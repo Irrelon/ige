@@ -1,12 +1,12 @@
-import { IgeBaseClass } from "../../engine/core/IgeBaseClass";
-import { IgeCanInit } from "../../types/IgeCanInit";
-import { ige } from "../../engine/instance";
-import { IgeBox2dComponent } from "../../engine/components/physics/box2d/IgeBox2dComponent";
-import { IgeScene2d } from "../../engine/core/IgeScene2d";
-import { IgeViewport } from "../../engine/core/IgeViewport";
-import { IgeEntityBox2d } from "../../engine/components/physics/box2d/IgeEntityBox2d";
-import { IgeBox2dBodyType } from "../../enums/IgeBox2dBodyType";
-import { IgeBox2dFixtureShapeType } from "../../enums/IgeBox2dFixtureShapeType";
+import { IgeBaseClass } from "@/engine/core/IgeBaseClass";
+import { IgeCanInit } from "@/types/IgeCanInit";
+import { ige } from "@/engine/instance";
+import { IgeBox2dComponent } from "@/engine/components/physics/box2d/IgeBox2dComponent";
+import { IgeScene2d } from "@/engine/core/IgeScene2d";
+import { IgeViewport } from "@/engine/core/IgeViewport";
+import { IgeEntityBox2d } from "@/engine/components/physics/box2d/IgeEntityBox2d";
+import { IgeBox2dBodyType } from "@/enums/IgeBox2dBodyType";
+import { IgeBox2dFixtureShapeType } from "@/enums/IgeBox2dFixtureShapeType";
 
 export class Client extends IgeBaseClass implements IgeCanInit {
 	classId = "Client";

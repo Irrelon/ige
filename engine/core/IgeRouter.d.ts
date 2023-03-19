@@ -1,4 +1,4 @@
-import { IgeRouteDefinition } from "../../types/IgeRouteDefinition";
+import { IgeRouteDefinition } from "@/types/IgeRouteDefinition";
 import { IgeBaseClass } from "./IgeBaseClass";
 export declare class IgeRouter extends IgeBaseClass {
     _routeLoad: Record<string, IgeRouteDefinition>;

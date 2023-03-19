@@ -1,12 +1,12 @@
-import { newIdHex } from "../../../../utils";
+import { newIdHex } from "@/engine/utils";
 
 class UiDialogs extends IgeEventingClass {
-	classId: 'UiDialogs',
+	classId: 'UiDialogs';,
 
-	init: function () {
-		var self = this;
-		self._dialogOrder = 200010;
-		ige.requireStylesheet(igeRoot + 'components/editor/ui/dialogs/dialogs.css');
+	init: function (); {
+		var; self = this;
+		self;._dialogOrder = 200010;
+		ige;.requireStylesheet(igeRoot + 'components/editor/ui/dialogs/dialogs.css';);
 	},
 
 	ready: function () {

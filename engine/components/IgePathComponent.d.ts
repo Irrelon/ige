@@ -4,7 +4,7 @@ import { IgeTileMap2d } from "../core/IgeTileMap2d";
 import { IgePathFinder, IgePathFinderComparisonCallback } from "../core/IgePathFinder";
 import { IgePoint3d } from "../core/IgePoint3d";
 import { IgePathNode } from "../core/IgePathNode";
-import { IgeEntityBehaviourMethod } from "../../types/IgeEntityBehaviour";
+import { IgeEntityBehaviourMethod } from "@/types/IgeEntityBehaviour";
 /**
  * Handles entity path traversal. This component is supposed to be added
  * to individual entities wishing to traverse paths. When added to an entity
@@ -236,6 +236,7 @@ export declare class IgePathComponent extends IgeComponent {
     unTransformPoint: (point: IgePathNode | IgePoint3d) => IgePoint3d;
     /**
      * The behaviour method executed each tick.
+     * @param entity
      * @param {CanvasRenderingContext2D} ctx The canvas that is currently being
      * rendered to.
      * @private

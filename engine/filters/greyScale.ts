@@ -1,4 +1,4 @@
-import { IgeSmartFilter } from "../../types/IgeSmartFilter";
+import { IgeSmartFilter } from "@/types/IgeSmartFilter";
 import { igeFilters } from "../igeFilters";
 
 export const greyScaleHelper = function (imageData: ImageData): ImageData {

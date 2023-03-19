@@ -19,7 +19,6 @@ export class IgeAudioController extends IgeEventingClass {
         /**
          * Decodes audio data and calls back with an audio buffer.
          * @param {ArrayBuffer} data The audio data to decode.
-         * @param {Function} callback The callback to pass the buffer to.
          * @private
          */
         this._decode = (data) => __awaiter(this, void 0, void 0, function* () {
@@ -114,7 +113,6 @@ export class IgeAudioController extends IgeEventingClass {
     /**
      * Loads an audio file from the given url.
      * @param {String} url The url to load the audio file from.
-     * @param {Function=} callback Optional callback method to call when the audio
      * file has loaded or on error.
      */
     _load(url) {

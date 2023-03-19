@@ -1,5 +1,5 @@
 import { IgeObject } from "../core/IgeObject";
-import type { Mixin } from "../../types/Mixin";
+import type { Mixin } from "@/types/Mixin";
 export declare const WithUiPositionMixin: <BaseClassType extends Mixin<IgeObject>>(Base: BaseClassType) => {
     new (...args: any[]): {
         _uiLeft?: number | undefined;
@@ -158,7 +158,7 @@ export declare const WithUiPositionMixin: <BaseClassType extends Mixin<IgeObject
         _depthSortMode: import("../../enums/IgeIsometricDepthSortMode").IgeIsometricDepthSortMode;
         _inView: boolean;
         _managed: number;
-        _triggerPolygon?: "aabb" | "localBounds3dPolygon" | undefined;
+        _triggerPolygon?: "localBounds3dPolygon" | "aabb" | undefined;
         _compositeCache: boolean;
         _compositeParent: boolean;
         _anchor: import("../core/IgePoint2d").IgePoint2d;

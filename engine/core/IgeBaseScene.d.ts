@@ -8,7 +8,6 @@ export declare class IgeBaseScene extends IgeSceneGraph {
     classId: string;
     /**
      * Called when loading the graph data via ige.addGraph().
-     * @param options
      */
     addGraph: () => void;
     /**

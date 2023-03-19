@@ -1,5 +1,5 @@
-import { ige } from "../../engine/instance";
-import { IgeCanvasRenderingContext2d } from "../../types/IgeCanvasRenderingContext2d";
+import { ige } from "@/engine/instance";
+import { IgeCanvasRenderingContext2d } from "@/types/IgeCanvasRenderingContext2d";
 import { Building } from "./base/Building";
 import { WorkerUnitType } from "../enums/WorkerUnitType";
 import { WorkerUnit } from "./WorkerUnit";

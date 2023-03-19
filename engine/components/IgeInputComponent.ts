@@ -1,7 +1,7 @@
 import {ige} from "../instance";
 import { IgePoint3d } from "../core/IgePoint3d";
 import { IgeViewport } from "../core/IgeViewport";
-import { IgeInputEventControl } from "../../types/IgeInputEventControl";
+import { IgeInputEventControl } from "@/types/IgeInputEventControl";
 import { IgeComponent } from "../core/IgeComponent";
 import type { IgeEngine } from "../core/IgeEngine";
 
@@ -307,7 +307,7 @@ export class IgeInputComponent extends IgeComponent<IgeEngine> {
 		}
 
 		return this._debug;
-	}
+	};
 
 	/**
 	 * Sets up the event listeners on the main window and front
@@ -387,7 +387,7 @@ export class IgeInputComponent extends IgeComponent<IgeEngine> {
 		// Listen for keyboard events
 		window.addEventListener("keydown", this._evRef.keydown, false);
 		window.addEventListener("keyup", this._evRef.keyup, false);
-	}
+	};
 
 	destroyListeners = () => {
 		this.log("Removing input event listeners...");
@@ -413,7 +413,7 @@ export class IgeInputComponent extends IgeComponent<IgeEngine> {
 
 		// Context menu events
 		canvas.removeEventListener("contextmenu", this._evRef.contextmenu, false);
-	}
+	};
 
 	/**
 	 * Fires an input event that didn't occur on the main canvas, as if it had
@@ -434,7 +434,7 @@ export class IgeInputComponent extends IgeComponent<IgeEngine> {
 		} else {
 			this.log("Cannot fire manual event because both eventName and eventObj params are required.", "warning");
 		}
-	}
+	};
 
 	/**
 	 * Sets igeX and igeY properties in the event object that
@@ -490,7 +490,7 @@ export class IgeInputComponent extends IgeComponent<IgeEngine> {
 		event.igeY = (event.igePageY - canvasPosition.top);
 
 		this.emit("inputEvent", event);
-	}
+	};
 
 
 	/**
@@ -528,7 +528,7 @@ export class IgeInputComponent extends IgeComponent<IgeEngine> {
 				this.emit("mouseDown", [event, mx, my, event.button + 1]);
 			});
 		}
-	}
+	};
 
 	/**
 	 * Emits the "mouseUp" event.
@@ -565,7 +565,7 @@ export class IgeInputComponent extends IgeComponent<IgeEngine> {
 				this.emit("mouseUp", [event, mx, my, event.button + 1]);
 			});
 		}
-	}
+	};
 
 	_contextMenu = (event: MouseEvent) => {
 		if (this._debug) {
@@ -596,7 +596,7 @@ export class IgeInputComponent extends IgeComponent<IgeEngine> {
 				this.emit("contextMenu", [event, mx, my, event.button + 1]);
 			});
 		}
-	}
+	};
 
 	/**
 	 * Emits the "mouseMove" event.
@@ -620,7 +620,7 @@ export class IgeInputComponent extends IgeComponent<IgeEngine> {
 				this.emit("mouseMove", [event, mx, my, event.button + 1]);
 			});
 		}
-	}
+	};
 
 	/**
 	 * Emits the "mouseWheel" event.
@@ -653,7 +653,7 @@ export class IgeInputComponent extends IgeComponent<IgeEngine> {
 				this.emit("mouseWheel", [event, mx, my, event.button + 1]);
 			});
 		}
-	}
+	};
 
 	/**
 	 * Emits the "keyDown" event.
@@ -672,7 +672,7 @@ export class IgeInputComponent extends IgeComponent<IgeEngine> {
 				this.emit("keyDown", [event, event.keyCode]);
 			});
 		}
-	}
+	};
 
 	/**
 	 * Emits the "keyUp" event.
@@ -691,7 +691,7 @@ export class IgeInputComponent extends IgeComponent<IgeEngine> {
 				this.emit("keyUp", [event, event.keyCode]);
 			});
 		}
-	}
+	};
 
 	/**
 	 * Loops the mounted viewports and updates their respective mouse
@@ -739,7 +739,7 @@ export class IgeInputComponent extends IgeComponent<IgeEngine> {
 		}
 
 		return vpUpdated as IgeViewport;
-	}
+	};
 
 	/**
 	 * Defines an action that will be emitted when the specified event type
@@ -749,7 +749,7 @@ export class IgeInputComponent extends IgeComponent<IgeEngine> {
 	 */
 	mapAction = (actionName: string, eventCode: string | number) => {
 		this._controlMap[actionName] = eventCode;
-	}
+	};
 
 	/**
 	 * Returns the passed action's input state value.
@@ -757,7 +757,7 @@ export class IgeInputComponent extends IgeComponent<IgeEngine> {
 	 */
 	actionVal = (actionName: string) => {
 		return this._state[this._controlMap[actionName]];
-	}
+	};
 
 	/**
 	 * Returns true if the passed action's input is pressed or its state
@@ -766,7 +766,7 @@ export class IgeInputComponent extends IgeComponent<IgeEngine> {
 	 */
 	actionState = (actionName: string) => {
 		return Boolean(this._state[this._controlMap[actionName]]);
-	}
+	};
 
 	/**
 	 * Returns an input's current value.
@@ -775,7 +775,7 @@ export class IgeInputComponent extends IgeComponent<IgeEngine> {
 	 */
 	val = (inputId: string | number) => {
 		return this._state[inputId];
-	}
+	};
 
 	/**
 	 * Returns an input's current state as a boolean.
@@ -784,7 +784,7 @@ export class IgeInputComponent extends IgeComponent<IgeEngine> {
 	 */
 	state = (inputId: string | number): boolean => {
 		return Boolean(this._state[inputId]);
-	}
+	};
 
 	/**
 	 * Stops further event propagation for this tick.
@@ -793,7 +793,7 @@ export class IgeInputComponent extends IgeComponent<IgeEngine> {
 	stopPropagation = () => {
 		this._eventControl._cancelled = true;
 		return this;
-	}
+	};
 
 	/**
 	 * Adds an event method to the eventQueue array. The array is
@@ -808,7 +808,7 @@ export class IgeInputComponent extends IgeComponent<IgeEngine> {
 		}
 
 		return this;
-	}
+	};
 
 	/**
 	 * Called by the engine after ALL other tick methods have processed.

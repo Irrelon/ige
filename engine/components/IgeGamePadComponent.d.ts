@@ -1,6 +1,6 @@
 import { IgeComponent } from "../core/IgeComponent";
 import { IgeEntity } from "../core/IgeEntity";
-import { IgeEntityBehaviourMethod } from "../../types/IgeEntityBehaviour";
+import { IgeEntityBehaviourMethod } from "@/types/IgeEntityBehaviour";
 export declare class IgeGamePadComponent extends IgeComponent {
     "classId": string;
     "componentId": string;

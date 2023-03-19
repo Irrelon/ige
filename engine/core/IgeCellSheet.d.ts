@@ -1,5 +1,5 @@
 import { IgeTexture } from "./IgeTexture";
-import { IgeSmartTexture } from "../../types/IgeSmartTexture";
+import { IgeSmartTexture } from "@/types/IgeSmartTexture";
 import { IgeImage } from "./IgeImage";
 import { IgeCanvas } from "./IgeCanvas";
 /**

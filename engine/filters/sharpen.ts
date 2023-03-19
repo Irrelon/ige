@@ -1,5 +1,5 @@
 import { convoluteHelper } from "./convolute";
-import { IgeSmartFilter } from "../../types/IgeSmartFilter";
+import { IgeSmartFilter } from "@/types/IgeSmartFilter";
 import { igeFilters } from "../igeFilters";
 
 export const sharpen: IgeSmartFilter = function (canvas, ctx, originalImage, texture, data) {

@@ -114,7 +114,7 @@ export class IgeNetIoServerComponent extends IgeNetIoBaseComponent {
 		}
 
 		this.emit(data.cmd, [data.data, clientId, responseCallback]);
-	}
+	};
 
 	_onResponse = (data: IgeNetworkMessageStructure, clientId?: string) => {
 		if (!clientId) return;
@@ -139,7 +139,7 @@ export class IgeNetIoServerComponent extends IgeNetIoBaseComponent {
 			// Delete the request from memory
 			delete this._requests[id];
 		}
-	}
+	};
 
 	_onTimeSync = (data: IgeNetworkMessageData, clientId?: string) => {
 		if (!clientId) return;
@@ -158,7 +158,7 @@ export class IgeNetIoServerComponent extends IgeNetIoBaseComponent {
 		this.log('Time sync, server clock ' + (localTime - sendTime) + 'ms ' + direction + ' client, roundtrip: ' + roundTrip + 'ms, send timestamp: ' + parseInt(data[0], 10) + ', local timestamp: ' + localTime);*/
 
 		this._timeSyncLog[clientId] = localTime - sendTime;
-	}
+	};
 
 	timeSyncStart () {
 		this._timeSyncStarted = true;

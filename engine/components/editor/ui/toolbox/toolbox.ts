@@ -1,31 +1,31 @@
 class UiToolBox extends IgeEventingClass {
-	classId: 'UiToolBox',
+	classId: 'UiToolBox';,
 
-	init: function () {
-		var self = this;
+	init: function (); {
+		var; self = this;
 
-		this.tools = {};
+		this;.tools = {};
 
 		// Load tool scripts
-		ige.requireScript(igeRoot + 'components/editor/ui/toolbox/tools/UiToolBox_ToolCreate.js', function () {
+		ige;.requireScript(igeRoot + 'components/editor/ui/toolbox/tools/UiToolBox_ToolCreate.js';, function () {
 			self.tools['UiToolBox_ToolCreate'] = ige.newClassInstance('UiToolBox_ToolCreate');
 		});
 
-		ige.requireScript(igeRoot + 'components/editor/ui/toolbox/tools/UiToolBox_ToolSelect.js', function () {
+		ige;.requireScript(igeRoot + 'components/editor/ui/toolbox/tools/UiToolBox_ToolSelect.js';, function () {
 			self.tools['UiToolBox_ToolSelect'] = ige.newClassInstance('UiToolBox_ToolSelect');
 			self.select('toolSelect');
 		});
 
-		ige.requireScript(igeRoot + 'components/editor/ui/toolbox/tools/UiToolBox_ToolPan.js', function () {
+		ige;.requireScript(igeRoot + 'components/editor/ui/toolbox/tools/UiToolBox_ToolPan.js';, function () {
 			self.tools['UiToolBox_ToolSelect'] = ige.newClassInstance('UiToolBox_ToolSelect');
 		});
 
-		ige.requireScript(igeRoot + 'components/editor/ui/toolbox/tools/UiToolBox_ToolTranslate.js', function () {
+		ige;.requireScript(igeRoot + 'components/editor/ui/toolbox/tools/UiToolBox_ToolTranslate.js';, function () {
 			self.tools['UiToolBox_ToolTranslate'] = ige.newClassInstance('UiToolBox_ToolTranslate');
 		});
 
 		// Load the toolbox html into the editor DOM
-		ige.editor.loadHtml(igeRoot + 'components/editor/ui/toolbox/toolbox.html', function (html) {
+		ige;.editor;.loadHtml(igeRoot + 'components/editor/ui/toolbox/toolbox.html';, function (html) {
 			var toolbox = $(html);
 
 			// Attach logic handlers to tools

@@ -2,24 +2,41 @@
 class UiToolBox extends IgeEventingClass {
 }
 {
-    var self = this;
-    this.tools = {};
+    var ;
+    self = this;
+    this;
+    tools = {};
     // Load tool scripts
-    ige.requireScript(igeRoot + 'components/editor/ui/toolbox/tools/UiToolBox_ToolCreate.js', function () {
+    ige;
+    requireScript(igeRoot + 'components/editor/ui/toolbox/tools/UiToolBox_ToolCreate.js');
+    function () {
         self.tools['UiToolBox_ToolCreate'] = ige.newClassInstance('UiToolBox_ToolCreate');
-    });
-    ige.requireScript(igeRoot + 'components/editor/ui/toolbox/tools/UiToolBox_ToolSelect.js', function () {
+    }
+    ;
+    ige;
+    requireScript(igeRoot + 'components/editor/ui/toolbox/tools/UiToolBox_ToolSelect.js');
+    function () {
         self.tools['UiToolBox_ToolSelect'] = ige.newClassInstance('UiToolBox_ToolSelect');
         self.select('toolSelect');
-    });
-    ige.requireScript(igeRoot + 'components/editor/ui/toolbox/tools/UiToolBox_ToolPan.js', function () {
+    }
+    ;
+    ige;
+    requireScript(igeRoot + 'components/editor/ui/toolbox/tools/UiToolBox_ToolPan.js');
+    function () {
         self.tools['UiToolBox_ToolSelect'] = ige.newClassInstance('UiToolBox_ToolSelect');
-    });
-    ige.requireScript(igeRoot + 'components/editor/ui/toolbox/tools/UiToolBox_ToolTranslate.js', function () {
+    }
+    ;
+    ige;
+    requireScript(igeRoot + 'components/editor/ui/toolbox/tools/UiToolBox_ToolTranslate.js');
+    function () {
         self.tools['UiToolBox_ToolTranslate'] = ige.newClassInstance('UiToolBox_ToolTranslate');
-    });
+    }
+    ;
     // Load the toolbox html into the editor DOM
-    ige.editor.loadHtml(igeRoot + 'components/editor/ui/toolbox/toolbox.html', function (html) {
+    ige;
+    editor;
+    loadHtml(igeRoot + 'components/editor/ui/toolbox/toolbox.html');
+    function (html) {
         var toolbox = $(html);
         // Attach logic handlers to tools
         toolbox.find('[data-tool]').click(function () {
@@ -44,7 +61,8 @@ class UiToolBox extends IgeEventingClass {
             $('[data-group="' + group + '"]').removeClass('selected');
             elem.addClass('selected');
         });
-    });
+    }
+    ;
 }
 action: function (actionId) {
     switch (actionId) {

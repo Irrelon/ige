@@ -1,4 +1,4 @@
-import { ige } from "../../../../engine/instance";
+import { ige } from "@/engine/instance";
 import { SplashScene } from "./SplashScene";
 
 ige.router.route("app/splash", {
@@ -10,4 +10,4 @@ ige.router.route("app/splash", {
 			ige.engine.removeGraph(SplashScene);
 		}
 	}
-})
+});

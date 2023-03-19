@@ -1,5 +1,5 @@
 import IgeEventingClass from "../../../../core/IgeEventingClass";
-import { IgeMountMode } from "../../../../../enums/IgeMountMode";
+import { IgeMountMode } from "@/enums/IgeMountMode";
 
 class UiPanels extends IgeEventingClass {
 	classId = "UiPanels";
@@ -1432,11 +1432,11 @@ class UiPanels extends IgeEventingClass {
 		});
 	},
 
-	definition: function (className, props) {
-		if (className !== undefined) {
-			if (props !== undefined) {
-				this._panelProps[className] = props;
-				return this;
+	definition: function (className, props); {
+		if (className !== undefined;) {
+			if (props !== undefined;) {
+				this;._panelProps;[className] = props;
+				return; this;
 			}
 
 			return this._panelProps[className];

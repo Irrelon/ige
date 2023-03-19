@@ -64,7 +64,7 @@ export class IgeMouseZoomComponent extends IgeComponent {
 			this._entity.camera._scale.x,
 			this._entity.camera._scale.y
 		);
-	}
+	};
 
 	/**
 	 * Handles the mouse wheel event. Scales the camera as the wheel goes
@@ -80,7 +80,7 @@ export class IgeMouseZoomComponent extends IgeComponent {
 		const newZoom = currentScale - zoomDelta > 0.02 ? currentScale - zoomDelta : 0.02;
 
 		this._entity.camera.scaleTo(newZoom, newZoom, 0);
-	}
+	};
 
 	/**
 	 * Handles the mouse up event. Finishes the camera scale and

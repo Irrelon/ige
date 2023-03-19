@@ -36,7 +36,7 @@ class IgeEditorTranslateComponent extends IgeComponent {
 		}
 
 		return this._startThreshold;
-	}
+	};
 
 	/**
 	 * Gets / sets the rectangle that the operation will be limited
@@ -51,7 +51,7 @@ class IgeEditorTranslateComponent extends IgeComponent {
 		}
 
 		return this._limit;
-	}
+	};
 
 	/**
 	 * Gets / sets the enabled flag. If set to true,
@@ -97,7 +97,7 @@ class IgeEditorTranslateComponent extends IgeComponent {
 		}
 
 		return this._enabled;
-	}
+	};
 
 	/**
 	 * Handles the mouseDown event. Records the starting position of the
@@ -121,7 +121,7 @@ class IgeEditorTranslateComponent extends IgeComponent {
 
 			document.getElementById("igeSgEditorStatus").innerHTML = "X: " + this._targetEntity._translate.x + " Y:" + this._targetEntity._translate.y;
 		}
-	}
+	};
 
 	/**
 	 * Handles the mouse move event. Translates the entity as the mouse
@@ -191,7 +191,7 @@ class IgeEditorTranslateComponent extends IgeComponent {
 				document.getElementById("igeSgEditorStatus").innerHTML = "X: " + panFinalX + " Y:" + panFinalY;
 			}
 		}
-	}
+	};
 
 	/**
 	 * Handles the mouse up event. Finishes the entity translate and

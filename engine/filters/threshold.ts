@@ -1,4 +1,4 @@
-import { IgeSmartFilter } from "../../types/IgeSmartFilter";
+import { IgeSmartFilter } from "@/types/IgeSmartFilter";
 import { IgeTexture } from "../core/IgeTexture";
 import { igeFilters } from "../igeFilters";
 

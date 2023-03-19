@@ -34,7 +34,7 @@ export class IgeMousePanComponent extends IgeComponent {
 		}
 
 		return this._startThreshold;
-	}
+	};
 
 	/**
 	 * Gets / sets the rectangle that the pan operation will be limited
@@ -105,7 +105,7 @@ export class IgeMousePanComponent extends IgeComponent {
 
 		this._panPreStart = true;
 		this._panStarted = false;
-	}
+	};
 
 	/**
 	 * Handles the mouse move event. Translates the camera as the mouse
@@ -177,7 +177,7 @@ export class IgeMousePanComponent extends IgeComponent {
 
 			this.emit("panMove");
 		}
-	}
+	};
 
 	/**
 	 * Handles the mouse up event. Finishes the camera translate and

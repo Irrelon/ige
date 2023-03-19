@@ -1,4 +1,4 @@
-import { ige } from "../../engine/instance";
+import { ige } from "@/engine/instance";
 import { Line } from "./base/Line";
 import { Building } from "./base/Building";
 import { registerClass } from "@/engine/igeClassStore";

@@ -1,4 +1,4 @@
-import { IgeRect } from "../../../engine/core/IgeRect";
+import { IgeRect } from "@/engine/core/IgeRect";
 import { GameEntity } from "./GameEntity";
 export declare class Line extends GameEntity {
     classId: string;

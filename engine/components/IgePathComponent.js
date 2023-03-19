@@ -495,6 +495,7 @@ export class IgePathComponent extends IgeComponent {
         };
         /**
          * The behaviour method executed each tick.
+         * @param entity
          * @param {CanvasRenderingContext2D} ctx The canvas that is currently being
          * rendered to.
          * @private

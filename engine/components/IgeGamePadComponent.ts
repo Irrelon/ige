@@ -1,6 +1,6 @@
 import { IgeComponent } from "../core/IgeComponent";
 import { IgeEntity } from "../core/IgeEntity";
-import { IgeEntityBehaviourMethod } from "../../types/IgeEntityBehaviour";
+import { IgeEntityBehaviourMethod } from "@/types/IgeEntityBehaviour";
 
 export class IgeGamePadComponent extends IgeComponent {
 	"classId" = "IgeGamePadComponent";
@@ -118,7 +118,7 @@ export class IgeGamePadComponent extends IgeComponent {
 	 */
 	_behaviour: IgeEntityBehaviourMethod = (entity) => {
 		entity.gamePad.pollStatus();
-	}
+	};
 
 	/**
 	 * Checks for the gamepad status. Monitors the necessary data and notices

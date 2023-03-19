@@ -1,7 +1,7 @@
-import { ige } from "../../../engine/instance";
+import { ige } from "@/engine/instance";
 import { isClient } from "@/engine/clientServer";
 import { registerClass } from "@/engine/igeClassStore";
-import { IgeRect } from "../../../engine/core/IgeRect";
+import { IgeRect } from "@/engine/core/IgeRect";
 import { GameEntity } from "./GameEntity";
 
 export class Line extends GameEntity {

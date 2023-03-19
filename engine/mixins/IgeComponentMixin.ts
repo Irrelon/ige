@@ -1,4 +1,4 @@
-import type {Mixin} from "../../types/Mixin";
+import type {Mixin} from "@/types/Mixin";
 import type { IgeBaseClass } from "../core/IgeBaseClass";
 import type { IgeComponent } from "../core/IgeComponent";
 import {arrPull} from "../utils";
@@ -20,7 +20,6 @@ export const WithComponentMixin = <ComponentTargetType, MixinBaseClassType exten
 	 * a property name that is defined in the component class as
 	 * "componentId".
 	 * @param {IgeBaseClass} component The class definition of the component.
-	 * @param ige
 	 * @param {Object=} options An options parameter to pass to the component
 	 * on init.
 	 * @example #Add the velocity component to an entity
@@ -73,4 +72,4 @@ export const WithComponentMixin = <ComponentTargetType, MixinBaseClassType exten
 		delete this.components[componentId];
 		return this;
 	}
-}
+};

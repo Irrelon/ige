@@ -232,7 +232,7 @@ class IgeEditorComponent extends IgeComponent {
 
 	interceptMouse = (val: boolean) => {
 		this._interceptMouse = val;
-	}
+	};
 
 	/**
 	 * Gets / sets the enabled flag. If set to true,
@@ -248,7 +248,7 @@ class IgeEditorComponent extends IgeComponent {
 		}
 
 		return this._enabled;
-	}
+	};
 
 	toggle = () => {
 		const elem = $("#editorToggle");
@@ -258,7 +258,7 @@ class IgeEditorComponent extends IgeComponent {
 		} else {
 			(ige.components.editor as IgeEditorComponent).show();
 		}
-	}
+	};
 
 	show = () => {
 		this.enabled(true);
@@ -270,7 +270,7 @@ class IgeEditorComponent extends IgeComponent {
 			.addClass("active");
 
 		$(".editorElem.toggleHide").addClass("shown");
-	}
+	};
 
 	hide = () => {
 		this.enabled(false);
@@ -281,7 +281,7 @@ class IgeEditorComponent extends IgeComponent {
 			.removeClass("active");
 
 		$(".editorElem.toggleHide").removeClass("shown");
-	}
+	};
 
 	toggleStats = () => {
 		const elem = $("#statsToggle");
@@ -291,7 +291,7 @@ class IgeEditorComponent extends IgeComponent {
 		} else {
 			(ige.components.editor as IgeEditorComponent).showStats();
 		}
-	}
+	};
 
 	showStats = () => {
 		$("#statsToggle")
@@ -300,7 +300,7 @@ class IgeEditorComponent extends IgeComponent {
 			.addClass("active");
 
 		$(".counter").show();
-	}
+	};
 
 	hideStats = () => {
 		$("#statsToggle")
@@ -308,13 +308,13 @@ class IgeEditorComponent extends IgeComponent {
 			.removeClass("active");
 
 		$(".counter").hide();
-	}
+	};
 
 	loadHtml = (url: string, callback: (content: string) => void) => {
 		fetch(url)
 			.then((response) => response.text())
 			.then(callback);
-	}
+	};
 
 	template = (url, callback) => {
 		const self = this;
@@ -342,7 +342,7 @@ class IgeEditorComponent extends IgeComponent {
 		} else {
 			if (callback) { callback(false, this._templateCache[url]); }
 		}
-	}
+	};
 
 	renderTemplate = (url, data, callback) => {
 		this.template(url, (err, template) => {
@@ -352,7 +352,7 @@ class IgeEditorComponent extends IgeComponent {
 				callback(err);
 			}
 		});
-	}
+	};
 
 	selectObject = (id) => {
 		if (id !== undefined) {
@@ -363,7 +363,7 @@ class IgeEditorComponent extends IgeComponent {
 				delete this._selectedObject;
 			}
 		}
-	}
+	};
 
 	_objectSelected = (obj) => {
 		if (obj) {
@@ -385,14 +385,14 @@ class IgeEditorComponent extends IgeComponent {
 
 			this.emit("selectedObject", obj.id());
 		}
-	}
+	};
 
 	destroySelected = () => {
 		if (this._selectedObject) {
 			this._selectedObject.destroy();
 			this.selectObject(null);
 		}
-	}
+	};
 
 	createObject = (classId, select) => {
 		if (this._selectedObject) {
@@ -418,7 +418,7 @@ class IgeEditorComponent extends IgeComponent {
 				}
 			}
 		}
-	}
+	};
 
 	/**
 	 * Updates the stats HTML overlay with the latest data.
@@ -471,7 +471,7 @@ class IgeEditorComponent extends IgeComponent {
 				break;
 			}
 		}
-	}
+	};
 
 	addToSgTree = (item) => {
 		let elem = document.createElement("li"),
@@ -548,7 +548,7 @@ class IgeEditorComponent extends IgeComponent {
 				ige.addToSgTree(arr[i]);
 			}
 		}
-	}
+	};
 
 	toggleShowEditor = () => {
 		this._showSgTree = !this._showSgTree;
@@ -698,7 +698,7 @@ class IgeEditorComponent extends IgeComponent {
 			ige.removeComponent("editorTranslate");
 			ige.removeComponent("editorRotate");
 		}
-	}
+	};
 
 	sgTreeUpdate = () => {
 		// Update the scenegraph tree

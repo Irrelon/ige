@@ -57,10 +57,10 @@ export declare class IgeUiLabel extends IgeUiElement {
      * @return {*}
      */
     fontSheet(fontSheet?: IgeFontSheet): IgeFontSheet | this | undefined;
-    font(val?: string | IgeFontSheet): string | IgeFontEntity | IgeFontSheet | this | undefined;
-    nativeFont(val?: string): string | IgeFontEntity | this | undefined;
-    nativeStroke(val?: number): number | IgeFontEntity | this | undefined;
-    nativeStrokeColor(val?: string): string | IgeFontEntity | this | undefined;
+    font(val?: string | IgeFontSheet): string | IgeFontSheet | this | IgeFontEntity | undefined;
+    nativeFont(val?: string): string | this | IgeFontEntity | undefined;
+    nativeStroke(val?: number): number | this | IgeFontEntity | undefined;
+    nativeStrokeColor(val?: string): string | this | IgeFontEntity | undefined;
     color(val: string): this;
     color(): string;
     _mounted(): void;

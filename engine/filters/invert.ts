@@ -1,4 +1,4 @@
-import { IgeSmartFilter } from "../../types/IgeSmartFilter";
+import { IgeSmartFilter } from "@/types/IgeSmartFilter";
 import { igeFilters } from "../igeFilters";
 
 export const invert: IgeSmartFilter = function (canvas, ctx, originalImage, texture, data) {

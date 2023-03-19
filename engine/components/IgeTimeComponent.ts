@@ -3,7 +3,7 @@ import { IgeComponent } from "../core/IgeComponent";
 import { IgeEntity } from "../core/IgeEntity";
 import { IgeInterval } from "../core/IgeInterval";
 import { arrPull } from "../utils";
-import { IgeEntityBehaviourMethod } from "../../types/IgeEntityBehaviour";
+import { IgeEntityBehaviourMethod } from "@/types/IgeEntityBehaviour";
 import type { IgeEngine } from "../core/IgeEngine";
 
 export class IgeTimeComponent extends IgeComponent<IgeEngine> {
@@ -66,7 +66,7 @@ export class IgeTimeComponent extends IgeComponent<IgeEngine> {
 		this._processAdditions();
 
 		return this;
-	}
+	};
 
 	_processAdditions = () => {
 		const arr = this._additions;

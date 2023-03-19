@@ -2028,7 +2028,7 @@ export class IgeObject extends IgeEventingClass implements IgeCanRegisterById, I
 
 	onStreamCreateInitialData (data: any) {
 		if (data) {
-			console.log(data)
+			console.log(data);
 			this.log("onStreamCreateInitialProps() received data but your class instance has not acted on it.", "warning");
 		}
 		return;

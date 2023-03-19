@@ -1,6 +1,6 @@
 import { IgePoint2d } from "../core/IgePoint2d";
-import { IgeSmartTexture } from "../../types/IgeSmartTexture";
-import { IgeMountMode } from "../../enums/IgeMountMode";
+import { IgeSmartTexture } from "@/types/IgeSmartTexture";
+import { IgeMountMode } from "@/enums/IgeMountMode";
 import { IgeTileMap2d } from "../core/IgeTileMap2d";
 
 export const IgeTileMap2dSmartTexture: IgeSmartTexture = {
@@ -189,4 +189,4 @@ export const IgeTileMap2dSmartTexture: IgeSmartTexture = {
 			}
 		}
 	}
-}
+};

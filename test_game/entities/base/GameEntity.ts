@@ -1,5 +1,5 @@
-import { IgeEntity } from "../../../engine/core/IgeEntity";
-import { IgeStreamMode } from "../../../enums/IgeStreamMode";
+import { IgeEntity } from "@/engine/core/IgeEntity";
+import { IgeStreamMode } from "@/enums/IgeStreamMode";
 import { registerClass } from "@/engine/igeClassStore";
 
 export class GameEntity extends IgeEntity {

@@ -1,4 +1,4 @@
-import { ige } from "../../../engine/instance";
+import { ige } from "@/engine/instance";
 import { isClient } from "@/engine/clientServer";
 import { registerClass } from "@/engine/igeClassStore";
 import { Building } from "./Building";

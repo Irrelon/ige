@@ -1,5 +1,5 @@
 import { IgeEntity } from "./IgeEntity";
-import { IgeCanvasRenderingContext2d } from "../../types/IgeCanvasRenderingContext2d";
+import { IgeCanvasRenderingContext2d } from "@/types/IgeCanvasRenderingContext2d";
 /**
  * Creates a new 2d scene.
  */

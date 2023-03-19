@@ -1,8 +1,8 @@
-import { ige } from "../../../../engine/instance";
-import { IgeSceneGraph } from "../../../../engine/core/IgeSceneGraph";
-import { IgeScene2d } from "../../../../engine/core/IgeScene2d";
-import { IgeEntity } from "../../../../engine/core/IgeEntity";
-import { IgeUiButton } from "../../../../engine/ui/IgeUiButton";
+import { ige } from "@/engine/instance";
+import { IgeSceneGraph } from "@/engine/core/IgeSceneGraph";
+import { IgeScene2d } from "@/engine/core/IgeScene2d";
+import { IgeEntity } from "@/engine/core/IgeEntity";
+import { IgeUiButton } from "@/engine/ui/IgeUiButton";
 
 export class SplashScene extends IgeSceneGraph {
 	classId = "SplashScene";

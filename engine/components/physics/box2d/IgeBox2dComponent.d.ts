@@ -1,14 +1,14 @@
 import { IgeComponent } from "../../../core/IgeComponent";
-import { IgeBox2dTimingMode } from "../../../../enums/IgeBox2dTimingMode";
+import { IgeBox2dTimingMode } from "@/enums/IgeBox2dTimingMode";
 import { IgeEntity } from "../../../core/IgeEntity";
 import { IgeTileMap2d, IgeTileMap2dScanRectCallback } from "../../../core/IgeTileMap2d";
 import { IgeEntityBox2d } from "./IgeEntityBox2d";
 import type { IgeEngine } from "../../../core/IgeEngine";
-import type { IgeBox2dBodyDef } from "../../../../types/IgeBox2dBodyDef";
-import type { IgeBox2dFixtureDef } from "../../../../types/IgeBox2dFixtureDef";
-import type { IgeBox2dContactListenerCallback } from "../../../../types/IgeBox2dContactListenerCallback";
-import type { IgeBox2dContactPostSolveCallback, IgeBox2dContactPreSolveCallback } from "../../../../types/IgeBox2dContactSolverCallback";
-import type { IgeEntityBehaviourMethod } from "../../../../types/IgeEntityBehaviour";
+import type { IgeBox2dBodyDef } from "@/types/IgeBox2dBodyDef";
+import type { IgeBox2dFixtureDef } from "@/types/IgeBox2dFixtureDef";
+import type { IgeBox2dContactListenerCallback } from "@/types/IgeBox2dContactListenerCallback";
+import type { IgeBox2dContactPostSolveCallback, IgeBox2dContactPreSolveCallback } from "@/types/IgeBox2dContactSolverCallback";
+import type { IgeEntityBehaviourMethod } from "@/types/IgeEntityBehaviour";
 import { Box2D } from "./index";
 /**
  * The engine's Box2D component class.

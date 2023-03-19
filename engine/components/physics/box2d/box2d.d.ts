@@ -636,7 +636,6 @@ export declare namespace Box2D {
 
 				/**
 				 * Generates a random number.
-				 * @param return Random number.
 				 **/
 				public static Random (): number;
 
@@ -1324,7 +1323,7 @@ export declare namespace Box2D.Collision {
 		/**
 		 * Create a proxy. Provide a tight fitting AABB and a userData.
 		 * @param aabb AABB.
-		 * @param userDate User defined data for this proxy.
+		 * @param userData
 		 * @return Dynamic tree node.
 		 **/
 		public CreateProxy (aabb: b2AABB, userData: any): b2DynamicTreeNode;
@@ -1362,6 +1361,7 @@ export declare namespace Box2D.Collision {
 		 * Query an AABB for overlapping proxies. The callback is called for each proxy that overlaps the supplied AABB. The callback should match function signature fuction callback(proxy:b2DynamicTreeNode):Boolean and should return false to trigger premature termination.
 		 * @param callback Called for each proxy that overlaps the supplied AABB.
 		 *    param proxy Proxy overlapping the supplied AABB.
+		 * @param aabb
 		 * @aabb Proxies are query for overlap on this AABB.
 		 **/
 		public Query (callback: (proxy: b2DynamicTreeNode) => boolean, aabb: b2AABB): void;
@@ -1705,6 +1705,7 @@ export declare namespace Box2D.Collision {
 		/**
 		 * Ray cast against this segment with another segment.
 		 * @param lambda returns the hit fraction. You can use this to compute the contact point * p = (1 - lambda) * segment.p1 + lambda * segment.p2 * @normal Normal at the contact point.  If there is no intersection, the normal is not set.
+		 * @param normal
 		 * @param segment Defines the begining and end point of the ray cast.
 		 * @param maxLambda a number typically in the range [0,1].
 		 * @return True if there is an intersection, otherwise false.
@@ -2073,6 +2074,7 @@ export declare namespace Box2D.Collision.Shapes {
 		/**
 		 * Compute the mass properties of this shape using its dimensions and density. The inertia tensor is computed about the local origin, not the centroid.
 		 * @param massData Calculate the mass, this argument is `out`.
+		 * @param density
 		 **/
 		public ComputeMass (massData: b2MassData, density: number): void;
 
@@ -2255,7 +2257,7 @@ export declare namespace Box2D.Collision.Shapes {
 		/**
 		 * Creates a single edge from two vertices.
 		 * @param v1 First vertex.
-		 * @param v2 Second vertex.
+		 * @param b2
 		 * @return Edge polygon shape.
 		 **/
 		public static AsEdge (v1: Box2D.Common.Math.b2Vec2, b2: Box2D.Common.Math.b2Vec2): b2PolygonShape;
@@ -2288,6 +2290,7 @@ export declare namespace Box2D.Collision.Shapes {
 		/**
 		 * Compute the mass properties of this shape using its dimensions and density. The inertia tensor is computed about the local origin, not the centroid.
 		 * @param massData Calculate the mass, this argument is `out`.
+		 * @param density
 		 **/
 		public ComputeMass (massData: b2MassData, density: number): void;
 
@@ -2378,7 +2381,7 @@ export declare namespace Box2D.Collision.Shapes {
 		/**
 		 * Creates a single edge from two vertices.
 		 * @param v1 First vertex.
-		 * @param v2 Second vertex.
+		 * @param b2
 		 * @return Edge polygon shape.
 		 **/
 		public SetAsEdge (v1: Box2D.Common.Math.b2Vec2, b2: Box2D.Common.Math.b2Vec2): void;
@@ -2488,7 +2491,6 @@ export declare namespace Box2D.Collision.Shapes {
 		 * @param output Ray cast results, this argument is `out`.
 		 * @param input Ray cast input parameters.
 		 * @param transform The transform to be applied to the shape.
-		 * @param return True if the ray hits the shape, otherwise false.
 		 **/
 		public RayCast (
 			output: b2RayCastOutput,
@@ -2556,7 +2558,7 @@ export declare namespace Box2D.Dynamics {
 
 		/**
 		 * Apply an impulse at a point. This immediately modifies the velocity. It also modifies the angular velocity if the point of application is not at the center of mass. This wakes up the body.
-		 * @param impules The world impulse vector, usually in N-seconds or kg-m/s.
+		 * @param impulse
 		 * @param point The world position of the point of application.
 		 **/
 		public ApplyImpulse (impulse: Box2D.Common.Math.b2Vec2, point: Box2D.Common.Math.b2Vec2): void;
@@ -3427,7 +3429,7 @@ export declare namespace Box2D.Dynamics {
 
 		/**
 		 * Get the coefficient of restitution.
-		 * @param resitution The new restitution coefficient.
+		 * @param restitution
 		 **/
 		public SetRestitution (restitution: number): void;
 
@@ -3708,7 +3710,7 @@ export declare namespace Box2D.Dynamics {
 		/**
 		 * Use the given object as a broadphase. The old broadphase will not be cleanly emptied.
 		 * @warning This function is locked during callbacks.
-		 * @param broadphase: Broad phase implementation.
+		 * @param broadPhase
 		 **/
 		public SetBroadPhase (broadPhase: Box2D.Collision.IBroadPhase): void;
 
@@ -4195,10 +4197,10 @@ export declare namespace Box2D.Dynamics.Joints {
 	 * The base joint class. Joints are used to constraint two bodies together in various fashions. Some joints also feature limits and motors.
 	 **/
 	export class b2Joint {
-		m_localAnchorA: Box2D.Common.Math.b2Vec2
-		m_localAnchorB: Box2D.Common.Math.b2Vec2
-		m_impulse: Box2D.Common.Math.b2Vec3
-		m_mass: Box2D.Common.Math.b2Mat33
+		m_localAnchorA: Box2D.Common.Math.b2Vec2;
+		m_localAnchorB: Box2D.Common.Math.b2Vec2;
+		m_impulse: Box2D.Common.Math.b2Vec3;
+		m_mass: Box2D.Common.Math.b2Mat33;
 
 		/**
 		 * Get the anchor point on bodyA in world coordinates.
@@ -4610,7 +4612,7 @@ export declare namespace Box2D.Dynamics.Joints {
 
 		/**
 		 * Set the gear ratio.
-		 * @param force New gear ratio.
+		 * @param ratio
 		 **/
 		public SetRatio (ratio: number): void;
 	}

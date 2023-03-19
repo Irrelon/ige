@@ -12,9 +12,8 @@ export class IgeBaseScene extends IgeSceneGraph {
 	classId = "IgeBaseScene";
 
 	/**
-     * Called when loading the graph data via ige.addGraph().
-     * @param options
-     */
+	 * Called when loading the graph data via ige.addGraph().
+	 */
 	addGraph = () => {
 		// Clear existing graph data
 		if (ige.$("baseScene")) {

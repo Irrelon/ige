@@ -1,5 +1,5 @@
 import { IgeViewport } from "../core/IgeViewport";
-import { IgeInputEventControl } from "../../types/IgeInputEventControl";
+import { IgeInputEventControl } from "@/types/IgeInputEventControl";
 import { IgeComponent } from "../core/IgeComponent";
 import type { IgeEngine } from "../core/IgeEngine";
 export interface IgeInputMouseInterface {

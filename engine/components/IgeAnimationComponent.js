@@ -324,7 +324,6 @@ export class IgeAnimationComponent extends IgeComponent {
         };
         /**
          * Handles the animation processing each update.
-         * @param igeInstance
          * @param {CanvasRenderingContext2D} ctx The rendering context to use when doing draw operations.
          * @param entity
          * @param {Number} tickDelta The current ige._tickDelta passed down the scenegraph.

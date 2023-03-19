@@ -1,10 +1,10 @@
-import { IgeTexture } from "../../engine/core/IgeTexture";
-import { IgeBaseScene } from "../../engine/core/IgeBaseScene";
+import { IgeTexture } from "@/engine/core/IgeTexture";
+import { IgeBaseScene } from "@/engine/core/IgeBaseScene";
 import simpleBox from "./assets/textures/smartTextures/simpleBox";
-import { IgeBaseClass } from "../../engine/core/IgeBaseClass";
+import { IgeBaseClass } from "@/engine/core/IgeBaseClass";
 import {Rotator} from "./gameClasses/Rotator";
-import {ige} from "../../engine/instance";
-import { IgeEntity } from "../../engine/core/IgeEntity";
+import {ige} from "@/engine/instance";
+import { IgeEntity } from "@/engine/core/IgeEntity";
 
 // @ts-ignore
 window.ige = ige;

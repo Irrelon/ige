@@ -1,9 +1,9 @@
-import {ige} from "../../engine/instance";
-import { IgeBaseClass } from "../../engine/core/IgeBaseClass";
-import { IgeCanInit } from "../../types/IgeCanInit";
-import { IgeBaseScene } from "../../engine/core/IgeBaseScene";
+import {ige} from "@/engine/instance";
+import { IgeBaseClass } from "@/engine/core/IgeBaseClass";
+import { IgeCanInit } from "@/types/IgeCanInit";
+import { IgeBaseScene } from "@/engine/core/IgeBaseScene";
 import { Level1 } from "./levels/Level1";
-import { IgeSpriteSheet } from "../../engine/core/IgeSpriteSheet";
+import { IgeSpriteSheet } from "@/engine/core/IgeSpriteSheet";
 
 // @ts-ignore
 window.ige = ige;

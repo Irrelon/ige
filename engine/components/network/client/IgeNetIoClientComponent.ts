@@ -170,7 +170,7 @@ export class IgeNetIoClientComponent extends IgeNetIoBaseComponent {
 		}
 
 		this.emit(data.cmd, [data.id, data.data]);
-	}
+	};
 
 	_onResponse = (responseObj: IgeNetworkMessageStructure) => {
 		// The message is a network response
@@ -193,7 +193,7 @@ export class IgeNetIoClientComponent extends IgeNetIoBaseComponent {
 			// Delete the request from memory
 			delete this._requests[id];
 		}
-	}
+	};
 
 	_onTimeSync = (data: IgeNetworkTimeSyncRequestFromServer) => {
 		const localTime = Math.floor(ige.engine._currentTime);
@@ -213,7 +213,7 @@ export class IgeNetIoClientComponent extends IgeNetIoBaseComponent {
 
 		// Send a response without current clock time to the server
 		this._sendTimeSync([serverTime, localTime]);
-	}
+	};
 
 	stop () {
 		// Check we are connected
@@ -386,7 +386,7 @@ export class IgeNetIoClientComponent extends IgeNetIoBaseComponent {
 	// TODO: Make an error message interface and apply it here
 	_onError = (data: any) => {
 		this.log(`Error with connection: ${data.reason}`, 'error');
-	}
+	};
 
 	_sendTimeSync (data: IgeNetworkTimeSyncResponseFromClient) {
 		// Send the time sync command
@@ -423,7 +423,7 @@ export class IgeNetIoClientComponent extends IgeNetIoBaseComponent {
 	 */
 	_onStreamTime = (data: number) => {
 		this._streamDataTime = data;
-	}
+	};
 
 	_onStreamCreate = (data: IgeStreamCreateMessageData) => {
 		const classId = data[0];
@@ -478,7 +478,7 @@ export class IgeNetIoClientComponent extends IgeNetIoBaseComponent {
 
 			this.log(`Cannot properly handle network streamed entity with id "${entityId}" because it's parent with id "${parentId}" does not exist on the scenegraph!`, 'warning');
 		}
-	}
+	};
 
 	_onStreamDestroy = (data: IgeStreamDestroyMessageData) => {
 		const entity = ige.$(data[1]) as IgeEntity;
@@ -501,7 +501,7 @@ export class IgeNetIoClientComponent extends IgeNetIoBaseComponent {
 		// Destroy immediately
 		this.emit("entityDestroyed", entity);
 		entity.destroy();
-	}
+	};
 
 	/**
 	 * Called when the client receives data from the stream system.

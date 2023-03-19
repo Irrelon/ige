@@ -1,4 +1,4 @@
-import { IgeSmartTexture } from "../../../../types/IgeSmartTexture";
+import { IgeSmartTexture } from "@/types/IgeSmartTexture";
 
 const circle: IgeSmartTexture = {
 	render: function (ctx, entity) {

@@ -28,7 +28,7 @@ export class IgeVelocityComponent extends IgeComponent {
 	 */
 	_behaviour = () => {
 		this.tick();
-	}
+	};
 
 	byAngleAndPower (radians: number, power: number, relative: boolean = false)  {
 		const vel = this._velocity,
@@ -63,7 +63,7 @@ export class IgeVelocityComponent extends IgeComponent {
 		}
 
 		return this._entity;
-	}
+	};
 
 	x = (x: number, relative: boolean = false) => {
 		const vel = this._velocity;
@@ -75,7 +75,7 @@ export class IgeVelocityComponent extends IgeComponent {
 		}
 
 		return this._entity;
-	}
+	};
 
 	y = (y: number, relative: boolean = false) => {
 		const vel = this._velocity;
@@ -87,7 +87,7 @@ export class IgeVelocityComponent extends IgeComponent {
 		}
 
 		return this._entity;
-	}
+	};
 
 	z = (z: number, relative: boolean = false) => {
 		const vel = this._velocity;
@@ -99,7 +99,7 @@ export class IgeVelocityComponent extends IgeComponent {
 		}
 
 		return this._entity;
-	}
+	};
 
 	vector3 = (vector: IgePoint3d, relative: boolean = false) => {
 		if (typeof(vector.scale) !== "number") {
@@ -122,7 +122,7 @@ export class IgeVelocityComponent extends IgeComponent {
 		}
 
 		return this._entity;
-	}
+	};
 
 	friction = (val: number) => {
 		let finalFriction = 1 - val;
@@ -134,7 +134,7 @@ export class IgeVelocityComponent extends IgeComponent {
 		this._friction = new IgePoint3d(finalFriction, finalFriction, finalFriction);
 
 		return this._entity;
-	}
+	};
 
 	linearForce = (degrees: number, power: number) => {
 		power /= 1000;
@@ -145,12 +145,12 @@ export class IgeVelocityComponent extends IgeComponent {
 		this._linearForce = new IgePoint3d(x, y, z);
 
 		return this._entity;
-	}
+	};
 
 	linearForceXYZ = (x: number, y: number, z: number) => {
 		this._linearForce = new IgePoint3d(x, y, z);
 		return this._entity;
-	}
+	};
 
 	linearForceVector3 = (vector: IgePoint3d, relative = false) => {
 		const force = this._linearForce = this._linearForce || new IgePoint3d(0, 0, 0),
@@ -169,7 +169,7 @@ export class IgeVelocityComponent extends IgeComponent {
 		}
 
 		return this._entity;
-	}
+	};
 
 	_applyLinearForce = (delta: number) => {
 		if (this._linearForce) {
@@ -179,7 +179,7 @@ export class IgeVelocityComponent extends IgeComponent {
 			vel.y += (this._linearForce.y * delta);
 			vel.z += (this._linearForce.z * delta);
 		}
-	}
+	};
 
 	_applyFriction = () => {
 		const vel = this._velocity,
@@ -188,7 +188,7 @@ export class IgeVelocityComponent extends IgeComponent {
 		vel.x *= fric.x;
 		vel.y *= fric.y;
 		vel.z *= fric.z;
-	}
+	};
 
 	tick () {
 		const delta = ige.engine._tickDelta;

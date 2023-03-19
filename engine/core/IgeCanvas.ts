@@ -23,4 +23,4 @@ export const newCanvas = (): IgeCanvas => {
 	});
 
 	return instance as IgeCanvas;
-}
+};

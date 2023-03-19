@@ -22,7 +22,6 @@ export declare class IgeAudioController extends IgeEventingClass {
      * Gets / loads an audio file from the given url and assigns it the id specified
      * in the global audio register.
      * @param {String} id The id to assign the audio in the register.
-     * @param {String=} url The url to load the audio from.
      */
     register(id: string): AudioBuffer;
     /**
@@ -41,7 +40,6 @@ export declare class IgeAudioController extends IgeEventingClass {
     /**
      * Loads an audio file from the given url.
      * @param {String} url The url to load the audio file from.
-     * @param {Function=} callback Optional callback method to call when the audio
      * file has loaded or on error.
      */
     _load(url: string): Promise<AudioBuffer>;
@@ -49,7 +47,6 @@ export declare class IgeAudioController extends IgeEventingClass {
     /**
      * Decodes audio data and calls back with an audio buffer.
      * @param {ArrayBuffer} data The audio data to decode.
-     * @param {Function} callback The callback to pass the buffer to.
      * @private
      */
     _decode: (data: ArrayBuffer) => Promise<AudioBuffer | undefined>;

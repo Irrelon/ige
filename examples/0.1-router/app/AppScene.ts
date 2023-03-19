@@ -1,6 +1,6 @@
-import { IgeSceneGraph } from "../../../engine/core/IgeSceneGraph";
-import { ige } from "../../../engine/instance";
-import { IgeBaseScene } from "../../../engine/core/IgeBaseScene";
+import { IgeSceneGraph } from "@/engine/core/IgeSceneGraph";
+import { ige } from "@/engine/instance";
+import { IgeBaseScene } from "@/engine/core/IgeBaseScene";
 
 export class AppScene extends IgeSceneGraph {
 	classId = "AppScene";

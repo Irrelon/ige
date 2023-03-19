@@ -1,7 +1,7 @@
 import { ige } from "../../../instance";
 import { IgeEntity } from "../../../core/IgeEntity";
 import type { IgeBox2dComponent } from "./IgeBox2dComponent";
-import type { IgeBox2dBodyDef } from "../../../../types/IgeBox2dBodyDef";
+import type { IgeBox2dBodyDef } from "@/types/IgeBox2dBodyDef";
 
 /**
  * Creates a new entity with box2d integration.

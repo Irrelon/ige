@@ -1,12 +1,12 @@
-import { ige } from "../../engine/instance";
-import { IgeBaseClass } from "../../engine/core/IgeBaseClass";
-import { IgeCanInit } from "../../types/IgeCanInit";
-import { IgeScene2d } from "../../engine/core/IgeScene2d";
-import { IgeViewport } from "../../engine/core/IgeViewport";
-import { IgeTexture } from "../../engine/core/IgeTexture";
-import { IgeParticleEmitter } from "../../engine/core/IgeParticleEmitter";
-import { IgePoint3d } from "../../engine/core/IgePoint3d";
-import { IgeParticle } from "../../engine/core/IgeParticle";
+import { ige } from "@/engine/instance";
+import { IgeBaseClass } from "@/engine/core/IgeBaseClass";
+import { IgeCanInit } from "@/types/IgeCanInit";
+import { IgeScene2d } from "@/engine/core/IgeScene2d";
+import { IgeViewport } from "@/engine/core/IgeViewport";
+import { IgeTexture } from "@/engine/core/IgeTexture";
+import { IgeParticleEmitter } from "@/engine/core/IgeParticleEmitter";
+import { IgePoint3d } from "@/engine/core/IgePoint3d";
+import { IgeParticle } from "@/engine/core/IgeParticle";
 
 // @ts-ignore
 window.ige = ige;

@@ -1,4 +1,4 @@
-import type { Mixin } from "../../types/Mixin";
+import type { Mixin } from "@/types/Mixin";
 import type { IgeBaseClass } from "../core/IgeBaseClass";
 import type { IgeComponent } from "../core/IgeComponent";
 export declare const WithComponentMixin: <ComponentTargetType, MixinBaseClassType extends Mixin<IgeBaseClass> = Mixin<IgeBaseClass>>(Base: MixinBaseClassType) => {
@@ -13,7 +13,6 @@ export declare const WithComponentMixin: <ComponentTargetType, MixinBaseClassTyp
          * a property name that is defined in the component class as
          * "componentId".
          * @param {IgeBaseClass} component The class definition of the component.
-         * @param ige
          * @param {Object=} options An options parameter to pass to the component
          * on init.
          * @example #Add the velocity component to an entity

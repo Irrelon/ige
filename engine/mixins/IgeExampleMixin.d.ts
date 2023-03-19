@@ -1,4 +1,4 @@
-import type { Mixin } from "../../types/Mixin";
+import type { Mixin } from "@/types/Mixin";
 import type { IgeBaseClass } from "../core/IgeBaseClass";
 export declare const WithExampleMixin: <BaseClassType extends Mixin<IgeBaseClass>>(Base: BaseClassType) => {
     new (...args: any[]): {

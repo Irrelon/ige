@@ -1,5 +1,5 @@
-import { IgeCanRegisterById } from "../../types/IgeCanRegisterById";
-import { IgeCanBeDestroyed } from "../../types/IgeCanBeDestroyed";
+import { IgeCanRegisterById } from "@/types/IgeCanRegisterById";
+import { IgeCanBeDestroyed } from "@/types/IgeCanBeDestroyed";
 export declare class IgeObjectRegister {
     _store: Record<string, IgeCanRegisterById & IgeCanBeDestroyed>;
     get(id: string): IgeCanRegisterById & IgeCanBeDestroyed;

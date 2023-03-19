@@ -6,10 +6,10 @@ import { IgeCamera } from "./IgeCamera";
 import { IgeRect } from "./IgeRect";
 import { IgePoint2d } from "./IgePoint2d";
 import { IgeScene2d } from "./IgeScene2d";
-import { IgeCanRegisterById } from "../../types/IgeCanRegisterById";
+import { IgeCanRegisterById } from "@/types/IgeCanRegisterById";
 import { IgeObject } from "./IgeObject";
-import { IgeCanvasRenderingContext2d } from "../../types/IgeCanvasRenderingContext2d";
-import { IgeMountMode } from "../../enums/IgeMountMode";
+import { IgeCanvasRenderingContext2d } from "@/types/IgeCanvasRenderingContext2d";
+import { IgeMountMode } from "@/enums/IgeMountMode";
 import { IgeUiEntity } from "./IgeUiEntity";
 
 export interface IgeViewportOptions {

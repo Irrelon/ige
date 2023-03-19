@@ -1,7 +1,7 @@
 import { ige } from "../instance";
 import { IgeEntity } from "./IgeEntity";
 import { IgeViewport } from "./IgeViewport";
-import { IgeCanvasRenderingContext2d } from "../../types/IgeCanvasRenderingContext2d";
+import { IgeCanvasRenderingContext2d } from "@/types/IgeCanvasRenderingContext2d";
 import { IgeObject } from "./IgeObject";
 
 /**

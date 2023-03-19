@@ -21,7 +21,7 @@ export class Client extends IgeBaseClass {
 		ige.engine.createFrontBuffer(true);
 
 		// Start the engine
-		await ige.engine.start()
+		await ige.engine.start();
 
 		// Add base scene data
 		ige.engine.addGraph(IgeBaseScene);

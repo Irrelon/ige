@@ -3,14 +3,14 @@ import { IgeEntity } from "./IgeEntity";
 import { IgeObject } from "./IgeObject";
 import { IgeDummyCanvas } from "./IgeDummyCanvas";
 import { IgeViewport } from "./IgeViewport";
-import type { SyncEntry, SyncMethod } from "../../types/SyncEntry";
+import type { SyncEntry, SyncMethod } from "@/types/SyncEntry";
 import type { IgeBaseClass } from "./IgeBaseClass";
 import type { IgeCamera } from "./IgeCamera";
 import type { IgeSceneGraph } from "./IgeSceneGraph";
-import type { IgeCanvasRenderingContext2d } from "../../types/IgeCanvasRenderingContext2d";
-import type { GenericClass } from "../../types/GenericClass";
-import type { IgeSceneGraphDataEntry } from "../../types/IgeSceneGraphDataEntry";
-import { IgeEngineState } from "../../enums/IgeEngineState";
+import type { IgeCanvasRenderingContext2d } from "@/types/IgeCanvasRenderingContext2d";
+import type { GenericClass } from "@/types/GenericClass";
+import type { IgeSceneGraphDataEntry } from "@/types/IgeSceneGraphDataEntry";
+import { IgeEngineState } from "@/enums/IgeEngineState";
 import { IgeComponent } from "./IgeComponent";
 export declare class IgeEngine extends IgeEntity {
     client?: IgeBaseClass;
@@ -98,7 +98,7 @@ export declare class IgeEngine extends IgeEntity {
      * @param {IgeEntity} entity The entity to add.
      * @returns {Ige|[]} Either this, or the spawn queue.
      */
-    spawnQueue(entity: IgeObject): this | IgeObject[];
+    spawnQueue(entity: IgeObject): IgeObject[] | this;
     currentViewport(viewport?: IgeObject): IgeViewport | null;
     /**
      * Sets the canvas element that will be used as the front-buffer.
@@ -106,7 +106,7 @@ export declare class IgeEngine extends IgeEntity {
      * @param autoSize If set to true, the engine will automatically size
      * the canvas to the width and height of the window upon window resize.
      */
-    canvas(elem?: HTMLCanvasElement, autoSize?: boolean): this | HTMLCanvasElement | undefined;
+    canvas(elem?: HTMLCanvasElement, autoSize?: boolean): HTMLCanvasElement | this | undefined;
     /**
      * Clears the entire canvas.
      */

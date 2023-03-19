@@ -162,7 +162,7 @@ export const newIdNumber = (): number => {
 			Math.random() * Math.pow(10, 17) +
 			Math.random() * Math.pow(10, 17))
 	);
-}
+};
 
 /**
  * Generates a new unique ID string
@@ -171,7 +171,7 @@ export const newIdNumber = (): number => {
 export const newId = (): string => {
 	_idCounter++;
 	return newIdNumber().toString();
-}
+};
 
 /**
  * Generates a new 16-character hexadecimal unique ID
@@ -228,7 +228,7 @@ export const traceSet = (obj: any, propName: string, sampleCount: number, callba
 			}
 		}
 	});
-}
+};
 
 /**
  * Turns off a trace that was created by calling traceSet.
@@ -243,7 +243,7 @@ export const traceSetOff = (obj: any, propName: string) => {
 			this.___igeTraceCurrentVal[propName] = val;
 		}
 	});
-}
+};
 
 /**
  * Returns a promise that resolves in the given milliseconds.
@@ -253,4 +253,4 @@ export const delay = (ms: number) => {
 	return new Promise((resolve) => {
 		setTimeout(resolve, ms);
 	});
-}
+};

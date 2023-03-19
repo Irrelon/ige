@@ -1,7 +1,7 @@
 import { IgeChatComponent } from "./IgeChatComponent";
-import { IgeNetworkChatFromServerMessageStructure } from "../../../types/IgeNetworkMessage";
+import { IgeNetworkChatFromServerMessageStructure } from "@/types/IgeNetworkMessage";
 import { IgeEntity } from "../../core/IgeEntity";
-import { IgeNetworkChatFromServerJoinRoomResponseStructure, IgeNetworkChatFromServerLeaveRoomResponseStructure, IgeNetworkChatFromServerRoomStructure } from "../../../types/IgeNetworkChat";
+import { IgeNetworkChatFromServerJoinRoomResponseStructure, IgeNetworkChatFromServerLeaveRoomResponseStructure, IgeNetworkChatFromServerRoomStructure } from "@/types/IgeNetworkChat";
 /**
  * The client-side chat component. Handles all client-side
  * chat methods and events.

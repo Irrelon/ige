@@ -110,7 +110,7 @@ export class IgeAnimationComponent extends IgeComponent {
 			this.log("Cannot define an animation without a frame array!", "error");
 		}
 		return this._entity;
-	}
+	};
 
 	addFrame = (id: string, frameId: number | string) => {
 		if (this._anims[id]) {
@@ -124,7 +124,7 @@ export class IgeAnimationComponent extends IgeComponent {
 			anim.frameCount++;
 			anim.totalTime = anim.frames.length * anim.frameTime;
 		}
-	}
+	};
 
 	removeFrame = (id: string, frameIndex: number) => {
 		if (this._anims[id]) {
@@ -134,7 +134,7 @@ export class IgeAnimationComponent extends IgeComponent {
 			anim.frameCount--;
 			anim.totalTime = anim.frames.length * anim.frameTime;
 		}
-	}
+	};
 
 	/**
 	 * Removes a previously defined animation from the entity.
@@ -146,7 +146,7 @@ export class IgeAnimationComponent extends IgeComponent {
 		this._animCount--;
 
 		return this._entity;
-	}
+	};
 
 	/**
 	 * Returns true if the specified animation has been defined.
@@ -155,7 +155,7 @@ export class IgeAnimationComponent extends IgeComponent {
 	 */
 	defined = (id: string) => {
 		return Boolean(this._anims[id]);
-	}
+	};
 
 	/**
 	 * Sets the specified animation's FPS.
@@ -184,7 +184,7 @@ export class IgeAnimationComponent extends IgeComponent {
 		}
 
 		return this._entity;
-	}
+	};
 
 	/**
 	 * Sets all the animations assigned to an entity to the specified FPS.
@@ -212,7 +212,7 @@ export class IgeAnimationComponent extends IgeComponent {
 		}
 
 		return this._entity;
-	}
+	};
 
 	/**
 	 * Checks the current animation state, either started
@@ -222,7 +222,7 @@ export class IgeAnimationComponent extends IgeComponent {
 	 */
 	playing = () => {
 		return this._playing;
-	}
+	};
 
 	/**
 	 * Starts an animation from the beginning frame.
@@ -322,7 +322,7 @@ export class IgeAnimationComponent extends IgeComponent {
 		}
 
 		return this._entity;
-	}
+	};
 
 	/**
 	 * Starts an animation only if the passed animation is not already
@@ -350,7 +350,7 @@ export class IgeAnimationComponent extends IgeComponent {
 		}
 
 		return this._entity;
-	}
+	};
 
 	/**
 	 * Stops the current animation.
@@ -375,11 +375,10 @@ export class IgeAnimationComponent extends IgeComponent {
 		delete this._stoppedCallback;
 
 		return this._entity;
-	}
+	};
 
 	/**
 	 * Handles the animation processing each update.
-	 * @param igeInstance
 	 * @param {CanvasRenderingContext2D} ctx The rendering context to use when doing draw operations.
 	 * @param entity
 	 * @param {Number} tickDelta The current ige._tickDelta passed down the scenegraph.

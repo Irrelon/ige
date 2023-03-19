@@ -1,5 +1,5 @@
-import { IgeSmartTexture } from "../../types/IgeSmartTexture";
-import { IgeFontAlignY } from "../../enums/IgeFontAlign";
+import { IgeSmartTexture } from "@/types/IgeSmartTexture";
+import { IgeFontAlignY } from "@/enums/IgeFontAlign";
 import type { IgeFontEntity } from "../core/IgeFontEntity";
 
 /**
@@ -153,4 +153,4 @@ export const IgeFontSmartTexture: IgeSmartTexture = {
 			return maxWidth;
 		}
 	}
-}
+};

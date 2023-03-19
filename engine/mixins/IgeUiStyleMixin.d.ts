@@ -1,6 +1,6 @@
 import { IgeTexture } from "../core/IgeTexture";
 import { IgeObject } from "../core/IgeObject";
-import type { Mixin } from "../../types/Mixin";
+import type { Mixin } from "@/types/Mixin";
 export type IgeRepeatType = "repeat" | "repeat-x" | "repeat-y" | "no-repeat";
 export declare const WithUiStyleMixin: <BaseClassType extends Mixin<IgeObject>>(Base: BaseClassType) => {
     new (...args: any[]): {
@@ -155,7 +155,7 @@ export declare const WithUiStyleMixin: <BaseClassType extends Mixin<IgeObject>>(
         _depthSortMode: import("../../enums/IgeIsometricDepthSortMode").IgeIsometricDepthSortMode;
         _inView: boolean;
         _managed: number;
-        _triggerPolygon?: "aabb" | "localBounds3dPolygon" | undefined;
+        _triggerPolygon?: "localBounds3dPolygon" | "aabb" | undefined;
         _compositeCache: boolean;
         _compositeParent: boolean;
         _anchor: import("../core/IgePoint2d").IgePoint2d;
@@ -220,6 +220,12 @@ export declare const WithUiStyleMixin: <BaseClassType extends Mixin<IgeObject>>(
         _bounds3dPolygonDirty: boolean;
         _localBounds3dPolygon?: import("../core/IgePoly2d").IgePoly2d | undefined;
         _bounds3dPolygon?: import("../core/IgePoly2d").IgePoly2d | undefined;
+        /**
+         * Gets / sets the position to start rendering the background image at.
+         * @param {Number=} x
+         * @param {Number=} y
+         * @return {*} Returns this when setting the value or the current value if none is specified.
+         */
         _localAabb?: import("../core/IgeRect").IgeRect | undefined;
         _deathCallBack?: ((...args: any[]) => void) | undefined;
         components: Record<string, import("../core/IgeComponent").IgeComponent<any>>;

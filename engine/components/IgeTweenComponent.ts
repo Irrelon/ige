@@ -3,7 +3,7 @@ import { IgeComponent } from "../core/IgeComponent";
 import { arrPull } from "../utils";
 import { IgeTween, IgeTweenDestination } from "../core/IgeTween";
 import { easingFunctions } from "../easing";
-import { IgeEntityBehaviourMethod } from "../../types/IgeEntityBehaviour";
+import { IgeEntityBehaviourMethod } from "@/types/IgeEntityBehaviour";
 import type { IgeEngine } from "../core/IgeEngine";
 
 /**

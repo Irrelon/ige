@@ -1,5 +1,5 @@
 import { IgeEntity } from "./IgeEntity";
-import { IgeCanvasRenderingContext2d } from "../../types/IgeCanvasRenderingContext2d";
+import { IgeCanvasRenderingContext2d } from "@/types/IgeCanvasRenderingContext2d";
 import { IgeObject } from "./IgeObject";
 /**
  * The engine's root entity that all the scenegraph lives from.

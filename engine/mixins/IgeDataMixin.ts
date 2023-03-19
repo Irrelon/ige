@@ -1,4 +1,4 @@
-import type {Mixin} from "../../types/Mixin";
+import type {Mixin} from "@/types/Mixin";
 import type { IgeBaseClass } from "../core/IgeBaseClass";
 
 export const WithDataMixin = <BaseClassType extends Mixin<IgeBaseClass>>(Base: BaseClassType) => class extends Base {
@@ -20,4 +20,4 @@ export const WithDataMixin = <BaseClassType extends Mixin<IgeBaseClass>>(Base: B
 
 		return null;
 	}
-}
+};

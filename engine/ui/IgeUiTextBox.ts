@@ -24,7 +24,7 @@ export class IgeUiTextBox extends IgeUiElement {
 	_mask: string = "";
 
 	constructor () {
-		super()
+		super();
 
 		this._value = "";
 

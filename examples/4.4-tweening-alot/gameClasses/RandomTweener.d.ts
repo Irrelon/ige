@@ -1,4 +1,4 @@
-import { IgeEntity } from "../../../engine/core/IgeEntity";
+import { IgeEntity } from "@/engine/core/IgeEntity";
 export declare class RandomTweener extends IgeEntity {
     classId: string;
     constructor();

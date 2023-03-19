@@ -1,4 +1,4 @@
-import { IgeSmartFilter } from "../../types/IgeSmartFilter";
+import { IgeSmartFilter } from "@/types/IgeSmartFilter";
 import { convoluteHelper } from "./convolute";
 import { igeFilters } from "../igeFilters";
 

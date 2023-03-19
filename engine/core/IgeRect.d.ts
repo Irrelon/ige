@@ -1,7 +1,7 @@
 import { IgePoint3d } from "./IgePoint3d";
 import { IgePoint2d } from "./IgePoint2d";
 import { IgeBaseClass } from "./IgeBaseClass";
-import { IgeCanvasRenderingContext2d } from "../../types/IgeCanvasRenderingContext2d";
+import { IgeCanvasRenderingContext2d } from "@/types/IgeCanvasRenderingContext2d";
 /**
  * Creates a new rectangle (x, y, width, height).
  */

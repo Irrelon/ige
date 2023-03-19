@@ -1,4 +1,4 @@
-import { ige } from "../../engine/instance";
+import { ige } from "@/engine/instance";
 import { Circle } from "./base/Circle";
 import { ResourceType } from "../enums/ResourceType";
 import { Building } from "./base/Building";

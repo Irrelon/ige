@@ -1,6 +1,6 @@
 import { IgeComponent } from "../core/IgeComponent";
 import { IgeTween } from "../core/IgeTween";
-import { IgeEntityBehaviourMethod } from "../../types/IgeEntityBehaviour";
+import { IgeEntityBehaviourMethod } from "@/types/IgeEntityBehaviour";
 import type { IgeEngine } from "../core/IgeEngine";
 /**
  * This component is already included in the IgeRoot (ige)

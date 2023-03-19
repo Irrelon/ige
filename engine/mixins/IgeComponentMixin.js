@@ -13,7 +13,6 @@ export const WithComponentMixin = (Base) => class extends Base {
      * a property name that is defined in the component class as
      * "componentId".
      * @param {IgeBaseClass} component The class definition of the component.
-     * @param ige
      * @param {Object=} options An options parameter to pass to the component
      * on init.
      * @example #Add the velocity component to an entity

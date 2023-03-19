@@ -1,4 +1,4 @@
-import type {Mixin} from "../../types/Mixin";
+import type {Mixin} from "@/types/Mixin";
 import type { IgeBaseClass } from "../core/IgeBaseClass";
 
 export interface IgeEventListenerObject {
@@ -332,4 +332,4 @@ export const WithEventingMixin = <BaseClassType extends Mixin<IgeBaseClass>>(Bas
 		// Remove the removal array
 		this._eventRemovalQueue = [];
 	}
-}
+};

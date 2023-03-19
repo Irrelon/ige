@@ -7,19 +7,19 @@ import {
 	IGE_NETWORK_CHAT_ROOM_CREATED,
 	IGE_NETWORK_CHAT_ROOM_LIST_USERS,
 	IGE_NETWORK_CHAT_ROOM_REMOVED
-} from "../../../enums/IgeConstants";
+} from "@/enums/IgeConstants";
 import { IgeChatComponent } from "./IgeChatComponent";
 import { IgeNetIoClientComponent } from "../network/client/IgeNetIoClientComponent";
 import {
 	IgeNetworkChatFromClientMessageStructure,
 	IgeNetworkChatFromServerMessageStructure
-} from "../../../types/IgeNetworkMessage";
+} from "@/types/IgeNetworkMessage";
 import { IgeEntity } from "../../core/IgeEntity";
 import {
 	IgeNetworkChatFromClientJoinRoomRequestStructure,
 	IgeNetworkChatFromServerJoinRoomResponseStructure,
 	IgeNetworkChatFromServerLeaveRoomResponseStructure, IgeNetworkChatFromServerRoomStructure
-} from "../../../types/IgeNetworkChat";
+} from "@/types/IgeNetworkChat";
 
 /**
  * The client-side chat component. Handles all client-side

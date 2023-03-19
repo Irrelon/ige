@@ -2,11 +2,18 @@
 class UiMenu extends IgeEventingClass {
 }
 {
-    var self = this;
-    self._menus = {};
-    ige.requireStylesheet(igeRoot + 'components/editor/ui/menu/menu.css');
+    var ;
+    self = this;
+    self;
+    _menus = {};
+    ige;
+    requireStylesheet(igeRoot + 'components/editor/ui/menu/menu.css');
+    ;
     // Pre-load the template we need
-    ige.editor.template(igeRoot + 'components/editor/ui/menu/templates/menuButton.html', function () {
+    ige;
+    editor;
+    template(igeRoot + 'components/editor/ui/menu/templates/menuButton.html');
+    function () {
         self.add({
             id: 'fileMenu',
             text: 'Project',
@@ -22,7 +29,8 @@ class UiMenu extends IgeEventingClass {
             text: 'Insert',
             menu: {}
         });
-    });
+    }
+    ;
 }
 ready: function () {
     var self = this;

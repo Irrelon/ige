@@ -1,5 +1,5 @@
 import { IgeEntity } from "../../../core/IgeEntity";
-import type { IgeCanvasRenderingContext2d } from "../../../../types/IgeCanvasRenderingContext2d";
+import type { IgeCanvasRenderingContext2d } from "@/types/IgeCanvasRenderingContext2d";
 export declare class IgeBox2dDebugPainter extends IgeEntity {
     classId: string;
     _entity: IgeEntity;

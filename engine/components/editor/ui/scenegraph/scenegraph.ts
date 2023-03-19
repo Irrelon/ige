@@ -1,25 +1,25 @@
 class UiSceneGraph extends IgeEventingClass {
-	classId: 'UiSceneGraph',
+	classId: 'UiSceneGraph';,
 
-	init: function () {
-		var self = this;
+	init: function (); {
+		var; self = this;
 
-		ige.requireStylesheet(igeRoot + 'components/editor/ui/scenegraph/scenegraph.css');
+		ige;.requireStylesheet(igeRoot + 'components/editor/ui/scenegraph/scenegraph.css';);
 
 		// Add tab to tabs
-		$('<div class="tab" data-content="scenegraphContent" title="Scene Graph"><span class="icon graph"></span></div>')
-			.insertAfter('#tabs .tab1');
+		$('<div class="tab" data-content="scenegraphContent" title="Scene Graph"><span class="icon graph"></span></div>';)
+			.insertAfter('#tabs .tab1';);
 
 		// Add content html
-		$('<div id="scenegraphContent" class="tabContent"><div class="header"><div class="label">Scene Graph</div><div class="controls"></div></div><div class="tree igeEditorGroup"></div></div>')
-			.appendTo('#tabContents');
+		$('<div id="scenegraphContent" class="tabContent"><div class="header"><div class="label">Scene Graph</div><div class="controls"></div></div><div class="tree igeEditorGroup"></div></div>';)
+			.appendTo('#tabContents';);
 
 		// Add controls
-		$('<div class="control" title="Refresh SceneGraph Tree"><span id="refreshSceneGraph" class="halflings-icon white refresh"></span></div>')
-			.on('click', function () {
+		$('<div class="control" title="Refresh SceneGraph Tree"><span id="refreshSceneGraph" class="halflings-icon white refresh"></span></div>';)
+			.on('click';, function () {
 				ige.editor.ui.scenegraph.updateSceneGraph();
 			})
-			.appendTo('#scenegraphContent .header .controls');
+			.appendTo('#scenegraphContent .header .controls';);
 	},
 
 	ready: function () {

@@ -1,13 +1,13 @@
 import { ige } from "../instance";
-import { IgeSmartTexture } from "../../types/IgeSmartTexture";
+import { IgeSmartTexture } from "@/types/IgeSmartTexture";
 import { arrPull } from "../utils";
-import { IgeSmartFilter } from "../../types/IgeSmartFilter";
+import { IgeSmartFilter } from "@/types/IgeSmartFilter";
 import type { IgeImage } from "./IgeImage";
 import type { IgeCanvas } from "./IgeCanvas";
 import { IgeEntity } from "./IgeEntity";
 import { isClient, isServer } from "../clientServer";
-import { IgeCanvasRenderingContext2d } from "../../types/IgeCanvasRenderingContext2d";
-import { IgeTextureRenderMode } from "../../enums/IgeTextureRenderMode";
+import { IgeCanvasRenderingContext2d } from "@/types/IgeCanvasRenderingContext2d";
+import { IgeTextureRenderMode } from "@/enums/IgeTextureRenderMode";
 import { IgeAsset } from "./IgeAsset";
 import { newCanvas } from "./IgeCanvas";
 

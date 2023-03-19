@@ -53,7 +53,6 @@ export class IgeFontSheet extends IgeTexture {
         return this._decode(canvas, 0, 0, this.image.width);
     }
     _decode(canvas, x, y, maxX) {
-        "use strict";
         let ctx = canvas.getContext("2d"), imageData = ctx.getImageData(x, y, maxX, canvas.height).data, run = true, quadCode, i = 0, jsonString = "";
         while (run) {
             quadCode = String(imageData[i]) + " " + String(imageData[i + 1]) + " " + String(imageData[i + 2]);

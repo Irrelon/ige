@@ -1,7 +1,7 @@
 import { IgeComponent } from "../core/IgeComponent";
 import { IgeEntity } from "../core/IgeEntity";
 import { IgeInterval } from "../core/IgeInterval";
-import { IgeEntityBehaviourMethod } from "../../types/IgeEntityBehaviour";
+import { IgeEntityBehaviourMethod } from "@/types/IgeEntityBehaviour";
 import type { IgeEngine } from "../core/IgeEngine";
 export declare class IgeTimeComponent extends IgeComponent<IgeEngine> {
     classId: string;

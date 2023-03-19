@@ -10,21 +10,21 @@ import { IgeRect } from "./IgeRect";
 import type { IgeTileMap2d } from "./IgeTileMap2d";
 import { IgeObject } from "./IgeObject";
 import { IgeNetIoClientComponent } from "../components/network/client/IgeNetIoClientComponent";
-import { IgeMountMode } from "../../enums/IgeMountMode";
-import { IgeStreamMode } from "../../enums/IgeStreamMode";
-import { IgeIsometricDepthSortMode } from "../../enums/IgeIsometricDepthSortMode";
-import { IgeEntityRenderMode } from "../../enums/IgeEntityRenderMode";
-import type { IgePoint } from "../../types/IgePoint";
-import type { IgeCanvasRenderingContext2d } from "../../types/IgeCanvasRenderingContext2d";
-import type { IgeDepthSortObject } from "../../types/IgeDepthSortObject";
-import type { IgeInputEvent } from "../../types/IgeInputEvent";
-import type { IgeInputEventControl } from "../../types/IgeInputEventControl";
-import type { IgeCanRegisterById } from "../../types/IgeCanRegisterById";
-import type { IgeSmartTexture } from "../../types/IgeSmartTexture";
-import type { IgeTimeStreamPacket, IgeTimeStreamParsedTransformData } from "../../types/IgeTimeStream";
+import { IgeMountMode } from "@/enums/IgeMountMode";
+import { IgeStreamMode } from "@/enums/IgeStreamMode";
+import { IgeIsometricDepthSortMode } from "@/enums/IgeIsometricDepthSortMode";
+import { IgeEntityRenderMode } from "@/enums/IgeEntityRenderMode";
+import type { IgePoint } from "@/types/IgePoint";
+import type { IgeCanvasRenderingContext2d } from "@/types/IgeCanvasRenderingContext2d";
+import type { IgeDepthSortObject } from "@/types/IgeDepthSortObject";
+import type { IgeInputEvent } from "@/types/IgeInputEvent";
+import type { IgeInputEventControl } from "@/types/IgeInputEventControl";
+import type { IgeCanRegisterById } from "@/types/IgeCanRegisterById";
+import type { IgeSmartTexture } from "@/types/IgeSmartTexture";
+import type { IgeTimeStreamPacket, IgeTimeStreamParsedTransformData } from "@/types/IgeTimeStream";
 import type { IgeViewport } from "./IgeViewport";
 import type { IgeTexture } from "./IgeTexture";
-import type { IgeCanRegisterByCategory } from "../../types/IgeCanRegisterByCategory";
+import type { IgeCanRegisterByCategory } from "@/types/IgeCanRegisterByCategory";
 import type { IgeInputComponent } from "../components/IgeInputComponent";
 
 /**
@@ -1779,7 +1779,6 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 	/**
 	 * Gets / sets if this object should be positioned isometrically
 	 * or in 2d.
-	 * @param {Boolean} val Set to true to position this object in
 	 * isometric space or false to position it in 2d space.
 	 * @example #Set the positioning mode to isometric
 	 *     var entity = new IgeEntity()

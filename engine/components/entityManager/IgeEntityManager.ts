@@ -2,8 +2,8 @@ import { ige } from "../../instance";
 import { arrPull } from "../../utils";
 import { IgeEntity } from "../../core/IgeEntity";
 import { IgeComponent } from "../../core/IgeComponent";
-import { IgeMountMode } from "../../../enums/IgeMountMode";
-import { IgeEntityBehaviourMethod } from "../../../types/IgeEntityBehaviour";
+import { IgeMountMode } from "@/enums/IgeMountMode";
+import { IgeEntityBehaviourMethod } from "@/types/IgeEntityBehaviour";
 
 export class IgeEntityManager extends IgeComponent {
 	classId = "IgeEntityManager";
@@ -55,7 +55,7 @@ export class IgeEntityManager extends IgeComponent {
 
 		self._processMountQueue();
 		self._processUnMountQueue();
-	}
+	};
 
 	/**
 	 * Checks all the mounted entities of our component parent are still supposed

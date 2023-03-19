@@ -13,7 +13,6 @@ export declare class IgeBox2dMultiWorldComponent extends IgeEventingClass {
     world(id: any): any;
     /**
      * Creates the Box2d world.
-     * @param {String} id
      * @param {Object=} options
      * @return {*}
      */

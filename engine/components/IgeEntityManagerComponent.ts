@@ -43,7 +43,7 @@ export class IgeEntityManagerComponent extends IgeComponent {
 		}
 
 		return this._entity;
-	}
+	};
 
 	/**
 	 * Gets / sets the boolean flag determining if the entity
@@ -58,7 +58,7 @@ export class IgeEntityManagerComponent extends IgeComponent {
 		}
 
 		return this._active;
-	}
+	};
 
 	/**
 	 * Gets / sets the number of entities the entity manager can
@@ -75,7 +75,7 @@ export class IgeEntityManagerComponent extends IgeComponent {
 		}
 
 		return this._maxCreatePerTick;
-	}
+	};
 
 	/**
 	 * Gets / sets the number of entities the entity manager can
@@ -92,7 +92,7 @@ export class IgeEntityManagerComponent extends IgeComponent {
 		}
 
 		return this._maxRemovePerTick;
-	}
+	};
 
 	/**
 	 * Gets / sets the overwatch mode for the entity manager. This
@@ -109,7 +109,7 @@ export class IgeEntityManagerComponent extends IgeComponent {
 		}
 
 		return this._overwatchMode;
-	}
+	};
 
 	/**
 	 * Adds a callback method that is called before an entity is
@@ -125,7 +125,7 @@ export class IgeEntityManagerComponent extends IgeComponent {
 		}
 
 		return this._createCheck;
-	}
+	};
 
 	/**
 	 * Adds a callback method that is called to allow you to execute
@@ -141,7 +141,7 @@ export class IgeEntityManagerComponent extends IgeComponent {
 		}
 
 		return this._createEntityFromMapData;
-	}
+	};
 
 	/**
 	 * Adds a callback method that is called before an entity is removed
@@ -157,7 +157,7 @@ export class IgeEntityManagerComponent extends IgeComponent {
 		}
 
 		return this._removeCheck;
-	}
+	};
 
 	/**
 	 * Get / sets the entity that will be used to determine the
@@ -173,14 +173,14 @@ export class IgeEntityManagerComponent extends IgeComponent {
 		}
 
 		return this._trackTranslateTarget;
-	}
+	};
 
 	/**
 	 * Stops tracking the current tracking target's translation.
 	 */
 	unTrackTranslate = () => {
 		delete this._trackTranslateTarget;
-	}
+	};
 
 	/**
 	 * Gets / sets the center position of the management area.
@@ -213,7 +213,7 @@ export class IgeEntityManagerComponent extends IgeComponent {
 		}
 
 		return this._areaCenter;
-	}
+	};
 
 	/**
 	 * Gets / sets the area rectangle of the management area where
@@ -233,7 +233,7 @@ export class IgeEntityManagerComponent extends IgeComponent {
 		}
 
 		return this._areaRect;
-	}
+	};
 
 	areaRectAutoSize = (val, options) => {
 		if (val !== undefined) {
@@ -243,7 +243,7 @@ export class IgeEntityManagerComponent extends IgeComponent {
 		}
 
 		return this._areaRectAutoSize;
-	}
+	};
 
 	/**
 	 * Returns the current management area.
@@ -271,7 +271,7 @@ export class IgeEntityManagerComponent extends IgeComponent {
 		} else {
 			return new IgeRect(0, 0, 0, 0);
 		}
-	}
+	};
 
 	/**
 	 * Gets / sets the mode that entities will be removed with.
@@ -290,7 +290,7 @@ export class IgeEntityManagerComponent extends IgeComponent {
 		}
 
 		return this._removeMode;
-	}
+	};
 
 	/**
 	 * The behaviour method executed each tick.
@@ -451,7 +451,7 @@ export class IgeEntityManagerComponent extends IgeComponent {
 			// Process the entity queues
 			self.processQueues();
 		}
-	}
+	};
 
 	processQueues = () => {
 		let createArr = this._createArr,
@@ -480,7 +480,7 @@ export class IgeEntityManagerComponent extends IgeComponent {
 			// to the entity creation method assigned to this manager
 			createEntityFunc.apply(this, createArr.shift());
 		}
-	}
+	};
 
 	/**
 	 * Handles screen resize events.

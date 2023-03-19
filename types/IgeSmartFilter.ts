@@ -1,6 +1,6 @@
-import { IgeTexture } from "../engine/core/IgeTexture";
-import { IgeImage } from "../engine/core/IgeImage";
-import { IgeCanvas } from "../engine/core/IgeCanvas";
+import { IgeTexture } from "@/engine/core/IgeTexture";
+import { IgeImage } from "@/engine/core/IgeImage";
+import { IgeCanvas } from "@/engine/core/IgeCanvas";
 import { IgeCanvasRenderingContext2d } from "./IgeCanvasRenderingContext2d";
 
 export type IgeSmartFilter = (

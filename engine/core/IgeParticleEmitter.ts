@@ -2,7 +2,7 @@ import { ige } from "../instance";
 import { IgeUiEntity } from "./IgeUiEntity";
 import { IgeTween, IgeTweenPropertyObject } from "./IgeTween";
 import { IgePoint3d } from "./IgePoint3d";
-import { IgeCanvasRenderingContext2d } from "../../types/IgeCanvasRenderingContext2d";
+import { IgeCanvasRenderingContext2d } from "@/types/IgeCanvasRenderingContext2d";
 import { IgeParticle } from "./IgeParticle";
 import { IgeObject } from "./IgeObject";
 import { degreesToRadians } from "../utils";

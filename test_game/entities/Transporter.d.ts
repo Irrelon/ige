@@ -1,4 +1,4 @@
-import { IgeCanvasRenderingContext2d } from "../../types/IgeCanvasRenderingContext2d";
+import { IgeCanvasRenderingContext2d } from "@/types/IgeCanvasRenderingContext2d";
 import { Building } from "./base/Building";
 import { WorkerUnit } from "./WorkerUnit";
 export declare class Transporter extends WorkerUnit {

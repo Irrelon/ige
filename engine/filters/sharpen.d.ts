@@ -1,2 +1,2 @@
-import { IgeSmartFilter } from "../../types/IgeSmartFilter";
+import { IgeSmartFilter } from "@/types/IgeSmartFilter";
 export declare const sharpen: IgeSmartFilter;

@@ -1,6 +1,6 @@
-import { IgeTexture } from "../engine/core/IgeTexture";
+import { IgeTexture } from "@/engine/core/IgeTexture";
 import { IgeCanvasRenderingContext2d } from "./IgeCanvasRenderingContext2d";
-import { IgeObject } from "../engine/core/IgeObject";
+import { IgeObject } from "@/engine/core/IgeObject";
 
 export interface IgeSmartTexture<ParentType extends IgeObject = IgeObject> {
     init?: (texture: IgeTexture) => void;

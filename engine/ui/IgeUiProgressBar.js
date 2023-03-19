@@ -95,7 +95,7 @@ export class IgeUiProgressBar extends IgeUiElement {
     render(ctx) {
         // Check for an auto-progress update
         if (this._bindDataObject && this._bindDataProperty) {
-            if (this._bindDataObject._alive === false) {
+            if (!this._bindDataObject._alive) {
                 // The object we have bind data from has been
                 // destroyed so release our reference to it!
                 delete this._bindDataObject;

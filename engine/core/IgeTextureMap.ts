@@ -2,7 +2,7 @@
 import { IgeTileMap2d } from "./IgeTileMap2d";
 import { IgeMap2d } from "./IgeMap2d";
 import { IgePoint3d } from "./IgePoint3d";
-import { IgeMountMode } from "../../enums/IgeMountMode";
+import { IgeMountMode } from "@/enums/IgeMountMode";
 import { IgeTexture } from "./IgeTexture";
 
 /**

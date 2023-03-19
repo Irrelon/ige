@@ -1322,10 +1322,17 @@ class UiPanels extends IgeEventingClass {
     }
 }
 {
-    if (className !== undefined) {
-        if (props !== undefined) {
-            this._panelProps[className] = props;
-            return this;
+    if (className !== undefined)
+        ;
+    {
+        if (props !== undefined)
+            ;
+        {
+            this;
+            _panelProps;
+            [className] = props;
+            return;
+            this;
         }
         return this._panelProps[className];
     }

@@ -37,7 +37,7 @@ class IgeEditorRotateComponent extends IgeComponent {
 		}
 
 		return this._startThreshold;
-	}
+	};
 
 	/**
 	 * Gets / sets the rectangle that the operation will be limited
@@ -52,7 +52,7 @@ class IgeEditorRotateComponent extends IgeComponent {
 		}
 
 		return this._limit;
-	}
+	};
 
 	/**
 	 * Gets / sets the enabled flag. If set to true,
@@ -98,7 +98,7 @@ class IgeEditorRotateComponent extends IgeComponent {
 		}
 
 		return this._enabled;
-	}
+	};
 
 	/**
 	 * Handles the mouseDown event. Records the starting position of the
@@ -121,7 +121,7 @@ class IgeEditorRotateComponent extends IgeComponent {
 
 			document.getElementById("igeSgEditorStatus").innerHTML = "Degrees: " + radiansToDegrees(this._targetEntity._rotate.z);
 		}
-	}
+	};
 
 	/**
 	 * Handles the mouse move event. Rotates the entity as the mouse
@@ -167,7 +167,7 @@ class IgeEditorRotateComponent extends IgeComponent {
 				document.getElementById("igeSgEditorStatus").innerHTML = "Degrees: " + radiansToDegrees(this._targetEntity._rotate.z);
 			}
 		}
-	}
+	};
 
 	/**
 	 * Handles the mouse up event. Finishes the entity rotate and

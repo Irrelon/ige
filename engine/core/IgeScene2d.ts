@@ -1,6 +1,6 @@
 import {ige} from "../instance";
 import { IgeEntity } from "./IgeEntity";
-import { IgeCanvasRenderingContext2d } from "../../types/IgeCanvasRenderingContext2d";
+import { IgeCanvasRenderingContext2d } from "@/types/IgeCanvasRenderingContext2d";
 
 /**
  * Creates a new 2d scene.
@@ -44,7 +44,7 @@ export class IgeScene2d extends IgeEntity {
 		}
 
 		return this._streamRoomId;
-	}
+	};
 
 	/**
 	 * Overrides the default entity stream sections to also stream important
@@ -73,7 +73,7 @@ export class IgeScene2d extends IgeEntity {
 			super.streamSectionData(sectionId, data);
 			break;
 		}
-	}
+	};
 
 	/**
 	 * Gets / sets the auto-size property. If set to true, the scene will
@@ -90,7 +90,7 @@ export class IgeScene2d extends IgeEntity {
 		}
 
 		return this._autoSize;
-	}
+	};
 
 	/**
 	 * Gets / sets the _shouldRender property. If set to true, the scene's child
@@ -105,7 +105,7 @@ export class IgeScene2d extends IgeEntity {
 		}
 
 		return this._shouldRender;
-	}
+	};
 
 	/**
 	 * Gets / sets the flag that determines if the scene will ignore camera
@@ -121,7 +121,7 @@ export class IgeScene2d extends IgeEntity {
 		}
 
 		return this._ignoreCamera;
-	}
+	};
 
 	update = (ctx: IgeCanvasRenderingContext2d, tickDelta: number) => {
 		if (this._ignoreCamera) {
@@ -137,7 +137,7 @@ export class IgeScene2d extends IgeEntity {
 		}
 
 		super.update(ctx, tickDelta);
-	}
+	};
 
 	/**
 	 * Processes the actions required each render frame.
@@ -167,7 +167,7 @@ export class IgeScene2d extends IgeEntity {
 		while (arrCount--) {
 			arr[arrCount]._resizeEvent(event);
 		}
-	}
+	};
 
 	/**
 	 * Returns a string containing a code fragment that when

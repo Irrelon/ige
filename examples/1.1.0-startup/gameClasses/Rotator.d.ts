@@ -1,5 +1,5 @@
-import { IgeEntity } from "../../../engine/core/IgeEntity";
-import { IgeCanvasRenderingContext2d } from "../../../types/IgeCanvasRenderingContext2d";
+import { IgeEntity } from "@/engine/core/IgeEntity";
+import { IgeCanvasRenderingContext2d } from "@/types/IgeCanvasRenderingContext2d";
 export declare class Rotator extends IgeEntity {
     classId: string;
     _rSpeed: number;

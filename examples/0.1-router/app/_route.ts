@@ -1,5 +1,5 @@
-import { ige } from "../../../engine/instance";
-import { IgeUiManagerComponent } from "../../../engine/components/IgeUiManagerComponent";
+import { ige } from "@/engine/instance";
+import { IgeUiManagerComponent } from "@/engine/components/IgeUiManagerComponent";
 import { AppScene } from "./AppScene";
 import "./splash/_route";
 import "./level1/_route";

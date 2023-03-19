@@ -1,4 +1,4 @@
-import { ige } from "../../engine/instance";
+import { ige } from "@/engine/instance";
 import "./app/_route";
 
 export class Game {

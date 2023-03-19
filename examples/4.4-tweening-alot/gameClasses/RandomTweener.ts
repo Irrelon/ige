@@ -1,7 +1,7 @@
-import { ige } from "../../../engine/instance";
+import { ige } from "@/engine/instance";
 import { PI180 } from "@/engine/utils";
-import { IgeTween } from "../../../engine/core/IgeTween";
-import { IgeEntity } from "../../../engine/core/IgeEntity";
+import { IgeTween } from "@/engine/core/IgeTween";
+import { IgeEntity } from "@/engine/core/IgeEntity";
 
 export class RandomTweener extends IgeEntity {
 	classId = 'RandomTweener';

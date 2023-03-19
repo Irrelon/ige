@@ -2,7 +2,7 @@ import { IgeEntity } from "./IgeEntity";
 import { IgeViewport } from "./IgeViewport";
 import { IgeRect } from "./IgeRect";
 import { IgePoint3d } from "./IgePoint3d";
-import { IgeCanvasRenderingContext2d } from "../../types/IgeCanvasRenderingContext2d";
+import { IgeCanvasRenderingContext2d } from "@/types/IgeCanvasRenderingContext2d";
 /**
  * Creates a new camera that will be attached to a viewport.
  */
@@ -22,7 +22,7 @@ export declare class IgeCamera extends IgeEntity {
      * @param {IgeRect=} rect
      * @return {*}
      */
-    limit(rect?: IgeRect): IgeViewport | IgeRect | undefined;
+    limit(rect?: IgeRect): IgeRect | IgeViewport | undefined;
     /**
      * Pan (tween) the camera to the new specified point in
      * the specified time.

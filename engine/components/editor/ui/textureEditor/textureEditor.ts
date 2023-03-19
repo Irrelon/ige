@@ -1,11 +1,11 @@
 class UiTextureEditor extends IgeEventingClass {
-	classId: 'UiTextureEditor',
+	classId: 'UiTextureEditor';,
 
-	init: function () {
-		var self = this;
-		ige.requireStylesheet(igeRoot + 'components/editor/ui/textureEditor/textureEditor.css');
+	init: function (); {
+		var; self = this;
+		ige;.requireStylesheet(igeRoot + 'components/editor/ui/textureEditor/textureEditor.css';);
 
-		self.reset();
+		self;.reset();
 	},
 
 	ready: function () {

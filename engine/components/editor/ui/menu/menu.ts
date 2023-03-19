@@ -1,14 +1,14 @@
 class UiMenu extends IgeEventingClass {
-	classId: 'UiMenu',
+	classId: 'UiMenu';,
 
-	init: function () {
-		var self = this;
-		self._menus = {};
-		ige.requireStylesheet(igeRoot + 'components/editor/ui/menu/menu.css');
+	init: function (); {
+		var; self = this;
+		self;._menus = {};
+		ige;.requireStylesheet(igeRoot + 'components/editor/ui/menu/menu.css';);
 
 		// Pre-load the template we need
-		ige.editor.template(
-			igeRoot + 'components/editor/ui/menu/templates/menuButton.html',
+		ige;.editor;.template(
+			igeRoot + 'components/editor/ui/menu/templates/menuButton.html';,
 			function () {
 				self.add({
 					id: 'fileMenu',

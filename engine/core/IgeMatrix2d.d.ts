@@ -1,8 +1,8 @@
 import { IgePoint3d } from "./IgePoint3d";
 import { IgeBaseClass } from "./IgeBaseClass";
-import type { IgePoint } from "../../types/IgePoint";
+import type { IgePoint } from "@/types/IgePoint";
 import type { IgeEntity } from "./IgeEntity";
-import { IgeCanvasRenderingContext2d } from "../../types/IgeCanvasRenderingContext2d";
+import { IgeCanvasRenderingContext2d } from "@/types/IgeCanvasRenderingContext2d";
 import { IgeObject } from "./IgeObject";
 /**
  * Creates a new transformation matrix.

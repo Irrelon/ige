@@ -1,9 +1,9 @@
-import { ige } from "../../../engine/instance";
-import { IgeSceneGraph } from "../../../engine/core/IgeSceneGraph";
-import { IgeScene2d } from "../../../engine/core/IgeScene2d";
-import { IgeEntity } from "../../../engine/core/IgeEntity";
-import { IgeSpriteSheet } from "../../../engine/core/IgeSpriteSheet";
-import { IgeAnimationComponent } from "../../../engine/components/IgeAnimationComponent";
+import { ige } from "@/engine/instance";
+import { IgeSceneGraph } from "@/engine/core/IgeSceneGraph";
+import { IgeScene2d } from "@/engine/core/IgeScene2d";
+import { IgeEntity } from "@/engine/core/IgeEntity";
+import { IgeSpriteSheet } from "@/engine/core/IgeSpriteSheet";
+import { IgeAnimationComponent } from "@/engine/components/IgeAnimationComponent";
 
 export class Level1 extends IgeSceneGraph {
 	classId = "Level1";

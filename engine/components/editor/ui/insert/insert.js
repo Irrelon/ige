@@ -2,9 +2,13 @@
 class UiTextureEditor extends IgeEventingClass {
 }
 {
-    var self = this;
-    ige.requireStylesheet(igeRoot + 'components/editor/ui/insert/insert.css');
-    self.reset();
+    var ;
+    self = this;
+    ige;
+    requireStylesheet(igeRoot + 'components/editor/ui/insert/insert.css');
+    ;
+    self;
+    reset();
 }
 ready: function () {
     var self = this;

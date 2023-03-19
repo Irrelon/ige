@@ -2,7 +2,7 @@
 import { ige } from "../instance";
 import { IgeTexture } from "../core/IgeTexture";
 import { IgeObject } from "../core/IgeObject";
-import type { Mixin } from "../../types/Mixin";
+import type { Mixin } from "@/types/Mixin";
 
 export type IgeRepeatType = "repeat" | "repeat-x" | "repeat-y" | "no-repeat";
 
@@ -526,4 +526,4 @@ export const WithUiStyleMixin = <BaseClassType extends Mixin<IgeObject>>(Base: B
 
 		return this._marginBottom;
 	}
-}
+};

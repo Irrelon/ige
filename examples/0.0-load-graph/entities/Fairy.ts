@@ -1,4 +1,4 @@
-import { ige } from "../../../engine/instance";
+import { ige } from "@/engine/instance";
 import { Rotator } from "./Rotator";
 import { createChildRotators } from "./ChildRotators";
 import { isClient } from "@/engine/clientServer";

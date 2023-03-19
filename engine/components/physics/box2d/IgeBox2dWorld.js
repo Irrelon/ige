@@ -380,6 +380,7 @@ export class IgeBox2dWorld extends IgeEventingClass {
     }
     /**
      * Steps the physics simulation forward.
+     * @param entity
      * @param ctx
      * @private
      */

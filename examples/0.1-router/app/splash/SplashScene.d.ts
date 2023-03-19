@@ -1,4 +1,4 @@
-import { IgeSceneGraph } from "../../../../engine/core/IgeSceneGraph";
+import { IgeSceneGraph } from "@/engine/core/IgeSceneGraph";
 export declare class SplashScene extends IgeSceneGraph {
     classId: string;
     /**

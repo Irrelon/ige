@@ -38,7 +38,7 @@ export class IgeTiledComponent extends IgeComponent {
 		} else {
 			self._processData(url, callback);
 		}
-	}
+	};
 
 	_processData = (data, callback) => {
 		let mapClass = this._ige.isServer === true ? IgeTileMap2d : IgeTextureMap,

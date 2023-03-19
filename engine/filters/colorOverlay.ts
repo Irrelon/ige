@@ -1,4 +1,4 @@
-import { IgeSmartFilter } from "../../types/IgeSmartFilter";
+import { IgeSmartFilter } from "@/types/IgeSmartFilter";
 import { igeFilters } from "../igeFilters";
 
 export const colorOverlay: IgeSmartFilter = function (canvas, ctx, originalImage, texture, data) {

@@ -2,7 +2,7 @@ import { IgeEntity } from "./IgeEntity";
 import { IgeViewport } from "./IgeViewport";
 import { IgeRect } from "./IgeRect";
 import { IgePoint3d } from "./IgePoint3d";
-import { IgeCanvasRenderingContext2d } from "../../types/IgeCanvasRenderingContext2d";
+import { IgeCanvasRenderingContext2d } from "@/types/IgeCanvasRenderingContext2d";
 import { IgeTween } from "./IgeTween";
 
 /**

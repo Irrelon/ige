@@ -1,5 +1,5 @@
 import IgeEventingClass from "../../../../core/IgeEventingClass";
-import { ige } from "../../../../instance";
+import { ige } from "@/engine/instance";
 
 export class UiAnimationEditor extends IgeEventingClass {
 	classId = 'UiAnimationEditor';

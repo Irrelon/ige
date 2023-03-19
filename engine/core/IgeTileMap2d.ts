@@ -8,7 +8,7 @@ import { IgeRect } from "./IgeRect";
 import { IgePoint3d } from "./IgePoint3d";
 import { IgePoly2d } from "./IgePoly2d";
 import { isServer } from "../clientServer";
-import { IgeMountMode } from "../../enums/IgeMountMode";
+import { IgeMountMode } from "@/enums/IgeMountMode";
 import { arrClone, newIdHex } from "../utils";
 import { IgeEntity } from "./IgeEntity";
 import { IgeObject } from "./IgeObject";

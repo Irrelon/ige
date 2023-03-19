@@ -7,14 +7,14 @@ import { IgeEntity } from "./IgeEntity";
 import { IgeObject } from "./IgeObject";
 import { IgeDummyCanvas } from "./IgeDummyCanvas";
 import { IgeViewport } from "./IgeViewport";
-import type { SyncEntry, SyncMethod } from "../../types/SyncEntry";
+import type { SyncEntry, SyncMethod } from "@/types/SyncEntry";
 import type { IgeBaseClass } from "./IgeBaseClass";
 import type { IgeCamera } from "./IgeCamera";
 import type { IgeSceneGraph } from "./IgeSceneGraph";
-import type { IgeCanvasRenderingContext2d } from "../../types/IgeCanvasRenderingContext2d";
-import type { GenericClass } from "../../types/GenericClass";
-import type { IgeSceneGraphDataEntry } from "../../types/IgeSceneGraphDataEntry";
-import { IgeEngineState } from "../../enums/IgeEngineState";
+import type { IgeCanvasRenderingContext2d } from "@/types/IgeCanvasRenderingContext2d";
+import type { GenericClass } from "@/types/GenericClass";
+import type { IgeSceneGraphDataEntry } from "@/types/IgeSceneGraphDataEntry";
+import { IgeEngineState } from "@/enums/IgeEngineState";
 import { IgeTweenComponent } from "../components/IgeTweenComponent";
 import { IgePoint2d } from "./IgePoint2d";
 import { IgeTimeComponent } from "../components/IgeTimeComponent";
@@ -1413,7 +1413,7 @@ export class IgeEngine extends IgeEntity {
 				}
 
 				setTimeout(doDependencyCheck, 200);
-			}
+			};
 
 			doDependencyCheck();
 		});
