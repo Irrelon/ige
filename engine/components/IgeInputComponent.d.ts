@@ -104,6 +104,20 @@ export interface IgeInputKeyboardInterface {
     "y": number;
     "z": number;
 }
+export declare enum IgeInputMouse {
+    "down" = 0,
+    "up" = 1,
+    "dblClick" = 2,
+    "move" = 3,
+    "wheel" = 4,
+    "wheelX" = 5,
+    "wheelY" = 6,
+    "x" = 7,
+    "y" = 8,
+    "button1" = 9,
+    "button2" = 10,
+    "button3" = 11
+}
 export declare class IgeInputComponent extends IgeComponent<IgeEngine> {
     classId: string;
     componentId: string;
@@ -114,9 +128,8 @@ export declare class IgeInputComponent extends IgeComponent<IgeEngine> {
     _state: Record<string | number, boolean | number>;
     _controlMap: Record<string, string | number>;
     mouse: IgeInputMouseInterface;
-    pad1: IgeInputGamePadInterface;
-    pad2: IgeInputGamePadInterface;
-    key: IgeInputKeyboardInterface;
+    gamePad: IgeInputGamePadInterface[];
+    keyboard: IgeInputKeyboardInterface;
     dblClick?: Event;
     mouseMove?: Event;
     mouseDown?: Event;

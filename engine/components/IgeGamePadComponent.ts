@@ -1,8 +1,10 @@
 import { IgeComponent } from "../core/IgeComponent";
 import { IgeEntity } from "../core/IgeEntity";
 import { IgeEntityBehaviourMethod } from "@/types/IgeEntityBehaviour";
+import { IgeEngine } from "@/engine/core/IgeEngine";
+import { isClient } from "@/engine/clientServer";
 
-export class IgeGamePadComponent extends IgeComponent {
+export class IgeGamePadComponent extends IgeComponent<IgeEngine> {
 	"classId" = "IgeGamePadComponent";
 	"componentId" = "gamePad";
 
@@ -36,36 +38,25 @@ export class IgeGamePadComponent extends IgeComponent {
 		// as last time).
 		this.prevTimestamps = [];
 
-		if (this._ige.isClient) {
-			// As of writing, it seems impossible to detect Gamepad API support
-			// in Firefox, hence we need to hardcode it in the third clause.
-			// (The preceding two clauses are for Chrome.)
-			this.gamepadAvailable = !!navigator.webkitGetGamepads ||
-				!!navigator.webkitGamepads ||
-				(navigator.userAgent.indexOf("Firefox/") !== -1);
-
-			if (!this.gamepadAvailable) {
-				// It doesn't seem Gamepad API is available – show a message telling
-				// the visitor about it.
-				this.emit("notSupported");
-			} else {
-				// Firefox supports the connect/disconnect event, so we attach event
-				// handlers to those.
-				window.addEventListener("MozGamepadConnected", function () { self.onGamepadConnect.apply(self, arguments); }, false);
-				window.addEventListener("MozGamepadDisconnected", function () { self.onGamepadDisconnect.apply(self, arguments); }, false);
-
-				// Since Chrome only supports polling, we initiate polling loop straight
-				// away. For Firefox, we will only do it if we get a connect event.
-				if (!!navigator.webkitGamepads || !!navigator.webkitGetGamepads) {
-					this.startPolling();
-				}
-			}
-
-			entity.addBehaviour("gamePadComponent", this._behaviour);
+		if (!isClient) {
+			return;
 		}
+
+		this.gamepadAvailable = Boolean(navigator.getGamepads());
+
+		if (!this.gamepadAvailable) {
+			// It doesn't seem Gamepad API is available
+			this.emit("notSupported");
+			return;
+		}
+
+		window.addEventListener("gamepadconnected", this.onGamepadConnect);
+		window.addEventListener("gamepaddisconnected", this.onGamepadDisconnect);
+
+		entity.addBehaviour("gamePadComponent", this._behaviour);
 	}
 
-	"onGamepadConnect" (event) {
+	onGamepadConnect (event: GamepadEvent) {
 		// Add the new gamepad on the list of gamepads to look after.
 		this.gamepads.push(event.gamepad);
 
@@ -79,7 +70,7 @@ export class IgeGamePadComponent extends IgeComponent {
 	/**
 	 * React to the gamepad being disconnected.
 	 */
-	"onGamepadDisconnect" (event) {
+	onGamepadDisconnect (event: GamepadEvent) {
 		// Remove the gamepad from the list of gamepads to monitor.
 		for (const i in this.gamepads) {
 			if (this.gamepads[i].index == event.gamepad.index) {
@@ -98,94 +89,10 @@ export class IgeGamePadComponent extends IgeComponent {
 	}
 
 	/**
-	 * Starts a polling loop to check for gamepad state.
-	 */
-	"startPolling" () {
-		this.ticking = true;
-	}
-
-	/**
-	 * Stops a polling loop by setting a flag which will prevent the next
-	 * requestAnimationFrame() from being scheduled.
-	 */
-	"stopPolling" () {
-		this.ticking = false;
-	}
-
-	/**
 	 * A function called with each requestAnimationFrame(). Polls the gamepad
 	 * status and schedules another poll.
 	 */
 	_behaviour: IgeEntityBehaviourMethod = (entity) => {
 		entity.gamePad.pollStatus();
 	};
-
-	/**
-	 * Checks for the gamepad status. Monitors the necessary data and notices
-	 * the differences from previous state (buttons for Chrome/Firefox,
-	 * new connects/disconnects for Chrome). If differences are noticed, asks
-	 * to update the display accordingly. Should run as close to 60 frames per
-	 * second as possible.
-	 */
-	"pollStatus" () {
-		// Poll to see if gamepads are connected or disconnected. Necessary
-		// only on Chrome.
-		this.pollGamepads();
-
-		for (const i in this.gamepads) {
-			const gamepad = this.gamepads[i];
-
-			// Don’t do anything if the current timestamp is the same as previous
-			// one, which means that the state of the gamepad hasn’t changed.
-			// This is only supported by Chrome right now, so the first check
-			// makes sure we’re not doing anything if the timestamps are empty
-			// or undefined.
-			if (gamepad.timestamp && (gamepad.timestamp == this.prevTimestamps[i])) {
-				continue;
-			}
-			this.prevTimestamps[i] = gamepad.timestamp;
-		}
-	}
-
-	// This function is called only on Chrome, which does not yet support
-	// connection/disconnection events, but requires you to monitor
-	// an array for changes.
-	"pollGamepads" () {
-		// Get the array of gamepads – the first method (getGamepads)
-		// is the most modern one and is supported by Firefox 28+ and
-		// Chrome 35+. The second one (webkitGetGamepads) is a deprecated method
-		// used by older Chrome builds.
-		const rawGamepads =
-			(navigator.getGamepads && navigator.getGamepads()) ||
-				(navigator.webkitGetGamepads && navigator.webkitGetGamepads());
-
-		if (rawGamepads) {
-			// We don’t want to use rawGamepads coming straight from the browser,
-			// since it can have “holes” (e.g. if you plug two gamepads, and then
-			// unplug the first one, the remaining one will be at index [1]).
-			this.gamepads = [];
-
-			// We only refresh the display when we detect some gamepads are new
-			// or removed; we do it by comparing raw gamepad table entries to
-			// “undefined.”
-			let gamepadsChanged = false;
-
-			for (let i = 0; i < rawGamepads.length; i++) {
-				if (typeof rawGamepads[i] != this.prevRawGamepadTypes[i]) {
-					gamepadsChanged = true;
-					this.prevRawGamepadTypes[i] = typeof rawGamepads[i];
-				}
-
-				if (rawGamepads[i]) {
-					this.gamepads.push(rawGamepads[i]);
-				}
-			}
-
-			// Ask the tester to refresh the visual representations of gamepads
-			// on the screen.
-			if (gamepadsChanged) {
-				this.emit("change");
-			}
-		}
-	}
 }
