@@ -9,6 +9,9 @@
 			"email": "rob@irrelon.com"
 		}
 	],
+	"engines": {
+		"node": "v16.13.1"
+	},
 	"type": "module",
 	"main": "index.js",
 	"scripts": {
