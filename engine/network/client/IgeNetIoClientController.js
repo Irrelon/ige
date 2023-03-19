@@ -159,7 +159,7 @@ export class IgeNetIoClientController extends IgeNetIoBaseController {
         this._onStreamData = (data) => {
             // Read the packet data into variables
             const sectionDataArr = data.split(this._sectionDesignator);
-            const sectionDataCount = sectionDataArr.length;
+            const sectionDataCount = sectionDataArr.length - 1;
             // We know the first bit of data will always be the
             // target entity's ID
             const entityId = sectionDataArr.shift();

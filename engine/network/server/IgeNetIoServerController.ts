@@ -570,11 +570,11 @@ export class IgeNetIoServerController extends IgeNetIoBaseController {
 				// time of the stream data
 
 				// TODO: Commented this because the receiving client never uses this data at all!
-				// if (!hasSentTimeDataByClientId[clientId]) {
-				// 	// Send the stream start time
-				// 	network.send(IGE_NETWORK_STREAM_TIME, currentTime, clientId);
-				// 	hasSentTimeDataByClientId[clientId] = true;
-				// }
+				if (!hasSentTimeDataByClientId[clientId]) {
+					// Send the stream start time
+					network.send(IGE_NETWORK_STREAM_TIME, currentTime, clientId);
+					hasSentTimeDataByClientId[clientId] = true;
+				}
 
 				network.send(IGE_NETWORK_STREAM_DATA, item[0], clientId);
 

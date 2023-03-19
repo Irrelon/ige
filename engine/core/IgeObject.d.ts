@@ -764,7 +764,7 @@ export declare class IgeObject extends IgeEventingClass implements IgeCanRegiste
      * @return {*} "this" when arguments are passed to allow method
      * chaining or the current value if no arguments are specified.
      */
-    streamSections(sectionArray?: string[]): string[] | this;
+    streamSections(sectionArray?: string[]): this | string[];
     /**
      * Adds a section into the existing streamed sections array.
      * @param {String} sectionName The section name to add.
@@ -789,6 +789,14 @@ export declare class IgeObject extends IgeEventingClass implements IgeCanRegiste
      * chaining or the current value if no propVal argument is specified.
      */
     streamProperty(propName: string, propVal?: any): any;
+    /**
+     * Called on the client-side when a property updated is received for this
+     * object from the server. Override this method in your own class to handle
+     * stream property changes.
+     * @param propName
+     * @param propVal
+     */
+    onStreamProperty(propName: string, propVal: any): this;
     /**
      * Gets / sets the stream mode that the stream system will use when
      * handling pushing data updates to connected clients.
@@ -971,12 +979,12 @@ export declare class IgeObject extends IgeEventingClass implements IgeCanRegiste
      * client id or array of ids.
      * @param {Array} recipientArr The array of ids of the client(s) to
      * queue stream data for. The stream data being queued
-     * is returned by a call to this._streamData().
+     * is returned by a call to this._generateStreamData().
      * @param {String} streamRoomId The id of the room the entity belongs
      * in (can be undefined or null if no room assigned).
      * @private
      */
-    _streamSync(recipientArr?: string[], streamRoomId?: string): void;
+    _queueStreamDataToSend(recipientArr?: string[], streamRoomId?: string): void;
     /**
      * Forces the stream to push this entity's full stream data on the
      * next stream sync regardless of what clients have received in the
@@ -1051,7 +1059,7 @@ export declare class IgeObject extends IgeEventingClass implements IgeCanRegiste
      * this entity.
      * @private
      */
-    _streamData(): string;
+    _generateStreamData(): string;
     /**
      * Removes all references to any behaviour methods that were added to
      * this object.

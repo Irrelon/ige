@@ -1690,7 +1690,16 @@ export class IgeObject extends IgeEventingClass implements IgeCanRegisterById, I
 		return this._streamProperty[propName];
 	}
 
-
+	/**
+	 * Called on the client-side when a property updated is received for this
+	 * object from the server. Override this method in your own class to handle
+	 * stream property changes.
+	 * @param propName
+	 * @param propVal
+	 */
+	onStreamProperty (propName: string, propVal: any): this {
+		return this;
+	}
 
 	/**
 	 * Gets / sets the stream mode that the stream system will use when
@@ -1885,13 +1894,13 @@ export class IgeObject extends IgeEventingClass implements IgeCanRegisterById, I
 				}
 			});
 
-			this._streamSync(recipientArr);
+			this._queueStreamDataToSend(recipientArr);
 			return this;
 		}
 
 		if (this._streamMode === IgeStreamMode.advanced) {
 			// Stream mode is advanced
-			this._streamSync(clientIds, this._streamRoomId);
+			this._queueStreamDataToSend(clientIds, this._streamRoomId);
 
 			return this;
 		}
@@ -2026,21 +2035,19 @@ export class IgeObject extends IgeEventingClass implements IgeCanRegisterById, I
 	 * client id or array of ids.
 	 * @param {Array} recipientArr The array of ids of the client(s) to
 	 * queue stream data for. The stream data being queued
-	 * is returned by a call to this._streamData().
+	 * is returned by a call to this._generateStreamData().
 	 * @param {String} streamRoomId The id of the room the entity belongs
 	 * in (can be undefined or null if no room assigned).
 	 * @private
 	 */
-	_streamSync (recipientArr: string[] = [], streamRoomId?: string) {
+	_queueStreamDataToSend (recipientArr: string[] = [], streamRoomId?: string) {
 		const arrCount = recipientArr.length;
 		const thisId = this.id();
 		const filteredArr: string[] = [];
 		const network = ige.network as IgeNetIoServerController;
 
+		let data: string = "";
 		let createResult = true; // We set this to true by default
-
-		// Get the stream data
-		const data =  this._streamData();
 
 		// Loop the recipient array
 		for (let arrIndex = 0; arrIndex < arrCount; arrIndex++) {
@@ -2057,6 +2064,9 @@ export class IgeObject extends IgeEventingClass implements IgeCanRegisterById, I
 			// this client that the operation worked before bothering
 			// to waste bandwidth on stream updates
 			if (createResult) {
+				// Get the stream data
+				data = this._generateStreamData();
+
 				// Is the data different from the last data we sent
 				// this client?
 				network._streamClientData[thisId] = network._streamClientData[thisId] || {};
@@ -2188,10 +2198,10 @@ export class IgeObject extends IgeEventingClass implements IgeCanRegisterById, I
 	 */
 	streamSectionData (sectionId: string, data?: string, bypassTimeStream: boolean = false, bypassChangeDetection: boolean = false) {
 		switch (sectionId) {
-		case 'transform':
+		case "transform":
 			if (data) {
 				// We have received updated data
-				const dataArr = data.split(',');
+				const dataArr = data.split(",");
 				const network = ige.network as IgeNetIoClientController;
 
 				if (!this._disableInterpolation && !bypassTimeStream && !this._streamJustCreated) {
@@ -2230,13 +2240,13 @@ export class IgeObject extends IgeEventingClass implements IgeCanRegisterById, I
 				}
 			} else {
 				// We should return the transform data as a comma separated string
-				return this._translate.toString(this._streamFloatPrecision) + ',' + // translate
-					this._scale.toString(this._streamFloatPrecision) + ',' + // scale
+				return this._translate.toString(this._streamFloatPrecision) + "," + // translate
+					this._scale.toString(this._streamFloatPrecision) + "," + // scale
 					this._rotate.toString(this._streamFloatPrecision); // rotate
 			}
 			break;
 
-		case 'depth':
+		case "depth":
 			if (data !== undefined) {
 				if (isClient) {
 					this.depth(parseInt(data));
@@ -2246,7 +2256,7 @@ export class IgeObject extends IgeEventingClass implements IgeCanRegisterById, I
 			}
 			break;
 
-		case 'layer':
+		case "layer":
 			if (data !== undefined) {
 				if (isClient) {
 					this.layer(parseInt(data));
@@ -2256,7 +2266,7 @@ export class IgeObject extends IgeEventingClass implements IgeCanRegisterById, I
 			}
 			break;
 
-		case 'mount':
+		case "mount":
 			if (data !== undefined) {
 				if (isClient) {
 					if (data) {
@@ -2276,25 +2286,25 @@ export class IgeObject extends IgeEventingClass implements IgeCanRegisterById, I
 				if (parent) {
 					return parent.id();
 				} else {
-					return '';
+					return "";
 				}
 			}
 			break;
 
-		case 'origin':
+		case "origin":
 			if (data !== undefined) {
 				if (isClient) {
-					const geom = data.split(',');
+					const geom = data.split(",");
 					this._origin.x = parseFloat(geom[0]);
 					this._origin.y = parseFloat(geom[1]);
 					this._origin.z = parseFloat(geom[2]);
 				}
 			} else {
-				return String(this._origin.x + ',' + this._origin.y + ',' + this._origin.z);
+				return String(this._origin.x + "," + this._origin.y + "," + this._origin.z);
 			}
 			break;
 
-		case 'props':
+		case "props":
 			if (data !== undefined) {
 				if (isClient) {
 					this._streamProperty = this._streamProperty || {};
@@ -2305,7 +2315,10 @@ export class IgeObject extends IgeEventingClass implements IgeCanRegisterById, I
 						if (this._streamProperty[i] !== props[i]) {
 							//console.log('Updated stream property ' + i + ' to', props[i]);
 							this._streamProperty[i] = props[i];
-							this.emit('streamPropChange', [i, props[i]]);
+							if (this.onStreamProperty) {
+								this.onStreamProperty(i, props[i]);
+							}
+							this.emit("streamPropChange", [i, props[i]]);
 						}
 					}
 				}
@@ -2379,7 +2392,7 @@ export class IgeObject extends IgeEventingClass implements IgeCanRegisterById, I
 	 * this entity.
 	 * @private
 	 */
-	_streamData () {
+	_generateStreamData () {
 		// Check if we already have a cached version of the streamData
 		if (this._streamDataCache) {
 			return this._streamDataCache;
