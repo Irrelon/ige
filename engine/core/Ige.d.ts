@@ -12,8 +12,8 @@ import type { IgeObject } from "./IgeObject";
 import type { IgeObjectWithValueProperty } from "@/types/IgeObjectWithValueProperty";
 import type { IgeCanRegisterByCategory } from "@/types/IgeCanRegisterByCategory";
 import type { IgeViewport } from "./IgeViewport";
-import type { IgeNetIoClientController } from "@/engine/components/network/client/IgeNetIoClientController";
-import type { IgeNetIoServerController } from "@/engine/components/network/server/IgeNetIoServerController";
+import type { IgeNetIoClientController } from "@/engine/network/client/IgeNetIoClientController";
+import type { IgeNetIoServerController } from "@/engine/network/server/IgeNetIoServerController";
 import { IgeDependencies } from "@/engine/core/IgeDependencies";
 export declare class Ige {
     router: IgeRouter;

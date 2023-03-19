@@ -135,7 +135,13 @@ export declare const WithUiPositionMixin: <BaseClassType extends Mixin<IgeObject
         _streamEmitCreated?: boolean | undefined;
         _streamSections: string[];
         _streamProperty: Record<string, any>;
-        _streamSyncInterval?: number | undefined;
+        _streamSyncInterval?: number | undefined; /**
+         * Gets / sets the viewport's x position relative to the center of
+         * the entity parent.
+         * @param {Number} px
+         * @param {Boolean=} noUpdate
+         * @return {Number}
+         */
         _streamSyncDelta: number;
         _streamSyncSectionInterval: Record<string, number>;
         _streamSyncSectionDelta: Record<string, number>;
@@ -167,13 +173,6 @@ export declare const WithUiPositionMixin: <BaseClassType extends Mixin<IgeObject
             y: number;
         };
         _computedOpacity: number;
-        /**
-         * Gets / sets the entity's y position relative to the top of
-         * the canvas.
-         * @param {Number} px
-         * @param {Boolean=} noUpdate
-         * @return {Number}
-         */
         _opacity: number;
         _cell: number | null;
         _deathTime?: number | undefined;
@@ -215,7 +214,13 @@ export declare const WithUiPositionMixin: <BaseClassType extends Mixin<IgeObject
         _noAabb?: boolean | undefined;
         _hasParent?: Record<string, boolean> | undefined;
         _texture?: import("../core/IgeTexture").IgeTexture | undefined;
-        _indestructible: boolean;
+        _indestructible: boolean; /**
+         * Gets / sets the entity's y position relative to the bottom of
+         * the canvas.
+         * @param {Number} px
+         * @param {Boolean=} noUpdate
+         * @return {Number}
+         */
         _shouldRender?: boolean | undefined;
         _smartBackground?: import("../../types/IgeSmartTexture").IgeSmartTexture<IgeObject> | undefined;
         _lastUpdate?: number | undefined;

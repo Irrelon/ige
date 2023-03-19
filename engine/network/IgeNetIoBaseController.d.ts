@@ -1,4 +1,4 @@
-import { IgeEventingClass } from "../../core/IgeEventingClass";
+import { IgeEventingClass } from "../core/IgeEventingClass";
 import { IgeNetworkMessageData } from "@/types/IgeNetworkMessage";
 import { IgeNetIoSocket } from "./server/IgeNetIoSocket";
 export declare class IgeNetIoBaseController extends IgeEventingClass {

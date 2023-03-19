@@ -9,7 +9,7 @@ import {
 	IGE_NETWORK_CHAT_ROOM_REMOVED
 } from "@/enums/IgeConstants";
 import { IgeChatComponent } from "./IgeChatComponent";
-import { IgeNetIoClientController } from "../network/client/IgeNetIoClientController";
+import { IgeNetIoClientController } from "../../network/client/IgeNetIoClientController";
 import {
 	IgeNetworkChatFromClientMessageStructure,
 	IgeNetworkChatFromServerMessageStructure

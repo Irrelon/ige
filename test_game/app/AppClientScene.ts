@@ -2,7 +2,7 @@ import {ige} from "@/engine/instance";
 import { IgeBaseScene } from "@/engine/core/IgeBaseScene";
 import { IgeOptions } from "@/engine/core/IgeOptions";
 import { IgeTexture } from "@/engine/core/IgeTexture";
-import { IgeNetIoClientController } from "@/engine/components/network/client/IgeNetIoClientController";
+import { IgeNetIoClientController } from "@/engine/network/client/IgeNetIoClientController";
 import square from "../assets/textures/smartTextures/square";
 import line from "../assets/textures/smartTextures/line";
 import triangle from "../assets/textures/smartTextures/triangle";

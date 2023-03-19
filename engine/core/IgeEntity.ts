@@ -9,7 +9,7 @@ import { IgeDummyCanvas } from "./IgeDummyCanvas";
 import { IgeRect } from "./IgeRect";
 import type { IgeTileMap2d } from "./IgeTileMap2d";
 import { IgeObject } from "./IgeObject";
-import { IgeNetIoClientController } from "../components/network/client/IgeNetIoClientController";
+import { IgeNetIoClientController } from "../network/client/IgeNetIoClientController";
 import { IgeMountMode } from "@/enums/IgeMountMode";
 import { IgeStreamMode } from "@/enums/IgeStreamMode";
 import { IgeIsometricDepthSortMode } from "@/enums/IgeIsometricDepthSortMode";

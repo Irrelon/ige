@@ -1,7 +1,7 @@
 /// <reference types="node" />
 import http from "http";
 import websocket from "websocket";
-import { IgeEventingClass } from "../../../core/IgeEventingClass";
+import { IgeEventingClass } from "../../core/IgeEventingClass";
 import { IgeNetIoSocket } from "./IgeNetIoSocket";
 export declare class IgeNetIoServer extends IgeEventingClass {
     classId: string;

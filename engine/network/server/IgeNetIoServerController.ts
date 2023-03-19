@@ -1,5 +1,5 @@
-import { ige } from "../../../instance";
-import { arrPull, newIdHex } from "../../../utils";
+import { ige } from "../../instance";
+import { arrPull, newIdHex } from "../../utils";
 import { IgeNetIoBaseController } from "../IgeNetIoBaseController";
 import {
 	IgeNetworkMessageData,

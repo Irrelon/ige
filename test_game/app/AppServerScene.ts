@@ -1,5 +1,5 @@
 import {ige} from "@/engine/instance";
-import { IgeNetIoServerController } from "@/engine/components/network/server/IgeNetIoServerController";
+import { IgeNetIoServerController } from "@/engine/network/server/IgeNetIoServerController";
 import { IgeBaseScene } from "@/engine/core/IgeBaseScene";
 import { IgeOptions } from "@/engine/core/IgeOptions";
 import { IgeSceneGraph } from "@/engine/core/IgeSceneGraph";

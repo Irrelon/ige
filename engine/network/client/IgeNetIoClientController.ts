@@ -1,6 +1,6 @@
-import { ige } from "../../../instance";
-import { igeClassStore } from "../../../igeClassStore";
-import { newIdHex } from "../../../utils";
+import { ige } from "../../instance";
+import { igeClassStore } from "../../igeClassStore";
+import { newIdHex } from "../../utils";
 import { IgeNetIoBaseController } from "../IgeNetIoBaseController";
 import { IgeNetIoClient } from "./IgeNetIoClient";
 import {
@@ -17,7 +17,7 @@ import {
 	IgeStreamDestroyMessageData,
 	IgeStreamUpdateMessageData
 } from "@/types/IgeNetworkStream";
-import { IgeEntity } from "../../../core/IgeEntity";
+import { IgeEntity } from "../../core/IgeEntity";
 import {
 	IGE_NETWORK_REQUEST,
 	IGE_NETWORK_RESPONSE,
