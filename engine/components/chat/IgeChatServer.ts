@@ -6,7 +6,7 @@ import {
 	IGE_NETWORK_CHAT_ROOM_CREATED, IGE_NETWORK_CHAT_ROOM_LIST_USERS,
 	IGE_NETWORK_CHAT_ROOM_REMOVED
 } from "@/enums/IgeConstants";
-import { IgeNetIoServerComponent } from "@/engine/components/network/IgeNetIoServerComponent";
+import { IgeNetIoServerComponent } from "@/engine/components/network/server/IgeNetIoServerComponent";
 import { IgeChatComponent, IgeChatRoomOptions } from "@/engine/components/chat/IgeChatComponent";
 import {
 	IgeNetworkChatFromClientMessageStructure,

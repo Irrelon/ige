@@ -1,4 +1,4 @@
-import { IgeEventingClass } from "../../core/IgeEventingClass";
+import { IgeEventingClass } from "../../../core/IgeEventingClass";
 import type websocket from "websocket";
 export declare class IgeNetIoSocket extends IgeEventingClass {
     classId: string;

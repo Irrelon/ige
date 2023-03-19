@@ -1,6 +1,6 @@
-import { ige } from "../../instance";
-import { arrPull, newIdHex } from "../../utils";
-import { IgeNetIoBaseComponent } from "./IgeNetIoBaseComponent";
+import { ige } from "../../../instance";
+import { arrPull, newIdHex } from "../../../utils";
+import { IgeNetIoBaseComponent } from "../IgeNetIoBaseComponent";
 import {
 	IgeNetworkMessageData,
 	IgeNetworkServerSideMessageHandler,

@@ -1,4 +1,4 @@
-import { IgeNetIoBaseComponent } from "./IgeNetIoBaseComponent";
+import { IgeNetIoBaseComponent } from "../IgeNetIoBaseComponent";
 import { IgeNetworkMessageData, IgeNetworkServerSideMessageHandler, IgeNetworkMessageStructure, IgeNetworkRequestMessageStructure, IgeNetworkServerSideResponseData } from "@/types/IgeNetworkMessage";
 import { IgeNetIoServer } from "./IgeNetIoServer";
 import { IgeNetIoSocket } from "./IgeNetIoSocket";

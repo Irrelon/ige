@@ -1,6 +1,6 @@
 import {ige} from "@/engine/instance";
 import { Level1 } from "./levels/Level1";
-import { IgeNetIoServerComponent } from "@/engine/components/network/IgeNetIoServerComponent";
+import { IgeNetIoServerComponent } from "@/engine/components/network/server/IgeNetIoServerComponent";
 import { IgeBaseClass } from "@/engine/core/IgeBaseClass";
 import { IgeBaseScene } from "@/engine/core/IgeBaseScene";
 import { IgeOptions } from "@/engine/core/IgeOptions";

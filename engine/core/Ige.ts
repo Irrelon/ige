@@ -15,8 +15,8 @@ import type { IgeObject } from "./IgeObject";
 import type { IgeObjectWithValueProperty } from "@/types/IgeObjectWithValueProperty";
 import type { IgeCanRegisterByCategory } from "@/types/IgeCanRegisterByCategory";
 import type { IgeViewport } from "./IgeViewport";
-import type { IgeNetIoClientComponent } from "@/engine/components/network/IgeNetIoClientComponent";
-import type { IgeNetIoServerComponent } from "@/engine/components/network/IgeNetIoServerComponent";
+import type { IgeNetIoClientComponent } from "@/engine/components/network/client/IgeNetIoClientComponent";
+import type { IgeNetIoServerComponent } from "@/engine/components/network/server/IgeNetIoServerComponent";
 
 const version = "2.0.0";
 
@@ -45,7 +45,7 @@ export class Ige {
 
 	constructor () {
 		if (isClient) {
-			import("../components/network/IgeNetIoClientComponent.js").then(({ IgeNetIoClientComponent: Module }) => {
+			import("../components/network/client/IgeNetIoClientComponent.js").then(({ IgeNetIoClientComponent: Module }) => {
 				this.network = new Module();
 			});
 
@@ -53,7 +53,7 @@ export class Ige {
 		}
 
 		if (isServer) {
-			import("../components/network/IgeNetIoServerComponent.js").then(({ IgeNetIoServerComponent: Module }) => {
+			import("../components/network/server/IgeNetIoServerComponent.js").then(({ IgeNetIoServerComponent: Module }) => {
 				this.network = new Module();
 			});
 		}

@@ -1,7 +1,7 @@
 import http from "http" ;
 import websocket from "websocket" ;
-import { IgeEventingClass } from "../../core/IgeEventingClass";
-import { arrClone, newIdHex } from "../../utils";
+import { IgeEventingClass } from "../../../core/IgeEventingClass";
+import { arrClone, newIdHex } from "../../../utils";
 import { IgeNetIoSocket } from "./IgeNetIoSocket" ;
 // /**
 //  * Define the debug options object.
