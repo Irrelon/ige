@@ -16,8 +16,25 @@ const { minimatch } = require("minimatch");
 const matchPattern = ["**/*.js", "**/*.jsx"];
 const excludePattern = ["node_modules", "react", ".git"];
 
-const basicImportExp = /import\s(.*)?\sfrom\s["']([.]+)(((?!\.js).)*?)["'];/g;
-const basicExportExp = /export\s(.*)?\sfrom\s["']([.]+)(((?!\.js).)*?)["'];/g;
+const expressions = [{
+	exp: /import(.*)?["']([.]+)(((?!\.js).)*?)["'];/g,
+	update: (match, isIndex) => {
+		if (isIndex) {
+			return `import${match[1]}"${match[2]}${match[3]}/index.js";`;
+		}
+
+		return `import${match[1]}"${match[2]}${match[3]}.js";`;
+	}
+}, {
+	exp: /export\s(.*)?\sfrom\s["']([.]+)(((?!\.js).)*?)["'];/g,
+	update: (match, isIndex) => {
+		if (isIndex) {
+			return `export ${match[1]} from "${match[2]}${match[3]}/index.js";`;
+		}
+
+		return `export ${match[1]} from "${match[2]}${match[3]}.js";`;
+	}
+}];
 
 let tsPaths = {};
 let tsResolvedPaths = {};
@@ -31,7 +48,7 @@ const readTsConfig = () => {
 			return resolve(__dirname, dir);
 		});
 	});
-}
+};
 
 async function getFiles (dir, gitIgnoreArr) {
 	const dirArr = await readdir(dir, { withFileTypes: true });
@@ -58,7 +75,7 @@ async function getFiles (dir, gitIgnoreArr) {
 	return Array.prototype.concat(...finalFiles);
 }
 
-const processMatches = (regExp, fileFolder, content, statement) => {
+const processMatches = (regExp, fileFolder, content, updateFunc) => {
 	let match;
 	while (match = regExp.exec(content)) {
 		const pathToItemFile = resolve(fileFolder, match[2] + match[3] + ".js");
@@ -80,15 +97,14 @@ const processMatches = (regExp, fileFolder, content, statement) => {
 
 		if (pathStatFile) {
 			// Just add .js to the end of the path
-			content = content.replace(match[0], `${statement} ${match[1]} from "${match[2]}${match[3]}.js";`);
+			content = content.replace(match[0], updateFunc(match, false));
 		} else if (pathStatFolderIndexFile) {
-			// The item is a directory rather than a file so point it at index.js
-			content = content.replace(match[0], `${statement} ${match[1]} from "${match[2]}${match[3]}/index.js";`);
+			content = content.replace(match[0], updateFunc(match, true));
 		}
 	}
 
 	return content;
-}
+};
 
 const processFile = (file) => {
 	if (!file) return;
@@ -114,11 +130,10 @@ const processFile = (file) => {
 			updatedContent = updatedContent.replaceAll(find, replacementPath);
 		});
 
-		updatedContent = processMatches(basicImportExp, fileFolder, updatedContent, "import");
-		updatedContent = processMatches(basicExportExp, fileFolder, updatedContent, "export");
-
-		basicImportExp.lastIndex = 0;
-		basicExportExp.lastIndex = 0;
+		expressions.forEach((expression) => {
+			updatedContent = processMatches(expression.exp, fileFolder, updatedContent, expression.update);
+			expression.exp.lastIndex = 0;
+		})
 
 		if (fileContent === updatedContent) {
 			//console.log(`No change ${file}`);
@@ -129,7 +144,7 @@ const processFile = (file) => {
 			console.log(`Updated ${file}`);
 		});
 	});
-}
+};
 
 const runSearchReplace = () => {
 	// Scan all folders
@@ -155,7 +170,7 @@ const runSearchReplace = () => {
 readTsConfig();
 runSearchReplace();
 
-const watcher = chokidar.watch(__dirname, {persistent: true});
+const watcher = chokidar.watch(__dirname, { persistent: true });
 
 watcher.on("change", (filename) => {
 	if (filename.indexOf("tsconfig.json") > -1) {
