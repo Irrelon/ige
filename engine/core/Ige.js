@@ -61,13 +61,13 @@ export class Ige {
             this._watch.splice(index, 1);
         };
         if (isClient) {
-            this._dependencies.addDependency("network", import("../components/network/client/IgeNetIoClientComponent.js").then(({ IgeNetIoClientComponent: Module }) => {
+            this._dependencies.addDependency("network", import("../components/network/client/IgeNetIoClientController.js").then(({ IgeNetIoClientController: Module }) => {
                 this.network = new Module();
             }));
             this.audio = new IgeAudioController();
         }
         if (isServer) {
-            this._dependencies.addDependency("network", import("../components/network/server/IgeNetIoServerComponent.js").then(({ IgeNetIoServerComponent: Module }) => {
+            this._dependencies.addDependency("network", import("../components/network/server/IgeNetIoServerController.js").then(({ IgeNetIoServerController: Module }) => {
                 this.network = new Module();
             }));
         }

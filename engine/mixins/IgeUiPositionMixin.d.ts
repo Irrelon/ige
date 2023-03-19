@@ -167,6 +167,13 @@ export declare const WithUiPositionMixin: <BaseClassType extends Mixin<IgeObject
             y: number;
         };
         _computedOpacity: number;
+        /**
+         * Gets / sets the entity's y position relative to the top of
+         * the canvas.
+         * @param {Number} px
+         * @param {Boolean=} noUpdate
+         * @return {Number}
+         */
         _opacity: number;
         _cell: number | null;
         _deathTime?: number | undefined;

@@ -9,7 +9,7 @@ import { IgeDummyCanvas } from "./IgeDummyCanvas";
 import { IgeRect } from "./IgeRect";
 import type { IgeTileMap2d } from "./IgeTileMap2d";
 import { IgeObject } from "./IgeObject";
-import { IgeNetIoClientComponent } from "../components/network/client/IgeNetIoClientComponent";
+import { IgeNetIoClientController } from "../components/network/client/IgeNetIoClientController";
 import { IgeMountMode } from "@/enums/IgeMountMode";
 import { IgeStreamMode } from "@/enums/IgeStreamMode";
 import { IgeIsometricDepthSortMode } from "@/enums/IgeIsometricDepthSortMode";
@@ -3216,7 +3216,7 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 
 			if (this._timeStream.length) {
 				// Process any interpolation
-				this._processInterpolate(ige.engine._tickStart - (ige.network as IgeNetIoClientComponent)._renderLatency);
+				this._processInterpolate(ige.engine._tickStart - (ige.network as IgeNetIoClientController)._renderLatency);
 			}
 
 			// Check for changes to the transform values

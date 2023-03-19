@@ -9,7 +9,7 @@ import {
 	IGE_NETWORK_CHAT_ROOM_REMOVED
 } from "@/enums/IgeConstants";
 import { IgeChatComponent } from "./IgeChatComponent";
-import { IgeNetIoClientComponent } from "../network/client/IgeNetIoClientComponent";
+import { IgeNetIoClientController } from "../network/client/IgeNetIoClientController";
 import {
 	IgeNetworkChatFromClientMessageStructure,
 	IgeNetworkChatFromServerMessageStructure
@@ -47,12 +47,12 @@ export class IgeChatClient extends IgeChatComponent {
 	 * @param {String} roomId The room id of the room to join.
 	 */
 	joinRoom (roomId: string) {
-		const network = ige.network as IgeNetIoClientComponent;
+		const network = ige.network as IgeNetIoClientController;
 		network.send<IgeNetworkChatFromClientJoinRoomRequestStructure>(IGE_NETWORK_CHAT_JOIN_ROOM, roomId);
 	}
 
 	sendToRoom (roomId: string, message: string, to: string) {
-		const network = ige.network as IgeNetIoClientComponent;
+		const network = ige.network as IgeNetIoClientController;
 
 		if (roomId !== undefined && message !== undefined) {
 			const msg: IgeNetworkChatFromClientMessageStructure = {

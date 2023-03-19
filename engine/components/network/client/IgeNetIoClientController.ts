@@ -32,7 +32,7 @@ import {
  * The client-side net.io component. Handles all client-side
  * networking systems.
  */
-export class IgeNetIoClientComponent extends IgeNetIoBaseController {
+export class IgeNetIoClientController extends IgeNetIoBaseController {
 	version: string = '1.0.0';
 	_networkCommands: Record<string, IgeNetworkClientSideMessageHandler> = {}; // Maps a command name to a command handler function
 	_initDone: boolean = false;
@@ -464,7 +464,7 @@ export class IgeNetIoClientComponent extends IgeNetIoBaseController {
 					// data, inform any interested listeners
 					this.emit('entityCreated', entity);
 				} else {
-					(ige.network as IgeNetIoClientComponent).stop();
+					(ige.network as IgeNetIoClientController).stop();
 					ige.engine.stop();
 
 					this.log(`Network stream cannot create entity with class "${classId}" because the class has not been defined! The engine will now stop.`, 'error');
@@ -473,7 +473,7 @@ export class IgeNetIoClientComponent extends IgeNetIoBaseController {
 				this.log(`Network stream received "create entity" with class "${classId}" and id "${entityId}" but an entity with that id already exists in the scenegraph!`, 'warning');
 			}
 		} else {
-			(ige.network as IgeNetIoClientComponent).stop();
+			(ige.network as IgeNetIoClientController).stop();
 			ige.engine.stop();
 
 			this.log(`Cannot properly handle network streamed entity with id "${entityId}" because it's parent with id "${parentId}" does not exist on the scenegraph!`, 'warning');

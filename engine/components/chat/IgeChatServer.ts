@@ -6,7 +6,7 @@ import {
 	IGE_NETWORK_CHAT_ROOM_CREATED, IGE_NETWORK_CHAT_ROOM_LIST_USERS,
 	IGE_NETWORK_CHAT_ROOM_REMOVED
 } from "@/enums/IgeConstants";
-import { IgeNetIoServerComponent } from "@/engine/components/network/server/IgeNetIoServerComponent";
+import { IgeNetIoServerController } from "@/engine/components/network/server/IgeNetIoServerController";
 import { IgeChatComponent, IgeChatRoomOptions } from "@/engine/components/chat/IgeChatComponent";
 import {
 	IgeNetworkChatFromClientMessageStructure,
@@ -48,7 +48,7 @@ export class IgeChatServer extends IgeChatComponent {
      * @return {String} The new room's ID.
      */
 	createRoom (roomName: string, roomId?: string, options?: IgeChatRoomOptions) {
-		const network = ige.network as IgeNetIoServerComponent;
+		const network = ige.network as IgeNetIoServerController;
 		const newRoomId = roomId || newIdHex();
 
 		this._rooms[newRoomId] = {
@@ -70,7 +70,7 @@ export class IgeChatServer extends IgeChatComponent {
 	 * @return {Boolean}
 	 */
 	removeRoom (roomId: string) {
-		const network = ige.network as IgeNetIoServerComponent;
+		const network = ige.network as IgeNetIoServerController;
 
 		if (this._rooms[roomId]) {
 			// Inform all users that the room was removed
@@ -91,7 +91,7 @@ export class IgeChatServer extends IgeChatComponent {
 	 * @param {String} from The id of the user that sent the message.
 	 */
 	sendToRoom (roomId: string, message: string, to: string, from: string) {
-		const network = ige.network as IgeNetIoServerComponent;
+		const network = ige.network as IgeNetIoServerController;
 
 		if (this._rooms[roomId]) {
 			const room = this._rooms[roomId];
@@ -157,7 +157,7 @@ export class IgeChatServer extends IgeChatComponent {
 	}
 
 	_onJoinRoomRequestFromClient (roomId: IgeNetworkChatFromClientJoinRoomRequestStructure, clientId: string) {
-		const network = ige.network as IgeNetIoServerComponent;
+		const network = ige.network as IgeNetIoServerController;
 
 		// Emit the event and if it wasn't cancelled (by returning true) then
 		// process this ourselves

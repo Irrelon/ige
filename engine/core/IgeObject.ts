@@ -10,7 +10,7 @@ import { IgeDummyCanvas } from "@/engine/core/IgeDummyCanvas";
 import { IgeRect } from "@/engine/core/IgeRect";
 import { IgeTexture } from "@/engine/core/IgeTexture";
 import { IgePoly2d } from "@/engine/core/IgePoly2d";
-import { IgeNetIoServerComponent } from "../components/network/server/IgeNetIoServerComponent";
+import { IgeNetIoServerController } from "../components/network/server/IgeNetIoServerController";
 import { IgeMountMode } from "@/enums/IgeMountMode";
 import { IgeStreamMode } from "@/enums/IgeStreamMode";
 import { IgeIsometricDepthSortMode } from "@/enums/IgeIsometricDepthSortMode";
@@ -25,7 +25,7 @@ import type { IgeChildSortFunction } from "@/types/IgeChildSortFunction";
 import { IgeEntityBehaviourMethod } from "@/types/IgeEntityBehaviour";
 import { IgeInputEvent } from "@/types/IgeInputEvent";
 import { GenericClass } from "@/types/GenericClass";
-import { IgeNetIoClientComponent } from "../components/network/client/IgeNetIoClientComponent";
+import { IgeNetIoClientController } from "../components/network/client/IgeNetIoClientController";
 import { IgePoint } from "@/types/IgePoint";
 import { IgeViewport } from "@/engine/core/IgeViewport";
 import { IgeCanAcceptComponents } from "@/types/IgeCanAcceptComponents";
@@ -1671,7 +1671,7 @@ export class IgeObject extends IgeEventingClass implements IgeCanRegisterById, I
 	streamProperty (propName: string, propVal?: any) {
 		if (!this._id) return;
 
-		const network = ige.network as IgeNetIoServerComponent;
+		const network = ige.network as IgeNetIoServerController;
 
 		this._streamProperty = this._streamProperty || {};
 		network._streamPropertyChange = network._streamPropertyChange || {};
@@ -1869,7 +1869,7 @@ export class IgeObject extends IgeEventingClass implements IgeCanRegisterById, I
 
 			// Grab an array of connected clients from the network system
 			const recipientArr: string[] = [];
-			const clientsById = (ige.network as IgeNetIoServerComponent).clients(this._streamRoomId);
+			const clientsById = (ige.network as IgeNetIoServerController).clients(this._streamRoomId);
 
 			Object.keys(clientsById).forEach((clientId) => {
 				// Check for a stream control method
@@ -2035,7 +2035,7 @@ export class IgeObject extends IgeEventingClass implements IgeCanRegisterById, I
 		const arrCount = recipientArr.length;
 		const thisId = this.id();
 		const filteredArr: string[] = [];
-		const network = ige.network as IgeNetIoServerComponent;
+		const network = ige.network as IgeNetIoServerController;
 
 		let createResult = true; // We set this to true by default
 
@@ -2085,7 +2085,7 @@ export class IgeObject extends IgeEventingClass implements IgeCanRegisterById, I
 	 */
 	streamForceUpdate () {
 		const thisId = this.id();
-		const network = ige.network as IgeNetIoServerComponent;
+		const network = ige.network as IgeNetIoServerController;
 
 		// Invalidate the stream client data lookup to ensure
 		// the latest data will be pushed on the next stream sync
@@ -2122,7 +2122,7 @@ export class IgeObject extends IgeEventingClass implements IgeCanRegisterById, I
 		}
 
 		const thisId = this.id();
-		const network = ige.network as IgeNetIoServerComponent;
+		const network = ige.network as IgeNetIoServerController;
 
 		// Send the client an entity create command first
 		network.send<IgeStreamCreateMessageData>(
@@ -2192,7 +2192,7 @@ export class IgeObject extends IgeEventingClass implements IgeCanRegisterById, I
 			if (data) {
 				// We have received updated data
 				const dataArr = data.split(',');
-				const network = ige.network as IgeNetIoClientComponent;
+				const network = ige.network as IgeNetIoClientController;
 
 				if (!this._disableInterpolation && !bypassTimeStream && !this._streamJustCreated) {
 					const parsedDataArr: IgeTimeStreamTransformData = dataArr.map((dataItem) => {
@@ -2311,7 +2311,7 @@ export class IgeObject extends IgeEventingClass implements IgeCanRegisterById, I
 				}
 			} else {
 				const newData: Record<string, any> = {};
-				const network = ige.network as IgeNetIoServerComponent;
+				const network = ige.network as IgeNetIoServerController;
 
 				for (const i in this._streamProperty) {
 					if ((network._streamPropertyChange && network._streamPropertyChange[this._id as string] && network._streamPropertyChange[this._id as string][i]) || bypassChangeDetection) {
@@ -2342,7 +2342,7 @@ export class IgeObject extends IgeEventingClass implements IgeCanRegisterById, I
 	 */
 	streamDestroy (clientId?: string) {
 		const thisId = this.id();
-		const network = ige.network as IgeNetIoServerComponent;
+		const network = ige.network as IgeNetIoServerController;
 
 		// Send clients the stream destroy command for this entity
 		network.send(IGE_NETWORK_STREAM_DESTROY, [ige.engine._currentTime, thisId], clientId);
@@ -2431,7 +2431,7 @@ export class IgeObject extends IgeEventingClass implements IgeCanRegisterById, I
 				// regardless of if there is actually any section data because
 				// we want to be able to identify sections in a serial fashion
 				// on receipt of the data string on the client
-				sectionDataString += (ige.network as IgeNetIoServerComponent)._sectionDesignator;
+				sectionDataString += (ige.network as IgeNetIoServerController)._sectionDesignator;
 
 				// Check if we were returned any data
 				if (sectionData !== undefined) {

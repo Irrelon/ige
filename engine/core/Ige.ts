@@ -15,8 +15,8 @@ import type { IgeObject } from "./IgeObject";
 import type { IgeObjectWithValueProperty } from "@/types/IgeObjectWithValueProperty";
 import type { IgeCanRegisterByCategory } from "@/types/IgeCanRegisterByCategory";
 import type { IgeViewport } from "./IgeViewport";
-import type { IgeNetIoClientComponent } from "@/engine/components/network/client/IgeNetIoClientComponent";
-import type { IgeNetIoServerComponent } from "@/engine/components/network/server/IgeNetIoServerComponent";
+import type { IgeNetIoClientController } from "@/engine/components/network/client/IgeNetIoClientController";
+import type { IgeNetIoServerController } from "@/engine/components/network/server/IgeNetIoServerController";
 import { IgeDependencies } from "@/engine/core/IgeDependencies";
 
 const version = "2.0.0";
@@ -28,7 +28,7 @@ export class Ige {
 	metrics: IgeMetrics = new IgeMetrics();
 	input: IgeInputComponent = new IgeInputComponent();
 	audio?: IgeAudioController;
-	network?: IgeNetIoClientComponent | IgeNetIoServerComponent;
+	network?: IgeNetIoClientController | IgeNetIoServerController;
 	register: IgeObjectRegister = new IgeObjectRegister();
 	categoryRegister: IgeArrayRegister<IgeCanRegisterByCategory> = new IgeArrayRegister("_category", "_categoryRegistered");
 	groupRegister: IgeArrayRegister<IgeCanRegisterByCategory> = new IgeArrayRegister("_category", "_categoryRegistered");
@@ -46,7 +46,7 @@ export class Ige {
 
 	constructor () {
 		if (isClient) {
-			this._dependencies.addDependency("network", import("../components/network/client/IgeNetIoClientComponent.js").then(({ IgeNetIoClientComponent: Module }) => {
+			this._dependencies.addDependency("network", import("../components/network/client/IgeNetIoClientController.js").then(({ IgeNetIoClientController: Module }) => {
 				this.network = new Module();
 			}));
 
@@ -54,7 +54,7 @@ export class Ige {
 		}
 
 		if (isServer) {
-			this._dependencies.addDependency("network", import("../components/network/server/IgeNetIoServerComponent.js").then(({ IgeNetIoServerComponent: Module }) => {
+			this._dependencies.addDependency("network", import("../components/network/server/IgeNetIoServerController.js").then(({ IgeNetIoServerController: Module }) => {
 				this.network = new Module();
 			}));
 		}

@@ -2,7 +2,7 @@ import {ige} from "@/engine/instance";
 import { IgeBaseScene } from "@/engine/core/IgeBaseScene";
 import { IgeOptions } from "@/engine/core/IgeOptions";
 import { IgeTexture } from "@/engine/core/IgeTexture";
-import { IgeNetIoClientComponent } from "@/engine/components/network/client/IgeNetIoClientComponent";
+import { IgeNetIoClientController } from "@/engine/components/network/client/IgeNetIoClientController";
 import square from "../assets/textures/smartTextures/square";
 import line from "../assets/textures/smartTextures/line";
 import triangle from "../assets/textures/smartTextures/triangle";
@@ -29,7 +29,7 @@ export class AppClientScene extends IgeSceneGraph {
 		new IgeTexture("circle", circle);
 		new IgeTexture("star", star);
 
-		const network = (ige.network as IgeNetIoClientComponent);
+		const network = (ige.network as IgeNetIoClientController);
 
 		// Wait for our textures to load before continuing
 		await ige.textures.whenLoaded();
@@ -48,7 +48,7 @@ export class AppClientScene extends IgeSceneGraph {
 	}
 
 	removeGraph () {
-		const network = (ige.network as IgeNetIoClientComponent);
+		const network = (ige.network as IgeNetIoClientController);
 		network.stop();
 		ige.engine.stop();
 	}

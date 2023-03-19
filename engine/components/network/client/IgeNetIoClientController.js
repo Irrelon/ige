@@ -8,7 +8,7 @@ import { IGE_NETWORK_REQUEST, IGE_NETWORK_RESPONSE, IGE_NETWORK_STREAM_CREATE, I
  * The client-side net.io component. Handles all client-side
  * networking systems.
  */
-export class IgeNetIoClientComponent extends IgeNetIoBaseController {
+export class IgeNetIoClientController extends IgeNetIoBaseController {
     constructor() {
         super();
         this.version = '1.0.0';

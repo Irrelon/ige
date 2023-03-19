@@ -6,7 +6,7 @@ import { IgeStreamCreateMessageData, IgeStreamDestroyMessageData } from "@/types
  * The client-side net.io component. Handles all client-side
  * networking systems.
  */
-export declare class IgeNetIoClientComponent extends IgeNetIoBaseController {
+export declare class IgeNetIoClientController extends IgeNetIoBaseController {
     version: string;
     _networkCommands: Record<string, IgeNetworkClientSideMessageHandler>;
     _initDone: boolean;

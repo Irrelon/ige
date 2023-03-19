@@ -23,7 +23,7 @@ import {
 } from "@/enums/IgeConstants";
 import { IgeNetIoSocket } from "./IgeNetIoSocket";
 
-export class IgeNetIoServerComponent extends IgeNetIoBaseController {
+export class IgeNetIoServerController extends IgeNetIoBaseController {
 	_idCounter: number = 0;
 	_networkCommands: Record<string, IgeNetworkServerSideMessageHandler | undefined> = {}; // Maps a command name to a command handler function
 	_requests: Record<string, IgeNetworkRequestMessageStructure<IgeNetworkServerSideMessageHandler>> = {};
@@ -557,7 +557,7 @@ export class IgeNetIoServerComponent extends IgeNetIoBaseController {
 	_sendQueue = () => {
 		const st = new Date().getTime();
 		const queueObj = this._queuedData;
-		const network = (ige.network as IgeNetIoServerComponent);
+		const network = (ige.network as IgeNetIoServerController);
 		const currentTime = ige.engine._currentTime;
 		const hasSentTimeDataByClientId: Record<string, boolean> = {};
 

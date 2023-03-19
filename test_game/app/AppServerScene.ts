@@ -1,5 +1,5 @@
 import {ige} from "@/engine/instance";
-import { IgeNetIoServerComponent } from "@/engine/components/network/server/IgeNetIoServerComponent";
+import { IgeNetIoServerController } from "@/engine/components/network/server/IgeNetIoServerController";
 import { IgeBaseScene } from "@/engine/core/IgeBaseScene";
 import { IgeOptions } from "@/engine/core/IgeOptions";
 import { IgeSceneGraph } from "@/engine/core/IgeSceneGraph";
@@ -11,7 +11,7 @@ export class AppServerScene extends IgeSceneGraph {
 		const options = new IgeOptions();
 		options.set("masterVolume", 1);
 
-		const network = (ige.network as IgeNetIoServerComponent);
+		const network = (ige.network as IgeNetIoServerController);
 
 		// Start the engine
 		await ige.engine.start();
@@ -30,7 +30,7 @@ export class AppServerScene extends IgeSceneGraph {
 	}
 
 	removeGraph () {
-		const network = (ige.network as IgeNetIoServerComponent);
+		const network = (ige.network as IgeNetIoServerController);
 		network.stop();
 		ige.engine.stop();
 	}
