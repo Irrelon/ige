@@ -7,5 +7,6 @@ export declare class Road extends Line {
     _toId: string;
     _to?: Building;
     constructor(fromId: string, toId: string);
+    setLocation(): void;
     streamCreateConstructorArgs(): string[];
 }

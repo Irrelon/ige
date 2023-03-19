@@ -115,6 +115,16 @@ body {
     opacity: 0.7;
 }
 
+.stats {
+	position: absolute;
+	bottom: 10px;
+	left: 10px;
+	border: 1px solid #0000DD;
+	color: #ffffff;
+	font-size: 12px;
+	padding: 10px;
+}
+
 @-moz-keyframes fadePulse {
 	0% { opacity:0.5; }
 	50% { opacity:1; }

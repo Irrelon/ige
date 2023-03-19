@@ -2,16 +2,16 @@ import { ige } from "../../../engine/instance.js";
 import { isClient } from "../../../engine/clientServer.js";
 import { degreesToRadians } from "../../../engine/utils.js";
 import { IgeStreamMode } from "../../../enums/IgeStreamMode.js";
-import { Transporter } from "../../entities/Transporter.js";
 import { ResourceBuilding } from "../../entities/ResourceBuilding.js";
 import { ResourceType } from "../../enums/ResourceType.js";
 import { FactoryBuilding } from "../../entities/FactoryBuilding.js";
 import { Road } from "../../entities/Road.js";
 import { StorageBuilding } from "../../entities/StorageBuilding.js";
-import { IgeTileMap2d } from "../../../engine/core/IgeTileMap2d.js";
 import { IgeAudioEntity } from "../../../engine/audio/index.js";
 import { IgeSceneGraph } from "../../../engine/core/IgeSceneGraph.js";
 import { IgeScene2d } from "../../../engine/core/IgeScene2d.js";
+import { Resource } from "../../entities/Resource.js";
+import { Transporter } from "../../entities/Transporter.js";
 export class Level1 extends IgeSceneGraph {
     constructor() {
         super(...arguments);
@@ -30,17 +30,6 @@ export class Level1 extends IgeSceneGraph {
         const scene1 = new IgeScene2d()
             .id("scene1")
             .mount(baseScene);
-        new IgeTileMap2d()
-            .id('tileMap1')
-            .tileWidth(40)
-            .tileHeight(40)
-            .gridSize(20, 20)
-            .drawGrid(true)
-            .drawMouse(true)
-            .drawBounds(true)
-            .drawBoundsData(false)
-            .highlightOccupied(true) // Draws a red tile wherever a tile is "occupied"
-            .mount(scene1);
         if (isClient) {
             console.log("Client mode");
         }
@@ -52,32 +41,48 @@ export class Level1 extends IgeSceneGraph {
             .play(true)
             .mount(baseScene);
         const base = new StorageBuilding()
+            .id("base1")
             .translateTo(0, 0, 0)
             .mount(scene1);
-        const resource1 = new ResourceBuilding(ResourceType.energy)
+        const resourceBuilding1 = new ResourceBuilding(ResourceType.energy)
+            .id("resourceBuilding1")
             .translateTo(220, 120, 0)
             .rotateTo(0, 0, degreesToRadians(-10))
             .mount(scene1);
-        const factory1 = new FactoryBuilding(ResourceType.wood, [{
+        const factoryBuilding1 = new FactoryBuilding(ResourceType.wood, [{
                 resource: ResourceType.energy,
                 count: 1
             }])
+            .id("factoryBuilding1")
             .translateTo(50, 150, 0)
             .mount(scene1);
-        const factory2 = new FactoryBuilding(ResourceType.wood, [{
+        const factoryBuilding2 = new FactoryBuilding(ResourceType.wood, [{
                 resource: ResourceType.energy,
                 count: 1
             }])
+            .id("factoryBuilding2")
             .translateTo(250, -50, 0)
             .mount(scene1);
-        new Road(base.id(), factory2.id())
+        new Road(base.id(), resourceBuilding1.id())
             .mount(scene1);
-        new Road(factory2.id(), resource1.id())
+        new Road(base.id(), factoryBuilding2.id())
             .mount(scene1);
-        new Road(resource1.id(), factory1.id())
+        new Road(factoryBuilding2.id(), resourceBuilding1.id())
             .mount(scene1);
-        new Transporter(factory1.id(), resource1.id())
-            .translateTo(resource1._translate.x, resource1._translate.y, 0)
+        new Road(resourceBuilding1.id(), factoryBuilding1.id())
+            .mount(scene1);
+        new Transporter(factoryBuilding1.id(), resourceBuilding1.id())
+            .translateTo(resourceBuilding1._translate.x, resourceBuilding1._translate.y, 0)
+            .mount(scene1);
+        new Transporter(resourceBuilding1.id(), factoryBuilding2.id())
+            .translateTo(factoryBuilding2._translate.x, factoryBuilding2._translate.y, 0)
+            .mount(scene1);
+        new Transporter(factoryBuilding2.id(), base.id())
+            .translateTo(base._translate.x, base._translate.y, 0)
+            .mount(scene1);
+        const resource1 = new Resource(ResourceType.wood, factoryBuilding1.id(), base.id())
+            .id("resource1")
+            .translateTo(factoryBuilding1._translate.x, factoryBuilding1._translate.y, 0)
             .mount(scene1);
     }
     /**

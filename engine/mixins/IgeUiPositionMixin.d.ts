@@ -164,7 +164,7 @@ export declare const WithUiPositionMixin: <BaseClassType extends Mixin<IgeObject
         _depthSortMode: import("../../enums/IgeIsometricDepthSortMode").IgeIsometricDepthSortMode;
         _inView: boolean;
         _managed: number;
-        _triggerPolygon?: "aabb" | "localBounds3dPolygon" | undefined;
+        _triggerPolygon?: "localBounds3dPolygon" | "aabb" | undefined;
         _compositeCache: boolean;
         _compositeParent: boolean;
         _anchor: import("../core/IgePoint2d").IgePoint2d;
@@ -309,6 +309,7 @@ export declare const WithUiPositionMixin: <BaseClassType extends Mixin<IgeObject
         streamSectionsPush(sectionName: string): any;
         streamSectionsPull(sectionName: string): any;
         streamProperty(propName: string, propVal?: any): any;
+        onStreamProperty(propName: string, propVal: any): any;
         streamMode(val: import("../../enums/IgeStreamMode").IgeStreamMode): any;
         streamMode(): import("../../enums/IgeStreamMode").IgeStreamMode;
         streamControl(method: (clientId: string, roomId?: string | undefined) => boolean): any;
@@ -320,12 +321,12 @@ export declare const WithUiPositionMixin: <BaseClassType extends Mixin<IgeObject
         streamCreateInitialData(): any;
         onStreamCreateInitialData(data: any): void;
         streamEmitCreated(val?: boolean | undefined): boolean | any | undefined;
-        _streamSync(recipientArr?: string[], streamRoomId?: string | undefined): void;
+        _queueStreamDataToSend(recipientArr?: string[], streamRoomId?: string | undefined): void;
         streamForceUpdate(): any;
         sendStreamCreate(clientId?: string | string[] | undefined): boolean;
         streamSectionData(sectionId: string, data?: string | undefined, bypassTimeStream?: boolean, bypassChangeDetection?: boolean): string | undefined;
         streamDestroy(clientId?: string | undefined): boolean;
-        _streamData(): string;
+        _generateStreamData(): string;
         destroyBehaviours(): void;
         destroy(): any;
         compositeAabb(inverse?: boolean): import("../core/IgeRect").IgeRect;

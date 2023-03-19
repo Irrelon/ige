@@ -2,7 +2,7 @@ const circle = {
     render: function (ctx, entity) {
         ctx.beginPath();
         ctx.arc(0, 0, entity._bounds2d.x2, 0, 2 * Math.PI);
-        ctx.fillStyle = "#ffffff";
+        ctx.fillStyle = entity.data("fillColor") || "#ffffff";
         ctx.shadowColor = entity.data("glowColor");
         ctx.shadowBlur = 40;
         ctx.shadowOffsetX = 0;

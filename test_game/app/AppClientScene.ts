@@ -9,6 +9,7 @@ import triangle from "../assets/textures/smartTextures/triangle";
 import circle from "../assets/textures/smartTextures/circle";
 import star from "../assets/textures/smartTextures/star";
 import { IgeSceneGraph } from "@/engine/core/IgeSceneGraph";
+import { IgeViewport } from "@/engine/core/IgeViewport";
 
 // @ts-ignore
 window.ige = ige;
@@ -42,7 +43,10 @@ export class AppClientScene extends IgeSceneGraph {
 
 		// Load the base scene data
 		await ige.engine.addGraph(IgeBaseScene);
-		ige.engine.currentViewport()?.drawBounds(true);
+		const vp1 = ige.$("vp1") as IgeViewport;
+
+		vp1.drawBounds(true);
+		vp1.drawBoundsData(true);
 
 		network.start('http://localhost:2000');
 	}

@@ -2,6 +2,7 @@ import { ige } from "@/engine/instance";
 import { Line } from "./base/Line";
 import { Building } from "./base/Building";
 import { registerClass } from "@/engine/igeClassStore";
+import { IgeTimeout } from "@/engine/core/IgeTimeout";
 
 export class Road extends Line {
 	classId = "Road";
@@ -18,12 +19,25 @@ export class Road extends Line {
 		this._fromId = fromId;
 		this._toId = toId;
 
-		this._from = ige.$(fromId) as Building;
-		this._to = ige.$(toId) as Building;
+		this.category("road");
 
-		if (this._from && this._to) {
-			this.setLine(this._from._translate.x, this._from._translate.y, this._to._translate.x, this._to._translate.y);
+		this.setLocation();
+	}
+
+	setLocation () {
+		this._from = ige.$(this._fromId) as Building;
+		this._to = ige.$(this._toId) as Building;
+
+		if (!(this._from && this._to)) {
+			// Create a timeout to re-check
+			new IgeTimeout(() => {
+				this.setLocation();
+			}, 50);
+
+			return;
 		}
+
+		this.setLine(this._from._translate.x, this._from._translate.y, this._to._translate.x, this._to._translate.y);
 	}
 
 	streamCreateConstructorArgs () {

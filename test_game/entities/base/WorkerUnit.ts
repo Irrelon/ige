@@ -1,5 +1,5 @@
-import { Circle } from "./base/Circle";
-import { WorkerUnitType } from "../enums/WorkerUnitType";
+import { Circle } from "./Circle";
+import { WorkerUnitType } from "../../enums/WorkerUnitType";
 import { registerClass } from "@/engine/igeClassStore";
 
 export class WorkerUnit extends Circle {
@@ -10,8 +10,9 @@ export class WorkerUnit extends Circle {
 
 		this._type = type;
 
-		this.depth(2)
-			.scaleTo(0.3, 0.3, 0.3);
+		this.depth(3)
+			.width(20)
+			.height(20);
 	}
 }
 

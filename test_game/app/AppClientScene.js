@@ -25,7 +25,7 @@ export class AppClientScene extends IgeSceneGraph {
         this.classId = "AppClientScene";
     }
     addGraph() {
-        var _a, _b;
+        var _a;
         return __awaiter(this, void 0, void 0, function* () {
             const options = new IgeOptions();
             options.set("masterVolume", 1);
@@ -45,7 +45,9 @@ export class AppClientScene extends IgeSceneGraph {
             yield ige.engine.start();
             // Load the base scene data
             yield ige.engine.addGraph(IgeBaseScene);
-            (_b = ige.engine.currentViewport()) === null || _b === void 0 ? void 0 : _b.drawBounds(true);
+            const vp1 = ige.$("vp1");
+            vp1.drawBounds(true);
+            vp1.drawBoundsData(true);
             network.start('http://localhost:2000');
         });
     }

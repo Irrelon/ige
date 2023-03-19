@@ -630,48 +630,48 @@ export class IgeObject extends IgeEventingClass implements IgeCanRegisterById, I
 			return;
 		}
 
-		const arrCount = arr.length;
+		let arrCount = arr.length;
 
 		if (ige.config.debug._timing) {
-			for (let i = 0; i < arrCount; i++) {
-				if (!arr[i]) {
-					this.log("Object _children is undefined for index " + i + " and _id: " + this._id, "error");
+			while (arrCount--) {
+				if (!arr[arrCount]) {
+					this.log("Object _children is undefined for index " + arrCount + " and _id: " + this._id, "error");
 					continue;
 				}
 
-				if (!arr[i]._newBorn) {
+				if (!arr[arrCount]._newBorn) {
 					ctx.save();
 
 					const ts = new Date().getTime();
-					arr[i].tick(ctx);
+					arr[arrCount].tick(ctx);
 					const td = new Date().getTime() - ts;
 
-					if (arr[i]) {
-						if (!ige.engine._timeSpentInTick[arr[i].id()]) {
-							ige.engine._timeSpentInTick[arr[i].id()] = 0;
+					if (arr[arrCount]) {
+						if (!ige.engine._timeSpentInTick[arr[arrCount].id()]) {
+							ige.engine._timeSpentInTick[arr[arrCount].id()] = 0;
 						}
 
-						if (!ige.engine._timeSpentLastTick[arr[i].id()]) {
-							ige.engine._timeSpentLastTick[arr[i].id()] = {};
+						if (!ige.engine._timeSpentLastTick[arr[arrCount].id()]) {
+							ige.engine._timeSpentLastTick[arr[arrCount].id()] = {};
 						}
 
-						ige.engine._timeSpentInTick[arr[i].id()] += td;
-						ige.engine._timeSpentLastTick[arr[i].id()].tick = td;
+						ige.engine._timeSpentInTick[arr[arrCount].id()] += td;
+						ige.engine._timeSpentLastTick[arr[arrCount].id()].tick = td;
 					}
 
 					ctx.restore();
 				}
 			}
 		} else {
-			for (let i = 0; i < arrCount; i++) {
-				if (!arr[i]) {
-					this.log(`Object _children is undefined for index ${i} and _id: ${this._id}`, "error");
+			while (arrCount--) {
+				if (!arr[arrCount]) {
+					this.log(`Object _children is undefined for index ${arrCount} and _id: ${this._id}`, "error");
 					continue;
 				}
 
-				if (!arr[i]._newBorn) {
+				if (!arr[arrCount]._newBorn) {
 					ctx.save();
-					arr[i].tick(ctx);
+					arr[arrCount].tick(ctx);
 					ctx.restore();
 				}
 			}

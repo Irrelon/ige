@@ -21,7 +21,7 @@ export class Ige {
         this.input = new IgeInputComponent();
         this.register = new IgeObjectRegister();
         this.categoryRegister = new IgeArrayRegister("_category", "_categoryRegistered");
-        this.groupRegister = new IgeArrayRegister("_category", "_categoryRegistered");
+        this.groupRegister = new IgeArrayRegister("_group", "_groupRegistered");
         this.config = igeConfig;
         this.version = version;
         this.classStore = igeClassStore;
