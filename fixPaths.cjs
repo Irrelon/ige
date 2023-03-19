@@ -58,9 +58,9 @@ async function getFiles (dir, gitIgnoreArr) {
 	return Array.prototype.concat(...finalFiles);
 }
 
-const processMatches = (regExp, fileFolder, content) => {
+const processMatches = (regExp, fileFolder, content, statement) => {
 	let match;
-	while (match = basicImportExp.exec(content)) {
+	while (match = regExp.exec(content)) {
 		const pathToItemFile = resolve(fileFolder, match[2] + match[3] + ".js");
 		const pathToItemFolderIndexFile = resolve(fileFolder, match[2] + match[3] + "/index.js");
 		let pathStatFile;
@@ -79,10 +79,11 @@ const processMatches = (regExp, fileFolder, content) => {
 		}
 
 		if (pathStatFile) {
-			content = content.replace(match[0], `import ${match[1]} from "${match[2]}${match[3]}.js";`);
+			// Just add .js to the end of the path
+			content = content.replace(match[0], `${statement} ${match[1]} from "${match[2]}${match[3]}.js";`);
 		} else if (pathStatFolderIndexFile) {
 			// The item is a directory rather than a file so point it at index.js
-			content = content.replace(match[0], `import ${match[1]} from "${match[2]}${match[3]}/index.js";`);
+			content = content.replace(match[0], `${statement} ${match[1]} from "${match[2]}${match[3]}/index.js";`);
 		}
 	}
 
@@ -113,8 +114,8 @@ const processFile = (file) => {
 			updatedContent = updatedContent.replaceAll(find, replacementPath);
 		});
 
-		updatedContent = processMatches(basicImportExp, fileFolder, updatedContent);
-		updatedContent = processMatches(basicExportExp, fileFolder, updatedContent);
+		updatedContent = processMatches(basicImportExp, fileFolder, updatedContent, "import");
+		updatedContent = processMatches(basicExportExp, fileFolder, updatedContent, "export");
 
 		basicImportExp.lastIndex = 0;
 		basicExportExp.lastIndex = 0;
