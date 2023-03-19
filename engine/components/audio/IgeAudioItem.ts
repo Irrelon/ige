@@ -1,8 +1,8 @@
 import { ige } from "@/engine/instance";
 import { IgeEventingClass } from "@/engine/core/IgeEventingClass";
 
-export class IgeAudio extends IgeEventingClass {
-	classId = "IgeAudio";
+export class IgeAudioItem extends IgeEventingClass {
+	classId = "IgeAudioItem";
 	_url?: string;
 	_buffer?: AudioBuffer;
 	_bufferSource?: AudioBufferSourceNode;

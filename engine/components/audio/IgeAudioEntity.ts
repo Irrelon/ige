@@ -1,6 +1,6 @@
 import { ige } from "@/engine/instance";
 import { isClient } from "@/engine/clientServer";
-import { IgeAudio } from "@/engine/components/audio/IgeAudio";
+import { IgeAudioItem } from "@/engine/components/audio/IgeAudioItem";
 import { IgeObject } from "@/engine/core/IgeObject";
 import type { IgeCanvasRenderingContext2d } from "@/types/IgeCanvasRenderingContext2d";
 
@@ -30,7 +30,7 @@ const defaultPanner: IgeAudioEntityPanner = {
 
 export class IgeAudioEntity extends IgeObject {
 	classId = "IgeAudioEntity";
-	_audioInterface?: IgeAudio;
+	_audioInterface?: IgeAudioItem;
 	_options: IgeAudioEntityOptions = {
 		started: false,
 		loop: false,
@@ -51,7 +51,7 @@ export class IgeAudioEntity extends IgeObject {
 		super();
 
 		this._audioId = audioId;
-		this._audioInterface = new IgeAudio(audioId);
+		this._audioInterface = new IgeAudioItem(audioId);
 		this._options = options;
 
 		if (this._options.relativeTo) {
@@ -161,14 +161,14 @@ export class IgeAudioEntity extends IgeObject {
 	}
 
 	/**
-	 * Gets / sets the IgeAudio instance used to control
+	 * Gets / sets the IgeAudioItem instance used to control
 	 * playback of the audio stream.
-	 * @param {IgeAudio=} audio
+	 * @param {IgeAudioItem=} audio
 	 * @returns {*}
 	 */
-	audioInterface (audio: IgeAudio): this;
-	audioInterface (): IgeAudio | undefined;
-	audioInterface (audio?: IgeAudio) {
+	audioInterface (audio: IgeAudioItem): this;
+	audioInterface (): IgeAudioItem | undefined;
+	audioInterface (audio?: IgeAudioItem) {
 		if (audio !== undefined) {
 			this._audioInterface = audio;
 			return this;

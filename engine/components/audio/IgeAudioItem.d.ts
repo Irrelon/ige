@@ -1,5 +1,5 @@
 import { IgeEventingClass } from "@/engine/core/IgeEventingClass";
-export declare class IgeAudio extends IgeEventingClass {
+export declare class IgeAudioItem extends IgeEventingClass {
     classId: string;
     _url?: string;
     _buffer?: AudioBuffer;

@@ -1,9 +1,9 @@
 import { ige } from "../../../engine/instance.js";
 import { IgeEventingClass } from "../../../engine/core/IgeEventingClass.js";
-export class IgeAudio extends IgeEventingClass {
+export class IgeAudioItem extends IgeEventingClass {
     constructor(audioId) {
         super();
-        this.classId = "IgeAudio";
+        this.classId = "IgeAudioItem";
         this._playWhenReady = false;
         this._loaded = false;
         this._loop = false;
