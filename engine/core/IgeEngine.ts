@@ -19,6 +19,7 @@ import { IgeTweenComponent } from "../components/IgeTweenComponent";
 import { IgePoint2d } from "./IgePoint2d";
 import { IgeTimeComponent } from "../components/IgeTimeComponent";
 import { IgeComponent } from "./IgeComponent";
+import { IgeBehaviourType } from "@/enums/IgeBehaviourType";
 
 export class IgeEngine extends IgeEntity {
 	client?: IgeBaseClass;
@@ -56,12 +57,11 @@ export class IgeEngine extends IgeEntity {
 	_clientNetDiff: number;
 	_frameAlternator: boolean;
 	_viewportDepth: boolean = false;
-	_mousePos: IgePoint3d;
+	_pointerPos: IgePoint3d;
 	_currentViewport: IgeViewport | null;
 	_currentCamera: IgeCamera | null;
 	_currentTime: number;
 	_globalSmoothing: boolean;
-	_postTick: (() => void)[];
 	_timeSpentInUpdate: Record<string, number>;
 	_timeSpentLastUpdate: Record<string, Record<string, number>>;
 	_timeSpentInTick: Record<string, number>;
@@ -83,7 +83,7 @@ export class IgeEngine extends IgeEntity {
 	_syncArr: SyncEntry[] = [];
 	_webFonts: FontFace[];
 	_cssFonts: string[];
-	_mouseOverVp?: IgeViewport;
+	_pointerOverVp?: IgeViewport;
 	_deviceFinalDrawRatio: number = 1;
 	_createdFrontBuffer: boolean = false;
 	_devicePixelRatio: number = 1;
@@ -125,12 +125,11 @@ export class IgeEngine extends IgeEntity {
 		this._clientNetDiff = 0; // The difference between the server and client comms (only non-zero on clients)
 		this._frameAlternator = false; // Is set to the boolean not of itself each frame
 		this._viewportDepth = false;
-		this._mousePos = new IgePoint3d(0, 0, 0);
+		this._pointerPos = new IgePoint3d(0, 0, 0);
 		this._currentViewport = null; // Set in IgeViewport.js tick(), holds the current rendering viewport
 		this._currentCamera = null; // Set in IgeViewport.js tick(), holds the current rendering viewport's camera
 		this._currentTime = 0; // The current engine time
 		this._globalSmoothing = false; // Determines the default smoothing setting for new textures
-		this._postTick = []; // An array of methods that are called upon tick completion
 		this._timeSpentInUpdate = {}; // An object holding time-spent-in-update (total time spent in this object's update method)
 		this._timeSpentLastUpdate = {}; // An object holding time-spent-last-update (time spent in this object's update method last tick)
 		this._timeSpentInTick = {}; // An object holding time-spent-in-tick (total time spent in this object's tick method)
@@ -1444,8 +1443,6 @@ export class IgeEngine extends IgeEntity {
             then process updates and ticks. This will also allow a layered rendering system that can render the
             first x number of entities then stop, allowing a step through of the renderer in realtime.
          */
-		const ptArr = this._postTick;
-		const ptCount = ptArr.length;
 
 		// Scale the timestamp according to the current
 		// engine's time scaling factor
@@ -1546,21 +1543,14 @@ export class IgeEngine extends IgeEntity {
 			}
 
 			// Call post-tick methods
-			for (let ptIndex = 0; ptIndex < ptCount; ptIndex++) {
-				ptArr[ptIndex]();
-			}
+			this._processBehaviours(IgeBehaviourType.postTick, ctx);
 
-			// Record the lastTick value so we can
+			// Record the lastTick value, so we can
 			// calculate delta on the next tick
 			this.lastTick = this._tickStart;
 			this._frames++;
 			this._dpf = this._drawCount;
 			this._drawCount = 0;
-
-			// Call the input system tick to reset any flags etc
-			if (this.components.input) {
-				(this.components.input as IgeInputComponent).tick();
-			}
 		}
 
 		this._resized = false;
@@ -1657,7 +1647,7 @@ export class IgeEngine extends IgeEntity {
 	 * @return {IgePoint3d}
 	 */
 	mousePos () {
-		return ige._mousePos.clone();
+		return ige._pointerPos.clone();
 	}
 
 	/**
@@ -1665,7 +1655,7 @@ export class IgeEngine extends IgeEntity {
 	 * is currently over, ordered by their draw order from drawn last (above other
 	 * entities) to first (underneath other entities).
 	 */
-	mouseOverList = (obj?: IgeEntity, entArr: IgeEntity[] = []) => {
+	pointerOverList = (obj?: IgeEntity, entArr: IgeEntity[] = []) => {
 		let arr,
 			arrCount,
 			mp,
@@ -1691,7 +1681,7 @@ export class IgeEngine extends IgeEntity {
 
 					if (vp._scene) {
 						if (vp._scene._shouldRender) {
-							this.mouseOverList(vp._scene, entArr);
+							this.pointerOverList(vp._scene, entArr);
 						}
 					}
 				}
@@ -1718,7 +1708,7 @@ export class IgeEngine extends IgeEntity {
 
 				// Loop our children
 				while (arrCount--) {
-					this.mouseOverList(arr[arrCount], entArr);
+					this.pointerOverList(arr[arrCount], entArr);
 				}
 			}
 		}
@@ -1747,7 +1737,7 @@ export class IgeEngine extends IgeEntity {
 		const tickDelta = ige.engine._tickDelta;
 
 		// Process any behaviours assigned to the engine
-		this._processUpdateBehaviours(ctx, tickDelta);
+		this._processBehaviours(IgeBehaviourType.preUpdate, ctx, tickDelta);
 
 		if (arr) {
 			let arrCount = arr.length;
@@ -1784,7 +1774,7 @@ export class IgeEngine extends IgeEntity {
 		let ts, td;
 
 		// Process any behaviours assigned to the engine
-		this._processTickBehaviours(ctx);
+		this._processBehaviours(IgeBehaviourType.preTick, ctx);
 
 		// Depth-sort the viewports
 		if (this._viewportDepth) {

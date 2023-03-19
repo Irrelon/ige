@@ -6,7 +6,8 @@ import { IgeBox2dBodyType } from "../../../../enums/IgeBox2dBodyType.js";
 import { IgeBox2dFixtureShapeType } from "../../../../enums/IgeBox2dFixtureShapeType.js";
 import { IgeBox2dDebugPainter } from "./IgeBox2dDebugPainter.js";
 import { IgeEntityBox2d } from "./IgeEntityBox2d.js";
-import { Box2D } from "./index";
+import { IgeBehaviourType } from "../../../../enums/IgeBehaviourType.js";
+import { Box2D } from "../../../../engine/components/physics/box2d/lib_box2d.js";
 /**
  * The engine's Box2D component class.
  */
@@ -608,7 +609,7 @@ export class IgeBox2dComponent extends IgeComponent {
             if (!this._networkDebugMode) {
                 if (this._renderMode === 0) {
                     // Add the box2d behaviour to the ige
-                    this._entity.addBehaviour("box2dStep", this._behaviour);
+                    this._entity.addBehaviour(IgeBehaviourType.preUpdate, "box2dStep", this._behaviour);
                 }
                 else {
                     this._intervalTimer = setInterval(this._behaviour, 1000 / 60);
@@ -621,7 +622,7 @@ export class IgeBox2dComponent extends IgeComponent {
             this._active = false;
             if (this._renderMode === 0) {
                 // Add the box2d behaviour to the ige
-                this._entity.removeBehaviour("box2dStep");
+                this._entity.removeBehaviour(IgeBehaviourType.preUpdate, "box2dStep");
             }
             else {
                 clearInterval(this._intervalTimer);
@@ -630,7 +631,7 @@ export class IgeBox2dComponent extends IgeComponent {
     }
     destroy() {
         // Stop processing box2d steps
-        this._entity.removeBehaviour("box2dStep");
+        this._entity.removeBehaviour(IgeBehaviourType.preUpdate, "box2dStep");
         // Destroy all box2d world bodies
         return this;
     }

@@ -2,6 +2,7 @@ import { ige } from "../instance.js";
 import { IgeComponent } from "../core/IgeComponent.js";
 import { arrPull } from "../utils.js";
 import { easingFunctions } from "../easing.js";
+import { IgeBehaviourType } from "../../enums/IgeBehaviourType.js";
 /**
  * This component is already included in the IgeRoot (ige)
  * instance and is not designed for use in any other way!
@@ -202,7 +203,7 @@ export class IgeTweenComponent extends IgeComponent {
         // Set up the array that will hold our active tweens
         this._tweens = [];
         // Add the tween behaviour to the entity
-        entity.addBehaviour("tween", this.update);
+        entity.addBehaviour(IgeBehaviourType.preUpdate, "tween", this.update);
     }
     /**
      * Start tweening particular properties for the object.

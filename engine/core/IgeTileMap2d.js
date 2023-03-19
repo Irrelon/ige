@@ -433,8 +433,8 @@ export class IgeTileMap2d extends IgeEntity {
     }
     _processTriggerHitTests() {
         // This method overrides the one in IgeEntity
-        if (this._mouseEventsActive && ige.engine._currentViewport) {
-            if (!this._mouseAlwaysInside) {
+        if (this._pointerEventsActive && ige.engine._currentViewport) {
+            if (!this._pointerAlwaysInside) {
                 const mouseTile = this.mouseToTile();
                 if (mouseTile.x >= 0 && mouseTile.y >= 0 && mouseTile.x < this._gridSize.x && mouseTile.y < this._gridSize.y) {
                     return true;

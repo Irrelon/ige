@@ -2,122 +2,7 @@ import { IgeViewport } from "../core/IgeViewport";
 import { IgeInputEventControl } from "@/types/IgeInputEventControl";
 import { IgeComponent } from "../core/IgeComponent";
 import type { IgeEngine } from "../core/IgeEngine";
-export interface IgeInputMouseInterface {
-    "dblClick": number;
-    "down": number;
-    "up": number;
-    "move": number;
-    "wheel": number;
-    "wheelUp": number;
-    "wheelDown": number;
-    "x": number;
-    "y": number;
-    "button1": number;
-    "button2": number;
-    "button3": number;
-}
-export interface IgeInputGamePadInterface {
-    "button1": number;
-    "button2": number;
-    "button3": number;
-    "button4": number;
-    "button5": number;
-    "button6": number;
-    "button7": number;
-    "button8": number;
-    "button9": number;
-    "button10": number;
-    "button11": number;
-    "button12": number;
-    "button13": number;
-    "button14": number;
-    "button15": number;
-    "button16": number;
-    "button17": number;
-    "button18": number;
-    "button19": number;
-    "button20": number;
-    "stick1": number;
-    "stick2": number;
-    "stick1Up": number;
-    "stick1Down": number;
-    "stick1Left": number;
-    "stick1Right": number;
-    "stick2Up": number;
-    "stick2Down": number;
-    "stick2Left": number;
-    "stick2Right": number;
-}
-export interface IgeInputKeyboardInterface {
-    "shift": number;
-    "ctrl": number;
-    "alt": number;
-    "backspace": number;
-    "tab": number;
-    "enter": number;
-    "escape": number;
-    "space": number;
-    "pageUp": number;
-    "pageDown": number;
-    "end": number;
-    "home": number;
-    "left": number;
-    "up": number;
-    "right": number;
-    "down": number;
-    "insert": number;
-    "del": number;
-    "0": number;
-    "1": number;
-    "2": number;
-    "3": number;
-    "4": number;
-    "5": number;
-    "6": number;
-    "7": number;
-    "8": number;
-    "9": number;
-    "a": number;
-    "b": number;
-    "c": number;
-    "d": number;
-    "e": number;
-    "f": number;
-    "g": number;
-    "h": number;
-    "i": number;
-    "j": number;
-    "k": number;
-    "l": number;
-    "m": number;
-    "n": number;
-    "o": number;
-    "p": number;
-    "q": number;
-    "r": number;
-    "s": number;
-    "t": number;
-    "u": number;
-    "v": number;
-    "w": number;
-    "x": number;
-    "y": number;
-    "z": number;
-}
-export declare enum IgeInputMouse {
-    "down" = 0,
-    "up" = 1,
-    "dblClick" = 2,
-    "move" = 3,
-    "wheel" = 4,
-    "wheelX" = 5,
-    "wheelY" = 6,
-    "x" = 7,
-    "y" = 8,
-    "button1" = 9,
-    "button2" = 10,
-    "button3" = 11
-}
+import { IgeInputDevice } from "@/enums/IgeInputDeviceMap";
 export declare class IgeInputComponent extends IgeComponent<IgeEngine> {
     classId: string;
     componentId: string;
@@ -125,16 +10,13 @@ export declare class IgeInputComponent extends IgeComponent<IgeEngine> {
     _eventControl: IgeInputEventControl;
     _evRef: Record<string, (event: any) => void>;
     _debug?: boolean;
-    _state: Record<string | number, boolean | number>;
-    _controlMap: Record<string, string | number>;
-    mouse: IgeInputMouseInterface;
-    gamePad: IgeInputGamePadInterface[];
-    keyboard: IgeInputKeyboardInterface;
+    _state: Record<number, Record<number, string | number | boolean>>;
+    _controlMap: Record<number, [number, number]>;
     dblClick?: Event;
-    mouseMove?: Event;
-    mouseDown?: Event;
-    mouseUp?: Event;
-    mouseWheel?: Event;
+    pointerMove?: Event;
+    pointerDown?: Event;
+    pointerUp?: Event;
+    pointerWheel?: Event;
     contextMenu?: Event;
     constructor();
     debug: (val?: boolean) => boolean | this | undefined;
@@ -148,47 +30,53 @@ export declare class IgeInputComponent extends IgeComponent<IgeEngine> {
     /**
      * Fires an input event that didn't occur on the main canvas, as if it had
      * occurred on the main canvas, allowing you to pass through events like
-     * mousedown and mouseup that occurred elsewhere on the DOM but might be
+     * pointerdown and pointerup that occurred elsewhere on the DOM but might be
      * useful for the engine to be aware of, such as if you are dragging an entity
-     * and then the mouse goes off-canvas and the button is released.
-     * @param {String} eventName The lowercase name of the event to fire e.g. mousedown.
+     * and then the pointer goes off-canvas and the button is released.
+     * @param {String} eventName The lowercase name of the event to fire e.g. pointerdown.
      * @param {Object} eventObj The event object that was passed by the DOM.
      */
     fireManualEvent: (eventName: string, eventObj: Event) => void;
+    _ensureState(device: IgeInputDevice): void;
+    _updateState(device: IgeInputDevice, inputId: number, newValue: any): void;
     /**
      * Sets igeX and igeY properties in the event object that
      * can be relied on to provide the x, y co-ordinates of the
-     * mouse event including the canvas offset.
+     * pointer event including the canvas offset.
      * @param {Event} event The event object.
      * @param type
      * @private
      */
-    _rationalise: (event: MouseEvent | KeyboardEvent | TouchEvent, type: "mouse" | "key" | "touch") => void;
+    _rationalise(event: PointerEvent, type: "pointer"): void;
+    _rationalise(event: KeyboardEvent, type: "keyboard"): void;
+    _rationalise(event: TouchEvent, type: "touch"): void;
+    _rationalise(event: WheelEvent, type: "wheel"): void;
+    _rationalise(event: GamepadEvent, type: "gamepad"): void;
     /**
-     * Emits the "mouseDown" event.
+     * Emits the "pointerDown" event.
      * @param event
      * @private
      */
-    _mouseDown: (event: MouseEvent | TouchEvent) => void;
+    _pointerDown: (event: PointerEvent | TouchEvent) => void;
     /**
-     * Emits the "mouseUp" event.
+     * Emits the "pointerUp" event.
      * @param event
      * @private
      */
-    _mouseUp: (event: MouseEvent | TouchEvent) => void;
-    _contextMenu: (event: MouseEvent) => void;
+    _pointerUp: (event: PointerEvent | TouchEvent) => void;
+    _contextMenu: (event: PointerEvent) => void;
     /**
-     * Emits the "mouseMove" event.
+     * Emits the "pointerMove" event.
      * @param event
      * @private
      */
-    _mouseMove: (event: MouseEvent | TouchEvent) => void;
+    _pointerMove: (event: PointerEvent | TouchEvent) => void;
     /**
-     * Emits the "mouseWheel" event.
+     * Emits the "pointerWheel" event.
      * @param event
      * @private
      */
-    _mouseWheel: (event: WheelEvent) => void;
+    _pointerWheel: (event: WheelEvent) => void;
     /**
      * Emits the "keyDown" event.
      * @param event
@@ -202,50 +90,52 @@ export declare class IgeInputComponent extends IgeComponent<IgeEngine> {
      */
     _keyUp: (event: KeyboardEvent) => void;
     /**
-     * Loops the mounted viewports and updates their respective mouse
-     * co-ordinates so that mouse events can work out where on a viewport
+     * Loops the mounted viewports and updates their respective pointer
+     * co-ordinates so that pointer events can work out where on a viewport
      * they occurred.
      *
      * @param {Event} event The HTML DOM event that occurred.
      * @return {*}
      * @private
      */
-    _updateMouseData: (event: MouseEvent | TouchEvent) => IgeViewport | undefined;
+    _updatePointerData: (event: PointerEvent | TouchEvent | WheelEvent) => IgeViewport | undefined;
     /**
      * Defines an action that will be emitted when the specified event type
      * occurs.
-     * @param actionName
-     * @param eventCode
+     * @param action
+     * @param inputMap
      */
-    mapAction: (actionName: string, eventCode: string | number) => void;
+    mapAction: (action: number, inputMap: [IgeInputDevice, number]) => void;
     /**
      * Returns the passed action's input state value.
-     * @param actionName
+     * @param action
      */
-    actionVal: (actionName: string) => number | boolean;
+    actionVal: (action: number) => string | number | boolean;
     /**
      * Returns true if the passed action's input is pressed or its state
      * is not zero.
-     * @param actionName
+     * @param action
      */
-    actionState: (actionName: string) => boolean;
+    actionState(action: number): boolean;
     /**
      * Returns an input's current value.
+     * @param device
      * @param inputId
      * @return {*}
      */
-    val: (inputId: string | number) => number | boolean;
+    val(device: IgeInputDevice, inputId: number): string | number | boolean;
     /**
      * Returns an input's current state as a boolean.
+     * @param device
      * @param inputId
      * @return {Boolean}
      */
-    state: (inputId: string | number) => boolean;
+    state(device: IgeInputDevice, inputId: number): boolean;
     /**
      * Stops further event propagation for this tick.
      * @return {*}
      */
-    stopPropagation: () => this;
+    stopPropagation(): this;
     /**
      * Adds an event method to the eventQueue array. The array is
      * processed during each tick after the scenegraph has been
@@ -256,7 +146,8 @@ export declare class IgeInputComponent extends IgeComponent<IgeEngine> {
     queueEvent: (eventFunction?: ((evc: IgeInputEventControl, eventData?: any) => boolean | void) | undefined, eventData?: any) => this;
     /**
      * Called by the engine after ALL other tick methods have processed.
-     * Call originates in IgeRoot.js. Allows us to reset any flags etc.
+     * Call originates in IgeEngine.engineStep(). Allows us to reset any flags
+     * etc.
      */
     tick(): void;
     /**

@@ -27,7 +27,7 @@ export class Ige {
         this.classStore = igeClassStore;
         this._dependencies = new IgeDependencies();
         this._watch = [];
-        this._mousePos = new IgePoint3d(); // Could probably be just {x: number, y: number}
+        this._pointerPos = new IgePoint3d(); // Could probably be just {x: number, y: number}
         // /**
         //  * Returns an array of all objects that have been assigned
         //  * the passed group name.

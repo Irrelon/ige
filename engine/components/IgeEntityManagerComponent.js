@@ -2,6 +2,7 @@ import { ige } from "../../engine/instance.js";
 import { IgeComponent } from "../../engine/core/IgeComponent.js";
 import { IgeMountMode } from "../../enums/IgeMountMode.js";
 import { IgeRect } from "../../engine/core/IgeRect.js";
+import { IgeBehaviourType } from "../../enums/IgeBehaviourType.js";
 export class IgeEntityManagerComponent extends IgeComponent {
     /**
      * @constructor
@@ -410,6 +411,6 @@ export class IgeEntityManagerComponent extends IgeComponent {
         this._removeMode = 0;
         this._createArr = [];
         this._removeArr = [];
-        entity.addBehaviour("entityManager", this._behaviour);
+        entity.addBehaviour(IgeBehaviourType.preUpdate, "entityManager", this._behaviour);
     }
 }

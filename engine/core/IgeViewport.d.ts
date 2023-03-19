@@ -21,8 +21,8 @@ export declare class IgeViewport extends IgeUiEntity implements IgeCanRegisterBy
     _idRegistered: boolean;
     _lockDimension?: IgePoint3d;
     _alwaysInView: boolean;
-    _mouseAlwaysInside: boolean;
-    _mousePos: IgePoint3d;
+    _pointerAlwaysInside: boolean;
+    _pointerPos: IgePoint3d;
     _overflow: string;
     _clipping: boolean;
     _autoSize: boolean;

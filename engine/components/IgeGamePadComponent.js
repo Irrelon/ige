@@ -1,5 +1,6 @@
 import { IgeComponent } from "../core/IgeComponent.js";
 import { isClient } from "../../engine/clientServer.js";
+import { IgeBehaviourType } from "../../enums/IgeBehaviourType.js";
 export class IgeGamePadComponent extends IgeComponent {
     constructor(entity, options) {
         super(entity, options);
@@ -43,7 +44,7 @@ export class IgeGamePadComponent extends IgeComponent {
         }
         window.addEventListener("gamepadconnected", this.onGamepadConnect);
         window.addEventListener("gamepaddisconnected", this.onGamepadDisconnect);
-        entity.addBehaviour("gamePadComponent", this._behaviour);
+        entity.addBehaviour(IgeBehaviourType.preUpdate, "gamePadComponent", this._behaviour);
     }
     onGamepadConnect(event) {
         // Add the new gamepad on the list of gamepads to look after.

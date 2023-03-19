@@ -5,6 +5,7 @@ import { IgeInterval } from "../core/IgeInterval";
 import { arrPull } from "../utils";
 import { IgeEntityBehaviourMethod } from "@/types/IgeEntityBehaviour";
 import type { IgeEngine } from "../core/IgeEngine";
+import { IgeBehaviourType } from "@/enums/IgeBehaviourType";
 
 export class IgeTimeComponent extends IgeComponent<IgeEngine> {
 	classId = "IgeTimeComponent";
@@ -19,7 +20,7 @@ export class IgeTimeComponent extends IgeComponent<IgeEngine> {
 		super(entity, options);
 
 		// Add the animation behaviour to the entity
-		entity.addBehaviour("time", this._update);
+		entity.addBehaviour(IgeBehaviourType.preUpdate, "time", this._update);
 	}
 
 	addTimer = (timer: IgeInterval) => {

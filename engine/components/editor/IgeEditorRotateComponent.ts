@@ -82,9 +82,9 @@ class IgeEditorRotateComponent extends IgeComponent {
 						this.enabled(false);
 					} else {
 						// Listen for the mouse events we need to operate
-						this._ige.engine.components.input.on("mouseDown", (event) => { self._mouseDown(event); });
-						this._ige.engine.components.input.on("mouseMove", (event) => { self._mouseMove(event); });
-						this._ige.engine.components.input.on("mouseUp", (event) => { self._mouseUp(event); });
+						this._ige.engine.components.input.on("pointerDown", (event) => { self._pointerDown(event); });
+						this._ige.engine.components.input.on("pointerMove", (event) => { self._pointerMove(event); });
+						this._ige.engine.components.input.on("pointerUp", (event) => { self._pointerUp(event); });
 						this.log("Editor: Mouse rotate enabled");
 					}
 				}
@@ -101,15 +101,15 @@ class IgeEditorRotateComponent extends IgeComponent {
 	};
 
 	/**
-	 * Handles the mouseDown event. Records the starting position of the
+	 * Handles the pointerDown event. Records the starting position of the
 	 * operation and the current operation translation.
 	 * @param event
 	 * @private
 	 */
-	_mouseDown = (event) => {
+	_pointerDown = (event) => {
 		if (!this._opStarted && this._enabled && this._targetEntity) {
 			// Record the mouse down position - pre-start
-			const curMousePos = this._ige._mousePos;
+			const curMousePos = this._ige._pointerPos;
 			this._opStartMouse = curMousePos.clone();
 
 			this._opStartRotate = {
@@ -129,11 +129,11 @@ class IgeEditorRotateComponent extends IgeComponent {
 	 * @param event
 	 * @private
 	 */
-	_mouseMove = (event) => {
+	_pointerMove = (event) => {
 		if (this._enabled && this._targetEntity) {
 			// Rotate the camera if the mouse is down
 			if (this._opStartMouse) {
-				const curMousePos = this._ige._mousePos,
+				const curMousePos = this._ige._pointerPos,
 					rotateCords = {
 						"x": this._opStartMouse.x - curMousePos.x
 					},
@@ -175,12 +175,12 @@ class IgeEditorRotateComponent extends IgeComponent {
 	 * @param event
 	 * @private
 	 */
-	_mouseUp = (event) => {
+	_pointerUp = (event) => {
 		if (this._enabled && this._targetEntity) {
 			// End the rotate
 			if (this._opStarted) {
 				if (this._opStartMouse) {
-					const curMousePos = this._ige._mousePos,
+					const curMousePos = this._ige._pointerPos,
 						rotateCords = {
 							"x": this._opStartMouse.x - curMousePos.x
 						},

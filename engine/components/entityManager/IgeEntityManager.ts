@@ -4,6 +4,7 @@ import { IgeEntity } from "../../core/IgeEntity";
 import { IgeComponent } from "../../core/IgeComponent";
 import { IgeMountMode } from "@/enums/IgeMountMode";
 import { IgeEntityBehaviourMethod } from "@/types/IgeEntityBehaviour";
+import { IgeBehaviourType } from "@/enums/IgeBehaviourType";
 
 export class IgeEntityManager extends IgeComponent {
 	classId = "IgeEntityManager";
@@ -23,7 +24,7 @@ export class IgeEntityManager extends IgeComponent {
 		entity._orphans = [];
 
 		// Set a method (behaviour) that will be called on every update
-		entity.addBehaviour("entManager", this._updateBehaviour, false);
+		entity.addBehaviour(IgeBehaviourType.preUpdate, "entManager", this._updateBehaviour);
 	}
 
 	/**

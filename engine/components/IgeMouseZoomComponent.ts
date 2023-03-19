@@ -34,7 +34,7 @@ export class IgeMouseZoomComponent extends IgeComponent {
 
 		if (this._enabled) {
 			// Listen for the mouse events we need to operate a mouse zoom
-			this._entity.mouseWheel(this._mouseWheel);
+			this._entity.pointerWheel(this._pointerWheel);
 		} else {
 			// Remove the zoom start data
 			delete this._zoomStartMouse;
@@ -45,15 +45,15 @@ export class IgeMouseZoomComponent extends IgeComponent {
 	}
 
 	/**
-	 * Handles the mouseDown event. Records the starting position of the
+	 * Handles the pointerDown event. Records the starting position of the
 	 * camera zoom and the current camera translation.
 	 * @param event
 	 * @private
 	 */
-	_mouseDown = (event: Event) => {
+	_pointerDown = (event: Event) => {
 		if (!this._enabled || event.igeViewport.id() !== this._entity.id()) { return; }
 
-		const curMousePos = ige.engine._mousePos;
+		const curMousePos = ige.engine._pointerPos;
 		this._zoomStartMouse = new IgePoint3d(
 			curMousePos.x,
 			curMousePos.y,
@@ -72,7 +72,7 @@ export class IgeMouseZoomComponent extends IgeComponent {
 	 * @param event
 	 * @private
 	 */
-	_mouseWheel = (event: WheelEvent) => {
+	_pointerWheel = (event: WheelEvent) => {
 		if (!this._enabled) { return; }
 
 		const zoomDelta = event.deltaY / 500;
@@ -88,7 +88,7 @@ export class IgeMouseZoomComponent extends IgeComponent {
 	 * @param event
 	 * @private
 	 */
-	_mouseUp = (event: Event) => {
+	_pointerUp = (event: Event) => {
 		if (!this._enabled) {
 			return;
 		}
@@ -97,7 +97,7 @@ export class IgeMouseZoomComponent extends IgeComponent {
 			return;
 		}
 
-		const curMousePos = ige.engine._mousePos;
+		const curMousePos = ige.engine._pointerPos;
 		const zoomCords = {
 			"x": -(this._zoomStartMouse.x - curMousePos.x) / 100,
 			"y": -(this._zoomStartMouse.y - curMousePos.y) / 100

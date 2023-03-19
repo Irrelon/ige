@@ -4,14 +4,14 @@ export class IgeUiButton extends IgeUiElement {
         super();
         this.classId = "IgeUiButton";
         this._autoCell = false;
-        this.on("mouseDown", () => {
+        this.on("pointerDown", () => {
             if (this._autoCell && this._cell !== null) {
                 // React to the mouse events
                 this.cell(this._cell + 1);
                 this.cacheDirty(true);
             }
         });
-        this.on("mouseUp", () => {
+        this.on("pointerUp", () => {
             if (this._autoCell && this._cell !== null) {
                 // React to the mouse events
                 this.cell(this._cell - 1);
@@ -31,7 +31,7 @@ export class IgeUiButton extends IgeUiElement {
         if (val !== undefined) {
             this._autoCell = val;
             if (val) {
-                this.mouseEventsActive(true);
+                this.pointerEventsActive(true);
             }
             return this;
         }
@@ -42,11 +42,11 @@ export class IgeUiButton extends IgeUiElement {
      * @returns {*}
      */
     click() {
-        if (this._mouseDown) {
-            this._mouseDown();
+        if (this._pointerDown) {
+            this._pointerDown();
         }
-        if (this._mouseUp) {
-            this._mouseUp();
+        if (this._pointerUp) {
+            this._pointerUp();
         }
         return this;
     }

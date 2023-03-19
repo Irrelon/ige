@@ -9,13 +9,13 @@ export class IgeScene2d extends IgeEntity {
 	classId = "IgeScene2d";
 	_shouldRender: boolean;
 	_autoSize: boolean;
-	_mouseAlwaysInside: boolean;
+	_pointerAlwaysInside: boolean;
 	_alwaysInView: boolean;
 
 	constructor () {
 		super();
 
-		this._mouseAlwaysInside = true;
+		this._pointerAlwaysInside = true;
 		this._alwaysInView = true;
 
 		this._shouldRender = true;

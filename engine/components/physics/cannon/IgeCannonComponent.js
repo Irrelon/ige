@@ -1,5 +1,5 @@
-"use strict";
-var IgeCannonComponent = IgeEventingClass.extend({
+import { IgeBehaviourType } from "../../../../enums/IgeBehaviourType.js";
+const IgeCannonComponent = IgeEventingClass.extend({
     classId: 'IgeCannonComponent',
     componentId: 'cannon',
     init: function (entity, options) {
@@ -22,7 +22,7 @@ var IgeCannonComponent = IgeEventingClass.extend({
         0.3 // restitution
         );
         // Add the cannon behaviour to the ige
-        ige.addBehaviour('cannonStep', this._behaviour);
+        ige.addBehaviour(IgeBehaviourType.preUpdate, 'cannonStep', this._behaviour);
     },
     /**
      * Gets / sets if the world should allow sleep or not.
@@ -80,11 +80,11 @@ var IgeCannonComponent = IgeEventingClass.extend({
         return this._entity;
     },
     createFloor: function (normalX, normalY, normalZ) {
-        var groundShape = new CANNON.Plane(new CANNON.Vec3(normalX, normalY, normalZ)), groundBody = new CANNON.RigidBody(0, groundShape, this._slipperyMaterial);
+        const groundShape = new CANNON.Plane(new CANNON.Vec3(normalX, normalY, normalZ)), groundBody = new CANNON.RigidBody(0, groundShape, this._slipperyMaterial);
         this._world.add(groundBody);
     },
     createBody: function (entity, body) {
-        var param, type, fixtureDef, tempShape, tempBod, i;
+        let param, type, fixtureDef, tempShape, tempBod, i;
         // Process body definition and create a cannon body for it
         switch (body.type) {
             case 'static':
@@ -158,7 +158,7 @@ var IgeCannonComponent = IgeEventingClass.extend({
     },
     enableDebug: function (canvasId) {
         // Define the debug drawing instance
-        var debugDraw = new this.b2DebugDraw();
+        const debugDraw = new this.b2DebugDraw();
         this._cannonDebug = true;
         this._debugCanvas = document.getElementById(canvasId);
         this._debugCtx = this._debugCanvas.getContext('2d');
@@ -180,7 +180,7 @@ var IgeCannonComponent = IgeEventingClass.extend({
      category:"method",
      } **/
     _behaviour: function (ctx) {
-        var self = ige.cannon, bodiesArr = self._world.bodies, bodyCount = bodiesArr.length, tempBod, entity;
+        let self = ige.cannon, bodiesArr = self._world.bodies, bodyCount = bodiesArr.length, tempBod, entity;
         if (self._active) {
             // Call the world step
             self._world.step(1 / 60);

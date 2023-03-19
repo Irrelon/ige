@@ -31,7 +31,7 @@ export class IgeUiDropDown extends IgeUiElement {
             .bottom(0)
             .textAlignY(1)
             .mount(this);
-        this.on("mouseUp", () => {
+        this.on("pointerUp", () => {
             // Toggle the list drop-down
             this.toggle();
         });
@@ -131,7 +131,7 @@ export class IgeUiDropDown extends IgeUiElement {
                     .allowFocus(true)
                     .allowActive(true)
                     .allowHover(true)
-                    .mouseUp(() => {
+                    .pointerUp(() => {
                     this.selectIndex(this.data("optionIndex"));
                 })
                     .mount(optionContainer);

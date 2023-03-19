@@ -4,6 +4,7 @@ import { IgeRect } from "./IgeRect";
 import { IgePoint3d } from "./IgePoint3d";
 import { IgeCanvasRenderingContext2d } from "@/types/IgeCanvasRenderingContext2d";
 import { IgeTween } from "./IgeTween";
+import { IgeBehaviourType } from "@/enums/IgeBehaviourType";
 
 /**
  * Creates a new camera that will be attached to a viewport.
@@ -243,7 +244,7 @@ export class IgeCamera extends IgeEntity {
 
 	update (ctx: IgeCanvasRenderingContext2d) {
 		// Process any behaviours assigned to the camera
-		this._processUpdateBehaviours(ctx);
+		this._processBehaviours(IgeBehaviourType.preUpdate, ctx);
 
 		// Check if we are tracking the translation value of a target
 		if (this._trackTranslateTarget) {
@@ -325,7 +326,7 @@ export class IgeCamera extends IgeEntity {
 	 */
 	tick (ctx: IgeCanvasRenderingContext2d) {
 		// Process any behaviours assigned to the camera
-		this._processTickBehaviours(ctx);
+		this._processBehaviours(IgeBehaviourType.preTick, ctx);
 
 		// Updated local transform matrix and then transform the context
 		this._localMatrix.transformRenderingContext(ctx);

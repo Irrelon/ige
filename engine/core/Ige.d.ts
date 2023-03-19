@@ -33,8 +33,8 @@ export declare class Ige {
     classStore: Record<string, import("../../types/GenericClass").GenericClass>;
     _dependencies: IgeDependencies;
     _watch: (string | IgeObjectWithValueProperty)[];
-    _mouseOverVp?: IgeViewport;
-    _mousePos: IgePoint3d;
+    _pointerOverVp?: IgeViewport;
+    _pointerPos: IgePoint3d;
     constructor();
     ready(): Promise<void>;
     /**

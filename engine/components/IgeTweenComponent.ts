@@ -5,6 +5,7 @@ import { IgeTween, IgeTweenDestination } from "../core/IgeTween";
 import { easingFunctions } from "../easing";
 import { IgeEntityBehaviourMethod } from "@/types/IgeEntityBehaviour";
 import type { IgeEngine } from "../core/IgeEngine";
+import { IgeBehaviourType } from "@/enums/IgeBehaviourType";
 
 /**
  * This component is already included in the IgeRoot (ige)
@@ -25,7 +26,7 @@ export class IgeTweenComponent extends IgeComponent<IgeEngine> {
 		this._tweens = [];
 
 		// Add the tween behaviour to the entity
-		entity.addBehaviour("tween", this.update);
+		entity.addBehaviour(IgeBehaviourType.preUpdate, "tween", this.update);
 	}
 
 	/**

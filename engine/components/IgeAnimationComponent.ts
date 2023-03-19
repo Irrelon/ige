@@ -3,6 +3,7 @@ import { IgeComponent } from "@/engine/core/IgeComponent";
 import { IgeEntity } from "@/engine/core/IgeEntity";
 import type { IgeCanvasRenderingContext2d } from "@/types/IgeCanvasRenderingContext2d";
 import type { IgeAnimation } from "@/types/IgeAnimation";
+import { IgeBehaviourType } from "@/enums/IgeBehaviourType";
 
 export interface IgeAnimationStartOptions {
 	onComplete?: (anim: IgeAnimation) => void;
@@ -41,7 +42,7 @@ export class IgeAnimationComponent extends IgeComponent {
 		this._anims = {};
 
 		// Add the animation behaviour to the entity
-		entity.addBehaviour("tween", this._update);
+		entity.addBehaviour(IgeBehaviourType.preUpdate, "tween", this._update);
 	}
 
 	/**

@@ -103,8 +103,8 @@ export class IgeUiTextBox extends IgeUiElement {
 
 		// On focus, create a temp input element in the DOM and focus to it
 		this.on("focus", focusFunc);
-		this.on("mouseUp", focusFunc);
-		this.on("mouseDown", () => {
+		this.on("pointerUp", focusFunc);
+		this.on("pointerDown", () => {
 			(ige.engine.components.input as IgeInputComponent).stopPropagation();
 		});
 

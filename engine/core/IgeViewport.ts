@@ -30,8 +30,8 @@ export class IgeViewport extends IgeUiEntity implements IgeCanRegisterById {
 	_idRegistered: boolean = false;
 	_lockDimension?: IgePoint3d;
 	_alwaysInView: boolean;
-	_mouseAlwaysInside: boolean;
-	_mousePos: IgePoint3d;
+	_pointerAlwaysInside: boolean;
+	_pointerPos: IgePoint3d;
 	_overflow: string;
 	_clipping: boolean;
 	_autoSize: boolean = false;
@@ -49,8 +49,8 @@ export class IgeViewport extends IgeUiEntity implements IgeCanRegisterById {
 		let width, height;
 		this._alwaysInView = true;
 
-		this._mouseAlwaysInside = true;
-		this._mousePos = new IgePoint3d(0, 0, 0);
+		this._pointerAlwaysInside = true;
+		this._pointerPos = new IgePoint3d(0, 0, 0);
 		this._overflow = "";
 		this._clipping = true;
 		this._bornTime = 0;
@@ -138,11 +138,11 @@ export class IgeViewport extends IgeUiEntity implements IgeCanRegisterById {
 	mousePos () {
 		// Viewport mouse position is calculated and assigned in the
 		// IgeInputComponent class.
-		return this._mousePos.clone();
+		return this._pointerPos.clone();
 	}
 
 	mousePosWorld () {
-		return this._transformPoint(this._mousePos.clone());
+		return this._transformPoint(this._pointerPos.clone());
 	}
 
 	/**

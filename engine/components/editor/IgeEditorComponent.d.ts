@@ -15,9 +15,9 @@ declare class IgeEditorComponent extends IgeComponent {
     _cacheTemplates: boolean;
     _interceptMouse: boolean;
     _activateKeyHandle?: IgeEventListenerObject | IgeMultiEventListenerObject;
-    _mouseUpHandle?: IgeEventListenerObject | IgeMultiEventListenerObject;
-    _mouseDownHandle?: IgeEventListenerObject | IgeMultiEventListenerObject;
-    _mouseMoveHandle?: IgeEventListenerObject | IgeMultiEventListenerObject;
+    _pointerUpHandle?: IgeEventListenerObject | IgeMultiEventListenerObject;
+    _pointerDownHandle?: IgeEventListenerObject | IgeMultiEventListenerObject;
+    _pointerMoveHandle?: IgeEventListenerObject | IgeMultiEventListenerObject;
     _contextMenuHandle?: IgeEventListenerObject | IgeMultiEventListenerObject;
     _enabled: boolean;
     _show: boolean;

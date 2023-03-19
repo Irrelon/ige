@@ -29,34 +29,34 @@ export class IgeUiElement extends IgeUiEntity {
 		if (!(ige.engine.components.ui as IgeUiManagerComponent)) throw new Error("Engine UI component has not been added to the engine, please add the component IgeUiManagerComponent to the engine");
 		(ige.engine.components.ui as IgeUiManagerComponent).registerElement(this);
 
-		this.on("mouseOver", () => {
+		this.on("pointerOver", () => {
 			if (this._allowHover) {
 				this._updateStyle();
 				(ige.engine.components.input as IgeInputComponent).stopPropagation();
 			} else {
-				this._mouseStateOver = false;
+				this._pointerStateOver = false;
 			}
 		});
 
-		this.on("mouseOut", () => {
+		this.on("pointerOut", () => {
 			if (this._allowHover) {
 				this._updateStyle();
 				(ige.engine.components.input as IgeInputComponent).stopPropagation();
 			} else {
-				this._mouseStateOver = false;
+				this._pointerStateOver = false;
 			}
 		});
 
-		this.on("mouseDown", () => {
+		this.on("pointerDown", () => {
 			if (this._allowActive) {
 				this._updateStyle();
 				(ige.engine.components.input as IgeInputComponent).stopPropagation();
 			} else {
-				this._mouseStateDown = false;
+				this._pointerStateDown = false;
 			}
 		});
 
-		this.on("mouseUp", () => {
+		this.on("pointerUp", () => {
 			if (this._allowFocus) {
 				// Try to focus the entity
 				if (!this.focus()) {
@@ -70,7 +70,7 @@ export class IgeUiElement extends IgeUiEntity {
 		});
 
 		// Enable mouse events on this entity by default
-		this.mouseEventsActive(true);
+		this.pointerEventsActive(true);
 	}
 
 	allowHover (val: boolean): this;
@@ -165,13 +165,13 @@ export class IgeUiElement extends IgeUiEntity {
 			this._processStyle("#" + this._id, "focus");
 		}
 
-		if (this._mouseStateOver) {
+		if (this._pointerStateOver) {
 			this._processStyle(this.classId, "hover");
 			this._processStyle(this._styleClass, "hover");
 			this._processStyle("#" + this._id, "hover");
 		}
 
-		if (this._mouseStateDown) {
+		if (this._pointerStateDown) {
 			this._processStyle(this.classId, "active");
 			this._processStyle(this._styleClass, "active");
 			this._processStyle("#" + this._id, "active");

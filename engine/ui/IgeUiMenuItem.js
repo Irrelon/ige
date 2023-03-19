@@ -14,14 +14,14 @@ export class IgeUiMenuItem extends IgeUiElement {
             if (menuData.id) {
                 this.id(menuData.id);
             }
-            if (menuData.mouseUp) {
-                this.mouseUp(menuData.mouseUp);
+            if (menuData.pointerUp) {
+                this.pointerUp(menuData.pointerUp);
             }
-            if (menuData.mouseOver) {
-                this.mouseOver(menuData.mouseOver);
+            if (menuData.pointerOver) {
+                this.pointerOver(menuData.pointerOver);
             }
-            if (menuData.mouseOut) {
-                this.mouseOut(menuData.mouseOut);
+            if (menuData.pointerOut) {
+                this.pointerOut(menuData.pointerOut);
             }
             this._labelEntity = new IgeFontEntity()
                 .id(this.id() + "_label")

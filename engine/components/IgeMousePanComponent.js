@@ -28,16 +28,16 @@ export class IgeMousePanComponent extends IgeComponent {
             return this._startThreshold;
         };
         /**
-         * Handles the mouseDown event. Records the starting position of the
+         * Handles the pointerDown event. Records the starting position of the
          * camera pan and the current camera translation.
          * @param event
          * @private
          */
-        this._mouseDown = (event) => {
+        this._pointerDown = (event) => {
             if (!(!this._panStarted && this._enabled && event.igeViewport.id() === this._entity.id())) {
                 return;
             }
-            const curMousePos = ige.engine._mousePos;
+            const curMousePos = ige.engine._pointerPos;
             this._panStartMouse = curMousePos.clone();
             this._panStartCamera = new IgePoint2d(this._entity.camera._translate.x, this._entity.camera._translate.y);
             this._panPreStart = true;
@@ -49,14 +49,14 @@ export class IgeMousePanComponent extends IgeComponent {
          * @param event
          * @private
          */
-        this._mouseMove = (event) => {
+        this._pointerMove = (event) => {
             if (!this._enabled) {
                 return;
             }
             if (!this._panStartMouse || !this._panStartCamera) {
                 return;
             }
-            const curMousePos = ige.engine._mousePos;
+            const curMousePos = ige.engine._pointerPos;
             const panCords = {
                 "x": this._panStartMouse.x - curMousePos.x,
                 "y": this._panStartMouse.y - curMousePos.y
@@ -103,7 +103,7 @@ export class IgeMousePanComponent extends IgeComponent {
          * @param event
          * @private
          */
-        this._mouseUp = (event) => {
+        this._pointerUp = (event) => {
             if (!this._enabled) {
                 return;
             }
@@ -116,7 +116,7 @@ export class IgeMousePanComponent extends IgeComponent {
             if (!this._panStartMouse || !this._panStartCamera) {
                 return;
             }
-            const curMousePos = ige.engine._mousePos;
+            const curMousePos = ige.engine._pointerPos;
             const panCords = {
                 "x": this._panStartMouse.x - curMousePos.x,
                 "y": this._panStartMouse.y - curMousePos.y
@@ -177,9 +177,9 @@ export class IgeMousePanComponent extends IgeComponent {
         this._panStarted = false;
         if (this._enabled) {
             // Listen for the mouse events we need to operate a mouse pan
-            this._entity.mouseDown(this._mouseDown);
-            this._entity.mouseMove(this._mouseMove);
-            this._entity.mouseUp(this._mouseUp);
+            this._entity.pointerDown(this._pointerDown);
+            this._entity.pointerMove(this._pointerMove);
+            this._entity.pointerUp(this._pointerUp);
         }
         else {
             // Remove the pan start data

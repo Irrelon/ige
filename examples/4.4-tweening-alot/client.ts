@@ -73,8 +73,8 @@ export class Client extends IgeBaseClass implements IgeCanInit {
 				.texture(ige.textures.get("fairy"))
 				.drawBounds(false)
 				.drawBoundsData(false)
-				.mouseOver(overFunc)
-				.mouseOut(outFunc)
+				.pointerOver(overFunc)
+				.pointerOut(outFunc)
 				.mount(scene1);
 		}
 	}

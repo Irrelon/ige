@@ -57,7 +57,7 @@ export class IgeUiWindow extends IgeUiElement {
 			.top(8)
 			.value("X")
 			.color("#000000")
-			.mouseUp(function () {
+			.pointerUp(function () {
 				if (!self.emit("beforeClose")) {
 					self.destroy();
 				}
@@ -72,7 +72,7 @@ export class IgeUiWindow extends IgeUiElement {
 
 		if (self._draggable) {
 			self._dragging = true;
-			self._opStartMouse = $ige.engine._mousePos.clone();
+			self._opStartMouse = $ige.engine._pointerPos.clone();
 			self._opStartTranslate = {
 				x: self._translate.x,
 				y: self._translate.y
@@ -92,7 +92,7 @@ export class IgeUiWindow extends IgeUiElement {
 
 		if (self._draggable && self._dragging) {
 			// Update window co-ordinates
-			curMousePos = $ige.engine._mousePos;
+			curMousePos = $ige.engine._pointerPos;
 
 			panCordsX = self._opStartMouse.x - curMousePos.x;
 			panCordsY = self._opStartMouse.y - curMousePos.y;
@@ -125,13 +125,13 @@ export class IgeUiWindow extends IgeUiElement {
 		if (val) {
 			self._draggable = true;
 
-			this._topNav.on("mouseDown", self._dragStart);
+			this._topNav.on("pointerDown", self._dragStart);
 			$ige.engine.input.on("preMouseUp", self._dragEnd);
 			$ige.engine.input.on("preMouseMove", self._dragMove);
 		} else {
 			self._draggable = false;
 
-			this._topNav.off("mouseDown", self._dragStart);
+			this._topNav.off("pointerDown", self._dragStart);
 			$ige.engine.input.off("preMouseUp", self._dragEnd);
 			$ige.engine.input.off("preMouseMove", self._dragMove);
 		}

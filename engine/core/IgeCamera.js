@@ -1,5 +1,6 @@
 import { IgeEntity } from "./IgeEntity.js";
 import { IgeTween } from "./IgeTween.js";
+import { IgeBehaviourType } from "../../enums/IgeBehaviourType.js";
 /**
  * Creates a new camera that will be attached to a viewport.
  */
@@ -204,7 +205,7 @@ export class IgeCamera extends IgeEntity {
     }
     update(ctx) {
         // Process any behaviours assigned to the camera
-        this._processUpdateBehaviours(ctx);
+        this._processBehaviours(IgeBehaviourType.preUpdate, ctx);
         // Check if we are tracking the translation value of a target
         if (this._trackTranslateTarget) {
             const targetEntity = this._trackTranslateTarget;
@@ -273,7 +274,7 @@ export class IgeCamera extends IgeEntity {
      */
     tick(ctx) {
         // Process any behaviours assigned to the camera
-        this._processTickBehaviours(ctx);
+        this._processBehaviours(IgeBehaviourType.preTick, ctx);
         // Updated local transform matrix and then transform the context
         this._localMatrix.transformRenderingContext(ctx);
     }

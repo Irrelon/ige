@@ -2,6 +2,7 @@
 import { ige } from "../instance.js";
 import { IgePoint3d } from "../core/IgePoint3d.js";
 import { IgeComponent } from "../core/IgeComponent.js";
+import { IgeBehaviourType } from "../../enums/IgeBehaviourType.js";
 export class IgeVelocityComponent extends IgeComponent {
     constructor(entity, options) {
         super(entity, options);
@@ -124,7 +125,7 @@ export class IgeVelocityComponent extends IgeComponent {
         this._velocity = new IgePoint3d(0, 0, 0);
         this._friction = new IgePoint3d(1, 1, 1);
         // Add the velocity behaviour to the entity
-        entity.addBehaviour("velocity", this._behaviour);
+        entity.addBehaviour(IgeBehaviourType.preUpdate, "velocity", this._behaviour);
     }
     byAngleAndPower(radians, power, relative = false) {
         const vel = this._velocity, x = Math.cos(radians) * power, y = Math.sin(radians) * power, z = 0;

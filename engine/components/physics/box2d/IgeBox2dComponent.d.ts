@@ -9,7 +9,7 @@ import type { IgeBox2dFixtureDef } from "@/types/IgeBox2dFixtureDef";
 import type { IgeBox2dContactListenerCallback } from "@/types/IgeBox2dContactListenerCallback";
 import type { IgeBox2dContactPostSolveCallback, IgeBox2dContactPreSolveCallback } from "@/types/IgeBox2dContactSolverCallback";
 import type { IgeEntityBehaviourMethod } from "@/types/IgeEntityBehaviour";
-import { Box2D } from "./index";
+import { Box2D } from "@/engine/components/physics/box2d/lib_box2d";
 /**
  * The engine's Box2D component class.
  */
@@ -28,24 +28,24 @@ export declare class IgeBox2dComponent extends IgeComponent<IgeEngine> {
     _box2dDebug: boolean;
     _updateCallback?: () => void;
     _world?: Box2D.Dynamics.b2World;
-    b2Color: any;
-    b2Vec2: any;
-    b2Math: any;
-    b2Shape: any;
-    b2BodyDef: any;
-    b2Body: any;
-    b2FixtureDef: any;
-    b2Fixture: any;
-    b2World: any;
-    b2MassData: any;
-    b2PolygonShape: any;
-    b2CircleShape: any;
-    b2DebugDraw: any;
-    b2ContactListener: any;
+    b2Color: typeof Box2D.Common.b2Color;
+    b2Vec2: typeof Box2D.Common.Math.b2Vec2;
+    b2Math: typeof Box2D.Common.Math.b2Math;
+    b2Shape: typeof Box2D.Collision.Shapes.b2Shape;
+    b2BodyDef: typeof Box2D.Dynamics.b2BodyDef;
+    b2Body: typeof Box2D.Dynamics.b2Body;
+    b2FixtureDef: typeof Box2D.Dynamics.b2FixtureDef;
+    b2Fixture: typeof Box2D.Dynamics.b2Fixture;
+    b2World: typeof Box2D.Dynamics.b2World;
+    b2MassData: typeof Box2D.Collision.Shapes.b2MassData;
+    b2PolygonShape: typeof Box2D.Collision.Shapes.b2PolygonShape;
+    b2CircleShape: typeof Box2D.Collision.Shapes.b2CircleShape;
+    b2DebugDraw: typeof Box2D.Dynamics.b2DebugDraw;
+    b2ContactListener: typeof Box2D.Dynamics.b2ContactListener;
     b2Distance: any;
-    b2Contact: any;
-    b2FilterData: any;
-    b2DistanceJointDef: any;
+    b2Contact: typeof Box2D.Dynamics.Contacts.b2Contact;
+    b2FilterData: typeof Box2D.Dynamics.b2FilterData;
+    b2DistanceJointDef: typeof Box2D.Dynamics.Joints.b2DistanceJointDef;
     constructor(entity: IgeEngine, options?: any);
     useWorker(val?: boolean): boolean | this | undefined;
     /**
@@ -83,7 +83,7 @@ export declare class IgeBox2dComponent extends IgeComponent<IgeEngine> {
      * Gets the current Box2d world object.
      * @return {b2World}
      */
-    world(): any;
+    world(): Box2D.Dynamics.b2World | undefined;
     /**
      * Creates the Box2d world.
      * @return {*}
@@ -94,7 +94,7 @@ export declare class IgeBox2dComponent extends IgeComponent<IgeEngine> {
      * @param params
      * @return {b2FixtureDef}
      */
-    createFixture(params: IgeBox2dFixtureDef): any;
+    createFixture(params: IgeBox2dFixtureDef): Box2D.Dynamics.b2FixtureDef;
     /**
      * Creates a Box2d body and attaches it to an IGE entity
      * based on the supplied body definition.

@@ -23,24 +23,24 @@ export declare class IgeMouseZoomComponent extends IgeComponent {
      */
     enabled(val?: boolean): any;
     /**
-     * Handles the mouseDown event. Records the starting position of the
+     * Handles the pointerDown event. Records the starting position of the
      * camera zoom and the current camera translation.
      * @param event
      * @private
      */
-    _mouseDown: (event: Event) => void;
+    _pointerDown: (event: Event) => void;
     /**
      * Handles the mouse wheel event. Scales the camera as the wheel goes
      * positive or negative delta.
      * @param event
      * @private
      */
-    _mouseWheel: (event: WheelEvent) => void;
+    _pointerWheel: (event: WheelEvent) => void;
     /**
      * Handles the mouse up event. Finishes the camera scale and
      * removes the starting zoom data.
      * @param event
      * @private
      */
-    _mouseUp: (event: Event) => void;
+    _pointerUp: (event: Event) => void;
 }

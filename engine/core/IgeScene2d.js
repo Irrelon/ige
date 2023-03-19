@@ -123,7 +123,7 @@ export class IgeScene2d extends IgeEntity {
                 arr[arrCount]._resizeEvent(event);
             }
         };
-        this._mouseAlwaysInside = true;
+        this._pointerAlwaysInside = true;
         this._alwaysInView = true;
         this._shouldRender = true;
         this._autoSize = true;

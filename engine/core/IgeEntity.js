@@ -12,6 +12,7 @@ import { IgeMountMode } from "../../enums/IgeMountMode.js";
 import { IgeStreamMode } from "../../enums/IgeStreamMode.js";
 import { IgeIsometricDepthSortMode } from "../../enums/IgeIsometricDepthSortMode.js";
 import { IgeEntityRenderMode } from "../../enums/IgeEntityRenderMode.js";
+import { IgeBehaviourType } from "../../enums/IgeBehaviourType.js";
 /**
  * Creates an entity and handles the entity's life cycle and
  * all related entity actions / methods.
@@ -35,7 +36,7 @@ export class IgeEntity extends IgeObject {
          * move event is triggered.
          * @param {Function=} callback
          * @example #Hook the mouse move event and stop it propagating further down the scenegraph
-         *     entity.mouseMove(function (event, control) {
+         *     entity.pointerMove(function (event, control) {
          *         // Mouse moved with button
          *         console.log('Mouse move button: ' + event.button);
          *
@@ -48,20 +49,20 @@ export class IgeEntity extends IgeObject {
          *     });
          * @return {*}
          */
-        this.mouseMove = (callback) => {
+        this.pointerMove = (callback) => {
             if (callback) {
-                this._mouseMove = callback;
-                this._mouseEventsActive = true;
+                this._pointerMove = callback;
+                this._pointerEventsActive = true;
                 return this;
             }
-            return this._mouseMove;
+            return this._pointerMove;
         };
         /**
          * Gets / sets the callback that is fired when a mouse
          * down event is triggered.
          * @param {Function=} callback
          * @example #Hook the mouse down event and stop it propagating further down the scenegraph
-         *     entity.mouseDown(function (event, control) {
+         *     entity.pointerDown(function (event, control) {
          *         // Mouse down with button
          *         console.log('Mouse down button: ' + event.button);
          *
@@ -74,20 +75,20 @@ export class IgeEntity extends IgeObject {
          *     });
          * @return {*}
          */
-        this.mouseDown = (callback) => {
+        this.pointerDown = (callback) => {
             if (callback) {
-                this._mouseDown = callback;
-                this._mouseEventsActive = true;
+                this._pointerDown = callback;
+                this._pointerEventsActive = true;
                 return this;
             }
-            return this._mouseDown;
+            return this._pointerDown;
         };
         /**
          * Gets / sets the callback that is fired when a mouse
          * wheel event is triggered.
          * @param {Function=} callback
          * @example #Hook the mouse wheel event and stop it propagating further down the scenegraph
-         *     entity.mouseWheel(function (event, control) {
+         *     entity.pointerWheel(function (event, control) {
          *         // Mouse wheel with button
          *         console.log('Mouse wheel button: ' + event.button);
          *         console.log('Mouse wheel delta: ' + event.wheelDelta);
@@ -101,13 +102,13 @@ export class IgeEntity extends IgeObject {
          *     });
          * @return {*}
          */
-        this.mouseWheel = (callback) => {
+        this.pointerWheel = (callback) => {
             if (callback) {
-                this._mouseWheel = callback;
-                this._mouseEventsActive = true;
+                this._pointerWheel = callback;
+                this._pointerEventsActive = true;
                 return this;
             }
-            return this._mouseWheel;
+            return this._pointerWheel;
         };
         /**
          * Gets / sets the shape / polygon that the mouse events
@@ -127,24 +128,24 @@ export class IgeEntity extends IgeObject {
          */
         this._handleMouseIn = (event, evc, data) => {
             // Check if the mouse move is a mouse over
-            if (!this._mouseStateOver) {
-                this._mouseStateOver = true;
-                if (this._mouseOver) {
-                    this._mouseOver(event, evc, data);
+            if (!this._pointerStateOver) {
+                this._pointerStateOver = true;
+                if (this._pointerOver) {
+                    this._pointerOver(event, evc, data);
                 }
                 /**
                  * Fires when the mouse moves over the entity.
-                 * @event IgeEntity#mouseOver
+                 * @event IgeEntity#pointerOver
                  * @param {Object} The DOM event object.
                  * @param {Object} The IGE event control object.
                  * @param {*} Any further event data.
                  */
-                this.emit("mouseOver", [event, evc, data]);
+                this.emit("pointerOver", [event, evc, data]);
             }
-            if (this._mouseMove) {
-                this._mouseMove(event, evc, data);
+            if (this._pointerMove) {
+                this._pointerMove(event, evc, data);
             }
-            this.emit("mouseMove", [event, evc, data]);
+            this.emit("pointerMove", [event, evc, data]);
         };
         /**
          * Handler method that determines if a mouse-out event
@@ -154,23 +155,23 @@ export class IgeEntity extends IgeObject {
         this._handleMouseOut = (event, evc, data) => {
             // The mouse went away from this entity so
             // set mouse-down to false, regardless of the situation
-            this._mouseStateDown = false;
+            this._pointerStateDown = false;
             // Check if the mouse move is a mouse out
-            if (!this._mouseStateOver) {
+            if (!this._pointerStateOver) {
                 return;
             }
-            this._mouseStateOver = false;
-            if (this._mouseOut) {
-                this._mouseOut(event, evc, data);
+            this._pointerStateOver = false;
+            if (this._pointerOut) {
+                this._pointerOut(event, evc, data);
             }
             /**
              * Fires when the mouse moves away from the entity.
-             * @event IgeEntity#mouseOut
+             * @event IgeEntity#pointerOut
              * @param {Object} The DOM event object.
              * @param {Object} The IGE event control object.
              * @param {*} Any further event data.
              */
-            this.emit("mouseOut", [event, evc, data]);
+            this.emit("pointerOut", [event, evc, data]);
         };
         /**
          * Handler method that determines if a mouse-wheel event
@@ -178,17 +179,17 @@ export class IgeEntity extends IgeObject {
          * @private
          */
         this._handleMouseWheel = (event, evc, data) => {
-            if (this._mouseWheel) {
-                this._mouseWheel(event, evc, data);
+            if (this._pointerWheel) {
+                this._pointerWheel(event, evc, data);
             }
             /**
              * Fires when the mouse wheel is moved over the entity.
-             * @event IgeEntity#mouseWheel
+             * @event IgeEntity#pointerWheel
              * @param {Object} The DOM event object.
              * @param {Object} The IGE event control object.
              * @param {*} Any further event data.
              */
-            this.emit("mouseWheel", [event, evc, data]);
+            this.emit("pointerWheel", [event, evc, data]);
         };
         /**
          * Handler method that determines if a mouse-up event
@@ -197,18 +198,18 @@ export class IgeEntity extends IgeObject {
          */
         this._handleMouseUp = (event, evc, data) => {
             // Reset the mouse-down flag
-            this._mouseStateDown = false;
-            if (this._mouseUp) {
-                this._mouseUp(event, evc, data);
+            this._pointerStateDown = false;
+            if (this._pointerUp) {
+                this._pointerUp(event, evc, data);
             }
             /**
              * Fires when a mouse up occurs on the entity.
-             * @event IgeEntity#mouseUp
+             * @event IgeEntity#pointerUp
              * @param {Object} The DOM event object.
              * @param {Object} The IGE event control object.
              * @param {*} Any further event data.
              */
-            this.emit("mouseUp", [event, evc, data]);
+            this.emit("pointerUp", [event, evc, data]);
         };
         /**
          * Handler method that determines if a mouse-down event
@@ -216,19 +217,19 @@ export class IgeEntity extends IgeObject {
          * @private
          */
         this._handleMouseDown = (event, evc, data) => {
-            if (!this._mouseStateDown) {
-                this._mouseStateDown = true;
-                if (this._mouseDown) {
-                    this._mouseDown(event, evc, data);
+            if (!this._pointerStateDown) {
+                this._pointerStateDown = true;
+                if (this._pointerDown) {
+                    this._pointerDown(event, evc, data);
                 }
                 /**
                  * Fires when a mouse down occurs on the entity.
-                 * @event IgeEntity#mouseDown
+                 * @event IgeEntity#pointerDown
                  * @param {Object} The DOM event object.
                  * @param {Object} The IGE event control object.
                  * @param {*} Any further event data.
                  */
-                this.emit("mouseDown", [event, evc, data]);
+                this.emit("pointerDown", [event, evc, data]);
             }
         };
         /**
@@ -242,21 +243,21 @@ export class IgeEntity extends IgeObject {
          */
         this._mouseInTrigger = (evc, eventData) => {
             const input = ige.engine.components.input;
-            if (input.mouseMove) {
+            if (input.pointerMove) {
                 // There is a mouse move event
-                this._handleMouseIn(input.mouseMove, evc, eventData);
+                this._handleMouseIn(input.pointerMove, evc, eventData);
             }
-            if (input.mouseDown) {
+            if (input.pointerDown) {
                 // There is a mouse down event
-                this._handleMouseDown(input.mouseDown, evc, eventData);
+                this._handleMouseDown(input.pointerDown, evc, eventData);
             }
-            if (input.mouseUp) {
+            if (input.pointerUp) {
                 // There is a mouse up event
-                this._handleMouseUp(input.mouseUp, evc, eventData);
+                this._handleMouseUp(input.pointerUp, evc, eventData);
             }
-            if (input.mouseWheel) {
+            if (input.pointerWheel) {
                 // There is a mouse wheel event
-                this._handleMouseWheel(input.mouseWheel, evc, eventData);
+                this._handleMouseWheel(input.pointerWheel, evc, eventData);
             }
         };
         /**
@@ -588,7 +589,7 @@ export class IgeEntity extends IgeObject {
         if (!viewport) {
             return new IgePoint3d(0, 0, 0);
         }
-        const mp = viewport._mousePos.clone();
+        const mp = viewport._pointerPos.clone();
         // if (this._ignoreCamera) {
         //      const cam = ige.engine._currentCamera;
         // 	    mp.thisMultiply(1 / cam._scale.x, 1 / cam._scale.y, 1 / cam._scale.z);
@@ -618,7 +619,7 @@ export class IgeEntity extends IgeObject {
     mousePosAbsolute(viewport) {
         viewport = viewport || ige.engine._currentViewport;
         if (viewport) {
-            const mp = viewport._mousePos.clone();
+            const mp = viewport._pointerPos.clone();
             this._transformPoint(mp);
             return mp;
         }
@@ -1269,12 +1270,12 @@ export class IgeEntity extends IgeObject {
         }
         return thisX + thisY + this._translate.z > otherX + otherY + otherObject._translate.z;
     }
-    mouseEventsActive(val) {
+    pointerEventsActive(val) {
         if (val !== undefined) {
-            this._mouseEventsActive = val;
+            this._pointerEventsActive = val;
             return this;
         }
-        return this._mouseEventsActive;
+        return this._pointerEventsActive;
     }
     /**
      * Sets the _ignoreCamera internal flag to the value passed for this
@@ -1343,12 +1344,12 @@ export class IgeEntity extends IgeObject {
             (_a = this._localMatrix.getInverse()) === null || _a === void 0 ? void 0 : _a.transformRenderingContext(ctx);
         }
     }
-    mouseAlwaysInside(val) {
+    pointerAlwaysInside(val) {
         if (val !== undefined) {
-            this._mouseAlwaysInside = val;
+            this._pointerAlwaysInside = val;
             return this;
         }
-        return this._mouseAlwaysInside;
+        return this._pointerAlwaysInside;
     }
     /**
      * Processes the actions required each render frame.
@@ -1363,19 +1364,19 @@ export class IgeEntity extends IgeObject {
         if (!(!this._hidden && this._inView && (!this._parent || this._parent._inView) && !this._streamJustCreated)) {
             return;
         }
-        this._processTickBehaviours(ctx);
-        if (this._mouseEventsActive) {
+        this._processBehaviours(IgeBehaviourType.preTick, ctx);
+        if (this._pointerEventsActive) {
             const input = ige.engine.components.input;
             if (this._processTriggerHitTests()) {
                 // Point is inside the trigger bounds
                 input.queueEvent(this._mouseInTrigger, null);
             }
             else {
-                if (input.mouseMove) {
+                if (input.pointerMove) {
                     // There is a mouse move event, but we are not inside the entity
                     // so fire a mouse out event (_handleMouseOut will check if the
                     // mouse WAS inside before firing an out event).
-                    this._handleMouseOut(input.mouseMove);
+                    this._handleMouseOut(input.pointerMove);
                 }
             }
         }
@@ -1418,7 +1419,7 @@ export class IgeEntity extends IgeObject {
         if (!ige.engine._currentViewport) {
             return false;
         }
-        if (this._mouseAlwaysInside) {
+        if (this._pointerAlwaysInside) {
             return true;
         }
         const mp = this.mousePosWorld();
@@ -1886,77 +1887,77 @@ export class IgeEntity extends IgeObject {
             });
         }
     }
-    mouseOver(callback) {
+    pointerOver(callback) {
         if (callback) {
-            this._mouseOver = callback;
-            this._mouseEventsActive = true;
+            this._pointerOver = callback;
+            this._pointerEventsActive = true;
             return this;
         }
-        return this._mouseOver;
+        return this._pointerOver;
     }
-    mouseOut(callback) {
+    pointerOut(callback) {
         if (callback) {
-            this._mouseOut = callback;
-            this._mouseEventsActive = true;
+            this._pointerOut = callback;
+            this._pointerEventsActive = true;
             return this;
         }
-        return this._mouseOut;
+        return this._pointerOut;
     }
-    mouseUp(callback) {
+    pointerUp(callback) {
         if (callback) {
-            this._mouseUp = callback;
-            this._mouseEventsActive = true;
+            this._pointerUp = callback;
+            this._pointerEventsActive = true;
             return this;
         }
-        return this._mouseUp;
+        return this._pointerUp;
     }
     /**
      * Removes the callback that is fired when a mouse
      * move event is triggered.
      */
-    mouseMoveOff() {
-        delete this._mouseMove;
+    pointerMoveOff() {
+        delete this._pointerMove;
         return this;
     }
     /**
      * Removes the callback that is fired when a mouse
      * over event is triggered.
      */
-    mouseOverOff() {
-        delete this._mouseOver;
+    pointerOverOff() {
+        delete this._pointerOver;
         return this;
     }
     /**
      * Removes the callback that is fired when a mouse
      * out event is triggered.
      */
-    mouseOutOff() {
-        delete this._mouseOut;
+    pointerOutOff() {
+        delete this._pointerOut;
         return this;
     }
     /**
      * Removes the callback that is fired when a mouse
      * up event is triggered.
      */
-    mouseUpOff() {
-        delete this._mouseUp;
+    pointerUpOff() {
+        delete this._pointerUp;
         return this;
     }
     /**
      * Removes the callback that is fired when a mouse
      * down event is triggered if the listener was registered
-     * via the mouseDown() method.
+     * via the pointerDown() method.
      */
-    mouseDownOff() {
-        delete this._mouseDown;
+    pointerDownOff() {
+        delete this._pointerDown;
         return this;
     }
     /**
      * Removes the callback that is fired when a mouse
      * wheel event is triggered.
      */
-    mouseWheelOff() {
-        delete this._mouseWheel;
+    pointerWheelOff() {
+        delete this._pointerWheel;
         return this;
     }
     triggerPolygon(setting) {
@@ -2496,7 +2497,7 @@ export class IgeEntity extends IgeObject {
             // Remove the stream data cache
             this._streamDataCache = "";
             // Process any behaviours assigned to the entity
-            this._processUpdateBehaviours(ctx, tickDelta);
+            this._processBehaviours(IgeBehaviourType.preUpdate, ctx, tickDelta);
             // Process velocity
             if (this._velocity.x || this._velocity.y) {
                 this._translate.x += (this._velocity.x / 16) * tickDelta;

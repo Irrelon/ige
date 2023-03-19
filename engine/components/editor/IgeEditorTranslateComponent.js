@@ -65,9 +65,9 @@ class IgeEditorTranslateComponent extends IgeComponent {
                         }
                         else {
                             // Listen for the mouse events we need to operate
-                            this._ige.engine.components.input.on("mouseDown", (event) => { self._mouseDown(event); });
-                            this._ige.engine.components.input.on("mouseMove", (event) => { self._mouseMove(event); });
-                            this._ige.engine.components.input.on("mouseUp", (event) => { self._mouseUp(event); });
+                            this._ige.engine.components.input.on("pointerDown", (event) => { self._pointerDown(event); });
+                            this._ige.engine.components.input.on("pointerMove", (event) => { self._pointerMove(event); });
+                            this._ige.engine.components.input.on("pointerUp", (event) => { self._pointerUp(event); });
                             this.log("Editor: Mouse translate enabled");
                         }
                     }
@@ -82,15 +82,15 @@ class IgeEditorTranslateComponent extends IgeComponent {
             return this._enabled;
         };
         /**
-         * Handles the mouseDown event. Records the starting position of the
+         * Handles the pointerDown event. Records the starting position of the
          * operation and the current operation translation.
          * @param event
          * @private
          */
-        this._mouseDown = (event) => {
+        this._pointerDown = (event) => {
             if (!this._opStarted && this._enabled && this._targetEntity) {
                 // Record the mouse down position - pre-start
-                const curMousePos = this._ige._mousePos;
+                const curMousePos = this._ige._pointerPos;
                 this._opStartMouse = curMousePos.clone();
                 this._opStartTranslate = {
                     "x": this._targetEntity._translate.x,
@@ -107,11 +107,11 @@ class IgeEditorTranslateComponent extends IgeComponent {
          * @param event
          * @private
          */
-        this._mouseMove = (event) => {
+        this._pointerMove = (event) => {
             if (this._enabled && this._targetEntity) {
                 // Pan the camera if the mouse is down
                 if (this._opStartMouse) {
-                    let curMousePos = this._ige._mousePos, panCords = {
+                    let curMousePos = this._ige._pointerPos, panCords = {
                         "x": this._opStartMouse.x - curMousePos.x,
                         "y": this._opStartMouse.y - curMousePos.y
                     }, distX = Math.abs(panCords.x), distY = Math.abs(panCords.y), panFinalX = this._opStartTranslate.x - (panCords.x / this._ige._currentViewport.camera._scale.x), panFinalY = this._opStartTranslate.y - (panCords.y / this._ige._currentViewport.camera._scale.y);
@@ -158,12 +158,12 @@ class IgeEditorTranslateComponent extends IgeComponent {
          * @param event
          * @private
          */
-        this._mouseUp = (event) => {
+        this._pointerUp = (event) => {
             if (this._enabled && this._targetEntity) {
                 // End the pan
                 if (this._opStarted) {
                     if (this._opStartMouse) {
-                        let curMousePos = this._ige._mousePos, panCords = {
+                        let curMousePos = this._ige._pointerPos, panCords = {
                             "x": this._opStartMouse.x - curMousePos.x,
                             "y": this._opStartMouse.y - curMousePos.y
                         }, panFinalX = this._opStartTranslate.x - (panCords.x / this._ige._currentViewport.camera._scale.x), panFinalY = this._opStartTranslate.y - (panCords.y / this._ige._currentViewport.camera._scale.y);

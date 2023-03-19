@@ -37,25 +37,25 @@ declare class IgeEditorRotateComponent extends IgeComponent {
      */
     enabled: (val: any) => any;
     /**
-     * Handles the mouseDown event. Records the starting position of the
+     * Handles the pointerDown event. Records the starting position of the
      * operation and the current operation translation.
      * @param event
      * @private
      */
-    _mouseDown: (event: any) => void;
+    _pointerDown: (event: any) => void;
     /**
      * Handles the mouse move event. Rotates the entity as the mouse
      * moves across the screen.
      * @param event
      * @private
      */
-    _mouseMove: (event: any) => void;
+    _pointerMove: (event: any) => void;
     /**
      * Handles the mouse up event. Finishes the entity rotate and
      * removes the starting operation data.
      * @param event
      * @private
      */
-    _mouseUp: (event: any) => void;
+    _pointerUp: (event: any) => void;
 }
 export default IgeEditorRotateComponent;

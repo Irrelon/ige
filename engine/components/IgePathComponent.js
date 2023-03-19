@@ -6,6 +6,7 @@ import { IgeMountMode } from "../../enums/IgeMountMode.js";
 import { IgePoint3d } from "../core/IgePoint3d.js";
 import { IgePathNode } from "../core/IgePathNode.js";
 import { IgeEntityRenderMode } from "../../enums/IgeEntityRenderMode.js";
+import { IgeBehaviourType } from "../../enums/IgeBehaviourType.js";
 /**
  * Handles entity path traversal. This component is supposed to be added
  * to individual entities wishing to traverse paths. When added to an entity
@@ -445,10 +446,10 @@ export class IgePathComponent extends IgeComponent {
             if (val !== undefined) {
                 this._drawPath = val;
                 if (val) {
-                    this._entity.addBehaviour("path", this._tickBehaviour, true);
+                    this._entity.addBehaviour(IgeBehaviourType.preTick, "path", this._tickBehaviour);
                 }
                 else {
-                    this._entity.removeBehaviour("path", true);
+                    this._entity.removeBehaviour(IgeBehaviourType.preTick, "path");
                 }
                 return this;
             }
@@ -794,6 +795,6 @@ export class IgePathComponent extends IgeComponent {
         this._previousPointTo = 0;
         this._currentPointTo = 0;
         // Add the path behaviour to the entity
-        entity.addBehaviour("path", this._updateBehaviour, false);
+        entity.addBehaviour(IgeBehaviourType.preUpdate, "path", this._updateBehaviour);
     }
 }

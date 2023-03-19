@@ -1,6 +1,7 @@
 import { ige } from "../instance.js";
 import { IgeComponent } from "../core/IgeComponent.js";
 import { arrPull } from "../utils.js";
+import { IgeBehaviourType } from "../../enums/IgeBehaviourType.js";
 export class IgeTimeComponent extends IgeComponent {
     constructor(entity, options) {
         super(entity, options);
@@ -71,6 +72,6 @@ export class IgeTimeComponent extends IgeComponent {
             return this;
         };
         // Add the animation behaviour to the entity
-        entity.addBehaviour("time", this._update);
+        entity.addBehaviour(IgeBehaviourType.preUpdate, "time", this._update);
     }
 }

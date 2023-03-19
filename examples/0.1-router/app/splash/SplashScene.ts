@@ -25,7 +25,7 @@ export class SplashScene extends IgeSceneGraph {
 			.borderColor("#ffffff")
 			.borderWidth(1)
 			.value("Level 1")
-			.mouseUp(() => {
+			.pointerUp(() => {
 				ige.router.go("app/level1");
 			})
 			.mount(uiScene);

@@ -4,6 +4,7 @@ import { IgeEntity } from "@/engine/core/IgeEntity";
 import { IgeMountMode } from "@/enums/IgeMountMode";
 import { IgeRect } from "@/engine/core/IgeRect";
 import { IgeCanvasRenderingContext2d } from "@/types/IgeCanvasRenderingContext2d";
+import { IgeBehaviourType } from "@/enums/IgeBehaviourType";
 
 export class IgeEntityManagerComponent extends IgeComponent {
 	classId = "IgeEntityManagerComponent";
@@ -28,7 +29,7 @@ export class IgeEntityManagerComponent extends IgeComponent {
 		this._createArr = [];
 		this._removeArr = [];
 
-		entity.addBehaviour("entityManager", this._behaviour);
+		entity.addBehaviour(IgeBehaviourType.preUpdate, "entityManager", this._behaviour);
 	}
 
 	/**

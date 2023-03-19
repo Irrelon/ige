@@ -506,20 +506,20 @@ export declare class IgeEntity extends IgeObject implements IgeCanRegisterById, 
     /**
      * Get / set the flag determining if this entity will respond
      * to mouse interaction or not. When you set a mouse* event e.g.
-     * mouseUp, mouseOver etc this flag will automatically be reset
+     * pointerUp, pointerOver etc this flag will automatically be reset
      * to true.
      * @param {Boolean=} val The flag value true or false.
      * @example #Set entity to ignore mouse events
-     *     entity.mouseEventsActive(false);
+     *     entity.pointerEventsActive(false);
      * @example #Set entity to receive mouse events
-     *     entity.mouseEventsActive(true);
+     *     entity.pointerEventsActive(true);
      * @example #Get current flag value
-     *     var val = entity.mouseEventsActive();
+     *     var val = entity.pointerEventsActive();
      * @return {*} "this" when arguments are passed to allow method
      * chaining or the current value if no arguments are specified.
      */
-    mouseEventsActive(val: boolean): this;
-    mouseEventsActive(): boolean;
+    pointerEventsActive(val: boolean): this;
+    pointerEventsActive(): boolean;
     /**
      * Sets the _ignoreCamera internal flag to the value passed for this
      * and all child entities down the scenegraph.
@@ -561,8 +561,8 @@ export declare class IgeEntity extends IgeObject implements IgeCanRegisterById, 
      * @private
      */
     _transformContext(ctx: IgeCanvasRenderingContext2d, inverse?: boolean): void;
-    mouseAlwaysInside(val: boolean): this;
-    mouseAlwaysInside(): boolean;
+    pointerAlwaysInside(val: boolean): this;
+    pointerAlwaysInside(): boolean;
     /**
      * Processes the actions required each render frame.
      * @param {CanvasRenderingContext2D} ctx The canvas context to render to.
@@ -642,7 +642,7 @@ export declare class IgeEntity extends IgeObject implements IgeCanRegisterById, 
      * move event is triggered.
      * @param {Function=} callback
      * @example #Hook the mouse move event and stop it propagating further down the scenegraph
-     *     entity.mouseMove(function (event, control) {
+     *     entity.pointerMove(function (event, control) {
      *         // Mouse moved with button
      *         console.log('Mouse move button: ' + event.button);
      *
@@ -655,13 +655,13 @@ export declare class IgeEntity extends IgeObject implements IgeCanRegisterById, 
      *     });
      * @return {*}
      */
-    mouseMove: (callback?: IgeInputEvent) => this | IgeInputEvent | undefined;
+    pointerMove: (callback?: IgeInputEvent) => this | IgeInputEvent | undefined;
     /**
      * Gets / sets the callback that is fired when a mouse
      * over event is triggered.
      * @param {Function=} callback
      * @example #Hook the mouse over event and stop it propagating further down the scenegraph
-     *     entity.mouseOver(function (event, control) {
+     *     entity.pointerOver(function (event, control) {
      *         // Mouse over with button
      *         console.log('Mouse over button: ' + event.button);
      *
@@ -674,14 +674,14 @@ export declare class IgeEntity extends IgeObject implements IgeCanRegisterById, 
      *     });
      * @return {*}
      */
-    mouseOver(callback: IgeInputEvent): this;
-    mouseOver(): IgeInputEvent;
+    pointerOver(callback: IgeInputEvent): this;
+    pointerOver(): IgeInputEvent;
     /**
      * Gets / sets the callback that is fired when a mouse
      * out event is triggered.
      * @param {Function=} callback
      * @example #Hook the mouse out event and stop it propagating further down the scenegraph
-     *     entity.mouseOut(function (event, control) {
+     *     entity.pointerOut(function (event, control) {
      *         // Mouse out with button
      *         console.log('Mouse out button: ' + event.button);
      *
@@ -694,14 +694,14 @@ export declare class IgeEntity extends IgeObject implements IgeCanRegisterById, 
      *     });
      * @return {*}
      */
-    mouseOut(callback: IgeInputEvent): this;
-    mouseOut(): IgeInputEvent;
+    pointerOut(callback: IgeInputEvent): this;
+    pointerOut(): IgeInputEvent;
     /**
      * Gets / sets the callback that is fired when a mouse
      * up event is triggered.
      * @param {Function=} callback
      * @example #Hook the mouse up event and stop it propagating further down the scenegraph
-     *     entity.mouseUp(function (event, control) {
+     *     entity.pointerUp(function (event, control) {
      *         // Mouse up with button
      *         console.log('Mouse up button: ' + event.button);
      *
@@ -714,14 +714,14 @@ export declare class IgeEntity extends IgeObject implements IgeCanRegisterById, 
      *     });
      * @return {*}
      */
-    mouseUp(callback: IgeInputEvent): this;
-    mouseUp(): IgeInputEvent;
+    pointerUp(callback: IgeInputEvent): this;
+    pointerUp(): IgeInputEvent;
     /**
      * Gets / sets the callback that is fired when a mouse
      * down event is triggered.
      * @param {Function=} callback
      * @example #Hook the mouse down event and stop it propagating further down the scenegraph
-     *     entity.mouseDown(function (event, control) {
+     *     entity.pointerDown(function (event, control) {
      *         // Mouse down with button
      *         console.log('Mouse down button: ' + event.button);
      *
@@ -734,13 +734,13 @@ export declare class IgeEntity extends IgeObject implements IgeCanRegisterById, 
      *     });
      * @return {*}
      */
-    mouseDown: (callback?: IgeInputEvent) => this | IgeInputEvent | undefined;
+    pointerDown: (callback?: IgeInputEvent) => this | IgeInputEvent | undefined;
     /**
      * Gets / sets the callback that is fired when a mouse
      * wheel event is triggered.
      * @param {Function=} callback
      * @example #Hook the mouse wheel event and stop it propagating further down the scenegraph
-     *     entity.mouseWheel(function (event, control) {
+     *     entity.pointerWheel(function (event, control) {
      *         // Mouse wheel with button
      *         console.log('Mouse wheel button: ' + event.button);
      *         console.log('Mouse wheel delta: ' + event.wheelDelta);
@@ -754,38 +754,38 @@ export declare class IgeEntity extends IgeObject implements IgeCanRegisterById, 
      *     });
      * @return {*}
      */
-    mouseWheel: (callback?: IgeInputEvent) => this | IgeInputEvent | undefined;
+    pointerWheel: (callback?: IgeInputEvent) => this | IgeInputEvent | undefined;
     /**
      * Removes the callback that is fired when a mouse
      * move event is triggered.
      */
-    mouseMoveOff(): this;
+    pointerMoveOff(): this;
     /**
      * Removes the callback that is fired when a mouse
      * over event is triggered.
      */
-    mouseOverOff(): this;
+    pointerOverOff(): this;
     /**
      * Removes the callback that is fired when a mouse
      * out event is triggered.
      */
-    mouseOutOff(): this;
+    pointerOutOff(): this;
     /**
      * Removes the callback that is fired when a mouse
      * up event is triggered.
      */
-    mouseUpOff(): this;
+    pointerUpOff(): this;
     /**
      * Removes the callback that is fired when a mouse
      * down event is triggered if the listener was registered
-     * via the mouseDown() method.
+     * via the pointerDown() method.
      */
-    mouseDownOff(): this;
+    pointerDownOff(): this;
     /**
      * Removes the callback that is fired when a mouse
      * wheel event is triggered.
      */
-    mouseWheelOff(): this;
+    pointerWheelOff(): this;
     triggerPolygon(poly: "aabb" | "localBounds3dPolygon"): this;
     triggerPolygon(): "aabb" | "localBounds3dPolygon";
     /**

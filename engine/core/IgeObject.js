@@ -53,9 +53,9 @@ export class IgeObject extends IgeEventingClass {
         this._compositeParent = false;
         this._cell = 1;
         this._bornTime = 0;
-        this._mouseStateDown = false;
-        this._mouseStateOver = false;
-        this._mouseAlwaysInside = false;
+        this._pointerStateDown = false;
+        this._pointerStateOver = false;
+        this._pointerAlwaysInside = false;
         this._adjustmentMatrix = new IgeMatrix2d();
         this._cache = false;
         this._cacheDirty = false;
@@ -90,7 +90,7 @@ export class IgeObject extends IgeEventingClass {
         this._oldBounds2d = new IgePoint2d(40, 40);
         this._oldBounds3d = new IgePoint3d(0, 0, 0);
         this._highlight = false;
-        this._mouseEventsActive = false;
+        this._pointerEventsActive = false;
         this._velocity = new IgePoint3d(0, 0, 0);
         this._localMatrix = new IgeMatrix2d();
         this._worldMatrix = new IgeMatrix2d();
@@ -397,28 +397,17 @@ export class IgeObject extends IgeEventingClass {
     }
     /**
      * Calls each behaviour method for the object.
-     * @private
      */
-    _processUpdateBehaviours(...args) {
-        const arr = this._updateBehaviours;
-        if (arr) {
-            let arrCount = arr.length;
-            while (arrCount--) {
-                // TODO: Do we really want to pass ige here?
-                arr[arrCount].method(ige, this, ...args);
-            }
+    _processBehaviours(type, ...args) {
+        if (!this._behaviours)
+            return;
+        const arr = this._behaviours[type];
+        if (!arr) {
+            return;
         }
-    }
-    /**
-     * Calls each behaviour method for the object.
-     */
-    _processTickBehaviours(...args) {
-        const arr = this._tickBehaviours;
-        if (arr) {
-            let arrCount = arr.length;
-            while (arrCount--) {
-                arr[arrCount].method(ige, this, ...args);
-            }
+        let arrCount = arr.length;
+        while (arrCount--) {
+            arr[arrCount].method(ige, this, ...args);
         }
     }
     parent(id) {
@@ -767,13 +756,13 @@ export class IgeObject extends IgeEventingClass {
     }
     /**
      * Adds a behaviour to the object's active behaviour list.
+     * @param type
      * @param {String} id
      * @param {Function} behaviour
-     * @param {Boolean=} duringTick If true, will execute the behaviour
      * during the tick() method instead of the update() method.
      * @example #Add a behaviour with the id "myBehaviour"
      *     var entity = new IgeEntity();
-     *     entity.addBehaviour('myBehaviour', function () {
+     *     entity.addBehaviour(IgeBehaviourType.preUpdate, 'myBehaviour', function () {
      *         // Code here will execute during each engine update for
      *         // this entity. I can access the entity via the "this"
      *         // keyword such as:
@@ -786,31 +775,22 @@ export class IgeObject extends IgeEventingClass {
      *     console.log(entity._somePropertyOfTheEntity);
      * @return {*} Returns this on success or false on failure.
      */
-    addBehaviour(id, behaviour, duringTick = false) {
-        if (duringTick) {
-            this._tickBehaviours = this._tickBehaviours || [];
-            this._tickBehaviours.push({
-                id,
-                method: behaviour
-            });
-        }
-        else {
-            this._updateBehaviours = this._updateBehaviours || [];
-            this._updateBehaviours.push({
-                id,
-                method: behaviour
-            });
-        }
+    addBehaviour(type, id, behaviour) {
+        this._behaviours = this._behaviours || {};
+        this._behaviours[type] = this._behaviours[type] || [];
+        this._behaviours[type].push({
+            id,
+            method: behaviour
+        });
         return this;
     }
     /**
      * Removes a behaviour to the object's active behaviour list by its id.
+     * @param type
      * @param {String} id
-     * @param {Boolean=} duringTick If true will look to remove the behaviour
-     * from the tick method rather than the update method.
      * @example #Remove a behaviour with the id "myBehaviour"
      *     var entity = new IgeEntity();
-     *     entity.addBehaviour('myBehaviour', function () {
+     *     entity.addBehaviour(IgeBehaviourType.preUpdate, 'myBehaviour', function () {
      *         // Code here will execute during each engine update for
      *         // this entity. I can access the entity via the "this"
      *         // keyword such as:
@@ -818,20 +798,16 @@ export class IgeObject extends IgeEventingClass {
      *     });
      *
      *     // Now remove the "myBehaviour" behaviour
-     *     entity.removeBehaviour('myBehaviour');
+     *     entity.removeBehaviour(IgeBehaviourType.preUpdate, 'myBehaviour');
      * @return {*} Returns this on success or false on failure.
      */
-    removeBehaviour(id, duringTick = false) {
-        let arr, arrCount;
-        if (duringTick) {
-            arr = this._tickBehaviours;
-        }
-        else {
-            arr = this._updateBehaviours;
-        }
+    removeBehaviour(type, id) {
+        if (!this._behaviours)
+            return;
+        const arr = this._behaviours[type];
         // Find the behaviour
         if (arr) {
-            arrCount = arr.length;
+            let arrCount = arr.length;
             while (arrCount--) {
                 if (arr[arrCount].id === id) {
                     // Remove the item from the array
@@ -843,12 +819,12 @@ export class IgeObject extends IgeEventingClass {
     }
     /**
      * Checks if the object has the specified behaviour already added to it.
+     * @param type
      * @param {String} id
-     * @param {Boolean=} duringTick If true will look to remove the behaviour
      * from the tick method rather than the update method.
      * @example #Check for a behaviour with the id "myBehaviour"
      *     var entity = new IgeEntity();
-     *     entity.addBehaviour('myBehaviour', function () {
+     *     entity.addBehaviour(IgeBehaviourType.preUpdate, 'myBehaviour', function () {
      *         // Code here will execute during each engine update for
      *         // this entity. I can access the entity via the "this"
      *         // keyword such as:
@@ -856,26 +832,21 @@ export class IgeObject extends IgeEventingClass {
      *     });
      *
      *     // Now check for the "myBehaviour" behaviour
-     *     console.log(entity.hasBehaviour('myBehaviour')); // Will log "true"
+     *     console.log(entity.hasBehaviour(IgeBehaviourType.preUpdate, 'myBehaviour')); // Will log "true"
      * @return {*} Returns this on success or false on failure.
      */
-    hasBehaviour(id, duringTick = false) {
-        if (id !== undefined) {
-            let arr, arrCount;
-            if (duringTick) {
-                arr = this._tickBehaviours;
-            }
-            else {
-                arr = this._updateBehaviours;
-            }
-            // Find the behaviour
-            if (arr) {
-                arrCount = arr.length;
-                while (arrCount--) {
-                    if (arr[arrCount].id === id) {
-                        return true;
-                    }
-                }
+    hasBehaviour(type, id) {
+        if (!this._behaviours || !id)
+            return false;
+        const arr = this._behaviours[type];
+        // Find the behaviour
+        if (!arr) {
+            return false;
+        }
+        let arrCount = arr.length;
+        while (arrCount--) {
+            if (arr[arrCount].id === id) {
+                return true;
             }
         }
         return false;
@@ -1737,8 +1708,7 @@ export class IgeObject extends IgeEventingClass {
      * this object.
      */
     destroyBehaviours() {
-        delete this._updateBehaviours;
-        delete this._tickBehaviours;
+        this._behaviours = {};
     }
     /**
      * Destroys the object and all it's child objects, removing them from the

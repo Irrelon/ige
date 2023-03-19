@@ -13,16 +13,16 @@ export class IgeMouseZoomComponent extends IgeComponent {
         this.componentId = "mouseZoom";
         this._enabled = false; // Set the zoom component to `inactive` to start with
         /**
-         * Handles the mouseDown event. Records the starting position of the
+         * Handles the pointerDown event. Records the starting position of the
          * camera zoom and the current camera translation.
          * @param event
          * @private
          */
-        this._mouseDown = (event) => {
+        this._pointerDown = (event) => {
             if (!this._enabled || event.igeViewport.id() !== this._entity.id()) {
                 return;
             }
-            const curMousePos = ige.engine._mousePos;
+            const curMousePos = ige.engine._pointerPos;
             this._zoomStartMouse = new IgePoint3d(curMousePos.x, curMousePos.y, 0);
             this._zoomStartCamera = new IgePoint2d(this._entity.camera._scale.x, this._entity.camera._scale.y);
         };
@@ -32,7 +32,7 @@ export class IgeMouseZoomComponent extends IgeComponent {
          * @param event
          * @private
          */
-        this._mouseWheel = (event) => {
+        this._pointerWheel = (event) => {
             if (!this._enabled) {
                 return;
             }
@@ -47,14 +47,14 @@ export class IgeMouseZoomComponent extends IgeComponent {
          * @param event
          * @private
          */
-        this._mouseUp = (event) => {
+        this._pointerUp = (event) => {
             if (!this._enabled) {
                 return;
             }
             if (!this._zoomStartMouse || !this._zoomStartCamera) {
                 return;
             }
-            const curMousePos = ige.engine._mousePos;
+            const curMousePos = ige.engine._pointerPos;
             const zoomCords = {
                 "x": -(this._zoomStartMouse.x - curMousePos.x) / 100,
                 "y": -(this._zoomStartMouse.y - curMousePos.y) / 100
@@ -78,7 +78,7 @@ export class IgeMouseZoomComponent extends IgeComponent {
         this._enabled = val;
         if (this._enabled) {
             // Listen for the mouse events we need to operate a mouse zoom
-            this._entity.mouseWheel(this._mouseWheel);
+            this._entity.pointerWheel(this._pointerWheel);
         }
         else {
             // Remove the zoom start data

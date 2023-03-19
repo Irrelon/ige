@@ -17,13 +17,14 @@ import type { IgeSmartTexture } from "@/types/IgeSmartTexture";
 import type { IgeDepthSortObject } from "@/types/IgeDepthSortObject";
 import type { IgeCanvasRenderingContext2d } from "@/types/IgeCanvasRenderingContext2d";
 import type { IgeChildSortFunction } from "@/types/IgeChildSortFunction";
-import type { IgeEntityBehaviour } from "@/types/IgeEntityBehaviour";
 import { IgeEntityBehaviourMethod } from "@/types/IgeEntityBehaviour";
 import { IgeInputEvent } from "@/types/IgeInputEvent";
 import { IgePoint } from "@/types/IgePoint";
 import { IgeViewport } from "@/engine/core/IgeViewport";
 import { IgeCanAcceptComponents } from "@/types/IgeCanAcceptComponents";
 import { IgeComponent } from "@/engine/core/IgeComponent";
+import { IgeBehaviourStore } from "@/types/IgeBehaviourStore";
+import { IgeBehaviourType } from "@/enums/IgeBehaviourType";
 export declare class IgeObject extends IgeEventingClass implements IgeCanRegisterById, IgeCanRegisterByCategory, IgeCanAcceptComponents {
     classId: string;
     _id?: string;
@@ -94,16 +95,16 @@ export declare class IgeObject extends IgeEventingClass implements IgeCanRegiste
     _bounds3d: IgePoint3d;
     _oldBounds3d: IgePoint3d;
     _highlight: boolean;
-    _mouseEventsActive: boolean;
-    _mouseStateDown: boolean;
-    _mouseStateOver: boolean;
-    _mouseAlwaysInside: boolean;
-    _mouseOut?: IgeInputEvent;
-    _mouseOver?: IgeInputEvent;
-    _mouseMove?: IgeInputEvent;
-    _mouseWheel?: IgeInputEvent;
-    _mouseUp?: IgeInputEvent;
-    _mouseDown?: IgeInputEvent;
+    _pointerEventsActive: boolean;
+    _pointerStateDown: boolean;
+    _pointerStateOver: boolean;
+    _pointerAlwaysInside: boolean;
+    _pointerOut?: IgeInputEvent;
+    _pointerOver?: IgeInputEvent;
+    _pointerMove?: IgeInputEvent;
+    _pointerWheel?: IgeInputEvent;
+    _pointerUp?: IgeInputEvent;
+    _pointerDown?: IgeInputEvent;
     _velocity: IgePoint3d;
     _localMatrix: IgeMatrix2d;
     _worldMatrix: IgeMatrix2d;
@@ -125,8 +126,7 @@ export declare class IgeObject extends IgeEventingClass implements IgeCanRegiste
     _shouldRender?: boolean;
     _smartBackground?: IgeSmartTexture;
     _lastUpdate?: number;
-    _tickBehaviours?: IgeEntityBehaviour[];
-    _updateBehaviours?: IgeEntityBehaviour[];
+    _behaviours?: IgeBehaviourStore;
     _birthMount?: string;
     _frameAlternatorCurrent: boolean;
     _backgroundPattern?: IgeTexture;
@@ -315,13 +315,8 @@ export declare class IgeObject extends IgeEventingClass implements IgeCanRegiste
     aabb(recalculate?: boolean, inverse?: boolean): IgeRect;
     /**
      * Calls each behaviour method for the object.
-     * @private
      */
-    _processUpdateBehaviours(...args: any[]): void;
-    /**
-     * Calls each behaviour method for the object.
-     */
-    _processTickBehaviours(...args: any[]): void;
+    _processBehaviours(type: IgeBehaviourType, ...args: any[]): void;
     /**
      * Returns the object's parent object (the object that
      * it is mounted to).
@@ -627,13 +622,13 @@ export declare class IgeObject extends IgeEventingClass implements IgeCanRegiste
     _transformPoint(point: IgePoint3d): IgePoint3d;
     /**
      * Adds a behaviour to the object's active behaviour list.
+     * @param type
      * @param {String} id
      * @param {Function} behaviour
-     * @param {Boolean=} duringTick If true, will execute the behaviour
      * during the tick() method instead of the update() method.
      * @example #Add a behaviour with the id "myBehaviour"
      *     var entity = new IgeEntity();
-     *     entity.addBehaviour('myBehaviour', function () {
+     *     entity.addBehaviour(IgeBehaviourType.preUpdate, 'myBehaviour', function () {
      *         // Code here will execute during each engine update for
      *         // this entity. I can access the entity via the "this"
      *         // keyword such as:
@@ -646,15 +641,14 @@ export declare class IgeObject extends IgeEventingClass implements IgeCanRegiste
      *     console.log(entity._somePropertyOfTheEntity);
      * @return {*} Returns this on success or false on failure.
      */
-    addBehaviour<ParentType extends IgeObject = IgeObject>(id: string, behaviour: IgeEntityBehaviourMethod<ParentType>, duringTick?: boolean): this;
+    addBehaviour<ParentType extends IgeObject = IgeObject>(type: IgeBehaviourType, id: string, behaviour: IgeEntityBehaviourMethod<ParentType>): this;
     /**
      * Removes a behaviour to the object's active behaviour list by its id.
+     * @param type
      * @param {String} id
-     * @param {Boolean=} duringTick If true will look to remove the behaviour
-     * from the tick method rather than the update method.
      * @example #Remove a behaviour with the id "myBehaviour"
      *     var entity = new IgeEntity();
-     *     entity.addBehaviour('myBehaviour', function () {
+     *     entity.addBehaviour(IgeBehaviourType.preUpdate, 'myBehaviour', function () {
      *         // Code here will execute during each engine update for
      *         // this entity. I can access the entity via the "this"
      *         // keyword such as:
@@ -662,18 +656,18 @@ export declare class IgeObject extends IgeEventingClass implements IgeCanRegiste
      *     });
      *
      *     // Now remove the "myBehaviour" behaviour
-     *     entity.removeBehaviour('myBehaviour');
+     *     entity.removeBehaviour(IgeBehaviourType.preUpdate, 'myBehaviour');
      * @return {*} Returns this on success or false on failure.
      */
-    removeBehaviour(id: string, duringTick?: boolean): this | undefined;
+    removeBehaviour(type: IgeBehaviourType, id: string): this | undefined;
     /**
      * Checks if the object has the specified behaviour already added to it.
+     * @param type
      * @param {String} id
-     * @param {Boolean=} duringTick If true will look to remove the behaviour
      * from the tick method rather than the update method.
      * @example #Check for a behaviour with the id "myBehaviour"
      *     var entity = new IgeEntity();
-     *     entity.addBehaviour('myBehaviour', function () {
+     *     entity.addBehaviour(IgeBehaviourType.preUpdate, 'myBehaviour', function () {
      *         // Code here will execute during each engine update for
      *         // this entity. I can access the entity via the "this"
      *         // keyword such as:
@@ -681,10 +675,10 @@ export declare class IgeObject extends IgeEventingClass implements IgeCanRegiste
      *     });
      *
      *     // Now check for the "myBehaviour" behaviour
-     *     console.log(entity.hasBehaviour('myBehaviour')); // Will log "true"
+     *     console.log(entity.hasBehaviour(IgeBehaviourType.preUpdate, 'myBehaviour')); // Will log "true"
      * @return {*} Returns this on success or false on failure.
      */
-    hasBehaviour(id?: string, duringTick?: boolean): boolean;
+    hasBehaviour(type: IgeBehaviourType, id: string): boolean;
     /**
      * Gets / sets the cache flag that determines if the entity's
      * texture rendering output should be stored on an off-screen

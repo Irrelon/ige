@@ -41,8 +41,8 @@ export class Ige {
 	_watch: (string | IgeObjectWithValueProperty)[] = [];
 
 	// Questionable properties, think about them and potentially move
-	_mouseOverVp?: IgeViewport;
-	_mousePos: IgePoint3d = new IgePoint3d(); // Could probably be just {x: number, y: number}
+	_pointerOverVp?: IgeViewport;
+	_pointerPos: IgePoint3d = new IgePoint3d(); // Could probably be just {x: number, y: number}
 
 	constructor () {
 		if (isClient) {

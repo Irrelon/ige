@@ -3,6 +3,7 @@ import { igeClassStore } from "../../../igeClassStore.js";
 import { IgeEventingClass } from "../../../core/IgeEventingClass.js";
 import { ige } from "../../../instance.js";
 import { Box2D } from "./lib_box2d.js";
+import { IgeBehaviourType } from "../../../../enums/IgeBehaviourType.js";
 export class IgeBox2dWorld extends IgeEventingClass {
     constructor(entity, options) {
         super();
@@ -358,7 +359,7 @@ export class IgeBox2dWorld extends IgeEventingClass {
             if (!this._networkDebugMode) {
                 if (this._renderMode === 0) {
                     // Add the box2d behaviour to the ige
-                    ige.engine.addBehaviour(`box2dStep_${this._id}`, this._behaviour);
+                    ige.engine.addBehaviour(IgeBehaviourType.preUpdate, `box2dStep_${this._id}`, this._behaviour);
                 }
                 else {
                     this._intervalTimer = setInterval(this._behaviour, 1000 / 60);
@@ -371,7 +372,7 @@ export class IgeBox2dWorld extends IgeEventingClass {
             this._active = false;
             if (this._renderMode === 0) {
                 // Add the box2d behaviour to the ige
-                ige.removeBehaviour('box2dStep_' + this._id);
+                ige.engine.removeBehaviour(IgeBehaviourType.preUpdate, 'box2dStep_' + this._id);
             }
             else {
                 clearInterval(this._intervalTimer);
@@ -448,7 +449,7 @@ export class IgeBox2dWorld extends IgeEventingClass {
     }
     destroy() {
         // Stop processing box2d steps
-        this.removeBehaviour('box2dStep');
+        ige.engine.removeBehaviour(IgeBehaviourType.preUpdate, 'box2dStep');
         // Destroy all box2d world bodies
         return this;
     }

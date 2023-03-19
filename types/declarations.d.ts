@@ -8,7 +8,7 @@ declare global {
 		igeY: number;
 		igePageX: number;
 		igePageY: number;
-		igeType: "mouse" | "key" | "touch";
+		igeType: "pointer" | "touch" | "keyboard" | "gamepad" | "wheel";
 		igeViewport: IgeViewport;
 		button: number;
 	}

@@ -40,24 +40,24 @@ export declare class IgeMousePanComponent extends IgeComponent {
      */
     enabled(val?: boolean): any;
     /**
-     * Handles the mouseDown event. Records the starting position of the
+     * Handles the pointerDown event. Records the starting position of the
      * camera pan and the current camera translation.
      * @param event
      * @private
      */
-    _mouseDown: (event: Event) => void;
+    _pointerDown: (event: Event) => void;
     /**
      * Handles the mouse move event. Translates the camera as the mouse
      * moves across the screen.
      * @param event
      * @private
      */
-    _mouseMove: (event: Event) => void;
+    _pointerMove: (event: Event) => void;
     /**
      * Handles the mouse up event. Finishes the camera translate and
      * removes the starting pan data.
      * @param event
      * @private
      */
-    _mouseUp: (event: Event) => void;
+    _pointerUp: (event: Event) => void;
 }

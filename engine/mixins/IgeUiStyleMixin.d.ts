@@ -19,7 +19,7 @@ export declare const WithUiStyleMixin: <BaseClassType extends Mixin<IgeObject>>(
         _patternHeight?: number | undefined;
         _patternFill?: CanvasPattern | undefined;
         _cell: number | null;
-        _backgroundColor?: string | CanvasGradient | CanvasPattern | undefined;
+        _backgroundColor?: string | CanvasPattern | CanvasGradient | undefined;
         _borderColor?: string | undefined;
         _borderLeftColor?: string | undefined;
         _borderTopColor?: string | undefined;
@@ -50,7 +50,7 @@ export declare const WithUiStyleMixin: <BaseClassType extends Mixin<IgeObject>>(
          * @param {CSSColor, CanvasGradient, CanvasPattern=} color
          * @return {*} Returns this when setting the value or the current value if none is specified.
          */
-        color(color: string | CanvasGradient | CanvasPattern): string | CanvasGradient | CanvasPattern | any;
+        color(color: string | CanvasGradient | CanvasPattern): string | CanvasPattern | CanvasGradient | any;
         /**
          * Sets the current background texture and the repeatType
          * to determine in which axis the image should be repeated.
@@ -71,7 +71,7 @@ export declare const WithUiStyleMixin: <BaseClassType extends Mixin<IgeObject>>(
          * @param {CSSColor, CanvasGradient, CanvasPattern=} color
          * @return {*} Returns this when setting the value or the current value if none is specified.
          */
-        backgroundColor(color: string | CanvasGradient | CanvasPattern): string | CanvasGradient | CanvasPattern | any | undefined;
+        backgroundColor(color: string | CanvasGradient | CanvasPattern): string | CanvasPattern | CanvasGradient | any | undefined;
         /**
          * Gets / sets the position to start rendering the background image at.
          * @param {Number=} x
@@ -155,7 +155,7 @@ export declare const WithUiStyleMixin: <BaseClassType extends Mixin<IgeObject>>(
         _depthSortMode: import("../../enums/IgeIsometricDepthSortMode").IgeIsometricDepthSortMode;
         _inView: boolean;
         _managed: number;
-        _triggerPolygon?: "aabb" | "localBounds3dPolygon" | undefined;
+        _triggerPolygon?: "localBounds3dPolygon" | "aabb" | undefined;
         _compositeCache: boolean;
         _compositeParent: boolean;
         _anchor: import("../core/IgePoint2d").IgePoint2d;
@@ -177,16 +177,16 @@ export declare const WithUiStyleMixin: <BaseClassType extends Mixin<IgeObject>>(
         _bounds3d: import("../core/IgePoint3d").IgePoint3d;
         _oldBounds3d: import("../core/IgePoint3d").IgePoint3d;
         _highlight: boolean;
-        _mouseEventsActive: boolean;
-        _mouseStateDown: boolean;
-        _mouseStateOver: boolean;
-        _mouseAlwaysInside: boolean;
-        _mouseOut?: import("../../types/IgeInputEvent").IgeInputEvent | undefined;
-        _mouseOver?: import("../../types/IgeInputEvent").IgeInputEvent | undefined;
-        _mouseMove?: import("../../types/IgeInputEvent").IgeInputEvent | undefined;
-        _mouseWheel?: import("../../types/IgeInputEvent").IgeInputEvent | undefined;
-        _mouseUp?: import("../../types/IgeInputEvent").IgeInputEvent | undefined;
-        _mouseDown?: import("../../types/IgeInputEvent").IgeInputEvent | undefined;
+        _pointerEventsActive: boolean;
+        _pointerStateDown: boolean;
+        _pointerStateOver: boolean;
+        _pointerAlwaysInside: boolean;
+        _pointerOut?: import("../../types/IgeInputEvent").IgeInputEvent | undefined;
+        _pointerOver?: import("../../types/IgeInputEvent").IgeInputEvent | undefined;
+        _pointerMove?: import("../../types/IgeInputEvent").IgeInputEvent | undefined;
+        _pointerWheel?: import("../../types/IgeInputEvent").IgeInputEvent | undefined;
+        _pointerUp?: import("../../types/IgeInputEvent").IgeInputEvent | undefined;
+        _pointerDown?: import("../../types/IgeInputEvent").IgeInputEvent | undefined;
         _velocity: import("../core/IgePoint3d").IgePoint3d;
         _localMatrix: import("../core/IgeMatrix2d").IgeMatrix2d;
         _worldMatrix: import("../core/IgeMatrix2d").IgeMatrix2d;
@@ -208,8 +208,7 @@ export declare const WithUiStyleMixin: <BaseClassType extends Mixin<IgeObject>>(
         _shouldRender?: boolean | undefined;
         _smartBackground?: import("../../types/IgeSmartTexture").IgeSmartTexture<IgeObject> | undefined;
         _lastUpdate?: number | undefined;
-        _tickBehaviours?: import("../../types/IgeEntityBehaviour").IgeEntityBehaviour[] | undefined;
-        _updateBehaviours?: import("../../types/IgeEntityBehaviour").IgeEntityBehaviour[] | undefined;
+        _behaviours?: import("../../types/IgeBehaviourStore").IgeBehaviourStore | undefined;
         _birthMount?: string | undefined;
         _frameAlternatorCurrent: boolean;
         _backgroundPattern?: IgeTexture | undefined;
@@ -220,12 +219,6 @@ export declare const WithUiStyleMixin: <BaseClassType extends Mixin<IgeObject>>(
         _bounds3dPolygonDirty: boolean;
         _localBounds3dPolygon?: import("../core/IgePoly2d").IgePoly2d | undefined;
         _bounds3dPolygon?: import("../core/IgePoly2d").IgePoly2d | undefined;
-        /**
-         * Gets / sets the position to start rendering the background image at.
-         * @param {Number=} x
-         * @param {Number=} y
-         * @return {*} Returns this when setting the value or the current value if none is specified.
-         */
         _localAabb?: import("../core/IgeRect").IgeRect | undefined;
         _deathCallBack?: ((...args: any[]) => void) | undefined;
         components: Record<string, import("../core/IgeComponent").IgeComponent<any>>;
@@ -254,8 +247,7 @@ export declare const WithUiStyleMixin: <BaseClassType extends Mixin<IgeObject>>(
         tick(ctx: import("../../types/IgeCanvasRenderingContext2d").IgeCanvasRenderingContext2d): void;
         updateTransform(): void;
         aabb(recalculate?: boolean, inverse?: boolean): import("../core/IgeRect").IgeRect;
-        _processUpdateBehaviours(...args: any[]): void;
-        _processTickBehaviours(...args: any[]): void;
+        _processBehaviours(type: import("../../enums/IgeBehaviourType").IgeBehaviourType, ...args: any[]): void;
         parent(): IgeObject | import("../core/IgeTileMap2d").IgeTileMap2d | null | undefined;
         parent(id: string): IgeObject | null;
         children(): IgeObject[];
@@ -286,9 +278,9 @@ export declare const WithUiStyleMixin: <BaseClassType extends Mixin<IgeObject>>(
         childSortingAlgorithm(val: import("../../types/IgeChildSortFunction").IgeChildSortFunction): any;
         childSortingAlgorithm(): import("../../types/IgeChildSortFunction").IgeChildSortFunction;
         _transformPoint(point: import("../core/IgePoint3d").IgePoint3d): import("../core/IgePoint3d").IgePoint3d;
-        addBehaviour<ParentType extends IgeObject = IgeObject>(id: string, behaviour: import("../../types/IgeEntityBehaviour").IgeEntityBehaviourMethod<ParentType>, duringTick?: boolean): any;
-        removeBehaviour(id: string, duringTick?: boolean): any | undefined;
-        hasBehaviour(id?: string | undefined, duringTick?: boolean): boolean;
+        addBehaviour<ParentType extends IgeObject = IgeObject>(type: import("../../enums/IgeBehaviourType").IgeBehaviourType, id: string, behaviour: import("../../types/IgeEntityBehaviour").IgeEntityBehaviourMethod<ParentType>): any;
+        removeBehaviour(type: import("../../enums/IgeBehaviourType").IgeBehaviourType, id: string): any | undefined;
+        hasBehaviour(type: import("../../enums/IgeBehaviourType").IgeBehaviourType, id: string): boolean;
         cache(val?: boolean | undefined, propagateToChildren?: boolean): boolean | any;
         compositeCache(val?: boolean | undefined, propagateToChildren?: boolean): boolean | any;
         cacheDirty(val: boolean): any;

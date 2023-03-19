@@ -68,9 +68,9 @@ export class IgeUiTooltip extends IgeUiElement {
 		parent._tooltip = this;
 
 		// Listen for keyboard events to capture text input
-		parent._mouseEventsActive = true;
-		parent.on("mouseMove", this._mousemove);
-		parent.on("mouseOut", this._mouseout);
+		parent._pointerEventsActive = true;
+		parent.on("pointerMove", this._mousemove);
+		parent.on("pointerOut", this._mouseout);
 
 		return this;
 	}

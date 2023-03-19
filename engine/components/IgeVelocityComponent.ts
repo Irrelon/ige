@@ -3,6 +3,7 @@ import { ige } from "../instance";
 import { IgePoint3d } from "../core/IgePoint3d";
 import { IgeEntity } from "../core/IgeEntity";
 import { IgeComponent } from "../core/IgeComponent";
+import { IgeBehaviourType } from "@/enums/IgeBehaviourType";
 
 export class IgeVelocityComponent extends IgeComponent {
 	classId = "IgeVelocityComponent";
@@ -19,7 +20,7 @@ export class IgeVelocityComponent extends IgeComponent {
 		this._friction = new IgePoint3d(1, 1, 1);
 
 		// Add the velocity behaviour to the entity
-		entity.addBehaviour("velocity", this._behaviour);
+		entity.addBehaviour(IgeBehaviourType.preUpdate, "velocity", this._behaviour);
 	}
 
 	/**

@@ -34,15 +34,15 @@ export class IgeUiTogglePanel extends IgeUiElement {
 			.text(title)
 			.mount(this);
 
-		this.mouseOver(function () {
+		this.pointerOver(function () {
 			this.backgroundColor("#666666");
 		});
 
-		this.mouseOut(function () {
+		this.pointerOut(function () {
 			this.backgroundColor("#222222");
 		});
 
-		this.mouseUp(function () {
+		this.pointerUp(function () {
 			this._toggleState = !this._toggleState;
 
 			if (this._toggleState) {

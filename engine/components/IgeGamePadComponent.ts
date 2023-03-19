@@ -3,6 +3,7 @@ import { IgeEntity } from "../core/IgeEntity";
 import { IgeEntityBehaviourMethod } from "@/types/IgeEntityBehaviour";
 import { IgeEngine } from "@/engine/core/IgeEngine";
 import { isClient } from "@/engine/clientServer";
+import { IgeBehaviourType } from "@/enums/IgeBehaviourType";
 
 export class IgeGamePadComponent extends IgeComponent<IgeEngine> {
 	"classId" = "IgeGamePadComponent";
@@ -53,7 +54,7 @@ export class IgeGamePadComponent extends IgeComponent<IgeEngine> {
 		window.addEventListener("gamepadconnected", this.onGamepadConnect);
 		window.addEventListener("gamepaddisconnected", this.onGamepadDisconnect);
 
-		entity.addBehaviour("gamePadComponent", this._behaviour);
+		entity.addBehaviour(IgeBehaviourType.preUpdate, "gamePadComponent", this._behaviour);
 	}
 
 	onGamepadConnect (event: GamepadEvent) {

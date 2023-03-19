@@ -12,6 +12,7 @@ import { IgePathNode } from "../core/IgePathNode";
 import { IgeEntityRenderMode } from "@/enums/IgeEntityRenderMode";
 import { IgeEntityBehaviourMethod } from "@/types/IgeEntityBehaviour";
 import { IgeObject } from "../core/IgeObject";
+import { IgeBehaviourType } from "@/enums/IgeBehaviourType";
 
 /**
  * Handles entity path traversal. This component is supposed to be added
@@ -62,7 +63,7 @@ export class IgePathComponent extends IgeComponent {
 		this._currentPointTo = 0;
 
 		// Add the path behaviour to the entity
-		entity.addBehaviour("path", this._updateBehaviour, false);
+		entity.addBehaviour(IgeBehaviourType.preUpdate, "path", this._updateBehaviour);
 	}
 
 	/**
@@ -572,9 +573,9 @@ export class IgePathComponent extends IgeComponent {
 			this._drawPath = val;
 
 			if (val) {
-				this._entity.addBehaviour("path", this._tickBehaviour, true);
+				this._entity.addBehaviour(IgeBehaviourType.preTick, "path", this._tickBehaviour);
 			} else {
-				this._entity.removeBehaviour("path", true);
+				this._entity.removeBehaviour(IgeBehaviourType.preTick, "path");
 			}
 
 			return this;

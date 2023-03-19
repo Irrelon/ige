@@ -2,6 +2,7 @@ import { ige } from "../../instance.js";
 import { arrPull } from "../../utils.js";
 import { IgeComponent } from "../../core/IgeComponent.js";
 import { IgeMountMode } from "../../../enums/IgeMountMode.js";
+import { IgeBehaviourType } from "../../../enums/IgeBehaviourType.js";
 export class IgeEntityManager extends IgeComponent {
     constructor(entity, options) {
         super(entity, options);
@@ -119,7 +120,7 @@ export class IgeEntityManager extends IgeComponent {
         // Create the _orphans array on the entity
         entity._orphans = [];
         // Set a method (behaviour) that will be called on every update
-        entity.addBehaviour("entManager", this._updateBehaviour, false);
+        entity.addBehaviour(IgeBehaviourType.preUpdate, "entManager", this._updateBehaviour);
     }
     /**
      * Checks all the un-mounted entities of our component parent to see if they are

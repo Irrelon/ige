@@ -35,7 +35,7 @@ export const WithEventingMixin = <BaseClassType extends Mixin<IgeBaseClass>>(Bas
 	 * @return {Object} The event listener object. Hold this value if you later want to turn off the event listener.
 	 * @example #Add an Event Listener
 	 *     // Register event lister and store in "evt"
-	 *     var evt = myEntity.on('mouseDown', function () { console.log('down'); });
+	 *     var evt = myEntity.on('pointerDown', function () { console.log('down'); });
 	 * @example #Listen for Event Data
 	 *     // Set a listener to listen for the data (multiple values emitted
 	 *     // from an event are passed as function arguments)
@@ -139,10 +139,10 @@ export const WithEventingMixin = <BaseClassType extends Mixin<IgeBaseClass>>(Bas
 	 * (true) or the listener did not exist to remove (false).
 	 * @example #Switch off an Event Listener
 	 *     // Register event lister and store in "evt"
-	 *     var evt = myEntity.on('mouseDown', function () { console.log('down'); });
+	 *     var evt = myEntity.on('pointerDown', function () { console.log('down'); });
 	 *
 	 *     // Switch off event listener
-	 *     myEntity.off('mouseDown', evt);
+	 *     myEntity.off('pointerDown', evt);
 	 * @return {Boolean}
 	 */
 	off (eventName: string, evtListener: IgeEventListenerObject | IgeMultiEventListenerObject | undefined, callback?: IgeEventRemovalResultCallback) {

@@ -1,5 +1,6 @@
 import { ige } from "../../engine/instance.js";
 import { IgeComponent } from "../../engine/core/IgeComponent.js";
+import { IgeBehaviourType } from "../../enums/IgeBehaviourType.js";
 /**
  * The animation component class. Handles defining and controlling
  * frame-based animations based on cells from a texture.
@@ -398,6 +399,6 @@ export class IgeAnimationComponent extends IgeComponent {
         };
         this._anims = {};
         // Add the animation behaviour to the entity
-        entity.addBehaviour("tween", this._update);
+        entity.addBehaviour(IgeBehaviourType.preUpdate, "tween", this._update);
     }
 }

@@ -17,7 +17,8 @@ import type {
 	IgeBox2dContactPreSolveCallback
 } from "@/types/IgeBox2dContactSolverCallback";
 import type { IgeEntityBehaviourMethod } from "@/types/IgeEntityBehaviour";
-import { Box2D } from "./index";
+import { IgeBehaviourType } from "@/enums/IgeBehaviourType";
+import { Box2D } from "@/engine/components/physics/box2d/lib_box2d";
 
 /**
  * The engine's Box2D component class.
@@ -665,7 +666,7 @@ export class IgeBox2dComponent extends IgeComponent<IgeEngine> {
 			if (!this._networkDebugMode) {
 				if (this._renderMode === 0) {
 					// Add the box2d behaviour to the ige
-					this._entity.addBehaviour("box2dStep", this._behaviour);
+					this._entity.addBehaviour(IgeBehaviourType.preUpdate, "box2dStep", this._behaviour);
 				} else {
 					this._intervalTimer = setInterval(this._behaviour, 1000 / 60) as unknown as number;
 				}
@@ -679,7 +680,7 @@ export class IgeBox2dComponent extends IgeComponent<IgeEngine> {
 
 			if (this._renderMode === 0) {
 				// Add the box2d behaviour to the ige
-				this._entity.removeBehaviour("box2dStep");
+				this._entity.removeBehaviour(IgeBehaviourType.preUpdate, "box2dStep");
 			} else {
 				clearInterval(this._intervalTimer);
 			}
@@ -773,7 +774,7 @@ export class IgeBox2dComponent extends IgeComponent<IgeEngine> {
 
 	destroy () {
 		// Stop processing box2d steps
-		this._entity.removeBehaviour("box2dStep");
+		this._entity.removeBehaviour(IgeBehaviourType.preUpdate, "box2dStep");
 
 		// Destroy all box2d world bodies
 		return this;

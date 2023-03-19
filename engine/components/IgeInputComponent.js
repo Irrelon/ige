@@ -1,28 +1,16 @@
 import { ige } from "../instance.js";
 import { IgePoint3d } from "../core/IgePoint3d.js";
 import { IgeComponent } from "../core/IgeComponent.js";
-export var IgeInputMouse;
-(function (IgeInputMouse) {
-    IgeInputMouse[IgeInputMouse["down"] = 0] = "down";
-    IgeInputMouse[IgeInputMouse["up"] = 1] = "up";
-    IgeInputMouse[IgeInputMouse["dblClick"] = 2] = "dblClick";
-    IgeInputMouse[IgeInputMouse["move"] = 3] = "move";
-    IgeInputMouse[IgeInputMouse["wheel"] = 4] = "wheel";
-    IgeInputMouse[IgeInputMouse["wheelX"] = 5] = "wheelX";
-    IgeInputMouse[IgeInputMouse["wheelY"] = 6] = "wheelY";
-    IgeInputMouse[IgeInputMouse["x"] = 7] = "x";
-    IgeInputMouse[IgeInputMouse["y"] = 8] = "y";
-    IgeInputMouse[IgeInputMouse["button1"] = 9] = "button1";
-    IgeInputMouse[IgeInputMouse["button2"] = 10] = "button2";
-    IgeInputMouse[IgeInputMouse["button3"] = 11] = "button3";
-})(IgeInputMouse || (IgeInputMouse = {}));
+import { IgeBehaviourType } from "../../enums/IgeBehaviourType.js";
+import { IgeInputDevice, IgeInputKeyboardMap, IgeInputPointerMap } from "../../enums/IgeInputDeviceMap.js";
 export class IgeInputComponent extends IgeComponent {
     constructor() {
         super();
         this.classId = "IgeInputComponent";
         this.componentId = "input";
         this._evRef = {};
-        this.gamePad = [];
+        this._state = {};
+        this._controlMap = {};
         this.debug = (val) => {
             if (val !== undefined) {
                 this._debug = val;
@@ -41,59 +29,61 @@ export class IgeInputComponent extends IgeComponent {
                 return;
             }
             this.log("Setting up input event listeners...");
+            // Register a post-tick behaviour with the engine
+            ige.engine.addBehaviour(IgeBehaviourType.postTick, "inputComponentPostTick", this.tick.bind(this));
             // Define event functions and keep references for later removal
             this._evRef = {
-                "mousedown": (event) => {
-                    this._rationalise(event, "mouse");
-                    this._mouseDown(event);
+                "pointerdown": (event) => {
+                    this._rationalise(event, "pointer");
+                    this._pointerDown(event);
                 },
-                "mouseup": (event) => {
-                    this._rationalise(event, "mouse");
-                    this._mouseUp(event);
+                "pointerup": (event) => {
+                    this._rationalise(event, "pointer");
+                    this._pointerUp(event);
                 },
-                "mousemove": (event) => {
-                    this._rationalise(event, "mouse");
-                    this._mouseMove(event);
+                "pointermove": (event) => {
+                    this._rationalise(event, "pointer");
+                    this._pointerMove(event);
                 },
-                "mouseWheel": (event) => {
-                    this._rationalise(event, "mouse");
-                    this._mouseWheel(event);
+                "pointerWheel": (event) => {
+                    this._rationalise(event, "wheel");
+                    this._pointerWheel(event);
                 },
-                "touchmove": (event) => {
-                    this._rationalise(event, "touch");
-                    this._mouseMove(event);
-                },
-                "touchstart": (event) => {
-                    this._rationalise(event, "touch");
-                    this._mouseDown(event);
-                },
-                "touchend": (event) => {
-                    this._rationalise(event, "touch");
-                    this._mouseUp(event);
-                },
+                // "touchmove": (event: TouchEvent) => {
+                // 	this._rationalise(event, "touch");
+                // 	this._pointerMove(event);
+                // },
+                // "touchstart": (event: TouchEvent) => {
+                // 	this._rationalise(event, "touch");
+                // 	this._pointerDown(event);
+                // },
+                // "touchend": (event: TouchEvent) => {
+                // 	this._rationalise(event, "touch");
+                // 	this._pointerUp(event);
+                // },
                 "contextmenu": (event) => {
                     event.preventDefault();
-                    this._rationalise(event, "mouse");
+                    this._rationalise(event, "pointer");
                     this._contextMenu(event);
                 },
                 "keydown": (event) => {
-                    this._rationalise(event, "key");
+                    this._rationalise(event, "keyboard");
                     this._keyDown(event);
                 },
                 "keyup": (event) => {
-                    this._rationalise(event, "key");
+                    this._rationalise(event, "keyboard");
                     this._keyUp(event);
                 }
             };
-            // Listen for mouse events
-            canvas.addEventListener("mousedown", this._evRef.mousedown, false);
-            canvas.addEventListener("mouseup", this._evRef.mouseup, false);
-            canvas.addEventListener("mousemove", this._evRef.mousemove, false);
-            canvas.addEventListener("wheel", this._evRef.mouseWheel, false);
+            // Listen for pointer events
+            canvas.addEventListener("pointerdown", this._evRef.pointerdown, false);
+            canvas.addEventListener("pointerup", this._evRef.pointerup, false);
+            canvas.addEventListener("pointermove", this._evRef.pointermove, false);
+            canvas.addEventListener("wheel", this._evRef.pointerWheel, false);
             // Touch events
-            canvas.addEventListener("touchmove", this._evRef.touchmove, false);
-            canvas.addEventListener("touchstart", this._evRef.touchstart, false);
-            canvas.addEventListener("touchend", this._evRef.touchend, false);
+            // canvas.addEventListener("touchmove", this._evRef.touchmove, false);
+            // canvas.addEventListener("touchstart", this._evRef.touchstart, false);
+            // canvas.addEventListener("touchend", this._evRef.touchend, false);
             // Kill the context menu on right-click, urgh!
             canvas.addEventListener("contextmenu", this._evRef.contextmenu, false);
             // Listen for keyboard events
@@ -109,25 +99,25 @@ export class IgeInputComponent extends IgeComponent {
             const canvas = ige.engine._canvas;
             if (!canvas)
                 return;
-            // Mouse events
-            canvas.removeEventListener("mousedown", this._evRef.mousedown, false);
-            canvas.removeEventListener("mouseup", this._evRef.mouseup, false);
-            canvas.removeEventListener("mousemove", this._evRef.mousemove, false);
-            canvas.removeEventListener("wheel", this._evRef.mouseWheel, false);
+            // Pointer events
+            canvas.removeEventListener("pointerdown", this._evRef.pointerdown, false);
+            canvas.removeEventListener("pointerup", this._evRef.pointerup, false);
+            canvas.removeEventListener("pointermove", this._evRef.pointermove, false);
+            canvas.removeEventListener("wheel", this._evRef.pointerWheel, false);
             // Touch events
-            canvas.removeEventListener("touchmove", this._evRef.touchmove, false);
-            canvas.removeEventListener("touchstart", this._evRef.touchstart, false);
-            canvas.removeEventListener("touchend", this._evRef.touchend, false);
+            // canvas.removeEventListener("touchmove", this._evRef.touchmove, false);
+            // canvas.removeEventListener("touchstart", this._evRef.touchstart, false);
+            // canvas.removeEventListener("touchend", this._evRef.touchend, false);
             // Context menu events
             canvas.removeEventListener("contextmenu", this._evRef.contextmenu, false);
         };
         /**
          * Fires an input event that didn't occur on the main canvas, as if it had
          * occurred on the main canvas, allowing you to pass through events like
-         * mousedown and mouseup that occurred elsewhere on the DOM but might be
+         * pointerdown and pointerup that occurred elsewhere on the DOM but might be
          * useful for the engine to be aware of, such as if you are dragging an entity
-         * and then the mouse goes off-canvas and the button is released.
-         * @param {String} eventName The lowercase name of the event to fire e.g. mousedown.
+         * and then the pointer goes off-canvas and the button is released.
+         * @param {String} eventName The lowercase name of the event to fire e.g. pointerdown.
          * @param {Object} eventObj The event object that was passed by the DOM.
          */
         this.fireManualEvent = (eventName, eventObj) => {
@@ -144,107 +134,78 @@ export class IgeInputComponent extends IgeComponent {
             }
         };
         /**
-         * Sets igeX and igeY properties in the event object that
-         * can be relied on to provide the x, y co-ordinates of the
-         * mouse event including the canvas offset.
-         * @param {Event} event The event object.
-         * @param type
-         * @private
-         */
-        this._rationalise = (event, type) => {
-            event.igeType = type;
-            // Check if we want to prevent default behaviour
-            if (type === "key") {
-                const keyboardEvent = event;
-                // TODO: Re-map all the keys using the new event.key property
-                if (keyboardEvent.keyCode === 8) { // Backspace
-                    // Check if the event occurred on the body
-                    const elem = event.target;
-                    if (((elem === null || elem === void 0 ? void 0 : elem.tagName) || "body").toLowerCase() === "body") {
-                        // The event occurred on our body element so prevent
-                        // default behaviour. This allows other elements on
-                        // the page to retain focus such as text boxes etc
-                        // and allows them to behave normally.
-                        event.preventDefault();
-                    }
-                }
-            }
-            if (type === "touch") {
-                const touchEvent = event;
-                touchEvent.preventDefault();
-                touchEvent.button = 0; // Emulate left mouse button
-                // Handle touch changed
-                if (touchEvent.changedTouches && touchEvent.changedTouches.length) {
-                    touchEvent.igePageX = touchEvent.changedTouches[0].pageX;
-                    touchEvent.igePageY = touchEvent.changedTouches[0].pageY;
-                }
-            }
-            if (type === "mouse") {
-                // @ts-ignore
-                event.igePageX = event.pageX;
-                // @ts-ignore
-                event.igePageY = event.pageY;
-            }
-            const canvasPosition = ige.engine._canvasPosition();
-            event.igeX = (event.igePageX - canvasPosition.left);
-            event.igeY = (event.igePageY - canvasPosition.top);
-            this.emit("inputEvent", event);
-        };
-        /**
-         * Emits the "mouseDown" event.
+         * Emits the "pointerDown" event.
          * @param event
          * @private
          */
-        this._mouseDown = (event) => {
+        this._pointerDown = (event) => {
             if (this._debug) {
-                console.log("Mouse Down", event);
+                console.log("Pointer Down", event);
             }
-            // Update the mouse position within the viewports
-            this._updateMouseData(event);
+            // Update the pointer position within the viewports
+            this._updatePointerData(event);
             const mx = event.igeX - ige.engine._bounds2d.x2;
             const my = event.igeY - ige.engine._bounds2d.y2;
             if (event.button === 0) {
-                this._state[this.mouse.button1] = true;
+                this._updateState(IgeInputDevice.pointer1, IgeInputPointerMap.button0, true);
             }
             if (event.button === 1) {
-                this._state[this.mouse.button2] = true;
+                this._updateState(IgeInputDevice.pointer1, IgeInputPointerMap.button1, true);
             }
             if (event.button === 2) {
-                this._state[this.mouse.button3] = true;
+                this._updateState(IgeInputDevice.pointer1, IgeInputPointerMap.button2, true);
             }
-            this.mouseDown = event;
-            if (!this.emit("preMouseDown", [event, mx, my, event.button + 1])) {
+            if (event.button === 3) {
+                this._updateState(IgeInputDevice.pointer1, IgeInputPointerMap.button3, true);
+            }
+            if (event.button === 4) {
+                this._updateState(IgeInputDevice.pointer1, IgeInputPointerMap.button4, true);
+            }
+            if (event.button === 5) {
+                this._updateState(IgeInputDevice.pointer1, IgeInputPointerMap.button5, true);
+            }
+            this.pointerDown = event;
+            if (!this.emit("prePointerDown", [event, mx, my, event.button + 1])) {
                 this.queueEvent(() => {
-                    this.emit("mouseDown", [event, mx, my, event.button + 1]);
+                    this.emit("pointerDown", [event, mx, my, event.button + 1]);
                 });
             }
         };
         /**
-         * Emits the "mouseUp" event.
+         * Emits the "pointerUp" event.
          * @param event
          * @private
          */
-        this._mouseUp = (event) => {
+        this._pointerUp = (event) => {
             if (this._debug) {
-                console.log("Mouse Up", event);
+                console.log("Pointer Up", event);
             }
-            // Update the mouse position within the viewports
-            this._updateMouseData(event);
+            // Update the pointer position within the viewports
+            this._updatePointerData(event);
             const mx = event.igeX - ige.engine._bounds2d.x2;
             const my = event.igeY - ige.engine._bounds2d.y2;
             if (event.button === 0) {
-                this._state[this.mouse.button1] = false;
+                this._updateState(IgeInputDevice.pointer1, IgeInputPointerMap.button0, false);
             }
             if (event.button === 1) {
-                this._state[this.mouse.button2] = false;
+                this._updateState(IgeInputDevice.pointer1, IgeInputPointerMap.button1, false);
             }
             if (event.button === 2) {
-                this._state[this.mouse.button3] = false;
+                this._updateState(IgeInputDevice.pointer1, IgeInputPointerMap.button2, false);
             }
-            this.mouseUp = event;
-            if (!this.emit("preMouseUp", [event, mx, my, event.button + 1])) {
+            if (event.button === 3) {
+                this._updateState(IgeInputDevice.pointer1, IgeInputPointerMap.button3, false);
+            }
+            if (event.button === 4) {
+                this._updateState(IgeInputDevice.pointer1, IgeInputPointerMap.button4, false);
+            }
+            if (event.button === 5) {
+                this._updateState(IgeInputDevice.pointer1, IgeInputPointerMap.button5, false);
+            }
+            this.pointerUp = event;
+            if (!this.emit("prePointerUp", [event, mx, my, event.button + 1])) {
                 this.queueEvent(() => {
-                    this.emit("mouseUp", [event, mx, my, event.button + 1]);
+                    this.emit("pointerUp", [event, mx, my, event.button + 1]);
                 });
             }
         };
@@ -252,18 +213,27 @@ export class IgeInputComponent extends IgeComponent {
             if (this._debug) {
                 console.log("Context Menu", event);
             }
-            // Update the mouse position within the viewports
-            this._updateMouseData(event);
+            // Update the pointer position within the viewports
+            this._updatePointerData(event);
             const mx = event.igeX - ige.engine._bounds2d.x2;
             const my = event.igeY - ige.engine._bounds2d.y2;
             if (event.button === 0) {
-                this._state[this.mouse.button1] = false;
+                this._updateState(IgeInputDevice.pointer1, IgeInputPointerMap.button0, false);
             }
             if (event.button === 1) {
-                this._state[this.mouse.button2] = false;
+                this._updateState(IgeInputDevice.pointer1, IgeInputPointerMap.button1, false);
             }
             if (event.button === 2) {
-                this._state[this.mouse.button3] = false;
+                this._updateState(IgeInputDevice.pointer1, IgeInputPointerMap.button2, false);
+            }
+            if (event.button === 3) {
+                this._updateState(IgeInputDevice.pointer1, IgeInputPointerMap.button3, false);
+            }
+            if (event.button === 4) {
+                this._updateState(IgeInputDevice.pointer1, IgeInputPointerMap.button4, false);
+            }
+            if (event.button === 5) {
+                this._updateState(IgeInputDevice.pointer1, IgeInputPointerMap.button5, false);
             }
             this.contextMenu = event;
             if (!this.emit("preContextMenu", [event, mx, my, event.button + 1])) {
@@ -273,48 +243,74 @@ export class IgeInputComponent extends IgeComponent {
             }
         };
         /**
-         * Emits the "mouseMove" event.
+         * Emits the "pointerMove" event.
          * @param event
          * @private
          */
-        this._mouseMove = (event) => {
-            // Update the mouse position within the viewports
-            ige._mouseOverVp = this._updateMouseData(event);
+        this._pointerMove = (event) => {
+            // Update the pointer position within the viewports
+            ige._pointerOverVp = this._updatePointerData(event);
             const mx = event.igeX - ige.engine._bounds2d.x2;
             const my = event.igeY - ige.engine._bounds2d.y2;
-            this._state[this.mouse.x] = mx;
-            this._state[this.mouse.y] = my;
-            this.mouseMove = event;
-            if (!this.emit("preMouseMove", [event, mx, my, event.button + 1])) {
+            this._updateState(IgeInputDevice.pointer1, IgeInputPointerMap.x, mx);
+            this._updateState(IgeInputDevice.pointer1, IgeInputPointerMap.y, my);
+            this.pointerMove = event;
+            if (!this.emit("prePointerMove", [event, mx, my, event.button + 1])) {
                 this.queueEvent(() => {
-                    this.emit("mouseMove", [event, mx, my, event.button + 1]);
+                    this.emit("pointerMove", [event, mx, my, event.button + 1]);
                 });
             }
         };
         /**
-         * Emits the "mouseWheel" event.
+         * Emits the "pointerWheel" event.
          * @param event
          * @private
          */
-        this._mouseWheel = (event) => {
+        this._pointerWheel = (event) => {
             if (this._debug) {
-                console.log("MouseWheel", event);
+                console.log("PointerWheel", event);
             }
-            // Update the mouse position within the viewports
-            this._updateMouseData(event);
+            // Update the pointer position within the viewports
+            this._updatePointerData(event);
             const mx = event.igeX - ige.engine._bounds2d.x2;
             const my = event.igeY - ige.engine._bounds2d.y2;
-            this._state[this.mouse.wheel] = event.deltaY;
-            if (event.deltaY > 0) {
-                this._state[this.mouse.wheelUp] = true;
+            if (event.deltaX !== 0) {
+                this._updateState(IgeInputDevice.pointer1, IgeInputPointerMap.wheelX, event.deltaX);
+                if (event.deltaX > 0) {
+                    this._updateState(IgeInputDevice.pointer1, IgeInputPointerMap.wheelRight, true);
+                    this._updateState(IgeInputDevice.pointer1, IgeInputPointerMap.wheelLeft, false);
+                }
+                else {
+                    this._updateState(IgeInputDevice.pointer1, IgeInputPointerMap.wheelLeft, true);
+                    this._updateState(IgeInputDevice.pointer1, IgeInputPointerMap.wheelRight, false);
+                }
             }
-            else {
-                this._state[this.mouse.wheelDown] = true;
+            if (event.deltaY !== 0) {
+                this._updateState(IgeInputDevice.pointer1, IgeInputPointerMap.wheelY, event.deltaY);
+                if (event.deltaY > 0) {
+                    this._updateState(IgeInputDevice.pointer1, IgeInputPointerMap.wheelUp, true);
+                    this._updateState(IgeInputDevice.pointer1, IgeInputPointerMap.wheelDown, false);
+                }
+                else {
+                    this._updateState(IgeInputDevice.pointer1, IgeInputPointerMap.wheelDown, true);
+                    this._updateState(IgeInputDevice.pointer1, IgeInputPointerMap.wheelUp, false);
+                }
             }
-            this.mouseWheel = event;
-            if (!this.emit("preMouseWheel", [event, mx, my, event.button + 1])) {
+            if (event.deltaZ !== 0) {
+                this._updateState(IgeInputDevice.pointer1, IgeInputPointerMap.wheelZ, event.deltaZ);
+                if (event.deltaZ > 0) {
+                    this._updateState(IgeInputDevice.pointer1, IgeInputPointerMap.wheelBackward, true);
+                    this._updateState(IgeInputDevice.pointer1, IgeInputPointerMap.wheelForward, false);
+                }
+                else {
+                    this._updateState(IgeInputDevice.pointer1, IgeInputPointerMap.wheelForward, true);
+                    this._updateState(IgeInputDevice.pointer1, IgeInputPointerMap.wheelBackward, false);
+                }
+            }
+            this.pointerWheel = event;
+            if (!this.emit("prePointerWheel", [event, mx, my, event.button + 1])) {
                 this.queueEvent(() => {
-                    this.emit("mouseWheel", [event, mx, my, event.button + 1]);
+                    this.emit("pointerWheel", [event, mx, my, event.button + 1]);
                 });
             }
         };
@@ -324,7 +320,7 @@ export class IgeInputComponent extends IgeComponent {
          * @private
          */
         this._keyDown = (event) => {
-            this._state[event.keyCode] = true;
+            this._updateState(IgeInputDevice.keyboard, IgeInputKeyboardMap[event.code], true);
             if (this._debug) {
                 console.log("Key Down", event);
             }
@@ -340,7 +336,7 @@ export class IgeInputComponent extends IgeComponent {
          * @private
          */
         this._keyUp = (event) => {
-            this._state[event.keyCode] = false;
+            this._updateState(IgeInputDevice.keyboard, IgeInputKeyboardMap[event.code], false);
             if (this._debug) {
                 console.log("Key Up", event);
             }
@@ -351,31 +347,31 @@ export class IgeInputComponent extends IgeComponent {
             }
         };
         /**
-         * Loops the mounted viewports and updates their respective mouse
-         * co-ordinates so that mouse events can work out where on a viewport
+         * Loops the mounted viewports and updates their respective pointer
+         * co-ordinates so that pointer events can work out where on a viewport
          * they occurred.
          *
          * @param {Event} event The HTML DOM event that occurred.
          * @return {*}
          * @private
          */
-        this._updateMouseData = (event) => {
-            // Loop the viewports and check if the mouse is inside
+        this._updatePointerData = (event) => {
+            // Loop the viewports and check if the pointer is inside
             const arr = ige.engine._children;
             const mx = (event.igeX - ige.engine._bounds2d.x2) - ige.engine._translate.x;
             const my = (event.igeY - ige.engine._bounds2d.y2) - ige.engine._translate.y;
             let arrCount = arr.length;
             let vpUpdated;
-            ige._mousePos.x = mx;
-            ige._mousePos.y = my;
+            ige._pointerPos.x = mx;
+            ige._pointerPos.y = my;
             while (arrCount--) {
                 const vp = arr[arr.length - (arrCount + 1)];
-                // Check if the mouse is inside this viewport's bounds
+                // Check if the pointer is inside this viewport's bounds
                 // TODO: Update this code to take into account viewport rotation and camera rotation
                 if (mx > vp._translate.x - vp._bounds2d.x / 2 && mx < vp._translate.x + vp._bounds2d.x / 2) {
                     if (my > vp._translate.y - vp._bounds2d.y / 2 && my < vp._translate.y + vp._bounds2d.y / 2) {
-                        // Mouse is inside this viewport
-                        vp._mousePos = new IgePoint3d(Math.floor((mx - vp._translate.x) / vp.camera._scale.x + vp.camera._translate.x), Math.floor((my - vp._translate.y) / vp.camera._scale.y + vp.camera._translate.y), 0);
+                        // Pointer is inside this viewport
+                        vp._pointerPos = new IgePoint3d(Math.floor((mx - vp._translate.x) / vp.camera._scale.x + vp.camera._translate.x), Math.floor((my - vp._translate.y) / vp.camera._scale.y + vp.camera._translate.y), 0);
                         vpUpdated = vp;
                         // Record the viewport that this event occurred on in the
                         // event object
@@ -389,50 +385,19 @@ export class IgeInputComponent extends IgeComponent {
         /**
          * Defines an action that will be emitted when the specified event type
          * occurs.
-         * @param actionName
-         * @param eventCode
+         * @param action
+         * @param inputMap
          */
-        this.mapAction = (actionName, eventCode) => {
-            this._controlMap[actionName] = eventCode;
+        this.mapAction = (action, inputMap) => {
+            this._controlMap[action] = inputMap;
         };
         /**
          * Returns the passed action's input state value.
-         * @param actionName
+         * @param action
          */
-        this.actionVal = (actionName) => {
-            return this._state[this._controlMap[actionName]];
-        };
-        /**
-         * Returns true if the passed action's input is pressed or its state
-         * is not zero.
-         * @param actionName
-         */
-        this.actionState = (actionName) => {
-            return Boolean(this._state[this._controlMap[actionName]]);
-        };
-        /**
-         * Returns an input's current value.
-         * @param inputId
-         * @return {*}
-         */
-        this.val = (inputId) => {
-            return this._state[inputId];
-        };
-        /**
-         * Returns an input's current state as a boolean.
-         * @param inputId
-         * @return {Boolean}
-         */
-        this.state = (inputId) => {
-            return Boolean(this._state[inputId]);
-        };
-        /**
-         * Stops further event propagation for this tick.
-         * @return {*}
-         */
-        this.stopPropagation = () => {
-            this._eventControl._cancelled = true;
-            return this;
+        this.actionVal = (action) => {
+            const inputMap = this._controlMap[action];
+            return this._state[inputMap[0]][inputMap[1]];
         };
         /**
          * Adds an event method to the eventQueue array. The array is
@@ -456,17 +421,103 @@ export class IgeInputComponent extends IgeComponent {
             }
         };
         this.tick();
-        this._controlMap = {};
-        this._state = {};
-        // Set default values for the mouse position
-        this._state[this.mouse.x] = 0;
-        this._state[this.mouse.y] = 0;
-        // Ask the input component to set up any listeners it has
-        //this.setupListeners(ige.engine._canvas);
+        this._ensureState(IgeInputDevice.pointer1);
+        this._ensureState(IgeInputDevice.keyboard);
+        this._ensureState(IgeInputDevice.gamePad1);
+        this._ensureState(IgeInputDevice.gamePad2);
+        this._ensureState(IgeInputDevice.gamePad3);
+        this._ensureState(IgeInputDevice.gamePad4);
+        this._ensureState(IgeInputDevice.gamePad5);
+        this._ensureState(IgeInputDevice.gamePad6);
+        this._ensureState(IgeInputDevice.gamePad7);
+        this._ensureState(IgeInputDevice.gamePad8);
+        // Set default values for the pointer position
+        this._updateState(IgeInputDevice.pointer1, IgeInputPointerMap.x, 0);
+        this._updateState(IgeInputDevice.pointer1, IgeInputPointerMap.y, 0);
+    }
+    _ensureState(device) {
+        this._state[device] = this._state[device] || {};
+    }
+    _updateState(device, inputId, newValue) {
+        this._state[device][inputId] = newValue;
+    }
+    _rationalise(event, type) {
+        event.igeType = type;
+        // Check if we want to prevent default behaviour
+        if (type === "keyboard") {
+            const keyboardEvent = event;
+            // TODO: Re-map all the keys using the new event.key property
+            if (keyboardEvent.keyCode === 8) { // Backspace
+                // Check if the event occurred on the body
+                const elem = event.target;
+                if (((elem === null || elem === void 0 ? void 0 : elem.tagName) || "body").toLowerCase() === "body") {
+                    // The event occurred on our body element so prevent
+                    // default behaviour. This allows other elements on
+                    // the page to retain focus such as text boxes etc
+                    // and allows them to behave normally.
+                    event.preventDefault();
+                }
+            }
+        }
+        // if (type === "touch") {
+        // 	const touchEvent = event as TouchEvent;
+        // 	touchEvent.preventDefault();
+        // 	touchEvent.button = 0; // Emulate left pointer button
+        //
+        // 	// Handle touch changed
+        // 	if (touchEvent.changedTouches && touchEvent.changedTouches.length) {
+        // 		touchEvent.igePageX = touchEvent.changedTouches[0].pageX;
+        // 		touchEvent.igePageY = touchEvent.changedTouches[0].pageY;
+        // 	}
+        // }
+        if (type === "pointer") {
+            const pointerEvent = event;
+            pointerEvent.igePageX = pointerEvent.pageX;
+            pointerEvent.igePageY = pointerEvent.pageY;
+        }
+        const canvasPosition = ige.engine._canvasPosition();
+        event.igeX = (event.igePageX - canvasPosition.left);
+        event.igeY = (event.igePageY - canvasPosition.top);
+        this.emit("inputEvent", event);
+    }
+    /**
+     * Returns true if the passed action's input is pressed or its state
+     * is not zero.
+     * @param action
+     */
+    actionState(action) {
+        return Boolean(this.actionVal(action));
+    }
+    /**
+     * Returns an input's current value.
+     * @param device
+     * @param inputId
+     * @return {*}
+     */
+    val(device, inputId) {
+        return this._state[device][inputId];
+    }
+    /**
+     * Returns an input's current state as a boolean.
+     * @param device
+     * @param inputId
+     * @return {Boolean}
+     */
+    state(device, inputId) {
+        return Boolean(this.val(device, inputId));
+    }
+    /**
+     * Stops further event propagation for this tick.
+     * @return {*}
+     */
+    stopPropagation() {
+        this._eventControl._cancelled = true;
+        return this;
     }
     /**
      * Called by the engine after ALL other tick methods have processed.
-     * Call originates in IgeRoot.js. Allows us to reset any flags etc.
+     * Call originates in IgeEngine.engineStep(). Allows us to reset any flags
+     * etc.
      */
     tick() {
         // If we have an event queue, process it
@@ -485,10 +536,10 @@ export class IgeInputComponent extends IgeComponent {
         this._eventQueue = [];
         this._eventControl._cancelled = false;
         delete this.dblClick; // TODO: Add double-click event handling
-        delete this.mouseMove;
-        delete this.mouseDown;
-        delete this.mouseUp;
-        delete this.mouseWheel;
+        delete this.pointerMove;
+        delete this.pointerDown;
+        delete this.pointerUp;
+        delete this.pointerWheel;
     }
     /**
      * Emit an event by name. Overrides the IgeEventingClass emit method and

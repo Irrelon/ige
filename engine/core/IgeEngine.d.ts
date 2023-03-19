@@ -47,12 +47,11 @@ export declare class IgeEngine extends IgeEntity {
     _clientNetDiff: number;
     _frameAlternator: boolean;
     _viewportDepth: boolean;
-    _mousePos: IgePoint3d;
+    _pointerPos: IgePoint3d;
     _currentViewport: IgeViewport | null;
     _currentCamera: IgeCamera | null;
     _currentTime: number;
     _globalSmoothing: boolean;
-    _postTick: (() => void)[];
     _timeSpentInUpdate: Record<string, number>;
     _timeSpentLastUpdate: Record<string, Record<string, number>>;
     _timeSpentInTick: Record<string, number>;
@@ -74,7 +73,7 @@ export declare class IgeEngine extends IgeEntity {
     _syncArr: SyncEntry[];
     _webFonts: FontFace[];
     _cssFonts: string[];
-    _mouseOverVp?: IgeViewport;
+    _pointerOverVp?: IgeViewport;
     _deviceFinalDrawRatio: number;
     _createdFrontBuffer: boolean;
     _devicePixelRatio: number;
@@ -98,7 +97,7 @@ export declare class IgeEngine extends IgeEntity {
      * @param {IgeEntity} entity The entity to add.
      * @returns {Ige|[]} Either this, or the spawn queue.
      */
-    spawnQueue(entity: IgeObject): this | IgeObject[];
+    spawnQueue(entity: IgeObject): IgeObject[] | this;
     currentViewport(viewport?: IgeObject): IgeViewport | null;
     /**
      * Sets the canvas element that will be used as the front-buffer.
@@ -106,7 +105,7 @@ export declare class IgeEngine extends IgeEntity {
      * @param autoSize If set to true, the engine will automatically size
      * the canvas to the width and height of the window upon window resize.
      */
-    canvas(elem?: HTMLCanvasElement, autoSize?: boolean): this | HTMLCanvasElement | undefined;
+    canvas(elem?: HTMLCanvasElement, autoSize?: boolean): HTMLCanvasElement | this | undefined;
     /**
      * Clears the entire canvas.
      */
@@ -430,7 +429,7 @@ export declare class IgeEngine extends IgeEntity {
      * is currently over, ordered by their draw order from drawn last (above other
      * entities) to first (underneath other entities).
      */
-    mouseOverList: (obj?: IgeEntity, entArr?: IgeEntity[]) => IgeEntity[];
+    pointerOverList: (obj?: IgeEntity, entArr?: IgeEntity[]) => IgeEntity[];
     _childMounted(child: IgeObject): void;
     updateSceneGraph(ctx: IgeCanvasRenderingContext2d): void;
     renderSceneGraph(ctx: IgeCanvasRenderingContext2d): void;
