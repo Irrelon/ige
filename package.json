@@ -10,7 +10,7 @@
 		}
 	],
 	"engines": {
-		"node": "v16.13.1"
+		"node": "^v16.x.x"
 	},
 	"type": "module",
 	"main": "index.js",
