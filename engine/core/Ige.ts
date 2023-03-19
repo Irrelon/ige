@@ -8,7 +8,7 @@ import { IgeInputComponent } from "@/engine/components/IgeInputComponent";
 import { IgeObjectRegister } from "./IgeObjectRegister";
 import { IgeArrayRegister } from "./IgeArrayRegister";
 import { IgePoint3d } from "./IgePoint3d";
-import { IgeAudioController } from "@/engine/components/audio";
+import { IgeAudioController } from "@/engine/audio";
 import { IgeRouter } from "./IgeRouter";
 
 import type { IgeObject } from "./IgeObject";

@@ -1,7 +1,7 @@
 import { ige } from "../../../instance";
 import { igeClassStore } from "../../../igeClassStore";
 import { newIdHex } from "../../../utils";
-import { IgeNetIoBaseComponent } from "../IgeNetIoBaseComponent";
+import { IgeNetIoBaseController } from "../IgeNetIoBaseController";
 import { IgeNetIoClient } from "./IgeNetIoClient";
 import {
 	IgeNetworkMessageStructure,
@@ -32,7 +32,7 @@ import {
  * The client-side net.io component. Handles all client-side
  * networking systems.
  */
-export class IgeNetIoClientComponent extends IgeNetIoBaseComponent {
+export class IgeNetIoClientComponent extends IgeNetIoBaseController {
 	version: string = '1.0.0';
 	_networkCommands: Record<string, IgeNetworkClientSideMessageHandler> = {}; // Maps a command name to a command handler function
 	_initDone: boolean = false;

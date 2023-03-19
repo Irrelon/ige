@@ -4,8 +4,8 @@ import {
 } from "@/types/IgeNetworkMessage";
 import { IgeNetIoSocket } from "./server/IgeNetIoSocket";
 
-export class IgeNetIoBaseComponent extends IgeEventingClass {
-	classId = 'IgeNetIoBaseComponent';
+export class IgeNetIoBaseController extends IgeEventingClass {
+	classId = 'IgeNetIoBaseController';
 	_networkCommandsIndex: string[] = []; // Maps a command name to an integer via the array index
 	_networkCommandsLookup: Record<string, number> = {}; // Maps a command name to its index
 	_debug: boolean = false;

@@ -1,8 +1,8 @@
 import { IgeEventingClass } from "../../core/IgeEventingClass.js";
-export class IgeNetIoBaseComponent extends IgeEventingClass {
+export class IgeNetIoBaseController extends IgeEventingClass {
     constructor() {
         super(...arguments);
-        this.classId = 'IgeNetIoBaseComponent';
+        this.classId = 'IgeNetIoBaseController';
         this._networkCommandsIndex = []; // Maps a command name to an integer via the array index
         this._networkCommandsLookup = {}; // Maps a command name to its index
         this._debug = false;

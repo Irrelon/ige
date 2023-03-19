@@ -1,6 +1,6 @@
 import { ige } from "../../../instance";
 import { arrPull, newIdHex } from "../../../utils";
-import { IgeNetIoBaseComponent } from "../IgeNetIoBaseComponent";
+import { IgeNetIoBaseController } from "../IgeNetIoBaseController";
 import {
 	IgeNetworkMessageData,
 	IgeNetworkServerSideMessageHandler,
@@ -23,7 +23,7 @@ import {
 } from "@/enums/IgeConstants";
 import { IgeNetIoSocket } from "./IgeNetIoSocket";
 
-export class IgeNetIoServerComponent extends IgeNetIoBaseComponent {
+export class IgeNetIoServerComponent extends IgeNetIoBaseController {
 	_idCounter: number = 0;
 	_networkCommands: Record<string, IgeNetworkServerSideMessageHandler | undefined> = {}; // Maps a command name to a command handler function
 	_requests: Record<string, IgeNetworkRequestMessageStructure<IgeNetworkServerSideMessageHandler>> = {};

@@ -9,7 +9,7 @@ import { FactoryBuilding } from "../../entities/FactoryBuilding.js";
 import { Road } from "../../entities/Road.js";
 import { StorageBuilding } from "../../entities/StorageBuilding.js";
 import { IgeTileMap2d } from "../../../engine/core/IgeTileMap2d.js";
-import { IgeAudioEntity } from "../../../engine/components/audio/index.js";
+import { IgeAudioEntity } from "../../../engine/audio/index.js";
 import { IgeSceneGraph } from "../../../engine/core/IgeSceneGraph.js";
 import { IgeScene2d } from "../../../engine/core/IgeScene2d.js";
 export class Level1 extends IgeSceneGraph {

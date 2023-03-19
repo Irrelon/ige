@@ -1,14 +1,14 @@
 import { ige } from "../../../instance.js";
 import { igeClassStore } from "../../../igeClassStore.js";
 import { newIdHex } from "../../../utils.js";
-import { IgeNetIoBaseComponent } from "../IgeNetIoBaseComponent.js";
+import { IgeNetIoBaseController } from "../IgeNetIoBaseController.js";
 import { IgeNetIoClient } from "./IgeNetIoClient.js";
 import { IGE_NETWORK_REQUEST, IGE_NETWORK_RESPONSE, IGE_NETWORK_STREAM_CREATE, IGE_NETWORK_STREAM_DATA, IGE_NETWORK_STREAM_DESTROY, IGE_NETWORK_STREAM_TIME, IGE_NETWORK_TIME_SYNC } from "../../../../enums/IgeConstants.js";
 /**
  * The client-side net.io component. Handles all client-side
  * networking systems.
  */
-export class IgeNetIoClientComponent extends IgeNetIoBaseComponent {
+export class IgeNetIoClientComponent extends IgeNetIoBaseController {
     constructor() {
         super();
         this.version = '1.0.0';

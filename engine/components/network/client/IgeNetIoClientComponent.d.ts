@@ -1,4 +1,4 @@
-import { IgeNetIoBaseComponent } from "../IgeNetIoBaseComponent";
+import { IgeNetIoBaseController } from "../IgeNetIoBaseController";
 import { IgeNetIoClient } from "./IgeNetIoClient";
 import { IgeNetworkMessageStructure, IgeNetworkRequestMessageStructure, IgeNetworkMessageData, IgeNetworkEncodedMessageData, IgeNetworkTimeSyncResponseFromClient, IgeNetworkTimeSyncRequestFromServer, IgeNetworkClientSideMessageHandler, IgeNetworkClientSideResponseHandler } from "@/types/IgeNetworkMessage";
 import { IgeStreamCreateMessageData, IgeStreamDestroyMessageData } from "@/types/IgeNetworkStream";
@@ -6,7 +6,7 @@ import { IgeStreamCreateMessageData, IgeStreamDestroyMessageData } from "@/types
  * The client-side net.io component. Handles all client-side
  * networking systems.
  */
-export declare class IgeNetIoClientComponent extends IgeNetIoBaseComponent {
+export declare class IgeNetIoClientComponent extends IgeNetIoBaseController {
     version: string;
     _networkCommands: Record<string, IgeNetworkClientSideMessageHandler>;
     _initDone: boolean;

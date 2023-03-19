@@ -9,7 +9,7 @@ import { FactoryBuilding } from "../../entities/FactoryBuilding";
 import { Road } from "../../entities/Road";
 import { StorageBuilding } from "../../entities/StorageBuilding";
 import { IgeTileMap2d } from "@/engine/core/IgeTileMap2d";
-import { IgeAudioEntity } from "@/engine/components/audio/index";
+import { IgeAudioEntity } from "@/engine/audio/index";
 import { IgeSceneGraph } from "@/engine/core/IgeSceneGraph";
 import { IgeEntity } from "@/engine/core/IgeEntity";
 import { IgeScene2d } from "@/engine/core/IgeScene2d";

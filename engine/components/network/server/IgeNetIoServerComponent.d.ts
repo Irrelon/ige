@@ -1,8 +1,8 @@
-import { IgeNetIoBaseComponent } from "../IgeNetIoBaseComponent";
+import { IgeNetIoBaseController } from "../IgeNetIoBaseController";
 import { IgeNetworkMessageData, IgeNetworkServerSideMessageHandler, IgeNetworkMessageStructure, IgeNetworkRequestMessageStructure, IgeNetworkServerSideResponseData } from "@/types/IgeNetworkMessage";
 import { IgeNetIoServer } from "./IgeNetIoServer";
 import { IgeNetIoSocket } from "./IgeNetIoSocket";
-export declare class IgeNetIoServerComponent extends IgeNetIoBaseComponent {
+export declare class IgeNetIoServerComponent extends IgeNetIoBaseController {
     _idCounter: number;
     _networkCommands: Record<string, IgeNetworkServerSideMessageHandler | undefined>;
     _requests: Record<string, IgeNetworkRequestMessageStructure<IgeNetworkServerSideMessageHandler>>;

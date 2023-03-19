@@ -1,7 +1,7 @@
 import { IgeEventingClass } from "../../core/IgeEventingClass";
 import { IgeNetworkMessageData } from "@/types/IgeNetworkMessage";
 import { IgeNetIoSocket } from "./server/IgeNetIoSocket";
-export declare class IgeNetIoBaseComponent extends IgeEventingClass {
+export declare class IgeNetIoBaseController extends IgeEventingClass {
     classId: string;
     _networkCommandsIndex: string[];
     _networkCommandsLookup: Record<string, number>;

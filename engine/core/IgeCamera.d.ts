@@ -22,7 +22,7 @@ export declare class IgeCamera extends IgeEntity {
      * @param {IgeRect=} rect
      * @return {*}
      */
-    limit(rect?: IgeRect): IgeRect | IgeViewport | undefined;
+    limit(rect?: IgeRect): IgeViewport | IgeRect | undefined;
     /**
      * Pan (tween) the camera to the new specified point in
      * the specified time.
@@ -51,7 +51,7 @@ export declare class IgeCamera extends IgeEntity {
      * it will not use floating point values.
      * @return {*}
      */
-    trackTranslate(entity: IgeEntity, smoothing?: number, rounding?: boolean): IgeViewport | IgeEntity | undefined;
+    trackTranslate(entity: IgeEntity, smoothing?: number, rounding?: boolean): IgeEntity | IgeViewport | undefined;
     /**
      * Gets / sets the translate tracking smoothing value.
      * @param {Number=} val
@@ -83,7 +83,7 @@ export declare class IgeCamera extends IgeEntity {
      * tracking will be.
      * @return {*}
      */
-    trackRotate(entity?: IgeEntity, smoothing?: number): IgeViewport | IgeEntity | undefined;
+    trackRotate(entity?: IgeEntity, smoothing?: number): IgeEntity | IgeViewport | undefined;
     /**
      * Gets / sets the rotate tracking smoothing value.
      * @param {Number=} val

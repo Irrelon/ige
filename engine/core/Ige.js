@@ -8,7 +8,7 @@ import { IgeInputComponent } from "../../engine/components/IgeInputComponent.js"
 import { IgeObjectRegister } from "./IgeObjectRegister.js";
 import { IgeArrayRegister } from "./IgeArrayRegister.js";
 import { IgePoint3d } from "./IgePoint3d.js";
-import { IgeAudioController } from "../../engine/components/audio/index.js";
+import { IgeAudioController } from "../../engine/audio/index.js";
 import { IgeRouter } from "./IgeRouter.js";
 import { IgeDependencies } from "../../engine/core/IgeDependencies.js";
 const version = "2.0.0";
