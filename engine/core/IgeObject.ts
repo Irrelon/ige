@@ -2128,7 +2128,7 @@ export class IgeObject extends IgeEventingClass implements IgeCanRegisterById, I
 		network.send<IgeStreamCreateMessageData>(
 			IGE_NETWORK_STREAM_CREATE,
 			[
-				this.classId,
+				this.constructor.name,
 				thisId,
 				this._parent.id(),
 				this.streamCreateConstructorArgs(),
