@@ -1,15 +1,15 @@
-> This is an alpha branch at present. It is a re-write utilising TypeScript
+> This is a beta branch at present. It is a re-write utilising TypeScript
 > and compiling to ES6 ESM modules. Client and server-side rendering are
 > working and various examples have been updated. If you see an index.ts
 > in an example folder, it's been updated to work with ES6 modules.
 > 
-> To update the engine as you work on it, run the build-watch npm command
-> and then run the fixPaths npm command. Build watch will compile the
-> TypeScript changes to JavaScript files. The fixPaths will watch .js files
-> and fix any paths to .js files that don't have a .js extension.
+> Compiling the engine: run the `build-watch` npm command and then run the
+> `fixPaths` npm command. `build-watch` will compile the TypeScript changes
+> to JavaScript files. The fixPaths will watch .js files and fix any paths
+> to .js files that don't have a .js extension.
 
 # Isogenic Game Engine
-HTML5 2D and isometric scenegraph-based game engine written entirely in JavaScript.
+HTML5 2D and isometric scenegraph-based game engine written entirely in TypeScript.
 
 ## Latest Updates & Changelog
 https://www.isogenicengine.com/forum/viewforum.php?f=8
@@ -27,45 +27,35 @@ https://www.isogenicengine.com/forum/viewforum.php?f=8
 * Native and font-sheet text support
 
 ## Installation
-After downloading or cloning this repository, if you plan to use the multiplayer aspects of the engine you should run
-(assumes that you cloned / extracted the engine repository to /ige)**:
+After downloading or cloning this repository, please change to the folder you cloned the
+repository to and then run:
 
-    cd /ige/server
-    npm install
+```bash
+npm i
+```
 
-This will automatically download and install any required Node.js modules.
-
-** You must have Node.js installed for the installation to work
+You must have Node.js installed for the installation to work.
+This version of the engine has been tested against Node.js 16.13.1.
 
 ## Examples
-There are a lot of examples in the ./examples folder. Please see the ./examples/readme.md file for more information
-about running the examples.
+There are a lot of examples in the ./examples folder. Please see the ./examples/readme.md
+file for more information about running the examples.
 
 ## Documentation
 https://www.isogenicengine.com/docs-manual.html
 
-## Forum
-Head over to the official help & support forum: https://www.isogenicengine.com/forum
-
 ## Feedback & Support
-If you have any comments, questions, requests etc please don't hesitate to discuss them on the forum!
+If you have any comments, questions, requests etc. you can post on the GitHub issue tracker.
 
 ## License
 MIT
 
 ## Intellectual Property, Ownership & Copyright
-(C)opyright 2013 Irrelon Software Limited
-http://www.irrelon.com
+(C)opyright 2023 Irrelon Software Limited
+https://www.irrelon.com
 
 * Website: https://www.isogenicengine.com
-* Store: https://www.isogenicengine.com/download.html
-* Forum: https://www.isogenicengine.com/forum
 * API Docs: https://www.isogenicengine.com/docs-reference.html
 * Video Tutorials: https://www.isogenicengine.com/docs-tutorials.html
-* Updates, News & Changelog: https://www.isogenicengine.com/forum/viewforum.php?f=8
 * Twitter: @IsogenicEngine https://twitter.com/IsogenicEngine
-* Youtube: http://www.youtube.com/user/coolbloke1324
-
-### Prototype Version
-Some of the art and assets that are included in the premium version are not included in the free (prototype) version because
-of licensing issues.
+* Youtube: https://www.youtube.com/user/coolbloke1324
