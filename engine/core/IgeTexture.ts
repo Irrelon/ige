@@ -39,7 +39,7 @@ export class IgeTexture extends IgeAsset {
 	_textureCanvas?: IgeCanvas;
 	_textureCtx?: IgeCanvasRenderingContext2d;
 	_cells: IgeTextureCellArray = [];
-	_dependencies: IgeDependencies = new IgeDependencies();
+	dependencies: IgeDependencies = new IgeDependencies();
 	image?: IgeImage | IgeCanvas;
 	script?: IgeSmartTexture;
 
@@ -67,7 +67,7 @@ export class IgeTexture extends IgeAsset {
 			ige.textures.add(id, this);
 		}
 
-		this._dependencies.addDependency("IgeImageClass", import("./IgeImage.js").then(({ IgeImage: IgeModule }) => {
+		this.dependencies.add("IgeImageClass", import("./IgeImage.js").then(({ IgeImage: IgeModule }) => {
 			IgeImageClass = IgeModule;
 		}));
 
@@ -131,7 +131,7 @@ export class IgeTexture extends IgeAsset {
 			return false;
 		}
 
-		this._dependencies.dependsOn(["IgeImageClass"], () => {
+		this.dependencies.waitFor(["IgeImageClass"], () => {
 			if (!ige.textures._textureImageStore[imageUrl]) {
 				// Image not in cache, create the image object
 				const image = ige.textures._textureImageStore[imageUrl] = this.image = this._originalImage = new IgeImageClass();

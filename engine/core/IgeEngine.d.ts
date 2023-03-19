@@ -105,7 +105,7 @@ export declare class IgeEngine extends IgeEntity {
      * @param autoSize If set to true, the engine will automatically size
      * the canvas to the width and height of the window upon window resize.
      */
-    canvas(elem?: HTMLCanvasElement, autoSize?: boolean): this | HTMLCanvasElement | undefined;
+    canvas(elem?: HTMLCanvasElement, autoSize?: boolean): HTMLCanvasElement | this | undefined;
     /**
      * Clears the entire canvas.
      */

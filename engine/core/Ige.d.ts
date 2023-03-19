@@ -31,7 +31,7 @@ export declare class Ige {
     config: IgeConfig;
     version: string;
     classStore: Record<string, import("../../types/GenericClass").GenericClass>;
-    _dependencies: IgeDependencies;
+    dependencies: IgeDependencies;
     _watch: (string | IgeObjectWithValueProperty)[];
     _pointerOverVp?: IgeViewport;
     _pointerPos: IgePoint3d;

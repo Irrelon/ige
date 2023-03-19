@@ -7,7 +7,7 @@ export class IgeDependencies {
 	_dependencyFulfilled: Record<string, boolean> = {};
 	_dependsOnArr: IgeDependencyAction[] = [];
 
-	addDependency (dependencyName: string, dependencyPromise: Promise<any>) {
+	add (dependencyName: string, dependencyPromise: Promise<any>) {
 		dependencyPromise.then(() => {
 			this._onDependencySatisfied(dependencyName);
 		}).catch((err)=> {
@@ -15,7 +15,7 @@ export class IgeDependencies {
 		});
 	}
 
-	dependsOn (dependencyList: string[], actionToTake: (...args: any[]) => any) {
+	waitFor (dependencyList: string[], actionToTake: (...args: any[]) => any) {
 		if (this._isDependencyListSatisfied(dependencyList)) {
 			// All deps for this action are already fulfilled so call immediately
 			actionToTake();

@@ -6,18 +6,20 @@ import { IgeChatComponent } from "./IgeChatComponent.js";
  * chat methods and events.
  */
 export class IgeChatClient extends IgeChatComponent {
-    constructor(entity, options) {
-        super(entity, options);
-        // Define the chat system network command listeners
-        this._entity
-            .network.define(IGE_NETWORK_CHAT_MSG, this._onMessageFromServer)
-            .network.define(IGE_NETWORK_CHAT_JOIN_ROOM, this._onJoinedRoom)
-            .network.define(IGE_NETWORK_CHAT_LEAVE_ROOM, this._onLeftRoom)
-            .network.define(IGE_NETWORK_CHAT_LIST_ROOMS, this._onServerSentRoomList)
-            .network.define(IGE_NETWORK_CHAT_ROOM_LIST_USERS, this._onServerSentRoomUserList)
-            .network.define(IGE_NETWORK_CHAT_ROOM_CREATED, this._onRoomCreated)
-            .network.define(IGE_NETWORK_CHAT_ROOM_REMOVED, this._onRoomRemoved);
-        this.log("Chat client component initiated!");
+    constructor() {
+        super();
+        ige.dependencies.waitFor(["network"], () => {
+            // Define the chat system network command listeners
+            const network = ige.network;
+            network.define(IGE_NETWORK_CHAT_MSG, this._onMessageFromServer);
+            network.define(IGE_NETWORK_CHAT_JOIN_ROOM, this._onJoinedRoom);
+            network.define(IGE_NETWORK_CHAT_LEAVE_ROOM, this._onLeftRoom);
+            network.define(IGE_NETWORK_CHAT_LIST_ROOMS, this._onServerSentRoomList);
+            network.define(IGE_NETWORK_CHAT_ROOM_LIST_USERS, this._onServerSentRoomUserList);
+            network.define(IGE_NETWORK_CHAT_ROOM_CREATED, this._onRoomCreated);
+            network.define(IGE_NETWORK_CHAT_ROOM_REMOVED, this._onRoomRemoved);
+            this.log("Chat client component initiated!");
+        });
     }
     /**
      * Asks the serve to let us join the room specified.

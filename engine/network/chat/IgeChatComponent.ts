@@ -1,4 +1,4 @@
-import { IgeComponent } from "@/engine/core/IgeComponent";
+import { IgeEventingClass } from "@/engine/core/IgeEventingClass";
 
 export type IgeChatRoomOptions = Record<string, any>;
 
@@ -9,7 +9,7 @@ export interface IgeChatRoom {
 	users: string[];
 }
 
-export class IgeChatComponent extends IgeComponent {
+export class IgeChatComponent extends IgeEventingClass {
 	classId = "IgeChatComponent";
 	componentId = "chat";
 

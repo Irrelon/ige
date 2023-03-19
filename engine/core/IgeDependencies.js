@@ -3,14 +3,14 @@ export class IgeDependencies {
         this._dependencyFulfilled = {};
         this._dependsOnArr = [];
     }
-    addDependency(dependencyName, dependencyPromise) {
+    add(dependencyName, dependencyPromise) {
         dependencyPromise.then(() => {
             this._onDependencySatisfied(dependencyName);
         }).catch((err) => {
             throw new Error(`Dependency ${dependencyName} threw an error: ${err}`);
         });
     }
-    dependsOn(dependencyList, actionToTake) {
+    waitFor(dependencyList, actionToTake) {
         if (this._isDependencyListSatisfied(dependencyList)) {
             // All deps for this action are already fulfilled so call immediately
             actionToTake();

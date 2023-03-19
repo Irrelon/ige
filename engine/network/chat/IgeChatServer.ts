@@ -7,12 +7,11 @@ import {
 	IGE_NETWORK_CHAT_ROOM_REMOVED
 } from "@/enums/IgeConstants";
 import { IgeNetIoServerController } from "@/engine/network/server/IgeNetIoServerController";
-import { IgeChatComponent, IgeChatRoomOptions } from "@/engine/components/chat/IgeChatComponent";
+import { IgeChatComponent, IgeChatRoomOptions } from "@/engine/network/chat/IgeChatComponent";
 import {
 	IgeNetworkChatFromClientMessageStructure,
 	IgeNetworkChatFromServerMessageStructure
 } from "@/types/IgeNetworkMessage";
-import { IgeEntity } from "../../core/IgeEntity";
 import {
 	IgeNetworkChatFromClientJoinRoomRequestStructure, IgeNetworkChatFromClientLeaveRoomRequestStructure,
 	IgeNetworkChatFromServerJoinRoomResponseStructure,
@@ -24,20 +23,23 @@ import {
  * chat methods and events.
  */
 export class IgeChatServer extends IgeChatComponent {
-	constructor (entity: IgeEntity, options?: any) {
-		super(entity, options);
+	constructor () {
+		super();
 
-		// Define the chat system network commands
-		this._entity
-			.network.define(IGE_NETWORK_CHAT_MSG, this._onMessageFromClient)
-			.network.define(IGE_NETWORK_CHAT_JOIN_ROOM, this._onJoinRoomRequestFromClient)
-			.network.define(IGE_NETWORK_CHAT_LEAVE_ROOM, this._onLeaveRoomRequestFromClient)
-			.network.define(IGE_NETWORK_CHAT_LIST_ROOMS, this._onClientWantsRoomList)
-			.network.define(IGE_NETWORK_CHAT_ROOM_LIST_USERS, this._onClientWantsRoomUserList)
-			.network.define(IGE_NETWORK_CHAT_ROOM_CREATED)
-			.network.define(IGE_NETWORK_CHAT_ROOM_REMOVED);
+		ige.dependencies.waitFor(["network"], () => {
+			// Define the chat system network command listeners
+			const network = ige.network as IgeNetIoServerController;
 
-		this.log("Chat server component initiated!");
+			network.define(IGE_NETWORK_CHAT_MSG, this._onMessageFromClient);
+			network.define(IGE_NETWORK_CHAT_JOIN_ROOM, this._onJoinRoomRequestFromClient);
+			network.define(IGE_NETWORK_CHAT_LEAVE_ROOM, this._onLeaveRoomRequestFromClient);
+			network.define(IGE_NETWORK_CHAT_LIST_ROOMS, this._onClientWantsRoomList);
+			network.define(IGE_NETWORK_CHAT_ROOM_LIST_USERS, this._onClientWantsRoomUserList);
+			network.define(IGE_NETWORK_CHAT_ROOM_CREATED);
+			network.define(IGE_NETWORK_CHAT_ROOM_REMOVED);
+
+			this.log("Chat server component initiated!");
+		});
 	}
 
 	/**

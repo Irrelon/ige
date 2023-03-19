@@ -1,5 +1,5 @@
-import { IgeComponent } from "../../../engine/core/IgeComponent.js";
-export class IgeChatComponent extends IgeComponent {
+import { IgeEventingClass } from "../../../engine/core/IgeEventingClass.js";
+export class IgeChatComponent extends IgeEventingClass {
     constructor() {
         super(...arguments);
         this.classId = "IgeChatComponent";

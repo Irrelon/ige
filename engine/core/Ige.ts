@@ -37,7 +37,7 @@ export class Ige {
 	config: IgeConfig = igeConfig;
 	version: string = version;
 	classStore = igeClassStore;
-	_dependencies: IgeDependencies = new IgeDependencies();
+	dependencies: IgeDependencies = new IgeDependencies();
 	_watch: (string | IgeObjectWithValueProperty)[] = [];
 
 	// Questionable properties, think about them and potentially move
@@ -46,7 +46,7 @@ export class Ige {
 
 	constructor () {
 		if (isClient) {
-			this._dependencies.addDependency("network", import("../network/client/IgeNetIoClientController.js").then(({ IgeNetIoClientController: Module }) => {
+			this.dependencies.add("network", import("../network/client/IgeNetIoClientController.js").then(({ IgeNetIoClientController: Module }) => {
 				this.network = new Module();
 			}));
 
@@ -54,7 +54,7 @@ export class Ige {
 		}
 
 		if (isServer) {
-			this._dependencies.addDependency("network", import("../network/server/IgeNetIoServerController.js").then(({ IgeNetIoServerController: Module }) => {
+			this.dependencies.add("network", import("../network/server/IgeNetIoServerController.js").then(({ IgeNetIoServerController: Module }) => {
 				this.network = new Module();
 			}));
 		}
@@ -62,7 +62,7 @@ export class Ige {
 
 	ready () {
 		return new Promise<void>((resolve) => {
-			this._dependencies.dependsOn(["network"], resolve);
+			this.dependencies.waitFor(["network"], resolve);
 		});
 	}
 

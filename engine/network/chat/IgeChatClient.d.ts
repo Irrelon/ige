@@ -1,13 +1,12 @@
 import { IgeChatComponent } from "./IgeChatComponent";
 import { IgeNetworkChatFromServerMessageStructure } from "@/types/IgeNetworkMessage";
-import { IgeEntity } from "../../core/IgeEntity";
 import { IgeNetworkChatFromServerJoinRoomResponseStructure, IgeNetworkChatFromServerLeaveRoomResponseStructure, IgeNetworkChatFromServerRoomStructure } from "@/types/IgeNetworkChat";
 /**
  * The client-side chat component. Handles all client-side
  * chat methods and events.
  */
 export declare class IgeChatClient extends IgeChatComponent {
-    constructor(entity: IgeEntity, options?: any);
+    constructor();
     /**
      * Asks the serve to let us join the room specified.
      * @param {String} roomId The room id of the room to join.

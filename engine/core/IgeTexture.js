@@ -33,7 +33,7 @@ export class IgeTexture extends IgeAsset {
         this._preFilters = [];
         this._preFiltersData = [];
         this._cells = [];
-        this._dependencies = new IgeDependencies();
+        this.dependencies = new IgeDependencies();
         this._loaded = false;
         if (isServer) {
             this.log(`Cannot create a texture on the server. Textures are only client-side objects. Please alter your code so that you don't try to load a texture on the server-side using something like an if statement around your texture laoding such as "if (isClient) {...}".`, "error");
@@ -43,7 +43,7 @@ export class IgeTexture extends IgeAsset {
             this.id(id);
             ige.textures.add(id, this);
         }
-        this._dependencies.addDependency("IgeImageClass", import("./IgeImage.js").then(({ IgeImage: IgeModule }) => {
+        this.dependencies.add("IgeImageClass", import("./IgeImage.js").then(({ IgeImage: IgeModule }) => {
             IgeImageClass = IgeModule;
         }));
         // Create an array that is used to store cell dimensions
@@ -93,7 +93,7 @@ export class IgeTexture extends IgeAsset {
         if (!isClient) {
             return false;
         }
-        this._dependencies.dependsOn(["IgeImageClass"], () => {
+        this.dependencies.waitFor(["IgeImageClass"], () => {
             if (!ige.textures._textureImageStore[imageUrl]) {
                 // Image not in cache, create the image object
                 const image = ige.textures._textureImageStore[imageUrl] = this.image = this._originalImage = new IgeImageClass();

@@ -25,7 +25,7 @@ export class Ige {
         this.config = igeConfig;
         this.version = version;
         this.classStore = igeClassStore;
-        this._dependencies = new IgeDependencies();
+        this.dependencies = new IgeDependencies();
         this._watch = [];
         this._pointerPos = new IgePoint3d(); // Could probably be just {x: number, y: number}
         // /**
@@ -61,20 +61,20 @@ export class Ige {
             this._watch.splice(index, 1);
         };
         if (isClient) {
-            this._dependencies.addDependency("network", import("../network/client/IgeNetIoClientController.js").then(({ IgeNetIoClientController: Module }) => {
+            this.dependencies.add("network", import("../network/client/IgeNetIoClientController.js").then(({ IgeNetIoClientController: Module }) => {
                 this.network = new Module();
             }));
             this.audio = new IgeAudioController();
         }
         if (isServer) {
-            this._dependencies.addDependency("network", import("../network/server/IgeNetIoServerController.js").then(({ IgeNetIoServerController: Module }) => {
+            this.dependencies.add("network", import("../network/server/IgeNetIoServerController.js").then(({ IgeNetIoServerController: Module }) => {
                 this.network = new Module();
             }));
         }
     }
     ready() {
         return new Promise((resolve) => {
-            this._dependencies.dependsOn(["network"], resolve);
+            this.dependencies.waitFor(["network"], resolve);
         });
     }
     /**
