@@ -20,13 +20,14 @@
 		"@typescript-eslint/ban-ts-comment": "off",
 		"@typescript-eslint/no-this-alias": "off",
 		"@typescript-eslint/no-explicit-any": "off",
+		"@typescript-eslint/no-shadow": "error",
 		"unused-imports/no-unused-imports": "warn",
 		"indent": ["error", "tab"],
 		"space-before-function-paren": [
 			"error",
 			"always"
 		],
-		"no-shadow": "error",
+		"no-shadow": "off",
 		"complexity": [
 			"warn",
 			20
