@@ -8,10 +8,10 @@ import { IgePoly2d } from "./IgePoly2d.js";
 import { IgeDummyCanvas } from "./IgeDummyCanvas.js";
 import { IgeRect } from "./IgeRect.js";
 import { IgeObject } from "./IgeObject.js";
-import { IgeMountMode } from "../../enums/IgeMountMode.js";
-import { IgeStreamMode } from "../../enums/IgeStreamMode.js";
-import { IgeIsometricDepthSortMode } from "../../enums/IgeIsometricDepthSortMode.js";
-import { IgeEntityRenderMode } from "../../enums/IgeEntityRenderMode.js";
+import { IgeMountMode } from "@/enums/IgeMountMode";
+import { IgeStreamMode } from "@/enums/IgeStreamMode";
+import { IgeIsometricDepthSortMode } from "@/enums/IgeIsometricDepthSortMode";
+import { IgeEntityRenderMode } from "@/enums/IgeEntityRenderMode";
 /**
  * Creates an entity and handles the entity's life cycle and
  * all related entity actions / methods.

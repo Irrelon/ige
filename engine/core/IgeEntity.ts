@@ -27,6 +27,12 @@ import type { IgeTexture } from "./IgeTexture";
 import type { IgeCanRegisterByCategory } from "@/types/IgeCanRegisterByCategory";
 import type { IgeInputComponent } from "../components/IgeInputComponent";
 
+export interface IgeEntityTransformAccessor {
+	x: (val?: number) => number | IgeEntity;
+	y: (val?: number) => number | IgeEntity;
+	z: (val?: number) => number | IgeEntity;
+}
+
 /**
  * Creates an entity and handles the entity's life cycle and
  * all related entity actions / methods.
@@ -2593,7 +2599,7 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 	 *     entity.translate().y(10);
 	 * @return {*}
 	 */
-	translate (...args: any[]) {
+	translate (...args: any[]): IgeEntityTransformAccessor {
 		if (args.length) {
 			throw new Error("You called translate with arguments, did you mean translateTo or translateBy instead of translate?");
 		}
@@ -2710,7 +2716,7 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 	 *     entity.rotate().z(degreesToRadians(10));
 	 * @return {*}
 	 */
-	rotate (...args: any[]) {
+	rotate (...args: any[]): IgeEntityTransformAccessor {
 		if (args.length) {
 			throw new Error("You called rotate with arguments, did you mean rotateTo or rotateBy instead of rotate?");
 		}
@@ -2826,7 +2832,7 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 	 *     entity.scale().x(1);
 	 * @return {*}
 	 */
-	scale (...args: any[]) {
+	scale (...args: any[]): IgeEntityTransformAccessor {
 		if (args.length) {
 			throw new Error("You called scale with arguments, did you mean scaleTo or scaleBy instead of scale?");
 		}
@@ -2941,7 +2947,7 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 	 *     entity.origin().x(1);
 	 * @return {*}
 	 */
-	origin () {
+	origin (): IgeEntityTransformAccessor {
 		// used to be this._entity || { x, y z }
 		return (
 			{
