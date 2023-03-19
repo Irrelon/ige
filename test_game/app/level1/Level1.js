@@ -1,17 +1,17 @@
-import { ige } from "../../engine/instance.js";
-import { isClient } from "../../engine/clientServer.js";
-import { degreesToRadians } from "../../engine/utils.js";
-import { IgeStreamMode } from "../../enums/IgeStreamMode.js";
-import { Transporter } from "../entities/Transporter.js";
-import { ResourceBuilding } from "../entities/ResourceBuilding.js";
-import { ResourceType } from "../enums/ResourceType.js";
-import { FactoryBuilding } from "../entities/FactoryBuilding.js";
-import { Road } from "../entities/Road.js";
-import { StorageBuilding } from "../entities/StorageBuilding.js";
-import { IgeTileMap2d } from "../../engine/core/IgeTileMap2d.js";
-import { IgeAudioEntity } from "../../engine/components/audio/index.js";
-import { IgeSceneGraph } from "../../engine/core/IgeSceneGraph.js";
-import { IgeScene2d } from "../../engine/core/IgeScene2d.js";
+import { ige } from "../../../engine/instance.js";
+import { isClient } from "../../../engine/clientServer.js";
+import { degreesToRadians } from "../../../engine/utils.js";
+import { IgeStreamMode } from "../../../enums/IgeStreamMode.js";
+import { Transporter } from "../../entities/Transporter.js";
+import { ResourceBuilding } from "../../entities/ResourceBuilding.js";
+import { ResourceType } from "../../enums/ResourceType.js";
+import { FactoryBuilding } from "../../entities/FactoryBuilding.js";
+import { Road } from "../../entities/Road.js";
+import { StorageBuilding } from "../../entities/StorageBuilding.js";
+import { IgeTileMap2d } from "../../../engine/core/IgeTileMap2d.js";
+import { IgeAudioEntity } from "../../../engine/components/audio/index.js";
+import { IgeSceneGraph } from "../../../engine/core/IgeSceneGraph.js";
+import { IgeScene2d } from "../../../engine/core/IgeScene2d.js";
 export class Level1 extends IgeSceneGraph {
     constructor() {
         super(...arguments);
@@ -44,7 +44,8 @@ export class Level1 extends IgeSceneGraph {
         if (isClient) {
             console.log("Client mode");
         }
-        //if (isClient) return;
+        if (isClient)
+            return;
         new IgeAudioEntity()
             .streamMode(IgeStreamMode.simple)
             .url("assets/audio/deepSpace.mp3")

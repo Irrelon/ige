@@ -10,12 +10,6 @@ declare const IgeEventingClass_base: {
         eventList(): import("../mixins/IgeEventingMixin").IgeEventListenerRegister | undefined;
         _processRemovals(): void;
         classId: string;
-        _dependencyFulfilled: Record<string, boolean>;
-        _dependsOnArr: import("./IgeBaseClass").IgeDependencyAction[];
-        addDependency(dependencyName: string, dependencyPromise: Promise<any>): void;
-        dependsOn(dependencyList: string[], actionToTake: (...args: any[]) => any): void;
-        _onDependencySatisfied(dependencyName: string): void;
-        _isDependencyListSatisfied(dependencyList: string[]): boolean;
         getClassId(): string;
         log(message: string, ...args: any[]): any;
         logIndent(): void;

@@ -998,31 +998,33 @@ export class IgeEngine extends IgeEntity {
      * @returns {*}
      */
     addGraph(className, options) {
-        if (className !== undefined) {
-            const classObj = this.getClass(className);
-            if (classObj) {
-                const classInstance = this.newClassInstance(className);
-                this.log("Loading SceneGraph data class: " + classInstance.constructor.name);
-                // Make sure the graph class implements the required methods "addGraph" and "removeGraph"
-                if (typeof classInstance.addGraph === "function" && typeof classInstance.removeGraph === "function") {
-                    // Call the class's graph() method passing the options in
-                    classInstance.addGraph(options);
-                    // Add the graph instance to the holding array
-                    this._graphInstances[classInstance.constructor.name] = classInstance;
+        return __awaiter(this, void 0, void 0, function* () {
+            if (className !== undefined) {
+                const classObj = this.getClass(className);
+                if (classObj) {
+                    const classInstance = this.newClassInstance(className);
+                    this.log("Loading SceneGraph data class: " + classInstance.constructor.name);
+                    // Make sure the graph class implements the required methods "addGraph" and "removeGraph"
+                    if (typeof classInstance.addGraph === "function" && typeof classInstance.removeGraph === "function") {
+                        // Call the class's graph() method passing the options in
+                        yield classInstance.addGraph(options);
+                        // Add the graph instance to the holding array
+                        this._graphInstances[classInstance.constructor.name] = classInstance;
+                    }
+                    else {
+                        this.log("Could not load graph for class name \"" +
+                            className +
+                            "\" because the class does not implement both the require methods \"addGraph()\" and \"removeGraph()\".", "error");
+                    }
                 }
                 else {
-                    this.log("Could not load graph for class name \"" +
+                    this.log("Cannot load graph for class name \"" +
                         className +
-                        "\" because the class does not implement both the require methods \"addGraph()\" and \"removeGraph()\".", "error");
+                        "\" because the class could not be found. Have you included it in your server/clientConfig.js file?", "error");
                 }
             }
-            else {
-                this.log("Cannot load graph for class name \"" +
-                    className +
-                    "\" because the class could not be found. Have you included it in your server/clientConfig.js file?", "error");
-            }
-        }
-        return this;
+            return this;
+        });
     }
     /**
      * Removes a scenegraph class into memory.
@@ -1031,23 +1033,25 @@ export class IgeEngine extends IgeEntity {
      * @returns {*}
      */
     removeGraph(className, options) {
-        if (className !== undefined) {
-            const classObj = this.getClass(className);
-            const classInstance = this._graphInstances[classObj.name];
-            if (classInstance) {
-                this.log(`Removing SceneGraph data class: ${classObj.name}`);
-                // Call the class's graph() method passing the options in
-                classInstance.removeGraph(options);
-                // Now remove the graph instance from the graph instance array
-                delete this._graphInstances[classObj.name];
+        return __awaiter(this, void 0, void 0, function* () {
+            if (className !== undefined) {
+                const classObj = this.getClass(className);
+                const classInstance = this._graphInstances[classObj.name];
+                if (classInstance) {
+                    this.log(`Removing SceneGraph data class: ${classObj.name}`);
+                    // Call the class's graph() method passing the options in
+                    yield classInstance.removeGraph(options);
+                    // Now remove the graph instance from the graph instance array
+                    delete this._graphInstances[classObj.name];
+                }
+                else {
+                    this.log("Cannot remove graph for class name \"" +
+                        className +
+                        "\" because the class instance could not be found. Did you add it via ige.addGraph() ?", "error");
+                }
             }
-            else {
-                this.log("Cannot remove graph for class name \"" +
-                    className +
-                    "\" because the class instance could not be found. Did you add it via ige.addGraph() ?", "error");
-            }
-        }
-        return this;
+            return this;
+        });
     }
     /**
      * Allows the update() methods of the entire scenegraph to

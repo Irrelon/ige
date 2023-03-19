@@ -7,24 +7,23 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-import { ige } from "../../../../engine/instance.js";
-import { Level1Scene } from "./Level1Scene.js";
-import { IgeTexture } from "../../../../engine/core/IgeTexture.js";
-import simpleBox from "../../assets/textures/smartTextures/simpleBox.js";
+import { ige } from "../../../engine/instance.js";
+import { Level1 } from "./Level1.js";
 ige.router.route("app/level1", {
     client: () => __awaiter(void 0, void 0, void 0, function* () {
-        // Load the game textures
-        const textures = [
-            new IgeTexture("fairy", "./assets/textures/sprites/fairy.png"),
-            new IgeTexture("simpleBox", simpleBox)
-        ];
-        // Wait for our textures to load before continuing
-        yield ige.textures.whenLoaded();
-        // Load our level onto the scenegraph
-        yield ige.engine.addGraph(Level1Scene);
+        // Add all the items in Scene1 to the scenegraph
+        // (see gameClasses/Scene1.js :: addGraph() to see
+        // the method being called by the engine and how
+        // the items are added to the scenegraph)
+        yield ige.engine.addGraph(Level1);
         return () => __awaiter(void 0, void 0, void 0, function* () {
-            yield ige.engine.removeGraph(Level1Scene);
-            ige.textures.removeList(textures);
+            yield ige.engine.removeGraph(Level1);
+        });
+    }),
+    server: () => __awaiter(void 0, void 0, void 0, function* () {
+        yield ige.engine.addGraph(Level1);
+        return () => __awaiter(void 0, void 0, void 0, function* () {
+            yield ige.engine.removeGraph(Level1);
         });
     })
 });

@@ -7,14 +7,19 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-import { ige } from "../../../../engine/instance.js";
-import { SplashScene } from "./SplashScene.js";
-ige.router.route("app/splash", {
+import { ige } from "../../engine/instance.js";
+import "./level1/_route.js";
+ige.router.route("app", {
     client: () => __awaiter(void 0, void 0, void 0, function* () {
-        // Load our level onto the scenegraph
-        yield ige.engine.addGraph(SplashScene);
-        return () => __awaiter(void 0, void 0, void 0, function* () {
-            yield ige.engine.removeGraph(SplashScene);
+        yield ige.ready();
+        return import("./AppClientScene.js").then(({ AppClientScene: App }) => {
+            return ige.engine.addGraph(App);
+        });
+    }),
+    server: () => __awaiter(void 0, void 0, void 0, function* () {
+        yield ige.ready();
+        return import("./AppServerScene.js").then(({ AppServerScene: App }) => {
+            return ige.engine.addGraph(App);
         });
     })
 });

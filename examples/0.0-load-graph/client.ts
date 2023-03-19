@@ -18,8 +18,6 @@ export class Client extends IgeBaseClass implements IgeCanInit {
 	}
 
 	async init () {
-		ige.init();
-
 		// Load the game textures
 		new IgeTexture("fairy", "./assets/textures/sprites/fairy.png");
 		new IgeTexture("simpleBox", simpleBox);

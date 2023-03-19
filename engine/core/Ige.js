@@ -10,6 +10,7 @@ import { IgeArrayRegister } from "./IgeArrayRegister.js";
 import { IgePoint3d } from "./IgePoint3d.js";
 import { IgeAudioController } from "../../engine/components/audio/index.js";
 import { IgeRouter } from "./IgeRouter.js";
+import { IgeDependencies } from "../../engine/core/IgeDependencies.js";
 const version = "2.0.0";
 export class Ige {
     constructor() {
@@ -24,7 +25,7 @@ export class Ige {
         this.config = igeConfig;
         this.version = version;
         this.classStore = igeClassStore;
-        this._globalLogIndent = 0;
+        this._dependencies = new IgeDependencies();
         this._watch = [];
         this._mousePos = new IgePoint3d(); // Could probably be just {x: number, y: number}
         // /**
@@ -60,20 +61,21 @@ export class Ige {
             this._watch.splice(index, 1);
         };
         if (isClient) {
-            import("../components/network/client/IgeNetIoClientComponent.js").then(({ IgeNetIoClientComponent: Module }) => {
+            this._dependencies.addDependency("network", import("../components/network/client/IgeNetIoClientComponent.js").then(({ IgeNetIoClientComponent: Module }) => {
                 this.network = new Module();
-            });
+            }));
             this.audio = new IgeAudioController();
         }
         if (isServer) {
-            import("../components/network/server/IgeNetIoServerComponent.js").then(({ IgeNetIoServerComponent: Module }) => {
+            this._dependencies.addDependency("network", import("../components/network/server/IgeNetIoServerComponent.js").then(({ IgeNetIoServerComponent: Module }) => {
                 this.network = new Module();
-            });
+            }));
         }
     }
-    init() {
-        //this.textures = new IgeTextureStore();
-        //this.engine = new IgeEngine();
+    ready() {
+        return new Promise((resolve) => {
+            this._dependencies.dependsOn(["network"], resolve);
+        });
     }
     /**
      * Returns an object from the engine's object register by

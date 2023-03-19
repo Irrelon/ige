@@ -25,7 +25,6 @@ export class Client extends IgeBaseClass {
     }
     init() {
         return __awaiter(this, void 0, void 0, function* () {
-            ige.init();
             // Wait for our textures to load before continuing
             yield ige.textures.whenLoaded();
             // Create the HTML canvas

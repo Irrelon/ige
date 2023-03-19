@@ -971,7 +971,7 @@ export class IgeEngine extends IgeEntity {
 	 * @param {Object=} options Optional object to pass to the scenegraph class graph() method.
 	 * @returns {*}
 	 */
-	addGraph (className: string | typeof IgeSceneGraph, options?: any) {
+	async addGraph (className: string | typeof IgeSceneGraph, options?: any) {
 		if (className !== undefined) {
 			const classObj = this.getClass(className);
 
@@ -982,7 +982,7 @@ export class IgeEngine extends IgeEntity {
 				// Make sure the graph class implements the required methods "addGraph" and "removeGraph"
 				if (typeof classInstance.addGraph === "function" && typeof classInstance.removeGraph === "function") {
 					// Call the class's graph() method passing the options in
-					classInstance.addGraph(options);
+					await classInstance.addGraph(options);
 
 					// Add the graph instance to the holding array
 					this._graphInstances[classInstance.constructor.name] = classInstance;
@@ -1013,7 +1013,7 @@ export class IgeEngine extends IgeEntity {
 	 * @param {Object=} options Optional object to pass to the scenegraph class graph() method.
 	 * @returns {*}
 	 */
-	removeGraph (className?: string | typeof IgeSceneGraph, options?: any) {
+	async removeGraph (className?: string | typeof IgeSceneGraph, options?: any) {
 		if (className !== undefined) {
 			const classObj = this.getClass(className);
 			const classInstance = this._graphInstances[classObj.name];
@@ -1022,7 +1022,7 @@ export class IgeEngine extends IgeEntity {
 				this.log(`Removing SceneGraph data class: ${classObj.name}`);
 
 				// Call the class's graph() method passing the options in
-				classInstance.removeGraph(options);
+				await classInstance.removeGraph(options);
 
 				// Now remove the graph instance from the graph instance array
 				delete this._graphInstances[classObj.name];

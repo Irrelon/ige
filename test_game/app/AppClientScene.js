@@ -7,32 +7,29 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-import { ige } from "../engine/instance.js";
-import { IgeBaseClass } from "../engine/core/IgeBaseClass.js";
-import { IgeBaseScene } from "../engine/core/IgeBaseScene.js";
-import { IgeOptions } from "../engine/core/IgeOptions.js";
-import { IgeTexture } from "../engine/core/IgeTexture.js";
-import { Level1 } from "./levels/Level1.js";
-import square from "./assets/textures/smartTextures/square.js";
-import line from "./assets/textures/smartTextures/line.js";
-import triangle from "./assets/textures/smartTextures/triangle.js";
-import circle from "./assets/textures/smartTextures/circle.js";
-import star from "./assets/textures/smartTextures/star.js";
+import { ige } from "../../engine/instance.js";
+import { IgeBaseScene } from "../../engine/core/IgeBaseScene.js";
+import { IgeOptions } from "../../engine/core/IgeOptions.js";
+import { IgeTexture } from "../../engine/core/IgeTexture.js";
+import square from "../assets/textures/smartTextures/square.js";
+import line from "../assets/textures/smartTextures/line.js";
+import triangle from "../assets/textures/smartTextures/triangle.js";
+import circle from "../assets/textures/smartTextures/circle.js";
+import star from "../assets/textures/smartTextures/star.js";
+import { IgeSceneGraph } from "../../engine/core/IgeSceneGraph.js";
 // @ts-ignore
 window.ige = ige;
-export class Client extends IgeBaseClass {
+export class AppClientScene extends IgeSceneGraph {
     constructor() {
-        // Init the super class
-        super();
-        this.classId = "Client";
-        void this.init();
+        super(...arguments);
+        this.classId = "AppClientScene";
     }
-    init() {
+    addGraph() {
         var _a, _b;
         return __awaiter(this, void 0, void 0, function* () {
             const options = new IgeOptions();
             options.set("masterVolume", 1);
-            ige.init();
+            (_a = ige.audio) === null || _a === void 0 ? void 0 : _a.masterVolume(options.get('masterVolume', 1));
             new IgeTexture("fairy", "./assets/textures/sprites/fairy.png");
             new IgeTexture("square", square);
             new IgeTexture("line", line);
@@ -40,7 +37,6 @@ export class Client extends IgeBaseClass {
             new IgeTexture("circle", circle);
             new IgeTexture("star", star);
             const network = ige.network;
-            (_a = ige.audio) === null || _a === void 0 ? void 0 : _a.masterVolume(options.get('masterVolume', 1));
             // Wait for our textures to load before continuing
             yield ige.textures.whenLoaded();
             // Create the HTML canvas
@@ -48,18 +44,14 @@ export class Client extends IgeBaseClass {
             // Start the engine
             yield ige.engine.start();
             // Load the base scene data
-            ige.engine.addGraph(IgeBaseScene);
-            // Add all the items in Scene1 to the scenegraph
-            // (see gameClasses/Scene1.js :: addGraph() to see
-            // the method being called by the engine and how
-            // the items are added to the scenegraph)
-            ige.engine.addGraph(Level1);
+            yield ige.engine.addGraph(IgeBaseScene);
             (_b = ige.engine.currentViewport()) === null || _b === void 0 ? void 0 : _b.drawBounds(true);
-            network.start('http://localhost:2000', () => {
-                // network.send("testRequest", "foo", (err, data) => {
-                // 	console.log("testRequest response", err, data);
-                // });
-            });
+            network.start('http://localhost:2000');
         });
+    }
+    removeGraph() {
+        const network = ige.network;
+        network.stop();
+        ige.engine.stop();
     }
 }

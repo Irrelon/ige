@@ -14,6 +14,7 @@ import type { IgeCanRegisterByCategory } from "@/types/IgeCanRegisterByCategory"
 import type { IgeViewport } from "./IgeViewport";
 import type { IgeNetIoClientComponent } from "@/engine/components/network/client/IgeNetIoClientComponent";
 import type { IgeNetIoServerComponent } from "@/engine/components/network/server/IgeNetIoServerComponent";
+import { IgeDependencies } from "@/engine/core/IgeDependencies";
 export declare class Ige {
     router: IgeRouter;
     engine: IgeEngine;
@@ -30,12 +31,12 @@ export declare class Ige {
     config: IgeConfig;
     version: string;
     classStore: Record<string, import("../../types/GenericClass").GenericClass>;
-    _globalLogIndent: number;
+    _dependencies: IgeDependencies;
     _watch: (string | IgeObjectWithValueProperty)[];
     _mouseOverVp?: IgeViewport;
     _mousePos: IgePoint3d;
     constructor();
-    init(): void;
+    ready(): Promise<void>;
     /**
      * Returns an object from the engine's object register by
      * the object's id. If the item passed is not a string id

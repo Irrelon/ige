@@ -10,10 +10,11 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 import { ige } from "../../../engine/instance.js";
 import { IgeUiManagerComponent } from "../../../engine/components/IgeUiManagerComponent.js";
 import { AppScene } from "./AppScene.js";
-import "./splash/_route";
-import "./level1/_route";
+import "./splash/_route.js";
+import "./level1/_route.js";
 ige.router.route("app", {
     client: () => __awaiter(void 0, void 0, void 0, function* () {
+        yield ige.ready();
         // @ts-ignore
         window.ige = ige;
         ige.engine.addComponent("ui", IgeUiManagerComponent);
@@ -22,9 +23,9 @@ ige.router.route("app", {
         // Start the engine
         yield ige.engine.start();
         // Load our level onto the scenegraph
-        ige.engine.addGraph(AppScene);
+        yield ige.engine.addGraph(AppScene);
         return () => __awaiter(void 0, void 0, void 0, function* () {
-            ige.engine.removeGraph(AppScene);
+            yield ige.engine.removeGraph(AppScene);
             yield ige.engine.stop();
         });
     })

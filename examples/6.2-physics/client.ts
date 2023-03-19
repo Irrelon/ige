@@ -21,8 +21,6 @@ export class Client extends IgeBaseClass implements IgeCanInit {
 	}
 
 	async init () {
-		ige.init();
-
 		// Wait for our textures to load before continuing
 		await ige.textures.whenLoaded();
 

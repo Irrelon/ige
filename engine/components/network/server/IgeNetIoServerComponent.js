@@ -155,7 +155,7 @@ export class IgeNetIoServerComponent extends IgeNetIoBaseComponent {
                 const ct = new Date().getTime();
                 const dt = ct - st;
                 if (dt > this._streamInterval) {
-                    console.log('WARNING, Stream send is taking too long: ' + dt + 'ms');
+                    console.log("WARNING, Stream send is taking too long: " + dt + "ms");
                     break;
                 }
             }
@@ -173,25 +173,31 @@ export class IgeNetIoServerComponent extends IgeNetIoBaseComponent {
      * network has started.
      */
     start(port, callback) {
-        this._socketById = {};
-        this._socketsByRoomId = {};
-        if (typeof (port) !== "undefined") {
-            this._port = port;
-        }
-        // Start net.io
-        this.log("Starting net.io listener on port " + this._port);
-        this._io = new IgeNetIoServer(this._port, callback);
-        // Setup listeners
-        this._io.on("connection", this._onClientConnect);
-        // Set up default commands
-        this.define(IGE_NETWORK_REQUEST, this._onRequest);
-        this.define(IGE_NETWORK_RESPONSE, this._onResponse);
-        this.define(IGE_NETWORK_TIME_SYNC, this._onTimeSync);
-        // Start network sync
-        this.timeSyncStart();
-        this.log('Starting delta stream...');
-        this._streamTimer = setInterval(this._sendQueue, this._streamInterval);
-        return this;
+        return new Promise((resolve) => {
+            this._socketById = {};
+            this._socketsByRoomId = {};
+            if (typeof (port) !== "undefined") {
+                this._port = port;
+            }
+            // Start net.io
+            this.log("Starting net.io listener on port " + this._port);
+            this._io = new IgeNetIoServer(this._port, () => {
+                if (callback) {
+                    callback();
+                }
+                resolve();
+            });
+            // Setup listeners
+            this._io.on("connection", this._onClientConnect);
+            // Set up default commands
+            this.define(IGE_NETWORK_REQUEST, this._onRequest);
+            this.define(IGE_NETWORK_RESPONSE, this._onResponse);
+            this.define(IGE_NETWORK_TIME_SYNC, this._onTimeSync);
+            // Start network sync
+            this.timeSyncStart();
+            this.log("Starting delta stream...");
+            this._streamTimer = setInterval(this._sendQueue, this._streamInterval);
+        });
     }
     timeSyncStart() {
         this._timeSyncStarted = true;
@@ -446,7 +452,7 @@ export class IgeNetIoServerComponent extends IgeNetIoBaseComponent {
      */
     sendInterval(ms) {
         if (ms !== undefined) {
-            this.log('Setting delta stream interval to ' + (ms / ige.engine._timeScale) + 'ms');
+            this.log("Setting delta stream interval to " + (ms / ige.engine._timeScale) + "ms");
             this._streamInterval = ms / ige.engine._timeScale;
             return this;
         }
@@ -456,7 +462,7 @@ export class IgeNetIoServerComponent extends IgeNetIoBaseComponent {
      * Stops the stream of world updates to connected clients.
      */
     stop() {
-        this.log('Stopping delta stream...');
+        this.log("Stopping delta stream...");
         clearInterval(this._streamTimer);
         return this;
     }

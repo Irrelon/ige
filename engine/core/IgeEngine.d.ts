@@ -98,7 +98,7 @@ export declare class IgeEngine extends IgeEntity {
      * @param {IgeEntity} entity The entity to add.
      * @returns {Ige|[]} Either this, or the spawn queue.
      */
-    spawnQueue(entity: IgeObject): IgeObject[] | this;
+    spawnQueue(entity: IgeObject): this | IgeObject[];
     currentViewport(viewport?: IgeObject): IgeViewport | null;
     /**
      * Sets the canvas element that will be used as the front-buffer.
@@ -106,7 +106,7 @@ export declare class IgeEngine extends IgeEntity {
      * @param autoSize If set to true, the engine will automatically size
      * the canvas to the width and height of the window upon window resize.
      */
-    canvas(elem?: HTMLCanvasElement, autoSize?: boolean): HTMLCanvasElement | this | undefined;
+    canvas(elem?: HTMLCanvasElement, autoSize?: boolean): this | HTMLCanvasElement | undefined;
     /**
      * Clears the entire canvas.
      */
@@ -245,14 +245,14 @@ export declare class IgeEngine extends IgeEntity {
      * @param {Object=} options Optional object to pass to the scenegraph class graph() method.
      * @returns {*}
      */
-    addGraph(className: string | typeof IgeSceneGraph, options?: any): this;
+    addGraph(className: string | typeof IgeSceneGraph, options?: any): Promise<this>;
     /**
      * Removes a scenegraph class into memory.
      * @param {String} className The name of the scenegraph class.
      * @param {Object=} options Optional object to pass to the scenegraph class graph() method.
      * @returns {*}
      */
-    removeGraph(className?: string | typeof IgeSceneGraph, options?: any): this;
+    removeGraph(className?: string | typeof IgeSceneGraph, options?: any): Promise<this>;
     /**
      * Allows the update() methods of the entire scenegraph to
      * be temporarily enabled or disabled. Useful for debugging.

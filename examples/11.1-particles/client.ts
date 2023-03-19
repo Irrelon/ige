@@ -20,8 +20,6 @@ export class Client extends IgeBaseClass implements IgeCanInit {
 	}
 
 	async init () {
-		ige.init();
-
 		new IgeTexture("star1", '../assets/textures/particles/star1.png');
 		new IgeTexture("star2", '../assets/textures/particles/star2.png');
 		new IgeTexture("star3", '../assets/textures/particles/star3.png');

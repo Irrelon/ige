@@ -112,12 +112,6 @@ export declare const WithEventingMixin: <BaseClassType extends Mixin<IgeBaseClas
          */
         _processRemovals(): void;
         classId: string;
-        _dependencyFulfilled: Record<string, boolean>;
-        _dependsOnArr: import("../core/IgeBaseClass").IgeDependencyAction[];
-        addDependency(dependencyName: string, dependencyPromise: Promise<any>): void;
-        dependsOn(dependencyList: string[], actionToTake: (...args: any[]) => any): void;
-        _onDependencySatisfied(dependencyName: string): void;
-        _isDependencyListSatisfied(dependencyList: string[]): boolean;
         getClassId(): string;
         log(message: string, ...args: any[]): any;
         logIndent(): void;

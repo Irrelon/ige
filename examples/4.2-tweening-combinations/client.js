@@ -24,7 +24,6 @@ export class Client extends IgeBaseClass {
     }
     init() {
         return __awaiter(this, void 0, void 0, function* () {
-            ige.init();
             // Load the game textures
             new IgeTexture("fairy", "../assets/textures/sprites/fairy.png");
             // Wait for our textures to load before continuing

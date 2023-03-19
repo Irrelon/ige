@@ -1,23 +1,15 @@
 import {ige} from "@/engine/instance";
-import { Level1 } from "./levels/Level1";
 import { IgeNetIoServerComponent } from "@/engine/components/network/server/IgeNetIoServerComponent";
-import { IgeBaseClass } from "@/engine/core/IgeBaseClass";
 import { IgeBaseScene } from "@/engine/core/IgeBaseScene";
 import { IgeOptions } from "@/engine/core/IgeOptions";
+import { IgeSceneGraph } from "@/engine/core/IgeSceneGraph";
 
-export class Server extends IgeBaseClass {
-	classId = "Server";
+export class AppServerScene extends IgeSceneGraph {
+	classId = "AppServerScene";
 
-	constructor () {
-		// Init the super class
-		super();
-		void this.init();
-	}
-
-	async init () {
+	async addGraph () {
 		const options = new IgeOptions();
 		options.set("masterVolume", 1);
-		ige.init();
 
 		const network = (ige.network as IgeNetIoServerComponent);
 
@@ -25,13 +17,7 @@ export class Server extends IgeBaseClass {
 		await ige.engine.start();
 
 		// Load the base scene data
-		ige.engine.addGraph(IgeBaseScene);
-
-		// Add all the items in Scene1 to the scenegraph
-		// (see gameClasses/Scene1.js :: addGraph() to see
-		// the method being called by the engine and how
-		// the items are added to the scenegraph)
-		ige.engine.addGraph(Level1);
+		await ige.engine.addGraph(IgeBaseScene);
 
 		network.sendInterval(30); // Send a stream update once every 30 milliseconds
 
@@ -39,8 +25,13 @@ export class Server extends IgeBaseClass {
 			requestCallback?.(false, "some data");
 		});
 
-		network.start(2000, () => {
-			network.acceptConnections(true);
-		});
+		await network.start(2000);
+		network.acceptConnections(true);
+	}
+
+	removeGraph () {
+		const network = (ige.network as IgeNetIoServerComponent);
+		network.stop();
+		ige.engine.stop();
 	}
 }

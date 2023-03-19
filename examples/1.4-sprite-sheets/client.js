@@ -22,7 +22,6 @@ export class Client extends IgeBaseClass {
     }
     init() {
         return __awaiter(this, void 0, void 0, function* () {
-            ige.init();
             // Load the game textures
             // Load the sprite sheet texture and store it in the gameTexture array
             new IgeSpriteSheet("sci-fi-tiles1", '../assets/textures/tiles/future-joy-tilee.png', [

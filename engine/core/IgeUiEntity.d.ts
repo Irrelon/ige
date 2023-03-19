@@ -198,7 +198,7 @@ export declare class IgeUiEntity extends IgeEntity {
      * @return {*} Returns this if any parameter is specified or
      * the current background image if no parameters are specified.
      */
-    backgroundImage(texture?: IgeTexture, repeatType?: IgeRepeatType): CanvasPattern | this | undefined;
+    backgroundImage(texture?: IgeTexture, repeatType?: IgeRepeatType): this | CanvasPattern | undefined;
     backgroundSize(x?: number | string, y?: number | string): this | IgePointXY;
     /**
      * Gets / sets the color to use as a background when

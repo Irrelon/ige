@@ -25,7 +25,6 @@ export class Client extends IgeBaseClass {
     }
     init() {
         return __awaiter(this, void 0, void 0, function* () {
-            ige.init();
             new IgeTexture("star1", '../assets/textures/particles/star1.png');
             new IgeTexture("star2", '../assets/textures/particles/star2.png');
             new IgeTexture("star3", '../assets/textures/particles/star3.png');

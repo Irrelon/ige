@@ -55,32 +55,38 @@ export class IgeNetIoServerComponent extends IgeNetIoBaseComponent {
 	 * network has started.
 	 */
 	start (port?: number, callback?: () => void) {
-		this._socketById = {};
-		this._socketsByRoomId = {};
+		return new Promise<void>((resolve) => {
+			this._socketById = {};
+			this._socketsByRoomId = {};
 
-		if (typeof (port) !== "undefined") {
-			this._port = port;
-		}
+			if (typeof (port) !== "undefined") {
+				this._port = port;
+			}
 
-		// Start net.io
-		this.log("Starting net.io listener on port " + this._port);
-		this._io = new IgeNetIoServer(this._port, callback);
+			// Start net.io
+			this.log("Starting net.io listener on port " + this._port);
+			this._io = new IgeNetIoServer(this._port, () => {
+				if (callback) {
+					callback();
+				}
 
-		// Setup listeners
-		this._io.on("connection", this._onClientConnect);
+				resolve();
+			});
 
-		// Set up default commands
-		this.define(IGE_NETWORK_REQUEST, this._onRequest);
-		this.define(IGE_NETWORK_RESPONSE, this._onResponse);
-		this.define(IGE_NETWORK_TIME_SYNC, this._onTimeSync);
+			// Setup listeners
+			this._io.on("connection", this._onClientConnect);
 
-		// Start network sync
-		this.timeSyncStart();
+			// Set up default commands
+			this.define(IGE_NETWORK_REQUEST, this._onRequest);
+			this.define(IGE_NETWORK_RESPONSE, this._onResponse);
+			this.define(IGE_NETWORK_TIME_SYNC, this._onTimeSync);
 
-		this.log('Starting delta stream...');
-		this._streamTimer = setInterval(this._sendQueue, this._streamInterval) as unknown as number;
+			// Start network sync
+			this.timeSyncStart();
 
-		return this;
+			this.log("Starting delta stream...");
+			this._streamTimer = setInterval(this._sendQueue, this._streamInterval) as unknown as number;
+		});
 	}
 
 	/**
@@ -513,7 +519,7 @@ export class IgeNetIoServerComponent extends IgeNetIoBaseComponent {
 	 */
 	sendInterval (ms?: number) {
 		if (ms !== undefined) {
-			this.log('Setting delta stream interval to ' + (ms / ige.engine._timeScale) + 'ms');
+			this.log("Setting delta stream interval to " + (ms / ige.engine._timeScale) + "ms");
 			this._streamInterval = ms / ige.engine._timeScale;
 			return this;
 		}
@@ -525,7 +531,7 @@ export class IgeNetIoServerComponent extends IgeNetIoBaseComponent {
 	 * Stops the stream of world updates to connected clients.
 	 */
 	stop () {
-		this.log('Stopping delta stream...');
+		this.log("Stopping delta stream...");
 		clearInterval(this._streamTimer);
 
 		return this;
@@ -578,15 +584,17 @@ export class IgeNetIoServerComponent extends IgeNetIoBaseComponent {
 
 			delete queueObj[entityId];
 
-			if (this._streamPropertyChange) { delete this._streamPropertyChange[entityId]; }
+			if (this._streamPropertyChange) {
+				delete this._streamPropertyChange[entityId];
+			}
 
 			const ct = new Date().getTime();
 			const dt = ct - st;
 
 			if (dt > this._streamInterval) {
-				console.log('WARNING, Stream send is taking too long: ' + dt + 'ms');
+				console.log("WARNING, Stream send is taking too long: " + dt + "ms");
 				break;
 			}
 		}
-	}
+	};
 }

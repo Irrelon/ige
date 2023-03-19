@@ -6,6 +6,8 @@ import "./level1/_route";
 
 ige.router.route("app", {
 	client: async () => {
+		await ige.ready();
+
 		// @ts-ignore
 		window.ige = ige;
 
@@ -18,10 +20,10 @@ ige.router.route("app", {
 		await ige.engine.start();
 
 		// Load our level onto the scenegraph
-		ige.engine.addGraph(AppScene);
+		await ige.engine.addGraph(AppScene);
 
 		return async () => {
-			ige.engine.removeGraph(AppScene);
+			await ige.engine.removeGraph(AppScene);
 
 			await ige.engine.stop();
 		}

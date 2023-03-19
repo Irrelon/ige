@@ -6,6 +6,7 @@ import { IgeEntity } from "./IgeEntity";
 import { IgeCanvasRenderingContext2d } from "@/types/IgeCanvasRenderingContext2d";
 import { IgeTextureRenderMode } from "@/enums/IgeTextureRenderMode";
 import { IgeAsset } from "./IgeAsset";
+import { IgeDependencies } from "@/engine/core/IgeDependencies";
 export type IgeTextureCell = [number, number, number, number, string?];
 export type IgeTextureCellArray = IgeTextureCell[];
 /**
@@ -30,6 +31,7 @@ export declare class IgeTexture extends IgeAsset {
     _textureCanvas?: IgeCanvas;
     _textureCtx?: IgeCanvasRenderingContext2d;
     _cells: IgeTextureCellArray;
+    _dependencies: IgeDependencies;
     image?: IgeImage | IgeCanvas;
     script?: IgeSmartTexture;
     /**

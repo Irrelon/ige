@@ -15,10 +15,10 @@ ige.router.route("app/level1", {
 		await ige.textures.whenLoaded();
 
 		// Load our level onto the scenegraph
-		ige.engine.addGraph(Level1Scene);
+		await ige.engine.addGraph(Level1Scene);
 
 		return async () => {
-			ige.engine.removeGraph(Level1Scene);
+			await ige.engine.removeGraph(Level1Scene);
 			ige.textures.removeList(textures);
 		}
 	}

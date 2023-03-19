@@ -2,14 +2,14 @@ import { ige } from "@/engine/instance";
 import { isClient } from "@/engine/clientServer";
 import { degreesToRadians } from "@/engine/utils";
 import { IgeStreamMode } from "@/enums/IgeStreamMode";
-import { Transporter } from "../entities/Transporter";
-import { ResourceBuilding } from "../entities/ResourceBuilding";
-import { ResourceType } from "../enums/ResourceType";
-import { FactoryBuilding } from "../entities/FactoryBuilding";
-import { Road } from "../entities/Road";
-import { StorageBuilding } from "../entities/StorageBuilding";
+import { Transporter } from "../../entities/Transporter";
+import { ResourceBuilding } from "../../entities/ResourceBuilding";
+import { ResourceType } from "../../enums/ResourceType";
+import { FactoryBuilding } from "../../entities/FactoryBuilding";
+import { Road } from "../../entities/Road";
+import { StorageBuilding } from "../../entities/StorageBuilding";
 import { IgeTileMap2d } from "@/engine/core/IgeTileMap2d";
-import { IgeAudioEntity } from "@/engine/components/audio";
+import { IgeAudioEntity } from "@/engine/components/audio/index";
 import { IgeSceneGraph } from "@/engine/core/IgeSceneGraph";
 import { IgeEntity } from "@/engine/core/IgeEntity";
 import { IgeScene2d } from "@/engine/core/IgeScene2d";
@@ -48,7 +48,7 @@ export class Level1 extends IgeSceneGraph {
 		if (isClient) {
 			console.log("Client mode");
 		}
-		//if (isClient) return;
+		if (isClient) return;
 
 		new IgeAudioEntity()
 			.streamMode(IgeStreamMode.simple)

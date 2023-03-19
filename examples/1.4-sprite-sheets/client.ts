@@ -17,8 +17,6 @@ export class Client extends IgeBaseClass implements IgeCanInit {
 	}
 
 	async init () {
-		ige.init();
-
 		// Load the game textures
 		// Load the sprite sheet texture and store it in the gameTexture array
 		new IgeSpriteSheet("sci-fi-tiles1", '../assets/textures/tiles/future-joy-tilee.png', [

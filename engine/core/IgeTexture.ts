@@ -10,6 +10,7 @@ import { IgeCanvasRenderingContext2d } from "@/types/IgeCanvasRenderingContext2d
 import { IgeTextureRenderMode } from "@/enums/IgeTextureRenderMode";
 import { IgeAsset } from "./IgeAsset";
 import { newCanvas } from "./IgeCanvas";
+import { IgeDependencies } from "@/engine/core/IgeDependencies";
 
 export type IgeTextureCell = [number, number, number, number, string?];
 export type IgeTextureCellArray = IgeTextureCell[];
@@ -38,6 +39,7 @@ export class IgeTexture extends IgeAsset {
 	_textureCanvas?: IgeCanvas;
 	_textureCtx?: IgeCanvasRenderingContext2d;
 	_cells: IgeTextureCellArray = [];
+	_dependencies: IgeDependencies = new IgeDependencies();
 	image?: IgeImage | IgeCanvas;
 	script?: IgeSmartTexture;
 
@@ -65,7 +67,7 @@ export class IgeTexture extends IgeAsset {
 			ige.textures.add(id, this);
 		}
 
-		this.addDependency("IgeImageClass", import("./IgeImage.js").then(({ IgeImage: IgeModule }) => {
+		this._dependencies.addDependency("IgeImageClass", import("./IgeImage.js").then(({ IgeImage: IgeModule }) => {
 			IgeImageClass = IgeModule;
 		}));
 
@@ -129,7 +131,7 @@ export class IgeTexture extends IgeAsset {
 			return false;
 		}
 
-		this.dependsOn(["IgeImageClass"], () => {
+		this._dependencies.dependsOn(["IgeImageClass"], () => {
 			if (!ige.textures._textureImageStore[imageUrl]) {
 				// Image not in cache, create the image object
 				const image = ige.textures._textureImageStore[imageUrl] = this.image = this._originalImage = new IgeImageClass();

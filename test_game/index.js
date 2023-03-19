@@ -1,19 +1,10 @@
 import { ige } from "../engine/instance.js";
-import { isClient, isServer } from "../engine/clientServer.js";
+import { isServer } from "../engine/clientServer.js";
+import "./app/_route.js";
 export class Game {
     constructor(options) {
         this.classId = "Game";
-        if (isClient) {
-            import("./client.js").then(({ Client: App }) => {
-                ige.client = new App();
-            });
-        }
-        if (isServer) {
-            console.log("Init server instance");
-            import("./server.js").then(({ Server: App }) => {
-                ige.server = new App();
-            });
-        }
+        ige.router.go("app/level1");
     }
 }
 if (isServer) {

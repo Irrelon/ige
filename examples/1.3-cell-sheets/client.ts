@@ -17,8 +17,6 @@ export class Client extends IgeBaseClass implements IgeCanInit {
 	}
 
 	async init () {
-		ige.init();
-
 		// Load the game textures
 		new IgeCellSheet("grassSheet", '../assets/textures/tiles/grassSheet.png', 4, 1);
 

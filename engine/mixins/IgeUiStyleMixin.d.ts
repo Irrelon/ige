@@ -155,7 +155,7 @@ export declare const WithUiStyleMixin: <BaseClassType extends Mixin<IgeObject>>(
         _depthSortMode: import("../../enums/IgeIsometricDepthSortMode").IgeIsometricDepthSortMode;
         _inView: boolean;
         _managed: number;
-        _triggerPolygon?: "localBounds3dPolygon" | "aabb" | undefined;
+        _triggerPolygon?: "aabb" | "localBounds3dPolygon" | undefined;
         _compositeCache: boolean;
         _compositeParent: boolean;
         _anchor: import("../core/IgePoint2d").IgePoint2d;
@@ -333,12 +333,6 @@ export declare const WithUiStyleMixin: <BaseClassType extends Mixin<IgeObject>>(
         emit(eventName: string, args?: any): number;
         eventList(): import("./IgeEventingMixin").IgeEventListenerRegister | undefined;
         _processRemovals(): void;
-        _dependencyFulfilled: Record<string, boolean>;
-        _dependsOnArr: import("../core/IgeBaseClass").IgeDependencyAction[];
-        addDependency(dependencyName: string, dependencyPromise: Promise<any>): void;
-        dependsOn(dependencyList: string[], actionToTake: (...args: any[]) => any): void;
-        _onDependencySatisfied(dependencyName: string): void;
-        _isDependencyListSatisfied(dependencyList: string[]): boolean;
         getClassId(): string;
         log(message: string, ...args: any[]): any;
         logIndent(): void;

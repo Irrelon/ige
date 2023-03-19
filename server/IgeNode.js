@@ -103,7 +103,7 @@ var IgeNode = IgeClass.extend({
 	},
 
 	main: function () {
-		this.Server = require(this._gamePath + 'server.js');
+		this.AppServerScene = require(this._gamePath + 'server.js');
 		this.Game = require(this._gamePath + 'index.js');
 
 		// Load the configuration file and load any modules
@@ -327,10 +327,10 @@ var IgeNode = IgeClass.extend({
 						|| (
 							// The file has a flag of "c" AND DOES NOT have a flag of "a"
 							file[0].indexOf('c') > -1 && file[0].indexOf('a') === -1
-							)
 						)
+					)
 					// The file has not already been included
-					) && finalArr.indexOf(file[2]) === -1
+				) && finalArr.indexOf(file[2]) === -1
 				) {
 					// The client code is using this class
 					console.log('Class "' + file[1] + '" used in project, keeping file: engine/' + file[2]);
@@ -477,7 +477,7 @@ var IgeNode = IgeClass.extend({
 		var readline = require('readline'),
 			input = readline.createInterface(process.stdin, process.stdout, null);
 
-		input.question(question, function(answer) {
+		input.question(question, function (answer) {
 			input.close();
 			process.stdin.destroy();
 			callback(answer);

@@ -1,15 +1,5 @@
-export interface IgeDependencyAction {
-    dependencyList: string[];
-    actionToTake: (...args: any[]) => any;
-}
 export declare class IgeBaseClass {
     classId: string;
-    _dependencyFulfilled: Record<string, boolean>;
-    _dependsOnArr: IgeDependencyAction[];
-    addDependency(dependencyName: string, dependencyPromise: Promise<any>): void;
-    dependsOn(dependencyList: string[], actionToTake: (...args: any[]) => any): void;
-    _onDependencySatisfied(dependencyName: string): void;
-    _isDependencyListSatisfied(dependencyList: string[]): boolean;
     /**
      * Returns the class id. Primarily used to help identify
      * what class an instance was instantiated with and is also

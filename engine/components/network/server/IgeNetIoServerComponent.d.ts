@@ -23,7 +23,7 @@ export declare class IgeNetIoServerComponent extends IgeNetIoBaseComponent {
      * @param {Function=} callback A callback method to call once the
      * network has started.
      */
-    start(port?: number, callback?: () => void): this;
+    start(port?: number, callback?: () => void): Promise<void>;
     /**
      * Called on receipt of a request message from a client.
      * @param data The data the client sent with the request.

@@ -17,6 +17,7 @@ import type { IgeCanRegisterByCategory } from "@/types/IgeCanRegisterByCategory"
 import type { IgeViewport } from "./IgeViewport";
 import type { IgeNetIoClientComponent } from "@/engine/components/network/client/IgeNetIoClientComponent";
 import type { IgeNetIoServerComponent } from "@/engine/components/network/server/IgeNetIoServerComponent";
+import { IgeDependencies } from "@/engine/core/IgeDependencies";
 
 const version = "2.0.0";
 
@@ -36,7 +37,7 @@ export class Ige {
 	config: IgeConfig = igeConfig;
 	version: string = version;
 	classStore = igeClassStore;
-	_globalLogIndent: number = 0;
+	_dependencies: IgeDependencies = new IgeDependencies();
 	_watch: (string | IgeObjectWithValueProperty)[] = [];
 
 	// Questionable properties, think about them and potentially move
@@ -45,23 +46,24 @@ export class Ige {
 
 	constructor () {
 		if (isClient) {
-			import("../components/network/client/IgeNetIoClientComponent.js").then(({ IgeNetIoClientComponent: Module }) => {
+			this._dependencies.addDependency("network", import("../components/network/client/IgeNetIoClientComponent.js").then(({ IgeNetIoClientComponent: Module }) => {
 				this.network = new Module();
-			});
+			}));
 
 			this.audio = new IgeAudioController();
 		}
 
 		if (isServer) {
-			import("../components/network/server/IgeNetIoServerComponent.js").then(({ IgeNetIoServerComponent: Module }) => {
+			this._dependencies.addDependency("network", import("../components/network/server/IgeNetIoServerComponent.js").then(({ IgeNetIoServerComponent: Module }) => {
 				this.network = new Module();
-			});
+			}));
 		}
 	}
 
-	init () {
-		//this.textures = new IgeTextureStore();
-		//this.engine = new IgeEngine();
+	ready () {
+		return new Promise<void>((resolve) => {
+			this._dependencies.dependsOn(["network"], resolve);
+		});
 	}
 
 	/**
