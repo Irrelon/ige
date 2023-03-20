@@ -79,20 +79,6 @@ export class IgeScene2d extends IgeEntity {
             }
             return this._shouldRender;
         };
-        /**
-         * Gets / sets the flag that determines if the scene will ignore camera
-         * transform values allowing the scene to remain static on screen
-         * regardless of the camera transform.
-         * @param {Boolean=} val True to ignore, false to not ignore.
-         * @return {*}
-         */
-        this.ignoreCamera = (val) => {
-            if (val !== undefined) {
-                this._ignoreCamera = val;
-                return this;
-            }
-            return this._ignoreCamera;
-        };
         this.update = (ctx, tickDelta) => {
             if (this._ignoreCamera) {
                 // Translate the scene, so it is always center of the camera
@@ -132,6 +118,13 @@ export class IgeScene2d extends IgeEntity {
         this._bounds2d.x = ige.engine._bounds2d.x;
         this._bounds2d.y = ige.engine._bounds2d.y;
         this.streamSections(["transform", "ignoreCamera"]);
+    }
+    ignoreCamera(val) {
+        if (val !== undefined) {
+            this._ignoreCamera = val;
+            return this;
+        }
+        return this._ignoreCamera;
     }
     /**
      * Processes the actions required each render frame.

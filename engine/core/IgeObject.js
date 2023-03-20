@@ -481,10 +481,12 @@ export class IgeObject extends IgeEventingClass {
         // Set our parent to the object we are mounting to
         this._parent = obj;
         // Check if we need to set the "ignore camera" flag
-        this._ignoreCamera = this._parent._ignoreCamera;
-        /*if (this.ignoreCameraComposite) {
-            this.ignoreCameraComposite(this._parent._ignoreCamera);
-        }*/
+        if (!this._ignoreCamera && this._parent._ignoreCamera) {
+            this._ignoreCamera = this._parent._ignoreCamera;
+            /*if (this.ignoreCameraComposite) {
+                this.ignoreCameraComposite(this._parent._ignoreCamera);
+            }*/
+        }
         // Make sure we keep the child's room id in sync with its parent
         if (this._parent._streamRoomId) {
             this._streamRoomId = this._parent._streamRoomId;

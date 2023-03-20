@@ -1,5 +1,7 @@
 import { ige } from "../instance.js";
 import { IgeUiElement } from "../core/IgeUiElement.js";
+import { IgeUiLabel } from "../../engine/ui/IgeUiLabel.js";
+import { IgeUiButton } from "../../engine/ui/IgeUiButton.js";
 export class IgeUiWindow extends IgeUiElement {
     constructor() {
         super();

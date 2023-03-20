@@ -1,5 +1,6 @@
 export declare class IgeBaseClass {
     classId: string;
+    _data: Record<string, any>;
     /**
      * Returns the class id. Primarily used to help identify
      * what class an instance was instantiated with and is also
@@ -56,7 +57,6 @@ export declare class IgeBaseClass {
     log(message: string, ...args: any[]): this;
     logIndent(): void;
     logOutdent(): void;
-    _data: Record<string, any>;
     data(key: string, value: any): this;
     data(key: string): any;
 }

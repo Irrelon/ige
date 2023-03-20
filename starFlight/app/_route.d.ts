@@ -1,0 +1,1 @@
+import "./splash/_route";

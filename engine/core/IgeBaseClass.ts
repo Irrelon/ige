@@ -2,6 +2,7 @@ import { global } from "./_global";
 
 export class IgeBaseClass {
 	classId = "IgeBaseClass";
+	_data: Record<string, any> = {};
 
 	/**
 	 * Returns the class id. Primarily used to help identify
@@ -86,8 +87,6 @@ export class IgeBaseClass {
 		global._globalLogIndent--;
 		if (global._globalLogIndent < 0) global._globalLogIndent = 0;
 	}
-
-	_data: Record<string, any> = {};
 
 	data (key: string, value: any): this;
 	data (key: string): any;

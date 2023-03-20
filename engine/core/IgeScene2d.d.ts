@@ -50,7 +50,8 @@ export declare class IgeScene2d extends IgeEntity {
      * @param {Boolean=} val True to ignore, false to not ignore.
      * @return {*}
      */
-    ignoreCamera: (val?: boolean) => boolean | this;
+    ignoreCamera(val: boolean): this;
+    ignoreCamera(): boolean;
     update: (ctx: IgeCanvasRenderingContext2d, tickDelta: number) => void;
     /**
      * Processes the actions required each render frame.

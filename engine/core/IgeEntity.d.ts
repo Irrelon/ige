@@ -148,7 +148,7 @@ export declare class IgeEntity extends IgeObject implements IgeCanRegisterById, 
      *     entity.backgroundPattern(texture, 'repeat', true, true);
      * @return {*}
      */
-    backgroundPattern(texture?: IgeTexture, repeat?: string, trackCamera?: boolean, isoTile?: boolean): this | IgeTexture | undefined;
+    backgroundPattern(texture?: IgeTexture, repeat?: string, trackCamera?: boolean, isoTile?: boolean): IgeTexture | this | undefined;
     smartBackground(): IgeSmartTexture | undefined;
     smartBackground(renderMethod?: IgeSmartTexture): this;
     /**

@@ -22,13 +22,8 @@
         "moduleResolution": "node",
         "resolveJsonModule": true,
         "isolatedModules": true,
-        "jsx": "preserve",
-        "plugins": [
-            {
-                "transform": "@zoltu/typescript-transformer-append-js-extension/output/index.js",
-                "after": true
-            }
-        ],
+        "jsx": "react-jsx",
+        "jsxImportSource": "ige-jsx",
         "declaration": true
     },
     "include": ["**/*.ts", "**/*.tsx"],

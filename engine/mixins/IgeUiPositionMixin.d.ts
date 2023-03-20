@@ -342,11 +342,11 @@ export declare const WithUiPositionMixin: <BaseClassType extends Mixin<IgeObject
         emit(eventName: string, args?: any): number;
         eventList(): import("./IgeEventingMixin").IgeEventListenerRegister | undefined;
         _processRemovals(): void;
+        _data: Record<string, any>;
         getClassId(): string;
         log(message: string, ...args: any[]): any;
         logIndent(): void;
         logOutdent(): void;
-        _data: Record<string, any>;
         data(key: string, value: any): any;
         data(key: string): any;
     };
