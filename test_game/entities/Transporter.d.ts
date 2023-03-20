@@ -8,7 +8,7 @@ export declare class Transporter extends WorkerUnit {
     _depotA?: Building;
     _depotBId: string;
     _depotB?: Building;
-    _targetResource?: Resource;
+    _resource?: Resource;
     _state: "idle" | "retrieving" | "transporting" | "returning";
     constructor(depotAId: string, depotBId: string);
     setDepots(): void;

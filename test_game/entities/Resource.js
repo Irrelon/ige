@@ -2,6 +2,8 @@ import { ige } from "../../engine/instance.js";
 import { Circle } from "./base/Circle.js";
 import { registerClass } from "../../engine/igeClassStore.js";
 import { IgeTimeout } from "../../engine/core/IgeTimeout.js";
+import { ResourcePathFinder } from "../services/ResourcePathFinder.js";
+import { isServer } from "../../engine/clientServer.js";
 export class Resource extends Circle {
     constructor(type, locationId, destinationId) {
         super();
@@ -13,7 +15,9 @@ export class Resource extends Circle {
         this._type = type;
         this._locationId = locationId;
         this._destinationId = destinationId;
-        this.setNavigation();
+        if (isServer) {
+            this.setNavigation();
+        }
     }
     setNavigation() {
         this._location = ige.$(this._locationId);
@@ -25,19 +29,33 @@ export class Resource extends Circle {
             }, 50);
             return;
         }
+        this.onDropped(this._locationId);
     }
     onDropped(droppedLocationId) {
         this._location = ige.$(droppedLocationId);
-        // Calculate next hop in path to destination
-        const roads = ige.$$("road");
-        // Find the roads that connect to the destination
-        const filteredRoads = roads.filter((road) => {
-            return road._toId === this._destinationId || road._fromId === this._destinationId;
+        this._locationId = droppedLocationId;
+        // console.log("Resource is located at", this._locationId);
+        // console.log("Resource wants to get to", this._destinationId);
+        if (this._locationId === this._destinationId) {
+            //console.log("We got to our destination!");
+            this._pathIds = [];
+            this.destroy();
+            return;
+        }
+        const pathFinder = new ResourcePathFinder();
+        const sourceNode = pathFinder.getNode(this._locationId);
+        const targetNode = pathFinder.getNode(this._destinationId);
+        if (!sourceNode || !targetNode) {
+            console.log("Resource no source or dest!");
+            return;
+        }
+        const path = pathFinder.generate(sourceNode, targetNode).map((pathItem) => {
+            return pathItem._id;
         });
-        const path = [this._destinationId];
-        // Loop the roads and traverse them
-        filteredRoads.forEach((road) => {
-        });
+        this._pathIds = path;
+        //console.log("Resource path is", this._pathIds.toString());
+        // Add resource to the current location's transport queue
+        this._location.transportQueue.push(this);
     }
     streamCreateConstructorArgs() {
         return [this._type, this._locationId, this._destinationId];

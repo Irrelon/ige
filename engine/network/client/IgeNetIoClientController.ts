@@ -434,8 +434,6 @@ export class IgeNetIoClientController extends IgeNetIoBaseController {
 		const initialData = data[5];
 		const parent = ige.$(parentId);
 
-		console.log("Got stream create", data);
-
 		// Check the required class exists
 		if (parent) {
 			// Check that the entity doesn't already exist

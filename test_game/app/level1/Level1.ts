@@ -95,9 +95,12 @@ export class Level1 extends IgeSceneGraph {
 			.translateTo(base._translate.x, base._translate.y, 0)
 			.mount(scene1);
 
-		const resource1 = new Resource(ResourceType.wood, factoryBuilding1.id(), base.id())
-			.id("resource1")
-			.translateTo(factoryBuilding1._translate.x, factoryBuilding1._translate.y, 0)
+		new Transporter(resourceBuilding1.id(), base.id())
+			.translateTo(base._translate.x, base._translate.y, 0)
+			.mount(scene1);
+
+		new Resource(ResourceType.wood, factoryBuilding2.id(), factoryBuilding1.id())
+			.translateTo(factoryBuilding2._translate.x, factoryBuilding2._translate.y, 0)
 			.mount(scene1);
 	}
 

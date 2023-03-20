@@ -27,7 +27,7 @@ export declare class IgePathFinder extends IgeEventingClass {
     diagonalCost(val?: number): number | this;
     /**
      * Gets / sets the limit on the number of neighbour nodes
-     * that the path-finder will analyse before reaching it's
+     * that the pathfinder will analyse before reaching its
      * target tile. On large maps this limit should be increased
      * to allow pathing where many neighbours need to be
      * considered.
