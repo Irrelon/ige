@@ -22,10 +22,12 @@ export class Level1Scene extends IgeSceneGraph {
 		// Create the scene
 		const scene1 = new IgeScene2d()
 			.id('scene1')
+			.layer(0)
 			.mount(baseScene);
 
 		const uiScene = new IgeScene2d()
 			.id('uiScene')
+			.layer(1)
 			.mount(baseScene);
 
 		// Create an entity and mount it to the scene
