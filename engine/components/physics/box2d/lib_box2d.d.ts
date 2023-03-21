@@ -2554,6 +2554,11 @@ export declare namespace Box2D.Dynamics {
 	export class b2Body {
 		_entity: IgeEntityBox2d;
 		m_nonGravitic: boolean;
+		updating: boolean;
+		m_xf: Box2D.Common.Math.b2Transform;
+		asleep: boolean;
+
+		public m_type: number;
 
 		/**
 		 * Dynamic Body

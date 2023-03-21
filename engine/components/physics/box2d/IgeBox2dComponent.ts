@@ -737,6 +737,8 @@ export class IgeBox2dComponent extends IgeComponent<IgeEngine> {
 					entity = tempBod._entity; //this.ige.entities.read(tempBod.m_userData);
 					entityBox2dBody = entity._box2dBody;
 
+					if (!entityBox2dBody) continue;
+
 					// Check if the body is awake and is dynamic (we don't transform static bodies)
 					if (tempBod.IsAwake() && tempBod.m_type !== 0) {
 						// Update the entity data to match the body data
