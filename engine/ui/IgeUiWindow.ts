@@ -4,6 +4,7 @@ import { IgeUiLabel } from "@/engine/ui/IgeUiLabel";
 import { IgeUiButton } from "@/engine/ui/IgeUiButton";
 import { IgePoint3d } from "@/engine/core/IgePoint3d";
 import type { IgeUiManagerController } from "../core/IgeUiManagerController";
+import { IgeEventListenerObject, IgeMultiEventListenerObject } from "@/engine/mixins/IgeEventingMixin";
 
 export class IgeUiWindow extends IgeUiElement {
 	classId = "IgeUiWindow";
@@ -14,13 +15,16 @@ export class IgeUiWindow extends IgeUiElement {
 	_closeButton: IgeUiButton;
 	_opStartMouse?: IgePoint3d;
 	_opStartTranslate: Record<string, number> = {};
+	_eventHandlers: Record<string, IgeEventListenerObject | IgeMultiEventListenerObject | undefined> = {};
 
 	constructor () {
 		super();
 
+		const ui = ige.ui as IgeUiManagerController;
+
 		// Define some default styles
-		if (!(ige.ui as IgeUiManagerController).style("IgeUiWindow")) {
-			(ige.ui as IgeUiManagerController).style("IgeUiWindow", {
+		if (!ui.style("IgeUiWindow")) {
+			ui.style("IgeUiWindow", {
 				backgroundColor: null
 			});
 		}
@@ -122,15 +126,15 @@ export class IgeUiWindow extends IgeUiElement {
 		if (val) {
 			this._draggable = true;
 
-			this._topNav.on("pointerDown", this._dragStart);
-			ige.input.on("preMouseUp", this._dragEnd);
-			ige.input.on("preMouseMove", this._dragMove);
+			this._eventHandlers.pointerDown = this._topNav.on("pointerDown", this._dragStart);
+			this._eventHandlers.preMouseUp = ige.input.on("preMouseUp", this._dragEnd);
+			this._eventHandlers.preMouseMove = ige.input.on("preMouseMove", this._dragMove);
 		} else {
 			this._draggable = false;
 
-			this._topNav.off("pointerDown", this._dragStart);
-			ige.input.off("preMouseUp", this._dragEnd);
-			ige.input.off("preMouseMove", this._dragMove);
+			this._topNav.off("pointerDown", this._eventHandlers.pointerDown);
+			ige.input.off("preMouseUp", this._eventHandlers.preMouseUp);
+			ige.input.off("preMouseMove", this._eventHandlers.preMouseMove);
 		}
 	}
 

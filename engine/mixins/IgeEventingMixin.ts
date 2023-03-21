@@ -16,7 +16,7 @@ export interface IgeMultiEventListenerObject extends Omit<IgeEventListenerObject
 	totalEvents: number;
 }
 
-export type IgeEventListenerRegister = Record<string, IgeEventListenerObject[]>;
+export type IgeEventListenerRegister = Record<string, (IgeEventListenerObject | IgeMultiEventListenerObject)[]>;
 export type IgeEventRemovalResultCallback = (success: boolean) => void;
 
 export const WithEventingMixin = <BaseClassType extends Mixin<IgeBaseClass>>(Base: BaseClassType) => class extends Base {
@@ -70,7 +70,7 @@ export const WithEventingMixin = <BaseClassType extends Mixin<IgeBaseClass>>(Bas
 				sendEventName
 			};
 
-			const elArr: IgeEventListenerObject[] = this._eventListeners[eventName] = this._eventListeners[eventName] || [];
+			const elArr: (IgeEventListenerObject | IgeMultiEventListenerObject)[] = this._eventListeners[eventName] = this._eventListeners[eventName] || [];
 
 			const existingIndex = elArr.findIndex((tmpListener) => {
 				return tmpListener.callback === newListener.callback;
