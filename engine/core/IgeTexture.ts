@@ -23,6 +23,7 @@ let IgeImageClass: typeof IgeImage;
 export class IgeTexture extends IgeAsset {
 	classId = "IgeTexture";
 	IgeTexture = true;
+	_noDimensions: boolean = false;
 	_sizeX: number = 0;
 	_sizeY: number = 0;
 	_renderMode: IgeTextureRenderMode = IgeTextureRenderMode.none;

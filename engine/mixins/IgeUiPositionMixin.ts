@@ -1,6 +1,7 @@
 import { ige } from "../instance";
 import { IgeObject } from "../core/IgeObject";
 import type { Mixin } from "@/types/Mixin";
+import { IgeUiEntity } from "@/engine/core/IgeUiEntity";
 
 export const WithUiPositionMixin = <BaseClassType extends Mixin<IgeObject>>(Base: BaseClassType) => class extends Base {
 	_uiLeft?: number;
@@ -527,7 +528,7 @@ export const WithUiPositionMixin = <BaseClassType extends Mixin<IgeObject>>(Base
 	 * @return {*}
 	 */
 	updateUiChildren () {
-		const arr = this._children || [];
+		const arr = (this._children || []) as IgeUiEntity[];
 
 		if (!arr) {
 			return this;

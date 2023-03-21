@@ -1,4 +1,7 @@
 import { IgeTexture } from "./IgeTexture";
+import { IgeSmartTexture } from "@/types/IgeSmartTexture";
+import { IgeImage } from "@/engine/core/IgeImage";
+import { IgeCanvas } from "@/engine/core/IgeCanvas";
 
 /* TODO: URGENT - Make this alignment stuff work inside the bounds of the entity it is attached to
  *    so that bottom-right aligns to the lower-right point of the bounding box of the entity
@@ -13,37 +16,37 @@ import { IgeTexture } from "./IgeTexture";
  */
 export class IgeFontSheet extends IgeTexture {
 	classId = "IgeFontSheet";
+	_sheetImage?: IgeImage | IgeCanvas;
+	_lineHeightModifier: number = 0;
+	_fontData: any;
 
-	constructor (ige, url) {
-		super(ige, url);
+	constructor (id: string, urlOrObject?: string | IgeSmartTexture) {
+		super(id, urlOrObject);
 
 		// Set the _noDimensions flag which tells any entity
 		// that assigns this texture that the texture has an
-		// unknown width/height so it should not get it's
+		// unknown width/height, so it should not get its
 		// dimension data from the texture
 		this._noDimensions = true;
 
 		// Set a listener for when the texture loads
-		this.on("loaded", function () {
-			if (this.image) {
-				// Store the cell sheet image
-				this._sheetImage = this.image;
+		this.on("loaded", () => {
+			if (!this.image) {
+				return;
+			}
 
-				// Get the font sheet data header
-				this._fontData = this.decodeHeader();
+			this._sheetImage = this.image;
+			this._fontData = this.decodeHeader();
+			this._charCodeMap = this._fontData.characters.charCodes;
+			this._charPosMap = this._fontData.characters.charPosition;
+			this._measuredWidthMap = this._fontData.characters.measuredWidth;
+			this._pixelWidthMap = this._fontData.characters.pixelWidth;
 
-				// Cache access to looped data
-				this._charCodeMap = this._fontData.characters.charCodes;
-				this._charPosMap = this._fontData.characters.charPosition;
-				this._measuredWidthMap = this._fontData.characters.measuredWidth;
-				this._pixelWidthMap = this._fontData.characters.pixelWidth;
-
-				if (this._fontData) {
-					const header = this._fontData.font;
-					this.log("Loaded font sheet for font: " + header.fontName + " @ " + header.fontSize + header.fontSizeUnit + " in " + header.fontColor);
-				} else {
-					this.log("Could not load data header for font sheet: " + this.image.src, "error");
-				}
+			if (this._fontData) {
+				const header = this._fontData.font;
+				this.log("Loaded font sheet for font: " + header.fontName + " @ " + header.fontSize + header.fontSizeUnit + " in " + header.fontColor);
+			} else {
+				this.log("Could not load data header for font sheet: " + this.image.src, "error");
 			}
 		});
 	}
@@ -65,7 +68,7 @@ export class IgeFontSheet extends IgeTexture {
 		return this._decode(canvas, 0, 0, this.image.width);
 	}
 
-	_decode (canvas, x, y, maxX) {
+	_decode (canvas: IgeCanvas, x: number, y: number, maxX: number): any {
 		let ctx = canvas.getContext("2d"),
 			imageData = ctx.getImageData(x, y, maxX, canvas.height).data,
 			run = true,
@@ -92,7 +95,7 @@ export class IgeFontSheet extends IgeTexture {
 		}
 	}
 
-	lineHeightModifier (val) {
+	lineHeightModifier (val?: number) {
 		if (typeof (val) !== "undefined") {
 			this._lineHeightModifier = val;
 		}

@@ -246,10 +246,10 @@ export class IgeFontEntity extends IgeUiEntity {
 			this.cacheDirty(true);
 		}
 
-		// TODO: Maybe use .script.meta to store these properties?
-		if (this._texture && this._texture._caching && this._texture._cacheText[this._renderText]) {
-			delete this._texture._cacheText[this._renderText];
-		}
+		// TODO: Commented this as it is not used anywhere!
+		// if (this._texture && this._texture._caching && this._texture._cacheText[this._renderText]) {
+		// 	delete this._texture._cacheText[this._renderText];
+		// }
 	}
 
 	/**

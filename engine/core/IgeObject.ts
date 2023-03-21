@@ -135,8 +135,6 @@ export class IgeObject extends IgeEventingClass implements IgeCanRegisterById, I
 	_smartBackground?: IgeSmartTexture;
 	_lastUpdate?: number;
 	_behaviours?: IgeBehaviourStore;
-	//_tickBehaviours?: IgeEntityBehaviour[];
-	//_updateBehaviours?: IgeEntityBehaviour[];
 	_birthMount?: string;
 	_frameAlternatorCurrent: boolean = false;
 	_backgroundPattern?: IgeTexture;
