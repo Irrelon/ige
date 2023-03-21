@@ -6,8 +6,8 @@
 </head>
 <body>
 	<div class="page">
-<h2>IgeBox2dComponent <span>CLASS</span></h2>
-<p>Declared in <a href="../../engine/components/physics/box2d/IgeBox2dComponent.js">IgeBox2dComponent.js</a></p>
+<h2>IgeBox2dController <span>CLASS</span></h2>
+<p>Declared in <a href="../../engine/components/physics/box2d/IgeBox2dController.js">IgeBox2dController.js</a></p>
 <div class="itemBox">
 	<div class="header">Description</div>
 	<div class="content">The engine's box2d component class.</div>
@@ -27,7 +27,7 @@
     <div class="methodDefinition"><span class="methodName">mode</span>({<span class="argType">Integer</span>} <span class="argName">val</span>)</div>
     <div class="methodArgs"><ul class="argList"><li>{<span class="argType">Integer</span>}<span class="argName">val</span> The mode, either 0 or 1.</li></ul></div>
     <div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
-    
+
 </div><a name="sleep"></a>
 <h3 class="methodTitle">sleep</h3>
 <div class="methodSection">
@@ -37,7 +37,7 @@
     <div class="methodDefinition"><span class="methodName">sleep</span>({<span class="argType">Boolean</span>} <span class="argName">val</span>)</div>
     <div class="methodArgs"><ul class="argList"><li>{<span class="argType">Boolean</span>}<span class="argName">val</span> </li></ul></div>
     <div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
-    
+
 </div><a name="scaleRatio"></a>
 <h3 class="methodTitle">scaleRatio</h3>
 <div class="methodSection">
@@ -47,7 +47,7 @@
     <div class="methodDefinition"><span class="methodName">scaleRatio</span>({<span class="argType"></span>} <span class="argName">val</span>)</div>
     <div class="methodArgs"><ul class="argList"><li>{<span class="argType"></span>}<span class="argName">val</span> </li></ul></div>
     <div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
-    
+
 </div><a name="gravity"></a>
 <h3 class="methodTitle">gravity</h3>
 <div class="methodSection">
@@ -57,7 +57,7 @@
     <div class="methodDefinition"><span class="methodName">gravity</span>({<span class="argType"></span>} <span class="argName">x</span>, {<span class="argType"></span>} <span class="argName">y</span>)</div>
     <div class="methodArgs"><ul class="argList"><li>{<span class="argType"></span>}<span class="argName">x</span> </li><li>{<span class="argType"></span>}<span class="argName">y</span> </li></ul></div>
     <div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
-    
+
 </div><a name="world"></a>
 <h3 class="methodTitle">world</h3>
 <div class="methodSection">
@@ -67,7 +67,7 @@
     <div class="methodDefinition"><span class="methodName">world</span>()</div>
     <div class="methodArgs"></div>
     <div class="methodReturnDesc">Returns {<span class="argType">b2World</span>} </div>
-    
+
 </div><a name="createWorld"></a>
 <h3 class="methodTitle">createWorld</h3>
 <div class="methodSection">
@@ -77,7 +77,7 @@
     <div class="methodDefinition"><span class="methodName">createWorld</span>({<span class="argType">String</span>} <span class="argName">id</span>, {<span class="argType">Object</span>} <span class="argName">options</span>)</div>
     <div class="methodArgs"><ul class="argList"><li>{<span class="argType">String</span>}<span class="argName">id</span> </li><li>{<span class="argType">Object</span>}<span class="argName">options</span> </li></ul></div>
     <div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
-    
+
 </div><a name="createFixture"></a>
 <h3 class="methodTitle">createFixture</h3>
 <div class="methodSection">
@@ -87,7 +87,7 @@
     <div class="methodDefinition"><span class="methodName">createFixture</span>({<span class="argType"></span>} <span class="argName">params</span>)</div>
     <div class="methodArgs"><ul class="argList"><li>{<span class="argType"></span>}<span class="argName">params</span> </li></ul></div>
     <div class="methodReturnDesc">Returns {<span class="argType">b2FixtureDef</span>} </div>
-    
+
 </div><a name="createBody"></a>
 <h3 class="methodTitle">createBody</h3>
 <div class="methodSection">
@@ -97,7 +97,7 @@
     <div class="methodDefinition"><span class="methodName">createBody</span>({<span class="argType"><a href="./IgeEntity.html">IgeEntity</a></span>} <span class="argName">entity</span>, {<span class="argType">Object</span>} <span class="argName">body</span>)</div>
     <div class="methodArgs"><ul class="argList"><li>{<span class="argType"><a href="./IgeEntity.html">IgeEntity</a></span>}<span class="argName">entity</span> </li><li>{<span class="argType">Object</span>}<span class="argName">body</span> </li></ul></div>
     <div class="methodReturnDesc">Returns {<span class="argType">b2Body</span>} </div>
-    
+
 </div><a name="staticsFromMap"></a>
 <h3 class="methodTitle">staticsFromMap</h3>
 <div class="methodSection">
@@ -107,7 +107,7 @@
     <div class="methodDefinition"><span class="methodName">staticsFromMap</span>({<span class="argType"><a href="./IgeTileMap2d.html">IgeTileMap2d</a></span>} <span class="argName">mapLayer</span>, {<span class="argType">Function</span>} <span class="argName">callback</span>)</div>
     <div class="methodArgs"><ul class="argList"><li>{<span class="argType"><a href="./IgeTileMap2d.html">IgeTileMap2d</a></span>}<span class="argName">mapLayer</span> </li><li>{<span class="argType">Function</span>}<span class="argName">callback</span> Returns true or false depending on if the passed map data should be included as part of the box2d static object data. This allows you to control what parts of the map data are to be considered for box2d static objects and which parts are to be ignored. If not passed then any tile with any map data is considered part of the static object data.</li></ul></div>
     <div class="methodReturnDesc"></div>
-    
+
 </div><a name="contactListener"></a>
 <h3 class="methodTitle">contactListener</h3>
 <div class="methodSection">
@@ -117,7 +117,7 @@
     <div class="methodDefinition"><span class="methodName">contactListener</span>({<span class="argType">Function</span>} <span class="argName">beginContactCallback</span>, {<span class="argType">Function</span>} <span class="argName">endContactCallback</span>, {<span class="argType">Function</span>} <span class="argName">preSolve</span>, {<span class="argType">Function</span>} <span class="argName">postSolve</span>)</div>
     <div class="methodArgs"><ul class="argList"><li>{<span class="argType">Function</span>}<span class="argName">beginContactCallback</span> The method to call when the contact listener detects contact has started.</li><li>{<span class="argType">Function</span>}<span class="argName">endContactCallback</span> The method to call when the contact listener detects contact has ended.</li><li>{<span class="argType">Function</span>}<span class="argName">preSolve</span> </li><li>{<span class="argType">Function</span>}<span class="argName">postSolve</span> </li></ul></div>
     <div class="methodReturnDesc"></div>
-    
+
 </div><a name="networkDebugMode"></a>
 <h3 class="methodTitle">networkDebugMode</h3>
 <div class="methodSection">
@@ -127,7 +127,7 @@
     <div class="methodDefinition"><span class="methodName">networkDebugMode</span>({<span class="argType">Boolean</span>} <span class="argName">val</span>)</div>
     <div class="methodArgs"><ul class="argList"><li>{<span class="argType">Boolean</span>}<span class="argName">val</span> </li></ul></div>
     <div class="methodReturnDesc"></div>
-    
+
 </div><a name="enableDebug"></a>
 <h3 class="methodTitle">enableDebug</h3>
 <div class="methodSection">
@@ -137,7 +137,7 @@
     <div class="methodDefinition"><span class="methodName">enableDebug</span>({<span class="argType"><a href="./IgeEntity.html">IgeEntity</a></span>} <span class="argName">mountScene</span>)</div>
     <div class="methodArgs"><ul class="argList"><li>{<span class="argType"><a href="./IgeEntity.html">IgeEntity</a></span>}<span class="argName">mountScene</span> </li></ul></div>
     <div class="methodReturnDesc"></div>
-    
+
 </div><a name="destroyBody"></a>
 <h3 class="methodTitle">destroyBody</h3>
 <div class="methodSection">
@@ -147,7 +147,7 @@
     <div class="methodDefinition"><span class="methodName">destroyBody</span>({<span class="argType"></span>} <span class="argName">body</span>)</div>
     <div class="methodArgs"><ul class="argList"><li>{<span class="argType"></span>}<span class="argName">body</span> </li></ul></div>
     <div class="methodReturnDesc"></div>
-    
+
 </div><a name="updateCallback"></a>
 <h3 class="methodTitle">updateCallback</h3>
 <div class="methodSection">
@@ -157,7 +157,7 @@
     <div class="methodDefinition"><span class="methodName">updateCallback</span>({<span class="argType"></span>} <span class="argName">method</span>)</div>
     <div class="methodArgs"><ul class="argList"><li>{<span class="argType"></span>}<span class="argName">method</span> </li></ul></div>
     <div class="methodReturnDesc">Returns {<span class="argType">*</span>} </div>
-    
+
 </div><a name="_behaviour"></a>
 <h3 class="methodTitle">_behaviour</h3>
 <div class="methodSection">
@@ -167,7 +167,7 @@
     <div class="methodDefinition"><span class="methodName">_behaviour</span>({<span class="argType"></span>} <span class="argName">ctx</span>)</div>
     <div class="methodArgs"><ul class="argList"><li>{<span class="argType"></span>}<span class="argName">ctx</span> </li></ul></div>
     <div class="methodReturnDesc"></div>
-    
+
 </div>	</div>
     <script type="text/javascript">
         $(function () {

@@ -1,6 +1,6 @@
 import { ige } from "../../../instance";
 import { IgeEntity } from "../../../core/IgeEntity";
-import type { IgeBox2dComponent } from "./IgeBox2dComponent";
+import type { IgeBox2dController } from "./IgeBox2dController";
 import type { IgeBox2dBodyDef } from "@/types/IgeBox2dBodyDef";
 import type { Box2D } from "@/engine/components/physics/box2d/lib_box2d";
 
@@ -11,7 +11,7 @@ import type { Box2D } from "@/engine/components/physics/box2d/lib_box2d";
 export class IgeEntityBox2d extends IgeEntity {
 	classId = 'IgeEntityBox2d';
 
-	_b2dRef: IgeBox2dComponent;
+	_b2dRef: IgeBox2dController;
 	_box2dBodyDef?: IgeBox2dBodyDef;
 	_box2dBody?: Box2D.Dynamics.b2Body;
 	_box2dOurContactFixture?: Box2D.Dynamics.b2Fixture;
@@ -20,7 +20,7 @@ export class IgeEntityBox2d extends IgeEntity {
 	constructor () {
 		super();
 
-		this._b2dRef = (ige.engine.components.box2d as IgeBox2dComponent);
+		this._b2dRef = (ige.box2d as IgeBox2dController);
 
 		// Check if Box2D is enabled in the engine
 		if (this._b2dRef) {

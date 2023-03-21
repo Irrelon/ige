@@ -19,11 +19,13 @@ import type { IgeViewport } from "./IgeViewport";
 import type { IgeNetIoClientController } from "@/engine/network/client/IgeNetIoClientController";
 import type { IgeNetIoServerController } from "@/engine/network/server/IgeNetIoServerController";
 import { IgeUiManagerController } from "@/engine/core/IgeUiManagerController";
+import { IgeBox2dController } from "@/engine/components/physics/box2d/IgeBox2dController";
 export declare class Ige implements IgeIsReadyPromise {
     game: Record<string, any>;
     audio?: IgeAudioController;
     router: IgeRouter;
     engine: IgeEngine;
+    box2d: IgeBox2dController;
     textures: IgeTextureStore;
     input: IgeInputComponent;
     tween: IgeTweenController;

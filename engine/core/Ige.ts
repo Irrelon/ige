@@ -22,6 +22,7 @@ import type { IgeViewport } from "./IgeViewport";
 import type { IgeNetIoClientController } from "@/engine/network/client/IgeNetIoClientController";
 import type { IgeNetIoServerController } from "@/engine/network/server/IgeNetIoServerController";
 import { IgeUiManagerController } from "@/engine/core/IgeUiManagerController";
+import { IgeBox2dController } from "@/engine/components/physics/box2d/IgeBox2dController";
 
 const version = "3.0.0";
 
@@ -30,6 +31,7 @@ export class Ige implements IgeIsReadyPromise {
 	audio?: IgeAudioController;
 	router: IgeRouter = new IgeRouter();
 	engine: IgeEngine = new IgeEngine();
+	box2d: IgeBox2dController = new IgeBox2dController();
 	textures: IgeTextureStore = new IgeTextureStore();
 	input: IgeInputComponent = new IgeInputComponent();
 	tween: IgeTweenController = new IgeTweenController();
@@ -74,11 +76,12 @@ export class Ige implements IgeIsReadyPromise {
 		this.dependencies.add("ui", this.ui.isReady());
 
 		this.dependencies.markAsSatisfied("engine");
+		this.dependencies.markAsSatisfied("box2d");
 	}
 
 	isReady () {
 		return new Promise<void>((resolve) => {
-			this.dependencies.waitFor(["network", "tween", "time", "engine"], resolve);
+			this.dependencies.waitFor(["network", "engine", "tween", "time", "ui"], resolve);
 		});
 	}
 

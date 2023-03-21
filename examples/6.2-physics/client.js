@@ -9,7 +9,6 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 import { IgeBaseClass } from "../../engine/core/IgeBaseClass.js";
 import { ige } from "../../engine/instance.js";
-import { IgeBox2dComponent } from "../../engine/components/physics/box2d/IgeBox2dComponent.js";
 import { IgeScene2d } from "../../engine/core/IgeScene2d.js";
 import { IgeViewport } from "../../engine/core/IgeViewport.js";
 import { IgeEntityBox2d } from "../../engine/components/physics/box2d/IgeEntityBox2d.js";
@@ -29,9 +28,8 @@ export class Client extends IgeBaseClass {
             yield ige.textures.whenLoaded();
             // Create the HTML canvas
             ige.engine.createFrontBuffer(true);
-            // Add physics and setup physics world
-            ige.engine.addComponent("box2d", IgeBox2dComponent);
-            ige.engine.components.box2d
+            // Setup physics world
+            ige.box2d
                 .sleep(true)
                 .gravity(0, 10)
                 .createWorld()
@@ -140,7 +138,7 @@ export class Client extends IgeBaseClass {
                 .mount(scene1);
             // Add the box2d debug painter entity to the
             // scene to show the box2d body outlines
-            ige.engine.components.box2d.enableDebug(scene1);
+            ige.box2d.enableDebug(scene1);
         });
     }
 }

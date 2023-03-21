@@ -7,7 +7,7 @@ export class IgeEntityBox2d extends IgeEntity {
     constructor() {
         super();
         this.classId = 'IgeEntityBox2d';
-        this._b2dRef = ige.engine.components.box2d;
+        this._b2dRef = ige.box2d;
         // Check if Box2D is enabled in the engine
         if (this._b2dRef) {
             if (this._b2dRef._networkDebugMode) {

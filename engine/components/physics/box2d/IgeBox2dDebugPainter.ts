@@ -1,6 +1,6 @@
 import { ige } from "../../../instance";
 import { IgeEntity } from "../../../core/IgeEntity";
-import { IgeBox2dComponent } from "./IgeBox2dComponent";
+import { IgeBox2dController } from "./IgeBox2dController";
 import { registerClass } from "../../../igeClassStore";
 import type { IgeCanvasRenderingContext2d } from "@/types/IgeCanvasRenderingContext2d";
 
@@ -22,7 +22,7 @@ export class IgeBox2dDebugPainter extends IgeEntity {
 			ctx.rotate((45 * Math.PI) / 180);
 		}
 
-		(ige.engine.components.box2d as IgeBox2dComponent)._world?.DrawDebugData();
+		(ige.box2d as IgeBox2dController)._world?.DrawDebugData();
 
 		super.tick(ctx);
 	}

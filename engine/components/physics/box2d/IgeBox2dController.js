@@ -1,6 +1,4 @@
 import { ige } from "../../../instance.js";
-import { IgeEngineState } from "../../../../enums/IgeEngineState.js";
-import { IgeComponent } from "../../../core/IgeComponent.js";
 import { IgeBox2dTimingMode } from "../../../../enums/IgeBox2dTimingMode.js";
 import { IgeBox2dBodyType } from "../../../../enums/IgeBox2dBodyType.js";
 import { IgeBox2dFixtureShapeType } from "../../../../enums/IgeBox2dFixtureShapeType.js";
@@ -8,13 +6,14 @@ import { IgeBox2dDebugPainter } from "./IgeBox2dDebugPainter.js";
 import { IgeEntityBox2d } from "./IgeEntityBox2d.js";
 import { IgeBehaviourType } from "../../../../enums/IgeBehaviourType.js";
 import { Box2D } from "../../../../engine/components/physics/box2d/lib_box2d.js";
+import { IgeEventingClass } from "../../../../engine/core/IgeEventingClass.js";
 /**
  * The engine's Box2D component class.
  */
-export class IgeBox2dComponent extends IgeComponent {
-    constructor(entity, options) {
-        super(entity, options);
-        this.classId = "IgeBox2dComponent";
+export class IgeBox2dController extends IgeEventingClass {
+    constructor() {
+        super();
+        this.classId = "IgeBox2dController";
         this.componentId = "box2d";
         this._active = false;
         this._renderMode = IgeBox2dTimingMode.matchEngine;
@@ -117,11 +116,6 @@ export class IgeBox2dComponent extends IgeComponent {
                 }
             }
         };
-        // Check that the engine has not already started
-        // as this will mess everything up if it has
-        if (ige.engine._state === IgeEngineState.started) {
-            this.log("Cannot add box2D component to the ige instance once the engine has started!", "error");
-        }
         this._renderMode = 0;
         this.b2Color = Box2D.Common.b2Color;
         this.b2Vec2 = Box2D.Common.Math.b2Vec2;
@@ -212,8 +206,10 @@ export class IgeBox2dComponent extends IgeComponent {
         this._scaleRatio = 30;
         this._gravity = new this.b2Vec2(0, 0);
         this._removeWhenReady = [];
-        this.log("Physics controller initiated!");
     }
+    /**
+     * Starts the physics simulation. Without calling this, no physics operations will be processed.
+     */
     start() {
         if (!this._world) {
             throw new Error("Cannot start the physics simulation until a world exists. Use the createWorld() method to set up a physics world before calling start()!");
@@ -233,6 +229,9 @@ export class IgeBox2dComponent extends IgeComponent {
             this._intervalTimer = setInterval(this._behaviour, 1000 / 60);
         }
     }
+    /**
+     * Stops the physics simulation. You can start it again and resume where it left off by calling start().
+     */
     stop() {
         if (!this._active) {
             return;
@@ -610,7 +609,7 @@ export class IgeBox2dComponent extends IgeComponent {
             this._world.SetDebugDraw(debugDraw);
             // Create the debug painter entity and mount
             // it to the passed scene
-            new IgeBox2dDebugPainter(this._entity)
+            new IgeBox2dDebugPainter(ige.engine)
                 .depth(40000) // Set a really high depth
                 .drawBounds(false)
                 .mount(mountScene);
@@ -641,7 +640,7 @@ export class IgeBox2dComponent extends IgeComponent {
     }
     destroy() {
         // Stop processing box2D steps
-        this._entity.removeBehaviour(IgeBehaviourType.preUpdate, "box2dStep");
+        this.stop();
         // Destroy all box2D world bodies
         return this;
     }

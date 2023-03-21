@@ -1,19 +1,18 @@
-import { IgeComponent } from "../../../core/IgeComponent";
 import { IgeBox2dTimingMode } from "@/enums/IgeBox2dTimingMode";
 import { IgeEntity } from "../../../core/IgeEntity";
 import { IgeTileMap2d, IgeTileMap2dScanRectCallback } from "../../../core/IgeTileMap2d";
 import { IgeEntityBox2d } from "./IgeEntityBox2d";
-import type { IgeEngine } from "../../../core/IgeEngine";
 import type { IgeBox2dBodyDef } from "@/types/IgeBox2dBodyDef";
 import type { IgeBox2dContactListenerCallback } from "@/types/IgeBox2dContactListenerCallback";
 import type { IgeBox2dContactPostSolveCallback, IgeBox2dContactPreSolveCallback } from "@/types/IgeBox2dContactSolverCallback";
 import type { IgeEntityBehaviourMethod } from "@/types/IgeEntityBehaviour";
 import { Box2D } from "@/engine/components/physics/box2d/lib_box2d";
 import { IgeBox2dFixtureDef } from "@/types/IgeBox2dFixtureDef";
+import { IgeEventingClass } from "@/engine/core/IgeEventingClass";
 /**
  * The engine's Box2D component class.
  */
-export declare class IgeBox2dComponent extends IgeComponent<IgeEngine> {
+export declare class IgeBox2dController extends IgeEventingClass {
     classId: string;
     componentId: string;
     _intervalTimer?: number;
@@ -46,8 +45,14 @@ export declare class IgeBox2dComponent extends IgeComponent<IgeEngine> {
     b2Contact: typeof Box2D.Dynamics.Contacts.b2Contact;
     b2FilterData: typeof Box2D.Dynamics.b2FilterData;
     b2DistanceJointDef: typeof Box2D.Dynamics.Joints.b2DistanceJointDef;
-    constructor(entity: IgeEngine, options?: any);
+    constructor();
+    /**
+     * Starts the physics simulation. Without calling this, no physics operations will be processed.
+     */
     start(): void;
+    /**
+     * Stops the physics simulation. You can start it again and resume where it left off by calling start().
+     */
     stop(): void;
     useWorker(val?: boolean): boolean | this | undefined;
     /**

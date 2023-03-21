@@ -1,5 +1,5 @@
 import { IgeEntity } from "../../../core/IgeEntity";
-import type { IgeBox2dComponent } from "./IgeBox2dComponent";
+import type { IgeBox2dController } from "./IgeBox2dController";
 import type { IgeBox2dBodyDef } from "@/types/IgeBox2dBodyDef";
 import type { Box2D } from "@/engine/components/physics/box2d/lib_box2d";
 /**
@@ -7,7 +7,7 @@ import type { Box2D } from "@/engine/components/physics/box2d/lib_box2d";
  */
 export declare class IgeEntityBox2d extends IgeEntity {
     classId: string;
-    _b2dRef: IgeBox2dComponent;
+    _b2dRef: IgeBox2dController;
     _box2dBodyDef?: IgeBox2dBodyDef;
     _box2dBody?: Box2D.Dynamics.b2Body;
     _box2dOurContactFixture?: Box2D.Dynamics.b2Fixture;

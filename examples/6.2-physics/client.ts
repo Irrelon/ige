@@ -1,7 +1,6 @@
 import { IgeBaseClass } from "@/engine/core/IgeBaseClass";
 import { IgeCanInit } from "@/types/IgeCanInit";
 import { ige } from "@/engine/instance";
-import { IgeBox2dComponent } from "@/engine/components/physics/box2d/IgeBox2dComponent";
 import { IgeScene2d } from "@/engine/core/IgeScene2d";
 import { IgeViewport } from "@/engine/core/IgeViewport";
 import { IgeEntityBox2d } from "@/engine/components/physics/box2d/IgeEntityBox2d";
@@ -27,9 +26,8 @@ export class Client extends IgeBaseClass implements IgeCanInit {
 		// Create the HTML canvas
 		ige.engine.createFrontBuffer(true);
 
-		// Add physics and setup physics world
-		ige.engine.addComponent("box2d", IgeBox2dComponent);
-		(ige.engine.components.box2d as IgeBox2dComponent)
+		// Setup physics world
+		ige.box2d
 			.sleep(true)
 			.gravity(0, 10)
 			.createWorld()
@@ -146,6 +144,6 @@ export class Client extends IgeBaseClass implements IgeCanInit {
 
 		// Add the box2d debug painter entity to the
 		// scene to show the box2d body outlines
-		(ige.engine.components.box2d as IgeBox2dComponent).enableDebug(scene1);
+		ige.box2d.enableDebug(scene1);
 	}
 }

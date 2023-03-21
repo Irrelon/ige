@@ -13,12 +13,14 @@ import { IgeDependencies } from "../../engine/core/IgeDependencies.js";
 import { IgeTweenController } from "../../engine/core/IgeTweenController.js";
 import { IgeTimeController } from "../../engine/core/IgeTimeController.js";
 import { IgeUiManagerController } from "../../engine/core/IgeUiManagerController.js";
+import { IgeBox2dController } from "../../engine/components/physics/box2d/IgeBox2dController.js";
 const version = "3.0.0";
 export class Ige {
     constructor() {
         this.game = {};
         this.router = new IgeRouter();
         this.engine = new IgeEngine();
+        this.box2d = new IgeBox2dController();
         this.textures = new IgeTextureStore();
         this.input = new IgeInputComponent();
         this.tween = new IgeTweenController();
@@ -84,10 +86,11 @@ export class Ige {
         this.dependencies.add("time", this.time.isReady());
         this.dependencies.add("ui", this.ui.isReady());
         this.dependencies.markAsSatisfied("engine");
+        this.dependencies.markAsSatisfied("box2d");
     }
     isReady() {
         return new Promise((resolve) => {
-            this.dependencies.waitFor(["network", "tween", "time", "engine"], resolve);
+            this.dependencies.waitFor(["network", "engine", "tween", "time", "ui"], resolve);
         });
     }
     /**
