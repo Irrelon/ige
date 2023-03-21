@@ -407,7 +407,7 @@ export class IgeObject extends IgeEventingClass {
         }
         let arrCount = arr.length;
         while (arrCount--) {
-            arr[arrCount].method(ige, this, ...args);
+            arr[arrCount].method(this, ...args);
         }
     }
     parent(id) {

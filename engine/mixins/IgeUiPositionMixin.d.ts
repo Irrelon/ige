@@ -138,6 +138,13 @@ export declare const WithUiPositionMixin: <BaseClassType extends Mixin<IgeObject
         _streamProperty: Record<string, any>;
         _streamSyncInterval?: number | undefined;
         _streamSyncDelta: number;
+        /**
+         * Gets / sets the viewport's x position relative to the center of
+         * the entity parent.
+         * @param {Number} px
+         * @param {Boolean=} noUpdate
+         * @return {Number}
+         */
         _streamSyncSectionInterval: Record<string, number>;
         _streamSyncSectionDelta: Record<string, number>;
         _timeStreamCurrentInterpolateTime?: number | undefined;
@@ -167,13 +174,7 @@ export declare const WithUiPositionMixin: <BaseClassType extends Mixin<IgeObject
             x: number;
             y: number;
         };
-        _computedOpacity: number; /**
-         * Gets / sets the entity's y position relative to the top of
-         * the canvas.
-         * @param {Number} px
-         * @param {Boolean=} noUpdate
-         * @return {Number}
-         */
+        _computedOpacity: number;
         _opacity: number;
         _cell: number | null;
         _deathTime?: number | undefined;
@@ -216,7 +217,13 @@ export declare const WithUiPositionMixin: <BaseClassType extends Mixin<IgeObject
         _hasParent?: Record<string, boolean> | undefined;
         _texture?: import("../core/IgeTexture").IgeTexture | undefined;
         _indestructible: boolean;
-        _shouldRender?: boolean | undefined;
+        _shouldRender?: boolean | undefined; /**
+         * Gets / sets the entity's y position relative to the bottom of
+         * the canvas.
+         * @param {Number} px
+         * @param {Boolean=} noUpdate
+         * @return {Number}
+         */
         _smartBackground?: import("../../types/IgeSmartTexture").IgeSmartTexture<IgeObject> | undefined;
         _lastUpdate?: number | undefined;
         _behaviours?: import("../../types/IgeBehaviourStore").IgeBehaviourStore | undefined;
@@ -302,7 +309,7 @@ export declare const WithUiPositionMixin: <BaseClassType extends Mixin<IgeObject
         disableInterpolation(val?: boolean | undefined): boolean | any;
         compositeStream(val: boolean): any;
         compositeStream(): boolean;
-        streamSections(sectionArray?: string[] | undefined): string[] | any;
+        streamSections(sectionArray?: string[] | undefined): any | string[];
         streamSectionsPush(sectionName: string): any;
         streamSectionsPull(sectionName: string): any;
         streamProperty(propName: string, propVal?: any): any;

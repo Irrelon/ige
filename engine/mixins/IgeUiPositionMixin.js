@@ -455,7 +455,7 @@ export const WithUiPositionMixin = (Base) => class extends Base {
      * @return {*}
      */
     updateUiChildren() {
-        const arr = this._children || [];
+        const arr = (this._children || []);
         if (!arr) {
             return this;
         }

@@ -14,7 +14,7 @@ export declare class IgeUiLabel extends IgeUiElement {
     _mask: string;
     _fontSheet?: IgeFontSheet;
     constructor();
-    textAlign(val?: "left" | "center" | "right"): "center" | "left" | "right" | undefined;
+    textAlign(val?: "left" | "center" | "right"): "left" | "right" | "center" | undefined;
     textAlignX(val: IgeFontAlignX): this;
     textAlignX(): IgeFontAlignX;
     textAlignY(val: IgeFontAlignY): this;
@@ -57,12 +57,12 @@ export declare class IgeUiLabel extends IgeUiElement {
      * @param fontSheet
      * @return {*}
      */
-    fontSheet(fontSheet?: IgeFontSheet): this | IgeFontSheet | undefined;
+    fontSheet(fontSheet?: IgeFontSheet): IgeFontSheet | this | undefined;
     font(val: string | IgeFontSheet): this;
     font(): string | IgeFontSheet;
-    nativeFont(val?: string): string | this | IgeFontEntity | undefined;
-    nativeStroke(val?: number): number | this | IgeFontEntity | undefined;
-    nativeStrokeColor(val?: string): string | this | IgeFontEntity | undefined;
+    nativeFont(val?: string): string | IgeFontEntity | this | undefined;
+    nativeStroke(val?: number): number | IgeFontEntity | this | undefined;
+    nativeStrokeColor(val?: string): string | IgeFontEntity | this | undefined;
     color(val: string): this;
     color(): string;
     _mounted(): void;
