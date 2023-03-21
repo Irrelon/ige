@@ -8,24 +8,29 @@ import { IgeInputComponent } from "../../engine/components/IgeInputComponent.js"
 import { IgeObjectRegister } from "./IgeObjectRegister.js";
 import { IgeArrayRegister } from "./IgeArrayRegister.js";
 import { IgePoint3d } from "./IgePoint3d.js";
-import { IgeAudioController } from "../../engine/audio/index.js";
 import { IgeRouter } from "./IgeRouter.js";
 import { IgeDependencies } from "../../engine/core/IgeDependencies.js";
-const version = "2.0.0";
+import { IgeTweenController } from "../../engine/core/IgeTweenController.js";
+import { IgeTimeController } from "../../engine/core/IgeTimeController.js";
+import { IgeUiManagerController } from "../../engine/core/IgeUiManagerController.js";
+const version = "3.0.0";
 export class Ige {
     constructor() {
         this.router = new IgeRouter();
         this.engine = new IgeEngine();
         this.textures = new IgeTextureStore();
-        this.metrics = new IgeMetrics();
         this.input = new IgeInputComponent();
+        this.tween = new IgeTweenController();
+        this.time = new IgeTimeController();
+        this.ui = new IgeUiManagerController();
         this.register = new IgeObjectRegister();
         this.categoryRegister = new IgeArrayRegister("_category", "_categoryRegistered");
         this.groupRegister = new IgeArrayRegister("_group", "_groupRegistered");
+        this.dependencies = new IgeDependencies();
+        this.metrics = new IgeMetrics();
         this.config = igeConfig;
         this.version = version;
         this.classStore = igeClassStore;
-        this.dependencies = new IgeDependencies();
         this._watch = [];
         this._pointerPos = new IgePoint3d(); // Could probably be just {x: number, y: number}
         // /**
@@ -64,17 +69,24 @@ export class Ige {
             this.dependencies.add("network", import("../network/client/IgeNetIoClientController.js").then(({ IgeNetIoClientController: Module }) => {
                 this.network = new Module();
             }));
-            this.audio = new IgeAudioController();
+            this.dependencies.add("audio", import("../audio/IgeAudioController.js").then(({ IgeAudioController: Module }) => {
+                this.audio = new Module();
+            }));
         }
         if (isServer) {
             this.dependencies.add("network", import("../network/server/IgeNetIoServerController.js").then(({ IgeNetIoServerController: Module }) => {
                 this.network = new Module();
             }));
         }
+        this.dependencies.add("tween", this.tween.isReady());
+        this.dependencies.add("input", this.input.isReady());
+        this.dependencies.add("time", this.time.isReady());
+        this.dependencies.add("ui", this.ui.isReady());
+        this.dependencies.markAsSatisfied("engine");
     }
-    ready() {
+    isReady() {
         return new Promise((resolve) => {
-            this.dependencies.waitFor(["network"], resolve);
+            this.dependencies.waitFor(["network", "tween", "time", "engine"], resolve);
         });
     }
     /**

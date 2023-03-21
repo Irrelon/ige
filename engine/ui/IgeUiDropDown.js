@@ -8,11 +8,11 @@ export class IgeUiDropDown extends IgeUiElement {
         this._toggleState = false;
         this._options = [];
         // Define some default styles
-        if (!ige.engine.components.ui.style(".IgeUiDropDownOption")) {
-            ige.engine.components.ui.style(".IgeUiDropDownOption", {
+        if (!ige.ui.style(".IgeUiDropDownOption")) {
+            ige.ui.style(".IgeUiDropDownOption", {
                 backgroundColor: null
             });
-            ige.engine.components.ui.style(".IgeUiDropDownOption:hover", {
+            ige.ui.style(".IgeUiDropDownOption:hover", {
                 backgroundColor: "#00b4ff",
                 color: "#ffffff"
             });
@@ -115,7 +115,7 @@ export class IgeUiDropDown extends IgeUiElement {
                 .height(mainHeight)
                 .mount(this);
             for (let i = 0; i < this._options.length; i++) {
-                ige.engine.components.ui.style("#" + this._id + "_options_" + i, {
+                ige.ui.style("#" + this._id + "_options_" + i, {
                     color: this._color
                 });
                 new IgeUiLabel()

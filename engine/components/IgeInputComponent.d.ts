@@ -1,9 +1,9 @@
 import { IgeViewport } from "../core/IgeViewport";
 import { IgeInputEventControl } from "@/types/IgeInputEventControl";
-import { IgeComponent } from "../core/IgeComponent";
-import type { IgeEngine } from "../core/IgeEngine";
 import { IgeInputDevice } from "@/enums/IgeInputDeviceMap";
-export declare class IgeInputComponent extends IgeComponent<IgeEngine> {
+import { IgeEventingClass } from "@/engine/core/IgeEventingClass";
+import { IgeIsReadyPromise } from "@/types/IgeIsReadyPromise";
+export declare class IgeInputComponent extends IgeEventingClass implements IgeIsReadyPromise {
     classId: string;
     componentId: string;
     _eventQueue: [((evc: IgeInputEventControl, eventData?: any) => void), any][];
@@ -19,6 +19,7 @@ export declare class IgeInputComponent extends IgeComponent<IgeEngine> {
     pointerWheel?: Event;
     contextMenu?: Event;
     constructor();
+    isReady(): Promise<void>;
     debug: (val?: boolean) => boolean | this | undefined;
     /**
      * Sets up the event listeners on the main window and front
@@ -152,7 +153,7 @@ export declare class IgeInputComponent extends IgeComponent<IgeEngine> {
     tick(): void;
     /**
      * Emit an event by name. Overrides the IgeEventingClass emit method and
-     * checks for propagation stopped by calling ige.engine.components.input.stopPropagation().
+     * checks for propagation stopped by calling ige.input.stopPropagation().
      * @param {Object} eventName The name of the event to emit.
      * @param {Object || Array} args The arguments to send to any listening methods.
      * If you are sending multiple arguments, use an array containing each argument.

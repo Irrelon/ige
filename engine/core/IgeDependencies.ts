@@ -7,7 +7,7 @@ export class IgeDependencies {
 	_dependencyFulfilled: Record<string, boolean> = {};
 	_dependsOnArr: IgeDependencyAction[] = [];
 
-	add (dependencyName: string, dependencyPromise: Promise<any>) {
+	add (dependencyName: string, dependencyPromise: Promise<any | void>) {
 		dependencyPromise.then(() => {
 			this._onDependencySatisfied(dependencyName);
 		}).catch((err)=> {
@@ -24,6 +24,10 @@ export class IgeDependencies {
 
 		// Not all deps are fulfilled, add to the action array
 		this._dependsOnArr.push({ dependencyList, actionToTake });
+	}
+
+	markAsSatisfied (dependencyName: string) {
+		this._onDependencySatisfied(dependencyName);
 	}
 
 	_onDependencySatisfied (dependencyName: string) {

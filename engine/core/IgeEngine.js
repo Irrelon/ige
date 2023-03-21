@@ -11,13 +11,10 @@ import { ige } from "../instance.js";
 import { isClient, isServer } from "../clientServer.js";
 import { IgePoint3d } from "./IgePoint3d.js";
 import { IgeDummyContext } from "./IgeDummyContext.js";
-import { IgeInputComponent } from "../components/IgeInputComponent.js";
 import { IgeEntity } from "./IgeEntity.js";
 import { IgeViewport } from "./IgeViewport.js";
 import { IgeEngineState } from "../../enums/IgeEngineState.js";
-import { IgeTweenComponent } from "../components/IgeTweenComponent.js";
 import { IgePoint2d } from "./IgePoint2d.js";
-import { IgeTimeComponent } from "../components/IgeTimeComponent.js";
 import { IgeBehaviourType } from "../../enums/IgeBehaviourType.js";
 export class IgeEngine extends IgeEntity {
     constructor() {
@@ -435,9 +432,6 @@ export class IgeEngine extends IgeEntity {
         if (isClient) {
             this._resizeEvent();
         }
-        this.addComponent("input", IgeInputComponent);
-        this.addComponent("tween", IgeTweenComponent);
-        this.addComponent("time", IgeTimeComponent);
     }
     addComponent(id, Component, options) {
         return super.addComponent(id, Component, options);
@@ -548,7 +542,7 @@ export class IgeEngine extends IgeEntity {
         this._ctx = this._canvas.getContext(this._renderContext);
         this._headless = false;
         // Ask the input component to set up any listeners it has
-        this.components.input.setupListeners(this._canvas);
+        ige.input.setupListeners(this._canvas);
     }
     /**
      * Clears the entire canvas.
@@ -564,8 +558,8 @@ export class IgeEngine extends IgeEntity {
      */
     removeCanvas() {
         // Stop listening for input events
-        if (this.components.input) {
-            this.components.input.destroyListeners();
+        if (ige.input) {
+            ige.input.destroyListeners();
         }
         // Remove event listener
         window.removeEventListener("resize", this._resizeEvent);

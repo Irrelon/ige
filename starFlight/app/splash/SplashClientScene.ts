@@ -10,7 +10,7 @@ import { IgeUiDropDown } from "@/engine/ui/IgeUiDropDown";
 import { IgeEntity } from "@/engine/core/IgeEntity";
 import { IgeScene2d } from "@/engine/core/IgeScene2d";
 import { degreesToRadians } from "@/engine/utils";
-import { IgeUiManagerComponent } from "@/engine/components/IgeUiManagerComponent";
+import { IgeUiManagerController } from "@/engine/core/IgeUiManagerController";
 import { IgeViewport } from "@/engine/core/IgeViewport";
 
 export class SplashClientScene extends IgeEventingClass {
@@ -33,7 +33,7 @@ export class SplashClientScene extends IgeEventingClass {
 			}
 		};
 
-		const ui = ige.engine.components.ui as IgeUiManagerComponent;
+		const ui = ige.ui as IgeUiManagerController;
 
 		const mainScene = ige.$("mainScene") as IgeScene2d;
 
@@ -256,6 +256,8 @@ export class SplashClientScene extends IgeEventingClass {
 		gameOptionsWindow.on("beforeClose", function () {
 
 		});
+
+		gameOptionsWindow.show();
 
 		const leftNav = new IgeUiElement()
 			.id("leftNav")

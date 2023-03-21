@@ -1388,7 +1388,7 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 		this._processBehaviours(IgeBehaviourType.preTick, ctx);
 
 		if (this._pointerEventsActive) {
-			const input = ige.engine.components.input as IgeInputComponent;
+			const input = ige.input as IgeInputComponent;
 			if (this._processTriggerHitTests()) {
 				// Point is inside the trigger bounds
 				input.queueEvent(this._mouseInTrigger, null);
@@ -2003,7 +2003,7 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 	 *
 	 *         // You can ALSO stop propagation without the control object
 	 *         // reference via the global reference:
-	 *         ige.engine.components.input.stopPropagation();
+	 *         ige.input.stopPropagation();
 	 *     });
 	 * @return {*}
 	 */
@@ -2031,7 +2031,7 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 	 *
 	 *         // You can ALSO stop propagation without the control object
 	 *         // reference via the global reference:
-	 *         ige.engine.components.input.stopPropagation();
+	 *         ige.input.stopPropagation();
 	 *     });
 	 * @return {*}
 	 */
@@ -2061,7 +2061,7 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 	 *
 	 *         // You can ALSO stop propagation without the control object
 	 *         // reference via the global reference:
-	 *         ige.engine.components.input.stopPropagation();
+	 *         ige.input.stopPropagation();
 	 *     });
 	 * @return {*}
 	 */
@@ -2091,7 +2091,7 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 	 *
 	 *         // You can ALSO stop propagation without the control object
 	 *         // reference via the global reference:
-	 *         ige.engine.components.input.stopPropagation();
+	 *         ige.input.stopPropagation();
 	 *     });
 	 * @return {*}
 	 */
@@ -2121,7 +2121,7 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 	 *
 	 *         // You can ALSO stop propagation without the control object
 	 *         // reference via the global reference:
-	 *         ige.engine.components.input.stopPropagation();
+	 *         ige.input.stopPropagation();
 	 *     });
 	 * @return {*}
 	 */
@@ -2150,7 +2150,7 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 	 *
 	 *         // You can ALSO stop propagation without the control object
 	 *         // reference via the global reference:
-	 *         ige.engine.components.input.stopPropagation();
+	 *         ige.input.stopPropagation();
 	 *     });
 	 * @return {*}
 	 */
@@ -2385,7 +2385,7 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 	 * @private
 	 */
 	_mouseInTrigger = (evc: IgeInputEventControl, eventData?: any) => {
-		const input = ige.engine.components.input as IgeInputComponent;
+		const input = ige.input as IgeInputComponent;
 
 		if (input.pointerMove) {
 			// There is a mouse move event

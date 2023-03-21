@@ -31,7 +31,7 @@ export class IgeUiTextBox extends IgeUiElement {
             }
         };
         const focusFunc = () => {
-            ige.engine.components.input.stopPropagation();
+            ige.input.stopPropagation();
             blurFunc();
             const entScreenPos = this.screenPosition();
             const input = document.createElement("input");
@@ -77,7 +77,7 @@ export class IgeUiTextBox extends IgeUiElement {
         this.on("focus", focusFunc);
         this.on("pointerUp", focusFunc);
         this.on("pointerDown", () => {
-            ige.engine.components.input.stopPropagation();
+            ige.input.stopPropagation();
         });
         this.on("uiUpdate", () => {
             if (this._domElement) {

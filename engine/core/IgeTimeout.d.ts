@@ -20,7 +20,7 @@ export declare class IgeTimeout extends IgeInterval {
     reset(): void;
     /**
      * Checks for a timeout event to see if we should call the timeout method. This is
-     * called automatically by the IgeTimeComponent class and does not need to be
+     * called automatically by the IgeTimeController class and does not need to be
      * called manually.
      * @returns {*}
      */

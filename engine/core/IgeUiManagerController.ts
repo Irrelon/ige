@@ -1,14 +1,14 @@
 import { ige } from "../instance";
-import { IgeComponent } from "../core/IgeComponent";
 import { arrPull } from "../utils";
-import { IgeEntity } from "../core/IgeEntity";
-import { IgeUiElement, IgeUiStyleObject } from "../core/IgeUiElement";
-import type { IgeInputComponent } from "./IgeInputComponent";
+import { IgeUiElement, IgeUiStyleObject } from "./IgeUiElement";
+import type { IgeInputComponent } from "../components/IgeInputComponent";
+import { IgeEventingClass } from "@/engine/core/IgeEventingClass";
+import { IgeIsReadyPromise } from "@/types/IgeIsReadyPromise";
 
-export class IgeUiManagerComponent extends IgeComponent {
-	static componentTargetClass = "Ige";
-	classId = "IgeUiManagerComponent";
+export class IgeUiManagerController extends IgeEventingClass implements IgeIsReadyPromise {
+	static componentTargetClass = "IgeEngine";
 	componentId = "ui";
+	classId = "IgeUiManagerController";
 
 	_focus: IgeUiElement | null = null; // The element that currently has focus
 	_caret: null = null; // The caret position within the focused element
@@ -16,11 +16,16 @@ export class IgeUiManagerComponent extends IgeComponent {
 	_styles: Record<string, IgeUiStyleObject> = {};
 	_elementsByStyle: Record<string, IgeUiElement[]> = {};
 
-	constructor (entity: IgeEntity, options?: any) {
-		super(entity, options);
-
-		(ige.engine.components.input as IgeInputComponent).on("keyDown", (event) => {
-			this._keyDown(event);
+	isReady () {
+		return new Promise<void>((resolve) => {
+			setTimeout(() => {
+				ige.dependencies.waitFor(["input"], () => {
+					(ige.input as IgeInputComponent).on("keyDown", (event) => {
+						this._keyDown(event);
+					});
+					resolve();
+				});
+			}, 1);
 		});
 	}
 
@@ -150,7 +155,7 @@ export class IgeUiManagerComponent extends IgeComponent {
 		// Direct the key event to the focused element
 		if (this._focus) {
 			this._focus.emit("keyUp", event);
-			(ige.engine.components.input as IgeInputComponent).stopPropagation();
+			(ige.input as IgeInputComponent).stopPropagation();
 		}
 	};
 
@@ -158,7 +163,7 @@ export class IgeUiManagerComponent extends IgeComponent {
 		// Direct the key event to the focused element
 		if (this._focus) {
 			this._focus.emit("keyDown", event);
-			(ige.engine.components.input as IgeInputComponent).stopPropagation();
+			(ige.input as IgeInputComponent).stopPropagation();
 		}
 	};
 }

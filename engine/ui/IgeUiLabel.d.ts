@@ -19,7 +19,8 @@ export declare class IgeUiLabel extends IgeUiElement {
     textAlignX(): IgeFontAlignX;
     textAlignY(val: IgeFontAlignY): this;
     textAlignY(): IgeFontAlignY;
-    textLineSpacing(val?: number): number | IgeFontEntity;
+    textLineSpacing(val: number): this;
+    textLineSpacing(): number;
     autoWrap(val?: boolean): boolean | IgeFontEntity;
     /**
      * Extended method to auto-update the width of the child
@@ -56,11 +57,12 @@ export declare class IgeUiLabel extends IgeUiElement {
      * @param fontSheet
      * @return {*}
      */
-    fontSheet(fontSheet?: IgeFontSheet): IgeFontSheet | this | undefined;
-    font(val?: string | IgeFontSheet): string | IgeFontEntity | IgeFontSheet | this | undefined;
-    nativeFont(val?: string): string | IgeFontEntity | this | undefined;
-    nativeStroke(val?: number): number | IgeFontEntity | this | undefined;
-    nativeStrokeColor(val?: string): string | IgeFontEntity | this | undefined;
+    fontSheet(fontSheet?: IgeFontSheet): this | IgeFontSheet | undefined;
+    font(val: string | IgeFontSheet): this;
+    font(): string | IgeFontSheet;
+    nativeFont(val?: string): string | this | IgeFontEntity | undefined;
+    nativeStroke(val?: number): number | this | IgeFontEntity | undefined;
+    nativeStrokeColor(val?: string): string | this | IgeFontEntity | undefined;
     color(val: string): this;
     color(): string;
     _mounted(): void;

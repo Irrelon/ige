@@ -1,16 +1,16 @@
-import { IgeComponent } from "../core/IgeComponent";
-import { IgeEntity } from "../core/IgeEntity";
-import { IgeUiElement, IgeUiStyleObject } from "../core/IgeUiElement";
-export declare class IgeUiManagerComponent extends IgeComponent {
+import { IgeUiElement, IgeUiStyleObject } from "./IgeUiElement";
+import { IgeEventingClass } from "@/engine/core/IgeEventingClass";
+import { IgeIsReadyPromise } from "@/types/IgeIsReadyPromise";
+export declare class IgeUiManagerController extends IgeEventingClass implements IgeIsReadyPromise {
     static componentTargetClass: string;
-    classId: string;
     componentId: string;
+    classId: string;
     _focus: IgeUiElement | null;
     _caret: null;
     _register: IgeUiElement[];
     _styles: Record<string, IgeUiStyleObject>;
     _elementsByStyle: Record<string, IgeUiElement[]>;
-    constructor(entity: IgeEntity, options?: any);
+    isReady(): Promise<void>;
     /**
      * Get / set a style by name.
      * @param {String} name The unique name of the style.

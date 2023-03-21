@@ -15,9 +15,7 @@ import type { IgeCanvasRenderingContext2d } from "@/types/IgeCanvasRenderingCont
 import type { GenericClass } from "@/types/GenericClass";
 import type { IgeSceneGraphDataEntry } from "@/types/IgeSceneGraphDataEntry";
 import { IgeEngineState } from "@/enums/IgeEngineState";
-import { IgeTweenComponent } from "../components/IgeTweenComponent";
 import { IgePoint2d } from "./IgePoint2d";
-import { IgeTimeComponent } from "../components/IgeTimeComponent";
 import { IgeComponent } from "./IgeComponent";
 import { IgeBehaviourType } from "@/enums/IgeBehaviourType";
 
@@ -175,10 +173,6 @@ export class IgeEngine extends IgeEntity {
 		if (isClient) {
 			this._resizeEvent();
 		}
-
-		this.addComponent("input", IgeInputComponent);
-		this.addComponent("tween", IgeTweenComponent);
-		this.addComponent("time", IgeTimeComponent);
 	}
 
 	addComponent (id: string, Component: typeof IgeComponent<IgeEngine>, options?: any): this {
@@ -333,7 +327,7 @@ export class IgeEngine extends IgeEntity {
 		this._headless = false;
 
 		// Ask the input component to set up any listeners it has
-		(this.components.input as IgeInputComponent).setupListeners(this._canvas);
+		ige.input.setupListeners(this._canvas);
 	}
 
 	/**
@@ -351,8 +345,8 @@ export class IgeEngine extends IgeEntity {
 	 */
 	removeCanvas () {
 		// Stop listening for input events
-		if (this.components.input) {
-			(this.components.input as IgeInputComponent).destroyListeners();
+		if (ige.input) {
+			(ige.input as IgeInputComponent).destroyListeners();
 		}
 
 		// Remove event listener

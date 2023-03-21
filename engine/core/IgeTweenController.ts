@@ -1,32 +1,34 @@
 import { ige } from "../instance";
-import { IgeComponent } from "../core/IgeComponent";
 import { arrPull } from "../utils";
-import { IgeTween, IgeTweenDestination } from "../core/IgeTween";
+import { IgeTween, IgeTweenDestination } from "./IgeTween";
 import { easingFunctions } from "../easing";
 import { IgeEntityBehaviourMethod } from "@/types/IgeEntityBehaviour";
-import type { IgeEngine } from "../core/IgeEngine";
 import { IgeBehaviourType } from "@/enums/IgeBehaviourType";
+import { IgeEventingClass } from "@/engine/core/IgeEventingClass";
+import { IgeIsReadyPromise } from "@/types/IgeIsReadyPromise";
 
 /**
  * This component is already included in the IgeRoot (ige)
  * instance and is not designed for use in any other way!
  * It handles global tween processing on all tweening values.
  */
-export class IgeTweenComponent extends IgeComponent<IgeEngine> {
+export class IgeTweenController extends IgeEventingClass implements IgeIsReadyPromise {
 	static componentTargetClass = "Ige";
-	classId = "IgeTweenComponent";
+	classId = "IgeTweenController";
 	componentId = "tween";
-	_tweens: IgeTween[];
+	_tweens: IgeTween[] = []; // Set up the array that will hold our active tweens
 	_tweening: boolean = false;
 
-	constructor (entity: IgeEngine, options?: any) {
-		super(entity, options);
-
-		// Set up the array that will hold our active tweens
-		this._tweens = [];
-
-		// Add the tween behaviour to the entity
-		entity.addBehaviour(IgeBehaviourType.preUpdate, "tween", this.update);
+	isReady () {
+		return new Promise<void>((resolve) => {
+			setTimeout(() => {
+				ige.dependencies.waitFor(["engine"], () => {
+					// Add the tween behaviour to the entity
+					ige.engine.addBehaviour(IgeBehaviourType.preUpdate, "tween", this.update);
+					resolve();
+				});
+			}, 1);
+		});
 	}
 
 	/**
@@ -37,7 +39,7 @@ export class IgeTweenComponent extends IgeComponent<IgeEngine> {
 	start (tween: IgeTween) {
 		if (tween._startTime !== undefined && tween._startTime > ige.engine._currentTime) {
 			// The tween is scheduled for later
-			// Push the tween into the IgeTweenComponent's _tweens array
+			// Push the tween into the IgeTweenController's _tweens array
 			this._tweens.push(tween);
 		} else {
 			// The tween should start immediately
@@ -45,12 +47,12 @@ export class IgeTweenComponent extends IgeComponent<IgeEngine> {
 
 			// Set up the tweens step
 			if (this._setupStep(tween, false)) {
-				// Push the tween into the IgeTweenComponent's _tweens array
+				// Push the tween into the IgeTweenController's _tweens array
 				this._tweens.push(tween);
 			}
 		}
 
-		// Enable tweening on the IgeTweenComponent
+		// Enable tweening on the IgeTweenController
 		this.enable();
 
 		// Return the tween

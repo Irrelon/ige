@@ -8,16 +8,14 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 import { ige } from "../../../engine/instance.js";
-import { IgeUiManagerComponent } from "../../../engine/components/IgeUiManagerComponent.js";
 import { AppScene } from "./AppScene.js";
 import "./splash/_route.js";
 import "./level1/_route.js";
 ige.router.route("app", {
     client: () => __awaiter(void 0, void 0, void 0, function* () {
-        yield ige.ready();
+        yield ige.isReady();
         // @ts-ignore
         window.ige = ige;
-        ige.engine.addComponent("ui", IgeUiManagerComponent);
         // Create the HTML canvas
         ige.engine.createFrontBuffer(true);
         // Start the engine

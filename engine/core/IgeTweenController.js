@@ -1,18 +1,19 @@
 import { ige } from "../instance.js";
-import { IgeComponent } from "../core/IgeComponent.js";
 import { arrPull } from "../utils.js";
 import { easingFunctions } from "../easing.js";
 import { IgeBehaviourType } from "../../enums/IgeBehaviourType.js";
+import { IgeEventingClass } from "../../engine/core/IgeEventingClass.js";
 /**
  * This component is already included in the IgeRoot (ige)
  * instance and is not designed for use in any other way!
  * It handles global tween processing on all tweening values.
  */
-export class IgeTweenComponent extends IgeComponent {
-    constructor(entity, options) {
-        super(entity, options);
-        this.classId = "IgeTweenComponent";
+export class IgeTweenController extends IgeEventingClass {
+    constructor() {
+        super(...arguments);
+        this.classId = "IgeTweenController";
         this.componentId = "tween";
+        this._tweens = []; // Set up the array that will hold our active tweens
         this._tweening = false;
         /**
          * Process tweening for the object.
@@ -200,10 +201,17 @@ export class IgeTweenComponent extends IgeComponent {
                 }
             }
         };
-        // Set up the array that will hold our active tweens
-        this._tweens = [];
-        // Add the tween behaviour to the entity
-        entity.addBehaviour(IgeBehaviourType.preUpdate, "tween", this.update);
+    }
+    isReady() {
+        return new Promise((resolve) => {
+            setTimeout(() => {
+                ige.dependencies.waitFor(["engine"], () => {
+                    // Add the tween behaviour to the entity
+                    ige.engine.addBehaviour(IgeBehaviourType.preUpdate, "tween", this.update);
+                    resolve();
+                });
+            }, 1);
+        });
     }
     /**
      * Start tweening particular properties for the object.
@@ -213,7 +221,7 @@ export class IgeTweenComponent extends IgeComponent {
     start(tween) {
         if (tween._startTime !== undefined && tween._startTime > ige.engine._currentTime) {
             // The tween is scheduled for later
-            // Push the tween into the IgeTweenComponent's _tweens array
+            // Push the tween into the IgeTweenController's _tweens array
             this._tweens.push(tween);
         }
         else {
@@ -221,11 +229,11 @@ export class IgeTweenComponent extends IgeComponent {
             tween._currentStep = 0;
             // Set up the tweens step
             if (this._setupStep(tween, false)) {
-                // Push the tween into the IgeTweenComponent's _tweens array
+                // Push the tween into the IgeTweenController's _tweens array
                 this._tweens.push(tween);
             }
         }
-        // Enable tweening on the IgeTweenComponent
+        // Enable tweening on the IgeTweenController
         this.enable();
         // Return the tween
         return tween;
@@ -317,4 +325,4 @@ export class IgeTweenComponent extends IgeComponent {
         return this;
     }
 }
-IgeTweenComponent.componentTargetClass = "Ige";
+IgeTweenController.componentTargetClass = "Ige";

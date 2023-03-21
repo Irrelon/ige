@@ -1,6 +1,6 @@
 import { ige } from "../instance";
 import { IgeInterval, IgeIntervalCallback } from "./IgeInterval";
-import type { IgeTimeComponent } from "../components/IgeTimeComponent";
+import type { IgeTimeController } from "./IgeTimeController";
 
 /**
  * Provides an alternative to setTimeout() which works based on the engine's internal
@@ -26,14 +26,14 @@ export class IgeTimeout extends IgeInterval {
 	 */
 	reset () {
 		this._time = 0;
-		if ((ige.engine.components.time as IgeTimeComponent)._timers.indexOf(this) === -1) {
-			(ige.engine.components.time as IgeTimeComponent).addTimer(this);
+		if ((ige.time as IgeTimeController)._timers.indexOf(this) === -1) {
+			(ige.time as IgeTimeController).addTimer(this);
 		}
 	}
 
 	/**
 	 * Checks for a timeout event to see if we should call the timeout method. This is
-	 * called automatically by the IgeTimeComponent class and does not need to be
+	 * called automatically by the IgeTimeController class and does not need to be
 	 * called manually.
 	 * @returns {*}
 	 */
@@ -46,7 +46,7 @@ export class IgeTimeout extends IgeInterval {
 
 			// Fire an interval
 			this._method(ige.engine._currentTime, intendedTime);
-			(ige.engine.components.time as IgeTimeComponent).removeTimer(this);
+			(ige.time as IgeTimeController).removeTimer(this);
 		}
 
 		return this;

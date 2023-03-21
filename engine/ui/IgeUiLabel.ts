@@ -81,9 +81,12 @@ export class IgeUiLabel extends IgeUiElement {
 		return this._fontEntity.textAlignY();
 	}
 
+	textLineSpacing (val: number): this;
+	textLineSpacing (): number;
 	textLineSpacing (val?: number) {
 		if (val !== undefined) {
-			return this._fontEntity.textLineSpacing(val);
+			this._fontEntity.textLineSpacing(val);
+			return this;
 		}
 
 		return this._fontEntity.textLineSpacing();
@@ -201,6 +204,8 @@ export class IgeUiLabel extends IgeUiElement {
 		return this._fontSheet;
 	}
 
+	font (val: string | IgeFontSheet): this;
+	font (): string | IgeFontSheet;
 	font (val?: string | IgeFontSheet) {
 		if (val !== undefined) {
 			if (typeof (val) === "string") {

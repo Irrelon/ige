@@ -1,6 +1,5 @@
 import { ige } from "@/engine/instance";
 import { IgeTexture } from "@/engine/core/IgeTexture";
-import { IgeUiManagerComponent } from "@/engine/components/IgeUiManagerComponent";
 import {AppClientScene} from "./AppClientScene";
 import {AppServerScene} from "./AppServerScene";
 
@@ -15,8 +14,6 @@ ige.router.route("app", {
 	client: async () => {
 		// @ts-ignore
 		window.ige = ige;
-
-		ige.engine.addComponent("ui", IgeUiManagerComponent);
 
 		// Create the HTML canvas
 		ige.engine.createFrontBuffer(true);
@@ -41,8 +38,6 @@ ige.router.route("app", {
 		}
 	},
 	server: async () => {
-		ige.engine.addComponent("ui", IgeUiManagerComponent);
-
 		// Create the HTML canvas
 		ige.engine.createFrontBuffer(true);
 

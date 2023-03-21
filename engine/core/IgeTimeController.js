@@ -1,11 +1,11 @@
 import { ige } from "../instance.js";
-import { IgeComponent } from "../core/IgeComponent.js";
 import { arrPull } from "../utils.js";
 import { IgeBehaviourType } from "../../enums/IgeBehaviourType.js";
-export class IgeTimeComponent extends IgeComponent {
-    constructor(entity, options) {
-        super(entity, options);
-        this.classId = "IgeTimeComponent";
+import { IgeEventingClass } from "../../engine/core/IgeEventingClass.js";
+export class IgeTimeController extends IgeEventingClass {
+    constructor() {
+        super(...arguments);
+        this.classId = "IgeTimeController";
         this.componentId = "time";
         this._updating = false;
         this._timers = [];
@@ -71,7 +71,17 @@ export class IgeTimeComponent extends IgeComponent {
             }
             return this;
         };
-        // Add the animation behaviour to the entity
-        entity.addBehaviour(IgeBehaviourType.preUpdate, "time", this._update);
+    }
+    isReady() {
+        return new Promise((resolve) => {
+            setTimeout(() => {
+                ige.dependencies.waitFor(["engine"], () => {
+                    // Add the animation behaviour to the entity
+                    ige.engine.addBehaviour(IgeBehaviourType.preUpdate, "time", this._update);
+                    resolve();
+                });
+            }, 1);
+        });
     }
 }
+IgeTimeController.componentTargetClass = "Ige";

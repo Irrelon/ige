@@ -22,13 +22,13 @@ export class IgeTimeout extends IgeInterval {
      */
     reset() {
         this._time = 0;
-        if (ige.engine.components.time._timers.indexOf(this) === -1) {
-            ige.engine.components.time.addTimer(this);
+        if (ige.time._timers.indexOf(this) === -1) {
+            ige.time.addTimer(this);
         }
     }
     /**
      * Checks for a timeout event to see if we should call the timeout method. This is
-     * called automatically by the IgeTimeComponent class and does not need to be
+     * called automatically by the IgeTimeController class and does not need to be
      * called manually.
      * @returns {*}
      */
@@ -39,7 +39,7 @@ export class IgeTimeout extends IgeInterval {
             intendedTime = ige.engine._currentTime - overTime;
             // Fire an interval
             this._method(ige.engine._currentTime, intendedTime);
-            ige.engine.components.time.removeTimer(this);
+            ige.time.removeTimer(this);
         }
         return this;
     }

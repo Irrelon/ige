@@ -1,19 +1,26 @@
 import { ige } from "../instance";
 import { IgeUiElement } from "../core/IgeUiElement";
-import type { IgeUiManagerComponent } from "../components/IgeUiManagerComponent";
 import { IgeUiLabel } from "@/engine/ui/IgeUiLabel";
 import { IgeUiButton } from "@/engine/ui/IgeUiButton";
+import { IgePoint3d } from "@/engine/core/IgePoint3d";
+import type { IgeUiManagerController } from "../core/IgeUiManagerController";
 
 export class IgeUiWindow extends IgeUiElement {
 	classId = "IgeUiWindow";
+	_draggable: boolean = false;
+	_dragging: boolean = false;
+	_topNav: IgeUiElement;
+	_label: IgeUiLabel;
+	_closeButton: IgeUiButton;
+	_opStartMouse?: IgePoint3d;
+	_opStartTranslate: Record<string, number> = {};
 
 	constructor () {
 		super();
-		const self = this;
 
 		// Define some default styles
-		if (!(ige.engine.components.ui as IgeUiManagerComponent).style("IgeUiWindow")) {
-			(ige.engine.components.ui as IgeUiManagerComponent).style("IgeUiWindow", {
+		if (!(ige.ui as IgeUiManagerController).style("IgeUiWindow")) {
+			(ige.ui as IgeUiManagerController).style("IgeUiWindow", {
 				backgroundColor: null
 			});
 		}
@@ -25,9 +32,6 @@ export class IgeUiWindow extends IgeUiElement {
 		this.color("#000000");
 		this.width(200);
 		this.height(30);
-
-		this._draggable = false;
-		this._dragging = false;
 
 		this._topNav = new IgeUiElement()
 			.backgroundColor("#212121")
@@ -59,91 +63,84 @@ export class IgeUiWindow extends IgeUiElement {
 			.top(8)
 			.value("X")
 			.color("#000000")
-			.pointerUp(function () {
-				if (!self.emit("beforeClose")) {
-					self.destroy();
+			.pointerUp(() => {
+				if (!this.emit("beforeClose")) {
+					this.destroy();
 				}
 
-				$ige.engine.input.stopPropagation();
+				ige.input.stopPropagation();
 			})
 			.mount(this._topNav);
 	}
 
 	_dragStart () {
-		const self = this;
-
-		if (self._draggable) {
-			self._dragging = true;
-			self._opStartMouse = $ige.engine._pointerPos.clone();
-			self._opStartTranslate = {
-				x: self._translate.x,
-				y: self._translate.y
-			};
-
-			return true;
+		if (!this._draggable) {
+			return;
 		}
+
+		this._dragging = true;
+		this._opStartMouse = ige.engine._pointerPos.clone();
+		this._opStartTranslate = {
+			x: this._translate.x,
+			y: this._translate.y
+		};
+
+		return true;
 	}
 
 	_dragMove () {
-		let self = this,
-			curMousePos,
-			panCordsX,
-			panCordsY,
-			panFinalX,
-			panFinalY;
+		if (!this._draggable || !this._dragging) return;
+		if (!ige.engine._currentViewport) return;
+		if (!this._opStartMouse) return;
 
-		if (self._draggable && self._dragging) {
-			// Update window co-ordinates
-			curMousePos = $ige.engine._pointerPos;
+		// Update window co-ordinates
+		const curMousePos = ige.engine._pointerPos;
 
-			panCordsX = self._opStartMouse.x - curMousePos.x;
-			panCordsY = self._opStartMouse.y - curMousePos.y;
+		const panCordsX = this._opStartMouse.x - curMousePos.x;
+		const panCordsY = this._opStartMouse.y - curMousePos.y;
 
-			panFinalX = self._opStartTranslate.x - (panCordsX / $ige._currentViewport.camera._scale.x);
-			panFinalY = self._opStartTranslate.y - (panCordsY / $ige._currentViewport.camera._scale.y);
+		const panFinalX = this._opStartTranslate.x - (panCordsX / ige.engine._currentViewport.camera._scale.x);
+		const panFinalY = this._opStartTranslate.y - (panCordsY / ige.engine._currentViewport.camera._scale.y);
 
-			self.style("left", panFinalX);
-			self.style("top", panFinalY);
+		this.style("left", panFinalX);
+		this.style("top", panFinalY);
 
-			// Cancel further propagation
-			return true;
-		}
+		// Cancel further propagation
+		return true;
 	}
 
 	_dragEnd () {
-		const self = this;
-
-		if (self._draggable && self._dragging) {
-			self._dragging = false;
+		if (this._draggable && this._dragging) {
+			this._dragging = false;
 
 			// Cancel further propagation
 			return true;
 		}
 	}
 
-	draggable (val) {
-		const self = this;
-
+	draggable (val: boolean) {
 		if (val) {
-			self._draggable = true;
+			this._draggable = true;
 
-			this._topNav.on("pointerDown", self._dragStart);
-			$ige.engine.input.on("preMouseUp", self._dragEnd);
-			$ige.engine.input.on("preMouseMove", self._dragMove);
+			this._topNav.on("pointerDown", this._dragStart);
+			ige.input.on("preMouseUp", this._dragEnd);
+			ige.input.on("preMouseMove", this._dragMove);
 		} else {
-			self._draggable = false;
+			this._draggable = false;
 
-			this._topNav.off("pointerDown", self._dragStart);
-			$ige.engine.input.off("preMouseUp", self._dragEnd);
-			$ige.engine.input.off("preMouseMove", self._dragMove);
+			this._topNav.off("pointerDown", this._dragStart);
+			ige.input.off("preMouseUp", this._dragEnd);
+			ige.input.off("preMouseMove", this._dragMove);
 		}
 	}
 
 	blur () {
-		IgeUiElement.prototype.blur.call(this);
+		return super.blur();
 	}
 
-	title (val) {
+	title (val: string): this;
+	title (): string;
+	title (val?: string) {
 		if (val !== undefined) {
 			this._label.value(val);
 			return this;
@@ -152,7 +149,9 @@ export class IgeUiWindow extends IgeUiElement {
 		return this._label.value();
 	}
 
-	titleColor (val) {
+	titleColor (val: string): this;
+	titleColor (): string;
+	titleColor (val?: string) {
 		if (val !== undefined) {
 			this._label.color(val);
 			return this;
@@ -161,7 +160,9 @@ export class IgeUiWindow extends IgeUiElement {
 		return this._label.color();
 	}
 
-	titleFont (val) {
+	titleFont (val: string): this;
+	titleFont (): string;
+	titleFont (val?: string) {
 		if (val !== undefined) {
 			this._label.style("font", val);
 			return this;

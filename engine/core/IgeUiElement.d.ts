@@ -5,7 +5,7 @@ export type IgeUiStyleState = "focus" | "hover" | "active";
  * Creates a new UI element. UI elements use more resources and CPU
  * than standard IgeEntity instances but provide a rich set of extra
  * positioning and styling methods as well as reacting to styles
- * defined using the IgeUiManagerComponent.
+ * defined using the IgeUiManagerController.
  */
 export declare class IgeUiElement extends IgeUiEntity {
     classId: string;
@@ -30,7 +30,14 @@ export declare class IgeUiElement extends IgeUiEntity {
      */
     styleClass(name?: string): this;
     styleClass(): string;
-    style(styleDataObject: IgeUiStyleObject): IgeUiStyleObject | undefined;
+    /**
+     * Gets / sets a style for this individual element.
+     * @param {String=} property The property to get / set.
+     * @param {*=} value The value to set for the property.
+     * @return {*}
+     */
+    style(property: string, value: any): this;
+    style(property: string): any;
     _updateStyle(): void;
     _processStyle(styleName?: string, state?: IgeUiStyleState): void;
     /**

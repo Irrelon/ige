@@ -8,7 +8,7 @@ export const tab: IgeSmartTexture = {
 		ctx.fillStyle = '#00080a';
 		ctx.strokeStyle = '#04b7f9';
 
-		switch (entity._tab.position) {
+		switch (entity._tabOptions.position) {
 		case 'top':
 			ctx.moveTo(-entity._bounds2d.x2, entity._bounds2d.y2 - 1);
 			ctx.lineTo(-entity._bounds2d.x2 + 10, -entity._bounds2d.y2);

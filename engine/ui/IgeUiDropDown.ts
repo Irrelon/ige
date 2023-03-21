@@ -1,7 +1,7 @@
 import { ige } from "@/engine/instance";
 import { IgeUiElement } from "@/engine/core/IgeUiElement";
 import type { IgeCanvasRenderingContext2d } from "@/types/IgeCanvasRenderingContext2d";
-import type { IgeUiManagerComponent } from "@/engine/components/IgeUiManagerComponent";
+import type { IgeUiManagerController } from "@/engine/core/IgeUiManagerController";
 import { IgeUiLabel } from "@/engine/ui/IgeUiLabel";
 
 export interface IgeUiDropDownOption {
@@ -21,12 +21,12 @@ export class IgeUiDropDown extends IgeUiElement {
 		super();
 
 		// Define some default styles
-		if (!(ige.engine.components.ui as IgeUiManagerComponent).style(".IgeUiDropDownOption")) {
-			(ige.engine.components.ui as IgeUiManagerComponent).style(".IgeUiDropDownOption", {
+		if (!(ige.ui as IgeUiManagerController).style(".IgeUiDropDownOption")) {
+			(ige.ui as IgeUiManagerController).style(".IgeUiDropDownOption", {
 				backgroundColor: null
 			});
 
-			(ige.engine.components.ui as IgeUiManagerComponent).style(".IgeUiDropDownOption:hover", {
+			(ige.ui as IgeUiManagerController).style(".IgeUiDropDownOption:hover", {
 				backgroundColor: "#00b4ff",
 				color: "#ffffff"
 			});
@@ -153,7 +153,7 @@ export class IgeUiDropDown extends IgeUiElement {
 				.mount(this);
 
 			for (let i = 0; i < this._options.length; i++) {
-				(ige.engine.components.ui as IgeUiManagerComponent).style("#" + this._id + "_options_" + i, {
+				(ige.ui as IgeUiManagerController).style("#" + this._id + "_options_" + i, {
 					color: this._color
 				});
 

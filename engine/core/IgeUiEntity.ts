@@ -1462,6 +1462,8 @@ export class IgeUiEntity extends IgeEntity {
 		return this;
 	}
 
+	paddingLeft (px: number): this;
+	paddingLeft (): number;
 	paddingLeft (px?: number) {
 		if (px !== undefined) {
 			this._paddingLeft = px;
@@ -1473,6 +1475,8 @@ export class IgeUiEntity extends IgeEntity {
 		return this._paddingLeft;
 	}
 
+	paddingTop (px: number): this;
+	paddingTop (): number;
 	paddingTop (px?: number) {
 		if (px !== undefined) {
 			this._paddingTop = px;
@@ -1484,6 +1488,8 @@ export class IgeUiEntity extends IgeEntity {
 		return this._paddingTop;
 	}
 
+	paddingRight (px: number): this;
+	paddingRight (): number;
 	paddingRight (px?: number) {
 		if (px !== undefined) {
 			this._paddingRight = px;
@@ -1495,6 +1501,8 @@ export class IgeUiEntity extends IgeEntity {
 		return this._paddingRight;
 	}
 
+	paddingBottom (px: number): this;
+	paddingBottom (): number;
 	paddingBottom (px?: number) {
 		if (px !== undefined) {
 			this._paddingBottom = px;

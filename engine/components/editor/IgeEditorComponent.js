@@ -408,7 +408,7 @@ class IgeEditorComponent extends IgeComponent {
         // @ts-ignore
         const igeRoot = window.igeRoot || "";
         // Hook the input component's keyUp and check for the = symbol... if there, toggle editor
-        this._activateKeyHandle = ige.engine.components.input.on("keyUp", (event) => {
+        this._activateKeyHandle = ige.input.on("keyUp", (event) => {
             if (event.keyIdentifier === "U+00BB") {
                 // = key pressed, toggle the editor
                 this.toggle();
@@ -417,7 +417,7 @@ class IgeEditorComponent extends IgeComponent {
             }
         });
         // Hook the input component's keyUp and check for the - symbol... if there, toggle stats
-        this._activateKeyHandle = ige.engine.components.input.on("keyUp", (event) => {
+        this._activateKeyHandle = ige.input.on("keyUp", (event) => {
             if (event.keyIdentifier === "U+00BD") {
                 // Toggle the stats
                 this.toggleStats();
@@ -426,28 +426,28 @@ class IgeEditorComponent extends IgeComponent {
             }
         });
         // Hook the engine's input system and take over mouse interaction
-        this._pointerUpHandle = ige.engine.components.input.on("preMouseUp", (event) => {
+        this._pointerUpHandle = ige.input.on("preMouseUp", (event) => {
             if (this._enabled && this._interceptMouse) {
                 this.emit("pointerUp", event);
                 // Return true to stop this event from being emitted by the engine to the scenegraph
                 return true;
             }
         });
-        this._pointerDownHandle = ige.engine.components.input.on("preMouseDown", (event) => {
+        this._pointerDownHandle = ige.input.on("preMouseDown", (event) => {
             if (this._enabled && this._interceptMouse) {
                 this.emit("pointerDown", event);
                 // Return true to stop this event from being emitted by the engine to the scenegraph
                 return true;
             }
         });
-        this._pointerMoveHandle = ige.engine.components.input.on("preMouseMove", (event) => {
+        this._pointerMoveHandle = ige.input.on("preMouseMove", (event) => {
             if (this._enabled && this._interceptMouse) {
                 this.emit("pointerMove", event);
                 // Return true to stop this event from being emitted by the engine to the scenegraph
                 return true;
             }
         });
-        this._contextMenuHandle = ige.engine.components.input.on("preContextMenu", (event) => {
+        this._contextMenuHandle = ige.input.on("preContextMenu", (event) => {
             if (this._enabled && this._interceptMouse) {
                 this.emit("contextMenu", event);
                 // Return true to stop this event from being emitted by the engine to the scenegraph

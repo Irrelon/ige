@@ -1,9 +1,9 @@
 import { ige } from "../instance.js";
 import { IgePoint3d } from "../core/IgePoint3d.js";
-import { IgeComponent } from "../core/IgeComponent.js";
 import { IgeBehaviourType } from "../../enums/IgeBehaviourType.js";
 import { IgeInputDevice, IgeInputKeyboardMap, IgeInputPointerMap } from "../../enums/IgeInputDeviceMap.js";
-export class IgeInputComponent extends IgeComponent {
+import { IgeEventingClass } from "../../engine/core/IgeEventingClass.js";
+export class IgeInputComponent extends IgeEventingClass {
     constructor() {
         super();
         this.classId = "IgeInputComponent";
@@ -29,8 +29,6 @@ export class IgeInputComponent extends IgeComponent {
                 return;
             }
             this.log("Setting up input event listeners...");
-            // Register a post-tick behaviour with the engine
-            ige.engine.addBehaviour(IgeBehaviourType.postTick, "inputComponentPostTick", this.tick.bind(this));
             // Define event functions and keep references for later removal
             this._evRef = {
                 "pointerdown": (event) => {
@@ -435,6 +433,17 @@ export class IgeInputComponent extends IgeComponent {
         this._updateState(IgeInputDevice.pointer1, IgeInputPointerMap.x, 0);
         this._updateState(IgeInputDevice.pointer1, IgeInputPointerMap.y, 0);
     }
+    isReady() {
+        return new Promise((resolve) => {
+            setTimeout(() => {
+                ige.dependencies.waitFor(["engine"], () => {
+                    // Register a post-tick behaviour with the engine
+                    ige.engine.addBehaviour(IgeBehaviourType.postTick, "inputComponentPostTick", this.tick.bind(this));
+                    resolve();
+                });
+            }, 1);
+        });
+    }
     _ensureState(device) {
         this._state[device] = this._state[device] || {};
     }
@@ -543,7 +552,7 @@ export class IgeInputComponent extends IgeComponent {
     }
     /**
      * Emit an event by name. Overrides the IgeEventingClass emit method and
-     * checks for propagation stopped by calling ige.engine.components.input.stopPropagation().
+     * checks for propagation stopped by calling ige.input.stopPropagation().
      * @param {Object} eventName The name of the event to emit.
      * @param {Object || Array} args The arguments to send to any listening methods.
      * If you are sending multiple arguments, use an array containing each argument.

@@ -10,7 +10,6 @@ import { IgeBox2dDebugPainter } from "./IgeBox2dDebugPainter";
 import { IgeEntityBox2d } from "./IgeEntityBox2d";
 import type { IgeEngine } from "../../../core/IgeEngine";
 import type { IgeBox2dBodyDef } from "@/types/IgeBox2dBodyDef";
-import type { IgeBox2dFixtureDef } from "@/types/IgeBox2dFixtureDef";
 import type { IgeBox2dContactListenerCallback } from "@/types/IgeBox2dContactListenerCallback";
 import type {
 	IgeBox2dContactPostSolveCallback,
@@ -19,6 +18,7 @@ import type {
 import type { IgeEntityBehaviourMethod } from "@/types/IgeEntityBehaviour";
 import { IgeBehaviourType } from "@/enums/IgeBehaviourType";
 import { Box2D } from "@/engine/components/physics/box2d/lib_box2d";
+import { IgeBox2dFixtureDef } from "@/types/IgeBox2dFixtureDef";
 
 /**
  * The engine's Box2D component class.
@@ -54,7 +54,7 @@ export class IgeBox2dComponent extends IgeComponent<IgeEngine> {
 	b2CircleShape = Box2D.Collision.Shapes.b2CircleShape;
 	b2DebugDraw = Box2D.Dynamics.b2DebugDraw;
 	b2ContactListener = Box2D.Dynamics.b2ContactListener;
-	b2Distance = Box2D.Collision.b2Distance;
+	b2Distance = Box2D.Collision.b2DistanceOutput;
 	b2Contact = Box2D.Dynamics.Contacts.b2Contact;
 	b2FilterData = Box2D.Dynamics.b2FilterData;
 	b2DistanceJointDef = Box2D.Dynamics.Joints.b2DistanceJointDef;
@@ -84,7 +84,7 @@ export class IgeBox2dComponent extends IgeComponent<IgeEngine> {
 		this.b2CircleShape = Box2D.Collision.Shapes.b2CircleShape;
 		this.b2DebugDraw = Box2D.Dynamics.b2DebugDraw;
 		this.b2ContactListener = Box2D.Dynamics.b2ContactListener;
-		this.b2Distance = Box2D.Collision.b2Distance;
+		this.b2Distance = Box2D.Collision.b2DistanceOutput;
 		this.b2Contact = Box2D.Dynamics.Contacts.b2Contact;
 		this.b2FilterData = Box2D.Dynamics.b2FilterData;
 		this.b2DistanceJointDef = Box2D.Dynamics.Joints.b2DistanceJointDef;
@@ -105,7 +105,7 @@ export class IgeBox2dComponent extends IgeComponent<IgeEngine> {
 			return ent;
 		};
 
-		this.b2Contact.prototype.igeEitherId = function (id1: string, id2: string) {
+		this.b2Contact.prototype.igeEitherId = function (id1: string, id2: string): boolean {
 			if (!id2) {
 				return this.m_fixtureA.m_body._entity._id === id1 || this.m_fixtureB.m_body._entity._id === id1;
 			} else {
@@ -114,7 +114,7 @@ export class IgeBox2dComponent extends IgeComponent<IgeEngine> {
 			}
 		};
 
-		this.b2Contact.prototype.igeEitherCategory = function (category1: string, category2: string) {
+		this.b2Contact.prototype.igeEitherCategory = function (category1: string, category2: string): boolean {
 			if (!category2) {
 				return this.m_fixtureA.m_body._entity._category === category1 || this.m_fixtureB.m_body._entity._category === category1;
 			} else {
@@ -123,11 +123,11 @@ export class IgeBox2dComponent extends IgeComponent<IgeEngine> {
 			}
 		};
 
-		this.b2Contact.prototype.igeBothCategories = function (category: string) {
+		this.b2Contact.prototype.igeBothCategories = function (category: string): boolean {
 			return (this.m_fixtureA.m_body._entity._category === category && this.m_fixtureB.m_body._entity._category === category);
 		};
 
-		this.b2Contact.prototype.igeEntityByCategory = function (category: string) {
+		this.b2Contact.prototype.igeEntityByCategory = function (category: string): IgeEntityBox2d | undefined {
 			if (this.m_fixtureA.m_body._entity._category === category) {
 				return this.igeEntityA();
 			}
@@ -137,7 +137,7 @@ export class IgeBox2dComponent extends IgeComponent<IgeEngine> {
 			}
 		};
 
-		this.b2Contact.prototype.igeEntityById = function (id: string) {
+		this.b2Contact.prototype.igeEntityById = function (id: string): IgeEntityBox2d | undefined {
 			if (this.m_fixtureA.m_body._entity._id === id) {
 				return this.igeEntityA();
 			}
@@ -147,7 +147,7 @@ export class IgeBox2dComponent extends IgeComponent<IgeEngine> {
 			}
 		};
 
-		this.b2Contact.prototype.igeEntityByFixtureId = function (id: string) {
+		this.b2Contact.prototype.igeEntityByFixtureId = function (id: string): IgeEntityBox2d | undefined {
 			if (this.m_fixtureA.igeId === id) {
 				return this.igeEntityA();
 			}
@@ -157,7 +157,7 @@ export class IgeBox2dComponent extends IgeComponent<IgeEngine> {
 			}
 		};
 
-		this.b2Contact.prototype.igeOtherEntity = function (bodyEntity: IgeEntity) {
+		this.b2Contact.prototype.igeOtherEntity = function (bodyEntity: IgeEntityBox2d): IgeEntityBox2d | undefined {
 			if (this.m_fixtureA.m_body._entity === bodyEntity) {
 				return this.igeEntityB();
 			} else {
@@ -253,7 +253,7 @@ export class IgeBox2dComponent extends IgeComponent<IgeEngine> {
 	}
 
 	/**
-	 * Gets the current Box2d world object.
+	 * Gets the current Box2D world object.
 	 * @return {b2World}
 	 */
 	world () {
@@ -261,7 +261,7 @@ export class IgeBox2dComponent extends IgeComponent<IgeEngine> {
 	}
 
 	/**
-	 * Creates the Box2d world.
+	 * Creates the Box2D world.
 	 * @return {*}
 	 */
 	createWorld (): this {
@@ -276,16 +276,17 @@ export class IgeBox2dComponent extends IgeComponent<IgeEngine> {
 	}
 
 	/**
-	 * Creates a Box2d fixture and returns it.
+	 * Creates a Box2D fixture and returns it.
 	 * @param params
 	 * @return {b2FixtureDef}
 	 */
 	createFixture (params: IgeBox2dFixtureDef) {
-		const tempDef = new this.b2FixtureDef();
+		const tempDef: Box2D.Dynamics.b2FixtureDef = new this.b2FixtureDef();
 
 		for (const param in params) {
 			if (param !== "shape" && param !== "filter") {
-				tempDef[param] = params[param as keyof IgeBox2dFixtureDef];
+				// @ts-ignore
+				tempDef[param] = params[param as keyof Box2D.Dynamics.b2FixtureDef];
 			}
 		}
 
@@ -293,7 +294,7 @@ export class IgeBox2dComponent extends IgeComponent<IgeEngine> {
 	}
 
 	/**
-	 * Creates a Box2d body and attaches it to an IGE entity
+	 * Creates a Box2D body and attaches it to an IGE entity
 	 * based on the supplied body definition.
 	 * @param {IgeEntity} entity
 	 * @param {Object} body
@@ -342,6 +343,7 @@ export class IgeBox2dComponent extends IgeComponent<IgeEngine> {
 				break;
 
 			default:
+				// @ts-ignore
 				tempDef[param] = body[param as keyof IgeBox2dBodyDef];
 				break;
 			}

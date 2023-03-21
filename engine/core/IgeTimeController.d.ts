@@ -1,16 +1,16 @@
-import { IgeComponent } from "../core/IgeComponent";
-import { IgeEntity } from "../core/IgeEntity";
-import { IgeInterval } from "../core/IgeInterval";
+import { IgeInterval } from "./IgeInterval";
 import { IgeEntityBehaviourMethod } from "@/types/IgeEntityBehaviour";
-import type { IgeEngine } from "../core/IgeEngine";
-export declare class IgeTimeComponent extends IgeComponent<IgeEngine> {
+import { IgeIsReadyPromise } from "@/types/IgeIsReadyPromise";
+import { IgeEventingClass } from "@/engine/core/IgeEventingClass";
+export declare class IgeTimeController extends IgeEventingClass implements IgeIsReadyPromise {
+    static componentTargetClass: string;
     classId: string;
     componentId: string;
     _updating: boolean;
     _timers: IgeInterval[];
     _additions: IgeInterval[];
     _removals: IgeInterval[];
-    constructor(entity: IgeEntity, options?: any);
+    isReady(): Promise<void>;
     addTimer: (timer: IgeInterval) => this;
     removeTimer: (timer: IgeInterval) => this;
     _update: IgeEntityBehaviourMethod;

@@ -19,6 +19,9 @@ export class IgeDependencies {
         // Not all deps are fulfilled, add to the action array
         this._dependsOnArr.push({ dependencyList, actionToTake });
     }
+    markAsSatisfied(dependencyName) {
+        this._onDependencySatisfied(dependencyName);
+    }
     _onDependencySatisfied(dependencyName) {
         // Mark the dependency as satisfied
         this._dependencyFulfilled[dependencyName] = true;

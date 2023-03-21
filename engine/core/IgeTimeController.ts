@@ -1,14 +1,14 @@
 import { ige } from "../instance";
-import { IgeComponent } from "../core/IgeComponent";
-import { IgeEntity } from "../core/IgeEntity";
-import { IgeInterval } from "../core/IgeInterval";
+import { IgeInterval } from "./IgeInterval";
 import { arrPull } from "../utils";
 import { IgeEntityBehaviourMethod } from "@/types/IgeEntityBehaviour";
-import type { IgeEngine } from "../core/IgeEngine";
 import { IgeBehaviourType } from "@/enums/IgeBehaviourType";
+import { IgeIsReadyPromise } from "@/types/IgeIsReadyPromise";
+import { IgeEventingClass } from "@/engine/core/IgeEventingClass";
 
-export class IgeTimeComponent extends IgeComponent<IgeEngine> {
-	classId = "IgeTimeComponent";
+export class IgeTimeController extends IgeEventingClass implements IgeIsReadyPromise {
+	static componentTargetClass = "Ige";
+	classId = "IgeTimeController";
 	componentId = "time";
 
 	_updating: boolean = false;
@@ -16,11 +16,16 @@ export class IgeTimeComponent extends IgeComponent<IgeEngine> {
 	_additions: IgeInterval[] = [];
 	_removals: IgeInterval[] = [];
 
-	constructor (entity: IgeEntity, options?: any) {
-		super(entity, options);
-
-		// Add the animation behaviour to the entity
-		entity.addBehaviour(IgeBehaviourType.preUpdate, "time", this._update);
+	isReady () {
+		return new Promise<void>((resolve) => {
+			setTimeout(() => {
+				ige.dependencies.waitFor(["engine"], () => {
+					// Add the animation behaviour to the entity
+					ige.engine.addBehaviour(IgeBehaviourType.preUpdate, "time", this._update);
+					resolve();
+				});
+			}, 1);
+		});
 	}
 
 	addTimer = (timer: IgeInterval) => {

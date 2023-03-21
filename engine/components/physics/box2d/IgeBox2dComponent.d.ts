@@ -5,11 +5,11 @@ import { IgeTileMap2d, IgeTileMap2dScanRectCallback } from "../../../core/IgeTil
 import { IgeEntityBox2d } from "./IgeEntityBox2d";
 import type { IgeEngine } from "../../../core/IgeEngine";
 import type { IgeBox2dBodyDef } from "@/types/IgeBox2dBodyDef";
-import type { IgeBox2dFixtureDef } from "@/types/IgeBox2dFixtureDef";
 import type { IgeBox2dContactListenerCallback } from "@/types/IgeBox2dContactListenerCallback";
 import type { IgeBox2dContactPostSolveCallback, IgeBox2dContactPreSolveCallback } from "@/types/IgeBox2dContactSolverCallback";
 import type { IgeEntityBehaviourMethod } from "@/types/IgeEntityBehaviour";
 import { Box2D } from "@/engine/components/physics/box2d/lib_box2d";
+import { IgeBox2dFixtureDef } from "@/types/IgeBox2dFixtureDef";
 /**
  * The engine's Box2D component class.
  */
@@ -42,7 +42,7 @@ export declare class IgeBox2dComponent extends IgeComponent<IgeEngine> {
     b2CircleShape: typeof Box2D.Collision.Shapes.b2CircleShape;
     b2DebugDraw: typeof Box2D.Dynamics.b2DebugDraw;
     b2ContactListener: typeof Box2D.Dynamics.b2ContactListener;
-    b2Distance: any;
+    b2Distance: typeof Box2D.Collision.b2DistanceOutput;
     b2Contact: typeof Box2D.Dynamics.Contacts.b2Contact;
     b2FilterData: typeof Box2D.Dynamics.b2FilterData;
     b2DistanceJointDef: typeof Box2D.Dynamics.Joints.b2DistanceJointDef;
@@ -80,23 +80,23 @@ export declare class IgeBox2dComponent extends IgeComponent<IgeEngine> {
     gravity(x: number, y: number): this;
     gravity(): Box2D.Common.Math.b2Vec2;
     /**
-     * Gets the current Box2d world object.
+     * Gets the current Box2D world object.
      * @return {b2World}
      */
     world(): Box2D.Dynamics.b2World | undefined;
     /**
-     * Creates the Box2d world.
+     * Creates the Box2D world.
      * @return {*}
      */
     createWorld(): this;
     /**
-     * Creates a Box2d fixture and returns it.
+     * Creates a Box2D fixture and returns it.
      * @param params
      * @return {b2FixtureDef}
      */
     createFixture(params: IgeBox2dFixtureDef): Box2D.Dynamics.b2FixtureDef;
     /**
-     * Creates a Box2d body and attaches it to an IGE entity
+     * Creates a Box2D body and attaches it to an IGE entity
      * based on the supplied body definition.
      * @param {IgeEntity} entity
      * @param {Object} body

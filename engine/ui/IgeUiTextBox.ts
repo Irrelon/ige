@@ -43,7 +43,7 @@ export class IgeUiTextBox extends IgeUiElement {
 		};
 
 		const focusFunc = () => {
-			(ige.engine.components.input as IgeInputComponent).stopPropagation();
+			(ige.input as IgeInputComponent).stopPropagation();
 
 			blurFunc();
 
@@ -105,7 +105,7 @@ export class IgeUiTextBox extends IgeUiElement {
 		this.on("focus", focusFunc);
 		this.on("pointerUp", focusFunc);
 		this.on("pointerDown", () => {
-			(ige.engine.components.input as IgeInputComponent).stopPropagation();
+			(ige.input as IgeInputComponent).stopPropagation();
 		});
 
 		this.on("uiUpdate", () => {

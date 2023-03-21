@@ -9,7 +9,6 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 import { ige } from "../../engine/instance.js";
 import { IgeTexture } from "../../engine/core/IgeTexture.js";
-import { IgeUiManagerComponent } from "../../engine/components/IgeUiManagerComponent.js";
 import { AppClientScene } from "./AppClientScene.js";
 import { AppServerScene } from "./AppServerScene.js";
 import { timerCircle } from "../assets/ui/timerCircle.js";
@@ -21,7 +20,6 @@ ige.router.route("app", {
     client: () => __awaiter(void 0, void 0, void 0, function* () {
         // @ts-ignore
         window.ige = ige;
-        ige.engine.addComponent("ui", IgeUiManagerComponent);
         // Create the HTML canvas
         ige.engine.createFrontBuffer(true);
         // Start the engine
@@ -40,7 +38,6 @@ ige.router.route("app", {
         });
     }),
     server: () => __awaiter(void 0, void 0, void 0, function* () {
-        ige.engine.addComponent("ui", IgeUiManagerComponent);
         // Create the HTML canvas
         ige.engine.createFrontBuffer(true);
         // Start the engine

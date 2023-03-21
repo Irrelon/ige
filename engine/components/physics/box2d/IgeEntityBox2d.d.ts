@@ -1,7 +1,7 @@
-/// <reference types="box2d" />
 import { IgeEntity } from "../../../core/IgeEntity";
 import type { IgeBox2dComponent } from "./IgeBox2dComponent";
-import type { IgeBox2dBodyDef } from "../../../../types/IgeBox2dBodyDef";
+import type { IgeBox2dBodyDef } from "@/types/IgeBox2dBodyDef";
+import type { Box2D } from "@/engine/components/physics/box2d/lib_box2d";
 /**
  * Creates a new entity with box2d integration.
  */
@@ -10,6 +10,8 @@ export declare class IgeEntityBox2d extends IgeEntity {
     _b2dRef: IgeBox2dComponent;
     _box2dBodyDef?: IgeBox2dBodyDef;
     _box2dBody?: Box2D.Dynamics.b2Body;
+    _box2dOurContactFixture?: Box2D.Dynamics.b2Fixture;
+    _box2dTheirContactFixture?: Box2D.Dynamics.b2Fixture;
     constructor();
     /**
      * Gets / sets the box2d body's active flag which determines

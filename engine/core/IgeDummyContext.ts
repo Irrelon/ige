@@ -47,5 +47,6 @@ export class IgeDummyContext {
 	getImageData = undefinedMethod;
 	putImageData = undefinedMethod;
 	strokeText = undefinedMethod;
+	createLinearGradient = undefinedMethod;
 	measureText = () => ({width: 0, height: 0});
 }

@@ -5,7 +5,7 @@ import {
 	easingFunctions
 } from "../easing";
 
-import type { IgeTweenComponent } from "../components/IgeTweenComponent";
+import type { IgeTweenController } from "./IgeTweenController";
 
 export interface IgeTweenStep {
 	props: Record<string, number>;
@@ -336,7 +336,7 @@ export class IgeTween extends IgeBaseClass {
 			this.startTime(timeMs + ige.engine._currentTime);
 		}
 
-		(ige.engine.components.tween as IgeTweenComponent).start(this);
+		(ige.tween as IgeTweenController).start(this);
 
 		// Add the tween to the target object's tween array
 		this._targetObj._tweenArr = this._targetObj._tweenArr || [];
@@ -349,7 +349,7 @@ export class IgeTween extends IgeBaseClass {
 	 * Stops the tweening operation.
 	 */
 	stop () {
-		(ige.engine.components.tween as IgeTweenComponent).stop(this);
+		(ige.tween as IgeTweenController).stop(this);
 		if (this._targetObj._tweenArr) {
 			arrPull(this._targetObj._tweenArr, this);
 		}

@@ -1,6 +1,6 @@
 import { ige } from "../instance";
 import { IgeEventingClass } from "./IgeEventingClass";
-import { IgeTimeComponent } from "../components/IgeTimeComponent";
+import { IgeTimeController } from "./IgeTimeController";
 
 export type IgeIntervalCallback = (...args: any[]) => void;
 
@@ -37,7 +37,7 @@ export class IgeInterval extends IgeEventingClass {
 		this._catchup = catchup;
 
 		// Attach ourselves to the time system
-		(ige.engine.components.time as IgeTimeComponent).addTimer(this);
+		(ige.time as IgeTimeController).addTimer(this);
 	}
 
 	/**
@@ -55,13 +55,13 @@ export class IgeInterval extends IgeEventingClass {
 	 * @returns {*}
 	 */
 	cancel () {
-		(ige.engine.components.time as IgeTimeComponent).removeTimer(this);
+		(ige.time as IgeTimeController).removeTimer(this);
 		return this;
 	}
 
 	/**
 	 * Checks for a timer event to see if we should call the timer method. This is
-	 * called automatically by the IgeTimeComponent class and does not need to be
+	 * called automatically by the IgeTimeController class and does not need to be
 	 * called manually.
 	 * @returns {*}
 	 */

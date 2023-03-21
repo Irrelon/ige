@@ -148,7 +148,7 @@ export declare class IgeEntity extends IgeObject implements IgeCanRegisterById, 
      *     entity.backgroundPattern(texture, 'repeat', true, true);
      * @return {*}
      */
-    backgroundPattern(texture?: IgeTexture, repeat?: string, trackCamera?: boolean, isoTile?: boolean): IgeTexture | this | undefined;
+    backgroundPattern(texture?: IgeTexture, repeat?: string, trackCamera?: boolean, isoTile?: boolean): this | IgeTexture | undefined;
     smartBackground(): IgeSmartTexture | undefined;
     smartBackground(renderMethod?: IgeSmartTexture): this;
     /**
@@ -651,7 +651,7 @@ export declare class IgeEntity extends IgeObject implements IgeCanRegisterById, 
      *
      *         // You can ALSO stop propagation without the control object
      *         // reference via the global reference:
-     *         ige.engine.components.input.stopPropagation();
+     *         ige.input.stopPropagation();
      *     });
      * @return {*}
      */
@@ -670,7 +670,7 @@ export declare class IgeEntity extends IgeObject implements IgeCanRegisterById, 
      *
      *         // You can ALSO stop propagation without the control object
      *         // reference via the global reference:
-     *         ige.engine.components.input.stopPropagation();
+     *         ige.input.stopPropagation();
      *     });
      * @return {*}
      */
@@ -690,7 +690,7 @@ export declare class IgeEntity extends IgeObject implements IgeCanRegisterById, 
      *
      *         // You can ALSO stop propagation without the control object
      *         // reference via the global reference:
-     *         ige.engine.components.input.stopPropagation();
+     *         ige.input.stopPropagation();
      *     });
      * @return {*}
      */
@@ -710,7 +710,7 @@ export declare class IgeEntity extends IgeObject implements IgeCanRegisterById, 
      *
      *         // You can ALSO stop propagation without the control object
      *         // reference via the global reference:
-     *         ige.engine.components.input.stopPropagation();
+     *         ige.input.stopPropagation();
      *     });
      * @return {*}
      */
@@ -730,7 +730,7 @@ export declare class IgeEntity extends IgeObject implements IgeCanRegisterById, 
      *
      *         // You can ALSO stop propagation without the control object
      *         // reference via the global reference:
-     *         ige.engine.components.input.stopPropagation();
+     *         ige.input.stopPropagation();
      *     });
      * @return {*}
      */
@@ -750,7 +750,7 @@ export declare class IgeEntity extends IgeObject implements IgeCanRegisterById, 
      *
      *         // You can ALSO stop propagation without the control object
      *         // reference via the global reference:
-     *         ige.engine.components.input.stopPropagation();
+     *         ige.input.stopPropagation();
      *     });
      * @return {*}
      */

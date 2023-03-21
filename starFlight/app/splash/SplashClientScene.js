@@ -40,7 +40,7 @@ export class SplashClientScene extends IgeEventingClass {
                 elem.style.display = "none";
             }
         };
-        const ui = ige.engine.components.ui;
+        const ui = ige.ui;
         const mainScene = ige.$("mainScene");
         const sceneBase = new IgeScene2d()
             .id("sceneBase")
@@ -227,6 +227,7 @@ export class SplashClientScene extends IgeEventingClass {
             .mount(uiScene);
         gameOptionsWindow.on("beforeClose", function () {
         });
+        gameOptionsWindow.show();
         const leftNav = new IgeUiElement()
             .id("leftNav")
             .mount(gameOptionsWindow);

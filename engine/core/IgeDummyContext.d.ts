@@ -42,6 +42,7 @@ export declare class IgeDummyContext {
     getImageData: () => void;
     putImageData: () => void;
     strokeText: () => void;
+    createLinearGradient: () => void;
     measureText: () => {
         width: number;
         height: number;

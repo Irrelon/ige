@@ -234,10 +234,14 @@ export declare class IgeUiEntity extends IgeEntity {
     borderBottomRightRadius(px?: number): number | this;
     padding(...args: [number]): this;
     padding(...args: [number, number, number, number]): this;
-    paddingLeft(px?: number): number | this;
-    paddingTop(px?: number): number | this;
-    paddingRight(px?: number): number | this;
-    paddingBottom(px?: number): number | this;
+    paddingLeft(px: number): this;
+    paddingLeft(): number;
+    paddingTop(px: number): this;
+    paddingTop(): number;
+    paddingRight(px: number): this;
+    paddingRight(): number;
+    paddingBottom(px: number): this;
+    paddingBottom(): number;
     margin(...args: [number]): this;
     margin(...args: [number, number, number, number]): this;
     marginLeft(px?: number): number | this | undefined;

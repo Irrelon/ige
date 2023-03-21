@@ -24,7 +24,7 @@ export class IgeInterval extends IgeEventingClass {
         this._started = ige.engine._currentTime;
         this._catchup = catchup;
         // Attach ourselves to the time system
-        ige.engine.components.time.addTimer(this);
+        ige.time.addTimer(this);
     }
     /**
      * Adds time to the timer's internal clock.
@@ -40,12 +40,12 @@ export class IgeInterval extends IgeEventingClass {
      * @returns {*}
      */
     cancel() {
-        ige.engine.components.time.removeTimer(this);
+        ige.time.removeTimer(this);
         return this;
     }
     /**
      * Checks for a timer event to see if we should call the timer method. This is
-     * called automatically by the IgeTimeComponent class and does not need to be
+     * called automatically by the IgeTimeController class and does not need to be
      * called manually.
      * @returns {*}
      */

@@ -8,36 +8,43 @@ import { IgeInputComponent } from "@/engine/components/IgeInputComponent";
 import { IgeObjectRegister } from "./IgeObjectRegister";
 import { IgeArrayRegister } from "./IgeArrayRegister";
 import { IgePoint3d } from "./IgePoint3d";
-import { IgeAudioController } from "@/engine/audio";
 import { IgeRouter } from "./IgeRouter";
 
+import { IgeDependencies } from "@/engine/core/IgeDependencies";
+import { IgeTweenController } from "@/engine/core/IgeTweenController";
+import { IgeTimeController } from "@/engine/core/IgeTimeController";
+import type { IgeIsReadyPromise } from "@/types/IgeIsReadyPromise";
+import type { IgeAudioController } from "@/engine/audio";
 import type { IgeObject } from "./IgeObject";
 import type { IgeObjectWithValueProperty } from "@/types/IgeObjectWithValueProperty";
 import type { IgeCanRegisterByCategory } from "@/types/IgeCanRegisterByCategory";
 import type { IgeViewport } from "./IgeViewport";
 import type { IgeNetIoClientController } from "@/engine/network/client/IgeNetIoClientController";
 import type { IgeNetIoServerController } from "@/engine/network/server/IgeNetIoServerController";
-import { IgeDependencies } from "@/engine/core/IgeDependencies";
+import { IgeUiManagerController } from "@/engine/core/IgeUiManagerController";
 
-const version = "2.0.0";
+const version = "3.0.0";
 
-export class Ige {
+export class Ige implements IgeIsReadyPromise {
+	audio?: IgeAudioController;
 	router: IgeRouter = new IgeRouter();
 	engine: IgeEngine = new IgeEngine();
 	textures: IgeTextureStore = new IgeTextureStore();
-	metrics: IgeMetrics = new IgeMetrics();
 	input: IgeInputComponent = new IgeInputComponent();
-	audio?: IgeAudioController;
+	tween: IgeTweenController = new IgeTweenController();
+	time: IgeTimeController = new IgeTimeController();
+	ui: IgeUiManagerController = new IgeUiManagerController();
 	network?: IgeNetIoClientController | IgeNetIoServerController;
 	register: IgeObjectRegister = new IgeObjectRegister();
 	categoryRegister: IgeArrayRegister<IgeCanRegisterByCategory> = new IgeArrayRegister("_category", "_categoryRegistered");
 	groupRegister: IgeArrayRegister<IgeCanRegisterByCategory> = new IgeArrayRegister("_group", "_groupRegistered");
+	dependencies: IgeDependencies = new IgeDependencies();
+	metrics: IgeMetrics = new IgeMetrics();
 	client: any;
 	server: any;
 	config: IgeConfig = igeConfig;
 	version: string = version;
 	classStore = igeClassStore;
-	dependencies: IgeDependencies = new IgeDependencies();
 	_watch: (string | IgeObjectWithValueProperty)[] = [];
 
 	// Questionable properties, think about them and potentially move
@@ -49,8 +56,9 @@ export class Ige {
 			this.dependencies.add("network", import("../network/client/IgeNetIoClientController.js").then(({ IgeNetIoClientController: Module }) => {
 				this.network = new Module();
 			}));
-
-			this.audio = new IgeAudioController();
+			this.dependencies.add("audio", import("../audio/IgeAudioController.js").then(({ IgeAudioController: Module }) => {
+				this.audio = new Module();
+			}));
 		}
 
 		if (isServer) {
@@ -58,11 +66,18 @@ export class Ige {
 				this.network = new Module();
 			}));
 		}
+
+		this.dependencies.add("tween", this.tween.isReady());
+		this.dependencies.add("input", this.input.isReady());
+		this.dependencies.add("time", this.time.isReady());
+		this.dependencies.add("ui", this.ui.isReady());
+
+		this.dependencies.markAsSatisfied("engine");
 	}
 
-	ready () {
+	isReady () {
 		return new Promise<void>((resolve) => {
-			this.dependencies.waitFor(["network"], resolve);
+			this.dependencies.waitFor(["network", "tween", "time", "engine"], resolve);
 		});
 	}
 

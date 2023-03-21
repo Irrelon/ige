@@ -1,11 +1,11 @@
 import { ige } from "../instance.js";
-import { IgeComponent } from "../core/IgeComponent.js";
 import { arrPull } from "../utils.js";
-export class IgeUiManagerComponent extends IgeComponent {
-    constructor(entity, options) {
-        super(entity, options);
-        this.classId = "IgeUiManagerComponent";
+import { IgeEventingClass } from "../../engine/core/IgeEventingClass.js";
+export class IgeUiManagerController extends IgeEventingClass {
+    constructor() {
+        super(...arguments);
         this.componentId = "ui";
+        this.classId = "IgeUiManagerController";
         this._focus = null; // The element that currently has focus
         this._caret = null; // The caret position within the focused element
         this._register = [];
@@ -15,18 +15,27 @@ export class IgeUiManagerComponent extends IgeComponent {
             // Direct the key event to the focused element
             if (this._focus) {
                 this._focus.emit("keyUp", event);
-                ige.engine.components.input.stopPropagation();
+                ige.input.stopPropagation();
             }
         };
         this._keyDown = (event) => {
             // Direct the key event to the focused element
             if (this._focus) {
                 this._focus.emit("keyDown", event);
-                ige.engine.components.input.stopPropagation();
+                ige.input.stopPropagation();
             }
         };
-        ige.engine.components.input.on("keyDown", (event) => {
-            this._keyDown(event);
+    }
+    isReady() {
+        return new Promise((resolve) => {
+            setTimeout(() => {
+                ige.dependencies.waitFor(["input"], () => {
+                    ige.input.on("keyDown", (event) => {
+                        this._keyDown(event);
+                    });
+                    resolve();
+                });
+            }, 1);
         });
     }
     /**
@@ -135,4 +144,4 @@ export class IgeUiManagerComponent extends IgeComponent {
         return false;
     }
 }
-IgeUiManagerComponent.componentTargetClass = "Ige";
+IgeUiManagerController.componentTargetClass = "IgeEngine";

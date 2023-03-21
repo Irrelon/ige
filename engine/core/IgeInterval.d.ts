@@ -35,7 +35,7 @@ export declare class IgeInterval extends IgeEventingClass {
     cancel(): this;
     /**
      * Checks for a timer event to see if we should call the timer method. This is
-     * called automatically by the IgeTimeComponent class and does not need to be
+     * called automatically by the IgeTimeController class and does not need to be
      * called manually.
      * @returns {*}
      */

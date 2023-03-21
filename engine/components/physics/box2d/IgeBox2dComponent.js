@@ -37,7 +37,7 @@ export class IgeBox2dComponent extends IgeComponent {
         this.b2CircleShape = Box2D.Collision.Shapes.b2CircleShape;
         this.b2DebugDraw = Box2D.Dynamics.b2DebugDraw;
         this.b2ContactListener = Box2D.Dynamics.b2ContactListener;
-        this.b2Distance = Box2D.Collision.b2Distance;
+        this.b2Distance = Box2D.Collision.b2DistanceOutput;
         this.b2Contact = Box2D.Dynamics.Contacts.b2Contact;
         this.b2FilterData = Box2D.Dynamics.b2FilterData;
         this.b2DistanceJointDef = Box2D.Dynamics.Joints.b2DistanceJointDef;
@@ -135,7 +135,7 @@ export class IgeBox2dComponent extends IgeComponent {
         this.b2CircleShape = Box2D.Collision.Shapes.b2CircleShape;
         this.b2DebugDraw = Box2D.Dynamics.b2DebugDraw;
         this.b2ContactListener = Box2D.Dynamics.b2ContactListener;
-        this.b2Distance = Box2D.Collision.b2Distance;
+        this.b2Distance = Box2D.Collision.b2DistanceOutput;
         this.b2Contact = Box2D.Dynamics.Contacts.b2Contact;
         this.b2FilterData = Box2D.Dynamics.b2FilterData;
         this.b2DistanceJointDef = Box2D.Dynamics.Joints.b2DistanceJointDef;
@@ -267,14 +267,14 @@ export class IgeBox2dComponent extends IgeComponent {
         return this._gravity;
     }
     /**
-     * Gets the current Box2d world object.
+     * Gets the current Box2D world object.
      * @return {b2World}
      */
     world() {
         return this._world;
     }
     /**
-     * Creates the Box2d world.
+     * Creates the Box2D world.
      * @return {*}
      */
     createWorld() {
@@ -283,7 +283,7 @@ export class IgeBox2dComponent extends IgeComponent {
         return this;
     }
     /**
-     * Creates a Box2d fixture and returns it.
+     * Creates a Box2D fixture and returns it.
      * @param params
      * @return {b2FixtureDef}
      */
@@ -291,13 +291,14 @@ export class IgeBox2dComponent extends IgeComponent {
         const tempDef = new this.b2FixtureDef();
         for (const param in params) {
             if (param !== "shape" && param !== "filter") {
+                // @ts-ignore
                 tempDef[param] = params[param];
             }
         }
         return tempDef;
     }
     /**
-     * Creates a Box2d body and attaches it to an IGE entity
+     * Creates a Box2D body and attaches it to an IGE entity
      * based on the supplied body definition.
      * @param {IgeEntity} entity
      * @param {Object} body
@@ -332,6 +333,7 @@ export class IgeBox2dComponent extends IgeComponent {
                     // below as post-creation attributes
                     break;
                 default:
+                    // @ts-ignore
                     tempDef[param] = body[param];
                     break;
             }

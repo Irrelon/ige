@@ -47,7 +47,7 @@ class IgeEditorComponent extends IgeComponent {
 		const igeRoot = window.igeRoot || "";
 
 		// Hook the input component's keyUp and check for the = symbol... if there, toggle editor
-		this._activateKeyHandle = (ige.engine.components.input as IgeInputComponent).on("keyUp", (event) => {
+		this._activateKeyHandle = (ige.input as IgeInputComponent).on("keyUp", (event) => {
 			if (event.keyIdentifier === "U+00BB") {
 				// = key pressed, toggle the editor
 				this.toggle();
@@ -58,7 +58,7 @@ class IgeEditorComponent extends IgeComponent {
 		});
 
 		// Hook the input component's keyUp and check for the - symbol... if there, toggle stats
-		this._activateKeyHandle = (ige.engine.components.input as IgeInputComponent).on("keyUp", (event) => {
+		this._activateKeyHandle = (ige.input as IgeInputComponent).on("keyUp", (event) => {
 			if (event.keyIdentifier === "U+00BD") {
 				// Toggle the stats
 				this.toggleStats();
@@ -69,7 +69,7 @@ class IgeEditorComponent extends IgeComponent {
 		});
 
 		// Hook the engine's input system and take over mouse interaction
-		this._pointerUpHandle = (ige.engine.components.input as IgeInputComponent).on("preMouseUp", (event) => {
+		this._pointerUpHandle = (ige.input as IgeInputComponent).on("preMouseUp", (event) => {
 			if (this._enabled && this._interceptMouse) {
 				this.emit("pointerUp", event);
 
@@ -78,7 +78,7 @@ class IgeEditorComponent extends IgeComponent {
 			}
 		});
 
-		this._pointerDownHandle = (ige.engine.components.input as IgeInputComponent).on("preMouseDown", (event) => {
+		this._pointerDownHandle = (ige.input as IgeInputComponent).on("preMouseDown", (event) => {
 			if (this._enabled && this._interceptMouse) {
 				this.emit("pointerDown", event);
 
@@ -87,7 +87,7 @@ class IgeEditorComponent extends IgeComponent {
 			}
 		});
 
-		this._pointerMoveHandle = (ige.engine.components.input as IgeInputComponent).on("preMouseMove", (event) => {
+		this._pointerMoveHandle = (ige.input as IgeInputComponent).on("preMouseMove", (event) => {
 			if (this._enabled && this._interceptMouse) {
 				this.emit("pointerMove", event);
 
@@ -96,7 +96,7 @@ class IgeEditorComponent extends IgeComponent {
 			}
 		});
 
-		this._contextMenuHandle = (ige.engine.components.input as IgeInputComponent).on("preContextMenu", (event) => {
+		this._contextMenuHandle = (ige.input as IgeInputComponent).on("preContextMenu", (event) => {
 			if (this._enabled && this._interceptMouse) {
 				this.emit("contextMenu", event);
 

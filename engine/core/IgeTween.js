@@ -246,7 +246,7 @@ export class IgeTween extends IgeBaseClass {
         if (timeMs !== undefined) {
             this.startTime(timeMs + ige.engine._currentTime);
         }
-        ige.engine.components.tween.start(this);
+        ige.tween.start(this);
         // Add the tween to the target object's tween array
         this._targetObj._tweenArr = this._targetObj._tweenArr || [];
         this._targetObj._tweenArr.push(this);
@@ -256,7 +256,7 @@ export class IgeTween extends IgeBaseClass {
      * Stops the tweening operation.
      */
     stop() {
-        ige.engine.components.tween.stop(this);
+        ige.tween.stop(this);
         if (this._targetObj._tweenArr) {
             arrPull(this._targetObj._tweenArr, this);
         }

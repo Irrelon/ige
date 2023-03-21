@@ -1,19 +1,19 @@
-import { IgeComponent } from "../core/IgeComponent";
-import { IgeTween } from "../core/IgeTween";
+import { IgeTween } from "./IgeTween";
 import { IgeEntityBehaviourMethod } from "@/types/IgeEntityBehaviour";
-import type { IgeEngine } from "../core/IgeEngine";
+import { IgeEventingClass } from "@/engine/core/IgeEventingClass";
+import { IgeIsReadyPromise } from "@/types/IgeIsReadyPromise";
 /**
  * This component is already included in the IgeRoot (ige)
  * instance and is not designed for use in any other way!
  * It handles global tween processing on all tweening values.
  */
-export declare class IgeTweenComponent extends IgeComponent<IgeEngine> {
+export declare class IgeTweenController extends IgeEventingClass implements IgeIsReadyPromise {
     static componentTargetClass: string;
     classId: string;
     componentId: string;
     _tweens: IgeTween[];
     _tweening: boolean;
-    constructor(entity: IgeEngine, options?: any);
+    isReady(): Promise<void>;
     /**
      * Start tweening particular properties for the object.
      * @param {IgeTween} tween The tween to start.

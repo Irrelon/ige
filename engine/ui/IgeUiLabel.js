@@ -57,7 +57,8 @@ export class IgeUiLabel extends IgeUiElement {
     }
     textLineSpacing(val) {
         if (val !== undefined) {
-            return this._fontEntity.textLineSpacing(val);
+            this._fontEntity.textLineSpacing(val);
+            return this;
         }
         return this._fontEntity.textLineSpacing();
     }

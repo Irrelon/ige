@@ -21,7 +21,7 @@ export class AppClientScene extends IgeSceneGraph {
 		// receive a mouse event or not
 
 		// Hook the engine's input system and take over mouse interaction
-		const _mouseUpHandle = ige.engine.components.input.on('preMouseUp', (event) => {
+		const _mouseUpHandle = ige.input.on('preMouseUp', (event) => {
 			// Get list of entities that the mouse is currently over
 			const arr = ige.engine.pointerOverList();
 
@@ -42,7 +42,7 @@ export class AppClientScene extends IgeSceneGraph {
 			return true;
 		});
 
-		const _mouseDownHandle = ige.engine.components.input.on('preMouseDown', (event) => {
+		const _mouseDownHandle = ige.input.on('preMouseDown', (event) => {
 			// Get list of entities that the mouse is currently over
 			const arr = ige.engine.pointerOverList();
 
@@ -57,12 +57,12 @@ export class AppClientScene extends IgeSceneGraph {
 			return true;
 		});
 
-		const _mouseMoveHandle = ige.engine.components.input.on('preMouseMove', (event) => {
+		const _mouseMoveHandle = ige.input.on('preMouseMove', (event) => {
 			// Return true to stop this event from being emitted by the engine to the scenegraph
 			return true;
 		});
 
-		const _contextMenuHandle = ige.engine.components.input.on('preContextMenu', (event) => {
+		const _contextMenuHandle = ige.input.on('preContextMenu', (event) => {
 			// Return true to stop this event from being emitted by the engine to the scenegraph
 			return true;
 		});

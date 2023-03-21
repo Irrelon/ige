@@ -6,37 +6,44 @@ import { IgeInputComponent } from "@/engine/components/IgeInputComponent";
 import { IgeObjectRegister } from "./IgeObjectRegister";
 import { IgeArrayRegister } from "./IgeArrayRegister";
 import { IgePoint3d } from "./IgePoint3d";
-import { IgeAudioController } from "@/engine/audio";
 import { IgeRouter } from "./IgeRouter";
+import { IgeDependencies } from "@/engine/core/IgeDependencies";
+import { IgeTweenController } from "@/engine/core/IgeTweenController";
+import { IgeTimeController } from "@/engine/core/IgeTimeController";
+import type { IgeIsReadyPromise } from "@/types/IgeIsReadyPromise";
+import type { IgeAudioController } from "@/engine/audio";
 import type { IgeObject } from "./IgeObject";
 import type { IgeObjectWithValueProperty } from "@/types/IgeObjectWithValueProperty";
 import type { IgeCanRegisterByCategory } from "@/types/IgeCanRegisterByCategory";
 import type { IgeViewport } from "./IgeViewport";
 import type { IgeNetIoClientController } from "@/engine/network/client/IgeNetIoClientController";
 import type { IgeNetIoServerController } from "@/engine/network/server/IgeNetIoServerController";
-import { IgeDependencies } from "@/engine/core/IgeDependencies";
-export declare class Ige {
+import { IgeUiManagerController } from "@/engine/core/IgeUiManagerController";
+export declare class Ige implements IgeIsReadyPromise {
+    audio?: IgeAudioController;
     router: IgeRouter;
     engine: IgeEngine;
     textures: IgeTextureStore;
-    metrics: IgeMetrics;
     input: IgeInputComponent;
-    audio?: IgeAudioController;
+    tween: IgeTweenController;
+    time: IgeTimeController;
+    ui: IgeUiManagerController;
     network?: IgeNetIoClientController | IgeNetIoServerController;
     register: IgeObjectRegister;
     categoryRegister: IgeArrayRegister<IgeCanRegisterByCategory>;
     groupRegister: IgeArrayRegister<IgeCanRegisterByCategory>;
+    dependencies: IgeDependencies;
+    metrics: IgeMetrics;
     client: any;
     server: any;
     config: IgeConfig;
     version: string;
     classStore: Record<string, import("../../types/GenericClass").GenericClass>;
-    dependencies: IgeDependencies;
     _watch: (string | IgeObjectWithValueProperty)[];
     _pointerOverVp?: IgeViewport;
     _pointerPos: IgePoint3d;
     constructor();
-    ready(): Promise<void>;
+    isReady(): Promise<void>;
     /**
      * Returns an object from the engine's object register by
      * the object's id. If the item passed is not a string id

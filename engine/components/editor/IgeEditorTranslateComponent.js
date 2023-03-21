@@ -65,9 +65,9 @@ class IgeEditorTranslateComponent extends IgeComponent {
                         }
                         else {
                             // Listen for the mouse events we need to operate
-                            this._ige.engine.components.input.on("pointerDown", (event) => { self._pointerDown(event); });
-                            this._ige.engine.components.input.on("pointerMove", (event) => { self._pointerMove(event); });
-                            this._ige.engine.components.input.on("pointerUp", (event) => { self._pointerUp(event); });
+                            this._ige.input.on("pointerDown", (event) => { self._pointerDown(event); });
+                            this._ige.input.on("pointerMove", (event) => { self._pointerMove(event); });
+                            this._ige.input.on("pointerUp", (event) => { self._pointerUp(event); });
                             this.log("Editor: Mouse translate enabled");
                         }
                     }

@@ -4,7 +4,7 @@ import { IgeUiEntity } from "./IgeUiEntity.js";
  * Creates a new UI element. UI elements use more resources and CPU
  * than standard IgeEntity instances but provide a rich set of extra
  * positioning and styling methods as well as reacting to styles
- * defined using the IgeUiManagerComponent.
+ * defined using the IgeUiManagerController.
  */
 export class IgeUiElement extends IgeUiEntity {
     constructor() {
@@ -14,13 +14,13 @@ export class IgeUiElement extends IgeUiEntity {
         this._allowHover = true;
         this._allowFocus = true;
         this._allowActive = true;
-        if (!ige.engine.components.ui)
-            throw new Error("Engine UI component has not been added to the engine, please add the component IgeUiManagerComponent to the engine");
-        ige.engine.components.ui.registerElement(this);
+        if (!ige.ui)
+            throw new Error("Engine UI component has not been added to the engine, please add the component IgeUiManagerController to the engine");
+        ige.ui.registerElement(this);
         this.on("pointerOver", () => {
             if (this._allowHover) {
                 this._updateStyle();
-                ige.engine.components.input.stopPropagation();
+                ige.input.stopPropagation();
             }
             else {
                 this._pointerStateOver = false;
@@ -29,7 +29,7 @@ export class IgeUiElement extends IgeUiEntity {
         this.on("pointerOut", () => {
             if (this._allowHover) {
                 this._updateStyle();
-                ige.engine.components.input.stopPropagation();
+                ige.input.stopPropagation();
             }
             else {
                 this._pointerStateOver = false;
@@ -38,7 +38,7 @@ export class IgeUiElement extends IgeUiEntity {
         this.on("pointerDown", () => {
             if (this._allowActive) {
                 this._updateStyle();
-                ige.engine.components.input.stopPropagation();
+                ige.input.stopPropagation();
             }
             else {
                 this._pointerStateDown = false;
@@ -51,7 +51,7 @@ export class IgeUiElement extends IgeUiEntity {
                     this._updateStyle();
                 }
                 else {
-                    ige.engine.components.input.stopPropagation();
+                    ige.input.stopPropagation();
                 }
             }
             else if (this._allowActive) {
@@ -91,24 +91,48 @@ export class IgeUiElement extends IgeUiEntity {
         // Check for existing assigned style
         if (this._styleClass && this._styleClass !== name) {
             // Unregister this element from the style
-            ige.engine.components.ui.unRegisterElementStyle(this);
+            ige.ui.unRegisterElementStyle(this);
         }
         // Assign the new style
         this._styleClass = name;
         // Register the element for this style
-        ige.engine.components.ui.registerElementStyle(this);
+        ige.ui.registerElementStyle(this);
         // Update the element style
         this._updateStyle();
         return this;
     }
-    style(styleDataObject) {
-        if (styleDataObject === undefined) {
-            return this._style;
+    style(property, value) {
+        const ui = ige.ui;
+        const allStyles = {};
+        const elementStyles = ui.style(this.classId) || {}; // Get styles by element type (e.g. "IgeUiButton")
+        const classStyles = ui.style(this._styleClass) || {}; // Get styles by class name (e.g. ".helpButton")
+        const idStyles = ui.style('#' + this._id) || {}; // Get styles by element id (e.g. "#myHelpButton")
+        for (const i in elementStyles) {
+            if (elementStyles.hasOwnProperty(i)) {
+                allStyles[i] = elementStyles[i];
+            }
         }
-        // Assign the new style
-        this._style = styleDataObject;
-        // Update the element style
-        this._updateStyle();
+        for (const i in classStyles) {
+            if (classStyles.hasOwnProperty(i)) {
+                allStyles[i] = classStyles[i];
+            }
+        }
+        for (const i in idStyles) {
+            if (idStyles.hasOwnProperty(i)) {
+                allStyles[i] = idStyles[i];
+            }
+        }
+        if (property !== undefined) {
+            if (value !== undefined) {
+                // Assign property value to our idStyles object and
+                // assign it back to the style management component
+                idStyles[property] = value;
+                ui.style('#' + this._id, idStyles);
+                return this;
+            }
+            return allStyles[property];
+        }
+        return allStyles;
     }
     _updateStyle() {
         // Apply styles in order of class, class:focus, class:hover, class:active,
@@ -116,7 +140,6 @@ export class IgeUiElement extends IgeUiEntity {
         this._processStyle(this.classId);
         this._processStyle(this._styleClass);
         this._processStyle("#" + this._id);
-        this.applyStyle(this._style);
         if (this._focused) {
             this._processStyle(this.classId, "focus");
             this._processStyle(this._styleClass, "focus");
@@ -140,7 +163,7 @@ export class IgeUiElement extends IgeUiEntity {
         if (state) {
             styleName += ":" + state;
         }
-        const styleData = ige.engine.components.ui.style(styleName);
+        const styleData = ige.ui.style(styleName);
         if (styleData) {
             //this.log('Applying styles with selector "' + styleName + '"');
             this.applyStyle(styleData);
@@ -204,7 +227,7 @@ export class IgeUiElement extends IgeUiEntity {
      * Sets global UI focus to this element.
      */
     focus() {
-        if (ige.engine.components.ui.focus(this)) {
+        if (ige.ui.focus(this)) {
             // Re-apply styles since the change
             this._updateStyle();
             return true;
@@ -215,7 +238,7 @@ export class IgeUiElement extends IgeUiEntity {
      * The blur method removes global UI focus from this UI element.
      */
     blur() {
-        if (ige.engine.components.ui.blur(this)) {
+        if (ige.ui.blur(this)) {
             // Re-apply styles since the change
             this._updateStyle();
             return true;
@@ -239,7 +262,7 @@ export class IgeUiElement extends IgeUiEntity {
      * Destructor
      */
     destroy() {
-        ige.engine.components.ui.unRegisterElement(this);
+        ige.ui.unRegisterElement(this);
         return super.destroy();
     }
 }
