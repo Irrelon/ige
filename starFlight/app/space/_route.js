@@ -16,7 +16,7 @@ import { ige } from "../../../engine/instance.js";
 //
 // require('./SpaceServer');
 // require('./SpaceServerScene');
-ige.router.route('app.space', {
+ige.router.route('app/space', {
     client: () => __awaiter(void 0, void 0, void 0, function* () {
     }),
     client: {

@@ -47,11 +47,13 @@ export declare class IgeBox2dComponent extends IgeComponent<IgeEngine> {
     b2FilterData: typeof Box2D.Dynamics.b2FilterData;
     b2DistanceJointDef: typeof Box2D.Dynamics.Joints.b2DistanceJointDef;
     constructor(entity: IgeEngine, options?: any);
+    start(): void;
+    stop(): void;
     useWorker(val?: boolean): boolean | this | undefined;
     /**
      * Gets / sets the world interval mode. In mode 0 (zero) the
-     * box2d simulation is synced to the framerate of the engine's
-     * renderer. In mode 1 the box2d simulation is stepped at a constant
+     * box2D simulation is synced to the framerate of the engine's
+     * renderer. In mode 1 the box2D simulation is stepped at a constant
      * speed regardless of the engine's renderer. This must be set *before*
      * calling the start() method in order for the setting to take effect.
      * @param {Integer} val The mode, either 0 or 1.
@@ -66,7 +68,7 @@ export declare class IgeBox2dComponent extends IgeComponent<IgeEngine> {
     sleep(val: boolean): this;
     sleep(): boolean;
     /**
-     * Gets / sets the current engine-to-box2d scaling ratio.
+     * Gets / sets the current engine-to-box2D scaling ratio.
      * @param val
      * @return {*}
      */
@@ -104,12 +106,12 @@ export declare class IgeBox2dComponent extends IgeComponent<IgeEngine> {
      */
     createBody(entity: IgeEntityBox2d, body: IgeBox2dBodyDef): Box2D.Dynamics.b2Body;
     /**
-     * Produces static box2d bodies from passed map data.
+     * Produces static box2D bodies from passed map data.
      * @param {IgeTileMap2d} mapLayer
      * @param {Function=} callback Returns true or false depending
      * on if the passed map data should be included as part of the
-     * box2d static object data. This allows you to control what
-     * parts of the map data are to be considered for box2d static
+     * box2D static object data. This allows you to control what
+     * parts of the map data are to be considered for box2D static
      * objects and which parts are to be ignored. If not passed then
      * any tile with any map data is considered part of the static
      * object data.
@@ -117,7 +119,7 @@ export declare class IgeBox2dComponent extends IgeComponent<IgeEngine> {
     staticsFromMap(mapLayer: IgeTileMap2d, callback?: IgeTileMap2dScanRectCallback): void;
     /**
      * Creates a contact listener with the specified callbacks. When
-     * contacts begin and end inside the box2d simulation the specified
+     * contacts begin and end inside the box2D simulation the specified
      * callbacks are fired.
      * @param {Function} beginContactCallback The method to call when the contact listener detects contact has started.
      * @param {Function} endContactCallback The method to call when the contact listener detects contact has ended.
@@ -135,7 +137,7 @@ export declare class IgeBox2dComponent extends IgeComponent<IgeEngine> {
      */
     networkDebugMode(val?: boolean): boolean | this;
     /**
-     * Creates a debug entity that outputs the bounds of each box2d
+     * Creates a debug entity that outputs the bounds of each box2D
      * body during standard engine ticks.
      * @param {IgeEntity} mountScene
      */
@@ -152,8 +154,6 @@ export declare class IgeBox2dComponent extends IgeComponent<IgeEngine> {
      * @return {*}
      */
     updateCallback(method: () => void): this | (() => void) | undefined;
-    start(): void;
-    stop(): void;
     /**
      * Steps the physics simulation forward.
      * @private
