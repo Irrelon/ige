@@ -1,7 +1,7 @@
 import { ige } from "../../../engine/instance.js";
 import { IgeSceneGraph } from "../../../engine/core/IgeSceneGraph.js";
 import { IgeEntity } from "../../../engine/core/IgeEntity.js";
-import { IgeAnimationComponent } from "../../../engine/components/IgeAnimationComponent.js";
+import { IgeTextureAnimationComponent } from "../../../engine/components/IgeTextureAnimationComponent.js";
 export class Level1 extends IgeSceneGraph {
     constructor() {
         super(...arguments);
@@ -51,7 +51,7 @@ export class Level1 extends IgeSceneGraph {
         // that cell-id based frames will animate correctly
         const sprite3 = new IgeEntity()
             .id("sprite3")
-            .addComponent("animation", IgeAnimationComponent)
+            .addComponent("animation", IgeTextureAnimationComponent)
             .depth(1)
             // Assign the sprite sheet texture to the entity.
             // Notice we are using the gameTexture[1] instead of the

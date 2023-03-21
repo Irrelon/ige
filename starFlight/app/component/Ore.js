@@ -1,6 +1,6 @@
 import { IgeEntityBox2d } from "../../../engine/components/physics/box2d/IgeEntityBox2d.js";
 import { ige } from "../../../engine/instance.js";
-import { IgeAnimationComponent } from "../../../engine/components/IgeAnimationComponent.js";
+import { IgeTextureAnimationComponent } from "../../../engine/components/IgeTextureAnimationComponent.js";
 import { IgeBox2dBodyType } from "../../../enums/IgeBox2dBodyType.js";
 import { IgeBox2dFixtureShapeType } from "../../../enums/IgeBox2dFixtureShapeType.js";
 import { isClient } from "../../../engine/clientServer.js";
@@ -40,7 +40,7 @@ export class Ore extends IgeEntityBox2d {
         }
         if (isClient) {
             this.texture(ige.textures.get("ore1"));
-            this.addComponent("animation", IgeAnimationComponent);
+            this.addComponent("animation", IgeTextureAnimationComponent);
             const animation = this.components.animation;
             animation.define("ore", [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16], 25, -1);
             animation.start("ore");

@@ -3,7 +3,7 @@ import { IgeSceneGraph } from "@/engine/core/IgeSceneGraph";
 import { IgeScene2d } from "@/engine/core/IgeScene2d";
 import { IgeEntity } from "@/engine/core/IgeEntity";
 import { IgeSpriteSheet } from "@/engine/core/IgeSpriteSheet";
-import { IgeAnimationComponent } from "@/engine/components/IgeAnimationComponent";
+import { IgeTextureAnimationComponent } from "@/engine/components/IgeTextureAnimationComponent";
 
 export class Level1 extends IgeSceneGraph {
 	classId = "Level1";
@@ -55,7 +55,7 @@ export class Level1 extends IgeSceneGraph {
 		// that cell-id based frames will animate correctly
 		const sprite3 = new IgeEntity()
 			.id("sprite3")
-			.addComponent("animation", IgeAnimationComponent)
+			.addComponent("animation", IgeTextureAnimationComponent)
 			.depth(1)
 			// Assign the sprite sheet texture to the entity.
 			// Notice we are using the gameTexture[1] instead of the
@@ -76,8 +76,8 @@ export class Level1 extends IgeSceneGraph {
 			.translateTo(100, 0, 0);
 
 
-		(sprite3.components.animation as IgeAnimationComponent).define("test", ["panel", "table", null], 1, -1, true);
-		(sprite3.components.animation as IgeAnimationComponent).select("test");
+		(sprite3.components.animation as IgeTextureAnimationComponent).define("test", ["panel", "table", null], 1, -1, true);
+		(sprite3.components.animation as IgeTextureAnimationComponent).select("test");
 		sprite3.mount(baseScene);
 
 		// Create a new separate texture from the cell of one of the sprite sheets!

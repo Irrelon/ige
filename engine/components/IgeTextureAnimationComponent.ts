@@ -2,13 +2,13 @@ import { ige } from "@/engine/instance";
 import { IgeComponent } from "@/engine/core/IgeComponent";
 import { IgeEntity } from "@/engine/core/IgeEntity";
 import type { IgeCanvasRenderingContext2d } from "@/types/IgeCanvasRenderingContext2d";
-import type { IgeAnimation } from "@/types/IgeAnimation";
+import type { IgeTextureAnimation } from "@/types/IgeTextureAnimation";
 import { IgeBehaviourType } from "@/enums/IgeBehaviourType";
 
 export interface IgeAnimationStartOptions {
-	onComplete?: (anim: IgeAnimation) => void;
-	onLoop?: (anim: IgeAnimation) => void;
-	onStopped?: (anim: IgeAnimation) => void;
+	onComplete?: (anim: IgeTextureAnimation) => void;
+	onLoop?: (anim: IgeTextureAnimation) => void;
+	onStopped?: (anim: IgeTextureAnimation) => void;
 }
 
 /**
@@ -19,17 +19,17 @@ export interface IgeAnimationStartOptions {
  * @event loopComplete - The animation has completed a full cycle (shown all frames).
  * @event complete - The animation has completed all assigned loop cycles.
  */
-export class IgeAnimationComponent extends IgeComponent {
-	classId = "IgeAnimationComponent";
+export class IgeTextureAnimationComponent extends IgeComponent {
+	classId = "IgeTextureAnimationComponent";
 	componentId = "animation";
-	_anim?: IgeAnimation;
-	_anims: Record<string, IgeAnimation>;
+	_anim?: IgeTextureAnimation;
+	_anims: Record<string, IgeTextureAnimation>;
 	_animCount: number = 0;
 	_animId?: string;
 	_playing: boolean = false;
-	_completeCallback?: (anim: IgeAnimation) => void;
-	_loopCallback?: (anim: IgeAnimation) => void;
-	_stoppedCallback?: (anim: IgeAnimation) => void;
+	_completeCallback?: (anim: IgeTextureAnimation) => void;
+	_loopCallback?: (anim: IgeTextureAnimation) => void;
+	_stoppedCallback?: (anim: IgeTextureAnimation) => void;
 
 	/**
 	 * @constructor
@@ -63,7 +63,7 @@ export class IgeAnimationComponent extends IgeComponent {
 	 *     // an animation using frames 1, 2, 3 and 4, with an FPS of
 	 *     // 25 and looping forever (-1)
 	 *     var entity = new IgeEntity()
-	 *         .addComponent(IgeAnimationComponent)
+	 *         .addComponent(IgeTextureAnimationComponent)
 	 *         .animation.define('anim1', [1, 2, 3, 4], 25, -1);
 	 * @return {*}
 	 */
@@ -167,7 +167,7 @@ export class IgeAnimationComponent extends IgeComponent {
 	 *     // Create an entity, add the animation component and define
 	 *     // an animation with an FPS of 25
 	 *     var entity = new IgeEntity()
-	 *         .addComponent(IgeAnimationComponent)
+	 *         .addComponent(IgeTextureAnimationComponent)
 	 *         .animation.define('anim1', [1, 2, 3, 4], 25, -1);
 	 *
 	 *     // Change the FPS to 12
@@ -195,7 +195,7 @@ export class IgeAnimationComponent extends IgeComponent {
 	 *     // Create an entity, add the animation component and define
 	 *     // a couple of animations with an FPS of 25
 	 *     var entity = new IgeEntity()
-	 *         .addComponent(IgeAnimationComponent)
+	 *         .addComponent(IgeTextureAnimationComponent)
 	 *         .animation.define('anim1', [1, 2, 3, 4], 25, -1);
 	 *         .animation.define('anim2', [5, 6, 7, 8], 25, -1);
 	 *
@@ -233,7 +233,7 @@ export class IgeAnimationComponent extends IgeComponent {
 	 *     // Create an entity, add the animation component, define
 	 *     // an animation and then start it
 	 *     var entity = new IgeEntity()
-	 *         .addComponent(IgeAnimationComponent)
+	 *         .addComponent(IgeTextureAnimationComponent)
 	 *         .animation.define('anim1', [1, 2, 3, 4], 25, -1);
 	 *
 	 *     entity.animation.start('anim1');
@@ -242,7 +242,7 @@ export class IgeAnimationComponent extends IgeComponent {
 	 *     // Create an entity, add the animation component, define
 	 *     // an animation and then start it
 	 *     var entity = new IgeEntity()
-	 *         .addComponent(IgeAnimationComponent)
+	 *         .addComponent(IgeTextureAnimationComponent)
 	 *         .animation.define('anim1', [1, 2, 3, 4], 25, -1);
 	 *
 	 *     // In each animation callback...
@@ -266,7 +266,7 @@ export class IgeAnimationComponent extends IgeComponent {
 	 *     // Create an entity, add the animation component, define
 	 *     // an animation and then start it
 	 *     var entity = new IgeEntity()
-	 *         .addComponent(IgeAnimationComponent)
+	 *         .addComponent(IgeTextureAnimationComponent)
 	 *         .animation.define('anim1', [1, 2, 3, 4], 25, -1);
 	 *
 	 *     // In each animation callback...
@@ -334,7 +334,7 @@ export class IgeAnimationComponent extends IgeComponent {
 	 *     // Create an entity, add the animation component, define
 	 *     // an animation and then select it
 	 *     var entity = new IgeEntity()
-	 *         .addComponent(IgeAnimationComponent)
+	 *         .addComponent(IgeTextureAnimationComponent)
 	 *         .animation.define('anim1', [1, 2, 3, 4], 25, -1);
 	 *
 	 *     entity.animation.select('anim1');
@@ -361,7 +361,7 @@ export class IgeAnimationComponent extends IgeComponent {
 	 */
 	stop = () => {
 		if (this._stoppedCallback) {
-			this._stoppedCallback(this._anim as IgeAnimation);
+			this._stoppedCallback(this._anim as IgeTextureAnimation);
 		}
 
 		this.emit("stopped", this._anim);

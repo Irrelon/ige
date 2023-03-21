@@ -1,9 +1,21 @@
 import { IgeEntity } from "../../core/IgeEntity";
 import { IgeComponent } from "../../core/IgeComponent";
 import { IgeEntityBehaviourMethod } from "@/types/IgeEntityBehaviour";
+/**
+ * This component should be mounted to a parent entity such as an IgeScene2d but can
+ * be mounted to any instance that extends IgeEntity.
+ *
+ * The children of the entity this component is added to are tracked and checked to
+ * ensure they are still inside the visible area of any viewport. If not they are
+ * unmounted until they come back into view and are then mounted again.
+ */
 export declare class IgeEntityManager extends IgeComponent {
     classId: string;
     componentId: string;
+    _mountQueue: IgeEntity[];
+    _unMountQueue: IgeEntity[];
+    _maxMountsPerOp: number;
+    _maxUnMountsPerOp: number;
     constructor(entity: IgeEntity, options?: any);
     /**
      * Called each update frame from the component parent and calls various private

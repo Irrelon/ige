@@ -1,4 +1,4 @@
-export interface IgeAnimation {
+export interface IgeTextureAnimation {
 	loop: number;
 	currentDelta: number;
 	currentLoop: number;

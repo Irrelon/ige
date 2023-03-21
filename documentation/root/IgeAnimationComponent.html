@@ -6,8 +6,8 @@
 </head>
 <body>
 	<div class="page">
-<h2>IgeAnimationComponent <span>CLASS</span></h2>
-<p>Declared in <a href="../../engine/components/IgeAnimationComponent.js">IgeAnimationComponent.js</a></p>
+<h2>IgeTextureAnimationComponent <span>CLASS</span></h2>
+<p>Declared in <a href="../../engine/components/IgeTextureAnimationComponent.js">IgeTextureAnimationComponent.js</a></p>
 <div class="itemBox">
 	<div class="header">Description</div>
 	<div class="content">The animation component class. Handles defining and controlling frame-based animations based on cells from a texture.</div>
@@ -43,7 +43,7 @@
 // an animation using frames 1, 2, 3 and 4, with an FPS of
 // 25 and looping forever (-1)
 var entity = new IgeEntity()
-    .addComponent(IgeAnimationComponent)
+    .addComponent(IgeTextureAnimationComponent)
     .animation.define('anim1', [1, 2, 3, 4], 25, -1);
 </code></pre>
 </div>
@@ -85,7 +85,7 @@ var entity = new IgeEntity()
 <pre><code>// Create an entity, add the animation component and define
 // an animation with an FPS of 25
 var entity = new IgeEntity()
-    .addComponent(IgeAnimationComponent)
+    .addComponent(IgeTextureAnimationComponent)
     .animation.define('anim1', [1, 2, 3, 4], 25, -1);
 
 // Change the FPS to 12
@@ -110,7 +110,7 @@ entity.animation.setFps('anim1', 12);
 <pre><code>// Create an entity, add the animation component and define
 // a couple of animations with an FPS of 25
 var entity = new IgeEntity()
-    .addComponent(IgeAnimationComponent)
+    .addComponent(IgeTextureAnimationComponent)
     .animation.define('anim1', [1, 2, 3, 4], 25, -1);
     .animation.define('anim2', [5, 6, 7, 8], 25, -1);
 
@@ -146,7 +146,7 @@ entity.animation.setAllFps(12);
 <pre><code>// Create an entity, add the animation component, define
 // an animation and then start it
 var entity = new IgeEntity()
-    .addComponent(IgeAnimationComponent)
+    .addComponent(IgeTextureAnimationComponent)
     .animation.define('anim1', [1, 2, 3, 4], 25, -1);
 
 entity.animation.start('anim1');
@@ -160,7 +160,7 @@ entity.animation.start('anim1');
 <pre><code>// Create an entity, add the animation component, define
 // an animation and then start it
 var entity = new IgeEntity()
-    .addComponent(IgeAnimationComponent)
+    .addComponent(IgeTextureAnimationComponent)
     .animation.define('anim1', [1, 2, 3, 4], 25, -1);
 
 // In each animation callback...
@@ -189,7 +189,7 @@ entity.animation.start('anim1', {
 <pre><code>// Create an entity, add the animation component, define
 // an animation and then start it
 var entity = new IgeEntity()
-    .addComponent(IgeAnimationComponent)
+    .addComponent(IgeTextureAnimationComponent)
     .animation.define('anim1', [1, 2, 3, 4], 25, -1);
 
 // In each animation callback...
@@ -234,7 +234,7 @@ entity.animation.start('anim1');
 <pre><code>// Create an entity, add the animation component, define
 // an animation and then select it
 var entity = new IgeEntity()
-    .addComponent(IgeAnimationComponent)
+    .addComponent(IgeTextureAnimationComponent)
     .animation.define('anim1', [1, 2, 3, 4], 25, -1);
 
 entity.animation.select('anim1');

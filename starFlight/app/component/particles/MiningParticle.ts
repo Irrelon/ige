@@ -17,7 +17,7 @@ export class MiningParticle extends IgeParticle {
 			.layer(1)
 			.category("MiningParticle");
 
-		/*self.addComponent(IgeAnimationComponent);
+		/*self.addComponent(IgeTextureAnimationComponent);
 		 self.animation
 		 .define('smoke', self.animation.generateFrameArray(32, 71), 25, -1)
 		 .cell(1);*/

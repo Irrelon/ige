@@ -3,11 +3,25 @@ import { arrPull } from "../../utils.js";
 import { IgeComponent } from "../../core/IgeComponent.js";
 import { IgeMountMode } from "../../../enums/IgeMountMode.js";
 import { IgeBehaviourType } from "../../../enums/IgeBehaviourType.js";
+/**
+ * This component should be mounted to a parent entity such as an IgeScene2d but can
+ * be mounted to any instance that extends IgeEntity.
+ *
+ * The children of the entity this component is added to are tracked and checked to
+ * ensure they are still inside the visible area of any viewport. If not they are
+ * unmounted until they come back into view and are then mounted again.
+ */
 export class IgeEntityManager extends IgeComponent {
     constructor(entity, options) {
         super(entity, options);
         this.classId = "IgeEntityManager";
         this.componentId = "entityManager";
+        // Create queue arrays that will store entities waiting to
+        // be mounted or unmounted
+        this._mountQueue = [];
+        this._unMountQueue = [];
+        this._maxMountsPerOp = 0;
+        this._maxUnMountsPerOp = 0;
         /**
          * Called each update frame from the component parent and calls various private
          * methods to ensure that entities that should be mounted are mounted and those
@@ -15,9 +29,8 @@ export class IgeEntityManager extends IgeComponent {
          * @private
          */
         this._updateBehaviour = () => {
-            var _a;
             // Draw visible area rect
-            const rect = (_a = ige.engine._currentViewport) === null || _a === void 0 ? void 0 : _a.viewArea();
+            //const rect = ige.engine._currentViewport?.viewArea();
             /*new IgeEntity()
                 .id('visArea')
                 .texture(this.gameTexture.simpleBox)
@@ -27,12 +40,10 @@ export class IgeEntityManager extends IgeComponent {
                 .translateTo(rect.x + (rect.width / 2), rect.y + (rect.height / 2), 0)
                 .height(rect.height)
                 .width(rect.width);*/
-            // Get our instance back
-            const self = this.entityManager;
-            self._updateOrphans();
-            self._updateChildren();
-            self._processMountQueue();
-            self._processUnMountQueue();
+            this._updateOrphans();
+            this._updateChildren();
+            this._processMountQueue();
+            this._processUnMountQueue();
         };
         /**
          * Checks all the mounted entities of our component parent are still supposed
@@ -41,21 +52,25 @@ export class IgeEntityManager extends IgeComponent {
          * @private
          */
         this._updateOrphans = () => {
-            let arr = this._entity._children, arrCount = arr.length, viewportArr = ige._children, vpCount = viewportArr.length, item, itemAabb, vpIndex, inVisibleArea;
+            const arr = this._entity._children;
+            const viewportArr = ige.engine._children;
+            const vpCount = viewportArr.length;
+            let arrCount = arr.length;
             while (arrCount--) {
-                item = arr[arrCount];
+                const item = arr[arrCount];
                 if (item._managed) {
                     if (item.aabb) {
+                        let itemAabb;
                         if (item._renderMode === 1 || (item._parent && item._parent._mountMode === IgeMountMode.iso)) {
                             itemAabb = item.bounds3dPolygon().aabb();
                         }
                         else {
                             itemAabb = item.aabb();
                         }
-                        inVisibleArea = false;
+                        let inVisibleArea = false;
                         // Check the entity to see if its bounds are "inside" any
                         // viewport's visible area
-                        for (vpIndex = 0; vpIndex < vpCount; vpIndex++) {
+                        for (let vpIndex = 0; vpIndex < vpCount; vpIndex++) {
                             if (viewportArr[vpIndex].viewArea().intersects(itemAabb)) {
                                 inVisibleArea = true;
                                 break;
@@ -90,9 +105,10 @@ export class IgeEntityManager extends IgeComponent {
          * @private
          */
         this._processMountQueue = () => {
-            let arr = this._mountQueue, arrCount = arr.length, item;
+            const arr = this._mountQueue;
+            let arrCount = arr.length;
             while (arrCount--) {
-                item = arr[arrCount];
+                const item = arr[arrCount];
                 arrPull(this._entity._orphans, item);
                 item.mount(this._entity);
             }
@@ -103,24 +119,19 @@ export class IgeEntityManager extends IgeComponent {
          * @private
          */
         this._processUnMountQueue = () => {
-            let arr = this._unMountQueue, arrCount = arr.length, item;
+            const arr = this._unMountQueue;
+            let arrCount = arr.length;
             while (arrCount--) {
-                item = arr[arrCount];
+                const item = arr[arrCount];
                 item.unMount();
                 this._entity._orphans.push(item);
             }
             this._unMountQueue = [];
         };
-        // Create queue arrays that will store entities waiting to
-        // be mounted or unmounted
-        this._mountQueue = [];
-        this._unMountQueue = [];
-        this._maxMountsPerOp = 0;
-        this._maxUnMountsPerOp = 0;
         // Create the _orphans array on the entity
         entity._orphans = [];
         // Set a method (behaviour) that will be called on every update
-        entity.addBehaviour(IgeBehaviourType.preUpdate, "entManager", this._updateBehaviour);
+        entity.addBehaviour(IgeBehaviourType.preUpdate, "entityManager", this._updateBehaviour);
     }
     /**
      * Checks all the un-mounted entities of our component parent to see if they are
@@ -128,21 +139,25 @@ export class IgeEntityManager extends IgeComponent {
      * @private
      */
     _updateChildren() {
-        let arr = this._entity._orphans, arrCount = arr.length, viewportArr = ige._children, vpCount = viewportArr.length, item, itemAabb, vpIndex, inVisibleArea;
+        const arr = this._entity._orphans;
+        const viewportArr = ige.engine._children;
+        const vpCount = viewportArr.length;
+        let arrCount = arr.length;
         while (arrCount--) {
-            item = arr[arrCount];
+            const item = arr[arrCount];
             if (item._managed) {
                 if (item.aabb) {
+                    let itemAabb;
                     if (item._renderMode === 1 || (item._parent && item._parent._mountMode === IgeMountMode.iso)) {
                         itemAabb = item.bounds3dPolygon().aabb();
                     }
                     else {
                         itemAabb = item.aabb();
                     }
-                    inVisibleArea = false;
+                    let inVisibleArea = false;
                     // Check the entity to see if its bounds are "inside" any
                     // viewport's visible area
-                    for (vpIndex = 0; vpIndex < vpCount; vpIndex++) {
+                    for (let vpIndex = 0; vpIndex < vpCount; vpIndex++) {
                         if (viewportArr[vpIndex].viewArea().intersects(itemAabb)) {
                             inVisibleArea = true;
                             break;

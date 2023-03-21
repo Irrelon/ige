@@ -9,7 +9,7 @@ import { IgeBehaviourType } from "../../enums/IgeBehaviourType.js";
  * @event loopComplete - The animation has completed a full cycle (shown all frames).
  * @event complete - The animation has completed all assigned loop cycles.
  */
-export class IgeAnimationComponent extends IgeComponent {
+export class IgeTextureAnimationComponent extends IgeComponent {
     /**
      * @constructor
      * @param {Object} entity The parent object that this component is being added to.
@@ -17,7 +17,7 @@ export class IgeAnimationComponent extends IgeComponent {
      */
     constructor(entity, options) {
         super(entity, options);
-        this.classId = "IgeAnimationComponent";
+        this.classId = "IgeTextureAnimationComponent";
         this.componentId = "animation";
         this._animCount = 0;
         this._playing = false;
@@ -39,7 +39,7 @@ export class IgeAnimationComponent extends IgeComponent {
          *     // an animation using frames 1, 2, 3 and 4, with an FPS of
          *     // 25 and looping forever (-1)
          *     var entity = new IgeEntity()
-         *         .addComponent(IgeAnimationComponent)
+         *         .addComponent(IgeTextureAnimationComponent)
          *         .animation.define('anim1', [1, 2, 3, 4], 25, -1);
          * @return {*}
          */
@@ -131,7 +131,7 @@ export class IgeAnimationComponent extends IgeComponent {
          *     // Create an entity, add the animation component and define
          *     // an animation with an FPS of 25
          *     var entity = new IgeEntity()
-         *         .addComponent(IgeAnimationComponent)
+         *         .addComponent(IgeTextureAnimationComponent)
          *         .animation.define('anim1', [1, 2, 3, 4], 25, -1);
          *
          *     // Change the FPS to 12
@@ -156,7 +156,7 @@ export class IgeAnimationComponent extends IgeComponent {
          *     // Create an entity, add the animation component and define
          *     // a couple of animations with an FPS of 25
          *     var entity = new IgeEntity()
-         *         .addComponent(IgeAnimationComponent)
+         *         .addComponent(IgeTextureAnimationComponent)
          *         .animation.define('anim1', [1, 2, 3, 4], 25, -1);
          *         .animation.define('anim2', [5, 6, 7, 8], 25, -1);
          *
@@ -191,7 +191,7 @@ export class IgeAnimationComponent extends IgeComponent {
          *     // Create an entity, add the animation component, define
          *     // an animation and then start it
          *     var entity = new IgeEntity()
-         *         .addComponent(IgeAnimationComponent)
+         *         .addComponent(IgeTextureAnimationComponent)
          *         .animation.define('anim1', [1, 2, 3, 4], 25, -1);
          *
          *     entity.animation.start('anim1');
@@ -200,7 +200,7 @@ export class IgeAnimationComponent extends IgeComponent {
          *     // Create an entity, add the animation component, define
          *     // an animation and then start it
          *     var entity = new IgeEntity()
-         *         .addComponent(IgeAnimationComponent)
+         *         .addComponent(IgeTextureAnimationComponent)
          *         .animation.define('anim1', [1, 2, 3, 4], 25, -1);
          *
          *     // In each animation callback...
@@ -224,7 +224,7 @@ export class IgeAnimationComponent extends IgeComponent {
          *     // Create an entity, add the animation component, define
          *     // an animation and then start it
          *     var entity = new IgeEntity()
-         *         .addComponent(IgeAnimationComponent)
+         *         .addComponent(IgeTextureAnimationComponent)
          *         .animation.define('anim1', [1, 2, 3, 4], 25, -1);
          *
          *     // In each animation callback...
@@ -287,7 +287,7 @@ export class IgeAnimationComponent extends IgeComponent {
          *     // Create an entity, add the animation component, define
          *     // an animation and then select it
          *     var entity = new IgeEntity()
-         *         .addComponent(IgeAnimationComponent)
+         *         .addComponent(IgeTextureAnimationComponent)
          *         .animation.define('anim1', [1, 2, 3, 4], 25, -1);
          *
          *     entity.animation.select('anim1');
