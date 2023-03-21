@@ -853,26 +853,6 @@ export class IgeObject extends IgeEventingClass {
         }
         return false;
     }
-    /**
-     * Gets / sets the cache flag that determines if the entity's
-     * texture rendering output should be stored on an off-screen
-     * canvas instead of calling the texture.render() method each
-     * tick. Useful for expensive texture calls such as rendering
-     * fonts etc. If enabled, this will automatically disable advanced
-     * composite caching on this entity with a call to
-     * compositeCache(false).
-     * @param {Boolean=} val True to enable caching, false to
-     * disable caching.
-     * @param {Boolean} propagateToChildren If true, calls cache()
-     * on each child and all their children with the same `val`.
-     * @example #Enable entity caching
-     *     entity.cache(true);
-     * @example #Disable entity caching
-     *     entity.cache(false);
-     * @example #Get caching flag value
-     *     var val = entity.cache();
-     * @return {*}
-     */
     cache(val, propagateToChildren = false) {
         if (val === undefined) {
             return this._cache;
@@ -909,24 +889,6 @@ export class IgeObject extends IgeEventingClass {
         }
         return this;
     }
-    /**
-     * Gets / sets composite caching. Composite caching draws this entity
-     * and all of its children (and their children etc.) to a single
-     * off-screen canvas so that the entity does not need to be redrawn with
-     * all its children every tick. For composite entities where little
-     * change occurs this will massively increase rendering performance.
-     * If enabled, this will automatically disable simple caching on this
-     * entity with a call to cache(false).
-     * @param {Boolean=} val
-     * @param propagateToChildren
-     * @example #Enable entity composite caching
-     *     entity.compositeCache(true);
-     * @example #Disable entity composite caching
-     *     entity.compositeCache(false);
-     * @example #Get composite caching flag value
-     *     var val = entity.cache();
-     * @return {*}
-     */
     compositeCache(val, propagateToChildren = false) {
         if (!isClient) {
             return this;

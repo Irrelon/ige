@@ -41,6 +41,7 @@ export declare class IgeObject extends IgeEventingClass implements IgeCanRegiste
     _transformChanged: boolean;
     _tileWidth: number;
     _tileHeight: number;
+    _orphans?: IgeObject[];
     _specialProp: string[];
     _streamMode?: IgeStreamMode;
     _streamRoomId?: string;
@@ -699,7 +700,8 @@ export declare class IgeObject extends IgeEventingClass implements IgeCanRegiste
      *     var val = entity.cache();
      * @return {*}
      */
-    cache(val?: boolean, propagateToChildren?: boolean): boolean | this;
+    cache(val: boolean, propagateToChildren?: boolean): this;
+    cache(): boolean;
     /**
      * Gets / sets composite caching. Composite caching draws this entity
      * and all of its children (and their children etc.) to a single
@@ -718,7 +720,8 @@ export declare class IgeObject extends IgeEventingClass implements IgeCanRegiste
      *     var val = entity.cache();
      * @return {*}
      */
-    compositeCache(val?: boolean, propagateToChildren?: boolean): boolean | this;
+    compositeCache(val: boolean, propagateToChildren?: boolean): this;
+    compositeCache(): boolean;
     /**
      * Gets / sets the cache dirty flag. If set to true this will
      * instruct the entity to re-draw its cached image from the

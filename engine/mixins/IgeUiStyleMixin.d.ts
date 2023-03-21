@@ -50,7 +50,7 @@ export declare const WithUiStyleMixin: <BaseClassType extends Mixin<IgeObject>>(
          * @param {CSSColor, CanvasGradient, CanvasPattern=} color
          * @return {*} Returns this when setting the value or the current value if none is specified.
          */
-        color(color: string | CanvasGradient | CanvasPattern): string | CanvasPattern | any | CanvasGradient;
+        color(color: string | CanvasGradient | CanvasPattern): string | CanvasPattern | CanvasGradient | any;
         /**
          * Sets the current background texture and the repeatType
          * to determine in which axis the image should be repeated.
@@ -71,7 +71,7 @@ export declare const WithUiStyleMixin: <BaseClassType extends Mixin<IgeObject>>(
          * @param {CSSColor, CanvasGradient, CanvasPattern=} color
          * @return {*} Returns this when setting the value or the current value if none is specified.
          */
-        backgroundColor(color: string | CanvasGradient | CanvasPattern): string | CanvasPattern | any | CanvasGradient | undefined;
+        backgroundColor(color: string | CanvasGradient | CanvasPattern): string | CanvasPattern | CanvasGradient | any | undefined;
         /**
          * Gets / sets the position to start rendering the background image at.
          * @param {Number=} x
@@ -124,6 +124,7 @@ export declare const WithUiStyleMixin: <BaseClassType extends Mixin<IgeObject>>(
         _transformChanged: boolean;
         _tileWidth: number;
         _tileHeight: number;
+        _orphans?: IgeObject[] | undefined;
         _specialProp: string[];
         _streamMode?: import("../../enums/IgeStreamMode").IgeStreamMode | undefined;
         _streamRoomId?: string | undefined;
@@ -281,8 +282,10 @@ export declare const WithUiStyleMixin: <BaseClassType extends Mixin<IgeObject>>(
         addBehaviour<ParentType extends IgeObject = IgeObject>(type: import("../../enums/IgeBehaviourType").IgeBehaviourType, id: string, behaviour: import("../../types/IgeEntityBehaviour").IgeEntityBehaviourMethod<ParentType>): any;
         removeBehaviour(type: import("../../enums/IgeBehaviourType").IgeBehaviourType, id: string): any | undefined;
         hasBehaviour(type: import("../../enums/IgeBehaviourType").IgeBehaviourType, id: string): boolean;
-        cache(val?: boolean | undefined, propagateToChildren?: boolean): boolean | any;
-        compositeCache(val?: boolean | undefined, propagateToChildren?: boolean): boolean | any;
+        cache(val: boolean, propagateToChildren?: boolean | undefined): any;
+        cache(): boolean;
+        compositeCache(val: boolean, propagateToChildren?: boolean | undefined): any;
+        compositeCache(): boolean;
         cacheDirty(val: boolean): any;
         cacheDirty(): boolean;
         registerNetworkClass(): void;

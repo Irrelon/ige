@@ -1,6 +1,6 @@
 import { IgeBaseClass } from "@/engine/core/IgeBaseClass";
 import { IgeEntity } from "@/engine/core/IgeEntity";
-import { GameEntityModuleDefinition, GameEntityModuleAudio, GameEntityModuleEffects } from "../../../types/GameEntityModuleDefinition";
+import { GameEntityModuleDefinition, GameEntityModuleAudio, GameEntityModuleEffects, GameEntityModuleStates } from "../../../types/GameEntityModuleDefinition";
 export declare class Module_Generic extends IgeBaseClass {
     classId: string;
     _definition: GameEntityModuleDefinition;
@@ -8,6 +8,7 @@ export declare class Module_Generic extends IgeBaseClass {
     _active: boolean;
     _target: IgeEntity | null;
     _action?: string;
+    _activeStartTime: number;
     _attachedTo: IgeEntity | null;
     constructor(definition: GameEntityModuleDefinition);
     enabled(val?: boolean): boolean | this;
@@ -17,8 +18,8 @@ export declare class Module_Generic extends IgeBaseClass {
      * @param val
      * @returns {*}
      */
-    attachedTo(val?: IgeEntity): this | IgeEntity | null;
-    target(val?: IgeEntity): this | IgeEntity | null;
+    attachedTo(val?: IgeEntity): IgeEntity | this | null;
+    target(val?: IgeEntity): IgeEntity | this | null;
     action(val?: string): string | this | undefined;
     /**
      * If any effects are in the module's definition under "effects"
@@ -38,8 +39,8 @@ export declare class Module_Generic extends IgeBaseClass {
      * @param {Object} states The current states and their values.
      * @param {Number} tickDelta The tick delta for this tick.
      */
-    resolve(states: any, tickDelta: any): void;
+    resolve(states: GameEntityModuleStates, tickDelta: number): void;
     complete(): void;
-    cooldown(): number;
+    cooldown(): boolean;
     canBeActive(): boolean;
 }

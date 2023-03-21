@@ -56,8 +56,8 @@ export declare class IgeUiTextBox extends IgeUiElement {
      * @param fontSheet
      * @return {*}
      */
-    fontSheet(fontSheet?: IgeFontSheet): this | IgeFontSheet | undefined;
-    font(val?: string | IgeFontSheet): string | this | IgeFontEntity | IgeFontSheet | undefined;
+    fontSheet(fontSheet?: IgeFontSheet): IgeFontSheet | this | undefined;
+    font(val?: string | IgeFontSheet): string | IgeFontSheet | this | IgeFontEntity | undefined;
     nativeFont(val?: string): string | this | IgeFontEntity | undefined;
     nativeStroke(val?: number): number | this | IgeFontEntity | undefined;
     nativeStrokeColor(val?: string): string | this | IgeFontEntity | undefined;

@@ -1,8 +1,10 @@
+import { GameEntityModuleStates } from "../types/GameEntityModuleDefinition";
+
 export function roundNumber (number: number, digits: number) {
 	return Number(number.toFixed(digits));
 }
 
-export function calculateModifierRatio (states, modifierPerSecond: number, min: number, max: number, tickDelta: number, stateId: string) {
+export function calculateModifierRatio (states: GameEntityModuleStates, modifierPerSecond: number, min: number, max: number, tickDelta: number, stateId: string) {
 	// Deal with small numbers by doing some maths
 	const calcMultiplier = 1;
 	modifierPerSecond *= calcMultiplier;

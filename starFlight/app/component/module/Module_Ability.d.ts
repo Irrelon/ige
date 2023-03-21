@@ -1,10 +1,35 @@
 import { Module_Generic } from "./Module_Generic";
-import { GameEntityModuleDefinition, GameEntityModuleStates } from "../../../types/GameEntityModuleDefinition";
+import { GameEntityModuleAudio, GameEntityModuleBaseCost, GameEntityModuleDefinition, GameEntityModuleEffects, GameEntityModuleInputOutput, GameEntityModuleStates, GameEntityModuleUsageCost } from "../../../types/GameEntityModuleDefinition";
+export interface GameEntityAbilityModuleDefinition extends GameEntityModuleDefinition {
+    _id: string;
+    type: string;
+    slotType: string[];
+    slotSize: 1;
+    action: string;
+    classId: string;
+    name: string;
+    abilityTitle: string;
+    damageIndex?: number;
+    usageCost: GameEntityModuleUsageCost;
+    input: GameEntityModuleInputOutput;
+    output: GameEntityModuleInputOutput;
+    state: GameEntityModuleStates;
+    range?: number;
+    attachTo: string[];
+    baseCost: GameEntityModuleBaseCost;
+    requiresTarget?: boolean;
+    enabled: boolean;
+    active: boolean;
+    activeDuration: number;
+    cooldownDuration: number;
+    effects?: GameEntityModuleEffects;
+    audio?: GameEntityModuleAudio;
+}
 export declare class Module_Ability extends Module_Generic {
     classId: string;
     _cooldown: boolean;
-    _activeStartTime: number;
-    constructor(definition: GameEntityModuleDefinition);
+    _cooldownStartTime: number;
+    constructor(definition: GameEntityAbilityModuleDefinition);
     active(val: boolean, states: GameEntityModuleStates): this;
     active(): boolean;
     /**
@@ -16,7 +41,7 @@ export declare class Module_Ability extends Module_Generic {
      * @returns {boolean} If true, allows the active flag to become
      * true. If false, denies it.
      */
-    canBeActive(states: GameEntityModuleStates): any;
+    canBeActive(states: GameEntityModuleStates): boolean;
     /**
      * Determines if the active flag can transition from true
      * to false. This is useful for checking post-flight conditions
@@ -46,7 +71,8 @@ export declare class Module_Ability extends Module_Generic {
      * @param {Boolean=} val The boolean value to set.
      * @returns {*}
      */
-    cooldown(val: any): boolean | this;
+    cooldown(val: boolean): this;
+    cooldown(): boolean;
     /**
      * Takes the states in the module's definition for input and output
      * and based on the tickDelta, calculates the amount of input and

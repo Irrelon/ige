@@ -7,7 +7,7 @@ import { IgeAudioEntity } from "@/engine/audio";
 import {
 	GameEntityModuleDefinition, GameEntityModuleAudio,
 	GameEntityModuleEffectAction,
-	GameEntityModuleEffects
+	GameEntityModuleEffects, GameEntityModuleStates
 } from "../../../types/GameEntityModuleDefinition";
 
 export class Module_Generic extends IgeBaseClass {
@@ -17,6 +17,7 @@ export class Module_Generic extends IgeBaseClass {
 	_active: boolean = false;
 	_target: IgeEntity | null = null;
 	_action?: string;
+	_activeStartTime: number = 0;
 	_attachedTo: IgeEntity | null = null;// This might be GameEntity and game entity requires _effects defined on it, and effects need their own class
 
 	constructor (definition: GameEntityModuleDefinition) {
@@ -184,7 +185,7 @@ export class Module_Generic extends IgeBaseClass {
 	 * @param {Object} states The current states and their values.
 	 * @param {Number} tickDelta The tick delta for this tick.
 	 */
-	resolve (states, tickDelta) {
+	resolve (states: GameEntityModuleStates, tickDelta: number) {
 		let inputId,
 			currentRatio = 1,
 			outputId,
@@ -274,8 +275,8 @@ export class Module_Generic extends IgeBaseClass {
 
 	complete () {}
 
-	cooldown (): number {
-		return 0;
+	cooldown (): boolean {
+		return false;
 	}
 
 	canBeActive (): boolean {

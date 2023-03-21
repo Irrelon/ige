@@ -1,1 +1,1 @@
-export declare const Scene: () => JSX.Element;
+export declare const Scene: () => any;

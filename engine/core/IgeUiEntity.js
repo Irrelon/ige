@@ -355,13 +355,6 @@ export class IgeUiEntity extends IgeEntity {
         }
         return this._uiRight;
     }
-    /**
-     * Gets / sets the viewport's x position relative to the center of
-     * the entity parent.
-     * @param {Number} px
-     * @param {Boolean=} noUpdate
-     * @return {Number}
-     */
     center(px, noUpdate = false) {
         if (px !== undefined) {
             if (px === null) {

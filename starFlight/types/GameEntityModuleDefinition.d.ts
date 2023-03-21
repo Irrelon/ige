@@ -29,29 +29,23 @@ export interface GameEntityModuleAudio {
 export interface GameEntityModuleEffects {
     onActive?: GameEntityModuleEffectAction[];
     onInactive?: GameEntityModuleEffectAction[];
+    onComplete?: GameEntityModuleEffectAction[];
 }
 export interface GameEntityModuleDefinition {
     _id: string;
     type: string;
     slotType: string[];
     slotSize: 1;
-    action?: string;
     classId: string;
     name: string;
-    abilityTitle?: string;
     damageIndex?: number;
-    usageCost?: GameEntityModuleUsageCost;
     input: GameEntityModuleInputOutput;
     output: GameEntityModuleInputOutput;
     state: GameEntityModuleStates;
-    range?: number;
     attachTo: string[];
     baseCost: GameEntityModuleBaseCost;
-    requiresTarget?: boolean;
     enabled: boolean;
     active: boolean;
-    activeDuration?: number;
-    cooldownDuration?: number;
     effects?: GameEntityModuleEffects;
     audio?: GameEntityModuleAudio;
 }

@@ -1,22 +1,181 @@
-import { isServer } from "@/engine/clientServer";
 import { ige } from "@/engine/instance";
+import { isServer } from "@/engine/clientServer";
 import { Module_Generic } from "./Module_Generic";
 import { IgeNetIoServerController } from "@/engine/network/server/IgeNetIoServerController";
-import { GameEntityModuleDefinition, GameEntityModuleStates } from "../../../types/GameEntityModuleDefinition";
+import {
+	GameEntityModuleAudio,
+	GameEntityModuleBaseCost,
+	GameEntityModuleDefinition,
+	GameEntityModuleEffects,
+	GameEntityModuleInputOutput,
+	GameEntityModuleStates,
+	GameEntityModuleUsageCost
+} from "../../../types/GameEntityModuleDefinition";
+
+export interface GameEntityAbilityModuleDefinition extends GameEntityModuleDefinition {
+	_id: string,
+	type: string,
+	slotType: string[],
+	slotSize: 1,
+	action: string,
+	classId: string,
+	name: string,
+	abilityTitle: string,
+	damageIndex?: number;
+	usageCost: GameEntityModuleUsageCost,
+	input: GameEntityModuleInputOutput,
+	output: GameEntityModuleInputOutput,
+	state: GameEntityModuleStates,
+	range?: number,
+	attachTo: string[],
+	baseCost: GameEntityModuleBaseCost,
+	requiresTarget?: boolean,
+	enabled: boolean,
+	active: boolean,
+	activeDuration: number,
+	cooldownDuration: number,
+	effects?: GameEntityModuleEffects;
+	audio?: GameEntityModuleAudio;
+}
+
+const abilities: GameEntityAbilityModuleDefinition[] = [
+	{
+		"_id": "521a36aa3559382638c4254a",
+		"type": "ability",
+		"slotType": [
+			"weapon",
+			"mining"
+		],
+		"slotSize": 1,
+		"action": "mine",
+		"classId": "Module_MiningLaser",
+		"name": "Mining Laser 1",
+		"abilityTitle": "MINE\nTARGET",
+		"usageCost": {
+			"energy": -40
+		},
+		"input": {},
+		"output": {},
+		"state": {},
+		"range": 200,
+		"attachTo": [
+			"ship"
+		],
+		"baseCost": {
+			"credits": 1000
+		},
+		"requiresTarget": true,
+		"enabled": true,
+		"active": false,
+		"activeDuration": 8000,
+		"cooldownDuration": 2000,
+		"effects": {
+			"onActive": [
+				{
+					"action": "create",
+					"classId": "MiningLaserEffect",
+					"mount": "frontScene",
+					"data": {}
+				}
+			],
+			"onInactive": [
+				{
+					"action": "destroy",
+					"classId": "MiningLaserEffect",
+					"mount": "frontScene",
+					"data": {}
+				}
+			]
+		},
+		"audio": {
+			"onActive": [
+				{
+					"action": "play",
+					"audioId": "miningLaser",
+					"for": "all",
+					"loop": true,
+					"position": "target",
+					"mount": "backScene"
+				}
+			],
+			"onInactive": [
+				{
+					"action": "stop",
+					"audioId": "miningLaser"
+				}
+			],
+			"onComplete": [
+				{
+					"action": "stop",
+					"audioId": "miningLaser"
+				},
+				{
+					"action": "play",
+					"audioId": "actionComplete",
+					"for": "owner",
+					"position": "ambient"
+				}
+			]
+		}
+	},
+	{
+		"_id": "521a36aa3559382638c4254g",
+		"type": "ability",
+		"slotType": [
+			"weapon"
+		],
+		"slotSize": 1,
+		"action": "damage",
+		"classId": "Module_Ability",
+		"name": "Directed Laser Cannon 1",
+		"abilityTitle": "LASER\nCANNON",
+		"usageCost": {
+			"energy": -10
+		},
+		"input": {},
+		"output": {
+			"$target": {
+				"integrity": -1
+			}
+		},
+		"state": {},
+		"range": 100,
+		"attachTo": [
+			"ship"
+		],
+		"baseCost": {
+			"credits": 1000
+		},
+		"requiresTarget": true,
+		"enabled": true,
+		"active": false,
+		"activeDuration": 8000,
+		"cooldownDuration": 2000,
+		"effects": {
+			"onActive": [
+				{
+					"action": "create",
+					"classId": "LaserEffect",
+					"mount": "frontScene",
+					"data": {}
+				}
+			]
+		}
+	}];
 
 export class Module_Ability extends Module_Generic {
 	classId = "Module_Ability";
 	_cooldown: boolean = false;
-	_activeStartTime: number;
+	_cooldownStartTime: number = 0;
 
-	constructor (definition: GameEntityModuleDefinition) {
+	constructor (definition: GameEntityAbilityModuleDefinition) {
 		super(definition);
 
 		this._cooldown = false;
 	}
 
-	active (val: boolean, states: GameEntityModuleStates): this;
-	active (): boolean;
+	active(val: boolean, states: GameEntityModuleStates): this;
+	active(): boolean;
 	active (val?: boolean, states?: GameEntityModuleStates) {
 		if (val !== undefined && states !== undefined) {
 			if (val && !this._active) {
@@ -42,13 +201,8 @@ export class Module_Ability extends Module_Generic {
 	 * @returns {boolean} If true, allows the active flag to become
 	 * true. If false, denies it.
 	 */
-	canBeActive (states: GameEntityModuleStates) {
-		// Check if the module definition has a custom method
-		if (this._definition.canBeActive) {
-			return (require(path.resolve("./app/data", this._definition.canBeActive)))(this, states, $ige);
-		}
-
-		return true;
+	canBeActive (states: GameEntityModuleStates): boolean {
+		return !this.cooldown() && (states.energy.val + this._definition.usageCost.energy) > 0;
 	}
 
 	/**
@@ -61,7 +215,7 @@ export class Module_Ability extends Module_Generic {
 	canBeInactive (states) {
 		// Check if the module definition has a custom method
 		if (this._definition.canBeInactive) {
-			return (require(path.resolve("./app/data", this._definition.canBeInactive)))(this, states, $ige);
+			return (require(path.resolve("./app/data", this._definition.canBeInactive)))(this, states, ige);
 		}
 
 		return true;
@@ -122,16 +276,18 @@ export class Module_Ability extends Module_Generic {
 	 * @param {Boolean=} val The boolean value to set.
 	 * @returns {*}
 	 */
-	cooldown (val) {
+	cooldown(val: boolean): this;
+	cooldown(): boolean;
+	cooldown (val?: boolean) {
 		if (val !== undefined) {
-			if (val === true && this._cooldown === false) {
+			if (val && !this._cooldown) {
 				if (!this._definition.cooldownDuration) {
 					// Do nothing, there is no cooldown duration so never
 					// enable cooldown period
 					return this;
 				}
 
-				this._cooldownStartTime = $ige.engine.currentTime();
+				this._cooldownStartTime = ige.engine.currentTime();
 			}
 
 			this._cooldown = val;
@@ -140,7 +296,7 @@ export class Module_Ability extends Module_Generic {
 
 		// Check if we should be cancelling cooldown
 		if (this._cooldown) {
-			if ($ige.engine.currentTime() - this._cooldownStartTime >= this._definition.cooldownDuration) {
+			if (ige.engine.currentTime() - this._cooldownStartTime >= this._definition.cooldownDuration) {
 				this._cooldown = false;
 			}
 		}

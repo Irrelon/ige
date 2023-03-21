@@ -10,6 +10,7 @@ export class Module_Generic extends IgeBaseClass {
         this._enabled = false;
         this._active = false;
         this._target = null;
+        this._activeStartTime = 0;
         this._attachedTo = null; // This might be GameEntity and game entity requires _effects defined on it, and effects need their own class
         this._definition = definition;
         // Apply the initial enabled value from the definition
@@ -212,7 +213,7 @@ export class Module_Generic extends IgeBaseClass {
     }
     complete() { }
     cooldown() {
-        return 0;
+        return false;
     }
     canBeActive() {
         return true;

@@ -526,6 +526,8 @@ export class IgeUiEntity extends IgeEntity {
 	 * @param {Boolean=} noUpdate
 	 * @return {Number}
 	 */
+	center (px: number | string, noUpdate?: boolean): this;
+	center (): number;
 	center (px?: number | string, noUpdate = false) {
 		if (px !== undefined) {
 			if (px === null) {

@@ -110,7 +110,8 @@ export declare class IgeUiEntity extends IgeEntity {
      * @param {Boolean=} noUpdate
      * @return {Number}
      */
-    center(px?: number | string, noUpdate?: boolean): number | this | undefined;
+    center(px: number | string, noUpdate?: boolean): this;
+    center(): number;
     /**
      * Gets / sets the entity's y position relative to the top of
      * the canvas.
