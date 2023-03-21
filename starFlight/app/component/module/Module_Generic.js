@@ -211,4 +211,10 @@ export class Module_Generic extends IgeBaseClass {
         }
     }
     complete() { }
+    cooldown() {
+        return 0;
+    }
+    canBeActive() {
+        return true;
+    }
 }

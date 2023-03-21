@@ -1,15 +1,15 @@
 import { IgeBaseClass } from "@/engine/core/IgeBaseClass";
 import { IgeEntity } from "@/engine/core/IgeEntity";
-import { GameEntityModule, GameEntityModuleAudio, GameEntityModuleEffects } from "../../../types/GameEntityModule";
+import { GameEntityModuleDefinition, GameEntityModuleAudio, GameEntityModuleEffects } from "../../../types/GameEntityModuleDefinition";
 export declare class Module_Generic extends IgeBaseClass {
     classId: string;
-    _definition: GameEntityModule;
+    _definition: GameEntityModuleDefinition;
     _enabled: boolean;
     _active: boolean;
     _target: IgeEntity | null;
     _action?: string;
     _attachedTo: IgeEntity | null;
-    constructor(definition: GameEntityModule);
+    constructor(definition: GameEntityModuleDefinition);
     enabled(val?: boolean): boolean | this;
     active(val?: boolean): boolean | this;
     /**
@@ -40,4 +40,6 @@ export declare class Module_Generic extends IgeBaseClass {
      */
     resolve(states: any, tickDelta: any): void;
     complete(): void;
+    cooldown(): number;
+    canBeActive(): boolean;
 }

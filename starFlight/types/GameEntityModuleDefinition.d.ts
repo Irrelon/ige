@@ -30,7 +30,7 @@ export interface GameEntityModuleEffects {
     onActive?: GameEntityModuleEffectAction[];
     onInactive?: GameEntityModuleEffectAction[];
 }
-export interface GameEntityModule {
+export interface GameEntityModuleDefinition {
     _id: string;
     type: string;
     slotType: string[];
@@ -39,7 +39,6 @@ export interface GameEntityModule {
     classId: string;
     name: string;
     abilityTitle?: string;
-    canBeActive?: string;
     damageIndex?: number;
     usageCost?: GameEntityModuleUsageCost;
     input: GameEntityModuleInputOutput;

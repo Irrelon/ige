@@ -37,7 +37,7 @@ export interface GameEntityModuleEffects {
 	onInactive?: GameEntityModuleEffectAction[];
 }
 
-export interface GameEntityModule {
+export interface GameEntityModuleDefinition {
 	_id: string,
 	type: string,
 	slotType: string[],
@@ -46,7 +46,6 @@ export interface GameEntityModule {
 	classId: string,
 	name: string,
 	abilityTitle?: string,
-	canBeActive?: string,
 	damageIndex?: number;
 	usageCost?: GameEntityModuleUsageCost,
 	input: GameEntityModuleInputOutput,
@@ -64,7 +63,7 @@ export interface GameEntityModule {
 	audio?: GameEntityModuleAudio;
 }
 
-const modules: GameEntityModule[] = [
+const modules: GameEntityModuleDefinition[] = [
 	{
 		"_id": "521a36aa3559382638c4254a",
 		"type": "ability",

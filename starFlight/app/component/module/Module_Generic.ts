@@ -5,21 +5,21 @@ import { IgeEntity } from "@/engine/core/IgeEntity";
 import { calculateModifierRatio, roundNumber } from "../../services";
 import { IgeAudioEntity } from "@/engine/audio";
 import {
-	GameEntityModule, GameEntityModuleAudio,
+	GameEntityModuleDefinition, GameEntityModuleAudio,
 	GameEntityModuleEffectAction,
 	GameEntityModuleEffects
-} from "../../../types/GameEntityModule";
+} from "../../../types/GameEntityModuleDefinition";
 
 export class Module_Generic extends IgeBaseClass {
 	classId = "Module_Generic";
-	_definition: GameEntityModule;
+	_definition: GameEntityModuleDefinition;
 	_enabled: boolean = false;
 	_active: boolean = false;
 	_target: IgeEntity | null = null;
 	_action?: string;
 	_attachedTo: IgeEntity | null = null;// This might be GameEntity and game entity requires _effects defined on it, and effects need their own class
 
-	constructor (definition: GameEntityModule) {
+	constructor (definition: GameEntityModuleDefinition) {
 		super();
 		this._definition = definition;
 
@@ -273,4 +273,12 @@ export class Module_Generic extends IgeBaseClass {
 	}
 
 	complete () {}
+
+	cooldown (): number {
+		return 0;
+	}
+
+	canBeActive (): boolean {
+		return true;
+	}
 }
