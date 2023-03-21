@@ -1,16 +1,16 @@
-var appCore = require('../../../ige');
+const appCore = require('../../../ige');
 
 require('./GameEntity');
 require('./particles/ThrustParticle');
 
 appCore.module('Ship', function ($ige, $game, $textures, GameEntity, IgePoly2d, IgePoint3d, IgeParticleEmitter, ThrustParticle) {
-	var Ship = GameEntity.extend({
+	const Ship = GameEntity.extend({
 		classId: 'Ship',
 		
 		init: function (publicGameData) {
 			GameEntity.prototype.init.call(this, publicGameData);
 			
-			var self = this;
+			const self = this;
 			
 			self.streamProperty('thrusting', false);
 			self.category('ship');
@@ -22,7 +22,7 @@ appCore.module('Ship', function ($ige, $game, $textures, GameEntity, IgePoly2d, 
 				.width(40)
 				.height(40);
 			
-			if ($ige.engine.box2d) {
+			if (ige.box2d) {
 				// Define the polygon for collision
 				self._definePhysics();
 			}
@@ -55,7 +55,7 @@ appCore.module('Ship', function ($ige, $game, $textures, GameEntity, IgePoly2d, 
 		
 		/* CEXCLUDE */
 		_definePhysics: function () {
-			var self = this,
+			let self = this,
 				fixDefs,
 				collisionPoly = new IgePoly2d()
 					.addPoint(0, -this._bounds2d.y2)
@@ -64,7 +64,7 @@ appCore.module('Ship', function ($ige, $game, $textures, GameEntity, IgePoly2d, 
 					.addPoint(-this._bounds2d.x2, this._bounds2d.y2 - 7);
 			
 			// Scale the polygon by the box2d scale ratio
-			collisionPoly.divide($ige.engine.box2d._scaleRatio);
+			collisionPoly.divide(ige.box2d._scaleRatio);
 			
 			// Now convert this polygon into an array of triangles
 			this.triangles = collisionPoly.triangulate();
@@ -73,7 +73,7 @@ appCore.module('Ship', function ($ige, $game, $textures, GameEntity, IgePoly2d, 
 			// based on the triangles
 			fixDefs = [];
 			
-			for (var i = 0; i < this.triangles.length; i++) {
+			for (let i = 0; i < this.triangles.length; i++) {
 				fixDefs.push({
 					density: 0.2,
 					friction: 1.0,

@@ -1,30 +1,26 @@
-var appCore = require('../../../ige');
+import { ige } from "@/engine/instance";
+import { isClient } from "@/engine/clientServer";
+import { IgeEntity } from "@/engine/core/IgeEntity";
 
-appCore.module('JumpGate', function ($ige, $textures, IgeEntity) {
-	var JumpGate = IgeEntity.extend({
-		classId: 'JumpGate',
-		
-		init: function (publicGameData) {
-			IgeEntity.prototype.init.call(this);
-			
-			var self = this;
-			
-			publicGameData = publicGameData || {};
-			self._publicGameData = publicGameData;
-			
-			self.layer(0)
-				.width(400)
-				.height(380);
-			
-			if ($ige.isClient) {
-				self.texture($textures.get(publicGameData.texture));
-			}
-		},
-		
-		streamCreateData: function () {
-			return this._publicGameData;
+export class JumpGate extends IgeEntity {
+	classId = "JumpGate";
+	_publicGameData: Record<string, any>;
+
+	constructor (publicGameData: Record<string, any> = {}) {
+		super();
+
+		this._publicGameData = publicGameData;
+
+		this.layer(0)
+			.width(400)
+			.height(380);
+
+		if (isClient) {
+			this.texture(ige.textures.get(publicGameData.texture));
 		}
-	});
-	
-	return JumpGate;
-});
+	}
+
+	streamCreateData () {
+		return this._publicGameData;
+	}
+}

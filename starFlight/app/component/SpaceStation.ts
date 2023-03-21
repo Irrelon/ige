@@ -2,6 +2,8 @@ import { ige } from "@/engine/instance";
 import { isClient, isServer } from "@/engine/clientServer";
 import { IgeVelocityComponent } from "@/engine/components/IgeVelocityComponent";
 import { IgeEntityBox2d } from "@/engine/components/physics/box2d/IgeEntityBox2d";
+import { IgeBox2dBodyType } from "@/enums/IgeBox2dBodyType";
+import { IgeBox2dFixtureShapeType } from "@/enums/IgeBox2dFixtureShapeType";
 
 export class SpaceStation extends IgeEntityBox2d {
 	classId = "SpaceStation";
@@ -21,10 +23,10 @@ export class SpaceStation extends IgeEntityBox2d {
 			this.addComponent("velocity", IgeVelocityComponent);
 		}
 
-		if (ige.engine.box2d) {
+		if (ige.box2d) {
 			// Create box2d body for this object
 			this.box2dBody({
-				type: "dynamic",
+				type: IgeBox2dBodyType.dynamic,
 				linearDamping: 0.0,
 				angularDamping: 0.5,
 				allowSleep: true,
@@ -37,7 +39,7 @@ export class SpaceStation extends IgeEntityBox2d {
 					friction: 1.0,
 					restitution: 0.2,
 					shape: {
-						type: "circle"
+						type: IgeBox2dFixtureShapeType.circle
 					}
 				}]
 			});

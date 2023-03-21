@@ -1,5 +1,6 @@
 import type { IgeBox2dFixtureDefShape } from "./IgeBox2dFixtureDefShape";
 export interface IgeBox2dFixtureDef {
+    isSensor?: boolean;
     density?: number;
     friction?: number;
     restitution?: number;

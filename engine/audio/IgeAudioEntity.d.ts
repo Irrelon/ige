@@ -4,10 +4,10 @@ import type { IgeCanvasRenderingContext2d } from "@/types/IgeCanvasRenderingCont
 export interface IgeAudioEntityPanner extends PannerOptions {
 }
 export interface IgeAudioEntityOptions {
-    started: boolean;
-    loop: boolean;
-    gain: number;
-    panner: IgeAudioEntityPanner;
+    started?: boolean;
+    loop?: boolean;
+    gain?: number;
+    panner?: IgeAudioEntityPanner;
     relativeTo?: IgeObject;
 }
 export declare class IgeAudioEntity extends IgeObject {

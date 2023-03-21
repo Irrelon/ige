@@ -148,7 +148,7 @@ export declare class IgeEntity extends IgeObject implements IgeCanRegisterById, 
      *     entity.backgroundPattern(texture, 'repeat', true, true);
      * @return {*}
      */
-    backgroundPattern(texture?: IgeTexture, repeat?: string, trackCamera?: boolean, isoTile?: boolean): this | IgeTexture | undefined;
+    backgroundPattern(texture?: IgeTexture, repeat?: string, trackCamera?: boolean, isoTile?: boolean): IgeTexture | this | undefined;
     smartBackground(): IgeSmartTexture | undefined;
     smartBackground(renderMethod?: IgeSmartTexture): this;
     /**
@@ -655,7 +655,7 @@ export declare class IgeEntity extends IgeObject implements IgeCanRegisterById, 
      *     });
      * @return {*}
      */
-    pointerMove: (callback?: IgeInputEvent) => this | IgeInputEvent | undefined;
+    pointerMove: (callback?: IgeInputEvent) => IgeInputEvent | this | undefined;
     /**
      * Gets / sets the callback that is fired when a mouse
      * over event is triggered.
@@ -734,7 +734,7 @@ export declare class IgeEntity extends IgeObject implements IgeCanRegisterById, 
      *     });
      * @return {*}
      */
-    pointerDown: (callback?: IgeInputEvent) => this | IgeInputEvent | undefined;
+    pointerDown: (callback?: IgeInputEvent) => IgeInputEvent | this | undefined;
     /**
      * Gets / sets the callback that is fired when a mouse
      * wheel event is triggered.
@@ -754,7 +754,7 @@ export declare class IgeEntity extends IgeObject implements IgeCanRegisterById, 
      *     });
      * @return {*}
      */
-    pointerWheel: (callback?: IgeInputEvent) => this | IgeInputEvent | undefined;
+    pointerWheel: (callback?: IgeInputEvent) => IgeInputEvent | this | undefined;
     /**
      * Removes the callback that is fired when a mouse
      * move event is triggered.

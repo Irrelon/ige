@@ -1,15 +1,15 @@
-var appCore = require('../../../ige'),
+const appCore = require('../../../ige'),
 	oreTypes = require('../data/oreTypes.json');
 
 require('./GameEntity');
 require('./Ore');
 
 appCore.module('Asteroid', function ($ige, $textures, $game, GameEntity, IgePoly2d, Ore) {
-	var Asteroid = GameEntity.extend({
+	const Asteroid = GameEntity.extend({
 		classId: 'Asteroid',
 		
 		init: function (publicGameData) {
-			var self = this,
+			let self = this,
 				amount,
 				i,
 				triangles,
@@ -47,7 +47,7 @@ appCore.module('Asteroid', function ($ige, $textures, $game, GameEntity, IgePoly
 				.width(publicGameData.size)
 				.height(publicGameData.size);
 			
-			if ($ige.engine.box2d) {
+			if (ige.box2d) {
 				// Define the polygon for collision
 				collisionPoly = new IgePoly2d()
 					.addPoint(0, -this._bounds2d.y2 * 0.7)
@@ -63,7 +63,7 @@ appCore.module('Asteroid', function ($ige, $textures, $game, GameEntity, IgePoly
 					.addPoint(-this._bounds2d.x2 * 0.25, -this._bounds2d.y2 * 0.75);
 				
 				// Scale the polygon by the box2d scale ratio
-				collisionPoly.divide($ige.engine.box2d._scaleRatio);
+				collisionPoly.divide(ige.box2d._scaleRatio);
 				
 				// Now convert this polygon into an array of triangles
 				triangles = collisionPoly.triangulate();
@@ -123,7 +123,7 @@ appCore.module('Asteroid', function ($ige, $textures, $game, GameEntity, IgePoly
 		},
 		
 		removeRandomOreType: function () {
-			var oreType;
+			let oreType;
 			
 			// TODO check that the ore we picked has any in "stock" on this asteroid
 			oreType = oreTypes[Math.round(Math.random() * (Object.keys(this._ore).length - 1))];
@@ -137,7 +137,7 @@ appCore.module('Asteroid', function ($ige, $textures, $game, GameEntity, IgePoly
 		
 		/* CEXCLUDE */
 		applyDamage: function (val) {
-			var previousWholeHealth = Math.floor(this._health),
+			let previousWholeHealth = Math.floor(this._health),
 				newWholeHealth;
 			
 			// Call parent class function
@@ -156,7 +156,7 @@ appCore.module('Asteroid', function ($ige, $textures, $game, GameEntity, IgePoly
 		
 		/* CEXCLUDE */
 		spawnMinedOre: function (oreType) {
-			var ore;
+			let ore;
 			
 			ore = new Ore({
 				type: oreType

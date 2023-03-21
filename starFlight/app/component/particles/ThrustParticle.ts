@@ -1,35 +1,30 @@
-var appCore = require('../../../../ige');
+import { ige } from "@/engine/instance";
+import { IgeParticle } from "@/engine/core/IgeParticle";
+import { IgeParticleEmitter } from "@/engine/core/IgeParticleEmitter";
+import { arrPull } from "@/engine/utils";
 
-appCore.module('ThrustParticle', function ($ige, $textures, IgeEntityBox2d, IgeVelocityComponent) {
-	var ThrustParticle = IgeEntityBox2d.extend({
-		classId: 'ThrustParticle',
-		
-		init: function (emitter) {
-			var self = this;
-			
-			self._emitter = emitter;
-			IgeEntityBox2d.prototype.init.call(this);
-			
-			// Setup the particle default values
-			self.addComponent(IgeVelocityComponent)
-				.texture($textures.get('explosions1'))
-				.cell(9)
-				.width(15)
-				.height(15)
-				.layer(2)
-				.depth(2)
-				.category('thrustParticle');
-		},
-		
-		destroy: function () {
-			// Remove ourselves from the emitter
-			if (this._emitter !== undefined) {
-				this._emitter._particles.pull(this);
-			}
-			
-			IgeEntityBox2d.prototype.destroy.call(this);
+export class ThrustParticle extends IgeParticle {
+	classId = "ThrustParticle";
+
+	constructor (emitter: IgeParticleEmitter) {
+		super(emitter);
+
+		// Setup the particle default values
+		this.texture(ige.textures.get("explosions1"))
+			.cell(9)
+			.width(15)
+			.height(15)
+			.layer(2)
+			.depth(2)
+			.category("thrustParticle");
+	}
+
+	destroy () {
+		// Remove ourselves from the emitter
+		if (this._emitter !== undefined) {
+			arrPull(this._emitter._particles, this);
 		}
-	});
-	
-	return ThrustParticle;
-});
+
+		return super.destroy();
+	}
+}

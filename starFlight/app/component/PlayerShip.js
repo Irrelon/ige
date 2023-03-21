@@ -1,14 +1,14 @@
 "use strict";
-var appCore = require('../../../ige');
+const appCore = require('../../../ige');
 require('./Ship');
 require('./Target');
 require('./Inventory');
 appCore.module('PlayerShip', function ($ige, $game, Ship, Target, Inventory) {
-    var PlayerShip = Ship.extend({
+    const PlayerShip = Ship.extend({
         classId: 'PlayerShip',
         init: function (publicGameData) {
             Ship.prototype.init.call(this, publicGameData);
-            var self = this;
+            const self = this;
             self.drawBounds(false);
             self.clientId(publicGameData.clientId);
             self._controls = [];
@@ -105,7 +105,7 @@ appCore.module('PlayerShip', function ($ige, $game, Ship, Target, Inventory) {
             }
         },
         _updatePhysics: function () {
-            var radians, thrustVector, thrusting = false;
+            let radians, thrustVector, thrusting = false;
             if (this._controlState.left && this._controlState.right) {
                 this._box2dBody.SetAngularVelocity(0);
             }
@@ -124,14 +124,14 @@ appCore.module('PlayerShip', function ($ige, $game, Ship, Target, Inventory) {
             }
             if (this._controlState.thrust) {
                 radians = this._rotate.z + Math.radians(-90);
-                thrustVector = new $ige.engine.box2d.b2Vec2(Math.cos(radians) * this._thrustPower, Math.sin(radians) * this._thrustPower);
+                thrustVector = new ige.box2d.b2Vec2(Math.cos(radians) * this._thrustPower, Math.sin(radians) * this._thrustPower);
                 this._box2dBody.ApplyForce(thrustVector, this._box2dBody.GetWorldCenter());
                 this._box2dBody.SetAwake(true);
                 thrusting = true;
             }
             if (this._controlState.reverse) {
                 radians = this._rotate.z + Math.radians(-270);
-                thrustVector = new $ige.engine.box2d.b2Vec2(Math.cos(radians) * this._reversePower, Math.sin(radians) * this._reversePower);
+                thrustVector = new ige.box2d.b2Vec2(Math.cos(radians) * this._reversePower, Math.sin(radians) * this._reversePower);
                 this._box2dBody.ApplyForce(thrustVector, this._box2dBody.GetWorldCenter());
                 this._box2dBody.SetAwake(true);
                 thrusting = true;
@@ -146,7 +146,7 @@ appCore.module('PlayerShip', function ($ige, $game, Ship, Target, Inventory) {
             }
         },
         _updateInputs: function () {
-            var arr = this._controls, arrCount = arr.length, arrIndex, control;
+            let arr = this._controls, arrCount = arr.length, arrIndex, control;
             for (arrIndex = 0; arrIndex < arrCount; arrIndex++) {
                 control = arr[arrIndex];
                 if ($ige.engine.input.actionState(control)) {

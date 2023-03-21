@@ -1,41 +1,36 @@
-var appCore = require('../../../../ige');
+import { IgeParticleEmitter } from "@/engine/core/IgeParticleEmitter";
+import { ige } from "@/engine/instance";
+import { IgeParticle } from "@/engine/core/IgeParticle";
+import { arrPull } from "@/engine/utils";
 
-appCore.module('MiningParticle', function ($ige, $textures, IgeEntityBox2d, IgeVelocityComponent) {
-	var MiningParticle = IgeEntityBox2d.extend({
-		classId: 'MiningParticle',
-		
-		init: function (emitter) {
-			var self = this;
-			
-			self._emitter = emitter;
-			IgeEntityBox2d.prototype.init.call(this);
-			
-			// Setup the particle default values
-			self.addComponent(IgeVelocityComponent)
-				.texture($textures.get('explosions1'))
-				.cell(39)
-				.width(15)
-				.height(15)
-				.layer(1)
-				.category('MiningParticle');
-			
-			/*self.addComponent(IgeAnimationComponent);
-			 self.animation
-			 .define('smoke', self.animation.generateFrameArray(32, 71), 25, -1)
-			 .cell(1);*/
-			
-			//self.animation.start('smoke');
-		},
-		
-		destroy: function () {
-			// Remove ourselves from the emitter
-			if (this._emitter !== undefined) {
-				this._emitter._particles.pull(this);
-			}
-			IgeEntityBox2d.prototype.destroy.call(this);
-			//this.animation.stop();
+export class MiningParticle extends IgeParticle {
+	classId = "MiningParticle";
+
+	constructor (emitter: IgeParticleEmitter) {
+		super(emitter);
+
+		// Setup the particle default values
+		this.texture(ige.textures.get("explosions1"))
+			.cell(39)
+			.width(15)
+			.height(15)
+			.layer(1)
+			.category("MiningParticle");
+
+		/*self.addComponent(IgeAnimationComponent);
+		 self.animation
+		 .define('smoke', self.animation.generateFrameArray(32, 71), 25, -1)
+		 .cell(1);*/
+
+		//self.animation.start('smoke');
+	}
+
+	destroy () {
+		// Remove ourselves from the emitter
+		if (this._emitter !== undefined) {
+			arrPull(this._emitter._particles, this);
 		}
-	});
-	
-	return MiningParticle;
-});
+		//this.animation.stop();
+		return super.destroy();
+	}
+}

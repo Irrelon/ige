@@ -1,1 +1,1 @@
-declare var appCore: any, oreTypes: any;
+declare const appCore: any, oreTypes: any;
