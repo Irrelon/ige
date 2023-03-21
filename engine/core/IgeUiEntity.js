@@ -14,7 +14,6 @@ export class IgeUiEntity extends IgeEntity {
         this._color = "#000000";
         this._backgroundSize = { x: 1, y: 1 };
         this._backgroundPosition = { x: 0, y: 0 };
-        this._cell = null;
         this._borderWidth = 0;
         this._borderLeftWidth = 0;
         this._borderTopWidth = 0;
@@ -108,18 +107,33 @@ export class IgeUiEntity extends IgeEntity {
         }
         ctx.restore();
     }
+    _anyBorderColor() {
+        return Boolean(this._borderColor || this._borderLeftColor || this._borderTopColor || this._borderRightColor || this._borderBottomColor);
+    }
+    _anyBorderWidth() {
+        return Boolean(this._borderWidth || this._borderLeftWidth || this._borderTopWidth || this._borderRightWidth || this._borderBottomWidth);
+    }
+    _anyBorderRadius() {
+        return Boolean(this._borderRadius || this._borderTopRightRadius || this._borderBottomRightRadius || this._borderBottomLeftRadius || this._borderTopLeftRadius);
+    }
+    _borderWidthsMatch() {
+        return this._borderLeftWidth === this._borderWidth
+            && this._borderTopWidth === this._borderWidth
+            && this._borderRightWidth === this._borderWidth
+            && this._borderBottomWidth === this._borderWidth;
+    }
     _renderBorder(ctx) {
         const geom = this._bounds2d;
         const left = (-(geom.x2) | 0) + 0.5;
         const top = (-(geom.y2) | 0) + 0.5;
         const width = geom.x - 1;
         const height = geom.y - 1;
+        if (!this._anyBorderColor())
+            return;
+        if (!this._anyBorderWidth())
+            return;
         // Check for early exit if we are rendering a rectangle
-        if (!this._borderTopRightRadius && !this._borderBottomRightRadius && !this._borderBottomLeftRadius && !this._borderTopLeftRadius
-            && this._borderLeftWidth === this._borderWidth
-            && this._borderTopWidth === this._borderWidth
-            && this._borderRightWidth === this._borderWidth
-            && this._borderBottomWidth === this._borderWidth) {
+        if (!this._anyBorderRadius() && this._borderWidthsMatch()) {
             ctx.strokeStyle = this._borderColor;
             ctx.lineWidth = this._borderWidth;
             ctx.strokeRect(left, top, width, height);
@@ -229,7 +243,7 @@ export class IgeUiEntity extends IgeEntity {
         return ret;
     }
     tick(ctx, dontTransform = false) {
-        if (!this._hidden && this._inView && (!this._parent || (this._parent._inView)) && !this._streamJustCreated) {
+        if (!this._hidden && this._inView && (!this._parent || this._parent._inView) && !this._streamJustCreated) {
             if (!dontTransform) {
                 this._transformContext(ctx);
             }

@@ -11038,6 +11038,3 @@ let i;
 for (i = 0; i < Box2D.postDefs.length; ++i)
 	Box2D.postDefs[i]();
 delete Box2D.postDefs;
-if (typeof (window) == "undefined") {
-	exports.Box2D = Box2D;
-}

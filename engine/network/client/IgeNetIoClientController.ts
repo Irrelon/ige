@@ -523,9 +523,9 @@ export class IgeNetIoClientController extends IgeNetIoBaseController {
 		const entity = ige.$(entityId) as IgeEntity;
 
 		if (!entity) {
-			this.log("+++ Stream: Data received for unknown entity (" + entityId + ")");
-			this.stop();
-			ige.engine.stop();
+			//this.log("+++ Stream: Data received for unknown entity (" + entityId + ")");
+			//this.stop();
+			//ige.engine.stop();
 			return;
 		}
 

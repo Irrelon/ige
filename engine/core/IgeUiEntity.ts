@@ -24,7 +24,6 @@ export class IgeUiEntity extends IgeEntity {
 	_patternWidth?: number;
 	_patternHeight?: number;
 	_patternFill?: CanvasPattern;
-	_cell: number | null = null;
 	_backgroundColor?: string | CanvasGradient | CanvasPattern;
 	_borderColor?: string;
 	_borderLeftColor?: string;
@@ -204,6 +203,25 @@ export class IgeUiEntity extends IgeEntity {
 		ctx.restore();
 	}
 
+	_anyBorderColor (): boolean {
+		return Boolean(this._borderColor || this._borderLeftColor || this._borderTopColor || this._borderRightColor || this._borderBottomColor);
+	}
+
+	_anyBorderWidth (): boolean {
+		return Boolean(this._borderWidth || this._borderLeftWidth || this._borderTopWidth || this._borderRightWidth || this._borderBottomWidth);
+	}
+
+	_anyBorderRadius (): boolean {
+		return Boolean(this._borderRadius || this._borderTopRightRadius || this._borderBottomRightRadius || this._borderBottomLeftRadius || this._borderTopLeftRadius);
+	}
+
+	_borderWidthsMatch (): boolean {
+		return this._borderLeftWidth === this._borderWidth
+			&& this._borderTopWidth === this._borderWidth
+			&& this._borderRightWidth === this._borderWidth
+			&& this._borderBottomWidth === this._borderWidth;
+	}
+
 	_renderBorder (ctx: IgeCanvasRenderingContext2d) {
 		const geom = this._bounds2d;
 		const left = (-(geom.x2) | 0) + 0.5;
@@ -211,12 +229,11 @@ export class IgeUiEntity extends IgeEntity {
 		const width = geom.x - 1;
 		const height = geom.y - 1;
 
+		if (!this._anyBorderColor()) return;
+		if (!this._anyBorderWidth()) return;
+
 		// Check for early exit if we are rendering a rectangle
-		if (!this._borderTopRightRadius && !this._borderBottomRightRadius && !this._borderBottomLeftRadius && !this._borderTopLeftRadius
-			&& this._borderLeftWidth === this._borderWidth
-			&& this._borderTopWidth === this._borderWidth
-			&& this._borderRightWidth === this._borderWidth
-			&& this._borderBottomWidth === this._borderWidth) {
+		if (!this._anyBorderRadius() && this._borderWidthsMatch()) {
 			ctx.strokeStyle = this._borderColor;
 			ctx.lineWidth = this._borderWidth;
 			ctx.strokeRect(left, top, width, height);
@@ -357,7 +374,7 @@ export class IgeUiEntity extends IgeEntity {
 	}
 
 	tick (ctx: IgeCanvasRenderingContext2d, dontTransform = false) {
-		if (!this._hidden && this._inView && (!this._parent || (this._parent._inView)) && !this._streamJustCreated) {
+		if (!this._hidden && this._inView && (!this._parent || this._parent._inView) && !this._streamJustCreated) {
 			if (!dontTransform) {
 				this._transformContext(ctx);
 			}

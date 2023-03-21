@@ -1159,7 +1159,7 @@ export class IgeEntity extends IgeObject {
      * @return {IgeRect} The local AABB.
      */
     localAabb(recalculate = false) {
-        if (!(!this._localAabb || recalculate)) {
+        if (this._localAabb && !recalculate) {
             return this._localAabb;
         }
         const aabb = this.aabb();

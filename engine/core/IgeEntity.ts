@@ -1111,7 +1111,7 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 	 * @return {IgeRect} The local AABB.
 	 */
 	localAabb (recalculate = false) {
-		if (!(!this._localAabb || recalculate)) {
+		if (this._localAabb && !recalculate) {
 			return this._localAabb;
 		}
 

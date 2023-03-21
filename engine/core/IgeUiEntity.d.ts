@@ -19,7 +19,6 @@ export declare class IgeUiEntity extends IgeEntity {
     _patternWidth?: number;
     _patternHeight?: number;
     _patternFill?: CanvasPattern;
-    _cell: number | null;
     _backgroundColor?: string | CanvasGradient | CanvasPattern;
     _borderColor?: string;
     _borderLeftColor?: string;
@@ -73,6 +72,10 @@ export declare class IgeUiEntity extends IgeEntity {
     display(val?: string): string | this | undefined;
     overflow(val?: string): string | this | undefined;
     _renderBackground(ctx?: IgeCanvasRenderingContext2d): void;
+    _anyBorderColor(): boolean;
+    _anyBorderWidth(): boolean;
+    _anyBorderRadius(): boolean;
+    _borderWidthsMatch(): boolean;
     _renderBorder(ctx: IgeCanvasRenderingContext2d): void;
     cell(val: number | null): this;
     cell(): number | null;
@@ -199,7 +202,7 @@ export declare class IgeUiEntity extends IgeEntity {
      * @return {*} Returns this if any parameter is specified or
      * the current background image if no parameters are specified.
      */
-    backgroundImage(texture?: IgeTexture, repeatType?: IgeRepeatType): CanvasPattern | this | undefined;
+    backgroundImage(texture?: IgeTexture, repeatType?: IgeRepeatType): this | CanvasPattern | undefined;
     backgroundSize(x?: number | string, y?: number | string): this | IgePointXY;
     /**
      * Gets / sets the color to use as a background when

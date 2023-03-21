@@ -167,9 +167,9 @@ export class IgeNetIoClientController extends IgeNetIoBaseController {
             // Check if the entity with this ID currently exists
             const entity = ige.$(entityId);
             if (!entity) {
-                this.log("+++ Stream: Data received for unknown entity (" + entityId + ")");
-                this.stop();
-                ige.engine.stop();
+                //this.log("+++ Stream: Data received for unknown entity (" + entityId + ")");
+                //this.stop();
+                //ige.engine.stop();
                 return;
             }
             // Hold the entity's just created flag

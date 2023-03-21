@@ -309,7 +309,7 @@ export declare const WithUiPositionMixin: <BaseClassType extends Mixin<IgeObject
         disableInterpolation(val?: boolean | undefined): boolean | any;
         compositeStream(val: boolean): any;
         compositeStream(): boolean;
-        streamSections(sectionArray?: string[] | undefined): any | string[];
+        streamSections(sectionArray?: string[] | undefined): string[] | any;
         streamSectionsPush(sectionName: string): any;
         streamSectionsPull(sectionName: string): any;
         streamProperty(propName: string, propVal?: any): any;

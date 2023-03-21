@@ -53,7 +53,7 @@ export class IgeFontEntity extends IgeUiEntity {
 				this.clearCache();
 			}
 
-			return super.width(px, lockAspect);
+			return super.width(px, lockAspect, modifier, noUpdate);
 		}
 
 		if (this._autoWrap) {
@@ -81,7 +81,7 @@ export class IgeFontEntity extends IgeUiEntity {
 				this.clearCache();
 			}
 
-			return super.height(px, lockAspect);
+			return super.height(px, lockAspect, modifier, noUpdate);
 		}
 
 		return this._bounds2d.y;

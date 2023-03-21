@@ -41,6 +41,10 @@ export class IgeTexture extends IgeAsset {
             return this;
         }
         if (id) {
+            const alreadyExists = ige.textures.get(id);
+            if (alreadyExists) {
+                return alreadyExists;
+            }
             this.id(id);
             ige.textures.add(id, this);
         }
