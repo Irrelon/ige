@@ -20,6 +20,7 @@ import type { IgeNetIoClientController } from "@/engine/network/client/IgeNetIoC
 import type { IgeNetIoServerController } from "@/engine/network/server/IgeNetIoServerController";
 import { IgeUiManagerController } from "@/engine/core/IgeUiManagerController";
 export declare class Ige implements IgeIsReadyPromise {
+    game: Record<string, any>;
     audio?: IgeAudioController;
     router: IgeRouter;
     engine: IgeEngine;

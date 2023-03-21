@@ -16,6 +16,7 @@ import { IgeUiManagerController } from "../../engine/core/IgeUiManagerController
 const version = "3.0.0";
 export class Ige {
     constructor() {
+        this.game = {};
         this.router = new IgeRouter();
         this.engine = new IgeEngine();
         this.textures = new IgeTextureStore();

@@ -9,6 +9,7 @@ import { infoWindow } from "../assets/ui/infoWindow";
 
 //import "./space/_route";
 import "./splash/_route";
+//require('./space/SpaceServer');
 
 ige.router.route("app", {
 	client: async () => {
@@ -38,6 +39,11 @@ ige.router.route("app", {
 		}
 	},
 	server: async () => {
+		// Set up the game storage for the server-side
+		// This is the players object that stores player state per network
+		// connection client id
+		ige.game.players = {};
+
 		// Create the HTML canvas
 		ige.engine.createFrontBuffer(true);
 

@@ -9,9 +9,11 @@ export class IgeUiWindow extends IgeUiElement {
         this._draggable = false;
         this._dragging = false;
         this._opStartTranslate = {};
+        this._eventHandlers = {};
+        const ui = ige.ui;
         // Define some default styles
-        if (!ige.ui.style("IgeUiWindow")) {
-            ige.ui.style("IgeUiWindow", {
+        if (!ui.style("IgeUiWindow")) {
+            ui.style("IgeUiWindow", {
                 backgroundColor: null
             });
         }
@@ -97,15 +99,15 @@ export class IgeUiWindow extends IgeUiElement {
     draggable(val) {
         if (val) {
             this._draggable = true;
-            this._topNav.on("pointerDown", this._dragStart);
-            ige.input.on("preMouseUp", this._dragEnd);
-            ige.input.on("preMouseMove", this._dragMove);
+            this._eventHandlers.pointerDown = this._topNav.on("pointerDown", this._dragStart);
+            this._eventHandlers.preMouseUp = ige.input.on("preMouseUp", this._dragEnd);
+            this._eventHandlers.preMouseMove = ige.input.on("preMouseMove", this._dragMove);
         }
         else {
             this._draggable = false;
-            this._topNav.off("pointerDown", this._dragStart);
-            ige.input.off("preMouseUp", this._dragEnd);
-            ige.input.off("preMouseMove", this._dragMove);
+            this._topNav.off("pointerDown", this._eventHandlers.pointerDown);
+            ige.input.off("preMouseUp", this._eventHandlers.preMouseUp);
+            ige.input.off("preMouseMove", this._eventHandlers.preMouseMove);
         }
     }
     blur() {

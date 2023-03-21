@@ -13,7 +13,7 @@ export interface IgeMultiEventListenerObject extends Omit<IgeEventListenerObject
     eventsFired: number;
     totalEvents: number;
 }
-export type IgeEventListenerRegister = Record<string, IgeEventListenerObject[]>;
+export type IgeEventListenerRegister = Record<string, (IgeEventListenerObject | IgeMultiEventListenerObject)[]>;
 export type IgeEventRemovalResultCallback = (success: boolean) => void;
 export declare const WithEventingMixin: <BaseClassType extends Mixin<IgeBaseClass>>(Base: BaseClassType) => {
     new (...args: any[]): {

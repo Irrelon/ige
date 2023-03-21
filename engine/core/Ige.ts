@@ -26,6 +26,7 @@ import { IgeUiManagerController } from "@/engine/core/IgeUiManagerController";
 const version = "3.0.0";
 
 export class Ige implements IgeIsReadyPromise {
+	game: Record<string, any> = {};
 	audio?: IgeAudioController;
 	router: IgeRouter = new IgeRouter();
 	engine: IgeEngine = new IgeEngine();

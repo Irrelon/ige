@@ -16,6 +16,7 @@ import { tab } from "../assets/ui/tab.js";
 import { infoWindow } from "../assets/ui/infoWindow.js";
 //import "./space/_route.js";
 import "./splash/_route.js";
+//require('./space/SpaceServer');
 ige.router.route("app", {
     client: () => __awaiter(void 0, void 0, void 0, function* () {
         // @ts-ignore
@@ -38,6 +39,10 @@ ige.router.route("app", {
         });
     }),
     server: () => __awaiter(void 0, void 0, void 0, function* () {
+        // Set up the game storage for the server-side
+        // This is the players object that stores player state per network
+        // connection client id
+        ige.game.players = {};
         // Create the HTML canvas
         ige.engine.createFrontBuffer(true);
         // Start the engine

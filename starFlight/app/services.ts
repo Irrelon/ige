@@ -2,37 +2,30 @@ export function roundNumber (number: number, digits: number) {
 	return Number(number.toFixed(digits));
 }
 
-export function calculateModifierRatio (states, modifierPerSecond, min, max, tickDelta, stateId) {
-	let proposedModifierValue,
-		newModifierValue,
-		proposedNewStateValue,
-		proposalDifference,
-		tempRatio,
-		calcMultiplier;
-
+export function calculateModifierRatio (states, modifierPerSecond: number, min: number, max: number, tickDelta: number, stateId: string) {
 	// Deal with small numbers by doing some maths
-	calcMultiplier = 1;
+	const calcMultiplier = 1;
 	modifierPerSecond *= calcMultiplier;
 	min *= calcMultiplier;
 	max *= calcMultiplier;
 
 	// Calculate maximum modifier value for the tickDelta
-	proposedModifierValue = (modifierPerSecond / 1000) * tickDelta;
-	newModifierValue = proposedModifierValue;
+	const proposedModifierValue = (modifierPerSecond / 1000) * tickDelta;
+	let newModifierValue = proposedModifierValue;
 
 	// Calculate the potential new state value
-	proposedNewStateValue = states[stateId].val + proposedModifierValue;
+	const proposedNewStateValue = states[stateId].val + proposedModifierValue;
 
 	// Make sure the value is within the state's bounds
 	if (proposedNewStateValue < min) {
-		proposalDifference = min - proposedNewStateValue;
+		const proposalDifference = min - proposedNewStateValue;
 		newModifierValue = proposedModifierValue + proposalDifference;
 	} else if (proposedNewStateValue > max) {
-		proposalDifference = proposedNewStateValue - max;
+		const proposalDifference = proposedNewStateValue - max;
 		newModifierValue = proposedModifierValue - proposalDifference;
 	}
 
-	tempRatio = newModifierValue / proposedModifierValue;
+	const tempRatio = newModifierValue / proposedModifierValue;
 
 	return {
 		proposedModifierValue: proposedModifierValue / calcMultiplier,

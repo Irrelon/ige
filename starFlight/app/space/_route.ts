@@ -9,7 +9,7 @@ import { ige } from "@/engine/instance";
 // require('./SpaceServer');
 // require('./SpaceServerScene');
 
-ige.router.route('app.space', {
+ige.router.route('app/space', {
 	client: async () => {
 
 	},

@@ -65,7 +65,7 @@ export class IgeBox2dComponent extends IgeComponent<IgeEngine> {
 		// Check that the engine has not already started
 		// as this will mess everything up if it has
 		if (ige.engine._state === IgeEngineState.started) {
-			this.log("Cannot add box2d component to the ige instance once the engine has started!", "error");
+			this.log("Cannot add box2D component to the ige instance once the engine has started!", "error");
 		}
 
 		this._renderMode = 0;
@@ -171,7 +171,45 @@ export class IgeBox2dComponent extends IgeComponent<IgeEngine> {
 
 		this._removeWhenReady = [];
 
-		this.log("Physics component initiated!");
+		this.log("Physics controller initiated!");
+	}
+
+	start () {
+		if (!this._world) {
+			throw new Error("Cannot start the physics simulation until a world exists. Use the createWorld() method to set up a physics world before calling start()!");
+		}
+
+		if (this._active) {
+			return;
+		}
+
+		this._active = true;
+
+		if (this._networkDebugMode) {
+			return;
+		}
+
+		// Add the box2D behaviour to the engine
+		if (this._renderMode === 0) {
+			ige.engine.addBehaviour(IgeBehaviourType.preUpdate, "box2dStep", this._behaviour);
+		} else {
+			this._intervalTimer = setInterval(this._behaviour, 1000 / 60) as unknown as number;
+		}
+	}
+
+	stop () {
+		if (!this._active) {
+			return;
+		}
+
+		this._active = false;
+
+		// Remove the box2D behaviour from the engine
+		if (this._renderMode === 0) {
+			ige.engine.removeBehaviour(IgeBehaviourType.preUpdate, "box2dStep");
+		} else {
+			clearInterval(this._intervalTimer);
+		}
 	}
 
 	useWorker (val?: boolean) {
@@ -189,8 +227,8 @@ export class IgeBox2dComponent extends IgeComponent<IgeEngine> {
 
 	/**
 	 * Gets / sets the world interval mode. In mode 0 (zero) the
-	 * box2d simulation is synced to the framerate of the engine's
-	 * renderer. In mode 1 the box2d simulation is stepped at a constant
+	 * box2D simulation is synced to the framerate of the engine's
+	 * renderer. In mode 1 the box2D simulation is stepped at a constant
 	 * speed regardless of the engine's renderer. This must be set *before*
 	 * calling the start() method in order for the setting to take effect.
 	 * @param {Integer} val The mode, either 0 or 1.
@@ -222,7 +260,7 @@ export class IgeBox2dComponent extends IgeComponent<IgeEngine> {
 	}
 
 	/**
-	 * Gets / sets the current engine-to-box2d scaling ratio.
+	 * Gets / sets the current engine-to-box2D scaling ratio.
 	 * @param val
 	 * @return {*}
 	 */
@@ -302,7 +340,7 @@ export class IgeBox2dComponent extends IgeComponent<IgeEngine> {
 	 */
 	createBody (entity: IgeEntityBox2d, body: IgeBox2dBodyDef): Box2D.Dynamics.b2Body {
 		if (!this._world) {
-			throw new Error("No box2d world instantiated!");
+			throw new Error("No box2D world instantiated!");
 		}
 
 		const tempDef = new this.b2BodyDef();
@@ -316,7 +354,7 @@ export class IgeBox2dComponent extends IgeComponent<IgeEngine> {
 			finalX, finalY,
 			finalWidth, finalHeight;
 
-		// Process body definition and create a box2d body for it
+		// Process body definition and create a box2D body for it
 		switch (body.type) {
 		case IgeBox2dBodyType.static: // "static"
 			tempDef.type = this.b2Body.b2_staticBody;
@@ -473,12 +511,12 @@ export class IgeBox2dComponent extends IgeComponent<IgeEngine> {
 	}
 
 	/**
-	 * Produces static box2d bodies from passed map data.
+	 * Produces static box2D bodies from passed map data.
 	 * @param {IgeTileMap2d} mapLayer
 	 * @param {Function=} callback Returns true or false depending
 	 * on if the passed map data should be included as part of the
-	 * box2d static object data. This allows you to control what
-	 * parts of the map data are to be considered for box2d static
+	 * box2D static object data. This allows you to control what
+	 * parts of the map data are to be considered for box2D static
 	 * objects and which parts are to be ignored. If not passed then
 	 * any tile with any map data is considered part of the static
 	 * object data.
@@ -516,13 +554,13 @@ export class IgeBox2dComponent extends IgeComponent<IgeEngine> {
 					});
 			}
 		} else {
-			this.log("Cannot extract box2d static bodies from map data because passed map does not have a .map property!", "error");
+			this.log("Cannot extract box2D static bodies from map data because passed map does not have a .map property!", "error");
 		}
 	}
 
 	/**
 	 * Creates a contact listener with the specified callbacks. When
-	 * contacts begin and end inside the box2d simulation the specified
+	 * contacts begin and end inside the box2D simulation the specified
 	 * callbacks are fired.
 	 * @param {Function} beginContactCallback The method to call when the contact listener detects contact has started.
 	 * @param {Function} endContactCallback The method to call when the contact listener detects contact has ended.
@@ -531,7 +569,7 @@ export class IgeBox2dComponent extends IgeComponent<IgeEngine> {
 	 */
 	contactListener (beginContactCallback?: IgeBox2dContactListenerCallback, endContactCallback?: IgeBox2dContactListenerCallback, preSolve?: IgeBox2dContactPreSolveCallback, postSolve?: IgeBox2dContactPostSolveCallback) {
 		if (!this._world) {
-			throw new Error("No box2d world instantiated!");
+			throw new Error("No box2D world instantiated!");
 		}
 
 		const contactListener = new this.b2ContactListener();
@@ -597,13 +635,13 @@ export class IgeBox2dComponent extends IgeComponent<IgeEngine> {
 	}
 
 	/**
-	 * Creates a debug entity that outputs the bounds of each box2d
+	 * Creates a debug entity that outputs the bounds of each box2D
 	 * body during standard engine ticks.
 	 * @param {IgeEntity} mountScene
 	 */
 	enableDebug (mountScene?: IgeEntity) {
 		if (!this._world) {
-			throw new Error("No box2d world instantiated!");
+			throw new Error("No box2D world instantiated!");
 		}
 
 		if (mountScene) {
@@ -634,7 +672,7 @@ export class IgeBox2dComponent extends IgeComponent<IgeEngine> {
 				.drawBounds(false)
 				.mount(mountScene);
 		} else {
-			this.log("Cannot enable box2d debug drawing because the passed argument is not an object on the scenegraph.", "error");
+			this.log("Cannot enable box2D debug drawing because the passed argument is not an object on the scenegraph.", "error");
 		}
 	}
 
@@ -661,41 +699,13 @@ export class IgeBox2dComponent extends IgeComponent<IgeEngine> {
 		return this._updateCallback;
 	}
 
-	start () {
-		if (!this._active) {
-			this._active = true;
-
-			if (!this._networkDebugMode) {
-				if (this._renderMode === 0) {
-					// Add the box2d behaviour to the ige
-					this._entity.addBehaviour(IgeBehaviourType.preUpdate, "box2dStep", this._behaviour);
-				} else {
-					this._intervalTimer = setInterval(this._behaviour, 1000 / 60) as unknown as number;
-				}
-			}
-		}
-	}
-
-	stop () {
-		if (this._active) {
-			this._active = false;
-
-			if (this._renderMode === 0) {
-				// Add the box2d behaviour to the ige
-				this._entity.removeBehaviour(IgeBehaviourType.preUpdate, "box2dStep");
-			} else {
-				clearInterval(this._intervalTimer);
-			}
-		}
-	}
-
 	/**
 	 * Steps the physics simulation forward.
 	 * @private
 	 */
 	_behaviour: IgeEntityBehaviourMethod = () => {
 		if (!this._world) {
-			throw new Error("No box2d world instantiated!");
+			throw new Error("No box2D world instantiated!");
 		}
 
 		let tempBod;
@@ -777,10 +787,10 @@ export class IgeBox2dComponent extends IgeComponent<IgeEngine> {
 	};
 
 	destroy () {
-		// Stop processing box2d steps
+		// Stop processing box2D steps
 		this._entity.removeBehaviour(IgeBehaviourType.preUpdate, "box2dStep");
 
-		// Destroy all box2d world bodies
+		// Destroy all box2D world bodies
 		return this;
 	}
 }
