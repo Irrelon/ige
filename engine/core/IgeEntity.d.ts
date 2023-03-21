@@ -655,7 +655,7 @@ export declare class IgeEntity extends IgeObject implements IgeCanRegisterById, 
      *     });
      * @return {*}
      */
-    pointerMove: (callback?: IgeInputEvent) => IgeInputEvent | this | undefined;
+    pointerMove: (callback?: IgeInputEvent) => this | IgeInputEvent | undefined;
     /**
      * Gets / sets the callback that is fired when a mouse
      * over event is triggered.
@@ -734,7 +734,7 @@ export declare class IgeEntity extends IgeObject implements IgeCanRegisterById, 
      *     });
      * @return {*}
      */
-    pointerDown: (callback?: IgeInputEvent) => IgeInputEvent | this | undefined;
+    pointerDown: (callback?: IgeInputEvent) => this | IgeInputEvent | undefined;
     /**
      * Gets / sets the callback that is fired when a mouse
      * wheel event is triggered.
@@ -754,7 +754,7 @@ export declare class IgeEntity extends IgeObject implements IgeCanRegisterById, 
      *     });
      * @return {*}
      */
-    pointerWheel: (callback?: IgeInputEvent) => IgeInputEvent | this | undefined;
+    pointerWheel: (callback?: IgeInputEvent) => this | IgeInputEvent | undefined;
     /**
      * Removes the callback that is fired when a mouse
      * move event is triggered.

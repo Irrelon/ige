@@ -15,6 +15,7 @@ export type IgeTextureCellArray = IgeTextureCell[];
 export declare class IgeTexture extends IgeAsset {
     classId: string;
     IgeTexture: boolean;
+    _noDimensions: boolean;
     _sizeX: number;
     _sizeY: number;
     _renderMode: IgeTextureRenderMode;

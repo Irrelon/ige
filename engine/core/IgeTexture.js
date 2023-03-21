@@ -21,6 +21,7 @@ export class IgeTexture extends IgeAsset {
         super();
         this.classId = "IgeTexture";
         this.IgeTexture = true;
+        this._noDimensions = false;
         this._sizeX = 0;
         this._sizeY = 0;
         this._renderMode = IgeTextureRenderMode.none;

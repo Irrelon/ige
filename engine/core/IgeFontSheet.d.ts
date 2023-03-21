@@ -1,4 +1,7 @@
 import { IgeTexture } from "./IgeTexture";
+import { IgeSmartTexture } from "@/types/IgeSmartTexture";
+import { IgeImage } from "@/engine/core/IgeImage";
+import { IgeCanvas } from "@/engine/core/IgeCanvas";
 /**
  * Creates a new font sheet. A font sheet is an image that contains
  * letters and numbers rendered to specifications. It allows you to
@@ -7,10 +10,13 @@ import { IgeTexture } from "./IgeTexture";
  */
 export declare class IgeFontSheet extends IgeTexture {
     classId: string;
-    constructor(ige: any, url: any);
+    _sheetImage?: IgeImage | IgeCanvas;
+    _lineHeightModifier: number;
+    _fontData: any;
+    constructor(id: string, urlOrObject?: string | IgeSmartTexture);
     decodeHeader(): any;
-    _decode(canvas: any, x: any, y: any, maxX: any): any;
-    lineHeightModifier(val: any): void;
+    _decode(canvas: IgeCanvas, x: number, y: number, maxX: number): any;
+    lineHeightModifier(val?: number): void;
     /**
      * Returns the width in pixels of the text passed in the
      * argument.

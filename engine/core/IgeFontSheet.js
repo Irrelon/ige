@@ -10,33 +10,32 @@ import { IgeTexture } from "./IgeTexture.js";
  * the target system that the engine is running in.
  */
 export class IgeFontSheet extends IgeTexture {
-    constructor(ige, url) {
-        super(ige, url);
+    constructor(id, urlOrObject) {
+        super(id, urlOrObject);
         this.classId = "IgeFontSheet";
+        this._lineHeightModifier = 0;
         // Set the _noDimensions flag which tells any entity
         // that assigns this texture that the texture has an
-        // unknown width/height so it should not get it's
+        // unknown width/height, so it should not get its
         // dimension data from the texture
         this._noDimensions = true;
         // Set a listener for when the texture loads
-        this.on("loaded", function () {
-            if (this.image) {
-                // Store the cell sheet image
-                this._sheetImage = this.image;
-                // Get the font sheet data header
-                this._fontData = this.decodeHeader();
-                // Cache access to looped data
-                this._charCodeMap = this._fontData.characters.charCodes;
-                this._charPosMap = this._fontData.characters.charPosition;
-                this._measuredWidthMap = this._fontData.characters.measuredWidth;
-                this._pixelWidthMap = this._fontData.characters.pixelWidth;
-                if (this._fontData) {
-                    const header = this._fontData.font;
-                    this.log("Loaded font sheet for font: " + header.fontName + " @ " + header.fontSize + header.fontSizeUnit + " in " + header.fontColor);
-                }
-                else {
-                    this.log("Could not load data header for font sheet: " + this.image.src, "error");
-                }
+        this.on("loaded", () => {
+            if (!this.image) {
+                return;
+            }
+            this._sheetImage = this.image;
+            this._fontData = this.decodeHeader();
+            this._charCodeMap = this._fontData.characters.charCodes;
+            this._charPosMap = this._fontData.characters.charPosition;
+            this._measuredWidthMap = this._fontData.characters.measuredWidth;
+            this._pixelWidthMap = this._fontData.characters.pixelWidth;
+            if (this._fontData) {
+                const header = this._fontData.font;
+                this.log("Loaded font sheet for font: " + header.fontName + " @ " + header.fontSize + header.fontSizeUnit + " in " + header.fontColor);
+            }
+            else {
+                this.log("Could not load data header for font sheet: " + this.image.src, "error");
             }
         });
     }
