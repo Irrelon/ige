@@ -3,6 +3,7 @@ import { isClient } from "@/engine/clientServer";
 import { IgeAudioItem } from "@/engine/audio/IgeAudioItem";
 import { IgeObject } from "@/engine/core/IgeObject";
 import type { IgeCanvasRenderingContext2d } from "@/types/IgeCanvasRenderingContext2d";
+import { IgeEntity } from "@/engine/core/IgeEntity";
 
 export interface IgeAudioEntityPanner extends PannerOptions {
 
@@ -28,7 +29,7 @@ const defaultPanner: IgeAudioEntityPanner = {
 	coneOuterGain: 0
 };
 
-export class IgeAudioEntity extends IgeObject {
+export class IgeAudioEntity extends IgeEntity {
 	classId = "IgeAudioEntity";
 	_audioInterface?: IgeAudioItem;
 	_options: IgeAudioEntityOptions = {
