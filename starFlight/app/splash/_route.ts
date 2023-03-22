@@ -29,7 +29,6 @@ ige.router.route('app/splash', {
 		return async () => {
 			await ige.engine.removeGraph(SplashClientScene);
 			ige.textures.removeList(textures);
-			await ige.engine.stop();
 		}
 	}
 });

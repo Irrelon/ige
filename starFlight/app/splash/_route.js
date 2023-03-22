@@ -34,7 +34,6 @@ ige.router.route('app/splash', {
         return () => __awaiter(void 0, void 0, void 0, function* () {
             yield ige.engine.removeGraph(SplashClientScene);
             ige.textures.removeList(textures);
-            yield ige.engine.stop();
         });
     })
 });

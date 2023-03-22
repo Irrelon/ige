@@ -13,6 +13,7 @@ const PATH_DELIMITER = "/";
 export class IgeRouter extends IgeBaseClass {
     constructor() {
         super(...arguments);
+        this.classId = "IgeRouter";
         this._routeLoad = {};
         this._routeUnload = {};
         this._currentRoutePath = "";

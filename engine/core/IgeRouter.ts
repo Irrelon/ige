@@ -5,6 +5,7 @@ import { IgeBaseClass } from "./IgeBaseClass";
 const PATH_DELIMITER = "/";
 
 export class IgeRouter extends IgeBaseClass {
+	classId = "IgeRouter";
 	_routeLoad: Record<string, IgeRouteDefinition> = {};
 	_routeUnload: Record<string, any> = {};
 	_currentRoutePath: string = "";

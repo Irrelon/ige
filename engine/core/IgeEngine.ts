@@ -20,6 +20,7 @@ import { IgeComponent } from "./IgeComponent";
 import { IgeBehaviourType } from "@/enums/IgeBehaviourType";
 
 export class IgeEngine extends IgeEntity {
+	classId = "IgeEngine";
 	client?: IgeBaseClass;
 	server?: IgeBaseClass;
 	// @ts-ignore

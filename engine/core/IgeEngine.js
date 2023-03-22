@@ -19,6 +19,7 @@ import { IgeBehaviourType } from "../../enums/IgeBehaviourType.js";
 export class IgeEngine extends IgeEntity {
     constructor() {
         super();
+        this.classId = "IgeEngine";
         // @ts-ignore
         this._idRegistered = true;
         this._pause = false;

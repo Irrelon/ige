@@ -13,6 +13,7 @@ import type { IgeSceneGraphDataEntry } from "@/types/IgeSceneGraphDataEntry";
 import { IgeEngineState } from "@/enums/IgeEngineState";
 import { IgeComponent } from "./IgeComponent";
 export declare class IgeEngine extends IgeEntity {
+    classId: string;
     client?: IgeBaseClass;
     server?: IgeBaseClass;
     _idRegistered: boolean;
@@ -97,7 +98,7 @@ export declare class IgeEngine extends IgeEntity {
      * @param {IgeEntity} entity The entity to add.
      * @returns {Ige|[]} Either this, or the spawn queue.
      */
-    spawnQueue(entity: IgeObject): IgeObject[] | this;
+    spawnQueue(entity: IgeObject): this | IgeObject[];
     currentViewport(viewport?: IgeObject): IgeViewport | null;
     /**
      * Sets the canvas element that will be used as the front-buffer.
@@ -403,7 +404,7 @@ export declare class IgeEngine extends IgeEntity {
      * @param {String=} contextId The context such as '2d'. Defaults to '2d'.
      * @return {*}
      */
-    renderContext(contextId: "2d" | "three"): this | "2d" | "three";
+    renderContext(contextId: "2d" | "three"): "2d" | this | "three";
     /**
      * Creates a front-buffer or "drawing surface" for the renderer.
      *

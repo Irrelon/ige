@@ -18,7 +18,7 @@ export class SplashClientScene extends IgeSceneGraph {
 
 	addGraph () {
 		const login = async () => {
-			await ige.router.go("app.space");
+			await ige.router.go("app/space");
 		};
 
 		const fullscreen = function () {

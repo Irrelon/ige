@@ -70,7 +70,10 @@ export class IgeBaseClass {
         if (global._globalLogIndent) {
             indent += " ";
         }
-        console.log(indent + message, ...args);
+        const stack = new Error().stack || "";
+        const stackArr = stack.split("\n");
+        stackArr.shift();
+        console.log(indent + `(${this.classId}) ${message}`, ...args, stackArr);
         return this;
     }
     logIndent() {

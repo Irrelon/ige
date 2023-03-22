@@ -28,6 +28,7 @@
 		"net.io-server": "https://github.com/irrelon/net.io-server/tarball/master",
 		"node-arguments": "0.0.1",
 		"socket.io": "0.9.14",
+		"stacktrace-js": "^2.0.2",
 		"uglify-js2": "2.1.4",
 		"websocket": "^1.0.34"
 	},
