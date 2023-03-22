@@ -3,6 +3,7 @@ import { IgeInputEventControl } from "@/types/IgeInputEventControl";
 import { IgeInputDevice } from "@/enums/IgeInputDeviceMap";
 import { IgeEventingClass } from "@/engine/core/IgeEventingClass";
 import { IgeIsReadyPromise } from "@/types/IgeIsReadyPromise";
+import { IgeInputControlMap } from "@/engine/components/IgeInputControlMap";
 export declare class IgeInputComponent extends IgeEventingClass implements IgeIsReadyPromise {
     classId: string;
     componentId: string;
@@ -11,7 +12,7 @@ export declare class IgeInputComponent extends IgeEventingClass implements IgeIs
     _evRef: Record<string, (event: any) => void>;
     _debug?: boolean;
     _state: Record<number, Record<number, string | number | boolean>>;
-    _controlMap: Record<number, [IgeInputDevice, number][]>;
+    _controlMap: Record<number, IgeInputControlMap>;
     dblClick?: Event;
     pointerMove?: Event;
     pointerDown?: Event;
@@ -103,21 +104,21 @@ export declare class IgeInputComponent extends IgeEventingClass implements IgeIs
     /**
      * Defines an action that will be emitted when the specified event type
      * occurs.
-     * @param action
+     * @param actionCode
      * @param inputMap
      */
-    mapAction(action: number, inputMap: [IgeInputDevice, number][]): void;
+    mapAction(actionCode: number, inputMap: [IgeInputDevice, number][]): void;
     /**
      * Returns the passed action's input state value.
-     * @param action
+     * @param actionCode
      */
-    actionVal(action: number): any;
+    actionVal(actionCode: number): string | number | boolean | undefined;
     /**
      * Returns true if the passed action's input is pressed or its state
      * is not zero.
-     * @param action
+     * @param actionCode
      */
-    actionState(action: number): boolean;
+    actionState(actionCode: number): boolean | undefined;
     /**
      * Returns an input's current value.
      * @param device

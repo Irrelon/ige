@@ -3,12 +3,14 @@ import { IgePoint3d } from "../core/IgePoint3d.js";
 import { IgeBehaviourType } from "../../enums/IgeBehaviourType.js";
 import { IgeInputDevice, IgeInputKeyboardMap, IgeInputPointerMap } from "../../enums/IgeInputDeviceMap.js";
 import { IgeEventingClass } from "../../engine/core/IgeEventingClass.js";
+import { IgeInputControlMap } from "../../engine/components/IgeInputControlMap.js";
 export class IgeInputComponent extends IgeEventingClass {
     constructor() {
         super();
         this.classId = "IgeInputComponent";
         this.componentId = "input";
         this._evRef = {};
+        // State <DeviceCode, <InputCode, InputValue>>
         this._state = {};
         this._controlMap = {};
         this.debug = (val) => {
@@ -475,27 +477,29 @@ export class IgeInputComponent extends IgeEventingClass {
     /**
      * Defines an action that will be emitted when the specified event type
      * occurs.
-     * @param action
+     * @param actionCode
      * @param inputMap
      */
-    mapAction(action, inputMap) {
-        this._controlMap[action] = inputMap;
+    mapAction(actionCode, inputMap) {
+        this._controlMap[actionCode] = this._controlMap[actionCode] || new IgeInputControlMap();
+        for (let i = 0; i < inputMap.length; i++) {
+            this._controlMap[actionCode].push(inputMap[i]);
+        }
     }
     /**
      * Returns the passed action's input state value.
-     * @param action
+     * @param actionCode
      */
-    actionVal(action) {
-        const inputMap = this._controlMap[action];
-        return this._state[inputMap[0]][inputMap[1]];
+    actionVal(actionCode) {
+        return this._controlMap[actionCode].val();
     }
     /**
      * Returns true if the passed action's input is pressed or its state
      * is not zero.
-     * @param action
+     * @param actionCode
      */
-    actionState(action) {
-        return Boolean(this.actionVal(action));
+    actionState(actionCode) {
+        return this._controlMap[actionCode].state();
     }
     /**
      * Returns an input's current value.

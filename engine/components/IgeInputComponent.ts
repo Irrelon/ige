@@ -6,6 +6,7 @@ import { IgeBehaviourType } from "@/enums/IgeBehaviourType";
 import { IgeInputDevice, IgeInputKeyboardMap, IgeInputPointerMap } from "@/enums/IgeInputDeviceMap";
 import { IgeEventingClass } from "@/engine/core/IgeEventingClass";
 import { IgeIsReadyPromise } from "@/types/IgeIsReadyPromise";
+import { IgeInputControlMap } from "@/engine/components/IgeInputControlMap";
 
 export class IgeInputComponent extends IgeEventingClass implements IgeIsReadyPromise {
 	classId = "IgeInputComponent";
@@ -14,8 +15,9 @@ export class IgeInputComponent extends IgeEventingClass implements IgeIsReadyPro
 	_eventControl: IgeInputEventControl;
 	_evRef: Record<string, (event: any) => void> = {};
 	_debug?: boolean;
+	// State <DeviceCode, <InputCode, InputValue>>
 	_state: Record<number, Record<number, string | number | boolean>> = {};
-	_controlMap: Record<number, [IgeInputDevice, number][]> = {};
+	_controlMap: Record<number, IgeInputControlMap> = {};
 	dblClick?: Event;
 	pointerMove?: Event;
 	pointerDown?: Event;
@@ -584,29 +586,32 @@ export class IgeInputComponent extends IgeEventingClass implements IgeIsReadyPro
 	/**
 	 * Defines an action that will be emitted when the specified event type
 	 * occurs.
-	 * @param action
+	 * @param actionCode
 	 * @param inputMap
 	 */
-	mapAction (action: number, inputMap: [IgeInputDevice, number][]) {
-		this._controlMap[action] = inputMap;
+	mapAction (actionCode: number, inputMap: [IgeInputDevice, number][]) {
+		this._controlMap[actionCode] = this._controlMap[actionCode] || new IgeInputControlMap();
+
+		for (let i = 0; i < inputMap.length; i++) {
+			this._controlMap[actionCode].push(inputMap[i]);
+		}
 	}
 
 	/**
 	 * Returns the passed action's input state value.
-	 * @param action
+	 * @param actionCode
 	 */
-	actionVal (action: number) {
-		const inputMap = this._controlMap[action];
-		return this._state[inputMap[0]][inputMap[1]];
+	actionVal (actionCode: number) {
+		return this._controlMap[actionCode].val();
 	}
 
 	/**
 	 * Returns true if the passed action's input is pressed or its state
 	 * is not zero.
-	 * @param action
+	 * @param actionCode
 	 */
-	actionState (action: number) {
-		return Boolean(this.actionVal(action));
+	actionState (actionCode: number) {
+		return this._controlMap[actionCode].state();
 	}
 
 	/**
