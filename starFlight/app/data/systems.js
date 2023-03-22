@@ -1,5 +1,5 @@
-import valeria from "./system/valeria.json";
-import orhaan from "./system/orhaan.json";
+import { valeria } from "./system/valeria.js";
+import { orhaan } from "./system/orhaan.js";
 export const systems = {
     valeria,
     orhaan

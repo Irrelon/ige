@@ -1,4 +1,6 @@
 import { IgeEventingClass } from "@/engine/core/IgeEventingClass";
+import { IgeNetIoSocket } from "@/engine/network/server/IgeNetIoSocket";
+import { IgeNetworkServerSideMessageHandler, IgeNetworkServerSideRequestHandler } from "@/types/IgeNetworkMessage";
 export declare class SpaceServer extends IgeEventingClass {
     constructor();
     /**
@@ -8,14 +10,14 @@ export declare class SpaceServer extends IgeEventingClass {
      * @param socket The client socket object.
      * @private
      */
-    _onPlayerConnect(socket: any): boolean;
+    _onPlayerConnect(socket: IgeNetIoSocket): boolean;
     /**
      * Called when a client disconnects.
      * @param {String} clientId The client network id.
      * @private
      */
-    _onPlayerDisconnect(clientId: any): void;
-    _onPublicGameData(data: any, clientId: any, callback: any): void;
+    _onPlayerDisconnect(clientId: string): void;
+    _onPublicGameData: IgeNetworkServerSideRequestHandler;
     /**
      * Is called when a network packet with the "playerEntity" command
      * is received by the server or client.
@@ -27,8 +29,8 @@ export declare class SpaceServer extends IgeEventingClass {
      * @param {String=} clientId The id of the client that sent the command.
      * @private
      */
-    _onPlayerEntity(data: any, clientId: any): void;
-    _onMiningStartRequest(data: any, clientId: any, callback: any): void;
-    _onAbilityUseRequest(data: any, clientId: any, callback: any): any;
-    _onPlayerControlChange(data: any, clientId: any): void;
+    _onPlayerEntity: IgeNetworkServerSideMessageHandler;
+    _onMiningStartRequest: IgeNetworkServerSideRequestHandler;
+    _onAbilityUseRequest: IgeNetworkServerSideMessageHandler;
+    _onPlayerControlChange: IgeNetworkServerSideMessageHandler;
 }

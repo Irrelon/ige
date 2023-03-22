@@ -1,5 +1,5 @@
-import { GameEntityModuleDefinition, GameEntityModuleStates } from "../../../types/GameEntityModuleDefinition";
+import { EntityModuleDefinition, EntityModuleStates } from "../../../types/EntityModuleDefinition";
 
-export const abilityCanBeActive = (module: GameEntityModuleDefinition, states: GameEntityModuleStates) => {
+export const abilityCanBeActive = (module: EntityModuleDefinition, states: EntityModuleStates) => {
 	return !module.cooldown() && (states.energy.val + module._definition.usageCost.energy) > 0;
 };

@@ -3,23 +3,23 @@ import { isClient, isServer } from "@/engine/clientServer";
 import { IgeEntityBox2d } from "@/engine/components/physics/box2d/IgeEntityBox2d";
 import { AbilityButton } from "./ui/AbilityButton";
 import { IgeNetIoClientController } from "@/engine/network/client/IgeNetIoClientController";
-import { GameEntityModuleDefinition } from "../../types/GameEntityModuleDefinition";
+import { EntityModuleDefinition } from "../../types/EntityModuleDefinition";
 import { IgeCanvasRenderingContext2d } from "@/types/IgeCanvasRenderingContext2d";
 import { IgeAudioController } from "@/engine/audio";
-import acceptedAction from "../data/acceptedAction.json";
-import { GameEntityAbilityModuleDefinition } from "./module/Module_Ability";
-
-const acceptedActionTyped = acceptedAction as Record<string, string[]>;
+import { acceptedAction } from "../data/acceptedAction";
+import { IgeNetworkServerSideRequestHandler } from "@/types/IgeNetworkMessage";
+import { Module_Generic } from "./module/Module_Generic";
+import { EntityAbilityModuleDefinition } from "../../types/EntityAbilityModuleDefinition";
 
 //require('./module/Module_Generic');
 //require('./module/Module_Ability');
 //require('./module/Module_MiningLaser');
 //require('./ui/AbilityButton');
 
-export interface GameEntityPublicGameData {
+export interface EntityPublicGameData {
 	clientId?: string;
 	state: Record<string, any>;
-	module: Record<string, GameEntityModuleDefinition | GameEntityAbilityModuleDefinition>;
+	module: Record<string, EntityModuleDefinition | EntityAbilityModuleDefinition>;
 	ability: Record<string, any>;
 	acceptsActionObj: Record<string, any>;
 	size?: number;
@@ -27,21 +27,21 @@ export interface GameEntityPublicGameData {
 	rotation?: number;
 }
 
-export interface GameEntityPrivateGameData {
+export interface EntityPrivateGameData {
 	state?: Record<string, any>;
-	module: Record<string, GameEntityModuleDefinition | GameEntityAbilityModuleDefinition>;
+	module: Record<string, Module_Generic>;
 	ability?: Record<string, any>;
 	acceptsActionObj?: Record<string, any>;
 }
 
 export class GameEntity extends IgeEntityBox2d {
 	classId = "GameEntity";
-	_publicGameData: GameEntityPublicGameData;
-	_privateGameData: GameEntityPrivateGameData;
+	_publicGameData: EntityPublicGameData;
+	_privateGameData: EntityPrivateGameData;
 	_tickTime: number = 0;
 	_health: number = 0;
 
-	constructor (publicGameData: GameEntityPublicGameData = {
+	constructor (publicGameData: EntityPublicGameData = {
 		state: {},
 		module: {},
 		ability: {},
@@ -64,7 +64,7 @@ export class GameEntity extends IgeEntityBox2d {
 
 		if (isServer) {
 			// Define the actions that are accepted by this instance
-			const thisAcceptedActionsArr = acceptedActionTyped[this.classId] as string[];
+			const thisAcceptedActionsArr = acceptedAction[this.classId] as string[];
 
 			if (thisAcceptedActionsArr && thisAcceptedActionsArr.length) {
 				for (let i = 0; i < thisAcceptedActionsArr.length; i++) {
@@ -148,7 +148,7 @@ export class GameEntity extends IgeEntityBox2d {
 				this._publicGameData.ability[abilityId] = moduleId;
 
 				if (isClient) {
-					const module = this.module(moduleId) as GameEntityAbilityModuleDefinition;
+					const module = this.module(moduleId) as EntityAbilityModuleDefinition;
 
 					const abilityButton = ige.game.scene["action" + abilityId] = new AbilityButton({
 						abilityId: abilityId,
@@ -181,7 +181,7 @@ export class GameEntity extends IgeEntityBox2d {
 	 * Set to null to remove the existing component.
 	 * @returns {*}
 	 */
-	module (moduleId: string, moduleDefinition?: GameEntityModuleDefinition) {
+	module (moduleId: string, moduleDefinition?: EntityModuleDefinition) {
 		const modulesObj = this._publicGameData.module;
 
 		if (moduleId !== undefined) {
@@ -316,7 +316,7 @@ export class GameEntity extends IgeEntityBox2d {
 	}
 
 	/**
-	 * Called by the client requesting ability usage. Activates a ability if
+	 * Called by the client requesting ability usage. Activates an ability if
 	 * the ability is not already active or on cooldown.
 	 * @param {Object} data Arbitrary data that the ability usage might need
 	 * and is sent by the client.
@@ -324,7 +324,7 @@ export class GameEntity extends IgeEntityBox2d {
 	 * @returns {*}
 	 * @private
 	 */
-	_onAbilityUseRequest (data, callback) {
+	_onAbilityUseRequest: IgeNetworkServerSideRequestHandler = (data, clientId, callback) => {
 		// Grab the component in the ship's module
 		const module = this.privateModule(this.ability(data.abilityId));
 

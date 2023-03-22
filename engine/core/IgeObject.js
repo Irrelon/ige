@@ -11,7 +11,7 @@ import { IgePoly2d } from "../../engine/core/IgePoly2d.js";
 import { IgeMountMode } from "../../enums/IgeMountMode.js";
 import { IgeStreamMode } from "../../enums/IgeStreamMode.js";
 import { IgeIsometricDepthSortMode } from "../../enums/IgeIsometricDepthSortMode.js";
-import { IGE_NETWORK_STREAM_CREATE, IGE_NETWORK_STREAM_DESTROY } from "../../enums/IgeConstants.js";
+import { IGE_NETWORK_STREAM_CREATE, IGE_NETWORK_STREAM_DESTROY } from "../../enums/IgeNetworkConstants.js";
 export class IgeObject extends IgeEventingClass {
     constructor() {
         super();

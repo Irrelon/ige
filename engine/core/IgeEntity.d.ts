@@ -82,7 +82,8 @@ export declare class IgeEntity extends IgeObject implements IgeCanRegisterById, 
      * @param {Boolean=} val True to enable smoothing, false to disable.
      * @returns {*}
      */
-    cacheSmoothing(val?: boolean): boolean | this;
+    cacheSmoothing(val: boolean): this;
+    cacheSmoothing(): boolean;
     /**
      * Gets the position of the mouse relative to this entity's
      * center point.
@@ -155,7 +156,8 @@ export declare class IgeEntity extends IgeObject implements IgeCanRegisterById, 
      *     entity.backgroundPattern(texture, 'repeat', true, true);
      * @return {*}
      */
-    backgroundPattern(texture?: IgeTexture, repeat?: string, trackCamera?: boolean, isoTile?: boolean): IgeTexture | this | undefined;
+    backgroundPattern(texture: IgeTexture, repeat?: string, trackCamera?: boolean, isoTile?: boolean): this;
+    backgroundPattern(): IgeTexture;
     smartBackground(): IgeSmartTexture | undefined;
     smartBackground(renderMethod?: IgeSmartTexture): this;
     /**
@@ -435,7 +437,8 @@ export declare class IgeEntity extends IgeObject implements IgeCanRegisterById, 
      * @return {*} "this" when arguments are passed to allow method
      * chaining or the current value if no arguments are specified.
      */
-    highlight(val?: boolean, highlightChildEntities?: boolean): boolean | this;
+    highlight(val: boolean, highlightChildEntities: boolean): this;
+    highlight(): boolean;
     /**
      * Calculates and returns the current axis-aligned bounding box in
      * world co-ordinates.
@@ -662,7 +665,8 @@ export declare class IgeEntity extends IgeObject implements IgeCanRegisterById, 
      *     });
      * @return {*}
      */
-    pointerMove: (callback?: IgeInputEvent) => this | IgeInputEvent | undefined;
+    pointerMove(callback: IgeInputEvent): this;
+    pointerMove(): IgeInputEvent;
     /**
      * Gets / sets the callback that is fired when a mouse
      * over event is triggered.
@@ -741,7 +745,8 @@ export declare class IgeEntity extends IgeObject implements IgeCanRegisterById, 
      *     });
      * @return {*}
      */
-    pointerDown: (callback?: IgeInputEvent) => this | IgeInputEvent | undefined;
+    pointerDown(callback: IgeInputEvent): this;
+    pointerDown(): IgeInputEvent;
     /**
      * Gets / sets the callback that is fired when a mouse
      * wheel event is triggered.
@@ -761,7 +766,8 @@ export declare class IgeEntity extends IgeObject implements IgeCanRegisterById, 
      *     });
      * @return {*}
      */
-    pointerWheel: (callback?: IgeInputEvent) => this | IgeInputEvent | undefined;
+    pointerWheel(callback: IgeInputEvent): this;
+    pointerWheel(): IgeInputEvent;
     /**
      * Removes the callback that is fired when a mouse
      * move event is triggered.
@@ -922,7 +928,8 @@ export declare class IgeEntity extends IgeObject implements IgeCanRegisterById, 
      * @return {*}
      * @private
      */
-    _translateAccessorX: (val?: number) => number | this;
+    _translateAccessorX(val: number): this;
+    _translateAccessorX(): number;
     /**
      * The `translate` accessor method for the y-axis. This
      * method is not called directly but is accessed through
@@ -931,7 +938,8 @@ export declare class IgeEntity extends IgeObject implements IgeCanRegisterById, 
      * @return {*}
      * @private
      */
-    _translateAccessorY(val?: number): number | this;
+    _translateAccessorY(val: number): this;
+    _translateAccessorY(): number;
     /**
      * The `translate` accessor method for the z-axis. This
      * method is not called directly but is accessed through
@@ -940,7 +948,8 @@ export declare class IgeEntity extends IgeObject implements IgeCanRegisterById, 
      * @return {*}
      * @private
      */
-    _translateAccessorZ: (val?: number) => number | this;
+    _translateAccessorZ(val: number): this;
+    _translateAccessorZ(): number;
     /**
      * Rotates the entity by adding the passed values to
      * the current rotation values.
@@ -977,7 +986,8 @@ export declare class IgeEntity extends IgeObject implements IgeCanRegisterById, 
      * @return {*}
      * @private
      */
-    _rotateAccessorX: (val?: number) => number | this;
+    _rotateAccessorX(val: number): this;
+    _rotateAccessorX(): number;
     /**
      * The `rotate` accessor method for the y-axis. This
      * method is not called directly but is accessed through
@@ -986,7 +996,8 @@ export declare class IgeEntity extends IgeObject implements IgeCanRegisterById, 
      * @return {*}
      * @private
      */
-    _rotateAccessorY: (val?: number) => number | this;
+    _rotateAccessorY(val: number): this;
+    _rotateAccessorY(): number;
     /**
      * The `rotate` accessor method for the z-axis. This
      * method is not called directly but is accessed through
@@ -995,7 +1006,8 @@ export declare class IgeEntity extends IgeObject implements IgeCanRegisterById, 
      * @return {*}
      * @private
      */
-    _rotateAccessorZ: (val?: number) => number | this;
+    _rotateAccessorZ(val: number): this;
+    _rotateAccessorZ(): number;
     /**
      * Scales the entity by adding the passed values to
      * the current scale values.
@@ -1032,7 +1044,8 @@ export declare class IgeEntity extends IgeObject implements IgeCanRegisterById, 
      * @return {*}
      * @private
      */
-    _scaleAccessorX: (val?: number) => number | this;
+    _scaleAccessorX(val: number): this;
+    _scaleAccessorX(): number;
     /**
      * The `scale` accessor method for the y-axis. This
      * method is not called directly but is accessed through
@@ -1041,7 +1054,8 @@ export declare class IgeEntity extends IgeObject implements IgeCanRegisterById, 
      * @return {*}
      * @private
      */
-    _scaleAccessorY: (val?: number) => number | this;
+    _scaleAccessorY(val: number): this;
+    _scaleAccessorY(): number;
     /**
      * The `scale` accessor method for the z-axis. This
      * method is not called directly but is accessed through
@@ -1050,7 +1064,8 @@ export declare class IgeEntity extends IgeObject implements IgeCanRegisterById, 
      * @return {*}
      * @private
      */
-    _scaleAccessorZ: (val?: number) => number | this;
+    _scaleAccessorZ(val: number): this;
+    _scaleAccessorZ(): number;
     /**
      * Sets the `origin` of the entity by adding the passed values to
      * the current origin values.
@@ -1087,7 +1102,8 @@ export declare class IgeEntity extends IgeObject implements IgeCanRegisterById, 
      * @return {*}
      * @private
      */
-    _originAccessorX: (val?: number) => number | this;
+    _originAccessorX(val: number): this;
+    _originAccessorX(): number;
     /**
      * The `origin` accessor method for the y-axis. This
      * method is not called directly but is accessed through
@@ -1096,7 +1112,8 @@ export declare class IgeEntity extends IgeObject implements IgeCanRegisterById, 
      * @return {*}
      * @private
      */
-    _originAccessorY: (val?: number) => number | this;
+    _originAccessorY(val: number): this;
+    _originAccessorY(): number;
     /**
      * The `origin` accessor method for the z-axis. This
      * method is not called directly but is accessed through
@@ -1105,7 +1122,8 @@ export declare class IgeEntity extends IgeObject implements IgeCanRegisterById, 
      * @return {*}
      * @private
      */
-    _originAccessorZ: (val?: number) => number | this;
+    _originAccessorZ(val: number): this;
+    _originAccessorZ(): number;
     _rotatePoint(point: IgePoint2d, radians: number, origin: IgePoint2d): {
         x: number;
         y: number;

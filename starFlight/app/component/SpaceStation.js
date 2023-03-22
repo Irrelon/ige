@@ -5,7 +5,7 @@ import { IgeEntityBox2d } from "../../../engine/components/physics/box2d/IgeEnti
 import { IgeBox2dBodyType } from "../../../enums/IgeBox2dBodyType.js";
 import { IgeBox2dFixtureShapeType } from "../../../enums/IgeBox2dFixtureShapeType.js";
 export class SpaceStation extends IgeEntityBox2d {
-    constructor(publicGameData = {}) {
+    constructor(publicGameData) {
         super();
         this.classId = "SpaceStation";
         this._publicGameData = publicGameData;
@@ -17,7 +17,7 @@ export class SpaceStation extends IgeEntityBox2d {
             this.addComponent("velocity", IgeVelocityComponent);
         }
         if (ige.box2d) {
-            // Create box2d body for this object
+            // Create Box2D body for this object
             this.box2dBody({
                 type: IgeBox2dBodyType.dynamic,
                 linearDamping: 0.0,

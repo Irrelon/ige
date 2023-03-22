@@ -2,8 +2,7 @@ import { ige } from "../../../engine/instance.js";
 import { isClient, isServer } from "../../../engine/clientServer.js";
 import { IgeEntityBox2d } from "../../../engine/components/physics/box2d/IgeEntityBox2d.js";
 import { AbilityButton } from "./ui/AbilityButton.js";
-import acceptedAction from "../data/acceptedAction.json";
-const acceptedActionTyped = acceptedAction;
+import { acceptedAction } from "../data/acceptedAction.js";
 export class GameEntity extends IgeEntityBox2d {
     constructor(publicGameData = {
         state: {},
@@ -15,6 +14,58 @@ export class GameEntity extends IgeEntityBox2d {
         this.classId = "GameEntity";
         this._tickTime = 0;
         this._health = 0;
+        /**
+         * Called by the client requesting ability usage. Activates an ability if
+         * the ability is not already active or on cooldown.
+         * @param {Object} data Arbitrary data that the ability usage might need
+         * and is sent by the client.
+         * @param {Function} callback The callback to send the result to.
+         * @returns {*}
+         * @private
+         */
+        this._onAbilityUseRequest = (data, clientId, callback) => {
+            // Grab the component in the ship's module
+            const module = this.privateModule(this.ability(data.abilityId));
+            if (!module) {
+                //console.log('Player tried to activate empty ability: ' + data.abilityId);
+                return callback("abilityEmpty");
+            }
+            if (module.active()) {
+                // Module already active, ignore the request
+                //console.log('Player tried to activate already activated ability: ' + data.abilityId);
+                return callback("alreadyActive");
+            }
+            // Check if the action requires a target
+            if (module._definition.requiresTarget) {
+                // Check if we were sent a target and the target is valid
+                if (!data.targetId) {
+                    // No target was provided
+                    //console.log('Player tried to activate ability that requires target: ' + data.abilityId);
+                    return callback("targetRequired");
+                }
+                const targetEntity = ige.$(data.targetId);
+                if (!targetEntity.acceptsAction(module.action())) {
+                    //console.log('Player tried to activate ability against invalid target: ' + data.abilityId);
+                    return callback("invalidTarget");
+                }
+                // Check distance to target
+                if (module._definition.range && Math.abs(this.distanceTo(targetEntity)) > module._definition.range) {
+                    return callback("targetOutOfRange", Math.abs(this.distanceTo(targetEntity)));
+                }
+                // Set the target for the module
+                //console.log('Accepted target for ability: ' + data.abilityId);
+                module.target(targetEntity);
+            }
+            // Check if the ability can be activated
+            if (!module.canBeActive(this._publicGameData.state)) {
+                return callback("canBeActiveDenied");
+            }
+            // Activate the module
+            //console.log('Activating ability: ' + data.abilityId);
+            module.active(true, this._publicGameData.state);
+            // Tell the client this ability use was accepted
+            callback(false);
+        };
         publicGameData.state = publicGameData.state || {};
         publicGameData.module = publicGameData.module || {};
         publicGameData.ability = publicGameData.ability || {};
@@ -27,7 +78,7 @@ export class GameEntity extends IgeEntityBox2d {
         this.streamSections(["transform", "props"]);
         if (isServer) {
             // Define the actions that are accepted by this instance
-            const thisAcceptedActionsArr = acceptedActionTyped[this.classId];
+            const thisAcceptedActionsArr = acceptedAction[this.classId];
             if (thisAcceptedActionsArr && thisAcceptedActionsArr.length) {
                 for (let i = 0; i < thisAcceptedActionsArr.length; i++) {
                     this.acceptsAction(thisAcceptedActionsArr[i], true);
@@ -238,58 +289,6 @@ export class GameEntity extends IgeEntityBox2d {
                 }
             }
         }
-    }
-    /**
-     * Called by the client requesting ability usage. Activates a ability if
-     * the ability is not already active or on cooldown.
-     * @param {Object} data Arbitrary data that the ability usage might need
-     * and is sent by the client.
-     * @param {Function} callback The callback to send the result to.
-     * @returns {*}
-     * @private
-     */
-    _onAbilityUseRequest(data, callback) {
-        // Grab the component in the ship's module
-        const module = this.privateModule(this.ability(data.abilityId));
-        if (!module) {
-            //console.log('Player tried to activate empty ability: ' + data.abilityId);
-            return callback("abilityEmpty");
-        }
-        if (module.active()) {
-            // Module already active, ignore the request
-            //console.log('Player tried to activate already activated ability: ' + data.abilityId);
-            return callback("alreadyActive");
-        }
-        // Check if the action requires a target
-        if (module._definition.requiresTarget) {
-            // Check if we were sent a target and the target is valid
-            if (!data.targetId) {
-                // No target was provided
-                //console.log('Player tried to activate ability that requires target: ' + data.abilityId);
-                return callback("targetRequired");
-            }
-            const targetEntity = ige.$(data.targetId);
-            if (!targetEntity.acceptsAction(module.action())) {
-                //console.log('Player tried to activate ability against invalid target: ' + data.abilityId);
-                return callback("invalidTarget");
-            }
-            // Check distance to target
-            if (module._definition.range && Math.abs(this.distanceTo(targetEntity)) > module._definition.range) {
-                return callback("targetOutOfRange", Math.abs(this.distanceTo(targetEntity)));
-            }
-            // Set the target for the module
-            //console.log('Accepted target for ability: ' + data.abilityId);
-            module.target(targetEntity);
-        }
-        // Check if the ability can be activated
-        if (!module.canBeActive(this._publicGameData.state)) {
-            return callback("canBeActiveDenied");
-        }
-        // Activate the module
-        //console.log('Activating ability: ' + data.abilityId);
-        module.active(true, this._publicGameData.state);
-        // Tell the client this ability use was accepted
-        callback(false);
     }
     /* CEXCLUDE */
     /**

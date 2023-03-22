@@ -1,5 +1,5 @@
-import { IgeEntityBox2d } from "@/engine/components/physics/box2d/IgeEntityBox2d";
 import { ige } from "@/engine/instance";
+import { IgeEntityBox2d } from "@/engine/components/physics/box2d/IgeEntityBox2d";
 import { IgeTextureAnimationComponent } from "@/engine/components/IgeTextureAnimationComponent";
 import { IgeBox2dBodyType } from "@/enums/IgeBox2dBodyType";
 import { IgeBox2dFixtureShapeType } from "@/enums/IgeBox2dFixtureShapeType";

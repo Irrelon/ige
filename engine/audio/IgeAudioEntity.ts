@@ -1,9 +1,8 @@
 import { ige } from "@/engine/instance";
 import { isClient } from "@/engine/clientServer";
 import { IgeAudioItem } from "@/engine/audio/IgeAudioItem";
-import { IgeObject } from "@/engine/core/IgeObject";
-import type { IgeCanvasRenderingContext2d } from "@/types/IgeCanvasRenderingContext2d";
 import { IgeEntity } from "@/engine/core/IgeEntity";
+import type { IgeCanvasRenderingContext2d } from "@/types/IgeCanvasRenderingContext2d";
 
 export interface IgeAudioEntityPanner extends PannerOptions {
 
@@ -14,7 +13,7 @@ export interface IgeAudioEntityOptions {
 	loop?: boolean;
 	gain?: number;
 	panner?: IgeAudioEntityPanner;
-	relativeTo?: IgeObject;
+	relativeTo?: IgeEntity;
 }
 
 // Set default data for any audio panner node
@@ -38,7 +37,7 @@ export class IgeAudioEntity extends IgeEntity {
 		gain: 1,
 		panner: defaultPanner
 	};
-	_relativeTo?: IgeObject;
+	_relativeTo?: IgeEntity;
 	_listener?: AudioListener;
 	_panner?: PannerNode;
 	_audioId?: string;
@@ -70,9 +69,9 @@ export class IgeAudioEntity extends IgeEntity {
 		}
 	}
 
-	relativeTo (val: IgeObject): this;
-	relativeTo (): IgeObject | undefined;
-	relativeTo (val?: IgeObject) {
+	relativeTo (val: IgeEntity): this;
+	relativeTo (): IgeEntity | undefined;
+	relativeTo (val?: IgeEntity) {
 		if (val !== undefined) {
 			const audioInterface = this.audioInterface();
 			if (!audioInterface) return;

@@ -22,6 +22,33 @@ export enum IgeInputDevice {
 	"gamePad8"
 }
 
+export enum IgeInputGamePadMap {
+	"button1",
+	"button2",
+	"button3",
+	"button4",
+	"button5",
+	"button6",
+	"button7",
+	"button8",
+	"button9",
+	"button10",
+	"button11",
+	"button12",
+	"button13",
+	"button14",
+	"button15",
+	"button16",
+	"button17",
+	"button18",
+	"button19",
+	"button20",
+	"axisLeftX",
+	"axisLeftY",
+	"axisRightX",
+	"axisRightY",
+}
+
 export enum IgeInputPointerMap {
 	"down", // If any button is currently down
 	"up", // If any button is currently NOT down but was in the last tick

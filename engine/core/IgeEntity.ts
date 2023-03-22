@@ -230,6 +230,8 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 	 * @param {Boolean=} val True to enable smoothing, false to disable.
 	 * @returns {*}
 	 */
+	cacheSmoothing (val: boolean): this;
+	cacheSmoothing (): boolean;
 	cacheSmoothing (val?: boolean) {
 		if (val !== undefined) {
 			this._cacheSmoothing = val;
@@ -370,6 +372,8 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 	 *     entity.backgroundPattern(texture, 'repeat', true, true);
 	 * @return {*}
 	 */
+	backgroundPattern (texture: IgeTexture, repeat?: string, trackCamera?: boolean, isoTile?: boolean): this;
+	backgroundPattern (): IgeTexture;
 	backgroundPattern (texture?: IgeTexture, repeat: string = "repeat", trackCamera: boolean = false, isoTile: boolean = false) {
 		if (texture !== undefined) {
 			this._backgroundPattern = texture;
@@ -1006,7 +1010,9 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 	 * @return {*} "this" when arguments are passed to allow method
 	 * chaining or the current value if no arguments are specified.
 	 */
-	highlight (val?: boolean, highlightChildEntities = true) {
+	highlight (val: boolean, highlightChildEntities: boolean): this;
+	highlight (): boolean;
+	highlight (val?: boolean, highlightChildEntities: boolean = true) {
 		if (val !== undefined) {
 			this._highlight = val;
 
@@ -2020,7 +2026,9 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 	 *     });
 	 * @return {*}
 	 */
-	pointerMove = (callback?: IgeInputEvent) => {
+	pointerMove (callback: IgeInputEvent): this;
+	pointerMove (): IgeInputEvent;
+	pointerMove (callback?: IgeInputEvent) {
 		if (callback) {
 			this._pointerMove = callback;
 			this._pointerEventsActive = true;
@@ -2028,7 +2036,7 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 		}
 
 		return this._pointerMove;
-	};
+	}
 
 	/**
 	 * Gets / sets the callback that is fired when a mouse
@@ -2138,7 +2146,9 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 	 *     });
 	 * @return {*}
 	 */
-	pointerDown = (callback?: IgeInputEvent) => {
+	pointerDown (callback: IgeInputEvent): this;
+	pointerDown (): IgeInputEvent;
+	pointerDown (callback?: IgeInputEvent) {
 		if (callback) {
 			this._pointerDown = callback;
 			this._pointerEventsActive = true;
@@ -2146,7 +2156,7 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 		}
 
 		return this._pointerDown;
-	};
+	}
 
 	/**
 	 * Gets / sets the callback that is fired when a mouse
@@ -2167,7 +2177,9 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 	 *     });
 	 * @return {*}
 	 */
-	pointerWheel = (callback?: IgeInputEvent) => {
+	pointerWheel (callback: IgeInputEvent): this;
+	pointerWheel (): IgeInputEvent;
+	pointerWheel (callback?: IgeInputEvent) {
 		if (callback) {
 			this._pointerWheel = callback;
 			this._pointerEventsActive = true;
@@ -2175,7 +2187,7 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 		}
 
 		return this._pointerWheel;
-	};
+	}
 
 	/**
 	 * Removes the callback that is fired when a mouse
@@ -2636,14 +2648,16 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 	 * @return {*}
 	 * @private
 	 */
-	_translateAccessorX = (val?: number) => {
+	_translateAccessorX (val: number): this;
+	_translateAccessorX (): number;
+	_translateAccessorX (val?: number) {
 		if (val !== undefined) {
 			this._translate.x = val;
 			return this; // Used to include this._entity
 		}
 
 		return this._translate.x;
-	};
+	}
 
 	/**
 	 * The `translate` accessor method for the y-axis. This
@@ -2653,6 +2667,8 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 	 * @return {*}
 	 * @private
 	 */
+	_translateAccessorY (val: number): this;
+	_translateAccessorY (): number;
 	_translateAccessorY (val?: number) {
 		if (val !== undefined) {
 			this._translate.y = val;
@@ -2670,7 +2686,9 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 	 * @return {*}
 	 * @private
 	 */
-	_translateAccessorZ = (val?: number) => {
+	_translateAccessorZ (val: number): this;
+	_translateAccessorZ (): number;
+	_translateAccessorZ (val?: number) {
 		// TODO: Do we need to do anything to the matrix here for iso views?
 		//this._localMatrix.translateTo(this._translate.x, this._translate.y);
 		if (val !== undefined) {
@@ -2679,7 +2697,7 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 		}
 
 		return this._translate.z;
-	};
+	}
 
 	/**
 	 * Rotates the entity by adding the passed values to
@@ -2753,14 +2771,16 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 	 * @return {*}
 	 * @private
 	 */
-	_rotateAccessorX = (val?: number) => {
+	_rotateAccessorX (val: number): this;
+	_rotateAccessorX (): number;
+	_rotateAccessorX (val?: number) {
 		if (val !== undefined) {
 			this._rotate.x = val;
 			return this; // Used to include this._entity
 		}
 
 		return this._rotate.x;
-	};
+	}
 
 	/**
 	 * The `rotate` accessor method for the y-axis. This
@@ -2770,14 +2790,16 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 	 * @return {*}
 	 * @private
 	 */
-	_rotateAccessorY = (val?: number) => {
+	_rotateAccessorY (val: number): this;
+	_rotateAccessorY (): number;
+	_rotateAccessorY (val?: number) {
 		if (val !== undefined) {
 			this._rotate.y = val;
 			return this; // Used to include this._entity
 		}
 
 		return this._rotate.y;
-	};
+	}
 
 	/**
 	 * The `rotate` accessor method for the z-axis. This
@@ -2787,14 +2809,16 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 	 * @return {*}
 	 * @private
 	 */
-	_rotateAccessorZ = (val?: number) => {
+	_rotateAccessorZ (val: number): this;
+	_rotateAccessorZ (): number;
+	_rotateAccessorZ (val?: number) {
 		if (val !== undefined) {
 			this._rotate.z = val;
 			return this; // Used to include this._entity
 		}
 
 		return this._rotate.z;
-	};
+	}
 
 	/**
 	 * Scales the entity by adding the passed values to
@@ -2869,14 +2893,16 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 	 * @return {*}
 	 * @private
 	 */
-	_scaleAccessorX = (val?: number) => {
+	_scaleAccessorX (val: number): this;
+	_scaleAccessorX (): number;
+	_scaleAccessorX (val?: number) {
 		if (val !== undefined) {
 			this._scale.x = val;
 			return this; // Used to include this._entity
 		}
 
 		return this._scale.x;
-	};
+	}
 
 	/**
 	 * The `scale` accessor method for the y-axis. This
@@ -2886,14 +2912,16 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 	 * @return {*}
 	 * @private
 	 */
-	_scaleAccessorY = (val?: number) => {
+	_scaleAccessorY (val: number): this;
+	_scaleAccessorY (): number;
+	_scaleAccessorY (val?: number) {
 		if (val !== undefined) {
 			this._scale.y = val;
 			return this; // Used to include this._entity
 		}
 
 		return this._scale.y;
-	};
+	}
 
 	/**
 	 * The `scale` accessor method for the z-axis. This
@@ -2903,14 +2931,16 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 	 * @return {*}
 	 * @private
 	 */
-	_scaleAccessorZ = (val?: number) => {
+	_scaleAccessorZ (val: number): this;
+	_scaleAccessorZ (): number;
+	_scaleAccessorZ (val?: number) {
 		if (val !== undefined) {
 			this._scale.z = val;
 			return this; // Used to include this._entity
 		}
 
 		return this._scale.z;
-	};
+	}
 
 	/**
 	 * Sets the `origin` of the entity by adding the passed values to
@@ -2980,14 +3010,16 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 	 * @return {*}
 	 * @private
 	 */
-	_originAccessorX = (val?: number) => {
+	_originAccessorX (val: number): this;
+	_originAccessorX (): number;
+	_originAccessorX (val?: number) {
 		if (val !== undefined) {
 			this._origin.x = val;
 			return this; // Used to include this._entity
 		}
 
 		return this._origin.x;
-	};
+	}
 
 	/**
 	 * The `origin` accessor method for the y-axis. This
@@ -2997,14 +3029,16 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 	 * @return {*}
 	 * @private
 	 */
-	_originAccessorY = (val?: number) => {
+	_originAccessorY (val: number): this;
+	_originAccessorY (): number;
+	_originAccessorY (val?: number) {
 		if (val !== undefined) {
 			this._origin.y = val;
 			return this; // Used to include this._entity
 		}
 
 		return this._origin.y;
-	};
+	}
 
 	/**
 	 * The `origin` accessor method for the z-axis. This
@@ -3014,14 +3048,16 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 	 * @return {*}
 	 * @private
 	 */
-	_originAccessorZ = (val?: number) => {
+	_originAccessorZ (val: number): this;
+	_originAccessorZ (): number;
+	_originAccessorZ (val?: number) {
 		if (val !== undefined) {
 			this._origin.z = val;
 			return this; // Used to include this._entity
 		}
 
 		return this._origin.z;
-	};
+	}
 
 	_rotatePoint (point: IgePoint2d, radians: number, origin: IgePoint2d) {
 		const cosAngle = Math.cos(radians),

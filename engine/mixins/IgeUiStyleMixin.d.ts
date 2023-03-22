@@ -205,7 +205,12 @@ export declare const WithUiStyleMixin: <BaseClassType extends Mixin<IgeObject>>(
         _noAabb?: boolean | undefined;
         _hasParent?: Record<string, boolean> | undefined;
         _texture?: IgeTexture | undefined;
-        _indestructible: boolean;
+        _indestructible: boolean; /**
+         * Gets / sets the color to use as a background when
+         * rendering the UI element.
+         * @param {CSSColor, CanvasGradient, CanvasPattern=} color
+         * @return {*} Returns this when setting the value or the current value if none is specified.
+         */
         _shouldRender?: boolean | undefined;
         _smartBackground?: import("../../types/IgeSmartTexture").IgeSmartTexture<IgeObject> | undefined;
         _lastUpdate?: number | undefined;

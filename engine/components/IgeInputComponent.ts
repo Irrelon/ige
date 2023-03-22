@@ -15,7 +15,7 @@ export class IgeInputComponent extends IgeEventingClass implements IgeIsReadyPro
 	_evRef: Record<string, (event: any) => void> = {};
 	_debug?: boolean;
 	_state: Record<number, Record<number, string | number | boolean>> = {};
-	_controlMap: Record<number, [number, number]> = {};
+	_controlMap: Record<number, [IgeInputDevice, number][]> = {};
 	dblClick?: Event;
 	pointerMove?: Event;
 	pointerDown?: Event;
@@ -587,18 +587,18 @@ export class IgeInputComponent extends IgeEventingClass implements IgeIsReadyPro
 	 * @param action
 	 * @param inputMap
 	 */
-	mapAction = (action: number, inputMap: [IgeInputDevice, number]) => {
+	mapAction (action: number, inputMap: [IgeInputDevice, number][]) {
 		this._controlMap[action] = inputMap;
-	};
+	}
 
 	/**
 	 * Returns the passed action's input state value.
 	 * @param action
 	 */
-	actionVal = (action: number) => {
+	actionVal (action: number) {
 		const inputMap = this._controlMap[action];
 		return this._state[inputMap[0]][inputMap[1]];
-	};
+	}
 
 	/**
 	 * Returns true if the passed action's input is pressed or its state

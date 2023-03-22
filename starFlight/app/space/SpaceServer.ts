@@ -1,6 +1,13 @@
 import { ige } from "@/engine/instance";
+import { playerData } from "../data/playerData";
 import { IgeEventingClass } from "@/engine/core/IgeEventingClass";
 import { IgeNetIoServerController } from "@/engine/network/server/IgeNetIoServerController";
+import { IgeNetIoSocket } from "@/engine/network/server/IgeNetIoSocket";
+import { IgeNetworkServerSideMessageHandler, IgeNetworkServerSideRequestHandler } from "@/types/IgeNetworkMessage";
+import { IgeInterval } from "@/engine/core/IgeInterval";
+import { MiningLaserEffect } from "../component/effects/MiningLaserEffect";
+import { PlayerShip } from "../component/PlayerShip";
+import type { IgeScene2d } from "@/engine/core/IgeScene2d";
 
 export class SpaceServer extends IgeEventingClass {
 	constructor () {
@@ -9,17 +16,17 @@ export class SpaceServer extends IgeEventingClass {
 		ige.game._systemId = "valeria";
 
 		const network = ige.network as IgeNetIoServerController;
-		
+
 		// Listen for network connection events
 		network.on("connect", this._onPlayerConnect.bind(this)); // Defined in ./gameClasses/ServerNetworkEvents.js
 		network.on("disconnect", this._onPlayerDisconnect.bind(this)); // Defined in ./gameClasses/ServerNetworkEvents.js
 
 		// Create some network commands we will need
-		network.define("publicGameData", this._onPublicGameData.bind(this));
-		network.define("playerEntity", this._onPlayerEntity.bind(this));
-		network.define("miningStart", this._onMiningStartRequest.bind(this));
-		network.define("playerShipControlChange", this._onPlayerControlChange.bind(this));
-		network.define("useAbility", this._onAbilityUseRequest.bind(this));
+		network.define("publicGameData", this._onPublicGameData);
+		network.define("playerEntity", this._onPlayerEntity);
+		network.define("miningStart", this._onMiningStartRequest);
+		network.define("playerShipControlChange", this._onPlayerControlChange);
+		network.define("useAbility", this._onAbilityUseRequest);
 		network.define("msg");
 
 		for (let i = 1; i <= 10; i++) {
@@ -43,7 +50,7 @@ export class SpaceServer extends IgeEventingClass {
 	 * @param socket The client socket object.
 	 * @private
 	 */
-	_onPlayerConnect (socket) {
+	_onPlayerConnect (socket: IgeNetIoSocket) {
 		// Don't reject the client connection
 		return false;
 	}
@@ -53,7 +60,7 @@ export class SpaceServer extends IgeEventingClass {
 	 * @param {String} clientId The client network id.
 	 * @private
 	 */
-	_onPlayerDisconnect (clientId) {
+	_onPlayerDisconnect (clientId: string) {
 		if (ige.game.players[clientId]) {
 			// Remove the player from the game
 			ige.game.players[clientId].destroy();
@@ -64,7 +71,8 @@ export class SpaceServer extends IgeEventingClass {
 		}
 	}
 
-	_onPublicGameData (data, clientId, callback) {
+	_onPublicGameData: IgeNetworkServerSideRequestHandler = (data, clientId, callback) => {
+		if (!callback) return;
 		callback(false, ige.game.publicGameData);
 	}
 
@@ -79,46 +87,33 @@ export class SpaceServer extends IgeEventingClass {
 	 * @param {String=} clientId The id of the client that sent the command.
 	 * @private
 	 */
-	_onPlayerEntity (data, clientId) {
-		let player,
-			playerData,
-			modules;
-
-		player = ige.game.playerByClientId(clientId);
-
-		if (!player) {
-			// Create a new player instance
-			playerData = require("../data/playerData_dummyData.json");
-			modules = playerData.modules;
-
-			player = new PlayerShip({
-				clientId: clientId,
-				module: ige.game.generateModuleObject(JSON.parse(JSON.stringify(modules)))
-			}).streamMode(1).mount(ige.game.scene.frontScene);
-
-			// Keep inventory count up to date
-			player._inventory.on("change", function () {
-				player._publicGameData.state.inventoryCount.val = player._inventory.count();
-			});
-
-			// Apply player data
-			player._inventory.post(playerData.inventory);
-
-			// Set the player against the client id
-			ige.game.playerByClientId(clientId, player);
-
-			// Tell the client to track their player entity by it's id
-			ige.network.send("playerEntity", player.id(), clientId);
+	_onPlayerEntity: IgeNetworkServerSideMessageHandler = (data, clientId) => {
+		if (ige.game.playerByClientId(clientId)) {
+			return;
 		}
+
+		const modules = playerData.modules;
+
+		const player = new PlayerShip({
+			clientId: clientId,
+			module: ige.game.generateModuleObject(JSON.parse(JSON.stringify(modules)))
+		}).streamMode(1).mount(ige.game.scene.frontScene);
+
+		player._inventory.on("change", function () {
+			player._publicGameData.state.inventoryCount.val = player._inventory.count();
+		});
+
+		player._inventory.post(playerData.inventory);
+
+		ige.game.playerByClientId(clientId, player);
+		(ige.network as IgeNetIoServerController).send("playerEntity", player.id(), clientId);
 	}
 
-	_onMiningStartRequest (data, clientId, callback) {
-		let player = ige.game.playerByClientId(clientId),
-			asteroid,
-			laser;
+	_onMiningStartRequest: IgeNetworkServerSideRequestHandler = (data, clientId: string, callback) => {
+		const player = ige.game.playerByClientId(clientId);
 
 		if (data && data.asteroidId) {
-			asteroid = ige.engine.$(data.asteroidId);
+			const asteroid = ige.$(data.asteroidId);
 
 			if (asteroid) {
 				// Check the player's ship has a mining capability
@@ -131,6 +126,8 @@ export class SpaceServer extends IgeEventingClass {
 
 					// Check that the asteroid has ore left in it
 					if (asteroid._oreCount > 0) {
+						let laser;
+
 						player.effects = player.effects || [];
 
 						// Check if the player already has mining laser effect
@@ -141,7 +138,7 @@ export class SpaceServer extends IgeEventingClass {
 							// Create a laser effect
 							laser = new MiningLaserEffect()
 								.streamMode(1)
-								.mount(ige.engine.$("frontScene"));
+								.mount(ige.$("frontScene") as IgeScene2d);
 
 							player.effects.push(laser);
 						}
@@ -168,26 +165,21 @@ export class SpaceServer extends IgeEventingClass {
 		}
 	}
 
-	_onAbilityUseRequest (data, clientId, callback) {
-		let playerEntity;
-
+	_onAbilityUseRequest: IgeNetworkServerSideMessageHandler = (data, clientId, callback) => {
 		if (!data || data && !data.abilityId) {
-			return callback("noAbilityId");
+			return callback && callback("noAbilityId");
 		}
 
-		playerEntity = ige.game.playerByClientId(clientId);
+		const playerEntity = ige.game.playerByClientId(clientId);
 
 		if (!playerEntity) {
-			return callback("noPlayer");
+			return callback && callback("noPlayer");
 		}
 
-		playerEntity._onAbilityUseRequest(data, callback);
+		playerEntity._onAbilityUseRequest(data, clientId, callback);
 	}
 
-	/* CEXCLUDE */
-	_onPlayerControlChange (data, clientId) {
+	_onPlayerControlChange: IgeNetworkServerSideMessageHandler = (data, clientId: string) => {
 		ige.game.playerByClientId(clientId)._controlState[data[0]] = data[1];
 	}
-
-	/* CEXCLUDE */
 }

@@ -1,4 +1,4 @@
-{
+export const playerData = {
 	"inventory": [{
 		"type": "ore",
 		"meta": {

@@ -1,4 +1,4 @@
-var appCore = require('../../../ige');
+const appCore = require('../../../ige');
 
 require('./StationClient');
 require('./StationClientScene');
@@ -8,7 +8,7 @@ require('./StationServer');
 require('./StationServerScene');
 
 appCore.config(function ($ige) {
-	$ige.route('app.space', {
+	ige.route('app.space', {
 		client: {
 			controller: 'StationClient',
 			sceneGraph: 'StationClientScene',

@@ -1,5 +1,5 @@
 import { IgeAudioItem } from "@/engine/audio/IgeAudioItem";
-import { IgeObject } from "@/engine/core/IgeObject";
+import { IgeEntity } from "@/engine/core/IgeEntity";
 import type { IgeCanvasRenderingContext2d } from "@/types/IgeCanvasRenderingContext2d";
 export interface IgeAudioEntityPanner extends PannerOptions {
 }
@@ -8,19 +8,19 @@ export interface IgeAudioEntityOptions {
     loop?: boolean;
     gain?: number;
     panner?: IgeAudioEntityPanner;
-    relativeTo?: IgeObject;
+    relativeTo?: IgeEntity;
 }
-export declare class IgeAudioEntity extends IgeObject {
+export declare class IgeAudioEntity extends IgeEntity {
     classId: string;
     _audioInterface?: IgeAudioItem;
     _options: IgeAudioEntityOptions;
-    _relativeTo?: IgeObject;
+    _relativeTo?: IgeEntity;
     _listener?: AudioListener;
     _panner?: PannerNode;
     _audioId?: string;
     constructor(audioId?: string, options?: IgeAudioEntityOptions);
-    relativeTo(val: IgeObject): this;
-    relativeTo(): IgeObject | undefined;
+    relativeTo(val: IgeEntity): this;
+    relativeTo(): IgeEntity | undefined;
     /**
      * Gets the playing boolean flag state.
      * @returns {Boolean} True if playing, false if not.

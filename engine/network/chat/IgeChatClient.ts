@@ -7,7 +7,7 @@ import {
 	IGE_NETWORK_CHAT_ROOM_CREATED,
 	IGE_NETWORK_CHAT_ROOM_LIST_USERS,
 	IGE_NETWORK_CHAT_ROOM_REMOVED
-} from "@/enums/IgeConstants";
+} from "@/enums/IgeNetworkConstants";
 import { IgeChatComponent } from "./IgeChatComponent";
 import { IgeNetIoClientController } from "../client/IgeNetIoClientController";
 import {

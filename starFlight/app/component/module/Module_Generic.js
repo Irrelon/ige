@@ -9,13 +9,12 @@ export class Module_Generic extends IgeBaseClass {
         this.classId = "Module_Generic";
         this._enabled = false;
         this._active = false;
-        this._target = null;
+        //_target: IgeEntity | null = null;
         this._activeStartTime = 0;
         this._attachedTo = null; // This might be GameEntity and game entity requires _effects defined on it, and effects need their own class
         this._definition = definition;
         // Apply the initial enabled value from the definition
         this._enabled = definition.enabled;
-        this._action = definition.action;
         this._active = definition.active !== undefined ? definition.active : false;
     }
     enabled(val) {
@@ -43,20 +42,6 @@ export class Module_Generic extends IgeBaseClass {
             return this;
         }
         return this._attachedTo;
-    }
-    target(val) {
-        if (val !== undefined) {
-            this._target = val;
-            return this;
-        }
-        return this._target;
-    }
-    action(val) {
-        if (val !== undefined) {
-            this._action = val;
-            return this;
-        }
-        return this._action;
     }
     /**
      * If any effects are in the module's definition under "effects"
@@ -144,21 +129,11 @@ export class Module_Generic extends IgeBaseClass {
      * @param {Number} tickDelta The tick delta for this tick.
      */
     resolve(states, tickDelta) {
-        let inputId, currentRatio = 1, outputId, modifierCalcData;
+        let currentRatio = 1;
         const inputValues = {};
         const outputValues = {};
-        if (this.active()) {
-            if (this._definition.activeDuration) {
-                if (ige.engine.currentTime() - this._activeStartTime >= this._definition.activeDuration) {
-                    this.active(false);
-                    // Adjust tick delta to exactly match what is left of the allowed active duration
-                    tickDelta = tickDelta - ((ige.engine.currentTime() - this._activeStartTime) - this._definition.activeDuration);
-                    this.complete();
-                }
-            }
-        }
         if (this._definition.input) {
-            for (inputId in this._definition.input) {
+            for (const inputId in this._definition.input) {
                 if (this._definition.input.hasOwnProperty(inputId)) {
                     switch (inputId) {
                         case "$target":
@@ -166,7 +141,7 @@ export class Module_Generic extends IgeBaseClass {
                             break;
                         default:
                             // Calculate maximum modifier value for the tickDelta
-                            modifierCalcData = calculateModifierRatio(states, this._definition.input[inputId], states[inputId].min, states[inputId].max, tickDelta, inputId);
+                            const modifierCalcData = calculateModifierRatio(states, this._definition.input[inputId], states[inputId].min, states[inputId].max, tickDelta, inputId);
                             if (modifierCalcData.ratio < currentRatio) {
                                 currentRatio = modifierCalcData.ratio;
                             }
@@ -179,7 +154,7 @@ export class Module_Generic extends IgeBaseClass {
         // Now using the worst case ratio from the inputs,
         // calculate each output for this update
         if (this._definition.output) {
-            for (outputId in this._definition.output) {
+            for (const outputId in this._definition.output) {
                 if (this._definition.output.hasOwnProperty(outputId)) {
                     switch (outputId) {
                         case "$target":
@@ -187,7 +162,7 @@ export class Module_Generic extends IgeBaseClass {
                             break;
                         default:
                             // Calculate maximum modifier value for the tickDelta
-                            modifierCalcData = calculateModifierRatio(states, this._definition.output[outputId], states[outputId].min, states[outputId].max, tickDelta, outputId);
+                            const modifierCalcData = calculateModifierRatio(states, this._definition.output[outputId], states[outputId].min, states[outputId].max, tickDelta, outputId);
                             if (modifierCalcData.ratio < currentRatio) {
                                 currentRatio = modifierCalcData.ratio;
                             }
@@ -198,13 +173,13 @@ export class Module_Generic extends IgeBaseClass {
             }
         }
         // Now loop the input values and apply the lowest ratio to them
-        for (inputId in inputValues) {
+        for (const inputId in inputValues) {
             if (inputValues.hasOwnProperty(inputId)) {
                 // Assign the new state value
                 states[inputId].val = roundNumber(states[inputId].val + (inputValues[inputId] * currentRatio), 6);
             }
         }
-        for (outputId in outputValues) {
+        for (const outputId in outputValues) {
             if (outputValues.hasOwnProperty(outputId)) {
                 // Assign the new state value
                 states[outputId].val = roundNumber(states[outputId].val + (outputValues[outputId] * currentRatio), 6);
@@ -215,7 +190,7 @@ export class Module_Generic extends IgeBaseClass {
     cooldown() {
         return false;
     }
-    canBeActive() {
+    canBeActive(states) {
         return true;
     }
 }

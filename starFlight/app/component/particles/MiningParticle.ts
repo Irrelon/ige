@@ -1,5 +1,5 @@
-import { IgeParticleEmitter } from "@/engine/core/IgeParticleEmitter";
 import { ige } from "@/engine/instance";
+import { IgeParticleEmitter } from "@/engine/core/IgeParticleEmitter";
 import { IgeParticle } from "@/engine/core/IgeParticle";
 import { arrPull } from "@/engine/utils";
 

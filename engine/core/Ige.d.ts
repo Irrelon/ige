@@ -10,6 +10,8 @@ import { IgeRouter } from "./IgeRouter";
 import { IgeDependencies } from "@/engine/core/IgeDependencies";
 import { IgeTweenController } from "@/engine/core/IgeTweenController";
 import { IgeTimeController } from "@/engine/core/IgeTimeController";
+import { IgeUiManagerController } from "@/engine/core/IgeUiManagerController";
+import { IgeBox2dController } from "@/engine/components/physics/box2d/IgeBox2dController";
 import type { IgeIsReadyPromise } from "@/types/IgeIsReadyPromise";
 import type { IgeAudioController } from "@/engine/audio";
 import type { IgeObject } from "./IgeObject";
@@ -18,8 +20,6 @@ import type { IgeCanRegisterByCategory } from "@/types/IgeCanRegisterByCategory"
 import type { IgeViewport } from "./IgeViewport";
 import type { IgeNetIoClientController } from "@/engine/network/client/IgeNetIoClientController";
 import type { IgeNetIoServerController } from "@/engine/network/server/IgeNetIoServerController";
-import { IgeUiManagerController } from "@/engine/core/IgeUiManagerController";
-import { IgeBox2dController } from "@/engine/components/physics/box2d/IgeBox2dController";
 export declare class Ige implements IgeIsReadyPromise {
     game: Record<string, any>;
     audio?: IgeAudioController;

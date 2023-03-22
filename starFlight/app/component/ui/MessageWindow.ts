@@ -1,66 +1,66 @@
-var appCore = require('../../../../ige');
+import { ige } from "@/engine/instance";
+import { IgeUiLabel } from "@/engine/ui/IgeUiLabel";
+import { InfoWindow } from "./InfoWindow";
+import { IgeNetIoClientController } from "@/engine/network/client/IgeNetIoClientController";
+import { IgeCanvasRenderingContext2d } from "@/types/IgeCanvasRenderingContext2d";
+import { IgeUiEntity } from "@/engine/core/IgeUiEntity";
 
-require('./InfoWindow');
+export class MessageWindow extends InfoWindow {
+	classId = "MessageWindow";
+	_msgs: IgeUiLabel[] = [];
+	_options: {
+		messageFont?: string;
+		messageColor?: string;
+	}
 
-appCore.module('MessageWindow', function ($ige, $textures, $game, $time, InfoWindow, IgeUiLabel) {
-	var MessageWindow = InfoWindow.extend({
-		classId: 'MessageWindow',
-		
-		init: function (options) {
-			var self = this;
-			
-			InfoWindow.prototype.init.call(this, options);
-			
-			$ige.engine.network.on('msg', function (data) {
-				self.addMsg(data.msg);
-			});
-			
-			this._options = options;
-			this._msgs = [];
-		},
-		
-		addMsg: function (msg) {
-			this._msgs.push(new IgeUiLabel()
-				.layer(1)
-				.font(this._options.messageFont || '8px Verdana')
-				.height(15)
-				.width(this.width())
-				.left(0)
-				.textAlignX(0)
-				.textAlignY(1)
-				.textLineSpacing(15)
-				.color(this._options.messageColor || '#7bdaf1')
-				.value(msg)
-				.mount(this)
-			);
-		},
-		
-		tick: function (ctx) {
-			// Loop children and re-position then
-			var arr = this._children,
-				arrCount = arr.length, i,
-				item, itemY, currentY = 5,
-				width;
-			
-			width = this.width();
-			
-			for (i = 0; i < arrCount; i++) {
-				item = arr[i];
-				
-				if (item._classId !== 'Tab') {
-					itemY = item._bounds2d.y;
-					
-					item.top(currentY);
-					item.width(width);
-					
-					currentY += itemY;
-				}
+	constructor (options = {}) {
+		super(options);
+
+		(ige.network as IgeNetIoClientController).on("msg",  (data) => {
+			this.addMsg(data.msg);
+		});
+
+		this._options = options;
+	}
+
+	addMsg (msg: string) {
+		this._msgs.push(new IgeUiLabel()
+			.layer(1)
+			.font(this._options.messageFont || "8px Verdana")
+			.height(15)
+			.width(this.width())
+			.left(0)
+			.textAlignX(0)
+			.textAlignY(1)
+			.textLineSpacing(15)
+			.color(this._options.messageColor || "#7bdaf1")
+			.value(msg)
+			.mount(this)
+		);
+	}
+
+	tick (ctx: IgeCanvasRenderingContext2d, dontTransform = false) {
+		// Loop children and re-position then
+		const arr = this._children as IgeUiEntity[];
+		const arrCount = arr.length;
+		let currentY = 5;
+
+		const width = this.width();
+
+		for (let i = 0; i < arrCount; i++) {
+			const item = arr[i];
+
+			if (item.classId !== "Tab") {
+				const itemY = item._bounds2d.y;
+
+				item.top(currentY);
+				item.width(width);
+
+				currentY += itemY;
 			}
-			
-			// Now do the super-class tick
-			InfoWindow.prototype.tick.call(this, ctx);
 		}
-	});
-	
-	return MessageWindow;
-});
+
+		// Now do the super-class tick
+		super.tick(ctx, dontTransform);
+	}
+}

@@ -28,88 +28,6 @@ export class IgeEntity extends IgeObject {
         this._sortChildren = (compareFn) => {
             return this._children.sort(compareFn);
         };
-        ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-        // INTERACTION
-        ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-        /**
-         * Gets / sets the callback that is fired when a mouse
-         * move event is triggered.
-         * @param {Function=} callback
-         * @example #Hook the mouse move event and stop it propagating further down the scenegraph
-         *     entity.pointerMove(function (event, control) {
-         *         // Mouse moved with button
-         *         console.log('Mouse move button: ' + event.button);
-         *
-         *         // Stop the event propagating further down the scenegraph
-         *         control.stopPropagation();
-         *
-         *         // You can ALSO stop propagation without the control object
-         *         // reference via the global reference:
-         *         ige.input.stopPropagation();
-         *     });
-         * @return {*}
-         */
-        this.pointerMove = (callback) => {
-            if (callback) {
-                this._pointerMove = callback;
-                this._pointerEventsActive = true;
-                return this;
-            }
-            return this._pointerMove;
-        };
-        /**
-         * Gets / sets the callback that is fired when a mouse
-         * down event is triggered.
-         * @param {Function=} callback
-         * @example #Hook the mouse down event and stop it propagating further down the scenegraph
-         *     entity.pointerDown(function (event, control) {
-         *         // Mouse down with button
-         *         console.log('Mouse down button: ' + event.button);
-         *
-         *         // Stop the event propagating further down the scenegraph
-         *         control.stopPropagation();
-         *
-         *         // You can ALSO stop propagation without the control object
-         *         // reference via the global reference:
-         *         ige.input.stopPropagation();
-         *     });
-         * @return {*}
-         */
-        this.pointerDown = (callback) => {
-            if (callback) {
-                this._pointerDown = callback;
-                this._pointerEventsActive = true;
-                return this;
-            }
-            return this._pointerDown;
-        };
-        /**
-         * Gets / sets the callback that is fired when a mouse
-         * wheel event is triggered.
-         * @param {Function=} callback
-         * @example #Hook the mouse wheel event and stop it propagating further down the scenegraph
-         *     entity.pointerWheel(function (event, control) {
-         *         // Mouse wheel with button
-         *         console.log('Mouse wheel button: ' + event.button);
-         *         console.log('Mouse wheel delta: ' + event.wheelDelta);
-         *
-         *         // Stop the event propagating further down the scenegraph
-         *         control.stopPropagation();
-         *
-         *         // You can ALSO stop propagation without the control object
-         *         // reference via the global reference:
-         *         ige.input.stopPropagation();
-         *     });
-         * @return {*}
-         */
-        this.pointerWheel = (callback) => {
-            if (callback) {
-                this._pointerWheel = callback;
-                this._pointerEventsActive = true;
-                return this;
-            }
-            return this._pointerWheel;
-        };
         /**
          * Gets / sets the shape / polygon that the mouse events
          * are triggered against. There are two options, 'aabb' and
@@ -260,173 +178,6 @@ export class IgeEntity extends IgeObject {
                 this._handleMouseWheel(input.pointerWheel, evc, eventData);
             }
         };
-        /**
-         * The `translate` accessor method for the x-axis. This
-         * method is not called directly but is accessed through
-         * the accessor object obtained by calling entity.translate().
-         * @param {Number=} val The new value to apply to the co-ordinate.
-         * @return {*}
-         * @private
-         */
-        this._translateAccessorX = (val) => {
-            if (val !== undefined) {
-                this._translate.x = val;
-                return this; // Used to include this._entity
-            }
-            return this._translate.x;
-        };
-        /**
-         * The `translate` accessor method for the z-axis. This
-         * method is not called directly but is accessed through
-         * the accessor object obtained by calling entity.translate().
-         * @param {Number=} val The new value to apply to the co-ordinate.
-         * @return {*}
-         * @private
-         */
-        this._translateAccessorZ = (val) => {
-            // TODO: Do we need to do anything to the matrix here for iso views?
-            //this._localMatrix.translateTo(this._translate.x, this._translate.y);
-            if (val !== undefined) {
-                this._translate.z = val;
-                return this; // Used to include this._entity
-            }
-            return this._translate.z;
-        };
-        /**
-         * The `rotate` accessor method for the x-axis. This
-         * method is not called directly but is accessed through
-         * the accessor object obtained by calling entity.rotate().
-         * @param {Number=} val The new value to apply to the co-ordinate.
-         * @return {*}
-         * @private
-         */
-        this._rotateAccessorX = (val) => {
-            if (val !== undefined) {
-                this._rotate.x = val;
-                return this; // Used to include this._entity
-            }
-            return this._rotate.x;
-        };
-        /**
-         * The `rotate` accessor method for the y-axis. This
-         * method is not called directly but is accessed through
-         * the accessor object obtained by calling entity.rotate().
-         * @param {Number=} val The new value to apply to the co-ordinate.
-         * @return {*}
-         * @private
-         */
-        this._rotateAccessorY = (val) => {
-            if (val !== undefined) {
-                this._rotate.y = val;
-                return this; // Used to include this._entity
-            }
-            return this._rotate.y;
-        };
-        /**
-         * The `rotate` accessor method for the z-axis. This
-         * method is not called directly but is accessed through
-         * the accessor object obtained by calling entity.rotate().
-         * @param {Number=} val The new value to apply to the co-ordinate.
-         * @return {*}
-         * @private
-         */
-        this._rotateAccessorZ = (val) => {
-            if (val !== undefined) {
-                this._rotate.z = val;
-                return this; // Used to include this._entity
-            }
-            return this._rotate.z;
-        };
-        /**
-         * The `scale` accessor method for the x-axis. This
-         * method is not called directly but is accessed through
-         * the accessor object obtained by calling entity.scale().
-         * @param {Number=} val The new value to apply to the co-ordinate.
-         * @return {*}
-         * @private
-         */
-        this._scaleAccessorX = (val) => {
-            if (val !== undefined) {
-                this._scale.x = val;
-                return this; // Used to include this._entity
-            }
-            return this._scale.x;
-        };
-        /**
-         * The `scale` accessor method for the y-axis. This
-         * method is not called directly but is accessed through
-         * the accessor object obtained by calling entity.scale().
-         * @param {Number=} val The new value to apply to the co-ordinate.
-         * @return {*}
-         * @private
-         */
-        this._scaleAccessorY = (val) => {
-            if (val !== undefined) {
-                this._scale.y = val;
-                return this; // Used to include this._entity
-            }
-            return this._scale.y;
-        };
-        /**
-         * The `scale` accessor method for the z-axis. This
-         * method is not called directly but is accessed through
-         * the accessor object obtained by calling entity.scale().
-         * @param {Number=} val The new value to apply to the co-ordinate.
-         * @return {*}
-         * @private
-         */
-        this._scaleAccessorZ = (val) => {
-            if (val !== undefined) {
-                this._scale.z = val;
-                return this; // Used to include this._entity
-            }
-            return this._scale.z;
-        };
-        /**
-         * The `origin` accessor method for the x-axis. This
-         * method is not called directly but is accessed through
-         * the accessor object obtained by calling entity.origin().
-         * @param {Number=} val The new value to apply to the co-ordinate.
-         * @return {*}
-         * @private
-         */
-        this._originAccessorX = (val) => {
-            if (val !== undefined) {
-                this._origin.x = val;
-                return this; // Used to include this._entity
-            }
-            return this._origin.x;
-        };
-        /**
-         * The `origin` accessor method for the y-axis. This
-         * method is not called directly but is accessed through
-         * the accessor object obtained by calling entity.origin().
-         * @param {Number=} val The new value to apply to the co-ordinate.
-         * @return {*}
-         * @private
-         */
-        this._originAccessorY = (val) => {
-            if (val !== undefined) {
-                this._origin.y = val;
-                return this; // Used to include this._entity
-            }
-            return this._origin.y;
-        };
-        /**
-         * The `origin` accessor method for the z-axis. This
-         * method is not called directly but is accessed through
-         * the accessor object obtained by calling entity.origin().
-         * @param {Number=} val The new value to apply to the co-ordinate.
-         * @return {*}
-         * @private
-         */
-        this._originAccessorZ = (val) => {
-            if (val !== undefined) {
-                this._origin.z = val;
-                return this; // Used to include this._entity
-            }
-            return this._origin.z;
-        };
         // Register the IgeEntity special properties handler for
         // serialise and de-serialise support
         this._specialProp.push("_texture");
@@ -567,13 +318,6 @@ export class IgeEntity extends IgeObject {
     isHidden() {
         return this._hidden;
     }
-    /**
-     * When using the caching system, this boolean determines if the
-     * cache canvas should have image smoothing enabled or not. If
-     * not set, the ige global smoothing setting will be used instead.
-     * @param {Boolean=} val True to enable smoothing, false to disable.
-     * @returns {*}
-     */
     cacheSmoothing(val) {
         if (val !== undefined) {
             this._cacheSmoothing = val;
@@ -673,26 +417,6 @@ export class IgeEntity extends IgeObject {
         this.rotateTo(this._rotate.x, this._rotate.y, Math.atan2(worldPos.y - point.y, worldPos.x - point.x) - ((_c = (_b = (_a = this._parent) === null || _a === void 0 ? void 0 : _a._rotate) === null || _b === void 0 ? void 0 : _b.z) !== null && _c !== void 0 ? _c : 0) + degreesToRadians(270));
         return this;
     }
-    /**
-     * Gets / sets the texture to use as the background
-     * pattern for this entity.
-     * @param {IgeTexture} texture The texture to use as
-     * the background.
-     * @param {String=} repeat The type of repeat mode either: "repeat",
-     * "repeat-x", "repeat-y" or "none".
-     * @param {Boolean=} trackCamera If set to true, will track the camera
-     * translation and "move" the background with the camera.
-     * @param {Boolean=} isoTile If true the tiles of the background will
-     * be treated as isometric and will therefore be drawn so that they are
-     * layered seamlessly in isometric view.
-     * @example #Set a background pattern for this entity with 2d tiling
-     *     var texture = new IgeTexture('path/to/my/texture.png');
-     *     entity.backgroundPattern(texture, 'repeat', true, false);
-     * @example #Set a background pattern for this entity with isometric tiling
-     *     var texture = new IgeTexture('path/to/my/texture.png');
-     *     entity.backgroundPattern(texture, 'repeat', true, true);
-     * @return {*}
-     */
     backgroundPattern(texture, repeat = "repeat", trackCamera = false, isoTile = false) {
         if (texture !== undefined) {
             this._backgroundPattern = texture;
@@ -1052,20 +776,6 @@ export class IgeEntity extends IgeObject {
         }
         return this;
     }
-    /**
-     * Gets / sets the highlight mode. True is on false is off.
-     * @param {Boolean} val The highlight mode true, false or optionally a string representing a globalCompositeOperation.
-     * https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API/Tutorial/Compositing
-     * @param highlightChildEntities
-     * @example #Set the entity to render highlighted
-     *     entity.highlight(true);
-     * @example #Set the entity to render highlighted using 'screen' globalCompositeOperation
-     *     entity.highlight('screen');
-     * @example #Get the current highlight state
-     *     var isHighlighted = entity.highlight();
-     * @return {*} "this" when arguments are passed to allow method
-     * chaining or the current value if no arguments are specified.
-     */
     highlight(val, highlightChildEntities = true) {
         if (val !== undefined) {
             this._highlight = val;
@@ -1897,6 +1607,14 @@ export class IgeEntity extends IgeObject {
             });
         }
     }
+    pointerMove(callback) {
+        if (callback) {
+            this._pointerMove = callback;
+            this._pointerEventsActive = true;
+            return this;
+        }
+        return this._pointerMove;
+    }
     pointerOver(callback) {
         if (callback) {
             this._pointerOver = callback;
@@ -1920,6 +1638,22 @@ export class IgeEntity extends IgeObject {
             return this;
         }
         return this._pointerUp;
+    }
+    pointerDown(callback) {
+        if (callback) {
+            this._pointerDown = callback;
+            this._pointerEventsActive = true;
+            return this;
+        }
+        return this._pointerDown;
+    }
+    pointerWheel(callback) {
+        if (callback) {
+            this._pointerWheel = callback;
+            this._pointerEventsActive = true;
+            return this;
+        }
+        return this._pointerWheel;
     }
     /**
      * Removes the callback that is fired when a mouse
@@ -2156,20 +1890,28 @@ export class IgeEntity extends IgeObject {
             z: this._translateAccessorZ
         });
     }
-    /**
-     * The `translate` accessor method for the y-axis. This
-     * method is not called directly but is accessed through
-     * the accessor object obtained by calling entity.translate().
-     * @param {Number=} val The new value to apply to the co-ordinate.
-     * @return {*}
-     * @private
-     */
+    _translateAccessorX(val) {
+        if (val !== undefined) {
+            this._translate.x = val;
+            return this; // Used to include this._entity
+        }
+        return this._translate.x;
+    }
     _translateAccessorY(val) {
         if (val !== undefined) {
             this._translate.y = val;
             return this; // Used to include this._entity
         }
         return this._translate.y;
+    }
+    _translateAccessorZ(val) {
+        // TODO: Do we need to do anything to the matrix here for iso views?
+        //this._localMatrix.translateTo(this._translate.x, this._translate.y);
+        if (val !== undefined) {
+            this._translate.z = val;
+            return this; // Used to include this._entity
+        }
+        return this._translate.z;
     }
     /**
      * Rotates the entity by adding the passed values to
@@ -2229,6 +1971,27 @@ export class IgeEntity extends IgeObject {
             z: this._rotateAccessorZ
         });
     }
+    _rotateAccessorX(val) {
+        if (val !== undefined) {
+            this._rotate.x = val;
+            return this; // Used to include this._entity
+        }
+        return this._rotate.x;
+    }
+    _rotateAccessorY(val) {
+        if (val !== undefined) {
+            this._rotate.y = val;
+            return this; // Used to include this._entity
+        }
+        return this._rotate.y;
+    }
+    _rotateAccessorZ(val) {
+        if (val !== undefined) {
+            this._rotate.z = val;
+            return this; // Used to include this._entity
+        }
+        return this._rotate.z;
+    }
     /**
      * Scales the entity by adding the passed values to
      * the current scale values.
@@ -2286,6 +2049,27 @@ export class IgeEntity extends IgeObject {
             z: this._scaleAccessorZ
         });
     }
+    _scaleAccessorX(val) {
+        if (val !== undefined) {
+            this._scale.x = val;
+            return this; // Used to include this._entity
+        }
+        return this._scale.x;
+    }
+    _scaleAccessorY(val) {
+        if (val !== undefined) {
+            this._scale.y = val;
+            return this; // Used to include this._entity
+        }
+        return this._scale.y;
+    }
+    _scaleAccessorZ(val) {
+        if (val !== undefined) {
+            this._scale.z = val;
+            return this; // Used to include this._entity
+        }
+        return this._scale.z;
+    }
     /**
      * Sets the `origin` of the entity by adding the passed values to
      * the current origin values.
@@ -2340,6 +2124,27 @@ export class IgeEntity extends IgeObject {
             y: this._originAccessorY,
             z: this._originAccessorZ
         });
+    }
+    _originAccessorX(val) {
+        if (val !== undefined) {
+            this._origin.x = val;
+            return this; // Used to include this._entity
+        }
+        return this._origin.x;
+    }
+    _originAccessorY(val) {
+        if (val !== undefined) {
+            this._origin.y = val;
+            return this; // Used to include this._entity
+        }
+        return this._origin.y;
+    }
+    _originAccessorZ(val) {
+        if (val !== undefined) {
+            this._origin.z = val;
+            return this; // Used to include this._entity
+        }
+        return this._origin.z;
     }
     _rotatePoint(point, radians, origin) {
         const cosAngle = Math.cos(radians), sinAngle = Math.sin(radians);

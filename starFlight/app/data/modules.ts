@@ -1,63 +1,133 @@
-export type GameEntityModuleUsageCost = Record<string, number>;
-export type GameEntityModuleBaseCost = Record<string, number>;
-export type GameEntityModuleInputOutput = Record<string, number | Record<string, number>>;
-
-export interface GameEntityModuleStateItem {
-	initial: number;
-	min: number;
-	max: number;
-}
-
-export type GameEntityModuleStates = Record<string, GameEntityModuleStateItem>;
-
-export interface GameEntityModuleEffectAction {
-	action: "create" | "destroy",
-	classId: string,
-	mount: string,
-	data: Record<string, any>;
-}
-
-export interface GameEntityModuleEffectAudio {
-	"action": "play" | "stop",
-	"audioId": string,
-	"for"?: "all" | "owner",
-	"loop"?: boolean,
-	"position"?: "ambient" | "target",
-	"mount"?: string
-}
-
-export interface GameEntityModuleAudio {
-	onActive?: GameEntityModuleEffectAudio[];
-	onInactive?: GameEntityModuleEffectAudio[];
-	onComplete?: GameEntityModuleEffectAudio[];
-}
-
-export interface GameEntityModuleEffects {
-	onActive?: GameEntityModuleEffectAction[];
-	onInactive?: GameEntityModuleEffectAction[];
-	onComplete?: GameEntityModuleEffectAction[];
-}
-
-export interface GameEntityModuleDefinition {
-	_id: string,
-	type: string,
-	slotType: string[],
-	slotSize: 1,
-	classId: string,
-	name: string,
-	damageIndex?: number;
-	input: GameEntityModuleInputOutput,
-	output: GameEntityModuleInputOutput,
-	state: GameEntityModuleStates,
-	attachTo: string[],
-	baseCost: GameEntityModuleBaseCost,
-	enabled: boolean,
-	active: boolean,
-	effects?: GameEntityModuleEffects;
-	audio?: GameEntityModuleAudio;
-}
-
-const modules: GameEntityModuleDefinition[] = [
+export const modules = [
+	{
+		"_id": "521a36aa3559382638c4254a",
+		"type": "ability",
+		"slotType": [
+			"weapon",
+			"mining"
+		],
+		"slotSize": 1,
+		"action": "mine",
+		"classId": "Module_MiningLaser",
+		"name": "Mining Laser 1",
+		"abilityTitle": "MINE\nTARGET",
+		"canBeActive": "./code/abilityCanBeActive",
+		"usageCost": {
+			"energy": -40
+		},
+		"input": {
+		},
+		"output": {
+		},
+		"state": {
+		},
+		"range": 200,
+		"attachTo": [
+			"ship"
+		],
+		"baseCost": {
+			"credits": 1000
+		},
+		"requiresTarget": true,
+		"enabled": true,
+		"active": false,
+		"activeDuration": 8000,
+		"cooldownDuration": 2000,
+		"effects": {
+			"onActive": [
+				{
+					"action": "create",
+					"classId": "MiningLaserEffect",
+					"mount": "frontScene",
+					"data": {}
+				}
+			],
+			"onInactive": [
+				{
+					"action": "destroy",
+					"classId": "MiningLaserEffect",
+					"mount": "frontScene",
+					"data": {}
+				}
+			]
+		},
+		"audio": {
+			"onActive": [
+				{
+					"action": "play",
+					"audioId": "miningLaser",
+					"for": "all",
+					"loop": true,
+					"position": "target",
+					"mount": "backScene"
+				}
+			],
+			"onInactive": [
+				{
+					"action": "stop",
+					"audioId": "miningLaser"
+				}
+			],
+			"onComplete": [
+				{
+					"action": "stop",
+					"audioId": "miningLaser"
+				},
+				{
+					"action": "play",
+					"audioId": "actionComplete",
+					"for": "owner",
+					"position": "ambient"
+				}
+			]
+		}
+	},
+	{
+		"_id": "521a36aa3559382638c4254g",
+		"type": "ability",
+		"slotType": [
+			"weapon"
+		],
+		"slotSize": 1,
+		"action": "damage",
+		"classId": "Module_Ability",
+		"name": "Directed Laser Cannon 1",
+		"abilityTitle": "LASER\nCANNON",
+		"canBeActive": "./code/abilityCanBeActive",
+		"usageCost": {
+			"energy": -10
+		},
+		"input": {
+		},
+		"output": {
+			"$target": {
+				"integrity": -1
+			}
+		},
+		"state": {
+		},
+		"range": 100,
+		"attachTo": [
+			"ship"
+		],
+		"baseCost": {
+			"credits": 1000
+		},
+		"requiresTarget": true,
+		"enabled": true,
+		"active": false,
+		"activeDuration": 8000,
+		"cooldownDuration": 2000,
+		"effects": {
+			"onActive": [
+				{
+					"classId": "LaserEffect",
+					"mount": "frontScene",
+					"data": {}
+				}
+			]
+		}
+	},
 	{
 		"_id": "521a36aa3559382638c4254b",
 		"type": "module",
@@ -113,8 +183,10 @@ const modules: GameEntityModuleDefinition[] = [
 		"slotSize": 1,
 		"classId": "Module_Generic",
 		"name": "Big Tank Fuel Hold",
-		"input": {},
-		"output": {},
+		"input": {
+		},
+		"output": {
+		},
 		"state": {
 			"fuel": {
 				"initial": 2000,
@@ -173,8 +245,10 @@ const modules: GameEntityModuleDefinition[] = [
 		"classId": "Module_Generic",
 		"name": "Lazy Boy Armour",
 		"damageIndex": 1,
-		"input": {},
-		"output": {},
+		"input": {
+		},
+		"output": {
+		},
 		"state": {
 			"integrity": {
 				"initial": 100,
@@ -200,8 +274,10 @@ const modules: GameEntityModuleDefinition[] = [
 		"slotSize": 1,
 		"classId": "Module_Generic",
 		"name": "Energy Capacitor Mk1",
-		"input": {},
-		"output": {},
+		"input": {
+		},
+		"output": {
+		},
 		"state": {
 			"energy": {
 				"initial": 100,
@@ -227,18 +303,16 @@ const modules: GameEntityModuleDefinition[] = [
 		"slotSize": 1,
 		"classId": "Module_Generic",
 		"name": "Cargo Hold 10",
-		"input": {},
-		"output": {},
+		"input": {
+		},
+		"output": {
+		},
 		"state": {
 			"inventorySpace": {
-				"initial": 2,
-				"min": 2,
-				"max": 2
+				"initial": 2
 			},
 			"inventoryCount": {
-				"initial": 0,
-				"min": 0,
-				"max": 2
+				"initial": 0
 			}
 		},
 		"attachTo": [
@@ -250,4 +324,4 @@ const modules: GameEntityModuleDefinition[] = [
 		"enabled": true,
 		"active": true
 	}
-];
+]

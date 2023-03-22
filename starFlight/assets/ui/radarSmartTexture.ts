@@ -2,8 +2,8 @@ import { IgeSmartTexture } from "@/types/IgeSmartTexture";
 
 export const radarSmartTexture: IgeSmartTexture = {
 	render: function (ctx, entity) {
-		if ($game._playerEntity) {
-			const peTranslate = $game._playerEntity._translate;
+		if (ige.game._playerEntity) {
+			const peTranslate = ige.game._playerEntity._translate;
 
 			// Draw the background
 			ctx.fillStyle = '#000000';

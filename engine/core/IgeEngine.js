@@ -993,7 +993,7 @@ export class IgeEngine extends IgeEntity {
                     this.log("Loading SceneGraph data class: " + classInstance.constructor.name);
                     // Make sure the graph class implements the required methods "addGraph" and "removeGraph"
                     if (typeof classInstance.addGraph === "function" && typeof classInstance.removeGraph === "function") {
-                        // Call the class's graph() method passing the options in
+                        // Call the class's addGraph() method passing the options in
                         yield classInstance.addGraph(options);
                         // Add the graph instance to the holding array
                         this._graphInstances[classInstance.constructor.name] = classInstance;
@@ -1026,7 +1026,7 @@ export class IgeEngine extends IgeEntity {
                 const classInstance = this._graphInstances[classObj.name];
                 if (classInstance) {
                     this.log(`Removing SceneGraph data class: ${classObj.name}`);
-                    // Call the class's graph() method passing the options in
+                    // Call the class's removeGraph() method passing the options in
                     yield classInstance.removeGraph(options);
                     // Now remove the graph instance from the graph instance array
                     delete this._graphInstances[classObj.name];

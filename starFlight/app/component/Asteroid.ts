@@ -1,18 +1,14 @@
 import { ige } from "@/engine/instance";
-import { IgePoly2d } from "@/engine/core/IgePoly2d";
 import { isServer } from "@/engine/clientServer";
+import { oreTypes } from "../data/oreTypes";
+import { IgePoly2d } from "@/engine/core/IgePoly2d";
 import { Ore } from "./Ore";
 import { degreesToRadians } from "@/engine/utils";
 import { IgeAudioController } from "@/engine/audio";
-import { GameEntity, GameEntityPublicGameData } from "./GameEntity";
+import { GameEntity, EntityPublicGameData } from "./GameEntity";
 import { IgeBox2dBodyType } from "@/enums/IgeBox2dBodyType";
 import { IgeBox2dFixtureShapeType } from "@/enums/IgeBox2dFixtureShapeType";
 import { IgeBox2dFixtureDef } from "@/types/IgeBox2dFixtureDef";
-import oreTypes from "../data/oreTypes.json";
-const oreTypesTyped = oreTypes as string[];
-
-require("./GameEntity");
-require("./Ore");
 
 export class Asteroid extends GameEntity {
 	classId = "Asteroid";
@@ -21,7 +17,7 @@ export class Asteroid extends GameEntity {
 	_oreTypeCount: number = 0;
 	_triangles: IgePoly2d[] = [];
 
-	constructor (publicGameData: GameEntityPublicGameData = {
+	constructor (publicGameData: EntityPublicGameData = {
 		state: {},
 		module: {},
 		ability: {},
@@ -36,10 +32,8 @@ export class Asteroid extends GameEntity {
 		publicGameData.rotation = Math.round(Math.random() * 360);
 
 		this._publicGameData = publicGameData;
-
 		this._ore = {};
 
-		/* CEXCLUDE */
 		if (isServer) {
 			// Set the types and quantities of ore in this asteroid
 			this._oreCount = 0;
@@ -47,13 +41,12 @@ export class Asteroid extends GameEntity {
 
 			for (let i = 0; i < this._oreTypeCount; i++) {
 				const amount = Math.round(Math.random() * 1000) + 100;
-				const tmpOreType = oreTypesTyped[Math.round(Math.random() * (oreTypesTyped.length - 1))];
+				const tmpOreType = oreTypes[Math.round(Math.random() * (oreTypes.length - 1))];
 
 				this._ore[tmpOreType] = amount;
 				this._oreCount += amount;
 			}
 		}
-		/* CEXCLUDE */
 
 		this.layer(1)
 			.width(publicGameData.size)
@@ -137,7 +130,7 @@ export class Asteroid extends GameEntity {
 
 	removeRandomOreType () {
 		// TODO check that the ore we picked has any in "stock" on this asteroid
-		const oreType = oreTypesTyped[Math.round(Math.random() * (Object.keys(this._ore).length - 1))];
+		const oreType = oreTypes[Math.round(Math.random() * (Object.keys(this._ore).length - 1))];
 
 		// Reduce the ore in the asteroid
 		this._ore[oreType]--;

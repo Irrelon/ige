@@ -3,180 +3,50 @@ import { isServer } from "@/engine/clientServer";
 import { Module_Generic } from "./Module_Generic";
 import { IgeNetIoServerController } from "@/engine/network/server/IgeNetIoServerController";
 import {
-	GameEntityModuleAudio,
-	GameEntityModuleBaseCost,
-	GameEntityModuleDefinition,
-	GameEntityModuleEffects,
-	GameEntityModuleInputOutput,
-	GameEntityModuleStates,
-	GameEntityModuleUsageCost
-} from "../../../types/GameEntityModuleDefinition";
-
-export interface GameEntityAbilityModuleDefinition extends GameEntityModuleDefinition {
-	_id: string,
-	type: string,
-	slotType: string[],
-	slotSize: 1,
-	action: string,
-	classId: string,
-	name: string,
-	abilityTitle: string,
-	damageIndex?: number;
-	usageCost: GameEntityModuleUsageCost,
-	input: GameEntityModuleInputOutput,
-	output: GameEntityModuleInputOutput,
-	state: GameEntityModuleStates,
-	range?: number,
-	attachTo: string[],
-	baseCost: GameEntityModuleBaseCost,
-	requiresTarget?: boolean,
-	enabled: boolean,
-	active: boolean,
-	activeDuration: number,
-	cooldownDuration: number,
-	effects?: GameEntityModuleEffects;
-	audio?: GameEntityModuleAudio;
-}
-
-const abilities: GameEntityAbilityModuleDefinition[] = [
-	{
-		"_id": "521a36aa3559382638c4254a",
-		"type": "ability",
-		"slotType": [
-			"weapon",
-			"mining"
-		],
-		"slotSize": 1,
-		"action": "mine",
-		"classId": "Module_MiningLaser",
-		"name": "Mining Laser 1",
-		"abilityTitle": "MINE\nTARGET",
-		"usageCost": {
-			"energy": -40
-		},
-		"input": {},
-		"output": {},
-		"state": {},
-		"range": 200,
-		"attachTo": [
-			"ship"
-		],
-		"baseCost": {
-			"credits": 1000
-		},
-		"requiresTarget": true,
-		"enabled": true,
-		"active": false,
-		"activeDuration": 8000,
-		"cooldownDuration": 2000,
-		"effects": {
-			"onActive": [
-				{
-					"action": "create",
-					"classId": "MiningLaserEffect",
-					"mount": "frontScene",
-					"data": {}
-				}
-			],
-			"onInactive": [
-				{
-					"action": "destroy",
-					"classId": "MiningLaserEffect",
-					"mount": "frontScene",
-					"data": {}
-				}
-			]
-		},
-		"audio": {
-			"onActive": [
-				{
-					"action": "play",
-					"audioId": "miningLaser",
-					"for": "all",
-					"loop": true,
-					"position": "target",
-					"mount": "backScene"
-				}
-			],
-			"onInactive": [
-				{
-					"action": "stop",
-					"audioId": "miningLaser"
-				}
-			],
-			"onComplete": [
-				{
-					"action": "stop",
-					"audioId": "miningLaser"
-				},
-				{
-					"action": "play",
-					"audioId": "actionComplete",
-					"for": "owner",
-					"position": "ambient"
-				}
-			]
-		}
-	},
-	{
-		"_id": "521a36aa3559382638c4254g",
-		"type": "ability",
-		"slotType": [
-			"weapon"
-		],
-		"slotSize": 1,
-		"action": "damage",
-		"classId": "Module_Ability",
-		"name": "Directed Laser Cannon 1",
-		"abilityTitle": "LASER\nCANNON",
-		"usageCost": {
-			"energy": -10
-		},
-		"input": {},
-		"output": {
-			"$target": {
-				"integrity": -1
-			}
-		},
-		"state": {},
-		"range": 100,
-		"attachTo": [
-			"ship"
-		],
-		"baseCost": {
-			"credits": 1000
-		},
-		"requiresTarget": true,
-		"enabled": true,
-		"active": false,
-		"activeDuration": 8000,
-		"cooldownDuration": 2000,
-		"effects": {
-			"onActive": [
-				{
-					"action": "create",
-					"classId": "LaserEffect",
-					"mount": "frontScene",
-					"data": {}
-				}
-			]
-		}
-	}];
+	EntityModuleStates
+} from "../../../types/EntityModuleDefinition";
+import { EntityAbilityModuleDefinition } from "../../../types/EntityAbilityModuleDefinition";
+import { GameEntity } from "../GameEntity";
 
 export class Module_Ability extends Module_Generic {
 	classId = "Module_Ability";
+	_definition: EntityAbilityModuleDefinition;
 	_cooldown: boolean = false;
 	_cooldownStartTime: number = 0;
+	_action?: string;
+	_target: GameEntity | null = null;
 
-	constructor (definition: GameEntityAbilityModuleDefinition) {
+	constructor (definition: EntityAbilityModuleDefinition) {
 		super(definition);
 
+		this._definition = definition;
+		this._action = definition.action;
 		this._cooldown = false;
 	}
 
-	active(val: boolean, states: GameEntityModuleStates): this;
+	target (val?: GameEntity) {
+		if (val !== undefined) {
+			this._target = val;
+			return this;
+		}
+
+		return this._target;
+	}
+
+	action (val: string): this;
+	action (): string;
+	action (val?: string) {
+		if (val !== undefined) {
+			this._action = val;
+			return this;
+		}
+
+		return this._action;
+	}
+
+	active(val: boolean, states?: EntityModuleStates): this;
 	active(): boolean;
-	active (val?: boolean, states?: GameEntityModuleStates) {
+	active (val?: boolean, states?: EntityModuleStates) {
 		if (val !== undefined && states !== undefined) {
 			if (val && !this._active) {
 				this._activeStartTime = ige.engine.currentTime();
@@ -201,8 +71,8 @@ export class Module_Ability extends Module_Generic {
 	 * @returns {boolean} If true, allows the active flag to become
 	 * true. If false, denies it.
 	 */
-	canBeActive (states: GameEntityModuleStates): boolean {
-		return !this.cooldown() && (states.energy.val + this._definition.usageCost.energy) > 0;
+	canBeActive (states: EntityModuleStates): boolean {
+		return !this.cooldown() && ((states.energy.val || 0) + this._definition.usageCost.energy) > 0;
 	}
 
 	/**
@@ -212,13 +82,8 @@ export class Module_Ability extends Module_Generic {
 	 * @returns {boolean} If true, allows the active flag to become
 	 * false. If false, denies it.
 	 */
-	canBeInactive (states) {
-		// Check if the module definition has a custom method
-		if (this._definition.canBeInactive) {
-			return (require(path.resolve("./app/data", this._definition.canBeInactive)))(this, states, ige);
-		}
-
-		return true;
+	canBeInactive (states: EntityModuleStates): boolean {
+		return !this.cooldown() && ((states.energy.val || 0) + this._definition.usageCost.energy) > 0;
 	}
 
 	/**
@@ -226,17 +91,14 @@ export class Module_Ability extends Module_Generic {
 	 * when it was previously set to false.
 	 * @private
 	 */
-	_onActive (states) {
+	_onActive (states: EntityModuleStates) {
 		// Abilities simply debit the usage of usageCosts they need
 		// up front and then apply their output over time based
 		// on their activeDuration setting.
-		let usageCosts,
-			stateName;
-
-		usageCosts = this._definition.usageCost;
+		const usageCosts = this._definition.usageCost;
 
 		// Debit usage costs from input in definition
-		for (stateName in usageCosts) {
+		for (const stateName in usageCosts) {
 			if (usageCosts.hasOwnProperty(stateName) && states.hasOwnProperty(stateName)) {
 				states[stateName].val += usageCosts[stateName];
 			}
@@ -252,7 +114,7 @@ export class Module_Ability extends Module_Generic {
 	 * when it was previously set to true.
 	 * @private
 	 */
-	_onInactive (states: GameEntityModuleStates) {
+	_onInactive (states: EntityModuleStates) {
 		// Deactivate effects
 		this.processEffects("onInactive");
 		this.processAudio("onInactive");
@@ -311,7 +173,7 @@ export class Module_Ability extends Module_Generic {
 	 * @param {Object} states The current states and their values.
 	 * @param {Number} tickDelta The tick delta for this tick.
 	 */
-	resolve (states, tickDelta) {
+	resolve (states: EntityModuleStates, tickDelta: number) {
 		if (this.active()) {
 			// Check if the module has a max range to target
 			if (this._definition.requiresTarget && this._definition.range) {
@@ -321,14 +183,24 @@ export class Module_Ability extends Module_Generic {
 					this.active(false);
 
 					if (isServer) {
-						// Send network message to client telling them their ability when
-						// out of range
-						(ige.network as IgeNetIoServerController).send("ability_" + this._definition.abilityId + ".active", false, this._attachedTo.clientId());
+						// Send network message to client telling them their ability went out of range
+						(ige.network as IgeNetIoServerController).send("ability_" + this._definition._id + ".active", false, this._attachedTo.clientId());
 					}
+				}
+			}
+
+			if (this._definition.activeDuration) {
+				if (ige.engine.currentTime() - this._activeStartTime >= this._definition.activeDuration) {
+					this.active(false);
+
+					// Adjust tick delta to exactly match what is left of the allowed active duration
+					tickDelta = tickDelta - ((ige.engine.currentTime() - this._activeStartTime) - this._definition.activeDuration);
+
+					this.complete();
 				}
 			}
 		}
 
-		Module_Generic.prototype.resolve.call(this, states, tickDelta);
+		super.resolve(states, tickDelta);
 	}
 }

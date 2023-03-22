@@ -1,7 +1,7 @@
-var appCore = require('../../../ige');
+const appCore = require('../../../ige');
 
 appCore.module('StationClientScene', function (ige, $game, $textures, IgeEventingClass, IgeScene2d, IgeEntity, IgeUiEntity) {
-	var StationClientScene = IgeEventingClass.extend({
+	const StationClientScene = IgeEventingClass.extend({
 		classId: 'StationClientScene',
 		
 		init: function () {
@@ -9,99 +9,99 @@ appCore.module('StationClientScene', function (ige, $game, $textures, IgeEventin
 		
 		addGraph: function (options) {
 			// Set the viewport camera to 0, 0, 0
-			$game.scene.vp1.camera
+			ige.game.scene.vp1.camera
 				.velocity.x(0)
 				.velocity.y(0)
 				.translateTo(0, 0, 0);
 			
-			$game.scene.sceneBase = new IgeScene2d()
+			ige.game.scene.sceneBase = new IgeScene2d()
 				.id('sceneBase')
-				.mount($game.scene.mainScene);
+				.mount(ige.game.scene.mainScene);
 			
-			$game.scene.backScene = new IgeScene2d()
+			ige.game.scene.backScene = new IgeScene2d()
 				.id('backScene')
 				.layer(0)
-				.mount($game.scene.sceneBase);
+				.mount(ige.game.scene.sceneBase);
 			
-			$game.scene.frontScene = new IgeScene2d()
+			ige.game.scene.frontScene = new IgeScene2d()
 				.id('frontScene')
 				.layer(1)
-				.mount($game.scene.sceneBase);
+				.mount(ige.game.scene.sceneBase);
 			
-			$game.scene.uiScene = new IgeScene2d()
+			ige.game.scene.uiScene = new IgeScene2d()
 				.id('uiScene')
 				.layer(2)
 				.ignoreCamera(true)
-				.mount($game.scene.sceneBase);
+				.mount(ige.game.scene.sceneBase);
 			
 			// Create nebula
-			$game.scene.nebula = new IgeEntity()
+			ige.game.scene.nebula = new IgeEntity()
 				.id('nebula')
 				.layer(0)
-				.texture($textures.get('nebula'))
+				.texture(ige.textures.get('nebula'))
 				.width(1600)
 				.height(1600)
 				.translateTo(0, 0, 0)
-				.mount($game.scene.backScene);
+				.mount(ige.game.scene.backScene);
 			
 			// Create starfield
-			$game.scene.starfield = new IgeEntity()
+			ige.game.scene.starfield = new IgeEntity()
 				.id('starfield')
 				.layer(1)
-				.texture($textures.get('starfield'))
+				.texture(ige.textures.get('starfield'))
 				.width(1600)
 				.height(1600)
 				.translateTo(0, 0, 0)
-				.mount($game.scene.backScene);
+				.mount(ige.game.scene.backScene);
 			
-			$game.scene.windowStats = new IgeUiEntity()
+			ige.game.scene.windowStats = new IgeUiEntity()
 				.id('windowStats')
-				.texture($textures.get('windowStats'))
+				.texture(ige.textures.get('windowStats'))
 				.dimensionsFromTexture()
 				.top(-20)
 				.right(-20)
-				.mount($game.scene.uiScene);
+				.mount(ige.game.scene.uiScene);
 			
-			$game.scene.radar = new IgeUiEntity()
+			ige.game.scene.radar = new IgeUiEntity()
 				.id('radar')
 				.layer(1)
-				.texture($textures.get('radar'))
+				.texture(ige.textures.get('radar'))
 				.width(330)
 				.height(170)
 				.bottom(13)
 				.right(13)
-				.mount($game.scene.uiScene);
+				.mount(ige.game.scene.uiScene);
 			
-			$game.scene.windowLocalScan = new IgeUiEntity()
+			ige.game.scene.windowLocalScan = new IgeUiEntity()
 				.id('windowLocalScan')
 				.layer(0)
-				.texture($textures.get('windowLocalScan'))
+				.texture(ige.textures.get('windowLocalScan'))
 				.dimensionsFromTexture()
 				.bottom(-20)
 				.right(-20)
-				.mount($game.scene.uiScene);
+				.mount(ige.game.scene.uiScene);
 			
-			$game.scene.windowControls = new IgeUiEntity()
+			ige.game.scene.windowControls = new IgeUiEntity()
 				.id('windowControls')
 				.layer(2)
-				.texture($textures.get('windowControls'))
+				.texture(ige.textures.get('windowControls'))
 				.dimensionsFromTexture()
 				.left(-20)
 				.top(-20)
-				.mount($game.scene.uiScene);
+				.mount(ige.game.scene.uiScene);
 		},
 		
 		removeGraph: function () {
-			var i;
+			let i;
 			
 			if (ige.$('sceneBase')) {
 				ige.$('sceneBase').destroy();
 				
 				// Clear any references
-				for (i in $game.scene) {
-					if ($game.scene.hasOwnProperty(i)) {
-						if (!$game.scene[i].alive()) {
-							delete $game.scene[i];
+				for (i in ige.game.scene) {
+					if (ige.game.scene.hasOwnProperty(i)) {
+						if (!ige.game.scene[i].alive()) {
+							delete ige.game.scene[i];
 						}
 					}
 					

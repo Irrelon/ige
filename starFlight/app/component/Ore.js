@@ -1,5 +1,5 @@
-import { IgeEntityBox2d } from "../../../engine/components/physics/box2d/IgeEntityBox2d.js";
 import { ige } from "../../../engine/instance.js";
+import { IgeEntityBox2d } from "../../../engine/components/physics/box2d/IgeEntityBox2d.js";
 import { IgeTextureAnimationComponent } from "../../../engine/components/IgeTextureAnimationComponent.js";
 import { IgeBox2dBodyType } from "../../../enums/IgeBox2dBodyType.js";
 import { IgeBox2dFixtureShapeType } from "../../../enums/IgeBox2dFixtureShapeType.js";

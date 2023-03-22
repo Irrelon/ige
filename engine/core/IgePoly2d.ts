@@ -197,7 +197,7 @@ export class IgePoly2d {
 		}
 	}
 
-	triangulate () {
+	triangulate (): IgePoly2d[] {
 		// Get the indices of each new triangle
 		const poly = this._poly;
 		const triangles: IgePoly2d[] = [];

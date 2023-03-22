@@ -381,23 +381,6 @@ export class IgeInputComponent extends IgeEventingClass {
             return vpUpdated;
         };
         /**
-         * Defines an action that will be emitted when the specified event type
-         * occurs.
-         * @param action
-         * @param inputMap
-         */
-        this.mapAction = (action, inputMap) => {
-            this._controlMap[action] = inputMap;
-        };
-        /**
-         * Returns the passed action's input state value.
-         * @param action
-         */
-        this.actionVal = (action) => {
-            const inputMap = this._controlMap[action];
-            return this._state[inputMap[0]][inputMap[1]];
-        };
-        /**
          * Adds an event method to the eventQueue array. The array is
          * processed during each tick after the scenegraph has been
          * rendered.
@@ -488,6 +471,23 @@ export class IgeInputComponent extends IgeEventingClass {
         event.igeX = (event.igePageX - canvasPosition.left);
         event.igeY = (event.igePageY - canvasPosition.top);
         this.emit("inputEvent", event);
+    }
+    /**
+     * Defines an action that will be emitted when the specified event type
+     * occurs.
+     * @param action
+     * @param inputMap
+     */
+    mapAction(action, inputMap) {
+        this._controlMap[action] = inputMap;
+    }
+    /**
+     * Returns the passed action's input state value.
+     * @param action
+     */
+    actionVal(action) {
+        const inputMap = this._controlMap[action];
+        return this._state[inputMap[0]][inputMap[1]];
     }
     /**
      * Returns true if the passed action's input is pressed or its state

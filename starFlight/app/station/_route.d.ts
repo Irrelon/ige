@@ -1,1 +1,1 @@
-declare var appCore: any;
+declare const appCore: any;

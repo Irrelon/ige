@@ -8,6 +8,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 import { ige } from "../../../engine/instance.js";
+import { SpaceServerScene } from "./SpaceServerScene.js";
 // require('../component/SpaceStation');
 //
 // require('./SpaceClient');
@@ -20,5 +21,9 @@ ige.router.route('app/space', {
     client: () => __awaiter(void 0, void 0, void 0, function* () {
     }),
     server: () => __awaiter(void 0, void 0, void 0, function* () {
+        yield ige.engine.addGraph(SpaceServerScene);
+        return () => __awaiter(void 0, void 0, void 0, function* () {
+            yield ige.engine.removeGraph(SpaceServerScene);
+        });
     })
 });

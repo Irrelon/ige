@@ -1,8 +1,8 @@
+import { ige } from "../../../../engine/instance.js";
 import { isServer } from "../../../../engine/clientServer.js";
 import { IgeUiButton } from "../../../../engine/ui/IgeUiButton.js";
 import { IgeUiLabel } from "../../../../engine/ui/IgeUiLabel.js";
 import { IgeUiEntity } from "../../../../engine/core/IgeUiEntity.js";
-import { ige } from "../../../../engine/instance.js";
 export class AbilityButton extends IgeUiEntity {
     constructor(options) {
         if (isServer) {
@@ -67,13 +67,13 @@ export class AbilityButton extends IgeUiEntity {
     }
     active(val) {
         if (val !== undefined) {
-            if (val === true && this._module.active === false) {
+            if (val && !this._module.active) {
                 // Make module active
-                this._module._activeStartTime = $time._currentTime;
+                this._module._activeStartTime = ige.engine._currentTime;
             }
-            else if (val === false && this._module.active === true) {
+            else if (!val && this._module.active) {
                 // Enable cooldown timer
-                this.cooldown(true, $time._currentTime);
+                this.cooldown(true, ige.engine._currentTime);
             }
             this._module.active = val;
             return this;
@@ -86,11 +86,12 @@ export class AbilityButton extends IgeUiEntity {
      * remaining cooldown period to see if cooldown has been deactivated
      * or not before giving its answer.
      * @param {Boolean=} val The boolean value to set.
+     * @param startTime
      * @returns {*}
      */
     cooldown(val, startTime) {
         if (val !== undefined) {
-            if (val === true && this._module.cooldown === false) {
+            if (val && !this._module.cooldown) {
                 if (!this._module.cooldownDuration) {
                     // Do nothing, there is no cooldown duration so never
                     // enable cooldown period
@@ -110,27 +111,27 @@ export class AbilityButton extends IgeUiEntity {
      */
     requestActivation() {
         if (this._disabled || this._module.active || this._module.cooldown) {
-            return $ige.engine.audio.play("actionDenied");
+            return ige.audio.play("actionDenied");
         }
         ige.game.playerEntity.useAbility(this._abilityId);
     }
-    update(tickDelta) {
+    update(ctx, tickDelta) {
         let activeTime, beenInCooldownFor, playerTargetData;
-        IgeUiEntity.prototype.update.call(this, tickDelta);
+        super.update(ctx, tickDelta);
         if (this._module.active) {
             this._timerCircle._timerColor = "#ffffff";
             // Check if we have finished being active
-            activeTime = $time._currentTime - this._module._activeStartTime;
+            activeTime = ige.engine._currentTime - this._module._activeStartTime;
             this._timerCircle._timerValue = (1 / this._module.activeDuration) * activeTime;
             if (activeTime >= this._module.activeDuration) {
                 this.active(false);
                 beenInCooldownFor = activeTime - this._module.activeDuration;
-                this.cooldown(true, $time._currentTime - beenInCooldownFor);
+                this.cooldown(true, ige.engine._currentTime - beenInCooldownFor);
             }
         }
         else if (this._module.cooldown) {
             // Check if we have finished cooldown
-            activeTime = $time._currentTime - this._module._cooldownStartTime;
+            activeTime = ige.engine._currentTime - this._module._cooldownStartTime;
             this._timerCircle._timerValue = (1 / this._module.cooldownDuration) * activeTime;
             this._timerCircle._timerColor = "#ff0000";
             if (activeTime >= this._module.cooldownDuration) {

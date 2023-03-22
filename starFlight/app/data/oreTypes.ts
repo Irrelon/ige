@@ -1,4 +1,4 @@
-[
+export const oreTypes: string[] = [
 	"Acanthite",
 	"Hydrogen",
 	"Bauxite",

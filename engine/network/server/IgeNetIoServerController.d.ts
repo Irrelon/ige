@@ -1,11 +1,11 @@
 import { IgeNetIoBaseController } from "../IgeNetIoBaseController";
-import { IgeNetworkMessageData, IgeNetworkServerSideMessageHandler, IgeNetworkMessageStructure, IgeNetworkRequestMessageStructure, IgeNetworkServerSideResponseData } from "@/types/IgeNetworkMessage";
+import { IgeNetworkMessageData, IgeNetworkServerSideMessageHandler, IgeNetworkMessageStructure, IgeNetworkRequestMessageStructure, IgeNetworkServerSideResponseData, IgeNetworkServerSideRequestHandler } from "@/types/IgeNetworkMessage";
 import { IgeNetIoServer } from "./IgeNetIoServer";
 import { IgeNetIoSocket } from "./IgeNetIoSocket";
 export declare class IgeNetIoServerController extends IgeNetIoBaseController {
     _idCounter: number;
-    _networkCommands: Record<string, IgeNetworkServerSideMessageHandler | undefined>;
-    _requests: Record<string, IgeNetworkRequestMessageStructure<IgeNetworkServerSideMessageHandler>>;
+    _networkCommands: Record<string, IgeNetworkServerSideMessageHandler | IgeNetworkServerSideRequestHandler | undefined>;
+    _requests: Record<string, IgeNetworkRequestMessageStructure<IgeNetworkServerSideRequestHandler>>;
     _socketById: Record<string, IgeNetIoSocket>;
     _port: number;
     _acceptConnections: boolean;
@@ -44,7 +44,7 @@ export declare class IgeNetIoServerController extends IgeNetIoBaseController {
      * command is received by the network.
      * @return {*}
      */
-    define(commandName: string, callback?: IgeNetworkServerSideMessageHandler): this;
+    define(commandName: string, callback?: IgeNetworkServerSideMessageHandler | IgeNetworkServerSideRequestHandler): this;
     /**
      * Adds a client to a room by id. All clients are added to room id
      * "ige" by default when they connect to the server.
@@ -104,7 +104,7 @@ export declare class IgeNetIoServerController extends IgeNetIoBaseController {
      * an array of socket ids to send to.
      * @param callback
      */
-    send<DataType = IgeNetworkMessageData>(commandName: string, data: DataType, clientIdOrArrayOfIds?: string | string[], callback?: IgeNetworkServerSideMessageHandler): this | undefined;
+    send<DataType = IgeNetworkMessageData>(commandName: string, data: DataType, clientIdOrArrayOfIds?: string | string[], callback?: IgeNetworkServerSideMessageHandler | IgeNetworkServerSideRequestHandler): this | undefined;
     /**
      * Sends a network request. This is different from a standard
      * call to send() because the recipient code will be able to
@@ -116,7 +116,7 @@ export declare class IgeNetIoServerController extends IgeNetIoBaseController {
      * @param clientIdOrArrayOfIds
      * @param {Function} callback
      */
-    request<DataType extends IgeNetworkMessageData = IgeNetworkMessageData>(commandName: string, data: DataType, clientIdOrArrayOfIds: string | string[], callback: IgeNetworkServerSideMessageHandler): void;
+    request<DataType extends IgeNetworkMessageData = IgeNetworkMessageData>(cmd: string, data: DataType, clientIdOrArrayOfIds: string | string[], callback: IgeNetworkServerSideRequestHandler): void;
     /**
      * Sends a response to a network request.
      * @param {String} requestId

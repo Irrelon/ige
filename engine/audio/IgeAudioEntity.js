@@ -1,7 +1,7 @@
 import { ige } from "../../engine/instance.js";
 import { isClient } from "../../engine/clientServer.js";
 import { IgeAudioItem } from "../../engine/audio/IgeAudioItem.js";
-import { IgeObject } from "../../engine/core/IgeObject.js";
+import { IgeEntity } from "../../engine/core/IgeEntity.js";
 // Set default data for any audio panner node
 const defaultPanner = {
     panningModel: "HRTF",
@@ -13,7 +13,7 @@ const defaultPanner = {
     coneInnerAngle: 360,
     coneOuterGain: 0
 };
-export class IgeAudioEntity extends IgeObject {
+export class IgeAudioEntity extends IgeEntity {
     constructor(audioId, options = {
         started: false,
         loop: false,

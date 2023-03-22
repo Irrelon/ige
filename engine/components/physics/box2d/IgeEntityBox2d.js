@@ -1,7 +1,7 @@
 import { ige } from "../../../instance.js";
 import { IgeEntity } from "../../../core/IgeEntity.js";
 /**
- * Creates a new entity with box2d integration.
+ * Creates a new entity with Box2D integration.
  */
 export class IgeEntityBox2d extends IgeEntity {
     constructor() {

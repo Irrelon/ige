@@ -1,7 +1,6 @@
 import { IgeEventingClass } from "../core/IgeEventingClass";
-import {
-	IgeNetworkMessageData
-} from "@/types/IgeNetworkMessage";
+
+
 import { IgeNetIoSocket } from "./server/IgeNetIoSocket";
 
 export class IgeNetIoBaseController extends IgeEventingClass {
@@ -49,6 +48,8 @@ export class IgeNetIoBaseController extends IgeEventingClass {
 	 * @param {Number} time The client timestamp, usually
 	 * the result of new Date().getTime() or ige.currentTime().
 	 */
+	timeToServerTime (time: number): number;
+	timeToServerTime (): number;
 	timeToServerTime (time?: number) {
 		if (time !== undefined) {
 			return time + this._latency;
@@ -63,6 +64,8 @@ export class IgeNetIoBaseController extends IgeEventingClass {
 	 * @param {Boolean=} val
 	 * @return {*}
 	 */
+	debug (val: boolean): this;
+	debug (): boolean;
 	debug (val?: boolean) {
 		if (val !== undefined) {
 			this._debug = val;
@@ -101,6 +104,4 @@ export class IgeNetIoBaseController extends IgeEventingClass {
 
 		return this._debugMax;
 	}
-
-	send (command: string, data: IgeNetworkMessageData) {}
 }

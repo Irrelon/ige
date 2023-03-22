@@ -1,5 +1,4 @@
 import { IgeEventingClass } from "../core/IgeEventingClass";
-import { IgeNetworkMessageData } from "@/types/IgeNetworkMessage";
 import { IgeNetIoSocket } from "./server/IgeNetIoSocket";
 export declare class IgeNetIoBaseController extends IgeEventingClass {
     classId: string;
@@ -36,14 +35,16 @@ export declare class IgeNetIoBaseController extends IgeEventingClass {
      * @param {Number} time The client timestamp, usually
      * the result of new Date().getTime() or ige.currentTime().
      */
-    timeToServerTime(time?: number): number;
+    timeToServerTime(time: number): number;
+    timeToServerTime(): number;
     /**
      * Gets / sets debug flag that determines if debug output
      * is logged to the console.
      * @param {Boolean=} val
      * @return {*}
      */
-    debug(val?: boolean): boolean | this;
+    debug(val: boolean): this;
+    debug(): boolean;
     /**
      * Gets / sets the maximum number of debug messages that
      * should be allowed to be output to the console before
@@ -58,5 +59,4 @@ export declare class IgeNetIoBaseController extends IgeEventingClass {
      */
     debugMax(val: number): this;
     debugMax(): number;
-    send(command: string, data: IgeNetworkMessageData): void;
 }

@@ -2,7 +2,7 @@ import { ige } from "../../../engine/instance.js";
 import { isClient } from "../../../engine/clientServer.js";
 import { IgeEntity } from "../../../engine/core/IgeEntity.js";
 export class JumpGate extends IgeEntity {
-    constructor(publicGameData = {}) {
+    constructor(publicGameData) {
         super();
         this.classId = "JumpGate";
         this._publicGameData = publicGameData;

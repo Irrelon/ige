@@ -1,15 +1,12 @@
 import { ige } from "../../../engine/instance.js";
-import { IgePoly2d } from "../../../engine/core/IgePoly2d.js";
 import { isServer } from "../../../engine/clientServer.js";
+import { oreTypes } from "../data/oreTypes.js";
+import { IgePoly2d } from "../../../engine/core/IgePoly2d.js";
 import { Ore } from "./Ore.js";
 import { degreesToRadians } from "../../../engine/utils.js";
 import { GameEntity } from "./GameEntity.js";
 import { IgeBox2dBodyType } from "../../../enums/IgeBox2dBodyType.js";
 import { IgeBox2dFixtureShapeType } from "../../../enums/IgeBox2dFixtureShapeType.js";
-import oreTypes from "../data/oreTypes.json";
-const oreTypesTyped = oreTypes;
-require("./GameEntity");
-require("./Ore");
 export class Asteroid extends GameEntity {
     constructor(publicGameData = {
         state: {},
@@ -29,19 +26,17 @@ export class Asteroid extends GameEntity {
         publicGameData.rotation = Math.round(Math.random() * 360);
         this._publicGameData = publicGameData;
         this._ore = {};
-        /* CEXCLUDE */
         if (isServer) {
             // Set the types and quantities of ore in this asteroid
             this._oreCount = 0;
             this._oreTypeCount = Math.round(Math.random() * 3) + 1;
             for (let i = 0; i < this._oreTypeCount; i++) {
                 const amount = Math.round(Math.random() * 1000) + 100;
-                const tmpOreType = oreTypesTyped[Math.round(Math.random() * (oreTypesTyped.length - 1))];
+                const tmpOreType = oreTypes[Math.round(Math.random() * (oreTypes.length - 1))];
                 this._ore[tmpOreType] = amount;
                 this._oreCount += amount;
             }
         }
-        /* CEXCLUDE */
         this.layer(1)
             .width(publicGameData.size)
             .height(publicGameData.size);
@@ -111,7 +106,7 @@ export class Asteroid extends GameEntity {
     }
     removeRandomOreType() {
         // TODO check that the ore we picked has any in "stock" on this asteroid
-        const oreType = oreTypesTyped[Math.round(Math.random() * (Object.keys(this._ore).length - 1))];
+        const oreType = oreTypes[Math.round(Math.random() * (Object.keys(this._ore).length - 1))];
         // Reduce the ore in the asteroid
         this._ore[oreType]--;
         this._oreCount--;

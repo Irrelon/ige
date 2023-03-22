@@ -35,11 +35,11 @@ export function calculateModifierRatio(states, modifierPerSecond, min, max, tick
 // 	optionsString = localStorage.getItem("starflight_options");
 // 	options = optionsString ? JSON.parse(optionsString) : {};
 //
-// 	$ige.engine.log("User options loaded", "log");
+// 	ige.engine.log("User options loaded", "log");
 //
 // 	for (i in options) {
 // 		if (options.hasOwnProperty(i)) {
-// 			$ige.engine.log("User option " + i + ": " + options[i]);
+// 			ige.engine.log("User option " + i + ": " + options[i]);
 // 		}
 // 	}
 //

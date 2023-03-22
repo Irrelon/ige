@@ -1,10 +1,10 @@
-import { GameEntityModuleStates } from "../types/GameEntityModuleDefinition";
+import { EntityModuleStates } from "../types/EntityModuleDefinition";
 
 export function roundNumber (number: number, digits: number) {
 	return Number(number.toFixed(digits));
 }
 
-export function calculateModifierRatio (states: GameEntityModuleStates, modifierPerSecond: number, min: number, max: number, tickDelta: number, stateId: string) {
+export function calculateModifierRatio (states: EntityModuleStates, modifierPerSecond: number, min: number, max: number, tickDelta: number, stateId: string) {
 	// Deal with small numbers by doing some maths
 	const calcMultiplier = 1;
 	modifierPerSecond *= calcMultiplier;
@@ -43,11 +43,11 @@ export function calculateModifierRatio (states: GameEntityModuleStates, modifier
 // 	optionsString = localStorage.getItem("starflight_options");
 // 	options = optionsString ? JSON.parse(optionsString) : {};
 //
-// 	$ige.engine.log("User options loaded", "log");
+// 	ige.engine.log("User options loaded", "log");
 //
 // 	for (i in options) {
 // 		if (options.hasOwnProperty(i)) {
-// 			$ige.engine.log("User option " + i + ": " + options[i]);
+// 			ige.engine.log("User option " + i + ": " + options[i]);
 // 		}
 // 	}
 //

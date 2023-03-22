@@ -1,4 +1,6 @@
-{
+import { StarSystemDefinition } from "../../../types/StarSystemDefinition";
+
+export const orhaan: StarSystemDefinition = {
 	"_id": "orhaan",
 	"name": "Orhaan",
 	"jumpGate": [
@@ -12,6 +14,9 @@
 				9,
 				0
 			],
+			"public": {
+				"texture": "jumpGate1"
+			},
 			"destination": {
 				"_id": "valeria",
 				"name": "Valeria"

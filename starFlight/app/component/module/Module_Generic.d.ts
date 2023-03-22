@@ -1,16 +1,14 @@
 import { IgeBaseClass } from "@/engine/core/IgeBaseClass";
 import { IgeEntity } from "@/engine/core/IgeEntity";
-import { GameEntityModuleDefinition, GameEntityModuleAudio, GameEntityModuleEffects, GameEntityModuleStates } from "../../../types/GameEntityModuleDefinition";
+import { EntityModuleDefinition, EntityModuleAudio, EntityModuleEffects, EntityModuleStates } from "../../../types/EntityModuleDefinition";
 export declare class Module_Generic extends IgeBaseClass {
     classId: string;
-    _definition: GameEntityModuleDefinition;
+    _definition: EntityModuleDefinition;
     _enabled: boolean;
     _active: boolean;
-    _target: IgeEntity | null;
-    _action?: string;
     _activeStartTime: number;
     _attachedTo: IgeEntity | null;
-    constructor(definition: GameEntityModuleDefinition);
+    constructor(definition: EntityModuleDefinition);
     enabled(val?: boolean): boolean | this;
     active(val?: boolean): boolean | this;
     /**
@@ -19,19 +17,17 @@ export declare class Module_Generic extends IgeBaseClass {
      * @returns {*}
      */
     attachedTo(val?: IgeEntity): IgeEntity | this | null;
-    target(val?: IgeEntity): IgeEntity | this | null;
-    action(val?: string): string | this | undefined;
     /**
      * If any effects are in the module's definition under "effects"
      * this method will enable / disable them and add / remove them
      * to / from the scene.
      */
-    processEffects(state: keyof GameEntityModuleEffects): void;
+    processEffects(state: keyof EntityModuleEffects): void;
     /**
      * If any audio files are in the module's definition under "audio"
      * this method will enable / disable them.
      */
-    processAudio(state: keyof GameEntityModuleAudio): void;
+    processAudio(state: keyof EntityModuleAudio): void;
     /**
      * Takes the states in the module's definition for input and output
      * and based on the tickDelta, calculates the amount of input and
@@ -39,8 +35,8 @@ export declare class Module_Generic extends IgeBaseClass {
      * @param {Object} states The current states and their values.
      * @param {Number} tickDelta The tick delta for this tick.
      */
-    resolve(states: GameEntityModuleStates, tickDelta: number): void;
+    resolve(states: EntityModuleStates, tickDelta: number): void;
     complete(): void;
     cooldown(): boolean;
-    canBeActive(): boolean;
+    canBeActive(states: EntityModuleStates): boolean;
 }

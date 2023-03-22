@@ -11,7 +11,7 @@ export declare class IgeInputComponent extends IgeEventingClass implements IgeIs
     _evRef: Record<string, (event: any) => void>;
     _debug?: boolean;
     _state: Record<number, Record<number, string | number | boolean>>;
-    _controlMap: Record<number, [number, number]>;
+    _controlMap: Record<number, [IgeInputDevice, number][]>;
     dblClick?: Event;
     pointerMove?: Event;
     pointerDown?: Event;
@@ -106,12 +106,12 @@ export declare class IgeInputComponent extends IgeEventingClass implements IgeIs
      * @param action
      * @param inputMap
      */
-    mapAction: (action: number, inputMap: [IgeInputDevice, number]) => void;
+    mapAction(action: number, inputMap: [IgeInputDevice, number][]): void;
     /**
      * Returns the passed action's input state value.
      * @param action
      */
-    actionVal: (action: number) => string | number | boolean;
+    actionVal(action: number): any;
     /**
      * Returns true if the passed action's input is pressed or its state
      * is not zero.

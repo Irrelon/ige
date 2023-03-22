@@ -1,7 +1,7 @@
 import { ige } from "@/engine/instance";
 import { IgeEntity } from "@/engine/core/IgeEntity";
 import { IgeCanvasRenderingContext2d } from "@/types/IgeCanvasRenderingContext2d";
-import { IgeScene2d } from "@/engine/core/IgeScene2d";
+import type { IgeScene2d } from "@/engine/core/IgeScene2d";
 
 export class Target extends IgeEntity {
 	classId = "Target";

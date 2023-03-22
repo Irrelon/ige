@@ -1,4 +1,6 @@
-{
+import { StarSystemDefinition } from "../../../types/StarSystemDefinition";
+
+export const valeria: StarSystemDefinition = {
 	"_id": "valeria",
 	"name": "Valeria",
 	"station": [
@@ -14,16 +16,17 @@
 				-550,
 				0
 			],
-			"market": [{
+			"market": {
 				"jobs": [],
-				"goods": [{
+				"resources": [{
 					"_id": "acanthite",
 					"name": "Acanthite Ore",
 					"type": "Ore"
 				}]
-			}],
+			},
 			"interior": [{
 				"_id": "groundFloor",
+				"name": "Ground Floor",
 				"width": 10,
 				"height": 5,
 				"floorTiles": [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],

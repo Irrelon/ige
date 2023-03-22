@@ -1,27 +1,27 @@
 "use strict";
-var appCore = require('../../../ige'), galaxyData;
+let appCore = require('../../../ige'), galaxyData;
 require('../component/JumpGate');
-galaxyData = require('../data/galaxy.json');
+galaxyData = require('../data/galaxy');
 appCore.module('StationServerScene', function (ige, $ige, $game, $textures, IgeEventingClass, IgeScene2d) {
-    var moduleSelf = this;
-    var StationServerScene = IgeEventingClass.extend({
+    const moduleSelf = this;
+    const StationServerScene = IgeEventingClass.extend({
         classId: 'StationServerScene',
         init: function () {
         },
         addGraph: function (options) {
-            var systemData, station, jumpGate, i;
-            if ($ige.isServer) {
-                $game.scene.sceneBase = new IgeScene2d()
+            let systemData, station, jumpGate, i;
+            if (ige.isServer) {
+                ige.game.scene.sceneBase = new IgeScene2d()
                     .id('sceneBase')
-                    .mount($game.scene.mainScene);
-                $game.scene.backScene = new IgeScene2d()
+                    .mount(ige.game.scene.mainScene);
+                ige.game.scene.backScene = new IgeScene2d()
                     .id('backScene')
                     .layer(0)
-                    .mount($game.scene.sceneBase);
-                $game.scene.frontScene = new IgeScene2d()
+                    .mount(ige.game.scene.sceneBase);
+                ige.game.scene.frontScene = new IgeScene2d()
                     .id('frontScene')
                     .layer(1)
-                    .mount($game.scene.sceneBase);
+                    .mount(ige.game.scene.sceneBase);
                 // Read the galaxy data for this system
                 systemData = galaxyData.system[moduleSelf.$controller._systemId];
                 // Create stations
@@ -32,7 +32,7 @@ appCore.module('StationServerScene', function (ige, $ige, $game, $textures, IgeE
                             .id(station._id)
                             .translateTo(station.position[0], station.position[1], station.position[2])
                             .streamMode(1)
-                            .mount($game.scene.frontScene);
+                            .mount(ige.game.scene.frontScene);
                     }
                 }
                 // Create jump gates
@@ -43,21 +43,21 @@ appCore.module('StationServerScene', function (ige, $ige, $game, $textures, IgeE
                             .id(jumpGate._id)
                             .translateTo(jumpGate.position[0], jumpGate.position[1], jumpGate.position[2])
                             .streamMode(1)
-                            .mount($game.scene.frontScene);
+                            .mount(ige.game.scene.frontScene);
                     }
                 }
                 /*self.generateAsteroidBelt(800, 0);*/
             }
         },
         removeGraph: function () {
-            var i;
+            let i;
             if (ige.$('sceneBase')) {
                 ige.$('sceneBase').destroy();
                 // Clear any references
-                for (i in $game.scene) {
-                    if ($game.scene.hasOwnProperty(i)) {
-                        if (!$game.scene[i].alive()) {
-                            delete $game.scene[i];
+                for (i in ige.game.scene) {
+                    if (ige.game.scene.hasOwnProperty(i)) {
+                        if (!ige.game.scene[i].alive()) {
+                            delete ige.game.scene[i];
                         }
                     }
                 }

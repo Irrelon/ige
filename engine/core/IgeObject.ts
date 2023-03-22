@@ -30,7 +30,7 @@ import { IgePoint } from "@/types/IgePoint";
 import { IgeViewport } from "@/engine/core/IgeViewport";
 import { IgeCanAcceptComponents } from "@/types/IgeCanAcceptComponents";
 import { IgeComponent } from "@/engine/core/IgeComponent";
-import { IGE_NETWORK_STREAM_CREATE, IGE_NETWORK_STREAM_DESTROY } from "@/enums/IgeConstants";
+import { IGE_NETWORK_STREAM_CREATE, IGE_NETWORK_STREAM_DESTROY } from "@/enums/IgeNetworkConstants";
 import { IgeStreamCreateMessageData } from "@/types/IgeNetworkStream";
 import { IgeBehaviourStore } from "@/types/IgeBehaviourStore";
 import { IgeBehaviourType } from "@/enums/IgeBehaviourType";

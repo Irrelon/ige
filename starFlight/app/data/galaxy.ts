@@ -1,4 +1,4 @@
-{
+export const galaxy = {
 	"system": [{
 		"_id": "valeria",
 		"enabled": true

@@ -1,36 +1,19 @@
 import { Module_Generic } from "./Module_Generic";
-import { GameEntityModuleAudio, GameEntityModuleBaseCost, GameEntityModuleDefinition, GameEntityModuleEffects, GameEntityModuleInputOutput, GameEntityModuleStates, GameEntityModuleUsageCost } from "../../../types/GameEntityModuleDefinition";
-export interface GameEntityAbilityModuleDefinition extends GameEntityModuleDefinition {
-    _id: string;
-    type: string;
-    slotType: string[];
-    slotSize: 1;
-    action: string;
-    classId: string;
-    name: string;
-    abilityTitle: string;
-    damageIndex?: number;
-    usageCost: GameEntityModuleUsageCost;
-    input: GameEntityModuleInputOutput;
-    output: GameEntityModuleInputOutput;
-    state: GameEntityModuleStates;
-    range?: number;
-    attachTo: string[];
-    baseCost: GameEntityModuleBaseCost;
-    requiresTarget?: boolean;
-    enabled: boolean;
-    active: boolean;
-    activeDuration: number;
-    cooldownDuration: number;
-    effects?: GameEntityModuleEffects;
-    audio?: GameEntityModuleAudio;
-}
+import { EntityModuleStates } from "../../../types/EntityModuleDefinition";
+import { EntityAbilityModuleDefinition } from "../../../types/EntityAbilityModuleDefinition";
+import { GameEntity } from "../GameEntity";
 export declare class Module_Ability extends Module_Generic {
     classId: string;
+    _definition: EntityAbilityModuleDefinition;
     _cooldown: boolean;
     _cooldownStartTime: number;
-    constructor(definition: GameEntityAbilityModuleDefinition);
-    active(val: boolean, states: GameEntityModuleStates): this;
+    _action?: string;
+    _target: GameEntity | null;
+    constructor(definition: EntityAbilityModuleDefinition);
+    target(val?: GameEntity): GameEntity | this | null;
+    action(val: string): this;
+    action(): string;
+    active(val: boolean, states?: EntityModuleStates): this;
     active(): boolean;
     /**
      * Determines if the active flag can transition from false
@@ -41,7 +24,7 @@ export declare class Module_Ability extends Module_Generic {
      * @returns {boolean} If true, allows the active flag to become
      * true. If false, denies it.
      */
-    canBeActive(states: GameEntityModuleStates): boolean;
+    canBeActive(states: EntityModuleStates): boolean;
     /**
      * Determines if the active flag can transition from true
      * to false. This is useful for checking post-flight conditions
@@ -49,19 +32,19 @@ export declare class Module_Ability extends Module_Generic {
      * @returns {boolean} If true, allows the active flag to become
      * false. If false, denies it.
      */
-    canBeInactive(states: any): any;
+    canBeInactive(states: EntityModuleStates): boolean;
     /**
      * Called when an ability's active flag has been set to true
      * when it was previously set to false.
      * @private
      */
-    _onActive(states: any): void;
+    _onActive(states: EntityModuleStates): void;
     /**
      * Called when an ability's active flag has been set to false
      * when it was previously set to true.
      * @private
      */
-    _onInactive(states: GameEntityModuleStates): void;
+    _onInactive(states: EntityModuleStates): void;
     complete(): void;
     /**
      * Gets / sets the cooldown flag for this ability. When called
@@ -80,5 +63,5 @@ export declare class Module_Ability extends Module_Generic {
      * @param {Object} states The current states and their values.
      * @param {Number} tickDelta The tick delta for this tick.
      */
-    resolve(states: any, tickDelta: any): void;
+    resolve(states: EntityModuleStates, tickDelta: number): void;
 }

@@ -24,26 +24,12 @@ export class IgeNetIoBaseController extends IgeEventingClass {
         }
         return this._timeSyncInterval;
     }
-    /**
-     * Converts a timestamp on the client to approx. time
-     * on the server using the difference in client/server
-     * clocks and the network latency between this client
-     * and the server.
-     * @param {Number} time The client timestamp, usually
-     * the result of new Date().getTime() or ige.currentTime().
-     */
     timeToServerTime(time) {
         if (time !== undefined) {
             return time + this._latency;
         }
         return this._latency;
     }
-    /**
-     * Gets / sets debug flag that determines if debug output
-     * is logged to the console.
-     * @param {Boolean=} val
-     * @return {*}
-     */
     debug(val) {
         if (val !== undefined) {
             this._debug = val;
@@ -64,5 +50,4 @@ export class IgeNetIoBaseController extends IgeEventingClass {
         }
         return this._debugMax;
     }
-    send(command, data) { }
 }

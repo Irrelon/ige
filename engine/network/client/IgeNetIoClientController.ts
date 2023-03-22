@@ -26,7 +26,7 @@ import {
 	IGE_NETWORK_STREAM_DESTROY,
 	IGE_NETWORK_STREAM_TIME,
 	IGE_NETWORK_TIME_SYNC
-} from "@/enums/IgeConstants";
+} from "@/enums/IgeNetworkConstants";
 
 /**
  * The client-side net.io component. Handles all client-side

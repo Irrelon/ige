@@ -4,6 +4,7 @@ export class Module_MiningLaser extends Module_Ability {
     constructor() {
         super(...arguments);
         this.classId = "Module_MiningLaser";
+        this._target = null;
     }
     /**
      * Called when the module has been active for a set period of time
@@ -14,9 +15,9 @@ export class Module_MiningLaser extends Module_Ability {
         const inventorySpace = this.attachedTo()._publicGameData.state.inventorySpace;
         const inventoryCount = this.attachedTo()._inventory.count();
         // Remove the mining laser target entity
-        delete this._target;
+        this._target = null;
         // Get new ore type randomly
-        oreType = target.removeRandomOreType();
+        const oreType = target.removeRandomOreType();
         // Check if the player's hold has space for our mined ore
         if (inventorySpace && inventorySpace.val > 0 && inventorySpace.val - inventoryCount > 0) {
             // The ship has cargo space available, add the ore directly to inventory

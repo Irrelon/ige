@@ -1,5 +1,5 @@
 import { ige } from "../../instance.js";
-import { IGE_NETWORK_CHAT_JOIN_ROOM, IGE_NETWORK_CHAT_LEAVE_ROOM, IGE_NETWORK_CHAT_LIST_ROOMS, IGE_NETWORK_CHAT_MSG, IGE_NETWORK_CHAT_ROOM_CREATED, IGE_NETWORK_CHAT_ROOM_LIST_USERS, IGE_NETWORK_CHAT_ROOM_REMOVED } from "../../../enums/IgeConstants.js";
+import { IGE_NETWORK_CHAT_JOIN_ROOM, IGE_NETWORK_CHAT_LEAVE_ROOM, IGE_NETWORK_CHAT_LIST_ROOMS, IGE_NETWORK_CHAT_MSG, IGE_NETWORK_CHAT_ROOM_CREATED, IGE_NETWORK_CHAT_ROOM_LIST_USERS, IGE_NETWORK_CHAT_ROOM_REMOVED } from "../../../enums/IgeNetworkConstants.js";
 import { IgeChatComponent } from "./IgeChatComponent.js";
 /**
  * The client-side chat component. Handles all client-side

@@ -1,1 +1,1 @@
-declare var appCore: any, galaxyData: any;
+declare let appCore: any, galaxyData: any;

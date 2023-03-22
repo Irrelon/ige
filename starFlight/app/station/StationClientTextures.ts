@@ -1,11 +1,11 @@
-var appCore = require('../../../ige');
+const appCore = require('../../../ige');
 
 require('../../assets/backgrounds/nebulaFieldSmartTexture');
 require('../../assets/backgrounds/starFieldSmartTexture');
 require('../../assets/ui/radarSmartTexture');
 
 appCore.module('StationClientTextures', function (ige, $textures, IgeTexture, IgeCellSheet, nebulaFieldSmartTexture, starFieldSmartTexture, radarSmartTexture) {
-	var textures = {};
+	const textures = {};
 	
 	// UI
 	textures.title = new IgeTexture('assets/ui/title.png');
@@ -33,9 +33,9 @@ appCore.module('StationClientTextures', function (ige, $textures, IgeTexture, Ig
 	textures.ore1 = new IgeCellSheet('assets/sprites/ore1.png', 8, 2);
 	textures.jumpGate1 = new IgeTexture('assets/sprites/jumpGate1.png');
 	
-	$textures.addGroup(textures);
+	ige.textures.addGroup(textures);
 	
 	this.on('destroy', function () {
-		$textures.removeGroup(textures);
+		ige.textures.removeGroup(textures);
 	});
 });

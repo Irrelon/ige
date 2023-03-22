@@ -2,7 +2,7 @@ import { ige } from "../../instance.js";
 import { arrPull, newIdHex } from "../../utils.js";
 import { IgeNetIoBaseController } from "../IgeNetIoBaseController.js";
 import { IgeNetIoServer } from "./IgeNetIoServer.js";
-import { IGE_NETWORK_REQUEST, IGE_NETWORK_RESPONSE, IGE_NETWORK_STREAM_CREATE, IGE_NETWORK_STREAM_DATA, IGE_NETWORK_STREAM_DESTROY, IGE_NETWORK_STREAM_TIME, IGE_NETWORK_TIME_SYNC } from "../../../enums/IgeConstants.js";
+import { IGE_NETWORK_REQUEST, IGE_NETWORK_RESPONSE, IGE_NETWORK_STREAM_CREATE, IGE_NETWORK_STREAM_DATA, IGE_NETWORK_STREAM_DESTROY, IGE_NETWORK_STREAM_TIME, IGE_NETWORK_TIME_SYNC } from "../../../enums/IgeNetworkConstants.js";
 export class IgeNetIoServerController extends IgeNetIoBaseController {
     constructor() {
         super();
@@ -366,13 +366,13 @@ export class IgeNetIoServerController extends IgeNetIoBaseController {
      * @param clientIdOrArrayOfIds
      * @param {Function} callback
      */
-    request(commandName, data, clientIdOrArrayOfIds, callback) {
+    request(cmd, data, clientIdOrArrayOfIds, callback) {
         // Build the request object
         const req = {
             id: newIdHex(),
-            cmd: commandName,
+            cmd,
             data,
-            callback: callback,
+            callback,
             timestamp: new Date().getTime()
         };
         // Store the request object
@@ -380,7 +380,7 @@ export class IgeNetIoServerController extends IgeNetIoBaseController {
         // Send the network request packet
         this.send(IGE_NETWORK_REQUEST, {
             id: req.id,
-            cmd: commandName,
+            cmd,
             data: req.data
         }, clientIdOrArrayOfIds);
     }

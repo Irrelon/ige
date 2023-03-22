@@ -1,133 +1,64 @@
-[
-	{
-		"_id": "521a36aa3559382638c4254a",
-		"type": "ability",
-		"slotType": [
-			"weapon",
-			"mining"
-		],
-		"slotSize": 1,
-		"action": "mine",
-		"classId": "Module_MiningLaser",
-		"name": "Mining Laser 1",
-		"abilityTitle": "MINE\nTARGET",
-		"canBeActive": "./code/abilityCanBeActive",
-		"usageCost": {
-			"energy": -40
-		},
-		"input": {
-		},
-		"output": {
-		},
-		"state": {
-		},
-		"range": 200,
-		"attachTo": [
-			"ship"
-		],
-		"baseCost": {
-			"credits": 1000
-		},
-		"requiresTarget": true,
-		"enabled": true,
-		"active": false,
-		"activeDuration": 8000,
-		"cooldownDuration": 2000,
-		"effects": {
-			"onActive": [
-				{
-					"action": "create",
-					"classId": "MiningLaserEffect",
-					"mount": "frontScene",
-					"data": {}
-				}
-			],
-			"onInactive": [
-				{
-					"action": "destroy",
-					"classId": "MiningLaserEffect",
-					"mount": "frontScene",
-					"data": {}
-				}
-			]
-		},
-		"audio": {
-			"onActive": [
-				{
-					"action": "play",
-					"audioId": "miningLaser",
-					"for": "all",
-					"loop": true,
-					"position": "target",
-					"mount": "backScene"
-				}
-			],
-			"onInactive": [
-				{
-					"action": "stop",
-					"audioId": "miningLaser"
-				}
-			],
-			"onComplete": [
-				{
-					"action": "stop",
-					"audioId": "miningLaser"
-				},
-				{
-					"action": "play",
-					"audioId": "actionComplete",
-					"for": "owner",
-					"position": "ambient"
-				}
-			]
-		}
-	},
-	{
-		"_id": "521a36aa3559382638c4254g",
-		"type": "ability",
-		"slotType": [
-			"weapon"
-		],
-		"slotSize": 1,
-		"action": "damage",
-		"classId": "Module_Ability",
-		"name": "Directed Laser Cannon 1",
-		"abilityTitle": "LASER\nCANNON",
-		"canBeActive": "./code/abilityCanBeActive",
-		"usageCost": {
-			"energy": -10
-		},
-		"input": {
-		},
-		"output": {
-			"$target": {
-				"integrity": -1
-			}
-		},
-		"state": {
-		},
-		"range": 100,
-		"attachTo": [
-			"ship"
-		],
-		"baseCost": {
-			"credits": 1000
-		},
-		"requiresTarget": true,
-		"enabled": true,
-		"active": false,
-		"activeDuration": 8000,
-		"cooldownDuration": 2000,
-		"effects": {
-			"onActive": [
-				{
-					"classId": "LaserEffect",
-					"mount": "frontScene",
-					"data": {}
-				}
-			]
-		}
-	},
+export type EntityModuleUsageCost = Record<string, number>;
+export type EntityModuleBaseCost = Record<string, number>;
+export type EntityModuleInputOutput = Record<string, number | Record<string, number>>;
+
+export interface EntityModuleStateItem {
+	initial: number;
+	min: number;
+	max: number;
+}
+
+export type EntityModuleStates = Record<string, EntityModuleStateItem>;
+
+export interface EntityModuleEffectAction {
+	action: "create" | "destroy",
+	classId: string,
+	mount: string,
+	data: Record<string, any>;
+}
+
+export interface EntityModuleEffectAudio {
+	"action": "play" | "stop",
+	"audioId": string,
+	"for"?: "all" | "owner",
+	"loop"?: boolean,
+	"position"?: "ambient" | "target",
+	"mount"?: string
+}
+
+export interface EntityModuleAudio {
+	onActive?: EntityModuleEffectAudio[];
+	onInactive?: EntityModuleEffectAudio[];
+	onComplete?: EntityModuleEffectAudio[];
+}
+
+export interface EntityModuleEffects {
+	onActive?: EntityModuleEffectAction[];
+	onInactive?: EntityModuleEffectAction[];
+	onComplete?: EntityModuleEffectAction[];
+}
+
+export interface EntityModuleDefinition {
+	_id: string,
+	type: string,
+	slotType: string[],
+	slotSize: 1,
+	classId: string,
+	name: string,
+	damageIndex?: number;
+	input: EntityModuleInputOutput,
+	output: EntityModuleInputOutput,
+	state: EntityModuleStates,
+	attachTo: string[],
+	baseCost: EntityModuleBaseCost,
+	enabled: boolean,
+	active: boolean,
+	effects?: EntityModuleEffects;
+	audio?: EntityModuleAudio;
+	requiresTarget?: boolean;
+}
+
+const modules: EntityModuleDefinition[] = [
 	{
 		"_id": "521a36aa3559382638c4254b",
 		"type": "module",
@@ -183,10 +114,8 @@
 		"slotSize": 1,
 		"classId": "Module_Generic",
 		"name": "Big Tank Fuel Hold",
-		"input": {
-		},
-		"output": {
-		},
+		"input": {},
+		"output": {},
 		"state": {
 			"fuel": {
 				"initial": 2000,
@@ -245,10 +174,8 @@
 		"classId": "Module_Generic",
 		"name": "Lazy Boy Armour",
 		"damageIndex": 1,
-		"input": {
-		},
-		"output": {
-		},
+		"input": {},
+		"output": {},
 		"state": {
 			"integrity": {
 				"initial": 100,
@@ -274,10 +201,8 @@
 		"slotSize": 1,
 		"classId": "Module_Generic",
 		"name": "Energy Capacitor Mk1",
-		"input": {
-		},
-		"output": {
-		},
+		"input": {},
+		"output": {},
 		"state": {
 			"energy": {
 				"initial": 100,
@@ -303,16 +228,18 @@
 		"slotSize": 1,
 		"classId": "Module_Generic",
 		"name": "Cargo Hold 10",
-		"input": {
-		},
-		"output": {
-		},
+		"input": {},
+		"output": {},
 		"state": {
 			"inventorySpace": {
-				"initial": 2
+				"initial": 2,
+				"min": 2,
+				"max": 2
 			},
 			"inventoryCount": {
-				"initial": 0
+				"initial": 0,
+				"min": 0,
+				"max": 2
 			}
 		},
 		"attachTo": [
@@ -324,4 +251,4 @@
 		"enabled": true,
 		"active": true
 	}
-]
+];

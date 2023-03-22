@@ -1,31 +1,33 @@
 import { IgeEntityBox2d } from "@/engine/components/physics/box2d/IgeEntityBox2d";
-import { GameEntityModuleDefinition } from "../../types/GameEntityModuleDefinition";
+import { EntityModuleDefinition } from "../../types/EntityModuleDefinition";
 import { IgeCanvasRenderingContext2d } from "@/types/IgeCanvasRenderingContext2d";
-import { GameEntityAbilityModuleDefinition } from "./module/Module_Ability";
-export interface GameEntityPublicGameData {
+import { IgeNetworkServerSideRequestHandler } from "@/types/IgeNetworkMessage";
+import { Module_Generic } from "./module/Module_Generic";
+import { EntityAbilityModuleDefinition } from "../../types/EntityAbilityModuleDefinition";
+export interface EntityPublicGameData {
     clientId?: string;
     state: Record<string, any>;
-    module: Record<string, GameEntityModuleDefinition | GameEntityAbilityModuleDefinition>;
+    module: Record<string, EntityModuleDefinition | EntityAbilityModuleDefinition>;
     ability: Record<string, any>;
     acceptsActionObj: Record<string, any>;
     size?: number;
     type?: number;
     rotation?: number;
 }
-export interface GameEntityPrivateGameData {
+export interface EntityPrivateGameData {
     state?: Record<string, any>;
-    module: Record<string, GameEntityModuleDefinition | GameEntityAbilityModuleDefinition>;
+    module: Record<string, Module_Generic>;
     ability?: Record<string, any>;
     acceptsActionObj?: Record<string, any>;
 }
 export declare class GameEntity extends IgeEntityBox2d {
     classId: string;
-    _publicGameData: GameEntityPublicGameData;
-    _privateGameData: GameEntityPrivateGameData;
+    _publicGameData: EntityPublicGameData;
+    _privateGameData: EntityPrivateGameData;
     _tickTime: number;
     _health: number;
-    constructor(publicGameData?: GameEntityPublicGameData);
-    streamCreateData(): GameEntityPublicGameData;
+    constructor(publicGameData?: EntityPublicGameData);
+    streamCreateData(): EntityPublicGameData;
     /**
      * Override the default IgeEntity class streamSectionData() method
      * so that we can check for custom sections and handle how we deal
@@ -51,14 +53,14 @@ export declare class GameEntity extends IgeEntityBox2d {
      * Set to null to remove the existing component.
      * @returns {*}
      */
-    module(moduleId: string, moduleDefinition?: GameEntityModuleDefinition): GameEntityModuleDefinition | Record<string, GameEntityModuleDefinition | GameEntityAbilityModuleDefinition> | this;
+    module(moduleId: string, moduleDefinition?: EntityModuleDefinition): this | EntityModuleDefinition | Record<string, EntityModuleDefinition | EntityAbilityModuleDefinition>;
     /**
      * Gets the private module data by slot number.
      * @param {Number} moduleId The slot number to get / set component for.
      * Set to null to remove the existing component.
      * @returns {*}
      */
-    privateModule(moduleId?: string): GameEntityModuleDefinition | undefined;
+    privateModule(moduleId?: string): Module_Generic | undefined;
     /**
      * Checks if this entity can accept the given action or sets the
      * `accept` value for an action.
@@ -79,7 +81,7 @@ export declare class GameEntity extends IgeEntityBox2d {
      */
     _resolveModules(tickDelta: number): void;
     /**
-     * Called by the client requesting ability usage. Activates a ability if
+     * Called by the client requesting ability usage. Activates an ability if
      * the ability is not already active or on cooldown.
      * @param {Object} data Arbitrary data that the ability usage might need
      * and is sent by the client.
@@ -87,7 +89,7 @@ export declare class GameEntity extends IgeEntityBox2d {
      * @returns {*}
      * @private
      */
-    _onAbilityUseRequest(data: any, callback: any): any;
+    _onAbilityUseRequest: IgeNetworkServerSideRequestHandler;
     /**
      * Sends a request to the server to use an ability.
      * @param {String} abilityId The ID of the ability to use.

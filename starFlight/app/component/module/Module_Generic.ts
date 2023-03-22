@@ -5,28 +5,27 @@ import { IgeEntity } from "@/engine/core/IgeEntity";
 import { calculateModifierRatio, roundNumber } from "../../services";
 import { IgeAudioEntity } from "@/engine/audio";
 import {
-	GameEntityModuleDefinition, GameEntityModuleAudio,
-	GameEntityModuleEffectAction,
-	GameEntityModuleEffects, GameEntityModuleStates
-} from "../../../types/GameEntityModuleDefinition";
+	EntityModuleDefinition, EntityModuleAudio,
+	EntityModuleEffectAction,
+	EntityModuleEffects, EntityModuleStates
+} from "../../../types/EntityModuleDefinition";
 
 export class Module_Generic extends IgeBaseClass {
 	classId = "Module_Generic";
-	_definition: GameEntityModuleDefinition;
+	_definition: EntityModuleDefinition;
 	_enabled: boolean = false;
 	_active: boolean = false;
-	_target: IgeEntity | null = null;
-	_action?: string;
+	//_target: IgeEntity | null = null;
+
 	_activeStartTime: number = 0;
 	_attachedTo: IgeEntity | null = null;// This might be GameEntity and game entity requires _effects defined on it, and effects need their own class
 
-	constructor (definition: GameEntityModuleDefinition) {
+	constructor (definition: EntityModuleDefinition) {
 		super();
 		this._definition = definition;
 
 		// Apply the initial enabled value from the definition
 		this._enabled = definition.enabled;
-		this._action = definition.action;
 		this._active = definition.active !== undefined ? definition.active : false;
 	}
 
@@ -62,37 +61,19 @@ export class Module_Generic extends IgeBaseClass {
 		return this._attachedTo;
 	}
 
-	target (val?: IgeEntity) {
-		if (val !== undefined) {
-			this._target = val;
-			return this;
-		}
-
-		return this._target;
-	}
-
-	action (val?: string) {
-		if (val !== undefined) {
-			this._action = val;
-			return this;
-		}
-
-		return this._action;
-	}
-
 	/**
 	 * If any effects are in the module's definition under "effects"
 	 * this method will enable / disable them and add / remove them
 	 * to / from the scene.
 	 */
-	processEffects (state: keyof GameEntityModuleEffects) {
+	processEffects (state: keyof EntityModuleEffects) {
 		if (!this._definition.effects || !this._definition.effects[state]) {
 			return;
 		}
 
 		if (!this._attachedTo || !this._target) return;
 
-		const stateEffects: GameEntityModuleEffectAction[] | undefined = this._definition.effects[state];
+		const stateEffects: EntityModuleEffectAction[] | undefined = this._definition.effects[state];
 
 		// Check and handle any state effects
 		if (stateEffects) {
@@ -136,7 +117,7 @@ export class Module_Generic extends IgeBaseClass {
 	 * If any audio files are in the module's definition under "audio"
 	 * this method will enable / disable them.
 	 */
-	processAudio (state: keyof GameEntityModuleAudio) {
+	processAudio (state: keyof EntityModuleAudio) {
 		if (!this._definition.audio || !this._definition.audio[state]) {
 			return;
 		}
@@ -185,30 +166,14 @@ export class Module_Generic extends IgeBaseClass {
 	 * @param {Object} states The current states and their values.
 	 * @param {Number} tickDelta The tick delta for this tick.
 	 */
-	resolve (states: GameEntityModuleStates, tickDelta: number) {
-		let inputId,
-			currentRatio = 1,
-			outputId,
-			modifierCalcData;
+	resolve (states: EntityModuleStates, tickDelta: number) {
+		let currentRatio = 1;
 
 		const inputValues = {};
 		const outputValues = {};
 
-		if (this.active()) {
-			if (this._definition.activeDuration) {
-				if (ige.engine.currentTime() - this._activeStartTime >= this._definition.activeDuration) {
-					this.active(false);
-
-					// Adjust tick delta to exactly match what is left of the allowed active duration
-					tickDelta = tickDelta - ((ige.engine.currentTime() - this._activeStartTime) - this._definition.activeDuration);
-
-					this.complete();
-				}
-			}
-		}
-
 		if (this._definition.input) {
-			for (inputId in this._definition.input) {
+			for (const inputId in this._definition.input) {
 				if (this._definition.input.hasOwnProperty(inputId)) {
 					switch (inputId) {
 					case "$target":
@@ -218,7 +183,7 @@ export class Module_Generic extends IgeBaseClass {
 
 					default:
 						// Calculate maximum modifier value for the tickDelta
-						modifierCalcData = calculateModifierRatio(states, this._definition.input[inputId], states[inputId].min, states[inputId].max, tickDelta, inputId);
+						const modifierCalcData = calculateModifierRatio(states, this._definition.input[inputId], states[inputId].min, states[inputId].max, tickDelta, inputId);
 
 						if (modifierCalcData.ratio < currentRatio) {
 							currentRatio = modifierCalcData.ratio;
@@ -234,7 +199,7 @@ export class Module_Generic extends IgeBaseClass {
 		// Now using the worst case ratio from the inputs,
 		// calculate each output for this update
 		if (this._definition.output) {
-			for (outputId in this._definition.output) {
+			for (const outputId in this._definition.output) {
 				if (this._definition.output.hasOwnProperty(outputId)) {
 					switch (outputId) {
 					case "$target":
@@ -244,7 +209,7 @@ export class Module_Generic extends IgeBaseClass {
 
 					default:
 						// Calculate maximum modifier value for the tickDelta
-						modifierCalcData = calculateModifierRatio(states, this._definition.output[outputId], states[outputId].min, states[outputId].max, tickDelta, outputId);
+						const modifierCalcData = calculateModifierRatio(states, this._definition.output[outputId], states[outputId].min, states[outputId].max, tickDelta, outputId);
 
 						if (modifierCalcData.ratio < currentRatio) {
 							currentRatio = modifierCalcData.ratio;
@@ -258,14 +223,14 @@ export class Module_Generic extends IgeBaseClass {
 		}
 
 		// Now loop the input values and apply the lowest ratio to them
-		for (inputId in inputValues) {
+		for (const inputId in inputValues) {
 			if (inputValues.hasOwnProperty(inputId)) {
 				// Assign the new state value
 				states[inputId].val = roundNumber(states[inputId].val + (inputValues[inputId] * currentRatio), 6);
 			}
 		}
 
-		for (outputId in outputValues) {
+		for (const outputId in outputValues) {
 			if (outputValues.hasOwnProperty(outputId)) {
 				// Assign the new state value
 				states[outputId].val = roundNumber(states[outputId].val + (outputValues[outputId] * currentRatio), 6);
@@ -279,7 +244,7 @@ export class Module_Generic extends IgeBaseClass {
 		return false;
 	}
 
-	canBeActive (): boolean {
+	canBeActive (states: EntityModuleStates): boolean {
 		return true;
 	}
 }

@@ -21,6 +21,32 @@ export declare enum IgeInputDevice {
     "gamePad7" = 19,
     "gamePad8" = 20
 }
+export declare enum IgeInputGamePadMap {
+    "button1" = 0,
+    "button2" = 1,
+    "button3" = 2,
+    "button4" = 3,
+    "button5" = 4,
+    "button6" = 5,
+    "button7" = 6,
+    "button8" = 7,
+    "button9" = 8,
+    "button10" = 9,
+    "button11" = 10,
+    "button12" = 11,
+    "button13" = 12,
+    "button14" = 13,
+    "button15" = 14,
+    "button16" = 15,
+    "button17" = 16,
+    "button18" = 17,
+    "button19" = 18,
+    "button20" = 19,
+    "axisLeftX" = 20,
+    "axisLeftY" = 21,
+    "axisRightX" = 22,
+    "axisRightY" = 23
+}
 export declare enum IgeInputPointerMap {
     "down" = 0,
     "up" = 1,

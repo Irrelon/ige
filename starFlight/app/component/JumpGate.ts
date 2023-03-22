@@ -1,12 +1,13 @@
 import { ige } from "@/engine/instance";
 import { isClient } from "@/engine/clientServer";
 import { IgeEntity } from "@/engine/core/IgeEntity";
+import { JumpGateDefinition } from "../../types/JumpGateDefinition";
 
 export class JumpGate extends IgeEntity {
 	classId = "JumpGate";
 	_publicGameData: Record<string, any>;
 
-	constructor (publicGameData: Record<string, any> = {}) {
+	constructor (publicGameData: JumpGateDefinition["public"]) {
 		super();
 
 		this._publicGameData = publicGameData;

@@ -1,36 +1,36 @@
-var appCore = require('../../../ige');
+const appCore = require('../../../ige');
 
 appCore.module('SpaceClient', function ($ige, $game, IgeStreamComponent) {
-	var moduleSelf = this;
+	const moduleSelf = this;
 	
-	var SpaceClient = function () {
-		var self = this;
+	const SpaceClient = function () {
+		const self = this;
 		
 		// Show the connecting dialog
 		document.getElementById('connectingDialog').style.display = 'block';
 		
 		moduleSelf.on('ready', function () {
 			// Hook network events we want to respond to
-			$ige.engine.network.define('playerEntity', self._onPlayerEntity.bind(self));
+			ige.network.define('playerEntity', self._onPlayerEntity.bind(self));
 			
 			// Start the network client
-			$ige.engine.network.start('http://' + window.location.hostname + ':2000', function () {
+			ige.network.start('http://' + window.location.hostname + ':2000', function () {
 				// Setup the network stream handler
-				$ige.engine.network.addComponent(IgeStreamComponent)
+				ige.network.addComponent(IgeStreamComponent)
 					.stream.renderLatency(80); // Render the simulation 80 milliseconds in the past
 				
 				// Ask server for game data
-				$ige.engine.network.send('publicGameData', null, function (err, data) {
+				ige.network.send('publicGameData', null, function (err, data) {
 					if (err) {
-						$ige.engine.network.stop();
+						ige.network.stop();
 						console.log("Game error");
 						return;
 					}
 					
-					$game.publicGameData = data;
+					ige.game.publicGameData = data;
 					
 					// Ask the server to create an entity for us
-					$ige.engine.network.send('playerEntity');
+					ige.network.send('playerEntity');
 				});
 			});
 		});
@@ -44,9 +44,9 @@ appCore.module('SpaceClient', function ($ige, $game, IgeStreamComponent) {
 	 * @private
 	 */
 	SpaceClient.prototype._onPlayerEntity = function (entityId) {
-		var self = this,
+		let self = this,
 			eventListener,
-			ent = $ige.engine.$(entityId);
+			ent = ige.engine.$(entityId);
 		
 		if (ent) {
 			self._trackPlayerEntity(ent);
@@ -57,13 +57,13 @@ appCore.module('SpaceClient', function ($ige, $game, IgeStreamComponent) {
 		// stream so lets ask the stream to tell us when it creates a
 		// new entity and then check if that entity is the one we
 		// should be tracking!
-		eventListener = $ige.engine.network.stream.on('entityCreated', function (entity) {
+		eventListener = ige.network.stream.on('entityCreated', function (entity) {
 			if (entity.id() === entityId) {
-				self._trackPlayerEntity($ige.engine.$(entityId));
+				self._trackPlayerEntity(ige.engine.$(entityId));
 				
 				// Turn off the listener for this event now that we
 				// have found and started tracking our player entity
-				$ige.engine.network.stream.off('entityCreated', eventListener, function (result) {
+				ige.network.stream.off('entityCreated', eventListener, function (result) {
 					if (!result) {
 						this.log('Could not disable event listener!', 'warning');
 					}
@@ -79,10 +79,10 @@ appCore.module('SpaceClient', function ($ige, $game, IgeStreamComponent) {
 	 */
 	SpaceClient.prototype._trackPlayerEntity = function (ent) {
 		// Store the player entity reference
-		$game.playerEntity = ent;
+		ige.game.playerEntity = ent;
 		
 		// Tell the camera to track this entity with some elasticity
-		$game.scene.vp1.camera.trackTranslate(ent, 8);
+		ige.game.scene.vp1.camera.trackTranslate(ent, 8);
 		
 		// Hide connection dialog now that the player can do something
 		document.getElementById('connectingDialog').style.display = 'none';
