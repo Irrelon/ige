@@ -1,5 +1,4 @@
 import { ige } from "@/engine/instance";
-import { IgeEventingClass } from "@/engine/core/IgeEventingClass";
 import { IgeVelocityComponent } from "@/engine/components/IgeVelocityComponent";
 import { IgeUiEntity } from "@/engine/core/IgeUiEntity";
 import { IgeAudioEntity } from "@/engine/audio";
@@ -12,8 +11,9 @@ import { IgeScene2d } from "@/engine/core/IgeScene2d";
 import { degreesToRadians } from "@/engine/utils";
 import { IgeUiManagerController } from "@/engine/core/IgeUiManagerController";
 import { IgeViewport } from "@/engine/core/IgeViewport";
+import { IgeSceneGraph } from "@/engine/core/IgeSceneGraph";
 
-export class SplashClientScene extends IgeEventingClass {
+export class SplashClientScene extends IgeSceneGraph {
 	classId = "SplashClientScene";
 
 	addGraph () {

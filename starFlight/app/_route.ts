@@ -3,13 +3,12 @@ import { IgeTexture } from "@/engine/core/IgeTexture";
 import {AppClientScene} from "./AppClientScene";
 import {AppServerScene} from "./AppServerScene";
 
-import { timerCircle } from "../assets/ui/timerCircle";
 import { tab } from "../assets/ui/tab";
+import { timerCircle } from "../assets/ui/timerCircle";
 import { infoWindow } from "../assets/ui/infoWindow";
 
-//import "./space/_route";
+import "./space/_route";
 import "./splash/_route";
-//require('./space/SpaceServer');
 
 ige.router.route("app", {
 	client: async () => {

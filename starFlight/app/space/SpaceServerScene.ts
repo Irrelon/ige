@@ -1,26 +1,24 @@
 import { ige } from "@/engine/instance";
+import { isServer } from "@/engine/clientServer";
 import { IgeScene2d } from "@/engine/core/IgeScene2d";
 import { IgeSceneGraph } from "@/engine/core/IgeSceneGraph";
-import { isServer } from "@/engine/clientServer";
 
-let appCore = require("../../../ige"),
-	galaxyData;
+import {Asteroid} from "../component/Asteroid";
+import { distance } from "@/engine/utils";
+import { SpaceStation } from "../component/SpaceStation";
+import { JumpGate } from "../component/JumpGate";
+import { systems } from "../data/systems";
+//require("../component/JumpGate");
+//require("../component/Asteroid");
 
-require("../component/JumpGate");
-require("../component/Asteroid");
+export const generateAsteroidBelt = function generateAsteroidBelt (beltX: number, beltY: number) {
+	const asteroidArr = [];
+	const maxDist = 900;
+	const minDist = 500;
+	const max = 100;
 
-galaxyData = require("../data/galaxy.json");
-
-export const generateAsteroidBelt = function generateAsteroidBelt (beltX, beltY) {
-	let maxDist = 900,
-		minDist = 500,
-		dist,
-		x, y, i,
-		count = 0,
-		max = 100,
-		asteroid,
-		asteroidArr = [],
-		rejectedLocation;
+	let count = 0;
+	let asteroid;
 
 	while (count < max) {
 		if (!asteroid) {
@@ -28,17 +26,17 @@ export const generateAsteroidBelt = function generateAsteroidBelt (beltX, beltY)
 			asteroid.mount(ige.game.scene.middleScene);
 		}
 
-		x = Math.floor(beltX + ((Math.random() * maxDist * 2) - maxDist));
-		y = Math.floor(beltY + ((Math.random() * maxDist * 2) - maxDist));
-		dist = Math.distance(x, y, beltX, beltY);
+		const x = Math.floor(beltX + ((Math.random() * maxDist * 2) - maxDist));
+		const y = Math.floor(beltY + ((Math.random() * maxDist * 2) - maxDist));
+		const dist = distance(x, y, beltX, beltY);
 
 		if (dist > minDist && dist < maxDist) {
 			asteroid.translateTo(x, y, 0);
 			asteroid.updateTransform();
-			rejectedLocation = false;
+			let rejectedLocation = false;
 
 			// Make sure no asteroids intersect this one
-			for (i = 0; i < asteroidArr.length; i++) {
+			for (let i = 0; i < asteroidArr.length; i++) {
 				if (asteroidArr[i].aabb().intersects(asteroid.aabb(true))) {
 					// The asteroid intersects another, reject this location
 					rejectedLocation = true;
@@ -88,7 +86,7 @@ export class SpaceServerScene extends IgeSceneGraph {
 				.mount(ige.game.scene.sceneBase);
 
 			// Read the galaxy data for this system
-			systemData = require("../data/system/" + moduleSelf.$controller._systemId);
+			systemData = systems[ige.game._systemId];
 
 			// Create stations
 			if (systemData.station) {
@@ -127,20 +125,9 @@ export class SpaceServerScene extends IgeSceneGraph {
 	}
 
 	removeGraph () {
-		let i;
+		const sceneBase = ige.$("sceneBase");
+		if (!sceneBase) return;
 
-		if (ige.$("sceneBase")) {
-			ige.$("sceneBase").destroy();
-
-			// Clear any references
-			for (i in ige.game.scene) {
-				if (ige.game.scene.hasOwnProperty(i)) {
-					if (!ige.game.scene[i].alive()) {
-						delete ige.game.scene[i];
-					}
-				}
-
-			}
-		}
+		sceneBase.destroy();
 	}
 }

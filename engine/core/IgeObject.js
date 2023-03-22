@@ -959,15 +959,6 @@ export class IgeObject extends IgeEventingClass {
         }
         return this._compositeStream;
     }
-    /**
-     * Gets / sets the array of sections that this entity will
-     * encode into its stream data.
-     * @param {Array=} sectionArray An array of strings.
-     * @example #Define the sections this entity will use in the network stream. Use the default "transform" section as well as a "custom1" section
-     *     entity.streamSections('transform', 'custom1');
-     * @return {*} "this" when arguments are passed to allow method
-     * chaining or the current value if no arguments are specified.
-     */
     streamSections(sectionArray) {
         if (sectionArray !== undefined) {
             this._streamSections = sectionArray;

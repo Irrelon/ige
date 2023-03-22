@@ -34,7 +34,7 @@ export class IgeRouter extends IgeBaseClass {
         return __awaiter(this, void 0, void 0, function* () {
             // Check for a route definition first
             if (!this._routeLoad[path]) {
-                throw ('Attempt to navigate to undefined route: ' + path);
+                throw new Error('Attempt to navigate to undefined route: ' + path);
             }
             if (path === this._currentRoutePath)
                 return;

@@ -70,6 +70,19 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 	}
 
 	/**
+	 * Calculates the distance to the passed entity from this one.
+	 * @param {IgeEntity} entity The entity to calculate distance
+	 * to.
+	 * @returns {Number} Distance.
+	 */
+	distanceTo (entity: IgeEntity) {
+		const a = this._translate.x - entity._translate.x,
+			b = this._translate.y - entity._translate.y;
+
+		return Math.sqrt(a * a + b * b);
+	}
+
+	/**
 	 * Clones the object and all its children and returns a new object.
 	 */
 	clone (options?: Record<string, boolean>) {

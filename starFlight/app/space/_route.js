@@ -19,13 +19,6 @@ import { ige } from "../../../engine/instance.js";
 ige.router.route('app/space', {
     client: () => __awaiter(void 0, void 0, void 0, function* () {
     }),
-    client: {
-        controller: 'SpaceClient',
-        sceneGraph: 'SpaceClientScene',
-        textures: 'SpaceClientTextures'
-    },
-    server: {
-        controller: 'SpaceServer',
-        sceneGraph: 'SpaceServerScene'
-    }
+    server: () => __awaiter(void 0, void 0, void 0, function* () {
+    })
 });

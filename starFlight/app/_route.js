@@ -11,12 +11,11 @@ import { ige } from "../../engine/instance.js";
 import { IgeTexture } from "../../engine/core/IgeTexture.js";
 import { AppClientScene } from "./AppClientScene.js";
 import { AppServerScene } from "./AppServerScene.js";
-import { timerCircle } from "../assets/ui/timerCircle.js";
 import { tab } from "../assets/ui/tab.js";
+import { timerCircle } from "../assets/ui/timerCircle.js";
 import { infoWindow } from "../assets/ui/infoWindow.js";
-//import "./space/_route.js";
+import "./space/_route.js";
 import "./splash/_route.js";
-//require('./space/SpaceServer');
 ige.router.route("app", {
     client: () => __awaiter(void 0, void 0, void 0, function* () {
         // @ts-ignore

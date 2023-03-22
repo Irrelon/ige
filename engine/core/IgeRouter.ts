@@ -29,7 +29,7 @@ export class IgeRouter extends IgeBaseClass {
 	async go (path: string) {
 		// Check for a route definition first
 		if (!this._routeLoad[path]) {
-			throw('Attempt to navigate to undefined route: ' + path);
+			throw new Error('Attempt to navigate to undefined route: ' + path);
 		}
 
 		if (path === this._currentRoutePath) return;

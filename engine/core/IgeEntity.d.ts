@@ -33,6 +33,13 @@ export declare class IgeEntity extends IgeObject implements IgeCanRegisterById, 
     _sortChildren: ((comparatorFunction: (a: any, b: any) => number) => void);
     constructor();
     /**
+     * Calculates the distance to the passed entity from this one.
+     * @param {IgeEntity} entity The entity to calculate distance
+     * to.
+     * @returns {Number} Distance.
+     */
+    distanceTo(entity: IgeEntity): number;
+    /**
      * Clones the object and all its children and returns a new object.
      */
     clone(options?: Record<string, boolean>): any;

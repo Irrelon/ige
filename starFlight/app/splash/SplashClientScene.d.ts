@@ -1,5 +1,5 @@
-import { IgeEventingClass } from "@/engine/core/IgeEventingClass";
-export declare class SplashClientScene extends IgeEventingClass {
+import { IgeSceneGraph } from "@/engine/core/IgeSceneGraph";
+export declare class SplashClientScene extends IgeSceneGraph {
     classId: string;
     addGraph(): void;
     removeGraph(): void;

@@ -767,7 +767,8 @@ export declare class IgeObject extends IgeEventingClass implements IgeCanRegiste
      * @return {*} "this" when arguments are passed to allow method
      * chaining or the current value if no arguments are specified.
      */
-    streamSections(sectionArray?: string[]): this | string[];
+    streamSections(sectionArray: string[]): this;
+    streamSections(): string[];
     /**
      * Adds a section into the existing streamed sections array.
      * @param {String} sectionName The section name to add.

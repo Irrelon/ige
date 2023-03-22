@@ -8,7 +8,6 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 import { ige } from "../../../engine/instance.js";
-import { IgeEventingClass } from "../../../engine/core/IgeEventingClass.js";
 import { IgeVelocityComponent } from "../../../engine/components/IgeVelocityComponent.js";
 import { IgeUiEntity } from "../../../engine/core/IgeUiEntity.js";
 import { IgeAudioEntity } from "../../../engine/audio/index.js";
@@ -19,7 +18,8 @@ import { IgeUiDropDown } from "../../../engine/ui/IgeUiDropDown.js";
 import { IgeEntity } from "../../../engine/core/IgeEntity.js";
 import { IgeScene2d } from "../../../engine/core/IgeScene2d.js";
 import { degreesToRadians } from "../../../engine/utils.js";
-export class SplashClientScene extends IgeEventingClass {
+import { IgeSceneGraph } from "../../../engine/core/IgeSceneGraph.js";
+export class SplashClientScene extends IgeSceneGraph {
     constructor() {
         super(...arguments);
         this.classId = "SplashClientScene";

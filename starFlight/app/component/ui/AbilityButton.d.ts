@@ -3,6 +3,7 @@ import { IgeUiEntity } from "@/engine/core/IgeUiEntity";
 import { GameEntityAbilityModuleDefinition } from "../module/Module_Ability";
 export interface AbilityButtonOptions {
     abilityId: string;
+    label?: string;
     module: GameEntityAbilityModuleDefinition;
 }
 export declare class AbilityButton extends IgeUiEntity {

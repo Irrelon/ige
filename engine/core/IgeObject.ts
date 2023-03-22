@@ -1623,6 +1623,8 @@ export class IgeObject extends IgeEventingClass implements IgeCanRegisterById, I
 	 * @return {*} "this" when arguments are passed to allow method
 	 * chaining or the current value if no arguments are specified.
 	 */
+	streamSections (sectionArray: string[]): this;
+	streamSections (): string[];
 	streamSections (sectionArray?: string[]) {
 		if (sectionArray !== undefined) {
 			this._streamSections = sectionArray;
