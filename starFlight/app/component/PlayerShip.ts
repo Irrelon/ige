@@ -10,6 +10,8 @@ import { IgeCanvasRenderingContext2d } from "@/types/IgeCanvasRenderingContext2d
 import { degreesToRadians } from "@/engine/utils";
 import { IgeNetIoClientController } from "@/engine/network/client/IgeNetIoClientController";
 import { PlayerControls } from "../../enums/PlayerControls";
+import type { IgeUiLabel } from "@/engine/ui/IgeUiLabel";
+import { registerClass } from "@/engine/igeClassStore";
 
 export class PlayerShip extends Ship {
 	classId = "PlayerShip";
@@ -234,7 +236,7 @@ export class PlayerShip extends Ship {
 			this.target._distance = this.distanceTo(this.target._targetEntity);
 
 			// Update the on-screen target distance label
-			ige.$("targetDistance").value("Distance: " + this.target._distance.toFixed(2) + " km");
+			(ige.$("targetDistance") as IgeUiLabel).value("Distance: " + this.target._distance.toFixed(2) + " km");
 
 			ige.game.scene.targetInfo.show();
 		} else {
@@ -242,3 +244,5 @@ export class PlayerShip extends Ship {
 		}
 	}
 }
+
+registerClass(PlayerShip);

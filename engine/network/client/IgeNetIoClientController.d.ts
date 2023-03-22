@@ -54,7 +54,7 @@ export declare class IgeNetIoClientController extends IgeNetIoBaseController {
      * @param data
      * @param callback
      */
-    send<DataType = IgeNetworkMessageData>(commandName: string, data: DataType, callback?: IgeNetworkClientSideResponseHandler): void;
+    send<DataType = IgeNetworkMessageData>(commandName: string, data?: DataType, callback?: IgeNetworkClientSideResponseHandler): void;
     /**
      * Sends a network request. This is different from a standard
      * call to send() because the recipient code will be able to

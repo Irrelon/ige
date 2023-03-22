@@ -6,6 +6,7 @@ import { Inventory } from "./Inventory.js";
 import { IgeInputDevice, IgeInputKeyboardMap } from "../../../enums/IgeInputDeviceMap.js";
 import { degreesToRadians } from "../../../engine/utils.js";
 import { PlayerControls } from "../../enums/PlayerControls.js";
+import { registerClass } from "../../../engine/igeClassStore.js";
 export class PlayerShip extends Ship {
     constructor(publicGameData) {
         super(publicGameData);
@@ -190,3 +191,4 @@ export class PlayerShip extends Ship {
         }
     }
 }
+registerClass(PlayerShip);

@@ -59,7 +59,9 @@ export class IgeAudioController extends IgeEventingClass {
 	 * Gets / loads an audio file from the given url and assigns it the id specified
 	 * in the global audio register.
 	 * @param {String} id The id to assign the audio in the register.
+	 * @param url
 	 */
+	register (id: string, url: string): this;
 	register (id: string): AudioBuffer;
 	register (id: string, url?: string) {
 		if (!id) {

@@ -1,6 +1,6 @@
 import { IgeSmartTexture } from "@/types/IgeSmartTexture";
 
-export const target: IgeSmartTexture = {
+export const targetSmartTexture: IgeSmartTexture = {
 	render: function (ctx, entity) {
 		if (entity._targetEntity) {
 			ctx.save();

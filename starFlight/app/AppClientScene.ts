@@ -3,6 +3,7 @@ import { IgeOptions } from "@/engine/core/IgeOptions";
 import { IgeSceneGraph } from "@/engine/core/IgeSceneGraph";
 import { IgeViewport } from "@/engine/core/IgeViewport";
 import { IgeScene2d } from "@/engine/core/IgeScene2d";
+import { IgeVelocityComponent } from "@/engine/components/IgeVelocityComponent";
 
 // Include this here as we use it throughout the app
 //require('./component/ui/InfoWindow');
@@ -75,12 +76,14 @@ export class AppClientScene extends IgeSceneGraph {
 		// Create the main viewport and set the scene
 		// it will "look" at as the new mainScene we just
 		// created above
-		new IgeViewport()
+		const vp1 = new IgeViewport()
 			.id('vp1')
 			.autoSize(true)
 			.scene(mainScene)
 			.drawBounds(false)
 			.mount(ige.engine);
+
+		vp1.camera.addComponent("velocity", IgeVelocityComponent);
 	}
 
 	removeGraph () {

@@ -1,4 +1,3 @@
-/// <reference types="react" />
 import './App.css';
-declare function App(): JSX.Element;
+declare function App(): any;
 export default App;

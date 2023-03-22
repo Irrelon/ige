@@ -24,7 +24,7 @@ appCore.module('StationClientTextures', function (ige, $textures, IgeTexture, Ig
     textures.neb4 = new IgeTexture('assets/backgrounds/neb4.png');
     textures.nebula = new IgeTexture(nebulaFieldSmartTexture);
     textures.radar = new IgeTexture(radarSmartTexture);
-    textures.target = new IgeTexture('assets/ui/target.js');
+    textures.target = new IgeTexture('assets/ui/targetSmartTexture.js');
     textures.laser = new IgeTexture('assets/sprites/laser.js');
     textures.explosions1 = new IgeCellSheet('assets/sprites/explosions.png', 8, 22);
     textures.ore1 = new IgeCellSheet('assets/sprites/ore1.png', 8, 2);

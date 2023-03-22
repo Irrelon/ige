@@ -404,7 +404,7 @@ export declare class IgeEngine extends IgeEntity {
      * @param {String=} contextId The context such as '2d'. Defaults to '2d'.
      * @return {*}
      */
-    renderContext(contextId: "2d" | "three"): this | "2d" | "three";
+    renderContext(contextId: "2d" | "three"): "2d" | this | "three";
     /**
      * Creates a front-buffer or "drawing surface" for the renderer.
      *

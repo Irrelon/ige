@@ -1,6 +1,7 @@
 import { ige } from "@/engine/instance";
 import { Asteroid } from "../app/component/Asteroid";
 import { distance } from "@/engine/utils";
+import { IgeScene2d } from "@/engine/core/IgeScene2d";
 
 export const generateAsteroidBelt = function generateAsteroidBelt (beltX: number, beltY: number) {
 	const asteroidArr = [];
@@ -11,10 +12,12 @@ export const generateAsteroidBelt = function generateAsteroidBelt (beltX: number
 	let count = 0;
 	let asteroid;
 
+	const middleScene = ige.$("middleScene") as IgeScene2d;
+
 	while (count < max) {
 		if (!asteroid) {
 			asteroid = new Asteroid();
-			asteroid.mount(ige.game.scene.middleScene);
+			asteroid.mount(middleScene);
 		}
 
 		const x = Math.floor(beltX + ((Math.random() * maxDist * 2) - maxDist));

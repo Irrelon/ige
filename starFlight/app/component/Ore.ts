@@ -3,7 +3,8 @@ import { IgeEntityBox2d } from "@/engine/components/physics/box2d/IgeEntityBox2d
 import { IgeTextureAnimationComponent } from "@/engine/components/IgeTextureAnimationComponent";
 import { IgeBox2dBodyType } from "@/enums/IgeBox2dBodyType";
 import { IgeBox2dFixtureShapeType } from "@/enums/IgeBox2dFixtureShapeType";
-import { isClient } from "@/engine/clientServer";
+import { isClient, isServer } from "@/engine/clientServer";
+import { registerClass } from "@/engine/igeClassStore";
 
 export class Ore extends IgeEntityBox2d {
 	classId = "Ore";
@@ -21,7 +22,7 @@ export class Ore extends IgeEntityBox2d {
 			.width(25)
 			.height(25);
 
-		if (ige.box2d) {
+		if (isServer && ige.box2d) {
 			// Create box2d body for this object
 			this.box2dBody({
 				type: IgeBox2dBodyType.dynamic,
@@ -61,3 +62,5 @@ export class Ore extends IgeEntityBox2d {
 		return this._publicGameData;
 	}
 }
+
+registerClass(Ore);

@@ -15,21 +15,22 @@ export class SpaceServerScene extends IgeSceneGraph {
         if (!isServer) {
             return;
         }
-        ige.game.scene.sceneBase = new IgeScene2d()
+        const mainScene = ige.$("mainScene");
+        const sceneBase = new IgeScene2d()
             .id("sceneBase")
-            .mount(ige.game.scene.mainScene);
-        ige.game.scene.backScene = new IgeScene2d()
+            .mount(mainScene);
+        const backScene = new IgeScene2d()
             .id("backScene")
             .layer(0)
-            .mount(ige.game.scene.sceneBase);
-        ige.game.scene.middleScene = new IgeScene2d()
+            .mount(sceneBase);
+        const middleScene = new IgeScene2d()
             .id("middleScene")
             .layer(1)
-            .mount(ige.game.scene.sceneBase);
-        ige.game.scene.frontScene = new IgeScene2d()
+            .mount(sceneBase);
+        new IgeScene2d()
             .id("frontScene")
             .layer(2)
-            .mount(ige.game.scene.sceneBase);
+            .mount(sceneBase);
         const systemData = systems[ige.game._systemId];
         if (systemData.station) {
             for (let i = 0; i < systemData.station.length; i++) {
@@ -38,7 +39,7 @@ export class SpaceServerScene extends IgeSceneGraph {
                     .id(station._id)
                     .translateTo(station.position[0], station.position[1], station.position[2])
                     .streamMode(1)
-                    .mount(ige.game.scene.middleScene);
+                    .mount(middleScene);
             }
         }
         if (systemData.jumpGate) {
@@ -48,7 +49,7 @@ export class SpaceServerScene extends IgeSceneGraph {
                     .id(jumpGate._id)
                     .translateTo(jumpGate.position[0], jumpGate.position[1], jumpGate.position[2])
                     .streamMode(1)
-                    .mount(ige.game.scene.middleScene);
+                    .mount(middleScene);
             }
         }
         if (systemData.asteroidBelt) {

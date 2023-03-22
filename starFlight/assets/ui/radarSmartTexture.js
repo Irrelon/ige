@@ -1,3 +1,5 @@
+import { ige } from "../../../engine/instance.js";
+import { PI2 } from "../../../engine/utils.js";
 export const radarSmartTexture = {
     render: function (ctx, entity) {
         if (ige.game._playerEntity) {
@@ -61,7 +63,7 @@ export const radarSmartTexture = {
                             }
                             if (draw) {
                                 ctx.beginPath();
-                                ctx.arc(ent._transform[0] - peTranslate.x, ent._transform[1] - peTranslate.y, blipRadius, 0, Math._PI2, true);
+                                ctx.arc(ent._transform[0] - peTranslate.x, ent._transform[1] - peTranslate.y, blipRadius, 0, PI2, true);
                                 ctx.closePath();
                                 ctx.fill();
                             }

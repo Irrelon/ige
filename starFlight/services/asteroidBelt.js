@@ -8,10 +8,11 @@ export const generateAsteroidBelt = function generateAsteroidBelt(beltX, beltY) 
     const max = 100;
     let count = 0;
     let asteroid;
+    const middleScene = ige.$("middleScene");
     while (count < max) {
         if (!asteroid) {
             asteroid = new Asteroid();
-            asteroid.mount(ige.game.scene.middleScene);
+            asteroid.mount(middleScene);
         }
         const x = Math.floor(beltX + ((Math.random() * maxDist * 2) - maxDist));
         const y = Math.floor(beltY + ((Math.random() * maxDist * 2) - maxDist));

@@ -1,2 +1,2 @@
 import { IgeSmartTexture } from "@/types/IgeSmartTexture";
-export declare const target: IgeSmartTexture;
+export declare const targetSmartTexture: IgeSmartTexture;

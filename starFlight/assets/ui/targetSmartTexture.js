@@ -1,4 +1,4 @@
-export const target = {
+export const targetSmartTexture = {
     render: function (ctx, entity) {
         if (entity._targetEntity) {
             ctx.save();

@@ -1,4 +1,6 @@
 import { IgeSmartTexture } from "@/types/IgeSmartTexture";
+import { ige } from "@/engine/instance";
+import { PI2 } from "@/engine/utils";
 
 export const radarSmartTexture: IgeSmartTexture = {
 	render: function (ctx, entity) {
@@ -82,7 +84,7 @@ export const radarSmartTexture: IgeSmartTexture = {
 									ent._transform[1] - peTranslate.y,
 									blipRadius,
 									0,
-									Math._PI2,
+									PI2,
 									true
 								);
 								ctx.closePath();

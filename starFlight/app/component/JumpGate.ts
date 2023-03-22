@@ -2,6 +2,7 @@ import { ige } from "@/engine/instance";
 import { isClient } from "@/engine/clientServer";
 import { IgeEntity } from "@/engine/core/IgeEntity";
 import { JumpGateDefinition } from "../../types/JumpGateDefinition";
+import { registerClass } from "@/engine/igeClassStore";
 
 export class JumpGate extends IgeEntity {
 	classId = "JumpGate";
@@ -25,3 +26,5 @@ export class JumpGate extends IgeEntity {
 		return this._publicGameData;
 	}
 }
+
+registerClass(JumpGate);

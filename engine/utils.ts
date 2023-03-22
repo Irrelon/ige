@@ -112,6 +112,8 @@ export const PI180 = Math.PI / 180;
  */
 export const PI180R = 180 / Math.PI;
 
+export const PI2 = Math.PI * 2;
+
 export const toIso = (x: number, y: number, z: number) => {
 	const sx = x - y;
 	const sy = -z * 1.2247 + (x + y) * 0.5;

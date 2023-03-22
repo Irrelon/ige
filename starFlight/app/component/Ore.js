@@ -3,7 +3,8 @@ import { IgeEntityBox2d } from "../../../engine/components/physics/box2d/IgeEnti
 import { IgeTextureAnimationComponent } from "../../../engine/components/IgeTextureAnimationComponent.js";
 import { IgeBox2dBodyType } from "../../../enums/IgeBox2dBodyType.js";
 import { IgeBox2dFixtureShapeType } from "../../../enums/IgeBox2dFixtureShapeType.js";
-import { isClient } from "../../../engine/clientServer.js";
+import { isClient, isServer } from "../../../engine/clientServer.js";
+import { registerClass } from "../../../engine/igeClassStore.js";
 export class Ore extends IgeEntityBox2d {
     constructor(publicGameData = {}) {
         super();
@@ -14,7 +15,7 @@ export class Ore extends IgeEntityBox2d {
         this.layer(1)
             .width(25)
             .height(25);
-        if (ige.box2d) {
+        if (isServer && ige.box2d) {
             // Create box2d body for this object
             this.box2dBody({
                 type: IgeBox2dBodyType.dynamic,
@@ -50,3 +51,4 @@ export class Ore extends IgeEntityBox2d {
         return this._publicGameData;
     }
 }
+registerClass(Ore);

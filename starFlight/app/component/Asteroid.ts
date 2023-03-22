@@ -1,5 +1,5 @@
 import { ige } from "@/engine/instance";
-import { isServer } from "@/engine/clientServer";
+import { isClient, isServer } from "@/engine/clientServer";
 import { oreTypes } from "../data/oreTypes";
 import { IgePoly2d } from "@/engine/core/IgePoly2d";
 import { Ore } from "./Ore";
@@ -9,6 +9,7 @@ import { GameEntity, EntityPublicGameData } from "./GameEntity";
 import { IgeBox2dBodyType } from "@/enums/IgeBox2dBodyType";
 import { IgeBox2dFixtureShapeType } from "@/enums/IgeBox2dFixtureShapeType";
 import { IgeBox2dFixtureDef } from "@/types/IgeBox2dFixtureDef";
+import { registerClass } from "@/engine/igeClassStore";
 
 export class Asteroid extends GameEntity {
 	classId = "Asteroid";
@@ -52,7 +53,7 @@ export class Asteroid extends GameEntity {
 			.width(publicGameData.size)
 			.height(publicGameData.size);
 
-		if (ige.box2d) {
+		if (isServer && ige.box2d) {
 			const fixDefs: IgeBox2dFixtureDef[] = [];
 
 			// Define the polygon for collision
@@ -111,7 +112,7 @@ export class Asteroid extends GameEntity {
 
 		this.rotateTo(0, 0, degreesToRadians(publicGameData.rotation));
 
-		if (!isServer) {
+		if (isClient) {
 			this.texture(ige.textures.get("asteroid" + publicGameData.type));
 		}
 	}
@@ -180,3 +181,5 @@ export class Asteroid extends GameEntity {
 		return true;
 	}
 }
+
+registerClass(Asteroid);

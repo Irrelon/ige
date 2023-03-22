@@ -5,7 +5,6 @@ import { IgeScene2d } from "@/engine/core/IgeScene2d";
 import { IgeSceneGraph } from "@/engine/core/IgeSceneGraph";
 import { SpaceStation } from "../component/SpaceStation";
 import { JumpGate } from "../component/JumpGate";
-import { StarSystemDefinition } from "../../types/StarSystemDefinition";
 import { generateAsteroidBelt } from "../../services/asteroidBelt";
 
 export class SpaceServerScene extends IgeSceneGraph {
@@ -15,27 +14,29 @@ export class SpaceServerScene extends IgeSceneGraph {
 		if (!isServer) {
 			return;
 		}
+		
+		const mainScene = ige.$("mainScene") as IgeScene2d;
 
-		ige.game.scene.sceneBase = new IgeScene2d()
+		const sceneBase = new IgeScene2d()
 			.id("sceneBase")
-			.mount(ige.game.scene.mainScene);
+			.mount(mainScene);
 
-		ige.game.scene.backScene = new IgeScene2d()
+		const backScene = new IgeScene2d()
 			.id("backScene")
 			.layer(0)
-			.mount(ige.game.scene.sceneBase);
+			.mount(sceneBase);
 
-		ige.game.scene.middleScene = new IgeScene2d()
+		const middleScene = new IgeScene2d()
 			.id("middleScene")
 			.layer(1)
-			.mount(ige.game.scene.sceneBase);
+			.mount(sceneBase);
 
-		ige.game.scene.frontScene = new IgeScene2d()
+		new IgeScene2d()
 			.id("frontScene")
 			.layer(2)
-			.mount(ige.game.scene.sceneBase);
+			.mount(sceneBase);
 
-		const systemData = (systems as Record<string, StarSystemDefinition>)[ige.game._systemId];
+		const systemData = systems[ige.game._systemId as keyof typeof systems];
 
 		if (systemData.station) {
 			for (let i = 0; i < systemData.station.length; i++) {
@@ -45,7 +46,7 @@ export class SpaceServerScene extends IgeSceneGraph {
 					.id(station._id)
 					.translateTo(station.position[0], station.position[1], station.position[2])
 					.streamMode(1)
-					.mount(ige.game.scene.middleScene);
+					.mount(middleScene);
 			}
 		}
 
@@ -57,7 +58,7 @@ export class SpaceServerScene extends IgeSceneGraph {
 					.id(jumpGate._id)
 					.translateTo(jumpGate.position[0], jumpGate.position[1], jumpGate.position[2])
 					.streamMode(1)
-					.mount(ige.game.scene.middleScene);
+					.mount(middleScene);
 			}
 		}
 

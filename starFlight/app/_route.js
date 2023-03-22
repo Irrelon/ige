@@ -20,6 +20,7 @@ ige.router.route("app", {
     client: () => __awaiter(void 0, void 0, void 0, function* () {
         // @ts-ignore
         window.ige = ige;
+        yield ige.isReady();
         // Create the HTML canvas
         ige.engine.createFrontBuffer(true);
         // Start the engine
@@ -42,6 +43,7 @@ ige.router.route("app", {
         // This is the players object that stores player state per network
         // connection client id
         ige.game.players = {};
+        yield ige.isReady();
         // Create the HTML canvas
         ige.engine.createFrontBuffer(true);
         // Start the engine

@@ -15,6 +15,8 @@ ige.router.route("app", {
 		// @ts-ignore
 		window.ige = ige;
 
+		await ige.isReady();
+
 		// Create the HTML canvas
 		ige.engine.createFrontBuffer(true);
 
@@ -42,6 +44,8 @@ ige.router.route("app", {
 		// This is the players object that stores player state per network
 		// connection client id
 		ige.game.players = {};
+
+		await ige.isReady();
 
 		// Create the HTML canvas
 		ige.engine.createFrontBuffer(true);

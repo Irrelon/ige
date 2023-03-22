@@ -6,39 +6,41 @@ import { IgeUiEntity } from "../../../engine/core/IgeUiEntity.js";
 import { IgeEntity } from "../../../engine/core/IgeEntity.js";
 import { IgeScene2d } from "../../../engine/core/IgeScene2d.js";
 import { InfoWindow } from "../component/ui/InfoWindow.js";
+import { MessageWindow } from "../component/ui/MessageWindow.js";
 export class SpaceClientScene extends IgeSceneGraph {
     constructor() {
         super(...arguments);
         this.classId = "SpaceClientScene";
     }
     addGraph() {
+        const vp1 = ige.$("vp1");
         // Set the viewport camera to 0, 0, 0
-        ige.game.scene.vp1.camera
-            .velocity.x(0)
-            .velocity.y(0)
-            .translateTo(0, 0, 0);
-        ige.game.scene.sceneBase = new IgeScene2d()
+        vp1.camera.components.velocity.x(0);
+        vp1.camera.components.velocity.y(0);
+        vp1.camera.translateTo(0, 0, 0);
+        const mainScene = ige.$("mainScene");
+        const sceneBase = new IgeScene2d()
             .id("sceneBase")
-            .mount(ige.game.scene.mainScene);
-        ige.game.scene.backScene = new IgeScene2d()
+            .mount(mainScene);
+        const backScene = new IgeScene2d()
             .id("backScene")
             .layer(0)
-            .mount(ige.game.scene.sceneBase);
-        ige.game.scene.middleScene = new IgeScene2d()
+            .mount(sceneBase);
+        const middleScene = new IgeScene2d()
             .id("middleScene")
             .layer(1)
-            .mount(ige.game.scene.sceneBase);
-        ige.game.scene.frontScene = new IgeScene2d()
+            .mount(sceneBase);
+        const frontScene = new IgeScene2d()
             .id("frontScene")
             .layer(2)
-            .mount(ige.game.scene.sceneBase);
-        ige.game.scene.uiScene = new IgeScene2d()
+            .mount(sceneBase);
+        const uiScene = new IgeScene2d()
             .id("uiScene")
             .layer(3)
             .ignoreCamera(true)
-            .mount(ige.game.scene.sceneBase);
-        ige.game.scene.stateBar = {};
-        ige.game.scene.stateBar.fuel = new IgeUiProgressBar()
+            .mount(sceneBase);
+        const stateBar = {};
+        stateBar.fuel = new IgeUiProgressBar()
             .id("stateBar_fuel")
             .top(10)
             .right(10)
@@ -47,8 +49,8 @@ export class SpaceClientScene extends IgeSceneGraph {
             .barBackColor("#08343f")
             .barColor("#dea927")
             .barText("FUEL: ", "%", "#ffffff", true)
-            .mount(ige.game.scene.uiScene);
-        ige.game.scene.stateBar.energy = new IgeUiProgressBar()
+            .mount(uiScene);
+        stateBar.energy = new IgeUiProgressBar()
             .id("stateBar_energy")
             .top(30)
             .right(10)
@@ -57,8 +59,8 @@ export class SpaceClientScene extends IgeSceneGraph {
             .barBackColor("#08343f")
             .barColor("#28b8db")
             .barText("ENERGY: ", "%", "#ffffff", true)
-            .mount(ige.game.scene.uiScene);
-        ige.game.scene.stateBar.shield = new IgeUiProgressBar()
+            .mount(uiScene);
+        stateBar.shield = new IgeUiProgressBar()
             .id("stateBar_shield")
             .top(50)
             .right(10)
@@ -67,8 +69,8 @@ export class SpaceClientScene extends IgeSceneGraph {
             .barBackColor("#08343f")
             .barColor("#c27aef")
             .barText("SHIELD: ", "%", "#ffffff", true)
-            .mount(ige.game.scene.uiScene);
-        ige.game.scene.stateBar.integrity = new IgeUiProgressBar()
+            .mount(uiScene);
+        stateBar.integrity = new IgeUiProgressBar()
             .id("stateBar_integrity")
             .top(70)
             .right(10)
@@ -77,8 +79,8 @@ export class SpaceClientScene extends IgeSceneGraph {
             .barBackColor("#08343f")
             .barColor("#ef7a7a")
             .barText("INTEGRITY: ", "%", "#ffffff", true)
-            .mount(ige.game.scene.uiScene);
-        ige.game.scene.stateBar.inventorySpace = new IgeUiProgressBar()
+            .mount(uiScene);
+        stateBar.inventorySpace = new IgeUiProgressBar()
             .id("stateBar_inventorySpace")
             .top(90)
             .right(10)
@@ -89,26 +91,26 @@ export class SpaceClientScene extends IgeSceneGraph {
             .barText("#ffffff", (val, total) => {
             return "CARGO: " + val + " of " + total;
         })
-            .mount(ige.game.scene.uiScene);
+            .mount(uiScene);
         // Create nebula
-        ige.game.scene.nebula = new IgeEntity()
+        const nebula = new IgeEntity()
             .id("nebula")
             .layer(0)
             .texture(ige.textures.get("nebula"))
             .width(1600)
             .height(1600)
             .translateTo(0, 0, 0)
-            .mount(ige.game.scene.backScene);
+            .mount(backScene);
         // Create starfield
-        ige.game.scene.starfield = new IgeEntity()
+        const starfield = new IgeEntity()
             .id("starfield")
             .layer(1)
             .texture(ige.textures.get("starfield"))
             .width(1600)
             .height(1600)
             .translateTo(0, 0, 0)
-            .mount(ige.game.scene.backScene);
-        ige.game.scene.targetInfo = new InfoWindow({
+            .mount(backScene);
+        const targetInfo = new InfoWindow({
             tab: {
                 width: 80,
                 position: "top",
@@ -121,12 +123,12 @@ export class SpaceClientScene extends IgeSceneGraph {
             .height(150)
             .bottom(10)
             .left(10)
-            .mount(ige.game.scene.uiScene);
+            .mount(uiScene);
         new IgeUiLabel()
             .id("targetDistance")
             .layer(1)
             .font("10px Verdana")
-            .width(ige.game.scene.targetInfo.width())
+            .width(targetInfo.width())
             .height(20)
             .left(5)
             .top(5)
@@ -135,8 +137,8 @@ export class SpaceClientScene extends IgeSceneGraph {
             .textLineSpacing(20)
             .color("#f4f4f4")
             .value("Distance: No Target")
-            .mount(ige.game.scene.targetInfo);
-        ige.game.scene.radar = new IgeUiEntity()
+            .mount(targetInfo);
+        const radar = new IgeUiEntity()
             .id("radar")
             .layer(1)
             .texture(ige.textures.get("radar"))
@@ -144,16 +146,16 @@ export class SpaceClientScene extends IgeSceneGraph {
             .height(170)
             .bottom(13)
             .right(13)
-            .mount(ige.game.scene.uiScene);
-        ige.game.scene.windowLocalScan = new IgeUiEntity()
+            .mount(uiScene);
+        const windowLocalScan = new IgeUiEntity()
             .id("windowLocalScan")
             .layer(0)
             .texture(ige.textures.get("windowLocalScan"))
             .dimensionsFromTexture()
             .bottom(-20)
             .right(-20)
-            .mount(ige.game.scene.uiScene);
-        ige.game.scene.messageWindow = new MessageWindow({
+            .mount(uiScene);
+        const messageWindow = new MessageWindow({
             messageFont: "12px Verdana",
             messageColor: "#ffffff",
             tab: {
@@ -168,25 +170,16 @@ export class SpaceClientScene extends IgeSceneGraph {
             .height(150)
             .top(10)
             .left(70)
-            .mount(ige.game.scene.uiScene);
-        ige.audio.register("select", "assets/audio/select.wav");
-        ige.audio.register("miningLaser", "assets/audio/miningLaser.wav");
-        ige.audio.register("actionDenied", "assets/audio/actionDenied.wav");
-        ige.audio.register("actionAllowed", "assets/audio/actionAllowed.wav");
-        ige.audio.register("actionComplete", "assets/audio/actionComplete.wav");
+            .mount(uiScene);
+        const audio = ige.audio;
+        audio.register("select", "assets/audio/select.wav");
+        audio.register("miningLaser", "assets/audio/miningLaser.wav");
+        audio.register("actionDenied", "assets/audio/actionDenied.wav");
+        audio.register("actionAllowed", "assets/audio/actionAllowed.wav");
+        audio.register("actionComplete", "assets/audio/actionComplete.wav");
     }
     removeGraph() {
-        let i;
-        if (ige.engine.$("sceneBase")) {
-            ige.engine.$("sceneBase").destroy();
-            // Clear any references
-            for (i in ige.game.scene) {
-                if (ige.game.scene.hasOwnProperty(i)) {
-                    if (!ige.game.scene[i].alive()) {
-                        delete ige.game.scene[i];
-                    }
-                }
-            }
-        }
+        const sceneBase = ige.$("sceneBase");
+        sceneBase === null || sceneBase === void 0 ? void 0 : sceneBase.destroy();
     }
 }

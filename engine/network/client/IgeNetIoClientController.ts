@@ -254,7 +254,7 @@ export class IgeNetIoClientController extends IgeNetIoBaseController {
 	 * @param data
 	 * @param callback
 	 */
-	send<DataType = IgeNetworkMessageData> (commandName: string, data: DataType, callback?: IgeNetworkClientSideResponseHandler) {
+	send<DataType = IgeNetworkMessageData> (commandName: string, data?: DataType, callback?: IgeNetworkClientSideResponseHandler) {
 		if (callback) {
 			this.request(commandName, data, callback);
 			return;

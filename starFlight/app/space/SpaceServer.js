@@ -138,12 +138,10 @@ export class SpaceServer extends IgeEventingClass {
      * @private
      */
     _onPlayerDisconnect(clientId) {
-        if (ige.game.players[clientId]) {
-            // Remove the player from the game
-            ige.game.players[clientId].destroy();
-            // Remove the reference to the player entity
-            // so that we don't leak memory
-            delete ige.game.players[clientId];
+        if (!ige.game.players[clientId]) {
+            return;
         }
+        ige.game.players[clientId].destroy();
+        delete ige.game.players[clientId];
     }
 }

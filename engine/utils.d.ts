@@ -47,6 +47,7 @@ export declare const PI180: number;
  * @type {Number}
  */
 export declare const PI180R: number;
+export declare const PI2: number;
 export declare const toIso: (x: number, y: number, z: number) => {
     x: number;
     y: number;
