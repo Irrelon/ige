@@ -71,16 +71,16 @@ export class Level1 extends IgeSceneGraph {
             .mount(scene1);
         new Road(resourceBuilding1.id(), factoryBuilding1.id())
             .mount(scene1);
-        new Transporter(factoryBuilding1.id(), resourceBuilding1.id())
-            .translateTo(resourceBuilding1._translate.x, resourceBuilding1._translate.y, 0)
-            .mount(scene1);
-        new Transporter(resourceBuilding1.id(), factoryBuilding2.id())
-            .translateTo(factoryBuilding2._translate.x, factoryBuilding2._translate.y, 0)
-            .mount(scene1);
-        new Transporter(factoryBuilding2.id(), base.id())
+        new Transporter(base.id(), factoryBuilding1.id(), resourceBuilding1.id())
             .translateTo(base._translate.x, base._translate.y, 0)
             .mount(scene1);
-        new Transporter(resourceBuilding1.id(), base.id())
+        new Transporter(base.id(), resourceBuilding1.id(), factoryBuilding2.id())
+            .translateTo(base._translate.x, base._translate.y, 0)
+            .mount(scene1);
+        new Transporter(base.id(), factoryBuilding2.id(), base.id())
+            .translateTo(base._translate.x, base._translate.y, 0)
+            .mount(scene1);
+        new Transporter(base.id(), resourceBuilding1.id(), base.id())
             .translateTo(base._translate.x, base._translate.y, 0)
             .mount(scene1);
         new Resource(ResourceType.wood, factoryBuilding2.id(), factoryBuilding1.id())

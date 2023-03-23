@@ -17,6 +17,7 @@ import triangle from "../assets/textures/smartTextures/triangle.js";
 import circle from "../assets/textures/smartTextures/circle.js";
 import star from "../assets/textures/smartTextures/star.js";
 import { IgeSceneGraph } from "../../engine/core/IgeSceneGraph.js";
+import { IgeMousePanComponent } from "../../engine/components/IgeMousePanComponent.js";
 // @ts-ignore
 window.ige = ige;
 export class AppClientScene extends IgeSceneGraph {
@@ -46,6 +47,8 @@ export class AppClientScene extends IgeSceneGraph {
             // Load the base scene data
             yield ige.engine.addGraph(IgeBaseScene);
             const vp1 = ige.$("vp1");
+            vp1.addComponent("mousePan", IgeMousePanComponent);
+            vp1.components.mousePan.enabled(true);
             vp1.drawBounds(true);
             vp1.drawBoundsData(true);
             network.start('http://localhost:2000');

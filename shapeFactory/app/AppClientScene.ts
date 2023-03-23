@@ -10,6 +10,7 @@ import circle from "../assets/textures/smartTextures/circle";
 import star from "../assets/textures/smartTextures/star";
 import { IgeSceneGraph } from "@/engine/core/IgeSceneGraph";
 import { IgeViewport } from "@/engine/core/IgeViewport";
+import { IgeMousePanComponent } from "@/engine/components/IgeMousePanComponent";
 
 // @ts-ignore
 window.ige = ige;
@@ -44,6 +45,9 @@ export class AppClientScene extends IgeSceneGraph {
 		// Load the base scene data
 		await ige.engine.addGraph(IgeBaseScene);
 		const vp1 = ige.$("vp1") as IgeViewport;
+
+		vp1.addComponent("mousePan", IgeMousePanComponent);
+		(vp1.components.mousePan as IgeMousePanComponent).enabled(true);
 
 		vp1.drawBounds(true);
 		vp1.drawBoundsData(true);

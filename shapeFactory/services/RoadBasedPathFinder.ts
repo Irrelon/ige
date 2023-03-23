@@ -3,7 +3,7 @@ import { ige } from "@/engine/instance";
 import { Building } from "../entities/base/Building";
 import { Road } from "../entities/Road";
 
-export class ResourcePathFinder extends IgeGenericPathFinder {
+export class RoadBasedPathFinder extends IgeGenericPathFinder {
 	getNode (id: string): IgeGenericPathFinderNode | null {
 		const allBuildings = ige.$$("building") as Building[];
 		const building = allBuildings.find((tmpBuilding) => tmpBuilding._id === id);

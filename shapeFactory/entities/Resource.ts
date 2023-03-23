@@ -4,8 +4,8 @@ import { ResourceType } from "../enums/ResourceType";
 import { Building } from "./base/Building";
 import { registerClass } from "@/engine/igeClassStore";
 import { IgeTimeout } from "@/engine/core/IgeTimeout";
-import { ResourcePathFinder } from "../services/ResourcePathFinder";
 import { isServer } from "@/engine/clientServer";
+import { roadPathFinder } from "../services/roadPathFinder";
 
 export class Resource extends Circle {
 	_type: ResourceType;
@@ -52,8 +52,16 @@ export class Resource extends Circle {
 		this._location = ige.$(droppedLocationId) as Building;
 		this._locationId = droppedLocationId;
 
-		// console.log("Resource is located at", this._locationId);
-		// console.log("Resource wants to get to", this._destinationId);
+		if (!this._location) {
+			// Couldn't get current location, re-queue the check
+			new IgeTimeout(() => {
+				this.onDropped(droppedLocationId);
+			}, 1000);
+			return;
+		}
+
+		//console.log("Resource is located at", this._locationId);
+		//console.log("Resource wants to get to", this._destinationId);
 
 		if (this._locationId === this._destinationId) {
 			//console.log("We got to our destination!");
@@ -62,20 +70,25 @@ export class Resource extends Circle {
 			return;
 		}
 
-		const pathFinder = new ResourcePathFinder();
-		const sourceNode = pathFinder.getNode(this._locationId);
-		const targetNode = pathFinder.getNode(this._destinationId);
+		this.calculateTransportPath();
+	}
 
-		if (!sourceNode || !targetNode) {
-			console.log("Resource no source or dest!");
+	calculateTransportPath () {
+		if (!this._location) {
+			console.log("Resource cannot calculate transport path because we don't have a location");
 			return;
 		}
 
-		const path = pathFinder.generate(sourceNode, targetNode).map((pathItem) => {
-			return pathItem._id;
-		});
+		this._pathIds = roadPathFinder(this._locationId, this._destinationId);
 
-		this._pathIds = path;
+		if (this._pathIds.length === 0) {
+			console.log("Resource cannot calculate transport path, retrying...");
+			// We failed to find a path, queue a re-check
+			new IgeTimeout(() => {
+				this.calculateTransportPath();
+			}, 1000);
+			return;
+		}
 
 		//console.log("Resource path is", this._pathIds.toString());
 

@@ -20,7 +20,7 @@ export class FactoryBuilding extends Star {
                 new Resource(ResourceType.wood, this.id(), destinationId)
                     .translateTo(this._translate.x, this._translate.y, 0)
                     .mount(ige.$("scene1"));
-            }, 7000);
+            }, Math.random() * 12000 + 5000);
         }
         this.pointerUp(() => {
             new Resource(ResourceType.wood, this.id(), "base1")

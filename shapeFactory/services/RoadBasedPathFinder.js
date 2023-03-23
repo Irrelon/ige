@@ -1,6 +1,6 @@
 import { IgeGenericPathFinder } from "../../engine/core/IgeGenericPathFinder.js";
 import { ige } from "../../engine/instance.js";
-export class ResourcePathFinder extends IgeGenericPathFinder {
+export class RoadBasedPathFinder extends IgeGenericPathFinder {
     getNode(id) {
         const allBuildings = ige.$$("building");
         const building = allBuildings.find((tmpBuilding) => tmpBuilding._id === id);

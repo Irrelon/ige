@@ -11,5 +11,6 @@ export declare class Resource extends Circle {
     constructor(type: ResourceType, locationId: string, destinationId: string);
     setNavigation(): void;
     onDropped(droppedLocationId: string): void;
+    calculateTransportPath(): void;
     streamCreateConstructorArgs(): (string | ResourceType)[];
 }
