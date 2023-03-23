@@ -92,6 +92,7 @@ export class Level1 extends IgeSceneGraph {
         new Transporter(base.id(), factoryBuilding1.id(), base.id())
             .translateTo(base._translate.x, base._translate.y, 0)
             .mount(scene1);
+        base.resourcePool[ResourceType.energy] = 10;
     }
     /**
      * The method called when the graph items are to be removed from the

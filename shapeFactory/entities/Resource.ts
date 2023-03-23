@@ -57,6 +57,7 @@ export class Resource extends Circle {
 
 		// If we have no buildings to send the resource to, return, since destination will be the base
 		if (!needyList.length) return;
+		//console.log(`Current ${ResourceType[this._type]} count`, needyList[0].id(), needyList[0].countAllResourcesByType(this._type));
 
 		const buildingWeWillDeliverTo = needyList[0];
 

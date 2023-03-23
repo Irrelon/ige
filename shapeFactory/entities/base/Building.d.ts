@@ -5,11 +5,15 @@ import { BuildingResourceRequirement } from "../../types/BuildingResourceRequire
 import { IgeCanvasRenderingContext2d } from "@/types/IgeCanvasRenderingContext2d";
 export declare class Building extends GameEntity {
     outboundQueue: Resource[];
-    inboundQueue: ResourceType[];
-    resourcePool: ResourceType[];
+    inboundQueue: Partial<Record<ResourceType, number>>;
+    resourcePool: Partial<Record<ResourceType, number>>;
+    _timeToProduceMs: number;
+    _isProducing: boolean;
     _produces: ResourceType;
     _requires: BuildingResourceRequirement[];
     constructor();
+    _addResource(recordObj: Partial<Record<ResourceType, number>>, resourceType: ResourceType, amount?: number): void;
+    _subtractResource(recordObj: Partial<Record<ResourceType, number>>, resourceType: ResourceType, amount?: number): void;
     onResourceEnRoute(resourceType: ResourceType): void;
     onResourceArrived(resourceType: ResourceType): void;
     /**
@@ -17,7 +21,12 @@ export declare class Building extends GameEntity {
      * @param resourceType
      */
     needsResource(resourceType: ResourceType): boolean;
+    countInboundResourcesByType(type: ResourceType): number;
+    countAvailableResourcesByType(type: ResourceType): number;
+    countAllResourcesByType(type: ResourceType): number;
     canProduceResource(): boolean;
+    startProducingResource(): void;
+    completeProducingResource(): void;
     _updateOnServer(): void;
     update(ctx: IgeCanvasRenderingContext2d, tickDelta: number): void;
 }

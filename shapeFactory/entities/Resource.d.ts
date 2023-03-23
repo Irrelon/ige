@@ -9,7 +9,7 @@ export declare class Resource extends Circle {
     _destination?: Building;
     _pathIds: string[];
     constructor(type: ResourceType, locationId: string);
-    streamCreateConstructorArgs(): (string | ResourceType)[];
+    streamCreateConstructorArgs(): string[];
     selectDestination(): void;
     setNavigation(): void;
     onDropped(droppedLocationId: string): void;
