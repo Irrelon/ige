@@ -167,22 +167,22 @@ export class Transporter extends WorkerUnit {
 		if (this._depotA && this._depotB) {
 			if (currentLocation === this._depotA) {
 				// Check for items that need to route to depot B
-				for (let i = 0; i < this._depotA.transportQueue.length; i++) {
-					const newResource = this._depotA?.transportQueue[i];
+				for (let i = 0; i < this._depotA.outboundQueue.length; i++) {
+					const newResource = this._depotA?.outboundQueue[i];
 
 					if (newResource._pathIds[0] === this._depotBId) {
-						this._depotB.transportQueue.splice(i, 1);
+						this._depotB.outboundQueue.splice(i, 1);
 						this.retrieveResource(newResource);
 						return;
 					}
 				}
 			} else {
 				// Check for items that need to route to depot A
-				for (let i = 0; i < this._depotB.transportQueue.length; i++) {
-					const newResource = this._depotB?.transportQueue[i];
+				for (let i = 0; i < this._depotB.outboundQueue.length; i++) {
+					const newResource = this._depotB?.outboundQueue[i];
 
 					if (newResource._pathIds[0] === this._depotAId) {
-						this._depotB.transportQueue.splice(i, 1);
+						this._depotB.outboundQueue.splice(i, 1);
 						this.retrieveResource(newResource);
 						return;
 					}
@@ -239,7 +239,7 @@ export class Transporter extends WorkerUnit {
 		}).start();
 	}
 
-	_serverUpdate () {
+	_updateOnServer () {
 		const depotA = this._depotA;
 		const depotB = this._depotB;
 		const homeLocation = this._homeLocation;
@@ -263,11 +263,11 @@ export class Transporter extends WorkerUnit {
 			// If we're waiting, check depot A
 			if (this._state === "waiting") {
 				// Determine if we should be transporting anything
-				for (let i = 0; i < depotA.transportQueue.length; i++) {
-					const resource = depotA?.transportQueue[i];
+				for (let i = 0; i < depotA.outboundQueue.length; i++) {
+					const resource = depotA?.outboundQueue[i];
 
 					if (resource._pathIds[0] === this._depotBId) {
-						depotA.transportQueue.splice(i, 1);
+						depotA.outboundQueue.splice(i, 1);
 						//this.log(`Picking up resource ${resource._id} from depot A: ${depotA._id}`);
 						//console.log("Depot A queue now:", depotA.transportQueue);
 
@@ -280,11 +280,11 @@ export class Transporter extends WorkerUnit {
 			// We're still waiting, check depot B
 			if (this._state === "waiting") {
 				// Determine if we should be transporting anything
-				for (let i = 0; i < depotB.transportQueue.length; i++) {
-					const resource = depotB?.transportQueue[i];
+				for (let i = 0; i < depotB.outboundQueue.length; i++) {
+					const resource = depotB?.outboundQueue[i];
 
 					if (resource._pathIds[0] === this._depotAId) {
-						depotB.transportQueue.splice(i, 1);
+						depotB.outboundQueue.splice(i, 1);
 						//this.log(`Picking up resource ${resource._id} from depot A: ${depotB._id}`);
 						//console.log("Depot B queue now:", depotB.transportQueue);
 
@@ -304,7 +304,7 @@ export class Transporter extends WorkerUnit {
 
 	update (ctx: IgeCanvasRenderingContext2d, tickDelta: number) {
 		if (isServer) {
-			this._serverUpdate();
+			this._updateOnServer();
 		}
 
 		super.update(ctx, tickDelta);

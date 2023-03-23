@@ -5,8 +5,6 @@ import { registerClass } from "@/engine/igeClassStore";
 
 export class FactoryBuilding extends Triangle {
 	classId = "FactoryBuilding";
-	_produces: ResourceType;
-	_requires: BuildingResourceRequirement[];
 
 	constructor (produces: ResourceType, requires: BuildingResourceRequirement[] = []) {
 		super();

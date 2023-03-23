@@ -13,17 +13,14 @@ export class MiningBuilding extends Star {
         this._produces = produces;
         this._requires = requires;
         if (isServer) {
-            const destinations = ["base1", "resourceBuilding1", "factoryBuilding1", "factoryBuilding2"];
             new IgeInterval(() => {
-                const r = Math.floor(Math.random() * 4);
-                const destinationId = destinations[r];
-                new Resource(this._produces, this.id(), destinationId)
+                new Resource(this._produces, this.id())
                     .translateTo(this._translate.x, this._translate.y, 0)
                     .mount(ige.$("scene1"));
             }, Math.random() * 12000 + 5000);
         }
         this.pointerUp(() => {
-            new Resource(ResourceType.wood, this.id(), "base1")
+            new Resource(ResourceType.wood, this.id())
                 .translateTo(this._translate.x, this._translate.y, 0)
                 .mount(ige.$("scene1"));
         });

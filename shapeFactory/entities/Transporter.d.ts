@@ -27,6 +27,6 @@ export declare class Transporter extends WorkerUnit {
     moveToHomeLocation(): void;
     gotBackHome(): void;
     processPath(): void;
-    _serverUpdate(): void;
+    _updateOnServer(): void;
     update(ctx: IgeCanvasRenderingContext2d, tickDelta: number): void;
 }

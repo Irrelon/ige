@@ -1,6 +1,7 @@
 export var ResourceType;
 (function (ResourceType) {
-    ResourceType[ResourceType["wood"] = 0] = "wood";
-    ResourceType[ResourceType["grain"] = 1] = "grain";
-    ResourceType[ResourceType["energy"] = 2] = "energy";
+    ResourceType[ResourceType["none"] = 0] = "none";
+    ResourceType[ResourceType["wood"] = 1] = "wood";
+    ResourceType[ResourceType["grain"] = 2] = "grain";
+    ResourceType[ResourceType["energy"] = 3] = "energy";
 })(ResourceType || (ResourceType = {}));

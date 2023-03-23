@@ -3,8 +3,6 @@ import { BuildingResourceRequirement } from "../types/BuildingResourceRequiremen
 import { Star } from "./base/Star";
 export declare class MiningBuilding extends Star {
     classId: string;
-    _produces: ResourceType;
-    _requires: BuildingResourceRequirement[];
     constructor(produces: ResourceType, requires?: BuildingResourceRequirement[]);
     streamCreateConstructorArgs(): (ResourceType | BuildingResourceRequirement[])[];
 }

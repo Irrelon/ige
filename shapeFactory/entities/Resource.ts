@@ -8,6 +8,7 @@ import { isServer } from "@/engine/clientServer";
 import { roadPathFinder } from "../services/roadPathFinder";
 
 const fillColorByType: Record<ResourceType, string> = {
+	[ResourceType.none]: "#000000",
 	[ResourceType.wood]: "#006901",
 	[ResourceType.grain]: "#ff00ea",
 	[ResourceType.energy]: "#ff9900"
@@ -16,12 +17,12 @@ const fillColorByType: Record<ResourceType, string> = {
 export class Resource extends Circle {
 	_type: ResourceType;
 	_locationId: string;
-	_destinationId: string;
+	_destinationId: string = "";
 	_location?: Building;
 	_destination?: Building;
 	_pathIds: string[] = [];
 
-	constructor (type: ResourceType, locationId: string, destinationId: string) {
+	constructor (type: ResourceType, locationId: string) {
 		super();
 
 		this.depth(4);
@@ -31,26 +32,50 @@ export class Resource extends Circle {
 
 		this._type = type;
 		this._locationId = locationId;
-		this._destinationId = destinationId;
 
 		if (isServer) {
+			this.selectDestination();
 			this.setNavigation();
 		}
 	}
 
 	streamCreateConstructorArgs () {
-		return [this._type, this._locationId, this._destinationId];
+		return [this._type, this._locationId];
+	}
+
+	selectDestination () {
+		this._destinationId = "base1"; // The destination when no other building needs the resource at the moment
+
+		// Check buildings to see if any need this resource at the moment
+		const buildings = ige.$$("building") as Building[];
+
+		// If we have no buildings to scan, return, since destination will be the base
+		if (!buildings.length) return;
+
+		// Scan each building and ask if it needs this resource and if so, determine the closest one
+		const needyList = buildings.filter((tmpBuilding) => tmpBuilding.needsResource(this._type));
+
+		// If we have no buildings to send the resource to, return, since destination will be the base
+		if (!needyList.length) return;
+
+		const buildingWeWillDeliverTo = needyList[0];
+
+		// Tell the building we are going to route the resource to it
+		buildingWeWillDeliverTo.onResourceEnRoute(this._type);
+		this._destinationId = buildingWeWillDeliverTo.id();
 	}
 
 	setNavigation () {
-		this._location = ige.$(this._locationId) as Building;
-		this._destination = ige.$(this._destinationId) as Building;
+		if (this._destinationId) {
+			this._location = ige.$(this._locationId) as Building;
+			this._destination = ige.$(this._destinationId) as Building;
+		}
 
 		if (!this._location || !this._destination) {
 			// Create a timeout to re-check
 			new IgeTimeout(() => {
 				this.setNavigation();
-			}, 50);
+			}, 200);
 
 			return;
 		}
@@ -76,6 +101,11 @@ export class Resource extends Circle {
 		if (this._locationId === this._destinationId) {
 			//console.log("We got to our destination!");
 			this._pathIds = [];
+
+			// Tell the destination building we have arrived
+			this._destination?.onResourceArrived(this._type);
+
+			// Destroy the resource
 			this.destroy();
 			return;
 		}
@@ -103,7 +133,14 @@ export class Resource extends Circle {
 		//console.log("Resource path is", this._pathIds.toString());
 
 		// Add resource to the current location's transport queue
-		this._location.transportQueue.push(this);
+		this._location.outboundQueue.push(this);
+	}
+
+	destroy (): this {
+		delete this._location;
+		delete this._destination;
+
+		return super.destroy();
 	}
 }
 

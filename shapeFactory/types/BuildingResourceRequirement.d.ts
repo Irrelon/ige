@@ -1,5 +1,6 @@
 import { ResourceType } from "../enums/ResourceType";
 export interface BuildingResourceRequirement {
-    resource: ResourceType;
+    type: ResourceType;
     count: number;
+    max: number;
 }
