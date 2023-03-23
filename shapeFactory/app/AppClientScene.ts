@@ -11,6 +11,7 @@ import star from "../assets/textures/smartTextures/star";
 import { IgeSceneGraph } from "@/engine/core/IgeSceneGraph";
 import { IgeViewport } from "@/engine/core/IgeViewport";
 import { IgeMousePanComponent } from "@/engine/components/IgeMousePanComponent";
+import flag from "../assets/textures/smartTextures/flag";
 
 // @ts-ignore
 window.ige = ige;
@@ -30,6 +31,7 @@ export class AppClientScene extends IgeSceneGraph {
 		new IgeTexture("triangle", triangle);
 		new IgeTexture("circle", circle);
 		new IgeTexture("star", star);
+		new IgeTexture("flag", flag);
 
 		const network = (ige.network as IgeNetIoClientController);
 

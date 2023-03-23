@@ -1,8 +1,9 @@
 import { Square } from "./base/Square";
 import { ResourceType } from "../enums/ResourceType";
+import { FlagBuilding } from "./FlagBuilding";
 export declare class StorageBuilding extends Square {
     classId: string;
-    constructor();
+    flag?: FlagBuilding;
     streamCreateConstructorArgs(): never[];
     /**
      * Takes a resource from the resource pool and dumps it back onto the

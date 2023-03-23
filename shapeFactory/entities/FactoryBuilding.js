@@ -4,7 +4,6 @@ export class FactoryBuilding extends Triangle {
     constructor(produces, requires = []) {
         super();
         this.classId = "FactoryBuilding";
-        this.depth(1);
         this._produces = produces;
         this._requires = requires;
     }

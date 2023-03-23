@@ -60,6 +60,9 @@ export class Building extends GameEntity {
         return this.countInboundResourcesByType(type) + this.countAvailableResourcesByType(type);
     }
     canProduceResource() {
+        // Check if this building produces anything
+        if (this._produces === ResourceType.none)
+            return false;
         // Check if we are already producing
         if (this._isProducing)
             return false;

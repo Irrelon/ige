@@ -88,11 +88,13 @@ export class Resource extends Circle {
     }
     calculateTransportPath() {
         if (!this._location) {
+            debugger;
             console.log("Resource cannot calculate transport path because we don't have a location");
             return;
         }
         this._pathIds = roadPathFinder(this._locationId, this._destinationId);
         if (this._pathIds.length === 0) {
+            debugger;
             console.log("Resource cannot calculate transport path, retrying...");
             // We failed to find a path, queue a re-check
             new IgeTimeout(() => {

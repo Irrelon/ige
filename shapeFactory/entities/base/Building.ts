@@ -79,6 +79,9 @@ export class Building extends GameEntity {
 	}
 
 	canProduceResource (): boolean {
+		// Check if this building produces anything
+		if (this._produces === ResourceType.none) return false;
+
 		// Check if we are already producing
 		if (this._isProducing) return false;
 

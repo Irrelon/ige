@@ -1,16 +1,16 @@
 import { ige } from "@/engine/instance";
 import { isClient } from "@/engine/clientServer";
-import { degreesToRadians } from "@/engine/utils";
 import { IgeStreamMode } from "@/enums/IgeStreamMode";
 import { FactoryBuilding } from "../../entities/FactoryBuilding";
 import { ResourceType } from "../../enums/ResourceType";
 import { MiningBuilding } from "../../entities/MiningBuilding";
-import { Road } from "../../entities/Road";
 import { StorageBuilding } from "../../entities/StorageBuilding";
 import { IgeAudioEntity } from "@/engine/audio";
 import { IgeSceneGraph } from "@/engine/core/IgeSceneGraph";
 import { IgeEntity } from "@/engine/core/IgeEntity";
 import { IgeScene2d } from "@/engine/core/IgeScene2d";
+import { Road } from "../../entities/Road";
+import { FlagBuilding } from "../../entities/FlagBuilding";
 import { Transporter } from "../../entities/Transporter";
 
 export class Level1 extends IgeSceneGraph {
@@ -48,6 +48,17 @@ export class Level1 extends IgeSceneGraph {
 			.translateTo(-100, -80, 0)
 			.mount(scene1);
 
+		base.flag = new FlagBuilding()
+			.translateTo(base._translate.x, base._translate.y + 50, 0)
+			.mount(scene1);
+
+		new Road(base.id(), base.flag.id())
+			.mount(scene1);
+
+		new Transporter(base.id(), base.id(), base.flag.id())
+			.translateTo(base._translate.x, base._translate.y, 0)
+			.mount(scene1);
+
 		const miningBuilding1 = new MiningBuilding(ResourceType.wood, [{
 			type: ResourceType.energy,
 			count: 1,
@@ -57,6 +68,17 @@ export class Level1 extends IgeSceneGraph {
 			.translateTo(50, 150, 0)
 			.mount(scene1);
 
+		miningBuilding1.flag = new FlagBuilding()
+			.translateTo(miningBuilding1._translate.x, miningBuilding1._translate.y + 50, 0)
+			.mount(scene1);
+
+		new Road(miningBuilding1.id(), miningBuilding1.flag.id())
+			.mount(scene1);
+
+		new Transporter(base.id(), miningBuilding1.id(), miningBuilding1.flag.id())
+			.translateTo(base._translate.x, base._translate.y, 0)
+			.mount(scene1);
+
 		const miningBuilding2 = new MiningBuilding(ResourceType.grain, [{
 			type: ResourceType.energy,
 			count: 1,
@@ -64,6 +86,17 @@ export class Level1 extends IgeSceneGraph {
 		}])
 			.id("miningBuilding2")
 			.translateTo(250, -150, 0)
+			.mount(scene1);
+
+		miningBuilding2.flag = new FlagBuilding()
+			.translateTo(miningBuilding2._translate.x, miningBuilding2._translate.y + 50, 0)
+			.mount(scene1);
+
+		new Road(miningBuilding2.id(), miningBuilding2.flag.id())
+			.mount(scene1);
+
+		new Transporter(base.id(), miningBuilding2.id(), miningBuilding2.flag.id())
+			.translateTo(base._translate.x, base._translate.y, 0)
 			.mount(scene1);
 
 		const factoryBuilding1 = new FactoryBuilding(ResourceType.energy, [{
@@ -77,36 +110,42 @@ export class Level1 extends IgeSceneGraph {
 		}])
 			.id("factoryBuilding1")
 			.translateTo(220, 120, 0)
-			.rotateTo(0, 0, degreesToRadians(-10))
 			.mount(scene1);
 
-		new Road(base.id(), factoryBuilding1.id())
+		factoryBuilding1.flag = new FlagBuilding()
+			.translateTo(factoryBuilding1._translate.x, factoryBuilding1._translate.y + 50, 0)
 			.mount(scene1);
 
-		new Road(base.id(), miningBuilding2.id())
+		new Road(factoryBuilding1.id(), factoryBuilding1.flag.id())
 			.mount(scene1);
 
-		new Road(miningBuilding2.id(), factoryBuilding1.id())
-			.mount(scene1);
-
-		new Road(factoryBuilding1.id(), miningBuilding1.id())
-			.mount(scene1);
-
-		new Transporter(base.id(), miningBuilding1.id(), factoryBuilding1.id())
+		new Transporter(base.id(), factoryBuilding1.id(), factoryBuilding1.flag.id())
 			.translateTo(base._translate.x, base._translate.y, 0)
 			.mount(scene1);
 
-		new Transporter(base.id(), factoryBuilding1.id(), miningBuilding2.id())
+		///////////////////////////////////////////////////////////
+
+		new Road(base.flag.id(), factoryBuilding1.flag.id())
+			.mount(scene1);
+
+		new Road(base.flag.id(), miningBuilding2.flag.id())
+			.mount(scene1);
+
+		new Road(factoryBuilding1.flag.id(), miningBuilding1.flag.id())
+			.mount(scene1);
+
+		new Transporter(base.id(), base.flag.id(), factoryBuilding1.flag.id())
 			.translateTo(base._translate.x, base._translate.y, 0)
 			.mount(scene1);
 
-		new Transporter(base.id(), miningBuilding2.id(), base.id())
+		new Transporter(base.id(), base.flag.id(), miningBuilding2.flag.id())
 			.translateTo(base._translate.x, base._translate.y, 0)
 			.mount(scene1);
 
-		new Transporter(base.id(), factoryBuilding1.id(), base.id())
+		new Transporter(base.id(), factoryBuilding1.flag.id(), miningBuilding1.flag.id())
 			.translateTo(base._translate.x, base._translate.y, 0)
 			.mount(scene1);
+
 
 		base.resourcePool[ResourceType.energy] = 10;
 	}

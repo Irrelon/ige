@@ -1,12 +1,12 @@
 import { registerClass } from "../../engine/igeClassStore.js";
 import { Square } from "./base/Square.js";
 import { ige } from "../../engine/instance.js";
+import { ResourceType } from "../enums/ResourceType.js";
 import { Resource } from "./Resource.js";
 export class StorageBuilding extends Square {
     constructor() {
-        super();
+        super(...arguments);
         this.classId = "StorageBuilding";
-        this.depth(1);
     }
     streamCreateConstructorArgs() {
         return [];
@@ -34,6 +34,8 @@ export class StorageBuilding extends Square {
         // Loop our resources and see if any buildings need it
         Object.entries(this.resourcePool).forEach(([type, count]) => {
             if (!count)
+                return;
+            if (type === ResourceType.none)
                 return;
             // Scan each building and ask if it needs this resource and if so, determine the closest one
             const someBuildingNeedsThisResource = buildings.find((tmpBuilding) => {

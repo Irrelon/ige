@@ -18,6 +18,7 @@ import circle from "../assets/textures/smartTextures/circle.js";
 import star from "../assets/textures/smartTextures/star.js";
 import { IgeSceneGraph } from "../../engine/core/IgeSceneGraph.js";
 import { IgeMousePanComponent } from "../../engine/components/IgeMousePanComponent.js";
+import flag from "../assets/textures/smartTextures/flag.js";
 // @ts-ignore
 window.ige = ige;
 export class AppClientScene extends IgeSceneGraph {
@@ -37,6 +38,7 @@ export class AppClientScene extends IgeSceneGraph {
             new IgeTexture("triangle", triangle);
             new IgeTexture("circle", circle);
             new IgeTexture("star", star);
+            new IgeTexture("flag", flag);
             const network = ige.network;
             // Wait for our textures to load before continuing
             yield ige.textures.whenLoaded();

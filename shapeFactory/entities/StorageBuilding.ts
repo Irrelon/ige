@@ -5,15 +5,11 @@ import { Building } from "./base/Building";
 import { ResourceType } from "../enums/ResourceType";
 import { Resource } from "./Resource";
 import { IgeScene2d } from "@/engine/core/IgeScene2d";
+import { FlagBuilding } from "./FlagBuilding";
 
 export class StorageBuilding extends Square {
 	classId = "StorageBuilding";
-
-	constructor () {
-		super();
-
-		this.depth(1);
-	}
+	flag?: FlagBuilding;
 
 	streamCreateConstructorArgs () {
 		return [];
@@ -46,6 +42,7 @@ export class StorageBuilding extends Square {
 		// Loop our resources and see if any buildings need it
 		Object.entries(this.resourcePool).forEach(([type, count]) => {
 			if (!count) return;
+			if (type === ResourceType.none) return;
 
 			// Scan each building and ask if it needs this resource and if so, determine the closest one
 			const someBuildingNeedsThisResource = buildings.find((tmpBuilding) => {
