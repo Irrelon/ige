@@ -1,15 +1,21 @@
 import { ige } from "../../engine/instance.js";
 import { Circle } from "./base/Circle.js";
+import { ResourceType } from "../enums/ResourceType.js";
 import { registerClass } from "../../engine/igeClassStore.js";
 import { IgeTimeout } from "../../engine/core/IgeTimeout.js";
 import { isServer } from "../../engine/clientServer.js";
 import { roadPathFinder } from "../services/roadPathFinder.js";
+const fillColorByType = {
+    [ResourceType.wood]: "#006901",
+    [ResourceType.grain]: "#ff00ea",
+    [ResourceType.energy]: "#ff9900"
+};
 export class Resource extends Circle {
     constructor(type, locationId, destinationId) {
         super();
         this._pathIds = [];
         this.depth(4);
-        this.data("fillColor", "#006901")
+        this.data("fillColor", fillColorByType[type])
             .width(10)
             .height(10);
         this._type = type;
@@ -18,6 +24,9 @@ export class Resource extends Circle {
         if (isServer) {
             this.setNavigation();
         }
+    }
+    streamCreateConstructorArgs() {
+        return [this._type, this._locationId, this._destinationId];
     }
     setNavigation() {
         this._location = ige.$(this._locationId);
@@ -68,9 +77,6 @@ export class Resource extends Circle {
         //console.log("Resource path is", this._pathIds.toString());
         // Add resource to the current location's transport queue
         this._location.transportQueue.push(this);
-    }
-    streamCreateConstructorArgs() {
-        return [this._type, this._locationId, this._destinationId];
     }
 }
 registerClass(Resource);

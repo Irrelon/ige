@@ -7,6 +7,12 @@ import { IgeTimeout } from "@/engine/core/IgeTimeout";
 import { isServer } from "@/engine/clientServer";
 import { roadPathFinder } from "../services/roadPathFinder";
 
+const fillColorByType: Record<ResourceType, string> = {
+	[ResourceType.wood]: "#006901",
+	[ResourceType.grain]: "#ff00ea",
+	[ResourceType.energy]: "#ff9900"
+};
+
 export class Resource extends Circle {
 	_type: ResourceType;
 	_locationId: string;
@@ -19,7 +25,7 @@ export class Resource extends Circle {
 		super();
 
 		this.depth(4);
-		this.data("fillColor", "#006901")
+		this.data("fillColor", fillColorByType[type])
 			.width(10)
 			.height(10);
 
@@ -30,6 +36,10 @@ export class Resource extends Circle {
 		if (isServer) {
 			this.setNavigation();
 		}
+	}
+
+	streamCreateConstructorArgs () {
+		return [this._type, this._locationId, this._destinationId];
 	}
 
 	setNavigation () {
@@ -94,10 +104,6 @@ export class Resource extends Circle {
 
 		// Add resource to the current location's transport queue
 		this._location.transportQueue.push(this);
-	}
-
-	streamCreateConstructorArgs () {
-		return [this._type, this._locationId, this._destinationId];
 	}
 }
 

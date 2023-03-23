@@ -5,10 +5,10 @@ import { ige } from "../../engine/instance.js";
 import { Resource } from "./Resource.js";
 import { isServer } from "../../engine/clientServer.js";
 import { IgeInterval } from "../../engine/core/IgeInterval.js";
-export class FactoryBuilding extends Star {
+export class MiningBuilding extends Star {
     constructor(produces, requires = []) {
         super();
-        this.classId = "FactoryBuilding";
+        this.classId = "MiningBuilding";
         this.depth(1);
         this._produces = produces;
         this._requires = requires;
@@ -17,7 +17,7 @@ export class FactoryBuilding extends Star {
             new IgeInterval(() => {
                 const r = Math.floor(Math.random() * 4);
                 const destinationId = destinations[r];
-                new Resource(ResourceType.wood, this.id(), destinationId)
+                new Resource(this._produces, this.id(), destinationId)
                     .translateTo(this._translate.x, this._translate.y, 0)
                     .mount(ige.$("scene1"));
             }, Math.random() * 12000 + 5000);
@@ -32,4 +32,4 @@ export class FactoryBuilding extends Star {
         return [this._produces, this._requires];
     }
 }
-registerClass(FactoryBuilding);
+registerClass(MiningBuilding);

@@ -4,14 +4,13 @@ import { degreesToRadians } from "@/engine/utils";
 import { IgeStreamMode } from "@/enums/IgeStreamMode";
 import { ResourceBuilding } from "../../entities/ResourceBuilding";
 import { ResourceType } from "../../enums/ResourceType";
-import { FactoryBuilding } from "../../entities/FactoryBuilding";
+import { MiningBuilding } from "../../entities/MiningBuilding";
 import { Road } from "../../entities/Road";
 import { StorageBuilding } from "../../entities/StorageBuilding";
 import { IgeAudioEntity } from "@/engine/audio";
 import { IgeSceneGraph } from "@/engine/core/IgeSceneGraph";
 import { IgeEntity } from "@/engine/core/IgeEntity";
 import { IgeScene2d } from "@/engine/core/IgeScene2d";
-import { Resource } from "../../entities/Resource";
 import { Transporter } from "../../entities/Transporter";
 
 export class Level1 extends IgeSceneGraph {
@@ -46,7 +45,7 @@ export class Level1 extends IgeSceneGraph {
 
 		const base = new StorageBuilding()
 			.id("base1")
-			.translateTo(0, 0, 0)
+			.translateTo(-100, -80, 0)
 			.mount(scene1);
 
 		const resourceBuilding1 = new ResourceBuilding(ResourceType.energy)
@@ -55,7 +54,7 @@ export class Level1 extends IgeSceneGraph {
 			.rotateTo(0, 0, degreesToRadians(-10))
 			.mount(scene1);
 
-		const factoryBuilding1 = new FactoryBuilding(ResourceType.wood, [{
+		const factoryBuilding1 = new MiningBuilding(ResourceType.wood, [{
 			resource: ResourceType.energy,
 			count: 1
 		}])
@@ -63,12 +62,12 @@ export class Level1 extends IgeSceneGraph {
 			.translateTo(50, 150, 0)
 			.mount(scene1);
 
-		const factoryBuilding2 = new FactoryBuilding(ResourceType.wood, [{
+		const factoryBuilding2 = new MiningBuilding(ResourceType.grain, [{
 			resource: ResourceType.energy,
 			count: 1
 		}])
 			.id("factoryBuilding2")
-			.translateTo(250, -50, 0)
+			.translateTo(250, -150, 0)
 			.mount(scene1);
 
 		new Road(base.id(), resourceBuilding1.id())
@@ -97,10 +96,6 @@ export class Level1 extends IgeSceneGraph {
 
 		new Transporter(base.id(), resourceBuilding1.id(), base.id())
 			.translateTo(base._translate.x, base._translate.y, 0)
-			.mount(scene1);
-
-		new Resource(ResourceType.wood, factoryBuilding2.id(), factoryBuilding1.id())
-			.translateTo(factoryBuilding2._translate.x, factoryBuilding2._translate.y, 0)
 			.mount(scene1);
 	}
 

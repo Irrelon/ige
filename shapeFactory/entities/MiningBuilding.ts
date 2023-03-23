@@ -8,8 +8,8 @@ import { IgeScene2d } from "@/engine/core/IgeScene2d";
 import { isServer } from "@/engine/clientServer";
 import { IgeInterval } from "@/engine/core/IgeInterval";
 
-export class FactoryBuilding extends Star {
-	classId = "FactoryBuilding";
+export class MiningBuilding extends Star {
+	classId = "MiningBuilding";
 	_produces: ResourceType;
 	_requires: BuildingResourceRequirement[];
 
@@ -27,7 +27,7 @@ export class FactoryBuilding extends Star {
 				const r = Math.floor(Math.random() * 4);
 				const destinationId = destinations[r];
 
-				new Resource(ResourceType.wood, this.id(), destinationId)
+				new Resource(this._produces, this.id(), destinationId)
 					.translateTo(this._translate.x, this._translate.y, 0)
 					.mount(ige.$("scene1") as IgeScene2d);
 			}, Math.random() * 12000 + 5000);
@@ -45,4 +45,4 @@ export class FactoryBuilding extends Star {
 	}
 }
 
-registerClass(FactoryBuilding);
+registerClass(MiningBuilding);
