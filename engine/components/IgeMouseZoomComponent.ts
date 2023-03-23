@@ -53,7 +53,7 @@ export class IgeMouseZoomComponent extends IgeComponent {
 	_pointerDown = (event: Event) => {
 		if (!this._enabled || event.igeViewport.id() !== this._entity.id()) { return; }
 
-		const curMousePos = ige.engine._pointerPos;
+		const curMousePos = ige._pointerPos;
 		this._zoomStartMouse = new IgePoint3d(
 			curMousePos.x,
 			curMousePos.y,
@@ -97,7 +97,7 @@ export class IgeMouseZoomComponent extends IgeComponent {
 			return;
 		}
 
-		const curMousePos = ige.engine._pointerPos;
+		const curMousePos = ige._pointerPos;
 		const zoomCords = {
 			"x": -(this._zoomStartMouse.x - curMousePos.x) / 100,
 			"y": -(this._zoomStartMouse.y - curMousePos.y) / 100

@@ -37,7 +37,7 @@ export class IgeMousePanComponent extends IgeComponent {
             if (!(!this._panStarted && this._enabled && event.igeViewport.id() === this._entity.id())) {
                 return;
             }
-            const curMousePos = ige.engine._pointerPos;
+            const curMousePos = ige._pointerPos;
             this._panStartMouse = curMousePos.clone();
             this._panStartCamera = new IgePoint2d(this._entity.camera._translate.x, this._entity.camera._translate.y);
             this._panPreStart = true;
@@ -56,7 +56,7 @@ export class IgeMousePanComponent extends IgeComponent {
             if (!this._panStartMouse || !this._panStartCamera) {
                 return;
             }
-            const curMousePos = ige.engine._pointerPos;
+            const curMousePos = ige._pointerPos;
             const panCords = {
                 "x": this._panStartMouse.x - curMousePos.x,
                 "y": this._panStartMouse.y - curMousePos.y
@@ -116,7 +116,7 @@ export class IgeMousePanComponent extends IgeComponent {
             if (!this._panStartMouse || !this._panStartCamera) {
                 return;
             }
-            const curMousePos = ige.engine._pointerPos;
+            const curMousePos = ige._pointerPos;
             const panCords = {
                 "x": this._panStartMouse.x - curMousePos.x,
                 "y": this._panStartMouse.y - curMousePos.y

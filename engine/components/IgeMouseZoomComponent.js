@@ -22,7 +22,7 @@ export class IgeMouseZoomComponent extends IgeComponent {
             if (!this._enabled || event.igeViewport.id() !== this._entity.id()) {
                 return;
             }
-            const curMousePos = ige.engine._pointerPos;
+            const curMousePos = ige._pointerPos;
             this._zoomStartMouse = new IgePoint3d(curMousePos.x, curMousePos.y, 0);
             this._zoomStartCamera = new IgePoint2d(this._entity.camera._scale.x, this._entity.camera._scale.y);
         };
@@ -54,7 +54,7 @@ export class IgeMouseZoomComponent extends IgeComponent {
             if (!this._zoomStartMouse || !this._zoomStartCamera) {
                 return;
             }
-            const curMousePos = ige.engine._pointerPos;
+            const curMousePos = ige._pointerPos;
             const zoomCords = {
                 "x": -(this._zoomStartMouse.x - curMousePos.x) / 100,
                 "y": -(this._zoomStartMouse.y - curMousePos.y) / 100

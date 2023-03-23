@@ -84,7 +84,7 @@ export class IgeUiWindow extends IgeUiElement {
 		}
 
 		this._dragging = true;
-		this._opStartMouse = ige.engine._pointerPos.clone();
+		this._opStartMouse = ige._pointerPos.clone();
 		this._opStartTranslate = {
 			x: this._translate.x,
 			y: this._translate.y
@@ -99,7 +99,7 @@ export class IgeUiWindow extends IgeUiElement {
 		if (!this._opStartMouse) return;
 
 		// Update window co-ordinates
-		const curMousePos = ige.engine._pointerPos;
+		const curMousePos = ige._pointerPos;
 
 		const panCordsX = this._opStartMouse.x - curMousePos.x;
 		const panCordsY = this._opStartMouse.y - curMousePos.y;
