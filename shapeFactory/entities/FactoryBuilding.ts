@@ -3,8 +3,8 @@ import { ResourceType } from "../enums/ResourceType";
 import { BuildingResourceRequirement } from "../types/BuildingResourceRequirement";
 import { registerClass } from "@/engine/igeClassStore";
 
-export class ResourceBuilding extends Triangle {
-	classId = "ResourceBuilding";
+export class FactoryBuilding extends Triangle {
+	classId = "FactoryBuilding";
 	_produces: ResourceType;
 	_requires: BuildingResourceRequirement[];
 
@@ -22,4 +22,4 @@ export class ResourceBuilding extends Triangle {
 	}
 }
 
-registerClass(ResourceBuilding);
+registerClass(FactoryBuilding);

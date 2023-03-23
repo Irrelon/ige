@@ -2,7 +2,7 @@ import { ige } from "@/engine/instance";
 import { isClient } from "@/engine/clientServer";
 import { degreesToRadians } from "@/engine/utils";
 import { IgeStreamMode } from "@/enums/IgeStreamMode";
-import { ResourceBuilding } from "../../entities/ResourceBuilding";
+import { FactoryBuilding } from "../../entities/FactoryBuilding";
 import { ResourceType } from "../../enums/ResourceType";
 import { MiningBuilding } from "../../entities/MiningBuilding";
 import { Road } from "../../entities/Road";
@@ -48,7 +48,7 @@ export class Level1 extends IgeSceneGraph {
 			.translateTo(-100, -80, 0)
 			.mount(scene1);
 
-		const resourceBuilding1 = new ResourceBuilding(ResourceType.energy)
+		const resourceBuilding1 = new FactoryBuilding(ResourceType.energy)
 			.id("resourceBuilding1")
 			.translateTo(220, 120, 0)
 			.rotateTo(0, 0, degreesToRadians(-10))

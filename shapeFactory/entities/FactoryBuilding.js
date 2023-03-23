@@ -1,9 +1,9 @@
 import { Triangle } from "./base/Triangle.js";
 import { registerClass } from "../../engine/igeClassStore.js";
-export class ResourceBuilding extends Triangle {
+export class FactoryBuilding extends Triangle {
     constructor(produces, requires = []) {
         super();
-        this.classId = "ResourceBuilding";
+        this.classId = "FactoryBuilding";
         this.depth(1);
         this._produces = produces;
         this._requires = requires;
@@ -12,4 +12,4 @@ export class ResourceBuilding extends Triangle {
         return [this._produces, this._requires];
     }
 }
-registerClass(ResourceBuilding);
+registerClass(FactoryBuilding);
