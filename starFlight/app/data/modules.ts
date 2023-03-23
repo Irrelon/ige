@@ -1,4 +1,7 @@
-export const modules = [
+import { EntityModuleDefinition } from "../../types/EntityModuleDefinition";
+import { EntityAbilityModuleDefinition } from "../../types/EntityAbilityModuleDefinition";
+
+export const modules: Record<string, EntityModuleDefinition | EntityAbilityModuleDefinition> = [
 	{
 		"_id": "521a36aa3559382638c4254a",
 		"type": "ability",
@@ -11,7 +14,6 @@ export const modules = [
 		"classId": "Module_MiningLaser",
 		"name": "Mining Laser 1",
 		"abilityTitle": "MINE\nTARGET",
-		"canBeActive": "./code/abilityCanBeActive",
 		"usageCost": {
 			"energy": -40
 		},

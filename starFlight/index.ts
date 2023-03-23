@@ -6,6 +6,8 @@ export class Game {
 	classId = "Game";
 
 	constructor () {
+		ige.app = {};
+
 		if (isClient) {
 			ige.router.go("app/splash");
 		}

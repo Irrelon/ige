@@ -33,7 +33,6 @@ export class Module_MiningLaser extends Module_Ability {
 			});
 
 			(ige.network as IgeNetIoServerController).send("msg", { msg: "Mined " + oreType + ", in cargo hold" }, this.attachedTo().clientId());
-
 			return;
 		}
 

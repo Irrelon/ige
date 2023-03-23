@@ -89,25 +89,25 @@ export class PlayerShip extends Ship {
         }
         // Call the IgeEntity (super-class) tick() method
         super.update(ctx, tickDelta);
-        if (isClient && ige.game.playerEntity === this) {
+        if (isClient && ige.app.playerEntity === this) {
             // Update UI elements
-            ige.game.scene.stateBar.fuel
+            ige.$("stateBar_fuel")
                 .min(this._publicGameData.state.fuel.min)
                 .max(this._publicGameData.state.fuel.max)
                 .progress(this._publicGameData.state.fuel.val);
-            ige.game.scene.stateBar.energy
+            ige.$("stateBar_energy")
                 .min(this._publicGameData.state.energy.min)
                 .max(this._publicGameData.state.energy.max)
                 .progress(this._publicGameData.state.energy.val);
-            ige.game.scene.stateBar.shield
+            ige.$("stateBar_shield")
                 .min(this._publicGameData.state.shield.min)
                 .max(this._publicGameData.state.shield.max)
                 .progress(this._publicGameData.state.shield.val);
-            ige.game.scene.stateBar.integrity
+            ige.$("stateBar_integrity")
                 .min(this._publicGameData.state.integrity.min)
                 .max(this._publicGameData.state.integrity.max)
                 .progress(this._publicGameData.state.integrity.val);
-            ige.game.scene.stateBar.inventorySpace
+            ige.$("stateBar_inventorySpace")
                 .min(0)
                 .max(this._publicGameData.state.inventorySpace.val)
                 .progress(this._publicGameData.state.inventoryCount.val);
@@ -184,10 +184,10 @@ export class PlayerShip extends Ship {
             this.target._distance = this.distanceTo(this.target._targetEntity);
             // Update the on-screen target distance label
             ige.$("targetDistance").value("Distance: " + this.target._distance.toFixed(2) + " km");
-            ige.game.scene.targetInfo.show();
+            ige.$("targetInfo").show();
         }
         else {
-            ige.game.scene.targetInfo.hide();
+            ige.$("targetInfo").hide();
         }
     }
 }

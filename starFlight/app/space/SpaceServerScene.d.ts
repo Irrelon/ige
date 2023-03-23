@@ -2,13 +2,19 @@ import { IgeSceneGraph } from "@/engine/core/IgeSceneGraph";
 import { GameEntity } from "../component/GameEntity";
 import { IgeNetworkServerSideMessageHandler, IgeNetworkServerSideRequestHandler } from "@/types/IgeNetworkMessage";
 import { IgeNetIoSocket } from "@/engine/network/server/IgeNetIoSocket";
+import { EntityModuleDefinition } from "../../types/EntityModuleDefinition";
+import { EntityAbilityModuleDefinition } from "../../types/EntityAbilityModuleDefinition";
+export interface ServerPublicGameData {
+    modules: Record<string, EntityModuleDefinition | EntityAbilityModuleDefinition>;
+}
 export declare class SpaceServerScene extends IgeSceneGraph {
     classId: string;
+    publicGameData: ServerPublicGameData;
     players: Record<string, GameEntity>;
     constructor();
     addGraph(): void;
     removeGraph(): void;
-    playerByClientId(clientId: string, player?: GameEntity): this | GameEntity;
+    playerByClientId(clientId: string, player?: GameEntity): GameEntity | this;
     /**
      * Is called when the network tells us a new client has connected
      * to the server. This is the point we can return true to reject

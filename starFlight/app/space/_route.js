@@ -18,14 +18,6 @@ import { radarSmartTexture } from "../../assets/ui/radarSmartTexture.js";
 import { targetSmartTexture } from "../../assets/ui/targetSmartTexture.js";
 import { laserSmartTexture } from "../../assets/sprites/laser1.js";
 import { SpaceClientScene } from "./SpaceClientScene.js";
-// require('../component/SpaceStation');
-//
-// require('./SpaceClient');
-// require('./SpaceClientScene');
-// require('./SpaceClientTextures');
-//
-// require('./SpaceServer');
-// require('./SpaceServerScene');
 ige.router.route('app/space', {
     client: () => __awaiter(void 0, void 0, void 0, function* () {
         const textures = [

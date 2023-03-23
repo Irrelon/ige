@@ -16,7 +16,7 @@ export declare class Module_Generic extends IgeBaseClass {
      * @param val
      * @returns {*}
      */
-    attachedTo(val?: IgeEntity): IgeEntity | this | null;
+    attachedTo(val?: IgeEntity): this | IgeEntity | null;
     /**
      * If any effects are in the module's definition under "effects"
      * this method will enable / disable them and add / remove them

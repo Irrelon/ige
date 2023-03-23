@@ -11,7 +11,6 @@ export const modules = [
         "classId": "Module_MiningLaser",
         "name": "Mining Laser 1",
         "abilityTitle": "MINE\nTARGET",
-        "canBeActive": "./code/abilityCanBeActive",
         "usageCost": {
             "energy": -40
         },

@@ -4,6 +4,7 @@ import "./app/_route.js";
 export class Game {
     constructor() {
         this.classId = "Game";
+        ige.app = {};
         if (isClient) {
             ige.router.go("app/splash");
         }

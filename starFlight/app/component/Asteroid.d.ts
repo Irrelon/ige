@@ -10,7 +10,7 @@ export declare class Asteroid extends GameEntity {
     streamCreateData(): EntityPublicGameData;
     ore(): Record<string, number>;
     handleAcceptedAction(actionId: string, tickDelta: number): void;
-    removeRandomOreType(): string;
+    removeRandomOreType(): number;
     applyDamage(val: number): this;
     spawnMinedOre(oreType: number): void;
     _mouseUp(): boolean;

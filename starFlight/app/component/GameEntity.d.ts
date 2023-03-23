@@ -53,7 +53,7 @@ export declare class GameEntity extends IgeEntityBox2d {
      * Set to null to remove the existing component.
      * @returns {*}
      */
-    module(moduleId: string, moduleDefinition?: EntityModuleDefinition): this | EntityModuleDefinition | Record<string, EntityModuleDefinition | EntityAbilityModuleDefinition>;
+    module(moduleId: string, moduleDefinition?: EntityModuleDefinition): EntityModuleDefinition | Record<string, EntityModuleDefinition | EntityAbilityModuleDefinition> | this;
     /**
      * Gets the private module data by slot number.
      * @param {Number} moduleId The slot number to get / set component for.

@@ -49,13 +49,13 @@ export class StationServer {
 	 * @private
 	 */
 	_onPlayerDisconnect = function (clientId) {
-		if (ige.game.players[clientId]) {
+		if (ige.app.players[clientId]) {
 			// Remove the player from the game
-			ige.game.players[clientId].destroy();
+			ige.app.players[clientId].destroy();
 
 			// Remove the reference to the player entity
 			// so that we don't leak memory
-			delete ige.game.players[clientId];
+			delete ige.app.players[clientId];
 		}
 	}
 
@@ -73,16 +73,16 @@ export class StationServer {
 	_onPlayerEntity = function (data, clientId) {
 		var player;
 
-		player = ige.game.playerByClientId(clientId);
+		player = ige.app.playerByClientId(clientId);
 
 		if (!player) {
 			// Create a new player instance
 			player = new PlayerShip(clientId)
 				.streamMode(1)
-				.mount(ige.game.scene.frontScene);
+				.mount(ige.app.scene.frontScene);
 
 			// Set the player against the client id
-			ige.game.playerByClientId(clientId, player);
+			ige.app.playerByClientId(clientId, player);
 
 			// Tell the client to track their player entity by it's id
 			ige.network.send('playerEntity', player.id(), clientId);
@@ -90,7 +90,7 @@ export class StationServer {
 	}
 
 	_onMiningRequest = function (data, clientId, callback) {
-		var player = ige.game.playerByClientId(clientId),
+		var player = ige.app.playerByClientId(clientId),
 			asteroid,
 			laser;
 
@@ -132,7 +132,7 @@ export class StationServer {
 						// something!
 						player.miningInterval = new IgeInterval(function () {
 							var ore = new Ore();
-							ore.mount(ige.game.frontScene);
+							ore.mount(ige.app.frontScene);
 
 							ore.translateTo(asteroid._translate.x, asteroid._translate.y, 0);
 							ore.updateTransform();
@@ -165,7 +165,7 @@ export class StationServer {
 		while (count < max) {
 			if (!asteroid) {
 				asteroid = new Asteroid();
-				asteroid.mount(ige.game.scene.frontScene);
+				asteroid.mount(ige.app.scene.frontScene);
 			}
 
 			x = Math.floor(beltX + ((Math.random() * maxDist * 2) - maxDist));

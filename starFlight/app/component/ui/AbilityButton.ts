@@ -26,8 +26,8 @@ export class AbilityButton extends IgeUiEntity {
 
 		super();
 
-		if (ige.game.abilityCounter === undefined) {
-			ige.game.abilityCounter = 0;
+		if (ige.app.abilityCounter === undefined) {
+			ige.app.abilityCounter = 0;
 		}
 
 		this._abilityId = options.abilityId;
@@ -50,7 +50,7 @@ export class AbilityButton extends IgeUiEntity {
 			.texture(ige.textures.get("infoWindow"))
 			.cache(true)
 			.left(0)
-			.top(((60) * ige.game.abilityCounter))
+			.top(((60) * ige.app.abilityCounter))
 			.mount(this);
 
 		this._label = new IgeUiLabel()
@@ -88,7 +88,7 @@ export class AbilityButton extends IgeUiEntity {
 			}
 		});
 
-		ige.game.abilityCounter++;
+		ige.app.abilityCounter++;
 	}
 
 	active (val?: boolean) {
@@ -146,7 +146,7 @@ export class AbilityButton extends IgeUiEntity {
 			return (ige.audio as IgeAudioController).play("actionDenied");
 		}
 
-		ige.game.playerEntity.useAbility(this._abilityId);
+		ige.app.playerEntity.useAbility(this._abilityId);
 	}
 
 	update (ctx: IgeCanvasRenderingContext2d, tickDelta: number) {
@@ -182,7 +182,7 @@ export class AbilityButton extends IgeUiEntity {
 		} else {
 			// Ability is not active or on cooldown, check distance from
 			// target to determine if it is in range of this ability
-			playerTargetData = ige.game.playerEntity.target;
+			playerTargetData = ige.app.playerEntity.target;
 
 			if (this._module.range && this._module.requiresTarget && playerTargetData && playerTargetData._targetEntity) {
 				if (playerTargetData._distance > this._module.range) {

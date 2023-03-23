@@ -14,9 +14,17 @@ import { MiningLaserEffect } from "../component/effects/MiningLaserEffect";
 import { IgeInterval } from "@/engine/core/IgeInterval";
 import { IgeNetIoSocket } from "@/engine/network/server/IgeNetIoSocket";
 import { generateAsteroidBelt } from "../../services/asteroidBelt";
+import { EntityModuleDefinition } from "../../types/EntityModuleDefinition";
+import { EntityAbilityModuleDefinition } from "../../types/EntityAbilityModuleDefinition";
+import { modules } from "../data/modules";
+
+export interface ServerPublicGameData {
+	modules: Record<string, EntityModuleDefinition | EntityAbilityModuleDefinition>
+}
 
 export class SpaceServerScene extends IgeSceneGraph {
 	classId = "SpaceServerScene";
+	publicGameData: ServerPublicGameData;
 	players: Record<string, GameEntity>;
 
 	constructor () {
@@ -26,6 +34,10 @@ export class SpaceServerScene extends IgeSceneGraph {
 		// This is the players object that stores player state per network
 		// connection client id
 		this.players = {};
+
+		this.publicGameData = {
+			modules
+		}
 
 		const network = ige.network as IgeNetIoServerController;
 
@@ -59,7 +71,7 @@ export class SpaceServerScene extends IgeSceneGraph {
 		if (!isServer) {
 			return;
 		}
-		
+
 		const mainScene = ige.$("mainScene") as IgeScene2d;
 
 		const sceneBase = new IgeScene2d()
@@ -159,7 +171,7 @@ export class SpaceServerScene extends IgeSceneGraph {
 
 	_onPublicGameData: IgeNetworkServerSideRequestHandler = (data, clientId, callback) => {
 		if (!callback) return;
-		callback(false, ige.app.publicGameData);
+		callback(false, this.publicGameData);
 	};
 
 	/**

@@ -1,7 +1,13 @@
 import { IgeSceneGraph } from "@/engine/core/IgeSceneGraph";
-import { IgeEntity } from "@/engine/core/IgeEntity";
+import { EntityModuleDefinition } from "../../types/EntityModuleDefinition";
+import { EntityAbilityModuleDefinition } from "../../types/EntityAbilityModuleDefinition";
+import { GameEntity } from "../component/GameEntity";
+export interface ClientPublicGameData {
+    modules: Record<string, EntityModuleDefinition | EntityAbilityModuleDefinition>;
+}
 export declare class SpaceClientScene extends IgeSceneGraph {
     classId: string;
+    publicGameData: ClientPublicGameData;
     constructor();
     addGraph(): void;
     removeGraph(): void;
@@ -18,5 +24,5 @@ export declare class SpaceClientScene extends IgeSceneGraph {
      * @param {IgeEntity} ent Our player entity to track.
      * @private
      */
-    _trackPlayerEntity(ent: IgeEntity): void;
+    _trackPlayerEntity(ent: GameEntity): void;
 }

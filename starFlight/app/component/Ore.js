@@ -16,7 +16,7 @@ export class Ore extends IgeEntityBox2d {
             .width(25)
             .height(25);
         if (isServer && ige.box2d) {
-            // Create box2d body for this object
+            // Create Box2D body for this object
             this.box2dBody({
                 type: IgeBox2dBodyType.dynamic,
                 linearDamping: 0.7,

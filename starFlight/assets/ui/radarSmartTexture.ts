@@ -4,8 +4,8 @@ import { PI2 } from "@/engine/utils";
 
 export const radarSmartTexture: IgeSmartTexture = {
 	render: function (ctx, entity) {
-		if (ige.game._playerEntity) {
-			const peTranslate = ige.game._playerEntity._translate;
+		if (ige.app.playerEntity) {
+			const peTranslate = ige.app.playerEntity._translate;
 
 			// Draw the background
 			ctx.fillStyle = '#000000';

@@ -3,8 +3,9 @@ export type EntityModuleBaseCost = Record<string, number>;
 export type EntityModuleInputOutput = Record<string, number | Record<string, number>>;
 export interface EntityModuleStateItem {
     initial: number;
-    min: number;
-    max: number;
+    min?: number;
+    max?: number;
+    val?: number;
 }
 export type EntityModuleStates = Record<string, EntityModuleStateItem>;
 export interface EntityModuleEffectAction {

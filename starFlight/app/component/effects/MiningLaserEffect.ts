@@ -18,7 +18,7 @@ export class MiningLaserEffect extends LaserEffect {
 
 		if (isClient) {
 			this.audio = new IgeAudioEntity("miningLaser")
-				.relativeTo(ige.game.playerEntity)
+				.relativeTo(ige.app.playerEntity)
 				.mount(this);
 
 			this.texture(ige.textures.get("laser1"));

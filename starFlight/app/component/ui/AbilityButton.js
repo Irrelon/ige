@@ -10,8 +10,8 @@ export class AbilityButton extends IgeUiEntity {
         }
         super();
         this.classId = "AbilityButton";
-        if (ige.game.abilityCounter === undefined) {
-            ige.game.abilityCounter = 0;
+        if (ige.app.abilityCounter === undefined) {
+            ige.app.abilityCounter = 0;
         }
         this._abilityId = options.abilityId;
         this._module = options.module;
@@ -30,7 +30,7 @@ export class AbilityButton extends IgeUiEntity {
             .texture(ige.textures.get("infoWindow"))
             .cache(true)
             .left(0)
-            .top(((60) * ige.game.abilityCounter))
+            .top(((60) * ige.app.abilityCounter))
             .mount(this);
         this._label = new IgeUiLabel()
             .layer(1)
@@ -63,7 +63,7 @@ export class AbilityButton extends IgeUiEntity {
                 this.requestActivation();
             }
         });
-        ige.game.abilityCounter++;
+        ige.app.abilityCounter++;
     }
     active(val) {
         if (val !== undefined) {
@@ -113,7 +113,7 @@ export class AbilityButton extends IgeUiEntity {
         if (this._disabled || this._module.active || this._module.cooldown) {
             return ige.audio.play("actionDenied");
         }
-        ige.game.playerEntity.useAbility(this._abilityId);
+        ige.app.playerEntity.useAbility(this._abilityId);
     }
     update(ctx, tickDelta) {
         let activeTime, beenInCooldownFor, playerTargetData;
@@ -142,7 +142,7 @@ export class AbilityButton extends IgeUiEntity {
         else {
             // Ability is not active or on cooldown, check distance from
             // target to determine if it is in range of this ability
-            playerTargetData = ige.game.playerEntity.target;
+            playerTargetData = ige.app.playerEntity.target;
             if (this._module.range && this._module.requiresTarget && playerTargetData && playerTargetData._targetEntity) {
                 if (playerTargetData._distance > this._module.range) {
                     // Disable this ability button

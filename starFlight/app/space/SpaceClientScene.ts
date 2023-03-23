@@ -10,9 +10,20 @@ import { MessageWindow } from "../component/ui/MessageWindow";
 import { IgeAudioController } from "@/engine/audio";
 import { IgeViewport } from "@/engine/core/IgeViewport";
 import { IgeNetIoClientController } from "@/engine/network/client/IgeNetIoClientController";
+import { EntityModuleDefinition } from "../../types/EntityModuleDefinition";
+import { EntityAbilityModuleDefinition } from "../../types/EntityAbilityModuleDefinition";
+import { GameEntity } from "../component/GameEntity";
+import { IgeVelocityComponent } from "@/engine/components/IgeVelocityComponent";
+
+export interface ClientPublicGameData {
+	modules: Record<string, EntityModuleDefinition | EntityAbilityModuleDefinition>
+}
 
 export class SpaceClientScene extends IgeSceneGraph {
 	classId = "SpaceClientScene";
+	publicGameData: ClientPublicGameData = {
+		modules: {}
+	};
 
 	constructor () {
 		super();
@@ -29,7 +40,7 @@ export class SpaceClientScene extends IgeSceneGraph {
 		network.define('playerEntity', this._onPlayerEntity.bind(this));
 
 		// Start the network client
-		network.start('http://' + window.location.hostname + ':2000', function () {
+		network.start('http://' + window.location.hostname + ':2000', () => {
 			// Set up the network stream handler
 			network.renderLatency(80); // Render the simulation 80 milliseconds in the past
 
@@ -53,8 +64,9 @@ export class SpaceClientScene extends IgeSceneGraph {
 		const vp1 = ige.$("vp1") as IgeViewport;
 
 		// Set the viewport camera to 0, 0, 0
-		vp1.camera.components.velocity.x(0);
-		vp1.camera.components.velocity.y(0);
+		const velocity = vp1.camera.components.velocity as IgeVelocityComponent;
+		velocity.x(0);
+		velocity.y(0);
 		vp1.camera.translateTo(0, 0, 0);
 
 		const mainScene = ige.$("mainScene") as IgeScene2d;
@@ -250,7 +262,7 @@ export class SpaceClientScene extends IgeSceneGraph {
 	 * @private
 	 */
 	_onPlayerEntity (entityId: string) {
-		const ent = ige.$(entityId) as IgeEntity;
+		const ent = ige.$(entityId) as GameEntity;
 
 		if (ent) {
 			this._trackPlayerEntity(ent);
@@ -265,7 +277,7 @@ export class SpaceClientScene extends IgeSceneGraph {
 		// should be tracking!
 		const eventListener = network.on('entityCreated', (entity) => {
 			if (entity.id() === entityId) {
-				this._trackPlayerEntity(ige.$(entityId) as IgeEntity);
+				this._trackPlayerEntity(ige.$(entityId) as GameEntity);
 
 				// Turn off the listener for this event now that we
 				// have found and started tracking our player entity
@@ -283,12 +295,15 @@ export class SpaceClientScene extends IgeSceneGraph {
 	 * @param {IgeEntity} ent Our player entity to track.
 	 * @private
 	 */
-	_trackPlayerEntity (ent: IgeEntity) {
+	_trackPlayerEntity (ent: GameEntity) {
 		// Store the player entity reference
-		this.playerEntity = ent;
+		ige.app.playerEntity = ent;
 
 		// Tell the camera to track this entity with some elasticity
-		ige.$("vp1").camera.trackTranslate(ent, 8);
+		const vp1 = ige.$("vp1") as IgeViewport;
+		if (vp1) {
+			vp1.camera.trackTranslate(ent, 8);
+		}
 
 		// Hide connection dialog now that the player can do something
 		const connectingDialog = document.getElementById('connectingDialog');

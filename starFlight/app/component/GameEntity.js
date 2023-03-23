@@ -153,14 +153,15 @@ export class GameEntity extends IgeEntityBox2d {
                 this._publicGameData.ability[abilityId] = moduleId;
                 if (isClient) {
                     const module = this.module(moduleId);
-                    const abilityButton = ige.game.scene["action" + abilityId] = new AbilityButton({
+                    const abilityButton = new AbilityButton({
                         abilityId: abilityId,
                         label: abilityId + "\n" + module.abilityTitle,
                         module: module
                     })
+                        .id(`action${abilityId}`)
                         .top(10)
                         .left(10)
-                        .mount(ige.game.scene.uiScene);
+                        .mount(ige.$("uiScene"));
                     ige.network.on("ability_" + abilityId + ".active", function (data) {
                         abilityButton.active(data);
                     });
@@ -336,7 +337,7 @@ export class GameEntity extends IgeEntityBox2d {
                     }
                     // Access the AbilityButton instance for this ability
                     // and tell it to become active
-                    ige.game.scene["action" + abilityId].active(true);
+                    ige.$(`action${abilityId}`).active(true);
                     ige.audio.play("actionAllowed");
                 });
             }

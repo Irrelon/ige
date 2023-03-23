@@ -10,6 +10,7 @@ import { IgeBox2dBodyType } from "@/enums/IgeBox2dBodyType";
 import { IgeBox2dFixtureShapeType } from "@/enums/IgeBox2dFixtureShapeType";
 import { IgeBox2dFixtureDef } from "@/types/IgeBox2dFixtureDef";
 import { registerClass } from "@/engine/igeClassStore";
+import { IgeScene2d } from "@/engine/core/IgeScene2d";
 
 export class Asteroid extends GameEntity {
 	classId = "Asteroid";
@@ -129,9 +130,9 @@ export class Asteroid extends GameEntity {
 
 	}
 
-	removeRandomOreType () {
+	removeRandomOreType (): number {
 		// TODO check that the ore we picked has any in "stock" on this asteroid
-		const oreType = oreTypes[Math.round(Math.random() * (Object.keys(this._ore).length - 1))];
+		const oreType = Math.round(Math.random() * (Object.keys(this._ore).length - 1));
 
 		// Reduce the ore in the asteroid
 		this._ore[oreType]--;
@@ -164,7 +165,7 @@ export class Asteroid extends GameEntity {
 				type: oreType
 			});
 
-			ore.mount(ige.game.scene.frontScene);
+			ore.mount(ige.$("frontScene") as IgeScene2d);
 
 			ore.translateTo(this._translate.x, this._translate.y, 0);
 			ore.updateTransform();
@@ -175,7 +176,7 @@ export class Asteroid extends GameEntity {
 
 	_mouseUp () {
 		(ige.audio as IgeAudioController).play("select");
-		ige.game.playerEntity.selectTarget(this);
+		ige.app.playerEntity.selectTarget(this);
 
 		// Cancel further event propagation
 		return true;

@@ -10,6 +10,7 @@ import { PlayerShip } from "../component/PlayerShip.js";
 import { MiningLaserEffect } from "../component/effects/MiningLaserEffect.js";
 import { IgeInterval } from "../../../engine/core/IgeInterval.js";
 import { generateAsteroidBelt } from "../../services/asteroidBelt.js";
+import { modules } from "../data/modules.js";
 export class SpaceServerScene extends IgeSceneGraph {
     constructor() {
         super();
@@ -17,7 +18,7 @@ export class SpaceServerScene extends IgeSceneGraph {
         this._onPublicGameData = (data, clientId, callback) => {
             if (!callback)
                 return;
-            callback(false, ige.app.publicGameData);
+            callback(false, this.publicGameData);
         };
         /**
          * Is called when a network packet with the "playerEntity" command
@@ -106,6 +107,9 @@ export class SpaceServerScene extends IgeSceneGraph {
         // This is the players object that stores player state per network
         // connection client id
         this.players = {};
+        this.publicGameData = {
+            modules
+        };
         const network = ige.network;
         // Listen for network connection events
         network.on("connect", this._onPlayerConnect.bind(this));

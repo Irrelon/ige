@@ -107,7 +107,7 @@ export class Asteroid extends GameEntity {
     }
     removeRandomOreType() {
         // TODO check that the ore we picked has any in "stock" on this asteroid
-        const oreType = oreTypes[Math.round(Math.random() * (Object.keys(this._ore).length - 1))];
+        const oreType = Math.round(Math.random() * (Object.keys(this._ore).length - 1));
         // Reduce the ore in the asteroid
         this._ore[oreType]--;
         this._oreCount--;
@@ -131,7 +131,7 @@ export class Asteroid extends GameEntity {
             const ore = new Ore({
                 type: oreType
             });
-            ore.mount(ige.game.scene.frontScene);
+            ore.mount(ige.$("frontScene"));
             ore.translateTo(this._translate.x, this._translate.y, 0);
             ore.updateTransform();
             ore.streamMode(1);
@@ -139,7 +139,7 @@ export class Asteroid extends GameEntity {
     }
     _mouseUp() {
         ige.audio.play("select");
-        ige.game.playerEntity.selectTarget(this);
+        ige.app.playerEntity.selectTarget(this);
         // Cancel further event propagation
         return true;
     }

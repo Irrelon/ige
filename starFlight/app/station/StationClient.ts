@@ -1,26 +1,28 @@
+import { ige } from "@/engine/instance";
+
 const appCore = require('../../../ige');
 
 appCore.module('StationClient', function ($ige, $game, IgeStreamComponent) {
 	const StationClient = function () {
 		const self = this;
-		
+
 		// Show the connecting dialog
 		document.getElementById('connectingDialog').style.display = 'block';
-		
+
 		// Hook network events we want to respond to
 		ige.network.define('playerEntity', self._onPlayerEntity.bind(self));
-		
+
 		// Start the network client
 		ige.network.start('http://localhost:2000', function () {
 			// Setup the network stream handler
 			ige.network.addComponent(IgeStreamComponent)
 				.stream.renderLatency(80); // Render the simulation 80 milliseconds in the past
-			
+
 			// Ask the server to create an entity for us
 			ige.network.send('playerEntity');
 		});
 	};
-	
+
 	/**
 	 * Called when the client receives a message from the server that it has
 	 * created an entity for our player, sending us the entity id so we can
@@ -32,12 +34,12 @@ appCore.module('StationClient', function ($ige, $game, IgeStreamComponent) {
 		let self = this,
 			eventListener,
 			ent = ige.engine.$(entityId);
-		
+
 		if (ent) {
 			self._trackPlayerEntity(ent);
 			return;
 		}
-		
+
 		// The client has not yet received the entity via the network
 		// stream so lets ask the stream to tell us when it creates a
 		// new entity and then check if that entity is the one we
@@ -45,7 +47,7 @@ appCore.module('StationClient', function ($ige, $game, IgeStreamComponent) {
 		eventListener = ige.network.stream.on('entityCreated', function (entity) {
 			if (entity.id() === entityId) {
 				self._trackPlayerEntity(ige.engine.$(entityId));
-				
+
 				// Turn off the listener for this event now that we
 				// have found and started tracking our player entity
 				ige.network.stream.off('entityCreated', eventListener, function (result) {
@@ -56,7 +58,7 @@ appCore.module('StationClient', function ($ige, $game, IgeStreamComponent) {
 			}
 		});
 	};
-	
+
 	/**
 	 * Sets up camera tracking for our player entity.
 	 * @param {IgeEntity} ent Our player entity to track.
@@ -64,14 +66,14 @@ appCore.module('StationClient', function ($ige, $game, IgeStreamComponent) {
 	 */
 	StationClient.prototype._trackPlayerEntity = function (ent) {
 		// Store the player entity reference
-		ige.game.playerEntity = ent;
-		
+		ige.app.playerEntity = ent;
+
 		// Tell the camera to track this entity with some elasticity
-		ige.game.scene.vp1.camera.trackTranslate(ent, 8);
-		
+		ige.$("vp1").camera.trackTranslate(ent, 8);
+
 		// Hide connection dialog now that the player can do something
 		document.getElementById('connectingDialog').style.display = 'none';
 	};
-	
+
 	return StationClient;
 });

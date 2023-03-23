@@ -10,11 +10,7 @@ import { acceptedAction } from "../data/acceptedAction";
 import { IgeNetworkServerSideRequestHandler } from "@/types/IgeNetworkMessage";
 import { Module_Generic } from "./module/Module_Generic";
 import { EntityAbilityModuleDefinition } from "../../types/EntityAbilityModuleDefinition";
-
-//require('./module/Module_Generic');
-//require('./module/Module_Ability');
-//require('./module/Module_MiningLaser');
-//require('./ui/AbilityButton');
+import { IgeScene2d } from "@/engine/core/IgeScene2d";
 
 export interface EntityPublicGameData {
 	clientId?: string;
@@ -150,14 +146,15 @@ export class GameEntity extends IgeEntityBox2d {
 				if (isClient) {
 					const module = this.module(moduleId) as EntityAbilityModuleDefinition;
 
-					const abilityButton = ige.game.scene["action" + abilityId] = new AbilityButton({
+					const abilityButton = new AbilityButton({
 						abilityId: abilityId,
 						label: abilityId + "\n" + module.abilityTitle,
 						module: module
 					})
+						.id(`action${abilityId}`)
 						.top(10)
 						.left(10)
-						.mount(ige.game.scene.uiScene);
+						.mount(ige.$("uiScene") as IgeScene2d);
 
 					(ige.network as IgeNetIoClientController).on("ability_" + abilityId + ".active", function (data) {
 						abilityButton.active(data);
@@ -434,7 +431,7 @@ export class GameEntity extends IgeEntityBox2d {
 
 					// Access the AbilityButton instance for this ability
 					// and tell it to become active
-					ige.game.scene["action" + abilityId].active(true);
+					(ige.$(`action${abilityId}`) as AbilityButton).active(true);
 					(ige.audio as IgeAudioController).play("actionAllowed");
 				});
 			}

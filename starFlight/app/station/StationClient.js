@@ -1,4 +1,4 @@
-"use strict";
+import { ige } from "../../../engine/instance.js";
 const appCore = require('../../../ige');
 appCore.module('StationClient', function ($ige, $game, IgeStreamComponent) {
     const StationClient = function () {
@@ -53,9 +53,9 @@ appCore.module('StationClient', function ($ige, $game, IgeStreamComponent) {
      */
     StationClient.prototype._trackPlayerEntity = function (ent) {
         // Store the player entity reference
-        ige.game.playerEntity = ent;
+        ige.app.playerEntity = ent;
         // Tell the camera to track this entity with some elasticity
-        ige.game.scene.vp1.camera.trackTranslate(ent, 8);
+        ige.$("vp1").camera.trackTranslate(ent, 8);
         // Hide connection dialog now that the player can do something
         document.getElementById('connectingDialog').style.display = 'none';
     };

@@ -11,6 +11,9 @@ export class SpaceClientScene extends IgeSceneGraph {
     constructor() {
         super();
         this.classId = "SpaceClientScene";
+        this.publicGameData = {
+            modules: {}
+        };
         // Show the connecting dialog
         const connectingDialog = document.getElementById('connectingDialog');
         if (connectingDialog) {
@@ -20,7 +23,7 @@ export class SpaceClientScene extends IgeSceneGraph {
         // Hook network events we want to respond to
         network.define('playerEntity', this._onPlayerEntity.bind(this));
         // Start the network client
-        network.start('http://' + window.location.hostname + ':2000', function () {
+        network.start('http://' + window.location.hostname + ':2000', () => {
             // Set up the network stream handler
             network.renderLatency(80); // Render the simulation 80 milliseconds in the past
             // Ask server for game data
@@ -39,8 +42,9 @@ export class SpaceClientScene extends IgeSceneGraph {
     addGraph() {
         const vp1 = ige.$("vp1");
         // Set the viewport camera to 0, 0, 0
-        vp1.camera.components.velocity.x(0);
-        vp1.camera.components.velocity.y(0);
+        const velocity = vp1.camera.components.velocity;
+        velocity.x(0);
+        velocity.y(0);
         vp1.camera.translateTo(0, 0, 0);
         const mainScene = ige.$("mainScene");
         const sceneBase = new IgeScene2d()
@@ -244,9 +248,12 @@ export class SpaceClientScene extends IgeSceneGraph {
      */
     _trackPlayerEntity(ent) {
         // Store the player entity reference
-        this.playerEntity = ent;
+        ige.app.playerEntity = ent;
         // Tell the camera to track this entity with some elasticity
-        ige.$("vp1").camera.trackTranslate(ent, 8);
+        const vp1 = ige.$("vp1");
+        if (vp1) {
+            vp1.camera.trackTranslate(ent, 8);
+        }
         // Hide connection dialog now that the player can do something
         const connectingDialog = document.getElementById('connectingDialog');
         if (connectingDialog) {
