@@ -27,6 +27,7 @@ import type { IgeTexture } from "./IgeTexture";
 import type { IgeCanRegisterByCategory } from "@/types/IgeCanRegisterByCategory";
 import type { IgeInputComponent } from "../components/IgeInputComponent";
 import { IgeBehaviourType } from "@/enums/IgeBehaviourType";
+import { registerClass } from "@/engine/igeClassStore";
 
 export interface IgeEntityTransformAccessor {
 	x: (val?: number) => number | IgeEntity;
@@ -1010,7 +1011,7 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 	 * @return {*} "this" when arguments are passed to allow method
 	 * chaining or the current value if no arguments are specified.
 	 */
-	highlight (val: boolean, highlightChildEntities: boolean): this;
+	highlight (val: boolean, highlightChildEntities?: boolean): this;
 	highlight (): boolean;
 	highlight (val?: boolean, highlightChildEntities: boolean = true) {
 		if (val !== undefined) {
@@ -3384,3 +3385,5 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 		}
 	}
 }
+
+registerClass(IgeEntity);

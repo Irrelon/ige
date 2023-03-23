@@ -1,5 +1,6 @@
 import { IgeUiElement } from "@/engine/core/IgeUiElement";
 import { IgeCanvasRenderingContext2d } from "@/types/IgeCanvasRenderingContext2d";
+import { registerClass } from "@/engine/igeClassStore";
 
 export class IgeUiColumn extends IgeUiElement {
 	classId = "IgeUiColumn";
@@ -56,3 +57,5 @@ export class IgeUiColumn extends IgeUiElement {
 		super.tick(ctx);
 	}
 }
+
+registerClass(IgeUiColumn);

@@ -11,6 +11,7 @@ import { isServer } from "../clientServer.js";
 import { IgeMountMode } from "../../enums/IgeMountMode.js";
 import { arrClone, newIdHex } from "../utils.js";
 import { IgeEntity } from "./IgeEntity.js";
+import { registerClass } from "../../engine/igeClassStore.js";
 /**
  * Tile maps provide a way to align mounted child objects to a tile-based grid.
  * NOTE: These are not to be confused with IgeTextureMap's which allow you to
@@ -473,3 +474,4 @@ export class IgeTileMap2d extends IgeEntity {
         super._childMounted(obj);
     }
 }
+registerClass((IgeTileMap2d));

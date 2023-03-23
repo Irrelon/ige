@@ -3,6 +3,7 @@ import { isClient } from "@/engine/clientServer";
 import { IgeAudioItem } from "@/engine/audio/IgeAudioItem";
 import { IgeEntity } from "@/engine/core/IgeEntity";
 import type { IgeCanvasRenderingContext2d } from "@/types/IgeCanvasRenderingContext2d";
+import { registerClass } from "@/engine/igeClassStore";
 
 export interface IgeAudioEntityPanner extends PannerOptions {
 
@@ -222,3 +223,5 @@ export class IgeAudioEntity extends IgeEntity {
 		return this;
 	}
 }
+
+registerClass(IgeAudioEntity);

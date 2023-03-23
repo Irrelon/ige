@@ -1,6 +1,7 @@
 import { IgeEntity } from "./IgeEntity.js";
 import { IgeTween } from "./IgeTween.js";
 import { IgeBehaviourType } from "../../enums/IgeBehaviourType.js";
+import { registerClass } from "../../engine/igeClassStore.js";
 /**
  * Creates a new camera that will be attached to a viewport.
  */
@@ -333,3 +334,4 @@ export class IgeCamera extends IgeEntity {
         return str;
     }
 }
+registerClass(IgeCamera);

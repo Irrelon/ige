@@ -1,5 +1,6 @@
 import { IgeUiElement } from "@/engine/core/IgeUiElement";
 import { IgeCanvasRenderingContext2d } from "@/types/IgeCanvasRenderingContext2d";
+import { registerClass } from "@/engine/igeClassStore";
 
 export class IgeUiButton extends IgeUiElement {
 	classId = "IgeUiButton";
@@ -90,3 +91,5 @@ export class IgeUiButton extends IgeUiElement {
 		}
 	}
 }
+
+registerClass(IgeUiButton);

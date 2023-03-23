@@ -1,4 +1,6 @@
 import { IgeUiElement } from "../../engine/core/IgeUiElement.js";
+import { registerClass } from "../../engine/igeClassStore.js";
+import { ige } from "../../engine/instance.js";
 export class IgeUiTimeStream extends IgeUiElement {
     constructor() {
         super(...arguments);
@@ -56,3 +58,4 @@ export class IgeUiTimeStream extends IgeUiElement {
         }
     }
 }
+registerClass(IgeUiTimeStream);

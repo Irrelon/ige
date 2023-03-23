@@ -1,4 +1,5 @@
 import { IgeUiElement } from "../../engine/core/IgeUiElement.js";
+import { registerClass } from "../../engine/igeClassStore.js";
 export class IgeUiProgressBar extends IgeUiElement {
     constructor() {
         super();
@@ -155,3 +156,4 @@ export class IgeUiProgressBar extends IgeUiElement {
         super.tick(ctx, true);
     }
 }
+registerClass(IgeUiProgressBar);

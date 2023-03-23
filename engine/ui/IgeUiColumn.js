@@ -1,4 +1,5 @@
 import { IgeUiElement } from "../../engine/core/IgeUiElement.js";
+import { registerClass } from "../../engine/igeClassStore.js";
 export class IgeUiColumn extends IgeUiElement {
     constructor() {
         super(...arguments);
@@ -44,3 +45,4 @@ export class IgeUiColumn extends IgeUiElement {
         super.tick(ctx);
     }
 }
+registerClass(IgeUiColumn);

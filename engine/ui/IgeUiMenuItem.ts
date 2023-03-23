@@ -1,5 +1,6 @@
 import { IgeUiElement } from "@/engine/core/IgeUiElement";
 import { IgeUiMenu } from "@/engine/ui/IgeUiMenu";
+import { registerClass } from "@/engine/igeClassStore";
 
 export class IgeUiMenuItem extends IgeUiElement {
 	classId = "IgeUiMenuItem";
@@ -85,3 +86,5 @@ export class IgeUiMenuItem extends IgeUiElement {
 		}
 	}
 }
+
+registerClass(IgeUiMenuItem);

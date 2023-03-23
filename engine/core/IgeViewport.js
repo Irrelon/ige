@@ -6,6 +6,7 @@ import { IgeRect } from "./IgeRect.js";
 import { IgePoint2d } from "./IgePoint2d.js";
 import { IgeMountMode } from "../../enums/IgeMountMode.js";
 import { IgeUiEntity } from "./IgeUiEntity.js";
+import { registerClass } from "../../engine/igeClassStore.js";
 // TODO: Turns out we need IgeObject because IgeViewport cannot extend IgeEntity
 //    because IgeEntity imports IgeViewport, creating a circular referencing issue
 /**
@@ -485,3 +486,4 @@ export class IgeViewport extends IgeUiEntity {
         return str;
     }
 }
+registerClass(IgeViewport);

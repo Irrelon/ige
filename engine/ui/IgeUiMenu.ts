@@ -1,5 +1,6 @@
 import { IgeUiElement } from "@/engine/core/IgeUiElement";
 import { IgeUiMenuItem } from "@/engine/ui/IgeUiMenuItem";
+import { registerClass } from "@/engine/igeClassStore";
 
 /**
  * Provides a UI drop-down menu entity.
@@ -83,3 +84,5 @@ export class IgeUiMenu extends IgeUiElement {
 		}
 	}
 }
+
+registerClass(IgeUiMenu);

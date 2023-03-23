@@ -12,6 +12,7 @@ import { IgeMountMode } from "@/enums/IgeMountMode";
 import { arrClone, newIdHex } from "../utils";
 import { IgeEntity } from "./IgeEntity";
 import { IgeObject } from "./IgeObject";
+import { registerClass } from "@/engine/igeClassStore";
 
 export type IgeTileMap2dScanRectCallback = (mapData: any, x: number, y: number) => boolean;
 
@@ -624,3 +625,5 @@ export class IgeTileMap2d extends IgeEntity {
 		super._childMounted(obj);
 	}
 }
+
+registerClass((IgeTileMap2d);

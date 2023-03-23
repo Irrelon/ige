@@ -1,5 +1,6 @@
 import { IgeUiElement } from "../../engine/core/IgeUiElement.js";
 import { IgeFontEntity } from "../../engine/core/IgeFontEntity.js";
+import { registerClass } from "../../engine/igeClassStore.js";
 /**
  * Provides a UI label entity. Basic on-screen text label.
  */
@@ -194,3 +195,4 @@ export class IgeUiLabel extends IgeUiElement {
         super._mounted();
     }
 }
+registerClass(IgeUiLabel);

@@ -1,4 +1,5 @@
 import { IgeUiElement } from "../../engine/core/IgeUiElement.js";
+import { registerClass } from "../../engine/igeClassStore.js";
 export class IgeUiGridPanel extends IgeUiElement {
     constructor(cellWidth, cellHeight) {
         super();
@@ -16,3 +17,4 @@ export class IgeUiGridPanel extends IgeUiElement {
             .top(this._gridCellHeight * positionY);
     }
 }
+registerClass(IgeUiGridPanel);

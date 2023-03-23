@@ -2,6 +2,7 @@ import { ige } from "../instance";
 import { IgeUiEntity } from "./IgeUiEntity";
 import type { IgeUiManagerController } from "./IgeUiManagerController";
 import type { IgeInputComponent } from "../components/IgeInputComponent";
+import { registerClass } from "@/engine/igeClassStore";
 
 export type IgeUiStyleObject = Record<string, any>;
 export type IgeUiStyleState = "focus" | "hover" | "active";
@@ -340,3 +341,5 @@ export class IgeUiElement extends IgeUiEntity {
 		return super.destroy();
 	}
 }
+
+registerClass(IgeUiElement);

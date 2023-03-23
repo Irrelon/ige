@@ -2,6 +2,7 @@ import { ige } from "../instance.js";
 import { IgeUiEntity } from "./IgeUiEntity.js";
 import { IgeTween } from "./IgeTween.js";
 import { degreesToRadians } from "../utils.js";
+import { registerClass } from "../../engine/igeClassStore.js";
 /**
  * Creates a new particle emitter.
  */
@@ -584,3 +585,4 @@ export class IgeParticleEmitter extends IgeUiEntity {
         return this._particles;
     }
 }
+registerClass(IgeParticleEmitter);

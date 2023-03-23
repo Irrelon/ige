@@ -1,4 +1,5 @@
 import { IgeBaseClass } from "./IgeBaseClass";
+import { registerClass } from "@/engine/igeClassStore";
 
 /**
  * Creates a new map that has two dimensions (x and y) to its data.
@@ -226,3 +227,6 @@ export class IgeMap2d extends IgeBaseClass {
 		this.mapData(newArr, 0, 0);
 	}
 }
+
+
+registerClass(IgeMap2d);

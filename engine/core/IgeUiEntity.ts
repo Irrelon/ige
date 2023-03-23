@@ -7,6 +7,7 @@ import { IgeRepeatType } from "../mixins/IgeUiStyleMixin";
 import { IgeObject } from "./IgeObject";
 import { PI180 } from "../utils";
 import { IgePointXY } from "@/types/IgePointXY";
+import { registerClass } from "@/engine/igeClassStore";
 
 /**
  * Creates a new UI entity. UI entities use more resources and CPU
@@ -1600,3 +1601,5 @@ export class IgeUiEntity extends IgeEntity {
 		return this._marginBottom;
 	}
 }
+
+registerClass(IgeUiEntity);

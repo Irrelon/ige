@@ -437,7 +437,7 @@ export declare class IgeEntity extends IgeObject implements IgeCanRegisterById, 
      * @return {*} "this" when arguments are passed to allow method
      * chaining or the current value if no arguments are specified.
      */
-    highlight(val: boolean, highlightChildEntities: boolean): this;
+    highlight(val: boolean, highlightChildEntities?: boolean): this;
     highlight(): boolean;
     /**
      * Calculates and returns the current axis-aligned bounding box in

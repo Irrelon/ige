@@ -1,5 +1,6 @@
 import { IgeUiElement } from "@/engine/core/IgeUiElement";
 import { IgeCanvasRenderingContext2d } from "@/types/IgeCanvasRenderingContext2d";
+import { registerClass } from "@/engine/igeClassStore";
 
 export class IgeUiAutoFlow extends IgeUiElement {
 	classId = "IgeUiAutoFlow";
@@ -26,3 +27,5 @@ export class IgeUiAutoFlow extends IgeUiElement {
 		super.tick(ctx);
 	}
 }
+
+registerClass(IgeUiAutoFlow);

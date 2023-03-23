@@ -5,6 +5,7 @@ import { IgePoint3d } from "./IgePoint3d";
 import { IgeCanvasRenderingContext2d } from "@/types/IgeCanvasRenderingContext2d";
 import { IgeTween } from "./IgeTween";
 import { IgeBehaviourType } from "@/enums/IgeBehaviourType";
+import { registerClass } from "@/engine/igeClassStore";
 
 /**
  * Creates a new camera that will be attached to a viewport.
@@ -393,3 +394,5 @@ export class IgeCamera extends IgeEntity {
 		return str;
 	}
 }
+
+registerClass(IgeCamera);

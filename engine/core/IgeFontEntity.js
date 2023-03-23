@@ -3,6 +3,7 @@ import { IgeTexture } from "./IgeTexture.js";
 import { IgeFontSmartTexture } from "../textures/IgeFontSmartTexture.js";
 import { IgeFontAlignX, IgeFontAlignY } from "../../enums/IgeFontAlign.js";
 import { IgeTextureRenderMode } from "../../enums/IgeTextureRenderMode.js";
+import { registerClass } from "../../engine/igeClassStore.js";
 /**
  * Creates a new font entity. A font entity will use a font sheet
  * (IgeFontSheet) or native font and render text.
@@ -343,3 +344,4 @@ export class IgeFontEntity extends IgeUiEntity {
         return str;
     }
 }
+registerClass(IgeFontEntity);

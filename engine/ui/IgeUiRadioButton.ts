@@ -1,4 +1,5 @@
 import { IgeUiButton } from "@/engine/ui/IgeUiButton";
+import { registerClass } from "@/engine/igeClassStore";
 
 export class IgeUiRadioButton extends IgeUiButton {
 	classId = "IgeUiRadioButton";
@@ -71,3 +72,5 @@ export class IgeUiRadioButton extends IgeUiButton {
 		return this;
 	}
 }
+
+registerClass(IgeUiRadioButton);

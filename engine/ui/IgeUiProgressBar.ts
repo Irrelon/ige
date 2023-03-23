@@ -1,4 +1,6 @@
 import { IgeUiElement } from "@/engine/core/IgeUiElement";
+import { registerClass } from "@/engine/igeClassStore";
+import { IgeCanvasRenderingContext2d } from "@/types/IgeCanvasRenderingContext2d";
 
 export class IgeUiProgressBar extends IgeUiElement {
 	classId = "IgeUiProgressBar";
@@ -186,9 +188,11 @@ export class IgeUiProgressBar extends IgeUiElement {
 		}
 	}
 
-	tick (ctx) {
+	tick (ctx: IgeCanvasRenderingContext2d) {
 		this._transformContext(ctx);
 		this.render(ctx);
 		super.tick(ctx, true);
 	}
 }
+
+registerClass(IgeUiProgressBar);

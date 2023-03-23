@@ -3,6 +3,7 @@ import { IgeFontEntity } from "@/engine/core/IgeFontEntity";
 import { IgeFontAlignX, IgeFontAlignY } from "@/enums/IgeFontAlign";
 import type { IgeFontSheet } from "@/engine/core/IgeFontSheet";
 import type { IgeTexture } from "@/engine/core/IgeTexture";
+import { registerClass } from "@/engine/igeClassStore";
 
 /**
  * Provides a UI label entity. Basic on-screen text label.
@@ -281,3 +282,5 @@ export class IgeUiLabel extends IgeUiElement {
 		super._mounted();
 	}
 }
+
+registerClass(IgeUiLabel);

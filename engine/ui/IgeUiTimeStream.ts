@@ -1,4 +1,6 @@
 import { IgeUiElement } from "@/engine/core/IgeUiElement";
+import { registerClass } from "@/engine/igeClassStore";
+import { ige } from "@/engine/instance";
 
 export class IgeUiTimeStream extends IgeUiElement {
 	classId = "IgeUiTimeStream";
@@ -69,3 +71,5 @@ export class IgeUiTimeStream extends IgeUiElement {
 		}
 	}
 }
+
+registerClass(IgeUiTimeStream);

@@ -1,5 +1,6 @@
 import { IgeUiElement } from "../../engine/core/IgeUiElement.js";
 import { IgeUiMenu } from "../../engine/ui/IgeUiMenu.js";
+import { registerClass } from "../../engine/igeClassStore.js";
 export class IgeUiMenuItem extends IgeUiElement {
     constructor() {
         super(...arguments);
@@ -78,3 +79,4 @@ export class IgeUiMenuItem extends IgeUiElement {
         }
     }
 }
+registerClass(IgeUiMenuItem);

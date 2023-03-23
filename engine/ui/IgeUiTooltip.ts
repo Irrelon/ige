@@ -1,5 +1,6 @@
 import { IgeUiElement } from "@/engine/core/IgeUiElement";
 import { IgeFontEntity } from "@/engine/core/IgeFontEntity";
+import { registerClass } from "@/engine/igeClassStore";
 
 /**
  * Provides a UI tooltip. Change properties (textBox, fonts, backgroundcolor)
@@ -204,3 +205,5 @@ export class IgeUiTooltip extends IgeUiElement {
 		this._tooltip.hide();
 	}
 }
+
+registerClass(IgeUiTooltip);

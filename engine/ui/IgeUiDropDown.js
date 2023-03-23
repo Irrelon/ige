@@ -1,6 +1,7 @@
 import { ige } from "../../engine/instance.js";
 import { IgeUiElement } from "../../engine/core/IgeUiElement.js";
 import { IgeUiLabel } from "../../engine/ui/IgeUiLabel.js";
+import { registerClass } from "../../engine/igeClassStore.js";
 export class IgeUiDropDown extends IgeUiElement {
     constructor() {
         super();
@@ -156,3 +157,4 @@ export class IgeUiDropDown extends IgeUiElement {
         this._renderBorder(ctx);
     }
 }
+registerClass(IgeUiDropDown);

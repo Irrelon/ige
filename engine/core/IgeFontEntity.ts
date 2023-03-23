@@ -4,6 +4,7 @@ import { IgeFontSmartTexture } from "../textures/IgeFontSmartTexture";
 import { IgeFontAlignX, IgeFontAlignY } from "@/enums/IgeFontAlign";
 import { IgeTextureRenderMode } from "@/enums/IgeTextureRenderMode";
 import { IgeCanvasRenderingContext2d } from "@/types/IgeCanvasRenderingContext2d";
+import { registerClass } from "@/engine/igeClassStore";
 
 /**
  * Creates a new font entity. A font entity will use a font sheet
@@ -458,3 +459,5 @@ export class IgeFontEntity extends IgeUiEntity {
 		return str;
 	}
 }
+
+registerClass(IgeFontEntity);

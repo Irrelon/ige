@@ -7,6 +7,7 @@ import { IgeParticle } from "./IgeParticle";
 import { IgeObject } from "./IgeObject";
 import { degreesToRadians } from "../utils";
 import { IgeVelocityComponent } from "../components/IgeVelocityComponent";
+import { registerClass } from "@/engine/igeClassStore";
 
 export interface IgeParticleVectorBaseMinMax {
 	base: IgePoint3d;
@@ -774,3 +775,4 @@ export class IgeParticleEmitter extends IgeUiEntity {
 	// }
 }
 
+registerClass(IgeParticleEmitter);

@@ -1,6 +1,7 @@
 import {ige} from "../instance";
 import { IgeEntity } from "./IgeEntity";
 import { IgeCanvasRenderingContext2d } from "@/types/IgeCanvasRenderingContext2d";
+import { registerClass } from "@/engine/igeClassStore";
 
 /**
  * Creates a new 2d scene.
@@ -201,3 +202,5 @@ export class IgeScene2d extends IgeEntity {
 		return str;
 	}
 }
+
+registerClass(IgeScene2d);

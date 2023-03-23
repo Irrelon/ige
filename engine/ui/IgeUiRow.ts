@@ -1,4 +1,5 @@
 import { IgeUiElement } from "@/engine/core/IgeUiElement";
+import { registerClass } from "@/engine/igeClassStore";
 
 export class IgeUiRow extends IgeUiElement {
 	classId = "IgeUiRow";
@@ -55,3 +56,5 @@ export class IgeUiRow extends IgeUiElement {
 		super.tick(ctx);
 	}
 }
+
+registerClass(IgeUiRow);

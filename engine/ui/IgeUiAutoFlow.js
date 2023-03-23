@@ -1,4 +1,5 @@
 import { IgeUiElement } from "../../engine/core/IgeUiElement.js";
+import { registerClass } from "../../engine/igeClassStore.js";
 export class IgeUiAutoFlow extends IgeUiElement {
     constructor() {
         super(...arguments);
@@ -20,3 +21,4 @@ export class IgeUiAutoFlow extends IgeUiElement {
         super.tick(ctx);
     }
 }
+registerClass(IgeUiAutoFlow);

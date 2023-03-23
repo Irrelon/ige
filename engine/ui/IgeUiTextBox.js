@@ -1,6 +1,7 @@
 import { ige } from "../../engine/instance.js";
 import { IgeUiElement } from "../../engine/core/IgeUiElement.js";
 import { IgeFontEntity } from "../../engine/core/IgeFontEntity.js";
+import { registerClass } from "../../engine/igeClassStore.js";
 /**
  * Provides a UI text entry box. When provided with focus this UI entity will
  * capture keyboard input and display it, similar in usage to the HTML input
@@ -243,3 +244,4 @@ export class IgeUiTextBox extends IgeUiElement {
         return super.destroy();
     }
 }
+registerClass(IgeUiTextBox);

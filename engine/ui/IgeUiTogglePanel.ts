@@ -1,5 +1,6 @@
 import { IgeUiElement } from "@/engine/core/IgeUiElement";
 import { IgeFontEntity } from "@/engine/core/IgeFontEntity";
+import { registerClass } from "@/engine/igeClassStore";
 
 export class IgeUiTogglePanel extends IgeUiElement {
 	classId = "IgeUiTogglePanel";
@@ -69,3 +70,5 @@ export class IgeUiTogglePanel extends IgeUiElement {
 		return this;
 	}
 }
+
+registerClass(IgeUiTogglePanel);

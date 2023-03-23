@@ -1,4 +1,5 @@
 import { IgeUiElement } from "../../engine/core/IgeUiElement.js";
+import { registerClass } from "../../engine/igeClassStore.js";
 export class IgeUiButton extends IgeUiElement {
     constructor() {
         super();
@@ -75,3 +76,4 @@ export class IgeUiButton extends IgeUiElement {
         }
     }
 }
+registerClass(IgeUiButton);

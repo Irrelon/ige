@@ -1,5 +1,6 @@
 import { ige } from "../instance.js";
 import { IgeEntity } from "./IgeEntity.js";
+import { registerClass } from "../../engine/igeClassStore.js";
 /**
  * Creates a new 2d scene.
  */
@@ -163,3 +164,4 @@ export class IgeScene2d extends IgeEntity {
         return str;
     }
 }
+registerClass(IgeScene2d);

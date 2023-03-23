@@ -5,6 +5,7 @@ import { IgeUiButton } from "@/engine/ui/IgeUiButton";
 import { IgePoint3d } from "@/engine/core/IgePoint3d";
 import type { IgeUiManagerController } from "../core/IgeUiManagerController";
 import { IgeEventListenerObject, IgeMultiEventListenerObject } from "@/engine/mixins/IgeEventingMixin";
+import { registerClass } from "@/engine/igeClassStore";
 
 export class IgeUiWindow extends IgeUiElement {
 	classId = "IgeUiWindow";
@@ -175,3 +176,5 @@ export class IgeUiWindow extends IgeUiElement {
 		return this._label.style("font");
 	}
 }
+
+registerClass(IgeUiWindow);

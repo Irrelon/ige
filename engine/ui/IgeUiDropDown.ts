@@ -3,6 +3,7 @@ import { IgeUiElement } from "@/engine/core/IgeUiElement";
 import type { IgeCanvasRenderingContext2d } from "@/types/IgeCanvasRenderingContext2d";
 import type { IgeUiManagerController } from "@/engine/core/IgeUiManagerController";
 import { IgeUiLabel } from "@/engine/ui/IgeUiLabel";
+import { registerClass } from "@/engine/igeClassStore";
 
 export interface IgeUiDropDownOption {
 	text: string;
@@ -198,3 +199,5 @@ export class IgeUiDropDown extends IgeUiElement {
 		this._renderBorder(ctx);
 	}
 }
+
+registerClass(IgeUiDropDown);

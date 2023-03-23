@@ -2,6 +2,7 @@ import { ige } from "../instance.js";
 import { IgeUiElement } from "../core/IgeUiElement.js";
 import { IgeUiLabel } from "../../engine/ui/IgeUiLabel.js";
 import { IgeUiButton } from "../../engine/ui/IgeUiButton.js";
+import { registerClass } from "../../engine/igeClassStore.js";
 export class IgeUiWindow extends IgeUiElement {
     constructor() {
         super();
@@ -135,3 +136,4 @@ export class IgeUiWindow extends IgeUiElement {
         return this._label.style("font");
     }
 }
+registerClass(IgeUiWindow);

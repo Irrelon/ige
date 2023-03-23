@@ -11,6 +11,7 @@ import { IgeObject } from "./IgeObject";
 import { IgeCanvasRenderingContext2d } from "@/types/IgeCanvasRenderingContext2d";
 import { IgeMountMode } from "@/enums/IgeMountMode";
 import { IgeUiEntity } from "./IgeUiEntity";
+import { registerClass } from "@/engine/igeClassStore";
 
 export interface IgeViewportOptions {
 	width: number;
@@ -647,3 +648,5 @@ export class IgeViewport extends IgeUiEntity implements IgeCanRegisterById {
 		return str;
 	}
 }
+
+registerClass(IgeViewport);

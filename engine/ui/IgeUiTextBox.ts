@@ -4,6 +4,7 @@ import { IgeFontEntity } from "@/engine/core/IgeFontEntity";
 import type { IgeFontSheet } from "@/engine/core/IgeFontSheet";
 import type { IgeInputComponent } from "@/engine/components/IgeInputComponent";
 import type { IgeTexture } from "@/engine/core/IgeTexture";
+import { registerClass } from "@/engine/igeClassStore";
 
 /**
  * Provides a UI text entry box. When provided with focus this UI entity will
@@ -339,3 +340,5 @@ export class IgeUiTextBox extends IgeUiElement {
 		return super.destroy();
 	}
 }
+
+registerClass(IgeUiTextBox);

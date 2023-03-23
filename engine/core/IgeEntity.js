@@ -13,6 +13,7 @@ import { IgeStreamMode } from "../../enums/IgeStreamMode.js";
 import { IgeIsometricDepthSortMode } from "../../enums/IgeIsometricDepthSortMode.js";
 import { IgeEntityRenderMode } from "../../enums/IgeEntityRenderMode.js";
 import { IgeBehaviourType } from "../../enums/IgeBehaviourType.js";
+import { registerClass } from "../../engine/igeClassStore.js";
 /**
  * Creates an entity and handles the entity's life cycle and
  * all related entity actions / methods.
@@ -2429,3 +2430,4 @@ export class IgeEntity extends IgeObject {
         }
     }
 }
+registerClass(IgeEntity);

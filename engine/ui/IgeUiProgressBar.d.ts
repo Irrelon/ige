@@ -1,4 +1,5 @@
 import { IgeUiElement } from "@/engine/core/IgeUiElement";
+import { IgeCanvasRenderingContext2d } from "@/types/IgeCanvasRenderingContext2d";
 export declare class IgeUiProgressBar extends IgeUiElement {
     classId: string;
     constructor();
@@ -11,5 +12,5 @@ export declare class IgeUiProgressBar extends IgeUiElement {
     progress(val: any): any;
     bindData(obj: any, propName: any): this;
     render(ctx: any): void;
-    tick(ctx: any): void;
+    tick(ctx: IgeCanvasRenderingContext2d): void;
 }
