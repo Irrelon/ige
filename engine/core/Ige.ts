@@ -27,7 +27,7 @@ import type { IgeNetIoServerController } from "@/engine/network/server/IgeNetIoS
 const version = "3.0.0";
 
 export class Ige implements IgeIsReadyPromise {
-	game: Record<string, any> = {};
+	app: any = null;
 	audio?: IgeAudioController;
 	router: IgeRouter = new IgeRouter();
 	engine: IgeEngine = new IgeEngine();

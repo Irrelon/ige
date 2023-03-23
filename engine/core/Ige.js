@@ -17,7 +17,7 @@ import { IgeBox2dController } from "../../engine/components/physics/box2d/IgeBox
 const version = "3.0.0";
 export class Ige {
     constructor() {
-        this.game = {};
+        this.app = null;
         this.router = new IgeRouter();
         this.engine = new IgeEngine();
         this.box2d = new IgeBox2dController();

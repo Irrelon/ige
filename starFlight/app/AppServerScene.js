@@ -8,10 +8,6 @@ export class AppServerScene extends IgeSceneGraph {
         this.classId = 'AppServerScene';
     }
     addGraph() {
-        // Set up the game storage for the server-side
-        // This is the players object that stores player state per network
-        // connection client id
-        ige.game.players = {};
         // Create the root scene on which all other objects
         // will branch from in the scenegraph
         const mainScene = new IgeScene2d()
@@ -28,8 +24,6 @@ export class AppServerScene extends IgeSceneGraph {
     }
     removeGraph() {
         const mainScene = ige.$('mainScene');
-        if (mainScene) {
-            mainScene.destroy();
-        }
+        mainScene === null || mainScene === void 0 ? void 0 : mainScene.destroy();
     }
 }

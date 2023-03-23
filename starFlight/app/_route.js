@@ -21,15 +21,15 @@ ige.router.route("app", {
         // @ts-ignore
         window.ige = ige;
         yield ige.isReady();
-        // Create the HTML canvas
-        ige.engine.createFrontBuffer(true);
-        // Start the engine
-        yield ige.engine.start();
         const textures = [
             new IgeTexture("timerCircle", timerCircle),
             new IgeTexture("infoWindow", infoWindow),
             new IgeTexture("tab", tab)
         ];
+        // Create the HTML canvas
+        ige.engine.createFrontBuffer(true);
+        // Start the engine
+        yield ige.engine.start();
         // Load our level onto the scenegraph
         yield ige.engine.addGraph(AppClientScene);
         return () => __awaiter(void 0, void 0, void 0, function* () {
@@ -39,13 +39,7 @@ ige.router.route("app", {
         });
     }),
     server: () => __awaiter(void 0, void 0, void 0, function* () {
-        // Set up the game storage for the server-side
-        // This is the players object that stores player state per network
-        // connection client id
-        ige.game.players = {};
         yield ige.isReady();
-        // Create the HTML canvas
-        ige.engine.createFrontBuffer(true);
         // Start the engine
         yield ige.engine.start();
         // Load our level onto the scenegraph

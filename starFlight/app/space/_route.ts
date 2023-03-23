@@ -1,6 +1,5 @@
 import { ige } from "@/engine/instance";
 import { SpaceServerScene } from "./SpaceServerScene";
-import { SpaceServer } from "./SpaceServer";
 import { IgeTexture } from "@/engine/core/IgeTexture";
 import { igeButton } from "../../assets/ui/igeButton";
 import { starFieldSmartTexture } from "../../assets/backgrounds/starFieldSmartTexture";
@@ -9,7 +8,6 @@ import { IgeCellSheet } from "@/engine/core/IgeCellSheet";
 import { radarSmartTexture } from "../../assets/ui/radarSmartTexture";
 import { targetSmartTexture } from "../../assets/ui/targetSmartTexture";
 import { laserSmartTexture } from "../../assets/sprites/laser1";
-import { SpaceClient } from "./SpaceClient";
 import { SpaceClientScene } from "./SpaceClientScene";
 
 // require('../component/SpaceStation');
@@ -61,8 +59,6 @@ ige.router.route('app/space', {
 		];
 
 		await ige.textures.whenLoaded();
-
-		ige.game.client = new SpaceClient();
 		await ige.engine.addGraph(SpaceClientScene);
 
 		return async () => {
@@ -72,7 +68,6 @@ ige.router.route('app/space', {
 	},
 	server: async () => {
 		ige.box2d.createWorld();
-		ige.game.server = new SpaceServer();
 		await ige.engine.addGraph(SpaceServerScene);
 
 		return async () => {

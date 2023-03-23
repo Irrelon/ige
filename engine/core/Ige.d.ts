@@ -21,7 +21,7 @@ import type { IgeViewport } from "./IgeViewport";
 import type { IgeNetIoClientController } from "@/engine/network/client/IgeNetIoClientController";
 import type { IgeNetIoServerController } from "@/engine/network/server/IgeNetIoServerController";
 export declare class Ige implements IgeIsReadyPromise {
-    game: Record<string, any>;
+    app: any;
     audio?: IgeAudioController;
     router: IgeRouter;
     engine: IgeEngine;

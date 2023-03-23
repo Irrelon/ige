@@ -79,7 +79,7 @@ export class IgeBaseClass {
 		const stackArr = stack.split("\n");
 		stackArr.shift();
 
-		console.log(indent + `(${this.classId}) ${message}`, ...args, stackArr);
+		console.log(indent + `(${this.classId}) ${message}`, ...args);
 		return this;
 	}
 

@@ -9,7 +9,6 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 import { ige } from "../../../engine/instance.js";
 import { SpaceServerScene } from "./SpaceServerScene.js";
-import { SpaceServer } from "./SpaceServer.js";
 import { IgeTexture } from "../../../engine/core/IgeTexture.js";
 import { igeButton } from "../../assets/ui/igeButton.js";
 import { starFieldSmartTexture } from "../../assets/backgrounds/starFieldSmartTexture.js";
@@ -18,7 +17,6 @@ import { IgeCellSheet } from "../../../engine/core/IgeCellSheet.js";
 import { radarSmartTexture } from "../../assets/ui/radarSmartTexture.js";
 import { targetSmartTexture } from "../../assets/ui/targetSmartTexture.js";
 import { laserSmartTexture } from "../../assets/sprites/laser1.js";
-import { SpaceClient } from "./SpaceClient.js";
 import { SpaceClientScene } from "./SpaceClientScene.js";
 // require('../component/SpaceStation');
 //
@@ -66,7 +64,6 @@ ige.router.route('app/space', {
             new IgeTexture("abilityButton", 'assets/ui/abilityButton.png')
         ];
         yield ige.textures.whenLoaded();
-        ige.game.client = new SpaceClient();
         yield ige.engine.addGraph(SpaceClientScene);
         return () => __awaiter(void 0, void 0, void 0, function* () {
             yield ige.engine.removeGraph(SpaceClientScene);
@@ -75,7 +72,6 @@ ige.router.route('app/space', {
     }),
     server: () => __awaiter(void 0, void 0, void 0, function* () {
         ige.box2d.createWorld();
-        ige.game.server = new SpaceServer();
         yield ige.engine.addGraph(SpaceServerScene);
         return () => __awaiter(void 0, void 0, void 0, function* () {
             yield ige.engine.removeGraph(SpaceServerScene);

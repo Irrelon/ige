@@ -982,17 +982,13 @@ export class IgeEngine extends IgeEntity {
 					this._graphInstances[classInstance.constructor.name] = classInstance;
 				} else {
 					this.log(
-						"Could not load graph for class name \"" +
-						className +
-						"\" because the class does not implement both the require methods \"addGraph()\" and \"removeGraph()\".",
+						`Could not load graph for class name "${className}" because the class does not implement both the require methods "addGraph()" and "removeGraph()".`,
 						"error"
 					);
 				}
 			} else {
 				this.log(
-					"Cannot load graph for class name \"" +
-					className +
-					"\" because the class could not be found. Have you included it in your server/clientConfig.js file?",
+					`Cannot load graph for class name "${className}" because the class could not be found. Did you call registerClass(ClassName)?`,
 					"error"
 				);
 			}
