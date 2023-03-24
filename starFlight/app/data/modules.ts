@@ -95,7 +95,6 @@ export const modules: Record<string, EntityModuleDefinition | EntityAbilityModul
 		"classId": "Module_Ability",
 		"name": "Directed Laser Cannon 1",
 		"abilityTitle": "LASER\nCANNON",
-		"canBeActive": "./code/abilityCanBeActive",
 		"usageCost": {
 			"energy": -10
 		},
@@ -123,6 +122,7 @@ export const modules: Record<string, EntityModuleDefinition | EntityAbilityModul
 		"effects": {
 			"onActive": [
 				{
+					"action": "create",
 					"classId": "LaserEffect",
 					"mount": "frontScene",
 					"data": {}

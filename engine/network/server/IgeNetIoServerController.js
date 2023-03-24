@@ -3,6 +3,7 @@ import { arrPull, newIdHex } from "../../utils.js";
 import { IgeNetIoBaseController } from "../IgeNetIoBaseController.js";
 import { IgeNetIoServer } from "./IgeNetIoServer.js";
 import { IGE_NETWORK_REQUEST, IGE_NETWORK_RESPONSE, IGE_NETWORK_STREAM_CREATE, IGE_NETWORK_STREAM_DATA, IGE_NETWORK_STREAM_DESTROY, IGE_NETWORK_STREAM_TIME, IGE_NETWORK_TIME_SYNC } from "../../../enums/IgeNetworkConstants.js";
+import { IgeEventReturnFlag } from "../../../enums/IgeEventReturnFlag.js";
 export class IgeNetIoServerController extends IgeNetIoBaseController {
     constructor() {
         super();
@@ -96,7 +97,7 @@ export class IgeNetIoServerController extends IgeNetIoBaseController {
                 return;
             }
             // Check if any listener cancels this
-            if (this.emit("connect", socket)) {
+            if (this.emit("connect", socket) === IgeEventReturnFlag.cancel) {
                 // Reject the connection
                 socket.close();
                 return;

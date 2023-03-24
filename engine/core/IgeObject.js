@@ -524,12 +524,12 @@ export class IgeObject extends IgeEventingClass {
      */
     unMount() {
         if (!this._parent) {
-            return false;
+            return this;
         }
         const childArr = this._parent._children, index = childArr.indexOf(this), oldParent = this._parent;
         if (index <= -1) {
             // Cannot find this in the parent._children array
-            return false;
+            return this;
         }
         // Found this in the parent._children array so remove it
         childArr.splice(index, 1);
@@ -934,17 +934,6 @@ export class IgeObject extends IgeEventingClass {
     registerNetworkClass() {
         ige.classStore[this.constructor.name] = this.constructor;
     }
-    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    // STREAM
-    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    /**
-     * Gets / sets the `disable interpolation` flag. If set to true then
-     * stream data being received by the client will not be interpolated
-     * and will be instantly assigned instead. Useful if your entity's
-     * transformations should not be interpolated over time.
-     * @param val
-     * @returns {*}
-     */
     disableInterpolation(val) {
         if (val !== undefined) {
             this._disableInterpolation = val;
@@ -1043,23 +1032,6 @@ export class IgeObject extends IgeEventingClass {
         }
         return this._streamControl;
     }
-    /**
-     * Gets / sets the stream sync interval. This value
-     * is in milliseconds and cannot be lower than 16. It will
-     * determine how often data from this entity is added to the
-     * stream queue.
-     * @param {Number=} val Number of milliseconds between adding
-     * stream data for this entity to the stream queue.
-     * @param {String=} sectionId Optional id of the stream data
-     * section you want to set the interval for. If omitted the
-     * interval will be applied to all sections.
-     * @example #Set the entity's stream update (sync) interval to 1 second because this entity's data is not highly important to the simulation so save some bandwidth!
-     *     entity.streamSyncInterval(1000);
-     * @example #Set the entity's stream update (sync) interval to 16 milliseconds because this entity's data is very important to the simulation so send as often as possible!
-     *     entity.streamSyncInterval(16);
-     * @return {*} "this" when arguments are passed to allow method
-     * chaining or the current value if no arguments are specified.
-     */
     streamSyncInterval(val, sectionId) {
         if (val === undefined) {
             return this._streamSyncInterval;
@@ -1085,21 +1057,6 @@ export class IgeObject extends IgeEventingClass {
         }
         return this;
     }
-    /**
-     * Gets / sets the precision by which floating-point values will
-     * be encoded and sent when packaged into stream data.
-     * @param {Number=} val The number of decimal places to preserve.
-     * @example #Set the float precision to 2
-     *     // This will mean that any data using floating-point values
-     *     // that gets sent across the network stream will be rounded
-     *     // to 2 decimal places. This helps save bandwidth by not
-     *     // having to send the entire number since precision above
-     *     // 2 decimal places is usually not that important to the
-     *     // simulation.
-     *     entity.streamFloatPrecision(2);
-     * @return {*} "this" when arguments are passed to allow method
-     * chaining or the current value if no arguments are specified.
-     */
     streamFloatPrecision(val) {
         if (val === undefined) {
             return this._streamFloatPrecision;
@@ -1273,13 +1230,6 @@ export class IgeObject extends IgeEventingClass {
         }
         return;
     }
-    /**
-     * Gets / sets the stream emit created flag. If set to true this entity
-     * emit a "streamCreated" event when it is created by the stream, but
-     * after the id and initial transform are set.
-     * @param val
-     * @returns {*}
-     */
     streamEmitCreated(val) {
         if (val !== undefined) {
             this._streamEmitCreated = val;

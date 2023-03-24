@@ -9,7 +9,7 @@ export declare class IgePoly2d {
     _poly: IgePoint2d[];
     _scale: IgePoint2d;
     constructor();
-    scale(x?: number, y?: number): IgePoint2d | this;
+    scale(x?: number, y?: number): this | IgePoint2d;
     /**
      * Multiplies the points of the polygon by the supplied factor.
      * @param {Number} factor The multiplication factor.

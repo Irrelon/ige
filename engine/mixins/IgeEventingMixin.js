@@ -58,9 +58,6 @@ export const WithEventingMixin = (Base) => class extends Base {
             }
             return newListener;
         }
-        if (!eventName.length) {
-            return;
-        }
         // The eventName is an array of names, creating a group of events
         // that must be fired to fire this event callback
         const multiEventListener = {
@@ -143,7 +140,7 @@ export const WithEventingMixin = (Base) => class extends Base {
                 // loop!
                 this._eventRemovalQueue = this._eventRemovalQueue || [];
                 this._eventRemovalQueue.push([eventName, evtListener, callback]);
-                return -1;
+                return false;
             }
         }
         if (callback) {

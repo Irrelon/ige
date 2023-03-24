@@ -3,15 +3,14 @@ import { arrPull, newIdHex } from "../../utils";
 import { IgeNetIoBaseController } from "../IgeNetIoBaseController";
 import {
 	IgeNetworkMessageData,
-	IgeNetworkServerSideMessageHandler,
 	IgeNetworkMessageStructure,
 	IgeNetworkRequestMessageStructure,
-	IgeNetworkTimeSyncRequestFromServer,
-	IgeNetworkServerSideResponseData, IgeNetworkServerSideRequestHandler
+	IgeNetworkServerSideMessageHandler,
+	IgeNetworkServerSideRequestHandler,
+	IgeNetworkServerSideResponseData,
+	IgeNetworkTimeSyncRequestFromServer
 } from "@/types/IgeNetworkMessage";
-import {
-	IgeNetIoServer
-} from "./IgeNetIoServer";
+import { IgeNetIoServer } from "./IgeNetIoServer";
 import {
 	IGE_NETWORK_REQUEST,
 	IGE_NETWORK_RESPONSE,
@@ -22,6 +21,7 @@ import {
 	IGE_NETWORK_TIME_SYNC
 } from "@/enums/IgeNetworkConstants";
 import { IgeNetIoSocket } from "./IgeNetIoSocket";
+import { IgeEventReturnFlag } from "@/enums/IgeEventReturnFlag";
 
 export class IgeNetIoServerController extends IgeNetIoBaseController {
 	_idCounter: number = 0;
@@ -438,7 +438,7 @@ export class IgeNetIoServerController extends IgeNetIoBaseController {
 		}
 
 		// Check if any listener cancels this
-		if (this.emit("connect", socket)) {
+		if (this.emit("connect", socket) === IgeEventReturnFlag.cancel) {
 			// Reject the connection
 			socket.close();
 			return;

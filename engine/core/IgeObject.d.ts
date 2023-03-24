@@ -385,7 +385,7 @@ export declare class IgeObject extends IgeEventingClass implements IgeCanRegiste
      *     entity2.unMount();
      * @return {*} Returns this on success or false on failure.
      */
-    unMount(): false | this;
+    unMount(): this;
     /**
      * Determines if the object has a parent up the scenegraph whose
      * id matches the one passed. Will traverse each parent object
@@ -746,7 +746,8 @@ export declare class IgeObject extends IgeEventingClass implements IgeCanRegiste
      * @param val
      * @returns {*}
      */
-    disableInterpolation(val?: boolean): boolean | this;
+    disableInterpolation(val: boolean): this;
+    disableInterpolation(): boolean;
     /**
      * Gets / sets the composite stream flag. If set to true, any objects
      * mounted to this one will have their streamMode() set to the same
@@ -859,7 +860,8 @@ export declare class IgeObject extends IgeEventingClass implements IgeCanRegiste
      * @return {*} "this" when arguments are passed to allow method
      * chaining or the current value if no arguments are specified.
      */
-    streamSyncInterval(val?: number, sectionId?: string): number | this | undefined;
+    streamSyncInterval(val: number, sectionId: string): this;
+    streamSyncInterval(): number;
     /**
      * Gets / sets the precision by which floating-point values will
      * be encoded and sent when packaged into stream data.
@@ -875,7 +877,8 @@ export declare class IgeObject extends IgeEventingClass implements IgeCanRegiste
      * @return {*} "this" when arguments are passed to allow method
      * chaining or the current value if no arguments are specified.
      */
-    streamFloatPrecision(val?: number): number | this;
+    streamFloatPrecision(val: number): this;
+    streamFloatPrecision(): number;
     /**
      * Queues stream data for this entity to be sent to the
      * specified client id or array of client ids.
@@ -977,7 +980,8 @@ export declare class IgeObject extends IgeEventingClass implements IgeCanRegiste
      * @param val
      * @returns {*}
      */
-    streamEmitCreated(val?: boolean): boolean | this | undefined;
+    streamEmitCreated(val: boolean): this;
+    streamEmitCreated(): boolean;
     /**
      * Asks the stream system to queue the stream data to the specified
      * client id or array of ids.

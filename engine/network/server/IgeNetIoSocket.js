@@ -7,18 +7,18 @@ export class IgeNetIoSocket extends IgeEventingClass {
         this._encode = options.encode;
         this._decode = options.decode;
         this._socket = connection;
-        this._socket.on('message', (message) => {
-            if (message.type === 'utf8') {
-                this.emit('message', [this._decode(message.utf8Data)]);
+        this._socket.on("message", (message) => {
+            if (message.type === "utf8") {
+                this.emit("message", [this._decode(message.utf8Data)]);
                 //socket.sendUTF(message.utf8Data);
             }
-            else if (message.type === 'binary') {
-                console.log('Binary data received, no support yet!');
+            else if (message.type === "binary") {
+                console.log("Binary data received, no support yet!");
                 //socket.sendBytes(message.binaryData);
             }
         });
-        this._socket.on('close', (reasonCode, description) => {
-            this.emit('disconnect', {
+        this._socket.on("close", (reasonCode, description) => {
+            this.emit("disconnect", {
                 socket: this._socket,
                 reason: description,
                 code: reasonCode
@@ -46,7 +46,7 @@ export class IgeNetIoSocket extends IgeEventingClass {
      */
     close(reason) {
         this.send({
-            _netioCmd: 'close',
+            _netioCmd: "close",
             data: reason
         });
         this._socket.close();

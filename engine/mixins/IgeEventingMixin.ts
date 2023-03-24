@@ -49,7 +49,7 @@ export const WithEventingMixin = <BaseClassType extends Mixin<IgeBaseClass>>(Bas
 	 *     // The console output is:
 	 *     //    data1, data2
 	 */
-	on (eventName: string | string[], callback: (...args: any) => void, context?: any, oneShot = false, sendEventName = false) {
+	on (eventName: string | string[], callback: (...args: any) => void, context?: any, oneShot = false, sendEventName = false): IgeEventListenerObject | IgeMultiEventListenerObject {
 		// Check that we have an event listener object
 		this._eventListeners = this._eventListeners || {};
 
@@ -82,10 +82,6 @@ export const WithEventingMixin = <BaseClassType extends Mixin<IgeBaseClass>>(Bas
 			}
 
 			return newListener;
-		}
-
-		if (!eventName.length) {
-			return;
 		}
 
 		// The eventName is an array of names, creating a group of events
@@ -145,7 +141,7 @@ export const WithEventingMixin = <BaseClassType extends Mixin<IgeBaseClass>>(Bas
 	 *     myEntity.off('pointerDown', evt);
 	 * @return {Boolean}
 	 */
-	off (eventName: string, evtListener: IgeEventListenerObject | IgeMultiEventListenerObject | undefined, callback?: IgeEventRemovalResultCallback) {
+	off (eventName: string, evtListener: IgeEventListenerObject | IgeMultiEventListenerObject | undefined, callback?: IgeEventRemovalResultCallback): boolean {
 		if (!evtListener) return false;
 
 		if (this._eventListeners) {
@@ -173,7 +169,7 @@ export const WithEventingMixin = <BaseClassType extends Mixin<IgeBaseClass>>(Bas
 				this._eventRemovalQueue = this._eventRemovalQueue || [];
 				this._eventRemovalQueue.push([eventName, evtListener, callback]);
 
-				return -1;
+				return false;
 			}
 		}
 

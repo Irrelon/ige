@@ -228,18 +228,15 @@ export class SpaceClientScene extends IgeSceneGraph {
         // stream so lets ask the stream to tell us when it creates a
         // new entity and then check if that entity is the one we
         // should be tracking!
-        const eventListener = network.on('entityCreated', (entity) => {
+        const listener = (entity) => {
             if (entity.id() === entityId) {
                 this._trackPlayerEntity(ige.$(entityId));
                 // Turn off the listener for this event now that we
                 // have found and started tracking our player entity
-                network.off('entityCreated', eventListener, (result) => {
-                    if (!result) {
-                        this.log('Could not disable event listener!', 'warning');
-                    }
-                });
+                network.off('entityCreated', listener);
             }
-        });
+        };
+        network.on('entityCreated', listener);
     }
     /**
      * Sets up camera tracking for our player entity.

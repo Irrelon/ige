@@ -1,5 +1,5 @@
 import { IgeNetIoBaseController } from "../IgeNetIoBaseController";
-import { IgeNetworkMessageData, IgeNetworkServerSideMessageHandler, IgeNetworkMessageStructure, IgeNetworkRequestMessageStructure, IgeNetworkServerSideResponseData, IgeNetworkServerSideRequestHandler } from "@/types/IgeNetworkMessage";
+import { IgeNetworkMessageData, IgeNetworkMessageStructure, IgeNetworkRequestMessageStructure, IgeNetworkServerSideMessageHandler, IgeNetworkServerSideRequestHandler, IgeNetworkServerSideResponseData } from "@/types/IgeNetworkMessage";
 import { IgeNetIoServer } from "./IgeNetIoServer";
 import { IgeNetIoSocket } from "./IgeNetIoSocket";
 export declare class IgeNetIoServerController extends IgeNetIoBaseController {

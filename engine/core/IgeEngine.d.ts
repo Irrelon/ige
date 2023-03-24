@@ -98,7 +98,7 @@ export declare class IgeEngine extends IgeEntity {
      * @param {IgeEntity} entity The entity to add.
      * @returns {Ige|[]} Either this, or the spawn queue.
      */
-    spawnQueue(entity: IgeObject): IgeObject[] | this;
+    spawnQueue(entity: IgeObject): this | IgeObject[];
     currentViewport(viewport?: IgeObject): IgeViewport | null;
     /**
      * Sets the canvas element that will be used as the front-buffer.
@@ -106,7 +106,7 @@ export declare class IgeEngine extends IgeEntity {
      * @param autoSize If set to true, the engine will automatically size
      * the canvas to the width and height of the window upon window resize.
      */
-    canvas(elem?: HTMLCanvasElement, autoSize?: boolean): HTMLCanvasElement | this | undefined;
+    canvas(elem?: HTMLCanvasElement, autoSize?: boolean): this | HTMLCanvasElement | undefined;
     /**
      * Clears the entire canvas.
      */

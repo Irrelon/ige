@@ -69,7 +69,7 @@ export class IgeUiWindow extends IgeUiElement {
 			.value("X")
 			.color("#000000")
 			.pointerUp(() => {
-				if (!this.emit("beforeClose")) {
+				if (this.emit("beforeClose") !== IgeEventReturnFlag.cancel) {
 					this.destroy();
 				}
 

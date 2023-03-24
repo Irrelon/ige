@@ -51,7 +51,7 @@ export declare class IgeCamera extends IgeEntity {
      * it will not use floating point values.
      * @return {*}
      */
-    trackTranslate(entity: IgeEntity, smoothing?: number, rounding?: boolean): IgeEntity | IgeViewport | undefined;
+    trackTranslate<EntityType extends IgeEntity = IgeEntity>(entity: EntityType, smoothing?: number, rounding?: boolean): IgeEntity | IgeViewport | undefined;
     /**
      * Gets / sets the translate tracking smoothing value.
      * @param {Number=} val

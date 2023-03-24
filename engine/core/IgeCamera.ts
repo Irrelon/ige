@@ -106,7 +106,7 @@ export class IgeCamera extends IgeEntity {
 	 * it will not use floating point values.
 	 * @return {*}
 	 */
-	trackTranslate (entity: IgeEntity, smoothing?: number, rounding?: boolean) {
+	trackTranslate <EntityType extends IgeEntity = IgeEntity> (entity: EntityType, smoothing?: number, rounding?: boolean) {
 		if (entity !== undefined) {
 			this.log("Camera on viewport " + this._entity.id() + " is now tracking translation target " + entity.id());
 			if (rounding !== undefined) {

@@ -44,7 +44,7 @@ export declare const WithEventingMixin: <BaseClassType extends Mixin<IgeBaseClas
          *     // The console output is:
          *     //    data1, data2
          */
-        on(eventName: string | string[], callback: (...args: any) => void, context?: any, oneShot?: boolean, sendEventName?: boolean): IgeEventListenerObject | IgeMultiEventListenerObject | undefined;
+        on(eventName: string | string[], callback: (...args: any) => void, context?: any, oneShot?: boolean, sendEventName?: boolean): IgeEventListenerObject | IgeMultiEventListenerObject;
         /**
          * Remove an event listener. If the _processing flag is true
          * then the removal will be placed in the removals array to be
@@ -70,7 +70,7 @@ export declare const WithEventingMixin: <BaseClassType extends Mixin<IgeBaseClas
          *     myEntity.off('pointerDown', evt);
          * @return {Boolean}
          */
-        off(eventName: string, evtListener: IgeEventListenerObject | IgeMultiEventListenerObject | undefined, callback?: IgeEventRemovalResultCallback): boolean | -1;
+        off(eventName: string, evtListener: IgeEventListenerObject | IgeMultiEventListenerObject | undefined, callback?: IgeEventRemovalResultCallback): boolean;
         /**
          * Emit an event by name.
          * @param {Object} eventName The name of the event to emit.

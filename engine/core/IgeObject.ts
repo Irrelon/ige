@@ -856,7 +856,7 @@ export class IgeObject extends IgeEventingClass implements IgeCanRegisterById, I
 	 */
 	unMount () {
 		if (!this._parent) {
-			return false;
+			return this;
 		}
 
 		const childArr = this._parent._children,
@@ -865,7 +865,7 @@ export class IgeObject extends IgeEventingClass implements IgeCanRegisterById, I
 
 		if (index <= -1) {
 			// Cannot find this in the parent._children array
-			return false;
+			return this;
 		}
 
 		// Found this in the parent._children array so remove it
@@ -1585,6 +1585,8 @@ export class IgeObject extends IgeEventingClass implements IgeCanRegisterById, I
 	 * @param val
 	 * @returns {*}
 	 */
+	disableInterpolation (val: boolean): this;
+	disableInterpolation (): boolean;
 	disableInterpolation (val?: boolean) {
 		if (val !== undefined) {
 			this._disableInterpolation = val;
@@ -1785,6 +1787,8 @@ export class IgeObject extends IgeEventingClass implements IgeCanRegisterById, I
 	 * @return {*} "this" when arguments are passed to allow method
 	 * chaining or the current value if no arguments are specified.
 	 */
+	streamSyncInterval (val: number, sectionId: string): this;
+	streamSyncInterval (): number;
 	streamSyncInterval (val?: number, sectionId?: string) {
 		if (val === undefined) {
 			return this._streamSyncInterval;
@@ -1829,6 +1833,8 @@ export class IgeObject extends IgeEventingClass implements IgeCanRegisterById, I
 	 * @return {*} "this" when arguments are passed to allow method
 	 * chaining or the current value if no arguments are specified.
 	 */
+	streamFloatPrecision (val: number): this;
+	streamFloatPrecision (): number;
 	streamFloatPrecision (val?: number) {
 		if (val === undefined) {
 			return this._streamFloatPrecision;
@@ -2027,6 +2033,8 @@ export class IgeObject extends IgeEventingClass implements IgeCanRegisterById, I
 	 * @param val
 	 * @returns {*}
 	 */
+	streamEmitCreated (val: boolean): this;
+	streamEmitCreated (): boolean;
 	streamEmitCreated (val?: boolean) {
 		if (val !== undefined) {
 			this._streamEmitCreated = val;
