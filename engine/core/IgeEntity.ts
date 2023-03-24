@@ -1869,7 +1869,7 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 
 		// Remove the event listeners array in case any
 		// object references still exist there
-		delete this._eventListeners;
+		this._eventListeners = {};
 
 		return this;
 	}
@@ -2295,13 +2295,13 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 			 * @param {Object} The IGE event control object.
 			 * @param {*} Any further event data.
 			 */
-			this.emit("pointerOver", [event, evc, data]);
+			this.emit("pointerOver", event, evc, data);
 		}
 
 		if (this._pointerMove) {
 			this._pointerMove(event, evc, data);
 		}
-		this.emit("pointerMove", [event, evc, data]);
+		this.emit("pointerMove", event, evc, data);
 	};
 
 	/**
@@ -2332,7 +2332,7 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 		 * @param {Object} The IGE event control object.
 		 * @param {*} Any further event data.
 		 */
-		this.emit("pointerOut", [event, evc, data]);
+		this.emit("pointerOut", event, evc, data);
 	};
 
 	/**
@@ -2352,7 +2352,7 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 		 * @param {Object} The IGE event control object.
 		 * @param {*} Any further event data.
 		 */
-		this.emit("pointerWheel", [event, evc, data]);
+		this.emit("pointerWheel", event, evc, data);
 	};
 
 	/**
@@ -2374,7 +2374,7 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 		 * @param {Object} The IGE event control object.
 		 * @param {*} Any further event data.
 		 */
-		this.emit("pointerUp", [event, evc, data]);
+		this.emit("pointerUp", event, evc, data);
 	};
 
 	/**
@@ -2397,7 +2397,7 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 			 * @param {Object} The IGE event control object.
 			 * @param {*} Any further event data.
 			 */
-			this.emit("pointerDown", [event, evc, data]);
+			this.emit("pointerDown", event, evc, data);
 		}
 	};
 

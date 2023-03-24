@@ -19,10 +19,12 @@ export class IgeAsset extends IgeEventingClass implements IgeCanAsyncLoad {
 				return resolve(true);
 			}
 
-			const emitterHandle = this.on("loaded", () => {
+			const listener = () => {
 				resolve(true);
-				this.off("loaded", emitterHandle);
-			});
+				this.off("loaded", listener);
+			};
+
+			this.on("loaded", listener);
 		});
 	}
 

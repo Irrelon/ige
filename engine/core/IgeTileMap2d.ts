@@ -626,4 +626,4 @@ export class IgeTileMap2d extends IgeEntity {
 	}
 }
 
-registerClass((IgeTileMap2d);
+registerClass(IgeTileMap2d);

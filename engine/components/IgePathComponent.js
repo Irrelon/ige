@@ -359,7 +359,7 @@ export class IgePathComponent extends IgeComponent {
                     this._currentPointFrom = 0;
                     this._currentPointTo = 1;
                     startPoint = this._points[0];
-                    this.emit("started", [this._entity, startPoint.x, startPoint.y, this._startTime]);
+                    this.emit("started", this._entity, startPoint.x, startPoint.y, this._startTime);
                 }
             }
             else {
@@ -542,7 +542,7 @@ export class IgePathComponent extends IgeComponent {
                             newPoint = this.transformPoint(newPoint);
                             // We must translate the entity at a minimum once per point to ensure it's coords are correct if a new path starts
                             this._entity.translateToPoint(newPoint);
-                            this.emit("pointComplete", [this._entity, pointArr[p].x, pointArr[p].y, pointNext.x, pointNext.y, p, p + 1, effectiveTime]);
+                            this.emit("pointComplete", this._entity, pointArr[p].x, pointArr[p].y, pointNext.x, pointNext.y, p, p + 1, effectiveTime);
                             if (this._nextPointToProcess <= p) {
                                 // The path has restarted so bomb out and catch up next tick
                                 return;
@@ -557,7 +557,7 @@ export class IgePathComponent extends IgeComponent {
                             // spliced into our points array
                             pointFrom = pointArr[this._currentPointFrom];
                             pointTo = pointArr[this._currentPointTo];
-                            this.emit("pathRecalculated", [this._entity, pointArr[this._previousPointFrom].x, pointArr[this._previousPointFrom].y, pointArr[this._currentPointFrom].x, pointArr[this._currentPointFrom].y]);
+                            this.emit("pathRecalculated", this._entity, pointArr[this._previousPointFrom].x, pointArr[this._previousPointFrom].y, pointArr[this._currentPointFrom].x, pointArr[this._currentPointFrom].y);
                         }
                         if (dynamicResult === -1) {
                             // Failed to find a new dynamic path
@@ -586,7 +586,7 @@ export class IgePathComponent extends IgeComponent {
                         newPoint = this.transformPoint(newPoint);
                         // We must translate the entity at a minimum once per point to ensure it's coords are correct if a new path starts
                         this._entity.translateToPoint(newPoint);
-                        this.emit("pointComplete", [this._entity, pointArr[p].x, pointArr[p].y, pointNext.x, pointNext.y, p, p + 1, effectiveTime]);
+                        this.emit("pointComplete", this._entity, pointArr[p].x, pointArr[p].y, pointNext.x, pointNext.y, p, p + 1, effectiveTime);
                         if (this._nextPointToProcess <= p) {
                             // The path has restarted so bomb out and catch up next tick
                             return;
@@ -596,7 +596,7 @@ export class IgePathComponent extends IgeComponent {
                     this._previousPointTo = pointCount - 1;
                     this._finished = true;
                     effectiveTime = this._startTime + this._totalTime;
-                    this.emit("pathComplete", [this._entity, pointArr[this._previousPointFrom].x, pointArr[this._previousPointFrom].y, effectiveTime]);
+                    this.emit("pathComplete", this._entity, pointArr[this._previousPointFrom].x, pointArr[this._previousPointFrom].y, effectiveTime);
                 }
             }
             else if (this._active && this._totalDistance == 0 && !this._finished) {
@@ -622,7 +622,7 @@ export class IgePathComponent extends IgeComponent {
                 }
                 else {
                     // Cannot generate valid path, delete this path
-                    this.emit("dynamicFail", [this._entity, new IgePoint3d(pointFrom.x, pointFrom.y, pointFrom.z), new IgePoint3d(destinationPoint.x, destinationPoint.y, destinationPoint.z)]);
+                    this.emit("dynamicFail", this._entity, new IgePoint3d(pointFrom.x, pointFrom.y, pointFrom.z), new IgePoint3d(destinationPoint.x, destinationPoint.y, destinationPoint.z));
                     this.clear();
                     return -1;
                 }

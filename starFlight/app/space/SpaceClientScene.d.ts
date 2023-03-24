@@ -9,7 +9,7 @@ export declare class SpaceClientScene extends IgeSceneGraph {
     classId: string;
     publicGameData: ClientPublicGameData;
     constructor();
-    addGraph(): void;
+    addGraph(): Promise<void>;
     removeGraph(): void;
     /**
      * Called when the client receives a message from the server that it has

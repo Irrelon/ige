@@ -43,7 +43,7 @@ export class IgeNetIoServerController extends IgeNetIoBaseController {
             if (commandHandler) {
                 commandHandler(data.data, clientId, responseCallback);
             }
-            this.emit(data.cmd, [data.data, clientId, responseCallback]);
+            this.emit(data.cmd, data.data, clientId, responseCallback);
         };
         this._onResponse = (data, clientId) => {
             if (!clientId)
@@ -430,7 +430,7 @@ export class IgeNetIoServerController extends IgeNetIoBaseController {
         if (commandHandler) {
             commandHandler(data[1], clientId);
         }
-        this.emit(commandName, [data[1], clientId]);
+        this.emit(commandName, data[1], clientId);
     }
     /**
      * Called when a client disconnects from the server.

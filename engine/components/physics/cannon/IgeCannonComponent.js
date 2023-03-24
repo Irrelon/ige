@@ -1,4 +1,5 @@
 import { IgeBehaviourType } from "../../../../enums/IgeBehaviourType.js";
+import { IgeEventingClass } from "../../../../engine/core/IgeEventingClass.js";
 const IgeCannonComponent = IgeEventingClass.extend({
     classId: 'IgeCannonComponent',
     componentId: 'cannon',

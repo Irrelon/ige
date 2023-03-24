@@ -25,9 +25,9 @@ export class IgeNetIoServer extends IgeEventingClass {
         this.classId = "IgeNetIoServer";
         this._sockets = [];
         this._socketsById = {};
-        if (port !== undefined) {
-            this.start(port, callback);
-        }
+        if (port === undefined)
+            return;
+        this.start(port, callback);
     }
     start(port, callback) {
         this._port = port;
@@ -79,7 +79,7 @@ export class IgeNetIoServer extends IgeEventingClass {
                 _netioCmd: "id",
                 data: id
             });
-            this.emit('connection', [socket]);
+            this.emit('connection', socket);
         });
         this._httpServer.on('error', (err) => {
             switch (err.code) {

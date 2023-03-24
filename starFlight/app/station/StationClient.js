@@ -2,19 +2,17 @@ import { ige } from "../../../engine/instance.js";
 const appCore = require('../../../ige');
 appCore.module('StationClient', function ($ige, $game, IgeStreamComponent) {
     const StationClient = function () {
-        const self = this;
         // Show the connecting dialog
         document.getElementById('connectingDialog').style.display = 'block';
+        const network = ige.network;
         // Hook network events we want to respond to
-        ige.network.define('playerEntity', self._onPlayerEntity.bind(self));
+        network.define('playerEntity', this._onPlayerEntity.bind(self));
         // Start the network client
-        ige.network.start('http://localhost:2000', function () {
-            // Setup the network stream handler
-            ige.network.addComponent(IgeStreamComponent)
-                .stream.renderLatency(80); // Render the simulation 80 milliseconds in the past
-            // Ask the server to create an entity for us
-            ige.network.send('playerEntity');
-        });
+        network.start('http://localhost:2000');
+        // Setup the network stream handler
+        network.renderLatency(80); // Render the simulation 80 milliseconds in the past
+        // Ask the server to create an entity for us
+        network.send('playerEntity');
     };
     /**
      * Called when the client receives a message from the server that it has

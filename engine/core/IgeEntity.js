@@ -59,12 +59,12 @@ export class IgeEntity extends IgeObject {
                  * @param {Object} The IGE event control object.
                  * @param {*} Any further event data.
                  */
-                this.emit("pointerOver", [event, evc, data]);
+                this.emit("pointerOver", event, evc, data);
             }
             if (this._pointerMove) {
                 this._pointerMove(event, evc, data);
             }
-            this.emit("pointerMove", [event, evc, data]);
+            this.emit("pointerMove", event, evc, data);
         };
         /**
          * Handler method that determines if a mouse-out event
@@ -90,7 +90,7 @@ export class IgeEntity extends IgeObject {
              * @param {Object} The IGE event control object.
              * @param {*} Any further event data.
              */
-            this.emit("pointerOut", [event, evc, data]);
+            this.emit("pointerOut", event, evc, data);
         };
         /**
          * Handler method that determines if a mouse-wheel event
@@ -108,7 +108,7 @@ export class IgeEntity extends IgeObject {
              * @param {Object} The IGE event control object.
              * @param {*} Any further event data.
              */
-            this.emit("pointerWheel", [event, evc, data]);
+            this.emit("pointerWheel", event, evc, data);
         };
         /**
          * Handler method that determines if a mouse-up event
@@ -128,7 +128,7 @@ export class IgeEntity extends IgeObject {
              * @param {Object} The IGE event control object.
              * @param {*} Any further event data.
              */
-            this.emit("pointerUp", [event, evc, data]);
+            this.emit("pointerUp", event, evc, data);
         };
         /**
          * Handler method that determines if a mouse-down event
@@ -148,7 +148,7 @@ export class IgeEntity extends IgeObject {
                  * @param {Object} The IGE event control object.
                  * @param {*} Any further event data.
                  */
-                this.emit("pointerDown", [event, evc, data]);
+                this.emit("pointerDown", event, evc, data);
             }
         };
         /**
@@ -1489,7 +1489,7 @@ export class IgeEntity extends IgeObject {
         this._alive = false;
         // Remove the event listeners array in case any
         // object references still exist there
-        delete this._eventListeners;
+        this._eventListeners = {};
         return this;
     }
     /**

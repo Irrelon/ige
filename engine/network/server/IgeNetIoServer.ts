@@ -34,9 +34,9 @@ export class IgeNetIoServer extends IgeEventingClass {
 		this._sockets = [];
 		this._socketsById = {};
 
-		if (port !== undefined) {
-			this.start(port, callback);
-		}
+		if (port === undefined) return;
+
+		this.start(port, callback);
 	}
 
 	start (port: number, callback?: () => void) {
@@ -101,7 +101,7 @@ export class IgeNetIoServer extends IgeEventingClass {
 				data: id
 			});
 
-			this.emit('connection', [socket]);
+			this.emit('connection', socket);
 		});
 
 		this._httpServer.on('error', (err: any) => {

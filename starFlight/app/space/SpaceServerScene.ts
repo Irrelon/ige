@@ -186,11 +186,11 @@ export class SpaceServerScene extends IgeSceneGraph {
 			return;
 		}
 
-		const modules = playerData.modules;
+		const playerDataModules = playerData.modules;
 
 		const player = new PlayerShip({
 			clientId,
-			module: this.generateModuleObject(JSON.parse(JSON.stringify(modules)))
+			module: this.generateModuleObject(JSON.parse(JSON.stringify(playerDataModules)))
 		}).streamMode(1).mount(ige.$("frontScene") as IgeScene2d);
 
 		player._inventory.on("change", function () {

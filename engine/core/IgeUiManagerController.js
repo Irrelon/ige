@@ -1,6 +1,7 @@
 import { ige } from "../instance.js";
 import { arrPull } from "../utils.js";
 import { IgeEventingClass } from "../../engine/core/IgeEventingClass.js";
+import { IgeEventReturnFlag } from "../../enums/IgeEventReturnFlag.js";
 export class IgeUiManagerController extends IgeEventingClass {
     constructor() {
         super(...arguments);
@@ -105,13 +106,13 @@ export class IgeUiManagerController extends IgeEventingClass {
                 // The element is not our current focus so focus to it
                 const previousFocus = this._focus;
                 // Tell the current focused element that it is about to loose focus
-                if (!previousFocus || !previousFocus.emit("blur", elem)) {
+                if (!previousFocus || previousFocus.emit("blur", elem) !== IgeEventReturnFlag.cancel) {
                     if (previousFocus) {
                         previousFocus._focused = false;
                         previousFocus.blur();
                     }
                     // The blur was not cancelled
-                    if (!elem.emit("focus", previousFocus)) {
+                    if (elem.emit("focus", previousFocus) !== IgeEventReturnFlag.cancel) {
                         // The focus was not cancelled
                         this._focus = elem;
                         elem._focused = true;
@@ -132,7 +133,7 @@ export class IgeUiManagerController extends IgeEventingClass {
             if (elem === this._focus) {
                 // The element is currently focused
                 // Tell the current focused element that it is about to loose focus
-                if (!elem.emit("blur")) {
+                if (elem.emit("blur") !== IgeEventReturnFlag.cancel) {
                     // The blur was not cancelled
                     this._focus = null;
                     elem._focused = false;

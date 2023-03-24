@@ -2332,7 +2332,7 @@ export class IgeObject extends IgeEventingClass implements IgeCanRegisterById, I
 							if (this.onStreamProperty) {
 								this.onStreamProperty(i, props[i]);
 							}
-							this.emit("streamPropChange", [i, props[i]]);
+							this.emit("streamPropChange", i, props[i]);
 						}
 					}
 				}
@@ -2519,7 +2519,7 @@ export class IgeObject extends IgeEventingClass implements IgeCanRegisterById, I
 
 		// Remove the event listeners array in case any
 		// object references still exist there
-		delete this._eventListeners;
+		this._eventListeners = {};
 
 		return this;
 	}

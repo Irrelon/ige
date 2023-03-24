@@ -12,6 +12,7 @@ import { IgeNetIoClientController } from "@/engine/network/client/IgeNetIoClient
 import { PlayerControls } from "../../enums/PlayerControls";
 import type { IgeUiLabel } from "@/engine/ui/IgeUiLabel";
 import { registerClass } from "@/engine/igeClassStore";
+import { IgeUiProgressBar } from "@/engine/ui/IgeUiProgressBar";
 
 export class PlayerShip extends Ship {
 	classId = "PlayerShip";
@@ -125,27 +126,27 @@ export class PlayerShip extends Ship {
 
 		if (isClient && ige.app.playerEntity === this) {
 			// Update UI elements
-			ige.$("stateBar_fuel")
+			(ige.$("stateBar_fuel") as IgeUiProgressBar)
 				.min(this._publicGameData.state.fuel.min)
 				.max(this._publicGameData.state.fuel.max)
 				.progress(this._publicGameData.state.fuel.val);
 
-			ige.$("stateBar_energy")
+			(ige.$("stateBar_energy") as IgeUiProgressBar)
 				.min(this._publicGameData.state.energy.min)
 				.max(this._publicGameData.state.energy.max)
 				.progress(this._publicGameData.state.energy.val);
 
-			ige.$("stateBar_shield")
+			(ige.$("stateBar_shield") as IgeUiProgressBar)
 				.min(this._publicGameData.state.shield.min)
 				.max(this._publicGameData.state.shield.max)
 				.progress(this._publicGameData.state.shield.val);
 
-			ige.$("stateBar_integrity")
+			(ige.$("stateBar_integrity") as IgeUiProgressBar)
 				.min(this._publicGameData.state.integrity.min)
 				.max(this._publicGameData.state.integrity.max)
 				.progress(this._publicGameData.state.integrity.val);
 
-			ige.$("stateBar_inventorySpace")
+			(ige.$("stateBar_inventorySpace") as IgeUiProgressBar)
 				.min(0)
 				.max(this._publicGameData.state.inventorySpace.val)
 				.progress(this._publicGameData.state.inventoryCount.val);

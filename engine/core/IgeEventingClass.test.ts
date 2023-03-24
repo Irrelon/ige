@@ -34,7 +34,7 @@ describe("IgeEventingClass", () => {
 		myClass.on("moo", () => {
 		});
 
-		assert.strictEqual(myClass._eventListeners.moo["*"].length, 1, "Listener registered on event");
+		assert.strictEqual(myClass._eventListeners?.moo["*"].length, 1, "Listener registered on event");
 
 		myClass.off("moo");
 
@@ -55,7 +55,7 @@ describe("IgeEventingClass", () => {
 			myClass.emit("moo");
 
 			assert.strictEqual(callCount, 1, "Number of times listener called is correct");
-			assert.strictEqual(!myClass._eventListeners.moo || !myClass._eventListeners.moo["*"] || !myClass._eventListeners.moo["*"].length, true, "Listeners all removed from event");
+			assert.strictEqual(!myClass._eventListeners?.moo || !myClass._eventListeners?.moo["*"] || !myClass._eventListeners?.moo["*"].length, true, "Listeners all removed from event");
 		});
 
 		it("The correct arguments are emitted", async () => {
@@ -79,7 +79,7 @@ describe("IgeEventingClass", () => {
 			assert.strictEqual(receivedArg1, 1, "Argument 1 was correct");
 			// @ts-ignore
 			assert.strictEqual(receivedArg2, "one", "Argument 2 was correct");
-			assert.strictEqual(!myClass._eventListeners.moo || !myClass._eventListeners.moo["*"] || !myClass._eventListeners.moo["*"].length, true, "Listeners all removed from event");
+			assert.strictEqual(!myClass._eventListeners?.moo || !myClass._eventListeners?.moo["*"] || !myClass._eventListeners?.moo["*"].length, true, "Listeners all removed from event");
 		});
 	});
 
@@ -93,18 +93,18 @@ describe("IgeEventingClass", () => {
 
 			myClass.on("moo", () => {
 			});
-			assert.strictEqual(myClass._eventListeners.moo["*"].length, 1, "Listeners registered on event");
+			assert.strictEqual(myClass._eventListeners?.moo["*"].length, 1, "Listeners registered on event");
 			myClass.on("moo", "testId", () => {
 			});
-			assert.strictEqual(myClass._eventListeners.moo["testId"].length, 1, "Listeners registered on event");
+			assert.strictEqual(myClass._eventListeners?.moo["testId"].length, 1, "Listeners registered on event");
 			myClass.on("moo", listener1);
-			assert.strictEqual(myClass._eventListeners.moo["*"].length, 2, "Listeners registered on event");
+			assert.strictEqual(myClass._eventListeners?.moo["*"].length, 2, "Listeners registered on event");
 			myClass.on("moo", "testId", listener2);
-			assert.strictEqual(myClass._eventListeners.moo["testId"].length, 2, "Listeners registered on event");
+			assert.strictEqual(myClass._eventListeners?.moo["testId"].length, 2, "Listeners registered on event");
 
 			myClass.off("moo");
 
-			assert.strictEqual(!myClass._eventListeners.moo || (myClass._eventListeners.moo["*"].length === 0 && myClass._eventListeners.moo["testId"].length === 0), true, "Listeners all removed from event");
+			assert.strictEqual(!myClass._eventListeners?.moo || (myClass._eventListeners?.moo["*"].length === 0 && myClass._eventListeners?.moo["testId"].length === 0), true, "Listeners all removed from event");
 		});
 
 		it("Cancels id-based listeners (event, id)", () => {
@@ -116,19 +116,19 @@ describe("IgeEventingClass", () => {
 
 			myClass.on("moo", () => {
 			});
-			assert.strictEqual(myClass._eventListeners.moo["*"].length, 1, "Listeners registered on event");
+			assert.strictEqual(myClass._eventListeners?.moo["*"].length, 1, "Listeners registered on event");
 			myClass.on("moo", "testId", () => {
 			});
-			assert.strictEqual(myClass._eventListeners.moo["testId"].length, 1, "Listeners registered on event");
+			assert.strictEqual(myClass._eventListeners?.moo["testId"].length, 1, "Listeners registered on event");
 			myClass.on("moo", listener1);
-			assert.strictEqual(myClass._eventListeners.moo["*"].length, 2, "Listeners registered on event");
+			assert.strictEqual(myClass._eventListeners?.moo["*"].length, 2, "Listeners registered on event");
 			myClass.on("moo", "testId", listener2);
-			assert.strictEqual(myClass._eventListeners.moo["testId"].length, 2, "Listeners registered on event");
+			assert.strictEqual(myClass._eventListeners?.moo["testId"].length, 2, "Listeners registered on event");
 
 			myClass.off("moo", "testId");
 
-			assert.strictEqual(myClass._eventListeners.moo["*"].length === 2, true, "Listeners all removed from event");
-			assert.strictEqual(!myClass._eventListeners.moo["testId"] || myClass._eventListeners.moo["testId"].length === 0, true, "Listeners all removed from event");
+			assert.strictEqual(myClass._eventListeners?.moo["*"].length === 2, true, "Listeners all removed from event");
+			assert.strictEqual(!myClass._eventListeners?.moo["testId"] || myClass._eventListeners?.moo["testId"].length === 0, true, "Listeners all removed from event");
 		});
 
 		it("Cancels listener-based listeners (event, listener)", () => {
@@ -140,19 +140,19 @@ describe("IgeEventingClass", () => {
 
 			myClass.on("moo", () => {
 			});
-			assert.strictEqual(myClass._eventListeners.moo["*"].length, 1, "Listeners registered on event");
+			assert.strictEqual(myClass._eventListeners?.moo["*"].length, 1, "Listeners registered on event");
 			myClass.on("moo", "testId", () => {
 			});
-			assert.strictEqual(myClass._eventListeners.moo["testId"].length, 1, "Listeners registered on event");
+			assert.strictEqual(myClass._eventListeners?.moo["testId"].length, 1, "Listeners registered on event");
 			myClass.on("moo", listener1);
-			assert.strictEqual(myClass._eventListeners.moo["*"].length, 2, "Listeners registered on event");
+			assert.strictEqual(myClass._eventListeners?.moo["*"].length, 2, "Listeners registered on event");
 			myClass.on("moo", "testId", listener2);
-			assert.strictEqual(myClass._eventListeners.moo["testId"].length, 2, "Listeners registered on event");
+			assert.strictEqual(myClass._eventListeners?.moo["testId"].length, 2, "Listeners registered on event");
 
 			myClass.off("moo", listener1);
 
-			assert.strictEqual(myClass._eventListeners.moo["*"].length === 1, true, "Listeners all removed from event");
-			assert.strictEqual(myClass._eventListeners.moo["testId"].length === 2, true, "Listeners all removed from event");
+			assert.strictEqual(myClass._eventListeners?.moo["*"].length === 1, true, "Listeners all removed from event");
+			assert.strictEqual(myClass._eventListeners?.moo["testId"].length === 2, true, "Listeners all removed from event");
 		});
 
 		it("Cancels id-based + listener-based listeners (event, id, listener)", () => {
@@ -164,19 +164,19 @@ describe("IgeEventingClass", () => {
 
 			myClass.on("moo", () => {
 			});
-			assert.strictEqual(myClass._eventListeners.moo["*"].length, 1, "Listeners registered on event");
+			assert.strictEqual(myClass._eventListeners?.moo["*"].length, 1, "Listeners registered on event");
 			myClass.on("moo", "testId", () => {
 			});
-			assert.strictEqual(myClass._eventListeners.moo["testId"].length, 1, "Listeners registered on event");
+			assert.strictEqual(myClass._eventListeners?.moo["testId"].length, 1, "Listeners registered on event");
 			myClass.on("moo", listener1);
-			assert.strictEqual(myClass._eventListeners.moo["*"].length, 2, "Listeners registered on event");
+			assert.strictEqual(myClass._eventListeners?.moo["*"].length, 2, "Listeners registered on event");
 			myClass.on("moo", "testId", listener2);
-			assert.strictEqual(myClass._eventListeners.moo["testId"].length, 2, "Listeners registered on event");
+			assert.strictEqual(myClass._eventListeners?.moo["testId"].length, 2, "Listeners registered on event");
 
 			myClass.off("moo", "testId", listener2);
 
-			assert.strictEqual(myClass._eventListeners.moo["*"].length === 2, true, "Listeners all removed from event");
-			assert.strictEqual(myClass._eventListeners.moo["testId"].length === 1, true, "Listeners all removed from event");
+			assert.strictEqual(myClass._eventListeners?.moo["*"].length === 2, true, "Listeners all removed from event");
+			assert.strictEqual(myClass._eventListeners?.moo["testId"].length === 1, true, "Listeners all removed from event");
 		});
 	});
 
@@ -266,7 +266,7 @@ describe("IgeEventingClass", () => {
 				emitCount++;
 			});
 
-			assert.strictEqual(myClass._eventListeners.moo["testId"].length, 1, "Listener registered on event");
+			assert.strictEqual(myClass._eventListeners?.moo["testId"].length, 1, "Listener registered on event");
 
 			myClass.emitId("moo", "testId", "foo");
 
@@ -274,12 +274,12 @@ describe("IgeEventingClass", () => {
 
 			myClass.off("moo", "testId");
 
-			assert.strictEqual(!myClass._eventListeners.moo || !myClass._eventListeners.moo["testId"] || myClass._eventListeners.moo["testId"].length, true, "Listeners all removed from event");
-			assert.strictEqual(myClass._eventListeners.moo && myClass._eventListeners.moo["*"] && myClass._eventListeners.moo["*"].length === 1, true, "Global listener still there");
+			assert.strictEqual(!myClass._eventListeners?.moo || !myClass._eventListeners?.moo["testId"] || myClass._eventListeners?.moo["testId"].length, true, "Listeners all removed from event");
+			assert.strictEqual(myClass._eventListeners?.moo && myClass._eventListeners?.moo["*"] && myClass._eventListeners?.moo["*"].length === 1, true, "Global listener still there");
 
 			myClass.off("moo");
 
-			assert.strictEqual(!myClass._eventListeners.moo || !myClass._eventListeners.moo["*"] || myClass._eventListeners.moo["*"].length === 0, true, "Listeners all removed from event");
+			assert.strictEqual(!myClass._eventListeners?.moo || !myClass._eventListeners?.moo["*"] || myClass._eventListeners?.moo["*"].length === 0, true, "Listeners all removed from event");
 		});
 	});
 });

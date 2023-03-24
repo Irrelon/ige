@@ -19,6 +19,7 @@ import star from "../assets/textures/smartTextures/star.js";
 import { IgeSceneGraph } from "../../engine/core/IgeSceneGraph.js";
 import { IgeMousePanComponent } from "../../engine/components/IgeMousePanComponent.js";
 import flag from "../assets/textures/smartTextures/flag.js";
+import { IgeFontSheet } from "../../engine/core/IgeFontSheet.js";
 // @ts-ignore
 window.ige = ige;
 export class AppClientScene extends IgeSceneGraph {
@@ -32,6 +33,7 @@ export class AppClientScene extends IgeSceneGraph {
             const options = new IgeOptions();
             options.set("masterVolume", 1);
             (_a = ige.audio) === null || _a === void 0 ? void 0 : _a.masterVolume(options.get('masterVolume', 1));
+            new IgeFontSheet("", './assets/textures/fonts/openSans20px.png');
             new IgeTexture("fairy", "./assets/textures/sprites/fairy.png");
             new IgeTexture("square", square);
             new IgeTexture("line", line);
@@ -53,7 +55,7 @@ export class AppClientScene extends IgeSceneGraph {
             vp1.components.mousePan.enabled(true);
             vp1.drawBounds(true);
             vp1.drawBoundsData(true);
-            network.start('http://localhost:2000');
+            yield network.start('http://localhost:2000');
         });
     }
     removeGraph() {

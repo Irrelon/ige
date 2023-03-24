@@ -474,4 +474,4 @@ export class IgeTileMap2d extends IgeEntity {
         super._childMounted(obj);
     }
 }
-registerClass((IgeTileMap2d));
+registerClass(IgeTileMap2d);

@@ -1,7 +1,8 @@
 import { newIdHex } from "@/engine/utils";
+import { IgeEventingClass } from "@/engine/core/IgeEventingClass";
 
 class UiDialogs extends IgeEventingClass {
-	classId: 'UiDialogs';,
+	classId = 'UiDialogs';
 
 	init: function (); {
 		var; self = this;

@@ -44,7 +44,6 @@ export class IgeNetIoClientController extends IgeNetIoBaseController {
 	_url?: string;
 	_renderLatency: number = 100;
 	_streamDataTime: number = 0;
-	_startCallback?: () => void;
 
 	constructor () {
 		super();
@@ -72,86 +71,88 @@ export class IgeNetIoClientController extends IgeNetIoBaseController {
 	 * network has started.
 	 */
 	start (url?: string, callback?: () => void) {
-		if (this._state === 3) {
-			// We're already connected
-			if (typeof (callback) === "function") {
-				callback();
-			}
+		return new Promise<void>((resolve) => {
+			if (this._state === 3) {
+				// We're already connected
+				if (callback) {
+					callback();
+				}
 
-			return;
-		}
-
-		this._startCallback = callback;
-
-		if (typeof (url) !== "undefined") {
-			this._url = url;
-		}
-
-		this.log(`Connecting to net.io server at "${this._url}"...`);
-
-		if (typeof WebSocket === "undefined") {
-			return;
-		}
-
-		this._io = new IgeNetIoClient(url);
-		this._state = 1;
-
-		this._io.on("connect", (clientId) => {
-			this._state = 2; // Connected
-			this._id = clientId;
-			this._onConnectToServer();
-		});
-
-		this._io.on("message", (data) => {
-			if (this._initDone) {
-				this._onMessageFromServer(data);
+				resolve();
 				return;
 			}
 
-			let commandCount = 0;
-
-			// Check if the data is an init packet
-			if (data.cmd === "init") {
-				// Set flag to show we've now received an init command
-				this._initDone = true;
-				this._state = 3; // Connected and init done
-
-				// Set up the network commands storage
-				this._networkCommandsLookup = data.ncmds;
-
-				// Fill the reverse lookup on the commands
-				for (const i in this._networkCommandsLookup) {
-					if (this._networkCommandsLookup.hasOwnProperty(i)) {
-						this._networkCommandsIndex[this._networkCommandsLookup[i]] = i;
-						commandCount++;
-					}
-				}
-
-				// Set up default commands
-				this.define(IGE_NETWORK_REQUEST, this._onRequest);
-				this.define(IGE_NETWORK_RESPONSE, this._onResponse);
-				this.define(IGE_NETWORK_TIME_SYNC, this._onTimeSync);
-
-				this.log("Received network command list with count: " + commandCount);
-
-				// Setup timescale and current time
-				ige.engine.timeScale(parseFloat(data.ts));
-				ige.engine._currentTime = parseInt(data.ct);
-
-				// Now fire the start() callback
-				if (typeof (this._startCallback) === "function") {
-					this._startCallback();
-					delete this._startCallback;
-				}
+			if (typeof (url) !== "undefined") {
+				this._url = url;
 			}
-		});
 
-		this._io.on("disconnect",  (data) => {
-			this._state = 0; // Disconnected
-			this._onDisconnectFromServer(data);
-		});
+			this.log(`Connecting to net.io server at "${this._url}"...`);
 
-		this._io.on("error",  this._onError);
+			if (typeof WebSocket === "undefined") {
+				return;
+			}
+
+			this._io = new IgeNetIoClient(url);
+			this._state = 1;
+
+			this._io.on("connect", (clientId) => {
+				this._state = 2; // Connected
+				this._id = clientId;
+				this._onConnectToServer();
+			});
+
+			this._io.on("message", (data) => {
+				if (this._initDone) {
+					this._onMessageFromServer(data);
+					return;
+				}
+
+				let commandCount = 0;
+
+				// Check if the data is an init packet
+				if (data.cmd === "init") {
+					// Set flag to show we've now received an init command
+					this._initDone = true;
+					this._state = 3; // Connected and init done
+
+					// Set up the network commands storage
+					this._networkCommandsLookup = data.ncmds;
+
+					// Fill the reverse lookup on the commands
+					for (const i in this._networkCommandsLookup) {
+						if (this._networkCommandsLookup.hasOwnProperty(i)) {
+							this._networkCommandsIndex[this._networkCommandsLookup[i]] = i;
+							commandCount++;
+						}
+					}
+
+					// Set up default commands
+					this.define(IGE_NETWORK_REQUEST, this._onRequest);
+					this.define(IGE_NETWORK_RESPONSE, this._onResponse);
+					this.define(IGE_NETWORK_TIME_SYNC, this._onTimeSync);
+
+					this.log("Received network command list with count: " + commandCount);
+
+					// Setup timescale and current time
+					ige.engine.timeScale(parseFloat(data.ts));
+					ige.engine._currentTime = parseInt(data.ct);
+
+					// Now fire the start() callback
+					if (callback) {
+						callback();
+					}
+
+					resolve();
+				}
+			});
+
+			this._io.on("disconnect", (data) => {
+				this._state = 0; // Disconnected
+				this._onDisconnectFromServer(data);
+			});
+
+			this._io.on("error", this._onError);
+		});
 	}
 
 	_onRequest = (data: IgeNetworkRequestMessageStructure<IgeNetworkClientSideMessageHandler>) => {
@@ -169,7 +170,7 @@ export class IgeNetIoClientController extends IgeNetIoBaseController {
 			this._networkCommands[data.cmd](data.id, data.data);
 		}
 
-		this.emit(data.cmd, [data.id, data.data]);
+		this.emit(data.cmd, data.id, data.data);
 	};
 
 	_onResponse = (responseObj: IgeNetworkMessageStructure) => {

@@ -4,6 +4,7 @@ import { IgeBehaviourType } from "../../enums/IgeBehaviourType.js";
 import { IgeInputDevice, IgeInputKeyboardMap, IgeInputPointerMap } from "../../enums/IgeInputDeviceMap.js";
 import { IgeEventingClass } from "../../engine/core/IgeEventingClass.js";
 import { IgeInputControlMap } from "../../engine/components/IgeInputControlMap.js";
+import { IgeEventReturnFlag } from "../../enums/IgeEventReturnFlag.js";
 export class IgeInputComponent extends IgeEventingClass {
     constructor() {
         super();
@@ -165,9 +166,9 @@ export class IgeInputComponent extends IgeEventingClass {
                 this._updateState(IgeInputDevice.pointer1, IgeInputPointerMap.button5, true);
             }
             this.pointerDown = event;
-            if (!this.emit("prePointerDown", [event, mx, my, event.button + 1])) {
+            if (this.emit("prePointerDown", event, mx, my, event.button + 1) !== IgeEventReturnFlag.cancel) {
                 this.queueEvent(() => {
-                    this.emit("pointerDown", [event, mx, my, event.button + 1]);
+                    this.emit("pointerDown", event, mx, my, event.button + 1);
                 });
             }
         };
@@ -203,9 +204,9 @@ export class IgeInputComponent extends IgeEventingClass {
                 this._updateState(IgeInputDevice.pointer1, IgeInputPointerMap.button5, false);
             }
             this.pointerUp = event;
-            if (!this.emit("prePointerUp", [event, mx, my, event.button + 1])) {
+            if (this.emit("prePointerUp", event, mx, my, event.button + 1) !== IgeEventReturnFlag.cancel) {
                 this.queueEvent(() => {
-                    this.emit("pointerUp", [event, mx, my, event.button + 1]);
+                    this.emit("pointerUp", event, mx, my, event.button + 1);
                 });
             }
         };
@@ -236,9 +237,9 @@ export class IgeInputComponent extends IgeEventingClass {
                 this._updateState(IgeInputDevice.pointer1, IgeInputPointerMap.button5, false);
             }
             this.contextMenu = event;
-            if (!this.emit("preContextMenu", [event, mx, my, event.button + 1])) {
+            if (this.emit("preContextMenu", event, mx, my, event.button + 1) !== IgeEventReturnFlag.cancel) {
                 this.queueEvent(() => {
-                    this.emit("contextMenu", [event, mx, my, event.button + 1]);
+                    this.emit("contextMenu", event, mx, my, event.button + 1);
                 });
             }
         };
@@ -255,9 +256,9 @@ export class IgeInputComponent extends IgeEventingClass {
             this._updateState(IgeInputDevice.pointer1, IgeInputPointerMap.x, mx);
             this._updateState(IgeInputDevice.pointer1, IgeInputPointerMap.y, my);
             this.pointerMove = event;
-            if (!this.emit("prePointerMove", [event, mx, my, event.button + 1])) {
+            if (this.emit("prePointerMove", event, mx, my, event.button + 1) !== IgeEventReturnFlag.cancel) {
                 this.queueEvent(() => {
-                    this.emit("pointerMove", [event, mx, my, event.button + 1]);
+                    this.emit("pointerMove", event, mx, my, event.button + 1);
                 });
             }
         };
@@ -308,9 +309,9 @@ export class IgeInputComponent extends IgeEventingClass {
                 }
             }
             this.pointerWheel = event;
-            if (!this.emit("prePointerWheel", [event, mx, my, event.button + 1])) {
+            if (this.emit("prePointerWheel", event, mx, my, event.button + 1) !== IgeEventReturnFlag.cancel) {
                 this.queueEvent(() => {
-                    this.emit("pointerWheel", [event, mx, my, event.button + 1]);
+                    this.emit("pointerWheel", event, mx, my, event.button + 1);
                 });
             }
         };
@@ -324,9 +325,9 @@ export class IgeInputComponent extends IgeEventingClass {
             if (this._debug) {
                 console.log("Key Down", event);
             }
-            if (!this.emit("preKeyDown", [event, event.keyCode])) {
+            if (this.emit("preKeyDown", event, event.keyCode) !== IgeEventReturnFlag.cancel) {
                 this.queueEvent(() => {
-                    this.emit("keyDown", [event, event.keyCode]);
+                    this.emit("keyDown", event, event.keyCode);
                 });
             }
         };
@@ -340,9 +341,9 @@ export class IgeInputComponent extends IgeEventingClass {
             if (this._debug) {
                 console.log("Key Up", event);
             }
-            if (!this.emit("preKeyUp", [event, event.keyCode])) {
+            if (this.emit("preKeyUp", event, event.keyCode) !== IgeEventReturnFlag.cancel) {
                 this.queueEvent(() => {
-                    this.emit("keyUp", [event, event.keyCode]);
+                    this.emit("keyUp", event, event.keyCode);
                 });
             }
         };
@@ -558,66 +559,39 @@ export class IgeInputComponent extends IgeEventingClass {
      * Emit an event by name. Overrides the IgeEventingClass emit method and
      * checks for propagation stopped by calling ige.input.stopPropagation().
      * @param {Object} eventName The name of the event to emit.
-     * @param {Object || Array} args The arguments to send to any listening methods.
+     * @param data
      * If you are sending multiple arguments, use an array containing each argument.
      * @return {Number}
      */
-    emit(eventName, args) {
+    emit(eventName, ...data) {
         if (!this._eventListeners) {
-            return 0;
-        }
-        // Check if the event has any listeners
-        if (!this._eventListeners[eventName]) {
-            return 0;
+            return IgeEventReturnFlag.none;
         }
         const evc = this._eventControl;
-        let eventCount = this._eventListeners[eventName].length;
-        const eventCount2 = this._eventListeners[eventName].length - 1;
-        let finalArgs = [];
-        if (!eventCount) {
-            return 0;
-        }
-        finalArgs = [];
-        if (typeof (args) === "object" && args !== null && args[0] !== null) {
-            args.forEach((arg, argIndex) => {
-                finalArgs[argIndex] = arg;
-            });
-        }
-        else {
-            finalArgs = [args];
-        }
-        let cancelFlag = false;
-        this._eventsProcessing = true;
-        while (eventCount--) {
-            if (evc._cancelled) {
-                // The stopPropagation() method was called, cancel all other event calls
-                break;
-            }
-            const eventIndex = eventCount2 - eventCount;
-            const tempEvt = this._eventListeners[eventName][eventIndex];
-            // If the sendEventName flag is set, overwrite the arguments with the event name
-            if (tempEvt.sendEventName) {
-                finalArgs = [eventName];
-            }
-            // Call the callback
-            const retVal = tempEvt.callback.apply(tempEvt.context || this, finalArgs);
-            // If the retVal === true then store the cancel flag and return to the emitting method
-            if (retVal === true || evc._cancelled) {
-                // The receiver method asked us to send a cancel request back to the emitter
-                cancelFlag = true;
-            }
-            // Check if we should now cancel the event
-            if (tempEvt.oneShot) {
-                // The event has a oneShot flag so since we have fired the event,
-                // lets cancel the listener now
-                this.off(eventName, tempEvt);
+        const id = "*";
+        let returnFlag = IgeEventReturnFlag.none;
+        this._eventsEmitting = true;
+        if (this._eventListeners[eventName] && this._eventListeners[eventName][id]) {
+            // Handle global emit
+            const arr = this._eventListeners[eventName][id];
+            const arrCount = arr.length;
+            for (let arrIndex = 0; arrIndex < arrCount; arrIndex++) {
+                if (evc._cancelled) {
+                    // The stopPropagation() method was called, cancel all other event calls
+                    break;
+                }
+                // Check we have a function to execute
+                const tmpFunc = arr[arrIndex];
+                if (typeof tmpFunc === "function") {
+                    const result = tmpFunc(...data);
+                    if (result || evc._cancelled) {
+                        returnFlag = IgeEventReturnFlag.cancel;
+                    }
+                }
             }
         }
-        this._eventsProcessing = false;
-        this._processRemovals();
-        if (cancelFlag) {
-            return 1;
-        }
-        return 0;
+        this._eventsEmitting = false;
+        this._processRemovalQueue();
+        return returnFlag;
     }
 }

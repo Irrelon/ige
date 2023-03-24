@@ -18,7 +18,6 @@ export declare class IgeNetIoClientController extends IgeNetIoBaseController {
     _url?: string;
     _renderLatency: number;
     _streamDataTime: number;
-    _startCallback?: () => void;
     constructor();
     /**
      * Gets the current socket id.
@@ -31,7 +30,7 @@ export declare class IgeNetIoClientController extends IgeNetIoBaseController {
      * @param {Function=} callback A callback method to call once the
      * network has started.
      */
-    start(url?: string, callback?: () => void): void;
+    start(url?: string, callback?: () => void): Promise<void>;
     _onRequest: (data: IgeNetworkRequestMessageStructure<IgeNetworkClientSideMessageHandler>) => void;
     _onResponse: (responseObj: IgeNetworkMessageStructure) => void;
     _onTimeSync: (data: IgeNetworkTimeSyncRequestFromServer) => void;

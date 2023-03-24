@@ -4,6 +4,7 @@ import { IgeInputDevice } from "@/enums/IgeInputDeviceMap";
 import { IgeEventingClass } from "@/engine/core/IgeEventingClass";
 import { IgeIsReadyPromise } from "@/types/IgeIsReadyPromise";
 import { IgeInputControlMap } from "@/engine/components/IgeInputControlMap";
+import { IgeEventReturnFlag } from "@/enums/IgeEventReturnFlag";
 export declare class IgeInputComponent extends IgeEventingClass implements IgeIsReadyPromise {
     classId: string;
     componentId: string;
@@ -156,9 +157,9 @@ export declare class IgeInputComponent extends IgeEventingClass implements IgeIs
      * Emit an event by name. Overrides the IgeEventingClass emit method and
      * checks for propagation stopped by calling ige.input.stopPropagation().
      * @param {Object} eventName The name of the event to emit.
-     * @param {Object || Array} args The arguments to send to any listening methods.
+     * @param data
      * If you are sending multiple arguments, use an array containing each argument.
      * @return {Number}
      */
-    emit(eventName: string, args?: any): number;
+    emit(eventName: string, ...data: any[]): IgeEventReturnFlag;
 }

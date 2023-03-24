@@ -19,6 +19,7 @@ import {
 	IgeNetworkChatFromServerJoinRoomResponseStructure,
 	IgeNetworkChatFromServerLeaveRoomResponseStructure, IgeNetworkChatFromServerRoomStructure
 } from "@/types/IgeNetworkChat";
+import { IgeEventReturnFlag } from "@/enums/IgeEventReturnFlag";
 
 /**
  * The client-side chat component. Handles all client-side
@@ -70,7 +71,7 @@ export class IgeChatClient extends IgeChatComponent {
 	_onMessageFromServer (data: IgeNetworkChatFromServerMessageStructure) {
 		// Emit the event and if it wasn't cancelled (by returning true) then
 		// process this ourselves
-		if (!this.emit('messageFromServer', [data])) {
+		if (this.emit('messageFromServer', data) !== IgeEventReturnFlag.cancel) {
 			console.log('Server sent us a message in the room "' + data.roomId + '" from the user id "' + data.from + '":', data.text);
 		}
 	}
@@ -78,7 +79,7 @@ export class IgeChatClient extends IgeChatComponent {
 	_onJoinedRoom (data: IgeNetworkChatFromServerJoinRoomResponseStructure) {
 		// Emit the event and if it wasn't cancelled (by returning true) then
 		// process this ourselves
-		if (!this.emit('joinedRoom', [data])) {
+		if (this.emit('joinedRoom', data) !== IgeEventReturnFlag.cancel) {
 			if (data.joined) {
 				console.log('Server says we have joined room:', data.roomId);
 			} else {
@@ -90,7 +91,7 @@ export class IgeChatClient extends IgeChatComponent {
 	_onLeftRoom (data: IgeNetworkChatFromServerLeaveRoomResponseStructure) {
 		// Emit the event and if it wasn't cancelled (by returning true) then
 		// process this ourselves
-		if (!this.emit('leftRoom', [data])) {
+		if (this.emit('leftRoom', data) !== IgeEventReturnFlag.cancel) {
 			console.log('We have left room:', data);
 		}
 	}
@@ -98,7 +99,7 @@ export class IgeChatClient extends IgeChatComponent {
 	_onServerSentRoomList (data: IgeNetworkChatFromServerRoomStructure[]) {
 		// Emit the event and if it wasn't cancelled (by returning true) then
 		// process this ourselves
-		if (!this.emit('roomList', [data])) {
+		if (this.emit('roomList', data) !== IgeEventReturnFlag.cancel) {
 			console.log('Server sent room list:', data);
 		}
 	}
@@ -106,7 +107,7 @@ export class IgeChatClient extends IgeChatComponent {
 	_onServerSentRoomUserList (data: any) {
 		// Emit the event and if it wasn't cancelled (by returning true) then
 		// process this ourselves
-		if (!this.emit('roomUserList', [data])) {
+		if (this.emit('roomUserList', data) !== IgeEventReturnFlag.cancel) {
 			console.log('Server sent room user list:', data);
 		}
 	}
@@ -114,7 +115,7 @@ export class IgeChatClient extends IgeChatComponent {
 	_onRoomCreated (data: IgeNetworkChatFromServerRoomStructure) {
 		// Emit the event and if it wasn't cancelled (by returning true) then
 		// process this ourselves
-		if (!this.emit('roomCreated', [data])) {
+		if (this.emit('roomCreated', data) !== IgeEventReturnFlag.cancel) {
 			console.log('Server told us room was created:', data);
 		}
 	}
@@ -122,7 +123,7 @@ export class IgeChatClient extends IgeChatComponent {
 	_onRoomRemoved (data: string) {
 		// Emit the event and if it wasn't cancelled (by returning true) then
 		// process this ourselves
-		if (!this.emit('roomRemoved', [data])) {
+		if (this.emit('roomRemoved', data) !== IgeEventReturnFlag.cancel) {
 			console.log('Server told us room was removed:', data);
 		}
 	}

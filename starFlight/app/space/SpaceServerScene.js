@@ -31,10 +31,10 @@ export class SpaceServerScene extends IgeSceneGraph {
             if (this.playerByClientId(clientId)) {
                 return;
             }
-            const modules = playerData.modules;
+            const playerDataModules = playerData.modules;
             const player = new PlayerShip({
                 clientId,
-                module: this.generateModuleObject(JSON.parse(JSON.stringify(modules)))
+                module: this.generateModuleObject(JSON.parse(JSON.stringify(playerDataModules)))
             }).streamMode(1).mount(ige.$("frontScene"));
             player._inventory.on("change", function () {
                 player._publicGameData.state.inventoryCount.val = player._inventory.count();

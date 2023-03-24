@@ -472,7 +472,7 @@ export class IgePathComponent extends IgeComponent {
 				this._currentPointTo = 1;
 
 				startPoint = this._points[0];
-				this.emit("started", [this._entity, startPoint.x, startPoint.y, this._startTime]);
+				this.emit("started", this._entity, startPoint.x, startPoint.y, this._startTime);
 			}
 		} else {
 			this._finished = false;
@@ -708,7 +708,7 @@ export class IgePathComponent extends IgeComponent {
 						// We must translate the entity at a minimum once per point to ensure it's coords are correct if a new path starts
 						this._entity.translateToPoint(newPoint);
 
-						this.emit("pointComplete", [this._entity, pointArr[p].x, pointArr[p].y, pointNext.x, pointNext.y, p, p + 1, effectiveTime]);
+						this.emit("pointComplete", this._entity, pointArr[p].x, pointArr[p].y, pointNext.x, pointNext.y, p, p + 1, effectiveTime);
 
 						if (this._nextPointToProcess <= p) {
 							// The path has restarted so bomb out and catch up next tick
@@ -727,7 +727,7 @@ export class IgePathComponent extends IgeComponent {
 						pointFrom = pointArr[this._currentPointFrom];
 						pointTo = pointArr[this._currentPointTo];
 
-						this.emit("pathRecalculated", [this._entity, pointArr[this._previousPointFrom].x, pointArr[this._previousPointFrom].y, pointArr[this._currentPointFrom].x, pointArr[this._currentPointFrom].y]);
+						this.emit("pathRecalculated", this._entity, pointArr[this._previousPointFrom].x, pointArr[this._previousPointFrom].y, pointArr[this._currentPointFrom].x, pointArr[this._currentPointFrom].y);
 					}
 
 					if (dynamicResult === -1) {
@@ -770,7 +770,7 @@ export class IgePathComponent extends IgeComponent {
 					// We must translate the entity at a minimum once per point to ensure it's coords are correct if a new path starts
 					this._entity.translateToPoint(newPoint);
 
-					this.emit("pointComplete", [this._entity, pointArr[p].x, pointArr[p].y, pointNext.x, pointNext.y, p, p + 1, effectiveTime]);
+					this.emit("pointComplete", this._entity, pointArr[p].x, pointArr[p].y, pointNext.x, pointNext.y, p, p + 1, effectiveTime);
 
 					if (this._nextPointToProcess <= p) {
 						// The path has restarted so bomb out and catch up next tick
@@ -783,7 +783,7 @@ export class IgePathComponent extends IgeComponent {
 
 				this._finished = true;
 				effectiveTime = this._startTime + this._totalTime;
-				this.emit("pathComplete", [this._entity, pointArr[this._previousPointFrom].x, pointArr[this._previousPointFrom].y, effectiveTime]);
+				this.emit("pathComplete", this._entity, pointArr[this._previousPointFrom].x, pointArr[this._previousPointFrom].y, effectiveTime);
 			}
 		} else if (this._active && this._totalDistance == 0 && !this._finished) {
 			this._finished = true;
@@ -818,7 +818,7 @@ export class IgePathComponent extends IgeComponent {
 				return true;
 			} else {
 				// Cannot generate valid path, delete this path
-				this.emit("dynamicFail", [this._entity, new IgePoint3d(pointFrom.x, pointFrom.y, pointFrom.z), new IgePoint3d(destinationPoint.x, destinationPoint.y, destinationPoint.z)]);
+				this.emit("dynamicFail", this._entity, new IgePoint3d(pointFrom.x, pointFrom.y, pointFrom.z), new IgePoint3d(destinationPoint.x, destinationPoint.y, destinationPoint.z));
 				this.clear();
 
 				return -1;

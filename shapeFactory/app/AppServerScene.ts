@@ -3,6 +3,7 @@ import { IgeNetIoServerController } from "@/engine/network/server/IgeNetIoServer
 import { IgeBaseScene } from "@/engine/core/IgeBaseScene";
 import { IgeOptions } from "@/engine/core/IgeOptions";
 import { IgeSceneGraph } from "@/engine/core/IgeSceneGraph";
+import { IgeNetworkRequestCallback } from "@/types/IgeNetworkMessage";
 
 export class AppServerScene extends IgeSceneGraph {
 	classId = "AppServerScene";
@@ -21,7 +22,7 @@ export class AppServerScene extends IgeSceneGraph {
 
 		network.sendInterval(30); // Send a stream update once every 30 milliseconds
 
-		network.define("testRequest", (data, clientId, requestCallback) => {
+		network.define("testRequest", (data: any, clientId: string, requestCallback: IgeNetworkRequestCallback) => {
 			requestCallback?.(false, "some data");
 		});
 

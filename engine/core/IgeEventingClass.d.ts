@@ -12,7 +12,7 @@ export declare class IgeEventingClass extends IgeBaseClass {
     _eventsEmitting: boolean;
     _eventsProcessing: boolean;
     _eventRemovalQueue: any[];
-    _eventListeners: Record<string, Record<string, IgeEventListenerCallback[]>>;
+    _eventListeners?: Record<string, Record<string, IgeEventListenerCallback[]>>;
     _eventStaticEmitters: Record<string, IgeEventStaticEmitterObject[]>;
     _eventsAllowDefer: boolean;
     _eventsDeferTimeouts: Record<any, number>;
@@ -79,7 +79,6 @@ export declare class IgeEventingClass extends IgeBaseClass {
     overwrite(eventName: string, listener: IgeEventListenerCallback): this;
     /**
      * Cancels an event listener based on an event name, id and listener function.
-     * @method off
      * @param {String} eventName The event to cancel listener for.
      * @param {String} id The ID of the event to cancel listening for.
      * @param {Function} listener The event listener function used in the on()
@@ -90,18 +89,40 @@ export declare class IgeEventingClass extends IgeBaseClass {
     off(eventName: string, listener?: IgeEventListenerCallback): this;
     off(eventName: string): this;
     /**
-     * Handles emitting events, is an internal method not called directly.
-     * @param {String} eventName The name of the event to emit.
-     * @param {*} data The data to emit with the event.
-     * @returns {IgeEventingClass} The emitter instance.
-     * @private
+     * Emit an event by name.
+     * @param {Object} eventName The name of the event to emit.
+     * @param {...any} data The arguments to send to any listening methods.
+     * If you are sending multiple arguments, separate them with a comma so
+     * that they are received by the function as separate arguments.
+     * @return {Number}
+     * @example #Emit an Event
+     *     // Emit the event named "hello"
+     *     myEntity.emit('hello');
+     * @example #Emit an Event With Data Object
+     *     // Emit the event named "hello"
+     *     myEntity.emit('hello', {moo: true});
+     * @example #Emit an Event With Multiple Data Values
+     *     // Emit the event named "hello"
+     *     myEntity.emit('hello', {moo: true}, 'someString');
+     * @example #Listen for Event Data
+     *     // Set a listener to listen for the data (multiple values emitted
+     *     // from an event are passed as function arguments)
+     *     myEntity.on('hello', function (arg1, arg2) {
+     *         console.log(arg1, arg2);
+     *     }
+     *
+     *     // Emit the event named "hello"
+     *     myEntity.emit('hello', 'data1', 'data2');
+     *
+     *     // The console output is:
+     *     //    data1, data2
      */
     emit(eventName: string, ...data: any[]): IgeEventReturnFlag;
     emitId(eventName: string, id: string, ...data: any[]): this;
     /**
      * Handles emitting events, is an internal method not called directly.
      * @param {String} eventName The name of the event to emit.
-     * @param {*} data The data to emit with the event.
+     * @param {...any} data Optional arguments to emit with the event.
      * @returns {IgeEventingClass} The emitter instance.
      * @private
      */
@@ -110,7 +131,7 @@ export declare class IgeEventingClass extends IgeBaseClass {
      * Handles emitting events, is an internal method not called directly.
      * @param {String} eventName The name of the event to emit.
      * @param {String} id The id of the event to emit.
-     * @param {*} data The data to emit with the event.
+     * @param {...any} data Optional arguments to emit with the event.
      * @returns {IgeEventingClass} The emitter instance.
      * @private
      */
@@ -124,8 +145,6 @@ export declare class IgeEventingClass extends IgeBaseClass {
     cancelStatic(eventName: string): this;
     /**
      * Checks if an event has any event listeners or not.
-
-     * @method willEmit
      * @param {String} eventName The name of the event to check for.
      * @returns {boolean} True if one or more event listeners are registered for
      * the event. False if none are found.
@@ -133,7 +152,6 @@ export declare class IgeEventingClass extends IgeBaseClass {
     willEmit(eventName: string): boolean;
     /**
      * Checks if an event has any event listeners or not based on the passed id.
-     * @method willEmitId
      * @param {String} eventName The name of the event to check for.
      * @param {String} id The event ID to check for.
      * @returns {boolean} True if one or more event listeners are registered for
@@ -146,9 +164,8 @@ export declare class IgeEventingClass extends IgeBaseClass {
      * one will all be wrapped into a single emit rather than emitting tons of
      * events for lots of chained inserts etc. Only the data from the last
      * de-bounced event will be emitted.
-     * @method deferEmit
      * @param {String} eventName The name of the event to emit.
-     * @param {*=} data Optional data to emit with the event.
+     * @param {...any} data Optional arguments to emit with the event.
      * @returns {IgeEventingClass} The emitter instance.
      */
     deferEmit(eventName: string, ...data: any[]): this;

@@ -33,34 +33,34 @@ export class SpaceClientScene extends IgeSceneGraph {
 		if (connectingDialog) {
 			connectingDialog.style.display = 'block';
 		}
+	}
 
+	async addGraph () {
 		const network = ige.network as IgeNetIoClientController;
 
 		// Hook network events we want to respond to
 		network.define('playerEntity', this._onPlayerEntity.bind(this));
 
 		// Start the network client
-		network.start('http://' + window.location.hostname + ':2000', () => {
-			// Set up the network stream handler
-			network.renderLatency(80); // Render the simulation 80 milliseconds in the past
+		await network.start('http://' + window.location.hostname + ':2000');
 
-			// Ask server for game data
-			network.send('publicGameData', null, (err, data) => {
-				if (err) {
-					network.stop();
-					console.log("Game error");
-					return;
-				}
+		// Set up the network stream handler
+		network.renderLatency(80); // Render the simulation 80 milliseconds in the past
 
-				this.publicGameData = data;
+		// Ask server for game data
+		network.send('publicGameData', null, (err, data) => {
+			if (err) {
+				network.stop();
+				console.log("Game error");
+				return;
+			}
 
-				// Ask the server to create an entity for us
-				network.send('playerEntity');
-			});
+			this.publicGameData = data;
+
+			// Ask the server to create an entity for us
+			network.send('playerEntity');
 		});
-	}
 
-	addGraph () {
 		const vp1 = ige.$("vp1") as IgeViewport;
 
 		// Set the viewport camera to 0, 0, 0

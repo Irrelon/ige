@@ -119,7 +119,7 @@ export class IgeNetIoServerController extends IgeNetIoBaseController {
 			commandHandler(data.data, clientId, responseCallback);
 		}
 
-		this.emit(data.cmd, [data.data, clientId, responseCallback]);
+		this.emit(data.cmd, data.data, clientId, responseCallback);
 	};
 
 	_onResponse = (data: IgeNetworkMessageStructure, clientId?: string) => {
@@ -486,13 +486,13 @@ export class IgeNetIoServerController extends IgeNetIoBaseController {
 		const ciDecoded = data[0].charCodeAt(0),
 			commandName = this._networkCommandsIndex[ciDecoded];
 
-		const commandHandler = this._networkCommands[commandName];
+		const commandHandler = this._networkCommands[commandName] as IgeNetworkServerSideMessageHandler;
 
 		if (commandHandler) {
 			commandHandler(data[1], clientId);
 		}
 
-		this.emit(commandName, [data[1], clientId]);
+		this.emit(commandName, data[1], clientId);
 	}
 
 	/**

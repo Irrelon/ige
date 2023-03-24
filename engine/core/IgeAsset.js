@@ -17,10 +17,11 @@ export class IgeAsset extends IgeEventingClass {
             if (this._loaded) {
                 return resolve(true);
             }
-            const emitterHandle = this.on("loaded", () => {
+            const listener = () => {
                 resolve(true);
-                this.off("loaded", emitterHandle);
-            });
+                this.off("loaded", listener);
+            };
+            this.on("loaded", listener);
         });
     }
     destroy() {

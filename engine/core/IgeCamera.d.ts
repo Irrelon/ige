@@ -53,14 +53,14 @@ export declare class IgeCamera extends IgeEntity {
      */
     trackTranslate<EntityType extends IgeEntity = IgeEntity>(entity: EntityType, smoothing?: number, rounding?: boolean): IgeEntity | IgeViewport | undefined;
     /**
-     * Gets / sets the translate tracking smoothing value.
+     * Gets / sets the `translate` tracking smoothing value.
      * @param {Number=} val
      * @return {*}
      */
     trackTranslateSmoothing(val?: number): number | this | undefined;
     /**
-     * Gets / sets the translate tracking smoothing rounding
-     * either enabled or disabled. When enabled the translate
+     * Gets / sets the `translate` tracking smoothing rounding
+     * either enabled or disabled. When enabled the `translate`
      * smoothing value will be rounded so that floating point
      * values are not used which can help when smoothing on a
      * scene that has texture smoothing disabled so sub-pixel
@@ -85,7 +85,7 @@ export declare class IgeCamera extends IgeEntity {
      */
     trackRotate(entity?: IgeEntity, smoothing?: number): IgeEntity | IgeViewport | undefined;
     /**
-     * Gets / sets the rotate tracking smoothing value.
+     * Gets / sets the `rotate` tracking smoothing value.
      * @param {Number=} val
      * @return {*}
      */

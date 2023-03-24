@@ -22,7 +22,7 @@ export class IgeNetIoSocket extends IgeEventingClass {
 		this._socket = connection;
 		this._socket.on("message", (message) => {
 			if (message.type === "utf8") {
-				this.emit("message", [this._decode(message.utf8Data)]);
+				this.emit("message", this._decode(message.utf8Data));
 				//socket.sendUTF(message.utf8Data);
 			} else if (message.type === "binary") {
 				console.log("Binary data received, no support yet!");

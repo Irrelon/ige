@@ -1,1 +1,1 @@
-declare const appCore: any;
+export {};

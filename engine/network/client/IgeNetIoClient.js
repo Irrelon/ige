@@ -45,7 +45,7 @@ export class IgeNetIoClient extends IgeEventingClass {
             }
             else {
                 // The packet is normal data
-                this.emit("message", [packet]);
+                this.emit("message", packet);
             }
         };
         this._onClose = (evt) => {

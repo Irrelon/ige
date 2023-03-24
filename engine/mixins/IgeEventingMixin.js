@@ -25,7 +25,7 @@ export const WithEventingMixin = (Base) => class extends Base {
      *     }
      *
      *     // Emit the event named "hello"
-     *     myEntity.emit('hello', ['data1', 'data2']);
+     *     myEntity.emit('hello', 'data1', 'data2');
      *
      *     // The console output is:
      *     //    data1, data2
@@ -162,7 +162,7 @@ export const WithEventingMixin = (Base) => class extends Base {
      *     myEntity.emit('hello', {moo: true});
      * @example #Emit an Event With Multiple Data Values
      *     // Emit the event named "hello"
-     *     myEntity.emit('hello', [{moo: true}, 'someString']);
+     *     myEntity.emit('hello', {moo: true}, 'someString');
      * @example #Listen for Event Data
      *     // Set a listener to listen for the data (multiple values emitted
      *     // from an event are passed as function arguments)
@@ -171,7 +171,7 @@ export const WithEventingMixin = (Base) => class extends Base {
      *     }
      *
      *     // Emit the event named "hello"
-     *     myEntity.emit('hello', ['data1', 'data2']);
+     *     myEntity.emit('hello', 'data1', 'data2');
      *
      *     // The console output is:
      *     //    data1, data2

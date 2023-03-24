@@ -1496,7 +1496,7 @@ export class IgeObject extends IgeEventingClass {
                                 if (this.onStreamProperty) {
                                     this.onStreamProperty(i, props[i]);
                                 }
-                                this.emit("streamPropChange", [i, props[i]]);
+                                this.emit("streamPropChange", i, props[i]);
                             }
                         }
                     }
@@ -1652,7 +1652,7 @@ export class IgeObject extends IgeEventingClass {
         this._alive = false;
         // Remove the event listeners array in case any
         // object references still exist there
-        delete this._eventListeners;
+        this._eventListeners = {};
         return this;
     }
     /**
