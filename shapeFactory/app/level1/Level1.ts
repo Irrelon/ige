@@ -30,6 +30,7 @@ export class Level1 extends IgeSceneGraph {
 		// Create the scene
 		const scene1 = new IgeScene2d()
 			.id("scene1")
+			//.isometricMounts(true)
 			.mount(baseScene);
 
 		if (isClient) {

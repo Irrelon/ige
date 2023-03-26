@@ -1112,9 +1112,6 @@ export class IgeObject extends IgeEventingClass implements IgeCanRegisterById, I
 	/**
 	 * Gets / sets if objects mounted to this object should be positioned
 	 * and depth-sorted in an isometric fashion or a 2d fashion.
-	 * and depth sorting of objects mounted to this object, or false to
-	 * enable 2d positioning and depth-sorting of objects mounted to this
-	 * object.
 	 * @example #Set children to be positioned and depth sorted in 2d
 	 *     var entity = new IgeEntity()
 	 *         .isometricMounts(false);
