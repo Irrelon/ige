@@ -9,6 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 import { ige } from "../../../engine/instance.js";
 import { Level1 } from "./Level1.js";
+import { UiClientScene } from "./UiClientScene.js";
 ige.router.route("app/level1", {
     client: () => __awaiter(void 0, void 0, void 0, function* () {
         // Add all the items in Scene1 to the scenegraph
@@ -16,7 +17,9 @@ ige.router.route("app/level1", {
         // the method being called by the engine and how
         // the items are added to the scenegraph)
         yield ige.engine.addGraph(Level1);
+        yield ige.engine.addGraph(UiClientScene);
         return () => __awaiter(void 0, void 0, void 0, function* () {
+            yield ige.engine.removeGraph(UiClientScene);
             yield ige.engine.removeGraph(Level1);
         });
     }),

@@ -6,6 +6,7 @@ import { registerClass } from "@/engine/igeClassStore";
 import { IgeTimeout } from "@/engine/core/IgeTimeout";
 import { isServer } from "@/engine/clientServer";
 import { roadPathFinder } from "../services/roadPathFinder";
+import { distance } from "@/engine/utils";
 
 const fillColorByType: Record<ResourceType, string> = {
 	[ResourceType.none]: "#000000",
@@ -58,6 +59,17 @@ export class Resource extends Circle {
 		// If we have no buildings to send the resource to, return, since destination will be the base
 		if (!needyList.length) return;
 		//console.log(`Current ${ResourceType[this._type]} count`, needyList[0].id(), needyList[0].countAllResourcesByType(this._type));
+
+		const distances: Record<string, number> = {};
+
+		needyList.forEach((tmpBuilding) => {
+			distances[tmpBuilding.id()] = distance(this._translate.x, this._translate.y, tmpBuilding._translate.x, tmpBuilding._translate.y);
+		});
+
+		// Sort the needy list by distance
+		needyList.sort((a, b) => {
+			return distances[a.id()] < distances[b.id()] ? -1 : 1;
+		});
 
 		const buildingWeWillDeliverTo = needyList[0];
 

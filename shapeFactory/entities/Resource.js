@@ -5,6 +5,7 @@ import { registerClass } from "../../engine/igeClassStore.js";
 import { IgeTimeout } from "../../engine/core/IgeTimeout.js";
 import { isServer } from "../../engine/clientServer.js";
 import { roadPathFinder } from "../services/roadPathFinder.js";
+import { distance } from "../../engine/utils.js";
 const fillColorByType = {
     [ResourceType.none]: "#000000",
     [ResourceType.wood]: "#006901",
@@ -43,6 +44,14 @@ export class Resource extends Circle {
         if (!needyList.length)
             return;
         //console.log(`Current ${ResourceType[this._type]} count`, needyList[0].id(), needyList[0].countAllResourcesByType(this._type));
+        const distances = {};
+        needyList.forEach((tmpBuilding) => {
+            distances[tmpBuilding.id()] = distance(this._translate.x, this._translate.y, tmpBuilding._translate.x, tmpBuilding._translate.y);
+        });
+        // Sort the needy list by distance
+        needyList.sort((a, b) => {
+            return distances[a.id()] < distances[b.id()] ? -1 : 1;
+        });
         const buildingWeWillDeliverTo = needyList[0];
         // Tell the building we are going to route the resource to it
         buildingWeWillDeliverTo.onResourceEnRoute(this._type);

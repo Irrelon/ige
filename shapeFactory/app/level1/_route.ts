@@ -1,5 +1,6 @@
 import { ige } from "@/engine/instance";
 import { Level1 } from "./Level1";
+import { UiClientScene } from "./UiClientScene";
 
 ige.router.route("app/level1", {
 	client: async () => {
@@ -8,8 +9,10 @@ ige.router.route("app/level1", {
 		// the method being called by the engine and how
 		// the items are added to the scenegraph)
 		await ige.engine.addGraph(Level1);
+		await ige.engine.addGraph(UiClientScene);
 
 		return async () => {
+			await ige.engine.removeGraph(UiClientScene);
 			await ige.engine.removeGraph(Level1);
 		}
 	},

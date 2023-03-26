@@ -29,8 +29,8 @@ export class GameEntity extends IgeEntity {
 			this.drawBoundsData(false);
 		};
 
-		//this.pointerOver(overFunc);
-		//this.pointerOut(outFunc);
+		this.pointerOver(overFunc);
+		this.pointerOut(outFunc);
 	}
 
 	mount (obj: IgeObject): this {

@@ -11,8 +11,8 @@ export class Star extends Building {
 
 		this.data("glowColor", "#00ff00")
 			.depth(1)
-			.width(50)
-			.height(50);
+			.width(60)
+			.height(60);
 
 		if (isClient) {
 			this.texture(ige.textures.get("star"));
