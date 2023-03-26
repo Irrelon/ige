@@ -5,8 +5,9 @@ import { ResourceType } from "../enums/ResourceType.js";
 import { Resource } from "./Resource.js";
 export class StorageBuilding extends Square {
     constructor() {
-        super(...arguments);
+        super();
         this.classId = "StorageBuilding";
+        this.depth(10);
     }
     streamCreateConstructorArgs() {
         return [];

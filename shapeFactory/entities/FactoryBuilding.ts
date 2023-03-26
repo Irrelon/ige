@@ -13,6 +13,7 @@ export class FactoryBuilding extends Triangle {
 
 		this._produces = produces;
 		this._requires = requires;
+		this.depth(10);
 	}
 
 	streamCreateConstructorArgs () {

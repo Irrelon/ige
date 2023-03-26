@@ -25,7 +25,7 @@ export class Resource extends Circle {
 	constructor (type: ResourceType, locationId: string) {
 		super();
 
-		this.depth(4);
+		this.depth(3);
 		this.data("fillColor", fillColorByType[type])
 			.width(10)
 			.height(10);

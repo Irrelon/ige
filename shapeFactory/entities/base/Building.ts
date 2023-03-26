@@ -14,7 +14,8 @@ export class Building extends GameEntity {
 	inboundQueue: Partial<Record<ResourceType, number>> = {};
 	resourcePool: Partial<Record<ResourceType, number>> = {};
 
-	_timeToProduceMs: number = 10000;
+	_productionMinTimeMs: number = 10000;
+	_productionMaxTimeMs: number = 20000;
 	_isProducing: boolean = false;
 	_produces: ResourceType;
 	_requires: BuildingResourceRequirement[];
@@ -36,6 +37,24 @@ export class Building extends GameEntity {
 	_subtractResource (recordObj: Partial<Record<ResourceType, number>>, resourceType: ResourceType, amount: number = 1) {
 		const currentVal = recordObj[resourceType] || 0;
 		recordObj[resourceType] = currentVal - amount;
+	}
+
+	productionMinTime (val?: number) {
+		if (val === undefined) {
+			return this._productionMinTimeMs;
+		}
+
+		this._productionMinTimeMs = val;
+		return this;
+	}
+
+	productionMaxTime (val?: number) {
+		if (val === undefined) {
+			return this._productionMaxTimeMs;
+		}
+
+		this._productionMaxTimeMs = val;
+		return this;
 	}
 
 	onResourceEnRoute (resourceType: ResourceType) {
@@ -103,9 +122,12 @@ export class Building extends GameEntity {
 		// The building can produce
 		this._isProducing = true;
 
+		const diff = this._productionMaxTimeMs - this._productionMinTimeMs;
+		const productionTime = Math.round(Math.random() * diff) + this._productionMinTimeMs;
+
 		new IgeTimeout(() => {
 			this.completeProducingResource();
-		}, this._timeToProduceMs);
+		}, productionTime);
 	}
 
 	completeProducingResource () {

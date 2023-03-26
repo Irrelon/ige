@@ -13,6 +13,8 @@ export class MiningBuilding extends Star {
 
 		this._produces = produces;
 		this._requires = requires;
+
+		this.depth(10);
 	}
 
 	streamCreateConstructorArgs () {

@@ -4,7 +4,7 @@ export class WorkerUnit extends Circle {
     constructor(type) {
         super();
         this._type = type;
-        this.depth(3)
+        this.depth(0)
             .width(20)
             .height(20);
     }

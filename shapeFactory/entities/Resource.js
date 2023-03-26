@@ -16,7 +16,7 @@ export class Resource extends Circle {
         super();
         this._destinationId = "";
         this._pathIds = [];
-        this.depth(4);
+        this.depth(3);
         this.data("fillColor", fillColorByType[type])
             .width(10)
             .height(10);

@@ -9,7 +9,7 @@ export class Flag extends Building {
 	constructor () {
 		super();
 
-		this.data("glowColor", "#002aff")
+		this.data("glowColor", "#ffcc00")
 			.depth(1)
 			.width(10)
 			.height(20);

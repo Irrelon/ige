@@ -4,6 +4,7 @@ import { FlagBuilding } from "./FlagBuilding";
 export declare class StorageBuilding extends Square {
     classId: string;
     flag?: FlagBuilding;
+    constructor();
     streamCreateConstructorArgs(): never[];
     /**
      * Takes a resource from the resource pool and dumps it back onto the

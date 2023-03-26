@@ -7,7 +7,6 @@ export class Circle extends GameEntity {
         super();
         this.classId = 'Circle';
         this.data("glowColor", "#c852ff")
-            .depth(1)
             .width(50)
             .height(50);
         if (isClient) {

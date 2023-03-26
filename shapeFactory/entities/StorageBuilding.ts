@@ -11,6 +11,11 @@ export class StorageBuilding extends Square {
 	classId = "StorageBuilding";
 	flag?: FlagBuilding;
 
+	constructor () {
+		super();
+		this.depth(10);
+	}
+
 	streamCreateConstructorArgs () {
 		return [];
 	}

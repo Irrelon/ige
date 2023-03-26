@@ -8,10 +8,14 @@ const line: IgeSmartTexture = {
 		ctx.lineWidth = 4;
 		ctx.strokeStyle = "#ffffff";
 		ctx.shadowColor = entity.data("glowColor");
-		ctx.shadowBlur = 40;
+		ctx.shadowBlur = entity.data("glowSize");
 		ctx.shadowOffsetX = 0;
 		ctx.shadowOffsetY = 0;
 		ctx.stroke();
+
+		for (let i = 0; i < entity.data("glowIntensity") || 0; i++) {
+			ctx.stroke();
+		}
 	}
 };
 

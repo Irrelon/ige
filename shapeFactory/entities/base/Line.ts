@@ -19,7 +19,7 @@ export class Line extends GameEntity {
 	setLine (x1: number, y1: number, x2: number, y2: number) {
 		this._initVals = new IgeRect(x1, y1, x2 ,y2);
 
-		this.data("glowColor", "#ffea00")
+		this.data("glowColor", "#ff9100")
 			.depth(0)
 			.width(x2 - x1)
 			.height(y2 - y1)

@@ -60,9 +60,9 @@ export class Level1 extends IgeSceneGraph {
 			.mount(scene1);
 
 		const miningBuilding1 = new MiningBuilding(ResourceType.wood, [{
-			type: ResourceType.energy,
-			count: 1,
-			max: 1
+			type: ResourceType.none,
+			count: 0,
+			max: 0
 		}])
 			.id("miningBuilding1")
 			.translateTo(50, 150, 0)
@@ -80,9 +80,9 @@ export class Level1 extends IgeSceneGraph {
 			.mount(scene1);
 
 		const miningBuilding2 = new MiningBuilding(ResourceType.grain, [{
-			type: ResourceType.energy,
-			count: 1,
-			max: 1
+			type: ResourceType.none,
+			count: 0,
+			max: 0
 		}])
 			.id("miningBuilding2")
 			.translateTo(250, -150, 0)

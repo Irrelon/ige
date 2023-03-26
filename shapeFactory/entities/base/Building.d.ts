@@ -7,13 +7,16 @@ export declare class Building extends GameEntity {
     outboundQueue: Resource[];
     inboundQueue: Partial<Record<ResourceType, number>>;
     resourcePool: Partial<Record<ResourceType, number>>;
-    _timeToProduceMs: number;
+    _productionMinTimeMs: number;
+    _productionMaxTimeMs: number;
     _isProducing: boolean;
     _produces: ResourceType;
     _requires: BuildingResourceRequirement[];
     constructor();
     _addResource(recordObj: Partial<Record<ResourceType, number>>, resourceType: ResourceType, amount?: number): void;
     _subtractResource(recordObj: Partial<Record<ResourceType, number>>, resourceType: ResourceType, amount?: number): void;
+    productionMinTime(val?: number): number | this;
+    productionMaxTime(val?: number): number | this;
     onResourceEnRoute(resourceType: ResourceType): void;
     onResourceArrived(resourceType: ResourceType): void;
     /**

@@ -6,6 +6,7 @@ export class MiningBuilding extends Star {
         this.classId = "MiningBuilding";
         this._produces = produces;
         this._requires = requires;
+        this.depth(10);
     }
     streamCreateConstructorArgs() {
         return [this._produces, this._requires];
