@@ -631,8 +631,8 @@ export declare class IgeEntity extends IgeObject implements IgeCanRegisterById, 
      *         .isometric(false);
      * @return {*}
      */
-    isometric(): boolean;
     isometric(val: boolean): this;
+    isometric(): boolean;
     /**
      * Destroys the entity by removing it from the scenegraph,
      * calling destroy() on any child entities and removing

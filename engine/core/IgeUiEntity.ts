@@ -1400,6 +1400,8 @@ export class IgeUiEntity extends IgeEntity {
 		return this._borderBottomWidth;
 	}
 
+	borderRadius (px: number): this;
+	borderRadius (): number;
 	borderRadius (px?: number) {
 		if (px !== undefined) {
 			this._borderRadius = px;

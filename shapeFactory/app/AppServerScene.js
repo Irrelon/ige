@@ -26,9 +26,6 @@ export class AppServerScene extends IgeSceneGraph {
             // Load the base scene data
             yield ige.engine.addGraph(IgeBaseScene);
             network.sendInterval(30); // Send a stream update once every 30 milliseconds
-            network.define("testRequest", (data, clientId, requestCallback) => {
-                requestCallback === null || requestCallback === void 0 ? void 0 : requestCallback(false, "some data");
-            });
             yield network.start(2000);
             network.acceptConnections(true);
         });

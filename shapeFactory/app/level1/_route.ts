@@ -11,6 +11,31 @@ ige.router.route("app/level1", {
 		await ige.engine.addGraph(Level1);
 		await ige.engine.addGraph(UiClientScene);
 
+		// const fsm = new IgeFSM();
+		//
+		// fsm.defineState("idle", {
+		// 	enter: async () => {
+		// 		console.log("Entered idle");
+		// 		const uiCreateStorage = ige.$("uiCreateStorage") as IgeUiElement;
+		//
+		// 		uiCreateStorage.pointerUp(() => {
+		// 			fsm.enterState("createBuilding", "storage");
+		// 		});
+		// 	}
+		// });
+		//
+		// fsm.defineState("createBuilding", {
+		// 	enter: async (buildingType: string) => {
+		// 		console.log("Entered createBuilding", buildingType);
+		// 	}
+		// });
+		//
+		// fsm.defineState("createRoad");
+		//
+		// fsm.defineState("destroyObject");
+		//
+		// await fsm.initialState("idle");
+
 		return async () => {
 			await ige.engine.removeGraph(UiClientScene);
 			await ige.engine.removeGraph(Level1);

@@ -14,7 +14,7 @@ export declare class SpaceServerScene extends IgeSceneGraph {
     constructor();
     addGraph(): void;
     removeGraph(): void;
-    playerByClientId(clientId: string, player?: GameEntity): this | GameEntity;
+    playerByClientId(clientId: string, player?: GameEntity): GameEntity | this;
     /**
      * Is called when the network tells us a new client has connected
      * to the server. This is the point we can return true to reject

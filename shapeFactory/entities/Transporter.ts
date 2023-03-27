@@ -108,6 +108,12 @@ export class Transporter extends WorkerUnit {
 		// Go pick up the item
 		this._state = "retrieving";
 
+		const obj = {x: 1};
+
+		new IgeTween(obj, {
+			x: 100
+		}, 4000).start()
+
 		// Move the transporter towards the target resource
 		new IgeTween(this._translate, {
 			x: resource._translate.x,

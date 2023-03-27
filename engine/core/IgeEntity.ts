@@ -1815,8 +1815,8 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 	 *         .isometric(false);
 	 * @return {*}
 	 */
-	isometric(): boolean;
 	isometric(val: boolean): this;
+	isometric(): boolean;
 	isometric (val?: boolean): boolean | this {
 		if (val !== undefined) {
 			this._renderMode = val ? IgeEntityRenderMode.iso : IgeEntityRenderMode.flat;

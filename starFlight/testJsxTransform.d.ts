@@ -1,1 +1,2 @@
-export declare const Scene: () => any;
+/// <reference types="react" />
+export declare const Scene: () => JSX.Element;

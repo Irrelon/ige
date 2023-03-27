@@ -1,12 +1,44 @@
-import { IgeBaseClass } from "./IgeBaseClass";
+import { IgeBaseClass } from "@/engine/core/IgeBaseClass";
 
-/**
- * A simple finite state machine implementation.
- */
-export class IgeFSM extends IgeBaseClass {
-	classId = "IgeFSM";
+export type TransitionResult = Error | any | Promise<any>;
+export type TransitionCheckFunction = (...rest: any[]) => TransitionResult;
+export type TransitionPromise = (resolve: (result?: any) => any | Promise<any>) => any | Promise<any>;
 
-	constructor () {
+export interface TransitionDefinition {
+	[fromState: string]: {
+		[toState: string]: TransitionCheckFunction;
+	};
+}
+
+export interface EventDefinition {
+	[eventName: string]: (...rest: any[]) => Promise<any>;
+}
+
+export interface StateDefinition {
+	[stateName: string]: EventDefinition;
+}
+
+export interface InitialData {
+	states: StateDefinition;
+	initialState: string;
+}
+
+export default class IgeFSM extends IgeBaseClass {
+	_states: StateDefinition;
+	_transitions: TransitionDefinition;
+	_transitioning: boolean;
+	_initialStateName: string;
+	_currentStateName: string;
+	_previousStateName: string;
+	_transitionQueue: TransitionPromise[];
+	_data: { [key: string]: any };
+	_debug: boolean;
+	_log: boolean;
+
+	/**
+	 * A simple finite state machine implementation.
+	 */
+	constructor (initialData?: InitialData) {
 		super();
 
 		this._states = {};
@@ -16,29 +48,45 @@ export class IgeFSM extends IgeBaseClass {
 		this._initialStateName = "";
 		this._currentStateName = "";
 		this._previousStateName = "";
+		this._transitionQueue = [];
+		this._transitioning = false;
+		this._data = {};
 
 		this._debug = false;
+		this._log = false;
+
+		if (initialData) {
+			if (initialData.states) {
+				Object.entries(initialData.states).forEach(([stateName, definition]) => {
+					this.defineState(stateName, definition);
+				});
+			}
+
+			if (initialData.initialState) {
+				void this.initialState(initialData.initialState);
+			}
+		}
 	}
 
 	/**
 	 * Returns the name of the initial state.
-	 * @returns {string}
+	 * @returns {string} The name of the initial state.
 	 */
 	initialStateName () {
-		return this._currentStateName;
+		return this._initialStateName;
 	}
 
 	/**
 	 * Returns the name of the previous state.
-	 * @returns {string}
+	 * @returns {string} The name of the previous state.
 	 */
 	previousStateName () {
-		return this._currentStateName;
+		return this._previousStateName;
 	}
 
 	/**
 	 * Returns the name of the current state.
-	 * @returns {string}
+	 * @returns {string} The name of the current state.
 	 */
 	currentStateName () {
 		return this._currentStateName;
@@ -47,39 +95,39 @@ export class IgeFSM extends IgeBaseClass {
 	/**
 	 * Gets / sets the debug flag. If set to true will enable console logging
 	 * of state changes / events.
-	 * @param {Boolean=} val Set to true to enable.
-	 * @returns {*}
+	 * @param {boolean=} val Set to true to enable.
+	 * @returns {boolean|FiniteStateMachine} The debug flag value.
 	 */
-	debug (val) {
+	debug = (val: boolean | undefined) => {
 		if (val !== undefined) {
 			this._debug = val;
 			return this;
 		}
 
 		return this._debug;
-	}
+	};
 
 	/**
 	 * Defines a state with a name and a state definition.
-	 * @param {String} name The name of the state to define.
-	 * @param {Object} definition The state definition object.
+	 * @param {string} name The name of the state to define.
+	 * @param {EventDefinition} definition The state definition object.
 	 * @example #Define a state
-	 *     var fsm = new IgeFSM();
+	 *     var fsm = new FSM();
 	 *
 	 *     // Define an "idle" state
 	 *     fsm.defineState('idle', {
-	 *         enter: function (data, completeCallback) {
-	 *             console.log('entered idle state');
-	 *             completeCallback();
+	 *         enter = async (data) => {
+	 *             console.log("entered idle state");
+	 *             return;
 	 *         },
-	 *         exit: function (data, completeCallback) {
-	 *             console.log('exited idle state');
-	 *             completeCallback();
+	 *         exit = async (data) => {
+	 *             console.log("exited idle state");
+	 *             return;
 	 *         }
 	 *     });
-	 * @returns {IgeFSM}
+	 * @returns {FiniteStateMachine} The FSM instance.
 	 */
-	defineState (name, definition) {
+	defineState = (name: string, definition: EventDefinition = {}) => {
 		this._states[name] = definition;
 
 		if (!this._initialStateName) {
@@ -87,88 +135,84 @@ export class IgeFSM extends IgeBaseClass {
 		}
 
 		return this;
-	}
+	};
 
 	/**
 	 * Defines a transition between two states.
 	 * @param {String} fromState The state name the transition is from.
 	 * @param {String} toState The state name the transition is to.
 	 * @param {Function} transitionCheck A method to call just before this transition
-	 * between the two specified states is executed, that will call the callback method
-	 * passed to it in the second parameter and include either true to allow the
-	 * transition to continue, or false to cancel it in the first parameter.
+	 * between the two specified states is executed. The function should be async and
+	 * return either an Error instance (new Error()) to indicate the transition should
+	 * be cancelled, or any other value to indicate success.
 	 * @example #Define a state transition
-	 *     var fsm = new IgeFSM();
+	 *     var fsm = new FSM();
 	 *
 	 *     // Define an "idle" state
 	 *     fsm.defineState('idle', {
-	 *         enter: function (data, completeCallback) {
-	 *             console.log('entered idle state');
-	 *             completeCallback();
+	 *         enter = async function (data) {
+	 *             console.log("entered idle state");
+	 *             return;
 	 *         },
-	 *         exit: function (data, completeCallback) {
-	 *             console.log('exited idle state');
-	 *             completeCallback();
+	 *         exit = async function (data) {
+	 *             console.log("exited idle state");
+	 *             return;
 	 *         }
 	 *     });
 	 *
 	 *     // Define a "moving" state
 	 *     fsm.defineState('moving', {
-	 *         enter: function (data, completeCallback) {
-	 *             console.log('entered moving state');
-	 *             completeCallback();
+	 *         enter = async function (data) {
+	 *             console.log("entered moving state");
+	 *             return;
 	 *         },
-	 *         exit: function (data, completeCallback) {
-	 *             console.log('exited moving state');
-	 *             completeCallback();
+	 *         exit = async function (data) {
+	 *             console.log("exited moving state");
+	 *             return;
 	 *         }
 	 *     });
 	 *
 	 *     // Define a transition between the two methods
-	 *     fsm.defineTransition('idle', 'moving', function (data, callback) {
+	 *     fsm.defineTransition('idle', 'moving', async (data) => {
 	 *         // Check some data we were passed
 	 *         if (data === 'ok') {
-	 *             // Callback the listener and tell them there was no error
-	 *             // (first argument is an err flag, set to false for no error)
-	 *             callback(false);
+	 *             return "whatever value you like, objects, arrays, strings, undefined etc";
 	 *         } else {
-	 *             // Callback and say there was an error by passing anything other
-	 *             // than false in the first argument
-	 *             callback('Some error string, or true or any data');
+	 *             return new Error("Some error");
 	 *         }
 	 *     });
 	 *
 	 *     // Now change states and cause it to fail
-	 *     fsm.enterState('moving', 'notOk', function (err, data) {
-	 *         if (!err) {
-	 *             // There was no error, the state changed successfully
-	 *             console.log('State changed!', fsm.currentStateName());
-	 *         } else {
+	 *     fsm.enterState('moving', {"someData": true}).then((result) => {
+	 *         if (result instanceof Error) {
 	 *             // There was an error, the state did not change
 	 *             console.log('State did NOT change!', fsm.currentStateName());
+	 *         } else {
+	 *             // There was no error, the state changed successfully
+	 *             console.log('State changed!', fsm.currentStateName());
 	 *         }
 	 *     });
 	 *
 	 *     // Now change states and pass "ok" in the data to make it proceed
-	 *     fsm.enterState('moving', 'ok', function (err, data) {
-	 *         if (!err) {
-	 *             // There was no error, the state changed successfully
-	 *             console.log('State changed!', fsm.currentStateName());
-	 *         } else {
+	 *     fsm.enterState('moving', 'ok').then((result) {
+	 *         if (result instanceof Error) {
 	 *             // There was an error, the state did not change
 	 *             console.log('State did NOT change!', fsm.currentStateName());
+	 *         } else {
+	 *             // There was no error, the state changed successfully
+	 *             console.log('State changed!', fsm.currentStateName());
 	 *         }
 	 *     });
-	 * @returns {*}
+	 * @returns {FiniteStateMachine|Boolean} The FSM instance.
 	 */
-	defineTransition (fromState, toState, transitionCheck) {
+	defineTransition = (fromState: string, toState: string, transitionCheck: TransitionCheckFunction) => {
 		if (fromState && toState && transitionCheck) {
 			if (!this._states[fromState]) {
-				this.log("fromState \"" + fromState + "\" specified is not defined as a state!", "error");
+				this.log(`fromState "${fromState}" specified is not defined as a state!`, "error");
 			}
 
 			if (!this._states[toState]) {
-				this.log("toState \"" + toState + "\" specified is not defined as a state!", "error");
+				this.log(`toState "${toState}" specified is not defined as a state!`, "error");
 			}
 
 			this._transitions[fromState] = this._transitions[fromState] || {};
@@ -178,111 +222,243 @@ export class IgeFSM extends IgeBaseClass {
 		}
 
 		return false;
-	}
+	};
 
 	/**
-	 * After defining your states, call this with the state name and the initial
-	 * state of the FSM will be set.
+	 * After defining your states, call this to set the initial state of the FSM.
+	 * Setting the state this way skips any transition logic since there is assumed
+	 * to be no current state and therefore no state to transition from. If the FSM
+	 * already has a state set, this function will do nothing.
 	 * @param {String} stateName The state to set as the initial state.
-	 * @param {*=} data Any data you wish to pass the state's "enter" method.
-	 * @param {Function=} callback An optional callback method that will be called
-	 * once the state has been entered successfully, or if there was an error.
+	 * @param {any[]} rest Any data you wish to pass the state's "enter" method.
+	 * @returns {Promise} The result of trying to enter the state.
 	 */
-	initialState (stateName, data, callback) {
-		const newStateObj = this.getState(stateName);
+	initialState = (stateName: string, ...rest: any[]): Promise<any> => {
+		return new Promise((resolve) => {
+			if (this._currentStateName) {
+				resolve(undefined);
+				return;
+			}
 
-		this._currentStateName = stateName;
+			const newStateObj = this.getState(stateName);
 
-		if (this._debug) { this.log("Entering initial state: " + stateName); }
+			if (!newStateObj) throw new Error(`Cannot set initial state "${stateName}" because it does not exist!`);
 
-		if (newStateObj.enter) {
-			newStateObj.enter.apply(newStateObj, [data, function (enterErr, enterData) {
-				if (callback) { callback(enterErr, enterData); }
-			}]);
-		}
-	}
+			// Update the current state
+			this._currentStateName = stateName;
+
+			if (this._debug) {
+				this.log(`Entering initial state: ${stateName}`);
+			}
+
+			if (newStateObj.enter) {
+				resolve(newStateObj.enter(...rest));
+				return;
+			}
+
+			resolve(undefined);
+		});
+	};
 
 	/**
 	 * Gets the state definition object for the specified state name.
-	 * @param {String} stateName The name of the state who's definition object should
+	 * @param {String} stateName The name of the state whose definition object should
 	 * be looked up and returned.
 	 * @returns {Object} The state definition object or undefined if no state exists
 	 * with that name.
 	 */
-	getState (stateName) {
+	getState = (stateName: string) => {
 		return this._states[stateName];
-	}
+	};
 
 	/**
 	 * Tell the FSM to enter the state specified.
 	 * @param {String} newStateName The new state to enter.
-	 * @param {*} data Any data to pass to the exit and enter methods.
-	 * @param {Function=} callback The optional callback method to call on completion.
+	 * @param {any[]} rest Any data to pass to the exit and enter methods.
+	 * @returns {Promise<TransitionResult>} The result of entering the state.
 	 */
-	enterState (newStateName, data, callback) {
-		const self = this;
+	enterState = (newStateName: string, ...rest: any[]): Promise<TransitionResult> => {
+		this.log(`Asked to enter state: ${newStateName}`);
+		this._transitionQueue.push((resolve) => {
+			// Check if we need to do transitions
+			if (newStateName === this._currentStateName) {
+				this.log(`Already in "${newStateName}" state.`);
+				return resolve(undefined);
+			}
 
-		if (self._transitions[self._currentStateName] && self._transitions[self._currentStateName][newStateName]) {
+			this.log(`Checking transition from ${this._currentStateName} to ${newStateName}...`);
+
+			if (!this._transitions[this._currentStateName] || !this._transitions[this._currentStateName][newStateName]) {
+				this.log(`No transition check from ${this._currentStateName} to ${newStateName}`);
+				// No transition check method exists, continue to change states
+				return resolve(this._transitionStates(newStateName, ...rest));
+			}
+
 			// There is a transition check method, call it to see if we can change states
-			self._transitions[self._currentStateName][newStateName](data, function (err) {
-				if (!err) {
-					// State change allowed
-					self._transitionStates(self._currentStateName, newStateName, data, callback);
-				} else {
+			this._transitions[this._currentStateName][newStateName](...rest).then((result: TransitionResult) => {
+				if (result instanceof Error) {
 					// State change not allowed or error
-					if (callback) { callback(err); }
-
-					this.log("Cannot transition from \"" + self._currentStateName + "\" to \"" + newStateName + "\" states.", "warning");
+					this.log(`Cannot transition from "${this._currentStateName}" to "${newStateName}" states.`);
+					return resolve(result);
 				}
+
+				// State change allowed
+				return resolve(this._transitionStates(newStateName, ...rest));
 			});
-		} else {
-			// No transition check method exists, continue to change states
-			self._transitionStates(self._currentStateName, newStateName, data, callback);
+		});
+
+		return this._processTransition();
+	};
+
+	/**
+	 * Processes the transition queue, taking the first on the queue
+	 * and calling the transition function, then when that function
+	 * completes, calls _processTransition again. This continues until
+	 * the queue is empty.
+	 * @private
+	 */
+	_processTransition = async (): Promise<any> => {
+		if (this._transitioning) {
+			this.log(`We are already transitioning, returning`);
+			return;
 		}
-	}
+
+		// Check if there are any further transitions to take
+		if (!this._transitionQueue.length) {
+			this.log(`No further transitions, returning`);
+			this._transitioning = false;
+			return;
+		}
+
+		// Mark the system as transitioning
+		this._transitioning = true;
+
+		// Pull the latest async function off the queue
+		let func = this._transitionQueue.shift();
+
+		if (!func) {
+			func = (resolve) => resolve(undefined);
+		}
+
+		// Call the function and wait for resolve
+		this.log(`Calling transition function...`);
+		return new Promise(func).then(() => {
+			this.log(`Transition function finished`);
+			// Mark the system as no longer transitioning
+			this._transitioning = false;
+
+			// Call processTransition() again
+			this.log(`Checking for further transitions...`);
+			return this._processTransition();
+		});
+	};
 
 	/**
 	 * Tell the FSM to exit the current state and enter the previous state.
-	 * @param {Function=} callback Optional callback method once exiting the state
-	 * has been executed.
+	 * @returns {Promise} The exit promise.
 	 */
-	exitState (callback) {
-		this.enterState(this._previousStateName, null, callback);
+	exitState = () => {
+		return this.enterState(this._previousStateName, null);
+	};
+
+	getData (key: string): any {
+		return this._data[key];
+	}
+
+	setData (key: string, val: any): void {
+		this._data[key] = val;
 	}
 
 	/**
+	 * Raise an event in the current state. If a corresponding event
+	 * function exists in the current state's definition, it is executed
+	 * with the passed data as the argument. This is useful when you
+	 * want to respond to the same event in different ways depending on
+	 * the current state.
+	 * @param {string} eventName The name of the event to raise.
+	 * @param {any[]} rest The optional arguments to pass to the event handler.
+	 */
+	raiseEvent = (eventName: string, ...rest: any[]) => {
+		const beforeAllStateObj = this.getState("beforeAll");
+
+		if (beforeAllStateObj && beforeAllStateObj[eventName]) {
+			const eventHandler = beforeAllStateObj[eventName];
+			eventHandler(...rest);
+		}
+
+		const currentStateObj = this.getState(this._currentStateName);
+		let result;
+
+		if (currentStateObj[eventName]) {
+			result = currentStateObj[eventName](...rest);
+		}
+
+		const afterAllStateObj = this.getState("afterAll");
+
+		if (afterAllStateObj && afterAllStateObj[eventName]) {
+			const eventHandler = afterAllStateObj[eventName];
+			eventHandler(...rest);
+		}
+
+		return result;
+	};
+
+	/**
 	 * Handles changing states from one to another by checking for transitions and
-	 * handling callbacks.
-	 * @param {String} oldStateName The name of the state we are transitioning from.
+	 * handling return values.
 	 * @param {String} newStateName The name of the state we are transitioning to.
-	 * @param {*=} data Optional data to pass to the exit and enter methods of each state.
-	 * @param {Function=} callback Optional callback method to execute once the transition
-	 * has been completed.
+	 * @param {any[]} rest Optional data to pass to the exit and enter methods of each state.
+	 * @returns {Promise} The promise of the transition result.
 	 * @private
 	 */
-	_transitionStates (oldStateName, newStateName, data, callback) {
-		const self = this,
-			currentStateObj = self.getState(self._currentStateName),
-			newStateObj = self.getState(newStateName);
+	_transitionStates = (newStateName: string, ...rest: any[]) => {
+		return new Promise((resolve) => {
+			const currentStateObj = this.getState(this._currentStateName);
+			const newStateObj = this.getState(newStateName);
 
-		if (currentStateObj && newStateObj) {
-			if (self._debug) { self.log("Exiting state: " + self._currentStateName); }
-			if (currentStateObj.exit) {
-				currentStateObj.exit.apply(currentStateObj, [data, function (exitStateErr, exitStateData) {
-					self._previousStateName = self._currentStateName;
-					self._currentStateName = newStateName;
-
-					if (self._debug) { self.log("Entering state: " + newStateName); }
-					if (newStateObj.enter) {
-						newStateObj.enter.apply(newStateObj, [data, function (enterStateErr, enterStateData) {
-							if (callback) { callback(enterStateErr, data); }
-						}]);
-					}
-				}]);
+			if (!currentStateObj) {
+				this.log(`No state defined called ${this._currentStateName}, cannot change states!`);
 			}
-		} else {
-			if (callback) { callback("Cannot change states from \"" + self._currentStateName + "\" to \"" + newStateName + "\" states."); }
-			self.log("Cannot change states from \"" + self._currentStateName + "\" to \"" + newStateName + "\" states.", "warning");
-		}
-	}
+
+			if (!newStateObj) {
+				this.log(`No state defined called ${newStateName}, cannot change states!`);
+			}
+
+			if (!currentStateObj || !newStateObj) {
+				return resolve(
+					new Error(
+						`Cannot change states from "${this._currentStateName}" to "${newStateName}" states because at least one is not defined.`
+					)
+				);
+			}
+
+			if (this._debug) {
+				this.log(`Exiting state: ${this._currentStateName}`);
+			}
+
+			if (currentStateObj.exit) {
+				const exit = currentStateObj.exit as (...rest: any[]) => Promise<any>;
+				exit(...rest).then((exitResult) => {
+					if (exitResult instanceof Error) {
+						this.log(`Error exiting state: ${this._currentStateName}`);
+						return resolve(exitResult);
+					}
+
+					this._previousStateName = this._currentStateName;
+					this._currentStateName = newStateName;
+
+					if (this._debug) {
+						this.log(`Entering state: ${newStateName}`);
+					}
+
+					if (newStateObj.enter) {
+						const enter = newStateObj.enter as (...rest: any[]) => Promise<any>;
+						enter(...rest).then((enterResult) => {
+							return resolve(enterResult);
+						});
+					}
+				});
+			}
+		});
+	};
 }

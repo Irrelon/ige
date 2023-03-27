@@ -9,25 +9,32 @@ export class UiClientScene extends IgeSceneGraph {
 		const baseScene = ige.$("baseScene") as IgeScene2d;
 
 		const uiScene = new IgeScene2d()
+			.id("uiScene")
 			.layer(1)
 			.ignoreCamera(true)
-			.mount(baseScene)
+			.mount(baseScene);
 
 		const buildUi = new IgeUiElement()
 			.left(0)
 			.middle(0)
 			.width(80)
 			.height(400)
+			.borderRadius(10)
 			.borderWidth(1)
 			.borderColor("#ffffff")
 			.backgroundColor("#222222")
 			.mount(uiScene);
 
-		const storage = new Square()
+		const container = new IgeUiElement()
+			.top(20)
 			.mount(buildUi);
+
+		new Square()
+			.id("uiCreateStorage")
+			.mount(container);
 	}
 
 	removeGraph () {
-
+		ige.$("uiScene")?.destroy();
 	}
 }
