@@ -12,7 +12,6 @@ import { IgeSceneGraph } from "@/engine/core/IgeSceneGraph";
 import { IgeViewport } from "@/engine/core/IgeViewport";
 import { IgeMousePanComponent } from "@/engine/components/IgeMousePanComponent";
 import flag from "../assets/textures/smartTextures/flag";
-import { IgeFontSheet } from "@/engine/core/IgeFontSheet";
 
 // @ts-ignore
 window.ige = ige;
@@ -26,7 +25,6 @@ export class AppClientScene extends IgeSceneGraph {
 
 		ige.audio?.masterVolume(options.get('masterVolume', 1));
 
-		new IgeFontSheet("", './assets/textures/fonts/openSans20px.png');
 		new IgeTexture("fairy", "./assets/textures/sprites/fairy.png");
 		new IgeTexture("square", square);
 		new IgeTexture("line", line);

@@ -10,6 +10,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 import { ige } from "../../../engine/instance.js";
 import { Level1 } from "./Level1.js";
 import { UiClientScene } from "./UiClientScene.js";
+import IgeFSM from "../../../engine/core/IgeFSM.js";
 ige.router.route("app/level1", {
     client: () => __awaiter(void 0, void 0, void 0, function* () {
         // Add all the items in Scene1 to the scenegraph
@@ -18,30 +19,24 @@ ige.router.route("app/level1", {
         // the items are added to the scenegraph)
         yield ige.engine.addGraph(Level1);
         yield ige.engine.addGraph(UiClientScene);
-        // const fsm = new IgeFSM();
-        //
-        // fsm.defineState("idle", {
-        // 	enter: async () => {
-        // 		console.log("Entered idle");
-        // 		const uiCreateStorage = ige.$("uiCreateStorage") as IgeUiElement;
-        //
-        // 		uiCreateStorage.pointerUp(() => {
-        // 			fsm.enterState("createBuilding", "storage");
-        // 		});
-        // 	}
-        // });
-        //
-        // fsm.defineState("createBuilding", {
-        // 	enter: async (buildingType: string) => {
-        // 		console.log("Entered createBuilding", buildingType);
-        // 	}
-        // });
-        //
-        // fsm.defineState("createRoad");
-        //
-        // fsm.defineState("destroyObject");
-        //
-        // await fsm.initialState("idle");
+        const fsm = new IgeFSM();
+        fsm.defineState("idle", {
+            enter: () => __awaiter(void 0, void 0, void 0, function* () {
+                console.log("Entered idle");
+                const uiCreateStorage = ige.$("uiCreateStorage");
+                uiCreateStorage.pointerUp(() => {
+                    fsm.enterState("createBuilding", "storage");
+                });
+            })
+        });
+        fsm.defineState("createBuilding", {
+            enter: (buildingType) => __awaiter(void 0, void 0, void 0, function* () {
+                console.log("Entered createBuilding", buildingType);
+            })
+        });
+        fsm.defineState("createRoad");
+        fsm.defineState("destroyObject");
+        yield fsm.initialState("idle");
         return () => __awaiter(void 0, void 0, void 0, function* () {
             yield ige.engine.removeGraph(UiClientScene);
             yield ige.engine.removeGraph(Level1);

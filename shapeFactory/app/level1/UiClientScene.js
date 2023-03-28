@@ -26,7 +26,6 @@ export class UiClientScene extends IgeSceneGraph {
                 .middle(0)
                 .width(80)
                 .height(400)
-                .borderRadius(10)
                 .borderWidth(1)
                 .borderColor("#ffffff")
                 .backgroundColor("#222222")

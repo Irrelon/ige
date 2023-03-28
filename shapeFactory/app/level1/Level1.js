@@ -27,9 +27,6 @@ export class Level1 extends IgeSceneGraph {
             .id("scene1")
             //.isometricMounts(true)
             .mount(baseScene);
-        if (isClient) {
-            console.log("Client mode");
-        }
         if (isClient)
             return;
         new IgeAudioEntity()
