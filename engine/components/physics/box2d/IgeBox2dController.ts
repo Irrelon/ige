@@ -563,7 +563,7 @@ export class IgeBox2dController extends IgeEventingClass {
 	 * @param {Function} preSolve
 	 * @param {Function} postSolve
 	 */
-	contactListener (beginContactCallback?: IgeBox2dContactListenerCallback, endContactCallback?: IgeBox2dContactListenerCallback, preSolve?: IgeBox2dContactPreSolveCallback, postSolve?: IgeBox2dContactPostSolveCallback) {
+	contactListener (beginContactCallback?: IgeBox2dContactListenerCallback, endContactCallback?: IgeBox2dContactListenerCallback, preSolve?: IgeBox2dContactPreSolveCallback, postSolve?: IgeBox2dContactPostSolveCallback): Box2D.Dynamics.b2ContactListener {
 		if (!this._world) {
 			throw new Error("No box2D world instantiated!");
 		}
@@ -587,6 +587,8 @@ export class IgeBox2dController extends IgeEventingClass {
 		}
 
 		this._world.SetContactListener(contactListener);
+
+		return contactListener;
 	}
 
 	/**

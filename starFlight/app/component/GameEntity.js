@@ -24,6 +24,8 @@ export class GameEntity extends IgeEntityBox2d {
          * @private
          */
         this._onAbilityUseRequest = (data, clientId, callback) => {
+            if (isClient)
+                return;
             // Grab the component in the ship's module
             const module = this.privateModule(this.ability(data.abilityId));
             if (!module) {
@@ -64,7 +66,7 @@ export class GameEntity extends IgeEntityBox2d {
             //console.log('Activating ability: ' + data.abilityId);
             module.active(true, this._publicGameData.state);
             // Tell the client this ability use was accepted
-            callback(false);
+            callback();
         };
         publicGameData.state = publicGameData.state || {};
         publicGameData.module = publicGameData.module || {};
@@ -104,8 +106,8 @@ export class GameEntity extends IgeEntityBox2d {
             }
         }
     }
-    streamCreateData() {
-        return this._publicGameData;
+    streamCreateConstructorArgs() {
+        return [this._publicGameData];
     }
     /**
      * Override the default IgeEntity class streamSectionData() method
@@ -187,6 +189,9 @@ export class GameEntity extends IgeEntityBox2d {
                 if (moduleDefinition !== null) {
                     this.log("Adding module to game entity: " + moduleDefinition.name);
                     const moduleClass = ige.classStore[moduleDefinition.classId];
+                    if (!moduleClass) {
+                        throw new Error(`Cannot find class with id: ${moduleDefinition.classId}`);
+                    }
                     modulesObj[moduleId] = moduleDefinition;
                     if (isServer) {
                         this._privateGameData.module[moduleId] = new moduleClass(moduleDefinition)
@@ -269,7 +274,6 @@ export class GameEntity extends IgeEntityBox2d {
         // Call the super-class update() method
         super.update(ctx, tickDelta);
     }
-    /* CEXCLUDE */
     /**
      * Updates the modules for this entity based on the tick delta.
      * This does things like add to state values (e.g. energy + 1)
@@ -279,6 +283,8 @@ export class GameEntity extends IgeEntityBox2d {
      * @private
      */
     _resolveModules(tickDelta) {
+        if (isClient)
+            return;
         const modulesObj = this._privateGameData.module;
         if (modulesObj) {
             for (const moduleIndex in modulesObj) {
@@ -291,7 +297,6 @@ export class GameEntity extends IgeEntityBox2d {
             }
         }
     }
-    /* CEXCLUDE */
     /**
      * Sends a request to the server to use an ability.
      * @param {String} abilityId The ID of the ability to use.
@@ -299,49 +304,51 @@ export class GameEntity extends IgeEntityBox2d {
      * that is targeted by the ability (if any).
      */
     useAbility(abilityId, targetId) {
-        if (isClient) {
-            if (this.target && this.target._targetEntity) {
-                // Ask the server to start mining this asteroid
-                ige.network.send("useAbility", {
-                    targetId: this.target._targetEntity.id(),
-                    abilityId: abilityId
-                }, (err, data) => {
-                    if (err) {
-                        // Display error to UI
-                        switch (err) {
-                            case "noAbilityId":
-                                console.warn("useAbility ERROR CODE: noAbilityId");
-                                break;
-                            case "noPlayer":
-                                console.warn("useAbility ERROR CODE: noPlayer");
-                                break;
-                            case "abilityEmpty":
-                                console.warn("useAbility ERROR CODE: abilityEmpty");
-                                break;
-                            case "invalidTarget":
-                                console.warn("useAbility ERROR CODE: invalidTarget");
-                                break;
-                            case "targetOutOfRange":
-                                console.warn("useAbility ERROR CODE: targetOutOfRange: " + data);
-                                break;
-                            case "targetRequired":
-                                console.warn("useAbility ERROR CODE: targetRequired");
-                                break;
-                            case "alreadyActive":
-                                console.warn("useAbility ERROR CODE: alreadyActive");
-                                // TODO: Flash the ability icon to let the user know it is already active
-                                break;
-                        }
-                        ige.audio.play("actionDenied");
-                        return;
-                    }
-                    // Access the AbilityButton instance for this ability
-                    // and tell it to become active
-                    ige.$(`action${abilityId}`).active(true);
-                    ige.audio.play("actionAllowed");
-                });
-            }
+        if (isServer) {
+            return;
         }
+        if (!this.target || !this.target._targetEntity) {
+            return;
+        }
+        // Ask the server to start mining this asteroid
+        ige.network.send("useAbility", {
+            targetId: this.target._targetEntity.id(),
+            abilityId: abilityId
+        }, (err, data) => {
+            if (err) {
+                // Display error to UI
+                switch (err) {
+                    case "noAbilityId":
+                        console.warn("useAbility ERROR CODE: noAbilityId");
+                        break;
+                    case "noPlayer":
+                        console.warn("useAbility ERROR CODE: noPlayer");
+                        break;
+                    case "abilityEmpty":
+                        console.warn("useAbility ERROR CODE: abilityEmpty");
+                        break;
+                    case "invalidTarget":
+                        console.warn("useAbility ERROR CODE: invalidTarget");
+                        break;
+                    case "targetOutOfRange":
+                        console.warn("useAbility ERROR CODE: targetOutOfRange: " + data);
+                        break;
+                    case "targetRequired":
+                        console.warn("useAbility ERROR CODE: targetRequired");
+                        break;
+                    case "alreadyActive":
+                        console.warn("useAbility ERROR CODE: alreadyActive");
+                        // TODO: Flash the ability icon to let the user know it is already active
+                        break;
+                }
+                ige.audio.play("actionDenied");
+                return;
+            }
+            // Access the AbilityButton instance for this ability
+            // and tell it to become active
+            ige.$(`action${abilityId}`).active(true);
+            ige.audio.play("actionAllowed");
+        });
     }
     applyDamage(val) {
         return this;

@@ -22,7 +22,7 @@ export class Ore extends IgeEntityBox2d {
 			.width(25)
 			.height(25);
 
-		if (isServer && ige.box2d) {
+		if (isServer) {
 			// Create Box2D body for this object
 			this.box2dBody({
 				type: IgeBox2dBodyType.dynamic,
@@ -58,8 +58,8 @@ export class Ore extends IgeEntityBox2d {
 		}
 	}
 
-	streamCreateData () {
-		return this._publicGameData;
+	streamCreateConstructorArgs () {
+		return [this._publicGameData];
 	}
 }
 

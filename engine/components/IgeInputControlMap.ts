@@ -7,7 +7,7 @@ export class IgeInputControlMap {
 	push (inputMap: [IgeInputDevice, number]) {
 		this._inputMap.push(inputMap);
 	}
-	
+
 	state () {
 		if (this._inputMap.length === 1) {
 			return Boolean(ige.input._state[this._inputMap[0][0]][this._inputMap[0][1]]);

@@ -1,7 +1,7 @@
 import { EntityModuleDefinition } from "../../types/EntityModuleDefinition";
 import { EntityAbilityModuleDefinition } from "../../types/EntityAbilityModuleDefinition";
 
-export const modules: Record<string, EntityModuleDefinition | EntityAbilityModuleDefinition> = [
+export const modules: (EntityModuleDefinition | EntityAbilityModuleDefinition)[] = [
 	{
 		"_id": "521a36aa3559382638c4254a",
 		"type": "ability",

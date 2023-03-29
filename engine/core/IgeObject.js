@@ -152,12 +152,15 @@ export class IgeObject extends IgeEventingClass {
         }
         return this;
     }
-    drawBounds(val) {
-        if (val !== undefined) {
-            this._drawBounds = val;
-            return this;
+    drawBounds(val, recursive = false) {
+        if (val === undefined) {
+            return this._drawBounds;
         }
-        return this._drawBounds;
+        this._drawBounds = val;
+        if (recursive) {
+            this.children().forEach((child) => child.drawBounds(val, recursive));
+        }
+        return this;
     }
     drawBoundsData(val) {
         if (val !== undefined) {

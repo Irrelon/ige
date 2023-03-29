@@ -14,8 +14,8 @@ export class JumpGate extends IgeEntity {
             this.texture(ige.textures.get(publicGameData.texture));
         }
     }
-    streamCreateData() {
-        return this._publicGameData;
+    streamCreateConstructorArgs() {
+        return [this._publicGameData];
     }
 }
 registerClass(JumpGate);

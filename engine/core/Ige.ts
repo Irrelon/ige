@@ -49,6 +49,7 @@ export class Ige implements IgeIsReadyPromise {
 	version: string = version;
 	classStore = igeClassStore;
 	_watch: (string | IgeObjectWithValueProperty)[] = [];
+	_drawBounds: boolean = false;
 
 	// Questionable properties, think about them and potentially move
 	_pointerOverVp?: IgeViewport;
@@ -148,4 +149,16 @@ export class Ige implements IgeIsReadyPromise {
 		this._watch = this._watch || [];
 		this._watch.splice(index, 1);
 	};
+
+	drawBounds (val?: boolean, recursive: boolean = false) {
+		if (val === undefined) {
+			return this._drawBounds;
+		}
+
+		this._drawBounds = val;
+
+		// Loop all the way down the scenegraph and enable bounds for all
+		this.engine.drawBounds(val, recursive);
+		return this;
+	}
 }

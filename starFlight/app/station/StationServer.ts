@@ -141,7 +141,7 @@ export class StationServer {
 						}, 2000);
 
 						// Tell the client there was no error
-						callback(false);
+						callback();
 					} else {
 						// Tell the client that the asteroid is empty!
 						callback('EMPTY');

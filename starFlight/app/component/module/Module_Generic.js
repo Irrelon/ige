@@ -1,5 +1,5 @@
 import { ige } from "../../../../engine/instance.js";
-import { igeClassStore } from "../../../../engine/igeClassStore.js";
+import { igeClassStore, registerClass } from "../../../../engine/igeClassStore.js";
 import { IgeBaseClass } from "../../../../engine/core/IgeBaseClass.js";
 import { calculateModifierRatio, roundNumber } from "../../services.js";
 import { IgeAudioEntity } from "../../../../engine/audio/index.js";
@@ -194,3 +194,4 @@ export class Module_Generic extends IgeBaseClass {
         return true;
     }
 }
+registerClass(Module_Generic);

@@ -6,7 +6,6 @@ import { IgeUiEntity } from "@/engine/core/IgeUiEntity";
 import { IgeEntity } from "@/engine/core/IgeEntity";
 import { IgeScene2d } from "@/engine/core/IgeScene2d";
 import { InfoWindow } from "../component/ui/InfoWindow";
-import { MessageWindow } from "../component/ui/MessageWindow";
 import { IgeAudioController } from "@/engine/audio";
 import { IgeViewport } from "@/engine/core/IgeViewport";
 import { IgeNetIoClientController } from "@/engine/network/client/IgeNetIoClientController";
@@ -48,10 +47,10 @@ export class SpaceClientScene extends IgeSceneGraph {
 		network.renderLatency(80); // Render the simulation 80 milliseconds in the past
 
 		// Ask server for game data
-		network.send('publicGameData', null, (err, data) => {
-			if (err) {
+		network.send('publicGameData', null, (data) => {
+			if (!data) {
 				network.stop();
-				console.log("Game error");
+				console.log("Game error, publicGameData not returned");
 				return;
 			}
 
@@ -223,22 +222,22 @@ export class SpaceClientScene extends IgeSceneGraph {
 			.right(-20)
 			.mount(uiScene);
 
-		const messageWindow = new MessageWindow({
-			messageFont: "12px Verdana",
-			messageColor: "#ffffff",
-			tab: {
-				width: 80,
-				position: "bottom",
-				label: "MESSAGE LOG",
-				tweenDefault: 10
-			}
-		})
-			.id("messageWindow")
-			.width(400)
-			.height(150)
-			.top(10)
-			.left(70)
-			.mount(uiScene);
+		// const messageWindow = new MessageWindow({
+		// 	messageFont: "12px Verdana",
+		// 	messageColor: "#ffffff",
+		// 	tab: {
+		// 		width: 80,
+		// 		position: "bottom",
+		// 		label: "MESSAGE LOG",
+		// 		tweenDefault: 10
+		// 	}
+		// })
+		// 	.id("messageWindow")
+		// 	.width(400)
+		// 	.height(150)
+		// 	.top(10)
+		// 	.left(70)
+		// 	.mount(uiScene);
 
 		const audio = ige.audio as IgeAudioController;
 

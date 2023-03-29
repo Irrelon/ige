@@ -3,5 +3,7 @@ export declare enum PlayerControls {
     "right" = 1,
     "thrust" = 2,
     "reverse" = 3,
-    "braking" = 4
+    "braking" = 4,
+    "ability1" = 5,
+    "ability2" = 6
 }

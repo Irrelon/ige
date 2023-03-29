@@ -543,6 +543,7 @@ export class IgeBox2dController extends IgeEventingClass {
             contactListener.PostSolve = postSolve;
         }
         this._world.SetContactListener(contactListener);
+        return contactListener;
     }
     /**
      * If enabled, sets the physics world into network debug mode which

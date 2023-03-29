@@ -43,6 +43,7 @@ export declare class Ige implements IgeIsReadyPromise {
     version: string;
     classStore: Record<string, import("../../types/GenericClass").GenericClass>;
     _watch: (string | IgeObjectWithValueProperty)[];
+    _drawBounds: boolean;
     _pointerOverVp?: IgeViewport;
     _pointerPos: IgePoint3d;
     constructor();
@@ -79,4 +80,5 @@ export declare class Ige implements IgeIsReadyPromise {
      * remove from the watch array.
      */
     watchStop: (index: number) => void;
+    drawBounds(val?: boolean, recursive?: boolean): boolean | this;
 }

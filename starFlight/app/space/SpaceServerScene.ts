@@ -17,6 +17,7 @@ import { generateAsteroidBelt } from "../../services/asteroidBelt";
 import { EntityModuleDefinition } from "../../types/EntityModuleDefinition";
 import { EntityAbilityModuleDefinition } from "../../types/EntityAbilityModuleDefinition";
 import { modules } from "../data/modules";
+import { generateModuleObject } from "../../services/gameUtils";
 
 export interface ServerPublicGameData {
 	modules: Record<string, EntityModuleDefinition | EntityAbilityModuleDefinition>
@@ -171,7 +172,7 @@ export class SpaceServerScene extends IgeSceneGraph {
 
 	_onPublicGameData: IgeNetworkServerSideRequestHandler = (data, clientId, callback) => {
 		if (!callback) return;
-		callback(false, this.publicGameData);
+		callback(this.publicGameData);
 	};
 
 	/**
@@ -190,10 +191,10 @@ export class SpaceServerScene extends IgeSceneGraph {
 
 		const player = new PlayerShip({
 			clientId,
-			module: this.generateModuleObject(JSON.parse(JSON.stringify(playerDataModules)))
+			module: generateModuleObject(playerDataModules)
 		}).streamMode(1).mount(ige.$("frontScene") as IgeScene2d);
 
-		player._inventory.on("change", function () {
+		player._inventory.on("change", () => {
 			player._publicGameData.state.inventoryCount.val = player._inventory.count();
 		});
 
@@ -249,7 +250,7 @@ export class SpaceServerScene extends IgeSceneGraph {
 						}, 10000);
 
 						// Tell the client there was no error
-						callback(false);
+						callback();
 					} else {
 						// Tell the client that the asteroid is empty!
 						callback("EMPTY");
@@ -274,6 +275,12 @@ export class SpaceServerScene extends IgeSceneGraph {
 	};
 
 	_onPlayerControlChange: IgeNetworkServerSideMessageHandler = (data, clientId: string) => {
-		this.playerByClientId(clientId)._controlState[data[0]] = data[1];
+		const playerEntity = this.playerByClientId(clientId) as PlayerShip;
+		if (!playerEntity) {
+			console.error("Control change received for player but no player entity found!");
+			return;
+		}
+
+		playerEntity._controlState[data[0]] = data[1];
 	};
 }

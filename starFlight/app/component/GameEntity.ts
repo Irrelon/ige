@@ -15,7 +15,7 @@ import { IgeScene2d } from "@/engine/core/IgeScene2d";
 export interface EntityPublicGameData {
 	clientId?: string;
 	state: Record<string, any>;
-	module: Record<string, EntityModuleDefinition | EntityAbilityModuleDefinition>;
+	module: EntityModuleDefinition | EntityAbilityModuleDefinition;
 	ability: Record<string, any>;
 	acceptsActionObj: Record<string, any>;
 	size?: number;
@@ -92,8 +92,8 @@ export class GameEntity extends IgeEntityBox2d {
 		}
 	}
 
-	streamCreateData () {
-		return this._publicGameData;
+	streamCreateConstructorArgs () {
+		return [this._publicGameData];
 	}
 
 	/**
@@ -187,6 +187,11 @@ export class GameEntity extends IgeEntityBox2d {
 					this.log("Adding module to game entity: " + moduleDefinition.name);
 
 					const moduleClass = ige.classStore[moduleDefinition.classId];
+
+					if (!moduleClass) {
+						throw new Error(`Cannot find class with id: ${moduleDefinition.classId}`);
+					}
+
 					modulesObj[moduleId] = moduleDefinition;
 
 					if (isServer) {
@@ -287,7 +292,6 @@ export class GameEntity extends IgeEntityBox2d {
 		super.update(ctx, tickDelta);
 	}
 
-	/* CEXCLUDE */
 	/**
 	 * Updates the modules for this entity based on the tick delta.
 	 * This does things like add to state values (e.g. energy + 1)
@@ -297,6 +301,7 @@ export class GameEntity extends IgeEntityBox2d {
 	 * @private
 	 */
 	_resolveModules (tickDelta: number) {
+		if (isClient) return;
 		const modulesObj = this._privateGameData.module;
 
 		if (modulesObj) {
@@ -322,6 +327,8 @@ export class GameEntity extends IgeEntityBox2d {
 	 * @private
 	 */
 	_onAbilityUseRequest: IgeNetworkServerSideRequestHandler = (data, clientId, callback) => {
+		if (isClient) return;
+
 		// Grab the component in the ship's module
 		const module = this.privateModule(this.ability(data.abilityId));
 
@@ -372,10 +379,8 @@ export class GameEntity extends IgeEntityBox2d {
 		module.active(true, this._publicGameData.state);
 
 		// Tell the client this ability use was accepted
-		callback(false);
+		callback();
 	}
-
-	/* CEXCLUDE */
 
 	/**
 	 * Sends a request to the server to use an ability.
@@ -384,58 +389,62 @@ export class GameEntity extends IgeEntityBox2d {
 	 * that is targeted by the ability (if any).
 	 */
 	useAbility (abilityId: string, targetId?: string) {
-		if (isClient) {
-			if (this.target && this.target._targetEntity) {
-				// Ask the server to start mining this asteroid
-				(ige.network as IgeNetIoClientController).send("useAbility", {
-					targetId: this.target._targetEntity.id(),
-					abilityId: abilityId
-				},  (err, data) => {
-					if (err) {
-						// Display error to UI
-						switch (err) {
-						case "noAbilityId":
-							console.warn("useAbility ERROR CODE: noAbilityId");
-							break;
-
-						case "noPlayer":
-							console.warn("useAbility ERROR CODE: noPlayer");
-							break;
-
-						case "abilityEmpty":
-							console.warn("useAbility ERROR CODE: abilityEmpty");
-							break;
-
-						case "invalidTarget":
-							console.warn("useAbility ERROR CODE: invalidTarget");
-							break;
-
-						case "targetOutOfRange":
-							console.warn("useAbility ERROR CODE: targetOutOfRange: " + data);
-							break;
-
-						case "targetRequired":
-							console.warn("useAbility ERROR CODE: targetRequired");
-							break;
-
-						case "alreadyActive":
-							console.warn("useAbility ERROR CODE: alreadyActive");
-							// TODO: Flash the ability icon to let the user know it is already active
-							break;
-						}
-
-						(ige.audio as IgeAudioController).play("actionDenied");
-
-						return;
-					}
-
-					// Access the AbilityButton instance for this ability
-					// and tell it to become active
-					(ige.$(`action${abilityId}`) as AbilityButton).active(true);
-					(ige.audio as IgeAudioController).play("actionAllowed");
-				});
-			}
+		if (isServer) {
+			return;
 		}
+
+		if (!this.target || !this.target._targetEntity) {
+			return;
+		}
+
+		// Ask the server to start mining this asteroid
+		(ige.network as IgeNetIoClientController).send("useAbility", {
+			targetId: this.target._targetEntity.id(),
+			abilityId: abilityId
+		}, (err, data) => {
+			if (err) {
+				// Display error to UI
+				switch (err) {
+				case "noAbilityId":
+					console.warn("useAbility ERROR CODE: noAbilityId");
+					break;
+
+				case "noPlayer":
+					console.warn("useAbility ERROR CODE: noPlayer");
+					break;
+
+				case "abilityEmpty":
+					console.warn("useAbility ERROR CODE: abilityEmpty");
+					break;
+
+				case "invalidTarget":
+					console.warn("useAbility ERROR CODE: invalidTarget");
+					break;
+
+				case "targetOutOfRange":
+					console.warn("useAbility ERROR CODE: targetOutOfRange: " + data);
+					break;
+
+				case "targetRequired":
+					console.warn("useAbility ERROR CODE: targetRequired");
+					break;
+
+				case "alreadyActive":
+					console.warn("useAbility ERROR CODE: alreadyActive");
+					// TODO: Flash the ability icon to let the user know it is already active
+					break;
+				}
+
+				(ige.audio as IgeAudioController).play("actionDenied");
+
+				return;
+			}
+
+			// Access the AbilityButton instance for this ability
+			// and tell it to become active
+			(ige.$(`action${abilityId}`) as AbilityButton).active(true);
+			(ige.audio as IgeAudioController).play("actionAllowed");
+		});
 	}
 
 	applyDamage (val: number) {

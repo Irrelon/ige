@@ -131,7 +131,7 @@ export declare class IgeBox2dController extends IgeEventingClass {
      * @param {Function} preSolve
      * @param {Function} postSolve
      */
-    contactListener(beginContactCallback?: IgeBox2dContactListenerCallback, endContactCallback?: IgeBox2dContactListenerCallback, preSolve?: IgeBox2dContactPreSolveCallback, postSolve?: IgeBox2dContactPostSolveCallback): void;
+    contactListener(beginContactCallback?: IgeBox2dContactListenerCallback, endContactCallback?: IgeBox2dContactListenerCallback, preSolve?: IgeBox2dContactPreSolveCallback, postSolve?: IgeBox2dContactPostSolveCallback): Box2D.Dynamics.b2ContactListener;
     /**
      * If enabled, sets the physics world into network debug mode which
      * will stop the world from generating collisions but still allow us

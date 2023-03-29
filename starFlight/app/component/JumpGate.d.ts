@@ -4,5 +4,5 @@ export declare class JumpGate extends IgeEntity {
     classId: string;
     _publicGameData: Record<string, any>;
     constructor(publicGameData: JumpGateDefinition["public"]);
-    streamCreateData(): Record<string, any>;
+    streamCreateConstructorArgs(): Record<string, any>[];
 }

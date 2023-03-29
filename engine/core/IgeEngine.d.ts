@@ -455,4 +455,31 @@ export declare class IgeEngine extends IgeEntity {
     requireStylesheet(url: string): Promise<void>;
     sync(method: SyncMethod, attrArr: any): void;
     _processSync: () => Promise<void>;
+    /**
+     * Returns the engine's children as an array of IgeViewport
+     * instances.
+     * @example #Get the viewports array
+     *     const vpArray = ige.engine.children();
+     * @return {Array} The array of IgeViewport instances.
+     */
+    children(): IgeViewport[];
+    /**
+     * Gets / sets the boolean flag determining if this object should have
+     * its bounds drawn when the bounds for all objects are being drawn.
+     * In order for bounds to be drawn the viewport the object is being drawn
+     * to must also have draw bounds enabled.
+     * @example #Enable draw bounds
+     *     var entity = new IgeEntity();
+     *     entity.drawBounds(true);
+     * @example #Disable draw bounds
+     *     var entity = new IgeEntity();
+     *     entity.drawBounds(false);
+     * @example #Get the current flag value
+     *     console.log(entity.drawBounds());
+     * @return {*}
+     * @param id
+     * @param recursive
+     */
+    drawBounds(id: boolean, recursive?: boolean): this;
+    drawBounds(): boolean;
 }

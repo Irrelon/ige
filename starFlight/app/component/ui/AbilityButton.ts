@@ -18,6 +18,8 @@ export class AbilityButton extends IgeUiEntity {
 	_abilityId: string;
 	_button: IgeUiButton;
 	_module: EntityAbilityModuleDefinition;
+	_label: IgeUiLabel;
+	_timerCircle: IgeUiEntity;
 
 	constructor (options: AbilityButtonOptions) {
 		if (isServer) {
@@ -81,9 +83,9 @@ export class AbilityButton extends IgeUiEntity {
 			this.requestActivation();
 		});
 
-		// Define ability keyboard shortcut
-		ige.input.on("keyUp", (ev, keyCode) => {
-			if (keyCode === ige.input.key[String(options.abilityId)]) {
+		ige.input.on("keyUp", (ev, code) => {
+			//console.log("Key up, code", code, `Digit${options.abilityId}`);
+			if (code === `Digit${options.abilityId}`) {
 				this.requestActivation();
 			}
 		});

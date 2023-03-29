@@ -1,4 +1,5 @@
 import { IgeUiButton } from "@/engine/ui/IgeUiButton";
+import { IgeUiLabel } from "@/engine/ui/IgeUiLabel";
 import { IgeUiEntity } from "@/engine/core/IgeUiEntity";
 import { IgeCanvasRenderingContext2d } from "@/types/IgeCanvasRenderingContext2d";
 import { EntityAbilityModuleDefinition } from "../../../types/EntityAbilityModuleDefinition";
@@ -12,6 +13,8 @@ export declare class AbilityButton extends IgeUiEntity {
     _abilityId: string;
     _button: IgeUiButton;
     _module: EntityAbilityModuleDefinition;
+    _label: IgeUiLabel;
+    _timerCircle: IgeUiEntity;
     constructor(options: AbilityButtonOptions);
     active(val?: boolean): boolean | this;
     /**

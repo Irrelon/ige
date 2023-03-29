@@ -2,58 +2,39 @@ import { ige } from "../../../instance";
 import { IgeEntity } from "../../../core/IgeEntity";
 import type { IgeBox2dController } from "./IgeBox2dController";
 import type { IgeBox2dBodyDef } from "@/types/IgeBox2dBodyDef";
-import type { Box2D } from "@/engine/components/physics/box2d/lib_box2d";
+import { Box2D } from "@/engine/components/physics/box2d/lib_box2d";
+import { IgeCanvasRenderingContext2d } from "@/types/IgeCanvasRenderingContext2d";
+import { IgeEventListenerCallback } from "@/engine/core/IgeEventingClass";
+
+export interface IgeEntityBox2dCollisionListener {
+	type: number;
+	target: string;
+	callback: (...args: any[]) => void;
+}
 
 /**
  * Creates a new entity with Box2D integration.
  */
 export class IgeEntityBox2d extends IgeEntity {
-	classId = 'IgeEntityBox2d';
+	classId = "IgeEntityBox2d";
 
 	_b2dRef: IgeBox2dController;
 	_box2dBodyDef?: IgeBox2dBodyDef;
 	_box2dBody?: Box2D.Dynamics.b2Body;
 	_box2dOurContactFixture?: Box2D.Dynamics.b2Fixture;
 	_box2dTheirContactFixture?: Box2D.Dynamics.b2Fixture;
+	_box2dNoDebug: boolean = false;
+	_collisionStartListeners?: IgeEntityBox2dCollisionListener[];
+	_collisionEndListeners?: IgeEntityBox2dCollisionListener[];
+	_contactListener?: Box2D.Dynamics.b2ContactListener;
 
 	constructor () {
 		super();
-
 		this._b2dRef = (ige.box2d as IgeBox2dController);
-
-		// Check if Box2D is enabled in the engine
-		if (this._b2dRef) {
-			if (this._b2dRef._networkDebugMode) {
-				this._translateToProto = function () {};
-				this._translateByProto = function () {};
-
-				this._rotateToProto = function () {};
-				this._rotateByProto = function () {};
-
-				this._updateProto = this.update;
-
-				// Make sure box2d is kept up to date by the engine
-				this.update = this._update;
-			} else {
-				// Store the existing transform methods
-				this._translateToProto = this.translateTo;
-				this._translateByProto = this.translateBy;
-
-				this._rotateToProto = this.rotateTo;
-				this._rotateByProto = this.rotateBy;
-
-				// Take over the transform methods
-				this.translateTo = this._translateTo;
-				this.translateBy = this._translateBy;
-
-				this.rotateTo = this._rotateTo;
-				this.rotateBy = this._rotateBy;
-			}
-		}
 	}
 
 	/**
-	 * Gets / sets the box2d body's active flag which determines
+	 * Gets / sets the Box2D body's active flag which determines
 	 * if it will be included as part of the physics simulation
 	 * or not.
 	 * @param {Boolean=} val Set to true to include the body in
@@ -91,7 +72,7 @@ export class IgeEntityBox2d extends IgeEntity {
 				// Ask the Box2D component to create a new body for us
 				this._box2dBody = this._b2dRef.createBody(this, def);
 			} else {
-				this.log('You are trying to create a Box2D entity but you have not added the Box2D component to the ige instance!', 'error');
+				this.log("You are trying to create a Box2D entity but you have not added the Box2D component to the ige instance!", "error");
 			}
 
 			return this;
@@ -125,32 +106,33 @@ export class IgeEntityBox2d extends IgeEntity {
 		}
 	}
 
-	on () {
-		if (arguments.length === 3) {
-			let evName = arguments[0],
-				target = arguments[1],
-				callback = arguments[2],
-				type;
+	on (eventName: string, id: string, listener: IgeEventListenerCallback): this;
+	on (eventName: string, listener: IgeEventListenerCallback): this;
+	on (eventName: string, ...rest: any[]): this {
+		if (rest[1]) {
+			const listener = rest[1];
+			let id = rest[0],
+				type = 0;
 
-			switch (target.substr(0, 1)) {
-			case '#':
+			switch (id.substr(0, 1)) {
+			case "#":
 				type = 0;
 				break;
 
-			case '.':
+			case ".":
 				type = 1;
 				break;
 			}
 
-			target = target.substr(1, target.length - 1);
+			id = id.substr(1, id.length - 1);
 
-			switch (evName) {
-			case 'collisionStart':
+			switch (eventName) {
+			case "collisionStart":
 				this._collisionStartListeners = this._collisionStartListeners || [];
 				this._collisionStartListeners.push({
 					type: type,
-					target: target,
-					callback: callback
+					target: id,
+					callback: listener
 				});
 
 				if (!this._contactListener) {
@@ -159,12 +141,12 @@ export class IgeEntityBox2d extends IgeEntity {
 				}
 				break;
 
-			case 'collisionEnd':
+			case "collisionEnd":
 				this._collisionEndListeners = this._collisionEndListeners || [];
 				this._collisionEndListeners.push({
 					type: type,
-					target: target,
-					callback: callback
+					target: id,
+					callback: listener
 				});
 
 				if (!this._contactListener) {
@@ -174,49 +156,53 @@ export class IgeEntityBox2d extends IgeEntity {
 				break;
 
 			default:
-				this.log('Cannot add event listener, event type ' + evName + ' not recognised', 'error');
+				this.log("Cannot add event listener, event type " + eventName + " not recognised", "error");
 				break;
 			}
-		} else {
-			IgeEntity.prototype.on.apply(this, arguments);
+
+			return this;
 		}
+
+		// @ts-ignore
+		return super.on(eventName, ...rest);
 	}
 
-	off () {
-		if (arguments.length === 3) {
-
-		} else {
-			IgeEntity.prototype.off.apply(this, arguments);
+	off (eventName: string, id: string, listener?: IgeEventListenerCallback): this;
+	off (eventName: string, listener?: IgeEventListenerCallback): this;
+	off (eventName: string): this;
+	off (eventName: string, ...args: any[]) {
+		if (args[1]) {
+			return;
 		}
+
+		return super.off(eventName, ...args);
 	}
 
 	_setupContactListeners () {
-		const self = this;
-
-		this._b2dRef.contactListener(
+		return this._b2dRef.contactListener(
 			// Listen for when contact's begin
-			function (contact) {
+			(contact) => {
 				//console.log('Contact begins between', contact.igeEntityA()._id, 'and', contact.igeEntityB()._id);
 
 				// Loop the collision listeners and check for a match
-				const arr = self._collisionStartListeners;
+				const arr = this._collisionStartListeners;
 
 				if (arr) {
-					self._checkContact(contact, arr);
+					this._checkContact(contact, arr);
 				}
 			},
 			// Listen for when contact's end
-			function (contact) {
+			(contact) => {
 				//console.log('Contact ends between', contact.igeEntityA()._id, 'and', contact.igeEntityB()._id);
 				// Loop the collision listeners and check for a match
-				const arr = self._collisionEndListeners;
+				const arr = this._collisionEndListeners;
 
 				if (arr) {
-					self._checkContact(contact, arr);
+					this._checkContact(contact, arr);
 				}
 			}/*,
 			// Handle pre-solver events
-			function (contact) {
+			(contact) => {
 				// If player ship collides with lunar surface, crash!
 				if (contact.igeEitherCategory('orb') && contact.igeEitherCategory('ship')) {
 					// Cancel the contact
@@ -228,24 +214,21 @@ export class IgeEntityBox2d extends IgeEntity {
 		);
 	}
 
-	_checkContact (contact, arr) {
-		let self = this,
-			arrCount = arr.length,
-			otherEntity,
-			listener,
-			i;
+	_checkContact (contact: Box2D.Dynamics.Contacts.b2Contact, arr: IgeEntityBox2dCollisionListener[]) {
+		const arrCount = arr.length;
+		let otherEntity: IgeEntityBox2d;
 
-		if (contact.igeEntityA()._id === self._id) {
+		if (contact.igeEntityA()._id === this._id) {
 			otherEntity = contact.igeEntityB();
-		} else if (contact.igeEntityB()._id === self._id) {
+		} else if (contact.igeEntityB()._id === this._id) {
 			otherEntity = contact.igeEntityA();
 		} else {
 			// This contact has nothing to do with us
 			return;
 		}
 
-		for (i = 0; i < arrCount; i++) {
-			listener = arr[i];
+		for (let i = 0; i < arrCount; i++) {
+			const listener = arr[i];
 
 			if (listener.type === 0) {
 				// Listener target is an id
@@ -273,11 +256,11 @@ export class IgeEntityBox2d extends IgeEntity {
 	 * @return {*}
 	 * @private
 	 */
-	_translateTo (x, y, z) {
+	translateTo (x: number, y: number, z: number) {
 		const entBox2d = this._box2dBody;
 
 		// Call the original method
-		this._translateToProto(x, y, z);
+		super.translateTo(x, y, z);
 
 		// Check if the entity has a Box2D body attached
 		// and if so, is it updating or not
@@ -287,22 +270,11 @@ export class IgeEntityBox2d extends IgeEntity {
 			// transform op and take over
 
 			// Translate the body
-			entBox2d.SetPosition({x: x / this._b2dRef._scaleRatio, y: y / this._b2dRef._scaleRatio});
+			entBox2d.SetPosition(new Box2D.Common.Math.b2Vec2(x / this._b2dRef._scaleRatio, y / this._b2dRef._scaleRatio));
 			entBox2d.SetAwake(true);
 		}
 
 		return this;
-	}
-
-	/**
-	 * Takes over translateBy calls and processes Box2D movement as well.
-	 * @param x
-	 * @param y
-	 * @param z
-	 * @private
-	 */
-	_translateBy (x, y, z) {
-		this._translateTo(this._translate.x + x, this._translate.y + y, this._translate.z + z);
 	}
 
 	/**
@@ -313,11 +285,11 @@ export class IgeEntityBox2d extends IgeEntity {
 	 * @return {*}
 	 * @private
 	 */
-	_rotateTo (x, y, z) {
+	rotateTo (x: number, y: number, z: number) {
 		const entBox2d = this._box2dBody;
 
 		// Call the original method
-		this._rotateToProto(x, y, z);
+		super.rotateTo(x, y, z);
 
 		// Check if the entity has a Box2D body attached
 		// and if so, is it updating or not
@@ -335,38 +307,32 @@ export class IgeEntityBox2d extends IgeEntity {
 	}
 
 	/**
-	 * Takes over translateBy calls and processes Box2D movement as well.
-	 * @param x
-	 * @param y
-	 * @param z
-	 * @private
+	 * Processes the updates required each render frame. Any code in the update()
+	 * method will be called ONCE for each render frame BEFORE the tick() method.
+	 * This differs from the tick() method in that the tick method can be called
+	 * multiple times during a render frame depending on how many viewports your
+	 * simulation is being rendered to, whereas the update() method is only called
+	 * once. It is therefore the perfect place to put code that will control your
+	 * entity's motion, AI etc.
+	 * @param {CanvasRenderingContext2D} ctx The canvas context to render to.
+	 * @param {Number} tickDelta The delta between the last tick time and this one.
 	 */
-	_rotateBy (x, y, z) {
-		this._rotateTo(this._rotate.x + x, this._rotate.y + y, this._rotate.z + z);
-	}
-
-	/**
-	 * Purely for networkDebugMode handling, ensures that an entity's transform is
-	 * not taken over by the physics simulation and is instead handled by the engine.
-	 * @param ctx
-	 * @private
-	 */
-	_update (ctx) {
+	update (ctx: IgeCanvasRenderingContext2d, tickDelta: number) {
 		// Call the original method
-		this._updateProto(ctx);
+		super.update(ctx, tickDelta);
 
-		// Update the Box2D body transform
-		this._translateTo(this._translate.x, this._translate.y, this._translate.z);
-		this._rotateTo(this._rotate.x, this._rotate.y, this._rotate.z);
-
-		//IgeEntity.prototype.update.call(this, ctx);
+		if (this._b2dRef._networkDebugMode) {
+			// Update the Box2D body transform
+			this.translateTo(this._translate.x, this._translate.y, this._translate.z);
+			this.rotateTo(this._rotate.x, this._rotate.y, this._rotate.z);
+		}
 	}
 
 	/**
 	 * If true, disabled Box2D debug shape drawing for this entity.
 	 * @param {Boolean} val
 	 */
-	box2dNoDebug (val) {
+	box2dNoDebug (val?: boolean) {
 		if (val !== undefined) {
 			this._box2dNoDebug = val;
 			return this;

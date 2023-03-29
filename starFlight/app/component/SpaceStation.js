@@ -17,7 +17,7 @@ export class SpaceStation extends IgeEntityBox2d {
         if (isServer) {
             this.addComponent("velocity", IgeVelocityComponent);
         }
-        if (isServer && ige.box2d) {
+        if (isServer) {
             // Create Box2D body for this object
             this.box2dBody({
                 type: IgeBox2dBodyType.dynamic,
@@ -42,8 +42,8 @@ export class SpaceStation extends IgeEntityBox2d {
             this.texture(ige.textures.get(publicGameData.texture));
         }
     }
-    streamCreateData() {
-        return this._publicGameData;
+    streamCreateConstructorArgs() {
+        return [this._publicGameData];
     }
 }
 registerClass(SpaceStation);

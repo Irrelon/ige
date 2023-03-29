@@ -22,8 +22,8 @@ export class JumpGate extends IgeEntity {
 		}
 	}
 
-	streamCreateData () {
-		return this._publicGameData;
+	streamCreateConstructorArgs () {
+		return [this._publicGameData];
 	}
 }
 

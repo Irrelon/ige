@@ -1,5 +1,6 @@
 import { ige } from "../../../../engine/instance.js";
 import { Module_Ability } from "./Module_Ability.js";
+import { registerClass } from "../../../../engine/igeClassStore.js";
 export class Module_MiningLaser extends Module_Ability {
     constructor() {
         super(...arguments);
@@ -12,8 +13,11 @@ export class Module_MiningLaser extends Module_Ability {
      */
     complete() {
         const target = this._target;
-        const inventorySpace = this.attachedTo()._publicGameData.state.inventorySpace;
-        const inventoryCount = this.attachedTo()._inventory.count();
+        const attachedTo = this.attachedTo();
+        if (!attachedTo)
+            return;
+        const inventorySpace = attachedTo._publicGameData.state.inventorySpace;
+        const inventoryCount = attachedTo._inventory.count();
         // Remove the mining laser target entity
         this._target = null;
         // Get new ore type randomly
@@ -35,3 +39,4 @@ export class Module_MiningLaser extends Module_Ability {
         ige.network.send("msg", { msg: "Mined " + oreType + ", no space in cargo hold" }, this.attachedTo().clientId());
     }
 }
+registerClass(Module_MiningLaser);

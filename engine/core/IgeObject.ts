@@ -324,16 +324,22 @@ export class IgeObject extends IgeEventingClass implements IgeCanRegisterById, I
 	 *     console.log(entity.drawBounds());
 	 * @return {*}
 	 * @param id
+	 * @param recursive
 	 */
-	drawBounds(id: boolean): this;
+	drawBounds(id: boolean, recursive?: boolean): this;
 	drawBounds(): boolean;
-	drawBounds (val?: boolean) {
-		if (val !== undefined) {
-			this._drawBounds = val;
-			return this;
+	drawBounds (val?: boolean, recursive: boolean = false) {
+		if (val === undefined) {
+			return this._drawBounds;
 		}
 
-		return this._drawBounds;
+		this._drawBounds = val;
+
+		if (recursive) {
+			this.children().forEach((child) => child.drawBounds(val, recursive));
+		}
+
+		return this;
 	}
 
 	/**

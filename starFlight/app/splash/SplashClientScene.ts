@@ -257,7 +257,7 @@ export class SplashClientScene extends IgeSceneGraph {
 
 		});
 
-		gameOptionsWindow.show();
+		gameOptionsWindow.hide();
 
 		const leftNav = new IgeUiElement()
 			.id("leftNav")

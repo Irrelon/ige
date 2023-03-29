@@ -51,8 +51,8 @@ export declare class IgeEventingClass extends IgeBaseClass {
      * @param {Function} listener The method to call when the event is fired.
      * @returns {IgeEventingClass} The emitter instance.
      */
-    on(eventName: string, listener: IgeEventListenerCallback): this;
     on(eventName: string, id: string, listener: IgeEventListenerCallback): this;
+    on(eventName: string, listener: IgeEventListenerCallback): this;
     /**
      * Attach an event listener to the passed event only if the passed
      * id matches the document id for the event being fired.

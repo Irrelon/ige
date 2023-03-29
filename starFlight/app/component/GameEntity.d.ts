@@ -7,7 +7,7 @@ import { EntityAbilityModuleDefinition } from "../../types/EntityAbilityModuleDe
 export interface EntityPublicGameData {
     clientId?: string;
     state: Record<string, any>;
-    module: Record<string, EntityModuleDefinition | EntityAbilityModuleDefinition>;
+    module: EntityModuleDefinition | EntityAbilityModuleDefinition;
     ability: Record<string, any>;
     acceptsActionObj: Record<string, any>;
     size?: number;
@@ -27,7 +27,7 @@ export declare class GameEntity extends IgeEntityBox2d {
     _tickTime: number;
     _health: number;
     constructor(publicGameData?: EntityPublicGameData);
-    streamCreateData(): EntityPublicGameData;
+    streamCreateConstructorArgs(): EntityPublicGameData[];
     /**
      * Override the default IgeEntity class streamSectionData() method
      * so that we can check for custom sections and handle how we deal
@@ -53,7 +53,7 @@ export declare class GameEntity extends IgeEntityBox2d {
      * Set to null to remove the existing component.
      * @returns {*}
      */
-    module(moduleId: string, moduleDefinition?: EntityModuleDefinition): EntityModuleDefinition | Record<string, EntityModuleDefinition | EntityAbilityModuleDefinition> | this;
+    module(moduleId: string, moduleDefinition?: EntityModuleDefinition): any;
     /**
      * Gets the private module data by slot number.
      * @param {Number} moduleId The slot number to get / set component for.

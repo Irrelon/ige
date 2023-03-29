@@ -135,8 +135,8 @@ export class IgeEventingClass extends IgeBaseClass {
 	 * @param {Function} listener The method to call when the event is fired.
 	 * @returns {IgeEventingClass} The emitter instance.
 	 */
-	on (eventName: string, listener: IgeEventListenerCallback): this;
 	on (eventName: string, id: string, listener: IgeEventListenerCallback): this;
+	on (eventName: string, listener: IgeEventListenerCallback): this;
 	on (eventName: string, ...rest: any[]): this {
 		const restTypes = rest.map((arg) => typeof arg);
 

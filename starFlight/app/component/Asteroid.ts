@@ -19,16 +19,12 @@ export class Asteroid extends GameEntity {
 	_oreTypeCount: number = 0;
 	_triangles: IgePoly2d[] = [];
 
-	constructor (publicGameData: EntityPublicGameData = {
-		state: {},
-		module: {},
-		ability: {},
-		acceptsActionObj: {},
-	}) {
+	constructor (publicGameData: EntityPublicGameData) {
 		super(publicGameData);
 
 		this.category("asteroid");
 
+		publicGameData = publicGameData || {};
 		publicGameData.size = publicGameData.size || Math.floor((Math.random() * 40) + 20);
 		publicGameData.type = publicGameData.type || Math.round(Math.random() * 7) + 1;
 		publicGameData.rotation = Math.round(Math.random() * 360);
@@ -54,7 +50,7 @@ export class Asteroid extends GameEntity {
 			.width(publicGameData.size)
 			.height(publicGameData.size);
 
-		if (isServer && ige.box2d) {
+		if (isServer) {
 			const fixDefs: IgeBox2dFixtureDef[] = [];
 
 			// Define the polygon for collision
@@ -118,8 +114,8 @@ export class Asteroid extends GameEntity {
 		}
 	}
 
-	streamCreateData () {
-		return this._publicGameData;
+	streamCreateConstructorArgs () {
+		return [this._publicGameData];
 	}
 
 	ore () {

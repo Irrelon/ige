@@ -11,6 +11,7 @@ import { MiningLaserEffect } from "../component/effects/MiningLaserEffect.js";
 import { IgeInterval } from "../../../engine/core/IgeInterval.js";
 import { generateAsteroidBelt } from "../../services/asteroidBelt.js";
 import { modules } from "../data/modules.js";
+import { generateModuleObject } from "../../services/gameUtils.js";
 export class SpaceServerScene extends IgeSceneGraph {
     constructor() {
         super();
@@ -18,7 +19,7 @@ export class SpaceServerScene extends IgeSceneGraph {
         this._onPublicGameData = (data, clientId, callback) => {
             if (!callback)
                 return;
-            callback(false, this.publicGameData);
+            callback(this.publicGameData);
         };
         /**
          * Is called when a network packet with the "playerEntity" command
@@ -34,9 +35,9 @@ export class SpaceServerScene extends IgeSceneGraph {
             const playerDataModules = playerData.modules;
             const player = new PlayerShip({
                 clientId,
-                module: this.generateModuleObject(JSON.parse(JSON.stringify(playerDataModules)))
+                module: generateModuleObject(playerDataModules)
             }).streamMode(1).mount(ige.$("frontScene"));
-            player._inventory.on("change", function () {
+            player._inventory.on("change", () => {
                 player._publicGameData.state.inventoryCount.val = player._inventory.count();
             });
             player._inventory.post(playerData.inventory);
@@ -80,7 +81,7 @@ export class SpaceServerScene extends IgeSceneGraph {
                                 asteroid.spawnMinedOre(asteroid, clientId);
                             }, 10000);
                             // Tell the client there was no error
-                            callback(false);
+                            callback();
                         }
                         else {
                             // Tell the client that the asteroid is empty!
@@ -101,7 +102,12 @@ export class SpaceServerScene extends IgeSceneGraph {
             playerEntity._onAbilityUseRequest(data, clientId, callback);
         };
         this._onPlayerControlChange = (data, clientId) => {
-            this.playerByClientId(clientId)._controlState[data[0]] = data[1];
+            const playerEntity = this.playerByClientId(clientId);
+            if (!playerEntity) {
+                console.error("Control change received for player but no player entity found!");
+                return;
+            }
+            playerEntity._controlState[data[0]] = data[1];
         };
         // Set up the game storage for the server-side
         // This is the players object that stores player state per network

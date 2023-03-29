@@ -1621,4 +1621,29 @@ export class IgeEngine extends IgeEntity {
             this._processSync();
         }
     }
+    /**
+     * Returns the engine's children as an array of IgeViewport
+     * instances.
+     * @example #Get the viewports array
+     *     const vpArray = ige.engine.children();
+     * @return {Array} The array of IgeViewport instances.
+     */
+    children() {
+        // Children of the ige.engine are ONLY IgeViewports
+        return this._children;
+    }
+    drawBounds(val, recursive = false) {
+        if (val === undefined) {
+            return this._drawBounds;
+        }
+        this._drawBounds = val;
+        if (recursive) {
+            this.children().forEach((child) => {
+                var _a;
+                child.drawBounds(val, recursive);
+                (_a = child._scene) === null || _a === void 0 ? void 0 : _a.drawBounds(val, recursive);
+            });
+        }
+        return this;
+    }
 }

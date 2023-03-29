@@ -63,7 +63,7 @@ ige.router.route('app/space', {
         });
     }),
     server: () => __awaiter(void 0, void 0, void 0, function* () {
-        ige.box2d.createWorld();
+        ige.box2d.createWorld().start();
         yield ige.engine.addGraph(SpaceServerScene);
         return () => __awaiter(void 0, void 0, void 0, function* () {
             yield ige.engine.removeGraph(SpaceServerScene);

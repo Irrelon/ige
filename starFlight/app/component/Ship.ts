@@ -26,7 +26,7 @@ export class Ship extends GameEntity {
 			.width(40)
 			.height(40);
 
-		if (ige.box2d) {
+		if (isServer) {
 			// Define the polygon for collision
 			this._definePhysics();
 		}

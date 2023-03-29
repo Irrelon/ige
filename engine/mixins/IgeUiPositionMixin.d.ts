@@ -232,7 +232,7 @@ export declare const WithUiPositionMixin: <BaseClassType extends Mixin<IgeObject
         id(): string;
         category(val: string): any;
         category(): string;
-        drawBounds(id: boolean): any;
+        drawBounds(id: boolean, recursive?: boolean | undefined): any;
         drawBounds(): boolean;
         drawBoundsData(): boolean;
         drawBoundsData(val: boolean): any;
@@ -340,8 +340,8 @@ export declare const WithUiPositionMixin: <BaseClassType extends Mixin<IgeObject
         _on(eventName: string, id: string, listener: import("../core/IgeEventingClass").IgeEventListenerCallback): any;
         _once(eventName: string, id: string, listener: import("../core/IgeEventingClass").IgeEventListenerCallback): any;
         _off(eventName: string, id: string, listener?: import("../core/IgeEventingClass").IgeEventListenerCallback | undefined): any;
-        on(eventName: string, listener: import("../core/IgeEventingClass").IgeEventListenerCallback): any;
         on(eventName: string, id: string, listener: import("../core/IgeEventingClass").IgeEventListenerCallback): any;
+        on(eventName: string, listener: import("../core/IgeEventingClass").IgeEventListenerCallback): any;
         once(eventName: string, id: string, listener: import("../core/IgeEventingClass").IgeEventListenerCallback): any;
         once(eventName: string, listener: import("../core/IgeEventingClass").IgeEventListenerCallback): any;
         overwrite(eventName: string, id: string, listener: import("../core/IgeEventingClass").IgeEventListenerCallback): any;

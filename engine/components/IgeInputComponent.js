@@ -325,9 +325,9 @@ export class IgeInputComponent extends IgeEventingClass {
             if (this._debug) {
                 console.log("Key Down", event);
             }
-            if (this.emit("preKeyDown", event, event.keyCode) !== IgeEventReturnFlag.cancel) {
+            if (this.emit("preKeyDown", event, event.code) !== IgeEventReturnFlag.cancel) {
                 this.queueEvent(() => {
-                    this.emit("keyDown", event, event.keyCode);
+                    this.emit("keyDown", event, event.code);
                 });
             }
         };
@@ -341,9 +341,9 @@ export class IgeInputComponent extends IgeEventingClass {
             if (this._debug) {
                 console.log("Key Up", event);
             }
-            if (this.emit("preKeyUp", event, event.keyCode) !== IgeEventReturnFlag.cancel) {
+            if (this.emit("preKeyUp", event, event.code) !== IgeEventReturnFlag.cancel) {
                 this.queueEvent(() => {
-                    this.emit("keyUp", event, event.keyCode);
+                    this.emit("keyUp", event, event.code);
                 });
             }
         };
@@ -441,8 +441,7 @@ export class IgeInputComponent extends IgeEventingClass {
         // Check if we want to prevent default behaviour
         if (type === "keyboard") {
             const keyboardEvent = event;
-            // TODO: Re-map all the keys using the new event.key property
-            if (keyboardEvent.keyCode === 8) { // Backspace
+            if (keyboardEvent.code === "Backspace") { // Backspace
                 // Check if the event occurred on the body
                 const elem = event.target;
                 if (((elem === null || elem === void 0 ? void 0 : elem.tagName) || "body").toLowerCase() === "body") {

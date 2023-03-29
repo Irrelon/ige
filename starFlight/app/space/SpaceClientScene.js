@@ -15,7 +15,6 @@ import { IgeUiEntity } from "../../../engine/core/IgeUiEntity.js";
 import { IgeEntity } from "../../../engine/core/IgeEntity.js";
 import { IgeScene2d } from "../../../engine/core/IgeScene2d.js";
 import { InfoWindow } from "../component/ui/InfoWindow.js";
-import { MessageWindow } from "../component/ui/MessageWindow.js";
 export class SpaceClientScene extends IgeSceneGraph {
     constructor() {
         super();
@@ -39,10 +38,10 @@ export class SpaceClientScene extends IgeSceneGraph {
             // Set up the network stream handler
             network.renderLatency(80); // Render the simulation 80 milliseconds in the past
             // Ask server for game data
-            network.send('publicGameData', null, (err, data) => {
-                if (err) {
+            network.send('publicGameData', null, (data) => {
+                if (!data) {
                     network.stop();
-                    console.log("Game error");
+                    console.log("Game error, publicGameData not returned");
                     return;
                 }
                 this.publicGameData = data;
@@ -192,22 +191,22 @@ export class SpaceClientScene extends IgeSceneGraph {
                 .bottom(-20)
                 .right(-20)
                 .mount(uiScene);
-            const messageWindow = new MessageWindow({
-                messageFont: "12px Verdana",
-                messageColor: "#ffffff",
-                tab: {
-                    width: 80,
-                    position: "bottom",
-                    label: "MESSAGE LOG",
-                    tweenDefault: 10
-                }
-            })
-                .id("messageWindow")
-                .width(400)
-                .height(150)
-                .top(10)
-                .left(70)
-                .mount(uiScene);
+            // const messageWindow = new MessageWindow({
+            // 	messageFont: "12px Verdana",
+            // 	messageColor: "#ffffff",
+            // 	tab: {
+            // 		width: 80,
+            // 		position: "bottom",
+            // 		label: "MESSAGE LOG",
+            // 		tweenDefault: 10
+            // 	}
+            // })
+            // 	.id("messageWindow")
+            // 	.width(400)
+            // 	.height(150)
+            // 	.top(10)
+            // 	.left(70)
+            // 	.mount(uiScene);
             const audio = ige.audio;
             audio.register("select", "assets/audio/select.wav");
             audio.register("miningLaser", "assets/audio/miningLaser.wav");

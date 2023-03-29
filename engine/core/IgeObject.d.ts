@@ -207,8 +207,9 @@ export declare class IgeObject extends IgeEventingClass implements IgeCanRegiste
      *     console.log(entity.drawBounds());
      * @return {*}
      * @param id
+     * @param recursive
      */
-    drawBounds(id: boolean): this;
+    drawBounds(id: boolean, recursive?: boolean): this;
     drawBounds(): boolean;
     /**
      * Gets / sets the boolean flag determining if this object should have

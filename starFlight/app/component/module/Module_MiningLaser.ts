@@ -2,6 +2,7 @@ import { ige } from "@/engine/instance";
 import { Module_Ability } from "./Module_Ability";
 import { IgeNetIoServerController } from "@/engine/network/server/IgeNetIoServerController";
 import { Asteroid } from "../Asteroid";
+import { registerClass } from "@/engine/igeClassStore";
 
 export class Module_MiningLaser extends Module_Ability {
 	classId = "Module_MiningLaser";
@@ -13,8 +14,11 @@ export class Module_MiningLaser extends Module_Ability {
 	 */
 	complete () {
 		const target = this._target as Asteroid;
-		const inventorySpace = this.attachedTo()._publicGameData.state.inventorySpace;
-		const inventoryCount = this.attachedTo()._inventory.count();
+		const attachedTo = this.attachedTo();
+		if (!attachedTo) return;
+
+		const inventorySpace = attachedTo._publicGameData.state.inventorySpace;
+		const inventoryCount = attachedTo._inventory.count();
 
 		// Remove the mining laser target entity
 		this._target = null;
@@ -41,3 +45,5 @@ export class Module_MiningLaser extends Module_Ability {
 		(ige.network as IgeNetIoServerController).send("msg", { msg: "Mined " + oreType + ", no space in cargo hold" }, this.attachedTo().clientId());
 	}
 }
+
+registerClass(Module_MiningLaser);

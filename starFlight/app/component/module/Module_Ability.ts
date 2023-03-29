@@ -7,6 +7,7 @@ import {
 } from "../../../types/EntityModuleDefinition";
 import { EntityAbilityModuleDefinition } from "../../../types/EntityAbilityModuleDefinition";
 import { GameEntity } from "../GameEntity";
+import { registerClass } from "@/engine/igeClassStore";
 
 export class Module_Ability extends Module_Generic {
 	classId = "Module_Ability";
@@ -204,3 +205,5 @@ export class Module_Ability extends Module_Generic {
 		super.resolve(states, tickDelta);
 	}
 }
+
+registerClass(Module_Ability);

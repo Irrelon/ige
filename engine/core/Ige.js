@@ -35,6 +35,7 @@ export class Ige {
         this.version = version;
         this.classStore = igeClassStore;
         this._watch = [];
+        this._drawBounds = false;
         this._pointerPos = new IgePoint3d(); // Could probably be just {x: number, y: number}
         // /**
         //  * Returns an array of all objects that have been assigned
@@ -118,5 +119,14 @@ export class Ige {
      */
     $$(categoryName) {
         return this.categoryRegister.get(categoryName) || [];
+    }
+    drawBounds(val, recursive = false) {
+        if (val === undefined) {
+            return this._drawBounds;
+        }
+        this._drawBounds = val;
+        // Loop all the way down the scenegraph and enable bounds for all
+        this.engine.drawBounds(val, recursive);
+        return this;
     }
 }

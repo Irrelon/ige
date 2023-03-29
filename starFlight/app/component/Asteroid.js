@@ -9,12 +9,7 @@ import { IgeBox2dBodyType } from "../../../enums/IgeBox2dBodyType.js";
 import { IgeBox2dFixtureShapeType } from "../../../enums/IgeBox2dFixtureShapeType.js";
 import { registerClass } from "../../../engine/igeClassStore.js";
 export class Asteroid extends GameEntity {
-    constructor(publicGameData = {
-        state: {},
-        module: {},
-        ability: {},
-        acceptsActionObj: {},
-    }) {
+    constructor(publicGameData) {
         super(publicGameData);
         this.classId = "Asteroid";
         this._oreCount = 0;
@@ -22,6 +17,7 @@ export class Asteroid extends GameEntity {
         this._oreTypeCount = 0;
         this._triangles = [];
         this.category("asteroid");
+        publicGameData = publicGameData || {};
         publicGameData.size = publicGameData.size || Math.floor((Math.random() * 40) + 20);
         publicGameData.type = publicGameData.type || Math.round(Math.random() * 7) + 1;
         publicGameData.rotation = Math.round(Math.random() * 360);
@@ -41,7 +37,7 @@ export class Asteroid extends GameEntity {
         this.layer(1)
             .width(publicGameData.size)
             .height(publicGameData.size);
-        if (isServer && ige.box2d) {
+        if (isServer) {
             const fixDefs = [];
             // Define the polygon for collision
             const collisionPoly = new IgePoly2d()
@@ -97,8 +93,8 @@ export class Asteroid extends GameEntity {
             this.texture(ige.textures.get("asteroid" + publicGameData.type));
         }
     }
-    streamCreateData() {
-        return this._publicGameData;
+    streamCreateConstructorArgs() {
+        return [this._publicGameData];
     }
     ore() {
         return this._ore;

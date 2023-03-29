@@ -6,8 +6,8 @@ export declare class Asteroid extends GameEntity {
     _ore: Record<string, number>;
     _oreTypeCount: number;
     _triangles: IgePoly2d[];
-    constructor(publicGameData?: EntityPublicGameData);
-    streamCreateData(): EntityPublicGameData;
+    constructor(publicGameData: EntityPublicGameData);
+    streamCreateConstructorArgs(): EntityPublicGameData[];
     ore(): Record<string, number>;
     handleAcceptedAction(actionId: string, tickDelta: number): void;
     removeRandomOreType(): number;

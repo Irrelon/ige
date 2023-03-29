@@ -58,7 +58,7 @@ ige.router.route('app/space', {
 		}
 	},
 	server: async () => {
-		ige.box2d.createWorld();
+		ige.box2d.createWorld().start();
 		await ige.engine.addGraph(SpaceServerScene);
 
 		return async () => {

@@ -6,6 +6,7 @@ import { IgeViewport } from "@/engine/core/IgeViewport";
 import { IgeEntityBox2d } from "@/engine/components/physics/box2d/IgeEntityBox2d";
 import { IgeBox2dBodyType } from "@/enums/IgeBox2dBodyType";
 import { IgeBox2dFixtureShapeType } from "@/enums/IgeBox2dFixtureShapeType";
+import { IgeCanvasRenderingContext2d } from "@/types/IgeCanvasRenderingContext2d";
 
 export class Client extends IgeBaseClass implements IgeCanInit {
 	classId = "Client";
@@ -48,8 +49,19 @@ export class Client extends IgeBaseClass implements IgeCanInit {
 			.drawBounds(true)
 			.mount(ige.engine);
 
+		class PhysicsEntity extends IgeEntityBox2d {
+			update (ctx: IgeCanvasRenderingContext2d, tickDelta: number) {
+				super.update(ctx, tickDelta);
+
+				if (this._translate.y > 4000) {
+					this.destroy();
+					console.log("Destroy", scene1._children.length);
+				}
+			}
+		}
+
 		for (let i = 0; i < 1000; i++) {
-			new IgeEntityBox2d()
+			new PhysicsEntity()
 				.width(8)
 				.height(8)
 				.box2dBody({

@@ -46,8 +46,17 @@ export class Client extends IgeBaseClass {
                 .scene(scene1)
                 .drawBounds(true)
                 .mount(ige.engine);
+            class PhysicsEntity extends IgeEntityBox2d {
+                update(ctx, tickDelta) {
+                    super.update(ctx, tickDelta);
+                    if (this._translate.y > 4000) {
+                        this.destroy();
+                        console.log("Destroy", scene1._children.length);
+                    }
+                }
+            }
             for (let i = 0; i < 1000; i++) {
-                new IgeEntityBox2d()
+                new PhysicsEntity()
                     .width(8)
                     .height(8)
                     .box2dBody({

@@ -5,4 +5,6 @@ export var PlayerControls;
     PlayerControls[PlayerControls["thrust"] = 2] = "thrust";
     PlayerControls[PlayerControls["reverse"] = 3] = "reverse";
     PlayerControls[PlayerControls["braking"] = 4] = "braking";
+    PlayerControls[PlayerControls["ability1"] = 5] = "ability1";
+    PlayerControls[PlayerControls["ability2"] = 6] = "ability2";
 })(PlayerControls || (PlayerControls = {}));

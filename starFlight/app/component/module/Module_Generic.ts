@@ -1,5 +1,5 @@
 import { ige } from "@/engine/instance";
-import { igeClassStore } from "@/engine/igeClassStore";
+import { igeClassStore, registerClass } from "@/engine/igeClassStore";
 import { IgeBaseClass } from "@/engine/core/IgeBaseClass";
 import { IgeEntity } from "@/engine/core/IgeEntity";
 import { calculateModifierRatio, roundNumber } from "../../services";
@@ -248,3 +248,5 @@ export class Module_Generic extends IgeBaseClass {
 		return true;
 	}
 }
+
+registerClass(Module_Generic);

@@ -1,7 +1,14 @@
 import { IgeEntity } from "../../../core/IgeEntity";
 import type { IgeBox2dController } from "./IgeBox2dController";
 import type { IgeBox2dBodyDef } from "@/types/IgeBox2dBodyDef";
-import type { Box2D } from "@/engine/components/physics/box2d/lib_box2d";
+import { Box2D } from "@/engine/components/physics/box2d/lib_box2d";
+import { IgeCanvasRenderingContext2d } from "@/types/IgeCanvasRenderingContext2d";
+import { IgeEventListenerCallback } from "@/engine/core/IgeEventingClass";
+export interface IgeEntityBox2dCollisionListener {
+    type: number;
+    target: string;
+    callback: (...args: any[]) => void;
+}
 /**
  * Creates a new entity with Box2D integration.
  */
@@ -12,9 +19,13 @@ export declare class IgeEntityBox2d extends IgeEntity {
     _box2dBody?: Box2D.Dynamics.b2Body;
     _box2dOurContactFixture?: Box2D.Dynamics.b2Fixture;
     _box2dTheirContactFixture?: Box2D.Dynamics.b2Fixture;
+    _box2dNoDebug: boolean;
+    _collisionStartListeners?: IgeEntityBox2dCollisionListener[];
+    _collisionEndListeners?: IgeEntityBox2dCollisionListener[];
+    _contactListener?: Box2D.Dynamics.b2ContactListener;
     constructor();
     /**
-     * Gets / sets the box2d body's active flag which determines
+     * Gets / sets the Box2D body's active flag which determines
      * if it will be included as part of the physics simulation
      * or not.
      * @param {Boolean=} val Set to true to include the body in
@@ -39,10 +50,13 @@ export declare class IgeEntityBox2d extends IgeEntity {
      * @returns {*}
      */
     gravitic(val?: boolean): boolean | this | undefined;
-    on(): void;
-    off(): void;
-    _setupContactListeners(): void;
-    _checkContact(contact: any, arr: any): void;
+    on(eventName: string, id: string, listener: IgeEventListenerCallback): this;
+    on(eventName: string, listener: IgeEventListenerCallback): this;
+    off(eventName: string, id: string, listener?: IgeEventListenerCallback): this;
+    off(eventName: string, listener?: IgeEventListenerCallback): this;
+    off(eventName: string): this;
+    _setupContactListeners(): Box2D.Dynamics.b2ContactListener;
+    _checkContact(contact: Box2D.Dynamics.Contacts.b2Contact, arr: IgeEntityBox2dCollisionListener[]): void;
     /**
      * Takes over translateTo calls and processes Box2D movement as well.
      * @param x
@@ -51,15 +65,7 @@ export declare class IgeEntityBox2d extends IgeEntity {
      * @return {*}
      * @private
      */
-    _translateTo(x: any, y: any, z: any): this;
-    /**
-     * Takes over translateBy calls and processes Box2D movement as well.
-     * @param x
-     * @param y
-     * @param z
-     * @private
-     */
-    _translateBy(x: any, y: any, z: any): void;
+    translateTo(x: number, y: number, z: number): this;
     /**
      * Takes over translateTo calls and processes Box2D movement as well.
      * @param x
@@ -68,27 +74,24 @@ export declare class IgeEntityBox2d extends IgeEntity {
      * @return {*}
      * @private
      */
-    _rotateTo(x: any, y: any, z: any): this;
+    rotateTo(x: number, y: number, z: number): this;
     /**
-     * Takes over translateBy calls and processes Box2D movement as well.
-     * @param x
-     * @param y
-     * @param z
-     * @private
+     * Processes the updates required each render frame. Any code in the update()
+     * method will be called ONCE for each render frame BEFORE the tick() method.
+     * This differs from the tick() method in that the tick method can be called
+     * multiple times during a render frame depending on how many viewports your
+     * simulation is being rendered to, whereas the update() method is only called
+     * once. It is therefore the perfect place to put code that will control your
+     * entity's motion, AI etc.
+     * @param {CanvasRenderingContext2D} ctx The canvas context to render to.
+     * @param {Number} tickDelta The delta between the last tick time and this one.
      */
-    _rotateBy(x: any, y: any, z: any): void;
-    /**
-     * Purely for networkDebugMode handling, ensures that an entity's transform is
-     * not taken over by the physics simulation and is instead handled by the engine.
-     * @param ctx
-     * @private
-     */
-    _update(ctx: any): void;
+    update(ctx: IgeCanvasRenderingContext2d, tickDelta: number): void;
     /**
      * If true, disabled Box2D debug shape drawing for this entity.
      * @param {Boolean} val
      */
-    box2dNoDebug(val: any): any;
+    box2dNoDebug(val?: boolean): boolean | this;
     /**
      * Destroys the physics entity and the Box2D body that
      * is attached to it.

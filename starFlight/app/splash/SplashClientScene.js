@@ -227,7 +227,7 @@ export class SplashClientScene extends IgeSceneGraph {
             .mount(uiScene);
         gameOptionsWindow.on("beforeClose", function () {
         });
-        gameOptionsWindow.show();
+        gameOptionsWindow.hide();
         const leftNav = new IgeUiElement()
             .id("leftNav")
             .mount(gameOptionsWindow);
