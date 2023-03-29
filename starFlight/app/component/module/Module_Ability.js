@@ -13,13 +13,6 @@ export class Module_Ability extends Module_Generic {
         this._action = definition.action;
         this._cooldown = false;
     }
-    target(val) {
-        if (val !== undefined) {
-            this._target = val;
-            return this;
-        }
-        return this._target;
-    }
     action(val) {
         if (val !== undefined) {
             this._action = val;
@@ -76,7 +69,7 @@ export class Module_Ability extends Module_Generic {
         // Debit usage costs from input in definition
         for (const stateName in usageCosts) {
             if (usageCosts.hasOwnProperty(stateName) && states.hasOwnProperty(stateName)) {
-                states[stateName].val += usageCosts[stateName];
+                states[stateName].val = (states[stateName].val || 0) + usageCosts[stateName];
             }
         }
         // Activate effects
@@ -98,7 +91,7 @@ export class Module_Ability extends Module_Generic {
     complete() {
         this.processEffects("onComplete");
         this.processAudio("onComplete");
-        Module_Generic.prototype.complete.call(this);
+        super.complete();
     }
     cooldown(val) {
         if (val !== undefined) {
@@ -131,14 +124,17 @@ export class Module_Ability extends Module_Generic {
     resolve(states, tickDelta) {
         if (this.active()) {
             // Check if the module has a max range to target
-            if (this._definition.requiresTarget && this._definition.range) {
+            if (this._definition.requiresTarget && this._definition.range && this._target) {
+                const attachedTo = this._attachedTo;
+                if (!attachedTo)
+                    return;
                 // Module has a max range, check if we are inside that range
-                if (Math.abs(this._attachedTo.distanceTo(this._target)) > this._definition.range) {
+                if (Math.abs(attachedTo.distanceTo(this._target)) > this._definition.range) {
                     // Deactivate the module
                     this.active(false);
                     if (isServer) {
                         // Send network message to client telling them their ability went out of range
-                        ige.network.send("ability_" + this._definition._id + ".active", false, this._attachedTo.clientId());
+                        ige.network.send("ability_" + this._definition._id + ".active", false, attachedTo.clientId());
                     }
                 }
             }

@@ -2,6 +2,7 @@ import { ige } from "@/engine/instance";
 import { isServer } from "@/engine/clientServer";
 import { IgeEntity } from "@/engine/core/IgeEntity";
 import { IgeCanvasRenderingContext2d } from "@/types/IgeCanvasRenderingContext2d";
+import { registerClass } from "@/engine/igeClassStore";
 
 export class LaserEffect extends IgeEntity {
 	classId = "LaserEffect";
@@ -105,3 +106,5 @@ export class LaserEffect extends IgeEntity {
 		super.update(ctx, tickDelta);
 	}
 }
+
+registerClass(LaserEffect);

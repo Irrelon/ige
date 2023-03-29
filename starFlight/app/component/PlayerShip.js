@@ -47,6 +47,7 @@ export class PlayerShip extends Ship {
             ]);
             this.target = new Target();
         }
+        this._setup();
     }
     clientId(clientId) {
         if (clientId !== undefined) {

@@ -7,6 +7,7 @@ import { IgeParticleEmitter } from "@/engine/core/IgeParticleEmitter";
 import { IgeAudioEntity } from "@/engine/audio";
 import { IgeCanvasRenderingContext2d } from "@/types/IgeCanvasRenderingContext2d";
 import type { IgeScene2d } from "@/engine/core/IgeScene2d";
+import { registerClass } from "@/engine/igeClassStore";
 
 export class MiningLaserEffect extends LaserEffect {
 	classId = "MiningLaserEffect";
@@ -83,3 +84,5 @@ export class MiningLaserEffect extends LaserEffect {
 		return super.destroy();
 	}
 }
+
+registerClass(MiningLaserEffect);

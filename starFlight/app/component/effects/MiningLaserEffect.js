@@ -5,6 +5,7 @@ import { LaserEffect } from "./LaserEffect.js";
 import { MiningParticle } from "../particles/MiningParticle.js";
 import { IgeParticleEmitter } from "../../../../engine/core/IgeParticleEmitter.js";
 import { IgeAudioEntity } from "../../../../engine/audio/index.js";
+import { registerClass } from "../../../../engine/igeClassStore.js";
 export class MiningLaserEffect extends LaserEffect {
     constructor(data = {}) {
         super(data);
@@ -68,3 +69,4 @@ export class MiningLaserEffect extends LaserEffect {
         return super.destroy();
     }
 }
+registerClass(MiningLaserEffect);

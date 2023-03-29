@@ -15,7 +15,7 @@ export class IgeFontEntity extends IgeUiEntity {
         this._textAlignX = IgeFontAlignX.center;
         this._textAlignY = IgeFontAlignY.multiLineMiddle;
         this._textLineSpacing = 0;
-        this._nativeMode = false;
+        this._nativeMode = true;
         this._autoWrap = false;
         // Enable caching by default for font entities!
         this.cache(true);

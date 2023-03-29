@@ -39,6 +39,7 @@ export declare class GameEntity extends IgeEntityBox2d {
      * @return {*}
      */
     streamSectionData(sectionId: string, data: string): any;
+    _setup(): void;
     /**
      * Gets / sets an ability id to module id mapping.
      * @param abilityId

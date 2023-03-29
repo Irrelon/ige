@@ -24,4 +24,6 @@ export interface EntityAbilityModuleDefinition extends EntityModuleDefinition {
     cooldownDuration: number;
     effects?: EntityModuleEffects;
     audio?: EntityModuleAudio;
+    _activeStartTime?: number;
+    _cooldownStartTime?: number;
 }

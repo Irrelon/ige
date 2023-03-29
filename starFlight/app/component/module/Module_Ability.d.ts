@@ -10,7 +10,6 @@ export declare class Module_Ability extends Module_Generic {
     _action?: string;
     _target: GameEntity | null;
     constructor(definition: EntityAbilityModuleDefinition);
-    target(val?: GameEntity): GameEntity | this | null;
     action(val: string): this;
     action(): string;
     active(val: boolean, states?: EntityModuleStates): this;

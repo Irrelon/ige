@@ -1,6 +1,7 @@
 import { ige } from "../../../../engine/instance.js";
 import { isServer } from "../../../../engine/clientServer.js";
 import { IgeEntity } from "../../../../engine/core/IgeEntity.js";
+import { registerClass } from "../../../../engine/igeClassStore.js";
 export class LaserEffect extends IgeEntity {
     constructor(data = {}) {
         super();
@@ -76,3 +77,4 @@ export class LaserEffect extends IgeEntity {
         super.update(ctx, tickDelta);
     }
 }
+registerClass(LaserEffect);

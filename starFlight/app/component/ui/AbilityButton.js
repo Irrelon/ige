@@ -22,10 +22,10 @@ export class AbilityButton extends IgeUiEntity {
             .id("abilityButton_" + options.abilityId)
             .width(50)
             .height(50);
-        this._button._windowGradient = ige.engine._ctx.createLinearGradient(0, 0, this._button.width(), this._button.height());
-        this._button._windowGradient.addColorStop(0.0, "#04b7f9");
-        this._button._windowGradient.addColorStop(0.5, "#005066");
-        this._button._windowGradient.addColorStop(1.0, "#04b7f9");
+        // this._button._windowGradient = (ige.engine._ctx as IgeCanvasRenderingContext2d).createLinearGradient(0, 0, this._button.width(), this._button.height());
+        // this._button._windowGradient.addColorStop(0.0, "#04b7f9");
+        // this._button._windowGradient.addColorStop(0.5, "#005066");
+        // this._button._windowGradient.addColorStop(1.0, "#04b7f9");
         this._button.layer(0)
             .texture(ige.textures.get("infoWindow"))
             .cache(true)
@@ -121,7 +121,7 @@ export class AbilityButton extends IgeUiEntity {
         if (this._module.active) {
             this._timerCircle._timerColor = "#ffffff";
             // Check if we have finished being active
-            activeTime = ige.engine._currentTime - this._module._activeStartTime;
+            activeTime = ige.engine._currentTime - (this._module._activeStartTime || 0);
             this._timerCircle._timerValue = (1 / this._module.activeDuration) * activeTime;
             if (activeTime >= this._module.activeDuration) {
                 this.active(false);
@@ -131,7 +131,7 @@ export class AbilityButton extends IgeUiEntity {
         }
         else if (this._module.cooldown) {
             // Check if we have finished cooldown
-            activeTime = ige.engine._currentTime - this._module._cooldownStartTime;
+            activeTime = ige.engine._currentTime - (this._module._cooldownStartTime || 0);
             this._timerCircle._timerValue = (1 / this._module.cooldownDuration) * activeTime;
             this._timerCircle._timerColor = "#ff0000";
             if (activeTime >= this._module.cooldownDuration) {

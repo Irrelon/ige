@@ -22,7 +22,7 @@ export class AppClientScene extends IgeSceneGraph {
 		// receive a mouse event or not
 
 		// Hook the engine's input system and take over mouse interaction
-		const _mouseUpHandle = ige.input.on('preMouseUp', (event) => {
+		const _mouseUpHandle = ige.input.on('prePointerUp', (event) => {
 			// Get list of entities that the mouse is currently over
 			const arr = ige.engine.pointerOverList();
 

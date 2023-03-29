@@ -43,6 +43,7 @@ export class Ship extends GameEntity {
                 // Mount the emitter to the ship
                 .mount(this);
         }
+        this._setup();
     }
     _definePhysics() {
         const collisionPoly = new IgePoly2d()

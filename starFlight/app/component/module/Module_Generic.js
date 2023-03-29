@@ -9,7 +9,7 @@ export class Module_Generic extends IgeBaseClass {
         this.classId = "Module_Generic";
         this._enabled = false;
         this._active = false;
-        //_target: IgeEntity | null = null;
+        this._target = null;
         this._activeStartTime = 0;
         this._attachedTo = null; // This might be GameEntity and game entity requires _effects defined on it, and effects need their own class
         this._definition = definition;
@@ -42,6 +42,14 @@ export class Module_Generic extends IgeBaseClass {
             return this;
         }
         return this._attachedTo;
+    }
+    target(val) {
+        if (val !== undefined) {
+            console.log("Setting target", val);
+            this._target = val;
+            return this;
+        }
+        return this._target;
     }
     /**
      * If any effects are in the module's definition under "effects"

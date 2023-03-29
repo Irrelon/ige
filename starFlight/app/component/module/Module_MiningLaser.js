@@ -13,6 +13,9 @@ export class Module_MiningLaser extends Module_Ability {
      */
     complete() {
         const target = this._target;
+        if (!target) {
+            throw new Error("Mining laser module complete but no target!");
+        }
         const attachedTo = this.attachedTo();
         if (!attachedTo)
             return;

@@ -18,7 +18,7 @@ export class IgeFontEntity extends IgeUiEntity {
 	_textAlignX: IgeFontAlignX = IgeFontAlignX.center;
 	_textAlignY: IgeFontAlignY = IgeFontAlignY.multiLineMiddle;
 	_textLineSpacing: number = 0;
-	_nativeMode: boolean = false;
+	_nativeMode: boolean = true;
 	_nativeFont?: string;
 	_nativeStroke?: number;
 	_nativeStrokeColor?: string;

@@ -32,6 +32,8 @@ export class Asteroid extends GameEntity {
 		this._publicGameData = publicGameData;
 		this._ore = {};
 
+		this._setup();
+
 		if (isServer) {
 			// Set the types and quantities of ore in this asteroid
 			this._oreCount = 0;
@@ -170,7 +172,7 @@ export class Asteroid extends GameEntity {
 		}
 	}
 
-	_mouseUp () {
+	_pointerUp () {
 		(ige.audio as IgeAudioController).play("select");
 		ige.app.playerEntity.selectTarget(this);
 

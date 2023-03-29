@@ -9,16 +9,17 @@ import {
 	EntityModuleEffectAction,
 	EntityModuleEffects, EntityModuleStates
 } from "../../../types/EntityModuleDefinition";
+import { GameEntity } from "../GameEntity";
 
 export class Module_Generic extends IgeBaseClass {
 	classId = "Module_Generic";
 	_definition: EntityModuleDefinition;
 	_enabled: boolean = false;
 	_active: boolean = false;
-	//_target: IgeEntity | null = null;
+	_target: GameEntity | null = null;
 
 	_activeStartTime: number = 0;
-	_attachedTo: IgeEntity | null = null;// This might be GameEntity and game entity requires _effects defined on it, and effects need their own class
+	_attachedTo: GameEntity | null = null; // This might be GameEntity and game entity requires _effects defined on it, and effects need their own class
 
 	constructor (definition: EntityModuleDefinition) {
 		super();
@@ -52,13 +53,23 @@ export class Module_Generic extends IgeBaseClass {
 	 * @param val
 	 * @returns {*}
 	 */
-	attachedTo (val?: IgeEntity) {
+	attachedTo (val?: GameEntity) {
 		if (val !== undefined) {
 			this._attachedTo = val;
 			return this;
 		}
 
 		return this._attachedTo;
+	}
+
+	target (val?: GameEntity) {
+		if (val !== undefined) {
+			console.log("Setting target", val);
+			this._target = val;
+			return this;
+		}
+
+		return this._target;
 	}
 
 	/**

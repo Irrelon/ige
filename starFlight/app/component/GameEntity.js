@@ -78,15 +78,6 @@ export class GameEntity extends IgeEntityBox2d {
         };
         // Define the data sections that will be included in the stream
         this.streamSections(["transform", "props"]);
-        if (isServer) {
-            // Define the actions that are accepted by this instance
-            const thisAcceptedActionsArr = acceptedAction[this.classId];
-            if (thisAcceptedActionsArr && thisAcceptedActionsArr.length) {
-                for (let i = 0; i < thisAcceptedActionsArr.length; i++) {
-                    this.acceptsAction(thisAcceptedActionsArr[i], true);
-                }
-            }
-        }
         // Apply the basic ship modules
         if (publicGameData && publicGameData.module) {
             for (const i in publicGameData.module) {
@@ -141,6 +132,18 @@ export class GameEntity extends IgeEntityBox2d {
             // to the super-class streamSectionData() method - it handles
             // the "transform" section by itthis
             return super.streamSectionData(sectionId, data);
+        }
+    }
+    _setup() {
+        if (!isServer) {
+            return;
+        }
+        const thisAcceptedActionsArr = acceptedAction[this.classId];
+        if (!thisAcceptedActionsArr || !thisAcceptedActionsArr.length) {
+            return;
+        }
+        for (let i = 0; i < thisAcceptedActionsArr.length; i++) {
+            this.acceptsAction(thisAcceptedActionsArr[i], true);
         }
     }
     /**

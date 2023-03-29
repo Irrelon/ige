@@ -175,7 +175,7 @@ export class SplashClientScene extends IgeSceneGraph {
             "width": 300,
             "height": 30,
             "left": 15,
-            "font": "12px Open Sans",
+            "font": "12px Verdana",
             "color": "#000000"
         });
         ui.style("#textBox1", {
@@ -198,10 +198,10 @@ export class SplashClientScene extends IgeSceneGraph {
             "height": 40
         });
         ui.style("IgeUiLabel", {
-            "font": "12px Open Sans"
+            "font": "8px Verdana"
         });
         ui.style("#homeLabel", {
-            "font": "14px Open Sans",
+            "font": "14px Verdana",
             "color": "#333333"
         });
         ui.style("#button1", {

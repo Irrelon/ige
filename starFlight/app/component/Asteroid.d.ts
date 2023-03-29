@@ -13,5 +13,5 @@ export declare class Asteroid extends GameEntity {
     removeRandomOreType(): number;
     applyDamage(val: number): this;
     spawnMinedOre(oreType: number): void;
-    _mouseUp(): boolean;
+    _pointerUp(): boolean;
 }

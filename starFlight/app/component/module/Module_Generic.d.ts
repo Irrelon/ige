@@ -1,13 +1,14 @@
 import { IgeBaseClass } from "@/engine/core/IgeBaseClass";
-import { IgeEntity } from "@/engine/core/IgeEntity";
 import { EntityModuleDefinition, EntityModuleAudio, EntityModuleEffects, EntityModuleStates } from "../../../types/EntityModuleDefinition";
+import { GameEntity } from "../GameEntity";
 export declare class Module_Generic extends IgeBaseClass {
     classId: string;
     _definition: EntityModuleDefinition;
     _enabled: boolean;
     _active: boolean;
+    _target: GameEntity | null;
     _activeStartTime: number;
-    _attachedTo: IgeEntity | null;
+    _attachedTo: GameEntity | null;
     constructor(definition: EntityModuleDefinition);
     enabled(val?: boolean): boolean | this;
     active(val?: boolean): boolean | this;
@@ -16,7 +17,8 @@ export declare class Module_Generic extends IgeBaseClass {
      * @param val
      * @returns {*}
      */
-    attachedTo(val?: IgeEntity): IgeEntity | this | null;
+    attachedTo(val?: GameEntity): this | GameEntity | null;
+    target(val?: GameEntity): this | GameEntity | null;
     /**
      * If any effects are in the module's definition under "effects"
      * this method will enable / disable them and add / remove them
