@@ -1,7 +1,7 @@
-export type IgeRouteFunction = () => Promise<any>;
+export type IgeEffectFunction = () => Promise<any>;
 
 export interface IgeRouteDefinition {
-	shared?: IgeRouteFunction;
-	client?: IgeRouteFunction;
-	server?: IgeRouteFunction;
+	shared?: IgeEffectFunction;
+	client?: IgeEffectFunction;
+	server?: IgeEffectFunction;
 }
