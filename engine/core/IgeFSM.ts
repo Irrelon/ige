@@ -23,7 +23,7 @@ export interface InitialData {
 	initialState: string;
 }
 
-export default class IgeFSM extends IgeBaseClass {
+export class IgeFSM extends IgeBaseClass {
 	_states: StateDefinition;
 	_transitions: TransitionDefinition;
 	_transitioning: boolean;
@@ -457,6 +457,21 @@ export default class IgeFSM extends IgeBaseClass {
 							return resolve(enterResult);
 						});
 					}
+				});
+				return;
+			}
+
+			this._previousStateName = this._currentStateName;
+			this._currentStateName = newStateName;
+
+			if (this._debug) {
+				this.log(`Entering state: ${newStateName}`);
+			}
+
+			if (newStateObj.enter) {
+				const enter = newStateObj.enter as (...rest: any[]) => Promise<any>;
+				enter(...rest).then((enterResult) => {
+					return resolve(enterResult);
 				});
 			}
 		});

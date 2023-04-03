@@ -8,7 +8,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 import { IgeBaseClass } from "../../engine/core/IgeBaseClass.js";
-export default class IgeFSM extends IgeBaseClass {
+export class IgeFSM extends IgeBaseClass {
     /**
      * A simple finite state machine implementation.
      */
@@ -321,6 +321,18 @@ export default class IgeFSM extends IgeBaseClass {
                                 return resolve(enterResult);
                             });
                         }
+                    });
+                    return;
+                }
+                this._previousStateName = this._currentStateName;
+                this._currentStateName = newStateName;
+                if (this._debug) {
+                    this.log(`Entering state: ${newStateName}`);
+                }
+                if (newStateObj.enter) {
+                    const enter = newStateObj.enter;
+                    enter(...rest).then((enterResult) => {
+                        return resolve(enterResult);
                     });
                 }
             });

@@ -17,7 +17,7 @@ export interface InitialData {
     states: StateDefinition;
     initialState: string;
 }
-export default class IgeFSM extends IgeBaseClass {
+export declare class IgeFSM extends IgeBaseClass {
     _states: StateDefinition;
     _transitions: TransitionDefinition;
     _transitioning: boolean;
