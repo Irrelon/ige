@@ -17,6 +17,7 @@ import { newIdHex } from "../../engine/utils.js";
 import { FactoryBuilding } from "../entities/FactoryBuilding.js";
 import { ResourceType } from "../enums/ResourceType.js";
 import { createFactoryBuilding, createStorageBuilding } from "../services/createBuilding.js";
+import { Line } from "../entities/base/Line.js";
 export const controllerClient = () => __awaiter(void 0, void 0, void 0, function* () {
     const uiCreateStorage = ige.$("uiCreateStorage");
     const uiCreateFactory = ige.$("uiCreateFactory");
@@ -73,6 +74,14 @@ export const controllerClient = () => __awaiter(void 0, void 0, void 0, function
                     break;
             }
         }),
+        pointerMove: () => __awaiter(void 0, void 0, void 0, function* () {
+            const tmpBuilding = ige.$("tmpBuilding");
+            if (!tmpBuilding)
+                return;
+            const gridX = Math.round(ige._pointerPos.x / 100) * 100;
+            const gridY = Math.round(ige._pointerPos.y / 100) * 100;
+            tmpBuilding.translateTo(gridX, gridY, 0);
+        }),
         click: () => __awaiter(void 0, void 0, void 0, function* () {
             const gridX = Math.round(ige._pointerPos.x / 100) * 100;
             const gridY = Math.round(ige._pointerPos.y / 100) * 100;
@@ -104,19 +113,68 @@ export const controllerClient = () => __awaiter(void 0, void 0, void 0, function
             tmpBuilding.destroy();
         })
     });
-    fsm.defineState("createRoad");
+    fsm.defineState("createRoad", {
+        enter: () => __awaiter(void 0, void 0, void 0, function* () {
+            console.log("Entered createRoad");
+            fsm.data("roadStart", null);
+            fsm.data("roadEnd", null);
+            // Get the scene to mount to
+            const scene1 = ige.$("scene1");
+            // Remove any existing temp building
+            const existingTmpBuilding = ige.$("tmpBuilding");
+            if (existingTmpBuilding) {
+                existingTmpBuilding.destroy();
+            }
+            new Line()
+                .id("tmpBuilding")
+                .mount(scene1);
+        }),
+        pointerMove: () => __awaiter(void 0, void 0, void 0, function* () {
+            const tmpBuilding = ige.$("tmpBuilding");
+            if (!tmpBuilding)
+                return;
+            const gridX = Math.round(ige._pointerPos.x / 100) * 100;
+            const gridY = Math.round(ige._pointerPos.y / 100) * 100;
+            tmpBuilding.translateTo(gridX, gridY, 0);
+        }),
+        click: () => __awaiter(void 0, void 0, void 0, function* () {
+            const gridX = Math.round(ige._pointerPos.x / 100) * 100;
+            const gridY = Math.round(ige._pointerPos.y / 100) * 100;
+            // Check the location and determine if we can build there
+            if (fsm.data("roadStart") === null) {
+                // Set the road start
+                fsm.data("roadStart", { x: gridX, y: gridY });
+            }
+            else {
+                // We have a road start and a road end, create the road
+                // TODO: Roads currently need a from and to id of the locations they
+                //   connect, however we can't use this model if we want to allow arbitrary
+                //   road building. Either we continue to use this and only allow road starts
+                //   to be existing flags and road ends to be either an existing flag or create
+                //   a flag for the location selected, or we move to a purely grid-based road
+                //   system where the path finder uses the grid to calculate paths
+            }
+            // Place the building
+            const existingTmpBuilding = ige.$("tmpBuilding");
+            existingTmpBuilding.destroy();
+            // Enter back into idle state
+            yield fsm.enterState("idle");
+        }),
+        exit: () => __awaiter(void 0, void 0, void 0, function* () {
+            const tmpBuilding = ige.$("tmpBuilding");
+            if (!tmpBuilding)
+                return;
+            // Destroy the tmp building
+            tmpBuilding.destroy();
+        })
+    });
     fsm.defineState("destroyObject");
     yield fsm.initialState("idle");
     ige.engine.addBehaviour(IgeBehaviourType.preUpdate, "tmpBuildingBehaviour", () => {
         if (ige.input.state(IgeInputDevice.pointer1, IgeInputPointerMap.button0)) {
             fsm.raiseEvent("click");
         }
-        const tmpBuilding = ige.$("tmpBuilding");
-        if (!tmpBuilding)
-            return;
-        const gridX = Math.round(ige._pointerPos.x / 100) * 100;
-        const gridY = Math.round(ige._pointerPos.y / 100) * 100;
-        tmpBuilding.translateTo(gridX, gridY, 0);
+        fsm.raiseEvent("pointerMove");
     });
     return () => __awaiter(void 0, void 0, void 0, function* () {
         ige.engine.removeBehaviour(IgeBehaviourType.preUpdate, "tmpBuildingBehaviour");
