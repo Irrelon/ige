@@ -1,6 +1,6 @@
 import { IgeSmartTexture } from "@/types/IgeSmartTexture";
 
-const line: IgeSmartTexture = {
+export const lineSmartTexture: IgeSmartTexture = {
 	render: function (ctx, entity) {
 		ctx.beginPath();
 		ctx.moveTo(-entity._bounds2d.x2, -entity._bounds2d.y2);
@@ -18,5 +18,3 @@ const line: IgeSmartTexture = {
 		}
 	}
 };
-
-export default line;

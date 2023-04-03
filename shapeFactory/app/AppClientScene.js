@@ -11,14 +11,15 @@ import { ige } from "../../engine/instance.js";
 import { IgeBaseScene } from "../../engine/core/IgeBaseScene.js";
 import { IgeOptions } from "../../engine/core/IgeOptions.js";
 import { IgeTexture } from "../../engine/core/IgeTexture.js";
-import square from "../assets/textures/smartTextures/square.js";
-import line from "../assets/textures/smartTextures/line.js";
-import triangle from "../assets/textures/smartTextures/triangle.js";
-import circle from "../assets/textures/smartTextures/circle.js";
-import star from "../assets/textures/smartTextures/star.js";
 import { IgeSceneGraph } from "../../engine/core/IgeSceneGraph.js";
 import { IgeMousePanComponent } from "../../engine/components/IgeMousePanComponent.js";
-import flag from "../assets/textures/smartTextures/flag.js";
+import { squareSmartTexture } from "../assets/textures/smartTextures/square.js";
+import { lineSmartTexture } from "../assets/textures/smartTextures/line.js";
+import { triangleSmartTexture } from "../assets/textures/smartTextures/triangle.js";
+import { circleSmartTexture } from "../assets/textures/smartTextures/circle.js";
+import { starSmartTexture } from "../assets/textures/smartTextures/star.js";
+import { flagSmartTexture } from "../assets/textures/smartTextures/flag.js";
+import { gridSmartTexture } from "../assets/textures/smartTextures/grid.js";
 // @ts-ignore
 window.ige = ige;
 export class AppClientScene extends IgeSceneGraph {
@@ -32,13 +33,13 @@ export class AppClientScene extends IgeSceneGraph {
             const options = new IgeOptions();
             options.set("masterVolume", 1);
             (_a = ige.audio) === null || _a === void 0 ? void 0 : _a.masterVolume(options.get('masterVolume', 1));
-            new IgeTexture("fairy", "./assets/textures/sprites/fairy.png");
-            new IgeTexture("square", square);
-            new IgeTexture("line", line);
-            new IgeTexture("triangle", triangle);
-            new IgeTexture("circle", circle);
-            new IgeTexture("star", star);
-            new IgeTexture("flag", flag);
+            new IgeTexture("squareSmartTexture", squareSmartTexture);
+            new IgeTexture("lineSmartTexture", lineSmartTexture);
+            new IgeTexture("triangleSmartTexture", triangleSmartTexture);
+            new IgeTexture("circleSmartTexture", circleSmartTexture);
+            new IgeTexture("starSmartTexture", starSmartTexture);
+            new IgeTexture("flagSmartTexture", flagSmartTexture);
+            new IgeTexture("gridSmartTexture", gridSmartTexture);
             const network = ige.network;
             // Wait for our textures to load before continuing
             yield ige.textures.whenLoaded();

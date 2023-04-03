@@ -1,6 +1,6 @@
 import { IgeSmartTexture } from "@/types/IgeSmartTexture";
 
-const triangle: IgeSmartTexture = {
+export const triangleSmartTexture: IgeSmartTexture = {
 	render: function (ctx, entity) {
 		ctx.beginPath();
 		ctx.moveTo(-entity._bounds2d.x2, entity._bounds2d.y2);
@@ -19,5 +19,3 @@ const triangle: IgeSmartTexture = {
 		}
 	}
 };
-
-export default triangle;

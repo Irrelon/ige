@@ -15,7 +15,7 @@ export class Flag extends Building {
 			.height(20);
 
 		if (isClient) {
-			this.texture(ige.textures.get("flag"));
+			this.texture(ige.textures.get("flagSmartTexture"));
 			this.registerNetworkClass();
 		}
 	}

@@ -1,4 +1,4 @@
-const square = {
+export const squareSmartTexture = {
     render: function (ctx, entity) {
         ctx.fillStyle = "#ffffff";
         ctx.shadowColor = entity.data("glowColor");
@@ -11,4 +11,3 @@ const square = {
         }
     }
 };
-export default square;

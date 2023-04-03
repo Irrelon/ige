@@ -1,6 +1,6 @@
 import { IgeSmartTexture } from "@/types/IgeSmartTexture";
 
-const square: IgeSmartTexture = {
+export const squareSmartTexture: IgeSmartTexture = {
 	render: function (ctx, entity) {
 		ctx.fillStyle = "#ffffff";
 		ctx.shadowColor = entity.data("glowColor");
@@ -14,5 +14,3 @@ const square: IgeSmartTexture = {
 		}
 	}
 };
-
-export default square;

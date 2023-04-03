@@ -64,10 +64,10 @@ export class IgeTexture extends IgeAsset {
 		}
 
 		if (id) {
-			const alreadyExists = ige.textures.get(id);
+			const alreadyExists = ige.textures.exists(id);
 
 			if (alreadyExists) {
-				return alreadyExists;
+				return ige.textures.get(id);
 			}
 
 			this.id(id);

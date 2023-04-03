@@ -15,7 +15,7 @@ export class Triangle extends Building {
 			.height(50);
 
 		if (isClient) {
-			this.texture(ige.textures.get("triangle"));
+			this.texture(ige.textures.get("triangleSmartTexture"));
 			this.registerNetworkClass();
 		}
 	}

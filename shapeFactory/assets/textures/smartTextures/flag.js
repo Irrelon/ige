@@ -1,4 +1,4 @@
-const flag = {
+export const flagSmartTexture = {
     render: function (ctx, entity) {
         ctx.beginPath();
         ctx.moveTo(-entity._bounds2d.x2, entity._bounds2d.y2);
@@ -17,4 +17,3 @@ const flag = {
         }
     }
 };
-export default flag;

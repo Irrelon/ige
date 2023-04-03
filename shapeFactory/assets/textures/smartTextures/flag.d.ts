@@ -1,3 +1,2 @@
 import { IgeSmartTexture } from "@/types/IgeSmartTexture";
-declare const flag: IgeSmartTexture;
-export default flag;
+export declare const flagSmartTexture: IgeSmartTexture;

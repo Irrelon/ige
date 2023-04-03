@@ -3,15 +3,16 @@ import { IgeBaseScene } from "@/engine/core/IgeBaseScene";
 import { IgeOptions } from "@/engine/core/IgeOptions";
 import { IgeTexture } from "@/engine/core/IgeTexture";
 import { IgeNetIoClientController } from "@/engine/network/client/IgeNetIoClientController";
-import square from "../assets/textures/smartTextures/square";
-import line from "../assets/textures/smartTextures/line";
-import triangle from "../assets/textures/smartTextures/triangle";
-import circle from "../assets/textures/smartTextures/circle";
-import star from "../assets/textures/smartTextures/star";
 import { IgeSceneGraph } from "@/engine/core/IgeSceneGraph";
 import { IgeViewport } from "@/engine/core/IgeViewport";
 import { IgeMousePanComponent } from "@/engine/components/IgeMousePanComponent";
-import flag from "../assets/textures/smartTextures/flag";
+import { squareSmartTexture } from "../assets/textures/smartTextures/square";
+import { lineSmartTexture } from "../assets/textures/smartTextures/line";
+import { triangleSmartTexture } from "../assets/textures/smartTextures/triangle";
+import { circleSmartTexture } from "../assets/textures/smartTextures/circle";
+import { starSmartTexture } from "../assets/textures/smartTextures/star";
+import { flagSmartTexture } from "../assets/textures/smartTextures/flag";
+import { gridSmartTexture } from "../assets/textures/smartTextures/grid";
 
 // @ts-ignore
 window.ige = ige;
@@ -25,13 +26,13 @@ export class AppClientScene extends IgeSceneGraph {
 
 		ige.audio?.masterVolume(options.get('masterVolume', 1));
 
-		new IgeTexture("fairy", "./assets/textures/sprites/fairy.png");
-		new IgeTexture("square", square);
-		new IgeTexture("line", line);
-		new IgeTexture("triangle", triangle);
-		new IgeTexture("circle", circle);
-		new IgeTexture("star", star);
-		new IgeTexture("flag", flag);
+		new IgeTexture("squareSmartTexture", squareSmartTexture);
+		new IgeTexture("lineSmartTexture", lineSmartTexture);
+		new IgeTexture("triangleSmartTexture", triangleSmartTexture);
+		new IgeTexture("circleSmartTexture", circleSmartTexture);
+		new IgeTexture("starSmartTexture", starSmartTexture);
+		new IgeTexture("flagSmartTexture", flagSmartTexture);
+		new IgeTexture("gridSmartTexture", gridSmartTexture);
 
 		const network = (ige.network as IgeNetIoClientController);
 

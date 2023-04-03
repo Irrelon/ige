@@ -14,7 +14,7 @@ export class Circle extends GameEntity {
 			.height(50);
 
 		if (isClient) {
-			this.texture(ige.textures.get("circle"));
+			this.texture(ige.textures.get("circleSmartTexture"));
 		}
 	}
 }

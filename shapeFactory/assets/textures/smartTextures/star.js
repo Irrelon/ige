@@ -1,10 +1,5 @@
-const triangle = {
+export const starSmartTexture = {
     render: function (ctx, entity) {
-        // ctx.beginPath();
-        // ctx.moveTo(-entity._bounds2d.x2, entity._bounds2d.y2);
-        // ctx.lineTo(0, -entity._bounds2d.y2);
-        // ctx.lineTo(entity._bounds2d.x2, entity._bounds2d.y2);
-        // ctx.lineTo(-entity._bounds2d.x2, entity._bounds2d.y2);
         let rot = Math.PI / 2 * 3;
         const cx = 0;
         const cy = 0;
@@ -37,4 +32,3 @@ const triangle = {
         }
     }
 };
-export default triangle;

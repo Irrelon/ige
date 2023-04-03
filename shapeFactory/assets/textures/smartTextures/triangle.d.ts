@@ -1,3 +1,2 @@
 import { IgeSmartTexture } from "@/types/IgeSmartTexture";
-declare const triangle: IgeSmartTexture;
-export default triangle;
+export declare const triangleSmartTexture: IgeSmartTexture;

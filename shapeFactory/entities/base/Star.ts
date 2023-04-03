@@ -15,7 +15,7 @@ export class Star extends Building {
 			.height(60);
 
 		if (isClient) {
-			this.texture(ige.textures.get("star"));
+			this.texture(ige.textures.get("starSmartTexture"));
 			this.registerNetworkClass();
 		}
 	}

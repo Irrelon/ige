@@ -6,7 +6,12 @@ export class IgeAssetRegister<AssetType extends IgeAsset> extends IgeEventingCla
 	_assetsLoading: number = 0;
 	_assetsTotal: number = 0;
 
+	exists (id: string): boolean {
+		return Boolean(this._assetById[id]);
+	}
+
 	get (id: string) {
+		if (!this._assetById[id]) throw new Error(`No texture registered with the id: ${id}`);
 		return this._assetById[id];
 	}
 

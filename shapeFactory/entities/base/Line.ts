@@ -26,7 +26,7 @@ export class Line extends GameEntity {
 			.translateTo((x2 / 2) + (x1 / 2), (y2 / 2) + (y1 / 2), 0);
 
 		if (isClient) {
-			this.texture(ige.textures.get("line"));
+			this.texture(ige.textures.get("lineSmartTexture"));
 		}
 	}
 }

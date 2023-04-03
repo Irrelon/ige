@@ -1,2 +1,2 @@
 import { IgeSmartTexture } from "@/types/IgeSmartTexture";
-export declare const circleSmartTexture: IgeSmartTexture;
+export declare const gridSmartTexture: IgeSmartTexture;

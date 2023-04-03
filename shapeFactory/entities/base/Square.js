@@ -11,7 +11,7 @@ export class Square extends Building {
             .width(50)
             .height(50);
         if (isClient) {
-            this.texture(ige.textures.get("square"));
+            this.texture(ige.textures.get("squareSmartTexture"));
             this.registerNetworkClass();
         }
     }

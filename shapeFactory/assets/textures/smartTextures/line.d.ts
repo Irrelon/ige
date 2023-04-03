@@ -1,3 +1,2 @@
 import { IgeSmartTexture } from "@/types/IgeSmartTexture";
-declare const line: IgeSmartTexture;
-export default line;
+export declare const lineSmartTexture: IgeSmartTexture;

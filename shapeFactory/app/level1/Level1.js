@@ -8,6 +8,7 @@ import { IgeScene2d } from "../../../engine/core/IgeScene2d.js";
 import { Road } from "../../entities/Road.js";
 import { Transporter } from "../../entities/Transporter.js";
 import { createFactoryBuilding, createMiningBuilding, createStorageBuilding } from "../../services/createBuilding.js";
+import { Grid } from "../../entities/Grid.js";
 export class Level1 extends IgeSceneGraph {
     constructor() {
         super(...arguments);
@@ -25,8 +26,9 @@ export class Level1 extends IgeSceneGraph {
         // Create the scene
         const scene1 = new IgeScene2d()
             .id("scene1")
-            //.isometricMounts(true)
+            .isometricMounts(true)
             .mount(baseScene);
+        const grid = new Grid().mount(baseScene);
         if (isClient)
             return;
         new IgeAudioEntity()
