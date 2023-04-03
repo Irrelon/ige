@@ -665,7 +665,7 @@ export declare class IgeEntity extends IgeObject implements IgeCanRegisterById, 
      *     });
      * @return {*}
      */
-    pointerMove(callback: IgeInputEvent): this;
+    pointerMove(callback: IgeInputEvent | null): this;
     pointerMove(): IgeInputEvent;
     /**
      * Gets / sets the callback that is fired when a mouse
@@ -685,7 +685,7 @@ export declare class IgeEntity extends IgeObject implements IgeCanRegisterById, 
      *     });
      * @return {*}
      */
-    pointerOver(callback: IgeInputEvent): this;
+    pointerOver(callback: IgeInputEvent | null): this;
     pointerOver(): IgeInputEvent;
     /**
      * Gets / sets the callback that is fired when a mouse
@@ -705,7 +705,7 @@ export declare class IgeEntity extends IgeObject implements IgeCanRegisterById, 
      *     });
      * @return {*}
      */
-    pointerOut(callback: IgeInputEvent): this;
+    pointerOut(callback: IgeInputEvent | null): this;
     pointerOut(): IgeInputEvent;
     /**
      * Gets / sets the callback that is fired when a mouse
@@ -725,7 +725,7 @@ export declare class IgeEntity extends IgeObject implements IgeCanRegisterById, 
      *     });
      * @return {*}
      */
-    pointerUp(callback: IgeInputEvent): this;
+    pointerUp(callback: IgeInputEvent | null): this;
     pointerUp(): IgeInputEvent;
     /**
      * Gets / sets the callback that is fired when a mouse
@@ -745,7 +745,7 @@ export declare class IgeEntity extends IgeObject implements IgeCanRegisterById, 
      *     });
      * @return {*}
      */
-    pointerDown(callback: IgeInputEvent): this;
+    pointerDown(callback: IgeInputEvent | null): this;
     pointerDown(): IgeInputEvent;
     /**
      * Gets / sets the callback that is fired when a mouse
@@ -766,7 +766,7 @@ export declare class IgeEntity extends IgeObject implements IgeCanRegisterById, 
      *     });
      * @return {*}
      */
-    pointerWheel(callback: IgeInputEvent): this;
+    pointerWheel(callback: IgeInputEvent | null): this;
     pointerWheel(): IgeInputEvent;
     /**
      * Removes the callback that is fired when a mouse

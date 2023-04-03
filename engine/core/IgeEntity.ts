@@ -2027,11 +2027,15 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 	 *     });
 	 * @return {*}
 	 */
-	pointerMove (callback: IgeInputEvent): this;
+	pointerMove (callback: IgeInputEvent | null): this;
 	pointerMove (): IgeInputEvent;
-	pointerMove (callback?: IgeInputEvent) {
-		if (callback) {
-			this._pointerMove = callback;
+	pointerMove (callback?: IgeInputEvent | null) {
+		if (callback !== undefined) {
+			if (callback === null) {
+				this._pointerMove = undefined;
+			} else {
+				this._pointerMove = callback;
+			}
 			this._pointerEventsActive = true;
 			return this;
 		}
@@ -2057,11 +2061,15 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 	 *     });
 	 * @return {*}
 	 */
-	pointerOver(callback: IgeInputEvent): this;
+	pointerOver(callback: IgeInputEvent | null): this;
 	pointerOver(): IgeInputEvent;
-	pointerOver (callback?: IgeInputEvent) {
-		if (callback) {
-			this._pointerOver = callback;
+	pointerOver (callback?: IgeInputEvent | null) {
+		if (callback !== undefined) {
+			if (callback === null) {
+				this._pointerOver = undefined;
+			} else {
+				this._pointerOver = callback;
+			}
 			this._pointerEventsActive = true;
 			return this;
 		}
@@ -2087,11 +2095,15 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 	 *     });
 	 * @return {*}
 	 */
-	pointerOut(callback: IgeInputEvent): this;
+	pointerOut(callback: IgeInputEvent | null): this;
 	pointerOut(): IgeInputEvent;
-	pointerOut (callback?: IgeInputEvent) {
-		if (callback) {
-			this._pointerOut = callback;
+	pointerOut (callback?: IgeInputEvent | null) {
+		if (callback !== undefined) {
+			if (callback === null) {
+				this._pointerOut = undefined;
+			} else {
+				this._pointerOut = callback;
+			}
 			this._pointerEventsActive = true;
 			return this;
 		}
@@ -2117,11 +2129,15 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 	 *     });
 	 * @return {*}
 	 */
-	pointerUp (callback: IgeInputEvent): this;
+	pointerUp (callback: IgeInputEvent | null): this;
 	pointerUp (): IgeInputEvent;
-	pointerUp (callback?: IgeInputEvent) {
-		if (callback) {
-			this._pointerUp = callback;
+	pointerUp (callback?: IgeInputEvent | null) {
+		if (callback !== undefined) {
+			if (callback === null) {
+				this._pointerUp = undefined;
+			} else {
+				this._pointerUp = callback;
+			}
 			this._pointerEventsActive = true;
 			return this;
 		}
@@ -2147,11 +2163,15 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 	 *     });
 	 * @return {*}
 	 */
-	pointerDown (callback: IgeInputEvent): this;
+	pointerDown (callback: IgeInputEvent | null): this;
 	pointerDown (): IgeInputEvent;
-	pointerDown (callback?: IgeInputEvent) {
-		if (callback) {
-			this._pointerDown = callback;
+	pointerDown (callback?: IgeInputEvent | null) {
+		if (callback !== undefined) {
+			if (callback === null) {
+				this._pointerDown = undefined;
+			} else {
+				this._pointerDown = callback;
+			}
 			this._pointerEventsActive = true;
 			return this;
 		}
@@ -2178,11 +2198,15 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 	 *     });
 	 * @return {*}
 	 */
-	pointerWheel (callback: IgeInputEvent): this;
+	pointerWheel (callback: IgeInputEvent | null): this;
 	pointerWheel (): IgeInputEvent;
-	pointerWheel (callback?: IgeInputEvent) {
-		if (callback) {
-			this._pointerWheel = callback;
+	pointerWheel (callback?: IgeInputEvent | null) {
+		if (callback !== undefined) {
+			if (callback === null) {
+				this._pointerWheel = undefined;
+			} else {
+				this._pointerWheel = callback;
+			}
 			this._pointerEventsActive = true;
 			return this;
 		}

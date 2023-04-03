@@ -12,6 +12,7 @@ import { IgeSceneGraph } from "../../../engine/core/IgeSceneGraph.js";
 import { IgeScene2d } from "../../../engine/core/IgeScene2d.js";
 import { Square } from "../../entities/base/Square.js";
 import { IgeUiElement } from "../../../engine/core/IgeUiElement.js";
+import { Triangle } from "../../entities/base/Triangle.js";
 export class UiClientScene extends IgeSceneGraph {
     addGraph() {
         return __awaiter(this, void 0, void 0, function* () {
@@ -30,12 +31,18 @@ export class UiClientScene extends IgeSceneGraph {
                 .borderColor("#ffffff")
                 .backgroundColor("#222222")
                 .mount(uiScene);
-            const container = new IgeUiElement()
+            const squareContainer = new IgeUiElement()
                 .top(20)
                 .mount(buildUi);
             new Square()
                 .id("uiCreateStorage")
-                .mount(container);
+                .mount(squareContainer);
+            const factoryContainer = new IgeUiElement()
+                .top(80)
+                .mount(buildUi);
+            new Triangle()
+                .id("uiCreateFactory")
+                .mount(factoryContainer);
         });
     }
     removeGraph() {

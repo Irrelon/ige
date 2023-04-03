@@ -1609,48 +1609,78 @@ export class IgeEntity extends IgeObject {
         }
     }
     pointerMove(callback) {
-        if (callback) {
-            this._pointerMove = callback;
+        if (callback !== undefined) {
+            if (callback === null) {
+                this._pointerMove = undefined;
+            }
+            else {
+                this._pointerMove = callback;
+            }
             this._pointerEventsActive = true;
             return this;
         }
         return this._pointerMove;
     }
     pointerOver(callback) {
-        if (callback) {
-            this._pointerOver = callback;
+        if (callback !== undefined) {
+            if (callback === null) {
+                this._pointerOver = undefined;
+            }
+            else {
+                this._pointerOver = callback;
+            }
             this._pointerEventsActive = true;
             return this;
         }
         return this._pointerOver;
     }
     pointerOut(callback) {
-        if (callback) {
-            this._pointerOut = callback;
+        if (callback !== undefined) {
+            if (callback === null) {
+                this._pointerOut = undefined;
+            }
+            else {
+                this._pointerOut = callback;
+            }
             this._pointerEventsActive = true;
             return this;
         }
         return this._pointerOut;
     }
     pointerUp(callback) {
-        if (callback) {
-            this._pointerUp = callback;
+        if (callback !== undefined) {
+            if (callback === null) {
+                this._pointerUp = undefined;
+            }
+            else {
+                this._pointerUp = callback;
+            }
             this._pointerEventsActive = true;
             return this;
         }
         return this._pointerUp;
     }
     pointerDown(callback) {
-        if (callback) {
-            this._pointerDown = callback;
+        if (callback !== undefined) {
+            if (callback === null) {
+                this._pointerDown = undefined;
+            }
+            else {
+                this._pointerDown = callback;
+            }
             this._pointerEventsActive = true;
             return this;
         }
         return this._pointerDown;
     }
     pointerWheel(callback) {
-        if (callback) {
-            this._pointerWheel = callback;
+        if (callback !== undefined) {
+            if (callback === null) {
+                this._pointerWheel = undefined;
+            }
+            else {
+                this._pointerWheel = callback;
+            }
             this._pointerEventsActive = true;
             return this;
         }
