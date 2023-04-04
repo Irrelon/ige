@@ -14,7 +14,7 @@ export class Line extends GameEntity {
     setLine(x1, y1, x2, y2) {
         this._initVals = new IgeRect(x1, y1, x2, y2);
         this.data("glowColor", "#ff9100")
-            .depth(0)
+            .layer(0)
             .width(x2 - x1)
             .height(y2 - y1)
             .translateTo((x2 / 2) + (x1 / 2), (y2 / 2) + (y1 / 2), 0);

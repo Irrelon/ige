@@ -284,30 +284,40 @@ export class IgeNetIoClientController extends IgeNetIoBaseController {
 	 * callback parameter will be fired with the response data.
 	 * @param {String} commandName
 	 * @param {Object} data
-	 * @param {Function} callback
+	 * @param {Function=} callback
 	 */
-	request (commandName: string, data: IgeNetworkMessageData, callback: IgeNetworkClientSideMessageHandler) {
-		// Build the request object
-		const req: IgeNetworkRequestMessageStructure<IgeNetworkClientSideMessageHandler> = {
-			id: newIdHex(),
-			cmd: commandName,
-			data: data,
-			callback: callback,
-			timestamp: new Date().getTime()
-		};
-
-		// Store the request object
-		this._requests[req.id] = req;
-
-		// Send the network request packet
-		this.send(
-			IGE_NETWORK_REQUEST,
-			{
-				id: req.id,
+	request <ResultType = any> (commandName: string, data: IgeNetworkMessageData, callback?: IgeNetworkClientSideMessageHandler): Promise<ResultType> {
+		return new Promise<ResultType>((resolve) => {
+			// Build the request object
+			const req: IgeNetworkRequestMessageStructure<IgeNetworkClientSideMessageHandler> = {
+				id: newIdHex(),
 				cmd: commandName,
-				data: req.data
-			}
-		);
+				data: data,
+				callback: (...args: any[]) => {
+					if (callback) {
+						// @ts-ignore
+						callback(...args);
+					}
+
+					// @ts-ignore
+					resolve(...args);
+				},
+				timestamp: new Date().getTime()
+			};
+
+			// Store the request object
+			this._requests[req.id] = req;
+
+			// Send the network request packet
+			this.send(
+				IGE_NETWORK_REQUEST,
+				{
+					id: req.id,
+					cmd: commandName,
+					data: req.data
+				}
+			);
+		});
 	}
 
 	/**

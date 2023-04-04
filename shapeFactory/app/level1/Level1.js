@@ -5,9 +5,7 @@ import { ResourceType } from "../../enums/ResourceType.js";
 import { IgeAudioEntity } from "../../../engine/audio/index.js";
 import { IgeSceneGraph } from "../../../engine/core/IgeSceneGraph.js";
 import { IgeScene2d } from "../../../engine/core/IgeScene2d.js";
-import { Road } from "../../entities/Road.js";
-import { Transporter } from "../../entities/Transporter.js";
-import { createFactoryBuilding, createMiningBuilding, createStorageBuilding } from "../../services/createBuilding.js";
+import { createStorageBuilding } from "../../services/createBuilding.js";
 import { Grid } from "../../entities/Grid.js";
 export class Level1 extends IgeSceneGraph {
     constructor() {
@@ -37,31 +35,38 @@ export class Level1 extends IgeSceneGraph {
             .play(true)
             .mount(baseScene);
         const base = createStorageBuilding(scene1, "base1", -100, -80);
-        const miningBuilding1 = createMiningBuilding(scene1, "miningBuilding1", 50, 150, ResourceType.wood);
-        const miningBuilding2 = createMiningBuilding(scene1, "miningBuilding2", 250, -150, ResourceType.grain);
-        const factoryBuilding1 = createFactoryBuilding(scene1, "factoryBuilding1", 220, 120);
-        const factoryBuilding2 = createFactoryBuilding(scene1, "factoryBuilding2", -220, 120);
+        // const miningBuilding1 = createMiningBuilding(scene1, "miningBuilding1", 50, 150, ResourceType.wood);
+        // const miningBuilding2 = createMiningBuilding(scene1, "miningBuilding2", 250, -150, ResourceType.grain);
+        // const factoryBuilding1 = createFactoryBuilding(scene1, "factoryBuilding1", 220, 120);
+        // const factoryBuilding2 = createFactoryBuilding(scene1, "factoryBuilding2", -220, 120);
         ///////////////////////////////////////////////////////////
-        new Road(base.flag.id(), factoryBuilding1.flag.id())
-            .mount(scene1);
-        new Road(base.flag.id(), factoryBuilding2.flag.id())
-            .mount(scene1);
-        new Road(base.flag.id(), miningBuilding2.flag.id())
-            .mount(scene1);
-        new Road(factoryBuilding1.flag.id(), miningBuilding1.flag.id())
-            .mount(scene1);
-        new Transporter(base.id(), base.flag.id(), factoryBuilding1.flag.id())
-            .translateTo(base._translate.x, base._translate.y, 0)
-            .mount(scene1);
-        new Transporter(base.id(), base.flag.id(), factoryBuilding2.flag.id())
-            .translateTo(base._translate.x, base._translate.y, 0)
-            .mount(scene1);
-        new Transporter(base.id(), base.flag.id(), miningBuilding2.flag.id())
-            .translateTo(base._translate.x, base._translate.y, 0)
-            .mount(scene1);
-        new Transporter(base.id(), factoryBuilding1.flag.id(), miningBuilding1.flag.id())
-            .translateTo(base._translate.x, base._translate.y, 0)
-            .mount(scene1);
+        // new Road(base.flag.id(), factoryBuilding1.flag.id())
+        // 	.mount(scene1);
+        //
+        // new Road(base.flag.id(), factoryBuilding2.flag.id())
+        // 	.mount(scene1);
+        //
+        // new Road(base.flag.id(), miningBuilding2.flag.id())
+        // 	.mount(scene1);
+        //
+        // new Road(factoryBuilding1.flag.id(), miningBuilding1.flag.id())
+        // 	.mount(scene1);
+        //
+        // new Transporter(base.id(), base.flag.id(), factoryBuilding1.flag.id())
+        // 	.translateTo(base._translate.x, base._translate.y, 0)
+        // 	.mount(scene1);
+        //
+        // new Transporter(base.id(), base.flag.id(), factoryBuilding2.flag.id())
+        // 	.translateTo(base._translate.x, base._translate.y, 0)
+        // 	.mount(scene1);
+        //
+        // new Transporter(base.id(), base.flag.id(), miningBuilding2.flag.id())
+        // 	.translateTo(base._translate.x, base._translate.y, 0)
+        // 	.mount(scene1);
+        //
+        // new Transporter(base.id(), factoryBuilding1.flag.id(), miningBuilding1.flag.id())
+        // 	.translateTo(base._translate.x, base._translate.y, 0)
+        // 	.mount(scene1);
         base.resourcePool[ResourceType.energy] = 10;
     }
     /**

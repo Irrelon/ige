@@ -6,7 +6,7 @@ export class Road extends Line {
     constructor(fromId, toId) {
         super();
         this.classId = "Road";
-        this.depth(0);
+        this.layer(0);
         //this.data("glowSize", 30);
         //this.data("glowIntensity", 1);
         this._fromId = fromId;

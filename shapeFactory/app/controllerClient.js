@@ -12,15 +12,18 @@ import { IgeFSM } from "../../engine/core/IgeFSM.js";
 import { BuildingType } from "../enums/BuildingType.js";
 import { StorageBuilding } from "../entities/StorageBuilding.js";
 import { IgeBehaviourType } from "../../enums/IgeBehaviourType.js";
-import { IgeInputDevice, IgeInputPointerMap } from "../../enums/IgeInputDeviceMap.js";
-import { newIdHex } from "../../engine/utils.js";
 import { FactoryBuilding } from "../entities/FactoryBuilding.js";
 import { ResourceType } from "../enums/ResourceType.js";
-import { createFactoryBuilding, createStorageBuilding } from "../services/createBuilding.js";
 import { Line } from "../entities/base/Line.js";
+import { FlagBuilding } from "../entities/FlagBuilding.js";
+import { MiningBuilding } from "../entities/MiningBuilding.js";
 export const controllerClient = () => __awaiter(void 0, void 0, void 0, function* () {
+    const network = ige.network;
     const uiCreateStorage = ige.$("uiCreateStorage");
     const uiCreateFactory = ige.$("uiCreateFactory");
+    const uiCreateMine1 = ige.$("uiCreateMine1");
+    const uiCreateMine2 = ige.$("uiCreateMine2");
+    const uiCreateFlag = ige.$("uiCreateFlag");
     const fsm = new IgeFSM();
     fsm.defineState("idle", {
         enter: () => __awaiter(void 0, void 0, void 0, function* () {
@@ -42,10 +45,34 @@ export const controllerClient = () => __awaiter(void 0, void 0, void 0, function
                         }]]);
                 fsm.enterState("createBuilding");
             });
+            uiCreateFlag.pointerUp(() => {
+                fsm.data("createBuilding", BuildingType.flag);
+                fsm.enterState("createBuilding");
+            });
+            uiCreateMine1.pointerUp(() => {
+                fsm.data("createBuilding", BuildingType.mine);
+                fsm.data("createArgs", [ResourceType.grain]);
+                fsm.enterState("createBuilding");
+            });
+            uiCreateMine2.pointerUp(() => {
+                fsm.data("createBuilding", BuildingType.mine);
+                fsm.data("createArgs", [ResourceType.wood]);
+                fsm.enterState("createBuilding");
+            });
         }),
         exit: () => __awaiter(void 0, void 0, void 0, function* () {
             uiCreateStorage.pointerUp(null);
             uiCreateFactory.pointerUp(null);
+        }),
+        click: (building) => __awaiter(void 0, void 0, void 0, function* () {
+            if (!building)
+                return;
+            if (building.classId === "FlagBuilding") {
+                // User clicked on a flag, start road building
+                // TODO: Later we should pop an options modal instead with other options
+                //  like remove flag?
+                yield fsm.enterState("createRoad", building);
+            }
         })
     });
     fsm.defineState("createBuilding", {
@@ -72,7 +99,24 @@ export const controllerClient = () => __awaiter(void 0, void 0, void 0, function
                         .id("tmpBuilding")
                         .mount(scene1);
                     break;
+                case BuildingType.mine:
+                    new MiningBuilding(ResourceType.none, [{ type: ResourceType.none, count: 0, max: 0 }])
+                        .id("tmpBuilding")
+                        .mount(scene1);
+                    break;
+                case BuildingType.flag:
+                    new FlagBuilding()
+                        .id("tmpBuilding")
+                        .mount(scene1);
+                    break;
             }
+        }),
+        exit: () => __awaiter(void 0, void 0, void 0, function* () {
+            const tmpBuilding = ige.$("tmpBuilding");
+            if (!tmpBuilding)
+                return;
+            // Destroy the tmp building
+            tmpBuilding.destroy();
         }),
         pointerMove: () => __awaiter(void 0, void 0, void 0, function* () {
             const tmpBuilding = ige.$("tmpBuilding");
@@ -86,38 +130,30 @@ export const controllerClient = () => __awaiter(void 0, void 0, void 0, function
             const gridX = Math.round(ige._pointerPos.x / 100) * 100;
             const gridY = Math.round(ige._pointerPos.y / 100) * 100;
             // Check the location and determine if we can build there
-            // Get the scene to mount to
-            const scene1 = ige.$("scene1");
             // Get the building details
             const buildingType = fsm.data("createBuilding");
             const createArgs = fsm.data("createArgs");
-            switch (buildingType) {
-                case BuildingType.storage:
-                    createStorageBuilding(scene1, newIdHex(), gridX, gridY);
-                    break;
-                case BuildingType.factory:
-                    createFactoryBuilding(scene1, newIdHex(), gridX, gridY);
-                    break;
-            }
+            const buildingId = yield network.request("createBuilding", {
+                buildingType,
+                x: gridX,
+                y: gridY,
+                resourceType: [createArgs[0]]
+            });
+            console.log("Building created", buildingId);
             // Place the building
             const existingTmpBuilding = ige.$("tmpBuilding");
             existingTmpBuilding.destroy();
             // Enter back into idle state
             yield fsm.enterState("idle");
-        }),
-        exit: () => __awaiter(void 0, void 0, void 0, function* () {
-            const tmpBuilding = ige.$("tmpBuilding");
-            if (!tmpBuilding)
-                return;
-            // Destroy the tmp building
-            tmpBuilding.destroy();
         })
     });
     fsm.defineState("createRoad", {
-        enter: () => __awaiter(void 0, void 0, void 0, function* () {
+        enter: (startFlag) => __awaiter(void 0, void 0, void 0, function* () {
+            if (!startFlag) {
+                throw new Error("Flag building was not passed when entering createRoad state!");
+            }
             console.log("Entered createRoad");
-            fsm.data("roadStart", null);
-            fsm.data("roadEnd", null);
+            fsm.data("startFlag", startFlag);
             // Get the scene to mount to
             const scene1 = ige.$("scene1");
             // Remove any existing temp building
@@ -135,28 +171,41 @@ export const controllerClient = () => __awaiter(void 0, void 0, void 0, function
                 return;
             const gridX = Math.round(ige._pointerPos.x / 100) * 100;
             const gridY = Math.round(ige._pointerPos.y / 100) * 100;
-            tmpBuilding.translateTo(gridX, gridY, 0);
+            const startFlag = fsm.data("startFlag");
+            tmpBuilding.setLine(startFlag._translate.x, startFlag._translate.y, gridX, gridY);
         }),
-        click: () => __awaiter(void 0, void 0, void 0, function* () {
+        click: (building) => __awaiter(void 0, void 0, void 0, function* () {
+            const scene1 = ige.$("scene1");
             const gridX = Math.round(ige._pointerPos.x / 100) * 100;
             const gridY = Math.round(ige._pointerPos.y / 100) * 100;
+            let destinationFlagId;
             // Check the location and determine if we can build there
-            if (fsm.data("roadStart") === null) {
-                // Set the road start
-                fsm.data("roadStart", { x: gridX, y: gridY });
+            // Check if the end is a flag and if not, create one
+            if (!building) {
+                // No building exists at the grid location, create a new flag
+                destinationFlagId = yield network.request("createBuilding", {
+                    buildingType: BuildingType.flag,
+                    x: gridX,
+                    y: gridY
+                });
+            }
+            else if (building.classId === "FlagBuilding") {
+                // The clicked end point is a flag, use this
+                destinationFlagId = building.id();
             }
             else {
-                // We have a road start and a road end, create the road
-                // TODO: Roads currently need a from and to id of the locations they
-                //   connect, however we can't use this model if we want to allow arbitrary
-                //   road building. Either we continue to use this and only allow road starts
-                //   to be existing flags and road ends to be either an existing flag or create
-                //   a flag for the location selected, or we move to a purely grid-based road
-                //   system where the path finder uses the grid to calculate paths
+                // The clicked end point is a building, use it's existing flag
+                destinationFlagId = building.flag.id();
             }
             // Place the building
             const existingTmpBuilding = ige.$("tmpBuilding");
             existingTmpBuilding.destroy();
+            // Create the new connecting road
+            const startFlag = fsm.data("startFlag");
+            yield network.request("createRoad", {
+                fromId: startFlag.id(),
+                toId: destinationFlagId
+            });
             // Enter back into idle state
             yield fsm.enterState("idle");
         }),
@@ -170,12 +219,26 @@ export const controllerClient = () => __awaiter(void 0, void 0, void 0, function
     });
     fsm.defineState("destroyObject");
     yield fsm.initialState("idle");
-    ige.engine.addBehaviour(IgeBehaviourType.preUpdate, "tmpBuildingBehaviour", () => {
-        if (ige.input.state(IgeInputDevice.pointer1, IgeInputPointerMap.button0)) {
-            fsm.raiseEvent("click");
+    const onPointerUp = (evt, mx, my, button) => {
+        // Run a hit test against the all the entities
+        const buildings = ige.$$("building");
+        // Loop the buildings and check against the AABB
+        const foundBuilding = buildings.find((building) => {
+            return building.aabb().pointInside(ige._pointerPos);
+        });
+        if (foundBuilding) {
+            console.log("foundBuilding", foundBuilding);
         }
+        fsm.raiseEvent("click", foundBuilding);
+    };
+    const onPointerMove = () => {
         fsm.raiseEvent("pointerMove");
-    });
+    };
+    ige.input.on("pointerUp", onPointerUp);
+    ige.input.on("pointerMove", onPointerMove);
+    // ige.engine.addBehaviour(IgeBehaviourType.preUpdate, "tmpBuildingBehaviour", () => {
+    //
+    // });
     return () => __awaiter(void 0, void 0, void 0, function* () {
         ige.engine.removeBehaviour(IgeBehaviourType.preUpdate, "tmpBuildingBehaviour");
     });

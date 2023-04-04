@@ -7,13 +7,7 @@ import { IgeTimeout } from "@/engine/core/IgeTimeout";
 import { isServer } from "@/engine/clientServer";
 import { roadPathFinder } from "../services/roadPathFinder";
 import { distance } from "@/engine/utils";
-
-const fillColorByType: Record<ResourceType, string> = {
-	[ResourceType.none]: "#000000",
-	[ResourceType.wood]: "#006901",
-	[ResourceType.grain]: "#ff00ea",
-	[ResourceType.energy]: "#ff9900"
-};
+import { fillColorByResourceType } from "../services/resource";
 
 export class Resource extends Circle {
 	_type: ResourceType;
@@ -26,8 +20,8 @@ export class Resource extends Circle {
 	constructor (type: ResourceType, locationId: string) {
 		super();
 
-		this.depth(3);
-		this.data("fillColor", fillColorByType[type])
+		this.layer(3);
+		this.data("fillColor", fillColorByResourceType[type])
 			.width(10)
 			.height(10);
 

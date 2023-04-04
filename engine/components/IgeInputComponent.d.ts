@@ -13,6 +13,7 @@ export declare class IgeInputComponent extends IgeEventingClass implements IgeIs
     _evRef: Record<string, (event: any) => void>;
     _debug?: boolean;
     _state: Record<number, Record<number, string | number | boolean>>;
+    _previousState: Record<number, Record<number, string | number | boolean>>;
     _controlMap: Record<number, IgeInputControlMap>;
     dblClick?: Event;
     pointerMove?: Event;
@@ -128,12 +129,26 @@ export declare class IgeInputComponent extends IgeEventingClass implements IgeIs
      */
     val(device: IgeInputDevice, inputId: number): string | number | boolean;
     /**
+     * Returns an input's previous value.
+     * @param device
+     * @param inputId
+     * @return {*}
+     */
+    previousVal(device: IgeInputDevice, inputId: number): string | number | boolean;
+    /**
      * Returns an input's current state as a boolean.
      * @param device
      * @param inputId
      * @return {Boolean}
      */
     state(device: IgeInputDevice, inputId: number): boolean;
+    /**
+     * Returns an input's previous state as a boolean.
+     * @param device
+     * @param inputId
+     * @return {Boolean}
+     */
+    previousState(device: IgeInputDevice, inputId: number): boolean;
     /**
      * Stops further event propagation for this tick.
      * @return {*}

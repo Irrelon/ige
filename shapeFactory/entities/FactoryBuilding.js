@@ -6,7 +6,7 @@ export class FactoryBuilding extends Triangle {
         this.classId = "FactoryBuilding";
         this._produces = produces;
         this._requires = requires;
-        this.depth(10);
+        this.layer(10);
     }
     streamCreateConstructorArgs() {
         return [this._produces, this._requires];

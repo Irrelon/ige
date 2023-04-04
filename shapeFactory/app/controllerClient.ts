@@ -7,16 +7,22 @@ import { StorageBuilding } from "../entities/StorageBuilding";
 import { IgeScene2d } from "@/engine/core/IgeScene2d";
 import { IgeBehaviourType } from "@/enums/IgeBehaviourType";
 import { IgeEntity } from "@/engine/core/IgeEntity";
-import { IgeInputDevice, IgeInputPointerMap } from "@/enums/IgeInputDeviceMap";
-import { newIdHex } from "@/engine/utils";
 import { FactoryBuilding } from "../entities/FactoryBuilding";
 import { ResourceType } from "../enums/ResourceType";
-import { createFactoryBuilding, createStorageBuilding } from "../services/createBuilding";
 import { Line } from "../entities/base/Line";
+import { Flag } from "../entities/base/Flag";
+import { FlagBuilding } from "../entities/FlagBuilding";
+import { Building } from "../entities/base/Building";
+import { IgeNetIoClientController } from "@/engine/network/client/IgeNetIoClientController";
+import { MiningBuilding } from "../entities/MiningBuilding";
 
 export const controllerClient: IgeEffectFunction = async () => {
+	const network = ige.network as IgeNetIoClientController;
 	const uiCreateStorage = ige.$("uiCreateStorage") as IgeUiElement;
 	const uiCreateFactory = ige.$("uiCreateFactory") as IgeUiElement;
+	const uiCreateMine1 = ige.$("uiCreateMine1") as IgeUiElement;
+	const uiCreateMine2 = ige.$("uiCreateMine2") as IgeUiElement;
+	const uiCreateFlag = ige.$("uiCreateFlag") as IgeUiElement;
 
 	const fsm = new IgeFSM();
 
@@ -42,10 +48,37 @@ export const controllerClient: IgeEffectFunction = async () => {
 				}]]);
 				fsm.enterState("createBuilding");
 			});
+
+			uiCreateFlag.pointerUp(() => {
+				fsm.data("createBuilding", BuildingType.flag);
+				fsm.enterState("createBuilding");
+			});
+
+			uiCreateMine1.pointerUp(() => {
+				fsm.data("createBuilding", BuildingType.mine);
+				fsm.data("createArgs", [ResourceType.grain]);
+				fsm.enterState("createBuilding");
+			});
+
+			uiCreateMine2.pointerUp(() => {
+				fsm.data("createBuilding", BuildingType.mine);
+				fsm.data("createArgs", [ResourceType.wood]);
+				fsm.enterState("createBuilding");
+			});
 		},
 		exit: async () => {
 			uiCreateStorage.pointerUp(null);
 			uiCreateFactory.pointerUp(null);
+		},
+		click: async (building?: Building) => {
+			if (!building) return;
+
+			if (building.classId === "FlagBuilding") {
+				// User clicked on a flag, start road building
+				// TODO: Later we should pop an options modal instead with other options
+				//  like remove flag?
+				await fsm.enterState("createRoad", building);
+			}
 		}
 	});
 
@@ -78,7 +111,26 @@ export const controllerClient: IgeEffectFunction = async () => {
 					.id("tmpBuilding")
 					.mount(scene1);
 				break;
+
+			case BuildingType.mine:
+				new MiningBuilding(ResourceType.none, [{type: ResourceType.none, count: 0, max: 0}])
+					.id("tmpBuilding")
+					.mount(scene1);
+				break;
+
+			case BuildingType.flag:
+				new FlagBuilding()
+					.id("tmpBuilding")
+					.mount(scene1);
+				break;
 			}
+		},
+		exit: async () => {
+			const tmpBuilding = ige.$("tmpBuilding") as IgeEntity;
+			if (!tmpBuilding) return;
+
+			// Destroy the tmp building
+			tmpBuilding.destroy();
 		},
 		pointerMove: async () => {
 			const tmpBuilding = ige.$("tmpBuilding") as IgeEntity;
@@ -95,22 +147,18 @@ export const controllerClient: IgeEffectFunction = async () => {
 
 			// Check the location and determine if we can build there
 
-			// Get the scene to mount to
-			const scene1 = ige.$("scene1") as IgeScene2d;
-
 			// Get the building details
 			const buildingType = fsm.data("createBuilding");
 			const createArgs = fsm.data("createArgs");
 
-			switch (buildingType) {
-			case BuildingType.storage:
-				createStorageBuilding(scene1, newIdHex(), gridX, gridY);
-				break;
+			const buildingId = await network.request("createBuilding", {
+				buildingType,
+				x: gridX,
+				y: gridY,
+				resourceType: [createArgs[0]]
+			});
 
-			case BuildingType.factory:
-				createFactoryBuilding(scene1, newIdHex(), gridX, gridY);
-				break;
-			}
+			console.log("Building created", buildingId);
 
 			// Place the building
 			const existingTmpBuilding = ige.$("tmpBuilding") as IgeEntity;
@@ -118,22 +166,17 @@ export const controllerClient: IgeEffectFunction = async () => {
 
 			// Enter back into idle state
 			await fsm.enterState("idle");
-		},
-		exit: async () => {
-			const tmpBuilding = ige.$("tmpBuilding") as IgeEntity;
-			if (!tmpBuilding) return;
-
-			// Destroy the tmp building
-			tmpBuilding.destroy();
 		}
 	});
 
 	fsm.defineState("createRoad", {
-		enter: async () => {
+		enter: async (startFlag: Flag) => {
+			if (!startFlag) {
+				throw new Error("Flag building was not passed when entering createRoad state!");
+			}
 			console.log("Entered createRoad");
 
-			fsm.data("roadStart", null);
-			fsm.data("roadEnd", null);
+			fsm.data("startFlag", startFlag);
 
 			// Get the scene to mount to
 			const scene1 = ige.$("scene1") as IgeScene2d;
@@ -150,36 +193,51 @@ export const controllerClient: IgeEffectFunction = async () => {
 				.mount(scene1);
 		},
 		pointerMove: async () => {
-			const tmpBuilding = ige.$("tmpBuilding") as IgeEntity;
+			const tmpBuilding = ige.$("tmpBuilding") as Line;
 			if (!tmpBuilding) return;
 
 			const gridX = Math.round(ige._pointerPos.x / 100) * 100;
 			const gridY = Math.round(ige._pointerPos.y / 100) * 100;
 
-			tmpBuilding.translateTo(gridX,gridY, 0);
+			const startFlag = fsm.data("startFlag") as FlagBuilding;
+
+			tmpBuilding.setLine(startFlag._translate.x, startFlag._translate.y, gridX, gridY);
 		},
-		click: async () => {
+		click: async (building?: Building) => {
+			const scene1 = ige.$("scene1") as IgeScene2d;
 			const gridX = Math.round(ige._pointerPos.x / 100) * 100;
 			const gridY = Math.round(ige._pointerPos.y / 100) * 100;
 
+			let destinationFlagId: string;
+
 			// Check the location and determine if we can build there
 
-			if (fsm.data("roadStart") === null) {
-				// Set the road start
-				fsm.data("roadStart", {x: gridX, y: gridY});
+			// Check if the end is a flag and if not, create one
+			if (!building) {
+				// No building exists at the grid location, create a new flag
+				destinationFlagId = await network.request("createBuilding", {
+					buildingType: BuildingType.flag,
+					x: gridX,
+					y: gridY
+				});
+			} else if (building.classId === "FlagBuilding") {
+				// The clicked end point is a flag, use this
+				destinationFlagId = building.id();
 			} else {
-				// We have a road start and a road end, create the road
-				// TODO: Roads currently need a from and to id of the locations they
-				//   connect, however we can't use this model if we want to allow arbitrary
-				//   road building. Either we continue to use this and only allow road starts
-				//   to be existing flags and road ends to be either an existing flag or create
-				//   a flag for the location selected, or we move to a purely grid-based road
-				//   system where the path finder uses the grid to calculate paths
+				// The clicked end point is a building, use it's existing flag
+				destinationFlagId = (building.flag as FlagBuilding).id();
 			}
 
 			// Place the building
 			const existingTmpBuilding = ige.$("tmpBuilding") as IgeEntity;
 			existingTmpBuilding.destroy();
+
+			// Create the new connecting road
+			const startFlag = fsm.data("startFlag") as FlagBuilding;
+			await network.request("createRoad", {
+				fromId: startFlag.id(),
+				toId: destinationFlagId
+			});
 
 			// Enter back into idle state
 			await fsm.enterState("idle");
@@ -196,13 +254,32 @@ export const controllerClient: IgeEffectFunction = async () => {
 
 	await fsm.initialState("idle");
 
-	ige.engine.addBehaviour(IgeBehaviourType.preUpdate, "tmpBuildingBehaviour", () => {
-		if (ige.input.state(IgeInputDevice.pointer1, IgeInputPointerMap.button0)) {
-			fsm.raiseEvent("click");
+	const onPointerUp = (evt: PointerEvent, mx: number, my: number, button: number) => {
+		// Run a hit test against the all the entities
+		const buildings = ige.$$("building") as Building[];
+
+		// Loop the buildings and check against the AABB
+		const foundBuilding = buildings.find((building) => {
+			return building.aabb().pointInside(ige._pointerPos);
+		});
+
+		if (foundBuilding) {
+			console.log("foundBuilding", foundBuilding);
 		}
 
+		fsm.raiseEvent("click", foundBuilding);
+	};
+
+	const onPointerMove = () => {
 		fsm.raiseEvent("pointerMove");
-	});
+	}
+
+	ige.input.on("pointerUp", onPointerUp);
+	ige.input.on("pointerMove", onPointerMove);
+
+	// ige.engine.addBehaviour(IgeBehaviourType.preUpdate, "tmpBuildingBehaviour", () => {
+	//
+	// });
 
 	return async () => {
 		ige.engine.removeBehaviour(IgeBehaviourType.preUpdate, "tmpBuildingBehaviour");

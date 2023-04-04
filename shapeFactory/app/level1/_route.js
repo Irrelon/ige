@@ -11,6 +11,7 @@ import { ige } from "../../../engine/instance.js";
 import { Level1 } from "./Level1.js";
 import { UiClientScene } from "./UiClientScene.js";
 import { controllerClient } from "../controllerClient.js";
+import { controllerServer } from "../controllerServer.js";
 ige.router.route("app/level1", {
     client: () => __awaiter(void 0, void 0, void 0, function* () {
         // Add all the items in Scene1 to the scenegraph
@@ -28,7 +29,9 @@ ige.router.route("app/level1", {
     }),
     server: () => __awaiter(void 0, void 0, void 0, function* () {
         yield ige.engine.addGraph(Level1);
+        const onControllerUnload = yield controllerServer();
         return () => __awaiter(void 0, void 0, void 0, function* () {
+            yield onControllerUnload();
             yield ige.engine.removeGraph(Level1);
         });
     })

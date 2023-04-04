@@ -13,6 +13,7 @@ export class IgeInputComponent extends IgeEventingClass {
         this._evRef = {};
         // State <DeviceCode, <InputCode, InputValue>>
         this._state = {};
+        this._previousState = {};
         this._controlMap = {};
         this.debug = (val) => {
             if (val !== undefined) {
@@ -166,9 +167,9 @@ export class IgeInputComponent extends IgeEventingClass {
                 this._updateState(IgeInputDevice.pointer1, IgeInputPointerMap.button5, true);
             }
             this.pointerDown = event;
-            if (this.emit("prePointerDown", event, mx, my, event.button + 1) !== IgeEventReturnFlag.cancel) {
+            if (this.emit("prePointerDown", event, mx, my, event.button) !== IgeEventReturnFlag.cancel) {
                 this.queueEvent(() => {
-                    this.emit("pointerDown", event, mx, my, event.button + 1);
+                    this.emit("pointerDown", event, mx, my, event.button);
                 });
             }
         };
@@ -204,9 +205,9 @@ export class IgeInputComponent extends IgeEventingClass {
                 this._updateState(IgeInputDevice.pointer1, IgeInputPointerMap.button5, false);
             }
             this.pointerUp = event;
-            if (this.emit("prePointerUp", event, mx, my, event.button + 1) !== IgeEventReturnFlag.cancel) {
+            if (this.emit("prePointerUp", event, mx, my, event.button) !== IgeEventReturnFlag.cancel) {
                 this.queueEvent(() => {
-                    this.emit("pointerUp", event, mx, my, event.button + 1);
+                    this.emit("pointerUp", event, mx, my, event.button);
                 });
             }
         };
@@ -237,9 +238,9 @@ export class IgeInputComponent extends IgeEventingClass {
                 this._updateState(IgeInputDevice.pointer1, IgeInputPointerMap.button5, false);
             }
             this.contextMenu = event;
-            if (this.emit("preContextMenu", event, mx, my, event.button + 1) !== IgeEventReturnFlag.cancel) {
+            if (this.emit("preContextMenu", event, mx, my, event.button) !== IgeEventReturnFlag.cancel) {
                 this.queueEvent(() => {
-                    this.emit("contextMenu", event, mx, my, event.button + 1);
+                    this.emit("contextMenu", event, mx, my, event.button);
                 });
             }
         };
@@ -256,9 +257,9 @@ export class IgeInputComponent extends IgeEventingClass {
             this._updateState(IgeInputDevice.pointer1, IgeInputPointerMap.x, mx);
             this._updateState(IgeInputDevice.pointer1, IgeInputPointerMap.y, my);
             this.pointerMove = event;
-            if (this.emit("prePointerMove", event, mx, my, event.button + 1) !== IgeEventReturnFlag.cancel) {
+            if (this.emit("prePointerMove", event, mx, my, event.button) !== IgeEventReturnFlag.cancel) {
                 this.queueEvent(() => {
-                    this.emit("pointerMove", event, mx, my, event.button + 1);
+                    this.emit("pointerMove", event, mx, my, event.button);
                 });
             }
         };
@@ -309,9 +310,9 @@ export class IgeInputComponent extends IgeEventingClass {
                 }
             }
             this.pointerWheel = event;
-            if (this.emit("prePointerWheel", event, mx, my, event.button + 1) !== IgeEventReturnFlag.cancel) {
+            if (this.emit("prePointerWheel", event, mx, my, event.button) !== IgeEventReturnFlag.cancel) {
                 this.queueEvent(() => {
-                    this.emit("pointerWheel", event, mx, my, event.button + 1);
+                    this.emit("pointerWheel", event, mx, my, event.button);
                 });
             }
         };
@@ -432,8 +433,10 @@ export class IgeInputComponent extends IgeEventingClass {
     }
     _ensureState(device) {
         this._state[device] = this._state[device] || {};
+        this._previousState[device] = this._previousState[device] || {};
     }
     _updateState(device, inputId, newValue) {
+        this._previousState[device][inputId] = this._state[device][inputId];
         this._state[device][inputId] = newValue;
     }
     _rationalise(event, type) {
@@ -511,6 +514,15 @@ export class IgeInputComponent extends IgeEventingClass {
         return this._state[device][inputId];
     }
     /**
+     * Returns an input's previous value.
+     * @param device
+     * @param inputId
+     * @return {*}
+     */
+    previousVal(device, inputId) {
+        return this._state[device][inputId];
+    }
+    /**
      * Returns an input's current state as a boolean.
      * @param device
      * @param inputId
@@ -518,6 +530,15 @@ export class IgeInputComponent extends IgeEventingClass {
      */
     state(device, inputId) {
         return Boolean(this.val(device, inputId));
+    }
+    /**
+     * Returns an input's previous state as a boolean.
+     * @param device
+     * @param inputId
+     * @return {Boolean}
+     */
+    previousState(device, inputId) {
+        return Boolean(this.previousVal(device, inputId));
     }
     /**
      * Stops further event propagation for this tick.

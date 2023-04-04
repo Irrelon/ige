@@ -3,7 +3,9 @@ import { Resource } from "../Resource";
 import { ResourceType } from "../../enums/ResourceType";
 import { BuildingResourceRequirement } from "../../types/BuildingResourceRequirement";
 import { IgeCanvasRenderingContext2d } from "@/types/IgeCanvasRenderingContext2d";
+import { FlagBuilding } from "../FlagBuilding";
 export declare class Building extends GameEntity {
+    flag?: FlagBuilding;
     outboundQueue: Resource[];
     inboundQueue: Partial<Record<ResourceType, number>>;
     resourcePool: Partial<Record<ResourceType, number>>;

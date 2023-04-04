@@ -27,7 +27,7 @@ export const starSmartTexture: IgeSmartTexture = {
 		ctx.lineTo(cx, cy - outerRadius);
 		ctx.closePath();
 
-		ctx.fillStyle = "#ffffff";
+		ctx.fillStyle = entity.data("fillColor") || "#ffffff";
 		ctx.shadowColor = entity.data("glowColor");
 		ctx.shadowBlur = entity.data("glowSize");
 		ctx.shadowOffsetX = 0;

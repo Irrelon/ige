@@ -62,9 +62,9 @@ export declare class IgeNetIoClientController extends IgeNetIoBaseController {
      * callback parameter will be fired with the response data.
      * @param {String} commandName
      * @param {Object} data
-     * @param {Function} callback
+     * @param {Function=} callback
      */
-    request(commandName: string, data: IgeNetworkMessageData, callback: IgeNetworkClientSideMessageHandler): void;
+    request<ResultType = any>(commandName: string, data: IgeNetworkMessageData, callback?: IgeNetworkClientSideMessageHandler): Promise<ResultType>;
     /**
      * Sends a response to a network request.
      * @param {String} requestId

@@ -5,15 +5,13 @@ import { Building } from "./base/Building";
 import { ResourceType } from "../enums/ResourceType";
 import { Resource } from "./Resource";
 import { IgeScene2d } from "@/engine/core/IgeScene2d";
-import { FlagBuilding } from "./FlagBuilding";
 
 export class StorageBuilding extends Square {
 	classId = "StorageBuilding";
-	flag?: FlagBuilding;
 
 	constructor () {
 		super();
-		this.depth(10);
+		this.layer(10);
 	}
 
 	streamCreateConstructorArgs () {

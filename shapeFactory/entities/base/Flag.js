@@ -7,7 +7,7 @@ export class Flag extends Building {
         super();
         this.classId = 'Flag';
         this.data("glowColor", "#ffcc00")
-            .depth(1)
+            .layer(1)
             .width(10)
             .height(20);
         if (isClient) {

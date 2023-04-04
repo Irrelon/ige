@@ -8,8 +8,10 @@ import { isServer } from "@/engine/clientServer";
 import { IgeTimeout } from "@/engine/core/IgeTimeout";
 import { ige } from "@/engine/instance";
 import { IgeScene2d } from "@/engine/core/IgeScene2d";
+import { FlagBuilding } from "../FlagBuilding";
 
 export class Building extends GameEntity {
+	flag?: FlagBuilding;
 	outboundQueue: Resource[] = [];
 	inboundQueue: Partial<Record<ResourceType, number>> = {};
 	resourcePool: Partial<Record<ResourceType, number>> = {};

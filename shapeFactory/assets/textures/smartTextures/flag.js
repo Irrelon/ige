@@ -6,7 +6,7 @@ export const flagSmartTexture = {
         ctx.lineTo(entity._bounds2d.x2, 0);
         ctx.lineTo(0, -entity._bounds2d.y2);
         ctx.lineTo(-entity._bounds2d.x2, 0);
-        ctx.fillStyle = "#ffffff";
+        ctx.fillStyle = entity.data("fillColor") || "#ffffff";
         ctx.shadowColor = entity.data("glowColor");
         ctx.shadowBlur = entity.data("glowSize");
         ctx.shadowOffsetX = 0;

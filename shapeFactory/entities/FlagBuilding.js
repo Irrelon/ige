@@ -4,7 +4,7 @@ export class FlagBuilding extends Flag {
     constructor() {
         super();
         this.classId = "FlagBuilding";
-        this.depth(1);
+        this.layer(1);
         this.data("glowSize", 30);
         //this.data("glowIntensity", 1);
     }

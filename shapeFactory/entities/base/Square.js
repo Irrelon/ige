@@ -7,7 +7,7 @@ export class Square extends Building {
         super();
         this.classId = 'Square';
         this.data("glowColor", "#00d0ff")
-            .depth(1)
+            .layer(1)
             .width(50)
             .height(50);
         if (isClient) {

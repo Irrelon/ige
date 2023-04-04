@@ -16,7 +16,7 @@ export class Transporter extends WorkerUnit {
         this._baseId = baseId;
         this._depotAId = depotAId;
         this._depotBId = depotBId;
-        this.depth(2);
+        this.layer(2);
         this.data("glowSize", 50);
         this.data("glowIntensity", 1);
         this.setDepots();

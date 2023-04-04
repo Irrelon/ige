@@ -7,7 +7,7 @@ export class Star extends Building {
         super();
         this.classId = 'Star';
         this.data("glowColor", "#00ff00")
-            .depth(1)
+            .layer(1)
             .width(60)
             .height(60);
         if (isClient) {

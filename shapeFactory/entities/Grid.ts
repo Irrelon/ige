@@ -1,5 +1,6 @@
 import { IgeEntity } from "@/engine/core/IgeEntity";
 import { ige } from "@/engine/instance";
+import { isClient } from "@/engine/clientServer";
 
 export class Grid extends IgeEntity {
 	classId = "Grid";
@@ -9,6 +10,9 @@ export class Grid extends IgeEntity {
 		super();
 		this.width(1000);
 		this.height(1000);
-		this.texture(ige.textures.get("gridSmartTexture"));
+
+		if (isClient) {
+			this.texture(ige.textures.get("gridSmartTexture"));
+		}
 	}
 }
