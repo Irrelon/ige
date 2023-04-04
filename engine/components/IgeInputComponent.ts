@@ -18,6 +18,7 @@ export class IgeInputComponent extends IgeEventingClass implements IgeIsReadyPro
 	_debug?: boolean;
 	// State <DeviceCode, <InputCode, InputValue>>
 	_state: Record<number, Record<number, string | number | boolean>> = {};
+	_previousState: Record<number, Record<number, string | number | boolean>> = {};
 	_controlMap: Record<number, IgeInputControlMap> = {};
 	dblClick?: Event;
 	pointerMove?: Event;
@@ -205,9 +206,11 @@ export class IgeInputComponent extends IgeEventingClass implements IgeIsReadyPro
 
 	_ensureState (device: IgeInputDevice) {
 		this._state[device] = this._state[device] || {};
+		this._previousState[device] = this._previousState[device] || {};
 	}
 
 	_updateState (device: IgeInputDevice, inputId: number, newValue: any) {
+		this._previousState[device][inputId] = this._state[device][inputId];
 		this._state[device][inputId] = newValue;
 	}
 
@@ -314,9 +317,9 @@ export class IgeInputComponent extends IgeEventingClass implements IgeIsReadyPro
 
 		this.pointerDown = event;
 
-		if (this.emit("prePointerDown", event, mx, my, event.button + 1) !== IgeEventReturnFlag.cancel) {
+		if (this.emit("prePointerDown", event, mx, my, event.button) !== IgeEventReturnFlag.cancel) {
 			this.queueEvent(() => {
-				this.emit("pointerDown", event, mx, my, event.button + 1);
+				this.emit("pointerDown", event, mx, my, event.button);
 			});
 		}
 	};
@@ -363,9 +366,9 @@ export class IgeInputComponent extends IgeEventingClass implements IgeIsReadyPro
 
 		this.pointerUp = event;
 
-		if (this.emit("prePointerUp", event, mx, my, event.button + 1) !== IgeEventReturnFlag.cancel) {
+		if (this.emit("prePointerUp", event, mx, my, event.button) !== IgeEventReturnFlag.cancel) {
 			this.queueEvent(() => {
-				this.emit("pointerUp", event, mx, my, event.button + 1);
+				this.emit("pointerUp", event, mx, my, event.button);
 			});
 		}
 	};
@@ -406,9 +409,9 @@ export class IgeInputComponent extends IgeEventingClass implements IgeIsReadyPro
 
 		this.contextMenu = event;
 
-		if (this.emit("preContextMenu", event, mx, my, event.button + 1) !== IgeEventReturnFlag.cancel) {
+		if (this.emit("preContextMenu", event, mx, my, event.button) !== IgeEventReturnFlag.cancel) {
 			this.queueEvent(() => {
-				this.emit("contextMenu", event, mx, my, event.button + 1);
+				this.emit("contextMenu", event, mx, my, event.button);
 			});
 		}
 	};
@@ -430,9 +433,9 @@ export class IgeInputComponent extends IgeEventingClass implements IgeIsReadyPro
 
 		this.pointerMove = event;
 
-		if (this.emit("prePointerMove", event, mx, my, event.button + 1) !== IgeEventReturnFlag.cancel) {
+		if (this.emit("prePointerMove", event, mx, my, event.button) !== IgeEventReturnFlag.cancel) {
 			this.queueEvent(() => {
-				this.emit("pointerMove", event, mx, my, event.button + 1);
+				this.emit("pointerMove", event, mx, my, event.button);
 			});
 		}
 	};
@@ -491,9 +494,9 @@ export class IgeInputComponent extends IgeEventingClass implements IgeIsReadyPro
 
 		this.pointerWheel = event;
 
-		if (this.emit("prePointerWheel", event, mx, my, event.button + 1) !== IgeEventReturnFlag.cancel) {
+		if (this.emit("prePointerWheel", event, mx, my, event.button) !== IgeEventReturnFlag.cancel) {
 			this.queueEvent(() => {
-				this.emit("pointerWheel", event, mx, my, event.button + 1);
+				this.emit("pointerWheel", event, mx, my, event.button);
 			});
 		}
 	};
@@ -626,6 +629,16 @@ export class IgeInputComponent extends IgeEventingClass implements IgeIsReadyPro
 	}
 
 	/**
+	 * Returns an input's previous value.
+	 * @param device
+	 * @param inputId
+	 * @return {*}
+	 */
+	previousVal (device: IgeInputDevice, inputId: number) {
+		return this._state[device][inputId];
+	}
+
+	/**
 	 * Returns an input's current state as a boolean.
 	 * @param device
 	 * @param inputId
@@ -633,6 +646,16 @@ export class IgeInputComponent extends IgeEventingClass implements IgeIsReadyPro
 	 */
 	state (device: IgeInputDevice, inputId: number): boolean {
 		return Boolean(this.val(device, inputId));
+	}
+
+	/**
+	 * Returns an input's previous state as a boolean.
+	 * @param device
+	 * @param inputId
+	 * @return {Boolean}
+	 */
+	previousState (device: IgeInputDevice, inputId: number): boolean {
+		return Boolean(this.previousVal(device, inputId));
 	}
 
 	/**
