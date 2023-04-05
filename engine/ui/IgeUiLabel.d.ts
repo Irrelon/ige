@@ -2,6 +2,7 @@ import { IgeUiElement } from "@/engine/core/IgeUiElement";
 import { IgeFontEntity } from "@/engine/core/IgeFontEntity";
 import { IgeFontAlignX, IgeFontAlignY } from "@/enums/IgeFontAlign";
 import type { IgeFontSheet } from "@/engine/core/IgeFontSheet";
+import { IgeCanvasRenderingContext2d } from "@/types/IgeCanvasRenderingContext2d";
 /**
  * Provides a UI label entity. Basic on-screen text label.
  */
@@ -13,8 +14,9 @@ export declare class IgeUiLabel extends IgeUiElement {
     _placeHolderColor: string;
     _mask: string;
     _fontSheet?: IgeFontSheet;
-    constructor();
-    textAlign(val?: "left" | "center" | "right"): "center" | "left" | "right" | undefined;
+    _widthFromText: boolean;
+    _valueChanged: boolean;
+    constructor(label?: string);
     textAlignX(val: IgeFontAlignX): this;
     textAlignX(): IgeFontAlignX;
     textAlignY(val: IgeFontAlignY): this;
@@ -65,5 +67,6 @@ export declare class IgeUiLabel extends IgeUiElement {
     nativeStrokeColor(val?: string): string | this | IgeFontEntity | undefined;
     color(val: string): this;
     color(): string;
+    update(ctx: IgeCanvasRenderingContext2d, tickDelta: number): void;
     _mounted(): void;
 }

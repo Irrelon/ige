@@ -9,7 +9,7 @@ export declare class IgeChatClient extends IgeChatComponent {
     constructor();
     /**
      * Asks the serve to let us join the room specified.
-     * @param {String} roomId The room id of the room to join.
+     * @param {string} roomId The room id of the room to join.
      */
     joinRoom(roomId: string): void;
     sendToRoom(roomId: string, message: string, to: string): void;

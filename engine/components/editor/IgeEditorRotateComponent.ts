@@ -58,7 +58,7 @@ class IgeEditorRotateComponent extends IgeComponent {
 	 * Gets / sets the enabled flag. If set to true,
 	 * operations will be processed. If false, no operations will
 	 * occur.
-	 * @param {Boolean=} val
+	 * @param {boolean=} val
 	 * @return {*}
 	 */
 	enabled = (val) => {

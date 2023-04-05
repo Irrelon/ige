@@ -11,7 +11,6 @@ export const IgeFontSmartTexture = {
         }
         const text = entity._renderText;
         let lineArr;
-        let textSize;
         let renderStartY = 0;
         let renderY;
         let lineHeight = 0;
@@ -73,7 +72,7 @@ export const IgeFontSmartTexture = {
                 renderY = renderStartY + entity._textLineSpacing * lineArrIndex;
             }
             // Measure text
-            textSize = ctx.measureText(lineArrItem);
+            //textSize = ctx.measureText(lineArrItem);
             // Check if we should stroke the text too
             if (entity._nativeStroke) {
                 ctx.strokeText(lineArrItem, 0, renderY);

@@ -15,7 +15,7 @@ export class IgeEntityBox2d extends IgeEntity {
      * Gets / sets the Box2D body's active flag which determines
      * if it will be included as part of the physics simulation
      * or not.
-     * @param {Boolean=} val Set to true to include the body in
+     * @param {boolean=} val Set to true to include the body in
      * the physics simulation or false for it to be ignored.
      * @return {*}
      */
@@ -48,7 +48,7 @@ export class IgeEntityBox2d extends IgeEntity {
      * Gets / sets the Box2D body's gravitic value. If set to false,
      * this entity will not be affected by gravity. If set to true it
      * will be affected by gravity.
-     * @param {Boolean=} val True to allow gravity to affect this entity.
+     * @param {boolean=} val True to allow gravity to affect this entity.
      * @returns {*}
      */
     gravitic(val) {
@@ -237,7 +237,7 @@ export class IgeEntityBox2d extends IgeEntity {
      * once. It is therefore the perfect place to put code that will control your
      * entity's motion, AI etc.
      * @param {CanvasRenderingContext2D} ctx The canvas context to render to.
-     * @param {Number} tickDelta The delta between the last tick time and this one.
+     * @param {number} tickDelta The delta between the last tick time and this one.
      */
     update(ctx, tickDelta) {
         // Call the original method
@@ -250,7 +250,7 @@ export class IgeEntityBox2d extends IgeEntity {
     }
     /**
      * If true, disabled Box2D debug shape drawing for this entity.
-     * @param {Boolean} val
+     * @param {boolean} val
      */
     box2dNoDebug(val) {
         if (val !== undefined) {

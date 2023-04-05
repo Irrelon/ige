@@ -30,11 +30,6 @@ export const controllerClient: IgeEffectFunction = async () => {
 		enter: async () => {
 			console.log("Entered idle");
 
-			uiCreateStorage.pointerUp(() => {
-				fsm.data("createBuilding", BuildingType.storage);
-				fsm.enterState("createBuilding");
-			});
-
 			uiCreateFactory.pointerUp(() => {
 				fsm.data("createBuilding", BuildingType.factory);
 				fsm.data("createArgs", [ResourceType.energy, [{
@@ -46,6 +41,11 @@ export const controllerClient: IgeEffectFunction = async () => {
 					count: 1,
 					max: 3
 				}]]);
+				fsm.enterState("createBuilding");
+			});
+
+			uiCreateStorage.pointerUp(() => {
+				fsm.data("createBuilding", BuildingType.storage);
 				fsm.enterState("createBuilding");
 			});
 
@@ -149,7 +149,7 @@ export const controllerClient: IgeEffectFunction = async () => {
 
 			// Get the building details
 			const buildingType = fsm.data("createBuilding");
-			const createArgs = fsm.data("createArgs");
+			const createArgs = fsm.data("createArgs") || [];
 
 			const buildingId = await network.request("createBuilding", {
 				buildingType,
@@ -260,7 +260,7 @@ export const controllerClient: IgeEffectFunction = async () => {
 
 		// Loop the buildings and check against the AABB
 		const foundBuilding = buildings.find((building) => {
-			return building.aabb().pointInside(ige._pointerPos);
+			return building.bounds3dPolygon().pointInside(ige._pointerPos);
 		});
 
 		if (foundBuilding) {
@@ -272,6 +272,18 @@ export const controllerClient: IgeEffectFunction = async () => {
 
 	const onPointerMove = () => {
 		fsm.raiseEvent("pointerMove");
+
+		// Run a hit test against the all the entities
+		const buildings = ige.$$("building") as Building[];
+
+		// Loop the buildings and check against the AABB
+		const foundBuilding = buildings.find((building) => {
+			return building.bounds3dPolygon().pointInside(ige._pointerPos);
+		});
+
+		if (foundBuilding) {
+			console.log("foundBuilding", foundBuilding);
+		}
 	}
 
 	ige.input.on("pointerUp", onPointerUp);

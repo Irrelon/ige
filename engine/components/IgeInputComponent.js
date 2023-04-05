@@ -119,7 +119,7 @@ export class IgeInputComponent extends IgeEventingClass {
          * pointerdown and pointerup that occurred elsewhere on the DOM but might be
          * useful for the engine to be aware of, such as if you are dragging an entity
          * and then the pointer goes off-canvas and the button is released.
-         * @param {String} eventName The lowercase name of the event to fire e.g. pointerdown.
+         * @param {string} eventName The lowercase name of the event to fire e.g. pointerdown.
          * @param {Object} eventObj The event object that was passed by the DOM.
          */
         this.fireManualEvent = (eventName, eventObj) => {
@@ -526,7 +526,7 @@ export class IgeInputComponent extends IgeEventingClass {
      * Returns an input's current state as a boolean.
      * @param device
      * @param inputId
-     * @return {Boolean}
+     * @return {boolean}
      */
     state(device, inputId) {
         return Boolean(this.val(device, inputId));
@@ -535,7 +535,7 @@ export class IgeInputComponent extends IgeEventingClass {
      * Returns an input's previous state as a boolean.
      * @param device
      * @param inputId
-     * @return {Boolean}
+     * @return {boolean}
      */
     previousState(device, inputId) {
         return Boolean(this.previousVal(device, inputId));
@@ -581,7 +581,7 @@ export class IgeInputComponent extends IgeEventingClass {
      * @param {Object} eventName The name of the event to emit.
      * @param data
      * If you are sending multiple arguments, use an array containing each argument.
-     * @return {Number}
+     * @return {number}
      */
     emit(eventName, ...data) {
         if (!this._eventListeners) {

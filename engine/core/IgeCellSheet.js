@@ -31,7 +31,7 @@ export class IgeCellSheet extends IgeTexture {
     }
     /**
      * Returns the total number of cells in the cell sheet.
-     * @return {Number}
+     * @return {number}
      */
     cellCount() {
         return this.horizontalCells() * this.verticalCells();
@@ -94,7 +94,7 @@ export class IgeCellSheet extends IgeTexture {
     /**
      * Returns a string containing a code fragment that when
      * evaluated will reproduce this object.
-     * @return {String}
+     * @return {string}
      */
     stringify() {
         const str = "new " + this.classId + "('" + this.url() + "', " + this.horizontalCells() + ", " + this.verticalCells() + ")";

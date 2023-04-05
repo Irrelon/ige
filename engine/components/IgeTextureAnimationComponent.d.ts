@@ -36,11 +36,11 @@ export declare class IgeTextureAnimationComponent extends IgeComponent {
      * Defines an animation specifying the frames to use, the
      * frames per second to animate at and if the animation
      * should loop and if so, how many times.
-     * @param {String} id The unique animation id.
+     * @param {string} id The unique animation id.
      * @param {Array} frames An array of cell numbers to animate through.
-     * @param {Number} fps The speed of the animation (frames per second).
-     * @param {Number} loop The number of times to loop the animation, or -1 to loop forever. Defaults to -1.
-     * @param {Boolean} convertIdsToIndex If true will convert cell ids to cell indexes to speed
+     * @param {number} fps The speed of the animation (frames per second).
+     * @param {number} loop The number of times to loop the animation, or -1 to loop forever. Defaults to -1.
+     * @param {boolean} convertIdsToIndex If true will convert cell ids to cell indexes to speed
      * up animation processing. This is true by default but should be disabled if you intend to
      * change the assigned texture of the entity that this animation is applied to after you have
      * defined the animation since the frame indexes will likely map to incorrect cells on a
@@ -59,20 +59,20 @@ export declare class IgeTextureAnimationComponent extends IgeComponent {
     removeFrame: (id: string, frameIndex: number) => void;
     /**
      * Removes a previously defined animation from the entity.
-     * @param {String} id The id of the animation to remove.
+     * @param {string} id The id of the animation to remove.
      * @returns {*}
      */
     remove: (id: string) => any;
     /**
      * Returns true if the specified animation has been defined.
-     * @param {String} id The id of the animation to check for.
-     * @returns {Boolean} True if the animation has been defined.
+     * @param {string} id The id of the animation to check for.
+     * @returns {boolean} True if the animation has been defined.
      */
     defined: (id: string) => boolean;
     /**
      * Sets the specified animation's FPS.
-     * @param {String} id The ID of the animation to alter the FPS for.
-     * @param {Number=} fps The number of frames per second the animation
+     * @param {string} id The ID of the animation to alter the FPS for.
+     * @param {number=} fps The number of frames per second the animation
      * should play at.
      * @example #Set the specified animation's FPS
      *     // Create an entity, add the animation component and define
@@ -88,7 +88,7 @@ export declare class IgeTextureAnimationComponent extends IgeComponent {
     setFps: (id: string, fps: number) => any;
     /**
      * Sets all the animations assigned to an entity to the specified FPS.
-     * @param {Number=} fps The number of frames per second the animations
+     * @param {number=} fps The number of frames per second the animations
      * should play at.
      * @example #Set all entity animations to specified FPS
      *     // Create an entity, add the animation component and define
@@ -106,13 +106,13 @@ export declare class IgeTextureAnimationComponent extends IgeComponent {
     /**
      * Checks the current animation state, either started
      * or stopped.
-     * @return {Boolean} True if an animation is currently playing
+     * @return {boolean} True if an animation is currently playing
      * or false if not.
      */
     playing: () => boolean;
     /**
      * Starts an animation from the beginning frame.
-     * @param {String} animId The id of the animation to start.
+     * @param {string} animId The id of the animation to start.
      * @param {Object=} options An object with some option properties.
      * @example #Start an animation
      *     // Create an entity, add the animation component, define
@@ -182,7 +182,7 @@ export declare class IgeTextureAnimationComponent extends IgeComponent {
     /**
      * Starts an animation only if the passed animation is not already
      * started.
-     * @param {String} animId The id of the animation to start.
+     * @param {string} animId The id of the animation to start.
      * @param {Object=} options An object with some option properties.
      * @example #Select an animation
      *     // Create an entity, add the animation component, define
@@ -211,7 +211,7 @@ export declare class IgeTextureAnimationComponent extends IgeComponent {
      * Handles the animation processing each update.
      * @param {CanvasRenderingContext2D} ctx The rendering context to use when doing draw operations.
      * @param entity
-     * @param {Number} tickDelta The current ige._tickDelta passed down the scenegraph.
+     * @param {number} tickDelta The current ige._tickDelta passed down the scenegraph.
      */
     _update: (entity: IgeEntity, ctx: IgeCanvasRenderingContext2d, tickDelta: number) => void;
 }

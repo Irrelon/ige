@@ -18,7 +18,7 @@ export declare class IgeNetIoClient extends IgeEventingClass {
      * Gets / sets the debug flag. If set to true, net.io
      * will output debug data about every network event as
      * it occurs to the console.
-     * @param {Boolean=} val
+     * @param {boolean=} val
      * @return {*}
      */
     debug(val?: boolean): boolean | this;

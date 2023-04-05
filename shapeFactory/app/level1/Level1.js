@@ -7,6 +7,7 @@ import { IgeSceneGraph } from "../../../engine/core/IgeSceneGraph.js";
 import { IgeScene2d } from "../../../engine/core/IgeScene2d.js";
 import { createStorageBuilding } from "../../services/createBuilding.js";
 import { Grid } from "../../entities/Grid.js";
+import { Cuboid } from "../../../examples/14.1-isoobjects/gameClasses/Cuboid.js";
 export class Level1 extends IgeSceneGraph {
     constructor() {
         super(...arguments);
@@ -27,6 +28,14 @@ export class Level1 extends IgeSceneGraph {
             .isometricMounts(true)
             .mount(baseScene);
         const grid = new Grid().mount(baseScene);
+        const cuboid = new Cuboid(null, null)
+            .depth(1)
+            .streamMode(1)
+            .translateTo(0, 0, 0)
+            .bounds3d(200, 200, 10)
+            .pointerEventsActive(true)
+            .triggerPolygon('bounds3dPolygon')
+            .mount(scene1);
         if (isClient)
             return;
         new IgeAudioEntity()
@@ -34,39 +43,7 @@ export class Level1 extends IgeSceneGraph {
             .url("assets/audio/deepSpace.mp3")
             .play(true)
             .mount(baseScene);
-        const base = createStorageBuilding(scene1, "base1", -100, -80);
-        // const miningBuilding1 = createMiningBuilding(scene1, "miningBuilding1", 50, 150, ResourceType.wood);
-        // const miningBuilding2 = createMiningBuilding(scene1, "miningBuilding2", 250, -150, ResourceType.grain);
-        // const factoryBuilding1 = createFactoryBuilding(scene1, "factoryBuilding1", 220, 120);
-        // const factoryBuilding2 = createFactoryBuilding(scene1, "factoryBuilding2", -220, 120);
-        ///////////////////////////////////////////////////////////
-        // new Road(base.flag.id(), factoryBuilding1.flag.id())
-        // 	.mount(scene1);
-        //
-        // new Road(base.flag.id(), factoryBuilding2.flag.id())
-        // 	.mount(scene1);
-        //
-        // new Road(base.flag.id(), miningBuilding2.flag.id())
-        // 	.mount(scene1);
-        //
-        // new Road(factoryBuilding1.flag.id(), miningBuilding1.flag.id())
-        // 	.mount(scene1);
-        //
-        // new Transporter(base.id(), base.flag.id(), factoryBuilding1.flag.id())
-        // 	.translateTo(base._translate.x, base._translate.y, 0)
-        // 	.mount(scene1);
-        //
-        // new Transporter(base.id(), base.flag.id(), factoryBuilding2.flag.id())
-        // 	.translateTo(base._translate.x, base._translate.y, 0)
-        // 	.mount(scene1);
-        //
-        // new Transporter(base.id(), base.flag.id(), miningBuilding2.flag.id())
-        // 	.translateTo(base._translate.x, base._translate.y, 0)
-        // 	.mount(scene1);
-        //
-        // new Transporter(base.id(), factoryBuilding1.flag.id(), miningBuilding1.flag.id())
-        // 	.translateTo(base._translate.x, base._translate.y, 0)
-        // 	.mount(scene1);
+        const base = createStorageBuilding(scene1, "base1", 0, 0);
         base.resourcePool[ResourceType.energy] = 10;
     }
     /**

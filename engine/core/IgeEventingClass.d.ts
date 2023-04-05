@@ -94,7 +94,7 @@ export declare class IgeEventingClass extends IgeBaseClass {
      * @param {...any} data The arguments to send to any listening methods.
      * If you are sending multiple arguments, separate them with a comma so
      * that they are received by the function as separate arguments.
-     * @return {Number}
+     * @return {number}
      * @example #Emit an Event
      *     // Emit the event named "hello"
      *     myEntity.emit('hello');

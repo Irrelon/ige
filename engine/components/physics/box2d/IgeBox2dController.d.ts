@@ -67,7 +67,7 @@ export declare class IgeBox2dController extends IgeEventingClass {
     mode(val?: IgeBox2dTimingMode): this | IgeBox2dTimingMode;
     /**
      * Gets / sets if the world should allow sleep or not.
-     * @param {Boolean=} val
+     * @param {boolean=} val
      * @return {*}
      */
     sleep(val: boolean): this;
@@ -138,7 +138,7 @@ export declare class IgeBox2dController extends IgeEventingClass {
      * to see shape outlines as they are attached to bodies. Useful when
      * your physics system is server-side but seeing client-side shape
      * data is useful for debugging collisions.
-     * @param {Boolean} val
+     * @param {boolean} val
      */
     networkDebugMode(val?: boolean): boolean | this;
     /**

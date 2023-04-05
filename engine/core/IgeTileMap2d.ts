@@ -89,7 +89,7 @@ export class IgeTileMap2d extends IgeEntity {
 
 	/**
 	 * Gets / sets the map's tile width.
-	 * @param {Number} val Tile width.
+	 * @param {number} val Tile width.
 	 * @return {*}
 	 */
 	tileWidth(val: number): this;
@@ -112,7 +112,7 @@ export class IgeTileMap2d extends IgeEntity {
 
 	/**
 	 * Gets / sets the map's tile height.
-	 * @param {Number} val Tile height.
+	 * @param {number} val Tile height.
 	 * @return {*}
 	 */
 	tileHeight(val: number): this;
@@ -186,7 +186,7 @@ export class IgeTileMap2d extends IgeEntity {
 	 * Gets / sets the color of the grid overlay. It accepts a string color
 	 * definition with the same specifications as the canvas context strokeStyle
 	 * property.
-	 * @param {String=} val The color of the grid.
+	 * @param {string=} val The color of the grid.
 	 * @return {*}
 	 */
 	gridColor (val?: string) {
@@ -202,10 +202,10 @@ export class IgeTileMap2d extends IgeEntity {
 	 * Sets a tile or area as occupied by the passed obj parameter.
 	 * Any previous occupy data on the specified tile or area will be
 	 * overwritten.
-	 * @param {Number} x X co-ordinate of the tile to un-occupy.
-	 * @param {Number} y Y co-ordinate of the tile to un-occupy.
-	 * @param {Number} width Number of tiles along the x-axis to occupy.
-	 * @param {Number} height Number of tiles along the y-axis to occupy.
+	 * @param {number} x X co-ordinate of the tile to un-occupy.
+	 * @param {number} y Y co-ordinate of the tile to un-occupy.
+	 * @param {number} width Number of tiles along the x-axis to occupy.
+	 * @param {number} height Number of tiles along the y-axis to occupy.
 	 * @param {*} obj
 	 * @return {*}
 	 */
@@ -244,10 +244,10 @@ export class IgeTileMap2d extends IgeEntity {
 
 	/**
 	 * Removes all data from the specified tile or area.
-	 * @param {Number} x
-	 * @param {Number} y
-	 * @param {Number=} width
-	 * @param {Number=} height
+	 * @param {number} x
+	 * @param {number} y
+	 * @param {number=} width
+	 * @param {number=} height
 	 * @return {*}
 	 */
 	unOccupyTile (x?: number, y?: number, width?: number, height?: number) {
@@ -286,10 +286,10 @@ export class IgeTileMap2d extends IgeEntity {
 	/**
 	 * Returns true if the specified tile or tile area has
 	 * an occupied status.
-	 * @param {Number} x
-	 * @param {Number} y
-	 * @param {Number=} width
-	 * @param {Number=} height
+	 * @param {number} x
+	 * @param {number} y
+	 * @param {number=} width
+	 * @param {number=} height
 	 * @return {*}
 	 */
 	isTileOccupied (x: number, y: number, width?: number, height?: number) {
@@ -486,7 +486,7 @@ export class IgeTileMap2d extends IgeEntity {
 	/**
 	 * Gets / sets the mouse tile hover color used in conjunction with the
 	 * drawMouse() method.
-	 * @param {String=} val The hex or rbg string color definition e.g. #ff0099.
+	 * @param {string=} val The hex or rbg string color definition e.g. #ff0099.
 	 * @returns {*}
 	 */
 	hoverColor (val?: string) {

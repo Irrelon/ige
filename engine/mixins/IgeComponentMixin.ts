@@ -45,7 +45,7 @@ export const WithComponentMixin = <ComponentTargetType, MixinBaseClassType exten
 
 	/**
 	 * Removes a component by its id.
-	 * @param {String} componentId The id of the component to remove.
+	 * @param {string} componentId The id of the component to remove.
 	 * @example #Remove a component by its id (namespace)
 	 *     var entity = new IgeEntity();
 	 *

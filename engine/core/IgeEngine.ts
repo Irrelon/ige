@@ -583,7 +583,7 @@ export class IgeEngine extends IgeEntity {
 	 * 0.5 to slow down time by half or 1.5 to speed up time by half. Negative
 	 * values will reverse time but not all engine systems handle this well
 	 * at the moment.
-	 * @param {Number=} val The timescale value.
+	 * @param {number=} val The timescale value.
 	 * @returns {*}
 	 */
 	timeScale (val?: number) {
@@ -597,10 +597,10 @@ export class IgeEngine extends IgeEntity {
 
 	/**
 	 * Increments the engine's internal time by the passed number of milliseconds.
-	 * @param {Number} val The number of milliseconds to increment time by.
-	 * @param {Number=} lastVal The last internal time value, used to calculate
+	 * @param {number} val The number of milliseconds to increment time by.
+	 * @param {number=} lastVal The last internal time value, used to calculate
 	 * delta internally in the method.
-	 * @returns {Number}
+	 * @returns {number}
 	 */
 	incrementTime (val: number, lastVal?: number) {
 		if (!this._pause) {
@@ -614,7 +614,7 @@ export class IgeEngine extends IgeEntity {
 
 	/**
 	 * Get the current time from the engine.
-	 * @return {Number} The current time.
+	 * @return {number} The current time.
 	 */
 	currentTime () {
 		return this._currentTime;
@@ -961,7 +961,7 @@ export class IgeEngine extends IgeEntity {
 
 	/**
 	 * Adds a scenegraph class into memory.
-	 * @param {String|Object} className The name of the scenegraph class, or the class itself.
+	 * @param {string|Object} className The name of the scenegraph class, or the class itself.
 	 * @param {Object=} options Optional object to pass to the scenegraph class graph() method.
 	 * @returns {*}
 	 */
@@ -969,29 +969,23 @@ export class IgeEngine extends IgeEntity {
 		if (className !== undefined) {
 			const classObj = this.getClass(className);
 
-			if (classObj) {
-				const classInstance = this.newClassInstance(className);
-				this.log("Loading SceneGraph data class: " + classInstance.constructor.name);
-
-				// Make sure the graph class implements the required methods "addGraph" and "removeGraph"
-				if (typeof classInstance.addGraph === "function" && typeof classInstance.removeGraph === "function") {
-					// Call the class's addGraph() method passing the options in
-					await classInstance.addGraph(options);
-
-					// Add the graph instance to the holding array
-					this._graphInstances[classInstance.constructor.name] = classInstance;
-				} else {
-					this.log(
-						`Could not load graph for class name "${className}" because the class does not implement both the require methods "addGraph()" and "removeGraph()".`,
-						"error"
-					);
-				}
-			} else {
-				this.log(
-					`Cannot load graph for class name "${className}" because the class could not be found. Did you call registerClass(ClassName)?`,
-					"error"
-				);
+			if (!classObj) {
+				throw new Error(`Cannot load graph for class name "${className}" because the class could not be found. Did you call registerClass(ClassName)?`);
 			}
+
+			const classInstance = this.newClassInstance(className);
+			this.log("Loading SceneGraph data class: " + classInstance.constructor.name);
+
+			// Make sure the graph class implements the required methods "addGraph" and "removeGraph"
+			if (typeof classInstance.addGraph !== "function" || typeof classInstance.removeGraph !== "function") {
+				throw new Error(`Could not load graph for class name "${className}" because the class does not implement both the require methods "addGraph()" and "removeGraph()".`);
+			}
+
+			// Call the class's addGraph() method passing the options in
+			await classInstance.addGraph(options);
+
+			// Add the graph instance to the holding array
+			this._graphInstances[classInstance.constructor.name] = classInstance;
 		}
 
 		return this;
@@ -999,7 +993,7 @@ export class IgeEngine extends IgeEntity {
 
 	/**
 	 * Removes a scenegraph class into memory.
-	 * @param {String} className The name of the scenegraph class.
+	 * @param {string} className The name of the scenegraph class.
 	 * @param {Object=} options Optional object to pass to the scenegraph class graph() method.
 	 * @returns {*}
 	 */
@@ -1116,7 +1110,7 @@ export class IgeEngine extends IgeEntity {
 	/**
 	 * Sets the opacity of every object on the scenegraph to
 	 * zero *except* the one specified by the given id argument.
-	 * @param {String} id The id of the object not to hide.
+	 * @param {string} id The id of the object not to hide.
 	 */
 	hideAllExcept (id: string) {
 		const arr = ige.register.all() as unknown as IgeEntity[];
@@ -1147,7 +1141,7 @@ export class IgeEngine extends IgeEntity {
 	 * method as defined in IgeBaseClass.js and on the client-side, will
 	 * stop usage of any available requestAnimationFrame() method
 	 * and will use a setTimeout()-based version instead.
-	 * @param {Number} fpsRate
+	 * @param {number} fpsRate
 	 */
 	setFps (fpsRate: number) {
 		// Override the default requestAnimFrame handler and set
@@ -1177,7 +1171,7 @@ export class IgeEngine extends IgeEntity {
 	/**
 	 * Retrieves a class by its ID that was defined with
 	 * a call to defineClass().
-	 * @param {String} id The ID of the class to retrieve.
+	 * @param {string} id The ID of the class to retrieve.
 	 * @return {Object} The class definition.
 	 */
 	getClass (id: string | GenericClass) {
@@ -1189,7 +1183,7 @@ export class IgeEngine extends IgeEntity {
 
 	/**
 	 * Returns true if the class specified has been defined.
-	 * @param {String} id The ID of the class to check for.
+	 * @param {string} id The ID of the class to check for.
 	 * @returns {*}
 	 */
 	classDefined (id: string) {
@@ -1318,8 +1312,8 @@ export class IgeEngine extends IgeEntity {
 	 * Generates a new 16-character hexadecimal ID based on
 	 * the passed string. Will always generate the same ID
 	 * for the same string.
-	 * @param {String} str A string to generate the ID from.
-	 * @return {String}
+	 * @param {string} str A string to generate the ID from.
+	 * @return {string}
 	 */
 	newIdFromString (str?: string) {
 		if (str === undefined) {

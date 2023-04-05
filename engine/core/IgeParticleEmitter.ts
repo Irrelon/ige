@@ -416,12 +416,12 @@ export class IgeParticleEmitter extends IgeUiEntity {
 	/**
 	 * Takes a base value and a variance range and returns a random
 	 * value between the range, added to the base.
-	 * @param {Number} base The base value.
+	 * @param {number} base The base value.
 	 * @param {Array} variance An array containing the two values of
 	 * the variance range.
-	 * @param {Boolean} floorIt If set to true, will cause the returned
+	 * @param {boolean} floorIt If set to true, will cause the returned
 	 * value to be passed through Math.floor().
-	 * @return {Number} Returns the final value based upon the base
+	 * @return {number} Returns the final value based upon the base
 	 * value and variance range.
 	 */
 	baseAndVarianceValue (base: number, variance: [number, number], floorIt: boolean = false) {
@@ -752,7 +752,7 @@ export class IgeParticleEmitter extends IgeUiEntity {
 	 * chained commands. This method will only check for
 	 * properties that are directly related to this class.
 	 * Other properties are handled by their own class method.
-	 * @return {String}
+	 * @return {string}
 	 */
 	// _stringify (options) {
 	// 	// Get the properties for all the super-classes

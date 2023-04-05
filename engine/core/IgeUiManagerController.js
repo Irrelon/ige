@@ -41,7 +41,7 @@ export class IgeUiManagerController extends IgeEventingClass {
     }
     /**
      * Get / set a style by name.
-     * @param {String} name The unique name of the style.
+     * @param {string} name The unique name of the style.
      * @param {Object=} data The style properties and values to assign to the
      * style.
      * @returns {*}

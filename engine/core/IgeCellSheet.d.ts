@@ -19,18 +19,18 @@ export declare class IgeCellSheet extends IgeTexture {
     _textureLoaded(): void;
     /**
      * Returns the total number of cells in the cell sheet.
-     * @return {Number}
+     * @return {number}
      */
     cellCount(): number;
     /**
      * Gets / sets the number of horizontal cells in the cell sheet.
-     * @param {Number=} val The integer count of the number of horizontal cells in the cell sheet.
+     * @param {number=} val The integer count of the number of horizontal cells in the cell sheet.
      */
     horizontalCells(val: number): this;
     horizontalCells(): number;
     /**
      * Gets / sets the number of vertical cells in the cell sheet.
-     * @param {Number=} val The integer count of the number of vertical cells in the cell sheet.
+     * @param {number=} val The integer count of the number of vertical cells in the cell sheet.
      */
     verticalCells(val: number): this;
     verticalCells(): number;
@@ -43,7 +43,7 @@ export declare class IgeCellSheet extends IgeTexture {
     /**
      * Returns a string containing a code fragment that when
      * evaluated will reproduce this object.
-     * @return {String}
+     * @return {string}
      */
     stringify(): string;
 }

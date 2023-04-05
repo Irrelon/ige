@@ -18,7 +18,7 @@ export declare class IgeMouseZoomComponent extends IgeComponent {
      * Sets / gets the enabled flag. If set to true, zoom
      * operations will be processed. If false, no zooming will
      * occur.
-     * @param {Boolean=} val
+     * @param {boolean=} val
      * @return {*}
      */
     enabled(val?: boolean): any;

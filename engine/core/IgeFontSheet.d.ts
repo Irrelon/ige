@@ -20,7 +20,7 @@ export declare class IgeFontSheet extends IgeTexture {
     /**
      * Returns the width in pixels of the text passed in the
      * argument.
-     * @param {String} text The text to measure.
+     * @param {string} text The text to measure.
      * @returns {number}
      */
     measureTextWidth(text: any): number | undefined;

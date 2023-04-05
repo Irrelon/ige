@@ -28,6 +28,8 @@ export class Building extends GameEntity {
 		this._produces = ResourceType.none;
 		this._requires = [];
 
+		this.isometric(true);
+
 		this.category("building");
 	}
 

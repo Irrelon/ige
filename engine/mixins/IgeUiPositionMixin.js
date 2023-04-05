@@ -3,9 +3,9 @@ export const WithUiPositionMixin = (Base) => class extends Base {
     /**
      * Gets / sets the entity's x position relative to the left of
      * the canvas.
-     * @param {Number} px
-     * @param {Boolean=} noUpdate
-     * @return {Number}
+     * @param {number} px
+     * @param {boolean=} noUpdate
+     * @return {number}
      */
     left(px, noUpdate = false) {
         if (px === undefined) {
@@ -51,9 +51,9 @@ export const WithUiPositionMixin = (Base) => class extends Base {
     /**
      * Gets / sets the entity's x position relative to the right of
      * the canvas.
-     * @param {Number} px
-     * @param {Boolean=} noUpdate
-     * @return {Number}
+     * @param {number} px
+     * @param {boolean=} noUpdate
+     * @return {number}
      */
     right(px, noUpdate = false) {
         if (px !== undefined) {
@@ -99,9 +99,9 @@ export const WithUiPositionMixin = (Base) => class extends Base {
     /**
      * Gets / sets the viewport's x position relative to the center of
      * the entity parent.
-     * @param {Number} px
-     * @param {Boolean=} noUpdate
-     * @return {Number}
+     * @param {number} px
+     * @param {boolean=} noUpdate
+     * @return {number}
      */
     center(px, noUpdate = false) {
         if (px !== undefined) {
@@ -149,9 +149,9 @@ export const WithUiPositionMixin = (Base) => class extends Base {
     /**
      * Gets / sets the entity's y position relative to the top of
      * the canvas.
-     * @param {Number} px
-     * @param {Boolean=} noUpdate
-     * @return {Number}
+     * @param {number} px
+     * @param {boolean=} noUpdate
+     * @return {number}
      */
     top(px, noUpdate = false) {
         if (px === undefined) {
@@ -198,9 +198,9 @@ export const WithUiPositionMixin = (Base) => class extends Base {
     /**
      * Gets / sets the entity's y position relative to the bottom of
      * the canvas.
-     * @param {Number} px
-     * @param {Boolean=} noUpdate
-     * @return {Number}
+     * @param {number} px
+     * @param {boolean=} noUpdate
+     * @return {number}
      */
     bottom(px, noUpdate = false) {
         if (px !== undefined) {
@@ -246,9 +246,9 @@ export const WithUiPositionMixin = (Base) => class extends Base {
     /**
      * Gets / sets the viewport's y position relative to the middle of
      * the canvas.
-     * @param {Number} px
-     * @param {Boolean=} noUpdate
-     * @return {Number}
+     * @param {number} px
+     * @param {boolean=} noUpdate
+     * @return {number}
      */
     middle(px, noUpdate = false) {
         if (px !== undefined) {
@@ -295,12 +295,12 @@ export const WithUiPositionMixin = (Base) => class extends Base {
     }
     /**
      * Gets / sets the geometry.x in pixels.
-     * @param {Number, String=} px Either the width in pixels or a percentage
-     * @param {Boolean=} lockAspect
-     * @param {Number=} modifier A value to add to the final width. Useful when
+     * @param {number, String=} px Either the width in pixels or a percentage
+     * @param {boolean=} lockAspect
+     * @param {number=} modifier A value to add to the final width. Useful when
      * you want to alter a percentage value by a certain number of pixels after
      * it has been calculated.
-     * @param {Boolean=} noUpdate
+     * @param {boolean=} noUpdate
      * @return {*}
      */
     width(px, lockAspect = false, modifier, noUpdate = false) {
@@ -358,12 +358,12 @@ export const WithUiPositionMixin = (Base) => class extends Base {
     }
     /**
      * Gets / sets the geometry.y in pixels.
-     * @param {Number=} px
-     * @param {Boolean=} lockAspect
-     * @param {Number=} modifier A value to add to the final height. Useful when
+     * @param {number=} px
+     * @param {boolean=} lockAspect
+     * @param {number=} modifier A value to add to the final height. Useful when
      * you want to alter a percentage value by a certain number of pixels after
      * it has been calculated.
-     * @param {Boolean=} noUpdate If passed, will not recalculate AABB etc from
+     * @param {boolean=} noUpdate If passed, will not recalculate AABB etc from
      * this call. Useful for performance if you intend to make subsequent calls
      * to other functions that will also cause a re-calculation, meaning we can
      * reduce the overall re-calculations to only one at the end. You must manually

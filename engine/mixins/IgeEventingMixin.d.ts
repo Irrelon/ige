@@ -22,11 +22,11 @@ export declare const WithEventingMixin: <BaseClassType extends Mixin<IgeBaseClas
         _eventListeners?: IgeEventListenerRegister | undefined;
         /**
          * Add an event listener method for an event.
-         * @param {String || Array} eventName The name of the event to listen for (string), or an array of events to listen for.
+         * @param {string || Array} eventName The name of the event to listen for (string), or an array of events to listen for.
          * @param {Function} callback The method to call when the event listener is triggered.
          * @param {Object=} context The context in which the call to the listening method will be made (sets the 'this' variable in the method to the object passed as this parameter).
-         * @param {Boolean=} oneShot If set, will instruct the listener to only listen to the event being fired once and will not fire again.
-         * @param {Boolean=} sendEventName If set, will instruct the emitter to send the event name as the argument instead of any emitted arguments.
+         * @param {boolean=} oneShot If set, will instruct the listener to only listen to the event being fired once and will not fire again.
+         * @param {boolean=} sendEventName If set, will instruct the emitter to send the event name as the argument instead of any emitted arguments.
          * @return {Object} The event listener object. Hold this value if you later want to turn off the event listener.
          * @example #Add an Event Listener
          *     // Register event lister and store in "evt"
@@ -68,7 +68,7 @@ export declare const WithEventingMixin: <BaseClassType extends Mixin<IgeBaseClas
          *
          *     // Switch off event listener
          *     myEntity.off('pointerDown', evt);
-         * @return {Boolean}
+         * @return {boolean}
          */
         off(eventName: string, evtListener: IgeEventListenerObject | IgeMultiEventListenerObject | undefined, callback?: IgeEventRemovalResultCallback): boolean;
         /**
@@ -76,7 +76,7 @@ export declare const WithEventingMixin: <BaseClassType extends Mixin<IgeBaseClas
          * @param {Object} eventName The name of the event to emit.
          * @param {Object || Array} [args] The arguments to send to any listening methods.
          * If you are sending multiple arguments, use an array containing each argument.
-         * @return {Number}
+         * @return {number}
          * @example #Emit an Event
          *     // Emit the event named "hello"
          *     myEntity.emit('hello');

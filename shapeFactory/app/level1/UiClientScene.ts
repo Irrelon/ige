@@ -1,13 +1,10 @@
 import { ige } from "@/engine/instance";
 import { IgeSceneGraph } from "@/engine/core/IgeSceneGraph";
 import { IgeScene2d } from "@/engine/core/IgeScene2d";
-import { Square } from "../../entities/base/Square";
 import { IgeUiElement } from "@/engine/core/IgeUiElement";
-import { Triangle } from "../../entities/base/Triangle";
-import { Flag } from "../../entities/base/Flag";
-import { Star } from "../../entities/base/Star";
 import { ResourceType } from "../../enums/ResourceType";
 import { fillColorByResourceType } from "../../services/resource";
+import { UiBuildItem } from "../../entities/base/UiBuildItem";
 
 export class UiClientScene extends IgeSceneGraph {
 	async addGraph () {
@@ -29,47 +26,32 @@ export class UiClientScene extends IgeSceneGraph {
 			.backgroundColor("#222222")
 			.mount(uiScene);
 
-		const squareContainer = new IgeUiElement()
+		new UiBuildItem(ige.textures.get("squareSmartTexture"), "Storage")
+			.id("uiCreateStorage")
 			.top(20)
 			.mount(buildUi);
 
-		new Square()
-			.id("uiCreateStorage")
-			.mount(squareContainer);
-
-		const factoryContainer = new IgeUiElement()
+		new UiBuildItem(ige.textures.get("triangleSmartTexture"), "Energy Factory")
+			.id("uiCreateFactory")
 			.top(90)
 			.mount(buildUi);
 
-		new Triangle()
-			.id("uiCreateFactory")
-			.mount(factoryContainer);
-
-		const mineContainer1 = new IgeUiElement()
+		new UiBuildItem(ige.textures.get("starSmartTexture"), "Green Mine")
+			.id("uiCreateMine1")
+			.data("fillColor", fillColorByResourceType[ResourceType.wood])
 			.top(170)
 			.mount(buildUi);
 
-		new Star()
-			.id("uiCreateMine1")
-			.data("fillColor", fillColorByResourceType[ResourceType.wood])
-			.mount(mineContainer1);
-
-		const mineContainer2 = new IgeUiElement()
+		new UiBuildItem(ige.textures.get("starSmartTexture"), "Purple Mine")
+			.id("uiCreateMine2")
+			.data("fillColor", fillColorByResourceType[ResourceType.grain])
 			.top(250)
 			.mount(buildUi);
 
-		new Star()
-			.id("uiCreateMine2")
-			.data("fillColor", fillColorByResourceType[ResourceType.grain])
-			.mount(mineContainer2);
-
-		const flagContainer = new IgeUiElement()
+		new UiBuildItem(ige.textures.get("flagSmartTexture"), "Flag")
+			.id("uiCreateFlag")
 			.top(320)
 			.mount(buildUi);
-
-		new Flag()
-			.id("uiCreateFlag")
-			.mount(flagContainer);
 	}
 
 	removeGraph () {

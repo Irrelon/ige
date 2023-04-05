@@ -66,7 +66,7 @@ export class IgePathComponent extends IgeComponent {
          * calling .finder(), a tile checker method by calling .tileChecker() and
          * the number of look-ahead steps by calling .lookAheadSteps(). See the
          * doc for those methods for usage and required arguments.
-         * @param {Boolean} enable If set to true, enables dynamic mode.
+         * @param {boolean} enable If set to true, enables dynamic mode.
          * @returns {*}
          */
         this.dynamic = (enable) => {
@@ -98,7 +98,7 @@ export class IgePathComponent extends IgeComponent {
         };
         /**
          * Gets / sets the flag determining if a path can use N, S, E and W movement.
-         * @param {Boolean=} val Set to true to allow, false to disallow.
+         * @param {boolean=} val Set to true to allow, false to disallow.
          * @returns {*}
          */
         this.allowSquare = (val) => {
@@ -110,7 +110,7 @@ export class IgePathComponent extends IgeComponent {
         };
         /**
          * Gets / sets the flag determining if a path can use NW, SW, NE and SE movement.
-         * @param {Boolean=} val Set to true to allow, false to disallow.
+         * @param {boolean=} val Set to true to allow, false to disallow.
          * @returns {*}
          */
         this.allowDiagonal = (val) => {
@@ -123,13 +123,13 @@ export class IgePathComponent extends IgeComponent {
         /**
          * Clears any existing path points and sets the path the entity will traverse
          * from start to finish.
-         * @param {Number} fromX The x tile to path from.
-         * @param {Number} fromY The y tile to path from.
-         * @param {Number} fromZ The z tile to path from.
-         * @param {Number} toX The x tile to path to.
-         * @param {Number} toY The y tile to path to.
-         * @param {Number} toZ The z tile to path to.
-         * @param {Boolean=} findNearest If the destination is unreachable, when set to
+         * @param {number} fromX The x tile to path from.
+         * @param {number} fromY The y tile to path from.
+         * @param {number} fromZ The z tile to path from.
+         * @param {number} toX The x tile to path to.
+         * @param {number} toY The y tile to path to.
+         * @param {number} toZ The z tile to path to.
+         * @param {boolean=} findNearest If the destination is unreachable, when set to
          * true this option will allow the pathfinder to return the closest path to the
          * destination tile.
          * @returns {*}
@@ -170,10 +170,10 @@ export class IgePathComponent extends IgeComponent {
         /**
          * Sets a new destination for a path including the point currently being traversed if a path is active
          * This creates a smooth transition and flow of pointComplete events between the old and new paths
-         * @param {Number} x The x tile to path to.
-         * @param {Number} y The y tile to path to.
-         * @param {Number} z The z tile to path to.
-         * @param {Boolean=} findNearest If the destination is unreachable, when set to
+         * @param {number} x The x tile to path to.
+         * @param {number} y The y tile to path to.
+         * @param {number} z The z tile to path to.
+         * @param {boolean=} findNearest If the destination is unreachable, when set to
          * true this option will allow the pathfinder to return the closest path to the
          * destination tile.
          * @returns {*}
@@ -246,7 +246,7 @@ export class IgePathComponent extends IgeComponent {
          *     // ...
          *     // Now get the current direction
          *     var direction = entity.path.currentDirection();
-         * @return {String} A string such as N, S, E, W, NW, NE, SW, SE.
+         * @return {string} A string such as N, S, E, W, NW, NE, SW, SE.
          * If there is currently no direction then the return value is a blank string.
          */
         this.getDirection = () => {
@@ -294,7 +294,7 @@ export class IgePathComponent extends IgeComponent {
         /**
          * Gets / sets the time towards the end of the path when the path
          * component will emit a "almostComplete" event.
-         * @param {Number=} ms The time in milliseconds to emit the event
+         * @param {number=} ms The time in milliseconds to emit the event
          * on before the end of the path.
          * @return {*}
          */
@@ -308,7 +308,7 @@ export class IgePathComponent extends IgeComponent {
         /**
          * Gets / sets the flag determining if the entity moving along
          * the path will stop automatically at the end of the path.
-         * @param {Boolean=} val If true, will stop at the end of the path.
+         * @param {boolean=} val If true, will stop at the end of the path.
          * @return {*}
          */
         this.autoStop = (val) => {
@@ -321,7 +321,7 @@ export class IgePathComponent extends IgeComponent {
         /**
          * Gets / sets the speed at which the entity will traverse the path in pixels
          * per second (world space).
-         * @param {Number=} val
+         * @param {number=} val
          * @param startTime
          * @return {*}
          */
@@ -343,7 +343,7 @@ export class IgePathComponent extends IgeComponent {
         };
         /**
          * Starts path traversal.
-         * @param {Number=} startTime The time to start path traversal. Defaults
+         * @param {number=} startTime The time to start path traversal. Defaults
          * to `ige.engine._currentTime` if no value is presented.
          * @return {*}
          */
@@ -370,7 +370,7 @@ export class IgePathComponent extends IgeComponent {
         /**
          * Restarts an existing path traversal, for example after we have changed the speed or given it a new set of points
          * but don't want to consider it a new path and raise a new start event
-         * @param {Number=} startTime The time to start path traversal. Defaults
+         * @param {number=} startTime The time to start path traversal. Defaults
          * to ige.engine._currentTime if no value is presented.
          * @return {*}
          */
@@ -439,7 +439,7 @@ export class IgePathComponent extends IgeComponent {
          * Gets / sets the flag determining if the path component
          * should draw the current path of the entity to the canvas
          * on each tick. Useful for debugging paths.
-         * @param {Boolean=} val If true, will draw the path.
+         * @param {boolean=} val If true, will draw the path.
          * @return {*}
          */
         this.drawPath = (val) => {
@@ -459,7 +459,7 @@ export class IgePathComponent extends IgeComponent {
          * Gets / sets the flag that determines if the path that
          * is drawn gets some added glow effects or not. Pure eye
          * candy, completely pointless otherwise.
-         * @param {Boolean=} val If true will add glow effects to the path.
+         * @param {boolean=} val If true will add glow effects to the path.
          * @return {*}
          */
         this.drawPathGlow = (val) => {
@@ -472,7 +472,7 @@ export class IgePathComponent extends IgeComponent {
         /**
          * Gets / sets the flag that determines if the path that
          * is drawn gets some added labels or not.
-         * @param {Boolean=} val If true will draw labels on each path point.
+         * @param {boolean=} val If true will draw labels on each path point.
          * @return {*}
          */
         this.drawPathText = (val) => {
@@ -653,8 +653,8 @@ export class IgePathComponent extends IgeComponent {
         };
         /**
          * Replaces a number of points in the current queue with the new points passed.
-         * @param {Number} fromIndex The from index.
-         * @param {Number} replaceLength The number of points to replace.
+         * @param {number} fromIndex The from index.
+         * @param {number} replaceLength The number of points to replace.
          * @param {Array} newPoints The array of new points to insert.
          */
         this.replacePoints = (fromIndex, replaceLength, newPoints) => {
@@ -764,8 +764,8 @@ export class IgePathComponent extends IgeComponent {
          * of the entity and the delta time.
          * @param {IgePoint3d} p1 Vector start point
          * @param {IgePoint3d} p2 Vector end point
-         * @param {Number} speed Speed along the vector
-         * @param {Number} deltaTime The time between the last update and now.
+         * @param {number} speed Speed along the vector
+         * @param {number} deltaTime The time between the last update and now.
          * @return {IgePoint3d}
          * @private
          */

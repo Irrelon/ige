@@ -188,7 +188,7 @@ export class IgeRect extends IgeBaseClass {
 	 * height, converting floating point values into fixed using the
 	 * passed precision parameter. If no precision is specified
 	 * then the precision defaults to 2.
-	 * @param {Number=} precision
+	 * @param {number=} precision
 	 * @return {String}
 	 */
 	toString (precision?: number) {

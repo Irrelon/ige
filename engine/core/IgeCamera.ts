@@ -52,8 +52,8 @@ export class IgeCamera extends IgeEntity {
 	 * Pan (tween) the camera to the new specified point in
 	 * the specified time.
 	 * @param {IgePoint3d} point The point describing the co-ordinates to pan to.
-	 * @param {Number} durationMs The number of milliseconds to span the pan operation over.
-	 * @param {String=} easing Optional easing method name.
+	 * @param {number} durationMs The number of milliseconds to span the pan operation over.
+	 * @param {string=} easing Optional easing method name.
 	 */
 	panTo (point?: IgePoint3d, durationMs?: number, easing: string = "none") {
 		if (point !== undefined) {
@@ -75,8 +75,8 @@ export class IgeCamera extends IgeEntity {
 	 * Pan (tween) the camera by the new specified point in
 	 * the specified time.
 	 * @param {IgePoint3d} point The point describing the co-ordinates to pan by.
-	 * @param {Number} durationMs The number of milliseconds to span the pan operation over.
-	 * @param {String=} easing Optional easing method name.
+	 * @param {number} durationMs The number of milliseconds to span the pan operation over.
+	 * @param {string=} easing Optional easing method name.
 	 */
 	panBy (point?: IgePoint3d, durationMs?: number, easing: string = "none") {
 		if (point !== undefined) {
@@ -98,10 +98,10 @@ export class IgeCamera extends IgeEntity {
 	 * Tells the camera to track the movement of the specified
 	 * target entity. The camera will center on the entity.
 	 * @param {IgeEntity} entity
-	 * @param {Number=} smoothing Determines how quickly the camera
+	 * @param {number=} smoothing Determines how quickly the camera
 	 * will track the target, the higher the number, the slower the
 	 * tracking will be.
-	 * @param {Boolean=} rounding Sets if the smoothing system is
+	 * @param {boolean=} rounding Sets if the smoothing system is
 	 * allowed to use floating point values or not. If enabled then
 	 * it will not use floating point values.
 	 * @return {*}
@@ -126,7 +126,7 @@ export class IgeCamera extends IgeEntity {
 
 	/**
 	 * Gets / sets the `translate` tracking smoothing value.
-	 * @param {Number=} val
+	 * @param {number=} val
 	 * @return {*}
 	 */
 	trackTranslateSmoothing (val?: number) {
@@ -169,7 +169,7 @@ export class IgeCamera extends IgeEntity {
 	 * Tells the camera to track the rotation of the specified
 	 * target entity.
 	 * @param {IgeEntity} entity
-	 * @param {Number=} smoothing Determines how quickly the camera
+	 * @param {number=} smoothing Determines how quickly the camera
 	 * will track the target, the higher the number, the slower the
 	 * tracking will be.
 	 * @return {*}
@@ -187,7 +187,7 @@ export class IgeCamera extends IgeEntity {
 
 	/**
 	 * Gets / sets the `rotate` tracking smoothing value.
-	 * @param {Number=} val
+	 * @param {number=} val
 	 * @return {*}
 	 */
 	trackRotateSmoothing (val?: number) {
@@ -210,10 +210,10 @@ export class IgeCamera extends IgeEntity {
 	 * Translates the camera to the center of the specified entity so
 	 * that the camera is "looking at" the entity.
 	 * @param {IgeEntity} entity The entity to look at.
-	 * @param {Number=} durationMs If specified, will cause the
+	 * @param {number=} durationMs If specified, will cause the
 	 * camera to tween to the location of the entity rather than
 	 * snapping to it instantly.
-	 * @param {String=} easing The easing method name to use if
+	 * @param {string=} easing The easing method name to use if
 	 * tweening by duration.
 	 * @return {*}
 	 */
@@ -366,7 +366,7 @@ export class IgeCamera extends IgeEntity {
 	 * properties that are directly related to this class.
 	 * Other properties are handled by their own class method.
 	 * @private
-	 * @return {String}
+	 * @return {string}
 	 */
 	_stringify () {
 		// Get the properties for all the super-classes

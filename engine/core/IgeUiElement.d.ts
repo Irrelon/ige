@@ -25,14 +25,14 @@ export declare class IgeUiElement extends IgeUiEntity {
     allowActive(): boolean;
     /**
      * Gets / sets the applied style by name.
-     * @param {String=} name The style name to apply.
+     * @param {string=} name The style name to apply.
      * @returns {*}
      */
     styleClass(name?: string): this;
     styleClass(): string;
     /**
      * Gets / sets a style for this individual element.
-     * @param {String=} property The property to get / set.
+     * @param {string=} property The property to get / set.
      * @param {*=} value The value to set for the property.
      * @return {*}
      */

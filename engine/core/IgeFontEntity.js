@@ -52,7 +52,7 @@ export class IgeFontEntity extends IgeUiEntity {
      * contains the unaltered version of your original text and
      * "_renderText" will be either the same as "_text" if auto-wrapping
      * is disabled or a wrapped version otherwise.
-     * @param {String} text The text string to render.
+     * @param {string} text The text string to render.
      * @returns {*}
      */
     text(text) {
@@ -82,9 +82,9 @@ export class IgeFontEntity extends IgeUiEntity {
      * position etc. output where data is stored in an object and changes
      * frequently.
      * @param {Object} obj The object to read the property from.
-     * @param {String} propName The name of the property to read value from.
-     * @param {String} preText Text to place before the output.
-     * @param {String} postText Text to place after the output.
+     * @param {string} propName The name of the property to read value from.
+     * @param {string} preText Text to place before the output.
+     * @param {string} postText Text to place after the output.
      * @returns {*}
      */
     bindData(obj, propName, preText, postText) {
@@ -129,7 +129,7 @@ export class IgeFontEntity extends IgeUiEntity {
     /**
      * Gets / sets the string hex or rgba value of the colour
      * to use as an overlay when rending this entity's texture.
-     * @param {String=} val The colour value as hex e.g. '#ff0000'
+     * @param {string=} val The colour value as hex e.g. '#ff0000'
      * or as rgba e.g. 'rbga(255, 0, 0, 0.5)'. To remove an overlay
      * colour simply passed an empty string.
      * @return {*} "this" when arguments are passed to allow method
@@ -164,7 +164,7 @@ export class IgeFontEntity extends IgeUiEntity {
      * When using native font rendering (canvasContext.fillText())
      * this sets the font and size as per the canvasContext.font
      * string specification.
-     * @param {String=} val The font style string.
+     * @param {string=} val The font style string.
      * @return {*} "this" when arguments are passed to allow method
      * chaining or the current value if no arguments are specified.
      */
@@ -189,7 +189,7 @@ export class IgeFontEntity extends IgeUiEntity {
     /**
      * Gets / sets the text stroke size that applies when using
      * a native font for text rendering.
-     * @param {Number=} val The size of the text stroke.
+     * @param {number=} val The size of the text stroke.
      * @return {*}
      */
     nativeStroke(val) {
@@ -277,24 +277,25 @@ export class IgeFontEntity extends IgeUiEntity {
     /**
      * Will measure and return the width in pixels of a line or multiple
      * lines of text. If no text parameter is passed, will use the current
-     * text assigned to the font entity.
-     * @param {String=} text Optional text to measure, used existing entity
+     * text assigned to the font entity. If the text cannot be measured,
+     * -1 is returned instead.
+     * @param {string=} text Optional text to measure, used existing entity
      * text value if none is provided.
-     * @returns {Number} The width of the text in pixels.
+     * @returns {number} The width of the text in pixels.
      */
     measureTextWidth(text) {
         var _a, _b, _c, _d, _e, _f;
         text = text || this._text;
         // Both IgeFontSheet and the IgeFontSmartTexture have a method
-        // called measureTextWidth() so we can just asks the current
+        // called measureTextWidth() so we can just ask the current
         // texture for the width :)
         if (((_a = this._texture) === null || _a === void 0 ? void 0 : _a._renderMode) === IgeTextureRenderMode.image) {
-            // TODO: Figure out what this should be since it's not a smart texture, where does the function come from?
-            return (_c = (_b = this._texture.script) === null || _b === void 0 ? void 0 : _b.meta) === null || _c === void 0 ? void 0 : _c.measureTextWidth(text);
+            return ((_c = (_b = this._texture.script) === null || _b === void 0 ? void 0 : _b.meta) === null || _c === void 0 ? void 0 : _c.measureTextWidth(text, this)) || -1;
         }
         else if (((_d = this._texture) === null || _d === void 0 ? void 0 : _d._renderMode) === IgeTextureRenderMode.smartTexture) {
-            return (_f = (_e = this._texture.script) === null || _e === void 0 ? void 0 : _e.meta) === null || _f === void 0 ? void 0 : _f.measureTextWidth(text, this);
+            return ((_f = (_e = this._texture.script) === null || _e === void 0 ? void 0 : _e.meta) === null || _f === void 0 ? void 0 : _f.measureTextWidth(text, this)) || -1;
         }
+        return -1;
     }
     tick(ctx) {
         // Check for an auto-progress update
@@ -316,7 +317,7 @@ export class IgeFontEntity extends IgeUiEntity {
      * chained commands. This method will only check for
      * properties that are directly related to this class.
      * Other properties are handled by their own class method.
-     * @return {String}
+     * @return {string}
      */
     _stringify() {
         // Get the properties for all the super-classes

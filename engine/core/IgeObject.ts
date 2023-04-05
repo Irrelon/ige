@@ -83,7 +83,7 @@ export class IgeObject extends IgeEventingClass implements IgeCanRegisterById, I
 	_depthSortMode = IgeIsometricDepthSortMode.bounds3d;
 	_inView = true;
 	_managed = 1;
-	_triggerPolygon?: "aabb" | "localBounds3dPolygon";
+	_triggerPolygon?: "aabb" | "bounds3dPolygon" | "localBounds3dPolygon";
 	_compositeCache: boolean = false;
 	_compositeParent: boolean = false;
 	_anchor: IgePoint2d;
@@ -198,7 +198,7 @@ export class IgeObject extends IgeEventingClass implements IgeCanRegisterById, I
 	 * Gets / sets the current object id. If no id is currently assigned and no
 	 * id is passed to the method, it will automatically generate and assign a
 	 * new id as a 16 character hexadecimal value typed as a string.
-	 * @param {String=} id
+	 * @param {string=} id
 	 * @example #Get the id of an entity
 	 *     var entity = new IgeEntity();
 	 *     console.log(entity.id());
@@ -254,7 +254,7 @@ export class IgeObject extends IgeEventingClass implements IgeCanRegisterById, I
 
 	/**
 	 * Gets / sets the arbitrary category name that the object belongs to.
-	 * @param {String=} val
+	 * @param {string=} val
 	 * @example #Get the category of an entity
 	 *     var entity = new IgeEntity();
 	 *     console.log(entity.category());
@@ -434,7 +434,7 @@ export class IgeObject extends IgeEventingClass implements IgeCanRegisterById, I
 	 * value in radians.
 	 * @example #Get the world rotation of the entity's z axis
 	 *     var wordRot = entity.worldRotationZ();
-	 * @return {Number} The absolute world rotation z of the
+	 * @return {number} The absolute world rotation z of the
 	 * entity.
 	 */
 	worldRotationZ () {
@@ -472,10 +472,9 @@ export class IgeObject extends IgeEventingClass implements IgeCanRegisterById, I
 
 	/**
 	 * Converts a point from local space to this entity's world space
-	 * using its world transform matrix. This will alter the point's
-	 * data directly.
+	 * using its world transform matrix. This will alter the passed
+	 * point's data directly.
 	 * @param {IgePoint3d} point The IgePoint3d to convert.
-	 * @param viewport
 	 */
 	localToWorldPoint (point: IgePoint3d, viewport?: IgeViewport | null) {
 		// TODO: We commented this because it doesn't even get used... is this a mistake?
@@ -485,10 +484,10 @@ export class IgeObject extends IgeEventingClass implements IgeCanRegisterById, I
 
 	/**
 	 * Returns the screen position of the entity as an IgePoint3d where x is the
-	 * "left" and y is the "top", useful for positioning HTML elements at the
-	 * screen location of an IGE entity. This method assumes that the top-left
-	 * of the main canvas element is at 0, 0. If not you can adjust the values
-	 * yourself to allow for offset.
+	 * horizontal center of the entity and y is the vertical center of the entity,
+	 * useful for positioning HTML elements at the screen location of an IGE entity.
+	 * This method assumes that the top-left of the main canvas element is at 0, 0.
+	 * If not you can adjust the values yourself to allow for offset.
 	 * @example #Get the screen position of the entity
 	 *     var screenPos = entity.screenPosition();
 	 * @return {IgePoint3d} The screen position of the entity.
@@ -513,8 +512,14 @@ export class IgeObject extends IgeEventingClass implements IgeCanRegisterById, I
 	 * @deprecated Use bounds3dPolygon instead
 	 */
 	localIsoBoundsPoly () {
+		throw new Error("localIsoBoundsPoly() is deprecated, please use bounds3dPolygon() instead.");
 	}
 
+	/**
+	 * Gets the polygon that encompasses the 3d bounds of the entity in local space.
+	 * @param {boolean=false} recalculate If true, will force a recalculation
+	 * of the polygon instead of using an existing cached value.
+	 */
 	localBounds3dPolygon (recalculate = false): IgePoly2d {
 		if (this._bounds3dPolygonDirty || !this._localBounds3dPolygon || recalculate) {
 			const geom = this._bounds3d,
@@ -543,6 +548,11 @@ export class IgeObject extends IgeEventingClass implements IgeCanRegisterById, I
 		return this._localBounds3dPolygon;
 	}
 
+	/**
+	 * Gets the polygon that encompasses the 3d bounds of the entity in world space.
+	 * @param {boolean=false} recalculate If true, will force a recalculation
+	 * of the polygon instead of using an existing cached value.
+	 */
 	bounds3dPolygon (recalculate = false): IgePoly2d {
 		if (this._bounds3dPolygonDirty || !this._bounds3dPolygon || recalculate) {
 			const poly = this.localBounds3dPolygon(recalculate).clone();
@@ -891,7 +901,7 @@ export class IgeObject extends IgeEventingClass implements IgeCanRegisterById, I
 	 * checking if the id matches. This information will be cached when
 	 * first called and can be refreshed by setting the "fresh" parameter
 	 * to true.
-	 * @param {String} parentId The id of the parent to check for.
+	 * @param {string} parentId The id of the parent to check for.
 	 * @param {Boolean=} fresh If true will force a full check instead of
 	 * using the cached value from an earlier check.
 	 */
@@ -1316,7 +1326,7 @@ export class IgeObject extends IgeEventingClass implements IgeCanRegisterById, I
 	/**
 	 * Adds a behaviour to the object's active behaviour list.
 	 * @param type
-	 * @param {String} id
+	 * @param {string} id
 	 * @param {Function} behaviour
 	 * during the tick() method instead of the update() method.
 	 * @example #Add a behaviour with the id "myBehaviour"
@@ -1348,7 +1358,7 @@ export class IgeObject extends IgeEventingClass implements IgeCanRegisterById, I
 	/**
 	 * Removes a behaviour to the object's active behaviour list by its id.
 	 * @param type
-	 * @param {String} id
+	 * @param {string} id
 	 * @example #Remove a behaviour with the id "myBehaviour"
 	 *     var entity = new IgeEntity();
 	 *     entity.addBehaviour(IgeBehaviourType.preUpdate, 'myBehaviour', function () {
@@ -1383,7 +1393,7 @@ export class IgeObject extends IgeEventingClass implements IgeCanRegisterById, I
 	/**
 	 * Checks if the object has the specified behaviour already added to it.
 	 * @param type
-	 * @param {String} id
+	 * @param {string} id
 	 * from the tick method rather than the update method.
 	 * @example #Check for a behaviour with the id "myBehaviour"
 	 *     var entity = new IgeEntity();
@@ -1641,7 +1651,7 @@ export class IgeObject extends IgeEventingClass implements IgeCanRegisterById, I
 
 	/**
 	 * Adds a section into the existing streamed sections array.
-	 * @param {String} sectionName The section name to add.
+	 * @param {string} sectionName The section name to add.
 	 */
 	streamSectionsPush (sectionName: string) {
 		if (this._streamSections.indexOf(sectionName) > -1) {
@@ -1656,7 +1666,7 @@ export class IgeObject extends IgeEventingClass implements IgeCanRegisterById, I
 
 	/**
 	 * Removes a section into the existing streamed sections array.
-	 * @param {String} sectionName The section name to remove.
+	 * @param {string} sectionName The section name to remove.
 	 */
 	streamSectionsPull (sectionName: string) {
 		if (this._streamSections) {
@@ -1673,7 +1683,7 @@ export class IgeObject extends IgeEventingClass implements IgeCanRegisterById, I
 	 * section via `streamSectionsPush("props");` or
 	 * `streamSections("transform", "props");`.
 	 *
-	 * @param {String} propName The name of the property to get / set.
+	 * @param {string} propName The name of the property to get / set.
 	 * @param {*=} propVal Optional. If provided, the property is set
 	 * to this value.
 	 * @return {*} "this" when a propVal argument is passed to allow method
@@ -1715,7 +1725,7 @@ export class IgeObject extends IgeEventingClass implements IgeCanRegisterById, I
 	/**
 	 * Gets / sets the stream mode that the stream system will use when
 	 * handling pushing data updates to connected clients.
-	 * @param {Number=} val A value representing the stream mode.
+	 * @param {number=} val A value representing the stream mode.
 	 * @example #Set the entity to disable streaming
 	 *     entity.streamMode(0);
 	 * @example #Set the entity to automatic streaming
@@ -1778,9 +1788,9 @@ export class IgeObject extends IgeEventingClass implements IgeCanRegisterById, I
 	 * is in milliseconds and cannot be lower than 16. It will
 	 * determine how often data from this entity is added to the
 	 * stream queue.
-	 * @param {Number=} val Number of milliseconds between adding
+	 * @param {number=} val Number of milliseconds between adding
 	 * stream data for this entity to the stream queue.
-	 * @param {String=} sectionId Optional id of the stream data
+	 * @param {string=} sectionId Optional id of the stream data
 	 * section you want to set the interval for. If omitted the
 	 * interval will be applied to all sections.
 	 * @example #Set the entity's stream update (sync) interval to 1 second because this entity's data is not highly important to the simulation so save some bandwidth!
@@ -1824,7 +1834,7 @@ export class IgeObject extends IgeEventingClass implements IgeCanRegisterById, I
 	/**
 	 * Gets / sets the precision by which floating-point values will
 	 * be encoded and sent when packaged into stream data.
-	 * @param {Number=} val The number of decimal places to preserve.
+	 * @param {number=} val The number of decimal places to preserve.
 	 * @example #Set the float precision to 2
 	 *     // This will mean that any data using floating-point values
 	 *     // that gets sent across the network stream will be rounded
@@ -2053,7 +2063,7 @@ export class IgeObject extends IgeEventingClass implements IgeCanRegisterById, I
 	 * @param {Array} recipientArr The array of ids of the client(s) to
 	 * queue stream data for. The stream data being queued
 	 * is returned by a call to this._generateStreamData().
-	 * @param {String} streamRoomId The id of the room the entity belongs
+	 * @param {string} streamRoomId The id of the room the entity belongs
 	 * in (can be undefined or null if no room assigned).
 	 * @private
 	 */

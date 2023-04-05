@@ -21,20 +21,20 @@ export declare class IgePathNode extends IgePoint3d {
     _deltaTimeToNext: number;
     /**
      * @constructor
-     * @param {Number} x
-     * @param {Number} y
-     * @param {Number} g
-     * @param {Number} moveCost
-     * @param {Number} heuristic
+     * @param {number} x
+     * @param {number} y
+     * @param {number} g
+     * @param {number} moveCost
+     * @param {number} heuristic
      * @param {Object} parent
-     * @param {String} direction
+     * @param {string} direction
      */
     constructor(x: number, y: number, g: number, moveCost?: number, heuristic?: number, parent?: IgePathNode, direction?: string);
     static fromPoint3d(point3d: IgePoint3d): IgePathNode;
     /**
      * Gets / sets the path node mode. The mode determines if the co-ordinates
      * will be in tile or absolute co-ordinates.
-     * @param {Number=} val 0 = tile based, 1 = absolute based.
+     * @param {number=} val 0 = tile based, 1 = absolute based.
      * @return {*}
      */
     mode(val?: number): number | this;

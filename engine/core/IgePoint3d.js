@@ -37,7 +37,7 @@ export class IgePoint3d {
      * Compares this point's x, y, z data with the passed point and returns
      * true if they are the same and false if any is different.
      * @param {IgePoint3d} point The point to compare data with.
-     * @return {Boolean}
+     * @return {boolean}
      */
     compare(point) {
         return point && this.x === point.x && this.y === point.y && this.z === point.z;
@@ -225,9 +225,9 @@ export class IgePoint3d {
      * x, y, z values based on the passed time variables and returns a new
      * IgePoint3d whose values are the result.
      * @param {IgePoint2d} endPoint
-     * @param {Number} startTime
-     * @param {Number} currentTime
-     * @param {Number} endTime
+     * @param {number} startTime
+     * @param {number} currentTime
+     * @param {number} endTime
      * @return {*}
      */
     interpolate(endPoint, startTime, currentTime, endTime) {
@@ -236,7 +236,7 @@ export class IgePoint3d {
     }
     /**
      * Rotates the point by the given radians.
-     * @param {Number} radians Radians to rotate by.
+     * @param {number} radians Radians to rotate by.
      * @return {IgePoint3d} A new point with the rotated x, y.
      */
     rotate(radians) {
@@ -246,7 +246,7 @@ export class IgePoint3d {
     /**
      * Rotates the point by the given radians and updates this point
      * to the new x, y values.
-     * @param {Number} radians Radians to rotate by.
+     * @param {number} radians Radians to rotate by.
      * @return {IgePoint3d} This point.
      */
     thisRotate(radians) {
@@ -260,8 +260,8 @@ export class IgePoint3d {
      * converting floating point values into fixed using the
      * passed precision parameter. If no precision is specified
      * then the precision defaults to 2.
-     * @param {Number=} precision
-     * @return {String}
+     * @param {number=} precision
+     * @return {string}
      */
     toString(precision = 2) {
         return this.x.toFixed(precision) + "," + this.y.toFixed(precision) + "," + this.z.toFixed(precision);

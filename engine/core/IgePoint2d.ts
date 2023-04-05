@@ -189,8 +189,8 @@ export class IgePoint2d {
 	/**
 	 * Multiplies this point's data by the x, y values specified and
 	 * overwrites the previous x, y values with the result.
-	 * @param {Number} x
-	 * @param {Number} y
+	 * @param {number} x
+	 * @param {number} y
 	 * @return {*}
 	 */
 	thisMultiply (x: number, y: number) {
@@ -203,8 +203,8 @@ export class IgePoint2d {
 	/**
 	 * Divides this point's data by the x, y values specified
 	 * and returns a new IgePoint2d whose values are the result.
-	 * @param {Number} x
-	 * @param {Number} y
+	 * @param {number} x
+	 * @param {number} y
 	 * @return {*}
 	 */
 	divide (x: number, y: number) {
@@ -230,8 +230,8 @@ export class IgePoint2d {
 	/**
 	 * Divides this point's data by the x, y values specified and
 	 * overwrites the previous x, y values with the result.
-	 * @param {Number} x
-	 * @param {Number} y
+	 * @param {number} x
+	 * @param {number} y
 	 * @return {*}
 	 */
 	thisDivide (x: number, y: number) {
@@ -254,9 +254,9 @@ export class IgePoint2d {
 	 * x, y values based on the passed time variables and returns a new
 	 * IgePoint2d whose values are the result.
 	 * @param {IgePoint2d} endPoint
-	 * @param {Number} startTime
-	 * @param {Number} currentTime
-	 * @param {Number} endTime
+	 * @param {number} startTime
+	 * @param {number} currentTime
+	 * @param {number} endTime
 	 * @return {*}
 	 */
 	interpolate (endPoint: IgePoint2d, startTime: number, currentTime: number, endTime: number) {
@@ -271,7 +271,7 @@ export class IgePoint2d {
 
 	/**
 	 * Rotates the point by the given radians.
-	 * @param {Number} radians Radians to rotate by.
+	 * @param {number} radians Radians to rotate by.
 	 * @return {IgePoint2d} A new point with the rotated x, y.
 	 */
 	rotate (radians: number) {
@@ -286,7 +286,7 @@ export class IgePoint2d {
 	/**
 	 * Rotates the point by the given radians and updates this point
 	 * to the new x, y values.
-	 * @param {Number} radians Radians to rotate by.
+	 * @param {number} radians Radians to rotate by.
 	 * @return {IgePoint2d} This point.
 	 */
 	thisRotate (radians: number) {
@@ -305,7 +305,7 @@ export class IgePoint2d {
 	 * converting floating point values into fixed using the
 	 * passed precision parameter. If no precision is specified
 	 * then the precision defaults to 2.
-	 * @param {Number} [precision]
+	 * @param {number} [precision]
 	 * @return {String}
 	 */
 	toString (precision: number = 2) {

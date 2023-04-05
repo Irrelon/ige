@@ -125,7 +125,7 @@ export declare class IgeViewport extends IgeUiEntity implements IgeCanRegisterBy
      * chained commands. This method will only check for
      * properties that are directly related to this class.
      * Other properties are handled by their own class method.
-     * @return {String}
+     * @return {string}
      */
     _stringify(): string;
 }

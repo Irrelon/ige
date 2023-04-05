@@ -10,7 +10,7 @@ export declare class IgeTimeout extends IgeInterval {
      * Creates a new timeout that will call the passed method after the number of
      * milliseconds specified by the timeout parameter has been reached.
      * @param {Function} method The method to call on timeout.
-     * @param {Number} timeout The number of milliseconds before the timeout.
+     * @param {number} timeout The number of milliseconds before the timeout.
      */
     constructor(method: IgeIntervalCallback, timeout: number);
     /**

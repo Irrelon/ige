@@ -20,24 +20,24 @@ export declare class IgeSpriteSheet extends IgeTexture {
     /**
      * Checks if a pixel is completely transparent.
      * @param {ImageData} imageData The image data to check.
-     * @param {Number} x X co-ordinate to check.
-     * @param {Number} y Y co-ordinate to check.
+     * @param {number} x X co-ordinate to check.
+     * @param {number} y Y co-ordinate to check.
      * @returns {boolean} True if transparent, false if not.
      */
     isPixelTransparent(imageData: ImageData, x: number, y: number): boolean;
     /**
      * Makes a pixel transparent at a particular co-ordinate.
      * @param {ImageData} imageData The image data to modify.
-     * @param {Number} x X co-ordinate to modify.
-     * @param {Number} y Y co-ordinate to modify.
+     * @param {number} x X co-ordinate to modify.
+     * @param {number} y Y co-ordinate to modify.
      * @returns {undefined} Nothing
      */
     makePixelTransparent(imageData: ImageData, x: number, y: number): void;
     /**
      * Reads the pixel value at the passed co-ordinates.
      * @param {ImageData} imageData The image data to read.
-     * @param {Number} x X co-ordinate to read from.
-     * @param {Number} y Y co-ordinate to read from.
+     * @param {number} x X co-ordinate to read from.
+     * @param {number} y Y co-ordinate to read from.
      * @returns {{a: *, r: *, b: *, g: *}} Object with the argb
      * values of the pixel.
      */
@@ -58,7 +58,7 @@ export declare class IgeSpriteSheet extends IgeTexture {
     _determineRect(pixels: ImageData, x: number, y: number): IgeTextureCell;
     /**
      * Returns the total number of cells in the cell sheet.
-     * @return {Number}
+     * @return {number}
      */
     cellCount(): number;
     /**

@@ -26,9 +26,9 @@ export class IgeChatServer extends IgeChatComponent {
     /**
      * Creates a new room with the specified room name and options.
      * @param roomName The display name of the room.
-     * @param {String=} roomId If specified, becomes the new room's ID.
+     * @param {string=} roomId If specified, becomes the new room's ID.
      * @param options An object containing options key/values.
-     * @return {String} The new room's ID.
+     * @return {string} The new room's ID.
      */
     createRoom(roomName, roomId, options) {
         const network = ige.network;
@@ -46,7 +46,7 @@ export class IgeChatServer extends IgeChatComponent {
     /**
      * Removes an existing room with the specified id.
      * @param roomId
-     * @return {Boolean}
+     * @return {boolean}
      */
     removeRoom(roomId) {
         const network = ige.network;
@@ -62,10 +62,10 @@ export class IgeChatServer extends IgeChatComponent {
     }
     /**
      * Sends a message to a room.
-     * @param {String} roomId The ID of the room to send the message to.
-     * @param {String} message The text body of the message to send.
-     * @param {String=} to The id of the user to send the message to.
-     * @param {String} from The id of the user that sent the message.
+     * @param {string} roomId The ID of the room to send the message to.
+     * @param {string} message The text body of the message to send.
+     * @param {string=} to The id of the user to send the message to.
+     * @param {string} from The id of the user that sent the message.
      */
     sendToRoom(roomId, message, to, from) {
         const network = ige.network;

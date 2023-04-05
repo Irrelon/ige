@@ -97,7 +97,7 @@ export class IgeAudioEntity extends IgeEntity {
 
 	/**
 	 * Gets the playing boolean flag state.
-	 * @returns {Boolean} True if playing, false if not.
+	 * @returns {boolean} True if playing, false if not.
 	 */
 	playing () {
 		return this.audioInterface()?.playing();
@@ -105,7 +105,7 @@ export class IgeAudioEntity extends IgeEntity {
 
 	/**
 	 * Gets / sets the url the audio is playing from.
-	 * @param {String} url The url that serves the audio file.
+	 * @param {string=} url The url that serves the audio file.
 	 * @returns {IgeAudioEntity}
 	 */
 	url (url: string): this;
@@ -122,7 +122,7 @@ export class IgeAudioEntity extends IgeEntity {
 	/**
 	 * Gets / sets the id of the audio stream to use for
 	 * playback.
-	 * @param {String=} audioId The audio id. Must match
+	 * @param {string=} audioId The audio id. Must match
 	 * a previously registered audio stream that was
 	 * registered via IgeAudioComponent.register(). You can
 	 * access the audio component via ige.engine.audio
@@ -142,7 +142,7 @@ export class IgeAudioEntity extends IgeEntity {
 
 	/**
 	 * Starts playback of the audio.
-	 * @param {Boolean} loop If true, loops the audio until
+	 * @param {boolean} loop If true, loops the audio until
 	 * explicitly stopped by calling stop() or the entity
 	 * being destroyed.
 	 * @returns {IgeAudioEntity}

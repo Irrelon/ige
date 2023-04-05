@@ -34,7 +34,7 @@ export class IgeTweenController extends IgeEventingClass implements IgeIsReadyPr
 	/**
 	 * Start tweening particular properties for the object.
 	 * @param {IgeTween} tween The tween to start.
-	 * @return {Number} The index of the added tween or -1 on error.
+	 * @return {number} The index of the added tween or -1 on error.
 	 */
 	start (tween: IgeTween) {
 		if (tween._startTime !== undefined && tween._startTime > ige.engine._currentTime) {

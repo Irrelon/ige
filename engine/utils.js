@@ -19,7 +19,7 @@ export const arrPull = (arr, item) => {
  * Adds an item to an array, only if it does not already exist in the array.
  * @param arr
  * @param item
- * @return {Boolean} True if the item was added, false if it already exists.
+ * @return {boolean} True if the item was added, false if it already exists.
  */
 export const pushUnique = (arr, item) => {
     const index = arr.indexOf(item);
@@ -68,7 +68,7 @@ export const mixin = (targetObject, mixinObj, overwrite = false) => {
  * return true. Objects must not contain circular references!
  * @param {Object} obj1 The first object to compare to.
  * @param {Object} obj2 The other object to compare to.
- * @return {Boolean}
+ * @return {boolean}
  */
 export const theSameAs = (obj1, obj2) => {
     return JSON.stringify(obj1) === JSON.stringify(obj2);
@@ -88,12 +88,12 @@ export const destroyAll = (arr) => {
 };
 /**
  * Stores a pre-calculated PI / 180 value.
- * @type {Number}
+ * @type {number}
  */
 export const PI180 = Math.PI / 180;
 /**
  * Stores a pre-calculated 180 / PI value.
- * @type {Number}
+ * @type {number}
  */
 export const PI180R = 180 / Math.PI;
 export const PI2 = Math.PI * 2;
@@ -104,16 +104,16 @@ export const toIso = (x, y, z) => {
 };
 /**
  * Converts degrees to radians.
- * @param {Number} degrees
- * @return {Number} radians
+ * @param {number} degrees
+ * @return {number} radians
  */
 export const degreesToRadians = (degrees) => {
     return degrees * PI180;
 };
 /**
  * Converts radians to degrees.
- * @param {Number} radians
- * @return {Number} degrees
+ * @param {number} radians
+ * @return {number} degrees
  */
 export const radiansToDegrees = (radians) => {
     return radians * PI180R;
@@ -124,7 +124,7 @@ export const radiansToDegrees = (radians) => {
  * @param y1
  * @param x2
  * @param y2
- * @return {Number}
+ * @return {number}
  */
 export const distance = (x1, y1, x2, y2) => {
     return Math.sqrt((x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2));
@@ -151,7 +151,7 @@ export const newId = () => {
 };
 /**
  * Generates a new 16-character hexadecimal unique ID
- * @return {String}
+ * @return {string}
  */
 export const newIdHex = () => {
     return newIdNumber().toString(16);
@@ -165,9 +165,9 @@ export const newIdHex = () => {
  * originated.
  * @param {Object} obj The object whose property you want
  * to trace.
- * @param {String} propName The name of the property you
+ * @param {string} propName The name of the property you
  * want to put the trace on.
- * @param {Number} sampleCount The number of times you
+ * @param {number} sampleCount The number of times you
  * want the trace to break with the debugger line before
  * automatically switching off the trace.
  * @param {Function=} callbackEvaluator Optional callback
@@ -206,7 +206,7 @@ export const traceSet = (obj, propName, sampleCount, callbackEvaluator) => {
  * Turns off a trace that was created by calling traceSet.
  * @param {Object} obj The object whose property you want
  * to disable a trace against.
- * @param {String} propName The name of the property you
+ * @param {string} propName The name of the property you
  * want to disable the trace for.
  */
 export const traceSetOff = (obj, propName) => {

@@ -814,7 +814,7 @@ export class IgeUiEntity extends IgeEntity {
      * Sets the current background texture and the repeatType
      * to determine in which axis the image should be repeated.
      * @param {IgeTexture=} texture
-     * @param {String=} repeatType Accepts "repeat", "repeat-x",
+     * @param {string=} repeatType Accepts "repeat", "repeat-x",
      * "repeat-y" and "no-repeat".
      * @return {*} Returns this if any parameter is specified or
      * the current background image if no parameters are specified.
@@ -929,8 +929,8 @@ export class IgeUiEntity extends IgeEntity {
     }
     /**
      * Gets / sets the position to start rendering the background image at.
-     * @param {Number=} x
-     * @param {Number=} y
+     * @param {number=} x
+     * @param {number=} y
      * @return {*} Returns this when setting the value or the current value if none is specified.
      */
     backgroundPosition(x, y) {
@@ -1089,6 +1089,24 @@ export class IgeUiEntity extends IgeEntity {
         this._paddingBottom = args[3];
         this.cacheDirty(true);
         return this;
+    }
+    paddingX(px) {
+        if (px !== undefined) {
+            this._paddingLeft = px;
+            this._paddingRight = px;
+            this.cacheDirty(true);
+            return this;
+        }
+        return this._paddingLeft;
+    }
+    paddingY(px) {
+        if (px !== undefined) {
+            this._paddingTop = px;
+            this._paddingBottom = px;
+            this.cacheDirty(true);
+            return this;
+        }
+        return this._paddingTop;
     }
     paddingLeft(px) {
         if (px !== undefined) {

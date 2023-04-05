@@ -36,7 +36,7 @@ export declare class IgeEntity extends IgeObject implements IgeCanRegisterById, 
      * Calculates the distance to the passed entity from this one.
      * @param {IgeEntity} entity The entity to calculate distance
      * to.
-     * @returns {Number} Distance.
+     * @returns {number} Distance.
      */
     distanceTo(entity: IgeEntity): number;
     /**
@@ -141,7 +141,7 @@ export declare class IgeEntity extends IgeObject implements IgeCanRegisterById, 
      * pattern for this entity.
      * @param {IgeTexture} texture The texture to use as
      * the background.
-     * @param {String=} repeat The type of repeat mode either: "repeat",
+     * @param {string=} repeat The type of repeat mode either: "repeat",
      * "repeat-x", "repeat-y" or "none".
      * @param {Boolean=} trackCamera If set to true, will track the camera
      * translation and "move" the background with the camera.
@@ -162,7 +162,7 @@ export declare class IgeEntity extends IgeObject implements IgeCanRegisterById, 
     smartBackground(renderMethod?: IgeSmartTexture): this;
     /**
      * Set the object's width to the number of tile width's specified.
-     * @param {Number} val Number of tiles.
+     * @param {number} val Number of tiles.
      * @param {Boolean=} lockAspect If true, sets the height according
      * to the texture aspect ratio and the new width.
      * @example #Set the width of the entity based on the tile width of the map the entity is mounted to
@@ -177,7 +177,7 @@ export declare class IgeEntity extends IgeObject implements IgeCanRegisterById, 
     widthByTile(val: number, lockAspect?: boolean): this;
     /**
      * Set the object's height to the number of tile height's specified.
-     * @param {Number} val Number of tiles.
+     * @param {number} val Number of tiles.
      * @param {Boolean=} lockAspect If true, sets the width according
      * to the texture aspect ratio and the new height.
      * @example #Set the height of the entity based on the tile height of the map the entity is mounted to
@@ -193,20 +193,20 @@ export declare class IgeEntity extends IgeObject implements IgeCanRegisterById, 
      * Adds the object to the tile map at the passed tile co-ordinates. If
      * no tile co-ordinates are passed, will use the current tile position
      * and the tileWidth() and tileHeight() values.
-     * @param {Number=} x X co-ordinate of the tile to occupy.
-     * @param {Number=} y Y co-ordinate of the tile to occupy.
-     * @param {Number=} width Number of tiles along the x-axis to occupy.
-     * @param {Number=} height Number of tiles along the y-axis to occupy.
+     * @param {number=} x X co-ordinate of the tile to occupy.
+     * @param {number=} y Y co-ordinate of the tile to occupy.
+     * @param {number=} width Number of tiles along the x-axis to occupy.
+     * @param {number=} height Number of tiles along the y-axis to occupy.
      */
     occupyTile(x?: number, y?: number, width?: number, height?: number): this;
     /**
      * Removes the object from the tile map at the passed tile co-ordinates.
      * If no tile co-ordinates are passed, will use the current tile position
      * and the tileWidth() and tileHeight() values.
-     * @param {Number=} x X co-ordinate of the tile to un-occupy.
-     * @param {Number=} y Y co-ordinate of the tile to un-occupy.
-     * @param {Number=} width Number of tiles along the x-axis to un-occupy.
-     * @param {Number=} height Number of tiles along the y-axis to un-occupy.
+     * @param {number=} x X co-ordinate of the tile to un-occupy.
+     * @param {number=} y Y co-ordinate of the tile to un-occupy.
+     * @param {number=} width Number of tiles along the x-axis to un-occupy.
+     * @param {number=} height Number of tiles along the y-axis to un-occupy.
      * @private
      */
     unOccupyTile(x?: number, y?: number, width?: number, height?: number): this;
@@ -221,8 +221,8 @@ export declare class IgeEntity extends IgeObject implements IgeCanRegisterById, 
     /**
      * Gets / sets the anchor position that this entity's texture
      * will be adjusted by.
-     * @param {Number=} x The x anchor value.
-     * @param {Number=} y The y anchor value.
+     * @param {number=} x The x anchor value.
+     * @param {number=} y The y anchor value.
      * @return {*} "this" when arguments are passed to allow method
      * chaining or the current value if no arguments are specified.
      */
@@ -230,7 +230,7 @@ export declare class IgeEntity extends IgeObject implements IgeCanRegisterById, 
     anchor(): IgePoint2d;
     /**
      * Gets / sets the geometry x value.
-     * @param {Number=} px The new x value in pixels.
+     * @param {number=} px The new x value in pixels.
      * @param {Boolean} lockAspect
      * @example #Set the entity width
      *     entity.width(40);
@@ -257,8 +257,8 @@ export declare class IgeEntity extends IgeObject implements IgeCanRegisterById, 
      * rendering textures for the entity and positioning in world space as
      * well as UI positioning calculations. It holds no bearing on isometric
      * positioning.
-     * @param {Number=} x The new x value in pixels.
-     * @param {Number=} y The new y value in pixels.
+     * @param {number=} x The new x value in pixels.
+     * @param {number=} y The new y value in pixels.
      * @example #Set the dimensions of the entity (width and height)
      *     entity.bounds2d(40, 40);
      * @return {*} "this" when arguments are passed to allow method
@@ -303,7 +303,7 @@ export declare class IgeEntity extends IgeObject implements IgeCanRegisterById, 
      * that the entity will be destroyed. The object checks its own death
      * time during each tick and if the current time is greater than the
      * death time, the object will be destroyed.
-     * @param {Number=} val The death time timestamp. This is a time relative
+     * @param {number=} val The death time timestamp. This is a time relative
      * to the engine's start time of zero rather than the current time that
      * would be retrieved from new Date().getTime(). It is usually easier
      * to call lifeSpan() rather than setting the deathTime directly.
@@ -371,7 +371,7 @@ export declare class IgeEntity extends IgeObject implements IgeCanRegisterById, 
      * object's texture. If the texture is not cell-based, this value is
      * ignored. This differs from cell() in that it accepts a string id
      * as the cell
-     * @param {Number=} val The cell id.
+     * @param {number=} val The cell id.
      * @example #Set the entity texture as a sprite sheet with cell ids and then set the cell to use
      *     var texture = new IgeSpriteSheet('path/to/some/cellSheet.png', [
      *         [0, 0, 40, 40, 'robotHead'],
@@ -391,7 +391,7 @@ export declare class IgeEntity extends IgeObject implements IgeCanRegisterById, 
     /**
      * Sets the geometry of the entity to match the width and height
      * of the assigned texture.
-     * @param {Number=} percent The percentage size to resize to.
+     * @param {number=} percent The percentage size to resize to.
      * @example #Set the entity dimensions based on the assigned texture
      *     var texture = new IgeTexture('path/to/some/texture.png');
      *
@@ -407,7 +407,7 @@ export declare class IgeEntity extends IgeObject implements IgeCanRegisterById, 
      * Sets the geometry of the entity to match the width and height
      * of the assigned texture cell. If the texture is not cell-based
      * the entire texture width / height will be used.
-     * @param {Number=} percent The percentage size to resize to.
+     * @param {number=} percent The percentage size to resize to.
      * @example #Set the entity dimensions based on the assigned texture and cell
      *     var texture = new IgeSpriteSheet('path/to/some/cellSheet.png', [
      *         [0, 0, 40, 40, 'robotHead'],
@@ -799,8 +799,13 @@ export declare class IgeEntity extends IgeObject implements IgeCanRegisterById, 
      * wheel event is triggered.
      */
     pointerWheelOff(): this;
-    triggerPolygon(poly: "aabb" | "localBounds3dPolygon"): this;
-    triggerPolygon(): "aabb" | "localBounds3dPolygon";
+    /**
+     * Sets the name of the function that will be called to return the polygon
+     * used when determining if a pointer event occurs on this entity.
+     * @param poly
+     */
+    triggerPolygon(poly: "aabb" | "bounds3dPolygon" | "localBounds3dPolygon"): this;
+    triggerPolygon(): "aabb" | "bounds3dPolygon" | "localBounds3dPolygon";
     /**
      * Gets / sets the shape / polygon that the mouse events
      * are triggered against. There are two options, 'aabb' and
@@ -864,9 +869,9 @@ export declare class IgeEntity extends IgeObject implements IgeCanRegisterById, 
     /**
      * Translates the entity by adding the passed values to
      * the current translation values.
-     * @param {Number} x The x co-ordinate.
-     * @param {Number} y The y co-ordinate.
-     * @param {Number} z The z co-ordinate.
+     * @param {number} x The x co-ordinate.
+     * @param {number} y The y co-ordinate.
+     * @param {number} z The z co-ordinate.
      * @example #Translate the entity by 10 along the x axis
      *     entity.translateBy(10, 0, 0);
      * @return {*}
@@ -874,9 +879,9 @@ export declare class IgeEntity extends IgeObject implements IgeCanRegisterById, 
     translateBy(x: number, y: number, z: number): this;
     /**
      * Translates the entity to the passed values.
-     * @param {Number} x The x co-ordinate.
-     * @param {Number} y The y co-ordinate.
-     * @param {Number} z The z co-ordinate.
+     * @param {number} x The x co-ordinate.
+     * @param {number} y The y co-ordinate.
+     * @param {number} z The z co-ordinate.
      * @example #Translate the entity to 10, 0, 0
      *     entity.translateTo(10, 0, 0);
      * @return {*}
@@ -895,9 +900,9 @@ export declare class IgeEntity extends IgeObject implements IgeCanRegisterById, 
     translateToPoint(point: IgePoint3d): this;
     /**
      * Translates the object to the tile co-ordinates passed.
-     * @param {Number} x The x tile co-ordinate.
-     * @param {Number} y The y tile co-ordinate.
-     * @param {Number=} z The z tile co-ordinate.
+     * @param {number} x The x tile co-ordinate.
+     * @param {number} y The y tile co-ordinate.
+     * @param {number=} z The z tile co-ordinate.
      * @example #Translate entity to tile
      *     // Create a tile map
      *     var tileMap = new IgeTileMap2d()
@@ -924,7 +929,7 @@ export declare class IgeEntity extends IgeObject implements IgeCanRegisterById, 
      * The `translate` accessor method for the x-axis. This
      * method is not called directly but is accessed through
      * the accessor object obtained by calling entity.translate().
-     * @param {Number=} val The new value to apply to the co-ordinate.
+     * @param {number=} val The new value to apply to the co-ordinate.
      * @return {*}
      * @private
      */
@@ -934,7 +939,7 @@ export declare class IgeEntity extends IgeObject implements IgeCanRegisterById, 
      * The `translate` accessor method for the y-axis. This
      * method is not called directly but is accessed through
      * the accessor object obtained by calling entity.translate().
-     * @param {Number=} val The new value to apply to the co-ordinate.
+     * @param {number=} val The new value to apply to the co-ordinate.
      * @return {*}
      * @private
      */
@@ -944,7 +949,7 @@ export declare class IgeEntity extends IgeObject implements IgeCanRegisterById, 
      * The `translate` accessor method for the z-axis. This
      * method is not called directly but is accessed through
      * the accessor object obtained by calling entity.translate().
-     * @param {Number=} val The new value to apply to the co-ordinate.
+     * @param {number=} val The new value to apply to the co-ordinate.
      * @return {*}
      * @private
      */
@@ -953,9 +958,9 @@ export declare class IgeEntity extends IgeObject implements IgeCanRegisterById, 
     /**
      * Rotates the entity by adding the passed values to
      * the current rotation values.
-     * @param {Number} x The x co-ordinate.
-     * @param {Number} y The y co-ordinate.
-     * @param {Number} z The z co-ordinate.
+     * @param {number} x The x co-ordinate.
+     * @param {number} y The y co-ordinate.
+     * @param {number} z The z co-ordinate.
      * @example #Rotate the entity by 10 degrees about the z axis
      *     entity.rotateBy(0, 0, degreesToRadians(10));
      * @return {*}
@@ -963,9 +968,9 @@ export declare class IgeEntity extends IgeObject implements IgeCanRegisterById, 
     rotateBy(x?: number, y?: number, z?: number): this;
     /**
      * Rotates the entity to the passed values.
-     * @param {Number} x The x co-ordinate.
-     * @param {Number} y The y co-ordinate.
-     * @param {Number} z The z co-ordinate.
+     * @param {number} x The x co-ordinate.
+     * @param {number} y The y co-ordinate.
+     * @param {number} z The z co-ordinate.
      * @example #Rotate the entity to 10 degrees about the z axis
      *     entity.rotateTo(0, 0, degreesToRadians(10));
      * @return {*}
@@ -982,7 +987,7 @@ export declare class IgeEntity extends IgeObject implements IgeCanRegisterById, 
      * The `rotate` accessor method for the x-axis. This
      * method is not called directly but is accessed through
      * the accessor object obtained by calling entity.rotate().
-     * @param {Number=} val The new value to apply to the co-ordinate.
+     * @param {number=} val The new value to apply to the co-ordinate.
      * @return {*}
      * @private
      */
@@ -992,7 +997,7 @@ export declare class IgeEntity extends IgeObject implements IgeCanRegisterById, 
      * The `rotate` accessor method for the y-axis. This
      * method is not called directly but is accessed through
      * the accessor object obtained by calling entity.rotate().
-     * @param {Number=} val The new value to apply to the co-ordinate.
+     * @param {number=} val The new value to apply to the co-ordinate.
      * @return {*}
      * @private
      */
@@ -1002,7 +1007,7 @@ export declare class IgeEntity extends IgeObject implements IgeCanRegisterById, 
      * The `rotate` accessor method for the z-axis. This
      * method is not called directly but is accessed through
      * the accessor object obtained by calling entity.rotate().
-     * @param {Number=} val The new value to apply to the co-ordinate.
+     * @param {number=} val The new value to apply to the co-ordinate.
      * @return {*}
      * @private
      */
@@ -1011,9 +1016,9 @@ export declare class IgeEntity extends IgeObject implements IgeCanRegisterById, 
     /**
      * Scales the entity by adding the passed values to
      * the current scale values.
-     * @param {Number} x The x co-ordinate.
-     * @param {Number} y The y co-ordinate.
-     * @param {Number} z The z co-ordinate.
+     * @param {number} x The x co-ordinate.
+     * @param {number} y The y co-ordinate.
+     * @param {number} z The z co-ordinate.
      * @example #Scale the entity by 2 on the x-axis
      *     entity.scaleBy(2, 0, 0);
      * @return {*}
@@ -1021,9 +1026,9 @@ export declare class IgeEntity extends IgeObject implements IgeCanRegisterById, 
     scaleBy(x?: number, y?: number, z?: number): this;
     /**
      * Scale the entity to the passed values.
-     * @param {Number} x The x co-ordinate.
-     * @param {Number} y The y co-ordinate.
-     * @param {Number} z The z co-ordinate.
+     * @param {number} x The x co-ordinate.
+     * @param {number} y The y co-ordinate.
+     * @param {number} z The z co-ordinate.
      * @example #Set the entity scale to 1 on all axes
      *     entity.scaleTo(1, 1, 1);
      * @return {*}
@@ -1040,7 +1045,7 @@ export declare class IgeEntity extends IgeObject implements IgeCanRegisterById, 
      * The `scale` accessor method for the x-axis. This
      * method is not called directly but is accessed through
      * the accessor object obtained by calling entity.scale().
-     * @param {Number=} val The new value to apply to the co-ordinate.
+     * @param {number=} val The new value to apply to the co-ordinate.
      * @return {*}
      * @private
      */
@@ -1050,7 +1055,7 @@ export declare class IgeEntity extends IgeObject implements IgeCanRegisterById, 
      * The `scale` accessor method for the y-axis. This
      * method is not called directly but is accessed through
      * the accessor object obtained by calling entity.scale().
-     * @param {Number=} val The new value to apply to the co-ordinate.
+     * @param {number=} val The new value to apply to the co-ordinate.
      * @return {*}
      * @private
      */
@@ -1060,7 +1065,7 @@ export declare class IgeEntity extends IgeObject implements IgeCanRegisterById, 
      * The `scale` accessor method for the z-axis. This
      * method is not called directly but is accessed through
      * the accessor object obtained by calling entity.scale().
-     * @param {Number=} val The new value to apply to the co-ordinate.
+     * @param {number=} val The new value to apply to the co-ordinate.
      * @return {*}
      * @private
      */
@@ -1069,9 +1074,9 @@ export declare class IgeEntity extends IgeObject implements IgeCanRegisterById, 
     /**
      * Sets the `origin` of the entity by adding the passed values to
      * the current origin values.
-     * @param {Number} x The x co-ordinate.
-     * @param {Number} y The y co-ordinate.
-     * @param {Number} z The z co-ordinate.
+     * @param {number} x The x co-ordinate.
+     * @param {number} y The y co-ordinate.
+     * @param {number} z The z co-ordinate.
      * @example #Add 0.5 to the origin on the x-axis
      *     entity.originBy(0.5, 0, 0);
      * @return {*}
@@ -1079,9 +1084,9 @@ export declare class IgeEntity extends IgeObject implements IgeCanRegisterById, 
     originBy(x?: number, y?: number, z?: number): this;
     /**
      * Set the `origin` of the entity to the passed values.
-     * @param {Number} x The x co-ordinate.
-     * @param {Number} y The y co-ordinate.
-     * @param {Number} z The z co-ordinate.
+     * @param {number} x The x co-ordinate.
+     * @param {number} y The y co-ordinate.
+     * @param {number} z The z co-ordinate.
      * @example #Set the entity origin to 0.5 on all axes
      *     entity.originTo(0.5, 0.5, 0.5);
      * @return {*}
@@ -1098,7 +1103,7 @@ export declare class IgeEntity extends IgeObject implements IgeCanRegisterById, 
      * The `origin` accessor method for the x-axis. This
      * method is not called directly but is accessed through
      * the accessor object obtained by calling entity.origin().
-     * @param {Number=} val The new value to apply to the co-ordinate.
+     * @param {number=} val The new value to apply to the co-ordinate.
      * @return {*}
      * @private
      */
@@ -1108,7 +1113,7 @@ export declare class IgeEntity extends IgeObject implements IgeCanRegisterById, 
      * The `origin` accessor method for the y-axis. This
      * method is not called directly but is accessed through
      * the accessor object obtained by calling entity.origin().
-     * @param {Number=} val The new value to apply to the co-ordinate.
+     * @param {number=} val The new value to apply to the co-ordinate.
      * @return {*}
      * @private
      */
@@ -1118,7 +1123,7 @@ export declare class IgeEntity extends IgeObject implements IgeCanRegisterById, 
      * The `origin` accessor method for the z-axis. This
      * method is not called directly but is accessed through
      * the accessor object obtained by calling entity.origin().
-     * @param {Number=} val The new value to apply to the co-ordinate.
+     * @param {number=} val The new value to apply to the co-ordinate.
      * @return {*}
      * @private
      */
@@ -1131,19 +1136,19 @@ export declare class IgeEntity extends IgeObject implements IgeCanRegisterById, 
     /**
      * Calculates the current value based on the time along the
      * value range.
-     * @param {Number} startValue The value that the interpolation started from.
-     * @param {Number} endValue The target value to be interpolated to.
-     * @param {Number} startTime The time the interpolation started.
-     * @param {Number} currentTime The current time.
-     * @param {Number} endTime The time the interpolation will end.
-     * @return {Number} The interpolated value.
+     * @param {number} startValue The value that the interpolation started from.
+     * @param {number} endValue The target value to be interpolated to.
+     * @param {number} startTime The time the interpolation started.
+     * @param {number} currentTime The current time.
+     * @param {number} endTime The time the interpolation will end.
+     * @return {number} The interpolated value.
      */
     interpolateValue(startValue: number, endValue: number, startTime: number, currentTime: number, endTime: number): number;
     /**
      * Processes the time stream for the entity.
-     * @param {Number} renderTime The time that the time stream is
+     * @param {number} renderTime The time that the time stream is
      * targeting to render the entity at.
-     * @param {Number} maxLerp The maximum lerp before the value
+     * @param {number} maxLerp The maximum lerp before the value
      * is assigned directly instead of being interpolated.
      * @private
      */
@@ -1158,7 +1163,7 @@ export declare class IgeEntity extends IgeObject implements IgeCanRegisterById, 
      * once. It is therefore the perfect place to put code that will control your
      * entity's motion, AI etc.
      * @param {CanvasRenderingContext2D} ctx The canvas context to render to.
-     * @param {Number} tickDelta The delta between the last tick time and this one.
+     * @param {number} tickDelta The delta between the last tick time and this one.
      */
     update(ctx: IgeCanvasRenderingContext2d, tickDelta: number): void;
     /**

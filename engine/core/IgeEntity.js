@@ -196,7 +196,7 @@ export class IgeEntity extends IgeObject {
      * Calculates the distance to the passed entity from this one.
      * @param {IgeEntity} entity The entity to calculate distance
      * to.
-     * @returns {Number} Distance.
+     * @returns {number} Distance.
      */
     distanceTo(entity) {
         const a = this._translate.x - entity._translate.x, b = this._translate.y - entity._translate.y;
@@ -438,7 +438,7 @@ export class IgeEntity extends IgeObject {
     }
     /**
      * Set the object's width to the number of tile width's specified.
-     * @param {Number} val Number of tiles.
+     * @param {number} val Number of tiles.
      * @param {Boolean=} lockAspect If true, sets the height according
      * to the texture aspect ratio and the new width.
      * @example #Set the width of the entity based on the tile width of the map the entity is mounted to
@@ -470,7 +470,7 @@ export class IgeEntity extends IgeObject {
     }
     /**
      * Set the object's height to the number of tile height's specified.
-     * @param {Number} val Number of tiles.
+     * @param {number} val Number of tiles.
      * @param {Boolean=} lockAspect If true, sets the width according
      * to the texture aspect ratio and the new height.
      * @example #Set the height of the entity based on the tile height of the map the entity is mounted to
@@ -503,10 +503,10 @@ export class IgeEntity extends IgeObject {
      * Adds the object to the tile map at the passed tile co-ordinates. If
      * no tile co-ordinates are passed, will use the current tile position
      * and the tileWidth() and tileHeight() values.
-     * @param {Number=} x X co-ordinate of the tile to occupy.
-     * @param {Number=} y Y co-ordinate of the tile to occupy.
-     * @param {Number=} width Number of tiles along the x-axis to occupy.
-     * @param {Number=} height Number of tiles along the y-axis to occupy.
+     * @param {number=} x X co-ordinate of the tile to occupy.
+     * @param {number=} y Y co-ordinate of the tile to occupy.
+     * @param {number=} width Number of tiles along the x-axis to occupy.
+     * @param {number=} height Number of tiles along the y-axis to occupy.
      */
     occupyTile(x, y, width, height) {
         // Check that the entity is mounted to a tile map
@@ -533,10 +533,10 @@ export class IgeEntity extends IgeObject {
      * Removes the object from the tile map at the passed tile co-ordinates.
      * If no tile co-ordinates are passed, will use the current tile position
      * and the tileWidth() and tileHeight() values.
-     * @param {Number=} x X co-ordinate of the tile to un-occupy.
-     * @param {Number=} y Y co-ordinate of the tile to un-occupy.
-     * @param {Number=} width Number of tiles along the x-axis to un-occupy.
-     * @param {Number=} height Number of tiles along the y-axis to un-occupy.
+     * @param {number=} x X co-ordinate of the tile to un-occupy.
+     * @param {number=} y Y co-ordinate of the tile to un-occupy.
+     * @param {number=} width Number of tiles along the x-axis to un-occupy.
+     * @param {number=} height Number of tiles along the y-axis to un-occupy.
      * @private
      */
     unOccupyTile(x, y, width, height) {
@@ -712,7 +712,7 @@ export class IgeEntity extends IgeObject {
     /**
      * Sets the geometry of the entity to match the width and height
      * of the assigned texture.
-     * @param {Number=} percent The percentage size to resize to.
+     * @param {number=} percent The percentage size to resize to.
      * @example #Set the entity dimensions based on the assigned texture
      *     var texture = new IgeTexture('path/to/some/texture.png');
      *
@@ -742,7 +742,7 @@ export class IgeEntity extends IgeObject {
      * Sets the geometry of the entity to match the width and height
      * of the assigned texture cell. If the texture is not cell-based
      * the entire texture width / height will be used.
-     * @param {Number=} percent The percentage size to resize to.
+     * @param {number=} percent The percentage size to resize to.
      * @example #Set the entity dimensions based on the assigned texture and cell
      *     var texture = new IgeSpriteSheet('path/to/some/cellSheet.png', [
      *         [0, 0, 40, 40, 'robotHead'],
@@ -1150,8 +1150,7 @@ export class IgeEntity extends IgeObject {
         let mouseTriggerPoly;
         // Use the trigger polygon function if defined
         if (this._triggerPolygon && this[this._triggerPolygon]) {
-            throw new Error("Unsupported feature");
-            //mouseTriggerPoly = this[this._triggerPolygon](mp);
+            mouseTriggerPoly = this[this._triggerPolygon]();
         }
         else {
             // Default to either aabb or bounds3dPolygon depending on entity parent mounting mode
@@ -1503,7 +1502,8 @@ export class IgeEntity extends IgeObject {
             // The mount mode for this entity is a 2d plane or "flat" mode, so we don't have any
             // isometric rendering to deal with and as such, just called the IgeObject version
             // of this method because IgeObject as a base class has no understanding of isometric
-            // mounting since IgeObject instances don't actually render anything
+            // mounting since IgeObject instances don't actually render anything. This will use
+            // the layer and depth of each object to sort against each other.
             return super.depthSortChildren();
         }
         const arr = this._children;
@@ -1525,9 +1525,9 @@ export class IgeEntity extends IgeObject {
                 const childItemA = arr[i];
                 sortObj.c[i] = 0;
                 sortObj.p[i] = -1;
+                sortObj.adj[i] = sortObj.adj[i] || [];
                 for (let j = i + 1; j < arrCount; ++j) {
                     const childItemB = arr[j];
-                    sortObj.adj[i] = sortObj.adj[i] || [];
                     sortObj.adj[j] = sortObj.adj[j] || [];
                     if (childItemA._inView && childItemB._inView && "_projectionOverlap" in childItemA && "_projectionOverlap" in childItemB) {
                         if (childItemA._projectionOverlap(childItemB)) {
@@ -1809,9 +1809,9 @@ export class IgeEntity extends IgeObject {
     /**
      * Translates the entity by adding the passed values to
      * the current translation values.
-     * @param {Number} x The x co-ordinate.
-     * @param {Number} y The y co-ordinate.
-     * @param {Number} z The z co-ordinate.
+     * @param {number} x The x co-ordinate.
+     * @param {number} y The y co-ordinate.
+     * @param {number} z The z co-ordinate.
      * @example #Translate the entity by 10 along the x axis
      *     entity.translateBy(10, 0, 0);
      * @return {*}
@@ -1829,9 +1829,9 @@ export class IgeEntity extends IgeObject {
     }
     /**
      * Translates the entity to the passed values.
-     * @param {Number} x The x co-ordinate.
-     * @param {Number} y The y co-ordinate.
-     * @param {Number} z The z co-ordinate.
+     * @param {number} x The x co-ordinate.
+     * @param {number} y The y co-ordinate.
+     * @param {number} z The z co-ordinate.
      * @example #Translate the entity to 10, 0, 0
      *     entity.translateTo(10, 0, 0);
      * @return {*}
@@ -1870,9 +1870,9 @@ export class IgeEntity extends IgeObject {
     }
     /**
      * Translates the object to the tile co-ordinates passed.
-     * @param {Number} x The x tile co-ordinate.
-     * @param {Number} y The y tile co-ordinate.
-     * @param {Number=} z The z tile co-ordinate.
+     * @param {number} x The x tile co-ordinate.
+     * @param {number} y The y tile co-ordinate.
+     * @param {number=} z The z tile co-ordinate.
      * @example #Translate entity to tile
      *     // Create a tile map
      *     var tileMap = new IgeTileMap2d()
@@ -1947,9 +1947,9 @@ export class IgeEntity extends IgeObject {
     /**
      * Rotates the entity by adding the passed values to
      * the current rotation values.
-     * @param {Number} x The x co-ordinate.
-     * @param {Number} y The y co-ordinate.
-     * @param {Number} z The z co-ordinate.
+     * @param {number} x The x co-ordinate.
+     * @param {number} y The y co-ordinate.
+     * @param {number} z The z co-ordinate.
      * @example #Rotate the entity by 10 degrees about the z axis
      *     entity.rotateBy(0, 0, degreesToRadians(10));
      * @return {*}
@@ -1967,9 +1967,9 @@ export class IgeEntity extends IgeObject {
     }
     /**
      * Rotates the entity to the passed values.
-     * @param {Number} x The x co-ordinate.
-     * @param {Number} y The y co-ordinate.
-     * @param {Number} z The z co-ordinate.
+     * @param {number} x The x co-ordinate.
+     * @param {number} y The y co-ordinate.
+     * @param {number} z The z co-ordinate.
      * @example #Rotate the entity to 10 degrees about the z axis
      *     entity.rotateTo(0, 0, degreesToRadians(10));
      * @return {*}
@@ -2026,9 +2026,9 @@ export class IgeEntity extends IgeObject {
     /**
      * Scales the entity by adding the passed values to
      * the current scale values.
-     * @param {Number} x The x co-ordinate.
-     * @param {Number} y The y co-ordinate.
-     * @param {Number} z The z co-ordinate.
+     * @param {number} x The x co-ordinate.
+     * @param {number} y The y co-ordinate.
+     * @param {number} z The z co-ordinate.
      * @example #Scale the entity by 2 on the x-axis
      *     entity.scaleBy(2, 0, 0);
      * @return {*}
@@ -2046,9 +2046,9 @@ export class IgeEntity extends IgeObject {
     }
     /**
      * Scale the entity to the passed values.
-     * @param {Number} x The x co-ordinate.
-     * @param {Number} y The y co-ordinate.
-     * @param {Number} z The z co-ordinate.
+     * @param {number} x The x co-ordinate.
+     * @param {number} y The y co-ordinate.
+     * @param {number} z The z co-ordinate.
      * @example #Set the entity scale to 1 on all axes
      *     entity.scaleTo(1, 1, 1);
      * @return {*}
@@ -2104,9 +2104,9 @@ export class IgeEntity extends IgeObject {
     /**
      * Sets the `origin` of the entity by adding the passed values to
      * the current origin values.
-     * @param {Number} x The x co-ordinate.
-     * @param {Number} y The y co-ordinate.
-     * @param {Number} z The z co-ordinate.
+     * @param {number} x The x co-ordinate.
+     * @param {number} y The y co-ordinate.
+     * @param {number} z The z co-ordinate.
      * @example #Add 0.5 to the origin on the x-axis
      *     entity.originBy(0.5, 0, 0);
      * @return {*}
@@ -2124,9 +2124,9 @@ export class IgeEntity extends IgeObject {
     }
     /**
      * Set the `origin` of the entity to the passed values.
-     * @param {Number} x The x co-ordinate.
-     * @param {Number} y The y co-ordinate.
-     * @param {Number} z The z co-ordinate.
+     * @param {number} x The x co-ordinate.
+     * @param {number} y The y co-ordinate.
+     * @param {number} z The z co-ordinate.
      * @example #Set the entity origin to 0.5 on all axes
      *     entity.originTo(0.5, 0.5, 0.5);
      * @return {*}
@@ -2190,12 +2190,12 @@ export class IgeEntity extends IgeObject {
     /**
      * Calculates the current value based on the time along the
      * value range.
-     * @param {Number} startValue The value that the interpolation started from.
-     * @param {Number} endValue The target value to be interpolated to.
-     * @param {Number} startTime The time the interpolation started.
-     * @param {Number} currentTime The current time.
-     * @param {Number} endTime The time the interpolation will end.
-     * @return {Number} The interpolated value.
+     * @param {number} startValue The value that the interpolation started from.
+     * @param {number} endValue The target value to be interpolated to.
+     * @param {number} startTime The time the interpolation started.
+     * @param {number} currentTime The current time.
+     * @param {number} endTime The time the interpolation will end.
+     * @return {number} The interpolated value.
      */
     interpolateValue(startValue, endValue, startTime, currentTime, endTime) {
         const totalValue = endValue - startValue;
@@ -2213,9 +2213,9 @@ export class IgeEntity extends IgeObject {
     }
     /**
      * Processes the time stream for the entity.
-     * @param {Number} renderTime The time that the time stream is
+     * @param {number} renderTime The time that the time stream is
      * targeting to render the entity at.
-     * @param {Number} maxLerp The maximum lerp before the value
+     * @param {number} maxLerp The maximum lerp before the value
      * is assigned directly instead of being interpolated.
      * @private
      */
@@ -2323,7 +2323,7 @@ export class IgeEntity extends IgeObject {
      * once. It is therefore the perfect place to put code that will control your
      * entity's motion, AI etc.
      * @param {CanvasRenderingContext2D} ctx The canvas context to render to.
-     * @param {Number} tickDelta The delta between the last tick time and this one.
+     * @param {number} tickDelta The delta between the last tick time and this one.
      */
     update(ctx, tickDelta) {
         var _a;

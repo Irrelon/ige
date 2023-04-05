@@ -99,7 +99,7 @@ export class Ige {
      * the object's id. If the item passed is not a string id
      * then the item is returned as is. If no item is passed
      * the engine itself is returned.
-     * @param {String | Object} item The id of the item to return,
+     * @param {string | Object} item The id of the item to return,
      * or if an object, returns the object as-is.
      */
     $(item) {

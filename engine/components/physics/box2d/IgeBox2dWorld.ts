@@ -329,7 +329,7 @@ export class IgeBox2dWorld extends IgeEventingClass {
 	 * to see shape outlines as they are attached to bodies. Useful when
 	 * your physics system is server-side but seeing client-side shape
 	 * data is useful for debugging collisions.
-	 * @param {Boolean} val
+	 * @param {boolean} val
 	 */
 	networkDebugMode (val) {
 		if (val !== undefined) {

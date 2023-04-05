@@ -14,7 +14,7 @@ export class IgePathFinder extends IgeEventingClass {
     /**
      * Gets / sets the cost of movement over a square (left,
      * right, up, down) adjacent tile.
-     * @param {Number=} val
+     * @param {number=} val
      * @return {*}
      */
     squareCost(val) {
@@ -27,7 +27,7 @@ export class IgePathFinder extends IgeEventingClass {
     /**
      * Gets / sets the cost of movement over a diagonal (nw,
      * ne, sw, se) adjacent tile.
-     * @param {Number=} val
+     * @param {number=} val
      * @return {*}
      */
     diagonalCost(val) {
@@ -277,12 +277,12 @@ export class IgePathFinder extends IgeEventingClass {
     /**
      * The heuristic to calculate the rough cost of pathing from the
      * x1, y1 to x2, y2.
-     * @param {Number} x1 The first x co-ordinate.
-     * @param {Number} y1 The first y co-ordinate.
-     * @param {Number} x2 The second x co-ordinate.
-     * @param {Number} y2 The second y co-ordinate.
-     * @param {Number} moveCost The cost multiplier to multiply by.
-     * @return {Number} Returns the heuristic cost between the co-ordinates specified.
+     * @param {number} x1 The first x co-ordinate.
+     * @param {number} y1 The first y co-ordinate.
+     * @param {number} x2 The second x co-ordinate.
+     * @param {number} y2 The second y co-ordinate.
+     * @param {number} moveCost The cost multiplier to multiply by.
+     * @return {number} Returns the heuristic cost between the co-ordinates specified.
      * @private
      */
     _heuristic(x1, y1, x2, y2, moveCost) {

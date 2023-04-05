@@ -70,7 +70,7 @@ export const WithUiStyleMixin = <BaseClassType extends Mixin<IgeObject>>(Base: B
      * Sets the current background texture and the repeatType
      * to determine in which axis the image should be repeated.
      * @param {IgeTexture=} texture
-     * @param {String=} repeatType Accepts "repeat", "repeat-x",
+     * @param {string=} repeatType Accepts "repeat", "repeat-x",
      * "repeat-y" and "no-repeat".
      * @return {*} Returns this if any parameter is specified or
      * the current background image if no parameters are specified.
@@ -210,8 +210,8 @@ export const WithUiStyleMixin = <BaseClassType extends Mixin<IgeObject>>(Base: B
 
 	/**
      * Gets / sets the position to start rendering the background image at.
-     * @param {Number=} x
-     * @param {Number=} y
+     * @param {number=} x
+     * @param {number=} y
      * @return {*} Returns this when setting the value or the current value if none is specified.
      */
 	backgroundPosition (x: number, y: number) {

@@ -12,7 +12,7 @@ export const createStorageBuilding = (parent, id, x, y) => {
         .translateTo(x, y, 0)
         .mount(parent);
     storageBuilding.flag = new FlagBuilding()
-        .translateTo(storageBuilding._translate.x, storageBuilding._translate.y + 50, 0)
+        .translateTo(storageBuilding._translate.x, storageBuilding._translate.y + 100, 0)
         .mount(parent);
     new Road(storageBuilding.id(), storageBuilding.flag.id())
         .mount(parent);
@@ -31,7 +31,7 @@ export const createMiningBuilding = (parent, id, x, y, resourceType) => {
         .translateTo(x, y, 0)
         .mount(parent);
     miningBuilding.flag = new FlagBuilding()
-        .translateTo(miningBuilding._translate.x, miningBuilding._translate.y + 50, 0)
+        .translateTo(miningBuilding._translate.x, miningBuilding._translate.y + 100, 0)
         .mount(parent);
     new Road(miningBuilding.id(), miningBuilding.flag.id())
         .mount(parent);
@@ -55,7 +55,7 @@ export const createFactoryBuilding = (parent, id, x, y) => {
         .translateTo(x, y, 0)
         .mount(parent);
     factoryBuilding.flag = new FlagBuilding()
-        .translateTo(factoryBuilding._translate.x, factoryBuilding._translate.y + 50, 0)
+        .translateTo(factoryBuilding._translate.x, factoryBuilding._translate.y + 100, 0)
         .mount(parent);
     new Road(factoryBuilding.id(), factoryBuilding.flag.id())
         .mount(parent);

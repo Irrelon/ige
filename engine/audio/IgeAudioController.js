@@ -76,8 +76,8 @@ export class IgeAudioController extends IgeEventingClass {
     }
     /**
      * Plays audio by its assigned id.
-     * @param {String} id The id of the audio file to play.
-     * @param {Boolean} loop If true, will loop the audio until
+     * @param {string} id The id of the audio file to play.
+     * @param {boolean} loop If true, will loop the audio until
      * it is explicitly stopped.
      */
     play(id, loop = false) {
@@ -100,7 +100,7 @@ export class IgeAudioController extends IgeEventingClass {
     }
     /**
      * Gets / sets the active flag to enable or disable audio support.
-     * @param {Boolean=} val True to enable audio support.
+     * @param {boolean=} val True to enable audio support.
      * @returns {*}
      */
     active(val) {
@@ -112,7 +112,7 @@ export class IgeAudioController extends IgeEventingClass {
     }
     /**
      * Loads an audio file from the given url.
-     * @param {String} url The url to load the audio file from.
+     * @param {string} url The url to load the audio file from.
      * file has loaded or on error.
      */
     _load(url) {

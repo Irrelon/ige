@@ -102,12 +102,12 @@ export class IgeTween extends IgeBaseClass {
      * as destination value.
      * @param {Object} propertyObj The properties to
      * tween during this step.
-     * @param {Number=} durationMs The number of milliseconds
+     * @param {number=} durationMs The number of milliseconds
      * to spend tweening this step, or if not provided uses
      * the current tween durationMs setting.
-     * @param {String=} easing The name of the easing method
+     * @param {string=} easing The name of the easing method
      * to use during this step.
-     * @param {Boolean=} delta If true will set the step to use
+     * @param {boolean=} delta If true will set the step to use
      * delta values instead of absolute values as the destination.
      * @return {*} this for chaining.
      */
@@ -129,10 +129,10 @@ export class IgeTween extends IgeBaseClass {
      * as deltas, not as destination values
      * @param {Object} propertyObj The properties to
      * tween during this step.
-     * @param {Number=} durationMs The number of milliseconds
+     * @param {number=} durationMs The number of milliseconds
      * to spend tweening this step, or if not provided uses
      * the current tween durationMs setting.
-     * @param {String=} easing The name of the easing method
+     * @param {string=} easing The name of the easing method
      * to use during this step.
      * @return {*}
      */
@@ -239,7 +239,7 @@ export class IgeTween extends IgeBaseClass {
     }
     /**
      * Starts the tweening operation.
-     * @param {Number=} timeMs If set, the tween will start this
+     * @param {number=} timeMs If set, the tween will start this
      * many milliseconds in the future.
      */
     start(timeMs) {
@@ -293,7 +293,7 @@ export class IgeTween extends IgeBaseClass {
  * until a call to start() is made.
  * @param {Object} target The target object to tween properties of.
  * @param {Object} [props]
- * @param {Number} [durationMs]
+ * @param {number} [durationMs]
  * @param {Object=} [options]
  * @return {IgeTween} A new IgeTween instance.
  */

@@ -35,7 +35,7 @@ export declare class IgeMousePanComponent extends IgeComponent {
      * Gets / sets the enabled flag. If set to true, pan
      * operations will be processed. If false, no panning will
      * occur.
-     * @param {Boolean=} val
+     * @param {boolean=} val
      * @return {*}
      */
     enabled(val?: boolean): any;

@@ -19,7 +19,7 @@ export class IgePoly2d {
     }
     /**
      * Multiplies the points of the polygon by the supplied factor.
-     * @param {Number} factor The multiplication factor.
+     * @param {number} factor The multiplication factor.
      * @return {*}
      */
     multiply(factor) {
@@ -35,7 +35,7 @@ export class IgePoly2d {
     }
     /**
      * Divides the points of the polygon by the supplied value.
-     * @param {Number} value The divide value.
+     * @param {number} value The divide value.
      * @return {*}
      */
     divide(value) {
@@ -51,8 +51,8 @@ export class IgePoly2d {
     }
     /**
      * Adds a point to the polygon relative to the polygon center at 0, 0.
-     * @param x
-     * @param y
+     * @param {number} x
+     * @param {number} y
      */
     addPoint(x, y) {
         this._poly.push(new IgePoint2d(x, y));
@@ -60,15 +60,23 @@ export class IgePoly2d {
     }
     /**
      * Returns the length of the poly array.
-     * @return {Number}
+     * @return {number}
      */
     length() {
         return this._poly.length;
     }
     /**
+     * An alias for the pointInPoly() function.
+     * @param {IgePoint2d | IgePoint3d} point
+     * @return {boolean}
+     */
+    pointInside(point) {
+        return this.pointInPoly(point);
+    }
+    /**
      * Check if a point is inside this polygon.
-     * @param {IgePoint2d} point
-     * @return {Boolean}
+     * @param {IgePoint2d | IgePoint3d} point
+     * @return {boolean}
      */
     pointInPoly(point) {
         const polyPoints = this._poly;
@@ -87,9 +95,9 @@ export class IgePoly2d {
     }
     /**
      * Check if the passed x and y are inside this polygon.
-     * @param {Number} x
-     * @param {Number} y
-     * @return {Boolean}
+     * @param {number} x
+     * @param {number} y
+     * @return {boolean}
      */
     xyInside(x, y) {
         const polyPoints = this._poly;
@@ -106,6 +114,9 @@ export class IgePoly2d {
         }
         return c;
     }
+    /**
+     * Calculates and returns the axis-aligned bounding-box for this polygon.
+     */
     aabb() {
         const xArr = [];
         const yArr = [];
@@ -123,8 +134,8 @@ export class IgePoly2d {
         return new IgeRect(minX, minY, maxX - minX, maxY - minY);
     }
     /**
-     * Returns a copy of this IgePoly2d object that is
-     * its own version, separate from the original.
+     * Returns a copy of this IgePoly2d object that is its own version,
+     * separate from the original.
      * @return {IgePoly2d}
      */
     clone() {
@@ -139,8 +150,7 @@ export class IgePoly2d {
     }
     /**
      * Determines if the polygon is clockwise or not.
-     * @return {Boolean} A boolean true if clockwise or false
-     * if not.
+     * @return {boolean} A boolean true if clockwise or false if not.
      */
     clockWiseTriangle() {
         // Loop the polygon points and determine if they are counter-clockwise
@@ -151,6 +161,9 @@ export class IgePoly2d {
         const val = (p1.x * p2.y) + (p2.x * p3.y) + (p3.x * p1.y) - (p2.y * p3.x) - (p3.y * p1.x) - (p1.y * p2.x);
         return val > 0;
     }
+    /**
+     * Modifies the points of this triangle so that the points are clock-wise.
+     */
     makeClockWiseTriangle() {
         // If our data is already clockwise exit
         if (!this.clockWiseTriangle()) {
@@ -160,6 +173,10 @@ export class IgePoly2d {
             this._poly[1] = p2;
         }
     }
+    /**
+     * Converts this polygon into many triangles so that there are no convex
+     * parts to the polygon.
+     */
     triangulate() {
         // Get the indices of each new triangle
         const poly = this._poly;
@@ -198,7 +215,6 @@ export class IgePoly2d {
             }
         }
         let nv = n;
-        let m = 0;
         let count = 2 * nv;
         for (let v = nv - 1; nv > 2;) {
             if ((count--) <= 0) {
@@ -223,7 +239,6 @@ export class IgePoly2d {
                 indices.push(a);
                 indices.push(b);
                 indices.push(c);
-                m++;
                 let s = v;
                 for (let t = v + 1; t < nv; t++) {
                     V[s] = V[t];
@@ -267,6 +282,14 @@ export class IgePoly2d {
         }
         return true;
     }
+    /**
+     * Determines if the point P is inside the triangle defined by points
+     * A, B and C.
+     * @param {IgePoint2d} A
+     * @param {IgePoint2d} B
+     * @param {IgePoint2d} C
+     * @param {IgePoint2d} P
+     */
     _insideTriangle(A, B, C, P) {
         const ax = C.x - B.x;
         const ay = C.y - B.y;

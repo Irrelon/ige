@@ -90,7 +90,7 @@ export class IgeTexture extends IgeAsset {
     /**
      * Loads an image into an img tag and sets an onload event
      * to capture when the image has finished loading.
-     * @param {String} imageUrl The image url used to load the
+     * @param {string} imageUrl The image url used to load the
      * image data.
      * @private
      */
@@ -176,7 +176,7 @@ export class IgeTexture extends IgeAsset {
     /**
      * Loads a render script into a script tag and sets an onload
      * event to capture when the script has finished loading.
-     * @param {String} scriptUrl The script url used to load the
+     * @param {string} scriptUrl The script url used to load the
      * script data.
      * @private
      */
@@ -227,7 +227,7 @@ export class IgeTexture extends IgeAsset {
     }
     /**
      * Assigns a render script to the smart texture.
-     * @param {String} scriptObj The script object.
+     * @param {string} scriptObj The script object.
      * @private
      */
     assignSmartTextureImage(scriptObj) {
@@ -269,14 +269,14 @@ export class IgeTexture extends IgeAsset {
     }
     /**
      * Sets the _sizeX property.
-     * @param {Number} val
+     * @param {number} val
      */
     sizeX(val) {
         this._sizeX = val;
     }
     /**
      * Sets the _sizeY property.
-     * @param {Number} val
+     * @param {number} val
      */
     sizeY(val) {
         this._sizeY = val;
@@ -285,9 +285,9 @@ export class IgeTexture extends IgeAsset {
      * Resizes the original texture image to a new size. This alters
      * the image that the texture renders so all entities that use
      * this texture will output the newly resized version of the image.
-     * @param {Number} x The new width.
-     * @param {Number} y The new height.
-     * @param {Boolean=} dontDraw If true the resized image will not be
+     * @param {number} x The new width.
+     * @param {number} y The new height.
+     * @param {boolean=} dontDraw If true the resized image will not be
      * drawn to the texture canvas. Useful for just resizing the texture
      * canvas and not the output image. Use in conjunction with the
      * applyFilter() and preFilter() methods.
@@ -323,8 +323,8 @@ export class IgeTexture extends IgeAsset {
      * Resizes the original texture image to a new size based on percentage.
      * This alters the image that the texture renders so all entities that use
      * this texture will output the newly resized version of the image.
-     * @param {Number} x The new width.
-     * @param {Number} y The new height.
+     * @param {number} x The new width.
+     * @param {number} y The new height.
      * @param {Boolean=} dontDraw If true the resized image will not be
      * drawn to the texture canvas. Useful for just resizing the texture
      * canvas and not the output image. Use in conjunction with the
@@ -593,8 +593,8 @@ export class IgeTexture extends IgeAsset {
      * Important: If the texture has a cross-domain url, the image host must allow
      * cross-origin resource sharing or a security error will be thrown.
      * Reference: http://blog.chromium.org/2011/07/using-cross-domain-images-in-webgl-and.html
-     * @param  {Number} x
-     * @param  {Number} y
+     * @param  {number} x
+     * @param  {number} y
      * @return {Array} [r,g,b,a] Pixel data.
      */
     pixelData(x, y) {
@@ -637,7 +637,7 @@ export class IgeTexture extends IgeAsset {
     /**
      * Returns a string containing a code fragment that when
      * evaluated will reproduce this object.
-     * @return {String}
+     * @return {string}
      */
     stringify() {
         let str = "new " + this.classId + "('" + this._url + "')";
@@ -674,7 +674,7 @@ export class IgeTexture extends IgeAsset {
      * Called by textureFromCell() when the texture is ready
      * to be processed. See textureFromCell() for description.
      * @param {IgeTexture} tex The new texture to paint to.
-     * @param {Number, String} indexOrId The cell index or id
+     * @param {number, String} indexOrId The cell index or id
      * to use.
      * @private
      */
@@ -725,8 +725,8 @@ export class IgeTexture extends IgeAsset {
     /**
      * Returns the cell index that the passed cell id corresponds
      * to.
-     * @param {String} id
-     * @return {Number} The cell index that the cell id corresponds
+     * @param {string} id
+     * @return {number} The cell index that the cell id corresponds
      * to or -1 if a corresponding index could not be found.
      */
     cellIdToIndex(id) {

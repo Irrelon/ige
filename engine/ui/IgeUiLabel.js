@@ -1,22 +1,24 @@
 import { IgeUiElement } from "../../engine/core/IgeUiElement.js";
 import { IgeFontEntity } from "../../engine/core/IgeFontEntity.js";
+import { IgeFontAlignX, IgeFontAlignY } from "../../enums/IgeFontAlign.js";
 import { registerClass } from "../../engine/igeClassStore.js";
 /**
  * Provides a UI label entity. Basic on-screen text label.
  */
 export class IgeUiLabel extends IgeUiElement {
-    constructor() {
+    constructor(label = "") {
         super();
         this.classId = "IgeUiLabel";
         this._placeHolder = "";
         this._placeHolderColor = "";
         this._mask = "";
-        this._value = "";
+        this._widthFromText = true;
+        this._valueChanged = true;
         this._fontEntity = new IgeFontEntity()
             .left(0)
             .middle(0)
-            .textAlignX(0)
-            .textAlignY(0)
+            .textAlignX(IgeFontAlignX.left)
+            .textAlignY(IgeFontAlignY.middle)
             .textLineSpacing(10);
         this._fontEntity.mount(this);
         // Set defaults
@@ -24,22 +26,8 @@ export class IgeUiLabel extends IgeUiElement {
         this.allowActive(false);
         this.allowFocus(false);
         this.allowHover(false);
-    }
-    textAlign(val) {
-        if (val === undefined) {
-            return this._alignText;
-        }
-        this._alignText = val;
-        switch (val) {
-            case "left":
-                this._fontEntity.textAlignX(0);
-                break;
-            case "center":
-                this._fontEntity.textAlignX(1);
-                break;
-            case "right":
-                this._fontEntity.textAlignX(2);
-                break;
+        if (label) {
+            this.value(label);
         }
     }
     textAlignX(val) {
@@ -73,8 +61,7 @@ export class IgeUiLabel extends IgeUiElement {
         if (px !== undefined) {
             // Call the main super class method
             const returnValue = super.width(px, lockAspect, modifier, noUpdate);
-            // Update the font entity width - 10px for margin
-            this._fontEntity.width(super.width() - 10, lockAspect, modifier, noUpdate);
+            this._fontEntity.width(super.width(), lockAspect, modifier, noUpdate);
             return returnValue;
         }
         return this._fontEntity.width();
@@ -95,6 +82,7 @@ export class IgeUiLabel extends IgeUiElement {
         if (this._value === val) {
             return this;
         }
+        this._valueChanged = true;
         this._value = val;
         if (!val && this._placeHolder) {
             // Assign placeholder text and color
@@ -184,6 +172,13 @@ export class IgeUiLabel extends IgeUiElement {
             return this;
         }
         return this._color;
+    }
+    update(ctx, tickDelta) {
+        if (this._widthFromText && this._valueChanged !== this._value) {
+            this._valueChanged = false;
+            this.width(this._fontEntity.measureTextWidth(this._value) + this._paddingLeft + this._paddingRight);
+        }
+        super.update(ctx, tickDelta);
     }
     _mounted() {
         // Check if we have a text value

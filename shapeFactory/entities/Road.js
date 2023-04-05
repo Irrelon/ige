@@ -11,6 +11,7 @@ export class Road extends Line {
         //this.data("glowIntensity", 1);
         this._fromId = fromId;
         this._toId = toId;
+        this.isometric(true);
         this.category("road");
         this.setLocation();
     }

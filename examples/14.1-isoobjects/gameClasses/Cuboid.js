@@ -1,14 +1,13 @@
-var Cuboid = IgeEntity.extend({
-	classId: 'Cuboid',
-	
-	init: function (mouseMoveFunc, mouseOutFunc) {
-		IgeEntity.prototype.init.call(this);
-		
-		this.isometric(true)
-			.mouseMove(mouseMoveFunc)
-			.mouseOut(mouseOutFunc)
-			.mouseEventsActive(true)
-			.triggerPolygon('bounds3dPolygon')
-			.opacity(0.95)
-	}
-});
+import { IgeEntity } from "../../../engine/core/IgeEntity.js";
+export class Cuboid extends IgeEntity {
+    constructor(pointerMoveFunc, pointerOutFunc) {
+        super();
+        this.classId = 'Cuboid';
+        this.isometric(true)
+            // .pointerMove(pointerMoveFunc)
+            // .pointerOut(pointerOutFunc)
+            // .pointerEventsActive(true)
+            .triggerPolygon('bounds3dPolygon')
+            .opacity(0.95);
+    }
+}

@@ -104,7 +104,7 @@ export class IgeQuest extends IgeEventingClass {
 
 	/**
 	 * Returns the number of quest items this quest has.
-	 * @return {Number}
+	 * @return {number}
 	 */
 	itemCount () {
 		return this._itemCount;
@@ -114,7 +114,7 @@ export class IgeQuest extends IgeEventingClass {
 	 * Returns the sum of all event counts for every item
 	 * in the quest giving an overall number of events that
 	 * need to fire in order for the quest to be completed.
-	 * @return {Number}
+	 * @return {number}
 	 */
 	eventCount () {
 		return this._eventCount;
@@ -122,7 +122,7 @@ export class IgeQuest extends IgeEventingClass {
 
 	/**
 	 * Returns the number of events that have been completed.
-	 * @return {Number}
+	 * @return {number}
 	 */
 	eventCompleteCount () {
 		return this._eventCompleteCount;
@@ -130,7 +130,7 @@ export class IgeQuest extends IgeEventingClass {
 
 	/**
 	 * Returns the number of items that have been completed.
-	 * @return {Number}
+	 * @return {number}
 	 */
 	itemCompleteCount () {
 		return this._itemCompleteCount;
@@ -140,7 +140,7 @@ export class IgeQuest extends IgeEventingClass {
 	 * Returns the percentage representation of the quest's
 	 * overall completion based on number of overall events and
 	 * number of events that have been completed.
-	 * @return {Number} A number from zero to one-hundred.
+	 * @return {number} A number from zero to one-hundred.
 	 */
 	percentComplete () {
 		return Math.floor((100 / this._eventCount) * this._eventCompleteCount);

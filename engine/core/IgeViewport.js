@@ -465,7 +465,7 @@ export class IgeViewport extends IgeUiEntity {
      * chained commands. This method will only check for
      * properties that are directly related to this class.
      * Other properties are handled by their own class method.
-     * @return {String}
+     * @return {string}
      */
     _stringify() {
         // Get the properties for all the super-classes

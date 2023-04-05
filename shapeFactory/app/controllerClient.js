@@ -28,10 +28,6 @@ export const controllerClient = () => __awaiter(void 0, void 0, void 0, function
     fsm.defineState("idle", {
         enter: () => __awaiter(void 0, void 0, void 0, function* () {
             console.log("Entered idle");
-            uiCreateStorage.pointerUp(() => {
-                fsm.data("createBuilding", BuildingType.storage);
-                fsm.enterState("createBuilding");
-            });
             uiCreateFactory.pointerUp(() => {
                 fsm.data("createBuilding", BuildingType.factory);
                 fsm.data("createArgs", [ResourceType.energy, [{
@@ -43,6 +39,10 @@ export const controllerClient = () => __awaiter(void 0, void 0, void 0, function
                             count: 1,
                             max: 3
                         }]]);
+                fsm.enterState("createBuilding");
+            });
+            uiCreateStorage.pointerUp(() => {
+                fsm.data("createBuilding", BuildingType.storage);
                 fsm.enterState("createBuilding");
             });
             uiCreateFlag.pointerUp(() => {
@@ -132,7 +132,7 @@ export const controllerClient = () => __awaiter(void 0, void 0, void 0, function
             // Check the location and determine if we can build there
             // Get the building details
             const buildingType = fsm.data("createBuilding");
-            const createArgs = fsm.data("createArgs");
+            const createArgs = fsm.data("createArgs") || [];
             const buildingId = yield network.request("createBuilding", {
                 buildingType,
                 x: gridX,
@@ -224,7 +224,7 @@ export const controllerClient = () => __awaiter(void 0, void 0, void 0, function
         const buildings = ige.$$("building");
         // Loop the buildings and check against the AABB
         const foundBuilding = buildings.find((building) => {
-            return building.aabb().pointInside(ige._pointerPos);
+            return building.bounds3dPolygon().pointInside(ige._pointerPos);
         });
         if (foundBuilding) {
             console.log("foundBuilding", foundBuilding);
@@ -233,6 +233,15 @@ export const controllerClient = () => __awaiter(void 0, void 0, void 0, function
     };
     const onPointerMove = () => {
         fsm.raiseEvent("pointerMove");
+        // Run a hit test against the all the entities
+        const buildings = ige.$$("building");
+        // Loop the buildings and check against the AABB
+        const foundBuilding = buildings.find((building) => {
+            return building.bounds3dPolygon().pointInside(ige._pointerPos);
+        });
+        if (foundBuilding) {
+            console.log("foundBuilding", foundBuilding);
+        }
     };
     ige.input.on("pointerUp", onPointerUp);
     ige.input.on("pointerMove", onPointerMove);

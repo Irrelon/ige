@@ -68,7 +68,7 @@ export class IgeAudioEntity extends IgeEntity {
     }
     /**
      * Gets the playing boolean flag state.
-     * @returns {Boolean} True if playing, false if not.
+     * @returns {boolean} True if playing, false if not.
      */
     playing() {
         var _a;
@@ -85,7 +85,7 @@ export class IgeAudioEntity extends IgeEntity {
     /**
      * Gets / sets the id of the audio stream to use for
      * playback.
-     * @param {String=} audioId The audio id. Must match
+     * @param {string=} audioId The audio id. Must match
      * a previously registered audio stream that was
      * registered via IgeAudioComponent.register(). You can
      * access the audio component via ige.engine.audio
@@ -103,7 +103,7 @@ export class IgeAudioEntity extends IgeEntity {
     }
     /**
      * Starts playback of the audio.
-     * @param {Boolean} loop If true, loops the audio until
+     * @param {boolean} loop If true, loops the audio until
      * explicitly stopped by calling stop() or the entity
      * being destroyed.
      * @returns {IgeAudioEntity}

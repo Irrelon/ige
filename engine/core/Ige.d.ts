@@ -53,7 +53,7 @@ export declare class Ige implements IgeIsReadyPromise {
      * the object's id. If the item passed is not a string id
      * then the item is returned as is. If no item is passed
      * the engine itself is returned.
-     * @param {String | Object} item The id of the item to return,
+     * @param {string | Object} item The id of the item to return,
      * or if an object, returns the object as-is.
      */
     $<ObjectType = IgeObject>(item: string | ObjectType | undefined): (import("../../types/IgeCanRegisterById").IgeCanRegisterById & import("../../types/IgeCanBeDestroyed").IgeCanBeDestroyed) | (ObjectType & object) | (ObjectType & null) | undefined;

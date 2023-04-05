@@ -33,31 +33,31 @@ export declare class IgeQuest extends IgeEventingClass {
     items(val: any): any;
     /**
      * Returns the number of quest items this quest has.
-     * @return {Number}
+     * @return {number}
      */
     itemCount(): any;
     /**
      * Returns the sum of all event counts for every item
      * in the quest giving an overall number of events that
      * need to fire in order for the quest to be completed.
-     * @return {Number}
+     * @return {number}
      */
     eventCount(): any;
     /**
      * Returns the number of events that have been completed.
-     * @return {Number}
+     * @return {number}
      */
     eventCompleteCount(): any;
     /**
      * Returns the number of items that have been completed.
-     * @return {Number}
+     * @return {number}
      */
     itemCompleteCount(): any;
     /**
      * Returns the percentage representation of the quest's
      * overall completion based on number of overall events and
      * number of events that have been completed.
-     * @return {Number} A number from zero to one-hundred.
+     * @return {number} A number from zero to one-hundred.
      */
     percentComplete(): number;
     /**

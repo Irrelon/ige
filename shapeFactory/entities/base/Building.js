@@ -16,6 +16,7 @@ export class Building extends GameEntity {
         this._isProducing = false;
         this._produces = ResourceType.none;
         this._requires = [];
+        this.isometric(true);
         this.category("building");
     }
     _addResource(recordObj, resourceType, amount = 1) {

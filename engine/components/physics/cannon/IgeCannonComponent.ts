@@ -39,7 +39,7 @@ const IgeCannonComponent = IgeEventingClass.extend({
 
 	/**
 	 * Gets / sets if the world should allow sleep or not.
-	 * @param {Boolean=} val
+	 * @param {boolean=} val
 	 * @return {*}
 	 */
 	sleep: function (val) {

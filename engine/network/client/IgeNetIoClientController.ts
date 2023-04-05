@@ -58,7 +58,7 @@ export class IgeNetIoClientController extends IgeNetIoBaseController {
 
 	/**
 	 * Gets the current socket id.
-	 * @returns {String} The id of the socket connection to the server.
+	 * @returns {string} The id of the socket connection to the server.
 	 */
 	id () {
 		return this._id || '';
@@ -228,7 +228,7 @@ export class IgeNetIoClientController extends IgeNetIoBaseController {
 	 * is received by the client, the callback set up for that command will
 	 * automatically be called and passed the data from the incoming network
 	 * packet.
-	 * @param {String} commandName The name of the command to define.
+	 * @param {string} commandName The name of the command to define.
 	 * @param {Function} callback A function to call when the defined network
 	 * command is received by the network.
 	 * @return {*}
@@ -282,7 +282,7 @@ export class IgeNetIoClientController extends IgeNetIoBaseController {
 	 * respond by calling ige.network.response(). When the response
 	 * is received, the callback method that was passed in the
 	 * callback parameter will be fired with the response data.
-	 * @param {String} commandName
+	 * @param {string} commandName
 	 * @param {Object} data
 	 * @param {Function=} callback
 	 */
@@ -322,7 +322,7 @@ export class IgeNetIoClientController extends IgeNetIoBaseController {
 
 	/**
 	 * Sends a response to a network request.
-	 * @param {String} requestId
+	 * @param {string} requestId
 	 * @param {Object} data
 	 */
 	response (requestId: string, data: IgeNetworkMessageData) {

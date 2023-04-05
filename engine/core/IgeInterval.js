@@ -10,7 +10,7 @@ export class IgeInterval extends IgeEventingClass {
      * Creates a new timer that will call the method every given number of
      * milliseconds specified by the interval parameter.
      * @param {Function} method The method to call each interval.
-     * @param {Number} interval The number of milliseconds between each interval.
+     * @param {number} interval The number of milliseconds between each interval.
      * @param {Boolean} catchup If true, the interval will fire multiple times
      * retrospectively when the engine jumps in time. If false, the interval will
      * only fire a single time even if a large period of engine time has elapsed.
@@ -28,7 +28,7 @@ export class IgeInterval extends IgeEventingClass {
     }
     /**
      * Adds time to the timer's internal clock.
-     * @param {Number} time The time in milliseconds to add to the timer's internal clock.
+     * @param {number} time The time in milliseconds to add to the timer's internal clock.
      * @returns {*}
      */
     addTime(time) {

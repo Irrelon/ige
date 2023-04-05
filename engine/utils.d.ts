@@ -10,7 +10,7 @@ export declare const arrPull: (arr: any[], item: any) => number;
  * Adds an item to an array, only if it does not already exist in the array.
  * @param arr
  * @param item
- * @return {Boolean} True if the item was added, false if it already exists.
+ * @return {boolean} True if the item was added, false if it already exists.
  */
 export declare const pushUnique: (arr: any[], item: any) => boolean;
 /**
@@ -28,7 +28,7 @@ export declare const mixin: (targetObject: IgeBaseClass, mixinObj: any, overwrit
  * return true. Objects must not contain circular references!
  * @param {Object} obj1 The first object to compare to.
  * @param {Object} obj2 The other object to compare to.
- * @return {Boolean}
+ * @return {boolean}
  */
 export declare const theSameAs: (obj1: any, obj2: any) => boolean;
 /**
@@ -39,12 +39,12 @@ export declare const theSameAs: (obj1: any, obj2: any) => boolean;
 export declare const destroyAll: (arr: any[]) => void;
 /**
  * Stores a pre-calculated PI / 180 value.
- * @type {Number}
+ * @type {number}
  */
 export declare const PI180: number;
 /**
  * Stores a pre-calculated 180 / PI value.
- * @type {Number}
+ * @type {number}
  */
 export declare const PI180R: number;
 export declare const PI2: number;
@@ -54,14 +54,14 @@ export declare const toIso: (x: number, y: number, z: number) => {
 };
 /**
  * Converts degrees to radians.
- * @param {Number} degrees
- * @return {Number} radians
+ * @param {number} degrees
+ * @return {number} radians
  */
 export declare const degreesToRadians: (degrees: number) => number;
 /**
  * Converts radians to degrees.
- * @param {Number} radians
- * @return {Number} degrees
+ * @param {number} radians
+ * @return {number} degrees
  */
 export declare const radiansToDegrees: (radians: number) => number;
 /**
@@ -70,7 +70,7 @@ export declare const radiansToDegrees: (radians: number) => number;
  * @param y1
  * @param x2
  * @param y2
- * @return {Number}
+ * @return {number}
  */
 export declare const distance: (x1: number, y1: number, x2: number, y2: number) => number;
 /**
@@ -85,7 +85,7 @@ export declare const newIdNumber: () => number;
 export declare const newId: () => string;
 /**
  * Generates a new 16-character hexadecimal unique ID
- * @return {String}
+ * @return {string}
  */
 export declare const newIdHex: () => string;
 /**
@@ -97,9 +97,9 @@ export declare const newIdHex: () => string;
  * originated.
  * @param {Object} obj The object whose property you want
  * to trace.
- * @param {String} propName The name of the property you
+ * @param {string} propName The name of the property you
  * want to put the trace on.
- * @param {Number} sampleCount The number of times you
+ * @param {number} sampleCount The number of times you
  * want the trace to break with the debugger line before
  * automatically switching off the trace.
  * @param {Function=} callbackEvaluator Optional callback
@@ -111,7 +111,7 @@ export declare const traceSet: (obj: any, propName: string, sampleCount: number,
  * Turns off a trace that was created by calling traceSet.
  * @param {Object} obj The object whose property you want
  * to disable a trace against.
- * @param {String} propName The name of the property you
+ * @param {string} propName The name of the property you
  * want to disable the trace for.
  */
 export declare const traceSetOff: (obj: any, propName: string) => void;

@@ -28,7 +28,7 @@ export class IgeEntityManagerComponent extends IgeComponent {
         /**
          * Gets / sets the boolean flag determining if the entity
          * manager is enabled or not.
-         * @param {Boolean=} val
+         * @param {boolean=} val
          * @return {*}
          */
         this.active = (val) => {
@@ -73,7 +73,7 @@ export class IgeEntityManagerComponent extends IgeComponent {
          * is the mode that the manager will use when monitoring the
          * entities under it's control to determine if any should be
          * removed or not.
-         * @param {Number=} val Overwatch mode, defaults to 0.
+         * @param {number=} val Overwatch mode, defaults to 0.
          * @return {*}
          */
         this.overwatchMode = (val) => {
@@ -147,8 +147,8 @@ export class IgeEntityManagerComponent extends IgeComponent {
         };
         /**
          * Gets / sets the center position of the management area.
-         * @param {Number=} x
-         * @param {Number=} y
+         * @param {number=} x
+         * @param {number=} y
          * @return {*}
          */
         this.areaCenter = (x, y) => {
@@ -176,10 +176,10 @@ export class IgeEntityManagerComponent extends IgeComponent {
          * entities outside this area are considered for removal and map
          * data that falls inside this area is considered for entity
          * creation.
-         * @param {Number=} x
-         * @param {Number=} y
-         * @param {Number=} width
-         * @param {Number=} height
+         * @param {number=} x
+         * @param {number=} y
+         * @param {number=} width
+         * @param {number=} height
          * @return {*}
          */
         this.areaRect = (x, y, width, height) => {

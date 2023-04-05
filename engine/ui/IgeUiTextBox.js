@@ -96,8 +96,7 @@ export class IgeUiTextBox extends IgeUiElement {
         if (px !== undefined) {
             // Call the main super class method
             const returnValue = super.width(px, lockAspect, modifier, noUpdate);
-            // Update the font entity width - 10px for margin
-            this._fontEntity.width(super.width() - 10, lockAspect, modifier, noUpdate);
+            this._fontEntity.width(super.width(), lockAspect, modifier, noUpdate);
             return returnValue;
         }
         return this._fontEntity.width();

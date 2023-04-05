@@ -15,7 +15,7 @@ export const createStorageBuilding = (parent: IgeScene2d, id: string, x: number,
 		.mount(parent);
 
 	storageBuilding.flag = new FlagBuilding()
-		.translateTo(storageBuilding._translate.x, storageBuilding._translate.y + 50, 0)
+		.translateTo(storageBuilding._translate.x, storageBuilding._translate.y + 100, 0)
 		.mount(parent);
 
 	new Road(storageBuilding.id(), storageBuilding.flag.id())
@@ -39,7 +39,7 @@ export const createMiningBuilding = (parent: IgeScene2d, id: string, x: number, 
 		.mount(parent);
 
 	miningBuilding.flag = new FlagBuilding()
-		.translateTo(miningBuilding._translate.x, miningBuilding._translate.y + 50, 0)
+		.translateTo(miningBuilding._translate.x, miningBuilding._translate.y + 100, 0)
 		.mount(parent);
 
 	new Road(miningBuilding.id(), miningBuilding.flag.id())
@@ -69,7 +69,7 @@ export const createFactoryBuilding = (parent: IgeScene2d, id: string, x: number,
 		.mount(parent);
 
 	factoryBuilding.flag = new FlagBuilding()
-		.translateTo(factoryBuilding._translate.x, factoryBuilding._translate.y + 50, 0)
+		.translateTo(factoryBuilding._translate.x, factoryBuilding._translate.y + 100, 0)
 		.mount(parent);
 
 	new Road(factoryBuilding.id(), factoryBuilding.flag.id())

@@ -11,8 +11,8 @@ export class IgeMap2d extends IgeBaseClass {
     }
     /**
      * Gets / sets a value on the specified map tile co-ordinates.
-     * @param {Number} x
-     * @param {Number} y
+     * @param {number} x
+     * @param {number} y
      * @param {*=} val The data to set on the map tile co-ordinate.
      * @return {*}
      */
@@ -39,7 +39,7 @@ export class IgeMap2d extends IgeBaseClass {
      * Clears any data set at the specified map tile co-ordinates.
      * @param x
      * @param y
-     * @return {Boolean} True if data was cleared or false if no data existed.
+     * @return {boolean} True if data was cleared or false if no data existed.
      */
     clearData(x, y) {
         if (x !== undefined && y !== undefined) {
@@ -176,7 +176,7 @@ export class IgeMap2d extends IgeBaseClass {
     }
     /**
      * Returns a string of the map's data in JSON format.
-     * @return {String}
+     * @return {string}
      */
     mapDataString() {
         return JSON.stringify(this.mapData());

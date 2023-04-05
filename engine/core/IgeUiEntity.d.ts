@@ -91,62 +91,62 @@ export declare class IgeUiEntity extends IgeEntity {
     /**
      * Gets / sets the entity's x position relative to the left of
      * the canvas.
-     * @param {Number} px
+     * @param {number} px
      * @param {Boolean=} noUpdate
-     * @return {Number}
+     * @return {number}
      */
     left(px: number | string, noUpdate?: boolean): this;
     left(): number;
     /**
      * Gets / sets the entity's x position relative to the right of
      * the canvas.
-     * @param {Number} px
+     * @param {number} px
      * @param {Boolean=} noUpdate
-     * @return {Number}
+     * @return {number}
      */
     right(px: number | string, noUpdate?: boolean): this;
     right(): number;
     /**
      * Gets / sets the viewport's x position relative to the center of
      * the entity parent.
-     * @param {Number} px
+     * @param {number} px
      * @param {Boolean=} noUpdate
-     * @return {Number}
+     * @return {number}
      */
     center(px: number | string, noUpdate?: boolean): this;
     center(): number;
     /**
      * Gets / sets the entity's y position relative to the top of
      * the canvas.
-     * @param {Number} px
+     * @param {number} px
      * @param {Boolean=} noUpdate
-     * @return {Number}
+     * @return {number}
      */
     top(px: number | string, noUpdate?: boolean): this;
     top(): number;
     /**
      * Gets / sets the entity's y position relative to the bottom of
      * the canvas.
-     * @param {Number} px
+     * @param {number} px
      * @param {Boolean=} noUpdate
-     * @return {Number}
+     * @return {number}
      */
     bottom(px: number | string, noUpdate?: boolean): this;
     bottom(): number;
     /**
      * Gets / sets the viewport's y position relative to the middle of
      * the canvas.
-     * @param {Number} px
+     * @param {number} px
      * @param {Boolean=} noUpdate
-     * @return {Number}
+     * @return {number}
      */
     middle(px: number | string, noUpdate?: boolean): this;
     middle(): number;
     /**
      * Gets / sets the geometry.x in pixels.
-     * @param {Number, String=} px Either the width in pixels or a percentage
+     * @param {number, String=} px Either the width in pixels or a percentage
      * @param {Boolean=} lockAspect
-     * @param {Number=} modifier A value to add to the final width. Useful when
+     * @param {number=} modifier A value to add to the final width. Useful when
      * you want to alter a percentage value by a certain number of pixels after
      * it has been calculated.
      * @param {Boolean=} noUpdate
@@ -156,9 +156,9 @@ export declare class IgeUiEntity extends IgeEntity {
     width(): number;
     /**
      * Gets / sets the geometry.y in pixels.
-     * @param {Number=} px
+     * @param {number=} px
      * @param {Boolean=} lockAspect
-     * @param {Number=} modifier A value to add to the final height. Useful when
+     * @param {number=} modifier A value to add to the final height. Useful when
      * you want to alter a percentage value by a certain number of pixels after
      * it has been calculated.
      * @param {Boolean=} noUpdate If passed, will not recalculate AABB etc. from
@@ -197,7 +197,7 @@ export declare class IgeUiEntity extends IgeEntity {
      * Sets the current background texture and the repeatType
      * to determine in which axis the image should be repeated.
      * @param {IgeTexture=} texture
-     * @param {String=} repeatType Accepts "repeat", "repeat-x",
+     * @param {string=} repeatType Accepts "repeat", "repeat-x",
      * "repeat-y" and "no-repeat".
      * @return {*} Returns this if any parameter is specified or
      * the current background image if no parameters are specified.
@@ -214,8 +214,8 @@ export declare class IgeUiEntity extends IgeEntity {
     backgroundColor(): string | CanvasGradient | CanvasPattern;
     /**
      * Gets / sets the position to start rendering the background image at.
-     * @param {Number=} x
-     * @param {Number=} y
+     * @param {number=} x
+     * @param {number=} y
      * @return {*} Returns this when setting the value or the current value if none is specified.
      */
     backgroundPosition(x: number, y: number): this | IgePointXY;
@@ -239,6 +239,10 @@ export declare class IgeUiEntity extends IgeEntity {
     borderBottomRightRadius(px?: number): number | this;
     padding(...args: [number]): this;
     padding(...args: [number, number, number, number]): this;
+    paddingX(px: number): this;
+    paddingX(): number;
+    paddingY(px: number): this;
+    paddingY(): number;
     paddingLeft(px: number): this;
     paddingLeft(): number;
     paddingTop(px: number): this;

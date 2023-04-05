@@ -15,7 +15,7 @@ export declare class IgeScene2d extends IgeEntity {
      * are mounted to this scene will only sync with clients that have been
      * assigned to this room id.
      *
-     * @param {String} id The id of the room.
+     * @param {string} id The id of the room.
      * @returns {*}
      */
     streamRoomId: (id?: string) => string | this | undefined;

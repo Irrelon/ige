@@ -22,7 +22,7 @@ export class IgeTextureMap extends IgeTileMap2d {
      * will render to off-screen canvases in sections denoted by the
      * number passed. For instance if you pass 10, the canvas sections
      * will be 10x10 tiles in size.
-     * @param {Number=} val The size in tiles of each section.
+     * @param {number=} val The size in tiles of each section.
      * @return {*}
      */
     autoSection(val) {
@@ -36,7 +36,7 @@ export class IgeTextureMap extends IgeTileMap2d {
      * Gets / sets the draw sections flag. If true the texture map will
      * output debug lines between each section of the map when using the
      * auto section system.
-     * @param {Number=} val The boolean flag value.
+     * @param {number=} val The boolean flag value.
      * @return {*}
      */
     drawSectionBounds(val) {
@@ -115,10 +115,10 @@ export class IgeTextureMap extends IgeTileMap2d {
     /**
      * Sets the specified tile's texture index and cell that will be used
      * when rendering the texture map.
-     * @param {Number} x The tile x co-ordinate.
-     * @param {Number} y The tile y co-ordinate.
-     * @param {Number} textureIndex The texture index.
-     * @param {Number} cell The cell index.
+     * @param {number} x The tile x co-ordinate.
+     * @param {number} y The tile y co-ordinate.
+     * @param {number} textureIndex The texture index.
+     * @param {number} cell The cell index.
      */
     paintTile(x, y, textureIndex, cell) {
         if (x !== undefined && y !== undefined && textureIndex !== undefined) {
@@ -131,8 +131,8 @@ export class IgeTextureMap extends IgeTileMap2d {
     /**
      * Clears any previous tile texture and cell data for the specified
      * tile co-ordinates.
-     * @param {Number} x The tile x co-ordinate.
-     * @param {Number} y The tile y co-ordinate.
+     * @param {number} x The tile x co-ordinate.
+     * @param {number} y The tile y co-ordinate.
      */
     clearTile(x, y) {
         this.map.clearData(x, y);
@@ -218,9 +218,9 @@ export class IgeTextureMap extends IgeTileMap2d {
     }
     /**
      * Gets / sets the specified tile's texture index.
-     * @param {Number} x The tile x co-ordinate.
-     * @param {Number} y The tile y co-ordinate.
-     * @param {Number=} textureIndex The new texture index.
+     * @param {number} x The tile x co-ordinate.
+     * @param {number} y The tile y co-ordinate.
+     * @param {number=} textureIndex The new texture index.
      */
     tileTextureIndex(x, y, textureIndex) {
         if (x !== undefined && y !== undefined) {
@@ -236,9 +236,9 @@ export class IgeTextureMap extends IgeTileMap2d {
     }
     /**
      * Gets / sets the specified tile's texture cell.
-     * @param {Number} x The tile x co-ordinate.
-     * @param {Number} y The tile y co-ordinate.
-     * @param {Number} cell The new cell index.
+     * @param {number} x The tile x co-ordinate.
+     * @param {number} y The tile y co-ordinate.
+     * @param {number} cell The new cell index.
      */
     tileTextureCell(x, y, cell) {
         if (x !== undefined && y !== undefined) {
@@ -393,8 +393,8 @@ export class IgeTextureMap extends IgeTileMap2d {
     /**
      * Private method, checks if the specified section currently exists in the cache
      * and if not, creates it.
-     * @param {Number} sectionX The section's x co-ordinate.
-     * @param {Number} sectionY The section's y co-ordinate.
+     * @param {number} sectionX The section's x co-ordinate.
+     * @param {number} sectionY The section's y co-ordinate.
      * @private
      */
     _ensureSectionExists(sectionX, sectionY) {
@@ -464,13 +464,13 @@ export class IgeTextureMap extends IgeTileMap2d {
      * Private method, renders a tile texture based on data from the texture map,
      * to a cached section.
      * @param {CanvasRenderingContext2D} ctx
-     * @param {Number} x The tile x co-ordinate.
-     * @param {Number} y The tile y co-ordinate.
+     * @param {number} x The tile x co-ordinate.
+     * @param {number} y The tile y co-ordinate.
      * @param {Object} tileData The tile's texture and cell data.
      * @param {Object} tileEntity The object that represents the tile.
      * @param {IgeRect=} rect The rectangular area to limit drawing to.
-     * @param {Number} sectionX The x co-ordinate of the section to draw to.
-     * @param {Number} sectionY The y co-ordinate of the section to draw to.
+     * @param {number} sectionX The x co-ordinate of the section to draw to.
+     * @param {number} sectionY The y co-ordinate of the section to draw to.
      * @return {*}
      * @private
      */

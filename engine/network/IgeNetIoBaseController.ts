@@ -45,7 +45,7 @@ export class IgeNetIoBaseController extends IgeEventingClass {
 	 * on the server using the difference in client/server
 	 * clocks and the network latency between this client
 	 * and the server.
-	 * @param {Number} time The client timestamp, usually
+	 * @param {number} time The client timestamp, usually
 	 * the result of new Date().getTime() or ige.currentTime().
 	 */
 	timeToServerTime (time: number): number;
@@ -61,7 +61,7 @@ export class IgeNetIoBaseController extends IgeEventingClass {
 	/**
 	 * Gets / sets debug flag that determines if debug output
 	 * is logged to the console.
-	 * @param {Boolean=} val
+	 * @param {boolean=} val
 	 * @return {*}
 	 */
 	debug (val: boolean): this;
@@ -89,7 +89,7 @@ export class IgeNetIoBaseController extends IgeEventingClass {
 	 * if you want to sample a certain number of outputs and
 	 * then automatically disable output so your console is
 	 * not flooded.
-	 * @param {Number=} val Number of debug messages to allow
+	 * @param {number=} val Number of debug messages to allow
 	 * to be output to the console. Set to zero to allow
 	 * infinite amounts.
 	 * @return {*}

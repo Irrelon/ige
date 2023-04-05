@@ -9,6 +9,7 @@ export class WorkerUnit extends Circle {
 		super();
 
 		this._type = type;
+		this.isometric(true);
 
 		this.layer(0)
 			.width(20)

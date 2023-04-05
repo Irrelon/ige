@@ -58,7 +58,7 @@ export declare class IgeFontEntity extends IgeUiEntity {
      * contains the unaltered version of your original text and
      * "_renderText" will be either the same as "_text" if auto-wrapping
      * is disabled or a wrapped version otherwise.
-     * @param {String} text The text string to render.
+     * @param {string} text The text string to render.
      * @returns {*}
      */
     text(text?: string): string | this | undefined;
@@ -69,16 +69,16 @@ export declare class IgeFontEntity extends IgeUiEntity {
      * position etc. output where data is stored in an object and changes
      * frequently.
      * @param {Object} obj The object to read the property from.
-     * @param {String} propName The name of the property to read value from.
-     * @param {String} preText Text to place before the output.
-     * @param {String} postText Text to place after the output.
+     * @param {string} propName The name of the property to read value from.
+     * @param {string} preText Text to place before the output.
+     * @param {string} postText Text to place after the output.
      * @returns {*}
      */
     bindData(obj: any, propName: string, preText?: string, postText?: string): this;
     /**
      * Gets / sets the current horizontal text alignment. Accepts
      * a value of 0, 1 or 2 (left, centre, right) respectively.
-     * @param {Number} val The new value.
+     * @param {number} val The new value.
      * @returns {*}
      */
     textAlignX(val: IgeFontAlignX): this;
@@ -87,7 +87,7 @@ export declare class IgeFontEntity extends IgeUiEntity {
      * Gets / sets the current vertical text alignment. Accepts
      * a value of 0, 1, 2, 3 (top, middle, bottom, justified) respectively.
      * Defaults to 3 (justified)
-     * @param {Number} val The new value.
+     * @param {number} val The new value.
      * @returns {*}
      */
     textAlignY(val: IgeFontAlignY): this;
@@ -95,7 +95,7 @@ export declare class IgeFontEntity extends IgeUiEntity {
     /**
      * Gets / sets the amount of spacing between the lines of text being
      * rendered. Accepts negative values as well as positive ones.
-     * @param {Number=} val
+     * @param {number=} val
      * @returns {*}
      */
     textLineSpacing(val: number): this;
@@ -103,7 +103,7 @@ export declare class IgeFontEntity extends IgeUiEntity {
     /**
      * Gets / sets the string hex or rgba value of the colour
      * to use as an overlay when rending this entity's texture.
-     * @param {String=} val The colour value as hex e.g. '#ff0000'
+     * @param {string=} val The colour value as hex e.g. '#ff0000'
      * or as rgba e.g. 'rbga(255, 0, 0, 0.5)'. To remove an overlay
      * colour simply passed an empty string.
      * @return {*} "this" when arguments are passed to allow method
@@ -123,7 +123,7 @@ export declare class IgeFontEntity extends IgeUiEntity {
      * When using native font rendering (canvasContext.fillText())
      * this sets the font and size as per the canvasContext.font
      * string specification.
-     * @param {String=} val The font style string.
+     * @param {string=} val The font style string.
      * @return {*} "this" when arguments are passed to allow method
      * chaining or the current value if no arguments are specified.
      */
@@ -131,7 +131,7 @@ export declare class IgeFontEntity extends IgeUiEntity {
     /**
      * Gets / sets the text stroke size that applies when using
      * a native font for text rendering.
-     * @param {Number=} val The size of the text stroke.
+     * @param {number=} val The size of the text stroke.
      * @return {*}
      */
     nativeStroke(val?: number): number | this | undefined;
@@ -159,12 +159,13 @@ export declare class IgeFontEntity extends IgeUiEntity {
     /**
      * Will measure and return the width in pixels of a line or multiple
      * lines of text. If no text parameter is passed, will use the current
-     * text assigned to the font entity.
-     * @param {String=} text Optional text to measure, used existing entity
+     * text assigned to the font entity. If the text cannot be measured,
+     * -1 is returned instead.
+     * @param {string=} text Optional text to measure, used existing entity
      * text value if none is provided.
-     * @returns {Number} The width of the text in pixels.
+     * @returns {number} The width of the text in pixels.
      */
-    measureTextWidth(text?: string): any;
+    measureTextWidth(text?: string): number;
     tick(ctx: IgeCanvasRenderingContext2d): void;
     /**
      * Returns a string containing a code fragment that when
@@ -172,7 +173,7 @@ export declare class IgeFontEntity extends IgeUiEntity {
      * chained commands. This method will only check for
      * properties that are directly related to this class.
      * Other properties are handled by their own class method.
-     * @return {String}
+     * @return {string}
      */
     _stringify(): string;
 }

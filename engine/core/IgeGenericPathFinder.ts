@@ -53,7 +53,7 @@ export class IgeGenericPathFinder extends IgeEventingClass {
      * @param {IgePoint3d} startPoint The point on the map to start path-finding from.
      * @param {IgePoint3d} endPoint The point on the map to try to path-find to.
      * @param {Function} isTraversalAllowed The callback function that will decide if each tile that is being considered for use in the path is allowed or not based on the tile map's data stored for that tile which is passed to this method as the first parameter. Must return a boolean value.
-     * @param {Boolean} allowSquare Whether to allow neighboring tiles along a square axis. Defaults to true if undefined.
+     * @param {boolean} allowSquare Whether to allow neighboring tiles along a square axis. Defaults to true if undefined.
      * @param {Boolean} allowDiagonal Whether to allow neighboring tiles along a diagonal axis. Defaults to false if undefined.
      * @param {Boolean=} allowInvalidDestination If the pathfinder cannot path to the destination tile, if this is true the closest path will be returned instead.
      * @return {Array} An array of objects each containing an x, y co-ordinate that describes the path from the starting point to the end point in order.
@@ -199,12 +199,12 @@ export class IgeGenericPathFinder extends IgeEventingClass {
 	/**
      * The heuristic to calculate the rough cost of pathing from the
      * x1, y1 to x2, y2.
-     * @param {Number} x1 The first x co-ordinate.
-     * @param {Number} y1 The first y co-ordinate.
-     * @param {Number} x2 The second x co-ordinate.
-     * @param {Number} y2 The second y co-ordinate.
-     * @param {Number} moveCost The cost multiplier to multiply by.
-     * @return {Number} Returns the heuristic cost between the co-ordinates specified.
+     * @param {number} x1 The first x co-ordinate.
+     * @param {number} y1 The first y co-ordinate.
+     * @param {number} x2 The second x co-ordinate.
+     * @param {number} y2 The second y co-ordinate.
+     * @param {number} moveCost The cost multiplier to multiply by.
+     * @return {number} Returns the heuristic cost between the co-ordinates specified.
      * @private
      */
 	cost (x1: number, y1: number, x2: number, y2: number, moveCost: number = 1) {

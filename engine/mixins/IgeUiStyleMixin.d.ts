@@ -55,7 +55,7 @@ export declare const WithUiStyleMixin: <BaseClassType extends Mixin<IgeObject>>(
          * Sets the current background texture and the repeatType
          * to determine in which axis the image should be repeated.
          * @param {IgeTexture=} texture
-         * @param {String=} repeatType Accepts "repeat", "repeat-x",
+         * @param {string=} repeatType Accepts "repeat", "repeat-x",
          * "repeat-y" and "no-repeat".
          * @return {*} Returns this if any parameter is specified or
          * the current background image if no parameters are specified.
@@ -74,8 +74,8 @@ export declare const WithUiStyleMixin: <BaseClassType extends Mixin<IgeObject>>(
         backgroundColor(color: string | CanvasGradient | CanvasPattern): string | CanvasPattern | CanvasGradient | any | undefined;
         /**
          * Gets / sets the position to start rendering the background image at.
-         * @param {Number=} x
-         * @param {Number=} y
+         * @param {number=} x
+         * @param {number=} y
          * @return {*} Returns this when setting the value or the current value if none is specified.
          */
         backgroundPosition(x: number, y: number): any | {
@@ -156,7 +156,7 @@ export declare const WithUiStyleMixin: <BaseClassType extends Mixin<IgeObject>>(
         _depthSortMode: import("../../enums/IgeIsometricDepthSortMode").IgeIsometricDepthSortMode;
         _inView: boolean;
         _managed: number;
-        _triggerPolygon?: "aabb" | "localBounds3dPolygon" | undefined;
+        _triggerPolygon?: "aabb" | "bounds3dPolygon" | "localBounds3dPolygon" | undefined;
         _compositeCache: boolean;
         _compositeParent: boolean;
         _anchor: import("../core/IgePoint2d").IgePoint2d;
@@ -205,12 +205,7 @@ export declare const WithUiStyleMixin: <BaseClassType extends Mixin<IgeObject>>(
         _noAabb?: boolean | undefined;
         _hasParent?: Record<string, boolean> | undefined;
         _texture?: IgeTexture | undefined;
-        _indestructible: boolean; /**
-         * Gets / sets the color to use as a background when
-         * rendering the UI element.
-         * @param {CSSColor, CanvasGradient, CanvasPattern=} color
-         * @return {*} Returns this when setting the value or the current value if none is specified.
-         */
+        _indestructible: boolean;
         _shouldRender?: boolean | undefined;
         _smartBackground?: import("../../types/IgeSmartTexture").IgeSmartTexture<IgeObject> | undefined;
         _lastUpdate?: number | undefined;

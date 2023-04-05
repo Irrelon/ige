@@ -71,7 +71,7 @@ export class IgeMatrix2d extends IgeBaseClass {
 
 	/**
 	 * Create a new rotation matrix and set it up for the specified angle in radians.
-	 * @param {Number} angle
+	 * @param {number} angle
 	 * @return {IgeMatrix2d} A new matrix object.
 	 */
 	_newRotate (angle: number) {
@@ -116,7 +116,7 @@ export class IgeMatrix2d extends IgeBaseClass {
 	/**
 	 * Gets the rotation from the matrix and returns it in
 	 * radians.
-	 * @return {Number}
+	 * @return {number}
 	 */
 	rotationRadians () {
 		return Math.asin(this.matrix[3]);
@@ -125,7 +125,7 @@ export class IgeMatrix2d extends IgeBaseClass {
 	/**
 	 * Gets the rotation from the matrix and returns it in
 	 * degrees.
-	 * @return {Number}
+	 * @return {number}
 	 */
 	rotationDegrees () {
 		return radiansToDegrees(Math.acos(this.matrix[0]));
@@ -133,8 +133,8 @@ export class IgeMatrix2d extends IgeBaseClass {
 
 	/**
 	 * Create a scale matrix.
-	 * @param {Number} x X scale magnitude.
-	 * @param {Number} y Y scale magnitude.
+	 * @param {number} x X scale magnitude.
+	 * @param {number} y Y scale magnitude.
 	 *
 	 * @return {IgeMatrix2d} a matrix object.
 	 *
@@ -178,8 +178,8 @@ export class IgeMatrix2d extends IgeBaseClass {
 
 	/**
 	 * Create a translation matrix.
-	 * @param {Number} x X translation magnitude.
-	 * @param {Number} y Y translation magnitude.
+	 * @param {number} x X translation magnitude.
+	 * @param {number} y Y translation magnitude.
 	 * @return {IgeMatrix2d} A new matrix object.
 	 */
 	_newTranslate (x: number, y: number) {

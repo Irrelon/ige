@@ -24,7 +24,7 @@ export class IgeChatClient extends IgeChatComponent {
     }
     /**
      * Asks the serve to let us join the room specified.
-     * @param {String} roomId The room id of the room to join.
+     * @param {string} roomId The room id of the room to join.
      */
     joinRoom(roomId) {
         const network = ige.network;

@@ -8,8 +8,8 @@ export declare class IgeMap2d extends IgeBaseClass {
     constructor(data?: any[][]);
     /**
      * Gets / sets a value on the specified map tile co-ordinates.
-     * @param {Number} x
-     * @param {Number} y
+     * @param {number} x
+     * @param {number} y
      * @param {*=} val The data to set on the map tile co-ordinate.
      * @return {*}
      */
@@ -18,7 +18,7 @@ export declare class IgeMap2d extends IgeBaseClass {
      * Clears any data set at the specified map tile co-ordinates.
      * @param x
      * @param y
-     * @return {Boolean} True if data was cleared or false if no data existed.
+     * @return {boolean} True if data was cleared or false if no data existed.
      */
     clearData(x?: number, y?: number): boolean;
     /**
@@ -65,7 +65,7 @@ export declare class IgeMap2d extends IgeBaseClass {
     _sortKeys(obj: Record<string, any>): string[];
     /**
      * Returns a string of the map's data in JSON format.
-     * @return {String}
+     * @return {string}
      */
     mapDataString(): string;
     translateDataBy(transX: number, transY: number): void;

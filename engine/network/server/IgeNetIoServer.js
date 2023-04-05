@@ -149,7 +149,7 @@ export class IgeNetIoServer extends IgeEventingClass {
     /**
      * Determines if the origin of a request should be allowed or denied.
      * @param origin
-     * @return {Boolean}
+     * @return {boolean}
      * @private
      */
     _originIsAllowed(origin) {

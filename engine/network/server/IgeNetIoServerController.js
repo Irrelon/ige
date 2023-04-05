@@ -222,7 +222,7 @@ export class IgeNetIoServerController extends IgeNetIoBaseController {
      * is received by the server, the callback set up for that command will
      * automatically be called and passed the data from the incoming network
      * packet.
-     * @param {String} commandName The name of the command to define.
+     * @param {string} commandName The name of the command to define.
      * @param {Function=} callback A function to call when the defined network
      * command is received by the network.
      * @return {*}
@@ -238,8 +238,8 @@ export class IgeNetIoServerController extends IgeNetIoBaseController {
     /**
      * Adds a client to a room by id. All clients are added to room id
      * "ige" by default when they connect to the server.
-     * @param {String} clientId The id of the client to add to the room.
-     * @param {String} roomId The id of the room to add the client to.
+     * @param {string} clientId The id of the client to add to the room.
+     * @param {string} roomId The id of the room to add the client to.
      * @returns {*}
      */
     clientJoinRoom(clientId, roomId) {
@@ -256,8 +256,8 @@ export class IgeNetIoServerController extends IgeNetIoBaseController {
      * Removes a client from a room by id. All clients are added to room id
      * "ige" by default when they connect to the server and you can remove
      * them from it if your game defines custom rooms etc.
-     * @param {String} clientId The id of the client to remove from the room.
-     * @param {String} roomId The id of the room to remove the client from.
+     * @param {string} clientId The id of the client to remove from the room.
+     * @param {string} roomId The id of the room to remove the client from.
      * @returns {*}
      */
     clientLeaveRoom(clientId, roomId) {
@@ -269,7 +269,7 @@ export class IgeNetIoServerController extends IgeNetIoBaseController {
     }
     /**
      * Removes a client from all rooms that it is a member of.
-     * @param {String} clientId The client id to remove from all rooms.
+     * @param {string} clientId The client id to remove from all rooms.
      * @returns {*}
      */
     clientLeaveAllRooms(clientId) {
@@ -292,7 +292,7 @@ export class IgeNetIoServerController extends IgeNetIoBaseController {
     /**
      * Returns an associative array of all connected clients
      * by their ID.
-     * @param {String=} roomId Optional, if provided will only return clients
+     * @param {string=} roomId Optional, if provided will only return clients
      * that have joined room specified by the passed roomId.
      * @return
      */
@@ -303,7 +303,7 @@ export class IgeNetIoServerController extends IgeNetIoBaseController {
     }
     /**
      * Returns the socket associated with the specified client id.
-     * @param {String=} clientId
+     * @param {string=} clientId
      * @return {*}
      */
     socket(clientId) {
@@ -312,7 +312,7 @@ export class IgeNetIoServerController extends IgeNetIoBaseController {
     /**
      * Gets / sets the current flag that determines if client connections
      * should be allowed to connect (true) or dropped instantly (false).
-     * @param {Boolean} val Set to true to allow connections or false
+     * @param {boolean} val Set to true to allow connections or false
      * to drop any incoming connections.
      * @return {*}
      */
@@ -331,7 +331,7 @@ export class IgeNetIoServerController extends IgeNetIoBaseController {
     }
     /**
      * Sends a message over the network.
-     * @param {String} commandName
+     * @param {string} commandName
      * @param {Object} data
      * @param {*=} clientIdOrArrayOfIds If specified, sets the recipient socket id or
      * an array of socket ids to send to.
@@ -362,7 +362,7 @@ export class IgeNetIoServerController extends IgeNetIoBaseController {
      * respond by calling ige.network.response(). When the response
      * is received, the callback method that was passed in the
      * callback parameter will be fired with the response data.
-     * @param {String} commandName
+     * @param {string} commandName
      * @param {Object} data
      * @param clientIdOrArrayOfIds
      * @param {Function} callback
@@ -387,7 +387,7 @@ export class IgeNetIoServerController extends IgeNetIoBaseController {
     }
     /**
      * Sends a response to a network request.
-     * @param {String} requestId
+     * @param {string} requestId
      * @param {Object} data
      */
     response(requestId, data) {
@@ -406,7 +406,7 @@ export class IgeNetIoServerController extends IgeNetIoBaseController {
     /**
      * Determines if the origin of a request should be allowed or denied.
      * @param origin
-     * @return {Boolean}
+     * @return {boolean}
      * @private
      */
     _originIsAllowed(origin) {
@@ -421,7 +421,7 @@ export class IgeNetIoServerController extends IgeNetIoBaseController {
     /**
      * Called when the server receives a network message from a client.
      * @param {Object} data The data sent by the client.
-     * @param {String} clientId The client socket id.
+     * @param {string} clientId The client socket id.
      * @private
      */
     _onClientMessage(data, clientId) {
@@ -449,7 +449,7 @@ export class IgeNetIoServerController extends IgeNetIoBaseController {
      * Gets / sets the interval by which updates to the game world are packaged
      * and transmitted to connected clients. The greater the value, the less
      * updates are sent per second.
-     * @param {Number=} ms The number of milliseconds between stream messages.
+     * @param {number=} ms The number of milliseconds between stream messages.
      */
     sendInterval(ms) {
         if (ms !== undefined) {
@@ -469,9 +469,9 @@ export class IgeNetIoServerController extends IgeNetIoBaseController {
     }
     /**
      * Queues stream data to be sent during the next stream data interval.
-     * @param {String} entityId The id of the entity that this data belongs to.
-     * @param {String} data The data queued for delivery to the client.
-     * @param {String} clientId The client id this data is queued for.
+     * @param {string} entityId The id of the entity that this data belongs to.
+     * @param {string} data The data queued for delivery to the client.
+     * @param {string} clientId The client id this data is queued for.
      * @return {*}
      */
     queue(entityId, data, clientId) {

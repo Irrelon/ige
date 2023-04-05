@@ -14,8 +14,8 @@ export class IgeMapStack2d extends IgeBaseClass {
     /**
      * Gets / sets the data stored at the specified map tile co-ordinates. If data already
      * exists at the specified co-ordinates, it is replaced with the passed data.
-     * @param {Number} x
-     * @param {Number} y
+     * @param {number} x
+     * @param {number} y
      * @param {Array=} val The array of data items to set at the specified co-ordinates.
      * @return {*} This or an array of data items at the specified co-ordinates.
      */
@@ -41,9 +41,9 @@ export class IgeMapStack2d extends IgeBaseClass {
     }
     /**
      * Gets the data stored at the specified co-ordinates and index.
-     * @param {Number} x
-     * @param {Number} y
-     * @param {Number} index
+     * @param {number} x
+     * @param {number} y
+     * @param {number} index
      * @return {*} The current data stored at the specified point or undefined if no data exists.
      */
     tileDataAtIndex(x, y, index) {
@@ -54,8 +54,8 @@ export class IgeMapStack2d extends IgeBaseClass {
     }
     /**
      * Adds a data item to the specified map tile co-ordinates.
-     * @param {Number} x
-     * @param {Number} y
+     * @param {number} x
+     * @param {number} y
      * @param {*} val The data to add.
      * @return {*} This on success or false on failure.
      */
@@ -70,8 +70,8 @@ export class IgeMapStack2d extends IgeBaseClass {
     }
     /**
      * Removes a data item from the specified map tile co-ordinates.
-     * @param {Number} x
-     * @param {Number} y
+     * @param {number} x
+     * @param {number} y
      * @param {*} val The data to remove.
      * @return {*} This on success or false on failure.
      */
@@ -113,7 +113,7 @@ export class IgeMapStack2d extends IgeBaseClass {
      * Clears any data set at the specified map tile co-ordinates.
      * @param x
      * @param y
-     * @return {Boolean} True if data was cleared or false if no data existed.
+     * @return {boolean} True if data was cleared or false if no data existed.
      */
     clearData(x, y) {
         if (x !== undefined && y !== undefined) {

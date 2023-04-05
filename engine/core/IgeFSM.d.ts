@@ -79,7 +79,7 @@ export declare class IgeFSM extends IgeBaseClass {
     defineState: (name: string, definition?: EventDefinition) => this;
     /**
      * Defines a transition between two states.
-     * @param {String} fromState The state name the transition is from.
+     * @param {string} fromState The state name the transition is from.
      * @param {String} toState The state name the transition is to.
      * @param {Function} transitionCheck A method to call just before this transition
      * between the two specified states is executed. The function should be async and

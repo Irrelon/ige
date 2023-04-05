@@ -5,13 +5,13 @@ import { IgePoint3d } from "./IgePoint3d.js";
 export class IgePathNode extends IgePoint3d {
     /**
      * @constructor
-     * @param {Number} x
-     * @param {Number} y
-     * @param {Number} g
-     * @param {Number} moveCost
-     * @param {Number} heuristic
+     * @param {number} x
+     * @param {number} y
+     * @param {number} g
+     * @param {number} moveCost
+     * @param {number} heuristic
      * @param {Object} parent
-     * @param {String} direction
+     * @param {string} direction
      */
     constructor(x, y, g, moveCost = 0, heuristic = 0, parent, direction = "") {
         super();
@@ -38,7 +38,7 @@ export class IgePathNode extends IgePoint3d {
     /**
      * Gets / sets the path node mode. The mode determines if the co-ordinates
      * will be in tile or absolute co-ordinates.
-     * @param {Number=} val 0 = tile based, 1 = absolute based.
+     * @param {number=} val 0 = tile based, 1 = absolute based.
      * @return {*}
      */
     mode(val) {
