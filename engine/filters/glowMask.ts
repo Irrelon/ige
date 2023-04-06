@@ -27,8 +27,8 @@ export const glowMask: IgeSmartFilter = function (canvas, ctx, originalImage, te
 
 		if (!pixelData) return;
 
-		tempCanvas = document.createElement("canvas");
-		tempCtx = tempCanvas.getContext("2d");
+		tempCanvas = new OffscreenCanvas(2, 2);
+		tempCtx = tempCanvas.getContext("2d") as OffscreenCanvasRenderingContext2D;
 
 		tempCanvas.width = canvas.width;
 		tempCanvas.height = canvas.height;

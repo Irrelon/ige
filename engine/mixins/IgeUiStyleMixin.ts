@@ -103,8 +103,8 @@ export const WithUiStyleMixin = <BaseClassType extends Mixin<IgeObject>>(Base: B
 		if (this._cell && this._cell > 1) {
 			// We are using a cell sheet, render the cell to a
 			// temporary canvas and set that as the pattern image
-			const canvas = document.createElement("canvas");
-			const ctx = canvas.getContext("2d");
+			const canvas = new OffscreenCanvas(2, 2);
+			const ctx = canvas.getContext("2d") as OffscreenCanvasRenderingContext2D;
 
 			if (!ctx) {
 				throw new Error("Couldn't get texture canvas 2d context!");

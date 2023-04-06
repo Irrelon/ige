@@ -11,8 +11,8 @@ export const IgeFontSmartTexture: IgeSmartTexture = {
 				lineIndex,
 				measuredWidth,
 				maxWidth = 0,
-				canvas = document.createElement("canvas"),
-				ctx = canvas.getContext("2d");
+				canvas = new OffscreenCanvas(2, 2),
+				ctx = canvas.getContext("2d") as OffscreenCanvasRenderingContext2D;
 
 			// Handle multi-line text
 			if (text.indexOf("\n") > -1) {

@@ -4,7 +4,7 @@ import { IgeCanvas } from "@/engine/core/IgeCanvas";
 import { IgeCanvasRenderingContext2d } from "./IgeCanvasRenderingContext2d";
 
 export type IgeSmartFilter = (
-    canvas: HTMLCanvasElement,
+    canvas: OffscreenCanvas,
     ctx: IgeCanvasRenderingContext2d,
     originalImage: IgeImage | IgeCanvas,
     texture: IgeTexture,
