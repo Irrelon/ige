@@ -48,6 +48,7 @@ export class Ige implements IgeIsReadyPromise {
 	config: IgeConfig = igeConfig;
 	version: string = version;
 	classStore = igeClassStore;
+	_data: Record<string, any> = {};
 	_watch: (string | IgeObjectWithValueProperty)[] = [];
 	_drawBounds: boolean = false;
 
@@ -160,5 +161,22 @@ export class Ige implements IgeIsReadyPromise {
 		// Loop all the way down the scenegraph and enable bounds for all
 		this.engine.drawBounds(val, recursive);
 		return this;
+	}
+
+	data (key: string, value: any): this;
+	data (key: string): any;
+	data (key: string, value?: any) {
+		if (value !== undefined) {
+			this._data = this._data || {};
+			this._data[key] = value;
+
+			return this;
+		}
+
+		if (this._data) {
+			return this._data[key];
+		}
+
+		return null;
 	}
 }

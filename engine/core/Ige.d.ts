@@ -42,6 +42,7 @@ export declare class Ige implements IgeIsReadyPromise {
     config: IgeConfig;
     version: string;
     classStore: Record<string, import("../../types/GenericClass").GenericClass>;
+    _data: Record<string, any>;
     _watch: (string | IgeObjectWithValueProperty)[];
     _drawBounds: boolean;
     _pointerOverVp?: IgeViewport;
@@ -81,4 +82,6 @@ export declare class Ige implements IgeIsReadyPromise {
      */
     watchStop: (index: number) => void;
     drawBounds(val?: boolean, recursive?: boolean): boolean | this;
+    data(key: string, value: any): this;
+    data(key: string): any;
 }
