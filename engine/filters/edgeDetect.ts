@@ -9,8 +9,11 @@ export const edgeDetect: IgeSmartFilter = function (canvas, ctx, originalImage, 
 		texture._filterImageDrawn = true;
 	}
 
+	const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+	if (!imgData) return;
+
 	const newData = convoluteHelper(
-		ctx.getImageData(0, 0, canvas.width, canvas.height),
+		imgData,
 		[-1, -1, -1, -1, -1, -1, 2, 2, 2, -1, -1, 2, 0, 2, -1, -1, 2, 2, 2, -1, -1, -1, -1, -1, -1],
 		true
 	);

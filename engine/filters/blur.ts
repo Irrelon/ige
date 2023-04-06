@@ -9,6 +9,7 @@ export const blur: IgeSmartFilter = function (canvas, ctx, originalImage, textur
 		pixelData;
 
 	pixelData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+	if (!pixelData) return;
 
 	if (data && data.value) {
 		strength = data.value;

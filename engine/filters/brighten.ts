@@ -9,15 +9,12 @@ export const brighten: IgeSmartFilter = function (canvas, ctx, originalImage, te
 igeFilters.registerFilter("brighten", brighten);
 
 igeFilters.registerHelper("brightenHelper", function (imageData, texture, data) {
-	let arr,
-		arrCount,
-		i,
-		adjustment = texture.data("IgeFilters.brighten.value") || data.value;
+	const adjustment: number = texture.data("IgeFilters.brighten.value") || data.value;
 
-	arr = imageData.data;
-	arrCount = arr.length;
+	const arr = imageData.data;
+	const arrCount = arr.length;
 
-	for (i = 0; i < arrCount; i += 4) {
+	for (let i = 0; i < arrCount; i += 4) {
 		arr[i] += adjustment;
 		arr[i + 1] += adjustment;
 		arr[i + 2] += adjustment;

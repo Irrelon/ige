@@ -25,8 +25,11 @@ export const greyScaleHelper = function (imageData: ImageData): ImageData {
 };
 
 export const greyScale: IgeSmartFilter = function (canvas, ctx, originalImage, texture, data) {
+	const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+	if (!imgData) return;
+
 	// Apply the filter and then put the new pixel data
-	const imageData = greyScaleHelper(ctx.getImageData(0, 0, canvas.width, canvas.height));
+	const imageData = greyScaleHelper(imgData);
 	if (!imageData) return;
 
 	ctx.putImageData(imageData, 0, 0);

@@ -11,8 +11,11 @@ export const sobel: IgeSmartFilter = function (canvas, ctx, originalImage, textu
 	}
 
 	for (loop = 0; loop < strength; loop++) {
+		const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+		if (!imgData) return;
+
 		// Apply the filter and then put the new pixel data
-		const imageData = convoluteHelper(ctx.getImageData(0, 0, canvas.width, canvas.height), [-1, -1, 1, -2, 0, 2, -1, 1, 1], true);
+		const imageData = convoluteHelper(imgData, [-1, -1, 1, -2, 0, 2, -1, 1, 1], true);
 
 		if (!imageData) return;
 
