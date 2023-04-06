@@ -323,10 +323,10 @@ export class IgeObject extends IgeEventingClass implements IgeCanRegisterById, I
 	 * @example #Get the current flag value
 	 *     console.log(entity.drawBounds());
 	 * @return {*}
-	 * @param id
+	 * @param val
 	 * @param recursive
 	 */
-	drawBounds(id: boolean, recursive?: boolean): this;
+	drawBounds(val: boolean, recursive?: boolean): this;
 	drawBounds(): boolean;
 	drawBounds (val?: boolean, recursive: boolean = false) {
 		if (val === undefined) {

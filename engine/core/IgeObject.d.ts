@@ -114,7 +114,7 @@ export declare class IgeObject extends IgeEventingClass implements IgeCanRegiste
     _hidden: boolean;
     _cache: boolean;
     _cacheCtx?: IgeCanvasRenderingContext2d | null;
-    _cacheCanvas?: HTMLCanvasElement | IgeDummyCanvas;
+    _cacheCanvas?: OffscreenCanvas | IgeDummyCanvas;
     _cacheDirty: boolean;
     _cacheSmoothing: boolean;
     _aabbDirty: boolean;
@@ -206,10 +206,10 @@ export declare class IgeObject extends IgeEventingClass implements IgeCanRegiste
      * @example #Get the current flag value
      *     console.log(entity.drawBounds());
      * @return {*}
-     * @param id
+     * @param val
      * @param recursive
      */
-    drawBounds(id: boolean, recursive?: boolean): this;
+    drawBounds(val: boolean, recursive?: boolean): this;
     drawBounds(): boolean;
     /**
      * Gets / sets the boolean flag determining if this object should have
