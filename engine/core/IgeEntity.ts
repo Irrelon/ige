@@ -1819,6 +1819,8 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 	isometric(): boolean;
 	isometric (val?: boolean): boolean | this {
 		if (val !== undefined) {
+			// TODO: When setting to true, do we also want to automatically set
+			//  the triggerPolygonFunctionName to "bounds3dPolygon" ?
 			this._renderMode = val ? IgeEntityRenderMode.iso : IgeEntityRenderMode.flat;
 			return this;
 		}
