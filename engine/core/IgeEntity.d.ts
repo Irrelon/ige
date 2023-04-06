@@ -12,6 +12,7 @@ import type { IgeSmartTexture } from "@/types/IgeSmartTexture";
 import type { IgeViewport } from "./IgeViewport";
 import type { IgeTexture } from "./IgeTexture";
 import type { IgeCanRegisterByCategory } from "@/types/IgeCanRegisterByCategory";
+import { IgePolygonFunctionality } from "@/types/IgePolygonFunctionality";
 export interface IgeEntityTransformAccessor {
     x: (val?: number) => number | IgeEntity;
     y: (val?: number) => number | IgeEntity;
@@ -804,15 +805,20 @@ export declare class IgeEntity extends IgeObject implements IgeCanRegisterById, 
      * used when determining if a pointer event occurs on this entity.
      * @param poly
      */
-    triggerPolygon(poly: "aabb" | "bounds3dPolygon" | "localBounds3dPolygon"): this;
-    triggerPolygon(): "aabb" | "bounds3dPolygon" | "localBounds3dPolygon";
+    triggerPolygonFunctionName(poly: "aabb" | "bounds3dPolygon" | "localBounds3dPolygon"): this;
+    triggerPolygonFunctionName(): "aabb" | "bounds3dPolygon" | "localBounds3dPolygon";
+    /**
+     * Will return the polygon used when determining if a pointer event occurs
+     * on this entity.
+     */
+    triggerPolygon(): IgePolygonFunctionality;
     /**
      * Gets / sets the shape / polygon that the mouse events
      * are triggered against. There are two options, 'aabb' and
      * 'isoBounds'. The default is 'aabb'.
      * @param val
      * @returns {*}
-     * @deprecated Please use triggerPolygon() instead
+     * @deprecated Please use triggerPolygonFunctionName() instead
      */
     mouseEventTrigger: (val?: boolean) => void;
     /**

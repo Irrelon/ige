@@ -35,10 +35,10 @@ export class IgeEntity extends IgeObject {
          * 'isoBounds'. The default is 'aabb'.
          * @param val
          * @returns {*}
-         * @deprecated Please use triggerPolygon() instead
+         * @deprecated Please use triggerPolygonFunctionName() instead
          */
         this.mouseEventTrigger = (val) => {
-            this.log("mouseEventTrigger is no longer in use. Please see triggerPolygon() instead.", "warning");
+            this.log("mouseEventTrigger is no longer in use. Please see triggerPolygonFunctionName() instead.", "warning");
         };
         /**
          * Handler method that determines which mouse-move event
@@ -1149,8 +1149,8 @@ export class IgeEntity extends IgeObject {
         }
         let mouseTriggerPoly;
         // Use the trigger polygon function if defined
-        if (this._triggerPolygon && this[this._triggerPolygon]) {
-            mouseTriggerPoly = this[this._triggerPolygon]();
+        if (this._triggerPolygonFunctionName && this[this._triggerPolygonFunctionName]) {
+            mouseTriggerPoly = this[this._triggerPolygonFunctionName]();
         }
         else {
             // Default to either aabb or bounds3dPolygon depending on entity parent mounting mode
@@ -1735,12 +1735,19 @@ export class IgeEntity extends IgeObject {
         delete this._pointerWheel;
         return this;
     }
-    triggerPolygon(setting) {
+    triggerPolygonFunctionName(setting) {
         if (setting !== undefined) {
-            this._triggerPolygon = setting;
+            this._triggerPolygonFunctionName = setting;
             return this;
         }
-        return this._triggerPolygon;
+        return this._triggerPolygonFunctionName;
+    }
+    /**
+     * Will return the polygon used when determining if a pointer event occurs
+     * on this entity.
+     */
+    triggerPolygon() {
+        return this[this._triggerPolygonFunctionName]();
     }
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // TRANSFORM

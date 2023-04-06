@@ -1,12 +1,12 @@
 import { IgePoint3d } from "./IgePoint3d";
 import { IgePoint2d } from "./IgePoint2d";
-import { IgeBaseClass } from "./IgeBaseClass";
 import { IgeCanvasRenderingContext2d } from "@/types/IgeCanvasRenderingContext2d";
+import { IgePolygonFunctionality } from "@/types/IgePolygonFunctionality";
 
 /**
  * Creates a new rectangle (x, y, width, height).
  */
-export class IgeRect extends IgeBaseClass {
+export class IgeRect implements IgePolygonFunctionality {
 	classId = "IgeRect";
 	x: number = 0;
 	y: number = 0;
@@ -16,8 +16,6 @@ export class IgeRect extends IgeBaseClass {
 	y2: number = 0;
 
 	constructor (x = 0, y = 0, width = 0, height = 0) {
-		super();
-
 		this.x = x;
 		this.y = y;
 		this.width = width;
@@ -89,7 +87,7 @@ export class IgeRect extends IgeBaseClass {
 	 * @param y
 	 * @return {Boolean}
 	 */
-	xyInside (x: number, y: number) {
+	xyInside (x: number, y: number): boolean {
 		return x >= this.x && y > this.y && x <= this.x + this.width && y <= this.y + this.height;
 	}
 
@@ -100,18 +98,16 @@ export class IgeRect extends IgeBaseClass {
 	 * @return {Boolean}
 	 */
 	pointInside (point: IgePoint3d) {
-		return point.x >= this.x && point.y > this.y && point.x <= this.x + this.width && point.y <= this.y + this.height;
+		return this.xyInside(point.x, point.y);
 	}
 
 	/**
 	 * Returns boolean indicating if the passed IgeRect is
 	 * intersecting the rectangle.
-	 * @param {IgeRect} rect
-	 * @return {Boolean}
+	 * @deprecated Please use intersects() instead.
 	 */
-	rectIntersect (rect: IgeRect) {
-		this.log("rectIntersect has been renamed to \"intersects\". Please update your code. rectIntersect will be removed in a later version of IGE.", "warning");
-		return this.intersects(rect);
+	rectIntersect () {
+		throw new Error("Deprecated, please use intersects() instead.");
 	}
 
 	/**
@@ -179,7 +175,7 @@ export class IgeRect extends IgeBaseClass {
 	 * but retains the same values.
 	 * @return {IgeRect}
 	 */
-	clone () {
+	clone (): IgeRect {
 		return new IgeRect(this.x, this.y, this.width, this.height);
 	}
 

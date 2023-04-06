@@ -83,7 +83,7 @@ export class IgeObject extends IgeEventingClass implements IgeCanRegisterById, I
 	_depthSortMode = IgeIsometricDepthSortMode.bounds3d;
 	_inView = true;
 	_managed = 1;
-	_triggerPolygon?: "aabb" | "bounds3dPolygon" | "localBounds3dPolygon";
+	_triggerPolygonFunctionName: "aabb" | "bounds3dPolygon" | "localBounds3dPolygon" = "aabb";
 	_compositeCache: boolean = false;
 	_compositeParent: boolean = false;
 	_anchor: IgePoint2d;

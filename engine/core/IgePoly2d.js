@@ -23,6 +23,7 @@ export class IgePoly2d {
      * @return {*}
      */
     multiply(factor) {
+        // TODO: Look at IgeRect and normalise this function name
         if (factor !== undefined) {
             const polyPoints = this._poly;
             const pointCount = polyPoints.length;
@@ -66,32 +67,19 @@ export class IgePoly2d {
         return this._poly.length;
     }
     /**
-     * An alias for the pointInPoly() function.
-     * @param {IgePoint2d | IgePoint3d} point
-     * @return {boolean}
+     * Check if a point is inside this polygon.
+     * @deprecated Please use pointInside() instead.
      */
-    pointInside(point) {
-        return this.pointInPoly(point);
+    pointInPoly() {
+        throw new Error("Deprecated, please use pointInside() instead.");
     }
     /**
      * Check if a point is inside this polygon.
      * @param {IgePoint2d | IgePoint3d} point
      * @return {boolean}
      */
-    pointInPoly(point) {
-        const polyPoints = this._poly;
-        const pointCount = polyPoints.length;
-        let oldPointIndex = pointCount - 1;
-        let c = false;
-        for (let pointIndex = 0; pointIndex < pointCount; oldPointIndex = pointIndex++) {
-            if (((polyPoints[pointIndex].y > point.y) !== (polyPoints[oldPointIndex].y > point.y)) &&
-                (point.x < (polyPoints[oldPointIndex].x - polyPoints[pointIndex].x) *
-                    (point.y - polyPoints[pointIndex].y) / (polyPoints[oldPointIndex].y - polyPoints[pointIndex].y) +
-                    polyPoints[pointIndex].x)) {
-                c = !c;
-            }
-        }
-        return c;
+    pointInside(point) {
+        return this.xyInside(point.x, point.y);
     }
     /**
      * Check if the passed x and y are inside this polygon.

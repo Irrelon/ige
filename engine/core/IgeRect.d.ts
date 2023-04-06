@@ -1,11 +1,11 @@
 import { IgePoint3d } from "./IgePoint3d";
 import { IgePoint2d } from "./IgePoint2d";
-import { IgeBaseClass } from "./IgeBaseClass";
 import { IgeCanvasRenderingContext2d } from "@/types/IgeCanvasRenderingContext2d";
+import { IgePolygonFunctionality } from "@/types/IgePolygonFunctionality";
 /**
  * Creates a new rectangle (x, y, width, height).
  */
-export declare class IgeRect extends IgeBaseClass {
+export declare class IgeRect implements IgePolygonFunctionality {
     classId: string;
     x: number;
     y: number;
@@ -54,10 +54,9 @@ export declare class IgeRect extends IgeBaseClass {
     /**
      * Returns boolean indicating if the passed IgeRect is
      * intersecting the rectangle.
-     * @param {IgeRect} rect
-     * @return {Boolean}
+     * @deprecated Please use intersects() instead.
      */
-    rectIntersect(rect: IgeRect): boolean;
+    rectIntersect(): void;
     /**
      * Returns boolean indicating if the passed IgeRect is
      * intersecting the rectangle.

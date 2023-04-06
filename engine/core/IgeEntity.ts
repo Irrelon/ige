@@ -28,6 +28,7 @@ import type { IgeCanRegisterByCategory } from "@/types/IgeCanRegisterByCategory"
 import type { IgeInputComponent } from "../components/IgeInputComponent";
 import { IgeBehaviourType } from "@/enums/IgeBehaviourType";
 import { registerClass } from "@/engine/igeClassStore";
+import { IgePolygonFunctionality } from "@/types/IgePolygonFunctionality";
 
 export interface IgeEntityTransformAccessor {
 	x: (val?: number) => number | IgeEntity;
@@ -1478,8 +1479,8 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 		let mouseTriggerPoly;
 
 		// Use the trigger polygon function if defined
-		if (this._triggerPolygon && this[this._triggerPolygon]) {
-			mouseTriggerPoly = this[this._triggerPolygon]();
+		if (this._triggerPolygonFunctionName && this[this._triggerPolygonFunctionName]) {
+			mouseTriggerPoly = this[this._triggerPolygonFunctionName]();
 		} else {
 			// Default to either aabb or bounds3dPolygon depending on entity parent mounting mode
 			if (this._parent && this._parent._mountMode === IgeMountMode.iso) {
@@ -2280,15 +2281,23 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 	 * used when determining if a pointer event occurs on this entity.
 	 * @param poly
 	 */
-	triggerPolygon(poly: "aabb" | "bounds3dPolygon" | "localBounds3dPolygon"): this;
-	triggerPolygon(): "aabb" | "bounds3dPolygon" | "localBounds3dPolygon";
-	triggerPolygon (setting?: "aabb" | "bounds3dPolygon" | "localBounds3dPolygon") {
+	triggerPolygonFunctionName(poly: "aabb" | "bounds3dPolygon" | "localBounds3dPolygon"): this;
+	triggerPolygonFunctionName(): "aabb" | "bounds3dPolygon" | "localBounds3dPolygon";
+	triggerPolygonFunctionName (setting?: "aabb" | "bounds3dPolygon" | "localBounds3dPolygon") {
 		if (setting !== undefined) {
-			this._triggerPolygon = setting;
+			this._triggerPolygonFunctionName = setting;
 			return this;
 		}
 
-		return this._triggerPolygon;
+		return this._triggerPolygonFunctionName;
+	}
+
+	/**
+	 * Will return the polygon used when determining if a pointer event occurs
+	 * on this entity.
+	 */
+	triggerPolygon (): IgePolygonFunctionality {
+		return this[this._triggerPolygonFunctionName]();
 	}
 
 	/**
@@ -2297,10 +2306,10 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 	 * 'isoBounds'. The default is 'aabb'.
 	 * @param val
 	 * @returns {*}
-	 * @deprecated Please use triggerPolygon() instead
+	 * @deprecated Please use triggerPolygonFunctionName() instead
 	 */
 	mouseEventTrigger = (val?: boolean) => {
-		this.log("mouseEventTrigger is no longer in use. Please see triggerPolygon() instead.", "warning");
+		this.log("mouseEventTrigger is no longer in use. Please see triggerPolygonFunctionName() instead.", "warning");
 	};
 
 	/**

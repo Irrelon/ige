@@ -1,10 +1,8 @@
-import { IgeBaseClass } from "./IgeBaseClass.js";
 /**
  * Creates a new rectangle (x, y, width, height).
  */
-export class IgeRect extends IgeBaseClass {
+export class IgeRect {
     constructor(x = 0, y = 0, width = 0, height = 0) {
-        super();
         this.classId = "IgeRect";
         this.x = 0;
         this.y = 0;
@@ -72,17 +70,15 @@ export class IgeRect extends IgeBaseClass {
      * @return {Boolean}
      */
     pointInside(point) {
-        return point.x >= this.x && point.y > this.y && point.x <= this.x + this.width && point.y <= this.y + this.height;
+        return this.xyInside(point.x, point.y);
     }
     /**
      * Returns boolean indicating if the passed IgeRect is
      * intersecting the rectangle.
-     * @param {IgeRect} rect
-     * @return {Boolean}
+     * @deprecated Please use intersects() instead.
      */
-    rectIntersect(rect) {
-        this.log("rectIntersect has been renamed to \"intersects\". Please update your code. rectIntersect will be removed in a later version of IGE.", "warning");
-        return this.intersects(rect);
+    rectIntersect() {
+        throw new Error("Deprecated, please use intersects() instead.");
     }
     /**
      * Returns boolean indicating if the passed IgeRect is

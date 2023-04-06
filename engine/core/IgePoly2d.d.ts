@@ -2,15 +2,16 @@ import { IgePoint2d } from "./IgePoint2d";
 import { IgeRect } from "./IgeRect";
 import { IgeCanvasRenderingContext2d } from "@/types/IgeCanvasRenderingContext2d";
 import { IgePoint3d } from "@/engine/core/IgePoint3d";
+import { IgePolygonFunctionality } from "@/types/IgePolygonFunctionality";
 /**
  * Creates a new 2d polygon made up of IgePoint2d instances.
  */
-export declare class IgePoly2d {
+export declare class IgePoly2d implements IgePolygonFunctionality {
     classId: string;
     _poly: IgePoint2d[];
     _scale: IgePoint2d;
     constructor();
-    scale(x?: number, y?: number): IgePoint2d | this;
+    scale(x?: number, y?: number): this | IgePoint2d;
     /**
      * Multiplies the points of the polygon by the supplied factor.
      * @param {number} factor The multiplication factor.
@@ -35,17 +36,16 @@ export declare class IgePoly2d {
      */
     length(): number;
     /**
-     * An alias for the pointInPoly() function.
-     * @param {IgePoint2d | IgePoint3d} point
-     * @return {boolean}
+     * Check if a point is inside this polygon.
+     * @deprecated Please use pointInside() instead.
      */
-    pointInside(point: IgePoint2d | IgePoint3d): boolean;
+    pointInPoly(): void;
     /**
      * Check if a point is inside this polygon.
      * @param {IgePoint2d | IgePoint3d} point
      * @return {boolean}
      */
-    pointInPoly(point: IgePoint2d | IgePoint3d): boolean;
+    pointInside(point: IgePoint2d | IgePoint3d): boolean;
     /**
      * Check if the passed x and y are inside this polygon.
      * @param {number} x

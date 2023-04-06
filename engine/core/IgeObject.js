@@ -49,6 +49,7 @@ export class IgeObject extends IgeEventingClass {
         this._depthSortMode = IgeIsometricDepthSortMode.bounds3d;
         this._inView = true;
         this._managed = 1;
+        this._triggerPolygonFunctionName = "aabb";
         this._compositeCache = false;
         this._compositeParent = false;
         this._cell = 1;

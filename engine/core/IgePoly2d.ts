@@ -2,11 +2,12 @@ import { IgePoint2d } from "./IgePoint2d";
 import { IgeRect } from "./IgeRect";
 import { IgeCanvasRenderingContext2d } from "@/types/IgeCanvasRenderingContext2d";
 import { IgePoint3d } from "@/engine/core/IgePoint3d";
+import { IgePolygonFunctionality } from "@/types/IgePolygonFunctionality";
 
 /**
  * Creates a new 2d polygon made up of IgePoint2d instances.
  */
-export class IgePoly2d {
+export class IgePoly2d implements IgePolygonFunctionality {
 	classId = "IgePoly2d";
 	_poly: IgePoint2d[];
 	_scale: IgePoint2d;
@@ -33,6 +34,7 @@ export class IgePoly2d {
 	 * @return {*}
 	 */
 	multiply (factor?: number) {
+		// TODO: Look at IgeRect and normalise this function name
 		if (factor !== undefined) {
 			const polyPoints = this._poly;
 			const pointCount = polyPoints.length;
@@ -84,12 +86,11 @@ export class IgePoly2d {
 	}
 
 	/**
-	 * An alias for the pointInPoly() function.
-	 * @param {IgePoint2d | IgePoint3d} point
-	 * @return {boolean}
+	 * Check if a point is inside this polygon.
+	 * @deprecated Please use pointInside() instead.
 	 */
-	pointInside (point: IgePoint2d | IgePoint3d): boolean {
-		return this.pointInPoly(point);
+	pointInPoly () {
+		throw new Error("Deprecated, please use pointInside() instead.");
 	}
 
 	/**
@@ -97,22 +98,8 @@ export class IgePoly2d {
 	 * @param {IgePoint2d | IgePoint3d} point
 	 * @return {boolean}
 	 */
-	pointInPoly (point: IgePoint2d | IgePoint3d): boolean {
-		const polyPoints = this._poly;
-		const pointCount = polyPoints.length;
-		let oldPointIndex = pointCount - 1;
-		let c = false;
-
-		for (let pointIndex = 0; pointIndex < pointCount; oldPointIndex = pointIndex++) {
-			if (((polyPoints[pointIndex].y > point.y) !== (polyPoints[oldPointIndex].y > point.y)) &&
-				(point.x < (polyPoints[oldPointIndex].x - polyPoints[pointIndex].x) *
-					(point.y - polyPoints[pointIndex].y) / (polyPoints[oldPointIndex].y - polyPoints[pointIndex].y) +
-					polyPoints[pointIndex].x)) {
-				c = !c;
-			}
-		}
-
-		return c;
+	pointInside (point: IgePoint2d | IgePoint3d): boolean {
+		return this.xyInside(point.x, point.y);
 	}
 
 	/**
@@ -142,7 +129,7 @@ export class IgePoly2d {
 	/**
 	 * Calculates and returns the axis-aligned bounding-box for this polygon.
 	 */
-	aabb () {
+	aabb (): IgeRect {
 		const xArr = [];
 		const yArr = [];
 		const arr = this._poly;
