@@ -5,7 +5,7 @@ export class IgeFilters {
         if (typeof window === "undefined") {
             return;
         }
-        this.tmpCanvas = document.createElement("canvas");
+        this.tmpCanvas = new OffscreenCanvas(2, 2);
         this.tmpCtx = this.tmpCanvas.getContext("2d");
     }
     getFilter(name) {

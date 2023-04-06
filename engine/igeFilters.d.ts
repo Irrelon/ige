@@ -4,7 +4,7 @@ export type IgeFilterHelperFunction = (...args: any[]) => any;
 export declare class IgeFilters {
     filter: Record<string, IgeSmartFilter>;
     helper: Record<string, IgeFilterHelperFunction>;
-    tmpCanvas?: HTMLCanvasElement;
+    tmpCanvas?: OffscreenCanvas;
     tmpCtx?: IgeCanvasRenderingContext2d | null;
     constructor();
     getFilter(name: string): IgeSmartFilter | undefined;

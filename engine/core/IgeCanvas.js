@@ -1,5 +1,5 @@
 export const newCanvas = () => {
-    const instance = document.createElement("canvas");
+    const instance = new OffscreenCanvas(2, 2);
     Object.defineProperty(instance, "_igeTextures", {
         configurable: true,
         enumerable: true,

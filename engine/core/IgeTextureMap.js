@@ -402,18 +402,16 @@ export class IgeTextureMap extends IgeTileMap2d {
         this._sections[sectionX] = this._sections[sectionX] || [];
         this._sectionCtx[sectionX] = this._sectionCtx[sectionX] || [];
         if (!this._sections[sectionX][sectionY]) {
-            this._sections[sectionX][sectionY] = document.createElement("canvas");
+            this._sections[sectionX][sectionY] = new OffscreenCanvas(2, 2);
             this._sections[sectionX][sectionY].width = (this._tileWidth * this._autoSection);
             this._sections[sectionX][sectionY].height = (this._tileHeight * this._autoSection);
             sectionCtx = this._sectionCtx[sectionX][sectionY] = this._sections[sectionX][sectionY].getContext("2d");
             // Ensure the canvas is using the correct image antialiasing mode
             if (!this._ige._globalSmoothing) {
                 sectionCtx.imageSmoothingEnabled = false;
-                sectionCtx.mozImageSmoothingEnabled = false;
             }
             else {
                 sectionCtx.imageSmoothingEnabled = true;
-                sectionCtx.mozImageSmoothingEnabled = true;
             }
             // One-time translate the context
             sectionCtx.translate(this._tileWidth / 2, this._tileHeight / 2);

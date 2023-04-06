@@ -119,10 +119,10 @@ export declare class IgeEngine extends IgeEntity {
         smoothing: boolean;
         pixelRatioScaling: boolean;
     }): {
-        canvas: HTMLCanvasElement;
-        ctx: CanvasRenderingContext2D;
+        canvas: OffscreenCanvas;
+        ctx: OffscreenCanvasRenderingContext2D;
     };
-    _setInternalCanvasSize(canvas: HTMLCanvasElement | IgeDummyCanvas, ctx: IgeCanvasRenderingContext2d, newWidth: number, newHeight: number): void;
+    _setInternalCanvasSize(canvas: OffscreenCanvas | IgeDummyCanvas, ctx: IgeCanvasRenderingContext2d, newWidth: number, newHeight: number): void;
     /**
      * Handles the screen resize event.
      * @param event

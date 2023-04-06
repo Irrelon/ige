@@ -580,7 +580,7 @@ export class IgeEngine extends IgeEntity {
         // current ige settings if no options are provided. This is a
         // safe way to generate a new canvas for things like caching
         // stores or whatever
-        const canvas = document.createElement("canvas");
+        const canvas = new OffscreenCanvas(2, 2);
         // Get the context
         const ctx = canvas.getContext("2d");
         if (!ctx) {

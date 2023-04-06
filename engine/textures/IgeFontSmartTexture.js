@@ -86,7 +86,7 @@ export const IgeFontSmartTexture = {
             if (!entity._nativeFont) {
                 return -1;
             }
-            const canvas = document.createElement("canvas");
+            const canvas = new OffscreenCanvas(2, 2);
             const ctx = canvas.getContext("2d");
             if (!ctx) {
                 throw new Error("measureTextWidth() failed to get a canvas 2d context to work with!");

@@ -19,7 +19,7 @@ export declare const WithUiStyleMixin: <BaseClassType extends Mixin<IgeObject>>(
         _patternHeight?: number | undefined;
         _patternFill?: CanvasPattern | undefined;
         _cell: number | null;
-        _backgroundColor?: string | CanvasPattern | CanvasGradient | undefined;
+        _backgroundColor?: string | CanvasGradient | CanvasPattern | undefined;
         _borderColor?: string | undefined;
         _borderLeftColor?: string | undefined;
         _borderTopColor?: string | undefined;
@@ -50,7 +50,7 @@ export declare const WithUiStyleMixin: <BaseClassType extends Mixin<IgeObject>>(
          * @param {CSSColor, CanvasGradient, CanvasPattern=} color
          * @return {*} Returns this when setting the value or the current value if none is specified.
          */
-        color(color: string | CanvasGradient | CanvasPattern): string | CanvasPattern | CanvasGradient | any;
+        color(color: string | CanvasGradient | CanvasPattern): string | CanvasGradient | CanvasPattern | any;
         /**
          * Sets the current background texture and the repeatType
          * to determine in which axis the image should be repeated.
@@ -71,7 +71,7 @@ export declare const WithUiStyleMixin: <BaseClassType extends Mixin<IgeObject>>(
          * @param {CSSColor, CanvasGradient, CanvasPattern=} color
          * @return {*} Returns this when setting the value or the current value if none is specified.
          */
-        backgroundColor(color: string | CanvasGradient | CanvasPattern): string | CanvasPattern | CanvasGradient | any | undefined;
+        backgroundColor(color: string | CanvasGradient | CanvasPattern): string | CanvasGradient | CanvasPattern | any | undefined;
         /**
          * Gets / sets the position to start rendering the background image at.
          * @param {number=} x
@@ -196,7 +196,7 @@ export declare const WithUiStyleMixin: <BaseClassType extends Mixin<IgeObject>>(
         _hidden: boolean;
         _cache: boolean;
         _cacheCtx?: import("../../types/IgeCanvasRenderingContext2d").IgeCanvasRenderingContext2d | null | undefined;
-        _cacheCanvas?: HTMLCanvasElement | import("../core/IgeDummyCanvas").IgeDummyCanvas | undefined;
+        _cacheCanvas?: OffscreenCanvas | import("../core/IgeDummyCanvas").IgeDummyCanvas | undefined;
         _cacheDirty: boolean;
         _cacheSmoothing: boolean;
         _aabbDirty: boolean;
@@ -228,7 +228,7 @@ export declare const WithUiStyleMixin: <BaseClassType extends Mixin<IgeObject>>(
         id(): string;
         category(val: string): any;
         category(): string;
-        drawBounds(id: boolean, recursive?: boolean | undefined): any;
+        drawBounds(val: boolean, recursive?: boolean | undefined): any;
         drawBounds(): boolean;
         drawBoundsData(): boolean;
         drawBoundsData(val: boolean): any;

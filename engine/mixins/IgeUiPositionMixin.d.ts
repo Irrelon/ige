@@ -200,7 +200,7 @@ export declare const WithUiPositionMixin: <BaseClassType extends Mixin<IgeObject
         _hidden: boolean;
         _cache: boolean;
         _cacheCtx?: import("../../types/IgeCanvasRenderingContext2d").IgeCanvasRenderingContext2d | null | undefined;
-        _cacheCanvas?: HTMLCanvasElement | import("../core/IgeDummyCanvas").IgeDummyCanvas | undefined;
+        _cacheCanvas?: OffscreenCanvas | import("../core/IgeDummyCanvas").IgeDummyCanvas | undefined;
         _cacheDirty: boolean;
         _cacheSmoothing: boolean;
         _aabbDirty: boolean;
@@ -232,7 +232,7 @@ export declare const WithUiPositionMixin: <BaseClassType extends Mixin<IgeObject
         id(): string;
         category(val: string): any;
         category(): string;
-        drawBounds(id: boolean, recursive?: boolean | undefined): any;
+        drawBounds(val: boolean, recursive?: boolean | undefined): any;
         drawBounds(): boolean;
         drawBoundsData(): boolean;
         drawBoundsData(val: boolean): any;

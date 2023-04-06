@@ -15,7 +15,7 @@ export const glowMask = function (canvas, ctx, originalImage, texture, data) {
         }
         if (!pixelData)
             return;
-        tempCanvas = document.createElement("canvas");
+        tempCanvas = new OffscreenCanvas(2, 2);
         tempCtx = tempCanvas.getContext("2d");
         tempCanvas.width = canvas.width;
         tempCanvas.height = canvas.height;

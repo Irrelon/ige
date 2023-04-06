@@ -41,7 +41,7 @@ export class IgeFontSheet extends IgeTexture {
     }
     decodeHeader() {
         // Create a temporary canvas
-        const canvas = document.createElement("canvas"), ctx = canvas.getContext("2d");
+        const canvas = new OffscreenCanvas(2, 2), ctx = canvas.getContext("2d");
         // Set canvas width to match font sheet image and
         // height to 1 as we have 1 line of header data
         canvas.width = this.image.width;
