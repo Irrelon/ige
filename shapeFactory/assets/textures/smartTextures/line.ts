@@ -1,10 +1,18 @@
 import { IgeSmartTexture } from "@/types/IgeSmartTexture";
+import { IgePoint3d } from "@/engine/core/IgePoint3d";
 
 export const lineSmartTexture: IgeSmartTexture = {
 	render: function (ctx, entity) {
 		ctx.beginPath();
-		ctx.moveTo(-entity._bounds2d.x2, -entity._bounds2d.y2);
-		ctx.lineTo(entity._bounds2d.x2, entity._bounds2d.y2);
+		if (entity.isometric()) {
+			const p1 = new IgePoint3d(-entity._bounds2d.x2, -entity._bounds2d.y2, 0).toIso();
+			const p2 = new IgePoint3d(entity._bounds2d.x2, entity._bounds2d.y2, 0).toIso();
+			ctx.moveTo(p1.x, p1.y);
+			ctx.lineTo(p2.x, p2.y);
+		} else {
+			ctx.moveTo(-entity._bounds2d.x2, -entity._bounds2d.y2);
+			ctx.lineTo(entity._bounds2d.x2, entity._bounds2d.y2);
+		}
 		ctx.lineWidth = 4;
 		ctx.strokeStyle = "#ffffff";
 		ctx.shadowColor = entity.data("glowColor");

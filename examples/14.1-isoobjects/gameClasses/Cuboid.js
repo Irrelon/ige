@@ -7,7 +7,7 @@ export class Cuboid extends IgeEntity {
             // .pointerMove(pointerMoveFunc)
             // .pointerOut(pointerOutFunc)
             // .pointerEventsActive(true)
-            .triggerPolygon('bounds3dPolygon')
+            .triggerPolygonFunctionName('bounds3dPolygon')
             .opacity(0.95);
     }
 }

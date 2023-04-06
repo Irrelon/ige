@@ -39,7 +39,15 @@ export class Road extends Line {
 			return;
 		}
 
-		this.setLine(this._from._translate.x, this._from._translate.y, this._to._translate.x, this._to._translate.y);
+		if (this.isometric()) {
+			const fromLocation = this._from._translate;
+			const toLocation = this._to._translate;
+			this.setLine(fromLocation.x, fromLocation.y, toLocation.x, toLocation.y);
+		} else {
+			const fromLocation = this._from._translate;
+			const toLocation = this._to._translate;
+			this.setLine(fromLocation.x, fromLocation.y, toLocation.x, toLocation.y);
+		}
 	}
 
 	streamCreateConstructorArgs () {

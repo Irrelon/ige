@@ -59,12 +59,12 @@ export declare class IgeUiLabel extends IgeUiElement {
      * @param fontSheet
      * @return {*}
      */
-    fontSheet(fontSheet?: IgeFontSheet): this | IgeFontSheet | undefined;
+    fontSheet(fontSheet?: IgeFontSheet): IgeFontSheet | this | undefined;
     font(val: string | IgeFontSheet): this;
     font(): string | IgeFontSheet;
-    nativeFont(val?: string): string | this | IgeFontEntity | undefined;
-    nativeStroke(val?: number): number | this | IgeFontEntity | undefined;
-    nativeStrokeColor(val?: string): string | this | IgeFontEntity | undefined;
+    nativeFont(val?: string): string | IgeFontEntity | this | undefined;
+    nativeStroke(val?: number): number | IgeFontEntity | this | undefined;
+    nativeStrokeColor(val?: string): string | IgeFontEntity | this | undefined;
     color(val: string): this;
     color(): string;
     update(ctx: IgeCanvasRenderingContext2d, tickDelta: number): void;

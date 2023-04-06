@@ -159,7 +159,7 @@ export declare const WithUiPositionMixin: <BaseClassType extends Mixin<IgeObject
         _depthSortMode: import("../../enums/IgeIsometricDepthSortMode").IgeIsometricDepthSortMode;
         _inView: boolean;
         _managed: number;
-        _triggerPolygonFunctionName: "localBounds3dPolygon" | "bounds3dPolygon" | "aabb";
+        _triggerPolygonFunctionName: "aabb" | "bounds3dPolygon" | "localBounds3dPolygon";
         _compositeCache: boolean;
         _compositeParent: boolean;
         _anchor: import("../core/IgePoint2d").IgePoint2d;
@@ -211,7 +211,7 @@ export declare const WithUiPositionMixin: <BaseClassType extends Mixin<IgeObject
         _texture?: import("../core/IgeTexture").IgeTexture | undefined;
         _indestructible: boolean;
         _shouldRender?: boolean | undefined;
-        _smartBackground?: import("../../types/IgeSmartTexture").IgeSmartTexture<IgeObject> | undefined;
+        _smartBackground?: import("../../types/IgeSmartTexture").IgeSmartTexture<import("../core/IgeEntity").IgeEntity> | undefined;
         _lastUpdate?: number | undefined;
         _behaviours?: import("../../types/IgeBehaviourStore").IgeBehaviourStore | undefined;
         _birthMount?: string | undefined;

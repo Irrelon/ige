@@ -17,6 +17,7 @@ import { ResourceType } from "../enums/ResourceType.js";
 import { Line } from "../entities/base/Line.js";
 import { FlagBuilding } from "../entities/FlagBuilding.js";
 import { MiningBuilding } from "../entities/MiningBuilding.js";
+import { IgePoint3d } from "../../engine/core/IgePoint3d.js";
 export const controllerClient = () => __awaiter(void 0, void 0, void 0, function* () {
     const network = ige.network;
     const uiCreateStorage = ige.$("uiCreateStorage");
@@ -124,7 +125,11 @@ export const controllerClient = () => __awaiter(void 0, void 0, void 0, function
                 return;
             const gridX = Math.round(ige._pointerPos.x / 100) * 100;
             const gridY = Math.round(ige._pointerPos.y / 100) * 100;
-            tmpBuilding.translateTo(gridX, gridY, 0);
+            const tr = new IgePoint3d(gridX, gridY);
+            if (ige.data("isometric")) {
+                tr.thisTo2d();
+            }
+            tmpBuilding.translateTo(tr.x, tr.y, 0);
         }),
         click: () => __awaiter(void 0, void 0, void 0, function* () {
             const gridX = Math.round(ige._pointerPos.x / 100) * 100;
@@ -133,10 +138,14 @@ export const controllerClient = () => __awaiter(void 0, void 0, void 0, function
             // Get the building details
             const buildingType = fsm.data("createBuilding");
             const createArgs = fsm.data("createArgs") || [];
+            const tr = new IgePoint3d(gridX, gridY);
+            if (ige.data("isometric")) {
+                tr.thisTo2d();
+            }
             const buildingId = yield network.request("createBuilding", {
                 buildingType,
-                x: gridX,
-                y: gridY,
+                x: tr.x,
+                y: tr.y,
                 resourceType: [createArgs[0]]
             });
             console.log("Building created", buildingId);
@@ -169,10 +178,18 @@ export const controllerClient = () => __awaiter(void 0, void 0, void 0, function
             const tmpBuilding = ige.$("tmpBuilding");
             if (!tmpBuilding)
                 return;
+            const startFlag = fsm.data("startFlag");
             const gridX = Math.round(ige._pointerPos.x / 100) * 100;
             const gridY = Math.round(ige._pointerPos.y / 100) * 100;
-            const startFlag = fsm.data("startFlag");
-            tmpBuilding.setLine(startFlag._translate.x, startFlag._translate.y, gridX, gridY);
+            const p1 = new IgePoint3d(startFlag._translate.x, startFlag._translate.y);
+            if (ige.data("isometric")) {
+                p1.thisToIso();
+            }
+            const p2 = new IgePoint3d(gridX, gridY);
+            // if (ige.data("isometric")) {
+            // 	p2.thisToIso();
+            // }
+            tmpBuilding.setLine(p1.x, p1.y, p2.x, p2.y);
         }),
         click: (building) => __awaiter(void 0, void 0, void 0, function* () {
             const scene1 = ige.$("scene1");
@@ -182,11 +199,15 @@ export const controllerClient = () => __awaiter(void 0, void 0, void 0, function
             // Check the location and determine if we can build there
             // Check if the end is a flag and if not, create one
             if (!building) {
+                const tr = new IgePoint3d(gridX, gridY);
+                if (ige.data("isometric")) {
+                    tr.thisTo2d();
+                }
                 // No building exists at the grid location, create a new flag
                 destinationFlagId = yield network.request("createBuilding", {
                     buildingType: BuildingType.flag,
-                    x: gridX,
-                    y: gridY
+                    x: tr.x,
+                    y: tr.y
                 });
             }
             else if (building.classId === "FlagBuilding") {
@@ -224,7 +245,7 @@ export const controllerClient = () => __awaiter(void 0, void 0, void 0, function
         const buildings = ige.$$("building");
         // Loop the buildings and check against the AABB
         const foundBuilding = buildings.find((building) => {
-            return building.bounds3dPolygon().pointInside(ige._pointerPos);
+            return building.triggerPolygon().pointInside(ige._pointerPos);
         });
         if (foundBuilding) {
             console.log("foundBuilding", foundBuilding);
@@ -238,7 +259,7 @@ export const controllerClient = () => __awaiter(void 0, void 0, void 0, function
         //
         // // Loop the buildings and check against the AABB
         // const foundBuilding = buildings.find((building) => {
-        // 	return building.bounds3dPolygon().pointInside(ige._pointerPos);
+        // 	return building.triggerPolygon().pointInside(ige._pointerPos);
         // });
         //
         // if (foundBuilding) {

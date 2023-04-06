@@ -15,6 +15,7 @@ import { FlagBuilding } from "../entities/FlagBuilding";
 import { Building } from "../entities/base/Building";
 import { IgeNetIoClientController } from "@/engine/network/client/IgeNetIoClientController";
 import { MiningBuilding } from "../entities/MiningBuilding";
+import { IgePoint3d } from "@/engine/core/IgePoint3d";
 
 export const controllerClient: IgeEffectFunction = async () => {
 	const network = ige.network as IgeNetIoClientController;
@@ -139,7 +140,13 @@ export const controllerClient: IgeEffectFunction = async () => {
 			const gridX = Math.round(ige._pointerPos.x / 100) * 100;
 			const gridY = Math.round(ige._pointerPos.y / 100) * 100;
 
-			tmpBuilding.translateTo(gridX,gridY, 0);
+			const tr = new IgePoint3d(gridX, gridY);
+
+			if (ige.data("isometric")) {
+				tr.thisTo2d();
+			}
+
+			tmpBuilding.translateTo(tr.x,tr.y, 0);
 		},
 		click: async () => {
 			const gridX = Math.round(ige._pointerPos.x / 100) * 100;
@@ -151,10 +158,16 @@ export const controllerClient: IgeEffectFunction = async () => {
 			const buildingType = fsm.data("createBuilding");
 			const createArgs = fsm.data("createArgs") || [];
 
+			const tr = new IgePoint3d(gridX, gridY);
+
+			if (ige.data("isometric")) {
+				tr.thisTo2d();
+			}
+
 			const buildingId = await network.request("createBuilding", {
 				buildingType,
-				x: gridX,
-				y: gridY,
+				x: tr.x,
+				y: tr.y,
 				resourceType: [createArgs[0]]
 			});
 
@@ -196,12 +209,24 @@ export const controllerClient: IgeEffectFunction = async () => {
 			const tmpBuilding = ige.$("tmpBuilding") as Line;
 			if (!tmpBuilding) return;
 
+			const startFlag = fsm.data("startFlag") as FlagBuilding;
+
 			const gridX = Math.round(ige._pointerPos.x / 100) * 100;
 			const gridY = Math.round(ige._pointerPos.y / 100) * 100;
 
-			const startFlag = fsm.data("startFlag") as FlagBuilding;
+			const p1 = new IgePoint3d(startFlag._translate.x, startFlag._translate.y);
 
-			tmpBuilding.setLine(startFlag._translate.x, startFlag._translate.y, gridX, gridY);
+			if (ige.data("isometric")) {
+				p1.thisToIso();
+			}
+
+			const p2 = new IgePoint3d(gridX, gridY);
+
+			// if (ige.data("isometric")) {
+			// 	p2.thisToIso();
+			// }
+
+			tmpBuilding.setLine(p1.x, p1.y, p2.x, p2.y);
 		},
 		click: async (building?: Building) => {
 			const scene1 = ige.$("scene1") as IgeScene2d;
@@ -214,11 +239,17 @@ export const controllerClient: IgeEffectFunction = async () => {
 
 			// Check if the end is a flag and if not, create one
 			if (!building) {
+				const tr = new IgePoint3d(gridX, gridY);
+
+				if (ige.data("isometric")) {
+					tr.thisTo2d();
+				}
+
 				// No building exists at the grid location, create a new flag
 				destinationFlagId = await network.request("createBuilding", {
 					buildingType: BuildingType.flag,
-					x: gridX,
-					y: gridY
+					x: tr.x,
+					y: tr.y
 				});
 			} else if (building.classId === "FlagBuilding") {
 				// The clicked end point is a flag, use this
@@ -260,7 +291,7 @@ export const controllerClient: IgeEffectFunction = async () => {
 
 		// Loop the buildings and check against the AABB
 		const foundBuilding = buildings.find((building) => {
-			return building.bounds3dPolygon().pointInside(ige._pointerPos);
+			return building.triggerPolygon().pointInside(ige._pointerPos);
 		});
 
 		if (foundBuilding) {
@@ -278,7 +309,7 @@ export const controllerClient: IgeEffectFunction = async () => {
 		//
 		// // Loop the buildings and check against the AABB
 		// const foundBuilding = buildings.find((building) => {
-		// 	return building.bounds3dPolygon().pointInside(ige._pointerPos);
+		// 	return building.triggerPolygon().pointInside(ige._pointerPos);
 		// });
 		//
 		// if (foundBuilding) {
