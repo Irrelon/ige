@@ -25,6 +25,9 @@ export class Resource extends Circle {
 			.width(10)
 			.height(10);
 
+		this.isometric(ige.data("isometric"));
+		//this.bounds3d(10, 10, 2);
+
 		this._type = type;
 		this._locationId = locationId;
 

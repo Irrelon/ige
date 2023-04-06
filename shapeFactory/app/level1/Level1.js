@@ -7,7 +7,6 @@ import { IgeSceneGraph } from "../../../engine/core/IgeSceneGraph.js";
 import { IgeScene2d } from "../../../engine/core/IgeScene2d.js";
 import { createStorageBuilding } from "../../services/createBuilding.js";
 import { Grid } from "../../entities/Grid.js";
-import { Cuboid } from "../../../examples/14.1-isoobjects/gameClasses/Cuboid.js";
 export class Level1 extends IgeSceneGraph {
     constructor() {
         super(...arguments);
@@ -25,17 +24,11 @@ export class Level1 extends IgeSceneGraph {
         // Create the scene
         const scene1 = new IgeScene2d()
             .id("scene1")
-            .isometricMounts(true)
+            .isometricMounts(ige.data("isometric"))
             .mount(baseScene);
-        const grid = new Grid().mount(baseScene);
-        const cuboid = new Cuboid(null, null)
-            .depth(1)
-            .streamMode(1)
-            .translateTo(0, 0, 0)
-            .bounds3d(200, 200, 10)
-            .pointerEventsActive(true)
-            .triggerPolygon('bounds3dPolygon')
-            .mount(scene1);
+        if (isClient) {
+            new Grid().id("buildGrid").mount(baseScene);
+        }
         if (isClient)
             return;
         new IgeAudioEntity()

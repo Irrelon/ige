@@ -9,7 +9,7 @@ export class GameEntity extends IgeEntity {
 	constructor () {
 		super();
 
-		//this.isometric(true);
+		//this.isometric(ige.data("isometric"));
 		this.streamMode(IgeStreamMode.simple);
 		this.streamSections(["transform", "props"]);
 

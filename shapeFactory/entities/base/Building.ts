@@ -28,7 +28,12 @@ export class Building extends GameEntity {
 		this._produces = ResourceType.none;
 		this._requires = [];
 
-		this.isometric(true);
+		this.isometric(ige.data("isometric"));
+
+		if (this.isometric()) {
+			this.bounds3d(30, 30, 30);
+			this.triggerPolygon('bounds3dPolygon');
+		}
 
 		this.category("building");
 	}

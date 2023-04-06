@@ -1,3 +1,4 @@
+import { ige } from "@/engine/instance";
 import { Circle } from "./Circle";
 import { WorkerUnitType } from "../../enums/WorkerUnitType";
 import { registerClass } from "@/engine/igeClassStore";
@@ -9,7 +10,7 @@ export class WorkerUnit extends Circle {
 		super();
 
 		this._type = type;
-		this.isometric(true);
+		this.isometric(ige.data("isometric"));
 
 		this.layer(0)
 			.width(20)

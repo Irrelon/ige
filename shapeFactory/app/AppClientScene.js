@@ -52,7 +52,7 @@ export class AppClientScene extends IgeSceneGraph {
             const vp1 = ige.$("vp1");
             vp1.addComponent("mousePan", IgeMousePanComponent);
             vp1.components.mousePan.enabled(true);
-            vp1.drawBounds(true);
+            vp1.drawBounds(true, true);
             vp1.drawBoundsData(true);
             yield network.start('http://localhost:2000');
         });

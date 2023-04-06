@@ -273,17 +273,17 @@ export const controllerClient: IgeEffectFunction = async () => {
 	const onPointerMove = () => {
 		fsm.raiseEvent("pointerMove");
 
-		// Run a hit test against the all the entities
-		const buildings = ige.$$("building") as Building[];
-
-		// Loop the buildings and check against the AABB
-		const foundBuilding = buildings.find((building) => {
-			return building.bounds3dPolygon().pointInside(ige._pointerPos);
-		});
-
-		if (foundBuilding) {
-			console.log("foundBuilding", foundBuilding);
-		}
+		// // Run a hit test against the all the entities
+		// const buildings = ige.$$("building") as Building[];
+		//
+		// // Loop the buildings and check against the AABB
+		// const foundBuilding = buildings.find((building) => {
+		// 	return building.bounds3dPolygon().pointInside(ige._pointerPos);
+		// });
+		//
+		// if (foundBuilding) {
+		// 	console.log("foundBuilding", foundBuilding);
+		// }
 	}
 
 	ige.input.on("pointerUp", onPointerUp);

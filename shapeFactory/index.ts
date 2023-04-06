@@ -5,7 +5,8 @@ import "./app/_route";
 export class Game {
 	classId = "Game";
 
-	constructor (options?: any) {
+	constructor () {
+		ige.data("isometric", false);
 		ige.router.go("app/level1");
 	}
 }

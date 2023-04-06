@@ -20,7 +20,7 @@ export class Road extends Line {
 
 		this._fromId = fromId;
 		this._toId = toId;
-		this.isometric(true);
+		this.isometric(ige.data("isometric"));
 		this.category("road");
 
 		this.setLocation();
