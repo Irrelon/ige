@@ -57,10 +57,10 @@ export class IgePoint3d {
     /**
      * Converts the point's x, y, z to an isometric x, y 2d co-ordinate
      * and returns an object whose x, y values are the result.
-     * @return {Object}
+     * @return IgePoint3d
      */
     toIso() {
-        return { "x": this.x - this.y, "y": (-this.z) * 1.2247 + (this.x + this.y) * 0.5 };
+        return new IgePoint3d(this.x - this.y, (-this.z) * 1.2247 + (this.x + this.y) * 0.5, 0);
     }
     /**
      * Converts this point's x, y, z data into isometric co-ordinate space
@@ -76,7 +76,7 @@ export class IgePoint3d {
     /**
      * Converts this point's x, y, z data into 2d co-ordinate space
      * and returns an object whose x, y values are the result.
-     * @return {Object}
+     * @return IgePoint3d
      */
     to2d() {
         return new IgePoint3d(this.y + this.x / 2, this.y - this.x / 2, 0);

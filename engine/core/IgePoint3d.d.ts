@@ -38,12 +38,9 @@ export declare class IgePoint3d {
     /**
      * Converts the point's x, y, z to an isometric x, y 2d co-ordinate
      * and returns an object whose x, y values are the result.
-     * @return {Object}
+     * @return IgePoint3d
      */
-    toIso(): {
-        x: number;
-        y: number;
-    };
+    toIso(): IgePoint3d;
     /**
      * Converts this point's x, y, z data into isometric co-ordinate space
      * and overwrites the previous x, y, z values with the result.
@@ -53,7 +50,7 @@ export declare class IgePoint3d {
     /**
      * Converts this point's x, y, z data into 2d co-ordinate space
      * and returns an object whose x, y values are the result.
-     * @return {Object}
+     * @return IgePoint3d
      */
     to2d(): IgePoint3d;
     /**
@@ -61,7 +58,7 @@ export declare class IgePoint3d {
      * and overwrites the previous x, y, z values with the result.
      * @return {*}
      */
-    thisTo2d(): this;
+    thisTo2d(): IgePoint3d;
     /**
      * Adds this point's data by the x, y, z, values specified
      * and returns a new IgePoint3d whose values are the result.
