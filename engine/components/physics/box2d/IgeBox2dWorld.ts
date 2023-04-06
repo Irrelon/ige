@@ -4,6 +4,8 @@ import { IgeEventingClass } from "../../../core/IgeEventingClass";
 import { ige } from "../../../instance";
 import { Box2D } from "./lib_box2d";
 import { IgeBehaviourType } from "@/enums/IgeBehaviourType";
+import { IgeEntityBox2d } from "@/engine/components/physics/box2d/IgeEntityBox2d";
+import { IgeBox2dTimingMode } from "@/enums/IgeBox2dTimingMode";
 
 export class IgeBox2dWorld extends IgeEventingClass {
 	classId = 'IgeBox2dWorld';
@@ -42,7 +44,7 @@ export class IgeBox2dWorld extends IgeEventingClass {
 		this._sleep = options.sleep;
 		this._scaleRatio = options.scaleRatio !== undefined ? options.scaleRatio : 30;
 		this._gravity = options.gravity;
-		this._renderMode = 0;
+		this._renderMode = IgeBox2dTimingMode.matchEngine;
 
 		this._removeWhenReady = [];
 
@@ -428,7 +430,7 @@ export class IgeBox2dWorld extends IgeEventingClass {
 			this._active = true;
 
 			if (!this._networkDebugMode) {
-				if (this._renderMode === 0) {
+				if (this._renderMode === IgeBox2dTimingMode.matchEngine) {
 					// Add the box2d behaviour to the ige
 					ige.engine.addBehaviour(IgeBehaviourType.preUpdate, `box2dStep_${this._id}`, this._behaviour);
 				} else {
@@ -442,7 +444,7 @@ export class IgeBox2dWorld extends IgeEventingClass {
 		if (this._active) {
 			this._active = false;
 
-			if (this._renderMode === 0) {
+			if (this._renderMode === IgeBox2dTimingMode.matchEngine) {
 				// Add the box2d behaviour to the ige
 				ige.engine.removeBehaviour(IgeBehaviourType.preUpdate, 'box2dStep_' + this._id);
 			} else {
@@ -483,7 +485,7 @@ export class IgeBox2dWorld extends IgeEventingClass {
 			}
 
 			// Call the world step; frame-rate, velocity iterations, position iterations
-			if (self._renderMode === 0) {
+			if (self._renderMode === IgeBox2dTimingMode.matchEngine) {
 				self._world.Step(ige._tickDelta / 1000, 8, 3);
 			} else {
 				self._world.Step(1 / 60, 8, 3);

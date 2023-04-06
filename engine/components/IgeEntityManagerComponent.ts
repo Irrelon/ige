@@ -5,6 +5,8 @@ import { IgeMountMode } from "@/enums/IgeMountMode";
 import { IgeRect } from "@/engine/core/IgeRect";
 import { IgeCanvasRenderingContext2d } from "@/types/IgeCanvasRenderingContext2d";
 import { IgeBehaviourType } from "@/enums/IgeBehaviourType";
+import { IgeEntityRenderMode } from "@/enums/IgeEntityRenderMode";
+import { IgePoint3d } from "@/engine/core/IgePoint3d";
 
 export class IgeEntityManagerComponent extends IgeComponent {
 	classId = "IgeEntityManagerComponent";
@@ -196,12 +198,12 @@ export class IgeEntityManagerComponent extends IgeComponent {
 			let ent = this._entity,
 				offset;
 
-			if (ent._renderMode === 0) {
+			if (ent._renderMode === IgeEntityRenderMode.flat) {
 				// 2d mode
 				offset = ent._translate;
 			}
 
-			if (ent._renderMode === 1) {
+			if (ent._renderMode === IgeEntityRenderMode.iso) {
 				// Iso mode
 				offset = ent._translate.toIso();
 			}

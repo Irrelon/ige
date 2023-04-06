@@ -117,7 +117,7 @@ export class IgeObject extends IgeEventingClass implements IgeCanRegisterById, I
 	_localMatrix: IgeMatrix2d;
 	_worldMatrix: IgeMatrix2d;
 	_oldWorldMatrix: IgeMatrix2d;
-	_adjustmentMatrix: IgeMatrix2d = new IgeMatrix2d();
+	_adjustmentMatrix?: IgeMatrix2d;
 	_hidden: boolean;
 	_cache: boolean = false;
 	_cacheCtx?: IgeCanvasRenderingContext2d | null;
@@ -450,7 +450,7 @@ export class IgeObject extends IgeEventingClass implements IgeCanRegisterById, I
 	 * @param inverse
 	 */
 	localToWorld (points: IgePoint[], viewport?: IgeViewport | null, inverse = false) {
-		// Commented as this was doing literally nothing
+		// TODO: Commented as this was doing literally nothing
 		//viewport = viewport || ige.engine._currentViewport;
 
 		if (this._adjustmentMatrix) {
@@ -466,6 +466,8 @@ export class IgeObject extends IgeEventingClass implements IgeCanRegisterById, I
 		}
 
 		if (this._ignoreCamera) {
+			// TODO: It looks like the ignoreCamera functionality needs further
+			//  investigation to make sure it works as expected
 			//viewport.camera._worldMatrix.transform(points, this);
 		}
 	}

@@ -60,7 +60,7 @@ export class IgeBox2dController extends IgeEventingClass {
 	constructor () {
 		super();
 
-		this._renderMode = 0;
+		this._renderMode = IgeBox2dTimingMode.matchEngine;
 
 		this.b2Color = Box2D.Common.b2Color;
 		this.b2Vec2 = Box2D.Common.Math.b2Vec2;
@@ -183,7 +183,7 @@ export class IgeBox2dController extends IgeEventingClass {
 		}
 
 		// Add the box2D behaviour to the engine
-		if (this._renderMode === 0) {
+		if (this._renderMode === IgeBox2dTimingMode.matchEngine) {
 			ige.engine.addBehaviour(IgeBehaviourType.preUpdate, "box2dStep", this._behaviour);
 		} else {
 			this._intervalTimer = setInterval(this._behaviour, 1000 / 60) as unknown as number;
@@ -201,7 +201,7 @@ export class IgeBox2dController extends IgeEventingClass {
 		this._active = false;
 
 		// Remove the box2D behaviour from the engine
-		if (this._renderMode === 0) {
+		if (this._renderMode === IgeBox2dTimingMode.matchEngine) {
 			ige.engine.removeBehaviour(IgeBehaviourType.preUpdate, "box2dStep");
 		} else {
 			clearInterval(this._intervalTimer);
@@ -730,7 +730,7 @@ export class IgeBox2dController extends IgeEventingClass {
 			}
 
 			// Call the world step; frame-rate, velocity iterations, position iterations
-			if (this._renderMode === 0) {
+			if (this._renderMode === IgeBox2dTimingMode.matchEngine) {
 				this._world.Step(ige.engine._tickDelta / 1000, 8, 3);
 			} else {
 				this._world.Step(1 / 60, 8, 3);

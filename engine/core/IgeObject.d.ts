@@ -110,7 +110,7 @@ export declare class IgeObject extends IgeEventingClass implements IgeCanRegiste
     _localMatrix: IgeMatrix2d;
     _worldMatrix: IgeMatrix2d;
     _oldWorldMatrix: IgeMatrix2d;
-    _adjustmentMatrix: IgeMatrix2d;
+    _adjustmentMatrix?: IgeMatrix2d;
     _hidden: boolean;
     _cache: boolean;
     _cacheCtx?: IgeCanvasRenderingContext2d | null;

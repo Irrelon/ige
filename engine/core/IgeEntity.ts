@@ -116,12 +116,12 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 	updateTransform () {
 		this._localMatrix.identity();
 
-		if (this._renderMode === 0) {
+		if (this._renderMode === IgeEntityRenderMode.flat) {
 			// 2d translation
 			this._localMatrix.multiply(this._localMatrix._newTranslate(this._translate.x, this._translate.y));
 		}
 
-		if (this._renderMode === 1) {
+		if (this._renderMode === IgeEntityRenderMode.iso) {
 			// iso translation
 			const isoPoint = this._translateIso = (new IgePoint3d(
 				this._translate.x,
@@ -421,7 +421,7 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 			);
 		}
 
-		const tileSize = this._renderMode === 0 ? this._parent._tileWidth : this._parent._tileWidth * 2;
+		const tileSize = this._renderMode === IgeEntityRenderMode.flat ? this._parent._tileWidth : this._parent._tileWidth * 2;
 
 		this.width(val * tileSize);
 
@@ -461,7 +461,7 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 			);
 		}
 
-		const tileSize = this._renderMode === 0 ? this._parent._tileHeight : this._parent._tileHeight * 2;
+		const tileSize = this._renderMode === IgeEntityRenderMode.flat ? this._parent._tileHeight : this._parent._tileHeight * 2;
 
 		this.height(val * tileSize);
 

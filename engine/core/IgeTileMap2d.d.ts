@@ -160,7 +160,7 @@ export declare class IgeTileMap2d extends IgeEntity {
     saveMap(): string;
     isometricMounts(): boolean;
     isometricMounts(val: boolean): this;
-    tileMapHitPolygon(): IgePoly2d | IgeRect | undefined;
+    tileMapHitPolygon(): IgeRect | IgePoly2d | undefined;
     _processTriggerHitTests(): boolean;
     _updateAdjustmentMatrix(): void;
     _childMounted(obj: IgeObject): void;

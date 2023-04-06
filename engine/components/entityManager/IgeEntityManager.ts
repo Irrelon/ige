@@ -6,6 +6,7 @@ import { IgeMountMode } from "@/enums/IgeMountMode";
 import { IgeEntityBehaviourMethod } from "@/types/IgeEntityBehaviour";
 import { IgeBehaviourType } from "@/enums/IgeBehaviourType";
 import type { IgeViewport } from "@/engine/core/IgeViewport";
+import { IgeEntityRenderMode } from "@/enums/IgeEntityRenderMode";
 
 /**
  * This component should be mounted to a parent entity such as an IgeScene2d but can
@@ -84,7 +85,7 @@ export class IgeEntityManager extends IgeComponent {
 				if (item.aabb) {
 					let itemAabb;
 
-					if (item._renderMode === 1 || (item._parent && item._parent._mountMode === IgeMountMode.iso)) {
+					if (item._renderMode === IgeEntityRenderMode.iso || (item._parent && item._parent._mountMode === IgeMountMode.iso)) {
 						itemAabb = item.bounds3dPolygon().aabb();
 					} else {
 						itemAabb = item.aabb();
@@ -141,7 +142,7 @@ export class IgeEntityManager extends IgeComponent {
 			if (item._managed) {
 				if (item.aabb) {
 					let itemAabb;
-					if (item._renderMode === 1 || (item._parent && item._parent._mountMode === IgeMountMode.iso)) {
+					if (item._renderMode === IgeEntityRenderMode.iso || (item._parent && item._parent._mountMode === IgeMountMode.iso)) {
 						itemAabb = item.bounds3dPolygon().aabb();
 					} else {
 						itemAabb = item.aabb();

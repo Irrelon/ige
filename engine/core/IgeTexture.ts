@@ -169,7 +169,7 @@ export class IgeTexture extends IgeAsset {
 					for (let i = 0; i < arrCount; i++) {
 						const item = arr[i];
 
-						item._renderMode = 0;
+						item._renderMode = IgeTextureRenderMode.image;
 
 						item.sizeX(image.width);
 						item.sizeY(image.height);
@@ -197,7 +197,7 @@ export class IgeTexture extends IgeAsset {
 				if (image._loaded) {
 					// The cached image object is already loaded so
 					// fire off the relevant events
-					this._renderMode = 0;
+					this._renderMode = IgeTextureRenderMode.image;
 
 					this.sizeX(image.width);
 					this.sizeY(image.height);
@@ -272,7 +272,7 @@ export class IgeTexture extends IgeAsset {
 			// 	// Store the eval data (the "image" variable is declared
 			// 	// by the texture script and becomes available in this scope
 			// 	// because we evaluated it above)
-			// 	self._renderMode = 1;
+			// 	self._renderMode = IgeTextureRenderMode.smartTexture;
 			// 	self.script = image;
 			//
 			// 	// Run the asset script init method
@@ -309,7 +309,7 @@ export class IgeTexture extends IgeAsset {
 		}
 
 		// Store the script data
-		this._renderMode = 1;
+		this._renderMode = IgeTextureRenderMode.smartTexture;
 		this.script = scriptObj;
 
 		// Run the asset script init method
@@ -340,7 +340,7 @@ export class IgeTexture extends IgeAsset {
 			// Mark the image as loaded
 			image._loaded = true;
 
-			this._renderMode = 0;
+			this._renderMode = IgeTextureRenderMode.image;
 
 			this.sizeX(image.width);
 			this.sizeY(image.height);
@@ -523,7 +523,7 @@ export class IgeTexture extends IgeAsset {
 			ige.engine._ctx.imageSmoothingEnabled = this._smoothing;
 		}
 
-		if (this._renderMode === 0) {
+		if (this._renderMode === IgeTextureRenderMode.image) {
 			// This texture is image-based
 			if (!this._originalImage || !this.image) {
 				throw new Error("No image is available to render but the IgeTexture is in mode zero (image based render)!");
@@ -572,7 +572,7 @@ export class IgeTexture extends IgeAsset {
 			ige.metrics.drawCount++;
 		}
 
-		if (this._renderMode === 1) {
+		if (this._renderMode === IgeTextureRenderMode.smartTexture) {
 			if (!this.script) {
 				throw new Error("No smart texture is available to render but the IgeTexture is in mode one (script based render)!");
 			}

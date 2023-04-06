@@ -57,7 +57,6 @@ export class IgeObject extends IgeEventingClass {
         this._pointerStateDown = false;
         this._pointerStateOver = false;
         this._pointerAlwaysInside = false;
-        this._adjustmentMatrix = new IgeMatrix2d();
         this._cache = false;
         this._cacheDirty = false;
         this._cacheSmoothing = false;
@@ -215,7 +214,7 @@ export class IgeObject extends IgeEventingClass {
      * @param inverse
      */
     localToWorld(points, viewport, inverse = false) {
-        // Commented as this was doing literally nothing
+        // TODO: Commented as this was doing literally nothing
         //viewport = viewport || ige.engine._currentViewport;
         if (this._adjustmentMatrix) {
             // Apply the optional adjustment matrix
@@ -229,6 +228,8 @@ export class IgeObject extends IgeEventingClass {
             //this._worldMatrix.getInverse().transform(points, this);
         }
         if (this._ignoreCamera) {
+            // TODO: It looks like the ignoreCamera functionality needs further
+            //  investigation to make sure it works as expected
             //viewport.camera._worldMatrix.transform(points, this);
         }
     }

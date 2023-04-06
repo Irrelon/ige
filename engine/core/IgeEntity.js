@@ -230,11 +230,11 @@ export class IgeEntity extends IgeObject {
      */
     updateTransform() {
         this._localMatrix.identity();
-        if (this._renderMode === 0) {
+        if (this._renderMode === IgeEntityRenderMode.flat) {
             // 2d translation
             this._localMatrix.multiply(this._localMatrix._newTranslate(this._translate.x, this._translate.y));
         }
-        if (this._renderMode === 1) {
+        if (this._renderMode === IgeEntityRenderMode.iso) {
             // iso translation
             const isoPoint = this._translateIso = (new IgePoint3d(this._translate.x, this._translate.y, this._translate.z + this._bounds3d.z / 2).toIso());
             if (this._parent && this._parent._bounds3d.z) {
@@ -454,7 +454,7 @@ export class IgeEntity extends IgeObject {
         if (!(this._parent && this._parent.IgeTileMap2d && this._parent._tileWidth !== undefined && this._parent._tileHeight !== undefined)) {
             throw new Error("Cannot set width by tile because the entity is not currently mounted to a tile map or the tile map has no tileWidth or tileHeight values.");
         }
-        const tileSize = this._renderMode === 0 ? this._parent._tileWidth : this._parent._tileWidth * 2;
+        const tileSize = this._renderMode === IgeEntityRenderMode.flat ? this._parent._tileWidth : this._parent._tileWidth * 2;
         this.width(val * tileSize);
         if (lockAspect) {
             if (this._texture) {
@@ -485,7 +485,7 @@ export class IgeEntity extends IgeObject {
         if (!(this._parent && this._parent.IgeTileMap2d && this._parent._tileWidth !== undefined && this._parent._tileHeight !== undefined)) {
             throw new Error("Cannot set height by tile because the entity is not currently mounted to a tile map or the tile map has no tileWidth or tileHeight values.");
         }
-        const tileSize = this._renderMode === 0 ? this._parent._tileHeight : this._parent._tileHeight * 2;
+        const tileSize = this._renderMode === IgeEntityRenderMode.flat ? this._parent._tileHeight : this._parent._tileHeight * 2;
         this.height(val * tileSize);
         if (lockAspect) {
             if (this._texture) {
@@ -1447,6 +1447,8 @@ export class IgeEntity extends IgeObject {
     }
     isometric(val) {
         if (val !== undefined) {
+            // TODO: When setting to true, do we also want to automatically set
+            //  the triggerPolygonFunctionName to "bounds3dPolygon" ?
             this._renderMode = val ? IgeEntityRenderMode.iso : IgeEntityRenderMode.flat;
             return this;
         }
