@@ -6,7 +6,10 @@ export const edgeDetect = function (canvas, ctx, originalImage, texture, data) {
         ctx.drawImage(originalImage, 0, 0);
         texture._filterImageDrawn = true;
     }
-    const newData = convoluteHelper(ctx.getImageData(0, 0, canvas.width, canvas.height), [-1, -1, -1, -1, -1, -1, 2, 2, 2, -1, -1, 2, 0, 2, -1, -1, 2, 2, 2, -1, -1, -1, -1, -1, -1], true);
+    const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    if (!imgData)
+        return;
+    const newData = convoluteHelper(imgData, [-1, -1, -1, -1, -1, -1, 2, 2, 2, -1, -1, 2, 0, 2, -1, -1, 2, 2, 2, -1, -1, -1, -1, -1, -1], true);
     if (!newData)
         return;
     const arr = newData.data;

@@ -14,7 +14,10 @@ export const thresholdHelper = function (imageData, texture, data) {
     return imageData;
 };
 export const threshold = function (canvas, ctx, originalImage, texture, data) {
+    const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    if (!imgData)
+        return;
     // Apply the filter and then put the new pixel data
-    ctx.putImageData(thresholdHelper(ctx.getImageData(0, 0, canvas.width, canvas.height), texture, data), 0, 0);
+    ctx.putImageData(thresholdHelper(imgData, texture, data), 0, 0);
 };
 igeFilters.registerFilter("threshold", threshold);
