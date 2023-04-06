@@ -4,6 +4,8 @@ import { IgeEventingClass } from "../../../core/IgeEventingClass.js";
 import { ige } from "../../../instance.js";
 import { Box2D } from "./lib_box2d.js";
 import { IgeBehaviourType } from "../../../../enums/IgeBehaviourType.js";
+import { IgeEntityBox2d } from "../../../../engine/components/physics/box2d/IgeEntityBox2d.js";
+import { IgeBox2dTimingMode } from "../../../../enums/IgeBox2dTimingMode.js";
 export class IgeBox2dWorld extends IgeEventingClass {
     constructor(entity, options) {
         super();
@@ -36,7 +38,7 @@ export class IgeBox2dWorld extends IgeEventingClass {
         this._sleep = options.sleep;
         this._scaleRatio = options.scaleRatio !== undefined ? options.scaleRatio : 30;
         this._gravity = options.gravity;
-        this._renderMode = 0;
+        this._renderMode = IgeBox2dTimingMode.matchEngine;
         this._removeWhenReady = [];
         this._world = new this.b2World(options.gravity, options.sleep);
     }
@@ -357,7 +359,7 @@ export class IgeBox2dWorld extends IgeEventingClass {
         if (!this._active) {
             this._active = true;
             if (!this._networkDebugMode) {
-                if (this._renderMode === 0) {
+                if (this._renderMode === IgeBox2dTimingMode.matchEngine) {
                     // Add the box2d behaviour to the ige
                     ige.engine.addBehaviour(IgeBehaviourType.preUpdate, `box2dStep_${this._id}`, this._behaviour);
                 }
@@ -370,7 +372,7 @@ export class IgeBox2dWorld extends IgeEventingClass {
     stop() {
         if (this._active) {
             this._active = false;
-            if (this._renderMode === 0) {
+            if (this._renderMode === IgeBox2dTimingMode.matchEngine) {
                 // Add the box2d behaviour to the ige
                 ige.engine.removeBehaviour(IgeBehaviourType.preUpdate, 'box2dStep_' + this._id);
             }
@@ -402,7 +404,7 @@ export class IgeBox2dWorld extends IgeEventingClass {
                 }
             }
             // Call the world step; frame-rate, velocity iterations, position iterations
-            if (self._renderMode === 0) {
+            if (self._renderMode === IgeBox2dTimingMode.matchEngine) {
                 self._world.Step(ige._tickDelta / 1000, 8, 3);
             }
             else {

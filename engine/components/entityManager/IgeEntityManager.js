@@ -3,6 +3,7 @@ import { arrPull } from "../../utils.js";
 import { IgeComponent } from "../../core/IgeComponent.js";
 import { IgeMountMode } from "../../../enums/IgeMountMode.js";
 import { IgeBehaviourType } from "../../../enums/IgeBehaviourType.js";
+import { IgeEntityRenderMode } from "../../../enums/IgeEntityRenderMode.js";
 /**
  * This component should be mounted to a parent entity such as an IgeScene2d but can
  * be mounted to any instance that extends IgeEntity.
@@ -61,7 +62,7 @@ export class IgeEntityManager extends IgeComponent {
                 if (item._managed) {
                     if (item.aabb) {
                         let itemAabb;
-                        if (item._renderMode === 1 || (item._parent && item._parent._mountMode === IgeMountMode.iso)) {
+                        if (item._renderMode === IgeEntityRenderMode.iso || (item._parent && item._parent._mountMode === IgeMountMode.iso)) {
                             itemAabb = item.bounds3dPolygon().aabb();
                         }
                         else {
@@ -148,7 +149,7 @@ export class IgeEntityManager extends IgeComponent {
             if (item._managed) {
                 if (item.aabb) {
                     let itemAabb;
-                    if (item._renderMode === 1 || (item._parent && item._parent._mountMode === IgeMountMode.iso)) {
+                    if (item._renderMode === IgeEntityRenderMode.iso || (item._parent && item._parent._mountMode === IgeMountMode.iso)) {
                         itemAabb = item.bounds3dPolygon().aabb();
                     }
                     else {

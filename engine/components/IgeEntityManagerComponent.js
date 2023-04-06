@@ -3,6 +3,8 @@ import { IgeComponent } from "../../engine/core/IgeComponent.js";
 import { IgeMountMode } from "../../enums/IgeMountMode.js";
 import { IgeRect } from "../../engine/core/IgeRect.js";
 import { IgeBehaviourType } from "../../enums/IgeBehaviourType.js";
+import { IgeEntityRenderMode } from "../../enums/IgeEntityRenderMode.js";
+import { IgePoint3d } from "../../engine/core/IgePoint3d.js";
 export class IgeEntityManagerComponent extends IgeComponent {
     /**
      * @constructor
@@ -156,11 +158,11 @@ export class IgeEntityManagerComponent extends IgeComponent {
                 // Adjust the passed x, y to account for this
                 // texture map's translation
                 let ent = this._entity, offset;
-                if (ent._renderMode === 0) {
+                if (ent._renderMode === IgeEntityRenderMode.flat) {
                     // 2d mode
                     offset = ent._translate;
                 }
-                if (ent._renderMode === 1) {
+                if (ent._renderMode === IgeEntityRenderMode.iso) {
                     // Iso mode
                     offset = ent._translate.toIso();
                 }
