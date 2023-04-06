@@ -6,7 +6,7 @@ export class Game {
 	classId = "Game";
 
 	constructor () {
-		ige.data("isometric", true);
+		ige.data("isometric", false);
 		ige.router.go("app/level1");
 	}
 }

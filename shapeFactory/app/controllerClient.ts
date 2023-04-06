@@ -317,8 +317,17 @@ export const controllerClient: IgeEffectFunction = async () => {
 		// }
 	}
 
+	const onKeyUp = (evt: KeyboardEvent) => {
+		if (evt.code === "Escape") {
+			// Cancel the current operation and return to the idle state
+			fsm.enterState("idle");
+		}
+	}
+
 	ige.input.on("pointerUp", onPointerUp);
 	ige.input.on("pointerMove", onPointerMove);
+	ige.input.on("keyUp", onKeyUp);
+
 
 	// ige.engine.addBehaviour(IgeBehaviourType.preUpdate, "tmpBuildingBehaviour", () => {
 	//
