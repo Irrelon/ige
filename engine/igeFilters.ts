@@ -7,7 +7,7 @@ export type IgeFilterHelperFunction = (...args: any[]) => any;
 export class IgeFilters {
 	filter: Record<string, IgeSmartFilter> = {};
 	helper: Record<string, IgeFilterHelperFunction> = {};
-	tmpCanvas?: HTMLCanvasElement;
+	tmpCanvas?: OffscreenCanvas;
 	tmpCtx?: IgeCanvasRenderingContext2d | null;
 
 	constructor () {
@@ -15,8 +15,8 @@ export class IgeFilters {
 			return;
 		}
 
-		this.tmpCanvas = document.createElement("canvas");
-		this.tmpCtx = this.tmpCanvas.getContext("2d");
+		this.tmpCanvas = new OffscreenCanvas(2, 2);
+		this.tmpCtx = this.tmpCanvas.getContext("2d") as OffscreenCanvasRenderingContext2D;
 	}
 
 	getFilter (name: string): IgeSmartFilter | undefined {

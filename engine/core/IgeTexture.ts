@@ -389,7 +389,7 @@ export class IgeTexture extends IgeAsset {
 
 			this._textureCanvas.width = x;
 			this._textureCanvas.height = y;
-			const tmpCtx = this._textureCanvas.getContext("2d");
+			const tmpCtx = this._textureCanvas.getContext("2d") as OffscreenCanvasRenderingContext2D;
 
 			if (!tmpCtx) {
 				throw new Error("Couldn't get texture canvas 2d context!");
@@ -452,7 +452,7 @@ export class IgeTexture extends IgeAsset {
 
 		this._textureCanvas.width = x;
 		this._textureCanvas.height = y;
-		const tmpCtx = this._textureCanvas.getContext("2d");
+		const tmpCtx = this._textureCanvas.getContext("2d") as OffscreenCanvasRenderingContext2D;
 
 		if (!tmpCtx) {
 			throw new Error("Couldn't get texture canvas 2d context!");
@@ -675,7 +675,7 @@ export class IgeTexture extends IgeAsset {
 
 			this._textureCanvas.width = this._originalImage.width;
 			this._textureCanvas.height = this._originalImage.height;
-			const tmpCtx = this._textureCanvas.getContext("2d");
+			const tmpCtx = this._textureCanvas.getContext("2d") as OffscreenCanvasRenderingContext2D;
 
 			if (!tmpCtx) {
 				throw new Error("Couldn't get texture canvas 2d context!");
@@ -721,7 +721,7 @@ export class IgeTexture extends IgeAsset {
 
 			this._textureCanvas.width = this._originalImage.width;
 			this._textureCanvas.height = this._originalImage.height;
-			const tmpCtx = this._textureCanvas.getContext("2d");
+			const tmpCtx = this._textureCanvas.getContext("2d") as OffscreenCanvasRenderingContext2D;
 
 			if (!tmpCtx) {
 				throw new Error("Couldn't get texture canvas 2d context!");
@@ -779,7 +779,7 @@ export class IgeTexture extends IgeAsset {
 
 			this._textureCanvas.width = this.image.width;
 			this._textureCanvas.height = this.image.height;
-			const tmpCtx = this._textureCanvas.getContext("2d");
+			const tmpCtx = this._textureCanvas.getContext("2d") as OffscreenCanvasRenderingContext2D;
 
 			if (!tmpCtx) {
 				throw new Error("Couldn't get texture canvas 2d context!");
@@ -887,7 +887,7 @@ export class IgeTexture extends IgeAsset {
 		const canvas = newCanvas();
 		if (!canvas) return;
 
-		const ctx = canvas.getContext("2d");
+		const ctx = canvas.getContext("2d") as OffscreenCanvasRenderingContext2D;
 
 		if (!ctx) {
 			throw new Error("Unable to get 2d context from IgeTexture canvas");

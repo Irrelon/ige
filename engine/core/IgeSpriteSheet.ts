@@ -114,8 +114,8 @@ export class IgeSpriteSheet extends IgeTexture {
      */
 	detectCells (img: IgeImage | IgeCanvas): IgeTextureCellArray {
 		// Create a temp canvas
-		const canvas = document.createElement("canvas");
-		const ctx = canvas.getContext("2d");
+		const canvas = new OffscreenCanvas(1, 1);
+		const ctx = canvas.getContext("2d") as OffscreenCanvasRenderingContext2D;
 		const spriteRects = [];
 
 		if (!ctx) {
