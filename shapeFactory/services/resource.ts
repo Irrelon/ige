@@ -3,6 +3,11 @@ import { ResourceType } from "../enums/ResourceType";
 export const fillColorByResourceType: Record<ResourceType, string> = {
 	[ResourceType.none]: "#000000",
 	[ResourceType.wood]: "#006901",
-	[ResourceType.grain]: "#ff00ea",
-	[ResourceType.energy]: "#ff9900"
+	[ResourceType.stone]: "#8a8a8a",
+	[ResourceType.gold]: "#ff9900",
+	[ResourceType.brick]: "#945400",
+	[ResourceType.grain]: "#f8ffbe",
+	[ResourceType.energy]: "#00a6ff",
+	[ResourceType.diamond]: "#b3dfff",
+	[ResourceType.science]: "#8400ff",
 };

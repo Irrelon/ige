@@ -26,6 +26,13 @@ export class AppClientScene extends IgeSceneGraph {
 
 		ige.audio?.masterVolume(options.get('masterVolume', 1));
 
+		new IgeTexture("wood", "assets/textures/sprites/wood.png");
+		new IgeTexture("book", "assets/textures/sprites/science.png");
+		new IgeTexture("diamond", "assets/textures/sprites/diamond.png");
+		new IgeTexture("stone", "assets/textures/sprites/stone.png");
+		new IgeTexture("brick", "assets/textures/sprites/brick.png");
+		new IgeTexture("gold", "assets/textures/sprites/gold.png");
+		new IgeTexture("energy", "assets/textures/sprites/energy.png");
 		new IgeTexture("squareSmartTexture", squareSmartTexture);
 		new IgeTexture("lineSmartTexture", lineSmartTexture);
 		new IgeTexture("triangleSmartTexture", triangleSmartTexture);

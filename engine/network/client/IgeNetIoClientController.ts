@@ -452,6 +452,7 @@ export class IgeNetIoClientController extends IgeNetIoBaseController {
 				const ClassConstructor = igeClassStore[classId];
 
 				if (ClassConstructor) {
+					console.log("Creating ", classId, createDataArgs);
 					// The entity does not currently exist so create it!
 					const entity = new ClassConstructor(...createDataArgs)
 						.id(entityId)

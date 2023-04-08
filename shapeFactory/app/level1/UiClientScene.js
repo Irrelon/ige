@@ -47,7 +47,7 @@ export class UiClientScene extends IgeSceneGraph {
                 .mount(buildUi);
             new UiBuildItem(ige.textures.get("starSmartTexture"), "Purple Mine")
                 .id("uiCreateMine2")
-                .data("fillColor", fillColorByResourceType[ResourceType.grain])
+                .data("fillColor", fillColorByResourceType[ResourceType.stone])
                 .top(250)
                 .mount(buildUi);
             new UiBuildItem(ige.textures.get("flagSmartTexture"), "Flag")

@@ -29,11 +29,7 @@ export const createStorageBuilding = (parent: IgeScene2d, id: string, x: number,
 }
 
 export const createMiningBuilding = (parent: IgeScene2d, id: string, x: number, y: number, resourceType: ResourceType) => {
-	const miningBuilding = new MiningBuilding(resourceType, [{
-		type: ResourceType.none,
-		count: 0,
-		max: 0
-	}])
+	const miningBuilding = new MiningBuilding(resourceType, [])
 		.id(id)
 		.translateTo(x, y, 0)
 		.mount(parent);

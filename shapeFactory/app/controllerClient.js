@@ -52,12 +52,12 @@ export const controllerClient = () => __awaiter(void 0, void 0, void 0, function
             });
             uiCreateMine1.pointerUp(() => {
                 fsm.data("createBuilding", BuildingType.mine);
-                fsm.data("createArgs", [ResourceType.grain]);
+                fsm.data("createArgs", [ResourceType.wood]);
                 fsm.enterState("createBuilding");
             });
             uiCreateMine2.pointerUp(() => {
                 fsm.data("createBuilding", BuildingType.mine);
-                fsm.data("createArgs", [ResourceType.wood]);
+                fsm.data("createArgs", [ResourceType.stone]);
                 fsm.enterState("createBuilding");
             });
         }),
@@ -146,7 +146,7 @@ export const controllerClient = () => __awaiter(void 0, void 0, void 0, function
                 buildingType,
                 x: tr.x,
                 y: tr.y,
-                resourceType: [createArgs[0]]
+                resourceType: createArgs[0]
             });
             console.log("Building created", buildingId);
             // Place the building

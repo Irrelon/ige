@@ -4,7 +4,7 @@ import { ResourceType } from "../enums/ResourceType";
 import { Building } from "./base/Building";
 import { registerClass } from "@/engine/igeClassStore";
 import { IgeTimeout } from "@/engine/core/IgeTimeout";
-import { isServer } from "@/engine/clientServer";
+import { isClient, isServer } from "@/engine/clientServer";
 import { roadPathFinder } from "../services/roadPathFinder";
 import { distance } from "@/engine/utils";
 import { fillColorByResourceType } from "../services/resource";
@@ -22,14 +22,41 @@ export class Resource extends Circle {
 
 		this.layer(3);
 		this.data("fillColor", fillColorByResourceType[type])
-			.width(10)
-			.height(10);
+			.width(40)
+			.height(40);
 
 		this.isometric(ige.data("isometric"));
 		//this.bounds3d(10, 10, 2);
 
 		this._type = type;
 		this._locationId = locationId;
+
+		if (isClient) {
+			console.log("Resource type", type, locationId);
+			if (type === ResourceType.wood) {
+				this.texture(ige.textures.get("wood"));
+			}
+
+			if (type === ResourceType.stone) {
+				this.texture(ige.textures.get("stone"));
+			}
+
+			if (type === ResourceType.science) {
+				this.texture(ige.textures.get("science"));
+			}
+
+			if (type === ResourceType.energy) {
+				this.texture(ige.textures.get("energy"));
+			}
+
+			if (type === ResourceType.gold) {
+				this.texture(ige.textures.get("gold"));
+			}
+
+			if (type === ResourceType.brick) {
+				this.texture(ige.textures.get("brick"));
+			}
+		}
 
 		if (isServer) {
 			this.selectDestination();

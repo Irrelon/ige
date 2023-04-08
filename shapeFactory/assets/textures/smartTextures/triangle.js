@@ -1,3 +1,4 @@
+import { fillColorByResourceType } from "../../../services/resource.js";
 export const triangleSmartTexture = {
     render: function (ctx, entity) {
         ctx.beginPath();
@@ -12,6 +13,13 @@ export const triangleSmartTexture = {
         ctx.shadowOffsetY = 0;
         ctx.fill();
         for (let i = 0; i < entity.data("glowIntensity") || 0; i++) {
+            ctx.fill();
+        }
+        const buildingEntity = entity;
+        if (buildingEntity._produces) {
+            ctx.beginPath();
+            ctx.fillStyle = fillColorByResourceType[buildingEntity._produces];
+            ctx.arc(0, 0, 5, 0, 2 * Math.PI);
             ctx.fill();
         }
     }

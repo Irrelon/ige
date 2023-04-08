@@ -7,6 +7,7 @@ export class Road extends Line {
         super();
         this.classId = "Road";
         this.layer(0);
+        this.opacity(0.2);
         //this.data("glowSize", 30);
         //this.data("glowIntensity", 1);
         this._fromId = fromId;

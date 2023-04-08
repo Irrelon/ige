@@ -22,11 +22,7 @@ export const createStorageBuilding = (parent, id, x, y) => {
     return storageBuilding;
 };
 export const createMiningBuilding = (parent, id, x, y, resourceType) => {
-    const miningBuilding = new MiningBuilding(resourceType, [{
-            type: ResourceType.none,
-            count: 0,
-            max: 0
-        }])
+    const miningBuilding = new MiningBuilding(resourceType, [])
         .id(id)
         .translateTo(x, y, 0)
         .mount(parent);

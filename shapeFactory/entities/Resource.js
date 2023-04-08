@@ -1,8 +1,9 @@
 import { ige } from "../../engine/instance.js";
 import { Circle } from "./base/Circle.js";
+import { ResourceType } from "../enums/ResourceType.js";
 import { registerClass } from "../../engine/igeClassStore.js";
 import { IgeTimeout } from "../../engine/core/IgeTimeout.js";
-import { isServer } from "../../engine/clientServer.js";
+import { isClient, isServer } from "../../engine/clientServer.js";
 import { roadPathFinder } from "../services/roadPathFinder.js";
 import { distance } from "../../engine/utils.js";
 import { fillColorByResourceType } from "../services/resource.js";
@@ -13,12 +14,33 @@ export class Resource extends Circle {
         this._pathIds = [];
         this.layer(3);
         this.data("fillColor", fillColorByResourceType[type])
-            .width(10)
-            .height(10);
+            .width(40)
+            .height(40);
         this.isometric(ige.data("isometric"));
         //this.bounds3d(10, 10, 2);
         this._type = type;
         this._locationId = locationId;
+        if (isClient) {
+            console.log("Resource type", type, locationId);
+            if (type === ResourceType.wood) {
+                this.texture(ige.textures.get("wood"));
+            }
+            if (type === ResourceType.stone) {
+                this.texture(ige.textures.get("stone"));
+            }
+            if (type === ResourceType.science) {
+                this.texture(ige.textures.get("science"));
+            }
+            if (type === ResourceType.energy) {
+                this.texture(ige.textures.get("energy"));
+            }
+            if (type === ResourceType.gold) {
+                this.texture(ige.textures.get("gold"));
+            }
+            if (type === ResourceType.brick) {
+                this.texture(ige.textures.get("brick"));
+            }
+        }
         if (isServer) {
             this.selectDestination();
             this.setNavigation();

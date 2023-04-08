@@ -36,6 +36,7 @@ export const controllerServer: IgeEffectFunction = async () => {
 		}
 
 		case BuildingType.mine: {
+			console.log("Create mine", data.resourceType);
 			const building = createMiningBuilding(scene1, newIdHex(), x, y, data.resourceType);
 			return requestCallback(building.id());
 		}
