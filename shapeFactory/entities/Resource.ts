@@ -1,5 +1,4 @@
 import { ige } from "@/engine/instance";
-import { Circle } from "./base/Circle";
 import { ResourceType } from "../enums/ResourceType";
 import { Building } from "./base/Building";
 import { registerClass } from "@/engine/igeClassStore";
@@ -8,8 +7,9 @@ import { isClient, isServer } from "@/engine/clientServer";
 import { roadPathFinder } from "../services/roadPathFinder";
 import { distance } from "@/engine/utils";
 import { fillColorByResourceType } from "../services/resource";
+import { GameEntity } from "./base/GameEntity";
 
-export class Resource extends Circle {
+export class Resource extends GameEntity {
 	_type: ResourceType;
 	_locationId: string;
 	_destinationId: string = "";

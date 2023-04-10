@@ -1,5 +1,4 @@
 import { ige } from "../../engine/instance.js";
-import { Circle } from "./base/Circle.js";
 import { ResourceType } from "../enums/ResourceType.js";
 import { registerClass } from "../../engine/igeClassStore.js";
 import { IgeTimeout } from "../../engine/core/IgeTimeout.js";
@@ -7,7 +6,8 @@ import { isClient, isServer } from "../../engine/clientServer.js";
 import { roadPathFinder } from "../services/roadPathFinder.js";
 import { distance } from "../../engine/utils.js";
 import { fillColorByResourceType } from "../services/resource.js";
-export class Resource extends Circle {
+import { GameEntity } from "./base/GameEntity.js";
+export class Resource extends GameEntity {
     constructor(type, locationId) {
         super();
         this._destinationId = "";

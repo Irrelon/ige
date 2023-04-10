@@ -1,5 +1,4 @@
 import { registerClass } from "@/engine/igeClassStore";
-import { Square } from "./base/Square";
 import { ige } from "@/engine/instance";
 import { Building } from "./base/Building";
 import { ResourceType } from "../enums/ResourceType";
@@ -9,7 +8,7 @@ import { IgePoint2d } from "@/engine/core/IgePoint2d";
 import { IgeObject } from "@/engine/core/IgeObject";
 import { IgeTileMap2d } from "@/engine/core/IgeTileMap2d";
 
-export class StorageBuilding extends Square {
+export class StorageBuilding extends Building {
 	classId = "StorageBuilding";
 	tileXDelta = -1;
 	tileYDelta = -1;

@@ -1,13 +1,13 @@
 import { ResourceType } from "../enums/ResourceType";
 import { BuildingResourceRequirement } from "../types/BuildingResourceRequirement";
 import { registerClass } from "@/engine/igeClassStore";
-import { Star } from "./base/Star";
 import { isClient } from "@/engine/clientServer";
 import { UiRequiresProducesDisplay } from "./UiRequiresProducesDisplay";
 import { ige } from "@/engine/instance";
 import { IgeObject } from "@/engine/core/IgeObject";
+import { Building } from "./base/Building";
 
-export class MiningBuilding extends Star {
+export class MiningBuilding extends Building {
 	classId = "MiningBuilding";
 
 	constructor (tileX: number = NaN, tileY: number = NaN, produces: ResourceType, requires: BuildingResourceRequirement[] = []) {

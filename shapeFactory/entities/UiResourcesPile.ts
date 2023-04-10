@@ -1,7 +1,7 @@
-import { IgeUiElement } from "@/engine/core/IgeUiElement";
 import { ResourceType } from "../enums/ResourceType";
+import { IgeUiEntity } from "@/engine/core/IgeUiEntity";
 
-export class UiResourcesPile extends IgeUiElement {
+export class UiResourcesPile extends IgeUiEntity {
 	resources: Partial<Record<ResourceType, number>> = {};
 
 	constructor () {
@@ -14,7 +14,7 @@ export class UiResourcesPile extends IgeUiElement {
 			.scaleTo(0.8, 0.8, 0.8);
 
 		// requires.forEach((requiresItem, index) => {
-		// 	new IgeUiElement()
+		// 	new IgeUiEntity()
 		// 		.texture(ige.textures.get(requiresItem.type))
 		// 		.center((-20 * (index + 1) - 10))
 		// 		.width(20)
@@ -23,13 +23,13 @@ export class UiResourcesPile extends IgeUiElement {
 		// });
 		//
 		// if (produces !== ResourceType.none) {
-		// 	new IgeUiElement()
+		// 	new IgeUiEntity()
 		// 		.texture(ige.textures.get("arrow"))
 		// 		.width(20)
 		// 		.height(15)
 		// 		.mount(this);
 		//
-		// 	new IgeUiElement()
+		// 	new IgeUiEntity()
 		// 		.texture(ige.textures.get(produces))
 		// 		.center(30)
 		// 		.width(20)
