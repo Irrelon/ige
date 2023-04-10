@@ -118,6 +118,7 @@ export declare class IgeTileMap2d extends IgeEntity {
      * @return {IgePoint3d}
      */
     mouseToTile(): IgePoint3d;
+    tileToWorld(tileX: number, tileY: number): IgePoint3d;
     /**
      * Scans the map data and returns an array of rectangle
      * objects that encapsulate the map data into discrete
@@ -160,7 +161,7 @@ export declare class IgeTileMap2d extends IgeEntity {
     saveMap(): string;
     isometricMounts(): boolean;
     isometricMounts(val: boolean): this;
-    tileMapHitPolygon(): IgePoly2d | IgeRect | undefined;
+    tileMapHitPolygon(): IgeRect | IgePoly2d | undefined;
     _processTriggerHitTests(): boolean;
     _updateAdjustmentMatrix(): void;
     _childMounted(obj: IgeObject): void;

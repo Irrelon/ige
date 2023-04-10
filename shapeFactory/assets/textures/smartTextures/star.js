@@ -1,4 +1,3 @@
-import { fillColorByResourceType } from "../../../services/resource.js";
 export const starSmartTexture = {
     render: function (ctx, entity) {
         let rot = Math.PI / 2 * 3;
@@ -29,21 +28,6 @@ export const starSmartTexture = {
         ctx.shadowOffsetY = 0;
         ctx.fill();
         for (let i = 0; i < entity.data("glowIntensity") || 0; i++) {
-            ctx.fill();
-        }
-        const buildingEntity = entity;
-        if (buildingEntity._requires) {
-            buildingEntity._requires.forEach((resourceEntry) => {
-                ctx.beginPath();
-                ctx.fillStyle = fillColorByResourceType[resourceEntry.type];
-                ctx.arc(0, 0, 5, 0, 2 * Math.PI);
-                ctx.fill();
-            });
-        }
-        if (buildingEntity._produces) {
-            ctx.beginPath();
-            ctx.fillStyle = fillColorByResourceType[buildingEntity._produces];
-            ctx.arc(0, 0, 5, 0, 2 * Math.PI);
             ctx.fill();
         }
     }

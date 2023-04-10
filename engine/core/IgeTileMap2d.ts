@@ -396,6 +396,19 @@ export class IgeTileMap2d extends IgeEntity {
 		return tilePos;
 	}
 
+	tileToWorld (tileX: number, tileY: number) {
+		const tilePos = new IgePoint3d(tileX, tileY).thisMultiply(this._tileWidth, this._tileHeight, 0);
+
+		tilePos.x += this._tileWidth / 2;
+		tilePos.y += this._tileHeight / 2;
+
+		if (this._mountMode === IgeMountMode.iso) {
+			tilePos.thisToIso();
+		}
+
+		return tilePos;
+	}
+
 	/**
 	 * Scans the map data and returns an array of rectangle
 	 * objects that encapsulate the map data into discrete
@@ -599,11 +612,11 @@ export class IgeTileMap2d extends IgeEntity {
 	_updateAdjustmentMatrix () {
 		if (this._bounds2d.x2 && this._bounds2d.y2 && this._tileWidth && this._tileHeight) {
 			if (this._mountMode === IgeMountMode.flat) {
-				this._adjustmentMatrix.translateTo(this._bounds2d.x2, this._bounds2d.y2);
+				this._adjustmentMatrix?.translateTo(this._bounds2d.x2, this._bounds2d.y2);
 			}
 
 			if (this._mountMode === IgeMountMode.iso) {
-				this._adjustmentMatrix.translateTo(0, this._bounds2d.y2);
+				this._adjustmentMatrix?.translateTo(0, this._bounds2d.y2);
 			}
 		}
 	}

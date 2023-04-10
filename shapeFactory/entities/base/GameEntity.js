@@ -14,14 +14,14 @@ export class GameEntity extends IgeEntity {
         const overFunc = function () {
             this.highlight(true);
             this.drawBounds(true);
-            this.drawBoundsData(true);
+            //this.drawBoundsData(true);
         };
         // Define a function that will be called when the
         // mouse cursor moves away from one of our entities
         const outFunc = function () {
             this.highlight(false);
             this.drawBounds(false);
-            this.drawBoundsData(false);
+            //this.drawBoundsData(false);
         };
         this.pointerOver(overFunc);
         this.pointerOut(outFunc);

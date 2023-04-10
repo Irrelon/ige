@@ -7,14 +7,20 @@ import { IgeCanvasRenderingContext2d } from "@/types/IgeCanvasRenderingContext2d
 import { isServer } from "@/engine/clientServer";
 import { IgeTimeout } from "@/engine/core/IgeTimeout";
 import { ige } from "@/engine/instance";
-import { IgeScene2d } from "@/engine/core/IgeScene2d";
 import { FlagBuilding } from "../FlagBuilding";
+import { IgeTileMap2d } from "@/engine/core/IgeTileMap2d";
 
 export class Building extends GameEntity {
 	flag?: FlagBuilding;
 	outboundQueue: Resource[] = [];
 	inboundQueue: Partial<Record<ResourceType, number>> = {};
 	resourcePool: Partial<Record<ResourceType, number>> = {};
+	tileX: number = NaN;
+	tileY: number = NaN;
+	tileXDelta: number = 0;
+	tileYDelta: number = 0;
+	tileW: number = 1;
+	tileH: number = 1;
 
 	_productionMinTimeMs: number = 10000;
 	_productionMaxTimeMs: number = 20000;
@@ -29,6 +35,7 @@ export class Building extends GameEntity {
 		this._requires = [];
 
 		this.isometric(ige.data("isometric"));
+		this.isometricMounts(ige.data("isometric"));
 
 		if (this.isometric()) {
 			this.bounds3d(30, 30, 0);
@@ -150,7 +157,7 @@ export class Building extends GameEntity {
 		// Generate our new resource
 		new Resource(this._produces, this.id())
 			.translateTo(this._translate.x, this._translate.y, 0)
-			.mount(ige.$("scene1") as IgeScene2d);
+			.mount(ige.$("tileMap1") as IgeTileMap2d);
 
 		this._isProducing = false;
 	}

@@ -3,6 +3,7 @@ import { IgePoint3d } from "./IgePoint3d";
 import { IgeRect } from "./IgeRect";
 import { IgeObject } from "./IgeObject";
 import { IgeEntityRenderMode } from "@/enums/IgeEntityRenderMode";
+import { IgePolygonFunctionality } from "@/types/IgePolygonFunctionality";
 import type { IgePoint } from "@/types/IgePoint";
 import type { IgeCanvasRenderingContext2d } from "@/types/IgeCanvasRenderingContext2d";
 import type { IgeInputEvent } from "@/types/IgeInputEvent";
@@ -12,7 +13,6 @@ import type { IgeSmartTexture } from "@/types/IgeSmartTexture";
 import type { IgeViewport } from "./IgeViewport";
 import type { IgeTexture } from "./IgeTexture";
 import type { IgeCanRegisterByCategory } from "@/types/IgeCanRegisterByCategory";
-import { IgePolygonFunctionality } from "@/types/IgePolygonFunctionality";
 export interface IgeEntityTransformAccessor {
     x: (val?: number) => number | IgeEntity;
     y: (val?: number) => number | IgeEntity;
@@ -31,6 +31,7 @@ export declare class IgeEntity extends IgeObject implements IgeCanRegisterById, 
         x: number;
         y: number;
     };
+    _textureOffset?: IgePoint2d;
     _sortChildren: ((comparatorFunction: (a: any, b: any) => number) => void);
     constructor();
     /**

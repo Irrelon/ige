@@ -11,12 +11,19 @@ export class Building extends GameEntity {
         this.outboundQueue = [];
         this.inboundQueue = {};
         this.resourcePool = {};
+        this.tileX = NaN;
+        this.tileY = NaN;
+        this.tileXDelta = 0;
+        this.tileYDelta = 0;
+        this.tileW = 1;
+        this.tileH = 1;
         this._productionMinTimeMs = 10000;
         this._productionMaxTimeMs = 20000;
         this._isProducing = false;
         this._produces = ResourceType.none;
         this._requires = [];
         this.isometric(ige.data("isometric"));
+        this.isometricMounts(ige.data("isometric"));
         if (this.isometric()) {
             this.bounds3d(30, 30, 0);
             this.triggerPolygonFunctionName('bounds3dPolygon');
@@ -116,7 +123,7 @@ export class Building extends GameEntity {
         // Generate our new resource
         new Resource(this._produces, this.id())
             .translateTo(this._translate.x, this._translate.y, 0)
-            .mount(ige.$("scene1"));
+            .mount(ige.$("tileMap1"));
         this._isProducing = false;
     }
     _updateOnServer() {

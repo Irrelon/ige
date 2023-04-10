@@ -6,17 +6,17 @@ import { Transporter } from "../entities/Transporter";
 import { MiningBuilding } from "../entities/MiningBuilding";
 import { ResourceType } from "../enums/ResourceType";
 import { FactoryBuilding } from "../entities/FactoryBuilding";
-import type { IgeScene2d } from "@/engine/core/IgeScene2d";
+import { IgeTileMap2d } from "@/engine/core/IgeTileMap2d";
 
-export const createStorageBuilding = (parent: IgeScene2d, id: string, x: number, y: number) => {
-	const storageBuilding = new StorageBuilding()
+export const createStorageBuilding = (parent: IgeTileMap2d, id: string, tileX: number, tileY: number) => {
+	const storageBuilding = new StorageBuilding(tileX, tileY)
 		.id(id)
-		.translateTo(x, y, 0)
-		.mount(parent);
+		.mount(parent)
+		.translateToTile(tileX, tileY, 0);
 
-	storageBuilding.flag = new FlagBuilding()
-		.translateTo(storageBuilding._translate.x, storageBuilding._translate.y + 100, 0)
-		.mount(parent);
+	storageBuilding.flag = new FlagBuilding(tileX, tileY + 2)
+		.mount(parent)
+		.translateToTile(tileX, tileY + 2, 0);
 
 	new Road(storageBuilding.id(), storageBuilding.flag.id())
 		.mount(parent);
@@ -28,15 +28,15 @@ export const createStorageBuilding = (parent: IgeScene2d, id: string, x: number,
 	return storageBuilding;
 }
 
-export const createMiningBuilding = (parent: IgeScene2d, id: string, x: number, y: number, resourceType: ResourceType) => {
-	const miningBuilding = new MiningBuilding(resourceType, [])
+export const createMiningBuilding = (parent: IgeTileMap2d, id: string, tileX: number, tileY: number, resourceType: ResourceType) => {
+	const miningBuilding = new MiningBuilding(tileX, tileY, resourceType, [])
 		.id(id)
-		.translateTo(x, y, 0)
-		.mount(parent);
+		.mount(parent)
+		.translateToTile(tileX, tileY, 0);
 
-	miningBuilding.flag = new FlagBuilding()
-		.translateTo(miningBuilding._translate.x, miningBuilding._translate.y + 100, 0)
-		.mount(parent);
+	miningBuilding.flag = new FlagBuilding(tileX, tileY + 2)
+		.mount(parent)
+		.translateToTile(tileX, tileY + 2, 0)
 
 	new Road(miningBuilding.id(), miningBuilding.flag.id())
 		.mount(parent);
@@ -50,23 +50,24 @@ export const createMiningBuilding = (parent: IgeScene2d, id: string, x: number, 
 	return miningBuilding;
 }
 
-export const createFactoryBuilding = (parent: IgeScene2d, id: string, x: number, y: number) => {
-	const factoryBuilding = new FactoryBuilding(ResourceType.energy, [{
-		type: ResourceType.wood,
+export const createFactoryBuilding = (parent: IgeTileMap2d, id: string, tileX: number, tileY: number) => {
+	// TODO Make the produces and requires parameters of the createFactoryBuilding()
+	const factoryBuilding = new FactoryBuilding(tileX, tileY, ResourceType.energy, [{
+		type: ResourceType.elerium,
 		count: 1,
 		max: 1
 	}, {
-		type: ResourceType.grain,
+		type: ResourceType.uranium,
 		count: 1,
 		max: 1
 	}])
 		.id(id)
-		.translateTo(x, y, 0)
-		.mount(parent);
+		.mount(parent)
+		.translateToTile(tileX, tileY, 0);
 
-	factoryBuilding.flag = new FlagBuilding()
-		.translateTo(factoryBuilding._translate.x, factoryBuilding._translate.y + 100, 0)
-		.mount(parent);
+	factoryBuilding.flag = new FlagBuilding(tileX, tileY + 2)
+		.mount(parent)
+		.translateToTile(tileX, tileY + 2, 0);
 
 	new Road(factoryBuilding.id(), factoryBuilding.flag.id())
 		.mount(parent);
@@ -78,4 +79,13 @@ export const createFactoryBuilding = (parent: IgeScene2d, id: string, x: number,
 		.mount(parent);
 
 	return factoryBuilding;
+}
+
+export const createFlagBuilding = (parent: IgeTileMap2d, id: string, tileX: number, tileY: number) => {
+	const flagBuilding = new FlagBuilding(tileX, tileY)
+		.id(id)
+		.mount(parent)
+		.translateToTile(tileX, tileY, 0);
+
+	return flagBuilding;
 }

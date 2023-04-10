@@ -3,16 +3,20 @@ import { IgeEffectFunction } from "@/types/IgeRouteDefinition";
 import { IgeNetIoServerController } from "@/engine/network/server/IgeNetIoServerController";
 import { BuildingType } from "../enums/BuildingType";
 import { IgeNetworkServerSideRequestHandler } from "@/types/IgeNetworkMessage";
-import { IgeScene2d } from "@/engine/core/IgeScene2d";
-import { createFactoryBuilding, createMiningBuilding, createStorageBuilding } from "../services/createBuilding";
+import {
+	createFactoryBuilding,
+	createFlagBuilding,
+	createMiningBuilding,
+	createStorageBuilding
+} from "../services/createBuilding";
 import { newIdHex } from "@/engine/utils";
-import { FlagBuilding } from "../entities/FlagBuilding";
 import { Road } from "../entities/Road";
 import { StorageBuilding } from "../entities/StorageBuilding";
 import { Transporter } from "../entities/Transporter";
+import { IgeTileMap2d } from "@/engine/core/IgeTileMap2d";
 
 export const controllerServer: IgeEffectFunction = async () => {
-	const scene1 = ige.$("scene1") as IgeScene2d;
+	const tileMap1 = ige.$("tileMap1") as IgeTileMap2d;
 
 	const createBuilding: IgeNetworkServerSideRequestHandler = async (data, clientId, requestCallback) => {
 		const buildingType: BuildingType = data.buildingType;
@@ -21,23 +25,23 @@ export const controllerServer: IgeEffectFunction = async () => {
 
 		switch (buildingType) {
 		case BuildingType.storage: {
-			const building = createStorageBuilding(scene1, newIdHex(), x, y);
+			const building = createStorageBuilding(tileMap1, newIdHex(), x, y);
 			return requestCallback(building.id());
 		}
 
 		case BuildingType.flag: {
-			const building = new FlagBuilding().id(newIdHex()).translateTo(x, y, 0).mount(scene1);
+			const building = createFlagBuilding(tileMap1, newIdHex(), x, y);
 			return requestCallback(building.id());
 		}
 
 		case BuildingType.factory: {
-			const building = createFactoryBuilding(scene1, newIdHex(), x, y);
+			const building = createFactoryBuilding(tileMap1, newIdHex(), x, y);
 			return requestCallback(building.id());
 		}
 
 		case BuildingType.mine: {
 			console.log("Create mine", data.resourceType);
-			const building = createMiningBuilding(scene1, newIdHex(), x, y, data.resourceType);
+			const building = createMiningBuilding(tileMap1, newIdHex(), x, y, data.resourceType);
 			return requestCallback(building.id());
 		}
 		}
@@ -47,13 +51,13 @@ export const controllerServer: IgeEffectFunction = async () => {
 		const fromId: string = data.fromId;
 		const toId: string = data.toId;
 
-		const road = new Road(fromId, toId).mount(scene1);
+		const road = new Road(fromId, toId).mount(tileMap1);
 
 		// Create the transporter
 		const base = ige.$("base1") as StorageBuilding;
 		new Transporter(base.id(), fromId, toId)
 			.translateTo(base._translate.x, base._translate.y, 0)
-			.mount(scene1);
+			.mount(tileMap1);
 
 		requestCallback(road.id());
 	};

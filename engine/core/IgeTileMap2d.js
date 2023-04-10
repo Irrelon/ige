@@ -284,6 +284,15 @@ export class IgeTileMap2d extends IgeEntity {
         }
         return tilePos;
     }
+    tileToWorld(tileX, tileY) {
+        const tilePos = new IgePoint3d(tileX, tileY).thisMultiply(this._tileWidth, this._tileHeight, 0);
+        tilePos.x += this._tileWidth / 2;
+        tilePos.y += this._tileHeight / 2;
+        if (this._mountMode === IgeMountMode.iso) {
+            tilePos.thisToIso();
+        }
+        return tilePos;
+    }
     /**
      * Scans the map data and returns an array of rectangle
      * objects that encapsulate the map data into discrete
@@ -451,12 +460,13 @@ export class IgeTileMap2d extends IgeEntity {
         return false;
     }
     _updateAdjustmentMatrix() {
+        var _a, _b;
         if (this._bounds2d.x2 && this._bounds2d.y2 && this._tileWidth && this._tileHeight) {
             if (this._mountMode === IgeMountMode.flat) {
-                this._adjustmentMatrix.translateTo(this._bounds2d.x2, this._bounds2d.y2);
+                (_a = this._adjustmentMatrix) === null || _a === void 0 ? void 0 : _a.translateTo(this._bounds2d.x2, this._bounds2d.y2);
             }
             if (this._mountMode === IgeMountMode.iso) {
-                this._adjustmentMatrix.translateTo(0, this._bounds2d.y2);
+                (_b = this._adjustmentMatrix) === null || _b === void 0 ? void 0 : _b.translateTo(0, this._bounds2d.y2);
             }
         }
     }

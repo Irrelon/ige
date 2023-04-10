@@ -6,7 +6,7 @@ import { IgeAudioEntity } from "../../../engine/audio/index.js";
 import { IgeSceneGraph } from "../../../engine/core/IgeSceneGraph.js";
 import { IgeScene2d } from "../../../engine/core/IgeScene2d.js";
 import { createStorageBuilding } from "../../services/createBuilding.js";
-import { Grid } from "../../entities/Grid.js";
+import { IgeTileMap2d } from "../../../engine/core/IgeTileMap2d.js";
 export class Level1 extends IgeSceneGraph {
     constructor() {
         super(...arguments);
@@ -26,9 +26,43 @@ export class Level1 extends IgeSceneGraph {
             .id("scene1")
             .isometricMounts(ige.data("isometric"))
             .mount(baseScene);
-        if (isClient) {
-            new Grid().id("buildGrid").mount(baseScene);
-        }
+        const tileMap1 = new IgeTileMap2d()
+            .id('tileMap1')
+            .isometricMounts(true)
+            .tileWidth(50)
+            .tileHeight(50)
+            .gridSize(50, 50)
+            .drawGrid(true)
+            .drawMouse(true)
+            .highlightOccupied(true)
+            .highlightTileRect(true)
+            .translateTo(0, 0, 0)
+            //.mouseMove(this.mapOnMouseOver)
+            .mount(baseScene);
+        const mapOnMouseUp = (...args) => {
+            const tile = tileMap1.mouseToTile();
+            console.log("Mouse up", tile);
+            // const tile = tileMap.mouseToTile(),
+            // 	objectTileWidth = cursorObject._bounds3d.x / tileMap._tileWidth,
+            // 	objectTileHeight = cursorObject._bounds3d.y / tileMap._tileHeight;
+            //
+            // // Check that the tiles this object will occupy if moved are
+            // // not already occupied
+            // if (!tileMap.isTileOccupied(
+            // 	tile.x,
+            // 	tile.y,
+            // 	objectTileWidth,
+            // 	objectTileHeight
+            // ) && tileMap.inGrid(tile.x, tile.y, objectTileWidth, objectTileHeight)) {
+            // 	// Move our cursor object to the tile
+            // 	cursorObject.translateToTile(tile.x + cursorObject._tileAdjustX, tile.y + cursorObject._tileAdjustY);
+            // 	this.cursorTile = tile;
+            // }
+        };
+        //tileMap.pointerUp(mapOnMouseUp);
+        // if (isClient) {
+        // 	new Grid().id("buildGrid").mount(baseScene);
+        // }
         if (isClient)
             return;
         new IgeAudioEntity()
@@ -36,7 +70,7 @@ export class Level1 extends IgeSceneGraph {
             .url("assets/audio/deepSpace.mp3")
             .play(true)
             .mount(baseScene);
-        const base = createStorageBuilding(scene1, "base1", 0, 0);
+        const base = createStorageBuilding(tileMap1, "base1", 11, 10);
         base.resourcePool[ResourceType.energy] = 10;
     }
     /**

@@ -1274,6 +1274,9 @@ export class IgeEntity extends IgeObject {
         }
         const texture = this._texture;
         if (texture && texture._loaded) {
+            if (this._textureOffset) {
+                ctx.translate(this._textureOffset.x, this._textureOffset.y);
+            }
             // Draw the entity image
             texture.render(ctx, this);
             if (this._highlight) {

@@ -1,11 +1,13 @@
 export enum ResourceType {
 	none = "none",
-	wood = "wood",
-	grain = "grain",
-	energy = "energy",
-	stone = "stone",
-	gold = "gold",
 	brick = "brick",
 	diamond = "diamond",
+	elerium = "elerium",
+	uranium = "uranium",
+	energy = "energy",
+	gold = "gold",
+	wood = "wood",
+	grain = "grain",
+	stone = "stone",
 	science = "science",
 }

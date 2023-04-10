@@ -7,13 +7,16 @@ import { IgeMatrix2d } from "./IgeMatrix2d";
 import { IgePoly2d } from "./IgePoly2d";
 import { IgeDummyCanvas } from "./IgeDummyCanvas";
 import { IgeRect } from "./IgeRect";
-import type { IgeTileMap2d } from "./IgeTileMap2d";
 import { IgeObject } from "./IgeObject";
 import { IgeNetIoClientController } from "../network/client/IgeNetIoClientController";
 import { IgeMountMode } from "@/enums/IgeMountMode";
 import { IgeStreamMode } from "@/enums/IgeStreamMode";
 import { IgeIsometricDepthSortMode } from "@/enums/IgeIsometricDepthSortMode";
 import { IgeEntityRenderMode } from "@/enums/IgeEntityRenderMode";
+import { IgeBehaviourType } from "@/enums/IgeBehaviourType";
+import { registerClass } from "@/engine/igeClassStore";
+import { IgePolygonFunctionality } from "@/types/IgePolygonFunctionality";
+import type { IgeTileMap2d } from "./IgeTileMap2d";
 import type { IgePoint } from "@/types/IgePoint";
 import type { IgeCanvasRenderingContext2d } from "@/types/IgeCanvasRenderingContext2d";
 import type { IgeDepthSortObject } from "@/types/IgeDepthSortObject";
@@ -26,9 +29,6 @@ import type { IgeViewport } from "./IgeViewport";
 import type { IgeTexture } from "./IgeTexture";
 import type { IgeCanRegisterByCategory } from "@/types/IgeCanRegisterByCategory";
 import type { IgeInputComponent } from "../components/IgeInputComponent";
-import { IgeBehaviourType } from "@/enums/IgeBehaviourType";
-import { registerClass } from "@/engine/igeClassStore";
-import { IgePolygonFunctionality } from "@/types/IgePolygonFunctionality";
 
 export interface IgeEntityTransformAccessor {
 	x: (val?: number) => number | IgeEntity;
@@ -47,6 +47,7 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 	_parent: IgeObject | null = null;
 	_children: IgeObject[] = [];
 	_translateIso?: IgePoint3d | { x: number, y: number };
+	_textureOffset?: IgePoint2d;
 	_sortChildren: ((comparatorFunction: (a: any, b: any) => number) => void) = (compareFn) => {
 		return this._children.sort(compareFn);
 	};
@@ -1621,6 +1622,10 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 		const texture = this._texture;
 
 		if (texture && texture._loaded) {
+			if (this._textureOffset) {
+				ctx.translate(this._textureOffset.x, this._textureOffset.y);
+			}
+
 			// Draw the entity image
 			texture.render(ctx, this);
 

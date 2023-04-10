@@ -24,7 +24,7 @@ export declare class IgePoint2d {
      * @param {IgePoint2d} point The point to compare data with.
      * @return {Boolean}
      */
-    compare(point: IgePoint2d): boolean;
+    compare(point: IgePoint2d | IgePoint3d): boolean;
     /**
      * Copies the x, y data from the passed point and overwrites this
      * point's data with those values.
@@ -68,28 +68,28 @@ export declare class IgePoint2d {
      * @param point
      * @return {*}
      */
-    addPoint(point: IgePoint2d): IgePoint2d;
+    addPoint(point: IgePoint2d | IgePoint3d): IgePoint2d;
     /**
      * Adds this point's data by the x, y values specified and
      * overwrites the previous x, y values with the result.
      * @param point
      * @return {*}
      */
-    thisAddPoint(point: IgePoint2d): this;
+    thisAddPoint(point: IgePoint2d | IgePoint3d): this;
     /**
      * Minuses this point's data by the x, y values specified
      * and returns a new IgePoint2d whose values are the result.
      * @param point
      * @return {*}
      */
-    minusPoint(point: IgePoint2d): IgePoint2d;
+    minusPoint(point: IgePoint2d | IgePoint3d): IgePoint2d;
     /**
      * Minuses this point's data by the x, y values specified and
      * overwrites the previous x, y values with the result.
      * @param point
      * @return {*}
      */
-    thisMinusPoint(point: IgePoint2d): this;
+    thisMinusPoint(point: IgePoint2d | IgePoint3d): this;
     /**
      * Multiplies this point's data by the x, y values specified
      * and returns a new IgePoint2d whose values are the result.
@@ -127,7 +127,7 @@ export declare class IgePoint2d {
      * @param {IgePoint2d} point
      * @return {*}
      */
-    dividePoint(point: IgePoint2d): IgePoint2d;
+    dividePoint(point: IgePoint2d | IgePoint3d): IgePoint2d;
     /**
      * Divides this point's data by the x, y values specified and
      * overwrites the previous x, y values with the result.
@@ -151,7 +151,7 @@ export declare class IgePoint2d {
      * @param {number} endTime
      * @return {*}
      */
-    interpolate(endPoint: IgePoint2d, startTime: number, currentTime: number, endTime: number): IgePoint2d;
+    interpolate(endPoint: IgePoint2d | IgePoint3d, startTime: number, currentTime: number, endTime: number): IgePoint2d;
     /**
      * Rotates the point by the given radians.
      * @param {number} radians Radians to rotate by.

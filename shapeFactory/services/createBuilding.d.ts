@@ -1,8 +1,10 @@
 import { StorageBuilding } from "../entities/StorageBuilding";
+import { FlagBuilding } from "../entities/FlagBuilding";
 import { MiningBuilding } from "../entities/MiningBuilding";
 import { ResourceType } from "../enums/ResourceType";
 import { FactoryBuilding } from "../entities/FactoryBuilding";
-import type { IgeScene2d } from "@/engine/core/IgeScene2d";
-export declare const createStorageBuilding: (parent: IgeScene2d, id: string, x: number, y: number) => StorageBuilding;
-export declare const createMiningBuilding: (parent: IgeScene2d, id: string, x: number, y: number, resourceType: ResourceType) => MiningBuilding;
-export declare const createFactoryBuilding: (parent: IgeScene2d, id: string, x: number, y: number) => FactoryBuilding;
+import { IgeTileMap2d } from "@/engine/core/IgeTileMap2d";
+export declare const createStorageBuilding: (parent: IgeTileMap2d, id: string, tileX: number, tileY: number) => StorageBuilding;
+export declare const createMiningBuilding: (parent: IgeTileMap2d, id: string, tileX: number, tileY: number, resourceType: ResourceType) => MiningBuilding;
+export declare const createFactoryBuilding: (parent: IgeTileMap2d, id: string, tileX: number, tileY: number) => FactoryBuilding;
+export declare const createFlagBuilding: (parent: IgeTileMap2d, id: string, tileX: number, tileY: number) => FlagBuilding;

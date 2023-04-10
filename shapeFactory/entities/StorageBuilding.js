@@ -3,14 +3,31 @@ import { Square } from "./base/Square.js";
 import { ige } from "../../engine/instance.js";
 import { ResourceType } from "../enums/ResourceType.js";
 import { Resource } from "./Resource.js";
+import { isClient } from "../../engine/clientServer.js";
+import { IgePoint2d } from "../../engine/core/IgePoint2d.js";
 export class StorageBuilding extends Square {
-    constructor() {
+    constructor(tileX = NaN, tileY = NaN) {
         super();
         this.classId = "StorageBuilding";
+        this.tileXDelta = -1;
+        this.tileYDelta = -1;
+        this.tileW = 3;
+        this.tileH = 3;
+        this.tileX = tileX;
+        this.tileY = tileY;
         this.layer(10);
+        this.isometric(true);
+        this.width(180);
+        this.height(180);
+        this.bounds3d(110, 110, 65);
+        this.originTo(0.5, 0.45, 0.5);
+        if (isClient) {
+            this.texture(ige.textures.get("headquarters"));
+            this._textureOffset = new IgePoint2d(0, -14);
+        }
     }
     streamCreateConstructorArgs() {
-        return [];
+        return [this.tileX, this.tileY];
     }
     /**
      * Takes a resource from the resource pool and dumps it back onto the
@@ -21,7 +38,7 @@ export class StorageBuilding extends Square {
         // Generate our new resource
         new Resource(type, this.id())
             .translateTo(this._translate.x, this._translate.y, 0)
-            .mount(ige.$("scene1"));
+            .mount(ige.$("tileMap1"));
     }
     _updateOnServer() {
         // Because we are a storage building, check if we should dispense
@@ -47,6 +64,12 @@ export class StorageBuilding extends Square {
             }
         });
         super._updateOnServer();
+    }
+    _mounted(obj) {
+        super._mounted(obj);
+        if (!isNaN(this.tileX) && !isNaN(this.tileY)) {
+            this.occupyTile(this.tileX + this.tileXDelta, this.tileY + this.tileYDelta, this.tileW, this.tileH);
+        }
     }
 }
 registerClass(StorageBuilding);

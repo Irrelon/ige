@@ -19,7 +19,7 @@ export declare const WithUiStyleMixin: <BaseClassType extends Mixin<IgeObject>>(
         _patternHeight?: number | undefined;
         _patternFill?: CanvasPattern | undefined;
         _cell: number | null;
-        _backgroundColor?: string | CanvasGradient | CanvasPattern | undefined;
+        _backgroundColor?: string | CanvasPattern | CanvasGradient | undefined;
         _borderColor?: string | undefined;
         _borderLeftColor?: string | undefined;
         _borderTopColor?: string | undefined;
@@ -50,7 +50,7 @@ export declare const WithUiStyleMixin: <BaseClassType extends Mixin<IgeObject>>(
          * @param {CSSColor, CanvasGradient, CanvasPattern=} color
          * @return {*} Returns this when setting the value or the current value if none is specified.
          */
-        color(color: string | CanvasGradient | CanvasPattern): string | CanvasGradient | CanvasPattern | any;
+        color(color: string | CanvasGradient | CanvasPattern): string | CanvasPattern | CanvasGradient | any;
         /**
          * Sets the current background texture and the repeatType
          * to determine in which axis the image should be repeated.
@@ -71,7 +71,7 @@ export declare const WithUiStyleMixin: <BaseClassType extends Mixin<IgeObject>>(
          * @param {CSSColor, CanvasGradient, CanvasPattern=} color
          * @return {*} Returns this when setting the value or the current value if none is specified.
          */
-        backgroundColor(color: string | CanvasGradient | CanvasPattern): string | CanvasGradient | CanvasPattern | any | undefined;
+        backgroundColor(color: string | CanvasGradient | CanvasPattern): string | CanvasPattern | CanvasGradient | any | undefined;
         /**
          * Gets / sets the position to start rendering the background image at.
          * @param {number=} x
@@ -249,7 +249,7 @@ export declare const WithUiStyleMixin: <BaseClassType extends Mixin<IgeObject>>(
         updateTransform(): void;
         aabb(recalculate?: boolean, inverse?: boolean): import("../core/IgeRect").IgeRect;
         _processBehaviours(type: import("../../enums/IgeBehaviourType").IgeBehaviourType, ...args: any[]): void;
-        parent(): IgeObject | import("../core/IgeTileMap2d").IgeTileMap2d | null | undefined;
+        parent(): import("../core/IgeTileMap2d").IgeTileMap2d | IgeObject | null | undefined;
         parent(id: string): IgeObject | null;
         children(): IgeObject[];
         mount(obj: IgeObject): any;

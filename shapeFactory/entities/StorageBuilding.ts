@@ -4,18 +4,38 @@ import { ige } from "@/engine/instance";
 import { Building } from "./base/Building";
 import { ResourceType } from "../enums/ResourceType";
 import { Resource } from "./Resource";
-import { IgeScene2d } from "@/engine/core/IgeScene2d";
+import { isClient } from "@/engine/clientServer";
+import { IgePoint2d } from "@/engine/core/IgePoint2d";
+import { IgeObject } from "@/engine/core/IgeObject";
+import { IgeTileMap2d } from "@/engine/core/IgeTileMap2d";
 
 export class StorageBuilding extends Square {
 	classId = "StorageBuilding";
+	tileXDelta = -1;
+	tileYDelta = -1;
+	tileW = 3;
+	tileH = 3;
 
-	constructor () {
+	constructor (tileX: number = NaN, tileY: number = NaN) {
 		super();
+		this.tileX = tileX;
+		this.tileY = tileY;
+
 		this.layer(10);
+		this.isometric(true);
+		this.width(180);
+		this.height(180);
+		this.bounds3d(110,110,65);
+		this.originTo(0.5, 0.45, 0.5);
+
+		if (isClient) {
+			this.texture(ige.textures.get("headquarters"));
+			this._textureOffset = new IgePoint2d(0, -14);
+		}
 	}
 
 	streamCreateConstructorArgs () {
-		return [];
+		return [this.tileX, this.tileY];
 	}
 
 	/**
@@ -28,7 +48,7 @@ export class StorageBuilding extends Square {
 		// Generate our new resource
 		new Resource(type, this.id())
 			.translateTo(this._translate.x, this._translate.y, 0)
-			.mount(ige.$("scene1") as IgeScene2d);
+			.mount(ige.$("tileMap1") as IgeTileMap2d);
 	}
 
 	_updateOnServer () {
@@ -58,6 +78,14 @@ export class StorageBuilding extends Square {
 		});
 
 		super._updateOnServer();
+	}
+
+	_mounted (obj: IgeObject) {
+		super._mounted(obj);
+
+		if (!isNaN(this.tileX) && !isNaN(this.tileY)) {
+			this.occupyTile(this.tileX + this.tileXDelta, this.tileY + this.tileYDelta, this.tileW, this.tileH);
+		}
 	}
 }
 

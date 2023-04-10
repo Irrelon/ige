@@ -253,7 +253,7 @@ export declare const WithUiPositionMixin: <BaseClassType extends Mixin<IgeObject
         updateTransform(): void;
         aabb(recalculate?: boolean, inverse?: boolean): import("../core/IgeRect").IgeRect;
         _processBehaviours(type: import("../../enums/IgeBehaviourType").IgeBehaviourType, ...args: any[]): void;
-        parent(): IgeObject | import("../core/IgeTileMap2d").IgeTileMap2d | null | undefined;
+        parent(): import("../core/IgeTileMap2d").IgeTileMap2d | IgeObject | null | undefined;
         parent(id: string): IgeObject | null;
         children(): IgeObject[];
         mount(obj: IgeObject): any;

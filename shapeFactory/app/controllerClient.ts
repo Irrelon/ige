@@ -16,6 +16,8 @@ import { Building } from "../entities/base/Building";
 import { IgeNetIoClientController } from "@/engine/network/client/IgeNetIoClientController";
 import { MiningBuilding } from "../entities/MiningBuilding";
 import { IgePoint3d } from "@/engine/core/IgePoint3d";
+import { IgePoint2d } from "@/engine/core/IgePoint2d";
+import { IgeTileMap2d } from "@/engine/core/IgeTileMap2d";
 
 export const controllerClient: IgeEffectFunction = async () => {
 	const network = ige.network as IgeNetIoClientController;
@@ -26,6 +28,7 @@ export const controllerClient: IgeEffectFunction = async () => {
 	const uiCreateFlag = ige.$("uiCreateFlag") as IgeUiElement;
 
 	const fsm = new IgeFSM();
+	const tileMap1 = ige.$("tileMap1") as IgeTileMap2d;
 
 	fsm.defineState("idle", {
 		enter: async () => {
@@ -34,11 +37,11 @@ export const controllerClient: IgeEffectFunction = async () => {
 			uiCreateFactory.pointerUp(() => {
 				fsm.data("createBuilding", BuildingType.factory);
 				fsm.data("createArgs", [ResourceType.energy, [{
-					type: ResourceType.wood,
+					type: ResourceType.elerium,
 					count: 1,
 					max: 3
 				}, {
-					type: ResourceType.grain,
+					type: ResourceType.uranium,
 					count: 1,
 					max: 3
 				}]]);
@@ -57,13 +60,13 @@ export const controllerClient: IgeEffectFunction = async () => {
 
 			uiCreateMine1.pointerUp(() => {
 				fsm.data("createBuilding", BuildingType.mine);
-				fsm.data("createArgs", [ResourceType.wood]);
+				fsm.data("createArgs", [ResourceType.elerium]);
 				fsm.enterState("createBuilding");
 			});
 
 			uiCreateMine2.pointerUp(() => {
 				fsm.data("createBuilding", BuildingType.mine);
-				fsm.data("createArgs", [ResourceType.stone]);
+				fsm.data("createArgs", [ResourceType.uranium]);
 				fsm.enterState("createBuilding");
 			});
 		},
@@ -71,7 +74,8 @@ export const controllerClient: IgeEffectFunction = async () => {
 			uiCreateStorage.pointerUp(null);
 			uiCreateFactory.pointerUp(null);
 		},
-		click: async (building?: Building) => {
+		click: async (mousePos: IgePoint2d, building?: Building) => {
+			console.log("IDLE CLICK");
 			if (!building) return;
 
 			if (building.classId === "FlagBuilding") {
@@ -89,9 +93,6 @@ export const controllerClient: IgeEffectFunction = async () => {
 			const createArgs = fsm.data("createArgs");
 			console.log("Entered createBuilding", buildingType);
 
-			// Get the scene to mount to
-			const scene1 = ige.$("scene1") as IgeScene2d;
-
 			// Remove any existing temp building
 			const existingTmpBuilding = ige.$("tmpBuilding");
 
@@ -104,53 +105,49 @@ export const controllerClient: IgeEffectFunction = async () => {
 			case BuildingType.storage:
 				new StorageBuilding()
 					.id("tmpBuilding")
-					.mount(scene1);
+					.mount(tileMap1);
 				break;
 
 			case BuildingType.factory:
-				new FactoryBuilding(createArgs[0], createArgs[1])
+				new FactoryBuilding( NaN, NaN, createArgs[0], createArgs[1])
 					.id("tmpBuilding")
-					.mount(scene1);
+					.mount(tileMap1);
 				break;
 
 			case BuildingType.mine:
-				new MiningBuilding(ResourceType.none, [{type: ResourceType.none, count: 0, max: 0}])
+				new MiningBuilding(NaN, NaN, ResourceType.none, [])
 					.id("tmpBuilding")
-					.mount(scene1);
+					.mount(tileMap1);
 				break;
 
 			case BuildingType.flag:
 				new FlagBuilding()
 					.id("tmpBuilding")
-					.mount(scene1);
+					.mount(tileMap1);
 				break;
 			}
 		},
 		exit: async () => {
-			const tmpBuilding = ige.$("tmpBuilding") as IgeEntity;
+			const tmpBuilding = ige.$("tmpBuilding") as Building;
 			if (!tmpBuilding) return;
 
 			// Destroy the tmp building
 			tmpBuilding.destroy();
 		},
-		pointerMove: async () => {
-			const tmpBuilding = ige.$("tmpBuilding") as IgeEntity;
+		pointerMove: async (tilePos: IgePoint2d) => {
+			const tmpBuilding = ige.$("tmpBuilding") as Building;
 			if (!tmpBuilding) return;
 
-			const gridX = Math.round(ige._pointerPos.x / 100) * 100;
-			const gridY = Math.round(ige._pointerPos.y / 100) * 100;
+			// Check if the building is allowed to occupy this area
+			if (tileMap1.isTileOccupied(tilePos.x + tmpBuilding.tileXDelta, tilePos.y + tmpBuilding.tileYDelta, tmpBuilding.tileW, tmpBuilding.tileH)) return;
 
-			const tr = new IgePoint3d(gridX, gridY);
-
-			if (ige.data("isometric")) {
-				tr.thisTo2d();
-			}
-
-			tmpBuilding.translateTo(tr.x,tr.y, 0);
+			tmpBuilding.translateToTile(tilePos.x,tilePos.y, 0);
 		},
-		click: async () => {
-			const gridX = Math.round(ige._pointerPos.x / 100) * 100;
-			const gridY = Math.round(ige._pointerPos.y / 100) * 100;
+		click: async (tilePos: IgePoint2d) => {
+			console.log("CREATE BUILDING CLICK");
+
+			const existingTmpBuilding = ige.$("tmpBuilding") as Building;
+			const buildLocation = tileMap1.pointToTile( existingTmpBuilding._translate);
 
 			// Check the location and determine if we can build there
 
@@ -158,23 +155,16 @@ export const controllerClient: IgeEffectFunction = async () => {
 			const buildingType = fsm.data("createBuilding");
 			const createArgs = fsm.data("createArgs") || [];
 
-			const tr = new IgePoint3d(gridX, gridY);
-
-			if (ige.data("isometric")) {
-				tr.thisTo2d();
-			}
-
 			const buildingId = await network.request("createBuilding", {
 				buildingType,
-				x: tr.x,
-				y: tr.y,
+				x: buildLocation.x,
+				y: buildLocation.y,
 				resourceType: createArgs[0]
 			});
 
 			console.log("Building created", buildingId);
 
 			// Place the building
-			const existingTmpBuilding = ige.$("tmpBuilding") as IgeEntity;
 			existingTmpBuilding.destroy();
 
 			// Enter back into idle state
@@ -205,14 +195,11 @@ export const controllerClient: IgeEffectFunction = async () => {
 				.id("tmpBuilding")
 				.mount(scene1);
 		},
-		pointerMove: async () => {
+		pointerMove: async (tilePos: IgePoint2d) => {
 			const tmpBuilding = ige.$("tmpBuilding") as Line;
 			if (!tmpBuilding) return;
 
 			const startFlag = fsm.data("startFlag") as FlagBuilding;
-
-			const gridX = Math.round(ige._pointerPos.x / 100) * 100;
-			const gridY = Math.round(ige._pointerPos.y / 100) * 100;
 
 			const p1 = new IgePoint3d(startFlag._translate.x, startFlag._translate.y);
 
@@ -220,18 +207,12 @@ export const controllerClient: IgeEffectFunction = async () => {
 				p1.thisToIso();
 			}
 
-			const p2 = new IgePoint3d(gridX, gridY);
-
-			// if (ige.data("isometric")) {
-			// 	p2.thisToIso();
-			// }
+			const p2 = tileMap1.tileToWorld(tilePos.x, tilePos.y);
 
 			tmpBuilding.setLine(p1.x, p1.y, p2.x, p2.y);
 		},
-		click: async (building?: Building) => {
-			const scene1 = ige.$("scene1") as IgeScene2d;
-			const gridX = Math.round(ige._pointerPos.x / 100) * 100;
-			const gridY = Math.round(ige._pointerPos.y / 100) * 100;
+		click: async (tilePos: IgePoint2d, building?: Building) => {
+			console.log("CREATE ROAD CLICK");
 
 			let destinationFlagId: string;
 
@@ -239,17 +220,11 @@ export const controllerClient: IgeEffectFunction = async () => {
 
 			// Check if the end is a flag and if not, create one
 			if (!building) {
-				const tr = new IgePoint3d(gridX, gridY);
-
-				if (ige.data("isometric")) {
-					tr.thisTo2d();
-				}
-
 				// No building exists at the grid location, create a new flag
 				destinationFlagId = await network.request("createBuilding", {
 					buildingType: BuildingType.flag,
-					x: tr.x,
-					y: tr.y
+					x: tilePos.x,
+					y: tilePos.y
 				});
 			} else if (building.classId === "FlagBuilding") {
 				// The clicked end point is a flag, use this
@@ -285,24 +260,35 @@ export const controllerClient: IgeEffectFunction = async () => {
 
 	await fsm.initialState("idle");
 
-	const onPointerUp = (evt: PointerEvent, mx: number, my: number, button: number) => {
+	const onPointerUp = () => {
+		const tilePos = tileMap1.mouseToTile();
+
 		// Run a hit test against the all the entities
 		const buildings = ige.$$("building") as Building[];
 
-		// Loop the buildings and check against the AABB
-		const foundBuilding = buildings.find((building) => {
-			return building.triggerPolygon().pointInside(ige._pointerPos);
-		});
+		const occupiedBy = tileMap1.tileOccupiedBy(tilePos.x, tilePos.y);
 
-		if (foundBuilding) {
-			console.log("foundBuilding", foundBuilding);
+		// Loop the buildings and check against the AABB
+		// const foundBuilding = buildings.reduce((tmpBuilding: Building | undefined, building) => {
+		// 	if (tmpBuilding?.classId !== "FlagBuilding") {
+		// 		if (building.triggerPolygon().pointInside(tilePos)) {
+		// 			tmpBuilding = building;
+		// 		}
+		// 	}
+		//
+		// 	return tmpBuilding;
+		// }, undefined);
+
+		if (occupiedBy) {
+			console.log("foundBuilding", occupiedBy);
 		}
 
-		fsm.raiseEvent("click", foundBuilding);
+		fsm.raiseEvent("click", tilePos, occupiedBy);
 	};
 
 	const onPointerMove = () => {
-		fsm.raiseEvent("pointerMove");
+		const tilePos = tileMap1.mouseToTile();
+		fsm.raiseEvent("pointerMove", tilePos);
 
 		// // Run a hit test against the all the entities
 		// const buildings = ige.$$("building") as Building[];
@@ -324,6 +310,9 @@ export const controllerClient: IgeEffectFunction = async () => {
 		}
 	}
 
+	tileMap1.pointerEventsActive(true);
+	//tileMap1.on("pointerUp", onPointerUp);
+	//tileMap1.on("pointerMove", onPointerMove);
 	ige.input.on("pointerUp", onPointerUp);
 	ige.input.on("pointerMove", onPointerMove);
 	ige.input.on("keyUp", onKeyUp);

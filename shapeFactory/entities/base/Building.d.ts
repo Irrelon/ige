@@ -9,6 +9,12 @@ export declare class Building extends GameEntity {
     outboundQueue: Resource[];
     inboundQueue: Partial<Record<ResourceType, number>>;
     resourcePool: Partial<Record<ResourceType, number>>;
+    tileX: number;
+    tileY: number;
+    tileXDelta: number;
+    tileYDelta: number;
+    tileW: number;
+    tileH: number;
     _productionMinTimeMs: number;
     _productionMaxTimeMs: number;
     _isProducing: boolean;

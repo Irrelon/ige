@@ -50,7 +50,7 @@ export class IgePoint2d {
 	 * @param {IgePoint2d} point The point to compare data with.
 	 * @return {Boolean}
 	 */
-	compare (point: IgePoint2d) {
+	compare (point: IgePoint2d | IgePoint3d) {
 		return point && this.x === point.x && this.y === point.y;
 	}
 
@@ -125,7 +125,7 @@ export class IgePoint2d {
 	 * @param point
 	 * @return {*}
 	 */
-	addPoint (point: IgePoint2d) {
+	addPoint (point: IgePoint2d | IgePoint3d) {
 		return new IgePoint2d(this.x + point.x, this.y + point.y);
 	}
 
@@ -135,7 +135,7 @@ export class IgePoint2d {
 	 * @param point
 	 * @return {*}
 	 */
-	thisAddPoint (point: IgePoint2d) {
+	thisAddPoint (point: IgePoint2d | IgePoint3d) {
 		this.x += point.x;
 		this.y += point.y;
 
@@ -148,7 +148,7 @@ export class IgePoint2d {
 	 * @param point
 	 * @return {*}
 	 */
-	minusPoint (point: IgePoint2d) {
+	minusPoint (point: IgePoint2d | IgePoint3d) {
 		return new IgePoint2d(this.x - point.x, this.y - point.y);
 	}
 
@@ -158,7 +158,7 @@ export class IgePoint2d {
 	 * @param point
 	 * @return {*}
 	 */
-	thisMinusPoint (point: IgePoint2d) {
+	thisMinusPoint (point: IgePoint2d | IgePoint3d) {
 		this.x -= point.x;
 		this.y -= point.y;
 
@@ -217,7 +217,7 @@ export class IgePoint2d {
 	 * @param {IgePoint2d} point
 	 * @return {*}
 	 */
-	dividePoint (point: IgePoint2d) {
+	dividePoint (point: IgePoint2d | IgePoint3d) {
 		let newX = this.x,
 			newY = this.y;
 
@@ -259,7 +259,7 @@ export class IgePoint2d {
 	 * @param {number} endTime
 	 * @return {*}
 	 */
-	interpolate (endPoint: IgePoint2d, startTime: number, currentTime: number, endTime: number) {
+	interpolate (endPoint: IgePoint2d | IgePoint3d, startTime: number, currentTime: number, endTime: number) {
 		const totalX = endPoint.x - this.x,
 			totalY = endPoint.y - this.y,
 			totalTime = endTime - startTime,

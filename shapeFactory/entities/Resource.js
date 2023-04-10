@@ -14,14 +14,19 @@ export class Resource extends Circle {
         this._pathIds = [];
         this.layer(3);
         this.data("fillColor", fillColorByResourceType[type])
-            .width(40)
-            .height(40);
+            .width(16)
+            .height(16);
         this.isometric(ige.data("isometric"));
         //this.bounds3d(10, 10, 2);
         this._type = type;
         this._locationId = locationId;
         if (isClient) {
-            console.log("Resource type", type, locationId);
+            if (type === ResourceType.elerium) {
+                this.texture(ige.textures.get("elerium"));
+            }
+            if (type === ResourceType.uranium) {
+                this.texture(ige.textures.get("uranium"));
+            }
             if (type === ResourceType.wood) {
                 this.texture(ige.textures.get("wood"));
             }
