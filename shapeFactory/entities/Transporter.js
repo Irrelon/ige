@@ -12,13 +12,15 @@ export class Transporter extends WorkerUnit {
         super(WorkerUnitType.transporter);
         this.classId = "Transporter";
         this._state = "spawned";
-        this._speed = 0.1;
+        this._speed = 0.5;
         this._baseId = baseId;
         this._depotAId = depotAId;
         this._depotBId = depotBId;
         this.layer(2);
-        this.data("glowSize", 50);
-        this.data("glowIntensity", 1);
+        this.category("transporter");
+        //this.data("glowColor", "#ffffff");
+        //this.data("glowSize", 50);
+        //this.data("glowIntensity", 1);
         this.setDepots();
     }
     timeToTarget(sourceX, sourceY, targetX, targetY) {
@@ -129,10 +131,10 @@ export class Transporter extends WorkerUnit {
         if (this._depotA && this._depotB) {
             if (currentLocation === this._depotA) {
                 // Check for items that need to route to depot B
-                for (let i = 0; i < this._depotA.outboundQueue.length; i++) {
-                    const newResource = (_a = this._depotA) === null || _a === void 0 ? void 0 : _a.outboundQueue[i];
+                for (let i = 0; i < this._depotA.outboundQueue.length(); i++) {
+                    const newResource = (_a = this._depotA) === null || _a === void 0 ? void 0 : _a.outboundQueue.getIndex(i);
                     if (newResource._pathIds[0] === this._depotBId) {
-                        this._depotB.outboundQueue.splice(i, 1);
+                        this._depotB.outboundQueue.removeItem(newResource);
                         this.retrieveResource(newResource);
                         return;
                     }
@@ -140,10 +142,10 @@ export class Transporter extends WorkerUnit {
             }
             else {
                 // Check for items that need to route to depot A
-                for (let i = 0; i < this._depotB.outboundQueue.length; i++) {
-                    const newResource = (_b = this._depotB) === null || _b === void 0 ? void 0 : _b.outboundQueue[i];
+                for (let i = 0; i < this._depotB.outboundQueue.length(); i++) {
+                    const newResource = (_b = this._depotB) === null || _b === void 0 ? void 0 : _b.outboundQueue.getIndex(i);
                     if (newResource._pathIds[0] === this._depotAId) {
-                        this._depotB.outboundQueue.splice(i, 1);
+                        this._depotB.outboundQueue.removeItem(newResource);
                         this.retrieveResource(newResource);
                         return;
                     }
@@ -212,10 +214,10 @@ export class Transporter extends WorkerUnit {
             // If we're waiting, check depot A
             if (this._state === "waiting") {
                 // Determine if we should be transporting anything
-                for (let i = 0; i < depotA.outboundQueue.length; i++) {
-                    const resource = depotA === null || depotA === void 0 ? void 0 : depotA.outboundQueue[i];
+                for (let i = 0; i < depotA.outboundQueue.length(); i++) {
+                    const resource = depotA === null || depotA === void 0 ? void 0 : depotA.outboundQueue.getIndex(i);
                     if (resource._pathIds[0] === this._depotBId) {
-                        depotA.outboundQueue.splice(i, 1);
+                        depotA.outboundQueue.removeItem(resource);
                         //this.log(`Picking up resource ${resource._id} from depot A: ${depotA._id}`);
                         //console.log("Depot A queue now:", depotA.transportQueue);
                         this.retrieveResource(resource);
@@ -226,10 +228,10 @@ export class Transporter extends WorkerUnit {
             // We're still waiting, check depot B
             if (this._state === "waiting") {
                 // Determine if we should be transporting anything
-                for (let i = 0; i < depotB.outboundQueue.length; i++) {
-                    const resource = depotB === null || depotB === void 0 ? void 0 : depotB.outboundQueue[i];
+                for (let i = 0; i < depotB.outboundQueue.length(); i++) {
+                    const resource = depotB === null || depotB === void 0 ? void 0 : depotB.outboundQueue.getIndex(i);
                     if (resource._pathIds[0] === this._depotAId) {
-                        depotB.outboundQueue.splice(i, 1);
+                        depotB.outboundQueue.removeItem(resource);
                         //this.log(`Picking up resource ${resource._id} from depot A: ${depotB._id}`);
                         //console.log("Depot B queue now:", depotB.transportQueue);
                         this.retrieveResource(resource);

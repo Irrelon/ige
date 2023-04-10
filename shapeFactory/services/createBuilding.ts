@@ -1,58 +1,79 @@
-import { ige } from "@/engine/instance";
-import { Road } from "../entities/Road";
 import { StorageBuilding } from "../entities/StorageBuilding";
 import { FlagBuilding } from "../entities/FlagBuilding";
-import { Transporter } from "../entities/Transporter";
 import { MiningBuilding } from "../entities/MiningBuilding";
 import { ResourceType } from "../enums/ResourceType";
-import { FactoryBuilding } from "../entities/FactoryBuilding";
+import { FactoryBuilding1 } from "../entities/FactoryBuilding1";
 import { IgeTileMap2d } from "@/engine/core/IgeTileMap2d";
+import { FactoryBuilding2 } from "../entities/FactoryBuilding2";
 
 export const createStorageBuilding = (parent: IgeTileMap2d, id: string, tileX: number, tileY: number) => {
-	const storageBuilding = new StorageBuilding(tileX, tileY)
+	const roadOffsetX = 0;
+	const roadOffsetY = 3;
+
+	const newBuilding = new StorageBuilding(tileX, tileY)
 		.id(id)
 		.mount(parent)
 		.translateToTile(tileX, tileY, 0);
 
-	storageBuilding.flag = new FlagBuilding(tileX, tileY + 2)
-		.mount(parent)
-		.translateToTile(tileX, tileY + 2, 0);
+	// // Check if a flag already exists
+	// const existingFlag = parent.tileOccupiedBy(tileX + roadOffsetX, tileY + roadOffsetY) as FlagBuilding;
+	//
+	// if (existingFlag) {
+	// 	newBuilding.flag = existingFlag;
+	// } else {
+	// 	newBuilding.flag = new FlagBuilding(tileX + roadOffsetX, tileY + roadOffsetY)
+	// 		.mount(parent)
+	// 		.translateToTile(tileX + roadOffsetX, tileY + roadOffsetY, 0);
+	// }
+	//
+	// new Road(newBuilding.id(), newBuilding.flag.id())
+	// 	.mount(parent);
+	//
+	// new Transporter(newBuilding.id(), newBuilding.id(), newBuilding.flag.id())
+	// 	.translateTo(newBuilding._translate.x, newBuilding._translate.y, 0)
+	// 	.mount(parent);
 
-	new Road(storageBuilding.id(), storageBuilding.flag.id())
-		.mount(parent);
-
-	new Transporter(storageBuilding.id(), storageBuilding.id(), storageBuilding.flag.id())
-		.translateTo(storageBuilding._translate.x, storageBuilding._translate.y, 0)
-		.mount(parent);
-
-	return storageBuilding;
+	return newBuilding;
 }
 
 export const createMiningBuilding = (parent: IgeTileMap2d, id: string, tileX: number, tileY: number, resourceType: ResourceType) => {
-	const miningBuilding = new MiningBuilding(tileX, tileY, resourceType, [])
+	const roadOffsetX = 0;
+	const roadOffsetY = 2;
+
+	const newBuilding = new MiningBuilding(tileX, tileY, resourceType, [])
 		.id(id)
 		.mount(parent)
 		.translateToTile(tileX, tileY, 0);
 
-	miningBuilding.flag = new FlagBuilding(tileX, tileY + 2)
-		.mount(parent)
-		.translateToTile(tileX, tileY + 2, 0)
+	// // Check if a flag already exists
+	// const existingFlag = parent.tileOccupiedBy(tileX + roadOffsetX, tileY + roadOffsetY) as FlagBuilding;
+	//
+	// if (existingFlag) {
+	// 	newBuilding.flag = existingFlag;
+	// } else {
+	// 	newBuilding.flag = new FlagBuilding(tileX + roadOffsetX, tileY + roadOffsetY)
+	// 		.mount(parent)
+	// 		.translateToTile(tileX + roadOffsetX, tileY + roadOffsetY, 0);
+	// }
+	//
+	// new Road(newBuilding.id(), newBuilding.flag.id())
+	// 	.mount(parent);
+	//
+	// const base = ige.$("base1") as StorageBuilding;
+	//
+	// new Transporter(base.id(), newBuilding.id(), newBuilding.flag.id())
+	// 	.translateTo(base._translate.x, base._translate.y, 0)
+	// 	.mount(parent);
 
-	new Road(miningBuilding.id(), miningBuilding.flag.id())
-		.mount(parent);
-
-	const base = ige.$("base1") as StorageBuilding;
-
-	new Transporter(base.id(), miningBuilding.id(), miningBuilding.flag.id())
-		.translateTo(base._translate.x, base._translate.y, 0)
-		.mount(parent);
-
-	return miningBuilding;
+	return newBuilding;
 }
 
-export const createFactoryBuilding = (parent: IgeTileMap2d, id: string, tileX: number, tileY: number) => {
+export const createFactoryBuilding1 = (parent: IgeTileMap2d, id: string, tileX: number, tileY: number) => {
 	// TODO Make the produces and requires parameters of the createFactoryBuilding()
-	const factoryBuilding = new FactoryBuilding(tileX, tileY, ResourceType.energy, [{
+	const roadOffsetX = 0;
+	const roadOffsetY = 3;
+
+	const newBuilding = new FactoryBuilding1(tileX, tileY, ResourceType.energy, [{
 		type: ResourceType.elerium,
 		count: 1,
 		max: 1
@@ -65,27 +86,79 @@ export const createFactoryBuilding = (parent: IgeTileMap2d, id: string, tileX: n
 		.mount(parent)
 		.translateToTile(tileX, tileY, 0);
 
-	factoryBuilding.flag = new FlagBuilding(tileX, tileY + 2)
-		.mount(parent)
-		.translateToTile(tileX, tileY + 2, 0);
+	// // Check if a flag already exists
+	// const existingFlag = parent.tileOccupiedBy(tileX + roadOffsetX, tileY + roadOffsetY) as FlagBuilding;
+	//
+	// if (existingFlag) {
+	// 	newBuilding.flag = existingFlag;
+	// } else {
+	// 	newBuilding.flag = new FlagBuilding(tileX + roadOffsetX, tileY + roadOffsetY)
+	// 		.mount(parent)
+	// 		.translateToTile(tileX + roadOffsetX, tileY + roadOffsetY, 0);
+	// }
+	//
+	// new Road(newBuilding.id(), newBuilding.flag.id())
+	// 	.mount(parent);
+	//
+	// const base = ige.$("base1") as StorageBuilding;
+	//
+	// new Transporter(base.id(), newBuilding.id(), newBuilding.flag.id())
+	// 	.translateTo(base._translate.x, base._translate.y, 0)
+	// 	.mount(parent);
 
-	new Road(factoryBuilding.id(), factoryBuilding.flag.id())
-		.mount(parent);
-
-	const base = ige.$("base1") as StorageBuilding;
-
-	new Transporter(base.id(), factoryBuilding.id(), factoryBuilding.flag.id())
-		.translateTo(base._translate.x, base._translate.y, 0)
-		.mount(parent);
-
-	return factoryBuilding;
+	return newBuilding;
 }
 
-export const createFlagBuilding = (parent: IgeTileMap2d, id: string, tileX: number, tileY: number) => {
-	const flagBuilding = new FlagBuilding(tileX, tileY)
+export const createFactoryBuilding2 = (parent: IgeTileMap2d, id: string, tileX: number, tileY: number) => {
+	// TODO Make the produces and requires parameters of the createFactoryBuilding()
+	const roadOffsetX = 0;
+	const roadOffsetY = 3;
+
+	const newBuilding = new FactoryBuilding2(tileX, tileY, ResourceType.science, [{
+		type: ResourceType.energy,
+		count: 1,
+		max: 1
+	}, {
+		type: ResourceType.elerium,
+		count: 1,
+		max: 1
+	}, {
+		type: ResourceType.uranium,
+		count: 1,
+		max: 1
+	}])
 		.id(id)
 		.mount(parent)
 		.translateToTile(tileX, tileY, 0);
 
-	return flagBuilding;
+	// // Check if a flag already exists
+	// const existingFlag = parent.tileOccupiedBy(tileX + roadOffsetX, tileY + roadOffsetY) as FlagBuilding;
+	//
+	// if (existingFlag) {
+	// 	newBuilding.flag = existingFlag;
+	// } else {
+	// 	newBuilding.flag = new FlagBuilding(tileX + roadOffsetX, tileY + roadOffsetY)
+	// 		.mount(parent)
+	// 		.translateToTile(tileX + roadOffsetX, tileY + roadOffsetY, 0);
+	// }
+	//
+	// new Road(newBuilding.id(), newBuilding.flag.id())
+	// 	.mount(parent);
+	//
+	// const base = ige.$("base1") as StorageBuilding;
+	//
+	// new Transporter(base.id(), newBuilding.id(), newBuilding.flag.id())
+	// 	.translateTo(base._translate.x, base._translate.y, 0)
+	// 	.mount(parent);
+
+	return newBuilding;
+}
+
+export const createFlagBuilding = (parent: IgeTileMap2d, id: string, tileX: number, tileY: number) => {
+	const newBuilding = new FlagBuilding(tileX, tileY)
+		.id(id)
+		.mount(parent)
+		.translateToTile(tileX, tileY, 0);
+
+	return newBuilding;
 }

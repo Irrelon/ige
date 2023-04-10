@@ -4,5 +4,5 @@ export declare class IgeCollisionMap2d extends IgeEntity {
     classId: string;
     map: IgeMap2d;
     constructor();
-    mapData(val?: number[][]): number[][] | this;
+    mapData(val?: number[][]): this | number[][];
 }

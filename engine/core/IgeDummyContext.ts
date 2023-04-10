@@ -20,6 +20,7 @@ export class IgeDummyContext {
 	textBaseline?: CanvasRenderingContext2D["textBaseline"] = "middle";
 	font?: CanvasRenderingContext2D["font"];
 	globalCompositeOperation?: string;
+	lineCap?: CanvasRenderingContext2D["lineCap"] = "square";
 	save = undefinedMethod;
 	restore = undefinedMethod;
 	translate = undefinedMethod;

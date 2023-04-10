@@ -4,7 +4,7 @@ import { IgeNetIoServerController } from "@/engine/network/server/IgeNetIoServer
 import { BuildingType } from "../enums/BuildingType";
 import { IgeNetworkServerSideRequestHandler } from "@/types/IgeNetworkMessage";
 import {
-	createFactoryBuilding,
+	createFactoryBuilding1, createFactoryBuilding2,
 	createFlagBuilding,
 	createMiningBuilding,
 	createStorageBuilding
@@ -34,8 +34,13 @@ export const controllerServer: IgeEffectFunction = async () => {
 			return requestCallback(building.id());
 		}
 
-		case BuildingType.factory: {
-			const building = createFactoryBuilding(tileMap1, newIdHex(), x, y);
+		case BuildingType.factory1: {
+			const building = createFactoryBuilding1(tileMap1, newIdHex(), x, y);
+			return requestCallback(building.id());
+		}
+
+		case BuildingType.factory2: {
+			const building = createFactoryBuilding2(tileMap1, newIdHex(), x, y);
 			return requestCallback(building.id());
 		}
 
@@ -62,8 +67,14 @@ export const controllerServer: IgeEffectFunction = async () => {
 		requestCallback(road.id());
 	};
 
+	const debug = () => {
+		const resources = ige.$$("resource");
+		debugger;
+	}
+
 	(ige.network as IgeNetIoServerController).define("createBuilding", createBuilding);
 	(ige.network as IgeNetIoServerController).define("createRoad", createRoad);
+	(ige.network as IgeNetIoServerController).define("debug", debug);
 
 	return async () => {
 

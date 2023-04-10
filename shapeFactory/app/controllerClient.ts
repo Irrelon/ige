@@ -4,10 +4,9 @@ import { IgeUiElement } from "@/engine/core/IgeUiElement";
 import { IgeEffectFunction } from "@/types/IgeRouteDefinition";
 import { BuildingType } from "../enums/BuildingType";
 import { StorageBuilding } from "../entities/StorageBuilding";
-import { IgeScene2d } from "@/engine/core/IgeScene2d";
 import { IgeBehaviourType } from "@/enums/IgeBehaviourType";
 import { IgeEntity } from "@/engine/core/IgeEntity";
-import { FactoryBuilding } from "../entities/FactoryBuilding";
+import { FactoryBuilding1 } from "../entities/FactoryBuilding1";
 import { ResourceType } from "../enums/ResourceType";
 import { Line } from "../entities/base/Line";
 import { Flag } from "../entities/base/Flag";
@@ -18,14 +17,17 @@ import { MiningBuilding } from "../entities/MiningBuilding";
 import { IgePoint3d } from "@/engine/core/IgePoint3d";
 import { IgePoint2d } from "@/engine/core/IgePoint2d";
 import { IgeTileMap2d } from "@/engine/core/IgeTileMap2d";
+import { FactoryBuilding2 } from "../entities/FactoryBuilding2";
 
 export const controllerClient: IgeEffectFunction = async () => {
 	const network = ige.network as IgeNetIoClientController;
+
+	// TODO Turn this into a loop and use data on the items to handle functionality
 	const uiCreateStorage = ige.$("uiCreateStorage") as IgeUiElement;
-	const uiCreateFactory = ige.$("uiCreateFactory") as IgeUiElement;
+	const uiCreateFactory1 = ige.$("uiCreateFactory1") as IgeUiElement;
+	const uiCreateFactory2 = ige.$("uiCreateFactory2") as IgeUiElement;
 	const uiCreateMine1 = ige.$("uiCreateMine1") as IgeUiElement;
 	const uiCreateMine2 = ige.$("uiCreateMine2") as IgeUiElement;
-	const uiCreateFlag = ige.$("uiCreateFlag") as IgeUiElement;
 
 	const fsm = new IgeFSM();
 	const tileMap1 = ige.$("tileMap1") as IgeTileMap2d;
@@ -34,9 +36,27 @@ export const controllerClient: IgeEffectFunction = async () => {
 		enter: async () => {
 			console.log("Entered idle");
 
-			uiCreateFactory.pointerUp(() => {
-				fsm.data("createBuilding", BuildingType.factory);
+			uiCreateFactory1.pointerUp(() => {
+				fsm.data("createBuilding", BuildingType.factory1);
 				fsm.data("createArgs", [ResourceType.energy, [{
+					type: ResourceType.elerium,
+					count: 1,
+					max: 3
+				}, {
+					type: ResourceType.uranium,
+					count: 1,
+					max: 3
+				}]]);
+				fsm.enterState("createBuilding");
+			});
+
+			uiCreateFactory2.pointerUp(() => {
+				fsm.data("createBuilding", BuildingType.factory2);
+				fsm.data("createArgs", [ResourceType.energy, [{
+					type: ResourceType.energy,
+					count: 1,
+					max: 3
+				}, {
 					type: ResourceType.elerium,
 					count: 1,
 					max: 3
@@ -50,11 +70,6 @@ export const controllerClient: IgeEffectFunction = async () => {
 
 			uiCreateStorage.pointerUp(() => {
 				fsm.data("createBuilding", BuildingType.storage);
-				fsm.enterState("createBuilding");
-			});
-
-			uiCreateFlag.pointerUp(() => {
-				fsm.data("createBuilding", BuildingType.flag);
 				fsm.enterState("createBuilding");
 			});
 
@@ -72,18 +87,18 @@ export const controllerClient: IgeEffectFunction = async () => {
 		},
 		exit: async () => {
 			uiCreateStorage.pointerUp(null);
-			uiCreateFactory.pointerUp(null);
+			uiCreateFactory1.pointerUp(null);
 		},
 		click: async (mousePos: IgePoint2d, building?: Building) => {
 			console.log("IDLE CLICK");
 			if (!building) return;
 
-			if (building.classId === "FlagBuilding") {
-				// User clicked on a flag, start road building
-				// TODO: Later we should pop an options modal instead with other options
-				//  like remove flag?
-				await fsm.enterState("createRoad", building);
-			}
+			//if (building.classId === "FlagBuilding") {
+			// User clicked on a flag, start road building
+			// TODO: Later we should pop an options modal instead with other options
+			//  like remove flag?
+			await fsm.enterState("createRoad", building);
+			//}
 		}
 	});
 
@@ -108,8 +123,14 @@ export const controllerClient: IgeEffectFunction = async () => {
 					.mount(tileMap1);
 				break;
 
-			case BuildingType.factory:
-				new FactoryBuilding( NaN, NaN, createArgs[0], createArgs[1])
+			case BuildingType.factory1:
+				new FactoryBuilding1( NaN, NaN, createArgs[0], createArgs[1])
+					.id("tmpBuilding")
+					.mount(tileMap1);
+				break;
+
+			case BuildingType.factory2:
+				new FactoryBuilding2( NaN, NaN, createArgs[0], createArgs[1])
 					.id("tmpBuilding")
 					.mount(tileMap1);
 				break;
@@ -181,9 +202,6 @@ export const controllerClient: IgeEffectFunction = async () => {
 
 			fsm.data("startFlag", startFlag);
 
-			// Get the scene to mount to
-			const scene1 = ige.$("scene1") as IgeScene2d;
-
 			// Remove any existing temp building
 			const existingTmpBuilding = ige.$("tmpBuilding");
 
@@ -193,7 +211,7 @@ export const controllerClient: IgeEffectFunction = async () => {
 
 			new Line()
 				.id("tmpBuilding")
-				.mount(scene1);
+				.mount(tileMap1);
 		},
 		pointerMove: async (tilePos: IgePoint2d) => {
 			const tmpBuilding = ige.$("tmpBuilding") as Line;

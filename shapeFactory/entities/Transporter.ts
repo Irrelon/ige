@@ -25,7 +25,7 @@ export class Transporter extends WorkerUnit {
 	_state: "spawned" | "traversingPath" | "waiting" | "retrieving" | "transporting" | "movingToHomeLocation" = "spawned";
 	_homeLocation?: IgePoint3d;
 	_navigateToHomePath?: string[];
-	_speed: number = 0.1;
+	_speed: number = 0.5;
 
 	constructor (baseId: string, depotAId: string, depotBId: string) {
 		super(WorkerUnitType.transporter);
@@ -34,8 +34,10 @@ export class Transporter extends WorkerUnit {
 		this._depotAId = depotAId;
 		this._depotBId = depotBId;
 		this.layer(2);
-		this.data("glowSize", 50);
-		this.data("glowIntensity", 1);
+		this.category("transporter");
+		//this.data("glowColor", "#ffffff");
+		//this.data("glowSize", 50);
+		//this.data("glowIntensity", 1);
 
 		this.setDepots();
 	}
@@ -176,22 +178,22 @@ export class Transporter extends WorkerUnit {
 		if (this._depotA && this._depotB) {
 			if (currentLocation === this._depotA) {
 				// Check for items that need to route to depot B
-				for (let i = 0; i < this._depotA.outboundQueue.length; i++) {
-					const newResource = this._depotA?.outboundQueue[i];
+				for (let i = 0; i < this._depotA.outboundQueue.length(); i++) {
+					const newResource = this._depotA?.outboundQueue.getIndex(i);
 
 					if (newResource._pathIds[0] === this._depotBId) {
-						this._depotB.outboundQueue.splice(i, 1);
+						this._depotB.outboundQueue.removeItem(newResource);
 						this.retrieveResource(newResource);
 						return;
 					}
 				}
 			} else {
 				// Check for items that need to route to depot A
-				for (let i = 0; i < this._depotB.outboundQueue.length; i++) {
-					const newResource = this._depotB?.outboundQueue[i];
+				for (let i = 0; i < this._depotB.outboundQueue.length(); i++) {
+					const newResource = this._depotB?.outboundQueue.getIndex(i);
 
 					if (newResource._pathIds[0] === this._depotAId) {
-						this._depotB.outboundQueue.splice(i, 1);
+						this._depotB.outboundQueue.removeItem(newResource);
 						this.retrieveResource(newResource);
 						return;
 					}
@@ -272,11 +274,11 @@ export class Transporter extends WorkerUnit {
 			// If we're waiting, check depot A
 			if (this._state === "waiting") {
 				// Determine if we should be transporting anything
-				for (let i = 0; i < depotA.outboundQueue.length; i++) {
-					const resource = depotA?.outboundQueue[i];
+				for (let i = 0; i < depotA.outboundQueue.length(); i++) {
+					const resource = depotA?.outboundQueue.getIndex(i);
 
 					if (resource._pathIds[0] === this._depotBId) {
-						depotA.outboundQueue.splice(i, 1);
+						depotA.outboundQueue.removeItem(resource);
 						//this.log(`Picking up resource ${resource._id} from depot A: ${depotA._id}`);
 						//console.log("Depot A queue now:", depotA.transportQueue);
 
@@ -289,11 +291,11 @@ export class Transporter extends WorkerUnit {
 			// We're still waiting, check depot B
 			if (this._state === "waiting") {
 				// Determine if we should be transporting anything
-				for (let i = 0; i < depotB.outboundQueue.length; i++) {
-					const resource = depotB?.outboundQueue[i];
+				for (let i = 0; i < depotB.outboundQueue.length(); i++) {
+					const resource = depotB?.outboundQueue.getIndex(i);
 
 					if (resource._pathIds[0] === this._depotAId) {
-						depotB.outboundQueue.splice(i, 1);
+						depotB.outboundQueue.removeItem(resource);
 						//this.log(`Picking up resource ${resource._id} from depot A: ${depotB._id}`);
 						//console.log("Depot B queue now:", depotB.transportQueue);
 
@@ -308,7 +310,6 @@ export class Transporter extends WorkerUnit {
 			// Make the resource we are carrying follow us at our current location
 			this._resource.translateTo(this._translate.x, this._translate.y, 0);
 		}
-
 	}
 
 	update (ctx: IgeCanvasRenderingContext2d, tickDelta: number) {

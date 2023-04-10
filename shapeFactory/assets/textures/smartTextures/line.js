@@ -2,6 +2,7 @@ import { IgePoint3d } from "../../../../engine/core/IgePoint3d.js";
 export const lineSmartTexture = {
     render: function (ctx, entity) {
         ctx.beginPath();
+        ctx.lineCap = "round";
         if (entity.isometric()) {
             const p1 = new IgePoint3d(-entity._bounds2d.x2, -entity._bounds2d.y2, 0).toIso();
             const p2 = new IgePoint3d(entity._bounds2d.x2, entity._bounds2d.y2, 0).toIso();
@@ -12,8 +13,8 @@ export const lineSmartTexture = {
             ctx.moveTo(-entity._bounds2d.x2, -entity._bounds2d.y2);
             ctx.lineTo(entity._bounds2d.x2, entity._bounds2d.y2);
         }
-        ctx.lineWidth = 4;
-        ctx.strokeStyle = "#ffffff";
+        ctx.lineWidth = 24;
+        ctx.strokeStyle = "#003a65";
         ctx.shadowColor = entity.data("glowColor");
         ctx.shadowBlur = entity.data("glowSize");
         ctx.shadowOffsetX = 0;

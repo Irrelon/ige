@@ -20,38 +20,43 @@ export class UiClientScene extends IgeSceneGraph {
 			.left(0)
 			.middle(0)
 			.width(80)
-			.height(400)
+			.height(500)
 			.borderWidth(1)
 			.borderColor("#ffffff")
 			.backgroundColor("#222222")
 			.mount(uiScene);
 
-		new UiBuildItem(ige.textures.get("squareSmartTexture"), "Storage")
+		new UiBuildItem(ige.textures.get("headquarters"), "Headquarters")
 			.id("uiCreateStorage")
 			.top(20)
 			.mount(buildUi);
 
-		new UiBuildItem(ige.textures.get("triangleSmartTexture"), "Energy Factory")
-			.id("uiCreateFactory")
+		new UiBuildItem(ige.textures.get("factory1"), "Factory 1")
+			.id("uiCreateFactory1")
 			.top(90)
 			.mount(buildUi);
 
-		new UiBuildItem(ige.textures.get("starSmartTexture"), "Green Mine")
+		new UiBuildItem(ige.textures.get("factory2"), "Factory 2")
+			.id("uiCreateFactory2")
+			.top(160)
+			.mount(buildUi);
+
+		new UiBuildItem(ige.textures.get("mine"), "Green Mine")
 			.id("uiCreateMine1")
 			.data("fillColor", fillColorByResourceType[ResourceType.wood])
-			.top(170)
+			.top(230)
 			.mount(buildUi);
 
-		new UiBuildItem(ige.textures.get("starSmartTexture"), "Purple Mine")
+		new UiBuildItem(ige.textures.get("mine"), "Purple Mine")
 			.id("uiCreateMine2")
 			.data("fillColor", fillColorByResourceType[ResourceType.stone])
-			.top(250)
+			.top(300)
 			.mount(buildUi);
 
-		new UiBuildItem(ige.textures.get("flagSmartTexture"), "Flag")
-			.id("uiCreateFlag")
-			.top(320)
-			.mount(buildUi);
+		// new UiBuildItem(ige.textures.get("flagSmartTexture"), "Flag")
+		// 	.id("uiCreateFlag")
+		// 	.top(370)
+		// 	.mount(buildUi);
 	}
 
 	removeGraph () {

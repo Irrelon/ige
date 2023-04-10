@@ -23,7 +23,7 @@ export class StorageBuilding extends Square {
         this.originTo(0.5, 0.45, 0.5);
         if (isClient) {
             this.texture(ige.textures.get("headquarters"));
-            this._textureOffset = new IgePoint2d(0, -14);
+            this._textureOffset = new IgePoint2d(6, -14);
         }
     }
     streamCreateConstructorArgs() {

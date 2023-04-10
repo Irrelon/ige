@@ -3,10 +3,11 @@ import { isClient } from "../../engine/clientServer.js";
 import { UiRequiresProducesDisplay } from "./UiRequiresProducesDisplay.js";
 import { Building } from "./base/Building.js";
 import { ige } from "../../engine/instance.js";
-export class FactoryBuilding extends Building {
+import { IgePoint2d } from "../../engine/core/IgePoint2d.js";
+export class FactoryBuilding1 extends Building {
     constructor(tileX = NaN, tileY = NaN, produces, requires = []) {
         super();
-        this.classId = "FactoryBuilding";
+        this.classId = "FactoryBuilding1";
         this.tileXDelta = -1;
         this.tileYDelta = -1;
         this.tileW = 3;
@@ -17,12 +18,13 @@ export class FactoryBuilding extends Building {
         this._requires = requires;
         this.layer(10);
         this.isometric(true);
-        this.width(140);
-        this.height(140);
-        this.bounds3d(70, 70, 56);
+        this.width(160);
+        this.height(160);
+        this.bounds3d(90, 90, 56);
         if (isClient) {
             new UiRequiresProducesDisplay(produces, requires).mount(this);
-            this.texture(ige.textures.get("factory"));
+            this.texture(ige.textures.get("factory1"));
+            this._textureOffset = new IgePoint2d(24, -16);
         }
     }
     streamCreateConstructorArgs() {
@@ -35,4 +37,4 @@ export class FactoryBuilding extends Building {
         }
     }
 }
-registerClass(FactoryBuilding);
+registerClass(FactoryBuilding1);

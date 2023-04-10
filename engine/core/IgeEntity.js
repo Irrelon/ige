@@ -1494,7 +1494,7 @@ export class IgeEntity extends IgeObject {
         // Remove the event listeners array in case any
         // object references still exist there
         this._eventListeners = {};
-        return this;
+        return super.destroy();
     }
     /**
      * Sorts the _children array by the layer and then depth of each object.

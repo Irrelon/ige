@@ -17,6 +17,7 @@ export class IgeDummyContext {
         this.lineWidth = 1;
         this.textAlign = "left";
         this.textBaseline = "middle";
+        this.lineCap = "square";
         this.save = undefinedMethod;
         this.restore = undefinedMethod;
         this.translate = undefinedMethod;

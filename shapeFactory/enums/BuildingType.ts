@@ -1,6 +1,7 @@
 export enum BuildingType {
 	"storage",
 	"mine",
-	"factory",
+	"factory1",
+	"factory2",
 	"flag"
 }

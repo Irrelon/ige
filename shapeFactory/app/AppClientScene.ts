@@ -37,6 +37,7 @@ export class AppClientScene extends IgeSceneGraph {
 		new IgeTexture("elerium", "assets/textures/sprites/elerium.png");
 		new IgeTexture("gold", "assets/textures/sprites/gold.png");
 		new IgeTexture("energy", "assets/textures/sprites/energy.png");
+		new IgeTexture("science", "assets/textures/sprites/science.png");
 		new IgeTexture("arrow", "assets/textures/sprites/arrow.png");
 		new IgeTexture("blueCube", "assets/textures/sprites/blueCube.png");
 		new IgeTexture("purpleCube", "assets/textures/sprites/purpleCube.png");
@@ -45,9 +46,11 @@ export class AppClientScene extends IgeSceneGraph {
 		new IgeTexture("whiteTubeL", "assets/textures/sprites/whiteTubeL.png");
 		new IgeTexture("roofE", "assets/textures/sprites/roofE.png");
 		new IgeTexture("roofW", "assets/textures/sprites/roofW.png");
-		new IgeTexture("factory", "assets/textures/sprites/factory.png");
+		new IgeTexture("factory1", "assets/textures/sprites/factory1.png");
+		new IgeTexture("factory2", "assets/textures/sprites/factory2.png");
 		new IgeTexture("headquarters", "assets/textures/sprites/headquarters.png");
 		new IgeTexture("mine", "assets/textures/sprites/mine.png");
+		new IgeTexture("flag", "assets/textures/sprites/flag.png");
 		new IgeTexture("squareSmartTexture", squareSmartTexture);
 		new IgeTexture("lineSmartTexture", lineSmartTexture);
 		new IgeTexture("triangleSmartTexture", triangleSmartTexture);
@@ -76,6 +79,8 @@ export class AppClientScene extends IgeSceneGraph {
 
 		vp1.drawBounds(true, true);
 		vp1.drawBoundsData(true);
+
+		vp1.camera.translateTo(0, 540, 0);
 
 		await network.start('http://localhost:2000');
 	}

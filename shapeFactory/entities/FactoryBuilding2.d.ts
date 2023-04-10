@@ -2,7 +2,7 @@ import { ResourceType } from "../enums/ResourceType";
 import { BuildingResourceRequirement } from "../types/BuildingResourceRequirement";
 import { Building } from "./base/Building";
 import { IgeObject } from "@/engine/core/IgeObject";
-export declare class FactoryBuilding extends Building {
+export declare class FactoryBuilding2 extends Building {
     classId: string;
     tileXDelta: number;
     tileYDelta: number;

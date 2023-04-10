@@ -9,10 +9,11 @@ import { IgeTimeout } from "@/engine/core/IgeTimeout";
 import { ige } from "@/engine/instance";
 import { FlagBuilding } from "../FlagBuilding";
 import { IgeTileMap2d } from "@/engine/core/IgeTileMap2d";
+import { ThreadSafeQueue } from "../../services/ThreadSafeQueue";
 
 export class Building extends GameEntity {
 	flag?: FlagBuilding;
-	outboundQueue: Resource[] = [];
+	outboundQueue: ThreadSafeQueue<Resource> = new ThreadSafeQueue<Resource>();
 	inboundQueue: Partial<Record<ResourceType, number>> = {};
 	resourcePool: Partial<Record<ResourceType, number>> = {};
 	tileX: number = NaN;
@@ -173,6 +174,8 @@ export class Building extends GameEntity {
 			this._updateOnServer();
 		}
 		super.update(ctx, tickDelta);
+
+		this.outboundQueue.update();
 	}
 }
 

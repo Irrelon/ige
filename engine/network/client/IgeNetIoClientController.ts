@@ -492,7 +492,7 @@ export class IgeNetIoClientController extends IgeNetIoBaseController {
 
 	_onStreamDestroy = (data: IgeStreamDestroyMessageData) => {
 		const entity = ige.$(data[1]) as IgeEntity;
-
+		console.log("Stream destroy", data);
 		if (!entity) {
 			return;
 		}

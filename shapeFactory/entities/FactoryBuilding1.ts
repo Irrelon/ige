@@ -6,9 +6,10 @@ import { UiRequiresProducesDisplay } from "./UiRequiresProducesDisplay";
 import { Building } from "./base/Building";
 import { ige } from "@/engine/instance";
 import { IgeObject } from "@/engine/core/IgeObject";
+import { IgePoint2d } from "@/engine/core/IgePoint2d";
 
-export class FactoryBuilding extends Building {
-	classId = "FactoryBuilding";
+export class FactoryBuilding1 extends Building {
+	classId = "FactoryBuilding1";
 	tileXDelta = -1;
 	tileYDelta = -1;
 	tileW = 3;
@@ -24,13 +25,14 @@ export class FactoryBuilding extends Building {
 
 		this.layer(10);
 		this.isometric(true);
-		this.width(140);
-		this.height(140);
-		this.bounds3d(70,70,56);
+		this.width(160);
+		this.height(160);
+		this.bounds3d(90,90,56);
 
 		if (isClient) {
 			new UiRequiresProducesDisplay(produces, requires).mount(this);
-			this.texture(ige.textures.get("factory"));
+			this.texture(ige.textures.get("factory1"));
+			this._textureOffset = new IgePoint2d(24, -16);
 		}
 	}
 
@@ -47,4 +49,4 @@ export class FactoryBuilding extends Building {
 	}
 }
 
-registerClass(FactoryBuilding);
+registerClass(FactoryBuilding1);

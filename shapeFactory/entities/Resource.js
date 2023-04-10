@@ -16,6 +16,7 @@ export class Resource extends Circle {
         this.data("fillColor", fillColorByResourceType[type])
             .width(16)
             .height(16);
+        this.category("resource");
         this.isometric(ige.data("isometric"));
         //this.bounds3d(10, 10, 2);
         this._type = type;
@@ -127,7 +128,7 @@ export class Resource extends Circle {
         this._pathIds = roadPathFinder(this._locationId, this._destinationId);
         if (this._pathIds.length === 0) {
             debugger;
-            console.log("Resource cannot calculate transport path, retrying...");
+            console.log("Resource cannot calculate transport path, retrying...", this._locationId, this._destinationId);
             // We failed to find a path, queue a re-check
             new IgeTimeout(() => {
                 this.calculateTransportPath();
@@ -136,7 +137,7 @@ export class Resource extends Circle {
         }
         //console.log("Resource path is", this._pathIds.toString());
         // Add resource to the current location's transport queue
-        this._location.outboundQueue.push(this);
+        this._location.outboundQueue.addItem(this);
     }
     destroy() {
         delete this._location;

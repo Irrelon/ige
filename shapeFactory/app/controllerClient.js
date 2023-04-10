@@ -12,27 +12,46 @@ import { IgeFSM } from "../../engine/core/IgeFSM.js";
 import { BuildingType } from "../enums/BuildingType.js";
 import { StorageBuilding } from "../entities/StorageBuilding.js";
 import { IgeBehaviourType } from "../../enums/IgeBehaviourType.js";
-import { FactoryBuilding } from "../entities/FactoryBuilding.js";
+import { FactoryBuilding1 } from "../entities/FactoryBuilding1.js";
 import { ResourceType } from "../enums/ResourceType.js";
 import { Line } from "../entities/base/Line.js";
 import { FlagBuilding } from "../entities/FlagBuilding.js";
 import { MiningBuilding } from "../entities/MiningBuilding.js";
 import { IgePoint3d } from "../../engine/core/IgePoint3d.js";
+import { FactoryBuilding2 } from "../entities/FactoryBuilding2.js";
 export const controllerClient = () => __awaiter(void 0, void 0, void 0, function* () {
     const network = ige.network;
+    // TODO Turn this into a loop and use data on the items to handle functionality
     const uiCreateStorage = ige.$("uiCreateStorage");
-    const uiCreateFactory = ige.$("uiCreateFactory");
+    const uiCreateFactory1 = ige.$("uiCreateFactory1");
+    const uiCreateFactory2 = ige.$("uiCreateFactory2");
     const uiCreateMine1 = ige.$("uiCreateMine1");
     const uiCreateMine2 = ige.$("uiCreateMine2");
-    const uiCreateFlag = ige.$("uiCreateFlag");
     const fsm = new IgeFSM();
     const tileMap1 = ige.$("tileMap1");
     fsm.defineState("idle", {
         enter: () => __awaiter(void 0, void 0, void 0, function* () {
             console.log("Entered idle");
-            uiCreateFactory.pointerUp(() => {
-                fsm.data("createBuilding", BuildingType.factory);
+            uiCreateFactory1.pointerUp(() => {
+                fsm.data("createBuilding", BuildingType.factory1);
                 fsm.data("createArgs", [ResourceType.energy, [{
+                            type: ResourceType.elerium,
+                            count: 1,
+                            max: 3
+                        }, {
+                            type: ResourceType.uranium,
+                            count: 1,
+                            max: 3
+                        }]]);
+                fsm.enterState("createBuilding");
+            });
+            uiCreateFactory2.pointerUp(() => {
+                fsm.data("createBuilding", BuildingType.factory2);
+                fsm.data("createArgs", [ResourceType.energy, [{
+                            type: ResourceType.energy,
+                            count: 1,
+                            max: 3
+                        }, {
                             type: ResourceType.elerium,
                             count: 1,
                             max: 3
@@ -45,10 +64,6 @@ export const controllerClient = () => __awaiter(void 0, void 0, void 0, function
             });
             uiCreateStorage.pointerUp(() => {
                 fsm.data("createBuilding", BuildingType.storage);
-                fsm.enterState("createBuilding");
-            });
-            uiCreateFlag.pointerUp(() => {
-                fsm.data("createBuilding", BuildingType.flag);
                 fsm.enterState("createBuilding");
             });
             uiCreateMine1.pointerUp(() => {
@@ -64,18 +79,18 @@ export const controllerClient = () => __awaiter(void 0, void 0, void 0, function
         }),
         exit: () => __awaiter(void 0, void 0, void 0, function* () {
             uiCreateStorage.pointerUp(null);
-            uiCreateFactory.pointerUp(null);
+            uiCreateFactory1.pointerUp(null);
         }),
         click: (mousePos, building) => __awaiter(void 0, void 0, void 0, function* () {
             console.log("IDLE CLICK");
             if (!building)
                 return;
-            if (building.classId === "FlagBuilding") {
-                // User clicked on a flag, start road building
-                // TODO: Later we should pop an options modal instead with other options
-                //  like remove flag?
-                yield fsm.enterState("createRoad", building);
-            }
+            //if (building.classId === "FlagBuilding") {
+            // User clicked on a flag, start road building
+            // TODO: Later we should pop an options modal instead with other options
+            //  like remove flag?
+            yield fsm.enterState("createRoad", building);
+            //}
         })
     });
     fsm.defineState("createBuilding", {
@@ -95,8 +110,13 @@ export const controllerClient = () => __awaiter(void 0, void 0, void 0, function
                         .id("tmpBuilding")
                         .mount(tileMap1);
                     break;
-                case BuildingType.factory:
-                    new FactoryBuilding(NaN, NaN, createArgs[0], createArgs[1])
+                case BuildingType.factory1:
+                    new FactoryBuilding1(NaN, NaN, createArgs[0], createArgs[1])
+                        .id("tmpBuilding")
+                        .mount(tileMap1);
+                    break;
+                case BuildingType.factory2:
+                    new FactoryBuilding2(NaN, NaN, createArgs[0], createArgs[1])
                         .id("tmpBuilding")
                         .mount(tileMap1);
                     break;
@@ -156,8 +176,6 @@ export const controllerClient = () => __awaiter(void 0, void 0, void 0, function
             }
             console.log("Entered createRoad");
             fsm.data("startFlag", startFlag);
-            // Get the scene to mount to
-            const scene1 = ige.$("scene1");
             // Remove any existing temp building
             const existingTmpBuilding = ige.$("tmpBuilding");
             if (existingTmpBuilding) {
@@ -165,7 +183,7 @@ export const controllerClient = () => __awaiter(void 0, void 0, void 0, function
             }
             new Line()
                 .id("tmpBuilding")
-                .mount(scene1);
+                .mount(tileMap1);
         }),
         pointerMove: (tilePos) => __awaiter(void 0, void 0, void 0, function* () {
             const tmpBuilding = ige.$("tmpBuilding");

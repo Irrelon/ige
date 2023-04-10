@@ -9,7 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 import { ige } from "../../engine/instance.js";
 import { BuildingType } from "../enums/BuildingType.js";
-import { createFactoryBuilding, createFlagBuilding, createMiningBuilding, createStorageBuilding } from "../services/createBuilding.js";
+import { createFactoryBuilding1, createFactoryBuilding2, createFlagBuilding, createMiningBuilding, createStorageBuilding } from "../services/createBuilding.js";
 import { newIdHex } from "../../engine/utils.js";
 import { Road } from "../entities/Road.js";
 import { Transporter } from "../entities/Transporter.js";
@@ -28,8 +28,12 @@ export const controllerServer = () => __awaiter(void 0, void 0, void 0, function
                 const building = createFlagBuilding(tileMap1, newIdHex(), x, y);
                 return requestCallback(building.id());
             }
-            case BuildingType.factory: {
-                const building = createFactoryBuilding(tileMap1, newIdHex(), x, y);
+            case BuildingType.factory1: {
+                const building = createFactoryBuilding1(tileMap1, newIdHex(), x, y);
+                return requestCallback(building.id());
+            }
+            case BuildingType.factory2: {
+                const building = createFactoryBuilding2(tileMap1, newIdHex(), x, y);
                 return requestCallback(building.id());
             }
             case BuildingType.mine: {
@@ -50,8 +54,14 @@ export const controllerServer = () => __awaiter(void 0, void 0, void 0, function
             .mount(tileMap1);
         requestCallback(road.id());
     });
+    const debug = () => {
+        const resources = ige.$$("resource");
+        const transporters = ige.$$("transporter");
+        debugger;
+    };
     ige.network.define("createBuilding", createBuilding);
     ige.network.define("createRoad", createRoad);
+    ige.network.define("debug", debug);
     return () => __awaiter(void 0, void 0, void 0, function* () {
     });
 });

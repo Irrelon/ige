@@ -1878,7 +1878,7 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 		// object references still exist there
 		this._eventListeners = {};
 
-		return this;
+		return super.destroy();
 	}
 
 	/**

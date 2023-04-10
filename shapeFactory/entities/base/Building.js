@@ -5,10 +5,11 @@ import { ResourceType } from "../../enums/ResourceType.js";
 import { isServer } from "../../../engine/clientServer.js";
 import { IgeTimeout } from "../../../engine/core/IgeTimeout.js";
 import { ige } from "../../../engine/instance.js";
+import { ThreadSafeQueue } from "../../services/ThreadSafeQueue.js";
 export class Building extends GameEntity {
     constructor() {
         super();
-        this.outboundQueue = [];
+        this.outboundQueue = new ThreadSafeQueue();
         this.inboundQueue = {};
         this.resourcePool = {};
         this.tileX = NaN;
@@ -137,6 +138,7 @@ export class Building extends GameEntity {
             this._updateOnServer();
         }
         super.update(ctx, tickDelta);
+        this.outboundQueue.update();
     }
 }
 registerClass(Building);

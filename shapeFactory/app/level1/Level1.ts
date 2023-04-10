@@ -34,10 +34,10 @@ export class Level1 extends IgeSceneGraph {
 			.tileWidth(50)
 			.tileHeight(50)
 			.gridSize(50, 50)
-			.drawGrid(true)
+			.drawGrid(false)
 			.drawMouse(true)
-			.highlightOccupied(true)
-			.highlightTileRect(true)
+			.highlightOccupied(false)
+			.highlightTileRect(false)
 			.translateTo(0, 0, 0)
 			//.mouseMove(this.mapOnMouseOver)
 			.mount(baseScene);

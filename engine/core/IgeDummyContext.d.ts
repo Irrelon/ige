@@ -15,6 +15,7 @@ export declare class IgeDummyContext {
     textBaseline?: CanvasRenderingContext2D["textBaseline"];
     font?: CanvasRenderingContext2D["font"];
     globalCompositeOperation?: string;
+    lineCap?: CanvasRenderingContext2D["lineCap"];
     save: () => void;
     restore: () => void;
     translate: () => void;

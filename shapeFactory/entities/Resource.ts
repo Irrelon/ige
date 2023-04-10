@@ -25,6 +25,7 @@ export class Resource extends Circle {
 			.width(16)
 			.height(16);
 
+		this.category("resource");
 		this.isometric(ige.data("isometric"));
 		//this.bounds3d(10, 10, 2);
 
@@ -169,7 +170,7 @@ export class Resource extends Circle {
 
 		if (this._pathIds.length === 0) {
 			debugger;
-			console.log("Resource cannot calculate transport path, retrying...");
+			console.log("Resource cannot calculate transport path, retrying...", this._locationId, this._destinationId);
 			// We failed to find a path, queue a re-check
 			new IgeTimeout(() => {
 				this.calculateTransportPath();
@@ -180,7 +181,7 @@ export class Resource extends Circle {
 		//console.log("Resource path is", this._pathIds.toString());
 
 		// Add resource to the current location's transport queue
-		this._location.outboundQueue.push(this);
+		this._location.outboundQueue.addItem(this);
 	}
 
 	destroy (): this {

@@ -4,9 +4,10 @@ import { ResourceType } from "../../enums/ResourceType";
 import { BuildingResourceRequirement } from "../../types/BuildingResourceRequirement";
 import { IgeCanvasRenderingContext2d } from "@/types/IgeCanvasRenderingContext2d";
 import { FlagBuilding } from "../FlagBuilding";
+import { ThreadSafeQueue } from "../../services/ThreadSafeQueue";
 export declare class Building extends GameEntity {
     flag?: FlagBuilding;
-    outboundQueue: Resource[];
+    outboundQueue: ThreadSafeQueue<Resource>;
     inboundQueue: Partial<Record<ResourceType, number>>;
     resourcePool: Partial<Record<ResourceType, number>>;
     tileX: number;
