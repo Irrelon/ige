@@ -28,11 +28,11 @@ export class Level1 extends IgeSceneGraph {
             .mount(baseScene);
         const tileMap1 = new IgeTileMap2d()
             .id('tileMap1')
-            .isometricMounts(true)
+            .isometricMounts(ige.data("isometric"))
             .tileWidth(50)
             .tileHeight(50)
             .gridSize(50, 50)
-            .drawGrid(false)
+            .drawGrid(true)
             .drawMouse(true)
             .highlightOccupied(false)
             .highlightTileRect(false)

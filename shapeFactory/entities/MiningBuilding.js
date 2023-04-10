@@ -12,7 +12,7 @@ export class MiningBuilding extends Star {
         this._produces = produces;
         this._requires = requires;
         this.layer(10);
-        this.isometric(true);
+        this.isometric(ige.data("isometric"));
         this.width(80);
         this.height(100);
         this.bounds3d(40, 40, 50);

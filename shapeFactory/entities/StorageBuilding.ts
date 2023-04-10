@@ -22,7 +22,7 @@ export class StorageBuilding extends Square {
 		this.tileY = tileY;
 
 		this.layer(10);
-		this.isometric(true);
+		this.isometric(ige.data("isometric"));
 		this.width(180);
 		this.height(180);
 		this.bounds3d(110,110,65);

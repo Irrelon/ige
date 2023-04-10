@@ -17,7 +17,7 @@ export class FactoryBuilding1 extends Building {
         this._produces = produces;
         this._requires = requires;
         this.layer(10);
-        this.isometric(true);
+        this.isometric(ige.data("isometric"));
         this.width(160);
         this.height(160);
         this.bounds3d(90, 90, 56);

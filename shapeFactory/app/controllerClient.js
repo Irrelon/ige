@@ -210,13 +210,9 @@ export const controllerClient = () => __awaiter(void 0, void 0, void 0, function
                     y: tilePos.y
                 });
             }
-            else if (building.classId === "FlagBuilding") {
+            else {
                 // The clicked end point is a flag, use this
                 destinationFlagId = building.id();
-            }
-            else {
-                // The clicked end point is a building, use it's existing flag
-                destinationFlagId = building.flag.id();
             }
             // Place the building
             const existingTmpBuilding = ige.$("tmpBuilding");
@@ -242,19 +238,7 @@ export const controllerClient = () => __awaiter(void 0, void 0, void 0, function
     yield fsm.initialState("idle");
     const onPointerUp = () => {
         const tilePos = tileMap1.mouseToTile();
-        // Run a hit test against the all the entities
-        const buildings = ige.$$("building");
         const occupiedBy = tileMap1.tileOccupiedBy(tilePos.x, tilePos.y);
-        // Loop the buildings and check against the AABB
-        // const foundBuilding = buildings.reduce((tmpBuilding: Building | undefined, building) => {
-        // 	if (tmpBuilding?.classId !== "FlagBuilding") {
-        // 		if (building.triggerPolygon().pointInside(tilePos)) {
-        // 			tmpBuilding = building;
-        // 		}
-        // 	}
-        //
-        // 	return tmpBuilding;
-        // }, undefined);
         if (occupiedBy) {
             console.log("foundBuilding", occupiedBy);
         }
@@ -263,17 +247,6 @@ export const controllerClient = () => __awaiter(void 0, void 0, void 0, function
     const onPointerMove = () => {
         const tilePos = tileMap1.mouseToTile();
         fsm.raiseEvent("pointerMove", tilePos);
-        // // Run a hit test against the all the entities
-        // const buildings = ige.$$("building") as Building[];
-        //
-        // // Loop the buildings and check against the AABB
-        // const foundBuilding = buildings.find((building) => {
-        // 	return building.triggerPolygon().pointInside(ige._pointerPos);
-        // });
-        //
-        // if (foundBuilding) {
-        // 	console.log("foundBuilding", foundBuilding);
-        // }
     };
     const onKeyUp = (evt) => {
         if (evt.code === "Escape") {
