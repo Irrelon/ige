@@ -5,6 +5,7 @@ import { BuildingResourceRequirement } from "../../types/BuildingResourceRequire
 import { IgeCanvasRenderingContext2d } from "@/types/IgeCanvasRenderingContext2d";
 import { FlagBuilding } from "../FlagBuilding";
 import { ThreadSafeQueue } from "../../services/ThreadSafeQueue";
+import { IgeParticleEmitter } from "@/engine/core/IgeParticleEmitter";
 export declare class Building extends GameEntity {
     flag?: FlagBuilding;
     outboundQueue: ThreadSafeQueue<Resource>;
@@ -21,6 +22,7 @@ export declare class Building extends GameEntity {
     _isProducing: boolean;
     _produces: ResourceType;
     _requires: BuildingResourceRequirement[];
+    productionEffects: IgeParticleEmitter[];
     constructor();
     _addResource(recordObj: Partial<Record<ResourceType, number>>, resourceType: ResourceType, amount?: number): void;
     _subtractResource(recordObj: Partial<Record<ResourceType, number>>, resourceType: ResourceType, amount?: number): void;
@@ -41,4 +43,6 @@ export declare class Building extends GameEntity {
     completeProducingResource(): void;
     _updateOnServer(): void;
     update(ctx: IgeCanvasRenderingContext2d, tickDelta: number): void;
+    streamSectionData(sectionId: string, data?: string, bypassTimeStream?: boolean, bypassChangeDetection?: boolean): string | undefined;
+    updateProductionEffects(): void;
 }

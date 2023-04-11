@@ -21,10 +21,12 @@ export class Building extends GameEntity {
         this._productionMinTimeMs = 10000;
         this._productionMaxTimeMs = 20000;
         this._isProducing = false;
+        this.productionEffects = [];
         this._produces = ResourceType.none;
         this._requires = [];
         this.isometric(ige.data("isometric"));
         this.isometricMounts(ige.data("isometric"));
+        this.streamSectionsPush("isProducing");
         if (this.isometric()) {
             this.bounds3d(30, 30, 0);
             this.triggerPolygonFunctionName('bounds3dPolygon');
@@ -139,6 +141,32 @@ export class Building extends GameEntity {
         }
         super.update(ctx, tickDelta);
         this.outboundQueue.update();
+    }
+    streamSectionData(sectionId, data, bypassTimeStream = false, bypassChangeDetection = false) {
+        if (sectionId === "isProducing") {
+            if (data === undefined) {
+                return this._isProducing ? "1" : "0";
+            }
+            else {
+                this._isProducing = data === "1";
+                this.updateProductionEffects();
+            }
+        }
+        return super.streamSectionData(sectionId, data, bypassTimeStream, bypassChangeDetection);
+    }
+    updateProductionEffects() {
+        if (this.productionEffects.length) {
+            if (this._isProducing) {
+                this.productionEffects.forEach((effect) => {
+                    effect.start();
+                });
+            }
+            else {
+                this.productionEffects.forEach((effect) => {
+                    effect.stop();
+                });
+            }
+        }
     }
 }
 registerClass(Building);

@@ -1,11 +1,11 @@
 import { registerClass } from "../../engine/igeClassStore.js";
-import { Square } from "./base/Square.js";
 import { ige } from "../../engine/instance.js";
+import { Building } from "./base/Building.js";
 import { ResourceType } from "../enums/ResourceType.js";
 import { Resource } from "./Resource.js";
 import { isClient } from "../../engine/clientServer.js";
 import { IgePoint2d } from "../../engine/core/IgePoint2d.js";
-export class StorageBuilding extends Square {
+export class StorageBuilding extends Building {
     constructor(tileX = NaN, tileY = NaN) {
         super();
         this.classId = "StorageBuilding";

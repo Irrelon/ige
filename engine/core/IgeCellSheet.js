@@ -5,7 +5,7 @@ import { IgeTexture } from "./IgeTexture.js";
  * width and height.
  */
 export class IgeCellSheet extends IgeTexture {
-    constructor(id, urlOrObject, horizontalCells, verticalCells) {
+    constructor(id, urlOrObject, horizontalCells = 1, verticalCells = 1) {
         super(id, urlOrObject);
         this.classId = "IgeCellSheet";
         this.IgeSpriteSheet = true;
@@ -13,8 +13,8 @@ export class IgeCellSheet extends IgeTexture {
         this._cellRows = 0;
         this._cellWidth = 0;
         this._cellHeight = 0;
-        this.horizontalCells(horizontalCells || 1);
-        this.verticalCells(verticalCells || 1);
+        this.horizontalCells(horizontalCells);
+        this.verticalCells(verticalCells);
     }
     _textureLoaded() {
         if (this.image) {

@@ -17,11 +17,11 @@ export class IgeCellSheet extends IgeTexture {
 	_cellHeight: number = 0;
 	_sheetImage?: IgeImage | IgeCanvas;
 
-	constructor (id?: string, urlOrObject?: string | IgeSmartTexture, horizontalCells?: number, verticalCells?: number) {
+	constructor (id?: string, urlOrObject?: string | IgeSmartTexture, horizontalCells: number = 1, verticalCells: number = 1) {
 		super(id, urlOrObject);
 
-		this.horizontalCells(horizontalCells || 1);
-		this.verticalCells(verticalCells || 1);
+		this.horizontalCells(horizontalCells);
+		this.verticalCells(verticalCells);
 	}
 
 	_textureLoaded () {

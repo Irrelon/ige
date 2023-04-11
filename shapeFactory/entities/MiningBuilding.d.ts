@@ -1,8 +1,8 @@
 import { ResourceType } from "../enums/ResourceType";
 import { BuildingResourceRequirement } from "../types/BuildingResourceRequirement";
-import { Star } from "./base/Star";
 import { IgeObject } from "@/engine/core/IgeObject";
-export declare class MiningBuilding extends Star {
+import { Building } from "./base/Building";
+export declare class MiningBuilding extends Building {
     classId: string;
     constructor(tileX: number | undefined, tileY: number | undefined, produces: ResourceType, requires?: BuildingResourceRequirement[]);
     streamCreateConstructorArgs(): (number | ResourceType | BuildingResourceRequirement[])[];

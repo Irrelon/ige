@@ -20,6 +20,7 @@ import { circleSmartTexture } from "../assets/textures/smartTextures/circle.js";
 import { starSmartTexture } from "../assets/textures/smartTextures/star.js";
 import { flagSmartTexture } from "../assets/textures/smartTextures/flag.js";
 import { gridSmartTexture } from "../assets/textures/smartTextures/grid.js";
+import { IgeCellSheet } from "../../engine/core/IgeCellSheet.js";
 // @ts-ignore
 window.ige = ige;
 export class AppClientScene extends IgeSceneGraph {
@@ -33,6 +34,7 @@ export class AppClientScene extends IgeSceneGraph {
             const options = new IgeOptions();
             options.set("masterVolume", 1);
             (_a = ige.audio) === null || _a === void 0 ? void 0 : _a.masterVolume(options.get('masterVolume', 1));
+            new IgeCellSheet("smoke", "assets/textures/sprites/smoke.png", 2, 2);
             new IgeTexture("wood", "assets/textures/sprites/wood.png");
             new IgeTexture("book", "assets/textures/sprites/science.png");
             new IgeTexture("diamond", "assets/textures/sprites/diamond.png");

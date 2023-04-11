@@ -10,6 +10,7 @@ import { ige } from "@/engine/instance";
 import { FlagBuilding } from "../FlagBuilding";
 import { IgeTileMap2d } from "@/engine/core/IgeTileMap2d";
 import { ThreadSafeQueue } from "../../services/ThreadSafeQueue";
+import { IgeParticleEmitter } from "@/engine/core/IgeParticleEmitter";
 
 export class Building extends GameEntity {
 	flag?: FlagBuilding;
@@ -28,6 +29,7 @@ export class Building extends GameEntity {
 	_isProducing: boolean = false;
 	_produces: ResourceType;
 	_requires: BuildingResourceRequirement[];
+	productionEffects: IgeParticleEmitter[] = [];
 
 	constructor () {
 		super();
@@ -37,6 +39,7 @@ export class Building extends GameEntity {
 
 		this.isometric(ige.data("isometric"));
 		this.isometricMounts(ige.data("isometric"));
+		this.streamSectionsPush("isProducing");
 
 		if (this.isometric()) {
 			this.bounds3d(30, 30, 0);
@@ -176,6 +179,33 @@ export class Building extends GameEntity {
 		super.update(ctx, tickDelta);
 
 		this.outboundQueue.update();
+	}
+
+	streamSectionData (sectionId: string, data?: string, bypassTimeStream: boolean = false, bypassChangeDetection: boolean = false): string | undefined {
+		if (sectionId === "isProducing") {
+			if (data === undefined) {
+				return this._isProducing ? "1" : "0";
+			} else {
+				this._isProducing = data === "1";
+				this.updateProductionEffects();
+			}
+		}
+
+		return super.streamSectionData(sectionId, data, bypassTimeStream, bypassChangeDetection);
+	}
+
+	updateProductionEffects () {
+		if (this.productionEffects.length) {
+			if (this._isProducing) {
+				this.productionEffects.forEach((effect) => {
+					effect.start();
+				});
+			} else {
+				this.productionEffects.forEach((effect) => {
+					effect.stop();
+				});
+			}
+		}
 	}
 }
 

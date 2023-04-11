@@ -1,6 +1,6 @@
-import { IgeUiElement } from "@/engine/core/IgeUiElement";
 import { ResourceType } from "../enums/ResourceType";
-export declare class UiResourcesPile extends IgeUiElement {
+import { IgeUiEntity } from "@/engine/core/IgeUiEntity";
+export declare class UiResourcesPile extends IgeUiEntity {
     resources: Partial<Record<ResourceType, number>>;
     constructor();
     addResource(type: ResourceType): void;

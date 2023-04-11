@@ -1,7 +1,7 @@
-import { Circle } from "./base/Circle";
 import { ResourceType } from "../enums/ResourceType";
 import { Building } from "./base/Building";
-export declare class Resource extends Circle {
+import { GameEntity } from "./base/GameEntity";
+export declare class Resource extends GameEntity {
     _type: ResourceType;
     _locationId: string;
     _destinationId: string;

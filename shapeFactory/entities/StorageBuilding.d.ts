@@ -1,7 +1,7 @@
-import { Square } from "./base/Square";
+import { Building } from "./base/Building";
 import { ResourceType } from "../enums/ResourceType";
 import { IgeObject } from "@/engine/core/IgeObject";
-export declare class StorageBuilding extends Square {
+export declare class StorageBuilding extends Building {
     classId: string;
     tileXDelta: number;
     tileYDelta: number;

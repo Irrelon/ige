@@ -10,6 +10,8 @@ export class IgeParticle extends IgeEntity {
 	constructor (emitter: IgeParticleEmitter) {
 		super();
 
+		this.noAabb(true);
+
 		// Setup the particle default values
 		this._emitter = emitter;
 		this.addComponent("velocity", IgeVelocityComponent);

@@ -6,6 +6,14 @@ import { registerClass } from "../../engine/igeClassStore.js";
  * than standard IgeEntity instances but provide a rich set of extra
  * positioning and styling methods as well as reacting to styles
  * defined using the IgeUiManagerController.
+ *
+ * IgeUiElement instances are similar to DOM elements. They receive
+ * their own pointer events as standard and also stop propagation
+ * of those events to lower depth entities and as such, should only
+ * be used if you intend to create user-interface elements. If you
+ * don't intend to create an element, use IgeUiEntity instead as
+ * those will use fewer resources and will not block pointer events
+ * from propagating to lower depth entities by default.
  */
 export class IgeUiElement extends IgeUiEntity {
     constructor() {
