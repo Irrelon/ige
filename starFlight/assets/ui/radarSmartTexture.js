@@ -1,5 +1,5 @@
-import { ige } from "../../../engine/instance.js";
-import { PI2 } from "../../../engine/utils.js";
+import { ige } from "@/engine/instance";
+import { PI2 } from "@/engine/utils";
 export const radarSmartTexture = {
     render: function (ctx, entity) {
         if (ige.app.playerEntity) {

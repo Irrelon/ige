@@ -1,4 +1,4 @@
-import { IgeFontAlignY } from "../../enums/IgeFontAlign.js";
+import { IgeFontAlignY } from "@/enums/IgeFontAlign";
 /**
  * Provides native canvas font rendering supporting multi-line
  * text and alignment options.

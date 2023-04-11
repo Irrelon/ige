@@ -1,6 +1,7 @@
 import { IgeTileMap2d } from "./IgeTileMap2d";
 import { IgePoint3d } from "./IgePoint3d";
 import { IgeTexture } from "./IgeTexture";
+import { IgeRect } from "@/engine/core/IgeRect";
 /**
  * Texture maps provide a way to display textures / cells across a tile map.
  */
@@ -11,6 +12,10 @@ export declare class IgeTextureMap extends IgeTileMap2d {
     _autoSection?: number;
     _drawSectionBounds: boolean;
     _allTexturesLoaded: boolean;
+    _sections: any[];
+    _sectionCtx: any[];
+    _sectionTileRegion?: any[];
+    type: any;
     constructor(tileWidth?: number, tileHeight?: number);
     /**
      * Gets / sets the auto sectioning mode. If enabled the texture map
@@ -118,7 +123,7 @@ export declare class IgeTextureMap extends IgeTileMap2d {
      * @param {Array} mapData The map data array.
      * @return {Object} The new map data.
      */
-    convertHorizontalData(mapData: any): any[];
+    convertHorizontalData(mapData: any): number[][];
     /**
      * Handles rendering the texture map during engine tick events.
      * @param {CanvasRenderingContext2D} ctx
@@ -131,13 +136,13 @@ export declare class IgeTextureMap extends IgeTileMap2d {
      * @param {number} sectionY The section's y co-ordinate.
      * @private
      */
-    _ensureSectionExists(sectionX: any, sectionY: any): void;
+    _ensureSectionExists(sectionX: any, sectionY: any, autoSection: number): void;
     /**
      * Private method, draws cached image sections to the canvas context.
      * @param {CanvasRenderingContext2D} ctx
      * @private
      */
-    _drawSectionsToCtx(ctx: any): void;
+    _drawSectionsToCtx(ctx: any, autoSection: number): void;
     /**
      * Private method, renders a tile texture based on data from the texture map,
      * to a cached section.
@@ -152,7 +157,7 @@ export declare class IgeTextureMap extends IgeTileMap2d {
      * @return {*}
      * @private
      */
-    _renderTile(ctx: any, x: any, y: any, tileData: any, tileEntity: any, rect: any, sectionX: any, sectionY: any): never[] | undefined;
+    _renderTile(ctx: any, x: any, y: any, tileData: any, tileEntity: any, rect?: IgeRect | undefined, sectionX?: undefined, sectionY?: undefined): any;
     /**
      * Private method, creates an entity object that a texture can use to render
      * itself. This is basically a dummy object that has the minimum amount of data

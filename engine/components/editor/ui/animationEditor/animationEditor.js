@@ -1,5 +1,5 @@
-import IgeEventingClass from "../../../../core/IgeEventingClass.js";
-import { ige } from "../../../../../engine/instance.js";
+import IgeEventingClass from "../../../../core/IgeEventingClass";
+import { ige } from "@/engine/instance";
 export class UiAnimationEditor extends IgeEventingClass {
     constructor() {
         super(...arguments);

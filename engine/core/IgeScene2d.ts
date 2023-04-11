@@ -8,9 +8,7 @@ import { registerClass } from "@/engine/igeClassStore";
  */
 export class IgeScene2d extends IgeEntity {
 	classId = "IgeScene2d";
-	_shouldRender: boolean;
 	_autoSize: boolean;
-	_pointerAlwaysInside: boolean;
 	_alwaysInView: boolean;
 
 	constructor () {

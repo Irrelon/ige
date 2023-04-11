@@ -7,19 +7,19 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-import { ige } from "../../engine/instance.js";
-import { IgeFSM } from "../../engine/core/IgeFSM.js";
-import { BuildingType } from "../enums/BuildingType.js";
-import { StorageBuilding } from "../entities/StorageBuilding.js";
-import { IgeBehaviourType } from "../../enums/IgeBehaviourType.js";
-import { FactoryBuilding1 } from "../entities/FactoryBuilding1.js";
-import { ResourceType } from "../enums/ResourceType.js";
-import { Line } from "../entities/base/Line.js";
-import { FlagBuilding } from "../entities/FlagBuilding.js";
-import { MiningBuilding } from "../entities/MiningBuilding.js";
-import { IgePoint3d } from "../../engine/core/IgePoint3d.js";
-import { FactoryBuilding2 } from "../entities/FactoryBuilding2.js";
-import { HouseBuilding1 } from "../entities/HouseBuilding1.js";
+import { ige } from "@/engine/instance";
+import { IgeFSM } from "@/engine/core/IgeFSM";
+import { BuildingType } from "../enums/BuildingType";
+import { StorageBuilding } from "../entities/StorageBuilding";
+import { IgeBehaviourType } from "@/enums/IgeBehaviourType";
+import { FactoryBuilding1 } from "../entities/FactoryBuilding1";
+import { ResourceType } from "../enums/ResourceType";
+import { Line } from "../entities/base/Line";
+import { FlagBuilding } from "../entities/FlagBuilding";
+import { MiningBuilding } from "../entities/MiningBuilding";
+import { IgePoint3d } from "@/engine/core/IgePoint3d";
+import { FactoryBuilding2 } from "../entities/FactoryBuilding2";
+import { HouseBuilding1 } from "../entities/HouseBuilding1";
 export const controllerClient = () => __awaiter(void 0, void 0, void 0, function* () {
     const network = ige.network;
     // TODO Turn this into a loop and use data on the items to handle functionality

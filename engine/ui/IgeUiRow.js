@@ -1,5 +1,5 @@
-import { IgeUiElement } from "../../engine/core/IgeUiElement.js";
-import { registerClass } from "../../engine/igeClassStore.js";
+import { IgeUiElement } from "@/engine/core/IgeUiElement";
+import { registerClass } from "@/engine/igeClassStore";
 export class IgeUiRow extends IgeUiElement {
     constructor() {
         super(...arguments);

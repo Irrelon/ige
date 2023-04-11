@@ -351,7 +351,7 @@ export class IgeFontEntity extends IgeUiEntity {
 		if (this._text) {
 			// Un-wrap the text so it is all on one line
 			const oneLineText = this._text.replace(/\n/g, " ");
-			const textArray = [];
+			const textArray: string[] = [];
 			let wordIndex;
 			let currentTextLine = "";
 			let lineWidth;

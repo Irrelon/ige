@@ -1,7 +1,7 @@
 import { IgeTexture } from "./IgeTexture";
 import { IgeSmartTexture } from "@/types/IgeSmartTexture";
-import { IgeImage } from "./IgeImage";
 import { IgeCanvas } from "./IgeCanvas";
+import { IgeImage } from "@/types/IgeImage";
 type IgeTextureCell = [number, number, number, number, string?];
 type IgeTextureCellArray = IgeTextureCell[];
 /**
@@ -13,7 +13,7 @@ export declare class IgeSpriteSheet extends IgeTexture {
     IgeSpriteSheet: boolean;
     _cells: IgeTextureCellArray;
     _spriteCells: IgeTextureCellArray;
-    _sheetImage?: IgeImage | IgeCanvas;
+    _sheetImage?: IgeImage;
     _checkModulus?: boolean;
     constructor(id?: string, urlOrObject?: string | IgeSmartTexture, cells?: IgeTextureCellArray);
     _textureLoaded(): void;

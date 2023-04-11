@@ -24,8 +24,11 @@
         "isolatedModules": true,
         "jsx": "react-jsx",
         "jsxImportSource": "ige-jsx",
-        "declaration": true
+        "declaration": true,
+        "noImplicitAny": false,
+        "composite": true
     },
     "include": ["**/*.ts", "**/*.tsx"],
-    "exclude": ["node_modules", "react"]
+    "exclude": ["node_modules", "react", "engine/ui", "engine/components/editor", "engine/components/physics"],
+    "files": ["engine/components/physics/box2d/IgeBox2dDebugPainter.ts", "engine/components/physics/box2d/IgeEntityBox2d.ts", "engine/components/physics/box2d/IgeBox2dController.ts"]
 }

@@ -1,5 +1,5 @@
-import { IgeBaseClass } from "./IgeBaseClass.js";
-import { registerClass } from "../../engine/igeClassStore.js";
+import { IgeBaseClass } from "./IgeBaseClass";
+import { registerClass } from "@/engine/igeClassStore";
 /**
  * Creates a new map that has two dimensions (x and y) to its data.
  */
@@ -163,7 +163,7 @@ export class IgeMap2d extends IgeBaseClass {
         for (let i = 0; i < yArr.length; i++) {
             const y = yArr[i];
             const xArr = this._sortKeys(data[y]);
-            finalData[y] = finalData[y] || {};
+            finalData[y] = finalData[y] || [];
             for (let k = 0; k < xArr.length; k++) {
                 const x = xArr[k];
                 finalData[y][x] = data[y][x];

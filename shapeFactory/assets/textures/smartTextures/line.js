@@ -1,4 +1,4 @@
-import { IgePoint3d } from "../../../../engine/core/IgePoint3d.js";
+import { IgePoint3d } from "@/engine/core/IgePoint3d";
 export const lineSmartTexture = {
     render: function (ctx, entity) {
         ctx.beginPath();

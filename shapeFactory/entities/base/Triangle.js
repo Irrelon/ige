@@ -1,7 +1,7 @@
-import { ige } from "../../../engine/instance.js";
-import { isClient } from "../../../engine/clientServer.js";
-import { registerClass } from "../../../engine/igeClassStore.js";
-import { Building } from "./Building.js";
+import { ige } from "@/engine/instance";
+import { isClient } from "@/engine/clientServer";
+import { registerClass } from "@/engine/igeClassStore";
+import { Building } from "./Building";
 export class Triangle extends Building {
     constructor() {
         super();

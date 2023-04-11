@@ -1,11 +1,11 @@
-import { GameEntity } from "./GameEntity.js";
-import { registerClass } from "../../../engine/igeClassStore.js";
-import { Resource } from "../Resource.js";
-import { ResourceType } from "../../enums/ResourceType.js";
-import { isServer } from "../../../engine/clientServer.js";
-import { IgeTimeout } from "../../../engine/core/IgeTimeout.js";
-import { ige } from "../../../engine/instance.js";
-import { ThreadSafeQueue } from "../../services/ThreadSafeQueue.js";
+import { GameEntity } from "./GameEntity";
+import { registerClass } from "@/engine/igeClassStore";
+import { Resource } from "../Resource";
+import { ResourceType } from "../../enums/ResourceType";
+import { isServer } from "@/engine/clientServer";
+import { IgeTimeout } from "@/engine/core/IgeTimeout";
+import { ige } from "@/engine/instance";
+import { ThreadSafeQueue } from "../../services/ThreadSafeQueue";
 export class Building extends GameEntity {
     constructor() {
         super();

@@ -1,4 +1,4 @@
-import { IgeEventingClass } from "../core/IgeEventingClass.js";
+import { IgeEventingClass } from "../core/IgeEventingClass";
 export class IgeNetIoBaseController extends IgeEventingClass {
     constructor() {
         super(...arguments);

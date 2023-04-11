@@ -1,6 +1,6 @@
-import { IgeUiElement } from "../../engine/core/IgeUiElement.js";
-import { IgeUiMenu } from "../../engine/ui/IgeUiMenu.js";
-import { registerClass } from "../../engine/igeClassStore.js";
+import { IgeUiElement } from "@/engine/core/IgeUiElement";
+import { IgeUiMenu } from "@/engine/ui/IgeUiMenu";
+import { registerClass } from "@/engine/igeClassStore";
 export class IgeUiMenuItem extends IgeUiElement {
     constructor() {
         super(...arguments);

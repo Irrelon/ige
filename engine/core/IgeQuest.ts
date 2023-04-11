@@ -1,8 +1,18 @@
-import { IgeEventingClass } from "./IgeEventingClass";
-import { registerClass } from "@/engine/igeClassStore";
+import {IgeEventingClass} from "./IgeEventingClass";
+import {registerClass} from "@/engine/igeClassStore";
 
 export class IgeQuest extends IgeEventingClass {
 	classId = "IgeQuest";
+
+	private _linear: boolean;
+	private _items: any[];
+	private _itemCount: number;
+	private _eventCount: number;
+	private _itemCompleteCount: number;
+	private _eventCompleteCount: number;
+	private _started: boolean;
+	private _isComplete: boolean;
+	private _completeCallback: any;
 
 	constructor (questDefinition, completeCallback) {
 		super();
@@ -84,10 +94,8 @@ export class IgeQuest extends IgeEventingClass {
 			this._items = val;
 
 			// Set the event and item counts
-			let arr = this._items,
-				arrCount = arr.length,
-				i,
-				eventCount = 0;
+			const arr = this._items, arrCount = arr.length;
+			let i, eventCount = 0;
 
 			for (i = 0; i < arrCount; i++) {
 				eventCount += arr[i].count;
@@ -152,10 +160,11 @@ export class IgeQuest extends IgeEventingClass {
 	 */
 	start () {
 		if (!this._started) {
-			let self = this,
+			const self = this,
 				arr = this._items,
-				arrCount = arr.length,
-				i;
+				arrCount = arr.length;
+
+			let i;
 
 			// Mark the quest as started
 			this._started = true;
@@ -204,9 +213,9 @@ export class IgeQuest extends IgeEventingClass {
 	 * original values and cancels all current event listeners.
 	 */
 	reset () {
-		let arr = this._items,
-			arrCount = arr.length,
-			i, item;
+		const arr = this._items,
+			arrCount = arr.length;
+		let i, item;
 
 		for (i = 0; i < arrCount; i++) {
 			item = arr[i];
@@ -300,8 +309,8 @@ export class IgeQuest extends IgeEventingClass {
 	 * @private
 	 */
 	_itemComplete (item) {
-		let itemIndex,
-			arr = this._items;
+		const arr = this._items;
+		let itemIndex;
 
 		// Mark the item as complete
 		item._complete = true;

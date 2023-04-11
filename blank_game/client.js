@@ -7,9 +7,9 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-import { IgeBaseClass } from "../engine/core/IgeBaseClass.js";
-import { ige } from "../engine/instance.js";
-import { IgeBaseScene } from "../engine/core/IgeBaseScene.js";
+import { IgeBaseClass } from "@/engine/core/IgeBaseClass";
+import { ige } from "@/engine/instance";
+import { IgeBaseScene } from "@/engine/core/IgeBaseScene";
 export class Client extends IgeBaseClass {
     constructor() {
         super();

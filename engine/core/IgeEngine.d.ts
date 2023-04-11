@@ -375,7 +375,7 @@ export declare class IgeEngine extends IgeEntity {
      * @param {string} str A string to generate the ID from.
      * @return {string}
      */
-    newIdFromString(str?: string): string | undefined;
+    newIdFromString(str?: string): any;
     /**
      * Starts the engine or rejects the promise with an error.
      */

@@ -1,8 +1,8 @@
-import { ige } from "../../../../engine/instance.js";
-import { IgeSceneGraph } from "../../../../engine/core/IgeSceneGraph.js";
-import { IgeScene2d } from "../../../../engine/core/IgeScene2d.js";
-import { Fairy } from "../../entities/Fairy.js";
-import { IgeUiButton } from "../../../../engine/ui/IgeUiButton.js";
+import { ige } from "@/engine/instance";
+import { IgeSceneGraph } from "@/engine/core/IgeSceneGraph";
+import { IgeScene2d } from "@/engine/core/IgeScene2d";
+import { Fairy } from "../../entities/Fairy";
+import { IgeUiButton } from "@/engine/ui/IgeUiButton";
 export class Level1Scene extends IgeSceneGraph {
     constructor() {
         super(...arguments);

@@ -1,10 +1,10 @@
-import { ige } from "../../engine/instance.js";
-import { IgeComponent } from "../../engine/core/IgeComponent.js";
-import { IgeMountMode } from "../../enums/IgeMountMode.js";
-import { IgeRect } from "../../engine/core/IgeRect.js";
-import { IgeBehaviourType } from "../../enums/IgeBehaviourType.js";
-import { IgeEntityRenderMode } from "../../enums/IgeEntityRenderMode.js";
-import { IgePoint3d } from "../../engine/core/IgePoint3d.js";
+import { ige } from "@/engine/instance";
+import { IgeComponent } from "@/engine/core/IgeComponent";
+import { IgeMountMode } from "@/enums/IgeMountMode";
+import { IgeRect } from "@/engine/core/IgeRect";
+import { IgeBehaviourType } from "@/enums/IgeBehaviourType";
+import { IgeEntityRenderMode } from "@/enums/IgeEntityRenderMode";
+import { IgePoint3d } from "@/engine/core/IgePoint3d";
 export class IgeEntityManagerComponent extends IgeComponent {
     /**
      * @constructor
@@ -15,6 +15,10 @@ export class IgeEntityManagerComponent extends IgeComponent {
         super(entity, options);
         this.classId = "IgeEntityManagerComponent";
         this.componentId = "entityManager";
+        this._active = false;
+        this._createEntityFromMapData = () => undefined;
+        this._areaRectAutoSize = false;
+        this._lastArea = new IgeRect();
         /**
          * Adds a map that will be used to read data and convert
          * to entities as the visible map area is moved.
@@ -157,7 +161,8 @@ export class IgeEntityManagerComponent extends IgeComponent {
             if (x !== undefined && y !== undefined) {
                 // Adjust the passed x, y to account for this
                 // texture map's translation
-                let ent = this._entity, offset;
+                const ent = this._entity;
+                let offset;
                 if (ent._renderMode === IgeEntityRenderMode.flat) {
                     // 2d mode
                     offset = ent._translate;
@@ -207,6 +212,7 @@ export class IgeEntityManagerComponent extends IgeComponent {
             // Check if we are tracking an entity that is used to
             // set the center point of the area
             if (this._trackTranslateTarget) {
+                let entTranslate;
                 // Calculate which tile our character is currently "over"
                 if (this._trackTranslateTarget.isometric() === true) {
                     entTranslate = this._trackTranslateTarget._translate.toIso();
@@ -248,11 +254,12 @@ export class IgeEntityManagerComponent extends IgeComponent {
          * @private
          */
         this._behaviour = (entity, ctx) => {
-            let self = this.entityManager, currentArea, currentAreaTiles, arr = this._children, arrCount = arr.length, item, maps = self._maps, map, mapIndex, mapData, currentTile, renderX, renderY, renderWidth, renderHeight, x, y, tileData, renderSize, ratio;
-            if ((!self._areaRect || ige._resized) && self._areaRectAutoSize) {
-                self._resizeEvent();
+            const self = this, arr = this._entity._children, maps = self._maps;
+            let arrCount = arr.length, currentAreaTiles, item, map, mapIndex, mapData, currentTile, renderX, renderY, renderWidth, renderHeight, x, y, tileData, renderSize, ratio;
+            if ((!self._areaRect || ige.engine._resized) && self._areaRectAutoSize) {
+                self._entity._resizeEvent();
             }
-            currentArea = self.currentArea();
+            const currentArea = self.currentArea();
             if (self._areaCenter && self._areaRect && !currentArea.compare(self._lastArea)) {
                 ////////////////////////////////////
                 // ENTITY REMOVAL CHECKS          //
@@ -284,37 +291,37 @@ export class IgeEntityManagerComponent extends IgeComponent {
                         }
                     }
                 }*/
-                currentTile = this.pointToTile(self._areaCenter);
+                currentTile = this._entity.pointToTile(self._areaCenter);
                 renderX = currentTile.x;
                 renderY = currentTile.y;
-                renderWidth = Math.ceil(currentArea.width / this._tileWidth);
-                renderHeight = Math.ceil(currentArea.height / this._tileHeight);
-                currentArea.x -= (this._tileWidth);
-                currentArea.y -= (this._tileHeight / 2);
-                currentArea.width += (this._tileWidth * 2);
-                currentArea.height += (this._tileHeight);
+                renderWidth = Math.ceil(currentArea.width / this._entity._tileWidth);
+                renderHeight = Math.ceil(currentArea.height / this._entity._tileHeight);
+                currentArea.x -= (this._entity._tileWidth);
+                currentArea.y -= (this._entity._tileHeight / 2);
+                currentArea.width += (this._entity._tileWidth * 2);
+                currentArea.height += (this._entity._tileHeight);
                 // Check if we are rendering in 2d or isometric mode
-                if (this._mountMode === IgeMountMode.flat) {
+                if (this._entity._mountMode === IgeMountMode.flat) {
                     // 2d
                     currentAreaTiles = new IgeRect(renderX - Math.floor(renderWidth / 2) - 1, renderY - Math.floor(renderHeight / 2) - 1, renderX + Math.floor(renderWidth / 2) + 1 - (renderX - Math.floor(renderWidth / 2) - 1), renderY + Math.floor(renderHeight / 2) + 1 - (renderY - Math.floor(renderHeight / 2) - 1));
                 }
-                if (this._mountMode === IgeMountMode.iso) {
+                if (this._entity._mountMode === IgeMountMode.iso) {
                     // Isometric
                     renderSize = Math.abs(renderWidth) > Math.abs(renderHeight) ? renderWidth : renderHeight;
                     ratio = 0.6;
                     currentAreaTiles = new IgeRect(renderX - Math.floor(renderSize * ratio), renderY - Math.floor(renderSize * ratio), renderX + Math.floor(renderSize * ratio) + 1 - (renderX - Math.floor(renderSize * ratio)), renderY + Math.floor(renderSize * ratio) + 1 - (renderY - Math.floor(renderSize * ratio)));
                 }
                 // Generate the bounds rectangle
-                if (this._drawBounds) {
+                if (this._entity._drawBounds) {
                     ctx.strokeStyle = "#ff0000";
                     ctx.strokeRect(currentArea.x, currentArea.y, currentArea.width, currentArea.height);
-                    this._highlightTileRect = currentAreaTiles;
+                    this._entity._highlightTileRect = currentAreaTiles;
                 }
                 ////////////////////////////////////
                 // ENTITY REMOVAL CHECKS          //
                 ////////////////////////////////////
                 //this._highlightTileRect = currentAreaTiles;
-                map = this.map;
+                map = this._entity.map;
                 while (arrCount--) {
                     item = arr[arrCount];
                     if (!self._removeCheck || self._removeCheck(item)) {
@@ -357,7 +364,8 @@ export class IgeEntityManagerComponent extends IgeComponent {
             }
         };
         this.processQueues = () => {
-            let createArr = this._createArr, createCount = createArr.length, createLimit = this._maxCreatePerTick !== undefined ? this._maxCreatePerTick : 0, createEntityFunc = this._createEntityFromMapData, removeArr = this._removeArr, removeCount = removeArr.length, removeLimit = this._maxRemovePerTick !== undefined ? this._maxRemovePerTick : 0, i;
+            const createArr = this._createArr, createLimit = this._maxCreatePerTick !== undefined ? this._maxCreatePerTick : 0, createEntityFunc = this._createEntityFromMapData, removeArr = this._removeArr, removeLimit = this._maxRemovePerTick !== undefined ? this._maxRemovePerTick : 0;
+            let createCount = createArr.length, removeCount = removeArr.length, i;
             if (createLimit && createCount > createLimit) {
                 createCount = createLimit;
             }
@@ -386,7 +394,8 @@ export class IgeEntityManagerComponent extends IgeComponent {
         this._resizeEvent = (event) => {
             // Set width / height of scene to match parent
             if (this._areaRectAutoSize) {
-                let geom = this._entity._parent._bounds2d, additionX = 0, additionY = 0;
+                const geom = this._entity._parent._bounds2d;
+                let additionX = 0, additionY = 0;
                 if (this._areaRectAutoSizeOptions) {
                     if (this._areaRectAutoSizeOptions.bufferMultiple) {
                         additionX = (geom.x * this._areaRectAutoSizeOptions.bufferMultiple.x) - geom.x;
@@ -399,8 +408,8 @@ export class IgeEntityManagerComponent extends IgeComponent {
                 }
                 this.areaRect(-Math.floor((geom.x + additionX) / 2), -Math.floor((geom.y + additionY) / 2), geom.x + additionX, geom.y + additionY);
                 // Check if caching is enabled
-                if (this._caching > 0) {
-                    this._resizeCacheCanvas();
+                if (this._entity._caching > 0) {
+                    this._entity._resizeCacheCanvas();
                 }
             }
         };

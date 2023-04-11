@@ -1,6 +1,6 @@
-import { ige } from "../../../../engine/instance.js";
-import { IgeUiLabel } from "../../../../engine/ui/IgeUiLabel.js";
-import { InfoWindow } from "./InfoWindow.js";
+import { ige } from "@/engine/instance";
+import { IgeUiLabel } from "@/engine/ui/IgeUiLabel";
+import { InfoWindow } from "./InfoWindow";
 export class MessageWindow extends InfoWindow {
     constructor(options = {}) {
         super(options);

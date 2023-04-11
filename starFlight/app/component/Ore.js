@@ -1,10 +1,10 @@
-import { ige } from "../../../engine/instance.js";
-import { IgeEntityBox2d } from "../../../engine/components/physics/box2d/IgeEntityBox2d.js";
-import { IgeTextureAnimationComponent } from "../../../engine/components/IgeTextureAnimationComponent.js";
-import { IgeBox2dBodyType } from "../../../enums/IgeBox2dBodyType.js";
-import { IgeBox2dFixtureShapeType } from "../../../enums/IgeBox2dFixtureShapeType.js";
-import { isClient, isServer } from "../../../engine/clientServer.js";
-import { registerClass } from "../../../engine/igeClassStore.js";
+import { ige } from "@/engine/instance";
+import { IgeEntityBox2d } from "@/engine/components/physics/box2d/IgeEntityBox2d";
+import { IgeTextureAnimationComponent } from "@/engine/components/IgeTextureAnimationComponent";
+import { IgeBox2dBodyType } from "@/enums/IgeBox2dBodyType";
+import { IgeBox2dFixtureShapeType } from "@/enums/IgeBox2dFixtureShapeType";
+import { isClient, isServer } from "@/engine/clientServer";
+import { registerClass } from "@/engine/igeClassStore";
 export class Ore extends IgeEntityBox2d {
     constructor(publicGameData = {}) {
         super();

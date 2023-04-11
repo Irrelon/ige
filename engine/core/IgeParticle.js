@@ -1,6 +1,6 @@
-import { IgeEntity } from "./IgeEntity.js";
-import { IgeVelocityComponent } from "../components/IgeVelocityComponent.js";
-import { arrPull } from "../utils.js";
+import { IgeEntity } from "./IgeEntity";
+import { IgeVelocityComponent } from "../components/IgeVelocityComponent";
+import { arrPull } from "../utils";
 export class IgeParticle extends IgeEntity {
     constructor(emitter) {
         super();

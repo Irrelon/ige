@@ -28,12 +28,9 @@ export interface IgeViewportOptions {
 export class IgeViewport extends IgeUiEntity implements IgeCanRegisterById {
 	classId = "IgeViewport";
 	IgeViewport = true;
-	_idRegistered: boolean = false;
 	_lockDimension?: IgePoint3d;
 	_alwaysInView: boolean;
-	_pointerAlwaysInside: boolean;
 	_pointerPos: IgePoint3d;
-	_overflow: string;
 	_clipping: boolean;
 	_autoSize: boolean = false;
 	_scene?: IgeScene2d;
@@ -50,7 +47,6 @@ export class IgeViewport extends IgeUiEntity implements IgeCanRegisterById {
 		let width, height;
 		this._alwaysInView = true;
 
-		this._pointerAlwaysInside = true;
 		this._pointerPos = new IgePoint3d(0, 0, 0);
 		this._overflow = "";
 		this._clipping = true;

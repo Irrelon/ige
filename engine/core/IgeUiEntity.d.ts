@@ -1,9 +1,9 @@
 import { IgeEntity } from "./IgeEntity";
 import { IgeCanvasRenderingContext2d } from "@/types/IgeCanvasRenderingContext2d";
 import { IgeTexture } from "./IgeTexture";
-import { IgeRepeatType } from "../mixins/IgeUiStyleMixin";
 import { IgeObject } from "./IgeObject";
 import { IgePointXY } from "@/types/IgePointXY";
+import { IgeRepeatType } from "@/types/IgeRepeatType";
 /**
  * Creates a new UI entity. UI entities use more resources and CPU
  * than standard IgeEntity instances so only use them if an IgeEntity

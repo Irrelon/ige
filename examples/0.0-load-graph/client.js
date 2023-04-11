@@ -7,12 +7,12 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-import { ige } from "../../engine/instance.js";
-import { IgeBaseClass } from "../../engine/core/IgeBaseClass.js";
-import { IgeTexture } from "../../engine/core/IgeTexture.js";
-import simpleBox from "./assets/textures/smartTextures/simpleBox.js";
-import { IgeBaseScene } from "../../engine/core/IgeBaseScene.js";
-import { Level1 } from "./levels/Level1.js";
+import { ige } from "@/engine/instance";
+import { IgeBaseClass } from "@/engine/core/IgeBaseClass";
+import { IgeTexture } from "@/engine/core/IgeTexture";
+import simpleBox from "./assets/textures/smartTextures/simpleBox";
+import { IgeBaseScene } from "@/engine/core/IgeBaseScene";
+import { Level1 } from "./levels/Level1";
 // @ts-ignore
 window.ige = ige;
 export class Client extends IgeBaseClass {

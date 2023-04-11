@@ -1,5 +1,5 @@
-import { degreesToRadians, radiansToDegrees } from "../../utils.js";
-import { IgeComponent } from "../../core/IgeComponent.js";
+import { degreesToRadians, radiansToDegrees } from "../../utils";
+import { IgeComponent } from "../../core/IgeComponent";
 /**
  * When added to a viewport, automatically adds entity rotate
  * capabilities to the selected entity in the scenegraph viewer.

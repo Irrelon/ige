@@ -1,7 +1,7 @@
-import { ige } from "../../../../engine/instance.js";
-import { isServer } from "../../../../engine/clientServer.js";
-import { Module_Generic } from "./Module_Generic.js";
-import { registerClass } from "../../../../engine/igeClassStore.js";
+import { ige } from "@/engine/instance";
+import { isServer } from "@/engine/clientServer";
+import { Module_Generic } from "./Module_Generic";
+import { registerClass } from "@/engine/igeClassStore";
 export class Module_Ability extends Module_Generic {
     constructor(definition) {
         super(definition);

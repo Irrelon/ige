@@ -153,7 +153,7 @@ export declare class IgeParticleEmitter extends IgeUiEntity {
      * @return {number} Returns the final value based upon the base
      * value and variance range.
      */
-    baseAndVarianceValue(base: number, variance: [number, number], floorIt?: boolean): number;
+    baseAndVarianceValue(base: number, variance: [number, number], floorIt?: boolean): any;
     vectorFromBaseMinMax(vectorData: IgeParticleVectorBaseMinMax): IgePoint3d;
     /**
      * Creates and maintains the particles that this emitter is

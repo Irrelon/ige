@@ -1,19 +1,19 @@
-import { ige } from "../instance.js";
-import { isClient, isServer } from "../clientServer.js";
-import { degreesToRadians, traceSet } from "../utils.js";
-import { IgePoint2d } from "./IgePoint2d.js";
-import { IgePoint3d } from "./IgePoint3d.js";
-import { IgeMatrix2d } from "./IgeMatrix2d.js";
-import { IgePoly2d } from "./IgePoly2d.js";
-import { IgeDummyCanvas } from "./IgeDummyCanvas.js";
-import { IgeRect } from "./IgeRect.js";
-import { IgeObject } from "./IgeObject.js";
-import { IgeMountMode } from "../../enums/IgeMountMode.js";
-import { IgeStreamMode } from "../../enums/IgeStreamMode.js";
-import { IgeIsometricDepthSortMode } from "../../enums/IgeIsometricDepthSortMode.js";
-import { IgeEntityRenderMode } from "../../enums/IgeEntityRenderMode.js";
-import { IgeBehaviourType } from "../../enums/IgeBehaviourType.js";
-import { registerClass } from "../../engine/igeClassStore.js";
+import { ige } from "../instance";
+import { isClient, isServer } from "../clientServer";
+import { degreesToRadians, traceSet } from "../utils";
+import { IgePoint2d } from "./IgePoint2d";
+import { IgePoint3d } from "./IgePoint3d";
+import { IgeMatrix2d } from "./IgeMatrix2d";
+import { IgePoly2d } from "./IgePoly2d";
+import { IgeDummyCanvas } from "./IgeDummyCanvas";
+import { IgeRect } from "./IgeRect";
+import { IgeObject } from "./IgeObject";
+import { IgeMountMode } from "@/enums/IgeMountMode";
+import { IgeStreamMode } from "@/enums/IgeStreamMode";
+import { IgeIsometricDepthSortMode } from "@/enums/IgeIsometricDepthSortMode";
+import { IgeEntityRenderMode } from "@/enums/IgeEntityRenderMode";
+import { IgeBehaviourType } from "@/enums/IgeBehaviourType";
+import { registerClass } from "@/engine/igeClassStore";
 /**
  * Creates an entity and handles the entity's life cycle and
  * all related entity actions / methods.
@@ -574,6 +574,7 @@ export class IgeEntity extends IgeObject {
         const tileWidth = this._tileWidth || 1;
         const tileHeight = this._tileHeight || 1;
         const tile = this._parent.pointToTile(this._translate);
+        //TODO: Should this be point2d instead?
         const tileArr = [];
         for (let x = 0; x < tileWidth; x++) {
             for (let y = 0; y < tileHeight; y++) {

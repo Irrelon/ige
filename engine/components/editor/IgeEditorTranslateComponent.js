@@ -1,4 +1,4 @@
-import { IgeComponent } from "../../core/IgeComponent.js";
+import { IgeComponent } from "../../core/IgeComponent";
 /**
  * When added to a viewport, automatically adds entity translate
  * capabilities to the selected entity in the scenegraph viewer.

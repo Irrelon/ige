@@ -31,7 +31,7 @@ export class IgeTileMap2d extends IgeEntity {
 	IgeTileMap2d = true;
 	_drawGrid?: boolean;
 	_highlightOccupied: boolean = false;
-	_highlightTileRect: boolean = false;
+	_highlightTileRect?: {x: number, y: number, width: number, height: number} = undefined;
 	_gridColor?: string;
 	_gridSize: IgePoint2d = new IgePoint2d(40, 40);
 	_hoverColor?: string;
@@ -76,9 +76,9 @@ export class IgeTileMap2d extends IgeEntity {
 		return this._highlightOccupied;
 	}
 
-	highlightTileRect(val: boolean): this;
-	highlightTileRect(): boolean
-	highlightTileRect (val?: boolean) {
+	highlightTileRect(val: {x: number, y: number, width: number, height: number}): this;
+	highlightTileRect(): {x: number, y: number, width: number, height: number}
+	highlightTileRect (val?: {x: number, y: number, width: number, height: number}) {
 		if (val !== undefined) {
 			this._highlightTileRect = val;
 			return this;
@@ -419,7 +419,7 @@ export class IgeTileMap2d extends IgeEntity {
 	 * @return {Array}
 	 */
 	scanRects (callback?: IgeTileMap2dScanRectCallback) {
-		const rectArray = [];
+		const rectArray: {x: number, y: number, width: number, height: number}[] = [];
 		const mapData = arrClone(this.map._mapData) as any[][];
 
 		// Loop the map data and scan for blocks that can

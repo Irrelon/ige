@@ -1,4 +1,4 @@
-import { getFiles } from "./getFiles.js";
+import { getFiles } from "./getFiles";
 import path from "path";
 import ts from "typescript";
 import esprima from "esprima";
@@ -14,10 +14,10 @@ const processFile = (filePath) => {
             "downlevelIteration": true,
             "baseUrl": ".",
             "paths": {
-                "../types/*": ["types/*"],
-                "../engine/*": ["engine/*"],
-                "../enums/*": ["enums/*"],
-                "../examples/*": ["examples/*"]
+                "@/types/*": ["types/*"],
+                "@/engine/*": ["engine/*"],
+                "@/enums/*": ["enums/*"],
+                "@/examples/*": ["examples/*"]
             },
             "target": ts.ScriptTarget.ES2020,
             "lib": ["dom", "dom.iterable", "esnext"],

@@ -1,4 +1,4 @@
-import { modules } from "../app/data/modules.js";
+import { modules } from "../app/data/modules";
 /**
  * Extends the target with data from the newData object.
  * If overwrite is false, only data that is undefined in

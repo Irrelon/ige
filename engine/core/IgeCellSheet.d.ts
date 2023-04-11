@@ -1,7 +1,6 @@
 import { IgeTexture } from "./IgeTexture";
 import { IgeSmartTexture } from "@/types/IgeSmartTexture";
-import { IgeImage } from "./IgeImage";
-import { IgeCanvas } from "./IgeCanvas";
+import { IgeImage } from "@/types/IgeImage";
 /**
  * Creates a new cell sheet. Cell sheets are textures that are
  * automatically split up into individual cells based on a cell
@@ -14,7 +13,7 @@ export declare class IgeCellSheet extends IgeTexture {
     _cellRows: number;
     _cellWidth: number;
     _cellHeight: number;
-    _sheetImage?: IgeImage | IgeCanvas;
+    _sheetImage?: IgeImage;
     constructor(id?: string, urlOrObject?: string | IgeSmartTexture, horizontalCells?: number, verticalCells?: number);
     _textureLoaded(): void;
     /**

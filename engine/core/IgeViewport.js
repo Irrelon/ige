@@ -1,12 +1,12 @@
-import { ige } from "../instance.js";
-import { isClient } from "../clientServer.js";
-import { IgePoint3d } from "./IgePoint3d.js";
-import { IgeCamera } from "./IgeCamera.js";
-import { IgeRect } from "./IgeRect.js";
-import { IgePoint2d } from "./IgePoint2d.js";
-import { IgeMountMode } from "../../enums/IgeMountMode.js";
-import { IgeUiEntity } from "./IgeUiEntity.js";
-import { registerClass } from "../../engine/igeClassStore.js";
+import { ige } from "../instance";
+import { isClient } from "../clientServer";
+import { IgePoint3d } from "./IgePoint3d";
+import { IgeCamera } from "./IgeCamera";
+import { IgeRect } from "./IgeRect";
+import { IgePoint2d } from "./IgePoint2d";
+import { IgeMountMode } from "@/enums/IgeMountMode";
+import { IgeUiEntity } from "./IgeUiEntity";
+import { registerClass } from "@/engine/igeClassStore";
 // TODO: Turns out we need IgeObject because IgeViewport cannot extend IgeEntity
 //    because IgeEntity imports IgeViewport, creating a circular referencing issue
 /**
@@ -17,11 +17,9 @@ export class IgeViewport extends IgeUiEntity {
         super();
         this.classId = "IgeViewport";
         this.IgeViewport = true;
-        this._idRegistered = false;
         this._autoSize = false;
         let width, height;
         this._alwaysInView = true;
-        this._pointerAlwaysInside = true;
         this._pointerPos = new IgePoint3d(0, 0, 0);
         this._overflow = "";
         this._clipping = true;

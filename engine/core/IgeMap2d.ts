@@ -188,7 +188,7 @@ export class IgeMap2d extends IgeBaseClass {
 			const y = yArr[i];
 			const xArr = this._sortKeys(data[y as unknown as number]);
 
-			finalData[y as unknown as number] = finalData[y as unknown as number] || {};
+			finalData[y as unknown as number] = finalData[y as unknown as number] || [];
 
 			for (let k = 0; k < xArr.length; k++) {
 				const x = xArr[k];

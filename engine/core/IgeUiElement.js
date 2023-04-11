@@ -1,6 +1,6 @@
-import { ige } from "../instance.js";
-import { IgeUiEntity } from "./IgeUiEntity.js";
-import { registerClass } from "../../engine/igeClassStore.js";
+import { ige } from "../instance";
+import { IgeUiEntity } from "./IgeUiEntity";
+import { registerClass } from "@/engine/igeClassStore";
 /**
  * Creates a new UI element. UI elements use more resources and CPU
  * than standard IgeEntity instances but provide a rich set of extra

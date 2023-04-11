@@ -1,5 +1,5 @@
-import { IgeEventingClass } from "./IgeEventingClass.js";
-import { IgePathNode } from "./IgePathNode.js";
+import { IgeEventingClass } from "./IgeEventingClass";
+import { IgePathNode } from "./IgePathNode";
 /**
  * Creates a new path using the A* path-finding algorithm.
  */

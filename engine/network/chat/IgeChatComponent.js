@@ -1,4 +1,4 @@
-import { IgeEventingClass } from "../../../engine/core/IgeEventingClass.js";
+import { IgeEventingClass } from "@/engine/core/IgeEventingClass";
 export class IgeChatComponent extends IgeEventingClass {
     constructor() {
         super(...arguments);

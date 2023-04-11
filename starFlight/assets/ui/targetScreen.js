@@ -1,4 +1,4 @@
-import { ige } from "../../../engine/instance.js";
+import { ige } from "@/engine/instance";
 export const targetScreen = {
     render: function (ctx, entity) {
         const lockEntity = ige.entities.read('lock');

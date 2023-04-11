@@ -1,4 +1,4 @@
-import { igeFilters } from "../igeFilters.js";
+import { igeFilters } from "../igeFilters";
 export const blur = function (canvas, ctx, originalImage, texture, data) {
     const oneNinth = 1 / 9;
     let strength = 1, loop, pixelData;

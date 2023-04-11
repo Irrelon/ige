@@ -1,4 +1,4 @@
-import { ResourceType } from "../enums/ResourceType.js";
+import { ResourceType } from "../enums/ResourceType";
 export const fillColorByResourceType = {
     [ResourceType.none]: "#000000",
     [ResourceType.wood]: "#006901",

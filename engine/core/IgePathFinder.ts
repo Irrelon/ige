@@ -2,6 +2,7 @@ import { IgeEventingClass } from "./IgeEventingClass";
 import { IgePathNode } from "./IgePathNode";
 import { IgeCollisionMap2d } from "./IgeCollisionMap2d";
 import { IgeTileMap2d } from "./IgeTileMap2d";
+import {IgeGenericPathFinderNode} from "@/engine/core/IgeGenericPathFinder";
 
 export type IgePathFinderComparisonCallback = (tileData: any, newX: number, newY: number, currentNodeData?: IgePathNode | null, x?: number | null, y?: number | null, dynamic?: boolean) => boolean;
 
@@ -78,8 +79,8 @@ export class IgePathFinder extends IgeEventingClass {
      * @return {Array} An array of objects each containing an x, y co-ordinate that describes the path from the starting point to the end point in order.
      */
 	generate (tileMap: IgeCollisionMap2d | IgeTileMap2d, startPoint: IgePathNode, endPoint: IgePathNode, comparisonCallback: IgePathFinderComparisonCallback = () => true, allowSquare: boolean = false, allowDiagonal: boolean = false, allowInvalidDestination: boolean = false) {
-		const openList = [];
-		const closedList = [];
+		const openList: IgePathNode[] = [];
+		const closedList: IgePathNode[] = [];
 		const listHash: Record<string, IgePathNode> = {};
 		let
 			lowestFScoringIndex,
@@ -251,7 +252,7 @@ export class IgePathFinder extends IgeEventingClass {
      * @private
      */
 	_getNeighbours (currentNode: IgePathNode, endPoint: IgePathNode, tileMap: IgeCollisionMap2d | IgeTileMap2d, comparisonCallback: IgePathFinderComparisonCallback, allowSquare: boolean, allowDiagonal: boolean) {
-		const list = [];
+		const list: IgePathNode[] = [];
 		const { x, y } = currentNode;
 		let newX = 0;
 		let newY = 0;

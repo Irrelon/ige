@@ -7,10 +7,10 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-import { ige } from "../../engine/instance.js";
-import { IgeBaseScene } from "../../engine/core/IgeBaseScene.js";
-import { IgeOptions } from "../../engine/core/IgeOptions.js";
-import { IgeSceneGraph } from "../../engine/core/IgeSceneGraph.js";
+import { ige } from "@/engine/instance";
+import { IgeBaseScene } from "@/engine/core/IgeBaseScene";
+import { IgeOptions } from "@/engine/core/IgeOptions";
+import { IgeSceneGraph } from "@/engine/core/IgeSceneGraph";
 export class AppServerScene extends IgeSceneGraph {
     constructor() {
         super(...arguments);

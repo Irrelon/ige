@@ -1,4 +1,4 @@
-import { ige } from "../../../engine/instance.js";
+import { ige } from "@/engine/instance";
 export const starFieldSmartTexture = {
     render: function (ctx, entity) {
         let sf = this._starField, starCount = this._starCount, stars, sfPoint, camera = ige.engine._currentCamera, camTranslate = camera._translate, finalPointX, finalPointY, multipleX, multipleY, i;

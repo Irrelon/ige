@@ -1,7 +1,7 @@
 import { IgeTexture } from "../core/IgeTexture";
 import { IgeObject } from "../core/IgeObject";
 import type { Mixin } from "@/types/Mixin";
-export type IgeRepeatType = "repeat" | "repeat-x" | "repeat-y" | "no-repeat";
+import { IgeRepeatType } from "@/types/IgeRepeatType";
 export declare const WithUiStyleMixin: <BaseClassType extends Mixin<IgeObject>>(Base: BaseClassType) => {
     new (...args: any[]): {
         _color: string | CanvasGradient | CanvasPattern;
@@ -196,7 +196,7 @@ export declare const WithUiStyleMixin: <BaseClassType extends Mixin<IgeObject>>(
         _hidden: boolean;
         _cache: boolean;
         _cacheCtx?: import("../../types/IgeCanvasRenderingContext2d").IgeCanvasRenderingContext2d | null | undefined;
-        _cacheCanvas?: OffscreenCanvas | import("../core/IgeDummyCanvas").IgeDummyCanvas | undefined;
+        _cacheCanvas?: import("../core/IgeDummyCanvas").IgeDummyCanvas | OffscreenCanvas | undefined;
         _cacheDirty: boolean;
         _cacheSmoothing: boolean;
         _aabbDirty: boolean;

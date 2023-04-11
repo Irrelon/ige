@@ -6,5 +6,5 @@
  * code in order to support a highly edge-case scenario where you might want more than
  * one engine instance to operate on at a time.
  */
-import { Ige } from "./core/Ige.js";
+import { Ige } from "./core/Ige";
 export const ige = new Ige();

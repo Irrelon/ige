@@ -5,6 +5,10 @@ import { IgeTextureMap } from "./IgeTextureMap";
  */
 export class IgeTextureAtlas extends IgeTextureMap {
 	classId = "IgeTextureAtlas";
+	private _dataSource: any;
+	
+	private _dataSourceType?: string;
+	private _bufferZone?: { x: any; y: any };
 
 	constructor (tileWidth?: number, tileHeight?: number) {
 		super(tileWidth, tileHeight);
@@ -54,6 +58,6 @@ export class IgeTextureAtlas extends IgeTextureMap {
 			return this;
 		}
 
-		return {"x": this._bufferZone.x, "y": this._bufferZone.y};
+		return {"x": this._bufferZone?.x, "y": this._bufferZone?.y};
 	}
 }

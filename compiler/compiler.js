@@ -1,4 +1,4 @@
-import { getFiles } from "./getFiles.js";
+import { getFiles } from "./getFiles";
 import { readFileSync } from "fs";
 import path from "path";
 import ts from "typescript";

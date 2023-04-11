@@ -1,7 +1,5 @@
 import { IgeTexture } from "./IgeTexture";
 import { IgeSmartTexture } from "@/types/IgeSmartTexture";
-import { IgeImage } from "@/engine/core/IgeImage";
-import { IgeCanvas } from "@/engine/core/IgeCanvas";
 /**
  * Creates a new font sheet. A font sheet is an image that contains
  * letters and numbers rendered to specifications. It allows you to
@@ -10,12 +8,16 @@ import { IgeCanvas } from "@/engine/core/IgeCanvas";
  */
 export declare class IgeFontSheet extends IgeTexture {
     classId: string;
-    _sheetImage?: IgeImage | IgeCanvas;
+    _sheetImage?: ImageBitmap | OffscreenCanvas;
     _lineHeightModifier: number;
     _fontData: any;
+    _charCodeMap: any;
+    _charPosMap: any;
+    _measuredWidthMap: any;
+    _pixelWidthMap: any;
     constructor(id: string, urlOrObject?: string | IgeSmartTexture);
     decodeHeader(): any;
-    _decode(canvas: IgeCanvas, x: number, y: number, maxX: number): any;
+    _decode(canvas: OffscreenCanvas, x: number, y: number, maxX: number): any;
     lineHeightModifier(val?: number): void;
     /**
      * Returns the width in pixels of the text passed in the
@@ -23,7 +25,7 @@ export declare class IgeFontSheet extends IgeTexture {
      * @param {string} text The text to measure.
      * @returns {number}
      */
-    measureTextWidth(text: any): number | undefined;
+    measureTextWidth(text: any): any;
     render(ctx: any, entity: any): void;
-    destroy(): void;
+    destroy(): this;
 }

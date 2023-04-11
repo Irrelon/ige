@@ -1,12 +1,12 @@
 import { IgeSmartTexture } from "@/types/IgeSmartTexture";
 import { IgeSmartFilter } from "@/types/IgeSmartFilter";
-import type { IgeImage } from "./IgeImage";
 import type { IgeCanvas } from "./IgeCanvas";
 import { IgeEntity } from "./IgeEntity";
 import { IgeCanvasRenderingContext2d } from "@/types/IgeCanvasRenderingContext2d";
 import { IgeTextureRenderMode } from "@/enums/IgeTextureRenderMode";
 import { IgeAsset } from "./IgeAsset";
 import { IgeDependencies } from "@/engine/core/IgeDependencies";
+import { IgeImage } from "@/types/IgeImage";
 export type IgeTextureCell = [number, number, number, number, string?];
 export type IgeTextureCellArray = IgeTextureCell[];
 /**
@@ -28,12 +28,12 @@ export declare class IgeTexture extends IgeAsset {
     _applyFiltersData: Record<string, any>[];
     _preFilters: IgeSmartFilter[];
     _preFiltersData: Record<string, any>[];
-    _originalImage?: IgeImage | IgeCanvas;
+    _originalImage?: IgeImage;
     _textureCanvas?: IgeCanvas;
     _textureCtx?: IgeCanvasRenderingContext2d;
     _cells: IgeTextureCellArray;
     dependencies: IgeDependencies;
-    image?: IgeImage | IgeCanvas;
+    image?: IgeImage;
     script?: IgeSmartTexture;
     /**
      * Constructor for a new IgeTexture.
@@ -82,7 +82,7 @@ export declare class IgeTexture extends IgeAsset {
      * the image data for the IgeTexture.
      * @private
      */
-    _setImage(imageElement: IgeImage | IgeCanvas): void;
+    _setImage(imageElement: IgeImage): void;
     /**
      * Sets the _sizeX property.
      * @param {number} val

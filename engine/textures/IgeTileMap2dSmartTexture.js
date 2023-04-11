@@ -1,11 +1,10 @@
-import { IgePoint2d } from "../core/IgePoint2d.js";
-import { IgeMountMode } from "../../enums/IgeMountMode.js";
+import { IgePoint2d } from "../core/IgePoint2d";
+import { IgeMountMode } from "@/enums/IgeMountMode";
 export const IgeTileMap2dSmartTexture = {
     render: (ctx, entity) => {
         const ent = entity;
         const tileWidth = ent._tileWidth, tileHeight = ent._tileHeight, bounds2d = ent._bounds2d, gridSize = ent._gridSize;
-        let x = 0;
-        let y = 0;
+        let x = 0, y = 0, tilePoint;
         /*ctx.save();
         var triggerPoly = ent.tileMapHitPolygon();
 
@@ -61,9 +60,9 @@ export const IgeTileMap2dSmartTexture = {
         }
         if (ent._highlightOccupied) {
             ctx.fillStyle = "#ff0000";
-            for (y in ent.map._mapData) {
+            for (y of ent.map._mapData.keys()) {
                 if (ent.map._mapData[y]) {
-                    for (x in ent.map._mapData[y]) {
+                    for (x of ent.map._mapData[y].keys()) {
                         if (ent.map._mapData[y][x]) {
                             // Tile is occupied
                             tilePoint = new IgePoint2d(tileWidth * x, tileHeight * y);
@@ -115,7 +114,8 @@ export const IgeTileMap2dSmartTexture = {
         }
         if (ent._drawMouse) {
             // Get mouse position
-            var mousePos = ent.mousePos(), mouseTile = ent.mouseToTile(), tilePoint, text, textMeasurement;
+            const mousePos = ent.mousePos(), mouseTile = ent.mouseToTile();
+            let text, textMeasurement;
             if (mouseTile.x >= 0 && mouseTile.y >= 0 && mouseTile.x < gridSize.x && mouseTile.y < gridSize.y) {
                 // Paint the tile the mouse is currently intersecting
                 ctx.fillStyle = ent._hoverColor || "#6000ff";
