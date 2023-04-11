@@ -5,7 +5,7 @@ import { BuildingType } from "../enums/BuildingType";
 import { IgeNetworkServerSideRequestHandler } from "@/types/IgeNetworkMessage";
 import {
 	createFactoryBuilding1, createFactoryBuilding2,
-	createFlagBuilding,
+	createFlagBuilding, createHouseBuilding1,
 	createMiningBuilding,
 	createStorageBuilding
 } from "../services/createBuilding";
@@ -47,6 +47,12 @@ export const controllerServer: IgeEffectFunction = async () => {
 		case BuildingType.mine: {
 			console.log("Create mine", data.resourceType);
 			const building = createMiningBuilding(tileMap1, newIdHex(), x, y, data.resourceType);
+			return requestCallback(building.id());
+		}
+
+		case BuildingType.house1: {
+			console.log("Create house 1", data.resourceType);
+			const building = createHouseBuilding1(tileMap1, newIdHex(), x, y, data.resourceType);
 			return requestCallback(building.id());
 		}
 		}

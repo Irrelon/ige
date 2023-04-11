@@ -1,30 +1,24 @@
 import { registerClass } from "../../engine/igeClassStore.js";
 import { isClient } from "../../engine/clientServer.js";
 import { UiRequiresProducesDisplay } from "./UiRequiresProducesDisplay.js";
-import { Building } from "./base/Building.js";
 import { ige } from "../../engine/instance.js";
-import { IgePoint2d } from "../../engine/core/IgePoint2d.js";
-export class FactoryBuilding2 extends Building {
+import { Building } from "./base/Building.js";
+export class HouseBuilding1 extends Building {
     constructor(tileX = NaN, tileY = NaN, produces, requires = []) {
         super();
-        this.classId = "FactoryBuilding2";
-        this.tileXDelta = -1;
-        this.tileYDelta = -1;
-        this.tileW = 3;
-        this.tileH = 3;
+        this.classId = "HouseBuilding1";
         this.tileX = tileX;
         this.tileY = tileY;
         this._produces = produces;
         this._requires = requires;
         this.layer(10);
         this.isometric(ige.data("isometric"));
-        this.width(132);
-        this.height(160);
-        this.bounds3d(70, 80, 70);
+        this.width(80);
+        this.height(100);
+        this.bounds3d(40, 40, 50);
         if (isClient) {
             this.uiResourceDisplay = new UiRequiresProducesDisplay(produces, requires).mount(this);
-            this.texture(ige.textures.get("factory2"));
-            this._textureOffset = new IgePoint2d(16, -10);
+            this.texture(ige.textures.get("house1"));
         }
     }
     streamCreateConstructorArgs() {
@@ -37,4 +31,4 @@ export class FactoryBuilding2 extends Building {
         }
     }
 }
-registerClass(FactoryBuilding2);
+registerClass(HouseBuilding1);

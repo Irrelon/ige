@@ -5,6 +5,7 @@ import { ResourceType } from "../enums/ResourceType";
 import { FactoryBuilding1 } from "../entities/FactoryBuilding1";
 import { IgeTileMap2d } from "@/engine/core/IgeTileMap2d";
 import { FactoryBuilding2 } from "../entities/FactoryBuilding2";
+import { HouseBuilding1 } from "../entities/HouseBuilding1";
 
 export const createStorageBuilding = (parent: IgeTileMap2d, id: string, tileX: number, tileY: number) => {
 	const roadOffsetX = 0;
@@ -64,6 +65,18 @@ export const createMiningBuilding = (parent: IgeTileMap2d, id: string, tileX: nu
 	// new Transporter(base.id(), newBuilding.id(), newBuilding.flag.id())
 	// 	.translateTo(base._translate.x, base._translate.y, 0)
 	// 	.mount(parent);
+
+	return newBuilding;
+}
+
+export const createHouseBuilding1 = (parent: IgeTileMap2d, id: string, tileX: number, tileY: number) => {
+	const roadOffsetX = 0;
+	const roadOffsetY = 2;
+
+	const newBuilding = new HouseBuilding1(tileX, tileY, ResourceType.gold, [{ count: 1, type: ResourceType.science, max: 1 }, { count: 1, type: ResourceType.energy, max: 1 }])
+		.id(id)
+		.mount(parent)
+		.translateToTile(tileX, tileY, 0);
 
 	return newBuilding;
 }

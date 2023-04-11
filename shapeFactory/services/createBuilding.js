@@ -4,6 +4,7 @@ import { MiningBuilding } from "../entities/MiningBuilding.js";
 import { ResourceType } from "../enums/ResourceType.js";
 import { FactoryBuilding1 } from "../entities/FactoryBuilding1.js";
 import { FactoryBuilding2 } from "../entities/FactoryBuilding2.js";
+import { HouseBuilding1 } from "../entities/HouseBuilding1.js";
 export const createStorageBuilding = (parent, id, tileX, tileY) => {
     const roadOffsetX = 0;
     const roadOffsetY = 3;
@@ -56,6 +57,15 @@ export const createMiningBuilding = (parent, id, tileX, tileY, resourceType) => 
     // new Transporter(base.id(), newBuilding.id(), newBuilding.flag.id())
     // 	.translateTo(base._translate.x, base._translate.y, 0)
     // 	.mount(parent);
+    return newBuilding;
+};
+export const createHouseBuilding1 = (parent, id, tileX, tileY) => {
+    const roadOffsetX = 0;
+    const roadOffsetY = 2;
+    const newBuilding = new HouseBuilding1(tileX, tileY, ResourceType.gold, [{ count: 1, type: ResourceType.science, max: 1 }, { count: 1, type: ResourceType.energy, max: 1 }])
+        .id(id)
+        .mount(parent)
+        .translateToTile(tileX, tileY, 0);
     return newBuilding;
 };
 export const createFactoryBuilding1 = (parent, id, tileX, tileY) => {

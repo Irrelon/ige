@@ -25,7 +25,7 @@ export class FactoryBuilding1 extends Building {
         this.height(160);
         this.bounds3d(90, 90, 56);
         if (isClient) {
-            new UiRequiresProducesDisplay(produces, requires).mount(this);
+            this.uiResourceDisplay = new UiRequiresProducesDisplay(produces, requires).mount(this);
             this.texture(ige.textures.get("factory1"));
             this._textureOffset = new IgePoint2d(24, -16);
             const smokeEmitter1 = new IgeParticleEmitter()

@@ -52,7 +52,7 @@ export declare class IgePathComponent extends IgeComponent {
      * @param {IgePathFinder} val The pathfinder class instance to use to generate paths.
      * @returns {*}
      */
-    finder: (val?: IgePathFinder) => this | IgePathFinder | undefined;
+    finder: (val?: IgePathFinder) => IgePathFinder | this | undefined;
     /**
      * Gets / sets the dynamic mode enabled flag. If dynamic mode is enabled
      * then at the end of every path point (reaching a tile along the path)
@@ -75,7 +75,7 @@ export declare class IgePathComponent extends IgeComponent {
      * to traverse when calculating paths.
      * @returns {*}
      */
-    tileChecker: (val?: IgePathFinderComparisonCallback) => this | IgePathFinderComparisonCallback;
+    tileChecker: (val?: IgePathFinderComparisonCallback) => IgePathFinderComparisonCallback | this;
     lookAheadSteps: (val?: number) => number | this | undefined;
     /**
      * Gets / sets the flag determining if a path can use N, S, E and W movement.

@@ -53,6 +53,7 @@ export class AppClientScene extends IgeSceneGraph {
 		new IgeTexture("headquarters", "assets/textures/sprites/headquarters.png");
 		new IgeTexture("mine", "assets/textures/sprites/mine.png");
 		new IgeTexture("flag", "assets/textures/sprites/flag.png");
+		new IgeTexture("house1", "assets/textures/sprites/house1.png");
 		new IgeTexture("squareSmartTexture", squareSmartTexture);
 		new IgeTexture("lineSmartTexture", lineSmartTexture);
 		new IgeTexture("triangleSmartTexture", triangleSmartTexture);

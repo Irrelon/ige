@@ -19,6 +19,7 @@ import { FlagBuilding } from "../entities/FlagBuilding.js";
 import { MiningBuilding } from "../entities/MiningBuilding.js";
 import { IgePoint3d } from "../../engine/core/IgePoint3d.js";
 import { FactoryBuilding2 } from "../entities/FactoryBuilding2.js";
+import { HouseBuilding1 } from "../entities/HouseBuilding1.js";
 export const controllerClient = () => __awaiter(void 0, void 0, void 0, function* () {
     const network = ige.network;
     // TODO Turn this into a loop and use data on the items to handle functionality
@@ -27,6 +28,7 @@ export const controllerClient = () => __awaiter(void 0, void 0, void 0, function
     const uiCreateFactory2 = ige.$("uiCreateFactory2");
     const uiCreateMine1 = ige.$("uiCreateMine1");
     const uiCreateMine2 = ige.$("uiCreateMine2");
+    const uiCreateHouse1 = ige.$("uiCreateHouse1");
     const fsm = new IgeFSM();
     const tileMap1 = ige.$("tileMap1");
     fsm.defineState("idle", {
@@ -76,6 +78,11 @@ export const controllerClient = () => __awaiter(void 0, void 0, void 0, function
                 fsm.data("createArgs", [ResourceType.uranium]);
                 fsm.enterState("createBuilding");
             });
+            uiCreateHouse1.pointerUp(() => {
+                fsm.data("createBuilding", BuildingType.house1);
+                fsm.data("createArgs", [ResourceType.science, ResourceType.energy]);
+                fsm.enterState("createBuilding");
+            });
         }),
         exit: () => __awaiter(void 0, void 0, void 0, function* () {
             uiCreateStorage.pointerUp(null);
@@ -122,6 +129,11 @@ export const controllerClient = () => __awaiter(void 0, void 0, void 0, function
                     break;
                 case BuildingType.mine:
                     new MiningBuilding(NaN, NaN, ResourceType.none, [])
+                        .id("tmpBuilding")
+                        .mount(tileMap1);
+                    break;
+                case BuildingType.house1:
+                    new HouseBuilding1(NaN, NaN, ResourceType.none, [])
                         .id("tmpBuilding")
                         .mount(tileMap1);
                     break;

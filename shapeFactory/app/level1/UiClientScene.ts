@@ -53,10 +53,11 @@ export class UiClientScene extends IgeSceneGraph {
 			.top(300)
 			.mount(buildUi);
 
-		// new UiBuildItem(ige.textures.get("flagSmartTexture"), "Flag")
-		// 	.id("uiCreateFlag")
-		// 	.top(370)
-		// 	.mount(buildUi);
+		new UiBuildItem(ige.textures.get("house1"), "House 1")
+			.id("uiCreateHouse1")
+			.top(370)
+			.height(50)
+			.mount(buildUi);
 	}
 
 	removeGraph () {

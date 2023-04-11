@@ -17,8 +17,8 @@ export class UiRequiresProducesDisplay extends IgeUiEntity {
 			new IgeUiEntity()
 				.texture(ige.textures.get(requiresItem.type))
 				.center((-20 * (index + 1) - 10))
-				.width(20)
-				.height(20)
+				.width(30)
+				.height(30)
 				.mount(this);
 		});
 
@@ -32,8 +32,8 @@ export class UiRequiresProducesDisplay extends IgeUiEntity {
 			new IgeUiEntity()
 				.texture(ige.textures.get(produces))
 				.center(30)
-				.width(20)
-				.height(20)
+				.width(30)
+				.height(30)
 				.mount(this);
 		}
 	}

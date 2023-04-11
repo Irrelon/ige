@@ -11,6 +11,7 @@ import { FlagBuilding } from "../FlagBuilding";
 import { IgeTileMap2d } from "@/engine/core/IgeTileMap2d";
 import { ThreadSafeQueue } from "../../services/ThreadSafeQueue";
 import { IgeParticleEmitter } from "@/engine/core/IgeParticleEmitter";
+import { UiRequiresProducesDisplay } from "../UiRequiresProducesDisplay";
 
 export class Building extends GameEntity {
 	flag?: FlagBuilding;
@@ -30,6 +31,7 @@ export class Building extends GameEntity {
 	_produces: ResourceType;
 	_requires: BuildingResourceRequirement[];
 	productionEffects: IgeParticleEmitter[] = [];
+	uiResourceDisplay?: UiRequiresProducesDisplay;
 
 	constructor () {
 		super();

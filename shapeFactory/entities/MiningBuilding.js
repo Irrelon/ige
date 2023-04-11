@@ -20,7 +20,7 @@ export class MiningBuilding extends Building {
         this.height(100);
         this.bounds3d(40, 40, 50);
         if (isClient) {
-            new UiRequiresProducesDisplay(produces, requires).mount(this);
+            this.uiResourceDisplay = new UiRequiresProducesDisplay(produces, requires).mount(this);
             this.texture(ige.textures.get("mine"));
             const smokeEmitter1 = new IgeParticleEmitter()
                 //.drawBounds(true)

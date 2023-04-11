@@ -5,4 +5,5 @@ export var BuildingType;
     BuildingType[BuildingType["factory1"] = 2] = "factory1";
     BuildingType[BuildingType["factory2"] = 3] = "factory2";
     BuildingType[BuildingType["flag"] = 4] = "flag";
+    BuildingType[BuildingType["house1"] = 5] = "house1";
 })(BuildingType || (BuildingType = {}));

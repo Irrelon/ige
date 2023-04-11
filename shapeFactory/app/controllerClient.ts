@@ -18,6 +18,7 @@ import { IgePoint3d } from "@/engine/core/IgePoint3d";
 import { IgePoint2d } from "@/engine/core/IgePoint2d";
 import { IgeTileMap2d } from "@/engine/core/IgeTileMap2d";
 import { FactoryBuilding2 } from "../entities/FactoryBuilding2";
+import { HouseBuilding1 } from "../entities/HouseBuilding1";
 
 export const controllerClient: IgeEffectFunction = async () => {
 	const network = ige.network as IgeNetIoClientController;
@@ -28,6 +29,7 @@ export const controllerClient: IgeEffectFunction = async () => {
 	const uiCreateFactory2 = ige.$("uiCreateFactory2") as IgeUiElement;
 	const uiCreateMine1 = ige.$("uiCreateMine1") as IgeUiElement;
 	const uiCreateMine2 = ige.$("uiCreateMine2") as IgeUiElement;
+	const uiCreateHouse1 = ige.$("uiCreateHouse1") as IgeUiElement;
 
 	const fsm = new IgeFSM();
 	const tileMap1 = ige.$("tileMap1") as IgeTileMap2d;
@@ -84,6 +86,12 @@ export const controllerClient: IgeEffectFunction = async () => {
 				fsm.data("createArgs", [ResourceType.uranium]);
 				fsm.enterState("createBuilding");
 			});
+
+			uiCreateHouse1.pointerUp(() => {
+				fsm.data("createBuilding", BuildingType.house1);
+				fsm.data("createArgs", [ResourceType.science, ResourceType.energy]);
+				fsm.enterState("createBuilding");
+			});
 		},
 		exit: async () => {
 			uiCreateStorage.pointerUp(null);
@@ -137,6 +145,12 @@ export const controllerClient: IgeEffectFunction = async () => {
 
 			case BuildingType.mine:
 				new MiningBuilding(NaN, NaN, ResourceType.none, [])
+					.id("tmpBuilding")
+					.mount(tileMap1);
+				break;
+
+			case BuildingType.house1:
+				new HouseBuilding1(NaN, NaN, ResourceType.none, [])
 					.id("tmpBuilding")
 					.mount(tileMap1);
 				break;
