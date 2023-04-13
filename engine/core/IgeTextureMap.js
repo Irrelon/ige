@@ -429,7 +429,7 @@ export class IgeTextureMap extends IgeTileMap2d {
      */
     _drawSectionsToCtx(ctx, autoSection) {
         if (ige.engine._currentCamera === null || ige.engine._currentViewport === null) {
-            throw "Engine was not ready";
+            throw new Error("Engine was not ready");
         }
         const viewArea = ige.engine._currentViewport.viewArea(), sectionWidth = (this._tileWidth * autoSection), sectionHeight = (this._tileHeight * autoSection);
         let x, y, tileData, sectionRenderX, sectionRenderY, sectionAbsX, sectionAbsY;
@@ -479,7 +479,7 @@ export class IgeTextureMap extends IgeTileMap2d {
      * @return {*}
      * @private
      */
-    _renderTile(ctx, x, y, tileData, tileEntity, rect = undefined, sectionX = undefined, sectionY = undefined) {
+    _renderTile(ctx, x, y, tileData, tileEntity, rect, sectionX, sectionY) {
         // TODO: Handle scaling so tiles don't loose res on scaled cached sections
         const xAdjust = this._mountMode === IgeMountMode.iso ? this._tileWidth / 2 : 0, yAdjust = this._mountMode === IgeMountMode.iso ? this._tileHeight / 2 : 0;
         let finalX, finalY, regions, xm1, xp1, ym1, yp1, regObj, tx, ty, sx, sy;

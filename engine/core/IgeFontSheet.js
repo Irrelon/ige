@@ -44,7 +44,7 @@ export class IgeFontSheet extends IgeTexture {
         // Create a temporary canvas
         const canvas = new OffscreenCanvas(2, 2), ctx = canvas.getContext("2d");
         if (this.image === undefined) {
-            throw "Image not loaded";
+            throw new Error("Image not loaded");
         }
         // Set canvas width to match font sheet image and
         // height to 1 as we have 1 line of header data

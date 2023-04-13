@@ -1,16 +1,16 @@
-import {ige} from "../instance";
-import {IgeSmartTexture} from "@/types/IgeSmartTexture";
-import {arrPull} from "../utils";
-import {IgeSmartFilter} from "@/types/IgeSmartFilter";
-import type {IgeCanvas} from "./IgeCanvas";
-import {newCanvas} from "./IgeCanvas";
-import {IgeEntity} from "./IgeEntity";
-import {isClient, isServer} from "../clientServer";
-import {IgeCanvasRenderingContext2d} from "@/types/IgeCanvasRenderingContext2d";
-import {IgeTextureRenderMode} from "@/enums/IgeTextureRenderMode";
-import {IgeAsset} from "./IgeAsset";
-import {IgeDependencies} from "@/engine/core/IgeDependencies";
-import {IgeImage} from "@/types/IgeImage";
+import { ige } from "../instance";
+import { IgeSmartTexture } from "@/types/IgeSmartTexture";
+import { arrPull } from "../utils";
+import { IgeSmartFilter } from "@/types/IgeSmartFilter";
+import type { IgeCanvas } from "./IgeCanvas";
+import { newCanvas } from "./IgeCanvas";
+import { IgeEntity } from "./IgeEntity";
+import { isClient, isServer } from "../clientServer";
+import { IgeCanvasRenderingContext2d } from "@/types/IgeCanvasRenderingContext2d";
+import { IgeTextureRenderMode } from "@/enums/IgeTextureRenderMode";
+import { IgeAsset } from "./IgeAsset";
+import { IgeDependencies } from "@/engine/core/IgeDependencies";
+import { IgeImage } from "@/types/IgeImage";
 
 export type IgeTextureCell = [number, number, number, number, string?];
 export type IgeTextureCellArray = IgeTextureCell[];
@@ -71,10 +71,6 @@ export class IgeTexture extends IgeAsset {
 			this.id(id);
 			ige.textures.add(id, this);
 		}
-
-		// this.dependencies.add("IgeImageClass", import("./IgeImage.js").then(({ IgeImage: IgeModule }) => {
-		// 	IgeImageClass = IgeModule;
-		// }));
 
 		// Create an array that is used to store cell dimensions
 		this._cells = [];

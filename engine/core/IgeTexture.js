@@ -47,9 +47,6 @@ export class IgeTexture extends IgeAsset {
             this.id(id);
             ige.textures.add(id, this);
         }
-        // this.dependencies.add("IgeImageClass", import("./IgeImage.js").then(({ IgeImage: IgeModule }) => {
-        // 	IgeImageClass = IgeModule;
-        // }));
         // Create an array that is used to store cell dimensions
         this._cells = [];
         this._smoothing = ige.engine._globalSmoothing;

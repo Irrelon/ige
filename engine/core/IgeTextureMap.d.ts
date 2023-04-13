@@ -157,7 +157,7 @@ export declare class IgeTextureMap extends IgeTileMap2d {
      * @return {*}
      * @private
      */
-    _renderTile(ctx: any, x: any, y: any, tileData: any, tileEntity: any, rect?: IgeRect | undefined, sectionX?: undefined, sectionY?: undefined): any;
+    _renderTile(ctx: any, x: any, y: any, tileData: any, tileEntity: any, rect?: IgeRect, sectionX?: any, sectionY?: any): any;
     /**
      * Private method, creates an entity object that a texture can use to render
      * itself. This is basically a dummy object that has the minimum amount of data

@@ -20,12 +20,7 @@ export declare class IgeTileMap2d extends IgeEntity {
     IgeTileMap2d: boolean;
     _drawGrid?: boolean;
     _highlightOccupied: boolean;
-    _highlightTileRect?: {
-        x: number;
-        y: number;
-        width: number;
-        height: number;
-    };
+    _highlightTileRect?: IgeRect;
     _gridColor?: string;
     _gridSize: IgePoint2d;
     _hoverColor?: string;
@@ -39,18 +34,8 @@ export declare class IgeTileMap2d extends IgeEntity {
      */
     highlightOccupied(val: boolean): this;
     highlightOccupied(): boolean;
-    highlightTileRect(val: {
-        x: number;
-        y: number;
-        width: number;
-        height: number;
-    }): this;
-    highlightTileRect(): {
-        x: number;
-        y: number;
-        width: number;
-        height: number;
-    };
+    highlightTileRect(val: IgeRect): this;
+    highlightTileRect(): IgeRect;
     /**
      * Gets / sets the map's tile width.
      * @param {number} val Tile width.

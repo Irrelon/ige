@@ -24,7 +24,6 @@ export class IgeTiledComponent extends IgeComponent {
 	 * @param callback
 	 */
 	loadJson = (url, callback) => {
-		const self = this;
 		let scriptElem;
 
 		if (typeof (url) === "string") {
@@ -32,7 +31,7 @@ export class IgeTiledComponent extends IgeComponent {
 				scriptElem = document.createElement("script");
 				scriptElem.src = url;
 				scriptElem.onload = function () {
-					self.log("Tiled data loaded, processing...");
+					this.log("Tiled data loaded, processing...");
 					//self._processData(tiled, callback);
 				};
 
@@ -41,7 +40,7 @@ export class IgeTiledComponent extends IgeComponent {
 				this.log("URL-based Tiled data is only available client-side. If you want to load Tiled map data on the server please include the map file in your ServerConfig.js file and then specify the map's data object instead of the URL.", "error");
 			}
 		} else {
-			self._processData(url, callback);
+			this._processData(url, callback);
 		}
 	};
 
@@ -100,11 +99,11 @@ export class IgeTiledComponent extends IgeComponent {
 					tileSetCount = tileSetArray.length;
 
 					if (isClient) {
-						const m = maps[i] as IgeTextureMap
-						m.type = layerType;
+						const textureMap = maps[i] as IgeTextureMap
+						textureMap.type = layerType;
 
 						for (k = 0; k < tileSetCount; k++) {
-							m.addTexture(textures[k]);
+							textureMap.addTexture(textures[k]);
 						}
 					}
 
@@ -117,13 +116,13 @@ export class IgeTiledComponent extends IgeComponent {
 
 							if (layerData[z] > 0 && layerData[z] !== 2147483712) {
 								if (isClient) {
-									const m = maps[i] as IgeTextureMap
+									const textureMap = maps[i] as IgeTextureMap
 
 									// Paint the tile
 									currentTexture = textureCellLookup[layerData[z]];
 									if (currentTexture) {
 										currentCell = layerData[z] - (currentTexture._tiledStartingId - 1);
-										m.paintTile(x, y, m._textureList.indexOf(currentTexture), currentCell);
+										textureMap.paintTile(x, y, textureMap._textureList.indexOf(currentTexture), currentCell);
 									}
 								} else {
 									// Server-side we don't paint tiles on a texture map

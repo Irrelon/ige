@@ -31,7 +31,7 @@ export class IgeTileMap2d extends IgeEntity {
 	IgeTileMap2d = true;
 	_drawGrid?: boolean;
 	_highlightOccupied: boolean = false;
-	_highlightTileRect?: {x: number, y: number, width: number, height: number} = undefined;
+	_highlightTileRect?: IgeRect = undefined;
 	_gridColor?: string;
 	_gridSize: IgePoint2d = new IgePoint2d(40, 40);
 	_hoverColor?: string;
@@ -76,9 +76,9 @@ export class IgeTileMap2d extends IgeEntity {
 		return this._highlightOccupied;
 	}
 
-	highlightTileRect(val: {x: number, y: number, width: number, height: number}): this;
-	highlightTileRect(): {x: number, y: number, width: number, height: number}
-	highlightTileRect (val?: {x: number, y: number, width: number, height: number}) {
+	highlightTileRect(val: IgeRect): this;
+	highlightTileRect(): IgeRect
+	highlightTileRect (val?: IgeRect) {
 		if (val !== undefined) {
 			this._highlightTileRect = val;
 			return this;

@@ -19,14 +19,13 @@ export class IgeTiledComponent extends IgeComponent {
          * @param callback
          */
         this.loadJson = (url, callback) => {
-            const self = this;
             let scriptElem;
             if (typeof (url) === "string") {
                 if (isClient) {
                     scriptElem = document.createElement("script");
                     scriptElem.src = url;
                     scriptElem.onload = function () {
-                        self.log("Tiled data loaded, processing...");
+                        this.log("Tiled data loaded, processing...");
                         //self._processData(tiled, callback);
                     };
                     document.getElementsByTagName("head")[0].appendChild(scriptElem);
@@ -36,7 +35,7 @@ export class IgeTiledComponent extends IgeComponent {
                 }
             }
             else {
-                self._processData(url, callback);
+                this._processData(url, callback);
             }
         };
         this._processData = (data, callback) => {
@@ -63,10 +62,10 @@ export class IgeTiledComponent extends IgeComponent {
                         layersById[layer.name] = maps[i];
                         tileSetCount = tileSetArray.length;
                         if (isClient) {
-                            const m = maps[i];
-                            m.type = layerType;
+                            const textureMap = maps[i];
+                            textureMap.type = layerType;
                             for (k = 0; k < tileSetCount; k++) {
-                                m.addTexture(textures[k]);
+                                textureMap.addTexture(textures[k]);
                             }
                         }
                         // Loop through the layer data and paint the tiles
@@ -76,12 +75,12 @@ export class IgeTiledComponent extends IgeComponent {
                                 z = x + (y * mapWidth);
                                 if (layerData[z] > 0 && layerData[z] !== 2147483712) {
                                     if (isClient) {
-                                        const m = maps[i];
+                                        const textureMap = maps[i];
                                         // Paint the tile
                                         currentTexture = textureCellLookup[layerData[z]];
                                         if (currentTexture) {
                                             currentCell = layerData[z] - (currentTexture._tiledStartingId - 1);
-                                            m.paintTile(x, y, m._textureList.indexOf(currentTexture), currentCell);
+                                            textureMap.paintTile(x, y, textureMap._textureList.indexOf(currentTexture), currentCell);
                                         }
                                     }
                                     else {

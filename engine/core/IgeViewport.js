@@ -20,6 +20,7 @@ export class IgeViewport extends IgeUiEntity {
         this._autoSize = false;
         let width, height;
         this._alwaysInView = true;
+        this._pointerAlwaysInside = true;
         this._pointerPos = new IgePoint3d(0, 0, 0);
         this._overflow = "";
         this._clipping = true;

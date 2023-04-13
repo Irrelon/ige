@@ -46,6 +46,7 @@ export class IgeViewport extends IgeUiEntity implements IgeCanRegisterById {
 
 		let width, height;
 		this._alwaysInView = true;
+		this._pointerAlwaysInside = true;
 
 		this._pointerPos = new IgePoint3d(0, 0, 0);
 		this._overflow = "";
