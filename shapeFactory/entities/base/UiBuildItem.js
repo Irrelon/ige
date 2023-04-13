@@ -1,6 +1,6 @@
-import { IgeUiElement } from "@/engine/core/IgeUiElement";
-import { IgeUiLabel } from "@/engine/ui/IgeUiLabel";
-import { IgeFontAlignX, IgeFontAlignY } from "@/enums/IgeFontAlign";
+import { IgeUiElement } from "../../../engine/core/IgeUiElement.js";
+import { IgeUiLabel } from "../../../engine/ui/IgeUiLabel.js";
+import { IgeFontAlignX, IgeFontAlignY } from "../../../enums/IgeFontAlign.js";
 export class UiBuildItem extends IgeUiElement {
     constructor(icon, label) {
         super();

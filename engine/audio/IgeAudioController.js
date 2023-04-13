@@ -7,8 +7,8 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-import { isClient } from "@/engine/clientServer";
-import { IgeEventingClass } from "@/engine/core/IgeEventingClass";
+import { isClient } from "../../engine/clientServer.js";
+import { IgeEventingClass } from "../../engine/core/IgeEventingClass.js";
 export class IgeAudioController extends IgeEventingClass {
     constructor() {
         super();

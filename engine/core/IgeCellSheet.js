@@ -1,4 +1,4 @@
-import { IgeTexture } from "./IgeTexture";
+import { IgeTexture } from "./IgeTexture.js";
 /**
  * Creates a new cell sheet. Cell sheets are textures that are
  * automatically split up into individual cells based on a cell

@@ -1,7 +1,7 @@
-import { ige } from "@/engine/instance";
-import { isServer } from "@/engine/clientServer";
-import { IgeEntity } from "@/engine/core/IgeEntity";
-import { registerClass } from "@/engine/igeClassStore";
+import { ige } from "../../../../engine/instance.js";
+import { isServer } from "../../../../engine/clientServer.js";
+import { IgeEntity } from "../../../../engine/core/IgeEntity.js";
+import { registerClass } from "../../../../engine/igeClassStore.js";
 export class LaserEffect extends IgeEntity {
     constructor(data = {}) {
         super();

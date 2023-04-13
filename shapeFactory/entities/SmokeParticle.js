@@ -1,5 +1,5 @@
-import { IgeParticle } from "@/engine/core/IgeParticle";
-import { ige } from "@/engine/instance";
+import { IgeParticle } from "../../engine/core/IgeParticle.js";
+import { ige } from "../../engine/instance.js";
 export class SmokeParticle extends IgeParticle {
     constructor(emitter) {
         super(emitter);

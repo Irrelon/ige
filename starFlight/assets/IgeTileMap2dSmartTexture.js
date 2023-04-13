@@ -1,4 +1,4 @@
-import { IgePoint2d } from "@/engine/core/IgePoint2d";
+import { IgePoint2d } from "../../engine/core/IgePoint2d.js";
 export const IgeTileMap2dSmartTexture = {
     render: function (ctx, entity) {
         let tileWidth = entity._tileWidth, tileHeight = entity._tileHeight, bounds2d = entity.bounds2d(), gridSize = entity._gridSize, x = 0, y = 0;

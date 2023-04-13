@@ -7,18 +7,18 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-import { ige } from "@/engine/instance";
-import { IgeVelocityComponent } from "@/engine/components/IgeVelocityComponent";
-import { IgeUiEntity } from "@/engine/core/IgeUiEntity";
-import { IgeAudioEntity } from "@/engine/audio";
-import { IgeUiWindow } from "@/engine/ui/IgeUiWindow";
-import { IgeUiButton } from "@/engine/ui/IgeUiButton";
-import { IgeUiElement } from "@/engine/core/IgeUiElement";
-import { IgeUiDropDown } from "@/engine/ui/IgeUiDropDown";
-import { IgeEntity } from "@/engine/core/IgeEntity";
-import { IgeScene2d } from "@/engine/core/IgeScene2d";
-import { degreesToRadians } from "@/engine/utils";
-import { IgeSceneGraph } from "@/engine/core/IgeSceneGraph";
+import { ige } from "../../../engine/instance.js";
+import { IgeVelocityComponent } from "../../../engine/components/IgeVelocityComponent.js";
+import { IgeUiEntity } from "../../../engine/core/IgeUiEntity.js";
+import { IgeAudioEntity } from "../../../engine/audio/index.js";
+import { IgeUiWindow } from "../../../engine/ui/IgeUiWindow.js";
+import { IgeUiButton } from "../../../engine/ui/IgeUiButton.js";
+import { IgeUiElement } from "../../../engine/core/IgeUiElement.js";
+import { IgeUiDropDown } from "../../../engine/ui/IgeUiDropDown.js";
+import { IgeEntity } from "../../../engine/core/IgeEntity.js";
+import { IgeScene2d } from "../../../engine/core/IgeScene2d.js";
+import { degreesToRadians } from "../../../engine/utils.js";
+import { IgeSceneGraph } from "../../../engine/core/IgeSceneGraph.js";
 export class SplashClientScene extends IgeSceneGraph {
     constructor() {
         super(...arguments);

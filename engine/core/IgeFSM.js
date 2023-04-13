@@ -7,7 +7,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-import { IgeBaseClass } from "@/engine/core/IgeBaseClass";
+import { IgeBaseClass } from "../../engine/core/IgeBaseClass.js";
 export class IgeFSM extends IgeBaseClass {
     /**
      * A simple finite state machine implementation.

@@ -7,12 +7,12 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-import { ige } from "@/engine/instance";
-import { BuildingType } from "../enums/BuildingType";
-import { createFactoryBuilding1, createFactoryBuilding2, createFlagBuilding, createHouseBuilding1, createMiningBuilding, createStorageBuilding } from "../services/createBuilding";
-import { newIdHex } from "@/engine/utils";
-import { Road } from "../entities/Road";
-import { Transporter } from "../entities/Transporter";
+import { ige } from "../../engine/instance.js";
+import { BuildingType } from "../enums/BuildingType.js";
+import { createFactoryBuilding1, createFactoryBuilding2, createFlagBuilding, createHouseBuilding1, createMiningBuilding, createStorageBuilding } from "../services/createBuilding.js";
+import { newIdHex } from "../../engine/utils.js";
+import { Road } from "../entities/Road.js";
+import { Transporter } from "../entities/Transporter.js";
 export const controllerServer = () => __awaiter(void 0, void 0, void 0, function* () {
     const tileMap1 = ige.$("tileMap1");
     const createBuilding = (data, clientId, requestCallback) => __awaiter(void 0, void 0, void 0, function* () {

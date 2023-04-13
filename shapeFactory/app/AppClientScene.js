@@ -7,20 +7,20 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-import { ige } from "@/engine/instance";
-import { IgeBaseScene } from "@/engine/core/IgeBaseScene";
-import { IgeOptions } from "@/engine/core/IgeOptions";
-import { IgeTexture } from "@/engine/core/IgeTexture";
-import { IgeSceneGraph } from "@/engine/core/IgeSceneGraph";
-import { IgeMousePanComponent } from "@/engine/components/IgeMousePanComponent";
-import { squareSmartTexture } from "../assets/textures/smartTextures/square";
-import { lineSmartTexture } from "../assets/textures/smartTextures/line";
-import { triangleSmartTexture } from "../assets/textures/smartTextures/triangle";
-import { circleSmartTexture } from "../assets/textures/smartTextures/circle";
-import { starSmartTexture } from "../assets/textures/smartTextures/star";
-import { flagSmartTexture } from "../assets/textures/smartTextures/flag";
-import { gridSmartTexture } from "../assets/textures/smartTextures/grid";
-import { IgeCellSheet } from "@/engine/core/IgeCellSheet";
+import { ige } from "../../engine/instance.js";
+import { IgeBaseScene } from "../../engine/core/IgeBaseScene.js";
+import { IgeOptions } from "../../engine/core/IgeOptions.js";
+import { IgeTexture } from "../../engine/core/IgeTexture.js";
+import { IgeSceneGraph } from "../../engine/core/IgeSceneGraph.js";
+import { IgeMousePanComponent } from "../../engine/components/IgeMousePanComponent.js";
+import { squareSmartTexture } from "../assets/textures/smartTextures/square.js";
+import { lineSmartTexture } from "../assets/textures/smartTextures/line.js";
+import { triangleSmartTexture } from "../assets/textures/smartTextures/triangle.js";
+import { circleSmartTexture } from "../assets/textures/smartTextures/circle.js";
+import { starSmartTexture } from "../assets/textures/smartTextures/star.js";
+import { flagSmartTexture } from "../assets/textures/smartTextures/flag.js";
+import { gridSmartTexture } from "../assets/textures/smartTextures/grid.js";
+import { IgeCellSheet } from "../../engine/core/IgeCellSheet.js";
 // @ts-ignore
 window.ige = ige;
 export class AppClientScene extends IgeSceneGraph {

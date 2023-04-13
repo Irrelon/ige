@@ -7,13 +7,13 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-import { ige } from "@/engine/instance";
-import { IgeSceneGraph } from "@/engine/core/IgeSceneGraph";
-import { IgeScene2d } from "@/engine/core/IgeScene2d";
-import { IgeUiElement } from "@/engine/core/IgeUiElement";
-import { ResourceType } from "../../enums/ResourceType";
-import { fillColorByResourceType } from "../../services/resource";
-import { UiBuildItem } from "../../entities/base/UiBuildItem";
+import { ige } from "../../../engine/instance.js";
+import { IgeSceneGraph } from "../../../engine/core/IgeSceneGraph.js";
+import { IgeScene2d } from "../../../engine/core/IgeScene2d.js";
+import { IgeUiElement } from "../../../engine/core/IgeUiElement.js";
+import { ResourceType } from "../../enums/ResourceType.js";
+import { fillColorByResourceType } from "../../services/resource.js";
+import { UiBuildItem } from "../../entities/base/UiBuildItem.js";
 export class UiClientScene extends IgeSceneGraph {
     addGraph() {
         return __awaiter(this, void 0, void 0, function* () {

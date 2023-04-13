@@ -1,6 +1,6 @@
-import { ige } from "@/engine/instance";
-import { Asteroid } from "../app/component/Asteroid";
-import { distance } from "@/engine/utils";
+import { ige } from "../../engine/instance.js";
+import { Asteroid } from "../app/component/Asteroid.js";
+import { distance } from "../../engine/utils.js";
 export const generateAsteroidBelt = function generateAsteroidBelt(beltX, beltY) {
     const asteroidArr = [];
     const maxDist = 900;

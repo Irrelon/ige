@@ -1,5 +1,5 @@
-import { newIdHex } from "@/engine/utils";
-import { IgeEventingClass } from "@/engine/core/IgeEventingClass";
+import { newIdHex } from "../../../../../engine/utils.js";
+import { IgeEventingClass } from "../../../../../engine/core/IgeEventingClass.js";
 class UiDialogs extends IgeEventingClass {
     constructor() {
         super(...arguments);

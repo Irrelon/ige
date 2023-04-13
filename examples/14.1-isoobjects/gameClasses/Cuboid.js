@@ -1,4 +1,4 @@
-import { IgeEntity } from "@/engine/core/IgeEntity";
+import { IgeEntity } from "../../../engine/core/IgeEntity.js";
 export class Cuboid extends IgeEntity {
     constructor(pointerMoveFunc, pointerOutFunc) {
         super();

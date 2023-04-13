@@ -1,4 +1,4 @@
-import { ige } from "@/engine/instance";
+import { ige } from "../../../engine/instance.js";
 ige.router.route("app.space", {
     client: {
         controller: "StationClient",

@@ -1,12 +1,12 @@
-import { ige } from "@/engine/instance";
-import { ResourceType } from "../enums/ResourceType";
-import { registerClass } from "@/engine/igeClassStore";
-import { IgeTimeout } from "@/engine/core/IgeTimeout";
-import { isClient, isServer } from "@/engine/clientServer";
-import { roadPathFinder } from "../services/roadPathFinder";
-import { distance } from "@/engine/utils";
-import { fillColorByResourceType } from "../services/resource";
-import { GameEntity } from "./base/GameEntity";
+import { ige } from "../../engine/instance.js";
+import { ResourceType } from "../enums/ResourceType.js";
+import { registerClass } from "../../engine/igeClassStore.js";
+import { IgeTimeout } from "../../engine/core/IgeTimeout.js";
+import { isClient, isServer } from "../../engine/clientServer.js";
+import { roadPathFinder } from "../services/roadPathFinder.js";
+import { distance } from "../../engine/utils.js";
+import { fillColorByResourceType } from "../services/resource.js";
+import { GameEntity } from "./base/GameEntity.js";
 export class Resource extends GameEntity {
     constructor(type, locationId) {
         super();

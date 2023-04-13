@@ -200,7 +200,7 @@ export declare const WithUiPositionMixin: <BaseClassType extends Mixin<IgeObject
         _hidden: boolean;
         _cache: boolean;
         _cacheCtx?: import("../../types/IgeCanvasRenderingContext2d").IgeCanvasRenderingContext2d | null | undefined;
-        _cacheCanvas?: import("../core/IgeDummyCanvas").IgeDummyCanvas | OffscreenCanvas | undefined;
+        _cacheCanvas?: OffscreenCanvas | import("../core/IgeDummyCanvas").IgeDummyCanvas | undefined;
         _cacheDirty: boolean;
         _cacheSmoothing: boolean;
         _aabbDirty: boolean;

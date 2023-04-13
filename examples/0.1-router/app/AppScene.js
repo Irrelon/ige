@@ -1,6 +1,6 @@
-import { IgeSceneGraph } from "@/engine/core/IgeSceneGraph";
-import { ige } from "@/engine/instance";
-import { IgeBaseScene } from "@/engine/core/IgeBaseScene";
+import { IgeSceneGraph } from "../../../engine/core/IgeSceneGraph.js";
+import { ige } from "../../../engine/instance.js";
+import { IgeBaseScene } from "../../../engine/core/IgeBaseScene.js";
 export class AppScene extends IgeSceneGraph {
     constructor() {
         super(...arguments);

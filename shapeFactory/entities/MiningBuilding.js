@@ -1,11 +1,11 @@
-import { registerClass } from "@/engine/igeClassStore";
-import { isClient } from "@/engine/clientServer";
-import { UiRequiresProducesDisplay } from "./UiRequiresProducesDisplay";
-import { ige } from "@/engine/instance";
-import { Building } from "./base/Building";
-import { IgeParticleEmitter } from "@/engine/core/IgeParticleEmitter";
-import { IgePoint3d } from "@/engine/core/IgePoint3d";
-import { SmokeParticle } from "./SmokeParticle";
+import { registerClass } from "../../engine/igeClassStore.js";
+import { isClient } from "../../engine/clientServer.js";
+import { UiRequiresProducesDisplay } from "./UiRequiresProducesDisplay.js";
+import { ige } from "../../engine/instance.js";
+import { Building } from "./base/Building.js";
+import { IgeParticleEmitter } from "../../engine/core/IgeParticleEmitter.js";
+import { IgePoint3d } from "../../engine/core/IgePoint3d.js";
+import { SmokeParticle } from "./SmokeParticle.js";
 export class MiningBuilding extends Building {
     constructor(tileX = NaN, tileY = NaN, produces, requires = []) {
         super();

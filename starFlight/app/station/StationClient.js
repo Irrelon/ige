@@ -1,4 +1,4 @@
-import { ige } from "@/engine/instance";
+import { ige } from "../../../engine/instance.js";
 const appCore = require('../../../ige');
 appCore.module('StationClient', function ($ige, $game, IgeStreamComponent) {
     const StationClient = function () {

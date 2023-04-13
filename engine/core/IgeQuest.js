@@ -1,5 +1,5 @@
-import { IgeEventingClass } from "./IgeEventingClass";
-import { registerClass } from "@/engine/igeClassStore";
+import { IgeEventingClass } from "./IgeEventingClass.js";
+import { registerClass } from "../../engine/igeClassStore.js";
 export class IgeQuest extends IgeEventingClass {
     constructor(questDefinition, completeCallback) {
         super();

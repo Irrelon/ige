@@ -1,10 +1,10 @@
-import { ige } from "@/engine/instance";
-import { IgeComponent } from "@/engine/core/IgeComponent";
-import { IgeMountMode } from "@/enums/IgeMountMode";
-import { IgeRect } from "@/engine/core/IgeRect";
-import { IgeBehaviourType } from "@/enums/IgeBehaviourType";
-import { IgeEntityRenderMode } from "@/enums/IgeEntityRenderMode";
-import { IgePoint3d } from "@/engine/core/IgePoint3d";
+import { ige } from "../../engine/instance.js";
+import { IgeComponent } from "../../engine/core/IgeComponent.js";
+import { IgeMountMode } from "../../enums/IgeMountMode.js";
+import { IgeRect } from "../../engine/core/IgeRect.js";
+import { IgeBehaviourType } from "../../enums/IgeBehaviourType.js";
+import { IgeEntityRenderMode } from "../../enums/IgeEntityRenderMode.js";
+import { IgePoint3d } from "../../engine/core/IgePoint3d.js";
 export class IgeEntityManagerComponent extends IgeComponent {
     /**
      * @constructor

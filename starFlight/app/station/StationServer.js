@@ -1,9 +1,9 @@
-import { PlayerShip } from "../component/PlayerShip";
-import { IgeInterval } from "@/engine/core/IgeInterval";
-import { Ore } from "../component/Ore";
-import { Asteroid } from "../component/Asteroid";
-import { distance } from "@/engine/utils";
-import { ige } from "@/engine/instance";
+import { PlayerShip } from "../component/PlayerShip.js";
+import { IgeInterval } from "../../../engine/core/IgeInterval.js";
+import { Ore } from "../component/Ore.js";
+import { Asteroid } from "../component/Asteroid.js";
+import { distance } from "../../../engine/utils.js";
+import { ige } from "../../../engine/instance.js";
 export class StationServer {
     constructor() {
         /**

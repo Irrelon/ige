@@ -1,11 +1,11 @@
-import { ige } from "@/engine/instance";
-import { isClient } from "@/engine/clientServer";
-import { IgePoint3d } from "@/engine/core/IgePoint3d";
-import { LaserEffect } from "./LaserEffect";
-import { MiningParticle } from "../particles/MiningParticle";
-import { IgeParticleEmitter } from "@/engine/core/IgeParticleEmitter";
-import { IgeAudioEntity } from "@/engine/audio";
-import { registerClass } from "@/engine/igeClassStore";
+import { ige } from "../../../../engine/instance.js";
+import { isClient } from "../../../../engine/clientServer.js";
+import { IgePoint3d } from "../../../../engine/core/IgePoint3d.js";
+import { LaserEffect } from "./LaserEffect.js";
+import { MiningParticle } from "../particles/MiningParticle.js";
+import { IgeParticleEmitter } from "../../../../engine/core/IgeParticleEmitter.js";
+import { IgeAudioEntity } from "../../../../engine/audio/index.js";
+import { registerClass } from "../../../../engine/igeClassStore.js";
 export class MiningLaserEffect extends LaserEffect {
     constructor(data = {}) {
         super(data);

@@ -1,6 +1,6 @@
-import { ige } from "@/engine/instance";
-import { Module_Ability } from "./Module_Ability";
-import { registerClass } from "@/engine/igeClassStore";
+import { ige } from "../../../../engine/instance.js";
+import { Module_Ability } from "./Module_Ability.js";
+import { registerClass } from "../../../../engine/igeClassStore.js";
 export class Module_MiningLaser extends Module_Ability {
     constructor() {
         super(...arguments);

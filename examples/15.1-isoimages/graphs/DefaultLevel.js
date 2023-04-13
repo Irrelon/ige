@@ -7,11 +7,11 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-import { ige } from "@/engine/instance";
-import { IgeTileMap2d } from "@/engine/core/IgeTileMap2d";
-import { IgeSceneGraph } from "@/engine/core/IgeSceneGraph";
-import { IgeScene2d } from "@/engine/core/IgeScene2d";
-import { registerClass } from "@/engine/igeClassStore";
+import { ige } from "../../../engine/instance.js";
+import { IgeTileMap2d } from "../../../engine/core/IgeTileMap2d.js";
+import { IgeSceneGraph } from "../../../engine/core/IgeSceneGraph.js";
+import { IgeScene2d } from "../../../engine/core/IgeScene2d.js";
+import { registerClass } from "../../../engine/igeClassStore.js";
 export class DefaultLevel extends IgeSceneGraph {
     constructor() {
         super(...arguments);

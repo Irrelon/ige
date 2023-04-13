@@ -7,12 +7,12 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-import { ige } from "@/engine/instance";
-import { starFieldSmartTexture } from "../../assets/backgrounds/starFieldSmartTexture";
-import { nebulaFieldSmartTexture } from "../../assets/backgrounds/nebulaFieldSmartTexture";
-import { igeButton } from "../../assets/ui/igeButton";
-import { IgeTexture } from "@/engine/core/IgeTexture";
-import { SplashClientScene } from "./SplashClientScene";
+import { ige } from "../../../engine/instance.js";
+import { starFieldSmartTexture } from "../../assets/backgrounds/starFieldSmartTexture.js";
+import { nebulaFieldSmartTexture } from "../../assets/backgrounds/nebulaFieldSmartTexture.js";
+import { igeButton } from "../../assets/ui/igeButton.js";
+import { IgeTexture } from "../../../engine/core/IgeTexture.js";
+import { SplashClientScene } from "./SplashClientScene.js";
 ige.router.route('app/splash', {
     client: () => __awaiter(void 0, void 0, void 0, function* () {
         const textures = [

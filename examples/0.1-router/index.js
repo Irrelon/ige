@@ -1,5 +1,5 @@
-import { ige } from "@/engine/instance";
-import "./app/_route";
+import { ige } from "../../engine/instance.js";
+import "./app/_route.js";
 export class Game {
     constructor() {
         this.classId = "Game";

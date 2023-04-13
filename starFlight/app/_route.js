@@ -7,15 +7,15 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-import { ige } from "@/engine/instance";
-import { IgeTexture } from "@/engine/core/IgeTexture";
-import { AppClientScene } from "./AppClientScene";
-import { AppServerScene } from "./AppServerScene";
-import { tab } from "../assets/ui/tab";
-import { timerCircle } from "../assets/ui/timerCircle";
-import { infoWindow } from "../assets/ui/infoWindow";
-import "./space/_route";
-import "./splash/_route";
+import { ige } from "../../engine/instance.js";
+import { IgeTexture } from "../../engine/core/IgeTexture.js";
+import { AppClientScene } from "./AppClientScene.js";
+import { AppServerScene } from "./AppServerScene.js";
+import { tab } from "../assets/ui/tab.js";
+import { timerCircle } from "../assets/ui/timerCircle.js";
+import { infoWindow } from "../assets/ui/infoWindow.js";
+import "./space/_route.js";
+import "./splash/_route.js";
 ige.router.route("app", {
     client: () => __awaiter(void 0, void 0, void 0, function* () {
         // @ts-ignore

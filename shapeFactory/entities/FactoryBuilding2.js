@@ -1,9 +1,9 @@
-import { registerClass } from "@/engine/igeClassStore";
-import { isClient } from "@/engine/clientServer";
-import { UiRequiresProducesDisplay } from "./UiRequiresProducesDisplay";
-import { Building } from "./base/Building";
-import { ige } from "@/engine/instance";
-import { IgePoint2d } from "@/engine/core/IgePoint2d";
+import { registerClass } from "../../engine/igeClassStore.js";
+import { isClient } from "../../engine/clientServer.js";
+import { UiRequiresProducesDisplay } from "./UiRequiresProducesDisplay.js";
+import { Building } from "./base/Building.js";
+import { ige } from "../../engine/instance.js";
+import { IgePoint2d } from "../../engine/core/IgePoint2d.js";
 export class FactoryBuilding2 extends Building {
     constructor(tileX = NaN, tileY = NaN, produces, requires = []) {
         super();

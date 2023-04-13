@@ -1,4 +1,4 @@
-import { ige } from "../instance";
+import { ige } from "../instance.js";
 export const WithUiPositionMixin = (Base) => class extends Base {
     /**
      * Gets / sets the entity's x position relative to the left of

@@ -7,10 +7,10 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-import { ige } from "@/engine/instance";
-import { Level1Scene } from "./Level1Scene";
-import { IgeTexture } from "@/engine/core/IgeTexture";
-import simpleBox from "../../assets/textures/smartTextures/simpleBox";
+import { ige } from "../../../../engine/instance.js";
+import { Level1Scene } from "./Level1Scene.js";
+import { IgeTexture } from "../../../../engine/core/IgeTexture.js";
+import simpleBox from "../../assets/textures/smartTextures/simpleBox.js";
 ige.router.route("app/level1", {
     client: () => __awaiter(void 0, void 0, void 0, function* () {
         // Load the game textures

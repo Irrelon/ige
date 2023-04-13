@@ -7,11 +7,11 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-import { ige } from "@/engine/instance";
-import { Level1 } from "./Level1";
-import { UiClientScene } from "./UiClientScene";
-import { controllerClient } from "../controllerClient";
-import { controllerServer } from "../controllerServer";
+import { ige } from "../../../engine/instance.js";
+import { Level1 } from "./Level1.js";
+import { UiClientScene } from "./UiClientScene.js";
+import { controllerClient } from "../controllerClient.js";
+import { controllerServer } from "../controllerServer.js";
 ige.router.route("app/level1", {
     client: () => __awaiter(void 0, void 0, void 0, function* () {
         // Add all the items in Scene1 to the scenegraph
