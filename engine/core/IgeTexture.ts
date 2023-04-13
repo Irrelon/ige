@@ -120,6 +120,7 @@ export class IgeTexture extends IgeAsset {
 		return this._url;
 	}
 
+
 	/**
 	 * Loads an image into an img tag and sets an onload event
 	 * to capture when the image has finished loading.
@@ -132,86 +133,87 @@ export class IgeTexture extends IgeAsset {
 			return false;
 		}
 
-		this.dependencies.waitFor(["IgeImageClass"], () => {
-			if (!ige.textures._textureImageStore[imageUrl]) {
+		if (!ige.textures._textureImageStore[imageUrl]) {
 
-				fetch(imageUrl)
-					.then(resp => resp.blob())
-					.then(blob => createImageBitmap(blob))
-					.then(image => {
-						ige.textures._textureImageStore[imageUrl] = this.image = this._originalImage = image;
-						image._igeTextures = image._igeTextures || [];
+			fetch(imageUrl)
+				.then(resp => resp.blob())
+				.then(blob => createImageBitmap(blob))
+				.then(image => {
+					ige.textures._textureImageStore[imageUrl] = this.image = this._originalImage = image;
+					image._igeTextures = image._igeTextures || [];
 
-						// Add this texture to the textures that are using this image
-						image._igeTextures.push(this);
-						// Mark the image as loaded
-						image._loaded = true;
+					// Add this texture to the textures that are using this image
+					image._igeTextures.push(this);
+					// Mark the image as loaded
+					image._loaded = true;
 
-						// Log success
-						this.log("Texture image (" + imageUrl + ") loaded successfully");
+					// Log success
+					this.log("Texture image (" + imageUrl + ") loaded successfully");
 
-						/*if (image.width % 2) {
-								self.log('The texture ' + imageUrl + ' width (' + image.width + ') is not divisible by 2 to a whole number! This can cause rendering artifacts. It can also cause performance issues on some GPUs. Please make sure your texture width is divisible by 2!', 'warning');
-							}
-
-							if (image.height % 2) {
-								self.log('The texture ' + imageUrl + ' height (' + image.height + ') is not divisible by 2 to a whole number! This can cause rendering artifacts. It can also cause performance issues on some GPUs. Please make sure your texture height is divisible by 2!', 'warning');
-							}*/
-
-						// Loop textures that are using this image
-						const arr = image._igeTextures;
-						const arrCount = arr.length;
-
-
-						for (let i = 0; i < arrCount; i++) {
-							const item = arr[i];
-
-							item._renderMode = IgeTextureRenderMode.image;
-
-							item.sizeX(image.width);
-							item.sizeY(image.height);
-
-							item._cells[1] = [0, 0, item._sizeX, item._sizeY];
+					/*if (image.width % 2) {
+							self.log('The texture ' + imageUrl + ' width (' + image.width + ') is not divisible by 2 to a whole number! This can cause rendering artifacts. It can also cause performance issues on some GPUs. Please make sure your texture width is divisible by 2!', 'warning');
 						}
-					});
-			} else {
-				// Grab the cached image object
-				const image = this.image = this._originalImage = ige.textures._textureImageStore[imageUrl];
 
-				// Add this texture to the textures that are using this image
-				image._igeTextures.push(this);
+						if (image.height % 2) {
+							self.log('The texture ' + imageUrl + ' height (' + image.height + ') is not divisible by 2 to a whole number! This can cause rendering artifacts. It can also cause performance issues on some GPUs. Please make sure your texture height is divisible by 2!', 'warning');
+						}*/
 
-				if (image._loaded) {
-					// The cached image object is already loaded so
-					// fire off the relevant events
-					this._renderMode = IgeTextureRenderMode.image;
+					// Loop textures that are using this image
+					const arr = image._igeTextures;
+					const arrCount = arr.length;
 
-					this.sizeX(image.width);
-					this.sizeY(image.height);
 
-					if (image.width % 2) {
-						this.log(
-							"This texture's width is not divisible by 2 which will cause the texture to use sub-pixel rendering resulting in a blurred image. This may also slow down the renderer on some browsers. Image file: " +
-							this._url,
-							"warning"
-						);
+					for (let i = 0; i < arrCount; i++) {
+						const item = arr[i];
+
+						item._renderMode = IgeTextureRenderMode.image;
+
+						item.sizeX(image.width);
+						item.sizeY(image.height);
+
+						item._cells[1] = [0, 0, item._sizeX, item._sizeY];
 					}
-
-					if (image.height % 2) {
-						this.log(
-							"This texture's height is not divisible by 2 which will cause the texture to use sub-pixel rendering resulting in a blurred image. This may also slow down the renderer on some browsers. Image file: " +
-							this._url,
-							"warning"
-						);
-					}
-
-					this._cells[1] = [0, 0, this._sizeX, this._sizeY];
 
 					// Mark texture as loaded
 					this._textureLoaded();
+				});
+		} else {
+			// Grab the cached image object
+			const image = this.image = this._originalImage = ige.textures._textureImageStore[imageUrl];
+
+			// Add this texture to the textures that are using this image
+			image._igeTextures.push(this);
+
+			if (image._loaded) {
+				// The cached image object is already loaded so
+				// fire off the relevant events
+				this._renderMode = IgeTextureRenderMode.image;
+
+				this.sizeX(image.width);
+				this.sizeY(image.height);
+
+				if (image.width % 2) {
+					this.log(
+						"This texture's width is not divisible by 2 which will cause the texture to use sub-pixel rendering resulting in a blurred image. This may also slow down the renderer on some browsers. Image file: " +
+						this._url,
+						"warning"
+					);
 				}
+
+				if (image.height % 2) {
+					this.log(
+						"This texture's height is not divisible by 2 which will cause the texture to use sub-pixel rendering resulting in a blurred image. This may also slow down the renderer on some browsers. Image file: " +
+						this._url,
+						"warning"
+					);
+				}
+
+				this._cells[1] = [0, 0, this._sizeX, this._sizeY];
+
+				// Mark texture as loaded
+				this._textureLoaded();
 			}
-		});
+		}
 
 	}
 
@@ -303,11 +305,9 @@ export class IgeTexture extends IgeAsset {
 	 * @private
 	 */
 	_setImage (imageElement: IgeImage) {
-		let image;
-
 		if (isClient) {
 			// Create the image object
-			image = this.image = this._originalImage = imageElement;
+			const image = this.image = this._originalImage = imageElement;
 
 			// Mark the image as loaded
 			image._loaded = true;
