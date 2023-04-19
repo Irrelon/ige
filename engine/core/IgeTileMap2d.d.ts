@@ -25,7 +25,8 @@ export declare class IgeTileMap2d extends IgeEntity {
     _gridSize: IgePoint2d;
     _hoverColor?: string;
     map: IgeMap2d;
-    constructor(tileWidth?: number, tileHeight?: number);
+    heightMap: IgeMap2d;
+    constructor(tileWidth?: number, tileHeight?: number, tileDepth?: number);
     /**
      * Gets / sets the flag that determines if the tile map will paint the
      * occupied tiles with an overlay colour so that it is easy to spot them.
@@ -50,6 +51,13 @@ export declare class IgeTileMap2d extends IgeEntity {
      */
     tileHeight(val: number): this;
     tileHeight(): number;
+    /**
+     * Gets / sets the map's tile depth (z axis).
+     * @param {number} val Tile depth.
+     * @return {*}
+     */
+    tileDepth(val: number): this;
+    tileDepth(): number;
     gridSize(x: number, y: number): this;
     gridSize(): IgePoint2d;
     /**

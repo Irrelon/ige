@@ -124,6 +124,7 @@ export declare const WithUiStyleMixin: <BaseClassType extends Mixin<IgeObject>>(
         _transformChanged: boolean;
         _tileWidth: number;
         _tileHeight: number;
+        _tileDepth: number;
         _orphans?: IgeObject[] | undefined;
         _specialProp: string[];
         _streamMode?: import("../../enums/IgeStreamMode").IgeStreamMode | undefined;
@@ -156,7 +157,7 @@ export declare const WithUiStyleMixin: <BaseClassType extends Mixin<IgeObject>>(
         _depthSortMode: import("../../enums/IgeIsometricDepthSortMode").IgeIsometricDepthSortMode;
         _inView: boolean;
         _managed: number;
-        _triggerPolygonFunctionName: "localBounds3dPolygon" | "bounds3dPolygon" | "aabb";
+        _triggerPolygonFunctionName: "aabb" | "bounds3dPolygon" | "localBounds3dPolygon" | "customTriggerPolygon";
         _compositeCache: boolean;
         _compositeParent: boolean;
         _anchor: import("../core/IgePoint2d").IgePoint2d;

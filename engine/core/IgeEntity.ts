@@ -52,6 +52,8 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 		return this._children.sort(compareFn);
 	};
 
+	customTriggerPolygon: () => IgePolygonFunctionality = () => new IgeRect();
+
 	constructor () {
 		super();
 
@@ -390,8 +392,8 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 		return this._backgroundPattern;
 	}
 
-	smartBackground(): IgeSmartTexture | undefined;
-	smartBackground(renderMethod?: IgeSmartTexture): this;
+	smartBackground (): IgeSmartTexture | undefined;
+	smartBackground (renderMethod?: IgeSmartTexture): this;
 	smartBackground (renderMethod?: IgeSmartTexture) {
 		if (renderMethod !== undefined) {
 			this._smartBackground = renderMethod;
@@ -602,8 +604,8 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 	 * @return {*} "this" when arguments are passed to allow method
 	 * chaining or the current value if no arguments are specified.
 	 */
-	anchor(x: number, y: number): this;
-	anchor(): IgePoint2d;
+	anchor (x: number, y: number): this;
+	anchor (): IgePoint2d;
 	anchor (x?: number, y?: number) {
 		if (x !== undefined && y !== undefined) {
 			this._anchor = new IgePoint2d(x, y);
@@ -622,10 +624,10 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 	 * @return {*} "this" when arguments are passed to allow method
 	 * chaining or the current value if no arguments are specified.
 	 */
-	width(px: number | string, lockAspect?: boolean): this;
-	width(px: number | string, lockAspect: boolean): this;
+	width (px: number | string, lockAspect?: boolean): this;
+	width (px: number | string, lockAspect: boolean): this;
 	// @ts-ignore
-	width(): number | string;
+	width (): number | string;
 	width (px?: number | string, lockAspect = false) {
 		if (px === undefined) {
 			return this._bounds2d.x;
@@ -655,8 +657,8 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 	 * @return {*} "this" when arguments are passed to allow method
 	 * chaining or the current value if no arguments are specified.
 	 */
-	height(px: number | string, lockAspect?: boolean): this;
-	height(): number;
+	height (px: number | string, lockAspect?: boolean): this;
+	height (): number;
 	height (px?: number | string, lockAspect = false) {
 		if (px === undefined) {
 			return this._bounds2d.y;
@@ -690,9 +692,9 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 	 * @return {*} "this" when arguments are passed to allow method
 	 * chaining or the current value if no arguments are specified.
 	 */
-	bounds2d(x: number, y: number): this;
-	bounds2d(): IgePoint2d;
-	bounds2d(x: IgePoint2d): this;
+	bounds2d (x: number, y: number): this;
+	bounds2d (): IgePoint2d;
+	bounds2d (x: IgePoint2d): this;
 	bounds2d (x?: number | IgePoint2d, y?: number) {
 		if (x !== undefined && y !== undefined && typeof x === "number") {
 			this._bounds2d = new IgePoint2d(x, y);
@@ -722,8 +724,8 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 	 * @return {*} "this" when arguments are passed to allow method
 	 * chaining or the current value if no arguments are specified.
 	 */
-	bounds3d(x: number, y: number, z: number): this;
-	bounds3d(): IgePoint3d;
+	bounds3d (x: number, y: number, z: number): this;
+	bounds3d (): IgePoint3d;
 	bounds3d (x?: number, y?: number, z?: number) {
 		if (x !== undefined && y !== undefined && z !== undefined) {
 			this._bounds3d = new IgePoint3d(x, y, z);
@@ -746,9 +748,9 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 	 * @return {*} "this" when arguments are passed to allow method
 	 * chaining or the current value if no arguments are specified.
 	 */
-	lifeSpan(milliseconds: number, deathCallback: (...args: any[]) => void): this;
-	lifeSpan(): number;
-	lifeSpan(milliseconds: number): this;
+	lifeSpan (milliseconds: number, deathCallback: (...args: any[]) => void): this;
+	lifeSpan (): number;
+	lifeSpan (milliseconds: number): this;
 	lifeSpan (milliseconds?: number, deathCallback?: (...args: any[]) => void) {
 		if (milliseconds !== undefined) {
 			this.deathTime(ige.engine._currentTime + milliseconds, deathCallback);
@@ -774,9 +776,9 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 	 * @return {*} "this" when arguments are passed to allow method
 	 * chaining or the current value if no arguments are specified.
 	 */
-	deathTime(val: number, deathCallback?: (...args: any[]) => void): this;
-	deathTime(): number | undefined;
-	deathTime(val: number): this;
+	deathTime (val: number, deathCallback?: (...args: any[]) => void): this;
+	deathTime (): number | undefined;
+	deathTime (val: number): this;
 	deathTime (val?: number, deathCallback?: (...args: any[]) => void) {
 		if (val !== undefined) {
 			this._deathTime = val;
@@ -800,8 +802,8 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 	 * @return {*} "this" when arguments are passed to allow method
 	 * chaining or the current value if no arguments are specified.
 	 */
-	opacity(val: number): this;
-	opacity(): number;
+	opacity (val: number): this;
+	opacity (): number;
 	opacity (val?: number) {
 		if (val !== undefined) {
 			this._opacity = val;
@@ -821,8 +823,8 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 	 * @param {Boolean=} val If set to true will turn off AABB calculation.
 	 * @returns {*}
 	 */
-	noAabb(val: boolean): this;
-	noAabb(): boolean | undefined;
+	noAabb (val: boolean): this;
+	noAabb (): boolean | undefined;
 	noAabb (val?: boolean) {
 		if (val !== undefined) {
 			this._noAabb = val;
@@ -841,8 +843,8 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 	 * @return {*} "this" when arguments are passed to allow method
 	 * chaining or the current value if no arguments are specified.
 	 */
-	texture(texture: IgeTexture): this;
-	texture(): IgeTexture | undefined;
+	texture (texture: IgeTexture): this;
+	texture (): IgeTexture | undefined;
 	texture (texture?: IgeTexture) {
 		if (texture !== undefined) {
 			this._texture = texture;
@@ -864,8 +866,8 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 	 * @return {*} "this" when arguments are passed to allow method
 	 * chaining or the current value if no arguments are specified.
 	 */
-	cell(val: number | null): this;
-	cell(): number | null;
+	cell (val: number | null): this;
+	cell (): number | null;
 	cell (val?: number | null) {
 		if (val !== undefined && (val === null || val > 0)) {
 			this._cell = val;
@@ -895,8 +897,8 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 	 * @return {*} "this" when arguments are passed to allow method
 	 * chaining or the current value if no arguments are specified.
 	 */
-	cellById(val: string | number): this;
-	cellById(): number | null;
+	cellById (val: string | number): this;
+	cellById (): number | null;
 	cellById (val?: string | number) {
 		if (val !== undefined) {
 			if (this._texture) {
@@ -1090,7 +1092,7 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 		poly.addPoint(x + ancX, y + ancY);
 		poly.addPoint(-x + ancX, y + ancY);
 
-		this._renderPos = { x: -x + ancX, y: -y + ancY };
+		this._renderPos = {x: -x + ancX, y: -y + ancY};
 
 		// Convert the poly's points from local space to world space
 		this.localToWorld(poly._poly, null, inverse);
@@ -1303,8 +1305,8 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 	 * @return {*} "this" when arguments are passed to allow method
 	 * chaining or the current value if no arguments are specified.
 	 */
-	pointerEventsActive(val: boolean): this;
-	pointerEventsActive(): boolean;
+	pointerEventsActive (val: boolean): this;
+	pointerEventsActive (): boolean;
 	pointerEventsActive (val?: boolean) {
 		if (val !== undefined) {
 			this._pointerEventsActive = val;
@@ -1384,8 +1386,8 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 		}
 	}
 
-	pointerAlwaysInside(val: boolean): this;
-	pointerAlwaysInside(): boolean;
+	pointerAlwaysInside (val: boolean): this;
+	pointerAlwaysInside (): boolean;
 	pointerAlwaysInside (val?: boolean) {
 		if (val !== undefined) {
 			this._pointerAlwaysInside = val;
@@ -1739,71 +1741,71 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 		for (const i in this) {
 			if (this.hasOwnProperty(i) && this[i] !== undefined) {
 				switch (i) {
-				case "_opacity":
-					str += `.opacity(${this.opacity()})`;
-					break;
-				case "_texture":
-					const tmpTexture = this.texture();
-					if (tmpTexture) {
-						str += `.texture(ige.$('${tmpTexture.id()}'))`;
-					}
-					break;
-				case "_cell":
-					str += ".cell(" + this.cell() + ")";
-					break;
-				case "_translate":
-					if (options.transform && options.translate) {
-						str += `.translateTo(${this._translate.x}, ${this._translate.y}, ${this._translate.z})`;
-					}
-					break;
-				case "_rotate":
-					if (options.transform && options.rotate) {
-						str += `.rotateTo(${this._rotate.x}, ${this._rotate.y}, ${this._rotate.z})`;
-					}
-					break;
-				case "_scale":
-					if (options.transform && options.scale) {
-						str += `.scaleTo(${this._scale.x}, ${this._scale.y}, ${this._scale.z})`;
-					}
-					break;
-				case "_origin":
-					if (options.origin) {
-						str += `.originTo(${this._origin.x}, ${this._origin.y}, ${this._origin.z})`;
-					}
-					break;
-				case "_anchor":
-					if (options.anchor) {
-						str += `.anchor(${this._anchor.x}, ${this._anchor.y})`;
-					}
-					break;
-				case "_width":
-					if (typeof this.width() === "string") {
-						str += `.width('${this.width()}')`;
-					} else {
-						str += `.width(${this.width()})`;
-					}
-					break;
-				case "_height":
-					if (typeof this.height() === "string") {
-						str += `.height('${this.height()}')`;
-					} else {
-						str += `.height(${this.height()})`;
-					}
-					break;
-				case "_bounds3d":
-					str += `.bounds3d(${this._bounds3d.x}, ${this._bounds3d.y}, ${this._bounds3d.z})`;
-					break;
-				case "_deathTime":
-					if (options.deathTime && options.lifeSpan) {
-						str += `.deathTime(${this.deathTime()})`;
-					}
-					break;
-				case "_highlight":
-					str += `.highlight(${this.highlight()})`;
-					break;
-				case "_renderMode":
-					str += ".mode(" + this._renderMode + ")";
-					break;
+					case "_opacity":
+						str += `.opacity(${this.opacity()})`;
+						break;
+					case "_texture":
+						const tmpTexture = this.texture();
+						if (tmpTexture) {
+							str += `.texture(ige.$('${tmpTexture.id()}'))`;
+						}
+						break;
+					case "_cell":
+						str += ".cell(" + this.cell() + ")";
+						break;
+					case "_translate":
+						if (options.transform && options.translate) {
+							str += `.translateTo(${this._translate.x}, ${this._translate.y}, ${this._translate.z})`;
+						}
+						break;
+					case "_rotate":
+						if (options.transform && options.rotate) {
+							str += `.rotateTo(${this._rotate.x}, ${this._rotate.y}, ${this._rotate.z})`;
+						}
+						break;
+					case "_scale":
+						if (options.transform && options.scale) {
+							str += `.scaleTo(${this._scale.x}, ${this._scale.y}, ${this._scale.z})`;
+						}
+						break;
+					case "_origin":
+						if (options.origin) {
+							str += `.originTo(${this._origin.x}, ${this._origin.y}, ${this._origin.z})`;
+						}
+						break;
+					case "_anchor":
+						if (options.anchor) {
+							str += `.anchor(${this._anchor.x}, ${this._anchor.y})`;
+						}
+						break;
+					case "_width":
+						if (typeof this.width() === "string") {
+							str += `.width('${this.width()}')`;
+						} else {
+							str += `.width(${this.width()})`;
+						}
+						break;
+					case "_height":
+						if (typeof this.height() === "string") {
+							str += `.height('${this.height()}')`;
+						} else {
+							str += `.height(${this.height()})`;
+						}
+						break;
+					case "_bounds3d":
+						str += `.bounds3d(${this._bounds3d.x}, ${this._bounds3d.y}, ${this._bounds3d.z})`;
+						break;
+					case "_deathTime":
+						if (options.deathTime && options.lifeSpan) {
+							str += `.deathTime(${this.deathTime()})`;
+						}
+						break;
+					case "_highlight":
+						str += `.highlight(${this.highlight()})`;
+						break;
+					case "_renderMode":
+						str += ".mode(" + this._renderMode + ")";
+						break;
 				}
 			}
 		}
@@ -1823,8 +1825,8 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 	 *         .isometric(false);
 	 * @return {*}
 	 */
-	isometric(val: boolean): this;
-	isometric(): boolean;
+	isometric (val: boolean): this;
+	isometric (): boolean;
 	isometric (val?: boolean): boolean | this {
 		if (val !== undefined) {
 			// TODO: When setting to true, do we also want to automatically set
@@ -2073,8 +2075,8 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 	 *     });
 	 * @return {*}
 	 */
-	pointerOver(callback: IgeInputEvent | null): this;
-	pointerOver(): IgeInputEvent;
+	pointerOver (callback: IgeInputEvent | null): this;
+	pointerOver (): IgeInputEvent;
 	pointerOver (callback?: IgeInputEvent | null) {
 		if (callback !== undefined) {
 			if (callback === null) {
@@ -2107,8 +2109,8 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 	 *     });
 	 * @return {*}
 	 */
-	pointerOut(callback: IgeInputEvent | null): this;
-	pointerOut(): IgeInputEvent;
+	pointerOut (callback: IgeInputEvent | null): this;
+	pointerOut (): IgeInputEvent;
 	pointerOut (callback?: IgeInputEvent | null) {
 		if (callback !== undefined) {
 			if (callback === null) {
@@ -2292,9 +2294,9 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 	 * used when determining if a pointer event occurs on this entity.
 	 * @param poly
 	 */
-	triggerPolygonFunctionName(poly: "aabb" | "bounds3dPolygon" | "localBounds3dPolygon"): this;
-	triggerPolygonFunctionName(): "aabb" | "bounds3dPolygon" | "localBounds3dPolygon";
-	triggerPolygonFunctionName (setting?: "aabb" | "bounds3dPolygon" | "localBounds3dPolygon") {
+	triggerPolygonFunctionName (poly: "aabb" | "bounds3dPolygon" | "localBounds3dPolygon" | "customTriggerPolygon"): this;
+	triggerPolygonFunctionName (): "aabb" | "bounds3dPolygon" | "localBounds3dPolygon" | "customTriggerPolygon";
+	triggerPolygonFunctionName (setting?: "aabb" | "bounds3dPolygon" | "localBounds3dPolygon" | "customTriggerPolygon") {
 		if (setting !== undefined) {
 			this._triggerPolygonFunctionName = setting;
 			return this;
@@ -2649,14 +2651,14 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 
 			// Handle being passed a z co-ordinate
 			if (z !== undefined) {
-				finalZ = z * this._parent._tileWidth;
+				finalZ = z * this._parent._tileDepth;
 			} else {
 				finalZ = this._translate.z;
 			}
 
 			this.translateTo(
 				x * this._parent._tileWidth + this._parent._tileWidth / 2,
-				y * this._parent._tileHeight + this._parent._tileWidth / 2,
+				y * this._parent._tileHeight + this._parent._tileHeight / 2,
 				finalZ
 			);
 		} else {
@@ -2667,6 +2669,34 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 		}
 
 		return this;
+	}
+
+	tileX () {
+		if (this._parent && this._parent._tileWidth !== undefined) {
+			return Math.floor(this._translate.x / this._parent._tileWidth);
+		}
+	}
+
+	tileY () {
+		if (this._parent && this._parent._tileHeight !== undefined) {
+			return Math.floor(this._translate.y / this._parent._tileHeight);
+		}
+	}
+
+
+	tileZ (): number;
+
+	tileZ (val: number): this;
+
+	tileZ (val?: number) {
+		if (this._parent && val !== undefined) {
+			this._translate.z = val * this._parent._tileDepth;
+			return this;
+		}
+
+		if (this._parent && this._parent._tileDepth !== undefined) {
+			return this._translate.z / this._parent._tileDepth;
+		}
 	}
 
 	/**
@@ -3368,69 +3398,69 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 	 */
 	streamSectionData (sectionId: string, data?: string, bypassTimeStream: boolean = false, bypassChangeDetection: boolean = false): string | undefined {
 		switch (sectionId) {
-		case "bounds2d":
-			if (data !== undefined) {
-				if (isClient) {
-					const geom = data.split(",");
-					this.bounds2d(parseFloat(geom[0]), parseFloat(geom[1]));
-				}
-			} else {
-				return String(this._bounds2d.x + "," + this._bounds2d.y);
-			}
-			break;
-
-		case "bounds3d":
-			if (data !== undefined) {
-				if (isClient) {
-					const geom = data.split(",");
-					this.bounds3d(parseFloat(geom[0]), parseFloat(geom[1]), parseFloat(geom[2]));
-				}
-			} else {
-				return String(this._bounds3d.x + "," + this._bounds3d.y + "," + this._bounds3d.z);
-			}
-			break;
-
-		case "hidden":
-			if (data !== undefined) {
-				if (isClient) {
-					if (data === "true") {
-						this.hide();
-					} else {
-						this.show();
+			case "bounds2d":
+				if (data !== undefined) {
+					if (isClient) {
+						const geom = data.split(",");
+						this.bounds2d(parseFloat(geom[0]), parseFloat(geom[1]));
 					}
+				} else {
+					return String(this._bounds2d.x + "," + this._bounds2d.y);
 				}
-			} else {
-				return String(this.isHidden());
-			}
-			break;
+				break;
 
-		case "width":
-			if (data !== undefined) {
-				if (isClient) {
-					this.width(parseInt(data));
+			case "bounds3d":
+				if (data !== undefined) {
+					if (isClient) {
+						const geom = data.split(",");
+						this.bounds3d(parseFloat(geom[0]), parseFloat(geom[1]), parseFloat(geom[2]));
+					}
+				} else {
+					return String(this._bounds3d.x + "," + this._bounds3d.y + "," + this._bounds3d.z);
 				}
-			} else {
-				return String(this.width());
-			}
-			break;
+				break;
 
-		case "height":
-			if (data !== undefined) {
-				if (isClient) {
-					this.height(parseInt(data));
+			case "hidden":
+				if (data !== undefined) {
+					if (isClient) {
+						if (data === "true") {
+							this.hide();
+						} else {
+							this.show();
+						}
+					}
+				} else {
+					return String(this.isHidden());
 				}
-			} else {
-				return String(this.height());
-			}
-			break;
+				break;
 
-		default:
-			return super.streamSectionData(
-				sectionId,
-				data,
-				bypassTimeStream,
-				bypassChangeDetection
-			);
+			case "width":
+				if (data !== undefined) {
+					if (isClient) {
+						this.width(parseInt(data));
+					}
+				} else {
+					return String(this.width());
+				}
+				break;
+
+			case "height":
+				if (data !== undefined) {
+					if (isClient) {
+						this.height(parseInt(data));
+					}
+				} else {
+					return String(this.height());
+				}
+				break;
+
+			default:
+				return super.streamSectionData(
+					sectionId,
+					data,
+					bypassTimeStream,
+					bypassChangeDetection
+				);
 		}
 	}
 }

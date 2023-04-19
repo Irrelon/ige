@@ -33,6 +33,7 @@ export declare class IgeEntity extends IgeObject implements IgeCanRegisterById, 
     };
     _textureOffset?: IgePoint2d;
     _sortChildren: ((comparatorFunction: (a: any, b: any) => number) => void);
+    customTriggerPolygon: () => IgePolygonFunctionality;
     constructor();
     /**
      * Calculates the distance to the passed entity from this one.
@@ -806,8 +807,8 @@ export declare class IgeEntity extends IgeObject implements IgeCanRegisterById, 
      * used when determining if a pointer event occurs on this entity.
      * @param poly
      */
-    triggerPolygonFunctionName(poly: "aabb" | "bounds3dPolygon" | "localBounds3dPolygon"): this;
-    triggerPolygonFunctionName(): "aabb" | "bounds3dPolygon" | "localBounds3dPolygon";
+    triggerPolygonFunctionName(poly: "aabb" | "bounds3dPolygon" | "localBounds3dPolygon" | "customTriggerPolygon"): this;
+    triggerPolygonFunctionName(): "aabb" | "bounds3dPolygon" | "localBounds3dPolygon" | "customTriggerPolygon";
     /**
      * Will return the polygon used when determining if a pointer event occurs
      * on this entity.
@@ -925,6 +926,10 @@ export declare class IgeEntity extends IgeObject implements IgeCanRegisterById, 
      * method chaining.
      */
     translateToTile(x: number, y: number, z: number): this;
+    tileX(): number | undefined;
+    tileY(): number | undefined;
+    tileZ(): number;
+    tileZ(val: number): this;
     /**
      * Gets the `translate` accessor object.
      * @example #Use the `translate` accessor object to alter the y co-ordinate of the entity to 10

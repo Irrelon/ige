@@ -29,6 +29,7 @@ export class IgeObject extends IgeEventingClass {
         this._transformChanged = false;
         this._tileWidth = 1;
         this._tileHeight = 1;
+        this._tileDepth = 1;
         this._specialProp = [];
         this._streamDataCache = "";
         this._streamSections = ["transform", "props"];

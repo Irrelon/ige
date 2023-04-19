@@ -127,6 +127,7 @@ export declare const WithUiPositionMixin: <BaseClassType extends Mixin<IgeObject
         _transformChanged: boolean;
         _tileWidth: number;
         _tileHeight: number;
+        _tileDepth: number;
         _orphans?: IgeObject[] | undefined;
         _specialProp: string[];
         _streamMode?: import("../../enums/IgeStreamMode").IgeStreamMode | undefined;
@@ -136,7 +137,13 @@ export declare const WithUiPositionMixin: <BaseClassType extends Mixin<IgeObject
         _streamEmitCreated?: boolean | undefined;
         _streamSections: string[];
         _streamProperty: Record<string, any>;
-        _streamSyncInterval?: number | undefined;
+        _streamSyncInterval?: number | undefined; /**
+         * Gets / sets the viewport's x position relative to the center of
+         * the entity parent.
+         * @param {number} px
+         * @param {boolean=} noUpdate
+         * @return {number}
+         */
         _streamSyncDelta: number;
         _streamSyncSectionInterval: Record<string, number>;
         _streamSyncSectionDelta: Record<string, number>;
@@ -159,12 +166,18 @@ export declare const WithUiPositionMixin: <BaseClassType extends Mixin<IgeObject
         _depthSortMode: import("../../enums/IgeIsometricDepthSortMode").IgeIsometricDepthSortMode;
         _inView: boolean;
         _managed: number;
-        _triggerPolygonFunctionName: "localBounds3dPolygon" | "bounds3dPolygon" | "aabb";
+        _triggerPolygonFunctionName: "aabb" | "bounds3dPolygon" | "localBounds3dPolygon" | "customTriggerPolygon";
         _compositeCache: boolean;
         _compositeParent: boolean;
         _anchor: import("../core/IgePoint2d").IgePoint2d;
         _renderPos: {
-            x: number;
+            x: number; /**
+             * Gets / sets the entity's y position relative to the top of
+             * the canvas.
+             * @param {number} px
+             * @param {boolean=} noUpdate
+             * @return {number}
+             */
             y: number;
         };
         _computedOpacity: number;

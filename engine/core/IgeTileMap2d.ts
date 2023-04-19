@@ -36,12 +36,14 @@ export class IgeTileMap2d extends IgeEntity {
 	_gridSize: IgePoint2d = new IgePoint2d(40, 40);
 	_hoverColor?: string;
 	map: IgeMap2d;
+	heightMap: IgeMap2d;
 
-	constructor (tileWidth?: number, tileHeight?: number) {
+	constructor (tileWidth?: number, tileHeight?: number, tileDepth?: number) {
 		super();
 
 		tileWidth = tileWidth !== undefined ? tileWidth : 40;
 		tileHeight = tileHeight !== undefined ? tileHeight : 40;
+		tileDepth = tileDepth !== undefined ? tileDepth : 16;
 
 		if (!isServer) {
 			const tex = new IgeTexture(newIdHex(), IgeTileMap2dSmartTexture);
@@ -49,10 +51,12 @@ export class IgeTileMap2d extends IgeEntity {
 		}
 
 		this.map = new IgeMap2d();
+		this.heightMap = new IgeMap2d();
 		this._adjustmentMatrix = new IgeMatrix2d();
 
 		this.tileWidth(tileWidth);
 		this.tileHeight(tileHeight);
+		this.tileDepth(tileDepth);
 		this.gridSize(3, 3);
 
 		this._drawGrid = false;
@@ -65,8 +69,8 @@ export class IgeTileMap2d extends IgeEntity {
 	 * @param val
 	 * @return {*}
 	 */
-	highlightOccupied(val: boolean): this;
-	highlightOccupied(): boolean
+	highlightOccupied (val: boolean): this;
+	highlightOccupied (): boolean
 	highlightOccupied (val?: boolean) {
 		if (val !== undefined) {
 			this._highlightOccupied = val;
@@ -76,8 +80,8 @@ export class IgeTileMap2d extends IgeEntity {
 		return this._highlightOccupied;
 	}
 
-	highlightTileRect(val: IgeRect): this;
-	highlightTileRect(): IgeRect
+	highlightTileRect (val: IgeRect): this;
+	highlightTileRect (): IgeRect
 	highlightTileRect (val?: IgeRect) {
 		if (val !== undefined) {
 			this._highlightTileRect = val;
@@ -92,8 +96,8 @@ export class IgeTileMap2d extends IgeEntity {
 	 * @param {number} val Tile width.
 	 * @return {*}
 	 */
-	tileWidth(val: number): this;
-	tileWidth(): number;
+	tileWidth (val: number): this;
+	tileWidth (): number;
 	tileWidth (val?: number) {
 		if (val !== undefined) {
 			this._tileWidth = val;
@@ -115,8 +119,8 @@ export class IgeTileMap2d extends IgeEntity {
 	 * @param {number} val Tile height.
 	 * @return {*}
 	 */
-	tileHeight(val: number): this;
-	tileHeight(): number;
+	tileHeight (val: number): this;
+	tileHeight (): number;
 	tileHeight (val?: number) {
 		if (val !== undefined) {
 			this._tileHeight = val;
@@ -133,8 +137,24 @@ export class IgeTileMap2d extends IgeEntity {
 		return this._tileHeight;
 	}
 
-	gridSize(x: number, y: number): this;
-	gridSize(): IgePoint2d;
+	/**
+	 * Gets / sets the map's tile depth (z axis).
+	 * @param {number} val Tile depth.
+	 * @return {*}
+	 */
+	tileDepth (val: number): this;
+	tileDepth (): number;
+	tileDepth (val?: number) {
+		if (val !== undefined) {
+			this._tileDepth = val;
+			return this;
+		}
+
+		return this._tileDepth;
+	}
+
+	gridSize (x: number, y: number): this;
+	gridSize (): IgePoint2d;
 	gridSize (x?: number, y?: number) {
 		if (x !== undefined && y !== undefined) {
 			this._gridSize = new IgePoint2d(x, y);
@@ -171,8 +191,8 @@ export class IgeTileMap2d extends IgeEntity {
 	 * @param {Boolean=} val If true, will paint the grid on tick.
 	 * @return {*}
 	 */
-	drawGrid(val: boolean): this;
-	drawGrid(): boolean;
+	drawGrid (val: boolean): this;
+	drawGrid (): boolean;
 	drawGrid (val?: boolean) {
 		if (val !== undefined) {
 			this._drawGrid = val;
@@ -419,7 +439,7 @@ export class IgeTileMap2d extends IgeEntity {
 	 * @return {Array}
 	 */
 	scanRects (callback?: IgeTileMap2dScanRectCallback) {
-		const rectArray: {x: number, y: number, width: number, height: number}[] = [];
+		const rectArray: { x: number, y: number, width: number, height: number }[] = [];
 		const mapData = arrClone(this.map._mapData) as any[][];
 
 		// Loop the map data and scan for blocks that can
@@ -555,8 +575,8 @@ export class IgeTileMap2d extends IgeEntity {
 		});
 	}
 
-	isometricMounts(): boolean;
-	isometricMounts(val: boolean): this;
+	isometricMounts (): boolean;
+	isometricMounts (val: boolean): this;
 	isometricMounts (val?: boolean) {
 		if (val !== undefined) {
 			super.isometricMounts(val);

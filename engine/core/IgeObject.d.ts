@@ -41,6 +41,7 @@ export declare class IgeObject extends IgeEventingClass implements IgeCanRegiste
     _transformChanged: boolean;
     _tileWidth: number;
     _tileHeight: number;
+    _tileDepth: number;
     _orphans?: IgeObject[];
     _specialProp: string[];
     _streamMode?: IgeStreamMode;
@@ -73,7 +74,7 @@ export declare class IgeObject extends IgeEventingClass implements IgeCanRegiste
     _depthSortMode: IgeIsometricDepthSortMode;
     _inView: boolean;
     _managed: number;
-    _triggerPolygonFunctionName: "aabb" | "bounds3dPolygon" | "localBounds3dPolygon";
+    _triggerPolygonFunctionName: "aabb" | "bounds3dPolygon" | "localBounds3dPolygon" | "customTriggerPolygon";
     _compositeCache: boolean;
     _compositeParent: boolean;
     _anchor: IgePoint2d;

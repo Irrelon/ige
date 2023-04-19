@@ -18,7 +18,7 @@ import { registerClass } from "../../engine/igeClassStore.js";
  * paint a bunch of tiles to a grid.
  */
 export class IgeTileMap2d extends IgeEntity {
-    constructor(tileWidth, tileHeight) {
+    constructor(tileWidth, tileHeight, tileDepth) {
         super();
         this.classId = "IgeTileMap2d";
         this.IgeTileMap2d = true;
@@ -27,14 +27,17 @@ export class IgeTileMap2d extends IgeEntity {
         this._gridSize = new IgePoint2d(40, 40);
         tileWidth = tileWidth !== undefined ? tileWidth : 40;
         tileHeight = tileHeight !== undefined ? tileHeight : 40;
+        tileDepth = tileDepth !== undefined ? tileDepth : 16;
         if (!isServer) {
             const tex = new IgeTexture(newIdHex(), IgeTileMap2dSmartTexture);
             this.texture(tex);
         }
         this.map = new IgeMap2d();
+        this.heightMap = new IgeMap2d();
         this._adjustmentMatrix = new IgeMatrix2d();
         this.tileWidth(tileWidth);
         this.tileHeight(tileHeight);
+        this.tileDepth(tileDepth);
         this.gridSize(3, 3);
         this._drawGrid = false;
         this._gridColor = "#ffffff";
@@ -78,6 +81,13 @@ export class IgeTileMap2d extends IgeEntity {
             return this;
         }
         return this._tileHeight;
+    }
+    tileDepth(val) {
+        if (val !== undefined) {
+            this._tileDepth = val;
+            return this;
+        }
+        return this._tileDepth;
     }
     gridSize(x, y) {
         if (x !== undefined && y !== undefined) {
