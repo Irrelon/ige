@@ -20,7 +20,7 @@ export declare class IgeTileMap2d extends IgeEntity {
     IgeTileMap2d: boolean;
     _drawGrid?: boolean;
     _highlightOccupied: boolean;
-    _highlightTileRect: boolean;
+    _highlightTileRect?: IgeRect;
     _gridColor?: string;
     _gridSize: IgePoint2d;
     _hoverColor?: string;
@@ -34,8 +34,8 @@ export declare class IgeTileMap2d extends IgeEntity {
      */
     highlightOccupied(val: boolean): this;
     highlightOccupied(): boolean;
-    highlightTileRect(val: boolean): this;
-    highlightTileRect(): boolean;
+    highlightTileRect(val: IgeRect): this;
+    highlightTileRect(): IgeRect;
     /**
      * Gets / sets the map's tile width.
      * @param {number} val Tile width.
@@ -111,13 +111,13 @@ export declare class IgeTileMap2d extends IgeEntity {
      * Returns the world co-ordinates of the tile the mouse is currently over.
      * @return {IgePoint3d}
      */
-    mouseTilePoint(): IgePoint3d;
-    tileToPoint(x: number, y: number): IgePoint3d;
+    mouseTilePoint(): any;
+    tileToPoint(x: number, y: number): any;
     /**
      * Returns the tile co-ordinates of the tile the mouse is currently over.
      * @return {IgePoint3d}
      */
-    mouseToTile(): IgePoint3d;
+    mouseToTile(): any;
     tileToWorld(tileX: number, tileY: number): IgePoint3d;
     /**
      * Scans the map data and returns an array of rectangle

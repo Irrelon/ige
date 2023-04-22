@@ -5,9 +5,7 @@ import { IgeCanvasRenderingContext2d } from "@/types/IgeCanvasRenderingContext2d
  */
 export declare class IgeScene2d extends IgeEntity {
     classId: string;
-    _shouldRender: boolean;
     _autoSize: boolean;
-    _pointerAlwaysInside: boolean;
     _alwaysInView: boolean;
     constructor();
     /**
@@ -42,7 +40,7 @@ export declare class IgeScene2d extends IgeEntity {
      * @param {Boolean} val If set to false, no child entities will be rendered.
      * @return {Boolean}
      */
-    shouldRender: (val?: boolean) => boolean | this;
+    shouldRender: (val?: boolean) => boolean | this | undefined;
     /**
      * Gets / sets the flag that determines if the scene will ignore camera
      * transform values allowing the scene to remain static on screen

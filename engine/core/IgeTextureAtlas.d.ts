@@ -4,6 +4,9 @@ import { IgeTextureMap } from "./IgeTextureMap";
  */
 export declare class IgeTextureAtlas extends IgeTextureMap {
     classId: string;
+    private _dataSource;
+    private _dataSourceType?;
+    private _bufferZone?;
     constructor(tileWidth?: number, tileHeight?: number);
     /**
      * Get / set the data source that the atlas system will use

@@ -18,12 +18,9 @@ export interface IgeViewportOptions {
 export declare class IgeViewport extends IgeUiEntity implements IgeCanRegisterById {
     classId: string;
     IgeViewport: boolean;
-    _idRegistered: boolean;
     _lockDimension?: IgePoint3d;
     _alwaysInView: boolean;
-    _pointerAlwaysInside: boolean;
     _pointerPos: IgePoint3d;
-    _overflow: string;
     _clipping: boolean;
     _autoSize: boolean;
     _scene?: IgeScene2d;

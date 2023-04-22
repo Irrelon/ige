@@ -7,13 +7,6 @@ export class IgeGamePadComponent extends IgeComponent {
         this["classId"] = "IgeGamePadComponent";
         this["componentId"] = "gamePad";
         this.gamepadAvailable = null; // True if the browser supports them
-        /**
-         * A function called with each requestAnimationFrame(). Polls the gamepad
-         * status and schedules another poll.
-         */
-        this._behaviour = (entity) => {
-            entity.gamePad.pollStatus();
-        };
         // A number of typical buttons recognized by Gamepad API and mapped to
         // standard controls. Any extraneous buttons will have larger indexes.
         this.TYPICAL_BUTTON_COUNT = 16;
@@ -33,6 +26,13 @@ export class IgeGamePadComponent extends IgeComponent {
         // analyzing the polled data if nothing changed (timestamp is the same
         // as last time).
         this.prevTimestamps = [];
+        /**
+         * A function called with each requestAnimationFrame(). Polls the gamepad
+         * status and schedules another poll.
+         */
+        this._behaviour = (entity) => {
+            //entity.gamePad.pollStatus();
+        };
         if (!isClient) {
             return;
         }
@@ -50,7 +50,7 @@ export class IgeGamePadComponent extends IgeComponent {
         // Add the new gamepad on the list of gamepads to look after.
         this.gamepads.push(event.gamepad);
         // Start the polling loop to monitor button changes.
-        this.startPolling();
+        //this.startPolling();
         // Ask the tester to update the screen to show more gamepads.
         this.emit("change");
     }
@@ -59,7 +59,7 @@ export class IgeGamePadComponent extends IgeComponent {
      */
     onGamepadDisconnect(event) {
         // Remove the gamepad from the list of gamepads to monitor.
-        for (const i in this.gamepads) {
+        for (const i of this.gamepads.keys()) {
             if (this.gamepads[i].index == event.gamepad.index) {
                 this.gamepads.splice(i, 1);
                 break;
@@ -67,7 +67,7 @@ export class IgeGamePadComponent extends IgeComponent {
         }
         // If no gamepads are left, stop the polling loop.
         if (this.gamepads.length == 0) {
-            this.stopPolling();
+            //this.stopPolling();
         }
         // Ask the tester to update the screen to remove the gamepad.
         this.emit("change");

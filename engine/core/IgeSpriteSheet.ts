@@ -1,7 +1,7 @@
 import { IgeTexture } from "./IgeTexture";
 import { IgeSmartTexture } from "@/types/IgeSmartTexture";
-import { IgeImage } from "./IgeImage";
 import { IgeCanvas } from "./IgeCanvas";
+import {IgeImage} from "@/types/IgeImage";
 
 type IgeTextureCell = [number, number, number, number, string?];
 type IgeTextureCellArray = IgeTextureCell[];
@@ -15,7 +15,7 @@ export class IgeSpriteSheet extends IgeTexture {
 	IgeSpriteSheet = true;
 	_cells: IgeTextureCellArray = [];
 	_spriteCells: IgeTextureCellArray = [];
-	_sheetImage?: IgeImage | IgeCanvas;
+	_sheetImage?: IgeImage;
 	_checkModulus?: boolean = false;
 
 	constructor (id?: string, urlOrObject?: string | IgeSmartTexture, cells?: IgeTextureCellArray) {
@@ -116,7 +116,7 @@ export class IgeSpriteSheet extends IgeTexture {
 		// Create a temp canvas
 		const canvas = new OffscreenCanvas(1, 1);
 		const ctx = canvas.getContext("2d") as OffscreenCanvasRenderingContext2D;
-		const spriteRects = [];
+		const spriteRects: IgeTextureCell[] = [];
 
 		if (!ctx) {
 			throw new Error("Couldn't get texture canvas 2d context!");

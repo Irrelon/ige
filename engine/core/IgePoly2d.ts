@@ -130,8 +130,8 @@ export class IgePoly2d implements IgePolygonFunctionality {
 	 * Calculates and returns the axis-aligned bounding-box for this polygon.
 	 */
 	aabb (): IgeRect {
-		const xArr = [];
-		const yArr = [];
+		const xArr: number[] = [];
+		const yArr: number[] = [];
 		const arr = this._poly;
 		const arrCount = arr.length;
 
@@ -231,7 +231,7 @@ export class IgePoly2d implements IgePolygonFunctionality {
 	triangulationIndices (): number[] {
 		const indices: number[] = [];
 		const n = this._poly.length;
-		const V = [];
+		const V: number[] = [];
 
 		if (n < 3) { return indices; }
 

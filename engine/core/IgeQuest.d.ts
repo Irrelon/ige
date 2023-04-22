@@ -1,6 +1,15 @@
 import { IgeEventingClass } from "./IgeEventingClass";
 export declare class IgeQuest extends IgeEventingClass {
     classId: string;
+    private _linear;
+    private _items;
+    private _itemCount;
+    private _eventCount;
+    private _itemCompleteCount;
+    private _eventCompleteCount;
+    private _started;
+    private _isComplete;
+    private _completeCallback;
     constructor(questDefinition: any, completeCallback: any);
     /**
      * Gets / sets the callback method that will fire when
@@ -15,7 +24,7 @@ export declare class IgeQuest extends IgeEventingClass {
      * @param val
      * @return {*}
      */
-    isComplete(val: any): any;
+    isComplete(val: any): boolean | this;
     /**
      * Gets / sets the flag that determines if the quest items
      * need to be completed in order (true) or if they can be
@@ -23,36 +32,36 @@ export declare class IgeQuest extends IgeEventingClass {
      * @param val
      * @return {*}
      */
-    linear(val: any): any;
+    linear(val: any): boolean | this;
     /**
      * Gets / sets the items array containing the quest item
      * definition objects.
      * @param val
      * @return {*}
      */
-    items(val: any): any;
+    items(val: any): any[] | this;
     /**
      * Returns the number of quest items this quest has.
      * @return {number}
      */
-    itemCount(): any;
+    itemCount(): number;
     /**
      * Returns the sum of all event counts for every item
      * in the quest giving an overall number of events that
      * need to fire in order for the quest to be completed.
      * @return {number}
      */
-    eventCount(): any;
+    eventCount(): number;
     /**
      * Returns the number of events that have been completed.
      * @return {number}
      */
-    eventCompleteCount(): any;
+    eventCompleteCount(): number;
     /**
      * Returns the number of items that have been completed.
      * @return {number}
      */
-    itemCompleteCount(): any;
+    itemCompleteCount(): number;
     /**
      * Returns the percentage representation of the quest's
      * overall completion based on number of overall events and

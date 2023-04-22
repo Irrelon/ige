@@ -195,7 +195,7 @@ export declare class IgeFSM extends IgeBaseClass {
      * @param {string} eventName The name of the event to raise.
      * @param {any[]} rest The optional arguments to pass to the event handler.
      */
-    raiseEvent: (eventName: string, ...rest: any[]) => Promise<any> | undefined;
+    raiseEvent: (eventName: string, ...rest: any[]) => any;
     /**
      * Handles changing states from one to another by checking for transitions and
      * handling return values.

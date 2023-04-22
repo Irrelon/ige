@@ -1,9 +1,9 @@
 import { IgeEntity } from "./IgeEntity";
 import { IgeCanvasRenderingContext2d } from "@/types/IgeCanvasRenderingContext2d";
 import { IgeTexture } from "./IgeTexture";
-import { IgeRepeatType } from "../mixins/IgeUiStyleMixin";
 import { IgeObject } from "./IgeObject";
 import { IgePointXY } from "@/types/IgePointXY";
+import { IgeRepeatType } from "@/types/IgeRepeatType";
 /**
  * Creates a new UI entity. UI entities use more resources and CPU
  * than standard IgeEntity instances so only use them if an IgeEntity
@@ -202,7 +202,7 @@ export declare class IgeUiEntity extends IgeEntity {
      * @return {*} Returns this if any parameter is specified or
      * the current background image if no parameters are specified.
      */
-    backgroundImage(texture?: IgeTexture, repeatType?: IgeRepeatType): CanvasPattern | this | undefined;
+    backgroundImage(texture?: IgeTexture, repeatType?: IgeRepeatType): this | CanvasPattern | undefined;
     backgroundSize(x?: number | string, y?: number | string): this | IgePointXY;
     /**
      * Gets / sets the color to use as a background when

@@ -3,11 +3,11 @@ import { ige } from "../instance";
 import { IgeEntity } from "./IgeEntity";
 import { IgeCanvasRenderingContext2d } from "@/types/IgeCanvasRenderingContext2d";
 import { IgeTexture } from "./IgeTexture";
-import { IgeRepeatType } from "../mixins/IgeUiStyleMixin";
 import { IgeObject } from "./IgeObject";
 import { PI180 } from "../utils";
 import { IgePointXY } from "@/types/IgePointXY";
 import { registerClass } from "@/engine/igeClassStore";
+import {IgeRepeatType} from "@/types/IgeRepeatType";
 
 /**
  * Creates a new UI entity. UI entities use more resources and CPU

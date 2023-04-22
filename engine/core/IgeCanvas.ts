@@ -3,6 +3,7 @@ import { IgeTexture } from "./IgeTexture";
 export interface IgeCanvas extends OffscreenCanvas {
 	_igeTextures: IgeTexture[];
 	_loaded: boolean;
+	src: string
 }
 
 export const newCanvas = (): IgeCanvas => {
@@ -20,6 +21,13 @@ export const newCanvas = (): IgeCanvas => {
 		enumerable: true,
 		writable: true,
 		value: false
+	});
+
+	Object.defineProperty(instance, "src", {
+		configurable: true,
+		enumerable: true,
+		writable: true,
+		value: "Canvas"
 	});
 
 	return instance as IgeCanvas;

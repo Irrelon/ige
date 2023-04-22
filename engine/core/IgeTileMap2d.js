@@ -23,7 +23,7 @@ export class IgeTileMap2d extends IgeEntity {
         this.classId = "IgeTileMap2d";
         this.IgeTileMap2d = true;
         this._highlightOccupied = false;
-        this._highlightTileRect = false;
+        this._highlightTileRect = undefined;
         this._gridSize = new IgePoint2d(40, 40);
         tileWidth = tileWidth !== undefined ? tileWidth : 40;
         tileHeight = tileHeight !== undefined ? tileHeight : 40;

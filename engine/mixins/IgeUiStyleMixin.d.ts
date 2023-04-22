@@ -1,7 +1,7 @@
 import { IgeTexture } from "../core/IgeTexture";
 import { IgeObject } from "../core/IgeObject";
 import type { Mixin } from "@/types/Mixin";
-export type IgeRepeatType = "repeat" | "repeat-x" | "repeat-y" | "no-repeat";
+import { IgeRepeatType } from "@/types/IgeRepeatType";
 export declare const WithUiStyleMixin: <BaseClassType extends Mixin<IgeObject>>(Base: BaseClassType) => {
     new (...args: any[]): {
         _color: string | CanvasGradient | CanvasPattern;
@@ -156,7 +156,7 @@ export declare const WithUiStyleMixin: <BaseClassType extends Mixin<IgeObject>>(
         _depthSortMode: import("../../enums/IgeIsometricDepthSortMode").IgeIsometricDepthSortMode;
         _inView: boolean;
         _managed: number;
-        _triggerPolygonFunctionName: "aabb" | "bounds3dPolygon" | "localBounds3dPolygon";
+        _triggerPolygonFunctionName: "localBounds3dPolygon" | "bounds3dPolygon" | "aabb";
         _compositeCache: boolean;
         _compositeParent: boolean;
         _anchor: import("../core/IgePoint2d").IgePoint2d;

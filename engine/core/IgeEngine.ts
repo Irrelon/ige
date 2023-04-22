@@ -236,7 +236,7 @@ export class IgeEngine extends IgeEntity {
 		const { fonts } = document;
 		const it = fonts.entries();
 
-		const arr = [];
+		const arr: string[] = [];
 		let done = false;
 
 		while (!done) {
@@ -856,7 +856,7 @@ export class IgeEngine extends IgeEntity {
 	 * Walks the scenegraph and returns a data object of the graph.
 	 */
 	getSceneGraphData (rootObject?: IgeObject, noRef?: boolean) {
-		const items = [];
+		const items: IgeSceneGraphDataEntry[] = [];
 		let finalRootObject: IgeObject | IgeEntity;
 
 		if (rootObject) {

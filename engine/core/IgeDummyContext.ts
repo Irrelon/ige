@@ -1,7 +1,7 @@
 export const undefinedMethod = () => {
 };
 
-export const nullMethod = () => {
+export const nullMethod = (): null => {
 	return null;
 };
 

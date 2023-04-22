@@ -1,4 +1,5 @@
 import { IgeEventingClass } from "./IgeEventingClass";
+import {Ige} from "@/engine/core/Ige";
 
 enum ListType {
 	"closed",
@@ -59,8 +60,8 @@ export class IgeGenericPathFinder extends IgeEventingClass {
      * @return {Array} An array of objects each containing an x, y co-ordinate that describes the path from the starting point to the end point in order.
      */
 	generate (startPoint: IgeGenericPathFinderNode, endPoint: IgeGenericPathFinderNode, allowInvalidDestination: boolean = false) {
-		const openList = [];
-		const closedList = [];
+		const openList: IgeGenericPathFinderNode[] = [];
+		const closedList: IgeGenericPathFinderNode[] = [];
 		const nodeById: Record<string, IgeGenericPathFinderNode> = {};
 
 		// Check that the end point on the map is actually allowed to be pathed to!
@@ -111,7 +112,7 @@ export class IgeGenericPathFinder extends IgeEventingClass {
 			// Check if the current node is the end point
 			if (currentNode.x === endPoint.x && currentNode.y === endPoint.y) {
 				// We have reached the end point
-				const finalPath = [];
+				const finalPath: IgeGenericPathFinderNode[] = [];
 				let pathPoint = currentNode;
 
 				while (pathPoint.link) {
@@ -180,7 +181,7 @@ export class IgeGenericPathFinder extends IgeEventingClass {
 			// We couldn't path to the destination so return
 			// the closest detected end point
 			let pathPoint = lowestCostNode;
-			let finalPath = [];
+			let finalPath: IgeGenericPathFinderNode[] = [];
 
 			while (pathPoint.link) {
 				finalPath.push(pathPoint);

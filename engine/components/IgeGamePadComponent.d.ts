@@ -6,6 +6,12 @@ export declare class IgeGamePadComponent extends IgeComponent<IgeEngine> {
     "classId": string;
     "componentId": string;
     gamepadAvailable: boolean | null;
+    TYPICAL_BUTTON_COUNT: number;
+    TYPICAL_AXIS_COUNT: number;
+    ticking: boolean;
+    gamepads: Gamepad[];
+    prevRawGamepadTypes: never[];
+    prevTimestamps: never[];
     constructor(entity: IgeEntity, options?: any);
     onGamepadConnect(event: GamepadEvent): void;
     /**

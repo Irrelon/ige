@@ -17,8 +17,8 @@ export declare class Module_Generic extends IgeBaseClass {
      * @param val
      * @returns {*}
      */
-    attachedTo(val?: GameEntity): GameEntity | this | null;
-    target(val?: GameEntity): GameEntity | this | null;
+    attachedTo(val?: GameEntity): this | GameEntity | null;
+    target(val?: GameEntity): this | GameEntity | null;
     /**
      * If any effects are in the module's definition under "effects"
      * this method will enable / disable them and add / remove them
