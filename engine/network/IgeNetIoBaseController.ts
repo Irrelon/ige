@@ -1,6 +1,4 @@
 import { IgeEventingClass } from "../core/IgeEventingClass";
-
-
 import { IgeNetIoSocket } from "./server/IgeNetIoSocket";
 
 export class IgeNetIoBaseController extends IgeEventingClass {

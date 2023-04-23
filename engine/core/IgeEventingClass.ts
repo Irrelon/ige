@@ -12,7 +12,6 @@ export interface IgeEventStaticEmitterObject {
  */
 export class IgeEventingClass extends IgeBaseClass {
 	_eventsEmitting: boolean = false;
-	_eventsProcessing: boolean = false;
 	_eventRemovalQueue: any[] = [];
 	_eventListeners?: Record<string, Record<string, IgeEventListenerCallback[]>>;
 	_eventStaticEmitters: Record<string, IgeEventStaticEmitterObject[]> = {};

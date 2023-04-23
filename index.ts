@@ -1,1 +1,1 @@
-export * from "./engine/instance";
+export * from "@/engine/instance";

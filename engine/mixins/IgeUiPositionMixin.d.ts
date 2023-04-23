@@ -331,7 +331,6 @@ export declare const WithUiPositionMixin: <BaseClassType extends Mixin<IgeObject
         addComponent(id: string, Component: typeof import("../core/IgeComponent").IgeComponent, options?: any): any;
         removeComponent(id: string): any;
         _eventsEmitting: boolean;
-        _eventsProcessing: boolean;
         _eventRemovalQueue: any[];
         _eventListeners?: Record<string, Record<string, import("../core/IgeEventingClass").IgeEventListenerCallback[]>> | undefined;
         _eventStaticEmitters: Record<string, import("../core/IgeEventingClass").IgeEventStaticEmitterObject[]>;
@@ -346,8 +345,29 @@ export declare const WithUiPositionMixin: <BaseClassType extends Mixin<IgeObject
         once(eventName: string, listener: import("../core/IgeEventingClass").IgeEventListenerCallback): any;
         overwrite(eventName: string, id: string, listener: import("../core/IgeEventingClass").IgeEventListenerCallback): any;
         overwrite(eventName: string, listener: import("../core/IgeEventingClass").IgeEventListenerCallback): any;
+        /**
+         * Gets / sets the viewport's y position relative to the middle of
+         * the canvas.
+         * @param {number} px
+         * @param {boolean=} noUpdate
+         * @return {number}
+         */
         off(eventName: string, id: string, listener?: import("../core/IgeEventingClass").IgeEventListenerCallback | undefined): any;
+        /**
+         * Gets / sets the viewport's y position relative to the middle of
+         * the canvas.
+         * @param {number} px
+         * @param {boolean=} noUpdate
+         * @return {number}
+         */
         off(eventName: string, listener?: import("../core/IgeEventingClass").IgeEventListenerCallback | undefined): any;
+        /**
+         * Gets / sets the viewport's y position relative to the middle of
+         * the canvas.
+         * @param {number} px
+         * @param {boolean=} noUpdate
+         * @return {number}
+         */
         off(eventName: string): any;
         emit(eventName: string, ...data: any[]): import("../../enums/IgeEventReturnFlag").IgeEventReturnFlag;
         emitId(eventName: string, id: string, ...data: any[]): any;

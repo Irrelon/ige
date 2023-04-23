@@ -1,1 +1,1 @@
-export * from "./engine/instance.js";
+export * from "engine/instance";
