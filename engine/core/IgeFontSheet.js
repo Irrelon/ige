@@ -1,4 +1,5 @@
 import { IgeTexture } from "./IgeTexture.js";
+import { ige } from "../../engine/instance.js";
 /* TODO: URGENT - Make this alignment stuff work inside the bounds of the entity it is attached to
  *    so that bottom-right aligns to the lower-right point of the bounding box of the entity
  *    whilst maintaining the current text-alignment as well
@@ -42,6 +43,9 @@ export class IgeFontSheet extends IgeTexture {
     decodeHeader() {
         // Create a temporary canvas
         const canvas = new OffscreenCanvas(2, 2), ctx = canvas.getContext("2d");
+        if (this.image === undefined) {
+            throw new Error("Image not loaded");
+        }
         // Set canvas width to match font sheet image and
         // height to 1 as we have 1 line of header data
         canvas.width = this.image.width;
@@ -52,7 +56,8 @@ export class IgeFontSheet extends IgeTexture {
         return this._decode(canvas, 0, 0, this.image.width);
     }
     _decode(canvas, x, y, maxX) {
-        let ctx = canvas.getContext("2d"), imageData = ctx.getImageData(x, y, maxX, canvas.height).data, run = true, quadCode, i = 0, jsonString = "";
+        const ctx = canvas.getContext("2d"), imageData = ctx.getImageData(x, y, maxX, canvas.height).data;
+        let run = true, quadCode, i = 0, jsonString = "";
         while (run) {
             quadCode = String(imageData[i]) + " " + String(imageData[i + 1]) + " " + String(imageData[i + 2]);
             if (quadCode === "3 2 1") {
@@ -84,7 +89,8 @@ export class IgeFontSheet extends IgeTexture {
      */
     measureTextWidth(text) {
         if (this._loaded) {
-            let characterIndex, charCodeMap = this._charCodeMap, measuredWidthMap = this._measuredWidthMap, charIndex, lineArr = [], lineIndex, measuredWidth, maxWidth = 0;
+            const charCodeMap = this._charCodeMap, measuredWidthMap = this._measuredWidthMap;
+            let characterIndex, charIndex, lineArr = [], lineIndex, measuredWidth, maxWidth = 0;
             // Handle multi-line text
             if (text.indexOf("\n") > -1) {
                 // Split each line into an array item
@@ -112,7 +118,8 @@ export class IgeFontSheet extends IgeTexture {
     }
     render(ctx, entity) {
         if (entity._renderText && this._loaded) {
-            let _ctx = ctx, text = entity._renderText, lineText, lineArr = [], lineIndex, characterIndex, charCodeMap = this._charCodeMap, charPosMap = this._charPosMap, measuredWidthMap = this._measuredWidthMap, pixelWidthMap = this._pixelWidthMap, renderX = 0, renderY = 0, renderStartX = 0, renderStartY = 0, masterX = 0, masterY = 0, lineWidth = [], lineHeight = (this._sizeY - 2), singleLineWidth = 0, totalWidth = 0, totalHeight, charIndex;
+            const _ctx = ctx, text = entity._renderText, charCodeMap = this._charCodeMap, charPosMap = this._charPosMap, measuredWidthMap = this._measuredWidthMap, pixelWidthMap = this._pixelWidthMap, masterX = 0, masterY = 0, lineWidth = [], lineHeight = (this._sizeY - 2);
+            let lineText, lineArr = [], lineIndex, characterIndex, renderX = 0, renderY = 0, renderStartX = 0, renderStartY = 0, singleLineWidth = 0, totalWidth = 0, charIndex;
             // Handle multi-line text
             if (text.indexOf("\n") > -1) {
                 // Split each line into an array item
@@ -122,7 +129,7 @@ export class IgeFontSheet extends IgeTexture {
                 // Store the text as a single line
                 lineArr.push(text);
             }
-            totalHeight = (lineHeight * lineArr.length);
+            const totalHeight = (lineHeight * lineArr.length);
             // TODO: Y-based alignment doesn't work at the moment. Fix it!
             // Handle text alignment y
             switch (entity._textAlignY) {
@@ -204,14 +211,15 @@ export class IgeFontSheet extends IgeTexture {
                         _ctx.restore();
                     }
                     renderX += measuredWidthMap[charIndex] || 0;
-                    this._ige.metrics.drawCount++;
+                    ige.metrics.drawCount++;
                 }
                 renderX = 0;
             }
         }
     }
     destroy() {
-        this.image = null;
-        this.script = null;
+        this.image = undefined;
+        this.script = undefined;
+        return this;
     }
 }

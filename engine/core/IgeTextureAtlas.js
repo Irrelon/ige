@@ -41,10 +41,11 @@ export class IgeTextureAtlas extends IgeTextureMap {
      * @return {*}
      */
     bufferZone(x, y) {
+        var _a, _b;
         if (x !== undefined && y !== undefined) {
             this._bufferZone = { x, y };
             return this;
         }
-        return { "x": this._bufferZone.x, "y": this._bufferZone.y };
+        return { "x": (_a = this._bufferZone) === null || _a === void 0 ? void 0 : _a.x, "y": (_b = this._bufferZone) === null || _b === void 0 ? void 0 : _b.y };
     }
 }

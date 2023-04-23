@@ -12,5 +12,11 @@ export const newCanvas = () => {
         writable: true,
         value: false
     });
+    Object.defineProperty(instance, "src", {
+        configurable: true,
+        enumerable: true,
+        writable: true,
+        value: "Canvas"
+    });
     return instance;
 };

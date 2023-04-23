@@ -1,16 +1,35 @@
-import { ige } from "@/engine/instance";
-import { IgeComponent } from "@/engine/core/IgeComponent";
-import { IgeEntity } from "@/engine/core/IgeEntity";
-import { IgeMountMode } from "@/enums/IgeMountMode";
-import { IgeRect } from "@/engine/core/IgeRect";
-import { IgeCanvasRenderingContext2d } from "@/types/IgeCanvasRenderingContext2d";
-import { IgeBehaviourType } from "@/enums/IgeBehaviourType";
-import { IgeEntityRenderMode } from "@/enums/IgeEntityRenderMode";
-import { IgePoint3d } from "@/engine/core/IgePoint3d";
+import {ige} from "@/engine/instance";
+import {IgeComponent} from "@/engine/core/IgeComponent";
+import {IgeEntity} from "@/engine/core/IgeEntity";
+import {IgeMountMode} from "@/enums/IgeMountMode";
+import {IgeRect} from "@/engine/core/IgeRect";
+import {IgeCanvasRenderingContext2d} from "@/types/IgeCanvasRenderingContext2d";
+import {IgeBehaviourType} from "@/enums/IgeBehaviourType";
+import {IgeEntityRenderMode} from "@/enums/IgeEntityRenderMode";
+import {IgePoint3d} from "@/engine/core/IgePoint3d";
 
 export class IgeEntityManagerComponent extends IgeComponent {
 	classId = "IgeEntityManagerComponent";
 	componentId = "entityManager";
+
+	private _maps: any[];
+	private _overwatchMode: number;
+	private _removeMode: number;
+	private _createArr: any[];
+	private _removeArr: any[];
+	private _active: boolean = false;
+	private _maxCreatePerTick?: number;
+	private _maxRemovePerTick?: number;
+	private _createCheck?: (item, x, y, tileData) => boolean;
+	private _createEntityFromMapData: () => any = () => undefined;
+	private _removeCheck?: (item) => boolean;
+	private _trackTranslateTarget?: IgeEntity;
+	private _areaCenter?: IgePoint3d;
+	private _areaRect?: IgeRect;
+	private _areaRectAutoSize: boolean = false
+	private _areaRectAutoSizeOptions: any;
+
+	_lastArea: IgeRect = new IgeRect();
 
 	/**
 	 * @constructor
@@ -195,8 +214,8 @@ export class IgeEntityManagerComponent extends IgeComponent {
 		if (x !== undefined && y !== undefined) {
 			// Adjust the passed x, y to account for this
 			// texture map's translation
-			let ent = this._entity,
-				offset;
+			const ent = this._entity;
+			let offset;
 
 			if (ent._renderMode === IgeEntityRenderMode.flat) {
 				// 2d mode
@@ -256,6 +275,8 @@ export class IgeEntityManagerComponent extends IgeComponent {
 		// Check if we are tracking an entity that is used to
 		// set the center point of the area
 		if (this._trackTranslateTarget) {
+			let entTranslate;
+
 			// Calculate which tile our character is currently "over"
 			if (this._trackTranslateTarget.isometric() === true) {
 				entTranslate = this._trackTranslateTarget._translate.toIso();
@@ -302,13 +323,13 @@ export class IgeEntityManagerComponent extends IgeComponent {
 	 * @private
 	 */
 	_behaviour = (entity: IgeEntity, ctx: IgeCanvasRenderingContext2d) => {
-		let self = this.entityManager,
-			currentArea,
+		const self = this,
+			arr = this._entity._children,
+			maps = self._maps;
+
+		let arrCount = arr.length,
 			currentAreaTiles,
-			arr = this._children,
-			arrCount = arr.length,
 			item,
-			maps = self._maps,
 			map,
 			mapIndex,
 			mapData,
@@ -320,11 +341,11 @@ export class IgeEntityManagerComponent extends IgeComponent {
 			renderSize,
 			ratio;
 
-		if ((!self._areaRect || ige._resized) && self._areaRectAutoSize) {
-			self._resizeEvent();
+		if ((!self._areaRect || ige.engine._resized) && self._areaRectAutoSize) {
+			self._entity._resizeEvent();
 		}
 
-		currentArea = self.currentArea();
+		const currentArea = self.currentArea();
 
 		if (self._areaCenter && self._areaRect && !currentArea.compare(self._lastArea)) {
 			////////////////////////////////////
@@ -359,19 +380,19 @@ export class IgeEntityManagerComponent extends IgeComponent {
 				}
 			}*/
 
-			currentTile = this.pointToTile(self._areaCenter);
+			currentTile = this._entity.pointToTile(self._areaCenter);
 			renderX = currentTile.x;
 			renderY = currentTile.y;
-			renderWidth = Math.ceil(currentArea.width / this._tileWidth);
-			renderHeight = Math.ceil(currentArea.height / this._tileHeight);
+			renderWidth = Math.ceil(currentArea.width / this._entity._tileWidth);
+			renderHeight = Math.ceil(currentArea.height / this._entity._tileHeight);
 
-			currentArea.x -= (this._tileWidth);
-			currentArea.y -= (this._tileHeight / 2);
-			currentArea.width += (this._tileWidth * 2);
-			currentArea.height += (this._tileHeight);
+			currentArea.x -= (this._entity._tileWidth);
+			currentArea.y -= (this._entity._tileHeight / 2);
+			currentArea.width += (this._entity._tileWidth * 2);
+			currentArea.height += (this._entity._tileHeight);
 
 			// Check if we are rendering in 2d or isometric mode
-			if (this._mountMode === IgeMountMode.flat) {
+			if (this._entity._mountMode === IgeMountMode.flat) {
 				// 2d
 				currentAreaTiles = new IgeRect(
 					renderX - Math.floor(renderWidth / 2) - 1,
@@ -381,7 +402,7 @@ export class IgeEntityManagerComponent extends IgeComponent {
 				);
 			}
 
-			if (this._mountMode === IgeMountMode.iso) {
+			if (this._entity._mountMode === IgeMountMode.iso) {
 				// Isometric
 				renderSize = Math.abs(renderWidth) > Math.abs(renderHeight) ? renderWidth : renderHeight;
 				ratio = 0.6;
@@ -394,11 +415,11 @@ export class IgeEntityManagerComponent extends IgeComponent {
 			}
 
 			// Generate the bounds rectangle
-			if (this._drawBounds) {
+			if (this._entity._drawBounds) {
 				ctx.strokeStyle = "#ff0000";
 				ctx.strokeRect(currentArea.x, currentArea.y, currentArea.width, currentArea.height);
 
-				this._highlightTileRect = currentAreaTiles;
+				this._entity._highlightTileRect = currentAreaTiles;
 			}
 
 			////////////////////////////////////
@@ -406,7 +427,7 @@ export class IgeEntityManagerComponent extends IgeComponent {
 			////////////////////////////////////
 			//this._highlightTileRect = currentAreaTiles;
 
-			map = this.map;
+			map = this._entity.map;
 			while (arrCount--) {
 				item = arr[arrCount];
 
@@ -457,17 +478,21 @@ export class IgeEntityManagerComponent extends IgeComponent {
 	};
 
 	processQueues = () => {
-		let createArr = this._createArr,
-			createCount = createArr.length,
+		const createArr = this._createArr,
 			createLimit = this._maxCreatePerTick !== undefined ? this._maxCreatePerTick : 0,
 			createEntityFunc = this._createEntityFromMapData,
 			removeArr = this._removeArr,
-			removeCount = removeArr.length,
-			removeLimit = this._maxRemovePerTick !== undefined ? this._maxRemovePerTick : 0,
-			i;
+			removeLimit = this._maxRemovePerTick !== undefined ? this._maxRemovePerTick : 0;
 
-		if (createLimit && createCount > createLimit) { createCount = createLimit; }
-		if (removeLimit && removeCount > removeLimit) { removeCount = removeLimit; }
+		let createCount = createArr.length,
+			removeCount = removeArr.length, i;
+
+		if (createLimit && createCount > createLimit) {
+			createCount = createLimit;
+		}
+		if (removeLimit && removeCount > removeLimit) {
+			removeCount = removeLimit;
+		}
 
 		// Process remove queue
 		for (i = 0; i < removeCount; i++) {
@@ -493,8 +518,8 @@ export class IgeEntityManagerComponent extends IgeComponent {
 	_resizeEvent = (event) => {
 		// Set width / height of scene to match parent
 		if (this._areaRectAutoSize) {
-			let geom = this._entity._parent._bounds2d,
-				additionX = 0, additionY = 0;
+			const geom = this._entity._parent._bounds2d;
+			let additionX = 0, additionY = 0;
 
 			if (this._areaRectAutoSizeOptions) {
 				if (this._areaRectAutoSizeOptions.bufferMultiple) {
@@ -511,8 +536,8 @@ export class IgeEntityManagerComponent extends IgeComponent {
 			this.areaRect(-Math.floor((geom.x + additionX) / 2), -Math.floor((geom.y + additionY) / 2), geom.x + additionX, geom.y + additionY);
 
 			// Check if caching is enabled
-			if (this._caching > 0) {
-				this._resizeCacheCanvas();
+			if (this._entity._caching > 0) {
+				this._entity._resizeCacheCanvas();
 			}
 		}
 	}

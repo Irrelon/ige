@@ -8,6 +8,7 @@ import {arrPull} from "../utils";
  */
 export class IgeMapStack2d extends IgeBaseClass {
 	classId = "IgeMapStack2d";
+	private _mapData: any[][];
 
 	constructor (data) {
 		super();

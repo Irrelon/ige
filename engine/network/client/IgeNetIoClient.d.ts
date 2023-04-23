@@ -1,8 +1,8 @@
 import { IgeEventingClass } from "../../core/IgeEventingClass";
 export interface IgeNetIoClientOptions {
-    connectionRetry: boolean;
-    connectionRetryMax: number;
-    reconnect: boolean;
+    connectionRetry?: boolean;
+    connectionRetryMax?: number;
+    reconnect?: boolean;
 }
 export declare class IgeNetIoClient extends IgeEventingClass {
     classId: string;

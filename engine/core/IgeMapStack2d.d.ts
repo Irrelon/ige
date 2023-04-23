@@ -6,6 +6,7 @@ import { IgeBaseClass } from "./IgeBaseClass";
  */
 export declare class IgeMapStack2d extends IgeBaseClass {
     classId: string;
+    private _mapData;
     constructor(data: any);
     /**
      * Gets / sets the data stored at the specified map tile co-ordinates. If data already
@@ -61,5 +62,5 @@ export declare class IgeMapStack2d extends IgeBaseClass {
      * @param {Array} val The map data array.
      * @return {*}
      */
-    mapData(val: any): any;
+    mapData(val: any): any[][] | this;
 }

@@ -47,7 +47,7 @@ export declare class IgePathFinder extends IgeEventingClass {
      * @param {Boolean=} allowInvalidDestination If the pathfinder cannot path to the destination tile, if this is true the closest path will be returned instead.
      * @return {Array} An array of objects each containing an x, y co-ordinate that describes the path from the starting point to the end point in order.
      */
-    generate(tileMap: IgeCollisionMap2d | IgeTileMap2d, startPoint: IgePathNode, endPoint: IgePathNode, comparisonCallback?: IgePathFinderComparisonCallback, allowSquare?: boolean, allowDiagonal?: boolean, allowInvalidDestination?: boolean): IgePathNode[];
+    generate(tileMap: IgeCollisionMap2d | IgeTileMap2d, startPoint: IgePathNode, endPoint: IgePathNode, comparisonCallback?: IgePathFinderComparisonCallback, allowSquare?: boolean, allowDiagonal?: boolean, allowInvalidDestination?: boolean): any;
     /**
      * Get all the neighbors of a node for the A* algorithm.
      * @param {IgePathNode} currentNode The current node along the path to evaluate neighbors for.

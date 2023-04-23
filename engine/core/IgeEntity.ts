@@ -581,7 +581,9 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 		const tileWidth = this._tileWidth || 1;
 		const tileHeight = this._tileHeight || 1;
 		const tile = (this._parent as IgeTileMap2d).pointToTile(this._translate);
-		const tileArr = [];
+
+		//TODO: Should this be point2d instead?
+		const tileArr: IgePoint3d[] = [];
 
 		for (let x = 0; x < tileWidth; x++) {
 			for (let y = 0; y < tileHeight; y++) {
@@ -3160,7 +3162,7 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 
 		//const maxLerpSquared = maxLerp * maxLerp;
 		const timeStream = this._timeStream;
-		const currentTransform = [];
+		const currentTransform: number[] = [];
 		let previousData: IgeTimeStreamPacket | undefined,
 			nextData: IgeTimeStreamPacket | undefined,
 			dataDelta,

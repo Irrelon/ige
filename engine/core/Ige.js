@@ -1,5 +1,5 @@
 import { igeClassStore } from "../igeClassStore.js";
-import { isClient, isServer } from "../clientServer.js";
+import { isClient, isServer, isWorker } from "../clientServer.js";
 import { igeConfig } from "./config.js";
 import { IgeEngine } from "./IgeEngine.js";
 import { IgeTextureStore } from "./IgeTextureStore.js";
@@ -74,9 +74,11 @@ export class Ige {
             this.dependencies.add("network", import("../network/client/IgeNetIoClientController.js").then(({ IgeNetIoClientController: Module }) => {
                 this.network = new Module();
             }));
-            this.dependencies.add("audio", import("../audio/IgeAudioController.js").then(({ IgeAudioController: Module }) => {
-                this.audio = new Module();
-            }));
+            if (!isWorker) {
+                this.dependencies.add("audio", import("../audio/IgeAudioController.js").then(({ IgeAudioController: Module }) => {
+                    this.audio = new Module();
+                }));
+            }
         }
         if (isServer) {
             this.dependencies.add("network", import("../network/server/IgeNetIoServerController.js").then(({ IgeNetIoServerController: Module }) => {

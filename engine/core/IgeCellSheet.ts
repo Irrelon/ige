@@ -1,7 +1,6 @@
-import { IgeTexture } from "./IgeTexture";
-import { IgeSmartTexture } from "@/types/IgeSmartTexture";
-import { IgeImage } from "./IgeImage";
-import { IgeCanvas } from "./IgeCanvas";
+import {IgeTexture} from "./IgeTexture";
+import {IgeSmartTexture} from "@/types/IgeSmartTexture";
+import {IgeImage} from "@/types/IgeImage";
 
 /**
  * Creates a new cell sheet. Cell sheets are textures that are
@@ -15,7 +14,7 @@ export class IgeCellSheet extends IgeTexture {
 	_cellRows: number = 0;
 	_cellWidth: number = 0;
 	_cellHeight: number = 0;
-	_sheetImage?: IgeImage | IgeCanvas;
+	_sheetImage?: IgeImage
 
 	constructor (id?: string, urlOrObject?: string | IgeSmartTexture, horizontalCells: number = 1, verticalCells: number = 1) {
 		super(id, urlOrObject);

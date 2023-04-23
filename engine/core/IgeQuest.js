@@ -69,7 +69,8 @@ export class IgeQuest extends IgeEventingClass {
         if (val !== undefined) {
             this._items = val;
             // Set the event and item counts
-            let arr = this._items, arrCount = arr.length, i, eventCount = 0;
+            const arr = this._items, arrCount = arr.length;
+            let i, eventCount = 0;
             for (i = 0; i < arrCount; i++) {
                 eventCount += arr[i].count;
             }
@@ -124,7 +125,8 @@ export class IgeQuest extends IgeEventingClass {
      */
     start() {
         if (!this._started) {
-            let self = this, arr = this._items, arrCount = arr.length, i;
+            const self = this, arr = this._items, arrCount = arr.length;
+            let i;
             // Mark the quest as started
             this._started = true;
             // Check if we have a linear quest or a non-linear one
@@ -169,7 +171,8 @@ export class IgeQuest extends IgeEventingClass {
      * original values and cancels all current event listeners.
      */
     reset() {
-        let arr = this._items, arrCount = arr.length, i, item;
+        const arr = this._items, arrCount = arr.length;
+        let i, item;
         for (i = 0; i < arrCount; i++) {
             item = arr[i];
             // Reset all the item internals
@@ -248,7 +251,8 @@ export class IgeQuest extends IgeEventingClass {
      * @private
      */
     _itemComplete(item) {
-        let itemIndex, arr = this._items;
+        const arr = this._items;
+        let itemIndex;
         // Mark the item as complete
         item._complete = true;
         // Cancel the listener

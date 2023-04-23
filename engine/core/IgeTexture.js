@@ -1,11 +1,10 @@
 import { ige } from "../instance.js";
 import { arrPull } from "../utils.js";
+import { newCanvas } from "./IgeCanvas.js";
 import { isClient, isServer } from "../clientServer.js";
 import { IgeTextureRenderMode } from "../../enums/IgeTextureRenderMode.js";
 import { IgeAsset } from "./IgeAsset.js";
-import { newCanvas } from "./IgeCanvas.js";
 import { IgeDependencies } from "../../engine/core/IgeDependencies.js";
-let IgeImageClass;
 /**
  * Creates a new texture.
  */
@@ -48,9 +47,6 @@ export class IgeTexture extends IgeAsset {
             this.id(id);
             ige.textures.add(id, this);
         }
-        this.dependencies.add("IgeImageClass", import("./IgeImage.js").then(({ IgeImage: IgeModule }) => {
-            IgeImageClass = IgeModule;
-        }));
         // Create an array that is used to store cell dimensions
         this._cells = [];
         this._smoothing = ige.engine._globalSmoothing;
@@ -98,68 +94,64 @@ export class IgeTexture extends IgeAsset {
         if (!isClient) {
             return false;
         }
-        this.dependencies.waitFor(["IgeImageClass"], () => {
-            if (!ige.textures._textureImageStore[imageUrl]) {
-                // Image not in cache, create the image object
-                const image = ige.textures._textureImageStore[imageUrl] = this.image = this._originalImage = new IgeImageClass();
+        if (!ige.textures._textureImageStore[imageUrl]) {
+            fetch(imageUrl)
+                .then(resp => resp.blob())
+                .then(blob => createImageBitmap(blob))
+                .then(image => {
+                ige.textures._textureImageStore[imageUrl] = this.image = this._originalImage = image;
                 image._igeTextures = image._igeTextures || [];
                 // Add this texture to the textures that are using this image
                 image._igeTextures.push(this);
-                image.onload = () => {
-                    // Mark the image as loaded
-                    image._loaded = true;
-                    // Log success
-                    this.log("Texture image (" + imageUrl + ") loaded successfully");
-                    /*if (image.width % 2) {
-                            self.log('The texture ' + imageUrl + ' width (' + image.width + ') is not divisible by 2 to a whole number! This can cause rendering artifacts. It can also cause performance issues on some GPUs. Please make sure your texture width is divisible by 2!', 'warning');
-                        }
+                // Mark the image as loaded
+                image._loaded = true;
+                // Log success
+                this.log("Texture image (" + imageUrl + ") loaded successfully");
+                /*if (image.width % 2) {
+                        self.log('The texture ' + imageUrl + ' width (' + image.width + ') is not divisible by 2 to a whole number! This can cause rendering artifacts. It can also cause performance issues on some GPUs. Please make sure your texture width is divisible by 2!', 'warning');
+                    }
 
-                        if (image.height % 2) {
-                            self.log('The texture ' + imageUrl + ' height (' + image.height + ') is not divisible by 2 to a whole number! This can cause rendering artifacts. It can also cause performance issues on some GPUs. Please make sure your texture height is divisible by 2!', 'warning');
-                        }*/
-                    // Loop textures that are using this image
-                    const arr = image._igeTextures;
-                    const arrCount = arr.length;
-                    for (let i = 0; i < arrCount; i++) {
-                        const item = arr[i];
-                        item._renderMode = IgeTextureRenderMode.image;
-                        item.sizeX(image.width);
-                        item.sizeY(image.height);
-                        item._cells[1] = [0, 0, item._sizeX, item._sizeY];
-                        // Mark texture as loaded
-                        item._textureLoaded();
-                    }
-                };
-                image.onerror = () => {
-                };
-                // Start the image loading by setting the source url
-                image.src = imageUrl;
-            }
-            else {
-                // Grab the cached image object
-                const image = this.image = this._originalImage = ige.textures._textureImageStore[imageUrl];
-                // Add this texture to the textures that are using this image
-                image._igeTextures.push(this);
-                if (image._loaded) {
-                    // The cached image object is already loaded so
-                    // fire off the relevant events
-                    this._renderMode = IgeTextureRenderMode.image;
-                    this.sizeX(image.width);
-                    this.sizeY(image.height);
-                    if (image.width % 2) {
-                        this.log("This texture's width is not divisible by 2 which will cause the texture to use sub-pixel rendering resulting in a blurred image. This may also slow down the renderer on some browsers. Image file: " +
-                            this._url, "warning");
-                    }
                     if (image.height % 2) {
-                        this.log("This texture's height is not divisible by 2 which will cause the texture to use sub-pixel rendering resulting in a blurred image. This may also slow down the renderer on some browsers. Image file: " +
-                            this._url, "warning");
-                    }
-                    this._cells[1] = [0, 0, this._sizeX, this._sizeY];
-                    // Mark texture as loaded
-                    this._textureLoaded();
+                        self.log('The texture ' + imageUrl + ' height (' + image.height + ') is not divisible by 2 to a whole number! This can cause rendering artifacts. It can also cause performance issues on some GPUs. Please make sure your texture height is divisible by 2!', 'warning');
+                    }*/
+                // Loop textures that are using this image
+                const arr = image._igeTextures;
+                const arrCount = arr.length;
+                for (let i = 0; i < arrCount; i++) {
+                    const item = arr[i];
+                    item._renderMode = IgeTextureRenderMode.image;
+                    item.sizeX(image.width);
+                    item.sizeY(image.height);
+                    item._cells[1] = [0, 0, item._sizeX, item._sizeY];
                 }
+                // Mark texture as loaded
+                this._textureLoaded();
+            });
+        }
+        else {
+            // Grab the cached image object
+            const image = this.image = this._originalImage = ige.textures._textureImageStore[imageUrl];
+            // Add this texture to the textures that are using this image
+            image._igeTextures.push(this);
+            if (image._loaded) {
+                // The cached image object is already loaded so
+                // fire off the relevant events
+                this._renderMode = IgeTextureRenderMode.image;
+                this.sizeX(image.width);
+                this.sizeY(image.height);
+                if (image.width % 2) {
+                    this.log("This texture's width is not divisible by 2 which will cause the texture to use sub-pixel rendering resulting in a blurred image. This may also slow down the renderer on some browsers. Image file: " +
+                        this._url, "warning");
+                }
+                if (image.height % 2) {
+                    this.log("This texture's height is not divisible by 2 which will cause the texture to use sub-pixel rendering resulting in a blurred image. This may also slow down the renderer on some browsers. Image file: " +
+                        this._url, "warning");
+                }
+                this._cells[1] = [0, 0, this._sizeX, this._sizeY];
+                // Mark texture as loaded
+                this._textureLoaded();
             }
-        });
+        }
     }
     _textureLoaded() {
         // Set a timeout here so that when this event is emitted,
@@ -181,48 +173,29 @@ export class IgeTexture extends IgeAsset {
      * @private
      */
     _loadScript(scriptUrl) {
-        //ige.textures.onLoadStart(scriptUrl, this);
         if (isClient) {
             import(scriptUrl)
-                .then((module) => {
-                console.log("Loaded module", module);
+                .then(({ image }) => {
+                console.log("Loaded module", image);
+                this.log('Texture script "' + scriptUrl + '" loaded successfully');
+                // Parse the JS with evil eval and store the result in the asset
+                // Store the eval data (the "image" variable is declared
+                // by the texture script and becomes available in this scope
+                // because we evaluated it above)
+                this._renderMode = 1;
+                this.script = image;
+                // Run the asset script init method
+                if (typeof (image.init) === 'function') {
+                    image.init.apply(image, [self]);
+                }
+                //self.sizeX(image.width);
+                //self.sizeY(image.height);
+                // Mark texture as loaded
+                this._textureLoaded();
             })
                 .catch((err) => {
                 console.log("Module error", err);
             });
-            // TODO: Finish this off so we can dynamically load script-based
-            //		render functions and store the imported module as a Smart Texture
-            // scriptElem = document.createElement("script");
-            // scriptElem.onload = function (data) {
-            // 	self.log("Texture script \"" + scriptUrl + "\" loaded successfully");
-            // 	// Parse the JS with evil eval and store the result in the asset
-            // 	eval(data);
-            //
-            // 	// Store the eval data (the "image" variable is declared
-            // 	// by the texture script and becomes available in this scope
-            // 	// because we evaluated it above)
-            // 	self._renderMode = IgeTextureRenderMode.smartTexture;
-            // 	self.script = image;
-            //
-            // 	// Run the asset script init method
-            // 	if (typeof(image.init) === "function") {
-            // 		image.init.apply(image, [self]);
-            // 	}
-            //
-            // 	//self.sizeX(image.width);
-            // 	//self.sizeY(image.height);
-            //
-            // 	self._loaded = true;
-            // 	self.emit("loaded");
-            // 	ige.textures.onLoadEnd(scriptUrl, self);
-            // };
-            //
-            // scriptElem.addEventListener("error", () => {
-            // 	self.log("Error loading smart texture script file: " + scriptUrl, "error");
-            // }, true);
-            //
-            // scriptElem.src = scriptUrl;
-            // document.getElementsByTagName("head")[0].appendChild(scriptElem);
         }
     }
     /**
@@ -255,10 +228,9 @@ export class IgeTexture extends IgeAsset {
      * @private
      */
     _setImage(imageElement) {
-        let image;
         if (isClient) {
             // Create the image object
-            image = this.image = this._originalImage = imageElement;
+            const image = this.image = this._originalImage = imageElement;
             // Mark the image as loaded
             image._loaded = true;
             this._renderMode = IgeTextureRenderMode.image;

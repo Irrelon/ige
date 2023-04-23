@@ -1,5 +1,9 @@
-import { IgeComponent } from "../core/IgeComponent";
-import { IgeEntity } from "../core/IgeEntity";
+import {IgeComponent} from "../core/IgeComponent";
+import {IgeEntity} from "../core/IgeEntity";
+import {isClient, isServer} from "../clientServer";
+import {IgeTileMap2d} from "@/engine/core/IgeTileMap2d";
+import {IgeTextureMap} from "@/engine/core/IgeTextureMap";
+import {IgeCellSheet} from "@/engine/core/IgeCellSheet";
 
 /**
  * Loads slightly modified Tiled-format json map data into the Isogenic Engine.
@@ -20,55 +24,56 @@ export class IgeTiledComponent extends IgeComponent {
 	 * @param callback
 	 */
 	loadJson = (url, callback) => {
-		let self = this,
-			scriptElem;
+		let scriptElem;
 
-		if (typeof(url) === "string") {
-			if (this._ige.isClient) {
+		if (typeof (url) === "string") {
+			if (isClient) {
 				scriptElem = document.createElement("script");
 				scriptElem.src = url;
 				scriptElem.onload = function () {
-					self.log("Tiled data loaded, processing...");
-					self._processData(tiled, callback);
+					this.log("Tiled data loaded, processing...");
+					//self._processData(tiled, callback);
 				};
+
 				document.getElementsByTagName("head")[0].appendChild(scriptElem);
 			} else {
 				this.log("URL-based Tiled data is only available client-side. If you want to load Tiled map data on the server please include the map file in your ServerConfig.js file and then specify the map's data object instead of the URL.", "error");
 			}
 		} else {
-			self._processData(url, callback);
+			this._processData(url, callback);
 		}
 	};
 
 	_processData = (data, callback) => {
-		let mapClass = this._ige.isServer === true ? IgeTileMap2d : IgeTextureMap,
+		const mapClass = isServer === true ? IgeTileMap2d : IgeTextureMap,
 			mapWidth = data.width,
 			mapHeight = data.height,
 			layerArray = data.layers,
 			layerCount = layerArray.length,
+			maps: (IgeTileMap2d | IgeTextureMap)[] = [],
+			layersById = {},
+			tileSetArray = data.tilesets,
+			tileSetsTotal = tileSetArray.length,
+			textureCellLookup: IgeCellSheet[] = [],
+			textures = [];
+
+		let
+			tileSetCount = tileSetArray.length,
 			layer,
 			layerType,
 			layerData,
 			layerDataCount,
-			maps = [],
-			layersById = {},
-			tileSetArray = data.tilesets,
-			tileSetCount = tileSetArray.length,
 			tileSetItem,
-			tileSetsTotal = tileSetCount,
 			tileSetsLoaded = 0,
-			textureCellLookup = [],
 			currentTexture,
 			currentCell,
 			onLoadFunc,
 			image,
-			textures = [],
-			allTexturesLoadedFunc,
 			i, k, x, y, z,
 			ent;
 
 		// Define the function to call when all textures have finished loading
-		allTexturesLoadedFunc = function () {
+		const allTexturesLoadedFunc = function () {
 			// Create a map for each layer
 			for (i = 0; i < layerCount; i++) {
 				layer = layerArray[i];
@@ -84,7 +89,6 @@ export class IgeTiledComponent extends IgeComponent {
 						.tileHeight(data.tilewidth)
 						.depth(i);
 
-					maps[i].type = layerType;
 
 					// Check if the layer should be isometric mounts enabled
 					if (data.orientation === "isometric") {
@@ -94,9 +98,12 @@ export class IgeTiledComponent extends IgeComponent {
 					layersById[layer.name] = maps[i];
 					tileSetCount = tileSetArray.length;
 
-					if (this._ige.isClient) {
+					if (isClient) {
+						const textureMap = maps[i] as IgeTextureMap
+						textureMap.type = layerType;
+
 						for (k = 0; k < tileSetCount; k++) {
-							maps[i].addTexture(textures[k]);
+							textureMap.addTexture(textures[k]);
 						}
 					}
 
@@ -108,12 +115,14 @@ export class IgeTiledComponent extends IgeComponent {
 							z = x + (y * mapWidth);
 
 							if (layerData[z] > 0 && layerData[z] !== 2147483712) {
-								if (this._ige.isClient) {
+								if (isClient) {
+									const textureMap = maps[i] as IgeTextureMap
+
 									// Paint the tile
 									currentTexture = textureCellLookup[layerData[z]];
 									if (currentTexture) {
 										currentCell = layerData[z] - (currentTexture._tiledStartingId - 1);
-										maps[i].paintTile(x, y, maps[i]._textureList.indexOf(currentTexture), currentCell);
+										textureMap.paintTile(x, y, textureMap._textureList.indexOf(currentTexture), currentCell);
 									}
 								} else {
 									// Server-side we don't paint tiles on a texture map
@@ -136,30 +145,29 @@ export class IgeTiledComponent extends IgeComponent {
 			callback(maps, layersById);
 		};
 
-		if (this._ige.isClient) {
-			onLoadFunc = function (textures, tileSetCount, tileSetItem) {
-				return function () {
-					let i, cc,
-						cs = new IgeCellSheet(tileSetItem.image, this.width / tileSetItem.tilewidth, this.height / tileSetItem.tileheight)
-							.id(tileSetItem.name)
-							.on("loaded", function () {
-								cc = this.cellCount();
+		if (isClient) {
+			onLoadFunc = function (_textures, _tileSetCount, _tileSetItem) {
+				return function (this: HTMLImageElement) {
+					let cc;
+					const cs = new IgeCellSheet(_tileSetItem.name, _tileSetItem.image, this.width / _tileSetItem.tilewidth, this.height / _tileSetItem.tileheight)
+						.on("loaded", function (this: IgeCellSheet) {
+							cc = this.cellCount();
 
-								this._tiledStartingId = tileSetItem.firstgid;
-								// Fill the lookup array
-								for (i = 0; i < cc; i++) {
-									textureCellLookup[this._tiledStartingId + i] = this;
-								}
+							const tiledStartingId = _tileSetItem.firstgid;
+							// Fill the lookup array
+							for (let ii = 0; ii < cc; i++) {
+								textureCellLookup[tiledStartingId + ii] = this;
+							}
 
-								textures.push(this);
+							_textures.push(this);
 
-								tileSetsLoaded++;
+							tileSetsLoaded++;
 
-								if (tileSetsLoaded === tileSetsTotal) {
-									// All textures loaded, fire processing function
-									allTexturesLoadedFunc();
-								}
-							});
+							if (tileSetsLoaded === tileSetsTotal) {
+								// All textures loaded, fire processing function
+								allTexturesLoadedFunc();
+							}
+						});
 				};
 			};
 

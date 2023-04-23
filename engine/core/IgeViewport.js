@@ -17,7 +17,6 @@ export class IgeViewport extends IgeUiEntity {
         super();
         this.classId = "IgeViewport";
         this.IgeViewport = true;
-        this._idRegistered = false;
         this._autoSize = false;
         let width, height;
         this._alwaysInView = true;

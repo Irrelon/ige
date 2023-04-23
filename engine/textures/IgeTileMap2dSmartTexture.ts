@@ -12,9 +12,7 @@ export const IgeTileMap2dSmartTexture: IgeSmartTexture = {
 			bounds2d = ent._bounds2d,
 			gridSize = ent._gridSize;
 
-		let x = 0;
-		let y = 0;
-
+		let x = 0, y = 0, tilePoint;
 		/*ctx.save();
 		var triggerPoly = ent.tileMapHitPolygon();
 
@@ -81,9 +79,9 @@ export const IgeTileMap2dSmartTexture: IgeSmartTexture = {
 
 		if (ent._highlightOccupied) {
 			ctx.fillStyle = "#ff0000";
-			for (y in ent.map._mapData) {
+			for (y of ent.map._mapData.keys()) {
 				if (ent.map._mapData[y]) {
-					for (x in ent.map._mapData[y]) {
+					for (x of ent.map._mapData[y].keys()) {
 						if (ent.map._mapData[y][x]) {
 							// Tile is occupied
 							tilePoint = new IgePoint2d(tileWidth * x, tileHeight * y);
@@ -144,10 +142,10 @@ export const IgeTileMap2dSmartTexture: IgeSmartTexture = {
 
 		if (ent._drawMouse) {
 			// Get mouse position
-			var mousePos = ent.mousePos(),
-				mouseTile = ent.mouseToTile(),
-				tilePoint,
-				text,
+			const mousePos = ent.mousePos(),
+				mouseTile = ent.mouseToTile();
+
+			let text,
 				textMeasurement;
 
 			if (mouseTile.x >= 0 && mouseTile.y >= 0 && mouseTile.x < gridSize.x && mouseTile.y < gridSize.y) {

@@ -3,8 +3,7 @@ import { ige } from "../instance";
 import { IgeTexture } from "../core/IgeTexture";
 import { IgeObject } from "../core/IgeObject";
 import type { Mixin } from "@/types/Mixin";
-
-export type IgeRepeatType = "repeat" | "repeat-x" | "repeat-y" | "no-repeat";
+import {IgeRepeatType} from "@/types/IgeRepeatType";
 
 // TODO: Update this mixin so it extends from IgeBaseClass, moving anything that relies on IgeEntity
 //    to another class, probably IgeEntity or IgeUiEntity?

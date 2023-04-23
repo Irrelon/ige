@@ -5,6 +5,23 @@ import { IgeCanvasRenderingContext2d } from "@/types/IgeCanvasRenderingContext2d
 export declare class IgeEntityManagerComponent extends IgeComponent {
     classId: string;
     componentId: string;
+    private _maps;
+    private _overwatchMode;
+    private _removeMode;
+    private _createArr;
+    private _removeArr;
+    private _active;
+    private _maxCreatePerTick?;
+    private _maxRemovePerTick?;
+    private _createCheck?;
+    private _createEntityFromMapData;
+    private _removeCheck?;
+    private _trackTranslateTarget?;
+    private _areaCenter?;
+    private _areaRect?;
+    private _areaRectAutoSize;
+    private _areaRectAutoSizeOptions;
+    _lastArea: IgeRect;
     /**
      * @constructor
      * @param {Object} entity The parent object that this component is being added to.
@@ -83,7 +100,7 @@ export declare class IgeEntityManagerComponent extends IgeComponent {
      * @param entity
      * @return {*}
      */
-    trackTranslate: (entity: any) => any;
+    trackTranslate: (entity: any) => IgeEntity | this | undefined;
     /**
      * Stops tracking the current tracking target's translation.
      */

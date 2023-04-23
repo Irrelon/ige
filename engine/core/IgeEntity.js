@@ -574,6 +574,7 @@ export class IgeEntity extends IgeObject {
         const tileWidth = this._tileWidth || 1;
         const tileHeight = this._tileHeight || 1;
         const tile = this._parent.pointToTile(this._translate);
+        //TODO: Should this be point2d instead?
         const tileArr = [];
         for (let x = 0; x < tileWidth; x++) {
             for (let y = 0; y < tileHeight; y++) {

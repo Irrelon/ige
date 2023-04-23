@@ -264,5 +264,5 @@ export declare class IgePathComponent extends IgeComponent {
      * @return {IgePoint3d}
      * @private
      */
-    _positionAlongVector: (p1: IgePoint3d, p2: IgePoint3d, speed: number, deltaTime: number) => IgePoint3d;
+    _positionAlongVector: (p1: IgePoint3d, p2: IgePoint3d, speed: number, deltaTime: number) => any;
 }
