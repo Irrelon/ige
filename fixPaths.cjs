@@ -10,7 +10,7 @@
 const chokidar = require("chokidar");
 const fs = require("fs");
 const { readFile, writeFile, readdir } = require("fs").promises;
-const { resolve } = require("path");
+const { resolve, normalize } = require("path");
 const { minimatch } = require("minimatch");
 
 const matchPattern = ["**/*.js", "**/*.jsx"];
@@ -45,7 +45,7 @@ const readTsConfig = () => {
 
 	Object.entries(tsPaths).forEach(([key, replacementArr]) => {
 		tsResolvedPaths[key] = replacementArr.map((dir) => {
-			return resolve(__dirname, dir);
+			return normalize(resolve(__dirname, dir));
 		});
 	});
 };
@@ -125,7 +125,7 @@ const processFile = (file) => {
 			const replace = replacementArr[0].replace("*", "");
 
 			const relativeSteps = new Array(file.replace(__dirname, "").split("/").length - 2).fill("../").join("");
-			const replacementPath = relativeSteps + replace;
+			const replacementPath = normalize(relativeSteps + replace);
 
 			updatedContent = updatedContent.replaceAll(find, replacementPath);
 		});
