@@ -642,9 +642,12 @@ export class IgeEngine extends IgeEntity {
 	 * @param {Boolean=} val
 	 * @return {*}
 	 */
-	useManualTicks (val?: boolean) {
+	useManualTicks (): boolean
+	useManualTicks (val: boolean): IgeEngine
+	useManualTicks (val?: boolean): boolean | IgeEngine {
 		if (val !== undefined) {
 			this._useManualTicks = val;
+			this._manualFrameAlternator = !this._frameAlternator; // Set this otherwise the first manual frame won't fire
 			return this;
 		}
 
@@ -655,10 +658,18 @@ export class IgeEngine extends IgeEntity {
 	 * Schedules a manual tick.
 	 */
 	manualTick () {
-		if (this._manualFrameAlternator !== this._frameAlternator) {
-			this._manualFrameAlternator = this._frameAlternator;
-			this.requestAnimFrame(this.engineStep);
-		}
+		return new Promise<void>((resolve, reject) => {
+			if (this._manualFrameAlternator !== this._frameAlternator) {
+				this._manualFrameAlternator = this._frameAlternator;
+				this.requestAnimFrame((timeStamp: number, ctx?: IgeCanvasRenderingContext2d | null) => {
+					this.engineStep(timeStamp, ctx);
+					resolve();
+				});
+			} else {
+				reject(new Error("Manual tick still in progress"));
+			}
+		})
+
 	}
 
 	/**

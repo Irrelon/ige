@@ -201,11 +201,12 @@ export declare class IgeEngine extends IgeEntity {
      * @param {Boolean=} val
      * @return {*}
      */
-    useManualTicks(val?: boolean): boolean | this;
+    useManualTicks(): boolean;
+    useManualTicks(val: boolean): typeof this;
     /**
      * Schedules a manual tick.
      */
-    manualTick(): void;
+    manualTick(): Promise<void>;
     /**
      * Gets / sets the option to determine if the engine should
      * render on every tick or wait for a manualRender() call.

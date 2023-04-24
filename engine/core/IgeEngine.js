@@ -700,16 +700,10 @@ export class IgeEngine extends IgeEntity {
         }
         return this._pause;
     }
-    /**
-     * Gets / sets the option to determine if the engine should
-     * schedule its own ticks or if you want to manually advance
-     * the engine by calling tick when you wish to.
-     * @param {Boolean=} val
-     * @return {*}
-     */
     useManualTicks(val) {
         if (val !== undefined) {
             this._useManualTicks = val;
+            this._manualFrameAlternator = !this._frameAlternator; // Set this otherwise the first manual frame won't fire
             return this;
         }
         return this._useManualTicks;
@@ -718,10 +712,18 @@ export class IgeEngine extends IgeEntity {
      * Schedules a manual tick.
      */
     manualTick() {
-        if (this._manualFrameAlternator !== this._frameAlternator) {
-            this._manualFrameAlternator = this._frameAlternator;
-            this.requestAnimFrame(this.engineStep);
-        }
+        return new Promise((resolve, reject) => {
+            if (this._manualFrameAlternator !== this._frameAlternator) {
+                this._manualFrameAlternator = this._frameAlternator;
+                this.requestAnimFrame((timeStamp, ctx) => {
+                    this.engineStep(timeStamp, ctx);
+                    resolve();
+                });
+            }
+            else {
+                reject(new Error("Manual tick still in progress"));
+            }
+        });
     }
     /**
      * Gets / sets the option to determine if the engine should
