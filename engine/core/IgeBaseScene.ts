@@ -2,6 +2,7 @@ import {ige} from "../instance";
 import { IgeSceneGraph } from "./IgeSceneGraph";
 import { IgeScene2d } from "./IgeScene2d";
 import { IgeViewport } from "./IgeViewport";
+import { registerClass } from "@/engine/igeClassStore";
 
 /**
  * When loaded into memory using ige.addGraph('IgeBaseScene') will create
@@ -45,3 +46,5 @@ export class IgeBaseScene extends IgeSceneGraph {
 		ige.$("baseScene")?.destroy();
 	};
 }
+
+registerClass(IgeBaseScene);

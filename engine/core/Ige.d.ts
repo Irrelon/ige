@@ -14,12 +14,13 @@ import { IgeUiManagerController } from "@/engine/core/IgeUiManagerController";
 import { IgeBox2dController } from "@/engine/components/physics/box2d/IgeBox2dController";
 import type { IgeIsReadyPromise } from "@/types/IgeIsReadyPromise";
 import type { IgeAudioController } from "@/engine/audio";
-import type { IgeObject } from "./IgeObject";
 import type { IgeObjectWithValueProperty } from "@/types/IgeObjectWithValueProperty";
 import type { IgeCanRegisterByCategory } from "@/types/IgeCanRegisterByCategory";
 import type { IgeViewport } from "./IgeViewport";
 import type { IgeNetIoClientController } from "@/engine/network/client/IgeNetIoClientController";
 import type { IgeNetIoServerController } from "@/engine/network/server/IgeNetIoServerController";
+import { IgeCanRegisterById } from "@/types/IgeCanRegisterById";
+import { IgeCanBeDestroyed } from "@/types/IgeCanBeDestroyed";
 export declare class Ige implements IgeIsReadyPromise {
     app: any;
     audio?: IgeAudioController;
@@ -57,7 +58,7 @@ export declare class Ige implements IgeIsReadyPromise {
      * @param {string | Object} item The id of the item to return,
      * or if an object, returns the object as-is.
      */
-    $<ObjectType = IgeObject>(item: string | ObjectType | undefined): (import("../../types/IgeCanRegisterById").IgeCanRegisterById & import("../../types/IgeCanBeDestroyed").IgeCanBeDestroyed) | (ObjectType & object) | (ObjectType & null) | undefined;
+    $<ObjectType extends IgeCanRegisterById & IgeCanBeDestroyed>(item: string | ObjectType | undefined): ObjectType | undefined;
     /**
      * Returns an array of all objects that have been assigned
      * the passed category name.
