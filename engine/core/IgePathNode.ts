@@ -5,9 +5,7 @@ import { IgePoint3d } from "./IgePoint3d";
  */
 export class IgePathNode extends IgePoint3d {
 	classId = "IgePathNode";
-	x: number;
-	y: number;
-	z: number;
+
 	g: number;
 	h: number;
 	moveCost: number;
@@ -30,8 +28,9 @@ export class IgePathNode extends IgePoint3d {
 	 * @param {number} heuristic
 	 * @param {Object} parent
 	 * @param {string} direction
+	 * @param {number} z
 	 */
-	constructor (x: number, y: number, g: number, moveCost: number = 0, heuristic: number = 0, parent?: IgePathNode, direction: string = "") {
+	constructor (x: number, y: number, g: number, moveCost: number = 0, heuristic: number = 0, parent?: IgePathNode, direction: string = "", z: number = 0) {
 		super();
 
 		this.x = x;
@@ -49,7 +48,9 @@ export class IgePathNode extends IgePoint3d {
 	}
 
 	static fromPoint3d (point3d: IgePoint3d): IgePathNode {
-		return new IgePathNode(point3d.x, point3d.y, point3d.z);
+		const node = new IgePathNode(point3d.x, point3d.y, 0);
+		node.z = point3d.z;
+		return node;
 	}
 
 	/**

@@ -12,8 +12,9 @@ export class IgePathNode extends IgePoint3d {
      * @param {number} heuristic
      * @param {Object} parent
      * @param {string} direction
+     * @param {number} z
      */
-    constructor(x, y, g, moveCost = 0, heuristic = 0, parent, direction = "") {
+    constructor(x, y, g, moveCost = 0, heuristic = 0, parent, direction = "", z = 0) {
         super();
         this.classId = "IgePathNode";
         this._distanceToNext = 0;
@@ -33,7 +34,9 @@ export class IgePathNode extends IgePoint3d {
         this._mode = 0;
     }
     static fromPoint3d(point3d) {
-        return new IgePathNode(point3d.x, point3d.y, point3d.z);
+        const node = new IgePathNode(point3d.x, point3d.y, 0);
+        node.z = point3d.z;
+        return node;
     }
     /**
      * Gets / sets the path node mode. The mode determines if the co-ordinates

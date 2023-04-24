@@ -4,9 +4,6 @@ import { IgePoint3d } from "./IgePoint3d";
  */
 export declare class IgePathNode extends IgePoint3d {
     classId: string;
-    x: number;
-    y: number;
-    z: number;
     g: number;
     h: number;
     moveCost: number;
@@ -28,8 +25,9 @@ export declare class IgePathNode extends IgePoint3d {
      * @param {number} heuristic
      * @param {Object} parent
      * @param {string} direction
+     * @param {number} z
      */
-    constructor(x: number, y: number, g: number, moveCost?: number, heuristic?: number, parent?: IgePathNode, direction?: string);
+    constructor(x: number, y: number, g: number, moveCost?: number, heuristic?: number, parent?: IgePathNode, direction?: string, z?: number);
     static fromPoint3d(point3d: IgePoint3d): IgePathNode;
     /**
      * Gets / sets the path node mode. The mode determines if the co-ordinates
