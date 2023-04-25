@@ -1,5 +1,5 @@
 import { ige } from "../instance";
-import { isClient, isServer } from "../clientServer";
+import { isClient, isServer, isWorker } from "../clientServer";
 import { IgePoint3d } from "./IgePoint3d";
 import { IgeDummyContext } from "./IgeDummyContext";
 import { IgeInputComponent } from "../components/IgeInputComponent";
@@ -1166,7 +1166,7 @@ export class IgeEngine extends IgeEntity {
 
 	requestAnimFrame (frameHandlerFunction: (timestamp: number, ctx?: IgeCanvasRenderingContext2d) => void, element?: Element) {
 		if (isClient) {
-			window.requestAnimationFrame(frameHandlerFunction);
+			globalThis.requestAnimationFrame(frameHandlerFunction);
 			return;
 		}
 
@@ -1300,7 +1300,7 @@ export class IgeEngine extends IgeEntity {
 	 * @return {Boolean}
 	 */
 	canvasReady = () => {
-		return this._canvas !== undefined || isServer;
+		return this._canvas !== undefined || isWorker || isServer;
 	};
 
 	/**
@@ -1376,7 +1376,7 @@ export class IgeEngine extends IgeEntity {
 
 					// Check if we have a DOM, that there is an igeLoading element
 					// and if so, remove it from the DOM now
-					if (isClient) {
+					if (isClient && !isWorker) {
 						if (document.getElementsByClassName && document.getElementsByClassName("igeLoading")) {
 							const arr = document.getElementsByClassName("igeLoading");
 							let arrCount = arr.length;

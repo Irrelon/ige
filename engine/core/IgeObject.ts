@@ -587,7 +587,8 @@ export class IgeObject extends IgeEventingClass implements IgeCanRegisterById, I
 		let arrCount = arr.length;
 
 		// Depth sort all child objects
-		if (arrCount && !ige.engine._headless) {
+		// if (arrCount && !ige.engine._headless) {
+		if (arrCount) {
 			if (ige.config.debug._timing) {
 				if (!ige.engine._timeSpentLastTick[this.id()]) {
 					ige.engine._timeSpentLastTick[this.id()] = {};

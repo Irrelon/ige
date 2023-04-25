@@ -8,7 +8,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 import { ige } from "../instance.js";
-import { isClient, isServer } from "../clientServer.js";
+import { isClient, isServer, isWorker } from "../clientServer.js";
 import { IgePoint3d } from "./IgePoint3d.js";
 import { IgeDummyContext } from "./IgeDummyContext.js";
 import { IgeEntity } from "./IgeEntity.js";
@@ -179,7 +179,7 @@ export class IgeEngine extends IgeEntity {
          * @return {Boolean}
          */
         this.canvasReady = () => {
-            return this._canvas !== undefined || isServer;
+            return this._canvas !== undefined || isWorker || isServer;
         };
         /**
          * Called each frame to traverse and render the scenegraph.
@@ -1149,7 +1149,7 @@ export class IgeEngine extends IgeEntity {
     }
     requestAnimFrame(frameHandlerFunction, element) {
         if (isClient) {
-            window.requestAnimationFrame(frameHandlerFunction);
+            globalThis.requestAnimationFrame(frameHandlerFunction);
             return;
         }
         setTimeout(function () {
@@ -1318,7 +1318,7 @@ export class IgeEngine extends IgeEntity {
                     this._state = IgeEngineState.started;
                     // Check if we have a DOM, that there is an igeLoading element
                     // and if so, remove it from the DOM now
-                    if (isClient) {
+                    if (isClient && !isWorker) {
                         if (document.getElementsByClassName && document.getElementsByClassName("igeLoading")) {
                             const arr = document.getElementsByClassName("igeLoading");
                             let arrCount = arr.length;
