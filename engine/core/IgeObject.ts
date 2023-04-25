@@ -848,7 +848,7 @@ export class IgeObject extends IgeEventingClass implements IgeCanRegisterById, I
 		obj.aabb(true);
 
 		if (obj._compositeCache) {
-			this._compositeCache = true;
+			this._compositeParent = true;
 		} else {
 			this._compositeParent = false;
 		}
@@ -1541,7 +1541,7 @@ export class IgeObject extends IgeEventingClass implements IgeCanRegisterById, I
 		this._children.forEach((child) => {
 			child._compositeParent = val;
 
-			if (propagateToChildren && "compositeCache" in child) {
+			if (propagateToChildren && ("compositeCache" in child)) {
 				child.compositeCache(val, propagateToChildren);
 			}
 		});
