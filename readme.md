@@ -10,15 +10,15 @@ HTML5 2D and isometric scenegraph-based game engine written entirely in JavaScri
 > With all that said, it's 2023 and back in 2011, ES classes, ES modules, TypeScript, webpack
 > etc did not exist. As such, language functionality such as classes were custom-created to
 > facilitate an inheritance-style codebase. This was great, as was the magic of using ES
-> classes years before they even existed, but now we have native functionality in our
-> beloved language, a rewrite of the engine need to happen to make use of that nirvana.
+> classes years before they even existed, but now we have native functionality in 
+> JavaScript, a rewrite of the engine needs to happen to make use of that new functionality.
 > The changes to the engine to support native functionality is in the branch `es6-typescript`
 > that has largely completed the work of converting the engine to use native ES6 classes and
 > TypeScript for all engine features. It will soon be merged into the master branch and
 > will be considered the production version.
 >
-> Minor changes exist as well as some breaking changes that were ultimately made to
-> increase functionality or update anachronistic coding patterns to more modern expectations.
+> Minor changes exist as well as some breaking changes (such as the removal of ClientConfig and ServerConfig files)
+> that were ultimately made to increase functionality or update anachronistic coding patterns to more modern expectations.
 >
 > **The major changes are:**
 >
