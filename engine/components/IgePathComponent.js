@@ -483,10 +483,10 @@ export class IgePathComponent extends IgeComponent {
             return this._drawPathText;
         };
         this.multiplyPoint = (point) => {
-            return point.multiply(this._entity._parent._tileWidth, this._entity._parent._tileHeight, 1);
+            return point.multiply(this._entity._parent._tileWidth, this._entity._parent._tileHeight, this._entity._parent._tileDepth || 1);
         };
         this.dividePoint = (point) => {
-            return point.divide(this._entity._parent._tileWidth, this._entity._parent._tileHeight, 1);
+            return point.divide(this._entity._parent._tileWidth, this._entity._parent._tileHeight, this._entity._parent._tileDepth || 1);
         };
         this.transformPoint = (point) => {
             return new IgePoint3d(point.x + this._entity._parent._tileWidth / 2, point.y + this._entity._parent._tileHeight / 2, point.z);
@@ -542,7 +542,7 @@ export class IgePathComponent extends IgeComponent {
                             newPoint = this.transformPoint(newPoint);
                             // We must translate the entity at a minimum once per point to ensure it's coords are correct if a new path starts
                             this._entity.translateToPoint(newPoint);
-                            this.emit("pointComplete", this._entity, pointArr[p].x, pointArr[p].y, pointNext.x, pointNext.y, p, p + 1, effectiveTime);
+                            this.emit('pointComplete', [this, pointArr[p].x, pointArr[p].y, pointNext.x, pointNext.y, p, p + 1, effectiveTime, pointArr[p].z, pointNext.z]);
                             if (this._nextPointToProcess <= p) {
                                 // The path has restarted so bomb out and catch up next tick
                                 return;
@@ -586,7 +586,7 @@ export class IgePathComponent extends IgeComponent {
                         newPoint = this.transformPoint(newPoint);
                         // We must translate the entity at a minimum once per point to ensure it's coords are correct if a new path starts
                         this._entity.translateToPoint(newPoint);
-                        this.emit("pointComplete", this._entity, pointArr[p].x, pointArr[p].y, pointNext.x, pointNext.y, p, p + 1, effectiveTime);
+                        this.emit('pointComplete', [this, pointArr[p].x, pointArr[p].y, pointNext.x, pointNext.y, p, p + 1, effectiveTime, pointArr[p].z, pointNext.z]);
                         if (this._nextPointToProcess <= p) {
                             // The path has restarted so bomb out and catch up next tick
                             return;
@@ -596,7 +596,7 @@ export class IgePathComponent extends IgeComponent {
                     this._previousPointTo = pointCount - 1;
                     this._finished = true;
                     effectiveTime = this._startTime + this._totalTime;
-                    this.emit("pathComplete", this._entity, pointArr[this._previousPointFrom].x, pointArr[this._previousPointFrom].y, effectiveTime);
+                    this.emit("pathComplete", this._entity, pointArr[this._previousPointFrom].x, pointArr[this._previousPointFrom].y, effectiveTime, pointArr[this._previousPointFrom].z);
                 }
             }
             else if (this._active && this._totalDistance == 0 && !this._finished) {
@@ -772,16 +772,20 @@ export class IgePathComponent extends IgeComponent {
         this._positionAlongVector = (p1, p2, speed, deltaTime) => {
             const p1X = p1.x;
             const p1Y = p1.y;
+            const p1Z = p1.z;
             const p2X = p2.x;
             const p2Y = p2.y;
+            const p2Z = p2.z;
             const deltaX = (p2X - p1X);
             const deltaY = (p2Y - p1Y);
+            const deltaZ = (p2Z - p1Z);
             const magnitude = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
             const normalisedX = deltaX / magnitude;
             const normalisedY = deltaY / magnitude;
+            const normalisedZ = deltaZ / magnitude;
             let newPoint;
-            if (deltaX !== 0 || deltaY !== 0) {
-                newPoint = new IgePoint3d(p1X + (normalisedX * (speed * deltaTime)), p1Y + (normalisedY * (speed * deltaTime)), 0);
+            if (deltaX !== 0 || deltaY !== 0 || deltaZ !== 0) {
+                newPoint = new IgePoint3d(p1X + (normalisedX * (speed * deltaTime)), p1Y + (normalisedY * (speed * deltaTime)), p1Z + (normalisedZ * (speed * deltaTime)));
             }
             else {
                 newPoint = new IgePoint3d(0, 0, 0);

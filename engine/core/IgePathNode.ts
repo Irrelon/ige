@@ -35,7 +35,7 @@ export class IgePathNode extends IgePoint3d {
 
 		this.x = x;
 		this.y = y;
-		this.z = 0; // Compat with IgePoint3d
+		this.z = z;
 		this.g = g + moveCost; // Cost of moving from the start point along the path to this node (parentNode.g + moveCost)
 		this.h = heuristic; // Rough distance to target node
 		this.moveCost = moveCost;

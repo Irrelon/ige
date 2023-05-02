@@ -118,8 +118,12 @@ export class IgePathFinder extends IgeEventingClass {
 			startPoint.y,
 			0,
 			0,
-			this._heuristic(startPoint.x, startPoint.y, endPoint.x, endPoint.y, 10)
+			this._heuristic(startPoint.x, startPoint.y, endPoint.x, endPoint.y, 10),
+			undefined,
+			undefined,
+			startPoint.z
 		);
+
 		// TODO this makes no sense, why did we assign as one?
 		//startNode.link = 1;
 		openList.push(startNode);
