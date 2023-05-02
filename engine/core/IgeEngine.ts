@@ -1,5 +1,5 @@
 import { ige } from "../instance";
-import { isClient, isServer } from "../clientServer";
+import { isClient, isServer, isWorker } from "../clientServer";
 import { IgePoint3d } from "./IgePoint3d";
 import { IgeDummyContext } from "./IgeDummyContext";
 import { IgeInputComponent } from "../components/IgeInputComponent";
@@ -642,9 +642,12 @@ export class IgeEngine extends IgeEntity {
 	 * @param {Boolean=} val
 	 * @return {*}
 	 */
-	useManualTicks (val?: boolean) {
+	useManualTicks (): boolean
+	useManualTicks (val: boolean): IgeEngine
+	useManualTicks (val?: boolean): boolean | IgeEngine {
 		if (val !== undefined) {
 			this._useManualTicks = val;
+			this._manualFrameAlternator = !this._frameAlternator; // Set this otherwise the first manual frame won't fire
 			return this;
 		}
 
@@ -655,10 +658,18 @@ export class IgeEngine extends IgeEntity {
 	 * Schedules a manual tick.
 	 */
 	manualTick () {
-		if (this._manualFrameAlternator !== this._frameAlternator) {
-			this._manualFrameAlternator = this._frameAlternator;
-			this.requestAnimFrame(this.engineStep);
-		}
+		return new Promise<void>((resolve, reject) => {
+			if (this._manualFrameAlternator !== this._frameAlternator) {
+				this._manualFrameAlternator = this._frameAlternator;
+				this.requestAnimFrame((timeStamp: number, ctx?: IgeCanvasRenderingContext2d | null) => {
+					this.engineStep(timeStamp, ctx);
+					resolve();
+				});
+			} else {
+				reject(new Error("Manual tick still in progress"));
+			}
+		})
+
 	}
 
 	/**
@@ -1155,7 +1166,7 @@ export class IgeEngine extends IgeEntity {
 
 	requestAnimFrame (frameHandlerFunction: (timestamp: number, ctx?: IgeCanvasRenderingContext2d) => void, element?: Element) {
 		if (isClient) {
-			window.requestAnimationFrame(frameHandlerFunction);
+			globalThis.requestAnimationFrame(frameHandlerFunction);
 			return;
 		}
 
@@ -1289,7 +1300,7 @@ export class IgeEngine extends IgeEntity {
 	 * @return {Boolean}
 	 */
 	canvasReady = () => {
-		return this._canvas !== undefined || isServer;
+		return this._canvas !== undefined || isWorker || isServer;
 	};
 
 	/**
@@ -1365,7 +1376,7 @@ export class IgeEngine extends IgeEntity {
 
 					// Check if we have a DOM, that there is an igeLoading element
 					// and if so, remove it from the DOM now
-					if (isClient) {
+					if (isClient && !isWorker) {
 						if (document.getElementsByClassName && document.getElementsByClassName("igeLoading")) {
 							const arr = document.getElementsByClassName("igeLoading");
 							let arrCount = arr.length;

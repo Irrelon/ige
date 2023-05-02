@@ -98,7 +98,7 @@ export declare class IgeEngine extends IgeEntity {
      * @param {IgeEntity} entity The entity to add.
      * @returns {Ige|[]} Either this, or the spawn queue.
      */
-    spawnQueue(entity: IgeObject): this | IgeObject[];
+    spawnQueue(entity: IgeObject): IgeObject[] | this;
     currentViewport(viewport?: IgeObject): IgeViewport | null;
     /**
      * Sets the canvas element that will be used as the front-buffer.
@@ -201,11 +201,12 @@ export declare class IgeEngine extends IgeEntity {
      * @param {Boolean=} val
      * @return {*}
      */
-    useManualTicks(val?: boolean): boolean | this;
+    useManualTicks(): boolean;
+    useManualTicks(val: boolean): IgeEngine;
     /**
      * Schedules a manual tick.
      */
-    manualTick(): void;
+    manualTick(): Promise<void>;
     /**
      * Gets / sets the option to determine if the engine should
      * render on every tick or wait for a manualRender() call.

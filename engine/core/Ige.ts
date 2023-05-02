@@ -23,6 +23,8 @@ import type { IgeCanRegisterByCategory } from "@/types/IgeCanRegisterByCategory"
 import type { IgeViewport } from "./IgeViewport";
 import type { IgeNetIoClientController } from "@/engine/network/client/IgeNetIoClientController";
 import type { IgeNetIoServerController } from "@/engine/network/server/IgeNetIoServerController";
+import { IgeCanRegisterById } from "@/types/IgeCanRegisterById";
+import { IgeCanBeDestroyed } from "@/types/IgeCanBeDestroyed";
 
 const version = "3.0.0";
 
@@ -98,9 +100,9 @@ export class Ige implements IgeIsReadyPromise {
 	 * @param {string | Object} item The id of the item to return,
 	 * or if an object, returns the object as-is.
 	 */
-	$<ObjectType = IgeObject> (item: string | ObjectType | undefined) {
+	$<ObjectType extends IgeCanRegisterById & IgeCanBeDestroyed> (item: string | ObjectType | undefined): ObjectType | undefined {
 		if (typeof item === "string") {
-			return this.register.get(item);
+			return this.register.get(item) as ObjectType;
 		} else if (typeof item === "object") {
 			return item;
 		}

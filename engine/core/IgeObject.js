@@ -318,7 +318,8 @@ export class IgeObject extends IgeEventingClass {
         }
         let arrCount = arr.length;
         // Depth sort all child objects
-        if (arrCount && !ige.engine._headless) {
+        // if (arrCount && !ige.engine._headless) {
+        if (arrCount) {
             if (ige.config.debug._timing) {
                 if (!ige.engine._timeSpentLastTick[this.id()]) {
                     ige.engine._timeSpentLastTick[this.id()] = {};
@@ -514,7 +515,7 @@ export class IgeObject extends IgeEventingClass {
         obj.updateTransform();
         obj.aabb(true);
         if (obj._compositeCache) {
-            this._compositeCache = true;
+            this._compositeParent = true;
         }
         else {
             this._compositeParent = false;
@@ -923,7 +924,7 @@ export class IgeObject extends IgeEventingClass {
         // Loop children and set _compositeParent to the correct value
         this._children.forEach((child) => {
             child._compositeParent = val;
-            if (propagateToChildren && "compositeCache" in child) {
+            if (propagateToChildren && ("compositeCache" in child)) {
                 child.compositeCache(val, propagateToChildren);
             }
         });

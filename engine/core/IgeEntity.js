@@ -1323,7 +1323,8 @@ export class IgeEntity extends IgeObject {
         // We have a clean cached version so output that. We use the destination width and height
         // here because the cache canvas might not be the destination size and should be scaled
         // as it is rendered (usually because of device pixel ratio related stuff)
-        ctx.drawImage(this._cacheCanvas, -this._bounds2d.x2, -this._bounds2d.y2, this._bounds2d.x, this._bounds2d.y);
+        ctx.drawImage(this._cacheCanvas, -this._bounds2d.x2, -this._bounds2d.y2);
+        //, this._bounds2d.x, this._bounds2d.y);
         if (ige.engine._currentViewport._drawCompositeBounds) {
             ctx.fillStyle = "rgba(0, 255, 0, 0.5)";
             ctx.fillRect(-this._bounds2d.x2, -this._bounds2d.y2, this._cacheCanvas.width, this._cacheCanvas.height);
