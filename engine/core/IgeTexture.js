@@ -182,7 +182,7 @@ export class IgeTexture extends IgeAsset {
                 // Store the eval data (the "image" variable is declared
                 // by the texture script and becomes available in this scope
                 // because we evaluated it above)
-                this._renderMode = 1;
+                this._renderMode = IgeTextureRenderMode.smartTexture;
                 this.script = image;
                 // Run the asset script init method
                 if (typeof (image.init) === 'function') {
