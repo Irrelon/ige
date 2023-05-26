@@ -174,7 +174,7 @@ export class IgeTexture extends IgeAsset {
      */
     _loadScript(scriptUrl) {
         if (isClient) {
-            import(scriptUrl)
+            import(/*webpackIgnore: true*/ scriptUrl)
                 .then(({ image }) => {
                 console.log("Loaded module", image);
                 this.log('Texture script "' + scriptUrl + '" loaded successfully');
