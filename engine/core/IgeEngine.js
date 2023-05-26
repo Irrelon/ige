@@ -371,7 +371,7 @@ export class IgeEngine extends IgeEntity {
             this.emit("syncComplete");
         });
         this._idCounter = 0;
-        this._renderContextModes = ["2d", "three"];
+        this._renderContextModes = ["2d", "three", "webgl"];
         this._pixelRatioScaling = true; // Default to scaling the canvas to get non-blurry output
         this._requireScriptTotal = 0;
         this._requireScriptLoading = 0;

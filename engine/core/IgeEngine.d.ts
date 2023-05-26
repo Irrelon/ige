@@ -33,7 +33,7 @@ export declare class IgeEngine extends IgeEntity {
     _enableUpdates: boolean;
     _enableRenders: boolean;
     _showSgTree: boolean;
-    _renderContext: "2d" | "three";
+    _renderContext: "2d" | "three" | "webgl";
     _tickTime: number;
     _updateTime: number;
     _renderTime: number;
@@ -407,7 +407,7 @@ export declare class IgeEngine extends IgeEntity {
      * @param {String=} contextId The context such as '2d'. Defaults to '2d'.
      * @return {*}
      */
-    renderContext(contextId: "2d" | "three"): this | "2d" | "three";
+    renderContext(contextId: "2d" | "three" | "webgl"): this | "2d" | "webgl" | "three";
     /**
      * Creates a front-buffer or "drawing surface" for the renderer.
      *

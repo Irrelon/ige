@@ -41,7 +41,7 @@ export class IgeEngine extends IgeEntity {
 	_enableUpdates: boolean;
 	_enableRenders: boolean;
 	_showSgTree: boolean;
-	_renderContext: "2d" | "three";
+	_renderContext: "2d" | "three" | "webgl";
 	_tickTime: number;
 	_updateTime: number;
 	_renderTime: number;
@@ -103,7 +103,7 @@ export class IgeEngine extends IgeEntity {
 		super();
 
 		this._idCounter = 0;
-		this._renderContextModes = ["2d", "three"];
+		this._renderContextModes = ["2d", "three", "webgl"];
 		this._pixelRatioScaling = true; // Default to scaling the canvas to get non-blurry output
 		this._requireScriptTotal = 0;
 		this._requireScriptLoading = 0;
@@ -1601,7 +1601,7 @@ export class IgeEngine extends IgeEntity {
 	 * @param {String=} contextId The context such as '2d'. Defaults to '2d'.
 	 * @return {*}
 	 */
-	renderContext (contextId: "2d" | "three") {
+	renderContext (contextId: "2d" | "three" | "webgl") {
 		if (contextId !== undefined) {
 			this._renderContext = contextId;
 
