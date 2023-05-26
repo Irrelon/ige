@@ -408,7 +408,7 @@ export declare class IgeEngine extends IgeEntity {
      * @param {String=} contextId The context such as '2d'. Defaults to '2d'.
      * @return {*}
      */
-    renderContext(contextId: "2d" | "three" | "webgl"): this | "2d" | "three" | "webgl";
+    renderContext(contextId: "2d" | "three" | "webgl"): this | "2d" | "webgl" | "three";
     /**
      * Creates a front-buffer or "drawing surface" for the renderer.
      *

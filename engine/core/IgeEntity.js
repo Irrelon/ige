@@ -352,10 +352,7 @@ export class IgeEntity extends IgeObject {
         // 	    //mp.thisRotate(-cam._rotate.z);
         // 	    mp.thisAddPoint(cam._translate);
         // }
-        // TODO: No idea why viewport doesn't have _translate, it's extended from IgeEntity!
-        // @ts-ignore
         mp.x += viewport._translate.x;
-        // @ts-ignore
         mp.y += viewport._translate.y;
         this._transformPoint(mp);
         return mp;
@@ -1138,14 +1135,13 @@ export class IgeEntity extends IgeObject {
             super.tick(ctx);
         }
     }
-    _processTriggerHitTests() {
+    _processTriggerHitTests(mp = this.mousePosWorld()) {
         if (!ige.engine._currentViewport) {
             return false;
         }
         if (this._pointerAlwaysInside) {
             return true;
         }
-        const mp = this.mousePosWorld();
         if (!mp) {
             return false;
         }

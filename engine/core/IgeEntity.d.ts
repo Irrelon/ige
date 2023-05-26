@@ -586,7 +586,7 @@ export declare class IgeEntity extends IgeObject implements IgeCanRegisterById, 
      * method.
      */
     tick(ctx: IgeCanvasRenderingContext2d, dontTransform?: boolean): void;
-    _processTriggerHitTests(): any;
+    _processTriggerHitTests(mp?: IgePoint3d): any;
     _refreshCache(dontTransform?: boolean): void;
     /**
      * Handles calling the texture.render() method if a texture
