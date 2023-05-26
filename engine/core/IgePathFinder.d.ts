@@ -2,7 +2,7 @@ import { IgeEventingClass } from "./IgeEventingClass";
 import { IgePathNode } from "./IgePathNode";
 import { IgeCollisionMap2d } from "./IgeCollisionMap2d";
 import { IgeTileMap2d } from "./IgeTileMap2d";
-export type IgePathFinderComparisonCallback = (tileData: any, newX: number, newY: number, currentNodeData?: IgePathNode | null, x?: number | null, y?: number | null, dynamic?: boolean) => boolean;
+export type IgePathFinderComparisonCallback = (tileData: any, newX: number, newY: number, currentNodeData?: any, x?: number | null, y?: number | null, dynamic?: boolean) => boolean;
 /**
  * Creates a new path using the A* path-finding algorithm.
  */
