@@ -176,7 +176,7 @@ export class IgeUiLabel extends IgeUiElement {
     update(ctx, tickDelta) {
         if (this._widthFromText && this._valueChanged !== this._value) {
             this._valueChanged = false;
-            this.width(this._fontEntity.measureTextWidth(this._value) + this._paddingLeft + this._paddingRight);
+            this.width(this._fontEntity.measureTextWidth(this._value || " ") + this._paddingLeft + this._paddingRight);
         }
         super.update(ctx, tickDelta);
     }
