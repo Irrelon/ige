@@ -311,7 +311,7 @@ export class IgeMatrix2d extends IgeBaseClass {
      */
     transformRenderingContextSet(ctx) {
         const m = this.matrix;
-        ctx.setTransform(m[0], m[3], m[1], m[4], m[2], m[5]);
+        ctx.setTransform(m[0], m[3], m[1], m[4], Math.floor(m[2]), Math.floor(m[5]));
         return this;
     }
     /**
@@ -323,7 +323,7 @@ export class IgeMatrix2d extends IgeBaseClass {
      */
     transformRenderingContext(ctx) {
         const m = this.matrix;
-        ctx.transform(m[0], m[3], m[1], m[4], m[2], m[5]);
+        ctx.transform(m[0], m[3], m[1], m[4], Math.floor(m[2]), Math.floor(m[5]));
         return this;
     }
 }

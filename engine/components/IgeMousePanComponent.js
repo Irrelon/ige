@@ -84,7 +84,7 @@ export class IgeMousePanComponent extends IgeComponent {
             if (this._panPreStart) {
                 // Check if we've reached the start threshold
                 if (distX > this._startThreshold || distY > this._startThreshold) {
-                    this._entity.camera.translateTo(panFinalX, panFinalY, 0);
+                    this._entity.camera.translateTo(Math.floor(panFinalX), Math.floor(panFinalY), 0);
                     this.emit("panStart");
                     this._panPreStart = false;
                     this._panStarted = true;
@@ -93,7 +93,7 @@ export class IgeMousePanComponent extends IgeComponent {
             }
             else {
                 // Pan has already started
-                this._entity.camera.translateTo(panFinalX, panFinalY, 0);
+                this._entity.camera.translateTo(Math.floor(panFinalX), Math.floor(panFinalY), 0);
                 this.emit("panMove");
             }
         };
@@ -139,7 +139,7 @@ export class IgeMousePanComponent extends IgeComponent {
                     panFinalY = this._limit.y + this._limit.height;
                 }
             }
-            this._entity.camera.translateTo(panFinalX, panFinalY, 0);
+            this._entity.camera.translateTo(Math.floor(panFinalX), Math.floor(panFinalY), 0);
             delete this._panStartMouse;
             delete this._panStartCamera;
             this.emit("panEnd");
