@@ -267,6 +267,12 @@ export class IgeInputComponent extends IgeEventingClass implements IgeIsReadyPro
 			pointerEvent.igePageY = pointerEvent.pageY;
 		}
 
+		if (type === "wheel") {
+			const wheelEvent = event as WheelEvent;
+			wheelEvent.igePageX = wheelEvent.pageX;
+			wheelEvent.igePageY = wheelEvent.pageY;
+		}
+
 		const canvasPosition = ige.engine._canvasPosition();
 		event.igeX = (event.igePageX - canvasPosition.left);
 		event.igeY = (event.igePageY - canvasPosition.top);
