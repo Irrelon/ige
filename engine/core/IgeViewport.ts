@@ -148,12 +148,11 @@ export class IgeViewport extends IgeUiEntity implements IgeCanRegisterById {
 	 * in the world. The co-ordinates are in world space.
 	 * @returns {IgeRect}
 	 */
-	viewArea () {
+	viewArea (camScaleX: number = this.camera._scale.x, camScaleY: number = this.camera._scale.y) {
 		const aabb = this.aabb(),
 			camTrans = this.camera._translate,
-			camScale = this.camera._scale,
-			width = aabb.width * (1 / camScale.x),
-			height = aabb.height * (1 / camScale.y);
+			width = aabb.width * (1 / camScaleX),
+			height = aabb.height * (1 / camScaleY);
 
 		return new IgeRect(camTrans.x - width / 2, camTrans.y - height / 2, width, height);
 	}
