@@ -1057,6 +1057,10 @@ export class IgeEngine extends IgeEntity {
 	 * @param {Boolean=} val If false, will disable all tick() calls.
 	 * @returns {*}
 	 */
+	enableRenders (): boolean
+
+	enableRenders (val: boolean): this
+
 	enableRenders (val?: boolean) {
 		if (val !== undefined) {
 			this._enableRenders = val;
@@ -1389,7 +1393,9 @@ export class IgeEngine extends IgeEntity {
 						}
 					}
 
-					this.requestAnimFrame(this.engineStep);
+					if (!this._useManualTicks) {
+						this.requestAnimFrame(this.engineStep);
+					}
 
 					this.log("Engine started");
 

@@ -268,7 +268,8 @@ export declare class IgeEngine extends IgeEntity {
      * @param {Boolean=} val If false, will disable all tick() calls.
      * @returns {*}
      */
-    enableRenders(val?: boolean): boolean | this;
+    enableRenders(): boolean;
+    enableRenders(val: boolean): this;
     /**
      * Enables or disables the engine's debug mode. Enabled by default.
      * @param {Boolean=} val If true, will enable debug mode.
@@ -407,7 +408,7 @@ export declare class IgeEngine extends IgeEntity {
      * @param {String=} contextId The context such as '2d'. Defaults to '2d'.
      * @return {*}
      */
-    renderContext(contextId: "2d" | "three" | "webgl"): this | "2d" | "webgl" | "three";
+    renderContext(contextId: "2d" | "three" | "webgl"): this | "2d" | "three" | "webgl";
     /**
      * Creates a front-buffer or "drawing surface" for the renderer.
      *

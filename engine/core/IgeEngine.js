@@ -1052,12 +1052,6 @@ export class IgeEngine extends IgeEntity {
         }
         return this._enableUpdates;
     }
-    /**
-     * Allows the tick() methods of the entire scenegraph to
-     * be temporarily enabled or disabled. Useful for debugging.
-     * @param {Boolean=} val If false, will disable all tick() calls.
-     * @returns {*}
-     */
     enableRenders(val) {
         if (val !== undefined) {
             this._enableRenders = val;
@@ -1332,7 +1326,9 @@ export class IgeEngine extends IgeEntity {
                             }
                         }
                     }
-                    this.requestAnimFrame(this.engineStep);
+                    if (!this._useManualTicks) {
+                        this.requestAnimFrame(this.engineStep);
+                    }
                     this.log("Engine started");
                     return resolve(true);
                 }
