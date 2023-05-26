@@ -44,6 +44,7 @@ export class IgeEngine extends IgeEntity {
         // because it's only the child entities that need occlusion testing
         this._alwaysInView = true;
         this.basePath = "";
+        this._setTickout = [];
         this.fontsLoaded = () => {
             if (!this._webFonts.length && !this._cssFonts.length)
                 return true;
@@ -292,6 +293,10 @@ export class IgeEngine extends IgeEntity {
             if (ige.config.debug._timing) {
                 const et = new Date().getTime();
                 this._tickTime = et - st;
+            }
+            let tickOut = this._setTickout.shift();
+            if (tickOut) {
+                tickOut();
             }
         };
         /**
@@ -1360,6 +1365,11 @@ export class IgeEngine extends IgeEntity {
         else {
             return false;
         }
+    }
+    setTickout(callback, count = 0) {
+        this._setTickout.length = count + 1;
+        this._setTickout[count] = callback;
+        return this;
     }
     /**
      * Gets / sets the _autoSize property. If set to true, the engine will listen

@@ -85,6 +85,7 @@ export declare class IgeEngine extends IgeEntity {
     _alwaysInView: boolean;
     basePath: string;
     _requestAnimFrame?: (callback: (time: number, ctx?: IgeCanvasRenderingContext2d) => void, element?: Element) => void;
+    _setTickout: Function[];
     constructor();
     addComponent(id: string, Component: typeof IgeComponent<IgeEngine>, options?: any): this;
     id(): string;
@@ -390,6 +391,7 @@ export declare class IgeEngine extends IgeEntity {
      * Called each frame to traverse and render the scenegraph.
      */
     engineStep: (timeStamp: number, ctx?: IgeCanvasRenderingContext2d | null) => void;
+    setTickout(callback: Function, count?: number): this;
     /**
      * Gets / sets the _autoSize property. If set to true, the engine will listen
      * for any change in screen size and resize the front-buffer (canvas) element

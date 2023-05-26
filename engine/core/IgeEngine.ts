@@ -97,6 +97,8 @@ export class IgeEngine extends IgeEntity {
 	basePath = "";
 	_requestAnimFrame?: (callback: (time: number, ctx?: IgeCanvasRenderingContext2d) => void, element?: Element) => void;
 
+	_setTickout: Function[] = [];
+
 	constructor () {
 		super();
 
@@ -1555,7 +1557,18 @@ export class IgeEngine extends IgeEntity {
 			const et = new Date().getTime();
 			this._tickTime = et - st;
 		}
+
+		let tickOut = this._setTickout.shift();
+		if (tickOut) {
+			tickOut();
+		}
 	};
+
+	setTickout (callback: Function, count = 0) {
+		this._setTickout.length = count + 1;
+		this._setTickout[count] = callback;
+		return this;
+	}
 
 	/**
 	 * Gets / sets the _autoSize property. If set to true, the engine will listen
