@@ -19,7 +19,7 @@ https://www.isogenicengine.com/forum/viewforum.php?f=8
 * Full un-obfuscated source code
 * Advanced networking system with built-in server
 * Particle system
-* Scenegraph-based rendering pipeline
+* Scenegraph-based
 * Tile maps
 * Box2D physics component for easy integration with 2d and isometric games
 * Multiple viewport support
