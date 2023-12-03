@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	<meta name="apple-mobile-web-app-capable" content="yes" />
+	<meta name="viewport" content="user-scalable=no, width=device-width, initial-scale=1.0" />
+	<meta name="apple-mobile-web-app-status-bar-style" content="black">
+	<meta name="game-engine-origin" content="https://www.isogenicengine.com">
+	<meta http-equiv="X-UA-Compatible" content="IE=9" >
+	<title>Starflight - Irrelon Software</title>
+
+	<link rel="stylesheet" type="text/css" href="css/index.css" />
+	<script type="text/javascript">
+		igeRoot = '../ige/engine/';
+
+		goFullScreen = function (element) {
+			if(element.requestFullscreen) {
+				element.requestFullscreen();
+			} else if(element.mozRequestFullScreen) {
+				element.mozRequestFullScreen();
+			} else if(element.webkitRequestFullscreen) {
+				element.webkitRequestFullscreen();
+			} else if(element.msRequestFullscreen) {
+				element.msRequestFullscreen();
+			}
+
+			document.getElementById('fullScreenDialog').style.display = 'none';
+		};
+	</script>
+
+</head>
+<body>
+<div class="igeLoading loadingFloat">
+	<div class="loadingLogo"></div>
+	<div class="loadingCircle"></div>
+	<div class="loadingCircleInner"></div>
+	<div class="loadingText" id="loadingText">
+		Loading
+	</div>
+</div>
+<div class="igeLoading loadingLink">
+	Powered By Isogenic Game Engine
+	<a href="http://www.isogenicengine.com" target="_blank">http://www.isogenicengine.com</a>
+</div>
+<div id="fullScreenDialog" class="dialog">
+	<p>Click the button below to enter full screen mode. You can exit full screen at any
+		time by pressing the ESC key on your keyboard.</p>
+
+	<button onclick="goFullScreen(document.documentElement)">Go Full Screen</button>
+</div>
+<div id="connectingDialog" class="dialog">
+	<p>Connecting to the server...</p>
+</div>
+<script type="module">
+	import { Game } from "./index.js";
+	const game = new Game();
+</script>
+</body>
+</html>
