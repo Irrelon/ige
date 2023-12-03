@@ -12,7 +12,7 @@ export class Transporter extends WorkerUnit {
         super(WorkerUnitType.transporter);
         this.classId = "Transporter";
         this._state = "spawned";
-        this._speed = 0.5;
+        this._speed = 0.2;
         this._baseId = baseId;
         this._depotAId = depotAId;
         this._depotBId = depotBId;

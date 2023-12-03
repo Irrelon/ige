@@ -25,7 +25,7 @@ export class Transporter extends WorkerUnit {
 	_state: "spawned" | "traversingPath" | "waiting" | "retrieving" | "transporting" | "movingToHomeLocation" = "spawned";
 	_homeLocation?: IgePoint3d;
 	_navigateToHomePath?: string[];
-	_speed: number = 0.5;
+	_speed: number = 0.2;
 
 	constructor (baseId: string, depotAId: string, depotBId: string) {
 		super(WorkerUnitType.transporter);

@@ -4,6 +4,8 @@ import { BuildingResourceRequirement } from "../types/BuildingResourceRequiremen
 import { IgeUiEntity } from "@/engine/core/IgeUiEntity";
 
 export class UiRequiresProducesDisplay extends IgeUiEntity {
+	_requiredResourceUiEntity: IgeUiEntity[] = [];
+
 	constructor (produces: ResourceType, requires: BuildingResourceRequirement[] = []) {
 		super();
 
@@ -14,12 +16,12 @@ export class UiRequiresProducesDisplay extends IgeUiEntity {
 			.scaleTo(0.8, 0.8, 0.8);
 
 		requires.forEach((requiresItem, index) => {
-			new IgeUiEntity()
+			this._requiredResourceUiEntity.push(new IgeUiEntity()
 				.texture(ige.textures.get(requiresItem.type))
 				.center((-20 * (index + 1) - 10))
 				.width(30)
 				.height(30)
-				.mount(this);
+				.mount(this));
 		});
 
 		if (produces !== ResourceType.none) {
