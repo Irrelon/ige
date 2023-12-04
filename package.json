@@ -10,15 +10,22 @@
 		}
 	],
 	"engines": {
-		"node": "^v16.x.x"
+		"node": ">=v16"
 	},
-	"type": "module",
-	"main": "index.js",
+	"main": "dist/cjs/src/Emitter.js",
+	"module": "dist/esm/src/Emitter.js",
+	"exports": {
+		".": {
+			"import": "./dist/esm/src/Emitter.js",
+			"require": "./dist/cjs/src/Emitter.js"
+		}
+	},
 	"scripts": {
 		"tsc-b": "tsc -b",
-		"build": "tsc",
+		"build": "tsc -p tsconfig-esm.json && tsc -p tsconfig-cjs.json && sh ./fixup.sh",
 		"build-watch": "tsc --watch",
-		"fixPaths": "node fixPaths.cjs",
+		"fix-paths-watch": "npx @irrelon/fix-paths --write --watch",
+		"fix-paths": "npx @irrelon/fix-paths --write",
 		"test": "NODE_OPTIONS=--experimental-vm-modules npx jest -f \".test.js\" --watch --all"
 	},
 	"dependencies": {

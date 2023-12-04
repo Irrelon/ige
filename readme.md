@@ -4,7 +4,7 @@
 > in an example folder, it's been updated to work with ES6 modules.
 > 
 > Compiling the engine: run the `build-watch` npm command and then run the
-> `fixPaths` npm command. `build-watch` will compile the TypeScript changes
+> `fix-paths-watch` npm command. `build-watch` will compile the TypeScript changes
 > to JavaScript files. The fixPaths will watch .js files and fix any paths
 > to .js files that don't have a .js extension as well as resolving TS
 > paths like @/something to their relative equivalent.

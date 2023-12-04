@@ -1,6 +1,8 @@
 import {IgeViewport} from "@/engine/core/IgeViewport";
 
-export * from "@/engine/instance";
+export {
+	ige
+} from "@/engine/instance";
 
 declare global {
 	interface Event {
