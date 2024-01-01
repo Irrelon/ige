@@ -3,8 +3,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.IgeUiManagerController = void 0;
 const instance_1 = require("../instance");
 const utils_1 = require("../utils");
-const IgeEventingClass_1 = require("@/engine/core/IgeEventingClass");
-const IgeEventReturnFlag_1 = require("@/enums/IgeEventReturnFlag");
+const IgeEventingClass_1 = require("./IgeEventingClass.js");
+const IgeEventReturnFlag_1 = require("../../enums/IgeEventReturnFlag.js");
 class IgeUiManagerController extends IgeEventingClass_1.IgeEventingClass {
     constructor() {
         super(...arguments);

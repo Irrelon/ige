@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-const instance_1 = require("@/engine/instance");
+const instance_1 = require("../../../../engine/instance.js");
 instance_1.ige.router.route("app.space", {
     client: {
         controller: "StationClient",

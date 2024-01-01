@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-const utils_1 = require("@/engine/utils");
-const IgeEventingClass_1 = require("@/engine/core/IgeEventingClass");
+const utils_1 = require("../../../../utils.js");
+const IgeEventingClass_1 = require("../../../../core/IgeEventingClass.js");
 class UiDialogs extends IgeEventingClass_1.IgeEventingClass {
     constructor() {
         super(...arguments);

@@ -1,20 +1,20 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.IgeObject = void 0;
-const instance_1 = require("@/engine/instance");
-const clientServer_1 = require("@/engine/clientServer");
-const utils_1 = require("@/engine/utils");
-const IgeEventingClass_1 = require("@/engine/core/IgeEventingClass");
-const IgePoint3d_1 = require("@/engine/core/IgePoint3d");
-const IgePoint2d_1 = require("@/engine/core/IgePoint2d");
-const IgeMatrix2d_1 = require("@/engine/core/IgeMatrix2d");
-const IgeDummyCanvas_1 = require("@/engine/core/IgeDummyCanvas");
-const IgeRect_1 = require("@/engine/core/IgeRect");
-const IgePoly2d_1 = require("@/engine/core/IgePoly2d");
-const IgeMountMode_1 = require("@/enums/IgeMountMode");
-const IgeStreamMode_1 = require("@/enums/IgeStreamMode");
-const IgeIsometricDepthSortMode_1 = require("@/enums/IgeIsometricDepthSortMode");
-const IgeNetworkConstants_1 = require("@/enums/IgeNetworkConstants");
+const instance_1 = require("../instance.js");
+const clientServer_1 = require("../clientServer.js");
+const utils_1 = require("../utils.js");
+const IgeEventingClass_1 = require("./IgeEventingClass.js");
+const IgePoint3d_1 = require("./IgePoint3d.js");
+const IgePoint2d_1 = require("./IgePoint2d.js");
+const IgeMatrix2d_1 = require("./IgeMatrix2d.js");
+const IgeDummyCanvas_1 = require("./IgeDummyCanvas.js");
+const IgeRect_1 = require("./IgeRect.js");
+const IgePoly2d_1 = require("./IgePoly2d.js");
+const IgeMountMode_1 = require("../../enums/IgeMountMode.js");
+const IgeStreamMode_1 = require("../../enums/IgeStreamMode.js");
+const IgeIsometricDepthSortMode_1 = require("../../enums/IgeIsometricDepthSortMode.js");
+const IgeNetworkConstants_1 = require("../../enums/IgeNetworkConstants.js");
 class IgeObject extends IgeEventingClass_1.IgeEventingClass {
     constructor() {
         super();

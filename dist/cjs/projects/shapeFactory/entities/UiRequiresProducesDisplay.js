@@ -1,9 +1,9 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.UiRequiresProducesDisplay = void 0;
-const instance_1 = require("@/engine/instance");
+const instance_1 = require("../../../engine/instance.js");
 const ResourceType_1 = require("../enums/ResourceType");
-const IgeUiEntity_1 = require("@/engine/core/IgeUiEntity");
+const IgeUiEntity_1 = require("../../../engine/core/IgeUiEntity.js");
 class UiRequiresProducesDisplay extends IgeUiEntity_1.IgeUiEntity {
     constructor(produces, requires = []) {
         super();

@@ -1,9 +1,9 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.FlagBuilding = void 0;
-const igeClassStore_1 = require("@/engine/igeClassStore");
-const clientServer_1 = require("@/engine/clientServer");
-const instance_1 = require("@/engine/instance");
+const igeClassStore_1 = require("../../../engine/igeClassStore.js");
+const clientServer_1 = require("../../../engine/clientServer.js");
+const instance_1 = require("../../../engine/instance.js");
 const Building_1 = require("./base/Building");
 class FlagBuilding extends Building_1.Building {
     constructor(tileX = NaN, tileY = NaN) {

@@ -1,8 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.IgeUiInlineFlow = void 0;
-const IgeUiElement_1 = require("@/engine/core/IgeUiElement");
-const igeClassStore_1 = require("@/engine/igeClassStore");
+const IgeUiElement_1 = require("../core/IgeUiElement.js");
+const igeClassStore_1 = require("../igeClassStore.js");
 class IgeUiInlineFlow extends IgeUiElement_1.IgeUiElement {
     constructor() {
         super(...arguments);

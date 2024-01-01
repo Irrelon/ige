@@ -1,6 +1,6 @@
-import { ige } from "@/engine/instance";
-import { IgeUiLabel } from "@/engine/ui/IgeUiLabel";
-import { InfoWindow } from "./InfoWindow";
+import { ige } from "../../../../../engine/instance.js"
+import { IgeUiLabel } from "../../../../../engine/ui/IgeUiLabel.js"
+import { InfoWindow } from "./InfoWindow.js"
 export class MessageWindow extends InfoWindow {
     classId = "MessageWindow";
     _msgs = [];

@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-const instance_1 = require("@/engine/instance");
+const instance_1 = require("../../../../engine/instance.js");
 const appCore = require('../../../ige');
 appCore.module('StationClient', function ($ige, $game, IgeStreamComponent) {
     const StationClient = function () {

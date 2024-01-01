@@ -1,9 +1,9 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Module_MiningLaser = void 0;
-const instance_1 = require("@/engine/instance");
+const instance_1 = require("../../../../../engine/instance.js");
 const Module_Ability_1 = require("./Module_Ability");
-const igeClassStore_1 = require("@/engine/igeClassStore");
+const igeClassStore_1 = require("../../../../../engine/igeClassStore.js");
 class Module_MiningLaser extends Module_Ability_1.Module_Ability {
     constructor() {
         super(...arguments);

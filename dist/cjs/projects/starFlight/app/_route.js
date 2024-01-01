@@ -9,8 +9,8 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const instance_1 = require("@/engine/instance");
-const IgeTexture_1 = require("@/engine/core/IgeTexture");
+const instance_1 = require("../../../engine/instance.js");
+const IgeTexture_1 = require("../../../engine/core/IgeTexture.js");
 const AppClientScene_1 = require("./AppClientScene");
 const AppServerScene_1 = require("./AppServerScene");
 const tab_1 = require("../assets/ui/tab");

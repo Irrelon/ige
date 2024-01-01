@@ -1,8 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.RoadBasedPathFinder = void 0;
-const IgeGenericPathFinder_1 = require("@/engine/core/IgeGenericPathFinder");
-const instance_1 = require("@/engine/instance");
+const IgeGenericPathFinder_1 = require("../../../engine/core/IgeGenericPathFinder.js");
+const instance_1 = require("../../../engine/instance.js");
 class RoadBasedPathFinder extends IgeGenericPathFinder_1.IgeGenericPathFinder {
     getNode(id) {
         const allBuildings = instance_1.ige.$$("building");

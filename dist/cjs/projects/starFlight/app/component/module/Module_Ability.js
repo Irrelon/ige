@@ -1,10 +1,10 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Module_Ability = void 0;
-const instance_1 = require("@/engine/instance");
-const clientServer_1 = require("@/engine/clientServer");
+const instance_1 = require("../../../../../engine/instance.js");
+const clientServer_1 = require("../../../../../engine/clientServer.js");
 const Module_Generic_1 = require("./Module_Generic");
-const igeClassStore_1 = require("@/engine/igeClassStore");
+const igeClassStore_1 = require("../../../../../engine/igeClassStore.js");
 class Module_Ability extends Module_Generic_1.Module_Generic {
     constructor(definition) {
         super(definition);

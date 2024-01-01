@@ -1,12 +1,12 @@
-import { ige } from "@/engine/instance";
-import { isClient, isServer } from "@/engine/clientServer";
-import { IgePoly2d } from "@/engine/core/IgePoly2d";
-import { IgePoint3d } from "@/engine/core/IgePoint3d";
-import { IgeParticleEmitter } from "@/engine/core/IgeParticleEmitter";
-import { ThrustParticle } from "./particles/ThrustParticle";
-import { GameEntity } from "./GameEntity";
-import { IgeBox2dBodyType } from "@/enums/IgeBox2dBodyType";
-import { IgeBox2dFixtureShapeType } from "@/enums/IgeBox2dFixtureShapeType";
+import { ige } from "../../../../engine/instance.js"
+import { isClient, isServer } from "../../../../engine/clientServer.js"
+import { IgePoly2d } from "../../../../engine/core/IgePoly2d.js"
+import { IgePoint3d } from "../../../../engine/core/IgePoint3d.js"
+import { IgeParticleEmitter } from "../../../../engine/core/IgeParticleEmitter.js"
+import { ThrustParticle } from "./particles/ThrustParticle.js"
+import { GameEntity } from "./GameEntity.js"
+import { IgeBox2dBodyType } from "../../../../enums/IgeBox2dBodyType.js"
+import { IgeBox2dFixtureShapeType } from "../../../../enums/IgeBox2dFixtureShapeType.js"
 export class Ship extends GameEntity {
     classId = "Ship";
     thrustEmitter;

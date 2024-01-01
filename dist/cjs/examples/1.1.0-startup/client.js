@@ -13,12 +13,12 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Client = void 0;
-const IgeTexture_1 = require("@/engine/core/IgeTexture");
-const IgeBaseScene_1 = require("@/engine/core/IgeBaseScene");
+const IgeTexture_1 = require("../../engine/core/IgeTexture.js");
+const IgeBaseScene_1 = require("../../engine/core/IgeBaseScene.js");
 const simpleBox_1 = __importDefault(require("./assets/textures/smartTextures/simpleBox"));
-const IgeBaseClass_1 = require("@/engine/core/IgeBaseClass");
+const IgeBaseClass_1 = require("../../engine/core/IgeBaseClass.js");
 const Rotator_1 = require("./gameClasses/Rotator");
-const instance_1 = require("@/engine/instance");
+const instance_1 = require("../../engine/instance.js");
 // @ts-ignore
 window.ige = instance_1.ige;
 class Client extends IgeBaseClass_1.IgeBaseClass {

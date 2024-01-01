@@ -2,8 +2,8 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.IgeGamePadComponent = void 0;
 const IgeComponent_1 = require("../core/IgeComponent");
-const clientServer_1 = require("@/engine/clientServer");
-const IgeBehaviourType_1 = require("@/enums/IgeBehaviourType");
+const clientServer_1 = require("../clientServer.js");
+const IgeBehaviourType_1 = require("../../enums/IgeBehaviourType.js");
 class IgeGamePadComponent extends IgeComponent_1.IgeComponent {
     constructor(entity, options) {
         super(entity, options);

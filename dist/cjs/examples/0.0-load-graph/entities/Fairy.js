@@ -1,10 +1,10 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Fairy = void 0;
-const instance_1 = require("@/engine/instance");
+const instance_1 = require("../../../engine/instance.js");
 const Rotator_1 = require("./Rotator");
 const ChildRotators_1 = require("./ChildRotators");
-const clientServer_1 = require("@/engine/clientServer");
+const clientServer_1 = require("../../../engine/clientServer.js");
 class Fairy extends Rotator_1.Rotator {
     constructor(speed) {
         super(speed);

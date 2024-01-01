@@ -24,8 +24,8 @@ var __importStar = (this && this.__importStar) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Game = void 0;
-const clientServer_1 = require("@/engine/clientServer");
-const instance_1 = require("@/engine/instance");
+const clientServer_1 = require("../engine/clientServer.js");
+const instance_1 = require("../engine/instance.js");
 class Game {
     constructor() {
         this.classId = "Game";

@@ -1,9 +1,9 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.IgeUiMenuItem = void 0;
-const IgeUiElement_1 = require("@/engine/core/IgeUiElement");
-const IgeUiMenu_1 = require("@/engine/ui/IgeUiMenu");
-const igeClassStore_1 = require("@/engine/igeClassStore");
+const IgeUiElement_1 = require("../core/IgeUiElement.js");
+const IgeUiMenu_1 = require("./IgeUiMenu.js");
+const igeClassStore_1 = require("../igeClassStore.js");
 class IgeUiMenuItem extends IgeUiElement_1.IgeUiElement {
     constructor() {
         super(...arguments);

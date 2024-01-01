@@ -1,11 +1,11 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.GameEntity = void 0;
-const instance_1 = require("@/engine/instance");
-const clientServer_1 = require("@/engine/clientServer");
-const IgeEntity_1 = require("@/engine/core/IgeEntity");
-const IgeStreamMode_1 = require("@/enums/IgeStreamMode");
-const igeClassStore_1 = require("@/engine/igeClassStore");
+const instance_1 = require("../../../../engine/instance.js");
+const clientServer_1 = require("../../../../engine/clientServer.js");
+const IgeEntity_1 = require("../../../../engine/core/IgeEntity.js");
+const IgeStreamMode_1 = require("../../../../enums/IgeStreamMode.js");
+const igeClassStore_1 = require("../../../../engine/igeClassStore.js");
 class GameEntity extends IgeEntity_1.IgeEntity {
     constructor() {
         super();

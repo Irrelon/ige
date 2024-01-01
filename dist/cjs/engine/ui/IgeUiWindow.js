@@ -3,10 +3,10 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.IgeUiWindow = void 0;
 const instance_1 = require("../instance");
 const IgeUiElement_1 = require("../core/IgeUiElement");
-const IgeUiLabel_1 = require("@/engine/ui/IgeUiLabel");
-const IgeUiButton_1 = require("@/engine/ui/IgeUiButton");
-const igeClassStore_1 = require("@/engine/igeClassStore");
-const IgeEventReturnFlag_1 = require("@/enums/IgeEventReturnFlag");
+const IgeUiLabel_1 = require("./IgeUiLabel.js");
+const IgeUiButton_1 = require("./IgeUiButton.js");
+const igeClassStore_1 = require("../igeClassStore.js");
+const IgeEventReturnFlag_1 = require("../../enums/IgeEventReturnFlag.js");
 class IgeUiWindow extends IgeUiElement_1.IgeUiElement {
     constructor() {
         super();

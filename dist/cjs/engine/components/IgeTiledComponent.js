@@ -3,9 +3,9 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.IgeTiledComponent = void 0;
 const IgeComponent_1 = require("../core/IgeComponent");
 const clientServer_1 = require("../clientServer");
-const IgeTileMap2d_1 = require("@/engine/core/IgeTileMap2d");
-const IgeTextureMap_1 = require("@/engine/core/IgeTextureMap");
-const IgeCellSheet_1 = require("@/engine/core/IgeCellSheet");
+const IgeTileMap2d_1 = require("../core/IgeTileMap2d.js");
+const IgeTextureMap_1 = require("../core/IgeTextureMap.js");
+const IgeCellSheet_1 = require("../core/IgeCellSheet.js");
 /**
  * Loads slightly modified Tiled-format json map data into the Isogenic Engine.
  */

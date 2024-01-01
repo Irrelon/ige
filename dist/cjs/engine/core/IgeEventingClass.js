@@ -2,7 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.IgeEventingClass = void 0;
 const IgeBaseClass_1 = require("./IgeBaseClass");
-const IgeEventReturnFlag_1 = require("@/enums/IgeEventReturnFlag");
+const IgeEventReturnFlag_1 = require("../../enums/IgeEventReturnFlag.js");
 /**
  * Creates a new class with the capability to emit events.
  */

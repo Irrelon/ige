@@ -2,7 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.IgeTileMap2dSmartTexture = void 0;
 const IgePoint2d_1 = require("../core/IgePoint2d");
-const IgeMountMode_1 = require("@/enums/IgeMountMode");
+const IgeMountMode_1 = require("../../enums/IgeMountMode.js");
 exports.IgeTileMap2dSmartTexture = {
     render: (ctx, entity) => {
         const ent = entity;

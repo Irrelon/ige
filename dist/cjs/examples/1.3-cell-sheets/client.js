@@ -10,10 +10,10 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Client = void 0;
-const instance_1 = require("@/engine/instance");
-const IgeBaseClass_1 = require("@/engine/core/IgeBaseClass");
-const IgeBaseScene_1 = require("@/engine/core/IgeBaseScene");
-const IgeCellSheet_1 = require("@/engine/core/IgeCellSheet");
+const instance_1 = require("../../engine/instance.js");
+const IgeBaseClass_1 = require("../../engine/core/IgeBaseClass.js");
+const IgeBaseScene_1 = require("../../engine/core/IgeBaseScene.js");
+const IgeCellSheet_1 = require("../../engine/core/IgeCellSheet.js");
 const Level1_1 = require("./levels/Level1");
 // @ts-ignore
 window.ige = instance_1.ige;

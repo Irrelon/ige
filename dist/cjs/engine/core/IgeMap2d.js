@@ -2,7 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.IgeMap2d = void 0;
 const IgeBaseClass_1 = require("./IgeBaseClass");
-const igeClassStore_1 = require("@/engine/igeClassStore");
+const igeClassStore_1 = require("../igeClassStore.js");
 /**
  * Creates a new map that has two dimensions (x and y) to its data.
  */

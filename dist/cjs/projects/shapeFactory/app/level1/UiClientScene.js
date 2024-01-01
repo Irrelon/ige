@@ -10,10 +10,10 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.UiClientScene = void 0;
-const instance_1 = require("@/engine/instance");
-const IgeSceneGraph_1 = require("@/engine/core/IgeSceneGraph");
-const IgeScene2d_1 = require("@/engine/core/IgeScene2d");
-const IgeUiElement_1 = require("@/engine/core/IgeUiElement");
+const instance_1 = require("../../../../engine/instance.js");
+const IgeSceneGraph_1 = require("../../../../engine/core/IgeSceneGraph.js");
+const IgeScene2d_1 = require("../../../../engine/core/IgeScene2d.js");
+const IgeUiElement_1 = require("../../../../engine/core/IgeUiElement.js");
 const ResourceType_1 = require("../../enums/ResourceType");
 const resource_1 = require("../../services/resource");
 const UiBuildItem_1 = require("../../entities/base/UiBuildItem");

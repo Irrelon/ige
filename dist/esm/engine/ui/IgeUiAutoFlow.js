@@ -1,5 +1,5 @@
-import { IgeUiElement } from "@/engine/core/IgeUiElement";
-import { registerClass } from "@/engine/igeClassStore";
+import { IgeUiElement } from "../core/IgeUiElement.js"
+import { registerClass } from "../igeClassStore.js";
 export class IgeUiAutoFlow extends IgeUiElement {
     classId = "IgeUiAutoFlow";
     _currentHeight = 0;

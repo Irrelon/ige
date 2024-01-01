@@ -1,5 +1,5 @@
-import { ige } from "@/engine/instance";
-import { IgeEntity } from "@/engine/core/IgeEntity";
+import { ige } from "../../../../engine/instance.js"
+import { IgeEntity } from "../../../../engine/core/IgeEntity.js"
 export class Target extends IgeEntity {
     classId = "Target";
     _targetEntity;

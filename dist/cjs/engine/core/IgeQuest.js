@@ -2,7 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.IgeQuest = void 0;
 const IgeEventingClass_1 = require("./IgeEventingClass");
-const igeClassStore_1 = require("@/engine/igeClassStore");
+const igeClassStore_1 = require("../igeClassStore.js");
 class IgeQuest extends IgeEventingClass_1.IgeEventingClass {
     constructor(questDefinition, completeCallback) {
         super();

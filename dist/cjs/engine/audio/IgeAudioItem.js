@@ -1,8 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.IgeAudioItem = void 0;
-const instance_1 = require("@/engine/instance");
-const IgeEventingClass_1 = require("@/engine/core/IgeEventingClass");
+const instance_1 = require("../instance.js");
+const IgeEventingClass_1 = require("../core/IgeEventingClass.js");
 class IgeAudioItem extends IgeEventingClass_1.IgeEventingClass {
     constructor(audioId) {
         super();

@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.starFieldSmartTexture = void 0;
-const instance_1 = require("@/engine/instance");
+const instance_1 = require("../../../../engine/instance.js");
 exports.starFieldSmartTexture = {
     render: function (ctx, entity) {
         let sf = this._starField, starCount = this._starCount, stars, sfPoint, camera = instance_1.ige.engine._currentCamera, camTranslate = camera._translate, finalPointX, finalPointY, multipleX, multipleY, i;

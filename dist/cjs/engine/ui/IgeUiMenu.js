@@ -1,9 +1,9 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.IgeUiMenu = void 0;
-const IgeUiElement_1 = require("@/engine/core/IgeUiElement");
-const IgeUiMenuItem_1 = require("@/engine/ui/IgeUiMenuItem");
-const igeClassStore_1 = require("@/engine/igeClassStore");
+const IgeUiElement_1 = require("../core/IgeUiElement.js");
+const IgeUiMenuItem_1 = require("./IgeUiMenuItem.js");
+const igeClassStore_1 = require("../igeClassStore.js");
 /**
  * Provides a UI drop-down menu entity.
  */

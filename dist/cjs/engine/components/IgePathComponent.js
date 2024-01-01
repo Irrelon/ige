@@ -5,11 +5,11 @@ const instance_1 = require("../instance");
 const clientServer_1 = require("../clientServer");
 const utils_1 = require("../utils");
 const IgeComponent_1 = require("../core/IgeComponent");
-const IgeMountMode_1 = require("@/enums/IgeMountMode");
+const IgeMountMode_1 = require("../../enums/IgeMountMode.js");
 const IgePoint3d_1 = require("../core/IgePoint3d");
 const IgePathNode_1 = require("../core/IgePathNode");
-const IgeEntityRenderMode_1 = require("@/enums/IgeEntityRenderMode");
-const IgeBehaviourType_1 = require("@/enums/IgeBehaviourType");
+const IgeEntityRenderMode_1 = require("../../enums/IgeEntityRenderMode.js");
+const IgeBehaviourType_1 = require("../../enums/IgeBehaviourType.js");
 /**
  * Handles entity path traversal. This component is supposed to be added
  * to individual entities wishing to traverse paths. When added to an entity

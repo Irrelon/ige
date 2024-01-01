@@ -10,7 +10,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.IgeFSM = void 0;
-const IgeBaseClass_1 = require("@/engine/core/IgeBaseClass");
+const IgeBaseClass_1 = require("./IgeBaseClass.js");
 class IgeFSM extends IgeBaseClass_1.IgeBaseClass {
     /**
      * A simple finite state machine implementation.

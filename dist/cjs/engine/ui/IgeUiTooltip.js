@@ -1,9 +1,9 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.IgeUiTooltip = void 0;
-const IgeUiElement_1 = require("@/engine/core/IgeUiElement");
-const IgeFontEntity_1 = require("@/engine/core/IgeFontEntity");
-const igeClassStore_1 = require("@/engine/igeClassStore");
+const IgeUiElement_1 = require("../core/IgeUiElement.js");
+const IgeFontEntity_1 = require("../core/IgeFontEntity.js");
+const igeClassStore_1 = require("../igeClassStore.js");
 /**
  * Provides a UI tooltip. Change properties (textBox, fonts, backgroundcolor)
  * at free will.

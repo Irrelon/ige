@@ -1,11 +1,11 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Module_Generic = void 0;
-const instance_1 = require("@/engine/instance");
-const igeClassStore_1 = require("@/engine/igeClassStore");
-const IgeBaseClass_1 = require("@/engine/core/IgeBaseClass");
+const instance_1 = require("../../../../../engine/instance.js");
+const igeClassStore_1 = require("../../../../../engine/igeClassStore.js");
+const IgeBaseClass_1 = require("../../../../../engine/core/IgeBaseClass.js");
 const services_1 = require("../../services");
-const index_1 = require("@/engine/audio/index");
+const index_1 = require("../../../../../engine/audio/index.js");
 class Module_Generic extends IgeBaseClass_1.IgeBaseClass {
     constructor(definition) {
         super();

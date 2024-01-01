@@ -10,15 +10,15 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Client = void 0;
-const instance_1 = require("@/engine/instance");
-const IgeBaseClass_1 = require("@/engine/core/IgeBaseClass");
-const IgeTexture_1 = require("@/engine/core/IgeTexture");
-const IgeFSM_1 = require("@/engine/core/IgeFSM");
-const IgeUiEntity_1 = require("@/engine/core/IgeUiEntity");
-const IgeUiRadioButton_1 = require("@/engine/ui/IgeUiRadioButton");
-const IgeTween_1 = require("@/engine/core/IgeTween");
-const IgeBaseScene_1 = require("@/engine/core/IgeBaseScene");
-const DefaultLevel_1 = require("@/examples/15.1-isoimages/graphs/DefaultLevel");
+const instance_1 = require("../../engine/instance.js");
+const IgeBaseClass_1 = require("../../engine/core/IgeBaseClass.js");
+const IgeTexture_1 = require("../../engine/core/IgeTexture.js");
+const IgeFSM_1 = require("../../engine/core/IgeFSM.js");
+const IgeUiEntity_1 = require("../../engine/core/IgeUiEntity.js");
+const IgeUiRadioButton_1 = require("../../engine/ui/IgeUiRadioButton.js");
+const IgeTween_1 = require("../../engine/core/IgeTween.js");
+const IgeBaseScene_1 = require("../../engine/core/IgeBaseScene.js");
+const DefaultLevel_1 = require("./graphs/DefaultLevel.js");
 class Client extends IgeBaseClass_1.IgeBaseClass {
     constructor() {
         super();

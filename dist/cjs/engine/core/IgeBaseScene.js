@@ -5,7 +5,7 @@ const instance_1 = require("../instance");
 const IgeSceneGraph_1 = require("./IgeSceneGraph");
 const IgeScene2d_1 = require("./IgeScene2d");
 const IgeViewport_1 = require("./IgeViewport");
-const igeClassStore_1 = require("@/engine/igeClassStore");
+const igeClassStore_1 = require("../igeClassStore.js");
 /**
  * When loaded into memory using ige.addGraph('IgeBaseScene') will create
  * the scene "baseScene" and the viewport "vp1" that are used in almost all

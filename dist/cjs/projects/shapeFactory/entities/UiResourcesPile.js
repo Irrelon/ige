@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.UiResourcesPile = void 0;
-const IgeUiEntity_1 = require("@/engine/core/IgeUiEntity");
+const IgeUiEntity_1 = require("../../../engine/core/IgeUiEntity.js");
 class UiResourcesPile extends IgeUiEntity_1.IgeUiEntity {
     constructor() {
         super();

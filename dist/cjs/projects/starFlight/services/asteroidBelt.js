@@ -1,9 +1,9 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.generateAsteroidBelt = void 0;
-const instance_1 = require("@/engine/instance");
+const instance_1 = require("../../../engine/instance.js");
 const Asteroid_1 = require("../app/component/Asteroid");
-const utils_1 = require("@/engine/utils");
+const utils_1 = require("../../../engine/utils.js");
 const generateAsteroidBelt = function generateAsteroidBelt(beltX, beltY) {
     const asteroidArr = [];
     const maxDist = 900;

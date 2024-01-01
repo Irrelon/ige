@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-const IgeBehaviourType_1 = require("@/enums/IgeBehaviourType");
-const IgeEventingClass_1 = require("@/engine/core/IgeEventingClass");
+const IgeBehaviourType_1 = require("../../../../enums/IgeBehaviourType.js");
+const IgeEventingClass_1 = require("../../../core/IgeEventingClass.js");
 const IgeCannonComponent = IgeEventingClass_1.IgeEventingClass.extend({
     classId: 'IgeCannonComponent',
     componentId: 'cannon',

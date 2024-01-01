@@ -1,13 +1,13 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.IgeEntityManagerComponent = void 0;
-const instance_1 = require("@/engine/instance");
-const IgeComponent_1 = require("@/engine/core/IgeComponent");
-const IgeMountMode_1 = require("@/enums/IgeMountMode");
-const IgeRect_1 = require("@/engine/core/IgeRect");
-const IgeBehaviourType_1 = require("@/enums/IgeBehaviourType");
-const IgeEntityRenderMode_1 = require("@/enums/IgeEntityRenderMode");
-const IgePoint3d_1 = require("@/engine/core/IgePoint3d");
+const instance_1 = require("../instance.js");
+const IgeComponent_1 = require("../core/IgeComponent.js");
+const IgeMountMode_1 = require("../../enums/IgeMountMode.js");
+const IgeRect_1 = require("../core/IgeRect.js");
+const IgeBehaviourType_1 = require("../../enums/IgeBehaviourType.js");
+const IgeEntityRenderMode_1 = require("../../enums/IgeEntityRenderMode.js");
+const IgePoint3d_1 = require("../core/IgePoint3d.js");
 class IgeEntityManagerComponent extends IgeComponent_1.IgeComponent {
     /**
      * @constructor

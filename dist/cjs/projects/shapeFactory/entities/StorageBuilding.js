@@ -1,13 +1,13 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.StorageBuilding = void 0;
-const igeClassStore_1 = require("@/engine/igeClassStore");
-const instance_1 = require("@/engine/instance");
+const igeClassStore_1 = require("../../../engine/igeClassStore.js");
+const instance_1 = require("../../../engine/instance.js");
 const Building_1 = require("./base/Building");
 const ResourceType_1 = require("../enums/ResourceType");
 const Resource_1 = require("./Resource");
-const clientServer_1 = require("@/engine/clientServer");
-const IgePoint2d_1 = require("@/engine/core/IgePoint2d");
+const clientServer_1 = require("../../../engine/clientServer.js");
+const IgePoint2d_1 = require("../../../engine/core/IgePoint2d.js");
 class StorageBuilding extends Building_1.Building {
     constructor(tileX = NaN, tileY = NaN) {
         super();

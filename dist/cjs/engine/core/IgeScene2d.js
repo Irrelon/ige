@@ -3,7 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.IgeScene2d = void 0;
 const instance_1 = require("../instance");
 const IgeEntity_1 = require("./IgeEntity");
-const igeClassStore_1 = require("@/engine/igeClassStore");
+const igeClassStore_1 = require("../igeClassStore.js");
 /**
  * Creates a new 2d scene.
  */

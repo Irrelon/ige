@@ -1,8 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.SmokeParticle = void 0;
-const IgeParticle_1 = require("@/engine/core/IgeParticle");
-const instance_1 = require("@/engine/instance");
+const IgeParticle_1 = require("../../../engine/core/IgeParticle.js");
+const instance_1 = require("../../../engine/instance.js");
 class SmokeParticle extends IgeParticle_1.IgeParticle {
     constructor(emitter) {
         super(emitter);

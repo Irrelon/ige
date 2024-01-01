@@ -10,17 +10,17 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.controllerClient = void 0;
-const instance_1 = require("@/engine/instance");
-const IgeFSM_1 = require("@/engine/core/IgeFSM");
+const instance_1 = require("../../../engine/instance.js");
+const IgeFSM_1 = require("../../../engine/core/IgeFSM.js");
 const BuildingType_1 = require("../enums/BuildingType");
 const StorageBuilding_1 = require("../entities/StorageBuilding");
-const IgeBehaviourType_1 = require("@/enums/IgeBehaviourType");
+const IgeBehaviourType_1 = require("../../../enums/IgeBehaviourType.js");
 const FactoryBuilding1_1 = require("../entities/FactoryBuilding1");
 const ResourceType_1 = require("../enums/ResourceType");
 const Line_1 = require("../entities/base/Line");
 const FlagBuilding_1 = require("../entities/FlagBuilding");
 const MiningBuilding_1 = require("../entities/MiningBuilding");
-const IgePoint3d_1 = require("@/engine/core/IgePoint3d");
+const IgePoint3d_1 = require("../../../engine/core/IgePoint3d.js");
 const FactoryBuilding2_1 = require("../entities/FactoryBuilding2");
 const HouseBuilding1_1 = require("../entities/HouseBuilding1");
 const controllerClient = () => __awaiter(void 0, void 0, void 0, function* () {

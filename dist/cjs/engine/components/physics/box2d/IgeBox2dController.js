@@ -2,14 +2,14 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.IgeBox2dController = void 0;
 const instance_1 = require("../../../instance");
-const IgeBox2dTimingMode_1 = require("@/enums/IgeBox2dTimingMode");
-const IgeBox2dBodyType_1 = require("@/enums/IgeBox2dBodyType");
-const IgeBox2dFixtureShapeType_1 = require("@/enums/IgeBox2dFixtureShapeType");
+const IgeBox2dTimingMode_1 = require("../../../../enums/IgeBox2dTimingMode.js");
+const IgeBox2dBodyType_1 = require("../../../../enums/IgeBox2dBodyType.js");
+const IgeBox2dFixtureShapeType_1 = require("../../../../enums/IgeBox2dFixtureShapeType.js");
 const IgeBox2dDebugPainter_1 = require("./IgeBox2dDebugPainter");
 const IgeEntityBox2d_1 = require("./IgeEntityBox2d");
-const IgeBehaviourType_1 = require("@/enums/IgeBehaviourType");
+const IgeBehaviourType_1 = require("../../../../enums/IgeBehaviourType.js");
 const lib_box2d_1 = require("@/engine/components/physics/box2d/lib_box2d");
-const IgeEventingClass_1 = require("@/engine/core/IgeEventingClass");
+const IgeEventingClass_1 = require("../../../core/IgeEventingClass.js");
 /**
  * The engine's Box2D component class.
  */

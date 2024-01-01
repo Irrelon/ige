@@ -1,4 +1,4 @@
-import { igeFilters } from "../igeFilters";
+import { igeFilters } from "../igeFilters.js"
 const createImageData = function (w, h) {
     return igeFilters.tmpCtx?.createImageData(w, h);
 };

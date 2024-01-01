@@ -1,15 +1,15 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Transporter = void 0;
-const instance_1 = require("@/engine/instance");
-const clientServer_1 = require("@/engine/clientServer");
+const instance_1 = require("../../../engine/instance.js");
+const clientServer_1 = require("../../../engine/clientServer.js");
 const WorkerUnitType_1 = require("../enums/WorkerUnitType");
 const WorkerUnit_1 = require("./base/WorkerUnit");
-const igeClassStore_1 = require("@/engine/igeClassStore");
-const IgeTween_1 = require("@/engine/core/IgeTween");
-const IgeTimeout_1 = require("@/engine/core/IgeTimeout");
+const igeClassStore_1 = require("../../../engine/igeClassStore.js");
+const IgeTween_1 = require("../../../engine/core/IgeTween.js");
+const IgeTimeout_1 = require("../../../engine/core/IgeTimeout.js");
 const roadPathFinder_1 = require("../services/roadPathFinder");
-const utils_1 = require("@/engine/utils");
+const utils_1 = require("../../../engine/utils.js");
 class Transporter extends WorkerUnit_1.WorkerUnit {
     constructor(baseId, depotAId, depotBId) {
         super(WorkerUnitType_1.WorkerUnitType.transporter);

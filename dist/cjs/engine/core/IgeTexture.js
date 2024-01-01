@@ -28,9 +28,9 @@ const instance_1 = require("../instance");
 const utils_1 = require("../utils");
 const IgeCanvas_1 = require("./IgeCanvas");
 const clientServer_1 = require("../clientServer");
-const IgeTextureRenderMode_1 = require("@/enums/IgeTextureRenderMode");
+const IgeTextureRenderMode_1 = require("../../enums/IgeTextureRenderMode.js");
 const IgeAsset_1 = require("./IgeAsset");
-const IgeDependencies_1 = require("@/engine/core/IgeDependencies");
+const IgeDependencies_1 = require("./IgeDependencies.js");
 /**
  * Creates a new texture.
  */

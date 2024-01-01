@@ -1,11 +1,11 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.AbilityButton = void 0;
-const instance_1 = require("@/engine/instance");
-const clientServer_1 = require("@/engine/clientServer");
-const IgeUiButton_1 = require("@/engine/ui/IgeUiButton");
-const IgeUiLabel_1 = require("@/engine/ui/IgeUiLabel");
-const IgeUiEntity_1 = require("@/engine/core/IgeUiEntity");
+const instance_1 = require("../../../../../engine/instance.js");
+const clientServer_1 = require("../../../../../engine/clientServer.js");
+const IgeUiButton_1 = require("../../../../../engine/ui/IgeUiButton.js");
+const IgeUiLabel_1 = require("../../../../../engine/ui/IgeUiLabel.js");
+const IgeUiEntity_1 = require("../../../../../engine/core/IgeUiEntity.js");
 class AbilityButton extends IgeUiEntity_1.IgeUiEntity {
     constructor(options) {
         if (clientServer_1.isServer) {

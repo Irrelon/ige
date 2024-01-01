@@ -1,9 +1,9 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.IgeTextureAnimationComponent = void 0;
-const instance_1 = require("@/engine/instance");
-const IgeComponent_1 = require("@/engine/core/IgeComponent");
-const IgeBehaviourType_1 = require("@/enums/IgeBehaviourType");
+const instance_1 = require("../instance.js");
+const IgeComponent_1 = require("../core/IgeComponent.js");
+const IgeBehaviourType_1 = require("../../enums/IgeBehaviourType.js");
 /**
  * The animation component class. Handles defining and controlling
  * frame-based animations based on cells from a texture.

@@ -1,12 +1,12 @@
-import { ige } from "@/engine/instance";
-import { isClient, isServer } from "@/engine/clientServer";
-import { Target } from "./Target";
-import { Ship } from "./Ship";
-import { Inventory } from "./Inventory";
-import { IgeInputDevice, IgeInputKeyboardMap } from "@/enums/IgeInputDeviceMap";
-import { degreesToRadians } from "@/engine/utils";
-import { PlayerControls } from "../../enums/PlayerControls";
-import { registerClass } from "@/engine/igeClassStore";
+import { ige } from "../../../../engine/instance.js"
+import { isClient, isServer } from "../../../../engine/clientServer.js"
+import { Target } from "./Target.js"
+import { Ship } from "./Ship.js"
+import { Inventory } from "./Inventory.js"
+import { IgeInputDevice, IgeInputKeyboardMap } from "../../../../enums/IgeInputDeviceMap.js"
+import { degreesToRadians } from "../../../../engine/utils.js"
+import { PlayerControls } from "../../enums/PlayerControls.js"
+import { registerClass } from "../../../../engine/igeClassStore.js"
 export class PlayerShip extends Ship {
     classId = "PlayerShip";
     target;

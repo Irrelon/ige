@@ -1,12 +1,12 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.FactoryBuilding1 = void 0;
-const igeClassStore_1 = require("@/engine/igeClassStore");
-const clientServer_1 = require("@/engine/clientServer");
+const igeClassStore_1 = require("../../../engine/igeClassStore.js");
+const clientServer_1 = require("../../../engine/clientServer.js");
 const UiRequiresProducesDisplay_1 = require("./UiRequiresProducesDisplay");
 const Building_1 = require("./base/Building");
-const instance_1 = require("@/engine/instance");
-const IgePoint2d_1 = require("@/engine/core/IgePoint2d");
+const instance_1 = require("../../../engine/instance.js");
+const IgePoint2d_1 = require("../../../engine/core/IgePoint2d.js");
 class FactoryBuilding1 extends Building_1.Building {
     constructor(tileX = NaN, tileY = NaN, produces, requires = []) {
         super();

@@ -10,13 +10,13 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.SpaceClientScene = void 0;
-const instance_1 = require("@/engine/instance");
-const IgeSceneGraph_1 = require("@/engine/core/IgeSceneGraph");
-const IgeUiProgressBar_1 = require("@/engine/ui/IgeUiProgressBar");
-const IgeUiLabel_1 = require("@/engine/ui/IgeUiLabel");
-const IgeUiEntity_1 = require("@/engine/core/IgeUiEntity");
-const IgeEntity_1 = require("@/engine/core/IgeEntity");
-const IgeScene2d_1 = require("@/engine/core/IgeScene2d");
+const instance_1 = require("../../../../engine/instance.js");
+const IgeSceneGraph_1 = require("../../../../engine/core/IgeSceneGraph.js");
+const IgeUiProgressBar_1 = require("../../../../engine/ui/IgeUiProgressBar.js");
+const IgeUiLabel_1 = require("../../../../engine/ui/IgeUiLabel.js");
+const IgeUiEntity_1 = require("../../../../engine/core/IgeUiEntity.js");
+const IgeEntity_1 = require("../../../../engine/core/IgeEntity.js");
+const IgeScene2d_1 = require("../../../../engine/core/IgeScene2d.js");
 const InfoWindow_1 = require("../component/ui/InfoWindow");
 class SpaceClientScene extends IgeSceneGraph_1.IgeSceneGraph {
     constructor() {

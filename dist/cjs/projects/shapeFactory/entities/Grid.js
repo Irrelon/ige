@@ -1,9 +1,9 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Grid = void 0;
-const IgeEntity_1 = require("@/engine/core/IgeEntity");
-const instance_1 = require("@/engine/instance");
-const clientServer_1 = require("@/engine/clientServer");
+const IgeEntity_1 = require("../../../engine/core/IgeEntity.js");
+const instance_1 = require("../../../engine/instance.js");
+const clientServer_1 = require("../../../engine/clientServer.js");
 class Grid extends IgeEntity_1.IgeEntity {
     constructor() {
         super();

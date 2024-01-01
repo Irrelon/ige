@@ -3,8 +3,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.IgeCamera = void 0;
 const IgeEntity_1 = require("./IgeEntity");
 const IgeTween_1 = require("./IgeTween");
-const IgeBehaviourType_1 = require("@/enums/IgeBehaviourType");
-const igeClassStore_1 = require("@/engine/igeClassStore");
+const IgeBehaviourType_1 = require("../../enums/IgeBehaviourType.js");
+const igeClassStore_1 = require("../igeClassStore.js");
 /**
  * Creates a new camera that will be attached to a viewport.
  */

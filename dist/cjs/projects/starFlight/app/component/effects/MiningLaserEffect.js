@@ -1,14 +1,14 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.MiningLaserEffect = void 0;
-const instance_1 = require("@/engine/instance");
-const clientServer_1 = require("@/engine/clientServer");
-const IgePoint3d_1 = require("@/engine/core/IgePoint3d");
+const instance_1 = require("../../../../../engine/instance.js");
+const clientServer_1 = require("../../../../../engine/clientServer.js");
+const IgePoint3d_1 = require("../../../../../engine/core/IgePoint3d.js");
 const LaserEffect_1 = require("./LaserEffect");
 const MiningParticle_1 = require("../particles/MiningParticle");
-const IgeParticleEmitter_1 = require("@/engine/core/IgeParticleEmitter");
-const index_1 = require("@/engine/audio/index");
-const igeClassStore_1 = require("@/engine/igeClassStore");
+const IgeParticleEmitter_1 = require("../../../../../engine/core/IgeParticleEmitter.js");
+const index_1 = require("../../../../../engine/audio/index.js");
+const igeClassStore_1 = require("../../../../../engine/igeClassStore.js");
 class MiningLaserEffect extends LaserEffect_1.LaserEffect {
     constructor(data = {}) {
         super(data);

@@ -3,8 +3,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.IgeTimeController = void 0;
 const instance_1 = require("../instance");
 const utils_1 = require("../utils");
-const IgeBehaviourType_1 = require("@/enums/IgeBehaviourType");
-const IgeEventingClass_1 = require("@/engine/core/IgeEventingClass");
+const IgeBehaviourType_1 = require("../../enums/IgeBehaviourType.js");
+const IgeEventingClass_1 = require("./IgeEventingClass.js");
 class IgeTimeController extends IgeEventingClass_1.IgeEventingClass {
     constructor() {
         super(...arguments);

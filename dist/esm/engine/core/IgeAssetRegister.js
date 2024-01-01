@@ -1,4 +1,4 @@
-import { IgeEventingClass } from "./IgeEventingClass";
+import { IgeEventingClass } from "./IgeEventingClass.js"
 export class IgeAssetRegister extends IgeEventingClass {
     _assetById = {};
     _assetsLoading = 0;

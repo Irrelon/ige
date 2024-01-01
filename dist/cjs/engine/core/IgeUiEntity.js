@@ -5,7 +5,7 @@ exports.IgeUiEntity = void 0;
 const instance_1 = require("../instance");
 const IgeEntity_1 = require("./IgeEntity");
 const utils_1 = require("../utils");
-const igeClassStore_1 = require("@/engine/igeClassStore");
+const igeClassStore_1 = require("../igeClassStore.js");
 /**
  * Creates a new UI entity. UI entities use more resources and CPU
  * than standard IgeEntity instances so only use them if an IgeEntity

@@ -1,15 +1,15 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Level1 = void 0;
-const instance_1 = require("@/engine/instance");
-const clientServer_1 = require("@/engine/clientServer");
-const IgeStreamMode_1 = require("@/enums/IgeStreamMode");
+const instance_1 = require("../../../../engine/instance.js");
+const clientServer_1 = require("../../../../engine/clientServer.js");
+const IgeStreamMode_1 = require("../../../../enums/IgeStreamMode.js");
 const ResourceType_1 = require("../../enums/ResourceType");
-const index_1 = require("@/engine/audio/index");
-const IgeSceneGraph_1 = require("@/engine/core/IgeSceneGraph");
-const IgeScene2d_1 = require("@/engine/core/IgeScene2d");
+const index_1 = require("../../../../engine/audio/index.js");
+const IgeSceneGraph_1 = require("../../../../engine/core/IgeSceneGraph.js");
+const IgeScene2d_1 = require("../../../../engine/core/IgeScene2d.js");
 const createBuilding_1 = require("../../services/createBuilding");
-const IgeTileMap2d_1 = require("@/engine/core/IgeTileMap2d");
+const IgeTileMap2d_1 = require("../../../../engine/core/IgeTileMap2d.js");
 class Level1 extends IgeSceneGraph_1.IgeSceneGraph {
     constructor() {
         super(...arguments);

@@ -11,12 +11,12 @@ const IgePoly2d_1 = require("./IgePoly2d");
 const IgeDummyCanvas_1 = require("./IgeDummyCanvas");
 const IgeRect_1 = require("./IgeRect");
 const IgeObject_1 = require("./IgeObject");
-const IgeMountMode_1 = require("@/enums/IgeMountMode");
-const IgeStreamMode_1 = require("@/enums/IgeStreamMode");
-const IgeIsometricDepthSortMode_1 = require("@/enums/IgeIsometricDepthSortMode");
-const IgeEntityRenderMode_1 = require("@/enums/IgeEntityRenderMode");
-const IgeBehaviourType_1 = require("@/enums/IgeBehaviourType");
-const igeClassStore_1 = require("@/engine/igeClassStore");
+const IgeMountMode_1 = require("../../enums/IgeMountMode.js");
+const IgeStreamMode_1 = require("../../enums/IgeStreamMode.js");
+const IgeIsometricDepthSortMode_1 = require("../../enums/IgeIsometricDepthSortMode.js");
+const IgeEntityRenderMode_1 = require("../../enums/IgeEntityRenderMode.js");
+const IgeBehaviourType_1 = require("../../enums/IgeBehaviourType.js");
+const igeClassStore_1 = require("../igeClassStore.js");
 /**
  * Creates an entity and handles the entity's life cycle and
  * all related entity actions / methods.

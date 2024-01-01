@@ -1,13 +1,13 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Resource = void 0;
-const instance_1 = require("@/engine/instance");
+const instance_1 = require("../../../engine/instance.js");
 const ResourceType_1 = require("../enums/ResourceType");
-const igeClassStore_1 = require("@/engine/igeClassStore");
-const IgeTimeout_1 = require("@/engine/core/IgeTimeout");
-const clientServer_1 = require("@/engine/clientServer");
+const igeClassStore_1 = require("../../../engine/igeClassStore.js");
+const IgeTimeout_1 = require("../../../engine/core/IgeTimeout.js");
+const clientServer_1 = require("../../../engine/clientServer.js");
 const roadPathFinder_1 = require("../services/roadPathFinder");
-const utils_1 = require("@/engine/utils");
+const utils_1 = require("../../../engine/utils.js");
 const resource_1 = require("../services/resource");
 const GameEntity_1 = require("./base/GameEntity");
 class Resource extends GameEntity_1.GameEntity {

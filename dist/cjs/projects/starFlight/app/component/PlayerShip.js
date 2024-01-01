@@ -1,15 +1,15 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.PlayerShip = void 0;
-const instance_1 = require("@/engine/instance");
-const clientServer_1 = require("@/engine/clientServer");
+const instance_1 = require("../../../../engine/instance.js");
+const clientServer_1 = require("../../../../engine/clientServer.js");
 const Target_1 = require("./Target");
 const Ship_1 = require("./Ship");
 const Inventory_1 = require("./Inventory");
-const IgeInputDeviceMap_1 = require("@/enums/IgeInputDeviceMap");
-const utils_1 = require("@/engine/utils");
+const IgeInputDeviceMap_1 = require("../../../../enums/IgeInputDeviceMap.js");
+const utils_1 = require("../../../../engine/utils.js");
 const PlayerControls_1 = require("../../enums/PlayerControls");
-const igeClassStore_1 = require("@/engine/igeClassStore");
+const igeClassStore_1 = require("../../../../engine/igeClassStore.js");
 class PlayerShip extends Ship_1.Ship {
     constructor(publicGameData) {
         super(publicGameData);

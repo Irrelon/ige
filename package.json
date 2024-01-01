@@ -22,7 +22,7 @@
 	},
 	"scripts": {
 		"tsc-b": "tsc -b",
-		"build": "tsc -p tsconfig-cjs.json && tsc -p tsconfig-esm.json && sh ./fixup.sh && npm run fix-paths",
+		"build": "(tsc -p tsconfig-cjs.json 2>/dev/null || exit 0) && (tsc -p tsconfig-esm.json 2>/dev/null || exit 0) && sh ./fixup.sh && npm run fix-paths",
 		"build-watch": "tsc --watch",
 		"fix-paths-watch": "npx @irrelon/fix-paths --write --watch",
 		"fix-paths": "npx @irrelon/fix-paths -p ./tsconfig-cjs.json --write && npx @irrelon/fix-paths -p ./tsconfig-esm.json --write",

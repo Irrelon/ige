@@ -1,8 +1,8 @@
-import { ige } from "@/engine/instance";
-import { isClient, isServer } from "@/engine/clientServer";
-import { IgeEntityBox2d } from "@/engine/components/physics/box2d/IgeEntityBox2d";
-import { AbilityButton } from "./ui/AbilityButton";
-import { acceptedAction } from "../data/acceptedAction";
+import { ige } from "../../../../engine/instance.js"
+import { isClient, isServer } from "../../../../engine/clientServer.js"
+import { IgeEntityBox2d } from "../../../../engine/components/physics/box2d/IgeEntityBox2d.js"
+import { AbilityButton } from "./ui/AbilityButton.js"
+import { acceptedAction } from "../data/acceptedAction.js"
 export class GameEntity extends IgeEntityBox2d {
     classId = "GameEntity";
     _publicGameData;

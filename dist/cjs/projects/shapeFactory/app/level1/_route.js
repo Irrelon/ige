@@ -9,7 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const instance_1 = require("@/engine/instance");
+const instance_1 = require("../../../../engine/instance.js");
 const Level1_1 = require("./Level1");
 const UiClientScene_1 = require("./UiClientScene");
 const controllerClient_1 = require("../controllerClient");

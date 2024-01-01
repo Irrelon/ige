@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.nebulaFieldSmartTexture = void 0;
-const instance_1 = require("@/engine/instance");
+const instance_1 = require("../../../../engine/instance.js");
 exports.nebulaFieldSmartTexture = {
     render: (ctx, entity) => {
         let points = 10, nebs, sfPoint, texture, textureCell, finalPointX, finalPointY, multipleX, multipleY, newType, halfWidth, halfHeight, i;

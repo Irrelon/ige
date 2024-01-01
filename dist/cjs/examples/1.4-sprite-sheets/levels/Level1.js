@@ -1,10 +1,10 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Level1 = void 0;
-const instance_1 = require("@/engine/instance");
-const IgeSceneGraph_1 = require("@/engine/core/IgeSceneGraph");
-const IgeEntity_1 = require("@/engine/core/IgeEntity");
-const IgeTextureAnimationComponent_1 = require("@/engine/components/IgeTextureAnimationComponent");
+const instance_1 = require("../../../engine/instance.js");
+const IgeSceneGraph_1 = require("../../../engine/core/IgeSceneGraph.js");
+const IgeEntity_1 = require("../../../engine/core/IgeEntity.js");
+const IgeTextureAnimationComponent_1 = require("../../../engine/components/IgeTextureAnimationComponent.js");
 class Level1 extends IgeSceneGraph_1.IgeSceneGraph {
     constructor() {
         super(...arguments);

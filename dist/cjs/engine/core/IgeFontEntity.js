@@ -4,9 +4,9 @@ exports.IgeFontEntity = void 0;
 const IgeUiEntity_1 = require("./IgeUiEntity");
 const IgeTexture_1 = require("./IgeTexture");
 const IgeFontSmartTexture_1 = require("../textures/IgeFontSmartTexture");
-const IgeFontAlign_1 = require("@/enums/IgeFontAlign");
-const IgeTextureRenderMode_1 = require("@/enums/IgeTextureRenderMode");
-const igeClassStore_1 = require("@/engine/igeClassStore");
+const IgeFontAlign_1 = require("../../enums/IgeFontAlign.js");
+const IgeTextureRenderMode_1 = require("../../enums/IgeTextureRenderMode.js");
+const igeClassStore_1 = require("../igeClassStore.js");
 /**
  * Creates a new font entity. A font entity will use a font sheet
  * (IgeFontSheet) or native font and render text.

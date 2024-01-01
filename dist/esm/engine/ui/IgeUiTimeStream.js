@@ -1,6 +1,6 @@
-import { IgeUiElement } from "@/engine/core/IgeUiElement";
-import { registerClass } from "@/engine/igeClassStore";
-import { ige } from "@/engine/instance";
+import { IgeUiElement } from "../core/IgeUiElement.js"
+import { registerClass } from "../igeClassStore.js";
+import { ige } from "../instance.js"
 export class IgeUiTimeStream extends IgeUiElement {
     classId = "IgeUiTimeStream";
     monitor(entity) {

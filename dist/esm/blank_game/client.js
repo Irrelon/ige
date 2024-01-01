@@ -1,6 +1,6 @@
-import { IgeBaseClass } from "@/engine/core/IgeBaseClass";
-import { ige } from "@/engine/instance";
-import { IgeBaseScene } from "@/engine/core/IgeBaseScene";
+import { IgeBaseClass } from "../engine/core/IgeBaseClass.js"
+import { ige } from "../engine/instance.js"
+import { IgeBaseScene } from "../engine/core/IgeBaseScene.js"
 export class Client extends IgeBaseClass {
     classId = "Client";
     constructor() {

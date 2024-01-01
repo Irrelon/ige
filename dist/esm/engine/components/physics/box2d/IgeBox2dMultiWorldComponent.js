@@ -1,5 +1,5 @@
-import { newIdHex } from "../../../utils";
-import { IgeEventingClass } from "../../../core/IgeEventingClass";
+import { newIdHex } from "../../../utils.js"
+import { IgeEventingClass } from "../../../core/IgeEventingClass.js"
 /**
  * The engine's box2d multi-world component class.
  */

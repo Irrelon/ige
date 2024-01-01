@@ -3,11 +3,11 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.IgeInputComponent = void 0;
 const instance_1 = require("../instance");
 const IgePoint3d_1 = require("../core/IgePoint3d");
-const IgeBehaviourType_1 = require("@/enums/IgeBehaviourType");
-const IgeInputDeviceMap_1 = require("@/enums/IgeInputDeviceMap");
-const IgeEventingClass_1 = require("@/engine/core/IgeEventingClass");
-const IgeInputControlMap_1 = require("@/engine/components/IgeInputControlMap");
-const IgeEventReturnFlag_1 = require("@/enums/IgeEventReturnFlag");
+const IgeBehaviourType_1 = require("../../enums/IgeBehaviourType.js");
+const IgeInputDeviceMap_1 = require("../../enums/IgeInputDeviceMap.js");
+const IgeEventingClass_1 = require("../core/IgeEventingClass.js");
+const IgeInputControlMap_1 = require("./IgeInputControlMap.js");
+const IgeEventReturnFlag_1 = require("../../enums/IgeEventReturnFlag.js");
 class IgeInputComponent extends IgeEventingClass_1.IgeEventingClass {
     constructor() {
         super();

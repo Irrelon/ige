@@ -1,9 +1,9 @@
-import { ige } from "@/engine/instance";
-import { IgeBaseClass } from "@/engine/core/IgeBaseClass";
-import { IgeTexture } from "@/engine/core/IgeTexture";
-import simpleBox from "./assets/textures/smartTextures/simpleBox";
-import { IgeBaseScene } from "@/engine/core/IgeBaseScene";
-import { Level1 } from "./levels/Level1";
+import { ige } from "../../engine/instance.js"
+import { IgeBaseClass } from "../../engine/core/IgeBaseClass.js"
+import { IgeTexture } from "../../engine/core/IgeTexture.js"
+import simpleBox from "./assets/textures/smartTextures/simpleBox.js"
+import { IgeBaseScene } from "../../engine/core/IgeBaseScene.js"
+import { Level1 } from "./levels/Level1.js"
 // @ts-ignore
 window.ige = ige;
 export class Client extends IgeBaseClass {

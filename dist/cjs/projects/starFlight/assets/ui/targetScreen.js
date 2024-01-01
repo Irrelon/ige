@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.targetScreen = void 0;
-const instance_1 = require("@/engine/instance");
+const instance_1 = require("../../../../engine/instance.js");
 exports.targetScreen = {
     render: function (ctx, entity) {
         const lockEntity = instance_1.ige.entities.read('lock');

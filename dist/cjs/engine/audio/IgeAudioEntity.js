@@ -1,11 +1,11 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.IgeAudioEntity = void 0;
-const instance_1 = require("@/engine/instance");
-const clientServer_1 = require("@/engine/clientServer");
-const IgeAudioItem_1 = require("@/engine/audio/IgeAudioItem");
-const IgeEntity_1 = require("@/engine/core/IgeEntity");
-const igeClassStore_1 = require("@/engine/igeClassStore");
+const instance_1 = require("../instance.js");
+const clientServer_1 = require("../clientServer.js");
+const IgeAudioItem_1 = require("./IgeAudioItem.js");
+const IgeEntity_1 = require("../core/IgeEntity.js");
+const igeClassStore_1 = require("../igeClassStore.js");
 // Set default data for any audio panner node
 const defaultPanner = {
     panningModel: "HRTF",

@@ -2,11 +2,11 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.StationServer = void 0;
 const PlayerShip_1 = require("../component/PlayerShip");
-const IgeInterval_1 = require("@/engine/core/IgeInterval");
+const IgeInterval_1 = require("../../../../engine/core/IgeInterval.js");
 const Ore_1 = require("../component/Ore");
 const Asteroid_1 = require("../component/Asteroid");
-const utils_1 = require("@/engine/utils");
-const instance_1 = require("@/engine/instance");
+const utils_1 = require("../../../../engine/utils.js");
+const instance_1 = require("../../../../engine/instance.js");
 class StationServer {
     constructor() {
         /**

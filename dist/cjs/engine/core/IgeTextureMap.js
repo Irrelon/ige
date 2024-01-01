@@ -5,8 +5,8 @@ exports.IgeTextureMap = void 0;
 const IgeTileMap2d_1 = require("./IgeTileMap2d");
 const IgeMap2d_1 = require("./IgeMap2d");
 const IgePoint3d_1 = require("./IgePoint3d");
-const IgeMountMode_1 = require("@/enums/IgeMountMode");
-const instance_1 = require("@/engine/instance");
+const IgeMountMode_1 = require("../../enums/IgeMountMode.js");
+const instance_1 = require("../instance.js");
 /**
  * Texture maps provide a way to display textures / cells across a tile map.
  */

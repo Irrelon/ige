@@ -10,18 +10,18 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.SplashClientScene = void 0;
-const instance_1 = require("@/engine/instance");
-const IgeVelocityComponent_1 = require("@/engine/components/IgeVelocityComponent");
-const IgeUiEntity_1 = require("@/engine/core/IgeUiEntity");
-const index_1 = require("@/engine/audio/index");
-const IgeUiWindow_1 = require("@/engine/ui/IgeUiWindow");
-const IgeUiButton_1 = require("@/engine/ui/IgeUiButton");
-const IgeUiElement_1 = require("@/engine/core/IgeUiElement");
-const IgeUiDropDown_1 = require("@/engine/ui/IgeUiDropDown");
-const IgeEntity_1 = require("@/engine/core/IgeEntity");
-const IgeScene2d_1 = require("@/engine/core/IgeScene2d");
-const utils_1 = require("@/engine/utils");
-const IgeSceneGraph_1 = require("@/engine/core/IgeSceneGraph");
+const instance_1 = require("../../../../engine/instance.js");
+const IgeVelocityComponent_1 = require("../../../../engine/components/IgeVelocityComponent.js");
+const IgeUiEntity_1 = require("../../../../engine/core/IgeUiEntity.js");
+const index_1 = require("../../../../engine/audio/index.js");
+const IgeUiWindow_1 = require("../../../../engine/ui/IgeUiWindow.js");
+const IgeUiButton_1 = require("../../../../engine/ui/IgeUiButton.js");
+const IgeUiElement_1 = require("../../../../engine/core/IgeUiElement.js");
+const IgeUiDropDown_1 = require("../../../../engine/ui/IgeUiDropDown.js");
+const IgeEntity_1 = require("../../../../engine/core/IgeEntity.js");
+const IgeScene2d_1 = require("../../../../engine/core/IgeScene2d.js");
+const utils_1 = require("../../../../engine/utils.js");
+const IgeSceneGraph_1 = require("../../../../engine/core/IgeSceneGraph.js");
 class SplashClientScene extends IgeSceneGraph_1.IgeSceneGraph {
     constructor() {
         super(...arguments);

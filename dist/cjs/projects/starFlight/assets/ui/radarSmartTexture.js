@@ -1,8 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.radarSmartTexture = void 0;
-const instance_1 = require("@/engine/instance");
-const utils_1 = require("@/engine/utils");
+const instance_1 = require("../../../../engine/instance.js");
+const utils_1 = require("../../../../engine/utils.js");
 exports.radarSmartTexture = {
     render: function (ctx, entity) {
         if (instance_1.ige.app.playerEntity) {

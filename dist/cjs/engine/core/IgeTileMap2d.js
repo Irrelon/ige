@@ -11,10 +11,10 @@ const IgeRect_1 = require("./IgeRect");
 const IgePoint3d_1 = require("./IgePoint3d");
 const IgePoly2d_1 = require("./IgePoly2d");
 const clientServer_1 = require("../clientServer");
-const IgeMountMode_1 = require("@/enums/IgeMountMode");
+const IgeMountMode_1 = require("../../enums/IgeMountMode.js");
 const utils_1 = require("../utils");
 const IgeEntity_1 = require("./IgeEntity");
-const igeClassStore_1 = require("@/engine/igeClassStore");
+const igeClassStore_1 = require("../igeClassStore.js");
 /**
  * Tile maps provide a way to align mounted child objects to a tile-based grid.
  * NOTE: These are not to be confused with IgeTextureMap's which allow you to

@@ -1,9 +1,9 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.GameEntity = void 0;
-const instance_1 = require("@/engine/instance");
-const clientServer_1 = require("@/engine/clientServer");
-const IgeEntityBox2d_1 = require("@/engine/components/physics/box2d/IgeEntityBox2d");
+const instance_1 = require("../../../../engine/instance.js");
+const clientServer_1 = require("../../../../engine/clientServer.js");
+const IgeEntityBox2d_1 = require("../../../../engine/components/physics/box2d/IgeEntityBox2d.js");
 const AbilityButton_1 = require("./ui/AbilityButton");
 const acceptedAction_1 = require("../data/acceptedAction");
 class GameEntity extends IgeEntityBox2d_1.IgeEntityBox2d {

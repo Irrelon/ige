@@ -1,4 +1,4 @@
-import { IgeEventingClass } from "../../core/IgeEventingClass";
+import { IgeEventingClass } from "../../core/IgeEventingClass.js"
 export class IgeNetIoClient extends IgeEventingClass {
     classId = "IgeNetIoClient";
     _networkId;

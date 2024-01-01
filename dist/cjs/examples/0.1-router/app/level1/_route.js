@@ -12,9 +12,9 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const instance_1 = require("@/engine/instance");
+const instance_1 = require("../../../../engine/instance.js");
 const Level1Scene_1 = require("./Level1Scene");
-const IgeTexture_1 = require("@/engine/core/IgeTexture");
+const IgeTexture_1 = require("../../../../engine/core/IgeTexture.js");
 const simpleBox_1 = __importDefault(require("../../assets/textures/smartTextures/simpleBox"));
 instance_1.ige.router.route("app/level1", {
     client: () => __awaiter(void 0, void 0, void 0, function* () {

@@ -1,8 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.IgeUiRadioButton = void 0;
-const IgeUiButton_1 = require("@/engine/ui/IgeUiButton");
-const igeClassStore_1 = require("@/engine/igeClassStore");
+const IgeUiButton_1 = require("./IgeUiButton.js");
+const igeClassStore_1 = require("../igeClassStore.js");
 class IgeUiRadioButton extends IgeUiButton_1.IgeUiButton {
     constructor() {
         super(...arguments);

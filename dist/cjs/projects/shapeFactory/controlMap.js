@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.controlMap = exports.GameControls = void 0;
-const IgeInputDeviceMap_1 = require("@/enums/IgeInputDeviceMap");
+const IgeInputDeviceMap_1 = require("../../enums/IgeInputDeviceMap.js");
 var GameControls;
 (function (GameControls) {
     GameControls[GameControls["pointerUp"] = 0] = "pointerUp";

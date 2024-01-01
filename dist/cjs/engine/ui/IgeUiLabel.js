@@ -1,10 +1,10 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.IgeUiLabel = void 0;
-const IgeUiElement_1 = require("@/engine/core/IgeUiElement");
-const IgeFontEntity_1 = require("@/engine/core/IgeFontEntity");
-const IgeFontAlign_1 = require("@/enums/IgeFontAlign");
-const igeClassStore_1 = require("@/engine/igeClassStore");
+const IgeUiElement_1 = require("../core/IgeUiElement.js");
+const IgeFontEntity_1 = require("../core/IgeFontEntity.js");
+const IgeFontAlign_1 = require("../../enums/IgeFontAlign.js");
+const igeClassStore_1 = require("../igeClassStore.js");
 /**
  * Provides a UI label entity. Basic on-screen text label.
  */

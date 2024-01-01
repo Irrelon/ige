@@ -1,9 +1,9 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.IgeUiTimeStream = void 0;
-const IgeUiElement_1 = require("@/engine/core/IgeUiElement");
-const igeClassStore_1 = require("@/engine/igeClassStore");
-const instance_1 = require("@/engine/instance");
+const IgeUiElement_1 = require("../core/IgeUiElement.js");
+const igeClassStore_1 = require("../igeClassStore.js");
+const instance_1 = require("../instance.js");
 class IgeUiTimeStream extends IgeUiElement_1.IgeUiElement {
     constructor() {
         super(...arguments);

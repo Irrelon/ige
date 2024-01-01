@@ -4,9 +4,9 @@ exports.IgeEntityManager = void 0;
 const instance_1 = require("../../instance");
 const utils_1 = require("../../utils");
 const IgeComponent_1 = require("../../core/IgeComponent");
-const IgeMountMode_1 = require("@/enums/IgeMountMode");
-const IgeBehaviourType_1 = require("@/enums/IgeBehaviourType");
-const IgeEntityRenderMode_1 = require("@/enums/IgeEntityRenderMode");
+const IgeMountMode_1 = require("../../../enums/IgeMountMode.js");
+const IgeBehaviourType_1 = require("../../../enums/IgeBehaviourType.js");
+const IgeEntityRenderMode_1 = require("../../../enums/IgeEntityRenderMode.js");
 /**
  * This component should be mounted to a parent entity such as an IgeScene2d but can
  * be mounted to any instance that extends IgeEntity.

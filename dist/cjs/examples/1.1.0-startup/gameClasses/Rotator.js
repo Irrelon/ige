@@ -1,9 +1,9 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Rotator = void 0;
-const instance_1 = require("@/engine/instance");
-const IgeEntity_1 = require("@/engine/core/IgeEntity");
-const clientServer_1 = require("@/engine/clientServer");
+const instance_1 = require("../../../engine/instance.js");
+const IgeEntity_1 = require("../../../engine/core/IgeEntity.js");
+const clientServer_1 = require("../../../engine/clientServer.js");
 class Rotator extends IgeEntity_1.IgeEntity {
     constructor(speed) {
         super();

@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.IgeTileMap2dSmartTexture = void 0;
-const IgePoint2d_1 = require("@/engine/core/IgePoint2d");
+const IgePoint2d_1 = require("../../../engine/core/IgePoint2d.js");
 exports.IgeTileMap2dSmartTexture = {
     render: function (ctx, entity) {
         let tileWidth = entity._tileWidth, tileHeight = entity._tileHeight, bounds2d = entity.bounds2d(), gridSize = entity._gridSize, x = 0, y = 0;

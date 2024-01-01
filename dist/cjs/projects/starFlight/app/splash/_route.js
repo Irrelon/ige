@@ -9,11 +9,11 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const instance_1 = require("@/engine/instance");
+const instance_1 = require("../../../../engine/instance.js");
 const starFieldSmartTexture_1 = require("../../assets/backgrounds/starFieldSmartTexture");
 const nebulaFieldSmartTexture_1 = require("../../assets/backgrounds/nebulaFieldSmartTexture");
 const igeButton_1 = require("../../assets/ui/igeButton");
-const IgeTexture_1 = require("@/engine/core/IgeTexture");
+const IgeTexture_1 = require("../../../../engine/core/IgeTexture.js");
 const SplashClientScene_1 = require("./SplashClientScene");
 instance_1.ige.router.route('app/splash', {
     client: () => __awaiter(void 0, void 0, void 0, function* () {

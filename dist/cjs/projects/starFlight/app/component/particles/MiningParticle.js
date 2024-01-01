@@ -1,9 +1,9 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.MiningParticle = void 0;
-const instance_1 = require("@/engine/instance");
-const IgeParticle_1 = require("@/engine/core/IgeParticle");
-const utils_1 = require("@/engine/utils");
+const instance_1 = require("../../../../../engine/instance.js");
+const IgeParticle_1 = require("../../../../../engine/core/IgeParticle.js");
+const utils_1 = require("../../../../../engine/utils.js");
 class MiningParticle extends IgeParticle_1.IgeParticle {
     constructor(emitter) {
         super(emitter);

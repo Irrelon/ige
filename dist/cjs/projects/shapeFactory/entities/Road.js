@@ -1,10 +1,10 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Road = void 0;
-const instance_1 = require("@/engine/instance");
+const instance_1 = require("../../../engine/instance.js");
 const Line_1 = require("./base/Line");
-const igeClassStore_1 = require("@/engine/igeClassStore");
-const IgeTimeout_1 = require("@/engine/core/IgeTimeout");
+const igeClassStore_1 = require("../../../engine/igeClassStore.js");
+const IgeTimeout_1 = require("../../../engine/core/IgeTimeout.js");
 class Road extends Line_1.Line {
     constructor(fromId, toId) {
         super();

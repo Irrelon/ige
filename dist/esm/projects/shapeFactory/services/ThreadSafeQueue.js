@@ -1,4 +1,4 @@
-import { arrPull } from "@/engine/utils";
+import { arrPull } from "../../../engine/utils.js"
 export class ThreadSafeQueue {
     _queue = [];
     _add = [];

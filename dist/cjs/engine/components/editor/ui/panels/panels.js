@@ -4,7 +4,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const IgeEventingClass_1 = __importDefault(require("../../../../core/IgeEventingClass"));
-const IgeMountMode_1 = require("@/enums/IgeMountMode");
+const IgeMountMode_1 = require("../../../../../enums/IgeMountMode.js");
 class UiPanels extends IgeEventingClass_1.default {
     constructor() {
         super(...arguments);

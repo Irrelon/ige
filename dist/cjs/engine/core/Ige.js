@@ -30,16 +30,16 @@ const config_1 = require("./config");
 const IgeEngine_1 = require("./IgeEngine");
 const IgeTextureStore_1 = require("./IgeTextureStore");
 const IgeMetrics_1 = require("./IgeMetrics");
-const IgeInputComponent_1 = require("@/engine/components/IgeInputComponent");
+const IgeInputComponent_1 = require("../components/IgeInputComponent.js");
 const IgeObjectRegister_1 = require("./IgeObjectRegister");
 const IgeArrayRegister_1 = require("./IgeArrayRegister");
 const IgePoint3d_1 = require("./IgePoint3d");
 const IgeRouter_1 = require("./IgeRouter");
-const IgeDependencies_1 = require("@/engine/core/IgeDependencies");
-const IgeTweenController_1 = require("@/engine/core/IgeTweenController");
-const IgeTimeController_1 = require("@/engine/core/IgeTimeController");
-const IgeUiManagerController_1 = require("@/engine/core/IgeUiManagerController");
-const IgeBox2dController_1 = require("@/engine/components/physics/box2d/IgeBox2dController");
+const IgeDependencies_1 = require("./IgeDependencies.js");
+const IgeTweenController_1 = require("./IgeTweenController.js");
+const IgeTimeController_1 = require("./IgeTimeController.js");
+const IgeUiManagerController_1 = require("./IgeUiManagerController.js");
+const IgeBox2dController_1 = require("../components/physics/box2d/IgeBox2dController.js");
 const version = "3.0.0";
 class Ige {
     constructor() {

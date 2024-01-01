@@ -1,13 +1,13 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Ore = void 0;
-const instance_1 = require("@/engine/instance");
-const IgeEntityBox2d_1 = require("@/engine/components/physics/box2d/IgeEntityBox2d");
-const IgeTextureAnimationComponent_1 = require("@/engine/components/IgeTextureAnimationComponent");
-const IgeBox2dBodyType_1 = require("@/enums/IgeBox2dBodyType");
-const IgeBox2dFixtureShapeType_1 = require("@/enums/IgeBox2dFixtureShapeType");
-const clientServer_1 = require("@/engine/clientServer");
-const igeClassStore_1 = require("@/engine/igeClassStore");
+const instance_1 = require("../../../../engine/instance.js");
+const IgeEntityBox2d_1 = require("../../../../engine/components/physics/box2d/IgeEntityBox2d.js");
+const IgeTextureAnimationComponent_1 = require("../../../../engine/components/IgeTextureAnimationComponent.js");
+const IgeBox2dBodyType_1 = require("../../../../enums/IgeBox2dBodyType.js");
+const IgeBox2dFixtureShapeType_1 = require("../../../../enums/IgeBox2dFixtureShapeType.js");
+const clientServer_1 = require("../../../../engine/clientServer.js");
+const igeClassStore_1 = require("../../../../engine/igeClassStore.js");
 class Ore extends IgeEntityBox2d_1.IgeEntityBox2d {
     constructor(publicGameData = {}) {
         super();

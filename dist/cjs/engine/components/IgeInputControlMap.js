@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.IgeInputControlMap = void 0;
-const instance_1 = require("@/engine/instance");
+const instance_1 = require("../instance.js");
 class IgeInputControlMap {
     constructor() {
         this._inputMap = [];

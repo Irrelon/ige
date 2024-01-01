@@ -1,5 +1,5 @@
-import { ige } from "@/engine/instance";
-import { isServer } from "@/engine/clientServer";
+import { ige } from "../../engine/instance.js"
+import { isServer } from "../../engine/clientServer.js"
 import "./app/_route";
 export class Game {
     classId = "Game";

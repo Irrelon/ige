@@ -1,5 +1,5 @@
-import { IgeEventingClass } from "@/engine/core/IgeEventingClass";
-import { newIdHex } from "@/engine/utils";
+import { IgeEventingClass } from "../../../../engine/core/IgeEventingClass.js"
+import { newIdHex } from "../../../../engine/utils.js"
 export class Inventory extends IgeEventingClass {
     classId = "Inventory";
     _inventory = [];

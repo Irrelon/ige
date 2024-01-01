@@ -1,8 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Inventory = void 0;
-const IgeEventingClass_1 = require("@/engine/core/IgeEventingClass");
-const utils_1 = require("@/engine/utils");
+const IgeEventingClass_1 = require("../../../../engine/core/IgeEventingClass.js");
+const utils_1 = require("../../../../engine/utils.js");
 class Inventory extends IgeEventingClass_1.IgeEventingClass {
     constructor() {
         super(...arguments);

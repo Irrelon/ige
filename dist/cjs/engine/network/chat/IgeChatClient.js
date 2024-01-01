@@ -2,9 +2,9 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.IgeChatClient = void 0;
 const instance_1 = require("../../instance");
-const IgeNetworkConstants_1 = require("@/enums/IgeNetworkConstants");
+const IgeNetworkConstants_1 = require("../../../enums/IgeNetworkConstants.js");
 const IgeChatComponent_1 = require("./IgeChatComponent");
-const IgeEventReturnFlag_1 = require("@/enums/IgeEventReturnFlag");
+const IgeEventReturnFlag_1 = require("../../../enums/IgeEventReturnFlag.js");
 /**
  * The client-side chat component. Handles all client-side
  * chat methods and events.

@@ -1,8 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.MessageWindow = void 0;
-const instance_1 = require("@/engine/instance");
-const IgeUiLabel_1 = require("@/engine/ui/IgeUiLabel");
+const instance_1 = require("../../../../../engine/instance.js");
+const IgeUiLabel_1 = require("../../../../../engine/ui/IgeUiLabel.js");
 const InfoWindow_1 = require("./InfoWindow");
 class MessageWindow extends InfoWindow_1.InfoWindow {
     constructor(options = {}) {

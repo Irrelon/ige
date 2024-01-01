@@ -1,10 +1,10 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.IgeUiTextBox = void 0;
-const instance_1 = require("@/engine/instance");
-const IgeUiElement_1 = require("@/engine/core/IgeUiElement");
-const IgeFontEntity_1 = require("@/engine/core/IgeFontEntity");
-const igeClassStore_1 = require("@/engine/igeClassStore");
+const instance_1 = require("../instance.js");
+const IgeUiElement_1 = require("../core/IgeUiElement.js");
+const IgeFontEntity_1 = require("../core/IgeFontEntity.js");
+const igeClassStore_1 = require("../igeClassStore.js");
 /**
  * Provides a UI text entry box. When provided with focus this UI entity will
  * capture keyboard input and display it, similar in usage to the HTML input

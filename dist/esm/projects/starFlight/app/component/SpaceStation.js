@@ -1,10 +1,10 @@
-import { ige } from "@/engine/instance";
-import { isClient, isServer } from "@/engine/clientServer";
-import { IgeVelocityComponent } from "@/engine/components/IgeVelocityComponent";
-import { IgeEntityBox2d } from "@/engine/components/physics/box2d/IgeEntityBox2d";
-import { IgeBox2dBodyType } from "@/enums/IgeBox2dBodyType";
-import { IgeBox2dFixtureShapeType } from "@/enums/IgeBox2dFixtureShapeType";
-import { registerClass } from "@/engine/igeClassStore";
+import { ige } from "../../../../engine/instance.js"
+import { isClient, isServer } from "../../../../engine/clientServer.js"
+import { IgeVelocityComponent } from "../../../../engine/components/IgeVelocityComponent.js"
+import { IgeEntityBox2d } from "../../../../engine/components/physics/box2d/IgeEntityBox2d.js"
+import { IgeBox2dBodyType } from "../../../../enums/IgeBox2dBodyType.js"
+import { IgeBox2dFixtureShapeType } from "../../../../enums/IgeBox2dFixtureShapeType.js"
+import { registerClass } from "../../../../engine/igeClassStore.js"
 export class SpaceStation extends IgeEntityBox2d {
     classId = "SpaceStation";
     _publicGameData;

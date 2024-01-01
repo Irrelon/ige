@@ -5,7 +5,7 @@ exports.IgeVelocityComponent = void 0;
 const instance_1 = require("../instance");
 const IgePoint3d_1 = require("../core/IgePoint3d");
 const IgeComponent_1 = require("../core/IgeComponent");
-const IgeBehaviourType_1 = require("@/enums/IgeBehaviourType");
+const IgeBehaviourType_1 = require("../../enums/IgeBehaviourType.js");
 class IgeVelocityComponent extends IgeComponent_1.IgeComponent {
     constructor(entity, options) {
         super(entity, options);

@@ -1,10 +1,10 @@
-import { StorageBuilding } from "../entities/StorageBuilding";
-import { FlagBuilding } from "../entities/FlagBuilding";
-import { MiningBuilding } from "../entities/MiningBuilding";
-import { ResourceType } from "../enums/ResourceType";
-import { FactoryBuilding1 } from "../entities/FactoryBuilding1";
-import { FactoryBuilding2 } from "../entities/FactoryBuilding2";
-import { HouseBuilding1 } from "../entities/HouseBuilding1";
+import { StorageBuilding } from "../entities/StorageBuilding.js"
+import { FlagBuilding } from "../entities/FlagBuilding.js"
+import { MiningBuilding } from "../entities/MiningBuilding.js"
+import { ResourceType } from "../enums/ResourceType.js"
+import { FactoryBuilding1 } from "../entities/FactoryBuilding1.js"
+import { FactoryBuilding2 } from "../entities/FactoryBuilding2.js"
+import { HouseBuilding1 } from "../entities/HouseBuilding1.js"
 export const createStorageBuilding = (parent, id, tileX, tileY) => {
     const roadOffsetX = 0;
     const roadOffsetY = 3;

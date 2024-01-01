@@ -5,7 +5,7 @@ const instance_1 = require("../instance");
 const IgeUiEntity_1 = require("./IgeUiEntity");
 const IgeTween_1 = require("./IgeTween");
 const utils_1 = require("../utils");
-const igeClassStore_1 = require("@/engine/igeClassStore");
+const igeClassStore_1 = require("../igeClassStore.js");
 /**
  * Creates a new particle emitter.
  */

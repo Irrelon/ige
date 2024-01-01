@@ -10,13 +10,13 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Client = void 0;
-const IgeBaseClass_1 = require("@/engine/core/IgeBaseClass");
-const instance_1 = require("@/engine/instance");
-const IgeScene2d_1 = require("@/engine/core/IgeScene2d");
-const IgeViewport_1 = require("@/engine/core/IgeViewport");
-const IgeEntityBox2d_1 = require("@/engine/components/physics/box2d/IgeEntityBox2d");
-const IgeBox2dBodyType_1 = require("@/enums/IgeBox2dBodyType");
-const IgeBox2dFixtureShapeType_1 = require("@/enums/IgeBox2dFixtureShapeType");
+const IgeBaseClass_1 = require("../../engine/core/IgeBaseClass.js");
+const instance_1 = require("../../engine/instance.js");
+const IgeScene2d_1 = require("../../engine/core/IgeScene2d.js");
+const IgeViewport_1 = require("../../engine/core/IgeViewport.js");
+const IgeEntityBox2d_1 = require("../../engine/components/physics/box2d/IgeEntityBox2d.js");
+const IgeBox2dBodyType_1 = require("../../enums/IgeBox2dBodyType.js");
+const IgeBox2dFixtureShapeType_1 = require("../../enums/IgeBox2dFixtureShapeType.js");
 class Client extends IgeBaseClass_1.IgeBaseClass {
     constructor() {
         super();

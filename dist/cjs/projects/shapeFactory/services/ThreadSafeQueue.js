@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ThreadSafeQueue = void 0;
-const utils_1 = require("@/engine/utils");
+const utils_1 = require("../../../engine/utils.js");
 class ThreadSafeQueue {
     constructor() {
         this._queue = [];

@@ -1,9 +1,9 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.WorkerUnit = void 0;
-const instance_1 = require("@/engine/instance");
+const instance_1 = require("../../../../engine/instance.js");
 const Circle_1 = require("./Circle");
-const igeClassStore_1 = require("@/engine/igeClassStore");
+const igeClassStore_1 = require("../../../../engine/igeClassStore.js");
 class WorkerUnit extends Circle_1.Circle {
     constructor(type) {
         super();

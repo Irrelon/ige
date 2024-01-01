@@ -1,9 +1,9 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.UiBuildItem = void 0;
-const IgeUiElement_1 = require("@/engine/core/IgeUiElement");
-const IgeUiLabel_1 = require("@/engine/ui/IgeUiLabel");
-const IgeFontAlign_1 = require("@/enums/IgeFontAlign");
+const IgeUiElement_1 = require("../../../../engine/core/IgeUiElement.js");
+const IgeUiLabel_1 = require("../../../../engine/ui/IgeUiLabel.js");
+const IgeFontAlign_1 = require("../../../../enums/IgeFontAlign.js");
 class UiBuildItem extends IgeUiElement_1.IgeUiElement {
     constructor(icon, label) {
         super();

@@ -5,8 +5,8 @@ const instance_1 = require("../../instance");
 const utils_1 = require("../../utils");
 const IgeNetIoBaseController_1 = require("../IgeNetIoBaseController");
 const IgeNetIoServer_1 = require("./IgeNetIoServer");
-const IgeNetworkConstants_1 = require("@/enums/IgeNetworkConstants");
-const IgeEventReturnFlag_1 = require("@/enums/IgeEventReturnFlag");
+const IgeNetworkConstants_1 = require("../../../enums/IgeNetworkConstants.js");
+const IgeEventReturnFlag_1 = require("../../../enums/IgeEventReturnFlag.js");
 class IgeNetIoServerController extends IgeNetIoBaseController_1.IgeNetIoBaseController {
     constructor() {
         super();

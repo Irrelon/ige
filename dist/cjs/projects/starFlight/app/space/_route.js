@@ -9,13 +9,13 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const instance_1 = require("@/engine/instance");
+const instance_1 = require("../../../../engine/instance.js");
 const SpaceServerScene_1 = require("./SpaceServerScene");
-const IgeTexture_1 = require("@/engine/core/IgeTexture");
+const IgeTexture_1 = require("../../../../engine/core/IgeTexture.js");
 const igeButton_1 = require("../../assets/ui/igeButton");
 const starFieldSmartTexture_1 = require("../../assets/backgrounds/starFieldSmartTexture");
 const nebulaFieldSmartTexture_1 = require("../../assets/backgrounds/nebulaFieldSmartTexture");
-const IgeCellSheet_1 = require("@/engine/core/IgeCellSheet");
+const IgeCellSheet_1 = require("../../../../engine/core/IgeCellSheet.js");
 const radarSmartTexture_1 = require("../../assets/ui/radarSmartTexture");
 const targetSmartTexture_1 = require("../../assets/ui/targetSmartTexture");
 const laser1_1 = require("../../assets/sprites/laser1");

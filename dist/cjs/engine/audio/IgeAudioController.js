@@ -10,8 +10,8 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.IgeAudioController = void 0;
-const clientServer_1 = require("@/engine/clientServer");
-const IgeEventingClass_1 = require("@/engine/core/IgeEventingClass");
+const clientServer_1 = require("../clientServer.js");
+const IgeEventingClass_1 = require("../core/IgeEventingClass.js");
 class IgeAudioController extends IgeEventingClass_1.IgeEventingClass {
     constructor() {
         super();

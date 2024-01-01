@@ -2,7 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.IgeFontSheet = void 0;
 const IgeTexture_1 = require("./IgeTexture");
-const instance_1 = require("@/engine/instance");
+const instance_1 = require("../instance.js");
 /* TODO: URGENT - Make this alignment stuff work inside the bounds of the entity it is attached to
  *    so that bottom-right aligns to the lower-right point of the bounding box of the entity
  *    whilst maintaining the current text-alignment as well

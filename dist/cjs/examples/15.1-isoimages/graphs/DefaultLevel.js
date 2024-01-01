@@ -10,11 +10,11 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.DefaultLevel = void 0;
-const instance_1 = require("@/engine/instance");
-const IgeTileMap2d_1 = require("@/engine/core/IgeTileMap2d");
-const IgeSceneGraph_1 = require("@/engine/core/IgeSceneGraph");
-const IgeScene2d_1 = require("@/engine/core/IgeScene2d");
-const igeClassStore_1 = require("@/engine/igeClassStore");
+const instance_1 = require("../../../engine/instance.js");
+const IgeTileMap2d_1 = require("../../../engine/core/IgeTileMap2d.js");
+const IgeSceneGraph_1 = require("../../../engine/core/IgeSceneGraph.js");
+const IgeScene2d_1 = require("../../../engine/core/IgeScene2d.js");
+const igeClassStore_1 = require("../../../engine/igeClassStore.js");
 class DefaultLevel extends IgeSceneGraph_1.IgeSceneGraph {
     constructor() {
         super(...arguments);

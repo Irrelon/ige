@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.createChildRotators = void 0;
-const instance_1 = require("@/engine/instance");
+const instance_1 = require("../../../engine/instance.js");
 const Rotator_1 = require("./Rotator");
 const createChildRotators = (parent, distance = 120, speed = 0.1) => {
     const simpleBox = instance_1.ige.textures.get("simpleBox");

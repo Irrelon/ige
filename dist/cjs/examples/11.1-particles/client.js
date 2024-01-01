@@ -10,14 +10,14 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Client = void 0;
-const instance_1 = require("@/engine/instance");
-const IgeBaseClass_1 = require("@/engine/core/IgeBaseClass");
-const IgeScene2d_1 = require("@/engine/core/IgeScene2d");
-const IgeViewport_1 = require("@/engine/core/IgeViewport");
-const IgeTexture_1 = require("@/engine/core/IgeTexture");
-const IgeParticleEmitter_1 = require("@/engine/core/IgeParticleEmitter");
-const IgePoint3d_1 = require("@/engine/core/IgePoint3d");
-const IgeParticle_1 = require("@/engine/core/IgeParticle");
+const instance_1 = require("../../engine/instance.js");
+const IgeBaseClass_1 = require("../../engine/core/IgeBaseClass.js");
+const IgeScene2d_1 = require("../../engine/core/IgeScene2d.js");
+const IgeViewport_1 = require("../../engine/core/IgeViewport.js");
+const IgeTexture_1 = require("../../engine/core/IgeTexture.js");
+const IgeParticleEmitter_1 = require("../../engine/core/IgeParticleEmitter.js");
+const IgePoint3d_1 = require("../../engine/core/IgePoint3d.js");
+const IgeParticle_1 = require("../../engine/core/IgeParticle.js");
 // @ts-ignore
 window.ige = instance_1.ige;
 class Client extends IgeBaseClass_1.IgeBaseClass {

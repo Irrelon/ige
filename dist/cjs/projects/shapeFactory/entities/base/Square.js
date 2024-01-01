@@ -1,9 +1,9 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Square = void 0;
-const instance_1 = require("@/engine/instance");
-const clientServer_1 = require("@/engine/clientServer");
-const igeClassStore_1 = require("@/engine/igeClassStore");
+const instance_1 = require("../../../../engine/instance.js");
+const clientServer_1 = require("../../../../engine/clientServer.js");
+const igeClassStore_1 = require("../../../../engine/igeClassStore.js");
 const Building_1 = require("./Building");
 class Square extends Building_1.Building {
     constructor() {

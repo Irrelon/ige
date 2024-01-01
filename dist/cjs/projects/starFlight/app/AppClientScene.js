@@ -1,12 +1,12 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.AppClientScene = void 0;
-const instance_1 = require("@/engine/instance");
-const IgeOptions_1 = require("@/engine/core/IgeOptions");
-const IgeSceneGraph_1 = require("@/engine/core/IgeSceneGraph");
-const IgeViewport_1 = require("@/engine/core/IgeViewport");
-const IgeScene2d_1 = require("@/engine/core/IgeScene2d");
-const IgeVelocityComponent_1 = require("@/engine/components/IgeVelocityComponent");
+const instance_1 = require("../../../engine/instance.js");
+const IgeOptions_1 = require("../../../engine/core/IgeOptions.js");
+const IgeSceneGraph_1 = require("../../../engine/core/IgeSceneGraph.js");
+const IgeViewport_1 = require("../../../engine/core/IgeViewport.js");
+const IgeScene2d_1 = require("../../../engine/core/IgeScene2d.js");
+const IgeVelocityComponent_1 = require("../../../engine/components/IgeVelocityComponent.js");
 // Include this here as we use it throughout the app
 //require('./component/ui/InfoWindow');
 class AppClientScene extends IgeSceneGraph_1.IgeSceneGraph {

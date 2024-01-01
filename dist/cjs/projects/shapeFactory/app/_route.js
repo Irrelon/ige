@@ -32,7 +32,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const instance_1 = require("@/engine/instance");
+const instance_1 = require("../../../engine/instance.js");
 require("./level1/_route");
 instance_1.ige.router.route("app", {
     client: () => __awaiter(void 0, void 0, void 0, function* () {

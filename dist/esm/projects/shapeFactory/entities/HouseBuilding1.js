@@ -1,8 +1,8 @@
-import { registerClass } from "@/engine/igeClassStore";
-import { isClient } from "@/engine/clientServer";
-import { UiRequiresProducesDisplay } from "./UiRequiresProducesDisplay";
-import { ige } from "@/engine/instance";
-import { Building } from "./base/Building";
+import { registerClass } from "../../../engine/igeClassStore.js"
+import { isClient } from "../../../engine/clientServer.js"
+import { UiRequiresProducesDisplay } from "./UiRequiresProducesDisplay.js"
+import { ige } from "../../../engine/instance.js"
+import { Building } from "./base/Building.js"
 export class HouseBuilding1 extends Building {
     classId = "HouseBuilding1";
     constructor(tileX = NaN, tileY = NaN, produces, requires = []) {

@@ -1,10 +1,10 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.AppServerScene = void 0;
-const instance_1 = require("@/engine/instance");
-const IgeSceneGraph_1 = require("@/engine/core/IgeSceneGraph");
-const IgeViewport_1 = require("@/engine/core/IgeViewport");
-const IgeScene2d_1 = require("@/engine/core/IgeScene2d");
+const instance_1 = require("../../../engine/instance.js");
+const IgeSceneGraph_1 = require("../../../engine/core/IgeSceneGraph.js");
+const IgeViewport_1 = require("../../../engine/core/IgeViewport.js");
+const IgeScene2d_1 = require("../../../engine/core/IgeScene2d.js");
 require("./component/module/Module_Generic");
 require("./component/module/Module_Ability");
 require("./component/module/Module_MiningLaser");

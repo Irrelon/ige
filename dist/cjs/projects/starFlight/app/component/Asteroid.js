@@ -1,16 +1,16 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Asteroid = void 0;
-const instance_1 = require("@/engine/instance");
-const clientServer_1 = require("@/engine/clientServer");
+const instance_1 = require("../../../../engine/instance.js");
+const clientServer_1 = require("../../../../engine/clientServer.js");
 const oreTypes_1 = require("../data/oreTypes");
-const IgePoly2d_1 = require("@/engine/core/IgePoly2d");
+const IgePoly2d_1 = require("../../../../engine/core/IgePoly2d.js");
 const Ore_1 = require("./Ore");
-const utils_1 = require("@/engine/utils");
+const utils_1 = require("../../../../engine/utils.js");
 const GameEntity_1 = require("./GameEntity");
-const IgeBox2dBodyType_1 = require("@/enums/IgeBox2dBodyType");
-const IgeBox2dFixtureShapeType_1 = require("@/enums/IgeBox2dFixtureShapeType");
-const igeClassStore_1 = require("@/engine/igeClassStore");
+const IgeBox2dBodyType_1 = require("../../../../enums/IgeBox2dBodyType.js");
+const IgeBox2dFixtureShapeType_1 = require("../../../../enums/IgeBox2dFixtureShapeType.js");
+const igeClassStore_1 = require("../../../../engine/igeClassStore.js");
 class Asteroid extends GameEntity_1.GameEntity {
     constructor(publicGameData) {
         super(publicGameData);

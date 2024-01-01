@@ -4,8 +4,8 @@ exports.IgeTweenController = void 0;
 const instance_1 = require("../instance");
 const utils_1 = require("../utils");
 const easing_1 = require("../easing");
-const IgeBehaviourType_1 = require("@/enums/IgeBehaviourType");
-const IgeEventingClass_1 = require("@/engine/core/IgeEventingClass");
+const IgeBehaviourType_1 = require("../../enums/IgeBehaviourType.js");
+const IgeEventingClass_1 = require("./IgeEventingClass.js");
 /**
  * This component is already included in the IgeRoot (ige)
  * instance and is not designed for use in any other way!

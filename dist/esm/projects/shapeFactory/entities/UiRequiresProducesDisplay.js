@@ -1,6 +1,6 @@
-import { ige } from "@/engine/instance";
-import { ResourceType } from "../enums/ResourceType";
-import { IgeUiEntity } from "@/engine/core/IgeUiEntity";
+import { ige } from "../../../engine/instance.js"
+import { ResourceType } from "../enums/ResourceType.js"
+import { IgeUiEntity } from "../../../engine/core/IgeUiEntity.js"
 export class UiRequiresProducesDisplay extends IgeUiEntity {
     _requiredResourceUiEntity = [];
     constructor(produces, requires = []) {

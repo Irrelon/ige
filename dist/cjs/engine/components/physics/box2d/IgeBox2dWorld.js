@@ -6,9 +6,9 @@ const igeClassStore_1 = require("../../../igeClassStore");
 const IgeEventingClass_1 = require("../../../core/IgeEventingClass");
 const instance_1 = require("../../../instance");
 const lib_box2d_1 = require("./lib_box2d");
-const IgeBehaviourType_1 = require("@/enums/IgeBehaviourType");
-const IgeEntityBox2d_1 = require("@/engine/components/physics/box2d/IgeEntityBox2d");
-const IgeBox2dTimingMode_1 = require("@/enums/IgeBox2dTimingMode");
+const IgeBehaviourType_1 = require("../../../../enums/IgeBehaviourType.js");
+const IgeEntityBox2d_1 = require("./IgeEntityBox2d.js");
+const IgeBox2dTimingMode_1 = require("../../../../enums/IgeBox2dTimingMode.js");
 class IgeBox2dWorld extends IgeEventingClass_1.IgeEventingClass {
     constructor(entity, options) {
         super();

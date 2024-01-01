@@ -1,8 +1,8 @@
-import { ige } from "@/engine/instance";
-import { isClient } from "@/engine/clientServer";
-import { registerClass } from "@/engine/igeClassStore";
-import { IgeRect } from "@/engine/core/IgeRect";
-import { GameEntity } from "./GameEntity";
+import { ige } from "../../../../engine/instance.js"
+import { isClient } from "../../../../engine/clientServer.js"
+import { registerClass } from "../../../../engine/igeClassStore.js"
+import { IgeRect } from "../../../../engine/core/IgeRect.js"
+import { GameEntity } from "./GameEntity.js"
 export class Line extends GameEntity {
     classId = 'Line';
     _initVals;

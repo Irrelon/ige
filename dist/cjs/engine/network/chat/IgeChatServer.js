@@ -1,11 +1,11 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.IgeChatServer = void 0;
-const instance_1 = require("@/engine/instance");
-const utils_1 = require("@/engine/utils");
-const IgeNetworkConstants_1 = require("@/enums/IgeNetworkConstants");
-const IgeChatComponent_1 = require("@/engine/network/chat/IgeChatComponent");
-const IgeEventReturnFlag_1 = require("@/enums/IgeEventReturnFlag");
+const instance_1 = require("../../instance.js");
+const utils_1 = require("../../utils.js");
+const IgeNetworkConstants_1 = require("../../../enums/IgeNetworkConstants.js");
+const IgeChatComponent_1 = require("./IgeChatComponent.js");
+const IgeEventReturnFlag_1 = require("../../../enums/IgeEventReturnFlag.js");
 /**
  * The server-side chat component. Handles all server-side
  * chat methods and events.

@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.lineSmartTexture = void 0;
-const IgePoint3d_1 = require("@/engine/core/IgePoint3d");
+const IgePoint3d_1 = require("../../../../../engine/core/IgePoint3d.js");
 exports.lineSmartTexture = {
     render: function (ctx, entity) {
         ctx.beginPath();

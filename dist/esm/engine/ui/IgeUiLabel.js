@@ -1,7 +1,7 @@
-import { IgeUiElement } from "@/engine/core/IgeUiElement";
-import { IgeFontEntity } from "@/engine/core/IgeFontEntity";
-import { IgeFontAlignX, IgeFontAlignY } from "@/enums/IgeFontAlign";
-import { registerClass } from "@/engine/igeClassStore";
+import { IgeUiElement } from "../core/IgeUiElement.js"
+import { IgeFontEntity } from "../core/IgeFontEntity.js";
+import { IgeFontAlignX, IgeFontAlignY } from "../../enums/IgeFontAlign.js"
+import { registerClass } from "../igeClassStore.js"
 /**
  * Provides a UI label entity. Basic on-screen text label.
  */

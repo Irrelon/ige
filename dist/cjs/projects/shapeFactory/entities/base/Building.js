@@ -2,12 +2,12 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Building = void 0;
 const GameEntity_1 = require("./GameEntity");
-const igeClassStore_1 = require("@/engine/igeClassStore");
+const igeClassStore_1 = require("../../../../engine/igeClassStore.js");
 const Resource_1 = require("../Resource");
 const ResourceType_1 = require("../../enums/ResourceType");
-const clientServer_1 = require("@/engine/clientServer");
-const IgeTimeout_1 = require("@/engine/core/IgeTimeout");
-const instance_1 = require("@/engine/instance");
+const clientServer_1 = require("../../../../engine/clientServer.js");
+const IgeTimeout_1 = require("../../../../engine/core/IgeTimeout.js");
+const instance_1 = require("../../../../engine/instance.js");
 const ThreadSafeQueue_1 = require("../../services/ThreadSafeQueue");
 class Building extends GameEntity_1.GameEntity {
     constructor() {

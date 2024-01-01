@@ -7,9 +7,9 @@ const IgePoint3d_1 = require("./IgePoint3d");
 const IgeCamera_1 = require("./IgeCamera");
 const IgeRect_1 = require("./IgeRect");
 const IgePoint2d_1 = require("./IgePoint2d");
-const IgeMountMode_1 = require("@/enums/IgeMountMode");
+const IgeMountMode_1 = require("../../enums/IgeMountMode.js");
 const IgeUiEntity_1 = require("./IgeUiEntity");
-const igeClassStore_1 = require("@/engine/igeClassStore");
+const igeClassStore_1 = require("../igeClassStore.js");
 // TODO: Turns out we need IgeObject because IgeViewport cannot extend IgeEntity
 //    because IgeEntity imports IgeViewport, creating a circular referencing issue
 /**

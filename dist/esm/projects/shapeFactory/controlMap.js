@@ -1,4 +1,4 @@
-import { IgeInputDevice, IgeInputKeyboardMap, IgeInputPointerMap } from "@/enums/IgeInputDeviceMap";
+import { IgeInputDevice, IgeInputKeyboardMap, IgeInputPointerMap } from "../../enums/IgeInputDeviceMap.js"
 export var GameControls;
 (function (GameControls) {
     GameControls[GameControls["pointerUp"] = 0] = "pointerUp";

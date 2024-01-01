@@ -1,7 +1,7 @@
-import { IgeUiLabel } from "@/engine/ui/IgeUiLabel";
-import { IgeUiEntity } from "@/engine/core/IgeUiEntity";
-import { Tab } from "./Tab";
-import { ige } from "@/engine/instance";
+import { IgeUiLabel } from "../../../../../engine/ui/IgeUiLabel.js"
+import { IgeUiEntity } from "../../../../../engine/core/IgeUiEntity.js"
+import { Tab } from "./Tab.js"
+import { ige } from "../../../../../engine/instance.js"
 export class InfoWindow extends IgeUiEntity {
     classId = "InfoWindow";
     _tab;

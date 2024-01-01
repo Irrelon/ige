@@ -16,9 +16,9 @@ const IgePoint3d_1 = require("./IgePoint3d");
 const IgeDummyContext_1 = require("./IgeDummyContext");
 const IgeEntity_1 = require("./IgeEntity");
 const IgeViewport_1 = require("./IgeViewport");
-const IgeEngineState_1 = require("@/enums/IgeEngineState");
+const IgeEngineState_1 = require("../../enums/IgeEngineState.js");
 const IgePoint2d_1 = require("./IgePoint2d");
-const IgeBehaviourType_1 = require("@/enums/IgeBehaviourType");
+const IgeBehaviourType_1 = require("../../enums/IgeBehaviourType.js");
 class IgeEngine extends IgeEntity_1.IgeEntity {
     constructor() {
         super();

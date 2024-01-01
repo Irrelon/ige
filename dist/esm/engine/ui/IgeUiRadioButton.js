@@ -1,5 +1,5 @@
-import { IgeUiButton } from "@/engine/ui/IgeUiButton";
-import { registerClass } from "@/engine/igeClassStore";
+import { IgeUiButton } from "./IgeUiButton.js"
+import { registerClass } from "../igeClassStore.js";
 export class IgeUiRadioButton extends IgeUiButton {
     classId = "IgeUiRadioButton";
     radioGroup(val) {

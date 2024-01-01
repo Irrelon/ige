@@ -1,10 +1,10 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Tab = void 0;
-const IgeUiLabel_1 = require("@/engine/ui/IgeUiLabel");
-const IgeUiEntity_1 = require("@/engine/core/IgeUiEntity");
-const instance_1 = require("@/engine/instance");
-const IgeTween_1 = require("@/engine/core/IgeTween");
+const IgeUiLabel_1 = require("../../../../../engine/ui/IgeUiLabel.js");
+const IgeUiEntity_1 = require("../../../../../engine/core/IgeUiEntity.js");
+const instance_1 = require("../../../../../engine/instance.js");
+const IgeTween_1 = require("../../../../../engine/core/IgeTween.js");
 class Tab extends IgeUiEntity_1.IgeUiEntity {
     constructor(options) {
         super();

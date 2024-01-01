@@ -1,8 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Game = void 0;
-const instance_1 = require("@/engine/instance");
-const clientServer_1 = require("@/engine/clientServer");
+const instance_1 = require("../../engine/instance.js");
+const clientServer_1 = require("../../engine/clientServer.js");
 require("./app/_route");
 class Game {
     constructor() {

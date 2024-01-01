@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.IgeFontSmartTexture = void 0;
-const IgeFontAlign_1 = require("@/enums/IgeFontAlign");
+const IgeFontAlign_1 = require("../../enums/IgeFontAlign.js");
 /**
  * Provides native canvas font rendering supporting multi-line
  * text and alignment options.

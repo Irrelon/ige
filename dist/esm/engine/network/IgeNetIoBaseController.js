@@ -1,4 +1,4 @@
-import { IgeEventingClass } from "../core/IgeEventingClass";
+import { IgeEventingClass } from "../core/IgeEventingClass.js"
 export class IgeNetIoBaseController extends IgeEventingClass {
     classId = 'IgeNetIoBaseController';
     _networkCommandsIndex = []; // Maps a command name to an integer via the array index

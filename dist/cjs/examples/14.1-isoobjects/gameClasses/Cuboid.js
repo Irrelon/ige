@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Cuboid = void 0;
-const IgeEntity_1 = require("@/engine/core/IgeEntity");
+const IgeEntity_1 = require("../../../engine/core/IgeEntity.js");
 class Cuboid extends IgeEntity_1.IgeEntity {
     constructor(pointerMoveFunc, pointerOutFunc) {
         super();

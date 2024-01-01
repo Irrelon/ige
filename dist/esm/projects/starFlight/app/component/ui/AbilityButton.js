@@ -1,8 +1,8 @@
-import { ige } from "@/engine/instance";
-import { isServer } from "@/engine/clientServer";
-import { IgeUiButton } from "@/engine/ui/IgeUiButton";
-import { IgeUiLabel } from "@/engine/ui/IgeUiLabel";
-import { IgeUiEntity } from "@/engine/core/IgeUiEntity";
+import { ige } from "../../../../../engine/instance.js"
+import { isServer } from "../../../../../engine/clientServer.js"
+import { IgeUiButton } from "../../../../../engine/ui/IgeUiButton.js"
+import { IgeUiLabel } from "../../../../../engine/ui/IgeUiLabel.js"
+import { IgeUiEntity } from "../../../../../engine/core/IgeUiEntity.js"
 export class AbilityButton extends IgeUiEntity {
     classId = "AbilityButton";
     _abilityId;

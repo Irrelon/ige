@@ -1,10 +1,10 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.LaserEffect = void 0;
-const instance_1 = require("@/engine/instance");
-const clientServer_1 = require("@/engine/clientServer");
-const IgeEntity_1 = require("@/engine/core/IgeEntity");
-const igeClassStore_1 = require("@/engine/igeClassStore");
+const instance_1 = require("../../../../../engine/instance.js");
+const clientServer_1 = require("../../../../../engine/clientServer.js");
+const IgeEntity_1 = require("../../../../../engine/core/IgeEntity.js");
+const igeClassStore_1 = require("../../../../../engine/igeClassStore.js");
 class LaserEffect extends IgeEntity_1.IgeEntity {
     constructor(data = {}) {
         super();

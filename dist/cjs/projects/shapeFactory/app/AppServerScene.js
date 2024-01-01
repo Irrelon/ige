@@ -10,10 +10,10 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.AppServerScene = void 0;
-const instance_1 = require("@/engine/instance");
-const IgeBaseScene_1 = require("@/engine/core/IgeBaseScene");
-const IgeOptions_1 = require("@/engine/core/IgeOptions");
-const IgeSceneGraph_1 = require("@/engine/core/IgeSceneGraph");
+const instance_1 = require("../../../engine/instance.js");
+const IgeBaseScene_1 = require("../../../engine/core/IgeBaseScene.js");
+const IgeOptions_1 = require("../../../engine/core/IgeOptions.js");
+const IgeSceneGraph_1 = require("../../../engine/core/IgeSceneGraph.js");
 class AppServerScene extends IgeSceneGraph_1.IgeSceneGraph {
     constructor() {
         super(...arguments);

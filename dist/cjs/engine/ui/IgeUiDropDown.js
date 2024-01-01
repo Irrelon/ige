@@ -1,10 +1,10 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.IgeUiDropDown = void 0;
-const instance_1 = require("@/engine/instance");
-const IgeUiElement_1 = require("@/engine/core/IgeUiElement");
-const IgeUiLabel_1 = require("@/engine/ui/IgeUiLabel");
-const igeClassStore_1 = require("@/engine/igeClassStore");
+const instance_1 = require("../instance.js");
+const IgeUiElement_1 = require("../core/IgeUiElement.js");
+const IgeUiLabel_1 = require("./IgeUiLabel.js");
+const igeClassStore_1 = require("../igeClassStore.js");
 class IgeUiDropDown extends IgeUiElement_1.IgeUiElement {
     constructor() {
         super();

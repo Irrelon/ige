@@ -6,7 +6,7 @@ const igeClassStore_1 = require("../../igeClassStore");
 const utils_1 = require("../../utils");
 const IgeNetIoBaseController_1 = require("../IgeNetIoBaseController");
 const IgeNetIoClient_1 = require("./IgeNetIoClient");
-const IgeNetworkConstants_1 = require("@/enums/IgeNetworkConstants");
+const IgeNetworkConstants_1 = require("../../../enums/IgeNetworkConstants.js");
 /**
  * The client-side net.io component. Handles all client-side
  * networking systems.

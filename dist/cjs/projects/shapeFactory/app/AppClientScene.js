@@ -10,12 +10,12 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.AppClientScene = void 0;
-const instance_1 = require("@/engine/instance");
-const IgeBaseScene_1 = require("@/engine/core/IgeBaseScene");
-const IgeOptions_1 = require("@/engine/core/IgeOptions");
-const IgeTexture_1 = require("@/engine/core/IgeTexture");
-const IgeSceneGraph_1 = require("@/engine/core/IgeSceneGraph");
-const IgeMousePanComponent_1 = require("@/engine/components/IgeMousePanComponent");
+const instance_1 = require("../../../engine/instance.js");
+const IgeBaseScene_1 = require("../../../engine/core/IgeBaseScene.js");
+const IgeOptions_1 = require("../../../engine/core/IgeOptions.js");
+const IgeTexture_1 = require("../../../engine/core/IgeTexture.js");
+const IgeSceneGraph_1 = require("../../../engine/core/IgeSceneGraph.js");
+const IgeMousePanComponent_1 = require("../../../engine/components/IgeMousePanComponent.js");
 const square_1 = require("../assets/textures/smartTextures/square");
 const line_1 = require("../assets/textures/smartTextures/line");
 const triangle_1 = require("../assets/textures/smartTextures/triangle");
@@ -23,7 +23,7 @@ const circle_1 = require("../assets/textures/smartTextures/circle");
 const star_1 = require("../assets/textures/smartTextures/star");
 const flag_1 = require("../assets/textures/smartTextures/flag");
 const grid_1 = require("../assets/textures/smartTextures/grid");
-const IgeCellSheet_1 = require("@/engine/core/IgeCellSheet");
+const IgeCellSheet_1 = require("../../../engine/core/IgeCellSheet.js");
 // @ts-ignore
 window.ige = instance_1.ige;
 class AppClientScene extends IgeSceneGraph_1.IgeSceneGraph {

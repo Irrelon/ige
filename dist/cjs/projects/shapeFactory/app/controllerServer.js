@@ -10,10 +10,10 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.controllerServer = void 0;
-const instance_1 = require("@/engine/instance");
+const instance_1 = require("../../../engine/instance.js");
 const BuildingType_1 = require("../enums/BuildingType");
 const createBuilding_1 = require("../services/createBuilding");
-const utils_1 = require("@/engine/utils");
+const utils_1 = require("../../../engine/utils.js");
 const Road_1 = require("../entities/Road");
 const Transporter_1 = require("../entities/Transporter");
 const controllerServer = () => __awaiter(void 0, void 0, void 0, function* () {
