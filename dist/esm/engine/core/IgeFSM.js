@@ -1,4 +1,4 @@
-import { IgeBaseClass } from "./IgeBaseClass.js"
+import { IgeBaseClass } from "@/engine/core/IgeBaseClass";
 export class IgeFSM extends IgeBaseClass {
     _states;
     _transitions;

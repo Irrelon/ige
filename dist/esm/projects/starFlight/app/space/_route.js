@@ -1,14 +1,14 @@
-import { ige } from "../../../../engine/instance.js"
-import { SpaceServerScene } from "./SpaceServerScene.js"
-import { IgeTexture } from "../../../../engine/core/IgeTexture.js"
-import { igeButton } from "../../assets/ui/igeButton.js"
-import { starFieldSmartTexture } from "../../assets/backgrounds/starFieldSmartTexture.js"
-import { nebulaFieldSmartTexture } from "../../assets/backgrounds/nebulaFieldSmartTexture.js"
-import { IgeCellSheet } from "../../../../engine/core/IgeCellSheet.js"
-import { radarSmartTexture } from "../../assets/ui/radarSmartTexture.js"
-import { targetSmartTexture } from "../../assets/ui/targetSmartTexture.js"
-import { laserSmartTexture } from "../../assets/sprites/laser1.js"
-import { SpaceClientScene } from "./SpaceClientScene.js"
+import { ige } from "@/engine/instance";
+import { SpaceServerScene } from "./SpaceServerScene";
+import { IgeTexture } from "@/engine/core/IgeTexture";
+import { igeButton } from "../../assets/ui/igeButton";
+import { starFieldSmartTexture } from "../../assets/backgrounds/starFieldSmartTexture";
+import { nebulaFieldSmartTexture } from "../../assets/backgrounds/nebulaFieldSmartTexture";
+import { IgeCellSheet } from "@/engine/core/IgeCellSheet";
+import { radarSmartTexture } from "../../assets/ui/radarSmartTexture";
+import { targetSmartTexture } from "../../assets/ui/targetSmartTexture";
+import { laserSmartTexture } from "../../assets/sprites/laser1";
+import { SpaceClientScene } from "./SpaceClientScene";
 ige.router.route('app/space', {
     client: async () => {
         const textures = [

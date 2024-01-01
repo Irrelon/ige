@@ -1,4 +1,4 @@
-import { ige } from "../instance.js"
+import { ige } from "../instance";
 export const WithUiPositionMixin = (Base) => class extends Base {
     _uiLeft;
     _uiLeftPercent;

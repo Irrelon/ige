@@ -1,12 +1,12 @@
-import { ige } from "../../../../engine/instance.js"
-import { isClient } from "../../../../engine/clientServer.js"
-import { IgeStreamMode } from "../../../../enums/IgeStreamMode.js"
-import { ResourceType } from "../../enums/ResourceType.js"
-import { IgeAudioEntity } from "../../../../engine/audio/index.js"
-import { IgeSceneGraph } from "../../../../engine/core/IgeSceneGraph.js"
-import { IgeScene2d } from "../../../../engine/core/IgeScene2d.js"
-import { createStorageBuilding } from "../../services/createBuilding.js"
-import { IgeTileMap2d } from "../../../../engine/core/IgeTileMap2d.js"
+import { ige } from "@/engine/instance";
+import { isClient } from "@/engine/clientServer";
+import { IgeStreamMode } from "@/enums/IgeStreamMode";
+import { ResourceType } from "../../enums/ResourceType";
+import { IgeAudioEntity } from "@/engine/audio/index";
+import { IgeSceneGraph } from "@/engine/core/IgeSceneGraph";
+import { IgeScene2d } from "@/engine/core/IgeScene2d";
+import { createStorageBuilding } from "../../services/createBuilding";
+import { IgeTileMap2d } from "@/engine/core/IgeTileMap2d";
 export class Level1 extends IgeSceneGraph {
     classId = "Level1";
     /**

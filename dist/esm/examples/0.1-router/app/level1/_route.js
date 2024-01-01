@@ -1,7 +1,7 @@
-import { ige } from "../../../../engine/instance.js"
-import { Level1Scene } from "./Level1Scene.js"
-import { IgeTexture } from "../../../../engine/core/IgeTexture.js"
-import simpleBox from "../../assets/textures/smartTextures/simpleBox.js"
+import { ige } from "@/engine/instance";
+import { Level1Scene } from "./Level1Scene";
+import { IgeTexture } from "@/engine/core/IgeTexture";
+import simpleBox from "../../assets/textures/smartTextures/simpleBox";
 ige.router.route("app/level1", {
     client: async () => {
         // Load the game textures

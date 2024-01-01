@@ -1,11 +1,11 @@
-import { newIdHex } from "../../../utils.js"
-import { igeClassStore } from "../../../igeClassStore.js"
-import { IgeEventingClass } from "../../../core/IgeEventingClass.js"
-import { ige } from "../../../instance.js"
+import { newIdHex } from "../../../utils";
+import { igeClassStore } from "../../../igeClassStore";
+import { IgeEventingClass } from "../../../core/IgeEventingClass";
+import { ige } from "../../../instance";
 import { Box2D } from "./lib_box2d";
-import { IgeBehaviourType } from "../../../../enums/IgeBehaviourType.js"
-import { IgeEntityBox2d } from "./IgeEntityBox2d.js"
-import { IgeBox2dTimingMode } from "../../../../enums/IgeBox2dTimingMode.js"
+import { IgeBehaviourType } from "@/enums/IgeBehaviourType";
+import { IgeEntityBox2d } from "@/engine/components/physics/box2d/IgeEntityBox2d";
+import { IgeBox2dTimingMode } from "@/enums/IgeBox2dTimingMode";
 export class IgeBox2dWorld extends IgeEventingClass {
     classId = 'IgeBox2dWorld';
     constructor(entity, options) {

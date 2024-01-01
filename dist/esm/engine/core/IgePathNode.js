@@ -1,4 +1,4 @@
-import { IgePoint3d } from "./IgePoint3d.js"
+import { IgePoint3d } from "./IgePoint3d";
 /**
  * Creates a new path node for use with the IgePathFinder class.
  */

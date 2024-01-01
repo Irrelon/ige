@@ -1,5 +1,5 @@
-import { ige } from "../../../engine/instance.js"
-import { AppScene } from "./AppScene.js"
+import { ige } from "@/engine/instance";
+import { AppScene } from "./AppScene";
 import "./splash/_route";
 import "./level1/_route";
 ige.router.route("app", {

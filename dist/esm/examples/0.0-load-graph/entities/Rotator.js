@@ -1,5 +1,5 @@
-import { ige } from "../../../engine/instance.js"
-import { IgeEntity } from "../../../engine/core/IgeEntity.js"
+import { ige } from "@/engine/instance";
+import { IgeEntity } from "@/engine/core/IgeEntity";
 export class Rotator extends IgeEntity {
     classId = 'Rotator';
     _rSpeed = 0;

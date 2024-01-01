@@ -1,6 +1,6 @@
-import { ige } from "../../../../../engine/instance.js"
-import { IgeParticle } from "../../../../../engine/core/IgeParticle.js"
-import { arrPull } from "../../../../../engine/utils.js"
+import { ige } from "@/engine/instance";
+import { IgeParticle } from "@/engine/core/IgeParticle";
+import { arrPull } from "@/engine/utils";
 export class ThrustParticle extends IgeParticle {
     classId = "ThrustParticle";
     constructor(emitter) {

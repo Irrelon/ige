@@ -1,8 +1,8 @@
-import { ige } from "../../engine/instance.js"
-import { IgeBaseClass } from "../../engine/core/IgeBaseClass.js"
-import { IgeBaseScene } from "../../engine/core/IgeBaseScene.js"
-import { Level1 } from "./levels/Level1.js"
-import { IgeSpriteSheet } from "../../engine/core/IgeSpriteSheet.js"
+import { ige } from "@/engine/instance";
+import { IgeBaseClass } from "@/engine/core/IgeBaseClass";
+import { IgeBaseScene } from "@/engine/core/IgeBaseScene";
+import { Level1 } from "./levels/Level1";
+import { IgeSpriteSheet } from "@/engine/core/IgeSpriteSheet";
 // @ts-ignore
 window.ige = ige;
 export class Client extends IgeBaseClass {

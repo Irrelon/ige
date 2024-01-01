@@ -1,12 +1,12 @@
-import { ige } from "../instance.js"
-import { isClient } from "../clientServer.js"
-import { distance } from "../utils.js"
-import { IgeComponent } from "../core/IgeComponent.js"
-import { IgeMountMode } from "../../enums/IgeMountMode.js"
-import { IgePoint3d } from "../core/IgePoint3d.js"
-import { IgePathNode } from "../core/IgePathNode.js"
-import { IgeEntityRenderMode } from "../../enums/IgeEntityRenderMode.js"
-import { IgeBehaviourType } from "../../enums/IgeBehaviourType.js"
+import { ige } from "../instance";
+import { isClient } from "../clientServer";
+import { distance } from "../utils";
+import { IgeComponent } from "../core/IgeComponent";
+import { IgeMountMode } from "@/enums/IgeMountMode";
+import { IgePoint3d } from "../core/IgePoint3d";
+import { IgePathNode } from "../core/IgePathNode";
+import { IgeEntityRenderMode } from "@/enums/IgeEntityRenderMode";
+import { IgeBehaviourType } from "@/enums/IgeBehaviourType";
 /**
  * Handles entity path traversal. This component is supposed to be added
  * to individual entities wishing to traverse paths. When added to an entity

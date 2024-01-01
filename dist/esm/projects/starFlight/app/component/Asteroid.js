@@ -1,13 +1,13 @@
-import { ige } from "../../../../engine/instance.js"
-import { isClient, isServer } from "../../../../engine/clientServer.js"
-import { oreTypes } from "../data/oreTypes.js"
-import { IgePoly2d } from "../../../../engine/core/IgePoly2d.js"
-import { Ore } from "./Ore.js"
-import { degreesToRadians } from "../../../../engine/utils.js"
-import { GameEntity } from "./GameEntity.js"
-import { IgeBox2dBodyType } from "../../../../enums/IgeBox2dBodyType.js"
-import { IgeBox2dFixtureShapeType } from "../../../../enums/IgeBox2dFixtureShapeType.js"
-import { registerClass } from "../../../../engine/igeClassStore.js"
+import { ige } from "@/engine/instance";
+import { isClient, isServer } from "@/engine/clientServer";
+import { oreTypes } from "../data/oreTypes";
+import { IgePoly2d } from "@/engine/core/IgePoly2d";
+import { Ore } from "./Ore";
+import { degreesToRadians } from "@/engine/utils";
+import { GameEntity } from "./GameEntity";
+import { IgeBox2dBodyType } from "@/enums/IgeBox2dBodyType";
+import { IgeBox2dFixtureShapeType } from "@/enums/IgeBox2dFixtureShapeType";
+import { registerClass } from "@/engine/igeClassStore";
 export class Asteroid extends GameEntity {
     classId = "Asteroid";
     _oreCount = 0;

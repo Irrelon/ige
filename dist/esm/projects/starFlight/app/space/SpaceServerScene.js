@@ -1,17 +1,17 @@
-import { ige } from "../../../../engine/instance.js"
-import { isServer } from "../../../../engine/clientServer.js"
-import { systems } from "../data/systems.js"
-import { playerData } from "../data/playerData.js"
-import { IgeScene2d } from "../../../../engine/core/IgeScene2d.js"
-import { IgeSceneGraph } from "../../../../engine/core/IgeSceneGraph.js"
-import { SpaceStation } from "../component/SpaceStation.js"
-import { JumpGate } from "../component/JumpGate.js"
-import { PlayerShip } from "../component/PlayerShip.js"
-import { MiningLaserEffect } from "../component/effects/MiningLaserEffect.js"
-import { IgeInterval } from "../../../../engine/core/IgeInterval.js"
-import { generateAsteroidBelt } from "../../services/asteroidBelt.js"
-import { modules } from "../data/modules.js"
-import { generateModuleObject } from "../../services/gameUtils.js"
+import { ige } from "@/engine/instance";
+import { isServer } from "@/engine/clientServer";
+import { systems } from "../data/systems";
+import { playerData } from "../data/playerData";
+import { IgeScene2d } from "@/engine/core/IgeScene2d";
+import { IgeSceneGraph } from "@/engine/core/IgeSceneGraph";
+import { SpaceStation } from "../component/SpaceStation";
+import { JumpGate } from "../component/JumpGate";
+import { PlayerShip } from "../component/PlayerShip";
+import { MiningLaserEffect } from "../component/effects/MiningLaserEffect";
+import { IgeInterval } from "@/engine/core/IgeInterval";
+import { generateAsteroidBelt } from "../../services/asteroidBelt";
+import { modules } from "../data/modules";
+import { generateModuleObject } from "../../services/gameUtils";
 export class SpaceServerScene extends IgeSceneGraph {
     classId = "SpaceServerScene";
     publicGameData;

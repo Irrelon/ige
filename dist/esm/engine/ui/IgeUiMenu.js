@@ -1,6 +1,6 @@
-import { IgeUiElement } from "../core/IgeUiElement.js"
-import { IgeUiMenuItem } from "./IgeUiMenuItem.js"
-import { registerClass } from "../igeClassStore.js"
+import { IgeUiElement } from "@/engine/core/IgeUiElement";
+import { IgeUiMenuItem } from "@/engine/ui/IgeUiMenuItem";
+import { registerClass } from "@/engine/igeClassStore";
 /**
  * Provides a UI drop-down menu entity.
  */

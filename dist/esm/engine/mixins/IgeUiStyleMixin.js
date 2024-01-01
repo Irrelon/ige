@@ -1,5 +1,5 @@
 // TODO: Add "overflow" with automatic scroll-bars
-import { ige } from "../instance.js"
+import { ige } from "../instance";
 // TODO: Update this mixin so it extends from IgeBaseClass, moving anything that relies on IgeEntity
 //    to another class, probably IgeEntity or IgeUiEntity?
 export const WithUiStyleMixin = (Base) => class extends Base {

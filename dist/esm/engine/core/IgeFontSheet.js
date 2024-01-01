@@ -1,5 +1,5 @@
-import { IgeTexture } from "./IgeTexture.js"
-import { ige } from "../instance.js"
+import { IgeTexture } from "./IgeTexture";
+import { ige } from "@/engine/instance";
 /* TODO: URGENT - Make this alignment stuff work inside the bounds of the entity it is attached to
  *    so that bottom-right aligns to the lower-right point of the bounding box of the entity
  *    whilst maintaining the current text-alignment as well

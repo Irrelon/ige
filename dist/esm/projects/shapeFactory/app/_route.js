@@ -1,4 +1,4 @@
-import { ige } from "../../../engine/instance.js"
+import { ige } from "@/engine/instance";
 import "./level1/_route";
 ige.router.route("app", {
     client: async () => {

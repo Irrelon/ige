@@ -1,12 +1,12 @@
-import { ige } from "../../../engine/instance.js"
-import { isServer } from "../../../engine/clientServer.js"
-import { WorkerUnitType } from "../enums/WorkerUnitType.js"
-import { WorkerUnit } from "./base/WorkerUnit.js"
-import { registerClass } from "../../../engine/igeClassStore.js"
-import { IgeTween } from "../../../engine/core/IgeTween.js"
-import { IgeTimeout } from "../../../engine/core/IgeTimeout.js"
-import { roadPathFinder } from "../services/roadPathFinder.js"
-import { distance } from "../../../engine/utils.js"
+import { ige } from "@/engine/instance";
+import { isServer } from "@/engine/clientServer";
+import { WorkerUnitType } from "../enums/WorkerUnitType";
+import { WorkerUnit } from "./base/WorkerUnit";
+import { registerClass } from "@/engine/igeClassStore";
+import { IgeTween } from "@/engine/core/IgeTween";
+import { IgeTimeout } from "@/engine/core/IgeTimeout";
+import { roadPathFinder } from "../services/roadPathFinder";
+import { distance } from "@/engine/utils";
 export class Transporter extends WorkerUnit {
     classId = "Transporter";
     _baseId;

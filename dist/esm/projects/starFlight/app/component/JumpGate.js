@@ -1,7 +1,7 @@
-import { ige } from "../../../../engine/instance.js"
-import { isClient } from "../../../../engine/clientServer.js"
-import { IgeEntity } from "../../../../engine/core/IgeEntity.js"
-import { registerClass } from "../../../../engine/igeClassStore.js"
+import { ige } from "@/engine/instance";
+import { isClient } from "@/engine/clientServer";
+import { IgeEntity } from "@/engine/core/IgeEntity";
+import { registerClass } from "@/engine/igeClassStore";
 export class JumpGate extends IgeEntity {
     classId = "JumpGate";
     _publicGameData;

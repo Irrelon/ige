@@ -1,4 +1,4 @@
-import { RoadBasedPathFinder } from "./RoadBasedPathFinder.js"
+import { RoadBasedPathFinder } from "./RoadBasedPathFinder";
 export const roadPathFinder = (fromBuildingId, toBuildingId) => {
     const pathFinder = new RoadBasedPathFinder();
     const sourceNode = pathFinder.getNode(fromBuildingId);

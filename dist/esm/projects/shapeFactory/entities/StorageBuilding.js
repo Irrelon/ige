@@ -1,10 +1,10 @@
-import { registerClass } from "../../../engine/igeClassStore.js"
-import { ige } from "../../../engine/instance.js"
-import { Building } from "./base/Building.js"
-import { ResourceType } from "../enums/ResourceType.js"
-import { Resource } from "./Resource.js"
-import { isClient } from "../../../engine/clientServer.js"
-import { IgePoint2d } from "../../../engine/core/IgePoint2d.js"
+import { registerClass } from "@/engine/igeClassStore";
+import { ige } from "@/engine/instance";
+import { Building } from "./base/Building";
+import { ResourceType } from "../enums/ResourceType";
+import { Resource } from "./Resource";
+import { isClient } from "@/engine/clientServer";
+import { IgePoint2d } from "@/engine/core/IgePoint2d";
 export class StorageBuilding extends Building {
     classId = "StorageBuilding";
     tileXDelta = -1;

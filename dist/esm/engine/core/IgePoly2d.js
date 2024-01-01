@@ -1,5 +1,5 @@
-import { IgePoint2d } from "./IgePoint2d.js"
-import { IgeRect } from "./IgeRect.js"
+import { IgePoint2d } from "./IgePoint2d";
+import { IgeRect } from "./IgeRect";
 /**
  * Creates a new 2d polygon made up of IgePoint2d instances.
  */

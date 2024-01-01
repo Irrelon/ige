@@ -1,5 +1,5 @@
-import { ige } from "../instance.js"
-import { IgeInterval } from "./IgeInterval.js"
+import { ige } from "../instance";
+import { IgeInterval } from "./IgeInterval";
 /**
  * Provides an alternative to setTimeout() which works based on the engine's internal
  * time system allowing timeouts to fire correctly, taking into account pausing the

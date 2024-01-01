@@ -1,9 +1,9 @@
-import { ige } from "../../../engine/instance.js"
-import { BuildingType } from "../enums/BuildingType.js"
-import { createFactoryBuilding1, createFactoryBuilding2, createFlagBuilding, createHouseBuilding1, createMiningBuilding, createStorageBuilding } from "../services/createBuilding.js"
-import { newIdHex } from "../../../engine/utils.js"
-import { Road } from "../entities/Road.js"
-import { Transporter } from "../entities/Transporter.js"
+import { ige } from "@/engine/instance";
+import { BuildingType } from "../enums/BuildingType";
+import { createFactoryBuilding1, createFactoryBuilding2, createFlagBuilding, createHouseBuilding1, createMiningBuilding, createStorageBuilding } from "../services/createBuilding";
+import { newIdHex } from "@/engine/utils";
+import { Road } from "../entities/Road";
+import { Transporter } from "../entities/Transporter";
 export const controllerServer = async () => {
     const tileMap1 = ige.$("tileMap1");
     const createBuilding = async (data, clientId, requestCallback) => {

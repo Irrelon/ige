@@ -1,5 +1,5 @@
-import { ige } from "../../../../engine/instance.js"
-import { SplashScene } from "./SplashScene.js"
+import { ige } from "@/engine/instance";
+import { SplashScene } from "./SplashScene";
 ige.router.route("app/splash", {
     client: async () => {
         // Load our level onto the scenegraph

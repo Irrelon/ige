@@ -1,5 +1,5 @@
-import { newIdHex } from "../../../../utils.js"
-import { IgeEventingClass } from "../../../../core/IgeEventingClass.js"
+import { newIdHex } from "@/engine/utils";
+import { IgeEventingClass } from "@/engine/core/IgeEventingClass";
 class UiDialogs extends IgeEventingClass {
     classId = 'UiDialogs';
     init;

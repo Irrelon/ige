@@ -1,9 +1,9 @@
-import { ige } from "../../instance.js"
-import { igeClassStore } from "../../igeClassStore.js"
-import { newIdHex } from "../../utils.js"
-import { IgeNetIoBaseController } from "../IgeNetIoBaseController.js"
-import { IgeNetIoClient } from "./IgeNetIoClient.js"
-import { IGE_NETWORK_REQUEST, IGE_NETWORK_RESPONSE, IGE_NETWORK_STREAM_CREATE, IGE_NETWORK_STREAM_DATA, IGE_NETWORK_STREAM_DESTROY, IGE_NETWORK_STREAM_TIME, IGE_NETWORK_TIME_SYNC } from "../../../enums/IgeNetworkConstants.js"
+import { ige } from "../../instance";
+import { igeClassStore } from "../../igeClassStore";
+import { newIdHex } from "../../utils";
+import { IgeNetIoBaseController } from "../IgeNetIoBaseController";
+import { IgeNetIoClient } from "./IgeNetIoClient";
+import { IGE_NETWORK_REQUEST, IGE_NETWORK_RESPONSE, IGE_NETWORK_STREAM_CREATE, IGE_NETWORK_STREAM_DATA, IGE_NETWORK_STREAM_DESTROY, IGE_NETWORK_STREAM_TIME, IGE_NETWORK_TIME_SYNC } from "@/enums/IgeNetworkConstants";
 /**
  * The client-side net.io component. Handles all client-side
  * networking systems.

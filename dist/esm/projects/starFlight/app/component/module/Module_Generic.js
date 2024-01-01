@@ -1,8 +1,8 @@
-import { ige } from "../../../../../engine/instance.js"
-import { igeClassStore, registerClass } from "../../../../../engine/igeClassStore.js"
-import { IgeBaseClass } from "../../../../../engine/core/IgeBaseClass.js"
-import { calculateModifierRatio, roundNumber } from "../../services.js"
-import { IgeAudioEntity } from "../../../../../engine/audio/index.js"
+import { ige } from "@/engine/instance";
+import { igeClassStore, registerClass } from "@/engine/igeClassStore";
+import { IgeBaseClass } from "@/engine/core/IgeBaseClass";
+import { calculateModifierRatio, roundNumber } from "../../services";
+import { IgeAudioEntity } from "@/engine/audio/index";
 export class Module_Generic extends IgeBaseClass {
     classId = "Module_Generic";
     _definition;

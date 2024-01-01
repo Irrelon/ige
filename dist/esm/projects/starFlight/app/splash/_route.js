@@ -1,9 +1,9 @@
-import { ige } from "../../../../engine/instance.js"
-import { starFieldSmartTexture } from "../../assets/backgrounds/starFieldSmartTexture.js"
-import { nebulaFieldSmartTexture } from "../../assets/backgrounds/nebulaFieldSmartTexture.js"
-import { igeButton } from "../../assets/ui/igeButton.js"
-import { IgeTexture } from "../../../../engine/core/IgeTexture.js"
-import { SplashClientScene } from "./SplashClientScene.js"
+import { ige } from "@/engine/instance";
+import { starFieldSmartTexture } from "../../assets/backgrounds/starFieldSmartTexture";
+import { nebulaFieldSmartTexture } from "../../assets/backgrounds/nebulaFieldSmartTexture";
+import { igeButton } from "../../assets/ui/igeButton";
+import { IgeTexture } from "@/engine/core/IgeTexture";
+import { SplashClientScene } from "./SplashClientScene";
 ige.router.route('app/splash', {
     client: async () => {
         const textures = [

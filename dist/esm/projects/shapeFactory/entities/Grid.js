@@ -1,6 +1,6 @@
-import { IgeEntity } from "../../../engine/core/IgeEntity.js"
-import { ige } from "../../../engine/instance.js"
-import { isClient } from "../../../engine/clientServer.js"
+import { IgeEntity } from "@/engine/core/IgeEntity";
+import { ige } from "@/engine/instance";
+import { isClient } from "@/engine/clientServer";
 export class Grid extends IgeEntity {
     classId = "Grid";
     spacing = 100;

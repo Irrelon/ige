@@ -1,10 +1,10 @@
-import { ige } from "../../../engine/instance.js"
-import { IgeTexture } from "../../../engine/core/IgeTexture.js"
-import { AppClientScene } from "./AppClientScene.js"
-import { AppServerScene } from "./AppServerScene.js"
-import { tab } from "../assets/ui/tab.js"
-import { timerCircle } from "../assets/ui/timerCircle.js"
-import { infoWindow } from "../assets/ui/infoWindow.js"
+import { ige } from "@/engine/instance";
+import { IgeTexture } from "@/engine/core/IgeTexture";
+import { AppClientScene } from "./AppClientScene";
+import { AppServerScene } from "./AppServerScene";
+import { tab } from "../assets/ui/tab";
+import { timerCircle } from "../assets/ui/timerCircle";
+import { infoWindow } from "../assets/ui/infoWindow";
 import "./space/_route";
 import "./splash/_route";
 ige.router.route("app", {

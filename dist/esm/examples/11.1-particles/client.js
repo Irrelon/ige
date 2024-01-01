@@ -1,11 +1,11 @@
-import { ige } from "../../engine/instance.js"
-import { IgeBaseClass } from "../../engine/core/IgeBaseClass.js"
-import { IgeScene2d } from "../../engine/core/IgeScene2d.js"
-import { IgeViewport } from "../../engine/core/IgeViewport.js"
-import { IgeTexture } from "../../engine/core/IgeTexture.js"
-import { IgeParticleEmitter } from "../../engine/core/IgeParticleEmitter.js"
-import { IgePoint3d } from "../../engine/core/IgePoint3d.js"
-import { IgeParticle } from "../../engine/core/IgeParticle.js"
+import { ige } from "@/engine/instance";
+import { IgeBaseClass } from "@/engine/core/IgeBaseClass";
+import { IgeScene2d } from "@/engine/core/IgeScene2d";
+import { IgeViewport } from "@/engine/core/IgeViewport";
+import { IgeTexture } from "@/engine/core/IgeTexture";
+import { IgeParticleEmitter } from "@/engine/core/IgeParticleEmitter";
+import { IgePoint3d } from "@/engine/core/IgePoint3d";
+import { IgeParticle } from "@/engine/core/IgeParticle";
 // @ts-ignore
 window.ige = ige;
 export class Client extends IgeBaseClass {

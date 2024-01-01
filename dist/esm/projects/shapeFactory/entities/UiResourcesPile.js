@@ -1,4 +1,4 @@
-import { IgeUiEntity } from "../../../engine/core/IgeUiEntity.js"
+import { IgeUiEntity } from "@/engine/core/IgeUiEntity";
 export class UiResourcesPile extends IgeUiEntity {
     resources = {};
     constructor() {

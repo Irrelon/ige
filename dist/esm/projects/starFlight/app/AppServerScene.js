@@ -1,7 +1,7 @@
-import { ige } from "../../../engine/instance.js"
-import { IgeSceneGraph } from "../../../engine/core/IgeSceneGraph.js"
-import { IgeViewport } from "../../../engine/core/IgeViewport.js"
-import { IgeScene2d } from "../../../engine/core/IgeScene2d.js"
+import { ige } from "@/engine/instance";
+import { IgeSceneGraph } from "@/engine/core/IgeSceneGraph";
+import { IgeViewport } from "@/engine/core/IgeViewport";
+import { IgeScene2d } from "@/engine/core/IgeScene2d";
 import "./component/module/Module_Generic";
 import "./component/module/Module_Ability";
 import "./component/module/Module_MiningLaser";

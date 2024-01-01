@@ -1,7 +1,7 @@
-import { ige } from "../../../engine/instance.js"
-import { IgeBaseScene } from "../../../engine/core/IgeBaseScene.js"
-import { IgeOptions } from "../../../engine/core/IgeOptions.js"
-import { IgeSceneGraph } from "../../../engine/core/IgeSceneGraph.js"
+import { ige } from "@/engine/instance";
+import { IgeBaseScene } from "@/engine/core/IgeBaseScene";
+import { IgeOptions } from "@/engine/core/IgeOptions";
+import { IgeSceneGraph } from "@/engine/core/IgeSceneGraph";
 export class AppServerScene extends IgeSceneGraph {
     classId = "AppServerScene";
     async addGraph() {

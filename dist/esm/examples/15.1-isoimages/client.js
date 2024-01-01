@@ -1,12 +1,12 @@
-import { ige } from "../../engine/instance.js"
-import { IgeBaseClass } from "../../engine/core/IgeBaseClass.js"
-import { IgeTexture } from "../../engine/core/IgeTexture.js"
-import { IgeFSM } from "../../engine/core/IgeFSM.js"
-import { IgeUiEntity } from "../../engine/core/IgeUiEntity.js"
-import { IgeUiRadioButton } from "../../engine/ui/IgeUiRadioButton.js"
-import { IgeTween } from "../../engine/core/IgeTween.js"
-import { IgeBaseScene } from "../../engine/core/IgeBaseScene.js"
-import { DefaultLevel } from "./graphs/DefaultLevel.js"
+import { ige } from "@/engine/instance";
+import { IgeBaseClass } from "@/engine/core/IgeBaseClass";
+import { IgeTexture } from "@/engine/core/IgeTexture";
+import { IgeFSM } from "@/engine/core/IgeFSM";
+import { IgeUiEntity } from "@/engine/core/IgeUiEntity";
+import { IgeUiRadioButton } from "@/engine/ui/IgeUiRadioButton";
+import { IgeTween } from "@/engine/core/IgeTween";
+import { IgeBaseScene } from "@/engine/core/IgeBaseScene";
+import { DefaultLevel } from "@/examples/15.1-isoimages/graphs/DefaultLevel";
 export class Client extends IgeBaseClass {
     classId = "Client";
     fsm;

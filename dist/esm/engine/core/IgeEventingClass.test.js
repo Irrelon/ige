@@ -1,4 +1,4 @@
-import { IgeEventingClass } from "./IgeEventingClass.js"
+import { IgeEventingClass } from "./IgeEventingClass";
 import assert from "assert";
 let expectedAssertions = 0;
 let actualAssertions = 0;

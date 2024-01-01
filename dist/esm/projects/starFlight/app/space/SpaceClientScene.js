@@ -1,11 +1,11 @@
-import { ige } from "../../../../engine/instance.js"
-import { IgeSceneGraph } from "../../../../engine/core/IgeSceneGraph.js"
-import { IgeUiProgressBar } from "../../../../engine/ui/IgeUiProgressBar.js"
-import { IgeUiLabel } from "../../../../engine/ui/IgeUiLabel.js"
-import { IgeUiEntity } from "../../../../engine/core/IgeUiEntity.js"
-import { IgeEntity } from "../../../../engine/core/IgeEntity.js"
-import { IgeScene2d } from "../../../../engine/core/IgeScene2d.js"
-import { InfoWindow } from "../component/ui/InfoWindow.js"
+import { ige } from "@/engine/instance";
+import { IgeSceneGraph } from "@/engine/core/IgeSceneGraph";
+import { IgeUiProgressBar } from "@/engine/ui/IgeUiProgressBar";
+import { IgeUiLabel } from "@/engine/ui/IgeUiLabel";
+import { IgeUiEntity } from "@/engine/core/IgeUiEntity";
+import { IgeEntity } from "@/engine/core/IgeEntity";
+import { IgeScene2d } from "@/engine/core/IgeScene2d";
+import { InfoWindow } from "../component/ui/InfoWindow";
 export class SpaceClientScene extends IgeSceneGraph {
     classId = "SpaceClientScene";
     publicGameData = {

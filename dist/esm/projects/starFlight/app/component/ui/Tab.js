@@ -1,7 +1,7 @@
-import { IgeUiLabel } from "../../../../../engine/ui/IgeUiLabel.js"
-import { IgeUiEntity } from "../../../../../engine/core/IgeUiEntity.js"
-import { ige } from "../../../../../engine/instance.js"
-import { IgeTween } from "../../../../../engine/core/IgeTween.js"
+import { IgeUiLabel } from "@/engine/ui/IgeUiLabel";
+import { IgeUiEntity } from "@/engine/core/IgeUiEntity";
+import { ige } from "@/engine/instance";
+import { IgeTween } from "@/engine/core/IgeTween";
 export class Tab extends IgeUiEntity {
     classId = "Tab";
     _slideVal = 0;
