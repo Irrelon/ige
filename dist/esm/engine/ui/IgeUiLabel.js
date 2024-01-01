@@ -1,5 +1,5 @@
 import { IgeUiElement } from "../core/IgeUiElement.js"
-import { IgeFontEntity } from "../core/IgeFontEntity.js";
+import { IgeFontEntity } from "../core/IgeFontEntity.js"
 import { IgeFontAlignX, IgeFontAlignY } from "../../enums/IgeFontAlign.js"
 import { registerClass } from "../igeClassStore.js"
 /**

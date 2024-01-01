@@ -1,13 +1,13 @@
 import { ige } from "../instance.js"
-import { isClient, isServer } from "../clientServer.js";
+import { isClient, isServer } from "../clientServer.js"
 import { arrPull, newIdHex, toIso } from "../utils.js"
-import { IgeEventingClass } from "./IgeEventingClass.js";
+import { IgeEventingClass } from "./IgeEventingClass.js"
 import { IgePoint3d } from "./IgePoint3d.js"
-import { IgePoint2d } from "./IgePoint2d.js";
+import { IgePoint2d } from "./IgePoint2d.js"
 import { IgeMatrix2d } from "./IgeMatrix2d.js"
-import { IgeDummyCanvas } from "./IgeDummyCanvas.js";
+import { IgeDummyCanvas } from "./IgeDummyCanvas.js"
 import { IgeRect } from "./IgeRect.js"
-import { IgePoly2d } from "./IgePoly2d.js";
+import { IgePoly2d } from "./IgePoly2d.js"
 import { IgeMountMode } from "../../enums/IgeMountMode.js"
 import { IgeStreamMode } from "../../enums/IgeStreamMode.js"
 import { IgeIsometricDepthSortMode } from "../../enums/IgeIsometricDepthSortMode.js"

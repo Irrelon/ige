@@ -5,14 +5,14 @@ import { IgeEngine } from "./IgeEngine.js"
 import { IgeTextureStore } from "./IgeTextureStore.js"
 import { IgeMetrics } from "./IgeMetrics.js"
 import { IgeInputComponent } from "../components/IgeInputComponent.js"
-import { IgeObjectRegister } from "./IgeObjectRegister";
+import { IgeObjectRegister } from "./IgeObjectRegister.js"
 import { IgeArrayRegister } from "./IgeArrayRegister.js"
 import { IgePoint3d } from "./IgePoint3d.js"
 import { IgeRouter } from "./IgeRouter.js"
 import { IgeDependencies } from "./IgeDependencies.js"
-import { IgeTweenController } from "./IgeTweenController.js";
+import { IgeTweenController } from "./IgeTweenController.js"
 import { IgeTimeController } from "./IgeTimeController.js"
-import { IgeUiManagerController } from "./IgeUiManagerController.js";
+import { IgeUiManagerController } from "./IgeUiManagerController.js"
 import { IgeBox2dController } from "../components/physics/box2d/IgeBox2dController.js"
 const version = "3.0.0";
 export class Ige {

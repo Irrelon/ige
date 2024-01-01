@@ -1,5 +1,5 @@
 import { IgeUiElement } from "../core/IgeUiElement.js"
-import { registerClass } from "../igeClassStore.js";
+import { registerClass } from "../igeClassStore.js"
 import { ige } from "../instance.js"
 export class IgeUiTimeStream extends IgeUiElement {
     classId = "IgeUiTimeStream";

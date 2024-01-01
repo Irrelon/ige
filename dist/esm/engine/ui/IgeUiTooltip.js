@@ -1,5 +1,5 @@
 import { IgeUiElement } from "../core/IgeUiElement.js"
-import { IgeFontEntity } from "../core/IgeFontEntity.js";
+import { IgeFontEntity } from "../core/IgeFontEntity.js"
 import { registerClass } from "../igeClassStore.js"
 /**
  * Provides a UI tooltip. Change properties (textBox, fonts, backgroundcolor)

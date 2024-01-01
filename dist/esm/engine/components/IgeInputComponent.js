@@ -3,7 +3,7 @@ import { IgePoint3d } from "../core/IgePoint3d.js"
 import { IgeBehaviourType } from "../../enums/IgeBehaviourType.js"
 import { IgeInputDevice, IgeInputKeyboardMap, IgeInputPointerMap } from "../../enums/IgeInputDeviceMap.js"
 import { IgeEventingClass } from "../core/IgeEventingClass.js"
-import { IgeInputControlMap } from "./IgeInputControlMap.js";
+import { IgeInputControlMap } from "./IgeInputControlMap.js"
 import { IgeEventReturnFlag } from "../../enums/IgeEventReturnFlag.js"
 export class IgeInputComponent extends IgeEventingClass {
     classId = "IgeInputComponent";

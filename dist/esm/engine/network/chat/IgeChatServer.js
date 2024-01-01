@@ -2,7 +2,7 @@ import { ige } from "../../instance.js"
 import { newIdHex } from "../../utils.js"
 import { IGE_NETWORK_CHAT_JOIN_ROOM, IGE_NETWORK_CHAT_LEAVE_ROOM, IGE_NETWORK_CHAT_LIST_ROOMS, IGE_NETWORK_CHAT_MSG, IGE_NETWORK_CHAT_ROOM_CREATED, IGE_NETWORK_CHAT_ROOM_LIST_USERS, IGE_NETWORK_CHAT_ROOM_REMOVED } from "../../../enums/IgeNetworkConstants.js"
 import { IgeChatComponent } from "./IgeChatComponent.js"
-import { IgeEventReturnFlag } from "../../../enums/IgeEventReturnFlag.js";
+import { IgeEventReturnFlag } from "../../../enums/IgeEventReturnFlag.js"
 /**
  * The server-side chat component. Handles all server-side
  * chat methods and events.
