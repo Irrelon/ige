@@ -1,12 +1,12 @@
-import { ige } from "../instance";
-import { isClient, isServer, isWorker } from "../clientServer";
-import { IgePoint3d } from "./IgePoint3d";
-import { IgeDummyContext } from "./IgeDummyContext";
-import { IgeEntity } from "./IgeEntity";
-import { IgeViewport } from "./IgeViewport";
-import { IgeEngineState } from "@/enums/IgeEngineState";
-import { IgePoint2d } from "./IgePoint2d";
-import { IgeBehaviourType } from "@/enums/IgeBehaviourType";
+import { ige } from "../instance.js"
+import { isClient, isServer, isWorker } from "../clientServer.js"
+import { IgePoint3d } from "./IgePoint3d.js"
+import { IgeDummyContext } from "./IgeDummyContext.js"
+import { IgeEntity } from "./IgeEntity.js"
+import { IgeViewport } from "./IgeViewport.js"
+import { IgeEngineState } from "../../enums/IgeEngineState.js"
+import { IgePoint2d } from "./IgePoint2d.js"
+import { IgeBehaviourType } from "../../enums/IgeBehaviourType.js"
 export class IgeEngine extends IgeEntity {
     classId = "IgeEngine";
     client;

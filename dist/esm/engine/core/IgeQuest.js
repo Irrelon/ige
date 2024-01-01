@@ -1,5 +1,5 @@
-import { IgeEventingClass } from "./IgeEventingClass";
-import { registerClass } from "@/engine/igeClassStore";
+import { IgeEventingClass } from "./IgeEventingClass.js"
+import { registerClass } from "../igeClassStore.js"
 export class IgeQuest extends IgeEventingClass {
     classId = "IgeQuest";
     _linear;

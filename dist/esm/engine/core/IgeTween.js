@@ -1,7 +1,7 @@
-import { IgeBaseClass } from "./IgeBaseClass";
-import { ige } from "../instance";
-import { arrPull } from "../utils";
-import { easingFunctions } from "../easing";
+import { IgeBaseClass } from "./IgeBaseClass.js"
+import { ige } from "../instance.js"
+import { arrPull } from "../utils.js"
+import { easingFunctions } from "../easing.js"
 /**
  * Creates a new tween instance.
  */

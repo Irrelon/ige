@@ -1,9 +1,9 @@
-import { ige } from "../../instance";
-import { arrPull, newIdHex } from "../../utils";
-import { IgeNetIoBaseController } from "../IgeNetIoBaseController";
-import { IgeNetIoServer } from "./IgeNetIoServer";
-import { IGE_NETWORK_REQUEST, IGE_NETWORK_RESPONSE, IGE_NETWORK_STREAM_CREATE, IGE_NETWORK_STREAM_DATA, IGE_NETWORK_STREAM_DESTROY, IGE_NETWORK_STREAM_TIME, IGE_NETWORK_TIME_SYNC } from "@/enums/IgeNetworkConstants";
-import { IgeEventReturnFlag } from "@/enums/IgeEventReturnFlag";
+import { ige } from "../../instance.js"
+import { arrPull, newIdHex } from "../../utils.js"
+import { IgeNetIoBaseController } from "../IgeNetIoBaseController.js"
+import { IgeNetIoServer } from "./IgeNetIoServer.js"
+import { IGE_NETWORK_REQUEST, IGE_NETWORK_RESPONSE, IGE_NETWORK_STREAM_CREATE, IGE_NETWORK_STREAM_DATA, IGE_NETWORK_STREAM_DESTROY, IGE_NETWORK_STREAM_TIME, IGE_NETWORK_TIME_SYNC } from "../../../enums/IgeNetworkConstants.js"
+import { IgeEventReturnFlag } from "../../../enums/IgeEventReturnFlag.js"
 export class IgeNetIoServerController extends IgeNetIoBaseController {
     _idCounter = 0;
     _networkCommands = {}; // Maps a command name to a command handler function

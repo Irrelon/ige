@@ -1,8 +1,8 @@
-import { ige } from "../instance";
-import { arrPull } from "../utils";
-import { easingFunctions } from "../easing";
-import { IgeBehaviourType } from "@/enums/IgeBehaviourType";
-import { IgeEventingClass } from "@/engine/core/IgeEventingClass";
+import { ige } from "../instance.js"
+import { arrPull } from "../utils.js"
+import { easingFunctions } from "../easing.js"
+import { IgeBehaviourType } from "../../enums/IgeBehaviourType.js"
+import { IgeEventingClass } from "./IgeEventingClass.js"
 /**
  * This component is already included in the IgeRoot (ige)
  * instance and is not designed for use in any other way!

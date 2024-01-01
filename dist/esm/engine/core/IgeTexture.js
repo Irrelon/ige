@@ -1,10 +1,10 @@
-import { ige } from "../instance";
-import { arrPull } from "../utils";
-import { newCanvas } from "./IgeCanvas";
-import { isClient, isServer } from "../clientServer";
-import { IgeTextureRenderMode } from "@/enums/IgeTextureRenderMode";
-import { IgeAsset } from "./IgeAsset";
-import { IgeDependencies } from "@/engine/core/IgeDependencies";
+import { ige } from "../instance.js"
+import { arrPull } from "../utils.js"
+import { newCanvas } from "./IgeCanvas.js"
+import { isClient, isServer } from "../clientServer.js"
+import { IgeTextureRenderMode } from "../../enums/IgeTextureRenderMode.js"
+import { IgeAsset } from "./IgeAsset.js"
+import { IgeDependencies } from "./IgeDependencies.js"
 /**
  * Creates a new texture.
  */

@@ -1,10 +1,10 @@
-import { IgeBaseClass } from "@/engine/core/IgeBaseClass";
-import { ige } from "@/engine/instance";
-import { IgeScene2d } from "@/engine/core/IgeScene2d";
-import { IgeViewport } from "@/engine/core/IgeViewport";
-import { IgeEntityBox2d } from "@/engine/components/physics/box2d/IgeEntityBox2d";
-import { IgeBox2dBodyType } from "@/enums/IgeBox2dBodyType";
-import { IgeBox2dFixtureShapeType } from "@/enums/IgeBox2dFixtureShapeType";
+import { IgeBaseClass } from "../../engine/core/IgeBaseClass.js"
+import { ige } from "../../engine/instance.js"
+import { IgeScene2d } from "../../engine/core/IgeScene2d.js"
+import { IgeViewport } from "../../engine/core/IgeViewport.js"
+import { IgeEntityBox2d } from "../../engine/components/physics/box2d/IgeEntityBox2d.js"
+import { IgeBox2dBodyType } from "../../enums/IgeBox2dBodyType.js"
+import { IgeBox2dFixtureShapeType } from "../../enums/IgeBox2dFixtureShapeType.js"
 export class Client extends IgeBaseClass {
     classId = "Client";
     constructor() {

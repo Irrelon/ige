@@ -1,4 +1,4 @@
-import { global } from "./_global";
+import { global } from "./_global.js"
 export class IgeBaseClass {
     classId = "IgeBaseClass";
     _data = {};
