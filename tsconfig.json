@@ -28,7 +28,7 @@
 		"composite": true,
 		"paths": {
 			"@/*": [
-				"./*"
+				"./src/*"
 			]
 		}
 	},
