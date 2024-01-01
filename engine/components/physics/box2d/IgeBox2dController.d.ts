@@ -27,24 +27,24 @@ export declare class IgeBox2dController extends IgeEventingClass {
     _box2dDebug: boolean;
     _updateCallback?: () => void;
     _world?: Box2D.Dynamics.b2World;
-    b2Color: typeof Box2D.Common.b2Color;
-    b2Vec2: typeof Box2D.Common.Math.b2Vec2;
-    b2Math: typeof Box2D.Common.Math.b2Math;
-    b2Shape: typeof Box2D.Collision.Shapes.b2Shape;
-    b2BodyDef: typeof Box2D.Dynamics.b2BodyDef;
-    b2Body: typeof Box2D.Dynamics.b2Body;
-    b2FixtureDef: typeof Box2D.Dynamics.b2FixtureDef;
-    b2Fixture: typeof Box2D.Dynamics.b2Fixture;
-    b2World: typeof Box2D.Dynamics.b2World;
-    b2MassData: typeof Box2D.Collision.Shapes.b2MassData;
-    b2PolygonShape: typeof Box2D.Collision.Shapes.b2PolygonShape;
-    b2CircleShape: typeof Box2D.Collision.Shapes.b2CircleShape;
-    b2DebugDraw: typeof Box2D.Dynamics.b2DebugDraw;
-    b2ContactListener: typeof Box2D.Dynamics.b2ContactListener;
-    b2Distance: typeof Box2D.Collision.b2DistanceOutput;
-    b2Contact: typeof Box2D.Dynamics.Contacts.b2Contact;
-    b2FilterData: typeof Box2D.Dynamics.b2FilterData;
-    b2DistanceJointDef: typeof Box2D.Dynamics.Joints.b2DistanceJointDef;
+    b2Color: any;
+    b2Vec2: any;
+    b2Math: any;
+    b2Shape: any;
+    b2BodyDef: any;
+    b2Body: any;
+    b2FixtureDef: any;
+    b2Fixture: any;
+    b2World: any;
+    b2MassData: any;
+    b2PolygonShape: any;
+    b2CircleShape: any;
+    b2DebugDraw: any;
+    b2ContactListener: any;
+    b2Distance: any;
+    b2Contact: any;
+    b2FilterData: any;
+    b2DistanceJointDef: any;
     constructor();
     /**
      * Starts the physics simulation. Without calling this, no physics operations will be processed.
@@ -64,7 +64,7 @@ export declare class IgeBox2dController extends IgeEventingClass {
      * @param {Integer} val The mode, either 0 or 1.
      * @returns {*}
      */
-    mode(val?: IgeBox2dTimingMode): this | IgeBox2dTimingMode;
+    mode(val?: IgeBox2dTimingMode): any;
     /**
      * Gets / sets if the world should allow sleep or not.
      * @param {boolean=} val
@@ -90,7 +90,7 @@ export declare class IgeBox2dController extends IgeEventingClass {
      * Gets the current Box2D world object.
      * @return {b2World}
      */
-    world(): Box2D.Dynamics.b2World | undefined;
+    world(): any;
     /**
      * Creates the Box2D world.
      * @return {*}

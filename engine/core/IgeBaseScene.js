@@ -1,8 +1,8 @@
-import { ige } from "../instance.js";
-import { IgeSceneGraph } from "./IgeSceneGraph.js";
-import { IgeScene2d } from "./IgeScene2d.js";
-import { IgeViewport } from "./IgeViewport.js";
-import { registerClass } from "../../engine/igeClassStore.js";
+import { ige } from "../instance";
+import { IgeSceneGraph } from "./IgeSceneGraph";
+import { IgeScene2d } from "./IgeScene2d";
+import { IgeViewport } from "./IgeViewport";
+import { registerClass } from "../igeClassStore.js";
 /**
  * When loaded into memory using ige.addGraph('IgeBaseScene') will create
  * the scene "baseScene" and the viewport "vp1" that are used in almost all

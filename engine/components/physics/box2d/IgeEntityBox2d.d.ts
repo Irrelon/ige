@@ -32,7 +32,7 @@ export declare class IgeEntityBox2d extends IgeEntity {
      * the physics simulation or false for it to be ignored.
      * @return {*}
      */
-    box2dActive(val?: boolean): boolean | this;
+    box2dActive(val?: boolean): any;
     /**
      * Gets / sets the physics body definition. When setting the
      * definition the physics body will also be created automatically

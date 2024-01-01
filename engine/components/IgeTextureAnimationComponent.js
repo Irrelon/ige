@@ -1,6 +1,6 @@
-import { ige } from "../../engine/instance.js";
-import { IgeComponent } from "../../engine/core/IgeComponent.js";
-import { IgeBehaviourType } from "../../enums/IgeBehaviourType.js";
+import { ige } from "@/engine/instance";
+import { IgeComponent } from "@/engine/core/IgeComponent";
+import { IgeBehaviourType } from "@/enums/IgeBehaviourType";
 /**
  * The animation component class. Handles defining and controlling
  * frame-based animations based on cells from a texture.
@@ -72,7 +72,7 @@ export class IgeTextureAnimationComponent extends IgeComponent {
                 this._anims[id] = {
                     frames,
                     frameTime,
-                    "loop": loop !== undefined ? loop : -1,
+                    "loop": loop !== undefined ? loop : -1, // Default to infinite loop (-1)
                     "frameCount": frames.length,
                     "totalTime": frames.length * frameTime,
                     "currentDelta": 0,

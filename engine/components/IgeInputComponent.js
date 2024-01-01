@@ -1,10 +1,10 @@
-import { ige } from "../instance.js";
-import { IgePoint3d } from "../core/IgePoint3d.js";
-import { IgeBehaviourType } from "../../enums/IgeBehaviourType.js";
-import { IgeInputDevice, IgeInputKeyboardMap, IgeInputPointerMap } from "../../enums/IgeInputDeviceMap.js";
-import { IgeEventingClass } from "../../engine/core/IgeEventingClass.js";
-import { IgeInputControlMap } from "../../engine/components/IgeInputControlMap.js";
-import { IgeEventReturnFlag } from "../../enums/IgeEventReturnFlag.js";
+import { ige } from "../instance";
+import { IgePoint3d } from "../core/IgePoint3d";
+import { IgeBehaviourType } from "@/enums/IgeBehaviourType";
+import { IgeInputDevice, IgeInputKeyboardMap, IgeInputPointerMap } from "@/enums/IgeInputDeviceMap";
+import { IgeEventingClass } from "@/engine/core/IgeEventingClass";
+import { IgeInputControlMap } from "@/engine/components/IgeInputControlMap";
+import { IgeEventReturnFlag } from "@/enums/IgeEventReturnFlag";
 export class IgeInputComponent extends IgeEventingClass {
     constructor() {
         super();

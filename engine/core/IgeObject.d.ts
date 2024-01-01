@@ -70,7 +70,7 @@ export declare class IgeObject extends IgeEventingClass implements IgeCanRegiste
     _mountMode: IgeMountMode;
     _layer: number;
     _depth: number;
-    _depthSortMode: IgeIsometricDepthSortMode;
+    _depthSortMode: any;
     _inView: boolean;
     _managed: number;
     _triggerPolygonFunctionName: "aabb" | "bounds3dPolygon" | "localBounds3dPolygon";
@@ -267,7 +267,7 @@ export declare class IgeObject extends IgeEventingClass implements IgeCanRegiste
      * @return {IgePoint3d} The absolute world position of the
      * entity.
      */
-    worldPosition(): IgePoint3d;
+    worldPosition(): any;
     /**
      * Returns the absolute world rotation z of the entity as a
      * value in radians.
@@ -276,7 +276,7 @@ export declare class IgeObject extends IgeEventingClass implements IgeCanRegiste
      * @return {number} The absolute world rotation z of the
      * entity.
      */
-    worldRotationZ(): number;
+    worldRotationZ(): any;
     /**
      * Converts an array of points from local space to this entity's
      * world space using its world transform matrix. This will alter
@@ -1047,7 +1047,7 @@ export declare class IgeObject extends IgeEventingClass implements IgeCanRegiste
      * @return {*} "this" when a data argument is passed to allow method
      * chaining or the current value if no data argument is specified.
      */
-    streamSectionData(sectionId: string, data?: string, bypassTimeStream?: boolean, bypassChangeDetection?: boolean): string | undefined;
+    streamSectionData(sectionId: string, data?: string, bypassTimeStream?: boolean, bypassChangeDetection?: boolean): any;
     /**
      * Issues a `destroy entity` command to the passed client id
      * or array of ids. If no id is passed it will issue the
@@ -1094,7 +1094,7 @@ export declare class IgeObject extends IgeEventingClass implements IgeCanRegiste
      *         aabb = entity.compositeAabb();
      * @return {IgeRect}
      */
-    compositeAabb(inverse?: boolean): IgeRect;
+    compositeAabb(inverse?: boolean): any;
     /**
      * Returns a string containing a code fragment that when
      * evaluated will reproduce this object.

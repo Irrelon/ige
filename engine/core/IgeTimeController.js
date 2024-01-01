@@ -1,7 +1,7 @@
-import { ige } from "../instance.js";
-import { arrPull } from "../utils.js";
-import { IgeBehaviourType } from "../../enums/IgeBehaviourType.js";
-import { IgeEventingClass } from "../../engine/core/IgeEventingClass.js";
+import { ige } from "../instance";
+import { arrPull } from "../utils";
+import { IgeBehaviourType } from "@/enums/IgeBehaviourType";
+import { IgeEventingClass } from "@/engine/core/IgeEventingClass";
 export class IgeTimeController extends IgeEventingClass {
     constructor() {
         super(...arguments);

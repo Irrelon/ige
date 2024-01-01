@@ -1,6 +1,6 @@
-import { ige } from "../../instance.js";
-import { arrPull } from "../../utils.js";
-import { IgeComponent } from "../../core/IgeComponent.js";
+import { ige } from "../../instance";
+import { arrPull } from "../../utils";
+import { IgeComponent } from "../../core/IgeComponent";
 import { IgeMountMode } from "../../../enums/IgeMountMode.js";
 import { IgeBehaviourType } from "../../../enums/IgeBehaviourType.js";
 import { IgeEntityRenderMode } from "../../../enums/IgeEntityRenderMode.js";

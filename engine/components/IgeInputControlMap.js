@@ -1,4 +1,4 @@
-import { ige } from "../../engine/instance.js";
+import { ige } from "../instance.js";
 export class IgeInputControlMap {
     constructor() {
         this._inputMap = [];

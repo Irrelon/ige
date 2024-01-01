@@ -1,10 +1,10 @@
-import { ige } from "../instance.js";
-import { isClient } from "../clientServer.js";
-import { distance } from "../utils.js";
-import { IgeComponent } from "../core/IgeComponent.js";
+import { ige } from "../instance";
+import { isClient } from "../clientServer";
+import { distance } from "../utils";
+import { IgeComponent } from "../core/IgeComponent";
 import { IgeMountMode } from "../../enums/IgeMountMode.js";
-import { IgePoint3d } from "../core/IgePoint3d.js";
-import { IgePathNode } from "../core/IgePathNode.js";
+import { IgePoint3d } from "../core/IgePoint3d";
+import { IgePathNode } from "../core/IgePathNode";
 import { IgeEntityRenderMode } from "../../enums/IgeEntityRenderMode.js";
 import { IgeBehaviourType } from "../../enums/IgeBehaviourType.js";
 /**

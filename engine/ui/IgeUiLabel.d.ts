@@ -23,7 +23,7 @@ export declare class IgeUiLabel extends IgeUiElement {
     textAlignY(): IgeFontAlignY;
     textLineSpacing(val: number): this;
     textLineSpacing(): number;
-    autoWrap(val?: boolean): boolean | IgeFontEntity;
+    autoWrap(val?: boolean): any;
     /**
      * Extended method to auto-update the width of the child
      * font entity automatically to fill the text box.
@@ -59,12 +59,12 @@ export declare class IgeUiLabel extends IgeUiElement {
      * @param fontSheet
      * @return {*}
      */
-    fontSheet(fontSheet?: IgeFontSheet): IgeFontSheet | this | undefined;
+    fontSheet(fontSheet?: IgeFontSheet): any;
     font(val: string | IgeFontSheet): this;
     font(): string | IgeFontSheet;
-    nativeFont(val?: string): string | IgeFontEntity | this | undefined;
-    nativeStroke(val?: number): number | IgeFontEntity | this | undefined;
-    nativeStrokeColor(val?: string): string | IgeFontEntity | this | undefined;
+    nativeFont(val?: string): any;
+    nativeStroke(val?: number): any;
+    nativeStrokeColor(val?: string): any;
     color(val: string): this;
     color(): string;
     update(ctx: IgeCanvasRenderingContext2d, tickDelta: number): void;

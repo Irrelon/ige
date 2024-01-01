@@ -25,7 +25,7 @@ export declare class IgeAudioEntity extends IgeEntity {
      * Gets the playing boolean flag state.
      * @returns {boolean} True if playing, false if not.
      */
-    playing(): boolean | IgeAudioItem | undefined;
+    playing(): any;
     /**
      * Gets / sets the url the audio is playing from.
      * @param {string=} url The url that serves the audio file.
@@ -44,7 +44,7 @@ export declare class IgeAudioEntity extends IgeEntity {
      * engine.
      * @returns {*}
      */
-    audioId(audioId?: string): string | this | undefined;
+    audioId(audioId?: string): any;
     /**
      * Starts playback of the audio.
      * @param {boolean} loop If true, loops the audio until

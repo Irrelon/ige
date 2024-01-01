@@ -1,4 +1,4 @@
-import { IgeEventingClass } from "./IgeEventingClass.js";
+import { IgeEventingClass } from "./IgeEventingClass";
 export class IgeComponent extends IgeEventingClass {
     constructor(parent, options) {
         super();

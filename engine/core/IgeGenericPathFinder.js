@@ -1,4 +1,4 @@
-import { IgeEventingClass } from "./IgeEventingClass.js";
+import { IgeEventingClass } from "./IgeEventingClass";
 var ListType;
 (function (ListType) {
     ListType[ListType["closed"] = 0] = "closed";

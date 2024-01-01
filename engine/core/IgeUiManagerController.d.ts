@@ -18,7 +18,7 @@ export declare class IgeUiManagerController extends IgeEventingClass implements 
      * style.
      * @returns {*}
      */
-    style(name?: string, data?: IgeUiStyleObject): IgeUiStyleObject;
+    style(name?: string, data?: IgeUiStyleObject): this | IgeUiStyleObject;
     /**
      * Registers a UI element with the UI manager.
      * @param elem

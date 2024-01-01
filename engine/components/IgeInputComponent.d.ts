@@ -114,13 +114,13 @@ export declare class IgeInputComponent extends IgeEventingClass implements IgeIs
      * Returns the passed action's input state value.
      * @param actionCode
      */
-    actionVal(actionCode: number): string | number | boolean | undefined;
+    actionVal(actionCode: number): any;
     /**
      * Returns true if the passed action's input is pressed or its state
      * is not zero.
      * @param actionCode
      */
-    actionState(actionCode: number): boolean | undefined;
+    actionState(actionCode: number): any;
     /**
      * Returns an input's current value.
      * @param device

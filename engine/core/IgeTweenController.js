@@ -1,8 +1,8 @@
-import { ige } from "../instance.js";
-import { arrPull } from "../utils.js";
-import { easingFunctions } from "../easing.js";
-import { IgeBehaviourType } from "../../enums/IgeBehaviourType.js";
-import { IgeEventingClass } from "../../engine/core/IgeEventingClass.js";
+import { ige } from "../instance";
+import { arrPull } from "../utils";
+import { easingFunctions } from "../easing";
+import { IgeBehaviourType } from "@/enums/IgeBehaviourType";
+import { IgeEventingClass } from "@/engine/core/IgeEventingClass";
 /**
  * This component is already included in the IgeRoot (ige)
  * instance and is not designed for use in any other way!
@@ -269,7 +269,7 @@ export class IgeTweenController extends IgeEventingClass {
                 targetData.push({
                     targetObj,
                     "propName": propertyIndex,
-                    "deltaVal": propertyNameAndValue[propertyIndex] - (step.isDelta ? 0 : targetObj[propertyIndex]),
+                    "deltaVal": propertyNameAndValue[propertyIndex] - (step.isDelta ? 0 : targetObj[propertyIndex]), // The diff between end and start values
                     "oldDelta": 0 // Var to save the old delta in order to get the actual difference data.
                 });
             }

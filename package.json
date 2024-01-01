@@ -1,6 +1,6 @@
 {
 	"name": "@irrelon/ige",
-	"version": "3.0.0",
+	"version": "3.0.0-alpha.1",
 	"author": "Irrelon Software Limited <isogenic@irrelon.com>",
 	"description": "The Isogenic Game Engine",
 	"contributors": [
@@ -62,8 +62,8 @@
 		"esprima": "^4.0.1",
 		"jest": "^29.5.0",
 		"minimatch": "^7.4.2",
-		"mongodb": "1.0.2",
-		"mysql": "2.0.0-alpha3",
+		"mongodb": "6.3.0",
+		"mysql": "2.18.1",
 		"prettier": "^2.6.2",
 		"stacktrace-js": "^2.0.2",
 		"tsc-watch": "^6.0.0",

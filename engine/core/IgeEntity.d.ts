@@ -7,7 +7,6 @@ import { IgePolygonFunctionality } from "@/types/IgePolygonFunctionality";
 import type { IgePoint } from "@/types/IgePoint";
 import type { IgeCanvasRenderingContext2d } from "@/types/IgeCanvasRenderingContext2d";
 import type { IgeInputEvent } from "@/types/IgeInputEvent";
-import type { IgeInputEventControl } from "@/types/IgeInputEventControl";
 import type { IgeCanRegisterById } from "@/types/IgeCanRegisterById";
 import type { IgeSmartTexture } from "@/types/IgeSmartTexture";
 import type { IgeViewport } from "./IgeViewport";
@@ -488,7 +487,7 @@ export declare class IgeEntity extends IgeObject implements IgeCanRegisterById, 
      *     console.log(aabb.height);
      * @return {IgeRect} The local AABB.
      */
-    localAabb(recalculate?: boolean): IgeRect | undefined;
+    localAabb(recalculate?: boolean): any;
     /**
      * Takes two values and returns them as an array where argument[0]
      * is the y argument and argument[1] is the x argument. This method
@@ -827,31 +826,31 @@ export declare class IgeEntity extends IgeObject implements IgeCanRegisterById, 
      * to fire, a mouse-over or a mouse-move.
      * @private
      */
-    _handleMouseIn: (event: Event, evc?: IgeInputEventControl, data?: any) => void;
+    _handleMouseIn: (event: Event, evc?: any, data?: any) => void;
     /**
      * Handler method that determines if a mouse-out event
      * should be fired.
      * @private
      */
-    _handleMouseOut: (event: Event, evc?: IgeInputEventControl, data?: any) => void;
+    _handleMouseOut: (event: Event, evc?: any, data?: any) => void;
     /**
      * Handler method that determines if a mouse-wheel event
      * should be fired.
      * @private
      */
-    _handleMouseWheel: (event: Event, evc?: IgeInputEventControl, data?: any) => void;
+    _handleMouseWheel: (event: Event, evc?: any, data?: any) => void;
     /**
      * Handler method that determines if a mouse-up event
      * should be fired.
      * @private
      */
-    _handleMouseUp: (event: Event, evc?: IgeInputEventControl, data?: any) => void;
+    _handleMouseUp: (event: Event, evc?: any, data?: any) => void;
     /**
      * Handler method that determines if a mouse-down event
      * should be fired.
      * @private
      */
-    _handleMouseDown: (event: Event, evc?: IgeInputEventControl, data?: any) => void;
+    _handleMouseDown: (event: Event, evc?: any, data?: any) => void;
     /**
      * Checks mouse input types and fires the correct mouse event
      * handler. This is an internal method that should never be

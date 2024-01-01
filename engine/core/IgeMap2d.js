@@ -1,5 +1,5 @@
-import { IgeBaseClass } from "./IgeBaseClass.js";
-import { registerClass } from "../../engine/igeClassStore.js";
+import { IgeBaseClass } from "./IgeBaseClass";
+import { registerClass } from "@/engine/igeClassStore";
 /**
  * Creates a new map that has two dimensions (x and y) to its data.
  */

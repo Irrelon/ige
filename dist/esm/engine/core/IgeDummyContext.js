@@ -1,0 +1,51 @@
+export const undefinedMethod = () => {
+};
+export const nullMethod = () => {
+    return null;
+};
+export class IgeDummyContext {
+    dummy = true;
+    imageSmoothingEnabled = false;
+    globalAlpha = 1;
+    fillStyle = "";
+    strokeStyle = "";
+    shadowColor = "";
+    shadowBlur = 0;
+    shadowOffsetX = 0;
+    shadowOffsetY = 0;
+    lineWidth = 1;
+    textAlign = "left";
+    textBaseline = "middle";
+    font;
+    globalCompositeOperation;
+    lineCap = "square";
+    save = undefinedMethod;
+    restore = undefinedMethod;
+    translate = undefinedMethod;
+    rotate = undefinedMethod;
+    scale = undefinedMethod;
+    drawImage = undefinedMethod;
+    fillRect = undefinedMethod;
+    strokeRect = undefinedMethod;
+    stroke = undefinedMethod;
+    fill = undefinedMethod;
+    rect = undefinedMethod;
+    moveTo = undefinedMethod;
+    lineTo = undefinedMethod;
+    arc = undefinedMethod;
+    arcTo = undefinedMethod;
+    clearRect = undefinedMethod;
+    beginPath = undefinedMethod;
+    closePath = undefinedMethod;
+    clip = undefinedMethod;
+    transform = undefinedMethod;
+    setTransform = undefinedMethod;
+    fillText = undefinedMethod;
+    createImageData = undefinedMethod;
+    createPattern = nullMethod;
+    getImageData = undefinedMethod;
+    putImageData = undefinedMethod;
+    strokeText = undefinedMethod;
+    createLinearGradient = undefinedMethod;
+    measureText = () => ({ width: 0, height: 0 });
+}

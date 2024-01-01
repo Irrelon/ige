@@ -1,4 +1,4 @@
-import { IgeBaseClass } from "./IgeBaseClass.js";
+import { IgeBaseClass } from "./IgeBaseClass";
 export class IgeSceneGraph extends IgeBaseClass {
     constructor() {
         super(...arguments);

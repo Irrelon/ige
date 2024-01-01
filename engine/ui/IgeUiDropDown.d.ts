@@ -18,7 +18,7 @@ export declare class IgeUiDropDown extends IgeUiElement {
     /**
      * The blur method removes global UI focus from this UI element.
      */
-    blur(): boolean;
+    blur(): any;
     selectIndex(index: number): void;
     value(val?: IgeUiDropDownOption): any;
     toggle(): void;

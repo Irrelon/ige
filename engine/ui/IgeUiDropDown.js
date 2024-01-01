@@ -1,7 +1,7 @@
-import { ige } from "../../engine/instance.js";
-import { IgeUiElement } from "../../engine/core/IgeUiElement.js";
-import { IgeUiLabel } from "../../engine/ui/IgeUiLabel.js";
-import { registerClass } from "../../engine/igeClassStore.js";
+import { ige } from "@/engine/instance";
+import { IgeUiElement } from "@/engine/core/IgeUiElement";
+import { IgeUiLabel } from "@/engine/ui/IgeUiLabel";
+import { registerClass } from "@/engine/igeClassStore";
 export class IgeUiDropDown extends IgeUiElement {
     constructor() {
         super();

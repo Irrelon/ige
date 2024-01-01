@@ -1,4 +1,4 @@
-import { arrPull } from "../utils.js";
+import { arrPull } from "../utils";
 export class IgeArrayRegister {
     constructor(field, registeredField) {
         this._store = {};
