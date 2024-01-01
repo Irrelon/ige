@@ -48,11 +48,11 @@ export declare enum IgeInputGamePadMap {
     "axisRightY" = 23
 }
 export declare enum IgeInputPointerMap {
-    "down" = 0,
-    "up" = 1,
+    "down" = 0,// If any button is currently down
+    "up" = 1,// If any button is currently NOT down but was in the last tick
     "dblClick" = 2,
     "move" = 3,
-    "wheel" = 4,
+    "wheel" = 4,// If either wheelUp or wheelDown happened
     "wheelX" = 5,
     "wheelY" = 6,
     "wheelZ" = 7,
