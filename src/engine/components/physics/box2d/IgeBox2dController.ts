@@ -1,13 +1,13 @@
 import { IgeBox2dDebugPainter } from "./IgeBox2dDebugPainter";
 import { IgeEntityBox2d } from "./IgeEntityBox2d";
+import type { IgeEntity } from "@/engine/core/IgeEntity";
 import { IgeEventingClass } from "@/engine/core/IgeEventingClass";
+import type { IgeTileMap2d, IgeTileMap2dScanRectCallback } from "@/engine/core/IgeTileMap2d";
 import { Box2D } from "@/engine/components/physics/box2d/lib_box2d";
 import { IgeBehaviourType } from "@/enums/IgeBehaviourType";
 import { IgeBox2dBodyType } from "@/enums/IgeBox2dBodyType";
 import { IgeBox2dFixtureShapeType } from "@/enums/IgeBox2dFixtureShapeType";
 import { IgeBox2dTimingMode } from "@/enums/IgeBox2dTimingMode";
-import type { IgeEntity } from "../../../core/IgeEntity";
-import type { IgeTileMap2d, IgeTileMap2dScanRectCallback } from "../../../core/IgeTileMap2d";
 import { ige } from "../../../instance";
 import type { IgeBox2dBodyDef } from "@/types/IgeBox2dBodyDef";
 import type { IgeBox2dContactListenerCallback } from "@/types/IgeBox2dContactListenerCallback";
