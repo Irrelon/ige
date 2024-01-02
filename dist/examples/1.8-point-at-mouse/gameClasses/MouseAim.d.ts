@@ -1,0 +1,1 @@
+declare function MouseAim(): void;

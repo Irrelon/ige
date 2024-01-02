@@ -12,14 +12,15 @@
 	"engines": {
 		"node": ">=v16"
 	},
-	"module": "dist/esm/index.js",
+	"module": "dist/index.js",
+	"types": "dist/index.d.ts",
 	"scripts": {
 		"tsc-b": "tsc -b",
 		"build": "(tsc -p tsconfig-esm.json 2>/dev/null || exit 0) && sh ./fixup-esm.sh && npm run fix-paths-esm",
 		"build-watch": "tsc --watch",
 		"fix-paths-watch": "npx @irrelon/fix-paths --write --watch",
 		"fix-paths": "npx @irrelon/fix-paths -p ./tsconfig-cjs.json --write && npx @irrelon/fix-paths -p ./tsconfig-esm.json --write",
-		"fix-paths-esm": "npx @irrelon/fix-paths -p ./tsconfig-esm.json --write",
+		"fix-paths-esm": "npx @irrelon/fix-paths -p ./tsconfig-esm.json -i \"**/*.js, **/*.ts\" --write",
 		"test": "NODE_OPTIONS=--experimental-vm-modules npx jest -f \".test.js\" --watch --all"
 	},
 	"dependencies": {
@@ -55,6 +56,7 @@
 		"eslint-plugin-tree-shaking": "^1.10.0",
 		"eslint-plugin-unused-imports": "^2.0.0",
 		"esprima": "^4.0.1",
+		"glob": "^10.3.10",
 		"jest": "^29.5.0",
 		"minimatch": "^7.4.2",
 		"mongodb": "6.3.0",
@@ -63,7 +65,7 @@
 		"stacktrace-js": "^2.0.2",
 		"tsc-watch": "^6.0.0",
 		"ttypescript": "^1.5.15",
-		"typescript": "^4.9.5"
-	},
-	"types": "dist/index.d.ts"
+		"typescript": "^4.9.5",
+		"yargs": "^17.7.2"
+	}
 }
