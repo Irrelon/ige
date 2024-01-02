@@ -1,25 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.delay =
-	exports.traceSetOff =
-	exports.traceSet =
-	exports.newIdHex =
-	exports.newId =
-	exports.newIdNumber =
-	exports.distance =
-	exports.radiansToDegrees =
-	exports.degreesToRadians =
-	exports.toIso =
-	exports.PI2 =
-	exports.PI180R =
-	exports.PI180 =
-	exports.destroyAll =
-	exports.theSameAs =
-	exports.mixin =
-	exports.arrClone =
-	exports.pushUnique =
-	exports.arrPull =
-		void 0;
+exports.delay = exports.traceSetOff = exports.traceSet = exports.newIdHex = exports.newId = exports.newIdNumber = exports.distance = exports.radiansToDegrees = exports.degreesToRadians = exports.toIso = exports.PI2 = exports.PI180R = exports.PI180 = exports.destroyAll = exports.theSameAs = exports.mixin = exports.arrClone = exports.pushUnique = exports.arrPull = void 0;
 let _idCounter = 0;
 /**
  * Removes the passed item from an array, the opposite of push().
@@ -28,13 +9,14 @@ let _idCounter = 0;
  * @return {number} The array index that was removed
  */
 const arrPull = (arr, item) => {
-	const index = arr.indexOf(item);
-	if (index > -1) {
-		arr.splice(index, 1);
-		return index;
-	} else {
-		return -1;
-	}
+    const index = arr.indexOf(item);
+    if (index > -1) {
+        arr.splice(index, 1);
+        return index;
+    }
+    else {
+        return -1;
+    }
 };
 exports.arrPull = arrPull;
 /**
@@ -44,12 +26,12 @@ exports.arrPull = arrPull;
  * @return {boolean} True if the item was added, false if it already exists.
  */
 const pushUnique = (arr, item) => {
-	const index = arr.indexOf(item);
-	if (index > -1) {
-		return false;
-	}
-	arr.push(item);
-	return true;
+    const index = arr.indexOf(item);
+    if (index > -1) {
+        return false;
+    }
+    arr.push(item);
+    return true;
 };
 exports.pushUnique = pushUnique;
 /**
@@ -59,30 +41,31 @@ exports.pushUnique = pushUnique;
  * @return {*}
  */
 const arrClone = (arr) => {
-	const newArray = [];
-	for (const i in arr) {
-		if (arr.hasOwnProperty(i)) {
-			if (arr[i] instanceof Array) {
-				newArray[i] = (0, exports.arrClone)(arr[i]);
-			} else {
-				newArray[i] = arr[i];
-			}
-		}
-	}
-	return newArray;
+    const newArray = [];
+    for (const i in arr) {
+        if (arr.hasOwnProperty(i)) {
+            if (arr[i] instanceof Array) {
+                newArray[i] = (0, exports.arrClone)(arr[i]);
+            }
+            else {
+                newArray[i] = arr[i];
+            }
+        }
+    }
+    return newArray;
 };
 exports.arrClone = arrClone;
 const mixin = (targetObject, mixinObj, overwrite = false) => {
-	const obj = mixinObj.prototype || mixinObj;
-	// Copy the class object's properties to (this)
-	for (const key in obj) {
-		// Only copy the property if this doesn't already have it
-		// @ts-ignore
-		if (Object.prototype.hasOwnProperty.call(obj, key) && (overwrite || targetObject[key] === undefined)) {
-			// @ts-ignore
-			targetObject[key] = obj[key];
-		}
-	}
+    const obj = mixinObj.prototype || mixinObj;
+    // Copy the class object's properties to (this)
+    for (const key in obj) {
+        // Only copy the property if this doesn't already have it
+        // @ts-ignore
+        if (Object.prototype.hasOwnProperty.call(obj, key) && (overwrite || targetObject[key] === undefined)) {
+            // @ts-ignore
+            targetObject[key] = obj[key];
+        }
+    }
 };
 exports.mixin = mixin;
 /**
@@ -95,7 +78,7 @@ exports.mixin = mixin;
  * @return {boolean}
  */
 const theSameAs = (obj1, obj2) => {
-	return JSON.stringify(obj1) === JSON.stringify(obj2);
+    return JSON.stringify(obj1) === JSON.stringify(obj2);
 };
 exports.theSameAs = theSameAs;
 /**
@@ -104,12 +87,12 @@ exports.theSameAs = theSameAs;
  * array of IgeEntity instances.
  */
 const destroyAll = (arr) => {
-	const arrCount = arr.length;
-	for (let i = arrCount - 1; i >= 0; i--) {
-		if (typeof arr[i].destroy === "function") {
-			arr[i].destroy();
-		}
-	}
+    const arrCount = arr.length;
+    for (let i = arrCount - 1; i >= 0; i--) {
+        if (typeof arr[i].destroy === "function") {
+            arr[i].destroy();
+        }
+    }
 };
 exports.destroyAll = destroyAll;
 /**
@@ -124,9 +107,9 @@ exports.PI180 = Math.PI / 180;
 exports.PI180R = 180 / Math.PI;
 exports.PI2 = Math.PI * 2;
 const toIso = (x, y, z) => {
-	const sx = x - y;
-	const sy = -z * 1.2247 + (x + y) * 0.5;
-	return { x: sx, y: sy };
+    const sx = x - y;
+    const sy = -z * 1.2247 + (x + y) * 0.5;
+    return { x: sx, y: sy };
 };
 exports.toIso = toIso;
 /**
@@ -135,7 +118,7 @@ exports.toIso = toIso;
  * @return {number} radians
  */
 const degreesToRadians = (degrees) => {
-	return degrees * exports.PI180;
+    return degrees * exports.PI180;
 };
 exports.degreesToRadians = degreesToRadians;
 /**
@@ -144,7 +127,7 @@ exports.degreesToRadians = degreesToRadians;
  * @return {number} degrees
  */
 const radiansToDegrees = (radians) => {
-	return radians * exports.PI180R;
+    return radians * exports.PI180R;
 };
 exports.radiansToDegrees = radiansToDegrees;
 /**
@@ -156,7 +139,7 @@ exports.radiansToDegrees = radiansToDegrees;
  * @return {number}
  */
 const distance = (x1, y1, x2, y2) => {
-	return Math.sqrt((x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2));
+    return Math.sqrt((x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2));
 };
 exports.distance = distance;
 /**
@@ -164,14 +147,12 @@ exports.distance = distance;
  * @return {number}
  */
 const newIdNumber = () => {
-	_idCounter++;
-	return (
-		_idCounter +
-		(Math.random() * Math.pow(10, 17) +
-			Math.random() * Math.pow(10, 17) +
-			Math.random() * Math.pow(10, 17) +
-			Math.random() * Math.pow(10, 17))
-	);
+    _idCounter++;
+    return (_idCounter +
+        (Math.random() * Math.pow(10, 17) +
+            Math.random() * Math.pow(10, 17) +
+            Math.random() * Math.pow(10, 17) +
+            Math.random() * Math.pow(10, 17)));
 };
 exports.newIdNumber = newIdNumber;
 /**
@@ -179,8 +160,8 @@ exports.newIdNumber = newIdNumber;
  * @return {string}
  */
 const newId = () => {
-	_idCounter++;
-	return (0, exports.newIdNumber)().toString();
+    _idCounter++;
+    return (0, exports.newIdNumber)().toString();
 };
 exports.newId = newId;
 /**
@@ -188,7 +169,7 @@ exports.newId = newId;
  * @return {string}
  */
 const newIdHex = () => {
-	return (0, exports.newIdNumber)().toString(16);
+    return (0, exports.newIdNumber)().toString(16);
 };
 exports.newIdHex = newIdHex;
 /**
@@ -210,31 +191,32 @@ exports.newIdHex = newIdHex;
  * the setter value as first argument.
  */
 const traceSet = (obj, propName, sampleCount, callbackEvaluator) => {
-	obj.___igeTraceCurrentVal = obj.___igeTraceCurrentVal || {};
-	obj.___igeTraceCurrentVal[propName] = obj[propName];
-	obj.___igeTraceMax = sampleCount || 1;
-	obj.___igeTraceCount = 0;
-	Object.defineProperty(obj, propName, {
-		get() {
-			return obj.___igeTraceCurrentVal[propName];
-		},
-		set: (val) => {
-			if (callbackEvaluator) {
-				if (callbackEvaluator(val)) {
-					debugger; // jshint ignore:line
-				}
-			} else {
-				debugger; // jshint ignore:line
-			}
-			obj.___igeTraceCurrentVal[propName] = val;
-			obj.___igeTraceCount++;
-			if (obj.___igeTraceCount === obj.___igeTraceMax) {
-				// Maximum amount of trace samples reached, turn off
-				// the trace system
-				(0, exports.traceSetOff)(obj, propName);
-			}
-		}
-	});
+    obj.___igeTraceCurrentVal = obj.___igeTraceCurrentVal || {};
+    obj.___igeTraceCurrentVal[propName] = obj[propName];
+    obj.___igeTraceMax = sampleCount || 1;
+    obj.___igeTraceCount = 0;
+    Object.defineProperty(obj, propName, {
+        get() {
+            return obj.___igeTraceCurrentVal[propName];
+        },
+        set: (val) => {
+            if (callbackEvaluator) {
+                if (callbackEvaluator(val)) {
+                    debugger; // jshint ignore:line
+                }
+            }
+            else {
+                debugger; // jshint ignore:line
+            }
+            obj.___igeTraceCurrentVal[propName] = val;
+            obj.___igeTraceCount++;
+            if (obj.___igeTraceCount === obj.___igeTraceMax) {
+                // Maximum amount of trace samples reached, turn off
+                // the trace system
+                (0, exports.traceSetOff)(obj, propName);
+            }
+        }
+    });
 };
 exports.traceSet = traceSet;
 /**
@@ -245,11 +227,11 @@ exports.traceSet = traceSet;
  * want to disable the trace for.
  */
 const traceSetOff = (obj, propName) => {
-	Object.defineProperty(obj, propName, {
-		set(val) {
-			this.___igeTraceCurrentVal[propName] = val;
-		}
-	});
+    Object.defineProperty(obj, propName, {
+        set(val) {
+            this.___igeTraceCurrentVal[propName] = val;
+        }
+    });
 };
 exports.traceSetOff = traceSetOff;
 /**
@@ -257,8 +239,8 @@ exports.traceSetOff = traceSetOff;
  * @param ms
  */
 const delay = (ms) => {
-	return new Promise((resolve) => {
-		setTimeout(resolve, ms);
-	});
+    return new Promise((resolve) => {
+        setTimeout(resolve, ms);
+    });
 };
 exports.delay = delay;

@@ -5,7 +5,7 @@ import { ige } from "../../../instance.js"
 import { Box2D } from "../../../../types/Box2D.js"
 import { IgeBehaviourType } from "../../../../enums/IgeBehaviourType.js"
 import { IgeEntityBox2d } from "./IgeEntityBox2d.js"
-import { IgeBox2dTimingMode } from "../../../../enums/IgeBox2dTimingMode.js"
+import { IgeBox2dTimingMode } from "../../../../enums/IgeBox2dTimingMode.js";
 export class IgeBox2dWorld extends IgeEventingClass {
     classId = 'IgeBox2dWorld';
     constructor(entity, options) {

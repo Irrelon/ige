@@ -1,8 +1,7 @@
-import { IgeAssetRegister } from "./IgeAssetRegister.js";
-
+import { IgeAssetRegister } from "./IgeAssetRegister.js"
 export class IgeTextureStore extends IgeAssetRegister {
-	_textureImageStore = {};
-	haveAllTexturesLoaded = () => {
-		return this._assetsLoading === 0;
-	};
+    _textureImageStore = {};
+    haveAllTexturesLoaded = () => {
+        return this._assetsLoading === 0;
+    };
 }

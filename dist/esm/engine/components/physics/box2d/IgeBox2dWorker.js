@@ -1,1 +1,2 @@
-export class IgeBox2dWorker {}
+export class IgeBox2dWorker {
+}

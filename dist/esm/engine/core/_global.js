@@ -1,3 +1,3 @@
 export const global = {
-	_globalLogIndent: 0
+    _globalLogIndent: 0
 };

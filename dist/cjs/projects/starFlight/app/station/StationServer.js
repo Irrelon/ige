@@ -46,7 +46,7 @@ class StationServer {
          * @private
          */
         this._onPlayerEntity = function (data, clientId) {
-            var player;
+            let player;
             player = instance_1.ige.app.playerByClientId(clientId);
             if (!player) {
                 // Create a new player instance
@@ -60,7 +60,7 @@ class StationServer {
             }
         };
         this._onMiningRequest = function (data, clientId, callback) {
-            var player = instance_1.ige.app.playerByClientId(clientId), asteroid, laser;
+            let player = instance_1.ige.app.playerByClientId(clientId), asteroid, laser;
             if (data && data.asteroidId) {
                 asteroid = instance_1.ige.engine.$(data.asteroidId);
                 if (asteroid) {
@@ -92,7 +92,7 @@ class StationServer {
                             // this should probably be a finite state machine or
                             // something!
                             player.miningInterval = new IgeInterval_1.IgeInterval(function () {
-                                var ore = new Ore_1.Ore();
+                                const ore = new Ore_1.Ore();
                                 ore.mount(instance_1.ige.app.frontScene);
                                 ore.translateTo(asteroid._translate.x, asteroid._translate.y, 0);
                                 ore.updateTransform();
@@ -110,7 +110,7 @@ class StationServer {
             }
         };
         this.generateAsteroidBelt = function (beltX, beltY) {
-            var maxDist = 900, minDist = 500, dist, x, y, i, count = 0, max = 100, asteroid, asteroidArr = [], rejectedLocation;
+            let maxDist = 900, minDist = 500, dist, x, y, i, count = 0, max = 100, asteroid, asteroidArr = [], rejectedLocation;
             while (count < max) {
                 if (!asteroid) {
                     asteroid = new Asteroid_1.Asteroid();

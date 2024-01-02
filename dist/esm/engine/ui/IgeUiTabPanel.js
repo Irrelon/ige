@@ -1,1 +1,2 @@
-export class IgeUiTabPanel {}
+export class IgeUiTabPanel {
+}
