@@ -10,14 +10,14 @@ import {
 	IGE_NETWORK_CHAT_ROOM_REMOVED
 } from "@/enums/IgeNetworkConstants";
 import { ige } from "../../instance";
-import { IgeNetIoClientController } from "../client/IgeNetIoClientController";
-import {
+import type { IgeNetIoClientController } from "../client/IgeNetIoClientController";
+import type {
 	IgeNetworkChatFromClientJoinRoomRequestStructure,
 	IgeNetworkChatFromServerJoinRoomResponseStructure,
 	IgeNetworkChatFromServerLeaveRoomResponseStructure,
 	IgeNetworkChatFromServerRoomStructure
 } from "@/types/IgeNetworkChat";
-import {
+import type {
 	IgeNetworkChatFromClientMessageStructure,
 	IgeNetworkChatFromServerMessageStructure
 } from "@/types/IgeNetworkMessage";
@@ -27,7 +27,7 @@ import {
  * chat methods and events.
  */
 export class IgeChatClient extends IgeChatComponent {
-	constructor() {
+	constructor () {
 		super();
 
 		ige.dependencies.waitFor(["network"], () => {
@@ -50,12 +50,12 @@ export class IgeChatClient extends IgeChatComponent {
 	 * Asks the serve to let us join the room specified.
 	 * @param {string} roomId The room id of the room to join.
 	 */
-	joinRoom(roomId: string) {
+	joinRoom (roomId: string) {
 		const network = ige.network as IgeNetIoClientController;
 		network.send<IgeNetworkChatFromClientJoinRoomRequestStructure>(IGE_NETWORK_CHAT_JOIN_ROOM, roomId);
 	}
 
-	sendToRoom(roomId: string, message: string, to: string) {
+	sendToRoom (roomId: string, message: string, to: string) {
 		const network = ige.network as IgeNetIoClientController;
 
 		if (roomId !== undefined && message !== undefined) {
@@ -69,7 +69,7 @@ export class IgeChatClient extends IgeChatComponent {
 		}
 	}
 
-	_onMessageFromServer(data: IgeNetworkChatFromServerMessageStructure) {
+	_onMessageFromServer (data: IgeNetworkChatFromServerMessageStructure) {
 		// Emit the event and if it wasn't cancelled (by returning true) then
 		// process this ourselves
 		if (this.emit("messageFromServer", data) !== IgeEventReturnFlag.cancel) {
@@ -80,7 +80,7 @@ export class IgeChatClient extends IgeChatComponent {
 		}
 	}
 
-	_onJoinedRoom(data: IgeNetworkChatFromServerJoinRoomResponseStructure) {
+	_onJoinedRoom (data: IgeNetworkChatFromServerJoinRoomResponseStructure) {
 		// Emit the event and if it wasn't cancelled (by returning true) then
 		// process this ourselves
 		if (this.emit("joinedRoom", data) !== IgeEventReturnFlag.cancel) {
@@ -92,7 +92,7 @@ export class IgeChatClient extends IgeChatComponent {
 		}
 	}
 
-	_onLeftRoom(data: IgeNetworkChatFromServerLeaveRoomResponseStructure) {
+	_onLeftRoom (data: IgeNetworkChatFromServerLeaveRoomResponseStructure) {
 		// Emit the event and if it wasn't cancelled (by returning true) then
 		// process this ourselves
 		if (this.emit("leftRoom", data) !== IgeEventReturnFlag.cancel) {
@@ -100,7 +100,7 @@ export class IgeChatClient extends IgeChatComponent {
 		}
 	}
 
-	_onServerSentRoomList(data: IgeNetworkChatFromServerRoomStructure[]) {
+	_onServerSentRoomList (data: IgeNetworkChatFromServerRoomStructure[]) {
 		// Emit the event and if it wasn't cancelled (by returning true) then
 		// process this ourselves
 		if (this.emit("roomList", data) !== IgeEventReturnFlag.cancel) {
@@ -108,7 +108,7 @@ export class IgeChatClient extends IgeChatComponent {
 		}
 	}
 
-	_onServerSentRoomUserList(data: any) {
+	_onServerSentRoomUserList (data: any) {
 		// Emit the event and if it wasn't cancelled (by returning true) then
 		// process this ourselves
 		if (this.emit("roomUserList", data) !== IgeEventReturnFlag.cancel) {
@@ -116,7 +116,7 @@ export class IgeChatClient extends IgeChatComponent {
 		}
 	}
 
-	_onRoomCreated(data: IgeNetworkChatFromServerRoomStructure) {
+	_onRoomCreated (data: IgeNetworkChatFromServerRoomStructure) {
 		// Emit the event and if it wasn't cancelled (by returning true) then
 		// process this ourselves
 		if (this.emit("roomCreated", data) !== IgeEventReturnFlag.cancel) {
@@ -124,7 +124,7 @@ export class IgeChatClient extends IgeChatComponent {
 		}
 	}
 
-	_onRoomRemoved(data: string) {
+	_onRoomRemoved (data: string) {
 		// Emit the event and if it wasn't cancelled (by returning true) then
 		// process this ourselves
 		if (this.emit("roomRemoved", data) !== IgeEventReturnFlag.cancel) {
