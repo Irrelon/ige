@@ -83,10 +83,8 @@ export class IgeEngine extends IgeEntity {
 	_webFonts: FontFace[];
 	_cssFonts: string[];
 	_pointerOverVp?: IgeViewport;
-	_deviceFinalDrawRatio: number = 1;
-	_createdFrontBuffer: boolean = false;
 	_devicePixelRatio: number = 1;
-	_backingStoreRatio: number = 1;
+	_createdFrontBuffer: boolean = false;
 	_resized: boolean = false;
 	_timeScaleLastTimestamp: number = 0;
 	lastTick: number = 0;
@@ -305,28 +303,15 @@ export class IgeEngine extends IgeEntity {
 		}
 
 		if (this._pixelRatioScaling) {
-			// Support high-definition devices and "retina" (stupid marketing name)
-			// displays by adjusting for device and back store pixels ratios
+			// Support high-definition devices and "retina" displays by adjusting
+			// for device and back store pixels ratios
 			this._devicePixelRatio = window.devicePixelRatio || 1;
-			// @ts-ignore
-			this._backingStoreRatio =
-				this._ctx.webkitBackingStorePixelRatio ||
-				this._ctx.mozBackingStorePixelRatio ||
-				this._ctx.msBackingStorePixelRatio ||
-				this._ctx.oBackingStorePixelRatio ||
-				this._ctx.backingStorePixelRatio ||
-				1;
-			this._deviceFinalDrawRatio = Math.ceil(this._devicePixelRatio / this._backingStoreRatio);
 		} else {
 			// No auto-scaling
 			this._devicePixelRatio = 1;
-			this._backingStoreRatio = 1;
-			this._deviceFinalDrawRatio = 1;
 		}
 
-		this.log(
-			`Device pixel ratio is ${this._devicePixelRatio} and canvas pixel ratio set to ${this._deviceFinalDrawRatio}`
-		);
+		this.log(`Device pixel ratio is ${this._devicePixelRatio}`);
 
 		if (autoSize) {
 			this._autoSize = autoSize;
@@ -400,7 +385,7 @@ export class IgeEngine extends IgeEntity {
 
 		if (pixelRatioScaling) {
 			// Scale the canvas context to account for the device pixel ratio
-			ctx.scale(this._deviceFinalDrawRatio, this._deviceFinalDrawRatio);
+			ctx.scale(this._devicePixelRatio, this._devicePixelRatio);
 		}
 
 		return {
@@ -415,11 +400,11 @@ export class IgeEngine extends IgeEntity {
 		newWidth: number,
 		newHeight: number
 	) {
-		canvas.width = newWidth * this._deviceFinalDrawRatio;
-		canvas.height = newHeight * this._deviceFinalDrawRatio;
+		canvas.width = newWidth * this._devicePixelRatio;
+		canvas.height = newHeight * this._devicePixelRatio;
 
 		// Scale the canvas context to account for the change
-		ctx.scale(this._deviceFinalDrawRatio, this._deviceFinalDrawRatio);
+		ctx.scale(this._devicePixelRatio, this._devicePixelRatio);
 	}
 
 	/**
@@ -455,15 +440,15 @@ export class IgeEngine extends IgeEntity {
 					newHeight--;
 				}
 
-				this._canvas.width = newWidth * this._deviceFinalDrawRatio;
-				this._canvas.height = newHeight * this._deviceFinalDrawRatio;
+				this._canvas.width = newWidth * this._devicePixelRatio;
+				this._canvas.height = newHeight * this._devicePixelRatio;
 
-				if (this._deviceFinalDrawRatio !== 1) {
+				if (this._devicePixelRatio !== 1) {
 					this._canvas.style.width = newWidth + "px";
 					this._canvas.style.height = newHeight + "px";
 
 					// Scale the canvas context to account for the change
-					this._ctx?.scale(this._deviceFinalDrawRatio, this._deviceFinalDrawRatio);
+					this._ctx?.scale(this._devicePixelRatio, this._devicePixelRatio);
 				}
 			}
 
