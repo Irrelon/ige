@@ -41,6 +41,7 @@
 		"engine/ui",
 		"engine/components/editor",
 		"engine/components/physics/cannon",
-		"engine/components/three"
+		"engine/components/three",
+		"src/**/*.old*"
 	]
 }
