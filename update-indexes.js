@@ -9,7 +9,7 @@ const argv = yargs.default("src", "src/**").argv;
 
 function createIndexFile (folder) {
 	console.info(`index: ${folder}`);
-	const indexFile = `${folder}/index.ts`;
+	const indexFile = `${folder}/exports.ts`;
 	if (fs.existsSync(indexFile)) {
 		return;
 	}
