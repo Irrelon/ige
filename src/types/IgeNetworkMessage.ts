@@ -31,16 +31,3 @@ export interface IgeNetworkRequestMessageStructure<CallbackType> extends IgeNetw
 	callback: CallbackType;
 	timestamp: number;
 }
-
-export interface IgeNetworkChatFromServerMessageStructure {
-	roomId: string;
-	text: string;
-	from: string;
-	to: string;
-}
-
-export interface IgeNetworkChatFromClientMessageStructure {
-	roomId: string;
-	text: string;
-	to: string;
-}
