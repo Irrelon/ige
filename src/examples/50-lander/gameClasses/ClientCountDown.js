@@ -1,13 +1,13 @@
 var ClientCountDown = IgeFontEntity.extend({
-	classId: 'ClientCountDown',
+	classId: "ClientCountDown",
 
 	init: function (prefix, countdownFrom, sufix, interval) {
 		IgeFontEntity.prototype.init.call(this);
 
-		this._prefix = prefix || '';
+		this._prefix = prefix || "";
 		this._countdown = countdownFrom;
 		this._count = countdownFrom;
-		this._sufix = sufix || '';
+		this._sufix = sufix || "";
 		this._interval = interval || 1000;
 
 		this.depth(1)
@@ -21,7 +21,9 @@ var ClientCountDown = IgeFontEntity.extend({
 
 	start: function () {
 		var self = this;
-		this._intervalTimer = setInterval(function () { self._timerTick(); }, this._interval);
+		this._intervalTimer = setInterval(function () {
+			self._timerTick();
+		}, this._interval);
 
 		return this;
 	},
@@ -31,7 +33,7 @@ var ClientCountDown = IgeFontEntity.extend({
 		this.text(this._prefix + this._count + this._sufix);
 
 		if (this._count === 0) {
-			this.emit('complete');
+			this.emit("complete");
 			this.stop();
 		}
 

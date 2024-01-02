@@ -1,11 +1,11 @@
-import { ige } from "@/engine/instance";
-import { isClient, isServer } from "@/engine/clientServer";
 import "./app/_route";
+import { isClient, isServer } from "@/engine/clientServer";
+import { ige } from "@/engine/instance";
 
 export class Game {
 	classId = "Game";
 
-	constructor () {
+	constructor() {
 		ige.app = {};
 
 		if (isClient) {

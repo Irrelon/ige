@@ -1,6 +1,6 @@
-import { ige } from "@/engine/instance";
 import { Level1Scene } from "./Level1Scene";
 import { IgeTexture } from "@/engine/core/IgeTexture";
+import { ige } from "@/engine/instance";
 import simpleBox from "../../assets/textures/smartTextures/simpleBox";
 
 ige.router.route("app/level1", {
@@ -20,6 +20,6 @@ ige.router.route("app/level1", {
 		return async () => {
 			await ige.engine.removeGraph(Level1Scene);
 			ige.textures.removeList(textures);
-		}
+		};
 	}
 });

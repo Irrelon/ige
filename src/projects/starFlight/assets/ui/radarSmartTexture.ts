@@ -1,6 +1,6 @@
-import { IgeSmartTexture } from "@/types/IgeSmartTexture";
 import { ige } from "@/engine/instance";
 import { PI2 } from "@/engine/utils";
+import { IgeSmartTexture } from "@/types/IgeSmartTexture";
 
 export const radarSmartTexture: IgeSmartTexture = {
 	render: function (ctx, entity) {
@@ -8,8 +8,8 @@ export const radarSmartTexture: IgeSmartTexture = {
 			const peTranslate = ige.app.playerEntity._translate;
 
 			// Draw the background
-			ctx.fillStyle = '#000000';
-			ctx.strokeStyle = '#3f3f3f';
+			ctx.fillStyle = "#000000";
+			ctx.strokeStyle = "#3f3f3f";
 
 			//ctx.fillRect(-entity._bounds2d.x2, -entity._bounds2d.y2, entity._bounds2d.x, entity._bounds2d.y);
 			//ctx.strokeRect(-entity._bounds2d.x2, -entity._bounds2d.y2, entity._bounds2d.x, entity._bounds2d.y);
@@ -17,7 +17,7 @@ export const radarSmartTexture: IgeSmartTexture = {
 			// Loop all visible entities and show them
 			// on the radar
 			let draw, blipRadius;
-			const entArray = [];//ige.entities.byIndex;
+			const entArray = []; //ige.entities.byIndex;
 			let entCount = entArray.length;
 
 			const radarScale = entity._radarScale || 0.05;
@@ -28,23 +28,23 @@ export const radarSmartTexture: IgeSmartTexture = {
 			ctx.clip();
 
 			// Draw a bunch of grid lines
-			ctx.strokeStyle = '#00707a';
+			ctx.strokeStyle = "#00707a";
 			for (let x = 0; x < 3; x++) {
 				ctx.beginPath();
-				ctx.moveTo(-entity._bounds2d.x2 + (x * 100) - (peTranslate.x * radarScale), -entity._bounds2d.y2);
-				ctx.lineTo(-entity._bounds2d.x2 + (x * 100) - (peTranslate.x * radarScale), entity._bounds2d.y);
+				ctx.moveTo(-entity._bounds2d.x2 + x * 100 - peTranslate.x * radarScale, -entity._bounds2d.y2);
+				ctx.lineTo(-entity._bounds2d.x2 + x * 100 - peTranslate.x * radarScale, entity._bounds2d.y);
 				ctx.stroke();
 			}
 
 			for (let y = 0; y < 3; y++) {
 				ctx.beginPath();
-				ctx.moveTo(-entity._bounds2d.x2, -entity._bounds2d.y2 + (y * 100) - (peTranslate.y * radarScale));
-				ctx.lineTo(entity._bounds2d.x, -entity._bounds2d.y2 + (y * 100) - (peTranslate.y * radarScale));
+				ctx.moveTo(-entity._bounds2d.x2, -entity._bounds2d.y2 + y * 100 - peTranslate.y * radarScale);
+				ctx.lineTo(entity._bounds2d.x, -entity._bounds2d.y2 + y * 100 - peTranslate.y * radarScale);
 				ctx.stroke();
 			}
 
 			// Move to the center of the draw space
-			ctx.translate((entity._bounds2d.x / 2), (entity._bounds2d.y / 2));
+			ctx.translate(entity._bounds2d.x / 2, entity._bounds2d.y / 2);
 			ctx.scale(radarScale, radarScale);
 
 			while (entCount--) {
@@ -59,20 +59,20 @@ export const radarSmartTexture: IgeSmartTexture = {
 							draw = false;
 
 							// Display a radar blip for this entity
-							if (ent._class == 'asteroid') {
-								ctx.fillStyle = '#afafaf';
+							if (ent._class == "asteroid") {
+								ctx.fillStyle = "#afafaf";
 								blipRadius = ent._width / 2; // 20
 								draw = true;
 							}
 
-							if (ent._class == 'ship') {
-								ctx.fillStyle = '#fffc00';
+							if (ent._class == "ship") {
+								ctx.fillStyle = "#fffc00";
 								blipRadius = ent._width / 2; // 30
 								draw = true;
 							}
 
-							if (ent._class == 'station') {
-								ctx.fillStyle = '#ea00ff';
+							if (ent._class == "station") {
+								ctx.fillStyle = "#ea00ff";
 								blipRadius = ent._width / 2; // 60
 								draw = true;
 							}
@@ -96,4 +96,4 @@ export const radarSmartTexture: IgeSmartTexture = {
 			}
 		}
 	}
-}
+};

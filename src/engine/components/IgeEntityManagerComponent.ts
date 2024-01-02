@@ -1,12 +1,12 @@
-import {ige} from "@/engine/instance";
-import {IgeComponent} from "@/engine/core/IgeComponent";
-import {IgeEntity} from "@/engine/core/IgeEntity";
-import {IgeMountMode} from "@/enums/IgeMountMode";
-import {IgeRect} from "@/engine/core/IgeRect";
-import {IgeCanvasRenderingContext2d} from "@/types/IgeCanvasRenderingContext2d";
-import {IgeBehaviourType} from "@/enums/IgeBehaviourType";
-import {IgeEntityRenderMode} from "@/enums/IgeEntityRenderMode";
-import {IgePoint3d} from "@/engine/core/IgePoint3d";
+import { IgeComponent } from "@/engine/core/IgeComponent";
+import { IgeEntity } from "@/engine/core/IgeEntity";
+import { IgePoint3d } from "@/engine/core/IgePoint3d";
+import { IgeRect } from "@/engine/core/IgeRect";
+import { ige } from "@/engine/instance";
+import { IgeBehaviourType } from "@/enums/IgeBehaviourType";
+import { IgeEntityRenderMode } from "@/enums/IgeEntityRenderMode";
+import { IgeMountMode } from "@/enums/IgeMountMode";
+import { IgeCanvasRenderingContext2d } from "@/types/IgeCanvasRenderingContext2d";
 
 export class IgeEntityManagerComponent extends IgeComponent {
 	classId = "IgeEntityManagerComponent";
@@ -26,7 +26,7 @@ export class IgeEntityManagerComponent extends IgeComponent {
 	private _trackTranslateTarget?: IgeEntity;
 	private _areaCenter?: IgePoint3d;
 	private _areaRect?: IgeRect;
-	private _areaRectAutoSize: boolean = false
+	private _areaRectAutoSize: boolean = false;
 	private _areaRectAutoSizeOptions: any;
 
 	_lastArea: IgeRect = new IgeRect();
@@ -36,7 +36,7 @@ export class IgeEntityManagerComponent extends IgeComponent {
 	 * @param {Object} entity The parent object that this component is being added to.
 	 * @param {Object=} options An optional object that is passed to the component when it is being initialised.
 	 */
-	constructor (entity: IgeEntity, options?: any) {
+	constructor(entity: IgeEntity, options?: any) {
 		super(entity, options);
 
 		// Check we are being added to a tile map
@@ -291,7 +291,12 @@ export class IgeEntityManagerComponent extends IgeComponent {
 			areaCenter = this._areaCenter;
 
 		if (areaRect && areaCenter) {
-			return new IgeRect(Math.floor(areaRect.x + areaCenter.x), Math.floor(areaRect.y + areaCenter.y), Math.floor(areaRect.width), Math.floor(areaRect.height));
+			return new IgeRect(
+				Math.floor(areaRect.x + areaCenter.x),
+				Math.floor(areaRect.y + areaCenter.y),
+				Math.floor(areaRect.width),
+				Math.floor(areaRect.height)
+			);
 		} else {
 			return new IgeRect(0, 0, 0, 0);
 		}
@@ -334,9 +339,12 @@ export class IgeEntityManagerComponent extends IgeComponent {
 			mapIndex,
 			mapData,
 			currentTile,
-			renderX, renderY,
-			renderWidth, renderHeight,
-			x, y,
+			renderX,
+			renderY,
+			renderWidth,
+			renderHeight,
+			x,
+			y,
 			tileData,
 			renderSize,
 			ratio;
@@ -386,10 +394,10 @@ export class IgeEntityManagerComponent extends IgeComponent {
 			renderWidth = Math.ceil(currentArea.width / this._entity._tileWidth);
 			renderHeight = Math.ceil(currentArea.height / this._entity._tileHeight);
 
-			currentArea.x -= (this._entity._tileWidth);
-			currentArea.y -= (this._entity._tileHeight / 2);
-			currentArea.width += (this._entity._tileWidth * 2);
-			currentArea.height += (this._entity._tileHeight);
+			currentArea.x -= this._entity._tileWidth;
+			currentArea.y -= this._entity._tileHeight / 2;
+			currentArea.width += this._entity._tileWidth * 2;
+			currentArea.height += this._entity._tileHeight;
 
 			// Check if we are rendering in 2d or isometric mode
 			if (this._entity._mountMode === IgeMountMode.flat) {
@@ -485,7 +493,8 @@ export class IgeEntityManagerComponent extends IgeComponent {
 			removeLimit = this._maxRemovePerTick !== undefined ? this._maxRemovePerTick : 0;
 
 		let createCount = createArr.length,
-			removeCount = removeArr.length, i;
+			removeCount = removeArr.length,
+			i;
 
 		if (createLimit && createCount > createLimit) {
 			createCount = createLimit;
@@ -519,12 +528,13 @@ export class IgeEntityManagerComponent extends IgeComponent {
 		// Set width / height of scene to match parent
 		if (this._areaRectAutoSize) {
 			const geom = this._entity._parent._bounds2d;
-			let additionX = 0, additionY = 0;
+			let additionX = 0,
+				additionY = 0;
 
 			if (this._areaRectAutoSizeOptions) {
 				if (this._areaRectAutoSizeOptions.bufferMultiple) {
-					additionX = (geom.x * this._areaRectAutoSizeOptions.bufferMultiple.x) - geom.x;
-					additionY = (geom.y * this._areaRectAutoSizeOptions.bufferMultiple.y) - geom.y;
+					additionX = geom.x * this._areaRectAutoSizeOptions.bufferMultiple.x - geom.x;
+					additionY = geom.y * this._areaRectAutoSizeOptions.bufferMultiple.y - geom.y;
 				}
 
 				if (this._areaRectAutoSizeOptions.bufferPixels) {
@@ -533,12 +543,17 @@ export class IgeEntityManagerComponent extends IgeComponent {
 				}
 			}
 
-			this.areaRect(-Math.floor((geom.x + additionX) / 2), -Math.floor((geom.y + additionY) / 2), geom.x + additionX, geom.y + additionY);
+			this.areaRect(
+				-Math.floor((geom.x + additionX) / 2),
+				-Math.floor((geom.y + additionY) / 2),
+				geom.x + additionX,
+				geom.y + additionY
+			);
 
 			// Check if caching is enabled
 			if (this._entity._caching > 0) {
 				this._entity._resizeCacheCanvas();
 			}
 		}
-	}
+	};
 }

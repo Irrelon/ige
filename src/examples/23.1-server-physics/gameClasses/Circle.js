@@ -1,5 +1,5 @@
 var Circle = IgeEntityBox2d.extend({
-	classId: 'Circle',
+	classId: "Circle",
 
 	init: function () {
 		IgeEntityBox2d.prototype.init.call(this);
@@ -8,9 +8,7 @@ var Circle = IgeEntityBox2d.extend({
 
 		if (isClient) {
 			// Define the texture this entity will use
-			self.texture(ige.client.gameTexture.circle)
-				.width(40)
-				.height(40);
+			self.texture(ige.client.gameTexture.circle).width(40).height(40);
 		}
 	},
 
@@ -19,4 +17,6 @@ var Circle = IgeEntityBox2d.extend({
 	}
 });
 
-if (typeof(module) !== 'undefined' && typeof(module.exports) !== 'undefined') { module.exports = Circle; }
+if (typeof module !== "undefined" && typeof module.exports !== "undefined") {
+	module.exports = Circle;
+}

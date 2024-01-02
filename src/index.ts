@@ -1,20 +1,11 @@
-import {IgeViewport} from "@/engine/core/IgeViewport";
-
-export {
-	ige
-} from "@/engine/instance";
-
-declare global {
-	interface Event {
-		igeX: number;
-		igeY: number;
-		igePageX: number;
-		igePageY: number;
-		igeType: "pointer" | "touch" | "keyboard" | "gamepad" | "wheel";
-		igeViewport: IgeViewport;
-	}
-
-	interface TouchEvent {
-		button: number;
-	}
-}
+export * from "@/engine/instance";
+export * from "@/engine/clientServer";
+export * from "@/engine/audio";
+export * from "@/engine/components";
+export * from "@/engine/utils";
+export * from "@/engine/easing";
+export * from "@/engine/igeClassStore";
+export * from "@/engine/igeFilters";
+export * from "@/engine/core";
+export * from "@/engine/ui";
+export * from "@/enums";

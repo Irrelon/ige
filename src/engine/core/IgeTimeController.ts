@@ -1,10 +1,10 @@
-import { ige } from "../instance";
 import { IgeInterval } from "./IgeInterval";
+import { IgeEventingClass } from "@/engine/core/IgeEventingClass";
+import { IgeBehaviourType } from "@/enums/IgeBehaviourType";
+import { ige } from "../instance";
 import { arrPull } from "../utils";
 import { IgeEntityBehaviourMethod } from "@/types/IgeEntityBehaviour";
-import { IgeBehaviourType } from "@/enums/IgeBehaviourType";
 import { IgeIsReadyPromise } from "@/types/IgeIsReadyPromise";
-import { IgeEventingClass } from "@/engine/core/IgeEventingClass";
 
 export class IgeTimeController extends IgeEventingClass implements IgeIsReadyPromise {
 	static componentTargetClass = "Ige";
@@ -16,7 +16,7 @@ export class IgeTimeController extends IgeEventingClass implements IgeIsReadyPro
 	_additions: IgeInterval[] = [];
 	_removals: IgeInterval[] = [];
 
-	isReady () {
+	isReady() {
 		return new Promise<void>((resolve) => {
 			setTimeout(() => {
 				ige.dependencies.waitFor(["engine"], () => {
@@ -60,9 +60,7 @@ export class IgeTimeController extends IgeEventingClass implements IgeIsReadyPro
 		let arrCount = arr.length;
 
 		while (arrCount--) {
-			arr[arrCount]
-				.addTime(delta)
-				.update();
+			arr[arrCount].addTime(delta).update();
 		}
 
 		// Process removing any timers that were scheduled for removal
@@ -76,7 +74,7 @@ export class IgeTimeController extends IgeEventingClass implements IgeIsReadyPro
 
 	_processAdditions = () => {
 		const arr = this._additions;
-		let	arrCount = arr.length;
+		let arrCount = arr.length;
 
 		if (arrCount) {
 			while (arrCount--) {
@@ -91,7 +89,7 @@ export class IgeTimeController extends IgeEventingClass implements IgeIsReadyPro
 
 	_processRemovals = () => {
 		const arr = this._removals;
-		let	arrCount = arr.length;
+		let arrCount = arr.length;
 
 		if (arrCount) {
 			while (arrCount--) {

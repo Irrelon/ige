@@ -10,5 +10,5 @@ export interface JumpGateDefinition {
 	destination: {
 		_id: string;
 		name: string;
-	}
+	};
 }

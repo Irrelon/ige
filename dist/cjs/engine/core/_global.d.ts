@@ -1,3 +1,3 @@
 export declare const global: {
-    _globalLogIndent: number;
+	_globalLogIndent: number;
 };

@@ -4,8 +4,8 @@ export const targetSmartTexture: IgeSmartTexture = {
 	render: function (ctx, entity) {
 		if (entity._targetEntity) {
 			ctx.save();
-			ctx.textAlign = 'center';
-			ctx.textBaseline = 'middle';
+			ctx.textAlign = "center";
+			ctx.textBaseline = "middle";
 
 			const targetEntityWidth = entity._targetEntity._width;
 			const targetEntityWidth2 = targetEntityWidth / 2;
@@ -31,18 +31,11 @@ export const targetSmartTexture: IgeSmartTexture = {
 						brightness = minBrightness;
 					}
 
-					ctx.strokeStyle = '#007482';
-					ctx.fillStyle = 'rgba(0, 116, 130, ' + brightness + ')';
+					ctx.strokeStyle = "#007482";
+					ctx.fillStyle = "rgba(0, 116, 130, " + brightness + ")";
 
 					ctx.beginPath();
-					ctx.arc(
-						width / 2,
-						height / 2,
-						radius,
-						0,
-						Math._PI2,
-						true
-					);
+					ctx.arc(width / 2, height / 2, radius, 0, Math._PI2, true);
 					ctx.closePath();
 					ctx.fill();
 					ctx.stroke();
@@ -56,18 +49,11 @@ export const targetSmartTexture: IgeSmartTexture = {
 						brightness = minBrightness;
 					}
 
-					ctx.strokeStyle = '#826500';
-					ctx.fillStyle = 'rgba(130, 101, 0, ' + brightness + ')';
+					ctx.strokeStyle = "#826500";
+					ctx.fillStyle = "rgba(130, 101, 0, " + brightness + ")";
 
 					ctx.beginPath();
-					ctx.arc(
-						width / 2,
-						height / 2,
-						radius,
-						0,
-						Math._PI2,
-						true
-					);
+					ctx.arc(width / 2, height / 2, radius, 0, Math._PI2, true);
 					ctx.closePath();
 					ctx.fill();
 					ctx.stroke();
@@ -81,18 +67,11 @@ export const targetSmartTexture: IgeSmartTexture = {
 						brightness = minBrightness;
 					}
 
-					ctx.strokeStyle = '#820000';
-					ctx.fillStyle = 'rgba(130, 0, 0, ' + brightness + ')';
+					ctx.strokeStyle = "#820000";
+					ctx.fillStyle = "rgba(130, 0, 0, " + brightness + ")";
 
 					ctx.beginPath();
-					ctx.arc(
-						width / 2,
-						height / 2,
-						radius,
-						0,
-						Math._PI2,
-						true
-					);
+					ctx.arc(width / 2, height / 2, radius, 0, Math._PI2, true);
 					ctx.closePath();
 					ctx.fill();
 					ctx.stroke();
@@ -106,18 +85,11 @@ export const targetSmartTexture: IgeSmartTexture = {
 						brightness = minBrightness;
 					}
 
-					ctx.strokeStyle = '#680082';
-					ctx.fillStyle = 'rgba(104, 0, 130, ' + brightness + ')';
+					ctx.strokeStyle = "#680082";
+					ctx.fillStyle = "rgba(104, 0, 130, " + brightness + ")";
 
 					ctx.beginPath();
-					ctx.arc(
-						width / 2,
-						height / 2,
-						radius,
-						0,
-						Math._PI2,
-						true
-					);
+					ctx.arc(width / 2, height / 2, radius, 0, Math._PI2, true);
 					ctx.closePath();
 					ctx.fill();
 					ctx.stroke();
@@ -125,7 +97,7 @@ export const targetSmartTexture: IgeSmartTexture = {
 			}
 
 			// Draw LOCK square
-			ctx.strokeStyle = '#ff0000';
+			ctx.strokeStyle = "#ff0000";
 
 			ctx.beginPath();
 			ctx.moveTo(0, yLength);
@@ -151,10 +123,10 @@ export const targetSmartTexture: IgeSmartTexture = {
 			ctx.lineTo(0, height - yLength);
 			ctx.stroke();
 
-			ctx.translate(width / 2, - 10);
-			ctx.fillStyle = '#ff0000';
-			ctx.font = 'Verdana bold 8px';
-			ctx.fillText('LOCK', 0, 0);
+			ctx.translate(width / 2, -10);
+			ctx.fillStyle = "#ff0000";
+			ctx.font = "Verdana bold 8px";
+			ctx.fillText("LOCK", 0, 0);
 			ctx.restore();
 		}
 	}

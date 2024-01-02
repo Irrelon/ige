@@ -1,30 +1,28 @@
-import { ige } from "@/engine/instance";
-import { isClient, isServer } from "@/engine/clientServer";
-import { IgePoly2d } from "@/engine/core/IgePoly2d";
-import { IgePoint3d } from "@/engine/core/IgePoint3d";
-import { IgeParticleEmitter } from "@/engine/core/IgeParticleEmitter";
-import { ThrustParticle } from "./particles/ThrustParticle";
 import { GameEntity, EntityPublicGameData } from "./GameEntity";
-import { IgeCanvasRenderingContext2d } from "@/types/IgeCanvasRenderingContext2d";
-import { IgeBox2dFixtureDef } from "@/types/IgeBox2dFixtureDef";
+import { ThrustParticle } from "./particles/ThrustParticle";
+import { isClient, isServer } from "@/engine/clientServer";
+import { IgeParticleEmitter } from "@/engine/core/IgeParticleEmitter";
+import { IgePoint3d } from "@/engine/core/IgePoint3d";
+import { IgePoly2d } from "@/engine/core/IgePoly2d";
+import type { IgeScene2d } from "@/engine/core/IgeScene2d";
+import { ige } from "@/engine/instance";
 import { IgeBox2dBodyType } from "@/enums/IgeBox2dBodyType";
 import { IgeBox2dFixtureShapeType } from "@/enums/IgeBox2dFixtureShapeType";
-import type { IgeScene2d } from "@/engine/core/IgeScene2d";
+import { IgeBox2dFixtureDef } from "@/types/IgeBox2dFixtureDef";
+import { IgeCanvasRenderingContext2d } from "@/types/IgeCanvasRenderingContext2d";
 
 export class Ship extends GameEntity {
 	classId = "Ship";
 	thrustEmitter?: IgeParticleEmitter;
 	triangles?: IgePoly2d[];
 
-	constructor (publicGameData?: EntityPublicGameData) {
+	constructor(publicGameData?: EntityPublicGameData) {
 		super(publicGameData);
 
 		this.streamProperty("thrusting", false);
 		this.category("ship");
 
-		this.layer(2)
-			.width(40)
-			.height(40);
+		this.layer(2).width(40).height(40);
 
 		if (isServer) {
 			// Define the polygon for collision
@@ -47,7 +45,11 @@ export class Ship extends GameEntity {
 				// Set the particle's death opacity to zero so it fades out as it's lifespan runs out
 				.deathOpacityBase(0)
 				// Set velocity vector to y = 0.02, with variance values
-				.velocityVector(new IgePoint3d(0, 0.01, 0), new IgePoint3d(-0.08, 0.01, 0), new IgePoint3d(0.08, 0.05, 0))
+				.velocityVector(
+					new IgePoint3d(0, 0.01, 0),
+					new IgePoint3d(-0.08, 0.01, 0),
+					new IgePoint3d(0.08, 0.05, 0)
+				)
 				// Mount new particles to the object scene
 				.particleMountTarget(ige.$("frontScene") as IgeScene2d)
 				// Move the particle emitter to the bottom of the ship
@@ -59,7 +61,7 @@ export class Ship extends GameEntity {
 		this._setup();
 	}
 
-	_definePhysics () {
+	_definePhysics() {
 		const collisionPoly = new IgePoly2d()
 			.addPoint(0, -this._bounds2d.y2)
 			.addPoint(this._bounds2d.x2, this._bounds2d.y2 - 7)
@@ -111,7 +113,7 @@ export class Ship extends GameEntity {
 	 * @param ctx The canvas context to render to.
 	 * @param tickDelta
 	 */
-	update (ctx: IgeCanvasRenderingContext2d, tickDelta: number) {
+	update(ctx: IgeCanvasRenderingContext2d, tickDelta: number) {
 		if (!isServer) {
 			if (this.streamProperty("thrusting")) {
 				this.thrustEmitter?.start();

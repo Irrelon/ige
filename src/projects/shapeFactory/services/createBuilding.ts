@@ -1,20 +1,17 @@
-import { StorageBuilding } from "../entities/StorageBuilding";
-import { FlagBuilding } from "../entities/FlagBuilding";
-import { MiningBuilding } from "../entities/MiningBuilding";
+import { IgeTileMap2d } from "@/engine/core/IgeTileMap2d";
 import { ResourceType } from "../enums/ResourceType";
 import { FactoryBuilding1 } from "../entities/FactoryBuilding1";
-import { IgeTileMap2d } from "@/engine/core/IgeTileMap2d";
 import { FactoryBuilding2 } from "../entities/FactoryBuilding2";
+import { FlagBuilding } from "../entities/FlagBuilding";
 import { HouseBuilding1 } from "../entities/HouseBuilding1";
+import { MiningBuilding } from "../entities/MiningBuilding";
+import { StorageBuilding } from "../entities/StorageBuilding";
 
 export const createStorageBuilding = (parent: IgeTileMap2d, id: string, tileX: number, tileY: number) => {
 	const roadOffsetX = 0;
 	const roadOffsetY = 3;
 
-	const newBuilding = new StorageBuilding(tileX, tileY)
-		.id(id)
-		.mount(parent)
-		.translateToTile(tileX, tileY, 0);
+	const newBuilding = new StorageBuilding(tileX, tileY).id(id).mount(parent).translateToTile(tileX, tileY, 0);
 
 	// // Check if a flag already exists
 	// const existingFlag = parent.tileOccupiedBy(tileX + roadOffsetX, tileY + roadOffsetY) as FlagBuilding;
@@ -35,9 +32,15 @@ export const createStorageBuilding = (parent: IgeTileMap2d, id: string, tileX: n
 	// 	.mount(parent);
 
 	return newBuilding;
-}
+};
 
-export const createMiningBuilding = (parent: IgeTileMap2d, id: string, tileX: number, tileY: number, resourceType: ResourceType) => {
+export const createMiningBuilding = (
+	parent: IgeTileMap2d,
+	id: string,
+	tileX: number,
+	tileY: number,
+	resourceType: ResourceType
+) => {
 	const roadOffsetX = 0;
 	const roadOffsetY = 2;
 
@@ -67,34 +70,40 @@ export const createMiningBuilding = (parent: IgeTileMap2d, id: string, tileX: nu
 	// 	.mount(parent);
 
 	return newBuilding;
-}
+};
 
 export const createHouseBuilding1 = (parent: IgeTileMap2d, id: string, tileX: number, tileY: number) => {
 	const roadOffsetX = 0;
 	const roadOffsetY = 2;
 
-	const newBuilding = new HouseBuilding1(tileX, tileY, ResourceType.gold, [{ count: 1, type: ResourceType.science, max: 1 }, { count: 1, type: ResourceType.energy, max: 1 }])
+	const newBuilding = new HouseBuilding1(tileX, tileY, ResourceType.gold, [
+		{ count: 1, type: ResourceType.science, max: 1 },
+		{ count: 1, type: ResourceType.energy, max: 1 }
+	])
 		.id(id)
 		.mount(parent)
 		.translateToTile(tileX, tileY, 0);
 
 	return newBuilding;
-}
+};
 
 export const createFactoryBuilding1 = (parent: IgeTileMap2d, id: string, tileX: number, tileY: number) => {
 	// TODO Make the produces and requires parameters of the createFactoryBuilding()
 	const roadOffsetX = 0;
 	const roadOffsetY = 3;
 
-	const newBuilding = new FactoryBuilding1(tileX, tileY, ResourceType.energy, [{
-		type: ResourceType.elerium,
-		count: 1,
-		max: 1
-	}, {
-		type: ResourceType.uranium,
-		count: 1,
-		max: 1
-	}])
+	const newBuilding = new FactoryBuilding1(tileX, tileY, ResourceType.energy, [
+		{
+			type: ResourceType.elerium,
+			count: 1,
+			max: 1
+		},
+		{
+			type: ResourceType.uranium,
+			count: 1,
+			max: 1
+		}
+	])
 		.id(id)
 		.mount(parent)
 		.translateToTile(tileX, tileY, 0);
@@ -120,26 +129,30 @@ export const createFactoryBuilding1 = (parent: IgeTileMap2d, id: string, tileX: 
 	// 	.mount(parent);
 
 	return newBuilding;
-}
+};
 
 export const createFactoryBuilding2 = (parent: IgeTileMap2d, id: string, tileX: number, tileY: number) => {
 	// TODO Make the produces and requires parameters of the createFactoryBuilding()
 	const roadOffsetX = 0;
 	const roadOffsetY = 3;
 
-	const newBuilding = new FactoryBuilding2(tileX, tileY, ResourceType.science, [{
-		type: ResourceType.energy,
-		count: 1,
-		max: 1
-	}, {
-		type: ResourceType.elerium,
-		count: 1,
-		max: 1
-	}, {
-		type: ResourceType.uranium,
-		count: 1,
-		max: 1
-	}])
+	const newBuilding = new FactoryBuilding2(tileX, tileY, ResourceType.science, [
+		{
+			type: ResourceType.energy,
+			count: 1,
+			max: 1
+		},
+		{
+			type: ResourceType.elerium,
+			count: 1,
+			max: 1
+		},
+		{
+			type: ResourceType.uranium,
+			count: 1,
+			max: 1
+		}
+	])
 		.id(id)
 		.mount(parent)
 		.translateToTile(tileX, tileY, 0);
@@ -165,13 +178,10 @@ export const createFactoryBuilding2 = (parent: IgeTileMap2d, id: string, tileX: 
 	// 	.mount(parent);
 
 	return newBuilding;
-}
+};
 
 export const createFlagBuilding = (parent: IgeTileMap2d, id: string, tileX: number, tileY: number) => {
-	const newBuilding = new FlagBuilding(tileX, tileY)
-		.id(id)
-		.mount(parent)
-		.translateToTile(tileX, tileY, 0);
+	const newBuilding = new FlagBuilding(tileX, tileY).id(id).mount(parent).translateToTile(tileX, tileY, 0);
 
 	return newBuilding;
-}
+};

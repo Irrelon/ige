@@ -1,6 +1,6 @@
-import {degreesToRadians, radiansToDegrees} from "../../utils";
-import { IgeEntity } from "../../core/IgeEntity";
 import { IgeComponent } from "../../core/IgeComponent";
+import { IgeEntity } from "../../core/IgeEntity";
+import { degreesToRadians, radiansToDegrees } from "../../utils";
 
 /**
  * When added to a viewport, automatically adds entity rotate
@@ -16,7 +16,7 @@ class IgeEditorRotateComponent extends IgeComponent {
 	 * @param options The options object that was passed to the component during
 	 * the call to addComponent.
 	 */
-	constructor (entity: IgeEntity, options?: any) {
+	constructor(entity: IgeEntity, options?: any) {
 		super(entity, options);
 
 		// Set the "rotate" component as inactive to start with
@@ -70,7 +70,7 @@ class IgeEditorRotateComponent extends IgeComponent {
 			// Reset rotate values.
 			// This prevents problems if the component is disabled mid-operation.
 			this._opPreStart = false;
-			this._opStarted  = false;
+			this._opStarted = false;
 
 			if (this._enabled) {
 				if (this._ige._sgTreeSelected && this._ige._sgTreeSelected !== "ige") {
@@ -82,9 +82,15 @@ class IgeEditorRotateComponent extends IgeComponent {
 						this.enabled(false);
 					} else {
 						// Listen for the mouse events we need to operate
-						this._ige.input.on("pointerDown", (event) => { self._pointerDown(event); });
-						this._ige.input.on("pointerMove", (event) => { self._pointerMove(event); });
-						this._ige.input.on("pointerUp", (event) => { self._pointerUp(event); });
+						this._ige.input.on("pointerDown", (event) => {
+							self._pointerDown(event);
+						});
+						this._ige.input.on("pointerMove", (event) => {
+							self._pointerMove(event);
+						});
+						this._ige.input.on("pointerUp", (event) => {
+							self._pointerUp(event);
+						});
 						this.log("Editor: Mouse rotate enabled");
 					}
 				}
@@ -113,13 +119,14 @@ class IgeEditorRotateComponent extends IgeComponent {
 			this._opStartMouse = curMousePos.clone();
 
 			this._opStartRotate = {
-				"x": radiansToDegrees(this._targetEntity._rotate.z)
+				x: radiansToDegrees(this._targetEntity._rotate.z)
 			};
 
 			this._opPreStart = true;
 			this._opStarted = false;
 
-			document.getElementById("igeSgEditorStatus").innerHTML = "Degrees: " + radiansToDegrees(this._targetEntity._rotate.z);
+			document.getElementById("igeSgEditorStatus").innerHTML =
+				"Degrees: " + radiansToDegrees(this._targetEntity._rotate.z);
 		}
 	};
 
@@ -135,7 +142,7 @@ class IgeEditorRotateComponent extends IgeComponent {
 			if (this._opStartMouse) {
 				const curMousePos = this._ige._pointerPos,
 					rotateCords = {
-						"x": this._opStartMouse.x - curMousePos.x
+						x: this._opStartMouse.x - curMousePos.x
 					},
 					distX = rotateCords.x - this._opStartRotate.x;
 
@@ -164,7 +171,8 @@ class IgeEditorRotateComponent extends IgeComponent {
 					this.emit("rotateMove");
 				}
 
-				document.getElementById("igeSgEditorStatus").innerHTML = "Degrees: " + radiansToDegrees(this._targetEntity._rotate.z);
+				document.getElementById("igeSgEditorStatus").innerHTML =
+					"Degrees: " + radiansToDegrees(this._targetEntity._rotate.z);
 			}
 		}
 	};
@@ -182,7 +190,7 @@ class IgeEditorRotateComponent extends IgeComponent {
 				if (this._opStartMouse) {
 					const curMousePos = this._ige._pointerPos,
 						rotateCords = {
-							"x": this._opStartMouse.x - curMousePos.x
+							x: this._opStartMouse.x - curMousePos.x
 						},
 						distX = rotateCords.x - this._opStartRotate.x;
 
@@ -192,7 +200,8 @@ class IgeEditorRotateComponent extends IgeComponent {
 						degreesToRadians(-distX)
 					);
 
-					document.getElementById("igeSgEditorStatus").innerHTML = "Degrees: " + radiansToDegrees(this._targetEntity._rotate.z);
+					document.getElementById("igeSgEditorStatus").innerHTML =
+						"Degrees: " + radiansToDegrees(this._targetEntity._rotate.z);
 
 					// Remove the rotate start data to end the rotate operation
 					delete this._opStartMouse;
@@ -207,7 +216,7 @@ class IgeEditorRotateComponent extends IgeComponent {
 				this._opStarted = false;
 			}
 		}
-	}
+	};
 }
 
 export default IgeEditorRotateComponent;

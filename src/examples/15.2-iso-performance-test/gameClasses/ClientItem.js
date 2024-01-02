@@ -1,15 +1,12 @@
 var ClientItem = IgeEntity.extend({
-	classId: 'ClientItem',
+	classId: "ClientItem",
 
 	init: function (tileX, tileY, tileWidth, tileHeight) {
 		IgeEntity.prototype.init.call(this);
 
 		// Store the tile details for this item in
 		// it's internal data object
-		this.data('tileX', tileX)
-			.data('tileY', tileY)
-			.data('tileWidth', tileWidth)
-			.data('tileHeight', tileHeight);
+		this.data("tileX", tileX).data("tileY", tileY).data("tileWidth", tileWidth).data("tileHeight", tileHeight);
 	},
 
 	/**
@@ -24,14 +21,9 @@ var ClientItem = IgeEntity.extend({
 		// tile map. The method tells the tile map that the
 		// entity is mounted to that the tiles specified are now
 		// taken up by this entity.
-		this.occupyTile(
-			this.data('tileX'),
-			this.data('tileY'),
-			this.data('tileWidth'),
-			this.data('tileHeight')
-		);
+		this.occupyTile(this.data("tileX"), this.data("tileY"), this.data("tileWidth"), this.data("tileHeight"));
 
-		this.data('placed', true);
+		this.data("placed", true);
 
 		return this;
 	},
@@ -45,30 +37,16 @@ var ClientItem = IgeEntity.extend({
 	 * @return {*}
 	 */
 	moveTo: function (tileX, tileY) {
-		if (this.data('placed')) {
+		if (this.data("placed")) {
 			// Un-occupy the current tiles
-			this.unOccupyTile(
-				this.data('tileX'),
-				this.data('tileY'),
-				this.data('tileWidth'),
-				this.data('tileHeight')
-			);
+			this.unOccupyTile(this.data("tileX"), this.data("tileY"), this.data("tileWidth"), this.data("tileHeight"));
 
 			// Set the new tile position
-			this.data('tileX', tileX)
-				.data('tileY', tileY);
+			this.data("tileX", tileX).data("tileY", tileY);
 
-			this.occupyTile(
-				this.data('tileX'),
-				this.data('tileY'),
-				this.data('tileWidth'),
-				this.data('tileHeight')
-			);
+			this.occupyTile(this.data("tileX"), this.data("tileY"), this.data("tileWidth"), this.data("tileHeight"));
 
-			this.translateToTile(
-				this.data('tileX'),
-				this.data('tileY')
-			);
+			this.translateToTile(this.data("tileX"), this.data("tileY"));
 		}
 
 		return this;
@@ -79,15 +57,10 @@ var ClientItem = IgeEntity.extend({
 	 */
 	destroy: function () {
 		// Un-occupy the tiles this entity currently occupies
-		if (this.data('placed')) {
-			this.unOccupyTile(
-				this.data('tileX'),
-				this.data('tileY'),
-				this.data('tileWidth'),
-				this.data('tileHeight')
-			);
+		if (this.data("placed")) {
+			this.unOccupyTile(this.data("tileX"), this.data("tileY"), this.data("tileWidth"), this.data("tileHeight"));
 
-			this.data('placed', false);
+			this.data("placed", false);
 		}
 
 		// Call the parent class destroy method
@@ -95,4 +68,6 @@ var ClientItem = IgeEntity.extend({
 	}
 });
 
-if (typeof(module) !== 'undefined' && typeof(module.exports) !== 'undefined') { module.exports = ClientItem; }
+if (typeof module !== "undefined" && typeof module.exports !== "undefined") {
+	module.exports = ClientItem;
+}

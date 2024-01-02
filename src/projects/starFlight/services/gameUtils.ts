@@ -1,7 +1,7 @@
 import { modules } from "../app/data/modules";
 import { PlayerDataModule } from "../app/data/playerData";
-import { EntityModuleDefinition } from "../types/EntityModuleDefinition";
 import { EntityAbilityModuleDefinition } from "../types/EntityAbilityModuleDefinition";
+import { EntityModuleDefinition } from "../types/EntityModuleDefinition";
 
 /**
  * Extends the target with data from the newData object.
@@ -15,7 +15,7 @@ export const extend = function (target: any, newData: any, overwrite: boolean = 
 	for (const i in newData) {
 		if (newData.hasOwnProperty(i)) {
 			// Check if this property is an object
-			if (typeof newData[i] === 'object' && !(newData[i] instanceof Array)) {
+			if (typeof newData[i] === "object" && !(newData[i] instanceof Array)) {
 				// Make sure the target property is an object
 				if (target[i] === undefined) {
 					target[i] = {};
@@ -35,7 +35,9 @@ export const extend = function (target: any, newData: any, overwrite: boolean = 
  * @param {String} moduleId The ID of the module to get.
  * @returns {*}
  */
-export const getModuleById = function (moduleId: string): EntityModuleDefinition | EntityAbilityModuleDefinition | undefined {
+export const getModuleById = function (
+	moduleId: string
+): EntityModuleDefinition | EntityAbilityModuleDefinition | undefined {
 	for (let i = 0; i < modules.length; i++) {
 		if (modules[i]._id === moduleId) {
 			return modules[i];

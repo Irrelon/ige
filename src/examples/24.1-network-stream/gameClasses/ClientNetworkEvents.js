@@ -6,8 +6,10 @@ var ClientNetworkEvents = {
 	 * @private
 	 */
 	_onTest: function (data) {
-		console.log('Test command received from server with data:', data);
+		console.log("Test command received from server with data:", data);
 	}
 };
 
-if (typeof(module) !== 'undefined' && typeof(module.exports) !== 'undefined') { module.exports = ClientNetworkEvents; }
+if (typeof module !== "undefined" && typeof module.exports !== "undefined") {
+	module.exports = ClientNetworkEvents;
+}

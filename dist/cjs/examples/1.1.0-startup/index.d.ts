@@ -1,4 +1,4 @@
 export declare class Game {
-    classId: string;
-    constructor(options?: any);
+	classId: string;
+	constructor(options?: any);
 }

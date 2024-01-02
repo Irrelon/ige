@@ -1,13 +1,11 @@
-import { ige } from "@/engine/instance";
-import { isClient } from "@/engine/clientServer";
 import { IgeAudioItem } from "@/engine/audio/IgeAudioItem";
+import { isClient } from "@/engine/clientServer";
 import { IgeEntity } from "@/engine/core/IgeEntity";
-import type { IgeCanvasRenderingContext2d } from "@/types/IgeCanvasRenderingContext2d";
 import { registerClass } from "@/engine/igeClassStore";
+import { ige } from "@/engine/instance";
+import type { IgeCanvasRenderingContext2d } from "@/types/IgeCanvasRenderingContext2d";
 
-export interface IgeAudioEntityPanner extends PannerOptions {
-
-}
+export interface IgeAudioEntityPanner extends PannerOptions {}
 
 export interface IgeAudioEntityOptions {
 	started?: boolean;
@@ -43,12 +41,15 @@ export class IgeAudioEntity extends IgeEntity {
 	_panner?: PannerNode;
 	_audioId?: string;
 
-	constructor (audioId?: string, options: IgeAudioEntityOptions = {
-		started: false,
-		loop: false,
-		gain: 1,
-		panner: defaultPanner
-	}) {
+	constructor(
+		audioId?: string,
+		options: IgeAudioEntityOptions = {
+			started: false,
+			loop: false,
+			gain: 1,
+			panner: defaultPanner
+		}
+	) {
 		super();
 
 		this._audioId = audioId;
@@ -70,9 +71,9 @@ export class IgeAudioEntity extends IgeEntity {
 		}
 	}
 
-	relativeTo (val: IgeEntity): this;
-	relativeTo (): IgeEntity | undefined;
-	relativeTo (val?: IgeEntity) {
+	relativeTo(val: IgeEntity): this;
+	relativeTo(): IgeEntity | undefined;
+	relativeTo(val?: IgeEntity) {
 		if (val !== undefined) {
 			const audioInterface = this.audioInterface();
 			if (!audioInterface) return;
@@ -99,7 +100,7 @@ export class IgeAudioEntity extends IgeEntity {
 	 * Gets the playing boolean flag state.
 	 * @returns {boolean} True if playing, false if not.
 	 */
-	playing () {
+	playing() {
 		return this.audioInterface()?.playing();
 	}
 
@@ -108,9 +109,9 @@ export class IgeAudioEntity extends IgeEntity {
 	 * @param {string=} url The url that serves the audio file.
 	 * @returns {IgeAudioEntity}
 	 */
-	url (url: string): this;
-	url (): string;
-	url (url?: string) {
+	url(url: string): this;
+	url(): string;
+	url(url?: string) {
 		if (url !== undefined) {
 			this.audioInterface()?.url(url);
 			return this;
@@ -130,7 +131,7 @@ export class IgeAudioEntity extends IgeEntity {
 	 * engine.
 	 * @returns {*}
 	 */
-	audioId (audioId?: string) {
+	audioId(audioId?: string) {
 		if (audioId !== undefined) {
 			this.audioInterface()?.audioId(audioId);
 
@@ -147,7 +148,7 @@ export class IgeAudioEntity extends IgeEntity {
 	 * being destroyed.
 	 * @returns {IgeAudioEntity}
 	 */
-	play (loop: boolean = false) {
+	play(loop: boolean = false) {
 		this.audioInterface()?.play(loop);
 		return this;
 	}
@@ -156,7 +157,7 @@ export class IgeAudioEntity extends IgeEntity {
 	 * Stops playback of the audio.
 	 * @returns {IgeAudioEntity}
 	 */
-	stop () {
+	stop() {
 		this.audioInterface()?.stop();
 		return this;
 	}
@@ -167,9 +168,9 @@ export class IgeAudioEntity extends IgeEntity {
 	 * @param {IgeAudioItem=} audio
 	 * @returns {*}
 	 */
-	audioInterface (audio: IgeAudioItem): this;
-	audioInterface (): IgeAudioItem | undefined;
-	audioInterface (audio?: IgeAudioItem) {
+	audioInterface(audio: IgeAudioItem): this;
+	audioInterface(): IgeAudioItem | undefined;
+	audioInterface(audio?: IgeAudioItem) {
 		if (audio !== undefined) {
 			this._audioInterface = audio;
 			return this;
@@ -183,11 +184,11 @@ export class IgeAudioEntity extends IgeEntity {
 	 * is created via the network stream.
 	 * @returns {*}
 	 */
-	streamCreateConstructorArgs () {
+	streamCreateConstructorArgs() {
 		return [this._audioId, this._options];
 	}
 
-	update (ctx: IgeCanvasRenderingContext2d, tickDelta: number) {
+	update(ctx: IgeCanvasRenderingContext2d, tickDelta: number) {
 		if (this._relativeTo && this._panner) {
 			const audioWorldPos = this.worldPosition();
 			const relativeToWorldPos = this._relativeTo.worldPosition();
@@ -214,7 +215,7 @@ export class IgeAudioEntity extends IgeEntity {
 	 * Called when the entity is to be destroyed. Stops any
 	 * current audio stream playback.
 	 */
-	destroy () {
+	destroy() {
 		if (isClient) {
 			this.audioInterface()?.stop();
 		}

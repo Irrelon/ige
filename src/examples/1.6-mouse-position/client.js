@@ -1,5 +1,5 @@
 var Client = IgeClass.extend({
-	classId: 'Client',
+	classId: "Client",
 	init: function () {
 		ige.addComponent(IgeEditorComponent);
 
@@ -12,13 +12,13 @@ var Client = IgeClass.extend({
 		//ige.components.input.debug(true);
 
 		// Load the fairy texture and store it in the gameTexture array
-		gameTexture[0] = new IgeTexture('../assets/textures/sprites/fairy.png');
+		gameTexture[0] = new IgeTexture("../assets/textures/sprites/fairy.png");
 
 		// Load a smart texture
-		gameTexture[1] = new IgeTexture('../assets/textures/smartTextures/simpleBox.js');
+		gameTexture[1] = new IgeTexture("../assets/textures/smartTextures/simpleBox.js");
 
 		// Wait for our textures to load before continuing
-		ige.on('texturesLoaded', function () {
+		ige.on("texturesLoaded", function () {
 			// Create the HTML canvas
 			ige.createFrontBuffer(true);
 
@@ -31,45 +31,39 @@ var Client = IgeClass.extend({
 					// Create a custom watch object
 					self.customWatch = {
 						w1: {
-							name: 'Mouse Move Viewport ID',
+							name: "Mouse Move Viewport ID",
 							value: 0
 						},
 						w2: {
-							name: 'World Mouse Position X',
+							name: "World Mouse Position X",
 							value: 0
 						},
 						w3: {
-							name: 'World Mouse Position Y',
+							name: "World Mouse Position Y",
 							value: 0
 						},
 						w4: {
-							name: 'Fairy 2 Local Mouse Position X',
+							name: "Fairy 2 Local Mouse Position X",
 							value: 0
 						},
 						w5: {
-							name: 'Fairy 2 Local Mouse Position Y',
+							name: "Fairy 2 Local Mouse Position Y",
 							value: 0
 						}
 					};
 
 					// Create the scene
-					self.mainScene = new IgeScene2d()
-						.id('mainScene');
+					self.mainScene = new IgeScene2d().id("mainScene");
 
-					self.objectScene = new IgeScene2d()
-						.id('objectScene')
-						.mount(self.mainScene);
+					self.objectScene = new IgeScene2d().id("objectScene").mount(self.mainScene);
 
-					self.uiScene = new IgeScene2d()
-						.id('uiScene')
-						.ignoreCamera(false)
-						.mount(self.mainScene);
+					self.uiScene = new IgeScene2d().id("uiScene").ignoreCamera(false).mount(self.mainScene);
 
 					// Create the main viewport and set the scene
 					// it will "look" at as the new mainScene we just
 					// created above
 					self.vp1 = new IgeViewport()
-						.id('vp1')
+						.id("vp1")
 						.addComponent(IgeMousePanComponent)
 						.mousePan.enabled(true)
 						.autoSize(true)
@@ -79,7 +73,7 @@ var Client = IgeClass.extend({
 						.mount(ige);
 
 					self.vp2 = new IgeViewport()
-						.id('vp2')
+						.id("vp2")
 						.addComponent(IgeMousePanComponent)
 						.mousePan.enabled(true)
 						.depth(2)
@@ -89,17 +83,17 @@ var Client = IgeClass.extend({
 						.right(10)
 						.bottom(10)
 						.borderWidth(1)
-						.borderColor('#ffffff')
+						.borderColor("#ffffff")
 						.scene(self.mainScene)
 						.drawBounds(true)
-						.drawMouse(true)
-						//.mount(ige);
+						.drawMouse(true);
+					//.mount(ige);
 
 					self.vp1.camera.translateTo(0, 0, 0);
 					self.vp2.camera.scaleTo(2, 2, 2);
 
 					self.cont = new IgeUiEntity()
-						.id('cont')
+						.id("cont")
 						.middle(0)
 						.center(0)
 						.width(300)
@@ -109,7 +103,7 @@ var Client = IgeClass.extend({
 
 					// Create an entity and mount it to the scene
 					self.obj[0] = new IgeUiEntity()
-						.id('fairy1')
+						.id("fairy1")
 						.depth(1)
 						.width(100)
 						.height(100)
@@ -125,7 +119,7 @@ var Client = IgeClass.extend({
 					// it to the first one at 0, 50 relative to the
 					// parent
 					self.obj[1] = new IgeUiEntity()
-						.id('fairy2')
+						.id("fairy2")
 						.depth(1)
 						.width(50)
 						.height(50)
@@ -143,15 +137,17 @@ var Client = IgeClass.extend({
 							// Get the mouse position relative to the center
 							// of this entity based on the viewport the event
 							// occurred in
-							ige.debugEventOn('event1');
+							ige.debugEventOn("event1");
 							var mpLocal = this.mousePos(event.igeViewport);
 							var mp = this.mousePosWorld(event.igeViewport);
 
 							self.customWatch.w2.value = mp.x;
 							self.customWatch.w3.value = mp.y;
 
-							self.customWatch.w4.name = 'Fairy 2 Local Mouse Position X (' + event.igeViewport.id() +')';
-							self.customWatch.w5.name = 'Fairy 2 Local Mouse Position Y (' + event.igeViewport.id() +')';
+							self.customWatch.w4.name =
+								"Fairy 2 Local Mouse Position X (" + event.igeViewport.id() + ")";
+							self.customWatch.w5.name =
+								"Fairy 2 Local Mouse Position Y (" + event.igeViewport.id() + ")";
 							self.customWatch.w4.value = mpLocal.x;
 							self.customWatch.w5.value = mpLocal.y;
 
@@ -160,14 +156,14 @@ var Client = IgeClass.extend({
 							self.obj[2].translateTo(mp.x, mp.y, 0);
 						})
 						.mouseUp(function (event) {
-							console.log('UP!');
+							console.log("UP!");
 						})
 						.mount(self.obj[0]);
 
 					// Create a simplebox entity and mount it to the
 					// main scene
 					self.obj[2] = new IgeEntity()
-						.id('mouse')
+						.id("mouse")
 						.depth(2)
 						.width(10)
 						.height(10)
@@ -202,4 +198,6 @@ var Client = IgeClass.extend({
 	}
 });
 
-if (typeof(module) !== 'undefined' && typeof(module.exports) !== 'undefined') { module.exports = Client; }
+if (typeof module !== "undefined" && typeof module.exports !== "undefined") {
+	module.exports = Client;
+}

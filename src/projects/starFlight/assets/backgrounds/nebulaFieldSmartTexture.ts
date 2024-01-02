@@ -1,6 +1,6 @@
+import { IgeTexture } from "@/engine/core/IgeTexture";
 import { ige } from "@/engine/instance";
 import { IgeSmartTexture } from "@/types/IgeSmartTexture";
-import { IgeTexture } from "@/engine/core/IgeTexture";
 
 type NebulaPositionSpeed = [number, number, number, number, number];
 
@@ -13,9 +13,13 @@ export const nebulaFieldSmartTexture: IgeSmartTexture = {
 	render: (ctx, entity) => {
 		let points = 10,
 			nebs: NebulaPositionSpeed[],
-			sfPoint, texture, textureCell,
-			finalPointX, finalPointY,
-			multipleX, multipleY,
+			sfPoint,
+			texture,
+			textureCell,
+			finalPointX,
+			finalPointY,
+			multipleX,
+			multipleY,
 			newType,
 			halfWidth,
 			halfHeight,
@@ -73,8 +77,8 @@ export const nebulaFieldSmartTexture: IgeSmartTexture = {
 
 			textureCell = texture._cells[1];
 
-			finalPointX = Math.floor(sfPoint[0] - (camera._translate.x * sfPoint[2]));
-			finalPointY = Math.floor(sfPoint[1] - (camera._translate.y * sfPoint[2]));
+			finalPointX = Math.floor(sfPoint[0] - camera._translate.x * sfPoint[2]);
+			finalPointY = Math.floor(sfPoint[1] - camera._translate.y * sfPoint[2]);
 			/*
 			 multipleX = Math.floor(finalPointX / nebula.maxDim);
 			 multipleY = Math.floor(finalPointY / nebula.maxDim);
@@ -101,13 +105,12 @@ export const nebulaFieldSmartTexture: IgeSmartTexture = {
 			//halfHeight = Math.floor(textureCell[3] / 2);
 
 			if (finalPointX + textureCell[2] < 0) {
-
 				sfPoint[0] += nebula.maxDim + textureCell[2];
 				//sfPoint[1] += nebula.maxDim * 0.5;
 				newType = true;
 			} else if (finalPointX > nebula.maxDim) {
 				// Left side of nebula is off screen to right
-				sfPoint[0] -= (nebula.maxDim + textureCell[2]);
+				sfPoint[0] -= nebula.maxDim + textureCell[2];
 				//sfPoint[1] -= nebula.maxDim * 1.5;
 				newType = true;
 			}
@@ -119,7 +122,7 @@ export const nebulaFieldSmartTexture: IgeSmartTexture = {
 				newType = true;
 			} else if (finalPointY > nebula.maxDim) {
 				// Top side of nebula is off screen to bottom
-				sfPoint[1] -= (nebula.maxDim + textureCell[3]);
+				sfPoint[1] -= nebula.maxDim + textureCell[3];
 				//sfPoint[0] -= nebula.maxDim * 1.5;
 				newType = true;
 			}
@@ -134,10 +137,10 @@ export const nebulaFieldSmartTexture: IgeSmartTexture = {
 			 6
 			 );
 			 */
-			ctx.translate((finalPointX + camera._translate.x), (finalPointY + camera._translate.y));
+			ctx.translate(finalPointX + camera._translate.x, finalPointY + camera._translate.y);
 
-			ctx.translate((textureCell[2] / 2), (textureCell[3] / 2));
-			ctx.rotate(sfPoint[4] * Math.PI / 180);
+			ctx.translate(textureCell[2] / 2, textureCell[3] / 2);
+			ctx.rotate((sfPoint[4] * Math.PI) / 180);
 			ctx.translate(-(textureCell[2] / 2), -(textureCell[3] / 2));
 			ctx.drawImage(
 				texture.image,

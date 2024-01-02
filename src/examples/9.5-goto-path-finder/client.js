@@ -1,5 +1,5 @@
 var Client = IgeClass.extend({
-	classId: 'Client',
+	classId: "Client",
 	init: function () {
 		ige.addComponent(IgeEditorComponent);
 		ige.globalSmoothing(true);
@@ -21,20 +21,17 @@ var Client = IgeClass.extend({
 				self.isoMode = true;
 
 				// Create the scene
-				self.mainScene = new IgeScene2d()
-					.id('mainScene')
-					.drawBounds(false)
-					.drawBoundsData(false);
+				self.mainScene = new IgeScene2d().id("mainScene").drawBounds(false).drawBoundsData(false);
 
 				self.objectScene = new IgeScene2d()
-					.id('objectScene')
+					.id("objectScene")
 					.depth(0)
 					.drawBounds(false)
 					.drawBoundsData(false)
 					.mount(self.mainScene);
 
 				self.uiScene = new IgeScene2d()
-					.id('uiScene')
+					.id("uiScene")
 					.depth(1)
 					.drawBounds(false)
 					.drawBoundsData(false)
@@ -46,7 +43,7 @@ var Client = IgeClass.extend({
 					.addComponent(IgeMousePanComponent)
 					.mousePan.limit(new IgeRect(-300, -100, 600, 200))
 					.mousePan.enabled(true)
-					.id('vp1')
+					.id("vp1")
 					.autoSize(true)
 					.scene(self.mainScene)
 					.drawMouse(true)
@@ -57,24 +54,24 @@ var Client = IgeClass.extend({
 				// Create some listeners for when the viewport is being panned
 				// so that we don't create a new path accidentally after a mouseUp
 				// occurs if we were panning
-				self.vp1.mousePan.on('panStart', function () {
+				self.vp1.mousePan.on("panStart", function () {
 					// Store the current cursor mode
-					ige.client.data('tempCursorMode', ige.client.data('cursorMode'));
+					ige.client.data("tempCursorMode", ige.client.data("cursorMode"));
 
 					// Switch the cursor mode
-					ige.client.data('cursorMode', 'panning');
+					ige.client.data("cursorMode", "panning");
 					ige.components.input.stopPropagation();
 				});
 
-				self.vp1.mousePan.on('panEnd', function () {
+				self.vp1.mousePan.on("panEnd", function () {
 					// Switch the cursor mode back
-					ige.client.data('cursorMode', ige.client.data('tempCursorMode'));
+					ige.client.data("cursorMode", ige.client.data("tempCursorMode"));
 					ige.components.input.stopPropagation();
 				});
 
 				// Create an isometric tile map
 				self.tileMap1 = new IgeTileMap2d()
-					.id('tileMap1')
+					.id("tileMap1")
 					.isometricMounts(self.isoMode)
 					.tileWidth(40)
 					.tileHeight(40)
@@ -89,7 +86,7 @@ var Client = IgeClass.extend({
 				// Create the 3d container that the player
 				// entity will be mounted to
 				self.player = new Character()
-					.id('player')
+					.id("player")
 					.addComponent(PlayerComponent)
 					.drawBounds(false)
 					.drawBoundsData(false)
@@ -106,13 +103,13 @@ var Client = IgeClass.extend({
 				self.vp1.camera.trackTranslate(self.player, 100);
 
 				// Create a path finder
-				self.pathFinder = new IgePathFinder()
-					.neighbourLimit(100);
+				self.pathFinder = new IgePathFinder().neighbourLimit(100);
 
 				// Assign the pathfinder to the player
-				self.player.addComponent(IgePathComponent).path
-					.finder(self.pathFinder)
-					.tileMap(ige.$('tileMap1'))
+				self.player
+					.addComponent(IgePathComponent)
+					.path.finder(self.pathFinder)
+					.tileMap(ige.$("tileMap1"))
 					.tileChecker(function (tileData, tileX, tileY, node, prevNodeX, prevNodeY, dynamic) {
 						// If the map tile data is set to 1, don't allow a path along it
 						return tileData !== 1;
@@ -126,26 +123,44 @@ var Client = IgeClass.extend({
 					.drawPathText(true); // Enable path text output
 
 				// Register some event listeners for the path
-				self.player.path.on('started', function () { console.log('Pathing started...'); });
-				self.player.path.on('stopped', function () { console.log('Pathing stopped.'); });
-				self.player.path.on('cleared', function () { console.log('Path data cleared.'); });
-				self.player.path.on('pointComplete', function () { console.log('Path point reached...'); });
-				self.player.path.on('pathComplete', function () { console.log('Path completed...'); });
-				self.player.path.on('traversalComplete', function () { this._entity.animation.stop(); console.log('Traversal of all paths completed.'); });
+				self.player.path.on("started", function () {
+					console.log("Pathing started...");
+				});
+				self.player.path.on("stopped", function () {
+					console.log("Pathing stopped.");
+				});
+				self.player.path.on("cleared", function () {
+					console.log("Path data cleared.");
+				});
+				self.player.path.on("pointComplete", function () {
+					console.log("Path point reached...");
+				});
+				self.player.path.on("pathComplete", function () {
+					console.log("Path completed...");
+				});
+				self.player.path.on("traversalComplete", function () {
+					this._entity.animation.stop();
+					console.log("Traversal of all paths completed.");
+				});
 
 				// Some error events from the pathfinder
-				self.pathFinder.on('noPathFound', function () { console.log('Could not find a path to the destination!'); });
-				self.pathFinder.on('exceededLimit', function () { console.log('Path finder exceeded allowed limit of nodes!'); });
-				self.pathFinder.on('pathFound', function () { console.log('Path to destination calculated...'); });
+				self.pathFinder.on("noPathFound", function () {
+					console.log("Could not find a path to the destination!");
+				});
+				self.pathFinder.on("exceededLimit", function () {
+					console.log("Path finder exceeded allowed limit of nodes!");
+				});
+				self.pathFinder.on("pathFound", function () {
+					console.log("Path to destination calculated...");
+				});
 
 				// Start traversing the path!
-				self.player.path
-					.set(0, 0, 0, 3, 7, 0)
-					.speed(5)
-					.start(1000);
+				self.player.path.set(0, 0, 0, 3, 7, 0).speed(5).start(1000);
 			}
 		});
 	}
 });
 
-if (typeof(module) !== 'undefined' && typeof(module.exports) !== 'undefined') { module.exports = Client; }
+if (typeof module !== "undefined" && typeof module.exports !== "undefined") {
+	module.exports = Client;
+}

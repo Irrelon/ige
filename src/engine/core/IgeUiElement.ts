@@ -1,8 +1,8 @@
-import { ige } from "../instance";
 import { IgeUiEntity } from "./IgeUiEntity";
 import type { IgeUiManagerController } from "./IgeUiManagerController";
-import type { IgeInputComponent } from "../components/IgeInputComponent";
 import { registerClass } from "@/engine/igeClassStore";
+import type { IgeInputComponent } from "../components/IgeInputComponent";
+import { ige } from "../instance";
 
 export type IgeUiStyleObject = Record<string, any>;
 export type IgeUiStyleState = "focus" | "hover" | "active";
@@ -32,10 +32,13 @@ export class IgeUiElement extends IgeUiEntity {
 	_style?: IgeUiStyleObject;
 	_value?: any;
 
-	constructor () {
+	constructor() {
 		super();
 
-		if (!(ige.ui as IgeUiManagerController)) throw new Error("Engine UI component has not been added to the engine, please add the component IgeUiManagerController to the engine");
+		if (!(ige.ui as IgeUiManagerController))
+			throw new Error(
+				"Engine UI component has not been added to the engine, please add the component IgeUiManagerController to the engine"
+			);
 		(ige.ui as IgeUiManagerController).registerElement(this);
 
 		this.on("pointerOver", () => {
@@ -82,9 +85,9 @@ export class IgeUiElement extends IgeUiEntity {
 		this.pointerEventsActive(true);
 	}
 
-	allowHover (val: boolean): this;
-	allowHover (): boolean;
-	allowHover (val?: boolean) {
+	allowHover(val: boolean): this;
+	allowHover(): boolean;
+	allowHover(val?: boolean) {
 		if (val !== undefined) {
 			this._allowHover = val;
 			return this;
@@ -93,9 +96,9 @@ export class IgeUiElement extends IgeUiEntity {
 		return this._allowHover;
 	}
 
-	allowFocus (val: boolean): this;
-	allowFocus (): boolean;
-	allowFocus (val?: boolean) {
+	allowFocus(val: boolean): this;
+	allowFocus(): boolean;
+	allowFocus(val?: boolean) {
 		if (val !== undefined) {
 			this._allowFocus = val;
 			return this;
@@ -104,9 +107,9 @@ export class IgeUiElement extends IgeUiEntity {
 		return this._allowFocus;
 	}
 
-	allowActive (val: boolean): this;
-	allowActive (): boolean;
-	allowActive (val?: boolean) {
+	allowActive(val: boolean): this;
+	allowActive(): boolean;
+	allowActive(val?: boolean) {
 		if (val !== undefined) {
 			this._allowActive = val;
 			return this;
@@ -120,9 +123,9 @@ export class IgeUiElement extends IgeUiEntity {
 	 * @param {string=} name The style name to apply.
 	 * @returns {*}
 	 */
-	styleClass (name?: string): this;
-	styleClass (): string;
-	styleClass (name?: string) {
+	styleClass(name?: string): this;
+	styleClass(): string;
+	styleClass(name?: string) {
 		if (name === undefined) {
 			return this._styleClass;
 		}
@@ -154,15 +157,15 @@ export class IgeUiElement extends IgeUiEntity {
 	 * @param {*=} value The value to set for the property.
 	 * @return {*}
 	 */
-	style (property: string, value: any): this;
-	style (property: string): any;
-	style (property: string, value?: any) {
+	style(property: string, value: any): this;
+	style(property: string): any;
+	style(property: string, value?: any) {
 		const ui = ige.ui as IgeUiManagerController;
 		const allStyles: Record<string, any> = {};
 
 		const elementStyles = ui.style(this.classId) || {}; // Get styles by element type (e.g. "IgeUiButton")
 		const classStyles = ui.style(this._styleClass) || {}; // Get styles by class name (e.g. ".helpButton")
-		const idStyles = ui.style('#' + this._id) || {}; // Get styles by element id (e.g. "#myHelpButton")
+		const idStyles = ui.style("#" + this._id) || {}; // Get styles by element id (e.g. "#myHelpButton")
 
 		for (const i in elementStyles) {
 			if (elementStyles.hasOwnProperty(i)) {
@@ -187,7 +190,7 @@ export class IgeUiElement extends IgeUiEntity {
 				// Assign property value to our idStyles object and
 				// assign it back to the style management component
 				idStyles[property] = value;
-				ui.style('#' + this._id, idStyles);
+				ui.style("#" + this._id, idStyles);
 				return this;
 			}
 
@@ -197,7 +200,7 @@ export class IgeUiElement extends IgeUiEntity {
 		return allStyles;
 	}
 
-	_updateStyle () {
+	_updateStyle() {
 		// Apply styles in order of class, class:focus, class:hover, class:active,
 		// id, id:focus, id:hover, id:active
 		this._processStyle(this.classId);
@@ -223,7 +226,7 @@ export class IgeUiElement extends IgeUiEntity {
 		}
 	}
 
-	_processStyle (styleName?: string, state?: IgeUiStyleState) {
+	_processStyle(styleName?: string, state?: IgeUiStyleState) {
 		if (!styleName) {
 			return;
 		}
@@ -271,7 +274,7 @@ export class IgeUiElement extends IgeUiEntity {
 	 * contain key/value pairs where the key matches a method name and the value
 	 * is the parameter to pass it.
 	 */
-	applyStyle (styleData?: IgeUiStyleObject) {
+	applyStyle(styleData?: IgeUiStyleObject) {
 		if (styleData === undefined) {
 			return this;
 		}
@@ -301,7 +304,7 @@ export class IgeUiElement extends IgeUiEntity {
 	/**
 	 * Sets global UI focus to this element.
 	 */
-	focus () {
+	focus() {
 		if ((ige.ui as IgeUiManagerController).focus(this)) {
 			// Re-apply styles since the change
 			this._updateStyle();
@@ -314,7 +317,7 @@ export class IgeUiElement extends IgeUiEntity {
 	/**
 	 * The blur method removes global UI focus from this UI element.
 	 */
-	blur () {
+	blur() {
 		if ((ige.ui as IgeUiManagerController).blur(this)) {
 			// Re-apply styles since the change
 			this._updateStyle();
@@ -324,11 +327,11 @@ export class IgeUiElement extends IgeUiEntity {
 		return false;
 	}
 
-	focused () {
+	focused() {
 		return this._focused;
 	}
 
-	value (val?: any) {
+	value(val?: any) {
 		if (val !== undefined) {
 			this._value = val;
 			return this;
@@ -337,14 +340,14 @@ export class IgeUiElement extends IgeUiEntity {
 		return this._value;
 	}
 
-	_mounted () {
+	_mounted() {
 		this._updateStyle();
 	}
 
 	/**
 	 * Destructor
 	 */
-	destroy () {
+	destroy() {
 		(ige.ui as IgeUiManagerController).unRegisterElement(this);
 		return super.destroy();
 	}

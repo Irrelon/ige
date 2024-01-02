@@ -7,4 +7,5 @@
  * one engine instance to operate on at a time.
  */
 import { Ige } from "./core/Ige";
+
 export const ige = new Ige();

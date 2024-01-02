@@ -31,7 +31,7 @@ var ServerNetworkEvents = {
 				.mount(ige.server.foregroundScene);
 
 			// Tell the client to track their player entity
-			ige.components.network.send('playerEntity', ige.server.players[clientId].id(), clientId);
+			ige.components.network.send("playerEntity", ige.server.players[clientId].id(), clientId);
 		}
 	},
 
@@ -68,4 +68,6 @@ var ServerNetworkEvents = {
 	}
 };
 
-if (typeof(module) !== 'undefined' && typeof(module.exports) !== 'undefined') { module.exports = ServerNetworkEvents; }
+if (typeof module !== "undefined" && typeof module.exports !== "undefined") {
+	module.exports = ServerNetworkEvents;
+}

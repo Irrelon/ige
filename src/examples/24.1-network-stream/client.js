@@ -1,5 +1,5 @@
 var Client = IgeClass.extend({
-	classId: 'Client',
+	classId: "Client",
 
 	init: function () {
 		ige.addComponent(IgeEditorComponent);
@@ -25,28 +25,28 @@ var Client = IgeClass.extend({
 				// than before the scene etc are created... maybe you want
 				// a splash screen or a menu first? Then connect after you've
 				// got a username or something?
-				ige.components.network.start('http://localhost:2000', function () {
-					ige.components.network.addComponent(IgeStreamComponent)
+				ige.components.network.start("http://localhost:2000", function () {
+					ige.components.network
+						.addComponent(IgeStreamComponent)
 						.stream.renderLatency(160) // Render the simulation 160 milliseconds in the past
 						// Create a listener that will fire whenever an entity
 						// is created because of the incoming stream data
-						.stream.on('entityCreated', function (entity) {
-							this.log('Stream entity created with ID: ' + entity.id());
-							if (entity._classId === 'Mover') {
+						.stream.on("entityCreated", function (entity) {
+							this.log("Stream entity created with ID: " + entity.id());
+							if (entity._classId === "Mover") {
 								// Track this entity with the camera
 								//self.vp1.camera.trackTranslate(entity, 10);
 							}
 						});
 
 					// Create the scene
-					self.scene1 = new IgeScene2d()
-						.id('scene1');
+					self.scene1 = new IgeScene2d().id("scene1");
 
 					// Create the main viewport and set the scene
 					// it will "look" at as the new scene1 we just
 					// created above
 					self.vp1 = new IgeViewport()
-						.id('vp1')
+						.id("vp1")
 						.autoSize(true)
 						.scene(self.scene1)
 						.drawBounds(true)
@@ -62,4 +62,6 @@ var Client = IgeClass.extend({
 	}
 });
 
-if (typeof(module) !== 'undefined' && typeof(module.exports) !== 'undefined') { module.exports = Client; }
+if (typeof module !== "undefined" && typeof module.exports !== "undefined") {
+	module.exports = Client;
+}

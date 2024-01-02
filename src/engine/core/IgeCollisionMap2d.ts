@@ -6,12 +6,12 @@ export class IgeCollisionMap2d extends IgeEntity {
 	classId = "IgeCollisionMap2d";
 	map: IgeMap2d;
 
-	constructor () {
+	constructor() {
 		super();
 		this.map = new IgeMap2d();
 	}
 
-	mapData (val?: number[][]) {
+	mapData(val?: number[][]) {
 		if (val !== undefined) {
 			this.map.mapData(val);
 			return this;

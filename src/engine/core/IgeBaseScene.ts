@@ -1,8 +1,8 @@
-import {ige} from "../instance";
-import { IgeSceneGraph } from "./IgeSceneGraph";
 import { IgeScene2d } from "./IgeScene2d";
+import { IgeSceneGraph } from "./IgeSceneGraph";
 import { IgeViewport } from "./IgeViewport";
 import { registerClass } from "@/engine/igeClassStore";
+import { ige } from "../instance";
 
 /**
  * When loaded into memory using ige.addGraph('IgeBaseScene') will create
@@ -35,9 +35,9 @@ export class IgeBaseScene extends IgeSceneGraph {
 	};
 
 	/**
-     * The method called when the graph items are to be removed from the
-     * active graph.
-     */
+	 * The method called when the graph items are to be removed from the
+	 * active graph.
+	 */
 	removeGraph = () => {
 		// Destroy the viewport
 		ige.$("vp1")?.destroy();

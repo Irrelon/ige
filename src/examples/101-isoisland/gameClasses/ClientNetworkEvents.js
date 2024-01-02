@@ -8,11 +8,11 @@ var ClientNetworkEvents = {
 	_login: function (data) {
 		if (data.success) {
 			// Our login was successful!
-			ige.client.log('Server accepted our login request...');
+			ige.client.log("Server accepted our login request...");
 			ige.client.startClient();
 			ige.manualRender();
 		} else {
-			ige.client.log('Server rejected our login request!');
+			ige.client.log("Server rejected our login request!");
 		}
 	},
 
@@ -23,7 +23,7 @@ var ClientNetworkEvents = {
 	 * @private
 	 */
 	_getMap: function (data) {
-		ige.client.log('Map data received...');
+		ige.client.log("Map data received...");
 
 		var i, item, entity;
 
@@ -32,12 +32,13 @@ var ClientNetworkEvents = {
 			item = data[i];
 
 			// Create the new building entity
-			entity = ige.client.createTemporaryItem(item.classId)
-				.data('tileX', item.tileX)
-				.data('tileY', item.tileY)
+			entity = ige.client
+				.createTemporaryItem(item.classId)
+				.data("tileX", item.tileX)
+				.data("tileY", item.tileY)
 				.translateToTile(item.tileX + 0.5, item.tileY + 0.5, 0);
 
-			if (item.classId === 'SkyScraper') {
+			if (item.classId === "SkyScraper") {
 				entity.addFloors(item.buildFloors);
 			}
 
@@ -48,8 +49,10 @@ var ClientNetworkEvents = {
 	},
 
 	_placeItem: function (data) {
-		console.log('placeItem', data);
+		console.log("placeItem", data);
 	}
 };
 
-if (typeof(module) !== 'undefined' && typeof(module.exports) !== 'undefined') { module.exports = ClientNetworkEvents; }
+if (typeof module !== "undefined" && typeof module.exports !== "undefined") {
+	module.exports = ClientNetworkEvents;
+}

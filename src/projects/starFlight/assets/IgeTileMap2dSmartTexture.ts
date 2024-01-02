@@ -1,5 +1,5 @@
-import { IgeSmartTexture } from "@/types/IgeSmartTexture";
 import { IgePoint2d } from "@/engine/core/IgePoint2d";
+import { IgeSmartTexture } from "@/types/IgeSmartTexture";
 
 export const IgeTileMap2dSmartTexture: IgeSmartTexture = {
 	render: function (ctx, entity) {
@@ -7,7 +7,8 @@ export const IgeTileMap2dSmartTexture: IgeSmartTexture = {
 			tileHeight = entity._tileHeight,
 			bounds2d = entity.bounds2d(),
 			gridSize = entity._gridSize,
-			x = 0, y = 0;
+			x = 0,
+			y = 0;
 
 		/*ctx.save();
 			 var triggerPoly = entity.tileMapHitPolygon();
@@ -43,8 +44,8 @@ export const IgeTileMap2dSmartTexture: IgeSmartTexture = {
 			y = 0;
 
 			for (index = 0; index <= gridSize.y; index++) {
-				gStart = new IgePoint2d(x, y + (tileHeight * index));
-				gEnd = new IgePoint2d(gridMaxX, y + (tileHeight * index));
+				gStart = new IgePoint2d(x, y + tileHeight * index);
+				gEnd = new IgePoint2d(gridMaxX, y + tileHeight * index);
 
 				if (entity._mountMode === 1) {
 					// Iso grid
@@ -59,8 +60,8 @@ export const IgeTileMap2dSmartTexture: IgeSmartTexture = {
 			}
 
 			for (index = 0; index <= gridSize.x; index++) {
-				gStart = new IgePoint2d(x + (tileWidth * index), y);
-				gEnd = new IgePoint2d(x + (tileWidth * index), gridMaxY);
+				gStart = new IgePoint2d(x + tileWidth * index, y);
+				gEnd = new IgePoint2d(x + tileWidth * index, gridMaxY);
 
 				if (entity._mountMode === 1) {
 					// Iso grid
@@ -87,12 +88,7 @@ export const IgeTileMap2dSmartTexture: IgeSmartTexture = {
 							// TODO: Abstract out the tile drawing method so that it can be overridden for other projections etc
 							if (entity._mountMode === 0) {
 								// 2d
-								ctx.fillRect(
-									tilePoint.x,
-									tilePoint.y,
-									tileWidth,
-									tileHeight
-								);
+								ctx.fillRect(tilePoint.x, tilePoint.y, tileWidth, tileHeight);
 							}
 
 							if (entity._mountMode === 1) {
@@ -115,20 +111,23 @@ export const IgeTileMap2dSmartTexture: IgeSmartTexture = {
 
 		if (entity._highlightTileRect) {
 			ctx.fillStyle = "#e4ff00";
-			for (y = entity._highlightTileRect.y; y < entity._highlightTileRect.y + entity._highlightTileRect.height; y++) {
-				for (x = entity._highlightTileRect.x; x < entity._highlightTileRect.x + entity._highlightTileRect.width; x++) {
+			for (
+				y = entity._highlightTileRect.y;
+				y < entity._highlightTileRect.y + entity._highlightTileRect.height;
+				y++
+			) {
+				for (
+					x = entity._highlightTileRect.x;
+					x < entity._highlightTileRect.x + entity._highlightTileRect.width;
+					x++
+				) {
 					// Tile is occupied
 					tilePoint = new IgePoint2d(tileWidth * x, tileHeight * y);
 
 					// TODO: Abstract out the tile drawing method so that it can be overridden for other projections etc
 					if (entity._mountMode === 0) {
 						// 2d
-						ctx.fillRect(
-							tilePoint.x,
-							tilePoint.y,
-							tileWidth,
-							tileHeight
-						);
+						ctx.fillRect(tilePoint.x, tilePoint.y, tileWidth, tileHeight);
 					}
 
 					if (entity._mountMode === 1) {
@@ -160,20 +159,12 @@ export const IgeTileMap2dSmartTexture: IgeSmartTexture = {
 				ctx.fillStyle = entity._hoverColor || "#6000ff";
 				if (entity._mountMode === 0) {
 					// 2d
-					ctx.fillRect(
-						(mouseTile.x * tileWidth),
-						(mouseTile.y * tileHeight),
-						tileWidth,
-						tileHeight
-					);
+					ctx.fillRect(mouseTile.x * tileWidth, mouseTile.y * tileHeight, tileWidth, tileHeight);
 				}
 
 				if (entity._mountMode === 1) {
 					// iso
-					tilePoint = mouseTile
-						.clone()
-						.thisMultiply(tileWidth, tileHeight, 0)
-						.thisToIso();
+					tilePoint = mouseTile.clone().thisMultiply(tileWidth, tileHeight, 0).thisToIso();
 
 					tilePoint.y += tileHeight / 2;
 
@@ -190,7 +181,12 @@ export const IgeTileMap2dSmartTexture: IgeSmartTexture = {
 					text = "Tile X: " + mouseTile.x + " Y: " + mouseTile.y;
 					textMeasurement = ctx.measureText(text);
 					ctx.fillStyle = "rgba(0, 0, 0, 0.8)";
-					ctx.fillRect(Math.floor(mousePos.x - textMeasurement.width / 2 - 5), Math.floor(mousePos.y - 40), Math.floor(textMeasurement.width + 10), 14);
+					ctx.fillRect(
+						Math.floor(mousePos.x - textMeasurement.width / 2 - 5),
+						Math.floor(mousePos.y - 40),
+						Math.floor(textMeasurement.width + 10),
+						14
+					);
 					ctx.fillStyle = "#ffffff";
 					ctx.fillText(text, Math.floor(mousePos.x - textMeasurement.width / 2), Math.floor(mousePos.y - 30));
 				}

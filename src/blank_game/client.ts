@@ -1,16 +1,16 @@
 import { IgeBaseClass } from "@/engine/core/IgeBaseClass";
-import { ige } from "@/engine/instance";
 import { IgeBaseScene } from "@/engine/core/IgeBaseScene";
+import { ige } from "@/engine/instance";
 
 export class Client extends IgeBaseClass {
 	classId = "Client";
 
-	constructor () {
+	constructor() {
 		super();
 		void this.init();
 	}
 
-	async init () {
+	async init() {
 		// Load a game texture here
 		//new IgeTexture("someImageName", './assets/somePathToImage.png');
 

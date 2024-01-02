@@ -1,5 +1,5 @@
 import { IgeEventingClass } from "./IgeEventingClass";
-import {Ige} from "@/engine/core/Ige";
+import { Ige } from "@/engine/core/Ige";
 
 enum ListType {
 	"closed",
@@ -23,15 +23,15 @@ export class IgeGenericPathFinder extends IgeEventingClass {
 	_neighbourLimit: number = 1000;
 
 	/**
-     * Gets / sets the limit on the number of neighbour nodes
-     * that the pathfinder will analyse before reaching its
-     * target tile. On large maps this limit should be increased
-     * to allow pathing where many neighbours need to be
-     * considered.
-     * @param val
-     * @return {*}
-     */
-	neighbourLimit (val?: number) {
+	 * Gets / sets the limit on the number of neighbour nodes
+	 * that the pathfinder will analyse before reaching its
+	 * target tile. On large maps this limit should be increased
+	 * to allow pathing where many neighbours need to be
+	 * considered.
+	 * @param val
+	 * @return {*}
+	 */
+	neighbourLimit(val?: number) {
 		if (val !== undefined) {
 			this._neighbourLimit = val;
 			return this;
@@ -40,26 +40,40 @@ export class IgeGenericPathFinder extends IgeEventingClass {
 		return this._neighbourLimit;
 	}
 
-	isTraversalAllowed (newX: number, newY: number, currentNode?: IgeGenericPathFinderNode | null, x?: number | null, y?: number | null, dynamic?: boolean): boolean {
+	isTraversalAllowed(
+		newX: number,
+		newY: number,
+		currentNode?: IgeGenericPathFinderNode | null,
+		x?: number | null,
+		y?: number | null,
+		dynamic?: boolean
+	): boolean {
 		return true;
 	}
 
-	getConnections (currentNode: IgeGenericPathFinderNode, targetNode: IgeGenericPathFinderNode): IgeGenericPathFinderNode[] {
+	getConnections(
+		currentNode: IgeGenericPathFinderNode,
+		targetNode: IgeGenericPathFinderNode
+	): IgeGenericPathFinderNode[] {
 		return [];
 	}
 
 	/**
-     * Uses the A* algorithm to generate path data between two points.
-     * @param {IgeCollisionMap2d} tileMap The tile map to use when generating the path.
-     * @param {IgePoint3d} startPoint The point on the map to start path-finding from.
-     * @param {IgePoint3d} endPoint The point on the map to try to path-find to.
-     * @param {Function} isTraversalAllowed The callback function that will decide if each tile that is being considered for use in the path is allowed or not based on the tile map's data stored for that tile which is passed to this method as the first parameter. Must return a boolean value.
-     * @param {boolean} allowSquare Whether to allow neighboring tiles along a square axis. Defaults to true if undefined.
-     * @param {Boolean} allowDiagonal Whether to allow neighboring tiles along a diagonal axis. Defaults to false if undefined.
-     * @param {Boolean=} allowInvalidDestination If the pathfinder cannot path to the destination tile, if this is true the closest path will be returned instead.
-     * @return {Array} An array of objects each containing an x, y co-ordinate that describes the path from the starting point to the end point in order.
-     */
-	generate (startPoint: IgeGenericPathFinderNode, endPoint: IgeGenericPathFinderNode, allowInvalidDestination: boolean = false) {
+	 * Uses the A* algorithm to generate path data between two points.
+	 * @param {IgeCollisionMap2d} tileMap The tile map to use when generating the path.
+	 * @param {IgePoint3d} startPoint The point on the map to start path-finding from.
+	 * @param {IgePoint3d} endPoint The point on the map to try to path-find to.
+	 * @param {Function} isTraversalAllowed The callback function that will decide if each tile that is being considered for use in the path is allowed or not based on the tile map's data stored for that tile which is passed to this method as the first parameter. Must return a boolean value.
+	 * @param {boolean} allowSquare Whether to allow neighboring tiles along a square axis. Defaults to true if undefined.
+	 * @param {Boolean} allowDiagonal Whether to allow neighboring tiles along a diagonal axis. Defaults to false if undefined.
+	 * @param {Boolean=} allowInvalidDestination If the pathfinder cannot path to the destination tile, if this is true the closest path will be returned instead.
+	 * @return {Array} An array of objects each containing an x, y co-ordinate that describes the path from the starting point to the end point in order.
+	 */
+	generate(
+		startPoint: IgeGenericPathFinderNode,
+		endPoint: IgeGenericPathFinderNode,
+		allowInvalidDestination: boolean = false
+	) {
 		const openList: IgeGenericPathFinderNode[] = [];
 		const closedList: IgeGenericPathFinderNode[] = [];
 		const nodeById: Record<string, IgeGenericPathFinderNode> = {};
@@ -169,7 +183,6 @@ export class IgeGenericPathFinder extends IgeEventingClass {
 					}
 				}
 			}
-
 		}
 
 		if (!allowInvalidDestination || (allowInvalidDestination && !lowestCostNode)) {
@@ -198,17 +211,17 @@ export class IgeGenericPathFinder extends IgeEventingClass {
 	}
 
 	/**
-     * The heuristic to calculate the rough cost of pathing from the
-     * x1, y1 to x2, y2.
-     * @param {number} x1 The first x co-ordinate.
-     * @param {number} y1 The first y co-ordinate.
-     * @param {number} x2 The second x co-ordinate.
-     * @param {number} y2 The second y co-ordinate.
-     * @param {number} moveCost The cost multiplier to multiply by.
-     * @return {number} Returns the heuristic cost between the co-ordinates specified.
-     * @private
-     */
-	cost (x1: number, y1: number, x2: number, y2: number, moveCost: number = 1) {
+	 * The heuristic to calculate the rough cost of pathing from the
+	 * x1, y1 to x2, y2.
+	 * @param {number} x1 The first x co-ordinate.
+	 * @param {number} y1 The first y co-ordinate.
+	 * @param {number} x2 The second x co-ordinate.
+	 * @param {number} y2 The second y co-ordinate.
+	 * @param {number} moveCost The cost multiplier to multiply by.
+	 * @return {number} Returns the heuristic cost between the co-ordinates specified.
+	 * @private
+	 */
+	cost(x1: number, y1: number, x2: number, y2: number, moveCost: number = 1) {
 		return moveCost * (Math.abs(x1 - x2) + Math.abs(y1 - y2));
 	}
 }

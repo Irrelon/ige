@@ -1,16 +1,12 @@
 var Server = IgeClass.extend({
-	classId: 'Server',
+	classId: "Server",
 	Server: true,
 
 	init: function (options) {
 		var self = this;
 
 		// Add physics and setup physics world
-		ige.addComponent(IgeBox2dComponent)
-			.box2d.sleep(true)
-			.box2d.gravity(0, 0)
-			.box2d.createWorld()
-			.box2d.start();
+		ige.addComponent(IgeBox2dComponent).box2d.sleep(true).box2d.gravity(0, 0).box2d.createWorld().box2d.start();
 
 		// Add the server-side game methods / event handlers
 		this.implement(ServerNetworkEvents);
@@ -24,7 +20,8 @@ var Server = IgeClass.extend({
 					// Check if the engine started successfully
 					if (success) {
 						// Add the network stream component
-						ige.components.network.addComponent(IgeStreamComponent)
+						ige.components.network
+							.addComponent(IgeStreamComponent)
 							.stream.sendInterval(120) // Send a stream update once every 30 milliseconds
 							.stream.start(); // Start the stream
 
@@ -33,20 +30,20 @@ var Server = IgeClass.extend({
 
 						// Create the scene
 						self.mainScene = new IgeScene2d()
-							.id('mainScene')
+							.id("mainScene")
 							.translateTo(0, 0, 0)
 							.drawBounds(false)
 							.drawBoundsData(false);
 
 						self.backScene = new IgeScene2d()
-							.id('backScene')
+							.id("backScene")
 							.depth(0)
 							.drawBounds(false)
 							.drawBoundsData(false)
 							.mount(self.mainScene);
 
 						self.objectLayer = new IgeTileMap2d()
-							.id('objectLayer')
+							.id("objectLayer")
 							.depth(1)
 							.isometricMounts(true)
 							.drawBounds(false)
@@ -57,7 +54,7 @@ var Server = IgeClass.extend({
 
 						// Create the main viewport
 						self.vp1 = new IgeViewport()
-							.id('vp1')
+							.id("vp1")
 							.depth(1)
 							.autoSize(true)
 							.scene(self.mainScene)
@@ -66,9 +63,12 @@ var Server = IgeClass.extend({
 							.mount(ige);
 
 						// Load the Tiled map data and handle the return data
-						ige.addComponent(IgeTiledComponent)
-							.tiled.loadJson(tiledExample1, function (layerArray, layersById) {
-								var i, destTileX = - 1, destTileY = -1,
+						ige.addComponent(IgeTiledComponent).tiled.loadJson(
+							tiledExample1,
+							function (layerArray, layersById) {
+								var i,
+									destTileX = -1,
+									destTileY = -1,
 									tileChecker = function (tileData, tileX, tileY) {
 										// If the map tile data is set, don't path along it
 										return !tileData;
@@ -78,8 +78,7 @@ var Server = IgeClass.extend({
 								ige.box2d.staticsFromMap(layersById.DirtLayer);
 
 								// Create a path-finder
-								self.pathFinder = new IgePathFinder()
-									.neighbourLimit(1000); // Set a high limit because we are using a large map
+								self.pathFinder = new IgePathFinder().neighbourLimit(1000); // Set a high limit because we are using a large map
 
 								// Create a bunch of AI characters that will walk around the screen
 								// using the path finder to find their way around. When they complete
@@ -87,13 +86,18 @@ var Server = IgeClass.extend({
 								// All the AI character code is in the gameClasses/CharacterAi.js
 								for (i = 0; i < 20; i++) {
 									// Pick a random tile for the entity to start on
-									while (destTileX < 0 || destTileY < 0 || !layersById.DirtLayer.map._mapData[destTileY] || !tileChecker(layersById.DirtLayer.map._mapData[destTileY][destTileX])) {
-										destTileX = Math.random() * 20 | 0;
-										destTileY = Math.random() * 20 | 0;
+									while (
+										destTileX < 0 ||
+										destTileY < 0 ||
+										!layersById.DirtLayer.map._mapData[destTileY] ||
+										!tileChecker(layersById.DirtLayer.map._mapData[destTileY][destTileX])
+									) {
+										destTileX = (Math.random() * 20) | 0;
+										destTileY = (Math.random() * 20) | 0;
 									}
 
 									new CharacterAi(layersById.DirtLayer, self.pathFinder)
-										.id('aiEntity_' + i)
+										.id("aiEntity_" + i)
 										.drawBounds(false)
 										.drawBoundsData(false)
 										.isometric(true) // Set to use isometric movement
@@ -104,11 +108,14 @@ var Server = IgeClass.extend({
 									destTileX = -1;
 									destTileY = -1;
 								}
-							});
+							}
+						);
 					}
 				});
 			});
 	}
 });
 
-if (typeof(module) !== 'undefined' && typeof(module.exports) !== 'undefined') { module.exports = Server; }
+if (typeof module !== "undefined" && typeof module.exports !== "undefined") {
+	module.exports = Server;
+}

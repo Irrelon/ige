@@ -1,17 +1,17 @@
 import { GameEntity } from "./GameEntity";
+import { isServer } from "@/engine/clientServer";
+import { IgeParticleEmitter } from "@/engine/core/IgeParticleEmitter";
+import { IgeTileMap2d } from "@/engine/core/IgeTileMap2d";
+import { IgeTimeout } from "@/engine/core/IgeTimeout";
 import { registerClass } from "@/engine/igeClassStore";
-import { Resource } from "../Resource";
+import { ige } from "@/engine/instance";
+import { ThreadSafeQueue } from "../../services/ThreadSafeQueue";
 import { ResourceType } from "../../enums/ResourceType";
 import { BuildingResourceRequirement } from "../../types/BuildingResourceRequirement";
-import { IgeCanvasRenderingContext2d } from "@/types/IgeCanvasRenderingContext2d";
-import { isServer } from "@/engine/clientServer";
-import { IgeTimeout } from "@/engine/core/IgeTimeout";
-import { ige } from "@/engine/instance";
 import { FlagBuilding } from "../FlagBuilding";
-import { IgeTileMap2d } from "@/engine/core/IgeTileMap2d";
-import { ThreadSafeQueue } from "../../services/ThreadSafeQueue";
-import { IgeParticleEmitter } from "@/engine/core/IgeParticleEmitter";
+import { Resource } from "../Resource";
 import { UiRequiresProducesDisplay } from "../UiRequiresProducesDisplay";
+import { IgeCanvasRenderingContext2d } from "@/types/IgeCanvasRenderingContext2d";
 
 export class Building extends GameEntity {
 	flag?: FlagBuilding;
@@ -33,7 +33,7 @@ export class Building extends GameEntity {
 	productionEffects: IgeParticleEmitter[] = [];
 	uiResourceDisplay?: UiRequiresProducesDisplay;
 
-	constructor () {
+	constructor() {
 		super();
 
 		this._produces = ResourceType.none;
@@ -45,23 +45,27 @@ export class Building extends GameEntity {
 
 		if (this.isometric()) {
 			this.bounds3d(30, 30, 0);
-			this.triggerPolygonFunctionName('bounds3dPolygon');
+			this.triggerPolygonFunctionName("bounds3dPolygon");
 		}
 
 		this.category("building");
 	}
 
-	_addResource (recordObj: Partial<Record<ResourceType, number>>, resourceType: ResourceType, amount: number = 1) {
+	_addResource(recordObj: Partial<Record<ResourceType, number>>, resourceType: ResourceType, amount: number = 1) {
 		const currentVal = recordObj[resourceType] || 0;
 		recordObj[resourceType] = currentVal + amount;
 	}
 
-	_subtractResource (recordObj: Partial<Record<ResourceType, number>>, resourceType: ResourceType, amount: number = 1) {
+	_subtractResource(
+		recordObj: Partial<Record<ResourceType, number>>,
+		resourceType: ResourceType,
+		amount: number = 1
+	) {
 		const currentVal = recordObj[resourceType] || 0;
 		recordObj[resourceType] = currentVal - amount;
 	}
 
-	productionMinTime (val?: number) {
+	productionMinTime(val?: number) {
 		if (val === undefined) {
 			return this._productionMinTimeMs;
 		}
@@ -70,7 +74,7 @@ export class Building extends GameEntity {
 		return this;
 	}
 
-	productionMaxTime (val?: number) {
+	productionMaxTime(val?: number) {
 		if (val === undefined) {
 			return this._productionMaxTimeMs;
 		}
@@ -79,11 +83,11 @@ export class Building extends GameEntity {
 		return this;
 	}
 
-	onResourceEnRoute (resourceType: ResourceType) {
+	onResourceEnRoute(resourceType: ResourceType) {
 		this._addResource(this.inboundQueue, resourceType, 1);
 	}
 
-	onResourceArrived (resourceType: ResourceType) {
+	onResourceArrived(resourceType: ResourceType) {
 		this._subtractResource(this.inboundQueue, resourceType, 1);
 		this._addResource(this.resourcePool, resourceType, 1);
 	}
@@ -92,7 +96,7 @@ export class Building extends GameEntity {
 	 * Returns true if the resource type is required at the moment.
 	 * @param resourceType
 	 */
-	needsResource (resourceType: ResourceType): boolean {
+	needsResource(resourceType: ResourceType): boolean {
 		if (!this._requires.length) return false;
 
 		// Check if this resource is one we accept in this building
@@ -107,19 +111,19 @@ export class Building extends GameEntity {
 		return false;
 	}
 
-	countInboundResourcesByType (type: ResourceType): number {
+	countInboundResourcesByType(type: ResourceType): number {
 		return this.inboundQueue[type] || 0;
 	}
 
-	countAvailableResourcesByType (type: ResourceType): number {
+	countAvailableResourcesByType(type: ResourceType): number {
 		return this.resourcePool[type] || 0;
 	}
 
-	countAllResourcesByType (type: ResourceType): number {
+	countAllResourcesByType(type: ResourceType): number {
 		return this.countInboundResourcesByType(type) + this.countAvailableResourcesByType(type);
 	}
 
-	canProduceResource (): boolean {
+	canProduceResource(): boolean {
 		// Check if this building produces anything
 		if (this._produces === ResourceType.none) return false;
 
@@ -140,7 +144,7 @@ export class Building extends GameEntity {
 		return true;
 	}
 
-	startProducingResource () {
+	startProducingResource() {
 		// The building can produce
 		this._isProducing = true;
 
@@ -152,7 +156,7 @@ export class Building extends GameEntity {
 		}, productionTime);
 	}
 
-	completeProducingResource () {
+	completeProducingResource() {
 		// Subtract the required resources from the resource pool since we
 		// consumed them to generate our product
 		for (let i = 0; i < this._requires.length; i++) {
@@ -168,13 +172,13 @@ export class Building extends GameEntity {
 		this._isProducing = false;
 	}
 
-	_updateOnServer () {
+	_updateOnServer() {
 		// Check if this building can produce the resource it makes
 		if (!this.canProduceResource()) return;
 		this.startProducingResource();
 	}
 
-	update (ctx: IgeCanvasRenderingContext2d, tickDelta: number) {
+	update(ctx: IgeCanvasRenderingContext2d, tickDelta: number) {
 		if (isServer) {
 			this._updateOnServer();
 		}
@@ -183,7 +187,12 @@ export class Building extends GameEntity {
 		this.outboundQueue.update();
 	}
 
-	streamSectionData (sectionId: string, data?: string, bypassTimeStream: boolean = false, bypassChangeDetection: boolean = false): string | undefined {
+	streamSectionData(
+		sectionId: string,
+		data?: string,
+		bypassTimeStream: boolean = false,
+		bypassChangeDetection: boolean = false
+	): string | undefined {
 		if (sectionId === "isProducing") {
 			if (data === undefined) {
 				return this._isProducing ? "1" : "0";
@@ -196,7 +205,7 @@ export class Building extends GameEntity {
 		return super.streamSectionData(sectionId, data, bypassTimeStream, bypassChangeDetection);
 	}
 
-	updateProductionEffects () {
+	updateProductionEffects() {
 		if (this.productionEffects.length) {
 			if (this._isProducing) {
 				this.productionEffects.forEach((effect) => {

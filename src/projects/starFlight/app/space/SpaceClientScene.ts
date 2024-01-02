@@ -1,21 +1,21 @@
-import { ige } from "@/engine/instance";
-import { IgeSceneGraph } from "@/engine/core/IgeSceneGraph";
-import { IgeUiProgressBar } from "@/engine/ui/IgeUiProgressBar";
-import { IgeUiLabel } from "@/engine/ui/IgeUiLabel";
-import { IgeUiEntity } from "@/engine/core/IgeUiEntity";
+import { IgeAudioController } from "@/engine/audio/index";
 import { IgeEntity } from "@/engine/core/IgeEntity";
 import { IgeScene2d } from "@/engine/core/IgeScene2d";
-import { InfoWindow } from "../component/ui/InfoWindow";
-import { IgeAudioController } from "@/engine/audio/index";
+import { IgeSceneGraph } from "@/engine/core/IgeSceneGraph";
+import { IgeUiEntity } from "@/engine/core/IgeUiEntity";
 import { IgeViewport } from "@/engine/core/IgeViewport";
+import { ige } from "@/engine/instance";
 import { IgeNetIoClientController } from "@/engine/network/client/IgeNetIoClientController";
-import { EntityModuleDefinition } from "../../types/EntityModuleDefinition";
-import { EntityAbilityModuleDefinition } from "../../types/EntityAbilityModuleDefinition";
-import { GameEntity } from "../component/GameEntity";
+import { IgeUiLabel } from "@/engine/ui/IgeUiLabel";
+import { IgeUiProgressBar } from "@/engine/ui/IgeUiProgressBar";
 import { IgeVelocityComponent } from "@/engine/components/IgeVelocityComponent";
+import { EntityAbilityModuleDefinition } from "../../types/EntityAbilityModuleDefinition";
+import { EntityModuleDefinition } from "../../types/EntityModuleDefinition";
+import { GameEntity } from "../component/GameEntity";
+import { InfoWindow } from "../component/ui/InfoWindow";
 
 export interface ClientPublicGameData {
-	modules: Record<string, EntityModuleDefinition | EntityAbilityModuleDefinition>
+	modules: Record<string, EntityModuleDefinition | EntityAbilityModuleDefinition>;
 }
 
 export class SpaceClientScene extends IgeSceneGraph {
@@ -24,30 +24,30 @@ export class SpaceClientScene extends IgeSceneGraph {
 		modules: {}
 	};
 
-	constructor () {
+	constructor() {
 		super();
 
 		// Show the connecting dialog
-		const connectingDialog = document.getElementById('connectingDialog');
+		const connectingDialog = document.getElementById("connectingDialog");
 		if (connectingDialog) {
-			connectingDialog.style.display = 'block';
+			connectingDialog.style.display = "block";
 		}
 	}
 
-	async addGraph () {
+	async addGraph() {
 		const network = ige.network as IgeNetIoClientController;
 
 		// Hook network events we want to respond to
-		network.define('playerEntity', this._onPlayerEntity.bind(this));
+		network.define("playerEntity", this._onPlayerEntity.bind(this));
 
 		// Start the network client
-		await network.start('http://' + window.location.hostname + ':2000');
+		await network.start("http://" + window.location.hostname + ":2000");
 
 		// Set up the network stream handler
 		network.renderLatency(80); // Render the simulation 80 milliseconds in the past
 
 		// Ask server for game data
-		network.send('publicGameData', null, (data) => {
+		network.send("publicGameData", null, (data) => {
 			if (!data) {
 				network.stop();
 				console.log("Game error, publicGameData not returned");
@@ -57,7 +57,7 @@ export class SpaceClientScene extends IgeSceneGraph {
 			this.publicGameData = data;
 
 			// Ask the server to create an entity for us
-			network.send('playerEntity');
+			network.send("playerEntity");
 		});
 
 		const vp1 = ige.$("vp1") as IgeViewport;
@@ -70,30 +70,15 @@ export class SpaceClientScene extends IgeSceneGraph {
 
 		const mainScene = ige.$("mainScene") as IgeScene2d;
 
-		const sceneBase = new IgeScene2d()
-			.id("sceneBase")
-			.mount(mainScene);
+		const sceneBase = new IgeScene2d().id("sceneBase").mount(mainScene);
 
-		const backScene = new IgeScene2d()
-			.id("backScene")
-			.layer(0)
-			.mount(sceneBase);
+		const backScene = new IgeScene2d().id("backScene").layer(0).mount(sceneBase);
 
-		const middleScene = new IgeScene2d()
-			.id("middleScene")
-			.layer(1)
-			.mount(sceneBase);
+		const middleScene = new IgeScene2d().id("middleScene").layer(1).mount(sceneBase);
 
-		const frontScene = new IgeScene2d()
-			.id("frontScene")
-			.layer(2)
-			.mount(sceneBase);
+		const frontScene = new IgeScene2d().id("frontScene").layer(2).mount(sceneBase);
 
-		const uiScene = new IgeScene2d()
-			.id("uiScene")
-			.layer(3)
-			.ignoreCamera(true)
-			.mount(sceneBase);
+		const uiScene = new IgeScene2d().id("uiScene").layer(3).ignoreCamera(true).mount(sceneBase);
 
 		const stateBar: Record<string, any> = {};
 		stateBar.fuel = new IgeUiProgressBar()
@@ -248,7 +233,7 @@ export class SpaceClientScene extends IgeSceneGraph {
 		audio.register("actionComplete", "assets/audio/actionComplete.wav");
 	}
 
-	removeGraph () {
+	removeGraph() {
 		const sceneBase = ige.$("sceneBase");
 		sceneBase?.destroy();
 	}
@@ -260,7 +245,7 @@ export class SpaceClientScene extends IgeSceneGraph {
 	 * @param {String} entityId The id of our player entity.
 	 * @private
 	 */
-	_onPlayerEntity (entityId: string) {
+	_onPlayerEntity(entityId: string) {
 		const ent = ige.$(entityId) as GameEntity;
 
 		if (ent) {
@@ -280,11 +265,11 @@ export class SpaceClientScene extends IgeSceneGraph {
 
 				// Turn off the listener for this event now that we
 				// have found and started tracking our player entity
-				network.off('entityCreated', listener);
+				network.off("entityCreated", listener);
 			}
 		};
 
-		network.on('entityCreated', listener);
+		network.on("entityCreated", listener);
 	}
 
 	/**
@@ -292,7 +277,7 @@ export class SpaceClientScene extends IgeSceneGraph {
 	 * @param {IgeEntity} ent Our player entity to track.
 	 * @private
 	 */
-	_trackPlayerEntity (ent: GameEntity) {
+	_trackPlayerEntity(ent: GameEntity) {
 		// Store the player entity reference
 		ige.app.playerEntity = ent;
 
@@ -303,9 +288,9 @@ export class SpaceClientScene extends IgeSceneGraph {
 		}
 
 		// Hide connection dialog now that the player can do something
-		const connectingDialog = document.getElementById('connectingDialog');
+		const connectingDialog = document.getElementById("connectingDialog");
 		if (connectingDialog) {
-			connectingDialog.style.display = 'none';
+			connectingDialog.style.display = "none";
 		}
 	}
 }

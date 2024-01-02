@@ -5,16 +5,14 @@ import { ige } from "@/engine/instance";
 export class IgeUiTimeStream extends IgeUiElement {
 	classId = "IgeUiTimeStream";
 
-	monitor (entity) {
+	monitor(entity) {
 		this._entity = entity;
 	}
 
-	tick (ctx) {
+	tick(ctx) {
 		// Draw timeline
 		const renderTime = ige.engine._tickStart - (ige.network as IgeNetIoClientComponent)._renderLatency;
-		let i, text, xAdjust,
-			arr, arrCount, arrItem,
-			deltaTime;
+		let i, text, xAdjust, arr, arrCount, arrItem, deltaTime;
 
 		super.tick(ctx);
 
@@ -28,24 +26,24 @@ export class IgeUiTimeStream extends IgeUiElement {
 
 		for (i = 0; i < 9; i++) {
 			ctx.beginPath();
-			if (((i - 2) * 10) === 0) {
+			if ((i - 2) * 10 === 0) {
 				// This is the render point, change colour for this one
 				ctx.strokeStyle = "#ff6600";
 			} else {
 				ctx.strokeStyle = "#ffffff";
 			}
-			ctx.moveTo(-200.5 + (i * 50), -30);
-			ctx.lineTo(-200.5 + (i * 50), 30);
+			ctx.moveTo(-200.5 + i * 50, -30);
+			ctx.lineTo(-200.5 + i * 50, 30);
 			ctx.stroke();
 
-			text = -ige.network.stream._renderLatency + ((i - 2) * 10) + "ms";
+			text = -ige.network.stream._renderLatency + (i - 2) * 10 + "ms";
 			xAdjust = ctx.measureText(text);
-			ctx.strokeText(text, -200 + (i * 50) - (xAdjust.width / 2), -38);
+			ctx.strokeText(text, -200 + i * 50 - xAdjust.width / 2, -38);
 
-			if (((i - 2) * 10) === 0) {
+			if ((i - 2) * 10 === 0) {
 				text = "Render Point";
 				xAdjust = ctx.measureText(text);
-				ctx.strokeText(text, -200 + (i * 50) - (xAdjust.width / 2), -52);
+				ctx.strokeText(text, -200 + i * 50 - xAdjust.width / 2, -52);
 			}
 		}
 
@@ -61,7 +59,7 @@ export class IgeUiTimeStream extends IgeUiElement {
 
 					deltaTime = arrItem[0] - renderTime;
 
-					ctx.strokeRect(-105 + ((deltaTime / 10) * 50), -5, 10, 10);
+					ctx.strokeRect(-105 + (deltaTime / 10) * 50, -5, 10, 10);
 				}
 			}
 

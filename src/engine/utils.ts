@@ -201,14 +201,19 @@ export const newIdHex = () => {
  * that if returns true, will fire debugger. Method is passed
  * the setter value as first argument.
  */
-export const traceSet = (obj: any, propName: string, sampleCount: number, callbackEvaluator?: (val: any) => boolean) => {
+export const traceSet = (
+	obj: any,
+	propName: string,
+	sampleCount: number,
+	callbackEvaluator?: (val: any) => boolean
+) => {
 	obj.___igeTraceCurrentVal = obj.___igeTraceCurrentVal || {};
 	obj.___igeTraceCurrentVal[propName] = obj[propName];
 	obj.___igeTraceMax = sampleCount || 1;
 	obj.___igeTraceCount = 0;
 
 	Object.defineProperty(obj, propName, {
-		get () {
+		get() {
 			return obj.___igeTraceCurrentVal[propName];
 		},
 		set: (val) => {
@@ -241,7 +246,7 @@ export const traceSet = (obj: any, propName: string, sampleCount: number, callba
  */
 export const traceSetOff = (obj: any, propName: string) => {
 	Object.defineProperty(obj, propName, {
-		set (val) {
+		set(val) {
 			this.___igeTraceCurrentVal[propName] = val;
 		}
 	});

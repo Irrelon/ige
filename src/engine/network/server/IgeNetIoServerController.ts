@@ -1,16 +1,6 @@
-import { ige } from "../../instance";
-import { arrPull, newIdHex } from "../../utils";
-import { IgeNetIoBaseController } from "../IgeNetIoBaseController";
-import {
-	IgeNetworkMessageData,
-	IgeNetworkMessageStructure,
-	IgeNetworkRequestMessageStructure,
-	IgeNetworkServerSideMessageHandler,
-	IgeNetworkServerSideRequestHandler,
-	IgeNetworkServerSideResponseData,
-	IgeNetworkTimeSyncRequestFromServer
-} from "@/types/IgeNetworkMessage";
 import { IgeNetIoServer } from "./IgeNetIoServer";
+import type { IgeNetIoSocket } from "./IgeNetIoSocket";
+import { IgeEventReturnFlag } from "@/enums/IgeEventReturnFlag";
 import {
 	IGE_NETWORK_REQUEST,
 	IGE_NETWORK_RESPONSE,
@@ -20,12 +10,25 @@ import {
 	IGE_NETWORK_STREAM_TIME,
 	IGE_NETWORK_TIME_SYNC
 } from "@/enums/IgeNetworkConstants";
-import { IgeNetIoSocket } from "./IgeNetIoSocket";
-import { IgeEventReturnFlag } from "@/enums/IgeEventReturnFlag";
+import { ige } from "../../instance";
+import { arrPull, newIdHex } from "../../utils";
+import { IgeNetIoBaseController } from "../IgeNetIoBaseController";
+import type {
+	IgeNetworkMessageData,
+	IgeNetworkMessageStructure,
+	IgeNetworkRequestMessageStructure,
+	IgeNetworkServerSideMessageHandler,
+	IgeNetworkServerSideRequestHandler,
+	IgeNetworkServerSideResponseData,
+	IgeNetworkTimeSyncRequestFromServer
+} from "@/types/IgeNetworkMessage";
 
 export class IgeNetIoServerController extends IgeNetIoBaseController {
 	_idCounter: number = 0;
-	_networkCommands: Record<string, IgeNetworkServerSideMessageHandler | IgeNetworkServerSideRequestHandler | undefined> = {}; // Maps a command name to a command handler function
+	_networkCommands: Record<
+		string,
+		IgeNetworkServerSideMessageHandler | IgeNetworkServerSideRequestHandler | undefined
+	> = {}; // Maps a command name to a command handler function
 	_requests: Record<string, IgeNetworkRequestMessageStructure<IgeNetworkServerSideRequestHandler>> = {};
 	_socketById: Record<string, IgeNetIoSocket> = {};
 	_port: number = 8000;
@@ -59,7 +62,7 @@ export class IgeNetIoServerController extends IgeNetIoBaseController {
 			this._socketById = {};
 			this._socketsByRoomId = {};
 
-			if (typeof (port) !== "undefined") {
+			if (typeof port !== "undefined") {
 				this._port = port;
 			}
 
@@ -303,7 +306,7 @@ export class IgeNetIoServerController extends IgeNetIoBaseController {
 	 * @return {*}
 	 */
 	acceptConnections (val?: boolean) {
-		if (typeof (val) === "undefined") {
+		if (typeof val === "undefined") {
 			return this._acceptConnections;
 		}
 
@@ -326,7 +329,12 @@ export class IgeNetIoServerController extends IgeNetIoBaseController {
 	 * an array of socket ids to send to.
 	 * @param callback
 	 */
-	send<DataType = IgeNetworkMessageData> (commandName: string, data: DataType, clientIdOrArrayOfIds?: string | string[], callback?: IgeNetworkServerSideMessageHandler | IgeNetworkServerSideRequestHandler) {
+	send<DataType = IgeNetworkMessageData> (
+		commandName: string,
+		data: DataType,
+		clientIdOrArrayOfIds?: string | string[],
+		callback?: IgeNetworkServerSideMessageHandler | IgeNetworkServerSideRequestHandler
+	) {
 		if (callback) {
 			if (!clientIdOrArrayOfIds) {
 				this.log("Attempted to send a request command without specifying the recipient clientId!", "error");
@@ -345,7 +353,10 @@ export class IgeNetIoServerController extends IgeNetIoBaseController {
 			return this;
 		}
 
-		this.log(`Cannot send network packet with command "${commandName}" because the command has not been defined!`, "error");
+		this.log(
+			`Cannot send network packet with command "${commandName}" because the command has not been defined!`,
+			"error"
+		);
 		return this;
 	}
 
@@ -360,7 +371,12 @@ export class IgeNetIoServerController extends IgeNetIoBaseController {
 	 * @param clientIdOrArrayOfIds
 	 * @param {Function} callback
 	 */
-	request<DataType extends IgeNetworkMessageData = IgeNetworkMessageData> (cmd: string, data: DataType, clientIdOrArrayOfIds: string | string[], callback: IgeNetworkServerSideRequestHandler) {
+	request<DataType extends IgeNetworkMessageData = IgeNetworkMessageData> (
+		cmd: string,
+		data: DataType,
+		clientIdOrArrayOfIds: string | string[],
+		callback: IgeNetworkServerSideRequestHandler
+	) {
 		// Build the request object
 		const req: IgeNetworkRequestMessageStructure<IgeNetworkServerSideRequestHandler> = {
 			id: newIdHex(),
@@ -519,7 +535,7 @@ export class IgeNetIoServerController extends IgeNetIoBaseController {
 	 */
 	sendInterval (ms?: number) {
 		if (ms !== undefined) {
-			this.log("Setting delta stream interval to " + (ms / ige.engine._timeScale) + "ms");
+			this.log("Setting delta stream interval to " + ms / ige.engine._timeScale + "ms");
 			this._streamInterval = ms / ige.engine._timeScale;
 			return this;
 		}
@@ -557,7 +573,7 @@ export class IgeNetIoServerController extends IgeNetIoBaseController {
 	_sendQueue = () => {
 		const st = new Date().getTime();
 		const queueObj = this._queuedData;
-		const network = (ige.network as IgeNetIoServerController);
+		const network = ige.network as IgeNetIoServerController;
 		const currentTime = ige.engine._currentTime;
 		const hasSentTimeDataByClientId: Record<string, boolean> = {};
 

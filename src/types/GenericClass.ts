@@ -1,1 +1,1 @@
-export type GenericClass = { new(...args: any[]): any };
+export type GenericClass = { new (...args: any[]): any };

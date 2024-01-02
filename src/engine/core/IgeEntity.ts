@@ -1,34 +1,34 @@
-import { ige } from "../instance";
-import { isClient, isServer } from "../clientServer";
-import { degreesToRadians, traceSet } from "../utils";
+import { IgeDummyCanvas } from "./IgeDummyCanvas";
+import { IgeMatrix2d } from "./IgeMatrix2d";
+import { IgeObject } from "./IgeObject";
 import { IgePoint2d } from "./IgePoint2d";
 import { IgePoint3d } from "./IgePoint3d";
-import { IgeMatrix2d } from "./IgeMatrix2d";
 import { IgePoly2d } from "./IgePoly2d";
-import { IgeDummyCanvas } from "./IgeDummyCanvas";
 import { IgeRect } from "./IgeRect";
-import { IgeObject } from "./IgeObject";
-import { IgeNetIoClientController } from "../network/client/IgeNetIoClientController";
+import type { IgeTexture } from "./IgeTexture";
+import type { IgeTileMap2d } from "./IgeTileMap2d";
+import type { IgeViewport } from "./IgeViewport";
+import type { IgeInputComponent } from "@/engine/components";
+import { registerClass } from "@/engine/igeClassStore";
+import { IgeBehaviourType } from "@/enums/IgeBehaviourType";
+import { IgeEntityRenderMode } from "@/enums/IgeEntityRenderMode";
+import { IgeIsometricDepthSortMode } from "@/enums/IgeIsometricDepthSortMode";
 import { IgeMountMode } from "@/enums/IgeMountMode";
 import { IgeStreamMode } from "@/enums/IgeStreamMode";
-import { IgeIsometricDepthSortMode } from "@/enums/IgeIsometricDepthSortMode";
-import { IgeEntityRenderMode } from "@/enums/IgeEntityRenderMode";
-import { IgeBehaviourType } from "@/enums/IgeBehaviourType";
-import { registerClass } from "@/engine/igeClassStore";
-import { IgePolygonFunctionality } from "@/types/IgePolygonFunctionality";
-import type { IgeTileMap2d } from "./IgeTileMap2d";
-import type { IgePoint } from "@/types/IgePoint";
+import { isClient, isServer } from "../clientServer";
+import { ige } from "../instance";
+import type { IgeNetIoClientController } from "../network/client/IgeNetIoClientController";
+import { degreesToRadians, traceSet } from "../utils";
+import type { IgeCanRegisterByCategory } from "@/types/IgeCanRegisterByCategory";
+import type { IgeCanRegisterById } from "@/types/IgeCanRegisterById";
 import type { IgeCanvasRenderingContext2d } from "@/types/IgeCanvasRenderingContext2d";
 import type { IgeDepthSortObject } from "@/types/IgeDepthSortObject";
 import type { IgeInputEvent } from "@/types/IgeInputEvent";
 import type { IgeInputEventControl } from "@/types/IgeInputEventControl";
-import type { IgeCanRegisterById } from "@/types/IgeCanRegisterById";
+import type { IgePoint } from "@/types/IgePoint";
+import type { IgePolygonFunctionality } from "@/types/IgePolygonFunctionality";
 import type { IgeSmartTexture } from "@/types/IgeSmartTexture";
 import type { IgeTimeStreamPacket, IgeTimeStreamParsedTransformData } from "@/types/IgeTimeStream";
-import type { IgeViewport } from "./IgeViewport";
-import type { IgeTexture } from "./IgeTexture";
-import type { IgeCanRegisterByCategory } from "@/types/IgeCanRegisterByCategory";
-import type { IgeInputComponent } from "../components/IgeInputComponent";
 
 export interface IgeEntityTransformAccessor {
 	x: (val?: number) => number | IgeEntity;
@@ -46,11 +46,8 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 	//_entity?: IgeEntity; // We comment this because any class wanting to override return values of methods can do so individually e.g. viewport.camera.width().height()
 	_parent: IgeObject | null = null;
 	_children: IgeObject[] = [];
-	_translateIso?: IgePoint3d | { x: number, y: number };
+	_translateIso?: IgePoint3d | { x: number; y: number };
 	_textureOffset?: IgePoint2d;
-	_sortChildren: ((comparatorFunction: (a: any, b: any) => number) => void) = (compareFn) => {
-		return this._children.sort(compareFn);
-	};
 
 	constructor () {
 		super();
@@ -72,13 +69,17 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 		this.streamSections(["transform"]);
 	}
 
+	_sortChildren: (comparatorFunction: (a: any, b: any) => number) => void = (compareFn) => {
+		return this._children.sort(compareFn);
+	};
+
 	/**
 	 * Calculates the distance to the passed entity from this one.
 	 * @param {IgeEntity} entity The entity to calculate distance
 	 * to.
 	 * @returns {number} Distance.
 	 */
-	distanceTo (entity: IgeEntity) {
+	distanceTo (entity: IgeEntity): number {
 		const a = this._translate.x - entity._translate.x,
 			b = this._translate.y - entity._translate.y;
 
@@ -124,7 +125,7 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 
 		if (this._renderMode === IgeEntityRenderMode.iso) {
 			// iso translation
-			const isoPoint = this._translateIso = (new IgePoint3d(
+			const isoPoint = (this._translateIso = new IgePoint3d(
 				this._translate.x,
 				this._translate.y,
 				this._translate.z + this._bounds3d.z / 2
@@ -144,7 +145,10 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 
 		// Adjust local matrix for origin values if not at center
 		if (this._origin.x !== 0.5 || this._origin.y !== 0.5) {
-			this._localMatrix.translateBy(this._bounds2d.x * (0.5 - this._origin.x), this._bounds2d.y * (0.5 - this._origin.y));
+			this._localMatrix.translateBy(
+				this._bounds2d.x * (0.5 - this._origin.x),
+				this._bounds2d.y * (0.5 - this._origin.y)
+			);
 		}
 
 		// TODO: If the parent and local transforms are unchanged, we should used cached values
@@ -233,8 +237,8 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 	 * @param {Boolean=} val True to enable smoothing, false to disable.
 	 * @returns {*}
 	 */
-	cacheSmoothing (val: boolean): this;
-	cacheSmoothing (): boolean;
+	cacheSmoothing(val: boolean): this;
+	cacheSmoothing(): boolean;
 	cacheSmoothing (val?: boolean) {
 		if (val !== undefined) {
 			this._cacheSmoothing = val;
@@ -349,7 +353,9 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 		this.rotateTo(
 			this._rotate.x,
 			this._rotate.y,
-			Math.atan2(worldPos.y - point.y, worldPos.x - point.x) - (this._parent?._rotate?.z ?? 0) + degreesToRadians(270)
+			Math.atan2(worldPos.y - point.y, worldPos.x - point.x) -
+				(this._parent?._rotate?.z ?? 0) +
+				degreesToRadians(270)
 		);
 
 		return this;
@@ -375,9 +381,14 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 	 *     entity.backgroundPattern(texture, 'repeat', true, true);
 	 * @return {*}
 	 */
-	backgroundPattern (texture: IgeTexture, repeat?: string, trackCamera?: boolean, isoTile?: boolean): this;
-	backgroundPattern (): IgeTexture;
-	backgroundPattern (texture?: IgeTexture, repeat: string = "repeat", trackCamera: boolean = false, isoTile: boolean = false) {
+	backgroundPattern(texture: IgeTexture, repeat?: string, trackCamera?: boolean, isoTile?: boolean): this;
+	backgroundPattern(): IgeTexture;
+	backgroundPattern (
+		texture?: IgeTexture,
+		repeat: string = "repeat",
+		trackCamera: boolean = false,
+		isoTile: boolean = false
+	) {
 		if (texture !== undefined) {
 			this._backgroundPattern = texture;
 			this._backgroundPatternRepeat = repeat;
@@ -416,13 +427,21 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 	 * method chaining.
 	 */
 	widthByTile (val: number, lockAspect = false) {
-		if (!(this._parent && (this._parent as IgeTileMap2d).IgeTileMap2d && this._parent._tileWidth !== undefined && this._parent._tileHeight !== undefined)) {
+		if (
+			!(
+				this._parent &&
+				(this._parent as IgeTileMap2d).IgeTileMap2d &&
+				this._parent._tileWidth !== undefined &&
+				this._parent._tileHeight !== undefined
+			)
+		) {
 			throw new Error(
 				"Cannot set width by tile because the entity is not currently mounted to a tile map or the tile map has no tileWidth or tileHeight values."
 			);
 		}
 
-		const tileSize = this._renderMode === IgeEntityRenderMode.flat ? this._parent._tileWidth : this._parent._tileWidth * 2;
+		const tileSize =
+			this._renderMode === IgeEntityRenderMode.flat ? this._parent._tileWidth : this._parent._tileWidth * 2;
 
 		this.width(val * tileSize);
 
@@ -456,13 +475,21 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 	 * method chaining.
 	 */
 	heightByTile (val: number, lockAspect = false) {
-		if (!(this._parent && (this._parent as IgeTileMap2d).IgeTileMap2d && this._parent._tileWidth !== undefined && this._parent._tileHeight !== undefined)) {
+		if (
+			!(
+				this._parent &&
+				(this._parent as IgeTileMap2d).IgeTileMap2d &&
+				this._parent._tileWidth !== undefined &&
+				this._parent._tileHeight !== undefined
+			)
+		) {
 			throw new Error(
 				"Cannot set height by tile because the entity is not currently mounted to a tile map or the tile map has no tileWidth or tileHeight values."
 			);
 		}
 
-		const tileSize = this._renderMode === IgeEntityRenderMode.flat ? this._parent._tileHeight : this._parent._tileHeight * 2;
+		const tileSize =
+			this._renderMode === IgeEntityRenderMode.flat ? this._parent._tileHeight : this._parent._tileHeight * 2;
 
 		this.height(val * tileSize);
 
@@ -1015,8 +1042,8 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 	 * @return {*} "this" when arguments are passed to allow method
 	 * chaining or the current value if no arguments are specified.
 	 */
-	highlight (val: boolean, highlightChildEntities?: boolean): this;
-	highlight (): boolean;
+	highlight(val: boolean, highlightChildEntities?: boolean): this;
+	highlight(): boolean;
 	highlight (val?: boolean, highlightChildEntities: boolean = true) {
 		if (val !== undefined) {
 			this._highlight = val;
@@ -1216,9 +1243,24 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 		};
 
 		return (
-			this._internalsOverlap(thisMin.x - thisMax.y, thisMax.x - thisMin.y, otherMin.x - otherMax.y, otherMax.x - otherMin.y) &&
-			this._internalsOverlap(thisMin.x - thisMax.z, thisMax.x - thisMin.z, otherMin.x - otherMax.z, otherMax.x - otherMin.z) &&
-			this._internalsOverlap(thisMin.z - thisMax.y, thisMax.z - thisMin.y, otherMin.z - otherMax.y, otherMax.z - otherMin.y)
+			this._internalsOverlap(
+				thisMin.x - thisMax.y,
+				thisMax.x - thisMin.y,
+				otherMin.x - otherMax.y,
+				otherMax.x - otherMin.y
+			) &&
+			this._internalsOverlap(
+				thisMin.x - thisMax.z,
+				thisMax.x - thisMin.z,
+				otherMin.x - otherMax.z,
+				otherMax.x - otherMin.z
+			) &&
+			this._internalsOverlap(
+				thisMin.z - thisMax.y,
+				thisMax.z - thisMin.y,
+				otherMin.z - otherMax.y,
+				otherMax.z - otherMin.y
+			)
 		);
 	}
 
@@ -1259,7 +1301,11 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 			thisMin = new IgePoint3d(thisX - thisG3d.x / 2, thisY - thisG3d.y / 2, this._translate.z),
 			thisMax = new IgePoint3d(thisX + thisG3d.x / 2, thisY + thisG3d.y / 2, this._translate.z + thisG3d.z),
 			otherMin = new IgePoint3d(otherX - otherG3d.x / 2, otherY - otherG3d.y / 2, otherObject._translate.z),
-			otherMax = new IgePoint3d(otherX + otherG3d.x / 2, otherY + otherG3d.y / 2, otherObject._translate.z + otherG3d.z);
+			otherMax = new IgePoint3d(
+				otherX + otherG3d.x / 2,
+				otherY + otherG3d.y / 2,
+				otherObject._translate.z + otherG3d.z
+			);
 
 		if (thisMax.x <= otherMin.x) {
 			return false;
@@ -1581,7 +1627,10 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 				// generate a pattern from
 				if (ctx) {
 					// Produce the pattern fill
-					this._backgroundPatternFill = ctx.createPattern(this._backgroundPattern.image, this._backgroundPatternRepeat);
+					this._backgroundPatternFill = ctx.createPattern(
+						this._backgroundPattern.image,
+						this._backgroundPatternRepeat
+					);
 				}
 			}
 
@@ -1931,7 +1980,12 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 
 					sortObj.adj[j] = sortObj.adj[j] || [];
 
-					if (childItemA._inView && childItemB._inView && "_projectionOverlap" in childItemA && "_projectionOverlap" in childItemB) {
+					if (
+						childItemA._inView &&
+						childItemB._inView &&
+						"_projectionOverlap" in childItemA &&
+						"_projectionOverlap" in childItemB
+					) {
 						if (childItemA._projectionOverlap(childItemB)) {
 							if (childItemA.isBehind(childItemB)) {
 								sortObj.adj[j].push(i);
@@ -2039,8 +2093,8 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 	 *     });
 	 * @return {*}
 	 */
-	pointerMove (callback: IgeInputEvent | null): this;
-	pointerMove (): IgeInputEvent;
+	pointerMove(callback: IgeInputEvent | null): this;
+	pointerMove(): IgeInputEvent;
 	pointerMove (callback?: IgeInputEvent | null) {
 		if (callback !== undefined) {
 			if (callback === null) {
@@ -2141,8 +2195,8 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 	 *     });
 	 * @return {*}
 	 */
-	pointerUp (callback: IgeInputEvent | null): this;
-	pointerUp (): IgeInputEvent;
+	pointerUp(callback: IgeInputEvent | null): this;
+	pointerUp(): IgeInputEvent;
 	pointerUp (callback?: IgeInputEvent | null) {
 		if (callback !== undefined) {
 			if (callback === null) {
@@ -2175,8 +2229,8 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 	 *     });
 	 * @return {*}
 	 */
-	pointerDown (callback: IgeInputEvent | null): this;
-	pointerDown (): IgeInputEvent;
+	pointerDown(callback: IgeInputEvent | null): this;
+	pointerDown(): IgeInputEvent;
 	pointerDown (callback?: IgeInputEvent | null) {
 		if (callback !== undefined) {
 			if (callback === null) {
@@ -2210,8 +2264,8 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 	 *     });
 	 * @return {*}
 	 */
-	pointerWheel (callback: IgeInputEvent | null): this;
-	pointerWheel (): IgeInputEvent;
+	pointerWheel(callback: IgeInputEvent | null): this;
+	pointerWheel(): IgeInputEvent;
 	pointerWheel (callback?: IgeInputEvent | null) {
 		if (callback !== undefined) {
 			if (callback === null) {
@@ -2677,17 +2731,17 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 	 */
 	translate (...args: any[]): IgeEntityTransformAccessor {
 		if (args.length) {
-			throw new Error("You called translate with arguments, did you mean translateTo or translateBy instead of translate?");
+			throw new Error(
+				"You called translate with arguments, did you mean translateTo or translateBy instead of translate?"
+			);
 		}
 
 		// used to be this._entity || { x, y z }
-		return (
-			{
-				x: this._translateAccessorX,
-				y: this._translateAccessorY,
-				z: this._translateAccessorZ
-			}
-		);
+		return {
+			x: this._translateAccessorX,
+			y: this._translateAccessorY,
+			z: this._translateAccessorZ
+		};
 	}
 
 	/**
@@ -2698,8 +2752,8 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 	 * @return {*}
 	 * @private
 	 */
-	_translateAccessorX (val: number): this;
-	_translateAccessorX (): number;
+	_translateAccessorX(val: number): this;
+	_translateAccessorX(): number;
 	_translateAccessorX (val?: number) {
 		if (val !== undefined) {
 			this._translate.x = val;
@@ -2717,8 +2771,8 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 	 * @return {*}
 	 * @private
 	 */
-	_translateAccessorY (val: number): this;
-	_translateAccessorY (): number;
+	_translateAccessorY(val: number): this;
+	_translateAccessorY(): number;
 	_translateAccessorY (val?: number) {
 		if (val !== undefined) {
 			this._translate.y = val;
@@ -2736,8 +2790,8 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 	 * @return {*}
 	 * @private
 	 */
-	_translateAccessorZ (val: number): this;
-	_translateAccessorZ (): number;
+	_translateAccessorZ(val: number): this;
+	_translateAccessorZ(): number;
 	_translateAccessorZ (val?: number) {
 		// TODO: Do we need to do anything to the matrix here for iso views?
 		//this._localMatrix.translateTo(this._translate.x, this._translate.y);
@@ -2804,13 +2858,11 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 		}
 
 		// used to be this._entity || { x, y z }
-		return (
-			{
-				x: this._rotateAccessorX,
-				y: this._rotateAccessorY,
-				z: this._rotateAccessorZ
-			}
-		);
+		return {
+			x: this._rotateAccessorX,
+			y: this._rotateAccessorY,
+			z: this._rotateAccessorZ
+		};
 	}
 
 	/**
@@ -2821,8 +2873,8 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 	 * @return {*}
 	 * @private
 	 */
-	_rotateAccessorX (val: number): this;
-	_rotateAccessorX (): number;
+	_rotateAccessorX(val: number): this;
+	_rotateAccessorX(): number;
 	_rotateAccessorX (val?: number) {
 		if (val !== undefined) {
 			this._rotate.x = val;
@@ -2840,8 +2892,8 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 	 * @return {*}
 	 * @private
 	 */
-	_rotateAccessorY (val: number): this;
-	_rotateAccessorY (): number;
+	_rotateAccessorY(val: number): this;
+	_rotateAccessorY(): number;
 	_rotateAccessorY (val?: number) {
 		if (val !== undefined) {
 			this._rotate.y = val;
@@ -2859,8 +2911,8 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 	 * @return {*}
 	 * @private
 	 */
-	_rotateAccessorZ (val: number): this;
-	_rotateAccessorZ (): number;
+	_rotateAccessorZ(val: number): this;
+	_rotateAccessorZ(): number;
 	_rotateAccessorZ (val?: number) {
 		if (val !== undefined) {
 			this._rotate.z = val;
@@ -2926,13 +2978,11 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 		}
 
 		// used to be this._entity || { x, y z }
-		return (
-			{
-				x: this._scaleAccessorX,
-				y: this._scaleAccessorY,
-				z: this._scaleAccessorZ
-			}
-		);
+		return {
+			x: this._scaleAccessorX,
+			y: this._scaleAccessorY,
+			z: this._scaleAccessorZ
+		};
 	}
 
 	/**
@@ -2943,8 +2993,8 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 	 * @return {*}
 	 * @private
 	 */
-	_scaleAccessorX (val: number): this;
-	_scaleAccessorX (): number;
+	_scaleAccessorX(val: number): this;
+	_scaleAccessorX(): number;
 	_scaleAccessorX (val?: number) {
 		if (val !== undefined) {
 			this._scale.x = val;
@@ -2962,8 +3012,8 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 	 * @return {*}
 	 * @private
 	 */
-	_scaleAccessorY (val: number): this;
-	_scaleAccessorY (): number;
+	_scaleAccessorY(val: number): this;
+	_scaleAccessorY(): number;
 	_scaleAccessorY (val?: number) {
 		if (val !== undefined) {
 			this._scale.y = val;
@@ -2981,8 +3031,8 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 	 * @return {*}
 	 * @private
 	 */
-	_scaleAccessorZ (val: number): this;
-	_scaleAccessorZ (): number;
+	_scaleAccessorZ(val: number): this;
+	_scaleAccessorZ(): number;
 	_scaleAccessorZ (val?: number) {
 		if (val !== undefined) {
 			this._scale.z = val;
@@ -3043,13 +3093,11 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 	 */
 	origin (): IgeEntityTransformAccessor {
 		// used to be this._entity || { x, y z }
-		return (
-			{
-				x: this._originAccessorX,
-				y: this._originAccessorY,
-				z: this._originAccessorZ
-			}
-		);
+		return {
+			x: this._originAccessorX,
+			y: this._originAccessorY,
+			z: this._originAccessorZ
+		};
 	}
 
 	/**
@@ -3060,8 +3108,8 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 	 * @return {*}
 	 * @private
 	 */
-	_originAccessorX (val: number): this;
-	_originAccessorX (): number;
+	_originAccessorX(val: number): this;
+	_originAccessorX(): number;
 	_originAccessorX (val?: number) {
 		if (val !== undefined) {
 			this._origin.x = val;
@@ -3079,8 +3127,8 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 	 * @return {*}
 	 * @private
 	 */
-	_originAccessorY (val: number): this;
-	_originAccessorY (): number;
+	_originAccessorY(val: number): this;
+	_originAccessorY(): number;
 	_originAccessorY (val?: number) {
 		if (val !== undefined) {
 			this._origin.y = val;
@@ -3098,8 +3146,8 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 	 * @return {*}
 	 * @private
 	 */
-	_originAccessorZ (val: number): this;
-	_originAccessorZ (): number;
+	_originAccessorZ(val: number): this;
+	_originAccessorZ(): number;
 	_originAccessorZ (val?: number) {
 		if (val !== undefined) {
 			this._origin.z = val;
@@ -3245,17 +3293,71 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 			nextTransform = nextData[1].map(parseFloat) as IgeTimeStreamParsedTransformData;
 
 			// Translate
-			currentTransform[0] = this.interpolateValue(previousTransform[0], nextTransform[0], previousData[0], renderTime, nextData[0]);
-			currentTransform[1] = this.interpolateValue(previousTransform[1], nextTransform[1], previousData[0], renderTime, nextData[0]);
-			currentTransform[2] = this.interpolateValue(previousTransform[2], nextTransform[2], previousData[0], renderTime, nextData[0]);
+			currentTransform[0] = this.interpolateValue(
+				previousTransform[0],
+				nextTransform[0],
+				previousData[0],
+				renderTime,
+				nextData[0]
+			);
+			currentTransform[1] = this.interpolateValue(
+				previousTransform[1],
+				nextTransform[1],
+				previousData[0],
+				renderTime,
+				nextData[0]
+			);
+			currentTransform[2] = this.interpolateValue(
+				previousTransform[2],
+				nextTransform[2],
+				previousData[0],
+				renderTime,
+				nextData[0]
+			);
 			// Scale
-			currentTransform[3] = this.interpolateValue(previousTransform[3], nextTransform[3], previousData[0], renderTime, nextData[0]);
-			currentTransform[4] = this.interpolateValue(previousTransform[4], nextTransform[4], previousData[0], renderTime, nextData[0]);
-			currentTransform[5] = this.interpolateValue(previousTransform[5], nextTransform[5], previousData[0], renderTime, nextData[0]);
+			currentTransform[3] = this.interpolateValue(
+				previousTransform[3],
+				nextTransform[3],
+				previousData[0],
+				renderTime,
+				nextData[0]
+			);
+			currentTransform[4] = this.interpolateValue(
+				previousTransform[4],
+				nextTransform[4],
+				previousData[0],
+				renderTime,
+				nextData[0]
+			);
+			currentTransform[5] = this.interpolateValue(
+				previousTransform[5],
+				nextTransform[5],
+				previousData[0],
+				renderTime,
+				nextData[0]
+			);
 			// Rotate
-			currentTransform[6] = this.interpolateValue(previousTransform[6], nextTransform[6], previousData[0], renderTime, nextData[0]);
-			currentTransform[7] = this.interpolateValue(previousTransform[7], nextTransform[7], previousData[0], renderTime, nextData[0]);
-			currentTransform[8] = this.interpolateValue(previousTransform[8], nextTransform[8], previousData[0], renderTime, nextData[0]);
+			currentTransform[6] = this.interpolateValue(
+				previousTransform[6],
+				nextTransform[6],
+				previousData[0],
+				renderTime,
+				nextData[0]
+			);
+			currentTransform[7] = this.interpolateValue(
+				previousTransform[7],
+				nextTransform[7],
+				previousData[0],
+				renderTime,
+				nextData[0]
+			);
+			currentTransform[8] = this.interpolateValue(
+				previousTransform[8],
+				nextTransform[8],
+				previousData[0],
+				renderTime,
+				nextData[0]
+			);
 
 			this.translateTo(currentTransform[0], currentTransform[1], currentTransform[2]);
 			this.scaleTo(currentTransform[3], currentTransform[4], currentTransform[5]);
@@ -3315,7 +3417,9 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 
 			if (this._timeStream.length) {
 				// Process any interpolation
-				this._processInterpolate(ige.engine._tickStart - (ige.network as IgeNetIoClientController)._renderLatency);
+				this._processInterpolate(
+					ige.engine._tickStart - (ige.network as IgeNetIoClientController)._renderLatency
+				);
 			}
 
 			// Check for changes to the transform values
@@ -3366,7 +3470,12 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 	 * @return {*} "this" when a data argument is passed to allow method
 	 * chaining or the current value if no data argument is specified.
 	 */
-	streamSectionData (sectionId: string, data?: string, bypassTimeStream: boolean = false, bypassChangeDetection: boolean = false): string | undefined {
+	streamSectionData (
+		sectionId: string,
+		data?: string,
+		bypassTimeStream: boolean = false,
+		bypassChangeDetection: boolean = false
+	): string | undefined {
 		switch (sectionId) {
 		case "bounds2d":
 			if (data !== undefined) {
@@ -3425,12 +3534,7 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 			break;
 
 		default:
-			return super.streamSectionData(
-				sectionId,
-				data,
-				bypassTimeStream,
-				bypassChangeDetection
-			);
+			return super.streamSectionData(sectionId, data, bypassTimeStream, bypassChangeDetection);
 		}
 	}
 }

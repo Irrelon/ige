@@ -1,11 +1,11 @@
 import { IgeTexture } from "./IgeTexture";
-import { IgeSmartTexture } from "@/types/IgeSmartTexture";
 import { ige } from "@/engine/instance";
+import { IgeSmartTexture } from "@/types/IgeSmartTexture";
 
 /* TODO: URGENT - Make this alignment stuff work inside the bounds of the entity it is attached to
  *    so that bottom-right aligns to the lower-right point of the bounding box of the entity
  *    whilst maintaining the current text-alignment as well
-* */
+ * */
 
 /**
  * Creates a new font sheet. A font sheet is an image that contains
@@ -27,7 +27,7 @@ export class IgeFontSheet extends IgeTexture {
 
 	_pixelWidthMap: any;
 
-	constructor (id: string, urlOrObject?: string | IgeSmartTexture) {
+	constructor(id: string, urlOrObject?: string | IgeSmartTexture) {
 		super(id, urlOrObject);
 
 		// Set the _noDimensions flag which tells any entity
@@ -51,20 +51,28 @@ export class IgeFontSheet extends IgeTexture {
 
 			if (this._fontData) {
 				const header = this._fontData.font;
-				this.log("Loaded font sheet for font: " + header.fontName + " @ " + header.fontSize + header.fontSizeUnit + " in " + header.fontColor);
+				this.log(
+					"Loaded font sheet for font: " +
+						header.fontName +
+						" @ " +
+						header.fontSize +
+						header.fontSizeUnit +
+						" in " +
+						header.fontColor
+				);
 			} else {
 				this.log("Could not load data header for font sheet: " + this.image.src, "error");
 			}
 		});
 	}
 
-	decodeHeader () {
+	decodeHeader() {
 		// Create a temporary canvas
 		const canvas = new OffscreenCanvas(2, 2),
 			ctx = canvas.getContext("2d") as OffscreenCanvasRenderingContext2D;
 
 		if (this.image === undefined) {
-			throw new Error("Image not loaded")
+			throw new Error("Image not loaded");
 		}
 
 		// Set canvas width to match font sheet image and
@@ -79,9 +87,9 @@ export class IgeFontSheet extends IgeTexture {
 		return this._decode(canvas, 0, 0, this.image.width);
 	}
 
-	_decode (canvas: OffscreenCanvas, x: number, y: number, maxX: number): any {
+	_decode(canvas: OffscreenCanvas, x: number, y: number, maxX: number): any {
 		const ctx = canvas.getContext("2d") as OffscreenCanvasRenderingContext2D,
-			imageData = ctx.getImageData(x, y, maxX, canvas.height).data
+			imageData = ctx.getImageData(x, y, maxX, canvas.height).data;
 
 		let run = true,
 			quadCode,
@@ -96,7 +104,10 @@ export class IgeFontSheet extends IgeTexture {
 				run = false;
 				return JSON.parse(jsonString);
 			} else {
-				jsonString += String.fromCharCode(imageData[i]) + String.fromCharCode(imageData[i + 1]) + String.fromCharCode(imageData[i + 2]);
+				jsonString +=
+					String.fromCharCode(imageData[i]) +
+					String.fromCharCode(imageData[i + 1]) +
+					String.fromCharCode(imageData[i + 2]);
 			}
 			i += 4;
 
@@ -107,8 +118,8 @@ export class IgeFontSheet extends IgeTexture {
 		}
 	}
 
-	lineHeightModifier (val?: number) {
-		if (typeof (val) !== "undefined") {
+	lineHeightModifier(val?: number) {
+		if (typeof val !== "undefined") {
 			this._lineHeightModifier = val;
 		}
 	}
@@ -119,7 +130,7 @@ export class IgeFontSheet extends IgeTexture {
 	 * @param {string} text The text to measure.
 	 * @returns {number}
 	 */
-	measureTextWidth (text) {
+	measureTextWidth(text) {
 		if (this._loaded) {
 			const charCodeMap = this._charCodeMap,
 				measuredWidthMap = this._measuredWidthMap;
@@ -160,7 +171,7 @@ export class IgeFontSheet extends IgeTexture {
 		return -1;
 	}
 
-	render (ctx, entity) {
+	render(ctx, entity) {
 		if (entity._renderText && this._loaded) {
 			const _ctx = ctx,
 				text = entity._renderText,
@@ -171,7 +182,7 @@ export class IgeFontSheet extends IgeTexture {
 				masterX = 0,
 				masterY = 0,
 				lineWidth: number[] = [],
-				lineHeight = (this._sizeY - 2)
+				lineHeight = this._sizeY - 2;
 
 			let lineText,
 				lineArr: string[] = [],
@@ -194,21 +205,24 @@ export class IgeFontSheet extends IgeTexture {
 				lineArr.push(text);
 			}
 
-			const totalHeight = (lineHeight * lineArr.length);
+			const totalHeight = lineHeight * lineArr.length;
 
 			// TODO: Y-based alignment doesn't work at the moment. Fix it!
 			// Handle text alignment y
 			switch (entity._textAlignY) {
 				case 0: // Align top
-					renderStartY = -((lineHeight * (lineArr.length)) / 2) - (entity._textLineSpacing * ((lineArr.length - 1) / 2));//0;
+					renderStartY =
+						-((lineHeight * lineArr.length) / 2) - entity._textLineSpacing * ((lineArr.length - 1) / 2); //0;
 					break;
 
 				case 1: // Align middle
-					renderStartY = -((lineHeight * (lineArr.length)) / 2) - (entity._textLineSpacing * ((lineArr.length - 1) / 2));
+					renderStartY =
+						-((lineHeight * lineArr.length) / 2) - entity._textLineSpacing * ((lineArr.length - 1) / 2);
 					break;
 
 				case 2: // Align bottom
-					renderStartY = -((lineHeight * (lineArr.length)) / 2) - (entity._textLineSpacing * ((lineArr.length - 1) / 2));//-((lineHeight) * (lineArr.length)) - (entity._textLineSpacing * (lineArr.length - 1));
+					renderStartY =
+						-((lineHeight * lineArr.length) / 2) - entity._textLineSpacing * ((lineArr.length - 1) / 2); //-((lineHeight) * (lineArr.length)) - (entity._textLineSpacing * (lineArr.length - 1));
 					break;
 			}
 
@@ -250,7 +264,7 @@ export class IgeFontSheet extends IgeTexture {
 
 			for (lineIndex = 0; lineIndex < lineArr.length; lineIndex++) {
 				lineText = lineArr[lineIndex];
-				renderY = (lineHeight * lineIndex) + (entity._textLineSpacing * (lineIndex));
+				renderY = lineHeight * lineIndex + entity._textLineSpacing * lineIndex;
 
 				// Handle text alignment x
 				switch (entity._textAlignX) {
@@ -279,7 +293,7 @@ export class IgeFontSheet extends IgeTexture {
 						Math.floor(masterX + renderX), // render x TODO: Performance - Cache these?
 						Math.floor(masterY + renderStartY + renderY), // render y
 						pixelWidthMap[charIndex], // render width
-						(this._sizeY - 2) // render height
+						this._sizeY - 2 // render height
 					);
 
 					// Check if we should overlay with a colour
@@ -293,7 +307,7 @@ export class IgeFontSheet extends IgeTexture {
 							Math.floor(masterX + renderX), // render x TODO: Performance - Cache these?
 							Math.floor(masterY + renderStartY + renderY), // render y
 							pixelWidthMap[charIndex], // render width
-							(this._sizeY - 2) // render height
+							this._sizeY - 2 // render height
 						);
 						_ctx.restore();
 					}
@@ -308,7 +322,7 @@ export class IgeFontSheet extends IgeTexture {
 		}
 	}
 
-	destroy () {
+	destroy() {
 		this.image = undefined;
 		this.script = undefined;
 

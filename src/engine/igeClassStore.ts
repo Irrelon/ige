@@ -5,4 +5,3 @@ export const registerClass = (cls: GenericClass) => {
 	//console.log(`Registering class ${cls.name}`);
 	igeClassStore[cls.name] = cls;
 };
-

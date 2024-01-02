@@ -4,15 +4,27 @@
  * received
  */
 export type IgeTimeStreamTransformData = [
-	string, string, string, // Translate x,y,z
-	string, string, string, // Scale x,y,z
-	string, string, string // Rotate x,y,z
+	string,
+	string,
+	string, // Translate x,y,z
+	string,
+	string,
+	string, // Scale x,y,z
+	string,
+	string,
+	string // Rotate x,y,z
 ];
 
 export type IgeTimeStreamParsedTransformData = [
-	number, number, number, // Translate x,y,z
-	number, number, number, // Scale x,y,z
-	number, number, number // Rotate x,y,z
+	number,
+	number,
+	number, // Translate x,y,z
+	number,
+	number,
+	number, // Scale x,y,z
+	number,
+	number,
+	number // Rotate x,y,z
 ];
 
 /**

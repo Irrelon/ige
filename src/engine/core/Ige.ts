@@ -1,30 +1,28 @@
-import { igeClassStore } from "../igeClassStore";
-import { isClient, isServer, isWorker } from "../clientServer";
-import { IgeConfig, igeConfig } from "./config";
-import { IgeEngine } from "./IgeEngine";
-import { IgeTextureStore } from "./IgeTextureStore";
-import { IgeMetrics } from "./IgeMetrics";
-import { IgeInputComponent } from "@/engine/components/IgeInputComponent";
-import { IgeObjectRegister } from "./IgeObjectRegister";
 import { IgeArrayRegister } from "./IgeArrayRegister";
+import { IgeEngine } from "./IgeEngine";
+import { IgeMetrics } from "./IgeMetrics";
+import { IgeObjectRegister } from "./IgeObjectRegister";
 import { IgePoint3d } from "./IgePoint3d";
 import { IgeRouter } from "./IgeRouter";
-
-import { IgeDependencies } from "@/engine/core/IgeDependencies";
-import { IgeTweenController } from "@/engine/core/IgeTweenController";
-import { IgeTimeController } from "@/engine/core/IgeTimeController";
-import { IgeUiManagerController } from "@/engine/core/IgeUiManagerController";
-import { IgeBox2dController } from "@/engine/components/physics/box2d/IgeBox2dController";
-import type { IgeIsReadyPromise } from "@/types/IgeIsReadyPromise";
-import type { IgeAudioController } from "@/engine/audio";
-import type { IgeObject } from "./IgeObject";
-import type { IgeObjectWithValueProperty } from "@/types/IgeObjectWithValueProperty";
-import type { IgeCanRegisterByCategory } from "@/types/IgeCanRegisterByCategory";
+import { IgeTextureStore } from "./IgeTextureStore";
 import type { IgeViewport } from "./IgeViewport";
+import type { IgeAudioController } from "@/engine/audio";
+import { IgeDependencies } from "@/engine/core/IgeDependencies";
+import { IgeTimeController } from "@/engine/core/IgeTimeController";
+import { IgeTweenController } from "@/engine/core/IgeTweenController";
+import { IgeUiManagerController } from "@/engine/core/IgeUiManagerController";
 import type { IgeNetIoClientController } from "@/engine/network/client/IgeNetIoClientController";
 import type { IgeNetIoServerController } from "@/engine/network/server/IgeNetIoServerController";
-import { IgeCanRegisterById } from "@/types/IgeCanRegisterById";
+import { IgeConfig, igeConfig } from "./config";
+import { IgeInputComponent } from "@/engine/components/IgeInputComponent";
+import { IgeBox2dController } from "@/engine/components/physics/box2d/IgeBox2dController";
+import { isClient, isServer, isWorker } from "../clientServer";
+import { igeClassStore } from "../igeClassStore";
 import { IgeCanBeDestroyed } from "@/types/IgeCanBeDestroyed";
+import type { IgeCanRegisterByCategory } from "@/types/IgeCanRegisterByCategory";
+import { IgeCanRegisterById } from "@/types/IgeCanRegisterById";
+import type { IgeIsReadyPromise } from "@/types/IgeIsReadyPromise";
+import type { IgeObjectWithValueProperty } from "@/types/IgeObjectWithValueProperty";
 
 const version = "3.0.0";
 
@@ -41,7 +39,10 @@ export class Ige implements IgeIsReadyPromise {
 	ui: IgeUiManagerController = new IgeUiManagerController();
 	network?: IgeNetIoClientController | IgeNetIoServerController;
 	register: IgeObjectRegister = new IgeObjectRegister();
-	categoryRegister: IgeArrayRegister<IgeCanRegisterByCategory> = new IgeArrayRegister("_category", "_categoryRegistered");
+	categoryRegister: IgeArrayRegister<IgeCanRegisterByCategory> = new IgeArrayRegister(
+		"_category",
+		"_categoryRegistered"
+	);
 	groupRegister: IgeArrayRegister<IgeCanRegisterByCategory> = new IgeArrayRegister("_group", "_groupRegistered");
 	dependencies: IgeDependencies = new IgeDependencies();
 	metrics: IgeMetrics = new IgeMetrics();
@@ -58,23 +59,32 @@ export class Ige implements IgeIsReadyPromise {
 	_pointerOverVp?: IgeViewport;
 	_pointerPos: IgePoint3d = new IgePoint3d(); // Could probably be just {x: number, y: number}
 
-	constructor () {
+	constructor() {
 		if (isClient) {
-			this.dependencies.add("network", import("../network/client/IgeNetIoClientController.js").then(({ IgeNetIoClientController: Module }) => {
-				this.network = new Module();
-			}));
+			this.dependencies.add(
+				"network",
+				import("../network/client/IgeNetIoClientController.js").then(({ IgeNetIoClientController: Module }) => {
+					this.network = new Module();
+				})
+			);
 
 			if (!isWorker) {
-				this.dependencies.add("audio", import("../audio/IgeAudioController.js").then(({ IgeAudioController: Module }) => {
-					this.audio = new Module();
-				}));
+				this.dependencies.add(
+					"audio",
+					import("../audio/IgeAudioController.js").then(({ IgeAudioController: Module }) => {
+						this.audio = new Module();
+					})
+				);
 			}
 		}
 
 		if (isServer) {
-			this.dependencies.add("network", import("../network/server/IgeNetIoServerController.js").then(({ IgeNetIoServerController: Module }) => {
-				this.network = new Module();
-			}));
+			this.dependencies.add(
+				"network",
+				import("../network/server/IgeNetIoServerController.js").then(({ IgeNetIoServerController: Module }) => {
+					this.network = new Module();
+				})
+			);
 		}
 
 		this.dependencies.add("tween", this.tween.isReady());
@@ -86,7 +96,7 @@ export class Ige implements IgeIsReadyPromise {
 		this.dependencies.markAsSatisfied("box2d");
 	}
 
-	isReady () {
+	isReady() {
 		return new Promise<void>((resolve) => {
 			this.dependencies.waitFor(["network", "engine", "tween", "time", "ui"], resolve);
 		});
@@ -100,7 +110,9 @@ export class Ige implements IgeIsReadyPromise {
 	 * @param {string | Object} item The id of the item to return,
 	 * or if an object, returns the object as-is.
 	 */
-	$<ObjectType extends IgeCanRegisterById & IgeCanBeDestroyed> (item: string | ObjectType | undefined): ObjectType | undefined {
+	$<ObjectType extends IgeCanRegisterById & IgeCanBeDestroyed>(
+		item: string | ObjectType | undefined
+	): ObjectType | undefined {
 		if (typeof item === "string") {
 			return this.register.get(item) as ObjectType;
 		} else if (typeof item === "object") {
@@ -116,7 +128,7 @@ export class Ige implements IgeIsReadyPromise {
 	 * @param {String} categoryName The name of the category to return
 	 * all objects for.
 	 */
-	$$ (categoryName: string) {
+	$$(categoryName: string) {
 		return this.categoryRegister.get(categoryName) || [];
 	}
 
@@ -156,7 +168,7 @@ export class Ige implements IgeIsReadyPromise {
 		this._watch.splice(index, 1);
 	};
 
-	drawBounds (val?: boolean, recursive: boolean = false) {
+	drawBounds(val?: boolean, recursive: boolean = false) {
 		if (val === undefined) {
 			return this._drawBounds;
 		}
@@ -168,9 +180,9 @@ export class Ige implements IgeIsReadyPromise {
 		return this;
 	}
 
-	data (key: string, value: any): this;
-	data (key: string): any;
-	data (key: string, value?: any) {
+	data(key: string, value: any): this;
+	data(key: string): any;
+	data(key: string, value?: any) {
 		if (value !== undefined) {
 			this._data = this._data || {};
 			this._data[key] = value;

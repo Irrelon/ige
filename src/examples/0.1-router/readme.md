@@ -1,4 +1,5 @@
 # Router Demo
+
 This demo gives an example of how to use the routing system
 built into IGE version 3.
 
@@ -20,7 +21,7 @@ resolving its async/promise.
 
 app -> AppScene.ts
 |--splash -> AppSplashScene.ts
-|--login  -> AppLoginScene.ts
+|--login -> AppLoginScene.ts
 
 The scenegraph from AppScene.ts stays mounted because we don't
 navigate away from `app`.

@@ -1,9 +1,9 @@
-import { ige } from "@/engine/instance";
-import { Asteroid } from "../app/component/Asteroid";
-import { distance } from "@/engine/utils";
 import { IgeScene2d } from "@/engine/core/IgeScene2d";
+import { ige } from "@/engine/instance";
+import { distance } from "@/engine/utils";
+import { Asteroid } from "../app/component/Asteroid";
 
-export const generateAsteroidBelt = function generateAsteroidBelt (beltX: number, beltY: number) {
+export const generateAsteroidBelt = function generateAsteroidBelt(beltX: number, beltY: number) {
 	const asteroidArr = [];
 	const maxDist = 900;
 	const minDist = 500;
@@ -20,8 +20,8 @@ export const generateAsteroidBelt = function generateAsteroidBelt (beltX: number
 			asteroid.mount(middleScene);
 		}
 
-		const x = Math.floor(beltX + ((Math.random() * maxDist * 2) - maxDist));
-		const y = Math.floor(beltY + ((Math.random() * maxDist * 2) - maxDist));
+		const x = Math.floor(beltX + (Math.random() * maxDist * 2 - maxDist));
+		const y = Math.floor(beltY + (Math.random() * maxDist * 2 - maxDist));
 		const dist = distance(x, y, beltX, beltY);
 
 		if (dist > minDist && dist < maxDist) {

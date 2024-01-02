@@ -1,5 +1,5 @@
-import { IgeSmartTexture } from "@/types/IgeSmartTexture";
 import { Grid } from "../../../entities/Grid";
+import { IgeSmartTexture } from "@/types/IgeSmartTexture";
 
 export const gridSmartTexture: IgeSmartTexture = {
 	render: function (ctx, entity) {

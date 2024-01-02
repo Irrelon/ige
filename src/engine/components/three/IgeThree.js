@@ -1,8 +1,8 @@
 var IgeThree = IgeEventingClass.extend({
-	classId: 'IgeThree',
-	componentId: 'three',
+	classId: "IgeThree",
+	componentId: "three",
 
-	init: function(entity, options) {
+	init: function (entity, options) {
 		this._entity = entity;
 		this._options = options;
 
@@ -38,20 +38,23 @@ var IgeThree = IgeEventingClass.extend({
 		IgeViewport.prototype.tick = this.IgeViewport_tick;
 	},
 
-	IgeCamera_init: function(entity) {
+	IgeCamera_init: function (entity) {
 		this._$init(entity);
 		this._threeObj = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.01, 10000);
 	},
 
-	IgeCamera_tick: function(ctx) {
+	IgeCamera_tick: function (ctx) {
 		// Check if we are tracking the translate value of a target
 
 		if (this._trackTranslateTarget) {
 			var targetEntity = this._trackTranslateTarget,
 				//targetMatrix = targetEntity._worldMatrix.matrix,
-				targetX = targetEntity._translate.x,//targetMatrix[2],
-				targetY =  targetEntity._translate.y,//targetMatrix[5],
-				sourceX, sourceY, distX, distY;
+				targetX = targetEntity._translate.x, //targetMatrix[2],
+				targetY = targetEntity._translate.y, //targetMatrix[5],
+				sourceX,
+				sourceY,
+				distX,
+				distY;
 
 			if (!this._trackTranslateSmoothing) {
 				// Copy the target's world matrix translate data
@@ -71,9 +74,11 @@ var IgeThree = IgeEventingClass.extend({
 
 		// Check if we are tracking the rotation values of a target
 		if (this._trackRotateTarget) {
-			var targetParentRZ = this._trackRotateTarget._parent !== undefined ? this._trackRotateTarget._parent._rotate.z : 0,
+			var targetParentRZ =
+					this._trackRotateTarget._parent !== undefined ? this._trackRotateTarget._parent._rotate.z : 0,
 				targetZ = -(targetParentRZ + this._trackRotateTarget._rotate.z),
-				sourceZ, distZ;
+				sourceZ,
+				distZ;
 
 			if (!this._trackRotateSmoothing) {
 				// Copy the target's rotate data
@@ -100,7 +105,7 @@ var IgeThree = IgeEventingClass.extend({
 		//this._localMatrix.transformRenderingContext(ctx);
 	},
 
-	IgeViewport_tick: function(ctx, scene) {
+	IgeViewport_tick: function (ctx, scene) {
 		// Check if we have a scene attached to this viewport
 		if (this._scene) {
 			// Store the viewport camera in the main ige so that
@@ -126,7 +131,7 @@ var IgeThree = IgeEventingClass.extend({
 		}
 	},
 
-	IgeScene2d_init: function(options) {
+	IgeScene2d_init: function (options) {
 		this._$init(options);
 		this._threeObj = new THREE.Scene();
 
@@ -157,10 +162,11 @@ var IgeThree = IgeEventingClass.extend({
 		 this._threeObj.add(specLight);*/
 	},
 
-	IgeEngine_frontBufferSetup: function(autoSize, dontScale) {
+	IgeEngine_frontBufferSetup: function (autoSize, dontScale) {
 		// Run the IGE in "headless" mode and allow Three.js to handle
 		// all rendering instead
-		var i, il,
+		var i,
+			il,
 			self = this;
 
 		//this._threeObj = new THREE.Scene();
@@ -208,7 +214,7 @@ var IgeThree = IgeEventingClass.extend({
 
 		 mesh2.position.z = 0;
 		 //this._threeObj.add( mesh2 );*/
-		this._threeRenderer = new THREE.WebGLRenderer({antialias: false});
+		this._threeRenderer = new THREE.WebGLRenderer({ antialias: false });
 		this._threeRenderer.setSize(window.innerWidth, window.innerHeight);
 		this._threeRenderer.autoClear = false;
 		//this._threeRenderer.shadowMapEnabled = true;
@@ -252,11 +258,9 @@ var IgeThree = IgeEventingClass.extend({
 		 });*/
 	},
 
-	IgeEntity_transformContext: function(ctx) {
+	IgeEntity_transformContext: function (ctx) {},
 
-	},
-
-	IgeEntity_renderEntity: function(ctx, dontTransform) {
+	IgeEntity_renderEntity: function (ctx, dontTransform) {
 		var m = this._threeObj;
 		if (m) {
 			// Update the translate, rotate and scale of the mesh
@@ -280,7 +284,7 @@ var IgeThree = IgeEventingClass.extend({
 		}
 	},
 
-	IgeEntity_material: function(material) {
+	IgeEntity_material: function (material) {
 		if (material !== undefined) {
 			this._material = material;
 			return this;
@@ -289,9 +293,9 @@ var IgeThree = IgeEventingClass.extend({
 		return this._material;
 	},
 
-	IgeEntity_model: function(model) {
+	IgeEntity_model: function (model) {
 		if (model !== undefined) {
-			ige.three._geometryLoader.path = './models';
+			ige.three._geometryLoader.path = "./models";
 			this._threeObj = new THREE.Mesh(
 				ige.three._geometryLoader.parse(model),
 				this._material || new THREE.MeshFaceMaterial()
@@ -305,11 +309,11 @@ var IgeThree = IgeEventingClass.extend({
 		return this._threeObj;
 	},
 
-	IgeEntity_mesh: function(mesh) {
+	IgeEntity_mesh: function (mesh) {
 		if (mesh !== undefined) {
 			this._threeObj = new THREE.Mesh(
 				mesh,
-				this._material || new THREE.MeshBasicMaterial({color: 0x0000ff, wireframe: true})
+				this._material || new THREE.MeshBasicMaterial({ color: 0x0000ff, wireframe: true })
 			);
 			return this;
 		}
@@ -317,7 +321,7 @@ var IgeThree = IgeEventingClass.extend({
 		return this._threeObj;
 	},
 
-	IgeEntity_mount: function(obj) {
+	IgeEntity_mount: function (obj) {
 		var self = this;
 
 		if (this._threeObj) {
@@ -328,7 +332,7 @@ var IgeThree = IgeEventingClass.extend({
 		return this._$mount(obj);
 	},
 
-	IgeEntity_unMount: function() {
+	IgeEntity_unMount: function () {
 		var self = this;
 
 		if (this._threeObj) {

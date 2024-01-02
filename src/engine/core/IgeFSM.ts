@@ -38,7 +38,7 @@ export class IgeFSM extends IgeBaseClass {
 	/**
 	 * A simple finite state machine implementation.
 	 */
-	constructor (initialData?: InitialData) {
+	constructor(initialData?: InitialData) {
 		super();
 
 		this._states = {};
@@ -72,7 +72,7 @@ export class IgeFSM extends IgeBaseClass {
 	 * Returns the name of the initial state.
 	 * @returns {string} The name of the initial state.
 	 */
-	initialStateName () {
+	initialStateName() {
 		return this._initialStateName;
 	}
 
@@ -80,7 +80,7 @@ export class IgeFSM extends IgeBaseClass {
 	 * Returns the name of the previous state.
 	 * @returns {string} The name of the previous state.
 	 */
-	previousStateName () {
+	previousStateName() {
 		return this._previousStateName;
 	}
 
@@ -88,7 +88,7 @@ export class IgeFSM extends IgeBaseClass {
 	 * Returns the name of the current state.
 	 * @returns {string} The name of the current state.
 	 */
-	currentStateName () {
+	currentStateName() {
 		return this._currentStateName;
 	}
 
@@ -288,7 +288,10 @@ export class IgeFSM extends IgeBaseClass {
 
 			this.log(`Checking transition from ${this._currentStateName} to ${newStateName}...`);
 
-			if (!this._transitions[this._currentStateName] || !this._transitions[this._currentStateName][newStateName]) {
+			if (
+				!this._transitions[this._currentStateName] ||
+				!this._transitions[this._currentStateName][newStateName]
+			) {
 				this.log(`No transition check from ${this._currentStateName} to ${newStateName}`);
 				// No transition check method exists, continue to change states
 				return resolve(this._transitionStates(newStateName, ...rest));
@@ -361,11 +364,11 @@ export class IgeFSM extends IgeBaseClass {
 		return this.enterState(this._previousStateName, null);
 	};
 
-	getData (key: string): any {
+	getData(key: string): any {
 		return this._data[key];
 	}
 
-	setData (key: string, val: any): void {
+	setData(key: string, val: any): void {
 		this._data[key] = val;
 	}
 

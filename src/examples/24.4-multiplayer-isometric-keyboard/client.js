@@ -1,5 +1,5 @@
 var Client = IgeClass.extend({
-	classId: 'Client',
+	classId: "Client",
 
 	init: function () {
 		//ige.timeScale(0.1);
@@ -20,10 +20,10 @@ var Client = IgeClass.extend({
 
 		// Load the textures we want to use
 		this.textures = {
-			grassSheet: new IgeCellSheet('../assets/textures/tiles/grassSheet.png', 4, 1)
+			grassSheet: new IgeCellSheet("../assets/textures/tiles/grassSheet.png", 4, 1)
 		};
 
-		ige.on('texturesLoaded', function () {
+		ige.on("texturesLoaded", function () {
 			// Ask the engine to start
 			ige.start(function (success) {
 				// Check if the engine started successfully
@@ -33,44 +33,33 @@ var Client = IgeClass.extend({
 					// than before the scene etc are created... maybe you want
 					// a splash screen or a menu first? Then connect after you've
 					// got a username or something?
-					ige.components.network.start('http://localhost:2000', function () {
+					ige.components.network.start("http://localhost:2000", function () {
 						// Setup the network command listeners
-						ige.components.network.define('playerEntity', self._onPlayerEntity); // Defined in ./gameClasses/ClientNetworkEvents.js
+						ige.components.network.define("playerEntity", self._onPlayerEntity); // Defined in ./gameClasses/ClientNetworkEvents.js
 
 						// Setup the network stream handler
-						ige.components.network.addComponent(IgeStreamComponent)
+						ige.components.network
+							.addComponent(IgeStreamComponent)
 							.stream.renderLatency(80) // Render the simulation 160 milliseconds in the past
 							// Create a listener that will fire whenever an entity
 							// is created because of the incoming stream data
-							.stream.on('entityCreated', function (entity) {
-								self.log('Stream entity created with ID: ' + entity.id());
-
+							.stream.on("entityCreated", function (entity) {
+								self.log("Stream entity created with ID: " + entity.id());
 							});
 
-						self.mainScene = new IgeScene2d()
-							.id('mainScene');
+						self.mainScene = new IgeScene2d().id("mainScene");
 
-						self.backgroundScene = new IgeScene2d()
-							.id('backgroundScene')
-							.layer(0)
-							.mount(self.mainScene);
+						self.backgroundScene = new IgeScene2d().id("backgroundScene").layer(0).mount(self.mainScene);
 
-						self.foregroundScene = new IgeScene2d()
-							.id('foregroundScene')
-							.layer(1)
-							.mount(self.mainScene);
+						self.foregroundScene = new IgeScene2d().id("foregroundScene").layer(1).mount(self.mainScene);
 
-						self.uiScene = new IgeScene2d()
-							.id('uiScene')
-							.layer(2)
-							.ignoreCamera(true)
-							.mount(self.mainScene);
+						self.uiScene = new IgeScene2d().id("uiScene").layer(2).ignoreCamera(true).mount(self.mainScene);
 
 						// Create the main viewport and set the scene
 						// it will "look" at as the new scene1 we just
 						// created above
 						self.vp1 = new IgeViewport()
-							.id('vp1')
+							.id("vp1")
 							.autoSize(true)
 							.scene(self.mainScene)
 							.drawBounds(false)
@@ -95,8 +84,8 @@ var Client = IgeClass.extend({
 						var texIndex = self.textureMap1.addTexture(self.textures.grassSheet);
 
 						// Ask the server to send us the tile data
-						ige.components.network.request('gameTiles', {}, function (commandName, data) {
-							console.log('gameTiles response', data);
+						ige.components.network.request("gameTiles", {}, function (commandName, data) {
+							console.log("gameTiles response", data);
 
 							// Paint the texture map based on the data sent from the server
 							var x, y, tileData;
@@ -113,7 +102,7 @@ var Client = IgeClass.extend({
 						});
 
 						// Ask the server to create an entity for us
-						ige.components.network.send('playerEntity');
+						ige.components.network.send("playerEntity");
 
 						// We don't create any entities here because in this example the entities
 						// are created server-side and then streamed to the clients. If an entity
@@ -126,4 +115,6 @@ var Client = IgeClass.extend({
 	}
 });
 
-if (typeof(module) !== 'undefined' && typeof(module.exports) !== 'undefined') { module.exports = Client; }
+if (typeof module !== "undefined" && typeof module.exports !== "undefined") {
+	module.exports = Client;
+}

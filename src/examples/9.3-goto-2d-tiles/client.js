@@ -1,5 +1,5 @@
 var Client = IgeClass.extend({
-	classId: 'Client',
+	classId: "Client",
 	init: function () {
 		ige.addComponent(IgeEditorComponent);
 		ige.globalSmoothing(true);
@@ -16,17 +16,12 @@ var Client = IgeClass.extend({
 			// Check if the engine started successfully
 			if (success) {
 				// Create the scene
-				self.mainScene = new IgeScene2d()
-					.id('mainScene');
+				self.mainScene = new IgeScene2d().id("mainScene");
 
-				self.objectScene = new IgeScene2d()
-					.id('objectScene')
-					.depth(0)
-					.drawBounds(false)
-					.mount(self.mainScene);
+				self.objectScene = new IgeScene2d().id("objectScene").depth(0).drawBounds(false).mount(self.mainScene);
 
 				self.uiScene = new IgeScene2d()
-					.id('uiScene')
+					.id("uiScene")
 					.depth(1)
 					.drawBounds(false)
 					.ignoreCamera(true) // We don't want the UI scene to be affected by the viewport's camera
@@ -34,7 +29,7 @@ var Client = IgeClass.extend({
 
 				// Create the main viewport
 				self.vp1 = new IgeViewport()
-					.id('vp1')
+					.id("vp1")
 					.autoSize(true)
 					.scene(self.mainScene)
 					.drawMouse(true)
@@ -43,7 +38,7 @@ var Client = IgeClass.extend({
 
 				// Create an isometric tile map
 				self.tileMap1 = new IgeTileMap2d()
-					.id('tileMap1')
+					.id("tileMap1")
 					.tileWidth(40)
 					.tileHeight(40)
 					.drawGrid(3)
@@ -68,7 +63,7 @@ var Client = IgeClass.extend({
 				};
 
 				self.player = new Character()
-					.id('player')
+					.id("player")
 					.addComponent(PlayerComponent)
 					.drawBounds(false)
 					.drawBoundsData(false)
@@ -81,20 +76,31 @@ var Client = IgeClass.extend({
 				// event propagation down to moving the player. If it's working correctly
 				// the player won't move when the entity is clicked.
 				self.button1 = new IgeUiEntity()
-					.id('testUiEntity')
+					.id("testUiEntity")
 					.depth(1)
-					.backgroundColor('#474747')
+					.backgroundColor("#474747")
 					.top(0)
 					.left(0)
-					.width('100%')
+					.width("100%")
 					.height(30)
-					.borderTopColor('#666666')
+					.borderTopColor("#666666")
 					.borderTopWidth(1)
 					.backgroundPosition(0, 0)
-					.mouseOver(function () {this.backgroundColor('#49ceff'); ige.components.input.stopPropagation(); })
-					.mouseOut(function () {this.backgroundColor('#474747'); ige.components.input.stopPropagation(); })
-					.mouseMove(function () { ige.components.input.stopPropagation(); })
-					.mouseUp(function () { console.log('Clicked ' + this.id()); ige.components.input.stopPropagation(); })
+					.mouseOver(function () {
+						this.backgroundColor("#49ceff");
+						ige.components.input.stopPropagation();
+					})
+					.mouseOut(function () {
+						this.backgroundColor("#474747");
+						ige.components.input.stopPropagation();
+					})
+					.mouseMove(function () {
+						ige.components.input.stopPropagation();
+					})
+					.mouseUp(function () {
+						console.log("Clicked " + this.id());
+						ige.components.input.stopPropagation();
+					})
 					.mount(self.uiScene);
 
 				// Set the camera to track the character with some
@@ -105,4 +111,6 @@ var Client = IgeClass.extend({
 	}
 });
 
-if (typeof(module) !== 'undefined' && typeof(module.exports) !== 'undefined') { module.exports = Client; }
+if (typeof module !== "undefined" && typeof module.exports !== "undefined") {
+	module.exports = Client;
+}

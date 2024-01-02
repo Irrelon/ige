@@ -1,12 +1,12 @@
-import { ige } from "@/engine/instance";
 import { IgeBaseClass } from "@/engine/core/IgeBaseClass";
-import { IgeCanInit } from "@/types/IgeCanInit";
-import { IgeScene2d } from "@/engine/core/IgeScene2d";
-import { IgeViewport } from "@/engine/core/IgeViewport";
-import { IgeTexture } from "@/engine/core/IgeTexture";
+import { IgeParticle } from "@/engine/core/IgeParticle";
 import { IgeParticleEmitter } from "@/engine/core/IgeParticleEmitter";
 import { IgePoint3d } from "@/engine/core/IgePoint3d";
-import { IgeParticle } from "@/engine/core/IgeParticle";
+import { IgeScene2d } from "@/engine/core/IgeScene2d";
+import { IgeTexture } from "@/engine/core/IgeTexture";
+import { IgeViewport } from "@/engine/core/IgeViewport";
+import { ige } from "@/engine/instance";
+import { IgeCanInit } from "@/types/IgeCanInit";
 
 // @ts-ignore
 window.ige = ige;
@@ -14,16 +14,16 @@ window.ige = ige;
 export class Client extends IgeBaseClass implements IgeCanInit {
 	classId = "Client";
 
-	constructor () {
+	constructor() {
 		super();
 		void this.init();
 	}
 
-	async init () {
-		new IgeTexture("star1", '../assets/textures/particles/star1.png');
-		new IgeTexture("star2", '../assets/textures/particles/star2.png');
-		new IgeTexture("star3", '../assets/textures/particles/star3.png');
-		new IgeTexture("star4", '../assets/textures/particles/star4.png');
+	async init() {
+		new IgeTexture("star1", "../assets/textures/particles/star1.png");
+		new IgeTexture("star2", "../assets/textures/particles/star2.png");
+		new IgeTexture("star3", "../assets/textures/particles/star3.png");
+		new IgeTexture("star4", "../assets/textures/particles/star4.png");
 
 		// Wait for our textures to load before continuing
 		await ige.textures.whenLoaded();
@@ -35,9 +35,9 @@ export class Client extends IgeBaseClass implements IgeCanInit {
 		await ige.engine.start();
 
 		class StarParticle extends IgeParticle {
-			classId = 'StarParticle';
+			classId = "StarParticle";
 
-			constructor (emitter: IgeParticleEmitter) {
+			constructor(emitter: IgeParticleEmitter) {
 				super(emitter);
 
 				this.noAabb(true);
@@ -52,14 +52,13 @@ export class Client extends IgeBaseClass implements IgeCanInit {
 		}
 
 		// Create the scene
-		const scene1 = new IgeScene2d()
-			.id('scene1');
+		const scene1 = new IgeScene2d().id("scene1");
 
 		// Create the main viewport
 		const vp1 = new IgeViewport()
 			//.addComponent("mousePan", IgeMousePanComponent)
 			//.components.mousePan.enabled(true)
-			.id('vp1')
+			.id("vp1")
 			.autoSize(true)
 			.scene(scene1)
 			.drawBounds(true)
@@ -68,7 +67,7 @@ export class Client extends IgeBaseClass implements IgeCanInit {
 
 		// Create an entity
 		const particleEmitter = new IgeParticleEmitter()
-			.id('emitter1')
+			.id("emitter1")
 			.particle(StarParticle)
 			.lifeBase(2500)
 			.quantityTimespan(1000)

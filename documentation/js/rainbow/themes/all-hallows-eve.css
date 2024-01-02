@@ -7,44 +7,46 @@
  * @version 1.0.1
  */
 pre {
-    background: #000;
-    word-wrap: break-word;
-    margin: 0px;
-    padding: 0px;
-    padding: 10px;
-    color: #fff;
-    font-size: 14px;
-    margin-bottom: 20px;
+	background: #000;
+	word-wrap: break-word;
+	margin: 0px;
+	padding: 0px;
+	padding: 10px;
+	color: #fff;
+	font-size: 14px;
+	margin-bottom: 20px;
 }
 
-pre, code {
-    font-family: 'Monaco', courier, monospace;
+pre,
+code {
+	font-family: "Monaco", courier, monospace;
 }
 
 pre .comment {
-    color: #9933CC;
+	color: #9933cc;
 }
 
 pre .constant {
-    color: #3387CC;
+	color: #3387cc;
 }
 
 pre .storage {
-    color: #CC7833;
+	color: #cc7833;
 }
 
 pre .string {
-    color: #66CC33;
+	color: #66cc33;
 }
 
-pre .keyword, pre .selector {
-    color: #CC7833;
+pre .keyword,
+pre .selector {
+	color: #cc7833;
 }
 
 pre .inherited-class {
-    font-style: italic;
+	font-style: italic;
 }
 
 pre .support {
-    color: #C83730;
+	color: #c83730;
 }

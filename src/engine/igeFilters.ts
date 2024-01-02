@@ -1,6 +1,6 @@
 // See the ige/engine/filters folder for the individual filter source
-import type { IgeSmartFilter } from "@/types/IgeSmartFilter";
 import type { IgeCanvasRenderingContext2d } from "@/types/IgeCanvasRenderingContext2d";
+import type { IgeSmartFilter } from "@/types/IgeSmartFilter";
 
 export type IgeFilterHelperFunction = (...args: any[]) => any;
 
@@ -10,7 +10,7 @@ export class IgeFilters {
 	tmpCanvas?: OffscreenCanvas;
 	tmpCtx?: IgeCanvasRenderingContext2d | null;
 
-	constructor () {
+	constructor() {
 		if (typeof window === "undefined") {
 			return;
 		}
@@ -19,19 +19,19 @@ export class IgeFilters {
 		this.tmpCtx = this.tmpCanvas.getContext("2d") as OffscreenCanvasRenderingContext2D;
 	}
 
-	getFilter (name: string): IgeSmartFilter | undefined {
+	getFilter(name: string): IgeSmartFilter | undefined {
 		return this.filter[name];
 	}
 
-	registerFilter (name: string, filter: IgeSmartFilter) {
+	registerFilter(name: string, filter: IgeSmartFilter) {
 		this.filter[name] = filter;
 	}
 
-	getHelper (name: string): IgeFilterHelperFunction | undefined {
+	getHelper(name: string): IgeFilterHelperFunction | undefined {
 		return this.helper[name];
 	}
 
-	registerHelper (name: string, filter: IgeFilterHelperFunction) {
+	registerHelper(name: string, filter: IgeFilterHelperFunction) {
 		this.helper[name] = filter;
 	}
 }

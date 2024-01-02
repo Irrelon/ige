@@ -1,12 +1,12 @@
-import { IgeUiElement } from "@/engine/core/IgeUiElement";
 import { IgeTexture } from "@/engine/core/IgeTexture";
+import { IgeUiElement } from "@/engine/core/IgeUiElement";
 import { IgeUiLabel } from "@/engine/ui/IgeUiLabel";
 import { IgeFontAlignX, IgeFontAlignY } from "@/enums/IgeFontAlign";
 
 export class UiBuildItem extends IgeUiElement {
 	labelEntity: IgeUiLabel;
 
-	constructor (icon: IgeTexture, label: string) {
+	constructor(icon: IgeTexture, label: string) {
 		super();
 
 		this.labelEntity = new IgeUiLabel();
@@ -17,7 +17,7 @@ export class UiBuildItem extends IgeUiElement {
 		this.labelEntity.backgroundColor("#333333");
 		this.labelEntity.value(label);
 		this.labelEntity.left(50);
-		this.labelEntity.height(20)
+		this.labelEntity.height(20);
 		this.labelEntity.mount(this);
 		this.labelEntity.hide();
 

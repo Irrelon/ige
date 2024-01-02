@@ -1,11 +1,11 @@
 // TODO: Implement the _stringify() method for this class
-import {IgeTileMap2d} from "./IgeTileMap2d";
-import {IgeMap2d} from "./IgeMap2d";
-import {IgePoint3d} from "./IgePoint3d";
-import {IgeMountMode} from "@/enums/IgeMountMode";
-import {IgeTexture} from "./IgeTexture";
-import {ige} from "@/engine/instance";
-import {IgeRect} from "@/engine/core/IgeRect";
+import { IgeMap2d } from "./IgeMap2d";
+import { IgePoint3d } from "./IgePoint3d";
+import { IgeTexture } from "./IgeTexture";
+import { IgeTileMap2d } from "./IgeTileMap2d";
+import { IgeRect } from "@/engine/core/IgeRect";
+import { ige } from "@/engine/instance";
+import { IgeMountMode } from "@/enums/IgeMountMode";
 
 /**
  * Texture maps provide a way to display textures / cells across a tile map.
@@ -23,7 +23,7 @@ export class IgeTextureMap extends IgeTileMap2d {
 
 	type: any;
 
-	constructor (tileWidth?: number, tileHeight?: number) {
+	constructor(tileWidth?: number, tileHeight?: number) {
 		super(tileWidth, tileHeight);
 
 		this.map = new IgeMap2d();
@@ -40,7 +40,7 @@ export class IgeTextureMap extends IgeTileMap2d {
 	 * @param {number=} val The size in tiles of each section.
 	 * @return {*}
 	 */
-	autoSection (val?: number) {
+	autoSection(val?: number) {
 		if (val !== undefined) {
 			this._autoSection = val;
 			return this;
@@ -56,7 +56,7 @@ export class IgeTextureMap extends IgeTileMap2d {
 	 * @param {number=} val The boolean flag value.
 	 * @return {*}
 	 */
-	drawSectionBounds (val?: boolean) {
+	drawSectionBounds(val?: boolean) {
 		if (val !== undefined) {
 			this._drawSectionBounds = val;
 			return this;
@@ -68,7 +68,7 @@ export class IgeTextureMap extends IgeTileMap2d {
 	/**
 	 * Forces a cache redraw on the next tick.
 	 */
-	cacheForceFrame () {
+	cacheForceFrame() {
 		this._cacheDirty = true;
 	}
 
@@ -78,7 +78,7 @@ export class IgeTextureMap extends IgeTileMap2d {
 	 * @param {IgeTileMap2d} entity The other map to read map data from.
 	 * @return {*}
 	 */
-	negate (entity?: IgeTileMap2d) {
+	negate(entity?: IgeTileMap2d) {
 		if (entity !== undefined) {
 			const entityMapData = entity.map._mapData;
 			const thisMapData = this.map._mapData;
@@ -109,7 +109,7 @@ export class IgeTextureMap extends IgeTileMap2d {
 	 * @param {IgeTexture} texture
 	 * @return {Integer} The index of the texture you just added.
 	 */
-	addTexture (texture: IgeTexture) {
+	addTexture(texture: IgeTexture) {
 		this._textureList.push(texture);
 		if (!texture._loaded) {
 			this._allTexturesLoaded = false;
@@ -123,7 +123,7 @@ export class IgeTextureMap extends IgeTileMap2d {
 	 * @return {Boolean} True if all textures are loaded, false if
 	 * not.
 	 */
-	allTexturesLoaded () {
+	allTexturesLoaded() {
 		if (!this._allTexturesLoaded) {
 			const arr = this._textureList;
 			let arrCount = arr.length;
@@ -147,7 +147,7 @@ export class IgeTextureMap extends IgeTileMap2d {
 	 * @param {number} textureIndex The texture index.
 	 * @param {number} cell The cell index.
 	 */
-	paintTile (x: number, y: number, textureIndex: number, cell: number) {
+	paintTile(x: number, y: number, textureIndex: number, cell: number) {
 		if (x !== undefined && y !== undefined && textureIndex !== undefined) {
 			if (cell === undefined || cell < 1) {
 				cell = 1; // Set the cell default to 1
@@ -162,7 +162,7 @@ export class IgeTextureMap extends IgeTileMap2d {
 	 * @param {number} x The tile x co-ordinate.
 	 * @param {number} y The tile y co-ordinate.
 	 */
-	clearTile (x: number, y: number) {
+	clearTile(x: number, y: number) {
 		this.map.clearData(x, y);
 	}
 
@@ -171,7 +171,7 @@ export class IgeTextureMap extends IgeTileMap2d {
 	 * with the data found.
 	 * @param {Object} map The map data object.
 	 */
-	loadMap (map) {
+	loadMap(map) {
 		if (map.textures) {
 			// Empty the existing array
 			this._textureList = [];
@@ -199,12 +199,16 @@ export class IgeTextureMap extends IgeTileMap2d {
 	 * with the loadMap() method.
 	 * @return {Object} The map data object.
 	 */
-	saveMap () {
+	saveMap() {
 		// in URL format
 		const textures: string[] = [],
 			mapData = this.map._mapData;
 
-		let i, x, y, dataX = 0, dataY = 0;
+		let i,
+			x,
+			y,
+			dataX = 0,
+			dataY = 0;
 
 		// Grab all the texture definitions
 		for (i = 0; i < this._textureList.length; i++) {
@@ -230,8 +234,8 @@ export class IgeTextureMap extends IgeTileMap2d {
 
 		return JSON.stringify({
 			textures,
-			"data": this.map.mapData(),
-			"dataXY": [dataX, dataY]
+			data: this.map.mapData(),
+			dataXY: [dataX, dataY]
 		});
 	}
 
@@ -241,7 +245,7 @@ export class IgeTextureMap extends IgeTileMap2d {
 	 * map will not be affected.
 	 * @returns {*}
 	 */
-	clearMap () {
+	clearMap() {
 		this.map.mapData([]);
 		return this;
 	}
@@ -252,7 +256,7 @@ export class IgeTextureMap extends IgeTileMap2d {
 	 * the texture map to it's virgin state as if it had just been created.
 	 * @returns {*}
 	 */
-	reset () {
+	reset() {
 		this.clearMap();
 		this._textureList = [];
 
@@ -265,7 +269,7 @@ export class IgeTextureMap extends IgeTileMap2d {
 	 * @param {number} y The tile y co-ordinate.
 	 * @param {number=} textureIndex The new texture index.
 	 */
-	tileTextureIndex (x, y, textureIndex) {
+	tileTextureIndex(x, y, textureIndex) {
 		if (x !== undefined && y !== undefined) {
 			const obj = this.map.tileData(x, y);
 			if (textureIndex !== undefined) {
@@ -283,7 +287,7 @@ export class IgeTextureMap extends IgeTileMap2d {
 	 * @param {number} y The tile y co-ordinate.
 	 * @param {number} cell The new cell index.
 	 */
-	tileTextureCell (x, y, cell) {
+	tileTextureCell(x, y, cell) {
 		if (x !== undefined && y !== undefined) {
 			const obj = this.map.tileData(x, y);
 			if (cell !== undefined) {
@@ -301,7 +305,7 @@ export class IgeTextureMap extends IgeTileMap2d {
 	 * @param {Array} mapData The map data array.
 	 * @return {Object} The new map data.
 	 */
-	convertHorizontalData (mapData) {
+	convertHorizontalData(mapData) {
 		const newData: number[][] = [];
 		let x, y;
 
@@ -324,23 +328,32 @@ export class IgeTextureMap extends IgeTileMap2d {
 	 * Handles rendering the texture map during engine tick events.
 	 * @param {CanvasRenderingContext2D} ctx
 	 */
-	tick (ctx) {
+	tick(ctx) {
 		// TODO: This is being called at the wrong time, drawing children before this parent! FIX THIS
 		// Run the IgeTileMap2d tick method
 		super.tick(ctx);
 
 		// Draw each image that has been defined on the map
-		const mapData = this.map._mapData, tileEntity = this._newTileEntity(); // TODO: This is wasteful, cache it?
-		let x, y,
-			tx, ty,
-			xInt, yInt,
-			finalX, finalY,
+		const mapData = this.map._mapData,
+			tileEntity = this._newTileEntity(); // TODO: This is wasteful, cache it?
+		let x,
+			y,
+			tx,
+			ty,
+			xInt,
+			yInt,
+			finalX,
+			finalY,
 			finalPoint,
 			tileData,
-			sectionX, sectionY,
-			tempSectionX, tempSectionY,
+			sectionX,
+			sectionY,
+			tempSectionX,
+			tempSectionY,
 			_ctx,
-			regions, region, i;
+			regions,
+			region,
+			i;
 
 		if (this._autoSection !== undefined && this._autoSection > 0) {
 			if (this._cacheDirty) {
@@ -425,16 +438,24 @@ export class IgeTextureMap extends IgeTileMap2d {
 													tempSectionY += region.y;
 												}
 
-												this._ensureSectionExists(tempSectionX, tempSectionY, this._autoSection);
+												this._ensureSectionExists(
+													tempSectionX,
+													tempSectionY,
+													this._autoSection
+												);
 												_ctx = this._sectionCtx[tempSectionX][tempSectionY];
 
 												this._sectionTileRegion = this._sectionTileRegion || [];
-												this._sectionTileRegion[tempSectionX] = this._sectionTileRegion[tempSectionX] || [];
-												this._sectionTileRegion[tempSectionX][tempSectionY] = this._sectionTileRegion[tempSectionX][tempSectionY] || [];
-												this._sectionTileRegion[tempSectionX][tempSectionY][xInt] = this._sectionTileRegion[tempSectionX][tempSectionY][xInt] || [];
+												this._sectionTileRegion[tempSectionX] =
+													this._sectionTileRegion[tempSectionX] || [];
+												this._sectionTileRegion[tempSectionX][tempSectionY] =
+													this._sectionTileRegion[tempSectionX][tempSectionY] || [];
+												this._sectionTileRegion[tempSectionX][tempSectionY][xInt] =
+													this._sectionTileRegion[tempSectionX][tempSectionY][xInt] || [];
 
 												if (!this._sectionTileRegion[tempSectionX][tempSectionY][xInt][yInt]) {
-													this._sectionTileRegion[tempSectionX][tempSectionY][xInt][yInt] = true;
+													this._sectionTileRegion[tempSectionX][tempSectionY][xInt][yInt] =
+														true;
 
 													this._renderTile(
 														_ctx,
@@ -493,7 +514,7 @@ export class IgeTextureMap extends IgeTileMap2d {
 	 * @param {number} sectionY The section's y co-ordinate.
 	 * @private
 	 */
-	_ensureSectionExists (sectionX, sectionY, autoSection: number) {
+	_ensureSectionExists(sectionX, sectionY, autoSection: number) {
 		let sectionCtx;
 
 		this._sections[sectionX] = this._sections[sectionX] || [];
@@ -501,10 +522,12 @@ export class IgeTextureMap extends IgeTileMap2d {
 
 		if (!this._sections[sectionX][sectionY]) {
 			this._sections[sectionX][sectionY] = new OffscreenCanvas(2, 2);
-			this._sections[sectionX][sectionY].width = (this._tileWidth * autoSection);
-			this._sections[sectionX][sectionY].height = (this._tileHeight * autoSection);
+			this._sections[sectionX][sectionY].width = this._tileWidth * autoSection;
+			this._sections[sectionX][sectionY].height = this._tileHeight * autoSection;
 
-			sectionCtx = this._sectionCtx[sectionX][sectionY] = this._sections[sectionX][sectionY].getContext("2d") as OffscreenCanvasRenderingContext2D;
+			sectionCtx = this._sectionCtx[sectionX][sectionY] = this._sections[sectionX][sectionY].getContext(
+				"2d"
+			) as OffscreenCanvasRenderingContext2D;
 
 			// Ensure the canvas is using the correct image antialiasing mode
 			if (!ige.engine._globalSmoothing) {
@@ -523,18 +546,16 @@ export class IgeTextureMap extends IgeTileMap2d {
 	 * @param {CanvasRenderingContext2D} ctx
 	 * @private
 	 */
-	_drawSectionsToCtx (ctx, autoSection: number) {
+	_drawSectionsToCtx(ctx, autoSection: number) {
 		if (ige.engine._currentCamera === null || ige.engine._currentViewport === null) {
 			throw new Error("Engine was not ready");
 		}
 
 		const viewArea = ige.engine._currentViewport.viewArea(),
-			sectionWidth = (this._tileWidth * autoSection),
-			sectionHeight = (this._tileHeight * autoSection);
+			sectionWidth = this._tileWidth * autoSection,
+			sectionHeight = this._tileHeight * autoSection;
 
-		let x, y, tileData,
-			sectionRenderX, sectionRenderY,
-			sectionAbsX, sectionAbsY;
+		let x, y, tileData, sectionRenderX, sectionRenderY, sectionAbsX, sectionAbsY;
 
 		// Render the map sections
 		//ctx.translate(-(this._tileWidth / 2), -(this._tileHeight / 2));
@@ -550,18 +571,24 @@ export class IgeTextureMap extends IgeTileMap2d {
 
 						// Check if we are drawing isometrically and adjust
 						if (this._mountMode === IgeMountMode.iso) {
-							sectionAbsX -= (this._tileWidth / 2);
-							sectionAbsY -= (this._tileHeight / 2);
+							sectionAbsX -= this._tileWidth / 2;
+							sectionAbsY -= this._tileHeight / 2;
 						}
 
 						// Check if the section is "on screen"
-						if ((sectionAbsX + sectionWidth + (this._tileHeight / 2) >= -(viewArea.width / 2) && sectionAbsX - (this._tileWidth / 2) <= (viewArea.width / 2)) && (sectionAbsY + sectionHeight + (this._tileHeight / 2) >= -(viewArea.height / 2) && sectionAbsY <= (viewArea.height / 2))) {
+						if (
+							sectionAbsX + sectionWidth + this._tileHeight / 2 >= -(viewArea.width / 2) &&
+							sectionAbsX - this._tileWidth / 2 <= viewArea.width / 2 &&
+							sectionAbsY + sectionHeight + this._tileHeight / 2 >= -(viewArea.height / 2) &&
+							sectionAbsY <= viewArea.height / 2
+						) {
 							// Grab the canvas to paint
 							tileData = this._sections[x][y];
 
 							ctx.drawImage(
 								tileData,
-								0, 0,
+								0,
+								0,
 								sectionWidth,
 								sectionHeight,
 								sectionRenderX,
@@ -578,8 +605,8 @@ export class IgeTextureMap extends IgeTileMap2d {
 								ctx.strokeRect(
 									x * (this._tileWidth * autoSection),
 									y * (this._tileHeight * autoSection),
-									(this._tileWidth * autoSection),
-									(this._tileHeight * autoSection)
+									this._tileWidth * autoSection,
+									this._tileHeight * autoSection
 								);
 							}
 						}
@@ -603,14 +630,12 @@ export class IgeTextureMap extends IgeTileMap2d {
 	 * @return {*}
 	 * @private
 	 */
-	_renderTile (ctx, x, y, tileData, tileEntity, rect?: IgeRect, sectionX?, sectionY?) {
+	_renderTile(ctx, x, y, tileData, tileEntity, rect?: IgeRect, sectionX?, sectionY?) {
 		// TODO: Handle scaling so tiles don't loose res on scaled cached sections
 		const xAdjust = this._mountMode === IgeMountMode.iso ? this._tileWidth / 2 : 0,
 			yAdjust = this._mountMode === IgeMountMode.iso ? this._tileHeight / 2 : 0;
 
-		let finalX, finalY, regions,
-			xm1, xp1, ym1, yp1, regObj,
-			tx, ty, sx, sy;
+		let finalX, finalY, regions, xm1, xp1, ym1, yp1, regObj, tx, ty, sx, sy;
 
 		// Translate the canvas to the tile position
 		if (this._mountMode === IgeMountMode.flat) {
@@ -645,36 +670,36 @@ export class IgeTextureMap extends IgeTileMap2d {
 			}
 		}
 
-		if (finalX - (xAdjust) < 0) {
+		if (finalX - xAdjust < 0) {
 			regions = regions || [];
-			regions.push({"x": -1});
+			regions.push({ x: -1 });
 			xm1 = true;
 
 			regObj = regObj || {};
 			regObj.x = -1;
 		}
 
-		if (finalX + (xAdjust) > (ctx.canvas.width - (this._tileWidth))) {
+		if (finalX + xAdjust > ctx.canvas.width - this._tileWidth) {
 			regions = regions || [];
-			regions.push({"x": 1});
+			regions.push({ x: 1 });
 			xp1 = true;
 
 			regObj = regObj || {};
 			regObj.x = 1;
 		}
 
-		if (finalY - (0) < 0) {
+		if (finalY - 0 < 0) {
 			regions = regions || [];
-			regions.push({"y": -1});
+			regions.push({ y: -1 });
 			ym1 = true;
 
 			regObj = regObj || {};
 			regObj.y = -1;
 		}
 
-		if (finalY + (0) > (ctx.canvas.height - (this._tileHeight))) {
+		if (finalY + 0 > ctx.canvas.height - this._tileHeight) {
 			regions = regions || [];
-			regions.push({"y": 1});
+			regions.push({ y: 1 });
 			yp1 = true;
 
 			regObj = regObj || {};
@@ -710,31 +735,31 @@ export class IgeTextureMap extends IgeTileMap2d {
 	 * @return {Object} The new tile entity object.
 	 * @private
 	 */
-	_newTileEntity () {
+	_newTileEntity() {
 		if (this._mountMode === IgeMountMode.flat) {
 			return {
-				"_cell": 1,
-				"_bounds2d": {
-					"x": this._tileWidth,
-					"y": this._tileHeight
+				_cell: 1,
+				_bounds2d: {
+					x: this._tileWidth,
+					y: this._tileHeight
 				},
-				"_renderPos": {
-					"x": -this._tileWidth / 2,
-					"y": -this._tileHeight / 2
+				_renderPos: {
+					x: -this._tileWidth / 2,
+					y: -this._tileHeight / 2
 				}
 			};
 		}
 
 		if (this._mountMode === IgeMountMode.iso) {
 			return {
-				"_cell": 1,
-				"_bounds2d": {
-					"x": this._tileWidth * 2,
-					"y": this._tileHeight
+				_cell: 1,
+				_bounds2d: {
+					x: this._tileWidth * 2,
+					y: this._tileHeight
 				},
-				"_renderPos": {
-					"x": -this._tileWidth,
-					"y": -this._tileHeight / 2
+				_renderPos: {
+					x: -this._tileWidth,
+					y: -this._tileHeight / 2
 				}
 			};
 		}

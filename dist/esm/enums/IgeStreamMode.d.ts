@@ -1,5 +1,5 @@
 export declare enum IgeStreamMode {
-    "none" = 0,
-    "simple" = 1,
-    "advanced" = 2
+	"none" = 0,
+	"simple" = 1,
+	"advanced" = 2
 }

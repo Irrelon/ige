@@ -1,8 +1,8 @@
-import { ige } from "../instance";
 import { IgeComponent } from "../core/IgeComponent";
-import { IgeRect } from "../core/IgeRect";
-import { IgePoint3d } from "../core/IgePoint3d";
 import { IgePoint2d } from "../core/IgePoint2d";
+import { IgePoint3d } from "../core/IgePoint3d";
+import { IgeRect } from "../core/IgeRect";
+import { ige } from "../instance";
 
 /**
  * When added to a viewport, automatically adds mouse zooming
@@ -25,7 +25,7 @@ export class IgeMouseZoomComponent extends IgeComponent {
 	 * @param {boolean=} val
 	 * @return {*}
 	 */
-	enabled (val?: boolean) {
+	enabled(val?: boolean) {
 		if (val === undefined) {
 			return this._enabled;
 		}
@@ -51,19 +51,14 @@ export class IgeMouseZoomComponent extends IgeComponent {
 	 * @private
 	 */
 	_pointerDown = (event: Event) => {
-		if (!this._enabled || event.igeViewport.id() !== this._entity.id()) { return; }
+		if (!this._enabled || event.igeViewport.id() !== this._entity.id()) {
+			return;
+		}
 
 		const curMousePos = ige._pointerPos;
-		this._zoomStartMouse = new IgePoint3d(
-			curMousePos.x,
-			curMousePos.y,
-			0
-		);
+		this._zoomStartMouse = new IgePoint3d(curMousePos.x, curMousePos.y, 0);
 
-		this._zoomStartCamera = new IgePoint2d(
-			this._entity.camera._scale.x,
-			this._entity.camera._scale.y
-		);
+		this._zoomStartCamera = new IgePoint2d(this._entity.camera._scale.x, this._entity.camera._scale.y);
 	};
 
 	/**
@@ -73,7 +68,9 @@ export class IgeMouseZoomComponent extends IgeComponent {
 	 * @private
 	 */
 	_pointerWheel = (event: WheelEvent) => {
-		if (!this._enabled) { return; }
+		if (!this._enabled) {
+			return;
+		}
 
 		const zoomDelta = event.deltaY / 500;
 		const currentScale = this._entity.camera._scale.x;
@@ -99,8 +96,8 @@ export class IgeMouseZoomComponent extends IgeComponent {
 
 		const curMousePos = ige._pointerPos;
 		const zoomCords = {
-			"x": -(this._zoomStartMouse.x - curMousePos.x) / 100,
-			"y": -(this._zoomStartMouse.y - curMousePos.y) / 100
+			x: -(this._zoomStartMouse.x - curMousePos.x) / 100,
+			y: -(this._zoomStartMouse.y - curMousePos.y) / 100
 		};
 
 		this._entity.camera.scaleTo(
@@ -111,5 +108,5 @@ export class IgeMouseZoomComponent extends IgeComponent {
 
 		delete this._zoomStartMouse;
 		delete this._zoomStartCamera;
-	}
+	};
 }

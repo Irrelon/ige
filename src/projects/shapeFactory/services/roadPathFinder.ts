@@ -13,4 +13,4 @@ export const roadPathFinder = (fromBuildingId: string, toBuildingId: string): st
 	return pathFinder.generate(sourceNode, targetNode).map((pathItem) => {
 		return pathItem._id;
 	});
-}
+};

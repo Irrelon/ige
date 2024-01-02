@@ -2,7 +2,7 @@ import { IgeSmartTexture } from "@/types/IgeSmartTexture";
 
 export const starSmartTexture: IgeSmartTexture = {
 	render: function (ctx, entity) {
-		let rot = Math.PI / 2 * 3;
+		let rot = (Math.PI / 2) * 3;
 		const cx = 0;
 		const cy = 0;
 

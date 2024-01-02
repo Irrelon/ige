@@ -11,5 +11,5 @@ export const fillColorByResourceType: Record<ResourceType, string> = {
 	[ResourceType.elerium]: "#ae7eff",
 	[ResourceType.diamond]: "#b3dfff",
 	[ResourceType.science]: "#8400ff",
-	[ResourceType.uranium]: "#00ff47",
+	[ResourceType.uranium]: "#00ff47"
 };

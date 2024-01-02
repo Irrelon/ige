@@ -1,5 +1,5 @@
 var Client = IgeClass.extend({
-	classId: 'Client',
+	classId: "Client",
 
 	init: function () {
 		ige.addComponent(IgeEditorComponent);
@@ -28,7 +28,7 @@ var Client = IgeClass.extend({
 				// than before the scene etc are created... maybe you want
 				// a splash screen or a menu first? Then connect after you've
 				// got a username or something?
-				ige.components.network.start('http://localhost:2000', function () {
+				ige.components.network.start("http://localhost:2000", function () {
 					// Enable chat - notice we do that here AFTER the network
 					// has started. This is because the chat component registers
 					// a number of new network commands and they will fail if
@@ -41,4 +41,6 @@ var Client = IgeClass.extend({
 	}
 });
 
-if (typeof(module) !== 'undefined' && typeof(module.exports) !== 'undefined') { module.exports = Client; }
+if (typeof module !== "undefined" && typeof module.exports !== "undefined") {
+	module.exports = Client;
+}

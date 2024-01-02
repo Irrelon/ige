@@ -1,21 +1,22 @@
 var Client = IgeClass.extend({
-	classId: 'Client',
+	classId: "Client",
 	init: function () {
 		ige.addComponent(IgeEditorComponent);
 
 		// Load our textures
 		var self = this,
 			gameTexture = [],
-			Player, x;
+			Player,
+			x;
 
 		this.obj = [];
 
-		gameTexture[0] = new IgeTexture('../assets/textures/buildings/bank1.png');
+		gameTexture[0] = new IgeTexture("../assets/textures/buildings/bank1.png");
 
 		ige.addComponent(IgeEditorComponent);
 
 		// Wait for our textures to load before continuing
-		ige.on('texturesLoaded', function () {
+		ige.on("texturesLoaded", function () {
 			// Create the HTML canvas
 			ige.createFrontBuffer(true);
 
@@ -23,12 +24,11 @@ var Client = IgeClass.extend({
 				// Check if the engine started successfully
 				if (success) {
 					// Create the scene
-					self.scene1 = new IgeScene2d()
-						.id('scene1');
+					self.scene1 = new IgeScene2d().id("scene1");
 
 					// Create the main viewport
 					self.vp1 = new IgeViewport()
-						.id('vp1')
+						.id("vp1")
 						.autoSize(true)
 						.scene(self.scene1)
 						.drawBounds(true)
@@ -132,7 +132,7 @@ var Client = IgeClass.extend({
 					// We are going to use the cuboidHighlighterByDepth, but you can swap
 					// that out for cuboidHighlighterByDistance to see picking by distance
 					// from the entity center to the pointer pointer
-					ige.addBehaviour('cuboidHighlighter', cuboidHighlighterByDepth, false);
+					ige.addBehaviour("cuboidHighlighter", cuboidHighlighterByDepth, false);
 
 					// Create an entity
 					// Plinth 1
@@ -242,7 +242,7 @@ var Client = IgeClass.extend({
 						.pointerOver(pointerOverFunc)
 						.pointerOut(pointerOutFunc)
 						.pointerEventsActive(true)
-						.triggerPolygon('bounds3dPolygon');
+						.triggerPolygon("bounds3dPolygon");
 
 					self.obj[14] = new Cuboid(pointerOverFunc, pointerOutFunc)
 						.addComponent(IgeVelocityComponent)
@@ -258,4 +258,6 @@ var Client = IgeClass.extend({
 	}
 });
 
-if (typeof(module) !== 'undefined' && typeof(module.exports) !== 'undefined') { module.exports = Client; }
+if (typeof module !== "undefined" && typeof module.exports !== "undefined") {
+	module.exports = Client;
+}

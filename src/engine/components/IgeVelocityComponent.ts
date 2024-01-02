@@ -1,9 +1,9 @@
 // TODO: Doc this class!
-import { ige } from "../instance";
-import { IgePoint3d } from "../core/IgePoint3d";
-import { IgeEntity } from "../core/IgeEntity";
-import { IgeComponent } from "../core/IgeComponent";
 import { IgeBehaviourType } from "@/enums/IgeBehaviourType";
+import { IgeComponent } from "../core/IgeComponent";
+import { IgeEntity } from "../core/IgeEntity";
+import { IgePoint3d } from "../core/IgePoint3d";
+import { ige } from "../instance";
 
 export class IgeVelocityComponent extends IgeComponent {
 	classId = "IgeVelocityComponent";
@@ -13,7 +13,7 @@ export class IgeVelocityComponent extends IgeComponent {
 	_friction: IgePoint3d;
 	_linearForce?: IgePoint3d;
 
-	constructor (entity: IgeEntity, options?: any) {
+	constructor(entity: IgeEntity, options?: any) {
 		super(entity, options);
 
 		this._velocity = new IgePoint3d(0, 0, 0);
@@ -31,7 +31,7 @@ export class IgeVelocityComponent extends IgeComponent {
 		this.tick();
 	};
 
-	byAngleAndPower (radians: number, power: number, relative: boolean = false)  {
+	byAngleAndPower(radians: number, power: number, relative: boolean = false) {
 		const vel = this._velocity,
 			x = Math.cos(radians) * power,
 			y = Math.sin(radians) * power,
@@ -103,14 +103,14 @@ export class IgeVelocityComponent extends IgeComponent {
 	};
 
 	vector3 = (vector: IgePoint3d, relative: boolean = false) => {
-		if (typeof(vector.scale) !== "number") {
+		if (typeof vector.scale !== "number") {
 			vector.scale = 1; // Default to 1
 		}
 
 		const vel = this._velocity,
-			{x} = vector,
-			{y} = vector,
-			{z} = vector;
+			{ x } = vector,
+			{ y } = vector,
+			{ z } = vector;
 
 		if (!relative) {
 			vel.x = x;
@@ -139,7 +139,7 @@ export class IgeVelocityComponent extends IgeComponent {
 
 	linearForce = (degrees: number, power: number) => {
 		power /= 1000;
-		const radians = (degrees * Math.PI / 180),
+		const radians = (degrees * Math.PI) / 180,
 			x = Math.cos(radians) * power,
 			y = Math.sin(radians) * power,
 			z = x * y;
@@ -154,7 +154,7 @@ export class IgeVelocityComponent extends IgeComponent {
 	};
 
 	linearForceVector3 = (vector: IgePoint3d, relative = false) => {
-		const force = this._linearForce = this._linearForce || new IgePoint3d(0, 0, 0),
+		const force = (this._linearForce = this._linearForce || new IgePoint3d(0, 0, 0)),
 			x = vector.x / 1000,
 			y = vector.y / 1000,
 			z = vector.z / 1000;
@@ -176,9 +176,9 @@ export class IgeVelocityComponent extends IgeComponent {
 		if (this._linearForce) {
 			const vel = this._velocity;
 
-			vel.x += (this._linearForce.x * delta);
-			vel.y += (this._linearForce.y * delta);
-			vel.z += (this._linearForce.z * delta);
+			vel.x += this._linearForce.x * delta;
+			vel.y += this._linearForce.y * delta;
+			vel.z += this._linearForce.z * delta;
 		}
 	};
 
@@ -191,7 +191,7 @@ export class IgeVelocityComponent extends IgeComponent {
 		vel.z *= fric.z;
 	};
 
-	tick () {
+	tick() {
 		const delta = ige.engine._tickDelta;
 		const vel = this._velocity;
 

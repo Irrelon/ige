@@ -1,5 +1,5 @@
 var Client = IgeClass.extend({
-	classId: 'Client',
+	classId: "Client",
 	init: function () {
 		ige.globalSmoothing(true);
 
@@ -8,7 +8,7 @@ var Client = IgeClass.extend({
 		this.obj = [];
 
 		ige.addComponent(IgeEditorComponent);
-		
+
 		// Create the HTML canvas
 		ige.createFrontBuffer(true);
 
@@ -16,10 +16,10 @@ var Client = IgeClass.extend({
 		ige.start(function (success) {
 			// Check if the engine started successfully
 			if (success) {
-				ige.addGraph('IgeBaseScene');
-				
-				var baseScene = ige.$('baseScene');
-				
+				ige.addGraph("IgeBaseScene");
+
+				var baseScene = ige.$("baseScene");
+
 				// Define a function that will be called when the
 				// mouse cursor moves over one of our entities
 				overFunc = function () {
@@ -38,7 +38,7 @@ var Client = IgeClass.extend({
 
 				// Create an isometric tile map
 				self.tileMap1 = new IgeTileMap2d()
-					.id('tileMap1')
+					.id("tileMap1")
 					.isometricMounts(true)
 					.tileWidth(40)
 					.tileHeight(40)
@@ -49,22 +49,24 @@ var Client = IgeClass.extend({
 				// Create the 3d container that the player
 				// entity will be mounted to
 				self.player = new Character()
-					.id('player')
+					.id("player")
 					.addComponent(PlayerComponent)
 					.isometric(true)
 					.mouseOver(overFunc)
 					.mouseOut(outFunc)
 					.mount(self.tileMap1);
-				
-				self.player.triggerPolygon('bounds3dPolygon');
+
+				self.player.triggerPolygon("bounds3dPolygon");
 
 				// Set the camera to track the character with some
 				// tracking smoothing turned on (100)
-				ige.$('vp1').camera.trackTranslate(self.player, 100);
-				ige.$('vp1').drawBounds(true);
+				ige.$("vp1").camera.trackTranslate(self.player, 100);
+				ige.$("vp1").drawBounds(true);
 			}
 		});
 	}
 });
 
-if (typeof(module) !== 'undefined' && typeof(module.exports) !== 'undefined') { module.exports = Client; }
+if (typeof module !== "undefined" && typeof module.exports !== "undefined") {
+	module.exports = Client;
+}

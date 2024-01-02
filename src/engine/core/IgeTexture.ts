@@ -1,19 +1,17 @@
-import { ige } from "../instance";
-import { IgeSmartTexture } from "@/types/IgeSmartTexture";
-import { arrPull } from "../utils";
-import { IgeSmartFilter } from "@/types/IgeSmartFilter";
-import type { IgeCanvas } from "./IgeCanvas";
-import { newCanvas } from "./IgeCanvas";
-import { IgeEntity } from "./IgeEntity";
-import { isClient, isServer } from "../clientServer";
-import { IgeCanvasRenderingContext2d } from "@/types/IgeCanvasRenderingContext2d";
-import { IgeTextureRenderMode } from "@/enums/IgeTextureRenderMode";
 import { IgeAsset } from "./IgeAsset";
+import { newCanvas } from "./IgeCanvas";
+import type { IgeEntity } from "./IgeEntity";
 import { IgeDependencies } from "@/engine/core/IgeDependencies";
-import { IgeImage } from "@/types/IgeImage";
-
-export type IgeTextureCell = [number, number, number, number, string?];
-export type IgeTextureCellArray = IgeTextureCell[];
+import { IgeTextureRenderMode } from "@/enums/IgeTextureRenderMode";
+import { isClient, isServer } from "../clientServer";
+import { ige } from "../instance";
+import { arrPull } from "../utils";
+import type { IgeCanvas } from "@/types/IgeCanvas";
+import type { IgeCanvasRenderingContext2d } from "@/types/IgeCanvasRenderingContext2d";
+import type { IgeImage } from "@/types/IgeImage";
+import type { IgeSmartFilter } from "@/types/IgeSmartFilter";
+import type { IgeSmartTexture } from "@/types/IgeSmartTexture";
+import type { IgeTextureCellArray } from "@/types/IgeTextureCellArray";
 
 /**
  * Creates a new texture.
@@ -100,8 +98,8 @@ export class IgeTexture extends IgeAsset {
 	 * @param {string=} url "The url used to load the file for this texture.
 	 * @return {*}
 	 */
-	url (url: string): this;
-	url (): string | undefined;
+	url(url: string): this;
+	url(): string | undefined;
 	url (url?: string) {
 		if (url !== undefined) {
 			this._url = url;
@@ -120,7 +118,6 @@ export class IgeTexture extends IgeAsset {
 		return this._url;
 	}
 
-
 	/**
 	 * Loads an image into an img tag and sets an onload event
 	 * to capture when the image has finished loading.
@@ -134,11 +131,10 @@ export class IgeTexture extends IgeAsset {
 		}
 
 		if (!ige.textures._textureImageStore[imageUrl]) {
-
 			fetch(imageUrl)
-				.then(resp => resp.blob())
-				.then(blob => createImageBitmap(blob))
-				.then(image => {
+				.then((resp) => resp.blob())
+				.then((blob) => createImageBitmap(blob))
+				.then((image) => {
 					ige.textures._textureImageStore[imageUrl] = this.image = this._originalImage = image;
 					image._igeTextures = image._igeTextures || [];
 
@@ -151,17 +147,16 @@ export class IgeTexture extends IgeAsset {
 					this.log("Texture image (" + imageUrl + ") loaded successfully");
 
 					/*if (image.width % 2) {
-							self.log('The texture ' + imageUrl + ' width (' + image.width + ') is not divisible by 2 to a whole number! This can cause rendering artifacts. It can also cause performance issues on some GPUs. Please make sure your texture width is divisible by 2!', 'warning');
-						}
+                            self.log('The texture ' + imageUrl + ' width (' + image.width + ') is not divisible by 2 to a whole number! This can cause rendering artifacts. It can also cause performance issues on some GPUs. Please make sure your texture width is divisible by 2!', 'warning');
+                        }
 
-						if (image.height % 2) {
-							self.log('The texture ' + imageUrl + ' height (' + image.height + ') is not divisible by 2 to a whole number! This can cause rendering artifacts. It can also cause performance issues on some GPUs. Please make sure your texture height is divisible by 2!', 'warning');
-						}*/
+                        if (image.height % 2) {
+                            self.log('The texture ' + imageUrl + ' height (' + image.height + ') is not divisible by 2 to a whole number! This can cause rendering artifacts. It can also cause performance issues on some GPUs. Please make sure your texture height is divisible by 2!', 'warning');
+                        }*/
 
 					// Loop textures that are using this image
 					const arr = image._igeTextures;
 					const arrCount = arr.length;
-
 
 					for (let i = 0; i < arrCount; i++) {
 						const item = arr[i];
@@ -179,7 +174,7 @@ export class IgeTexture extends IgeAsset {
 				});
 		} else {
 			// Grab the cached image object
-			const image = this.image = this._originalImage = ige.textures._textureImageStore[imageUrl];
+			const image = (this.image = this._originalImage = ige.textures._textureImageStore[imageUrl]);
 
 			// Add this texture to the textures that are using this image
 			image._igeTextures.push(this);
@@ -195,7 +190,7 @@ export class IgeTexture extends IgeAsset {
 				if (image.width % 2) {
 					this.log(
 						"This texture's width is not divisible by 2 which will cause the texture to use sub-pixel rendering resulting in a blurred image. This may also slow down the renderer on some browsers. Image file: " +
-						this._url,
+							this._url,
 						"warning"
 					);
 				}
@@ -203,7 +198,7 @@ export class IgeTexture extends IgeAsset {
 				if (image.height % 2) {
 					this.log(
 						"This texture's height is not divisible by 2 which will cause the texture to use sub-pixel rendering resulting in a blurred image. This may also slow down the renderer on some browsers. Image file: " +
-						this._url,
+							this._url,
 						"warning"
 					);
 				}
@@ -214,7 +209,6 @@ export class IgeTexture extends IgeAsset {
 				this._textureLoaded();
 			}
 		}
-
 	}
 
 	_textureLoaded () {
@@ -239,10 +233,9 @@ export class IgeTexture extends IgeAsset {
 	 * @private
 	 */
 	_loadScript (scriptUrl: string) {
-
 		if (isClient) {
 			import(scriptUrl)
-				.then(({image}) => {
+				.then(({ image }) => {
 					console.log("Loaded module", image);
 
 					this.log('Texture script "' + scriptUrl + '" loaded successfully');
@@ -255,7 +248,7 @@ export class IgeTexture extends IgeAsset {
 					this.script = image;
 
 					// Run the asset script init method
-					if (typeof (image.init) === 'function') {
+					if (typeof image.init === "function") {
 						image.init.apply(image, [self]);
 					}
 
@@ -307,7 +300,7 @@ export class IgeTexture extends IgeAsset {
 	_setImage (imageElement: IgeImage) {
 		if (isClient) {
 			// Create the image object
-			const image = this.image = this._originalImage = imageElement;
+			const image = (this.image = this._originalImage = imageElement);
 
 			// Mark the image as loaded
 			image._loaded = true;
@@ -351,7 +344,9 @@ export class IgeTexture extends IgeAsset {
 	resize (x: number, y: number, dontDraw = false) {
 		if (this._originalImage) {
 			if (!this._loaded) {
-				throw new Error(`Cannot resize texture because the texture image (${this._url}) has not loaded into memory yet!`);
+				throw new Error(
+					`Cannot resize texture because the texture image (${this._url}) has not loaded into memory yet!`
+				);
 			}
 
 			if (!this._textureCtx || !this._textureCanvas) {
@@ -410,7 +405,9 @@ export class IgeTexture extends IgeAsset {
 		}
 
 		if (!this._loaded) {
-			throw new Error(`Cannot resize texture because the texture image (${this._url}) has not loaded into memory yet!`);
+			throw new Error(
+				`Cannot resize texture because the texture image (${this._url}) has not loaded into memory yet!`
+			);
 		}
 
 		// Calc final x/y values
@@ -498,7 +495,9 @@ export class IgeTexture extends IgeAsset {
 		if (this._renderMode === IgeTextureRenderMode.image) {
 			// This texture is image-based
 			if (!this._originalImage || !this.image) {
-				throw new Error("No image is available to render but the IgeTexture is in mode zero (image based render)!");
+				throw new Error(
+					"No image is available to render but the IgeTexture is in mode zero (image based render)!"
+				);
 			}
 
 			const cell = this._cells[entity._cell];
@@ -506,7 +505,9 @@ export class IgeTexture extends IgeAsset {
 			const poly = entity._renderPos; // Render pos is calculated in the IgeEntity.aabb() method
 
 			if (!cell) {
-				throw new Error(`Cannot render texture using cell ${entity._cell} because the cell does not exist in the assigned texture!`);
+				throw new Error(
+					`Cannot render texture using cell ${entity._cell} because the cell does not exist in the assigned texture!`
+				);
 			}
 
 			if (this._preFilters.length > 0 && this._textureCanvas && this._textureCtx) {
@@ -518,13 +519,25 @@ export class IgeTexture extends IgeAsset {
 				this._applyFilters.forEach((method, index) => {
 					if (!this._textureCanvas || !this._textureCtx || !this._originalImage) return;
 					this._textureCtx.save();
-					method(this._textureCanvas, this._textureCtx, this._originalImage, this, this._applyFiltersData[index]);
+					method(
+						this._textureCanvas,
+						this._textureCtx,
+						this._originalImage,
+						this,
+						this._applyFiltersData[index]
+					);
 					this._textureCtx.restore();
 				});
 				this._preFilters.forEach((method, index) => {
 					if (!this._textureCanvas || !this._textureCtx || !this._originalImage) return;
 					this._textureCtx.save();
-					method(this._textureCanvas, this._textureCtx, this._originalImage, this, this._preFiltersData[index]);
+					method(
+						this._textureCanvas,
+						this._textureCtx,
+						this._originalImage,
+						this,
+						this._preFiltersData[index]
+					);
 					this._textureCtx.restore();
 				});
 			}
@@ -546,7 +559,9 @@ export class IgeTexture extends IgeAsset {
 
 		if (this._renderMode === IgeTextureRenderMode.smartTexture) {
 			if (!this.script) {
-				throw new Error("No smart texture is available to render but the IgeTexture is in mode one (script based render)!");
+				throw new Error(
+					"No smart texture is available to render but the IgeTexture is in mode one (script based render)!"
+				);
 			}
 
 			// This texture is script-based (a "smart texture")
@@ -680,7 +695,9 @@ export class IgeTexture extends IgeAsset {
 	 */
 	applyFilter (method: IgeSmartFilter, data?: any) {
 		if (!this._loaded) {
-			throw new Error("Cannot apply filter, the texture you are trying to apply the filter to has not yet loaded!");
+			throw new Error(
+				"Cannot apply filter, the texture you are trying to apply the filter to has not yet loaded!"
+			);
 		}
 
 		if (!this._originalImage) {
@@ -836,7 +853,9 @@ export class IgeTexture extends IgeAsset {
 	 */
 	_textureFromCell (tex: IgeTexture, indexOrId: number | string) {
 		if (!this._originalImage) {
-			throw new Error("Unable to create new texture from passed cell index because we don't have an _originalImage assigned to the IgeTexture!");
+			throw new Error(
+				"Unable to create new texture from passed cell index because we don't have an _originalImage assigned to the IgeTexture!"
+			);
 		}
 
 		let index;
@@ -850,7 +869,9 @@ export class IgeTexture extends IgeAsset {
 		}
 
 		if (!this._cells[index]) {
-			throw new Error(`Unable to create new texture from passed cell index (${indexOrId}) because the cell does not exist!`);
+			throw new Error(
+				`Unable to create new texture from passed cell index (${indexOrId}) because the cell does not exist!`
+			);
 		}
 
 		// Create a new IgeTexture, then draw the existing cell

@@ -1,5 +1,4 @@
-export const undefinedMethod = () => {
-};
+export const undefinedMethod = () => {};
 
 export const nullMethod = (): null => {
 	return null;
@@ -49,5 +48,5 @@ export class IgeDummyContext {
 	putImageData = undefinedMethod;
 	strokeText = undefinedMethod;
 	createLinearGradient = undefinedMethod;
-	measureText = () => ({width: 0, height: 0});
+	measureText = () => ({ width: 0, height: 0 });
 }

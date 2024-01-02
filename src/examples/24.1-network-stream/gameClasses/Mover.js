@@ -1,5 +1,5 @@
 var Mover = IgeEntity.extend({
-	classId: 'Mover',
+	classId: "Mover",
 
 	init: function () {
 		IgeEntity.prototype.init.call(this);
@@ -8,20 +8,18 @@ var Mover = IgeEntity.extend({
 
 		if (isClient) {
 			// Define the texture this entity will use
-			this._tex = new IgeTexture('../assets/textures/sprites/fairy.png');
+			this._tex = new IgeTexture("../assets/textures/sprites/fairy.png");
 
 			// Wait for the texture to load
-			this._tex.on('loaded', function () {
-				self.texture(self._tex)
-					.dimensionsFromCell();
+			this._tex.on("loaded", function () {
+				self.texture(self._tex).dimensionsFromCell();
 
-				self.width(100)
-					.height(100);
+				self.width(100).height(100);
 			});
 		}
 
 		// Define the data sections that will be included in the stream
-		this.streamSections(['transform', 'custom1']);
+		this.streamSections(["transform", "custom1"]);
 	},
 
 	/**
@@ -36,7 +34,7 @@ var Mover = IgeEntity.extend({
 	 */
 	streamSectionData: function (sectionId, data) {
 		// Check if the section is one that we are handling
-		if (sectionId === 'custom1') {
+		if (sectionId === "custom1") {
 			// Check if the server sent us data, if not we are supposed
 			// to return the data instead of set it
 			if (data) {
@@ -85,4 +83,6 @@ var Mover = IgeEntity.extend({
 	}
 });
 
-if (typeof(module) !== 'undefined' && typeof(module.exports) !== 'undefined') { module.exports = Mover; }
+if (typeof module !== "undefined" && typeof module.exports !== "undefined") {
+	module.exports = Mover;
+}

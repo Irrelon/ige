@@ -1,10 +1,10 @@
-import { IgeTexture } from "@/engine/core/IgeTexture";
-import { IgeBaseScene } from "@/engine/core/IgeBaseScene";
 import simpleBox from "./assets/textures/smartTextures/simpleBox";
+import { Rotator } from "./gameClasses/Rotator";
 import { IgeBaseClass } from "@/engine/core/IgeBaseClass";
-import {Rotator} from "./gameClasses/Rotator";
-import {ige} from "@/engine/instance";
+import { IgeBaseScene } from "@/engine/core/IgeBaseScene";
 import { IgeEntity } from "@/engine/core/IgeEntity";
+import { IgeTexture } from "@/engine/core/IgeTexture";
+import { ige } from "@/engine/instance";
 
 // @ts-ignore
 window.ige = ige;
@@ -12,13 +12,13 @@ window.ige = ige;
 export class Client extends IgeBaseClass {
 	classId = "Client";
 
-	constructor () {
+	constructor() {
 		// Init the super class
 		super();
 		void this.init();
 	}
 
-	async init () {
+	async init() {
 		// Load the game textures
 		new IgeTexture("fairy", "./assets/textures/sprites/fairy.png");
 		new IgeTexture("simpleBox", simpleBox);
@@ -35,7 +35,7 @@ export class Client extends IgeBaseClass {
 		// Creates "baseScene" and adds a viewport
 		ige.engine.addGraph(IgeBaseScene);
 
-		const baseScene = ige.$('baseScene') as IgeEntity;
+		const baseScene = ige.$("baseScene") as IgeEntity;
 
 		// Create an entity and mount it to the scene
 		new Rotator(0.1)

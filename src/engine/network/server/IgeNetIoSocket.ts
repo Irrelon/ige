@@ -1,4 +1,4 @@
-import { IgeEventingClass } from "../../core/IgeEventingClass";
+import { IgeEventingClass } from "@/engine/core/IgeEventingClass";
 import type websocket from "websocket";
 
 export class IgeNetIoSocket extends IgeEventingClass {
@@ -8,11 +8,14 @@ export class IgeNetIoSocket extends IgeEventingClass {
 	_encode: (data: any) => string;
 	_decode: (data: string) => any;
 
-	constructor (connection: websocket.connection, options: {
-		id: string;
-		encode: (data: any) => string;
-		decode: (data: string) => any;
-	}) {
+	constructor (
+		connection: websocket.connection,
+		options: {
+			id: string;
+			encode: (data: any) => string;
+			decode: (data: string) => any;
+		}
+	) {
 		super();
 
 		this._id = options.id;

@@ -1,5 +1,5 @@
 var Player = IgeEntityBox2d.extend({
-	classId: 'Player',
+	classId: "Player",
 
 	init: function (id) {
 		IgeEntityBox2d.prototype.init.call(this);
@@ -16,20 +16,16 @@ var Player = IgeEntityBox2d.extend({
 		};
 
 		self.id(id);
-		self.addComponent(IgeVelocityComponent)
-			.category('ship')
-			.texture(ige.client.textures.ship)
-			.width(20)
-			.height(20);
+		self.addComponent(IgeVelocityComponent).category("ship").texture(ige.client.textures.ship).width(20).height(20);
 
 		// Define the polygon for collision
 		var triangles,
 			fixDefs,
 			collisionPoly = new IgePoly2d()
-			.addPoint(0, -this._bounds2d.y2)
-			.addPoint(this._bounds2d.x2, this._bounds2d.y2)
-			.addPoint(0, this._bounds2d.y2 - 5)
-			.addPoint(-this._bounds2d.x2, this._bounds2d.y2);
+				.addPoint(0, -this._bounds2d.y2)
+				.addPoint(this._bounds2d.x2, this._bounds2d.y2)
+				.addPoint(0, this._bounds2d.y2 - 5)
+				.addPoint(-this._bounds2d.x2, this._bounds2d.y2);
 
 		// Scale the polygon by the box2d scale ratio
 		collisionPoly.divide(ige.box2d._scaleRatio);
@@ -52,7 +48,7 @@ var Player = IgeEntityBox2d.extend({
 					maskBits: 0xffff & ~0x0008
 				},
 				shape: {
-					type: 'polygon',
+					type: "polygon",
 					data: this.triangles[i]
 				}
 			});
@@ -70,7 +66,7 @@ var Player = IgeEntityBox2d.extend({
 				maskBits: 0x0100
 			},
 			shape: {
-				type: 'circle',
+				type: "circle",
 				data: {
 					radius: 60
 				}
@@ -79,7 +75,7 @@ var Player = IgeEntityBox2d.extend({
 
 		// Setup the box2d physics properties
 		self.box2dBody({
-			type: 'dynamic',
+			type: "dynamic",
 			linearDamping: 0.0,
 			angularDamping: 0.5,
 			allowSleep: true,
@@ -175,21 +171,24 @@ var Player = IgeEntityBox2d.extend({
 		this._box2dBody.SetActive(false);
 
 		// Create a count down at the death location
-		this._countDownText = new ClientCountDown('Respawn in ', 3, 's', 1000)
+		this._countDownText = new ClientCountDown("Respawn in ", 3, "s", 1000)
 			.translateTo(this._translate.x, this._translate.y, 0)
 			.rotateTo(0, 0, -ige.client.vp1.camera._rotate.z)
 			.mount(ige.client.objectScene)
 			.start();
 
 		// Add a tween on the countdown text for fun!
-		this._countDownText._rotate.tween()
+		this._countDownText._rotate
+			.tween()
 			.duration(2000)
-			.properties({z: Math.radians(360)})
-			.easing('outElastic')
+			.properties({ z: Math.radians(360) })
+			.easing("outElastic")
 			.start();
 
 		// Hook the complete event so we can schedule a respawn
-		this._countDownText.on('complete', function () { self.respawn(); });
+		this._countDownText.on("complete", function () {
+			self.respawn();
+		});
 	},
 
 	respawn: function () {
@@ -209,8 +208,8 @@ var Player = IgeEntityBox2d.extend({
 		// Reset fuel
 		this._fuel = 100;
 
-		new ClientScore('-' + (100) + ' for crash!')
-			.colorOverlay('#ff6f6f')
+		new ClientScore("-" + 100 + " for crash!")
+			.colorOverlay("#ff6f6f")
 			.translateTo(this._translate.x, this._translate.y + 50, 0)
 			.mount(ige.client.objectScene)
 			.start();
@@ -230,7 +229,7 @@ var Player = IgeEntityBox2d.extend({
 		}
 
 		// Scale the camera based on flight height
-		var camScale = 1 + (0.1 * (this._translate.y / 100));
+		var camScale = 1 + 0.1 * (this._translate.y / 100);
 		//ige.$('vp1').camera.scaleTo(camScale, camScale, camScale);
 
 		IgeEntityBox2d.prototype.tick.call(this, ctx);
@@ -238,21 +237,20 @@ var Player = IgeEntityBox2d.extend({
 		// If we are carrying an orb draw a connecting line to it
 		if (this._carryingOrb) {
 			ctx.save();
-				ctx.rotate(-this._rotate.z);
-				ctx.strokeStyle = '#a6fff6';
-				ctx.beginPath();
-				ctx.moveTo(0, 0);
-				ctx.lineTo(this._orb._translate.x - this._translate.x, this._orb._translate.y - this._translate.y);
-				ctx.stroke();
+			ctx.rotate(-this._rotate.z);
+			ctx.strokeStyle = "#a6fff6";
+			ctx.beginPath();
+			ctx.moveTo(0, 0);
+			ctx.lineTo(this._orb._translate.x - this._translate.x, this._orb._translate.y - this._translate.y);
+			ctx.stroke();
 			ctx.restore();
 		}
 
 		// Update the fuel progress bar to show player fuel
-		ige.$('player_fuelBar')
-			.progress(this._fuel);
-			//.translateTo(this._translate.x, this._translate.y - 25, 0);
+		ige.$("player_fuelBar").progress(this._fuel);
+		//.translateTo(this._translate.x, this._translate.y - 25, 0);
 
-		ige.$('scoreText').text(this._score + ' points');
+		ige.$("scoreText").text(this._score + " points");
 
 		if (this._dropTime < this._currentTime - 2000) {
 			// Remove the old orb from memory so we can pick
@@ -264,17 +262,12 @@ var Player = IgeEntityBox2d.extend({
 	},
 
 	carryOrb: function (orb, contact) {
-		if (!this._oldOrb || (this._oldOrb !== orb)) {
+		if (!this._oldOrb || this._oldOrb !== orb) {
 			var distanceJointDef = new ige.box2d.b2DistanceJointDef(),
 				bodyA = contact.m_fixtureA.m_body,
 				bodyB = contact.m_fixtureB.m_body;
 
-			distanceJointDef.Initialize(
-				bodyA,
-				bodyB,
-				bodyA.GetWorldCenter(),
-				bodyB.GetWorldCenter()
-			);
+			distanceJointDef.Initialize(bodyA, bodyB, bodyA.GetWorldCenter(), bodyB.GetWorldCenter());
 
 			this._orbRope = ige.box2d._world.CreateJoint(distanceJointDef);
 
@@ -300,4 +293,6 @@ var Player = IgeEntityBox2d.extend({
 	}
 });
 
-if (typeof(module) !== 'undefined' && typeof(module.exports) !== 'undefined') { module.exports = Player; }
+if (typeof module !== "undefined" && typeof module.exports !== "undefined") {
+	module.exports = Player;
+}

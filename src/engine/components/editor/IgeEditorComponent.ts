@@ -1,8 +1,8 @@
-import { ige } from "../../instance";
-import { IgeInputComponent } from "../IgeInputComponent";
-import { IgeEventListenerObject, IgeMultiEventListenerObject } from "../../mixins/IgeEventingMixin";
 import { IgeComponent } from "../../core/IgeComponent";
 import { IgeEntity } from "../../core/IgeEntity";
+import { ige } from "../../instance";
+import { IgeEventListenerObject, IgeMultiEventListenerObject } from "../../mixins/IgeEventingMixin";
+import { IgeInputComponent } from "../IgeInputComponent";
 
 /**
  * When added to a viewport, automatically adds entity rotate
@@ -31,7 +31,7 @@ class IgeEditorComponent extends IgeComponent {
 	 * @param options The options object that was passed to the component during
 	 * the call to addComponent.
 	 */
-	constructor (entity: IgeEntity, options?: any) {
+	constructor(entity: IgeEntity, options?: any) {
 		super(entity, options);
 
 		this._showStats = 0;
@@ -110,7 +110,10 @@ class IgeEditorComponent extends IgeComponent {
 			document.body.insertAdjacentHTML("beforeend", html);
 		});
 
-		ige.sync(ige.requireScript, [igeRoot + "engine/components/editor/react/build/static/js/main.min.js", undefined]);
+		ige.sync(ige.requireScript, [
+			igeRoot + "engine/components/editor/react/build/static/js/main.min.js",
+			undefined
+		]);
 		ige.sync(ige.requireStylesheet, [igeRoot + "engine/components/editor/react/build/static/css/main.min.css"]);
 		ige.sync(ige.requireStylesheet, [igeRoot + "engine/components/editor/css/editor.css"]);
 
@@ -224,8 +227,8 @@ class IgeEditorComponent extends IgeComponent {
 
 		// Set object create defaults
 		this.objectDefault = {
-			"IgeTextureMap": {
-				"drawGrid": 100
+			IgeTextureMap: {
+				drawGrid: 100
 			}
 		};
 	}
@@ -264,10 +267,7 @@ class IgeEditorComponent extends IgeComponent {
 		this.enabled(true);
 		this._show = true;
 
-		$("#editorToggle")
-			.html("Editor On")
-			.removeClass("active")
-			.addClass("active");
+		$("#editorToggle").html("Editor On").removeClass("active").addClass("active");
 
 		$(".editorElem.toggleHide").addClass("shown");
 	};
@@ -276,9 +276,7 @@ class IgeEditorComponent extends IgeComponent {
 		this.enabled(false);
 		this._show = false;
 
-		$("#editorToggle")
-			.html("Editor Off")
-			.removeClass("active");
+		$("#editorToggle").html("Editor Off").removeClass("active");
 
 		$(".editorElem.toggleHide").removeClass("shown");
 	};
@@ -294,18 +292,13 @@ class IgeEditorComponent extends IgeComponent {
 	};
 
 	showStats = () => {
-		$("#statsToggle")
-			.html("Stats On")
-			.removeClass("active")
-			.addClass("active");
+		$("#statsToggle").html("Stats On").removeClass("active").addClass("active");
 
 		$(".counter").show();
 	};
 
 	hideStats = () => {
-		$("#statsToggle")
-			.html("Stats Off")
-			.removeClass("active");
+		$("#statsToggle").html("Stats Off").removeClass("active");
 
 		$(".counter").hide();
 	};
@@ -322,9 +315,9 @@ class IgeEditorComponent extends IgeComponent {
 		if (!this._cacheTemplates || !this._templateCache[url]) {
 			this.log("Loading template data from: " + url);
 			$.ajax(url, {
-				"async": true,
-				"dataType": "text",
-				"complete" (xhr, status) {
+				async: true,
+				dataType: "text",
+				complete(xhr, status) {
 					if (status === "success") {
 						// Convert the text into a jsRender template object
 						const template = jsviews.templates(xhr.responseText);
@@ -333,14 +326,20 @@ class IgeEditorComponent extends IgeComponent {
 							self._templateCache[url] = template;
 						}
 
-						if (callback) { callback(false, template); }
+						if (callback) {
+							callback(false, template);
+						}
 					} else {
-						if (callback) { callback(true, status); }
+						if (callback) {
+							callback(true, status);
+						}
 					}
 				}
 			});
 		} else {
-			if (callback) { callback(false, this._templateCache[url]); }
+			if (callback) {
+				callback(false, this._templateCache[url]);
+			}
 		}
 	};
 
@@ -371,16 +370,13 @@ class IgeEditorComponent extends IgeComponent {
 			this._selectedObjectClassList = ige.getClassDerivedList(obj);
 
 			// Update active-for selectors
-			$("[data-active-for]")
-				.removeClass("disabled")
-				.addClass("disabled");
+			$("[data-active-for]").removeClass("disabled").addClass("disabled");
 
 			let classArr = this._selectedObjectClassList,
 				i;
 
 			for (i = 0; i < classArr.length; i++) {
-				$("[data-active-for~=\"" + classArr[i] + "\"]")
-					.removeClass("disabled");
+				$('[data-active-for~="' + classArr[i] + '"]').removeClass("disabled");
 			}
 
 			this.emit("selectedObject", obj.id());
@@ -425,7 +421,7 @@ class IgeEditorComponent extends IgeComponent {
 	 * @private
 	 */
 	_statsTick = () => {
-		let self = (ige.components.editor as IgeEditorComponent),
+		let self = ige.components.editor as IgeEditorComponent,
 			i,
 			watchCount,
 			watchItem,
@@ -436,8 +432,8 @@ class IgeEditorComponent extends IgeComponent {
 		// Check if the stats output is enabled
 		if (self._showStats && !self._statsPauseUpdate) {
 			switch (self._showStats) {
-			case 1:
-				/*if (self._watch && self._watch.length) {
+				case 1:
+					/*if (self._watch && self._watch.length) {
 						watchCount = self._watch.length;
 
 						for (i = 0; i < watchCount; i++) {
@@ -458,7 +454,7 @@ class IgeEditorComponent extends IgeComponent {
 						}
 						html += '<br />';
 					}*/
-				/*html += '<div class="sgButton" title="Show / Hide SceneGraph Tree" onmouseup="ige.toggleShowEditor();">Scene</div> <span class="met" title="Frames Per Second">' + self._fps + ' fps</span> <span class="met" title="Draws Per Second">' + self._dps + ' dps</span> <span class="met" title="Draws Per Frame">' + self._dpf + ' dpt</span> <span class="met" title="Update Delta (How Long the Last Update Took)">' + self._updateTime + ' ms\/ud</span> <span class="met" title="Render Delta (How Long the Last Render Took)">' + self._renderTime + ' ms\/rd</span> <span class="met" title="Tick Delta (How Long the Last Tick Took)">' + self._tickTime + ' ms\/pt</span>';
+					/*html += '<div class="sgButton" title="Show / Hide SceneGraph Tree" onmouseup="ige.toggleShowEditor();">Scene</div> <span class="met" title="Frames Per Second">' + self._fps + ' fps</span> <span class="met" title="Draws Per Second">' + self._dps + ' dps</span> <span class="met" title="Draws Per Frame">' + self._dpf + ' dpt</span> <span class="met" title="Update Delta (How Long the Last Update Took)">' + self._updateTime + ' ms\/ud</span> <span class="met" title="Render Delta (How Long the Last Render Took)">' + self._renderTime + ' ms\/rd</span> <span class="met" title="Tick Delta (How Long the Last Tick Took)">' + self._tickTime + ' ms\/pt</span>';
 
 					if (self.network) {
 						// Add the network latency too
@@ -467,8 +463,7 @@ class IgeEditorComponent extends IgeComponent {
 
 					self._statsDiv.innerHTML = html;*/
 
-
-				break;
+					break;
 			}
 		}
 	};
@@ -563,9 +558,9 @@ class IgeEditorComponent extends IgeComponent {
 			canvasBoundingRect = ige._canvasPosition();
 
 			elem1.id = "igeSgTree";
-			elem1.style.top = (parseInt(canvasBoundingRect.top) + 5) + "px";
-			elem1.style.left = (parseInt(canvasBoundingRect.left) + 5) + "px";
-			elem1.style.height = (ige.engine._bounds2d.y - 30) + "px";
+			elem1.style.top = parseInt(canvasBoundingRect.top) + 5 + "px";
+			elem1.style.left = parseInt(canvasBoundingRect.left) + 5 + "px";
+			elem1.style.height = ige.engine._bounds2d.y - 30 + "px";
 			elem1.style.overflow = "auto";
 			elem1.addEventListener("mousemove", (event) => {
 				event.stopPropagation();
@@ -590,7 +585,8 @@ class IgeEditorComponent extends IgeComponent {
 				dociFrame = document.createElement("iframe");
 
 			consoleHolderElem.id = "igeSgConsoleHolder";
-			consoleHolderElem.innerHTML = "<div><b>Console</b>: Double-Click a SceneGraph Object to Script it Here</div>";
+			consoleHolderElem.innerHTML =
+				"<div><b>Console</b>: Double-Click a SceneGraph Object to Script it Here</div>";
 
 			consoleElem.type = "text";
 			consoleElem.id = "igeSgConsole";
@@ -617,9 +613,13 @@ class IgeEditorComponent extends IgeComponent {
 			button.style.right = "0px";
 			button.value = "Refresh";
 
-			button.addEventListener("click", () => {
-				self.sgTreeUpdate();
-			}, false);
+			button.addEventListener(
+				"click",
+				() => {
+					self.sgTreeUpdate();
+				},
+				false
+			);
 
 			document.getElementById("igeSgTree").appendChild(button);
 
@@ -681,7 +681,9 @@ class IgeEditorComponent extends IgeComponent {
 			ige.addComponent(IgeEditorRotateComponent);
 
 			// Schedule tree updates every second
-			ige._sgTreeUpdateInterval = setInterval(() => { self.sgTreeUpdate(); }, 1000);
+			ige._sgTreeUpdateInterval = setInterval(() => {
+				self.sgTreeUpdate();
+			}, 1000);
 		} else {
 			// Kill interval
 			clearInterval(ige._sgTreeUpdateInterval);
@@ -706,7 +708,7 @@ class IgeEditorComponent extends IgeComponent {
 
 		// Get the scenegraph data
 		this.addToSgTree(this.getSceneGraphData(this, true));
-	}
+	};
 }
 
 export default IgeEditorComponent;

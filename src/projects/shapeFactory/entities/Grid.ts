@@ -1,12 +1,12 @@
+import { isClient } from "@/engine/clientServer";
 import { IgeEntity } from "@/engine/core/IgeEntity";
 import { ige } from "@/engine/instance";
-import { isClient } from "@/engine/clientServer";
 
 export class Grid extends IgeEntity {
 	classId = "Grid";
 	spacing: number = 100;
 
-	constructor () {
+	constructor() {
 		super();
 		this.width(1000);
 		this.height(1000);

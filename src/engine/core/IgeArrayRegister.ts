@@ -5,13 +5,12 @@ export class IgeArrayRegister<RegisterType extends Record<string, any>> {
 	_field: string = "";
 	_registeredField: string = "";
 
-	constructor (field: string, registeredField: string) {
+	constructor(field: string, registeredField: string) {
 		this._field = field;
 		this._registeredField = registeredField;
 	}
 
-
-	get (id: string) {
+	get(id: string) {
 		return this._store[id] || [];
 	}
 
@@ -20,7 +19,7 @@ export class IgeArrayRegister<RegisterType extends Record<string, any>> {
 	 * @param {Object} obj The object to register.
 	 * @return {*}
 	 */
-	add (obj: RegisterType) {
+	add(obj: RegisterType) {
 		const objFieldValue = obj[this._field] as string;
 		this._store[objFieldValue] = this._store[objFieldValue] || [];
 		this._store[objFieldValue].push(obj);
@@ -36,7 +35,7 @@ export class IgeArrayRegister<RegisterType extends Record<string, any>> {
 	 * @param {Object} obj The object to un-register.
 	 * @return {*}
 	 */
-	remove (obj: RegisterType) {
+	remove(obj: RegisterType) {
 		const objFieldValue = obj[this._field] as string;
 
 		if (!this._store[objFieldValue]) {

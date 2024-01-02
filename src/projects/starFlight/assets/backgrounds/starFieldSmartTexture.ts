@@ -1,5 +1,5 @@
-import { IgeSmartTexture } from "@/types/IgeSmartTexture";
 import { ige } from "@/engine/instance";
+import { IgeSmartTexture } from "@/types/IgeSmartTexture";
 
 export const starFieldSmartTexture: IgeSmartTexture = {
 	render: function (ctx, entity) {
@@ -45,16 +45,21 @@ export const starFieldSmartTexture: IgeSmartTexture = {
 			for (i = 0; i < starCount; i++) {
 				sfPoint = stars[i];
 
-				finalPointX = sfPoint[0] - (camTranslate.x * sfPoint[2]);
-				finalPointY = sfPoint[1] - (camTranslate.y * sfPoint[2]);
+				finalPointX = sfPoint[0] - camTranslate.x * sfPoint[2];
+				finalPointY = sfPoint[1] - camTranslate.y * sfPoint[2];
 				multipleX = Math.floor(finalPointX / sf.maxDim);
 				multipleY = Math.floor(finalPointY / sf.maxDim);
 
-				finalPointX -= (sf.maxDim * multipleX);
-				finalPointY -= (sf.maxDim * multipleY);
+				finalPointX -= sf.maxDim * multipleX;
+				finalPointY -= sf.maxDim * multipleY;
 
 				ctx.fillStyle = "rgba(255,255,255," + sfPoint[2] + ")";
-				ctx.fillRect(finalPointX + camTranslate.x - sf.maxDim / 2, finalPointY + camTranslate.y - sf.maxDim / 2, sfPoint[3], sfPoint[3]);
+				ctx.fillRect(
+					finalPointX + camTranslate.x - sf.maxDim / 2,
+					finalPointY + camTranslate.y - sf.maxDim / 2,
+					sfPoint[3],
+					sfPoint[3]
+				);
 			}
 		}
 	}

@@ -1,16 +1,16 @@
-import { ige } from "@/engine/instance";
-import { isClient, isServer } from "@/engine/clientServer";
-import { oreTypes } from "../data/oreTypes";
-import { IgePoly2d } from "@/engine/core/IgePoly2d";
-import { Ore } from "./Ore";
-import { degreesToRadians } from "@/engine/utils";
-import { IgeAudioController } from "@/engine/audio/index";
 import { GameEntity, EntityPublicGameData } from "./GameEntity";
+import { Ore } from "./Ore";
+import { IgeAudioController } from "@/engine/audio/index";
+import { isClient, isServer } from "@/engine/clientServer";
+import { IgePoly2d } from "@/engine/core/IgePoly2d";
+import { IgeScene2d } from "@/engine/core/IgeScene2d";
+import { registerClass } from "@/engine/igeClassStore";
+import { ige } from "@/engine/instance";
+import { degreesToRadians } from "@/engine/utils";
 import { IgeBox2dBodyType } from "@/enums/IgeBox2dBodyType";
 import { IgeBox2dFixtureShapeType } from "@/enums/IgeBox2dFixtureShapeType";
+import { oreTypes } from "../data/oreTypes";
 import { IgeBox2dFixtureDef } from "@/types/IgeBox2dFixtureDef";
-import { registerClass } from "@/engine/igeClassStore";
-import { IgeScene2d } from "@/engine/core/IgeScene2d";
 
 export class Asteroid extends GameEntity {
 	classId = "Asteroid";
@@ -19,13 +19,13 @@ export class Asteroid extends GameEntity {
 	_oreTypeCount: number = 0;
 	_triangles: IgePoly2d[] = [];
 
-	constructor (publicGameData: EntityPublicGameData) {
+	constructor(publicGameData: EntityPublicGameData) {
 		super(publicGameData);
 
 		this.category("asteroid");
 
 		publicGameData = publicGameData || {};
-		publicGameData.size = publicGameData.size || Math.floor((Math.random() * 40) + 20);
+		publicGameData.size = publicGameData.size || Math.floor(Math.random() * 40 + 20);
 		publicGameData.type = publicGameData.type || Math.round(Math.random() * 7) + 1;
 		publicGameData.rotation = Math.round(Math.random() * 360);
 
@@ -48,9 +48,7 @@ export class Asteroid extends GameEntity {
 			}
 		}
 
-		this.layer(1)
-			.width(publicGameData.size)
-			.height(publicGameData.size);
+		this.layer(1).width(publicGameData.size).height(publicGameData.size);
 
 		if (isServer) {
 			const fixDefs: IgeBox2dFixtureDef[] = [];
@@ -64,7 +62,7 @@ export class Asteroid extends GameEntity {
 				.addPoint(-this._bounds2d.x2 * 0.2, this._bounds2d.y2 * 0.4)
 				.addPoint(-this._bounds2d.x2 * 0.5, this._bounds2d.y2 * 0.3)
 				.addPoint(-this._bounds2d.x2 * 0.75, this._bounds2d.y2 * 0.25)
-				.addPoint(-this._bounds2d.x2 * 0.85, this._bounds2d.y2 * 0.10)
+				.addPoint(-this._bounds2d.x2 * 0.85, this._bounds2d.y2 * 0.1)
 				.addPoint(-this._bounds2d.x2 * 0.65, -this._bounds2d.y2 * 0.15)
 				.addPoint(-this._bounds2d.x2 * 0.65, -this._bounds2d.y2 * 0.35)
 				.addPoint(-this._bounds2d.x2 * 0.25, -this._bounds2d.y2 * 0.75);
@@ -116,19 +114,17 @@ export class Asteroid extends GameEntity {
 		}
 	}
 
-	streamCreateConstructorArgs () {
+	streamCreateConstructorArgs() {
 		return [this._publicGameData];
 	}
 
-	ore () {
+	ore() {
 		return this._ore;
 	}
 
-	handleAcceptedAction (actionId: string, tickDelta: number) {
+	handleAcceptedAction(actionId: string, tickDelta: number) {}
 
-	}
-
-	removeRandomOreType (): number {
+	removeRandomOreType(): number {
 		// TODO check that the ore we picked has any in "stock" on this asteroid
 		const oreType = Math.round(Math.random() * (Object.keys(this._ore).length - 1));
 
@@ -139,7 +135,7 @@ export class Asteroid extends GameEntity {
 		return oreType;
 	}
 
-	applyDamage (val: number) {
+	applyDamage(val: number) {
 		const previousWholeHealth = Math.floor(this._health);
 
 		// Call parent class function
@@ -157,7 +153,7 @@ export class Asteroid extends GameEntity {
 		return this;
 	}
 
-	spawnMinedOre (oreType: number) {
+	spawnMinedOre(oreType: number) {
 		if (isServer) {
 			const ore = new Ore({
 				type: oreType
@@ -172,7 +168,7 @@ export class Asteroid extends GameEntity {
 		}
 	}
 
-	_pointerUp () {
+	_pointerUp() {
 		(ige.audio as IgeAudioController).play("select");
 		ige.app.playerEntity.selectTarget(this);
 

@@ -1,12 +1,12 @@
+import type { IgeViewport } from "@/engine/core/IgeViewport";
+import { IgeBehaviourType } from "@/enums/IgeBehaviourType";
+import { IgeEntityRenderMode } from "@/enums/IgeEntityRenderMode";
+import { IgeMountMode } from "@/enums/IgeMountMode";
+import { IgeComponent } from "../../core/IgeComponent";
+import { IgeEntity } from "../../core/IgeEntity";
 import { ige } from "../../instance";
 import { arrPull } from "../../utils";
-import { IgeEntity } from "../../core/IgeEntity";
-import { IgeComponent } from "../../core/IgeComponent";
-import { IgeMountMode } from "@/enums/IgeMountMode";
 import { IgeEntityBehaviourMethod } from "@/types/IgeEntityBehaviour";
-import { IgeBehaviourType } from "@/enums/IgeBehaviourType";
-import type { IgeViewport } from "@/engine/core/IgeViewport";
-import { IgeEntityRenderMode } from "@/enums/IgeEntityRenderMode";
 
 /**
  * This component should be mounted to a parent entity such as an IgeScene2d but can
@@ -27,7 +27,7 @@ export class IgeEntityManager extends IgeComponent {
 	_maxMountsPerOp: number = 0;
 	_maxUnMountsPerOp: number = 0;
 
-	constructor (entity: IgeEntity, options?: any) {
+	constructor(entity: IgeEntity, options?: any) {
 		super(entity, options);
 
 		// Create the _orphans array on the entity
@@ -85,7 +85,10 @@ export class IgeEntityManager extends IgeComponent {
 				if (item.aabb) {
 					let itemAabb;
 
-					if (item._renderMode === IgeEntityRenderMode.iso || (item._parent && item._parent._mountMode === IgeMountMode.iso)) {
+					if (
+						item._renderMode === IgeEntityRenderMode.iso ||
+						(item._parent && item._parent._mountMode === IgeMountMode.iso)
+					) {
 						itemAabb = item.bounds3dPolygon().aabb();
 					} else {
 						itemAabb = item.aabb();
@@ -129,7 +132,7 @@ export class IgeEntityManager extends IgeComponent {
 	 * now inside the visible area of a viewport and if so, queues them for re-mounting.
 	 * @private
 	 */
-	_updateChildren () {
+	_updateChildren() {
 		const arr = this._entity._orphans;
 		const viewportArr = ige.engine._children as IgeViewport[];
 		const vpCount = viewportArr.length;
@@ -142,7 +145,10 @@ export class IgeEntityManager extends IgeComponent {
 			if (item._managed) {
 				if (item.aabb) {
 					let itemAabb;
-					if (item._renderMode === IgeEntityRenderMode.iso || (item._parent && item._parent._mountMode === IgeMountMode.iso)) {
+					if (
+						item._renderMode === IgeEntityRenderMode.iso ||
+						(item._parent && item._parent._mountMode === IgeMountMode.iso)
+					) {
 						itemAabb = item.bounds3dPolygon().aabb();
 					} else {
 						itemAabb = item.aabb();

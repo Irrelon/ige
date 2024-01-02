@@ -1,12 +1,12 @@
-import { ige } from "@/engine/instance";
 import { isServer } from "@/engine/clientServer";
 import { IgeEntity } from "@/engine/core/IgeEntity";
-import { IgeStreamMode } from "@/enums/IgeStreamMode";
-import { registerClass } from "@/engine/igeClassStore";
 import type { IgeObject } from "@/engine/core/IgeObject";
+import { registerClass } from "@/engine/igeClassStore";
+import { ige } from "@/engine/instance";
+import { IgeStreamMode } from "@/enums/IgeStreamMode";
 
 export class GameEntity extends IgeEntity {
-	constructor () {
+	constructor() {
 		super();
 
 		//this.isometric(ige.data("isometric"));
@@ -33,17 +33,17 @@ export class GameEntity extends IgeEntity {
 		//this.pointerOut(outFunc);
 	}
 
-	mount (obj: IgeObject): this {
+	mount(obj: IgeObject): this {
 		if (isServer) {
 			this.streamProperty("mount", obj.id());
 		}
 		return super.mount(obj);
 	}
 
-	onStreamProperty (propName: string, propVal: any): this {
+	onStreamProperty(propName: string, propVal: any): this {
 		switch (propName) {
-		case "mount":
-			this.mount(ige.$(propVal));
+			case "mount":
+				this.mount(ige.$(propVal));
 		}
 		return this;
 	}

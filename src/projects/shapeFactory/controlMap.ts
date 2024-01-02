@@ -16,4 +16,4 @@ export const controlMap = {
 	[GameControls.panDown]: [IgeInputDevice.keyboard, IgeInputKeyboardMap.ArrowDown],
 	[GameControls.panLeft]: [IgeInputDevice.keyboard, IgeInputKeyboardMap.ArrowLeft],
 	[GameControls.panRight]: [IgeInputDevice.keyboard, IgeInputKeyboardMap.ArrowRight]
-}
+};

@@ -1,11 +1,11 @@
-import {ige} from "@/engine/instance";
-import { IgeBaseClass } from "@/engine/core/IgeBaseClass";
-import { IgeTexture } from "@/engine/core/IgeTexture";
-import { IgeCanInit } from "@/types/IgeCanInit";
-import { IgeScene2d } from "@/engine/core/IgeScene2d";
-import { IgeViewport } from "@/engine/core/IgeViewport";
 import { RandomTweener } from "./gameClasses/RandomTweener";
+import { IgeBaseClass } from "@/engine/core/IgeBaseClass";
 import { IgeEntity } from "@/engine/core/IgeEntity";
+import { IgeScene2d } from "@/engine/core/IgeScene2d";
+import { IgeTexture } from "@/engine/core/IgeTexture";
+import { IgeViewport } from "@/engine/core/IgeViewport";
+import { ige } from "@/engine/instance";
+import { IgeCanInit } from "@/types/IgeCanInit";
 
 // @ts-ignore
 window.ige = ige;
@@ -13,12 +13,12 @@ window.ige = ige;
 export class Client extends IgeBaseClass implements IgeCanInit {
 	classId = "Client";
 
-	constructor () {
+	constructor() {
 		super();
 		void this.init();
 	}
 
-	async init () {
+	async init() {
 		// Load the game textures
 		new IgeTexture("fairy", "../assets/textures/sprites/fairy.png");
 
@@ -32,12 +32,11 @@ export class Client extends IgeBaseClass implements IgeCanInit {
 		await ige.engine.start();
 
 		// Create the scene
-		const scene1 = new IgeScene2d()
-			.id('scene1');
+		const scene1 = new IgeScene2d().id("scene1");
 
 		// Create the main viewport
 		new IgeViewport()
-			.id('vp1')
+			.id("vp1")
 			.autoSize(true)
 			.scene(scene1)
 			.drawBounds(true)
@@ -66,7 +65,7 @@ export class Client extends IgeBaseClass implements IgeCanInit {
 		// then add them to the scene!
 		for (let i = 0; i < 100; i++) {
 			new RandomTweener()
-				.id('fairy' + i)
+				.id("fairy" + i)
 				.depth(i)
 				.width(100)
 				.height(100)

@@ -1,26 +1,24 @@
-import { ige } from "@/engine/instance";
-import { isClient } from "@/engine/clientServer";
-import { IgePoint3d } from "@/engine/core/IgePoint3d";
 import { LaserEffect } from "./LaserEffect";
-import { MiningParticle } from "../particles/MiningParticle";
-import { IgeParticleEmitter } from "@/engine/core/IgeParticleEmitter";
 import { IgeAudioEntity } from "@/engine/audio/index";
-import { IgeCanvasRenderingContext2d } from "@/types/IgeCanvasRenderingContext2d";
+import { isClient } from "@/engine/clientServer";
+import { IgeParticleEmitter } from "@/engine/core/IgeParticleEmitter";
+import { IgePoint3d } from "@/engine/core/IgePoint3d";
 import type { IgeScene2d } from "@/engine/core/IgeScene2d";
 import { registerClass } from "@/engine/igeClassStore";
+import { ige } from "@/engine/instance";
+import { MiningParticle } from "../particles/MiningParticle";
+import { IgeCanvasRenderingContext2d } from "@/types/IgeCanvasRenderingContext2d";
 
 export class MiningLaserEffect extends LaserEffect {
 	classId = "MiningLaserEffect";
 	audio?: IgeAudioEntity;
 	particleEmitter?: IgeParticleEmitter;
 
-	constructor (data: Record<string, any> = {}) {
+	constructor(data: Record<string, any> = {}) {
 		super(data);
 
 		if (isClient) {
-			this.audio = new IgeAudioEntity("miningLaser")
-				.relativeTo(ige.app.playerEntity)
-				.mount(this);
+			this.audio = new IgeAudioEntity("miningLaser").relativeTo(ige.app.playerEntity).mount(this);
 
 			this.texture(ige.textures.get("laser1"));
 
@@ -48,14 +46,21 @@ export class MiningLaserEffect extends LaserEffect {
 		this.layer(3);
 	}
 
-	update (ctx: IgeCanvasRenderingContext2d, tickDelta: number) {
+	update(ctx: IgeCanvasRenderingContext2d, tickDelta: number) {
 		super.update(ctx, tickDelta);
 
 		if (isClient) {
 			if (this._fromEntity && this._toEntity && this._alive) {
-
-				this.particleEmitter?.translateTo(this._toEntity._translate.x + this._scanX, this._toEntity._translate.y + this._scanY, 0);
-				this.audio?.translateTo(this._toEntity._translate.x + this._scanX, this._toEntity._translate.y + this._scanY, 0);
+				this.particleEmitter?.translateTo(
+					this._toEntity._translate.x + this._scanX,
+					this._toEntity._translate.y + this._scanY,
+					0
+				);
+				this.audio?.translateTo(
+					this._toEntity._translate.x + this._scanX,
+					this._toEntity._translate.y + this._scanY,
+					0
+				);
 
 				if (!this.particleEmitter?._started) {
 					this.particleEmitter?.start();
@@ -76,7 +81,7 @@ export class MiningLaserEffect extends LaserEffect {
 		}
 	}
 
-	destroy () {
+	destroy() {
 		if (isClient) {
 			this.audio?.stop();
 		}

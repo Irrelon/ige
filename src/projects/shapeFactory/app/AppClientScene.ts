@@ -1,19 +1,19 @@
-import {ige} from "@/engine/instance";
 import { IgeBaseScene } from "@/engine/core/IgeBaseScene";
+import { IgeCellSheet } from "@/engine/core/IgeCellSheet";
 import { IgeOptions } from "@/engine/core/IgeOptions";
-import { IgeTexture } from "@/engine/core/IgeTexture";
-import { IgeNetIoClientController } from "@/engine/network/client/IgeNetIoClientController";
 import { IgeSceneGraph } from "@/engine/core/IgeSceneGraph";
+import { IgeTexture } from "@/engine/core/IgeTexture";
 import { IgeViewport } from "@/engine/core/IgeViewport";
+import { ige } from "@/engine/instance";
+import { IgeNetIoClientController } from "@/engine/network/client/IgeNetIoClientController";
 import { IgeMousePanComponent } from "@/engine/components/IgeMousePanComponent";
-import { squareSmartTexture } from "../assets/textures/smartTextures/square";
-import { lineSmartTexture } from "../assets/textures/smartTextures/line";
-import { triangleSmartTexture } from "../assets/textures/smartTextures/triangle";
 import { circleSmartTexture } from "../assets/textures/smartTextures/circle";
-import { starSmartTexture } from "../assets/textures/smartTextures/star";
 import { flagSmartTexture } from "../assets/textures/smartTextures/flag";
 import { gridSmartTexture } from "../assets/textures/smartTextures/grid";
-import { IgeCellSheet } from "@/engine/core/IgeCellSheet";
+import { lineSmartTexture } from "../assets/textures/smartTextures/line";
+import { squareSmartTexture } from "../assets/textures/smartTextures/square";
+import { starSmartTexture } from "../assets/textures/smartTextures/star";
+import { triangleSmartTexture } from "../assets/textures/smartTextures/triangle";
 
 // @ts-ignore
 window.ige = ige;
@@ -21,11 +21,11 @@ window.ige = ige;
 export class AppClientScene extends IgeSceneGraph {
 	classId = "AppClientScene";
 
-	async addGraph () {
+	async addGraph() {
 		const options = new IgeOptions();
 		options.set("masterVolume", 1);
 
-		ige.audio?.masterVolume(options.get('masterVolume', 1));
+		ige.audio?.masterVolume(options.get("masterVolume", 1));
 
 		new IgeCellSheet("smoke", "assets/textures/sprites/smoke.png", 2, 2);
 		new IgeTexture("wood", "assets/textures/sprites/wood.png");
@@ -62,7 +62,7 @@ export class AppClientScene extends IgeSceneGraph {
 		new IgeTexture("flagSmartTexture", flagSmartTexture);
 		new IgeTexture("gridSmartTexture", gridSmartTexture);
 
-		const network = (ige.network as IgeNetIoClientController);
+		const network = ige.network as IgeNetIoClientController;
 
 		// Wait for our textures to load before continuing
 		await ige.textures.whenLoaded();
@@ -85,11 +85,11 @@ export class AppClientScene extends IgeSceneGraph {
 
 		vp1.camera.translateTo(0, 540, 0);
 
-		await network.start('http://localhost:2000');
+		await network.start("http://localhost:2000");
 	}
 
-	removeGraph () {
-		const network = (ige.network as IgeNetIoClientController);
+	removeGraph() {
+		const network = ige.network as IgeNetIoClientController;
 		network.stop();
 		ige.engine.stop();
 	}

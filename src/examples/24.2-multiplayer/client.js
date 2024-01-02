@@ -1,5 +1,5 @@
 var Client = IgeClass.extend({
-	classId: 'Client',
+	classId: "Client",
 
 	init: function () {
 		//ige.timeScale(0.1);
@@ -19,10 +19,10 @@ var Client = IgeClass.extend({
 
 		// Load the textures we want to use
 		this.textures = {
-			ship: new IgeTexture('./assets/PlayerTexture.js')
+			ship: new IgeTexture("./assets/PlayerTexture.js")
 		};
 
-		ige.on('texturesLoaded', function () {
+		ige.on("texturesLoaded", function () {
 			// Ask the engine to start
 			ige.start(function (success) {
 				// Check if the engine started successfully
@@ -32,50 +32,44 @@ var Client = IgeClass.extend({
 					// than before the scene etc are created... maybe you want
 					// a splash screen or a menu first? Then connect after you've
 					// got a username or something?
-					ige.components.network.start('http://localhost:2000', function () {
+					ige.components.network.start("http://localhost:2000", function () {
 						// Setup the network command listeners
-						ige.components.network.define('playerEntity', self._onPlayerEntity); // Defined in ./gameClasses/ClientNetworkEvents.js
+						ige.components.network.define("playerEntity", self._onPlayerEntity); // Defined in ./gameClasses/ClientNetworkEvents.js
 
 						// Setup the network stream handler
-						ige.components.network.addComponent(IgeStreamComponent)
+						ige.components.network
+							.addComponent(IgeStreamComponent)
 							.stream.renderLatency(80) // Render the simulation 160 milliseconds in the past
 							// Create a listener that will fire whenever an entity
 							// is created because of the incoming stream data
-							.stream.on('entityCreated', function (entity) {
-								self.log('Stream entity created with ID: ' + entity.id());
-
+							.stream.on("entityCreated", function (entity) {
+								self.log("Stream entity created with ID: " + entity.id());
 							});
 
-						self.mainScene = new IgeScene2d()
-							.id('mainScene');
+						self.mainScene = new IgeScene2d().id("mainScene");
 
 						// Create the scene
-						self.scene1 = new IgeScene2d()
-							.id('scene1')
-							.mount(self.mainScene);
+						self.scene1 = new IgeScene2d().id("scene1").mount(self.mainScene);
 
-						self.uiScene = new IgeScene2d()
-							.id('uiScene')
-							.ignoreCamera(true)
-							.mount(self.mainScene);
+						self.uiScene = new IgeScene2d().id("uiScene").ignoreCamera(true).mount(self.mainScene);
 
 						// Create the main viewport and set the scene
 						// it will "look" at as the new scene1 we just
 						// created above
 						self.vp1 = new IgeViewport()
-							.id('vp1')
+							.id("vp1")
 							.autoSize(true)
 							.scene(self.mainScene)
 							.drawBounds(false)
 							.mount(ige);
 
 						// Define our player controls
-						ige.components.input.mapAction('left', ige.components.input.key.left);
-						ige.components.input.mapAction('right', ige.components.input.key.right);
-						ige.components.input.mapAction('thrust', ige.components.input.key.up);
+						ige.components.input.mapAction("left", ige.components.input.key.left);
+						ige.components.input.mapAction("right", ige.components.input.key.right);
+						ige.components.input.mapAction("thrust", ige.components.input.key.up);
 
 						// Ask the server to create an entity for us
-						ige.components.network.send('playerEntity');
+						ige.components.network.send("playerEntity");
 
 						// We don't create any entities here because in this example the entities
 						// are created server-side and then streamed to the clients. If an entity
@@ -90,30 +84,25 @@ var Client = IgeClass.extend({
 
 						// Create an IgeUiTimeStream entity that will allow us to "visualise" the
 						// timestream data being interpolated by the player entity
-						self.tsVis = new IgeUiTimeStream()
-							.height(140)
-							.width(400)
-							.top(0)
-							.center(0)
-							.mount(self.uiScene);
+						self.tsVis = new IgeUiTimeStream().height(140).width(400).top(0).center(0).mount(self.uiScene);
 
 						self.custom1 = {
-							name: 'Delta',
+							name: "Delta",
 							value: 0
 						};
 
 						self.custom2 = {
-							name: 'Data Delta',
+							name: "Data Delta",
 							value: 0
 						};
 
 						self.custom3 = {
-							name: 'Offset Delta',
+							name: "Offset Delta",
 							value: 0
 						};
 
 						self.custom4 = {
-							name: 'Interpolate Time',
+							name: "Interpolate Time",
 							value: 0
 						};
 
@@ -128,4 +117,6 @@ var Client = IgeClass.extend({
 	}
 });
 
-if (typeof(module) !== 'undefined' && typeof(module.exports) !== 'undefined') { module.exports = Client; }
+if (typeof module !== "undefined" && typeof module.exports !== "undefined") {
+	module.exports = Client;
+}

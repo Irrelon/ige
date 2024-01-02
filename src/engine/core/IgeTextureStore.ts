@@ -6,5 +6,5 @@ export class IgeTextureStore extends IgeAssetRegister<IgeTexture> {
 
 	haveAllTexturesLoaded = () => {
 		return this._assetsLoading === 0;
-	}
+	};
 }

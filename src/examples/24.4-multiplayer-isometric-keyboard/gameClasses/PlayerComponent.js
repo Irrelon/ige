@@ -1,6 +1,6 @@
 var PlayerComponent = IgeEntity.extend({
-	classId: 'PlayerComponent',
-	componentId: 'playerControl',
+	classId: "PlayerComponent",
+	componentId: "playerControl",
 
 	init: function (entity, options) {
 		var self = this;
@@ -21,13 +21,13 @@ var PlayerComponent = IgeEntity.extend({
 		this._speed = 0.1;
 
 		// Setup the control system
-		ige.components.input.mapAction('left', ige.components.input.key.left);
-		ige.components.input.mapAction('right', ige.components.input.key.right);
-		ige.components.input.mapAction('up', ige.components.input.key.up);
-		ige.components.input.mapAction('down', ige.components.input.key.down);
+		ige.components.input.mapAction("left", ige.components.input.key.left);
+		ige.components.input.mapAction("right", ige.components.input.key.right);
+		ige.components.input.mapAction("up", ige.components.input.key.up);
+		ige.components.input.mapAction("down", ige.components.input.key.down);
 
 		// Add the playerComponent behaviour to the entity
-		this._entity.addBehaviour('playerComponent_behaviour', this._behaviour);
+		this._entity.addBehaviour("playerComponent_behaviour", this._behaviour);
 	},
 
 	/**
@@ -57,13 +57,13 @@ var PlayerComponent = IgeEntity.extend({
 		/* CEXCLUDE */
 
 		if (isClient) {
-			if (ige.components.input.actionState('left')) {
+			if (ige.components.input.actionState("left")) {
 				if (!this.playerControl.controls.left) {
 					// Record the new state
 					this.playerControl.controls.left = true;
 
 					// Tell the server about our control change
-					ige.components.network.send('playerControlLeftDown');
+					ige.components.network.send("playerControlLeftDown");
 				}
 			} else {
 				if (this.playerControl.controls.left) {
@@ -71,17 +71,17 @@ var PlayerComponent = IgeEntity.extend({
 					this.playerControl.controls.left = false;
 
 					// Tell the server about our control change
-					ige.components.network.send('playerControlLeftUp');
+					ige.components.network.send("playerControlLeftUp");
 				}
 			}
 
-			if (ige.components.input.actionState('right')) {
+			if (ige.components.input.actionState("right")) {
 				if (!this.playerControl.controls.right) {
 					// Record the new state
 					this.playerControl.controls.right = true;
 
 					// Tell the server about our control change
-					ige.components.network.send('playerControlRightDown');
+					ige.components.network.send("playerControlRightDown");
 				}
 			} else {
 				if (this.playerControl.controls.right) {
@@ -89,17 +89,17 @@ var PlayerComponent = IgeEntity.extend({
 					this.playerControl.controls.right = false;
 
 					// Tell the server about our control change
-					ige.components.network.send('playerControlRightUp');
+					ige.components.network.send("playerControlRightUp");
 				}
 			}
 
-			if (ige.components.input.actionState('up')) {
+			if (ige.components.input.actionState("up")) {
 				if (!this.playerControl.controls.up) {
 					// Record the new state
 					this.playerControl.controls.up = true;
 
 					// Tell the server about our control change
-					ige.components.network.send('playerControlUpDown');
+					ige.components.network.send("playerControlUpDown");
 				}
 			} else {
 				if (this.playerControl.controls.up) {
@@ -107,17 +107,17 @@ var PlayerComponent = IgeEntity.extend({
 					this.playerControl.controls.up = false;
 
 					// Tell the server about our control change
-					ige.components.network.send('playerControlUpUp');
+					ige.components.network.send("playerControlUpUp");
 				}
 			}
 
-			if (ige.components.input.actionState('down')) {
+			if (ige.components.input.actionState("down")) {
 				if (!this.playerControl.controls.down) {
 					// Record the new state
 					this.playerControl.controls.down = true;
 
 					// Tell the server about our control change
-					ige.components.network.send('playerControlDownDown');
+					ige.components.network.send("playerControlDownDown");
 				}
 			} else {
 				if (this.playerControl.controls.down) {
@@ -125,11 +125,13 @@ var PlayerComponent = IgeEntity.extend({
 					this.playerControl.controls.down = false;
 
 					// Tell the server about our control change
-					ige.components.network.send('playerControlDownUp');
+					ige.components.network.send("playerControlDownUp");
 				}
 			}
 		}
 	}
 });
 
-if (typeof(module) !== 'undefined' && typeof(module.exports) !== 'undefined') { module.exports = PlayerComponent; }
+if (typeof module !== "undefined" && typeof module.exports !== "undefined") {
+	module.exports = PlayerComponent;
+}

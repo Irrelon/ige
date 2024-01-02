@@ -1,15 +1,16 @@
 var ClientTerrain = {
 	createTerrain: function () {
-		var i,
-			preVal,
-			terrainPoly,
-			landingPad,
-			fixtureArr;
+		var i, preVal, terrainPoly, landingPad, fixtureArr;
 
 		this.landingPads = [];
 
 		// Create random terrain
-		while (!this.landingPadPositions || !this.orbPositions || this.landingPadPositions.length < 1 || this.orbPositions.length < 3) {
+		while (
+			!this.landingPadPositions ||
+			!this.orbPositions ||
+			this.landingPadPositions.length < 1 ||
+			this.orbPositions.length < 3
+		) {
 			this.landingPadPositions = [];
 			this.orbPositions = [];
 			this.terrain = [];
@@ -24,9 +25,7 @@ var ClientTerrain = {
 				if (preVal > 90 && i > 1) {
 					if (this.terrain[i] * 20 < 160) {
 						this.terrain[i + 1] = this.terrain[i];
-						this.landingPadPositions.push(
-							[(i) * 4 * 20 + 40, (this.terrain[i] * 20) - 2, 0]
-						);
+						this.landingPadPositions.push([i * 4 * 20 + 40, this.terrain[i] * 20 - 2, 0]);
 
 						terrainPoly.addPoint(i * 4, this.terrain[i]);
 						terrainPoly.addPoint((i + 1) * 4, this.terrain[i]);
@@ -38,9 +37,7 @@ var ClientTerrain = {
 
 					if (preVal > 50) {
 						if (this.terrain[i] * 20 > 200 && i > 2 && i < 39) {
-							this.orbPositions.push(
-								[(i) * 4 * 20, (this.terrain[i] * 20) - 20, 0]
-							);
+							this.orbPositions.push([i * 4 * 20, this.terrain[i] * 20 - 20, 0]);
 						}
 					}
 				}
@@ -86,32 +83,29 @@ var ClientTerrain = {
 					maskBits: 0xffff
 				},
 				shape: {
-					type: 'polygon',
+					type: "polygon",
 					data: this.terrainTriangles[i]
 				}
 			});
 		}
 
 		// Now create a box2d entity
-		new IgeEntityBox2d()
-			.category('floor')
-			.box2dBody({
-				type: 'static',
-				allowSleep: true,
-				fixtures: fixtureArr
-			});
+		new IgeEntityBox2d().category("floor").box2dBody({
+			type: "static",
+			allowSleep: true,
+			fixtures: fixtureArr
+		});
 
 		// Create the entity that will render the terrain
 		var TerrainEntity = IgeEntity.extend({
-			classId: 'TerrainEntity',
+			classId: "TerrainEntity",
 			tick: function (ctx) {
 				IgeEntity.prototype.tick.call(this, ctx);
-				ctx.strokeStyle = '#ffffff';
+				ctx.strokeStyle = "#ffffff";
 				ige.client.terrainPoly.render(ctx);
 			}
 		});
 
-		new TerrainEntity()
-			.mount(ige.client.mainScene);
+		new TerrainEntity().mount(ige.client.mainScene);
 	}
 };

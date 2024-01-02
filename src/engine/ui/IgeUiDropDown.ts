@@ -1,9 +1,9 @@
-import { ige } from "@/engine/instance";
 import { IgeUiElement } from "@/engine/core/IgeUiElement";
-import type { IgeCanvasRenderingContext2d } from "@/types/IgeCanvasRenderingContext2d";
 import type { IgeUiManagerController } from "@/engine/core/IgeUiManagerController";
-import { IgeUiLabel } from "@/engine/ui/IgeUiLabel";
 import { registerClass } from "@/engine/igeClassStore";
+import { ige } from "@/engine/instance";
+import { IgeUiLabel } from "@/engine/ui/IgeUiLabel";
+import type { IgeCanvasRenderingContext2d } from "@/types/IgeCanvasRenderingContext2d";
 
 export interface IgeUiDropDownOption {
 	text: string;
@@ -18,7 +18,7 @@ export class IgeUiDropDown extends IgeUiElement {
 	_options: IgeUiDropDownOption[] = [];
 	_label: IgeUiLabel;
 
-	constructor () {
+	constructor() {
 		super();
 
 		// Define some default styles
@@ -41,13 +41,7 @@ export class IgeUiDropDown extends IgeUiElement {
 		this.width(200);
 		this.height(30);
 
-		this._label = new IgeUiLabel()
-			.left(0)
-			.right(30)
-			.top(0)
-			.bottom(0)
-			.textAlignY(1)
-			.mount(this);
+		this._label = new IgeUiLabel().left(0).right(30).top(0).bottom(0).textAlignY(1).mount(this);
 
 		this.on("pointerUp", () => {
 			// Toggle the list drop-down
@@ -55,7 +49,7 @@ export class IgeUiDropDown extends IgeUiElement {
 		});
 	}
 
-	options (ops?: IgeUiDropDownOption[]) {
+	options(ops?: IgeUiDropDownOption[]) {
 		if (ops !== undefined) {
 			this._options = ops;
 
@@ -79,7 +73,7 @@ export class IgeUiDropDown extends IgeUiElement {
 		return this;
 	}
 
-	addOption (op?: IgeUiDropDownOption) {
+	addOption(op?: IgeUiDropDownOption) {
 		if (op !== undefined) {
 			this._options.push(op);
 
@@ -98,7 +92,7 @@ export class IgeUiDropDown extends IgeUiElement {
 		return this;
 	}
 
-	removeAllOptions () {
+	removeAllOptions() {
 		this._options = [];
 		this.value({
 			text: "",
@@ -109,7 +103,7 @@ export class IgeUiDropDown extends IgeUiElement {
 	/**
 	 * The blur method removes global UI focus from this UI element.
 	 */
-	blur () {
+	blur() {
 		const returnValue = super.blur();
 
 		if (this._toggleState) {
@@ -119,14 +113,14 @@ export class IgeUiDropDown extends IgeUiElement {
 		return returnValue;
 	}
 
-	selectIndex (index: number) {
+	selectIndex(index: number) {
 		if (this._options[index]) {
 			this.value(this._options[index]);
 			this.emit("change", this.value());
 		}
 	}
 
-	value (val?: IgeUiDropDownOption) {
+	value(val?: IgeUiDropDownOption) {
 		if (val !== undefined) {
 			super.value(val);
 			this._label.value(val.text);
@@ -136,7 +130,7 @@ export class IgeUiDropDown extends IgeUiElement {
 		return this._value.value;
 	}
 
-	toggle () {
+	toggle() {
 		this._toggleState = !this._toggleState;
 
 		if (this._toggleState) {
@@ -163,7 +157,7 @@ export class IgeUiDropDown extends IgeUiElement {
 					.data("optionIndex", i)
 					.styleClass("IgeUiDropDownOption")
 					.value(this._options[i].text)
-					.top((this._bounds2d.y * i) + 1)
+					.top(this._bounds2d.y * i + 1)
 					.left(1)
 					.width(this._bounds2d.x - 2)
 					.height(this._bounds2d.y - 2)
@@ -181,7 +175,7 @@ export class IgeUiDropDown extends IgeUiElement {
 		}
 	}
 
-	tick (ctx: IgeCanvasRenderingContext2d) {
+	tick(ctx: IgeCanvasRenderingContext2d) {
 		super.tick(ctx);
 
 		// Draw drop-down box

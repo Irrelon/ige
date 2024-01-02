@@ -1,10 +1,10 @@
+import { IgeUiElement, IgeUiStyleObject } from "./IgeUiElement";
+import { IgeEventingClass } from "@/engine/core/IgeEventingClass";
+import type { IgeInputComponent } from "../components/IgeInputComponent";
+import { IgeEventReturnFlag } from "@/enums/IgeEventReturnFlag";
 import { ige } from "../instance";
 import { arrPull } from "../utils";
-import { IgeUiElement, IgeUiStyleObject } from "./IgeUiElement";
-import type { IgeInputComponent } from "../components/IgeInputComponent";
-import { IgeEventingClass } from "@/engine/core/IgeEventingClass";
 import { IgeIsReadyPromise } from "@/types/IgeIsReadyPromise";
-import { IgeEventReturnFlag } from "@/enums/IgeEventReturnFlag";
 
 export class IgeUiManagerController extends IgeEventingClass implements IgeIsReadyPromise {
 	static componentTargetClass = "IgeEngine";
@@ -17,7 +17,7 @@ export class IgeUiManagerController extends IgeEventingClass implements IgeIsRea
 	_styles: Record<string, IgeUiStyleObject> = {};
 	_elementsByStyle: Record<string, IgeUiElement[]> = {};
 
-	isReady () {
+	isReady() {
 		return new Promise<void>((resolve) => {
 			setTimeout(() => {
 				ige.dependencies.waitFor(["input"], () => {
@@ -37,7 +37,7 @@ export class IgeUiManagerController extends IgeEventingClass implements IgeIsRea
 	 * style.
 	 * @returns {*}
 	 */
-	style (name?: string, data?: IgeUiStyleObject) {
+	style(name?: string, data?: IgeUiStyleObject) {
 		if (name !== undefined) {
 			if (data !== undefined) {
 				// Set the data against the name, update any elements using the style
@@ -56,7 +56,7 @@ export class IgeUiManagerController extends IgeEventingClass implements IgeIsRea
 	 * Registers a UI element with the UI manager.
 	 * @param elem
 	 */
-	registerElement (elem: IgeUiElement) {
+	registerElement(elem: IgeUiElement) {
 		this._register.push(elem);
 	}
 
@@ -64,7 +64,7 @@ export class IgeUiManagerController extends IgeEventingClass implements IgeIsRea
 	 * Un-registers a UI element with the UI manager.
 	 * @param elem
 	 */
-	unRegisterElement (elem: IgeUiElement) {
+	unRegisterElement(elem: IgeUiElement) {
 		arrPull(this._register, elem);
 
 		// Kill any styles defined for this element id
@@ -79,7 +79,7 @@ export class IgeUiManagerController extends IgeEventingClass implements IgeIsRea
 	 * Registers a UI element against a style for quick lookup.
 	 * @param elem
 	 */
-	registerElementStyle (elem: IgeUiElement) {
+	registerElementStyle(elem: IgeUiElement) {
 		if (elem && elem._styleClass) {
 			this._elementsByStyle[elem._styleClass] = this._elementsByStyle[elem._styleClass] || [];
 			this._elementsByStyle[elem._styleClass].push(elem);
@@ -90,18 +90,18 @@ export class IgeUiManagerController extends IgeEventingClass implements IgeIsRea
 	 * Un-registers a UI element from a style.
 	 * @param elem
 	 */
-	unRegisterElementStyle (elem: IgeUiElement) {
+	unRegisterElementStyle(elem: IgeUiElement) {
 		if (elem && elem._styleClass) {
 			this._elementsByStyle[elem._styleClass] = this._elementsByStyle[elem._styleClass] || [];
 			this._elementsByStyle[elem._styleClass].push(elem);
 		}
 	}
 
-	canFocus (elem: IgeUiElement) {
+	canFocus(elem: IgeUiElement) {
 		return elem._allowFocus;
 	}
 
-	focus (elem: IgeUiElement) {
+	focus(elem: IgeUiElement) {
 		if (elem !== undefined) {
 			if (elem !== this._focus) {
 				// The element is not our current focus so focus to it
@@ -132,7 +132,7 @@ export class IgeUiManagerController extends IgeEventingClass implements IgeIsRea
 		return false;
 	}
 
-	blur (elem: IgeUiElement) {
+	blur(elem: IgeUiElement) {
 		//console.log('blur', elem._id, elem);
 		if (elem !== undefined) {
 			if (elem === this._focus) {

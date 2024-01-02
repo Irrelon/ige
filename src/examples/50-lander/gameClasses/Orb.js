@@ -1,34 +1,36 @@
 var Orb = IgeEntityBox2d.extend({
-	classId: 'Orb',
+	classId: "Orb",
 
 	init: function () {
 		IgeEntityBox2d.prototype.init.call(this);
 
 		// Set the rectangle colour (this is read in the Rectangle.js smart texture)
-		this._rectColor = '#ffc600';
+		this._rectColor = "#ffc600";
 
-		this.category('orb')
+		this.category("orb")
 			.texture(ige.client.textures.orb)
 			.width(10)
 			.height(10)
 			.box2dBody({
-				type: 'dynamic',
+				type: "dynamic",
 				linearDamping: 0.0,
 				angularDamping: 0.05,
 				allowSleep: true,
 				bullet: false,
 				gravitic: true,
 				fixedRotation: false,
-				fixtures: [{
-					density: 1,
-					filter: {
-						categoryBits: 0x0100,
-						maskBits: 0xffff
-					},
-					shape: {
-						type: 'circle'
+				fixtures: [
+					{
+						density: 1,
+						filter: {
+							categoryBits: 0x0100,
+							maskBits: 0xffff
+						},
+						shape: {
+							type: "circle"
+						}
 					}
-				}]
+				]
 			});
 	},
 
@@ -46,8 +48,8 @@ var Orb = IgeEntityBox2d.extend({
 	},
 
 	distanceBonus: function (landingPad) {
-		var distX = (landingPad._translate.x - this._originalStart.x),
-			distY = (landingPad._translate.y - this._originalStart.y),
+		var distX = landingPad._translate.x - this._originalStart.x,
+			distY = landingPad._translate.y - this._originalStart.y,
 			dist = Math.sqrt(distX * distX + distY * distY);
 
 		return Math.floor(dist / 10);
@@ -61,17 +63,17 @@ var Orb = IgeEntityBox2d.extend({
 		var distScore = this.distanceBonus(landingPad);
 
 		// Create a score text anim
-		new ClientScore('+' + this._scoreValue + ' for orb')
+		new ClientScore("+" + this._scoreValue + " for orb")
 			.translateTo(this._translate.x, this._translate.y, 0)
 			.mount(ige.client.objectScene)
 			.start();
 
-		new ClientScore('+' + distScore + ' for distance')
+		new ClientScore("+" + distScore + " for distance")
 			.translateTo(this._translate.x, this._translate.y - 30, 0)
 			.mount(ige.client.objectScene)
 			.start(500);
 
-		new ClientScore('+' + (this._scoreValue + distScore) + ' total')
+		new ClientScore("+" + (this._scoreValue + distScore) + " total")
 			.translateTo(this._translate.x, this._translate.y - 15, 0)
 			.mount(ige.client.objectScene)
 			.start(3000);

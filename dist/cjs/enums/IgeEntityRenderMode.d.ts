@@ -1,4 +1,4 @@
 export declare enum IgeEntityRenderMode {
-    "flat" = 0,
-    "iso" = 1
+	"flat" = 0,
+	"iso" = 1
 }

@@ -1,5 +1,5 @@
-import { IgeEntity } from "../../core/IgeEntity";
 import { IgeComponent } from "../../core/IgeComponent";
+import { IgeEntity } from "../../core/IgeEntity";
 
 /**
  * When added to a viewport, automatically adds entity translate
@@ -15,7 +15,7 @@ class IgeEditorTranslateComponent extends IgeComponent {
 	 * @param options The options object that was passed to the component during
 	 * the call to addComponent.
 	 */
-	constructor (entity: IgeEntity, options?: any) {
+	constructor(entity: IgeEntity, options?: any) {
 		super(entity, options);
 
 		// Set the pan component as inactive to start with
@@ -69,7 +69,7 @@ class IgeEditorTranslateComponent extends IgeComponent {
 			// Reset pan values.
 			// This prevents problems if the component is disabled mid-operation.
 			this._opPreStart = false;
-			this._opStarted  = false;
+			this._opStarted = false;
 
 			if (this._enabled) {
 				if (this._ige._sgTreeSelected) {
@@ -81,9 +81,15 @@ class IgeEditorTranslateComponent extends IgeComponent {
 						this.enabled(false);
 					} else {
 						// Listen for the mouse events we need to operate
-						this._ige.input.on("pointerDown", (event) => { self._pointerDown(event); });
-						this._ige.input.on("pointerMove", (event) => { self._pointerMove(event); });
-						this._ige.input.on("pointerUp", (event) => { self._pointerUp(event); });
+						this._ige.input.on("pointerDown", (event) => {
+							self._pointerDown(event);
+						});
+						this._ige.input.on("pointerMove", (event) => {
+							self._pointerMove(event);
+						});
+						this._ige.input.on("pointerUp", (event) => {
+							self._pointerUp(event);
+						});
 						this.log("Editor: Mouse translate enabled");
 					}
 				}
@@ -112,14 +118,15 @@ class IgeEditorTranslateComponent extends IgeComponent {
 			this._opStartMouse = curMousePos.clone();
 
 			this._opStartTranslate = {
-				"x": this._targetEntity._translate.x,
-				"y": this._targetEntity._translate.y
+				x: this._targetEntity._translate.x,
+				y: this._targetEntity._translate.y
 			};
 
 			this._opPreStart = true;
 			this._opStarted = false;
 
-			document.getElementById("igeSgEditorStatus").innerHTML = "X: " + this._targetEntity._translate.x + " Y:" + this._targetEntity._translate.y;
+			document.getElementById("igeSgEditorStatus").innerHTML =
+				"X: " + this._targetEntity._translate.x + " Y:" + this._targetEntity._translate.y;
 		}
 	};
 
@@ -135,11 +142,13 @@ class IgeEditorTranslateComponent extends IgeComponent {
 			if (this._opStartMouse) {
 				let curMousePos = this._ige._pointerPos,
 					panCords = {
-						"x": this._opStartMouse.x - curMousePos.x,
-						"y": this._opStartMouse.y - curMousePos.y
-					}, distX = Math.abs(panCords.x), distY = Math.abs(panCords.y),
-					panFinalX = this._opStartTranslate.x - (panCords.x / this._ige._currentViewport.camera._scale.x),
-					panFinalY = this._opStartTranslate.y - (panCords.y / this._ige._currentViewport.camera._scale.y);
+						x: this._opStartMouse.x - curMousePos.x,
+						y: this._opStartMouse.y - curMousePos.y
+					},
+					distX = Math.abs(panCords.x),
+					distY = Math.abs(panCords.y),
+					panFinalX = this._opStartTranslate.x - panCords.x / this._ige._currentViewport.camera._scale.x,
+					panFinalY = this._opStartTranslate.y - panCords.y / this._ige._currentViewport.camera._scale.y;
 
 				// Check if we have a limiter on the rectangle area
 				// that we should allow panning inside.
@@ -166,11 +175,7 @@ class IgeEditorTranslateComponent extends IgeComponent {
 				if (this._opPreStart) {
 					// Check if we've reached the start threshold
 					if (distX > this._startThreshold || distY > this._startThreshold) {
-						this._targetEntity.translateTo(
-							panFinalX,
-							panFinalY,
-							0
-						);
+						this._targetEntity.translateTo(panFinalX, panFinalY, 0);
 						this.emit("panStart");
 						this._opPreStart = false;
 						this._opStarted = true;
@@ -179,11 +184,7 @@ class IgeEditorTranslateComponent extends IgeComponent {
 					}
 				} else {
 					// Pan has already started
-					this._targetEntity.translateTo(
-						panFinalX,
-						panFinalY,
-						0
-					);
+					this._targetEntity.translateTo(panFinalX, panFinalY, 0);
 
 					this.emit("panMove");
 				}
@@ -206,11 +207,11 @@ class IgeEditorTranslateComponent extends IgeComponent {
 				if (this._opStartMouse) {
 					let curMousePos = this._ige._pointerPos,
 						panCords = {
-							"x": this._opStartMouse.x - curMousePos.x,
-							"y": this._opStartMouse.y - curMousePos.y
+							x: this._opStartMouse.x - curMousePos.x,
+							y: this._opStartMouse.y - curMousePos.y
 						},
-						panFinalX = this._opStartTranslate.x - (panCords.x / this._ige._currentViewport.camera._scale.x),
-						panFinalY = this._opStartTranslate.y - (panCords.y / this._ige._currentViewport.camera._scale.y);
+						panFinalX = this._opStartTranslate.x - panCords.x / this._ige._currentViewport.camera._scale.x,
+						panFinalY = this._opStartTranslate.y - panCords.y / this._ige._currentViewport.camera._scale.y;
 
 					// Check if we have a limiter on the rectangle area
 					// that we should allow panning inside.
@@ -234,11 +235,7 @@ class IgeEditorTranslateComponent extends IgeComponent {
 						}
 					}
 
-					this._targetEntity.translateTo(
-						panFinalX,
-						panFinalY,
-						0
-					);
+					this._targetEntity.translateTo(panFinalX, panFinalY, 0);
 
 					document.getElementById("igeSgEditorStatus").innerHTML = "X: " + panFinalX + " Y:" + panFinalY;
 
@@ -255,7 +252,7 @@ class IgeEditorTranslateComponent extends IgeComponent {
 				this._opStarted = false;
 			}
 		}
-	}
+	};
 }
 
 export default IgeEditorTranslateComponent;

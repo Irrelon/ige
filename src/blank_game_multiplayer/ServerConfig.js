@@ -4,4 +4,6 @@ var config = {
 	]
 };
 
-if (typeof(module) !== 'undefined' && typeof(module.exports) !== 'undefined') { module.exports = config; }
+if (typeof module !== "undefined" && typeof module.exports !== "undefined") {
+	module.exports = config;
+}

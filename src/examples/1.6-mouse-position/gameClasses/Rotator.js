@@ -1,5 +1,5 @@
 var Rotator = IgeEntity.extend({
-	classId:'Rotator',
+	classId: "Rotator",
 
 	/**
 	 * Called every frame by the engine when this entity is mounted to the scenegraph.
@@ -16,4 +16,6 @@ var Rotator = IgeEntity.extend({
 	}
 });
 
-if (typeof(module) !== 'undefined' && typeof(module.exports) !== 'undefined') { module.exports = Rotator; }
+if (typeof module !== "undefined" && typeof module.exports !== "undefined") {
+	module.exports = Rotator;
+}

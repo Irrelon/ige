@@ -1,17 +1,17 @@
 import { IgeBaseClass } from "@/engine/core/IgeBaseClass";
-import { IgeCanInit } from "@/types/IgeCanInit";
-import { ige } from "@/engine/instance";
 import { IgeScene2d } from "@/engine/core/IgeScene2d";
 import { IgeViewport } from "@/engine/core/IgeViewport";
+import { ige } from "@/engine/instance";
 import { IgeEntityBox2d } from "@/engine/components/physics/box2d/IgeEntityBox2d";
 import { IgeBox2dBodyType } from "@/enums/IgeBox2dBodyType";
 import { IgeBox2dFixtureShapeType } from "@/enums/IgeBox2dFixtureShapeType";
+import { IgeCanInit } from "@/types/IgeCanInit";
 import { IgeCanvasRenderingContext2d } from "@/types/IgeCanvasRenderingContext2d";
 
 export class Client extends IgeBaseClass implements IgeCanInit {
 	classId = "Client";
 
-	constructor () {
+	constructor() {
 		super();
 
 		// @ts-ignore
@@ -20,7 +20,7 @@ export class Client extends IgeBaseClass implements IgeCanInit {
 		void this.init();
 	}
 
-	async init () {
+	async init() {
 		// Wait for our textures to load before continuing
 		await ige.textures.whenLoaded();
 
@@ -28,29 +28,19 @@ export class Client extends IgeBaseClass implements IgeCanInit {
 		ige.engine.createFrontBuffer(true);
 
 		// Setup physics world
-		ige.box2d
-			.sleep(true)
-			.gravity(0, 10)
-			.createWorld()
-			.start();
+		ige.box2d.sleep(true).gravity(0, 10).createWorld().start();
 
 		// Start the engine
 		await ige.engine.start();
 
 		// Create the scene
-		const scene1 = new IgeScene2d()
-			.id('scene1');
+		const scene1 = new IgeScene2d().id("scene1");
 
 		// Create the main viewport
-		new IgeViewport()
-			.id('vp1')
-			.autoSize(true)
-			.scene(scene1)
-			.drawBounds(true)
-			.mount(ige.engine);
+		new IgeViewport().id("vp1").autoSize(true).scene(scene1).drawBounds(true).mount(ige.engine);
 
 		class PhysicsEntity extends IgeEntityBox2d {
-			update (ctx: IgeCanvasRenderingContext2d, tickDelta: number) {
+			update(ctx: IgeCanvasRenderingContext2d, tickDelta: number) {
 				super.update(ctx, tickDelta);
 
 				if (this._translate.y > 4000) {
@@ -72,21 +62,23 @@ export class Client extends IgeBaseClass implements IgeCanInit {
 					bullet: false,
 					gravitic: true,
 					fixedRotation: false,
-					fixtures: [{
-						density: 1.0,
-						friction: 0.5,
-						restitution: 0.2,
-						shape: {
-							type: IgeBox2dFixtureShapeType.circle,
-							data: {
-								// The position of the fixture relative to the body
-								x: 0,
-								y: 0
+					fixtures: [
+						{
+							density: 1.0,
+							friction: 0.5,
+							restitution: 0.2,
+							shape: {
+								type: IgeBox2dFixtureShapeType.circle,
+								data: {
+									// The position of the fixture relative to the body
+									x: 0,
+									y: 0
+								}
 							}
 						}
-					}]
+					]
 				})
-				.translateTo((Math.random() * 30) - 15, -300 - (i * 25), 0)
+				.translateTo(Math.random() * 30 - 15, -300 - i * 25, 0)
 				.drawBounds(true)
 				.mount(scene1);
 		}
@@ -100,16 +92,18 @@ export class Client extends IgeBaseClass implements IgeCanInit {
 				bullet: false,
 				gravitic: true,
 				fixedRotation: false,
-				fixtures: [{
-					density: 1.0,
-					friction: 0.5,
-					restitution: 0.2,
-					shape: {
-						type: IgeBox2dFixtureShapeType.rectangle
+				fixtures: [
+					{
+						density: 1.0,
+						friction: 0.5,
+						restitution: 0.2,
+						shape: {
+							type: IgeBox2dFixtureShapeType.rectangle
+						}
 					}
-				}]
+				]
 			})
-			.id('square1')
+			.id("square1")
 			.translateTo(-40, -470, 0)
 			.drawBounds(true)
 			.mount(scene1);
@@ -123,16 +117,18 @@ export class Client extends IgeBaseClass implements IgeCanInit {
 				bullet: false,
 				gravitic: true,
 				fixedRotation: false,
-				fixtures: [{
-					density: 1.0,
-					friction: 0.5,
-					restitution: 0.2,
-					shape: {
-						type: IgeBox2dFixtureShapeType.rectangle
+				fixtures: [
+					{
+						density: 1.0,
+						friction: 0.5,
+						restitution: 0.2,
+						shape: {
+							type: IgeBox2dFixtureShapeType.rectangle
+						}
 					}
-				}]
+				]
 			})
-			.id('square2')
+			.id("square2")
 			.translateTo(90, -560, 0)
 			.drawBounds(true)
 			.mount(scene1);
@@ -145,11 +141,13 @@ export class Client extends IgeBaseClass implements IgeCanInit {
 			.box2dBody({
 				type: IgeBox2dBodyType.static,
 				allowSleep: true,
-				fixtures: [{
-					shape: {
-						type: IgeBox2dFixtureShapeType.rectangle
+				fixtures: [
+					{
+						shape: {
+							type: IgeBox2dFixtureShapeType.rectangle
+						}
 					}
-				}]
+				]
 			})
 			.drawBounds(true)
 			.mount(scene1);

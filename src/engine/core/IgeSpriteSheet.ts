@@ -1,7 +1,7 @@
 import { IgeTexture } from "./IgeTexture";
+import type { IgeCanvas } from "@/types/IgeCanvas";
+import { IgeImage } from "@/types/IgeImage";
 import { IgeSmartTexture } from "@/types/IgeSmartTexture";
-import { IgeCanvas } from "./IgeCanvas";
-import {IgeImage} from "@/types/IgeImage";
 
 type IgeTextureCell = [number, number, number, number, string?];
 type IgeTextureCellArray = IgeTextureCell[];
@@ -18,7 +18,7 @@ export class IgeSpriteSheet extends IgeTexture {
 	_sheetImage?: IgeImage;
 	_checkModulus?: boolean = false;
 
-	constructor (id?: string, urlOrObject?: string | IgeSmartTexture, cells?: IgeTextureCellArray) {
+	constructor(id?: string, urlOrObject?: string | IgeSmartTexture, cells?: IgeTextureCellArray) {
 		super(id, urlOrObject);
 
 		if (cells) {
@@ -26,7 +26,7 @@ export class IgeSpriteSheet extends IgeTexture {
 		}
 	}
 
-	_textureLoaded () {
+	_textureLoaded() {
 		if (!this.image) {
 			// Unable to create cells from non-image texture
 			// TODO: Low-priority - Support cell sheets from smart-textures
@@ -52,11 +52,21 @@ export class IgeSpriteSheet extends IgeTexture {
 				if (this._checkModulus) {
 					// Check cell for division by 2 modulus warnings
 					if (cells[i][2] % 2) {
-						this.log("This texture's cell definition defines a cell width is not divisible by 2 which can cause the texture to use sub-pixel rendering resulting in a blurred image. This may also slow down the renderer on some browsers. Image file: " + this._url, "warning", cells[i]);
+						this.log(
+							"This texture's cell definition defines a cell width is not divisible by 2 which can cause the texture to use sub-pixel rendering resulting in a blurred image. This may also slow down the renderer on some browsers. Image file: " +
+								this._url,
+							"warning",
+							cells[i]
+						);
 					}
 
 					if (cells[i][3] % 2) {
-						this.log("This texture's cell definition defines a cell height is not divisible by 2 which can cause the texture to use sub-pixel rendering resulting in a blurred image. This may also slow down the renderer on some browsers. Image file: " + this._url, "warning", cells[i]);
+						this.log(
+							"This texture's cell definition defines a cell height is not divisible by 2 which can cause the texture to use sub-pixel rendering resulting in a blurred image. This may also slow down the renderer on some browsers. Image file: " +
+								this._url,
+							"warning",
+							cells[i]
+						);
 					}
 				}
 			}
@@ -64,55 +74,55 @@ export class IgeSpriteSheet extends IgeTexture {
 	}
 
 	/**
-     * Checks if a pixel is completely transparent.
-     * @param {ImageData} imageData The image data to check.
-     * @param {number} x X co-ordinate to check.
-     * @param {number} y Y co-ordinate to check.
-     * @returns {boolean} True if transparent, false if not.
-     */
-	isPixelTransparent (imageData: ImageData, x: number, y: number) {
-		const pixelStart = (y * imageData.width * 4) + (x * 4);
+	 * Checks if a pixel is completely transparent.
+	 * @param {ImageData} imageData The image data to check.
+	 * @param {number} x X co-ordinate to check.
+	 * @param {number} y Y co-ordinate to check.
+	 * @returns {boolean} True if transparent, false if not.
+	 */
+	isPixelTransparent(imageData: ImageData, x: number, y: number) {
+		const pixelStart = y * imageData.width * 4 + x * 4;
 		return imageData.data[pixelStart + 3] === 0;
 	}
 
 	/**
-     * Makes a pixel transparent at a particular co-ordinate.
-     * @param {ImageData} imageData The image data to modify.
-     * @param {number} x X co-ordinate to modify.
-     * @param {number} y Y co-ordinate to modify.
-     * @returns {undefined} Nothing
-     */
-	makePixelTransparent (imageData: ImageData, x: number, y: number) {
-		const pixelStart = (y * imageData.width * 4) + (x * 4);
+	 * Makes a pixel transparent at a particular co-ordinate.
+	 * @param {ImageData} imageData The image data to modify.
+	 * @param {number} x X co-ordinate to modify.
+	 * @param {number} y Y co-ordinate to modify.
+	 * @returns {undefined} Nothing
+	 */
+	makePixelTransparent(imageData: ImageData, x: number, y: number) {
+		const pixelStart = y * imageData.width * 4 + x * 4;
 		imageData.data[pixelStart + 3] = 0;
 	}
 
 	/**
-     * Reads the pixel value at the passed co-ordinates.
-     * @param {ImageData} imageData The image data to read.
-     * @param {number} x X co-ordinate to read from.
-     * @param {number} y Y co-ordinate to read from.
-     * @returns {{a: *, r: *, b: *, g: *}} Object with the argb
-     * values of the pixel.
-     */
-	getPixelAt (imageData: ImageData, x: number, y: number) {
-		const pixelStart = (y * imageData.width * 4) + (x * 4);
+	 * Reads the pixel value at the passed co-ordinates.
+	 * @param {ImageData} imageData The image data to read.
+	 * @param {number} x X co-ordinate to read from.
+	 * @param {number} y Y co-ordinate to read from.
+	 * @returns {{a: *, r: *, b: *, g: *}} Object with the argb
+	 * values of the pixel.
+	 */
+	getPixelAt(imageData: ImageData, x: number, y: number) {
+		const pixelStart = y * imageData.width * 4 + x * 4;
 
 		return {
-			"r": imageData.data[pixelStart],
-			"g": imageData.data[pixelStart + 1],
-			"b": imageData.data[pixelStart + 2],
-			"a": imageData.data[pixelStart + 3]
+			r: imageData.data[pixelStart],
+			g: imageData.data[pixelStart + 1],
+			b: imageData.data[pixelStart + 2],
+			a: imageData.data[pixelStart + 3]
 		};
 	}
 
 	/**
-     * Uses the sprite sheet image pixel data to detect distinct sprite
-     * bounds.
-     * @param {Image} img The image to detect cells in.
-     * @return {Array} An array of cell bounds.
-     */
-	detectCells (img: IgeImage | IgeCanvas): IgeTextureCellArray {
+	 * Uses the sprite sheet image pixel data to detect distinct sprite
+	 * bounds.
+	 * @param {Image} img The image to detect cells in.
+	 * @return {Array} An array of cell bounds.
+	 */
+	detectCells(img: IgeImage | IgeCanvas): IgeTextureCellArray {
 		// Create a temp canvas
 		const canvas = new OffscreenCanvas(1, 1);
 		const ctx = canvas.getContext("2d") as OffscreenCanvasRenderingContext2D;
@@ -158,7 +168,7 @@ export class IgeSpriteSheet extends IgeTexture {
 		return spriteRects;
 	}
 
-	_pixelInRects (rects: IgeTextureCellArray, x: number, y: number) {
+	_pixelInRects(rects: IgeTextureCellArray, x: number, y: number) {
 		const rectCount = rects.length;
 
 		let rectIndex;
@@ -177,7 +187,7 @@ export class IgeSpriteSheet extends IgeTexture {
 		return false;
 	}
 
-	_determineRect (pixels: ImageData, x: number, y: number): IgeTextureCell {
+	_determineRect(pixels: ImageData, x: number, y: number): IgeTextureCell {
 		const pixArr = [{ x, y }];
 		const rect = { x, y, width: 1, height: 1 };
 
@@ -212,7 +222,7 @@ export class IgeSpriteSheet extends IgeTexture {
 				this.makePixelTransparent(pixels, currentPixel.x - 1, currentPixel.y - 1);
 
 				// Add pixel position to queue
-				pixArr.push({ "x": currentPixel.x - 1, "y": currentPixel.y - 1 });
+				pixArr.push({ x: currentPixel.x - 1, y: currentPixel.y - 1 });
 			}
 
 			if (!this.isPixelTransparent(pixels, currentPixel.x, currentPixel.y - 1)) {
@@ -220,7 +230,7 @@ export class IgeSpriteSheet extends IgeTexture {
 				this.makePixelTransparent(pixels, currentPixel.x, currentPixel.y - 1);
 
 				// Add pixel position to queue
-				pixArr.push({ "x": currentPixel.x, "y": currentPixel.y - 1 });
+				pixArr.push({ x: currentPixel.x, y: currentPixel.y - 1 });
 			}
 
 			if (!this.isPixelTransparent(pixels, currentPixel.x + 1, currentPixel.y - 1)) {
@@ -228,7 +238,7 @@ export class IgeSpriteSheet extends IgeTexture {
 				this.makePixelTransparent(pixels, currentPixel.x + 1, currentPixel.y - 1);
 
 				// Add pixel position to queue
-				pixArr.push({ "x": currentPixel.x + 1, "y": currentPixel.y - 1 });
+				pixArr.push({ x: currentPixel.x + 1, y: currentPixel.y - 1 });
 			}
 
 			if (!this.isPixelTransparent(pixels, currentPixel.x - 1, currentPixel.y)) {
@@ -236,7 +246,7 @@ export class IgeSpriteSheet extends IgeTexture {
 				this.makePixelTransparent(pixels, currentPixel.x - 1, currentPixel.y);
 
 				// Add pixel position to queue
-				pixArr.push({ "x": currentPixel.x - 1, "y": currentPixel.y });
+				pixArr.push({ x: currentPixel.x - 1, y: currentPixel.y });
 			}
 
 			if (!this.isPixelTransparent(pixels, currentPixel.x + 1, currentPixel.y)) {
@@ -244,7 +254,7 @@ export class IgeSpriteSheet extends IgeTexture {
 				this.makePixelTransparent(pixels, currentPixel.x + 1, currentPixel.y);
 
 				// Add pixel position to queue
-				pixArr.push({ "x": currentPixel.x + 1, "y": currentPixel.y });
+				pixArr.push({ x: currentPixel.x + 1, y: currentPixel.y });
 			}
 
 			if (!this.isPixelTransparent(pixels, currentPixel.x - 1, currentPixel.y + 1)) {
@@ -252,7 +262,7 @@ export class IgeSpriteSheet extends IgeTexture {
 				this.makePixelTransparent(pixels, currentPixel.x - 1, currentPixel.y + 1);
 
 				// Add pixel position to queue
-				pixArr.push({ "x": currentPixel.x - 1, "y": currentPixel.y + 1 });
+				pixArr.push({ x: currentPixel.x - 1, y: currentPixel.y + 1 });
 			}
 
 			if (!this.isPixelTransparent(pixels, currentPixel.x, currentPixel.y + 1)) {
@@ -260,7 +270,7 @@ export class IgeSpriteSheet extends IgeTexture {
 				this.makePixelTransparent(pixels, currentPixel.x, currentPixel.y + 1);
 
 				// Add pixel position to queue
-				pixArr.push({ "x": currentPixel.x, "y": currentPixel.y + 1 });
+				pixArr.push({ x: currentPixel.x, y: currentPixel.y + 1 });
 			}
 
 			if (!this.isPixelTransparent(pixels, currentPixel.x + 1, currentPixel.y + 1)) {
@@ -268,7 +278,7 @@ export class IgeSpriteSheet extends IgeTexture {
 				this.makePixelTransparent(pixels, currentPixel.x + 1, currentPixel.y + 1);
 
 				// Add pixel position to queue
-				pixArr.push({ "x": currentPixel.x + 1, "y": currentPixel.y + 1 });
+				pixArr.push({ x: currentPixel.x + 1, y: currentPixel.y + 1 });
 			}
 		}
 
@@ -276,19 +286,19 @@ export class IgeSpriteSheet extends IgeTexture {
 	}
 
 	/**
-     * Returns the total number of cells in the cell sheet.
-     * @return {number}
-     */
-	cellCount () {
+	 * Returns the total number of cells in the cell sheet.
+	 * @return {number}
+	 */
+	cellCount() {
 		return this._cells.length;
 	}
 
 	/**
-     * Returns a string containing a code fragment that when
-     * evaluated will reproduce this object.
-     * @return {String}
-     */
-	stringify () {
+	 * Returns a string containing a code fragment that when
+	 * evaluated will reproduce this object.
+	 * @return {String}
+	 */
+	stringify() {
 		const str = "new " + this.classId + "('" + this.url() + "', " + this._cells.toString() + ")";
 
 		// Every object has an ID, assign that first

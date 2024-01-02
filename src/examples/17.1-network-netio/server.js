@@ -1,5 +1,5 @@
 var Server = IgeClass.extend({
-	classId: 'Server',
+	classId: "Server",
 	Server: true,
 
 	init: function (options) {
@@ -11,8 +11,8 @@ var Server = IgeClass.extend({
 		// Add the networking component
 		ige.addComponent(IgeNetIoComponent)
 			// Define a network command
-			.network.define('test', self._onTest)
-			.network.define('testRequest', self._onTestRequest)
+			.network.define("test", self._onTest)
+			.network.define("testRequest", self._onTestRequest)
 			// Start the network server
 			.network.start(2000, function () {
 				// Networking has started so start the game engine
@@ -27,4 +27,6 @@ var Server = IgeClass.extend({
 	}
 });
 
-if (typeof(module) !== 'undefined' && typeof(module.exports) !== 'undefined') { module.exports = Server; }
+if (typeof module !== "undefined" && typeof module.exports !== "undefined") {
+	module.exports = Server;
+}

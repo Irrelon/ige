@@ -1,10 +1,10 @@
+import { IgeTween, IgeTweenDestination } from "./IgeTween";
+import { IgeEventingClass } from "@/engine/core/IgeEventingClass";
+import { IgeBehaviourType } from "@/enums/IgeBehaviourType";
+import { easingFunctions } from "../easing";
 import { ige } from "../instance";
 import { arrPull } from "../utils";
-import { IgeTween, IgeTweenDestination } from "./IgeTween";
-import { easingFunctions } from "../easing";
 import { IgeEntityBehaviourMethod } from "@/types/IgeEntityBehaviour";
-import { IgeBehaviourType } from "@/enums/IgeBehaviourType";
-import { IgeEventingClass } from "@/engine/core/IgeEventingClass";
 import { IgeIsReadyPromise } from "@/types/IgeIsReadyPromise";
 
 /**
@@ -19,7 +19,7 @@ export class IgeTweenController extends IgeEventingClass implements IgeIsReadyPr
 	_tweens: IgeTween[] = []; // Set up the array that will hold our active tweens
 	_tweening: boolean = false;
 
-	isReady () {
+	isReady() {
 		return new Promise<void>((resolve) => {
 			setTimeout(() => {
 				ige.dependencies.waitFor(["engine"], () => {
@@ -36,7 +36,7 @@ export class IgeTweenController extends IgeEventingClass implements IgeIsReadyPr
 	 * @param {IgeTween} tween The tween to start.
 	 * @return {number} The index of the added tween or -1 on error.
 	 */
-	start (tween: IgeTween) {
+	start(tween: IgeTween) {
 		if (tween._startTime !== undefined && tween._startTime > ige.engine._currentTime) {
 			// The tween is scheduled for later
 			// Push the tween into the IgeTweenController's _tweens array
@@ -59,7 +59,7 @@ export class IgeTweenController extends IgeEventingClass implements IgeIsReadyPr
 		return tween;
 	}
 
-	_setupStep (tween: IgeTween, newTime: boolean = false) {
+	_setupStep(tween: IgeTween, newTime: boolean = false) {
 		const targetObj = tween._targetObj,
 			step = tween._steps[tween._currentStep],
 			targetData: IgeTweenDestination[] = [];
@@ -97,9 +97,9 @@ export class IgeTweenController extends IgeEventingClass implements IgeIsReadyPr
 			if (propertyNameAndValue.hasOwnProperty(propertyIndex)) {
 				targetData.push({
 					targetObj,
-					"propName": propertyIndex,
-					"deltaVal": propertyNameAndValue[propertyIndex] - (step.isDelta ? 0 : targetObj[propertyIndex]), // The diff between end and start values
-					"oldDelta": 0 // Var to save the old delta in order to get the actual difference data.
+					propName: propertyIndex,
+					deltaVal: propertyNameAndValue[propertyIndex] - (step.isDelta ? 0 : targetObj[propertyIndex]), // The diff between end and start values
+					oldDelta: 0 // Var to save the old delta in order to get the actual difference data.
 				});
 			}
 		}
@@ -114,7 +114,7 @@ export class IgeTweenController extends IgeEventingClass implements IgeIsReadyPr
 	 * Removes the specified tween from the active tween list.
 	 * @param {IgeTween} tween The tween to stop.
 	 */
-	stop (tween: IgeTween) {
+	stop(tween: IgeTween) {
 		// Store the new tween details in the item
 		arrPull(this._tweens, tween);
 
@@ -130,7 +130,7 @@ export class IgeTweenController extends IgeEventingClass implements IgeIsReadyPr
 	/**
 	 * Stop all tweening for the object.
 	 */
-	stopAll () {
+	stopAll() {
 		// Disable tweening
 		this.disable();
 
@@ -143,7 +143,7 @@ export class IgeTweenController extends IgeEventingClass implements IgeIsReadyPr
 	/**
 	 * Enable tweening for the object.
 	 */
-	enable () {
+	enable() {
 		// Check if the item is currently tweening
 		if (!this._tweening) {
 			// Set the item to tweening
@@ -156,7 +156,7 @@ export class IgeTweenController extends IgeEventingClass implements IgeIsReadyPr
 	/**
 	 * Disable tweening for the object.
 	 */
-	disable () {
+	disable() {
 		// Check if the item is currently tweening
 		if (this._tweening) {
 			// Set the item to not tweening
@@ -194,7 +194,7 @@ export class IgeTweenController extends IgeEventingClass implements IgeIsReadyPr
 						}
 
 						// Check if we have a beforeTween callback to fire
-						if (typeof (tween._beforeTween) === "function") {
+						if (typeof tween._beforeTween === "function") {
 							// Fire the beforeTween callback
 							tween._beforeTween(tween);
 
@@ -203,7 +203,7 @@ export class IgeTweenController extends IgeEventingClass implements IgeIsReadyPr
 						}
 
 						// Check if we have a beforeStep callback to fire
-						if (typeof (tween._beforeStep) === "function") {
+						if (typeof tween._beforeStep === "function") {
 							// Fire the beforeStep callback
 							if (tween._stepDirection) {
 								stepIndex = tween._steps.length - (tween._currentStep + 1);
@@ -239,11 +239,7 @@ export class IgeTweenController extends IgeEventingClass implements IgeIsReadyPr
 								// a divide by zero error resulting in a NaN value
 								if (destTime !== 0) {
 									// Add the delta amount to destination
-									currentDelta = easingFunctions[easing](
-										destTime,
-										item.deltaVal,
-										destTime
-									);
+									currentDelta = easingFunctions[easing](destTime, item.deltaVal, destTime);
 								} else {
 									currentDelta = item.deltaVal;
 								}
@@ -251,13 +247,14 @@ export class IgeTweenController extends IgeEventingClass implements IgeIsReadyPr
 								targetPropVal += currentDelta - item.oldDelta;
 
 								// Round the value to correct floating point operation imprecision
-								const roundingPrecision = Math.pow(10, 15 - (targetPropVal.toFixed(0).toString().length));
-								targetProp[item.propName] = Math.round(targetPropVal * roundingPrecision) / roundingPrecision;
+								const roundingPrecision = Math.pow(10, 15 - targetPropVal.toFixed(0).toString().length);
+								targetProp[item.propName] =
+									Math.round(targetPropVal * roundingPrecision) / roundingPrecision;
 							}
 						}
 
 						// Check if we have a afterStep callback to fire
-						if (typeof (tween._afterStep) === "function") {
+						if (typeof tween._afterStep === "function") {
 							// Fire the afterStep
 							if (tween._stepDirection) {
 								stepIndex = tween._steps.length - (tween._currentStep + 1);
@@ -306,7 +303,7 @@ export class IgeTweenController extends IgeEventingClass implements IgeIsReadyPr
 									// }
 
 									// Check if we have a beforeStep callback to fire
-									if (typeof (tween._beforeStep) === "function") {
+									if (typeof tween._beforeStep === "function") {
 										// Fire the beforeStep callback
 										if (tween._stepDirection) {
 											stepIndex = tween._steps.length - (tween._currentStep + 1);
@@ -328,7 +325,7 @@ export class IgeTweenController extends IgeEventingClass implements IgeIsReadyPr
 								tween.stop();
 
 								// If there is a callback, call it
-								if (typeof (tween._afterTween) === "function") {
+								if (typeof tween._afterTween === "function") {
 									// Fire the afterTween callback
 									tween._afterTween(tween);
 
@@ -341,7 +338,7 @@ export class IgeTweenController extends IgeEventingClass implements IgeIsReadyPr
 							tween._currentStep++;
 
 							// Check if we have a beforeStep callback to fire
-							if (typeof (tween._beforeStep) === "function") {
+							if (typeof tween._beforeStep === "function") {
 								// Fire the beforeStep callback
 								if (tween._stepDirection) {
 									stepIndex = tween._steps.length - (tween._currentStep + 1);
@@ -354,7 +351,7 @@ export class IgeTweenController extends IgeEventingClass implements IgeIsReadyPr
 							this._setupStep(tween, true);
 						}
 
-						if (typeof (tween._afterChange) === "function") {
+						if (typeof tween._afterChange === "function") {
 							tween._afterChange(tween, stepIndex);
 						}
 					} else {
@@ -365,22 +362,18 @@ export class IgeTweenController extends IgeEventingClass implements IgeIsReadyPr
 						for (const targetIndex in targets) {
 							if (targets.hasOwnProperty(targetIndex)) {
 								const item = targets[targetIndex];
-								const currentDelta = easingFunctions[easing](
-									deltaTime,
-									item.deltaVal,
-									destTime
-								);
+								const currentDelta = easingFunctions[easing](deltaTime, item.deltaVal, destTime);
 								item.targetObj[item.propName] += currentDelta - item.oldDelta;
 								item.oldDelta = currentDelta;
 							}
 						}
 
-						if (typeof (tween._afterChange) === "function") {
+						if (typeof tween._afterChange === "function") {
 							tween._afterChange(tween, stepIndex);
 						}
 					}
 				}
 			}
 		}
-	}
+	};
 }

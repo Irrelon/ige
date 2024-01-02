@@ -1,21 +1,16 @@
-import { ige } from "@/engine/instance";
-import { IgeParticleEmitter } from "@/engine/core/IgeParticleEmitter";
 import { IgeParticle } from "@/engine/core/IgeParticle";
+import { IgeParticleEmitter } from "@/engine/core/IgeParticleEmitter";
+import { ige } from "@/engine/instance";
 import { arrPull } from "@/engine/utils";
 
 export class MiningParticle extends IgeParticle {
 	classId = "MiningParticle";
 
-	constructor (emitter: IgeParticleEmitter) {
+	constructor(emitter: IgeParticleEmitter) {
 		super(emitter);
 
 		// Setup the particle default values
-		this.texture(ige.textures.get("explosions1"))
-			.cell(39)
-			.width(15)
-			.height(15)
-			.layer(1)
-			.category("MiningParticle");
+		this.texture(ige.textures.get("explosions1")).cell(39).width(15).height(15).layer(1).category("MiningParticle");
 
 		/*self.addComponent(IgeTextureAnimationComponent);
 		 self.animation
@@ -25,7 +20,7 @@ export class MiningParticle extends IgeParticle {
 		//self.animation.start('smoke');
 	}
 
-	destroy () {
+	destroy() {
 		// Remove ourselves from the emitter
 		if (this._emitter !== undefined) {
 			arrPull(this._emitter._particles, this);

@@ -1,4 +1,4 @@
 export interface IgePointXY {
-    x: number;
-    y: number;
+	x: number;
+	y: number;
 }

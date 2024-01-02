@@ -1,5 +1,5 @@
-import { ige } from "@/engine/instance";
 import { IgeEventingClass } from "@/engine/core/IgeEventingClass";
+import { ige } from "@/engine/instance";
 
 export class IgeAudioItem extends IgeEventingClass {
 	classId = "IgeAudioItem";
@@ -13,7 +13,7 @@ export class IgeAudioItem extends IgeEventingClass {
 	_audioId?: string;
 	_panner?: PannerNode;
 
-	constructor (audioId?: string) {
+	constructor(audioId?: string) {
 		super();
 
 		if (audioId) {
@@ -21,7 +21,7 @@ export class IgeAudioItem extends IgeEventingClass {
 		}
 	}
 
-	playing (val?: boolean) {
+	playing(val?: boolean) {
 		if (val !== undefined) {
 			this._playing = val;
 			return this;
@@ -30,9 +30,9 @@ export class IgeAudioItem extends IgeEventingClass {
 		return this._playing;
 	}
 
-	audioId (audioId: string): this;
-	audioId (): string;
-	audioId (audioId?: string) {
+	audioId(audioId: string): this;
+	audioId(): string;
+	audioId(audioId?: string) {
 		if (audioId === undefined) {
 			return this._audioId;
 		}
@@ -45,9 +45,9 @@ export class IgeAudioItem extends IgeEventingClass {
 		return this;
 	}
 
-	url (url: string): this;
-	url (): string;
-	url (url?: string) {
+	url(url: string): this;
+	url(): string;
+	url(url?: string) {
 		if (url === undefined) {
 			return this._url;
 		}
@@ -56,11 +56,14 @@ export class IgeAudioItem extends IgeEventingClass {
 
 		if (!ige.audio) return this;
 
-		ige.audio._load(url).then((buffer) => {
-			this.buffer(buffer);
-		}).catch((err) => {
-			throw new Error(`Unable to load audio: ${err}`);
-		});
+		ige.audio
+			._load(url)
+			.then((buffer) => {
+				this.buffer(buffer);
+			})
+			.catch((err) => {
+				throw new Error(`Unable to load audio: ${err}`);
+			});
 
 		return this;
 	}
@@ -70,9 +73,9 @@ export class IgeAudioItem extends IgeEventingClass {
 	 * @param {AudioBuffer} buffer
 	 * @returns {*}
 	 */
-	buffer (buffer: AudioBuffer): this;
-	buffer (): AudioBuffer;
-	buffer (buffer?: AudioBuffer) {
+	buffer(buffer: AudioBuffer): this;
+	buffer(): AudioBuffer;
+	buffer(buffer?: AudioBuffer) {
 		if (buffer === undefined) {
 			return this._buffer;
 		}
@@ -86,9 +89,9 @@ export class IgeAudioItem extends IgeEventingClass {
 		return this;
 	}
 
-	panner (val: PannerNode): this;
-	panner (): PannerNode;
-	panner (val?: PannerNode) {
+	panner(val: PannerNode): this;
+	panner(): PannerNode;
+	panner(val?: PannerNode) {
 		if (val === undefined) {
 			return this._panner;
 		}
@@ -107,7 +110,7 @@ export class IgeAudioItem extends IgeEventingClass {
 	/**
 	 * Plays the audio.
 	 */
-	play (loop: boolean = false) {
+	play(loop: boolean = false) {
 		if (!ige.audio) return;
 		if (!this._buffer || !ige.audio._ctx) {
 			this._playWhenReady = true;
@@ -138,7 +141,7 @@ export class IgeAudioItem extends IgeEventingClass {
 	/**
 	 * Stops the currently playing audio.
 	 */
-	stop () {
+	stop() {
 		if (this._bufferSource) {
 			this.log("Audio file (" + this._url + ") stopping...");
 			this._bufferSource.stop();

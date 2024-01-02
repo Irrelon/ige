@@ -31,7 +31,7 @@ var ServerNetworkEvents = {
 				.mount(ige.server.foregroundMap);
 
 			// Tell the client to track their player entity
-			ige.components.network.send('playerEntity', ige.server.players[clientId].id(), clientId);
+			ige.components.network.send("playerEntity", ige.server.players[clientId].id(), clientId);
 		}
 	},
 
@@ -41,17 +41,16 @@ var ServerNetworkEvents = {
 			currentPosition = playerEntity._translate,
 			startTile;
 
-		console.log('Path to: ', data);
+		console.log("Path to: ", data);
 
 		startTile = playerEntity._parent.pointToTile(currentPosition.toIso());
-		console.log('startTile', startTile);
+		console.log("startTile", startTile);
 
 		// Start movement along the new path
-		playerEntity.path
-			.clear()
-			.add(parseInt(data[0]), parseInt(data[1]), 0)
-			.start();
+		playerEntity.path.clear().add(parseInt(data[0]), parseInt(data[1]), 0).start();
 	}
 };
 
-if (typeof(module) !== 'undefined' && typeof(module.exports) !== 'undefined') { module.exports = ServerNetworkEvents; }
+if (typeof module !== "undefined" && typeof module.exports !== "undefined") {
+	module.exports = ServerNetworkEvents;
+}

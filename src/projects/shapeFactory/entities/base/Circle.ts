@@ -1,17 +1,15 @@
-import { ige } from "@/engine/instance";
+import { GameEntity } from "./GameEntity";
 import { isClient } from "@/engine/clientServer";
 import { registerClass } from "@/engine/igeClassStore";
-import { GameEntity } from "./GameEntity";
+import { ige } from "@/engine/instance";
 
 export class Circle extends GameEntity {
-	classId = 'Circle';
+	classId = "Circle";
 
-	constructor () {
+	constructor() {
 		super();
 
-		this.data("glowColor", "#c852ff")
-			.width(50)
-			.height(50);
+		this.data("glowColor", "#c852ff").width(50).height(50);
 
 		if (isClient) {
 			this.texture(ige.textures.get("circleSmartTexture"));

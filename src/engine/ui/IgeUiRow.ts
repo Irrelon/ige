@@ -4,7 +4,7 @@ import { registerClass } from "@/engine/igeClassStore";
 export class IgeUiRow extends IgeUiElement {
 	classId = "IgeUiRow";
 
-	tick (ctx) {
+	tick(ctx) {
 		const maxWidth = this.width();
 
 		// Loop children and re-position then
@@ -29,7 +29,7 @@ export class IgeUiRow extends IgeUiElement {
 			}
 
 			// Remove this non-flex entity's size from available flow space
-			flowSpace -= (item.width() + item._marginLeft + item._marginRight);
+			flowSpace -= item.width() + item._marginLeft + item._marginRight;
 		}
 
 		// Single flow space division is...
@@ -41,7 +41,7 @@ export class IgeUiRow extends IgeUiElement {
 
 			if (item._uiFlex !== undefined) {
 				// Item is flex-based, assign it space based on flex value
-				item.width((singleFlowSpaceDivision * item._uiFlex) - (item._marginLeft + item._marginRight));
+				item.width(singleFlowSpaceDivision * item._uiFlex - (item._marginLeft + item._marginRight));
 			}
 
 			// Bounds (x, y) is (width, height) in local space
@@ -49,7 +49,7 @@ export class IgeUiRow extends IgeUiElement {
 
 			item.left(currentPosition + item._marginLeft);
 
-			currentPosition += (itemWidth + item._marginLeft + item._marginRight);
+			currentPosition += itemWidth + item._marginLeft + item._marginRight;
 		}
 
 		// Now do the super-class tick

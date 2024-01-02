@@ -11,51 +11,51 @@
 	font-size: 11px;
 	color: #fff;
 	box-shadow: 0 0 85px 0 rgba(0, 0, 0, 0.5);
-	
+
 	.header {
 		background-color: #333;
 		height: 32px;
-		
+
 		&.secondary {
 			background-color: #222;
 		}
-		
+
 		.icon {
 			float: left;
 			margin-top: 9px;
 			margin-left: 9px;
 		}
-		
+
 		.title {
 			padding: 9px;
 			font-size: 12px;
 		}
-		
+
 		.controls {
 			position: absolute;
 			right: 0;
 			top: 0;
-			
+
 			.control {
 				float: right;
 				cursor: pointer;
 				background-color: #686868;
 				width: 32px;
 				height: 32px;
-				
+
 				&:hover {
 					background-color: #797979;
 				}
-				
+
 				&.sep {
 					width: 5px;
 					background: none;
-					
+
 					&:hover {
 						background: none;
 					}
 				}
-				
+
 				.halflings-icon {
 					padding: 0;
 					margin: 0;
@@ -65,14 +65,14 @@
 			}
 		}
 	}
-	
+
 	.content {
 		position: absolute;
 		top: 32px;
 		left: 0;
 		right: 0;
 		bottom: 0;
-		
+
 		.loadingCircle {
 			position: absolute;
 			top: 50%;
@@ -82,7 +82,7 @@
 			margin-top: -20px;
 			margin-left: -20px;
 		}
-		
+
 		.loadingMsg {
 			left: 50%;
 			top: 50%;
@@ -97,13 +97,15 @@
 			font-size: 10px;
 		}
 	}
-	
-	&.confirm, &.input, &.prompt {
+
+	&.confirm,
+	&.input,
+	&.prompt {
 		.content {
 			.msg {
 				text-align: center;
 				padding: 30px;
-				
+
 				&.paragraphs {
 					padding: 0;
 					padding-left: 10px;
@@ -111,7 +113,7 @@
 					text-align: left;
 				}
 			}
-			
+
 			.actionButtons {
 				position: absolute;
 				bottom: 10px;
@@ -119,13 +121,13 @@
 				right: 30px;
 				height: 30px;
 				text-align: center;
-				
+
 				.editorBtn {
 					min-width: 100px;
 					text-align: center;
 					margin-right: 10px;
 					display: inline-block;
-					
+
 					&:last-child {
 						margin-right: 0;
 					}

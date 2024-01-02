@@ -1,5 +1,5 @@
 var Game = IgeClass.extend({
-	classId: 'Game',
+	classId: "Game",
 
 	init: function (App, options) {
 		// Create the engine
@@ -15,4 +15,8 @@ var Game = IgeClass.extend({
 	}
 });
 
-if (typeof(module) !== 'undefined' && typeof(module.exports) !== 'undefined') { module.exports = Game; } else { var game = new Game(Client); }
+if (typeof module !== "undefined" && typeof module.exports !== "undefined") {
+	module.exports = Game;
+} else {
+	var game = new Game(Client);
+}

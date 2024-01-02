@@ -1,12 +1,12 @@
-import { ige } from "@/engine/instance";
-import { isClient } from "@/engine/clientServer";
-import { IgeStreamMode } from "@/enums/IgeStreamMode";
-import { ResourceType } from "../../enums/ResourceType";
 import { IgeAudioEntity } from "@/engine/audio/index";
-import { IgeSceneGraph } from "@/engine/core/IgeSceneGraph";
+import { isClient } from "@/engine/clientServer";
 import { IgeScene2d } from "@/engine/core/IgeScene2d";
-import { createStorageBuilding } from "../../services/createBuilding";
+import { IgeSceneGraph } from "@/engine/core/IgeSceneGraph";
 import { IgeTileMap2d } from "@/engine/core/IgeTileMap2d";
+import { ige } from "@/engine/instance";
+import { createStorageBuilding } from "../../services/createBuilding";
+import { ResourceType } from "../../enums/ResourceType";
+import { IgeStreamMode } from "@/enums/IgeStreamMode";
 
 export class Level1 extends IgeSceneGraph {
 	classId = "Level1";
@@ -14,7 +14,7 @@ export class Level1 extends IgeSceneGraph {
 	/**
 	 * Called when loading the graph data via ige.addGraph().
 	 */
-	addGraph () {
+	addGraph() {
 		const baseScene = ige.$("baseScene") as IgeScene2d;
 
 		// Clear existing graph data
@@ -23,13 +23,10 @@ export class Level1 extends IgeSceneGraph {
 		}
 
 		// Create the scene
-		const scene1 = new IgeScene2d()
-			.id("scene1")
-			.isometricMounts(ige.data("isometric"))
-			.mount(baseScene);
+		const scene1 = new IgeScene2d().id("scene1").isometricMounts(ige.data("isometric")).mount(baseScene);
 
 		const tileMap1 = new IgeTileMap2d()
-			.id('tileMap1')
+			.id("tileMap1")
 			.isometricMounts(ige.data("isometric"))
 			.tileWidth(50)
 			.tileHeight(50)
@@ -62,7 +59,7 @@ export class Level1 extends IgeSceneGraph {
 			// 	cursorObject.translateToTile(tile.x + cursorObject._tileAdjustX, tile.y + cursorObject._tileAdjustY);
 			// 	this.cursorTile = tile;
 			// }
-		}
+		};
 
 		//tileMap.pointerUp(mapOnMouseUp);
 
@@ -87,7 +84,7 @@ export class Level1 extends IgeSceneGraph {
 	 * The method called when the graph items are to be removed from the
 	 * active graph.
 	 */
-	removeGraph () {
+	removeGraph() {
 		// Since all our objects in addGraph() were mounted to the
 		// 'scene1' entity, destroying it will remove everything we
 		// added to it.

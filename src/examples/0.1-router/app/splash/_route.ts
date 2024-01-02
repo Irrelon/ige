@@ -1,5 +1,5 @@
-import { ige } from "@/engine/instance";
 import { SplashScene } from "./SplashScene";
+import { ige } from "@/engine/instance";
 
 ige.router.route("app/splash", {
 	client: async () => {
@@ -8,6 +8,6 @@ ige.router.route("app/splash", {
 
 		return async () => {
 			await ige.engine.removeGraph(SplashScene);
-		}
+		};
 	}
 });

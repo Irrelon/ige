@@ -1,5 +1,5 @@
 var Client = IgeClass.extend({
-	classId: 'Client',
+	classId: "Client",
 	init: function () {
 		ige.addComponent(IgeEditorComponent);
 		ige.globalSmoothing(true);
@@ -21,20 +21,17 @@ var Client = IgeClass.extend({
 				self.isoMode = true;
 
 				// Create the scene
-				self.mainScene = new IgeScene2d()
-					.id('mainScene')
-					.drawBounds(false)
-					.drawBoundsData(false);
+				self.mainScene = new IgeScene2d().id("mainScene").drawBounds(false).drawBoundsData(false);
 
 				self.objectScene = new IgeScene2d()
-					.id('objectScene')
+					.id("objectScene")
 					.depth(0)
 					.drawBounds(false)
 					.drawBoundsData(false)
 					.mount(self.mainScene);
 
 				self.uiScene = new IgeScene2d()
-					.id('uiScene')
+					.id("uiScene")
 					.depth(1)
 					.drawBounds(false)
 					.drawBoundsData(false)
@@ -43,7 +40,7 @@ var Client = IgeClass.extend({
 
 				// Create the main viewport
 				self.vp1 = new IgeViewport()
-					.id('vp1')
+					.id("vp1")
 					.autoSize(true)
 					.scene(self.mainScene)
 					.drawMouse(true)
@@ -53,7 +50,7 @@ var Client = IgeClass.extend({
 
 				// Create an isometric tile map
 				self.tileMap1 = new IgeTileMap2d()
-					.id('tileMap1')
+					.id("tileMap1")
 					.isometricMounts(self.isoMode)
 					.tileWidth(40)
 					.tileHeight(40)
@@ -63,7 +60,17 @@ var Client = IgeClass.extend({
 					.drawMouseData(true)
 					.drawBounds(false)
 					.drawBoundsData(false)
-					.loadMap({"data":{"1":{"1":1,"2":1,"3":1,"4":1,"5":1},"2":{"1":1,"5":1},"3":{"1":1,"3":1,"6":1},"4":{"1":1,"3":1,"4":1,"6":1},"5":{"1":1,"4":1,"6":1},"6":{"1":1,"2":1,"4":1}},"dataXY":[0,0]})
+					.loadMap({
+						data: {
+							1: { 1: 1, 2: 1, 3: 1, 4: 1, 5: 1 },
+							2: { 1: 1, 5: 1 },
+							3: { 1: 1, 3: 1, 6: 1 },
+							4: { 1: 1, 3: 1, 4: 1, 6: 1 },
+							5: { 1: 1, 4: 1, 6: 1 },
+							6: { 1: 1, 2: 1, 4: 1 }
+						},
+						dataXY: [0, 0]
+					})
 					.highlightOccupied(true) // Draws a red tile wherever a tile is "occupied"
 					.mount(self.objectScene);
 
@@ -86,7 +93,7 @@ var Client = IgeClass.extend({
 				// Create the 3d container that the player
 				// entity will be mounted to
 				self.player = new Character()
-					.id('player')
+					.id("player")
 					.addComponent(PlayerComponent)
 					.addComponent(IgePathComponent)
 					.mouseOver(overFunc)
@@ -105,20 +112,31 @@ var Client = IgeClass.extend({
 				// event propagation down to moving the player. If it's working correctly
 				// the player won't move when the entity is clicked.
 				self.topBar1 = new IgeUiEntity()
-					.id('topBar1')
+					.id("topBar1")
 					.depth(1)
-					.backgroundColor('#474747')
+					.backgroundColor("#474747")
 					.top(0)
 					.left(0)
-					.width('100%')
+					.width("100%")
 					.height(30)
-					.borderTopColor('#666666')
+					.borderTopColor("#666666")
 					.borderTopWidth(1)
 					.backgroundPosition(0, 0)
-					.mouseOver(function () {this.backgroundColor('#49ceff'); ige.components.input.stopPropagation(); })
-					.mouseOut(function () {this.backgroundColor('#474747'); ige.components.input.stopPropagation(); })
-					.mouseMove(function () { ige.components.input.stopPropagation(); })
-					.mouseUp(function () { console.log('Clicked ' + this.id()); ige.components.input.stopPropagation(); })
+					.mouseOver(function () {
+						this.backgroundColor("#49ceff");
+						ige.components.input.stopPropagation();
+					})
+					.mouseOut(function () {
+						this.backgroundColor("#474747");
+						ige.components.input.stopPropagation();
+					})
+					.mouseMove(function () {
+						ige.components.input.stopPropagation();
+					})
+					.mouseUp(function () {
+						console.log("Clicked " + this.id());
+						ige.components.input.stopPropagation();
+					})
 					.mount(self.uiScene);
 
 				// Set the camera to track the character with some
@@ -135,80 +153,117 @@ var Client = IgeClass.extend({
 				// that once completed will trigger the quest completed callback.
 				self.quest1 = new IgeQuest()
 					// Setup the quest's items
-					.items([{
-						// The number of times this event should fire
-						// before we mark this quest item as complete
-						count: 1,
-						// The object to attach the event listener to
-						emitter: self.player,
-						// The name of the event to listen for
-						eventName: 'overTile',
-						// The method that will be called by the event
-						// emitter, receiving it's parameters and then
-						// evaluating if the event constitutes the quest
-						// event we want to listen for. Returning true
-						// tells the quest system to count the event
-						// towards the item's event complete count.
-						// This is optional, if no method is specified
-						// then every event emitted will count towards
-						// the item's event complete count.
-						eventEvaluate: function (tile) {
-							// Check if the tile our character is over matches
-							// our co-ordinates
-							if (tile.x === 0 && tile.y === 4) {
-								return true;
+					.items([
+						{
+							// The number of times this event should fire
+							// before we mark this quest item as complete
+							count: 1,
+							// The object to attach the event listener to
+							emitter: self.player,
+							// The name of the event to listen for
+							eventName: "overTile",
+							// The method that will be called by the event
+							// emitter, receiving it's parameters and then
+							// evaluating if the event constitutes the quest
+							// event we want to listen for. Returning true
+							// tells the quest system to count the event
+							// towards the item's event complete count.
+							// This is optional, if no method is specified
+							// then every event emitted will count towards
+							// the item's event complete count.
+							eventEvaluate: function (tile) {
+								// Check if the tile our character is over matches
+								// our co-ordinates
+								if (tile.x === 0 && tile.y === 4) {
+									return true;
+								}
+							},
+							// Called when an event is fired for this item
+							// this is optional
+							eventCallback: function (item) {
+								console.log("overTile event");
+							},
+							// Called when this item has reached its item
+							// complete count. This is optional
+							itemCallback: function (item) {
+								console.log("Item completed! Quest percent: " + this.percentComplete() + "%");
 							}
 						},
-						// Called when an event is fired for this item
-						// this is optional
-						eventCallback: function (item) {
-							console.log('overTile event');
+						{
+							count: 1,
+							emitter: self.player,
+							eventName: "overTile",
+							eventEvaluate: function (tile) {
+								if (tile.x === 3 && tile.y === 0) {
+									return true;
+								}
+							},
+							eventCallback: function (item) {
+								console.log("overTile event");
+							},
+							itemCallback: function (item) {
+								console.log("Item completed! Quest percent: " + this.percentComplete() + "%");
+							}
 						},
-						// Called when this item has reached its item
-						// complete count. This is optional
-						itemCallback: function (item) {
-							console.log('Item completed! Quest percent: ' + this.percentComplete() + '%');
+						{
+							count: 1,
+							emitter: self.player,
+							eventName: "overTile",
+							eventEvaluate: function (tile) {
+								if (tile.x === 6 && tile.y === 4) {
+									return true;
+								}
+							},
+							eventCallback: function (item) {
+								console.log("overTile event");
+							},
+							itemCallback: function (item) {
+								console.log("Item completed! Quest percent: " + this.percentComplete() + "%");
+							}
+						},
+						{
+							count: 1,
+							emitter: self.player,
+							eventName: "overTile",
+							eventEvaluate: function (tile) {
+								if (tile.x === 7 && tile.y === 0) {
+									return true;
+								}
+							},
+							eventCallback: function (item) {
+								console.log("overTile event");
+							},
+							itemCallback: function (item) {
+								console.log("Item completed! Quest percent: " + this.percentComplete() + "%");
+							}
+						},
+						{
+							count: 1,
+							emitter: self.player,
+							eventName: "overTile",
+							eventEvaluate: function (tile) {
+								if (tile.x === 0 && tile.y === -1) {
+									return true;
+								}
+							},
+							eventCallback: function (item) {
+								console.log("overTile event");
+							},
+							itemCallback: function (item) {
+								console.log("Item completed! Quest percent: " + this.percentComplete() + "%");
+							}
 						}
-					}, {
-						count: 1,
-						emitter: self.player,
-						eventName: 'overTile',
-						eventEvaluate: function (tile) { if (tile.x === 3 && tile.y === 0) { return true; } },
-						eventCallback: function (item) { console.log('overTile event'); },
-						itemCallback: function (item) {	console.log('Item completed! Quest percent: ' + this.percentComplete() + '%'); }
-					}, {
-						count: 1,
-						emitter: self.player,
-						eventName: 'overTile',
-						eventEvaluate: function (tile) { if (tile.x === 6 && tile.y === 4) { return true; } },
-						eventCallback: function (item) { console.log('overTile event'); },
-						itemCallback: function (item) {	console.log('Item completed! Quest percent: ' + this.percentComplete() + '%'); }
-					}, {
-						count: 1,
-						emitter: self.player,
-						eventName: 'overTile',
-						eventEvaluate: function (tile) { if (tile.x === 7 && tile.y === 0) { return true; } },
-						eventCallback: function (item) { console.log('overTile event'); },
-						itemCallback: function (item) {	console.log('Item completed! Quest percent: ' + this.percentComplete() + '%'); }
-					}, {
-						count: 1,
-						emitter: self.player,
-						eventName: 'overTile',
-						eventEvaluate: function (tile) { if (tile.x === 0 && tile.y === -1) { return true; } },
-						eventCallback: function (item) { console.log('overTile event'); },
-						itemCallback: function (item) {	console.log('Item completed! Quest percent: ' + this.percentComplete() + '%'); }
-					}])
+					])
 					// Called when the quest has completed all items
 					.complete(function () {
-						console.log('Quest is complete!');
+						console.log("Quest is complete!");
 					})
 					// Start the quest now (activates event listeners)
 					.start();
 
 				// Create a path finder and generate a path using
 				// the collision map data
-				self.pathFinder = new IgePathFinder()
-					.neighbourLimit(100);
+				self.pathFinder = new IgePathFinder().neighbourLimit(100);
 
 				// Assign the path to the player
 				self.player.path
@@ -223,18 +278,37 @@ var Client = IgeClass.extend({
 
 				// Register some event listeners for the path (these are for debug console logging so you
 				// know what events are emitted by the path component and what they mean)
-				self.player.path.on('started', function () { console.log('Pathing started...'); });
-				self.player.path.on('stopped', function () { console.log('Pathing stopped.'); });
-				self.player.path.on('cleared', function () { console.log('Path data cleared.'); });
-				self.player.path.on('pointComplete', function () { console.log('Path point reached...'); });
-				self.player.path.on('pathComplete', function () { console.log('Path completed...'); });
-				self.player.path.on('traversalComplete', function () { this._entity.animation.stop(); console.log('Traversal of all paths completed.'); });
+				self.player.path.on("started", function () {
+					console.log("Pathing started...");
+				});
+				self.player.path.on("stopped", function () {
+					console.log("Pathing stopped.");
+				});
+				self.player.path.on("cleared", function () {
+					console.log("Path data cleared.");
+				});
+				self.player.path.on("pointComplete", function () {
+					console.log("Path point reached...");
+				});
+				self.player.path.on("pathComplete", function () {
+					console.log("Path completed...");
+				});
+				self.player.path.on("traversalComplete", function () {
+					this._entity.animation.stop();
+					console.log("Traversal of all paths completed.");
+				});
 
 				// Some error events from the path finder (these are for debug console logging so you
 				// know what events are emitted by the path finder class and what they mean)
-				self.pathFinder.on('noPathFound', function () { console.log('Could not find a path to the destination!'); });
-				self.pathFinder.on('exceededLimit', function () { console.log('Path finder exceeded allowed limit of nodes!'); });
-				self.pathFinder.on('pathFound', function () { console.log('Path to destination calculated...'); });
+				self.pathFinder.on("noPathFound", function () {
+					console.log("Could not find a path to the destination!");
+				});
+				self.pathFinder.on("exceededLimit", function () {
+					console.log("Path finder exceeded allowed limit of nodes!");
+				});
+				self.pathFinder.on("pathFound", function () {
+					console.log("Path to destination calculated...");
+				});
 
 				// Start traversing the path!
 				self.player.path
@@ -250,4 +324,6 @@ var Client = IgeClass.extend({
 	}
 });
 
-if (typeof(module) !== 'undefined' && typeof(module.exports) !== 'undefined') { module.exports = Client; }
+if (typeof module !== "undefined" && typeof module.exports !== "undefined") {
+	module.exports = Client;
+}

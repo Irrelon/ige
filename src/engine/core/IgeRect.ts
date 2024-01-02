@@ -1,5 +1,5 @@
-import { IgePoint3d } from "./IgePoint3d";
 import { IgePoint2d } from "./IgePoint2d";
+import { IgePoint3d } from "./IgePoint3d";
 import { IgeCanvasRenderingContext2d } from "@/types/IgeCanvasRenderingContext2d";
 import { IgePolygonFunctionality } from "@/types/IgePolygonFunctionality";
 
@@ -15,7 +15,7 @@ export class IgeRect implements IgePolygonFunctionality {
 	x2: number = 0;
 	y2: number = 0;
 
-	constructor (x = 0, y = 0, width = 0, height = 0) {
+	constructor(x = 0, y = 0, width = 0, height = 0) {
 		this.x = x;
 		this.y = y;
 		this.width = width;
@@ -33,12 +33,11 @@ export class IgeRect implements IgePolygonFunctionality {
 	 * @param {IgeRect} rect The rect to combine with this one.
 	 * @return {IgeRect} The new rect encapsulating both rects.
 	 */
-	combineRect (rect: IgeRect) {
+	combineRect(rect: IgeRect) {
 		const thisRectMaxX = this.x + this.width,
 			thisRectMaxY = this.y + this.height,
 			thatRectMaxX = rect.x + rect.width,
 			thatRectMaxY = rect.y + rect.height,
-
 			x = Math.min(this.x, rect.x),
 			y = Math.min(this.y, rect.y),
 			width = Math.max(thisRectMaxX - this.x, thatRectMaxX - this.x),
@@ -53,7 +52,7 @@ export class IgeRect implements IgePolygonFunctionality {
 	 * both rects.
 	 * @param {IgeRect} rect The rect to combine with this one.
 	 */
-	thisCombineRect (rect: IgeRect) {
+	thisCombineRect(rect: IgeRect) {
 		const thisRectMaxX = this.x + this.width,
 			thisRectMaxY = this.y + this.height,
 			thatRectMaxX = rect.x + rect.width,
@@ -66,7 +65,7 @@ export class IgeRect implements IgePolygonFunctionality {
 		this.height = Math.max(thisRectMaxY - this.y, thatRectMaxY - this.y);
 	}
 
-	minusPoint (point: IgePoint2d | IgePoint3d) {
+	minusPoint(point: IgePoint2d | IgePoint3d) {
 		return new IgeRect(this.x - point.x, this.y - point.y, this.width, this.height);
 	}
 
@@ -76,8 +75,10 @@ export class IgeRect implements IgePolygonFunctionality {
 	 * @param {IgeRect} rect
 	 * @return {Boolean}
 	 */
-	compare (rect: IgeRect) {
-		return rect && this.x === rect.x && this.y === rect.y && this.width === rect.width && this.height === rect.height;
+	compare(rect: IgeRect) {
+		return (
+			rect && this.x === rect.x && this.y === rect.y && this.width === rect.width && this.height === rect.height
+		);
 	}
 
 	/**
@@ -87,7 +88,7 @@ export class IgeRect implements IgePolygonFunctionality {
 	 * @param y
 	 * @return {Boolean}
 	 */
-	xyInside (x: number, y: number): boolean {
+	xyInside(x: number, y: number): boolean {
 		return x >= this.x && y > this.y && x <= this.x + this.width && y <= this.y + this.height;
 	}
 
@@ -97,7 +98,7 @@ export class IgeRect implements IgePolygonFunctionality {
 	 * @param {IgePoint3d} point
 	 * @return {Boolean}
 	 */
-	pointInside (point: IgePoint3d) {
+	pointInside(point: IgePoint3d) {
 		return this.xyInside(point.x, point.y);
 	}
 
@@ -106,7 +107,7 @@ export class IgeRect implements IgePolygonFunctionality {
 	 * intersecting the rectangle.
 	 * @deprecated Please use intersects() instead.
 	 */
-	rectIntersect () {
+	rectIntersect() {
 		throw new Error("Deprecated, please use intersects() instead.");
 	}
 
@@ -116,7 +117,7 @@ export class IgeRect implements IgePolygonFunctionality {
 	 * @param {IgeRect} rect
 	 * @return {Boolean}
 	 */
-	intersects (rect: IgeRect): boolean {
+	intersects(rect: IgeRect): boolean {
 		if (!rect) {
 			return false;
 		}
@@ -125,12 +126,10 @@ export class IgeRect implements IgePolygonFunctionality {
 			sY1 = this.y,
 			sW = this.width,
 			sH = this.height,
-
 			dX1 = rect.x,
 			dY1 = rect.y,
 			dW = rect.width,
 			dH = rect.height,
-
 			sX2 = sX1 + sW,
 			sY2 = sY1 + sH,
 			dX2 = dX1 + dW,
@@ -148,7 +147,7 @@ export class IgeRect implements IgePolygonFunctionality {
 	 * @param y2
 	 * @return {*}
 	 */
-	multiply (x1: number, y1: number, x2: number, y2: number) {
+	multiply(x1: number, y1: number, x2: number, y2: number) {
 		return new IgeRect(this.x * x1, this.y * y1, this.width * x2, this.height * y2);
 	}
 
@@ -161,7 +160,7 @@ export class IgeRect implements IgePolygonFunctionality {
 	 * @param y2
 	 * @return {*}
 	 */
-	thisMultiply (x1: number, y1: number, x2: number, y2: number) {
+	thisMultiply(x1: number, y1: number, x2: number, y2: number) {
 		this.x *= x1;
 		this.y *= y1;
 		this.width *= x2;
@@ -175,7 +174,7 @@ export class IgeRect implements IgePolygonFunctionality {
 	 * but retains the same values.
 	 * @return {IgeRect}
 	 */
-	clone (): IgeRect {
+	clone(): IgeRect {
 		return new IgeRect(this.x, this.y, this.width, this.height);
 	}
 
@@ -187,9 +186,19 @@ export class IgeRect implements IgePolygonFunctionality {
 	 * @param {number=} precision
 	 * @return {String}
 	 */
-	toString (precision?: number) {
-		if (precision === undefined) { precision = 2; }
-		return this.x.toFixed(precision) + "," + this.y.toFixed(precision) + "," + this.width.toFixed(precision) + "," + this.height.toFixed(precision);
+	toString(precision?: number) {
+		if (precision === undefined) {
+			precision = 2;
+		}
+		return (
+			this.x.toFixed(precision) +
+			"," +
+			this.y.toFixed(precision) +
+			"," +
+			this.width.toFixed(precision) +
+			"," +
+			this.height.toFixed(precision)
+		);
 	}
 
 	/**
@@ -197,9 +206,11 @@ export class IgeRect implements IgePolygonFunctionality {
 	 * @param {CanvasRenderingContext2D} ctx
 	 * @param fill
 	 */
-	render (ctx: IgeCanvasRenderingContext2d, fill: boolean = false) {
+	render(ctx: IgeCanvasRenderingContext2d, fill: boolean = false) {
 		ctx.rect(this.x, this.y, this.width, this.height);
-		if (fill) { ctx.fill(); }
+		if (fill) {
+			ctx.fill();
+		}
 		ctx.stroke();
 
 		return this;

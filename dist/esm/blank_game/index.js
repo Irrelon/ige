@@ -1,12 +1,13 @@
-import { isClient } from "../engine/clientServer.js"
-import { ige } from "../engine/instance.js"
+import { isClient } from "../engine/clientServer.js";
+import { ige } from "../engine/instance.js";
+
 export class Game {
-    classId = "Game";
-    constructor() {
-        if (isClient) {
-            import("./client.js").then(({ Client: App }) => {
-                ige.client = new App();
-            });
-        }
-    }
+	classId = "Game";
+	constructor() {
+		if (isClient) {
+			import("./client.js").then(({ Client: App }) => {
+				ige.client = new App();
+			});
+		}
+	}
 }

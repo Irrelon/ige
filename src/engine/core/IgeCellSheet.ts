@@ -1,6 +1,6 @@
-import {IgeTexture} from "./IgeTexture";
-import {IgeSmartTexture} from "@/types/IgeSmartTexture";
-import {IgeImage} from "@/types/IgeImage";
+import { IgeTexture } from "./IgeTexture";
+import { IgeImage } from "@/types/IgeImage";
+import { IgeSmartTexture } from "@/types/IgeSmartTexture";
 
 /**
  * Creates a new cell sheet. Cell sheets are textures that are
@@ -14,16 +14,21 @@ export class IgeCellSheet extends IgeTexture {
 	_cellRows: number = 0;
 	_cellWidth: number = 0;
 	_cellHeight: number = 0;
-	_sheetImage?: IgeImage
+	_sheetImage?: IgeImage;
 
-	constructor (id?: string, urlOrObject?: string | IgeSmartTexture, horizontalCells: number = 1, verticalCells: number = 1) {
+	constructor(
+		id?: string,
+		urlOrObject?: string | IgeSmartTexture,
+		horizontalCells: number = 1,
+		verticalCells: number = 1
+	) {
 		super(id, urlOrObject);
 
 		this.horizontalCells(horizontalCells);
 		this.verticalCells(verticalCells);
 	}
 
-	_textureLoaded () {
+	_textureLoaded() {
 		if (this.image) {
 			// Store the cell sheet image
 			this._sheetImage = this.image;
@@ -41,7 +46,7 @@ export class IgeCellSheet extends IgeTexture {
 	 * Returns the total number of cells in the cell sheet.
 	 * @return {number}
 	 */
-	cellCount () {
+	cellCount() {
 		return this.horizontalCells() * this.verticalCells();
 	}
 
@@ -49,9 +54,9 @@ export class IgeCellSheet extends IgeTexture {
 	 * Gets / sets the number of horizontal cells in the cell sheet.
 	 * @param {number=} val The integer count of the number of horizontal cells in the cell sheet.
 	 */
-	horizontalCells (val: number): this;
-	horizontalCells (): number;
-	horizontalCells (val?: number) {
+	horizontalCells(val: number): this;
+	horizontalCells(): number;
+	horizontalCells(val?: number) {
 		if (val !== undefined) {
 			this._cellColumns = val;
 			return this;
@@ -64,9 +69,9 @@ export class IgeCellSheet extends IgeTexture {
 	 * Gets / sets the number of vertical cells in the cell sheet.
 	 * @param {number=} val The integer count of the number of vertical cells in the cell sheet.
 	 */
-	verticalCells (val: number): this;
-	verticalCells (): number;
-	verticalCells (val?: number) {
+	verticalCells(val: number): this;
+	verticalCells(): number;
+	verticalCells(val?: number) {
 		if (val !== undefined) {
 			this._cellRows = val;
 			return this;
@@ -80,12 +85,8 @@ export class IgeCellSheet extends IgeTexture {
 	 * that information in the this._cells array.
 	 * @private
 	 */
-	_applyCells () {
-		let imgWidth, imgHeight,
-			rows, columns,
-			cellWidth, cellHeight,
-			cellIndex,
-			xPos, yPos;
+	_applyCells() {
+		let imgWidth, imgHeight, rows, columns, cellWidth, cellHeight, cellIndex, xPos, yPos;
 
 		// Do we have an image to use?
 		if (this.image) {
@@ -102,21 +103,41 @@ export class IgeCellSheet extends IgeTexture {
 
 				// Check if the cell width and height are non-floating-point
 				if (cellWidth !== parseInt(cellWidth.toString(), 10)) {
-					this.log("Cell width is a floating-point number! (Image Width " + imgWidth + " / Number of Columns " + columns + " = " + cellWidth + ") in file: " + this._url, "warning");
+					this.log(
+						"Cell width is a floating-point number! (Image Width " +
+							imgWidth +
+							" / Number of Columns " +
+							columns +
+							" = " +
+							cellWidth +
+							") in file: " +
+							this._url,
+						"warning"
+					);
 				}
 
 				if (cellHeight !== parseInt(cellHeight.toString(), 10)) {
-					this.log("Cell height is a floating-point number! (Image Height " + imgHeight + " / Number of Rows " + rows + " = " + cellHeight + ")  in file: " + this._url, "warning");
+					this.log(
+						"Cell height is a floating-point number! (Image Height " +
+							imgHeight +
+							" / Number of Rows " +
+							rows +
+							" = " +
+							cellHeight +
+							")  in file: " +
+							this._url,
+						"warning"
+					);
 				}
 
 				// Check if we need to calculate individual cell data
 				if (rows > 1 || columns > 1) {
-					for (cellIndex = 1; cellIndex <= (rows * columns); cellIndex++) {
-						yPos = (Math.ceil(cellIndex / columns) - 1);
-						xPos = ((cellIndex - (columns * yPos)) - 1);
+					for (cellIndex = 1; cellIndex <= rows * columns; cellIndex++) {
+						yPos = Math.ceil(cellIndex / columns) - 1;
+						xPos = cellIndex - columns * yPos - 1;
 
 						// Store the xy in the sheet frames variable
-						this._cells[cellIndex] = [(xPos * cellWidth), (yPos * cellHeight), cellWidth, cellHeight];
+						this._cells[cellIndex] = [xPos * cellWidth, yPos * cellHeight, cellWidth, cellHeight];
 					}
 				} else {
 					// The cell data shows only one cell so just store the whole image data
@@ -131,8 +152,17 @@ export class IgeCellSheet extends IgeTexture {
 	 * evaluated will reproduce this object.
 	 * @return {string}
 	 */
-	stringify () {
-		const str = "new " + this.classId + "('" + this.url() + "', " + this.horizontalCells() + ", " + this.verticalCells() + ")";
+	stringify() {
+		const str =
+			"new " +
+			this.classId +
+			"('" +
+			this.url() +
+			"', " +
+			this.horizontalCells() +
+			", " +
+			this.verticalCells() +
+			")";
 
 		// Every object has an ID, assign that first
 		// IDs are automatically generated from texture urls

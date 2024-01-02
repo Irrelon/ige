@@ -1,3 +1,4 @@
+dist
 artifacts
 cache
 node_modules
@@ -7,3 +8,4 @@ package-lock.json
 public
 .yarn
 .yarnrc
+.min.js

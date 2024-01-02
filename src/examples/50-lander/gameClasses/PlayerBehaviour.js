@@ -1,5 +1,5 @@
 var PlayerBehaviour = function () {
-	if (ige.components.input.actionState('left')) {
+	if (ige.components.input.actionState("left")) {
 		if (!this.controls.left) {
 			// Record the new state
 			this.controls.left = true;
@@ -12,7 +12,7 @@ var PlayerBehaviour = function () {
 		}
 	}
 
-	if (ige.components.input.actionState('right')) {
+	if (ige.components.input.actionState("right")) {
 		if (!this.controls.right) {
 			// Record the new state
 			this.controls.right = true;
@@ -25,7 +25,7 @@ var PlayerBehaviour = function () {
 		}
 	}
 
-	if (ige.components.input.actionState('thrust')) {
+	if (ige.components.input.actionState("thrust")) {
 		if (!this.controls.thrust) {
 			// Record the new state
 			this.controls.thrust = true;
@@ -49,7 +49,10 @@ var PlayerBehaviour = function () {
 
 	if (this.controls.thrust && this._fuel > 0) {
 		var radians = this._rotate.z + Math.radians(-90),
-			thrustVector = new ige.box2d.b2Vec2(Math.cos(radians) * this._thrustPower, Math.sin(radians) * this._thrustPower);
+			thrustVector = new ige.box2d.b2Vec2(
+				Math.cos(radians) * this._thrustPower,
+				Math.sin(radians) * this._thrustPower
+			);
 
 		this._box2dBody.ApplyForce(thrustVector, this._box2dBody.GetWorldCenter());
 		this._box2dBody.SetAwake(true);
@@ -64,7 +67,7 @@ var PlayerBehaviour = function () {
 		this.thrustEmitter.stop();
 	}
 
-	if (ige.components.input.actionState('drop')) {
+	if (ige.components.input.actionState("drop")) {
 		if (this._carryingOrb) {
 			this.dropOrb();
 		}

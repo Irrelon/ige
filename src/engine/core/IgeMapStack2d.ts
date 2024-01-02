@@ -1,5 +1,5 @@
 import { IgeBaseClass } from "./IgeBaseClass";
-import {arrPull} from "../utils";
+import { arrPull } from "../utils";
 
 /**
  * Creates a new map that has two dimensions (x and y) to its data
@@ -10,7 +10,7 @@ export class IgeMapStack2d extends IgeBaseClass {
 	classId = "IgeMapStack2d";
 	private _mapData: any[][];
 
-	constructor (data) {
+	constructor(data) {
 		super();
 		this._mapData = data || [];
 	}
@@ -23,7 +23,7 @@ export class IgeMapStack2d extends IgeBaseClass {
 	 * @param {Array=} val The array of data items to set at the specified co-ordinates.
 	 * @return {*} This or an array of data items at the specified co-ordinates.
 	 */
-	tileData (x, y, val) {
+	tileData(x, y, val) {
 		if (x !== undefined && y !== undefined) {
 			if (val !== undefined) {
 				// Assign a value
@@ -51,7 +51,7 @@ export class IgeMapStack2d extends IgeBaseClass {
 	 * @param {number} index
 	 * @return {*} The current data stored at the specified point or undefined if no data exists.
 	 */
-	tileDataAtIndex (x, y, index) {
+	tileDataAtIndex(x, y, index) {
 		if (this._mapData[y] && this._mapData[y][x]) {
 			return this._mapData[y][x][index];
 		}
@@ -66,7 +66,7 @@ export class IgeMapStack2d extends IgeBaseClass {
 	 * @param {*} val The data to add.
 	 * @return {*} This on success or false on failure.
 	 */
-	push (x, y, val) {
+	push(x, y, val) {
 		if (val !== undefined) {
 			this._mapData[y] = this._mapData[y] || [];
 			this._mapData[y][x] = this._mapData[y][x] || [];
@@ -84,7 +84,7 @@ export class IgeMapStack2d extends IgeBaseClass {
 	 * @param {*} val The data to remove.
 	 * @return {*} This on success or false on failure.
 	 */
-	pull (x, y, val) {
+	pull(x, y, val) {
 		if (this._mapData[y] && this._mapData[y][x]) {
 			arrPull(this._mapData[y][x], val);
 			return this;
@@ -101,16 +101,24 @@ export class IgeMapStack2d extends IgeBaseClass {
 	 * @param width
 	 * @param height
 	 */
-	collision (x, y, width, height) {
+	collision(x, y, width, height) {
 		let xi, yi;
 
-		if (width === undefined) { width = 1; }
-		if (height === undefined) { height = 1; }
+		if (width === undefined) {
+			width = 1;
+		}
+		if (height === undefined) {
+			height = 1;
+		}
 
 		if (x !== undefined && y !== undefined) {
 			for (yi = 0; yi < height; yi++) {
 				for (xi = 0; xi < width; xi++) {
-					if (this._mapData[y + yi] && this._mapData[y + yi][x + xi] && this._mapData[y + yi][x + xi].length) {
+					if (
+						this._mapData[y + yi] &&
+						this._mapData[y + yi][x + xi] &&
+						this._mapData[y + yi][x + xi].length
+					) {
 						return true;
 					}
 				}
@@ -126,7 +134,7 @@ export class IgeMapStack2d extends IgeBaseClass {
 	 * @param y
 	 * @return {boolean} True if data was cleared or false if no data existed.
 	 */
-	clearData (x, y) {
+	clearData(x, y) {
 		if (x !== undefined && y !== undefined) {
 			if (this._mapData[y] !== undefined) {
 				delete this._mapData[y][x];
@@ -142,7 +150,7 @@ export class IgeMapStack2d extends IgeBaseClass {
 	 * @param {Array} val The map data array.
 	 * @return {*}
 	 */
-	mapData (val) {
+	mapData(val) {
 		if (val !== undefined) {
 			this._mapData = val;
 			return this;

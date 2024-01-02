@@ -1,11 +1,11 @@
-import { ige } from "@/engine/instance";
-import { isServer } from "@/engine/clientServer";
 import "./app/_route";
+import { isServer } from "@/engine/clientServer";
+import { ige } from "@/engine/instance";
 
 export class Game {
 	classId = "Game";
 
-	constructor () {
+	constructor() {
 		ige.data("isometric", true);
 		ige.engine.globalSmoothing(true);
 		ige.router.go("app/level1");

@@ -1,11 +1,11 @@
-import { ige } from "../instance";
-import { IgeUiElement } from "../core/IgeUiElement";
-import { IgeUiLabel } from "@/engine/ui/IgeUiLabel";
-import { IgeUiButton } from "@/engine/ui/IgeUiButton";
 import { IgePoint3d } from "@/engine/core/IgePoint3d";
-import type { IgeUiManagerController } from "../core/IgeUiManagerController";
 import { registerClass } from "@/engine/igeClassStore";
+import { IgeUiButton } from "@/engine/ui/IgeUiButton";
+import { IgeUiLabel } from "@/engine/ui/IgeUiLabel";
 import { IgeEventReturnFlag } from "@/enums/IgeEventReturnFlag";
+import { IgeUiElement } from "../core/IgeUiElement";
+import type { IgeUiManagerController } from "../core/IgeUiManagerController";
+import { ige } from "../instance";
 
 export class IgeUiWindow extends IgeUiElement {
 	classId = "IgeUiWindow";
@@ -17,7 +17,7 @@ export class IgeUiWindow extends IgeUiElement {
 	_opStartMouse?: IgePoint3d;
 	_opStartTranslate: Record<string, number> = {};
 
-	constructor () {
+	constructor() {
 		super();
 
 		const ui = ige.ui as IgeUiManagerController;
@@ -37,13 +37,7 @@ export class IgeUiWindow extends IgeUiElement {
 		this.width(200);
 		this.height(30);
 
-		this._topNav = new IgeUiElement()
-			.backgroundColor("#212121")
-			.top(0)
-			.left(0)
-			.right(0)
-			.height(42)
-			.mount(this);
+		this._topNav = new IgeUiElement().backgroundColor("#212121").top(0).left(0).right(0).height(42).mount(this);
 
 		this._label = new IgeUiLabel()
 			.left(0)
@@ -54,8 +48,7 @@ export class IgeUiWindow extends IgeUiElement {
 			.textAlignY(1)
 			.mount(this._topNav);
 
-		this._label.color("#ffffff")
-			.value("Window Title");
+		this._label.color("#ffffff").value("Window Title");
 
 		this._closeButton = new IgeUiButton()
 			.backgroundColor("#cccccc")
@@ -77,7 +70,7 @@ export class IgeUiWindow extends IgeUiElement {
 			.mount(this._topNav);
 	}
 
-	_dragStart () {
+	_dragStart() {
 		if (!this._draggable) {
 			return;
 		}
@@ -92,7 +85,7 @@ export class IgeUiWindow extends IgeUiElement {
 		return true;
 	}
 
-	_dragMove () {
+	_dragMove() {
 		if (!this._draggable || !this._dragging) return;
 		if (!ige.engine._currentViewport) return;
 		if (!this._opStartMouse) return;
@@ -103,8 +96,8 @@ export class IgeUiWindow extends IgeUiElement {
 		const panCordsX = this._opStartMouse.x - curMousePos.x;
 		const panCordsY = this._opStartMouse.y - curMousePos.y;
 
-		const panFinalX = this._opStartTranslate.x - (panCordsX / ige.engine._currentViewport.camera._scale.x);
-		const panFinalY = this._opStartTranslate.y - (panCordsY / ige.engine._currentViewport.camera._scale.y);
+		const panFinalX = this._opStartTranslate.x - panCordsX / ige.engine._currentViewport.camera._scale.x;
+		const panFinalY = this._opStartTranslate.y - panCordsY / ige.engine._currentViewport.camera._scale.y;
 
 		this.style("left", panFinalX);
 		this.style("top", panFinalY);
@@ -113,7 +106,7 @@ export class IgeUiWindow extends IgeUiElement {
 		return true;
 	}
 
-	_dragEnd () {
+	_dragEnd() {
 		if (this._draggable && this._dragging) {
 			this._dragging = false;
 
@@ -122,7 +115,7 @@ export class IgeUiWindow extends IgeUiElement {
 		}
 	}
 
-	draggable (val: boolean) {
+	draggable(val: boolean) {
 		if (val) {
 			this._draggable = true;
 
@@ -138,13 +131,13 @@ export class IgeUiWindow extends IgeUiElement {
 		}
 	}
 
-	blur () {
+	blur() {
 		return super.blur();
 	}
 
-	title (val: string): this;
-	title (): string;
-	title (val?: string) {
+	title(val: string): this;
+	title(): string;
+	title(val?: string) {
 		if (val !== undefined) {
 			this._label.value(val);
 			return this;
@@ -153,9 +146,9 @@ export class IgeUiWindow extends IgeUiElement {
 		return this._label.value();
 	}
 
-	titleColor (val: string): this;
-	titleColor (): string;
-	titleColor (val?: string) {
+	titleColor(val: string): this;
+	titleColor(): string;
+	titleColor(val?: string) {
 		if (val !== undefined) {
 			this._label.color(val);
 			return this;
@@ -164,9 +157,9 @@ export class IgeUiWindow extends IgeUiElement {
 		return this._label.color();
 	}
 
-	titleFont (val: string): this;
-	titleFont (): string;
-	titleFont (val?: string) {
+	titleFont(val: string): this;
+	titleFont(): string;
+	titleFont(val?: string) {
 		if (val !== undefined) {
 			this._label.style("font", val);
 			return this;

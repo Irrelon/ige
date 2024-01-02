@@ -1,5 +1,5 @@
 var Client = IgeClass.extend({
-	classId: 'Client',
+	classId: "Client",
 	init: function () {
 		// Enabled texture smoothing when scaling textures
 		ige.globalSmoothing(true);
@@ -11,10 +11,10 @@ var Client = IgeClass.extend({
 
 		this.obj = [];
 
-		gameTexture[0] = new IgeTexture('../assets/textures/sprites/fairy.png');
+		gameTexture[0] = new IgeTexture("../assets/textures/sprites/fairy.png");
 
 		// Wait for our textures to load before continuing
-		ige.on('texturesLoaded', function () {
+		ige.on("texturesLoaded", function () {
 			// Create the HTML canvas
 			ige.createFrontBuffer(true);
 
@@ -22,14 +22,11 @@ var Client = IgeClass.extend({
 				// Check if the engine started successfully
 				if (success) {
 					// Create the scene
-					self.scene1 = new IgeScene2d()
-						.id('scene1')
-						.translateTo(0, 0, 0)
-						.drawBounds(false);
+					self.scene1 = new IgeScene2d().id("scene1").translateTo(0, 0, 0).drawBounds(false);
 
 					// Create the main viewport
 					self.vp1 = new IgeViewport()
-						.id('vp1')
+						.id("vp1")
 						.autoSize(true)
 						.scene(self.scene1)
 						.drawBounds(true)
@@ -37,7 +34,7 @@ var Client = IgeClass.extend({
 
 					// Create the tile map
 					self.tileMap1 = new IgeTileMap2d()
-						.id('tileMap1')
+						.id("tileMap1")
 						.depth(0)
 						.tileWidth(40)
 						.tileHeight(40)
@@ -53,7 +50,7 @@ var Client = IgeClass.extend({
 						.mount(self.scene1);
 
 					self.tileMap2 = new IgeTileMap2d()
-						.id('tileMap2')
+						.id("tileMap2")
 						.depth(1)
 						.isometricMounts(true)
 						.tileWidth(40)
@@ -69,9 +66,7 @@ var Client = IgeClass.extend({
 						})
 						.mount(self.scene1);
 
-					var overFunc,
-						outFunc,
-						upFunc;
+					var overFunc, outFunc, upFunc;
 
 					// Define a function that will be called when the
 					// mouse cursor moves over one of our entities
@@ -98,7 +93,7 @@ var Client = IgeClass.extend({
 
 					// Create an entity
 					self.obj[0] = new IgeEntity()
-						.id('fairy1')
+						.id("fairy1")
 						.depth(1)
 						.texture(gameTexture[0])
 						.mount(self.tileMap1)
@@ -114,7 +109,7 @@ var Client = IgeClass.extend({
 						.mouseUp(upFunc);
 
 					self.obj[1] = new IgeEntity()
-						.id('fairy2')
+						.id("fairy2")
 						.depth(1)
 						.texture(gameTexture[0])
 						.mount(self.tileMap1)
@@ -131,7 +126,7 @@ var Client = IgeClass.extend({
 
 					// Create two isometric 3d entities
 					self.obj[2] = new IgeEntity()
-						.id('3d1')
+						.id("3d1")
 						.isometric(true)
 						.bounds3d(40, 40, 0)
 						.texture(gameTexture[0])
@@ -143,13 +138,13 @@ var Client = IgeClass.extend({
 						/*.tileWidth(1)
 						.tileHeight(1)*/
 						.occupyTile()
-						
+
 						.mouseOver(overFunc)
 						.mouseOut(outFunc)
 						.mouseUp(upFunc);
 
 					self.obj[3] = new IgeEntity()
-						.id('3d2')
+						.id("3d2")
 						.isometric(true)
 						.bounds3d(40, 40, 0)
 						.texture(gameTexture[0])
@@ -162,7 +157,7 @@ var Client = IgeClass.extend({
 						/*.tileWidth(2)
 						.tileHeight(2)*/
 						.occupyTile()
-						
+
 						.mouseOver(overFunc)
 						.mouseOut(outFunc)
 						.mouseUp(upFunc);
@@ -172,4 +167,6 @@ var Client = IgeClass.extend({
 	}
 });
 
-if (typeof(module) !== 'undefined' && typeof(module.exports) !== 'undefined') { module.exports = Client; }
+if (typeof module !== "undefined" && typeof module.exports !== "undefined") {
+	module.exports = Client;
+}

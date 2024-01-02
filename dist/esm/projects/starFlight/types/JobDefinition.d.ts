@@ -1,2 +1,1 @@
-export interface JobDefinition {
-}
+export interface JobDefinition {}

@@ -1,4 +1,3 @@
-
 import { IgeEventingClass } from "../../core/IgeEventingClass";
 
 // /**
@@ -47,11 +46,14 @@ export class IgeNetIoClient extends IgeEventingClass {
 	_socket: WebSocket | null;
 	_disconnectReason?: string;
 
-	constructor (url?: string, options: IgeNetIoClientOptions = {
-		connectionRetry: true,
-		connectionRetryMax: 10,
-		reconnect: true
-	}) {
+	constructor(
+		url?: string,
+		options: IgeNetIoClientOptions = {
+			connectionRetry: true,
+			connectionRetryMax: 10,
+			reconnect: true
+		}
+	) {
 		super();
 		this.log("Net.io client starting...");
 		this._options = options || {};
@@ -84,7 +86,7 @@ export class IgeNetIoClient extends IgeEventingClass {
 	 * @param {boolean=} val
 	 * @return {*}
 	 */
-	debug (val?: boolean) {
+	debug(val?: boolean) {
 		if (val !== undefined) {
 			this._debug = val;
 			return this;
@@ -93,7 +95,7 @@ export class IgeNetIoClient extends IgeEventingClass {
 		return this._debug;
 	}
 
-	connect (url: string) {
+	connect(url: string) {
 		this.log(`Connecting to server at ${url}`);
 
 		// Set the state to connecting
@@ -112,7 +114,7 @@ export class IgeNetIoClient extends IgeEventingClass {
 		this._socket.onerror = this._onError;
 	}
 
-	disconnect (reason?: string) {
+	disconnect(reason?: string) {
 		if (!this._socket) {
 			this.log("Cannot disconnect(), no socket defined!", "warning");
 			return;
@@ -121,7 +123,7 @@ export class IgeNetIoClient extends IgeEventingClass {
 		this._socket.close(1000, reason);
 	}
 
-	send (data: any) {
+	send(data: any) {
 		if (!this._socket) {
 			this.log("Cannot send(), no socket defined!", "warning");
 			return;
@@ -146,22 +148,22 @@ export class IgeNetIoClient extends IgeEventingClass {
 		if (packet._netioCmd) {
 			// The packet is a netio command
 			switch (packet._netioCmd) {
-			case "id":
-				// Store the new id in the socket
-				this._networkId = packet.data;
+				case "id":
+					// Store the new id in the socket
+					this._networkId = packet.data;
 
-				// Now we have an id, set the state to connected
-				this._state = 3;
+					// Now we have an id, set the state to connected
+					this._state = 3;
 
-				// Emit the connect event
-				this.emit("connect", this._networkId);
-				break;
+					// Emit the connect event
+					this.emit("connect", this._networkId);
+					break;
 
-			case "close":
-				// The server told us our connection has been closed
-				// so store the reason the server gave us!
-				this._disconnectReason = packet.data;
-				break;
+				case "close":
+					// The server told us our connection has been closed
+					// so store the reason the server gave us!
+					this._disconnectReason = packet.data;
+					break;
 			}
 		} else {
 			// The packet is normal data
@@ -199,11 +201,11 @@ export class IgeNetIoClient extends IgeEventingClass {
 		this.emit("error", { reason: "Unknown error occurred" });
 	};
 
-	_encode (data: any) {
+	_encode(data: any) {
 		return JSON.stringify(data);
 	}
 
-	_decode (data: string) {
+	_decode(data: string) {
 		return JSON.parse(data);
 	}
 }

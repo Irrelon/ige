@@ -1,8 +1,8 @@
-import { ige } from "@/engine/instance";
 import { Module_Ability } from "./Module_Ability";
+import { registerClass } from "@/engine/igeClassStore";
+import { ige } from "@/engine/instance";
 import { IgeNetIoServerController } from "@/engine/network/server/IgeNetIoServerController";
 import { Asteroid } from "../Asteroid";
-import { registerClass } from "@/engine/igeClassStore";
 
 export class Module_MiningLaser extends Module_Ability {
 	classId = "Module_MiningLaser";
@@ -12,7 +12,7 @@ export class Module_MiningLaser extends Module_Ability {
 	 * Called when the module has been active for a set period of time
 	 * and completes its task.
 	 */
-	complete () {
+	complete() {
 		const target = this._target as Asteroid;
 		if (!target) {
 			throw new Error("Mining laser module complete but no target!");
@@ -33,19 +33,27 @@ export class Module_MiningLaser extends Module_Ability {
 		if (inventorySpace && inventorySpace.val > 0 && inventorySpace.val - inventoryCount > 0) {
 			// The ship has cargo space available, add the ore directly to inventory
 			this.attachedTo()._inventory.post({
-				"type": "ore",
-				"meta": {
-					"type": target.removeRandomOreType()
+				type: "ore",
+				meta: {
+					type: target.removeRandomOreType()
 				}
 			});
 
-			(ige.network as IgeNetIoServerController).send("msg", { msg: "Mined " + oreType + ", in cargo hold" }, this.attachedTo().clientId());
+			(ige.network as IgeNetIoServerController).send(
+				"msg",
+				{ msg: "Mined " + oreType + ", in cargo hold" },
+				this.attachedTo().clientId()
+			);
 			return;
 		}
 
 		// Generate ore from asteroid (which is stored in this._target)
 		target.spawnMinedOre(oreType);
-		(ige.network as IgeNetIoServerController).send("msg", { msg: "Mined " + oreType + ", no space in cargo hold" }, this.attachedTo().clientId());
+		(ige.network as IgeNetIoServerController).send(
+			"msg",
+			{ msg: "Mined " + oreType + ", no space in cargo hold" },
+			this.attachedTo().clientId()
+		);
 	}
 }
 

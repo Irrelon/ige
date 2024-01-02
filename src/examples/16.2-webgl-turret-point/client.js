@@ -1,10 +1,10 @@
 var Client = IgeClass.extend({
-	classId: 'Client',
+	classId: "Client",
 	init: function () {
 		ige.addComponent(IgeEditorComponent);
 
 		// Setup three.js interaction
-		ige.renderContext('three');
+		ige.renderContext("three");
 		ige.addComponent(IgeThree);
 
 		// Load our textures
@@ -27,28 +27,22 @@ var Client = IgeClass.extend({
 			// Check if the engine started successfully
 			if (success) {
 				// Create the scene
-				self.scene1 = new IgeScene2d()
-					.id('scene1');
+				self.scene1 = new IgeScene2d().id("scene1");
 
 				// Create the main viewport and set the scene
 				// it will "look" at as the new scene1 we just
 				// created above
-				self.vp1 = new IgeViewport()
-					.id('vp1')
-					.autoSize(true)
-					.scene(self.scene1)
-					.drawBounds(true)
-					.mount(ige);
+				self.vp1 = new IgeViewport().id("vp1").autoSize(true).scene(self.scene1).drawBounds(true).mount(ige);
 
 				self.vp1.camera.translateTo(0, 0, 500);
 
-				ige.components.input.mapAction('rotateLeft', ige.components.input.key.left);
-				ige.components.input.mapAction('rotateRight', ige.components.input.key.right);
-				ige.components.input.mapAction('rotateLeft', ige.components.input.key.a);
-				ige.components.input.mapAction('rotateRight', ige.components.input.key.d);
+				ige.components.input.mapAction("rotateLeft", ige.components.input.key.left);
+				ige.components.input.mapAction("rotateRight", ige.components.input.key.right);
+				ige.components.input.mapAction("rotateLeft", ige.components.input.key.a);
+				ige.components.input.mapAction("rotateRight", ige.components.input.key.d);
 
 				self.plane = new IgeEntity()
-					.id('plane')
+					.id("plane")
 					.translateTo(0, 0, 0)
 					.rotateTo(0, 0, 0)
 					.scaleTo(1, 1, 1)
@@ -57,24 +51,24 @@ var Client = IgeClass.extend({
 
 				// Create a ship entity and mount it to the scene
 				self.obj[0] = new IgeEntity()
-					.id('ship0')
+					.id("ship0")
 					.translateTo(0, 250, 0)
 					.rotateTo(0, Math.radians(0), 0)
 					.scaleTo(4, 4, 4)
 					.material(new THREE.MeshFaceMaterial())
 					.model(modelSpaceFrigate6)
-					.addBehaviour('keyboardControl', ShipControl)
+					.addBehaviour("keyboardControl", ShipControl)
 					.mount(self.scene1);
 
 				// Mount a turret to the ship entity
 				self.obj[1] = new IgeEntity()
-					.id('turret1')
+					.id("turret1")
 					.translateTo(0, -2.6, 1.8)
 					.rotateTo(0, 0, Math.radians(0))
 					.scaleTo(0.2, 0.2, 0.2)
 					.material(new THREE.MeshFaceMaterial())
 					.model(modelTurret)
-					.addBehaviour('mouseAim', TurretMouseAim)
+					.addBehaviour("mouseAim", TurretMouseAim)
 					.mount(self.obj[0]);
 
 				self.vp1.camera.trackTranslate(self.obj[0], 10);
@@ -83,4 +77,6 @@ var Client = IgeClass.extend({
 	}
 });
 
-if (typeof(module) !== 'undefined' && typeof(module.exports) !== 'undefined') { module.exports = Client; }
+if (typeof module !== "undefined" && typeof module.exports !== "undefined") {
+	module.exports = Client;
+}

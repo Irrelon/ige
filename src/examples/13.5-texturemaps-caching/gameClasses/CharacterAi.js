@@ -1,6 +1,6 @@
 // Define our AI character classes
 var CharacterAi = Character.extend({
-	classId: 'CharacterAi',
+	classId: "CharacterAi",
 
 	init: function (collisionMap, pathFinder) {
 		var self = this,
@@ -15,11 +15,11 @@ var CharacterAi = Character.extend({
 		};
 
 		// Choose a random character type
-		this.setType(Math.random() * 8 | 0);
+		this.setType((Math.random() * 8) | 0);
 
 		// Add pathing capabilities
-		this.addComponent(IgePathComponent).path
-			.speed(2)
+		this.addComponent(IgePathComponent)
+			.path.speed(2)
 			.finder(pathFinder)
 			.tileMap(this.collisionMap)
 			.tileChecker(this.tileChecker)
@@ -30,10 +30,10 @@ var CharacterAi = Character.extend({
 			self.newPath();
 		};
 
-		this.path.on('pathComplete', newPathMethod);
+		this.path.on("pathComplete", newPathMethod);
 
 		// Hook when we get mounted
-		this.on('mounted', function (parent) {
+		this.on("mounted", function (parent) {
 			// Start the first path!
 			self.pathNextTick = true;
 		});
@@ -49,24 +49,24 @@ var CharacterAi = Character.extend({
 		currentTile = this._parent.pointToTile(this._translate);
 
 		// Pick a random destination tile
-		destTileX = currentTile.x + ((Math.random() * 20 | 0) - 10);
-		destTileY = currentTile.y + ((Math.random() * 20 | 0) - 10);
+		destTileX = currentTile.x + (((Math.random() * 20) | 0) - 10);
+		destTileY = currentTile.y + (((Math.random() * 20) | 0) - 10);
 
 		if (destTileX < 0 || destTileY < 0) {
 			self.pathNextTick = true;
 			return;
 		}
 
-		if (!this.collisionMap.map._mapData[destTileY] || !this.tileChecker(this.collisionMap.map._mapData[destTileY][destTileX])) {
+		if (
+			!this.collisionMap.map._mapData[destTileY] ||
+			!this.tileChecker(this.collisionMap.map._mapData[destTileY][destTileX])
+		) {
 			self.pathNextTick = true;
 			return;
 		}
 
-			// Assign the path to the player and start it
-		self.path
-			.clear()
-			.add(destTileX, destTileY, 0)
-			.start();
+		// Assign the path to the player and start it
+		self.path.clear().add(destTileX, destTileY, 0).start();
 
 		self.pathNextTick = false;
 	},
@@ -80,4 +80,6 @@ var CharacterAi = Character.extend({
 	}
 });
 
-if (typeof(module) !== 'undefined' && typeof(module.exports) !== 'undefined') { module.exports = CharacterAi; }
+if (typeof module !== "undefined" && typeof module.exports !== "undefined") {
+	module.exports = CharacterAi;
+}

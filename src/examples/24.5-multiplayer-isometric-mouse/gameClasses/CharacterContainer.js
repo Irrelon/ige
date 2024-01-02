@@ -1,28 +1,28 @@
 // Define our player character container classes
 var CharacterContainer = IgeEntity.extend({
-	classId: 'CharacterContainer',
+	classId: "CharacterContainer",
 
 	init: function () {
 		var self = this;
 		IgeEntity.prototype.init.call(this);
-		
+
 		if (isClient) {
 			// Setup the entity 3d bounds
 			self.bounds3d(20, 20, 40);
-	
+
 			// Create a character entity as a child of this container
 			self.character = new Character()
-				.id(self.id() + '_character')
+				.id(self.id() + "_character")
 				.setType(3)
 				.drawBounds(false)
 				.drawBoundsData(false)
 				.originTo(0.5, 0.6, 0.5)
 				.mount(self);
-			
+
 			// Set the co-ordinate system as isometric
 			this.isometric(true);
 		}
-		
+
 		if (isServer) {
 			this.addComponent(IgePathComponent);
 			this.path.finder(ige.server.pathFinder);
@@ -31,11 +31,11 @@ var CharacterContainer = IgeEntity.extend({
 				return tileData !== 1;
 			});
 		}
-		
+
 		// Define the data sections that will be included in the stream
-		this.streamSections(['transform', 'direction']);
+		this.streamSections(["transform", "direction"]);
 	},
-	
+
 	/**
 	 * Override the default IgeEntity class streamSectionData() method
 	 * so that we can check for the custom1 section and handle how we deal
@@ -48,7 +48,7 @@ var CharacterContainer = IgeEntity.extend({
 	 */
 	streamSectionData: function (sectionId, data) {
 		// Check if the section is one that we are handling
-		if (sectionId === 'direction') {
+		if (sectionId === "direction") {
 			// Check if the server sent us data, if not we are supposed
 			// to return the data instead of set it
 			if (isClient) {
@@ -56,7 +56,7 @@ var CharacterContainer = IgeEntity.extend({
 					// We have been given new data!
 					this._streamDir = data;
 				} else {
-					this._streamDir = 'stop';
+					this._streamDir = "stop";
 				}
 			} else {
 				// Return current data
@@ -81,33 +81,33 @@ var CharacterContainer = IgeEntity.extend({
 			// makes the entity appear further in the foreground
 			// the closer they become to the bottom of the screen
 			this.depth(this._translate.y);
-			
+
 			if (this._streamDir) {
-				if ((this._streamDir !== this._currentDir || !this.character.animation.playing())) {
+				if (this._streamDir !== this._currentDir || !this.character.animation.playing()) {
 					this._currentDir = this._streamDir;
-					
+
 					var dir = this._streamDir;
 					// The characters we are using only have four directions
 					// so convert the NW, SE, NE, SW to N, S, E, W
 					switch (this._streamDir) {
-					case 'S':
-						dir = 'W';
-						break;
-						
-					case 'E':
-						dir = 'E';
-						break;
-						
-					case 'N':
-						dir = 'E';
-						break;
-						
-					case 'W':
-						dir = 'W';
-						break;
+						case "S":
+							dir = "W";
+							break;
+
+						case "E":
+							dir = "E";
+							break;
+
+						case "N":
+							dir = "E";
+							break;
+
+						case "W":
+							dir = "W";
+							break;
 					}
-					
-					if (dir && dir !== 'stop') {
+
+					if (dir && dir !== "stop") {
 						this.character.animation.start(dir);
 					} else {
 						this.character.animation.stop();
@@ -117,9 +117,11 @@ var CharacterContainer = IgeEntity.extend({
 				this.character.animation.stop();
 			}
 		}
-		
+
 		IgeEntity.prototype.update.call(this, ctx, tickDelta);
 	}
 });
 
-if (typeof(module) !== 'undefined' && typeof(module.exports) !== 'undefined') { module.exports = CharacterContainer; }
+if (typeof module !== "undefined" && typeof module.exports !== "undefined") {
+	module.exports = CharacterContainer;
+}

@@ -14,17 +14,17 @@ var ServerNetworkEvents = {
 		var self = ige.server;
 
 		// TODO: Actually create a login system... at the moment we just accept the login from bob123
-		console.log('Login request received', data);
-		if (data.username === 'bob123' && data.password === 'moo123') {
+		console.log("Login request received", data);
+		if (data.username === "bob123" && data.password === "moo123") {
 			// Store the username in the client store
 			self._clientStore[clientId] = self._clientStore[clientId] || {};
 			self._clientStore[clientId].username = data.username;
 
-			console.log('Sending login accepted...');
-			ige.components.network.send('login', {success: true}, clientId);
+			console.log("Sending login accepted...");
+			ige.components.network.send("login", { success: true }, clientId);
 		} else {
-			console.log('Sending login denied...');
-			ige.components.network.send('login', {success: false}, clientId);
+			console.log("Sending login denied...");
+			ige.components.network.send("login", { success: false }, clientId);
 		}
 	},
 
@@ -42,10 +42,10 @@ var ServerNetworkEvents = {
 				username: self._clientStore[clientId].username
 			};
 
-		ige.mongo.findAll('buildings', searchData, function (err, results) {
+		ige.mongo.findAll("buildings", searchData, function (err, results) {
 			console.log(results);
 			if (results && results.length) {
-				ige.components.network.send('getMap', results);
+				ige.components.network.send("getMap", results);
 			}
 		});
 	},
@@ -64,8 +64,8 @@ var ServerNetworkEvents = {
 		// Add the username to the data before storing it in the DB
 		data.username = self._clientStore[clientId].username;
 
-		ige.server.log('Placing item ' + data.classId + ' at ' + data.tileX + ', ' + data.tileY);
-		ige.mongo.insert('buildings', [data]);
+		ige.server.log("Placing item " + data.classId + " at " + data.tileX + ", " + data.tileY);
+		ige.mongo.insert("buildings", [data]);
 	},
 
 	/**
@@ -76,7 +76,7 @@ var ServerNetworkEvents = {
 	 * @private
 	 */
 	_removeItem: function (data, clientId) {
-		ige.server.log('Removing item at ' + data.tileX + ', ' + data.tileY);
+		ige.server.log("Removing item at " + data.tileX + ", " + data.tileY);
 
 		var self = ige.server,
 			removeSearch = {
@@ -85,8 +85,10 @@ var ServerNetworkEvents = {
 				username: self._clientStore[clientId].username // Limit the search remove to only this user's map!
 			};
 
-		ige.mongo.remove('buildings', removeSearch);
+		ige.mongo.remove("buildings", removeSearch);
 	}
 };
 
-if (typeof(module) !== 'undefined' && typeof(module.exports) !== 'undefined') { module.exports = ServerNetworkEvents; }
+if (typeof module !== "undefined" && typeof module.exports !== "undefined") {
+	module.exports = ServerNetworkEvents;
+}

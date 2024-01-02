@@ -1,8 +1,8 @@
-import { ige } from "@/engine/instance";
-import { IgeSceneGraph } from "@/engine/core/IgeSceneGraph";
-import { IgeScene2d } from "@/engine/core/IgeScene2d";
 import { IgeEntity } from "@/engine/core/IgeEntity";
+import { IgeScene2d } from "@/engine/core/IgeScene2d";
+import { IgeSceneGraph } from "@/engine/core/IgeSceneGraph";
 import { IgeSpriteSheet } from "@/engine/core/IgeSpriteSheet";
+import { ige } from "@/engine/instance";
 import { IgeTextureAnimationComponent } from "@/engine/components/IgeTextureAnimationComponent";
 
 export class Level1 extends IgeSceneGraph {
@@ -11,7 +11,7 @@ export class Level1 extends IgeSceneGraph {
 	/**
 	 * Called when loading the graph data via ige.addGraph().
 	 */
-	addGraph () {
+	addGraph() {
 		const baseScene = ige.$("baseScene") as IgeEntity;
 
 		new IgeEntity()
@@ -75,8 +75,13 @@ export class Level1 extends IgeSceneGraph {
 			.dimensionsFromCell()
 			.translateTo(100, 0, 0);
 
-
-		(sprite3.components.animation as IgeTextureAnimationComponent).define("test", ["panel", "table", null], 1, -1, true);
+		(sprite3.components.animation as IgeTextureAnimationComponent).define(
+			"test",
+			["panel", "table", null],
+			1,
+			-1,
+			true
+		);
 		(sprite3.components.animation as IgeTextureAnimationComponent).select("test");
 		sprite3.mount(baseScene);
 
@@ -107,7 +112,7 @@ export class Level1 extends IgeSceneGraph {
 				.translateTo(0 + xAdj, 180, 0)
 				.mount(baseScene);
 
-			xAdj += (shrubbery._cells[i][2] / 2) + 5;
+			xAdj += shrubbery._cells[i][2] / 2 + 5;
 		}
 	}
 
@@ -115,7 +120,7 @@ export class Level1 extends IgeSceneGraph {
 	 * The method called when the graph items are to be removed from the
 	 * active graph.
 	 */
-	removeGraph () {
+	removeGraph() {
 		// Since all our objects in addGraph() were mounted to the
 		// 'scene1' entity, destroying it will remove everything we
 		// added to it.

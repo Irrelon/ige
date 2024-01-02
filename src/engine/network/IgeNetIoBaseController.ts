@@ -1,8 +1,8 @@
-import { IgeEventingClass } from "../core/IgeEventingClass";
-import { IgeNetIoSocket } from "./server/IgeNetIoSocket";
+import type { IgeNetIoSocket } from "./server/IgeNetIoSocket";
+import { IgeEventingClass } from "@/engine/core/IgeEventingClass";
 
 export class IgeNetIoBaseController extends IgeEventingClass {
-	classId = 'IgeNetIoBaseController';
+	classId = "IgeNetIoBaseController";
 	_networkCommandsIndex: string[] = []; // Maps a command name to an integer via the array index
 	_networkCommandsLookup: Record<string, number> = {}; // Maps a command name to its index
 	_debug: boolean = false;
@@ -15,7 +15,7 @@ export class IgeNetIoBaseController extends IgeEventingClass {
 	_latency: number = 0;
 	_timeSyncStarted: boolean = false;
 	_timeSyncTimer: number = 0;
-	_sectionDesignator: string = '¬'; // Set the stream data section designator character
+	_sectionDesignator: string = "¬"; // Set the stream data section designator character
 
 	/**
 	 * Gets / sets the number of milliseconds between client/server
@@ -27,8 +27,8 @@ export class IgeNetIoBaseController extends IgeEventingClass {
 	 * @param val
 	 * @return {*}
 	 */
-	timeSyncInterval (val: number): this;
-	timeSyncInterval (): number;
+	timeSyncInterval(val: number): this;
+	timeSyncInterval(): number;
 	timeSyncInterval (val?: number) {
 		if (val !== undefined) {
 			this._timeSyncInterval = val;
@@ -46,8 +46,8 @@ export class IgeNetIoBaseController extends IgeEventingClass {
 	 * @param {number} time The client timestamp, usually
 	 * the result of new Date().getTime() or ige.currentTime().
 	 */
-	timeToServerTime (time: number): number;
-	timeToServerTime (): number;
+	timeToServerTime(time: number): number;
+	timeToServerTime(): number;
 	timeToServerTime (time?: number) {
 		if (time !== undefined) {
 			return time + this._latency;
@@ -62,8 +62,8 @@ export class IgeNetIoBaseController extends IgeEventingClass {
 	 * @param {boolean=} val
 	 * @return {*}
 	 */
-	debug (val: boolean): this;
-	debug (): boolean;
+	debug(val: boolean): this;
+	debug(): boolean;
 	debug (val?: boolean) {
 		if (val !== undefined) {
 			this._debug = val;
@@ -74,7 +74,9 @@ export class IgeNetIoBaseController extends IgeEventingClass {
 		if (this._debugMax > 0 && this._debugCounter >= this._debugMax) {
 			this._debug = false;
 			this._debugCounter = 0;
-			this.log(`Discontinuing further debug messages because we reached the maximum message count of ${this._debugMax}. Re-enable by running ige.network.debug(true);`);
+			this.log(
+				`Discontinuing further debug messages because we reached the maximum message count of ${this._debugMax}. Re-enable by running ige.network.debug(true);`
+			);
 		}
 
 		return this._debug;
@@ -92,8 +94,8 @@ export class IgeNetIoBaseController extends IgeEventingClass {
 	 * infinite amounts.
 	 * @return {*}
 	 */
-	debugMax (val: number): this;
-	debugMax (): number;
+	debugMax(val: number): this;
+	debugMax(): number;
 	debugMax (val?: number) {
 		if (val !== undefined) {
 			this._debugMax = val;

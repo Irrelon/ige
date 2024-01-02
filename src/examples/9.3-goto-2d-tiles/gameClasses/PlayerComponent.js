@@ -3,8 +3,8 @@
  * @type {IgeClass}
  */
 var PlayerComponent = IgeClass.extend({
-	classId: 'PlayerComponent',
-	componentId: 'player',
+	classId: "PlayerComponent",
+	componentId: "player",
 
 	init: function (entity, options) {
 		var self = this;
@@ -16,7 +16,9 @@ var PlayerComponent = IgeClass.extend({
 		this._options = options;
 
 		// Listen for the mouse up event
-		ige.components.input.on('mouseUp', function (event, x, y, button) { self._mouseUp(event, x, y, button); });
+		ige.components.input.on("mouseUp", function (event, x, y, button) {
+			self._mouseUp(event, x, y, button);
+		});
 	},
 
 	/**
@@ -25,13 +27,12 @@ var PlayerComponent = IgeClass.extend({
 	 * @private
 	 */
 	_mouseUp: function (event, x, y, button) {
-		var tilePoint = ige.$('tileMap1').mouseTilePoint();
+		var tilePoint = ige.$("tileMap1").mouseTilePoint();
 
-		this._entity.walkTo(
-			tilePoint.x,
-			tilePoint.y
-		);
+		this._entity.walkTo(tilePoint.x, tilePoint.y);
 	}
 });
 
-if (typeof(module) !== 'undefined' && typeof(module.exports) !== 'undefined') { module.exports = PlayerComponent; }
+if (typeof module !== "undefined" && typeof module.exports !== "undefined") {
+	module.exports = PlayerComponent;
+}

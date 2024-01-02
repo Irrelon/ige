@@ -1,5 +1,5 @@
 var Ship = IgeEntity.extend({
-	classId: 'Ship',
+	classId: "Ship",
 
 	init: function (id) {
 		IgeEntity.prototype.init.call(this);
@@ -13,8 +13,7 @@ var Ship = IgeEntity.extend({
 		this.scaleTo(4, 4, 4);
 
 		if (isClient) {
-			this.material(new THREE.MeshFaceMaterial())
-				.model(modelSpaceFrigate6);
+			this.material(new THREE.MeshFaceMaterial()).model(modelSpaceFrigate6);
 		}
 
 		/*// Mount a turret to the ship entity
@@ -39,7 +38,7 @@ var Ship = IgeEntity.extend({
 		}
 
 		// Define the data sections that will be included in the stream
-		this.streamSections(['transform', 'score']);
+		this.streamSections(["transform", "score"]);
 	},
 
 	/**
@@ -54,7 +53,7 @@ var Ship = IgeEntity.extend({
 	 */
 	streamSectionData: function (sectionId, data) {
 		// Check if the section is one that we are handling
-		if (sectionId === 'score') {
+		if (sectionId === "score") {
 			// Check if the server sent us data, if not we are supposed
 			// to return the data instead of set it
 			if (data) {
@@ -98,14 +97,13 @@ var Ship = IgeEntity.extend({
 		/* CEXCLUDE */
 
 		if (isClient) {
-			if (ige.components.input.actionState('left')) {
-
+			if (ige.components.input.actionState("left")) {
 				if (!this.controls.left) {
 					// Record the new state
 					this.controls.left = true;
 
 					// Tell the server about our control change
-					ige.components.network.send('playerControlLeftDown');
+					ige.components.network.send("playerControlLeftDown");
 				}
 			} else {
 				if (this.controls.left) {
@@ -113,17 +111,17 @@ var Ship = IgeEntity.extend({
 					this.controls.left = false;
 
 					// Tell the server about our control change
-					ige.components.network.send('playerControlLeftUp');
+					ige.components.network.send("playerControlLeftUp");
 				}
 			}
 
-			if (ige.components.input.actionState('right')) {
+			if (ige.components.input.actionState("right")) {
 				if (!this.controls.right) {
 					// Record the new state
 					this.controls.right = true;
 
 					// Tell the server about our control change
-					ige.components.network.send('playerControlRightDown');
+					ige.components.network.send("playerControlRightDown");
 				}
 			} else {
 				if (this.controls.right) {
@@ -131,17 +129,17 @@ var Ship = IgeEntity.extend({
 					this.controls.right = false;
 
 					// Tell the server about our control change
-					ige.components.network.send('playerControlRightUp');
+					ige.components.network.send("playerControlRightUp");
 				}
 			}
 
-			if (ige.components.input.actionState('thrust')) {
+			if (ige.components.input.actionState("thrust")) {
 				if (!this.controls.thrust) {
 					// Record the new state
 					this.controls.thrust = true;
 
 					// Tell the server about our control change
-					ige.components.network.send('playerControlThrustDown');
+					ige.components.network.send("playerControlThrustDown");
 				}
 			} else {
 				if (this.controls.thrust) {
@@ -149,7 +147,7 @@ var Ship = IgeEntity.extend({
 					this.controls.thrust = false;
 
 					// Tell the server about our control change
-					ige.components.network.send('playerControlThrustUp');
+					ige.components.network.send("playerControlThrustUp");
 				}
 			}
 		}
@@ -159,4 +157,6 @@ var Ship = IgeEntity.extend({
 	}
 });
 
-if (typeof(module) !== 'undefined' && typeof(module.exports) !== 'undefined') { module.exports = Ship; }
+if (typeof module !== "undefined" && typeof module.exports !== "undefined") {
+	module.exports = Ship;
+}

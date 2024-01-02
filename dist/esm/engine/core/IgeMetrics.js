@@ -1,3 +1,3 @@
 export class IgeMetrics {
-    drawCount = 0;
+	drawCount = 0;
 }

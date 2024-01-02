@@ -1,14 +1,12 @@
-import { ige } from "@/engine/instance";
-import { IgeTexture } from "@/engine/core/IgeTexture";
-import {AppClientScene} from "./AppClientScene";
-import {AppServerScene} from "./AppServerScene";
-
-import { tab } from "../assets/ui/tab";
-import { timerCircle } from "../assets/ui/timerCircle";
-import { infoWindow } from "../assets/ui/infoWindow";
-
+import { AppClientScene } from "./AppClientScene";
+import { AppServerScene } from "./AppServerScene";
 import "./space/_route";
 import "./splash/_route";
+import { IgeTexture } from "@/engine/core/IgeTexture";
+import { ige } from "@/engine/instance";
+import { infoWindow } from "../assets/ui/infoWindow";
+import { tab } from "../assets/ui/tab";
+import { timerCircle } from "../assets/ui/timerCircle";
 
 ige.router.route("app", {
 	client: async () => {
@@ -37,7 +35,7 @@ ige.router.route("app", {
 			ige.textures.removeList(textures);
 
 			await ige.engine.stop();
-		}
+		};
 	},
 	server: async () => {
 		await ige.isReady();
@@ -51,6 +49,6 @@ ige.router.route("app", {
 		return async () => {
 			await ige.engine.removeGraph(AppServerScene);
 			await ige.engine.stop();
-		}
+		};
 	}
 });

@@ -1,5 +1,5 @@
 var ClientScore = IgeFontEntity.extend({
-	classId: 'ClientScore',
+	classId: "ClientScore",
 
 	init: function (score) {
 		IgeFontEntity.prototype.init.call(this);
@@ -17,18 +17,21 @@ var ClientScore = IgeFontEntity.extend({
 	start: function (inMs) {
 		var self = this;
 		if (inMs) {
-			setTimeout(function () { self.start(); }, inMs);
+			setTimeout(function () {
+				self.start();
+			}, inMs);
 			return;
 		}
 
 		this.show();
 
-		this._translate.tween()
+		this._translate
+			.tween()
 			.duration(3000)
 			.properties({
 				y: this._translate.y - 100
 			})
-			.easing('outElastic')
+			.easing("outElastic")
 			.afterTween(function () {
 				self.tween()
 					.duration(500)
@@ -42,10 +45,11 @@ var ClientScore = IgeFontEntity.extend({
 			})
 			.start();
 
-		this._rotate.tween()
+		this._rotate
+			.tween()
 			.duration(2000)
-			.properties({z: Math.radians(360)})
-			.easing('outElastic')
+			.properties({ z: Math.radians(360) })
+			.easing("outElastic")
 			.start();
 	}
 });

@@ -1,10 +1,10 @@
 import { IgeGenericPathFinder, IgeGenericPathFinderNode } from "@/engine/core/IgeGenericPathFinder";
 import { ige } from "@/engine/instance";
-import { Building } from "../entities/base/Building";
 import { Road } from "../entities/Road";
+import { Building } from "../entities/base/Building";
 
 export class RoadBasedPathFinder extends IgeGenericPathFinder {
-	getNode (id: string): IgeGenericPathFinderNode | null {
+	getNode(id: string): IgeGenericPathFinderNode | null {
 		const allBuildings = ige.$$("building") as Building[];
 		const building = allBuildings.find((tmpBuilding) => tmpBuilding._id === id);
 		if (!building) return null;
@@ -17,7 +17,7 @@ export class RoadBasedPathFinder extends IgeGenericPathFinder {
 		};
 	}
 
-	getConnections (currentNode: IgeGenericPathFinderNode, targetNode: IgeGenericPathFinderNode) {
+	getConnections(currentNode: IgeGenericPathFinderNode, targetNode: IgeGenericPathFinderNode) {
 		const allRoads = ige.$$("road") as Road[];
 
 		const filteredRoads = allRoads.filter((road) => {

@@ -1,6 +1,7 @@
-import { PlayerDataModule } from "../app/data/playerData";
-import { EntityModuleDefinition } from "../types/EntityModuleDefinition";
 import { EntityAbilityModuleDefinition } from "../types/EntityAbilityModuleDefinition";
+import { EntityModuleDefinition } from "../types/EntityModuleDefinition";
+import { PlayerDataModule } from "../app/data/playerData";
+
 /**
  * Extends the target with data from the newData object.
  * If overwrite is false, only data that is undefined in
@@ -15,7 +16,9 @@ export declare const extend: (target: any, newData: any, overwrite?: boolean) =>
  * @param {String} moduleId The ID of the module to get.
  * @returns {*}
  */
-export declare const getModuleById: (moduleId: string) => EntityModuleDefinition | EntityAbilityModuleDefinition | undefined;
+export declare const getModuleById: (
+	moduleId: string
+) => EntityModuleDefinition | EntityAbilityModuleDefinition | undefined;
 /**
  * Generates a modules object with properties that contain
  * each module based on the moduleId.

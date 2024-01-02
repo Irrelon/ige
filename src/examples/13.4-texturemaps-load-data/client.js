@@ -1,5 +1,5 @@
 var Client = IgeClass.extend({
-	classId: 'Client',
+	classId: "Client",
 	init: function () {
 		ige.addComponent(IgeEditorComponent);
 
@@ -12,12 +12,12 @@ var Client = IgeClass.extend({
 
 		this.obj = [];
 
-		gameTexture[0] = new IgeTexture('../assets/textures/sprites/fairy.png');
-		gameTexture[1] = new IgeCellSheet('../assets/textures/tiles/grassSheet.png', 4, 1);
-		gameTexture[2] = new IgeCellSheet('../assets/textures/tiles/tilea5b.png', 8, 16);
+		gameTexture[0] = new IgeTexture("../assets/textures/sprites/fairy.png");
+		gameTexture[1] = new IgeCellSheet("../assets/textures/tiles/grassSheet.png", 4, 1);
+		gameTexture[2] = new IgeCellSheet("../assets/textures/tiles/tilea5b.png", 8, 16);
 
 		// Wait for our textures to load before continuing
-		ige.on('texturesLoaded', function () {
+		ige.on("texturesLoaded", function () {
 			// Create the HTML canvas
 			ige.createFrontBuffer(true);
 
@@ -25,14 +25,11 @@ var Client = IgeClass.extend({
 				// Check if the engine started successfully
 				if (success) {
 					// Create the scene
-					self.scene1 = new IgeScene2d()
-						.id('scene1')
-						.translateTo(0, 0, 0)
-						.drawBounds(false);
+					self.scene1 = new IgeScene2d().id("scene1").translateTo(0, 0, 0).drawBounds(false);
 
 					// Create the main viewport
 					self.vp1 = new IgeViewport()
-						.id('vp1')
+						.id("vp1")
 						.autoSize(true)
 						.scene(self.scene1)
 						.drawBounds(true)
@@ -94,4 +91,6 @@ var Client = IgeClass.extend({
 	}
 });
 
-if (typeof(module) !== 'undefined' && typeof(module.exports) !== 'undefined') { module.exports = Client; }
+if (typeof module !== "undefined" && typeof module.exports !== "undefined") {
+	module.exports = Client;
+}

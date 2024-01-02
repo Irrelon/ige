@@ -8,9 +8,11 @@ var ServerNetworkEvents = {
 	 */
 	_onTest: function (data, client) {
 		console.log('Client test command received from client id "' + client.id + '" with data:', data);
-		console.log('Sending back to client!');
-		ige.components.network.send('test', {moo:'here\'s some data right back at ya!'});
+		console.log("Sending back to client!");
+		ige.components.network.send("test", { moo: "here's some data right back at ya!" });
 	}
 };
 
-if (typeof(module) !== 'undefined' && typeof(module.exports) !== 'undefined') { module.exports = ServerNetworkEvents; }
+if (typeof module !== "undefined" && typeof module.exports !== "undefined") {
+	module.exports = ServerNetworkEvents;
+}

@@ -1,7 +1,7 @@
-import { ige } from "@/engine/instance";
-import { IgeSceneGraph } from "@/engine/core/IgeSceneGraph";
-import { IgeScene2d } from "@/engine/core/IgeScene2d";
 import { IgeEntity } from "@/engine/core/IgeEntity";
+import { IgeScene2d } from "@/engine/core/IgeScene2d";
+import { IgeSceneGraph } from "@/engine/core/IgeSceneGraph";
+import { ige } from "@/engine/instance";
 
 export class Level1 extends IgeSceneGraph {
 	classId = "Level1";
@@ -9,12 +9,12 @@ export class Level1 extends IgeSceneGraph {
 	/**
 	 * Called when loading the graph data via ige.addGraph().
 	 */
-	addGraph () {
-		const baseScene = ige.$('baseScene') as IgeEntity;
+	addGraph() {
+		const baseScene = ige.$("baseScene") as IgeEntity;
 
 		// Create an entity and mount it to the scene
 		new IgeEntity()
-			.id('entity1')
+			.id("entity1")
 			.depth(1)
 			// Set the entity texture to the cell sheet we created earlier
 			.texture(ige.textures.get("grassSheet"))
@@ -26,7 +26,7 @@ export class Level1 extends IgeSceneGraph {
 			.mount(baseScene);
 
 		new IgeEntity()
-			.id('entity2')
+			.id("entity2")
 			.depth(1)
 			// Set the entity texture to the cell sheet we created earlier
 			.texture(ige.textures.get("grassSheet"))
@@ -42,7 +42,7 @@ export class Level1 extends IgeSceneGraph {
 	 * The method called when the graph items are to be removed from the
 	 * active graph.
 	 */
-	removeGraph () {
+	removeGraph() {
 		// Since all our objects in addGraph() were mounted to the
 		// 'scene1' entity, destroying it will remove everything we
 		// added to it.

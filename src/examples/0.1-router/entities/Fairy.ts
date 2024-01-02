@@ -1,16 +1,13 @@
-import { ige } from "@/engine/instance";
-import { Rotator } from "./Rotator";
 import { createChildRotators } from "./ChildRotators";
+import { Rotator } from "./Rotator";
 import { isClient } from "@/engine/clientServer";
+import { ige } from "@/engine/instance";
 
-export class Fairy extends Rotator{
-	constructor (speed: number) {
+export class Fairy extends Rotator {
+	constructor(speed: number) {
 		super(speed);
 
-		this.depth(1)
-			.width(100)
-			.height(100)
-			.translateTo(0, 0, 0);
+		this.depth(1).width(100).height(100).translateTo(0, 0, 0);
 
 		if (isClient) {
 			this.texture(ige.textures.get("fairy"));

@@ -3,8 +3,8 @@
  * @type {IgeClass}
  */
 var PlayerComponent = IgeClass.extend({
-	classId: 'PlayerComponent',
-	componentId: 'player',
+	classId: "PlayerComponent",
+	componentId: "player",
 
 	init: function (entity, options) {
 		var self = this;
@@ -16,16 +16,18 @@ var PlayerComponent = IgeClass.extend({
 		this._options = options;
 
 		// Setup the control system
-		ige.components.input.mapAction('walkLeft', ige.components.input.key.left);
-		ige.components.input.mapAction('walkRight', ige.components.input.key.right);
-		ige.components.input.mapAction('walkUp', ige.components.input.key.up);
-		ige.components.input.mapAction('walkDown', ige.components.input.key.down);
+		ige.components.input.mapAction("walkLeft", ige.components.input.key.left);
+		ige.components.input.mapAction("walkRight", ige.components.input.key.right);
+		ige.components.input.mapAction("walkUp", ige.components.input.key.up);
+		ige.components.input.mapAction("walkDown", ige.components.input.key.down);
 
 		// Listen for the key up event
-		ige.components.input.on('keyUp', function (event, keyCode) { self._keyUp(event, keyCode); });
+		ige.components.input.on("keyUp", function (event, keyCode) {
+			self._keyUp(event, keyCode);
+		});
 
 		// Add the playerComponent behaviour to the entity
-		this._entity.addBehaviour('playerComponent_behaviour', this._behaviour);
+		this._entity.addBehaviour("playerComponent_behaviour", this._behaviour);
 	},
 
 	_keyUp: function (event, keyCode) {
@@ -43,80 +45,73 @@ var PlayerComponent = IgeClass.extend({
 
 	_behaviour: function (ctx) {
 		var vel = 0.15,
-			direction = '';
+			direction = "";
 
-		if (ige.components.input.actionState('walkUp')) {
-			direction += 'N';
+		if (ige.components.input.actionState("walkUp")) {
+			direction += "N";
 		}
 
-		if (ige.components.input.actionState('walkDown')) {
-			direction += 'S';
+		if (ige.components.input.actionState("walkDown")) {
+			direction += "S";
 		}
 
-		if (ige.components.input.actionState('walkLeft')) {
-			direction += 'W';
+		if (ige.components.input.actionState("walkLeft")) {
+			direction += "W";
 		}
 
-		if (ige.components.input.actionState('walkRight')) {
-			direction += 'E';
+		if (ige.components.input.actionState("walkRight")) {
+			direction += "E";
 		}
 
 		switch (direction) {
-		case 'N':
-			this.velocity.x(0)
-				.velocity.y(-vel);
-			this.animation.select('walkUp');
-			break;
+			case "N":
+				this.velocity.x(0).velocity.y(-vel);
+				this.animation.select("walkUp");
+				break;
 
-		case 'S':
-			this.velocity.x(0)
-				.velocity.y(vel);
-			this.animation.select('walkDown');
-			break;
+			case "S":
+				this.velocity.x(0).velocity.y(vel);
+				this.animation.select("walkDown");
+				break;
 
-		case 'E':
-			this.velocity.x(vel)
-				.velocity.y(0);
-			this.animation.select('walkRight');
-			break;
+			case "E":
+				this.velocity.x(vel).velocity.y(0);
+				this.animation.select("walkRight");
+				break;
 
-		case 'W':
-			this.velocity.x(-vel)
-				.velocity.y(0);
-			this.animation.select('walkLeft');
-			break;
+			case "W":
+				this.velocity.x(-vel).velocity.y(0);
+				this.animation.select("walkLeft");
+				break;
 
-		case 'NE':
-			this.velocity.x(vel)
-				.velocity.y(-vel);
-			this.animation.select('walkRight');
-			break;
+			case "NE":
+				this.velocity.x(vel).velocity.y(-vel);
+				this.animation.select("walkRight");
+				break;
 
-		case 'NW':
-			this.velocity.x(-vel)
-				.velocity.y(-vel);
-			this.animation.select('walkLeft');
-			break;
+			case "NW":
+				this.velocity.x(-vel).velocity.y(-vel);
+				this.animation.select("walkLeft");
+				break;
 
-		case 'SE':
-			this.velocity.x(vel)
-				.velocity.y(vel);
-			this.animation.select('walkRight');
-			break;
+			case "SE":
+				this.velocity.x(vel).velocity.y(vel);
+				this.animation.select("walkRight");
+				break;
 
-		case 'SW':
-			this.velocity.x(-vel)
-				.velocity.y(vel);
-			this.animation.select('walkLeft');
-			break;
+			case "SW":
+				this.velocity.x(-vel).velocity.y(vel);
+				this.animation.select("walkLeft");
+				break;
 
-		default:
-			this.velocity.x(0)
-				.velocity.y(0);
-			this.animation.stop();
-			break;
+			default:
+				this.velocity.x(0).velocity.y(0);
+				this.animation.stop();
+				break;
 		}
 	}
 });
 
-if (typeof(module) !== 'undefined' && typeof(module.exports) !== 'undefined') { module.exports = PlayerComponent; }
+if (typeof module !== "undefined" && typeof module.exports !== "undefined") {
+	module.exports = PlayerComponent;
+}

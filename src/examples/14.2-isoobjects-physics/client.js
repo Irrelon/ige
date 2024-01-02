@@ -1,5 +1,5 @@
 var Client = IgeClass.extend({
-	classId: 'Client',
+	classId: "Client",
 	init: function () {
 		ige.addComponent(IgeEditorComponent);
 
@@ -10,10 +10,10 @@ var Client = IgeClass.extend({
 
 		this.obj = [];
 
-		gameTexture[0] = new IgeTexture('../assets/textures/buildings/bank1.png');
+		gameTexture[0] = new IgeTexture("../assets/textures/buildings/bank1.png");
 
 		// Wait for our textures to load before continuing
-		ige.on('texturesLoaded', function () {
+		ige.on("texturesLoaded", function () {
 			// Create the HTML canvas
 			ige.createFrontBuffer(true);
 
@@ -21,12 +21,11 @@ var Client = IgeClass.extend({
 				// Check if the engine started successfully
 				if (success) {
 					// Create the scene
-					self.scene1 = new IgeScene2d()
-						.id('scene1');
+					self.scene1 = new IgeScene2d().id("scene1");
 
 					// Create the main viewport
 					self.vp1 = new IgeViewport()
-						.id('vp1')
+						.id("vp1")
 						.autoSize(true)
 						.scene(self.scene1)
 						.drawBounds(true)
@@ -58,13 +57,15 @@ var Client = IgeClass.extend({
 						.bounds3d(160, 240, 40)
 						.opacity(0.95)
 						.cannonBody({
-							type: 'static',
+							type: "static",
 							mass: 0,
-							fixtures: [{
-								shape: {
-									type: 'box'
+							fixtures: [
+								{
+									shape: {
+										type: "box"
+									}
 								}
-							}]
+							]
 						});
 
 					self.obj[14] = new IgeEntityCannon()
@@ -78,18 +79,20 @@ var Client = IgeClass.extend({
 						.bounds3d(40, 40, 10)
 						.opacity(0.95)
 						.cannonBody({
-							type: 'dynamic',
+							type: "dynamic",
 							mass: 1,
 							angularDamping: 1.0,
 							linearDamping: 0.05,
 							allowSleep: true,
 							sleepSpeedLimit: 0.1,
 							sleepTimeLimit: 1000,
-							fixtures: [{
-								shape: {
-									type: 'box'
+							fixtures: [
+								{
+									shape: {
+										type: "box"
+									}
 								}
-							}]
+							]
 						});
 				}
 			});
@@ -97,4 +100,6 @@ var Client = IgeClass.extend({
 	}
 });
 
-if (typeof(module) !== 'undefined' && typeof(module.exports) !== 'undefined') { module.exports = Client; }
+if (typeof module !== "undefined" && typeof module.exports !== "undefined") {
+	module.exports = Client;
+}

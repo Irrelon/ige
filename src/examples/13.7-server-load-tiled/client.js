@@ -1,5 +1,5 @@
 var Client = IgeClass.extend({
-	classId: 'Client',
+	classId: "Client",
 	init: function () {
 		ige.addComponent(IgeEditorComponent);
 
@@ -18,12 +18,12 @@ var Client = IgeClass.extend({
 
 		this.obj = [];
 
-		gameTexture[0] = new IgeTexture('../assets/textures/sprites/fairy.png');
-		gameTexture[1] = new IgeCellSheet('../assets/textures/tiles/grassSheet.png', 4, 1);
-		gameTexture[2] = new IgeCellSheet('../assets/textures/tiles/tilea5b.png', 8, 16);
+		gameTexture[0] = new IgeTexture("../assets/textures/sprites/fairy.png");
+		gameTexture[1] = new IgeCellSheet("../assets/textures/tiles/grassSheet.png", 4, 1);
+		gameTexture[2] = new IgeCellSheet("../assets/textures/tiles/tilea5b.png", 8, 16);
 
 		// Wait for our textures to load before continuing
-		ige.on('texturesLoaded', function () {
+		ige.on("texturesLoaded", function () {
 			// Create the HTML canvas
 			ige.createFrontBuffer(true);
 			ige.viewportDepth(true);
@@ -36,14 +36,15 @@ var Client = IgeClass.extend({
 					// than before the scene etc are created... maybe you want
 					// a splash screen or a menu first? Then connect after you've
 					// got a username or something?
-					ige.components.network.start('https://localhost:2000', function () {
-						ige.components.network.addComponent(IgeStreamComponent)
+					ige.components.network.start("https://localhost:2000", function () {
+						ige.components.network
+							.addComponent(IgeStreamComponent)
 							.stream.renderLatency(160) // Render the simulation 160 milliseconds in the past
 							// Create a listener that will fire whenever an entity
 							// is created because of the incoming stream data
-							.stream.on('entityCreated', function (entity) {
-								this.log('Stream entity created with ID: ' + entity.id());
-								if (entity._classId === 'Mover') {
+							.stream.on("entityCreated", function (entity) {
+								this.log("Stream entity created with ID: " + entity.id());
+								if (entity._classId === "Mover") {
 									// Track this entity with the camera
 									//self.vp1.camera.trackTranslate(entity, 10);
 								}
@@ -52,20 +53,20 @@ var Client = IgeClass.extend({
 
 					// Create the scene
 					self.mainScene = new IgeScene2d()
-						.id('mainScene')
+						.id("mainScene")
 						.translateTo(0, 0, 0)
 						.drawBounds(false)
 						.drawBoundsData(false);
 
 					self.backScene = new IgeScene2d()
-						.id('backScene')
+						.id("backScene")
 						.depth(0)
 						.drawBounds(false)
 						.drawBoundsData(false)
 						.mount(self.mainScene);
 
 					self.objectLayer = new IgeTileMap2d()
-						.id('objectLayer')
+						.id("objectLayer")
 						.depth(1)
 						.isometricMounts(true)
 						.drawBounds(false)
@@ -78,7 +79,7 @@ var Client = IgeClass.extend({
 					self.vp1 = new IgeViewport()
 						.addComponent(IgeMousePanComponent)
 						.mousePan.enabled(true)
-						.id('vp1')
+						.id("vp1")
 						.depth(1)
 						.autoSize(true)
 						.scene(self.mainScene)
@@ -105,8 +106,9 @@ var Client = IgeClass.extend({
 					self.vp1.camera.trackTranslate(self.player1, 20);*/
 
 					// Load the Tiled map data and handle the return data
-					ige.addComponent(IgeTiledComponent)
-						.tiled.loadJson(tiledExample1 /* you can also use a url: 'maps/example.js'*/, function (layerArray, layersById) {
+					ige.addComponent(IgeTiledComponent).tiled.loadJson(
+						tiledExample1 /* you can also use a url: 'maps/example.js'*/,
+						function (layerArray, layersById) {
 							// The return data from the tiled component are two arguments,
 							// the first is an array of IgeTextureMap instances, each one
 							// representing one of the Tiled map's layers. The ID of each
@@ -137,11 +139,14 @@ var Client = IgeClass.extend({
 									.drawBoundsData(false)
 									.mount(self.backScene);
 							}
-						});
+						}
+					);
 				}
 			});
 		});
 	}
 });
 
-if (typeof(module) !== 'undefined' && typeof(module.exports) !== 'undefined') { module.exports = Client; }
+if (typeof module !== "undefined" && typeof module.exports !== "undefined") {
+	module.exports = Client;
+}

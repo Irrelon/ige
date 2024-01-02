@@ -1,7 +1,7 @@
-import { ige } from "@/engine/instance";
 import { AppScene } from "./AppScene";
-import "./splash/_route";
 import "./level1/_route";
+import "./splash/_route";
+import { ige } from "@/engine/instance";
 
 ige.router.route("app", {
 	client: async () => {
@@ -23,6 +23,6 @@ ige.router.route("app", {
 			await ige.engine.removeGraph(AppScene);
 
 			await ige.engine.stop();
-		}
+		};
 	}
 });

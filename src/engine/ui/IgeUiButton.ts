@@ -1,13 +1,13 @@
 import { IgeUiElement } from "@/engine/core/IgeUiElement";
-import { IgeCanvasRenderingContext2d } from "@/types/IgeCanvasRenderingContext2d";
 import { registerClass } from "@/engine/igeClassStore";
+import { IgeCanvasRenderingContext2d } from "@/types/IgeCanvasRenderingContext2d";
 
 export class IgeUiButton extends IgeUiElement {
 	classId = "IgeUiButton";
 
 	_autoCell: boolean = false;
 
-	constructor () {
+	constructor() {
 		super();
 
 		this.on("pointerDown", () => {
@@ -35,7 +35,7 @@ export class IgeUiButton extends IgeUiElement {
 	 * @param {Boolean=} val Either true or false.
 	 * @returns {*}
 	 */
-	autoCell (val?: boolean) {
+	autoCell(val?: boolean) {
 		if (val !== undefined) {
 			this._autoCell = val;
 
@@ -52,7 +52,7 @@ export class IgeUiButton extends IgeUiElement {
 	 * Fires a mouse-down and a mouse-up event for the entity.
 	 * @returns {*}
 	 */
-	click () {
+	click() {
 		if (this._pointerDown) {
 			this._pointerDown();
 		}
@@ -63,7 +63,7 @@ export class IgeUiButton extends IgeUiElement {
 		return this;
 	}
 
-	tick (ctx: IgeCanvasRenderingContext2d) {
+	tick(ctx: IgeCanvasRenderingContext2d) {
 		super.tick(ctx);
 
 		// Now draw any ui overlays

@@ -1,5 +1,5 @@
 var Server = IgeClass.extend({
-	classId: 'Server',
+	classId: "Server",
 	Server: true,
 
 	init: function (options) {
@@ -19,7 +19,8 @@ var Server = IgeClass.extend({
 					// Check if the engine started successfully
 					if (success) {
 						// Add the network stream component
-						ige.components.network.addComponent(IgeStreamComponent)
+						ige.components.network
+							.addComponent(IgeStreamComponent)
 							.stream.sendInterval(120) // Send a stream update once every 30 milliseconds
 							.stream.start(); // Start the stream
 
@@ -27,14 +28,13 @@ var Server = IgeClass.extend({
 						ige.components.network.acceptConnections(true);
 
 						// Create the scene
-						self.scene1 = new IgeScene2d()
-							.id('scene1');
+						self.scene1 = new IgeScene2d().id("scene1");
 
 						// Create the main viewport and set the scene
 						// it will "look" at as the new scene1 we just
 						// created above
 						self.vp1 = new IgeViewport()
-							.id('vp1')
+							.id("vp1")
 							.autoSize(true)
 							.scene(self.scene1)
 							.drawBounds(true)
@@ -42,7 +42,7 @@ var Server = IgeClass.extend({
 
 						// Create an entity and mount it to the scene
 						self.obj[0] = new Rotator(0)
-							.id('fairy0')
+							.id("fairy0")
 							.depth(1)
 							.translateTo(0, 0, 0)
 							.streamMode(1)
@@ -52,13 +52,13 @@ var Server = IgeClass.extend({
 						// Add a value to the custom property that the
 						// rotator class "custom1" stream section will
 						// stream to clients
-						self.obj[0]._customProperty = 'Hello';
+						self.obj[0]._customProperty = "Hello";
 
 						// Create a second rotator entity and mount
 						// it to the first one at 0, 50 relative to the
 						// parent
 						self.obj[1] = new Rotator2(0.1)
-							.id('fairy1')
+							.id("fairy1")
 							.depth(1)
 							.translateTo(0, 50, 0)
 							.streamMode(1)
@@ -68,7 +68,7 @@ var Server = IgeClass.extend({
 						// "live" for 10 seconds - helps to test the stream
 						// based entity destruction system
 						self.obj[2] = new Rotator2(0.1)
-							.id('fairy2')
+							.id("fairy2")
 							.depth(1)
 							.translateTo(0, 150, 0)
 							.streamMode(1)
@@ -77,14 +77,14 @@ var Server = IgeClass.extend({
 
 						// Create an entity and mount it to the scene
 						self.obj[3] = new Mover()
-							.id('mover0')
+							.id("mover0")
 							.depth(1)
 							.translateTo(-300, -100, 0)
 							.streamMode(1)
 							.mount(self.scene1);
 
 						self.obj[4] = new Mover()
-							.id('mover1')
+							.id("mover1")
 							.depth(1)
 							.translateTo(300, 100, 0)
 							.streamMode(1)
@@ -95,4 +95,6 @@ var Server = IgeClass.extend({
 	}
 });
 
-if (typeof(module) !== 'undefined' && typeof(module.exports) !== 'undefined') { module.exports = Server; }
+if (typeof module !== "undefined" && typeof module.exports !== "undefined") {
+	module.exports = Server;
+}

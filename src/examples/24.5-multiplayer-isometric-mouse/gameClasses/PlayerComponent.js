@@ -1,6 +1,6 @@
 var PlayerComponent = IgeEntity.extend({
-	classId: 'PlayerComponent',
-	componentId: 'playerControl',
+	classId: "PlayerComponent",
+	componentId: "playerControl",
 
 	init: function (entity, options) {
 		var self = this;
@@ -14,14 +14,15 @@ var PlayerComponent = IgeEntity.extend({
 		if (isClient) {
 			// Listen for mouse events on the texture map
 			ige.client.textureMap1.mouseUp(function (mouseEvent) {
-
 				var tilePos = this.mouseToTile();
 
 				// Send a message to the server asking to path to this tile
-				ige.components.network.send('playerControlToTile', [tilePos.x, tilePos.y]);
+				ige.components.network.send("playerControlToTile", [tilePos.x, tilePos.y]);
 			});
 		}
 	}
 });
 
-if (typeof(module) !== 'undefined' && typeof(module.exports) !== 'undefined') { module.exports = PlayerComponent; }
+if (typeof module !== "undefined" && typeof module.exports !== "undefined") {
+	module.exports = PlayerComponent;
+}

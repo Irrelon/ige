@@ -1,5 +1,5 @@
 var Server = IgeClass.extend({
-	classId: 'Server',
+	classId: "Server",
 	Server: true,
 
 	init: function (options) {
@@ -13,11 +13,12 @@ var Server = IgeClass.extend({
 				ige.start(function (success) {
 					// Check if the engine started successfully
 					if (success) {
-						ige.components.network.on('connect', function () {});
-						ige.components.network.on('disconnect', function () {});
+						ige.components.network.on("connect", function () {});
+						ige.components.network.on("disconnect", function () {});
 
 						// Add the network stream component
-						ige.components.network.addComponent(IgeStreamComponent)
+						ige.components.network
+							.addComponent(IgeStreamComponent)
 							.stream.sendInterval(30) // Send a stream update once every 30 milliseconds
 							.stream.start(); // Start the stream
 
@@ -25,11 +26,13 @@ var Server = IgeClass.extend({
 						ige.components.network.acceptConnections(true);
 
 						// Load the base scene data
-						ige.addGraph('IgeBaseScene');
+						ige.addGraph("IgeBaseScene");
 					}
 				});
 			});
 	}
 });
 
-if (typeof(module) !== 'undefined' && typeof(module.exports) !== 'undefined') { module.exports = Server; }
+if (typeof module !== "undefined" && typeof module.exports !== "undefined") {
+	module.exports = Server;
+}

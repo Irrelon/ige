@@ -11,4 +11,4 @@ export const oreTypes: string[] = [
 	"Copper",
 	"Platinum",
 	"Zinc"
-]
+];

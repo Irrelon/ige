@@ -46,7 +46,7 @@ export enum IgeInputGamePadMap {
 	"axisLeftX",
 	"axisLeftY",
 	"axisRightX",
-	"axisRightY",
+	"axisRightY"
 }
 
 export enum IgeInputPointerMap {
@@ -71,7 +71,7 @@ export enum IgeInputPointerMap {
 	"button2",
 	"button3",
 	"button4",
-	"button5",
+	"button5"
 }
 
 export enum IgeInputKeyboardMap {
@@ -169,5 +169,5 @@ export enum IgeInputKeyboardMap {
 	"KeyW",
 	"KeyX",
 	"KeyY",
-	"KeyZ",
+	"KeyZ"
 }

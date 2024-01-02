@@ -1,7 +1,7 @@
-import {ige} from "../instance";
 import { IgeEntity } from "./IgeEntity";
-import { IgeCanvasRenderingContext2d } from "@/types/IgeCanvasRenderingContext2d";
 import { registerClass } from "@/engine/igeClassStore";
+import { ige } from "../instance";
+import { IgeCanvasRenderingContext2d } from "@/types/IgeCanvasRenderingContext2d";
 
 /**
  * Creates a new 2d scene.
@@ -11,7 +11,7 @@ export class IgeScene2d extends IgeEntity {
 	_autoSize: boolean;
 	_alwaysInView: boolean;
 
-	constructor () {
+	constructor() {
 		super();
 
 		this._pointerAlwaysInside = true;
@@ -54,23 +54,23 @@ export class IgeScene2d extends IgeEntity {
 	 */
 	streamSectionData = (sectionId: string, data: string) => {
 		switch (sectionId) {
-		case "ignoreCamera":
-			if (data !== undefined) {
-				// Setter
-				if (data === "false") {
-					this.ignoreCamera(false);
+			case "ignoreCamera":
+				if (data !== undefined) {
+					// Setter
+					if (data === "false") {
+						this.ignoreCamera(false);
+					} else {
+						this.ignoreCamera(true);
+					}
 				} else {
-					this.ignoreCamera(true);
+					// Getter
+					return String(this._ignoreCamera);
 				}
-			} else {
-				// Getter
-				return String(this._ignoreCamera);
-			}
-			break;
+				break;
 
-		default:
-			super.streamSectionData(sectionId, data);
-			break;
+			default:
+				super.streamSectionData(sectionId, data);
+				break;
 		}
 	};
 
@@ -83,7 +83,7 @@ export class IgeScene2d extends IgeEntity {
 	 * @return {*}
 	 */
 	autoSize = (val?: boolean) => {
-		if (typeof(val) !== "undefined") {
+		if (typeof val !== "undefined") {
 			this._autoSize = val;
 			return this;
 		}
@@ -113,9 +113,9 @@ export class IgeScene2d extends IgeEntity {
 	 * @param {Boolean=} val True to ignore, false to not ignore.
 	 * @return {*}
 	 */
-	ignoreCamera (val: boolean): this;
-	ignoreCamera (): boolean;
-	ignoreCamera (val?: boolean) {
+	ignoreCamera(val: boolean): this;
+	ignoreCamera(): boolean;
+	ignoreCamera(val?: boolean) {
 		if (val !== undefined) {
 			this._ignoreCamera = val;
 			return this;
@@ -144,7 +144,7 @@ export class IgeScene2d extends IgeEntity {
 	 * Processes the actions required each render frame.
 	 * @param {CanvasRenderingContext2D} ctx The canvas context to render to.
 	 */
-	tick (ctx: IgeCanvasRenderingContext2d) {
+	tick(ctx: IgeCanvasRenderingContext2d) {
 		if (this._shouldRender) {
 			super.tick(ctx);
 		}
@@ -178,21 +178,22 @@ export class IgeScene2d extends IgeEntity {
 	 * Other properties are handled by their own class method.
 	 * @return {String}
 	 */
-	_stringify () {
+	_stringify() {
 		// Get the properties for all the super-classes
-		let str = super._stringify(), i;
+		let str = super._stringify(),
+			i;
 
 		// Loop properties and add property assignment code to string
 		for (i in this) {
 			// @ts-ignore
 			if (this.hasOwnProperty(i) && this[i] !== undefined) {
 				switch (i) {
-				case "_shouldRender":
-					str += ".shouldRender(" + this.shouldRender() + ")";
-					break;
-				case "_autoSize":
-					str += ".autoSize(" + this.autoSize() + ")";
-					break;
+					case "_shouldRender":
+						str += ".shouldRender(" + this.shouldRender() + ")";
+						break;
+					case "_autoSize":
+						str += ".autoSize(" + this.autoSize() + ")";
+						break;
 				}
 			}
 		}

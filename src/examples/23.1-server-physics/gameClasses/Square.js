@@ -1,5 +1,5 @@
 var Square = IgeEntityBox2d.extend({
-	classId: 'Square',
+	classId: "Square",
 
 	init: function () {
 		IgeEntityBox2d.prototype.init.call(this);
@@ -8,9 +8,7 @@ var Square = IgeEntityBox2d.extend({
 
 		if (isClient) {
 			// Define the texture this entity will use
-			self.texture(ige.client.gameTexture.rect)
-				.width(40)
-				.height(40);
+			self.texture(ige.client.gameTexture.rect).width(40).height(40);
 		}
 	},
 
@@ -19,4 +17,6 @@ var Square = IgeEntityBox2d.extend({
 	}
 });
 
-if (typeof(module) !== 'undefined' && typeof(module.exports) !== 'undefined') { module.exports = Square; }
+if (typeof module !== "undefined" && typeof module.exports !== "undefined") {
+	module.exports = Square;
+}

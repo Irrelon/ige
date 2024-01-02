@@ -1,2 +1,1 @@
-export declare class IgeUiSlider {
-}
+export declare class IgeUiSlider {}

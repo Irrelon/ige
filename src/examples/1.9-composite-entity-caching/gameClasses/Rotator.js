@@ -1,5 +1,5 @@
 var Rotator = IgeEntity.extend({
-	classId:'Rotator',
+	classId: "Rotator",
 
 	init: function (speed) {
 		IgeEntity.prototype.init.call(this);
@@ -10,7 +10,7 @@ var Rotator = IgeEntity.extend({
 			this._rSpeed = 0;
 		}
 	},
-	
+
 	/**
 	 * Called every frame by the engine when this entity is mounted to the scenegraph.
 	 * @param ctx The canvas context.
@@ -19,10 +19,10 @@ var Rotator = IgeEntity.extend({
 		// Rotate this entity by 0.1 degrees.
 		//this.rotateBy(0, 0, (this._rSpeed * ige._tickDelta) * Math.PI / 180);
 		if (this._rSpeed) {
-			this._rotate.z += (this._rSpeed * ige._tickDelta) * Math.PI / 180;
+			this._rotate.z += (this._rSpeed * ige._tickDelta * Math.PI) / 180;
 			this.cacheDirty(true);
 		}
-		
+
 		// Call the IgeEntity (super-class) tick() method
 		IgeEntity.prototype.update.call(this, ctx, tickDelta);
 	},
@@ -37,4 +37,6 @@ var Rotator = IgeEntity.extend({
 	}
 });
 
-if (typeof(module) !== 'undefined' && typeof(module.exports) !== 'undefined') { module.exports = Rotator; }
+if (typeof module !== "undefined" && typeof module.exports !== "undefined") {
+	module.exports = Rotator;
+}

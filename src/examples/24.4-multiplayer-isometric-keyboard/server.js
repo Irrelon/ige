@@ -1,5 +1,5 @@
 var Server = IgeClass.extend({
-	classId: 'Server',
+	classId: "Server",
 	Server: true,
 
 	init: function (options) {
@@ -24,30 +24,34 @@ var Server = IgeClass.extend({
 					// Check if the engine started successfully
 					if (success) {
 						// Create some network commands we will need
-						ige.components.network.define('gameTiles', function (data, clientId, requestId) {
-							console.log('Client gameTiles command received from client id "' + clientId + '" with data:', data);
+						ige.components.network.define("gameTiles", function (data, clientId, requestId) {
+							console.log(
+								'Client gameTiles command received from client id "' + clientId + '" with data:',
+								data
+							);
 
 							// Send the tile data back
 							ige.components.network.response(requestId, self.tileData);
 						});
 
-						ige.components.network.define('playerEntity', self._onPlayerEntity);
+						ige.components.network.define("playerEntity", self._onPlayerEntity);
 
-						ige.components.network.define('playerControlLeftDown', self._onPlayerLeftDown);
-						ige.components.network.define('playerControlRightDown', self._onPlayerRightDown);
-						ige.components.network.define('playerControlUpDown', self._onPlayerUpDown);
-						ige.components.network.define('playerControlDownDown', self._onPlayerDownDown);
+						ige.components.network.define("playerControlLeftDown", self._onPlayerLeftDown);
+						ige.components.network.define("playerControlRightDown", self._onPlayerRightDown);
+						ige.components.network.define("playerControlUpDown", self._onPlayerUpDown);
+						ige.components.network.define("playerControlDownDown", self._onPlayerDownDown);
 
-						ige.components.network.define('playerControlLeftUp', self._onPlayerLeftUp);
-						ige.components.network.define('playerControlRightUp', self._onPlayerRightUp);
-						ige.components.network.define('playerControlUpUp', self._onPlayerUpUp);
-						ige.components.network.define('playerControlDownUp', self._onPlayerDownUp);
+						ige.components.network.define("playerControlLeftUp", self._onPlayerLeftUp);
+						ige.components.network.define("playerControlRightUp", self._onPlayerRightUp);
+						ige.components.network.define("playerControlUpUp", self._onPlayerUpUp);
+						ige.components.network.define("playerControlDownUp", self._onPlayerDownUp);
 
-						ige.components.network.on('connect', self._onPlayerConnect); // Defined in ./gameClasses/ServerNetworkEvents.js
-						ige.components.network.on('disconnect', self._onPlayerDisconnect); // Defined in ./gameClasses/ServerNetworkEvents.js
+						ige.components.network.on("connect", self._onPlayerConnect); // Defined in ./gameClasses/ServerNetworkEvents.js
+						ige.components.network.on("disconnect", self._onPlayerDisconnect); // Defined in ./gameClasses/ServerNetworkEvents.js
 
 						// Add the network stream component
-						ige.components.network.addComponent(IgeStreamComponent)
+						ige.components.network
+							.addComponent(IgeStreamComponent)
 							.stream.sendInterval(30) // Send a stream update once every 30 milliseconds
 							.stream.start(); // Start the stream
 
@@ -55,22 +59,17 @@ var Server = IgeClass.extend({
 						ige.components.network.acceptConnections(true);
 
 						// Create the scene
-						self.mainScene = new IgeScene2d()
-							.id('mainScene');
+						self.mainScene = new IgeScene2d().id("mainScene");
 
-						self.backgroundScene = new IgeScene2d()
-							.id('backgroundScene')
-							.mount(self.mainScene);
+						self.backgroundScene = new IgeScene2d().id("backgroundScene").mount(self.mainScene);
 
-						self.foregroundScene = new IgeScene2d()
-							.id('foregroundScene')
-							.mount(self.mainScene);
+						self.foregroundScene = new IgeScene2d().id("foregroundScene").mount(self.mainScene);
 
 						// Create the main viewport and set the scene
 						// it will "look" at as the new scene1 we just
 						// created above
 						self.vp1 = new IgeViewport()
-							.id('vp1')
+							.id("vp1")
 							.autoSize(true)
 							.scene(self.mainScene)
 							.drawBounds(true)
@@ -98,4 +97,6 @@ var Server = IgeClass.extend({
 	}
 });
 
-if (typeof(module) !== 'undefined' && typeof(module.exports) !== 'undefined') { module.exports = Server; }
+if (typeof module !== "undefined" && typeof module.exports !== "undefined") {
+	module.exports = Server;
+}

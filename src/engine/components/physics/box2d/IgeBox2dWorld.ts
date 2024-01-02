@@ -2,7 +2,7 @@ import { newIdHex } from "../../../utils";
 import { igeClassStore } from "../../../igeClassStore";
 import { IgeEventingClass } from "../../../core/IgeEventingClass";
 import { ige } from "../../../instance";
-import { Box2D } from "./lib_box2d";
+import { Box2D } from "@/types/Box2D";
 import { IgeBehaviourType } from "@/enums/IgeBehaviourType";
 import { IgeEntityBox2d } from "@/engine/components/physics/box2d/IgeEntityBox2d";
 import { IgeBox2dTimingMode } from "@/enums/IgeBox2dTimingMode";

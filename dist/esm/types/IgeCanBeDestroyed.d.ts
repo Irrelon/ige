@@ -1,3 +1,3 @@
 export interface IgeCanBeDestroyed {
-    destroy: () => this;
+	destroy: () => this;
 }

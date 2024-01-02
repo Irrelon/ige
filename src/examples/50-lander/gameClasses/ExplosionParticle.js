@@ -1,5 +1,5 @@
 var ExplosionParticle = ThrustParticle.extend({
-	classId: 'ExplosionParticle',
+	classId: "ExplosionParticle",
 
 	init: function (emitter) {
 		this._emitter = emitter;
@@ -8,13 +8,13 @@ var ExplosionParticle = ThrustParticle.extend({
 		// Set the rectangle colour (this is read in the Rectangle.js smart texture)
 		var pC = Math.floor(Math.random() * 3);
 		if (pC === 0) {
-			this._rectColor = '#ff5a00';
+			this._rectColor = "#ff5a00";
 		}
 		if (pC === 1) {
-			this._rectColor = '#c1c1c1';
+			this._rectColor = "#c1c1c1";
 		}
 		if (pC === 2) {
-			this._rectColor = '#fffc00';
+			this._rectColor = "#fffc00";
 		}
 
 		// Setup the particle default values
@@ -23,7 +23,7 @@ var ExplosionParticle = ThrustParticle.extend({
 			.width(5)
 			.height(5)
 			.layer(1)
-			.category('thrustParticle');
+			.category("thrustParticle");
 
 		// Setup the box2d physics properties
 		/*this.box2dBody({

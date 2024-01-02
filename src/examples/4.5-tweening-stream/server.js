@@ -1,5 +1,5 @@
 var Server = IgeClass.extend({
-	classId: 'Server',
+	classId: "Server",
 	Server: true,
 
 	init: function (options) {
@@ -17,7 +17,8 @@ var Server = IgeClass.extend({
 			// Check if the engine started successfully
 			if (success) {
 				// Add the network stream component
-				ige.components.network.addComponent(IgeStreamComponent)
+				ige.components.network
+					.addComponent(IgeStreamComponent)
 					.stream.sendInterval(120) // Send a stream update once every 30 milliseconds
 					.stream.start(); // Start the stream
 
@@ -25,12 +26,11 @@ var Server = IgeClass.extend({
 				ige.components.network.acceptConnections(true);
 
 				// Create the scene
-				self.scene1 = new IgeScene2d()
-					.id('scene1');
+				self.scene1 = new IgeScene2d().id("scene1");
 
 				// Create the main viewport
 				self.vp1 = new IgeViewport()
-					.id('vp1')
+					.id("vp1")
 					.autoSize(true)
 					.scene(self.scene1)
 					.drawBounds(true)
@@ -43,7 +43,7 @@ var Server = IgeClass.extend({
 				// then add them to the scene!
 				for (i = 0; i < 100; i++) {
 					self.obj[i] = new RandomTweener()
-						.id('fairy' + i)
+						.id("fairy" + i)
 						.depth(i)
 						.width(100)
 						.height(100)
@@ -56,4 +56,6 @@ var Server = IgeClass.extend({
 	}
 });
 
-if (typeof(module) !== 'undefined' && typeof(module.exports) !== 'undefined') { module.exports = Server; }
+if (typeof module !== "undefined" && typeof module.exports !== "undefined") {
+	module.exports = Server;
+}

@@ -5,23 +5,23 @@ export class ThreadSafeQueue<DataType> {
 	_add: DataType[] = [];
 	_remove: DataType[] = [];
 
-	addItem (item: DataType) {
+	addItem(item: DataType) {
 		this._add.push(item);
 	}
 
-	removeItem (item: DataType) {
+	removeItem(item: DataType) {
 		this._remove.push(item);
 	}
 
-	getIndex (index: number): DataType {
+	getIndex(index: number): DataType {
 		return this._queue[index];
 	}
 
-	length () {
+	length() {
 		return this._queue.length;
 	}
 
-	update () {
+	update() {
 		// Process removals
 		this._remove.forEach((item) => {
 			arrPull(this._queue, item);

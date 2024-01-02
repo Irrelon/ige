@@ -1,23 +1,4 @@
-import { ige } from "../../instance";
-import { igeClassStore } from "../../igeClassStore";
-import { newIdHex } from "../../utils";
-import { IgeNetIoBaseController } from "../IgeNetIoBaseController";
 import { IgeNetIoClient } from "./IgeNetIoClient";
-import {
-	IgeNetworkMessageStructure,
-	IgeNetworkRequestMessageStructure,
-	IgeNetworkMessageData,
-	IgeNetworkEncodedMessageData,
-	IgeNetworkTimeSyncResponseFromClient,
-	IgeNetworkTimeSyncRequestFromServer,
-	IgeNetworkClientSideMessageHandler, IgeNetworkClientSideResponseHandler
-} from "@/types/IgeNetworkMessage";
-import {
-	IgeStreamCreateMessageData,
-	IgeStreamDestroyMessageData,
-	IgeStreamUpdateMessageData
-} from "@/types/IgeNetworkStream";
-import { IgeEntity } from "../../core/IgeEntity";
 import {
 	IGE_NETWORK_REQUEST,
 	IGE_NETWORK_RESPONSE,
@@ -27,13 +8,33 @@ import {
 	IGE_NETWORK_STREAM_TIME,
 	IGE_NETWORK_TIME_SYNC
 } from "@/enums/IgeNetworkConstants";
+import { IgeEntity } from "../../core/IgeEntity";
+import { igeClassStore } from "../../igeClassStore";
+import { ige } from "../../instance";
+import { newIdHex } from "../../utils";
+import { IgeNetIoBaseController } from "../IgeNetIoBaseController";
+import {
+	IgeNetworkMessageStructure,
+	IgeNetworkRequestMessageStructure,
+	IgeNetworkMessageData,
+	IgeNetworkEncodedMessageData,
+	IgeNetworkTimeSyncResponseFromClient,
+	IgeNetworkTimeSyncRequestFromServer,
+	IgeNetworkClientSideMessageHandler,
+	IgeNetworkClientSideResponseHandler
+} from "@/types/IgeNetworkMessage";
+import {
+	IgeStreamCreateMessageData,
+	IgeStreamDestroyMessageData,
+	IgeStreamUpdateMessageData
+} from "@/types/IgeNetworkStream";
 
 /**
  * The client-side net.io component. Handles all client-side
  * networking systems.
  */
 export class IgeNetIoClientController extends IgeNetIoBaseController {
-	version: string = '1.0.0';
+	version: string = "1.0.0";
 	_networkCommands: Record<string, IgeNetworkClientSideMessageHandler> = {}; // Maps a command name to a command handler function
 	_initDone: boolean = false;
 	_idCounter: number = 0;
@@ -45,7 +46,7 @@ export class IgeNetIoClientController extends IgeNetIoBaseController {
 	_renderLatency: number = 100;
 	_streamDataTime: number = 0;
 
-	constructor () {
+	constructor() {
 		super();
 
 		// Define the network stream commands
@@ -55,13 +56,12 @@ export class IgeNetIoClientController extends IgeNetIoBaseController {
 		this.define(IGE_NETWORK_STREAM_TIME, this._onStreamTime);
 	}
 
-
 	/**
 	 * Gets the current socket id.
 	 * @returns {string} The id of the socket connection to the server.
 	 */
-	id () {
-		return this._id || '';
+	id() {
+		return this._id || "";
 	}
 
 	/**
@@ -70,7 +70,7 @@ export class IgeNetIoClientController extends IgeNetIoBaseController {
 	 * @param {Function=} callback A callback method to call once the
 	 * network has started.
 	 */
-	start (url?: string, callback?: () => void) {
+	start(url?: string, callback?: () => void) {
 		return new Promise<void>((resolve) => {
 			if (this._state === 3) {
 				// We're already connected
@@ -82,7 +82,7 @@ export class IgeNetIoClientController extends IgeNetIoBaseController {
 				return;
 			}
 
-			if (typeof (url) !== "undefined") {
+			if (typeof url !== "undefined") {
 				this._url = url;
 			}
 
@@ -160,7 +160,7 @@ export class IgeNetIoClientController extends IgeNetIoBaseController {
 		this._requests[data.id] = data;
 
 		if (this.debug()) {
-			console.log('onRequest', data);
+			console.log("onRequest", data);
 			this._debugCounter++;
 		}
 
@@ -183,7 +183,7 @@ export class IgeNetIoClientController extends IgeNetIoBaseController {
 		const requestObj = this._requests[id];
 
 		if (this.debug()) {
-			console.log('onResponse', responseObj);
+			console.log("onResponse", responseObj);
 			this._debugCounter++;
 		}
 
@@ -216,10 +216,10 @@ export class IgeNetIoClientController extends IgeNetIoBaseController {
 		this._sendTimeSync([serverTime, localTime]);
 	};
 
-	stop () {
+	stop() {
 		// Check we are connected
 		if (this._state === 3) {
-			this._io?.disconnect('Client requested disconnect');
+			this._io?.disconnect("Client requested disconnect");
 		}
 	}
 
@@ -233,7 +233,7 @@ export class IgeNetIoClientController extends IgeNetIoBaseController {
 	 * command is received by the network.
 	 * @return {*}
 	 */
-	define (commandName: string, callback: (...args: any[]) => void) {
+	define(commandName: string, callback: (...args: any[]) => void) {
 		if (commandName !== undefined && callback !== undefined) {
 			// Check if this command has been defined by the server
 			//if (this._networkCommandsLookup[commandName] !== undefined) {
@@ -244,7 +244,10 @@ export class IgeNetIoClientController extends IgeNetIoBaseController {
 
 			return this;
 		} else {
-			this.log('Cannot define network command either the commandName or callback parameters were undefined!', 'error');
+			this.log(
+				"Cannot define network command either the commandName or callback parameters were undefined!",
+				"error"
+			);
 		}
 	}
 
@@ -255,7 +258,11 @@ export class IgeNetIoClientController extends IgeNetIoBaseController {
 	 * @param data
 	 * @param callback
 	 */
-	send<DataType = IgeNetworkMessageData> (commandName: string, data?: DataType, callback?: IgeNetworkClientSideResponseHandler) {
+	send<DataType = IgeNetworkMessageData>(
+		commandName: string,
+		data?: DataType,
+		callback?: IgeNetworkClientSideResponseHandler
+	) {
 		if (callback) {
 			this.request(commandName, data, callback);
 			return;
@@ -272,7 +279,10 @@ export class IgeNetIoClientController extends IgeNetIoBaseController {
 			const encodedCommandIndex = String.fromCharCode(commandIndex);
 			this._io?.send([encodedCommandIndex, data]);
 		} else {
-			this.log(`Cannot send network packet with command "${commandName}" because the command has not been defined!`, 'error');
+			this.log(
+				`Cannot send network packet with command "${commandName}" because the command has not been defined!`,
+				"error"
+			);
 		}
 	}
 
@@ -286,7 +296,11 @@ export class IgeNetIoClientController extends IgeNetIoBaseController {
 	 * @param {Object} data
 	 * @param {Function=} callback
 	 */
-	request <ResultType = any> (commandName: string, data: IgeNetworkMessageData, callback?: IgeNetworkClientSideMessageHandler): Promise<ResultType> {
+	request<ResultType = any>(
+		commandName: string,
+		data: IgeNetworkMessageData,
+		callback?: IgeNetworkClientSideMessageHandler
+	): Promise<ResultType> {
 		return new Promise<ResultType>((resolve) => {
 			// Build the request object
 			const req: IgeNetworkRequestMessageStructure<IgeNetworkClientSideMessageHandler> = {
@@ -309,14 +323,11 @@ export class IgeNetIoClientController extends IgeNetIoBaseController {
 			this._requests[req.id] = req;
 
 			// Send the network request packet
-			this.send(
-				IGE_NETWORK_REQUEST,
-				{
-					id: req.id,
-					cmd: commandName,
-					data: req.data
-				}
-			);
+			this.send(IGE_NETWORK_REQUEST, {
+				id: req.id,
+				cmd: commandName,
+				data: req.data
+			});
 		});
 	}
 
@@ -325,20 +336,17 @@ export class IgeNetIoClientController extends IgeNetIoBaseController {
 	 * @param {string} requestId
 	 * @param {Object} data
 	 */
-	response (requestId: string, data: IgeNetworkMessageData) {
+	response(requestId: string, data: IgeNetworkMessageData) {
 		// Grab the original request object
 		const req = this._requests[requestId];
 
 		if (req) {
 			// Send the network response packet
-			this.send(
-				IGE_NETWORK_RESPONSE,
-				{
-					id: requestId,
-					cmd: req.cmd,
-					data: data
-				}
-			);
+			this.send(IGE_NETWORK_RESPONSE, {
+				id: requestId,
+				cmd: req.cmd,
+				data: data
+			});
 
 			// Remove the request as we've now responded!
 			delete this._requests[requestId];
@@ -349,9 +357,9 @@ export class IgeNetIoClientController extends IgeNetIoBaseController {
 	 * Called when the network connects to the server.
 	 * @private
 	 */
-	_onConnectToServer () {
-		this.log('Connected to server!');
-		this.emit('connected');
+	_onConnectToServer() {
+		this.log("Connected to server!");
+		this.emit("connected");
 	}
 
 	/**
@@ -359,7 +367,7 @@ export class IgeNetIoClientController extends IgeNetIoBaseController {
 	 * @param data
 	 * @private
 	 */
-	_onMessageFromServer (data: IgeNetworkEncodedMessageData) {
+	_onMessageFromServer(data: IgeNetworkEncodedMessageData) {
 		const decodedCommandIndex = data[0].charCodeAt(0);
 		const commandName = this._networkCommandsIndex[decodedCommandIndex];
 
@@ -380,13 +388,13 @@ export class IgeNetIoClientController extends IgeNetIoBaseController {
 	 * @param data
 	 * @private
 	 */
-	_onDisconnectFromServer (data: string) {
-		if (data === 'booted') {
-			this.log('Server rejected our connection because it is not accepting connections at this time!', 'warning');
+	_onDisconnectFromServer(data: string) {
+		if (data === "booted") {
+			this.log("Server rejected our connection because it is not accepting connections at this time!", "warning");
 		} else {
-			this.log('Disconnected from server!');
+			this.log("Disconnected from server!");
 		}
-		this.emit('disconnected');
+		this.emit("disconnected");
 	}
 
 	/**
@@ -396,10 +404,10 @@ export class IgeNetIoClientController extends IgeNetIoBaseController {
 	 */
 	// TODO: Make an error message interface and apply it here
 	_onError = (data: any) => {
-		this.log(`Error with connection: ${data.reason}`, 'error');
+		this.log(`Error with connection: ${data.reason}`, "error");
 	};
 
-	_sendTimeSync (data: IgeNetworkTimeSyncResponseFromClient) {
+	_sendTimeSync(data: IgeNetworkTimeSyncResponseFromClient) {
 		// Send the time sync command
 		this.send(IGE_NETWORK_TIME_SYNC, data);
 	}
@@ -418,7 +426,7 @@ export class IgeNetIoClientController extends IgeNetIoBaseController {
 	 *
 	 * @param latency
 	 */
-	renderLatency (latency?: number) {
+	renderLatency(latency?: number) {
 		if (latency !== undefined) {
 			this._renderLatency = latency;
 			return this;
@@ -454,11 +462,9 @@ export class IgeNetIoClientController extends IgeNetIoBaseController {
 				if (ClassConstructor) {
 					console.log("Creating ", classId, createDataArgs);
 					// The entity does not currently exist so create it!
-					const entity = new ClassConstructor(...createDataArgs)
-						.id(entityId)
-						.mount(parent) as IgeEntity;
+					const entity = new ClassConstructor(...createDataArgs).id(entityId).mount(parent) as IgeEntity;
 
-					entity.streamSectionData('transform', transformData, true);
+					entity.streamSectionData("transform", transformData, true);
 					entity.onStreamCreateInitialData(initialData);
 
 					// Set the just created flag which will stop the renderer
@@ -467,26 +473,35 @@ export class IgeNetIoClientController extends IgeNetIoBaseController {
 					entity._streamJustCreated = true;
 
 					if (entity._streamEmitCreated) {
-						entity.emit('streamCreated');
+						entity.emit("streamCreated");
 					}
 
 					// Since we just created an entity through receiving stream
 					// data, inform any interested listeners
-					this.emit('entityCreated', entity);
+					this.emit("entityCreated", entity);
 				} else {
 					(ige.network as IgeNetIoClientController).stop();
 					ige.engine.stop();
 
-					this.log(`Network stream cannot create entity with class "${classId}" because the class has not been defined! The engine will now stop.`, 'error');
+					this.log(
+						`Network stream cannot create entity with class "${classId}" because the class has not been defined! The engine will now stop.`,
+						"error"
+					);
 				}
 			} else {
-				this.log(`Network stream received "create entity" with class "${classId}" and id "${entityId}" but an entity with that id already exists in the scenegraph!`, 'warning');
+				this.log(
+					`Network stream received "create entity" with class "${classId}" and id "${entityId}" but an entity with that id already exists in the scenegraph!`,
+					"warning"
+				);
 			}
 		} else {
 			(ige.network as IgeNetIoClientController).stop();
 			ige.engine.stop();
 
-			this.log(`Cannot properly handle network streamed entity with id "${entityId}" because it's parent with id "${parentId}" does not exist on the scenegraph!`, 'warning');
+			this.log(
+				`Cannot properly handle network streamed entity with id "${entityId}" because it's parent with id "${parentId}" does not exist on the scenegraph!`,
+				"warning"
+			);
 		}
 	};
 
@@ -557,5 +572,5 @@ export class IgeNetIoClientController extends IgeNetIoBaseController {
 		// Now that the entity has had it's first bit of data
 		// reset the just created flag
 		delete entity._streamJustCreated;
-	}
+	};
 }

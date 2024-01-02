@@ -1,6 +1,6 @@
 // Define our AI character classes
 var CharacterAi = Character.extend({
-	classId: 'CharacterAi',
+	classId: "CharacterAi",
 
 	init: function (collisionMap, pathFinder) {
 		var self = this,
@@ -9,25 +9,24 @@ var CharacterAi = Character.extend({
 		Character.prototype.init.call(this);
 
 		// Choose a random character type
-		this.setType(Math.random() * 8 | 0);
+		this.setType((Math.random() * 8) | 0);
 
 		if (isServer) {
 			this.pathFinder = pathFinder;
 			this.collisionMap = collisionMap;
 
 			// Add pathing capabilities
-			this.addComponent(IgePathComponent)
-				.path.drawPath(true); // Enable drawing the current path
+			this.addComponent(IgePathComponent).path.drawPath(true); // Enable drawing the current path
 
 			// Hook the path events
 			newPathMethod = function () {
 				self.newPath();
 			};
 
-			this.path.on('pathComplete', newPathMethod);
+			this.path.on("pathComplete", newPathMethod);
 
 			// Hook when we get mounted
-			this.on('mounted', function (parent) {
+			this.on("mounted", function (parent) {
 				// Start the first path!
 				self.pathNextTick = true;
 			});
@@ -50,15 +49,18 @@ var CharacterAi = Character.extend({
 		currentTile = this._parent.pointToTile(this._translate.toIso());
 
 		// Pick a random destination tile
-		destTileX = currentTile.x + ((Math.random() * 20 | 0) - 10);
-		destTileY = currentTile.y + ((Math.random() * 20 | 0) - 10);
+		destTileX = currentTile.x + (((Math.random() * 20) | 0) - 10);
+		destTileY = currentTile.y + (((Math.random() * 20) | 0) - 10);
 
 		if (destTileX < 0 || destTileY < 0) {
 			self.pathNextTick = true;
 			return;
 		}
 
-		if (!this.collisionMap.map._mapData[destTileY] || !tileChecker(this.collisionMap.map._mapData[destTileY][destTileX])) {
+		if (
+			!this.collisionMap.map._mapData[destTileY] ||
+			!tileChecker(this.collisionMap.map._mapData[destTileY][destTileX])
+		) {
 			self.pathNextTick = true;
 			return;
 		}
@@ -68,9 +70,7 @@ var CharacterAi = Character.extend({
 
 		if (path.length) {
 			// Assign the path to the player and start it
-			self.path.clear()
-				.addPoints(path)
-				.start();
+			self.path.clear().addPoints(path).start();
 
 			self.pathNextTick = false;
 		} else {
@@ -87,4 +87,6 @@ var CharacterAi = Character.extend({
 	}
 });
 
-if (typeof(module) !== 'undefined' && typeof(module.exports) !== 'undefined') { module.exports = CharacterAi; }
+if (typeof module !== "undefined" && typeof module.exports !== "undefined") {
+	module.exports = CharacterAi;
+}

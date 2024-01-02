@@ -9,5 +9,5 @@ export enum ResourceType {
 	wood = "wood",
 	grain = "grain",
 	stone = "stone",
-	science = "science",
+	science = "science"
 }

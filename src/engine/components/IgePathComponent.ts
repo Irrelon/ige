@@ -1,18 +1,18 @@
-import { ige } from "../instance";
+import { IgeBehaviourType } from "@/enums/IgeBehaviourType";
+import { IgeEntityRenderMode } from "@/enums/IgeEntityRenderMode";
+import { IgeMountMode } from "@/enums/IgeMountMode";
 import { isClient } from "../clientServer";
-import { distance } from "../utils";
 import { IgeComponent } from "../core/IgeComponent";
 import { IgeEntity } from "../core/IgeEntity";
-import { IgeCanvasRenderingContext2d } from "@/types/IgeCanvasRenderingContext2d";
-import { IgeMountMode } from "@/enums/IgeMountMode";
-import { IgeTileMap2d } from "../core/IgeTileMap2d";
-import { IgePathFinder, IgePathFinderComparisonCallback } from "../core/IgePathFinder";
-import { IgePoint3d } from "../core/IgePoint3d";
-import { IgePathNode } from "../core/IgePathNode";
-import { IgeEntityRenderMode } from "@/enums/IgeEntityRenderMode";
-import { IgeEntityBehaviourMethod } from "@/types/IgeEntityBehaviour";
 import { IgeObject } from "../core/IgeObject";
-import { IgeBehaviourType } from "@/enums/IgeBehaviourType";
+import { IgePathFinder, IgePathFinderComparisonCallback } from "../core/IgePathFinder";
+import { IgePathNode } from "../core/IgePathNode";
+import { IgePoint3d } from "../core/IgePoint3d";
+import { IgeTileMap2d } from "../core/IgeTileMap2d";
+import { ige } from "../instance";
+import { distance } from "../utils";
+import { IgeCanvasRenderingContext2d } from "@/types/IgeCanvasRenderingContext2d";
+import { IgeEntityBehaviourMethod } from "@/types/IgeEntityBehaviour";
 
 /**
  * Handles entity path traversal. This component is supposed to be added
@@ -51,7 +51,7 @@ export class IgePathComponent extends IgeComponent {
 	_totalDistance?: number;
 	_totalTime?: number;
 
-	constructor (entity: IgeEntity, options?: any) {
+	constructor(entity: IgeEntity, options?: any) {
 		super(entity, options);
 
 		this._speed = 1 / 1000;
@@ -184,7 +184,15 @@ export class IgePathComponent extends IgeComponent {
 	 * destination tile.
 	 * @returns {*}
 	 */
-	set = (fromX: number, fromY: number, fromZ: number, toX: number, toY: number, toZ: number, findNearest: boolean = false) => {
+	set = (
+		fromX: number,
+		fromY: number,
+		fromZ: number,
+		toX: number,
+		toY: number,
+		toZ: number,
+		findNearest: boolean = false
+	) => {
 		// Clear existing path
 		this.clear();
 
@@ -350,37 +358,37 @@ export class IgePathComponent extends IgeComponent {
 				if (this._entity._renderMode === IgeEntityRenderMode.iso) {
 					// Convert direction for isometric
 					switch (dir) {
-					case "E":
-						dir = "SE";
-						break;
+						case "E":
+							dir = "SE";
+							break;
 
-					case "S":
-						dir = "SW";
-						break;
+						case "S":
+							dir = "SW";
+							break;
 
-					case "W":
-						dir = "NW";
-						break;
+						case "W":
+							dir = "NW";
+							break;
 
-					case "N":
-						dir = "NE";
-						break;
+						case "N":
+							dir = "NE";
+							break;
 
-					case "NE":
-						dir = "E";
-						break;
+						case "NE":
+							dir = "E";
+							break;
 
-					case "SW":
-						dir = "W";
-						break;
+						case "SW":
+							dir = "W";
+							break;
 
-					case "NW":
-						dir = "N";
-						break;
+						case "NW":
+							dir = "N";
+							break;
 
-					case "SE":
-						dir = "S";
-						break;
+						case "SE":
+							dir = "S";
+							break;
 					}
 				}
 			}
@@ -441,7 +449,14 @@ export class IgePathComponent extends IgeComponent {
 
 				// Need to round the restart co-ordinates as the speed could have changed with an entity halfway between
 				// points and this upsets the tile checker
-				this.set(Math.round(restartPoint.x), Math.round(restartPoint.y), restartPoint.z, endPoint.x, endPoint.y, endPoint.z);
+				this.set(
+					Math.round(restartPoint.x),
+					Math.round(restartPoint.y),
+					restartPoint.z,
+					endPoint.x,
+					endPoint.y,
+					endPoint.z
+				);
 				this.restart(startTime || ige.engine._currentTime);
 			}
 			return this;
@@ -616,19 +631,11 @@ export class IgePathComponent extends IgeComponent {
 	};
 
 	multiplyPoint = (point: IgePathNode | IgePoint3d) => {
-		return point.multiply(
-			this._entity._parent._tileWidth,
-			this._entity._parent._tileHeight,
-			1
-		);
+		return point.multiply(this._entity._parent._tileWidth, this._entity._parent._tileHeight, 1);
 	};
 
 	dividePoint = (point: IgePathNode | IgePoint3d) => {
-		return point.divide(
-			this._entity._parent._tileWidth,
-			this._entity._parent._tileHeight,
-			1
-		);
+		return point.divide(this._entity._parent._tileWidth, this._entity._parent._tileHeight, 1);
 	};
 
 	transformPoint = (point: IgePathNode | IgePoint3d) => {
@@ -663,8 +670,13 @@ export class IgePathComponent extends IgeComponent {
 		const progressTime = currentTime - this._startTime;
 
 		// Check if we should be processing paths
-		if (this._active && this._totalDistance !== 0 && currentTime >= this._startTime && (progressTime <= this._totalTime || !this._finished)) {
-			const distanceTravelled = (this._speed) * progressTime;
+		if (
+			this._active &&
+			this._totalDistance !== 0 &&
+			currentTime >= this._startTime &&
+			(progressTime <= this._totalTime || !this._finished)
+		) {
+			const distanceTravelled = this._speed * progressTime;
 			const pointArr = this._points;
 			const pointCount = pointArr.length;
 
@@ -708,7 +720,17 @@ export class IgePathComponent extends IgeComponent {
 						// We must translate the entity at a minimum once per point to ensure it's coords are correct if a new path starts
 						this._entity.translateToPoint(newPoint);
 
-						this.emit("pointComplete", this._entity, pointArr[p].x, pointArr[p].y, pointNext.x, pointNext.y, p, p + 1, effectiveTime);
+						this.emit(
+							"pointComplete",
+							this._entity,
+							pointArr[p].x,
+							pointArr[p].y,
+							pointNext.x,
+							pointNext.y,
+							p,
+							p + 1,
+							effectiveTime
+						);
 
 						if (this._nextPointToProcess <= p) {
 							// The path has restarted so bomb out and catch up next tick
@@ -727,7 +749,14 @@ export class IgePathComponent extends IgeComponent {
 						pointFrom = pointArr[this._currentPointFrom];
 						pointTo = pointArr[this._currentPointTo];
 
-						this.emit("pathRecalculated", this._entity, pointArr[this._previousPointFrom].x, pointArr[this._previousPointFrom].y, pointArr[this._currentPointFrom].x, pointArr[this._currentPointFrom].y);
+						this.emit(
+							"pathRecalculated",
+							this._entity,
+							pointArr[this._previousPointFrom].x,
+							pointArr[this._previousPointFrom].y,
+							pointArr[this._currentPointFrom].x,
+							pointArr[this._currentPointFrom].y
+						);
 					}
 
 					if (dynamicResult === -1) {
@@ -770,7 +799,17 @@ export class IgePathComponent extends IgeComponent {
 					// We must translate the entity at a minimum once per point to ensure it's coords are correct if a new path starts
 					this._entity.translateToPoint(newPoint);
 
-					this.emit("pointComplete", this._entity, pointArr[p].x, pointArr[p].y, pointNext.x, pointNext.y, p, p + 1, effectiveTime);
+					this.emit(
+						"pointComplete",
+						this._entity,
+						pointArr[p].x,
+						pointArr[p].y,
+						pointNext.x,
+						pointNext.y,
+						p,
+						p + 1,
+						effectiveTime
+					);
 
 					if (this._nextPointToProcess <= p) {
 						// The path has restarted so bomb out and catch up next tick
@@ -783,7 +822,13 @@ export class IgePathComponent extends IgeComponent {
 
 				this._finished = true;
 				effectiveTime = this._startTime + this._totalTime;
-				this.emit("pathComplete", this._entity, pointArr[this._previousPointFrom].x, pointArr[this._previousPointFrom].y, effectiveTime);
+				this.emit(
+					"pathComplete",
+					this._entity,
+					pointArr[this._previousPointFrom].x,
+					pointArr[this._previousPointFrom].y,
+					effectiveTime
+				);
 			}
 		} else if (this._active && this._totalDistance == 0 && !this._finished) {
 			this._finished = true;
@@ -799,7 +844,8 @@ export class IgePathComponent extends IgeComponent {
 		// We are in dynamic mode, check steps ahead to see if they
 		// have been blocked or not
 		const tileMapData = this._tileMap.map._mapData;
-		const tileCheckData = tileMapData[pointTo.y] && tileMapData[pointTo.y][pointTo.x] ? tileMapData[pointTo.y][pointTo.x] : null;
+		const tileCheckData =
+			tileMapData[pointTo.y] && tileMapData[pointTo.y][pointTo.x] ? tileMapData[pointTo.y][pointTo.x] : null;
 
 		if (!this._tileChecker(tileCheckData, pointTo.x, pointTo.y, null, null, null, true)) {
 			// The new destination tile is blocked, recalculate path
@@ -818,7 +864,12 @@ export class IgePathComponent extends IgeComponent {
 				return true;
 			} else {
 				// Cannot generate valid path, delete this path
-				this.emit("dynamicFail", this._entity, new IgePoint3d(pointFrom.x, pointFrom.y, pointFrom.z), new IgePoint3d(destinationPoint.x, destinationPoint.y, destinationPoint.z));
+				this.emit(
+					"dynamicFail",
+					this._entity,
+					new IgePoint3d(pointFrom.x, pointFrom.y, pointFrom.z),
+					new IgePoint3d(destinationPoint.x, destinationPoint.y, destinationPoint.z)
+				);
 				this.clear();
 
 				return -1;
@@ -963,13 +1014,35 @@ export class IgePathComponent extends IgeComponent {
 								}
 
 								tempPathText = "Entity: " + entity.id();
-								ctx.fillText(tempPathText, tracePathPoint.x - Math.floor(ctx.measureText(tempPathText).width / 2), tracePathPoint.y + 16);
+								ctx.fillText(
+									tempPathText,
+									tracePathPoint.x - Math.floor(ctx.measureText(tempPathText).width / 2),
+									tracePathPoint.y + 16
+								);
 
-								tempPathText = "Point (" + currentPath[pathPointIndex].x + ", " + currentPath[pathPointIndex].y + ")";
-								ctx.fillText(tempPathText, tracePathPoint.x - Math.floor(ctx.measureText(tempPathText).width / 2), tracePathPoint.y + 28);
+								tempPathText =
+									"Point (" +
+									currentPath[pathPointIndex].x +
+									", " +
+									currentPath[pathPointIndex].y +
+									")";
+								ctx.fillText(
+									tempPathText,
+									tracePathPoint.x - Math.floor(ctx.measureText(tempPathText).width / 2),
+									tracePathPoint.y + 28
+								);
 
-								tempPathText = "Abs (" + Math.floor(entity._translate.x) + ", " + Math.floor(entity._translate.y) + ")";
-								ctx.fillText(tempPathText, tracePathPoint.x - Math.floor(ctx.measureText(tempPathText).width / 2), tracePathPoint.y + 40);
+								tempPathText =
+									"Abs (" +
+									Math.floor(entity._translate.x) +
+									", " +
+									Math.floor(entity._translate.y) +
+									")";
+								ctx.fillText(
+									tempPathText,
+									tracePathPoint.x - Math.floor(ctx.measureText(tempPathText).width / 2),
+									tracePathPoint.y + 40
+								);
 							}
 
 							ctx.restore();
@@ -1009,8 +1082,8 @@ export class IgePathComponent extends IgeComponent {
 		const p1Y = p1.y;
 		const p2X = p2.x;
 		const p2Y = p2.y;
-		const deltaX = (p2X - p1X);
-		const deltaY = (p2Y - p1Y);
+		const deltaX = p2X - p1X;
+		const deltaY = p2Y - p1Y;
 		const magnitude = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
 		const normalisedX = deltaX / magnitude;
 		const normalisedY = deltaY / magnitude;
@@ -1019,8 +1092,8 @@ export class IgePathComponent extends IgeComponent {
 
 		if (deltaX !== 0 || deltaY !== 0) {
 			newPoint = new IgePoint3d(
-				p1X + (normalisedX * (speed * deltaTime)),
-				p1Y + (normalisedY * (speed * deltaTime)),
+				p1X + normalisedX * (speed * deltaTime),
+				p1Y + normalisedY * (speed * deltaTime),
 				0
 			);
 		} else {

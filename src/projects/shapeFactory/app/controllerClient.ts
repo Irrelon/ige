@@ -1,24 +1,24 @@
-import { ige } from "@/engine/instance";
-import { IgeFSM } from "@/engine/core/IgeFSM";
-import { IgeUiElement } from "@/engine/core/IgeUiElement";
-import { IgeEffectFunction } from "@/types/IgeRouteDefinition";
-import { BuildingType } from "../enums/BuildingType";
-import { StorageBuilding } from "../entities/StorageBuilding";
-import { IgeBehaviourType } from "@/enums/IgeBehaviourType";
 import { IgeEntity } from "@/engine/core/IgeEntity";
-import { FactoryBuilding1 } from "../entities/FactoryBuilding1";
-import { ResourceType } from "../enums/ResourceType";
-import { Line } from "../entities/base/Line";
-import { Flag } from "../entities/base/Flag";
-import { FlagBuilding } from "../entities/FlagBuilding";
-import { Building } from "../entities/base/Building";
-import { IgeNetIoClientController } from "@/engine/network/client/IgeNetIoClientController";
-import { MiningBuilding } from "../entities/MiningBuilding";
-import { IgePoint3d } from "@/engine/core/IgePoint3d";
+import { IgeFSM } from "@/engine/core/IgeFSM";
 import { IgePoint2d } from "@/engine/core/IgePoint2d";
+import { IgePoint3d } from "@/engine/core/IgePoint3d";
 import { IgeTileMap2d } from "@/engine/core/IgeTileMap2d";
+import { IgeUiElement } from "@/engine/core/IgeUiElement";
+import { ige } from "@/engine/instance";
+import { IgeNetIoClientController } from "@/engine/network/client/IgeNetIoClientController";
+import { BuildingType } from "../enums/BuildingType";
+import { ResourceType } from "../enums/ResourceType";
+import { IgeBehaviourType } from "@/enums/IgeBehaviourType";
+import { FactoryBuilding1 } from "../entities/FactoryBuilding1";
 import { FactoryBuilding2 } from "../entities/FactoryBuilding2";
+import { FlagBuilding } from "../entities/FlagBuilding";
 import { HouseBuilding1 } from "../entities/HouseBuilding1";
+import { MiningBuilding } from "../entities/MiningBuilding";
+import { StorageBuilding } from "../entities/StorageBuilding";
+import { Building } from "../entities/base/Building";
+import { Flag } from "../entities/base/Flag";
+import { Line } from "../entities/base/Line";
+import { IgeEffectFunction } from "@/types/IgeRouteDefinition";
 
 export const controllerClient: IgeEffectFunction = async () => {
 	const network = ige.network as IgeNetIoClientController;
@@ -40,33 +40,46 @@ export const controllerClient: IgeEffectFunction = async () => {
 
 			uiCreateFactory1.pointerUp(() => {
 				fsm.data("createBuilding", BuildingType.factory1);
-				fsm.data("createArgs", [ResourceType.energy, [{
-					type: ResourceType.elerium,
-					count: 1,
-					max: 3
-				}, {
-					type: ResourceType.uranium,
-					count: 1,
-					max: 3
-				}]]);
+				fsm.data("createArgs", [
+					ResourceType.energy,
+					[
+						{
+							type: ResourceType.elerium,
+							count: 1,
+							max: 3
+						},
+						{
+							type: ResourceType.uranium,
+							count: 1,
+							max: 3
+						}
+					]
+				]);
 				fsm.enterState("createBuilding");
 			});
 
 			uiCreateFactory2.pointerUp(() => {
 				fsm.data("createBuilding", BuildingType.factory2);
-				fsm.data("createArgs", [ResourceType.energy, [{
-					type: ResourceType.energy,
-					count: 1,
-					max: 3
-				}, {
-					type: ResourceType.elerium,
-					count: 1,
-					max: 3
-				}, {
-					type: ResourceType.uranium,
-					count: 1,
-					max: 3
-				}]]);
+				fsm.data("createArgs", [
+					ResourceType.energy,
+					[
+						{
+							type: ResourceType.energy,
+							count: 1,
+							max: 3
+						},
+						{
+							type: ResourceType.elerium,
+							count: 1,
+							max: 3
+						},
+						{
+							type: ResourceType.uranium,
+							count: 1,
+							max: 3
+						}
+					]
+				]);
 				fsm.enterState("createBuilding");
 			});
 
@@ -125,41 +138,29 @@ export const controllerClient: IgeEffectFunction = async () => {
 
 			// Set the temporary cursor-following building
 			switch (buildingType) {
-			case BuildingType.storage:
-				new StorageBuilding()
-					.id("tmpBuilding")
-					.mount(tileMap1);
-				break;
+				case BuildingType.storage:
+					new StorageBuilding().id("tmpBuilding").mount(tileMap1);
+					break;
 
-			case BuildingType.factory1:
-				new FactoryBuilding1( NaN, NaN, createArgs[0], createArgs[1])
-					.id("tmpBuilding")
-					.mount(tileMap1);
-				break;
+				case BuildingType.factory1:
+					new FactoryBuilding1(NaN, NaN, createArgs[0], createArgs[1]).id("tmpBuilding").mount(tileMap1);
+					break;
 
-			case BuildingType.factory2:
-				new FactoryBuilding2( NaN, NaN, createArgs[0], createArgs[1])
-					.id("tmpBuilding")
-					.mount(tileMap1);
-				break;
+				case BuildingType.factory2:
+					new FactoryBuilding2(NaN, NaN, createArgs[0], createArgs[1]).id("tmpBuilding").mount(tileMap1);
+					break;
 
-			case BuildingType.mine:
-				new MiningBuilding(NaN, NaN, ResourceType.none, [])
-					.id("tmpBuilding")
-					.mount(tileMap1);
-				break;
+				case BuildingType.mine:
+					new MiningBuilding(NaN, NaN, ResourceType.none, []).id("tmpBuilding").mount(tileMap1);
+					break;
 
-			case BuildingType.house1:
-				new HouseBuilding1(NaN, NaN, ResourceType.none, [])
-					.id("tmpBuilding")
-					.mount(tileMap1);
-				break;
+				case BuildingType.house1:
+					new HouseBuilding1(NaN, NaN, ResourceType.none, []).id("tmpBuilding").mount(tileMap1);
+					break;
 
-			case BuildingType.flag:
-				new FlagBuilding()
-					.id("tmpBuilding")
-					.mount(tileMap1);
-				break;
+				case BuildingType.flag:
+					new FlagBuilding().id("tmpBuilding").mount(tileMap1);
+					break;
 			}
 		},
 		exit: async () => {
@@ -174,15 +175,23 @@ export const controllerClient: IgeEffectFunction = async () => {
 			if (!tmpBuilding) return;
 
 			// Check if the building is allowed to occupy this area
-			if (tileMap1.isTileOccupied(tilePos.x + tmpBuilding.tileXDelta, tilePos.y + tmpBuilding.tileYDelta, tmpBuilding.tileW, tmpBuilding.tileH)) return;
+			if (
+				tileMap1.isTileOccupied(
+					tilePos.x + tmpBuilding.tileXDelta,
+					tilePos.y + tmpBuilding.tileYDelta,
+					tmpBuilding.tileW,
+					tmpBuilding.tileH
+				)
+			)
+				return;
 
-			tmpBuilding.translateToTile(tilePos.x,tilePos.y, 0);
+			tmpBuilding.translateToTile(tilePos.x, tilePos.y, 0);
 		},
 		click: async (tilePos: IgePoint2d) => {
 			console.log("CREATE BUILDING CLICK");
 
 			const existingTmpBuilding = ige.$("tmpBuilding") as Building;
-			const buildLocation = tileMap1.pointToTile( existingTmpBuilding._translate);
+			const buildLocation = tileMap1.pointToTile(existingTmpBuilding._translate);
 
 			// Check the location and determine if we can build there
 
@@ -223,9 +232,7 @@ export const controllerClient: IgeEffectFunction = async () => {
 				existingTmpBuilding.destroy();
 			}
 
-			new Line()
-				.id("tmpBuilding")
-				.mount(tileMap1);
+			new Line().id("tmpBuilding").mount(tileMap1);
 		},
 		pointerMove: async (tilePos: IgePoint2d) => {
 			const tmpBuilding = ige.$("tmpBuilding") as Line;
@@ -303,14 +310,14 @@ export const controllerClient: IgeEffectFunction = async () => {
 	const onPointerMove = () => {
 		const tilePos = tileMap1.mouseToTile();
 		fsm.raiseEvent("pointerMove", tilePos);
-	}
+	};
 
 	const onKeyUp = (evt: KeyboardEvent) => {
 		if (evt.code === "Escape") {
 			// Cancel the current operation and return to the idle state
 			fsm.enterState("idle");
 		}
-	}
+	};
 
 	tileMap1.pointerEventsActive(true);
 	//tileMap1.on("pointerUp", onPointerUp);
@@ -319,12 +326,11 @@ export const controllerClient: IgeEffectFunction = async () => {
 	ige.input.on("pointerMove", onPointerMove);
 	ige.input.on("keyUp", onKeyUp);
 
-
 	// ige.engine.addBehaviour(IgeBehaviourType.preUpdate, "tmpBuildingBehaviour", () => {
 	//
 	// });
 
 	return async () => {
 		ige.engine.removeBehaviour(IgeBehaviourType.preUpdate, "tmpBuildingBehaviour");
-	}
-}
+	};
+};

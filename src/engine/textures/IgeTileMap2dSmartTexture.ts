@@ -1,7 +1,7 @@
-import { IgePoint2d } from "../core/IgePoint2d";
-import { IgeSmartTexture } from "@/types/IgeSmartTexture";
 import { IgeMountMode } from "@/enums/IgeMountMode";
+import { IgePoint2d } from "../core/IgePoint2d";
 import { IgeTileMap2d } from "../core/IgeTileMap2d";
+import { IgeSmartTexture } from "@/types/IgeSmartTexture";
 
 export const IgeTileMap2dSmartTexture: IgeSmartTexture = {
 	render: (ctx, entity) => {
@@ -12,7 +12,9 @@ export const IgeTileMap2dSmartTexture: IgeSmartTexture = {
 			bounds2d = ent._bounds2d,
 			gridSize = ent._gridSize;
 
-		let x = 0, y = 0, tilePoint;
+		let x = 0,
+			y = 0,
+			tilePoint;
 		/*ctx.save();
 		var triggerPoly = ent.tileMapHitPolygon();
 
@@ -40,9 +42,7 @@ export const IgeTileMap2dSmartTexture: IgeSmartTexture = {
 			const gridMaxX = x + tileWidth * gridSize.x;
 			const gridMaxY = y + tileHeight * gridSize.y;
 
-			let index,
-				gStart,
-				gEnd;
+			let index, gStart, gEnd;
 
 			for (index = 0; index <= gridSize.y; index++) {
 				gStart = new IgePoint2d(x, y + tileHeight * index);
@@ -145,8 +145,7 @@ export const IgeTileMap2dSmartTexture: IgeSmartTexture = {
 			const mousePos = ent.mousePos(),
 				mouseTile = ent.mouseToTile();
 
-			let text,
-				textMeasurement;
+			let text, textMeasurement;
 
 			if (mouseTile.x >= 0 && mouseTile.y >= 0 && mouseTile.x < gridSize.x && mouseTile.y < gridSize.y) {
 				// Paint the tile the mouse is currently intersecting

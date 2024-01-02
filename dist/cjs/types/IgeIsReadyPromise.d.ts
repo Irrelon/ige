@@ -1,3 +1,3 @@
 export interface IgeIsReadyPromise {
-    isReady: () => Promise<void>;
+	isReady: () => Promise<void>;
 }

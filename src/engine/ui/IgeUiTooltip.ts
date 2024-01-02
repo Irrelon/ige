@@ -1,5 +1,5 @@
-import { IgeUiElement } from "@/engine/core/IgeUiElement";
 import { IgeFontEntity } from "@/engine/core/IgeFontEntity";
+import { IgeUiElement } from "@/engine/core/IgeUiElement";
 import { registerClass } from "@/engine/igeClassStore";
 
 /**
@@ -17,16 +17,11 @@ export class IgeUiTooltip extends IgeUiElement {
 	 * @param height Height of the tooltip
 	 * @param content The content which is set with public method "setContent". Can be string, array(2) or an entity
 	 */
-	constructor (parent, mountEntity, width, height, content) {
+	constructor(parent, mountEntity, width, height, content) {
 		super();
 
 		const self = this;
-		this.titleBox = new IgeUiElement()
-			.left(0)
-			.top(0)
-			.width(width)
-			.height(30)
-			.mount(this);
+		this.titleBox = new IgeUiElement().left(0).top(0).width(width).height(30).mount(this);
 
 		this.titleBox.borderBottomColor("#ffffff");
 		this.titleBox.borderBottomWidth(1);
@@ -85,7 +80,7 @@ export class IgeUiTooltip extends IgeUiElement {
 	 * @param noUpdate
 	 * @return {*}
 	 */
-	width (px, lockAspect, modifier, noUpdate) {
+	width(px, lockAspect, modifier, noUpdate) {
 		let val;
 
 		// Call the main super class method
@@ -107,7 +102,7 @@ export class IgeUiTooltip extends IgeUiElement {
 	 * @param noUpdate
 	 * @return {*}
 	 */
-	height (px, lockAspect, modifier, noUpdate) {
+	height(px, lockAspect, modifier, noUpdate) {
 		let val;
 
 		// Call the main super class method
@@ -127,7 +122,7 @@ export class IgeUiTooltip extends IgeUiElement {
 	 * @param val The content, be it string, array(2) or an entity
 	 * @return {*}
 	 */
-	setContent (val) {
+	setContent(val) {
 		if (val === undefined) {
 			return this;
 		}
@@ -139,13 +134,13 @@ export class IgeUiTooltip extends IgeUiElement {
 			child.destroy();
 		});
 
-		if (typeof(val) == "string") {
+		if (typeof val == "string") {
 			this.textBox.mount(this);
 			this.textBox.height(this._bounds2d.y);
 			this.textBox.top(0);
 			// Set the text of the font entity to the value
 			this.fontEntityText.text(this._value);
-		} else if (typeof(val) == "object" && typeof(val[0] === "string") && typeof(val[1] === "string")) {
+		} else if (typeof val == "object" && typeof (val[0] === "string") && typeof (val[1] === "string")) {
 			this.titleBox.mount(this);
 			this.textBox.mount(this);
 			this.textBox.height(this._bounds2d.y - this.titleBox._bounds2d.y);
@@ -153,7 +148,7 @@ export class IgeUiTooltip extends IgeUiElement {
 			//title + text
 			this.fontEntityTitle.text(val[0]);
 			this.fontEntityText.text(val[1]);
-		} else if (typeof(val) == "object") {
+		} else if (typeof val == "object") {
 			val.mount(this);
 		}
 
@@ -166,7 +161,7 @@ export class IgeUiTooltip extends IgeUiElement {
 	 * @param fontSheet
 	 * @return {*}
 	 */
-	fontSheet (fontSheet) {
+	fontSheet(fontSheet) {
 		if (fontSheet === undefined) {
 			return this;
 		}
@@ -182,7 +177,7 @@ export class IgeUiTooltip extends IgeUiElement {
 	 * @param event
 	 * @private
 	 */
-	_mousemove (event) {
+	_mousemove(event) {
 		let toolTip = this._tooltip,
 			mountPos;
 
@@ -192,7 +187,11 @@ export class IgeUiTooltip extends IgeUiElement {
 
 		mountPos = toolTip._mountEntity.worldPosition();
 
-		toolTip.translateTo(event.igeX - mountPos.x + toolTip._bounds2d.x2 + 10, event.igeY - mountPos.y + toolTip._bounds2d.y2, 0);
+		toolTip.translateTo(
+			event.igeX - mountPos.x + toolTip._bounds2d.x2 + 10,
+			event.igeY - mountPos.y + toolTip._bounds2d.y2,
+			0
+		);
 		toolTip.updateUiChildren();
 	}
 
@@ -201,7 +200,7 @@ export class IgeUiTooltip extends IgeUiElement {
 	 * @param event
 	 * @private
 	 */
-	_mouseout (event) {
+	_mouseout(event) {
 		this._tooltip.hide();
 	}
 }

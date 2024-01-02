@@ -1,6 +1,6 @@
-import { ige } from "@/engine/instance";
 import { Level1 } from "./Level1";
 import { UiClientScene } from "./UiClientScene";
+import { ige } from "@/engine/instance";
 import { controllerClient } from "../controllerClient";
 import { controllerServer } from "../controllerServer";
 
@@ -18,7 +18,7 @@ ige.router.route("app/level1", {
 			await onControllerUnload();
 			await ige.engine.removeGraph(UiClientScene);
 			await ige.engine.removeGraph(Level1);
-		}
+		};
 	},
 	server: async () => {
 		await ige.engine.addGraph(Level1);
@@ -27,6 +27,6 @@ ige.router.route("app/level1", {
 		return async () => {
 			await onControllerUnload();
 			await ige.engine.removeGraph(Level1);
-		}
+		};
 	}
 });

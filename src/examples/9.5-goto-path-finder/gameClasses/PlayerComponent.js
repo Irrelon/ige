@@ -3,9 +3,9 @@
  * @type {IgeClass}
  */
 var PlayerComponent = IgeClass.extend({
-	classId: 'PlayerComponent',
-	componentId: 'player',
-	
+	classId: "PlayerComponent",
+	componentId: "player",
+
 	init: function (entity, options) {
 		var self = this;
 
@@ -16,7 +16,9 @@ var PlayerComponent = IgeClass.extend({
 		this._options = options;
 
 		// Listen for the mouse up event
-		ige.components.input.on('mouseUp', function () { self._mouseUp(); });
+		ige.components.input.on("mouseUp", function () {
+			self._mouseUp();
+		});
 	},
 
 	/**
@@ -26,13 +28,13 @@ var PlayerComponent = IgeClass.extend({
 	 */
 	_mouseUp: function () {
 		// Get the tile co-ordinates that the mouse is currently over
-		var endTile = ige.$('tileMap1').mouseToTile();
+		var endTile = ige.$("tileMap1").mouseToTile();
 
 		// Tell the entity to start pathing along the new path
-		this._entity.path
-			.add(endTile.x, endTile.y, 0)
-			.start();
+		this._entity.path.add(endTile.x, endTile.y, 0).start();
 	}
 });
 
-if (typeof(module) !== 'undefined' && typeof(module.exports) !== 'undefined') { module.exports = PlayerComponent; }
+if (typeof module !== "undefined" && typeof module.exports !== "undefined") {
+	module.exports = PlayerComponent;
+}

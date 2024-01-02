@@ -3,8 +3,8 @@
  * @type {IgeClass}
  */
 var PlayerComponent = IgeClass.extend({
-	classId: 'PlayerComponent',
-	componentId: 'player',
+	classId: "PlayerComponent",
+	componentId: "player",
 
 	init: function (entity, options) {
 		var self = this;
@@ -16,14 +16,14 @@ var PlayerComponent = IgeClass.extend({
 		this._options = options;
 
 		// Setup the control system
-		ige.components.input.mapAction('walkLeft', ige.components.input.key.left);
-		ige.components.input.mapAction('walkRight', ige.components.input.key.right);
-		ige.components.input.mapAction('walkUp', ige.components.input.key.up);
-		ige.components.input.mapAction('walkDown', ige.components.input.key.down);
-		ige.components.input.mapAction('jump', ige.components.input.key.space);
+		ige.components.input.mapAction("walkLeft", ige.components.input.key.left);
+		ige.components.input.mapAction("walkRight", ige.components.input.key.right);
+		ige.components.input.mapAction("walkUp", ige.components.input.key.up);
+		ige.components.input.mapAction("walkDown", ige.components.input.key.down);
+		ige.components.input.mapAction("jump", ige.components.input.key.space);
 
 		// Add the playerComponent behaviour to the entity
-		this._entity.addBehaviour('playerComponent_behaviour', this._behaviour);
+		this._entity.addBehaviour("playerComponent_behaviour", this._behaviour);
 	},
 
 	_behaviour: function (ctx) {
@@ -35,27 +35,29 @@ var PlayerComponent = IgeClass.extend({
 		this._cannonBody.quaternion.z = 0;
 		this._cannonBody.quaternion.w = 1;
 
-		if (ige.components.input.actionState('walkLeft')) {
+		if (ige.components.input.actionState("walkLeft")) {
 			this._cannonBody.velocity.set(-vel, this._cannonBody.velocity.y, this._cannonBody.velocity.z);
 			this._cannonBody.wakeUp();
-		} else if (ige.components.input.actionState('walkRight')) {
+		} else if (ige.components.input.actionState("walkRight")) {
 			this._cannonBody.velocity.set(vel, this._cannonBody.velocity.y, this._cannonBody.velocity.z);
 			this._cannonBody.wakeUp();
 		}
 
-		if (ige.components.input.actionState('walkUp')) {
+		if (ige.components.input.actionState("walkUp")) {
 			this._cannonBody.velocity.set(this._cannonBody.velocity.x, -vel, this._cannonBody.velocity.z);
 			this._cannonBody.wakeUp();
-		} else if (ige.components.input.actionState('walkDown')) {
+		} else if (ige.components.input.actionState("walkDown")) {
 			this._cannonBody.velocity.set(this._cannonBody.velocity.x, vel, this._cannonBody.velocity.z);
 			this._cannonBody.wakeUp();
 		}
 
-		if (ige.components.input.actionState('jump')) {
+		if (ige.components.input.actionState("jump")) {
 			this._cannonBody.velocity.set(this._cannonBody.velocity.x, this._cannonBody.velocity.y, vel * 1.5);
 			this._cannonBody.wakeUp();
 		}
 	}
 });
 
-if (typeof(module) !== 'undefined' && typeof(module.exports) !== 'undefined') { module.exports = PlayerComponent; }
+if (typeof module !== "undefined" && typeof module.exports !== "undefined") {
+	module.exports = PlayerComponent;
+}

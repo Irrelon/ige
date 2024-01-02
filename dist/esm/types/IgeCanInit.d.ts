@@ -1,3 +1,3 @@
 export interface IgeCanInit {
-    init: (...args: any[]) => any;
+	init: (...args: any[]) => any;
 }

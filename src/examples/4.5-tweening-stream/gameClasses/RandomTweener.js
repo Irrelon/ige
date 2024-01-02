@@ -1,5 +1,5 @@
 var RandomTweener = IgeEntity.extend({
-	classId: 'RandomTweener',
+	classId: "RandomTweener",
 
 	init: function () {
 		var self = this,
@@ -10,40 +10,39 @@ var RandomTweener = IgeEntity.extend({
 
 		if (isClient) {
 			this.depth(ige.client.scene1._children.length);
-			
+
 			// Define the texture this entity will use
-			this._tex = new IgeTexture('../assets/textures/sprites/fairy.png');
+			this._tex = new IgeTexture("../assets/textures/sprites/fairy.png");
 
 			// Wait for the texture to load
-			this._tex.on('loaded', function () {
-				self.texture(self._tex)
-					.dimensionsFromCell();
+			this._tex.on(
+				"loaded",
+				function () {
+					self.texture(self._tex).dimensionsFromCell();
 
-				self.width(100)
-					.height(100);
+					self.width(100).height(100);
 
-				// Define a function that will be called when the
-				// mouse cursor moves over one of our entities
-				overFunc = function () {
-					this.highlight(true);
-					this.drawBounds(true);
-					this.drawBoundsData(true);
-				};
+					// Define a function that will be called when the
+					// mouse cursor moves over one of our entities
+					overFunc = function () {
+						this.highlight(true);
+						this.drawBounds(true);
+						this.drawBoundsData(true);
+					};
 
-				// Define a function that will be called when the
-				// mouse cursor moves away from one of our entities
-				outFunc = function () {
-					this.highlight(false);
-					this.drawBounds(false);
-					this.drawBoundsData(false);
-				};
+					// Define a function that will be called when the
+					// mouse cursor moves away from one of our entities
+					outFunc = function () {
+						this.highlight(false);
+						this.drawBounds(false);
+						this.drawBoundsData(false);
+					};
 
-				self.mouseOver(overFunc)
-					.mouseOut(outFunc)
-					.drawBounds(false)
-					.drawBoundsData(false);
-
-			}, false, true);
+					self.mouseOver(overFunc).mouseOut(outFunc).drawBounds(false).drawBoundsData(false);
+				},
+				false,
+				true
+			);
 		}
 
 		if (isServer) {
@@ -58,24 +57,28 @@ var RandomTweener = IgeEntity.extend({
 	newTween: function () {
 		var self = this;
 
-		this._translate.tween()
+		this._translate
+			.tween()
 			.duration(7000)
 			.stepTo({
-				x: (Math.random() * 1440) - 720,
-				y: (Math.random() * 900) - 450
+				x: Math.random() * 1440 - 720,
+				y: Math.random() * 900 - 450
 			})
-			.easing('outElastic')
+			.easing("outElastic")
 			.afterTween(function () {
 				self.newTween();
 			})
 			.start();
 
-		this._rotate.tween()
+		this._rotate
+			.tween()
 			.duration(7000)
-			.stepBy({z: (Math.random() * 360) * Math.PI / 180})
-			.easing('outElastic')
+			.stepBy({ z: (Math.random() * 360 * Math.PI) / 180 })
+			.easing("outElastic")
 			.start();
 	}
 });
 
-if (typeof(module) !== 'undefined' && typeof(module.exports) !== 'undefined') { module.exports = RandomTweener; }
+if (typeof module !== "undefined" && typeof module.exports !== "undefined") {
+	module.exports = RandomTweener;
+}

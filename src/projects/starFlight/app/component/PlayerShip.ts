@@ -1,19 +1,19 @@
-import { ige } from "@/engine/instance";
-import { isClient, isServer } from "@/engine/clientServer";
 import { EntityPublicGameData } from "./GameEntity";
-import { Target } from "./Target";
-import { Ship } from "./Ship";
 import { Inventory } from "./Inventory";
-import { IgeInputDevice, IgeInputKeyboardMap } from "@/enums/IgeInputDeviceMap";
-import { IgeEntity } from "@/engine/core/IgeEntity";
-import { IgeCanvasRenderingContext2d } from "@/types/IgeCanvasRenderingContext2d";
-import { degreesToRadians } from "@/engine/utils";
-import { IgeNetIoClientController } from "@/engine/network/client/IgeNetIoClientController";
-import { PlayerControls } from "../../enums/PlayerControls";
-import { registerClass } from "@/engine/igeClassStore";
-import { IgeUiProgressBar } from "@/engine/ui/IgeUiProgressBar";
-import type { IgeUiLabel } from "@/engine/ui/IgeUiLabel";
+import { Ship } from "./Ship";
+import { Target } from "./Target";
 import type { InfoWindow } from "./ui/InfoWindow";
+import { isClient, isServer } from "@/engine/clientServer";
+import { IgeEntity } from "@/engine/core/IgeEntity";
+import { registerClass } from "@/engine/igeClassStore";
+import { ige } from "@/engine/instance";
+import { IgeNetIoClientController } from "@/engine/network/client/IgeNetIoClientController";
+import type { IgeUiLabel } from "@/engine/ui/IgeUiLabel";
+import { IgeUiProgressBar } from "@/engine/ui/IgeUiProgressBar";
+import { degreesToRadians } from "@/engine/utils";
+import { PlayerControls } from "../../enums/PlayerControls";
+import { IgeInputDevice, IgeInputKeyboardMap } from "@/enums/IgeInputDeviceMap";
+import { IgeCanvasRenderingContext2d } from "@/types/IgeCanvasRenderingContext2d";
 
 export class PlayerShip extends Ship {
 	classId = "PlayerShip";
@@ -26,7 +26,7 @@ export class PlayerShip extends Ship {
 	_thrustPower: number;
 	_reversePower: number;
 
-	constructor (publicGameData: EntityPublicGameData) {
+	constructor(publicGameData: EntityPublicGameData) {
 		super(publicGameData);
 
 		this.drawBounds(false);
@@ -63,9 +63,7 @@ export class PlayerShip extends Ship {
 				[IgeInputDevice.keyboard, IgeInputKeyboardMap.ArrowDown],
 				[IgeInputDevice.keyboard, IgeInputKeyboardMap.KeyS]
 			]);
-			this.addControl(PlayerControls.braking, [
-				[IgeInputDevice.keyboard, IgeInputKeyboardMap.KeyS]
-			]);
+			this.addControl(PlayerControls.braking, [[IgeInputDevice.keyboard, IgeInputKeyboardMap.KeyS]]);
 
 			this.target = new Target();
 		}
@@ -73,7 +71,7 @@ export class PlayerShip extends Ship {
 		this._setup();
 	}
 
-	clientId (clientId?: string) {
+	clientId(clientId?: string) {
 		if (clientId !== undefined) {
 			this._clientId = clientId;
 			return this;
@@ -82,12 +80,12 @@ export class PlayerShip extends Ship {
 		return this._clientId;
 	}
 
-	addControl (controlCode: number, codes: [IgeInputDevice, number][]) {
+	addControl(controlCode: number, codes: [IgeInputDevice, number][]) {
 		ige.input.mapAction(controlCode, codes);
 		this._controls.push(controlCode);
 	}
 
-	selectTarget (targetEntity: IgeEntity | null) {
+	selectTarget(targetEntity: IgeEntity | null) {
 		if (!this.target) return;
 
 		if (targetEntity === null) {
@@ -96,11 +94,7 @@ export class PlayerShip extends Ship {
 		}
 
 		this.target._targetEntity = targetEntity;
-		this.target.translateTo(
-			targetEntity._translate.x,
-			targetEntity._translate.y,
-			0
-		);
+		this.target.translateTo(targetEntity._translate.x, targetEntity._translate.y, 0);
 	}
 
 	/**
@@ -109,7 +103,7 @@ export class PlayerShip extends Ship {
 	 * @param ctx The canvas context to render to.
 	 * @param tickDelta
 	 */
-	update (ctx: IgeCanvasRenderingContext2d, tickDelta: number) {
+	update(ctx: IgeCanvasRenderingContext2d, tickDelta: number) {
 		if (isServer) {
 			this._updatePhysics();
 		}
@@ -154,7 +148,7 @@ export class PlayerShip extends Ship {
 		}
 	}
 
-	_updatePhysics () {
+	_updatePhysics() {
 		if (isClient) return;
 		if (!this._box2dBody) {
 			throw new Error("Physics body for PlayerShip does not exist!");
@@ -182,7 +176,10 @@ export class PlayerShip extends Ship {
 
 		if (this._controlState[PlayerControls.thrust]) {
 			const radians = this._rotate.z + degreesToRadians(-90);
-			const thrustVector = new ige.box2d.b2Vec2(Math.cos(radians) * this._thrustPower, Math.sin(radians) * this._thrustPower);
+			const thrustVector = new ige.box2d.b2Vec2(
+				Math.cos(radians) * this._thrustPower,
+				Math.sin(radians) * this._thrustPower
+			);
 
 			this._box2dBody.ApplyForce(thrustVector, this._box2dBody.GetWorldCenter());
 			this._box2dBody.SetAwake(true);
@@ -192,7 +189,10 @@ export class PlayerShip extends Ship {
 
 		if (this._controlState[PlayerControls.reverse]) {
 			const radians = this._rotate.z + degreesToRadians(-270);
-			const thrustVector = new ige.box2d.b2Vec2(Math.cos(radians) * this._reversePower, Math.sin(radians) * this._reversePower);
+			const thrustVector = new ige.box2d.b2Vec2(
+				Math.cos(radians) * this._reversePower,
+				Math.sin(radians) * this._reversePower
+			);
 
 			this._box2dBody.ApplyForce(thrustVector, this._box2dBody.GetWorldCenter());
 			this._box2dBody.SetAwake(true);
@@ -210,7 +210,7 @@ export class PlayerShip extends Ship {
 		}
 	}
 
-	_updateInputs () {
+	_updateInputs() {
 		const arr = this._controls;
 		const arrCount = arr.length;
 
@@ -237,7 +237,7 @@ export class PlayerShip extends Ship {
 		}
 	}
 
-	_updateTarget () {
+	_updateTarget() {
 		const targetInfo = ige.$("targetInfo") as InfoWindow;
 
 		if (!this.target || !this.target._targetEntity) {

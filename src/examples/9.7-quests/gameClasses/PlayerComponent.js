@@ -3,9 +3,9 @@
  * @type {IgeClass}
  */
 var PlayerComponent = IgeClass.extend({
-	classId: 'PlayerComponent',
-	componentId: 'player',
-	
+	classId: "PlayerComponent",
+	componentId: "player",
+
 	init: function (entity, options) {
 		var self = this;
 
@@ -16,7 +16,9 @@ var PlayerComponent = IgeClass.extend({
 		this._options = options;
 
 		// Listen for the mouse up event
-		ige.components.input.on('mouseUp', function (event, x, y, button) { self._mouseUp(event, x, y, button); });
+		ige.components.input.on("mouseUp", function (event, x, y, button) {
+			self._mouseUp(event, x, y, button);
+		});
 	},
 
 	/**
@@ -27,7 +29,7 @@ var PlayerComponent = IgeClass.extend({
 	_mouseUp: function (event, x, y, button) {
 		return;
 		// Get the tile co-ordinates that the mouse is currently over
-		var endTile = ige.$('tileMap1').mouseToTile(),
+		var endTile = ige.$("tileMap1").mouseToTile(),
 			currentPosition = this._entity._translate,
 			startTile,
 			newPath,
@@ -48,17 +50,25 @@ var PlayerComponent = IgeClass.extend({
 		}
 
 		// Create a path from the current position to the target tile
-		newPath = ige.client.pathFinder.generate(ige.client.tileMap1, startTile, endTile, function (tileData, tileX, tileY) {
-			// If the map tile data is set to 1, don't allow a path along it
-			return tileData !== 1;
-		}, true, true);
+		newPath = ige.client.pathFinder.generate(
+			ige.client.tileMap1,
+			startTile,
+			endTile,
+			function (tileData, tileX, tileY) {
+				// If the map tile data is set to 1, don't allow a path along it
+				return tileData !== 1;
+			},
+			true,
+			true
+		);
 
 		// Tell the entity to start pathing along the new path
-		this._entity
-			//.path.clear()
-			.path.add(newPath)
+		this._entity.path //.path.clear()
+			.add(newPath)
 			.path.start();
 	}
 });
 
-if (typeof(module) !== 'undefined' && typeof(module.exports) !== 'undefined') { module.exports = PlayerComponent; }
+if (typeof module !== "undefined" && typeof module.exports !== "undefined") {
+	module.exports = PlayerComponent;
+}

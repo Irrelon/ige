@@ -1,6 +1,6 @@
-import { IgeSmartFilter } from "@/types/IgeSmartFilter";
-import { igeFilters } from "../igeFilters";
 import { convoluteHelper } from "./convolute";
+import { igeFilters } from "../igeFilters";
+import { IgeSmartFilter } from "@/types/IgeSmartFilter";
 
 export const glowMask: IgeSmartFilter = function (canvas, ctx, originalImage, texture, data) {
 	const oneNinth = 1 / 9;

@@ -1,5 +1,5 @@
-import {IgeEventingClass} from "./IgeEventingClass";
-import {registerClass} from "@/engine/igeClassStore";
+import { IgeEventingClass } from "./IgeEventingClass";
+import { registerClass } from "@/engine/igeClassStore";
 
 export class IgeQuest extends IgeEventingClass {
 	classId = "IgeQuest";
@@ -14,7 +14,7 @@ export class IgeQuest extends IgeEventingClass {
 	private _isComplete: boolean;
 	private _completeCallback: any;
 
-	constructor (questDefinition, completeCallback) {
+	constructor(questDefinition, completeCallback) {
 		super();
 
 		this._linear = false;
@@ -43,7 +43,7 @@ export class IgeQuest extends IgeEventingClass {
 	 * @param callback
 	 * @return {*}
 	 */
-	complete (callback) {
+	complete(callback) {
 		if (callback !== undefined) {
 			this._completeCallback = callback;
 			return this;
@@ -58,7 +58,7 @@ export class IgeQuest extends IgeEventingClass {
 	 * @param val
 	 * @return {*}
 	 */
-	isComplete (val) {
+	isComplete(val) {
 		if (val !== undefined) {
 			this._isComplete = val;
 			return this;
@@ -74,7 +74,7 @@ export class IgeQuest extends IgeEventingClass {
 	 * @param val
 	 * @return {*}
 	 */
-	linear (val) {
+	linear(val) {
 		if (val !== undefined) {
 			this._linear = val;
 			return this;
@@ -89,13 +89,15 @@ export class IgeQuest extends IgeEventingClass {
 	 * @param val
 	 * @return {*}
 	 */
-	items (val) {
+	items(val) {
 		if (val !== undefined) {
 			this._items = val;
 
 			// Set the event and item counts
-			const arr = this._items, arrCount = arr.length;
-			let i, eventCount = 0;
+			const arr = this._items,
+				arrCount = arr.length;
+			let i,
+				eventCount = 0;
 
 			for (i = 0; i < arrCount; i++) {
 				eventCount += arr[i].count;
@@ -114,7 +116,7 @@ export class IgeQuest extends IgeEventingClass {
 	 * Returns the number of quest items this quest has.
 	 * @return {number}
 	 */
-	itemCount () {
+	itemCount() {
 		return this._itemCount;
 	}
 
@@ -124,7 +126,7 @@ export class IgeQuest extends IgeEventingClass {
 	 * need to fire in order for the quest to be completed.
 	 * @return {number}
 	 */
-	eventCount () {
+	eventCount() {
 		return this._eventCount;
 	}
 
@@ -132,7 +134,7 @@ export class IgeQuest extends IgeEventingClass {
 	 * Returns the number of events that have been completed.
 	 * @return {number}
 	 */
-	eventCompleteCount () {
+	eventCompleteCount() {
 		return this._eventCompleteCount;
 	}
 
@@ -140,7 +142,7 @@ export class IgeQuest extends IgeEventingClass {
 	 * Returns the number of items that have been completed.
 	 * @return {number}
 	 */
-	itemCompleteCount () {
+	itemCompleteCount() {
 		return this._itemCompleteCount;
 	}
 
@@ -150,7 +152,7 @@ export class IgeQuest extends IgeEventingClass {
 	 * number of events that have been completed.
 	 * @return {number} A number from zero to one-hundred.
 	 */
-	percentComplete () {
+	percentComplete() {
 		return Math.floor((100 / this._eventCount) * this._eventCompleteCount);
 	}
 
@@ -158,7 +160,7 @@ export class IgeQuest extends IgeEventingClass {
 	 * Starts the quest by setting up the quest event
 	 * listeners.
 	 */
-	start () {
+	start() {
 		if (!this._started) {
 			const self = this,
 				arr = this._items,
@@ -196,7 +198,7 @@ export class IgeQuest extends IgeEventingClass {
 	 * Stops the quest and sets all the event listeners to
 	 * ignore events until the quest is restarted.
 	 */
-	stop () {
+	stop() {
 		if (this._started) {
 			this._started = false;
 			this.emit("stopped");
@@ -212,7 +214,7 @@ export class IgeQuest extends IgeEventingClass {
 	 * Resets the quest and item internals back to their
 	 * original values and cancels all current event listeners.
 	 */
-	reset () {
+	reset() {
 		const arr = this._items,
 			arrCount = arr.length;
 		let i, item;
@@ -248,7 +250,7 @@ export class IgeQuest extends IgeEventingClass {
 	 * @param item
 	 * @private
 	 */
-	_setupItemListener (item) {
+	_setupItemListener(item) {
 		const self = this;
 
 		// Check for an existing listener
@@ -282,7 +284,7 @@ export class IgeQuest extends IgeEventingClass {
 	 * @param item
 	 * @private
 	 */
-	_eventComplete (item) {
+	_eventComplete(item) {
 		// Increment the internal event count
 		item._eventCount++;
 
@@ -308,7 +310,7 @@ export class IgeQuest extends IgeEventingClass {
 	 * @param item
 	 * @private
 	 */
-	_itemComplete (item) {
+	_itemComplete(item) {
 		const arr = this._items;
 		let itemIndex;
 
@@ -350,7 +352,7 @@ export class IgeQuest extends IgeEventingClass {
 	 * completed.
 	 * @private
 	 */
-	_update () {
+	_update() {
 		// Check if all our items are complete
 		if (this._itemCompleteCount === this.itemCount()) {
 			// Mark the quest as complete

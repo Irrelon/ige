@@ -1,17 +1,13 @@
-import { ResourceType } from "../enums/ResourceType";
 import { IgeUiEntity } from "@/engine/core/IgeUiEntity";
+import { ResourceType } from "../enums/ResourceType";
 
 export class UiResourcesPile extends IgeUiEntity {
 	resources: Partial<Record<ResourceType, number>> = {};
 
-	constructor () {
+	constructor() {
 		super();
 
-		this.drawBounds(false)
-			.width(200)
-			.height(20)
-			.translateBy(0, -50, 0)
-			.scaleTo(0.8, 0.8, 0.8);
+		this.drawBounds(false).width(200).height(20).translateBy(0, -50, 0).scaleTo(0.8, 0.8, 0.8);
 
 		// requires.forEach((requiresItem, index) => {
 		// 	new IgeUiEntity()
@@ -38,7 +34,7 @@ export class UiResourcesPile extends IgeUiEntity {
 		// }
 	}
 
-	addResource (type: ResourceType) {
+	addResource(type: ResourceType) {
 		this.resources[type] = this.resources[type] || 0;
 		// @ts-ignore
 		this.resources[type]++;
@@ -46,7 +42,7 @@ export class UiResourcesPile extends IgeUiEntity {
 		//if () {}
 	}
 
-	removeResource (type: ResourceType) {
+	removeResource(type: ResourceType) {
 		this.resources[type] = this.resources[type] || 1;
 		// @ts-ignore
 		this.resources[type]--;

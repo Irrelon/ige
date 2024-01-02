@@ -1,13 +1,13 @@
-import { ige } from "@/engine/instance";
 import { IgeEntity } from "@/engine/core/IgeEntity";
-import { IgeCanvasRenderingContext2d } from "@/types/IgeCanvasRenderingContext2d";
 import type { IgeScene2d } from "@/engine/core/IgeScene2d";
+import { ige } from "@/engine/instance";
+import { IgeCanvasRenderingContext2d } from "@/types/IgeCanvasRenderingContext2d";
 
 export class Target extends IgeEntity {
 	classId = "Target";
 	_targetEntity?: IgeEntity;
 
-	constructor () {
+	constructor() {
 		super();
 
 		this.texture(ige.textures.get("target"))
@@ -16,7 +16,7 @@ export class Target extends IgeEntity {
 			.mount(ige.$("frontScene") as IgeScene2d);
 	}
 
-	update (ctx: IgeCanvasRenderingContext2d, tickDelta: number) {
+	update(ctx: IgeCanvasRenderingContext2d, tickDelta: number) {
 		if (this._targetEntity) {
 			if (this._targetEntity.alive()) {
 				this.translateToPoint(this._targetEntity._translate);

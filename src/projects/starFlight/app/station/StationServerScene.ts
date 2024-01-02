@@ -1,38 +1,26 @@
-let appCore = require('../../../ige'),
+let appCore = require("../../../ige"),
 	galaxyData;
 
-require('../component/JumpGate');
-galaxyData = require('../data/galaxy');
+require("../component/JumpGate");
+galaxyData = require("../data/galaxy");
 
-appCore.module('StationServerScene', function (ige, $ige, $game, $textures, IgeEventingClass, IgeScene2d) {
+appCore.module("StationServerScene", function (ige, $ige, $game, $textures, IgeEventingClass, IgeScene2d) {
 	const moduleSelf = this;
 
 	const StationServerScene = IgeEventingClass.extend({
-		classId: 'StationServerScene',
+		classId: "StationServerScene",
 
-		init: function () {
-		},
+		init: function () {},
 
 		addGraph: function (options) {
-			let systemData,
-				station,
-				jumpGate,
-				i;
+			let systemData, station, jumpGate, i;
 
 			if (ige.isServer) {
-				ige.app.scene.sceneBase = new IgeScene2d()
-					.id('sceneBase')
-					.mount(ige.app.scene.mainScene);
+				ige.app.scene.sceneBase = new IgeScene2d().id("sceneBase").mount(ige.app.scene.mainScene);
 
-				ige.app.scene.backScene = new IgeScene2d()
-					.id('backScene')
-					.layer(0)
-					.mount(ige.app.scene.sceneBase);
+				ige.app.scene.backScene = new IgeScene2d().id("backScene").layer(0).mount(ige.app.scene.sceneBase);
 
-				ige.app.scene.frontScene = new IgeScene2d()
-					.id('frontScene')
-					.layer(1)
-					.mount(ige.app.scene.sceneBase);
+				ige.app.scene.frontScene = new IgeScene2d().id("frontScene").layer(1).mount(ige.app.scene.sceneBase);
 
 				// Read the galaxy data for this system
 				systemData = galaxyData.system[moduleSelf.$controller._systemId];
@@ -70,8 +58,8 @@ appCore.module('StationServerScene', function (ige, $ige, $game, $textures, IgeE
 		removeGraph: function () {
 			let i;
 
-			if (ige.$('sceneBase')) {
-				ige.$('sceneBase').destroy();
+			if (ige.$("sceneBase")) {
+				ige.$("sceneBase").destroy();
 
 				// Clear any references
 				for (i in ige.app.scene) {
@@ -80,7 +68,6 @@ appCore.module('StationServerScene', function (ige, $ige, $game, $textures, IgeE
 							delete ige.app.scene[i];
 						}
 					}
-
 				}
 			}
 		}

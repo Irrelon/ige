@@ -3,7 +3,7 @@ import { IgeSmartTexture } from "@/types/IgeSmartTexture";
 export const laserSmartTexture: IgeSmartTexture = {
 	render: function (ctx, entity) {
 		if (entity._fromEntity && entity._toEntity) {
-			ctx.strokeStyle = '#ff0000';
+			ctx.strokeStyle = "#ff0000";
 
 			ctx.beginPath();
 			ctx.moveTo(entity._fromEntity._translate.x, entity._fromEntity._translate.y);

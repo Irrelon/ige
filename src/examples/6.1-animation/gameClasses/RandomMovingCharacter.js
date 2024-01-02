@@ -1,11 +1,11 @@
 var RandomMovingCharacter = Character.extend({
-	classId: 'RandomMovingCharacter',
+	classId: "RandomMovingCharacter",
 
 	update: function (ctx, tickDelta) {
-		if (this.data('moving') === false) {
+		if (this.data("moving") === false) {
 			this.walkTo(
-				(Math.random() * ige._bounds2d.x) - ige._bounds2d.x2,
-				(Math.random() * ige._bounds2d.y) - ige._bounds2d.y2
+				Math.random() * ige._bounds2d.x - ige._bounds2d.x2,
+				Math.random() * ige._bounds2d.y - ige._bounds2d.y2
 			);
 		}
 
@@ -13,4 +13,6 @@ var RandomMovingCharacter = Character.extend({
 	}
 });
 
-if (typeof(module) !== 'undefined' && typeof(module.exports) !== 'undefined') { module.exports = RandomMovingCharacter; }
+if (typeof module !== "undefined" && typeof module.exports !== "undefined") {
+	module.exports = RandomMovingCharacter;
+}

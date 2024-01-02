@@ -1,3 +1,3 @@
 export interface IgeObjectWithValueProperty {
-    value: number | string | boolean;
+	value: number | string | boolean;
 }

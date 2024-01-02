@@ -21,8 +21,13 @@
 		"@typescript-eslint/no-this-alias": "off",
 		"@typescript-eslint/no-explicit-any": "off",
 		"@typescript-eslint/no-shadow": "error",
+		"@typescript-eslint/no-namespace": "off",
+		"@typescript-eslint/consistent-type-imports": "error",
 		"unused-imports/no-unused-imports": "warn",
-		"indent": ["error", "tab"],
+		"indent": [
+			"error",
+			"tab"
+		],
 		"space-before-function-paren": [
 			"error",
 			"always"

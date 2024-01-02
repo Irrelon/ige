@@ -3,7 +3,7 @@
  * @type {IgeClass}
  */
 var PlayerComponent = IgeClass.extend({
-	classId: 'PlayerComponent',
+	classId: "PlayerComponent",
 
 	init: function (entity, options) {
 		var self = this;
@@ -15,7 +15,9 @@ var PlayerComponent = IgeClass.extend({
 		this._options = options;
 
 		// Listen for the mouse up event
-		ige.components.input.on('mouseUp', function (event, x, y, button) { self._mouseUp(event, x, y, button); });
+		ige.components.input.on("mouseUp", function (event, x, y, button) {
+			self._mouseUp(event, x, y, button);
+		});
 	},
 
 	/**
@@ -28,4 +30,6 @@ var PlayerComponent = IgeClass.extend({
 	}
 });
 
-if (typeof(module) !== 'undefined' && typeof(module.exports) !== 'undefined') { module.exports = PlayerComponent; }
+if (typeof module !== "undefined" && typeof module.exports !== "undefined") {
+	module.exports = PlayerComponent;
+}

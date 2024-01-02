@@ -1,5 +1,5 @@
 var Client = IgeClass.extend({
-	classId: 'Client',
+	classId: "Client",
 	init: function () {
 		ige.addComponent(IgeEditorComponent);
 		ige.globalSmoothing(true);
@@ -10,10 +10,10 @@ var Client = IgeClass.extend({
 		// Load our textures
 		self.gameTexture = {};
 		//self.gameTexture.grassSheet = new IgeCellSheet('../assets/textures/tiles/tilea5b.png', 8, 16);
-		self.gameTexture.grassSheet = new IgeCellSheet('../assets/textures/tiles/grassSheet.png', 4, 1);
+		self.gameTexture.grassSheet = new IgeCellSheet("../assets/textures/tiles/grassSheet.png", 4, 1);
 
 		// Wait for our textures to load before continuing
-		ige.on('texturesLoaded', function () {
+		ige.on("texturesLoaded", function () {
 			// Create the HTML canvas
 			ige.createFrontBuffer(true);
 
@@ -21,17 +21,14 @@ var Client = IgeClass.extend({
 				// Check if the engine started successfully
 				if (success) {
 					// Create the scene
-					self.mainScene = new IgeScene2d()
-						.id('mainScene')
-						.translateTo(20, 0, 0)
-						.drawBounds(true);
+					self.mainScene = new IgeScene2d().id("mainScene").translateTo(20, 0, 0).drawBounds(true);
 
 					// Create the main viewport
 					self.vp1 = new IgeViewport()
 						.addComponent(IgeMousePanComponent)
 						.addComponent(IgeMouseZoomComponent)
 						.mousePan.enabled(true)
-						.id('vp1')
+						.id("vp1")
 						.autoSize(true)
 						.scene(self.mainScene)
 						.drawBounds(true)
@@ -71,4 +68,6 @@ var Client = IgeClass.extend({
 	}
 });
 
-if (typeof(module) !== 'undefined' && typeof(module.exports) !== 'undefined') { module.exports = Client; }
+if (typeof module !== "undefined" && typeof module.exports !== "undefined") {
+	module.exports = Client;
+}

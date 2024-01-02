@@ -1,5 +1,5 @@
 var Client = IgeClass.extend({
-	classId: 'Client',
+	classId: "Client",
 	init: function () {
 		ige.addComponent(IgeEditorComponent);
 		ige.globalSmoothing(true);
@@ -12,27 +12,17 @@ var Client = IgeClass.extend({
 		ige.createFrontBuffer(true);
 
 		// Add physics and setup physics world
-		ige.addComponent(IgeBox2dComponent)
-			.box2d.sleep(true)
-			.box2d.gravity(0, 0)
-			.box2d.createWorld()
-			.box2d.start();
+		ige.addComponent(IgeBox2dComponent).box2d.sleep(true).box2d.gravity(0, 0).box2d.createWorld().box2d.start();
 
 		// Start the engine
 		ige.start(function (success) {
 			// Check if the engine started successfully
 			if (success) {
 				// Create the scene
-				self.scene1 = new IgeScene2d()
-					.id('scene1');
+				self.scene1 = new IgeScene2d().id("scene1");
 
 				// Create the main viewport
-				self.vp1 = new IgeViewport()
-					.id('vp1')
-					.autoSize(true)
-					.scene(self.scene1)
-					.drawBounds(true)
-					.mount(ige);
+				self.vp1 = new IgeViewport().id("vp1").autoSize(true).scene(self.scene1).drawBounds(true).mount(ige);
 
 				// Create the texture maps and load their map data
 				self.backgroundLayer1 = new IgeTextureMap()
@@ -64,28 +54,30 @@ var Client = IgeClass.extend({
 				self.player1 = new Character()
 					.addComponent(PlayerComponent)
 					.box2dBody({
-						type: 'dynamic',
+						type: "dynamic",
 						linearDamping: 0.0,
 						angularDamping: 0.1,
 						allowSleep: true,
 						bullet: true,
 						gravitic: true,
 						fixedRotation: true,
-						fixtures: [{
-							density: 1.0,
-							friction: 0.5,
-							restitution: 0.2,
-							shape: {
-								type: 'polygon',
-								data: new IgePoly2d()
-									.addPoint(-0.5, 0.2)
-									.addPoint(0.5, 0.2)
-									.addPoint(0.5, 0.8)
-									.addPoint(-0.5, 0.8)
+						fixtures: [
+							{
+								density: 1.0,
+								friction: 0.5,
+								restitution: 0.2,
+								shape: {
+									type: "polygon",
+									data: new IgePoly2d()
+										.addPoint(-0.5, 0.2)
+										.addPoint(0.5, 0.2)
+										.addPoint(0.5, 0.8)
+										.addPoint(-0.5, 0.8)
+								}
 							}
-						}]
+						]
 					})
-					.id('player1')
+					.id("player1")
 					.setType(0)
 					.translateTo(480, 300, 0)
 					.drawBounds(false)
@@ -99,13 +91,15 @@ var Client = IgeClass.extend({
 					.drawBounds(true)
 					//.mount(self.scene1)
 					.box2dBody({
-						type: 'static',
+						type: "static",
 						allowSleep: true,
-						fixtures: [{
-							shape: {
-								type: 'rectangle'
+						fixtures: [
+							{
+								shape: {
+									type: "rectangle"
+								}
 							}
-						}]
+						]
 					});
 
 				new IgeEntityBox2d()
@@ -115,13 +109,15 @@ var Client = IgeClass.extend({
 					.drawBounds(true)
 					//.mount(self.scene1)
 					.box2dBody({
-						type: 'static',
+						type: "static",
 						allowSleep: true,
-						fixtures: [{
-							shape: {
-								type: 'rectangle'
+						fixtures: [
+							{
+								shape: {
+									type: "rectangle"
+								}
 							}
-						}]
+						]
 					});
 
 				new IgeEntityBox2d()
@@ -131,13 +127,15 @@ var Client = IgeClass.extend({
 					.drawBounds(true)
 					//.mount(self.scene1)
 					.box2dBody({
-						type: 'static',
+						type: "static",
 						allowSleep: true,
-						fixtures: [{
-							shape: {
-								type: 'rectangle'
+						fixtures: [
+							{
+								shape: {
+									type: "rectangle"
+								}
 							}
-						}]
+						]
 					});
 
 				new IgeEntityBox2d()
@@ -147,13 +145,15 @@ var Client = IgeClass.extend({
 					.drawBounds(true)
 					//.mount(self.scene1)
 					.box2dBody({
-						type: 'static',
+						type: "static",
 						allowSleep: true,
-						fixtures: [{
-							shape: {
-								type: 'rectangle'
+						fixtures: [
+							{
+								shape: {
+									type: "rectangle"
+								}
 							}
-						}]
+						]
 					});
 
 				new IgeEntityBox2d()
@@ -163,13 +163,15 @@ var Client = IgeClass.extend({
 					.drawBounds(true)
 					//.mount(self.scene1)
 					.box2dBody({
-						type: 'static',
+						type: "static",
 						allowSleep: true,
-						fixtures: [{
-							shape: {
-								type: 'rectangle'
+						fixtures: [
+							{
+								shape: {
+									type: "rectangle"
+								}
 							}
-						}]
+						]
 					});
 
 				new IgeEntityBox2d()
@@ -179,13 +181,15 @@ var Client = IgeClass.extend({
 					.drawBounds(true)
 					//.mount(self.scene1)
 					.box2dBody({
-						type: 'static',
+						type: "static",
 						allowSleep: true,
-						fixtures: [{
-							shape: {
-								type: 'rectangle'
+						fixtures: [
+							{
+								shape: {
+									type: "rectangle"
+								}
 							}
-						}]
+						]
 					});
 
 				new IgeEntityBox2d()
@@ -195,13 +199,15 @@ var Client = IgeClass.extend({
 					.drawBounds(true)
 					//.mount(self.scene1)
 					.box2dBody({
-						type: 'static',
+						type: "static",
 						allowSleep: true,
-						fixtures: [{
-							shape: {
-								type: 'rectangle'
+						fixtures: [
+							{
+								shape: {
+									type: "rectangle"
+								}
 							}
-						}]
+						]
 					});
 
 				new IgeEntityBox2d()
@@ -211,13 +217,15 @@ var Client = IgeClass.extend({
 					.drawBounds(true)
 					//.mount(self.scene1)
 					.box2dBody({
-						type: 'static',
+						type: "static",
 						allowSleep: true,
-						fixtures: [{
-							shape: {
-								type: 'rectangle'
+						fixtures: [
+							{
+								shape: {
+									type: "rectangle"
+								}
 							}
-						}]
+						]
 					});
 
 				new IgeEntityBox2d()
@@ -227,13 +235,15 @@ var Client = IgeClass.extend({
 					.drawBounds(true)
 					//.mount(self.scene1)
 					.box2dBody({
-						type: 'static',
+						type: "static",
 						allowSleep: true,
-						fixtures: [{
-							shape: {
-								type: 'rectangle'
+						fixtures: [
+							{
+								shape: {
+									type: "rectangle"
+								}
 							}
-						}]
+						]
 					});
 
 				new IgeEntityBox2d()
@@ -243,13 +253,15 @@ var Client = IgeClass.extend({
 					.drawBounds(true)
 					//.mount(self.scene1)
 					.box2dBody({
-						type: 'static',
+						type: "static",
 						allowSleep: true,
-						fixtures: [{
-							shape: {
-								type: 'rectangle'
+						fixtures: [
+							{
+								shape: {
+									type: "rectangle"
+								}
 							}
-						}]
+						]
 					});
 
 				// Translate the camera to the initial player position
@@ -263,4 +275,6 @@ var Client = IgeClass.extend({
 	}
 });
 
-if (typeof(module) !== 'undefined' && typeof(module.exports) !== 'undefined') { module.exports = Client; }
+if (typeof module !== "undefined" && typeof module.exports !== "undefined") {
+	module.exports = Client;
+}

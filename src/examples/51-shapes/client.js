@@ -1,5 +1,5 @@
 var Client = IgeClass.extend({
-	classId: 'Client',
+	classId: "Client",
 	init: function () {
 		var self = this;
 		//ige.components.input.debug(true);
@@ -21,15 +21,15 @@ var Client = IgeClass.extend({
 		// Load the fairy texture and store it in the gameTexture object
 		self.gameTexture = {
 			fonts: {
-				'default': new IgeFontSheet('./assets/textures/fonts/verdana_20px.png')
+				default: new IgeFontSheet("./assets/textures/fonts/verdana_20px.png")
 			},
 			shapes: {
-				square: new IgeTexture('./assets/textures/smartTextures/square.js')
+				square: new IgeTexture("./assets/textures/smartTextures/square.js")
 			}
 		};
 
 		// Wait for our textures to load before continuing
-		ige.on('texturesLoaded', function () {
+		ige.on("texturesLoaded", function () {
 			// Create the HTML canvas
 			ige.createFrontBuffer(true);
 
@@ -38,15 +38,15 @@ var Client = IgeClass.extend({
 				// Check if the engine started successfully
 				if (success) {
 					// Load the base scene data
-					ige.addGraph('IgeBaseScene');
+					ige.addGraph("IgeBaseScene");
 
 					// Create player
 					self.player = new Player()
-						.id('player')
+						.id("player")
 						.depth(1)
 						.texture(self.gameTexture.shapes.square)
 						.translateTo(0, 0, 0)
-						.mount(ige.$('baseScene'));
+						.mount(ige.$("baseScene"));
 
 					self.spawnTarget();
 				}
@@ -58,15 +58,16 @@ var Client = IgeClass.extend({
 		setTimeout(function () {
 			new Square()
 				.translateTo(
-					(Math.random() * ige._aabb.width) - ige._bounds2d.x2,
-					(Math.random() * ige._aabb.height) - ige._bounds2d.y2,
+					Math.random() * ige._aabb.width - ige._bounds2d.x2,
+					Math.random() * ige._aabb.height - ige._bounds2d.y2,
 					0
 				)
-				.mount(ige.$('baseScene'))
+				.mount(ige.$("baseScene"))
 				.ready();
 		}, 500);
-
 	}
 });
 
-if (typeof(module) !== 'undefined' && typeof(module.exports) !== 'undefined') { module.exports = Client; }
+if (typeof module !== "undefined" && typeof module.exports !== "undefined") {
+	module.exports = Client;
+}

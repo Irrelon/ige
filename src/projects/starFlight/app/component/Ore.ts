@@ -1,26 +1,23 @@
-import { ige } from "@/engine/instance";
-import { IgeEntityBox2d } from "@/engine/components/physics/box2d/IgeEntityBox2d";
-import { IgeTextureAnimationComponent } from "@/engine/components/IgeTextureAnimationComponent";
-import { IgeBox2dBodyType } from "@/enums/IgeBox2dBodyType";
-import { IgeBox2dFixtureShapeType } from "@/enums/IgeBox2dFixtureShapeType";
 import { isClient, isServer } from "@/engine/clientServer";
 import { registerClass } from "@/engine/igeClassStore";
+import { ige } from "@/engine/instance";
+import { IgeTextureAnimationComponent } from "@/engine/components/IgeTextureAnimationComponent";
+import { IgeEntityBox2d } from "@/engine/components/physics/box2d/IgeEntityBox2d";
+import { IgeBox2dBodyType } from "@/enums/IgeBox2dBodyType";
+import { IgeBox2dFixtureShapeType } from "@/enums/IgeBox2dFixtureShapeType";
 
 export class Ore extends IgeEntityBox2d {
 	classId = "Ore";
 	_publicGameData: Record<string, any>;
 
-	constructor (publicGameData: Record<string, any> = {}) {
+	constructor(publicGameData: Record<string, any> = {}) {
 		super();
 
-		this.category("ore")
-			.depth(10);
+		this.category("ore").depth(10);
 
 		this._publicGameData = publicGameData;
 
-		this.layer(1)
-			.width(25)
-			.height(25);
+		this.layer(1).width(25).height(25);
 
 		if (isServer) {
 			// Create Box2D body for this object
@@ -32,18 +29,20 @@ export class Ore extends IgeEntityBox2d {
 				bullet: false,
 				gravitic: true,
 				fixedRotation: false,
-				fixtures: [{
-					density: 1.0,
-					friction: 0,
-					restitution: 0.8,
-					filter: {
-						categoryBits: 0x0008,
-						maskBits: 0xffff
-					},
-					shape: {
-						type: IgeBox2dFixtureShapeType.circle
+				fixtures: [
+					{
+						density: 1.0,
+						friction: 0,
+						restitution: 0.8,
+						filter: {
+							categoryBits: 0x0008,
+							maskBits: 0xffff
+						},
+						shape: {
+							type: IgeBox2dFixtureShapeType.circle
+						}
 					}
-				}]
+				]
 			});
 		}
 
@@ -58,7 +57,7 @@ export class Ore extends IgeEntityBox2d {
 		}
 	}
 
-	streamCreateConstructorArgs () {
+	streamCreateConstructorArgs() {
 		return [this._publicGameData];
 	}
 }

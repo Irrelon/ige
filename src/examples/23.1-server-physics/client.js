@@ -1,5 +1,5 @@
 var Client = IgeClass.extend({
-	classId: 'Client',
+	classId: "Client",
 
 	init: function () {
 		ige.addComponent(IgeEditorComponent);
@@ -19,10 +19,10 @@ var Client = IgeClass.extend({
 		// Create the HTML canvas
 		ige.createFrontBuffer(true);
 
-		this.gameTexture.rect = new IgeTexture('./assets/Rect.js');
-		this.gameTexture.circle = new IgeTexture('./assets/Circle.js');
+		this.gameTexture.rect = new IgeTexture("./assets/Rect.js");
+		this.gameTexture.circle = new IgeTexture("./assets/Circle.js");
 
-		ige.on('texturesLoaded', function () {
+		ige.on("texturesLoaded", function () {
 			// Ask the engine to start
 			ige.start(function (success) {
 				// Check if the engine started successfully
@@ -32,16 +32,17 @@ var Client = IgeClass.extend({
 					// than before the scene etc are created... maybe you want
 					// a splash screen or a menu first? Then connect after you've
 					// got a username or something?
-					ige.components.network.start('http://localhost:2000', function () {
-						ige.components.network.addComponent(IgeStreamComponent)
+					ige.components.network.start("http://localhost:2000", function () {
+						ige.components.network
+							.addComponent(IgeStreamComponent)
 							.stream.renderLatency(60) // Render the simulation 160 milliseconds in the past
 							// Create a listener that will fire whenever an entity
 							// is created because of the incoming stream data
-							.stream.on('entityCreated', function (entity) {
+							.stream.on("entityCreated", function (entity) {
 								//console.log('Stream entity created with ID: ' + entity.id());
 							});
 
-						ige.addGraph('IgeBaseScene');
+						ige.addGraph("IgeBaseScene");
 					});
 				}
 			});
@@ -49,4 +50,6 @@ var Client = IgeClass.extend({
 	}
 });
 
-if (typeof(module) !== 'undefined' && typeof(module.exports) !== 'undefined') { module.exports = Client; }
+if (typeof module !== "undefined" && typeof module.exports !== "undefined") {
+	module.exports = Client;
+}

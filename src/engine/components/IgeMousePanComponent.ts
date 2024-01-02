@@ -1,8 +1,8 @@
 import { IgeComponent } from "../core/IgeComponent";
+import { IgePoint2d } from "../core/IgePoint2d";
+import { IgePoint3d } from "../core/IgePoint3d";
 import { IgeRect } from "../core/IgeRect";
 import { ige } from "../instance";
-import { IgePoint3d } from "../core/IgePoint3d";
-import { IgePoint2d } from "../core/IgePoint2d";
 
 /**
  * When added to a viewport, automatically adds mouse panning
@@ -42,7 +42,7 @@ export class IgeMousePanComponent extends IgeComponent {
 	 * @param {IgeRect=} rect
 	 * @return {*}
 	 */
-	limit (rect?: IgeRect) {
+	limit(rect?: IgeRect) {
 		if (rect !== undefined) {
 			this._limit = rect;
 			return this._entity;
@@ -58,7 +58,7 @@ export class IgeMousePanComponent extends IgeComponent {
 	 * @param {boolean=} val
 	 * @return {*}
 	 */
-	enabled (val?: boolean) {
+	enabled(val?: boolean) {
 		if (val === undefined) {
 			return this._enabled;
 		}
@@ -68,7 +68,7 @@ export class IgeMousePanComponent extends IgeComponent {
 		// Reset pan values.
 		// This prevents problems if mouse pan is disabled mid-pan.
 		this._panPreStart = false;
-		this._panStarted  = false;
+		this._panStarted = false;
 
 		if (this._enabled) {
 			// Listen for the mouse events we need to operate a mouse pan
@@ -98,10 +98,7 @@ export class IgeMousePanComponent extends IgeComponent {
 		const curMousePos = ige._pointerPos;
 		this._panStartMouse = curMousePos.clone();
 
-		this._panStartCamera = new IgePoint2d(
-			this._entity.camera._translate.x,
-			this._entity.camera._translate.y
-		);
+		this._panStartCamera = new IgePoint2d(this._entity.camera._translate.x, this._entity.camera._translate.y);
 
 		this._panPreStart = true;
 		this._panStarted = false;
@@ -124,15 +121,15 @@ export class IgeMousePanComponent extends IgeComponent {
 
 		const curMousePos = ige._pointerPos;
 		const panCords = {
-			"x": this._panStartMouse.x - curMousePos.x,
-			"y": this._panStartMouse.y - curMousePos.y
+			x: this._panStartMouse.x - curMousePos.x,
+			y: this._panStartMouse.y - curMousePos.y
 		};
 
 		const distX = Math.abs(panCords.x);
 		const distY = Math.abs(panCords.y);
 
-		let panFinalX = (panCords.x / this._entity.camera._scale.x) + this._panStartCamera.x;
-		let panFinalY = (panCords.y / this._entity.camera._scale.y) + this._panStartCamera.y;
+		let panFinalX = panCords.x / this._entity.camera._scale.x + this._panStartCamera.x;
+		let panFinalY = panCords.y / this._entity.camera._scale.y + this._panStartCamera.y;
 
 		if (this._limit) {
 			// Check the pan co-ordinates against
@@ -156,11 +153,7 @@ export class IgeMousePanComponent extends IgeComponent {
 		if (this._panPreStart) {
 			// Check if we've reached the start threshold
 			if (distX > this._startThreshold || distY > this._startThreshold) {
-				this._entity.camera.translateTo(
-					panFinalX,
-					panFinalY,
-					0
-				);
+				this._entity.camera.translateTo(panFinalX, panFinalY, 0);
 				this.emit("panStart");
 				this._panPreStart = false;
 				this._panStarted = true;
@@ -169,11 +162,7 @@ export class IgeMousePanComponent extends IgeComponent {
 			}
 		} else {
 			// Pan has already started
-			this._entity.camera.translateTo(
-				panFinalX,
-				panFinalY,
-				0
-			);
+			this._entity.camera.translateTo(panFinalX, panFinalY, 0);
 
 			this.emit("panMove");
 		}
@@ -203,12 +192,12 @@ export class IgeMousePanComponent extends IgeComponent {
 
 		const curMousePos = ige._pointerPos;
 		const panCords = {
-			"x": this._panStartMouse.x - curMousePos.x,
-			"y": this._panStartMouse.y - curMousePos.y
+			x: this._panStartMouse.x - curMousePos.x,
+			y: this._panStartMouse.y - curMousePos.y
 		};
 
-		let panFinalX = (panCords.x / this._entity.camera._scale.x) + this._panStartCamera.x;
-		let panFinalY = (panCords.y / this._entity.camera._scale.y) + this._panStartCamera.y;
+		let panFinalX = panCords.x / this._entity.camera._scale.x + this._panStartCamera.x;
+		let panFinalY = panCords.y / this._entity.camera._scale.y + this._panStartCamera.y;
 
 		if (this._limit) {
 			// Check the pan co-ordinates against
@@ -230,16 +219,12 @@ export class IgeMousePanComponent extends IgeComponent {
 			}
 		}
 
-		this._entity.camera.translateTo(
-			panFinalX,
-			panFinalY,
-			0
-		);
+		this._entity.camera.translateTo(panFinalX, panFinalY, 0);
 
 		delete this._panStartMouse;
 		delete this._panStartCamera;
 
 		this.emit("panEnd");
 		this._panStarted = false;
-	}
+	};
 }

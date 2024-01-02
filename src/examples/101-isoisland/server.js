@@ -1,5 +1,5 @@
 var Server = IgeClass.extend({
-	classId: 'Server',
+	classId: "Server",
 	Server: true,
 
 	init: function (options) {
@@ -14,10 +14,10 @@ var Server = IgeClass.extend({
 			if (!err) {
 				// Start the network server
 				ige.addComponent(IgeSocketIoComponent)
-					.network.define('login', self._login)
-					.network.define('getMap', self._getMap)
-					.network.define('placeItem', self._placeItem)
-					.network.define('removeItem', self._removeItem)
+					.network.define("login", self._login)
+					.network.define("getMap", self._getMap)
+					.network.define("placeItem", self._placeItem)
+					.network.define("removeItem", self._removeItem)
 					.network.start(2000);
 
 				// Start the game engine
@@ -29,10 +29,12 @@ var Server = IgeClass.extend({
 					}
 				});
 			} else {
-				self.log('Cannot start server because we could not connect to the database server!', 'error');
+				self.log("Cannot start server because we could not connect to the database server!", "error");
 			}
 		});
 	}
 });
 
-if (typeof(module) !== 'undefined' && typeof(module.exports) !== 'undefined') { module.exports = Server; }
+if (typeof module !== "undefined" && typeof module.exports !== "undefined") {
+	module.exports = Server;
+}

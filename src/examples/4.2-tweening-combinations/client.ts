@@ -1,11 +1,11 @@
-import {ige} from "@/engine/instance";
 import { IgeBaseClass } from "@/engine/core/IgeBaseClass";
-import { IgeTexture } from "@/engine/core/IgeTexture";
-import { IgeCanInit } from "@/types/IgeCanInit";
-import { IgeScene2d } from "@/engine/core/IgeScene2d";
-import { IgeViewport } from "@/engine/core/IgeViewport";
 import { IgeEntity } from "@/engine/core/IgeEntity";
+import { IgeScene2d } from "@/engine/core/IgeScene2d";
+import { IgeTexture } from "@/engine/core/IgeTexture";
 import { IgeTween } from "@/engine/core/IgeTween";
+import { IgeViewport } from "@/engine/core/IgeViewport";
+import { ige } from "@/engine/instance";
+import { IgeCanInit } from "@/types/IgeCanInit";
 
 // @ts-ignore
 window.ige = ige;
@@ -13,12 +13,12 @@ window.ige = ige;
 export class Client extends IgeBaseClass implements IgeCanInit {
 	classId = "Client";
 
-	constructor () {
+	constructor() {
 		super();
 		void this.init();
 	}
 
-	async init () {
+	async init() {
 		// Load the game textures
 		new IgeTexture("fairy", "../assets/textures/sprites/fairy.png");
 
@@ -32,12 +32,11 @@ export class Client extends IgeBaseClass implements IgeCanInit {
 		await ige.engine.start();
 
 		// Create the scene
-		const scene1 = new IgeScene2d()
-			.id('scene1');
+		const scene1 = new IgeScene2d().id("scene1");
 
 		// Create the main viewport
 		new IgeViewport()
-			.id('vp1')
+			.id("vp1")
 			.autoSize(true)
 			.scene(scene1)
 			.drawBounds(true)
@@ -45,7 +44,7 @@ export class Client extends IgeBaseClass implements IgeCanInit {
 			.mount(ige.engine);
 
 		const fairy0 = new IgeEntity()
-			.id('fairy0')
+			.id("fairy0")
 			.depth(0)
 			.width(100)
 			.height(100)
@@ -56,24 +55,40 @@ export class Client extends IgeBaseClass implements IgeCanInit {
 
 		const jumpTween = () => {
 			new IgeTween(fairy0._translate)
-				.stepBy({
-					y: -150
-				}, 500, 'outSine')
-				.stepBy({
-					y: 150
-				}, 500, 'inSine')
+				.stepBy(
+					{
+						y: -150
+					},
+					500,
+					"outSine"
+				)
+				.stepBy(
+					{
+						y: 150
+					},
+					500,
+					"inSine"
+				)
 				.start();
 		};
 
 		new IgeTween(fairy0._translate)
-			.stepBy({
-				x: 200,
-				y: 300
-			}, 1000, 'inOutSine')
-			.stepBy({
-				x: -200,
-				y: -300
-			}, 1000, 'inOutSine')
+			.stepBy(
+				{
+					x: 200,
+					y: 300
+				},
+				1000,
+				"inOutSine"
+			)
+			.stepBy(
+				{
+					x: -200,
+					y: -300
+				},
+				1000,
+				"inOutSine"
+			)
 			.repeatMode(1, -1)
 			.beforeStep(() => {
 				// but we don't want her to just move there, we want her to jump there

@@ -1,13 +1,13 @@
-import { ige } from "@/engine/instance";
-import { ResourceType } from "../enums/ResourceType";
 import { Building } from "./base/Building";
-import { registerClass } from "@/engine/igeClassStore";
-import { IgeTimeout } from "@/engine/core/IgeTimeout";
+import { GameEntity } from "./base/GameEntity";
 import { isClient, isServer } from "@/engine/clientServer";
-import { roadPathFinder } from "../services/roadPathFinder";
+import { IgeTimeout } from "@/engine/core/IgeTimeout";
+import { registerClass } from "@/engine/igeClassStore";
+import { ige } from "@/engine/instance";
 import { distance } from "@/engine/utils";
 import { fillColorByResourceType } from "../services/resource";
-import { GameEntity } from "./base/GameEntity";
+import { roadPathFinder } from "../services/roadPathFinder";
+import { ResourceType } from "../enums/ResourceType";
 
 export class Resource extends GameEntity {
 	_type: ResourceType;
@@ -17,13 +17,11 @@ export class Resource extends GameEntity {
 	_destination?: Building;
 	_pathIds: string[] = [];
 
-	constructor (type: ResourceType, locationId: string) {
+	constructor(type: ResourceType, locationId: string) {
 		super();
 
 		this.layer(3);
-		this.data("fillColor", fillColorByResourceType[type])
-			.width(16)
-			.height(16);
+		this.data("fillColor", fillColorByResourceType[type]).width(16).height(16);
 
 		this.category("resource");
 		this.isometric(ige.data("isometric"));
@@ -63,7 +61,6 @@ export class Resource extends GameEntity {
 
 			if (type === ResourceType.brick) {
 				this.texture(ige.textures.get("brick"));
-
 			}
 		}
 
@@ -73,11 +70,11 @@ export class Resource extends GameEntity {
 		}
 	}
 
-	streamCreateConstructorArgs () {
+	streamCreateConstructorArgs() {
 		return [this._type, this._locationId];
 	}
 
-	selectDestination () {
+	selectDestination() {
 		this._destinationId = "base1"; // The destination when no other building needs the resource at the moment
 
 		// Check buildings to see if any need this resource at the moment
@@ -96,7 +93,12 @@ export class Resource extends GameEntity {
 		const distances: Record<string, number> = {};
 
 		needyList.forEach((tmpBuilding) => {
-			distances[tmpBuilding.id()] = distance(this._translate.x, this._translate.y, tmpBuilding._translate.x, tmpBuilding._translate.y);
+			distances[tmpBuilding.id()] = distance(
+				this._translate.x,
+				this._translate.y,
+				tmpBuilding._translate.x,
+				tmpBuilding._translate.y
+			);
 		});
 
 		// Sort the needy list by distance
@@ -111,7 +113,7 @@ export class Resource extends GameEntity {
 		this._destinationId = buildingWeWillDeliverTo.id();
 	}
 
-	setNavigation () {
+	setNavigation() {
 		if (this._destinationId) {
 			this._location = ige.$(this._locationId) as Building;
 			this._destination = ige.$(this._destinationId) as Building;
@@ -129,7 +131,7 @@ export class Resource extends GameEntity {
 		this.onDropped(this._locationId);
 	}
 
-	onDropped (droppedLocationId: string) {
+	onDropped(droppedLocationId: string) {
 		this._location = ige.$(droppedLocationId) as Building;
 		this._locationId = droppedLocationId;
 
@@ -159,7 +161,7 @@ export class Resource extends GameEntity {
 		this.calculateTransportPath();
 	}
 
-	calculateTransportPath () {
+	calculateTransportPath() {
 		if (!this._location) {
 			debugger;
 			console.log("Resource cannot calculate transport path because we don't have a location");
@@ -184,7 +186,7 @@ export class Resource extends GameEntity {
 		this._location.outboundQueue.addItem(this);
 	}
 
-	destroy (): this {
+	destroy(): this {
 		delete this._location;
 		delete this._destination;
 

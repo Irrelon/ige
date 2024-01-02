@@ -1,12 +1,10 @@
 var Game = IgeClass.extend({
-	classId: 'Game',
+	classId: "Game",
 
 	init: function (App, options) {
 		// Create the engine
 		ige = new IgeEngine();
-		ige.addComponent(IgeCannonComponent)
-			.cannon.gravity(0, 0, -600)
-			.cannon.createWorld();
+		ige.addComponent(IgeCannonComponent).cannon.gravity(0, 0, -600).cannon.createWorld();
 
 		if (isClient) {
 			ige.client = new App();
@@ -18,4 +16,8 @@ var Game = IgeClass.extend({
 	}
 });
 
-if (typeof(module) !== 'undefined' && typeof(module.exports) !== 'undefined') { module.exports = Game; } else { var game = new Game(Client); }
+if (typeof module !== "undefined" && typeof module.exports !== "undefined") {
+	module.exports = Game;
+} else {
+	var game = new Game(Client);
+}

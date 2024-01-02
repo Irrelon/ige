@@ -1,26 +1,26 @@
 import { ige } from "@/engine/instance";
 import { IgeNetIoClientController } from "@/engine/network/client/IgeNetIoClientController";
 
-const appCore = require('../../../ige');
+const appCore = require("../../../ige");
 
-appCore.module('StationClient', function ($ige, $game, IgeStreamComponent) {
+appCore.module("StationClient", function ($ige, $game, IgeStreamComponent) {
 	const StationClient = function () {
 		// Show the connecting dialog
-		document.getElementById('connectingDialog').style.display = 'block';
+		document.getElementById("connectingDialog").style.display = "block";
 
 		const network = ige.network as IgeNetIoClientController;
 
 		// Hook network events we want to respond to
-		network.define('playerEntity', this._onPlayerEntity.bind(self));
+		network.define("playerEntity", this._onPlayerEntity.bind(self));
 
 		// Start the network client
-		network.start('http://localhost:2000');
+		network.start("http://localhost:2000");
 
 		// Setup the network stream handler
 		network.renderLatency(80); // Render the simulation 80 milliseconds in the past
 
 		// Ask the server to create an entity for us
-		network.send('playerEntity');
+		network.send("playerEntity");
 	};
 
 	/**
@@ -44,15 +44,15 @@ appCore.module('StationClient', function ($ige, $game, IgeStreamComponent) {
 		// stream so lets ask the stream to tell us when it creates a
 		// new entity and then check if that entity is the one we
 		// should be tracking!
-		eventListener = ige.network.stream.on('entityCreated', function (entity) {
+		eventListener = ige.network.stream.on("entityCreated", function (entity) {
 			if (entity.id() === entityId) {
 				self._trackPlayerEntity(ige.engine.$(entityId));
 
 				// Turn off the listener for this event now that we
 				// have found and started tracking our player entity
-				ige.network.stream.off('entityCreated', eventListener, function (result) {
+				ige.network.stream.off("entityCreated", eventListener, function (result) {
 					if (!result) {
-						this.log('Could not disable event listener!', 'warning');
+						this.log("Could not disable event listener!", "warning");
 					}
 				});
 			}
@@ -72,7 +72,7 @@ appCore.module('StationClient', function ($ige, $game, IgeStreamComponent) {
 		ige.$("vp1").camera.trackTranslate(ent, 8);
 
 		// Hide connection dialog now that the player can do something
-		document.getElementById('connectingDialog').style.display = 'none';
+		document.getElementById("connectingDialog").style.display = "none";
 	};
 
 	return StationClient;

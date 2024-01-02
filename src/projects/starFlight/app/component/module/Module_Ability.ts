@@ -1,13 +1,11 @@
-import { ige } from "@/engine/instance";
-import { isServer } from "@/engine/clientServer";
 import { Module_Generic } from "./Module_Generic";
-import { IgeNetIoServerController } from "@/engine/network/server/IgeNetIoServerController";
-import {
-	EntityModuleStates
-} from "../../../types/EntityModuleDefinition";
-import { EntityAbilityModuleDefinition } from "../../../types/EntityAbilityModuleDefinition";
-import { GameEntity } from "../GameEntity";
+import { isServer } from "@/engine/clientServer";
 import { registerClass } from "@/engine/igeClassStore";
+import { ige } from "@/engine/instance";
+import { IgeNetIoServerController } from "@/engine/network/server/IgeNetIoServerController";
+import { EntityAbilityModuleDefinition } from "../../../types/EntityAbilityModuleDefinition";
+import { EntityModuleStates } from "../../../types/EntityModuleDefinition";
+import { GameEntity } from "../GameEntity";
 
 export class Module_Ability extends Module_Generic {
 	classId = "Module_Ability";
@@ -17,7 +15,7 @@ export class Module_Ability extends Module_Generic {
 	_action?: string;
 	_target: GameEntity | null = null;
 
-	constructor (definition: EntityAbilityModuleDefinition) {
+	constructor(definition: EntityAbilityModuleDefinition) {
 		super(definition);
 
 		this._definition = definition;
@@ -25,9 +23,9 @@ export class Module_Ability extends Module_Generic {
 		this._cooldown = false;
 	}
 
-	action (val: string): this;
-	action (): string;
-	action (val?: string) {
+	action(val: string): this;
+	action(): string;
+	action(val?: string) {
 		if (val !== undefined) {
 			this._action = val;
 			return this;
@@ -38,7 +36,7 @@ export class Module_Ability extends Module_Generic {
 
 	active(val: boolean, states?: EntityModuleStates): this;
 	active(): boolean;
-	active (val?: boolean, states?: EntityModuleStates) {
+	active(val?: boolean, states?: EntityModuleStates) {
 		if (val !== undefined && states !== undefined) {
 			if (val && !this._active) {
 				this._activeStartTime = ige.engine.currentTime();
@@ -63,8 +61,8 @@ export class Module_Ability extends Module_Generic {
 	 * @returns {boolean} If true, allows the active flag to become
 	 * true. If false, denies it.
 	 */
-	canBeActive (states: EntityModuleStates): boolean {
-		return !this.cooldown() && ((states.energy.val || 0) + this._definition.usageCost.energy) > 0;
+	canBeActive(states: EntityModuleStates): boolean {
+		return !this.cooldown() && (states.energy.val || 0) + this._definition.usageCost.energy > 0;
 	}
 
 	/**
@@ -74,8 +72,8 @@ export class Module_Ability extends Module_Generic {
 	 * @returns {boolean} If true, allows the active flag to become
 	 * false. If false, denies it.
 	 */
-	canBeInactive (states: EntityModuleStates): boolean {
-		return !this.cooldown() && ((states.energy.val || 0) + this._definition.usageCost.energy) > 0;
+	canBeInactive(states: EntityModuleStates): boolean {
+		return !this.cooldown() && (states.energy.val || 0) + this._definition.usageCost.energy > 0;
 	}
 
 	/**
@@ -83,7 +81,7 @@ export class Module_Ability extends Module_Generic {
 	 * when it was previously set to false.
 	 * @private
 	 */
-	_onActive (states: EntityModuleStates) {
+	_onActive(states: EntityModuleStates) {
 		// Abilities simply debit the usage of usageCosts they need
 		// up front and then apply their output over time based
 		// on their activeDuration setting.
@@ -106,7 +104,7 @@ export class Module_Ability extends Module_Generic {
 	 * when it was previously set to true.
 	 * @private
 	 */
-	_onInactive (states: EntityModuleStates) {
+	_onInactive(states: EntityModuleStates) {
 		// Deactivate effects
 		this.processEffects("onInactive");
 		this.processAudio("onInactive");
@@ -115,7 +113,7 @@ export class Module_Ability extends Module_Generic {
 		this.cooldown(true);
 	}
 
-	complete () {
+	complete() {
 		this.processEffects("onComplete");
 		this.processAudio("onComplete");
 
@@ -132,7 +130,7 @@ export class Module_Ability extends Module_Generic {
 	 */
 	cooldown(val: boolean): this;
 	cooldown(): boolean;
-	cooldown (val?: boolean) {
+	cooldown(val?: boolean) {
 		if (val !== undefined) {
 			if (val && !this._cooldown) {
 				if (!this._definition.cooldownDuration) {
@@ -165,7 +163,7 @@ export class Module_Ability extends Module_Generic {
 	 * @param {Object} states The current states and their values.
 	 * @param {Number} tickDelta The tick delta for this tick.
 	 */
-	resolve (states: EntityModuleStates, tickDelta: number) {
+	resolve(states: EntityModuleStates, tickDelta: number) {
 		if (this.active()) {
 			// Check if the module has a max range to target
 			if (this._definition.requiresTarget && this._definition.range && this._target) {
@@ -179,7 +177,11 @@ export class Module_Ability extends Module_Generic {
 
 					if (isServer) {
 						// Send network message to client telling them their ability went out of range
-						(ige.network as IgeNetIoServerController).send("ability_" + this._definition._id + ".active", false, attachedTo.clientId());
+						(ige.network as IgeNetIoServerController).send(
+							"ability_" + this._definition._id + ".active",
+							false,
+							attachedTo.clientId()
+						);
 					}
 				}
 			}
@@ -189,7 +191,9 @@ export class Module_Ability extends Module_Generic {
 					this.active(false);
 
 					// Adjust tick delta to exactly match what is left of the allowed active duration
-					tickDelta = tickDelta - ((ige.engine.currentTime() - this._activeStartTime) - this._definition.activeDuration);
+					tickDelta =
+						tickDelta -
+						(ige.engine.currentTime() - this._activeStartTime - this._definition.activeDuration);
 
 					this.complete();
 				}

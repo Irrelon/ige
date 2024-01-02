@@ -1,5 +1,5 @@
-import { newIdHex } from "../../../utils";
 import { IgeEventingClass } from "../../../core/IgeEventingClass";
+import { newIdHex } from "../../../utils";
 
 /**
  * The engine's box2d multi-world component class.
@@ -8,7 +8,7 @@ export class IgeBox2dMultiWorldComponent extends IgeEventingClass {
 	classId = "IgeBox2dMultiWorldComponent";
 	componentId = "box2d";
 
-	constructor (entity, options) {
+	constructor(entity, options) {
 		super();
 
 		this._entity = entity;
@@ -55,22 +55,34 @@ export class IgeBox2dMultiWorldComponent extends IgeEventingClass {
 			if (!id2) {
 				return this.m_fixtureA.m_body._entity._id === id1 || this.m_fixtureB.m_body._entity._id === id1;
 			} else {
-				return (this.m_fixtureA.m_body._entity._id === id1 || this.m_fixtureB.m_body._entity._id === id1) &&
-					(this.m_fixtureA.m_body._entity._id === id2 || this.m_fixtureB.m_body._entity._id === id2);
+				return (
+					(this.m_fixtureA.m_body._entity._id === id1 || this.m_fixtureB.m_body._entity._id === id1) &&
+					(this.m_fixtureA.m_body._entity._id === id2 || this.m_fixtureB.m_body._entity._id === id2)
+				);
 			}
 		};
 
 		this.b2Contact.prototype.igeEitherCategory = function (category1, category2) {
 			if (!category2) {
-				return this.m_fixtureA.m_body._entity._category === category1 || this.m_fixtureB.m_body._entity._category === category1;
+				return (
+					this.m_fixtureA.m_body._entity._category === category1 ||
+					this.m_fixtureB.m_body._entity._category === category1
+				);
 			} else {
-				return (this.m_fixtureA.m_body._entity._category === category1 || this.m_fixtureB.m_body._entity._category === category1) &&
-					(this.m_fixtureA.m_body._entity._category === category2 || this.m_fixtureB.m_body._entity._category === category2);
+				return (
+					(this.m_fixtureA.m_body._entity._category === category1 ||
+						this.m_fixtureB.m_body._entity._category === category1) &&
+					(this.m_fixtureA.m_body._entity._category === category2 ||
+						this.m_fixtureB.m_body._entity._category === category2)
+				);
 			}
 		};
 
 		this.b2Contact.prototype.igeBothCategories = function (category1) {
-			return (this.m_fixtureA.m_body._entity._category === category1 && this.m_fixtureB.m_body._entity._category === category1);
+			return (
+				this.m_fixtureA.m_body._entity._category === category1 &&
+				this.m_fixtureB.m_body._entity._category === category1
+			);
 		};
 
 		this.b2Contact.prototype.igeEntityByCategory = function (category) {
@@ -118,7 +130,7 @@ export class IgeBox2dMultiWorldComponent extends IgeEventingClass {
 	 * Gets the Box2d world object by it's id.
 	 * @return {b2World}
 	 */
-	world (id) {
+	world(id) {
 		return this._worlds[id];
 	}
 
@@ -127,7 +139,7 @@ export class IgeBox2dMultiWorldComponent extends IgeEventingClass {
 	 * @param {Object=} options
 	 * @return {*}
 	 */
-	createWorld (options) {
+	createWorld(options) {
 		let world;
 
 		options = options || {};

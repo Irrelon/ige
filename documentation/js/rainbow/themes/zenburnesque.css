@@ -7,54 +7,56 @@
  * @version 1.0
  */
 pre {
-    background: #404040;
-    word-wrap: break-word;
-    margin: 0px;
-    padding: 0px;
-    padding: 10px;
-    color: #dedede;
-    font-size: 14px;
-    margin-bottom: 20px;
+	background: #404040;
+	word-wrap: break-word;
+	margin: 0px;
+	padding: 0px;
+	padding: 10px;
+	color: #dedede;
+	font-size: 14px;
+	margin-bottom: 20px;
 }
 
-pre, code {
-    font-family: 'Monaco', courier, monospace;
+pre,
+code {
+	font-family: "Monaco", courier, monospace;
 }
 
 pre .comment {
-    color: #709070;
-    font-style: italic;
+	color: #709070;
+	font-style: italic;
 }
 
 pre .integer {
-    color: #22C0FF;
+	color: #22c0ff;
 }
 
 pre .storage {
-    color: #6080FF;
+	color: #6080ff;
 }
 
 /* This includes regexes */
 pre .string {
-    color: #FF2020;
+	color: #ff2020;
 }
 
-pre .keyword, pre .selector {
-    color: #ffffa0;
+pre .keyword,
+pre .selector {
+	color: #ffffa0;
 }
 
 pre .inherited-class {
-    font-style: italic;
+	font-style: italic;
 }
 
 pre .entity {
-  color: #F09040;
+	color: #f09040;
 }
 
 pre .support {
-    color: #C83730;
+	color: #c83730;
 }
 
 pre .variable.class {
-  color: #FF8000;
+	color: #ff8000;
 }

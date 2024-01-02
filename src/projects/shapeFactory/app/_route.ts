@@ -1,5 +1,5 @@
-import { ige } from "@/engine/instance";
 import "./level1/_route";
+import { ige } from "@/engine/instance";
 
 ige.router.route("app", {
 	client: async () => {

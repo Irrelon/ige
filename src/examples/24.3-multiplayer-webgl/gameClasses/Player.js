@@ -1,5 +1,5 @@
 var Player = IgeEntity.extend({
-	classId: 'Player',
+	classId: "Player",
 
 	init: function (id) {
 		IgeEntity.prototype.init.call(this);
@@ -22,13 +22,11 @@ var Player = IgeEntity.extend({
 		}
 
 		if (isClient) {
-			self.texture(ige.client.textures.ship)
-				.width(20)
-				.height(20);
+			self.texture(ige.client.textures.ship).width(20).height(20);
 		}
 
 		// Define the data sections that will be included in the stream
-		this.streamSections(['transform', 'score']);
+		this.streamSections(["transform", "score"]);
 	},
 
 	/**
@@ -43,7 +41,7 @@ var Player = IgeEntity.extend({
 	 */
 	streamSectionData: function (sectionId, data) {
 		// Check if the section is one that we are handling
-		if (sectionId === 'score') {
+		if (sectionId === "score") {
 			// Check if the server sent us data, if not we are supposed
 			// to return the data instead of set it
 			if (data) {
@@ -87,13 +85,13 @@ var Player = IgeEntity.extend({
 		/* CEXCLUDE */
 
 		if (isClient) {
-			if (ige.components.input.actionState('left')) {
+			if (ige.components.input.actionState("left")) {
 				if (!this.controls.left) {
 					// Record the new state
 					this.controls.left = true;
 
 					// Tell the server about our control change
-					ige.components.network.send('playerControlLeftDown');
+					ige.components.network.send("playerControlLeftDown");
 				}
 			} else {
 				if (this.controls.left) {
@@ -101,17 +99,17 @@ var Player = IgeEntity.extend({
 					this.controls.left = false;
 
 					// Tell the server about our control change
-					ige.components.network.send('playerControlLeftUp');
+					ige.components.network.send("playerControlLeftUp");
 				}
 			}
 
-			if (ige.components.input.actionState('right')) {
+			if (ige.components.input.actionState("right")) {
 				if (!this.controls.right) {
 					// Record the new state
 					this.controls.right = true;
 
 					// Tell the server about our control change
-					ige.components.network.send('playerControlRightDown');
+					ige.components.network.send("playerControlRightDown");
 				}
 			} else {
 				if (this.controls.right) {
@@ -119,17 +117,17 @@ var Player = IgeEntity.extend({
 					this.controls.right = false;
 
 					// Tell the server about our control change
-					ige.components.network.send('playerControlRightUp');
+					ige.components.network.send("playerControlRightUp");
 				}
 			}
 
-			if (ige.components.input.actionState('thrust')) {
+			if (ige.components.input.actionState("thrust")) {
 				if (!this.controls.thrust) {
 					// Record the new state
 					this.controls.thrust = true;
 
 					// Tell the server about our control change
-					ige.components.network.send('playerControlThrustDown');
+					ige.components.network.send("playerControlThrustDown");
 				}
 			} else {
 				if (this.controls.thrust) {
@@ -137,7 +135,7 @@ var Player = IgeEntity.extend({
 					this.controls.thrust = false;
 
 					// Tell the server about our control change
-					ige.components.network.send('playerControlThrustUp');
+					ige.components.network.send("playerControlThrustUp");
 				}
 			}
 		}
@@ -147,4 +145,6 @@ var Player = IgeEntity.extend({
 	}
 });
 
-if (typeof(module) !== 'undefined' && typeof(module.exports) !== 'undefined') { module.exports = Player; }
+if (typeof module !== "undefined" && typeof module.exports !== "undefined") {
+	module.exports = Player;
+}

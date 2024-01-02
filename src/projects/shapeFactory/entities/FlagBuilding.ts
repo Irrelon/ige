@@ -1,13 +1,13 @@
-import { registerClass } from "@/engine/igeClassStore";
-import { IgeObject } from "@/engine/core/IgeObject";
-import { isClient } from "@/engine/clientServer";
-import { ige } from "@/engine/instance";
 import { Building } from "./base/Building";
+import { isClient } from "@/engine/clientServer";
+import { IgeObject } from "@/engine/core/IgeObject";
+import { registerClass } from "@/engine/igeClassStore";
+import { ige } from "@/engine/instance";
 
 export class FlagBuilding extends Building {
 	classId = "FlagBuilding";
 
-	constructor (tileX: number = NaN, tileY: number = NaN) {
+	constructor(tileX: number = NaN, tileY: number = NaN) {
 		super();
 		this.tileX = tileX;
 		this.tileY = tileY;
@@ -30,11 +30,11 @@ export class FlagBuilding extends Building {
 		}
 	}
 
-	streamCreateConstructorArgs () {
+	streamCreateConstructorArgs() {
 		return [this.tileX, this.tileY];
 	}
 
-	_mounted (obj: IgeObject) {
+	_mounted(obj: IgeObject) {
 		super._mounted(obj);
 
 		if (!isNaN(this.tileX) && !isNaN(this.tileY)) {

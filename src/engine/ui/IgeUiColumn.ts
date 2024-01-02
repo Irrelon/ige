@@ -1,15 +1,15 @@
 import { IgeUiElement } from "@/engine/core/IgeUiElement";
-import { IgeCanvasRenderingContext2d } from "@/types/IgeCanvasRenderingContext2d";
 import { registerClass } from "@/engine/igeClassStore";
+import { IgeCanvasRenderingContext2d } from "@/types/IgeCanvasRenderingContext2d";
 
 export class IgeUiColumn extends IgeUiElement {
 	classId = "IgeUiColumn";
 
-	tick (ctx: IgeCanvasRenderingContext2d) {
+	tick(ctx: IgeCanvasRenderingContext2d) {
 		const maxSize = this.height();
 
 		// Loop children and re-position then
-		const arr = (this._children as IgeUiElement[]);
+		const arr = this._children as IgeUiElement[];
 		const arrCount = arr.length;
 
 		let flowSpace = maxSize;
@@ -30,7 +30,7 @@ export class IgeUiColumn extends IgeUiElement {
 			}
 
 			// Remove this non-flex entity's size from available flow space
-			flowSpace -= (item.height() + item._marginTop + item._marginBottom);
+			flowSpace -= item.height() + item._marginTop + item._marginBottom;
 		}
 
 		// Single flow space division is...
@@ -42,7 +42,7 @@ export class IgeUiColumn extends IgeUiElement {
 
 			if (item._uiFlex !== undefined) {
 				// Item is flex-based, assign it space based on flex value
-				item.height((singleFlowSpaceDivision * item._uiFlex) - (item._marginTop + item._marginBottom));
+				item.height(singleFlowSpaceDivision * item._uiFlex - (item._marginTop + item._marginBottom));
 			}
 
 			// Bounds (x, y) is (width, height) in local space
@@ -50,7 +50,7 @@ export class IgeUiColumn extends IgeUiElement {
 
 			item.top(currentPosition + item._marginTop);
 
-			currentPosition += (itemHeight + item._marginTop + item._marginBottom);
+			currentPosition += itemHeight + item._marginTop + item._marginBottom;
 		}
 
 		// Now do the super-class tick

@@ -1,4 +1,5 @@
 import type { IgeBaseClass } from "@/engine/core/IgeBaseClass";
+
 /**
  * Removes the passed item from an array, the opposite of push().
  * @param arr
@@ -48,9 +49,13 @@ export declare const PI180: number;
  */
 export declare const PI180R: number;
 export declare const PI2: number;
-export declare const toIso: (x: number, y: number, z: number) => {
-    x: number;
-    y: number;
+export declare const toIso: (
+	x: number,
+	y: number,
+	z: number
+) => {
+	x: number;
+	y: number;
 };
 /**
  * Converts degrees to radians.
@@ -106,7 +111,12 @@ export declare const newIdHex: () => string;
  * that if returns true, will fire debugger. Method is passed
  * the setter value as first argument.
  */
-export declare const traceSet: (obj: any, propName: string, sampleCount: number, callbackEvaluator?: ((val: any) => boolean) | undefined) => void;
+export declare const traceSet: (
+	obj: any,
+	propName: string,
+	sampleCount: number,
+	callbackEvaluator?: ((val: any) => boolean) | undefined
+) => void;
 /**
  * Turns off a trace that was created by calling traceSet.
  * @param {Object} obj The object whose property you want

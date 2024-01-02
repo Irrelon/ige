@@ -3,7 +3,11 @@ import { IgeSmartFilter } from "@/types/IgeSmartFilter";
 
 export const brighten: IgeSmartFilter = function (canvas, ctx, originalImage, texture, data) {
 	// Apply the filter and then put the new pixel data
-	ctx.putImageData(igeFilters.helper.brightenHelper(ctx.getImageData(0, 0, canvas.width, canvas.height), texture, data), 0, 0);
+	ctx.putImageData(
+		igeFilters.helper.brightenHelper(ctx.getImageData(0, 0, canvas.width, canvas.height), texture, data),
+		0,
+		0
+	);
 };
 
 igeFilters.registerFilter("brighten", brighten);

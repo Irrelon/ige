@@ -57,8 +57,8 @@
 }
 
 .tree ul li ul li:before {
-	border-left: 1px solid #E2E2E3;
-	border-bottom: 1px solid #E2E2E3;
+	border-left: 1px solid #e2e2e3;
+	border-bottom: 1px solid #e2e2e3;
 	content: "";
 	left: -16px;
 	position: absolute;
@@ -68,7 +68,7 @@
 }
 
 .tree ul li ul li:after {
-	border-left: 1px solid #E2E2E3;
+	border-left: 1px solid #e2e2e3;
 	/*border-bottom: 1px solid #E2E2E3;*/
 	content: "";
 	left: -16px;

@@ -1,2 +1,1 @@
-export const WithExampleMixin = (Base) => class extends Base {
-};
+export const WithExampleMixin = (Base) => class extends Base {};

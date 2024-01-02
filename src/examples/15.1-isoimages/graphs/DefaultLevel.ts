@@ -1,35 +1,31 @@
-import { ige } from "@/engine/instance";
-import { IgeTileMap2d } from "@/engine/core/IgeTileMap2d";
-import { IgeSceneGraph } from "@/engine/core/IgeSceneGraph";
 import { IgeScene2d } from "@/engine/core/IgeScene2d";
+import { IgeSceneGraph } from "@/engine/core/IgeSceneGraph";
+import { IgeTileMap2d } from "@/engine/core/IgeTileMap2d";
 import { registerClass } from "@/engine/igeClassStore";
+import { ige } from "@/engine/instance";
 
 export class DefaultLevel extends IgeSceneGraph {
-	classId = 'DefaultLevel';
+	classId = "DefaultLevel";
 
 	/**
 	 * Called when loading the graph data via ige.addGraph().
 	 * @param options
 	 */
-	async addGraph (options) {
+	async addGraph(options) {
 		// Create the scene
-		const baseScene = ige.$('baseScene') as IgeScene2d;
+		const baseScene = ige.$("baseScene") as IgeScene2d;
 
 		// Resize the background and then create a background pattern
 		ige.client.gameTextures.background1.resize(40, 20);
 
 		const backgroundScene = new IgeScene2d()
-			.id('backgroundScene')
+			.id("backgroundScene")
 			.layer(0)
-			.backgroundPattern(ige.client.gameTextures.background1, 'repeat', true, true)
+			.backgroundPattern(ige.client.gameTextures.background1, "repeat", true, true)
 			.ignoreCamera(true) // We want the scene to remain static
 			.mount(baseScene);
 
-		const objectScene = new IgeScene2d()
-			.id('objectScene')
-			.layer(1)
-			.isometric(false)
-			.mount(baseScene);
+		const objectScene = new IgeScene2d().id("objectScene").layer(1).isometric(false).mount(baseScene);
 
 		// Create the UI scene that will have all the UI
 		// entities mounted to it. This scene is at a higher
@@ -37,11 +33,7 @@ export class DefaultLevel extends IgeSceneGraph {
 		// "on top" of the other game items which will all
 		// be mounted to off of gameScene somewhere down the
 		// scenegraph.
-		const uiScene = new IgeScene2d()
-			.id('uiScene')
-			.layer(2)
-			.ignoreCamera(true)
-			.mount(baseScene);
+		const uiScene = new IgeScene2d().id("uiScene").layer(2).ignoreCamera(true).mount(baseScene);
 
 		// Create the tile map that will store which buildings
 		// are occupying which tiles on the map. When we create
@@ -49,7 +41,7 @@ export class DefaultLevel extends IgeSceneGraph {
 		// map also has a number of mouse event listeners to
 		// handle things like building new objects in the game.
 		const tileMap1 = new IgeTileMap2d()
-			.id('tileMap1')
+			.id("tileMap1")
 			.isometricMounts(true)
 			.tileWidth(20)
 			.tileHeight(20)
@@ -66,13 +58,13 @@ export class DefaultLevel extends IgeSceneGraph {
 	 * The method called when the graph items are to be removed from the
 	 * active graph.
 	 */
-	async removeGraph () {
+	async removeGraph() {
 		// Since all our objects in addGraph() were mounted to the
 		// 'scene1' entity, destroying it will remove everything we
 		// added to it.
-		ige.$('backgroundScene').destroy();
-		ige.$('objectScene').destroy();
-		ige.$('uiScene').destroy();
+		ige.$("backgroundScene").destroy();
+		ige.$("objectScene").destroy();
+		ige.$("uiScene").destroy();
 	}
 }
 

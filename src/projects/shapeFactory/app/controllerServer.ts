@@ -1,19 +1,21 @@
+import { IgeTileMap2d } from "@/engine/core/IgeTileMap2d";
 import { ige } from "@/engine/instance";
-import { IgeEffectFunction } from "@/types/IgeRouteDefinition";
 import { IgeNetIoServerController } from "@/engine/network/server/IgeNetIoServerController";
-import { BuildingType } from "../enums/BuildingType";
-import { IgeNetworkServerSideRequestHandler } from "@/types/IgeNetworkMessage";
+import { newIdHex } from "@/engine/utils";
 import {
-	createFactoryBuilding1, createFactoryBuilding2,
-	createFlagBuilding, createHouseBuilding1,
+	createFactoryBuilding1,
+	createFactoryBuilding2,
+	createFlagBuilding,
+	createHouseBuilding1,
 	createMiningBuilding,
 	createStorageBuilding
 } from "../services/createBuilding";
-import { newIdHex } from "@/engine/utils";
+import { BuildingType } from "../enums/BuildingType";
 import { Road } from "../entities/Road";
 import { StorageBuilding } from "../entities/StorageBuilding";
 import { Transporter } from "../entities/Transporter";
-import { IgeTileMap2d } from "@/engine/core/IgeTileMap2d";
+import { IgeNetworkServerSideRequestHandler } from "@/types/IgeNetworkMessage";
+import { IgeEffectFunction } from "@/types/IgeRouteDefinition";
 
 export const controllerServer: IgeEffectFunction = async () => {
 	const tileMap1 = ige.$("tileMap1") as IgeTileMap2d;
@@ -24,37 +26,37 @@ export const controllerServer: IgeEffectFunction = async () => {
 		const y: number = data.y;
 
 		switch (buildingType) {
-		case BuildingType.storage: {
-			const building = createStorageBuilding(tileMap1, newIdHex(), x, y);
-			return requestCallback(building.id());
-		}
+			case BuildingType.storage: {
+				const building = createStorageBuilding(tileMap1, newIdHex(), x, y);
+				return requestCallback(building.id());
+			}
 
-		case BuildingType.flag: {
-			const building = createFlagBuilding(tileMap1, newIdHex(), x, y);
-			return requestCallback(building.id());
-		}
+			case BuildingType.flag: {
+				const building = createFlagBuilding(tileMap1, newIdHex(), x, y);
+				return requestCallback(building.id());
+			}
 
-		case BuildingType.factory1: {
-			const building = createFactoryBuilding1(tileMap1, newIdHex(), x, y);
-			return requestCallback(building.id());
-		}
+			case BuildingType.factory1: {
+				const building = createFactoryBuilding1(tileMap1, newIdHex(), x, y);
+				return requestCallback(building.id());
+			}
 
-		case BuildingType.factory2: {
-			const building = createFactoryBuilding2(tileMap1, newIdHex(), x, y);
-			return requestCallback(building.id());
-		}
+			case BuildingType.factory2: {
+				const building = createFactoryBuilding2(tileMap1, newIdHex(), x, y);
+				return requestCallback(building.id());
+			}
 
-		case BuildingType.mine: {
-			console.log("Create mine", data.resourceType);
-			const building = createMiningBuilding(tileMap1, newIdHex(), x, y, data.resourceType);
-			return requestCallback(building.id());
-		}
+			case BuildingType.mine: {
+				console.log("Create mine", data.resourceType);
+				const building = createMiningBuilding(tileMap1, newIdHex(), x, y, data.resourceType);
+				return requestCallback(building.id());
+			}
 
-		case BuildingType.house1: {
-			console.log("Create house 1", data.resourceType);
-			const building = createHouseBuilding1(tileMap1, newIdHex(), x, y, data.resourceType);
-			return requestCallback(building.id());
-		}
+			case BuildingType.house1: {
+				console.log("Create house 1", data.resourceType);
+				const building = createHouseBuilding1(tileMap1, newIdHex(), x, y, data.resourceType);
+				return requestCallback(building.id());
+			}
 		}
 	};
 
@@ -66,9 +68,7 @@ export const controllerServer: IgeEffectFunction = async () => {
 
 		// Create the transporter
 		const base = ige.$("base1") as StorageBuilding;
-		new Transporter(base.id(), fromId, toId)
-			.translateTo(base._translate.x, base._translate.y, 0)
-			.mount(tileMap1);
+		new Transporter(base.id(), fromId, toId).translateTo(base._translate.x, base._translate.y, 0).mount(tileMap1);
 
 		requestCallback(road.id());
 	};
@@ -76,13 +76,11 @@ export const controllerServer: IgeEffectFunction = async () => {
 	const debug = () => {
 		const resources = ige.$$("resource");
 		debugger;
-	}
+	};
 
 	(ige.network as IgeNetIoServerController).define("createBuilding", createBuilding);
 	(ige.network as IgeNetIoServerController).define("createRoad", createRoad);
 	(ige.network as IgeNetIoServerController).define("debug", debug);
 
-	return async () => {
-
-	}
-}
+	return async () => {};
+};

@@ -1,26 +1,26 @@
-import { ige } from "@/engine/instance";
 import { isServer } from "@/engine/clientServer";
-import { systems } from "../data/systems";
-import { playerData } from "../data/playerData";
+import { IgeInterval } from "@/engine/core/IgeInterval";
 import { IgeScene2d } from "@/engine/core/IgeScene2d";
 import { IgeSceneGraph } from "@/engine/core/IgeSceneGraph";
-import { SpaceStation } from "../component/SpaceStation";
-import { JumpGate } from "../component/JumpGate";
-import { GameEntity } from "../component/GameEntity";
+import { ige } from "@/engine/instance";
 import { IgeNetIoServerController } from "@/engine/network/server/IgeNetIoServerController";
-import { IgeNetworkServerSideMessageHandler, IgeNetworkServerSideRequestHandler } from "@/types/IgeNetworkMessage";
-import { PlayerShip } from "../component/PlayerShip";
-import { MiningLaserEffect } from "../component/effects/MiningLaserEffect";
-import { IgeInterval } from "@/engine/core/IgeInterval";
 import { IgeNetIoSocket } from "@/engine/network/server/IgeNetIoSocket";
 import { generateAsteroidBelt } from "../../services/asteroidBelt";
-import { EntityModuleDefinition } from "../../types/EntityModuleDefinition";
-import { EntityAbilityModuleDefinition } from "../../types/EntityAbilityModuleDefinition";
-import { modules } from "../data/modules";
 import { generateModuleObject } from "../../services/gameUtils";
+import { EntityAbilityModuleDefinition } from "../../types/EntityAbilityModuleDefinition";
+import { EntityModuleDefinition } from "../../types/EntityModuleDefinition";
+import { GameEntity } from "../component/GameEntity";
+import { JumpGate } from "../component/JumpGate";
+import { PlayerShip } from "../component/PlayerShip";
+import { SpaceStation } from "../component/SpaceStation";
+import { MiningLaserEffect } from "../component/effects/MiningLaserEffect";
+import { modules } from "../data/modules";
+import { playerData } from "../data/playerData";
+import { systems } from "../data/systems";
+import { IgeNetworkServerSideMessageHandler, IgeNetworkServerSideRequestHandler } from "@/types/IgeNetworkMessage";
 
 export interface ServerPublicGameData {
-	modules: Record<string, EntityModuleDefinition | EntityAbilityModuleDefinition>
+	modules: Record<string, EntityModuleDefinition | EntityAbilityModuleDefinition>;
 }
 
 export class SpaceServerScene extends IgeSceneGraph {
@@ -28,7 +28,7 @@ export class SpaceServerScene extends IgeSceneGraph {
 	publicGameData: ServerPublicGameData;
 	players: Record<string, GameEntity>;
 
-	constructor () {
+	constructor() {
 		super();
 
 		// Set up the game storage for the server-side
@@ -38,7 +38,7 @@ export class SpaceServerScene extends IgeSceneGraph {
 
 		this.publicGameData = {
 			modules
-		}
+		};
 
 		const network = ige.network as IgeNetIoServerController;
 
@@ -68,31 +68,20 @@ export class SpaceServerScene extends IgeSceneGraph {
 		network.acceptConnections(true);
 	}
 
-	addGraph () {
+	addGraph() {
 		if (!isServer) {
 			return;
 		}
 
 		const mainScene = ige.$("mainScene") as IgeScene2d;
 
-		const sceneBase = new IgeScene2d()
-			.id("sceneBase")
-			.mount(mainScene);
+		const sceneBase = new IgeScene2d().id("sceneBase").mount(mainScene);
 
-		const backScene = new IgeScene2d()
-			.id("backScene")
-			.layer(0)
-			.mount(sceneBase);
+		const backScene = new IgeScene2d().id("backScene").layer(0).mount(sceneBase);
 
-		const middleScene = new IgeScene2d()
-			.id("middleScene")
-			.layer(1)
-			.mount(sceneBase);
+		const middleScene = new IgeScene2d().id("middleScene").layer(1).mount(sceneBase);
 
-		new IgeScene2d()
-			.id("frontScene")
-			.layer(2)
-			.mount(sceneBase);
+		new IgeScene2d().id("frontScene").layer(2).mount(sceneBase);
 
 		const systemData = systems["valeria"];
 
@@ -128,14 +117,14 @@ export class SpaceServerScene extends IgeSceneGraph {
 		}
 	}
 
-	removeGraph () {
+	removeGraph() {
 		const sceneBase = ige.$("sceneBase");
 		if (!sceneBase) return;
 
 		sceneBase.destroy();
 	}
 
-	playerByClientId (clientId: string, player?: GameEntity) {
+	playerByClientId(clientId: string, player?: GameEntity) {
 		if (player !== undefined) {
 			this.players[clientId] = player;
 			return this;
@@ -151,7 +140,7 @@ export class SpaceServerScene extends IgeSceneGraph {
 	 * @param socket The client socket object.
 	 * @private
 	 */
-	_onPlayerConnect (socket: IgeNetIoSocket) {
+	_onPlayerConnect(socket: IgeNetIoSocket) {
 		// Don't reject the client connection
 		return false;
 	}
@@ -161,7 +150,7 @@ export class SpaceServerScene extends IgeSceneGraph {
 	 * @param {String} clientId The client network id.
 	 * @private
 	 */
-	_onPlayerDisconnect (clientId: string) {
+	_onPlayerDisconnect(clientId: string) {
 		if (!this.players[clientId]) {
 			return;
 		}
@@ -192,7 +181,9 @@ export class SpaceServerScene extends IgeSceneGraph {
 		const player = new PlayerShip({
 			clientId,
 			module: generateModuleObject(playerDataModules)
-		}).streamMode(1).mount(ige.$("frontScene") as IgeScene2d);
+		})
+			.streamMode(1)
+			.mount(ige.$("frontScene") as IgeScene2d);
 
 		player._inventory.on("change", () => {
 			player._publicGameData.state.inventoryCount.val = player._inventory.count();
@@ -231,9 +222,7 @@ export class SpaceServerScene extends IgeSceneGraph {
 							clearInterval(player.miningInterval);
 						} else {
 							// Create a laser effect
-							laser = new MiningLaserEffect()
-								.streamMode(1)
-								.mount(ige.$("frontScene") as IgeScene2d);
+							laser = new MiningLaserEffect().streamMode(1).mount(ige.$("frontScene") as IgeScene2d);
 
 							player.effects.push(laser);
 						}
@@ -261,7 +250,7 @@ export class SpaceServerScene extends IgeSceneGraph {
 	};
 
 	_onAbilityUseRequest: IgeNetworkServerSideMessageHandler = (data, clientId, callback) => {
-		if (!data || data && !data.abilityId) {
+		if (!data || (data && !data.abilityId)) {
 			return callback && callback("noAbilityId");
 		}
 

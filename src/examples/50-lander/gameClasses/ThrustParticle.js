@@ -1,12 +1,12 @@
 var ThrustParticle = IgeEntityBox2d.extend({
-	classId: 'ThrustParticle',
+	classId: "ThrustParticle",
 
 	init: function (emitter) {
 		this._emitter = emitter;
 		IgeEntityBox2d.prototype.init.call(this);
 
 		// Set the rectangle colour (this is read in the Rectangle.js smart texture)
-		this._rectColor = '#ff5a00';
+		this._rectColor = "#ff5a00";
 
 		// Setup the particle default values
 		this.addComponent(IgeVelocityComponent)
@@ -14,7 +14,7 @@ var ThrustParticle = IgeEntityBox2d.extend({
 			.width(5)
 			.height(5)
 			.layer(1)
-			.category('thrustParticle');
+			.category("thrustParticle");
 
 		// Setup the box2d physics properties
 		/*this.box2dBody({

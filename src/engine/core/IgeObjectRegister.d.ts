@@ -1,22 +1,23 @@
-import { IgeCanRegisterById } from "@/types/IgeCanRegisterById";
 import { IgeCanBeDestroyed } from "@/types/IgeCanBeDestroyed";
+import { IgeCanRegisterById } from "@/types/IgeCanRegisterById";
+
 export declare class IgeObjectRegister {
-    _store: Record<string, IgeCanRegisterById & IgeCanBeDestroyed>;
-    get(id: string): any;
-    all(): Record<string, any>;
-    /**
-     * Register an object with the engine object register. The
-     * register allows you to access an object by its id with
-     * a call to ige.$(objectId).
-     * @param {Object} obj The object to register.
-     * @return {*}
-     */
-    add(obj: IgeCanRegisterById & IgeCanBeDestroyed): this;
-    /**
-     * Un-register an object with the engine object register. The
-     * object will no longer be accessible via ige.$().
-     * @param {Object} obj The object to un-register.
-     * @return {*}
-     */
-    remove(obj: IgeCanRegisterById): void;
+	_store: Record<string, IgeCanRegisterById & IgeCanBeDestroyed>;
+	get(id: string): any;
+	all(): Record<string, any>;
+	/**
+	 * Register an object with the engine object register. The
+	 * register allows you to access an object by its id with
+	 * a call to ige.$(objectId).
+	 * @param {Object} obj The object to register.
+	 * @return {*}
+	 */
+	add(obj: IgeCanRegisterById & IgeCanBeDestroyed): this;
+	/**
+	 * Un-register an object with the engine object register. The
+	 * object will no longer be accessible via ige.$().
+	 * @param {Object} obj The object to un-register.
+	 * @return {*}
+	 */
+	remove(obj: IgeCanRegisterById): void;
 }

@@ -1,13 +1,15 @@
 var igeClientConfig = {
 	include: [
 		/* Your custom game JS scripts */
-		
-		'./gameClasses/ClientNetworkEvents.js',
-		
+
+		"./gameClasses/ClientNetworkEvents.js",
+
 		/* Standard game scripts */
-		'./client.js',
-		'./index.js'
+		"./client.js",
+		"./index.js"
 	]
 };
 
-if (typeof(module) !== 'undefined' && typeof(module.exports) !== 'undefined') { module.exports = igeClientConfig; }
+if (typeof module !== "undefined" && typeof module.exports !== "undefined") {
+	module.exports = igeClientConfig;
+}

@@ -1,17 +1,22 @@
+import { UiRequiresProducesDisplay } from "./UiRequiresProducesDisplay";
+import { Building } from "./base/Building";
+import { isClient } from "@/engine/clientServer";
+import { IgeObject } from "@/engine/core/IgeObject";
+import { registerClass } from "@/engine/igeClassStore";
+import { ige } from "@/engine/instance";
 import { ResourceType } from "../enums/ResourceType";
 import { BuildingResourceRequirement } from "../types/BuildingResourceRequirement";
-import { registerClass } from "@/engine/igeClassStore";
-import { isClient } from "@/engine/clientServer";
-import { UiRequiresProducesDisplay } from "./UiRequiresProducesDisplay";
-import { ige } from "@/engine/instance";
-import { IgeObject } from "@/engine/core/IgeObject";
-import { Building } from "./base/Building";
 import { IgeCanvasRenderingContext2d } from "@/types/IgeCanvasRenderingContext2d";
 
 export class HouseBuilding1 extends Building {
 	classId = "HouseBuilding1";
 
-	constructor (tileX: number = NaN, tileY: number = NaN, produces: ResourceType, requires: BuildingResourceRequirement[] = []) {
+	constructor(
+		tileX: number = NaN,
+		tileY: number = NaN,
+		produces: ResourceType,
+		requires: BuildingResourceRequirement[] = []
+	) {
 		super();
 
 		this.tileX = tileX;
@@ -23,7 +28,7 @@ export class HouseBuilding1 extends Building {
 		this.isometric(ige.data("isometric"));
 		this.width(80);
 		this.height(100);
-		this.bounds3d(40,40,50);
+		this.bounds3d(40, 40, 50);
 
 		if (isClient) {
 			this.uiResourceDisplay = new UiRequiresProducesDisplay(produces, requires).mount(this);
@@ -62,11 +67,11 @@ export class HouseBuilding1 extends Building {
 		}
 	}
 
-	streamCreateConstructorArgs () {
+	streamCreateConstructorArgs() {
 		return [this.tileX, this.tileY, this._produces, this._requires];
 	}
 
-	_mounted (obj: IgeObject) {
+	_mounted(obj: IgeObject) {
 		super._mounted(obj);
 
 		if (!isNaN(this.tileX) && !isNaN(this.tileY)) {
@@ -74,7 +79,7 @@ export class HouseBuilding1 extends Building {
 		}
 	}
 
-	update (ctx: IgeCanvasRenderingContext2d, tickDelta: number) {
+	update(ctx: IgeCanvasRenderingContext2d, tickDelta: number) {
 		super.update(ctx, tickDelta);
 
 		// Update the required resources UI display

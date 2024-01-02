@@ -1,4 +1,5 @@
 # Blank Project
+
 This project is set up to work from outside the ige folder because any project you create should be outside the ige
 repository folder. To use this project, copy the "blank_game" folder one level below the ige folder in your filesystem.
 

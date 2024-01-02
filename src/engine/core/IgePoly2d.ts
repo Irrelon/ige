@@ -1,7 +1,7 @@
 import { IgePoint2d } from "./IgePoint2d";
 import { IgeRect } from "./IgeRect";
-import { IgeCanvasRenderingContext2d } from "@/types/IgeCanvasRenderingContext2d";
 import { IgePoint3d } from "@/engine/core/IgePoint3d";
+import { IgeCanvasRenderingContext2d } from "@/types/IgeCanvasRenderingContext2d";
 import { IgePolygonFunctionality } from "@/types/IgePolygonFunctionality";
 
 /**
@@ -12,12 +12,12 @@ export class IgePoly2d implements IgePolygonFunctionality {
 	_poly: IgePoint2d[];
 	_scale: IgePoint2d;
 
-	constructor () {
+	constructor() {
 		this._poly = [];
 		this._scale = new IgePoint2d(1, 1);
 	}
 
-	scale (x?: number, y?: number) {
+	scale(x?: number, y?: number) {
 		if (x !== undefined && y !== undefined) {
 			this._scale.x = x;
 			this._scale.y = y;
@@ -33,7 +33,7 @@ export class IgePoly2d implements IgePolygonFunctionality {
 	 * @param {number} factor The multiplication factor.
 	 * @return {*}
 	 */
-	multiply (factor?: number) {
+	multiply(factor?: number) {
 		// TODO: Look at IgeRect and normalise this function name
 		if (factor !== undefined) {
 			const polyPoints = this._poly;
@@ -53,7 +53,7 @@ export class IgePoly2d implements IgePolygonFunctionality {
 	 * @param {number} value The divide value.
 	 * @return {*}
 	 */
-	divide (value?: number) {
+	divide(value?: number) {
 		if (value !== undefined) {
 			const polyPoints = this._poly;
 			const pointCount = polyPoints.length;
@@ -72,7 +72,7 @@ export class IgePoly2d implements IgePolygonFunctionality {
 	 * @param {number} x
 	 * @param {number} y
 	 */
-	addPoint (x: number, y: number) {
+	addPoint(x: number, y: number) {
 		this._poly.push(new IgePoint2d(x, y));
 		return this;
 	}
@@ -81,7 +81,7 @@ export class IgePoly2d implements IgePolygonFunctionality {
 	 * Returns the length of the poly array.
 	 * @return {number}
 	 */
-	length () {
+	length() {
 		return this._poly.length;
 	}
 
@@ -89,7 +89,7 @@ export class IgePoly2d implements IgePolygonFunctionality {
 	 * Check if a point is inside this polygon.
 	 * @deprecated Please use pointInside() instead.
 	 */
-	pointInPoly () {
+	pointInPoly() {
 		throw new Error("Deprecated, please use pointInside() instead.");
 	}
 
@@ -98,7 +98,7 @@ export class IgePoly2d implements IgePolygonFunctionality {
 	 * @param {IgePoint2d | IgePoint3d} point
 	 * @return {boolean}
 	 */
-	pointInside (point: IgePoint2d | IgePoint3d): boolean {
+	pointInside(point: IgePoint2d | IgePoint3d): boolean {
 		return this.xyInside(point.x, point.y);
 	}
 
@@ -108,17 +108,20 @@ export class IgePoly2d implements IgePolygonFunctionality {
 	 * @param {number} y
 	 * @return {boolean}
 	 */
-	xyInside (x: number, y: number): boolean {
+	xyInside(x: number, y: number): boolean {
 		const polyPoints = this._poly;
 		const pointCount = polyPoints.length;
 		let oldPointIndex = pointCount - 1;
 		let c = false;
 
 		for (let pointIndex = 0; pointIndex < pointCount; oldPointIndex = pointIndex++) {
-			if (((polyPoints[pointIndex].y > y) !== (polyPoints[oldPointIndex].y > y)) &&
-				(x < (polyPoints[oldPointIndex].x - polyPoints[pointIndex].x) *
-					(y - polyPoints[pointIndex].y) / (polyPoints[oldPointIndex].y - polyPoints[pointIndex].y) +
-					polyPoints[pointIndex].x)) {
+			if (
+				polyPoints[pointIndex].y > y !== polyPoints[oldPointIndex].y > y &&
+				x <
+					((polyPoints[oldPointIndex].x - polyPoints[pointIndex].x) * (y - polyPoints[pointIndex].y)) /
+						(polyPoints[oldPointIndex].y - polyPoints[pointIndex].y) +
+						polyPoints[pointIndex].x
+			) {
 				c = !c;
 			}
 		}
@@ -129,7 +132,7 @@ export class IgePoly2d implements IgePolygonFunctionality {
 	/**
 	 * Calculates and returns the axis-aligned bounding-box for this polygon.
 	 */
-	aabb (): IgeRect {
+	aabb(): IgeRect {
 		const xArr: number[] = [];
 		const yArr: number[] = [];
 		const arr = this._poly;
@@ -154,7 +157,7 @@ export class IgePoly2d implements IgePolygonFunctionality {
 	 * separate from the original.
 	 * @return {IgePoly2d}
 	 */
-	clone (): IgePoly2d {
+	clone(): IgePoly2d {
 		const newPoly = new IgePoly2d();
 		const arr = this._poly;
 		const arrCount = arr.length;
@@ -172,7 +175,7 @@ export class IgePoly2d implements IgePolygonFunctionality {
 	 * Determines if the polygon is clockwise or not.
 	 * @return {boolean} A boolean true if clockwise or false if not.
 	 */
-	clockWiseTriangle () {
+	clockWiseTriangle() {
 		// Loop the polygon points and determine if they are counter-clockwise
 		const arr = this._poly;
 
@@ -180,7 +183,7 @@ export class IgePoly2d implements IgePolygonFunctionality {
 		const p2 = arr[1];
 		const p3 = arr[2];
 
-		const val = (p1.x * p2.y) + (p2.x * p3.y) + (p3.x * p1.y) - (p2.y * p3.x) - (p3.y * p1.x) - (p1.y * p2.x);
+		const val = p1.x * p2.y + p2.x * p3.y + p3.x * p1.y - p2.y * p3.x - p3.y * p1.x - p1.y * p2.x;
 
 		return val > 0;
 	}
@@ -188,7 +191,7 @@ export class IgePoly2d implements IgePolygonFunctionality {
 	/**
 	 * Modifies the points of this triangle so that the points are clock-wise.
 	 */
-	makeClockWiseTriangle () {
+	makeClockWiseTriangle() {
 		// If our data is already clockwise exit
 		if (!this.clockWiseTriangle()) {
 			const p1 = this._poly[1];
@@ -203,7 +206,7 @@ export class IgePoly2d implements IgePolygonFunctionality {
 	 * Converts this polygon into many triangles so that there are no convex
 	 * parts to the polygon.
 	 */
-	triangulate (): IgePoly2d[] {
+	triangulate(): IgePoly2d[] {
 		// Get the indices of each new triangle
 		const poly = this._poly;
 		const triangles: IgePoly2d[] = [];
@@ -228,12 +231,14 @@ export class IgePoly2d implements IgePolygonFunctionality {
 		return triangles;
 	}
 
-	triangulationIndices (): number[] {
+	triangulationIndices(): number[] {
 		const indices: number[] = [];
 		const n = this._poly.length;
 		const V: number[] = [];
 
-		if (n < 3) { return indices; }
+		if (n < 3) {
+			return indices;
+		}
 
 		if (this._area() > 0) {
 			for (let v = 0; v < n; v++) {
@@ -241,7 +246,7 @@ export class IgePoly2d implements IgePolygonFunctionality {
 			}
 		} else {
 			for (let v = 0; v < n; v++) {
-				V[v] = (n - 1) - v;
+				V[v] = n - 1 - v;
 			}
 		}
 
@@ -249,7 +254,7 @@ export class IgePoly2d implements IgePolygonFunctionality {
 		let count = 2 * nv;
 
 		for (let v = nv - 1; nv > 2; ) {
-			if ((count--) <= 0) {
+			if (count-- <= 0) {
 				return indices;
 			}
 
@@ -296,7 +301,7 @@ export class IgePoly2d implements IgePolygonFunctionality {
 		return indices;
 	}
 
-	_area () {
+	_area() {
 		const n = this._poly.length;
 		let a = 0.0;
 		let q = 0;
@@ -307,22 +312,22 @@ export class IgePoly2d implements IgePolygonFunctionality {
 			a += pval.x * qval.y - qval.x * pval.y;
 		}
 
-		return (a * 0.5);
+		return a * 0.5;
 	}
 
-	_snip (u: number, v: number, w: number, n: number, V: number[]): boolean {
+	_snip(u: number, v: number, w: number, n: number, V: number[]): boolean {
 		const A = this._poly[V[u]];
 		const B = this._poly[V[v]];
 		const C = this._poly[V[w]];
 
 		// Replaced Math.Epsilon with 0.00001
-		if (0.00001 > (((B.x - A.x) * (C.y - A.y)) - ((B.y - A.y) * (C.x - A.x)))) {
+		if (0.00001 > (B.x - A.x) * (C.y - A.y) - (B.y - A.y) * (C.x - A.x)) {
 			return false;
 		}
 
 		for (let p = 0; p < n; p++) {
 			// eslint-disable-next-line eqeqeq
-			if ((p == u) || (p == v) || (p == w)) {
+			if (p == u || p == v || p == w) {
 				continue;
 			}
 
@@ -343,7 +348,7 @@ export class IgePoly2d implements IgePolygonFunctionality {
 	 * @param {IgePoint2d} C
 	 * @param {IgePoint2d} P
 	 */
-	_insideTriangle (A: IgePoint2d, B: IgePoint2d, C: IgePoint2d, P: IgePoint2d) {
+	_insideTriangle(A: IgePoint2d, B: IgePoint2d, C: IgePoint2d, P: IgePoint2d) {
 		const ax = C.x - B.x;
 		const ay = C.y - B.y;
 		const bx = A.x - C.x;
@@ -361,7 +366,7 @@ export class IgePoly2d implements IgePolygonFunctionality {
 		const cCROSSap = cx * apy - cy * apx;
 		const bCROSScp = bx * cpy - by * cpx;
 
-		return ((aCROSSbp >= 0.0) && (bCROSScp >= 0.0) && (cCROSSap >= 0.0));
+		return aCROSSbp >= 0.0 && bCROSScp >= 0.0 && cCROSSap >= 0.0;
 	}
 
 	/**
@@ -369,7 +374,7 @@ export class IgePoly2d implements IgePolygonFunctionality {
 	 * @param {CanvasRenderingContext2D} ctx
 	 * @param fill
 	 */
-	render (ctx: IgeCanvasRenderingContext2d, fill: boolean = false) {
+	render(ctx: IgeCanvasRenderingContext2d, fill: boolean = false) {
 		const polyPoints = this._poly;
 		const pointCount = polyPoints.length;
 		const scaleX = this._scale.x;
@@ -381,7 +386,9 @@ export class IgePoly2d implements IgePolygonFunctionality {
 			ctx.lineTo(polyPoints[i].x * scaleX, polyPoints[i].y * scaleY);
 		}
 		ctx.lineTo(polyPoints[0].x * scaleX, polyPoints[0].y * scaleY);
-		if (fill) { ctx.fill(); }
+		if (fill) {
+			ctx.fill();
+		}
 		ctx.stroke();
 
 		return this;

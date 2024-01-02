@@ -104,10 +104,10 @@ export const IgeFontSmartTexture: IgeSmartTexture = {
 			}
 
 			lineHeight = Math.floor(entity._bounds2d.y / lineArr.length);
-			renderStartY = -((lineHeight + (entity._textLineSpacing)) / 2) * (lineArr.length - 1);
+			renderStartY = -((lineHeight + entity._textLineSpacing) / 2) * (lineArr.length - 1);
 
 			for (i = 0; i < lineArr.length; i++) {
-				renderY = renderStartY + (lineHeight * i) + (entity._textLineSpacing * (i));
+				renderY = renderStartY + lineHeight * i + entity._textLineSpacing * i;
 
 				// Measure text
 				textSize = ctx.measureText(lineArr[i]);

@@ -2,7 +2,7 @@
  * Creates a new entity with CANNON 3d physics integration.
  */
 var IgeEntityCannon = IgeEntity.extend({
-	classId: 'IgeEntityCannon',
+	classId: "IgeEntityCannon",
 
 	init: function () {
 		IgeEntity.prototype.init.call(this);
@@ -57,4 +57,6 @@ var IgeEntityCannon = IgeEntity.extend({
 	}
 });
 
-if (typeof(module) !== 'undefined' && typeof(module.exports) !== 'undefined') { module.exports = IgeEntityCannon; }
+if (typeof module !== "undefined" && typeof module.exports !== "undefined") {
+	module.exports = IgeEntityCannon;
+}

@@ -1,19 +1,21 @@
 var Client = IgeClass.extend({
-	classId: 'Client',
+	classId: "Client",
 	init: function () {
 		ige.addComponent(IgeEditorComponent);
 
 		// Load our textures
 		var self = this,
 			gameTexture = [],
-			i, overFunc, outFunc;
+			i,
+			overFunc,
+			outFunc;
 
 		this.obj = [];
 
-		gameTexture[0] = new IgeTexture('../assets/textures/sprites/fairy.png');
+		gameTexture[0] = new IgeTexture("../assets/textures/sprites/fairy.png");
 
 		// Wait for our textures to load before continuing
-		ige.on('texturesLoaded', function () {
+		ige.on("texturesLoaded", function () {
 			// Create the HTML canvas
 			ige.createFrontBuffer(true);
 
@@ -21,21 +23,20 @@ var Client = IgeClass.extend({
 				// Check if the engine started successfully
 				if (success) {
 					var Rotator = IgeEntity.extend({
-						classId: 'Rotator',
+						classId: "Rotator",
 
 						tick: function (ctx) {
-							this.rotateBy(0, 0, 0.001 * ige._tickDelta * Math.PI / 180);
+							this.rotateBy(0, 0, (0.001 * ige._tickDelta * Math.PI) / 180);
 							IgeEntity.prototype.tick.call(this, ctx);
 						}
 					});
 
 					// Create the scene
-					self.scene1 = new IgeScene2d()
-						.id('scene1');
+					self.scene1 = new IgeScene2d().id("scene1");
 
 					// Create the main viewport
 					self.vp1 = new IgeViewport()
-						.id('vp1')
+						.id("vp1")
 						.autoSize(true)
 						.scene(self.scene1)
 						.drawBounds(true)
@@ -55,7 +56,7 @@ var Client = IgeClass.extend({
 					};
 
 					self.obj[0] = new Rotator()
-						.id('mt1')
+						.id("mt1")
 						.depth(1)
 						.width(20)
 						.height(20)
@@ -86,4 +87,6 @@ var Client = IgeClass.extend({
 	}
 });
 
-if (typeof(module) !== 'undefined' && typeof(module.exports) !== 'undefined') { module.exports = Client; }
+if (typeof module !== "undefined" && typeof module.exports !== "undefined") {
+	module.exports = Client;
+}

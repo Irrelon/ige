@@ -1,5 +1,5 @@
 var Client = IgeClass.extend({
-	classId: 'Client',
+	classId: "Client",
 	init: function () {
 		ige.addComponent(IgeEditorComponent);
 
@@ -12,10 +12,10 @@ var Client = IgeClass.extend({
 		ige.components.input.debug(true);
 
 		// Load the fairy texture and store it in the gameTexture array
-		gameTexture[0] = new IgeTexture('../assets/textures/backgrounds/grassTile.png');
+		gameTexture[0] = new IgeTexture("../assets/textures/backgrounds/grassTile.png");
 
 		// Wait for our textures to load before continuing
-		ige.on('texturesLoaded', function () {
+		ige.on("texturesLoaded", function () {
 			gameTexture[0].resize(100, 50);
 
 			// Create the HTML canvas
@@ -26,8 +26,7 @@ var Client = IgeClass.extend({
 				// Check if the engine started successfully
 				if (success) {
 					// Create a parent scene node
-					self.mainScene = new IgeScene2d()
-						.id('mainScene');
+					self.mainScene = new IgeScene2d().id("mainScene");
 
 					// Create a background scene node and apply
 					// a background pattern to it using an isometric
@@ -37,8 +36,8 @@ var Client = IgeClass.extend({
 					// around the viewport with the mouse, the pattern
 					// will "track" the camera as if it was the "floor".
 					self.backgroundScene = new IgeScene2d()
-						.id('backgroundScene')
-						.backgroundPattern(gameTexture[0], 'repeat', true, true)
+						.id("backgroundScene")
+						.backgroundPattern(gameTexture[0], "repeat", true, true)
 						.ignoreCamera(true) // We want the scene to remain static
 						.mount(self.mainScene);
 
@@ -49,7 +48,7 @@ var Client = IgeClass.extend({
 						.addComponent(IgeMousePanComponent)
 						.addComponent(IgeMouseZoomComponent)
 						.mousePan.enabled(true)
-						.id('vp1')
+						.id("vp1")
 						.autoSize(true)
 						.scene(self.mainScene)
 						.drawBounds(true)
@@ -60,4 +59,6 @@ var Client = IgeClass.extend({
 	}
 });
 
-if (typeof(module) !== 'undefined' && typeof(module.exports) !== 'undefined') { module.exports = Client; }
+if (typeof module !== "undefined" && typeof module.exports !== "undefined") {
+	module.exports = Client;
+}

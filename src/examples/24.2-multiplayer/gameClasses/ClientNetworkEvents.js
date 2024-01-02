@@ -20,7 +20,7 @@ var ClientNetworkEvents = {
 			// new entity and then check if that entity is the one we
 			// should be tracking!
 			var self = this;
-			self._eventListener = ige.components.network.stream.on('entityCreated', function (entity) {
+			self._eventListener = ige.components.network.stream.on("entityCreated", function (entity) {
 				if (entity.id() === data) {
 					// Tell the camera to track out player entity
 					ige.client.vp1.camera.trackTranslate(ige.$(data), 50);
@@ -31,9 +31,9 @@ var ClientNetworkEvents = {
 
 					// Turn off the listener for this event now that we
 					// have found and started tracking our player entity
-					ige.components.network.stream.off('entityCreated', self._eventListener, function (result) {
+					ige.components.network.stream.off("entityCreated", self._eventListener, function (result) {
 						if (!result) {
-							this.log('Could not disable event listener!', 'warning');
+							this.log("Could not disable event listener!", "warning");
 						}
 					});
 				}
@@ -42,4 +42,6 @@ var ClientNetworkEvents = {
 	}
 };
 
-if (typeof(module) !== 'undefined' && typeof(module.exports) !== 'undefined') { module.exports = ClientNetworkEvents; }
+if (typeof module !== "undefined" && typeof module.exports !== "undefined") {
+	module.exports = ClientNetworkEvents;
+}

@@ -1,18 +1,15 @@
-import { ige } from "@/engine/instance";
+import { Building } from "./Building";
 import { isClient } from "@/engine/clientServer";
 import { registerClass } from "@/engine/igeClassStore";
-import { Building } from "./Building";
+import { ige } from "@/engine/instance";
 
 export class Flag extends Building {
-	classId = 'Flag';
+	classId = "Flag";
 
-	constructor () {
+	constructor() {
 		super();
 
-		this.data("glowColor", "#ffcc00")
-			.layer(1)
-			.width(10)
-			.height(20);
+		this.data("glowColor", "#ffcc00").layer(1).width(10).height(20);
 
 		if (isClient) {
 			this.texture(ige.textures.get("flagSmartTexture"));
