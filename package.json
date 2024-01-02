@@ -12,20 +12,14 @@
 	"engines": {
 		"node": ">=v16"
 	},
-	"main": "dist/cjs/src/Emitter.js",
-	"module": "dist/esm/src/Emitter.js",
-	"exports": {
-		".": {
-			"import": "./dist/esm/index.js",
-			"require": "./dist/cjs/index.js"
-		}
-	},
+	"module": "dist/esm/index.js",
 	"scripts": {
 		"tsc-b": "tsc -b",
-		"build": "(tsc -p tsconfig-cjs.json 2>/dev/null || exit 0) && (tsc -p tsconfig-esm.json 2>/dev/null || exit 0) && sh ./fixup.sh && npm run fix-paths",
+		"build": "(tsc -p tsconfig-esm.json 2>/dev/null || exit 0) && sh ./fixup-esm.sh && npm run fix-paths-esm",
 		"build-watch": "tsc --watch",
 		"fix-paths-watch": "npx @irrelon/fix-paths --write --watch",
 		"fix-paths": "npx @irrelon/fix-paths -p ./tsconfig-cjs.json --write && npx @irrelon/fix-paths -p ./tsconfig-esm.json --write",
+		"fix-paths-esm": "npx @irrelon/fix-paths -p ./tsconfig-esm.json --write",
 		"test": "NODE_OPTIONS=--experimental-vm-modules npx jest -f \".test.js\" --watch --all"
 	},
 	"dependencies": {
@@ -71,5 +65,5 @@
 		"ttypescript": "^1.5.15",
 		"typescript": "^4.9.5"
 	},
-	"types": "dist/types"
+	"types": "dist/index.d.ts"
 }

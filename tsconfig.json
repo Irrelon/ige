@@ -18,7 +18,7 @@
 		"incremental": true,
 		"esModuleInterop": true,
 		"module": "es2022",
-		"moduleResolution": "node",
+		"moduleResolution": "NodeNext",
 		"resolveJsonModule": true,
 		"isolatedModules": true,
 		"jsx": "react-jsx",
@@ -33,14 +33,14 @@
 		}
 	},
 	"include": [
-		"**/*.ts",
-		"**/*.tsx"
+		"src/**/*"
 	],
 	"exclude": [
 		"node_modules",
 		"react",
 		"engine/ui",
 		"engine/components/editor",
-		"engine/components/physics"
+		"engine/components/physics/cannon",
+		"engine/components/three"
 	]
 }
