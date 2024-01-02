@@ -9,7 +9,7 @@ export const WithUiPositionMixin = (Base) =>
 		 * @param {boolean=} noUpdate
 		 * @return {number}
 		 */
-		left(px, noUpdate = false) {
+		left (px, noUpdate = false) {
 			if (px === undefined) {
 				return this._uiLeft;
 			}
@@ -54,7 +54,7 @@ export const WithUiPositionMixin = (Base) =>
 		 * @param {boolean=} noUpdate
 		 * @return {number}
 		 */
-		right(px, noUpdate = false) {
+		right (px, noUpdate = false) {
 			if (px !== undefined) {
 				if (px === null) {
 					// Remove all data
@@ -99,7 +99,7 @@ export const WithUiPositionMixin = (Base) =>
 		 * @param {boolean=} noUpdate
 		 * @return {number}
 		 */
-		center(px, noUpdate = false) {
+		center (px, noUpdate = false) {
 			if (px !== undefined) {
 				if (px === null) {
 					// Remove all data
@@ -146,7 +146,7 @@ export const WithUiPositionMixin = (Base) =>
 		 * @param {boolean=} noUpdate
 		 * @return {number}
 		 */
-		top(px, noUpdate = false) {
+		top (px, noUpdate = false) {
 			if (px === undefined) {
 				return this._uiTop;
 			}
@@ -192,7 +192,7 @@ export const WithUiPositionMixin = (Base) =>
 		 * @param {boolean=} noUpdate
 		 * @return {number}
 		 */
-		bottom(px, noUpdate = false) {
+		bottom (px, noUpdate = false) {
 			if (px !== undefined) {
 				if (px === null) {
 					// Remove all data
@@ -237,7 +237,7 @@ export const WithUiPositionMixin = (Base) =>
 		 * @param {boolean=} noUpdate
 		 * @return {number}
 		 */
-		middle(px, noUpdate = false) {
+		middle (px, noUpdate = false) {
 			if (px !== undefined) {
 				if (px === null) {
 					// Remove all data
@@ -287,7 +287,7 @@ export const WithUiPositionMixin = (Base) =>
 		 * @param {boolean=} noUpdate
 		 * @return {*}
 		 */
-		width(px, lockAspect = false, modifier, noUpdate = false) {
+		width (px, lockAspect = false, modifier, noUpdate = false) {
 			if (px !== undefined) {
 				if (px === null) {
 					// Remove all data
@@ -352,7 +352,7 @@ export const WithUiPositionMixin = (Base) =>
 		 *
 		 * @return {*}
 		 */
-		height(px, lockAspect = false, modifier, noUpdate = false) {
+		height (px, lockAspect = false, modifier, noUpdate = false) {
 			if (px !== undefined) {
 				if (px === null) {
 					// Remove all data
@@ -403,12 +403,12 @@ export const WithUiPositionMixin = (Base) =>
 			}
 			return this._bounds2d.y;
 		}
-		flex(val) {
+		flex (val) {
 			if (val === undefined) return this._uiFlex;
 			this._uiFlex = val;
 			return this;
 		}
-		autoScaleX(val, lockAspect = false) {
+		autoScaleX (val, lockAspect = false) {
 			if (val !== undefined) {
 				this._autoScaleX = val;
 				this._autoScaleLockAspect = lockAspect;
@@ -417,7 +417,7 @@ export const WithUiPositionMixin = (Base) =>
 			}
 			return this._autoScaleX;
 		}
-		autoScaleY(val, lockAspect = false) {
+		autoScaleY (val, lockAspect = false) {
 			if (val !== undefined) {
 				this._autoScaleY = val;
 				this._autoScaleLockAspect = lockAspect;
@@ -431,7 +431,7 @@ export const WithUiPositionMixin = (Base) =>
 		 * for this UI entity.
 		 * @return {*}
 		 */
-		updateUiChildren() {
+		updateUiChildren () {
 			const arr = this._children || [];
 			if (!arr) {
 				return this;
@@ -453,7 +453,7 @@ export const WithUiPositionMixin = (Base) =>
 		 * top and bottom co-ordinates.
 		 * @private
 		 */
-		_updateUiPosition() {
+		_updateUiPosition () {
 			if (this._parent) {
 				const parentGeom = this._parent._bounds2d;
 				const geomScaled = this._bounds2d.multiplyPoint(this._scale);

@@ -1,9 +1,9 @@
 import { isClient } from "@/engine/clientServer";
-import { IgeEngine } from "@/engine/core/IgeEngine";
+import type { IgeEngine } from "@/engine/core/IgeEngine";
 import { IgeBehaviourType } from "@/enums/IgeBehaviourType";
 import { IgeComponent } from "../core/IgeComponent";
-import { IgeEntity } from "../core/IgeEntity";
-import { IgeEntityBehaviourMethod } from "@/types/IgeEntityBehaviour";
+import type { IgeEntity } from "../core/IgeEntity";
+import type { IgeEntityBehaviourMethod } from "@/types/IgeEntityBehaviour";
 
 export class IgeGamePadComponent extends IgeComponent<IgeEngine> {
 	"classId" = "IgeGamePadComponent";
@@ -36,7 +36,7 @@ export class IgeGamePadComponent extends IgeComponent<IgeEngine> {
 	// as last time).
 	prevTimestamps = [];
 
-	constructor(entity: IgeEntity, options?: any) {
+	constructor (entity: IgeEntity, options?: any) {
 		super(entity, options);
 
 		if (!isClient) {
@@ -57,7 +57,7 @@ export class IgeGamePadComponent extends IgeComponent<IgeEngine> {
 		entity.addBehaviour(IgeBehaviourType.preUpdate, "gamePadComponent", this._behaviour);
 	}
 
-	onGamepadConnect(event: GamepadEvent) {
+	onGamepadConnect (event: GamepadEvent) {
 		// Add the new gamepad on the list of gamepads to look after.
 		this.gamepads.push(event.gamepad);
 
@@ -71,7 +71,7 @@ export class IgeGamePadComponent extends IgeComponent<IgeEngine> {
 	/**
 	 * React to the gamepad being disconnected.
 	 */
-	onGamepadDisconnect(event: GamepadEvent) {
+	onGamepadDisconnect (event: GamepadEvent) {
 		// Remove the gamepad from the list of gamepads to monitor.
 		for (const i of this.gamepads.keys()) {
 			if (this.gamepads[i].index == event.gamepad.index) {

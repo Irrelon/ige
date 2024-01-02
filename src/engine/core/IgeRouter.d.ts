@@ -1,5 +1,5 @@
 import { IgeBaseClass } from "./IgeBaseClass";
-import { IgeRouteDefinition } from "@/types/IgeRouteDefinition";
+import type { IgeRouteDefinition } from "@/types/IgeRouteDefinition";
 
 export declare class IgeRouter extends IgeBaseClass {
 	classId: string;

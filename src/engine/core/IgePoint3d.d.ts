@@ -1,4 +1,4 @@
-import { IgeTween, IgeTweenOptions, IgeTweenPropertyObject } from "./IgeTween";
+import type { IgeTween, IgeTweenOptions, IgeTweenPropertyObject } from "./IgeTween";
 
 /**
  * Creates a new 3d point (x, y, z).

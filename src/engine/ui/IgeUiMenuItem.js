@@ -3,11 +3,11 @@ import { registerClass } from "../../engine/igeClassStore.js";
 import { IgeUiMenu } from "../../engine/ui/IgeUiMenu.js";
 
 export class IgeUiMenuItem extends IgeUiElement {
-	constructor() {
+	constructor () {
 		super(...arguments);
 		this.classId = "IgeUiMenuItem";
 	}
-	menuData(menuData) {
+	menuData (menuData) {
 		if (menuData !== undefined) {
 			this._menuData = menuData;
 			if (menuData.width) {
@@ -46,7 +46,7 @@ export class IgeUiMenuItem extends IgeUiElement {
 	 * @param fontSheet
 	 * @return {*}
 	 */
-	fontSheet(fontSheet) {
+	fontSheet (fontSheet) {
 		if (fontSheet !== undefined) {
 			this._fontSheet = fontSheet;
 			return this;
@@ -56,7 +56,7 @@ export class IgeUiMenuItem extends IgeUiElement {
 	/**
 	 * Opens the menu item so it's child items are visible.
 	 */
-	open() {
+	open () {
 		if (this._menuData.items) {
 			this._childMenu = new IgeUiMenu()
 				.id(this.id() + "_childMenu")
@@ -74,7 +74,7 @@ export class IgeUiMenuItem extends IgeUiElement {
 	/**
 	 * Closes the menu item so it's child items are hidden.
 	 */
-	close() {
+	close () {
 		if (this._childMenu) {
 			this._childMenu.destroy();
 		}

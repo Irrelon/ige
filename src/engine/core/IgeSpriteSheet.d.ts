@@ -1,7 +1,7 @@
-import { IgeCanvas } from "./IgeCanvas";
+import type { IgeCanvas } from "./IgeCanvas";
 import { IgeTexture } from "./IgeTexture";
-import { IgeImage } from "@/types/IgeImage";
-import { IgeSmartTexture } from "@/types/IgeSmartTexture";
+import type { IgeImage } from "@/types/IgeImage";
+import type { IgeSmartTexture } from "@/types/IgeSmartTexture";
 
 type IgeTextureCell = [number, number, number, number, string?];
 type IgeTextureCellArray = IgeTextureCell[];

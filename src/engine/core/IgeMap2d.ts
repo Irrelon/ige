@@ -8,7 +8,7 @@ export class IgeMap2d extends IgeBaseClass {
 	classId = "IgeMap2d";
 	_mapData: any[][];
 
-	constructor(data?: any[][]) {
+	constructor (data?: any[][]) {
 		super();
 		this._mapData = data || [];
 	}
@@ -20,7 +20,7 @@ export class IgeMap2d extends IgeBaseClass {
 	 * @param {*=} val The data to set on the map tile co-ordinate.
 	 * @return {*}
 	 */
-	tileData(x?: number, y?: number, val?: any) {
+	tileData (x?: number, y?: number, val?: any) {
 		if (x !== undefined && y !== undefined) {
 			if (val !== undefined) {
 				// Assign a value
@@ -46,7 +46,7 @@ export class IgeMap2d extends IgeBaseClass {
 	 * @param y
 	 * @return {boolean} True if data was cleared or false if no data existed.
 	 */
-	clearData(x?: number, y?: number) {
+	clearData (x?: number, y?: number) {
 		if (x !== undefined && y !== undefined) {
 			if (this._mapData[y] !== undefined) {
 				delete this._mapData[y][x];
@@ -65,7 +65,7 @@ export class IgeMap2d extends IgeBaseClass {
 	 * @param width
 	 * @param height
 	 */
-	collision(x?: number, y?: number, width?: number, height?: number) {
+	collision (x?: number, y?: number, width?: number, height?: number) {
 		let xi, yi;
 
 		if (width === undefined) {
@@ -97,7 +97,7 @@ export class IgeMap2d extends IgeBaseClass {
 	 * @param height
 	 * @param data
 	 */
-	collisionWith(x?: number, y?: number, width?: number, height?: number, data?: any) {
+	collisionWith (x?: number, y?: number, width?: number, height?: number, data?: any) {
 		let xi, yi;
 
 		if (width === undefined) {
@@ -130,7 +130,7 @@ export class IgeMap2d extends IgeBaseClass {
 	 * @param height
 	 * @param data
 	 */
-	collisionWithOnly(x?: number, y?: number, width?: number, height?: number, data?: any) {
+	collisionWithOnly (x?: number, y?: number, width?: number, height?: number, data?: any) {
 		let xi,
 			yi,
 			tileData,
@@ -171,7 +171,7 @@ export class IgeMap2d extends IgeBaseClass {
 	mapData(val: number[][], startX: number, startY: number): this;
 	mapData(val: number[][]): this;
 	mapData(): number[][];
-	mapData(val?: number[][], startX?: number, startY?: number) {
+	mapData (val?: number[][], startX?: number, startY?: number) {
 		if (val === undefined) {
 			return this._mapData;
 		}
@@ -191,7 +191,7 @@ export class IgeMap2d extends IgeBaseClass {
 		return this;
 	}
 
-	sortedMapDataAsArray() {
+	sortedMapDataAsArray () {
 		const data = this.mapData();
 		const finalData: number[][] = [];
 
@@ -213,7 +213,7 @@ export class IgeMap2d extends IgeBaseClass {
 		return finalData;
 	}
 
-	_sortKeys(obj: Record<string, any>) {
+	_sortKeys (obj: Record<string, any>) {
 		return Object.keys(obj).sort();
 	}
 
@@ -221,11 +221,11 @@ export class IgeMap2d extends IgeBaseClass {
 	 * Returns a string of the map's data in JSON format.
 	 * @return {string}
 	 */
-	mapDataString() {
+	mapDataString () {
 		return JSON.stringify(this.mapData());
 	}
 
-	translateDataBy(transX: number, transY: number) {
+	translateDataBy (transX: number, transY: number) {
 		const yArr = this.mapData();
 		const newArr: number[][] = [];
 

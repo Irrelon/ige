@@ -4,8 +4,8 @@ import { IgeScene2d } from "@/engine/core/IgeScene2d";
 import { IgeSceneGraph } from "@/engine/core/IgeSceneGraph";
 import { IgeUiElement } from "@/engine/core/IgeUiElement";
 import { IgeUiEntity } from "@/engine/core/IgeUiEntity";
-import { IgeUiManagerController } from "@/engine/core/IgeUiManagerController";
-import { IgeViewport } from "@/engine/core/IgeViewport";
+import type { IgeUiManagerController } from "@/engine/core/IgeUiManagerController";
+import type { IgeViewport } from "@/engine/core/IgeViewport";
 import { ige } from "@/engine/instance";
 import { IgeUiButton } from "@/engine/ui/IgeUiButton";
 import { IgeUiDropDown } from "@/engine/ui/IgeUiDropDown";
@@ -16,7 +16,7 @@ import { IgeVelocityComponent } from "@/engine/components/IgeVelocityComponent";
 export class SplashClientScene extends IgeSceneGraph {
 	classId = "SplashClientScene";
 
-	addGraph() {
+	addGraph () {
 		const login = async () => {
 			await ige.router.go("app/space");
 		};
@@ -274,7 +274,7 @@ export class SplashClientScene extends IgeSceneGraph {
 			.mount(leftNav);
 	}
 
-	removeGraph() {
+	removeGraph () {
 		const sceneBase = ige.$("sceneBase") as IgeScene2d;
 		if (!sceneBase) return;
 

@@ -7,7 +7,7 @@ import { ResourceType } from "../../enums/ResourceType";
 import { UiBuildItem } from "../../entities/base/UiBuildItem";
 
 export class UiClientScene extends IgeSceneGraph {
-	async addGraph() {
+	async addGraph () {
 		const baseScene = ige.$("baseScene") as IgeScene2d;
 
 		const uiScene = new IgeScene2d().id("uiScene").layer(1).ignoreCamera(true).mount(baseScene);
@@ -43,7 +43,7 @@ export class UiClientScene extends IgeSceneGraph {
 		new UiBuildItem(ige.textures.get("house1"), "House 1").id("uiCreateHouse1").top(370).height(50).mount(buildUi);
 	}
 
-	removeGraph() {
+	removeGraph () {
 		ige.$("uiScene")?.destroy();
 	}
 }

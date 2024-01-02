@@ -1,4 +1,4 @@
-import { IgeSmartTexture } from "@/types/IgeSmartTexture";
+import type { IgeSmartTexture } from "@/types/IgeSmartTexture";
 
 export const timerCircle: IgeSmartTexture = {
 	render: function (ctx, entity) {

@@ -7,7 +7,7 @@ export class IgeDependencies {
 	_dependencyFulfilled: Record<string, boolean> = {};
 	_dependsOnArr: IgeDependencyAction[] = [];
 
-	add(dependencyName: string, dependencyPromise: Promise<any | void>) {
+	add (dependencyName: string, dependencyPromise: Promise<any | void>) {
 		dependencyPromise
 			.then(() => {
 				this._onDependencySatisfied(dependencyName);
@@ -17,7 +17,7 @@ export class IgeDependencies {
 			});
 	}
 
-	waitFor(dependencyList: string[], actionToTake: (...args: any[]) => any) {
+	waitFor (dependencyList: string[], actionToTake: (...args: any[]) => any) {
 		if (this._isDependencyListSatisfied(dependencyList)) {
 			// All deps for this action are already fulfilled so call immediately
 			actionToTake();
@@ -28,11 +28,11 @@ export class IgeDependencies {
 		this._dependsOnArr.push({ dependencyList, actionToTake });
 	}
 
-	markAsSatisfied(dependencyName: string) {
+	markAsSatisfied (dependencyName: string) {
 		this._onDependencySatisfied(dependencyName);
 	}
 
-	_onDependencySatisfied(dependencyName: string) {
+	_onDependencySatisfied (dependencyName: string) {
 		// Mark the dependency as satisfied
 		this._dependencyFulfilled[dependencyName] = true;
 
@@ -52,7 +52,7 @@ export class IgeDependencies {
 		});
 	}
 
-	_isDependencyListSatisfied(dependencyList: string[]) {
+	_isDependencyListSatisfied (dependencyList: string[]) {
 		return dependencyList.every((dependencyName: string) => this._dependencyFulfilled[dependencyName]);
 	}
 }

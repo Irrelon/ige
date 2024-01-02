@@ -1,3 +1,3 @@
-import { IgeInputEventControl } from "./IgeInputEventControl";
+import type { IgeInputEventControl } from "./IgeInputEventControl";
 
 export type IgeInputEvent = (event?: Event, evc?: IgeInputEventControl, data?: any) => void | boolean;

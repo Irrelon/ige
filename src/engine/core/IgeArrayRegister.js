@@ -1,14 +1,14 @@
 import { arrPull } from "../utils";
 
 export class IgeArrayRegister {
-	constructor(field, registeredField) {
+	constructor (field, registeredField) {
 		this._store = {};
 		this._field = "";
 		this._registeredField = "";
 		this._field = field;
 		this._registeredField = registeredField;
 	}
-	get(id) {
+	get (id) {
 		return this._store[id] || [];
 	}
 	/**
@@ -16,7 +16,7 @@ export class IgeArrayRegister {
 	 * @param {Object} obj The object to register.
 	 * @return {*}
 	 */
-	add(obj) {
+	add (obj) {
 		const objFieldValue = obj[this._field];
 		this._store[objFieldValue] = this._store[objFieldValue] || [];
 		this._store[objFieldValue].push(obj);
@@ -29,7 +29,7 @@ export class IgeArrayRegister {
 	 * @param {Object} obj The object to un-register.
 	 * @return {*}
 	 */
-	remove(obj) {
+	remove (obj) {
 		const objFieldValue = obj[this._field];
 		if (!this._store[objFieldValue]) {
 			return this;

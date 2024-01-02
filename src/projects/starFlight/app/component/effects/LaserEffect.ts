@@ -2,7 +2,7 @@ import { isServer } from "@/engine/clientServer";
 import { IgeEntity } from "@/engine/core/IgeEntity";
 import { registerClass } from "@/engine/igeClassStore";
 import { ige } from "@/engine/instance";
-import { IgeCanvasRenderingContext2d } from "@/types/IgeCanvasRenderingContext2d";
+import type { IgeCanvasRenderingContext2d } from "@/types/IgeCanvasRenderingContext2d";
 
 export class LaserEffect extends IgeEntity {
 	classId = "LaserEffect";
@@ -17,7 +17,7 @@ export class LaserEffect extends IgeEntity {
 	_fromEntity?: IgeEntity;
 	_toEntity?: IgeEntity;
 
-	constructor(data: Record<string, any> = {}) {
+	constructor (data: Record<string, any> = {}) {
 		super();
 
 		if (!isServer) {
@@ -62,7 +62,7 @@ export class LaserEffect extends IgeEntity {
 		this.layer(3);
 	}
 
-	update(ctx: IgeCanvasRenderingContext2d, tickDelta: number) {
+	update (ctx: IgeCanvasRenderingContext2d, tickDelta: number) {
 		if (this._fromEntity && this._toEntity) {
 			// Make sure our target entities are alive and if not
 			// remove them from our cache to avoid issues

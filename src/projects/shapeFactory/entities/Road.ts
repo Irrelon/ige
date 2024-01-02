@@ -1,4 +1,4 @@
-import { Building } from "./base/Building";
+import type { Building } from "./base/Building";
 import { Line } from "./base/Line";
 import { IgeTimeout } from "@/engine/core/IgeTimeout";
 import { registerClass } from "@/engine/igeClassStore";
@@ -11,7 +11,7 @@ export class Road extends Line {
 	_toId: string;
 	_to?: Building;
 
-	constructor(fromId: string, toId: string) {
+	constructor (fromId: string, toId: string) {
 		super();
 
 		this.layer(0);
@@ -27,7 +27,7 @@ export class Road extends Line {
 		this.setLocation();
 	}
 
-	setLocation() {
+	setLocation () {
 		this._from = ige.$(this._fromId) as Building;
 		this._to = ige.$(this._toId) as Building;
 
@@ -51,7 +51,7 @@ export class Road extends Line {
 		}
 	}
 
-	streamCreateConstructorArgs() {
+	streamCreateConstructorArgs () {
 		return [this._fromId, this._toId];
 	}
 }

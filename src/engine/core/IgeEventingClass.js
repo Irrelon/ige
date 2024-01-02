@@ -5,7 +5,7 @@ import { IgeEventReturnFlag } from "@/enums/IgeEventReturnFlag";
  * Creates a new class with the capability to emit events.
  */
 export class IgeEventingClass extends IgeBaseClass {
-	constructor() {
+	constructor () {
 		super(...arguments);
 		this._eventsEmitting = false;
 		this._eventRemovalQueue = [];
@@ -21,7 +21,7 @@ export class IgeEventingClass extends IgeBaseClass {
 	 * @param {function} listener The method to call when the event is fired.
 	 * @returns {IgeEventingClass} The emitter instance.
 	 */
-	_on(eventName, id, listener) {
+	_on (eventName, id, listener) {
 		const generateTimeout = (emitter) => {
 			setTimeout(() => {
 				listener(...emitter.args);
@@ -58,7 +58,7 @@ export class IgeEventingClass extends IgeBaseClass {
 	 * @param {Function} listener The method to call when the event is fired.
 	 * @returns {IgeEventingClass} The emitter instance.
 	 */
-	_once(eventName, id, listener) {
+	_once (eventName, id, listener) {
 		let fired = false;
 		const internalCallback = (...args) => {
 			if (fired) return;
@@ -76,7 +76,7 @@ export class IgeEventingClass extends IgeBaseClass {
 	 * or once() call to cancel.
 	 * @returns {IgeEventingClass} The emitter instance.
 	 */
-	_off(eventName, id, listener) {
+	_off (eventName, id, listener) {
 		// If the event name doesn't have any listeners, exit early
 		if (!this._eventListeners || !this._eventListeners[eventName] || !this._eventListeners[eventName][id])
 			return this;
@@ -109,21 +109,21 @@ export class IgeEventingClass extends IgeBaseClass {
 		}
 		return this;
 	}
-	on(eventName, ...rest) {
+	on (eventName, ...rest) {
 		const restTypes = rest.map((arg) => typeof arg);
 		if (restTypes[0] === "function") {
 			return this._on(eventName, "*", rest[0]);
 		}
 		return this._on(eventName, rest[0], rest[1]);
 	}
-	once(eventName, ...rest) {
+	once (eventName, ...rest) {
 		const restTypes = rest.map((arg) => typeof arg);
 		if (restTypes[0] === "function") {
 			return this._once(eventName, "*", rest[0]);
 		}
 		return this._once(eventName, rest[0], rest[1]);
 	}
-	overwrite(eventName, ...rest) {
+	overwrite (eventName, ...rest) {
 		const restTypes = rest.map((arg) => typeof arg);
 		if (restTypes[0] === "function") {
 			this.off(eventName);
@@ -132,7 +132,7 @@ export class IgeEventingClass extends IgeBaseClass {
 		this.off(eventName, rest[0]);
 		return this._on(eventName, rest[0], rest[1]);
 	}
-	off(eventName, ...rest) {
+	off (eventName, ...rest) {
 		if (rest.length === 0) {
 			// Only event was provided, use * as the id to mean "any without"
 			// a specific id
@@ -176,7 +176,7 @@ export class IgeEventingClass extends IgeBaseClass {
 	 *     // The console output is:
 	 *     //    data1, data2
 	 */
-	emit(eventName, ...data) {
+	emit (eventName, ...data) {
 		if (!this._eventListeners) {
 			return IgeEventReturnFlag.none;
 		}
@@ -202,7 +202,7 @@ export class IgeEventingClass extends IgeBaseClass {
 		this._processRemovalQueue();
 		return returnFlag;
 	}
-	emitId(eventName, id, ...data) {
+	emitId (eventName, id, ...data) {
 		this._eventListeners = this._eventListeners || {};
 		this._eventsEmitting = true;
 		if (!this._eventListeners[eventName]) {
@@ -245,7 +245,7 @@ export class IgeEventingClass extends IgeBaseClass {
 	 * @returns {IgeEventingClass} The emitter instance.
 	 * @private
 	 */
-	emitStatic(eventName, ...data) {
+	emitStatic (eventName, ...data) {
 		const id = "*";
 		this._eventListeners = this._eventListeners || {};
 		this._eventsEmitting = true;
@@ -279,7 +279,7 @@ export class IgeEventingClass extends IgeBaseClass {
 	 * @returns {IgeEventingClass} The emitter instance.
 	 * @private
 	 */
-	emitStaticId(eventName, id, ...data) {
+	emitStaticId (eventName, id, ...data) {
 		if (!id) throw new Error("Missing id from emitId call!");
 		this._eventListeners = this._eventListeners || {};
 		this._eventsEmitting = true;
@@ -325,7 +325,7 @@ export class IgeEventingClass extends IgeBaseClass {
 	 * @returns {IgeEventingClass} The emitter instance.
 	 * @private
 	 */
-	cancelStatic(eventName) {
+	cancelStatic (eventName) {
 		this._eventStaticEmitters = this._eventStaticEmitters || {};
 		this._eventStaticEmitters[eventName] = [];
 		return this;
@@ -336,7 +336,7 @@ export class IgeEventingClass extends IgeBaseClass {
 	 * @returns {boolean} True if one or more event listeners are registered for
 	 * the event. False if none are found.
 	 */
-	willEmit(eventName) {
+	willEmit (eventName) {
 		const id = "*";
 		if (!this._eventListeners || !this._eventListeners[eventName]) {
 			return false;
@@ -359,7 +359,7 @@ export class IgeEventingClass extends IgeBaseClass {
 	 * @returns {boolean} True if one or more event listeners are registered for
 	 * the event. False if none are found.
 	 */
-	willEmitId(eventName, id) {
+	willEmitId (eventName, id) {
 		if (!this._eventListeners || !this._eventListeners[eventName]) {
 			return false;
 		}
@@ -399,7 +399,7 @@ export class IgeEventingClass extends IgeBaseClass {
 	 * @param {...any} data Optional arguments to emit with the event.
 	 * @returns {IgeEventingClass} The emitter instance.
 	 */
-	deferEmit(eventName, ...data) {
+	deferEmit (eventName, ...data) {
 		if (!this._eventsAllowDefer) {
 			// Check for an existing timeout
 			this._eventsDeferTimeouts = this._eventsDeferTimeouts || {};
@@ -424,7 +424,7 @@ export class IgeEventingClass extends IgeBaseClass {
 	 * event emitter is finished processing.
 	 * @private
 	 */
-	_processRemovalQueue() {
+	_processRemovalQueue () {
 		if (!this._eventRemovalQueue || !this._eventRemovalQueue.length) {
 			return;
 		}

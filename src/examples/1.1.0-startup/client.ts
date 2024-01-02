@@ -2,7 +2,7 @@ import simpleBox from "./assets/textures/smartTextures/simpleBox";
 import { Rotator } from "./gameClasses/Rotator";
 import { IgeBaseClass } from "@/engine/core/IgeBaseClass";
 import { IgeBaseScene } from "@/engine/core/IgeBaseScene";
-import { IgeEntity } from "@/engine/core/IgeEntity";
+import type { IgeEntity } from "@/engine/core/IgeEntity";
 import { IgeTexture } from "@/engine/core/IgeTexture";
 import { ige } from "@/engine/instance";
 
@@ -12,13 +12,13 @@ window.ige = ige;
 export class Client extends IgeBaseClass {
 	classId = "Client";
 
-	constructor() {
+	constructor () {
 		// Init the super class
 		super();
 		void this.init();
 	}
 
-	async init() {
+	async init () {
 		// Load the game textures
 		new IgeTexture("fairy", "./assets/textures/sprites/fairy.png");
 		new IgeTexture("simpleBox", simpleBox);

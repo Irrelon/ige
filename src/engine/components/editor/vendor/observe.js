@@ -22,14 +22,14 @@
 	var ARRAY_SPLICE_TYPE = "splice";
 
 	// Detect and do basic sanity checking on Object/Array.observe.
-	function detectObjectObserve() {
+	function detectObjectObserve () {
 		if (typeof Object.observe !== "function" || typeof Array.observe !== "function") {
 			return false;
 		}
 
 		var records = [];
 
-		function callback(recs) {
+		function callback (recs) {
 			records = recs;
 		}
 
@@ -70,7 +70,7 @@
 
 	var hasObserve = detectObjectObserve();
 
-	function detectEval() {
+	function detectEval () {
 		// don't test for eval if document has CSP securityPolicy object and we can see that
 		// eval is not supported. This avoids an error message in console even when the exception
 		// is caught
@@ -88,25 +88,25 @@
 
 	var hasEval = detectEval();
 
-	function isIndex(s) {
+	function isIndex (s) {
 		return +s === s >>> 0;
 	}
 
-	function toNumber(s) {
+	function toNumber (s) {
 		return +s;
 	}
 
-	function isObject(obj) {
+	function isObject (obj) {
 		return obj === Object(obj);
 	}
 
 	var numberIsNaN =
 		global.Number.isNaN ||
-		function isNaN(value) {
+		function isNaN (value) {
 			return typeof value === "number" && global.isNaN(value);
 		};
 
-	function areSameValue(left, right) {
+	function areSameValue (left, right) {
 		if (left === right) return left !== 0 || 1 / left === 1 / right;
 		if (numberIsNaN(left) && numberIsNaN(right)) return true;
 
@@ -116,16 +116,16 @@
 	var createObject =
 		"__proto__" in {}
 			? function (obj) {
-					return obj;
+				return obj;
 			  }
 			: function (obj) {
-					var proto = obj.__proto__;
-					if (!proto) return obj;
-					var newObject = Object.create(proto);
-					Object.getOwnPropertyNames(obj).forEach(function (name) {
-						Object.defineProperty(newObject, name, Object.getOwnPropertyDescriptor(obj, name));
-					});
-					return newObject;
+				var proto = obj.__proto__;
+				if (!proto) return obj;
+				var newObject = Object.create(proto);
+				Object.getOwnPropertyNames(obj).forEach(function (name) {
+					Object.defineProperty(newObject, name, Object.getOwnPropertyDescriptor(obj, name));
+				});
+				return newObject;
 			  };
 
 	var identStart = "[$_a-zA-Z]";
@@ -136,7 +136,7 @@
 	var path = "(?:" + identOrElementIndex + ")(?:\\s*\\.\\s*" + identOrElementIndex + ")*";
 	var pathRegExp = new RegExp("^" + path + "$");
 
-	function isPathValid(s) {
+	function isPathValid (s) {
 		if (typeof s != "string") return false;
 		s = s.trim();
 
@@ -149,7 +149,7 @@
 
 	var constructorIsPrivate = {};
 
-	function Path(s, privateToken) {
+	function Path (s, privateToken) {
 		if (privateToken !== constructorIsPrivate) throw Error("Use Path.get to retrieve path objects");
 
 		if (s.trim() == "") return this;
@@ -175,7 +175,7 @@
 	// TODO(rafaelw): Make simple LRU cache
 	var pathCache = {};
 
-	function getPath(pathString) {
+	function getPath (pathString) {
 		if (pathString instanceof Path) return pathString;
 
 		if (pathString == null) pathString = "";
@@ -252,7 +252,7 @@
 
 	var MAX_DIRTY_CHECK_CYCLES = 1000;
 
-	function dirtyCheck(observer) {
+	function dirtyCheck (observer) {
 		var cycles = 0;
 		while (cycles < MAX_DIRTY_CHECK_CYCLES && observer.check_()) {
 			observer.report_();
@@ -261,16 +261,16 @@
 		if (global.testingExposeCycleCount) global.dirtyCheckCycleCount = cycles;
 	}
 
-	function objectIsEmpty(object) {
+	function objectIsEmpty (object) {
 		for (var prop in object) return false;
 		return true;
 	}
 
-	function diffIsEmpty(diff) {
+	function diffIsEmpty (diff) {
 		return objectIsEmpty(diff.added) && objectIsEmpty(diff.removed) && objectIsEmpty(diff.changed);
 	}
 
-	function diffObjectFromOldObject(object, oldObject) {
+	function diffObjectFromOldObject (object, oldObject) {
 		var added = {};
 		var removed = {};
 		var changed = {};
@@ -304,7 +304,7 @@
 		};
 	}
 
-	function copyObject(object, opt_copy) {
+	function copyObject (object, opt_copy) {
 		var copy = opt_copy || (Array.isArray(object) ? [] : {});
 		for (var prop in object) {
 			copy[prop] = object[prop];
@@ -313,7 +313,7 @@
 		return copy;
 	}
 
-	function Observer(object, callback, target) {
+	function Observer (object, callback, target) {
 		this.closed_ = false;
 		this.object_ = object;
 		this.callback = callback; // TODO(rafaelw): Used in NodeBind
@@ -399,7 +399,7 @@
 		allObservers = [];
 	}
 
-	function addToAll(observer) {
+	function addToAll (observer) {
 		if (!collectObservers) return;
 
 		allObservers.push(observer);
@@ -460,7 +460,7 @@
 		};
 	}
 
-	function ObjectObserver(object, callback, target) {
+	function ObjectObserver (object, callback, target) {
 		Observer.call(this, object, callback, target);
 		this.connect_();
 		this.sync_(true);
@@ -506,7 +506,7 @@
 		}
 	});
 
-	function ArrayObserver(array, callback, target) {
+	function ArrayObserver (array, callback, target) {
 		if (!Array.isArray(array)) throw Error("Provided object is not an Array");
 		ObjectObserver.call(this, array, callback, target);
 	}
@@ -551,7 +551,7 @@
 		});
 	};
 
-	function ObservedSet(callback) {
+	function ObservedSet (callback) {
 		this.arr = [];
 		this.callback = callback;
 		this.isObserved = true;
@@ -603,7 +603,7 @@
 		}
 	};
 
-	function PathObserver(object, path, callback, target, transformFn, setValueFn) {
+	function PathObserver (object, path, callback, target, transformFn, setValueFn) {
 		var path = path instanceof Path ? path : getPath(path);
 		if (!path.valid || !path.length || !isObject(object)) {
 			this.value_ = path.getValueFrom(object);
@@ -674,7 +674,7 @@
 		}
 	});
 
-	function CompoundPathObserver(callback, target, transformFn, setValueFn) {
+	function CompoundPathObserver (callback, target, transformFn, setValueFn) {
 		Observer.call(this, undefined, callback, target);
 		this.transformFn_ = transformFn;
 		this.setValueFn_ = setValueFn;
@@ -784,7 +784,7 @@
 	expectedRecordTypes[PROP_UPDATE_TYPE] = true;
 	expectedRecordTypes[PROP_DELETE_TYPE] = true;
 
-	function notifyFunction(object, name) {
+	function notifyFunction (object, name) {
 		if (typeof Object.observe !== "function") return;
 
 		var notifier = Object.getNotifier(object);
@@ -836,7 +836,7 @@
 		};
 	};
 
-	function diffObjectFromChangeRecords(object, changeRecords, oldValues) {
+	function diffObjectFromChangeRecords (object, changeRecords, oldValues) {
 		var added = {};
 		var removed = {};
 
@@ -887,7 +887,7 @@
 		};
 	}
 
-	function newSplice(index, removed, addedCount) {
+	function newSplice (index, removed, addedCount) {
 		return {
 			index: index,
 			removed: removed,
@@ -900,7 +900,7 @@
 	var EDIT_ADD = 2;
 	var EDIT_DELETE = 3;
 
-	function ArraySplice() {}
+	function ArraySplice () {}
 
 	ArraySplice.prototype = {
 		// Note: This function is *based* on the computation of the Levenshtein
@@ -1053,36 +1053,36 @@
 			var oldIndex = oldStart;
 			for (var i = 0; i < ops.length; i++) {
 				switch (ops[i]) {
-					case EDIT_LEAVE:
-						if (splice) {
-							splices.push(splice);
-							splice = undefined;
-						}
+				case EDIT_LEAVE:
+					if (splice) {
+						splices.push(splice);
+						splice = undefined;
+					}
 
-						index++;
-						oldIndex++;
-						break;
-					case EDIT_UPDATE:
-						if (!splice) splice = newSplice(index, [], 0);
+					index++;
+					oldIndex++;
+					break;
+				case EDIT_UPDATE:
+					if (!splice) splice = newSplice(index, [], 0);
 
-						splice.addedCount++;
-						index++;
+					splice.addedCount++;
+					index++;
 
-						splice.removed.push(old[oldIndex]);
-						oldIndex++;
-						break;
-					case EDIT_ADD:
-						if (!splice) splice = newSplice(index, [], 0);
+					splice.removed.push(old[oldIndex]);
+					oldIndex++;
+					break;
+				case EDIT_ADD:
+					if (!splice) splice = newSplice(index, [], 0);
 
-						splice.addedCount++;
-						index++;
-						break;
-					case EDIT_DELETE:
-						if (!splice) splice = newSplice(index, [], 0);
+					splice.addedCount++;
+					index++;
+					break;
+				case EDIT_DELETE:
+					if (!splice) splice = newSplice(index, [], 0);
 
-						splice.removed.push(old[oldIndex]);
-						oldIndex++;
-						break;
+					splice.removed.push(old[oldIndex]);
+					oldIndex++;
+					break;
 				}
 			}
 
@@ -1117,11 +1117,11 @@
 
 	var arraySplice = new ArraySplice();
 
-	function calcSplices(current, currentStart, currentEnd, old, oldStart, oldEnd) {
+	function calcSplices (current, currentStart, currentEnd, old, oldStart, oldEnd) {
 		return arraySplice.calcSplices(current, currentStart, currentEnd, old, oldStart, oldEnd);
 	}
 
-	function intersect(start1, end1, start2, end2) {
+	function intersect (start1, end1, start2, end2) {
 		// Disjoint
 		if (end1 < start2 || end2 < start1) return -1;
 
@@ -1139,7 +1139,7 @@
 		}
 	}
 
-	function mergeSplice(splices, index, removed, addedCount) {
+	function mergeSplice (splices, index, removed, addedCount) {
 		var splice = newSplice(index, removed, addedCount);
 
 		var inserted = false;
@@ -1210,33 +1210,33 @@
 		if (!inserted) splices.push(splice);
 	}
 
-	function createInitialSplices(array, changeRecords) {
+	function createInitialSplices (array, changeRecords) {
 		var splices = [];
 
 		for (var i = 0; i < changeRecords.length; i++) {
 			var record = changeRecords[i];
 			switch (record.type) {
-				case ARRAY_SPLICE_TYPE:
-					mergeSplice(splices, record.index, record.removed.slice(), record.addedCount);
-					break;
-				case PROP_ADD_TYPE:
-				case PROP_UPDATE_TYPE:
-				case PROP_DELETE_TYPE:
-					if (!isIndex(record.name)) continue;
-					var index = toNumber(record.name);
-					if (index < 0) continue;
-					mergeSplice(splices, index, [record.oldValue], 1);
-					break;
-				default:
-					console.error("Unexpected record type: " + JSON.stringify(record));
-					break;
+			case ARRAY_SPLICE_TYPE:
+				mergeSplice(splices, record.index, record.removed.slice(), record.addedCount);
+				break;
+			case PROP_ADD_TYPE:
+			case PROP_UPDATE_TYPE:
+			case PROP_DELETE_TYPE:
+				if (!isIndex(record.name)) continue;
+				var index = toNumber(record.name);
+				if (index < 0) continue;
+				mergeSplice(splices, index, [record.oldValue], 1);
+				break;
+			default:
+				console.error("Unexpected record type: " + JSON.stringify(record));
+				break;
 			}
 		}
 
 		return splices;
 	}
 
-	function projectArraySplices(array, changeRecords) {
+	function projectArraySplices (array, changeRecords) {
 		var splices = [];
 
 		createInitialSplices(array, changeRecords).forEach(function (splice) {

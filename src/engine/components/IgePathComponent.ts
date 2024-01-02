@@ -3,16 +3,16 @@ import { IgeEntityRenderMode } from "@/enums/IgeEntityRenderMode";
 import { IgeMountMode } from "@/enums/IgeMountMode";
 import { isClient } from "../clientServer";
 import { IgeComponent } from "../core/IgeComponent";
-import { IgeEntity } from "../core/IgeEntity";
-import { IgeObject } from "../core/IgeObject";
-import { IgePathFinder, IgePathFinderComparisonCallback } from "../core/IgePathFinder";
+import type { IgeEntity } from "../core/IgeEntity";
+import type { IgeObject } from "../core/IgeObject";
+import type { IgePathFinder, IgePathFinderComparisonCallback } from "../core/IgePathFinder";
 import { IgePathNode } from "../core/IgePathNode";
 import { IgePoint3d } from "../core/IgePoint3d";
-import { IgeTileMap2d } from "../core/IgeTileMap2d";
+import type { IgeTileMap2d } from "../core/IgeTileMap2d";
 import { ige } from "../instance";
 import { distance } from "../utils";
-import { IgeCanvasRenderingContext2d } from "@/types/IgeCanvasRenderingContext2d";
-import { IgeEntityBehaviourMethod } from "@/types/IgeEntityBehaviour";
+import type { IgeCanvasRenderingContext2d } from "@/types/IgeCanvasRenderingContext2d";
+import type { IgeEntityBehaviourMethod } from "@/types/IgeEntityBehaviour";
 
 /**
  * Handles entity path traversal. This component is supposed to be added
@@ -51,7 +51,7 @@ export class IgePathComponent extends IgeComponent {
 	_totalDistance?: number;
 	_totalTime?: number;
 
-	constructor(entity: IgeEntity, options?: any) {
+	constructor (entity: IgeEntity, options?: any) {
 		super(entity, options);
 
 		this._speed = 1 / 1000;
@@ -358,37 +358,37 @@ export class IgePathComponent extends IgeComponent {
 				if (this._entity._renderMode === IgeEntityRenderMode.iso) {
 					// Convert direction for isometric
 					switch (dir) {
-						case "E":
-							dir = "SE";
-							break;
+					case "E":
+						dir = "SE";
+						break;
 
-						case "S":
-							dir = "SW";
-							break;
+					case "S":
+						dir = "SW";
+						break;
 
-						case "W":
-							dir = "NW";
-							break;
+					case "W":
+						dir = "NW";
+						break;
 
-						case "N":
-							dir = "NE";
-							break;
+					case "N":
+						dir = "NE";
+						break;
 
-						case "NE":
-							dir = "E";
-							break;
+					case "NE":
+						dir = "E";
+						break;
 
-						case "SW":
-							dir = "W";
-							break;
+					case "SW":
+						dir = "W";
+						break;
 
-						case "NW":
-							dir = "N";
-							break;
+					case "NW":
+						dir = "N";
+						break;
 
-						case "SE":
-							dir = "S";
-							break;
+					case "SE":
+						dir = "S";
+						break;
 					}
 				}
 			}

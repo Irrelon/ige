@@ -8,12 +8,12 @@ import {
 	IGE_NETWORK_STREAM_TIME,
 	IGE_NETWORK_TIME_SYNC
 } from "@/enums/IgeNetworkConstants";
-import { IgeEntity } from "../../core/IgeEntity";
+import type { IgeEntity } from "../../core/IgeEntity";
 import { igeClassStore } from "../../igeClassStore";
 import { ige } from "../../instance";
 import { newIdHex } from "../../utils";
 import { IgeNetIoBaseController } from "../IgeNetIoBaseController";
-import {
+import type {
 	IgeNetworkMessageStructure,
 	IgeNetworkRequestMessageStructure,
 	IgeNetworkMessageData,
@@ -23,7 +23,7 @@ import {
 	IgeNetworkClientSideMessageHandler,
 	IgeNetworkClientSideResponseHandler
 } from "@/types/IgeNetworkMessage";
-import {
+import type {
 	IgeStreamCreateMessageData,
 	IgeStreamDestroyMessageData,
 	IgeStreamUpdateMessageData
@@ -46,7 +46,7 @@ export class IgeNetIoClientController extends IgeNetIoBaseController {
 	_renderLatency: number = 100;
 	_streamDataTime: number = 0;
 
-	constructor() {
+	constructor () {
 		super();
 
 		// Define the network stream commands
@@ -60,7 +60,7 @@ export class IgeNetIoClientController extends IgeNetIoBaseController {
 	 * Gets the current socket id.
 	 * @returns {string} The id of the socket connection to the server.
 	 */
-	id() {
+	id () {
 		return this._id || "";
 	}
 
@@ -70,7 +70,7 @@ export class IgeNetIoClientController extends IgeNetIoBaseController {
 	 * @param {Function=} callback A callback method to call once the
 	 * network has started.
 	 */
-	start(url?: string, callback?: () => void) {
+	start (url?: string, callback?: () => void) {
 		return new Promise<void>((resolve) => {
 			if (this._state === 3) {
 				// We're already connected
@@ -216,7 +216,7 @@ export class IgeNetIoClientController extends IgeNetIoBaseController {
 		this._sendTimeSync([serverTime, localTime]);
 	};
 
-	stop() {
+	stop () {
 		// Check we are connected
 		if (this._state === 3) {
 			this._io?.disconnect("Client requested disconnect");
@@ -233,7 +233,7 @@ export class IgeNetIoClientController extends IgeNetIoBaseController {
 	 * command is received by the network.
 	 * @return {*}
 	 */
-	define(commandName: string, callback: (...args: any[]) => void) {
+	define (commandName: string, callback: (...args: any[]) => void) {
 		if (commandName !== undefined && callback !== undefined) {
 			// Check if this command has been defined by the server
 			//if (this._networkCommandsLookup[commandName] !== undefined) {
@@ -258,7 +258,7 @@ export class IgeNetIoClientController extends IgeNetIoBaseController {
 	 * @param data
 	 * @param callback
 	 */
-	send<DataType = IgeNetworkMessageData>(
+	send<DataType = IgeNetworkMessageData> (
 		commandName: string,
 		data?: DataType,
 		callback?: IgeNetworkClientSideResponseHandler
@@ -296,7 +296,7 @@ export class IgeNetIoClientController extends IgeNetIoBaseController {
 	 * @param {Object} data
 	 * @param {Function=} callback
 	 */
-	request<ResultType = any>(
+	request<ResultType = any> (
 		commandName: string,
 		data: IgeNetworkMessageData,
 		callback?: IgeNetworkClientSideMessageHandler
@@ -336,7 +336,7 @@ export class IgeNetIoClientController extends IgeNetIoBaseController {
 	 * @param {string} requestId
 	 * @param {Object} data
 	 */
-	response(requestId: string, data: IgeNetworkMessageData) {
+	response (requestId: string, data: IgeNetworkMessageData) {
 		// Grab the original request object
 		const req = this._requests[requestId];
 
@@ -357,7 +357,7 @@ export class IgeNetIoClientController extends IgeNetIoBaseController {
 	 * Called when the network connects to the server.
 	 * @private
 	 */
-	_onConnectToServer() {
+	_onConnectToServer () {
 		this.log("Connected to server!");
 		this.emit("connected");
 	}
@@ -367,7 +367,7 @@ export class IgeNetIoClientController extends IgeNetIoBaseController {
 	 * @param data
 	 * @private
 	 */
-	_onMessageFromServer(data: IgeNetworkEncodedMessageData) {
+	_onMessageFromServer (data: IgeNetworkEncodedMessageData) {
 		const decodedCommandIndex = data[0].charCodeAt(0);
 		const commandName = this._networkCommandsIndex[decodedCommandIndex];
 
@@ -388,7 +388,7 @@ export class IgeNetIoClientController extends IgeNetIoBaseController {
 	 * @param data
 	 * @private
 	 */
-	_onDisconnectFromServer(data: string) {
+	_onDisconnectFromServer (data: string) {
 		if (data === "booted") {
 			this.log("Server rejected our connection because it is not accepting connections at this time!", "warning");
 		} else {
@@ -407,7 +407,7 @@ export class IgeNetIoClientController extends IgeNetIoBaseController {
 		this.log(`Error with connection: ${data.reason}`, "error");
 	};
 
-	_sendTimeSync(data: IgeNetworkTimeSyncResponseFromClient) {
+	_sendTimeSync (data: IgeNetworkTimeSyncResponseFromClient) {
 		// Send the time sync command
 		this.send(IGE_NETWORK_TIME_SYNC, data);
 	}
@@ -426,7 +426,7 @@ export class IgeNetIoClientController extends IgeNetIoBaseController {
 	 *
 	 * @param latency
 	 */
-	renderLatency(latency?: number) {
+	renderLatency (latency?: number) {
 		if (latency !== undefined) {
 			this._renderLatency = latency;
 			return this;

@@ -1,7 +1,7 @@
-import { IgeTween } from "./IgeTween";
+import type { IgeTween } from "./IgeTween";
 import { IgeEventingClass } from "@/engine/core/IgeEventingClass";
-import { IgeEntityBehaviourMethod } from "@/types/IgeEntityBehaviour";
-import { IgeIsReadyPromise } from "@/types/IgeIsReadyPromise";
+import type { IgeEntityBehaviourMethod } from "@/types/IgeEntityBehaviour";
+import type { IgeIsReadyPromise } from "@/types/IgeIsReadyPromise";
 
 /**
  * This component is already included in the IgeRoot (ige)

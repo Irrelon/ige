@@ -11,11 +11,11 @@ export class Inventory extends IgeEventingClass {
 	classId = "Inventory";
 	_inventory: InventoryItem[] = [];
 
-	_onChange() {
+	_onChange () {
 		this.emit("change");
 	}
 
-	post(data: InventoryItem | InventoryItem[]) {
+	post (data: InventoryItem | InventoryItem[]) {
 		let i;
 
 		if (data instanceof Array) {
@@ -34,7 +34,7 @@ export class Inventory extends IgeEventingClass {
 		this._onChange();
 	}
 
-	get(id: string) {
+	get (id: string) {
 		let i;
 
 		if (id) {
@@ -50,7 +50,7 @@ export class Inventory extends IgeEventingClass {
 		return this._inventory;
 	}
 
-	put(id: string, data: InventoryItem) {
+	put (id: string, data: InventoryItem) {
 		let i;
 
 		for (i = 0; i < this._inventory.length; i++) {
@@ -66,7 +66,7 @@ export class Inventory extends IgeEventingClass {
 		return false;
 	}
 
-	delete(id: string) {
+	delete (id: string) {
 		let i;
 
 		for (i = 0; i < this._inventory.length; i++) {
@@ -82,7 +82,7 @@ export class Inventory extends IgeEventingClass {
 		return false;
 	}
 
-	count() {
+	count () {
 		return this._inventory.length;
 	}
 }

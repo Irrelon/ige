@@ -6,7 +6,7 @@ import { IgeUiElement } from "../core/IgeUiElement";
 import { ige } from "../instance";
 
 export class IgeUiWindow extends IgeUiElement {
-	constructor() {
+	constructor () {
 		super();
 		this.classId = "IgeUiWindow";
 		this._draggable = false;
@@ -54,7 +54,7 @@ export class IgeUiWindow extends IgeUiElement {
 			})
 			.mount(this._topNav);
 	}
-	_dragStart() {
+	_dragStart () {
 		if (!this._draggable) {
 			return;
 		}
@@ -66,7 +66,7 @@ export class IgeUiWindow extends IgeUiElement {
 		};
 		return true;
 	}
-	_dragMove() {
+	_dragMove () {
 		if (!this._draggable || !this._dragging) return;
 		if (!ige.engine._currentViewport) return;
 		if (!this._opStartMouse) return;
@@ -81,14 +81,14 @@ export class IgeUiWindow extends IgeUiElement {
 		// Cancel further propagation
 		return true;
 	}
-	_dragEnd() {
+	_dragEnd () {
 		if (this._draggable && this._dragging) {
 			this._dragging = false;
 			// Cancel further propagation
 			return true;
 		}
 	}
-	draggable(val) {
+	draggable (val) {
 		if (val) {
 			this._draggable = true;
 			this._topNav.on("pointerDown", this._dragStart);
@@ -101,24 +101,24 @@ export class IgeUiWindow extends IgeUiElement {
 			ige.input.off("preMouseMove", this._dragMove);
 		}
 	}
-	blur() {
+	blur () {
 		return super.blur();
 	}
-	title(val) {
+	title (val) {
 		if (val !== undefined) {
 			this._label.value(val);
 			return this;
 		}
 		return this._label.value();
 	}
-	titleColor(val) {
+	titleColor (val) {
 		if (val !== undefined) {
 			this._label.color(val);
 			return this;
 		}
 		return this._label.color();
 	}
-	titleFont(val) {
+	titleFont (val) {
 		if (val !== undefined) {
 			this._label.style("font", val);
 			return this;

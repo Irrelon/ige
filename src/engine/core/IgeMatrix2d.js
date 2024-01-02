@@ -6,13 +6,13 @@ import { radiansToDegrees } from "../utils";
  * Creates a new transformation matrix.
  */
 export class IgeMatrix2d extends IgeBaseClass {
-	constructor() {
+	constructor () {
 		super(...arguments);
 		this.matrix = [1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0];
 		this._rotateOrigin = new IgePoint3d(0, 0, 0);
 		this._scaleOrigin = new IgePoint3d(0, 0, 0);
 	}
-	transformCoord(point, obj) {
+	transformCoord (point, obj) {
 		const { x, y } = point;
 		const tm = this.matrix;
 		point.x = x * tm[0] + y * tm[1] + tm[2];
@@ -31,7 +31,7 @@ export class IgeMatrix2d extends IgeBaseClass {
 	 * @param obj
 	 * @return {IgePoint3d} The passed point.
 	 */
-	transformCoordInverse(point, obj) {
+	transformCoordInverse (point, obj) {
 		const { x, y } = point;
 		const tm = this.matrix;
 		point.x = x * tm[0] - y * tm[1] + tm[2];
@@ -44,7 +44,7 @@ export class IgeMatrix2d extends IgeBaseClass {
 		/* DEXCLUDE */
 		return point;
 	}
-	transform(points, obj) {
+	transform (points, obj) {
 		const pointCount = points.length;
 		for (let pointIndex = 0; pointIndex < pointCount; pointIndex++) {
 			this.transformCoord(points[pointIndex], obj);
@@ -56,12 +56,12 @@ export class IgeMatrix2d extends IgeBaseClass {
 	 * @param {number} angle
 	 * @return {IgeMatrix2d} A new matrix object.
 	 */
-	_newRotate(angle) {
+	_newRotate (angle) {
 		const m = new IgeMatrix2d();
 		m.rotateTo(angle);
 		return m;
 	}
-	rotateBy(angle) {
+	rotateBy (angle) {
 		const m = new IgeMatrix2d();
 		m.translateBy(this._rotateOrigin.x, this._rotateOrigin.y);
 		m.rotateTo(angle);
@@ -69,7 +69,7 @@ export class IgeMatrix2d extends IgeBaseClass {
 		this.multiply(m);
 		return this;
 	}
-	rotateTo(angle) {
+	rotateTo (angle) {
 		const tm = this.matrix;
 		const c = Math.cos(angle);
 		const s = Math.sin(angle);
@@ -90,7 +90,7 @@ export class IgeMatrix2d extends IgeBaseClass {
 	 * radians.
 	 * @return {number}
 	 */
-	rotationRadians() {
+	rotationRadians () {
 		return Math.asin(this.matrix[3]);
 	}
 	/**
@@ -98,7 +98,7 @@ export class IgeMatrix2d extends IgeBaseClass {
 	 * degrees.
 	 * @return {number}
 	 */
-	rotationDegrees() {
+	rotationDegrees () {
 		return radiansToDegrees(Math.acos(this.matrix[0]));
 	}
 	/**
@@ -110,20 +110,20 @@ export class IgeMatrix2d extends IgeBaseClass {
 	 *
 	 * @static
 	 */
-	_newScale(x, y) {
+	_newScale (x, y) {
 		const m = new IgeMatrix2d();
 		m.matrix[0] = x;
 		m.matrix[4] = y;
 		return m;
 	}
-	scaleBy(x, y) {
+	scaleBy (x, y) {
 		const m = new IgeMatrix2d();
 		m.matrix[0] = x;
 		m.matrix[4] = y;
 		this.multiply(m);
 		return this;
 	}
-	scaleTo(x, y) {
+	scaleTo (x, y) {
 		const tm = this.matrix;
 		//this.identity();
 		tm[0] = x;
@@ -142,13 +142,13 @@ export class IgeMatrix2d extends IgeBaseClass {
 	 * @param {number} y Y translation magnitude.
 	 * @return {IgeMatrix2d} A new matrix object.
 	 */
-	_newTranslate(x, y) {
+	_newTranslate (x, y) {
 		const m = new IgeMatrix2d();
 		m.matrix[2] = x;
 		m.matrix[5] = y;
 		return m;
 	}
-	translateBy(x, y) {
+	translateBy (x, y) {
 		const m = new IgeMatrix2d();
 		m.matrix[2] = x;
 		m.matrix[5] = y;
@@ -160,7 +160,7 @@ export class IgeMatrix2d extends IgeBaseClass {
 	 * @param x
 	 * @param y
 	 */
-	translateTo(x, y) {
+	translateTo (x, y) {
 		const tm = this.matrix;
 		tm[2] = x;
 		tm[5] = y;
@@ -177,7 +177,7 @@ export class IgeMatrix2d extends IgeBaseClass {
 	 * @param {IgeMatrix2d} matrix
 	 * @return {Object} "this".
 	 */
-	copy(matrix) {
+	copy (matrix) {
 		const internalMatrix = matrix.matrix;
 		const thisMatrix = this.matrix;
 		thisMatrix[0] = internalMatrix[0];
@@ -191,7 +191,7 @@ export class IgeMatrix2d extends IgeBaseClass {
 		thisMatrix[8] = internalMatrix[8];
 		return this;
 	}
-	compare(matrix) {
+	compare (matrix) {
 		const thisMatrix = this.matrix,
 			thatMatrix = matrix.matrix;
 		for (let i = 0; i < 9; i++) {
@@ -205,7 +205,7 @@ export class IgeMatrix2d extends IgeBaseClass {
 	 * Set this matrix to the identity matrix.
 	 * @return {Object} "this".
 	 */
-	identity() {
+	identity () {
 		const m = this.matrix;
 		m[0] = 1.0;
 		m[1] = 0.0;
@@ -224,7 +224,7 @@ export class IgeMatrix2d extends IgeBaseClass {
 	 * current matrix by.
 	 * @return {Object} "this".
 	 */
-	multiply(m) {
+	multiply (m) {
 		const tm = this.matrix,
 			mm = m.matrix,
 			tm0 = tm[0],
@@ -262,7 +262,7 @@ export class IgeMatrix2d extends IgeBaseClass {
 	 * current matrix by.
 	 * @return {Object} "this".
 	 */
-	premultiply(m) {
+	premultiply (m) {
 		const m00 = m.matrix[0] * this.matrix[0] + m.matrix[1] * this.matrix[3] + m.matrix[2] * this.matrix[6];
 		const m01 = m.matrix[0] * this.matrix[1] + m.matrix[1] * this.matrix[4] + m.matrix[2] * this.matrix[7];
 		const m02 = m.matrix[0] * this.matrix[2] + m.matrix[1] * this.matrix[5] + m.matrix[2] * this.matrix[8];
@@ -287,7 +287,7 @@ export class IgeMatrix2d extends IgeBaseClass {
 	 * Creates a new inverse matrix from this matrix.
 	 * @return {IgeMatrix2d} An inverse matrix.
 	 */
-	getInverse() {
+	getInverse () {
 		const tm = this.matrix;
 		const m00 = tm[0],
 			m01 = tm[1],
@@ -322,7 +322,7 @@ export class IgeMatrix2d extends IgeBaseClass {
 	 * @param {number} scalar Scalar value.
 	 * @return this
 	 */
-	multiplyScalar(scalar) {
+	multiplyScalar (scalar) {
 		let i;
 		for (i = 0; i < 9; i++) {
 			this.matrix[i] *= scalar;
@@ -336,7 +336,7 @@ export class IgeMatrix2d extends IgeBaseClass {
 	 * @param {CanvasRenderingContext2D} ctx The rendering context to
 	 * set the transform matrix for.
 	 */
-	transformRenderingContextSet(ctx) {
+	transformRenderingContextSet (ctx) {
 		const m = this.matrix;
 		ctx.setTransform(m[0], m[3], m[1], m[4], m[2], m[5]);
 		return this;
@@ -348,7 +348,7 @@ export class IgeMatrix2d extends IgeBaseClass {
 	 * @param {CanvasRenderingContext2D} ctx The rendering context to
 	 * set the transform matrix for.
 	 */
-	transformRenderingContext(ctx) {
+	transformRenderingContext (ctx) {
 		const m = this.matrix;
 		ctx.transform(m[0], m[3], m[1], m[4], m[2], m[5]);
 		return this;

@@ -1,6 +1,6 @@
-import { AreaInteriorDefinition } from "./AreaInteriorDefinition";
-import { JobDefinition } from "./JobDefinition";
-import { ResourceDefinition } from "./ResourceDefinition";
+import type { AreaInteriorDefinition } from "./AreaInteriorDefinition";
+import type { JobDefinition } from "./JobDefinition";
+import type { ResourceDefinition } from "./ResourceDefinition";
 
 export interface SpaceStationDefinition {
 	_id: string;

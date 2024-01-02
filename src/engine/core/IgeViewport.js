@@ -14,7 +14,7 @@ import { ige } from "../instance";
  * Creates a new viewport.
  */
 export class IgeViewport extends IgeUiEntity {
-	constructor(options) {
+	constructor (options) {
 		super();
 		this.classId = "IgeViewport";
 		this.IgeViewport = true;
@@ -54,7 +54,7 @@ export class IgeViewport extends IgeUiEntity {
 	 * @param {number} height Height in pixels.
 	 * @returns {*}
 	 */
-	minimumVisibleArea(width, height) {
+	minimumVisibleArea (width, height) {
 		// Store the w/h we want to lock to
 		this._lockDimension = new IgePoint3d(width, height, 0);
 		if (isClient) {
@@ -62,14 +62,14 @@ export class IgeViewport extends IgeUiEntity {
 		}
 		return this;
 	}
-	autoSize(val) {
+	autoSize (val) {
 		if (typeof val !== "undefined") {
 			this._autoSize = val;
 			return this;
 		}
 		return this._autoSize;
 	}
-	scene(scene) {
+	scene (scene) {
 		if (scene !== undefined) {
 			this._scene = scene;
 			return this;
@@ -80,12 +80,12 @@ export class IgeViewport extends IgeUiEntity {
 	 * Returns the viewport's mouse position.
 	 * @return {IgePoint3d}
 	 */
-	mousePos() {
+	mousePos () {
 		// Viewport mouse position is calculated and assigned in the
 		// IgeInputComponent class.
 		return this._pointerPos.clone();
 	}
-	mousePosWorld() {
+	mousePosWorld () {
 		return this._transformPoint(this._pointerPos.clone());
 	}
 	/**
@@ -93,7 +93,7 @@ export class IgeViewport extends IgeUiEntity {
 	 * in the world. The co-ordinates are in world space.
 	 * @returns {IgeRect}
 	 */
-	viewArea() {
+	viewArea () {
 		const aabb = this.aabb(),
 			camTrans = this.camera._translate,
 			camScale = this.camera._scale,
@@ -106,7 +106,7 @@ export class IgeViewport extends IgeUiEntity {
 	 * @param ctx
 	 * @param tickDelta
 	 */
-	update(ctx, tickDelta) {
+	update (ctx, tickDelta) {
 		// Check if we have a scene attached to this viewport
 		if (!this._scene) {
 			return;
@@ -123,7 +123,7 @@ export class IgeViewport extends IgeUiEntity {
 	/**
 	 * Processes the actions required each render frame.
 	 */
-	tick(ctx) {
+	tick (ctx) {
 		// Check if we have a scene attached to this viewport and ige has a root object
 		if (!this._scene || !ige.engine) {
 			return;
@@ -217,7 +217,7 @@ export class IgeViewport extends IgeUiEntity {
 	 *     var screenPos = entity.screenPosition();
 	 * @return {IgePoint3d} The screen position of the entity.
 	 */
-	screenPosition() {
+	screenPosition () {
 		var _a, _b;
 		return new IgePoint3d(
 			Math.floor(
@@ -231,42 +231,42 @@ export class IgeViewport extends IgeUiEntity {
 			0
 		);
 	}
-	drawViewArea(val) {
+	drawViewArea (val) {
 		if (val !== undefined) {
 			this._drawViewArea = val;
 			return this;
 		}
 		return this._drawViewArea;
 	}
-	drawBoundsLimitId(id) {
+	drawBoundsLimitId (id) {
 		if (id !== undefined) {
 			this._drawBoundsLimitId = id;
 			return this;
 		}
 		return this._drawBoundsLimitId;
 	}
-	drawBoundsLimitCategory(category) {
+	drawBoundsLimitCategory (category) {
 		if (category !== undefined) {
 			this._drawBoundsLimitCategory = category;
 			return this;
 		}
 		return this._drawBoundsLimitCategory;
 	}
-	drawCompositeBounds(val) {
+	drawCompositeBounds (val) {
 		if (val !== undefined) {
 			this._drawCompositeBounds = val;
 			return this;
 		}
 		return this._drawCompositeBounds;
 	}
-	drawGuides(val) {
+	drawGuides (val) {
 		if (val !== undefined) {
 			this._drawGuides = val;
 			return this;
 		}
 		return this._drawGuides;
 	}
-	paintGuides(ctx) {
+	paintGuides (ctx) {
 		if (!ige.engine) return;
 		const geom = ige.engine._bounds2d;
 		// Check draw-guides setting
@@ -290,7 +290,7 @@ export class IgeViewport extends IgeUiEntity {
 	 * @param rootObject
 	 * @param index
 	 */
-	paintAabbs(ctx, rootObject, index) {
+	paintAabbs (ctx, rootObject, index) {
 		const arr = rootObject._children || [];
 		let arrCount,
 			obj,
@@ -491,7 +491,7 @@ export class IgeViewport extends IgeUiEntity {
 	 * @param event
 	 * @private
 	 */
-	_resizeEvent(event) {
+	_resizeEvent (event) {
 		if (this._autoSize && this._parent) {
 			this._bounds2d = this._parent._bounds2d.clone();
 		}
@@ -538,19 +538,19 @@ export class IgeViewport extends IgeUiEntity {
 	 * Other properties are handled by their own class method.
 	 * @return {string}
 	 */
-	_stringify() {
+	_stringify () {
 		// Get the properties for all the super-classes
 		let str = super.stringify();
 		// Loop properties and add property assignment code to string
 		for (const i in this) {
 			if (this.hasOwnProperty(i) && this[i] !== undefined) {
 				switch (i) {
-					case "_autoSize":
-						str += ".autoSize(" + this._autoSize + ")";
-						break;
-					case "_scene":
-						str += ".scene(ige.$('" + this.scene().id() + "'))";
-						break;
+				case "_autoSize":
+					str += ".autoSize(" + this._autoSize + ")";
+					break;
+				case "_scene":
+					str += ".scene(ige.$('" + this.scene().id() + "'))";
+					break;
 				}
 			}
 		}

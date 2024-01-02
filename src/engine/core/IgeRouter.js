@@ -4,29 +4,29 @@ import { isClient, isServer } from "../clientServer";
 var __awaiter =
 	(this && this.__awaiter) ||
 	function (thisArg, _arguments, P, generator) {
-		function adopt(value) {
+		function adopt (value) {
 			return value instanceof P
 				? value
 				: new P(function (resolve) {
-						resolve(value);
+					resolve(value);
 				  });
 		}
 		return new (P || (P = Promise))(function (resolve, reject) {
-			function fulfilled(value) {
+			function fulfilled (value) {
 				try {
 					step(generator.next(value));
 				} catch (e) {
 					reject(e);
 				}
 			}
-			function rejected(value) {
+			function rejected (value) {
 				try {
 					step(generator["throw"](value));
 				} catch (e) {
 					reject(e);
 				}
 			}
-			function step(result) {
+			function step (result) {
 				result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected);
 			}
 			step((generator = generator.apply(thisArg, _arguments || [])).next());
@@ -35,7 +35,7 @@ var __awaiter =
 
 const PATH_DELIMITER = "/";
 export class IgeRouter extends IgeBaseClass {
-	constructor() {
+	constructor () {
 		super(...arguments);
 		this.classId = "IgeRouter";
 		this._routeLoad = {};
@@ -44,7 +44,7 @@ export class IgeRouter extends IgeBaseClass {
 		this._routeQueue = [];
 		this._executingSeries = false;
 	}
-	route(path, definition) {
+	route (path, definition) {
 		if (path !== undefined) {
 			if (definition !== undefined) {
 				this._routeLoad = this._routeLoad || {};
@@ -55,7 +55,7 @@ export class IgeRouter extends IgeBaseClass {
 		}
 		return this._routeLoad;
 	}
-	go(path) {
+	go (path) {
 		return __awaiter(this, void 0, void 0, function* () {
 			// Check for a route definition first
 			if (!this._routeLoad[path]) {
@@ -120,13 +120,13 @@ export class IgeRouter extends IgeBaseClass {
 			this._currentRoutePath = path;
 		});
 	}
-	_pathJoin(path1, path2) {
+	_pathJoin (path1, path2) {
 		if (!path1 && !path2) return "";
 		if (path1 && !path2) return path1;
 		if (path2 && !path1) return path2;
 		return path1 + PATH_DELIMITER + path2;
 	}
-	_routeAdd(path) {}
-	_routeRemove(path) {}
-	_processQueue() {}
+	_routeAdd (path) {}
+	_routeRemove (path) {}
+	_processQueue () {}
 }

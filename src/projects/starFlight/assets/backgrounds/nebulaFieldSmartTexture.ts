@@ -1,6 +1,6 @@
-import { IgeTexture } from "@/engine/core/IgeTexture";
+import type { IgeTexture } from "@/engine/core/IgeTexture";
 import { ige } from "@/engine/instance";
-import { IgeSmartTexture } from "@/types/IgeSmartTexture";
+import type { IgeSmartTexture } from "@/types/IgeSmartTexture";
 
 type NebulaPositionSpeed = [number, number, number, number, number];
 

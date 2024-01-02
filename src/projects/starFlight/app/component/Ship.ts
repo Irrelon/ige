@@ -1,4 +1,5 @@
-import { GameEntity, EntityPublicGameData } from "./GameEntity";
+import type { EntityPublicGameData } from "./GameEntity";
+import { GameEntity } from "./GameEntity";
 import { ThrustParticle } from "./particles/ThrustParticle";
 import { isClient, isServer } from "@/engine/clientServer";
 import { IgeParticleEmitter } from "@/engine/core/IgeParticleEmitter";
@@ -8,15 +9,15 @@ import type { IgeScene2d } from "@/engine/core/IgeScene2d";
 import { ige } from "@/engine/instance";
 import { IgeBox2dBodyType } from "@/enums/IgeBox2dBodyType";
 import { IgeBox2dFixtureShapeType } from "@/enums/IgeBox2dFixtureShapeType";
-import { IgeBox2dFixtureDef } from "@/types/IgeBox2dFixtureDef";
-import { IgeCanvasRenderingContext2d } from "@/types/IgeCanvasRenderingContext2d";
+import type { IgeBox2dFixtureDef } from "@/types/IgeBox2dFixtureDef";
+import type { IgeCanvasRenderingContext2d } from "@/types/IgeCanvasRenderingContext2d";
 
 export class Ship extends GameEntity {
 	classId = "Ship";
 	thrustEmitter?: IgeParticleEmitter;
 	triangles?: IgePoly2d[];
 
-	constructor(publicGameData?: EntityPublicGameData) {
+	constructor (publicGameData?: EntityPublicGameData) {
 		super(publicGameData);
 
 		this.streamProperty("thrusting", false);
@@ -61,7 +62,7 @@ export class Ship extends GameEntity {
 		this._setup();
 	}
 
-	_definePhysics() {
+	_definePhysics () {
 		const collisionPoly = new IgePoly2d()
 			.addPoint(0, -this._bounds2d.y2)
 			.addPoint(this._bounds2d.x2, this._bounds2d.y2 - 7)
@@ -113,7 +114,7 @@ export class Ship extends GameEntity {
 	 * @param ctx The canvas context to render to.
 	 * @param tickDelta
 	 */
-	update(ctx: IgeCanvasRenderingContext2d, tickDelta: number) {
+	update (ctx: IgeCanvasRenderingContext2d, tickDelta: number) {
 		if (!isServer) {
 			if (this.streamProperty("thrusting")) {
 				this.thrustEmitter?.start();

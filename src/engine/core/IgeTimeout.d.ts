@@ -1,4 +1,5 @@
-import { IgeInterval, IgeIntervalCallback } from "./IgeInterval";
+import type { IgeIntervalCallback } from "./IgeInterval";
+import { IgeInterval } from "./IgeInterval";
 
 /**
  * Provides an alternative to setTimeout() which works based on the engine's internal

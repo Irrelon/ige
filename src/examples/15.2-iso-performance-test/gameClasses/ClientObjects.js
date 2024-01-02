@@ -457,21 +457,21 @@ var ClientObjects = {
 				this.addFloors(1);
 
 				switch (this.data("crane")) {
-					case "se":
-						this.crane("sw");
-						break;
+				case "se":
+					this.crane("sw");
+					break;
 
-					case "sw":
-						this.crane("nw");
-						break;
+				case "sw":
+					this.crane("nw");
+					break;
 
-					case "nw":
-						this.crane("ne");
-						break;
+				case "nw":
+					this.crane("ne");
+					break;
 
-					case "ne":
-						this.crane("se");
-						break;
+				case "ne":
+					this.crane("se");
+					break;
 				}
 
 				// Set another timeout to re-call this method

@@ -1,7 +1,7 @@
 import { IgeDummyContext } from "./IgeDummyContext";
 
 export class IgeDummyCanvas {
-	constructor() {
+	constructor () {
 		this.dummy = true;
 		this.width = 0;
 		this.height = 0;

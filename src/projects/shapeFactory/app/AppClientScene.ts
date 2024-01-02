@@ -3,9 +3,9 @@ import { IgeCellSheet } from "@/engine/core/IgeCellSheet";
 import { IgeOptions } from "@/engine/core/IgeOptions";
 import { IgeSceneGraph } from "@/engine/core/IgeSceneGraph";
 import { IgeTexture } from "@/engine/core/IgeTexture";
-import { IgeViewport } from "@/engine/core/IgeViewport";
+import type { IgeViewport } from "@/engine/core/IgeViewport";
 import { ige } from "@/engine/instance";
-import { IgeNetIoClientController } from "@/engine/network/client/IgeNetIoClientController";
+import type { IgeNetIoClientController } from "@/engine/network/client/IgeNetIoClientController";
 import { IgeMousePanComponent } from "@/engine/components/IgeMousePanComponent";
 import { circleSmartTexture } from "../assets/textures/smartTextures/circle";
 import { flagSmartTexture } from "../assets/textures/smartTextures/flag";
@@ -21,7 +21,7 @@ window.ige = ige;
 export class AppClientScene extends IgeSceneGraph {
 	classId = "AppClientScene";
 
-	async addGraph() {
+	async addGraph () {
 		const options = new IgeOptions();
 		options.set("masterVolume", 1);
 
@@ -88,7 +88,7 @@ export class AppClientScene extends IgeSceneGraph {
 		await network.start("http://localhost:2000");
 	}
 
-	removeGraph() {
+	removeGraph () {
 		const network = ige.network as IgeNetIoClientController;
 		network.stop();
 		ige.engine.stop();

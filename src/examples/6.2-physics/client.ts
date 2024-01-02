@@ -5,13 +5,13 @@ import { ige } from "@/engine/instance";
 import { IgeEntityBox2d } from "@/engine/components/physics/box2d/IgeEntityBox2d";
 import { IgeBox2dBodyType } from "@/enums/IgeBox2dBodyType";
 import { IgeBox2dFixtureShapeType } from "@/enums/IgeBox2dFixtureShapeType";
-import { IgeCanInit } from "@/types/IgeCanInit";
-import { IgeCanvasRenderingContext2d } from "@/types/IgeCanvasRenderingContext2d";
+import type { IgeCanInit } from "@/types/IgeCanInit";
+import type { IgeCanvasRenderingContext2d } from "@/types/IgeCanvasRenderingContext2d";
 
 export class Client extends IgeBaseClass implements IgeCanInit {
 	classId = "Client";
 
-	constructor() {
+	constructor () {
 		super();
 
 		// @ts-ignore
@@ -20,7 +20,7 @@ export class Client extends IgeBaseClass implements IgeCanInit {
 		void this.init();
 	}
 
-	async init() {
+	async init () {
 		// Wait for our textures to load before continuing
 		await ige.textures.whenLoaded();
 
@@ -40,7 +40,7 @@ export class Client extends IgeBaseClass implements IgeCanInit {
 		new IgeViewport().id("vp1").autoSize(true).scene(scene1).drawBounds(true).mount(ige.engine);
 
 		class PhysicsEntity extends IgeEntityBox2d {
-			update(ctx: IgeCanvasRenderingContext2d, tickDelta: number) {
+			update (ctx: IgeCanvasRenderingContext2d, tickDelta: number) {
 				super.update(ctx, tickDelta);
 
 				if (this._translate.y > 4000) {

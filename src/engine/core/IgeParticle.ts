@@ -7,7 +7,7 @@ export class IgeParticle extends IgeEntity {
 	classId = "IgeParticle";
 	_emitter: IgeParticleEmitter;
 
-	constructor(emitter: IgeParticleEmitter) {
+	constructor (emitter: IgeParticleEmitter) {
 		super();
 
 		this.noAabb(true);
@@ -17,7 +17,7 @@ export class IgeParticle extends IgeEntity {
 		this.addComponent("velocity", IgeVelocityComponent);
 	}
 
-	destroy() {
+	destroy () {
 		// Remove ourselves from the emitter
 		if (this._emitter !== undefined) {
 			arrPull(this._emitter._particles, this);

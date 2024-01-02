@@ -1,4 +1,4 @@
-import { AreaInteriorFeature } from "./AreaInteriorFeature";
+import type { AreaInteriorFeature } from "./AreaInteriorFeature";
 
 export interface AreaInteriorDefinition {
 	_id: string;

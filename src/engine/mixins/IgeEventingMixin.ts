@@ -50,7 +50,7 @@ export const WithEventingMixin = <BaseClassType extends Mixin<IgeBaseClass>>(Bas
 		 *     // The console output is:
 		 *     //    data1, data2
 		 */
-		on(
+		on (
 			eventName: string | string[],
 			callback: (...args: any) => void,
 			context?: any,
@@ -155,7 +155,7 @@ export const WithEventingMixin = <BaseClassType extends Mixin<IgeBaseClass>>(Bas
 		 *     myEntity.off('pointerDown', evt);
 		 * @return {boolean}
 		 */
-		off(
+		off (
 			eventName: string,
 			evtListener: IgeEventListenerObject | IgeMultiEventListenerObject | undefined,
 			callback?: IgeEventRemovalResultCallback
@@ -229,7 +229,7 @@ export const WithEventingMixin = <BaseClassType extends Mixin<IgeBaseClass>>(Bas
 		 *     // The console output is:
 		 *     //    data1, data2
 		 */
-		emit(eventName: string, args?: any): number {
+		emit (eventName: string, args?: any): number {
 			if (!this._eventListeners) {
 				return 0;
 			}
@@ -311,7 +311,7 @@ export const WithEventingMixin = <BaseClassType extends Mixin<IgeBaseClass>>(Bas
 		 * Returns an object containing the current event listeners.
 		 * @return {Object}
 		 */
-		eventList() {
+		eventList () {
 			return this._eventListeners;
 		}
 
@@ -320,7 +320,7 @@ export const WithEventingMixin = <BaseClassType extends Mixin<IgeBaseClass>>(Bas
 		 * each array item.
 		 * @private
 		 */
-		_processRemovals() {
+		_processRemovals () {
 			if (!this._eventListeners) {
 				return;
 			}

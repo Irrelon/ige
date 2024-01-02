@@ -1,12 +1,12 @@
 import { IgeAsset } from "./IgeAsset";
 import type { IgeCanvas } from "./IgeCanvas";
-import { IgeEntity } from "./IgeEntity";
-import { IgeDependencies } from "@/engine/core/IgeDependencies";
-import { IgeTextureRenderMode } from "@/enums/IgeTextureRenderMode";
-import { IgeCanvasRenderingContext2d } from "@/types/IgeCanvasRenderingContext2d";
-import { IgeImage } from "@/types/IgeImage";
-import { IgeSmartFilter } from "@/types/IgeSmartFilter";
-import { IgeSmartTexture } from "@/types/IgeSmartTexture";
+import type { IgeEntity } from "./IgeEntity";
+import type { IgeDependencies } from "@/engine/core/IgeDependencies";
+import type { IgeTextureRenderMode } from "@/enums/IgeTextureRenderMode";
+import type { IgeCanvasRenderingContext2d } from "@/types/IgeCanvasRenderingContext2d";
+import type { IgeImage } from "@/types/IgeImage";
+import type { IgeSmartFilter } from "@/types/IgeSmartFilter";
+import type { IgeSmartTexture } from "@/types/IgeSmartTexture";
 
 export type IgeTextureCell = [number, number, number, number, string?];
 export type IgeTextureCellArray = IgeTextureCell[];

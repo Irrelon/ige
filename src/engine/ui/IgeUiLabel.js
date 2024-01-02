@@ -7,7 +7,7 @@ import { IgeFontAlignX, IgeFontAlignY } from "@/enums/IgeFontAlign";
  * Provides a UI label entity. Basic on-screen text label.
  */
 export class IgeUiLabel extends IgeUiElement {
-	constructor(label = "") {
+	constructor (label = "") {
 		super();
 		this.classId = "IgeUiLabel";
 		this._placeHolder = "";
@@ -31,34 +31,34 @@ export class IgeUiLabel extends IgeUiElement {
 			this.value(label);
 		}
 	}
-	textAlignX(val) {
+	textAlignX (val) {
 		if (val !== undefined) {
 			this._fontEntity.textAlignX(val);
 			return this;
 		}
 		return this._fontEntity.textAlignX();
 	}
-	textAlignY(val) {
+	textAlignY (val) {
 		if (val !== undefined) {
 			this._fontEntity.textAlignY(val);
 			return this;
 		}
 		return this._fontEntity.textAlignY();
 	}
-	textLineSpacing(val) {
+	textLineSpacing (val) {
 		if (val !== undefined) {
 			this._fontEntity.textLineSpacing(val);
 			return this;
 		}
 		return this._fontEntity.textLineSpacing();
 	}
-	autoWrap(val) {
+	autoWrap (val) {
 		if (val !== undefined) {
 			return this._fontEntity.autoWrap(val);
 		}
 		return this._fontEntity.autoWrap();
 	}
-	width(px, lockAspect = false, modifier, noUpdate = false) {
+	width (px, lockAspect = false, modifier, noUpdate = false) {
 		if (px !== undefined) {
 			// Call the main super class method
 			const returnValue = super.width(px, lockAspect, modifier, noUpdate);
@@ -67,7 +67,7 @@ export class IgeUiLabel extends IgeUiElement {
 		}
 		return this._fontEntity.width();
 	}
-	height(px, lockAspect = false, modifier, noUpdate = false) {
+	height (px, lockAspect = false, modifier, noUpdate = false) {
 		if (px !== undefined) {
 			// Call the main super class method
 			const returnValue = super.height(px, lockAspect, modifier, noUpdate);
@@ -76,7 +76,7 @@ export class IgeUiLabel extends IgeUiElement {
 		}
 		return this._fontEntity.height();
 	}
-	value(val) {
+	value (val) {
 		if (val === undefined) {
 			return this._value;
 		}
@@ -109,7 +109,7 @@ export class IgeUiLabel extends IgeUiElement {
 	 * @param fontSheet
 	 * @return {*}
 	 */
-	fontSheet(fontSheet) {
+	fontSheet (fontSheet) {
 		if (fontSheet !== undefined) {
 			this._fontSheet = fontSheet;
 			// Set the font sheet as the texture for our font entity
@@ -118,7 +118,7 @@ export class IgeUiLabel extends IgeUiElement {
 		}
 		return this._fontSheet;
 	}
-	font(val) {
+	font (val) {
 		if (val !== undefined) {
 			if (typeof val === "string") {
 				// Native font name
@@ -136,28 +136,28 @@ export class IgeUiLabel extends IgeUiElement {
 			return this.fontSheet();
 		}
 	}
-	nativeFont(val) {
+	nativeFont (val) {
 		if (val !== undefined) {
 			this._fontEntity.nativeFont(val);
 			return this;
 		}
 		return this._fontEntity.nativeFont();
 	}
-	nativeStroke(val) {
+	nativeStroke (val) {
 		if (val !== undefined) {
 			this._fontEntity.nativeStroke(val);
 			return this;
 		}
 		return this._fontEntity.nativeStroke();
 	}
-	nativeStrokeColor(val) {
+	nativeStrokeColor (val) {
 		if (val !== undefined) {
 			this._fontEntity.nativeStrokeColor(val);
 			return this;
 		}
 		return this._fontEntity.nativeStrokeColor();
 	}
-	color(val) {
+	color (val) {
 		if (val !== undefined) {
 			this._color = val;
 			if (!this._value && this._placeHolder && this._placeHolderColor) {
@@ -169,14 +169,14 @@ export class IgeUiLabel extends IgeUiElement {
 		}
 		return this._color;
 	}
-	update(ctx, tickDelta) {
+	update (ctx, tickDelta) {
 		if (this._widthFromText && this._valueChanged !== this._value) {
 			this._valueChanged = false;
 			this.width(this._fontEntity.measureTextWidth(this._value) + this._paddingLeft + this._paddingRight);
 		}
 		super.update(ctx, tickDelta);
 	}
-	_mounted() {
+	_mounted () {
 		// Check if we have a text value
 		if (!this._value && this._placeHolder) {
 			// Assign placeholder text and color

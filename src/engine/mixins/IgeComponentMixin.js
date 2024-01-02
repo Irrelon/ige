@@ -2,7 +2,7 @@ import { arrPull } from "../utils";
 
 export const WithComponentMixin = (Base) =>
 	class extends Base {
-		constructor(...args) {
+		constructor (...args) {
 			super(...args);
 			this.components = {};
 			this._components = []; // TODO: Rename this to _componentsArr
@@ -26,7 +26,7 @@ export const WithComponentMixin = (Base) =>
 		 *     // "byAngleAndPower" method of the velocity component:
 		 *     entity.velocity.byAngleAndPower(degreesToRadians(20), 0.1);
 		 */
-		addComponent(component, options) {
+		addComponent (component, options) {
 			const newComponentInstance = new component(this._componentBase, options);
 			this.components[newComponentInstance.componentId] = newComponentInstance;
 			// Add the component reference to the class component array
@@ -47,7 +47,7 @@ export const WithComponentMixin = (Base) =>
 		 *     // it via it's id ("velocity")
 		 *     entity.removeComponent('velocity');
 		 */
-		removeComponent(componentId) {
+		removeComponent (componentId) {
 			// If the component has a destroy method, call it
 			const component = this.components[componentId];
 			if (component && component.destroy) {

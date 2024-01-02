@@ -3,7 +3,7 @@ import { IgeTexture } from "../core/IgeTexture";
 import { IgeCuboidSmartTexture } from "../textures/IgeCuboidSmartTexture";
 
 export class IgeCuboid extends IgeEntity {
-	constructor() {
+	constructor () {
 		super();
 		this.classId = "IgeCuboid";
 		this.bounds3d(40, 40, 40);

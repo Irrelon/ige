@@ -1,4 +1,4 @@
-import { Building } from "./base/Building";
+import type { Building } from "./base/Building";
 import { GameEntity } from "./base/GameEntity";
 import { isClient, isServer } from "@/engine/clientServer";
 import { IgeTimeout } from "@/engine/core/IgeTimeout";
@@ -17,7 +17,7 @@ export class Resource extends GameEntity {
 	_destination?: Building;
 	_pathIds: string[] = [];
 
-	constructor(type: ResourceType, locationId: string) {
+	constructor (type: ResourceType, locationId: string) {
 		super();
 
 		this.layer(3);
@@ -70,11 +70,11 @@ export class Resource extends GameEntity {
 		}
 	}
 
-	streamCreateConstructorArgs() {
+	streamCreateConstructorArgs () {
 		return [this._type, this._locationId];
 	}
 
-	selectDestination() {
+	selectDestination () {
 		this._destinationId = "base1"; // The destination when no other building needs the resource at the moment
 
 		// Check buildings to see if any need this resource at the moment
@@ -113,7 +113,7 @@ export class Resource extends GameEntity {
 		this._destinationId = buildingWeWillDeliverTo.id();
 	}
 
-	setNavigation() {
+	setNavigation () {
 		if (this._destinationId) {
 			this._location = ige.$(this._locationId) as Building;
 			this._destination = ige.$(this._destinationId) as Building;
@@ -131,7 +131,7 @@ export class Resource extends GameEntity {
 		this.onDropped(this._locationId);
 	}
 
-	onDropped(droppedLocationId: string) {
+	onDropped (droppedLocationId: string) {
 		this._location = ige.$(droppedLocationId) as Building;
 		this._locationId = droppedLocationId;
 
@@ -161,7 +161,7 @@ export class Resource extends GameEntity {
 		this.calculateTransportPath();
 	}
 
-	calculateTransportPath() {
+	calculateTransportPath () {
 		if (!this._location) {
 			debugger;
 			console.log("Resource cannot calculate transport path because we don't have a location");
@@ -186,7 +186,7 @@ export class Resource extends GameEntity {
 		this._location.outboundQueue.addItem(this);
 	}
 
-	destroy(): this {
+	destroy (): this {
 		delete this._location;
 		delete this._destination;
 

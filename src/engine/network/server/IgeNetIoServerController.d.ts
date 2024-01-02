@@ -1,7 +1,7 @@
-import { IgeNetIoServer } from "./IgeNetIoServer";
-import { IgeNetIoSocket } from "./IgeNetIoSocket";
+import type { IgeNetIoServer } from "./IgeNetIoServer";
+import type { IgeNetIoSocket } from "./IgeNetIoSocket";
 import { IgeNetIoBaseController } from "../IgeNetIoBaseController";
-import {
+import type {
 	IgeNetworkMessageData,
 	IgeNetworkRequestMessageStructure,
 	IgeNetworkServerSideMessageHandler,

@@ -1,16 +1,16 @@
 import { IgeObject } from "./IgeObject";
-import { IgePoint2d } from "./IgePoint2d";
-import { IgePoint3d } from "./IgePoint3d";
-import { IgeRect } from "./IgeRect";
+import type { IgePoint2d } from "./IgePoint2d";
+import type { IgePoint3d } from "./IgePoint3d";
+import type { IgeRect } from "./IgeRect";
 import type { IgeTexture } from "./IgeTexture";
 import type { IgeViewport } from "./IgeViewport";
-import { IgeEntityRenderMode } from "@/enums/IgeEntityRenderMode";
+import type { IgeEntityRenderMode } from "@/enums/IgeEntityRenderMode";
 import type { IgeCanRegisterByCategory } from "@/types/IgeCanRegisterByCategory";
 import type { IgeCanRegisterById } from "@/types/IgeCanRegisterById";
 import type { IgeCanvasRenderingContext2d } from "@/types/IgeCanvasRenderingContext2d";
 import type { IgeInputEvent } from "@/types/IgeInputEvent";
 import type { IgePoint } from "@/types/IgePoint";
-import { IgePolygonFunctionality } from "@/types/IgePolygonFunctionality";
+import type { IgePolygonFunctionality } from "@/types/IgePolygonFunctionality";
 import type { IgeSmartTexture } from "@/types/IgeSmartTexture";
 
 export interface IgeEntityTransformAccessor {

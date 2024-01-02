@@ -17,7 +17,7 @@ export class IgeUiTooltip extends IgeUiElement {
 	 * @param height Height of the tooltip
 	 * @param content The content which is set with public method "setContent". Can be string, array(2) or an entity
 	 */
-	constructor(parent, mountEntity, width, height, content) {
+	constructor (parent, mountEntity, width, height, content) {
 		super();
 
 		const self = this;
@@ -80,7 +80,7 @@ export class IgeUiTooltip extends IgeUiElement {
 	 * @param noUpdate
 	 * @return {*}
 	 */
-	width(px, lockAspect, modifier, noUpdate) {
+	width (px, lockAspect, modifier, noUpdate) {
 		let val;
 
 		// Call the main super class method
@@ -102,7 +102,7 @@ export class IgeUiTooltip extends IgeUiElement {
 	 * @param noUpdate
 	 * @return {*}
 	 */
-	height(px, lockAspect, modifier, noUpdate) {
+	height (px, lockAspect, modifier, noUpdate) {
 		let val;
 
 		// Call the main super class method
@@ -122,7 +122,7 @@ export class IgeUiTooltip extends IgeUiElement {
 	 * @param val The content, be it string, array(2) or an entity
 	 * @return {*}
 	 */
-	setContent(val) {
+	setContent (val) {
 		if (val === undefined) {
 			return this;
 		}
@@ -161,7 +161,7 @@ export class IgeUiTooltip extends IgeUiElement {
 	 * @param fontSheet
 	 * @return {*}
 	 */
-	fontSheet(fontSheet) {
+	fontSheet (fontSheet) {
 		if (fontSheet === undefined) {
 			return this;
 		}
@@ -177,7 +177,7 @@ export class IgeUiTooltip extends IgeUiElement {
 	 * @param event
 	 * @private
 	 */
-	_mousemove(event) {
+	_mousemove (event) {
 		let toolTip = this._tooltip,
 			mountPos;
 
@@ -200,7 +200,7 @@ export class IgeUiTooltip extends IgeUiElement {
 	 * @param event
 	 * @private
 	 */
-	_mouseout(event) {
+	_mouseout (event) {
 		this._tooltip.hide();
 	}
 }

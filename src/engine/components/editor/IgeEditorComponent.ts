@@ -1,8 +1,8 @@
 import { IgeComponent } from "../../core/IgeComponent";
-import { IgeEntity } from "../../core/IgeEntity";
+import type { IgeEntity } from "../../core/IgeEntity";
 import { ige } from "../../instance";
-import { IgeEventListenerObject, IgeMultiEventListenerObject } from "../../mixins/IgeEventingMixin";
-import { IgeInputComponent } from "../IgeInputComponent";
+import type { IgeEventListenerObject, IgeMultiEventListenerObject } from "../../mixins/IgeEventingMixin";
+import type { IgeInputComponent } from "../IgeInputComponent";
 
 /**
  * When added to a viewport, automatically adds entity rotate
@@ -31,7 +31,7 @@ class IgeEditorComponent extends IgeComponent {
 	 * @param options The options object that was passed to the component during
 	 * the call to addComponent.
 	 */
-	constructor(entity: IgeEntity, options?: any) {
+	constructor (entity: IgeEntity, options?: any) {
 		super(entity, options);
 
 		this._showStats = 0;
@@ -317,7 +317,7 @@ class IgeEditorComponent extends IgeComponent {
 			$.ajax(url, {
 				async: true,
 				dataType: "text",
-				complete(xhr, status) {
+				complete (xhr, status) {
 					if (status === "success") {
 						// Convert the text into a jsRender template object
 						const template = jsviews.templates(xhr.responseText);
@@ -432,8 +432,8 @@ class IgeEditorComponent extends IgeComponent {
 		// Check if the stats output is enabled
 		if (self._showStats && !self._statsPauseUpdate) {
 			switch (self._showStats) {
-				case 1:
-					/*if (self._watch && self._watch.length) {
+			case 1:
+				/*if (self._watch && self._watch.length) {
 						watchCount = self._watch.length;
 
 						for (i = 0; i < watchCount; i++) {
@@ -454,7 +454,7 @@ class IgeEditorComponent extends IgeComponent {
 						}
 						html += '<br />';
 					}*/
-					/*html += '<div class="sgButton" title="Show / Hide SceneGraph Tree" onmouseup="ige.toggleShowEditor();">Scene</div> <span class="met" title="Frames Per Second">' + self._fps + ' fps</span> <span class="met" title="Draws Per Second">' + self._dps + ' dps</span> <span class="met" title="Draws Per Frame">' + self._dpf + ' dpt</span> <span class="met" title="Update Delta (How Long the Last Update Took)">' + self._updateTime + ' ms\/ud</span> <span class="met" title="Render Delta (How Long the Last Render Took)">' + self._renderTime + ' ms\/rd</span> <span class="met" title="Tick Delta (How Long the Last Tick Took)">' + self._tickTime + ' ms\/pt</span>';
+				/*html += '<div class="sgButton" title="Show / Hide SceneGraph Tree" onmouseup="ige.toggleShowEditor();">Scene</div> <span class="met" title="Frames Per Second">' + self._fps + ' fps</span> <span class="met" title="Draws Per Second">' + self._dps + ' dps</span> <span class="met" title="Draws Per Frame">' + self._dpf + ' dpt</span> <span class="met" title="Update Delta (How Long the Last Update Took)">' + self._updateTime + ' ms\/ud</span> <span class="met" title="Render Delta (How Long the Last Render Took)">' + self._renderTime + ' ms\/rd</span> <span class="met" title="Tick Delta (How Long the Last Tick Took)">' + self._tickTime + ' ms\/pt</span>';
 
 					if (self.network) {
 						// Add the network latency too
@@ -463,7 +463,7 @@ class IgeEditorComponent extends IgeComponent {
 
 					self._statsDiv.innerHTML = html;*/
 
-					break;
+				break;
 			}
 		}
 	};

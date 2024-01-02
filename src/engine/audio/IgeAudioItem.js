@@ -2,7 +2,7 @@ import { IgeEventingClass } from "@/engine/core/IgeEventingClass";
 import { ige } from "@/engine/instance";
 
 export class IgeAudioItem extends IgeEventingClass {
-	constructor(audioId) {
+	constructor (audioId) {
 		super();
 		this.classId = "IgeAudioItem";
 		this._playWhenReady = false;
@@ -13,14 +13,14 @@ export class IgeAudioItem extends IgeEventingClass {
 			this.audioId(audioId);
 		}
 	}
-	playing(val) {
+	playing (val) {
 		if (val !== undefined) {
 			this._playing = val;
 			return this;
 		}
 		return this._playing;
 	}
-	audioId(audioId) {
+	audioId (audioId) {
 		if (audioId === undefined) {
 			return this._audioId;
 		}
@@ -29,7 +29,7 @@ export class IgeAudioItem extends IgeEventingClass {
 		this.buffer(ige.audio.register(audioId));
 		return this;
 	}
-	url(url) {
+	url (url) {
 		if (url === undefined) {
 			return this._url;
 		}
@@ -45,7 +45,7 @@ export class IgeAudioItem extends IgeEventingClass {
 			});
 		return this;
 	}
-	buffer(buffer) {
+	buffer (buffer) {
 		if (buffer === undefined) {
 			return this._buffer;
 		}
@@ -55,7 +55,7 @@ export class IgeAudioItem extends IgeEventingClass {
 		}
 		return this;
 	}
-	panner(val) {
+	panner (val) {
 		if (val === undefined) {
 			return this._panner;
 		}
@@ -70,7 +70,7 @@ export class IgeAudioItem extends IgeEventingClass {
 	/**
 	 * Plays the audio.
 	 */
-	play(loop = false) {
+	play (loop = false) {
 		if (!ige.audio) return;
 		if (!this._buffer || !ige.audio._ctx) {
 			this._playWhenReady = true;
@@ -96,7 +96,7 @@ export class IgeAudioItem extends IgeEventingClass {
 	/**
 	 * Stops the currently playing audio.
 	 */
-	stop() {
+	stop () {
 		if (this._bufferSource) {
 			this.log("Audio file (" + this._url + ") stopping...");
 			this._bufferSource.stop();

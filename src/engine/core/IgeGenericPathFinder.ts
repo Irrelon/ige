@@ -1,5 +1,4 @@
 import { IgeEventingClass } from "./IgeEventingClass";
-import { Ige } from "@/engine/core/Ige";
 
 enum ListType {
 	"closed",
@@ -31,7 +30,7 @@ export class IgeGenericPathFinder extends IgeEventingClass {
 	 * @param val
 	 * @return {*}
 	 */
-	neighbourLimit(val?: number) {
+	neighbourLimit (val?: number) {
 		if (val !== undefined) {
 			this._neighbourLimit = val;
 			return this;
@@ -40,7 +39,7 @@ export class IgeGenericPathFinder extends IgeEventingClass {
 		return this._neighbourLimit;
 	}
 
-	isTraversalAllowed(
+	isTraversalAllowed (
 		newX: number,
 		newY: number,
 		currentNode?: IgeGenericPathFinderNode | null,
@@ -51,7 +50,7 @@ export class IgeGenericPathFinder extends IgeEventingClass {
 		return true;
 	}
 
-	getConnections(
+	getConnections (
 		currentNode: IgeGenericPathFinderNode,
 		targetNode: IgeGenericPathFinderNode
 	): IgeGenericPathFinderNode[] {
@@ -69,7 +68,7 @@ export class IgeGenericPathFinder extends IgeEventingClass {
 	 * @param {Boolean=} allowInvalidDestination If the pathfinder cannot path to the destination tile, if this is true the closest path will be returned instead.
 	 * @return {Array} An array of objects each containing an x, y co-ordinate that describes the path from the starting point to the end point in order.
 	 */
-	generate(
+	generate (
 		startPoint: IgeGenericPathFinderNode,
 		endPoint: IgeGenericPathFinderNode,
 		allowInvalidDestination: boolean = false
@@ -221,7 +220,7 @@ export class IgeGenericPathFinder extends IgeEventingClass {
 	 * @return {number} Returns the heuristic cost between the co-ordinates specified.
 	 * @private
 	 */
-	cost(x1: number, y1: number, x2: number, y2: number, moveCost: number = 1) {
+	cost (x1: number, y1: number, x2: number, y2: number, moveCost: number = 1) {
 		return moveCost * (Math.abs(x1 - x2) + Math.abs(y1 - y2));
 	}
 }

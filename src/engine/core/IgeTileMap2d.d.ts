@@ -1,10 +1,10 @@
 import { IgeEntity } from "./IgeEntity";
-import { IgeMap2d } from "./IgeMap2d";
-import { IgeObject } from "./IgeObject";
-import { IgePoint2d } from "./IgePoint2d";
-import { IgePoint3d } from "./IgePoint3d";
-import { IgePoly2d } from "./IgePoly2d";
-import { IgeRect } from "./IgeRect";
+import type { IgeMap2d } from "./IgeMap2d";
+import type { IgeObject } from "./IgeObject";
+import type { IgePoint2d } from "./IgePoint2d";
+import type { IgePoint3d } from "./IgePoint3d";
+import type { IgePoly2d } from "./IgePoly2d";
+import type { IgeRect } from "./IgeRect";
 
 export type IgeTileMap2dScanRectCallback = (mapData: any, x: number, y: number) => boolean;
 export interface IgeTileMap2dSavedMap {

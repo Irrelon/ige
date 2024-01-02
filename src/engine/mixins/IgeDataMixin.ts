@@ -7,7 +7,7 @@ export const WithDataMixin = <BaseClassType extends Mixin<IgeBaseClass>>(Base: B
 
 		data(key: string, value: any): this;
 		data(key: string): any;
-		data(key: string, value?: any) {
+		data (key: string, value?: any) {
 			if (value !== undefined) {
 				this._data = this._data || {};
 				this._data[key] = value;

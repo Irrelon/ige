@@ -1,11 +1,11 @@
 import { IgeParticle } from "@/engine/core/IgeParticle";
-import { IgeParticleEmitter } from "@/engine/core/IgeParticleEmitter";
+import type { IgeParticleEmitter } from "@/engine/core/IgeParticleEmitter";
 import { ige } from "@/engine/instance";
 
 export class SmokeParticle extends IgeParticle {
 	classId = "SmokeParticle";
 
-	constructor(emitter: IgeParticleEmitter) {
+	constructor (emitter: IgeParticleEmitter) {
 		super(emitter);
 
 		// Setup the particle default values

@@ -1,4 +1,4 @@
-import { IgeAudioItem } from "@/engine/audio/IgeAudioItem";
+import type { IgeAudioItem } from "@/engine/audio/IgeAudioItem";
 import { IgeEntity } from "@/engine/core/IgeEntity";
 import type { IgeCanvasRenderingContext2d } from "@/types/IgeCanvasRenderingContext2d";
 

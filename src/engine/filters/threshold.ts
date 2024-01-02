@@ -1,6 +1,6 @@
-import { IgeTexture } from "../core/IgeTexture";
+import type { IgeTexture } from "../core/IgeTexture";
 import { igeFilters } from "../igeFilters";
-import { IgeSmartFilter } from "@/types/IgeSmartFilter";
+import type { IgeSmartFilter } from "@/types/IgeSmartFilter";
 
 export const thresholdHelper = function (imageData: ImageData, texture: IgeTexture, data: any) {
 	let i, r, g, b, v;

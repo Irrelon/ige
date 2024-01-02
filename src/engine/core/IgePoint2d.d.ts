@@ -1,4 +1,4 @@
-import { IgePoint3d } from "./IgePoint3d";
+import type { IgePoint3d } from "./IgePoint3d";
 
 /**
  * Creates a new 2d point (x, y).

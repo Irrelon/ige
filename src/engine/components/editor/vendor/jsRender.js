@@ -98,7 +98,7 @@ informal pre V1.0 commit counter: 47 */
 			}
 		};
 
-	function JsViewsError(message, object) {
+	function JsViewsError (message, object) {
 		// Error exception type for JsViews/JsRender
 		// Override of $.views.sub.Error is possible
 		if (object && object.onError) {
@@ -110,7 +110,7 @@ informal pre V1.0 commit counter: 47 */
 		this.message = message || "JsRender error";
 	}
 
-	function $extend(target, source) {
+	function $extend (target, source) {
 		var name;
 		target = target || {};
 		for (name in source) {
@@ -126,7 +126,7 @@ informal pre V1.0 commit counter: 47 */
 	//===================
 	// jsviews.delimiters
 	//===================
-	function $viewsDelimiters(openChars, closeChars, link) {
+	function $viewsDelimiters (openChars, closeChars, link) {
 		// Set the tag opening and closing delimiters and 'link' character. Default is "{{", "}}" and "^"
 		// openChars, closeChars: opening and closing strings, each with two characters
 
@@ -171,7 +171,7 @@ informal pre V1.0 commit counter: 47 */
 	// View.get
 	//=========
 
-	function getView(inner, type) {
+	function getView (inner, type) {
 		//view.get(inner, type)
 		if (!type) {
 			// view.get(type)
@@ -217,7 +217,7 @@ informal pre V1.0 commit counter: 47 */
 		return found;
 	}
 
-	function getNestedIndex() {
+	function getNestedIndex () {
 		var view = this.get("item");
 		return view ? view.index : undefined;
 	}
@@ -226,7 +226,7 @@ informal pre V1.0 commit counter: 47 */
 		return [this.get("item"), "index"];
 	};
 
-	function getIndex() {
+	function getIndex () {
 		return this.index;
 	}
 
@@ -238,7 +238,7 @@ informal pre V1.0 commit counter: 47 */
 	// View.hlp
 	//==========
 
-	function getHelper(helper) {
+	function getHelper (helper) {
 		// Helper method called as view.hlp(key) from compiled template, for helper functions or template parameters ~foo
 		var wrapped,
 			view = this,
@@ -271,7 +271,7 @@ informal pre V1.0 commit counter: 47 */
 	// jsviews._cnvt
 	//==============
 
-	function convertVal(converter, view, tagCtx) {
+	function convertVal (converter, view, tagCtx) {
 		// self is template object or linkCtx object
 		var tmplConverter,
 			tag,
@@ -332,7 +332,7 @@ informal pre V1.0 commit counter: 47 */
 	// jsviews._tag
 	//=============
 
-	function getResource(resourceType, itemName) {
+	function getResource (resourceType, itemName) {
 		var res,
 			store,
 			view = this;
@@ -344,7 +344,7 @@ informal pre V1.0 commit counter: 47 */
 		return res || $views[resourceType][itemName];
 	}
 
-	function renderTag(tagName, parentView, tmpl, tagCtxs, isRefresh) {
+	function renderTag (tagName, parentView, tmpl, tagCtxs, isRefresh) {
 		// Called from within compiled template function, to render a template tag
 		// Returns the rendered tag
 
@@ -514,7 +514,7 @@ informal pre V1.0 commit counter: 47 */
 	// View constructor
 	//=================
 
-	function View(context, type, parentView, data, template, key, contentTmpl, onRender) {
+	function View (context, type, parentView, data, template, key, contentTmpl, onRender) {
 		// Constructor for view object in view hierarchy. (Augmented by JsViews if JsViews is loaded)
 		var views,
 			parentView_,
@@ -578,7 +578,7 @@ informal pre V1.0 commit counter: 47 */
 	// Registration
 	//=============
 
-	function compileChildResources(parentTmpl) {
+	function compileChildResources (parentTmpl) {
 		var storeName, resources, resourceName, settings, compile;
 		for (storeName in jsvStores) {
 			settings = jsvStores[storeName];
@@ -597,7 +597,7 @@ informal pre V1.0 commit counter: 47 */
 		}
 	}
 
-	function compileTag(name, tagDef, parentTmpl) {
+	function compileTag (name, tagDef, parentTmpl) {
 		var init, tmpl;
 		if (typeof tagDef === "function") {
 			// Simple tag declared as function. No presenter instantation.
@@ -631,11 +631,11 @@ informal pre V1.0 commit counter: 47 */
 		return tagDef;
 	}
 
-	function compileTmpl(name, tmpl, parentTmpl, storeName, storeSettings, options) {
+	function compileTmpl (name, tmpl, parentTmpl, storeName, storeSettings, options) {
 		// tmpl is either a template object, a selector for a template script block, the name of a compiled template, or a template object
 
 		//==== nested functions ====
-		function tmplOrMarkupFromStr(value) {
+		function tmplOrMarkupFromStr (value) {
 			// If value is of type string - treat as selector, or name of compiled template
 			// Return the template object, if already compiled, or the markup string
 
@@ -732,7 +732,7 @@ informal pre V1.0 commit counter: 47 */
 	}
 	//==== /end of function compile ====
 
-	function TmplObject(markup, options) {
+	function TmplObject (markup, options) {
 		// Template object constructor
 		var htmlTag,
 			wrapMap = $viewsSettings.wrapMap || {},
@@ -764,8 +764,8 @@ informal pre V1.0 commit counter: 47 */
 		return tmpl;
 	}
 
-	function registerStore(storeName, storeSettings) {
-		function theStore(name, item, parentTmpl) {
+	function registerStore (storeName, storeSettings) {
+		function theStore (name, item, parentTmpl) {
 			// The store is also the function used to add items to the store. e.g. $.templates, or $.views.tags
 
 			// For store of name 'thing', Call as:
@@ -829,7 +829,7 @@ informal pre V1.0 commit counter: 47 */
 	// renderContent
 	//==============
 
-	function renderContent(data, context, parentView, key, isLayout, onRender) {
+	function renderContent (data, context, parentView, key, isLayout, onRender) {
 		// Render template against data as a tree of subviews (nested rendered template instances), or as a string (top-level template).
 		// If the data is the parent view, treat as layout template, re-render with the same data context.
 		var i,
@@ -960,31 +960,31 @@ informal pre V1.0 commit counter: 47 */
 	// Generate a reusable function that will serve to render a template against data
 	// (Compile AST then build template function)
 
-	function error(message) {
+	function error (message) {
 		throw new $viewsSub.Error(message);
 	}
 
-	function syntaxError(message) {
+	function syntaxError (message) {
 		error("Syntax error\n" + message);
 	}
 
-	function tmplFn(markup, tmpl, isLinkExpr, convertBack) {
+	function tmplFn (markup, tmpl, isLinkExpr, convertBack) {
 		// Compile markup to AST (abtract syntax tree) then build the template function code from the AST nodes
 		// Used for compiling templates, and also by JsViews to build functions for data link expressions
 
 		//==== nested functions ====
-		function pushprecedingContent(shift) {
+		function pushprecedingContent (shift) {
 			shift -= loc;
 			if (shift) {
 				content.push(markup.substr(loc, shift).replace(rNewLine, "\\n"));
 			}
 		}
 
-		function blockTagCheck(tagName) {
+		function blockTagCheck (tagName) {
 			tagName && syntaxError('Unmatched or missing tag: "{{/' + tagName + '}}" in template:\n' + markup);
 		}
 
-		function parseTag(
+		function parseTag (
 			all,
 			bind,
 			tagName,
@@ -1111,7 +1111,7 @@ informal pre V1.0 commit counter: 47 */
 		return buildCode(astTop, isLinkExpr ? markup : tmpl, isLinkExpr);
 	}
 
-	function buildCode(ast, tmpl, isLinkExpr) {
+	function buildCode (ast, tmpl, isLinkExpr) {
 		// Build the template function code from the AST nodes, and set as property on the passed-in template object
 		// Used for compiling templates, and also by JsViews to build functions for data link expressions
 		var i,
@@ -1253,7 +1253,7 @@ informal pre V1.0 commit counter: 47 */
 						  (pathBindings ? "" : noError) +
 						  (isLinkExpr ? "return " : "ret+=") +
 						  (useCnvt // Call _cnvt if there is a converter: {{cnvt: ... }} or {^{cnvt: ... }}
-								? ((useCnvt = 0),
+						  	? ((useCnvt = 0),
 								  (hasCnvt = true),
 								  'c("' +
 										converter +
@@ -1262,9 +1262,9 @@ informal pre V1.0 commit counter: 47 */
 											? ((tmplBindings[tmplBindingKey - 1] = tagCtxFn), tmplBindingKey) // Store the compiled tagCtxFn in tmpl.bnds, and pass the key to convertVal()
 											: "{" + hash) +
 										");")
-								: tagName === ">"
-								? ((hasEncoder = true), "h(" + params + ");")
-								: ((getsVal = true), "(v=" + params + ")!=" + (isLinkExpr ? "=" : "") + 'u?v:"";')) // Strict equality just for data-link="title{:expr}" so expr=null will remove title attribute
+						  	: tagName === ">"
+						  		? ((hasEncoder = true), "h(" + params + ");")
+						  		: ((getsVal = true), "(v=" + params + ")!=" + (isLinkExpr ? "=" : "") + 'u?v:"";')) // Strict equality just for data-link="title{:expr}" so expr=null will remove title attribute
 						: ((hasTag = true),
 						  "{view:view,tmpl:" + // Add this tagCtx to the compiled code for the tagCtxs to be passed to renderTag()
 								(content ? nestedTmpls.length : "0") +
@@ -1327,14 +1327,14 @@ informal pre V1.0 commit counter: 47 */
 		return code;
 	}
 
-	function parseParams(params, bindings, tmpl) {
+	function parseParams (params, bindings, tmpl) {
 		//function pushBindings() { // Consider structured path bindings
 		//	if (bindings) {
 		//		named ? bindings[named] = bindings.pop(): bindings.push(list = []);
 		//	}
 		//}
 
-		function parseTokens(
+		function parseTokens (
 			all,
 			lftPrn0,
 			lftPrn,
@@ -1365,7 +1365,7 @@ informal pre V1.0 commit counter: 47 */
 			path = path || path2;
 			prn = prn || prn2 || "";
 
-			function parsePath(allPath, not, object, helper, view, viewProperty, pathTokens, leafToken) {
+			function parsePath (allPath, not, object, helper, view, viewProperty, pathTokens, leafToken) {
 				// rPath = /^(?:null|true|false|\d[\d.]*|(!*?)([\w$]+|\.|~([\w$]+)|#(view|([\w$]+))?)([\w$.^]*?)(?:[.[^]([\w$]+)\]?)?)$/g,
 				//                                        none   object     helper    view  viewProperty pathTokens      leafToken
 				if (object) {
@@ -1431,43 +1431,43 @@ informal pre V1.0 commit counter: 47 */
 					? // within single-quoted string
 					  ((aposed = !apos), aposed ? all : '"')
 					: quoted
-					? // within double-quoted string
+						? // within double-quoted string
 					  ((quoted = !quot), quoted ? all : '"')
-					: (lftPrn ? (parenDepth++, (pathStart[parenDepth] = index++), lftPrn) : "") +
+						: (lftPrn ? (parenDepth++, (pathStart[parenDepth] = index++), lftPrn) : "") +
 					  (space
-							? parenDepth
-								? ""
-								: //: (pushBindings(), named
-								//	: ",")
-								named
-								? ((named = boundName = bindto = false), "\b")
-								: ","
-							: eq
-							? // named param
+					  	? parenDepth
+					  		? ""
+					  		: //: (pushBindings(), named
+					  	//	: ",")
+					  		named
+					  			? ((named = boundName = bindto = false), "\b")
+					  			: ","
+					  	: eq
+					  		? // named param
 							  // Insert backspace \b (\x08) as separator for named params, used subsequently by rBuildHash
 							  (parenDepth && syntaxError(params),
 							  (named = path),
 							  (boundName = bound),
 							  /*pushBindings(),*/ "\b" + path + ":")
-							: path
-							? // path
+					  		: path
+					  			? // path
 							  path.split("^").join(".").replace(rPath, parsePath) +
 							  (prn
-									? ((fnCall[++parenDepth] = true),
+							  	? ((fnCall[++parenDepth] = true),
 									  path.charAt(0) !== "." && (pathStart[parenDepth] = index),
 									  prn)
-									: operator)
-							: operator
-							? operator
-							: rtPrn
-							? // function
+							  	: operator)
+					  			: operator
+					  				? operator
+					  				: rtPrn
+					  					? // function
 							  ((fnCall[parenDepth--] = false), rtPrn) +
 							  (prn ? ((fnCall[++parenDepth] = true), prn) : "")
-							: comma
-							? (fnCall[parenDepth] || syntaxError(params), ",") // We don't allow top-level literal arrays or objects
-							: lftPrn0
-							? ""
-							: ((aposed = apos), (quoted = quot), '"'));
+					  					: comma
+					  						? (fnCall[parenDepth] || syntaxError(params), ",") // We don't allow top-level literal arrays or objects
+					  						: lftPrn0
+					  							? ""
+					  							: ((aposed = apos), (quoted = quot), '"'));
 			}
 		}
 
@@ -1496,7 +1496,7 @@ informal pre V1.0 commit counter: 47 */
 	//==========
 
 	// Merge objects, in particular contexts which inherit from parent contexts
-	function extendCtx(context, parentContext) {
+	function extendCtx (context, parentContext) {
 		// Return copy of parentContext, unless context is defined and is different, in which case return a new merged context
 		// If neither context nor parentContext are defined, return undefined
 		return context && context !== parentContext
@@ -1507,7 +1507,7 @@ informal pre V1.0 commit counter: 47 */
 	}
 
 	// Get character entity for HTML and Attribute encoding
-	function getCharEntity(ch) {
+	function getCharEntity (ch) {
 		return charEntities[ch] || (charEntities[ch] = "&#" + ch.charCodeAt(0) + ";");
 	}
 
@@ -1651,7 +1651,7 @@ informal pre V1.0 commit counter: 47 */
 		}
 	});
 
-	function renderForBlock(val) {
+	function renderForBlock (val) {
 		// This function is called once for {{for}} and once for each {{else}}.
 		// We will use the tag.rendering object for carrying rendering state across the calls.
 		var self = this,

@@ -1,12 +1,12 @@
 import { IgeUiEntity } from "@/engine/core/IgeUiEntity";
 import { ige } from "@/engine/instance";
 import { ResourceType } from "../enums/ResourceType";
-import { BuildingResourceRequirement } from "../types/BuildingResourceRequirement";
+import type { BuildingResourceRequirement } from "../types/BuildingResourceRequirement";
 
 export class UiRequiresProducesDisplay extends IgeUiEntity {
 	_requiredResourceUiEntity: IgeUiEntity[] = [];
 
-	constructor(produces: ResourceType, requires: BuildingResourceRequirement[] = []) {
+	constructor (produces: ResourceType, requires: BuildingResourceRequirement[] = []) {
 		super();
 
 		this.drawBounds(false).width(200).height(20).translateBy(0, -50, 0).scaleTo(0.8, 0.8, 0.8);

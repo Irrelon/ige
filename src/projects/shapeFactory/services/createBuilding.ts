@@ -1,4 +1,4 @@
-import { IgeTileMap2d } from "@/engine/core/IgeTileMap2d";
+import type { IgeTileMap2d } from "@/engine/core/IgeTileMap2d";
 import { ResourceType } from "../enums/ResourceType";
 import { FactoryBuilding1 } from "../entities/FactoryBuilding1";
 import { FactoryBuilding2 } from "../entities/FactoryBuilding2";

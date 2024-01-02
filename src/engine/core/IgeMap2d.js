@@ -5,7 +5,7 @@ import { registerClass } from "@/engine/igeClassStore";
  * Creates a new map that has two dimensions (x and y) to its data.
  */
 export class IgeMap2d extends IgeBaseClass {
-	constructor(data) {
+	constructor (data) {
 		super();
 		this.classId = "IgeMap2d";
 		this._mapData = data || [];
@@ -17,7 +17,7 @@ export class IgeMap2d extends IgeBaseClass {
 	 * @param {*=} val The data to set on the map tile co-ordinate.
 	 * @return {*}
 	 */
-	tileData(x, y, val) {
+	tileData (x, y, val) {
 		if (x !== undefined && y !== undefined) {
 			if (val !== undefined) {
 				// Assign a value
@@ -41,7 +41,7 @@ export class IgeMap2d extends IgeBaseClass {
 	 * @param y
 	 * @return {boolean} True if data was cleared or false if no data existed.
 	 */
-	clearData(x, y) {
+	clearData (x, y) {
 		if (x !== undefined && y !== undefined) {
 			if (this._mapData[y] !== undefined) {
 				delete this._mapData[y][x];
@@ -58,7 +58,7 @@ export class IgeMap2d extends IgeBaseClass {
 	 * @param width
 	 * @param height
 	 */
-	collision(x, y, width, height) {
+	collision (x, y, width, height) {
 		let xi, yi;
 		if (width === undefined) {
 			width = 1;
@@ -86,7 +86,7 @@ export class IgeMap2d extends IgeBaseClass {
 	 * @param height
 	 * @param data
 	 */
-	collisionWith(x, y, width, height, data) {
+	collisionWith (x, y, width, height, data) {
 		let xi, yi;
 		if (width === undefined) {
 			width = 1;
@@ -115,7 +115,7 @@ export class IgeMap2d extends IgeBaseClass {
 	 * @param height
 	 * @param data
 	 */
-	collisionWithOnly(x, y, width, height, data) {
+	collisionWithOnly (x, y, width, height, data) {
 		let xi,
 			yi,
 			tileData,
@@ -142,7 +142,7 @@ export class IgeMap2d extends IgeBaseClass {
 		}
 		return withData;
 	}
-	mapData(val, startX, startY) {
+	mapData (val, startX, startY) {
 		if (val === undefined) {
 			return this._mapData;
 		}
@@ -158,7 +158,7 @@ export class IgeMap2d extends IgeBaseClass {
 		}
 		return this;
 	}
-	sortedMapDataAsArray() {
+	sortedMapDataAsArray () {
 		const data = this.mapData();
 		const finalData = [];
 		const yArr = this._sortKeys(data);
@@ -173,17 +173,17 @@ export class IgeMap2d extends IgeBaseClass {
 		}
 		return finalData;
 	}
-	_sortKeys(obj) {
+	_sortKeys (obj) {
 		return Object.keys(obj).sort();
 	}
 	/**
 	 * Returns a string of the map's data in JSON format.
 	 * @return {string}
 	 */
-	mapDataString() {
+	mapDataString () {
 		return JSON.stringify(this.mapData());
 	}
-	translateDataBy(transX, transY) {
+	translateDataBy (transX, transY) {
 		const yArr = this.mapData();
 		const newArr = [];
 		for (let y = 0; y < yArr.length; y++) {

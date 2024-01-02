@@ -4,7 +4,7 @@ import { IgeTween } from "./IgeTween";
  * Creates a new 3d point (x, y, z).
  */
 export class IgePoint3d {
-	constructor(x = 0, y = 0, z = 0, floor = false) {
+	constructor (x = 0, y = 0, z = 0, floor = false) {
 		this.classId = "IgePoint3d";
 		this.x = 0;
 		this.y = 0;
@@ -27,7 +27,7 @@ export class IgePoint3d {
 		this.y2 = y / 2;
 		this.z2 = z / 2;
 	}
-	floor(val) {
+	floor (val) {
 		if (val !== undefined) {
 			this._floor = val;
 			return this;
@@ -40,7 +40,7 @@ export class IgePoint3d {
 	 * @param {IgePoint3d} point The point to compare data with.
 	 * @return {boolean}
 	 */
-	compare(point) {
+	compare (point) {
 		return point && this.x === point.x && this.y === point.y && this.z === point.z;
 	}
 	/**
@@ -49,7 +49,7 @@ export class IgePoint3d {
 	 * @param {IgePoint3d} point The point to copy values from.
 	 * @returns {*}
 	 */
-	copy(point) {
+	copy (point) {
 		this.x = point.x;
 		this.y = point.y;
 		this.z = point.z;
@@ -60,7 +60,7 @@ export class IgePoint3d {
 	 * and returns an object whose x, y values are the result.
 	 * @return IgePoint3d
 	 */
-	toIso() {
+	toIso () {
 		return new IgePoint3d(this.x - this.y, -this.z * 1.2247 + (this.x + this.y) * 0.5, 0);
 	}
 	/**
@@ -68,7 +68,7 @@ export class IgePoint3d {
 	 * and overwrites the previous x, y, z values with the result.
 	 * @return {*}
 	 */
-	thisToIso() {
+	thisToIso () {
 		const val = this.toIso();
 		this.x = val.x;
 		this.y = val.y;
@@ -79,7 +79,7 @@ export class IgePoint3d {
 	 * and returns an object whose x, y values are the result.
 	 * @return IgePoint3d
 	 */
-	to2d() {
+	to2d () {
 		return new IgePoint3d(this.y + this.x / 2, this.y - this.x / 2, 0);
 	}
 	/**
@@ -87,7 +87,7 @@ export class IgePoint3d {
 	 * and overwrites the previous x, y, z values with the result.
 	 * @return {*}
 	 */
-	thisTo2d() {
+	thisTo2d () {
 		const val = this.to2d();
 		this.x = val.x;
 		this.y = val.y;
@@ -100,7 +100,7 @@ export class IgePoint3d {
 	 * @param point
 	 * @return {*}
 	 */
-	addPoint(point) {
+	addPoint (point) {
 		return new IgePoint3d(this.x + point.x, this.y + point.y, this.z + point.z);
 	}
 	/**
@@ -109,7 +109,7 @@ export class IgePoint3d {
 	 * @param {IgePoint3d} point
 	 * @return {*}
 	 */
-	thisAddPoint(point) {
+	thisAddPoint (point) {
 		this.x += point.x;
 		this.y += point.y;
 		this.z += point.z;
@@ -121,7 +121,7 @@ export class IgePoint3d {
 	 * @param point
 	 * @return {*}
 	 */
-	minusPoint(point) {
+	minusPoint (point) {
 		return new IgePoint3d(this.x - point.x, this.y - point.y, this.z - point.z);
 	}
 	/**
@@ -130,7 +130,7 @@ export class IgePoint3d {
 	 * @param point
 	 * @return {*}
 	 */
-	thisMinusPoint(point) {
+	thisMinusPoint (point) {
 		this.x -= point.x;
 		this.y -= point.y;
 		this.z -= point.z;
@@ -144,7 +144,7 @@ export class IgePoint3d {
 	 * @param z
 	 * @return {*}
 	 */
-	multiply(x, y, z) {
+	multiply (x, y, z) {
 		return new IgePoint3d(this.x * x, this.y * y, this.z * z);
 	}
 	/**
@@ -153,7 +153,7 @@ export class IgePoint3d {
 	 * @param {IgePoint3d} point
 	 * @return {*}
 	 */
-	multiplyPoint(point) {
+	multiplyPoint (point) {
 		return new IgePoint3d(this.x * point.x, this.y * point.y, this.z * point.z);
 	}
 	/**
@@ -164,7 +164,7 @@ export class IgePoint3d {
 	 * @param z
 	 * @return {*}
 	 */
-	thisMultiply(x, y, z) {
+	thisMultiply (x, y, z) {
 		this.x *= x;
 		this.y *= y;
 		this.z *= z;
@@ -178,7 +178,7 @@ export class IgePoint3d {
 	 * @param z
 	 * @return {*}
 	 */
-	divide(x, y, z) {
+	divide (x, y, z) {
 		return new IgePoint3d(this.x / x, this.y / y, this.z / z);
 	}
 	/**
@@ -187,7 +187,7 @@ export class IgePoint3d {
 	 * @param {IgePoint3d} point
 	 * @return {*}
 	 */
-	dividePoint(point) {
+	dividePoint (point) {
 		let newX = this.x,
 			newY = this.y,
 			newZ = this.z;
@@ -210,7 +210,7 @@ export class IgePoint3d {
 	 * @param z
 	 * @return {*}
 	 */
-	thisDivide(x, y, z) {
+	thisDivide (x, y, z) {
 		this.x /= x;
 		this.y /= y;
 		this.z /= z;
@@ -220,7 +220,7 @@ export class IgePoint3d {
 	 * Returns a clone of this IgePoint3d's data as a new instance.
 	 * @return {*}
 	 */
-	clone() {
+	clone () {
 		return new IgePoint3d(this.x, this.y, this.z);
 	}
 	/**
@@ -233,7 +233,7 @@ export class IgePoint3d {
 	 * @param {number} endTime
 	 * @return {*}
 	 */
-	interpolate(endPoint, startTime, currentTime, endTime) {
+	interpolate (endPoint, startTime, currentTime, endTime) {
 		const totalX = endPoint.x - this.x,
 			totalY = endPoint.y - this.y,
 			totalZ = endPoint.z - this.z,
@@ -251,7 +251,7 @@ export class IgePoint3d {
 	 * @param {number} radians Radians to rotate by.
 	 * @return {IgePoint3d} A new point with the rotated x, y.
 	 */
-	rotate(radians) {
+	rotate (radians) {
 		const s = Math.sin(radians),
 			c = Math.cos(radians),
 			x = c * this.x - s * this.y,
@@ -264,7 +264,7 @@ export class IgePoint3d {
 	 * @param {number} radians Radians to rotate by.
 	 * @return {IgePoint3d} This point.
 	 */
-	thisRotate(radians) {
+	thisRotate (radians) {
 		const s = Math.sin(radians),
 			c = Math.cos(radians),
 			{ x, y } = this;
@@ -280,10 +280,10 @@ export class IgePoint3d {
 	 * @param {number=} precision
 	 * @return {string}
 	 */
-	toString(precision = 2) {
+	toString (precision = 2) {
 		return this.x.toFixed(precision) + "," + this.y.toFixed(precision) + "," + this.z.toFixed(precision);
 	}
-	tween(props, durationMs, options) {
+	tween (props, durationMs, options) {
 		const newTween = new IgeTween().targetObj(this).properties(props).duration(durationMs);
 		if (options) {
 			if (options.beforeTween) {

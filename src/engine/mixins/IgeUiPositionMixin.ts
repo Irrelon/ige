@@ -1,5 +1,5 @@
-import { IgeUiEntity } from "@/engine/core/IgeUiEntity";
-import { IgeObject } from "../core/IgeObject";
+import type { IgeUiEntity } from "@/engine/core/IgeUiEntity";
+import type { IgeObject } from "../core/IgeObject";
 import { ige } from "../instance";
 import type { Mixin } from "@/types/Mixin";
 
@@ -36,7 +36,7 @@ export const WithUiPositionMixin = <BaseClassType extends Mixin<IgeObject>>(Base
 		 * @param {boolean=} noUpdate
 		 * @return {number}
 		 */
-		left(px?: number | string, noUpdate = false) {
+		left (px?: number | string, noUpdate = false) {
 			if (px === undefined) {
 				return this._uiLeft;
 			}
@@ -89,7 +89,7 @@ export const WithUiPositionMixin = <BaseClassType extends Mixin<IgeObject>>(Base
 		 * @param {boolean=} noUpdate
 		 * @return {number}
 		 */
-		right(px?: number | string, noUpdate = false) {
+		right (px?: number | string, noUpdate = false) {
 			if (px !== undefined) {
 				if (px === null) {
 					// Remove all data
@@ -141,7 +141,7 @@ export const WithUiPositionMixin = <BaseClassType extends Mixin<IgeObject>>(Base
 		 * @param {boolean=} noUpdate
 		 * @return {number}
 		 */
-		center(px?: number | string, noUpdate = false) {
+		center (px?: number | string, noUpdate = false) {
 			if (px !== undefined) {
 				if (px === null) {
 					// Remove all data
@@ -195,7 +195,7 @@ export const WithUiPositionMixin = <BaseClassType extends Mixin<IgeObject>>(Base
 		 * @param {boolean=} noUpdate
 		 * @return {number}
 		 */
-		top(px?: number | string, noUpdate = false) {
+		top (px?: number | string, noUpdate = false) {
 			if (px === undefined) {
 				return this._uiTop;
 			}
@@ -249,7 +249,7 @@ export const WithUiPositionMixin = <BaseClassType extends Mixin<IgeObject>>(Base
 		 * @param {boolean=} noUpdate
 		 * @return {number}
 		 */
-		bottom(px?: number | string, noUpdate = false) {
+		bottom (px?: number | string, noUpdate = false) {
 			if (px !== undefined) {
 				if (px === null) {
 					// Remove all data
@@ -301,7 +301,7 @@ export const WithUiPositionMixin = <BaseClassType extends Mixin<IgeObject>>(Base
 		 * @param {boolean=} noUpdate
 		 * @return {number}
 		 */
-		middle(px?: number | string, noUpdate = false) {
+		middle (px?: number | string, noUpdate = false) {
 			if (px !== undefined) {
 				if (px === null) {
 					// Remove all data
@@ -358,7 +358,7 @@ export const WithUiPositionMixin = <BaseClassType extends Mixin<IgeObject>>(Base
 		 * @param {boolean=} noUpdate
 		 * @return {*}
 		 */
-		width(px?: number | string, lockAspect = false, modifier?: number, noUpdate = false) {
+		width (px?: number | string, lockAspect = false, modifier?: number, noUpdate = false) {
 			if (px !== undefined) {
 				if (px === null) {
 					// Remove all data
@@ -432,7 +432,7 @@ export const WithUiPositionMixin = <BaseClassType extends Mixin<IgeObject>>(Base
 		 *
 		 * @return {*}
 		 */
-		height(px?: number | string, lockAspect = false, modifier?: number, noUpdate = false) {
+		height (px?: number | string, lockAspect = false, modifier?: number, noUpdate = false) {
 			if (px !== undefined) {
 				if (px === null) {
 					// Remove all data
@@ -492,14 +492,14 @@ export const WithUiPositionMixin = <BaseClassType extends Mixin<IgeObject>>(Base
 			return this._bounds2d.y;
 		}
 
-		flex(val?: number) {
+		flex (val?: number) {
 			if (val === undefined) return this._uiFlex;
 
 			this._uiFlex = val;
 			return this;
 		}
 
-		autoScaleX(val?: string, lockAspect = false) {
+		autoScaleX (val?: string, lockAspect = false) {
 			if (val !== undefined) {
 				this._autoScaleX = val;
 				this._autoScaleLockAspect = lockAspect;
@@ -511,7 +511,7 @@ export const WithUiPositionMixin = <BaseClassType extends Mixin<IgeObject>>(Base
 			return this._autoScaleX;
 		}
 
-		autoScaleY(val?: string, lockAspect = false) {
+		autoScaleY (val?: string, lockAspect = false) {
 			if (val !== undefined) {
 				this._autoScaleY = val;
 				this._autoScaleLockAspect = lockAspect;
@@ -528,7 +528,7 @@ export const WithUiPositionMixin = <BaseClassType extends Mixin<IgeObject>>(Base
 		 * for this UI entity.
 		 * @return {*}
 		 */
-		updateUiChildren() {
+		updateUiChildren () {
 			const arr = (this._children || []) as IgeUiEntity[];
 
 			if (!arr) {
@@ -557,7 +557,7 @@ export const WithUiPositionMixin = <BaseClassType extends Mixin<IgeObject>>(Base
 		 * top and bottom co-ordinates.
 		 * @private
 		 */
-		_updateUiPosition() {
+		_updateUiPosition () {
 			if (this._parent) {
 				const parentGeom = this._parent._bounds2d;
 				const geomScaled = this._bounds2d.multiplyPoint(this._scale);

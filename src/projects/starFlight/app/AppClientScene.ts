@@ -11,7 +11,7 @@ import { IgeVelocityComponent } from "@/engine/components/IgeVelocityComponent";
 export class AppClientScene extends IgeSceneGraph {
 	classId = "AppClientScene";
 
-	addGraph() {
+	addGraph () {
 		// Get game options (or set defaults)
 		const options = new IgeOptions();
 		options.set("masterVolume", 1);
@@ -80,7 +80,7 @@ export class AppClientScene extends IgeSceneGraph {
 		vp1.camera.addComponent("velocity", IgeVelocityComponent);
 	}
 
-	removeGraph() {
+	removeGraph () {
 		const mainScene = ige.$("mainScene");
 
 		if (mainScene) {

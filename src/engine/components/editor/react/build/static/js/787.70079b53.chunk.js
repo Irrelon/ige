@@ -1,4 +1,4 @@
-"use strict";
+
 (self.webpackChunkeditor = self.webpackChunkeditor || []).push([
 	[787],
 	{

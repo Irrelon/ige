@@ -1,5 +1,5 @@
 import { IgeEntity } from "./IgeEntity";
-import { IgeMap2d } from "./IgeMap2d";
+import type { IgeMap2d } from "./IgeMap2d";
 
 export declare class IgeCollisionMap2d extends IgeEntity {
 	classId: string;

@@ -1,12 +1,12 @@
 import { UiRequiresProducesDisplay } from "./UiRequiresProducesDisplay";
 import { Building } from "./base/Building";
 import { isClient } from "@/engine/clientServer";
-import { IgeObject } from "@/engine/core/IgeObject";
+import type { IgeObject } from "@/engine/core/IgeObject";
 import { IgePoint2d } from "@/engine/core/IgePoint2d";
 import { registerClass } from "@/engine/igeClassStore";
 import { ige } from "@/engine/instance";
-import { ResourceType } from "../enums/ResourceType";
-import { BuildingResourceRequirement } from "../types/BuildingResourceRequirement";
+import type { ResourceType } from "../enums/ResourceType";
+import type { BuildingResourceRequirement } from "../types/BuildingResourceRequirement";
 
 export class FactoryBuilding1 extends Building {
 	classId = "FactoryBuilding1";
@@ -15,7 +15,7 @@ export class FactoryBuilding1 extends Building {
 	tileW = 3;
 	tileH = 3;
 
-	constructor(
+	constructor (
 		tileX: number = NaN,
 		tileY: number = NaN,
 		produces: ResourceType,
@@ -138,11 +138,11 @@ export class FactoryBuilding1 extends Building {
 		}
 	}
 
-	streamCreateConstructorArgs() {
+	streamCreateConstructorArgs () {
 		return [this.tileX, this.tileY, this._produces, this._requires];
 	}
 
-	_mounted(obj: IgeObject) {
+	_mounted (obj: IgeObject) {
 		super._mounted(obj);
 
 		if (!isNaN(this.tileX) && !isNaN(this.tileY)) {

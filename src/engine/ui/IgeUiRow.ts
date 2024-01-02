@@ -4,7 +4,7 @@ import { registerClass } from "@/engine/igeClassStore";
 export class IgeUiRow extends IgeUiElement {
 	classId = "IgeUiRow";
 
-	tick(ctx) {
+	tick (ctx) {
 		const maxWidth = this.width();
 
 		// Loop children and re-position then

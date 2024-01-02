@@ -1,13 +1,14 @@
-import { IgeObject } from "./IgeObject";
-import { IgeParticle } from "./IgeParticle";
-import { IgePoint3d } from "./IgePoint3d";
-import { IgeTween, IgeTweenPropertyObject } from "./IgeTween";
+import type { IgeObject } from "./IgeObject";
+import type { IgeParticle } from "./IgeParticle";
+import type { IgePoint3d } from "./IgePoint3d";
+import type { IgeTweenPropertyObject } from "./IgeTween";
+import { IgeTween } from "./IgeTween";
 import { IgeUiEntity } from "./IgeUiEntity";
 import { registerClass } from "@/engine/igeClassStore";
-import { IgeVelocityComponent } from "../components/IgeVelocityComponent";
+import type { IgeVelocityComponent } from "../components/IgeVelocityComponent";
 import { ige } from "../instance";
 import { degreesToRadians } from "../utils";
-import { IgeCanvasRenderingContext2d } from "@/types/IgeCanvasRenderingContext2d";
+import type { IgeCanvasRenderingContext2d } from "@/types/IgeCanvasRenderingContext2d";
 
 export interface IgeParticleVectorBaseMinMax {
 	base: IgePoint3d;
@@ -70,7 +71,7 @@ export class IgeParticleEmitter extends IgeUiEntity {
 	_maxParticles: number = 1;
 	_particlesPerTimeVector: number = 1;
 
-	constructor() {
+	constructor () {
 		super();
 
 		// Set some defaults
@@ -121,193 +122,193 @@ export class IgeParticleEmitter extends IgeUiEntity {
 	 * @param {IgeParticle} obj
 	 * @return {*}
 	 */
-	particle(obj: typeof IgeParticle) {
+	particle (obj: typeof IgeParticle) {
 		this._particle = obj;
 		return this;
 	}
 
-	particleMountTarget(obj: IgeObject) {
+	particleMountTarget (obj: IgeObject) {
 		this._particleMountTarget = obj;
 		return this;
 	}
 
-	applyDepthToParticles(val: boolean) {
+	applyDepthToParticles (val: boolean) {
 		this._applyDepthToParticles = val;
 		return this;
 	}
 
-	applyLayerToParticles(val: boolean) {
+	applyLayerToParticles (val: boolean) {
 		this._applyLayerToParticles = val;
 		return this;
 	}
 
-	quantityTimespan(val: number) {
+	quantityTimespan (val: number) {
 		this._quantityTimespan = val;
 		return this;
 	}
 
-	quantityBase(val: number) {
+	quantityBase (val: number) {
 		this._quantityBase = val;
 		return this;
 	}
 
-	quantityVariance(a: number, b: number) {
+	quantityVariance (a: number, b: number) {
 		this._quantityVariance = [a, b];
 		return this;
 	}
 
-	quantityMax(val: number) {
+	quantityMax (val: number) {
 		this._quantityMax = val;
 		this._quantityProduced = 0;
 		return this;
 	}
 
-	translateBaseX(val: number) {
+	translateBaseX (val: number) {
 		this._translateBaseX = val;
 		return this;
 	}
 
-	translateBaseY(val: number) {
+	translateBaseY (val: number) {
 		this._translateBaseY = val;
 		return this;
 	}
 
-	translateBaseZ(val: number) {
+	translateBaseZ (val: number) {
 		this._translateBaseZ = val;
 		return this;
 	}
 
-	translateVarianceX(a: number, b: number) {
+	translateVarianceX (a: number, b: number) {
 		this._translateVarianceX = [a, b];
 		return this;
 	}
 
-	translateVarianceY(a: number, b: number) {
+	translateVarianceY (a: number, b: number) {
 		this._translateVarianceY = [a, b];
 		return this;
 	}
 
-	translateVarianceZ(a: number, b: number) {
+	translateVarianceZ (a: number, b: number) {
 		this._translateVarianceZ = [a, b];
 		return this;
 	}
 
-	rotateBase(val: number) {
+	rotateBase (val: number) {
 		this._rotateBase = val;
 		return this;
 	}
 
-	rotateVariance(a: number, b: number) {
+	rotateVariance (a: number, b: number) {
 		this._rotateVariance = [a, b];
 		return this;
 	}
 
-	deathRotateBase(val: number) {
+	deathRotateBase (val: number) {
 		this._deathRotateBase = val;
 		return this;
 	}
 
-	deathRotateVariance(a: number, b: number) {
+	deathRotateVariance (a: number, b: number) {
 		this._deathRotateVariance = [a, b];
 		return this;
 	}
 
-	scaleBaseX(val: number) {
+	scaleBaseX (val: number) {
 		this._scaleBaseX = val;
 		return this;
 	}
 
-	scaleBaseY(val: number) {
+	scaleBaseY (val: number) {
 		this._scaleBaseY = val;
 		return this;
 	}
 
-	scaleBaseZ(val: number) {
+	scaleBaseZ (val: number) {
 		this._scaleBaseZ = val;
 		return this;
 	}
 
-	scaleVarianceX(a: number, b: number) {
+	scaleVarianceX (a: number, b: number) {
 		this._scaleVarianceX = [a, b];
 		return this;
 	}
 
-	scaleVarianceY(a: number, b: number) {
+	scaleVarianceY (a: number, b: number) {
 		this._scaleVarianceY = [a, b];
 		return this;
 	}
 
-	scaleVarianceZ(a: number, b: number) {
+	scaleVarianceZ (a: number, b: number) {
 		this._scaleVarianceZ = [a, b];
 		return this;
 	}
 
-	scaleLockAspect(val: boolean) {
+	scaleLockAspect (val: boolean) {
 		this._scaleLockAspect = val;
 		return this;
 	}
 
-	deathScaleBaseX(val: number) {
+	deathScaleBaseX (val: number) {
 		this._deathScaleBaseX = val;
 		return this;
 	}
 
-	deathScaleBaseY(val: number) {
+	deathScaleBaseY (val: number) {
 		this._deathScaleBaseY = val;
 		return this;
 	}
 
-	deathScaleBaseZ(val: number) {
+	deathScaleBaseZ (val: number) {
 		this._deathScaleBaseZ = val;
 		return this;
 	}
 
-	deathScaleVarianceX(a: number, b: number) {
+	deathScaleVarianceX (a: number, b: number) {
 		this._deathScaleVarianceX = [a, b];
 		return this;
 	}
 
-	deathScaleVarianceY(a: number, b: number) {
+	deathScaleVarianceY (a: number, b: number) {
 		this._deathScaleVarianceY = [a, b];
 		return this;
 	}
 
-	deathScaleVarianceZ(a: number, b: number) {
+	deathScaleVarianceZ (a: number, b: number) {
 		this._deathScaleVarianceZ = [a, b];
 		return this;
 	}
 
-	deathScaleLockAspect(val: boolean) {
+	deathScaleLockAspect (val: boolean) {
 		this._deathScaleLockAspect = val;
 		return this;
 	}
 
-	opacityBase(val: number) {
+	opacityBase (val: number) {
 		this._opacityBase = val;
 		return this;
 	}
 
-	opacityVariance(a: number, b: number) {
+	opacityVariance (a: number, b: number) {
 		this._opacityVariance = [a, b];
 		return this;
 	}
 
-	deathOpacityBase(val: number) {
+	deathOpacityBase (val: number) {
 		this._deathOpacityBase = val;
 		return this;
 	}
 
-	deathOpacityVariance(a: number, b: number) {
+	deathOpacityVariance (a: number, b: number) {
 		this._deathOpacityVariance = [a, b];
 		return this;
 	}
 
-	lifeBase(val: number) {
+	lifeBase (val: number) {
 		this._lifeBase = val;
 		return this;
 	}
 
-	lifeVariance(a: number, b: number) {
+	lifeVariance (a: number, b: number) {
 		this._lifeVariance = [a, b];
 		return this;
 	}
@@ -320,7 +321,7 @@ export class IgeParticleEmitter extends IgeUiEntity {
 	 * @param {IgePoint3d} minVector The minimum vector.
 	 * @param {IgePoint3d} maxVector The maximum vector.
 	 */
-	velocityVector(baseVector: IgePoint3d, minVector: IgePoint3d, maxVector: IgePoint3d) {
+	velocityVector (baseVector: IgePoint3d, minVector: IgePoint3d, maxVector: IgePoint3d) {
 		this._velocityVector = {
 			base: baseVector,
 			min: minVector,
@@ -338,7 +339,7 @@ export class IgeParticleEmitter extends IgeUiEntity {
 	 * @param {IgePoint3d} minVector The minimum vector.
 	 * @param {IgePoint3d} maxVector The maximum vector.
 	 */
-	linearForceVector(baseVector: IgePoint3d, minVector: IgePoint3d, maxVector: IgePoint3d) {
+	linearForceVector (baseVector: IgePoint3d, minVector: IgePoint3d, maxVector: IgePoint3d) {
 		this._linearForceVector = {
 			base: baseVector,
 			min: minVector,
@@ -353,7 +354,7 @@ export class IgeParticleEmitter extends IgeUiEntity {
 	 * particle entities based upon the emitter's current settings.
 	 * @return {*}
 	 */
-	start() {
+	start () {
 		if (this._particle) {
 			// Update the transform matrix before starting
 			// otherwise some particles might read the old
@@ -378,7 +379,7 @@ export class IgeParticleEmitter extends IgeUiEntity {
 		return this;
 	}
 
-	updateSettings() {
+	updateSettings () {
 		this._maxParticles = this.baseAndVarianceValue(this._quantityBase, this._quantityVariance, true);
 		this._particlesPerTimeVector = this._quantityTimespan / this._maxParticles; // 1 Particle every x milliseconds (x stored in this._particlesPerTimeVector)
 	}
@@ -388,7 +389,7 @@ export class IgeParticleEmitter extends IgeUiEntity {
 	 * continue to process until they reach their natural lifespan.
 	 * @return {*}
 	 */
-	stop() {
+	stop () {
 		this._started = false;
 		return this;
 	}
@@ -398,7 +399,7 @@ export class IgeParticleEmitter extends IgeUiEntity {
 	 * destroyed immediately.
 	 * @return {*}
 	 */
-	stopAndKill() {
+	stopAndKill () {
 		this._started = false;
 
 		// Loop the particles array and destroy all the particles
@@ -427,7 +428,7 @@ export class IgeParticleEmitter extends IgeUiEntity {
 	 * @return {number} Returns the final value based upon the base
 	 * value and variance range.
 	 */
-	baseAndVarianceValue(base: number, variance: [number, number], floorIt: boolean = false) {
+	baseAndVarianceValue (base: number, variance: [number, number], floorIt: boolean = false) {
 		base = base || 0;
 		variance = variance || [0, 0];
 		let variant;
@@ -441,7 +442,7 @@ export class IgeParticleEmitter extends IgeUiEntity {
 		return base + variant;
 	}
 
-	vectorFromBaseMinMax(vectorData: IgeParticleVectorBaseMinMax): IgePoint3d {
+	vectorFromBaseMinMax (vectorData: IgeParticleVectorBaseMinMax): IgePoint3d {
 		if (vectorData.min && vectorData.max) {
 			const base = vectorData.base;
 			const min = vectorData.min;
@@ -462,7 +463,7 @@ export class IgeParticleEmitter extends IgeUiEntity {
 	 * responsible for spawning and controlling.
 	 * @param ctx
 	 */
-	tick(ctx: IgeCanvasRenderingContext2d) {
+	tick (ctx: IgeCanvasRenderingContext2d) {
 		this._currentDelta += ige.engine._tickDelta;
 
 		if (!this._particle) return;
@@ -767,7 +768,7 @@ export class IgeParticleEmitter extends IgeUiEntity {
 	 * emitter has spawned.
 	 * @return {Array} The array of particle entities the emitter spawned.
 	 */
-	particles() {
+	particles () {
 		return this._particles;
 	}
 

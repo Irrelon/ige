@@ -1,10 +1,10 @@
 export const WithDataMixin = (Base) =>
 	class extends Base {
-		constructor() {
+		constructor () {
 			super(...arguments);
 			this._data = {};
 		}
-		data(key, value) {
+		data (key, value) {
 			if (value !== undefined) {
 				this._data = this._data || {};
 				this._data[key] = value;

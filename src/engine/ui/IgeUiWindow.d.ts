@@ -1,6 +1,6 @@
-import { IgePoint3d } from "@/engine/core/IgePoint3d";
-import { IgeUiButton } from "@/engine/ui/IgeUiButton";
-import { IgeUiLabel } from "@/engine/ui/IgeUiLabel";
+import type { IgePoint3d } from "@/engine/core/IgePoint3d";
+import type { IgeUiButton } from "@/engine/ui/IgeUiButton";
+import type { IgeUiLabel } from "@/engine/ui/IgeUiLabel";
 import { IgeUiElement } from "../core/IgeUiElement";
 
 export declare class IgeUiWindow extends IgeUiElement {

@@ -2,11 +2,11 @@ import { IgeUiElement } from "../../engine/core/IgeUiElement.js";
 import { registerClass } from "../../engine/igeClassStore.js";
 
 export class IgeUiRow extends IgeUiElement {
-	constructor() {
+	constructor () {
 		super(...arguments);
 		this.classId = "IgeUiRow";
 	}
-	tick(ctx) {
+	tick (ctx) {
 		const maxWidth = this.width();
 		// Loop children and re-position then
 		const arr = this._children;

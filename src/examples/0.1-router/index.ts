@@ -4,7 +4,7 @@ import { ige } from "@/engine/instance";
 export class Game {
 	classId = "Game";
 
-	constructor() {
+	constructor () {
 		ige.router.go("app/splash");
 	}
 }

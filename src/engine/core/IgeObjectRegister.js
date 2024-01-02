@@ -1,11 +1,11 @@
 export class IgeObjectRegister {
-	constructor() {
+	constructor () {
 		this._store = {};
 	}
-	get(id) {
+	get (id) {
 		return this._store[id];
 	}
-	all() {
+	all () {
 		return this._store;
 	}
 	/**
@@ -15,7 +15,7 @@ export class IgeObjectRegister {
 	 * @param {Object} obj The object to register.
 	 * @return {*}
 	 */
-	add(obj) {
+	add (obj) {
 		if (this._store[obj.id()]) {
 			obj._idRegistered = false;
 			throw new Error(
@@ -32,7 +32,7 @@ export class IgeObjectRegister {
 	 * @param {Object} obj The object to un-register.
 	 * @return {*}
 	 */
-	remove(obj) {
+	remove (obj) {
 		// Check if the object is registered in the ID lookup
 		if (!this._store[obj.id()]) {
 			return;

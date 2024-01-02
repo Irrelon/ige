@@ -4,29 +4,29 @@ import { IgeEventingClass } from "@/engine/core/IgeEventingClass";
 var __awaiter =
 	(this && this.__awaiter) ||
 	function (thisArg, _arguments, P, generator) {
-		function adopt(value) {
+		function adopt (value) {
 			return value instanceof P
 				? value
 				: new P(function (resolve) {
-						resolve(value);
+					resolve(value);
 				  });
 		}
 		return new (P || (P = Promise))(function (resolve, reject) {
-			function fulfilled(value) {
+			function fulfilled (value) {
 				try {
 					step(generator.next(value));
 				} catch (e) {
 					reject(e);
 				}
 			}
-			function rejected(value) {
+			function rejected (value) {
 				try {
 					step(generator["throw"](value));
 				} catch (e) {
 					reject(e);
 				}
 			}
-			function step(result) {
+			function step (result) {
 				result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected);
 			}
 			step((generator = generator.apply(thisArg, _arguments || [])).next());
@@ -34,7 +34,7 @@ var __awaiter =
 	};
 
 export class IgeAudioController extends IgeEventingClass {
-	constructor() {
+	constructor () {
 		super();
 		this.classId = "IgeAudioController";
 		this._active = false;
@@ -69,7 +69,7 @@ export class IgeAudioController extends IgeEventingClass {
 	 * @param val
 	 * @returns {*}
 	 */
-	masterVolume(val) {
+	masterVolume (val) {
 		if (!this._masterVolumeNode) return;
 		if (val !== undefined) {
 			this._masterVolumeNode.gain.value = val;
@@ -81,10 +81,10 @@ export class IgeAudioController extends IgeEventingClass {
 	 * Returns an audio context.
 	 * @returns {*}
 	 */
-	getContext() {
+	getContext () {
 		return new window.AudioContext();
 	}
-	register(id, url) {
+	register (id, url) {
 		if (!id) {
 			return this._register;
 		}
@@ -103,7 +103,7 @@ export class IgeAudioController extends IgeEventingClass {
 	 * @param {boolean} loop If true, will loop the audio until
 	 * it is explicitly stopped.
 	 */
-	play(id, loop = false) {
+	play (id, loop = false) {
 		if (!isClient || !this._ctx) {
 			return;
 		}
@@ -125,7 +125,7 @@ export class IgeAudioController extends IgeEventingClass {
 	 * @param {boolean=} val True to enable audio support.
 	 * @returns {*}
 	 */
-	active(val) {
+	active (val) {
 		if (val !== undefined && !this._disabled) {
 			this._active = val;
 			return this;
@@ -137,7 +137,7 @@ export class IgeAudioController extends IgeEventingClass {
 	 * @param {string} url The url to load the audio file from.
 	 * file has loaded or on error.
 	 */
-	_load(url) {
+	_load (url) {
 		return __awaiter(this, void 0, void 0, function* () {
 			return new Promise((resolve, reject) => {
 				const request = new XMLHttpRequest();
@@ -163,7 +163,7 @@ export class IgeAudioController extends IgeEventingClass {
 			});
 		});
 	}
-	_loaded(url, data) {
+	_loaded (url, data) {
 		return __awaiter(this, void 0, void 0, function* () {
 			return this._decode(data)
 				.then((buffer) => {

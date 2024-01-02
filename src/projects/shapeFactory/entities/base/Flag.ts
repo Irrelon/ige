@@ -6,7 +6,7 @@ import { ige } from "@/engine/instance";
 export class Flag extends Building {
 	classId = "Flag";
 
-	constructor() {
+	constructor () {
 		super();
 
 		this.data("glowColor", "#ffcc00").layer(1).width(10).height(20);

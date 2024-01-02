@@ -1,6 +1,6 @@
-import { IgeObject } from "../core/IgeObject";
-import { IgeTexture } from "../core/IgeTexture";
-import { IgeRepeatType } from "@/types/IgeRepeatType";
+import type { IgeObject } from "../core/IgeObject";
+import type { IgeTexture } from "../core/IgeTexture";
+import type { IgeRepeatType } from "@/types/IgeRepeatType";
 import type { Mixin } from "@/types/Mixin";
 
 export declare const WithUiStyleMixin: <BaseClassType extends Mixin<IgeObject>>(

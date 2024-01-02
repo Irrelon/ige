@@ -1,7 +1,7 @@
 import { IgeEventingClass } from "../../core/IgeEventingClass";
 
 export class IgeNetIoClient extends IgeEventingClass {
-	constructor(
+	constructor (
 		url,
 		options = {
 			connectionRetry: true,
@@ -32,19 +32,19 @@ export class IgeNetIoClient extends IgeEventingClass {
 			if (packet._netioCmd) {
 				// The packet is a netio command
 				switch (packet._netioCmd) {
-					case "id":
-						// Store the new id in the socket
-						this._networkId = packet.data;
-						// Now we have an id, set the state to connected
-						this._state = 3;
-						// Emit the connect event
-						this.emit("connect", this._networkId);
-						break;
-					case "close":
-						// The server told us our connection has been closed
-						// so store the reason the server gave us!
-						this._disconnectReason = packet.data;
-						break;
+				case "id":
+					// Store the new id in the socket
+					this._networkId = packet.data;
+					// Now we have an id, set the state to connected
+					this._state = 3;
+					// Emit the connect event
+					this.emit("connect", this._networkId);
+					break;
+				case "close":
+					// The server told us our connection has been closed
+					// so store the reason the server gave us!
+					this._disconnectReason = packet.data;
+					break;
 				}
 			} else {
 				// The packet is normal data
@@ -103,14 +103,14 @@ export class IgeNetIoClient extends IgeEventingClass {
 	 * @param {boolean=} val
 	 * @return {*}
 	 */
-	debug(val) {
+	debug (val) {
 		if (val !== undefined) {
 			this._debug = val;
 			return this;
 		}
 		return this._debug;
 	}
-	connect(url) {
+	connect (url) {
 		this.log(`Connecting to server at ${url}`);
 		// Set the state to connecting
 		this._state = 1;
@@ -124,24 +124,24 @@ export class IgeNetIoClient extends IgeEventingClass {
 		this._socket.onclose = this._onClose;
 		this._socket.onerror = this._onError;
 	}
-	disconnect(reason) {
+	disconnect (reason) {
 		if (!this._socket) {
 			this.log("Cannot disconnect(), no socket defined!", "warning");
 			return;
 		}
 		this._socket.close(1000, reason);
 	}
-	send(data) {
+	send (data) {
 		if (!this._socket) {
 			this.log("Cannot send(), no socket defined!", "warning");
 			return;
 		}
 		this._socket.send(this._encode(data));
 	}
-	_encode(data) {
+	_encode (data) {
 		return JSON.stringify(data);
 	}
-	_decode(data) {
+	_decode (data) {
 		return JSON.parse(data);
 	}
 }

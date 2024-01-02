@@ -1,5 +1,5 @@
 import { IgeUiElement } from "@/engine/core/IgeUiElement";
-import { IgeUiLabel } from "@/engine/ui/IgeUiLabel";
+import type { IgeUiLabel } from "@/engine/ui/IgeUiLabel";
 import type { IgeCanvasRenderingContext2d } from "@/types/IgeCanvasRenderingContext2d";
 
 export interface IgeUiDropDownOption {

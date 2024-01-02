@@ -1,7 +1,7 @@
-import { IgeInterval } from "./IgeInterval";
+import type { IgeInterval } from "./IgeInterval";
 import { IgeEventingClass } from "@/engine/core/IgeEventingClass";
-import { IgeEntityBehaviourMethod } from "@/types/IgeEntityBehaviour";
-import { IgeIsReadyPromise } from "@/types/IgeIsReadyPromise";
+import type { IgeEntityBehaviourMethod } from "@/types/IgeEntityBehaviour";
+import type { IgeIsReadyPromise } from "@/types/IgeIsReadyPromise";
 
 export declare class IgeTimeController extends IgeEventingClass implements IgeIsReadyPromise {
 	static componentTargetClass: string;

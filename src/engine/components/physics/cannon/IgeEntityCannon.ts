@@ -1,7 +1,7 @@
 /**
  * Creates a new entity with CANNON 3d physics integration.
  */
-var IgeEntityCannon = IgeEntity.extend({
+const IgeEntityCannon = IgeEntity.extend({
 	classId: "IgeEntityCannon",
 
 	init: function () {
@@ -30,7 +30,7 @@ var IgeEntityCannon = IgeEntity.extend({
 	},
 
 	_translateTo: function (x, y, z) {
-		var entCannon = this._cannonBody,
+		const entCannon = this._cannonBody,
 			scaleRatio = ige.cannon._scaleRatio;
 
 		// Check if the entity has a cannon body attached

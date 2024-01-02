@@ -4,12 +4,12 @@ import { ige } from "@/engine/instance";
 export class UiAnimationEditor extends IgeEventingClass {
 	classId = "UiAnimationEditor";
 
-	init() {
+	init () {
 		ige.engine.requireStylesheet(igeRoot + "components/editor/ui/animationEditor/animationEditor.css");
 		this.reset();
 	}
 
-	reset() {
+	reset () {
 		const self = this;
 		self._frames = [];
 		self._cellCount = 0;
@@ -22,7 +22,7 @@ export class UiAnimationEditor extends IgeEventingClass {
 		self._animationEntity = new IgeEntity().addComponent(IgeAnimationComponent);
 	}
 
-	ready() {
+	ready () {
 		const self = this;
 
 		ige.editor.ui.menus.addMenuGroup("toolsMenu", "textures");
@@ -34,7 +34,7 @@ export class UiAnimationEditor extends IgeEventingClass {
 		});
 	}
 
-	show(settings) {
+	show (settings) {
 		const self = this;
 		self.reset();
 
@@ -49,7 +49,7 @@ export class UiAnimationEditor extends IgeEventingClass {
 			icon: "halflings-icon white film",
 			title: "Animation Editor",
 			contentTemplate: igeRoot + "components/editor/ui/animationEditor/templates/animationEditor.html",
-			blur() {
+			blur () {
 				ige.editor.ui.dialogs.confirm({
 					title: "Exit Animation Editor",
 					width: 400,
@@ -59,7 +59,7 @@ export class UiAnimationEditor extends IgeEventingClass {
 						positiveTitle: "OK",
 						negativeTitle: "Cancel"
 					},
-					positive() {
+					positive () {
 						self.destroy();
 						ige.editor.ui.dialogs.close("animationEditorDialog");
 					}
@@ -75,7 +75,7 @@ export class UiAnimationEditor extends IgeEventingClass {
 				cellsCanvasWidth: self._textureImage !== undefined ? self._textureImage.width : 500,
 				cellsCanvasHeight: self._textureImage !== undefined ? self._textureImage.height : 404
 			},
-			callback(err, dialogElem) {
+			callback (err, dialogElem) {
 				if (!err) {
 					self.setupListeners(dialogElem);
 					self.setupCanvas();
@@ -84,7 +84,7 @@ export class UiAnimationEditor extends IgeEventingClass {
 		});
 	}
 
-	setupListeners(dialogElem) {
+	setupListeners (dialogElem) {
 		const self = this;
 
 		self._outputCanvas = dialogElem.find(".viewArea").find("canvas");
@@ -165,12 +165,12 @@ export class UiAnimationEditor extends IgeEventingClass {
 		});
 	}
 
-	indexFromCell(cell) {
+	indexFromCell (cell) {
 		const self = this;
 		return cell.y * (self._textureImage.width / self._cellWidth) + cell.x + 1;
 	}
 
-	cellFromIndex(index) {
+	cellFromIndex (index) {
 		index = index - 1;
 		const self = this,
 			cellsPerRow = self._textureImage.width / self._cellWidth,
@@ -180,7 +180,7 @@ export class UiAnimationEditor extends IgeEventingClass {
 		return { x: x, y: y };
 	}
 
-	setupCanvas() {
+	setupCanvas () {
 		const self = this;
 
 		// Start a canvas loop to draw data in a tick-fashion
@@ -189,7 +189,7 @@ export class UiAnimationEditor extends IgeEventingClass {
 		}, 1000 / 60);
 	}
 
-	cellFromXY(event) {
+	cellFromXY (event) {
 		if (this._cellWidth && this._cellHeight) {
 			return {
 				x: Math.floor(event.offsetX / this._cellWidth),
@@ -203,7 +203,7 @@ export class UiAnimationEditor extends IgeEventingClass {
 		}
 	}
 
-	_renderCanvas(noGrid) {
+	_renderCanvas (noGrid) {
 		let self = this,
 			framesCtx = self._framesCtx,
 			cellsCtx = self._cellsCtx,
@@ -339,7 +339,7 @@ export class UiAnimationEditor extends IgeEventingClass {
 		}
 	}
 
-	destroy() {
+	destroy () {
 		const self = this;
 
 		self._animationEntity.animation.stop();

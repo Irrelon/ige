@@ -9,7 +9,7 @@ import { ige } from "../instance.js";
  * Texture maps provide a way to display textures / cells across a tile map.
  */
 export class IgeTextureMap extends IgeTileMap2d {
-	constructor(tileWidth, tileHeight) {
+	constructor (tileWidth, tileHeight) {
 		super(tileWidth, tileHeight);
 		this.classId = "IgeTextureMap";
 		this._drawSectionBounds = false;
@@ -29,7 +29,7 @@ export class IgeTextureMap extends IgeTileMap2d {
 	 * @param {number=} val The size in tiles of each section.
 	 * @return {*}
 	 */
-	autoSection(val) {
+	autoSection (val) {
 		if (val !== undefined) {
 			this._autoSection = val;
 			return this;
@@ -43,7 +43,7 @@ export class IgeTextureMap extends IgeTileMap2d {
 	 * @param {number=} val The boolean flag value.
 	 * @return {*}
 	 */
-	drawSectionBounds(val) {
+	drawSectionBounds (val) {
 		if (val !== undefined) {
 			this._drawSectionBounds = val;
 			return this;
@@ -53,7 +53,7 @@ export class IgeTextureMap extends IgeTileMap2d {
 	/**
 	 * Forces a cache redraw on the next tick.
 	 */
-	cacheForceFrame() {
+	cacheForceFrame () {
 		this._cacheDirty = true;
 	}
 	/**
@@ -62,7 +62,7 @@ export class IgeTextureMap extends IgeTileMap2d {
 	 * @param {IgeTileMap2d} entity The other map to read map data from.
 	 * @return {*}
 	 */
-	negate(entity) {
+	negate (entity) {
 		if (entity !== undefined) {
 			const entityMapData = entity.map._mapData;
 			const thisMapData = this.map._mapData;
@@ -90,7 +90,7 @@ export class IgeTextureMap extends IgeTileMap2d {
 	 * @param {IgeTexture} texture
 	 * @return {Integer} The index of the texture you just added.
 	 */
-	addTexture(texture) {
+	addTexture (texture) {
 		this._textureList.push(texture);
 		if (!texture._loaded) {
 			this._allTexturesLoaded = false;
@@ -103,7 +103,7 @@ export class IgeTextureMap extends IgeTileMap2d {
 	 * @return {Boolean} True if all textures are loaded, false if
 	 * not.
 	 */
-	allTexturesLoaded() {
+	allTexturesLoaded () {
 		if (!this._allTexturesLoaded) {
 			const arr = this._textureList;
 			let arrCount = arr.length;
@@ -124,7 +124,7 @@ export class IgeTextureMap extends IgeTileMap2d {
 	 * @param {number} textureIndex The texture index.
 	 * @param {number} cell The cell index.
 	 */
-	paintTile(x, y, textureIndex, cell) {
+	paintTile (x, y, textureIndex, cell) {
 		if (x !== undefined && y !== undefined && textureIndex !== undefined) {
 			if (cell === undefined || cell < 1) {
 				cell = 1; // Set the cell default to 1
@@ -138,7 +138,7 @@ export class IgeTextureMap extends IgeTileMap2d {
 	 * @param {number} x The tile x co-ordinate.
 	 * @param {number} y The tile y co-ordinate.
 	 */
-	clearTile(x, y) {
+	clearTile (x, y) {
 		this.map.clearData(x, y);
 	}
 	/**
@@ -146,7 +146,7 @@ export class IgeTextureMap extends IgeTileMap2d {
 	 * with the data found.
 	 * @param {Object} map The map data object.
 	 */
-	loadMap(map) {
+	loadMap (map) {
 		if (map.textures) {
 			// Empty the existing array
 			this._textureList = [];
@@ -170,7 +170,7 @@ export class IgeTextureMap extends IgeTileMap2d {
 	 * with the loadMap() method.
 	 * @return {Object} The map data object.
 	 */
-	saveMap() {
+	saveMap () {
 		// in URL format
 		const textures = [],
 			mapData = this.map._mapData;
@@ -210,7 +210,7 @@ export class IgeTextureMap extends IgeTileMap2d {
 	 * map will not be affected.
 	 * @returns {*}
 	 */
-	clearMap() {
+	clearMap () {
 		this.map.mapData([]);
 		return this;
 	}
@@ -220,7 +220,7 @@ export class IgeTextureMap extends IgeTileMap2d {
 	 * the texture map to it's virgin state as if it had just been created.
 	 * @returns {*}
 	 */
-	reset() {
+	reset () {
 		this.clearMap();
 		this._textureList = [];
 		return this;
@@ -231,7 +231,7 @@ export class IgeTextureMap extends IgeTileMap2d {
 	 * @param {number} y The tile y co-ordinate.
 	 * @param {number=} textureIndex The new texture index.
 	 */
-	tileTextureIndex(x, y, textureIndex) {
+	tileTextureIndex (x, y, textureIndex) {
 		if (x !== undefined && y !== undefined) {
 			const obj = this.map.tileData(x, y);
 			if (textureIndex !== undefined) {
@@ -248,7 +248,7 @@ export class IgeTextureMap extends IgeTileMap2d {
 	 * @param {number} y The tile y co-ordinate.
 	 * @param {number} cell The new cell index.
 	 */
-	tileTextureCell(x, y, cell) {
+	tileTextureCell (x, y, cell) {
 		if (x !== undefined && y !== undefined) {
 			const obj = this.map.tileData(x, y);
 			if (cell !== undefined) {
@@ -265,7 +265,7 @@ export class IgeTextureMap extends IgeTileMap2d {
 	 * @param {Array} mapData The map data array.
 	 * @return {Object} The new map data.
 	 */
-	convertHorizontalData(mapData) {
+	convertHorizontalData (mapData) {
 		const newData = [];
 		let x, y;
 		for (x in mapData) {
@@ -285,7 +285,7 @@ export class IgeTextureMap extends IgeTileMap2d {
 	 * Handles rendering the texture map during engine tick events.
 	 * @param {CanvasRenderingContext2D} ctx
 	 */
-	tick(ctx) {
+	tick (ctx) {
 		// TODO: This is being called at the wrong time, drawing children before this parent! FIX THIS
 		// Run the IgeTileMap2d tick method
 		super.tick(ctx);
@@ -449,7 +449,7 @@ export class IgeTextureMap extends IgeTileMap2d {
 	 * @param {number} sectionY The section's y co-ordinate.
 	 * @private
 	 */
-	_ensureSectionExists(sectionX, sectionY, autoSection) {
+	_ensureSectionExists (sectionX, sectionY, autoSection) {
 		let sectionCtx;
 		this._sections[sectionX] = this._sections[sectionX] || [];
 		this._sectionCtx[sectionX] = this._sectionCtx[sectionX] || [];
@@ -473,7 +473,7 @@ export class IgeTextureMap extends IgeTileMap2d {
 	 * @param {CanvasRenderingContext2D} ctx
 	 * @private
 	 */
-	_drawSectionsToCtx(ctx, autoSection) {
+	_drawSectionsToCtx (ctx, autoSection) {
 		if (ige.engine._currentCamera === null || ige.engine._currentViewport === null) {
 			throw new Error("Engine was not ready");
 		}
@@ -547,7 +547,7 @@ export class IgeTextureMap extends IgeTileMap2d {
 	 * @return {*}
 	 * @private
 	 */
-	_renderTile(ctx, x, y, tileData, tileEntity, rect, sectionX, sectionY) {
+	_renderTile (ctx, x, y, tileData, tileEntity, rect, sectionX, sectionY) {
 		// TODO: Handle scaling so tiles don't loose res on scaled cached sections
 		const xAdjust = this._mountMode === IgeMountMode.iso ? this._tileWidth / 2 : 0,
 			yAdjust = this._mountMode === IgeMountMode.iso ? this._tileHeight / 2 : 0;
@@ -631,7 +631,7 @@ export class IgeTextureMap extends IgeTileMap2d {
 	 * @return {Object} The new tile entity object.
 	 * @private
 	 */
-	_newTileEntity() {
+	_newTileEntity () {
 		if (this._mountMode === IgeMountMode.flat) {
 			return {
 				_cell: 1,

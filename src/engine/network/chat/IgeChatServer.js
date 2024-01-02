@@ -17,7 +17,7 @@ import { newIdHex } from "../../utils.js";
  * chat methods and events.
  */
 export class IgeChatServer extends IgeChatComponent {
-	constructor() {
+	constructor () {
 		super();
 		ige.dependencies.waitFor(["network"], () => {
 			// Define the chat system network command listeners
@@ -39,7 +39,7 @@ export class IgeChatServer extends IgeChatComponent {
 	 * @param options An object containing options key/values.
 	 * @return {string} The new room's ID.
 	 */
-	createRoom(roomName, roomId, options) {
+	createRoom (roomName, roomId, options) {
 		const network = ige.network;
 		const newRoomId = roomId || newIdHex();
 		this._rooms[newRoomId] = {
@@ -57,7 +57,7 @@ export class IgeChatServer extends IgeChatComponent {
 	 * @param roomId
 	 * @return {boolean}
 	 */
-	removeRoom(roomId) {
+	removeRoom (roomId) {
 		const network = ige.network;
 		if (this._rooms[roomId]) {
 			// Inform all users that the room was removed
@@ -75,7 +75,7 @@ export class IgeChatServer extends IgeChatComponent {
 	 * @param {string=} to The id of the user to send the message to.
 	 * @param {string} from The id of the user that sent the message.
 	 */
-	sendToRoom(roomId, message, to, from) {
+	sendToRoom (roomId, message, to, from) {
 		const network = ige.network;
 		if (this._rooms[roomId]) {
 			const room = this._rooms[roomId];
@@ -105,7 +105,7 @@ export class IgeChatServer extends IgeChatComponent {
 			this.log('Cannot send message to room with id "' + roomId + '" because it does not exist!');
 		}
 	}
-	_onMessageFromClient(msg, clientId) {
+	_onMessageFromClient (msg, clientId) {
 		// Emit the event and if it wasn't cancelled (by returning true) then
 		// process this ourselves
 		if (this.emit("messageFromClient", msg, clientId) !== IgeEventReturnFlag.cancel) {
@@ -134,7 +134,7 @@ export class IgeChatServer extends IgeChatComponent {
 			}
 		}
 	}
-	_onJoinRoomRequestFromClient(roomId, clientId) {
+	_onJoinRoomRequestFromClient (roomId, clientId) {
 		const network = ige.network;
 		// Emit the event and if it wasn't cancelled (by returning true) then
 		// process this ourselves
@@ -157,21 +157,21 @@ export class IgeChatServer extends IgeChatComponent {
 			}
 		}
 	}
-	_onLeaveRoomRequestFromClient(roomId, clientId) {
+	_onLeaveRoomRequestFromClient (roomId, clientId) {
 		// Emit the event and if it wasn't cancelled (by returning true) then
 		// process this ourselves
 		if (this.emit("clientLeaveRoomRequest", roomId, clientId) !== IgeEventReturnFlag.cancel) {
 			console.log("Client wants to leave room: (" + clientId + ")", roomId);
 		}
 	}
-	_onClientWantsRoomList(data, clientId) {
+	_onClientWantsRoomList (data, clientId) {
 		// Emit the event and if it wasn't cancelled (by returning true) then
 		// process this ourselves
 		if (this.emit("clientRoomListRequest", data, clientId) !== IgeEventReturnFlag.cancel) {
 			console.log("Client wants the room list: (" + clientId + ")", data);
 		}
 	}
-	_onClientWantsRoomUserList(roomId, clientId) {
+	_onClientWantsRoomUserList (roomId, clientId) {
 		// Emit the event and if it wasn't cancelled (by returning true) then
 		// process this ourselves
 		if (this.emit("clientRoomUserListRequest", roomId, clientId) !== IgeEventReturnFlag.cancel) {

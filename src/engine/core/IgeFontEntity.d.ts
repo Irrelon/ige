@@ -1,6 +1,6 @@
 import { IgeUiEntity } from "./IgeUiEntity";
-import { IgeFontAlignX, IgeFontAlignY } from "@/enums/IgeFontAlign";
-import { IgeCanvasRenderingContext2d } from "@/types/IgeCanvasRenderingContext2d";
+import type { IgeFontAlignX, IgeFontAlignY } from "@/enums/IgeFontAlign";
+import type { IgeCanvasRenderingContext2d } from "@/types/IgeCanvasRenderingContext2d";
 
 /**
  * Creates a new font entity. A font entity will use a font sheet

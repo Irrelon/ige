@@ -90,21 +90,21 @@ var CharacterContainer = IgeEntity.extend({
 					// The characters we are using only have four directions
 					// so convert the NW, SE, NE, SW to N, S, E, W
 					switch (this._streamDir) {
-						case "S":
-							dir = "W";
-							break;
+					case "S":
+						dir = "W";
+						break;
 
-						case "E":
-							dir = "E";
-							break;
+					case "E":
+						dir = "E";
+						break;
 
-						case "N":
-							dir = "E";
-							break;
+					case "N":
+						dir = "E";
+						break;
 
-						case "W":
-							dir = "W";
-							break;
+					case "W":
+						dir = "W";
+						break;
 					}
 
 					if (dir && dir !== "stop") {

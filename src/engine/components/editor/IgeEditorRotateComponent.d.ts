@@ -1,5 +1,5 @@
 import { IgeComponent } from "../../core/IgeComponent";
-import { IgeEntity } from "../../core/IgeEntity";
+import type { IgeEntity } from "../../core/IgeEntity";
 
 /**
  * When added to a viewport, automatically adds entity rotate

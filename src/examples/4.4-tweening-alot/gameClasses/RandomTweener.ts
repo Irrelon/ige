@@ -6,7 +6,7 @@ import { PI180 } from "@/engine/utils";
 export class RandomTweener extends IgeEntity {
 	classId = "RandomTweener";
 
-	constructor() {
+	constructor () {
 		super();
 		this.newTween();
 	}
@@ -15,7 +15,7 @@ export class RandomTweener extends IgeEntity {
 	 * Creates a new random position and rotation to tween
 	 * to and then starts the tween.
 	 */
-	newTween() {
+	newTween () {
 		new IgeTween(this._translate)
 			.duration(7000)
 			.properties({

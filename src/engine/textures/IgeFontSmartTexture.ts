@@ -1,6 +1,6 @@
 import { IgeFontAlignY } from "@/enums/IgeFontAlign";
 import type { IgeFontEntity } from "../core/IgeFontEntity";
-import { IgeSmartTexture } from "@/types/IgeSmartTexture";
+import type { IgeSmartTexture } from "@/types/IgeSmartTexture";
 
 /**
  * Provides native canvas font rendering supporting multi-line

@@ -10,7 +10,7 @@ import { IgeFontSmartTexture } from "../textures/IgeFontSmartTexture";
  * (IgeFontSheet) or native font and render text.
  */
 export class IgeFontEntity extends IgeUiEntity {
-	constructor() {
+	constructor () {
 		super();
 		this["classId"] = "IgeFontEntity";
 		this._textAlignX = IgeFontAlignX.center;
@@ -21,7 +21,7 @@ export class IgeFontEntity extends IgeUiEntity {
 		// Enable caching by default for font entities!
 		this.cache(true);
 	}
-	width(px, lockAspect, modifier, noUpdate) {
+	width (px, lockAspect, modifier, noUpdate) {
 		if (px !== undefined) {
 			if (this._bounds2d.x !== px) {
 				this.clearCache();
@@ -33,7 +33,7 @@ export class IgeFontEntity extends IgeUiEntity {
 		}
 		return this._bounds2d.x;
 	}
-	height(px, lockAspect = false, modifier, noUpdate = false) {
+	height (px, lockAspect = false, modifier, noUpdate = false) {
 		if (px !== undefined) {
 			if (this._bounds2d.y !== px) {
 				this.clearCache();
@@ -56,7 +56,7 @@ export class IgeFontEntity extends IgeUiEntity {
 	 * @param {string} text The text string to render.
 	 * @returns {*}
 	 */
-	text(text) {
+	text (text) {
 		if (text !== undefined) {
 			let wasDifferent = false;
 			// Ensure we have a string
@@ -87,7 +87,7 @@ export class IgeFontEntity extends IgeUiEntity {
 	 * @param {string} postText Text to place after the output.
 	 * @returns {*}
 	 */
-	bindData(obj, propName, preText, postText) {
+	bindData (obj, propName, preText, postText) {
 		if (obj !== undefined && propName !== undefined) {
 			this._bindDataObject = obj;
 			this._bindDataProperty = propName;
@@ -96,7 +96,7 @@ export class IgeFontEntity extends IgeUiEntity {
 		}
 		return this;
 	}
-	textAlignX(val) {
+	textAlignX (val) {
 		if (val !== undefined) {
 			if (this._textAlignX !== val) {
 				this.clearCache();
@@ -106,7 +106,7 @@ export class IgeFontEntity extends IgeUiEntity {
 		}
 		return this._textAlignX;
 	}
-	textAlignY(val) {
+	textAlignY (val) {
 		if (val !== undefined) {
 			if (this._textAlignY !== val) {
 				this.clearCache();
@@ -116,7 +116,7 @@ export class IgeFontEntity extends IgeUiEntity {
 		}
 		return this._textAlignY;
 	}
-	textLineSpacing(val) {
+	textLineSpacing (val) {
 		if (val !== undefined) {
 			if (this._textLineSpacing !== val) {
 				this.clearCache();
@@ -135,7 +135,7 @@ export class IgeFontEntity extends IgeUiEntity {
 	 * @return {*} "this" when arguments are passed to allow method
 	 * chaining or the current value if no arguments are specified.
 	 */
-	colorOverlay(val) {
+	colorOverlay (val) {
 		if (val !== undefined) {
 			if (this._colorOverlay !== val) {
 				this.clearCache();
@@ -145,13 +145,13 @@ export class IgeFontEntity extends IgeUiEntity {
 		}
 		return this._colorOverlay;
 	}
-	color(val) {
+	color (val) {
 		return this.colorOverlay(val);
 	}
 	/**
 	 * Clears the texture cache for this entity's text string.
 	 */
-	clearCache() {
+	clearCache () {
 		if (this._cache) {
 			this.cacheDirty(true);
 		}
@@ -168,7 +168,7 @@ export class IgeFontEntity extends IgeUiEntity {
 	 * @return {*} "this" when arguments are passed to allow method
 	 * chaining or the current value if no arguments are specified.
 	 */
-	nativeFont(val) {
+	nativeFont (val) {
 		if (val !== undefined) {
 			// Check if this font is different from the current
 			// assigned font
@@ -192,7 +192,7 @@ export class IgeFontEntity extends IgeUiEntity {
 	 * @param {number=} val The size of the text stroke.
 	 * @return {*}
 	 */
-	nativeStroke(val) {
+	nativeStroke (val) {
 		if (val !== undefined) {
 			if (this._nativeStroke !== val) {
 				this.clearCache();
@@ -208,7 +208,7 @@ export class IgeFontEntity extends IgeUiEntity {
 	 * @param val The color of the text stroke.
 	 * @return {*}
 	 */
-	nativeStrokeColor(val) {
+	nativeStrokeColor (val) {
 		if (val !== undefined) {
 			if (this._nativeStrokeColor !== val) {
 				this.clearCache();
@@ -225,7 +225,7 @@ export class IgeFontEntity extends IgeUiEntity {
 	 * @param val
 	 * @returns {*}
 	 */
-	autoWrap(val) {
+	autoWrap (val) {
 		if (val !== undefined) {
 			this._autoWrap = val;
 			// Execute an auto-wrap modification of the text
@@ -242,7 +242,7 @@ export class IgeFontEntity extends IgeUiEntity {
 	 * assigned to the entity and adds them.
 	 * @private
 	 */
-	_applyAutoWrap() {
+	_applyAutoWrap () {
 		if (this._text) {
 			// Un-wrap the text so it is all on one line
 			const oneLineText = this._text.replace(/\n/g, " ");
@@ -282,7 +282,7 @@ export class IgeFontEntity extends IgeUiEntity {
 	 * text value if none is provided.
 	 * @returns {number} The width of the text in pixels.
 	 */
-	measureTextWidth(text) {
+	measureTextWidth (text) {
 		var _a, _b, _c, _d, _e, _f;
 		text = text || this._text;
 		// Both IgeFontSheet and the IgeFontSmartTexture have a method
@@ -308,7 +308,7 @@ export class IgeFontEntity extends IgeUiEntity {
 		}
 		return -1;
 	}
-	tick(ctx) {
+	tick (ctx) {
 		// Check for an auto-progress update
 		if (this._bindDataObject && this._bindDataProperty) {
 			if (!this._bindDataObject._alive) {
@@ -331,7 +331,7 @@ export class IgeFontEntity extends IgeUiEntity {
 	 * Other properties are handled by their own class method.
 	 * @return {string}
 	 */
-	_stringify() {
+	_stringify () {
 		// Get the properties for all the super-classes
 		let str = IgeUiEntity.prototype._stringify.call(this);
 		let i;
@@ -339,18 +339,18 @@ export class IgeFontEntity extends IgeUiEntity {
 		for (i in this) {
 			if (this.hasOwnProperty(i) && this[i] !== undefined) {
 				switch (i) {
-					case "_text":
-						str += ".text(" + this.text() + ")";
-						break;
-					case "_textAlignX":
-						str += ".textAlignX(" + this.textAlignX() + ")";
-						break;
-					case "_textAlignY":
-						str += ".textAlignY(" + this.textAlignY() + ")";
-						break;
-					case "_textLineSpacing":
-						str += ".textLineSpacing(" + this.textLineSpacing() + ")";
-						break;
+				case "_text":
+					str += ".text(" + this.text() + ")";
+					break;
+				case "_textAlignX":
+					str += ".textAlignX(" + this.textAlignX() + ")";
+					break;
+				case "_textAlignY":
+					str += ".textAlignY(" + this.textAlignY() + ")";
+					break;
+				case "_textLineSpacing":
+					str += ".textLineSpacing(" + this.textLineSpacing() + ")";
+					break;
 				}
 			}
 		}

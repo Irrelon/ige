@@ -10,7 +10,7 @@ import { ige } from "../instance";
  * examples and can be used as the base for your scenegraph as well.
  */
 export class IgeBaseScene extends IgeSceneGraph {
-	constructor() {
+	constructor () {
 		super(...arguments);
 		this.classId = "IgeBaseScene";
 		/**

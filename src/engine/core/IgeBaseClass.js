@@ -1,7 +1,7 @@
 import { global } from "./_global";
 
 export class IgeBaseClass {
-	constructor() {
+	constructor () {
 		this.classId = "IgeBaseClass";
 		this._data = {};
 	}
@@ -16,7 +16,7 @@ export class IgeBaseClass {
 	 *     // Will output "IgeEntity"
 	 *     console.log(entity.classId);
 	 */
-	getClassId() {
+	getClassId () {
 		return this.classId;
 	}
 	/**
@@ -60,7 +60,7 @@ export class IgeBaseClass {
 	 *     entity.log('An error message', 'error');
 	 *
 	 */
-	log(message, ...args) {
+	log (message, ...args) {
 		let indent = "";
 		if (global._globalLogIndent) {
 			indent = "|";
@@ -77,14 +77,14 @@ export class IgeBaseClass {
 		console.log(indent + `(${this.classId}) ${message}`, ...args);
 		return this;
 	}
-	logIndent() {
+	logIndent () {
 		global._globalLogIndent++;
 	}
-	logOutdent() {
+	logOutdent () {
 		global._globalLogIndent--;
 		if (global._globalLogIndent < 0) global._globalLogIndent = 0;
 	}
-	data(key, value) {
+	data (key, value) {
 		if (value !== undefined) {
 			this._data = this._data || {};
 			this._data[key] = value;

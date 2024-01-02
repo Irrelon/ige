@@ -1,9 +1,9 @@
 export class IgeDependencies {
-	constructor() {
+	constructor () {
 		this._dependencyFulfilled = {};
 		this._dependsOnArr = [];
 	}
-	add(dependencyName, dependencyPromise) {
+	add (dependencyName, dependencyPromise) {
 		dependencyPromise
 			.then(() => {
 				this._onDependencySatisfied(dependencyName);
@@ -12,7 +12,7 @@ export class IgeDependencies {
 				throw new Error(`Dependency ${dependencyName} threw an error: ${err}`);
 			});
 	}
-	waitFor(dependencyList, actionToTake) {
+	waitFor (dependencyList, actionToTake) {
 		if (this._isDependencyListSatisfied(dependencyList)) {
 			// All deps for this action are already fulfilled so call immediately
 			actionToTake();
@@ -21,10 +21,10 @@ export class IgeDependencies {
 		// Not all deps are fulfilled, add to the action array
 		this._dependsOnArr.push({ dependencyList, actionToTake });
 	}
-	markAsSatisfied(dependencyName) {
+	markAsSatisfied (dependencyName) {
 		this._onDependencySatisfied(dependencyName);
 	}
-	_onDependencySatisfied(dependencyName) {
+	_onDependencySatisfied (dependencyName) {
 		// Mark the dependency as satisfied
 		this._dependencyFulfilled[dependencyName] = true;
 		// Loop the pending action array and check if this
@@ -41,7 +41,7 @@ export class IgeDependencies {
 			return true;
 		});
 	}
-	_isDependencyListSatisfied(dependencyList) {
+	_isDependencyListSatisfied (dependencyList) {
 		return dependencyList.every((dependencyName) => this._dependencyFulfilled[dependencyName]);
 	}
 }

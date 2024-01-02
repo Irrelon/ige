@@ -1,18 +1,18 @@
 import { IgeEventingClass } from "./IgeEventingClass";
 
 export class IgeAsset extends IgeEventingClass {
-	constructor() {
+	constructor () {
 		super(...arguments);
 		this._loaded = false;
 	}
-	id(id) {
+	id (id) {
 		if (id === undefined) return this._assetId;
 		this._assetId = id;
 	}
 	/**
 	 * A promise that resolves to true when the asset has loaded.
 	 */
-	whenLoaded() {
+	whenLoaded () {
 		return new Promise((resolve) => {
 			if (this._loaded) {
 				return resolve(true);
@@ -24,7 +24,7 @@ export class IgeAsset extends IgeEventingClass {
 			this.on("loaded", listener);
 		});
 	}
-	destroy() {
+	destroy () {
 		return this;
 	}
 }

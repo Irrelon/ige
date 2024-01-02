@@ -1,7 +1,7 @@
 // TODO: Doc this class!
 import { IgeBehaviourType } from "@/enums/IgeBehaviourType";
 import { IgeComponent } from "../core/IgeComponent";
-import { IgeEntity } from "../core/IgeEntity";
+import type { IgeEntity } from "../core/IgeEntity";
 import { IgePoint3d } from "../core/IgePoint3d";
 import { ige } from "../instance";
 
@@ -13,7 +13,7 @@ export class IgeVelocityComponent extends IgeComponent {
 	_friction: IgePoint3d;
 	_linearForce?: IgePoint3d;
 
-	constructor(entity: IgeEntity, options?: any) {
+	constructor (entity: IgeEntity, options?: any) {
 		super(entity, options);
 
 		this._velocity = new IgePoint3d(0, 0, 0);
@@ -31,7 +31,7 @@ export class IgeVelocityComponent extends IgeComponent {
 		this.tick();
 	};
 
-	byAngleAndPower(radians: number, power: number, relative: boolean = false) {
+	byAngleAndPower (radians: number, power: number, relative: boolean = false) {
 		const vel = this._velocity,
 			x = Math.cos(radians) * power,
 			y = Math.sin(radians) * power,
@@ -191,7 +191,7 @@ export class IgeVelocityComponent extends IgeComponent {
 		vel.z *= fric.z;
 	};
 
-	tick() {
+	tick () {
 		const delta = ige.engine._tickDelta;
 		const vel = this._velocity;
 

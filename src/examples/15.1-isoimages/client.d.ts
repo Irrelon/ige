@@ -1,8 +1,8 @@
 import { IgeBaseClass } from "@/engine/core/IgeBaseClass";
-import { IgeFSM } from "@/engine/core/IgeFSM";
-import { IgePoint3d } from "@/engine/core/IgePoint3d";
-import { IgeTexture } from "@/engine/core/IgeTexture";
-import { IgeCanInit } from "@/types/IgeCanInit";
+import type { IgeFSM } from "@/engine/core/IgeFSM";
+import type { IgePoint3d } from "@/engine/core/IgePoint3d";
+import type { IgeTexture } from "@/engine/core/IgeTexture";
+import type { IgeCanInit } from "@/types/IgeCanInit";
 
 export declare class Client extends IgeBaseClass implements IgeCanInit {
 	classId: string;

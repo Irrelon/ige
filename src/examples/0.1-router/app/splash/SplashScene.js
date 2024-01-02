@@ -4,14 +4,14 @@ import { ige } from "../../../../engine/instance.js";
 import { IgeUiButton } from "../../../../engine/ui/IgeUiButton.js";
 
 export class SplashScene extends IgeSceneGraph {
-	constructor() {
+	constructor () {
 		super(...arguments);
 		this.classId = "SplashScene";
 	}
 	/**
 	 * Called when loading the graph data via ige.addGraph().
 	 */
-	addGraph() {
+	addGraph () {
 		const baseScene = ige.$("baseScene");
 		const uiScene = new IgeScene2d().id("uiScene").mount(baseScene);
 		new IgeUiButton()
@@ -31,7 +31,7 @@ export class SplashScene extends IgeSceneGraph {
 	 * The method called when the graph items are to be removed from the
 	 * active graph.
 	 */
-	removeGraph() {
+	removeGraph () {
 		// Since all our objects in addGraph() were mounted to the
 		// 'scene1' entity, destroying it will remove everything we
 		// added to it.

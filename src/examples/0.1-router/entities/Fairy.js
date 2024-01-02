@@ -4,7 +4,7 @@ import { isClient } from "../../../engine/clientServer.js";
 import { ige } from "../../../engine/instance.js";
 
 export class Fairy extends Rotator {
-	constructor(speed) {
+	constructor (speed) {
 		super(speed);
 		this.depth(1).width(100).height(100).translateTo(0, 0, 0);
 		if (isClient) {

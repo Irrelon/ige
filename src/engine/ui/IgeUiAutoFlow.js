@@ -2,12 +2,12 @@ import { IgeUiElement } from "../../engine/core/IgeUiElement.js";
 import { registerClass } from "../../engine/igeClassStore.js";
 
 export class IgeUiAutoFlow extends IgeUiElement {
-	constructor() {
+	constructor () {
 		super(...arguments);
 		this.classId = "IgeUiAutoFlow";
 		this._currentHeight = 0;
 	}
-	tick(ctx) {
+	tick (ctx) {
 		// Loop children and re-position then
 		const arr = this._children;
 		const arrCount = arr.length;

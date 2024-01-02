@@ -115,70 +115,70 @@ const IgeCannonComponent = IgeEventingClass.extend({
 
 		// Process body definition and create a cannon body for it
 		switch (body.type) {
-			case "static":
-				type = CANNON.Body.STATIC;
-				break;
+		case "static":
+			type = CANNON.Body.STATIC;
+			break;
 
-			case "kinematic":
-				type = CANNON.Body.KINEMATIC;
-				break;
+		case "kinematic":
+			type = CANNON.Body.KINEMATIC;
+			break;
 
-			case "dynamic":
-				type = CANNON.Body.DYNAMIC;
-				break;
+		case "dynamic":
+			type = CANNON.Body.DYNAMIC;
+			break;
 		}
 
 		// Now apply any post-creation attributes we need to
 		for (param in body) {
 			if (body.hasOwnProperty(param)) {
 				switch (param) {
-					case "fixtures":
-						for (i = 0; i < body.fixtures.length; i++) {
-							// Grab the fixture definition
-							fixtureDef = body.fixtures[i];
+				case "fixtures":
+					for (i = 0; i < body.fixtures.length; i++) {
+						// Grab the fixture definition
+						fixtureDef = body.fixtures[i];
 
-							// Check for a shape definition for the fixture
-							if (fixtureDef.shape) {
-								// Create based on the shape type
-								switch (fixtureDef.shape.type) {
-									case "box":
-										if (fixtureDef.shape.data) {
-											// Use defined data to create the shape
-											if (
-												fixtureDef.shape.data.sizeX !== undefined &&
+						// Check for a shape definition for the fixture
+						if (fixtureDef.shape) {
+							// Create based on the shape type
+							switch (fixtureDef.shape.type) {
+							case "box":
+								if (fixtureDef.shape.data) {
+									// Use defined data to create the shape
+									if (
+										fixtureDef.shape.data.sizeX !== undefined &&
 												fixtureDef.shape.data.sizeY !== undefined &&
 												fixtureDef.shape.data.sizeZ !== undefined
-											) {
-												tempShape = new CANNON.Box(
-													new CANNON.Vec3(
-														fixtureDef.shape.data.sizeX / this._scaleRatio,
-														fixtureDef.shape.data.sizeY / this._scaleRatio,
-														fixtureDef.shape.data.sizeZ / this._scaleRatio
-													)
-												);
-											} else {
-												tempShape = new CANNON.Box(
-													new CANNON.Vec3(
-														entity._bounds3d.x2 + 1 / this._scaleRatio,
-														entity._bounds3d.y2 / this._scaleRatio,
-														entity._bounds3d.z2 / this._scaleRatio
-													)
-												);
-											}
-										} else {
-											tempShape = new CANNON.Box(
-												new CANNON.Vec3(
-													entity._bounds3d.x2 + 1 / this._scaleRatio,
-													entity._bounds3d.y2 + 1 / this._scaleRatio,
-													entity._bounds3d.z2 + 1 / this._scaleRatio
-												)
-											);
-										}
-										break;
+									) {
+										tempShape = new CANNON.Box(
+											new CANNON.Vec3(
+												fixtureDef.shape.data.sizeX / this._scaleRatio,
+												fixtureDef.shape.data.sizeY / this._scaleRatio,
+												fixtureDef.shape.data.sizeZ / this._scaleRatio
+											)
+										);
+									} else {
+										tempShape = new CANNON.Box(
+											new CANNON.Vec3(
+												entity._bounds3d.x2 + 1 / this._scaleRatio,
+												entity._bounds3d.y2 / this._scaleRatio,
+												entity._bounds3d.z2 / this._scaleRatio
+											)
+										);
+									}
+								} else {
+									tempShape = new CANNON.Box(
+										new CANNON.Vec3(
+											entity._bounds3d.x2 + 1 / this._scaleRatio,
+											entity._bounds3d.y2 + 1 / this._scaleRatio,
+											entity._bounds3d.z2 + 1 / this._scaleRatio
+										)
+									);
 								}
+								break;
 							}
 						}
-						break;
+					}
+					break;
 				}
 			}
 		}

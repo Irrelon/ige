@@ -9,7 +9,7 @@ import { ige } from "@/engine/instance";
 export class AppServerScene extends IgeSceneGraph {
 	classId = "AppServerScene";
 
-	addGraph() {
+	addGraph () {
 		// Create the root scene on which all other objects
 		// will branch from in the scenegraph
 		const mainScene = new IgeScene2d().id("mainScene");
@@ -20,7 +20,7 @@ export class AppServerScene extends IgeSceneGraph {
 		new IgeViewport().id("vp1").autoSize(true).scene(mainScene).drawBounds(false).mount(ige.engine);
 	}
 
-	removeGraph() {
+	removeGraph () {
 		const mainScene = ige.$("mainScene");
 		mainScene?.destroy();
 	}

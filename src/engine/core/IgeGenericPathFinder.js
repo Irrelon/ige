@@ -9,7 +9,7 @@ var ListType;
  * Creates a new path using the A* path-finding algorithm.
  */
 export class IgeGenericPathFinder extends IgeEventingClass {
-	constructor() {
+	constructor () {
 		super(...arguments);
 		this.classId = "IgePathFinder";
 		this._neighbourLimit = 1000;
@@ -23,17 +23,17 @@ export class IgeGenericPathFinder extends IgeEventingClass {
 	 * @param val
 	 * @return {*}
 	 */
-	neighbourLimit(val) {
+	neighbourLimit (val) {
 		if (val !== undefined) {
 			this._neighbourLimit = val;
 			return this;
 		}
 		return this._neighbourLimit;
 	}
-	isTraversalAllowed(newX, newY, currentNode, x, y, dynamic) {
+	isTraversalAllowed (newX, newY, currentNode, x, y, dynamic) {
 		return true;
 	}
-	getConnections(currentNode, targetNode) {
+	getConnections (currentNode, targetNode) {
 		return [];
 	}
 	/**
@@ -47,7 +47,7 @@ export class IgeGenericPathFinder extends IgeEventingClass {
 	 * @param {Boolean=} allowInvalidDestination If the pathfinder cannot path to the destination tile, if this is true the closest path will be returned instead.
 	 * @return {Array} An array of objects each containing an x, y co-ordinate that describes the path from the starting point to the end point in order.
 	 */
-	generate(startPoint, endPoint, allowInvalidDestination = false) {
+	generate (startPoint, endPoint, allowInvalidDestination = false) {
 		const openList = [];
 		const closedList = [];
 		const nodeById = {};
@@ -173,7 +173,7 @@ export class IgeGenericPathFinder extends IgeEventingClass {
 	 * @return {number} Returns the heuristic cost between the co-ordinates specified.
 	 * @private
 	 */
-	cost(x1, y1, x2, y2, moveCost = 1) {
+	cost (x1, y1, x2, y2, moveCost = 1) {
 		return moveCost * (Math.abs(x1 - x2) + Math.abs(y1 - y2));
 	}
 }

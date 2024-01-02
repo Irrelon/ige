@@ -5,7 +5,7 @@ import { IgePathNode } from "./IgePathNode";
  * Creates a new path using the A* path-finding algorithm.
  */
 export class IgePathFinder extends IgeEventingClass {
-	constructor() {
+	constructor () {
 		super(...arguments);
 		this.classId = "IgePathFinder";
 		this._neighbourLimit = 1000;
@@ -18,7 +18,7 @@ export class IgePathFinder extends IgeEventingClass {
 	 * @param {number=} val
 	 * @return {*}
 	 */
-	squareCost(val) {
+	squareCost (val) {
 		if (val !== undefined) {
 			this._squareCost = val;
 			return this;
@@ -31,7 +31,7 @@ export class IgePathFinder extends IgeEventingClass {
 	 * @param {number=} val
 	 * @return {*}
 	 */
-	diagonalCost(val) {
+	diagonalCost (val) {
 		if (val !== undefined) {
 			this._diagonalCost = val;
 			return this;
@@ -47,14 +47,14 @@ export class IgePathFinder extends IgeEventingClass {
 	 * @param val
 	 * @return {*}
 	 */
-	neighbourLimit(val) {
+	neighbourLimit (val) {
 		if (val !== undefined) {
 			this._neighbourLimit = val;
 			return this;
 		}
 		return this._neighbourLimit;
 	}
-	aStar() {
+	aStar () {
 		this.log('The "IgePathFinder.aStar" method has been renamed to "generate". Please update your code.', "error");
 	}
 	/**
@@ -68,7 +68,7 @@ export class IgePathFinder extends IgeEventingClass {
 	 * @param {Boolean=} allowInvalidDestination If the pathfinder cannot path to the destination tile, if this is true the closest path will be returned instead.
 	 * @return {Array} An array of objects each containing an x, y co-ordinate that describes the path from the starting point to the end point in order.
 	 */
-	generate(
+	generate (
 		tileMap,
 		startPoint,
 		endPoint,
@@ -233,7 +233,7 @@ export class IgePathFinder extends IgeEventingClass {
 	 * @return {Array} An array containing nodes describing the neighbouring tiles of the current node.
 	 * @private
 	 */
-	_getNeighbours(currentNode, endPoint, tileMap, comparisonCallback, allowSquare, allowDiagonal) {
+	_getNeighbours (currentNode, endPoint, tileMap, comparisonCallback, allowSquare, allowDiagonal) {
 		const list = [];
 		const { x, y } = currentNode;
 		let newX = 0;
@@ -378,7 +378,7 @@ export class IgePathFinder extends IgeEventingClass {
 	 * @return {number} Returns the heuristic cost between the co-ordinates specified.
 	 * @private
 	 */
-	_heuristic(x1, y1, x2, y2, moveCost) {
+	_heuristic (x1, y1, x2, y2, moveCost) {
 		return moveCost * (Math.abs(x1 - x2) + Math.abs(y1 - y2));
 	}
 }

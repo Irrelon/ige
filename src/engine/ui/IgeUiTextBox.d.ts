@@ -1,4 +1,4 @@
-import { IgeFontEntity } from "@/engine/core/IgeFontEntity";
+import type { IgeFontEntity } from "@/engine/core/IgeFontEntity";
 import type { IgeFontSheet } from "@/engine/core/IgeFontSheet";
 import { IgeUiElement } from "@/engine/core/IgeUiElement";
 

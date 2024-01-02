@@ -3,29 +3,29 @@ import { IgeBaseClass } from "./IgeBaseClass.js";
 var __awaiter =
 	(this && this.__awaiter) ||
 	function (thisArg, _arguments, P, generator) {
-		function adopt(value) {
+		function adopt (value) {
 			return value instanceof P
 				? value
 				: new P(function (resolve) {
-						resolve(value);
+					resolve(value);
 				  });
 		}
 		return new (P || (P = Promise))(function (resolve, reject) {
-			function fulfilled(value) {
+			function fulfilled (value) {
 				try {
 					step(generator.next(value));
 				} catch (e) {
 					reject(e);
 				}
 			}
-			function rejected(value) {
+			function rejected (value) {
 				try {
 					step(generator["throw"](value));
 				} catch (e) {
 					reject(e);
 				}
 			}
-			function step(result) {
+			function step (result) {
 				result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected);
 			}
 			step((generator = generator.apply(thisArg, _arguments || [])).next());
@@ -36,7 +36,7 @@ export class IgeFSM extends IgeBaseClass {
 	/**
 	 * A simple finite state machine implementation.
 	 */
-	constructor(initialData) {
+	constructor (initialData) {
 		super();
 		/**
 		 * Gets / sets the debug flag. If set to true will enable console logging
@@ -394,27 +394,27 @@ export class IgeFSM extends IgeBaseClass {
 	 * Returns the name of the initial state.
 	 * @returns {string} The name of the initial state.
 	 */
-	initialStateName() {
+	initialStateName () {
 		return this._initialStateName;
 	}
 	/**
 	 * Returns the name of the previous state.
 	 * @returns {string} The name of the previous state.
 	 */
-	previousStateName() {
+	previousStateName () {
 		return this._previousStateName;
 	}
 	/**
 	 * Returns the name of the current state.
 	 * @returns {string} The name of the current state.
 	 */
-	currentStateName() {
+	currentStateName () {
 		return this._currentStateName;
 	}
-	getData(key) {
+	getData (key) {
 		return this._data[key];
 	}
-	setData(key, val) {
+	setData (key, val) {
 		this._data[key] = val;
 	}
 }

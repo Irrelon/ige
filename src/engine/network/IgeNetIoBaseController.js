@@ -1,7 +1,7 @@
 import { IgeEventingClass } from "../core/IgeEventingClass";
 
 export class IgeNetIoBaseController extends IgeEventingClass {
-	constructor() {
+	constructor () {
 		super(...arguments);
 		this.classId = "IgeNetIoBaseController";
 		this._networkCommandsIndex = []; // Maps a command name to an integer via the array index
@@ -18,20 +18,20 @@ export class IgeNetIoBaseController extends IgeEventingClass {
 		this._timeSyncTimer = 0;
 		this._sectionDesignator = "¬"; // Set the stream data section designator character
 	}
-	timeSyncInterval(val) {
+	timeSyncInterval (val) {
 		if (val !== undefined) {
 			this._timeSyncInterval = val;
 			return this;
 		}
 		return this._timeSyncInterval;
 	}
-	timeToServerTime(time) {
+	timeToServerTime (time) {
 		if (time !== undefined) {
 			return time + this._latency;
 		}
 		return this._latency;
 	}
-	debug(val) {
+	debug (val) {
 		if (val !== undefined) {
 			this._debug = val;
 			return this;
@@ -46,7 +46,7 @@ export class IgeNetIoBaseController extends IgeEventingClass {
 		}
 		return this._debug;
 	}
-	debugMax(val) {
+	debugMax (val) {
 		if (val !== undefined) {
 			this._debugMax = val;
 			return this;

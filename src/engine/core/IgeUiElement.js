@@ -17,7 +17,7 @@ import { ige } from "../instance";
  * from propagating to lower depth entities by default.
  */
 export class IgeUiElement extends IgeUiEntity {
-	constructor() {
+	constructor () {
 		super();
 		this.classId = "IgeUiElement";
 		this._focused = false;
@@ -68,28 +68,28 @@ export class IgeUiElement extends IgeUiEntity {
 		// Enable mouse events on this entity by default
 		this.pointerEventsActive(true);
 	}
-	allowHover(val) {
+	allowHover (val) {
 		if (val !== undefined) {
 			this._allowHover = val;
 			return this;
 		}
 		return this._allowHover;
 	}
-	allowFocus(val) {
+	allowFocus (val) {
 		if (val !== undefined) {
 			this._allowFocus = val;
 			return this;
 		}
 		return this._allowFocus;
 	}
-	allowActive(val) {
+	allowActive (val) {
 		if (val !== undefined) {
 			this._allowActive = val;
 			return this;
 		}
 		return this._allowActive;
 	}
-	styleClass(name) {
+	styleClass (name) {
 		if (name === undefined) {
 			return this._styleClass;
 		}
@@ -108,7 +108,7 @@ export class IgeUiElement extends IgeUiEntity {
 		this._updateStyle();
 		return this;
 	}
-	style(property, value) {
+	style (property, value) {
 		const ui = ige.ui;
 		const allStyles = {};
 		const elementStyles = ui.style(this.classId) || {}; // Get styles by element type (e.g. "IgeUiButton")
@@ -141,7 +141,7 @@ export class IgeUiElement extends IgeUiEntity {
 		}
 		return allStyles;
 	}
-	_updateStyle() {
+	_updateStyle () {
 		// Apply styles in order of class, class:focus, class:hover, class:active,
 		// id, id:focus, id:hover, id:active
 		this._processStyle(this.classId);
@@ -163,7 +163,7 @@ export class IgeUiElement extends IgeUiEntity {
 			this._processStyle("#" + this._id, "active");
 		}
 	}
-	_processStyle(styleName, state) {
+	_processStyle (styleName, state) {
 		if (!styleName) {
 			return;
 		}
@@ -207,7 +207,7 @@ export class IgeUiElement extends IgeUiEntity {
 	 * contain key/value pairs where the key matches a method name and the value
 	 * is the parameter to pass it.
 	 */
-	applyStyle(styleData) {
+	applyStyle (styleData) {
 		if (styleData === undefined) {
 			return this;
 		}
@@ -232,7 +232,7 @@ export class IgeUiElement extends IgeUiEntity {
 	/**
 	 * Sets global UI focus to this element.
 	 */
-	focus() {
+	focus () {
 		if (ige.ui.focus(this)) {
 			// Re-apply styles since the change
 			this._updateStyle();
@@ -243,7 +243,7 @@ export class IgeUiElement extends IgeUiEntity {
 	/**
 	 * The blur method removes global UI focus from this UI element.
 	 */
-	blur() {
+	blur () {
 		if (ige.ui.blur(this)) {
 			// Re-apply styles since the change
 			this._updateStyle();
@@ -251,23 +251,23 @@ export class IgeUiElement extends IgeUiEntity {
 		}
 		return false;
 	}
-	focused() {
+	focused () {
 		return this._focused;
 	}
-	value(val) {
+	value (val) {
 		if (val !== undefined) {
 			this._value = val;
 			return this;
 		}
 		return this._value;
 	}
-	_mounted() {
+	_mounted () {
 		this._updateStyle();
 	}
 	/**
 	 * Destructor
 	 */
-	destroy() {
+	destroy () {
 		ige.ui.unRegisterElement(this);
 		return super.destroy();
 	}

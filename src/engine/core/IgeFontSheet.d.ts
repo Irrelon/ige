@@ -1,5 +1,5 @@
 import { IgeTexture } from "./IgeTexture";
-import { IgeSmartTexture } from "@/types/IgeSmartTexture";
+import type { IgeSmartTexture } from "@/types/IgeSmartTexture";
 
 /**
  * Creates a new font sheet. A font sheet is an image that contains

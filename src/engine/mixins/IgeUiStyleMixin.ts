@@ -1,8 +1,8 @@
 // TODO: Add "overflow" with automatic scroll-bars
-import { IgeObject } from "../core/IgeObject";
-import { IgeTexture } from "../core/IgeTexture";
+import type { IgeObject } from "../core/IgeObject";
+import type { IgeTexture } from "../core/IgeTexture";
 import { ige } from "../instance";
-import { IgeRepeatType } from "@/types/IgeRepeatType";
+import type { IgeRepeatType } from "@/types/IgeRepeatType";
 import type { Mixin } from "@/types/Mixin";
 
 // TODO: Update this mixin so it extends from IgeBaseClass, moving anything that relies on IgeEntity
@@ -56,7 +56,7 @@ export const WithUiStyleMixin = <BaseClassType extends Mixin<IgeObject>>(Base: B
 		 * @param {CSSColor, CanvasGradient, CanvasPattern=} color
 		 * @return {*} Returns this when setting the value or the current value if none is specified.
 		 */
-		color(color: string | CanvasGradient | CanvasPattern) {
+		color (color: string | CanvasGradient | CanvasPattern) {
 			if (color !== undefined) {
 				this._color = color;
 				this.cacheDirty(true);
@@ -75,7 +75,7 @@ export const WithUiStyleMixin = <BaseClassType extends Mixin<IgeObject>>(Base: B
 		 * @return {*} Returns this if any parameter is specified or
 		 * the current background image if no parameters are specified.
 		 */
-		backgroundImage(texture?: IgeTexture, repeatType?: IgeRepeatType) {
+		backgroundImage (texture?: IgeTexture, repeatType?: IgeRepeatType) {
 			if (!(texture && texture.image)) {
 				return this._patternFill;
 			}
@@ -143,7 +143,7 @@ export const WithUiStyleMixin = <BaseClassType extends Mixin<IgeObject>>(Base: B
 			return this;
 		}
 
-		backgroundSize(x?: number | string, y?: number | string) {
+		backgroundSize (x?: number | string, y?: number | string) {
 			if (!(x !== undefined && y !== undefined)) {
 				return this._backgroundSize;
 			}
@@ -202,7 +202,7 @@ export const WithUiStyleMixin = <BaseClassType extends Mixin<IgeObject>>(Base: B
 		 * @param {CSSColor, CanvasGradient, CanvasPattern=} color
 		 * @return {*} Returns this when setting the value or the current value if none is specified.
 		 */
-		backgroundColor(color: string | CanvasGradient | CanvasPattern) {
+		backgroundColor (color: string | CanvasGradient | CanvasPattern) {
 			if (color !== undefined) {
 				this._backgroundColor = color;
 				this.cacheDirty(true);
@@ -218,7 +218,7 @@ export const WithUiStyleMixin = <BaseClassType extends Mixin<IgeObject>>(Base: B
 		 * @param {number=} y
 		 * @return {*} Returns this when setting the value or the current value if none is specified.
 		 */
-		backgroundPosition(x: number, y: number) {
+		backgroundPosition (x: number, y: number) {
 			if (x !== undefined && y !== undefined) {
 				this._backgroundPosition = { x, y };
 				this.cacheDirty(true);
@@ -228,7 +228,7 @@ export const WithUiStyleMixin = <BaseClassType extends Mixin<IgeObject>>(Base: B
 			return this._backgroundPosition;
 		}
 
-		borderColor(color?: string) {
+		borderColor (color?: string) {
 			if (color !== undefined) {
 				this._borderColor = color;
 				this._borderLeftColor = color;
@@ -242,7 +242,7 @@ export const WithUiStyleMixin = <BaseClassType extends Mixin<IgeObject>>(Base: B
 			return this._borderColor;
 		}
 
-		borderLeftColor(color: string) {
+		borderLeftColor (color: string) {
 			if (color !== undefined) {
 				this._borderLeftColor = color;
 				this.cacheDirty(true);
@@ -252,7 +252,7 @@ export const WithUiStyleMixin = <BaseClassType extends Mixin<IgeObject>>(Base: B
 			return this._borderLeftColor;
 		}
 
-		borderTopColor(color: string) {
+		borderTopColor (color: string) {
 			if (color !== undefined) {
 				this._borderTopColor = color;
 				this.cacheDirty(true);
@@ -262,7 +262,7 @@ export const WithUiStyleMixin = <BaseClassType extends Mixin<IgeObject>>(Base: B
 			return this._borderTopColor;
 		}
 
-		borderRightColor(color: string) {
+		borderRightColor (color: string) {
 			if (color !== undefined) {
 				this._borderRightColor = color;
 				this.cacheDirty(true);
@@ -272,7 +272,7 @@ export const WithUiStyleMixin = <BaseClassType extends Mixin<IgeObject>>(Base: B
 			return this._borderRightColor;
 		}
 
-		borderBottomColor(color: string) {
+		borderBottomColor (color: string) {
 			if (color !== undefined) {
 				this._borderBottomColor = color;
 				this.cacheDirty(true);
@@ -282,7 +282,7 @@ export const WithUiStyleMixin = <BaseClassType extends Mixin<IgeObject>>(Base: B
 			return this._borderBottomColor;
 		}
 
-		borderWidth(px?: number) {
+		borderWidth (px?: number) {
 			if (px !== undefined) {
 				this._borderWidth = px;
 				this._borderLeftWidth = px;
@@ -296,7 +296,7 @@ export const WithUiStyleMixin = <BaseClassType extends Mixin<IgeObject>>(Base: B
 			return this._borderWidth;
 		}
 
-		borderLeftWidth(px?: number) {
+		borderLeftWidth (px?: number) {
 			if (px !== undefined) {
 				this._borderLeftWidth = px;
 				this.cacheDirty(true);
@@ -306,7 +306,7 @@ export const WithUiStyleMixin = <BaseClassType extends Mixin<IgeObject>>(Base: B
 			return this._borderLeftWidth;
 		}
 
-		borderTopWidth(px?: number) {
+		borderTopWidth (px?: number) {
 			if (px !== undefined) {
 				this._borderTopWidth = px;
 				this.cacheDirty(true);
@@ -316,7 +316,7 @@ export const WithUiStyleMixin = <BaseClassType extends Mixin<IgeObject>>(Base: B
 			return this._borderTopWidth;
 		}
 
-		borderRightWidth(px?: number) {
+		borderRightWidth (px?: number) {
 			if (px !== undefined) {
 				this._borderRightWidth = px;
 
@@ -327,7 +327,7 @@ export const WithUiStyleMixin = <BaseClassType extends Mixin<IgeObject>>(Base: B
 			return this._borderRightWidth;
 		}
 
-		borderBottomWidth(px?: number) {
+		borderBottomWidth (px?: number) {
 			if (px !== undefined) {
 				this._borderBottomWidth = px;
 
@@ -338,7 +338,7 @@ export const WithUiStyleMixin = <BaseClassType extends Mixin<IgeObject>>(Base: B
 			return this._borderBottomWidth;
 		}
 
-		borderRadius(px?: number) {
+		borderRadius (px?: number) {
 			if (px !== undefined) {
 				this._borderRadius = px;
 				this._borderTopLeftRadius = px;
@@ -353,7 +353,7 @@ export const WithUiStyleMixin = <BaseClassType extends Mixin<IgeObject>>(Base: B
 			return this._borderRadius;
 		}
 
-		borderTopLeftRadius(px?: number) {
+		borderTopLeftRadius (px?: number) {
 			if (px !== undefined) {
 				this._borderTopLeftRadius = px;
 
@@ -364,7 +364,7 @@ export const WithUiStyleMixin = <BaseClassType extends Mixin<IgeObject>>(Base: B
 			return this._borderTopLeftRadius;
 		}
 
-		borderTopRightRadius(px?: number) {
+		borderTopRightRadius (px?: number) {
 			if (px !== undefined) {
 				this._borderTopRightRadius = px;
 
@@ -375,7 +375,7 @@ export const WithUiStyleMixin = <BaseClassType extends Mixin<IgeObject>>(Base: B
 			return this._borderTopRightRadius;
 		}
 
-		borderBottomLeftRadius(px?: number) {
+		borderBottomLeftRadius (px?: number) {
 			if (px !== undefined) {
 				this._borderBottomLeftRadius = px;
 
@@ -386,7 +386,7 @@ export const WithUiStyleMixin = <BaseClassType extends Mixin<IgeObject>>(Base: B
 			return this._borderBottomLeftRadius;
 		}
 
-		borderBottomRightRadius(px?: number) {
+		borderBottomRightRadius (px?: number) {
 			if (px !== undefined) {
 				this._borderBottomRightRadius = px;
 
@@ -399,7 +399,7 @@ export const WithUiStyleMixin = <BaseClassType extends Mixin<IgeObject>>(Base: B
 
 		padding(...args: [number]): this;
 		padding(...args: [number, number, number, number]): this;
-		padding(...args: number[]) {
+		padding (...args: number[]) {
 			if (args.length === 0) return this._padding;
 
 			if (args.length === 1) {
@@ -420,7 +420,7 @@ export const WithUiStyleMixin = <BaseClassType extends Mixin<IgeObject>>(Base: B
 			return this;
 		}
 
-		paddingLeft(px?: number) {
+		paddingLeft (px?: number) {
 			if (px !== undefined) {
 				this._paddingLeft = px;
 
@@ -431,7 +431,7 @@ export const WithUiStyleMixin = <BaseClassType extends Mixin<IgeObject>>(Base: B
 			return this._paddingLeft;
 		}
 
-		paddingTop(px?: number) {
+		paddingTop (px?: number) {
 			if (px !== undefined) {
 				this._paddingTop = px;
 
@@ -442,7 +442,7 @@ export const WithUiStyleMixin = <BaseClassType extends Mixin<IgeObject>>(Base: B
 			return this._paddingTop;
 		}
 
-		paddingRight(px?: number) {
+		paddingRight (px?: number) {
 			if (px !== undefined) {
 				this._paddingRight = px;
 
@@ -453,7 +453,7 @@ export const WithUiStyleMixin = <BaseClassType extends Mixin<IgeObject>>(Base: B
 			return this._paddingRight;
 		}
 
-		paddingBottom(px?: number) {
+		paddingBottom (px?: number) {
 			if (px !== undefined) {
 				this._paddingBottom = px;
 
@@ -466,7 +466,7 @@ export const WithUiStyleMixin = <BaseClassType extends Mixin<IgeObject>>(Base: B
 
 		margin(...args: [number]): this;
 		margin(...args: [number, number, number, number]): this;
-		margin(...args: number[]) {
+		margin (...args: number[]) {
 			if (args.length === 0) return this._margin;
 
 			if (args.length === 1) {
@@ -487,7 +487,7 @@ export const WithUiStyleMixin = <BaseClassType extends Mixin<IgeObject>>(Base: B
 			return this;
 		}
 
-		marginLeft(px?: number) {
+		marginLeft (px?: number) {
 			if (px !== undefined) {
 				this._marginLeft = px;
 
@@ -498,7 +498,7 @@ export const WithUiStyleMixin = <BaseClassType extends Mixin<IgeObject>>(Base: B
 			return this._marginLeft !== undefined ? this._marginLeft : this._margin;
 		}
 
-		marginTop(px?: number) {
+		marginTop (px?: number) {
 			if (px !== undefined) {
 				this._marginTop = px;
 
@@ -509,7 +509,7 @@ export const WithUiStyleMixin = <BaseClassType extends Mixin<IgeObject>>(Base: B
 			return this._marginTop;
 		}
 
-		marginRight(px?: number) {
+		marginRight (px?: number) {
 			if (px !== undefined) {
 				this._marginRight = px;
 
@@ -520,7 +520,7 @@ export const WithUiStyleMixin = <BaseClassType extends Mixin<IgeObject>>(Base: B
 			return this._marginRight;
 		}
 
-		marginBottom(px?: number) {
+		marginBottom (px?: number) {
 			if (px !== undefined) {
 				this._marginBottom = px;
 

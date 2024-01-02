@@ -2,18 +2,18 @@ import { IgeUiButton } from "./IgeUiButton.js";
 import { registerClass } from "../igeClassStore.js";
 
 export class IgeUiRadioButton extends IgeUiButton {
-	constructor() {
+	constructor () {
 		super(...arguments);
 		this.classId = "IgeUiRadioButton";
 	}
-	radioGroup(val) {
+	radioGroup (val) {
 		if (val !== undefined) {
 			this._uiRadioGroup = val;
 			return this;
 		}
 		return this._uiRadioGroup;
 	}
-	select(val) {
+	select (val) {
 		if (val !== undefined) {
 			this._uiOnSelect = val;
 			return this;
@@ -50,7 +50,7 @@ export class IgeUiRadioButton extends IgeUiButton {
 		}
 		return this;
 	}
-	deSelect(val) {
+	deSelect (val) {
 		if (val !== undefined) {
 			this._uiOnDeSelect = val;
 			return this;

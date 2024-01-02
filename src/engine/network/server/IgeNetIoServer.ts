@@ -29,7 +29,7 @@ export class IgeNetIoServer extends IgeEventingClass {
 	_sockets: IgeNetIoSocket[];
 	_socketsById: Record<string, IgeNetIoSocket>;
 
-	constructor(port: number, callback?: () => void) {
+	constructor (port: number, callback?: () => void) {
 		super();
 
 		this._sockets = [];
@@ -40,7 +40,7 @@ export class IgeNetIoServer extends IgeEventingClass {
 		this.start(port, callback);
 	}
 
-	start(port: number, callback?: () => void) {
+	start (port: number, callback?: () => void) {
 		this._port = port;
 
 		this._httpServer = http.createServer(function (request, response) {
@@ -107,18 +107,18 @@ export class IgeNetIoServer extends IgeEventingClass {
 
 		this._httpServer.on("error", (err: any) => {
 			switch (err.code) {
-				// TODO: Add all the error codes and human readable error here!
-				case "EADDRINUSE":
-					this.log(
-						"Cannot start server on port " +
+			// TODO: Add all the error codes and human readable error here!
+			case "EADDRINUSE":
+				this.log(
+					"Cannot start server on port " +
 							this._port +
 							" because the port is already in use by another application!",
-						"error"
-					);
-					break;
-				default:
-					this.log("Cannot start server, error code: " + err.code);
-					break;
+					"error"
+				);
+				break;
+			default:
+				this.log("Cannot start server, error code: " + err.code);
+				break;
 			}
 		});
 
@@ -138,7 +138,7 @@ export class IgeNetIoServer extends IgeEventingClass {
 	 * @param {Object} data The JSON data to send.
 	 * @param {*=} clientIdOrArrayOfIds The id of the client to send to, or an array of id's to send to.
 	 */
-	send(data: any, clientIdOrArrayOfIds?: string | string[]) {
+	send (data: any, clientIdOrArrayOfIds?: string | string[]) {
 		// Pre-encode the data and then use _send to send raw
 		// instead of encoding for every socket
 		const encodedData = this._encode(data);
@@ -179,7 +179,7 @@ export class IgeNetIoServer extends IgeEventingClass {
 	 * @param recipientArray An array of client sockets.
 	 * @param encodedData The string encoded data to send each client.
 	 */
-	_sendToEach(recipientArray: IgeNetIoSocket[], encodedData: string) {
+	_sendToEach (recipientArray: IgeNetIoSocket[], encodedData: string) {
 		let arrCount = recipientArray.length;
 
 		while (arrCount--) {
@@ -194,7 +194,7 @@ export class IgeNetIoServer extends IgeEventingClass {
 	 * @return {boolean}
 	 * @private
 	 */
-	_originIsAllowed(origin?: string): boolean {
+	_originIsAllowed (origin?: string): boolean {
 		// TODO: Allow origins to be specified on startup and checked against here!
 		// put logic here to detect whether the specified origin is allowed.
 		return true;
@@ -206,7 +206,7 @@ export class IgeNetIoServer extends IgeEventingClass {
 	 * @return {*}
 	 * @private
 	 */
-	_encode(data: any) {
+	_encode (data: any) {
 		return JSON.stringify(data);
 	}
 
@@ -216,7 +216,7 @@ export class IgeNetIoServer extends IgeEventingClass {
 	 * @return {*}
 	 * @private
 	 */
-	_decode(data: string) {
+	_decode (data: string) {
 		return JSON.parse(data);
 	}
 }

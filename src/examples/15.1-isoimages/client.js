@@ -11,29 +11,29 @@ import { DefaultLevel } from "../../examples/15.1-isoimages/graphs/DefaultLevel.
 var __awaiter =
 	(this && this.__awaiter) ||
 	function (thisArg, _arguments, P, generator) {
-		function adopt(value) {
+		function adopt (value) {
 			return value instanceof P
 				? value
 				: new P(function (resolve) {
-						resolve(value);
+					resolve(value);
 				  });
 		}
 		return new (P || (P = Promise))(function (resolve, reject) {
-			function fulfilled(value) {
+			function fulfilled (value) {
 				try {
 					step(generator.next(value));
 				} catch (e) {
 					reject(e);
 				}
 			}
-			function rejected(value) {
+			function rejected (value) {
 				try {
 					step(generator["throw"](value));
 				} catch (e) {
 					reject(e);
 				}
 			}
-			function step(result) {
+			function step (result) {
 				result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected);
 			}
 			step((generator = generator.apply(thisArg, _arguments || [])).next());
@@ -41,14 +41,14 @@ var __awaiter =
 	};
 
 export class Client extends IgeBaseClass {
-	constructor() {
+	constructor () {
 		super();
 		this.classId = "Client";
 		this.gameTextures = {};
 		this.fsm = new IgeFSM();
 		void this.init();
 	}
-	init() {
+	init () {
 		return __awaiter(this, void 0, void 0, function* () {
 			// Enabled texture smoothing when scaling textures
 			ige.engine.globalSmoothing(true);
@@ -56,7 +56,7 @@ export class Client extends IgeBaseClass {
 			yield this.start();
 		});
 	}
-	start() {
+	start () {
 		return __awaiter(this, void 0, void 0, function* () {
 			// Wait for our textures to load before continuing
 			this.loadTextures();
@@ -76,7 +76,7 @@ export class Client extends IgeBaseClass {
 			yield this.fsm.initialState("select");
 		});
 	}
-	defineFSM() {
+	defineFSM () {
 		this.fsm = new IgeFSM();
 		// Define the fsm states
 		this.fsm.defineState("select", {
@@ -180,7 +180,7 @@ export class Client extends IgeBaseClass {
 				})
 		});
 	}
-	loadTextures() {
+	loadTextures () {
 		this.gameTextures.background1 = new IgeTexture("background1", "../assets/textures/backgrounds/grassTile.png");
 		this.gameTextures.bank = new IgeTexture("bank", "../assets/textures/buildings/bank1.png");
 		this.gameTextures.electricals = new IgeTexture(
@@ -259,7 +259,7 @@ export class Client extends IgeBaseClass {
 	 * Creates the UI entities that the user can interact with to
 	 * perform certain tasks like placing and removing buildings.
 	 */
-	setupUi() {
+	setupUi () {
 		const uiScene = ige.$("uiScene");
 		// Create the top menu bar
 		const menuBar = new IgeUiEntity()
@@ -422,7 +422,7 @@ export class Client extends IgeBaseClass {
 			.mount(menuBar);
 		this.setupUi_BuildingsMenu();
 	}
-	setupUi_BuildingsMenu() {
+	setupUi_BuildingsMenu () {
 		const uiScene = ige.$("uiScene");
 		const menuBar = ige.$("menuBar");
 		// First, create an entity that will act as a drop-down menu
@@ -684,7 +684,7 @@ export class Client extends IgeBaseClass {
 			})
 			.mount(menuBar);
 	}
-	setupEntities() {
+	setupEntities () {
 		// Create an entity
 		this.placeItem("Bank", 0, 6);
 		this.placeItem("Electricals", 2, 6);
@@ -697,7 +697,7 @@ export class Client extends IgeBaseClass {
 	 * @param tileY
 	 * @return {*}
 	 */
-	placeItem(type, tileX, tileY) {
+	placeItem (type, tileX, tileY) {
 		const item = new ige.classStore[type]().mount(ige.$("tileMap1")).translateToTile(tileX, tileY);
 		return item;
 	}
@@ -707,7 +707,7 @@ export class Client extends IgeBaseClass {
 	 * @param tileX
 	 * @param tileY
 	 */
-	removeItem(tileX, tileY) {
+	removeItem (tileX, tileY) {
 		const item = this.itemAt(tileX, tileY);
 		if (item) {
 			item.destroy();
@@ -718,7 +718,7 @@ export class Client extends IgeBaseClass {
 	 * @param tileX
 	 * @param tileY
 	 */
-	itemAt(tileX, tileY) {
+	itemAt (tileX, tileY) {
 		// Return the data at the map's tile co-ordinates
 		return ige.$("tileMap1").map.tileData(tileX, tileY);
 	}
@@ -727,7 +727,7 @@ export class Client extends IgeBaseClass {
 	 * to indicate to the player where their item will be built.
 	 * @param type
 	 */
-	createTemporaryItem(type) {
+	createTemporaryItem (type) {
 		// Create a new item at a far off tile position - it will
 		// be moved to follow the mouse cursor anyway but it's cleaner
 		// to create it off-screen first.
@@ -739,66 +739,100 @@ export class Client extends IgeBaseClass {
 	 * @param y
 	 * @private
 	 */
-	_mapOnPointerUp(x, y) {
+	_mapOnPointerUp (x, y) {
 		// Check what mode our cursor is in
 		switch (ige.client.data("cursorMode")) {
-			case "select":
-				break;
-			case "move": {
-				// Check if we are already moving an item
-				if (!ige.client.data("moveItem")) {
-					// We're not already moving an item so check if the user
-					// just clicked on a building
-					const item = ige.client.itemAt(x, y);
-					if (item) {
-						// The user clicked on a building so set this as the
-						// building we are moving.
-						ige.client.data("moveItem", item);
-						ige.client.data("moveItemX", item.data("tileX"));
-						ige.client.data("moveItemY", item.data("tileY"));
-					}
-				} else {
-					// We are already moving a building, place this building
-					// down now
-					const item = ige.client.data("moveItem"),
-						moveX = item.data("lastMoveX"),
-						moveY = item.data("lastMoveY");
-					item.moveTo(moveX, moveY);
-					// Ask the server to move the item
-					// **SERVER-CALL**
-					// apiUrl = ''; //apiUrl = 'yourServerSideApiUrl'; // E.g. http://www.myserver.com/api/process
-					// if (apiUrl) {
-					// 	$.ajax(apiUrl, {
-					// 		dataType: 'json',
-					// 		data: {
-					// 			action: 'move',
-					// 			fromX: ige.client.data('moveItemX'),
-					// 			fromY: ige.client.data('moveItemY'),
-					// 			classId: item._classId,
-					// 			tileX: item.data('tileX'),
-					// 			tileY: item.data('tileY')
-					// 		},
-					// 		success (data, status, requestObject) {
-					// 			// Do what you want with the server return value
-					// 		}
-					// 	});
-					// }
-					// Clear the data
-					ige.client.data("moveItem", "");
-				}
-				break;
-			}
-			case "delete": {
+		case "select":
+			break;
+		case "move": {
+			// Check if we are already moving an item
+			if (!ige.client.data("moveItem")) {
+				// We're not already moving an item so check if the user
+				// just clicked on a building
 				const item = ige.client.itemAt(x, y);
 				if (item) {
-					// Ask the server to remove the item
+					// The user clicked on a building so set this as the
+					// building we are moving.
+					ige.client.data("moveItem", item);
+					ige.client.data("moveItemX", item.data("tileX"));
+					ige.client.data("moveItemY", item.data("tileY"));
+				}
+			} else {
+				// We are already moving a building, place this building
+				// down now
+				const item = ige.client.data("moveItem"),
+					moveX = item.data("lastMoveX"),
+					moveY = item.data("lastMoveY");
+				item.moveTo(moveX, moveY);
+				// Ask the server to move the item
+				// **SERVER-CALL**
+				// apiUrl = ''; //apiUrl = 'yourServerSideApiUrl'; // E.g. http://www.myserver.com/api/process
+				// if (apiUrl) {
+				// 	$.ajax(apiUrl, {
+				// 		dataType: 'json',
+				// 		data: {
+				// 			action: 'move',
+				// 			fromX: ige.client.data('moveItemX'),
+				// 			fromY: ige.client.data('moveItemY'),
+				// 			classId: item._classId,
+				// 			tileX: item.data('tileX'),
+				// 			tileY: item.data('tileY')
+				// 		},
+				// 		success (data, status, requestObject) {
+				// 			// Do what you want with the server return value
+				// 		}
+				// 	});
+				// }
+				// Clear the data
+				ige.client.data("moveItem", "");
+			}
+			break;
+		}
+		case "delete": {
+			const item = ige.client.itemAt(x, y);
+			if (item) {
+				// Ask the server to remove the item
+				// **SERVER-CALL**
+				// apiUrl = ""; //apiUrl = 'yourServerSideApiUrl'; // E.g. http://www.myserver.com/api/process.php
+				// if (apiUrl) {
+				// 	$.ajax(apiUrl, {
+				// 		dataType: "json",
+				// 		data: {
+				// 			action: "delete",
+				// 			classId: item._classId,
+				// 			tileX: item.data("tileX"),
+				// 			tileY: item.data("tileY")
+				// 		},
+				// 		success (data, status, requestObject) {
+				// 			// Do what you want with the server return value
+				// 		}
+				// 	});
+				// }
+				this.data("currentlyHighlighted", false);
+				// Remove the item from the engine
+				item.destroy();
+			}
+			break;
+		}
+		case "build": {
+			const item = ige.client.data("ghostItem");
+			if (item && item.data("tileX") !== -1000 && item.data("tileY") !== -1000) {
+				if (item.data("tileX") > -1 && item.data("tileY") > -1) {
+					// TODO: Use the collision map to check that the tile location is allowed for building! At the moment you can basically build anywhere and that sucks!
+					// Clear out reference to the ghost item
+					ige.client.data("ghostItem", false);
+					// Turn the ghost item into a "real" building
+					item.opacity(1).place();
+					// Now that we've placed a building, ask the server
+					// to ok / save the request. If the server doesn't
+					// tell us anything then the building is obviously ok!
 					// **SERVER-CALL**
 					// apiUrl = ""; //apiUrl = 'yourServerSideApiUrl'; // E.g. http://www.myserver.com/api/process.php
 					// if (apiUrl) {
 					// 	$.ajax(apiUrl, {
 					// 		dataType: "json",
 					// 		data: {
-					// 			action: "delete",
+					// 			action: "build",
 					// 			classId: item._classId,
 					// 			tileX: item.data("tileX"),
 					// 			tileY: item.data("tileY")
@@ -808,49 +842,15 @@ export class Client extends IgeBaseClass {
 					// 		}
 					// 	});
 					// }
-					this.data("currentlyHighlighted", false);
-					// Remove the item from the engine
-					item.destroy();
+					// Now create a new temporary building
+					const tempItem = ige.client
+						.createTemporaryItem(item._classId) // SkyScraper, Electricals etc
+						.opacity(0.7);
+					ige.client.data("ghostItem", tempItem);
 				}
-				break;
 			}
-			case "build": {
-				const item = ige.client.data("ghostItem");
-				if (item && item.data("tileX") !== -1000 && item.data("tileY") !== -1000) {
-					if (item.data("tileX") > -1 && item.data("tileY") > -1) {
-						// TODO: Use the collision map to check that the tile location is allowed for building! At the moment you can basically build anywhere and that sucks!
-						// Clear out reference to the ghost item
-						ige.client.data("ghostItem", false);
-						// Turn the ghost item into a "real" building
-						item.opacity(1).place();
-						// Now that we've placed a building, ask the server
-						// to ok / save the request. If the server doesn't
-						// tell us anything then the building is obviously ok!
-						// **SERVER-CALL**
-						// apiUrl = ""; //apiUrl = 'yourServerSideApiUrl'; // E.g. http://www.myserver.com/api/process.php
-						// if (apiUrl) {
-						// 	$.ajax(apiUrl, {
-						// 		dataType: "json",
-						// 		data: {
-						// 			action: "build",
-						// 			classId: item._classId,
-						// 			tileX: item.data("tileX"),
-						// 			tileY: item.data("tileY")
-						// 		},
-						// 		success (data, status, requestObject) {
-						// 			// Do what you want with the server return value
-						// 		}
-						// 	});
-						// }
-						// Now create a new temporary building
-						const tempItem = ige.client
-							.createTemporaryItem(item._classId) // SkyScraper, Electricals etc
-							.opacity(0.7);
-						ige.client.data("ghostItem", tempItem);
-					}
-				}
-				break;
-			}
+			break;
+		}
 		}
 	}
 	/**
@@ -859,69 +859,69 @@ export class Client extends IgeBaseClass {
 	 * @param evc
 	 * @private
 	 */
-	_mapOnPointerOver(event, evc) {
+	_mapOnPointerOver (event, evc) {
 		const mp = this.mouseToTile(),
 			x = mp.x,
 			y = mp.y;
 		switch (ige.client.data("cursorMode")) {
-			case "select": {
-				// If we already have a selection, un-highlight it
-				if (this.data("currentlyHighlighted")) {
-					this.data("currentlyHighlighted").highlight(false);
-				}
-				// Highlight the building at the map x, y
-				const item = ige.client.itemAt(x, y);
-				if (item) {
-					item.highlight(true);
-					this.data("currentlyHighlighted", item);
-				}
-				break;
+		case "select": {
+			// If we already have a selection, un-highlight it
+			if (this.data("currentlyHighlighted")) {
+				this.data("currentlyHighlighted").highlight(false);
 			}
-			case "delete": {
-				// If we already have a selection, un-highlight it
-				if (this.data("currentlyHighlighted")) {
-					this.data("currentlyHighlighted").highlight(false);
-				}
-				// Highlight the building at the map x, y
-				const item = ige.client.itemAt(x, y);
-				if (item) {
-					item.highlight(true);
-					this.data("currentlyHighlighted", item);
-				}
-				break;
+			// Highlight the building at the map x, y
+			const item = ige.client.itemAt(x, y);
+			if (item) {
+				item.highlight(true);
+				this.data("currentlyHighlighted", item);
 			}
-			case "move": {
-				const item = ige.client.data("moveItem"),
-					map = ige.client.tileMap1.map;
-				if (item) {
-					// Check if the current tile is occupied or not
-					if (
-						!map.collision(x, y, item.data("tileWidth"), item.data("tileHeight")) ||
+			break;
+		}
+		case "delete": {
+			// If we already have a selection, un-highlight it
+			if (this.data("currentlyHighlighted")) {
+				this.data("currentlyHighlighted").highlight(false);
+			}
+			// Highlight the building at the map x, y
+			const item = ige.client.itemAt(x, y);
+			if (item) {
+				item.highlight(true);
+				this.data("currentlyHighlighted", item);
+			}
+			break;
+		}
+		case "move": {
+			const item = ige.client.data("moveItem"),
+				map = ige.client.tileMap1.map;
+			if (item) {
+				// Check if the current tile is occupied or not
+				if (
+					!map.collision(x, y, item.data("tileWidth"), item.data("tileHeight")) ||
 						map.collisionWithOnly(x, y, item.data("tileWidth"), item.data("tileHeight"), item)
-					) {
-						// We are currently moving an item so update it's
-						// translation
-						item.translateToTile(x, y);
-						// Store the last position we accepted
-						item.data("lastMoveX", x);
-						item.data("lastMoveY", y);
-					}
+				) {
+					// We are currently moving an item so update it's
+					// translation
+					item.translateToTile(x, y);
+					// Store the last position we accepted
+					item.data("lastMoveX", x);
+					item.data("lastMoveY", y);
 				}
-				break;
 			}
-			case "build": {
-				const item = ige.client.data("ghostItem");
-				if (item) {
-					// We have a ghost item so move it to where the
-					// mouse is!
-					// Check the tile is not currently occupied!
-					if (!ige.client.tileMap1.map.collision(x, y, item.data("tileWidth"), item.data("tileHeight"))) {
-						// The tile is not occupied so move to it!
-						item.data("tileX", x).data("tileY", y).translateToTile(x, y, 0);
-					}
+			break;
+		}
+		case "build": {
+			const item = ige.client.data("ghostItem");
+			if (item) {
+				// We have a ghost item so move it to where the
+				// mouse is!
+				// Check the tile is not currently occupied!
+				if (!ige.client.tileMap1.map.collision(x, y, item.data("tileWidth"), item.data("tileHeight"))) {
+					// The tile is not occupied so move to it!
+					item.data("tileX", x).data("tileY", y).translateToTile(x, y, 0);
 				}
-				break;
 			}
+			break;
+		}
 		}
 	}
 }

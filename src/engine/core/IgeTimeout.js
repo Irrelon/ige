@@ -13,7 +13,7 @@ export class IgeTimeout extends IgeInterval {
 	 * @param {Function} method The method to call on timeout.
 	 * @param {number} timeout The number of milliseconds before the timeout.
 	 */
-	constructor(method, timeout) {
+	constructor (method, timeout) {
 		super(method, timeout);
 		this.classId = "IgeTimeout";
 	}
@@ -21,7 +21,7 @@ export class IgeTimeout extends IgeInterval {
 	 * Resets the time and lets the timeout begin anew.
 	 * @returns {*}
 	 */
-	reset() {
+	reset () {
 		this._time = 0;
 		if (ige.time._timers.indexOf(this) === -1) {
 			ige.time.addTimer(this);
@@ -33,7 +33,7 @@ export class IgeTimeout extends IgeInterval {
 	 * called manually.
 	 * @returns {*}
 	 */
-	update() {
+	update () {
 		let intendedTime;
 		const overTime = this._time - this._interval;
 		if (overTime > 0) {

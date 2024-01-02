@@ -1,8 +1,8 @@
-import { IgeFontEntity } from "@/engine/core/IgeFontEntity";
+import type { IgeFontEntity } from "@/engine/core/IgeFontEntity";
 import type { IgeFontSheet } from "@/engine/core/IgeFontSheet";
 import { IgeUiElement } from "@/engine/core/IgeUiElement";
-import { IgeFontAlignX, IgeFontAlignY } from "@/enums/IgeFontAlign";
-import { IgeCanvasRenderingContext2d } from "@/types/IgeCanvasRenderingContext2d";
+import type { IgeFontAlignX, IgeFontAlignY } from "@/enums/IgeFontAlign";
+import type { IgeCanvasRenderingContext2d } from "@/types/IgeCanvasRenderingContext2d";
 
 /**
  * Provides a UI label entity. Basic on-screen text label.

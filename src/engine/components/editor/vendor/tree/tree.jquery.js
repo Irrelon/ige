@@ -1,5 +1,5 @@
 (function ($) {
-	function generateList(listData, parent) {
+	function generateList (listData, parent) {
 		var list = $("<ul></ul>"),
 			item = $(
 				'<li id="' +

@@ -2,7 +2,7 @@ import { IgeUiElement } from "@/engine/core/IgeUiElement";
 import { registerClass } from "@/engine/igeClassStore";
 
 export class IgeUiButton extends IgeUiElement {
-	constructor() {
+	constructor () {
 		super();
 		this.classId = "IgeUiButton";
 		this._autoCell = false;
@@ -29,7 +29,7 @@ export class IgeUiButton extends IgeUiElement {
 	 * @param {Boolean=} val Either true or false.
 	 * @returns {*}
 	 */
-	autoCell(val) {
+	autoCell (val) {
 		if (val !== undefined) {
 			this._autoCell = val;
 			if (val) {
@@ -43,7 +43,7 @@ export class IgeUiButton extends IgeUiElement {
 	 * Fires a mouse-down and a mouse-up event for the entity.
 	 * @returns {*}
 	 */
-	click() {
+	click () {
 		if (this._pointerDown) {
 			this._pointerDown();
 		}
@@ -52,7 +52,7 @@ export class IgeUiButton extends IgeUiElement {
 		}
 		return this;
 	}
-	tick(ctx) {
+	tick (ctx) {
 		super.tick(ctx);
 		// Now draw any ui overlays
 		// Check for the old way to assign text to the button

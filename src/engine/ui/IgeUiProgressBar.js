@@ -2,7 +2,7 @@ import { IgeUiElement } from "@/engine/core/IgeUiElement";
 import { registerClass } from "@/engine/igeClassStore";
 
 export class IgeUiProgressBar extends IgeUiElement {
-	constructor() {
+	constructor () {
 		super();
 		this.classId = "IgeUiProgressBar";
 		// Set some defaults
@@ -16,28 +16,28 @@ export class IgeUiProgressBar extends IgeUiElement {
 			color: ""
 		};
 	}
-	barBackColor(val) {
+	barBackColor (val) {
 		if (val !== undefined) {
 			this._barBackColor = val;
 			return this;
 		}
 		return this._barBackColor;
 	}
-	barColor(val) {
+	barColor (val) {
 		if (val !== undefined) {
 			this._barColor = val;
 			return this;
 		}
 		return this._barColor;
 	}
-	barBorderColor(val) {
+	barBorderColor (val) {
 		if (val !== undefined) {
 			this._barBorderColor = val;
 			return this;
 		}
 		return this._barBorderColor;
 	}
-	barText(pre, post, color, percent) {
+	barText (pre, post, color, percent) {
 		if (typeof post === "function") {
 			this._barText = {
 				color: pre,
@@ -58,21 +58,21 @@ export class IgeUiProgressBar extends IgeUiElement {
 		}
 		return this._barText;
 	}
-	min(val) {
+	min (val) {
 		if (val !== undefined) {
 			this._min = val;
 			return this;
 		}
 		return this._min;
 	}
-	max(val) {
+	max (val) {
 		if (val !== undefined) {
 			this._max = val;
 			return this;
 		}
 		return this._max;
 	}
-	progress(val) {
+	progress (val) {
 		if (val !== undefined) {
 			if (val < this._min) {
 				val = this._min;
@@ -85,7 +85,7 @@ export class IgeUiProgressBar extends IgeUiElement {
 		}
 		return this._progress;
 	}
-	bindData(obj, propName) {
+	bindData (obj, propName) {
 		if (obj !== undefined && propName !== undefined) {
 			// Set the object and property to automatically
 			// track progress from
@@ -94,7 +94,7 @@ export class IgeUiProgressBar extends IgeUiElement {
 		}
 		return this;
 	}
-	render(ctx) {
+	render (ctx) {
 		// Check for an auto-progress update
 		if (this._bindDataObject && this._bindDataProperty) {
 			if (!this._bindDataObject._alive) {
@@ -153,7 +153,7 @@ export class IgeUiProgressBar extends IgeUiElement {
 			ctx.fillText(this._barText.pre + valText + this._barText.post, 0, 0);
 		}
 	}
-	tick(ctx) {
+	tick (ctx) {
 		this._transformContext(ctx);
 		this.render(ctx);
 		super.tick(ctx, true);

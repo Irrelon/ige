@@ -5,12 +5,12 @@ import { IgeRect } from "./IgeRect";
  * Creates a new 2d polygon made up of IgePoint2d instances.
  */
 export class IgePoly2d {
-	constructor() {
+	constructor () {
 		this.classId = "IgePoly2d";
 		this._poly = [];
 		this._scale = new IgePoint2d(1, 1);
 	}
-	scale(x, y) {
+	scale (x, y) {
 		if (x !== undefined && y !== undefined) {
 			this._scale.x = x;
 			this._scale.y = y;
@@ -23,7 +23,7 @@ export class IgePoly2d {
 	 * @param {number} factor The multiplication factor.
 	 * @return {*}
 	 */
-	multiply(factor) {
+	multiply (factor) {
 		// TODO: Look at IgeRect and normalise this function name
 		if (factor !== undefined) {
 			const polyPoints = this._poly;
@@ -40,7 +40,7 @@ export class IgePoly2d {
 	 * @param {number} value The divide value.
 	 * @return {*}
 	 */
-	divide(value) {
+	divide (value) {
 		if (value !== undefined) {
 			const polyPoints = this._poly;
 			const pointCount = polyPoints.length;
@@ -56,7 +56,7 @@ export class IgePoly2d {
 	 * @param {number} x
 	 * @param {number} y
 	 */
-	addPoint(x, y) {
+	addPoint (x, y) {
 		this._poly.push(new IgePoint2d(x, y));
 		return this;
 	}
@@ -64,14 +64,14 @@ export class IgePoly2d {
 	 * Returns the length of the poly array.
 	 * @return {number}
 	 */
-	length() {
+	length () {
 		return this._poly.length;
 	}
 	/**
 	 * Check if a point is inside this polygon.
 	 * @deprecated Please use pointInside() instead.
 	 */
-	pointInPoly() {
+	pointInPoly () {
 		throw new Error("Deprecated, please use pointInside() instead.");
 	}
 	/**
@@ -79,7 +79,7 @@ export class IgePoly2d {
 	 * @param {IgePoint2d | IgePoint3d} point
 	 * @return {boolean}
 	 */
-	pointInside(point) {
+	pointInside (point) {
 		return this.xyInside(point.x, point.y);
 	}
 	/**
@@ -88,7 +88,7 @@ export class IgePoly2d {
 	 * @param {number} y
 	 * @return {boolean}
 	 */
-	xyInside(x, y) {
+	xyInside (x, y) {
 		const polyPoints = this._poly;
 		const pointCount = polyPoints.length;
 		let oldPointIndex = pointCount - 1;
@@ -109,7 +109,7 @@ export class IgePoly2d {
 	/**
 	 * Calculates and returns the axis-aligned bounding-box for this polygon.
 	 */
-	aabb() {
+	aabb () {
 		const xArr = [];
 		const yArr = [];
 		const arr = this._poly;
@@ -130,7 +130,7 @@ export class IgePoly2d {
 	 * separate from the original.
 	 * @return {IgePoly2d}
 	 */
-	clone() {
+	clone () {
 		const newPoly = new IgePoly2d();
 		const arr = this._poly;
 		const arrCount = arr.length;
@@ -144,7 +144,7 @@ export class IgePoly2d {
 	 * Determines if the polygon is clockwise or not.
 	 * @return {boolean} A boolean true if clockwise or false if not.
 	 */
-	clockWiseTriangle() {
+	clockWiseTriangle () {
 		// Loop the polygon points and determine if they are counter-clockwise
 		const arr = this._poly;
 		const p1 = arr[0];
@@ -156,7 +156,7 @@ export class IgePoly2d {
 	/**
 	 * Modifies the points of this triangle so that the points are clock-wise.
 	 */
-	makeClockWiseTriangle() {
+	makeClockWiseTriangle () {
 		// If our data is already clockwise exit
 		if (!this.clockWiseTriangle()) {
 			const p1 = this._poly[1];
@@ -169,7 +169,7 @@ export class IgePoly2d {
 	 * Converts this polygon into many triangles so that there are no convex
 	 * parts to the polygon.
 	 */
-	triangulate() {
+	triangulate () {
 		// Get the indices of each new triangle
 		const poly = this._poly;
 		const triangles = [];
@@ -189,7 +189,7 @@ export class IgePoly2d {
 		}
 		return triangles;
 	}
-	triangulationIndices() {
+	triangulationIndices () {
 		const indices = [];
 		const n = this._poly.length;
 		const V = [];
@@ -242,7 +242,7 @@ export class IgePoly2d {
 		indices.reverse();
 		return indices;
 	}
-	_area() {
+	_area () {
 		const n = this._poly.length;
 		let a = 0.0;
 		let q = 0;
@@ -253,7 +253,7 @@ export class IgePoly2d {
 		}
 		return a * 0.5;
 	}
-	_snip(u, v, w, n, V) {
+	_snip (u, v, w, n, V) {
 		const A = this._poly[V[u]];
 		const B = this._poly[V[v]];
 		const C = this._poly[V[w]];
@@ -281,7 +281,7 @@ export class IgePoly2d {
 	 * @param {IgePoint2d} C
 	 * @param {IgePoint2d} P
 	 */
-	_insideTriangle(A, B, C, P) {
+	_insideTriangle (A, B, C, P) {
 		const ax = C.x - B.x;
 		const ay = C.y - B.y;
 		const bx = A.x - C.x;
@@ -304,7 +304,7 @@ export class IgePoly2d {
 	 * @param {CanvasRenderingContext2D} ctx
 	 * @param fill
 	 */
-	render(ctx, fill = false) {
+	render (ctx, fill = false) {
 		const polyPoints = this._poly;
 		const pointCount = polyPoints.length;
 		const scaleX = this._scale.x;

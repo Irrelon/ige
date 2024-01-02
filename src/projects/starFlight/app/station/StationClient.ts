@@ -1,5 +1,5 @@
 import { ige } from "@/engine/instance";
-import { IgeNetIoClientController } from "@/engine/network/client/IgeNetIoClientController";
+import type { IgeNetIoClientController } from "@/engine/network/client/IgeNetIoClientController";
 
 const appCore = require("../../../ige");
 

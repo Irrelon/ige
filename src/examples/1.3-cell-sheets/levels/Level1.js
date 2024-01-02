@@ -3,14 +3,14 @@ import { IgeSceneGraph } from "../../../engine/core/IgeSceneGraph.js";
 import { ige } from "../../../engine/instance.js";
 
 export class Level1 extends IgeSceneGraph {
-	constructor() {
+	constructor () {
 		super(...arguments);
 		this.classId = "Level1";
 	}
 	/**
 	 * Called when loading the graph data via ige.addGraph().
 	 */
-	addGraph() {
+	addGraph () {
 		const baseScene = ige.$("baseScene");
 		// Create an entity and mount it to the scene
 		new IgeEntity()
@@ -40,7 +40,7 @@ export class Level1 extends IgeSceneGraph {
 	 * The method called when the graph items are to be removed from the
 	 * active graph.
 	 */
-	removeGraph() {
+	removeGraph () {
 		// Since all our objects in addGraph() were mounted to the
 		// 'scene1' entity, destroying it will remove everything we
 		// added to it.

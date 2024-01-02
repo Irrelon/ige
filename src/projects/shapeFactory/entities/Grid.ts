@@ -6,7 +6,7 @@ export class Grid extends IgeEntity {
 	classId = "Grid";
 	spacing: number = 100;
 
-	constructor() {
+	constructor () {
 		super();
 		this.width(1000);
 		this.height(1000);

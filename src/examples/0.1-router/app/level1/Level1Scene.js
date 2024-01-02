@@ -5,14 +5,14 @@ import { IgeUiButton } from "../../../../engine/ui/IgeUiButton.js";
 import { Fairy } from "../../entities/Fairy.js";
 
 export class Level1Scene extends IgeSceneGraph {
-	constructor() {
+	constructor () {
 		super(...arguments);
 		this.classId = "Level1Scene";
 	}
 	/**
 	 * Called when loading the graph data via ige.addGraph().
 	 */
-	addGraph() {
+	addGraph () {
 		const baseScene = ige.$("baseScene");
 		// Clear existing graph data
 		if (ige.$("scene1")) {
@@ -41,7 +41,7 @@ export class Level1Scene extends IgeSceneGraph {
 	 * The method called when the graph items are to be removed from the
 	 * active graph.
 	 */
-	removeGraph() {
+	removeGraph () {
 		// Since all our objects in addGraph() were mounted to the
 		// 'scene1' entity, destroying it will remove everything we
 		// added to it.

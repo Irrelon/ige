@@ -10,7 +10,7 @@ import { ige } from "../../engine/instance.js";
  */
 //TODO: Make cursor a text entry cursor on hover
 export class IgeUiTextBox extends IgeUiElement {
-	constructor() {
+	constructor () {
 		super();
 		this.classId = "IgeUiTextBox";
 		this._caretStart = 0;
@@ -91,7 +91,7 @@ export class IgeUiTextBox extends IgeUiElement {
 		});
 		this.on("blur", blurFunc);
 	}
-	width(px, lockAspect = false, modifier, noUpdate = false) {
+	width (px, lockAspect = false, modifier, noUpdate = false) {
 		if (px !== undefined) {
 			// Call the main super class method
 			const returnValue = super.width(px, lockAspect, modifier, noUpdate);
@@ -100,7 +100,7 @@ export class IgeUiTextBox extends IgeUiElement {
 		}
 		return this._fontEntity.width();
 	}
-	height(px, lockAspect = false, modifier, noUpdate = false) {
+	height (px, lockAspect = false, modifier, noUpdate = false) {
 		if (px !== undefined) {
 			// Call the main super class method
 			const returnValue = super.height(px, lockAspect, modifier, noUpdate);
@@ -109,7 +109,7 @@ export class IgeUiTextBox extends IgeUiElement {
 		}
 		return this._fontEntity.height();
 	}
-	value(val) {
+	value (val) {
 		if (val === undefined) {
 			return this._value;
 		}
@@ -135,21 +135,21 @@ export class IgeUiTextBox extends IgeUiElement {
 		this.emit("change", this._value);
 		return this;
 	}
-	placeHolder(val) {
+	placeHolder (val) {
 		if (val !== undefined) {
 			this._placeHolder = val;
 			return this;
 		}
 		return this._placeHolder;
 	}
-	placeHolderColor(val) {
+	placeHolderColor (val) {
 		if (val !== undefined) {
 			this._placeHolderColor = val;
 			return this;
 		}
 		return this._placeHolderColor;
 	}
-	mask(val) {
+	mask (val) {
 		if (val !== undefined) {
 			this._mask = val;
 			return this;
@@ -162,7 +162,7 @@ export class IgeUiTextBox extends IgeUiElement {
 	 * @param fontSheet
 	 * @return {*}
 	 */
-	fontSheet(fontSheet) {
+	fontSheet (fontSheet) {
 		if (fontSheet !== undefined) {
 			this._fontSheet = fontSheet;
 			// Set the font sheet as the texture for our font entity
@@ -171,7 +171,7 @@ export class IgeUiTextBox extends IgeUiElement {
 		}
 		return this._fontSheet;
 	}
-	font(val) {
+	font (val) {
 		if (val !== undefined) {
 			if (typeof val === "string") {
 				// Native font name
@@ -189,28 +189,28 @@ export class IgeUiTextBox extends IgeUiElement {
 			return this.fontSheet();
 		}
 	}
-	nativeFont(val) {
+	nativeFont (val) {
 		if (val !== undefined) {
 			this._fontEntity.nativeFont(val);
 			return this;
 		}
 		return this._fontEntity.nativeFont();
 	}
-	nativeStroke(val) {
+	nativeStroke (val) {
 		if (val !== undefined) {
 			this._fontEntity.nativeStroke(val);
 			return this;
 		}
 		return this._fontEntity.nativeStroke();
 	}
-	nativeStrokeColor(val) {
+	nativeStrokeColor (val) {
 		if (val !== undefined) {
 			this._fontEntity.nativeStrokeColor(val);
 			return this;
 		}
 		return this._fontEntity.nativeStrokeColor();
 	}
-	color(color) {
+	color (color) {
 		if (color !== undefined) {
 			this._color = color;
 			if (!this._value && this._placeHolder && this._placeHolderColor) {
@@ -222,7 +222,7 @@ export class IgeUiTextBox extends IgeUiElement {
 		}
 		return this._color;
 	}
-	_mounted() {
+	_mounted () {
 		// Check if we have a text value
 		if (!this._value && this._placeHolder) {
 			// Assign placeholder text and color
@@ -231,7 +231,7 @@ export class IgeUiTextBox extends IgeUiElement {
 		}
 		super._mounted();
 	}
-	destroy() {
+	destroy () {
 		/* The 'blur' function is called to destroy the DOM textbox. */
 		this.blur();
 		return super.destroy();

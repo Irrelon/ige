@@ -1,5 +1,5 @@
 import { IgeBaseClass } from "./IgeBaseClass";
-import { IgeEventReturnFlag } from "@/enums/IgeEventReturnFlag";
+import type { IgeEventReturnFlag } from "@/enums/IgeEventReturnFlag";
 
 export type IgeEventListenerCallback = (...args: any[]) => boolean | undefined | void;
 export interface IgeEventStaticEmitterObject {

@@ -1,8 +1,8 @@
-import { IgePoint2d } from "./IgePoint2d";
-import { IgeRect } from "./IgeRect";
-import { IgePoint3d } from "@/engine/core/IgePoint3d";
-import { IgeCanvasRenderingContext2d } from "@/types/IgeCanvasRenderingContext2d";
-import { IgePolygonFunctionality } from "@/types/IgePolygonFunctionality";
+import type { IgePoint2d } from "./IgePoint2d";
+import type { IgeRect } from "./IgeRect";
+import type { IgePoint3d } from "@/engine/core/IgePoint3d";
+import type { IgeCanvasRenderingContext2d } from "@/types/IgeCanvasRenderingContext2d";
+import type { IgePolygonFunctionality } from "@/types/IgePolygonFunctionality";
 
 /**
  * Creates a new 2d polygon made up of IgePoint2d instances.

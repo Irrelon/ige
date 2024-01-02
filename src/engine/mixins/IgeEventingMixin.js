@@ -1,6 +1,6 @@
 export const WithEventingMixin = (Base) =>
 	class extends Base {
-		constructor() {
+		constructor () {
 			super(...arguments);
 			// Private
 			this._eventsProcessing = false;
@@ -31,7 +31,7 @@ export const WithEventingMixin = (Base) =>
 		 *     // The console output is:
 		 *     //    data1, data2
 		 */
-		on(eventName, callback, context, oneShot = false, sendEventName = false) {
+		on (eventName, callback, context, oneShot = false, sendEventName = false) {
 			// Check that we have an event listener object
 			this._eventListeners = this._eventListeners || {};
 			if (typeof callback !== "function") {
@@ -116,7 +116,7 @@ export const WithEventingMixin = (Base) =>
 		 *     myEntity.off('pointerDown', evt);
 		 * @return {boolean}
 		 */
-		off(eventName, evtListener, callback) {
+		off (eventName, evtListener, callback) {
 			if (!evtListener) return false;
 			if (this._eventListeners) {
 				if (!this._eventListeners._processing) {
@@ -182,7 +182,7 @@ export const WithEventingMixin = (Base) =>
 		 *     // The console output is:
 		 *     //    data1, data2
 		 */
-		emit(eventName, args) {
+		emit (eventName, args) {
 			if (!this._eventListeners) {
 				return 0;
 			}
@@ -248,7 +248,7 @@ export const WithEventingMixin = (Base) =>
 		 * Returns an object containing the current event listeners.
 		 * @return {Object}
 		 */
-		eventList() {
+		eventList () {
 			return this._eventListeners;
 		}
 		/**
@@ -256,7 +256,7 @@ export const WithEventingMixin = (Base) =>
 		 * each array item.
 		 * @private
 		 */
-		_processRemovals() {
+		_processRemovals () {
 			if (!this._eventListeners) {
 				return;
 			}

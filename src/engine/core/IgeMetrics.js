@@ -1,5 +1,5 @@
 export class IgeMetrics {
-	constructor() {
+	constructor () {
 		this.drawCount = 0;
 	}
 }

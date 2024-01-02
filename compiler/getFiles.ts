@@ -4,7 +4,7 @@ import { resolve } from "path";
 
 const { readdir } = promises;
 
-export async function getFiles(
+export async function getFiles (
 	dir: string,
 	matchPattern = ["**/*.ts", "**/*.tsx"],
 	excludePattern = ["node_modules", "react", ".git"]

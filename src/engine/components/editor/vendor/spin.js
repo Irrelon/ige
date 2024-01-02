@@ -20,7 +20,7 @@
 	 * Utility function to create elements. If no tag name is given,
 	 * a DIV is created. Optionally properties can be passed.
 	 */
-	function createEl(tag, prop) {
+	function createEl (tag, prop) {
 		var el = document.createElement(tag || "div"),
 			n;
 
@@ -31,7 +31,7 @@
 	/**
 	 * Appends children and returns the parent.
 	 */
-	function ins(parent /* child1, child2, ...*/) {
+	function ins (parent /* child1, child2, ...*/) {
 		for (var i = 1, n = arguments.length; i < n; i++) parent.appendChild(arguments[i]);
 
 		return parent;
@@ -51,7 +51,7 @@
 	 * Since most mobile Webkits have timing issues with animation-delay,
 	 * we create separate rules for each line/segment.
 	 */
-	function addAnimation(alpha, trail, i, lines) {
+	function addAnimation (alpha, trail, i, lines) {
 		var name = ["opacity", trail, ~~(alpha * 100), i, lines].join("-"),
 			start = 0.01 + (i / lines) * 100,
 			z = Math.max(1 - ((1 - alpha) / trail) * (100 - start), alpha),
@@ -94,7 +94,7 @@
 	/**
 	 * Tries various vendor prefixes and returns the first supported property.
 	 */
-	function vendor(el, prop) {
+	function vendor (el, prop) {
 		var s = el.style,
 			pp,
 			i;
@@ -110,7 +110,7 @@
 	/**
 	 * Sets multiple style properties at once.
 	 */
-	function css(el, prop) {
+	function css (el, prop) {
 		for (var n in prop) el.style[vendor(el, n) || n] = prop[n];
 
 		return el;
@@ -119,7 +119,7 @@
 	/**
 	 * Fills in default values.
 	 */
-	function merge(obj) {
+	function merge (obj) {
 		for (var i = 1; i < arguments.length; i++) {
 			var def = arguments[i];
 			for (var n in def) if (obj[n] === undefined) obj[n] = def[n];
@@ -130,7 +130,7 @@
 	/**
 	 * Returns the absolute page-offset of the given element.
 	 */
-	function pos(el) {
+	function pos (el) {
 		var o = { x: el.offsetLeft, y: el.offsetTop };
 		while ((el = el.offsetParent)) (o.x += el.offsetLeft), (o.y += el.offsetTop);
 
@@ -140,7 +140,7 @@
 	/**
 	 * Returns the line color from the given string or array.
 	 */
-	function getColor(color, idx) {
+	function getColor (color, idx) {
 		return typeof color == "string" ? color : color[idx % color.length];
 	}
 
@@ -167,7 +167,7 @@
 	};
 
 	/** The constructor */
-	function Spinner(o) {
+	function Spinner (o) {
 		if (typeof this == "undefined") return new Spinner(o);
 		this.opts = merge(o || {}, Spinner.defaults, defaults);
 	}
@@ -220,7 +220,7 @@
 					ostep = (1 - o.opacity) / ((f * o.trail) / 100),
 					astep = f / o.lines;
 
-				(function anim() {
+				(function anim () {
 					i++;
 					for (var j = 0; j < o.lines; j++) {
 						alpha = Math.max(1 - ((i + (o.lines - j) * astep) % f) * ostep, o.opacity);
@@ -255,7 +255,7 @@
 				start = ((o.lines - 1) * (1 - o.direction)) / 2,
 				seg;
 
-			function fill(color, shadow) {
+			function fill (color, shadow) {
 				return css(createEl(), {
 					position: "absolute",
 					width: o.length + o.width + "px",
@@ -298,9 +298,9 @@
 		}
 	});
 
-	function initVML() {
+	function initVML () {
 		/* Utility function to create a VML tag */
-		function vml(tag, attr) {
+		function vml (tag, attr) {
 			return createEl("<" + tag + ' xmlns="urn:schemas-microsoft.com:vml" class="spin-vml">', attr);
 		}
 
@@ -311,7 +311,7 @@
 			var r = o.length + o.width,
 				s = 2 * r;
 
-			function grp() {
+			function grp () {
 				return css(
 					vml("group", {
 						coordsize: s + " " + s,
@@ -325,7 +325,7 @@
 				g = css(grp(), { position: "absolute", top: margin, left: margin }),
 				i;
 
-			function seg(i, dx, filter) {
+			function seg (i, dx, filter) {
 				ins(
 					g,
 					ins(

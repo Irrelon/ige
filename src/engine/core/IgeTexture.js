@@ -17,7 +17,7 @@ export class IgeTexture extends IgeAsset {
 	 * points to the path of the image or script you wish to use as
 	 * the texture image, or an object containing a smart texture.
 	 */
-	constructor(id, urlOrObject) {
+	constructor (id, urlOrObject) {
 		super();
 		this.classId = "IgeTexture";
 		this.IgeTexture = true;
@@ -70,7 +70,7 @@ export class IgeTexture extends IgeAsset {
 			this.assignSmartTextureImage(urlOrObject);
 		}
 	}
-	url(url) {
+	url (url) {
 		if (url !== undefined) {
 			this._url = url;
 			if (url.substr(url.length - 2, 2) === "js") {
@@ -91,7 +91,7 @@ export class IgeTexture extends IgeAsset {
 	 * image data.
 	 * @private
 	 */
-	_loadImage(imageUrl) {
+	_loadImage (imageUrl) {
 		if (!isClient) {
 			return false;
 		}
@@ -159,7 +159,7 @@ export class IgeTexture extends IgeAsset {
 			}
 		}
 	}
-	_textureLoaded() {
+	_textureLoaded () {
 		// Set a timeout here so that when this event is emitted,
 		// the code creating the texture is given a chance to
 		// set a listener first, otherwise this will be emitted
@@ -178,7 +178,7 @@ export class IgeTexture extends IgeAsset {
 	 * script data.
 	 * @private
 	 */
-	_loadScript(scriptUrl) {
+	_loadScript (scriptUrl) {
 		if (isClient) {
 			import(scriptUrl)
 				.then(({ image }) => {
@@ -209,7 +209,7 @@ export class IgeTexture extends IgeAsset {
 	 * @param {string} scriptObj The script object.
 	 * @private
 	 */
-	assignSmartTextureImage(scriptObj) {
+	assignSmartTextureImage (scriptObj) {
 		// Check the object has a render method
 		if (typeof scriptObj.render !== "function") {
 			throw new Error("Cannot assign smart texture because it doesn't have a render() method!");
@@ -233,7 +233,7 @@ export class IgeTexture extends IgeAsset {
 	 * the image data for the IgeTexture.
 	 * @private
 	 */
-	_setImage(imageElement) {
+	_setImage (imageElement) {
 		if (isClient) {
 			// Create the image object
 			const image = (this.image = this._originalImage = imageElement);
@@ -249,14 +249,14 @@ export class IgeTexture extends IgeAsset {
 	 * Sets the _sizeX property.
 	 * @param {number} val
 	 */
-	sizeX(val) {
+	sizeX (val) {
 		this._sizeX = val;
 	}
 	/**
 	 * Sets the _sizeY property.
 	 * @param {number} val
 	 */
-	sizeY(val) {
+	sizeY (val) {
 		this._sizeY = val;
 	}
 	/**
@@ -270,7 +270,7 @@ export class IgeTexture extends IgeAsset {
 	 * canvas and not the output image. Use in conjunction with the
 	 * applyFilter() and preFilter() methods.
 	 */
-	resize(x, y, dontDraw = false) {
+	resize (x, y, dontDraw = false) {
 		if (this._originalImage) {
 			if (!this._loaded) {
 				throw new Error(
@@ -320,7 +320,7 @@ export class IgeTexture extends IgeAsset {
 	 * canvas and not the output image. Use in conjunction with the
 	 * applyFilter() and preFilter() methods.
 	 */
-	resizeByPercent(x, y, dontDraw = false) {
+	resizeByPercent (x, y, dontDraw = false) {
 		if (!this._originalImage) {
 			return;
 		}
@@ -368,13 +368,13 @@ export class IgeTexture extends IgeAsset {
 	 * texture first loaded. Useful if you have applied filters
 	 * or resized the image and now want to revert to the original.
 	 */
-	restoreOriginal() {
+	restoreOriginal () {
 		this.image = this._originalImage;
 		delete this._textureCtx;
 		delete this._textureCanvas;
 		this.removeFilters();
 	}
-	smoothing(val) {
+	smoothing (val) {
 		if (val !== undefined) {
 			this._smoothing = val;
 			return this;
@@ -387,7 +387,7 @@ export class IgeTexture extends IgeAsset {
 	 * @param {IgeEntity} entity The entity that this texture is
 	 * being drawn for.
 	 */
-	render(ctx, entity) {
+	render (ctx, entity) {
 		// Check that the cell is not set to null. If it is then
 		// we don't render anything which effectively makes the
 		// entity "blank"
@@ -472,7 +472,7 @@ export class IgeTexture extends IgeAsset {
 	 * Removes a certain filter from the texture
 	 * Useful if you want to keep resizings, etc.
 	 */
-	removeFilter(method) {
+	removeFilter (method) {
 		// TODO: Maybe we should refactor filter data structures so that the filter data is stored alongside the filter method?
 		const matchingPreFilterIndexes = [];
 		const matchingApplyFilterIndexes = [];
@@ -504,7 +504,7 @@ export class IgeTexture extends IgeAsset {
 	 * Removes all filters on the texture
 	 * Useful if you want to keep resizings, etc.
 	 */
-	removeFilters() {
+	removeFilters () {
 		this._applyFilters = [];
 		this._applyFiltersData = [];
 		this._preFilters = [];
@@ -515,7 +515,7 @@ export class IgeTexture extends IgeAsset {
 	 * Rerenders image with filter list. Keeps sizings.
 	 * Useful if you have no preFilters
 	 */
-	_rerenderFilters() {
+	_rerenderFilters () {
 		if (!this._textureCanvas) return;
 		// Rerender applyFilters from scratch:
 		// Draw the basic image
@@ -537,7 +537,7 @@ export class IgeTexture extends IgeAsset {
 	 * @param data
 	 * @return {*}
 	 */
-	preFilter(method, data) {
+	preFilter (method, data) {
 		if (!this._originalImage) {
 			return this;
 		}
@@ -570,7 +570,7 @@ export class IgeTexture extends IgeAsset {
 	 * @param {Object=} data
 	 * @return {*}
 	 */
-	applyFilter(method, data) {
+	applyFilter (method, data) {
 		if (!this._loaded) {
 			throw new Error(
 				"Cannot apply filter, the texture you are trying to apply the filter to has not yet loaded!"
@@ -617,7 +617,7 @@ export class IgeTexture extends IgeAsset {
 	 * @param  {number} y
 	 * @return {Array} [r,g,b,a] Pixel data.
 	 */
-	pixelData(x, y) {
+	pixelData (x, y) {
 		if (!this._loaded) {
 			throw new Error("Cannot read pixel data, the texture you are trying to read data from has not yet loaded!");
 		}
@@ -651,7 +651,7 @@ export class IgeTexture extends IgeAsset {
 	 * @return {IgeTexture} A new, distinct texture with the same attributes
 	 * as the one being cloned.
 	 */
-	clone() {
+	clone () {
 		return this.textureFromCell(1);
 	}
 	/**
@@ -659,7 +659,7 @@ export class IgeTexture extends IgeAsset {
 	 * evaluated will reproduce this object.
 	 * @return {string}
 	 */
-	stringify() {
+	stringify () {
 		let str = "new " + this.classId + "('" + this._url + "')";
 		// Every object has an ID, assign that first
 		// We've commented this because ids for textures are actually generated
@@ -676,7 +676,7 @@ export class IgeTexture extends IgeAsset {
 	 * @param {number | string} indexOrId The cell index or id to use.
 	 * @return {*}
 	 */
-	textureFromCell(indexOrId) {
+	textureFromCell (indexOrId) {
 		const tex = new IgeTexture();
 		if (this._loaded) {
 			this._textureFromCell(tex, indexOrId);
@@ -697,7 +697,7 @@ export class IgeTexture extends IgeAsset {
 	 * to use.
 	 * @private
 	 */
-	_textureFromCell(tex, indexOrId) {
+	_textureFromCell (tex, indexOrId) {
 		if (!this._originalImage) {
 			throw new Error(
 				"Unable to create new texture from passed cell index because we don't have an _originalImage assigned to the IgeTexture!"
@@ -750,7 +750,7 @@ export class IgeTexture extends IgeAsset {
 	 * @return {number} The cell index that the cell id corresponds
 	 * to or -1 if a corresponding index could not be found.
 	 */
-	cellIdToIndex(id) {
+	cellIdToIndex (id) {
 		const cells = this._cells;
 		for (let i = 1; i < cells.length; i++) {
 			if (cells[i][4] === id) {
@@ -760,13 +760,13 @@ export class IgeTexture extends IgeAsset {
 		}
 		return -1;
 	}
-	_stringify() {
+	_stringify () {
 		return "";
 	}
 	/**
 	 * Destroys the item.
 	 */
-	destroy() {
+	destroy () {
 		delete this._eventListeners;
 		// Remove us from the image store reference array
 		if (this.image && this.image._igeTextures) {

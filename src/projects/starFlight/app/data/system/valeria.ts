@@ -1,4 +1,4 @@
-import { StarSystemDefinition } from "../../../types/StarSystemDefinition";
+import type { StarSystemDefinition } from "../../../types/StarSystemDefinition";
 
 export const valeria: StarSystemDefinition = {
 	_id: "valeria",

@@ -3,7 +3,7 @@ import { IgeUiElement } from "../../engine/core/IgeUiElement.js";
 import { registerClass } from "../../engine/igeClassStore.js";
 
 export class IgeUiTogglePanel extends IgeUiElement {
-	constructor(title, titleTexture, toggleOffTexture, toggleOnTexture) {
+	constructor (title, titleTexture, toggleOffTexture, toggleOnTexture) {
 		super();
 		this.classId = "IgeUiTogglePanel";
 		this.backgroundColor("#222222");
@@ -50,11 +50,11 @@ export class IgeUiTogglePanel extends IgeUiElement {
 			}
 		});
 	}
-	toggleOn(method) {
+	toggleOn (method) {
 		this._toggleOn = method;
 		return this;
 	}
-	toggleOff(method) {
+	toggleOff (method) {
 		this._toggleOff = method;
 		return this;
 	}

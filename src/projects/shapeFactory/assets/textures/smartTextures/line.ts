@@ -1,5 +1,5 @@
 import { IgePoint3d } from "@/engine/core/IgePoint3d";
-import { IgeSmartTexture } from "@/types/IgeSmartTexture";
+import type { IgeSmartTexture } from "@/types/IgeSmartTexture";
 
 export const lineSmartTexture: IgeSmartTexture = {
 	render: function (ctx, entity) {

@@ -1,10 +1,10 @@
-import { IgeInterval } from "./IgeInterval";
+import type { IgeInterval } from "./IgeInterval";
 import { IgeEventingClass } from "@/engine/core/IgeEventingClass";
 import { IgeBehaviourType } from "@/enums/IgeBehaviourType";
 import { ige } from "../instance";
 import { arrPull } from "../utils";
-import { IgeEntityBehaviourMethod } from "@/types/IgeEntityBehaviour";
-import { IgeIsReadyPromise } from "@/types/IgeIsReadyPromise";
+import type { IgeEntityBehaviourMethod } from "@/types/IgeEntityBehaviour";
+import type { IgeIsReadyPromise } from "@/types/IgeIsReadyPromise";
 
 export class IgeTimeController extends IgeEventingClass implements IgeIsReadyPromise {
 	static componentTargetClass = "Ige";
@@ -16,7 +16,7 @@ export class IgeTimeController extends IgeEventingClass implements IgeIsReadyPro
 	_additions: IgeInterval[] = [];
 	_removals: IgeInterval[] = [];
 
-	isReady() {
+	isReady () {
 		return new Promise<void>((resolve) => {
 			setTimeout(() => {
 				ige.dependencies.waitFor(["engine"], () => {

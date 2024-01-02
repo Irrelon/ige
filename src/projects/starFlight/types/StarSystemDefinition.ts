@@ -1,6 +1,6 @@
-import { AsteroidBeltDefinition } from "./AsteroidBeltDefinition";
-import { JumpGateDefinition } from "./JumpGateDefinition";
-import { SpaceStationDefinition } from "./SpaceStationDefinition";
+import type { AsteroidBeltDefinition } from "./AsteroidBeltDefinition";
+import type { JumpGateDefinition } from "./JumpGateDefinition";
+import type { SpaceStationDefinition } from "./SpaceStationDefinition";
 
 export interface StarSystemDefinition {
 	_id: string;

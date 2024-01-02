@@ -1,8 +1,8 @@
 import { Module_Ability } from "./Module_Ability";
 import { registerClass } from "@/engine/igeClassStore";
 import { ige } from "@/engine/instance";
-import { IgeNetIoServerController } from "@/engine/network/server/IgeNetIoServerController";
-import { Asteroid } from "../Asteroid";
+import type { IgeNetIoServerController } from "@/engine/network/server/IgeNetIoServerController";
+import type { Asteroid } from "../Asteroid";
 
 export class Module_MiningLaser extends Module_Ability {
 	classId = "Module_MiningLaser";
@@ -12,7 +12,7 @@ export class Module_MiningLaser extends Module_Ability {
 	 * Called when the module has been active for a set period of time
 	 * and completes its task.
 	 */
-	complete() {
+	complete () {
 		const target = this._target as Asteroid;
 		if (!target) {
 			throw new Error("Mining laser module complete but no target!");

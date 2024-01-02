@@ -10,7 +10,7 @@ export class Ore extends IgeEntityBox2d {
 	classId = "Ore";
 	_publicGameData: Record<string, any>;
 
-	constructor(publicGameData: Record<string, any> = {}) {
+	constructor (publicGameData: Record<string, any> = {}) {
 		super();
 
 		this.category("ore").depth(10);
@@ -57,7 +57,7 @@ export class Ore extends IgeEntityBox2d {
 		}
 	}
 
-	streamCreateConstructorArgs() {
+	streamCreateConstructorArgs () {
 		return [this._publicGameData];
 	}
 }

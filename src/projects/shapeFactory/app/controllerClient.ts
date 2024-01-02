@@ -1,11 +1,11 @@
-import { IgeEntity } from "@/engine/core/IgeEntity";
+import type { IgeEntity } from "@/engine/core/IgeEntity";
 import { IgeFSM } from "@/engine/core/IgeFSM";
-import { IgePoint2d } from "@/engine/core/IgePoint2d";
+import type { IgePoint2d } from "@/engine/core/IgePoint2d";
 import { IgePoint3d } from "@/engine/core/IgePoint3d";
-import { IgeTileMap2d } from "@/engine/core/IgeTileMap2d";
-import { IgeUiElement } from "@/engine/core/IgeUiElement";
+import type { IgeTileMap2d } from "@/engine/core/IgeTileMap2d";
+import type { IgeUiElement } from "@/engine/core/IgeUiElement";
 import { ige } from "@/engine/instance";
-import { IgeNetIoClientController } from "@/engine/network/client/IgeNetIoClientController";
+import type { IgeNetIoClientController } from "@/engine/network/client/IgeNetIoClientController";
 import { BuildingType } from "../enums/BuildingType";
 import { ResourceType } from "../enums/ResourceType";
 import { IgeBehaviourType } from "@/enums/IgeBehaviourType";
@@ -15,10 +15,10 @@ import { FlagBuilding } from "../entities/FlagBuilding";
 import { HouseBuilding1 } from "../entities/HouseBuilding1";
 import { MiningBuilding } from "../entities/MiningBuilding";
 import { StorageBuilding } from "../entities/StorageBuilding";
-import { Building } from "../entities/base/Building";
-import { Flag } from "../entities/base/Flag";
+import type { Building } from "../entities/base/Building";
+import type { Flag } from "../entities/base/Flag";
 import { Line } from "../entities/base/Line";
-import { IgeEffectFunction } from "@/types/IgeRouteDefinition";
+import type { IgeEffectFunction } from "@/types/IgeRouteDefinition";
 
 export const controllerClient: IgeEffectFunction = async () => {
 	const network = ige.network as IgeNetIoClientController;
@@ -138,29 +138,29 @@ export const controllerClient: IgeEffectFunction = async () => {
 
 			// Set the temporary cursor-following building
 			switch (buildingType) {
-				case BuildingType.storage:
-					new StorageBuilding().id("tmpBuilding").mount(tileMap1);
-					break;
+			case BuildingType.storage:
+				new StorageBuilding().id("tmpBuilding").mount(tileMap1);
+				break;
 
-				case BuildingType.factory1:
-					new FactoryBuilding1(NaN, NaN, createArgs[0], createArgs[1]).id("tmpBuilding").mount(tileMap1);
-					break;
+			case BuildingType.factory1:
+				new FactoryBuilding1(NaN, NaN, createArgs[0], createArgs[1]).id("tmpBuilding").mount(tileMap1);
+				break;
 
-				case BuildingType.factory2:
-					new FactoryBuilding2(NaN, NaN, createArgs[0], createArgs[1]).id("tmpBuilding").mount(tileMap1);
-					break;
+			case BuildingType.factory2:
+				new FactoryBuilding2(NaN, NaN, createArgs[0], createArgs[1]).id("tmpBuilding").mount(tileMap1);
+				break;
 
-				case BuildingType.mine:
-					new MiningBuilding(NaN, NaN, ResourceType.none, []).id("tmpBuilding").mount(tileMap1);
-					break;
+			case BuildingType.mine:
+				new MiningBuilding(NaN, NaN, ResourceType.none, []).id("tmpBuilding").mount(tileMap1);
+				break;
 
-				case BuildingType.house1:
-					new HouseBuilding1(NaN, NaN, ResourceType.none, []).id("tmpBuilding").mount(tileMap1);
-					break;
+			case BuildingType.house1:
+				new HouseBuilding1(NaN, NaN, ResourceType.none, []).id("tmpBuilding").mount(tileMap1);
+				break;
 
-				case BuildingType.flag:
-					new FlagBuilding().id("tmpBuilding").mount(tileMap1);
-					break;
+			case BuildingType.flag:
+				new FlagBuilding().id("tmpBuilding").mount(tileMap1);
+				break;
 			}
 		},
 		exit: async () => {

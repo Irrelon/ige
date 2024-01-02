@@ -6,7 +6,7 @@ import { ige } from "../instance";
  * Creates a new 2d scene.
  */
 export class IgeScene2d extends IgeEntity {
-	constructor() {
+	constructor () {
 		super();
 		this.classId = "IgeScene2d";
 		/**
@@ -33,22 +33,22 @@ export class IgeScene2d extends IgeEntity {
 		 */
 		this.streamSectionData = (sectionId, data) => {
 			switch (sectionId) {
-				case "ignoreCamera":
-					if (data !== undefined) {
-						// Setter
-						if (data === "false") {
-							this.ignoreCamera(false);
-						} else {
-							this.ignoreCamera(true);
-						}
+			case "ignoreCamera":
+				if (data !== undefined) {
+					// Setter
+					if (data === "false") {
+						this.ignoreCamera(false);
 					} else {
-						// Getter
-						return String(this._ignoreCamera);
+						this.ignoreCamera(true);
 					}
-					break;
-				default:
-					super.streamSectionData(sectionId, data);
-					break;
+				} else {
+					// Getter
+					return String(this._ignoreCamera);
+				}
+				break;
+			default:
+				super.streamSectionData(sectionId, data);
+				break;
 			}
 		};
 		/**
@@ -119,7 +119,7 @@ export class IgeScene2d extends IgeEntity {
 		this._bounds2d.y = ige.engine._bounds2d.y;
 		this.streamSections(["transform", "ignoreCamera"]);
 	}
-	ignoreCamera(val) {
+	ignoreCamera (val) {
 		if (val !== undefined) {
 			this._ignoreCamera = val;
 			return this;
@@ -130,7 +130,7 @@ export class IgeScene2d extends IgeEntity {
 	 * Processes the actions required each render frame.
 	 * @param {CanvasRenderingContext2D} ctx The canvas context to render to.
 	 */
-	tick(ctx) {
+	tick (ctx) {
 		if (this._shouldRender) {
 			super.tick(ctx);
 		}
@@ -143,7 +143,7 @@ export class IgeScene2d extends IgeEntity {
 	 * Other properties are handled by their own class method.
 	 * @return {String}
 	 */
-	_stringify() {
+	_stringify () {
 		// Get the properties for all the super-classes
 		let str = super._stringify(),
 			i;
@@ -152,12 +152,12 @@ export class IgeScene2d extends IgeEntity {
 			// @ts-ignore
 			if (this.hasOwnProperty(i) && this[i] !== undefined) {
 				switch (i) {
-					case "_shouldRender":
-						str += ".shouldRender(" + this.shouldRender() + ")";
-						break;
-					case "_autoSize":
-						str += ".autoSize(" + this.autoSize() + ")";
-						break;
+				case "_shouldRender":
+					str += ".shouldRender(" + this.shouldRender() + ")";
+					break;
+				case "_autoSize":
+					str += ".autoSize(" + this.autoSize() + ")";
+					break;
 				}
 			}
 		}

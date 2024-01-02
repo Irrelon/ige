@@ -1,16 +1,17 @@
-import { GameEntity, EntityPublicGameData } from "./GameEntity";
+import type { EntityPublicGameData } from "./GameEntity";
+import { GameEntity } from "./GameEntity";
 import { Ore } from "./Ore";
-import { IgeAudioController } from "@/engine/audio/index";
+import type { IgeAudioController } from "@/engine/audio/index";
 import { isClient, isServer } from "@/engine/clientServer";
 import { IgePoly2d } from "@/engine/core/IgePoly2d";
-import { IgeScene2d } from "@/engine/core/IgeScene2d";
+import type { IgeScene2d } from "@/engine/core/IgeScene2d";
 import { registerClass } from "@/engine/igeClassStore";
 import { ige } from "@/engine/instance";
 import { degreesToRadians } from "@/engine/utils";
 import { IgeBox2dBodyType } from "@/enums/IgeBox2dBodyType";
 import { IgeBox2dFixtureShapeType } from "@/enums/IgeBox2dFixtureShapeType";
 import { oreTypes } from "../data/oreTypes";
-import { IgeBox2dFixtureDef } from "@/types/IgeBox2dFixtureDef";
+import type { IgeBox2dFixtureDef } from "@/types/IgeBox2dFixtureDef";
 
 export class Asteroid extends GameEntity {
 	classId = "Asteroid";
@@ -19,7 +20,7 @@ export class Asteroid extends GameEntity {
 	_oreTypeCount: number = 0;
 	_triangles: IgePoly2d[] = [];
 
-	constructor(publicGameData: EntityPublicGameData) {
+	constructor (publicGameData: EntityPublicGameData) {
 		super(publicGameData);
 
 		this.category("asteroid");
@@ -114,17 +115,17 @@ export class Asteroid extends GameEntity {
 		}
 	}
 
-	streamCreateConstructorArgs() {
+	streamCreateConstructorArgs () {
 		return [this._publicGameData];
 	}
 
-	ore() {
+	ore () {
 		return this._ore;
 	}
 
-	handleAcceptedAction(actionId: string, tickDelta: number) {}
+	handleAcceptedAction (actionId: string, tickDelta: number) {}
 
-	removeRandomOreType(): number {
+	removeRandomOreType (): number {
 		// TODO check that the ore we picked has any in "stock" on this asteroid
 		const oreType = Math.round(Math.random() * (Object.keys(this._ore).length - 1));
 
@@ -135,7 +136,7 @@ export class Asteroid extends GameEntity {
 		return oreType;
 	}
 
-	applyDamage(val: number) {
+	applyDamage (val: number) {
 		const previousWholeHealth = Math.floor(this._health);
 
 		// Call parent class function
@@ -153,7 +154,7 @@ export class Asteroid extends GameEntity {
 		return this;
 	}
 
-	spawnMinedOre(oreType: number) {
+	spawnMinedOre (oreType: number) {
 		if (isServer) {
 			const ore = new Ore({
 				type: oreType
@@ -168,7 +169,7 @@ export class Asteroid extends GameEntity {
 		}
 	}
 
-	_pointerUp() {
+	_pointerUp () {
 		(ige.audio as IgeAudioController).play("select");
 		ige.app.playerEntity.selectTarget(this);
 

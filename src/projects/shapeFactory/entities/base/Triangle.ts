@@ -6,7 +6,7 @@ import { ige } from "@/engine/instance";
 export class Triangle extends Building {
 	classId = "Triangle";
 
-	constructor() {
+	constructor () {
 		super();
 
 		this.data("glowColor", "#00ff00").layer(1).width(50).height(50);

@@ -16,7 +16,7 @@ export class IgeInterval extends IgeEventingClass {
 	 * retrospectively when the engine jumps in time. If false, the interval will
 	 * only fire a single time even if a large period of engine time has elapsed.
 	 */
-	constructor(method, interval, catchup = true) {
+	constructor (method, interval, catchup = true) {
 		super();
 		this.classId = "IgeInterval";
 		this._method = method;
@@ -32,7 +32,7 @@ export class IgeInterval extends IgeEventingClass {
 	 * @param {number} time The time in milliseconds to add to the timer's internal clock.
 	 * @returns {*}
 	 */
-	addTime(time) {
+	addTime (time) {
 		this._time += time;
 		return this;
 	}
@@ -40,7 +40,7 @@ export class IgeInterval extends IgeEventingClass {
 	 * Cancels the timer stopping all future method calls.
 	 * @returns {*}
 	 */
-	cancel() {
+	cancel () {
 		ige.time.removeTimer(this);
 		return this;
 	}
@@ -50,7 +50,7 @@ export class IgeInterval extends IgeEventingClass {
 	 * called manually.
 	 * @returns {*}
 	 */
-	update() {
+	update () {
 		let intendedTime;
 		const overTime = this._time - this._interval;
 		if (overTime > 0) {

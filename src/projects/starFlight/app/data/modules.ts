@@ -1,5 +1,5 @@
-import { EntityAbilityModuleDefinition } from "../../types/EntityAbilityModuleDefinition";
-import { EntityModuleDefinition } from "../../types/EntityModuleDefinition";
+import type { EntityAbilityModuleDefinition } from "../../types/EntityAbilityModuleDefinition";
+import type { EntityModuleDefinition } from "../../types/EntityModuleDefinition";
 
 export const modules: (EntityModuleDefinition | EntityAbilityModuleDefinition)[] = [
 	{

@@ -1,8 +1,8 @@
 import { IgeBaseClass } from "./IgeBaseClass";
 import type { IgeEntity } from "./IgeEntity";
-import { IgeObject } from "./IgeObject";
-import { IgePoint3d } from "./IgePoint3d";
-import { IgeCanvasRenderingContext2d } from "@/types/IgeCanvasRenderingContext2d";
+import type { IgeObject } from "./IgeObject";
+import type { IgePoint3d } from "./IgePoint3d";
+import type { IgeCanvasRenderingContext2d } from "@/types/IgeCanvasRenderingContext2d";
 import type { IgePoint } from "@/types/IgePoint";
 
 /**

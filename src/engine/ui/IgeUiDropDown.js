@@ -4,7 +4,7 @@ import { ige } from "@/engine/instance";
 import { IgeUiLabel } from "@/engine/ui/IgeUiLabel";
 
 export class IgeUiDropDown extends IgeUiElement {
-	constructor() {
+	constructor () {
 		super();
 		this.classId = "IgeUiDropDown";
 		this._toggleState = false;
@@ -32,7 +32,7 @@ export class IgeUiDropDown extends IgeUiElement {
 			this.toggle();
 		});
 	}
-	options(ops) {
+	options (ops) {
 		if (ops !== undefined) {
 			this._options = ops;
 			// Loop the options and check for a selected one
@@ -50,7 +50,7 @@ export class IgeUiDropDown extends IgeUiElement {
 		}
 		return this;
 	}
-	addOption(op) {
+	addOption (op) {
 		if (op !== undefined) {
 			this._options.push(op);
 			if (op.selected) {
@@ -64,7 +64,7 @@ export class IgeUiDropDown extends IgeUiElement {
 		}
 		return this;
 	}
-	removeAllOptions() {
+	removeAllOptions () {
 		this._options = [];
 		this.value({
 			text: "",
@@ -74,20 +74,20 @@ export class IgeUiDropDown extends IgeUiElement {
 	/**
 	 * The blur method removes global UI focus from this UI element.
 	 */
-	blur() {
+	blur () {
 		const returnValue = super.blur();
 		if (this._toggleState) {
 			this.toggle();
 		}
 		return returnValue;
 	}
-	selectIndex(index) {
+	selectIndex (index) {
 		if (this._options[index]) {
 			this.value(this._options[index]);
 			this.emit("change", this.value());
 		}
 	}
-	value(val) {
+	value (val) {
 		if (val !== undefined) {
 			super.value(val);
 			this._label.value(val.text);
@@ -95,7 +95,7 @@ export class IgeUiDropDown extends IgeUiElement {
 		}
 		return this._value.value;
 	}
-	toggle() {
+	toggle () {
 		var _a;
 		this._toggleState = !this._toggleState;
 		if (this._toggleState) {
@@ -136,7 +136,7 @@ export class IgeUiDropDown extends IgeUiElement {
 			(_a = ige.$(`${this._id}_options`)) === null || _a === void 0 ? void 0 : _a.destroy();
 		}
 	}
-	tick(ctx) {
+	tick (ctx) {
 		super.tick(ctx);
 		// Draw drop-down box
 		ctx.fillStyle = "#cccccc";

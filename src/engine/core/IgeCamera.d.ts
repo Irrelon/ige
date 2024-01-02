@@ -1,8 +1,8 @@
 import { IgeEntity } from "./IgeEntity";
-import { IgePoint3d } from "./IgePoint3d";
-import { IgeRect } from "./IgeRect";
-import { IgeViewport } from "./IgeViewport";
-import { IgeCanvasRenderingContext2d } from "@/types/IgeCanvasRenderingContext2d";
+import type { IgePoint3d } from "./IgePoint3d";
+import type { IgeRect } from "./IgeRect";
+import type { IgeViewport } from "./IgeViewport";
+import type { IgeCanvasRenderingContext2d } from "@/types/IgeCanvasRenderingContext2d";
 
 /**
  * Creates a new camera that will be attached to a viewport.

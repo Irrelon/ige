@@ -1,7 +1,7 @@
 import { IgeEventingClass } from "../../core/IgeEventingClass";
 
 export class IgeNetIoSocket extends IgeEventingClass {
-	constructor(connection, options) {
+	constructor (connection, options) {
 		super();
 		this.classId = "IgeNetIoSocket";
 		this._id = options.id;
@@ -29,7 +29,7 @@ export class IgeNetIoSocket extends IgeEventingClass {
 	 * Encodes the passed JSON data and sends it.
 	 * @param data
 	 */
-	send(data) {
+	send (data) {
 		this._socket.sendUTF(this._encode(data));
 	}
 	/**
@@ -37,14 +37,14 @@ export class IgeNetIoSocket extends IgeEventingClass {
 	 * @param data
 	 * @private
 	 */
-	_send(data) {
+	_send (data) {
 		this._socket.sendUTF(data);
 	}
 	/**
 	 * Closes the socket.
 	 * @param reason
 	 */
-	close(reason) {
+	close (reason) {
 		this.send({
 			_netioCmd: "close",
 			data: reason

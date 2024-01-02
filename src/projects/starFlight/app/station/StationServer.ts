@@ -1,4 +1,4 @@
-import { IgeNetIoServerController } from "@/engine/network/server/IgeNetIoServerController";
+import type { IgeNetIoServerController } from "@/engine/network/server/IgeNetIoServerController";
 import { PlayerShip } from "../component/PlayerShip";
 import { IgeInterval } from "@/engine/core/IgeInterval";
 import { Ore } from "../component/Ore";
@@ -71,7 +71,7 @@ export class StationServer {
 	 * @private
 	 */
 	_onPlayerEntity = function (data, clientId) {
-		var player;
+		let player;
 
 		player = ige.app.playerByClientId(clientId);
 
@@ -90,7 +90,7 @@ export class StationServer {
 	}
 
 	_onMiningRequest = function (data, clientId, callback) {
-		var player = ige.app.playerByClientId(clientId),
+		let player = ige.app.playerByClientId(clientId),
 			asteroid,
 			laser;
 
@@ -131,7 +131,7 @@ export class StationServer {
 						// this should probably be a finite state machine or
 						// something!
 						player.miningInterval = new IgeInterval(function () {
-							var ore = new Ore();
+							const ore = new Ore();
 							ore.mount(ige.app.frontScene);
 
 							ore.translateTo(asteroid._translate.x, asteroid._translate.y, 0);
@@ -152,7 +152,7 @@ export class StationServer {
 	}
 
 	generateAsteroidBelt = function (beltX, beltY) {
-		var maxDist = 900,
+		let maxDist = 900,
 			minDist = 500,
 			dist,
 			x, y, i,

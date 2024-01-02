@@ -1,7 +1,7 @@
 import { IgeMountMode } from "@/enums/IgeMountMode";
 import { IgePoint2d } from "../core/IgePoint2d";
-import { IgeTileMap2d } from "../core/IgeTileMap2d";
-import { IgeSmartTexture } from "@/types/IgeSmartTexture";
+import type { IgeTileMap2d } from "../core/IgeTileMap2d";
+import type { IgeSmartTexture } from "@/types/IgeSmartTexture";
 
 export const IgeTileMap2dSmartTexture: IgeSmartTexture = {
 	render: (ctx, entity) => {

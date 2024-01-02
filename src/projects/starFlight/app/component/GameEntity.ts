@@ -1,16 +1,16 @@
-import { Module_Generic } from "./module/Module_Generic";
+import type { Module_Generic } from "./module/Module_Generic";
 import { AbilityButton } from "./ui/AbilityButton";
-import { IgeAudioController } from "@/engine/audio/index";
+import type { IgeAudioController } from "@/engine/audio/index";
 import { isClient, isServer } from "@/engine/clientServer";
-import { IgeScene2d } from "@/engine/core/IgeScene2d";
+import type { IgeScene2d } from "@/engine/core/IgeScene2d";
 import { ige } from "@/engine/instance";
-import { IgeNetIoClientController } from "@/engine/network/client/IgeNetIoClientController";
+import type { IgeNetIoClientController } from "@/engine/network/client/IgeNetIoClientController";
 import { IgeEntityBox2d } from "@/engine/components/physics/box2d/IgeEntityBox2d";
-import { EntityAbilityModuleDefinition } from "../../types/EntityAbilityModuleDefinition";
-import { EntityModuleDefinition } from "../../types/EntityModuleDefinition";
+import type { EntityAbilityModuleDefinition } from "../../types/EntityAbilityModuleDefinition";
+import type { EntityModuleDefinition } from "../../types/EntityModuleDefinition";
 import { acceptedAction } from "../data/acceptedAction";
-import { IgeCanvasRenderingContext2d } from "@/types/IgeCanvasRenderingContext2d";
-import { IgeNetworkServerSideRequestHandler } from "@/types/IgeNetworkMessage";
+import type { IgeCanvasRenderingContext2d } from "@/types/IgeCanvasRenderingContext2d";
+import type { IgeNetworkServerSideRequestHandler } from "@/types/IgeNetworkMessage";
 
 export interface EntityPublicGameData {
 	clientId?: string;
@@ -37,7 +37,7 @@ export class GameEntity extends IgeEntityBox2d {
 	_tickTime: number = 0;
 	_health: number = 0;
 
-	constructor(
+	constructor (
 		publicGameData: EntityPublicGameData = {
 			state: {},
 			module: {},
@@ -90,7 +90,7 @@ export class GameEntity extends IgeEntityBox2d {
 		}
 	}
 
-	streamCreateConstructorArgs() {
+	streamCreateConstructorArgs () {
 		return [this._publicGameData];
 	}
 
@@ -104,7 +104,7 @@ export class GameEntity extends IgeEntityBox2d {
 	 * from the server to the client for this entity.
 	 * @return {*}
 	 */
-	streamSectionData(sectionId: string, data: string) {
+	streamSectionData (sectionId: string, data: string) {
 		let stateName;
 
 		if (!sectionId) {
@@ -130,7 +130,7 @@ export class GameEntity extends IgeEntityBox2d {
 		}
 	}
 
-	_setup() {
+	_setup () {
 		if (!isServer) {
 			return;
 		}
@@ -152,7 +152,7 @@ export class GameEntity extends IgeEntityBox2d {
 	 * @param moduleId
 	 * @returns {*}
 	 */
-	ability(abilityId: string, moduleId?: string) {
+	ability (abilityId: string, moduleId?: string) {
 		if (abilityId !== undefined) {
 			if (moduleId !== undefined) {
 				this._publicGameData.ability[abilityId] = moduleId;
@@ -192,7 +192,7 @@ export class GameEntity extends IgeEntityBox2d {
 	 * Set to null to remove the existing component.
 	 * @returns {*}
 	 */
-	module(moduleId: string, moduleDefinition?: EntityModuleDefinition) {
+	module (moduleId: string, moduleDefinition?: EntityModuleDefinition) {
 		const modulesObj = this._publicGameData.module;
 
 		if (moduleId !== undefined) {
@@ -266,7 +266,7 @@ export class GameEntity extends IgeEntityBox2d {
 	 * Set to null to remove the existing component.
 	 * @returns {*}
 	 */
-	privateModule(moduleId?: string) {
+	privateModule (moduleId?: string) {
 		if (moduleId !== undefined) {
 			return this._privateGameData.module[moduleId];
 		}
@@ -280,7 +280,7 @@ export class GameEntity extends IgeEntityBox2d {
 	 * accepted flag rather than getting it.
 	 * @returns {Boolean|*}
 	 */
-	acceptsAction(action?: string, val?: boolean) {
+	acceptsAction (action?: string, val?: boolean) {
 		if (action !== undefined) {
 			if (val !== undefined) {
 				//this.log('Accepts action "' + action + '": ' + val);
@@ -300,7 +300,7 @@ export class GameEntity extends IgeEntityBox2d {
 		return this._publicGameData.acceptsActionObj;
 	}
 
-	update(ctx: IgeCanvasRenderingContext2d, tickDelta: number) {
+	update (ctx: IgeCanvasRenderingContext2d, tickDelta: number) {
 		if (isServer) {
 			this._resolveModules(tickDelta);
 		}
@@ -321,7 +321,7 @@ export class GameEntity extends IgeEntityBox2d {
 	 * the last tick.
 	 * @private
 	 */
-	_resolveModules(tickDelta: number) {
+	_resolveModules (tickDelta: number) {
 		if (isClient) return;
 		const modulesObj = this._privateGameData.module;
 
@@ -409,7 +409,7 @@ export class GameEntity extends IgeEntityBox2d {
 	 * @param {String=} targetId Optional. The ID of the entity
 	 * that is targeted by the ability (if any).
 	 */
-	useAbility(abilityId: string, targetId?: string) {
+	useAbility (abilityId: string, targetId?: string) {
 		if (isServer) {
 			return;
 		}
@@ -429,34 +429,34 @@ export class GameEntity extends IgeEntityBox2d {
 				if (err) {
 					// Display error to UI
 					switch (err) {
-						case "noAbilityId":
-							console.warn("useAbility ERROR CODE: noAbilityId");
-							break;
+					case "noAbilityId":
+						console.warn("useAbility ERROR CODE: noAbilityId");
+						break;
 
-						case "noPlayer":
-							console.warn("useAbility ERROR CODE: noPlayer");
-							break;
+					case "noPlayer":
+						console.warn("useAbility ERROR CODE: noPlayer");
+						break;
 
-						case "abilityEmpty":
-							console.warn("useAbility ERROR CODE: abilityEmpty");
-							break;
+					case "abilityEmpty":
+						console.warn("useAbility ERROR CODE: abilityEmpty");
+						break;
 
-						case "invalidTarget":
-							console.warn("useAbility ERROR CODE: invalidTarget");
-							break;
+					case "invalidTarget":
+						console.warn("useAbility ERROR CODE: invalidTarget");
+						break;
 
-						case "targetOutOfRange":
-							console.warn("useAbility ERROR CODE: targetOutOfRange: " + data);
-							break;
+					case "targetOutOfRange":
+						console.warn("useAbility ERROR CODE: targetOutOfRange: " + data);
+						break;
 
-						case "targetRequired":
-							console.warn("useAbility ERROR CODE: targetRequired");
-							break;
+					case "targetRequired":
+						console.warn("useAbility ERROR CODE: targetRequired");
+						break;
 
-						case "alreadyActive":
-							console.warn("useAbility ERROR CODE: alreadyActive");
-							// TODO: Flash the ability icon to let the user know it is already active
-							break;
+					case "alreadyActive":
+						console.warn("useAbility ERROR CODE: alreadyActive");
+						// TODO: Flash the ability icon to let the user know it is already active
+						break;
 					}
 
 					(ige.audio as IgeAudioController).play("actionDenied");
@@ -472,7 +472,7 @@ export class GameEntity extends IgeEntityBox2d {
 		);
 	}
 
-	applyDamage(val: number) {
+	applyDamage (val: number) {
 		return this;
 	}
 }

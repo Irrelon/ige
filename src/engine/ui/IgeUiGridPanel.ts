@@ -4,14 +4,14 @@ import { registerClass } from "@/engine/igeClassStore";
 export class IgeUiGridPanel extends IgeUiElement {
 	classId = "IgeUiGridPanel";
 
-	constructor(cellWidth, cellHeight) {
+	constructor (cellWidth, cellHeight) {
 		super();
 
 		this._gridCellWidth = cellWidth || 32;
 		this._gridCellHeight = cellHeight || 32;
 	}
 
-	_childMounted(obj) {
+	_childMounted (obj) {
 		super._childMounted(obj);
 
 		let gridWidth = Math.floor(this._bounds2d.x / this._gridCellWidth),

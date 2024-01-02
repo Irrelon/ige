@@ -5,11 +5,11 @@ import { ige } from "@/engine/instance";
 export class IgeUiTimeStream extends IgeUiElement {
 	classId = "IgeUiTimeStream";
 
-	monitor(entity) {
+	monitor (entity) {
 		this._entity = entity;
 	}
 
-	tick(ctx) {
+	tick (ctx) {
 		// Draw timeline
 		const renderTime = ige.engine._tickStart - (ige.network as IgeNetIoClientComponent)._renderLatency;
 		let i, text, xAdjust, arr, arrCount, arrItem, deltaTime;

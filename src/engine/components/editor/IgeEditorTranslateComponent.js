@@ -11,7 +11,7 @@ class IgeEditorTranslateComponent extends IgeComponent {
 	 * @param options The options object that was passed to the component during
 	 * the call to addComponent.
 	 */
-	constructor(entity, options) {
+	constructor (entity, options) {
 		super(entity, options);
 		this.classId = "IgeEditorTranslateComponent";
 		this.componentId = "editorTranslate";

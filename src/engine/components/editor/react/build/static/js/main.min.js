@@ -1,6 +1,6 @@
 /*! For license information please see main.e03908cb.js.LICENSE.txt */
 !(function () {
-	"use strict";
+	
 	var e = {
 			463: function (e, n, t) {
 				var r = t(791),
@@ -794,7 +794,7 @@
 					var r = wl(t);
 					if (null === r) return null;
 					t = r[n];
-					e: switch (n) {
+					switch (n) {
 						case "onClick":
 						case "onClickCapture":
 						case "onDoubleClick":
@@ -814,7 +814,7 @@
 									"textarea" === e
 								)),
 								(e = !r);
-							break e;
+							break;
 						default:
 							e = !1;
 					}
@@ -4548,7 +4548,7 @@
 									(e.child.return = e), (e = e.child);
 									continue;
 								}
-								if (e === n) break e;
+								if (e === n) break;
 								for (; null === e.sibling; ) {
 									if (null === e.return || e.return === n) break e;
 									e = e.return;
@@ -5579,7 +5579,7 @@
 										(d.child.return = d), (d = d.child);
 										continue;
 									}
-									if (d === e) break e;
+									if (d === e) break;
 									for (; null === d.sibling; ) {
 										if (null === d.return || d.return === e) break e;
 										f === d && (f = null), (d = d.return);
@@ -6578,7 +6578,7 @@
 									}
 									if (0 !== (2064 & o.subtreeFlags) && null !== u) (u.return = o), (Ju = u);
 									else
-										e: for (; null !== Ju; ) {
+										for (; null !== Ju; ) {
 											if (0 !== (2048 & (o = Ju).flags))
 												switch (o.tag) {
 													case 0:
@@ -6589,7 +6589,7 @@
 											var y = o.sibling;
 											if (null !== y) {
 												(y.return = o.return), (Ju = y);
-												break e;
+												break;
 											}
 											Ju = o.return;
 										}
@@ -6599,7 +6599,7 @@
 									var k = (u = Ju).child;
 									if (0 !== (2064 & u.subtreeFlags) && null !== k) (k.return = u), (Ju = k);
 									else
-										e: for (u = b; null !== Ju; ) {
+										for (u = b; null !== Ju; ) {
 											if (0 !== (2048 & (i = Ju).flags))
 												try {
 													switch (i.tag) {
@@ -6613,12 +6613,12 @@
 												}
 											if (i === u) {
 												Ju = null;
-												break e;
+												break;
 											}
 											var w = i.sibling;
 											if (null !== w) {
 												(w.return = i.return), (Ju = w);
-												break e;
+												break;
 											}
 											Ju = i.return;
 										}
@@ -7965,10 +7965,10 @@
 				function t(e, n) {
 					var t = e.length;
 					e.push(n);
-					e: for (; 0 < t; ) {
+					for (; 0 < t; ) {
 						var r = (t - 1) >>> 1,
 							l = e[r];
-						if (!(0 < a(l, n))) break e;
+						if (!(0 < a(l, n))) break;
 						(e[r] = n), (e[t] = l), (t = r);
 					}
 				}
@@ -7981,7 +7981,7 @@
 						t = e.pop();
 					if (t !== n) {
 						e[0] = t;
-						e: for (var r = 0, l = e.length, o = l >>> 1; r < o; ) {
+						for (var r = 0, l = e.length, o = l >>> 1; r < o; ) {
 							var u = 2 * (r + 1) - 1,
 								i = e[u],
 								s = u + 1,
@@ -7991,7 +7991,7 @@
 									? ((e[r] = c), (e[s] = t), (r = s))
 									: ((e[r] = i), (e[u] = t), (r = u));
 							else {
-								if (!(s < l && 0 > a(c, t))) break e;
+								if (!(s < l && 0 > a(c, t))) break;
 								(e[r] = c), (e[s] = t), (r = s);
 							}
 						}

@@ -1,6 +1,6 @@
-import { IgeCanvasRenderingContext2d } from "./IgeCanvasRenderingContext2d";
-import { IgeTexture } from "@/engine/core/IgeTexture";
-import { IgeImage } from "@/types/IgeImage";
+import type { IgeCanvasRenderingContext2d } from "./IgeCanvasRenderingContext2d";
+import type { IgeTexture } from "@/engine/core/IgeTexture";
+import type { IgeImage } from "@/types/IgeImage";
 
 export type IgeSmartFilter = (
 	canvas: OffscreenCanvas,

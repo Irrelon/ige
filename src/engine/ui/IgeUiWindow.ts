@@ -1,4 +1,4 @@
-import { IgePoint3d } from "@/engine/core/IgePoint3d";
+import type { IgePoint3d } from "@/engine/core/IgePoint3d";
 import { registerClass } from "@/engine/igeClassStore";
 import { IgeUiButton } from "@/engine/ui/IgeUiButton";
 import { IgeUiLabel } from "@/engine/ui/IgeUiLabel";
@@ -17,7 +17,7 @@ export class IgeUiWindow extends IgeUiElement {
 	_opStartMouse?: IgePoint3d;
 	_opStartTranslate: Record<string, number> = {};
 
-	constructor() {
+	constructor () {
 		super();
 
 		const ui = ige.ui as IgeUiManagerController;
@@ -70,7 +70,7 @@ export class IgeUiWindow extends IgeUiElement {
 			.mount(this._topNav);
 	}
 
-	_dragStart() {
+	_dragStart () {
 		if (!this._draggable) {
 			return;
 		}
@@ -85,7 +85,7 @@ export class IgeUiWindow extends IgeUiElement {
 		return true;
 	}
 
-	_dragMove() {
+	_dragMove () {
 		if (!this._draggable || !this._dragging) return;
 		if (!ige.engine._currentViewport) return;
 		if (!this._opStartMouse) return;
@@ -106,7 +106,7 @@ export class IgeUiWindow extends IgeUiElement {
 		return true;
 	}
 
-	_dragEnd() {
+	_dragEnd () {
 		if (this._draggable && this._dragging) {
 			this._dragging = false;
 
@@ -115,7 +115,7 @@ export class IgeUiWindow extends IgeUiElement {
 		}
 	}
 
-	draggable(val: boolean) {
+	draggable (val: boolean) {
 		if (val) {
 			this._draggable = true;
 
@@ -131,13 +131,13 @@ export class IgeUiWindow extends IgeUiElement {
 		}
 	}
 
-	blur() {
+	blur () {
 		return super.blur();
 	}
 
 	title(val: string): this;
 	title(): string;
-	title(val?: string) {
+	title (val?: string) {
 		if (val !== undefined) {
 			this._label.value(val);
 			return this;
@@ -148,7 +148,7 @@ export class IgeUiWindow extends IgeUiElement {
 
 	titleColor(val: string): this;
 	titleColor(): string;
-	titleColor(val?: string) {
+	titleColor (val?: string) {
 		if (val !== undefined) {
 			this._label.color(val);
 			return this;
@@ -159,7 +159,7 @@ export class IgeUiWindow extends IgeUiElement {
 
 	titleFont(val: string): this;
 	titleFont(): string;
-	titleFont(val?: string) {
+	titleFont (val?: string) {
 		if (val !== undefined) {
 			this._label.style("font", val);
 			return this;

@@ -1,10 +1,10 @@
-import { EntityModuleStates } from "../types/EntityModuleDefinition";
+import type { EntityModuleStates } from "../types/EntityModuleDefinition";
 
-export function roundNumber(number: number, digits: number) {
+export function roundNumber (number: number, digits: number) {
 	return Number(number.toFixed(digits));
 }
 
-export function calculateModifierRatio(
+export function calculateModifierRatio (
 	states: EntityModuleStates,
 	modifierPerSecond: number,
 	min: number,

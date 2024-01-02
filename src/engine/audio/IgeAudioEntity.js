@@ -16,7 +16,7 @@ const defaultPanner = {
 	coneOuterGain: 0
 };
 export class IgeAudioEntity extends IgeEntity {
-	constructor(
+	constructor (
 		audioId,
 		options = {
 			started: false,
@@ -49,7 +49,7 @@ export class IgeAudioEntity extends IgeEntity {
 			}, 1);
 		}
 	}
-	relativeTo(val) {
+	relativeTo (val) {
 		var _a;
 		if (val !== undefined) {
 			const audioInterface = this.audioInterface();
@@ -71,11 +71,11 @@ export class IgeAudioEntity extends IgeEntity {
 	 * Gets the playing boolean flag state.
 	 * @returns {boolean} True if playing, false if not.
 	 */
-	playing() {
+	playing () {
 		var _a;
 		return (_a = this.audioInterface()) === null || _a === void 0 ? void 0 : _a.playing();
 	}
-	url(url) {
+	url (url) {
 		var _a, _b;
 		if (url !== undefined) {
 			(_a = this.audioInterface()) === null || _a === void 0 ? void 0 : _a.url(url);
@@ -94,7 +94,7 @@ export class IgeAudioEntity extends IgeEntity {
 	 * engine.
 	 * @returns {*}
 	 */
-	audioId(audioId) {
+	audioId (audioId) {
 		var _a, _b;
 		if (audioId !== undefined) {
 			(_a = this.audioInterface()) === null || _a === void 0 ? void 0 : _a.audioId(audioId);
@@ -109,7 +109,7 @@ export class IgeAudioEntity extends IgeEntity {
 	 * being destroyed.
 	 * @returns {IgeAudioEntity}
 	 */
-	play(loop = false) {
+	play (loop = false) {
 		var _a;
 		(_a = this.audioInterface()) === null || _a === void 0 ? void 0 : _a.play(loop);
 		return this;
@@ -118,12 +118,12 @@ export class IgeAudioEntity extends IgeEntity {
 	 * Stops playback of the audio.
 	 * @returns {IgeAudioEntity}
 	 */
-	stop() {
+	stop () {
 		var _a;
 		(_a = this.audioInterface()) === null || _a === void 0 ? void 0 : _a.stop();
 		return this;
 	}
-	audioInterface(audio) {
+	audioInterface (audio) {
 		if (audio !== undefined) {
 			this._audioInterface = audio;
 			return this;
@@ -135,10 +135,10 @@ export class IgeAudioEntity extends IgeEntity {
 	 * is created via the network stream.
 	 * @returns {*}
 	 */
-	streamCreateConstructorArgs() {
+	streamCreateConstructorArgs () {
 		return [this._audioId, this._options];
 	}
-	update(ctx, tickDelta) {
+	update (ctx, tickDelta) {
 		if (this._relativeTo && this._panner) {
 			const audioWorldPos = this.worldPosition();
 			const relativeToWorldPos = this._relativeTo.worldPosition();
@@ -161,7 +161,7 @@ export class IgeAudioEntity extends IgeEntity {
 	 * Called when the entity is to be destroyed. Stops any
 	 * current audio stream playback.
 	 */
-	destroy() {
+	destroy () {
 		var _a;
 		if (isClient) {
 			(_a = this.audioInterface()) === null || _a === void 0 ? void 0 : _a.stop();

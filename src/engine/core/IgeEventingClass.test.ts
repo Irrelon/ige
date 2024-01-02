@@ -4,20 +4,20 @@ import assert from "assert";
 let expectedAssertions = 0;
 let actualAssertions = 0;
 
-function expect(val: number) {
+function expect (val: number) {
 	expectedAssertions = val;
 }
 
-function reset() {
+function reset () {
 	expectedAssertions = 0;
 	actualAssertions = 0;
 }
 
-function countAssertion() {
+function countAssertion () {
 	actualAssertions++;
 }
 
-function check() {
+function check () {
 	if (expectedAssertions === undefined || expectedAssertions === actualAssertions) {
 		return;
 	}

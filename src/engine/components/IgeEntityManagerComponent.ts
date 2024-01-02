@@ -1,12 +1,12 @@
 import { IgeComponent } from "@/engine/core/IgeComponent";
-import { IgeEntity } from "@/engine/core/IgeEntity";
+import type { IgeEntity } from "@/engine/core/IgeEntity";
 import { IgePoint3d } from "@/engine/core/IgePoint3d";
 import { IgeRect } from "@/engine/core/IgeRect";
 import { ige } from "@/engine/instance";
 import { IgeBehaviourType } from "@/enums/IgeBehaviourType";
 import { IgeEntityRenderMode } from "@/enums/IgeEntityRenderMode";
 import { IgeMountMode } from "@/enums/IgeMountMode";
-import { IgeCanvasRenderingContext2d } from "@/types/IgeCanvasRenderingContext2d";
+import type { IgeCanvasRenderingContext2d } from "@/types/IgeCanvasRenderingContext2d";
 
 export class IgeEntityManagerComponent extends IgeComponent {
 	classId = "IgeEntityManagerComponent";
@@ -36,7 +36,7 @@ export class IgeEntityManagerComponent extends IgeComponent {
 	 * @param {Object} entity The parent object that this component is being added to.
 	 * @param {Object=} options An optional object that is passed to the component when it is being initialised.
 	 */
-	constructor(entity: IgeEntity, options?: any) {
+	constructor (entity: IgeEntity, options?: any) {
 		super(entity, options);
 
 		// Check we are being added to a tile map

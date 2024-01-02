@@ -5,7 +5,7 @@ import { ige } from "@/engine/instance";
 export class Game {
 	classId = "Game";
 
-	constructor() {
+	constructor () {
 		ige.app = {};
 
 		if (isClient) {

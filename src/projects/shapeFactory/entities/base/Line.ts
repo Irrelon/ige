@@ -8,7 +8,7 @@ export class Line extends GameEntity {
 	classId = "Line";
 	_initVals?: IgeRect;
 
-	constructor(x1?: number, y1?: number, x2?: number, y2?: number) {
+	constructor (x1?: number, y1?: number, x2?: number, y2?: number) {
 		super();
 
 		if (x1 !== undefined && y1 !== undefined && x2 !== undefined && y2 !== undefined) {
@@ -16,7 +16,7 @@ export class Line extends GameEntity {
 		}
 	}
 
-	setLine(x1: number, y1: number, x2: number, y2: number) {
+	setLine (x1: number, y1: number, x2: number, y2: number) {
 		this._initVals = new IgeRect(x1, y1, x2, y2);
 
 		this.data("glowColor", "#ff9100")

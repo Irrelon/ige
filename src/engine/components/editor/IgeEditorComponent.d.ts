@@ -1,6 +1,6 @@
 import { IgeComponent } from "../../core/IgeComponent";
-import { IgeEntity } from "../../core/IgeEntity";
-import { IgeEventListenerObject, IgeMultiEventListenerObject } from "../../mixins/IgeEventingMixin";
+import type { IgeEntity } from "../../core/IgeEntity";
+import type { IgeEventListenerObject, IgeMultiEventListenerObject } from "../../mixins/IgeEventingMixin";
 
 /**
  * When added to a viewport, automatically adds entity rotate

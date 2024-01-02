@@ -7,29 +7,29 @@ import { ige } from "../../../engine/instance.js";
 var __awaiter =
 	(this && this.__awaiter) ||
 	function (thisArg, _arguments, P, generator) {
-		function adopt(value) {
+		function adopt (value) {
 			return value instanceof P
 				? value
 				: new P(function (resolve) {
-						resolve(value);
+					resolve(value);
 				  });
 		}
 		return new (P || (P = Promise))(function (resolve, reject) {
-			function fulfilled(value) {
+			function fulfilled (value) {
 				try {
 					step(generator.next(value));
 				} catch (e) {
 					reject(e);
 				}
 			}
-			function rejected(value) {
+			function rejected (value) {
 				try {
 					step(generator["throw"](value));
 				} catch (e) {
 					reject(e);
 				}
 			}
-			function step(result) {
+			function step (result) {
 				result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected);
 			}
 			step((generator = generator.apply(thisArg, _arguments || [])).next());
@@ -37,7 +37,7 @@ var __awaiter =
 	};
 
 export class DefaultLevel extends IgeSceneGraph {
-	constructor() {
+	constructor () {
 		super(...arguments);
 		this.classId = "DefaultLevel";
 	}
@@ -45,7 +45,7 @@ export class DefaultLevel extends IgeSceneGraph {
 	 * Called when loading the graph data via ige.addGraph().
 	 * @param options
 	 */
-	addGraph(options) {
+	addGraph (options) {
 		return __awaiter(this, void 0, void 0, function* () {
 			// Create the scene
 			const baseScene = ige.$("baseScene");
@@ -88,7 +88,7 @@ export class DefaultLevel extends IgeSceneGraph {
 	 * The method called when the graph items are to be removed from the
 	 * active graph.
 	 */
-	removeGraph() {
+	removeGraph () {
 		return __awaiter(this, void 0, void 0, function* () {
 			// Since all our objects in addGraph() were mounted to the
 			// 'scene1' entity, destroying it will remove everything we

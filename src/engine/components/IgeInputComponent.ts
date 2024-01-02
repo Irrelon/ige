@@ -4,10 +4,10 @@ import { IgeBehaviourType } from "@/enums/IgeBehaviourType";
 import { IgeEventReturnFlag } from "@/enums/IgeEventReturnFlag";
 import { IgeInputDevice, IgeInputKeyboardMap, IgeInputPointerMap } from "@/enums/IgeInputDeviceMap";
 import { IgePoint3d } from "../core/IgePoint3d";
-import { IgeViewport } from "../core/IgeViewport";
+import type { IgeViewport } from "../core/IgeViewport";
 import { ige } from "../instance";
-import { IgeInputEventControl } from "@/types/IgeInputEventControl";
-import { IgeIsReadyPromise } from "@/types/IgeIsReadyPromise";
+import type { IgeInputEventControl } from "@/types/IgeInputEventControl";
+import type { IgeIsReadyPromise } from "@/types/IgeIsReadyPromise";
 
 export class IgeInputComponent extends IgeEventingClass implements IgeIsReadyPromise {
 	classId = "IgeInputComponent";
@@ -27,14 +27,14 @@ export class IgeInputComponent extends IgeEventingClass implements IgeIsReadyPro
 	pointerWheel?: Event;
 	contextMenu?: Event;
 
-	constructor() {
+	constructor () {
 		super();
 
 		// Set up the input objects to hold the current input state
 		this._eventQueue = [];
 		this._eventControl = {
 			_cancelled: false,
-			stopPropagation() {
+			stopPropagation () {
 				this._cancelled = true;
 			}
 		};
@@ -57,7 +57,7 @@ export class IgeInputComponent extends IgeEventingClass implements IgeIsReadyPro
 		this._updateState(IgeInputDevice.pointer1, IgeInputPointerMap.y, 0);
 	}
 
-	isReady() {
+	isReady () {
 		return new Promise<void>((resolve) => {
 			setTimeout(() => {
 				ige.dependencies.waitFor(["engine"], () => {
@@ -209,12 +209,12 @@ export class IgeInputComponent extends IgeEventingClass implements IgeIsReadyPro
 		}
 	};
 
-	_ensureState(device: IgeInputDevice) {
+	_ensureState (device: IgeInputDevice) {
 		this._state[device] = this._state[device] || {};
 		this._previousState[device] = this._previousState[device] || {};
 	}
 
-	_updateState(device: IgeInputDevice, inputId: number, newValue: any) {
+	_updateState (device: IgeInputDevice, inputId: number, newValue: any) {
 		this._previousState[device][inputId] = this._state[device][inputId];
 		this._state[device][inputId] = newValue;
 	}
@@ -232,7 +232,7 @@ export class IgeInputComponent extends IgeEventingClass implements IgeIsReadyPro
 	_rationalise(event: TouchEvent, type: "touch"): void;
 	_rationalise(event: WheelEvent, type: "wheel"): void;
 	_rationalise(event: GamepadEvent, type: "gamepad"): void;
-	_rationalise(
+	_rationalise (
 		event: PointerEvent | KeyboardEvent | TouchEvent | WheelEvent | GamepadEvent,
 		type: Event["igeType"]
 	): void {
@@ -608,7 +608,7 @@ export class IgeInputComponent extends IgeEventingClass implements IgeIsReadyPro
 	 * @param actionCode
 	 * @param inputMap
 	 */
-	mapAction(actionCode: number, inputMap: [IgeInputDevice, number][]) {
+	mapAction (actionCode: number, inputMap: [IgeInputDevice, number][]) {
 		this._controlMap[actionCode] = this._controlMap[actionCode] || new IgeInputControlMap();
 
 		for (let i = 0; i < inputMap.length; i++) {
@@ -620,7 +620,7 @@ export class IgeInputComponent extends IgeEventingClass implements IgeIsReadyPro
 	 * Returns the passed action's input state value.
 	 * @param actionCode
 	 */
-	actionVal(actionCode: number) {
+	actionVal (actionCode: number) {
 		return this._controlMap[actionCode].val();
 	}
 
@@ -629,7 +629,7 @@ export class IgeInputComponent extends IgeEventingClass implements IgeIsReadyPro
 	 * is not zero.
 	 * @param actionCode
 	 */
-	actionState(actionCode: number) {
+	actionState (actionCode: number) {
 		return this._controlMap[actionCode].state();
 	}
 
@@ -639,7 +639,7 @@ export class IgeInputComponent extends IgeEventingClass implements IgeIsReadyPro
 	 * @param inputId
 	 * @return {*}
 	 */
-	val(device: IgeInputDevice, inputId: number) {
+	val (device: IgeInputDevice, inputId: number) {
 		return this._state[device][inputId];
 	}
 
@@ -649,7 +649,7 @@ export class IgeInputComponent extends IgeEventingClass implements IgeIsReadyPro
 	 * @param inputId
 	 * @return {*}
 	 */
-	previousVal(device: IgeInputDevice, inputId: number) {
+	previousVal (device: IgeInputDevice, inputId: number) {
 		return this._state[device][inputId];
 	}
 
@@ -659,7 +659,7 @@ export class IgeInputComponent extends IgeEventingClass implements IgeIsReadyPro
 	 * @param inputId
 	 * @return {boolean}
 	 */
-	state(device: IgeInputDevice, inputId: number): boolean {
+	state (device: IgeInputDevice, inputId: number): boolean {
 		return Boolean(this.val(device, inputId));
 	}
 
@@ -669,7 +669,7 @@ export class IgeInputComponent extends IgeEventingClass implements IgeIsReadyPro
 	 * @param inputId
 	 * @return {boolean}
 	 */
-	previousState(device: IgeInputDevice, inputId: number): boolean {
+	previousState (device: IgeInputDevice, inputId: number): boolean {
 		return Boolean(this.previousVal(device, inputId));
 	}
 
@@ -677,7 +677,7 @@ export class IgeInputComponent extends IgeEventingClass implements IgeIsReadyPro
 	 * Stops further event propagation for this tick.
 	 * @return {*}
 	 */
-	stopPropagation() {
+	stopPropagation () {
 		this._eventControl._cancelled = true;
 		return this;
 	}
@@ -702,7 +702,7 @@ export class IgeInputComponent extends IgeEventingClass implements IgeIsReadyPro
 	 * Call originates in IgeEngine.engineStep(). Allows us to reset any flags
 	 * etc.
 	 */
-	tick() {
+	tick () {
 		// If we have an event queue, process it
 		const arr = this._eventQueue;
 		const evc = this._eventControl;
@@ -737,7 +737,7 @@ export class IgeInputComponent extends IgeEventingClass implements IgeIsReadyPro
 	 * If you are sending multiple arguments, use an array containing each argument.
 	 * @return {number}
 	 */
-	emit(eventName: string, ...data: any[]): IgeEventReturnFlag {
+	emit (eventName: string, ...data: any[]): IgeEventReturnFlag {
 		if (!this._eventListeners) {
 			return IgeEventReturnFlag.none;
 		}

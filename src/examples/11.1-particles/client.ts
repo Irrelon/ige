@@ -6,7 +6,7 @@ import { IgeScene2d } from "@/engine/core/IgeScene2d";
 import { IgeTexture } from "@/engine/core/IgeTexture";
 import { IgeViewport } from "@/engine/core/IgeViewport";
 import { ige } from "@/engine/instance";
-import { IgeCanInit } from "@/types/IgeCanInit";
+import type { IgeCanInit } from "@/types/IgeCanInit";
 
 // @ts-ignore
 window.ige = ige;
@@ -14,12 +14,12 @@ window.ige = ige;
 export class Client extends IgeBaseClass implements IgeCanInit {
 	classId = "Client";
 
-	constructor() {
+	constructor () {
 		super();
 		void this.init();
 	}
 
-	async init() {
+	async init () {
 		new IgeTexture("star1", "../assets/textures/particles/star1.png");
 		new IgeTexture("star2", "../assets/textures/particles/star2.png");
 		new IgeTexture("star3", "../assets/textures/particles/star3.png");
@@ -37,7 +37,7 @@ export class Client extends IgeBaseClass implements IgeCanInit {
 		class StarParticle extends IgeParticle {
 			classId = "StarParticle";
 
-			constructor(emitter: IgeParticleEmitter) {
+			constructor (emitter: IgeParticleEmitter) {
 				super(emitter);
 
 				this.noAabb(true);

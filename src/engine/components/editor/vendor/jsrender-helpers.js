@@ -59,10 +59,10 @@ if (jsviews) {
 
 		format: function (val, format) {
 			switch (format) {
-				case "upper":
-					return val.toUpperCase();
-				case "lower":
-					return val.toLowerCase();
+			case "upper":
+				return val.toUpperCase();
+			case "lower":
+				return val.toLowerCase();
 			}
 		},
 
@@ -147,30 +147,30 @@ if (jsviews) {
 		currencySymbol: function (fx) {
 			var symbol;
 			switch (fx) {
-				case "usd":
-					symbol = "$";
-					break;
+			case "usd":
+				symbol = "$";
+				break;
 
-				case "gbp":
-					symbol = "£";
-					break;
+			case "gbp":
+				symbol = "£";
+				break;
 
-				case "eur":
-					symbol = "€";
-					break;
+			case "eur":
+				symbol = "€";
+				break;
 
-				case "thb":
-					symbol = "฿";
-					break;
+			case "thb":
+				symbol = "฿";
+				break;
 
-				case "jpy":
-				case "cny":
-					symbol = "¥";
-					break;
+			case "jpy":
+			case "cny":
+				symbol = "¥";
+				break;
 
-				default:
-					symbol = "None";
-					break;
+			default:
+				symbol = "None";
+				break;
 			}
 
 			return symbol;

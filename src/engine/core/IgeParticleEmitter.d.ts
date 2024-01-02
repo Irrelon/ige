@@ -1,8 +1,8 @@
-import { IgeObject } from "./IgeObject";
-import { IgeParticle } from "./IgeParticle";
-import { IgePoint3d } from "./IgePoint3d";
+import type { IgeObject } from "./IgeObject";
+import type { IgeParticle } from "./IgeParticle";
+import type { IgePoint3d } from "./IgePoint3d";
 import { IgeUiEntity } from "./IgeUiEntity";
-import { IgeCanvasRenderingContext2d } from "@/types/IgeCanvasRenderingContext2d";
+import type { IgeCanvasRenderingContext2d } from "@/types/IgeCanvasRenderingContext2d";
 
 export interface IgeParticleVectorBaseMinMax {
 	base: IgePoint3d;

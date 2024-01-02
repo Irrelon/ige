@@ -1,5 +1,5 @@
 import { IgeComponent } from "../../core/IgeComponent";
-import { IgeEntity } from "../../core/IgeEntity";
+import type { IgeEntity } from "../../core/IgeEntity";
 import { degreesToRadians, radiansToDegrees } from "../../utils";
 
 /**
@@ -16,7 +16,7 @@ class IgeEditorRotateComponent extends IgeComponent {
 	 * @param options The options object that was passed to the component during
 	 * the call to addComponent.
 	 */
-	constructor(entity: IgeEntity, options?: any) {
+	constructor (entity: IgeEntity, options?: any) {
 		super(entity, options);
 
 		// Set the "rotate" component as inactive to start with

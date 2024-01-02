@@ -2,7 +2,7 @@
  * Creates a new 2d point (x, y).
  */
 export class IgePoint2d {
-	constructor(x = 0, y = 0, floor = false) {
+	constructor (x = 0, y = 0, floor = false) {
 		this.classId = "IgePoint2d";
 		this.x = 0;
 		this.y = 0;
@@ -20,7 +20,7 @@ export class IgePoint2d {
 		this.x2 = x / 2;
 		this.y2 = y / 2;
 	}
-	floor(val) {
+	floor (val) {
 		if (val !== undefined) {
 			this._floor = val;
 			return this;
@@ -33,7 +33,7 @@ export class IgePoint2d {
 	 * @param {IgePoint2d} point The point to compare data with.
 	 * @return {Boolean}
 	 */
-	compare(point) {
+	compare (point) {
 		return point && this.x === point.x && this.y === point.y;
 	}
 	/**
@@ -42,7 +42,7 @@ export class IgePoint2d {
 	 * @param {IgePoint2d} point The point to copy values from.
 	 * @returns {*}
 	 */
-	copy(point) {
+	copy (point) {
 		this.x = point.x;
 		this.y = point.y;
 		return this;
@@ -52,7 +52,7 @@ export class IgePoint2d {
 	 * and returns an object whose x, y values are the result.
 	 * @return {Object}
 	 */
-	toIso() {
+	toIso () {
 		return {
 			x: this.x - this.y,
 			y: (this.x + this.y) * 0.5
@@ -63,7 +63,7 @@ export class IgePoint2d {
 	 * and overwrites the previous x, y values with the result.
 	 * @return {*}
 	 */
-	thisToIso() {
+	thisToIso () {
 		const val = this.toIso();
 		this.x = val.x;
 		this.y = val.y;
@@ -74,7 +74,7 @@ export class IgePoint2d {
 	 * and returns an object whose x, y values are the result.
 	 * @return {Object}
 	 */
-	to2d() {
+	to2d () {
 		return {
 			x: this.y + this.x / 2,
 			y: this.y - this.x / 2
@@ -85,7 +85,7 @@ export class IgePoint2d {
 	 * and overwrites the previous x, y values with the result.
 	 * @return {*}
 	 */
-	thisTo2d() {
+	thisTo2d () {
 		const val = this.to2d();
 		this.x = val.x;
 		this.y = val.y;
@@ -97,7 +97,7 @@ export class IgePoint2d {
 	 * @param point
 	 * @return {*}
 	 */
-	addPoint(point) {
+	addPoint (point) {
 		return new IgePoint2d(this.x + point.x, this.y + point.y);
 	}
 	/**
@@ -106,7 +106,7 @@ export class IgePoint2d {
 	 * @param point
 	 * @return {*}
 	 */
-	thisAddPoint(point) {
+	thisAddPoint (point) {
 		this.x += point.x;
 		this.y += point.y;
 		return this;
@@ -117,7 +117,7 @@ export class IgePoint2d {
 	 * @param point
 	 * @return {*}
 	 */
-	minusPoint(point) {
+	minusPoint (point) {
 		return new IgePoint2d(this.x - point.x, this.y - point.y);
 	}
 	/**
@@ -126,7 +126,7 @@ export class IgePoint2d {
 	 * @param point
 	 * @return {*}
 	 */
-	thisMinusPoint(point) {
+	thisMinusPoint (point) {
 		this.x -= point.x;
 		this.y -= point.y;
 		return this;
@@ -138,7 +138,7 @@ export class IgePoint2d {
 	 * @param y
 	 * @return {*}
 	 */
-	multiply(x, y) {
+	multiply (x, y) {
 		return new IgePoint2d(this.x * x, this.y * y);
 	}
 	/**
@@ -147,7 +147,7 @@ export class IgePoint2d {
 	 * @param point
 	 * @return {*}
 	 */
-	multiplyPoint(point) {
+	multiplyPoint (point) {
 		return new IgePoint2d(this.x * point.x, this.y * point.y);
 	}
 	/**
@@ -157,7 +157,7 @@ export class IgePoint2d {
 	 * @param {number} y
 	 * @return {*}
 	 */
-	thisMultiply(x, y) {
+	thisMultiply (x, y) {
 		this.x *= x;
 		this.y *= y;
 		return this;
@@ -169,7 +169,7 @@ export class IgePoint2d {
 	 * @param {number} y
 	 * @return {*}
 	 */
-	divide(x, y) {
+	divide (x, y) {
 		return new IgePoint2d(this.x / x, this.y / y);
 	}
 	/**
@@ -178,7 +178,7 @@ export class IgePoint2d {
 	 * @param {IgePoint2d} point
 	 * @return {*}
 	 */
-	dividePoint(point) {
+	dividePoint (point) {
 		let newX = this.x,
 			newY = this.y;
 		if (point.x) {
@@ -196,7 +196,7 @@ export class IgePoint2d {
 	 * @param {number} y
 	 * @return {*}
 	 */
-	thisDivide(x, y) {
+	thisDivide (x, y) {
 		this.x /= x;
 		this.y /= y;
 		return this;
@@ -205,7 +205,7 @@ export class IgePoint2d {
 	 * Returns a clone of this IgePoint2d's data as a new instance.
 	 * @return {*}
 	 */
-	clone() {
+	clone () {
 		return new IgePoint2d(this.x, this.y);
 	}
 	/**
@@ -218,7 +218,7 @@ export class IgePoint2d {
 	 * @param {number} endTime
 	 * @return {*}
 	 */
-	interpolate(endPoint, startTime, currentTime, endTime) {
+	interpolate (endPoint, startTime, currentTime, endTime) {
 		const totalX = endPoint.x - this.x,
 			totalY = endPoint.y - this.y,
 			totalTime = endTime - startTime,
@@ -231,7 +231,7 @@ export class IgePoint2d {
 	 * @param {number} radians Radians to rotate by.
 	 * @return {IgePoint2d} A new point with the rotated x, y.
 	 */
-	rotate(radians) {
+	rotate (radians) {
 		const s = Math.sin(radians),
 			c = Math.cos(radians),
 			x = c * this.x - s * this.y,
@@ -244,7 +244,7 @@ export class IgePoint2d {
 	 * @param {number} radians Radians to rotate by.
 	 * @return {IgePoint2d} This point.
 	 */
-	thisRotate(radians) {
+	thisRotate (radians) {
 		const s = Math.sin(radians),
 			c = Math.cos(radians),
 			{ x, y } = this;
@@ -260,7 +260,7 @@ export class IgePoint2d {
 	 * @param {number} [precision]
 	 * @return {String}
 	 */
-	toString(precision = 2) {
+	toString (precision = 2) {
 		return this.x.toFixed(precision) + "," + this.y.toFixed(precision);
 	}
 }

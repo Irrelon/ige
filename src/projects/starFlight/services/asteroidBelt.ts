@@ -1,9 +1,9 @@
-import { IgeScene2d } from "@/engine/core/IgeScene2d";
+import type { IgeScene2d } from "@/engine/core/IgeScene2d";
 import { ige } from "@/engine/instance";
 import { distance } from "@/engine/utils";
 import { Asteroid } from "../app/component/Asteroid";
 
-export const generateAsteroidBelt = function generateAsteroidBelt(beltX: number, beltY: number) {
+export const generateAsteroidBelt = function generateAsteroidBelt (beltX: number, beltY: number) {
 	const asteroidArr = [];
 	const maxDist = 900;
 	const minDist = 500;

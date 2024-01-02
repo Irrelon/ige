@@ -1,7 +1,7 @@
 import { IgeComponent } from "../core/IgeComponent";
 import { IgePoint2d } from "../core/IgePoint2d";
 import { IgePoint3d } from "../core/IgePoint3d";
-import { IgeRect } from "../core/IgeRect";
+import type { IgeRect } from "../core/IgeRect";
 import { ige } from "../instance";
 
 /**
@@ -25,7 +25,7 @@ export class IgeMouseZoomComponent extends IgeComponent {
 	 * @param {boolean=} val
 	 * @return {*}
 	 */
-	enabled(val?: boolean) {
+	enabled (val?: boolean) {
 		if (val === undefined) {
 			return this._enabled;
 		}

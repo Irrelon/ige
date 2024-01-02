@@ -3,14 +3,14 @@ import { registerClass } from "../../engine/igeClassStore.js";
 import { ige } from "../../engine/instance.js";
 
 export class IgeUiTimeStream extends IgeUiElement {
-	constructor() {
+	constructor () {
 		super(...arguments);
 		this.classId = "IgeUiTimeStream";
 	}
-	monitor(entity) {
+	monitor (entity) {
 		this._entity = entity;
 	}
-	tick(ctx) {
+	tick (ctx) {
 		// Draw timeline
 		const renderTime = ige.engine._tickStart - ige.network._renderLatency;
 		let i, text, xAdjust, arr, arrCount, arrItem, deltaTime;

@@ -2,13 +2,13 @@ import { isClient } from "@/engine/clientServer";
 import { IgeEntity } from "@/engine/core/IgeEntity";
 import { registerClass } from "@/engine/igeClassStore";
 import { ige } from "@/engine/instance";
-import { JumpGateDefinition } from "../../types/JumpGateDefinition";
+import type { JumpGateDefinition } from "../../types/JumpGateDefinition";
 
 export class JumpGate extends IgeEntity {
 	classId = "JumpGate";
 	_publicGameData: Record<string, any>;
 
-	constructor(publicGameData: JumpGateDefinition["public"]) {
+	constructor (publicGameData: JumpGateDefinition["public"]) {
 		super();
 
 		this._publicGameData = publicGameData;
@@ -20,7 +20,7 @@ export class JumpGate extends IgeEntity {
 		}
 	}
 
-	streamCreateConstructorArgs() {
+	streamCreateConstructorArgs () {
 		return [this._publicGameData];
 	}
 }

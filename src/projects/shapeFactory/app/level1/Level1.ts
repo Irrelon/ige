@@ -14,7 +14,7 @@ export class Level1 extends IgeSceneGraph {
 	/**
 	 * Called when loading the graph data via ige.addGraph().
 	 */
-	addGraph() {
+	addGraph () {
 		const baseScene = ige.$("baseScene") as IgeScene2d;
 
 		// Clear existing graph data
@@ -84,7 +84,7 @@ export class Level1 extends IgeSceneGraph {
 	 * The method called when the graph items are to be removed from the
 	 * active graph.
 	 */
-	removeGraph() {
+	removeGraph () {
 		// Since all our objects in addGraph() were mounted to the
 		// 'scene1' entity, destroying it will remove everything we
 		// added to it.

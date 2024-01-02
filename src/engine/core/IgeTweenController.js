@@ -10,7 +10,7 @@ import { arrPull } from "../utils";
  * It handles global tween processing on all tweening values.
  */
 export class IgeTweenController extends IgeEventingClass {
-	constructor() {
+	constructor () {
 		super(...arguments);
 		this.classId = "IgeTweenController";
 		this.componentId = "tween";
@@ -199,7 +199,7 @@ export class IgeTweenController extends IgeEventingClass {
 			}
 		};
 	}
-	isReady() {
+	isReady () {
 		return new Promise((resolve) => {
 			setTimeout(() => {
 				ige.dependencies.waitFor(["engine"], () => {
@@ -215,7 +215,7 @@ export class IgeTweenController extends IgeEventingClass {
 	 * @param {IgeTween} tween The tween to start.
 	 * @return {number} The index of the added tween or -1 on error.
 	 */
-	start(tween) {
+	start (tween) {
 		if (tween._startTime !== undefined && tween._startTime > ige.engine._currentTime) {
 			// The tween is scheduled for later
 			// Push the tween into the IgeTweenController's _tweens array
@@ -234,7 +234,7 @@ export class IgeTweenController extends IgeEventingClass {
 		// Return the tween
 		return tween;
 	}
-	_setupStep(tween, newTime = false) {
+	_setupStep (tween, newTime = false) {
 		const targetObj = tween._targetObj,
 			step = tween._steps[tween._currentStep],
 			targetData = [];
@@ -279,7 +279,7 @@ export class IgeTweenController extends IgeEventingClass {
 	 * Removes the specified tween from the active tween list.
 	 * @param {IgeTween} tween The tween to stop.
 	 */
-	stop(tween) {
+	stop (tween) {
 		// Store the new tween details in the item
 		arrPull(this._tweens, tween);
 		if (!this._tweens.length) {
@@ -292,7 +292,7 @@ export class IgeTweenController extends IgeEventingClass {
 	/**
 	 * Stop all tweening for the object.
 	 */
-	stopAll() {
+	stopAll () {
 		// Disable tweening
 		this.disable();
 		// Remove all tween details
@@ -302,7 +302,7 @@ export class IgeTweenController extends IgeEventingClass {
 	/**
 	 * Enable tweening for the object.
 	 */
-	enable() {
+	enable () {
 		// Check if the item is currently tweening
 		if (!this._tweening) {
 			// Set the item to tweening
@@ -313,7 +313,7 @@ export class IgeTweenController extends IgeEventingClass {
 	/**
 	 * Disable tweening for the object.
 	 */
-	disable() {
+	disable () {
 		// Check if the item is currently tweening
 		if (this._tweening) {
 			// Set the item to not tweening

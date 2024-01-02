@@ -1,5 +1,5 @@
-import { IgeEntity } from "@/engine/core/IgeEntity";
-import { IgeObject } from "@/engine/core/IgeObject";
+import type { IgeEntity } from "@/engine/core/IgeEntity";
+import type { IgeObject } from "@/engine/core/IgeObject";
 
 export interface IgeSceneGraphDataEntry {
 	text: string;

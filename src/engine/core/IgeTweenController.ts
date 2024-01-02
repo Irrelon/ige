@@ -1,11 +1,11 @@
-import { IgeTween, IgeTweenDestination } from "./IgeTween";
+import type { IgeTween, IgeTweenDestination } from "./IgeTween";
 import { IgeEventingClass } from "@/engine/core/IgeEventingClass";
 import { IgeBehaviourType } from "@/enums/IgeBehaviourType";
 import { easingFunctions } from "../easing";
 import { ige } from "../instance";
 import { arrPull } from "../utils";
-import { IgeEntityBehaviourMethod } from "@/types/IgeEntityBehaviour";
-import { IgeIsReadyPromise } from "@/types/IgeIsReadyPromise";
+import type { IgeEntityBehaviourMethod } from "@/types/IgeEntityBehaviour";
+import type { IgeIsReadyPromise } from "@/types/IgeIsReadyPromise";
 
 /**
  * This component is already included in the IgeRoot (ige)
@@ -19,7 +19,7 @@ export class IgeTweenController extends IgeEventingClass implements IgeIsReadyPr
 	_tweens: IgeTween[] = []; // Set up the array that will hold our active tweens
 	_tweening: boolean = false;
 
-	isReady() {
+	isReady () {
 		return new Promise<void>((resolve) => {
 			setTimeout(() => {
 				ige.dependencies.waitFor(["engine"], () => {
@@ -36,7 +36,7 @@ export class IgeTweenController extends IgeEventingClass implements IgeIsReadyPr
 	 * @param {IgeTween} tween The tween to start.
 	 * @return {number} The index of the added tween or -1 on error.
 	 */
-	start(tween: IgeTween) {
+	start (tween: IgeTween) {
 		if (tween._startTime !== undefined && tween._startTime > ige.engine._currentTime) {
 			// The tween is scheduled for later
 			// Push the tween into the IgeTweenController's _tweens array
@@ -59,7 +59,7 @@ export class IgeTweenController extends IgeEventingClass implements IgeIsReadyPr
 		return tween;
 	}
 
-	_setupStep(tween: IgeTween, newTime: boolean = false) {
+	_setupStep (tween: IgeTween, newTime: boolean = false) {
 		const targetObj = tween._targetObj,
 			step = tween._steps[tween._currentStep],
 			targetData: IgeTweenDestination[] = [];
@@ -114,7 +114,7 @@ export class IgeTweenController extends IgeEventingClass implements IgeIsReadyPr
 	 * Removes the specified tween from the active tween list.
 	 * @param {IgeTween} tween The tween to stop.
 	 */
-	stop(tween: IgeTween) {
+	stop (tween: IgeTween) {
 		// Store the new tween details in the item
 		arrPull(this._tweens, tween);
 
@@ -130,7 +130,7 @@ export class IgeTweenController extends IgeEventingClass implements IgeIsReadyPr
 	/**
 	 * Stop all tweening for the object.
 	 */
-	stopAll() {
+	stopAll () {
 		// Disable tweening
 		this.disable();
 
@@ -143,7 +143,7 @@ export class IgeTweenController extends IgeEventingClass implements IgeIsReadyPr
 	/**
 	 * Enable tweening for the object.
 	 */
-	enable() {
+	enable () {
 		// Check if the item is currently tweening
 		if (!this._tweening) {
 			// Set the item to tweening
@@ -156,7 +156,7 @@ export class IgeTweenController extends IgeEventingClass implements IgeIsReadyPr
 	/**
 	 * Disable tweening for the object.
 	 */
-	disable() {
+	disable () {
 		// Check if the item is currently tweening
 		if (this._tweening) {
 			// Set the item to not tweening

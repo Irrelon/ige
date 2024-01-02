@@ -1,2 +1,2 @@
 export = Client;
-declare var Client: any;
+declare let Client: any;

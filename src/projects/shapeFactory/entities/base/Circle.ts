@@ -6,7 +6,7 @@ import { ige } from "@/engine/instance";
 export class Circle extends GameEntity {
 	classId = "Circle";
 
-	constructor() {
+	constructor () {
 		super();
 
 		this.data("glowColor", "#c852ff").width(50).height(50);

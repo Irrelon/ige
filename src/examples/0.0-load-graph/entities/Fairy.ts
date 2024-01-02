@@ -4,7 +4,7 @@ import { isClient } from "@/engine/clientServer";
 import { ige } from "@/engine/instance";
 
 export class Fairy extends Rotator {
-	constructor(speed: number) {
+	constructor (speed: number) {
 		super(speed);
 
 		this.depth(1).width(100).height(100).translateTo(0, 0, 0);

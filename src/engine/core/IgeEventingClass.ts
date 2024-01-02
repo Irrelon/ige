@@ -26,7 +26,7 @@ export class IgeEventingClass extends IgeBaseClass {
 	 * @param {function} listener The method to call when the event is fired.
 	 * @returns {IgeEventingClass} The emitter instance.
 	 */
-	_on(eventName: string, id: string, listener: IgeEventListenerCallback) {
+	_on (eventName: string, id: string, listener: IgeEventListenerCallback) {
 		const generateTimeout = (emitter: IgeEventStaticEmitterObject) => {
 			setTimeout(() => {
 				listener(...emitter.args);
@@ -69,7 +69,7 @@ export class IgeEventingClass extends IgeBaseClass {
 	 * @param {Function} listener The method to call when the event is fired.
 	 * @returns {IgeEventingClass} The emitter instance.
 	 */
-	_once(eventName: string, id: string, listener: IgeEventListenerCallback) {
+	_once (eventName: string, id: string, listener: IgeEventListenerCallback) {
 		let fired = false;
 
 		const internalCallback = (...args: any[]) => {
@@ -91,7 +91,7 @@ export class IgeEventingClass extends IgeBaseClass {
 	 * or once() call to cancel.
 	 * @returns {IgeEventingClass} The emitter instance.
 	 */
-	_off(eventName: string, id: string, listener?: IgeEventListenerCallback): this {
+	_off (eventName: string, id: string, listener?: IgeEventListenerCallback): this {
 		// If the event name doesn't have any listeners, exit early
 		if (!this._eventListeners || !this._eventListeners[eventName] || !this._eventListeners[eventName][id])
 			return this;
@@ -142,7 +142,7 @@ export class IgeEventingClass extends IgeBaseClass {
 	 */
 	on(eventName: string, id: string, listener: IgeEventListenerCallback): this;
 	on(eventName: string, listener: IgeEventListenerCallback): this;
-	on(eventName: string, ...rest: any[]): this {
+	on (eventName: string, ...rest: any[]): this {
 		const restTypes = rest.map((arg) => typeof arg);
 
 		if (restTypes[0] === "function") {
@@ -162,7 +162,7 @@ export class IgeEventingClass extends IgeBaseClass {
 	 */
 	once(eventName: string, id: string, listener: IgeEventListenerCallback): this;
 	once(eventName: string, listener: IgeEventListenerCallback): this;
-	once(eventName: string, ...rest: any[]): this {
+	once (eventName: string, ...rest: any[]): this {
 		const restTypes = rest.map((arg) => typeof arg);
 
 		if (restTypes[0] === "function") {
@@ -186,7 +186,7 @@ export class IgeEventingClass extends IgeBaseClass {
 	 */
 	overwrite(eventName: string, id: string, listener: IgeEventListenerCallback): this;
 	overwrite(eventName: string, listener: IgeEventListenerCallback): this;
-	overwrite(eventName: string, ...rest: any[]) {
+	overwrite (eventName: string, ...rest: any[]) {
 		const restTypes = rest.map((arg) => typeof arg);
 
 		if (restTypes[0] === "function") {
@@ -209,7 +209,7 @@ export class IgeEventingClass extends IgeBaseClass {
 	public off(eventName: string, id: string, listener?: IgeEventListenerCallback): this;
 	public off(eventName: string, listener?: IgeEventListenerCallback): this;
 	public off(eventName: string): this;
-	public off(eventName: string, ...rest: any[]) {
+	public off (eventName: string, ...rest: any[]) {
 		if (rest.length === 0) {
 			// Only event was provided, use * as the id to mean "any without"
 			// a specific id
@@ -257,7 +257,7 @@ export class IgeEventingClass extends IgeBaseClass {
 	 *     // The console output is:
 	 *     //    data1, data2
 	 */
-	emit(eventName: string, ...data: any[]): IgeEventReturnFlag {
+	emit (eventName: string, ...data: any[]): IgeEventReturnFlag {
 		if (!this._eventListeners) {
 			return IgeEventReturnFlag.none;
 		}
@@ -292,7 +292,7 @@ export class IgeEventingClass extends IgeBaseClass {
 		return returnFlag;
 	}
 
-	emitId(eventName: string, id: string, ...data: any[]) {
+	emitId (eventName: string, id: string, ...data: any[]) {
 		this._eventListeners = this._eventListeners || {};
 		this._eventsEmitting = true;
 
@@ -346,7 +346,7 @@ export class IgeEventingClass extends IgeBaseClass {
 	 * @returns {IgeEventingClass} The emitter instance.
 	 * @private
 	 */
-	emitStatic(eventName: string, ...data: any[]) {
+	emitStatic (eventName: string, ...data: any[]) {
 		const id = "*";
 		this._eventListeners = this._eventListeners || {};
 		this._eventsEmitting = true;
@@ -388,7 +388,7 @@ export class IgeEventingClass extends IgeBaseClass {
 	 * @returns {IgeEventingClass} The emitter instance.
 	 * @private
 	 */
-	emitStaticId(eventName: string, id: string, ...data: any[]) {
+	emitStaticId (eventName: string, id: string, ...data: any[]) {
 		if (!id) throw new Error("Missing id from emitId call!");
 
 		this._eventListeners = this._eventListeners || {};
@@ -446,7 +446,7 @@ export class IgeEventingClass extends IgeBaseClass {
 	 * @returns {IgeEventingClass} The emitter instance.
 	 * @private
 	 */
-	cancelStatic(eventName: string) {
+	cancelStatic (eventName: string) {
 		this._eventStaticEmitters = this._eventStaticEmitters || {};
 		this._eventStaticEmitters[eventName] = [];
 
@@ -459,7 +459,7 @@ export class IgeEventingClass extends IgeBaseClass {
 	 * @returns {boolean} True if one or more event listeners are registered for
 	 * the event. False if none are found.
 	 */
-	willEmit(eventName: string) {
+	willEmit (eventName: string) {
 		const id = "*";
 
 		if (!this._eventListeners || !this._eventListeners[eventName]) {
@@ -488,7 +488,7 @@ export class IgeEventingClass extends IgeBaseClass {
 	 * @returns {boolean} True if one or more event listeners are registered for
 	 * the event. False if none are found.
 	 */
-	willEmitId(eventName: string, id: string) {
+	willEmitId (eventName: string, id: string) {
 		if (!this._eventListeners || !this._eventListeners[eventName]) {
 			return false;
 		}
@@ -536,7 +536,7 @@ export class IgeEventingClass extends IgeBaseClass {
 	 * @param {...any} data Optional arguments to emit with the event.
 	 * @returns {IgeEventingClass} The emitter instance.
 	 */
-	deferEmit(eventName: string, ...data: any[]) {
+	deferEmit (eventName: string, ...data: any[]) {
 		if (!this._eventsAllowDefer) {
 			// Check for an existing timeout
 			this._eventsDeferTimeouts = this._eventsDeferTimeouts || {};
@@ -565,7 +565,7 @@ export class IgeEventingClass extends IgeBaseClass {
 	 * event emitter is finished processing.
 	 * @private
 	 */
-	_processRemovalQueue() {
+	_processRemovalQueue () {
 		if (!this._eventRemovalQueue || !this._eventRemovalQueue.length) {
 			return;
 		}

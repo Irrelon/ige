@@ -4,7 +4,7 @@ import { ige } from "../instance";
 import { arrPull } from "../utils";
 
 export class IgeTimeController extends IgeEventingClass {
-	constructor() {
+	constructor () {
 		super(...arguments);
 		this.classId = "IgeTimeController";
 		this.componentId = "time";
@@ -69,7 +69,7 @@ export class IgeTimeController extends IgeEventingClass {
 			return this;
 		};
 	}
-	isReady() {
+	isReady () {
 		return new Promise((resolve) => {
 			setTimeout(() => {
 				ige.dependencies.waitFor(["engine"], () => {

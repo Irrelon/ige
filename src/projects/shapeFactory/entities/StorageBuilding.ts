@@ -1,9 +1,9 @@
 import { Resource } from "./Resource";
 import { Building } from "./base/Building";
 import { isClient } from "@/engine/clientServer";
-import { IgeObject } from "@/engine/core/IgeObject";
+import type { IgeObject } from "@/engine/core/IgeObject";
 import { IgePoint2d } from "@/engine/core/IgePoint2d";
-import { IgeTileMap2d } from "@/engine/core/IgeTileMap2d";
+import type { IgeTileMap2d } from "@/engine/core/IgeTileMap2d";
 import { registerClass } from "@/engine/igeClassStore";
 import { ige } from "@/engine/instance";
 import { ResourceType } from "../enums/ResourceType";
@@ -15,7 +15,7 @@ export class StorageBuilding extends Building {
 	tileW = 3;
 	tileH = 3;
 
-	constructor(tileX: number = NaN, tileY: number = NaN) {
+	constructor (tileX: number = NaN, tileY: number = NaN) {
 		super();
 		this.tileX = tileX;
 		this.tileY = tileY;
@@ -33,7 +33,7 @@ export class StorageBuilding extends Building {
 		}
 	}
 
-	streamCreateConstructorArgs() {
+	streamCreateConstructorArgs () {
 		return [this.tileX, this.tileY];
 	}
 
@@ -41,7 +41,7 @@ export class StorageBuilding extends Building {
 	 * Takes a resource from the resource pool and dumps it back onto the
 	 * map for it to decide where to route itself.
 	 */
-	dispenseResource(type: ResourceType) {
+	dispenseResource (type: ResourceType) {
 		this._subtractResource(this.resourcePool, type, 1);
 
 		// Generate our new resource
@@ -50,7 +50,7 @@ export class StorageBuilding extends Building {
 			.mount(ige.$("tileMap1") as IgeTileMap2d);
 	}
 
-	_updateOnServer() {
+	_updateOnServer () {
 		// Because we are a storage building, check if we should dispense
 		// any existing resources if buildings need them
 		// Check buildings to see if any need this resource at the moment
@@ -79,7 +79,7 @@ export class StorageBuilding extends Building {
 		super._updateOnServer();
 	}
 
-	_mounted(obj: IgeObject) {
+	_mounted (obj: IgeObject) {
 		super._mounted(obj);
 
 		if (!isNaN(this.tileX) && !isNaN(this.tileY)) {

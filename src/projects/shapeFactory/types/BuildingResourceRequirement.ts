@@ -1,4 +1,4 @@
-import { ResourceType } from "../enums/ResourceType";
+import type { ResourceType } from "../enums/ResourceType";
 
 export interface BuildingResourceRequirement {
 	type: ResourceType;

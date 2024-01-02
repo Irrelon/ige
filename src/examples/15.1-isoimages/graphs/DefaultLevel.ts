@@ -11,7 +11,7 @@ export class DefaultLevel extends IgeSceneGraph {
 	 * Called when loading the graph data via ige.addGraph().
 	 * @param options
 	 */
-	async addGraph(options) {
+	async addGraph (options) {
 		// Create the scene
 		const baseScene = ige.$("baseScene") as IgeScene2d;
 
@@ -58,7 +58,7 @@ export class DefaultLevel extends IgeSceneGraph {
 	 * The method called when the graph items are to be removed from the
 	 * active graph.
 	 */
-	async removeGraph() {
+	async removeGraph () {
 		// Since all our objects in addGraph() were mounted to the
 		// 'scene1' entity, destroying it will remove everything we
 		// added to it.

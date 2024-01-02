@@ -19,7 +19,7 @@ import { arrClone, newIdHex } from "../utils";
  * paint a bunch of tiles to a grid.
  */
 export class IgeTileMap2d extends IgeEntity {
-	constructor(tileWidth, tileHeight) {
+	constructor (tileWidth, tileHeight) {
 		super();
 		this.classId = "IgeTileMap2d";
 		this.IgeTileMap2d = true;
@@ -40,21 +40,21 @@ export class IgeTileMap2d extends IgeEntity {
 		this._drawGrid = false;
 		this._gridColor = "#ffffff";
 	}
-	highlightOccupied(val) {
+	highlightOccupied (val) {
 		if (val !== undefined) {
 			this._highlightOccupied = val;
 			return this;
 		}
 		return this._highlightOccupied;
 	}
-	highlightTileRect(val) {
+	highlightTileRect (val) {
 		if (val !== undefined) {
 			this._highlightTileRect = val;
 			return this;
 		}
 		return this._highlightTileRect;
 	}
-	tileWidth(val) {
+	tileWidth (val) {
 		if (val !== undefined) {
 			this._tileWidth = val;
 			if (this._gridSize && this._gridSize.x) {
@@ -67,7 +67,7 @@ export class IgeTileMap2d extends IgeEntity {
 		}
 		return this._tileWidth;
 	}
-	tileHeight(val) {
+	tileHeight (val) {
 		if (val !== undefined) {
 			this._tileHeight = val;
 			if (this._gridSize && this._gridSize.y) {
@@ -80,7 +80,7 @@ export class IgeTileMap2d extends IgeEntity {
 		}
 		return this._tileHeight;
 	}
-	gridSize(x, y) {
+	gridSize (x, y) {
 		if (x !== undefined && y !== undefined) {
 			this._gridSize = new IgePoint2d(x, y);
 			// If in 2d mount mode
@@ -103,7 +103,7 @@ export class IgeTileMap2d extends IgeEntity {
 		}
 		return this._gridSize;
 	}
-	drawGrid(val) {
+	drawGrid (val) {
 		if (val !== undefined) {
 			this._drawGrid = val;
 			return this;
@@ -117,7 +117,7 @@ export class IgeTileMap2d extends IgeEntity {
 	 * @param {string=} val The color of the grid.
 	 * @return {*}
 	 */
-	gridColor(val) {
+	gridColor (val) {
 		if (val !== undefined) {
 			this._gridColor = val;
 			return this;
@@ -135,7 +135,7 @@ export class IgeTileMap2d extends IgeEntity {
 	 * @param {*} obj
 	 * @return {*}
 	 */
-	occupyTile(x, y, width, height, obj) {
+	occupyTile (x, y, width, height, obj) {
 		if (!(x !== undefined && y !== undefined)) {
 			return this;
 		}
@@ -170,7 +170,7 @@ export class IgeTileMap2d extends IgeEntity {
 	 * @param {number=} height
 	 * @return {*}
 	 */
-	unOccupyTile(x, y, width, height) {
+	unOccupyTile (x, y, width, height) {
 		if (!(x !== undefined && y !== undefined)) {
 			return this;
 		}
@@ -205,7 +205,7 @@ export class IgeTileMap2d extends IgeEntity {
 	 * @param {number=} height
 	 * @return {*}
 	 */
-	isTileOccupied(x, y, width, height) {
+	isTileOccupied (x, y, width, height) {
 		if (width === undefined) {
 			width = 1;
 		}
@@ -214,7 +214,7 @@ export class IgeTileMap2d extends IgeEntity {
 		}
 		return this.map.collision(x, y, width, height);
 	}
-	tileOccupiedBy(x, y) {
+	tileOccupiedBy (x, y) {
 		return this.map.tileData(x, y);
 	}
 	/**
@@ -223,7 +223,7 @@ export class IgeTileMap2d extends IgeEntity {
 	 * @param {IgePoint3d} point
 	 * @return {IgePoint3d} The tile co-ordinates as a point object.
 	 */
-	pointToTile(point) {
+	pointToTile (point) {
 		// TODO: Could this do with some caching to check if the input values have changed and if not,
 		// TODO: supply the same pre-calculated data if it already exists?
 		const mx = point.x;
@@ -246,13 +246,13 @@ export class IgeTileMap2d extends IgeEntity {
 	 * Returns the world co-ordinates of the tile the mouse is currently over.
 	 * @return {IgePoint3d}
 	 */
-	mouseTilePoint() {
+	mouseTilePoint () {
 		const tilePos = this.mouseToTile().thisMultiply(this._tileWidth, this._tileHeight, 1);
 		tilePos.x += this._tileWidth / 2;
 		tilePos.y += this._tileHeight / 2;
 		return tilePos;
 	}
-	tileToPoint(x, y) {
+	tileToPoint (x, y) {
 		let point;
 		if (this._mountMode === IgeMountMode.flat) {
 			point = new IgePoint3d(x, y, 0).thisMultiply(this._tileWidth, this._tileHeight, 1);
@@ -275,7 +275,7 @@ export class IgeTileMap2d extends IgeEntity {
 	 * Returns the tile co-ordinates of the tile the mouse is currently over.
 	 * @return {IgePoint3d}
 	 */
-	mouseToTile() {
+	mouseToTile () {
 		let tilePos;
 		if (this._mountMode === IgeMountMode.flat) {
 			tilePos = this.pointToTile(this.mousePos());
@@ -284,7 +284,7 @@ export class IgeTileMap2d extends IgeEntity {
 		}
 		return tilePos;
 	}
-	tileToWorld(tileX, tileY) {
+	tileToWorld (tileX, tileY) {
 		const tilePos = new IgePoint3d(tileX, tileY).thisMultiply(this._tileWidth, this._tileHeight, 0);
 		tilePos.x += this._tileWidth / 2;
 		tilePos.y += this._tileHeight / 2;
@@ -302,7 +302,7 @@ export class IgeTileMap2d extends IgeEntity {
 	 * in a rectangle or not.
 	 * @return {Array}
 	 */
-	scanRects(callback) {
+	scanRects (callback) {
 		const rectArray = [];
 		const mapData = arrClone(this.map._mapData);
 		// Loop the map data and scan for blocks that can
@@ -323,7 +323,7 @@ export class IgeTileMap2d extends IgeEntity {
 		}
 		return rectArray;
 	}
-	_scanRects(mapData, x, y, callback) {
+	_scanRects (mapData, x, y, callback) {
 		const rect = {
 			x,
 			y,
@@ -368,7 +368,7 @@ export class IgeTileMap2d extends IgeEntity {
 		}
 		return rect;
 	}
-	inGrid(x, y, width = 1, height = 1) {
+	inGrid (x, y, width = 1, height = 1) {
 		// Checks if the passed area is inside the tile map grid as defined by gridSize
 		return x >= 0 && y >= 0 && x + width <= this._gridSize.x && y + height <= this._gridSize.y;
 	}
@@ -378,7 +378,7 @@ export class IgeTileMap2d extends IgeEntity {
 	 * @param {string=} val The hex or rbg string color definition e.g. #ff0099.
 	 * @returns {*}
 	 */
-	hoverColor(val) {
+	hoverColor (val) {
 		if (val !== undefined) {
 			this._hoverColor = val;
 			return this;
@@ -389,7 +389,7 @@ export class IgeTileMap2d extends IgeEntity {
 	 * Loads map data from a saved map.
 	 * @param {Object} map The map data object.
 	 */
-	loadMap(map) {
+	loadMap (map) {
 		// Just fill in the map data
 		this.map.mapData(map.data, 0, 0);
 		return this;
@@ -399,7 +399,7 @@ export class IgeTileMap2d extends IgeEntity {
 	 * with the loadMap() method.
 	 * @return {Object} The map data object.
 	 */
-	saveMap() {
+	saveMap () {
 		// in URL format
 		let dataX = 0,
 			dataY = 0;
@@ -424,7 +424,7 @@ export class IgeTileMap2d extends IgeEntity {
 			dataXY: [dataX, dataY]
 		});
 	}
-	isometricMounts(val) {
+	isometricMounts (val) {
 		if (val !== undefined) {
 			super.isometricMounts(val);
 			// Re-call the methods that check iso mounts property
@@ -436,7 +436,7 @@ export class IgeTileMap2d extends IgeEntity {
 		}
 		return this._mountMode === IgeMountMode.iso;
 	}
-	tileMapHitPolygon() {
+	tileMapHitPolygon () {
 		if (this._mountMode === IgeMountMode.flat) {
 			return this.aabb();
 		}
@@ -450,7 +450,7 @@ export class IgeTileMap2d extends IgeEntity {
 			return poly;
 		}
 	}
-	_processTriggerHitTests() {
+	_processTriggerHitTests () {
 		// This method overrides the one in IgeEntity
 		if (this._pointerEventsActive && ige.engine._currentViewport) {
 			if (!this._pointerAlwaysInside) {
@@ -471,7 +471,7 @@ export class IgeTileMap2d extends IgeEntity {
 		}
 		return false;
 	}
-	_updateAdjustmentMatrix() {
+	_updateAdjustmentMatrix () {
 		var _a, _b;
 		if (this._bounds2d.x2 && this._bounds2d.y2 && this._tileWidth && this._tileHeight) {
 			if (this._mountMode === IgeMountMode.flat) {
@@ -484,7 +484,7 @@ export class IgeTileMap2d extends IgeEntity {
 			}
 		}
 	}
-	_childMounted(obj) {
+	_childMounted (obj) {
 		// We can also re-use the tile size methods since
 		// they alter the same properties on the calling
 		// entity anyway.

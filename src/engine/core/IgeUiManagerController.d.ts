@@ -1,6 +1,6 @@
-import { IgeUiElement, IgeUiStyleObject } from "./IgeUiElement";
+import type { IgeUiElement, IgeUiStyleObject } from "./IgeUiElement";
 import { IgeEventingClass } from "@/engine/core/IgeEventingClass";
-import { IgeIsReadyPromise } from "@/types/IgeIsReadyPromise";
+import type { IgeIsReadyPromise } from "@/types/IgeIsReadyPromise";
 
 export declare class IgeUiManagerController extends IgeEventingClass implements IgeIsReadyPromise {
 	static componentTargetClass: string;

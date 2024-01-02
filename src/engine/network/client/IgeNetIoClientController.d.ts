@@ -1,6 +1,6 @@
-import { IgeNetIoClient } from "./IgeNetIoClient";
+import type { IgeNetIoClient } from "./IgeNetIoClient";
 import { IgeNetIoBaseController } from "../IgeNetIoBaseController";
-import {
+import type {
 	IgeNetworkRequestMessageStructure,
 	IgeNetworkMessageData,
 	IgeNetworkEncodedMessageData,

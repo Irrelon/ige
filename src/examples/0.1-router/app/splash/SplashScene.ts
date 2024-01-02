@@ -1,4 +1,4 @@
-import { IgeEntity } from "@/engine/core/IgeEntity";
+import type { IgeEntity } from "@/engine/core/IgeEntity";
 import { IgeScene2d } from "@/engine/core/IgeScene2d";
 import { IgeSceneGraph } from "@/engine/core/IgeSceneGraph";
 import { ige } from "@/engine/instance";
@@ -10,7 +10,7 @@ export class SplashScene extends IgeSceneGraph {
 	/**
 	 * Called when loading the graph data via ige.addGraph().
 	 */
-	addGraph() {
+	addGraph () {
 		const baseScene = ige.$("baseScene") as IgeEntity;
 
 		const uiScene = new IgeScene2d().id("uiScene").mount(baseScene);
@@ -33,7 +33,7 @@ export class SplashScene extends IgeSceneGraph {
 	 * The method called when the graph items are to be removed from the
 	 * active graph.
 	 */
-	removeGraph() {
+	removeGraph () {
 		// Since all our objects in addGraph() were mounted to the
 		// 'scene1' entity, destroying it will remove everything we
 		// added to it.

@@ -5,7 +5,7 @@ import { registerClass } from "@/engine/igeClassStore";
 export class IgeUiTogglePanel extends IgeUiElement {
 	classId = "IgeUiTogglePanel";
 
-	constructor(title, titleTexture, toggleOffTexture, toggleOnTexture) {
+	constructor (title, titleTexture, toggleOffTexture, toggleOnTexture) {
 		super();
 
 		this.backgroundColor("#222222");
@@ -60,12 +60,12 @@ export class IgeUiTogglePanel extends IgeUiElement {
 		});
 	}
 
-	toggleOn(method) {
+	toggleOn (method) {
 		this._toggleOn = method;
 		return this;
 	}
 
-	toggleOff(method) {
+	toggleOff (method) {
 		this._toggleOff = method;
 		return this;
 	}

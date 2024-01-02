@@ -199,122 +199,122 @@ var Client = IgeClass.extend({
 			.highlightOccupied(true)
 			.mouseOver(function (x, y) {
 				switch (ige.client.data("cursorMode")) {
-					case "select":
-						// If we already have a selection, un-highlight it
-						if (this.data("currentlyHighlighted")) {
-							this.data("currentlyHighlighted").highlight(false);
-						}
+				case "select":
+					// If we already have a selection, un-highlight it
+					if (this.data("currentlyHighlighted")) {
+						this.data("currentlyHighlighted").highlight(false);
+					}
 
-						// Highlight the building at the map x, y
-						var item = ige.client.itemAt(x, y);
-						if (item) {
-							item.highlight(true);
-							this.data("currentlyHighlighted", item);
-						}
-						break;
+					// Highlight the building at the map x, y
+					var item = ige.client.itemAt(x, y);
+					if (item) {
+						item.highlight(true);
+						this.data("currentlyHighlighted", item);
+					}
+					break;
 
-					case "delete":
-						// If we already have a selection, un-highlight it
-						if (this.data("currentlyHighlighted")) {
-							this.data("currentlyHighlighted").highlight(false);
-						}
+				case "delete":
+					// If we already have a selection, un-highlight it
+					if (this.data("currentlyHighlighted")) {
+						this.data("currentlyHighlighted").highlight(false);
+					}
 
-						// Highlight the building at the map x, y
-						var item = ige.client.itemAt(x, y);
-						if (item) {
-							item.highlight(true);
-							this.data("currentlyHighlighted", item);
-						}
-						break;
+					// Highlight the building at the map x, y
+					var item = ige.client.itemAt(x, y);
+					if (item) {
+						item.highlight(true);
+						this.data("currentlyHighlighted", item);
+					}
+					break;
 
-					case "build":
-						var item = ige.client.data("ghostItem");
-						if (item) {
-							// We have a ghost item so move it to where the
-							// mouse is!
+				case "build":
+					var item = ige.client.data("ghostItem");
+					if (item) {
+						// We have a ghost item so move it to where the
+						// mouse is!
 
-							// Check the tile is not currently occupied!
-							if (
-								!ige.client.tileMap1.map.collision(
-									x,
-									y,
-									item.data("tileWidth"),
-									item.data("tileHeight")
-								)
-							) {
-								// The tile is not occupied so move to it!
-								item.data("tileX", x)
-									.data("tileY", y)
-									.translateToTile(x + 0.5, y + 0.5, 0);
-							}
+						// Check the tile is not currently occupied!
+						if (
+							!ige.client.tileMap1.map.collision(
+								x,
+								y,
+								item.data("tileWidth"),
+								item.data("tileHeight")
+							)
+						) {
+							// The tile is not occupied so move to it!
+							item.data("tileX", x)
+								.data("tileY", y)
+								.translateToTile(x + 0.5, y + 0.5, 0);
 						}
-						break;
+					}
+					break;
 				}
 			})
 			.mouseUp(function (x, y) {
 				// Check what mode our cursor is in
 				switch (ige.client.data("cursorMode")) {
-					case "select":
-						break;
+				case "select":
+					break;
 
-					case "move":
-						break;
+				case "move":
+					break;
 
-					case "delete":
-						var item = ige.client.itemAt(x, y);
+				case "delete":
+					var item = ige.client.itemAt(x, y);
 
-						if (item) {
-							// Ask the server to remove the item
-							ige.components.network.send("removeItem", {
+					if (item) {
+						// Ask the server to remove the item
+						ige.components.network.send("removeItem", {
+							tileX: item.data("tileX"),
+							tileY: item.data("tileY")
+						});
+
+						this.data("currentlyHighlighted", false);
+
+						// Remove the item from the engine
+						item.destroy();
+					}
+					break;
+
+				case "build":
+					var item = ige.client.data("ghostItem"),
+						tempItem;
+
+					if (item && item.data("tileX") !== -1000 && item.data("tileY") !== -1000) {
+						if (item.data("tileX") > -1 && item.data("tileY") > -1) {
+							// TODO: Use the collision map to check that the tile location is allowed for building! At the moment you can basically build anywhere and that sucks!
+							// Clear out reference to the ghost item
+							ige.client.data("ghostItem", false);
+
+							// Turn the ghost item into a "real" building
+							item.opacity(1).place();
+
+							if (typeof item.build === "function") {
+								item.build(Math.floor(Math.random() * 8) + 3); // A skyscraper-only method that tells it to add a floor up to the number specified
+							}
+
+							// Now that we've placed a building, ask the server
+							// to ok / save the request. If the server doesn't
+							// tell us anything then the building is obviously ok!
+							// TODO: The server won't deny anything, it will just record the build request at the moment!
+							ige.components.network.send("placeItem", {
+								classId: item._classId,
 								tileX: item.data("tileX"),
-								tileY: item.data("tileY")
+								tileY: item.data("tileY"),
+								floors: item.data("floors"),
+								buildFloors: item.data("buildFloors")
 							});
 
-							this.data("currentlyHighlighted", false);
+							// Now create a new temporary building
+							tempItem = ige.client
+								.createTemporaryItem("Bank") // SkyScraper, Electricals etc
+								.opacity(0.7);
 
-							// Remove the item from the engine
-							item.destroy();
+							ige.client.data("ghostItem", tempItem);
 						}
-						break;
-
-					case "build":
-						var item = ige.client.data("ghostItem"),
-							tempItem;
-
-						if (item && item.data("tileX") !== -1000 && item.data("tileY") !== -1000) {
-							if (item.data("tileX") > -1 && item.data("tileY") > -1) {
-								// TODO: Use the collision map to check that the tile location is allowed for building! At the moment you can basically build anywhere and that sucks!
-								// Clear out reference to the ghost item
-								ige.client.data("ghostItem", false);
-
-								// Turn the ghost item into a "real" building
-								item.opacity(1).place();
-
-								if (typeof item.build === "function") {
-									item.build(Math.floor(Math.random() * 8) + 3); // A skyscraper-only method that tells it to add a floor up to the number specified
-								}
-
-								// Now that we've placed a building, ask the server
-								// to ok / save the request. If the server doesn't
-								// tell us anything then the building is obviously ok!
-								// TODO: The server won't deny anything, it will just record the build request at the moment!
-								ige.components.network.send("placeItem", {
-									classId: item._classId,
-									tileX: item.data("tileX"),
-									tileY: item.data("tileY"),
-									floors: item.data("floors"),
-									buildFloors: item.data("buildFloors")
-								});
-
-								// Now create a new temporary building
-								tempItem = ige.client
-									.createTemporaryItem("Bank") // SkyScraper, Electricals etc
-									.opacity(0.7);
-
-								ige.client.data("ghostItem", tempItem);
-							}
-						}
-						break;
+					}
+					break;
 				}
 			})
 			.mount(this.gameScene);

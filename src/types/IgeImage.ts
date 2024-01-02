@@ -1,4 +1,4 @@
-import { IgeTexture } from "@/engine/core/IgeTexture";
+import type { IgeTexture } from "@/engine/core/IgeTexture";
 import type { IgeCanvas } from "@/types/IgeCanvas";
 
 declare global {

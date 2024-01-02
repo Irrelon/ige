@@ -1,5 +1,5 @@
 import { ige } from "@/engine/instance";
-import { IgeSmartTexture } from "@/types/IgeSmartTexture";
+import type { IgeSmartTexture } from "@/types/IgeSmartTexture";
 
 export const starFieldSmartTexture: IgeSmartTexture = {
 	render: function (ctx, entity) {

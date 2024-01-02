@@ -9,7 +9,7 @@ export class Tab extends IgeUiEntity {
 	_label: IgeUiLabel;
 	_tabOptions: Record<string, any> = {};
 
-	constructor(options: Record<string, any>) {
+	constructor (options: Record<string, any>) {
 		super();
 
 		this._tabOptions = options;
@@ -19,24 +19,24 @@ export class Tab extends IgeUiEntity {
 
 		// Set position of this tab from parent
 		switch (options.position) {
-			case "top":
-				this.top(-this.height());
-				this.left(10);
-				break;
+		case "top":
+			this.top(-this.height());
+			this.left(10);
+			break;
 
-			case "bottom":
-				this.bottom(-this.height());
-				this.left(10);
-				break;
+		case "bottom":
+			this.bottom(-this.height());
+			this.left(10);
+			break;
 
-			case "left":
-				break;
+		case "left":
+			break;
 
-			case "right":
-				break;
+		case "right":
+			break;
 
-			default:
-				throw "Unsupported tab position: " + options.position;
+		default:
+			throw "Unsupported tab position: " + options.position;
 		}
 
 		this._label = new IgeUiLabel()
@@ -63,66 +63,66 @@ export class Tab extends IgeUiEntity {
 			if (!parent) return;
 
 			switch (options.position) {
-				case "top":
-					currentPos = this.bottom();
+			case "top":
+				currentPos = this.bottom();
 
-					if (currentPos > 0) {
-						// Slide down
-						targetVal = -this.height();
-					} else {
-						// Slide up
-						targetVal = options.tweenDefault;
-					}
+				if (currentPos > 0) {
+					// Slide down
+					targetVal = -this.height();
+				} else {
+					// Slide up
+					targetVal = options.tweenDefault;
+				}
 
-					this._slideVal = currentPos;
+				this._slideVal = currentPos;
 
-					new IgeTween(
-						this,
-						{
-							_slideVal: targetVal
-						},
-						200
-					)
-						.afterChange(() => {
-							this.bottom(this._slideVal);
-						})
-						.start();
-					break;
+				new IgeTween(
+					this,
+					{
+						_slideVal: targetVal
+					},
+					200
+				)
+					.afterChange(() => {
+						this.bottom(this._slideVal);
+					})
+					.start();
+				break;
 
-				case "bottom":
-					currentPos = this.top();
+			case "bottom":
+				currentPos = this.top();
 
-					if (currentPos > 0) {
-						// Slide up
-						targetVal = -this.height();
-					} else {
-						// Slide down
-						targetVal = options.tweenDefault;
-					}
+				if (currentPos > 0) {
+					// Slide up
+					targetVal = -this.height();
+				} else {
+					// Slide down
+					targetVal = options.tweenDefault;
+				}
 
-					this._slideVal = currentPos;
+				this._slideVal = currentPos;
 
-					new IgeTween(
-						this,
-						{
-							_slideVal: targetVal
-						},
-						200
-					)
-						.afterChange(() => {
-							this.top(this._slideVal);
-						})
-						.start();
-					break;
+				new IgeTween(
+					this,
+					{
+						_slideVal: targetVal
+					},
+					200
+				)
+					.afterChange(() => {
+						this.top(this._slideVal);
+					})
+					.start();
+				break;
 
-				case "left":
-					break;
+			case "left":
+				break;
 
-				case "right":
-					break;
+			case "right":
+				break;
 
-				default:
-					throw "Unsupported tab position: " + options.position;
+			default:
+				throw "Unsupported tab position: " + options.position;
 			}
 		});
 	}

@@ -8,7 +8,7 @@ export class IgeBox2dMultiWorldComponent extends IgeEventingClass {
 	classId = "IgeBox2dMultiWorldComponent";
 	componentId = "box2d";
 
-	constructor(entity, options) {
+	constructor (entity, options) {
 		super();
 
 		this._entity = entity;
@@ -130,7 +130,7 @@ export class IgeBox2dMultiWorldComponent extends IgeEventingClass {
 	 * Gets the Box2d world object by it's id.
 	 * @return {b2World}
 	 */
-	world(id) {
+	world (id) {
 		return this._worlds[id];
 	}
 
@@ -139,7 +139,7 @@ export class IgeBox2dMultiWorldComponent extends IgeEventingClass {
 	 * @param {Object=} options
 	 * @return {*}
 	 */
-	createWorld(options) {
+	createWorld (options) {
 		let world;
 
 		options = options || {};

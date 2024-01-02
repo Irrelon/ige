@@ -1,17 +1,17 @@
-import { IgeAudioController } from "@/engine/audio/index";
+import type { IgeAudioController } from "@/engine/audio/index";
 import { IgeEntity } from "@/engine/core/IgeEntity";
 import { IgeScene2d } from "@/engine/core/IgeScene2d";
 import { IgeSceneGraph } from "@/engine/core/IgeSceneGraph";
 import { IgeUiEntity } from "@/engine/core/IgeUiEntity";
-import { IgeViewport } from "@/engine/core/IgeViewport";
+import type { IgeViewport } from "@/engine/core/IgeViewport";
 import { ige } from "@/engine/instance";
-import { IgeNetIoClientController } from "@/engine/network/client/IgeNetIoClientController";
+import type { IgeNetIoClientController } from "@/engine/network/client/IgeNetIoClientController";
 import { IgeUiLabel } from "@/engine/ui/IgeUiLabel";
 import { IgeUiProgressBar } from "@/engine/ui/IgeUiProgressBar";
-import { IgeVelocityComponent } from "@/engine/components/IgeVelocityComponent";
-import { EntityAbilityModuleDefinition } from "../../types/EntityAbilityModuleDefinition";
-import { EntityModuleDefinition } from "../../types/EntityModuleDefinition";
-import { GameEntity } from "../component/GameEntity";
+import type { IgeVelocityComponent } from "@/engine/components/IgeVelocityComponent";
+import type { EntityAbilityModuleDefinition } from "../../types/EntityAbilityModuleDefinition";
+import type { EntityModuleDefinition } from "../../types/EntityModuleDefinition";
+import type { GameEntity } from "../component/GameEntity";
 import { InfoWindow } from "../component/ui/InfoWindow";
 
 export interface ClientPublicGameData {
@@ -24,7 +24,7 @@ export class SpaceClientScene extends IgeSceneGraph {
 		modules: {}
 	};
 
-	constructor() {
+	constructor () {
 		super();
 
 		// Show the connecting dialog
@@ -34,7 +34,7 @@ export class SpaceClientScene extends IgeSceneGraph {
 		}
 	}
 
-	async addGraph() {
+	async addGraph () {
 		const network = ige.network as IgeNetIoClientController;
 
 		// Hook network events we want to respond to
@@ -233,7 +233,7 @@ export class SpaceClientScene extends IgeSceneGraph {
 		audio.register("actionComplete", "assets/audio/actionComplete.wav");
 	}
 
-	removeGraph() {
+	removeGraph () {
 		const sceneBase = ige.$("sceneBase");
 		sceneBase?.destroy();
 	}
@@ -245,7 +245,7 @@ export class SpaceClientScene extends IgeSceneGraph {
 	 * @param {String} entityId The id of our player entity.
 	 * @private
 	 */
-	_onPlayerEntity(entityId: string) {
+	_onPlayerEntity (entityId: string) {
 		const ent = ige.$(entityId) as GameEntity;
 
 		if (ent) {
@@ -277,7 +277,7 @@ export class SpaceClientScene extends IgeSceneGraph {
 	 * @param {IgeEntity} ent Our player entity to track.
 	 * @private
 	 */
-	_trackPlayerEntity(ent: GameEntity) {
+	_trackPlayerEntity (ent: GameEntity) {
 		// Store the player entity reference
 		ige.app.playerEntity = ent;
 

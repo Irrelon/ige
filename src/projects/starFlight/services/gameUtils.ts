@@ -1,7 +1,7 @@
 import { modules } from "../app/data/modules";
-import { PlayerDataModule } from "../app/data/playerData";
-import { EntityAbilityModuleDefinition } from "../types/EntityAbilityModuleDefinition";
-import { EntityModuleDefinition } from "../types/EntityModuleDefinition";
+import type { PlayerDataModule } from "../app/data/playerData";
+import type { EntityAbilityModuleDefinition } from "../types/EntityAbilityModuleDefinition";
+import type { EntityModuleDefinition } from "../types/EntityModuleDefinition";
 
 /**
  * Extends the target with data from the newData object.

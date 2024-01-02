@@ -1,6 +1,6 @@
 import { IgeBaseClass } from "./IgeBaseClass";
 import { isClient, isServer } from "../clientServer";
-import { IgeRouteDefinition } from "@/types/IgeRouteDefinition";
+import type { IgeRouteDefinition } from "@/types/IgeRouteDefinition";
 
 const PATH_DELIMITER = "/";
 
@@ -12,7 +12,7 @@ export class IgeRouter extends IgeBaseClass {
 	_routeQueue: (() => Promise<boolean | undefined | void>)[] = [];
 	_executingSeries: boolean = false;
 
-	route(path?: string, definition?: IgeRouteDefinition) {
+	route (path?: string, definition?: IgeRouteDefinition) {
 		if (path !== undefined) {
 			if (definition !== undefined) {
 				this._routeLoad = this._routeLoad || {};
@@ -27,7 +27,7 @@ export class IgeRouter extends IgeBaseClass {
 		return this._routeLoad;
 	}
 
-	async go(path: string) {
+	async go (path: string) {
 		// Check for a route definition first
 		if (!this._routeLoad[path]) {
 			throw new Error("Attempt to navigate to undefined route: " + path);
@@ -109,7 +109,7 @@ export class IgeRouter extends IgeBaseClass {
 		this._currentRoutePath = path;
 	}
 
-	_pathJoin(path1?: string, path2?: string): string {
+	_pathJoin (path1?: string, path2?: string): string {
 		if (!path1 && !path2) return "";
 		if (path1 && !path2) return path1;
 		if (path2 && !path1) return path2;
@@ -117,9 +117,9 @@ export class IgeRouter extends IgeBaseClass {
 		return path1 + PATH_DELIMITER + path2;
 	}
 
-	_routeAdd(path: string) {}
+	_routeAdd (path: string) {}
 
-	_routeRemove(path?: string) {}
+	_routeRemove (path?: string) {}
 
-	_processQueue() {}
+	_processQueue () {}
 }

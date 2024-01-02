@@ -1,17 +1,17 @@
 import { IgeCamera } from "./IgeCamera";
-import { IgeEntity } from "./IgeEntity";
-import { IgeObject } from "./IgeObject";
+import type { IgeEntity } from "./IgeEntity";
+import type { IgeObject } from "./IgeObject";
 import { IgePoint2d } from "./IgePoint2d";
 import { IgePoint3d } from "./IgePoint3d";
 import { IgeRect } from "./IgeRect";
-import { IgeScene2d } from "./IgeScene2d";
+import type { IgeScene2d } from "./IgeScene2d";
 import { IgeUiEntity } from "./IgeUiEntity";
 import { registerClass } from "@/engine/igeClassStore";
 import { IgeMountMode } from "@/enums/IgeMountMode";
 import { isClient } from "../clientServer";
 import { ige } from "../instance";
-import { IgeCanRegisterById } from "@/types/IgeCanRegisterById";
-import { IgeCanvasRenderingContext2d } from "@/types/IgeCanvasRenderingContext2d";
+import type { IgeCanRegisterById } from "@/types/IgeCanRegisterById";
+import type { IgeCanvasRenderingContext2d } from "@/types/IgeCanvasRenderingContext2d";
 
 export interface IgeViewportOptions {
 	width: number;
@@ -41,7 +41,7 @@ export class IgeViewport extends IgeUiEntity implements IgeCanRegisterById {
 	_drawViewArea?: boolean;
 	camera: IgeCamera;
 
-	constructor(options?: IgeViewportOptions) {
+	constructor (options?: IgeViewportOptions) {
 		super();
 
 		let width, height;
@@ -85,7 +85,7 @@ export class IgeViewport extends IgeUiEntity implements IgeCanRegisterById {
 	 * @param {number} height Height in pixels.
 	 * @returns {*}
 	 */
-	minimumVisibleArea(width: number, height: number) {
+	minimumVisibleArea (width: number, height: number) {
 		// Store the w/h we want to lock to
 		this._lockDimension = new IgePoint3d(width, height, 0);
 
@@ -104,7 +104,7 @@ export class IgeViewport extends IgeUiEntity implements IgeCanRegisterById {
 	 */
 	autoSize(id: boolean): this;
 	autoSize(): boolean;
-	autoSize(val?: boolean) {
+	autoSize (val?: boolean) {
 		if (typeof val !== "undefined") {
 			this._autoSize = val;
 			return this;
@@ -120,7 +120,7 @@ export class IgeViewport extends IgeUiEntity implements IgeCanRegisterById {
 	 */
 	scene(id: IgeScene2d): this;
 	scene(): IgeScene2d;
-	scene(scene?: IgeScene2d) {
+	scene (scene?: IgeScene2d) {
 		if (scene !== undefined) {
 			this._scene = scene;
 			return this;
@@ -133,13 +133,13 @@ export class IgeViewport extends IgeUiEntity implements IgeCanRegisterById {
 	 * Returns the viewport's mouse position.
 	 * @return {IgePoint3d}
 	 */
-	mousePos() {
+	mousePos () {
 		// Viewport mouse position is calculated and assigned in the
 		// IgeInputComponent class.
 		return this._pointerPos.clone();
 	}
 
-	mousePosWorld() {
+	mousePosWorld () {
 		return this._transformPoint(this._pointerPos.clone());
 	}
 
@@ -148,7 +148,7 @@ export class IgeViewport extends IgeUiEntity implements IgeCanRegisterById {
 	 * in the world. The co-ordinates are in world space.
 	 * @returns {IgeRect}
 	 */
-	viewArea() {
+	viewArea () {
 		const aabb = this.aabb(),
 			camTrans = this.camera._translate,
 			camScale = this.camera._scale,
@@ -163,7 +163,7 @@ export class IgeViewport extends IgeUiEntity implements IgeCanRegisterById {
 	 * @param ctx
 	 * @param tickDelta
 	 */
-	update(ctx: IgeCanvasRenderingContext2d, tickDelta: number) {
+	update (ctx: IgeCanvasRenderingContext2d, tickDelta: number) {
 		// Check if we have a scene attached to this viewport
 		if (!this._scene) {
 			return;
@@ -185,7 +185,7 @@ export class IgeViewport extends IgeUiEntity implements IgeCanRegisterById {
 	/**
 	 * Processes the actions required each render frame.
 	 */
-	tick(ctx: IgeCanvasRenderingContext2d) {
+	tick (ctx: IgeCanvasRenderingContext2d) {
 		// Check if we have a scene attached to this viewport and ige has a root object
 		if (!this._scene || !ige.engine) {
 			return;
@@ -300,7 +300,7 @@ export class IgeViewport extends IgeUiEntity implements IgeCanRegisterById {
 	 *     var screenPos = entity.screenPosition();
 	 * @return {IgePoint3d} The screen position of the entity.
 	 */
-	screenPosition() {
+	screenPosition () {
 		return new IgePoint3d(
 			Math.floor(this._worldMatrix.matrix[2] + (ige.engine._bounds2d?.x2 || 0)),
 			Math.floor(this._worldMatrix.matrix[5] + (ige.engine._bounds2d?.y2 || 0)),
@@ -310,7 +310,7 @@ export class IgeViewport extends IgeUiEntity implements IgeCanRegisterById {
 
 	drawViewArea(): boolean;
 	drawViewArea(val: boolean): this;
-	drawViewArea(val?: boolean) {
+	drawViewArea (val?: boolean) {
 		if (val !== undefined) {
 			this._drawViewArea = val;
 			return this;
@@ -321,7 +321,7 @@ export class IgeViewport extends IgeUiEntity implements IgeCanRegisterById {
 
 	drawBoundsLimitId(): string | string[] | undefined;
 	drawBoundsLimitId(id: string | string[]): this;
-	drawBoundsLimitId(id?: string | string[]) {
+	drawBoundsLimitId (id?: string | string[]) {
 		if (id !== undefined) {
 			this._drawBoundsLimitId = id;
 			return this;
@@ -332,7 +332,7 @@ export class IgeViewport extends IgeUiEntity implements IgeCanRegisterById {
 
 	drawBoundsLimitCategory(): string | undefined;
 	drawBoundsLimitCategory(category: string): this;
-	drawBoundsLimitCategory(category?: string) {
+	drawBoundsLimitCategory (category?: string) {
 		if (category !== undefined) {
 			this._drawBoundsLimitCategory = category;
 			return this;
@@ -343,7 +343,7 @@ export class IgeViewport extends IgeUiEntity implements IgeCanRegisterById {
 
 	drawCompositeBounds(): boolean | undefined;
 	drawCompositeBounds(val: boolean): this;
-	drawCompositeBounds(val?: boolean) {
+	drawCompositeBounds (val?: boolean) {
 		if (val !== undefined) {
 			this._drawCompositeBounds = val;
 			return this;
@@ -354,7 +354,7 @@ export class IgeViewport extends IgeUiEntity implements IgeCanRegisterById {
 
 	drawGuides(): boolean | undefined;
 	drawGuides(val: boolean): this;
-	drawGuides(val?: boolean) {
+	drawGuides (val?: boolean) {
 		if (val !== undefined) {
 			this._drawGuides = val;
 			return this;
@@ -363,7 +363,7 @@ export class IgeViewport extends IgeUiEntity implements IgeCanRegisterById {
 		return this._drawGuides;
 	}
 
-	paintGuides(ctx: IgeCanvasRenderingContext2d) {
+	paintGuides (ctx: IgeCanvasRenderingContext2d) {
 		if (!ige.engine) return;
 		const geom = ige.engine._bounds2d;
 
@@ -392,7 +392,7 @@ export class IgeViewport extends IgeUiEntity implements IgeCanRegisterById {
 	 * @param rootObject
 	 * @param index
 	 */
-	paintAabbs(ctx: IgeCanvasRenderingContext2d, rootObject: IgeObject, index: number) {
+	paintAabbs (ctx: IgeCanvasRenderingContext2d, rootObject: IgeObject, index: number) {
 		const arr = rootObject._children || [];
 		let arrCount,
 			obj,
@@ -615,7 +615,7 @@ export class IgeViewport extends IgeUiEntity implements IgeCanRegisterById {
 	 * @param event
 	 * @private
 	 */
-	_resizeEvent(event?: Event) {
+	_resizeEvent (event?: Event) {
 		if (this._autoSize && this._parent) {
 			this._bounds2d = this._parent._bounds2d.clone();
 		}
@@ -672,7 +672,7 @@ export class IgeViewport extends IgeUiEntity implements IgeCanRegisterById {
 	 * Other properties are handled by their own class method.
 	 * @return {string}
 	 */
-	_stringify() {
+	_stringify () {
 		// Get the properties for all the super-classes
 		let str = super.stringify();
 
@@ -680,12 +680,12 @@ export class IgeViewport extends IgeUiEntity implements IgeCanRegisterById {
 		for (const i in this) {
 			if (this.hasOwnProperty(i) && this[i] !== undefined) {
 				switch (i) {
-					case "_autoSize":
-						str += ".autoSize(" + this._autoSize + ")";
-						break;
-					case "_scene":
-						str += ".scene(ige.$('" + this.scene().id() + "'))";
-						break;
+				case "_autoSize":
+					str += ".autoSize(" + this._autoSize + ")";
+					break;
+				case "_scene":
+					str += ".scene(ige.$('" + this.scene().id() + "'))";
+					break;
 				}
 			}
 		}

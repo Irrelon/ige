@@ -13,7 +13,7 @@ export class IgeAudioItem extends IgeEventingClass {
 	_audioId?: string;
 	_panner?: PannerNode;
 
-	constructor(audioId?: string) {
+	constructor (audioId?: string) {
 		super();
 
 		if (audioId) {
@@ -21,7 +21,7 @@ export class IgeAudioItem extends IgeEventingClass {
 		}
 	}
 
-	playing(val?: boolean) {
+	playing (val?: boolean) {
 		if (val !== undefined) {
 			this._playing = val;
 			return this;
@@ -32,7 +32,7 @@ export class IgeAudioItem extends IgeEventingClass {
 
 	audioId(audioId: string): this;
 	audioId(): string;
-	audioId(audioId?: string) {
+	audioId (audioId?: string) {
 		if (audioId === undefined) {
 			return this._audioId;
 		}
@@ -47,7 +47,7 @@ export class IgeAudioItem extends IgeEventingClass {
 
 	url(url: string): this;
 	url(): string;
-	url(url?: string) {
+	url (url?: string) {
 		if (url === undefined) {
 			return this._url;
 		}
@@ -75,7 +75,7 @@ export class IgeAudioItem extends IgeEventingClass {
 	 */
 	buffer(buffer: AudioBuffer): this;
 	buffer(): AudioBuffer;
-	buffer(buffer?: AudioBuffer) {
+	buffer (buffer?: AudioBuffer) {
 		if (buffer === undefined) {
 			return this._buffer;
 		}
@@ -91,7 +91,7 @@ export class IgeAudioItem extends IgeEventingClass {
 
 	panner(val: PannerNode): this;
 	panner(): PannerNode;
-	panner(val?: PannerNode) {
+	panner (val?: PannerNode) {
 		if (val === undefined) {
 			return this._panner;
 		}
@@ -110,7 +110,7 @@ export class IgeAudioItem extends IgeEventingClass {
 	/**
 	 * Plays the audio.
 	 */
-	play(loop: boolean = false) {
+	play (loop: boolean = false) {
 		if (!ige.audio) return;
 		if (!this._buffer || !ige.audio._ctx) {
 			this._playWhenReady = true;
@@ -141,7 +141,7 @@ export class IgeAudioItem extends IgeEventingClass {
 	/**
 	 * Stops the currently playing audio.
 	 */
-	stop() {
+	stop () {
 		if (this._bufferSource) {
 			this.log("Audio file (" + this._url + ") stopping...");
 			this._bufferSource.stop();

@@ -2,11 +2,11 @@ import { IgeUiElement } from "../../engine/core/IgeUiElement.js";
 import { registerClass } from "../../engine/igeClassStore.js";
 
 export class IgeUiInlineFlow extends IgeUiElement {
-	constructor() {
+	constructor () {
 		super(...arguments);
 		this.classId = "IgeUiInlineFlow";
 	}
-	tick(ctx, dontTransform = false) {
+	tick (ctx, dontTransform = false) {
 		// Loop children and re-position them
 		const arr = this._children;
 		const arrCount = arr.length;

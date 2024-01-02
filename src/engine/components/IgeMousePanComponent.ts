@@ -1,7 +1,7 @@
 import { IgeComponent } from "../core/IgeComponent";
 import { IgePoint2d } from "../core/IgePoint2d";
-import { IgePoint3d } from "../core/IgePoint3d";
-import { IgeRect } from "../core/IgeRect";
+import type { IgePoint3d } from "../core/IgePoint3d";
+import type { IgeRect } from "../core/IgeRect";
 import { ige } from "../instance";
 
 /**
@@ -42,7 +42,7 @@ export class IgeMousePanComponent extends IgeComponent {
 	 * @param {IgeRect=} rect
 	 * @return {*}
 	 */
-	limit(rect?: IgeRect) {
+	limit (rect?: IgeRect) {
 		if (rect !== undefined) {
 			this._limit = rect;
 			return this._entity;
@@ -58,7 +58,7 @@ export class IgeMousePanComponent extends IgeComponent {
 	 * @param {boolean=} val
 	 * @return {*}
 	 */
-	enabled(val?: boolean) {
+	enabled (val?: boolean) {
 		if (val === undefined) {
 			return this._enabled;
 		}

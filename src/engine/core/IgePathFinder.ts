@@ -1,7 +1,7 @@
-import { IgeCollisionMap2d } from "./IgeCollisionMap2d";
+import type { IgeCollisionMap2d } from "./IgeCollisionMap2d";
 import { IgeEventingClass } from "./IgeEventingClass";
 import { IgePathNode } from "./IgePathNode";
-import { IgeTileMap2d } from "./IgeTileMap2d";
+import type { IgeTileMap2d } from "./IgeTileMap2d";
 
 export type IgePathFinderComparisonCallback = (
 	tileData: any,
@@ -28,7 +28,7 @@ export class IgePathFinder extends IgeEventingClass {
 	 * @param {number=} val
 	 * @return {*}
 	 */
-	squareCost(val?: number) {
+	squareCost (val?: number) {
 		if (val !== undefined) {
 			this._squareCost = val;
 			return this;
@@ -43,7 +43,7 @@ export class IgePathFinder extends IgeEventingClass {
 	 * @param {number=} val
 	 * @return {*}
 	 */
-	diagonalCost(val?: number) {
+	diagonalCost (val?: number) {
 		if (val !== undefined) {
 			this._diagonalCost = val;
 			return this;
@@ -61,7 +61,7 @@ export class IgePathFinder extends IgeEventingClass {
 	 * @param val
 	 * @return {*}
 	 */
-	neighbourLimit(val?: number) {
+	neighbourLimit (val?: number) {
 		if (val !== undefined) {
 			this._neighbourLimit = val;
 			return this;
@@ -70,7 +70,7 @@ export class IgePathFinder extends IgeEventingClass {
 		return this._neighbourLimit;
 	}
 
-	aStar() {
+	aStar () {
 		this.log('The "IgePathFinder.aStar" method has been renamed to "generate". Please update your code.', "error");
 	}
 
@@ -85,7 +85,7 @@ export class IgePathFinder extends IgeEventingClass {
 	 * @param {Boolean=} allowInvalidDestination If the pathfinder cannot path to the destination tile, if this is true the closest path will be returned instead.
 	 * @return {Array} An array of objects each containing an x, y co-ordinate that describes the path from the starting point to the end point in order.
 	 */
-	generate(
+	generate (
 		tileMap: IgeCollisionMap2d | IgeTileMap2d,
 		startPoint: IgePathNode,
 		endPoint: IgePathNode,
@@ -272,7 +272,7 @@ export class IgePathFinder extends IgeEventingClass {
 	 * @return {Array} An array containing nodes describing the neighbouring tiles of the current node.
 	 * @private
 	 */
-	_getNeighbours(
+	_getNeighbours (
 		currentNode: IgePathNode,
 		endPoint: IgePathNode,
 		tileMap: IgeCollisionMap2d | IgeTileMap2d,
@@ -435,7 +435,7 @@ export class IgePathFinder extends IgeEventingClass {
 	 * @return {number} Returns the heuristic cost between the co-ordinates specified.
 	 * @private
 	 */
-	_heuristic(x1: number, y1: number, x2: number, y2: number, moveCost: number) {
+	_heuristic (x1: number, y1: number, x2: number, y2: number, moveCost: number) {
 		return moveCost * (Math.abs(x1 - x2) + Math.abs(y1 - y2));
 	}
 }

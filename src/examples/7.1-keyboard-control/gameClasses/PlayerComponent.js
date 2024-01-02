@@ -64,50 +64,50 @@ var PlayerComponent = IgeClass.extend({
 		}
 
 		switch (direction) {
-			case "N":
-				this.velocity.x(0).velocity.y(-vel);
-				this.animation.select("walkUp");
-				break;
+		case "N":
+			this.velocity.x(0).velocity.y(-vel);
+			this.animation.select("walkUp");
+			break;
 
-			case "S":
-				this.velocity.x(0).velocity.y(vel);
-				this.animation.select("walkDown");
-				break;
+		case "S":
+			this.velocity.x(0).velocity.y(vel);
+			this.animation.select("walkDown");
+			break;
 
-			case "E":
-				this.velocity.x(vel).velocity.y(0);
-				this.animation.select("walkRight");
-				break;
+		case "E":
+			this.velocity.x(vel).velocity.y(0);
+			this.animation.select("walkRight");
+			break;
 
-			case "W":
-				this.velocity.x(-vel).velocity.y(0);
-				this.animation.select("walkLeft");
-				break;
+		case "W":
+			this.velocity.x(-vel).velocity.y(0);
+			this.animation.select("walkLeft");
+			break;
 
-			case "NE":
-				this.velocity.x(vel).velocity.y(-vel);
-				this.animation.select("walkRight");
-				break;
+		case "NE":
+			this.velocity.x(vel).velocity.y(-vel);
+			this.animation.select("walkRight");
+			break;
 
-			case "NW":
-				this.velocity.x(-vel).velocity.y(-vel);
-				this.animation.select("walkLeft");
-				break;
+		case "NW":
+			this.velocity.x(-vel).velocity.y(-vel);
+			this.animation.select("walkLeft");
+			break;
 
-			case "SE":
-				this.velocity.x(vel).velocity.y(vel);
-				this.animation.select("walkRight");
-				break;
+		case "SE":
+			this.velocity.x(vel).velocity.y(vel);
+			this.animation.select("walkRight");
+			break;
 
-			case "SW":
-				this.velocity.x(-vel).velocity.y(vel);
-				this.animation.select("walkLeft");
-				break;
+		case "SW":
+			this.velocity.x(-vel).velocity.y(vel);
+			this.animation.select("walkLeft");
+			break;
 
-			default:
-				this.velocity.x(0).velocity.y(0);
-				this.animation.stop();
-				break;
+		default:
+			this.velocity.x(0).velocity.y(0);
+			this.animation.stop();
+			break;
 		}
 	}
 });

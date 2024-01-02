@@ -1,9 +1,9 @@
 import { InfoWindow } from "./InfoWindow";
-import { IgeUiEntity } from "@/engine/core/IgeUiEntity";
+import type { IgeUiEntity } from "@/engine/core/IgeUiEntity";
 import { ige } from "@/engine/instance";
-import { IgeNetIoClientController } from "@/engine/network/client/IgeNetIoClientController";
+import type { IgeNetIoClientController } from "@/engine/network/client/IgeNetIoClientController";
 import { IgeUiLabel } from "@/engine/ui/IgeUiLabel";
-import { IgeCanvasRenderingContext2d } from "@/types/IgeCanvasRenderingContext2d";
+import type { IgeCanvasRenderingContext2d } from "@/types/IgeCanvasRenderingContext2d";
 
 export class MessageWindow extends InfoWindow {
 	classId = "MessageWindow";
@@ -13,7 +13,7 @@ export class MessageWindow extends InfoWindow {
 		messageColor?: string;
 	};
 
-	constructor(options = {}) {
+	constructor (options = {}) {
 		super(options);
 
 		(ige.network as IgeNetIoClientController).on("msg", (data) => {
@@ -23,7 +23,7 @@ export class MessageWindow extends InfoWindow {
 		this._options = options;
 	}
 
-	addMsg(msg: string) {
+	addMsg (msg: string) {
 		this._msgs.push(
 			new IgeUiLabel()
 				.layer(1)
@@ -40,7 +40,7 @@ export class MessageWindow extends InfoWindow {
 		);
 	}
 
-	tick(ctx: IgeCanvasRenderingContext2d, dontTransform = false) {
+	tick (ctx: IgeCanvasRenderingContext2d, dontTransform = false) {
 		// Loop children and re-position then
 		const arr = this._children as IgeUiEntity[];
 		const arrCount = arr.length;

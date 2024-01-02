@@ -5,7 +5,7 @@ import { ige } from "../instance";
 //    to another class, probably IgeEntity or IgeUiEntity?
 export const WithUiStyleMixin = (Base) =>
 	class extends Base {
-		constructor() {
+		constructor () {
 			super(...arguments);
 			this._color = "#000000";
 			this._cell = null;
@@ -15,7 +15,7 @@ export const WithUiStyleMixin = (Base) =>
 		 * @param {CSSColor, CanvasGradient, CanvasPattern=} color
 		 * @return {*} Returns this when setting the value or the current value if none is specified.
 		 */
-		color(color) {
+		color (color) {
 			if (color !== undefined) {
 				this._color = color;
 				this.cacheDirty(true);
@@ -32,7 +32,7 @@ export const WithUiStyleMixin = (Base) =>
 		 * @return {*} Returns this if any parameter is specified or
 		 * the current background image if no parameters are specified.
 		 */
-		backgroundImage(texture, repeatType) {
+		backgroundImage (texture, repeatType) {
 			var _a, _b;
 			if (!(texture && texture.image)) {
 				return this._patternFill;
@@ -95,7 +95,7 @@ export const WithUiStyleMixin = (Base) =>
 			this.cacheDirty(true);
 			return this;
 		}
-		backgroundSize(x, y) {
+		backgroundSize (x, y) {
 			if (!(x !== undefined && y !== undefined)) {
 				return this._backgroundSize;
 			}
@@ -145,7 +145,7 @@ export const WithUiStyleMixin = (Base) =>
 		 * @param {CSSColor, CanvasGradient, CanvasPattern=} color
 		 * @return {*} Returns this when setting the value or the current value if none is specified.
 		 */
-		backgroundColor(color) {
+		backgroundColor (color) {
 			if (color !== undefined) {
 				this._backgroundColor = color;
 				this.cacheDirty(true);
@@ -159,7 +159,7 @@ export const WithUiStyleMixin = (Base) =>
 		 * @param {number=} y
 		 * @return {*} Returns this when setting the value or the current value if none is specified.
 		 */
-		backgroundPosition(x, y) {
+		backgroundPosition (x, y) {
 			if (x !== undefined && y !== undefined) {
 				this._backgroundPosition = { x, y };
 				this.cacheDirty(true);
@@ -167,7 +167,7 @@ export const WithUiStyleMixin = (Base) =>
 			}
 			return this._backgroundPosition;
 		}
-		borderColor(color) {
+		borderColor (color) {
 			if (color !== undefined) {
 				this._borderColor = color;
 				this._borderLeftColor = color;
@@ -179,7 +179,7 @@ export const WithUiStyleMixin = (Base) =>
 			}
 			return this._borderColor;
 		}
-		borderLeftColor(color) {
+		borderLeftColor (color) {
 			if (color !== undefined) {
 				this._borderLeftColor = color;
 				this.cacheDirty(true);
@@ -187,7 +187,7 @@ export const WithUiStyleMixin = (Base) =>
 			}
 			return this._borderLeftColor;
 		}
-		borderTopColor(color) {
+		borderTopColor (color) {
 			if (color !== undefined) {
 				this._borderTopColor = color;
 				this.cacheDirty(true);
@@ -195,7 +195,7 @@ export const WithUiStyleMixin = (Base) =>
 			}
 			return this._borderTopColor;
 		}
-		borderRightColor(color) {
+		borderRightColor (color) {
 			if (color !== undefined) {
 				this._borderRightColor = color;
 				this.cacheDirty(true);
@@ -203,7 +203,7 @@ export const WithUiStyleMixin = (Base) =>
 			}
 			return this._borderRightColor;
 		}
-		borderBottomColor(color) {
+		borderBottomColor (color) {
 			if (color !== undefined) {
 				this._borderBottomColor = color;
 				this.cacheDirty(true);
@@ -211,7 +211,7 @@ export const WithUiStyleMixin = (Base) =>
 			}
 			return this._borderBottomColor;
 		}
-		borderWidth(px) {
+		borderWidth (px) {
 			if (px !== undefined) {
 				this._borderWidth = px;
 				this._borderLeftWidth = px;
@@ -223,7 +223,7 @@ export const WithUiStyleMixin = (Base) =>
 			}
 			return this._borderWidth;
 		}
-		borderLeftWidth(px) {
+		borderLeftWidth (px) {
 			if (px !== undefined) {
 				this._borderLeftWidth = px;
 				this.cacheDirty(true);
@@ -231,7 +231,7 @@ export const WithUiStyleMixin = (Base) =>
 			}
 			return this._borderLeftWidth;
 		}
-		borderTopWidth(px) {
+		borderTopWidth (px) {
 			if (px !== undefined) {
 				this._borderTopWidth = px;
 				this.cacheDirty(true);
@@ -239,7 +239,7 @@ export const WithUiStyleMixin = (Base) =>
 			}
 			return this._borderTopWidth;
 		}
-		borderRightWidth(px) {
+		borderRightWidth (px) {
 			if (px !== undefined) {
 				this._borderRightWidth = px;
 				this.cacheDirty(true);
@@ -247,7 +247,7 @@ export const WithUiStyleMixin = (Base) =>
 			}
 			return this._borderRightWidth;
 		}
-		borderBottomWidth(px) {
+		borderBottomWidth (px) {
 			if (px !== undefined) {
 				this._borderBottomWidth = px;
 				this.cacheDirty(true);
@@ -255,7 +255,7 @@ export const WithUiStyleMixin = (Base) =>
 			}
 			return this._borderBottomWidth;
 		}
-		borderRadius(px) {
+		borderRadius (px) {
 			if (px !== undefined) {
 				this._borderRadius = px;
 				this._borderTopLeftRadius = px;
@@ -267,7 +267,7 @@ export const WithUiStyleMixin = (Base) =>
 			}
 			return this._borderRadius;
 		}
-		borderTopLeftRadius(px) {
+		borderTopLeftRadius (px) {
 			if (px !== undefined) {
 				this._borderTopLeftRadius = px;
 				this.cacheDirty(true);
@@ -275,7 +275,7 @@ export const WithUiStyleMixin = (Base) =>
 			}
 			return this._borderTopLeftRadius;
 		}
-		borderTopRightRadius(px) {
+		borderTopRightRadius (px) {
 			if (px !== undefined) {
 				this._borderTopRightRadius = px;
 				this.cacheDirty(true);
@@ -283,7 +283,7 @@ export const WithUiStyleMixin = (Base) =>
 			}
 			return this._borderTopRightRadius;
 		}
-		borderBottomLeftRadius(px) {
+		borderBottomLeftRadius (px) {
 			if (px !== undefined) {
 				this._borderBottomLeftRadius = px;
 				this.cacheDirty(true);
@@ -291,7 +291,7 @@ export const WithUiStyleMixin = (Base) =>
 			}
 			return this._borderBottomLeftRadius;
 		}
-		borderBottomRightRadius(px) {
+		borderBottomRightRadius (px) {
 			if (px !== undefined) {
 				this._borderBottomRightRadius = px;
 				this.cacheDirty(true);
@@ -299,7 +299,7 @@ export const WithUiStyleMixin = (Base) =>
 			}
 			return this._borderBottomRightRadius;
 		}
-		padding(...args) {
+		padding (...args) {
 			if (args.length === 0) return this._padding;
 			if (args.length === 1) {
 				// Set padding proper
@@ -315,7 +315,7 @@ export const WithUiStyleMixin = (Base) =>
 			this.cacheDirty(true);
 			return this;
 		}
-		paddingLeft(px) {
+		paddingLeft (px) {
 			if (px !== undefined) {
 				this._paddingLeft = px;
 				this.cacheDirty(true);
@@ -323,7 +323,7 @@ export const WithUiStyleMixin = (Base) =>
 			}
 			return this._paddingLeft;
 		}
-		paddingTop(px) {
+		paddingTop (px) {
 			if (px !== undefined) {
 				this._paddingTop = px;
 				this.cacheDirty(true);
@@ -331,7 +331,7 @@ export const WithUiStyleMixin = (Base) =>
 			}
 			return this._paddingTop;
 		}
-		paddingRight(px) {
+		paddingRight (px) {
 			if (px !== undefined) {
 				this._paddingRight = px;
 				this.cacheDirty(true);
@@ -339,7 +339,7 @@ export const WithUiStyleMixin = (Base) =>
 			}
 			return this._paddingRight;
 		}
-		paddingBottom(px) {
+		paddingBottom (px) {
 			if (px !== undefined) {
 				this._paddingBottom = px;
 				this.cacheDirty(true);
@@ -347,7 +347,7 @@ export const WithUiStyleMixin = (Base) =>
 			}
 			return this._paddingBottom;
 		}
-		margin(...args) {
+		margin (...args) {
 			if (args.length === 0) return this._margin;
 			if (args.length === 1) {
 				// Set margin proper
@@ -363,7 +363,7 @@ export const WithUiStyleMixin = (Base) =>
 			this.cacheDirty(true);
 			return this;
 		}
-		marginLeft(px) {
+		marginLeft (px) {
 			if (px !== undefined) {
 				this._marginLeft = px;
 				this.cacheDirty(true);
@@ -371,7 +371,7 @@ export const WithUiStyleMixin = (Base) =>
 			}
 			return this._marginLeft !== undefined ? this._marginLeft : this._margin;
 		}
-		marginTop(px) {
+		marginTop (px) {
 			if (px !== undefined) {
 				this._marginTop = px;
 				this.cacheDirty(true);
@@ -379,7 +379,7 @@ export const WithUiStyleMixin = (Base) =>
 			}
 			return this._marginTop;
 		}
-		marginRight(px) {
+		marginRight (px) {
 			if (px !== undefined) {
 				this._marginRight = px;
 				this.cacheDirty(true);
@@ -387,7 +387,7 @@ export const WithUiStyleMixin = (Base) =>
 			}
 			return this._marginRight;
 		}
-		marginBottom(px) {
+		marginBottom (px) {
 			if (px !== undefined) {
 				this._marginBottom = px;
 				this.cacheDirty(true);

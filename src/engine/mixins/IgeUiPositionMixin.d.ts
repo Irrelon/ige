@@ -1,4 +1,4 @@
-import { IgeObject } from "../core/IgeObject";
+import type { IgeObject } from "../core/IgeObject";
 import type { Mixin } from "@/types/Mixin";
 
 export declare const WithUiPositionMixin: <BaseClassType extends Mixin<IgeObject>>(

@@ -1,10 +1,10 @@
 import { IgeChatComponent } from "./IgeChatComponent";
-import {
+import type {
 	IgeNetworkChatFromServerJoinRoomResponseStructure,
 	IgeNetworkChatFromServerLeaveRoomResponseStructure,
 	IgeNetworkChatFromServerRoomStructure
 } from "@/types/IgeNetworkChat";
-import { IgeNetworkChatFromServerMessageStructure } from "@/types/IgeNetworkMessage";
+import type { IgeNetworkChatFromServerMessageStructure } from "@/types/IgeNetworkMessage";
 
 /**
  * The client-side chat component. Handles all client-side

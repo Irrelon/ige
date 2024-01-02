@@ -9,7 +9,7 @@ export class InfoWindow extends IgeUiEntity {
 	_label?: IgeUiLabel;
 	_windowGradient?: CanvasGradient;
 
-	constructor(options: Record<string, any>) {
+	constructor (options: Record<string, any>) {
 		super();
 
 		if (options.label) {
@@ -37,7 +37,7 @@ export class InfoWindow extends IgeUiEntity {
 		this.windowGradient("#04b7f9", "#005066", "#04b7f9");
 	}
 
-	show() {
+	show () {
 		super.show();
 
 		if (this._label) {
@@ -49,7 +49,7 @@ export class InfoWindow extends IgeUiEntity {
 		return this;
 	}
 
-	windowGradient(color1: string, color2: string, color3: string) {
+	windowGradient (color1: string, color2: string, color3: string) {
 		if (!ige.engine._ctx) return;
 
 		const gradient = ige.engine._ctx.createLinearGradient(0, 0, this.width(), this.height());

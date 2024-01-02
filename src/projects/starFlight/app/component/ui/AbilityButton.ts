@@ -1,11 +1,11 @@
-import { IgeAudioController } from "@/engine/audio";
+import type { IgeAudioController } from "@/engine/audio";
 import { isServer } from "@/engine/clientServer";
 import { IgeUiEntity } from "@/engine/core/IgeUiEntity";
 import { ige } from "@/engine/instance";
 import { IgeUiButton } from "@/engine/ui/IgeUiButton";
 import { IgeUiLabel } from "@/engine/ui/IgeUiLabel";
-import { EntityAbilityModuleDefinition } from "../../../types/EntityAbilityModuleDefinition";
-import { IgeCanvasRenderingContext2d } from "@/types/IgeCanvasRenderingContext2d";
+import type { EntityAbilityModuleDefinition } from "../../../types/EntityAbilityModuleDefinition";
+import type { IgeCanvasRenderingContext2d } from "@/types/IgeCanvasRenderingContext2d";
 
 export interface AbilityButtonOptions {
 	abilityId: string;
@@ -21,7 +21,7 @@ export class AbilityButton extends IgeUiEntity {
 	_label: IgeUiLabel;
 	_timerCircle: IgeUiEntity;
 
-	constructor(options: AbilityButtonOptions) {
+	constructor (options: AbilityButtonOptions) {
 		if (isServer) {
 			throw new Error("This module should never be instantiated server-side!");
 		}
@@ -94,7 +94,7 @@ export class AbilityButton extends IgeUiEntity {
 		ige.app.abilityCounter++;
 	}
 
-	active(val?: boolean) {
+	active (val?: boolean) {
 		if (val !== undefined) {
 			if (val && !this._module.active) {
 				// Make module active
@@ -120,7 +120,7 @@ export class AbilityButton extends IgeUiEntity {
 	 * @param startTime
 	 * @returns {*}
 	 */
-	cooldown(val?: boolean, startTime?: number) {
+	cooldown (val?: boolean, startTime?: number) {
 		if (val !== undefined) {
 			if (val && !this._module.cooldown) {
 				if (!this._module.cooldownDuration) {
@@ -144,7 +144,7 @@ export class AbilityButton extends IgeUiEntity {
 	 * be activated, via the useAbility() method on the player's
 	 * entity instance.
 	 */
-	requestActivation() {
+	requestActivation () {
 		if (this._disabled || this._module.active || this._module.cooldown) {
 			return (ige.audio as IgeAudioController).play("actionDenied");
 		}
@@ -152,7 +152,7 @@ export class AbilityButton extends IgeUiEntity {
 		ige.app.playerEntity.useAbility(this._abilityId);
 	}
 
-	update(ctx: IgeCanvasRenderingContext2d, tickDelta: number) {
+	update (ctx: IgeCanvasRenderingContext2d, tickDelta: number) {
 		let activeTime, beenInCooldownFor, playerTargetData;
 
 		super.update(ctx, tickDelta);

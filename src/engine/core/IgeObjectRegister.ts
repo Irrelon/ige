@@ -1,14 +1,14 @@
-import { IgeCanBeDestroyed } from "@/types/IgeCanBeDestroyed";
-import { IgeCanRegisterById } from "@/types/IgeCanRegisterById";
+import type { IgeCanBeDestroyed } from "@/types/IgeCanBeDestroyed";
+import type { IgeCanRegisterById } from "@/types/IgeCanRegisterById";
 
 export class IgeObjectRegister {
 	_store: Record<string, IgeCanRegisterById & IgeCanBeDestroyed> = {};
 
-	get(id: string) {
+	get (id: string) {
 		return this._store[id];
 	}
 
-	all() {
+	all () {
 		return this._store;
 	}
 
@@ -19,7 +19,7 @@ export class IgeObjectRegister {
 	 * @param {Object} obj The object to register.
 	 * @return {*}
 	 */
-	add(obj: IgeCanRegisterById & IgeCanBeDestroyed) {
+	add (obj: IgeCanRegisterById & IgeCanBeDestroyed) {
 		if (this._store[obj.id()]) {
 			obj._idRegistered = false;
 			throw new Error(
@@ -39,7 +39,7 @@ export class IgeObjectRegister {
 	 * @param {Object} obj The object to un-register.
 	 * @return {*}
 	 */
-	remove(obj: IgeCanRegisterById) {
+	remove (obj: IgeCanRegisterById) {
 		// Check if the object is registered in the ID lookup
 		if (!this._store[obj.id()]) {
 			return;

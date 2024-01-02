@@ -4,7 +4,7 @@ import { ige } from "../instance";
 import { arrPull } from "../utils";
 
 export class IgeUiManagerController extends IgeEventingClass {
-	constructor() {
+	constructor () {
 		super(...arguments);
 		this.componentId = "ui";
 		this.classId = "IgeUiManagerController";
@@ -28,7 +28,7 @@ export class IgeUiManagerController extends IgeEventingClass {
 			}
 		};
 	}
-	isReady() {
+	isReady () {
 		return new Promise((resolve) => {
 			setTimeout(() => {
 				ige.dependencies.waitFor(["input"], () => {
@@ -47,7 +47,7 @@ export class IgeUiManagerController extends IgeEventingClass {
 	 * style.
 	 * @returns {*}
 	 */
-	style(name, data) {
+	style (name, data) {
 		if (name !== undefined) {
 			if (data !== undefined) {
 				// Set the data against the name, update any elements using the style
@@ -63,14 +63,14 @@ export class IgeUiManagerController extends IgeEventingClass {
 	 * Registers a UI element with the UI manager.
 	 * @param elem
 	 */
-	registerElement(elem) {
+	registerElement (elem) {
 		this._register.push(elem);
 	}
 	/**
 	 * Un-registers a UI element with the UI manager.
 	 * @param elem
 	 */
-	unRegisterElement(elem) {
+	unRegisterElement (elem) {
 		arrPull(this._register, elem);
 		// Kill any styles defined for this element id
 		delete this._styles["#" + elem._id];
@@ -82,7 +82,7 @@ export class IgeUiManagerController extends IgeEventingClass {
 	 * Registers a UI element against a style for quick lookup.
 	 * @param elem
 	 */
-	registerElementStyle(elem) {
+	registerElementStyle (elem) {
 		if (elem && elem._styleClass) {
 			this._elementsByStyle[elem._styleClass] = this._elementsByStyle[elem._styleClass] || [];
 			this._elementsByStyle[elem._styleClass].push(elem);
@@ -92,16 +92,16 @@ export class IgeUiManagerController extends IgeEventingClass {
 	 * Un-registers a UI element from a style.
 	 * @param elem
 	 */
-	unRegisterElementStyle(elem) {
+	unRegisterElementStyle (elem) {
 		if (elem && elem._styleClass) {
 			this._elementsByStyle[elem._styleClass] = this._elementsByStyle[elem._styleClass] || [];
 			this._elementsByStyle[elem._styleClass].push(elem);
 		}
 	}
-	canFocus(elem) {
+	canFocus (elem) {
 		return elem._allowFocus;
 	}
-	focus(elem) {
+	focus (elem) {
 		if (elem !== undefined) {
 			if (elem !== this._focus) {
 				// The element is not our current focus so focus to it
@@ -127,7 +127,7 @@ export class IgeUiManagerController extends IgeEventingClass {
 		}
 		return false;
 	}
-	blur(elem) {
+	blur (elem) {
 		//console.log('blur', elem._id, elem);
 		if (elem !== undefined) {
 			if (elem === this._focus) {

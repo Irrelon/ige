@@ -1,5 +1,5 @@
 import { IgeComponent } from "../../core/IgeComponent";
-import { IgeEntity } from "../../core/IgeEntity";
+import type { IgeEntity } from "../../core/IgeEntity";
 
 /**
  * When added to a viewport, automatically adds entity translate
@@ -15,7 +15,7 @@ class IgeEditorTranslateComponent extends IgeComponent {
 	 * @param options The options object that was passed to the component during
 	 * the call to addComponent.
 	 */
-	constructor(entity: IgeEntity, options?: any) {
+	constructor (entity: IgeEntity, options?: any) {
 		super(entity, options);
 
 		// Set the pan component as inactive to start with

@@ -1,5 +1,5 @@
 import { Rotator } from "./Rotator";
-import { IgeEntity } from "@/engine/core/IgeEntity";
+import type { IgeEntity } from "@/engine/core/IgeEntity";
 import { ige } from "@/engine/instance";
 
 export const createChildRotators = (parent: IgeEntity, distance = 120, speed = 0.1) => {

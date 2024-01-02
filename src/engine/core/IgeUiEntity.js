@@ -10,7 +10,7 @@ import { PI180 } from "../utils";
  * won't do the job.
  */
 export class IgeUiEntity extends IgeEntity {
-	constructor() {
+	constructor () {
 		super(...arguments);
 		this.classId = "IgeUiEntity";
 		this._color = "#000000";
@@ -35,28 +35,28 @@ export class IgeUiEntity extends IgeEntity {
 		this._marginRight = 0;
 		this._marginBottom = 0;
 	}
-	disabled(val) {
+	disabled (val) {
 		if (val !== undefined) {
 			this._disabled = val;
 			return this;
 		}
 		return this._disabled;
 	}
-	display(val) {
+	display (val) {
 		if (val !== undefined) {
 			this._display = val;
 			return this;
 		}
 		return this._display;
 	}
-	overflow(val) {
+	overflow (val) {
 		if (val !== undefined) {
 			this._overflow = val;
 			return this;
 		}
 		return this._overflow;
 	}
-	_renderBackground(ctx) {
+	_renderBackground (ctx) {
 		const geom = this._bounds2d;
 		if ((!this._backgroundColor && !this._patternFill) || !ctx) {
 			return;
@@ -134,7 +134,7 @@ export class IgeUiEntity extends IgeEntity {
 		}
 		ctx.restore();
 	}
-	_anyBorderColor() {
+	_anyBorderColor () {
 		return Boolean(
 			this._borderColor ||
 				this._borderLeftColor ||
@@ -143,7 +143,7 @@ export class IgeUiEntity extends IgeEntity {
 				this._borderBottomColor
 		);
 	}
-	_anyBorderWidth() {
+	_anyBorderWidth () {
 		return Boolean(
 			this._borderWidth ||
 				this._borderLeftWidth ||
@@ -152,7 +152,7 @@ export class IgeUiEntity extends IgeEntity {
 				this._borderBottomWidth
 		);
 	}
-	_anyBorderRadius() {
+	_anyBorderRadius () {
 		return Boolean(
 			this._borderRadius ||
 				this._borderTopRightRadius ||
@@ -161,7 +161,7 @@ export class IgeUiEntity extends IgeEntity {
 				this._borderTopLeftRadius
 		);
 	}
-	_borderWidthsMatch() {
+	_borderWidthsMatch () {
 		return (
 			this._borderLeftWidth === this._borderWidth &&
 			this._borderTopWidth === this._borderWidth &&
@@ -169,7 +169,7 @@ export class IgeUiEntity extends IgeEntity {
 			this._borderBottomWidth === this._borderWidth
 		);
 	}
-	_renderBorder(ctx) {
+	_renderBorder (ctx) {
 		const geom = this._bounds2d;
 		const left = (-geom.x2 | 0) + 0.5;
 		const top = (-geom.y2 | 0) + 0.5;
@@ -318,7 +318,7 @@ export class IgeUiEntity extends IgeEntity {
 			ctx.stroke();
 		}
 	}
-	cell(val) {
+	cell (val) {
 		if (val === undefined) {
 			return this._cell;
 		}
@@ -328,7 +328,7 @@ export class IgeUiEntity extends IgeEntity {
 		}
 		return this;
 	}
-	mount(obj) {
+	mount (obj) {
 		const ret = super.mount(obj);
 		if (this._parent) {
 			// Now we're mounted update our ui calculations since we have a parent
@@ -346,7 +346,7 @@ export class IgeUiEntity extends IgeEntity {
 		}
 		return ret;
 	}
-	tick(ctx, dontTransform = false) {
+	tick (ctx, dontTransform = false) {
 		if (!this._hidden && this._inView && (!this._parent || this._parent._inView) && !this._streamJustCreated) {
 			if (!dontTransform) {
 				this._transformContext(ctx);
@@ -377,7 +377,7 @@ export class IgeUiEntity extends IgeEntity {
 	 * @param event
 	 * @private
 	 */
-	_resizeEvent(event) {
+	_resizeEvent (event) {
 		if (this._updateUiPosition) {
 			this._updateUiPosition();
 		} else {
@@ -388,8 +388,8 @@ export class IgeUiEntity extends IgeEntity {
 		}
 		super._resizeEvent(event);
 	}
-	_updateStyle() {}
-	left(px, noUpdate = false) {
+	_updateStyle () {}
+	left (px, noUpdate = false) {
 		if (px === undefined) {
 			return this._uiLeft;
 		}
@@ -427,7 +427,7 @@ export class IgeUiEntity extends IgeEntity {
 		}
 		return this;
 	}
-	right(px, noUpdate = false) {
+	right (px, noUpdate = false) {
 		if (px !== undefined) {
 			if (px === null) {
 				// Remove all data
@@ -465,7 +465,7 @@ export class IgeUiEntity extends IgeEntity {
 		}
 		return this._uiRight;
 	}
-	center(px, noUpdate = false) {
+	center (px, noUpdate = false) {
 		if (px !== undefined) {
 			if (px === null) {
 				// Remove all data
@@ -505,7 +505,7 @@ export class IgeUiEntity extends IgeEntity {
 		}
 		return this._uiCenter;
 	}
-	top(px, noUpdate = false) {
+	top (px, noUpdate = false) {
 		if (px === undefined) {
 			return this._uiTop;
 		}
@@ -544,7 +544,7 @@ export class IgeUiEntity extends IgeEntity {
 		}
 		return this;
 	}
-	bottom(px, noUpdate = false) {
+	bottom (px, noUpdate = false) {
 		if (px !== undefined) {
 			if (px === null) {
 				// Remove all data
@@ -582,7 +582,7 @@ export class IgeUiEntity extends IgeEntity {
 		}
 		return this._uiBottom;
 	}
-	middle(px, noUpdate = false) {
+	middle (px, noUpdate = false) {
 		if (px !== undefined) {
 			if (px === null) {
 				// Remove all data
@@ -622,7 +622,7 @@ export class IgeUiEntity extends IgeEntity {
 		}
 		return this._uiMiddle;
 	}
-	width(px, lockAspect = false, modifier, noUpdate = false) {
+	width (px, lockAspect = false, modifier, noUpdate = false) {
 		if (px !== undefined) {
 			if (px === null) {
 				// Remove all data
@@ -672,7 +672,7 @@ export class IgeUiEntity extends IgeEntity {
 		}
 		return this._bounds2d.x;
 	}
-	height(px, lockAspect = false, modifier, noUpdate = false) {
+	height (px, lockAspect = false, modifier, noUpdate = false) {
 		if (px !== undefined) {
 			if (px === null) {
 				// Remove all data
@@ -723,12 +723,12 @@ export class IgeUiEntity extends IgeEntity {
 		}
 		return this._bounds2d.y;
 	}
-	flex(val) {
+	flex (val) {
 		if (val === undefined) return this._uiFlex;
 		this._uiFlex = val;
 		return this;
 	}
-	autoScaleX(val, lockAspect = false) {
+	autoScaleX (val, lockAspect = false) {
 		if (val !== undefined) {
 			this._autoScaleX = val;
 			this._autoScaleLockAspect = lockAspect;
@@ -737,7 +737,7 @@ export class IgeUiEntity extends IgeEntity {
 		}
 		return this._autoScaleX;
 	}
-	autoScaleY(val, lockAspect = false) {
+	autoScaleY (val, lockAspect = false) {
 		if (val !== undefined) {
 			this._autoScaleY = val;
 			this._autoScaleLockAspect = lockAspect;
@@ -751,7 +751,7 @@ export class IgeUiEntity extends IgeEntity {
 	 * for this UI entity.
 	 * @return {*}
 	 */
-	updateUiChildren() {
+	updateUiChildren () {
 		const arr = this._children || [];
 		if (!arr) {
 			return this;
@@ -773,7 +773,7 @@ export class IgeUiEntity extends IgeEntity {
 	 * top and bottom co-ordinates.
 	 * @private
 	 */
-	_updateUiPosition() {
+	_updateUiPosition () {
 		if (!this._parent) {
 			return;
 		}
@@ -874,7 +874,7 @@ export class IgeUiEntity extends IgeEntity {
 		this.emit("uiUpdate");
 		this.cacheDirty(true);
 	}
-	color(color) {
+	color (color) {
 		if (color !== undefined) {
 			this._color = color;
 			this.cacheDirty(true);
@@ -891,7 +891,7 @@ export class IgeUiEntity extends IgeEntity {
 	 * @return {*} Returns this if any parameter is specified or
 	 * the current background image if no parameters are specified.
 	 */
-	backgroundImage(texture, repeatType) {
+	backgroundImage (texture, repeatType) {
 		var _a, _b;
 		if (!(texture && texture.image)) {
 			return this._patternFill;
@@ -953,7 +953,7 @@ export class IgeUiEntity extends IgeEntity {
 		this.cacheDirty(true);
 		return this;
 	}
-	backgroundSize(x, y) {
+	backgroundSize (x, y) {
 		if (!(x !== undefined && y !== undefined)) {
 			return this._backgroundSize;
 		}
@@ -1005,7 +1005,7 @@ export class IgeUiEntity extends IgeEntity {
 		this.cacheDirty(true);
 		return this;
 	}
-	backgroundColor(color) {
+	backgroundColor (color) {
 		if (color !== undefined) {
 			this._backgroundColor = color;
 			this.cacheDirty(true);
@@ -1019,7 +1019,7 @@ export class IgeUiEntity extends IgeEntity {
 	 * @param {number=} y
 	 * @return {*} Returns this when setting the value or the current value if none is specified.
 	 */
-	backgroundPosition(x, y) {
+	backgroundPosition (x, y) {
 		if (x !== undefined && y !== undefined) {
 			this._backgroundPosition = { x, y };
 			this.cacheDirty(true);
@@ -1027,7 +1027,7 @@ export class IgeUiEntity extends IgeEntity {
 		}
 		return this._backgroundPosition;
 	}
-	borderColor(color) {
+	borderColor (color) {
 		if (color !== undefined) {
 			this._borderColor = color;
 			this._borderLeftColor = color;
@@ -1039,7 +1039,7 @@ export class IgeUiEntity extends IgeEntity {
 		}
 		return this._borderColor;
 	}
-	borderLeftColor(color) {
+	borderLeftColor (color) {
 		if (color !== undefined) {
 			this._borderLeftColor = color;
 			this.cacheDirty(true);
@@ -1047,7 +1047,7 @@ export class IgeUiEntity extends IgeEntity {
 		}
 		return this._borderLeftColor;
 	}
-	borderTopColor(color) {
+	borderTopColor (color) {
 		if (color !== undefined) {
 			this._borderTopColor = color;
 			this.cacheDirty(true);
@@ -1055,7 +1055,7 @@ export class IgeUiEntity extends IgeEntity {
 		}
 		return this._borderTopColor;
 	}
-	borderRightColor(color) {
+	borderRightColor (color) {
 		if (color !== undefined) {
 			this._borderRightColor = color;
 			this.cacheDirty(true);
@@ -1063,7 +1063,7 @@ export class IgeUiEntity extends IgeEntity {
 		}
 		return this._borderRightColor;
 	}
-	borderBottomColor(color) {
+	borderBottomColor (color) {
 		if (color !== undefined) {
 			this._borderBottomColor = color;
 			this.cacheDirty(true);
@@ -1071,7 +1071,7 @@ export class IgeUiEntity extends IgeEntity {
 		}
 		return this._borderBottomColor;
 	}
-	borderWidth(px) {
+	borderWidth (px) {
 		if (px !== undefined) {
 			this._borderWidth = px;
 			this._borderLeftWidth = px;
@@ -1083,7 +1083,7 @@ export class IgeUiEntity extends IgeEntity {
 		}
 		return this._borderWidth;
 	}
-	borderLeftWidth(px) {
+	borderLeftWidth (px) {
 		if (px !== undefined) {
 			this._borderLeftWidth = px;
 			this.cacheDirty(true);
@@ -1091,7 +1091,7 @@ export class IgeUiEntity extends IgeEntity {
 		}
 		return this._borderLeftWidth;
 	}
-	borderTopWidth(px) {
+	borderTopWidth (px) {
 		if (px !== undefined) {
 			this._borderTopWidth = px;
 			this.cacheDirty(true);
@@ -1099,7 +1099,7 @@ export class IgeUiEntity extends IgeEntity {
 		}
 		return this._borderTopWidth;
 	}
-	borderRightWidth(px) {
+	borderRightWidth (px) {
 		if (px !== undefined) {
 			this._borderRightWidth = px;
 			this.cacheDirty(true);
@@ -1107,7 +1107,7 @@ export class IgeUiEntity extends IgeEntity {
 		}
 		return this._borderRightWidth;
 	}
-	borderBottomWidth(px) {
+	borderBottomWidth (px) {
 		if (px !== undefined) {
 			this._borderBottomWidth = px;
 			this.cacheDirty(true);
@@ -1115,7 +1115,7 @@ export class IgeUiEntity extends IgeEntity {
 		}
 		return this._borderBottomWidth;
 	}
-	borderRadius(px) {
+	borderRadius (px) {
 		if (px !== undefined) {
 			this._borderRadius = px;
 			this._borderTopLeftRadius = px;
@@ -1127,7 +1127,7 @@ export class IgeUiEntity extends IgeEntity {
 		}
 		return this._borderRadius;
 	}
-	borderTopLeftRadius(px) {
+	borderTopLeftRadius (px) {
 		if (px !== undefined) {
 			this._borderTopLeftRadius = px;
 			this.cacheDirty(true);
@@ -1135,7 +1135,7 @@ export class IgeUiEntity extends IgeEntity {
 		}
 		return this._borderTopLeftRadius;
 	}
-	borderTopRightRadius(px) {
+	borderTopRightRadius (px) {
 		if (px !== undefined) {
 			this._borderTopRightRadius = px;
 			this.cacheDirty(true);
@@ -1143,7 +1143,7 @@ export class IgeUiEntity extends IgeEntity {
 		}
 		return this._borderTopRightRadius;
 	}
-	borderBottomLeftRadius(px) {
+	borderBottomLeftRadius (px) {
 		if (px !== undefined) {
 			this._borderBottomLeftRadius = px;
 			this.cacheDirty(true);
@@ -1151,7 +1151,7 @@ export class IgeUiEntity extends IgeEntity {
 		}
 		return this._borderBottomLeftRadius;
 	}
-	borderBottomRightRadius(px) {
+	borderBottomRightRadius (px) {
 		if (px !== undefined) {
 			this._borderBottomRightRadius = px;
 			this.cacheDirty(true);
@@ -1159,7 +1159,7 @@ export class IgeUiEntity extends IgeEntity {
 		}
 		return this._borderBottomRightRadius;
 	}
-	padding(...args) {
+	padding (...args) {
 		if (args.length === 0) return this._padding;
 		if (args.length === 1) {
 			// Set padding proper
@@ -1175,7 +1175,7 @@ export class IgeUiEntity extends IgeEntity {
 		this.cacheDirty(true);
 		return this;
 	}
-	paddingX(px) {
+	paddingX (px) {
 		if (px !== undefined) {
 			this._paddingLeft = px;
 			this._paddingRight = px;
@@ -1184,7 +1184,7 @@ export class IgeUiEntity extends IgeEntity {
 		}
 		return this._paddingLeft;
 	}
-	paddingY(px) {
+	paddingY (px) {
 		if (px !== undefined) {
 			this._paddingTop = px;
 			this._paddingBottom = px;
@@ -1193,7 +1193,7 @@ export class IgeUiEntity extends IgeEntity {
 		}
 		return this._paddingTop;
 	}
-	paddingLeft(px) {
+	paddingLeft (px) {
 		if (px !== undefined) {
 			this._paddingLeft = px;
 			this.cacheDirty(true);
@@ -1201,7 +1201,7 @@ export class IgeUiEntity extends IgeEntity {
 		}
 		return this._paddingLeft;
 	}
-	paddingTop(px) {
+	paddingTop (px) {
 		if (px !== undefined) {
 			this._paddingTop = px;
 			this.cacheDirty(true);
@@ -1209,7 +1209,7 @@ export class IgeUiEntity extends IgeEntity {
 		}
 		return this._paddingTop;
 	}
-	paddingRight(px) {
+	paddingRight (px) {
 		if (px !== undefined) {
 			this._paddingRight = px;
 			this.cacheDirty(true);
@@ -1217,7 +1217,7 @@ export class IgeUiEntity extends IgeEntity {
 		}
 		return this._paddingRight;
 	}
-	paddingBottom(px) {
+	paddingBottom (px) {
 		if (px !== undefined) {
 			this._paddingBottom = px;
 			this.cacheDirty(true);
@@ -1225,7 +1225,7 @@ export class IgeUiEntity extends IgeEntity {
 		}
 		return this._paddingBottom;
 	}
-	margin(...args) {
+	margin (...args) {
 		if (args.length === 0) return this._margin;
 		if (args.length === 1) {
 			// Set margin proper
@@ -1241,7 +1241,7 @@ export class IgeUiEntity extends IgeEntity {
 		this.cacheDirty(true);
 		return this;
 	}
-	marginLeft(px) {
+	marginLeft (px) {
 		if (px !== undefined) {
 			this._marginLeft = px;
 			this.cacheDirty(true);
@@ -1249,7 +1249,7 @@ export class IgeUiEntity extends IgeEntity {
 		}
 		return this._marginLeft !== undefined ? this._marginLeft : this._margin;
 	}
-	marginTop(px) {
+	marginTop (px) {
 		if (px !== undefined) {
 			this._marginTop = px;
 			this.cacheDirty(true);
@@ -1257,7 +1257,7 @@ export class IgeUiEntity extends IgeEntity {
 		}
 		return this._marginTop;
 	}
-	marginRight(px) {
+	marginRight (px) {
 		if (px !== undefined) {
 			this._marginRight = px;
 			this.cacheDirty(true);
@@ -1265,7 +1265,7 @@ export class IgeUiEntity extends IgeEntity {
 		}
 		return this._marginRight;
 	}
-	marginBottom(px) {
+	marginBottom (px) {
 		if (px !== undefined) {
 			this._marginBottom = px;
 			this.cacheDirty(true);

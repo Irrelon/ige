@@ -1,7 +1,7 @@
 import { IgeTexture } from "./IgeTexture";
 import type { IgeCanvas } from "@/types/IgeCanvas";
-import { IgeImage } from "@/types/IgeImage";
-import { IgeSmartTexture } from "@/types/IgeSmartTexture";
+import type { IgeImage } from "@/types/IgeImage";
+import type { IgeSmartTexture } from "@/types/IgeSmartTexture";
 
 type IgeTextureCell = [number, number, number, number, string?];
 type IgeTextureCellArray = IgeTextureCell[];
@@ -18,7 +18,7 @@ export class IgeSpriteSheet extends IgeTexture {
 	_sheetImage?: IgeImage;
 	_checkModulus?: boolean = false;
 
-	constructor(id?: string, urlOrObject?: string | IgeSmartTexture, cells?: IgeTextureCellArray) {
+	constructor (id?: string, urlOrObject?: string | IgeSmartTexture, cells?: IgeTextureCellArray) {
 		super(id, urlOrObject);
 
 		if (cells) {
@@ -26,7 +26,7 @@ export class IgeSpriteSheet extends IgeTexture {
 		}
 	}
 
-	_textureLoaded() {
+	_textureLoaded () {
 		if (!this.image) {
 			// Unable to create cells from non-image texture
 			// TODO: Low-priority - Support cell sheets from smart-textures
@@ -80,7 +80,7 @@ export class IgeSpriteSheet extends IgeTexture {
 	 * @param {number} y Y co-ordinate to check.
 	 * @returns {boolean} True if transparent, false if not.
 	 */
-	isPixelTransparent(imageData: ImageData, x: number, y: number) {
+	isPixelTransparent (imageData: ImageData, x: number, y: number) {
 		const pixelStart = y * imageData.width * 4 + x * 4;
 		return imageData.data[pixelStart + 3] === 0;
 	}
@@ -92,7 +92,7 @@ export class IgeSpriteSheet extends IgeTexture {
 	 * @param {number} y Y co-ordinate to modify.
 	 * @returns {undefined} Nothing
 	 */
-	makePixelTransparent(imageData: ImageData, x: number, y: number) {
+	makePixelTransparent (imageData: ImageData, x: number, y: number) {
 		const pixelStart = y * imageData.width * 4 + x * 4;
 		imageData.data[pixelStart + 3] = 0;
 	}
@@ -105,7 +105,7 @@ export class IgeSpriteSheet extends IgeTexture {
 	 * @returns {{a: *, r: *, b: *, g: *}} Object with the argb
 	 * values of the pixel.
 	 */
-	getPixelAt(imageData: ImageData, x: number, y: number) {
+	getPixelAt (imageData: ImageData, x: number, y: number) {
 		const pixelStart = y * imageData.width * 4 + x * 4;
 
 		return {
@@ -122,7 +122,7 @@ export class IgeSpriteSheet extends IgeTexture {
 	 * @param {Image} img The image to detect cells in.
 	 * @return {Array} An array of cell bounds.
 	 */
-	detectCells(img: IgeImage | IgeCanvas): IgeTextureCellArray {
+	detectCells (img: IgeImage | IgeCanvas): IgeTextureCellArray {
 		// Create a temp canvas
 		const canvas = new OffscreenCanvas(1, 1);
 		const ctx = canvas.getContext("2d") as OffscreenCanvasRenderingContext2D;
@@ -168,7 +168,7 @@ export class IgeSpriteSheet extends IgeTexture {
 		return spriteRects;
 	}
 
-	_pixelInRects(rects: IgeTextureCellArray, x: number, y: number) {
+	_pixelInRects (rects: IgeTextureCellArray, x: number, y: number) {
 		const rectCount = rects.length;
 
 		let rectIndex;
@@ -187,7 +187,7 @@ export class IgeSpriteSheet extends IgeTexture {
 		return false;
 	}
 
-	_determineRect(pixels: ImageData, x: number, y: number): IgeTextureCell {
+	_determineRect (pixels: ImageData, x: number, y: number): IgeTextureCell {
 		const pixArr = [{ x, y }];
 		const rect = { x, y, width: 1, height: 1 };
 
@@ -289,7 +289,7 @@ export class IgeSpriteSheet extends IgeTexture {
 	 * Returns the total number of cells in the cell sheet.
 	 * @return {number}
 	 */
-	cellCount() {
+	cellCount () {
 		return this._cells.length;
 	}
 
@@ -298,7 +298,7 @@ export class IgeSpriteSheet extends IgeTexture {
 	 * evaluated will reproduce this object.
 	 * @return {String}
 	 */
-	stringify() {
+	stringify () {
 		const str = "new " + this.classId + "('" + this.url() + "', " + this._cells.toString() + ")";
 
 		// Every object has an ID, assign that first

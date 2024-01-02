@@ -2,13 +2,13 @@ import { IgeUiElement } from "../../engine/core/IgeUiElement.js";
 import { registerClass } from "../../engine/igeClassStore.js";
 
 export class IgeUiGridPanel extends IgeUiElement {
-	constructor(cellWidth, cellHeight) {
+	constructor (cellWidth, cellHeight) {
 		super();
 		this.classId = "IgeUiGridPanel";
 		this._gridCellWidth = cellWidth || 32;
 		this._gridCellHeight = cellHeight || 32;
 	}
-	_childMounted(obj) {
+	_childMounted (obj) {
 		super._childMounted(obj);
 		let gridWidth = Math.floor(this._bounds2d.x / this._gridCellWidth),
 			gridHeight = Math.floor(this._bounds2d.y / this._gridCellHeight),

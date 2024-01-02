@@ -14,7 +14,7 @@ export class IgePathNode extends IgePoint3d {
 	 * @param {Object} parent
 	 * @param {string} direction
 	 */
-	constructor(x, y, g, moveCost = 0, heuristic = 0, parent, direction = "") {
+	constructor (x, y, g, moveCost = 0, heuristic = 0, parent, direction = "") {
 		super();
 		this.classId = "IgePathNode";
 		this._distanceToNext = 0;
@@ -33,7 +33,7 @@ export class IgePathNode extends IgePoint3d {
 		this.direction = direction;
 		this._mode = 0;
 	}
-	static fromPoint3d(point3d) {
+	static fromPoint3d (point3d) {
 		return new IgePathNode(point3d.x, point3d.y, point3d.z);
 	}
 	/**
@@ -42,7 +42,7 @@ export class IgePathNode extends IgePoint3d {
 	 * @param {number=} val 0 = tile based, 1 = absolute based.
 	 * @return {*}
 	 */
-	mode(val) {
+	mode (val) {
 		if (val !== undefined) {
 			this._mode = val;
 			return this;

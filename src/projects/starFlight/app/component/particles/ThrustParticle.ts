@@ -1,12 +1,12 @@
 import { IgeParticle } from "@/engine/core/IgeParticle";
-import { IgeParticleEmitter } from "@/engine/core/IgeParticleEmitter";
+import type { IgeParticleEmitter } from "@/engine/core/IgeParticleEmitter";
 import { ige } from "@/engine/instance";
 import { arrPull } from "@/engine/utils";
 
 export class ThrustParticle extends IgeParticle {
 	classId = "ThrustParticle";
 
-	constructor(emitter: IgeParticleEmitter) {
+	constructor (emitter: IgeParticleEmitter) {
 		super(emitter);
 
 		// Setup the particle default values
@@ -19,7 +19,7 @@ export class ThrustParticle extends IgeParticle {
 			.category("thrustParticle");
 	}
 
-	destroy() {
+	destroy () {
 		// Remove ourselves from the emitter
 		if (this._emitter !== undefined) {
 			arrPull(this._emitter._particles, this);

@@ -213,7 +213,7 @@ export const traceSet = (
 	obj.___igeTraceCount = 0;
 
 	Object.defineProperty(obj, propName, {
-		get() {
+		get () {
 			return obj.___igeTraceCurrentVal[propName];
 		},
 		set: (val) => {
@@ -246,7 +246,7 @@ export const traceSet = (
  */
 export const traceSetOff = (obj: any, propName: string) => {
 	Object.defineProperty(obj, propName, {
-		set(val) {
+		set (val) {
 			this.___igeTraceCurrentVal[propName] = val;
 		}
 	});

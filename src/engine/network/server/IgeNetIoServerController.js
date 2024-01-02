@@ -14,7 +14,7 @@ import { arrPull, newIdHex } from "../../utils";
 import { IgeNetIoBaseController } from "../IgeNetIoBaseController";
 
 export class IgeNetIoServerController extends IgeNetIoBaseController {
-	constructor() {
+	constructor () {
 		super();
 		this._idCounter = 0;
 		this._networkCommands = {}; // Maps a command name to a command handler function
@@ -181,7 +181,7 @@ export class IgeNetIoServerController extends IgeNetIoBaseController {
 	 * @param {Function=} callback A callback method to call once the
 	 * network has started.
 	 */
-	start(port, callback) {
+	start (port, callback) {
 		return new Promise((resolve) => {
 			this._socketById = {};
 			this._socketsByRoomId = {};
@@ -208,7 +208,7 @@ export class IgeNetIoServerController extends IgeNetIoBaseController {
 			this._streamTimer = setInterval(this._sendQueue, this._streamInterval);
 		});
 	}
-	timeSyncStart() {
+	timeSyncStart () {
 		this._timeSyncStarted = true;
 		// Send a time sync request now, so we
 		// have a starting value to work with
@@ -219,7 +219,7 @@ export class IgeNetIoServerController extends IgeNetIoBaseController {
 		}, this._timeSyncInterval);
 		return this;
 	}
-	timeSyncStop() {
+	timeSyncStop () {
 		this.log("Stopping client/server clock sync...");
 		clearInterval(this._timeSyncTimer);
 		this._timeSyncStarted = false;
@@ -235,7 +235,7 @@ export class IgeNetIoServerController extends IgeNetIoBaseController {
 	 * command is received by the network.
 	 * @return {*}
 	 */
-	define(commandName, callback) {
+	define (commandName, callback) {
 		this._networkCommands[commandName] = callback;
 		// Record reverse lookups
 		const index = this._networkCommandsIndex.length;
@@ -250,7 +250,7 @@ export class IgeNetIoServerController extends IgeNetIoBaseController {
 	 * @param {string} roomId The id of the room to add the client to.
 	 * @returns {*}
 	 */
-	clientJoinRoom(clientId, roomId) {
+	clientJoinRoom (clientId, roomId) {
 		this._clientRooms[clientId] = this._clientRooms[clientId] || [];
 		this._clientRooms[clientId].push(roomId);
 		this._socketsByRoomId[roomId] = this._socketsByRoomId[roomId] || {};
@@ -268,7 +268,7 @@ export class IgeNetIoServerController extends IgeNetIoBaseController {
 	 * @param {string} roomId The id of the room to remove the client from.
 	 * @returns {*}
 	 */
-	clientLeaveRoom(clientId, roomId) {
+	clientLeaveRoom (clientId, roomId) {
 		if (this._clientRooms[clientId]) {
 			arrPull(this._clientRooms[clientId], roomId);
 			delete this._socketsByRoomId[roomId][clientId];
@@ -280,7 +280,7 @@ export class IgeNetIoServerController extends IgeNetIoBaseController {
 	 * @param {string} clientId The client id to remove from all rooms.
 	 * @returns {*}
 	 */
-	clientLeaveAllRooms(clientId) {
+	clientLeaveAllRooms (clientId) {
 		const arr = this._clientRooms[clientId];
 		let arrCount = arr.length;
 		while (arrCount--) {
@@ -294,7 +294,7 @@ export class IgeNetIoServerController extends IgeNetIoBaseController {
 	 * @param clientId
 	 * @returns {Array} An array of string ids for each room the client has joined.
 	 */
-	clientRooms(clientId) {
+	clientRooms (clientId) {
 		return this._clientRooms[clientId] || [];
 	}
 	/**
@@ -304,7 +304,7 @@ export class IgeNetIoServerController extends IgeNetIoBaseController {
 	 * that have joined room specified by the passed roomId.
 	 * @return
 	 */
-	clients(roomId) {
+	clients (roomId) {
 		if (!roomId) return this._socketById;
 		return this._socketsByRoomId[roomId] || {};
 	}
@@ -313,7 +313,7 @@ export class IgeNetIoServerController extends IgeNetIoBaseController {
 	 * @param {string=} clientId
 	 * @return {*}
 	 */
-	socket(clientId) {
+	socket (clientId) {
 		return this._socketById[clientId];
 	}
 	/**
@@ -323,7 +323,7 @@ export class IgeNetIoServerController extends IgeNetIoBaseController {
 	 * to drop any incoming connections.
 	 * @return {*}
 	 */
-	acceptConnections(val) {
+	acceptConnections (val) {
 		if (typeof val === "undefined") {
 			return this._acceptConnections;
 		}
@@ -343,7 +343,7 @@ export class IgeNetIoServerController extends IgeNetIoBaseController {
 	 * an array of socket ids to send to.
 	 * @param callback
 	 */
-	send(commandName, data, clientIdOrArrayOfIds, callback) {
+	send (commandName, data, clientIdOrArrayOfIds, callback) {
 		var _a;
 		if (callback) {
 			if (!clientIdOrArrayOfIds) {
@@ -378,7 +378,7 @@ export class IgeNetIoServerController extends IgeNetIoBaseController {
 	 * @param clientIdOrArrayOfIds
 	 * @param {Function} callback
 	 */
-	request(cmd, data, clientIdOrArrayOfIds, callback) {
+	request (cmd, data, clientIdOrArrayOfIds, callback) {
 		// Build the request object
 		const req = {
 			id: newIdHex(),
@@ -405,7 +405,7 @@ export class IgeNetIoServerController extends IgeNetIoBaseController {
 	 * @param {string} requestId
 	 * @param {Object} data
 	 */
-	response(requestId, data) {
+	response (requestId, data) {
 		// Grab the original request object
 		const req = this._requests[requestId];
 		if (!req) {
@@ -428,11 +428,11 @@ export class IgeNetIoServerController extends IgeNetIoBaseController {
 	 * @return {boolean}
 	 * @private
 	 */
-	_originIsAllowed(origin) {
+	_originIsAllowed (origin) {
 		// put logic here to detect whether the specified origin is allowed.
 		return true;
 	}
-	_sendTimeSync(clientId) {
+	_sendTimeSync (clientId) {
 		// Send the time sync command
 		const data = [ige.engine._currentTime];
 		this.send(IGE_NETWORK_TIME_SYNC, data, clientId);
@@ -443,7 +443,7 @@ export class IgeNetIoServerController extends IgeNetIoBaseController {
 	 * @param {string} clientId The client socket id.
 	 * @private
 	 */
-	_onClientMessage(data, clientId) {
+	_onClientMessage (data, clientId) {
 		const ciDecoded = data[0].charCodeAt(0),
 			commandName = this._networkCommandsIndex[ciDecoded];
 		const commandHandler = this._networkCommands[commandName];
@@ -458,7 +458,7 @@ export class IgeNetIoServerController extends IgeNetIoBaseController {
 	 * @param {Object} socket The client socket object.
 	 * @private
 	 */
-	_onClientDisconnect(data, socket) {
+	_onClientDisconnect (data, socket) {
 		this.log(`Client disconnected with id "${socket._id}"`);
 		this.emit("disconnect", socket._id);
 		// Remove them from all rooms
@@ -471,7 +471,7 @@ export class IgeNetIoServerController extends IgeNetIoBaseController {
 	 * updates are sent per second.
 	 * @param {number=} ms The number of milliseconds between stream messages.
 	 */
-	sendInterval(ms) {
+	sendInterval (ms) {
 		if (ms !== undefined) {
 			this.log("Setting delta stream interval to " + ms / ige.engine._timeScale + "ms");
 			this._streamInterval = ms / ige.engine._timeScale;
@@ -482,7 +482,7 @@ export class IgeNetIoServerController extends IgeNetIoBaseController {
 	/**
 	 * Stops the stream of world updates to connected clients.
 	 */
-	stop() {
+	stop () {
 		this.log("Stopping delta stream...");
 		clearInterval(this._streamTimer);
 		return this;
@@ -494,7 +494,7 @@ export class IgeNetIoServerController extends IgeNetIoBaseController {
 	 * @param {string} clientId The client id this data is queued for.
 	 * @return {*}
 	 */
-	queue(entityId, data, clientId) {
+	queue (entityId, data, clientId) {
 		this._queuedData[entityId] = [data, clientId];
 		return this;
 	}

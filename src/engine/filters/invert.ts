@@ -1,5 +1,5 @@
 import { igeFilters } from "../igeFilters";
-import { IgeSmartFilter } from "@/types/IgeSmartFilter";
+import type { IgeSmartFilter } from "@/types/IgeSmartFilter";
 
 export const invert: IgeSmartFilter = function (canvas, ctx, originalImage, texture, data) {
 	const w = canvas.width,

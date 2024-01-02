@@ -3,7 +3,7 @@ import { IgeBaseClass } from "@/engine/core/IgeBaseClass";
 import { IgeBaseScene } from "@/engine/core/IgeBaseScene";
 import { IgeCellSheet } from "@/engine/core/IgeCellSheet";
 import { ige } from "@/engine/instance";
-import { IgeCanInit } from "@/types/IgeCanInit";
+import type { IgeCanInit } from "@/types/IgeCanInit";
 
 // @ts-ignore
 window.ige = ige;
@@ -11,12 +11,12 @@ window.ige = ige;
 export class Client extends IgeBaseClass implements IgeCanInit {
 	classId = "Client";
 
-	constructor() {
+	constructor () {
 		super();
 		void this.init();
 	}
 
-	async init() {
+	async init () {
 		// Load the game textures
 		new IgeCellSheet("grassSheet", "../assets/textures/tiles/grassSheet.png", 4, 1);
 

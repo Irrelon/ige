@@ -5,13 +5,13 @@ export class IgeComponent<EntityType = any> extends IgeEventingClass {
 	_options?: any;
 	componentId: string = "IgeComponent";
 
-	constructor(parent?: any, options?: any) {
+	constructor (parent?: any, options?: any) {
 		super();
 		this._entity = parent;
 		this._options = options;
 	}
 
-	destroy() {
+	destroy () {
 		return this;
 	}
 }

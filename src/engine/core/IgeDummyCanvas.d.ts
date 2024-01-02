@@ -1,4 +1,4 @@
-import { IgeDummyContext } from "./IgeDummyContext";
+import type { IgeDummyContext } from "./IgeDummyContext";
 
 export declare class IgeDummyCanvas {
 	dummy: boolean;

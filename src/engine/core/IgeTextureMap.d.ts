@@ -1,7 +1,7 @@
-import { IgePoint3d } from "./IgePoint3d";
-import { IgeTexture } from "./IgeTexture";
+import type { IgePoint3d } from "./IgePoint3d";
+import type { IgeTexture } from "./IgeTexture";
 import { IgeTileMap2d } from "./IgeTileMap2d";
-import { IgeRect } from "@/engine/core/IgeRect";
+import type { IgeRect } from "@/engine/core/IgeRect";
 
 /**
  * Texture maps provide a way to display textures / cells across a tile map.

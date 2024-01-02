@@ -1,13 +1,13 @@
 import { IgeUiElement } from "@/engine/core/IgeUiElement";
 import { registerClass } from "@/engine/igeClassStore";
-import { IgeCanvasRenderingContext2d } from "@/types/IgeCanvasRenderingContext2d";
+import type { IgeCanvasRenderingContext2d } from "@/types/IgeCanvasRenderingContext2d";
 
 export class IgeUiAutoFlow extends IgeUiElement {
 	classId = "IgeUiAutoFlow";
 
 	_currentHeight: number = 0;
 
-	tick(ctx: IgeCanvasRenderingContext2d) {
+	tick (ctx: IgeCanvasRenderingContext2d) {
 		// Loop children and re-position then
 		const arr = this._children as IgeUiElement[];
 		const arrCount = arr.length;

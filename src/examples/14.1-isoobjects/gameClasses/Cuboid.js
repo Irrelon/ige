@@ -1,7 +1,7 @@
 import { IgeEntity } from "../../../engine/core/IgeEntity.js";
 
 export class Cuboid extends IgeEntity {
-	constructor(pointerMoveFunc, pointerOutFunc) {
+	constructor (pointerMoveFunc, pointerOutFunc) {
 		super();
 		this.classId = "Cuboid";
 		this.isometric(true)

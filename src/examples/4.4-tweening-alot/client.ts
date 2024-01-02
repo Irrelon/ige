@@ -1,11 +1,11 @@
 import { RandomTweener } from "./gameClasses/RandomTweener";
 import { IgeBaseClass } from "@/engine/core/IgeBaseClass";
-import { IgeEntity } from "@/engine/core/IgeEntity";
+import type { IgeEntity } from "@/engine/core/IgeEntity";
 import { IgeScene2d } from "@/engine/core/IgeScene2d";
 import { IgeTexture } from "@/engine/core/IgeTexture";
 import { IgeViewport } from "@/engine/core/IgeViewport";
 import { ige } from "@/engine/instance";
-import { IgeCanInit } from "@/types/IgeCanInit";
+import type { IgeCanInit } from "@/types/IgeCanInit";
 
 // @ts-ignore
 window.ige = ige;
@@ -13,12 +13,12 @@ window.ige = ige;
 export class Client extends IgeBaseClass implements IgeCanInit {
 	classId = "Client";
 
-	constructor() {
+	constructor () {
 		super();
 		void this.init();
 	}
 
-	async init() {
+	async init () {
 		// Load the game textures
 		new IgeTexture("fairy", "../assets/textures/sprites/fairy.png");
 

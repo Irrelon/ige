@@ -2,7 +2,7 @@
  * Creates a new rectangle (x, y, width, height).
  */
 export class IgeRect {
-	constructor(x = 0, y = 0, width = 0, height = 0) {
+	constructor (x = 0, y = 0, width = 0, height = 0) {
 		this.classId = "IgeRect";
 		this.x = 0;
 		this.y = 0;
@@ -24,7 +24,7 @@ export class IgeRect {
 	 * @param {IgeRect} rect The rect to combine with this one.
 	 * @return {IgeRect} The new rect encapsulating both rects.
 	 */
-	combineRect(rect) {
+	combineRect (rect) {
 		const thisRectMaxX = this.x + this.width,
 			thisRectMaxY = this.y + this.height,
 			thatRectMaxX = rect.x + rect.width,
@@ -41,7 +41,7 @@ export class IgeRect {
 	 * both rects.
 	 * @param {IgeRect} rect The rect to combine with this one.
 	 */
-	thisCombineRect(rect) {
+	thisCombineRect (rect) {
 		const thisRectMaxX = this.x + this.width,
 			thisRectMaxY = this.y + this.height,
 			thatRectMaxX = rect.x + rect.width,
@@ -51,7 +51,7 @@ export class IgeRect {
 		this.width = Math.max(thisRectMaxX - this.x, thatRectMaxX - this.x);
 		this.height = Math.max(thisRectMaxY - this.y, thatRectMaxY - this.y);
 	}
-	minusPoint(point) {
+	minusPoint (point) {
 		return new IgeRect(this.x - point.x, this.y - point.y, this.width, this.height);
 	}
 	/**
@@ -60,7 +60,7 @@ export class IgeRect {
 	 * @param {IgeRect} rect
 	 * @return {Boolean}
 	 */
-	compare(rect) {
+	compare (rect) {
 		return (
 			rect && this.x === rect.x && this.y === rect.y && this.width === rect.width && this.height === rect.height
 		);
@@ -72,7 +72,7 @@ export class IgeRect {
 	 * @param y
 	 * @return {Boolean}
 	 */
-	xyInside(x, y) {
+	xyInside (x, y) {
 		return x >= this.x && y > this.y && x <= this.x + this.width && y <= this.y + this.height;
 	}
 	/**
@@ -81,7 +81,7 @@ export class IgeRect {
 	 * @param {IgePoint3d} point
 	 * @return {Boolean}
 	 */
-	pointInside(point) {
+	pointInside (point) {
 		return this.xyInside(point.x, point.y);
 	}
 	/**
@@ -89,7 +89,7 @@ export class IgeRect {
 	 * intersecting the rectangle.
 	 * @deprecated Please use intersects() instead.
 	 */
-	rectIntersect() {
+	rectIntersect () {
 		throw new Error("Deprecated, please use intersects() instead.");
 	}
 	/**
@@ -98,7 +98,7 @@ export class IgeRect {
 	 * @param {IgeRect} rect
 	 * @return {Boolean}
 	 */
-	intersects(rect) {
+	intersects (rect) {
 		if (!rect) {
 			return false;
 		}
@@ -125,7 +125,7 @@ export class IgeRect {
 	 * @param y2
 	 * @return {*}
 	 */
-	multiply(x1, y1, x2, y2) {
+	multiply (x1, y1, x2, y2) {
 		return new IgeRect(this.x * x1, this.y * y1, this.width * x2, this.height * y2);
 	}
 	/**
@@ -137,7 +137,7 @@ export class IgeRect {
 	 * @param y2
 	 * @return {*}
 	 */
-	thisMultiply(x1, y1, x2, y2) {
+	thisMultiply (x1, y1, x2, y2) {
 		this.x *= x1;
 		this.y *= y1;
 		this.width *= x2;
@@ -149,7 +149,7 @@ export class IgeRect {
 	 * but retains the same values.
 	 * @return {IgeRect}
 	 */
-	clone() {
+	clone () {
 		return new IgeRect(this.x, this.y, this.width, this.height);
 	}
 	/**
@@ -160,7 +160,7 @@ export class IgeRect {
 	 * @param {number=} precision
 	 * @return {String}
 	 */
-	toString(precision) {
+	toString (precision) {
 		if (precision === undefined) {
 			precision = 2;
 		}
@@ -179,7 +179,7 @@ export class IgeRect {
 	 * @param {CanvasRenderingContext2D} ctx
 	 * @param fill
 	 */
-	render(ctx, fill = false) {
+	render (ctx, fill = false) {
 		ctx.rect(this.x, this.y, this.width, this.height);
 		if (fill) {
 			ctx.fill();

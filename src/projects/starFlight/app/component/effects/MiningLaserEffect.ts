@@ -7,14 +7,14 @@ import type { IgeScene2d } from "@/engine/core/IgeScene2d";
 import { registerClass } from "@/engine/igeClassStore";
 import { ige } from "@/engine/instance";
 import { MiningParticle } from "../particles/MiningParticle";
-import { IgeCanvasRenderingContext2d } from "@/types/IgeCanvasRenderingContext2d";
+import type { IgeCanvasRenderingContext2d } from "@/types/IgeCanvasRenderingContext2d";
 
 export class MiningLaserEffect extends LaserEffect {
 	classId = "MiningLaserEffect";
 	audio?: IgeAudioEntity;
 	particleEmitter?: IgeParticleEmitter;
 
-	constructor(data: Record<string, any> = {}) {
+	constructor (data: Record<string, any> = {}) {
 		super(data);
 
 		if (isClient) {
@@ -46,7 +46,7 @@ export class MiningLaserEffect extends LaserEffect {
 		this.layer(3);
 	}
 
-	update(ctx: IgeCanvasRenderingContext2d, tickDelta: number) {
+	update (ctx: IgeCanvasRenderingContext2d, tickDelta: number) {
 		super.update(ctx, tickDelta);
 
 		if (isClient) {
@@ -81,7 +81,7 @@ export class MiningLaserEffect extends LaserEffect {
 		}
 	}
 
-	destroy() {
+	destroy () {
 		if (isClient) {
 			this.audio?.stop();
 		}

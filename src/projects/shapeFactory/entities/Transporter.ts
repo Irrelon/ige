@@ -3,8 +3,8 @@ import type { Road } from "./Road";
 import type { Building } from "./base/Building";
 import { WorkerUnit } from "./base/WorkerUnit";
 import { isServer } from "@/engine/clientServer";
-import { IgeEntity } from "@/engine/core/IgeEntity";
-import { IgePoint3d } from "@/engine/core/IgePoint3d";
+import type { IgeEntity } from "@/engine/core/IgeEntity";
+import type { IgePoint3d } from "@/engine/core/IgePoint3d";
 import { IgeTimeout } from "@/engine/core/IgeTimeout";
 import { IgeTween } from "@/engine/core/IgeTween";
 import { registerClass } from "@/engine/igeClassStore";
@@ -12,7 +12,7 @@ import { ige } from "@/engine/instance";
 import { distance } from "@/engine/utils";
 import { roadPathFinder } from "../services/roadPathFinder";
 import { WorkerUnitType } from "../enums/WorkerUnitType";
-import { IgeCanvasRenderingContext2d } from "@/types/IgeCanvasRenderingContext2d";
+import type { IgeCanvasRenderingContext2d } from "@/types/IgeCanvasRenderingContext2d";
 
 export class Transporter extends WorkerUnit {
 	classId = "Transporter";
@@ -28,7 +28,7 @@ export class Transporter extends WorkerUnit {
 	_navigateToHomePath?: string[];
 	_speed: number = 0.2;
 
-	constructor(baseId: string, depotAId: string, depotBId: string) {
+	constructor (baseId: string, depotAId: string, depotBId: string) {
 		super(WorkerUnitType.transporter);
 
 		this._baseId = baseId;
@@ -43,15 +43,15 @@ export class Transporter extends WorkerUnit {
 		this.setDepots();
 	}
 
-	timeToTarget(sourceX: number, sourceY: number, targetX: number, targetY: number): number {
+	timeToTarget (sourceX: number, sourceY: number, targetX: number, targetY: number): number {
 		return distance(sourceX, sourceY, targetX, targetY) / this._speed;
 	}
 
-	streamCreateConstructorArgs() {
+	streamCreateConstructorArgs () {
 		return [this._baseId, this._depotAId, this._depotBId];
 	}
 
-	setDepots() {
+	setDepots () {
 		this._depotA = ige.$(this._depotAId) as Building;
 		this._depotB = ige.$(this._depotBId) as Building;
 
@@ -67,7 +67,7 @@ export class Transporter extends WorkerUnit {
 		this.setRoad();
 	}
 
-	setRoad() {
+	setRoad () {
 		if (!this._depotA || !this._depotB) {
 			// Create a timeout to re-check
 			new IgeTimeout(() => {
@@ -101,7 +101,7 @@ export class Transporter extends WorkerUnit {
 		this._homeLocation = depotConnectionRoad._translate;
 	}
 
-	retrieveResource(resource?: Resource) {
+	retrieveResource (resource?: Resource) {
 		if (!resource) return;
 
 		if (!resource._pathIds.length) {
@@ -139,14 +139,14 @@ export class Transporter extends WorkerUnit {
 			.start();
 	}
 
-	pickUpResource(resource?: Resource) {
+	pickUpResource (resource?: Resource) {
 		if (!resource || !resource._destination) return;
 
 		this._resource = resource;
 		this.transportResource();
 	}
 
-	transportResource() {
+	transportResource () {
 		if (!this._resource) {
 			return;
 		}
@@ -178,7 +178,7 @@ export class Transporter extends WorkerUnit {
 			.start();
 	}
 
-	dropResource(resource?: Resource) {
+	dropResource (resource?: Resource) {
 		if (!resource || !resource._destination) {
 			this.moveToHomeLocation();
 			return;
@@ -229,7 +229,7 @@ export class Transporter extends WorkerUnit {
 		this.moveToHomeLocation();
 	}
 
-	moveToHomeLocation() {
+	moveToHomeLocation () {
 		this._state = "movingToHomeLocation";
 
 		if (!this._homeLocation) {
@@ -254,11 +254,11 @@ export class Transporter extends WorkerUnit {
 			.start();
 	}
 
-	gotBackHome() {
+	gotBackHome () {
 		this._state = "waiting";
 	}
 
-	processPath() {
+	processPath () {
 		this._state = "traversingPath";
 
 		if (!this._navigateToHomePath) return;
@@ -292,7 +292,7 @@ export class Transporter extends WorkerUnit {
 			.start();
 	}
 
-	_updateOnServer() {
+	_updateOnServer () {
 		const depotA = this._depotA;
 		const depotB = this._depotB;
 		const homeLocation = this._homeLocation;
@@ -354,7 +354,7 @@ export class Transporter extends WorkerUnit {
 		}
 	}
 
-	update(ctx: IgeCanvasRenderingContext2d, tickDelta: number) {
+	update (ctx: IgeCanvasRenderingContext2d, tickDelta: number) {
 		if (isServer) {
 			this._updateOnServer();
 		}

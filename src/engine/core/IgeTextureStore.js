@@ -1,7 +1,7 @@
 import { IgeAssetRegister } from "./IgeAssetRegister";
 
 export class IgeTextureStore extends IgeAssetRegister {
-	constructor() {
+	constructor () {
 		super(...arguments);
 		this._textureImageStore = {};
 		this.haveAllTexturesLoaded = () => {

@@ -3,7 +3,7 @@ export const nullMethod = () => {
 	return null;
 };
 export class IgeDummyContext {
-	constructor() {
+	constructor () {
 		this.dummy = true;
 		this.imageSmoothingEnabled = false;
 		this.globalAlpha = 1;

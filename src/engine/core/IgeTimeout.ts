@@ -1,4 +1,5 @@
-import { IgeInterval, IgeIntervalCallback } from "./IgeInterval";
+import type { IgeIntervalCallback } from "./IgeInterval";
+import { IgeInterval } from "./IgeInterval";
 import type { IgeTimeController } from "./IgeTimeController";
 import { ige } from "../instance";
 
@@ -16,7 +17,7 @@ export class IgeTimeout extends IgeInterval {
 	 * @param {Function} method The method to call on timeout.
 	 * @param {number} timeout The number of milliseconds before the timeout.
 	 */
-	constructor(method: IgeIntervalCallback, timeout: number) {
+	constructor (method: IgeIntervalCallback, timeout: number) {
 		super(method, timeout);
 	}
 
@@ -24,7 +25,7 @@ export class IgeTimeout extends IgeInterval {
 	 * Resets the time and lets the timeout begin anew.
 	 * @returns {*}
 	 */
-	reset() {
+	reset () {
 		this._time = 0;
 		if ((ige.time as IgeTimeController)._timers.indexOf(this) === -1) {
 			(ige.time as IgeTimeController).addTimer(this);
@@ -37,7 +38,7 @@ export class IgeTimeout extends IgeInterval {
 	 * called manually.
 	 * @returns {*}
 	 */
-	update() {
+	update () {
 		let intendedTime;
 		const overTime = this._time - this._interval;
 

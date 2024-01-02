@@ -1,5 +1,5 @@
 import { IgeComponent } from "@/engine/core/IgeComponent";
-import { IgeEntity } from "@/engine/core/IgeEntity";
+import type { IgeEntity } from "@/engine/core/IgeEntity";
 import { ige } from "@/engine/instance";
 import { IgeBehaviourType } from "@/enums/IgeBehaviourType";
 import type { IgeCanvasRenderingContext2d } from "@/types/IgeCanvasRenderingContext2d";
@@ -36,7 +36,7 @@ export class IgeTextureAnimationComponent extends IgeComponent {
 	 * @param {Object} entity The parent object that this component is being added to.
 	 * @param {Object=} options An optional object that is passed to the component when it is being initialised.
 	 */
-	constructor(entity: IgeEntity, options?: any) {
+	constructor (entity: IgeEntity, options?: any) {
 		super(entity, options);
 
 		this._anims = {};

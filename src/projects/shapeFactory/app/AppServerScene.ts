@@ -2,12 +2,12 @@ import { IgeBaseScene } from "@/engine/core/IgeBaseScene";
 import { IgeOptions } from "@/engine/core/IgeOptions";
 import { IgeSceneGraph } from "@/engine/core/IgeSceneGraph";
 import { ige } from "@/engine/instance";
-import { IgeNetIoServerController } from "@/engine/network/server/IgeNetIoServerController";
+import type { IgeNetIoServerController } from "@/engine/network/server/IgeNetIoServerController";
 
 export class AppServerScene extends IgeSceneGraph {
 	classId = "AppServerScene";
 
-	async addGraph() {
+	async addGraph () {
 		const options = new IgeOptions();
 		options.set("masterVolume", 1);
 
@@ -25,7 +25,7 @@ export class AppServerScene extends IgeSceneGraph {
 		network.acceptConnections(true);
 	}
 
-	removeGraph() {
+	removeGraph () {
 		const network = ige.network as IgeNetIoServerController;
 		network.stop();
 		ige.engine.stop();

@@ -1,4 +1,4 @@
-import { IgeDummyContext } from "@/engine/core/IgeDummyContext";
+import type { IgeDummyContext } from "@/engine/core/IgeDummyContext";
 
 export type IgeCanvasRenderingContext2d =
 	| OffscreenCanvasRenderingContext2D

@@ -1,11 +1,11 @@
-import { IgeCamera } from "./IgeCamera";
-import { IgeObject } from "./IgeObject";
-import { IgePoint3d } from "./IgePoint3d";
-import { IgeRect } from "./IgeRect";
-import { IgeScene2d } from "./IgeScene2d";
+import type { IgeCamera } from "./IgeCamera";
+import type { IgeObject } from "./IgeObject";
+import type { IgePoint3d } from "./IgePoint3d";
+import type { IgeRect } from "./IgeRect";
+import type { IgeScene2d } from "./IgeScene2d";
 import { IgeUiEntity } from "./IgeUiEntity";
-import { IgeCanRegisterById } from "@/types/IgeCanRegisterById";
-import { IgeCanvasRenderingContext2d } from "@/types/IgeCanvasRenderingContext2d";
+import type { IgeCanRegisterById } from "@/types/IgeCanRegisterById";
+import type { IgeCanvasRenderingContext2d } from "@/types/IgeCanvasRenderingContext2d";
 
 export interface IgeViewportOptions {
 	width: number;

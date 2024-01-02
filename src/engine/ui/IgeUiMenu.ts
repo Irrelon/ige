@@ -13,7 +13,7 @@ export class IgeUiMenu extends IgeUiElement {
 	 * @param {Object=} val The menu definition object.
 	 * @return {*}
 	 */
-	menuData(val) {
+	menuData (val) {
 		if (val !== undefined) {
 			this._menuData = val;
 
@@ -28,7 +28,7 @@ export class IgeUiMenu extends IgeUiElement {
 		return this._menuData;
 	}
 
-	menuMode(mode) {
+	menuMode (mode) {
 		if (mode !== undefined) {
 			this._menuMode = mode;
 			return this;
@@ -43,7 +43,7 @@ export class IgeUiMenu extends IgeUiElement {
 	 * @param fontSheet
 	 * @return {*}
 	 */
-	fontSheet(fontSheet) {
+	fontSheet (fontSheet) {
 		if (fontSheet !== undefined) {
 			this._fontSheet = fontSheet;
 			return this;
@@ -52,12 +52,12 @@ export class IgeUiMenu extends IgeUiElement {
 		return this._fontSheet;
 	}
 
-	addItem(item) {
+	addItem (item) {
 		if (item !== undefined) {
 		}
 	}
 
-	_buildMenu(data, parent) {
+	_buildMenu (data, parent) {
 		let arrCount = data.length,
 			i,
 			item,
