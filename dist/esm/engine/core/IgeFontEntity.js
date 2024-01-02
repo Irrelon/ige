@@ -1,7 +1,7 @@
 import { IgeTexture } from "./IgeTexture.js"
 import { IgeUiEntity } from "./IgeUiEntity.js"
 import { registerClass } from "../igeClassStore.js"
-import { IgeFontAlignX, IgeFontAlignY } from "../../enums/IgeFontAlign.js";
+import { IgeFontAlignX, IgeFontAlignY } from "../../enums/IgeFontAlign.js"
 import { IgeTextureRenderMode } from "../../enums/IgeTextureRenderMode.js"
 import { IgeFontSmartTexture } from "../textures/IgeFontSmartTexture.js"
 /**

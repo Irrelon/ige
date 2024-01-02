@@ -1,5 +1,5 @@
 import { IgeEventingClass } from "./IgeEventingClass.js"
-import { IgeEventReturnFlag } from "../../enums/IgeEventReturnFlag.js";
+import { IgeEventReturnFlag } from "../../enums/IgeEventReturnFlag.js"
 import { ige } from "../instance.js"
 import { arrPull } from "../utils.js"
 export class IgeUiManagerController extends IgeEventingClass {

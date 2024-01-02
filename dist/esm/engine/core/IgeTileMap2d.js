@@ -7,7 +7,7 @@ import { IgePoly2d } from "./IgePoly2d.js"
 import { IgeRect } from "./IgeRect.js"
 import { IgeTexture } from "./IgeTexture.js"
 import { registerClass } from "../igeClassStore.js"
-import { IgeMountMode } from "../../enums/IgeMountMode.js";
+import { IgeMountMode } from "../../enums/IgeMountMode.js"
 import { isServer } from "../clientServer.js"
 import { ige } from "../instance.js"
 import { IgeTileMap2dSmartTexture } from "../textures/IgeTileMap2dSmartTexture.js"

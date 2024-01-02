@@ -6,7 +6,7 @@ import { IgePoint3d } from "./IgePoint3d.js"
 import { IgePoly2d } from "./IgePoly2d.js"
 import { IgeRect } from "./IgeRect.js"
 import { registerClass } from "../igeClassStore.js"
-import { IgeBehaviourType } from "../../enums/IgeBehaviourType.js";
+import { IgeBehaviourType } from "../../enums/IgeBehaviourType.js"
 import { IgeEntityRenderMode } from "../../enums/IgeEntityRenderMode.js"
 import { IgeIsometricDepthSortMode } from "../../enums/IgeIsometricDepthSortMode.js"
 import { IgeMountMode } from "../../enums/IgeMountMode.js"

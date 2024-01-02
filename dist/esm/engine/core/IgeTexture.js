@@ -1,7 +1,7 @@
 import { IgeAsset } from "./IgeAsset.js"
 import { newCanvas } from "./IgeCanvas.js"
 import { IgeDependencies } from "./IgeDependencies.js"
-import { IgeTextureRenderMode } from "../../enums/IgeTextureRenderMode.js";
+import { IgeTextureRenderMode } from "../../enums/IgeTextureRenderMode.js"
 import { isClient, isServer } from "../clientServer.js"
 import { ige } from "../instance.js"
 import { arrPull } from "../utils.js"

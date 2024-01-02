@@ -1,7 +1,7 @@
 import { IgeCellSheet } from "../core/IgeCellSheet.js"
-import { IgeTextureMap } from "../core/IgeTextureMap.js";
+import { IgeTextureMap } from "../core/IgeTextureMap.js"
 import { IgeTileMap2d } from "../core/IgeTileMap2d.js"
-import { isClient, isServer } from "../clientServer";
+import { isClient, isServer } from "../clientServer.js"
 import { IgeComponent } from "../core/IgeComponent.js"
 /**
  * Loads slightly modified Tiled-format json map data into the Isogenic Engine.

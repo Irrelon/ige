@@ -1,5 +1,5 @@
 import { IgeEventingClass } from "../core/IgeEventingClass.js"
-import { IgeInputControlMap } from "./IgeInputControlMap.js";
+import { IgeInputControlMap } from "./IgeInputControlMap.js"
 import { IgeBehaviourType } from "../../enums/IgeBehaviourType.js"
 import { IgeEventReturnFlag } from "../../enums/IgeEventReturnFlag.js"
 import { IgeInputDevice, IgeInputKeyboardMap, IgeInputPointerMap } from "../../enums/IgeInputDeviceMap.js"

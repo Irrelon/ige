@@ -1,7 +1,7 @@
 import { IgeComponent } from "../core/IgeComponent.js"
-import { IgePoint3d } from "../core/IgePoint3d.js";
+import { IgePoint3d } from "../core/IgePoint3d.js"
 import { IgeRect } from "../core/IgeRect.js"
-import { ige } from "../instance.js";
+import { ige } from "../instance.js"
 import { IgeBehaviourType } from "../../enums/IgeBehaviourType.js"
 import { IgeEntityRenderMode } from "../../enums/IgeEntityRenderMode.js"
 import { IgeMountMode } from "../../enums/IgeMountMode.js"

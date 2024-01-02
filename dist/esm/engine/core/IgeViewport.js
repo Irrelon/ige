@@ -4,7 +4,7 @@ import { IgePoint3d } from "./IgePoint3d.js"
 import { IgeRect } from "./IgeRect.js"
 import { IgeUiEntity } from "./IgeUiEntity.js"
 import { registerClass } from "../igeClassStore.js"
-import { IgeMountMode } from "../../enums/IgeMountMode.js";
+import { IgeMountMode } from "../../enums/IgeMountMode.js"
 import { isClient } from "../clientServer.js"
 import { ige } from "../instance.js"
 // TODO: Turns out we need IgeObject because IgeViewport cannot extend IgeEntity

@@ -6,12 +6,12 @@ import { IgePoint3d } from "./IgePoint3d.js"
 import { IgeRouter } from "./IgeRouter.js"
 import { IgeTextureStore } from "./IgeTextureStore.js"
 import { IgeDependencies } from "./IgeDependencies.js"
-import { IgeTimeController } from "./IgeTimeController.js";
+import { IgeTimeController } from "./IgeTimeController.js"
 import { IgeTweenController } from "./IgeTweenController.js"
-import { IgeUiManagerController } from "./IgeUiManagerController.js";
+import { IgeUiManagerController } from "./IgeUiManagerController.js"
 import { igeConfig } from "./config.js"
 import { IgeInputComponent } from "../components/IgeInputComponent.js"
-import { IgeBox2dController } from "../components/physics/box2d/IgeBox2dController.js";
+import { IgeBox2dController } from "../components/physics/box2d/IgeBox2dController.js"
 import { isClient, isServer, isWorker } from "../clientServer.js"
 import { igeClassStore } from "../igeClassStore.js"
 const version = "3.0.0";

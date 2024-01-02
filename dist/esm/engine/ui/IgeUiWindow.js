@@ -1,7 +1,7 @@
 import { registerClass } from "../igeClassStore.js"
-import { IgeUiButton } from "./IgeUiButton.js";
+import { IgeUiButton } from "./IgeUiButton.js"
 import { IgeUiLabel } from "./IgeUiLabel.js"
-import { IgeEventReturnFlag } from "../../enums/IgeEventReturnFlag.js";
+import { IgeEventReturnFlag } from "../../enums/IgeEventReturnFlag.js"
 import { IgeUiElement } from "../core/IgeUiElement.js"
 import { ige } from "../instance.js"
 export class IgeUiWindow extends IgeUiElement {

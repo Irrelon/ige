@@ -1,5 +1,5 @@
 import { IgeEventingClass } from "./IgeEventingClass.js"
-import { IgeBehaviourType } from "../../enums/IgeBehaviourType.js";
+import { IgeBehaviourType } from "../../enums/IgeBehaviourType.js"
 import { ige } from "../instance.js"
 import { arrPull } from "../utils.js"
 export class IgeTimeController extends IgeEventingClass {

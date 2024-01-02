@@ -1,5 +1,5 @@
 import { IgeUiElement } from "../core/IgeUiElement.js"
-import { registerClass } from "../igeClassStore.js";
+import { registerClass } from "../igeClassStore.js"
 import { IgeUiMenu } from "./IgeUiMenu.js"
 export class IgeUiMenuItem extends IgeUiElement {
     classId = "IgeUiMenuItem";

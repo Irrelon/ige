@@ -1,5 +1,5 @@
 import { IgeComponent } from "../core/IgeComponent.js"
-import { ige } from "../instance.js";
+import { ige } from "../instance.js"
 import { IgeBehaviourType } from "../../enums/IgeBehaviourType.js"
 /**
  * The animation component class. Handles defining and controlling

@@ -1,5 +1,5 @@
 import { IgeUiElement } from "../core/IgeUiElement.js"
-import { registerClass } from "../igeClassStore.js";
+import { registerClass } from "../igeClassStore.js"
 export class IgeUiButton extends IgeUiElement {
     classId = "IgeUiButton";
     _autoCell = false;

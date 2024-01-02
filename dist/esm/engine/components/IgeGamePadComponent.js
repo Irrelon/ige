@@ -1,5 +1,5 @@
 import { isClient } from "../clientServer.js"
-import { IgeBehaviourType } from "../../enums/IgeBehaviourType.js";
+import { IgeBehaviourType } from "../../enums/IgeBehaviourType.js"
 import { IgeComponent } from "../core/IgeComponent.js"
 export class IgeGamePadComponent extends IgeComponent {
     "classId" = "IgeGamePadComponent";

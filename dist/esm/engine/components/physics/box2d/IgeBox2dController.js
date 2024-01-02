@@ -2,7 +2,7 @@ import { IgeBox2dDebugPainter } from "./IgeBox2dDebugPainter.js"
 import { IgeEntityBox2d } from "./IgeEntityBox2d.js"
 import { IgeEventingClass } from "../../../core/IgeEventingClass.js"
 import { Box2D } from "./lib_box2d.js"
-import { IgeBehaviourType } from "../../../../enums/IgeBehaviourType.js";
+import { IgeBehaviourType } from "../../../../enums/IgeBehaviourType.js"
 import { IgeBox2dBodyType } from "../../../../enums/IgeBox2dBodyType.js"
 import { IgeBox2dFixtureShapeType } from "../../../../enums/IgeBox2dFixtureShapeType.js"
 import { IgeBox2dTimingMode } from "../../../../enums/IgeBox2dTimingMode.js"
