@@ -1,6 +1,7 @@
 import { ige } from "@/engine/instance";
-import { IgeChatComponent, IgeChatRoomOptions } from "@/engine/network/chat/IgeChatComponent";
-import { IgeNetIoServerController } from "@/engine/network/server/IgeNetIoServerController";
+import type { IgeChatRoomOptions } from "@/engine/network/chat/IgeChatComponent";
+import { IgeChatComponent } from "@/engine/network/chat/IgeChatComponent";
+import type { IgeNetIoServerController } from "@/engine/network/server/IgeNetIoServerController";
 import { newIdHex } from "@/engine/utils";
 import { IgeEventReturnFlag } from "@/enums/IgeEventReturnFlag";
 import {
@@ -12,14 +13,14 @@ import {
 	IGE_NETWORK_CHAT_ROOM_LIST_USERS,
 	IGE_NETWORK_CHAT_ROOM_REMOVED
 } from "@/enums/IgeNetworkConstants";
-import {
+import type {
 	IgeNetworkChatFromClientJoinRoomRequestStructure,
 	IgeNetworkChatFromClientLeaveRoomRequestStructure,
 	IgeNetworkChatFromServerJoinRoomResponseStructure,
 	IgeNetworkChatRoomCreatedMessageStructure,
 	IgeNetworkChatRoomRemovedMessageStructure
 } from "@/types/IgeNetworkChat";
-import {
+import type {
 	IgeNetworkChatFromClientMessageStructure,
 	IgeNetworkChatFromServerMessageStructure
 } from "@/types/IgeNetworkMessage";
@@ -29,7 +30,7 @@ import {
  * chat methods and events.
  */
 export class IgeChatServer extends IgeChatComponent {
-	constructor() {
+	constructor () {
 		super();
 
 		ige.dependencies.waitFor(["network"], () => {
@@ -55,7 +56,7 @@ export class IgeChatServer extends IgeChatComponent {
 	 * @param options An object containing options key/values.
 	 * @return {string} The new room's ID.
 	 */
-	createRoom(roomName: string, roomId?: string, options?: IgeChatRoomOptions) {
+	createRoom (roomName: string, roomId?: string, options?: IgeChatRoomOptions) {
 		const network = ige.network as IgeNetIoServerController;
 		const newRoomId = roomId || newIdHex();
 
@@ -77,7 +78,7 @@ export class IgeChatServer extends IgeChatComponent {
 	 * @param roomId
 	 * @return {boolean}
 	 */
-	removeRoom(roomId: string) {
+	removeRoom (roomId: string) {
 		const network = ige.network as IgeNetIoServerController;
 
 		if (this._rooms[roomId]) {
@@ -98,7 +99,7 @@ export class IgeChatServer extends IgeChatComponent {
 	 * @param {string=} to The id of the user to send the message to.
 	 * @param {string} from The id of the user that sent the message.
 	 */
-	sendToRoom(roomId: string, message: string, to: string, from: string) {
+	sendToRoom (roomId: string, message: string, to: string, from: string) {
 		const network = ige.network as IgeNetIoServerController;
 
 		if (this._rooms[roomId]) {
@@ -132,7 +133,7 @@ export class IgeChatServer extends IgeChatComponent {
 		}
 	}
 
-	_onMessageFromClient(msg: IgeNetworkChatFromClientMessageStructure, clientId: string) {
+	_onMessageFromClient (msg: IgeNetworkChatFromClientMessageStructure, clientId: string) {
 		// Emit the event and if it wasn't cancelled (by returning true) then
 		// process this ourselves
 		if (this.emit("messageFromClient", msg, clientId) !== IgeEventReturnFlag.cancel) {
@@ -164,7 +165,7 @@ export class IgeChatServer extends IgeChatComponent {
 		}
 	}
 
-	_onJoinRoomRequestFromClient(roomId: IgeNetworkChatFromClientJoinRoomRequestStructure, clientId: string) {
+	_onJoinRoomRequestFromClient (roomId: IgeNetworkChatFromClientJoinRoomRequestStructure, clientId: string) {
 		const network = ige.network as IgeNetIoServerController;
 
 		// Emit the event and if it wasn't cancelled (by returning true) then
@@ -195,7 +196,7 @@ export class IgeChatServer extends IgeChatComponent {
 		}
 	}
 
-	_onLeaveRoomRequestFromClient(roomId: IgeNetworkChatFromClientLeaveRoomRequestStructure, clientId: string) {
+	_onLeaveRoomRequestFromClient (roomId: IgeNetworkChatFromClientLeaveRoomRequestStructure, clientId: string) {
 		// Emit the event and if it wasn't cancelled (by returning true) then
 		// process this ourselves
 		if (this.emit("clientLeaveRoomRequest", roomId, clientId) !== IgeEventReturnFlag.cancel) {
@@ -203,7 +204,7 @@ export class IgeChatServer extends IgeChatComponent {
 		}
 	}
 
-	_onClientWantsRoomList(data: any, clientId: string) {
+	_onClientWantsRoomList (data: any, clientId: string) {
 		// Emit the event and if it wasn't cancelled (by returning true) then
 		// process this ourselves
 		if (this.emit("clientRoomListRequest", data, clientId) !== IgeEventReturnFlag.cancel) {
@@ -211,7 +212,7 @@ export class IgeChatServer extends IgeChatComponent {
 		}
 	}
 
-	_onClientWantsRoomUserList(roomId: string, clientId: string) {
+	_onClientWantsRoomUserList (roomId: string, clientId: string) {
 		// Emit the event and if it wasn't cancelled (by returning true) then
 		// process this ourselves
 		if (this.emit("clientRoomUserListRequest", roomId, clientId) !== IgeEventReturnFlag.cancel) {
