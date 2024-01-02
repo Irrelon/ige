@@ -23,7 +23,7 @@ import type {
 import type {
 	IgeNetworkChatFromClientMessageStructure,
 	IgeNetworkChatFromServerMessageStructure
-} from "@/types/IgeNetworkMessage";
+} from "@/types/IgeNetworkChat";
 
 /**
  * The server-side chat component. Handles all server-side
