@@ -1,4 +1,4 @@
-cat >dist/package.json <<!EOF
+cat >dist/esm/package.json <<!EOF
 {
     "type": "module"
 }
