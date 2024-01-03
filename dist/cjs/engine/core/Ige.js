@@ -28,7 +28,7 @@ const exports_1 = require("../../export/exports.js");
 const exports_2 = require("../../export/exports.js");
 const exports_3 = require("../../export/exports.js");
 const exports_4 = require("../../export/exports.js");
-const version = "3.0.0";
+const version = "3.0.1";
 class Ige {
     constructor() {
         this.app = null;

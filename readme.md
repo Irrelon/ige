@@ -1,13 +1,22 @@
 > This is a beta branch at present. It is a re-write utilising TypeScript
-> and compiling to ES6 ESM modules. Client and server-side rendering are
-> working and various examples have been updated. If you see an index.ts
-> in an example folder, it's been updated to work with ES6 modules.
+> and compiling to both CommonJS (for Node.js) and ESM modules (for Webpack).
+> Client and server-side rendering are working and various examples have been
+> updated. If you see an index.ts in an example folder, it's been updated to
+> work with ES6 modules.
 >
-> Compiling the engine: run the `build-watch` npm command and then run the
-> `fix-paths-watch` npm command. `build-watch` will compile the TypeScript changes
-> to JavaScript files. The fixPaths will watch .js files and fix any paths
-> to .js files that don't have a .js extension as well as resolving TS
-> paths like @/something to their relative equivalent.
+> Compiling the engine: run the `build` npm command and then run the
+> `build` will compile the TypeScript to JavaScript files and automatically
+> resolve TypeScript paths in .js files to their relative equivalents using
+> `npx @irrelon/fix-paths` helper app.
+>
+> From version 3.0.1 you can use the engine with `import { ige } from "@irrelon/ige";`
+>
+> All the engine's classes, functionality, types etc are exported from that module
+> and can be imported as required.
+>
+> A `create-ige-app` npx script is on the way as well, almost ready! This will
+> create a basic app with the webpack and Node.js setup to create games with
+> this version of the engine without configuring all the things yourself.
 
 # Isogenic Game Engine
 
@@ -19,16 +28,16 @@ https://www.isogenicengine.com/forum/viewforum.php?f=8
 
 ## Main Features
 
--   Full un-obfuscated source code
--   Advanced networking system with built-in server
--   Particle system
--   Scenegraph-based
--   Tile maps
--   Box2D physics component for easy integration with 2d and isometric games
--   Multiple viewport support
--   Tweening support
--   Cell-based animation support
--   Native and font-sheet text support
+- Full un-obfuscated source code
+- Advanced networking system with built-in server
+- Particle system
+- Scenegraph-based
+- Tile maps
+- Box2D physics component for easy integration with 2d and isometric games
+- Multiple viewport support
+- Tweening support
+- Cell-based animation support
+- Native and font-sheet text support
 
 ## Installation
 
@@ -64,8 +73,8 @@ MIT
 (C)opyright 2023 Irrelon Software Limited
 https://www.irrelon.com
 
--   Website: https://www.isogenicengine.com
--   API Docs: https://www.isogenicengine.com/docs-reference.html
--   Video Tutorials: https://www.isogenicengine.com/docs-tutorials.html
--   Twitter: @IsogenicEngine https://twitter.com/IsogenicEngine
--   Youtube: https://www.youtube.com/user/coolbloke1324
+- Website: https://www.isogenicengine.com
+- API Docs: https://www.isogenicengine.com/docs-reference.html
+- Video Tutorials: https://www.isogenicengine.com/docs-tutorials.html
+- Twitter: @IsogenicEngine https://twitter.com/IsogenicEngine
+- Youtube: https://www.youtube.com/user/coolbloke1324

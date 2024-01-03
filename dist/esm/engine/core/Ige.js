@@ -2,7 +2,7 @@ import { IgeArrayRegister, igeConfig, IgeDependencies, IgeEngine, IgeMetrics, Ig
 import { igeClassStore, isClient, isServer, isWorker } from "../../export/exports.js"
 import { IgeInputComponent } from "../../export/exports.js"
 import { IgeBox2dController } from "../../export/exports.js"
-const version = "3.0.0";
+const version = "3.0.1";
 export class Ige {
     app = null;
     audio;
