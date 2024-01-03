@@ -1,0 +1,12 @@
+<div id="igeEditorProperty_{{:id}}" class="igeEditorProperty" data-type="List" data-prop="{{:id}}" data-obj-id="{{:obj._id}}">
+	<div class="header">
+		<div class="label">{{:label}}</div>
+	</div>
+	<div class="content">
+		<select class="listValue span9">
+			{{for list}}
+			<option {{if selected}}selected{{/if}} value="{{:value}}">{{:text}}</option>
+			{{/for}}
+		</select>
+	</div>
+</div>

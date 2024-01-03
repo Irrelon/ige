@@ -1,0 +1,14 @@
+<div class="msg">
+	<p>Select the number of target columns to import files:</p>
+	<p>
+		<select>
+			{{for ~forNum(1, fileCount)}}
+			<option value="{{:num}}">{{:num}}</option>
+			{{/for}}
+		</select>
+	</p>
+</div>
+<div class="actionButtons">
+	<div class="negative editorBtn btn-negative">{{:negativeTitle}}</div>
+	<div class="positive editorBtn btn-primary">{{:positiveTitle}}</div>
+</div>
