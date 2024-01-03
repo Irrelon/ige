@@ -15,17 +15,17 @@
 		"strictNullChecks": true,
 		"forceConsistentCasingInFileNames": true,
 		"noEmit": false,
-		"incremental": true,
+		"incremental": false,
 		"esModuleInterop": true,
 		"module": "es2022",
-		"moduleResolution": "NodeNext",
+		"moduleResolution": "Node",
 		"resolveJsonModule": true,
 		"isolatedModules": true,
 		"jsx": "react-jsx",
 		"jsxImportSource": "ige-jsx",
 		"declaration": true,
 		"noImplicitAny": false,
-		"composite": true,
+		"composite": false,
 		"paths": {
 			"@/*": [
 				"./src/*"
@@ -42,6 +42,10 @@
 		"engine/components/editor",
 		"engine/components/physics/cannon",
 		"engine/components/three",
-		"src/**/*.old*"
+		"src/**/*.old*",
+		"src/**/*.test*",
+		"other/*",
+		"other/**",
+		"other/**/*"
 	]
 }

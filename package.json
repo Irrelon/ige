@@ -12,11 +12,14 @@
 	"engines": {
 		"node": ">=v16"
 	},
+	"type": "module",
 	"module": "dist/index.js",
 	"types": "dist/index.d.ts",
 	"scripts": {
 		"tsc-b": "tsc -b",
-		"build": "(tsc -p tsconfig-esm.json 2>/dev/null || exit 0) && sh ./fixup-esm.sh && npm run fix-paths-esm",
+		"compile-esm": "tsc -p tsconfig-esm.json",
+		"generate-exports": "node update-indexes.cjs",
+		"build": "(npm run compile-esm 2>/dev/null || exit 0) && sh ./fixup-esm.sh && npm run fix-paths-esm",
 		"build-watch": "tsc --watch",
 		"fix-paths-watch": "npx @irrelon/fix-paths --write --watch",
 		"fix-paths": "npx @irrelon/fix-paths -p ./tsconfig-cjs.json --write && npx @irrelon/fix-paths -p ./tsconfig-esm.json --write",
@@ -27,6 +30,7 @@
 		"websocket": "^1.0.34"
 	},
 	"devDependencies": {
+		"@irrelon/fix-paths": "^1.0.7",
 		"@swc/cli": "^0.1.62",
 		"@swc/core": "^1.3.41",
 		"@trivago/prettier-plugin-sort-imports": "^4.3.0",
@@ -65,7 +69,7 @@
 		"stacktrace-js": "^2.0.2",
 		"tsc-watch": "^6.0.0",
 		"ttypescript": "^1.5.15",
-		"typescript": "^4.9.5",
+		"typescript": "^5.3.3",
 		"yargs": "^17.7.2"
 	}
 }

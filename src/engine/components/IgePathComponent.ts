@@ -1,18 +1,18 @@
 import { ige } from "@/export/exports";
-import { IgeBehaviourType } from "@/enums/IgeBehaviourType";
-import { IgeEntityRenderMode } from "@/enums/IgeEntityRenderMode";
-import { IgeMountMode } from "@/enums/IgeMountMode";
-import { isClient } from "../clientServer";
-import { IgeComponent } from "../core/IgeComponent";
-import type { IgeEntity } from "../core/IgeEntity";
-import type { IgeObject } from "../core/IgeObject";
-import type { IgePathFinder, IgePathFinderComparisonCallback } from "../core/IgePathFinder";
-import { IgePathNode } from "../core/IgePathNode";
-import { IgePoint3d } from "../core/IgePoint3d";
-import type { IgeTileMap2d } from "../core/IgeTileMap2d";
-import { distance } from "../utils";
-import type { IgeCanvasRenderingContext2d } from "@/types/IgeCanvasRenderingContext2d";
-import type { IgeEntityBehaviourMethod } from "@/types/IgeEntityBehaviour";
+import { IgeBehaviourType } from "@/export/exports";
+import { IgeEntityRenderMode } from "@/export/exports";
+import { IgeMountMode } from "@/export/exports";
+import { isClient } from "@/export/exports";
+import { IgeComponent } from "@/export/exports";
+import type { IgeEntity } from "@/export/exports";
+import type { IgeObject } from "@/export/exports";
+import type { IgePathFinder, IgePathFinderComparisonCallback } from "@/export/exports";
+import { IgePathNode } from "@/export/exports";
+import { IgePoint3d } from "@/export/exports";
+import type { IgeTileMap2d } from "@/export/exports";
+import { distance } from "@/export/exports";
+import type { IgeCanvasRenderingContext2d } from "@/export/exports";
+import type { IgeEntityBehaviourMethod } from "@/export/exports";
 
 /**
  * Handles entity path traversal. This component is supposed to be added

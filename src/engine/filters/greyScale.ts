@@ -1,5 +1,5 @@
-import { igeFilters } from "../igeFilters";
-import type { IgeSmartFilter } from "@/types/IgeSmartFilter";
+import { igeFilters } from "@/export/exports";
+import type { IgeSmartFilter } from "@/export/exports";
 
 export const greyScaleHelper = function (imageData: ImageData): ImageData {
 	let arr, arrCount, i, r, g, b, v;

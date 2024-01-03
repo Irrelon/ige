@@ -1,5 +1,5 @@
-import { igeFilters } from "../igeFilters";
-import type { IgeSmartFilter } from "@/types/IgeSmartFilter";
+import { igeFilters } from "@/export/exports";
+import type { IgeSmartFilter } from "@/export/exports";
 
 export const colorOverlay: IgeSmartFilter = function (canvas, ctx, originalImage, texture, data) {
 	// Set the composite operation and draw the colour over the top

@@ -1,5 +1,5 @@
-import type { IgeBaseClass } from "../core/IgeBaseClass";
-import type { Mixin } from "@/types/Mixin";
+import type { IgeBaseClass } from "@/export/exports";
+import type { Mixin } from "@/export/exports";
 
 export interface IgeEventListenerObject {
 	type: "single";

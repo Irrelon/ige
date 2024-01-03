@@ -1,6 +1,6 @@
-import { convoluteHelper } from "./convolute";
-import { igeFilters } from "../igeFilters";
-import type { IgeSmartFilter } from "@/types/IgeSmartFilter";
+import { convoluteHelper } from "@/export/exports";
+import { igeFilters } from "@/export/exports";
+import type { IgeSmartFilter } from "@/export/exports";
 
 export const emboss: IgeSmartFilter = function (canvas, ctx, originalImage, texture, data) {
 	const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);

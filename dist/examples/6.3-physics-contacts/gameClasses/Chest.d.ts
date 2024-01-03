@@ -1,1 +1,0 @@
-declare var Chest: any;

@@ -1,1 +1,0 @@
-declare var Orb: any;
