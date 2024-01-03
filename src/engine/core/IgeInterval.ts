@@ -1,6 +1,6 @@
-import { IgeEventingClass } from "./IgeEventingClass";
-import type { IgeTimeController } from "./IgeTimeController";
-import { ige } from "../instance";
+import { IgeEventingClass } from "@/export/exports";
+import type { IgeTimeController } from "@/export/exports";
+import { ige } from "@/export/exports";
 
 export type IgeIntervalCallback = (...args: any[]) => void;
 

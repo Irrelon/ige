@@ -1,39 +1,42 @@
-import { isClient, isServer } from "@/engine/clientServer";
-import type { IgeComponent } from "@/engine/core/IgeComponent";
-import { IgeDummyCanvas } from "@/engine/core/IgeDummyCanvas";
-import { IgeEventingClass } from "@/engine/core/IgeEventingClass";
-import { IgeMatrix2d } from "@/engine/core/IgeMatrix2d";
-import { IgePoint2d } from "@/engine/core/IgePoint2d";
-import { IgePoint3d } from "@/engine/core/IgePoint3d";
-import { IgePoly2d } from "@/engine/core/IgePoly2d";
-import { IgeRect } from "@/engine/core/IgeRect";
-import type { IgeTexture } from "@/engine/core/IgeTexture";
-import type { IgeTileMap2d } from "@/engine/core/IgeTileMap2d";
-import type { IgeViewport } from "@/engine/core/IgeViewport";
-import { ige } from "@/engine/instance";
-import { arrPull, newIdHex, toIso } from "@/engine/utils";
-import type { IgeBehaviourType } from "@/enums/IgeBehaviourType";
-import { IgeIsometricDepthSortMode } from "@/enums/IgeIsometricDepthSortMode";
-import { IgeMountMode } from "@/enums/IgeMountMode";
-import { IGE_NETWORK_STREAM_CREATE, IGE_NETWORK_STREAM_DESTROY } from "@/enums/IgeNetworkConstants";
-import { IgeStreamMode } from "@/enums/IgeStreamMode";
-import type { IgeNetIoClientController } from "../network/client/IgeNetIoClientController";
-import type { IgeNetIoServerController } from "../network/server/IgeNetIoServerController";
-import type { GenericClass } from "@/types/GenericClass";
-import type { IgeBehaviourStore } from "@/types/IgeBehaviourStore";
-import type { IgeCanAcceptComponents } from "@/types/IgeCanAcceptComponents";
-import type { IgeCanRegisterByCategory } from "@/types/IgeCanRegisterByCategory";
-import type { IgeCanRegisterById } from "@/types/IgeCanRegisterById";
-import type { IgeCanvasRenderingContext2d } from "@/types/IgeCanvasRenderingContext2d";
-import type { IgeChildSortFunction } from "@/types/IgeChildSortFunction";
-import type { IgeDepthSortObject } from "@/types/IgeDepthSortObject";
-import type { IgeEntityBehaviourMethod } from "@/types/IgeEntityBehaviour";
-import type { IgeInputEvent } from "@/types/IgeInputEvent";
-import type { IgeStreamCreateMessageData } from "@/types/IgeNetworkStream";
-import type { IgePoint } from "@/types/IgePoint";
-import type { IgeSmartTexture } from "@/types/IgeSmartTexture";
-import type { IgeTimeStreamPacket } from "@/types/IgeTimeStream";
-import type { IgeTimeStreamTransformData } from "@/types/IgeTimeStream";
+import type { IgeNetIoClientController } from "@/export/exports";
+import type { IgeNetIoServerController } from "@/export/exports";
+import { arrPull, newIdHex, toIso } from "@/export/exports";
+import type { IgeComponent, IgeTexture, IgeTileMap2d, IgeViewport } from "@/export/exports";
+import {
+	IgeDummyCanvas,
+	IgeEventingClass,
+	IgeMatrix2d,
+	IgePoint2d,
+	IgePoint3d,
+	IgePoly2d,
+	IgeRect
+} from "@/export/exports";
+import { ige, isClient, isServer } from "@/export/exports";
+import type { IgeBehaviourType } from "@/export/exports";
+import {
+	IGE_NETWORK_STREAM_CREATE,
+	IGE_NETWORK_STREAM_DESTROY,
+	IgeIsometricDepthSortMode,
+	IgeMountMode,
+	IgeStreamMode
+} from "@/export/exports";
+import type {
+	GenericClass,
+	IgeBehaviourStore,
+	IgeCanAcceptComponents,
+	IgeCanRegisterByCategory,
+	IgeCanRegisterById,
+	IgeCanvasRenderingContext2d,
+	IgeChildSortFunction,
+	IgeDepthSortObject,
+	IgeEntityBehaviourMethod,
+	IgeInputEvent,
+	IgePoint,
+	IgeSmartTexture,
+	IgeStreamCreateMessageData,
+	IgeTimeStreamPacket,
+	IgeTimeStreamTransformData
+} from "@/export/exports";
 
 export class IgeObject
 	extends IgeEventingClass

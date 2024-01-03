@@ -1,7 +1,7 @@
-import { IgeEntity } from "./IgeEntity";
-import type { IgeParticleEmitter } from "./IgeParticleEmitter";
-import { IgeVelocityComponent } from "../components/IgeVelocityComponent";
-import { arrPull } from "../utils";
+import { IgeEntity } from "@/export/exports";
+import type { IgeParticleEmitter } from "@/export/exports";
+import { IgeVelocityComponent } from "@/export/exports";
+import { arrPull } from "@/export/exports";
 
 export class IgeParticle extends IgeEntity {
 	classId = "IgeParticle";

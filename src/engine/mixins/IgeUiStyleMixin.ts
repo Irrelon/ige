@@ -1,9 +1,9 @@
 // TODO: Add "overflow" with automatic scroll-bars
-import type { IgeObject } from "../core/IgeObject";
-import type { IgeTexture } from "../core/IgeTexture";
-import { ige } from "../instance";
-import type { IgeRepeatType } from "@/types/IgeRepeatType";
-import type { Mixin } from "@/types/Mixin";
+import { ige } from "@/export/exports";
+import type { IgeObject } from "@/export/exports";
+import type { IgeTexture } from "@/export/exports";
+import type { IgeRepeatType } from "@/export/exports";
+import type { Mixin } from "@/export/exports";
 
 // TODO: Update this mixin so it extends from IgeBaseClass, moving anything that relies on IgeEntity
 //    to another class, probably IgeEntity or IgeUiEntity?

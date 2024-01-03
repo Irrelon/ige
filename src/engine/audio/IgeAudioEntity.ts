@@ -1,9 +1,9 @@
-import { IgeAudioItem } from "@/engine/audio/IgeAudioItem";
-import { isClient } from "@/engine/clientServer";
-import { IgeEntity } from "@/engine/core/IgeEntity";
-import { registerClass } from "@/engine/igeClassStore";
-import { ige } from "@/engine/instance";
-import type { IgeCanvasRenderingContext2d } from "@/types/IgeCanvasRenderingContext2d";
+import { IgeAudioItem } from "@/export/exports";
+import { isClient } from "@/export/exports";
+import { registerClass } from "@/export/exports";
+import { IgeEntity } from "@/export/exports";
+import { ige } from "@/export/exports";
+import type { IgeCanvasRenderingContext2d } from "@/export/exports";
 
 export interface IgeAudioEntityPanner extends PannerOptions {}
 

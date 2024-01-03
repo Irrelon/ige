@@ -1,11 +1,8 @@
 // TODO: Implement the _stringify() method for this class
-import { IgeMap2d } from "./IgeMap2d";
-import { IgePoint3d } from "./IgePoint3d";
-import type { IgeTexture } from "./IgeTexture";
-import { IgeTileMap2d } from "./IgeTileMap2d";
-import type { IgeRect } from "@/engine/core/IgeRect";
-import { ige } from "@/engine/instance";
-import { IgeMountMode } from "@/enums/IgeMountMode";
+import type { IgeRect, IgeTexture } from "@/export/exports";
+import { IgeMap2d, IgePoint3d, IgeTileMap2d } from "@/export/exports";
+import { ige } from "@/export/exports";
+import { IgeMountMode } from "@/export/exports";
 
 /**
  * Texture maps provide a way to display textures / cells across a tile map.

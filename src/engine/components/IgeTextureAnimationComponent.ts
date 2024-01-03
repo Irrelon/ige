@@ -1,9 +1,9 @@
-import { IgeComponent } from "@/engine/core/IgeComponent";
-import type { IgeEntity } from "@/engine/core/IgeEntity";
-import { ige } from "@/engine/instance";
-import { IgeBehaviourType } from "@/enums/IgeBehaviourType";
-import type { IgeCanvasRenderingContext2d } from "@/types/IgeCanvasRenderingContext2d";
-import type { IgeTextureAnimation } from "@/types/IgeTextureAnimation";
+import { IgeComponent } from "@/export/exports";
+import type { IgeEntity } from "@/export/exports";
+import { ige } from "@/export/exports";
+import { IgeBehaviourType } from "@/enums/exports";
+import type { IgeCanvasRenderingContext2d } from "@/types/exports";
+import type { IgeTextureAnimation } from "@/types/exports";
 
 export interface IgeAnimationStartOptions {
 	onComplete?: (anim: IgeTextureAnimation) => void;

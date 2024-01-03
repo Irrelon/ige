@@ -1,11 +1,19 @@
-import { IgeFontEntity } from "@/engine/core/IgeFontEntity";
-import { IgeUiElement } from "@/engine/core/IgeUiElement";
-import { registerClass } from "@/engine/igeClassStore";
+import { IgeFontEntity } from "@/export/exports";
+import { IgeUiElement } from "@/export/exports";
+import { registerClass } from "@/export/exports";
+import type { IgeTexture } from "@/export/exports";
 
 export class IgeUiTogglePanel extends IgeUiElement {
 	classId = "IgeUiTogglePanel";
+	private _toggleState: boolean;
+	private _toggleOffTexture: any;
+	private _toggleOnTexture: any;
+	private _panelImage: IgeUiElement;
+	private _panelTitle: IgeFontEntity;
+	private _toggleOn?: () => void;
+	private _toggleOff?: () => void;
 
-	constructor (title, titleTexture, toggleOffTexture, toggleOnTexture) {
+	constructor (title: string, titleTexture: IgeTexture, toggleOffTexture: IgeTexture, toggleOnTexture: IgeTexture) {
 		super();
 
 		this.backgroundColor("#222222");
@@ -14,17 +22,14 @@ export class IgeUiTogglePanel extends IgeUiElement {
 		this._toggleOffTexture = toggleOffTexture;
 		this._toggleOnTexture = toggleOnTexture;
 
-		this._panelImage = new IgeUiElement()
-			.id("panelImage")
-			.texture(toggleOffTexture)
-			.left(5)
-			.middle(0.5)
-			.width(16)
-			.height(16)
-			.mount(this);
+		this._panelImage = new IgeUiElement().id("panelImage");
 
-		this._panelTitle = new IgeFontEntity()
-			.id("panelTitle")
+		this._panelImage.texture(toggleOffTexture);
+		this._panelImage.left(5).middle(0.5).width(16).height(16).mount(this);
+
+		this._panelTitle = new IgeFontEntity().id("panelTitle");
+
+		this._panelTitle
 			.texture(titleTexture)
 			.left(25)
 			.middle(0.5)
@@ -32,18 +37,19 @@ export class IgeUiTogglePanel extends IgeUiElement {
 			.height(20)
 			.textAlignX(0)
 			.textAlignY(1)
-			.text(title)
-			.mount(this);
+			.text(title);
 
-		this.pointerOver(function () {
+		this._panelTitle.mount(this);
+
+		this.pointerOver(() => {
 			this.backgroundColor("#666666");
 		});
 
-		this.pointerOut(function () {
+		this.pointerOut(() => {
 			this.backgroundColor("#222222");
 		});
 
-		this.pointerUp(function () {
+		this.pointerUp(() => {
 			this._toggleState = !this._toggleState;
 
 			if (this._toggleState) {
@@ -60,12 +66,12 @@ export class IgeUiTogglePanel extends IgeUiElement {
 		});
 	}
 
-	toggleOn (method) {
+	toggleOn (method: () => void) {
 		this._toggleOn = method;
 		return this;
 	}
 
-	toggleOff (method) {
+	toggleOff (method: () => void) {
 		this._toggleOff = method;
 		return this;
 	}

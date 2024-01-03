@@ -1,14 +1,14 @@
-import type { IgeObject } from "./IgeObject";
-import type { IgeParticle } from "./IgeParticle";
-import type { IgePoint3d } from "./IgePoint3d";
-import type { IgeTweenPropertyObject } from "./IgeTween";
-import { IgeTween } from "./IgeTween";
-import { IgeUiEntity } from "./IgeUiEntity";
-import { registerClass } from "@/engine/igeClassStore";
-import type { IgeVelocityComponent } from "../components/IgeVelocityComponent";
-import { ige } from "../instance";
-import { degreesToRadians } from "../utils";
-import type { IgeCanvasRenderingContext2d } from "@/types/IgeCanvasRenderingContext2d";
+import type { IgeObject } from "@/export/exports";
+import type { IgeParticle } from "@/export/exports";
+import type { IgePoint3d } from "@/export/exports";
+import type { IgeTweenPropertyObject } from "@/export/exports";
+import { IgeTween } from "@/export/exports";
+import { IgeUiEntity } from "@/export/exports";
+import { registerClass } from "@/export/exports";
+import { degreesToRadians } from "@/export/exports";
+import { ige } from "@/export/exports";
+import type { IgeVelocityComponent } from "@/export/exports";
+import type { IgeCanvasRenderingContext2d } from "@/export/exports";
 
 export interface IgeParticleVectorBaseMinMax {
 	base: IgePoint3d;

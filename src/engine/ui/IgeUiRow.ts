@@ -1,14 +1,16 @@
-import { IgeUiElement } from "@/engine/core/IgeUiElement";
-import { registerClass } from "@/engine/igeClassStore";
+import { registerClass } from "@/export/exports";
+import { IgeUiElement } from "@/export/exports";
+import type { IgeUiEntity } from "@/export/exports";
+import type { IgeCanvasRenderingContext2d } from "@/export/exports";
 
 export class IgeUiRow extends IgeUiElement {
 	classId = "IgeUiRow";
 
-	tick (ctx) {
+	tick(ctx: IgeCanvasRenderingContext2d) {
 		const maxWidth = this.width();
 
 		// Loop children and re-position then
-		const arr = this._children;
+		const arr = this._children as IgeUiEntity[];
 		const arrCount = arr.length;
 
 		let flowSpace = maxWidth;

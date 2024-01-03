@@ -1,4 +1,4 @@
-import { IgeEventingClass } from "../../core/IgeEventingClass";
+import { IgeEventingClass } from "@/export/exports";
 
 // /**
 //  * Define the debug options object.

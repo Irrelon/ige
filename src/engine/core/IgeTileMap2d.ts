@@ -1,18 +1,18 @@
-import { IgeEntity } from "./IgeEntity";
-import { IgeMap2d } from "./IgeMap2d";
-import { IgeMatrix2d } from "./IgeMatrix2d";
-import type { IgeObject } from "./IgeObject";
-import { IgePoint2d } from "./IgePoint2d";
-import { IgePoint3d } from "./IgePoint3d";
-import { IgePoly2d } from "./IgePoly2d";
-import { IgeRect } from "./IgeRect";
-import { IgeTexture } from "./IgeTexture";
-import { registerClass } from "@/engine/igeClassStore";
-import { IgeMountMode } from "@/enums/IgeMountMode";
-import { isServer } from "../clientServer";
-import { ige } from "../instance";
-import { IgeTileMap2dSmartTexture } from "../textures/IgeTileMap2dSmartTexture";
-import { arrClone, newIdHex } from "../utils";
+import { IgeEntity } from "@/export/exports";
+import { IgeMap2d } from "@/export/exports";
+import { IgeMatrix2d } from "@/export/exports";
+import type { IgeObject } from "@/export/exports";
+import { IgePoint2d } from "@/export/exports";
+import { IgePoint3d } from "@/export/exports";
+import { IgePoly2d } from "@/export/exports";
+import { IgeRect } from "@/export/exports";
+import { IgeTexture } from "@/export/exports";
+import { registerClass } from "@/export/exports";
+import { ige } from "@/export/exports";
+import { IgeMountMode } from "@/export/exports";
+import { isServer } from "@/export/exports";
+import { IgeTileMap2dSmartTexture } from "@/export/exports";
+import { arrClone, newIdHex } from "@/export/exports";
 
 export type IgeTileMap2dScanRectCallback = (mapData: any, x: number, y: number) => boolean;
 
@@ -31,7 +31,7 @@ export class IgeTileMap2d extends IgeEntity {
 	IgeTileMap2d = true;
 	_drawGrid?: boolean;
 	_highlightOccupied: boolean = false;
-	_highlightTileRect?: IgeRect = undefined;
+	_highlightTileRect: IgeRect | null = null;
 	_gridColor?: string;
 	_gridSize: IgePoint2d = new IgePoint2d(40, 40);
 	_hoverColor?: string;
@@ -76,9 +76,9 @@ export class IgeTileMap2d extends IgeEntity {
 		return this._highlightOccupied;
 	}
 
-	highlightTileRect(val: IgeRect): this;
+	highlightTileRect(val: IgeRect | null): this;
 	highlightTileRect(): IgeRect;
-	highlightTileRect (val?: IgeRect) {
+	highlightTileRect (val?: IgeRect | null) {
 		if (val !== undefined) {
 			this._highlightTileRect = val;
 			return this;

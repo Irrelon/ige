@@ -1,4 +1,4 @@
-import { IgeEventingClass } from "@/engine/core/IgeEventingClass";
+import { IgeEventingClass } from "@/export/exports";
 
 export type IgeChatRoomOptions = Record<string, any>;
 

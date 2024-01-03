@@ -1,10 +1,10 @@
-import { IgeTexture } from "./IgeTexture";
-import { IgeUiEntity } from "./IgeUiEntity";
-import { registerClass } from "@/engine/igeClassStore";
-import { IgeFontAlignX, IgeFontAlignY } from "@/enums/IgeFontAlign";
-import { IgeTextureRenderMode } from "@/enums/IgeTextureRenderMode";
-import { IgeFontSmartTexture } from "../textures/IgeFontSmartTexture";
-import type { IgeCanvasRenderingContext2d } from "@/types/IgeCanvasRenderingContext2d";
+import { IgeTexture } from "@/export/exports";
+import { IgeUiEntity } from "@/export/exports";
+import { registerClass } from "@/export/exports";
+import { IgeFontAlignX, IgeFontAlignY } from "@/export/exports";
+import { IgeTextureRenderMode } from "@/export/exports";
+import { IgeFontSmartTexture } from "@/export/exports";
+import type { IgeCanvasRenderingContext2d } from "@/export/exports";
 
 /**
  * Creates a new font entity. A font entity will use a font sheet

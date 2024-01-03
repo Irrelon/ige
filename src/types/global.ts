@@ -1,4 +1,4 @@
-import type { IgeViewport } from "@/engine/core/IgeViewport";
+import type { IgeViewport } from "@/export/exports";
 
 declare global {
 	interface Event {

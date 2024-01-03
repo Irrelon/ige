@@ -1,17 +1,16 @@
-import { IgeAsset } from "./IgeAsset";
-import { newCanvas } from "./IgeCanvas";
-import type { IgeEntity } from "./IgeEntity";
-import { IgeDependencies } from "@/engine/core/IgeDependencies";
-import { IgeTextureRenderMode } from "@/enums/IgeTextureRenderMode";
-import { isClient, isServer } from "../clientServer";
-import { ige } from "../instance";
-import { arrPull } from "../utils";
-import type { IgeCanvas } from "@/types/IgeCanvas";
-import type { IgeCanvasRenderingContext2d } from "@/types/IgeCanvasRenderingContext2d";
-import type { IgeImage } from "@/types/IgeImage";
-import type { IgeSmartFilter } from "@/types/IgeSmartFilter";
-import type { IgeSmartTexture } from "@/types/IgeSmartTexture";
-import type { IgeTextureCellArray } from "@/types/IgeTextureCellArray";
+import { arrPull } from "@/export/exports";
+import type { IgeEntity } from "@/export/exports";
+import { IgeAsset, IgeDependencies, newCanvas } from "@/export/exports";
+import { ige, isClient, isServer } from "@/export/exports";
+import { IgeTextureRenderMode } from "@/export/exports";
+import type {
+	IgeCanvas,
+	IgeCanvasRenderingContext2d,
+	IgeImage,
+	IgeSmartFilter,
+	IgeSmartTexture,
+	IgeTextureCellArray
+} from "@/export/exports";
 
 /**
  * Creates a new texture.

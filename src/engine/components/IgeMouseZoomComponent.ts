@@ -1,8 +1,8 @@
-import { IgeComponent } from "../core/IgeComponent";
-import { IgePoint2d } from "../core/IgePoint2d";
-import { IgePoint3d } from "../core/IgePoint3d";
-import type { IgeRect } from "../core/IgeRect";
-import { ige } from "../instance";
+import { IgeComponent } from "@/export/exports";
+import { IgePoint2d } from "@/export/exports";
+import { IgePoint3d } from "@/export/exports";
+import type { IgeRect } from "@/export/exports";
+import { ige } from "@/export/exports";
 
 /**
  * When added to a viewport, automatically adds mouse zooming

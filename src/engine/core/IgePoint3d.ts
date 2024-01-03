@@ -1,5 +1,10 @@
-import type { IgeTweenOptions, IgeTweenPropertyObject } from "./IgeTween";
-import { IgeTween } from "./IgeTween";
+import type { IgeTween, IgeTweenOptions, IgeTweenPropertyObject } from "@/export/exports";
+
+let IgeTweenModule: typeof IgeTween;
+
+import("./IgeTween.js").then((module) => {
+	IgeTweenModule = module.IgeTween;
+});
 
 /**
  * Creates a new 3d point (x, y, z).
@@ -337,7 +342,7 @@ export class IgePoint3d {
 	}
 
 	tween (props?: IgeTweenPropertyObject, durationMs?: number, options?: IgeTweenOptions) {
-		const newTween = new IgeTween().targetObj(this).properties(props).duration(durationMs);
+		const newTween = new IgeTweenModule().targetObj(this).properties(props).duration(durationMs);
 
 		if (options) {
 			if (options.beforeTween) {

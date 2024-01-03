@@ -1,4 +1,4 @@
-import { arrPull } from "../utils";
+import { arrPull } from "@/export/exports";
 
 export class IgeArrayRegister<RegisterType extends Record<string, any>> {
 	_store: Record<string, RegisterType[]> = {};

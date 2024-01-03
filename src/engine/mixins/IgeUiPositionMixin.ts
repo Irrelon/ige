@@ -1,7 +1,7 @@
-import type { IgeUiEntity } from "@/engine/core/IgeUiEntity";
-import type { IgeObject } from "../core/IgeObject";
-import { ige } from "../instance";
-import type { Mixin } from "@/types/Mixin";
+import type { IgeUiEntity } from "@/export/exports";
+import type { IgeObject } from "@/export/exports";
+import { ige } from "@/export/exports";
+import type { Mixin } from "@/types/exports";
 
 export const WithUiPositionMixin = <BaseClassType extends Mixin<IgeObject>>(Base: BaseClassType) =>
 	class extends Base {

@@ -1,6 +1,6 @@
-import { IgeTexture } from "./IgeTexture";
-import type { IgeImage } from "@/types/IgeImage";
-import type { IgeSmartTexture } from "@/types/IgeSmartTexture";
+import { IgeTexture } from "@/export/exports";
+import type { IgeImage } from "@/export/exports";
+import type { IgeSmartTexture } from "@/export/exports";
 
 /**
  * Creates a new cell sheet. Cell sheets are textures that are

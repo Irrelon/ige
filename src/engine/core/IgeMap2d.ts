@@ -1,5 +1,5 @@
-import { IgeBaseClass } from "./IgeBaseClass";
-import { registerClass } from "@/engine/igeClassStore";
+import { IgeBaseClass } from "@/export/exports";
+import { registerClass } from "@/export/exports";
 
 /**
  * Creates a new map that has two dimensions (x and y) to its data.

@@ -1,22 +1,26 @@
-import { IgeBox2dDebugPainter } from "./IgeBox2dDebugPainter";
-import { IgeEntityBox2d } from "./IgeEntityBox2d";
-import type { IgeEntity } from "@/engine/core/IgeEntity";
-import { IgeEventingClass } from "@/engine/core/IgeEventingClass";
-import type { IgeTileMap2d, IgeTileMap2dScanRectCallback } from "@/engine/core/IgeTileMap2d";
-import { Box2D } from "@/engine/components/physics/box2d/lib_box2d";
-import { IgeBehaviourType } from "@/enums/IgeBehaviourType";
-import { IgeBox2dBodyType } from "@/enums/IgeBox2dBodyType";
-import { IgeBox2dFixtureShapeType } from "@/enums/IgeBox2dFixtureShapeType";
-import { IgeBox2dTimingMode } from "@/enums/IgeBox2dTimingMode";
-import { ige } from "../../../instance";
-import type { IgeBox2dBodyDef } from "@/types/IgeBox2dBodyDef";
-import type { IgeBox2dContactListenerCallback } from "@/types/IgeBox2dContactListenerCallback";
-import type {
-	IgeBox2dContactPostSolveCallback,
-	IgeBox2dContactPreSolveCallback
-} from "@/types/IgeBox2dContactSolverCallback";
-import type { IgeBox2dFixtureDef } from "@/types/IgeBox2dFixtureDef";
-import type { IgeEntityBehaviourMethod } from "@/types/IgeEntityBehaviour";
+import { IgeEntityBox2d } from "@/export/exports";
+import { b2CircleShape } from "@/export/exports";
+import { b2PolygonShape } from "@/export/exports";
+import { b2Filter } from "@/export/exports";
+import { b2FixtureDef } from "@/export/exports";
+import { b2ContactListener } from "@/export/exports";
+import type { IgeEntity } from "@/export/exports";
+import { IgeEventingClass } from "@/export/exports";
+import type { IgeTileMap2d, IgeTileMap2dScanRectCallback } from "@/export/exports";
+import { ige } from "@/export/exports";
+import { b2Vec2 } from "@/export/exports";
+import type { b2Body } from "@/export/exports";
+import { b2BodyDef, b2BodyType } from "@/export/exports";
+import { b2World } from "@/export/exports";
+import { IgeBehaviourType } from "@/export/exports";
+import { IgeBox2dBodyType } from "@/export/exports";
+import { IgeBox2dFixtureShapeType } from "@/export/exports";
+import { IgeBox2dTimingMode } from "@/export/exports";
+import type { IgeBox2dBodyDef } from "@/export/exports";
+import type { IgeBox2dContactListenerCallback } from "@/export/exports";
+import type { IgeBox2dContactPostSolveCallback, IgeBox2dContactPreSolveCallback } from "@/export/exports";
+import type { IgeBox2dFixtureDef } from "@/export/exports";
+import type { IgeEntityBehaviourMethod } from "@/export/exports";
 
 /**
  * The engine's Box2D component class.
@@ -31,147 +35,20 @@ export class IgeBox2dController extends IgeEventingClass {
 	_useWorker: boolean = false;
 	_sleep: boolean = true;
 	_scaleRatio: number = 1;
-	_gravity: Box2D.Common.Math.b2Vec2;
-	_removeWhenReady: Box2D.Dynamics.b2Body[];
+	_gravity: b2Vec2;
+	_removeWhenReady: b2Body[];
 	_networkDebugMode: boolean = false;
 	_box2dDebug: boolean = false;
 	_updateCallback?: () => void;
-	_world?: Box2D.Dynamics.b2World;
-
-	b2Color = Box2D.Common.b2Color;
-	b2Vec2 = Box2D.Common.Math.b2Vec2;
-	b2Math = Box2D.Common.Math.b2Math;
-	b2Shape = Box2D.Collision.Shapes.b2Shape;
-	b2BodyDef = Box2D.Dynamics.b2BodyDef;
-	b2Body = Box2D.Dynamics.b2Body;
-	b2FixtureDef = Box2D.Dynamics.b2FixtureDef;
-	b2Fixture = Box2D.Dynamics.b2Fixture;
-	b2World = Box2D.Dynamics.b2World;
-	b2MassData = Box2D.Collision.Shapes.b2MassData;
-	b2PolygonShape = Box2D.Collision.Shapes.b2PolygonShape;
-	b2CircleShape = Box2D.Collision.Shapes.b2CircleShape;
-	b2DebugDraw = Box2D.Dynamics.b2DebugDraw;
-	b2ContactListener = Box2D.Dynamics.b2ContactListener;
-	b2Distance = Box2D.Collision.b2DistanceOutput;
-	b2Contact = Box2D.Dynamics.Contacts.b2Contact;
-	b2FilterData = Box2D.Dynamics.b2FilterData;
-	b2DistanceJointDef = Box2D.Dynamics.Joints.b2DistanceJointDef;
+	_world?: b2World;
 
 	constructor () {
 		super();
 
 		this._renderMode = IgeBox2dTimingMode.matchEngine;
-
-		this.b2Color = Box2D.Common.b2Color;
-		this.b2Vec2 = Box2D.Common.Math.b2Vec2;
-		this.b2Math = Box2D.Common.Math.b2Math;
-		this.b2Shape = Box2D.Collision.Shapes.b2Shape;
-		this.b2BodyDef = Box2D.Dynamics.b2BodyDef;
-		this.b2Body = Box2D.Dynamics.b2Body;
-		this.b2FixtureDef = Box2D.Dynamics.b2FixtureDef;
-		this.b2Fixture = Box2D.Dynamics.b2Fixture;
-		this.b2World = Box2D.Dynamics.b2World;
-		this.b2MassData = Box2D.Collision.Shapes.b2MassData;
-		this.b2PolygonShape = Box2D.Collision.Shapes.b2PolygonShape;
-		this.b2CircleShape = Box2D.Collision.Shapes.b2CircleShape;
-		this.b2DebugDraw = Box2D.Dynamics.b2DebugDraw;
-		this.b2ContactListener = Box2D.Dynamics.b2ContactListener;
-		this.b2Distance = Box2D.Collision.b2DistanceOutput;
-		this.b2Contact = Box2D.Dynamics.Contacts.b2Contact;
-		this.b2FilterData = Box2D.Dynamics.b2FilterData;
-		this.b2DistanceJointDef = Box2D.Dynamics.Joints.b2DistanceJointDef;
-
-		// Extend the b2Contact class to allow the IGE entity accessor
-		// and other helper methods
-		this.b2Contact.prototype.igeEntityA = function () {
-			const ent = this.m_fixtureA.m_body._entity;
-			ent._box2dOurContactFixture = this.m_fixtureA;
-			ent._box2dTheirContactFixture = this.m_fixtureB;
-			return ent;
-		};
-
-		this.b2Contact.prototype.igeEntityB = function () {
-			const ent = this.m_fixtureB.m_body._entity;
-			ent._box2dOurContactFixture = this.m_fixtureB;
-			ent._box2dTheirContactFixture = this.m_fixtureA;
-			return ent;
-		};
-
-		this.b2Contact.prototype.igeEitherId = function (id1: string, id2: string): boolean {
-			if (!id2) {
-				return this.m_fixtureA.m_body._entity._id === id1 || this.m_fixtureB.m_body._entity._id === id1;
-			} else {
-				return (
-					(this.m_fixtureA.m_body._entity._id === id1 || this.m_fixtureB.m_body._entity._id === id1) &&
-					(this.m_fixtureA.m_body._entity._id === id2 || this.m_fixtureB.m_body._entity._id === id2)
-				);
-			}
-		};
-
-		this.b2Contact.prototype.igeEitherCategory = function (category1: string, category2: string): boolean {
-			if (!category2) {
-				return (
-					this.m_fixtureA.m_body._entity._category === category1 ||
-					this.m_fixtureB.m_body._entity._category === category1
-				);
-			} else {
-				return (
-					(this.m_fixtureA.m_body._entity._category === category1 ||
-						this.m_fixtureB.m_body._entity._category === category1) &&
-					(this.m_fixtureA.m_body._entity._category === category2 ||
-						this.m_fixtureB.m_body._entity._category === category2)
-				);
-			}
-		};
-
-		this.b2Contact.prototype.igeBothCategories = function (category: string): boolean {
-			return (
-				this.m_fixtureA.m_body._entity._category === category &&
-				this.m_fixtureB.m_body._entity._category === category
-			);
-		};
-
-		this.b2Contact.prototype.igeEntityByCategory = function (category: string): IgeEntityBox2d | undefined {
-			if (this.m_fixtureA.m_body._entity._category === category) {
-				return this.igeEntityA();
-			}
-
-			if (this.m_fixtureB.m_body._entity._category === category) {
-				return this.igeEntityB();
-			}
-		};
-
-		this.b2Contact.prototype.igeEntityById = function (id: string): IgeEntityBox2d | undefined {
-			if (this.m_fixtureA.m_body._entity._id === id) {
-				return this.igeEntityA();
-			}
-
-			if (this.m_fixtureB.m_body._entity._id === id) {
-				return this.igeEntityB();
-			}
-		};
-
-		this.b2Contact.prototype.igeEntityByFixtureId = function (id: string): IgeEntityBox2d | undefined {
-			if (this.m_fixtureA.igeId === id) {
-				return this.igeEntityA();
-			}
-
-			if (this.m_fixtureB.igeId === id) {
-				return this.igeEntityB();
-			}
-		};
-
-		this.b2Contact.prototype.igeOtherEntity = function (bodyEntity: IgeEntityBox2d): IgeEntityBox2d | undefined {
-			if (this.m_fixtureA.m_body._entity === bodyEntity) {
-				return this.igeEntityB();
-			} else {
-				return this.igeEntityA();
-			}
-		};
-
 		this._sleep = true;
 		this._scaleRatio = 30;
-		this._gravity = new this.b2Vec2(0, 0);
+		this._gravity = new b2Vec2(0, 0);
 
 		this._removeWhenReady = [];
 	}
@@ -290,10 +167,10 @@ export class IgeBox2dController extends IgeEventingClass {
 	 * @return {*}
 	 */
 	gravity(x: number, y: number): this;
-	gravity(): Box2D.Common.Math.b2Vec2;
+	gravity(): b2Vec2;
 	gravity (x?: number, y?: number) {
 		if (x !== undefined && y !== undefined) {
-			this._gravity = new this.b2Vec2(x, y);
+			this._gravity = new b2Vec2(x, y);
 			return this;
 		}
 
@@ -313,7 +190,7 @@ export class IgeBox2dController extends IgeEventingClass {
 	 * @return {*}
 	 */
 	createWorld (): this {
-		this._world = new this.b2World(this._gravity, this._sleep);
+		this._world = new b2World(this._gravity);
 
 		this.log("World created");
 
@@ -326,12 +203,11 @@ export class IgeBox2dController extends IgeEventingClass {
 	 * @return {b2FixtureDef}
 	 */
 	createFixture (params: IgeBox2dFixtureDef) {
-		const tempDef: Box2D.Dynamics.b2FixtureDef = new this.b2FixtureDef();
+		const tempDef: b2FixtureDef = new b2FixtureDef();
 
 		for (const param in params) {
 			if (param !== "shape" && param !== "filter") {
-				// @ts-ignore
-				tempDef[param] = params[param as keyof Box2D.Dynamics.b2FixtureDef];
+				tempDef[param] = params[param as keyof b2FixtureDef];
 			}
 		}
 
@@ -345,12 +221,12 @@ export class IgeBox2dController extends IgeEventingClass {
 	 * @param {Object} body
 	 * @return {b2Body}
 	 */
-	createBody (entity: IgeEntityBox2d, body: IgeBox2dBodyDef): Box2D.Dynamics.b2Body {
+	createBody (entity: IgeEntityBox2d, body: IgeBox2dBodyDef): b2Body {
 		if (!this._world) {
 			throw new Error("No box2D world instantiated!");
 		}
 
-		const tempDef = new this.b2BodyDef();
+		const tempDef = new b2BodyDef();
 		let param,
 			fixtureDef,
 			tempFixture,
@@ -366,15 +242,15 @@ export class IgeBox2dController extends IgeEventingClass {
 		// Process body definition and create a box2D body for it
 		switch (body.type) {
 		case IgeBox2dBodyType.static: // "static"
-			tempDef.type = this.b2Body.b2_staticBody;
+			tempDef.type = b2BodyType.b2_staticBody;
 			break;
 
 		case IgeBox2dBodyType.dynamic: // "dynamic"
-			tempDef.type = this.b2Body.b2_dynamicBody;
+			tempDef.type = b2BodyType.b2_dynamicBody;
 			break;
 
 		case IgeBox2dBodyType.kinematic: // "kinematic"
-			tempDef.type = this.b2Body.b2_kinematicBody;
+			tempDef.type = b2BodyType.b2_kinematicBody;
 			break;
 		}
 
@@ -397,10 +273,7 @@ export class IgeBox2dController extends IgeEventingClass {
 		}
 
 		// Set the position
-		tempDef.position = new this.b2Vec2(
-			entity._translate.x / this._scaleRatio,
-			entity._translate.y / this._scaleRatio
-		);
+		tempDef.position.Set(entity._translate.x / this._scaleRatio, entity._translate.y / this._scaleRatio);
 
 		// Create the new body
 		const tempBod = this._world.CreateBody(tempDef);
@@ -409,9 +282,10 @@ export class IgeBox2dController extends IgeEventingClass {
 		for (param in body) {
 			switch (param) {
 			case "gravitic":
-				if (!body.gravitic) {
-					tempBod.m_nonGravitic = true;
-				}
+				// TODO: Modify box2d to allow gravitic mode again
+				// if (!body.gravitic) {
+				// 	tempBod.m_nonGravitic = true;
+				// }
 				break;
 
 			case "fixedRotation":
@@ -435,7 +309,7 @@ export class IgeBox2dController extends IgeEventingClass {
 							// Create based on the shape type
 							switch (fixtureDef.shape.type) {
 							case IgeBox2dFixtureShapeType.circle:
-								tempShape = new this.b2CircleShape();
+								tempShape = new b2CircleShape();
 								if (
 									fixtureDef.shape.data &&
 											typeof fixtureDef.shape.data.radius !== "undefined"
@@ -452,13 +326,13 @@ export class IgeBox2dController extends IgeEventingClass {
 												fixtureDef.shape.data.y !== undefined ? fixtureDef.shape.data.y : 0;
 
 									tempShape.SetLocalPosition(
-										new this.b2Vec2(finalX / this._scaleRatio, finalY / this._scaleRatio)
+										new b2Vec2(finalX / this._scaleRatio, finalY / this._scaleRatio)
 									);
 								}
 								break;
 
 							case IgeBox2dFixtureShapeType.polygon:
-								tempShape = new this.b2PolygonShape();
+								tempShape = new b2PolygonShape();
 								tempShape.SetAsArray(
 									fixtureDef.shape.data._poly,
 									fixtureDef.shape.data.length()
@@ -466,7 +340,7 @@ export class IgeBox2dController extends IgeEventingClass {
 								break;
 
 							case IgeBox2dFixtureShapeType.rectangle:
-								tempShape = new this.b2PolygonShape();
+								tempShape = new b2PolygonShape();
 
 								if (fixtureDef.shape.data) {
 									finalX =
@@ -492,7 +366,7 @@ export class IgeBox2dController extends IgeEventingClass {
 								tempShape.SetAsOrientedBox(
 									finalWidth / this._scaleRatio,
 									finalHeight / this._scaleRatio,
-									new this.b2Vec2(finalX / this._scaleRatio, finalY / this._scaleRatio),
+									new b2Vec2(finalX / this._scaleRatio, finalY / this._scaleRatio),
 									0
 								);
 								break;
@@ -507,7 +381,7 @@ export class IgeBox2dController extends IgeEventingClass {
 						}
 
 						if (fixtureDef.filter && finalFixture) {
-							tempFilterData = new this.b2FilterData();
+							tempFilterData = new b2Filter();
 
 							if (fixtureDef.filter.categoryBits !== undefined) {
 								tempFilterData.categoryBits = fixtureDef.filter.categoryBits;
@@ -537,7 +411,7 @@ export class IgeBox2dController extends IgeEventingClass {
 		}
 
 		// Store the entity that is linked to this body
-		tempBod._entity = entity;
+		tempBod.SetUserData({ _entity: entity });
 
 		// Add the body to the world with the passed fixture
 		return tempBod;
@@ -610,12 +484,12 @@ export class IgeBox2dController extends IgeEventingClass {
 		endContactCallback?: IgeBox2dContactListenerCallback,
 		preSolve?: IgeBox2dContactPreSolveCallback,
 		postSolve?: IgeBox2dContactPostSolveCallback
-	): Box2D.Dynamics.b2ContactListener {
+	): b2ContactListener {
 		if (!this._world) {
 			throw new Error("No box2D world instantiated!");
 		}
 
-		const contactListener = new this.b2ContactListener();
+		const contactListener = new b2ContactListener();
 
 		if (beginContactCallback !== undefined) {
 			contactListener.BeginContact = beginContactCallback;
@@ -682,50 +556,48 @@ export class IgeBox2dController extends IgeEventingClass {
 	 * @param {IgeEntity} mountScene
 	 */
 	enableDebug (mountScene?: IgeEntity) {
-		if (!this._world) {
-			throw new Error("No box2D world instantiated!");
-		}
-
-		if (mountScene) {
-			// Define the debug drawing instance
-			const debugDraw = new this.b2DebugDraw();
-			this._box2dDebug = true;
-
-			debugDraw.SetSprite(ige.engine._ctx as CanvasRenderingContext2D);
-			debugDraw.SetDrawScale(this._scaleRatio);
-			debugDraw.SetFillAlpha(0.3);
-			debugDraw.SetLineThickness(1.0);
-			debugDraw.SetFlags(
-				this.b2DebugDraw.e_controllerBit |
-					this.b2DebugDraw.e_jointBit |
-					this.b2DebugDraw.e_pairBit |
-					this.b2DebugDraw.e_shapeBit
-				//| this.b2DebugDraw.e_aabbBit
-				//| this.b2DebugDraw.e_centerOfMassBit
-			);
-
-			// Set the debug draw for the world
-			this._world.SetDebugDraw(debugDraw);
-
-			// Create the debug painter entity and mount
-			// it to the passed scene
-			new IgeBox2dDebugPainter(ige.engine)
-				.depth(40000) // Set a really high depth
-				.drawBounds(false)
-				.mount(mountScene);
-		} else {
-			this.log(
-				"Cannot enable box2D debug drawing because the passed argument is not an object on the scenegraph.",
-				"error"
-			);
-		}
+		// TODO: Implement debug drawing again. Look at the Box2d library in ./testbed for an example of the class
+		// if (!this._world) {
+		// 	throw new Error("No box2D world instantiated!");
+		// }
+		//
+		// if (mountScene) {
+		// 	// Define the debug drawing instance
+		// 	const debugDraw = new igeBox2dDebugDraw();
+		// 	this._box2dDebug = true;
+		//
+		// 	debugDraw.SetSprite(ige.engine._ctx as CanvasRenderingContext2D);
+		// 	debugDraw.SetDrawScale(this._scaleRatio);
+		// 	debugDraw.SetFillAlpha(0.3);
+		// 	debugDraw.SetLineThickness(1.0);
+		// 	debugDraw.SetFlags(
+		// 		b2DrawFlags.e_controllerBit | b2DrawFlags.e_jointBit | b2DrawFlags.e_pairBit | b2DrawFlags.e_shapeBit
+		// 		//| b2DrawFlags.e_aabbBit
+		// 		//| b2DrawFlags.e_centerOfMassBit
+		// 	);
+		//
+		// 	// Set the debug draw for the world
+		// 	this._world.SetDebugDraw(debugDraw);
+		//
+		// 	// Create the debug painter entity and mount
+		// 	// it to the passed scene
+		// 	new IgeBox2dDebugPainter(ige.engine)
+		// 		.depth(40000) // Set a really high depth
+		// 		.drawBounds(false)
+		// 		.mount(mountScene);
+		// } else {
+		// 	this.log(
+		// 		"Cannot enable box2D debug drawing because the passed argument is not an object on the scenegraph.",
+		// 		"error"
+		// 	);
+		// }
 	}
 
 	/**
 	 * Queues a body for removal from the physics world.
 	 * @param body
 	 */
-	destroyBody (body: Box2D.Dynamics.b2Body) {
+	destroyBody (body: b2Body) {
 		this._removeWhenReady.push(body);
 	}
 

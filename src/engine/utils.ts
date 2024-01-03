@@ -1,4 +1,4 @@
-import type { IgeBaseClass } from "@/engine/core/IgeBaseClass";
+import type { IgeBaseClass } from "@/export/exports";
 
 let _idCounter = 0;
 

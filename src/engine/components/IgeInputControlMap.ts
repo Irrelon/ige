@@ -1,4 +1,4 @@
-import { ige } from "@/engine/instance";
+import { ige } from "@/export/exports";
 import type { IgeInputDevice } from "@/enums/IgeInputDeviceMap";
 
 export class IgeInputControlMap {

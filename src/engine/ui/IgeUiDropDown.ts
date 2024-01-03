@@ -1,9 +1,9 @@
-import { IgeUiElement } from "@/engine/core/IgeUiElement";
-import type { IgeUiManagerController } from "@/engine/core/IgeUiManagerController";
-import { registerClass } from "@/engine/igeClassStore";
-import { ige } from "@/engine/instance";
-import { IgeUiLabel } from "@/engine/ui/IgeUiLabel";
-import type { IgeCanvasRenderingContext2d } from "@/types/IgeCanvasRenderingContext2d";
+import { IgeUiElement } from "@/export/exports";
+import type { IgeUiManagerController } from "@/export/exports";
+import { ige } from "@/export/exports";
+import { registerClass } from "@/export/exports";
+import { IgeUiLabel } from "@/export/exports";
+import type { IgeCanvasRenderingContext2d } from "@/export/exports";
 
 export interface IgeUiDropDownOption {
 	text: string;
@@ -18,7 +18,7 @@ export class IgeUiDropDown extends IgeUiElement {
 	_options: IgeUiDropDownOption[] = [];
 	_label: IgeUiLabel;
 
-	constructor () {
+	constructor() {
 		super();
 
 		// Define some default styles
@@ -49,7 +49,7 @@ export class IgeUiDropDown extends IgeUiElement {
 		});
 	}
 
-	options (ops?: IgeUiDropDownOption[]) {
+	options(ops?: IgeUiDropDownOption[]) {
 		if (ops !== undefined) {
 			this._options = ops;
 
@@ -73,7 +73,7 @@ export class IgeUiDropDown extends IgeUiElement {
 		return this;
 	}
 
-	addOption (op?: IgeUiDropDownOption) {
+	addOption(op?: IgeUiDropDownOption) {
 		if (op !== undefined) {
 			this._options.push(op);
 
@@ -92,7 +92,7 @@ export class IgeUiDropDown extends IgeUiElement {
 		return this;
 	}
 
-	removeAllOptions () {
+	removeAllOptions() {
 		this._options = [];
 		this.value({
 			text: "",
@@ -103,7 +103,7 @@ export class IgeUiDropDown extends IgeUiElement {
 	/**
 	 * The blur method removes global UI focus from this UI element.
 	 */
-	blur () {
+	blur() {
 		const returnValue = super.blur();
 
 		if (this._toggleState) {
@@ -113,14 +113,14 @@ export class IgeUiDropDown extends IgeUiElement {
 		return returnValue;
 	}
 
-	selectIndex (index: number) {
+	selectIndex(index: number) {
 		if (this._options[index]) {
 			this.value(this._options[index]);
 			this.emit("change", this.value());
 		}
 	}
 
-	value (val?: IgeUiDropDownOption) {
+	value(val?: IgeUiDropDownOption) {
 		if (val !== undefined) {
 			super.value(val);
 			this._label.value(val.text);
@@ -130,7 +130,7 @@ export class IgeUiDropDown extends IgeUiElement {
 		return this._value.value;
 	}
 
-	toggle () {
+	toggle() {
 		this._toggleState = !this._toggleState;
 
 		if (this._toggleState) {
@@ -175,7 +175,7 @@ export class IgeUiDropDown extends IgeUiElement {
 		}
 	}
 
-	tick (ctx: IgeCanvasRenderingContext2d) {
+	tick(ctx: IgeCanvasRenderingContext2d) {
 		super.tick(ctx);
 
 		// Draw drop-down box

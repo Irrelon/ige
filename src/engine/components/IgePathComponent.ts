@@ -1,3 +1,4 @@
+import { ige } from "@/export/exports";
 import { IgeBehaviourType } from "@/enums/IgeBehaviourType";
 import { IgeEntityRenderMode } from "@/enums/IgeEntityRenderMode";
 import { IgeMountMode } from "@/enums/IgeMountMode";
@@ -9,7 +10,6 @@ import type { IgePathFinder, IgePathFinderComparisonCallback } from "../core/Ige
 import { IgePathNode } from "../core/IgePathNode";
 import { IgePoint3d } from "../core/IgePoint3d";
 import type { IgeTileMap2d } from "../core/IgeTileMap2d";
-import { ige } from "../instance";
 import { distance } from "../utils";
 import type { IgeCanvasRenderingContext2d } from "@/types/IgeCanvasRenderingContext2d";
 import type { IgeEntityBehaviourMethod } from "@/types/IgeEntityBehaviour";
@@ -27,7 +27,6 @@ export class IgePathComponent extends IgeComponent {
 	_tileMap?: IgeTileMap2d;
 	_finder?: IgePathFinder;
 	_dynamic: boolean = false;
-	_tileChecker: IgePathFinderComparisonCallback = () => true;
 	_lookAheadSteps?: number;
 	_allowSquare: boolean = true;
 	_allowDiagonal: boolean = true;
@@ -65,6 +64,8 @@ export class IgePathComponent extends IgeComponent {
 		// Add the path behaviour to the entity
 		entity.addBehaviour(IgeBehaviourType.preUpdate, "path", this._updateBehaviour);
 	}
+
+	_tileChecker: IgePathFinderComparisonCallback = () => true;
 
 	/**
 	 * Gets / sets the tile map that will be used when calculating paths.

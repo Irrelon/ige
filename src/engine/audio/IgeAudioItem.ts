@@ -1,5 +1,5 @@
-import { IgeEventingClass } from "@/engine/core/IgeEventingClass";
-import { ige } from "@/engine/instance";
+import { IgeEventingClass } from "@/export/exports";
+import { ige } from "@/export/exports";
 
 export class IgeAudioItem extends IgeEventingClass {
 	classId = "IgeAudioItem";
@@ -120,6 +120,7 @@ export class IgeAudioItem extends IgeEventingClass {
 		}
 
 		this._bufferSource = ige.audio._ctx.createBufferSource();
+		if (!this._bufferSource) return;
 		this._bufferSource.buffer = this._buffer;
 
 		if (this._panner) {

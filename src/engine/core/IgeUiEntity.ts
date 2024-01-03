@@ -1,13 +1,13 @@
 // TODO: Implement the _stringify() method for this class
-import { IgeEntity } from "./IgeEntity";
-import type { IgeObject } from "./IgeObject";
-import type { IgeTexture } from "./IgeTexture";
-import { registerClass } from "@/engine/igeClassStore";
-import { ige } from "../instance";
-import { PI180 } from "../utils";
-import type { IgeCanvasRenderingContext2d } from "@/types/IgeCanvasRenderingContext2d";
-import type { IgePointXY } from "@/types/IgePointXY";
-import type { IgeRepeatType } from "@/types/IgeRepeatType";
+import { IgeEntity } from "@/export/exports";
+import type { IgeObject } from "@/export/exports";
+import type { IgeTexture } from "@/export/exports";
+import { registerClass } from "@/export/exports";
+import { PI180 } from "@/export/exports";
+import { ige } from "@/export/exports";
+import type { IgeCanvasRenderingContext2d } from "@/export/exports";
+import type { IgePointXY } from "@/export/exports";
+import type { IgeRepeatType } from "@/export/exports";
 
 /**
  * Creates a new UI entity. UI entities use more resources and CPU
@@ -830,7 +830,7 @@ export class IgeUiEntity extends IgeEntity {
 
 	/**
 	 * Gets / sets the geometry.x in pixels.
-	 * @param {number, String=} px Either the width in pixels or a percentage
+	 * @param {number | string=} px Either the width in pixels or a percentage
 	 * @param {Boolean=} lockAspect
 	 * @param {number=} modifier A value to add to the final width. Useful when
 	 * you want to alter a percentage value by a certain number of pixels after
@@ -901,7 +901,7 @@ export class IgeUiEntity extends IgeEntity {
 
 	/**
 	 * Gets / sets the geometry.y in pixels.
-	 * @param {number=} px
+	 * @param {number|string=} px
 	 * @param {Boolean=} lockAspect
 	 * @param {number=} modifier A value to add to the final height. Useful when
 	 * you want to alter a percentage value by a certain number of pixels after

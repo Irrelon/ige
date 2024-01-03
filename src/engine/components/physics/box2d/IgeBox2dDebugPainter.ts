@@ -1,9 +1,10 @@
-import type { IgeBox2dController } from "./IgeBox2dController";
-import { IgeEntity } from "../../../core/IgeEntity";
-import { registerClass } from "../../../igeClassStore";
-import { ige } from "../../../instance";
-import type { IgeCanvasRenderingContext2d } from "@/types/IgeCanvasRenderingContext2d";
+import type { IgeBox2dController } from "@/export/exports";
+import { ige } from "@/export/exports";
+import { IgeEntity } from "@/export/exports";
+import { registerClass } from "@/export/exports";
+import type { IgeCanvasRenderingContext2d } from "@/export/exports";
 
+// TODO: Check if this is still supported with the new version of Box2d we are using. Does DrawDebugData() need calling?
 export class IgeBox2dDebugPainter extends IgeEntity {
 	classId = "IgeBox2dDebugPainter";
 	_entity: IgeEntity;
@@ -22,6 +23,8 @@ export class IgeBox2dDebugPainter extends IgeEntity {
 			ctx.rotate((45 * Math.PI) / 180);
 		}
 
+		// TODO: This should use something like this.m_world.SetDebugDraw(g_debugDraw); instead now, where g_debugDraw is a Draw instance
+		// @ts-ignore
 		(ige.box2d as IgeBox2dController)._world?.DrawDebugData();
 
 		super.tick(ctx);

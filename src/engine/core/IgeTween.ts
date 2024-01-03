@@ -1,8 +1,5 @@
-import { IgeBaseClass } from "./IgeBaseClass";
-import type { IgeTweenController } from "./IgeTweenController";
-import { easingFunctions } from "../easing";
-import { ige } from "../instance";
-import { arrPull } from "../utils";
+import type { IgeTweenController } from "@/export/exports";
+import { arrPull, easingFunctions, ige, IgeBaseClass } from "@/export/exports";
 
 export interface IgeTweenStep {
 	props: Record<string, number>;

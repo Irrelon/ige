@@ -1,5 +1,5 @@
-import type { IgeAsset } from "./IgeAsset";
-import { IgeEventingClass } from "./IgeEventingClass";
+import type { IgeAsset } from "@/export/exports";
+import { IgeEventingClass } from "@/export/exports";
 
 export class IgeAssetRegister<AssetType extends IgeAsset> extends IgeEventingClass {
 	_assetById: Record<string, AssetType> = {};

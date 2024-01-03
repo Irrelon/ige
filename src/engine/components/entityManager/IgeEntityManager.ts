@@ -1,12 +1,12 @@
-import type { IgeViewport } from "@/engine/core/IgeViewport";
-import { IgeBehaviourType } from "@/enums/IgeBehaviourType";
-import { IgeEntityRenderMode } from "@/enums/IgeEntityRenderMode";
-import { IgeMountMode } from "@/enums/IgeMountMode";
-import { IgeComponent } from "../../core/IgeComponent";
-import type { IgeEntity } from "../../core/IgeEntity";
-import { ige } from "../../instance";
-import { arrPull } from "../../utils";
-import type { IgeEntityBehaviourMethod } from "@/types/IgeEntityBehaviour";
+import { arrPull } from "@/export/exports";
+import type { IgeViewport } from "@/export/exports";
+import { IgeComponent } from "@/export/exports";
+import type { IgeEntity } from "@/export/exports";
+import { ige } from "@/export/exports";
+import { IgeBehaviourType } from "@/export/exports";
+import { IgeEntityRenderMode } from "@/export/exports";
+import { IgeMountMode } from "@/export/exports";
+import type { IgeEntityBehaviourMethod } from "@/export/exports";
 
 /**
  * This component should be mounted to a parent entity such as an IgeScene2d but can

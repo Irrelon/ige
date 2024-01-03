@@ -1,10 +1,15 @@
-import type { IgeBox2dController } from "./IgeBox2dController";
-import type { IgeEventListenerCallback } from "@/engine/core/IgeEventingClass";
-import { Box2D } from "@/engine/components/physics/box2d/lib_box2d";
-import { IgeEntity } from "../../../core/IgeEntity";
-import { ige } from "../../../instance";
-import type { IgeBox2dBodyDef } from "@/types/IgeBox2dBodyDef";
-import type { IgeCanvasRenderingContext2d } from "@/types/IgeCanvasRenderingContext2d";
+import type { IgeEventListenerCallback } from "@/export/exports";
+import { ige } from "@/export/exports";
+import type { IgeBox2dController } from "@/export/exports";
+import { igeBox2dContactEntityA, igeBox2dContactEntityB } from "@/export/exports";
+import { b2Vec2 } from "@/export/exports";
+import type { b2Body } from "@/export/exports";
+import type { b2Contact } from "@/export/exports";
+import type { b2Fixture } from "@/export/exports";
+import type { b2ContactListener } from "@/export/exports";
+import { IgeEntity } from "@/export/exports";
+import type { IgeBox2dBodyDef } from "@/export/exports";
+import type { IgeCanvasRenderingContext2d } from "@/export/exports";
 
 export interface IgeEntityBox2dCollisionListener {
 	type: number;
@@ -20,13 +25,13 @@ export class IgeEntityBox2d extends IgeEntity {
 
 	_b2dRef: IgeBox2dController;
 	_box2dBodyDef?: IgeBox2dBodyDef;
-	_box2dBody?: Box2D.Dynamics.b2Body;
-	_box2dOurContactFixture?: Box2D.Dynamics.b2Fixture;
-	_box2dTheirContactFixture?: Box2D.Dynamics.b2Fixture;
+	_box2dBody?: b2Body;
+	_box2dOurContactFixture?: b2Fixture;
+	_box2dTheirContactFixture?: b2Fixture;
 	_box2dNoDebug: boolean = false;
 	_collisionStartListeners?: IgeEntityBox2dCollisionListener[];
 	_collisionEndListeners?: IgeEntityBox2dCollisionListener[];
-	_contactListener?: Box2D.Dynamics.b2ContactListener;
+	_contactListener?: b2ContactListener;
 
 	constructor () {
 		super();
@@ -44,11 +49,11 @@ export class IgeEntityBox2d extends IgeEntity {
 	box2dActive (val?: boolean) {
 		if (this._box2dBody) {
 			if (val !== undefined) {
-				this._box2dBody.SetActive(val);
+				this._box2dBody.SetEnabled(val);
 				return this;
 			}
 
-			return this._box2dBody.IsActive();
+			return this._box2dBody.IsEnabled();
 		}
 
 		return this;
@@ -84,30 +89,30 @@ export class IgeEntityBox2d extends IgeEntity {
 		return this._box2dBodyDef;
 	}
 
-	/**
-	 * Gets / sets the Box2D body's gravitic value. If set to false,
-	 * this entity will not be affected by gravity. If set to true it
-	 * will be affected by gravity.
-	 * @param {boolean=} val True to allow gravity to affect this entity.
-	 * @returns {*}
-	 */
-	gravitic (val?: boolean) {
-		if (this._box2dBody) {
-			if (val !== undefined) {
-				this._box2dBody.m_nonGravitic = !val;
-
-				if (this._box2dBodyDef) {
-					this._box2dBodyDef.gravitic = val;
-				}
-
-				// Wake up the body
-				this._box2dBody.SetAwake(true);
-				return this;
-			}
-
-			return !this._box2dBody.m_nonGravitic;
-		}
-	}
+	// /**
+	//  * Gets / sets the Box2D body's gravitic value. If set to false,
+	//  * this entity will not be affected by gravity. If set to true it
+	//  * will be affected by gravity.
+	//  * @param {boolean=} val True to allow gravity to affect this entity.
+	//  * @returns {*}
+	//  */
+	// gravitic (val?: boolean) {
+	// 	if (this._box2dBody) {
+	// 		if (val !== undefined) {
+	// 			this._box2dBody.m_nonGravitic = !val;
+	//
+	// 			if (this._box2dBodyDef) {
+	// 				this._box2dBodyDef.gravitic = val;
+	// 			}
+	//
+	// 			// Wake up the body
+	// 			this._box2dBody.SetAwake(true);
+	// 			return this;
+	// 		}
+	//
+	// 		return !this._box2dBody.m_nonGravitic;
+	// 	}
+	// }
 
 	on(eventName: string, id: string, listener: IgeEventListenerCallback): this;
 	on(eventName: string, listener: IgeEventListenerCallback): this;
@@ -207,24 +212,24 @@ export class IgeEntityBox2d extends IgeEntity {
 			// Handle pre-solver events
 			(contact) => {
 				// If player ship collides with lunar surface, crash!
-				if (contact.igeEitherCategory('orb') && contact.igeEitherCategory('ship')) {
+				if (igeBox2dContactEitherCategory(contact, 'orb') && igeBox2dContactEitherCategory(contact, 'ship')) {
 					// Cancel the contact
 					contact.SetEnabled(false);
 				}
 
-				// You can also check an entity by its category using igeEitherCategory('categoryName')
+				// You can also check an entity by its category using igeBox2dContactEitherCategory(contact, 'categoryName')
 			}*/
 		);
 	}
 
-	_checkContact (contact: Box2D.Dynamics.Contacts.b2Contact, arr: IgeEntityBox2dCollisionListener[]) {
+	_checkContact (contact: b2Contact, arr: IgeEntityBox2dCollisionListener[]) {
 		const arrCount = arr.length;
 		let otherEntity: IgeEntityBox2d;
 
-		if (contact.igeEntityA()._id === this._id) {
-			otherEntity = contact.igeEntityB();
-		} else if (contact.igeEntityB()._id === this._id) {
-			otherEntity = contact.igeEntityA();
+		if (igeBox2dContactEntityA(contact)._id === this._id) {
+			otherEntity = igeBox2dContactEntityB(contact);
+		} else if (igeBox2dContactEntityB(contact)._id === this._id) {
+			otherEntity = igeBox2dContactEntityA(contact);
 		} else {
 			// This contact has nothing to do with us
 			return;
@@ -267,15 +272,13 @@ export class IgeEntityBox2d extends IgeEntity {
 
 		// Check if the entity has a Box2D body attached
 		// and if so, is it updating or not
-		if (entBox2d && !entBox2d.updating) {
+		if (entBox2d && !entBox2d.m_userData.updating) {
 			// We have an entity with a Box2D definition that is
 			// not currently updating so let's override the standard
 			// transform op and take over
 
 			// Translate the body
-			entBox2d.SetPosition(
-				new Box2D.Common.Math.b2Vec2(x / this._b2dRef._scaleRatio, y / this._b2dRef._scaleRatio)
-			);
+			entBox2d.SetPosition(new b2Vec2(x / this._b2dRef._scaleRatio, y / this._b2dRef._scaleRatio));
 			entBox2d.SetAwake(true);
 		}
 
@@ -298,7 +301,7 @@ export class IgeEntityBox2d extends IgeEntity {
 
 		// Check if the entity has a Box2D body attached
 		// and if so, is it updating or not
-		if (entBox2d && !entBox2d.updating) {
+		if (entBox2d && !entBox2d.m_userData.updating) {
 			// We have an entity with a Box2D definition that is
 			// not currently updating so let's override the standard
 			// transform op and take over

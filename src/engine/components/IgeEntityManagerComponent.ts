@@ -1,17 +1,17 @@
-import { IgeComponent } from "@/engine/core/IgeComponent";
-import type { IgeEntity } from "@/engine/core/IgeEntity";
-import { IgePoint3d } from "@/engine/core/IgePoint3d";
-import { IgeRect } from "@/engine/core/IgeRect";
-import { ige } from "@/engine/instance";
-import { IgeBehaviourType } from "@/enums/IgeBehaviourType";
-import { IgeEntityRenderMode } from "@/enums/IgeEntityRenderMode";
-import { IgeMountMode } from "@/enums/IgeMountMode";
-import type { IgeCanvasRenderingContext2d } from "@/types/IgeCanvasRenderingContext2d";
+import { IgeComponent } from "@/export/exports";
+import type { IgeEntity } from "@/export/exports";
+import { IgePoint3d } from "@/export/exports";
+import { IgeRect } from "@/export/exports";
+import { ige } from "@/export/exports";
+import { IgeBehaviourType } from "@/export/exports";
+import { IgeEntityRenderMode } from "@/export/exports";
+import { IgeMountMode } from "@/export/exports";
+import type { IgeCanvasRenderingContext2d } from "@/export/exports";
 
 export class IgeEntityManagerComponent extends IgeComponent {
 	classId = "IgeEntityManagerComponent";
 	componentId = "entityManager";
-
+	_lastArea: IgeRect = new IgeRect();
 	private _maps: any[];
 	private _overwatchMode: number;
 	private _removeMode: number;
@@ -21,15 +21,12 @@ export class IgeEntityManagerComponent extends IgeComponent {
 	private _maxCreatePerTick?: number;
 	private _maxRemovePerTick?: number;
 	private _createCheck?: (item, x, y, tileData) => boolean;
-	private _createEntityFromMapData: () => any = () => undefined;
 	private _removeCheck?: (item) => boolean;
 	private _trackTranslateTarget?: IgeEntity;
 	private _areaCenter?: IgePoint3d;
 	private _areaRect?: IgeRect;
 	private _areaRectAutoSize: boolean = false;
 	private _areaRectAutoSizeOptions: any;
-
-	_lastArea: IgeRect = new IgeRect();
 
 	/**
 	 * @constructor
@@ -556,4 +553,6 @@ export class IgeEntityManagerComponent extends IgeComponent {
 			}
 		}
 	};
+
+	private _createEntityFromMapData: () => any = () => undefined;
 }

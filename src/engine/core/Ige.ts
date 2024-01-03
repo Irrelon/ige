@@ -1,29 +1,31 @@
-import { IgeArrayRegister } from "./IgeArrayRegister";
-import { IgeEngine } from "./IgeEngine";
-import { IgeMetrics } from "./IgeMetrics";
-import { IgeObjectRegister } from "./IgeObjectRegister";
-import { IgePoint3d } from "./IgePoint3d";
-import { IgeRouter } from "./IgeRouter";
-import { IgeTextureStore } from "./IgeTextureStore";
-import type { IgeViewport } from "./IgeViewport";
-import type { IgeAudioController } from "@/engine/audio";
-import { IgeDependencies } from "@/engine/core/IgeDependencies";
-import { IgeTimeController } from "@/engine/core/IgeTimeController";
-import { IgeTweenController } from "@/engine/core/IgeTweenController";
-import { IgeUiManagerController } from "@/engine/core/IgeUiManagerController";
-import type { IgeNetIoClientController } from "@/engine/network/client/IgeNetIoClientController";
-import type { IgeNetIoServerController } from "@/engine/network/server/IgeNetIoServerController";
-import type { IgeConfig} from "./config";
-import { igeConfig } from "./config";
-import { IgeInputComponent } from "@/engine/components/IgeInputComponent";
-import { IgeBox2dController } from "@/engine/components/physics/box2d/IgeBox2dController";
-import { isClient, isServer, isWorker } from "../clientServer";
-import { igeClassStore } from "../igeClassStore";
-import type { IgeCanBeDestroyed } from "@/types/IgeCanBeDestroyed";
-import type { IgeCanRegisterByCategory } from "@/types/IgeCanRegisterByCategory";
-import type { IgeCanRegisterById } from "@/types/IgeCanRegisterById";
-import type { IgeIsReadyPromise } from "@/types/IgeIsReadyPromise";
-import type { IgeObjectWithValueProperty } from "@/types/IgeObjectWithValueProperty";
+import type { IgeAudioController } from "@/export/exports";
+import type { IgeNetIoClientController } from "@/export/exports";
+import type { IgeNetIoServerController } from "@/export/exports";
+import type { IgeViewport } from "@/export/exports";
+import {
+	IgeArrayRegister,
+	igeConfig,
+	IgeDependencies,
+	IgeEngine,
+	IgeMetrics,
+	IgeObjectRegister,
+	IgePoint3d,
+	IgeRouter,
+	IgeTextureStore,
+	IgeTimeController,
+	IgeTweenController,
+	IgeUiManagerController
+} from "@/export/exports";
+import { igeClassStore, isClient, isServer, isWorker } from "@/export/exports";
+import { IgeInputComponent } from "@/export/exports";
+import { IgeBox2dController } from "@/export/exports";
+import type {
+	IgeCanRegisterAndCanDestroy,
+	IgeCanRegisterByCategory,
+	IgeConfig,
+	IgeIsReadyPromise,
+	IgeObjectWithValueProperty
+} from "@/export/exports";
 
 const version = "3.0.0";
 
@@ -111,16 +113,14 @@ export class Ige implements IgeIsReadyPromise {
 	 * @param {string | Object} item The id of the item to return,
 	 * or if an object, returns the object as-is.
 	 */
-	$<ObjectType extends IgeCanRegisterById & IgeCanBeDestroyed> (
-		item: string | ObjectType | undefined
-	): ObjectType | undefined {
+	$<ObjectType extends IgeCanRegisterAndCanDestroy | undefined> (
+		item: string | IgeCanRegisterAndCanDestroy | undefined
+	): ObjectType {
 		if (typeof item === "string") {
 			return this.register.get(item) as ObjectType;
-		} else if (typeof item === "object") {
-			return item;
 		}
 
-		return undefined;
+		return item as ObjectType;
 	}
 
 	/**

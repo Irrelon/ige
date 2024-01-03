@@ -1,5 +1,5 @@
-import { IgeEventingClass } from "./IgeEventingClass";
-import assert from "assert";
+import { IgeEventingClass } from "@/export/exports";
+import assert from "@/export/exports";
 
 let expectedAssertions = 0;
 let actualAssertions = 0;

@@ -1,6 +1,6 @@
 // See the ige/engine/filters folder for the individual filter source
-import type { IgeCanvasRenderingContext2d } from "@/types/IgeCanvasRenderingContext2d";
-import type { IgeSmartFilter } from "@/types/IgeSmartFilter";
+import type { IgeCanvasRenderingContext2d } from "@/export/exports";
+import type { IgeSmartFilter } from "@/export/exports";
 
 export type IgeFilterHelperFunction = (...args: any[]) => any;
 

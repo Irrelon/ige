@@ -1,4 +1,4 @@
-import type { IgeSmartTexture } from "@/types/IgeSmartTexture";
+import type { IgeSmartTexture } from "@/export/exports";
 
 export const IgeCuboidSmartTexture: IgeSmartTexture = {
 	render: (ctx, entity) => {

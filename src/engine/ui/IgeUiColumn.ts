@@ -1,11 +1,11 @@
-import { IgeUiElement } from "@/engine/core/IgeUiElement";
-import { registerClass } from "@/engine/igeClassStore";
-import type { IgeCanvasRenderingContext2d } from "@/types/IgeCanvasRenderingContext2d";
+import { IgeUiElement } from "@/export/exports";
+import { registerClass } from "@/export/exports";
+import type { IgeCanvasRenderingContext2d } from "@/export/exports";
 
 export class IgeUiColumn extends IgeUiElement {
 	classId = "IgeUiColumn";
 
-	tick (ctx: IgeCanvasRenderingContext2d) {
+	tick(ctx: IgeCanvasRenderingContext2d) {
 		const maxSize = this.height();
 
 		// Loop children and re-position then

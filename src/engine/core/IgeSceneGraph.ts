@@ -1,4 +1,4 @@
-import { IgeBaseClass } from "./IgeBaseClass";
+import { IgeBaseClass } from "@/export/exports";
 
 export class IgeSceneGraph extends IgeBaseClass {
 	classId = "IgeSceneGraph";

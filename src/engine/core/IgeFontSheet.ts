@@ -1,6 +1,6 @@
-import { IgeTexture } from "./IgeTexture";
-import { ige } from "@/engine/instance";
-import type { IgeSmartTexture } from "@/types/IgeSmartTexture";
+import { IgeTexture } from "@/export/exports";
+import { ige } from "@/export/exports";
+import type { IgeSmartTexture } from "@/export/exports";
 
 /* TODO: URGENT - Make this alignment stuff work inside the bounds of the entity it is attached to
  *    so that bottom-right aligns to the lower-right point of the bounding box of the entity

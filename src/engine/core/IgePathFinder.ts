@@ -1,7 +1,7 @@
-import type { IgeCollisionMap2d } from "./IgeCollisionMap2d";
-import { IgeEventingClass } from "./IgeEventingClass";
-import { IgePathNode } from "./IgePathNode";
-import type { IgeTileMap2d } from "./IgeTileMap2d";
+import type { IgeCollisionMap2d } from "@/export/exports";
+import { IgeEventingClass } from "@/export/exports";
+import { IgePathNode } from "@/export/exports";
+import type { IgeTileMap2d } from "@/export/exports";
 
 export type IgePathFinderComparisonCallback = (
 	tileData: any,

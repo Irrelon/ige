@@ -1,8 +1,8 @@
-import { IgeUiEntity } from "./IgeUiEntity";
-import type { IgeUiManagerController } from "./IgeUiManagerController";
-import { registerClass } from "@/engine/igeClassStore";
-import type { IgeInputComponent } from "../components/IgeInputComponent";
-import { ige } from "../instance";
+import { IgeUiEntity } from "@/export/exports";
+import type { IgeUiManagerController } from "@/export/exports";
+import { registerClass } from "@/export/exports";
+import { ige } from "@/export/exports";
+import type { IgeInputComponent } from "@/export/exports";
 
 export type IgeUiStyleObject = Record<string, any>;
 export type IgeUiStyleState = "focus" | "hover" | "active";

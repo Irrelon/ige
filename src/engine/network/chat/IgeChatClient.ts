@@ -1,5 +1,6 @@
-import { IgeChatComponent } from "./IgeChatComponent";
-import { IgeEventReturnFlag } from "@/enums/IgeEventReturnFlag";
+import { IgeChatComponent } from "@/export/exports";
+import { ige } from "@/export/exports";
+import { IgeEventReturnFlag } from "@/export/exports";
 import {
 	IGE_NETWORK_CHAT_JOIN_ROOM,
 	IGE_NETWORK_CHAT_LEAVE_ROOM,
@@ -8,19 +9,18 @@ import {
 	IGE_NETWORK_CHAT_ROOM_CREATED,
 	IGE_NETWORK_CHAT_ROOM_LIST_USERS,
 	IGE_NETWORK_CHAT_ROOM_REMOVED
-} from "@/enums/IgeNetworkConstants";
-import { ige } from "../../instance";
-import type { IgeNetIoClientController } from "../client/IgeNetIoClientController";
+} from "@/export/exports";
+import type { IgeNetIoClientController } from "@/export/exports";
 import type {
 	IgeNetworkChatFromClientJoinRoomRequestStructure,
 	IgeNetworkChatFromServerJoinRoomResponseStructure,
 	IgeNetworkChatFromServerLeaveRoomResponseStructure,
 	IgeNetworkChatFromServerRoomStructure
-} from "@/types/IgeNetworkChat";
+} from "@/export/exports";
 import type {
 	IgeNetworkChatFromClientMessageStructure,
 	IgeNetworkChatFromServerMessageStructure
-} from "@/types/IgeNetworkChat";
+} from "@/export/exports";
 
 /**
  * The client-side chat component. Handles all client-side

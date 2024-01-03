@@ -1,8 +1,8 @@
-import { IgeNetIoSocket } from "./IgeNetIoSocket";
+import { IgeNetIoSocket } from "@/export/exports";
+import { IgeEventingClass } from "@/export/exports";
+import { arrClone, newIdHex } from "@/export/exports";
 import http from "http";
 import websocket from "websocket";
-import { IgeEventingClass } from "../../core/IgeEventingClass";
-import { arrClone, newIdHex } from "../../utils";
 
 // /**
 //  * Define the debug options object.

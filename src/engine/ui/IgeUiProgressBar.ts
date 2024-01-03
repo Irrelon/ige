@@ -1,14 +1,15 @@
-import { IgeUiElement } from "@/engine/core/IgeUiElement";
-import { registerClass } from "@/engine/igeClassStore";
-import type { IgeCanvasRenderingContext2d } from "@/types/IgeCanvasRenderingContext2d";
+import { IgeUiElement } from "@/export/exports";
+import { registerClass } from "@/export/exports";
+import type { IgeObject } from "@/export/exports";
+import type { IgeCanvasRenderingContext2d } from "@/export/exports";
 
 export class IgeUiProgressBar extends IgeUiElement {
 	classId = "IgeUiProgressBar";
+	private _bindDataObject?: IgeObject;
+	private _bindDataProperty?: string;
 
-	constructor () {
+	constructor() {
 		super();
-
-		// Set some defaults
 		this._min = 0;
 		this._max = 100;
 		this._progress = 0;
@@ -20,106 +21,88 @@ export class IgeUiProgressBar extends IgeUiElement {
 		};
 	}
 
-	barBackColor (val) {
-		if (val !== undefined) {
-			this._barBackColor = val;
-			return this;
-		}
+	private _min: number;
 
-		return this._barBackColor;
-	}
-
-	barColor (val) {
-		if (val !== undefined) {
-			this._barColor = val;
-			return this;
-		}
-
-		return this._barColor;
-	}
-
-	barBorderColor (val) {
-		if (val !== undefined) {
-			this._barBorderColor = val;
-			return this;
-		}
-
-		return this._barBorderColor;
-	}
-
-	barText (pre, post, color, percent) {
-		if (typeof post === "function") {
-			this._barText = {
-				color: pre,
-				func: post,
-				pre: this._barText.pre,
-				post: this._barText.post
-			};
-
-			return this;
-		}
-
-		if (pre !== undefined && post !== undefined && color !== undefined) {
-			this._barText = {
-				pre: pre,
-				post: post,
-				color: color,
-				percent: percent !== undefined ? percent : false
-			};
-
-			return this;
-		}
-
-		return this._barText;
-	}
-
-	min (val) {
-		if (val !== undefined) {
-			this._min = val;
-			return this;
-		}
-
+	get min() {
 		return this._min;
 	}
 
-	max (val) {
-		if (val !== undefined) {
-			this._max = val;
-			return this;
-		}
+	set min(value) {
+		this._min = value;
+	}
 
+	private _max: number;
+
+	get max() {
 		return this._max;
 	}
 
-	progress (val) {
-		if (val !== undefined) {
-			if (val < this._min) {
-				val = this._min;
-			}
+	set max(value) {
+		this._max = value;
+	}
 
-			if (val > this._max) {
-				val = this._max;
-			}
+	private _progress: number;
 
-			this._progress = val;
-			return this;
-		}
-
+	get progress() {
 		return this._progress;
 	}
 
-	bindData (obj, propName) {
-		if (obj !== undefined && propName !== undefined) {
-			// Set the object and property to automatically
-			// track progress from
-			this._bindDataObject = obj;
-			this._bindDataProperty = propName;
-		}
-
-		return this;
+	set progress(value) {
+		this._progress = Math.max(this._min, Math.min(this._max, value));
 	}
 
-	render (ctx) {
+	private _barColor: string;
+
+	get barColor() {
+		return this._barColor;
+	}
+
+	set barColor(value) {
+		this._barColor = value;
+	}
+
+	private _barText: {
+		pre: string;
+		post: string;
+		color: string;
+		percent?: boolean;
+		func?: (progress: number, max: number) => any;
+	};
+
+	get barText() {
+		return this._barText;
+	}
+
+	set barText({ pre, post, color, percent, func }) {
+		this._barText = { pre, post, color, percent: percent !== undefined ? percent : false, func };
+	}
+
+	private _barBackColor?: string;
+
+	get barBackColor() {
+		return this._barBackColor;
+	}
+
+	set barBackColor(value) {
+		this._barBackColor = value;
+	}
+
+	private _barBorderColor?: string;
+
+	get barBorderColor() {
+		return this._barBorderColor;
+	}
+
+	set barBorderColor(value) {
+		this._barBorderColor = value;
+	}
+
+	set bindData({ obj, propName }: { obj: IgeObject; propName: string }) {
+		this._bindDataObject = obj;
+		this._bindDataProperty = propName;
+	}
+
+	render = (ctx: IgeCanvasRenderingContext2d) => {
 		// Check for an auto-progress update
 		if (this._bindDataObject && this._bindDataProperty) {
 			if (!this._bindDataObject._alive) {
@@ -127,16 +110,16 @@ export class IgeUiProgressBar extends IgeUiElement {
 				// destroyed so release our reference to it!
 				delete this._bindDataObject;
 			} else {
-				this.progress(parseInt(this._bindDataObject[this._bindDataProperty]));
+				this.progress = parseInt(this._bindDataObject[this._bindDataProperty]);
 			}
 		}
 
-		let min = this._min,
+		let progress = this._progress,
+			valText: string | undefined;
+
+		const min = this._min,
 			max = this._max,
-			progress = this._progress,
-			interval = this._bounds2d.x / (max - min),
-			barWidth = (progress - min) * interval,
-			valText;
+			interval = max - min !== 0 ? this._bounds2d.x / (max - min) : 0;
 
 		// Check the value is not out of range
 		if (progress > max) {
@@ -146,6 +129,8 @@ export class IgeUiProgressBar extends IgeUiElement {
 		if (progress < min) {
 			progress = min;
 		}
+
+		const barWidth = (progress - min) * interval;
 
 		// Draw bar fill
 		if (this._barBackColor) {
@@ -186,9 +171,9 @@ export class IgeUiProgressBar extends IgeUiElement {
 			ctx.fillStyle = this._barText.color;
 			ctx.fillText(this._barText.pre + valText + this._barText.post, 0, 0);
 		}
-	}
+	};
 
-	tick (ctx: IgeCanvasRenderingContext2d) {
+	tick(ctx: IgeCanvasRenderingContext2d) {
 		this._transformContext(ctx);
 		this.render(ctx);
 		super.tick(ctx, true);

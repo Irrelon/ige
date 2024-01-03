@@ -1,10 +1,16 @@
-import { registerClass } from "@/engine/igeClassStore";
-import { IgeUiButton } from "@/engine/ui/IgeUiButton";
+import { IgeUiButton } from "@/export/exports";
+import { registerClass } from "@/export/exports";
+import type { IgeObject } from "@/export/exports";
 
 export class IgeUiRadioButton extends IgeUiButton {
 	classId = "IgeUiRadioButton";
+	_uiRadioGroup?: number;
+	_uiOnSelect?: () => void;
+	_uiOnDeSelect?: () => void;
+	_uiSelected: boolean = false;
+	_parent: IgeObject | null = null;
 
-	radioGroup (val) {
+	radioGroup(val: number) {
 		if (val !== undefined) {
 			this._uiRadioGroup = val;
 			return this;
@@ -13,7 +19,7 @@ export class IgeUiRadioButton extends IgeUiButton {
 		return this._uiRadioGroup;
 	}
 
-	select (val) {
+	select(val: () => void) {
 		if (val !== undefined) {
 			this._uiOnSelect = val;
 			return this;
@@ -23,12 +29,12 @@ export class IgeUiRadioButton extends IgeUiButton {
 			// Loop the parent object's children, find any
 			// radio buttons that belong to this radio group
 			// and then deselect them
-			let arr = this._parent._children,
-				arrCount = arr.length,
-				item;
+			const arr = this._parent._children;
+			let arrCount = arr.length,
+				item: IgeUiRadioButton;
 
 			while (arrCount--) {
-				item = arr[arrCount];
+				item = arr[arrCount] as IgeUiRadioButton;
 				if (item !== this) {
 					if (item._uiRadioGroup === this._uiRadioGroup) {
 						// The item is part of the same radio group!
@@ -57,7 +63,7 @@ export class IgeUiRadioButton extends IgeUiButton {
 		return this;
 	}
 
-	deSelect (val) {
+	deSelect(val) {
 		if (val !== undefined) {
 			this._uiOnDeSelect = val;
 			return this;

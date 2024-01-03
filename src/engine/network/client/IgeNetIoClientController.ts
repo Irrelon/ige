@@ -1,4 +1,5 @@
-import { IgeNetIoClient } from "./IgeNetIoClient";
+import { IgeNetIoClient } from "@/export/exports";
+import { ige } from "@/export/exports";
 import {
 	IGE_NETWORK_REQUEST,
 	IGE_NETWORK_RESPONSE,
@@ -7,12 +8,11 @@ import {
 	IGE_NETWORK_STREAM_DESTROY,
 	IGE_NETWORK_STREAM_TIME,
 	IGE_NETWORK_TIME_SYNC
-} from "@/enums/IgeNetworkConstants";
-import type { IgeEntity } from "../../core/IgeEntity";
-import { igeClassStore } from "../../igeClassStore";
-import { ige } from "../../instance";
-import { newIdHex } from "../../utils";
-import { IgeNetIoBaseController } from "../IgeNetIoBaseController";
+} from "@/export/exports";
+import type { IgeEntity } from "@/export/exports";
+import { igeClassStore } from "@/export/exports";
+import { newIdHex } from "@/export/exports";
+import { IgeNetIoBaseController } from "@/export/exports";
 import type {
 	IgeNetworkMessageStructure,
 	IgeNetworkRequestMessageStructure,
@@ -22,12 +22,12 @@ import type {
 	IgeNetworkTimeSyncRequestFromServer,
 	IgeNetworkClientSideMessageHandler,
 	IgeNetworkClientSideResponseHandler
-} from "@/types/IgeNetworkMessage";
+} from "@/export/exports";
 import type {
 	IgeStreamCreateMessageData,
 	IgeStreamDestroyMessageData,
 	IgeStreamUpdateMessageData
-} from "@/types/IgeNetworkStream";
+} from "@/export/exports";
 
 /**
  * The client-side net.io component. Handles all client-side

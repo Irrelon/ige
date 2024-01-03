@@ -1,4 +1,4 @@
-import { global } from "./_global";
+import { global } from "@/export/exports";
 
 export class IgeBaseClass {
 	classId = "IgeBaseClass";

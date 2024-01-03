@@ -1,4 +1,4 @@
-import { IgeEventingClass } from "@/engine/core/IgeEventingClass";
+import { IgeEventingClass } from "@/export/exports";
 import type websocket from "websocket";
 
 export class IgeNetIoSocket extends IgeEventingClass {

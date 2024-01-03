@@ -1,7 +1,7 @@
-import type { IgePoint2d } from "./IgePoint2d";
-import type { IgePoint3d } from "./IgePoint3d";
-import type { IgeCanvasRenderingContext2d } from "@/types/IgeCanvasRenderingContext2d";
-import type { IgePolygonFunctionality } from "@/types/IgePolygonFunctionality";
+import type { IgePoint2d } from "@/export/exports";
+import type { IgePoint3d } from "@/export/exports";
+import type { IgeCanvasRenderingContext2d } from "@/export/exports";
+import type { IgePolygonFunctionality } from "@/export/exports";
 
 /**
  * Creates a new rectangle (x, y, width, height).

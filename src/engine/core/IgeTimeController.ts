@@ -1,10 +1,10 @@
-import type { IgeInterval } from "./IgeInterval";
-import { IgeEventingClass } from "@/engine/core/IgeEventingClass";
-import { IgeBehaviourType } from "@/enums/IgeBehaviourType";
-import { ige } from "../instance";
-import { arrPull } from "../utils";
-import type { IgeEntityBehaviourMethod } from "@/types/IgeEntityBehaviour";
-import type { IgeIsReadyPromise } from "@/types/IgeIsReadyPromise";
+import { arrPull } from "@/export/exports";
+import type { IgeInterval } from "@/export/exports";
+import { IgeEventingClass } from "@/export/exports";
+import { ige } from "@/export/exports";
+import { IgeBehaviourType } from "@/export/exports";
+import type { IgeEntityBehaviourMethod } from "@/export/exports";
+import type { IgeIsReadyPromise } from "@/export/exports";
 
 export class IgeTimeController extends IgeEventingClass implements IgeIsReadyPromise {
 	static componentTargetClass = "Ige";

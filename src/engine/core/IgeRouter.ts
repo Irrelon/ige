@@ -1,6 +1,6 @@
-import { IgeBaseClass } from "./IgeBaseClass";
-import { isClient, isServer } from "../clientServer";
-import type { IgeRouteDefinition } from "@/types/IgeRouteDefinition";
+import { IgeBaseClass } from "@/export/exports";
+import { isClient, isServer } from "@/export/exports";
+import type { IgeRouteDefinition } from "@/export/exports";
 
 const PATH_DELIMITER = "/";
 

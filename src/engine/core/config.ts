@@ -1,9 +1,4 @@
-export interface IgeConfig {
-	debug: {
-		_enabled: boolean;
-		_timing: boolean;
-	};
-}
+import type { IgeConfig } from "@/export/exports";
 
 export const igeConfig: IgeConfig = {
 	debug: {

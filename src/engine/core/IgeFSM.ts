@@ -1,4 +1,4 @@
-import { IgeBaseClass } from "@/engine/core/IgeBaseClass";
+import { IgeBaseClass } from "@/export/exports";
 
 export type TransitionResult = Error | any | Promise<any>;
 export type TransitionCheckFunction = (...rest: any[]) => TransitionResult;
