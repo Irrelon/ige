@@ -4,10 +4,10 @@
 > updated. If you see an index.ts in an example folder, it's been updated to
 > work with ES6 modules.
 >
-> Compiling the engine: run the `build` npm command and then run the
-> `build` will compile the TypeScript to JavaScript files and automatically
-> resolve TypeScript paths in .js files to their relative equivalents using
-> `npx @irrelon/fix-paths` helper app.
+> Compiling the engine: run the `build` npm command will compile the TypeScript
+> to JavaScript files. The `build` command also runs `npx @irrelon/fix-paths` to
+> automatically resolve TypeScript paths e.g. `@/engine/something` in .js files
+> to their relative equivalents.
 >
 > From version 3.0.1 you can use the engine with `import { ige } from "@irrelon/ige";`
 >
