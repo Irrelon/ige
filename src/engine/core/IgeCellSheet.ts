@@ -16,7 +16,7 @@ export class IgeCellSheet extends IgeTexture {
 	_cellHeight: number = 0;
 	_sheetImage?: IgeImage;
 
-	constructor (
+	constructor(
 		id?: string,
 		urlOrObject?: string | IgeSmartTexture,
 		horizontalCells: number = 1,
@@ -28,7 +28,7 @@ export class IgeCellSheet extends IgeTexture {
 		this.verticalCells(verticalCells);
 	}
 
-	_textureLoaded () {
+	_textureLoaded() {
 		if (this.image) {
 			// Store the cell sheet image
 			this._sheetImage = this.image;
@@ -46,7 +46,7 @@ export class IgeCellSheet extends IgeTexture {
 	 * Returns the total number of cells in the cell sheet.
 	 * @return {number}
 	 */
-	cellCount () {
+	cellCount() {
 		return this.horizontalCells() * this.verticalCells();
 	}
 
@@ -56,7 +56,7 @@ export class IgeCellSheet extends IgeTexture {
 	 */
 	horizontalCells(val: number): this;
 	horizontalCells(): number;
-	horizontalCells (val?: number) {
+	horizontalCells(val?: number) {
 		if (val !== undefined) {
 			this._cellColumns = val;
 			return this;
@@ -71,7 +71,7 @@ export class IgeCellSheet extends IgeTexture {
 	 */
 	verticalCells(val: number): this;
 	verticalCells(): number;
-	verticalCells (val?: number) {
+	verticalCells(val?: number) {
 		if (val !== undefined) {
 			this._cellRows = val;
 			return this;
@@ -82,68 +82,52 @@ export class IgeCellSheet extends IgeTexture {
 
 	/**
 	 * Sets the x, y, width and height of each sheet cell and stores
-	 * that information in the this._cells array.
+	 * that information in the this._cells array. The _cells array
+	 * is first indexed at 1 not 0.
 	 * @private
 	 */
-	_applyCells () {
-		let imgWidth, imgHeight, rows, columns, cellWidth, cellHeight, cellIndex, xPos, yPos;
-
+	_applyCells() {
 		// Do we have an image to use?
-		if (this.image) {
-			// Check we have the correct data for a uniform cell layout
-			if (this._cellRows && this._cellColumns) {
-				imgWidth = this._sizeX;
-				imgHeight = this._sizeY;
-				rows = this._cellRows;
-				columns = this._cellColumns;
+		if (!this.image) {
+			return;
+		}
 
-				// Store the width and height of a single cell
-				cellWidth = this._cellWidth = imgWidth / columns;
-				cellHeight = this._cellHeight = imgHeight / rows;
+		if (!this._cellRows || !this._cellColumns) {
+			return;
+		}
 
-				// Check if the cell width and height are non-floating-point
-				if (cellWidth !== parseInt(cellWidth.toString(), 10)) {
-					this.log(
-						"Cell width is a floating-point number! (Image Width " +
-							imgWidth +
-							" / Number of Columns " +
-							columns +
-							" = " +
-							cellWidth +
-							") in file: " +
-							this._url,
-						"warning"
-					);
-				}
+		const imgWidth = this._sizeX;
+		const imgHeight = this._sizeY;
+		const rows = this._cellRows;
+		const columns = this._cellColumns;
+		const cellWidth = (this._cellWidth = imgWidth / columns);
+		const cellHeight = (this._cellHeight = imgHeight / rows);
 
-				if (cellHeight !== parseInt(cellHeight.toString(), 10)) {
-					this.log(
-						"Cell height is a floating-point number! (Image Height " +
-							imgHeight +
-							" / Number of Rows " +
-							rows +
-							" = " +
-							cellHeight +
-							")  in file: " +
-							this._url,
-						"warning"
-					);
-				}
+		if (cellWidth !== parseInt(cellWidth.toString(), 10)) {
+			this.log(
+				`Cell width is a floating-point number! (Image Width ${imgWidth} / Number of Columns ${columns} = ${cellWidth}) in file: ${this._url}`,
+				"warning"
+			);
+		}
 
-				// Check if we need to calculate individual cell data
-				if (rows > 1 || columns > 1) {
-					for (cellIndex = 1; cellIndex <= rows * columns; cellIndex++) {
-						yPos = Math.ceil(cellIndex / columns) - 1;
-						xPos = cellIndex - columns * yPos - 1;
+		if (cellHeight !== parseInt(cellHeight.toString(), 10)) {
+			this.log(
+				`Cell height is a floating-point number! (Image Height ${imgHeight} / Number of Rows ${rows} = ${cellHeight}) in file: ${this._url}`,
+				"warning"
+			);
+		}
 
-						// Store the xy in the sheet frames variable
-						this._cells[cellIndex] = [xPos * cellWidth, yPos * cellHeight, cellWidth, cellHeight];
-					}
-				} else {
-					// The cell data shows only one cell so just store the whole image data
-					this._cells[1] = [0, 0, this._sizeX, this._sizeY];
-				}
+		if (rows > 1 || columns > 1) {
+			for (let cellIndex = 1; cellIndex <= rows * columns; cellIndex++) {
+				const yPos = Math.ceil(cellIndex / columns) - 1;
+				const xPos = cellIndex - columns * yPos - 1;
+
+				// Store the xy in the sheet frames variable
+				this._cells[cellIndex] = [xPos * cellWidth, yPos * cellHeight, cellWidth, cellHeight];
 			}
+		} else {
+			// The cell data shows only one cell so just store the whole image data
+			this._cells[1] = [0, 0, this._sizeX, this._sizeY];
 		}
 	}
 
@@ -152,7 +136,7 @@ export class IgeCellSheet extends IgeTexture {
 	 * evaluated will reproduce this object.
 	 * @return {string}
 	 */
-	stringify () {
+	stringify() {
 		const str =
 			"new " +
 			this.classId +
