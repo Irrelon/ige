@@ -1,4 +1,5 @@
-export type IgeEffectFunction = () => Promise<any>;
+export type IgeAsyncFunction<ReturnType> = () => Promise<ReturnType>;
+export type IgeEffectFunction = IgeAsyncFunction<IgeAsyncFunction<void>>;
 
 export interface IgeRouteDefinition {
 	shared?: IgeEffectFunction;
