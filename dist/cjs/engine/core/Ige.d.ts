@@ -50,7 +50,7 @@ export declare class Ige implements IgeIsReadyPromise {
      * @param {String} categoryName The name of the category to return
      * all objects for.
      */
-    $$(categoryName: string): IgeCanRegisterByCategory[];
+    $$<ReturnType extends IgeCanRegisterByCategory | undefined = IgeCanRegisterByCategory>(categoryName: string): ReturnType[];
     /**
      * Adds a new watch expression to the watch list which will be
      * displayed in the stats overlay during a call to _statsTick().

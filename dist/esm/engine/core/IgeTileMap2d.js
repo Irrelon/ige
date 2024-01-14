@@ -114,11 +114,14 @@ export class IgeTileMap2d extends IgeEntity {
         return this._drawGrid;
     }
     /**
-     * Gets / sets the color of the grid overlay. It accepts a string color
+     * Gets / sets the color of the grid overlay lines. It accepts a string color
      * definition with the same specifications as the canvas context strokeStyle
      * property.
-     * @param {string=} val The color of the grid.
-     * @return {*}
+     *
+     * @param {string=} val The color to set the grid lines.
+     * @returns {string | this | undefined} The current color of the grid if called without an argument,
+     *    `this` if called with an argument to support method chaining, or undefined if no argument is provided,
+     *    indicating that the color has not been set.
      */
     gridColor(val) {
         if (val !== undefined) {
@@ -131,12 +134,14 @@ export class IgeTileMap2d extends IgeEntity {
      * Sets a tile or area as occupied by the passed obj parameter.
      * Any previous occupy data on the specified tile or area will be
      * overwritten.
-     * @param {number} x X co-ordinate of the tile to un-occupy.
-     * @param {number} y Y co-ordinate of the tile to un-occupy.
-     * @param {number} width Number of tiles along the x-axis to occupy.
-     * @param {number} height Number of tiles along the y-axis to occupy.
-     * @param {*} obj
-     * @return {*}
+     *
+     * @param {number=} x X co-ordinate of the tile to un-occupy.
+     * @param {number=} y Y co-ordinate of the tile to un-occupy.
+     * @param {number=} width Number of tiles along the x-axis to occupy.
+     * @param {number=} height Number of tiles along the y-axis to occupy.
+     * @param {any=} obj The object to occupy the tile or area.
+     *
+     * @return {this} The object itself for method chaining.
      */
     occupyTile(x, y, width, height, obj) {
         if (!(x !== undefined && y !== undefined)) {
@@ -166,12 +171,13 @@ export class IgeTileMap2d extends IgeEntity {
         return this;
     }
     /**
-     * Removes all data from the specified tile or area.
-     * @param {number} x
-     * @param {number} y
-     * @param {number=} width
-     * @param {number=} height
-     * @return {*}
+     * Removes all data from the specified tile or area. If either the x or y arguments
+     * are undefined, the function returns without taking any action.
+     * @param {number=} x The x-coordinate of the tile or area.
+     * @param {number=} y The y-coordinate of the tile or area.
+     * @param {number=} width The width of the area (default is 1).
+     * @param {number=} height The height of the area (default is 1).
+     * @return {this} Returns the current instance of the object.
      */
     unOccupyTile(x, y, width, height) {
         if (!(x !== undefined && y !== undefined)) {
@@ -217,6 +223,13 @@ export class IgeTileMap2d extends IgeEntity {
         }
         return this.map.collision(x, y, width, height);
     }
+    /**
+     * Returns the data of the occupied tile at the given coordinates.
+     *
+     * @param {number} x The x-coordinate of the tile.
+     * @param {number} y The y-coordinate of the tile.
+     * @returns {ResultType} The data of the occupied tile at the given coordinates.
+     */
     tileOccupiedBy(x, y) {
         return this.map.tileData(x, y);
     }

@@ -55,7 +55,7 @@ class IgeTexture extends exports_2.IgeAsset {
         this._applyFiltersData = [];
         this._preFilters = [];
         this._preFiltersData = [];
-        this._cells = [];
+        this._cells = []; // The fist index of this array is 1 for some reason
         this.dependencies = new exports_2.IgeDependencies();
         this._loaded = false;
         if (exports_3.isServer) {

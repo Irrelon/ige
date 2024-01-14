@@ -55,6 +55,9 @@ export declare class IgeBaseClass {
      *
      */
     log(message: string, ...args: any[]): this;
+    logInfo(message: string, ...args: any[]): this;
+    logWarn(message: string, ...args: any[]): this;
+    logError(message: string, ...args: any[]): this;
     logIndent(): void;
     logOutdent(): void;
     data(key: string, value: any): this;

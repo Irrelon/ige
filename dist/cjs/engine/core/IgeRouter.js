@@ -11,7 +11,6 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.IgeRouter = void 0;
 const exports_1 = require("../../export/exports.js");
-const exports_2 = require("../../export/exports.js");
 const PATH_DELIMITER = "/";
 class IgeRouter extends exports_1.IgeBaseClass {
     constructor() {
@@ -23,6 +22,14 @@ class IgeRouter extends exports_1.IgeBaseClass {
         this._routeQueue = [];
         this._executingSeries = false;
     }
+    /**
+     * Sets or gets the route handler(s) for a given path.
+     *
+     * @param {string} path - The path for the route.
+     * @param {IgeRouteDefinition} definition - The definition for the route.
+     * @returns {this|IgeRouteDefinition|Object} - Returns this object when setting a route, returns the definition for a given path when getting a route, or returns all routes if no arguments
+     * are provided.
+     */
     route(path, definition) {
         if (path !== undefined) {
             if (definition !== undefined) {
@@ -34,7 +41,14 @@ class IgeRouter extends exports_1.IgeBaseClass {
         }
         return this._routeLoad;
     }
-    go(path) {
+    /**
+     * Navigate to a given path and execute the corresponding route handler(s).
+     *
+     * @param {string} path The path to navigate to.
+     * @param {...any} args Additional arguments to pass to the route handler(s).
+     * @throws {Error} If the route defined for the given path does not exist.
+     */
+    go(path, ...args) {
         return __awaiter(this, void 0, void 0, function* () {
             // Check for a route definition first
             if (!this._routeLoad[path]) {
@@ -65,7 +79,7 @@ class IgeRouter extends exports_1.IgeBaseClass {
                     this.logIndent();
                     const routeUnloadHandler = this._routeUnload[unloadRoutePath];
                     if (routeUnloadHandler) {
-                        yield routeUnloadHandler();
+                        yield routeUnloadHandler(...args);
                     }
                     this.logOutdent();
                     this.logOutdent();
@@ -83,17 +97,17 @@ class IgeRouter extends exports_1.IgeBaseClass {
                     continue;
                 }
                 let routeHandlerFunction;
-                if (exports_2.isClient && routeHandlerDefinition.client) {
+                if (exports_1.isClient && routeHandlerDefinition.client) {
                     routeHandlerFunction = routeHandlerDefinition.client;
                 }
-                if (exports_2.isServer && routeHandlerDefinition.server) {
+                if (exports_1.isServer && routeHandlerDefinition.server) {
                     routeHandlerFunction = routeHandlerDefinition.server;
                 }
                 if (routeHandlerFunction) {
                     this.logIndent();
                     this.log(`Loading route: "${loadRoutePath}"`);
                     this.logIndent();
-                    this._routeUnload[loadRoutePath] = yield routeHandlerFunction();
+                    this._routeUnload[loadRoutePath] = yield routeHandlerFunction(...args);
                     this.logOutdent();
                     this.logOutdent();
                 }

@@ -132,7 +132,7 @@ class Ige {
      * all objects for.
      */
     $$(categoryName) {
-        return this.categoryRegister.get(categoryName) || [];
+        return (this.categoryRegister.get(categoryName) || []);
     }
     drawBounds(val, recursive = false) {
         if (val === undefined) {

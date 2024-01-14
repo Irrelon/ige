@@ -29,6 +29,7 @@ export declare class IgeDummyContext {
     rect: () => void;
     moveTo: () => void;
     lineTo: () => void;
+    ellipse: () => void;
     arc: () => void;
     arcTo: () => void;
     clearRect: () => void;

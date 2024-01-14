@@ -80,7 +80,7 @@ export class Ige {
      * all objects for.
      */
     $$(categoryName) {
-        return this.categoryRegister.get(categoryName) || [];
+        return (this.categoryRegister.get(categoryName) || []);
     }
     // /**
     //  * Returns an array of all objects that have been assigned

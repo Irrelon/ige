@@ -53,57 +53,41 @@ export class IgeCellSheet extends IgeTexture {
     }
     /**
      * Sets the x, y, width and height of each sheet cell and stores
-     * that information in the this._cells array.
+     * that information in the this._cells array. The _cells array
+     * is first indexed at 1 not 0.
      * @private
      */
     _applyCells() {
-        let imgWidth, imgHeight, rows, columns, cellWidth, cellHeight, cellIndex, xPos, yPos;
         // Do we have an image to use?
-        if (this.image) {
-            // Check we have the correct data for a uniform cell layout
-            if (this._cellRows && this._cellColumns) {
-                imgWidth = this._sizeX;
-                imgHeight = this._sizeY;
-                rows = this._cellRows;
-                columns = this._cellColumns;
-                // Store the width and height of a single cell
-                cellWidth = this._cellWidth = imgWidth / columns;
-                cellHeight = this._cellHeight = imgHeight / rows;
-                // Check if the cell width and height are non-floating-point
-                if (cellWidth !== parseInt(cellWidth.toString(), 10)) {
-                    this.log("Cell width is a floating-point number! (Image Width " +
-                        imgWidth +
-                        " / Number of Columns " +
-                        columns +
-                        " = " +
-                        cellWidth +
-                        ") in file: " +
-                        this._url, "warning");
-                }
-                if (cellHeight !== parseInt(cellHeight.toString(), 10)) {
-                    this.log("Cell height is a floating-point number! (Image Height " +
-                        imgHeight +
-                        " / Number of Rows " +
-                        rows +
-                        " = " +
-                        cellHeight +
-                        ")  in file: " +
-                        this._url, "warning");
-                }
-                // Check if we need to calculate individual cell data
-                if (rows > 1 || columns > 1) {
-                    for (cellIndex = 1; cellIndex <= rows * columns; cellIndex++) {
-                        yPos = Math.ceil(cellIndex / columns) - 1;
-                        xPos = cellIndex - columns * yPos - 1;
-                        // Store the xy in the sheet frames variable
-                        this._cells[cellIndex] = [xPos * cellWidth, yPos * cellHeight, cellWidth, cellHeight];
-                    }
-                }
-                else {
-                    // The cell data shows only one cell so just store the whole image data
-                    this._cells[1] = [0, 0, this._sizeX, this._sizeY];
-                }
+        if (!this.image) {
+            return;
+        }
+        if (!this._cellRows || !this._cellColumns) {
+            return;
+        }
+        const imgWidth = this._sizeX;
+        const imgHeight = this._sizeY;
+        const rows = this._cellRows;
+        const columns = this._cellColumns;
+        const cellWidth = (this._cellWidth = imgWidth / columns);
+        const cellHeight = (this._cellHeight = imgHeight / rows);
+        if (cellWidth !== parseInt(cellWidth.toString(), 10)) {
+            this.log(`Cell width is a floating-point number! (Image Width ${imgWidth} / Number of Columns ${columns} = ${cellWidth}) in file: ${this._url}`, "warning");
+        }
+        if (cellHeight !== parseInt(cellHeight.toString(), 10)) {
+            this.log(`Cell height is a floating-point number! (Image Height ${imgHeight} / Number of Rows ${rows} = ${cellHeight}) in file: ${this._url}`, "warning");
+        }
+        if (rows > 1 || columns > 1) {
+            for (let cellIndex = 1; cellIndex <= rows * columns; cellIndex++) {
+                const yPos = Math.ceil(cellIndex / columns) - 1;
+                const xPos = cellIndex - columns * yPos - 1;
+                // Store the xy in the sheet frames variable
+                this._cells[cellIndex] = [xPos * cellWidth, yPos * cellHeight, cellWidth, cellHeight];
             }
+        }
+        else {
+            // The cell data shows only one cell so just store the whole image data
+            this._cells[1] = [0, 0, this._sizeX, this._sizeY];
         }
     }
     /**

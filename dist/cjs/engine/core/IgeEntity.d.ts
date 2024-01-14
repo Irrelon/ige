@@ -231,7 +231,7 @@ export declare class IgeEntity extends IgeObject implements IgeCanRegisterById, 
     anchor(x: number, y: number): this;
     anchor(): IgePoint2d;
     /**
-     * Gets / sets the geometry x value.
+     * Gets / sets the geometry x value (this._bounds2d.x).
      * @param {number=} px The new x value in pixels.
      * @param {Boolean} lockAspect
      * @example #Set the entity width
@@ -357,7 +357,7 @@ export declare class IgeEntity extends IgeObject implements IgeCanRegisterById, 
     /**
      * Gets / sets the current texture cell used when rendering the game
      * object's texture. If the texture is not cell-based, this value is
-     * ignored.
+     * ignored. The cell indices start at 1, not 0.
      * @param {number|null=} val The cell index.
      * @example #Set the entity texture as a 4x4 cell sheet and then set the cell to use
      *     var texture = new IgeCellSheet('path/to/some/cellSheet.png', 4, 4);
@@ -924,7 +924,7 @@ export declare class IgeEntity extends IgeObject implements IgeCanRegisterById, 
      * @return {*} The object this method was called from to allow
      * method chaining.
      */
-    translateToTile(x: number, y: number, z: number): this;
+    translateToTile(x: number, y: number, z?: number): this;
     /**
      * Gets the `translate` accessor object.
      * @example #Use the `translate` accessor object to alter the y co-ordinate of the entity to 10

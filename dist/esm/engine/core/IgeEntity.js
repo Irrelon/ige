@@ -311,16 +311,21 @@ export class IgeEntity extends IgeObject {
             throw new Error("Cannot set width by tile because the entity is not currently mounted to a tile map or the tile map has no tileWidth or tileHeight values.");
         }
         const tileSize = this._renderMode === IgeEntityRenderMode.flat ? this._parent._tileWidth : this._parent._tileWidth * 2;
-        this.width(val * tileSize);
         if (lockAspect) {
             if (this._texture) {
+                this.width(val * tileSize);
                 // Calculate the height based on the new width
                 const ratio = this._texture._sizeX / this._bounds2d.x;
                 this.height(this._texture._sizeY / ratio);
             }
             else {
-                this.log("Cannot set height based on texture aspect ratio and new width because no texture is currently assigned to the entity!", "error");
+                // No texture assigned, simply maintain aspect ratio
+                const ratio = this._bounds2d.x / (val * tileSize);
+                this.height(this._bounds2d.y / ratio);
             }
+        }
+        else {
+            this.width(val * tileSize);
         }
         return this;
     }
@@ -1912,7 +1917,7 @@ export class IgeEntity extends IgeObject {
      * @return {*} The object this method was called from to allow
      * method chaining.
      */
-    translateToTile(x, y, z) {
+    translateToTile(x, y, z = 0) {
         if (this._parent && this._parent._tileWidth !== undefined && this._parent._tileHeight !== undefined) {
             let finalZ;
             // Handle being passed a z co-ordinate

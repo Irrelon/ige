@@ -6,6 +6,9 @@ export declare const WithExampleMixin: <BaseClassType extends Mixin<IgeBaseClass
         _data: Record<string, any>;
         getClassId(): string;
         log(message: string, ...args: any[]): any;
+        logInfo(message: string, ...args: any[]): any;
+        logWarn(message: string, ...args: any[]): any;
+        logError(message: string, ...args: any[]): any;
         logIndent(): void;
         logOutdent(): void;
         data(key: string, value: any): any;

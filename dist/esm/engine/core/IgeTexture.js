@@ -24,7 +24,7 @@ export class IgeTexture extends IgeAsset {
     _originalImage;
     _textureCanvas;
     _textureCtx;
-    _cells = [];
+    _cells = []; // The fist index of this array is 1 for some reason
     dependencies = new IgeDependencies();
     image;
     script;

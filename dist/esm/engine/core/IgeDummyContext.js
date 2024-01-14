@@ -31,6 +31,7 @@ export class IgeDummyContext {
     rect = undefinedMethod;
     moveTo = undefinedMethod;
     lineTo = undefinedMethod;
+    ellipse = undefinedMethod;
     arc = undefinedMethod;
     arcTo = undefinedMethod;
     clearRect = undefinedMethod;

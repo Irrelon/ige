@@ -35,6 +35,7 @@ class IgeDummyContext {
         this.rect = exports.undefinedMethod;
         this.moveTo = exports.undefinedMethod;
         this.lineTo = exports.undefinedMethod;
+        this.ellipse = exports.undefinedMethod;
         this.arc = exports.undefinedMethod;
         this.arcTo = exports.undefinedMethod;
         this.clearRect = exports.undefinedMethod;

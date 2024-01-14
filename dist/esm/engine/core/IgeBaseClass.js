@@ -1,4 +1,17 @@
 import { global } from "../../export/exports.js"
+const getIndentString = () => {
+    let indent = "";
+    if (global._globalLogIndent) {
+        indent = "|";
+    }
+    for (let i = 0; i < global._globalLogIndent; i++) {
+        indent += "———";
+    }
+    if (global._globalLogIndent) {
+        indent += " ";
+    }
+    return indent;
+};
 export class IgeBaseClass {
     classId = "IgeBaseClass";
     _data = {};
@@ -58,20 +71,33 @@ export class IgeBaseClass {
      *
      */
     log(message, ...args) {
-        let indent = "";
-        if (global._globalLogIndent) {
-            indent = "|";
-        }
-        for (let i = 0; i < global._globalLogIndent; i++) {
-            indent += "———";
-        }
-        if (global._globalLogIndent) {
-            indent += " ";
-        }
+        return this.logInfo(message, ...args);
+    }
+    logInfo(message, ...args) {
         const stack = new Error().stack || "";
         const stackArr = stack.split("\n");
         stackArr.shift();
-        console.log(indent + `(${this.classId}) ${message}`, ...args);
+        console.log(getIndentString() + `(${this.classId}) ${message}`, ...args);
+        return this;
+    }
+    logWarn(message, ...args) {
+        const stack = new Error().stack || "";
+        const stackArr = stack.split("\n");
+        stackArr.shift();
+        console.warn(getIndentString() + `(${this.classId}) ${message}`, ...args);
+        stackArr.forEach((stackLine) => {
+            console.warn(stackLine);
+        });
+        return this;
+    }
+    logError(message, ...args) {
+        const stack = new Error().stack || "";
+        const stackArr = stack.split("\n");
+        stackArr.shift();
+        console.error(getIndentString() + `(${this.classId}) ${message}`, ...args);
+        stackArr.forEach((stackLine) => {
+            console.error(stackLine);
+        });
         return this;
     }
     logIndent() {

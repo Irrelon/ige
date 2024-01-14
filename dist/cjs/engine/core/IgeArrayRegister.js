@@ -11,7 +11,7 @@ class IgeArrayRegister {
         this._registeredField = registeredField;
     }
     get(id) {
-        return this._store[id] || [];
+        return [...(this._store[id] || [])];
     }
     /**
      * Register an object with the engine array register.

@@ -2,6 +2,19 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.IgeBaseClass = void 0;
 const exports_1 = require("../../export/exports.js");
+const getIndentString = () => {
+    let indent = "";
+    if (exports_1.global._globalLogIndent) {
+        indent = "|";
+    }
+    for (let i = 0; i < exports_1.global._globalLogIndent; i++) {
+        indent += "———";
+    }
+    if (exports_1.global._globalLogIndent) {
+        indent += " ";
+    }
+    return indent;
+};
 class IgeBaseClass {
     constructor() {
         this.classId = "IgeBaseClass";
@@ -63,20 +76,33 @@ class IgeBaseClass {
      *
      */
     log(message, ...args) {
-        let indent = "";
-        if (exports_1.global._globalLogIndent) {
-            indent = "|";
-        }
-        for (let i = 0; i < exports_1.global._globalLogIndent; i++) {
-            indent += "———";
-        }
-        if (exports_1.global._globalLogIndent) {
-            indent += " ";
-        }
+        return this.logInfo(message, ...args);
+    }
+    logInfo(message, ...args) {
         const stack = new Error().stack || "";
         const stackArr = stack.split("\n");
         stackArr.shift();
-        console.log(indent + `(${this.classId}) ${message}`, ...args);
+        console.log(getIndentString() + `(${this.classId}) ${message}`, ...args);
+        return this;
+    }
+    logWarn(message, ...args) {
+        const stack = new Error().stack || "";
+        const stackArr = stack.split("\n");
+        stackArr.shift();
+        console.warn(getIndentString() + `(${this.classId}) ${message}`, ...args);
+        stackArr.forEach((stackLine) => {
+            console.warn(stackLine);
+        });
+        return this;
+    }
+    logError(message, ...args) {
+        const stack = new Error().stack || "";
+        const stackArr = stack.split("\n");
+        stackArr.shift();
+        console.error(getIndentString() + `(${this.classId}) ${message}`, ...args);
+        stackArr.forEach((stackLine) => {
+            console.error(stackLine);
+        });
         return this;
     }
     logIndent() {

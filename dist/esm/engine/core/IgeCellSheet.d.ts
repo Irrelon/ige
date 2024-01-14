@@ -35,7 +35,8 @@ export declare class IgeCellSheet extends IgeTexture {
     verticalCells(): number;
     /**
      * Sets the x, y, width and height of each sheet cell and stores
-     * that information in the this._cells array.
+     * that information in the this._cells array. The _cells array
+     * is first indexed at 1 not 0.
      * @private
      */
     _applyCells(): void;
