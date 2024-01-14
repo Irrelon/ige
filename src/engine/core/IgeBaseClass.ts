@@ -1,5 +1,23 @@
 import { global } from "@/export/exports";
 
+const getIndentString = () => {
+	let indent = "";
+
+	if (global._globalLogIndent) {
+		indent = "|";
+	}
+
+	for (let i = 0; i < global._globalLogIndent; i++) {
+		indent += "———";
+	}
+
+	if (global._globalLogIndent) {
+		indent += " ";
+	}
+
+	return indent;
+};
+
 export class IgeBaseClass {
 	classId = "IgeBaseClass";
 	_data: Record<string, any> = {};
@@ -15,7 +33,7 @@ export class IgeBaseClass {
 	 *     // Will output "IgeEntity"
 	 *     console.log(entity.classId);
 	 */
-	getClassId () {
+	getClassId() {
 		return this.classId;
 	}
 
@@ -60,41 +78,57 @@ export class IgeBaseClass {
 	 *     entity.log('An error message', 'error');
 	 *
 	 */
-	log (message: string, ...args: any[]) {
-		let indent = "";
+	log(message: string, ...args: any[]) {
+		return this.logInfo(message, ...args);
+	}
 
-		if (global._globalLogIndent) {
-			indent = "|";
-		}
-
-		for (let i = 0; i < global._globalLogIndent; i++) {
-			indent += "———";
-		}
-
-		if (global._globalLogIndent) {
-			indent += " ";
-		}
-
+	logInfo(message: string, ...args: any[]) {
 		const stack = new Error().stack || "";
 		const stackArr = stack.split("\n");
 		stackArr.shift();
 
-		console.log(indent + `(${this.classId}) ${message}`, ...args);
+		console.log(getIndentString() + `(${this.classId}) ${message}`, ...args);
 		return this;
 	}
 
-	logIndent () {
+	logWarn(message: string, ...args: any[]) {
+		const stack = new Error().stack || "";
+		const stackArr = stack.split("\n");
+		stackArr.shift();
+
+		console.warn(getIndentString() + `(${this.classId}) ${message}`, ...args);
+
+		stackArr.forEach((stackLine) => {
+			console.warn(stackLine);
+		});
+		return this;
+	}
+
+	logError(message: string, ...args: any[]) {
+		const stack = new Error().stack || "";
+		const stackArr = stack.split("\n");
+		stackArr.shift();
+
+		console.error(getIndentString() + `(${this.classId}) ${message}`, ...args);
+
+		stackArr.forEach((stackLine) => {
+			console.error(stackLine);
+		});
+		return this;
+	}
+
+	logIndent() {
 		global._globalLogIndent++;
 	}
 
-	logOutdent () {
+	logOutdent() {
 		global._globalLogIndent--;
 		if (global._globalLogIndent < 0) global._globalLogIndent = 0;
 	}
 
 	data(key: string, value: any): this;
 	data(key: string): any;
-	data (key: string, value?: any) {
+	data(key: string, value?: any) {
 		if (value !== undefined) {
 			this._data = this._data || {};
 			this._data[key] = value;
