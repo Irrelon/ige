@@ -15,16 +15,17 @@ async function getGpu () {
 	});
 
 	const canvas = document.getElementById("render");
+	if (!canvas) {
+		console.error("WebGPU cannot be initialized - Canvas does not exist");
+		return null;
+	}
 	const context = canvas.getContext("webgpu");
 	if (!context) {
 		console.error("WebGPU cannot be initialized - Canvas does not support WebGPU");
 		return null;
 	}
 	const devicePixelRatio = window.devicePixelRatio || 1;
-	const presentationSize = [
-		canvas.clientWidth * devicePixelRatio,
-		canvas.clientHeight * devicePixelRatio
-	];
+	const presentationSize = [canvas.clientWidth * devicePixelRatio, canvas.clientHeight * devicePixelRatio];
 	const presentationFormat = navigator.gpu.getPreferredCanvasFormat();
 
 	context.configure({
@@ -34,9 +35,7 @@ async function getGpu () {
 	});
 
 	const vertices = new Float32Array([
-		-1.0, -1.0, 0, 1, 1, 0, 0, 1,
-		-0.0, 1.0, 0, 1, 0, 1, 0, 1,
-		1.0, -1.0, 0, 1, 0, 0, 1, 1
+		-1.0, -1.0, 0, 1, 1, 0, 0, 1, -0.0, 1.0, 0, 1, 0, 1, 0, 1, 1.0, -1.0, 0, 1, 0, 0, 1, 1
 	]);
 
 	const vertexBuffer = device.createBuffer({
@@ -47,22 +46,24 @@ async function getGpu () {
 	new Float32Array(vertexBuffer.getMappedRange()).set(vertices);
 	vertexBuffer.unmap();
 
-	const vertexBuffersDescriptors = [{
-		attributes: [
-			{
-				shaderLocation: 0,
-				offset: 0,
-				format: "float32x4"
-			},
-			{
-				shaderLocation: 1,
-				offset: 16,
-				format: "float32x4"
-			}
-		],
-		arrayStride: 32,
-		stepMode: "vertex"
-	}];
+	const vertexBuffersDescriptors = [
+		{
+			attributes: [
+				{
+					shaderLocation: 0,
+					offset: 0,
+					format: "float32x4"
+				},
+				{
+					shaderLocation: 1,
+					offset: 16,
+					format: "float32x4"
+				}
+			],
+			arrayStride: 32,
+			stepMode: "vertex"
+		}
+	];
 
 	const shaderModule = device.createShaderModule({
 		code: `

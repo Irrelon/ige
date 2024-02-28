@@ -147,6 +147,7 @@ __exportStar(require("../engine/filters/convolute"), exports);
 __exportStar(require("../engine/filters/colorOverlay"), exports);
 __exportStar(require("../engine/filters/brighten"), exports);
 __exportStar(require("../engine/filters/blur"), exports);
+__exportStar(require("../engine/core/IgeRenderer"), exports);
 __exportStar(require("../engine/core/IgeViewport"), exports);
 __exportStar(require("../engine/core/IgeUiManagerController"), exports);
 __exportStar(require("../engine/core/IgeTweenController"), exports);

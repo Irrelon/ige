@@ -31,7 +31,10 @@
 			"@/*": [
 				"./src/*"
 			]
-		}
+		},
+		"types": [
+			"@webgpu/types"
+		]
 	},
 	"include": [
 		"src/**/*"

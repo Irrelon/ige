@@ -1,4 +1,5 @@
-import type { IgeBaseClass } from "../../export/exports.js"
+import type { IgeRenderer } from "./IgeRenderer.js"
+import type { IgeBaseClass } from "../../export/exports.js";
 import type { IgeCamera } from "../../export/exports.js"
 import type { IgeComponent } from "../../export/exports.js"
 import type { IgeDummyCanvas } from "../../export/exports.js"
@@ -17,6 +18,7 @@ export declare class IgeEngine extends IgeEntity {
     client?: IgeBaseClass;
     server?: IgeBaseClass;
     _idRegistered: boolean;
+    _renderer: IgeRenderer | null;
     _canvas?: HTMLCanvasElement;
     _ctx: IgeCanvasRenderingContext2d | null;
     _idCounter: number;
@@ -92,12 +94,16 @@ export declare class IgeEngine extends IgeEntity {
     waitForCssFont(fontName: string): void;
     fontList(): string[];
     /**
-     * Adds an entity to the spawn queue.
-     * @param {IgeEntity} entity The entity to add.
-     * @returns {Ige|[]} Either this, or the spawn queue.
+     * Adds an entity to the spawn queue. Entities on the spawn queue will
+     * be spawned on the next tick.
+     * @param {IgeObject} [entity] The entity to add.
+     * @returns {IgeEngine|IgeObject[]} Either this, or the spawn queue.
      */
-    spawnQueue(entity: IgeObject): IgeObject[] | this;
+    spawnQueue(entity?: IgeObject): IgeEngine;
+    spawnQueue(): IgeEngine["_spawnQueue"];
     currentViewport(viewport?: IgeObject): IgeViewport | null;
+    renderer(renderer: IgeRenderer): IgeEngine;
+    renderer(): IgeEngine["_renderer"];
     /**
      * Sets the canvas element that will be used as the front-buffer.
      * @param elem The canvas element.
@@ -105,10 +111,6 @@ export declare class IgeEngine extends IgeEntity {
      * the canvas to the width and height of the window upon window resize.
      */
     canvas(elem?: HTMLCanvasElement, autoSize?: boolean): this | HTMLCanvasElement | undefined;
-    /**
-     * Clears the entire canvas.
-     */
-    clearCanvas(): void;
     /**
      * Removes the engine's canvas from the DOM.
      */
@@ -384,6 +386,7 @@ export declare class IgeEngine extends IgeEntity {
      * @return {Boolean}
      */
     stop(): boolean;
+    _birthUnbornEntities(): void;
     /**
      * Called each frame to traverse and render the scenegraph.
      */
@@ -407,11 +410,11 @@ export declare class IgeEngine extends IgeEntity {
     /**
      * Creates a front-buffer or "drawing surface" for the renderer.
      *
-     * @param {Boolean} autoSize Determines if the canvas will auto-resize
+     * @param {Boolean} autoSize=true Determines if the canvas will auto-resize
      * when the browser window changes dimensions. If true the canvas will
      * automatically fill the window when it is resized.
      *
-     * @param {Boolean=} dontScale If set to true, IGE will ignore device
+     * @param {Boolean=} dontScale=false If set to true, IGE will ignore device
      * pixel ratios when setting the width and height of the canvas and will
      * therefore not take into account "retina", high-definition displays or
      * those whose pixel ratio is different from 1 to 1.

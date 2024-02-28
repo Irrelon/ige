@@ -11,8 +11,8 @@ export class IgeEngine extends IgeEntity {
     classId = "IgeEngine";
     client;
     server;
-    // @ts-ignore
     _idRegistered = true;
+    _renderer = null;
     _canvas;
     _ctx;
     _idCounter;
@@ -210,11 +210,6 @@ export class IgeEngine extends IgeEntity {
         // converted to set then arr to filter repetitive values
         return [...new Set(arr)];
     }
-    /**
-     * Adds an entity to the spawn queue.
-     * @param {IgeEntity} entity The entity to add.
-     * @returns {Ige|[]} Either this, or the spawn queue.
-     */
     spawnQueue(entity) {
         if (entity !== undefined) {
             this._spawnQueue.push(entity);
@@ -228,6 +223,13 @@ export class IgeEngine extends IgeEntity {
             ige.engine._currentCamera = viewport.camera;
         }
         return ige.engine._currentViewport;
+    }
+    renderer(renderer) {
+        if (renderer !== undefined) {
+            this._renderer = renderer;
+            return this;
+        }
+        return this._renderer;
     }
     /**
      * Sets the canvas element that will be used as the front-buffer.
@@ -270,15 +272,6 @@ export class IgeEngine extends IgeEntity {
         this._headless = false;
         // Ask the input component to set up any listeners it has
         ige.input.setupListeners(this._canvas);
-    }
-    /**
-     * Clears the entire canvas.
-     */
-    clearCanvas() {
-        if (this._canvas && this._ctx) {
-            // Clear the whole canvas
-            this._ctx.clearRect(0, 0, this._canvas.width, this._canvas.height);
-        }
     }
     /**
      * Removes the engine's canvas from the DOM.
@@ -336,6 +329,10 @@ export class IgeEngine extends IgeEntity {
      * @private
      */
     _resizeEvent = (event) => {
+        if (this._renderer) {
+            this._renderer?._resizeEvent(event);
+            this._bounds2d = this._renderer?._bounds2d;
+        }
         let canvasBoundingRect;
         if (this._autoSize) {
             const arr = this._children;
@@ -1208,6 +1205,19 @@ export class IgeEngine extends IgeEntity {
             return false;
         }
     }
+    _birthUnbornEntities() {
+        const unbornQueue = this._spawnQueue;
+        const unbornCount = unbornQueue.length;
+        for (let unbornIndex = unbornCount - 1; unbornIndex >= 0; unbornIndex--) {
+            const unbornEntity = unbornQueue[unbornIndex];
+            if (this._currentTime >= unbornEntity._bornTime && unbornEntity._birthMount) {
+                // Now birth this entity
+                unbornEntity.mount(ige.$(unbornEntity._birthMount));
+                // Remove the newly born entity from the spawn queue
+                unbornQueue.splice(unbornIndex, 1);
+            }
+        }
+    }
     /**
      * Called each frame to traverse and render the scenegraph.
      */
@@ -1222,11 +1232,11 @@ export class IgeEngine extends IgeEntity {
         this.incrementTime(timeStamp, this._timeScaleLastTimestamp);
         this._timeScaleLastTimestamp = timeStamp;
         timeStamp = Math.floor(this._currentTime);
-        let st = 0;
+        let startTime = 0;
         if (ige.config.debug._timing) {
-            st = new Date().getTime();
+            startTime = new Date().getTime();
         }
-        if (this._state) {
+        if (this._state === IgeEngineState.started) {
             // Check if we were passed a context to work with
             if (ctx === undefined) {
                 ctx = this._ctx;
@@ -1241,36 +1251,26 @@ export class IgeEngine extends IgeEntity {
             else {
                 this._manualFrameAlternator = !this._frameAlternator;
             }
-            // Get the current time in milliseconds
-            this._tickStart = timeStamp;
-            // Adjust the tickStart value by the difference between
-            // the server and the client clocks (this is only applied
-            // when running as the client - the server always has a
-            // clientNetDiff of zero)
-            this._tickStart -= this._clientNetDiff;
+            // Record the tick start time and adjust the tickStart value
+            // by the difference between the server and the client clocks
+            // (this is only applied when running as the client - the
+            // server always has a clientNetDiff of zero)
+            this._tickStart = timeStamp - this._clientNetDiff;
             if (!this.lastTick) {
-                // This is the first time we've run so set some
-                // default values and set the delta to zero
-                this.lastTick = 0;
+                // This is the first time we've run so set the tick delta
+                // to zero
                 this._tickDelta = 0;
             }
             else {
-                // Calculate the frame delta
+                // Calculate the tick delta - how much time has elapsed
+                // between the last time we ran engineTick() and now
                 this._tickDelta = this._tickStart - this.lastTick;
             }
             // Check for unborn entities that should be born now
-            const unbornQueue = this._spawnQueue;
-            const unbornCount = unbornQueue.length;
-            for (let unbornIndex = unbornCount - 1; unbornIndex >= 0; unbornIndex--) {
-                const unbornEntity = unbornQueue[unbornIndex];
-                if (this._currentTime >= unbornEntity._bornTime && unbornEntity._birthMount) {
-                    // Now birth this entity
-                    unbornEntity.mount(ige.$(unbornEntity._birthMount));
-                    unbornQueue.splice(unbornIndex, 1);
-                }
-            }
-            // Update the scenegraph
+            this._birthUnbornEntities();
+            // Check if updates are enabled
             if (this._enableUpdates) {
+                // Update the scenegraph
                 if (ige.config.debug._timing) {
                     const updateStart = new Date().getTime();
                     ctx && this.updateSceneGraph(ctx);
@@ -1280,20 +1280,15 @@ export class IgeEngine extends IgeEntity {
                     ctx && this.updateSceneGraph(ctx);
                 }
             }
-            // Render the scenegraph
+            // Check if renders are enabled
             if (this._enableRenders) {
-                if (!this._useManualRender) {
-                    if (ige.config.debug._timing) {
-                        const renderStart = new Date().getTime();
-                        ctx && this.renderSceneGraph(ctx);
-                        this._renderTime = new Date().getTime() - renderStart;
-                    }
-                    else {
-                        ctx && this.renderSceneGraph(ctx);
-                    }
-                }
-                else {
+                // Check if we should only render after manualRender() has been called
+                // or if we just render each frame automatically
+                if (this._useManualRender) {
+                    // We are only rendering when manualRender() is called, check if
+                    // a manual render has been queued by calling manualRender()
                     if (this._manualRenderQueued) {
+                        // A manual render was queued, so we can render a frame now
                         if (ige.config.debug._timing) {
                             const renderStart = new Date().getTime();
                             ctx && this.renderSceneGraph(ctx);
@@ -1305,20 +1300,35 @@ export class IgeEngine extends IgeEntity {
                         this._manualRenderQueued = false;
                     }
                 }
+                else {
+                    // We are not in manual render mode so render the scenegraph
+                    if (ige.config.debug._timing) {
+                        const renderStart = new Date().getTime();
+                        ctx && this.renderSceneGraph(ctx);
+                        this._renderTime = new Date().getTime() - renderStart;
+                    }
+                    else {
+                        ctx && this.renderSceneGraph(ctx);
+                    }
+                }
             }
             // Call post-tick methods
-            this._processBehaviours(IgeBehaviourType.postTick, ctx);
+            const tickDelta = ige.engine._tickDelta;
+            this._processBehaviours(IgeBehaviourType.postTick, { ctx, tickDelta });
             // Record the lastTick value, so we can
             // calculate delta on the next tick
             this.lastTick = this._tickStart;
             this._frames++;
+            // Record the number of drawings we've done this frame in our
+            // dpf (draws per frame) counter
             this._dpf = this._drawCount;
+            // Clear the draw count, so it's zero for the next frame
             this._drawCount = 0;
         }
         this._resized = false;
         if (ige.config.debug._timing) {
-            const et = new Date().getTime();
-            this._tickTime = et - st;
+            const endTime = new Date().getTime();
+            this._tickTime = endTime - startTime;
         }
     };
     /**
@@ -1359,11 +1369,11 @@ export class IgeEngine extends IgeEntity {
     /**
      * Creates a front-buffer or "drawing surface" for the renderer.
      *
-     * @param {Boolean} autoSize Determines if the canvas will auto-resize
+     * @param {Boolean} autoSize=true Determines if the canvas will auto-resize
      * when the browser window changes dimensions. If true the canvas will
      * automatically fill the window when it is resized.
      *
-     * @param {Boolean=} dontScale If set to true, IGE will ignore device
+     * @param {Boolean=} dontScale=false If set to true, IGE will ignore device
      * pixel ratios when setting the width and height of the canvas and will
      * therefore not take into account "retina", high-definition displays or
      * those whose pixel ratio is different from 1 to 1.
@@ -1464,7 +1474,7 @@ export class IgeEngine extends IgeEntity {
         const arr = this._children;
         const tickDelta = ige.engine._tickDelta;
         // Process any behaviours assigned to the engine
-        this._processBehaviours(IgeBehaviourType.preUpdate, ctx, tickDelta);
+        this._processBehaviours(IgeBehaviourType.preUpdate, { ctx, tickDelta });
         if (arr) {
             let arrCount = arr.length;
             // Loop our viewports and call their update methods
@@ -1493,15 +1503,15 @@ export class IgeEngine extends IgeEntity {
         }
     }
     renderSceneGraph(ctx) {
-        let ts, td;
+        const tickDelta = ige.engine._tickDelta;
         // Process any behaviours assigned to the engine
-        this._processBehaviours(IgeBehaviourType.preTick, ctx);
+        this._processBehaviours(IgeBehaviourType.preTick, { ctx, tickDelta });
         // Depth-sort the viewports
         if (this._viewportDepth) {
             if (ige.config.debug._timing) {
-                ts = new Date().getTime();
+                const ts = new Date().getTime();
                 this.depthSortChildren();
-                td = new Date().getTime() - ts;
+                const td = new Date().getTime() - ts;
                 if (!ige.engine._timeSpentLastTick[this.id()]) {
                     ige.engine._timeSpentLastTick[this.id()] = {};
                 }
@@ -1522,9 +1532,9 @@ export class IgeEngine extends IgeEntity {
             if (ige.config.debug._timing) {
                 while (arrCount--) {
                     ctx.save();
-                    ts = new Date().getTime();
+                    const ts = new Date().getTime();
                     arr[arrCount].tick(ctx);
-                    td = new Date().getTime() - ts;
+                    const td = new Date().getTime() - ts;
                     if (arr[arrCount]) {
                         if (!ige.engine._timeSpentInTick[arr[arrCount].id()]) {
                             ige.engine._timeSpentInTick[arr[arrCount].id()] = 0;
@@ -1547,6 +1557,7 @@ export class IgeEngine extends IgeEntity {
             }
         }
         ctx.restore();
+        this._renderer?.renderSceneGraph(this._children, this._bounds2d);
     }
     destroy() {
         // Stop the engine and kill any timers
