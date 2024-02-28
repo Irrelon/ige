@@ -23,7 +23,6 @@ export class IgeEngine extends IgeEntity {
 	classId = "IgeEngine";
 	client?: IgeBaseClass;
 	server?: IgeBaseClass;
-	// @ts-ignore
 	_idRegistered: boolean = true;
 	_canvas?: HTMLCanvasElement;
 	_ctx: IgeCanvasRenderingContext2d | null;
@@ -1456,6 +1455,23 @@ export class IgeEngine extends IgeEntity {
 		}
 	}
 
+	_birthUnbornEntities () {
+		const unbornQueue = this._spawnQueue;
+		const unbornCount = unbornQueue.length;
+
+		for (let unbornIndex = unbornCount - 1; unbornIndex >= 0; unbornIndex--) {
+			const unbornEntity: IgeObject = unbornQueue[unbornIndex];
+
+			if (this._currentTime >= unbornEntity._bornTime && unbornEntity._birthMount) {
+				// Now birth this entity
+				unbornEntity.mount(ige.$(unbornEntity._birthMount) as IgeEntity);
+
+				// Remove the newly born entity from the spawn queue
+				unbornQueue.splice(unbornIndex, 1);
+			}
+		}
+	}
+
 	/**
 	 * Called each frame to traverse and render the scenegraph.
 	 */
@@ -1473,13 +1489,13 @@ export class IgeEngine extends IgeEntity {
 		this._timeScaleLastTimestamp = timeStamp;
 		timeStamp = Math.floor(this._currentTime);
 
-		let st = 0;
+		let startTime = 0;
 
 		if (ige.config.debug._timing) {
-			st = new Date().getTime();
+			startTime = new Date().getTime();
 		}
 
-		if (this._state) {
+		if (this._state === IgeEngineState.started) {
 			// Check if we were passed a context to work with
 			if (ctx === undefined) {
 				ctx = this._ctx;
@@ -1496,41 +1512,28 @@ export class IgeEngine extends IgeEntity {
 				this._manualFrameAlternator = !this._frameAlternator;
 			}
 
-			// Get the current time in milliseconds
-			this._tickStart = timeStamp;
-
-			// Adjust the tickStart value by the difference between
-			// the server and the client clocks (this is only applied
-			// when running as the client - the server always has a
-			// clientNetDiff of zero)
-			this._tickStart -= this._clientNetDiff;
+			// Record the tick start time and adjust the tickStart value
+			// by the difference between the server and the client clocks
+			// (this is only applied when running as the client - the
+			// server always has a clientNetDiff of zero)
+			this._tickStart = timeStamp - this._clientNetDiff;
 
 			if (!this.lastTick) {
-				// This is the first time we've run so set some
-				// default values and set the delta to zero
-				this.lastTick = 0;
+				// This is the first time we've run so set the tick delta
+				// to zero
 				this._tickDelta = 0;
 			} else {
-				// Calculate the frame delta
+				// Calculate the tick delta - how much time has elapsed
+				// between the last time we ran engineTick() and now
 				this._tickDelta = this._tickStart - this.lastTick;
 			}
 
 			// Check for unborn entities that should be born now
-			const unbornQueue = this._spawnQueue;
-			const unbornCount = unbornQueue.length;
+			this._birthUnbornEntities();
 
-			for (let unbornIndex = unbornCount - 1; unbornIndex >= 0; unbornIndex--) {
-				const unbornEntity: IgeObject = unbornQueue[unbornIndex];
-
-				if (this._currentTime >= unbornEntity._bornTime && unbornEntity._birthMount) {
-					// Now birth this entity
-					unbornEntity.mount(ige.$(unbornEntity._birthMount) as IgeEntity);
-					unbornQueue.splice(unbornIndex, 1);
-				}
-			}
-
-			// Update the scenegraph
+			// Check if updates are enabled
 			if (this._enableUpdates) {
+				// Update the scenegraph
 				if (ige.config.debug._timing) {
 					const updateStart = new Date().getTime();
 					ctx && this.updateSceneGraph(ctx);
@@ -1540,18 +1543,15 @@ export class IgeEngine extends IgeEntity {
 				}
 			}
 
-			// Render the scenegraph
+			// Check if renders are enabled
 			if (this._enableRenders) {
-				if (!this._useManualRender) {
-					if (ige.config.debug._timing) {
-						const renderStart = new Date().getTime();
-						ctx && this.renderSceneGraph(ctx);
-						this._renderTime = new Date().getTime() - renderStart;
-					} else {
-						ctx && this.renderSceneGraph(ctx);
-					}
-				} else {
+				// Check if we should only render after manualRender() has been called
+				// or if we just render each frame automatically
+				if (this._useManualRender) {
+					// We are only rendering when manualRender() is called, check if
+					// a manual render has been queued by calling manualRender()
 					if (this._manualRenderQueued) {
+						// A manual render was queued, so we can render a frame now
 						if (ige.config.debug._timing) {
 							const renderStart = new Date().getTime();
 							ctx && this.renderSceneGraph(ctx);
@@ -1560,6 +1560,15 @@ export class IgeEngine extends IgeEntity {
 							ctx && this.renderSceneGraph(ctx);
 						}
 						this._manualRenderQueued = false;
+					}
+				} else {
+					// We are not in manual render mode so render the scenegraph
+					if (ige.config.debug._timing) {
+						const renderStart = new Date().getTime();
+						ctx && this.renderSceneGraph(ctx);
+						this._renderTime = new Date().getTime() - renderStart;
+					} else {
+						ctx && this.renderSceneGraph(ctx);
 					}
 				}
 			}
@@ -1571,15 +1580,20 @@ export class IgeEngine extends IgeEntity {
 			// calculate delta on the next tick
 			this.lastTick = this._tickStart;
 			this._frames++;
+
+			// Record the number of drawings we've done this frame in our
+			// dpf (draws per frame) counter
 			this._dpf = this._drawCount;
+
+			// Clear the draw count, so it's zero for the next frame
 			this._drawCount = 0;
 		}
 
 		this._resized = false;
 
 		if (ige.config.debug._timing) {
-			const et = new Date().getTime();
-			this._tickTime = et - st;
+			const endTime = new Date().getTime();
+			this._tickTime = endTime - startTime;
 		}
 	};
 
