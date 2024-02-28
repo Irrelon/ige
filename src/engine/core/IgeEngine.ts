@@ -1,3 +1,4 @@
+import type { IgeRenderer } from "@/engine/core/IgeRenderer";
 import type { IgeBaseClass } from "@/export/exports";
 import type { IgeCamera } from "@/export/exports";
 import type { IgeComponent } from "@/export/exports";
@@ -24,6 +25,7 @@ export class IgeEngine extends IgeEntity {
 	client?: IgeBaseClass;
 	server?: IgeBaseClass;
 	_idRegistered: boolean = true;
+	_renderer: IgeRenderer | null = null;
 	_canvas?: HTMLCanvasElement;
 	_ctx: IgeCanvasRenderingContext2d | null;
 	_idCounter: number;
@@ -253,11 +255,14 @@ export class IgeEngine extends IgeEntity {
 	}
 
 	/**
-	 * Adds an entity to the spawn queue.
-	 * @param {IgeEntity} entity The entity to add.
-	 * @returns {Ige|[]} Either this, or the spawn queue.
+	 * Adds an entity to the spawn queue. Entities on the spawn queue will
+	 * be spawned on the next tick.
+	 * @param {IgeObject} [entity] The entity to add.
+	 * @returns {IgeEngine|IgeObject[]} Either this, or the spawn queue.
 	 */
-	spawnQueue (entity: IgeObject) {
+	spawnQueue(entity?: IgeObject): IgeEngine;
+	spawnQueue(): IgeEngine["_spawnQueue"];
+	spawnQueue (entity?: IgeObject): IgeEngine | IgeEngine["_spawnQueue"] {
 		if (entity !== undefined) {
 			this._spawnQueue.push(entity);
 			return this;
@@ -273,6 +278,17 @@ export class IgeEngine extends IgeEntity {
 		}
 
 		return ige.engine._currentViewport;
+	}
+
+	renderer(renderer: IgeRenderer): IgeEngine;
+	renderer(): IgeEngine["_renderer"];
+	renderer (renderer?: IgeRenderer): IgeEngine | IgeEngine["_renderer"] {
+		if (renderer !== undefined) {
+			this._renderer = renderer;
+			return this;
+		}
+
+		return this._renderer;
 	}
 
 	/**
@@ -324,16 +340,6 @@ export class IgeEngine extends IgeEntity {
 
 		// Ask the input component to set up any listeners it has
 		ige.input.setupListeners(this._canvas);
-	}
-
-	/**
-	 * Clears the entire canvas.
-	 */
-	clearCanvas () {
-		if (this._canvas && this._ctx) {
-			// Clear the whole canvas
-			this._ctx.clearRect(0, 0, this._canvas.width, this._canvas.height);
-		}
 	}
 
 	/**
@@ -412,6 +418,11 @@ export class IgeEngine extends IgeEntity {
 	 * @private
 	 */
 	_resizeEvent = (event?: Event) => {
+		if (this._renderer) {
+			this._renderer?._resizeEvent(event);
+			this._bounds2d = this._renderer?._bounds2d;
+		}
+
 		let canvasBoundingRect;
 
 		if (this._autoSize) {
@@ -1574,7 +1585,8 @@ export class IgeEngine extends IgeEntity {
 			}
 
 			// Call post-tick methods
-			this._processBehaviours(IgeBehaviourType.postTick, ctx);
+			const tickDelta = ige.engine._tickDelta;
+			this._processBehaviours(IgeBehaviourType.postTick, { ctx, tickDelta });
 
 			// Record the lastTick value, so we can
 			// calculate delta on the next tick
@@ -1643,11 +1655,11 @@ export class IgeEngine extends IgeEntity {
 	/**
 	 * Creates a front-buffer or "drawing surface" for the renderer.
 	 *
-	 * @param {Boolean} autoSize Determines if the canvas will auto-resize
+	 * @param {Boolean} autoSize=true Determines if the canvas will auto-resize
 	 * when the browser window changes dimensions. If true the canvas will
 	 * automatically fill the window when it is resized.
 	 *
-	 * @param {Boolean=} dontScale If set to true, IGE will ignore device
+	 * @param {Boolean=} dontScale=false If set to true, IGE will ignore device
 	 * pixel ratios when setting the width and height of the canvas and will
 	 * therefore not take into account "retina", high-definition displays or
 	 * those whose pixel ratio is different from 1 to 1.
@@ -1773,7 +1785,7 @@ export class IgeEngine extends IgeEntity {
 		const tickDelta = ige.engine._tickDelta;
 
 		// Process any behaviours assigned to the engine
-		this._processBehaviours(IgeBehaviourType.preUpdate, ctx, tickDelta);
+		this._processBehaviours(IgeBehaviourType.preUpdate, { ctx, tickDelta });
 
 		if (arr) {
 			let arrCount = arr.length;
@@ -1807,17 +1819,17 @@ export class IgeEngine extends IgeEntity {
 	}
 
 	renderSceneGraph (ctx: IgeCanvasRenderingContext2d) {
-		let ts, td;
+		const tickDelta = ige.engine._tickDelta;
 
 		// Process any behaviours assigned to the engine
-		this._processBehaviours(IgeBehaviourType.preTick, ctx);
+		this._processBehaviours(IgeBehaviourType.preTick, { ctx, tickDelta });
 
 		// Depth-sort the viewports
 		if (this._viewportDepth) {
 			if (ige.config.debug._timing) {
-				ts = new Date().getTime();
+				const ts = new Date().getTime();
 				this.depthSortChildren();
-				td = new Date().getTime() - ts;
+				const td = new Date().getTime() - ts;
 
 				if (!ige.engine._timeSpentLastTick[this.id()]) {
 					ige.engine._timeSpentLastTick[this.id()] = {};
@@ -1843,9 +1855,10 @@ export class IgeEngine extends IgeEntity {
 			if (ige.config.debug._timing) {
 				while (arrCount--) {
 					ctx.save();
-					ts = new Date().getTime();
+					const ts = new Date().getTime();
 					arr[arrCount].tick(ctx);
-					td = new Date().getTime() - ts;
+					const td = new Date().getTime() - ts;
+
 					if (arr[arrCount]) {
 						if (!ige.engine._timeSpentInTick[arr[arrCount].id()]) {
 							ige.engine._timeSpentInTick[arr[arrCount].id()] = 0;
@@ -1870,6 +1883,8 @@ export class IgeEngine extends IgeEntity {
 		}
 
 		ctx.restore();
+
+		this._renderer?.renderSceneGraph(this._children, this._bounds2d);
 	}
 
 	destroy () {
