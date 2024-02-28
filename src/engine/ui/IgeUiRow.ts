@@ -6,7 +6,7 @@ import type { IgeCanvasRenderingContext2d } from "@/export/exports";
 export class IgeUiRow extends IgeUiElement {
 	classId = "IgeUiRow";
 
-	tick(ctx: IgeCanvasRenderingContext2d) {
+	tick (ctx: IgeCanvasRenderingContext2d) {
 		const maxWidth = this.width();
 
 		// Loop children and re-position then

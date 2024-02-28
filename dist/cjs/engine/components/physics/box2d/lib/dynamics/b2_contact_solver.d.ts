@@ -1,7 +1,8 @@
 import { b2Vec2, b2Mat22, b2Transform } from "../common/b2_math.js"
 import { b2ManifoldType } from "../collision/b2_collision.js"
-import { b2Contact } from "./b2_contact.js"
-import { b2TimeStep, b2Position, b2Velocity } from "./b2_time_step.js"
+import type { b2Contact } from "./b2_contact.js"
+import type { b2Position, b2Velocity } from "./b2_time_step.js"
+import { b2TimeStep } from "./b2_time_step.js"
 export declare let g_blockSolve: boolean;
 export declare function get_g_blockSolve(): boolean;
 export declare function set_g_blockSolve(value: boolean): void;

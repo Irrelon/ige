@@ -15,8 +15,6 @@
  * misrepresented as being the original software.
  * 3. This notice may not be removed or altered from any source distribution.
  */
-// #if B2_ENABLE_PARTICLE
-// DEBUG: import { b2Assert } from "../common/b2_settings.js"
 import { b2Vec2, b2Transform } from "../common/b2_math.js"
 import { b2Color } from "../common/b2_draw.js"
 export var b2ParticleGroupFlag;

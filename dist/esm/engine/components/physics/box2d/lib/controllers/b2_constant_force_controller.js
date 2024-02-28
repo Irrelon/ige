@@ -23,8 +23,8 @@ import { b2Vec2 } from "../common/b2_math.js"
  */
 export class b2ConstantForceController extends b2Controller {
     /**
-     * The force to apply
-     */
+   * The force to apply
+   */
     F = new b2Vec2(0, 0);
     Step(step) {
         for (let i = this.m_bodyList; i; i = i.nextBody) {

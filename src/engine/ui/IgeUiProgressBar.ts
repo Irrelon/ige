@@ -8,7 +8,7 @@ export class IgeUiProgressBar extends IgeUiElement {
 	private _bindDataObject?: IgeObject;
 	private _bindDataProperty?: string;
 
-	constructor() {
+	constructor () {
 		super();
 		this._min = 0;
 		this._max = 100;
@@ -23,41 +23,41 @@ export class IgeUiProgressBar extends IgeUiElement {
 
 	private _min: number;
 
-	get min() {
+	get min () {
 		return this._min;
 	}
 
-	set min(value) {
+	set min (value) {
 		this._min = value;
 	}
 
 	private _max: number;
 
-	get max() {
+	get max () {
 		return this._max;
 	}
 
-	set max(value) {
+	set max (value) {
 		this._max = value;
 	}
 
 	private _progress: number;
 
-	get progress() {
+	get progress () {
 		return this._progress;
 	}
 
-	set progress(value) {
+	set progress (value) {
 		this._progress = Math.max(this._min, Math.min(this._max, value));
 	}
 
 	private _barColor: string;
 
-	get barColor() {
+	get barColor () {
 		return this._barColor;
 	}
 
-	set barColor(value) {
+	set barColor (value) {
 		this._barColor = value;
 	}
 
@@ -69,35 +69,35 @@ export class IgeUiProgressBar extends IgeUiElement {
 		func?: (progress: number, max: number) => any;
 	};
 
-	get barText() {
+	get barText () {
 		return this._barText;
 	}
 
-	set barText({ pre, post, color, percent, func }) {
+	set barText ({ pre, post, color, percent, func }) {
 		this._barText = { pre, post, color, percent: percent !== undefined ? percent : false, func };
 	}
 
 	private _barBackColor?: string;
 
-	get barBackColor() {
+	get barBackColor () {
 		return this._barBackColor;
 	}
 
-	set barBackColor(value) {
+	set barBackColor (value) {
 		this._barBackColor = value;
 	}
 
 	private _barBorderColor?: string;
 
-	get barBorderColor() {
+	get barBorderColor () {
 		return this._barBorderColor;
 	}
 
-	set barBorderColor(value) {
+	set barBorderColor (value) {
 		this._barBorderColor = value;
 	}
 
-	set bindData({ obj, propName }: { obj: IgeObject; propName: string }) {
+	set bindData ({ obj, propName }: { obj: IgeObject; propName: string }) {
 		this._bindDataObject = obj;
 		this._bindDataProperty = propName;
 	}
@@ -173,7 +173,7 @@ export class IgeUiProgressBar extends IgeUiElement {
 		}
 	};
 
-	tick(ctx: IgeCanvasRenderingContext2d) {
+	tick (ctx: IgeCanvasRenderingContext2d) {
 		this._transformContext(ctx);
 		this.render(ctx);
 		super.tick(ctx, true);

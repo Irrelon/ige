@@ -24,33 +24,33 @@ import { b2MakeArray } from "./b2_settings.js";
 /// to increase the size of the stack.
 
 export class b2GrowableStack<T> {
-  public m_stack: Array<T | null> = [];
-  public m_count: number = 0;
+	public m_stack: Array<T | null> = [];
+	public m_count: number = 0;
 
-  constructor(N: number) {
-    this.m_stack = b2MakeArray(N, (index) => null);
-    this.m_count = 0;
-  }
+	constructor (N: number) {
+		this.m_stack = b2MakeArray(N, (index) => null);
+		this.m_count = 0;
+	}
 
-  public Reset(): this {
-    this.m_count = 0;
-    return this;
-  }
+	public Reset (): this {
+		this.m_count = 0;
+		return this;
+	}
 
-  public Push(element: T): void {
-    this.m_stack[this.m_count] = element;
-    this.m_count++;
-  }
+	public Push (element: T): void {
+		this.m_stack[this.m_count] = element;
+		this.m_count++;
+	}
 
-  public Pop(): T | null {
-    // DEBUG: b2Assert(this.m_count > 0);
-    this.m_count--;
-    const element: T | null = this.m_stack[this.m_count];
-    this.m_stack[this.m_count] = null;
-    return element;
-  }
+	public Pop (): T | null {
+		// DEBUG: b2Assert(this.m_count > 0);
+		this.m_count--;
+		const element: T | null = this.m_stack[this.m_count];
+		this.m_stack[this.m_count] = null;
+		return element;
+	}
 
-  public GetCount(): number {
-    return this.m_count;
-  }
+	public GetCount (): number {
+		return this.m_count;
+	}
 }

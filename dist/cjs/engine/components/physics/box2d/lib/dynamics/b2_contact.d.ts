@@ -1,9 +1,10 @@
-import { b2Transform, b2Sweep } from "../common/b2_math.js"
-import { b2Manifold, b2WorldManifold } from "../collision/b2_collision.js"
-import { b2Body } from "./b2_body.js"
-import { b2Fixture } from "./b2_fixture.js"
-import { b2Shape } from "../collision/b2_shape.js"
-import { b2ContactListener } from "./b2_world_callbacks.js"
+import type { b2Transform, b2Sweep } from "../common/b2_math.js"
+import type { b2WorldManifold } from "../collision/b2_collision.js"
+import { b2Manifold } from "../collision/b2_collision.js"
+import type { b2Body } from "./b2_body.js"
+import type { b2Fixture } from "./b2_fixture.js"
+import type { b2Shape } from "../collision/b2_shape.js"
+import type { b2ContactListener } from "./b2_world_callbacks.js"
 export declare function b2MixFriction(friction1: number, friction2: number): number;
 export declare function b2MixRestitution(restitution1: number, restitution2: number): number;
 export declare function b2MixRestitutionThreshold(threshold1: number, threshold2: number): number;

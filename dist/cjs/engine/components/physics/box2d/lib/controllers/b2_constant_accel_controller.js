@@ -28,8 +28,8 @@ class b2ConstantAccelController extends b2_controller_js_1.b2Controller {
     constructor() {
         super(...arguments);
         /**
-         * The acceleration to apply
-         */
+       * The acceleration to apply
+       */
         this.A = new b2_math_js_1.b2Vec2(0, 0);
     }
     Step(step) {

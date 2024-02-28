@@ -1,6 +1,7 @@
-import { b2Vec2, b2Transform, XY } from "../common/b2_math.js"
-import { b2AABB, b2RayCastInput, b2RayCastOutput } from "./b2_collision.js"
-import { b2DistanceProxy } from "./b2_distance.js"
+import type { b2Transform, XY } from "../common/b2_math.js"
+import { b2Vec2 } from "../common/b2_math.js"
+import type { b2AABB, b2RayCastInput, b2RayCastOutput } from "./b2_collision.js"
+import type { b2DistanceProxy } from "./b2_distance.js"
 export declare class b2MassData {
     mass: number;
     readonly center: b2Vec2;

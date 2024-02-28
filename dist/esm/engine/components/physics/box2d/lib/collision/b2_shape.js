@@ -15,7 +15,6 @@
 * misrepresented as being the original software.
 * 3. This notice may not be removed or altered from any source distribution.
 */
-// DEBUG: import { b2Assert } from "../common/b2_settings.js"
 import { b2Vec2 } from "../common/b2_math.js"
 /// This holds the mass data computed for a shape.
 export class b2MassData {

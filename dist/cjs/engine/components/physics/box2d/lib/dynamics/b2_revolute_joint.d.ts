@@ -1,8 +1,10 @@
-import { b2Vec2, b2Mat22, b2Rot, XY } from "../common/b2_math.js"
-import { b2Body } from "./b2_body.js"
-import { b2Joint, b2JointDef, b2IJointDef } from "./b2_joint.js"
-import { b2SolverData } from "./b2_time_step.js"
-import { b2Draw } from "../common/b2_draw.js"
+import type { XY } from "../common/b2_math.js"
+import { b2Vec2, b2Mat22, b2Rot } from "../common/b2_math.js"
+import type { b2Body } from "./b2_body.js"
+import type { b2IJointDef } from "./b2_joint.js"
+import { b2Joint, b2JointDef } from "./b2_joint.js"
+import type { b2SolverData } from "./b2_time_step.js"
+import type { b2Draw } from "../common/b2_draw.js"
 export interface b2IRevoluteJointDef extends b2IJointDef {
     localAnchorA?: XY;
     localAnchorB?: XY;

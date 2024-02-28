@@ -1,7 +1,8 @@
-import { b2Vec2, XY } from "../common/b2_math.js"
-import { b2Body } from "./b2_body.js"
-import { b2SolverData } from "./b2_time_step.js"
-import { b2Draw } from "../common/b2_draw.js"
+import type { XY } from "../common/b2_math.js"
+import { b2Vec2 } from "../common/b2_math.js"
+import type { b2Body } from "./b2_body.js"
+import type { b2SolverData } from "./b2_time_step.js"
+import type { b2Draw } from "../common/b2_draw.js"
 export declare enum b2JointType {
     e_unknownJoint = 0,
     e_revoluteJoint = 1,

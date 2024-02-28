@@ -18,7 +18,6 @@
 */
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.b2Shape = exports.b2ShapeType = exports.b2MassData = void 0;
-// DEBUG: import { b2Assert } from "../common/b2_settings.js"
 const b2_math_js_1 = require("../common/b2_math.js");
 /// This holds the mass data computed for a shape.
 class b2MassData {

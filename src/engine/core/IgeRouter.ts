@@ -19,7 +19,7 @@ export class IgeRouter extends IgeBaseClass {
 	 * @returns {this|IgeRouteDefinition|Object} - Returns this object when setting a route, returns the definition for a given path when getting a route, or returns all routes if no arguments
 	 * are provided.
 	 */
-	route(path?: string, definition?: IgeRouteDefinition) {
+	route (path?: string, definition?: IgeRouteDefinition) {
 		if (path !== undefined) {
 			if (definition !== undefined) {
 				this._routeLoad = this._routeLoad || {};
@@ -41,7 +41,7 @@ export class IgeRouter extends IgeBaseClass {
 	 * @param {...any} args Additional arguments to pass to the route handler(s).
 	 * @throws {Error} If the route defined for the given path does not exist.
 	 */
-	async go(path: string, ...args: any[]) {
+	async go (path: string, ...args: any[]) {
 		// Check for a route definition first
 		if (!this._routeLoad[path]) {
 			throw new Error("Attempt to navigate to undefined route: " + path);
@@ -123,7 +123,7 @@ export class IgeRouter extends IgeBaseClass {
 		this._currentRoutePath = path;
 	}
 
-	_pathJoin(path1?: string, path2?: string): string {
+	_pathJoin (path1?: string, path2?: string): string {
 		if (!path1 && !path2) return "";
 		if (path1 && !path2) return path1;
 		if (path2 && !path1) return path2;
@@ -131,9 +131,9 @@ export class IgeRouter extends IgeBaseClass {
 		return path1 + PATH_DELIMITER + path2;
 	}
 
-	_routeAdd(path: string) {}
+	_routeAdd (path: string) {}
 
-	_routeRemove(path?: string) {}
+	_routeRemove (path?: string) {}
 
-	_processQueue() {}
+	_processQueue () {}
 }

@@ -1,9 +1,11 @@
-import { b2Vec2, b2Rot, XY } from "../common/b2_math.js"
-import { b2Joint, b2JointDef, b2JointType, b2IJointDef } from "./b2_joint.js"
-import { b2PrismaticJoint } from "./b2_prismatic_joint.js"
-import { b2RevoluteJoint } from "./b2_revolute_joint.js"
-import { b2SolverData } from "./b2_time_step.js"
-import { b2Body } from "./b2_body.js"
+import type { XY } from "../common/b2_math.js"
+import { b2Vec2, b2Rot } from "../common/b2_math.js"
+import type { b2IJointDef } from "./b2_joint.js"
+import { b2Joint, b2JointDef, b2JointType } from "./b2_joint.js"
+import type { b2PrismaticJoint } from "./b2_prismatic_joint.js"
+import type { b2RevoluteJoint } from "./b2_revolute_joint.js"
+import type { b2SolverData } from "./b2_time_step.js"
+import type { b2Body } from "./b2_body.js"
 export interface b2IGearJointDef extends b2IJointDef {
     joint1: b2RevoluteJoint | b2PrismaticJoint;
     joint2: b2RevoluteJoint | b2PrismaticJoint;

@@ -1,8 +1,10 @@
-import { b2Vec2, b2Transform, XY } from "../common/b2_math.js"
-import { b2Color, RGBA } from "../common/b2_draw.js"
-import { b2Shape } from "../collision/b2_shape.js"
-import { b2ParticleFlag } from "./b2_particle.js"
-import { b2ParticleSystem } from "./b2_particle_system.js"
+import type { XY } from "../common/b2_math.js"
+import { b2Vec2, b2Transform } from "../common/b2_math.js"
+import type { RGBA } from "../common/b2_draw.js"
+import { b2Color } from "../common/b2_draw.js"
+import type { b2Shape } from "../collision/b2_shape.js"
+import type { b2ParticleFlag } from "./b2_particle.js"
+import type { b2ParticleSystem } from "./b2_particle_system.js"
 export declare enum b2ParticleGroupFlag {
     b2_none = 0,
     b2_solidParticleGroup = 1,

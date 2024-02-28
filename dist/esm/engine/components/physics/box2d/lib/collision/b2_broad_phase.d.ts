@@ -1,6 +1,7 @@
-import { b2Vec2, XY } from "../common/b2_math.js"
-import { b2AABB, b2RayCastInput } from "./b2_collision.js"
-import { b2TreeNode, b2DynamicTree } from "./b2_dynamic_tree.js"
+import type { b2Vec2, XY } from "../common/b2_math.js"
+import type { b2AABB, b2RayCastInput } from "./b2_collision.js"
+import type { b2TreeNode } from "./b2_dynamic_tree.js"
+import { b2DynamicTree } from "./b2_dynamic_tree.js"
 export declare class b2Pair<T> {
     proxyA: b2TreeNode<T>;
     proxyB: b2TreeNode<T>;

@@ -1,4 +1,5 @@
-import { b2Vec2, XY } from "../common/b2_math.js"
+import type { XY } from "../common/b2_math.js"
+import { b2Vec2 } from "../common/b2_math.js"
 import { b2GrowableStack } from "../common/b2_growable_stack.js"
 import { b2AABB, b2RayCastInput } from "./b2_collision.js"
 export declare class b2TreeNode<T> {

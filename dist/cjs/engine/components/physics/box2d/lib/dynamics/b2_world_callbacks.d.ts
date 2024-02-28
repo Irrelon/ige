@@ -1,10 +1,10 @@
-import { b2Vec2 } from "../common/b2_math.js"
-import { b2Manifold } from "../collision/b2_collision.js"
-import { b2Contact } from "./b2_contact.js"
-import { b2Joint } from "./b2_joint.js"
-import { b2Fixture } from "./b2_fixture.js"
-import { b2ParticleGroup } from "../particle/b2_particle_group.js"
-import { b2ParticleSystem, b2ParticleContact, b2ParticleBodyContact } from "../particle/b2_particle_system.js"
+import type { b2Vec2 } from "../common/b2_math.js"
+import type { b2Manifold } from "../collision/b2_collision.js"
+import type { b2Contact } from "./b2_contact.js"
+import type { b2Joint } from "./b2_joint.js"
+import type { b2Fixture } from "./b2_fixture.js"
+import type { b2ParticleGroup } from "../particle/b2_particle_group.js"
+import type { b2ParticleSystem, b2ParticleContact, b2ParticleBodyContact } from "../particle/b2_particle_system.js"
 export declare class b2DestructionListener {
     SayGoodbyeJoint(joint: b2Joint): void;
     SayGoodbyeFixture(fixture: b2Fixture): void;

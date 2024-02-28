@@ -1,5 +1,5 @@
 import { b2Vec2, b2Transform } from "../common/b2_math.js"
-import { b2Shape } from "./b2_shape.js"
+import type { b2Shape } from "./b2_shape.js"
 export declare class b2DistanceProxy {
     readonly m_buffer: b2Vec2[];
     m_vertices: b2Vec2[];

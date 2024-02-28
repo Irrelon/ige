@@ -1,10 +1,11 @@
 import { b2Vec2 } from "../common/b2_math.js"
-import { b2Contact } from "./b2_contact.js"
-import { b2ContactVelocityConstraint } from "./b2_contact_solver.js"
-import { b2Joint } from "./b2_joint.js"
-import { b2Body } from "./b2_body.js"
-import { b2TimeStep, b2Profile, b2Position, b2Velocity } from "./b2_time_step.js"
-import { b2ContactListener } from "./b2_world_callbacks.js"
+import type { b2Contact } from "./b2_contact.js"
+import type { b2ContactVelocityConstraint } from "./b2_contact_solver.js"
+import type { b2Joint } from "./b2_joint.js"
+import type { b2Body } from "./b2_body.js"
+import type { b2TimeStep, b2Profile } from "./b2_time_step.js"
+import { b2Position, b2Velocity } from "./b2_time_step.js"
+import type { b2ContactListener } from "./b2_world_callbacks.js"
 export declare class b2Island {
     m_listener: b2ContactListener;
     readonly m_bodies: b2Body[];

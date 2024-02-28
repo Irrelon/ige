@@ -2,23 +2,20 @@ import { igeFilters } from "@/export/exports";
 import type { IgeSmartFilter } from "@/export/exports";
 
 export const greyScaleHelper = function (imageData: ImageData): ImageData {
-	let arr, arrCount, i, r, g, b, v;
+	const data = imageData.data;
+	const dataLength = data.length;
 
-	arr = imageData.data;
-	arrCount = arr.length;
-
-	for (i = 0; i < arrCount; i += 4) {
+	for (let i = 0; i < dataLength; i += 4) {
 		// Extract pixel colour values
-		r = arr[i];
-		g = arr[i + 1];
-		b = arr[i + 2];
+		const red = data[i];
+		const green = data[i + 1];
+		const blue = data[i + 2];
 
-		// CIE luminance for the RGB
-		// The human eye is bad at seeing red and blue, so we de-emphasize them.
-		v = 0.2126 * r + 0.7152 * g + 0.0722 * b;
+		// CIE luminance for the RGB, de-emphasizing red and blue as human eye is bad at seeing them.
+		const grayscaleValue = 0.2126 * red + 0.7152 * green + 0.0722 * blue;
 
-		// Set the new pixel colour value
-		arr[i] = arr[i + 1] = arr[i + 2] = v;
+		// Set each color channel to the grayscale value
+		data[i] = data[i + 1] = data[i + 2] = grayscaleValue;
 	}
 
 	return imageData;

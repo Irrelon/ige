@@ -11,25 +11,25 @@ export declare class b2VoronoiDiagram {
     m_diagram: b2VoronoiDiagram_Generator[];
     constructor(generatorCapacity: number);
     /**
-     * Add a generator.
-     *
-     * @param center the position of the generator.
-     * @param tag a tag used to identify the generator in callback functions.
-     * @param necessary whether to callback for nodes associated with the generator.
-     */
+   * Add a generator.
+   *
+   * @param center the position of the generator.
+   * @param tag a tag used to identify the generator in callback functions.
+   * @param necessary whether to callback for nodes associated with the generator.
+   */
     AddGenerator(center: b2Vec2, tag: number, necessary: boolean): void;
     /**
-     * Generate the Voronoi diagram. It is rasterized with a given
-     * interval in the same range as the necessary generators exist.
-     *
-     * @param radius the interval of the diagram.
-     * @param margin margin for which the range of the diagram is extended.
-     */
+   * Generate the Voronoi diagram. It is rasterized with a given
+   * interval in the same range as the necessary generators exist.
+   *
+   * @param radius the interval of the diagram.
+   * @param margin margin for which the range of the diagram is extended.
+   */
     Generate(radius: number, margin: number): void;
     /**
-     * Enumerate all nodes that contain at least one necessary
-     * generator.
-     */
+   * Enumerate all nodes that contain at least one necessary
+   * generator.
+   */
     GetNodes(callback: b2VoronoiDiagram_NodeCallback): void;
 }
 /**

@@ -29,17 +29,17 @@ class b2GravityController extends b2_controller_js_1.b2Controller {
     constructor() {
         super(...arguments);
         /**
-         * Specifies the strength of the gravitiation force
-         */
+       * Specifies the strength of the gravitiation force
+       */
         this.G = 1;
         /**
-         * If true, gravity is proportional to r^-2, otherwise r^-1
-         */
+       * If true, gravity is proportional to r^-2, otherwise r^-1
+       */
         this.invSqr = true;
     }
     /**
-     * @see b2Controller::Step
-     */
+   * @see b2Controller::Step
+   */
     Step(step) {
         if (this.invSqr) {
             for (let i = this.m_bodyList; i; i = i.nextBody) {

@@ -20,29 +20,29 @@
 
 import { b2Controller } from "./b2_controller.js";
 import { b2Vec2 } from "../common/b2_math.js";
-import { b2TimeStep } from "../dynamics/b2_time_step.js";
-import { b2Draw } from "../common/b2_draw.js";
+import type { b2TimeStep } from "../dynamics/b2_time_step.js";
+import type { b2Draw } from "../common/b2_draw.js";
 
 /**
  * Applies a force every frame
  */
 export class b2ConstantForceController extends b2Controller {
-  /**
+	/**
    * The force to apply
    */
-  public readonly F = new b2Vec2(0, 0);
+	public readonly F = new b2Vec2(0, 0);
 
-  public Step(step: b2TimeStep) {
-    for (let i = this.m_bodyList; i; i = i.nextBody) {
-      const body = i.body;
-      if (!body.IsAwake()) {
-        continue;
-      }
-      body.ApplyForce(this.F, body.GetWorldCenter());
-    }
-  }
+	public Step (step: b2TimeStep) {
+		for (let i = this.m_bodyList; i; i = i.nextBody) {
+			const body = i.body;
+			if (!body.IsAwake()) {
+				continue;
+			}
+			body.ApplyForce(this.F, body.GetWorldCenter());
+		}
+	}
 
-  public Draw(draw: b2Draw) {}
+	public Draw (draw: b2Draw) {}
 }
 
 // #endif

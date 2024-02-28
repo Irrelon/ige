@@ -18,7 +18,6 @@
  */
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.b2BuoyancyController = void 0;
-// #if B2_ENABLE_CONTROLLER
 const b2_controller_js_1 = require("./b2_controller.js");
 const b2_math_js_1 = require("../common/b2_math.js");
 const b2_settings_js_1 = require("../common/b2_settings.js");
@@ -31,41 +30,41 @@ class b2BuoyancyController extends b2_controller_js_1.b2Controller {
     constructor() {
         super(...arguments);
         /**
-         * The outer surface normal
-         */
+       * The outer surface normal
+       */
         this.normal = new b2_math_js_1.b2Vec2(0, 1);
         /**
-         * The height of the fluid surface along the normal
-         */
+       * The height of the fluid surface along the normal
+       */
         this.offset = 0;
         /**
-         * The fluid density
-         */
+       * The fluid density
+       */
         this.density = 0;
         /**
-         * Fluid velocity, for drag calculations
-         */
+       * Fluid velocity, for drag calculations
+       */
         this.velocity = new b2_math_js_1.b2Vec2(0, 0);
         /**
-         * Linear drag co-efficient
-         */
+       * Linear drag co-efficient
+       */
         this.linearDrag = 0;
         /**
-         * Angular drag co-efficient
-         */
+       * Angular drag co-efficient
+       */
         this.angularDrag = 0;
         /**
-         * If false, bodies are assumed to be uniformly dense, otherwise
-         * use the shapes densities
-         */
+       * If false, bodies are assumed to be uniformly dense, otherwise
+       * use the shapes densities
+       */
         this.useDensity = false; //False by default to prevent a gotcha
         /**
-         * If true, gravity is taken from the world instead of the
-         */
+       * If true, gravity is taken from the world instead of the
+       */
         this.useWorldGravity = true;
         /**
-         * Gravity vector, if the world's gravity is not used
-         */
+       * Gravity vector, if the world's gravity is not used
+       */
         this.gravity = new b2_math_js_1.b2Vec2(0, 0);
     }
     Step(step) {

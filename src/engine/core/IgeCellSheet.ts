@@ -16,7 +16,7 @@ export class IgeCellSheet extends IgeTexture {
 	_cellHeight: number = 0;
 	_sheetImage?: IgeImage;
 
-	constructor(
+	constructor (
 		id?: string,
 		urlOrObject?: string | IgeSmartTexture,
 		horizontalCells: number = 1,
@@ -28,7 +28,7 @@ export class IgeCellSheet extends IgeTexture {
 		this.verticalCells(verticalCells);
 	}
 
-	_textureLoaded() {
+	_textureLoaded () {
 		if (this.image) {
 			// Store the cell sheet image
 			this._sheetImage = this.image;
@@ -46,7 +46,7 @@ export class IgeCellSheet extends IgeTexture {
 	 * Returns the total number of cells in the cell sheet.
 	 * @return {number}
 	 */
-	cellCount() {
+	cellCount () {
 		return this.horizontalCells() * this.verticalCells();
 	}
 
@@ -56,7 +56,7 @@ export class IgeCellSheet extends IgeTexture {
 	 */
 	horizontalCells(val: number): this;
 	horizontalCells(): number;
-	horizontalCells(val?: number) {
+	horizontalCells (val?: number) {
 		if (val !== undefined) {
 			this._cellColumns = val;
 			return this;
@@ -71,7 +71,7 @@ export class IgeCellSheet extends IgeTexture {
 	 */
 	verticalCells(val: number): this;
 	verticalCells(): number;
-	verticalCells(val?: number) {
+	verticalCells (val?: number) {
 		if (val !== undefined) {
 			this._cellRows = val;
 			return this;
@@ -86,7 +86,7 @@ export class IgeCellSheet extends IgeTexture {
 	 * is first indexed at 1 not 0.
 	 * @private
 	 */
-	_applyCells() {
+	_applyCells () {
 		// Do we have an image to use?
 		if (!this.image) {
 			return;
@@ -136,7 +136,7 @@ export class IgeCellSheet extends IgeTexture {
 	 * evaluated will reproduce this object.
 	 * @return {string}
 	 */
-	stringify() {
+	stringify () {
 		const str =
 			"new " +
 			this.classId +

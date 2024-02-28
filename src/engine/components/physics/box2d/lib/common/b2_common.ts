@@ -18,15 +18,15 @@
 
 // import { b2_lengthUnitsPerMeter } from "./b2_settings.js";
 
-export function b2Assert(condition: boolean, ...args: any[]): asserts condition {
-  if (!condition) {
-    // debugger;
-    throw new Error(...args);
-  }
+export function b2Assert (condition: boolean, ...args: any[]): asserts condition {
+	if (!condition) {
+		// debugger;
+		throw new Error(...args);
+	}
 }
 
-export function b2Maybe<T>(value: T | undefined, def: T): T {
-  return value !== undefined ? value : def;
+export function b2Maybe<T> (value: T | undefined, def: T): T {
+	return value !== undefined ? value : def;
 }
 
 export const b2_maxFloat: number = 1E+37; // FLT_MAX instead of Number.MAX_VALUE;
@@ -183,19 +183,19 @@ export const b2_angularSleepTolerance: number = 2 / 180 * b2_pi;
 /// Version numbering scheme.
 /// See http://en.wikipedia.org/wiki/Software_versioning
 export class b2Version {
-  public major: number = 0; ///< significant changes
-  public minor: number = 0; ///< incremental changes
-  public revision: number = 0; ///< bug fixes
+	public major: number = 0; ///< significant changes
+	public minor: number = 0; ///< incremental changes
+	public revision: number = 0; ///< bug fixes
 
-  constructor(major: number = 0, minor: number = 0, revision: number = 0) {
-    this.major = major;
-    this.minor = minor;
-    this.revision = revision;
-  }
+	constructor (major: number = 0, minor: number = 0, revision: number = 0) {
+		this.major = major;
+		this.minor = minor;
+		this.revision = revision;
+	}
 
-  public toString(): string {
-    return this.major + "." + this.minor + "." + this.revision;
-  }
+	public toString (): string {
+		return this.major + "." + this.minor + "." + this.revision;
+	}
 }
 
 /// Current version.
@@ -204,34 +204,34 @@ export const b2_version: b2Version = new b2Version(2, 4, 1);
 export const b2_branch: string = "master";
 export const b2_commit: string = "9ebbbcd960ad424e03e5de6e66a40764c16f51bc";
 
-export function b2ParseInt(v: string): number {
-  return parseInt(v, 10);
+export function b2ParseInt (v: string): number {
+	return parseInt(v, 10);
 }
 
-export function b2ParseUInt(v: string): number {
-  return Math.abs(parseInt(v, 10));
+export function b2ParseUInt (v: string): number {
+	return Math.abs(parseInt(v, 10));
 }
 
-export function b2MakeArray<T>(length: number, init: (i: number) => T): T[] {
-  const a: T[] = new Array<T>(length);
-  for (let i: number = 0; i < length; ++i) {
-    a[i] = init(i);
-  }
-  return a;
+export function b2MakeArray<T> (length: number, init: (i: number) => T): T[] {
+	const a: T[] = new Array<T>(length);
+	for (let i: number = 0; i < length; ++i) {
+		a[i] = init(i);
+	}
+	return a;
 }
 
-export function b2MakeNullArray<T>(length: number): Array<T | null> {
-  const a: Array<T | null> = new Array<T | null>(length);
-  for (let i: number = 0; i < length; ++i) {
-    a[i] = null;
-  }
-  return a;
+export function b2MakeNullArray<T> (length: number): Array<T | null> {
+	const a: Array<T | null> = new Array<T | null>(length);
+	for (let i: number = 0; i < length; ++i) {
+		a[i] = null;
+	}
+	return a;
 }
 
-export function b2MakeNumberArray(length: number, init: number = 0): number[] {
-  const a: number[] = new Array<number>(length);
-  for (let i: number = 0; i < length; ++i) {
-    a[i] = init;
-  }
-  return a;
+export function b2MakeNumberArray (length: number, init: number = 0): number[] {
+	const a: number[] = new Array<number>(length);
+	for (let i: number = 0; i < length; ++i) {
+		a[i] = init;
+	}
+	return a;
 }

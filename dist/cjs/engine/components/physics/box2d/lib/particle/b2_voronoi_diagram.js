@@ -37,12 +37,12 @@ class b2VoronoiDiagram {
         this.m_generatorCapacity = generatorCapacity;
     }
     /**
-     * Add a generator.
-     *
-     * @param center the position of the generator.
-     * @param tag a tag used to identify the generator in callback functions.
-     * @param necessary whether to callback for nodes associated with the generator.
-     */
+   * Add a generator.
+   *
+   * @param center the position of the generator.
+   * @param tag a tag used to identify the generator in callback functions.
+   * @param necessary whether to callback for nodes associated with the generator.
+   */
     AddGenerator(center, tag, necessary) {
         // DEBUG: b2Assert(this.m_generatorCount < this.m_generatorCapacity);
         const g = this.m_generatorBuffer[this.m_generatorCount++];
@@ -51,12 +51,12 @@ class b2VoronoiDiagram {
         g.necessary = necessary;
     }
     /**
-     * Generate the Voronoi diagram. It is rasterized with a given
-     * interval in the same range as the necessary generators exist.
-     *
-     * @param radius the interval of the diagram.
-     * @param margin margin for which the range of the diagram is extended.
-     */
+   * Generate the Voronoi diagram. It is rasterized with a given
+   * interval in the same range as the necessary generators exist.
+   *
+   * @param radius the interval of the diagram.
+   * @param margin margin for which the range of the diagram is extended.
+   */
     Generate(radius, margin) {
         const inverseRadius = 1 / radius;
         const lower = new b2_math_js_1.b2Vec2(+b2_settings_js_1.b2_maxFloat, +b2_settings_js_1.b2_maxFloat);
@@ -176,9 +176,9 @@ class b2VoronoiDiagram {
         }
     }
     /**
-     * Enumerate all nodes that contain at least one necessary
-     * generator.
-     */
+   * Enumerate all nodes that contain at least one necessary
+   * generator.
+   */
     GetNodes(callback) {
         for (let y = 0; y < this.m_countY - 1; y++) {
             for (let x = 0; x < this.m_countX - 1; x++) {

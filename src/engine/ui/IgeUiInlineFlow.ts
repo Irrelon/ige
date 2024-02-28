@@ -5,7 +5,7 @@ import type { IgeCanvasRenderingContext2d } from "@/export/exports";
 export class IgeUiInlineFlow extends IgeUiElement {
 	classId = "IgeUiInlineFlow";
 
-	tick(ctx: IgeCanvasRenderingContext2d, dontTransform = false) {
+	tick (ctx: IgeCanvasRenderingContext2d, dontTransform = false) {
 		// Loop children and re-position them
 		const arr = this._children as IgeUiElement[];
 		const arrCount = arr.length;

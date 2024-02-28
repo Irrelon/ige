@@ -17,20 +17,21 @@
 */
 
 // DEBUG: import { b2Assert } from "../common/b2_settings.js";
-import { b2Vec2, b2Transform, XY } from "../common/b2_math.js";
-import { b2AABB, b2RayCastInput, b2RayCastOutput } from "./b2_collision.js";
-import { b2DistanceProxy } from "./b2_distance.js";
+import type { b2Transform, XY } from "../common/b2_math.js";
+import { b2Vec2 } from "../common/b2_math.js";
+import type { b2AABB, b2RayCastInput, b2RayCastOutput } from "./b2_collision.js";
+import type { b2DistanceProxy } from "./b2_distance.js";
 
 /// This holds the mass data computed for a shape.
 export class b2MassData {
-  /// The mass of the shape, usually in kilograms.
-  public mass: number = 0;
+	/// The mass of the shape, usually in kilograms.
+	public mass: number = 0;
 
-  /// The position of the shape's centroid relative to the shape's origin.
-  public readonly center: b2Vec2 = new b2Vec2(0, 0);
+	/// The position of the shape's centroid relative to the shape's origin.
+	public readonly center: b2Vec2 = new b2Vec2(0, 0);
 
-  /// The rotational inertia of the shape about the local origin.
-  public I: number = 0;
+	/// The rotational inertia of the shape about the local origin.
+	public I: number = 0;
 }
 
 export enum b2ShapeType {
@@ -46,30 +47,30 @@ export enum b2ShapeType {
 /// Shapes used for simulation in b2World are created automatically when a b2Fixture
 /// is created. Shapes may encapsulate a one or more child shapes.
 export abstract class b2Shape {
-  public readonly m_type: b2ShapeType = b2ShapeType.e_unknown;
+	public readonly m_type: b2ShapeType = b2ShapeType.e_unknown;
 
 	/// Radius of a shape. For polygonal shapes this must be b2_polygonRadius. There is no support for
 	/// making rounded polygons.
-  public m_radius: number = 0;
+	public m_radius: number = 0;
 
-  constructor(type: b2ShapeType, radius: number) {
-    this.m_type = type;
-    this.m_radius = radius;
-  }
+	constructor (type: b2ShapeType, radius: number) {
+		this.m_type = type;
+		this.m_radius = radius;
+	}
 
   /// Clone the concrete shape.
   public abstract Clone(): b2Shape;
 
-  public Copy(other: b2Shape): b2Shape {
-    // DEBUG: b2Assert(this.m_type === other.m_type);
-    this.m_radius = other.m_radius;
-    return this;
+  public Copy (other: b2Shape): b2Shape {
+  	// DEBUG: b2Assert(this.m_type === other.m_type);
+  	this.m_radius = other.m_radius;
+  	return this;
   }
 
   /// Get the type of this shape. You can use this to down cast to the concrete shape.
   /// @return the shape type.
-  public GetType(): b2ShapeType {
-    return this.m_type;
+  public GetType (): b2ShapeType {
+  	return this.m_type;
   }
 
   /// Get the number of child primitives.

@@ -1,7 +1,7 @@
 import { b2BroadPhase } from "../collision/b2_broad_phase.js"
-import { b2Contact } from "./b2_contact.js"
+import type { b2Contact } from "./b2_contact.js"
 import { b2ContactFactory } from "./b2_contact_factory.js"
-import { b2FixtureProxy } from "./b2_fixture.js"
+import type { b2FixtureProxy } from "./b2_fixture.js"
 import { b2ContactFilter, b2ContactListener } from "./b2_world_callbacks.js"
 export declare class b2ContactManager {
     readonly m_broadPhase: b2BroadPhase<b2FixtureProxy>;

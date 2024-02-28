@@ -387,37 +387,37 @@ export class b2Island {
             }
         }
         /*
-        #if 0
-          // Is the new position really safe?
-          for (int32 i = 0; i < this.m_contactCount; ++i) {
-            b2Contact* c = this.m_contacts[i];
-            b2Fixture* fA = c.GetFixtureA();
-            b2Fixture* fB = c.GetFixtureB();
-      
-            b2Body* bA = fA.GetBody();
-            b2Body* bB = fB.GetBody();
-      
-            int32 indexA = c.GetChildIndexA();
-            int32 indexB = c.GetChildIndexB();
-      
-            b2DistanceInput input;
-            input.proxyA.Set(fA.GetShape(), indexA);
-            input.proxyB.Set(fB.GetShape(), indexB);
-            input.transformA = bA.GetTransform();
-            input.transformB = bB.GetTransform();
-            input.useRadii = false;
-      
-            b2DistanceOutput output;
-            b2SimplexCache cache;
-            cache.count = 0;
-            b2Distance(&output, &cache, &input);
-      
-            if (output.distance === 0 || cache.count === 3) {
-              cache.count += 0;
-            }
-          }
-        #endif
-        */
+  #if 0
+    // Is the new position really safe?
+    for (int32 i = 0; i < this.m_contactCount; ++i) {
+      b2Contact* c = this.m_contacts[i];
+      b2Fixture* fA = c.GetFixtureA();
+      b2Fixture* fB = c.GetFixtureB();
+
+      b2Body* bA = fA.GetBody();
+      b2Body* bB = fB.GetBody();
+
+      int32 indexA = c.GetChildIndexA();
+      int32 indexB = c.GetChildIndexB();
+
+      b2DistanceInput input;
+      input.proxyA.Set(fA.GetShape(), indexA);
+      input.proxyB.Set(fB.GetShape(), indexB);
+      input.transformA = bA.GetTransform();
+      input.transformB = bB.GetTransform();
+      input.useRadii = false;
+
+      b2DistanceOutput output;
+      b2SimplexCache cache;
+      cache.count = 0;
+      b2Distance(&output, &cache, &input);
+
+      if (output.distance === 0 || cache.count === 3) {
+        cache.count += 0;
+      }
+    }
+  #endif
+  */
         // Leap of faith to new safe state.
         this.m_bodies[toiIndexA].m_sweep.c0.Copy(this.m_positions[toiIndexA].c);
         this.m_bodies[toiIndexA].m_sweep.a0 = this.m_positions[toiIndexA].a;

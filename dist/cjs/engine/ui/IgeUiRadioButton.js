@@ -17,34 +17,37 @@ class IgeUiRadioButton extends exports_1.IgeUiButton {
         }
         return this._uiRadioGroup;
     }
+    _deselectChildren(parent) {
+        if (!parent)
+            return;
+        // Loop the parent object's children, find any
+        // radio buttons that belong to this radio group
+        // and then deselect them
+        const childrenArr = parent._children;
+        let arrCount = childrenArr.length, item;
+        while (arrCount--) {
+            item = childrenArr[arrCount];
+            if (item === this)
+                continue;
+            if (item._uiRadioGroup !== this._uiRadioGroup)
+                continue;
+            // The item is part of the same radio group!
+            if (!item._uiSelected)
+                continue;
+            // The item is selected so un-select it!
+            item._uiSelected = false;
+            // Fire the item's onDeSelect method
+            if (!item._uiOnDeSelect)
+                continue;
+            item._uiOnDeSelect();
+        }
+    }
     select(val) {
         if (val !== undefined) {
             this._uiOnSelect = val;
             return this;
         }
-        if (this._parent) {
-            // Loop the parent object's children, find any
-            // radio buttons that belong to this radio group
-            // and then deselect them
-            const arr = this._parent._children;
-            let arrCount = arr.length, item;
-            while (arrCount--) {
-                item = arr[arrCount];
-                if (item !== this) {
-                    if (item._uiRadioGroup === this._uiRadioGroup) {
-                        // The item is part of the same radio group!
-                        if (item._uiSelected) {
-                            // The item is selected so un-select it!
-                            item._uiSelected = false;
-                            // Fire the item's onDeSelect method
-                            if (item._uiOnDeSelect) {
-                                item._uiOnDeSelect();
-                            }
-                        }
-                    }
-                }
-            }
-        }
+        this._deselectChildren(this._parent);
         // Now set this item as selected
         this._uiSelected = true;
         // Fire this item's onSelect method

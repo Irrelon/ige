@@ -15,7 +15,6 @@
  * misrepresented as being the original software.
  * 3. This notice may not be removed or altered from any source distribution.
  */
-// #if B2_ENABLE_CONTROLLER
 import { b2Controller } from "./b2_controller.js"
 import { b2Vec2 } from "../common/b2_math.js"
 import { b2_epsilon } from "../common/b2_settings.js"
@@ -26,41 +25,41 @@ import { b2Color } from "../common/b2_draw.js"
  */
 export class b2BuoyancyController extends b2Controller {
     /**
-     * The outer surface normal
-     */
+   * The outer surface normal
+   */
     normal = new b2Vec2(0, 1);
     /**
-     * The height of the fluid surface along the normal
-     */
+   * The height of the fluid surface along the normal
+   */
     offset = 0;
     /**
-     * The fluid density
-     */
+   * The fluid density
+   */
     density = 0;
     /**
-     * Fluid velocity, for drag calculations
-     */
+   * Fluid velocity, for drag calculations
+   */
     velocity = new b2Vec2(0, 0);
     /**
-     * Linear drag co-efficient
-     */
+   * Linear drag co-efficient
+   */
     linearDrag = 0;
     /**
-     * Angular drag co-efficient
-     */
+   * Angular drag co-efficient
+   */
     angularDrag = 0;
     /**
-     * If false, bodies are assumed to be uniformly dense, otherwise
-     * use the shapes densities
-     */
+   * If false, bodies are assumed to be uniformly dense, otherwise
+   * use the shapes densities
+   */
     useDensity = false; //False by default to prevent a gotcha
     /**
-     * If true, gravity is taken from the world instead of the
-     */
+   * If true, gravity is taken from the world instead of the
+   */
     useWorldGravity = true;
     /**
-     * Gravity vector, if the world's gravity is not used
-     */
+   * Gravity vector, if the world's gravity is not used
+   */
     gravity = new b2Vec2(0, 0);
     Step(step) {
         if (!this.m_bodyList) {

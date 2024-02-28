@@ -1,10 +1,12 @@
-import { b2Vec2, b2Transform, b2Sweep, XY } from "../common/b2_math.js"
+import type { XY } from "../common/b2_math.js"
+import { b2Vec2, b2Transform, b2Sweep } from "../common/b2_math.js"
 import { b2Shape, b2MassData } from "../collision/b2_shape.js"
-import { b2ContactEdge } from "./b2_contact.js"
-import { b2JointEdge } from "./b2_joint.js"
-import { b2Fixture, b2IFixtureDef } from "./b2_fixture.js"
-import { b2World } from "./b2_world.js"
-import { b2ControllerEdge } from "../controllers/b2_controller.js"
+import type { b2ContactEdge } from "./b2_contact.js"
+import type { b2JointEdge } from "./b2_joint.js"
+import type { b2IFixtureDef } from "./b2_fixture.js"
+import { b2Fixture } from "./b2_fixture.js"
+import type { b2World } from "./b2_world.js"
+import type { b2ControllerEdge } from "../controllers/b2_controller.js"
 export declare enum b2BodyType {
     b2_unknown = -1,
     b2_staticBody = 0,

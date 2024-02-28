@@ -302,30 +302,30 @@ function b2TimeOfImpact(output, input) {
         const fcn = b2TimeOfImpact_s_fcn;
         fcn.Initialize(cache, proxyA, sweepA, proxyB, sweepB, t1);
         /*
-        #if 0
-            // Dump the curve seen by the root finder {
-              const int32 N = 100;
-              float32 dx = 1.0f / N;
-              float32 xs[N+1];
-              float32 fs[N+1];
-        
-              float32 x = 0.0f;
-        
-              for (int32 i = 0; i <= N; ++i) {
-                sweepA.GetTransform(&xfA, x);
-                sweepB.GetTransform(&xfB, x);
-                float32 f = fcn.Evaluate(xfA, xfB) - target;
-        
-                printf("%g %g\n", x, f);
-        
-                xs[i] = x;
-                fs[i] = f;
-        
-                x += dx;
-              }
-            }
-        #endif
-        */
+#if 0
+    // Dump the curve seen by the root finder {
+      const int32 N = 100;
+      float32 dx = 1.0f / N;
+      float32 xs[N+1];
+      float32 fs[N+1];
+
+      float32 x = 0.0f;
+
+      for (int32 i = 0; i <= N; ++i) {
+        sweepA.GetTransform(&xfA, x);
+        sweepB.GetTransform(&xfB, x);
+        float32 f = fcn.Evaluate(xfA, xfB) - target;
+
+        printf("%g %g\n", x, f);
+
+        xs[i] = x;
+        fs[i] = f;
+
+        x += dx;
+      }
+    }
+#endif
+*/
         // Compute the TOI on the separating axis. We do this by successively
         // resolving the deepest point. This loop is bounded by the number of vertices.
         let done = false;

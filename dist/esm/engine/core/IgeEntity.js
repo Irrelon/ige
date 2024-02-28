@@ -939,7 +939,7 @@ export class IgeEntity extends IgeObject {
     /**
      * Processes the actions required each render frame.
      * @param {CanvasRenderingContext2D} ctx The canvas context to render to.
-     * @param {Boolean} [dontTransform] If set to true, the tick method will
+     * @param {boolean} [dontTransform=false] If set to true, the tick method will
      * not transform the context based on the entity's matrices. This is useful
      * if you have extended the class and want to process down the inheritance
      * chain but have already transformed the entity in a previous overloaded

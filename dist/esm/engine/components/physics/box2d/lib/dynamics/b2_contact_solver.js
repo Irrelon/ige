@@ -524,10 +524,10 @@ export class b2ContactSolver {
                 // b -= b2Mul(vc->K, a);
                 b.SelfSub(b2Mat22.MulMV(vc.K, a, b2Vec2.s_t0));
                 /*
-                #if B2_DEBUG_SOLVER === 1
-                const k_errorTol: number = 0.001;
-                #endif
-                */
+        #if B2_DEBUG_SOLVER === 1
+        const k_errorTol: number = 0.001;
+        #endif
+        */
                 for (;;) {
                     //
                     // Case 1: vn = 0
@@ -562,19 +562,19 @@ export class b2ContactSolver {
                         cp1.normalImpulse = x.x;
                         cp2.normalImpulse = x.y;
                         /*
-                        #if B2_DEBUG_SOLVER === 1
-                        // Postconditions
-                        dv1 = vB + b2Cross(wB, cp1->rB) - vA - b2Cross(wA, cp1->rA);
-                        dv2 = vB + b2Cross(wB, cp2->rB) - vA - b2Cross(wA, cp2->rA);
-            
-                        // Compute normal velocity
-                        vn1 = b2Dot(dv1, normal);
-                        vn2 = b2Dot(dv2, normal);
-            
-                        b2Assert(b2Abs(vn1 - cp1->velocityBias) < k_errorTol);
-                        b2Assert(b2Abs(vn2 - cp2->velocityBias) < k_errorTol);
-                        #endif
-                        */
+            #if B2_DEBUG_SOLVER === 1
+            // Postconditions
+            dv1 = vB + b2Cross(wB, cp1->rB) - vA - b2Cross(wA, cp1->rA);
+            dv2 = vB + b2Cross(wB, cp2->rB) - vA - b2Cross(wA, cp2->rA);
+
+            // Compute normal velocity
+            vn1 = b2Dot(dv1, normal);
+            vn2 = b2Dot(dv2, normal);
+
+            b2Assert(b2Abs(vn1 - cp1->velocityBias) < k_errorTol);
+            b2Assert(b2Abs(vn2 - cp2->velocityBias) < k_errorTol);
+            #endif
+            */
                         break;
                     }
                     //
@@ -609,16 +609,16 @@ export class b2ContactSolver {
                         cp1.normalImpulse = x.x;
                         cp2.normalImpulse = x.y;
                         /*
-                        #if B2_DEBUG_SOLVER === 1
-                        // Postconditions
-                        dv1 = vB + b2Cross(wB, cp1->rB) - vA - b2Cross(wA, cp1->rA);
-            
-                        // Compute normal velocity
-                        vn1 = b2Dot(dv1, normal);
-            
-                        b2Assert(b2Abs(vn1 - cp1->velocityBias) < k_errorTol);
-                        #endif
-                        */
+            #if B2_DEBUG_SOLVER === 1
+            // Postconditions
+            dv1 = vB + b2Cross(wB, cp1->rB) - vA - b2Cross(wA, cp1->rA);
+
+            // Compute normal velocity
+            vn1 = b2Dot(dv1, normal);
+
+            b2Assert(b2Abs(vn1 - cp1->velocityBias) < k_errorTol);
+            #endif
+            */
                         break;
                     }
                     //
@@ -653,16 +653,16 @@ export class b2ContactSolver {
                         cp1.normalImpulse = x.x;
                         cp2.normalImpulse = x.y;
                         /*
-                        #if B2_DEBUG_SOLVER === 1
-                        // Postconditions
-                        dv2 = vB + b2Cross(wB, cp2->rB) - vA - b2Cross(wA, cp2->rA);
-            
-                        // Compute normal velocity
-                        vn2 = b2Dot(dv2, normal);
-            
-                        b2Assert(b2Abs(vn2 - cp2->velocityBias) < k_errorTol);
-                        #endif
-                        */
+            #if B2_DEBUG_SOLVER === 1
+            // Postconditions
+            dv2 = vB + b2Cross(wB, cp2->rB) - vA - b2Cross(wA, cp2->rA);
+
+            // Compute normal velocity
+            vn2 = b2Dot(dv2, normal);
+
+            b2Assert(b2Abs(vn2 - cp2->velocityBias) < k_errorTol);
+            #endif
+            */
                         break;
                     }
                     //

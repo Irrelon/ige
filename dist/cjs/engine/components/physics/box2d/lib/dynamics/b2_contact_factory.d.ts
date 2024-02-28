@@ -1,5 +1,5 @@
-import { b2Contact } from "./b2_contact.js"
-import { b2Fixture } from "./b2_fixture.js"
+import type { b2Contact } from "./b2_contact.js"
+import type { b2Fixture } from "./b2_fixture.js"
 export declare class b2ContactRegister {
     pool: b2Contact[];
     createFcn: (() => b2Contact) | null;

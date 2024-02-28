@@ -28,8 +28,8 @@ class b2ConstantForceController extends b2_controller_js_1.b2Controller {
     constructor() {
         super(...arguments);
         /**
-         * The force to apply
-         */
+       * The force to apply
+       */
         this.F = new b2_math_js_1.b2Vec2(0, 0);
     }
     Step(step) {

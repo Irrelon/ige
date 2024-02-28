@@ -19,9 +19,11 @@
 // #if B2_ENABLE_PARTICLE
 
 import { b2_invalidParticleIndex } from "../common/b2_settings.js";
-import { b2Clamp, b2Vec2, XY } from "../common/b2_math.js";
-import { b2Color, RGBA } from "../common/b2_draw.js";
-import { b2ParticleGroup } from "./b2_particle_group.js";
+import type { XY } from "../common/b2_math.js";
+import { b2Clamp, b2Vec2 } from "../common/b2_math.js";
+import type { RGBA } from "../common/b2_draw.js";
+import { b2Color } from "../common/b2_draw.js";
+import type { b2ParticleGroup } from "./b2_particle_group.js";
 
 /**
  * The particle type. Can be combined with the | operator.
@@ -85,28 +87,28 @@ export interface b2IParticleDef {
 }
 
 export class b2ParticleDef implements b2IParticleDef {
-  public flags: b2ParticleFlag = 0;
-  public readonly position: b2Vec2 = new b2Vec2();
-  public readonly velocity: b2Vec2 = new b2Vec2();
-  public readonly color: b2Color = new b2Color(0, 0, 0, 0);
-  public lifetime: number = 0.0;
-  public userData: any = null;
-  public group: b2ParticleGroup | null = null;
+	public flags: b2ParticleFlag = 0;
+	public readonly position: b2Vec2 = new b2Vec2();
+	public readonly velocity: b2Vec2 = new b2Vec2();
+	public readonly color: b2Color = new b2Color(0, 0, 0, 0);
+	public lifetime: number = 0.0;
+	public userData: any = null;
+	public group: b2ParticleGroup | null = null;
 }
 
-export function b2CalculateParticleIterations(gravity: number, radius: number, timeStep: number): number {
-  // In some situations you may want more particle iterations than this,
-  // but to avoid excessive cycle cost, don't recommend more than this.
-  const B2_MAX_RECOMMENDED_PARTICLE_ITERATIONS = 8;
-  const B2_RADIUS_THRESHOLD = 0.01;
-  const iterations = Math.ceil(Math.sqrt(gravity / (B2_RADIUS_THRESHOLD * radius)) * timeStep);
-  return b2Clamp(iterations, 1, B2_MAX_RECOMMENDED_PARTICLE_ITERATIONS);
+export function b2CalculateParticleIterations (gravity: number, radius: number, timeStep: number): number {
+	// In some situations you may want more particle iterations than this,
+	// but to avoid excessive cycle cost, don't recommend more than this.
+	const B2_MAX_RECOMMENDED_PARTICLE_ITERATIONS = 8;
+	const B2_RADIUS_THRESHOLD = 0.01;
+	const iterations = Math.ceil(Math.sqrt(gravity / (B2_RADIUS_THRESHOLD * radius)) * timeStep);
+	return b2Clamp(iterations, 1, B2_MAX_RECOMMENDED_PARTICLE_ITERATIONS);
 }
 
 export class b2ParticleHandle {
-  public m_index: number = b2_invalidParticleIndex;
-  public GetIndex(): number { return this.m_index; }
-  public SetIndex(index: number): void { this.m_index = index; }
+	public m_index: number = b2_invalidParticleIndex;
+	public GetIndex (): number { return this.m_index; }
+	public SetIndex (index: number): void { this.m_index = index; }
 }
 
 // #endif

@@ -1,8 +1,11 @@
-import { b2Vec2, b2Transform, XY } from "../common/b2_math.js"
-import { b2AABB, b2RayCastInput, b2RayCastOutput } from "../collision/b2_collision.js"
-import { b2TreeNode } from "../collision/b2_dynamic_tree.js"
-import { b2Shape, b2ShapeType, b2MassData } from "../collision/b2_shape.js"
-import { b2Body } from "./b2_body.js"
+import type { b2Transform, XY } from "../common/b2_math.js"
+import { b2Vec2 } from "../common/b2_math.js"
+import type { b2RayCastInput, b2RayCastOutput } from "../collision/b2_collision.js"
+import { b2AABB } from "../collision/b2_collision.js"
+import type { b2TreeNode } from "../collision/b2_dynamic_tree.js"
+import type { b2Shape, b2ShapeType } from "../collision/b2_shape.js"
+import { b2MassData } from "../collision/b2_shape.js"
+import type { b2Body } from "./b2_body.js"
 export interface b2IFilter {
     categoryBits: number;
     maskBits: number;

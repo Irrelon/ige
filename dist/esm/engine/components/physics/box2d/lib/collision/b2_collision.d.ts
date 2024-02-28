@@ -1,5 +1,6 @@
-import { b2Vec2, b2Transform, XY } from "../common/b2_math.js"
-import { b2Shape } from "./b2_shape.js"
+import type { XY } from "../common/b2_math.js"
+import { b2Vec2, b2Transform } from "../common/b2_math.js"
+import type { b2Shape } from "./b2_shape.js"
 export declare enum b2ContactFeatureType {
     e_vertex = 0,
     e_face = 1

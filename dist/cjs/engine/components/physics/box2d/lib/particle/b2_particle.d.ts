@@ -1,6 +1,8 @@
-import { b2Vec2, XY } from "../common/b2_math.js"
-import { b2Color, RGBA } from "../common/b2_draw.js"
-import { b2ParticleGroup } from "./b2_particle_group.js"
+import type { XY } from "../common/b2_math.js"
+import { b2Vec2 } from "../common/b2_math.js"
+import type { RGBA } from "../common/b2_draw.js"
+import { b2Color } from "../common/b2_draw.js"
+import type { b2ParticleGroup } from "./b2_particle_group.js"
 /**
  * The particle type. Can be combined with the | operator.
  */

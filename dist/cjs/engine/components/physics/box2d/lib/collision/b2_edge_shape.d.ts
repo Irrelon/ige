@@ -1,7 +1,8 @@
-import { b2Vec2, b2Transform, XY } from "../common/b2_math.js"
-import { b2AABB, b2RayCastInput, b2RayCastOutput } from "./b2_collision.js"
-import { b2DistanceProxy } from "./b2_distance.js"
-import { b2MassData } from "./b2_shape.js"
+import type { XY } from "../common/b2_math.js"
+import { b2Vec2, b2Transform } from "../common/b2_math.js"
+import type { b2AABB, b2RayCastInput, b2RayCastOutput } from "./b2_collision.js"
+import type { b2DistanceProxy } from "./b2_distance.js"
+import type { b2MassData } from "./b2_shape.js"
 import { b2Shape } from "./b2_shape.js"
 export declare class b2EdgeShape extends b2Shape {
     readonly m_vertex1: b2Vec2;

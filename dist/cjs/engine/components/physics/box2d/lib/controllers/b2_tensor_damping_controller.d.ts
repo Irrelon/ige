@@ -1,7 +1,7 @@
 import { b2Controller } from "./b2_controller.js"
 import { b2Mat22 } from "../common/b2_math.js"
-import { b2TimeStep } from "../dynamics/b2_time_step.js"
-import { b2Draw } from "../common/b2_draw.js"
+import type { b2TimeStep } from "../dynamics/b2_time_step.js"
+import type { b2Draw } from "../common/b2_draw.js"
 /**
  * Applies top down linear damping to the controlled bodies
  * The damping is calculated by multiplying velocity by a matrix

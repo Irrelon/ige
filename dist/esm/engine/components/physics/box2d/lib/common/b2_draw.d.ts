@@ -1,4 +1,4 @@
-import { b2Transform, XY } from "./b2_math.js"
+import type { b2Transform, XY } from "./b2_math.js"
 export interface RGB {
     r: number;
     g: number;

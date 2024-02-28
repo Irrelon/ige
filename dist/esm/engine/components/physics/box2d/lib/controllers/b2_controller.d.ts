@@ -1,6 +1,6 @@
-import { b2Body } from "../dynamics/b2_body.js"
-import { b2TimeStep } from "../dynamics/b2_time_step.js"
-import { b2Draw } from "../common/b2_draw.js"
+import type { b2Body } from "../dynamics/b2_body.js"
+import type { b2TimeStep } from "../dynamics/b2_time_step.js"
+import type { b2Draw } from "../common/b2_draw.js"
 /**
  * A controller edge is used to connect bodies and controllers
  * together in a bipartite graph.

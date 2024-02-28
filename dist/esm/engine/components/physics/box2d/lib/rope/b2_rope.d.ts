@@ -1,5 +1,5 @@
 import { b2Vec2 } from "../common/b2_math.js"
-import { b2Draw } from "../common/b2_draw.js"
+import type { b2Draw } from "../common/b2_draw.js"
 export declare enum b2StretchingModel {
     b2_pbdStretchingModel = 0,
     b2_xpbdStretchingModel = 1

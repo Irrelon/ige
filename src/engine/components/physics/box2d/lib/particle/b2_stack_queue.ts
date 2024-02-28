@@ -21,38 +21,38 @@
 // DEBUG: import { b2Assert } from "../common/b2_settings.js";
 
 export class b2StackQueue<T> {
-  public readonly m_buffer: Array<T | null> = [];
-  public m_front: number = 0;
-  public m_back: number = 0;
-  public get m_capacity(): number { return this.m_buffer.length; }
-  constructor(capacity: number) {
-    this.m_buffer.fill(null, 0, capacity);
-  }
-  public Push(item: T): void {
-    if (this.m_back >= this.m_capacity) {
-      for (let i = this.m_front; i < this.m_back; i++) {
-        this.m_buffer[i - this.m_front] = this.m_buffer[i];
-      }
-      this.m_back -= this.m_front;
-      this.m_front = 0;
-    }
-    this.m_buffer[this.m_back] = item;
-    this.m_back++;
-  }
-  public Pop(): void {
-    // DEBUG: b2Assert(this.m_front < this.m_back);
-    this.m_buffer[this.m_front] = null;
-    this.m_front++;
-  }
-  public Empty(): boolean {
-    // DEBUG: b2Assert(this.m_front <= this.m_back);
-    return this.m_front === this.m_back;
-  }
-  public Front(): T {
-    const item = this.m_buffer[this.m_front];
-    if (!item) { throw new Error(); }
-    return item;
-  }
+	public readonly m_buffer: Array<T | null> = [];
+	public m_front: number = 0;
+	public m_back: number = 0;
+	public get m_capacity (): number { return this.m_buffer.length; }
+	constructor (capacity: number) {
+		this.m_buffer.fill(null, 0, capacity);
+	}
+	public Push (item: T): void {
+		if (this.m_back >= this.m_capacity) {
+			for (let i = this.m_front; i < this.m_back; i++) {
+				this.m_buffer[i - this.m_front] = this.m_buffer[i];
+			}
+			this.m_back -= this.m_front;
+			this.m_front = 0;
+		}
+		this.m_buffer[this.m_back] = item;
+		this.m_back++;
+	}
+	public Pop (): void {
+		// DEBUG: b2Assert(this.m_front < this.m_back);
+		this.m_buffer[this.m_front] = null;
+		this.m_front++;
+	}
+	public Empty (): boolean {
+		// DEBUG: b2Assert(this.m_front <= this.m_back);
+		return this.m_front === this.m_back;
+	}
+	public Front (): T {
+		const item = this.m_buffer[this.m_front];
+		if (!item) { throw new Error(); }
+		return item;
+	}
 }
 
 // #endif

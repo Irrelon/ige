@@ -62,7 +62,7 @@ export class Ige implements IgeIsReadyPromise {
 	_pointerOverVp?: IgeViewport;
 	_pointerPos: IgePoint3d = new IgePoint3d(); // Could probably be just {x: number, y: number}
 
-	constructor() {
+	constructor () {
 		if (isClient) {
 			this.dependencies.add(
 				"network",
@@ -99,7 +99,7 @@ export class Ige implements IgeIsReadyPromise {
 		this.dependencies.markAsSatisfied("box2d");
 	}
 
-	isReady() {
+	isReady () {
 		return new Promise<void>((resolve) => {
 			this.dependencies.waitFor(["network", "engine", "tween", "time", "ui"], resolve);
 		});
@@ -113,7 +113,7 @@ export class Ige implements IgeIsReadyPromise {
 	 * @param {string | Object} item The id of the item to return,
 	 * or if an object, returns the object as-is.
 	 */
-	$<ObjectType extends IgeCanRegisterAndCanDestroy | undefined>(
+	$<ObjectType extends IgeCanRegisterAndCanDestroy | undefined> (
 		item: string | IgeCanRegisterAndCanDestroy | undefined
 	): ObjectType {
 		if (typeof item === "string") {
@@ -129,7 +129,7 @@ export class Ige implements IgeIsReadyPromise {
 	 * @param {String} categoryName The name of the category to return
 	 * all objects for.
 	 */
-	$$<ReturnType extends IgeCanRegisterByCategory | undefined = IgeCanRegisterByCategory>(
+	$$<ReturnType extends IgeCanRegisterByCategory | undefined = IgeCanRegisterByCategory> (
 		categoryName: string
 	): ReturnType[] {
 		return (this.categoryRegister.get(categoryName) || []) as ReturnType[];
@@ -171,7 +171,7 @@ export class Ige implements IgeIsReadyPromise {
 		this._watch.splice(index, 1);
 	};
 
-	drawBounds(val?: boolean, recursive: boolean = false) {
+	drawBounds (val?: boolean, recursive: boolean = false) {
 		if (val === undefined) {
 			return this._drawBounds;
 		}
@@ -185,7 +185,7 @@ export class Ige implements IgeIsReadyPromise {
 
 	data(key: string, value: any): this;
 	data(key: string): any;
-	data(key: string, value?: any) {
+	data (key: string, value?: any) {
 		if (value !== undefined) {
 			this._data = this._data || {};
 			this._data[key] = value;

@@ -33,7 +33,7 @@ export class IgeBaseClass {
 	 *     // Will output "IgeEntity"
 	 *     console.log(entity.classId);
 	 */
-	getClassId() {
+	getClassId () {
 		return this.classId;
 	}
 
@@ -78,11 +78,11 @@ export class IgeBaseClass {
 	 *     entity.log('An error message', 'error');
 	 *
 	 */
-	log(message: string, ...args: any[]) {
+	log (message: string, ...args: any[]) {
 		return this.logInfo(message, ...args);
 	}
 
-	logInfo(message: string, ...args: any[]) {
+	logInfo (message: string, ...args: any[]) {
 		const stack = new Error().stack || "";
 		const stackArr = stack.split("\n");
 		stackArr.shift();
@@ -91,7 +91,7 @@ export class IgeBaseClass {
 		return this;
 	}
 
-	logWarn(message: string, ...args: any[]) {
+	logWarn (message: string, ...args: any[]) {
 		const stack = new Error().stack || "";
 		const stackArr = stack.split("\n");
 		stackArr.shift();
@@ -104,7 +104,7 @@ export class IgeBaseClass {
 		return this;
 	}
 
-	logError(message: string, ...args: any[]) {
+	logError (message: string, ...args: any[]) {
 		const stack = new Error().stack || "";
 		const stackArr = stack.split("\n");
 		stackArr.shift();
@@ -117,18 +117,18 @@ export class IgeBaseClass {
 		return this;
 	}
 
-	logIndent() {
+	logIndent () {
 		global._globalLogIndent++;
 	}
 
-	logOutdent() {
+	logOutdent () {
 		global._globalLogIndent--;
 		if (global._globalLogIndent < 0) global._globalLogIndent = 0;
 	}
 
 	data(key: string, value: any): this;
 	data(key: string): any;
-	data(key: string, value?: any) {
+	data (key: string, value?: any) {
 		if (value !== undefined) {
 			this._data = this._data || {};
 			this._data[key] = value;

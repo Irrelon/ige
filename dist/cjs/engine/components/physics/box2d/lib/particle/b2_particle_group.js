@@ -18,8 +18,6 @@
  */
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.b2ParticleGroup = exports.b2ParticleGroupDef = exports.b2ParticleGroupFlag = void 0;
-// #if B2_ENABLE_PARTICLE
-// DEBUG: import { b2Assert } from "../common/b2_settings.js"
 const b2_math_js_1 = require("../common/b2_math.js");
 const b2_draw_js_1 = require("../common/b2_draw.js");
 var b2ParticleGroupFlag;

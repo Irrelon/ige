@@ -330,124 +330,124 @@ class b2ParticleSystemDef {
         // Initialize physical coefficients to the maximum values that
         // maintain numerical stability.
         /**
-         * Enable strict Particle/Body contact check.
-         * See SetStrictContactCheck for details.
-         */
+       * Enable strict Particle/Body contact check.
+       * See SetStrictContactCheck for details.
+       */
         this.strictContactCheck = false;
         /**
-         * Set the particle density.
-         * See SetDensity for details.
-         */
+       * Set the particle density.
+       * See SetDensity for details.
+       */
         this.density = 1.0;
         /**
-         * Change the particle gravity scale. Adjusts the effect of the
-         * global gravity vector on particles. Default value is 1.0f.
-         */
+       * Change the particle gravity scale. Adjusts the effect of the
+       * global gravity vector on particles. Default value is 1.0f.
+       */
         this.gravityScale = 1.0;
         /**
-         * Particles behave as circles with this radius. In Box2D units.
-         */
+       * Particles behave as circles with this radius. In Box2D units.
+       */
         this.radius = 1.0;
         /**
-         * Set the maximum number of particles.
-         * By default, there is no maximum. The particle buffers can
-         * continue to grow while b2World's block allocator still has
-         * memory.
-         * See SetMaxParticleCount for details.
-         */
+       * Set the maximum number of particles.
+       * By default, there is no maximum. The particle buffers can
+       * continue to grow while b2World's block allocator still has
+       * memory.
+       * See SetMaxParticleCount for details.
+       */
         this.maxCount = 0;
         /**
-         * Increases pressure in response to compression
-         * Smaller values allow more compression
-         */
+       * Increases pressure in response to compression
+       * Smaller values allow more compression
+       */
         this.pressureStrength = 0.005;
         /**
-         * Reduces velocity along the collision normal
-         * Smaller value reduces less
-         */
+       * Reduces velocity along the collision normal
+       * Smaller value reduces less
+       */
         this.dampingStrength = 1.0;
         /**
-         * Restores shape of elastic particle groups
-         * Larger values increase elastic particle velocity
-         */
+       * Restores shape of elastic particle groups
+       * Larger values increase elastic particle velocity
+       */
         this.elasticStrength = 0.25;
         /**
-         * Restores length of spring particle groups
-         * Larger values increase spring particle velocity
-         */
+       * Restores length of spring particle groups
+       * Larger values increase spring particle velocity
+       */
         this.springStrength = 0.25;
         /**
-         * Reduces relative velocity of viscous particles
-         * Larger values slow down viscous particles more
-         */
+       * Reduces relative velocity of viscous particles
+       * Larger values slow down viscous particles more
+       */
         this.viscousStrength = 0.25;
         /**
-         * Produces pressure on tensile particles
-         * 0~0.2. Larger values increase the amount of surface tension.
-         */
+       * Produces pressure on tensile particles
+       * 0~0.2. Larger values increase the amount of surface tension.
+       */
         this.surfaceTensionPressureStrength = 0.2;
         /**
-         * Smoothes outline of tensile particles
-         * 0~0.2. Larger values result in rounder, smoother,
-         * water-drop-like clusters of particles.
-         */
+       * Smoothes outline of tensile particles
+       * 0~0.2. Larger values result in rounder, smoother,
+       * water-drop-like clusters of particles.
+       */
         this.surfaceTensionNormalStrength = 0.2;
         /**
-         * Produces additional pressure on repulsive particles
-         * Larger values repulse more
-         * Negative values mean attraction. The range where particles
-         * behave stably is about -0.2 to 2.0.
-         */
+       * Produces additional pressure on repulsive particles
+       * Larger values repulse more
+       * Negative values mean attraction. The range where particles
+       * behave stably is about -0.2 to 2.0.
+       */
         this.repulsiveStrength = 1.0;
         /**
-         * Produces repulsion between powder particles
-         * Larger values repulse more
-         */
+       * Produces repulsion between powder particles
+       * Larger values repulse more
+       */
         this.powderStrength = 0.5;
         /**
-         * Pushes particles out of solid particle group
-         * Larger values repulse more
-         */
+       * Pushes particles out of solid particle group
+       * Larger values repulse more
+       */
         this.ejectionStrength = 0.5;
         /**
-         * Produces static pressure
-         * Larger values increase the pressure on neighboring partilces
-         * For a description of static pressure, see
-         * http://en.wikipedia.org/wiki/Static_pressure#Static_pressure_in_fluid_dynamics
-         */
+       * Produces static pressure
+       * Larger values increase the pressure on neighboring partilces
+       * For a description of static pressure, see
+       * http://en.wikipedia.org/wiki/Static_pressure#Static_pressure_in_fluid_dynamics
+       */
         this.staticPressureStrength = 0.2;
         /**
-         * Reduces instability in static pressure calculation
-         * Larger values make stabilize static pressure with fewer
-         * iterations
-         */
+       * Reduces instability in static pressure calculation
+       * Larger values make stabilize static pressure with fewer
+       * iterations
+       */
         this.staticPressureRelaxation = 0.2;
         /**
-         * Computes static pressure more precisely
-         * See SetStaticPressureIterations for details
-         */
+       * Computes static pressure more precisely
+       * See SetStaticPressureIterations for details
+       */
         this.staticPressureIterations = 8;
         /**
-         * Determines how fast colors are mixed
-         * 1.0f ==> mixed immediately
-         * 0.5f ==> mixed half way each simulation step (see
-         * b2World::Step())
-         */
+       * Determines how fast colors are mixed
+       * 1.0f ==> mixed immediately
+       * 0.5f ==> mixed half way each simulation step (see
+       * b2World::Step())
+       */
         this.colorMixingStrength = 0.5;
         /**
-         * Whether to destroy particles by age when no more particles
-         * can be created.  See #b2ParticleSystem::SetDestructionByAge()
-         * for more information.
-         */
+       * Whether to destroy particles by age when no more particles
+       * can be created.  See #b2ParticleSystem::SetDestructionByAge()
+       * for more information.
+       */
         this.destroyByAge = true;
         /**
-         * Granularity of particle lifetimes in seconds.  By default
-         * this is set to (1.0f / 60.0f) seconds.  b2ParticleSystem uses
-         * a 32-bit signed value to track particle lifetimes so the
-         * maximum lifetime of a particle is (2^32 - 1) / (1.0f /
-         * lifetimeGranularity) seconds. With the value set to 1/60 the
-         * maximum lifetime or age of a particle is 2.27 years.
-         */
+       * Granularity of particle lifetimes in seconds.  By default
+       * this is set to (1.0f / 60.0f) seconds.  b2ParticleSystem uses
+       * a 32-bit signed value to track particle lifetimes so the
+       * maximum lifetime of a particle is (2^32 - 1) / (1.0f /
+       * lifetimeGranularity) seconds. With the value set to 1/60 the
+       * maximum lifetime or age of a particle is 2.27 years.
+       */
         this.lifetimeGranularity = 1.0 / 60.0;
     }
     Copy(def) {
@@ -504,54 +504,54 @@ class b2ParticleSystem {
         this.m_count = 0;
         this.m_internalAllocatedCapacity = 0;
         /**
-         * Allocator for b2ParticleHandle instances.
-         */
+       * Allocator for b2ParticleHandle instances.
+       */
         ///m_handleAllocator: any = null;
         /**
-         * Maps particle indicies to handles.
-         */
+       * Maps particle indicies to handles.
+       */
         this.m_handleIndexBuffer = new b2ParticleSystem_UserOverridableBuffer();
         this.m_flagsBuffer = new b2ParticleSystem_UserOverridableBuffer();
         this.m_positionBuffer = new b2ParticleSystem_UserOverridableBuffer();
         this.m_velocityBuffer = new b2ParticleSystem_UserOverridableBuffer();
         this.m_forceBuffer = [];
         /**
-         * this.m_weightBuffer is populated in ComputeWeight and used in
-         * ComputeDepth(), SolveStaticPressure() and SolvePressure().
-         */
+       * this.m_weightBuffer is populated in ComputeWeight and used in
+       * ComputeDepth(), SolveStaticPressure() and SolvePressure().
+       */
         this.m_weightBuffer = [];
         /**
-         * When any particles have the flag b2_staticPressureParticle,
-         * this.m_staticPressureBuffer is first allocated and used in
-         * SolveStaticPressure() and SolvePressure().  It will be
-         * reallocated on subsequent CreateParticle() calls.
-         */
+       * When any particles have the flag b2_staticPressureParticle,
+       * this.m_staticPressureBuffer is first allocated and used in
+       * SolveStaticPressure() and SolvePressure().  It will be
+       * reallocated on subsequent CreateParticle() calls.
+       */
         this.m_staticPressureBuffer = [];
         /**
-         * this.m_accumulationBuffer is used in many functions as a temporary
-         * buffer for scalar values.
-         */
+       * this.m_accumulationBuffer is used in many functions as a temporary
+       * buffer for scalar values.
+       */
         this.m_accumulationBuffer = [];
         /**
-         * When any particles have the flag b2_tensileParticle,
-         * this.m_accumulation2Buffer is first allocated and used in
-         * SolveTensile() as a temporary buffer for vector values.  It
-         * will be reallocated on subsequent CreateParticle() calls.
-         */
+       * When any particles have the flag b2_tensileParticle,
+       * this.m_accumulation2Buffer is first allocated and used in
+       * SolveTensile() as a temporary buffer for vector values.  It
+       * will be reallocated on subsequent CreateParticle() calls.
+       */
         this.m_accumulation2Buffer = [];
         /**
-         * When any particle groups have the flag b2_solidParticleGroup,
-         * this.m_depthBuffer is first allocated and populated in
-         * ComputeDepth() and used in SolveSolid(). It will be
-         * reallocated on subsequent CreateParticle() calls.
-         */
+       * When any particle groups have the flag b2_solidParticleGroup,
+       * this.m_depthBuffer is first allocated and populated in
+       * ComputeDepth() and used in SolveSolid(). It will be
+       * reallocated on subsequent CreateParticle() calls.
+       */
         this.m_depthBuffer = [];
         this.m_colorBuffer = new b2ParticleSystem_UserOverridableBuffer();
         this.m_groupBuffer = [];
         this.m_userDataBuffer = new b2ParticleSystem_UserOverridableBuffer();
         /**
-         * Stuck particle detection parameters and record keeping
-         */
+       * Stuck particle detection parameters and record keeping
+       */
         this.m_stuckThreshold = 0;
         this.m_lastBodyContactStepBuffer = new b2ParticleSystem_UserOverridableBuffer();
         this.m_bodyContactCountBuffer = new b2ParticleSystem_UserOverridableBuffer();
@@ -563,26 +563,26 @@ class b2ParticleSystem {
         this.m_pairBuffer = new b2GrowableBuffer(() => new b2ParticlePair());
         this.m_triadBuffer = new b2GrowableBuffer(() => new b2ParticleTriad());
         /**
-         * Time each particle should be destroyed relative to the last
-         * time this.m_timeElapsed was initialized.  Each unit of time
-         * corresponds to b2ParticleSystemDef::lifetimeGranularity
-         * seconds.
-         */
+       * Time each particle should be destroyed relative to the last
+       * time this.m_timeElapsed was initialized.  Each unit of time
+       * corresponds to b2ParticleSystemDef::lifetimeGranularity
+       * seconds.
+       */
         this.m_expirationTimeBuffer = new b2ParticleSystem_UserOverridableBuffer();
         /**
-         * List of particle indices sorted by expiration time.
-         */
+       * List of particle indices sorted by expiration time.
+       */
         this.m_indexByExpirationTimeBuffer = new b2ParticleSystem_UserOverridableBuffer();
         /**
-         * Time elapsed in 32:32 fixed point.  Each non-fractional unit
-         * of time corresponds to
-         * b2ParticleSystemDef::lifetimeGranularity seconds.
-         */
+       * Time elapsed in 32:32 fixed point.  Each non-fractional unit
+       * of time corresponds to
+       * b2ParticleSystemDef::lifetimeGranularity seconds.
+       */
         this.m_timeElapsed = 0;
         /**
-         * Whether the expiration time buffer has been modified and
-         * needs to be resorted.
-         */
+       * Whether the expiration time buffer has been modified and
+       * needs to be resorted.
+       */
         this.m_expirationTimeBufferRequiresSorting = false;
         this.m_groupCount = 0;
         this.m_groupList = null;
@@ -625,17 +625,17 @@ class b2ParticleSystem {
         this.FreeBuffer(this.m_groupBuffer, this.m_internalAllocatedCapacity);
     }
     /**
-     * Create a particle whose properties have been defined.
-     *
-     * No reference to the definition is retained.
-     *
-     * A simulation step must occur before it's possible to interact
-     * with a newly created particle.  For example,
-     * DestroyParticleInShape() will not destroy a particle until
-     * b2World::Step() has been called.
-     *
-     * warning: This function is locked during callbacks.
-     */
+   * Create a particle whose properties have been defined.
+   *
+   * No reference to the definition is retained.
+   *
+   * A simulation step must occur before it's possible to interact
+   * with a newly created particle.  For example,
+   * DestroyParticleInShape() will not destroy a particle until
+   * b2World::Step() has been called.
+   *
+   * warning: This function is locked during callbacks.
+   */
     CreateParticle(def) {
         if (this.m_world.IsLocked()) {
             throw new Error();
@@ -725,10 +725,10 @@ class b2ParticleSystem {
         return index;
     }
     /**
-     * Retrieve a handle to the particle at the specified index.
-     *
-     * Please see #b2ParticleHandle for why you might want a handle.
-     */
+   * Retrieve a handle to the particle at the specified index.
+   *
+   * Please see #b2ParticleHandle for why you might want a handle.
+   */
     GetParticleHandleFromIndex(index) {
         // DEBUG: b2Assert(index >= 0 && index < this.GetParticleCount() && index !== b2_invalidParticleIndex);
         this.m_handleIndexBuffer.data = this.RequestBuffer(this.m_handleIndexBuffer.data);
@@ -745,16 +745,16 @@ class b2ParticleSystem {
         return handle;
     }
     /**
-     * Destroy a particle.
-     *
-     * The particle is removed after the next simulation step (see
-     * b2World::Step()).
-     *
-     * @param index Index of the particle to destroy.
-     * @param callDestructionListener Whether to call the
-     *      destruction listener just before the particle is
-     *      destroyed.
-     */
+   * Destroy a particle.
+   *
+   * The particle is removed after the next simulation step (see
+   * b2World::Step()).
+   *
+   * @param index Index of the particle to destroy.
+   * @param callDestructionListener Whether to call the
+   *      destruction listener just before the particle is
+   *      destroyed.
+   */
     DestroyParticle(index, callDestructionListener = false) {
         let flags = b2_particle_js_1.b2ParticleFlag.b2_zombieParticle;
         if (callDestructionListener) {
@@ -763,17 +763,17 @@ class b2ParticleSystem {
         this.SetParticleFlags(index, this.m_flagsBuffer.data[index] | flags);
     }
     /**
-     * Destroy the Nth oldest particle in the system.
-     *
-     * The particle is removed after the next b2World::Step().
-     *
-     * @param index Index of the Nth oldest particle to
-     *      destroy, 0 will destroy the oldest particle in the
-     *      system, 1 will destroy the next oldest particle etc.
-     * @param callDestructionListener Whether to call the
-     *      destruction listener just before the particle is
-     *      destroyed.
-     */
+   * Destroy the Nth oldest particle in the system.
+   *
+   * The particle is removed after the next b2World::Step().
+   *
+   * @param index Index of the Nth oldest particle to
+   *      destroy, 0 will destroy the oldest particle in the
+   *      system, 1 will destroy the next oldest particle etc.
+   * @param callDestructionListener Whether to call the
+   *      destruction listener just before the particle is
+   *      destroyed.
+   */
     DestroyOldestParticle(index, callDestructionListener = false) {
         const particleCount = this.GetParticleCount();
         // DEBUG: b2Assert(index >= 0 && index < particleCount);
@@ -787,22 +787,22 @@ class b2ParticleSystem {
             oldestFiniteLifetimeParticle : oldestInfiniteLifetimeParticle, callDestructionListener);
     }
     /**
-     * Destroy particles inside a shape.
-     *
-     * warning: This function is locked during callbacks.
-     *
-     * In addition, this function immediately destroys particles in
-     * the shape in constrast to DestroyParticle() which defers the
-     * destruction until the next simulation step.
-     *
-     * @return Number of particles destroyed.
-     * @param shape Shape which encloses particles
-     *      that should be destroyed.
-     * @param xf Transform applied to the shape.
-     * @param callDestructionListener Whether to call the
-     *      world b2DestructionListener for each particle
-     *      destroyed.
-     */
+   * Destroy particles inside a shape.
+   *
+   * warning: This function is locked during callbacks.
+   *
+   * In addition, this function immediately destroys particles in
+   * the shape in constrast to DestroyParticle() which defers the
+   * destruction until the next simulation step.
+   *
+   * @return Number of particles destroyed.
+   * @param shape Shape which encloses particles
+   *      that should be destroyed.
+   * @param xf Transform applied to the shape.
+   * @param callDestructionListener Whether to call the
+   *      world b2DestructionListener for each particle
+   *      destroyed.
+   */
     DestroyParticlesInShape(shape, xf, callDestructionListener = false) {
         const s_aabb = b2ParticleSystem.DestroyParticlesInShape_s_aabb;
         if (this.m_world.IsLocked()) {
@@ -815,12 +815,12 @@ class b2ParticleSystem {
         return callback.Destroyed();
     }
     /**
-     * Create a particle group whose properties have been defined.
-     *
-     * No reference to the definition is retained.
-     *
-     * warning: This function is locked during callbacks.
-     */
+   * Create a particle group whose properties have been defined.
+   *
+   * No reference to the definition is retained.
+   *
+   * warning: This function is locked during callbacks.
+   */
     CreateParticleGroup(groupDef) {
         const s_transform = b2ParticleSystem.CreateParticleGroup_s_transform;
         if (this.m_world.IsLocked()) {
@@ -871,13 +871,13 @@ class b2ParticleSystem {
         return group;
     }
     /**
-     * Join two particle groups.
-     *
-     * warning: This function is locked during callbacks.
-     *
-     * @param groupA the first group. Expands to encompass the second group.
-     * @param groupB the second group. It is destroyed.
-     */
+   * Join two particle groups.
+   *
+   * warning: This function is locked during callbacks.
+   *
+   * @param groupA the first group. Expands to encompass the second group.
+   * @param groupB the second group. It is destroyed.
+   */
     JoinParticleGroups(groupA, groupB) {
         if (this.m_world.IsLocked()) {
             throw new Error();
@@ -901,12 +901,12 @@ class b2ParticleSystem {
         this.DestroyParticleGroup(groupB);
     }
     /**
-     * Split particle group into multiple disconnected groups.
-     *
-     * warning: This function is locked during callbacks.
-     *
-     * @param group the group to be split.
-     */
+   * Split particle group into multiple disconnected groups.
+   *
+   * warning: This function is locked during callbacks.
+   *
+   * @param group the group to be split.
+   */
     SplitParticleGroup(group) {
         this.UpdateContacts(true);
         const particleCount = group.GetParticleCount();
@@ -920,243 +920,243 @@ class b2ParticleSystem {
         this.UpdatePairsAndTriadsWithParticleList(group, nodeBuffer);
     }
     /**
-     * Get the world particle group list. With the returned group,
-     * use b2ParticleGroup::GetNext to get the next group in the
-     * world list.
-     *
-     * A null group indicates the end of the list.
-     *
-     * @return the head of the world particle group list.
-     */
+   * Get the world particle group list. With the returned group,
+   * use b2ParticleGroup::GetNext to get the next group in the
+   * world list.
+   *
+   * A null group indicates the end of the list.
+   *
+   * @return the head of the world particle group list.
+   */
     GetParticleGroupList() {
         return this.m_groupList;
     }
     /**
-     * Get the number of particle groups.
-     */
+   * Get the number of particle groups.
+   */
     GetParticleGroupCount() {
         return this.m_groupCount;
     }
     /**
-     * Get the number of particles.
-     */
+   * Get the number of particles.
+   */
     GetParticleCount() {
         return this.m_count;
     }
     /**
-     * Get the maximum number of particles.
-     */
+   * Get the maximum number of particles.
+   */
     GetMaxParticleCount() {
         return this.m_def.maxCount;
     }
     /**
-     * Set the maximum number of particles.
-     *
-     * A value of 0 means there is no maximum. The particle buffers
-     * can continue to grow while b2World's block allocator still
-     * has memory.
-     *
-     * Note: If you try to CreateParticle() with more than this
-     * count, b2_invalidParticleIndex is returned unless
-     * SetDestructionByAge() is used to enable the destruction of
-     * the oldest particles in the system.
-     */
+   * Set the maximum number of particles.
+   *
+   * A value of 0 means there is no maximum. The particle buffers
+   * can continue to grow while b2World's block allocator still
+   * has memory.
+   *
+   * Note: If you try to CreateParticle() with more than this
+   * count, b2_invalidParticleIndex is returned unless
+   * SetDestructionByAge() is used to enable the destruction of
+   * the oldest particles in the system.
+   */
     SetMaxParticleCount(count) {
         // DEBUG: b2Assert(this.m_count <= count);
         this.m_def.maxCount = count;
     }
     /**
-     * Get all existing particle flags.
-     */
+   * Get all existing particle flags.
+   */
     GetAllParticleFlags() {
         return this.m_allParticleFlags;
     }
     /**
-     * Get all existing particle group flags.
-     */
+   * Get all existing particle group flags.
+   */
     GetAllGroupFlags() {
         return this.m_allGroupFlags;
     }
     /**
-     * Pause or unpause the particle system. When paused,
-     * b2World::Step() skips over this particle system. All
-     * b2ParticleSystem function calls still work.
-     *
-     * @param paused paused is true to pause, false to un-pause.
-     */
+   * Pause or unpause the particle system. When paused,
+   * b2World::Step() skips over this particle system. All
+   * b2ParticleSystem function calls still work.
+   *
+   * @param paused paused is true to pause, false to un-pause.
+   */
     SetPaused(paused) {
         this.m_paused = paused;
     }
     /**
-     * Initially, true, then, the last value passed into
-     * SetPaused().
-     *
-     * @return true if the particle system is being updated in b2World::Step().
-     */
+   * Initially, true, then, the last value passed into
+   * SetPaused().
+   *
+   * @return true if the particle system is being updated in b2World::Step().
+   */
     GetPaused() {
         return this.m_paused;
     }
     /**
-     * Change the particle density.
-     *
-     * Particle density affects the mass of the particles, which in
-     * turn affects how the particles interact with b2Bodies. Note
-     * that the density does not affect how the particles interact
-     * with each other.
-     */
+   * Change the particle density.
+   *
+   * Particle density affects the mass of the particles, which in
+   * turn affects how the particles interact with b2Bodies. Note
+   * that the density does not affect how the particles interact
+   * with each other.
+   */
     SetDensity(density) {
         this.m_def.density = density;
         this.m_inverseDensity = 1 / this.m_def.density;
     }
     /**
-     * Get the particle density.
-     */
+   * Get the particle density.
+   */
     GetDensity() {
         return this.m_def.density;
     }
     /**
-     * Change the particle gravity scale. Adjusts the effect of the
-     * global gravity vector on particles.
-     */
+   * Change the particle gravity scale. Adjusts the effect of the
+   * global gravity vector on particles.
+   */
     SetGravityScale(gravityScale) {
         this.m_def.gravityScale = gravityScale;
     }
     /**
-     * Get the particle gravity scale.
-     */
+   * Get the particle gravity scale.
+   */
     GetGravityScale() {
         return this.m_def.gravityScale;
     }
     /**
-     * Damping is used to reduce the velocity of particles. The
-     * damping parameter can be larger than 1.0f but the damping
-     * effect becomes sensitive to the time step when the damping
-     * parameter is large.
-     */
+   * Damping is used to reduce the velocity of particles. The
+   * damping parameter can be larger than 1.0f but the damping
+   * effect becomes sensitive to the time step when the damping
+   * parameter is large.
+   */
     SetDamping(damping) {
         this.m_def.dampingStrength = damping;
     }
     /**
-     * Get damping for particles
-     */
+   * Get damping for particles
+   */
     GetDamping() {
         return this.m_def.dampingStrength;
     }
     /**
-     * Change the number of iterations when calculating the static
-     * pressure of particles. By default, 8 iterations. You can
-     * reduce the number of iterations down to 1 in some situations,
-     * but this may cause instabilities when many particles come
-     * together. If you see particles popping away from each other
-     * like popcorn, you may have to increase the number of
-     * iterations.
-     *
-     * For a description of static pressure, see
-     * http://en.wikipedia.org/wiki/Static_pressure#Static_pressure_in_fluid_dynamics
-     */
+   * Change the number of iterations when calculating the static
+   * pressure of particles. By default, 8 iterations. You can
+   * reduce the number of iterations down to 1 in some situations,
+   * but this may cause instabilities when many particles come
+   * together. If you see particles popping away from each other
+   * like popcorn, you may have to increase the number of
+   * iterations.
+   *
+   * For a description of static pressure, see
+   * http://en.wikipedia.org/wiki/Static_pressure#Static_pressure_in_fluid_dynamics
+   */
     SetStaticPressureIterations(iterations) {
         this.m_def.staticPressureIterations = iterations;
     }
     /**
-     * Get the number of iterations for static pressure of
-     * particles.
-     */
+   * Get the number of iterations for static pressure of
+   * particles.
+   */
     GetStaticPressureIterations() {
         return this.m_def.staticPressureIterations;
     }
     /**
-     * Change the particle radius.
-     *
-     * You should set this only once, on world start.
-     * If you change the radius during execution, existing particles
-     * may explode, shrink, or behave unexpectedly.
-     */
+   * Change the particle radius.
+   *
+   * You should set this only once, on world start.
+   * If you change the radius during execution, existing particles
+   * may explode, shrink, or behave unexpectedly.
+   */
     SetRadius(radius) {
         this.m_particleDiameter = 2 * radius;
         this.m_squaredDiameter = this.m_particleDiameter * this.m_particleDiameter;
         this.m_inverseDiameter = 1 / this.m_particleDiameter;
     }
     /**
-     * Get the particle radius.
-     */
+   * Get the particle radius.
+   */
     GetRadius() {
         return this.m_particleDiameter / 2;
     }
     /**
-     * Get the position of each particle
-     *
-     * Array is length GetParticleCount()
-     *
-     * @return the pointer to the head of the particle positions array.
-     */
+   * Get the position of each particle
+   *
+   * Array is length GetParticleCount()
+   *
+   * @return the pointer to the head of the particle positions array.
+   */
     GetPositionBuffer() {
         return this.m_positionBuffer.data;
     }
     /**
-     * Get the velocity of each particle
-     *
-     * Array is length GetParticleCount()
-     *
-     * @return the pointer to the head of the particle velocities array.
-     */
+   * Get the velocity of each particle
+   *
+   * Array is length GetParticleCount()
+   *
+   * @return the pointer to the head of the particle velocities array.
+   */
     GetVelocityBuffer() {
         return this.m_velocityBuffer.data;
     }
     /**
-     * Get the color of each particle
-     *
-     * Array is length GetParticleCount()
-     *
-     * @return the pointer to the head of the particle colors array.
-     */
+   * Get the color of each particle
+   *
+   * Array is length GetParticleCount()
+   *
+   * @return the pointer to the head of the particle colors array.
+   */
     GetColorBuffer() {
         this.m_colorBuffer.data = this.RequestBuffer(this.m_colorBuffer.data);
         return this.m_colorBuffer.data;
     }
     /**
-     * Get the particle-group of each particle.
-     *
-     * Array is length GetParticleCount()
-     *
-     * @return the pointer to the head of the particle group array.
-     */
+   * Get the particle-group of each particle.
+   *
+   * Array is length GetParticleCount()
+   *
+   * @return the pointer to the head of the particle group array.
+   */
     GetGroupBuffer() {
         return this.m_groupBuffer;
     }
     /**
-     * Get the weight of each particle
-     *
-     * Array is length GetParticleCount()
-     *
-     * @return the pointer to the head of the particle positions array.
-     */
+   * Get the weight of each particle
+   *
+   * Array is length GetParticleCount()
+   *
+   * @return the pointer to the head of the particle positions array.
+   */
     GetWeightBuffer() {
         return this.m_weightBuffer;
     }
     /**
-     * Get the user-specified data of each particle.
-     *
-     * Array is length GetParticleCount()
-     *
-     * @return the pointer to the head of the particle user-data array.
-     */
+   * Get the user-specified data of each particle.
+   *
+   * Array is length GetParticleCount()
+   *
+   * @return the pointer to the head of the particle user-data array.
+   */
     GetUserDataBuffer() {
         this.m_userDataBuffer.data = this.RequestBuffer(this.m_userDataBuffer.data);
         return this.m_userDataBuffer.data;
     }
     /**
-     * Get the flags for each particle. See the b2ParticleFlag enum.
-     *
-     * Array is length GetParticleCount()
-     *
-     * @return the pointer to the head of the particle-flags array.
-     */
+   * Get the flags for each particle. See the b2ParticleFlag enum.
+   *
+   * Array is length GetParticleCount()
+   *
+   * @return the pointer to the head of the particle-flags array.
+   */
     GetFlagsBuffer() {
         return this.m_flagsBuffer.data;
     }
     /**
-     * Set flags for a particle. See the b2ParticleFlag enum.
-     */
+   * Set flags for a particle. See the b2ParticleFlag enum.
+   */
     SetParticleFlags(index, newFlags) {
         const oldFlags = this.m_flagsBuffer.data[index];
         if (oldFlags & ~newFlags) {
@@ -1176,27 +1176,27 @@ class b2ParticleSystem {
         this.m_flagsBuffer.data[index] = newFlags;
     }
     /**
-     * Get flags for a particle. See the b2ParticleFlag enum.
-     */
+   * Get flags for a particle. See the b2ParticleFlag enum.
+   */
     GetParticleFlags(index) {
         return this.m_flagsBuffer.data[index];
     }
     /**
-     * Set an external buffer for particle data.
-     *
-     * Normally, the b2World's block allocator is used for particle
-     * data. However, sometimes you may have an OpenGL or Java
-     * buffer for particle data. To avoid data duplication, you may
-     * supply this external buffer.
-     *
-     * Note that, when b2World's block allocator is used, the
-     * particle data buffers can grow as required. However, when
-     * external buffers are used, the maximum number of particles is
-     * clamped to the size of the smallest external buffer.
-     *
-     * @param buffer a pointer to a block of memory.
-     * @param capacity the number of values in the block.
-     */
+   * Set an external buffer for particle data.
+   *
+   * Normally, the b2World's block allocator is used for particle
+   * data. However, sometimes you may have an OpenGL or Java
+   * buffer for particle data. To avoid data duplication, you may
+   * supply this external buffer.
+   *
+   * Note that, when b2World's block allocator is used, the
+   * particle data buffers can grow as required. However, when
+   * external buffers are used, the maximum number of particles is
+   * clamped to the size of the smallest external buffer.
+   *
+   * @param buffer a pointer to a block of memory.
+   * @param capacity the number of values in the block.
+   */
     SetFlagsBuffer(buffer) {
         this.SetUserOverridableBuffer(this.m_flagsBuffer, buffer);
     }
@@ -1246,10 +1246,10 @@ class b2ParticleSystem {
         this.SetUserOverridableBuffer(this.m_userDataBuffer, buffer);
     }
     /**
-     * Get contacts between particles
-     * Contact data can be used for many reasons, for example to
-     * trigger rendering or audio effects.
-     */
+   * Get contacts between particles
+   * Contact data can be used for many reasons, for example to
+   * trigger rendering or audio effects.
+   */
     GetContacts() {
         return this.m_contactBuffer.data;
     }
@@ -1257,11 +1257,11 @@ class b2ParticleSystem {
         return this.m_contactBuffer.count;
     }
     /**
-     * Get contacts between particles and bodies
-     *
-     * Contact data can be used for many reasons, for example to
-     * trigger rendering or audio effects.
-     */
+   * Get contacts between particles and bodies
+   *
+   * Contact data can be used for many reasons, for example to
+   * trigger rendering or audio effects.
+   */
     GetBodyContacts() {
         return this.m_bodyContactBuffer.data;
     }
@@ -1269,21 +1269,21 @@ class b2ParticleSystem {
         return this.m_bodyContactBuffer.count;
     }
     /**
-     * Get array of particle pairs. The particles in a pair:
-     *   (1) are contacting,
-     *   (2) are in the same particle group,
-     *   (3) are part of a rigid particle group, or are spring, elastic,
-     *       or wall particles.
-     *   (4) have at least one particle that is a spring or barrier
-     *       particle (i.e. one of the types in k_pairFlags),
-     *   (5) have at least one particle that returns true for
-     *       ConnectionFilter::IsNecessary,
-     *   (6) are not zombie particles.
-     *
-     * Essentially, this is an array of spring or barrier particles
-     * that are interacting. The array is sorted by b2ParticlePair's
-     * indexA, and then indexB. There are no duplicate entries.
-     */
+   * Get array of particle pairs. The particles in a pair:
+   *   (1) are contacting,
+   *   (2) are in the same particle group,
+   *   (3) are part of a rigid particle group, or are spring, elastic,
+   *       or wall particles.
+   *   (4) have at least one particle that is a spring or barrier
+   *       particle (i.e. one of the types in k_pairFlags),
+   *   (5) have at least one particle that returns true for
+   *       ConnectionFilter::IsNecessary,
+   *   (6) are not zombie particles.
+   *
+   * Essentially, this is an array of spring or barrier particles
+   * that are interacting. The array is sorted by b2ParticlePair's
+   * indexA, and then indexB. There are no duplicate entries.
+   */
     GetPairs() {
         return this.m_pairBuffer.data;
     }
@@ -1291,22 +1291,22 @@ class b2ParticleSystem {
         return this.m_pairBuffer.count;
     }
     /**
-     * Get array of particle triads. The particles in a triad:
-     *   (1) are in the same particle group,
-     *   (2) are in a Voronoi triangle together,
-     *   (3) are within b2_maxTriadDistance particle diameters of each
-     *       other,
-     *   (4) return true for ConnectionFilter::ShouldCreateTriad
-     *   (5) have at least one particle of type elastic (i.e. one of the
-     *       types in k_triadFlags),
-     *   (6) are part of a rigid particle group, or are spring, elastic,
-     *       or wall particles.
-     *   (7) are not zombie particles.
-     *
-     * Essentially, this is an array of elastic particles that are
-     * interacting. The array is sorted by b2ParticleTriad's indexA,
-     * then indexB, then indexC. There are no duplicate entries.
-     */
+   * Get array of particle triads. The particles in a triad:
+   *   (1) are in the same particle group,
+   *   (2) are in a Voronoi triangle together,
+   *   (3) are within b2_maxTriadDistance particle diameters of each
+   *       other,
+   *   (4) return true for ConnectionFilter::ShouldCreateTriad
+   *   (5) have at least one particle of type elastic (i.e. one of the
+   *       types in k_triadFlags),
+   *   (6) are part of a rigid particle group, or are spring, elastic,
+   *       or wall particles.
+   *   (7) are not zombie particles.
+   *
+   * Essentially, this is an array of elastic particles that are
+   * interacting. The array is sorted by b2ParticleTriad's indexA,
+   * then indexB, then indexC. There are no duplicate entries.
+   */
     GetTriads() {
         return this.m_triadBuffer.data;
     }
@@ -1314,11 +1314,11 @@ class b2ParticleSystem {
         return this.m_triadBuffer.count;
     }
     /**
-     * Set an optional threshold for the maximum number of
-     * consecutive particle iterations that a particle may contact
-     * multiple bodies before it is considered a candidate for being
-     * "stuck". Setting to zero or less disables.
-     */
+   * Set an optional threshold for the maximum number of
+   * consecutive particle iterations that a particle may contact
+   * multiple bodies before it is considered a candidate for being
+   * "stuck". Setting to zero or less disables.
+   */
     SetStuckThreshold(steps) {
         this.m_stuckThreshold = steps;
         if (steps > 0) {
@@ -1328,25 +1328,25 @@ class b2ParticleSystem {
         }
     }
     /**
-     * Get potentially stuck particles from the last step; the user
-     * must decide if they are stuck or not, and if so, delete or
-     * move them
-     */
+   * Get potentially stuck particles from the last step; the user
+   * must decide if they are stuck or not, and if so, delete or
+   * move them
+   */
     GetStuckCandidates() {
         ///return m_stuckParticleBuffer.Data();
         return this.m_stuckParticleBuffer.Data();
     }
     /**
-     * Get the number of stuck particle candidates from the last
-     * step.
-     */
+   * Get the number of stuck particle candidates from the last
+   * step.
+   */
     GetStuckCandidateCount() {
         ///return m_stuckParticleBuffer.GetCount();
         return this.m_stuckParticleBuffer.GetCount();
     }
     /**
-     * Compute the kinetic energy that can be lost by damping force
-     */
+   * Compute the kinetic energy that can be lost by damping force
+   */
     ComputeCollisionEnergy() {
         const s_v = b2ParticleSystem.ComputeCollisionEnergy_s_v;
         const vel_data = this.m_velocityBuffer.data;
@@ -1366,30 +1366,30 @@ class b2ParticleSystem {
         return 0.5 * this.GetParticleMass() * sum_v2;
     }
     /**
-     * Set strict Particle/Body contact check.
-     *
-     * This is an option that will help ensure correct behavior if
-     * there are corners in the world model where Particle/Body
-     * contact is ambiguous. This option scales at n*log(n) of the
-     * number of Particle/Body contacts, so it is best to only
-     * enable if it is necessary for your geometry. Enable if you
-     * see strange particle behavior around b2Body intersections.
-     */
+   * Set strict Particle/Body contact check.
+   *
+   * This is an option that will help ensure correct behavior if
+   * there are corners in the world model where Particle/Body
+   * contact is ambiguous. This option scales at n*log(n) of the
+   * number of Particle/Body contacts, so it is best to only
+   * enable if it is necessary for your geometry. Enable if you
+   * see strange particle behavior around b2Body intersections.
+   */
     SetStrictContactCheck(enabled) {
         this.m_def.strictContactCheck = enabled;
     }
     /**
-     * Get the status of the strict contact check.
-     */
+   * Get the status of the strict contact check.
+   */
     GetStrictContactCheck() {
         return this.m_def.strictContactCheck;
     }
     /**
-     * Set the lifetime (in seconds) of a particle relative to the
-     * current time.  A lifetime of less than or equal to 0.0f
-     * results in the particle living forever until it's manually
-     * destroyed by the application.
-     */
+   * Set the lifetime (in seconds) of a particle relative to the
+   * current time.  A lifetime of less than or equal to 0.0f
+   * results in the particle living forever until it's manually
+   * destroyed by the application.
+   */
     SetParticleLifetime(index, lifetime) {
         // DEBUG: b2Assert(this.ValidateParticleIndex(index));
         const initializeExpirationTimes = this.m_indexByExpirationTimeBuffer.data === null;
@@ -1413,26 +1413,26 @@ class b2ParticleSystem {
         }
     }
     /**
-     * Get the lifetime (in seconds) of a particle relative to the
-     * current time.  A value > 0.0f is returned if the particle is
-     * scheduled to be destroyed in the future, values <= 0.0f
-     * indicate the particle has an infinite lifetime.
-     */
+   * Get the lifetime (in seconds) of a particle relative to the
+   * current time.  A value > 0.0f is returned if the particle is
+   * scheduled to be destroyed in the future, values <= 0.0f
+   * indicate the particle has an infinite lifetime.
+   */
     GetParticleLifetime(index) {
         // DEBUG: b2Assert(this.ValidateParticleIndex(index));
         return this.ExpirationTimeToLifetime(this.GetExpirationTimeBuffer()[index]);
     }
     /**
-     * Enable / disable destruction of particles in CreateParticle()
-     * when no more particles can be created due to a prior call to
-     * SetMaxParticleCount().  When this is enabled, the oldest
-     * particle is destroyed in CreateParticle() favoring the
-     * destruction of particles with a finite lifetime over
-     * particles with infinite lifetimes. This feature is enabled by
-     * default when particle lifetimes are tracked.  Explicitly
-     * enabling this feature using this function enables particle
-     * lifetime tracking.
-     */
+   * Enable / disable destruction of particles in CreateParticle()
+   * when no more particles can be created due to a prior call to
+   * SetMaxParticleCount().  When this is enabled, the oldest
+   * particle is destroyed in CreateParticle() favoring the
+   * destruction of particles with a finite lifetime over
+   * particles with infinite lifetimes. This feature is enabled by
+   * default when particle lifetimes are tracked.  Explicitly
+   * enabling this feature using this function enables particle
+   * lifetime tracking.
+   */
     SetDestructionByAge(enable) {
         if (enable) {
             this.GetExpirationTimeBuffer();
@@ -1440,44 +1440,44 @@ class b2ParticleSystem {
         this.m_def.destroyByAge = enable;
     }
     /**
-     * Get whether the oldest particle will be destroyed in
-     * CreateParticle() when the maximum number of particles are
-     * present in the system.
-     */
+   * Get whether the oldest particle will be destroyed in
+   * CreateParticle() when the maximum number of particles are
+   * present in the system.
+   */
     GetDestructionByAge() {
         return this.m_def.destroyByAge;
     }
     /**
-     * Get the array of particle expiration times indexed by
-     * particle index.
-     *
-     * GetParticleCount() items are in the returned array.
-     */
+   * Get the array of particle expiration times indexed by
+   * particle index.
+   *
+   * GetParticleCount() items are in the returned array.
+   */
     GetExpirationTimeBuffer() {
         this.m_expirationTimeBuffer.data = this.RequestBuffer(this.m_expirationTimeBuffer.data);
         return this.m_expirationTimeBuffer.data;
     }
     /**
-     * Convert a expiration time value in returned by
-     * GetExpirationTimeBuffer() to a time in seconds relative to
-     * the current simulation time.
-     */
+   * Convert a expiration time value in returned by
+   * GetExpirationTimeBuffer() to a time in seconds relative to
+   * the current simulation time.
+   */
     ExpirationTimeToLifetime(expirationTime) {
         return (expirationTime > 0 ?
             expirationTime - this.GetQuantizedTimeElapsed() :
             expirationTime) * this.m_def.lifetimeGranularity;
     }
     /**
-     * Get the array of particle indices ordered by reverse
-     * lifetime. The oldest particle indexes are at the end of the
-     * array with the newest at the start.  Particles with infinite
-     * lifetimes (i.e expiration times less than or equal to 0) are
-     * placed at the start of the array.
-     * ExpirationTimeToLifetime(GetExpirationTimeBuffer()[index]) is
-     * equivalent to GetParticleLifetime(index).
-     *
-     * GetParticleCount() items are in the returned array.
-     */
+   * Get the array of particle indices ordered by reverse
+   * lifetime. The oldest particle indexes are at the end of the
+   * array with the newest at the start.  Particles with infinite
+   * lifetimes (i.e expiration times less than or equal to 0) are
+   * placed at the start of the array.
+   * ExpirationTimeToLifetime(GetExpirationTimeBuffer()[index]) is
+   * equivalent to GetParticleLifetime(index).
+   *
+   * GetParticleCount() items are in the returned array.
+   */
     GetIndexByExpirationTimeBuffer() {
         // If particles are present, initialize / reinitialize the lifetime buffer.
         if (this.GetParticleCount()) {
@@ -1489,28 +1489,28 @@ class b2ParticleSystem {
         return this.m_indexByExpirationTimeBuffer.data;
     }
     /**
-     * Apply an impulse to one particle. This immediately modifies
-     * the velocity. Similar to b2Body::ApplyLinearImpulse.
-     *
-     * @param index the particle that will be modified.
-     * @param impulse impulse the world impulse vector, usually in N-seconds or kg-m/s.
-     */
+   * Apply an impulse to one particle. This immediately modifies
+   * the velocity. Similar to b2Body::ApplyLinearImpulse.
+   *
+   * @param index the particle that will be modified.
+   * @param impulse impulse the world impulse vector, usually in N-seconds or kg-m/s.
+   */
     ParticleApplyLinearImpulse(index, impulse) {
         this.ApplyLinearImpulse(index, index + 1, impulse);
     }
     /**
-     * Apply an impulse to all particles between 'firstIndex' and
-     * 'lastIndex'. This immediately modifies the velocity. Note
-     * that the impulse is applied to the total mass of all
-     * particles. So, calling ParticleApplyLinearImpulse(0, impulse)
-     * and ParticleApplyLinearImpulse(1, impulse) will impart twice
-     * as much velocity as calling just ApplyLinearImpulse(0, 1,
-     * impulse).
-     *
-     * @param firstIndex the first particle to be modified.
-     * @param lastIndex the last particle to be modified.
-     * @param impulse the world impulse vector, usually in N-seconds or kg-m/s.
-     */
+   * Apply an impulse to all particles between 'firstIndex' and
+   * 'lastIndex'. This immediately modifies the velocity. Note
+   * that the impulse is applied to the total mass of all
+   * particles. So, calling ParticleApplyLinearImpulse(0, impulse)
+   * and ParticleApplyLinearImpulse(1, impulse) will impart twice
+   * as much velocity as calling just ApplyLinearImpulse(0, 1,
+   * impulse).
+   *
+   * @param firstIndex the first particle to be modified.
+   * @param lastIndex the last particle to be modified.
+   * @param impulse the world impulse vector, usually in N-seconds or kg-m/s.
+   */
     ApplyLinearImpulse(firstIndex, lastIndex, impulse) {
         const vel_data = this.m_velocityBuffer.data;
         const numParticles = (lastIndex - firstIndex);
@@ -1526,11 +1526,11 @@ class b2ParticleSystem {
         return force.x !== 0 || force.y !== 0;
     }
     /**
-     * Apply a force to the center of a particle.
-     *
-     * @param index the particle that will be modified.
-     * @param force the world force vector, usually in Newtons (N).
-     */
+   * Apply a force to the center of a particle.
+   *
+   * @param index the particle that will be modified.
+   * @param force the world force vector, usually in Newtons (N).
+   */
     ParticleApplyForce(index, force) {
         if (b2ParticleSystem.IsSignificantForce(force) &&
             this.ForceCanBeApplied(this.m_flagsBuffer.data[index])) {
@@ -1540,16 +1540,16 @@ class b2ParticleSystem {
         }
     }
     /**
-     * Distribute a force across several particles. The particles
-     * must not be wall particles. Note that the force is
-     * distributed across all the particles, so calling this
-     * function for indices 0..N is not the same as calling
-     * ParticleApplyForce(i, force) for i in 0..N.
-     *
-     * @param firstIndex the first particle to be modified.
-     * @param lastIndex the last particle to be modified.
-     * @param force the world force vector, usually in Newtons (N).
-     */
+   * Distribute a force across several particles. The particles
+   * must not be wall particles. Note that the force is
+   * distributed across all the particles, so calling this
+   * function for indices 0..N is not the same as calling
+   * ParticleApplyForce(i, force) for i in 0..N.
+   *
+   * @param firstIndex the first particle to be modified.
+   * @param lastIndex the last particle to be modified.
+   * @param force the world force vector, usually in Newtons (N).
+   */
     ApplyForce(firstIndex, lastIndex, force) {
         // Ensure we're not trying to apply force to particles that can't move,
         // such as wall particles.
@@ -1571,20 +1571,20 @@ class b2ParticleSystem {
         }
     }
     /**
-     * Get the next particle-system in the world's particle-system
-     * list.
-     */
+   * Get the next particle-system in the world's particle-system
+   * list.
+   */
     GetNext() {
         return this.m_next;
     }
     /**
-     * Query the particle system for all particles that potentially
-     * overlap the provided AABB.
-     * b2QueryCallback::ShouldQueryParticleSystem is ignored.
-     *
-     * @param callback a user implemented callback class.
-     * @param aabb the query box.
-     */
+   * Query the particle system for all particles that potentially
+   * overlap the provided AABB.
+   * b2QueryCallback::ShouldQueryParticleSystem is ignored.
+   *
+   * @param callback a user implemented callback class.
+   * @param aabb the query box.
+   */
     QueryAABB(callback, aabb) {
         if (this.m_proxyBuffer.count === 0) {
             return;
@@ -1607,16 +1607,16 @@ class b2ParticleSystem {
         }
     }
     /**
-     * Query the particle system for all particles that potentially
-     * overlap the provided shape's AABB. Calls QueryAABB
-     * internally. b2QueryCallback::ShouldQueryParticleSystem is
-     * ignored.
-     *
-     * @param callback a user implemented callback class.
-     * @param shape the query shape
-     * @param xf the transform of the AABB
-     * @param childIndex
-     */
+   * Query the particle system for all particles that potentially
+   * overlap the provided shape's AABB. Calls QueryAABB
+   * internally. b2QueryCallback::ShouldQueryParticleSystem is
+   * ignored.
+   *
+   * @param callback a user implemented callback class.
+   * @param shape the query shape
+   * @param xf the transform of the AABB
+   * @param childIndex
+   */
     QueryShapeAABB(callback, shape, xf, childIndex = 0) {
         const s_aabb = b2ParticleSystem.QueryShapeAABB_s_aabb;
         const aabb = s_aabb;
@@ -1631,16 +1631,16 @@ class b2ParticleSystem {
         this.QueryAABB(callback, aabb);
     }
     /**
-     * Ray-cast the particle system for all particles in the path of
-     * the ray. Your callback controls whether you get the closest
-     * point, any point, or n-points. The ray-cast ignores particles
-     * that contain the starting point.
-     * b2RayCastCallback::ShouldQueryParticleSystem is ignored.
-     *
-     * @param callback a user implemented callback class.
-     * @param point1 the ray starting point
-     * @param point2 the ray ending point
-     */
+   * Ray-cast the particle system for all particles in the path of
+   * the ray. Your callback controls whether you get the closest
+   * point, any point, or n-points. The ray-cast ignores particles
+   * that contain the starting point.
+   * b2RayCastCallback::ShouldQueryParticleSystem is ignored.
+   *
+   * @param callback a user implemented callback class.
+   * @param point1 the ray starting point
+   * @param point2 the ray ending point
+   */
     RayCast(callback, point1, point2) {
         const s_aabb = b2ParticleSystem.RayCast_s_aabb;
         const s_p = b2ParticleSystem.RayCast_s_p;
@@ -1695,10 +1695,10 @@ class b2ParticleSystem {
         }
     }
     /**
-     * Compute the axis-aligned bounding box for all particles
-     * contained within this particle system.
-     * @param aabb Returns the axis-aligned bounding box of the system.
-     */
+   * Compute the axis-aligned bounding box for all particles
+   * contained within this particle system.
+   * @param aabb Returns the axis-aligned bounding box of the system.
+   */
     ComputeAABB(aabb) {
         const particleCount = this.GetParticleCount();
         // DEBUG: b2Assert(aabb !== null);
@@ -1729,8 +1729,8 @@ class b2ParticleSystem {
         }
     }
     /**
-     * Reallocate a buffer
-     */
+   * Reallocate a buffer
+   */
     ReallocateBuffer3(oldBuffer, oldCapacity, newCapacity) {
         // b2Assert(newCapacity > oldCapacity);
         if (newCapacity <= oldCapacity) {
@@ -1741,8 +1741,8 @@ class b2ParticleSystem {
         return newBuffer;
     }
     /**
-     * Reallocate a buffer
-     */
+   * Reallocate a buffer
+   */
     ReallocateBuffer5(buffer, userSuppliedCapacity, oldCapacity, newCapacity, deferred) {
         // b2Assert(newCapacity > oldCapacity);
         if (newCapacity <= oldCapacity) {
@@ -1761,8 +1761,8 @@ class b2ParticleSystem {
         return buffer; // TODO: fix this
     }
     /**
-     * Reallocate a buffer
-     */
+   * Reallocate a buffer
+   */
     ReallocateBuffer4(buffer, oldCapacity, newCapacity, deferred) {
         // DEBUG: b2Assert(newCapacity > oldCapacity);
         return this.ReallocateBuffer5(buffer.data, buffer.userSuppliedCapacity, oldCapacity, newCapacity, deferred);
@@ -1778,9 +1778,9 @@ class b2ParticleSystem {
         return buffer;
     }
     /**
-     * Reallocate the handle / index map and schedule the allocation
-     * of a new pool for handle allocation.
-     */
+   * Reallocate the handle / index map and schedule the allocation
+   * of a new pool for handle allocation.
+   */
     ReallocateHandleBuffers(newCapacity) {
         // DEBUG: b2Assert(newCapacity > this.m_internalAllocatedCapacity);
         // Reallocate a new handle / index map buffer, copying old handle pointers
@@ -3797,9 +3797,9 @@ class b2ParticleSystem {
         }
     }
     /**
-     * Destroy all particles which have outlived their lifetimes set
-     * by SetParticleLifetime().
-     */
+   * Destroy all particles which have outlived their lifetimes set
+   * by SetParticleLifetime().
+   */
     SolveLifetimes(step) {
         // Update the time elapsed.
         this.m_timeElapsed = this.LifetimeToExpirationTime(step.dt);
@@ -3813,19 +3813,19 @@ class b2ParticleSystem {
             ///const ExpirationTimeComparator expirationTimeComparator(expirationTimes);
             ///std::sort(expirationTimeIndices, expirationTimeIndices + particleCount, expirationTimeComparator);
             /**
-             * Compare the lifetime of particleIndexA and particleIndexB
-             * returning true if the lifetime of A is greater than B for
-             * particles that will expire.  If either particle's lifetime is
-             * infinite (<= 0.0f) this function return true if the lifetime
-             * of A is lesser than B. When used with std::sort() this
-             * results in an array of particle indicies sorted in reverse
-             * order by particle lifetime.
-             *
-             * For example, the set of lifetimes
-             * (1.0, 0.7, 0.3, 0.0, -1.0, 2.0)
-             * would be sorted as
-             * (0.0, 1.0, -2.0, 1.0, 0.7, 0.3)
-             */
+       * Compare the lifetime of particleIndexA and particleIndexB
+       * returning true if the lifetime of A is greater than B for
+       * particles that will expire.  If either particle's lifetime is
+       * infinite (<= 0.0f) this function return true if the lifetime
+       * of A is lesser than B. When used with std::sort() this
+       * results in an array of particle indicies sorted in reverse
+       * order by particle lifetime.
+       *
+       * For example, the set of lifetimes
+       * (1.0, 0.7, 0.3, 0.0, -1.0, 2.0)
+       * would be sorted as
+       * (0.0, 1.0, -2.0, 1.0, 0.7, 0.3)
+       */
             const ExpirationTimeComparator = (particleIndexA, particleIndexB) => {
                 const expirationTimeA = expirationTimes[particleIndexA];
                 const expirationTimeB = expirationTimes[particleIndexB];
@@ -3989,36 +3989,36 @@ class b2ParticleSystem {
         return this.m_inverseDensity * inverseStride * inverseStride;
     }
     /**
-     * Get the world's contact filter if any particles with the
-     * b2_contactFilterParticle flag are present in the system.
-     */
+   * Get the world's contact filter if any particles with the
+   * b2_contactFilterParticle flag are present in the system.
+   */
     GetFixtureContactFilter() {
         return (this.m_allParticleFlags & b2_particle_js_1.b2ParticleFlag.b2_fixtureContactFilterParticle) ?
             this.m_world.m_contactManager.m_contactFilter : null;
     }
     /**
-     * Get the world's contact filter if any particles with the
-     * b2_particleContactFilterParticle flag are present in the
-     * system.
-     */
+   * Get the world's contact filter if any particles with the
+   * b2_particleContactFilterParticle flag are present in the
+   * system.
+   */
     GetParticleContactFilter() {
         return (this.m_allParticleFlags & b2_particle_js_1.b2ParticleFlag.b2_particleContactFilterParticle) ?
             this.m_world.m_contactManager.m_contactFilter : null;
     }
     /**
-     * Get the world's contact listener if any particles with the
-     * b2_fixtureContactListenerParticle flag are present in the
-     * system.
-     */
+   * Get the world's contact listener if any particles with the
+   * b2_fixtureContactListenerParticle flag are present in the
+   * system.
+   */
     GetFixtureContactListener() {
         return (this.m_allParticleFlags & b2_particle_js_1.b2ParticleFlag.b2_fixtureContactListenerParticle) ?
             this.m_world.m_contactManager.m_contactListener : null;
     }
     /**
-     * Get the world's contact listener if any particles with the
-     * b2_particleContactListenerParticle flag are present in the
-     * system.
-     */
+   * Get the world's contact listener if any particles with the
+   * b2_particleContactListenerParticle flag are present in the
+   * system.
+   */
     GetParticleContactListener() {
         return (this.m_allParticleFlags & b2_particle_js_1.b2ParticleFlag.b2_particleContactListenerParticle) ?
             this.m_world.m_contactManager.m_contactListener : null;
@@ -4172,23 +4172,23 @@ class b2ParticleSystem {
         this.m_lastBodyContactStepBuffer.data[particle] = this.m_timestamp;
     }
     /**
-     * Determine whether a particle index is valid.
-     */
+   * Determine whether a particle index is valid.
+   */
     ValidateParticleIndex(index) {
         return index >= 0 && index < this.GetParticleCount() &&
             index !== b2_settings_js_1.b2_invalidParticleIndex;
     }
     /**
-     * Get the time elapsed in
-     * b2ParticleSystemDef::lifetimeGranularity.
-     */
+   * Get the time elapsed in
+   * b2ParticleSystemDef::lifetimeGranularity.
+   */
     GetQuantizedTimeElapsed() {
         ///return (int32)(m_timeElapsed >> 32);
         return Math.floor(this.m_timeElapsed / 0x100000000);
     }
     /**
-     * Convert a lifetime in seconds to an expiration time.
-     */
+   * Convert a lifetime in seconds to an expiration time.
+   */
     LifetimeToExpirationTime(lifetime) {
         ///return m_timeElapsed + (int64)((lifetime / m_def.lifetimeGranularity) * (float32)(1LL << 32));
         return this.m_timeElapsed + Math.floor(((lifetime / this.m_def.lifetimeGranularity) * 0x100000000));
@@ -4274,20 +4274,20 @@ b2ParticleSystem.RayCast_s_v = new b2_math_js_1.b2Vec2();
 b2ParticleSystem.RayCast_s_n = new b2_math_js_1.b2Vec2();
 b2ParticleSystem.RayCast_s_point = new b2_math_js_1.b2Vec2();
 /**
- * All particle types that require creating pairs
- */
+* All particle types that require creating pairs
+*/
 b2ParticleSystem.k_pairFlags = b2_particle_js_1.b2ParticleFlag.b2_springParticle;
 /**
- * All particle types that require creating triads
- */
+* All particle types that require creating triads
+*/
 b2ParticleSystem.k_triadFlags = b2_particle_js_1.b2ParticleFlag.b2_elasticParticle;
 /**
- * All particle types that do not produce dynamic pressure
- */
+* All particle types that do not produce dynamic pressure
+*/
 b2ParticleSystem.k_noPressureFlags = b2_particle_js_1.b2ParticleFlag.b2_powderParticle | b2_particle_js_1.b2ParticleFlag.b2_tensileParticle;
 /**
- * All particle types that apply extra damping force with bodies
- */
+* All particle types that apply extra damping force with bodies
+*/
 b2ParticleSystem.k_extraDampingFlags = b2_particle_js_1.b2ParticleFlag.b2_staticPressureParticle;
 b2ParticleSystem.k_barrierWallFlags = b2_particle_js_1.b2ParticleFlag.b2_barrierParticle | b2_particle_js_1.b2ParticleFlag.b2_wallParticle;
 b2ParticleSystem.CreateParticlesStrokeShapeForGroup_s_edge = new b2_edge_shape_js_1.b2EdgeShape();
@@ -4375,12 +4375,12 @@ class b2ParticleSystem_Proxy {
 exports.b2ParticleSystem_Proxy = b2ParticleSystem_Proxy;
 class b2ParticleSystem_InsideBoundsEnumerator {
     /**
-     * InsideBoundsEnumerator enumerates all particles inside the
-     * given bounds.
-     *
-     * Construct an enumerator with bounds of tags and a range of
-     * proxies.
-     */
+   * InsideBoundsEnumerator enumerates all particles inside the
+   * given bounds.
+   *
+   * Construct an enumerator with bounds of tags and a range of
+   * proxies.
+   */
     constructor(system, lower, upper, first, last) {
         this.m_system = system;
         this.m_xLower = (lower & b2ParticleSystem.xMask) >>> 0;
@@ -4392,9 +4392,9 @@ class b2ParticleSystem_InsideBoundsEnumerator {
         // DEBUG: b2Assert(this.m_first <= this.m_last);
     }
     /**
-     * Get index of the next particle. Returns
-     * b2_invalidParticleIndex if there are no more particles.
-     */
+   * Get index of the next particle. Returns
+   * b2_invalidParticleIndex if there are no more particles.
+   */
     GetNext() {
         while (this.m_first < this.m_last) {
             const xTag = (this.m_system.m_proxyBuffer.data[this.m_first].tag & b2ParticleSystem.xMask) >>> 0;
@@ -4415,17 +4415,17 @@ exports.b2ParticleSystem_InsideBoundsEnumerator = b2ParticleSystem_InsideBoundsE
 class b2ParticleSystem_ParticleListNode {
     constructor() {
         /**
-         * The next node in the list.
-         */
+       * The next node in the list.
+       */
         this.next = null;
         /**
-         * Number of entries in the list. Valid only for the node at the
-         * head of the list.
-         */
+       * Number of entries in the list. Valid only for the node at the
+       * head of the list.
+       */
         this.count = 0;
         /**
-         * Particle index.
-         */
+       * Particle index.
+       */
         this.index = 0;
     }
 }
@@ -4500,22 +4500,22 @@ class b2ParticlePairSet extends b2ParticleSystem_FixedSetAllocator {
 exports.b2ParticlePairSet = b2ParticlePairSet;
 class b2ParticleSystem_ConnectionFilter {
     /**
-     * Is the particle necessary for connection?
-     * A pair or a triad should contain at least one 'necessary'
-     * particle.
-     */
+   * Is the particle necessary for connection?
+   * A pair or a triad should contain at least one 'necessary'
+   * particle.
+   */
     IsNecessary(index) {
         return true;
     }
     /**
-     * An additional condition for creating a pair.
-     */
+   * An additional condition for creating a pair.
+   */
     ShouldCreatePair(a, b) {
         return true;
     }
     /**
-     * An additional condition for creating a triad.
-     */
+   * An additional condition for creating a triad.
+   */
     ShouldCreateTriad(a, b, c) {
         return true;
     }
@@ -4558,15 +4558,15 @@ class b2ParticleSystem_JoinParticleGroupsFilter extends b2ParticleSystem_Connect
         this.m_threshold = threshold;
     }
     /**
-     * An additional condition for creating a pair.
-     */
+   * An additional condition for creating a pair.
+   */
     ShouldCreatePair(a, b) {
         return (a < this.m_threshold && this.m_threshold <= b) ||
             (b < this.m_threshold && this.m_threshold <= a);
     }
     /**
-     * An additional condition for creating a triad.
-     */
+   * An additional condition for creating a triad.
+   */
     ShouldCreateTriad(a, b, c) {
         return (a < this.m_threshold || b < this.m_threshold || c < this.m_threshold) &&
             (this.m_threshold <= a || this.m_threshold <= b || this.m_threshold <= c);
@@ -4588,8 +4588,8 @@ class b2ParticleSystem_CompositeShape extends b2_shape_js_1.b2Shape {
         return 1;
     }
     /**
-     * @see b2Shape::TestPoint
-     */
+   * @see b2Shape::TestPoint
+   */
     TestPoint(xf, p) {
         for (let i = 0; i < this.m_shapeCount; i++) {
             if (this.m_shapes[i].TestPoint(xf, p)) {
@@ -4599,22 +4599,22 @@ class b2ParticleSystem_CompositeShape extends b2_shape_js_1.b2Shape {
         return false;
     }
     /**
-     * @see b2Shape::ComputeDistance
-     */
+   * @see b2Shape::ComputeDistance
+   */
     ComputeDistance(xf, p, normal, childIndex) {
         // DEBUG: b2Assert(false);
         return 0;
     }
     /**
-     * Implement b2Shape.
-     */
+   * Implement b2Shape.
+   */
     RayCast(output, input, xf, childIndex) {
         // DEBUG: b2Assert(false);
         return false;
     }
     /**
-     * @see b2Shape::ComputeAABB
-     */
+   * @see b2Shape::ComputeAABB
+   */
     ComputeAABB(aabb, xf, childIndex) {
         const s_subaabb = new b2_collision_js_1.b2AABB();
         aabb.lowerBound.x = +b2_settings_js_1.b2_maxFloat;
@@ -4632,8 +4632,8 @@ class b2ParticleSystem_CompositeShape extends b2_shape_js_1.b2Shape {
         }
     }
     /**
-     * @see b2Shape::ComputeMass
-     */
+   * @see b2Shape::ComputeMass
+   */
     ComputeMass(massData, density) {
         // DEBUG: b2Assert(false);
     }

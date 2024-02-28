@@ -33,17 +33,17 @@
 // Memory Allocation
 
 /// Implement this function to use your own memory allocator.
-export function b2Alloc(size: number): any {
-  return null;
+export function b2Alloc (size: number): any {
+	return null;
 }
 
 /// If you implement b2Alloc, you should also implement this function.
-export function b2Free(mem: any): void {
+export function b2Free (mem: any): void {
 }
 
 /// Logging function.
-export function b2Log(message: string, ...args: any[]): void {
-  // console.log(message, ...args);
+export function b2Log (message: string, ...args: any[]): void {
+	// console.log(message, ...args);
 }
 
 export * from "./b2_common.js";

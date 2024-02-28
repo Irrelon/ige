@@ -24,7 +24,7 @@ export class IgeUiTextBox extends IgeUiElement {
 	_placeHolderColor: string = "";
 	_mask: string = "";
 
-	constructor() {
+	constructor () {
 		super();
 
 		this._value = "";
@@ -132,7 +132,7 @@ export class IgeUiTextBox extends IgeUiElement {
 	 */
 	width(px: number | string, lockAspect?: boolean, modifier?: number, noUpdate?: boolean): this;
 	width(): number;
-	width(px?: number | string, lockAspect = false, modifier?: number, noUpdate = false) {
+	width (px?: number | string, lockAspect = false, modifier?: number, noUpdate = false) {
 		if (px !== undefined) {
 			// Call the main super class method
 			const returnValue = super.width(px, lockAspect, modifier, noUpdate);
@@ -155,7 +155,7 @@ export class IgeUiTextBox extends IgeUiElement {
 	 */
 	height(px: number | string, lockAspect?: boolean, modifier?: number, noUpdate?: boolean): this;
 	height(): number;
-	height(px?: number | string, lockAspect: boolean = false, modifier?: number, noUpdate: boolean = false) {
+	height (px?: number | string, lockAspect: boolean = false, modifier?: number, noUpdate: boolean = false) {
 		if (px !== undefined) {
 			// Call the main super class method
 			const returnValue = super.height(px, lockAspect, modifier, noUpdate);
@@ -174,7 +174,7 @@ export class IgeUiTextBox extends IgeUiElement {
 	 */
 	value(val: string): this;
 	value(): string;
-	value(val?: string) {
+	value (val?: string) {
 		if (val === undefined) {
 			return this._value;
 		}
@@ -207,7 +207,7 @@ export class IgeUiTextBox extends IgeUiElement {
 
 	placeHolder(val: string): this;
 	placeHolder(): string;
-	placeHolder(val?: string) {
+	placeHolder (val?: string) {
 		if (val !== undefined) {
 			this._placeHolder = val;
 			return this;
@@ -216,7 +216,7 @@ export class IgeUiTextBox extends IgeUiElement {
 		return this._placeHolder;
 	}
 
-	placeHolderColor(val?: string) {
+	placeHolderColor (val?: string) {
 		if (val !== undefined) {
 			this._placeHolderColor = val;
 			return this;
@@ -225,7 +225,7 @@ export class IgeUiTextBox extends IgeUiElement {
 		return this._placeHolderColor;
 	}
 
-	mask(val?: string) {
+	mask (val?: string) {
 		if (val !== undefined) {
 			this._mask = val;
 			return this;
@@ -240,7 +240,7 @@ export class IgeUiTextBox extends IgeUiElement {
 	 * @param fontSheet
 	 * @return {*}
 	 */
-	fontSheet(fontSheet?: IgeFontSheet) {
+	fontSheet (fontSheet?: IgeFontSheet) {
 		if (fontSheet !== undefined) {
 			this._fontSheet = fontSheet;
 
@@ -252,7 +252,7 @@ export class IgeUiTextBox extends IgeUiElement {
 		return this._fontSheet;
 	}
 
-	font(val?: string | IgeFontSheet) {
+	font (val?: string | IgeFontSheet) {
 		if (val !== undefined) {
 			if (typeof val === "string") {
 				// Native font name
@@ -272,7 +272,7 @@ export class IgeUiTextBox extends IgeUiElement {
 		}
 	}
 
-	nativeFont(val?: string) {
+	nativeFont (val?: string) {
 		if (val !== undefined) {
 			this._fontEntity.nativeFont(val);
 			return this;
@@ -281,7 +281,7 @@ export class IgeUiTextBox extends IgeUiElement {
 		return this._fontEntity.nativeFont();
 	}
 
-	nativeStroke(val?: number) {
+	nativeStroke (val?: number) {
 		if (val !== undefined) {
 			this._fontEntity.nativeStroke(val);
 			return this;
@@ -290,7 +290,7 @@ export class IgeUiTextBox extends IgeUiElement {
 		return this._fontEntity.nativeStroke();
 	}
 
-	nativeStrokeColor(val?: string) {
+	nativeStrokeColor (val?: string) {
 		if (val !== undefined) {
 			this._fontEntity.nativeStrokeColor(val);
 			return this;
@@ -301,7 +301,7 @@ export class IgeUiTextBox extends IgeUiElement {
 
 	color(color?: string | CanvasGradient | CanvasPattern): this;
 	color(): string | CanvasGradient | CanvasPattern;
-	color(color?: string | CanvasGradient | CanvasPattern) {
+	color (color?: string | CanvasGradient | CanvasPattern) {
 		if (color !== undefined) {
 			this._color = color;
 
@@ -316,7 +316,7 @@ export class IgeUiTextBox extends IgeUiElement {
 		return this._color;
 	}
 
-	_mounted() {
+	_mounted () {
 		// Check if we have a text value
 		if (!this._value && this._placeHolder) {
 			// Assign placeholder text and color
@@ -327,7 +327,7 @@ export class IgeUiTextBox extends IgeUiElement {
 		super._mounted();
 	}
 
-	destroy() {
+	destroy () {
 		/* The 'blur' function is called to destroy the DOM textbox. */
 		this.blur();
 		return super.destroy();
