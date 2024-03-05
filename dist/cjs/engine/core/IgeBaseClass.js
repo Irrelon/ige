@@ -17,7 +17,7 @@ const getIndentString = () => {
 };
 class IgeBaseClass {
     constructor() {
-        this.classId = "IgeBaseClass";
+        this.classId = "";
         this._data = {};
     }
     /**
@@ -82,14 +82,14 @@ class IgeBaseClass {
         const stack = new Error().stack || "";
         const stackArr = stack.split("\n");
         stackArr.shift();
-        console.log(getIndentString() + `(${this.classId}) ${message}`, ...args);
+        console.log(getIndentString() + `(${this.classId || this.constructor.name}) ${message}`, ...args);
         return this;
     }
     logWarn(message, ...args) {
         const stack = new Error().stack || "";
         const stackArr = stack.split("\n");
         stackArr.shift();
-        console.warn(getIndentString() + `(${this.classId}) ${message}`, ...args);
+        console.warn(getIndentString() + `(${this.classId || this.constructor.name}) ${message}`, ...args);
         stackArr.forEach((stackLine) => {
             console.warn(stackLine);
         });
@@ -99,7 +99,7 @@ class IgeBaseClass {
         const stack = new Error().stack || "";
         const stackArr = stack.split("\n");
         stackArr.shift();
-        console.error(getIndentString() + `(${this.classId}) ${message}`, ...args);
+        console.error(getIndentString() + `(${this.classId || this.constructor.name}) ${message}`, ...args);
         stackArr.forEach((stackLine) => {
             console.error(stackLine);
         });

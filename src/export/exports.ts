@@ -139,7 +139,9 @@ export * from "../engine/filters/colorOverlay";
 export * from "../engine/filters/brighten";
 export * from "../engine/filters/blur";
 
-export * from "../engine/core/IgeRenderer";
+export * from "../engine/core/IgeBaseRenderer";
+export * from "../engine/renderer/IgeRenderer2d";
+export * from "../engine/renderer/IgeRendererWebGPU";
 export * from "../engine/core/IgeViewport";
 export * from "../engine/core/IgeUiManagerController";
 

@@ -1,4 +1,4 @@
-import type { IgeRenderer } from "./IgeRenderer.js"
+import type { IgeBaseRenderer } from "./IgeBaseRenderer.js"
 import type { IgeBaseClass } from "../../export/exports.js";
 import type { IgeCamera } from "../../export/exports.js"
 import type { IgeComponent } from "../../export/exports.js"
@@ -18,7 +18,7 @@ export declare class IgeEngine extends IgeEntity {
     client?: IgeBaseClass;
     server?: IgeBaseClass;
     _idRegistered: boolean;
-    _renderer: IgeRenderer | null;
+    _renderer: IgeBaseRenderer | null;
     _canvas?: HTMLCanvasElement;
     _ctx: IgeCanvasRenderingContext2d | null;
     _idCounter: number;
@@ -102,7 +102,7 @@ export declare class IgeEngine extends IgeEntity {
     spawnQueue(entity?: IgeObject): IgeEngine;
     spawnQueue(): IgeEngine["_spawnQueue"];
     currentViewport(viewport?: IgeObject): IgeViewport | null;
-    renderer(renderer: IgeRenderer): IgeEngine;
+    renderer(renderer: IgeBaseRenderer): IgeEngine;
     renderer(): IgeEngine["_renderer"];
     /**
      * Sets the canvas element that will be used as the front-buffer.

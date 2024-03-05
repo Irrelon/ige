@@ -1,7 +1,9 @@
-import { IgeBaseRenderer } from "./IgeBaseRenderer.js"
-import { ige } from "../../export/exports.js"
-export class IgeRenderer2d extends IgeBaseRenderer {
-    _canvasContext;
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.IgeRenderer2d = void 0;
+const IgeBaseRenderer_1 = require("../core/IgeBaseRenderer.js");
+const exports_1 = require("../../export/exports.js");
+class IgeRenderer2d extends IgeBaseRenderer_1.IgeBaseRenderer {
     constructor({ canvasElement, containerElement }) {
         super({ canvasElement, containerElement, mode: "2d" });
     }
@@ -16,9 +18,10 @@ export class IgeRenderer2d extends IgeBaseRenderer {
         }
     }
     _updateDevicePixelRatio() {
+        var _a;
         super._updateDevicePixelRatio();
         // Scale the canvas context to account for the change
-        this._canvasContext?.scale(this._devicePixelRatio, this._devicePixelRatio);
+        (_a = this._canvasContext) === null || _a === void 0 ? void 0 : _a.scale(this._devicePixelRatio, this._devicePixelRatio);
     }
     renderSceneGraph(arr, bounds) {
         const ctx = this._canvasContext;
@@ -32,21 +35,21 @@ export class IgeRenderer2d extends IgeBaseRenderer {
             //ctx.scale(this._globalScale.x, this._globalScale.y);
             let arrCount = arr.length;
             // Loop our viewports and call their tick methods
-            if (ige.config.debug._timing) {
+            if (exports_1.ige.config.debug._timing) {
                 while (arrCount--) {
                     ctx.save();
                     ts = new Date().getTime();
                     arr[arrCount].tick(ctx);
                     td = new Date().getTime() - ts;
                     if (arr[arrCount]) {
-                        if (!ige.engine._timeSpentInTick[arr[arrCount].id()]) {
-                            ige.engine._timeSpentInTick[arr[arrCount].id()] = 0;
+                        if (!exports_1.ige.engine._timeSpentInTick[arr[arrCount].id()]) {
+                            exports_1.ige.engine._timeSpentInTick[arr[arrCount].id()] = 0;
                         }
-                        if (!ige.engine._timeSpentLastTick[arr[arrCount].id()]) {
-                            ige.engine._timeSpentLastTick[arr[arrCount].id()] = {};
+                        if (!exports_1.ige.engine._timeSpentLastTick[arr[arrCount].id()]) {
+                            exports_1.ige.engine._timeSpentLastTick[arr[arrCount].id()] = {};
                         }
-                        ige.engine._timeSpentInTick[arr[arrCount].id()] += td;
-                        ige.engine._timeSpentLastTick[arr[arrCount].id()].ms = td;
+                        exports_1.ige.engine._timeSpentInTick[arr[arrCount].id()] += td;
+                        exports_1.ige.engine._timeSpentLastTick[arr[arrCount].id()].ms = td;
                     }
                     ctx.restore();
                 }
@@ -71,3 +74,4 @@ export class IgeRenderer2d extends IgeBaseRenderer {
         this._canvasContext.clearRect(0, 0, this._canvasElement.width, this._canvasElement.height);
     }
 }
+exports.IgeRenderer2d = IgeRenderer2d;

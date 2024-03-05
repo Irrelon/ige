@@ -1,18 +1,44 @@
+import { IgeBaseRenderer, type IgeBaseRendererProps } from "@/engine/core/IgeBaseRenderer";
 import type { IgeObject } from "@/engine/core/IgeObject";
 import type { IgePoint2d } from "@/engine/core/IgePoint2d";
-import { IgeRenderer } from "@/engine/core/IgeRenderer";
-import { ige } from "@/engine/instance";
+import { ige } from "@/export/exports";
+import type { IgeCanvasRenderingContext2d } from "@/types/IgeCanvasRenderingContext2d";
 
-export class IgeRenderer2d extends IgeRenderer {
+export interface IgeRenderer2dProps {
+	containerElement?: IgeBaseRendererProps["containerElement"];
+	canvasElement?: IgeBaseRendererProps["canvasElement"];
+}
+
+export class IgeRenderer2d extends IgeBaseRenderer {
+	_canvasContext?: IgeCanvasRenderingContext2d;
+
+	constructor ({ canvasElement, containerElement }: IgeRenderer2dProps) {
+		super({ canvasElement, containerElement, mode: "2d" });
+	}
+
+	_getContext () {
+		if (!this._canvasElement) {
+			throw new Error("No canvas element was found when trying to get context");
+		}
+		this._canvasContext = this._canvasElement.getContext("2d") as CanvasRenderingContext2D;
+
+		// If we didn't get a context, fail completely
+		if (!this._canvasContext) {
+			throw new Error(
+				"Could not get canvas context, renderer unable to start. This is a critical error that means the engine cannot start."
+			);
+		}
+	}
+
 	_updateDevicePixelRatio () {
 		super._updateDevicePixelRatio();
 
 		// Scale the canvas context to account for the change
-		this._canvasContext2d?.scale(this._devicePixelRatio, this._devicePixelRatio);
+		this._canvasContext?.scale(this._devicePixelRatio, this._devicePixelRatio);
 	}
 
 	renderSceneGraph (arr: IgeObject[], bounds: IgePoint2d): boolean {
-		const ctx = this._canvasContext2d;
+		const ctx = this._canvasContext;
 		if (!ctx) return false;
 
 		let ts: number;
@@ -57,5 +83,13 @@ export class IgeRenderer2d extends IgeRenderer {
 		}
 
 		return super.renderSceneGraph(arr, bounds);
+	}
+
+	/**
+	 * Clears the entire canvas.
+	 */
+	clear () {
+		if (!(this._canvasElement && this._canvasContext)) return;
+		this._canvasContext.clearRect(0, 0, this._canvasElement.width, this._canvasElement.height);
 	}
 }

@@ -19,7 +19,7 @@ const getIndentString = () => {
 };
 
 export class IgeBaseClass {
-	classId = "IgeBaseClass";
+	classId? = "";
 	_data: Record<string, any> = {};
 
 	/**
@@ -87,7 +87,7 @@ export class IgeBaseClass {
 		const stackArr = stack.split("\n");
 		stackArr.shift();
 
-		console.log(getIndentString() + `(${this.classId}) ${message}`, ...args);
+		console.log(getIndentString() + `(${this.classId || this.constructor.name}) ${message}`, ...args);
 		return this;
 	}
 
@@ -96,7 +96,7 @@ export class IgeBaseClass {
 		const stackArr = stack.split("\n");
 		stackArr.shift();
 
-		console.warn(getIndentString() + `(${this.classId}) ${message}`, ...args);
+		console.warn(getIndentString() + `(${this.classId || this.constructor.name}) ${message}`, ...args);
 
 		stackArr.forEach((stackLine) => {
 			console.warn(stackLine);
@@ -109,7 +109,7 @@ export class IgeBaseClass {
 		const stackArr = stack.split("\n");
 		stackArr.shift();
 
-		console.error(getIndentString() + `(${this.classId}) ${message}`, ...args);
+		console.error(getIndentString() + `(${this.classId || this.constructor.name}) ${message}`, ...args);
 
 		stackArr.forEach((stackLine) => {
 			console.error(stackLine);

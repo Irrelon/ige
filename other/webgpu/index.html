@@ -1,8 +1,34 @@
 <!doctype HTML>
 <html>
-<head></head>
-<body>
-<canvas id="render" width="800px" height="600px"></canvas>
-<script src="./index.js" type="module"></script>
+<head>
+  <style>
+      :root {
+          --bg-color: #fff;
+          --line-color-1: #AAA;
+          --line-color-2: #DDD;
+      }
+      @media (prefers-color-scheme: dark) {
+          :root {
+              --bg-color: #000;
+              --line-color-1: #666;
+              --line-color-2: #333;
+          }
+      }
+      canvas {
+          display: block;  /* make the canvas act like a block   */
+
+          background-color: var(--bg-color);
+          background-image: linear-gradient(var(--line-color-1) 1.5px, transparent 1.5px),
+          linear-gradient(90deg, var(--line-color-1) 1.5px, transparent 1.5px),
+          linear-gradient(var(--line-color-2) 1px, transparent 1px),
+          linear-gradient(90deg, var(--line-color-2) 1px, transparent 1px);
+          background-position: -1.5px -1.5px, -1.5px -1.5px, -1px -1px, -1px -1px;
+          background-size: 100px 100px, 100px 100px, 10px 10px, 10px 10px;
+      }
+  </style>
+</head>
+<body style="background-color: black;">
+  <canvas id="render" width="1000px" height="600px"></canvas>
+  <script src="./index.js" type="module"></script>
 </body>
 </html>

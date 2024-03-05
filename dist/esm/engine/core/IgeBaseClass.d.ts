@@ -1,5 +1,5 @@
 export declare class IgeBaseClass {
-    classId: string;
+    classId?: string | undefined;
     _data: Record<string, any>;
     /**
      * Returns the class id. Primarily used to help identify
@@ -12,7 +12,7 @@ export declare class IgeBaseClass {
      *     // Will output "IgeEntity"
      *     console.log(entity.classId);
      */
-    getClassId(): string;
+    getClassId(): string | undefined;
     /**
      * Provides logging capabilities to all IgeBaseClass instances.
      * @param message

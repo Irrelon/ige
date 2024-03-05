@@ -1,1 +1,1 @@
-export type IgeRendererMode = "2d" | "webgl" | "webgpu";
+export type IgeRendererMode = "2d" | "webgpu";

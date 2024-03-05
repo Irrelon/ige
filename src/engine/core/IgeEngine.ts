@@ -1,4 +1,4 @@
-import type { IgeRenderer } from "@/engine/core/IgeRenderer";
+import type { IgeBaseRenderer } from "@/engine/core/IgeBaseRenderer";
 import type { IgeBaseClass } from "@/export/exports";
 import type { IgeCamera } from "@/export/exports";
 import type { IgeComponent } from "@/export/exports";
@@ -25,7 +25,7 @@ export class IgeEngine extends IgeEntity {
 	client?: IgeBaseClass;
 	server?: IgeBaseClass;
 	_idRegistered: boolean = true;
-	_renderer: IgeRenderer | null = null;
+	_renderer: IgeBaseRenderer | null = null;
 	_canvas?: HTMLCanvasElement;
 	_ctx: IgeCanvasRenderingContext2d | null;
 	_idCounter: number;
@@ -280,11 +280,23 @@ export class IgeEngine extends IgeEntity {
 		return ige.engine._currentViewport;
 	}
 
-	renderer(renderer: IgeRenderer): IgeEngine;
+	renderer(renderer: IgeBaseRenderer): IgeEngine;
 	renderer(): IgeEngine["_renderer"];
-	renderer (renderer?: IgeRenderer): IgeEngine | IgeEngine["_renderer"] {
+	renderer (renderer?: IgeBaseRenderer | null): IgeEngine | IgeEngine["_renderer"] {
+		// Check if the passed renderer is either a new one or null (not undefined)
 		if (renderer !== undefined) {
+			if (this._renderer) {
+				// Destroy the current renderer
+				this._renderer.destroy();
+			}
+
 			this._renderer = renderer;
+
+			if (renderer) {
+				// Call the renderer's setup
+				renderer.setup();
+			}
+
 			return this;
 		}
 
@@ -1330,7 +1342,7 @@ export class IgeEngine extends IgeEntity {
 	 * @return {Boolean}
 	 */
 	canvasReady = () => {
-		return this._canvas !== undefined || isWorker || isServer;
+		return this._canvas !== undefined || (this._renderer && this._renderer.isReady()) || isWorker || isServer;
 	};
 
 	/**
@@ -1665,6 +1677,7 @@ export class IgeEngine extends IgeEntity {
 	 * those whose pixel ratio is different from 1 to 1.
 	 */
 	createFrontBuffer (autoSize = true, dontScale = false) {
+		return;
 		if (!isClient) {
 			return;
 		}
@@ -1841,48 +1854,48 @@ export class IgeEngine extends IgeEntity {
 			}
 		}
 
-		ctx.save();
-		ctx.translate(this._bounds2d.x2, this._bounds2d.y2);
-		//ctx.scale(this._globalScale.x, this._globalScale.y);
-
-		// Process the current engine tick for all child objects
-		const arr = this._children;
-
-		if (arr) {
-			let arrCount = arr.length;
-
-			// Loop our viewports and call their tick methods
-			if (ige.config.debug._timing) {
-				while (arrCount--) {
-					ctx.save();
-					const ts = new Date().getTime();
-					arr[arrCount].tick(ctx);
-					const td = new Date().getTime() - ts;
-
-					if (arr[arrCount]) {
-						if (!ige.engine._timeSpentInTick[arr[arrCount].id()]) {
-							ige.engine._timeSpentInTick[arr[arrCount].id()] = 0;
-						}
-
-						if (!ige.engine._timeSpentLastTick[arr[arrCount].id()]) {
-							ige.engine._timeSpentLastTick[arr[arrCount].id()] = {};
-						}
-
-						ige.engine._timeSpentInTick[arr[arrCount].id()] += td;
-						ige.engine._timeSpentLastTick[arr[arrCount].id()].ms = td;
-					}
-					ctx.restore();
-				}
-			} else {
-				while (arrCount--) {
-					ctx.save();
-					arr[arrCount].tick(ctx);
-					ctx.restore();
-				}
-			}
-		}
-
-		ctx.restore();
+		// ctx.save();
+		// ctx.translate(this._bounds2d.x2, this._bounds2d.y2);
+		// //ctx.scale(this._globalScale.x, this._globalScale.y);
+		//
+		// // Process the current engine tick for all child objects
+		// const arr = this._children;
+		//
+		// if (arr) {
+		// 	let arrCount = arr.length;
+		//
+		// 	// Loop our viewports and call their tick methods
+		// 	if (ige.config.debug._timing) {
+		// 		while (arrCount--) {
+		// 			ctx.save();
+		// 			const ts = new Date().getTime();
+		// 			arr[arrCount].tick(ctx);
+		// 			const td = new Date().getTime() - ts;
+		//
+		// 			if (arr[arrCount]) {
+		// 				if (!ige.engine._timeSpentInTick[arr[arrCount].id()]) {
+		// 					ige.engine._timeSpentInTick[arr[arrCount].id()] = 0;
+		// 				}
+		//
+		// 				if (!ige.engine._timeSpentLastTick[arr[arrCount].id()]) {
+		// 					ige.engine._timeSpentLastTick[arr[arrCount].id()] = {};
+		// 				}
+		//
+		// 				ige.engine._timeSpentInTick[arr[arrCount].id()] += td;
+		// 				ige.engine._timeSpentLastTick[arr[arrCount].id()].ms = td;
+		// 			}
+		// 			ctx.restore();
+		// 		}
+		// 	} else {
+		// 		while (arrCount--) {
+		// 			ctx.save();
+		// 			arr[arrCount].tick(ctx);
+		// 			ctx.restore();
+		// 		}
+		// 	}
+		// }
+		//
+		// ctx.restore();
 
 		this._renderer?.renderSceneGraph(this._children, this._bounds2d);
 	}

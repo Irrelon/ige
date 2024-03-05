@@ -1,4 +1,4 @@
-import { IgeBaseRenderer } from "./IgeBaseRenderer.js"
+import { IgeBaseRenderer } from "../core/IgeBaseRenderer.js"
 import { ige } from "../../export/exports.js"
 export class IgeRenderer2d extends IgeBaseRenderer {
     _canvasContext;

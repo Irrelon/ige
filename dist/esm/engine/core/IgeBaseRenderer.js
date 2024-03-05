@@ -1,24 +1,72 @@
+import { isServer } from "../clientServer.js"
+import { IgeEventingClass } from "./IgeEventingClass.js"
 import { IgePoint2d } from "./IgePoint2d.js"
-export class IgeRenderer {
+import { ige } from "../../export/exports.js"
+export class IgeBaseRenderer extends IgeEventingClass {
+    _hasRunSetup = false;
+    _isReady = false;
     _mode;
+    _containerElement;
     _canvasElement;
-    _canvasContext2d;
-    _canvasContext3d;
+    _canvasContext;
     _bounds2d = new IgePoint2d(40, 40);
     _autoSize = true;
     _devicePixelRatio = 1;
     _resized = false;
-    constructor({ canvasElement, mode = "2d" }) {
+    constructor({ canvasElement, containerElement, mode }) {
+        super();
+        this._containerElement = containerElement;
         this._canvasElement = canvasElement;
         this._mode = mode;
-        console.log("IGERENDERER INSTANTIATED");
+        this.log("++++++++++ Renderer Instantiated");
+    }
+    isReady() {
+        return this._isReady;
+    }
+    async setup() {
+        // Don't run setup on server, we don't render on the server,
+        // so we don't need a canvas or rendering backend!
+        if (isServer)
+            return;
+        // Check if we've already run setup before
+        if (this._hasRunSetup)
+            return;
+        await this._getAdaptor();
+        await this._getDevice();
+        this._createCanvas();
+        this._updateDevicePixelRatio();
+        this._getContext();
+        this._addEventListeners();
+        this._resizeEvent();
+        ige.engine._headless = false;
+        this._isReady = true;
+        this.log("Setup executed");
+    }
+    async _getAdaptor() { }
+    async _getDevice() { }
+    _createCanvas() {
+        // Create a new canvas element to use as the
+        // rendering front-buffer
+        this._canvasElement = document.createElement("canvas");
+        this._canvasElement.className = "igeRendererOutput";
+        (this._containerElement || document.body).appendChild(this._canvasElement);
+    }
+    _getContext() { }
+    _addEventListeners() {
+        window.addEventListener("resize", this._resizeEvent);
+    }
+    _removeEventListeners() {
+        window.removeEventListener("resize", this._resizeEvent);
+    }
+    destroy() {
+        this._removeEventListeners();
     }
     /**
      * Gets the bounding rectangle for the HTML canvas element being
      * used as the front buffer for the engine. Uses DOM methods.
      * @private
      */
-    _canvasPosition() {
+    _getCanvasElementPosition() {
         if (!this._canvasElement) {
             return {
                 top: 0,
@@ -38,13 +86,20 @@ export class IgeRenderer {
     _updateDevicePixelRatio() {
         if (!this._canvasElement)
             return;
-        // Support high-definition devices and "retina" displays by adjusting
-        // for device and back store pixels ratios
-        this._devicePixelRatio = window.devicePixelRatio || 1;
+        if (ige.engine._pixelRatioScaling) {
+            // Support high-definition devices and "retina" displays by adjusting
+            // for device and back store pixels ratios
+            this._devicePixelRatio = window.devicePixelRatio || 1;
+        }
+        else {
+            // No auto-scaling
+            this._devicePixelRatio = 1;
+        }
         if (this._devicePixelRatio !== 1) {
             this._canvasElement.style.width = this._bounds2d.x + "px";
             this._canvasElement.style.height = this._bounds2d.y + "px";
         }
+        //this.log(`Device pixel ratio is ${this._devicePixelRatio}`);
     }
     _resizeEvent = (event) => {
         if (this._autoSize) {
@@ -53,7 +108,7 @@ export class IgeRenderer {
             // Only update canvas dimensions if it exists
             if (this._canvasElement) {
                 // Check if we can get the position of the canvas
-                const canvasBoundingRect = this._canvasPosition();
+                const canvasBoundingRect = this._getCanvasElementPosition();
                 // Adjust the newWidth and newHeight by the canvas offset
                 newWidth -= canvasBoundingRect.left;
                 newHeight -= canvasBoundingRect.top;
@@ -83,12 +138,7 @@ export class IgeRenderer {
         return true;
     }
     /**
-     * Clears the entire canvas.
+     * Clear the entire canvas.
      */
-    clear() {
-        if (this._canvasElement && this._canvasContext2d) {
-            // Clear the whole canvas
-            this._canvasContext2d.clearRect(0, 0, this._canvasElement.width, this._canvasElement.height);
-        }
-    }
+    clear() { }
 }

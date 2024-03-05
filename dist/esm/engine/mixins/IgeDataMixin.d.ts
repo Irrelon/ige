@@ -5,8 +5,8 @@ export declare const WithDataMixin: <BaseClassType extends Mixin<IgeBaseClass>>(
         _data: Record<string, any>;
         data(key: string, value: any): this;
         data(key: string): any;
-        classId: string;
-        getClassId(): string;
+        classId?: string | undefined;
+        getClassId(): string | undefined;
         log(message: string, ...args: any[]): any;
         logInfo(message: string, ...args: any[]): any;
         logWarn(message: string, ...args: any[]): any;

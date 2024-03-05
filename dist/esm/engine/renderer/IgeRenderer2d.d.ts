@@ -1,7 +1,7 @@
-import { IgeBaseRenderer, type IgeBaseRendererProps } from "./IgeBaseRenderer.js"
-import type { IgeObject } from "./IgeObject.js"
-import type { IgePoint2d } from "./IgePoint2d.js"
-import type { IgeCanvasRenderingContext2d } from "../../types/IgeCanvasRenderingContext2d.js"
+import { IgeBaseRenderer, type IgeBaseRendererProps } from "../core/IgeBaseRenderer.js"
+import type { IgeObject } from "../core/IgeObject.js";
+import type { IgePoint2d } from "../core/IgePoint2d.js"
+import type { IgeCanvasRenderingContext2d } from "../../types/IgeCanvasRenderingContext2d.js";
 export interface IgeRenderer2dProps {
     containerElement?: IgeBaseRendererProps["containerElement"];
     canvasElement?: IgeBaseRendererProps["canvasElement"];

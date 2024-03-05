@@ -43,6 +43,7 @@ class IgeRenderer {
         };
         this._canvasElement = canvasElement;
         this._mode = mode;
+        console.log("IGERENDERER INSTANTIATED");
     }
     /**
      * Gets the bounding rectangle for the HTML canvas element being

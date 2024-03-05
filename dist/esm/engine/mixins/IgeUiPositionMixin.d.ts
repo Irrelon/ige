@@ -358,7 +358,7 @@ export declare const WithUiPositionMixin: <BaseClassType extends Mixin<IgeObject
         deferEmit(eventName: string, ...data: any[]): any;
         _processRemovalQueue(): void;
         _data: Record<string, any>;
-        getClassId(): string;
+        getClassId(): string | undefined;
         log(message: string, ...args: any[]): any;
         logInfo(message: string, ...args: any[]): any;
         logWarn(message: string, ...args: any[]): any;

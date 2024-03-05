@@ -111,9 +111,9 @@ export declare const WithEventingMixin: <BaseClassType extends Mixin<IgeBaseClas
          * @private
          */
         _processRemovals(): void;
-        classId: string;
+        classId?: string | undefined;
         _data: Record<string, any>;
-        getClassId(): string;
+        getClassId(): string | undefined;
         log(message: string, ...args: any[]): any;
         logInfo(message: string, ...args: any[]): any;
         logWarn(message: string, ...args: any[]): any;

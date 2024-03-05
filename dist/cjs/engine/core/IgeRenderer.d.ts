@@ -1,5 +1,5 @@
 import type { IgeObject } from "./IgeObject.js"
-import { IgePoint2d } from "./IgePoint2d.js";
+import { IgePoint2d } from "./IgePoint2d.js"
 import type { IgeCanvasRenderingContext2d } from "../../types/IgeCanvasRenderingContext2d.js"
 import type { IgeCanvasRenderingContext3d } from "../../types/IgeCanvasRenderingContext3d.js"
 import type { IgeRendererMode } from "../../types/IgeRendererMode.js"

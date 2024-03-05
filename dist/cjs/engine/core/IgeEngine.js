@@ -184,7 +184,7 @@ class IgeEngine extends exports_2.IgeEntity {
          * @return {Boolean}
          */
         this.canvasReady = () => {
-            return this._canvas !== undefined || exports_9.isWorker || exports_9.isServer;
+            return this._canvas !== undefined || (this._renderer && this._renderer.isReady()) || exports_9.isWorker || exports_9.isServer;
         };
         /**
          * Called each frame to traverse and render the scenegraph.
@@ -499,8 +499,17 @@ class IgeEngine extends exports_2.IgeEntity {
         return exports_6.ige.engine._currentViewport;
     }
     renderer(renderer) {
+        // Check if the passed renderer is either a new one or null (not undefined)
         if (renderer !== undefined) {
+            if (this._renderer) {
+                // Destroy the current renderer
+                this._renderer.destroy();
+            }
             this._renderer = renderer;
+            if (renderer) {
+                // Call the renderer's setup
+                renderer.setup();
+            }
             return this;
         }
         return this._renderer;
@@ -1419,6 +1428,7 @@ class IgeEngine extends exports_2.IgeEntity {
      * those whose pixel ratio is different from 1 to 1.
      */
     createFrontBuffer(autoSize = true, dontScale = false) {
+        return;
         if (!exports_9.isClient) {
             return;
         }
@@ -1508,42 +1518,48 @@ class IgeEngine extends exports_2.IgeEntity {
                 this.depthSortChildren();
             }
         }
-        ctx.save();
-        ctx.translate(this._bounds2d.x2, this._bounds2d.y2);
-        //ctx.scale(this._globalScale.x, this._globalScale.y);
-        // Process the current engine tick for all child objects
-        const arr = this._children;
-        if (arr) {
-            let arrCount = arr.length;
-            // Loop our viewports and call their tick methods
-            if (exports_6.ige.config.debug._timing) {
-                while (arrCount--) {
-                    ctx.save();
-                    const ts = new Date().getTime();
-                    arr[arrCount].tick(ctx);
-                    const td = new Date().getTime() - ts;
-                    if (arr[arrCount]) {
-                        if (!exports_6.ige.engine._timeSpentInTick[arr[arrCount].id()]) {
-                            exports_6.ige.engine._timeSpentInTick[arr[arrCount].id()] = 0;
-                        }
-                        if (!exports_6.ige.engine._timeSpentLastTick[arr[arrCount].id()]) {
-                            exports_6.ige.engine._timeSpentLastTick[arr[arrCount].id()] = {};
-                        }
-                        exports_6.ige.engine._timeSpentInTick[arr[arrCount].id()] += td;
-                        exports_6.ige.engine._timeSpentLastTick[arr[arrCount].id()].ms = td;
-                    }
-                    ctx.restore();
-                }
-            }
-            else {
-                while (arrCount--) {
-                    ctx.save();
-                    arr[arrCount].tick(ctx);
-                    ctx.restore();
-                }
-            }
-        }
-        ctx.restore();
+        // ctx.save();
+        // ctx.translate(this._bounds2d.x2, this._bounds2d.y2);
+        // //ctx.scale(this._globalScale.x, this._globalScale.y);
+        //
+        // // Process the current engine tick for all child objects
+        // const arr = this._children;
+        //
+        // if (arr) {
+        // 	let arrCount = arr.length;
+        //
+        // 	// Loop our viewports and call their tick methods
+        // 	if (ige.config.debug._timing) {
+        // 		while (arrCount--) {
+        // 			ctx.save();
+        // 			const ts = new Date().getTime();
+        // 			arr[arrCount].tick(ctx);
+        // 			const td = new Date().getTime() - ts;
+        //
+        // 			if (arr[arrCount]) {
+        // 				if (!ige.engine._timeSpentInTick[arr[arrCount].id()]) {
+        // 					ige.engine._timeSpentInTick[arr[arrCount].id()] = 0;
+        // 				}
+        //
+        // 				if (!ige.engine._timeSpentLastTick[arr[arrCount].id()]) {
+        // 					ige.engine._timeSpentLastTick[arr[arrCount].id()] = {};
+        // 				}
+        //
+        // 				ige.engine._timeSpentInTick[arr[arrCount].id()] += td;
+        // 				ige.engine._timeSpentLastTick[arr[arrCount].id()].ms = td;
+        // 			}
+        // 			ctx.restore();
+        // 		}
+        // 	} else {
+        // 		while (arrCount--) {
+        // 			ctx.save();
+        // 			arr[arrCount].tick(ctx);
+        // 			ctx.restore();
+        // 		}
+        // 	}
+        // }
+        //
+        // ctx.restore();
         (_a = this._renderer) === null || _a === void 0 ? void 0 : _a.renderSceneGraph(this._children, this._bounds2d);
     }
     destroy() {
