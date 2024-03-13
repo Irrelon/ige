@@ -30,7 +30,7 @@ export declare class IgeInputComponent extends IgeEventingClass implements IgeIs
      * @private
      */
     setupListeners: (canvas?: HTMLCanvasElement) => void;
-    destroyListeners: () => void;
+    destroyListeners: (canvas?: HTMLCanvasElement) => void;
     /**
      * Fires an input event that didn't occur on the main canvas, as if it had
      * occurred on the main canvas, allowing you to pass through events like

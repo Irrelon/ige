@@ -106,7 +106,7 @@ export declare class IgeCamera extends IgeEntity {
      * @return {*}
      */
     lookAt(entity?: IgeEntity, durationMs?: number, easing?: string): this;
-    update(ctx: IgeCanvasRenderingContext2d): void;
+    update(): void;
     /**
      * Process operations during the engine tick.
      * @param {CanvasRenderingContext2D} ctx

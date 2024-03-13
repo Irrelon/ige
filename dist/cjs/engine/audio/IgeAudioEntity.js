@@ -140,7 +140,7 @@ class IgeAudioEntity extends exports_4.IgeEntity {
     streamCreateConstructorArgs() {
         return [this._audioId, this._options];
     }
-    update(ctx, tickDelta) {
+    update(tickDelta) {
         if (this._relativeTo && this._panner) {
             const audioWorldPos = this.worldPosition();
             const relativeToWorldPos = this._relativeTo.worldPosition();
@@ -157,7 +157,7 @@ class IgeAudioEntity extends exports_4.IgeEntity {
                 this._listener.positionZ.value = relativeToWorldPos.z;
             }
         }
-        super.update(ctx, tickDelta);
+        super.update(tickDelta);
     }
     /**
      * Called when the entity is to be destroyed. Stops any

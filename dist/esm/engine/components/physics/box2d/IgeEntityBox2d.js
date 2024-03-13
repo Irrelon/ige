@@ -224,12 +224,11 @@ export class IgeEntityBox2d extends IgeEntity {
      * simulation is being rendered to, whereas the update() method is only called
      * once. It is therefore the perfect place to put code that will control your
      * entity's motion, AI etc.
-     * @param {CanvasRenderingContext2D} ctx The canvas context to render to.
      * @param {number} tickDelta The delta between the last tick time and this one.
      */
-    update(ctx, tickDelta) {
+    update(tickDelta) {
         // Call the original method
-        super.update(ctx, tickDelta);
+        super.update(tickDelta);
         if (this._b2dRef._networkDebugMode) {
             // Update the Box2D body transform
             this.translateTo(this._translate.x, this._translate.y, this._translate.z);

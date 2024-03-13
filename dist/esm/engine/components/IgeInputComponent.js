@@ -135,13 +135,11 @@ export class IgeInputComponent extends IgeEventingClass {
         window.addEventListener("keydown", this._evRef.keydown, false);
         window.addEventListener("keyup", this._evRef.keyup, false);
     };
-    destroyListeners = () => {
+    destroyListeners = (canvas) => {
         this.log("Removing input event listeners...");
         // Keyboard events
         window.removeEventListener("keydown", this._evRef.keydown, false);
         window.removeEventListener("keyup", this._evRef.keyup, false);
-        // Get the canvas element
-        const canvas = ige.engine._canvas;
         if (!canvas)
             return;
         // Pointer events
@@ -171,9 +169,7 @@ export class IgeInputComponent extends IgeEventingClass {
                 this._evRef[eventName](eventObj);
             }
             else {
-                this.log('Cannot fire manual event "' +
-                    eventName +
-                    '" because no listener exists in the engine for this event type!', "warning");
+                this.log(`Cannot fire manual event "${eventName}" because no listener exists in the engine for this event type!`, "warning");
             }
         }
         else {

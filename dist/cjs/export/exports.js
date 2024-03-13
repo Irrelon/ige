@@ -115,6 +115,8 @@ __exportStar(require("../engine/core/IgeRect"), exports);
 __exportStar(require("../engine/core/IgeObject"), exports);
 __exportStar(require("../engine/core/IgeEntity"), exports);
 __exportStar(require("../engine/core/IgeCamera"), exports);
+__exportStar(require("../engine/core/IgeBaseRenderer"), exports);
+__exportStar(require("../engine/core/IgeCanvas2dRenderer"), exports);
 __exportStar(require("../engine/core/IgeEngine"), exports);
 __exportStar(require("../engine/network/chat/IgeChatComponent"), exports);
 __exportStar(require("../engine/core/IgeUiEntity"), exports);

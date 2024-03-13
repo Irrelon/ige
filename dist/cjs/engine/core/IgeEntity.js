@@ -1103,21 +1103,6 @@ class IgeEntity extends exports_3.IgeObject {
             return;
         }
         this._processBehaviours(exports_10.IgeBehaviourType.preTick, ctx);
-        if (this._pointerEventsActive) {
-            const input = exports_9.ige.input;
-            if (this._processTriggerHitTests()) {
-                // Point is inside the trigger bounds
-                input.queueEvent(this._mouseInTrigger, null);
-            }
-            else {
-                if (input.pointerMove) {
-                    // There is a mouse move event, but we are not inside the entity
-                    // so fire a mouse out event (_handleMouseOut will check if the
-                    // mouse WAS inside before firing an out event).
-                    this._handleMouseOut(input.pointerMove);
-                }
-            }
-        }
         // Check for cached version
         if (this._cache || this._compositeCache) {
             // Caching is enabled
@@ -1137,6 +1122,7 @@ class IgeEntity extends exports_3.IgeObject {
             // Render the entity
             this._renderEntity(ctx);
         }
+        // WEBGPU - Move to postTick?
         if (this._streamMode === exports_14.IgeStreamMode.simple) {
             this.streamSync();
         }
@@ -2355,10 +2341,9 @@ class IgeEntity extends exports_3.IgeObject {
      * simulation is being rendered to, whereas the update() method is only called
      * once. It is therefore the perfect place to put code that will control your
      * entity's motion, AI etc.
-     * @param {CanvasRenderingContext2D} ctx The canvas context to render to.
      * @param {number} tickDelta The delta between the last tick time and this one.
      */
-    update(ctx, tickDelta) {
+    update(tickDelta) {
         var _a;
         // Check if the entity should still exist
         if (this._deathTime !== undefined && this._deathTime <= exports_9.ige.engine._tickStart) {
@@ -2376,7 +2361,7 @@ class IgeEntity extends exports_3.IgeObject {
             // Remove the stream data cache
             this._streamDataCache = "";
             // Process any behaviours assigned to the entity
-            this._processBehaviours(exports_10.IgeBehaviourType.preUpdate, ctx, tickDelta);
+            this._processBehaviours(exports_10.IgeBehaviourType.preUpdate, tickDelta);
             // Process velocity
             if (this._velocity.x || this._velocity.y) {
                 this._translate.x += (this._velocity.x / 16) * tickDelta;
@@ -2406,7 +2391,24 @@ class IgeEntity extends exports_3.IgeObject {
             exports_9.ige.engine.spawnQueue(this);
         }
         // Process super class
-        super.update(ctx, tickDelta);
+        super.update(tickDelta);
+        // TODO: This could be a behaviour instead to enable
+        //   customisation of the flow
+        if (this._pointerEventsActive) {
+            const input = exports_9.ige.input;
+            if (this._processTriggerHitTests()) {
+                // Point is inside the trigger bounds
+                input.queueEvent(this._mouseInTrigger, null);
+            }
+            else {
+                if (input.pointerMove) {
+                    // There is a mouse move event, but we are not inside the entity
+                    // so fire a mouse out event (_handleMouseOut will check if the
+                    // mouse WAS inside before firing an out event).
+                    this._handleMouseOut(input.pointerMove);
+                }
+            }
+        }
     }
     /**
      * Gets / sets the data for the specified data section id. This method

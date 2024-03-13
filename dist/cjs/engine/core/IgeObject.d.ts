@@ -298,7 +298,7 @@ export declare class IgeObject extends IgeEventingClass implements IgeCanRegiste
      * of the polygon instead of using an existing cached value.
      */
     bounds3dPolygon(recalculate?: boolean): IgePoly2d;
-    update(ctx: IgeCanvasRenderingContext2d, tickDelta: number): void;
+    update(tickDelta: number): void;
     tick(ctx: IgeCanvasRenderingContext2d): void;
     updateTransform(): void;
     aabb(recalculate?: boolean, inverse?: boolean): IgeRect;

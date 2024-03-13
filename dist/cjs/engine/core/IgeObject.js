@@ -301,7 +301,7 @@ class IgeObject extends exports_2.IgeEventingClass {
         }
         return this._bounds3dPolygon;
     }
-    update(ctx, tickDelta) {
+    update(tickDelta) {
         // Check that we are alive before processing further
         if (!this._alive) {
             return;
@@ -332,13 +332,13 @@ class IgeObject extends exports_2.IgeEventingClass {
         // Loop our children and call their update methods
         if (!exports_3.ige.config.debug._timing) {
             while (arrCount--) {
-                arr[arrCount].update(ctx, tickDelta);
+                arr[arrCount].update(tickDelta);
             }
             return;
         }
         while (arrCount--) {
             const ts = new Date().getTime();
-            arr[arrCount].update(ctx, tickDelta);
+            arr[arrCount].update(tickDelta);
             const td = new Date().getTime() - ts;
             if (!arr[arrCount]) {
                 continue;
@@ -403,7 +403,8 @@ class IgeObject extends exports_2.IgeEventingClass {
             }
         }
     }
-    updateTransform() { }
+    updateTransform() {
+    }
     aabb(recalculate = true, inverse = false) {
         return this._aabb;
     }
@@ -411,12 +412,9 @@ class IgeObject extends exports_2.IgeEventingClass {
      * Calls each behaviour method for the object.
      */
     _processBehaviours(type, ...args) {
-        if (!this._behaviours)
+        if (!this._behaviours || !this._behaviours[type])
             return;
         const arr = this._behaviours[type];
-        if (!arr) {
-            return;
-        }
         let arrCount = arr.length;
         while (arrCount--) {
             arr[arrCount].method(this, ...args);
@@ -715,19 +713,22 @@ class IgeObject extends exports_2.IgeEventingClass {
      * @param obj
      * @private
      */
-    _childUnMounted(obj) { }
+    _childUnMounted(obj) {
+    }
     /**
      * Called when this object is mounted to an object.
      * @param obj
      * @private
      */
-    _mounted(obj) { }
+    _mounted(obj) {
+    }
     /**
      * Called when this object is un-mounted from its parent.
      * @param obj
      * @private
      */
-    _unMounted(obj) { }
+    _unMounted(obj) {
+    }
     isMounted() {
         return Boolean(this._parent);
     }

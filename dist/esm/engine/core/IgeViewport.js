@@ -109,10 +109,9 @@ export class IgeViewport extends IgeUiEntity {
     }
     /**
      * Processes the updates before the render tick is called.
-     * @param ctx
      * @param tickDelta
      */
-    update(ctx, tickDelta) {
+    update(tickDelta) {
         // Check if we have a scene attached to this viewport
         if (!this._scene) {
             return;
@@ -120,10 +119,10 @@ export class IgeViewport extends IgeUiEntity {
         ige.engine._currentCamera = this.camera;
         ige.engine._currentViewport = this;
         this._scene._parent = this;
-        this.camera.update(ctx);
-        super.update(ctx, tickDelta);
+        this.camera.update();
+        super.update(tickDelta);
         if (this._scene.newFrame()) {
-            this._scene.update(ctx, tickDelta);
+            this._scene.update(tickDelta);
         }
     }
     /**

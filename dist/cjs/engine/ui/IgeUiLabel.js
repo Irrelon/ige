@@ -176,12 +176,12 @@ class IgeUiLabel extends exports_1.IgeUiElement {
         }
         return this._color;
     }
-    update(ctx, tickDelta) {
+    update(tickDelta) {
         if (this._widthFromText && this._valueChanged !== this._value) {
             this._valueChanged = false;
             this.width(this._fontEntity.measureTextWidth(this._value) + this._paddingLeft + this._paddingRight);
         }
-        super.update(ctx, tickDelta);
+        super.update(tickDelta);
     }
     _mounted() {
         // Check if we have a text value

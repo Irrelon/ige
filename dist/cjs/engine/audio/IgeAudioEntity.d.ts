@@ -1,6 +1,5 @@
 import { IgeAudioItem } from "../../export/exports.js"
 import { IgeEntity } from "../../export/exports.js"
-import type { IgeCanvasRenderingContext2d } from "../../export/exports.js"
 export interface IgeAudioEntityPanner extends PannerOptions {
 }
 export interface IgeAudioEntityOptions {
@@ -72,7 +71,7 @@ export declare class IgeAudioEntity extends IgeEntity {
      * @returns {*}
      */
     streamCreateConstructorArgs(): (string | IgeAudioEntityOptions | undefined)[];
-    update(ctx: IgeCanvasRenderingContext2d, tickDelta: number): void;
+    update(tickDelta: number): void;
     /**
      * Called when the entity is to be destroyed. Stops any
      * current audio stream playback.

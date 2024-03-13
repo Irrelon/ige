@@ -59,7 +59,7 @@ class IgeTexture extends exports_2.IgeAsset {
         this.dependencies = new exports_2.IgeDependencies();
         this._loaded = false;
         if (exports_3.isServer) {
-            this.log(`Cannot create a texture on the server. Textures are only client-side objects. Please alter your code so that you don't try to load a texture on the server-side using something like an if statement around your texture laoding such as "if (isClient) {...}".`, "error");
+            this.log(`Cannot create a texture on the server. Textures are only client-side objects. Please alter your code so that you don't try to load a texture on the server-side, using something like an if statement around your texture loading such as "if (isClient) {...}".`, "error");
             return this;
         }
         if (id) {
@@ -199,7 +199,7 @@ class IgeTexture extends exports_2.IgeAsset {
         if (exports_3.isClient) {
             Promise.resolve(`${scriptUrl}`).then(s => __importStar(require(s))).then(({ image }) => {
                 console.log("Loaded module", image);
-                this.log('Texture script "' + scriptUrl + '" loaded successfully');
+                this.log(`Texture script "${scriptUrl}" loaded successfully`);
                 // Parse the JS with evil eval and store the result in the asset
                 // Store the eval data (the "image" variable is declared
                 // by the texture script and becomes available in this scope

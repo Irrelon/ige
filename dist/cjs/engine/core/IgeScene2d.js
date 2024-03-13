@@ -83,7 +83,7 @@ class IgeScene2d extends exports_1.IgeEntity {
             }
             return this._shouldRender;
         };
-        this.update = (ctx, tickDelta) => {
+        this.update = (tickDelta) => {
             if (this._ignoreCamera) {
                 // Translate the scene, so it is always center of the camera
                 const cam = exports_3.ige.engine._currentCamera;
@@ -94,7 +94,7 @@ class IgeScene2d extends exports_1.IgeEntity {
                     //this._localMatrix.multiply(ige._currentCamera._worldMatrix.getInverse());
                 }
             }
-            super.update(ctx, tickDelta);
+            super.update(tickDelta);
         };
         /**
          * Handles screen resize events.

@@ -50,7 +50,7 @@ export declare class IgeScene2d extends IgeEntity {
      */
     ignoreCamera(val: boolean): this;
     ignoreCamera(): boolean;
-    update: (ctx: IgeCanvasRenderingContext2d, tickDelta: number) => void;
+    update: (tickDelta: number) => void;
     /**
      * Processes the actions required each render frame.
      * @param {CanvasRenderingContext2D} ctx The canvas context to render to.

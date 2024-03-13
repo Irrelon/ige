@@ -1169,10 +1169,9 @@ export declare class IgeEntity extends IgeObject implements IgeCanRegisterById, 
      * simulation is being rendered to, whereas the update() method is only called
      * once. It is therefore the perfect place to put code that will control your
      * entity's motion, AI etc.
-     * @param {CanvasRenderingContext2D} ctx The canvas context to render to.
      * @param {number} tickDelta The delta between the last tick time and this one.
      */
-    update(ctx: IgeCanvasRenderingContext2d, tickDelta: number): void;
+    update(tickDelta: number): void;
     /**
      * Gets / sets the data for the specified data section id. This method
      * is usually not called directly and instead is part of the network

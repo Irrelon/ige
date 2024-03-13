@@ -1,4 +1,5 @@
-import type { IgeBaseClass } from "../../export/exports.js"
+import type { IgeBaseRenderer } from "./IgeBaseRenderer.js"
+import type { IgeBaseClass } from "../../export/exports.js";
 import type { IgeCamera } from "../../export/exports.js"
 import type { IgeComponent } from "../../export/exports.js"
 import type { IgeDummyCanvas } from "../../export/exports.js"
@@ -19,13 +20,13 @@ export declare class IgeEngine extends IgeEntity {
     _idRegistered: boolean;
     _canvas?: HTMLCanvasElement;
     _ctx: IgeCanvasRenderingContext2d | null;
+    _renderer?: IgeBaseRenderer | null;
     _idCounter: number;
     _pause: boolean;
     _useManualRender: boolean;
     _manualRenderQueued: boolean;
     _useManualTicks: boolean;
     _manualFrameAlternator: boolean;
-    _renderContextModes: string[];
     _pixelRatioScaling: boolean;
     _requireScriptTotal: number;
     _requireScriptLoading: number;
@@ -69,12 +70,11 @@ export declare class IgeEngine extends IgeEntity {
     _dependencyCheckStart?: number;
     _dependencyCheckTimeout: number;
     _debugEvents: Record<string, boolean | number>;
-    _autoSize?: boolean;
+    _autoSize: boolean;
     _syncIndex: number;
     _syncArr: SyncEntry[];
     _webFonts: FontFace[];
     _cssFonts: string[];
-    _pointerOverVp?: IgeViewport;
     _devicePixelRatio: number;
     _createdFrontBuffer: boolean;
     _resized: boolean;
@@ -84,6 +84,8 @@ export declare class IgeEngine extends IgeEntity {
     basePath: string;
     _requestAnimFrame?: (callback: (time: number, ctx?: IgeCanvasRenderingContext2d) => void, element?: Element) => void;
     constructor();
+    renderer(val: IgeBaseRenderer): this;
+    renderer(): IgeBaseRenderer | null;
     addComponent(id: string, Component: typeof IgeComponent<IgeEngine>, options?: any): this;
     id(): string;
     id(id: string): this;
@@ -91,6 +93,12 @@ export declare class IgeEngine extends IgeEntity {
     fontsLoaded: () => boolean;
     waitForCssFont(fontName: string): void;
     fontList(): string[];
+    /**
+     * Gets / sets the headless flag in the engine denoting
+     * if the engine is in non-render mode or not.
+     */
+    headless(): boolean;
+    headless(val: boolean): this;
     /**
      * Adds an entity to the spawn queue.
      * @param {IgeEntity} entity The entity to add.
@@ -331,7 +339,7 @@ export declare class IgeEngine extends IgeEntity {
     newClassInstance(id: string | GenericClass, ...args: any[]): any;
     /**
      * Checks if all engine start dependencies have been satisfied.
-     * @return {Boolean}
+     * @return {boolean}
      */
     dependencyCheck(): boolean;
     /**
@@ -356,7 +364,7 @@ export declare class IgeEngine extends IgeEntity {
     /**
      * Checks to ensure that a canvas has been assigned to the engine or that the
      * engine is in server mode.
-     * @return {Boolean}
+     * @return {boolean}
      */
     canvasReady: () => boolean;
     /**
@@ -381,13 +389,14 @@ export declare class IgeEngine extends IgeEntity {
     start(): Promise<unknown>;
     /**
      * Stops the engine.
-     * @return {Boolean}
+     * @return {boolean}
      */
     stop(): boolean;
+    _birthUnbornEntities(): void;
     /**
      * Called each frame to traverse and render the scenegraph.
      */
-    engineStep: (timeStamp: number, ctx?: IgeCanvasRenderingContext2d | null) => void;
+    engineStep: (timeStamp: number) => void;
     /**
      * Gets / sets the _autoSize property. If set to true, the engine will listen
      * for any change in screen size and resize the front-buffer (canvas) element
@@ -395,7 +404,7 @@ export declare class IgeEngine extends IgeEntity {
      * @param val
      * @return {Boolean}
      */
-    autoSize(val?: boolean): boolean | this | undefined;
+    autoSize(val?: boolean): boolean | this;
     pixelRatioScaling(val?: boolean): boolean | this;
     /**
      * Gets / sets the rendering context that will be used when getting the
@@ -431,8 +440,8 @@ export declare class IgeEngine extends IgeEntity {
      */
     pointerOverList: (obj?: IgeEntity, entArr?: IgeEntity[]) => IgeEntity[];
     _childMounted(child: IgeObject): void;
-    updateSceneGraph(ctx: IgeCanvasRenderingContext2d): void;
-    renderSceneGraph(ctx: IgeCanvasRenderingContext2d): void;
+    updateSceneGraph(): void;
+    renderSceneGraph(): void;
     destroy(): this;
     /**
      * Load a js script file into memory via a path or url.

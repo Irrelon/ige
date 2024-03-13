@@ -2,7 +2,6 @@ import type { IgeFontSheet } from "../../export/exports.js"
 import { IgeUiElement } from "../../export/exports.js"
 import { IgeFontEntity } from "../../export/exports.js"
 import { IgeFontAlignX, IgeFontAlignY } from "../../export/exports.js"
-import type { IgeCanvasRenderingContext2d } from "../../export/exports.js"
 /**
  * Provides a UI label entity. Basic on-screen text label.
  */
@@ -67,6 +66,6 @@ export declare class IgeUiLabel extends IgeUiElement {
     nativeStrokeColor(val?: string): string | IgeFontEntity | this | undefined;
     color(val: string): this;
     color(): string;
-    update(ctx: IgeCanvasRenderingContext2d, tickDelta: number): void;
+    update(tickDelta: number): void;
     _mounted(): void;
 }

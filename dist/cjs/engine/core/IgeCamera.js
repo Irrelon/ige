@@ -209,9 +209,9 @@ class IgeCamera extends exports_1.IgeEntity {
         }
         return this;
     }
-    update(ctx) {
+    update() {
         // Process any behaviours assigned to the camera
-        this._processBehaviours(exports_4.IgeBehaviourType.preUpdate, ctx);
+        this._processBehaviours(exports_4.IgeBehaviourType.preUpdate);
         // Check if we are tracking the translation value of a target
         if (this._trackTranslateTarget) {
             const targetEntity = this._trackTranslateTarget;

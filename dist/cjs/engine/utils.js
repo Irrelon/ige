@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.delay = exports.traceSetOff = exports.traceSet = exports.newIdHex = exports.newId = exports.newIdNumber = exports.distance = exports.radiansToDegrees = exports.degreesToRadians = exports.toIso = exports.PI2 = exports.PI180R = exports.PI180 = exports.destroyAll = exports.theSameAs = exports.mixin = exports.arrClone = exports.pushUnique = exports.arrPull = void 0;
+exports.getElementPosition = exports.delay = exports.traceSetOff = exports.traceSet = exports.newIdHex = exports.newId = exports.newIdNumber = exports.distance = exports.radiansToDegrees = exports.degreesToRadians = exports.toIso = exports.PI2 = exports.PI180R = exports.PI180 = exports.destroyAll = exports.theSameAs = exports.mixin = exports.arrClone = exports.pushUnique = exports.arrPull = void 0;
 let _idCounter = 0;
 /**
  * Removes the passed item from an array, the opposite of push().
@@ -244,3 +244,25 @@ const delay = (ms) => {
     });
 };
 exports.delay = delay;
+/**
+ * Gets the bounding rectangle for the passed HTML element.
+ * Uses DOM methods.
+ */
+const getElementPosition = (elem) => {
+    if (!elem) {
+        return {
+            top: 0,
+            left: 0
+        };
+    }
+    try {
+        return elem.getBoundingClientRect();
+    }
+    catch (e) {
+        return {
+            top: elem.offsetTop,
+            left: elem.offsetLeft
+        };
+    }
+};
+exports.getElementPosition = getElementPosition;

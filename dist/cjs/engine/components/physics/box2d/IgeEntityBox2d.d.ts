@@ -6,7 +6,6 @@ import type { b2Fixture } from "../../../../export/exports.js"
 import type { b2ContactListener } from "../../../../export/exports.js"
 import { IgeEntity } from "../../../../export/exports.js"
 import type { IgeBox2dBodyDef } from "../../../../export/exports.js"
-import type { IgeCanvasRenderingContext2d } from "../../../../export/exports.js"
 export interface IgeEntityBox2dCollisionListener {
     type: number;
     target: string;
@@ -78,10 +77,9 @@ export declare class IgeEntityBox2d extends IgeEntity {
      * simulation is being rendered to, whereas the update() method is only called
      * once. It is therefore the perfect place to put code that will control your
      * entity's motion, AI etc.
-     * @param {CanvasRenderingContext2D} ctx The canvas context to render to.
      * @param {number} tickDelta The delta between the last tick time and this one.
      */
-    update(ctx: IgeCanvasRenderingContext2d, tickDelta: number): void;
+    update(tickDelta: number): void;
     /**
      * If true, disabled Box2D debug shape drawing for this entity.
      * @param {boolean} val

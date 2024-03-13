@@ -70,10 +70,9 @@ export declare class IgeViewport extends IgeUiEntity implements IgeCanRegisterBy
     viewArea(): IgeRect;
     /**
      * Processes the updates before the render tick is called.
-     * @param ctx
      * @param tickDelta
      */
-    update(ctx: IgeCanvasRenderingContext2d, tickDelta: number): void;
+    update(tickDelta: number): void;
     /**
      * Processes the actions required each render frame.
      */

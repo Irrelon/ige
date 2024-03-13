@@ -244,7 +244,7 @@ export declare const WithUiStyleMixin: <BaseClassType extends Mixin<IgeObject>>(
         localIsoBoundsPoly(): void;
         localBounds3dPolygon(recalculate?: boolean): import("../../export/exports.js").IgePoly2d;
         bounds3dPolygon(recalculate?: boolean): import("../../export/exports.js").IgePoly2d;
-        update(ctx: import("../../export/exports.js").IgeCanvasRenderingContext2d, tickDelta: number): void;
+        update(tickDelta: number): void;
         tick(ctx: import("../../export/exports.js").IgeCanvasRenderingContext2d): void;
         updateTransform(): void;
         aabb(recalculate?: boolean, inverse?: boolean): import("../../export/exports.js").IgeRect;

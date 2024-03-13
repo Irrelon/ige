@@ -120,3 +120,11 @@ export declare const traceSetOff: (obj: any, propName: string) => void;
  * @param ms
  */
 export declare const delay: (ms: number) => Promise<unknown>;
+/**
+ * Gets the bounding rectangle for the passed HTML element.
+ * Uses DOM methods.
+ */
+export declare const getElementPosition: (elem?: HTMLElement) => DOMRect | {
+    top: number;
+    left: number;
+};
