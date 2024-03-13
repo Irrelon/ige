@@ -1458,22 +1458,6 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 
 		this._processBehaviours(IgeBehaviourType.preTick, ctx);
 
-		// WEBGPU - Move to update?
-		if (this._pointerEventsActive) {
-			const input = ige.input as IgeInputComponent;
-			if (this._processTriggerHitTests()) {
-				// Point is inside the trigger bounds
-				input.queueEvent(this._mouseInTrigger, null);
-			} else {
-				if (input.pointerMove) {
-					// There is a mouse move event, but we are not inside the entity
-					// so fire a mouse out event (_handleMouseOut will check if the
-					// mouse WAS inside before firing an out event).
-					this._handleMouseOut(input.pointerMove);
-				}
-			}
-		}
-
 		// Check for cached version
 		if (this._cache || this._compositeCache) {
 			// Caching is enabled
@@ -3450,6 +3434,23 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 
 		// Process super class
 		super.update(ctx, tickDelta);
+
+		// TODO: This could be a behaviour instead to enable
+		//   customisation of the flow
+		if (this._pointerEventsActive) {
+			const input = ige.input as IgeInputComponent;
+			if (this._processTriggerHitTests()) {
+				// Point is inside the trigger bounds
+				input.queueEvent(this._mouseInTrigger, null);
+			} else {
+				if (input.pointerMove) {
+					// There is a mouse move event, but we are not inside the entity
+					// so fire a mouse out event (_handleMouseOut will check if the
+					// mouse WAS inside before firing an out event).
+					this._handleMouseOut(input.pointerMove);
+				}
+			}
+		}
 	}
 
 	/**
