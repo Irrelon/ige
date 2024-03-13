@@ -5,9 +5,10 @@ import { IgeEventingClass } from "@/engine/core/IgeEventingClass";
 import { IgePoint2d } from "@/engine/core/IgePoint2d";
 
 export class IgeBaseRenderer extends IgeEventingClass {
-	_hasRunSetup: boolean = false;
-	_isReady: boolean = false;
-	_bounds2d: IgePoint2d = new IgePoint2d(800, 600);
+	protected _canvas?: HTMLCanvasElement;
+	protected _hasRunSetup: boolean = false;
+	protected _isReady: boolean = false;
+	protected _bounds2d: IgePoint2d = new IgePoint2d(800, 600);
 
 	constructor () {
 		super();
@@ -50,12 +51,24 @@ export class IgeBaseRenderer extends IgeEventingClass {
 	destroy () {
 	}
 
+	canvasElement () {
+		return this._canvas;
+	}
+
 	_resizeEvent = (event?: Event) => {
 	};
 
 	renderSceneGraph (engine: IgeEngine, viewports: IgeViewport[]): boolean {
 		return this._renderSceneGraph(engine, viewports);
 	}
+
+	/**
+	 * Toggles full-screen output of the renderer canvas. Only works
+	 * if called from within a user-generated HTML event listener.
+	 */
+	toggleFullScreen = () => {
+
+	};
 
 	_renderSceneGraph (engine: IgeEngine, viewports: IgeViewport[]): boolean {
 		return false;

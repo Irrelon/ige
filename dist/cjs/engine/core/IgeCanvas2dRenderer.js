@@ -76,6 +76,24 @@ class IgeCanvas2dRenderer extends IgeBaseRenderer_1.IgeBaseRenderer {
             }
             this._resized = true;
         };
+        /**
+         * Toggles full-screen output of the main ige canvas. Only works
+         * if called from within a user-generated HTML event listener.
+         */
+        this.toggleFullScreen = () => {
+            const elem = this._canvas;
+            if (!elem)
+                return;
+            if (elem.requestFullscreen) {
+                return elem.requestFullscreen();
+            }
+            else if (elem.mozRequestFullScreen) {
+                return elem.mozRequestFullScreen();
+            }
+            else if (elem.webkitRequestFullscreen) {
+                return elem.webkitRequestFullscreen();
+            }
+        };
     }
     _setup() {
         const _super = Object.create(null, {
@@ -219,6 +237,12 @@ class IgeCanvas2dRenderer extends IgeBaseRenderer_1.IgeBaseRenderer {
         }
         ctx.restore();
         return true;
+    }
+    destroy() {
+        super.destroy();
+        if (exports_1.isClient) {
+            this.removeCanvas();
+        }
     }
     _frontBufferSetup(autoSize, dontScale) {
         // Create a new canvas element to use as the

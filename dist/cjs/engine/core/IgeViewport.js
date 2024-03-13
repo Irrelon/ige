@@ -151,13 +151,13 @@ class IgeViewport extends exports_5.IgeUiEntity {
         ctx.save();
         this._scene.tick(ctx);
         ctx.restore();
-        if (this._drawGuides && ctx === exports_7.ige.engine._ctx) {
+        if (this._drawGuides) { // Used to have extra condition: && ctx === ige.engine._ctx
             ctx.save();
             ctx.translate(-this._translate.x, -this._translate.y);
             this.paintGuides(ctx);
             ctx.restore();
         }
-        if (this._drawBounds && ctx === exports_7.ige.engine._ctx) {
+        if (this._drawBounds) { // Used to have extra condition: && ctx === ige.engine._ctx
             // Traverse the scenegraph and draw axis-aligned
             // bounding boxes for every object
             ctx.save();
@@ -165,7 +165,7 @@ class IgeViewport extends exports_5.IgeUiEntity {
             this.paintAabbs(ctx, this._scene, 0);
             ctx.restore();
         }
-        if (this._drawMouse && ctx === exports_7.ige.engine._ctx) {
+        if (this._drawMouse) { // Used to have extra condition: && ctx === ige.engine._ctx
             ctx.save();
             const mp = this.mousePos();
             // Re-scale the context to ensure that output is always 1:1

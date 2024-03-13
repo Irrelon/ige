@@ -1,13 +1,13 @@
 import { type IgeEngine, type IgeViewport } from "../../export/exports.js"
 import { IgeBaseRenderer } from "./IgeBaseRenderer.js"
+import type { IgeCanvasRenderingContext2d } from "../../types/IgeCanvasRenderingContext2d.js";
 export declare class IgeCanvas2dRenderer extends IgeBaseRenderer {
-    private _canvas?;
-    private _ctx?;
-    private _createdFrontBuffer;
-    private _pixelRatioScaling;
-    private _devicePixelRatio;
-    private _autoSize;
-    private _resized;
+    protected _ctx?: IgeCanvasRenderingContext2d | null;
+    protected _createdFrontBuffer: boolean;
+    protected _pixelRatioScaling: boolean;
+    protected _devicePixelRatio: number;
+    protected _autoSize: boolean;
+    protected _resized: boolean;
     _setup(): Promise<void>;
     /**
      * Creates a front-buffer or "drawing surface" for the renderer.
@@ -44,5 +44,11 @@ export declare class IgeCanvas2dRenderer extends IgeBaseRenderer {
      * @private
      */
     _resizeEvent: (event?: Event) => void;
+    /**
+     * Toggles full-screen output of the main ige canvas. Only works
+     * if called from within a user-generated HTML event listener.
+     */
+    toggleFullScreen: () => any;
+    destroy(): void;
     private _frontBufferSetup;
 }

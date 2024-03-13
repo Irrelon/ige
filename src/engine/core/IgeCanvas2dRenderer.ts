@@ -1,16 +1,22 @@
-import { type IgeEngine, type IgeViewport } from "@/export/exports";
-import { getElementPosition, ige, IgePoint2d, isClient, isServer } from "@/export/exports";
 import { IgeBaseRenderer } from "@/engine/core/IgeBaseRenderer";
+import {
+	getElementPosition,
+	ige,
+	type IgeEngine,
+	IgePoint2d,
+	type IgeViewport,
+	isClient,
+	isServer
+} from "@/export/exports";
 import type { IgeCanvasRenderingContext2d } from "@/types/IgeCanvasRenderingContext2d";
 
 export class IgeCanvas2dRenderer extends IgeBaseRenderer {
-	private _canvas?: HTMLCanvasElement;
-	private _ctx?: IgeCanvasRenderingContext2d | null;
-	private _createdFrontBuffer: boolean = false;
-	private _pixelRatioScaling: boolean = true;
-	private _devicePixelRatio: number = 1;
-	private _autoSize: boolean = true;
-	private _resized: boolean = false;
+	protected _ctx?: IgeCanvasRenderingContext2d | null;
+	protected _createdFrontBuffer: boolean = false;
+	protected _pixelRatioScaling: boolean = true;
+	protected _devicePixelRatio: number = 1;
+	protected _autoSize: boolean = true;
+	protected _resized: boolean = false;
 
 	async _setup (): Promise<void> {
 		await super._setup();
@@ -178,7 +184,6 @@ export class IgeCanvas2dRenderer extends IgeBaseRenderer {
 	 * @private
 	 */
 	_resizeEvent = (event?: Event) => {
-		console.log("Renderer resize event");
 		ige.engine._resizeEvent(event);
 
 		let canvasBoundingRect: DOMRect | { top: number; left: number; };
@@ -219,12 +224,10 @@ export class IgeCanvas2dRenderer extends IgeBaseRenderer {
 			}
 
 			this._bounds2d = new IgePoint2d(newWidth, newHeight);
-		} else {
-			if (this._canvas) {
-				this._bounds2d = new IgePoint2d(this._canvas.width, this._canvas.height);
-			}
+		} else if (this._canvas) {
+			this._bounds2d = new IgePoint2d(this._canvas.width, this._canvas.height);
 		}
-
+		
 		if (ige.engine._showSgTree) {
 			const sgTreeElem = document.getElementById("igeSgTree");
 
@@ -239,6 +242,32 @@ export class IgeCanvas2dRenderer extends IgeBaseRenderer {
 
 		this._resized = true;
 	};
+
+	/**
+	 * Toggles full-screen output of the main ige canvas. Only works
+	 * if called from within a user-generated HTML event listener.
+	 */
+	toggleFullScreen = () => {
+		const elem = this._canvas as any;
+
+		if (!elem) return;
+
+		if (elem.requestFullscreen) {
+			return elem.requestFullscreen();
+		} else if (elem.mozRequestFullScreen) {
+			return elem.mozRequestFullScreen();
+		} else if (elem.webkitRequestFullscreen) {
+			return elem.webkitRequestFullscreen();
+		}
+	};
+
+	destroy () {
+		super.destroy();
+
+		if (isClient) {
+			this.removeCanvas();
+		}
+	}
 
 	private _frontBufferSetup (autoSize: boolean, dontScale: boolean) {
 		// Create a new canvas element to use as the

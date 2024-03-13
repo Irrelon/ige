@@ -1,8 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.WithUiStyleMixin = void 0;
-// TODO: Add "overflow" with automatic scroll-bars
-const exports_1 = require("../../export/exports.js");
 // TODO: Update this mixin so it extends from IgeBaseClass, moving anything that relies on IgeEntity
 //    to another class, probably IgeEntity or IgeUiEntity?
 const WithUiStyleMixin = (Base) => class extends Base {
@@ -34,7 +32,6 @@ const WithUiStyleMixin = (Base) => class extends Base {
      * the current background image if no parameters are specified.
      */
     backgroundImage(texture, repeatType) {
-        var _a, _b;
         if (!(texture && texture.image)) {
             return this._patternFill;
         }
@@ -57,24 +54,23 @@ const WithUiStyleMixin = (Base) => class extends Base {
             this._patternWidth = texture.image.width;
             this._patternHeight = texture.image.height;
         }
+        const canvas = new OffscreenCanvas(2, 2);
+        const ctx = canvas.getContext("2d");
+        if (!ctx) {
+            throw new Error("Couldn't get texture canvas 2d context!");
+        }
         if (this._cell && this._cell > 1) {
-            // We are using a cell sheet, render the cell to a
-            // temporary canvas and set that as the pattern image
-            const canvas = new OffscreenCanvas(2, 2);
-            const ctx = canvas.getContext("2d");
-            if (!ctx) {
-                throw new Error("Couldn't get texture canvas 2d context!");
-            }
+            // Render the cell to a temporary canvas and set that as the pattern image
             const cellData = texture._cells[this._cell];
             canvas.width = cellData[2];
             canvas.height = cellData[3];
             ctx.drawImage(texture.image, cellData[0], cellData[1], cellData[2], cellData[3], 0, 0, cellData[2], cellData[3]);
             // Create the pattern from the texture cell
-            this._patternFill = ((_a = exports_1.ige.engine._ctx) === null || _a === void 0 ? void 0 : _a.createPattern(canvas, repeatType)) || undefined;
+            this._patternFill = ctx.createPattern(canvas, repeatType) || undefined;
         }
         else {
             // Create the pattern from the texture
-            this._patternFill = ((_b = exports_1.ige.engine._ctx) === null || _b === void 0 ? void 0 : _b.createPattern(texture.image, repeatType)) || undefined;
+            this._patternFill = ctx.createPattern(texture.image, repeatType) || undefined;
         }
         texture.restoreOriginal();
         this.cacheDirty(true);

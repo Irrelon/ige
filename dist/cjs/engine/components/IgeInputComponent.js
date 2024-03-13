@@ -441,6 +441,7 @@ class IgeInputComponent extends exports_1.IgeEventingClass {
         this._state[device][inputId] = newValue;
     }
     _rationalise(event, type) {
+        var _a;
         event.igeType = type;
         // Check if we want to prevent default behaviour
         if (type === "keyboard") {
@@ -474,7 +475,7 @@ class IgeInputComponent extends exports_1.IgeEventingClass {
             pointerEvent.igePageX = pointerEvent.pageX;
             pointerEvent.igePageY = pointerEvent.pageY;
         }
-        const canvasPosition = exports_3.ige.engine._canvasPosition();
+        const canvasPosition = (0, exports_1.getElementPosition)((_a = exports_3.ige.engine._renderer) === null || _a === void 0 ? void 0 : _a.canvasElement());
         event.igeX = event.igePageX - canvasPosition.left;
         event.igeY = event.igePageY - canvasPosition.top;
         this.emit("inputEvent", event);

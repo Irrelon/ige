@@ -1,5 +1,4 @@
 // TODO: Add "overflow" with automatic scroll-bars
-import { ige } from "@/export/exports";
 import type { IgeObject } from "@/export/exports";
 import type { IgeTexture } from "@/export/exports";
 import type { IgeRepeatType } from "@/export/exports";
@@ -7,7 +6,7 @@ import type { Mixin } from "@/export/exports";
 
 // TODO: Update this mixin so it extends from IgeBaseClass, moving anything that relies on IgeEntity
 //    to another class, probably IgeEntity or IgeUiEntity?
-export const WithUiStyleMixin = <BaseClassType extends Mixin<IgeObject>>(Base: BaseClassType) =>
+export const WithUiStyleMixin = <BaseClassType extends Mixin<IgeObject>> (Base: BaseClassType) =>
 	class extends Base {
 		_color: string | CanvasGradient | CanvasPattern = "#000000";
 		_patternRepeat?: IgeRepeatType;
@@ -104,16 +103,15 @@ export const WithUiStyleMixin = <BaseClassType extends Mixin<IgeObject>>(Base: B
 				this._patternHeight = texture.image.height;
 			}
 
+			const canvas = new OffscreenCanvas(2, 2);
+			const ctx = canvas.getContext("2d") as OffscreenCanvasRenderingContext2D;
+
+			if (!ctx) {
+				throw new Error("Couldn't get texture canvas 2d context!");
+			}
+
 			if (this._cell && this._cell > 1) {
-				// We are using a cell sheet, render the cell to a
-				// temporary canvas and set that as the pattern image
-				const canvas = new OffscreenCanvas(2, 2);
-				const ctx = canvas.getContext("2d") as OffscreenCanvasRenderingContext2D;
-
-				if (!ctx) {
-					throw new Error("Couldn't get texture canvas 2d context!");
-				}
-
+				// Render the cell to a temporary canvas and set that as the pattern image
 				const cellData = texture._cells[this._cell];
 
 				canvas.width = cellData[2];
@@ -132,10 +130,10 @@ export const WithUiStyleMixin = <BaseClassType extends Mixin<IgeObject>>(Base: B
 				);
 
 				// Create the pattern from the texture cell
-				this._patternFill = ige.engine._ctx?.createPattern(canvas, repeatType) || undefined;
+				this._patternFill = ctx.createPattern(canvas, repeatType) || undefined;
 			} else {
 				// Create the pattern from the texture
-				this._patternFill = ige.engine._ctx?.createPattern(texture.image, repeatType) || undefined;
+				this._patternFill = ctx.createPattern(texture.image, repeatType) || undefined;
 			}
 
 			texture.restoreOriginal();
@@ -397,8 +395,8 @@ export const WithUiStyleMixin = <BaseClassType extends Mixin<IgeObject>>(Base: B
 			return this._borderBottomRightRadius;
 		}
 
-		padding(...args: [number]): this;
-		padding(...args: [number, number, number, number]): this;
+		padding (...args: [number]): this;
+		padding (...args: [number, number, number, number]): this;
 		padding (...args: number[]) {
 			if (args.length === 0) return this._padding;
 
@@ -464,8 +462,8 @@ export const WithUiStyleMixin = <BaseClassType extends Mixin<IgeObject>>(Base: B
 			return this._paddingBottom;
 		}
 
-		margin(...args: [number]): this;
-		margin(...args: [number, number, number, number]): this;
+		margin (...args: [number]): this;
+		margin (...args: [number, number, number, number]): this;
 		margin (...args: number[]) {
 			if (args.length === 0) return this._margin;
 

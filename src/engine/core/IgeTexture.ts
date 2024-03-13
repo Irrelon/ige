@@ -487,9 +487,7 @@ export class IgeTexture extends IgeAsset {
 			return;
 		}
 
-		if (ige.engine._ctx) {
-			ige.engine._ctx.imageSmoothingEnabled = this._smoothing;
-		}
+		ctx.imageSmoothingEnabled = this._smoothing;
 
 		if (this._renderMode === IgeTextureRenderMode.image) {
 			// This texture is image-based

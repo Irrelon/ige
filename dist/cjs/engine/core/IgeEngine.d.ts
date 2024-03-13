@@ -18,8 +18,6 @@ export declare class IgeEngine extends IgeEntity {
     client?: IgeBaseClass;
     server?: IgeBaseClass;
     _idRegistered: boolean;
-    _canvas?: HTMLCanvasElement;
-    _ctx: IgeCanvasRenderingContext2d | null;
     _renderer?: IgeBaseRenderer | null;
     _idCounter: number;
     _pause: boolean;
@@ -106,21 +104,6 @@ export declare class IgeEngine extends IgeEntity {
      */
     spawnQueue(entity: IgeObject): IgeObject[] | this;
     currentViewport(viewport?: IgeObject): IgeViewport | null;
-    /**
-     * Sets the canvas element that will be used as the front-buffer.
-     * @param elem The canvas element.
-     * @param autoSize If set to true, the engine will automatically size
-     * the canvas to the width and height of the window upon window resize.
-     */
-    canvas(elem?: HTMLCanvasElement, autoSize?: boolean): this | HTMLCanvasElement | undefined;
-    /**
-     * Clears the entire canvas.
-     */
-    clearCanvas(): void;
-    /**
-     * Removes the engine's canvas from the DOM.
-     */
-    removeCanvas(): void;
     createCanvas(options?: {
         smoothing: boolean;
         pixelRatioScaling: boolean;
@@ -136,20 +119,10 @@ export declare class IgeEngine extends IgeEntity {
      */
     _resizeEvent: (event?: Event) => void;
     /**
-     * Gets the bounding rectangle for the HTML canvas element being
-     * used as the front buffer for the engine. Uses DOM methods.
-     * @returns {ClientRect}
-     * @private
-     */
-    _canvasPosition(): DOMRect | {
-        top: number;
-        left: number;
-    };
-    /**
-     * Toggles full-screen output of the main ige canvas. Only works
+     * Toggles full-screen output of the renderer canvas. Only works
      * if called from within a user-generated HTML event listener.
      */
-    toggleFullScreen: () => any;
+    toggleFullScreen: () => void;
     /**
      * Finds the first Ige* based class that the passed object
      * has been derived from.
@@ -414,6 +387,7 @@ export declare class IgeEngine extends IgeEntity {
      */
     renderContext(contextId: "2d" | "three"): this | "2d" | "three";
     /**
+     * @deprecated Please create a renderer instance and assign it via engine.renderer() instead.
      * Creates a front-buffer or "drawing surface" for the renderer.
      *
      * @param {Boolean} autoSize Determines if the canvas will auto-resize
@@ -426,7 +400,6 @@ export declare class IgeEngine extends IgeEntity {
      * those whose pixel ratio is different from 1 to 1.
      */
     createFrontBuffer(autoSize?: boolean, dontScale?: boolean): void;
-    _frontBufferSetup(autoSize: boolean, dontScale: boolean): void;
     /**
      * Returns the mouse position relative to the main front buffer. Mouse
      * position is set by the this.input component (IgeInputComponent)

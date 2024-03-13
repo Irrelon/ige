@@ -1,4 +1,3 @@
-import { IgeDummyContext } from "../../export/exports.js"
 import { IgeEntity } from "../../export/exports.js"
 import { IgePoint2d } from "../../export/exports.js"
 import { IgePoint3d } from "../../export/exports.js"
@@ -12,8 +11,6 @@ export class IgeEngine extends IgeEntity {
     client;
     server;
     _idRegistered = true;
-    _canvas;
-    _ctx;
     _renderer = null;
     _idCounter;
     _pause = false;
@@ -120,19 +117,7 @@ export class IgeEngine extends IgeEntity {
         this._dependencyQueue = []; // Holds an array of functions that must all return true for the engine to start
         this._webFonts = []; // Holds an array of web fonts to load
         this._cssFonts = []; // Holds an array of css fonts we want to wait for (loaded via HTML or CSS rather than our own loadWebFont())
-        // Set the context to a dummy context to start
-        // with in case we are in "headless" mode and
-        // a replacement context never gets assigned
-        this._ctx = new IgeDummyContext();
         this._headless = true;
-        // Deal with some debug settings first
-        // if (ige.config.debug) {
-        // 	if (!ige.config.debug._enabled) {
-        // 		// Debug is not enabled so ensure that
-        // 		// timing debugs are disabled
-        // 		ige.config.debug._timing = false;
-        // 	}
-        // }
         // Output our header
         console.log("-----------------------------------------");
         console.log(`Powered by Isogenic Engine`);
@@ -242,77 +227,6 @@ export class IgeEngine extends IgeEntity {
         }
         return ige.engine._currentViewport;
     }
-    /**
-     * Sets the canvas element that will be used as the front-buffer.
-     * @param elem The canvas element.
-     * @param autoSize If set to true, the engine will automatically size
-     * the canvas to the width and height of the window upon window resize.
-     */
-    canvas(elem, autoSize = true) {
-        if (isServer)
-            return this;
-        if (elem === undefined) {
-            // Return current value
-            return this._canvas;
-        }
-        if (this._canvas) {
-            // We already have a canvas
-            return this;
-        }
-        this._canvas = elem;
-        this._ctx = this._canvas.getContext(this._renderContext);
-        if (!this._ctx) {
-            throw new Error("Could not get canvas context!");
-        }
-        if (this._pixelRatioScaling) {
-            // Support high-definition devices and "retina" displays by adjusting
-            // for device and back store pixels ratios
-            this._devicePixelRatio = window.devicePixelRatio || 1;
-        }
-        else {
-            // No auto-scaling
-            this._devicePixelRatio = 1;
-        }
-        this.log(`Device pixel ratio is ${this._devicePixelRatio}`);
-        if (autoSize) {
-            this._autoSize = autoSize;
-        }
-        window.addEventListener("resize", this._resizeEvent);
-        this._resizeEvent();
-        this._ctx = this._canvas.getContext(this._renderContext);
-        this._headless = false;
-        // Ask the input component to set up any listeners it has
-        ige.input.setupListeners(this._canvas);
-    }
-    /**
-     * Clears the entire canvas.
-     */
-    clearCanvas() {
-        if (this._canvas && this._ctx) {
-            // Clear the whole canvas
-            this._ctx.clearRect(0, 0, this._canvas.width, this._canvas.height);
-        }
-    }
-    /**
-     * Removes the engine's canvas from the DOM.
-     */
-    removeCanvas() {
-        // Stop listening for input events
-        if (ige.input) {
-            ige.input.destroyListeners();
-        }
-        // Remove event listener
-        window.removeEventListener("resize", this._resizeEvent);
-        if (this._createdFrontBuffer && this._canvas) {
-            // Remove the canvas from the DOM
-            document.body.removeChild(this._canvas);
-        }
-        // Clear internal references
-        delete this._canvas;
-        this._ctx = null;
-        this._ctx = new IgeDummyContext();
-        this._headless = true;
-    }
     createCanvas(options = { smoothing: false, pixelRatioScaling: true }) {
         // Creates a new canvas instance with the device pixel ratio
         // and other features setup based on the passed `options` or
@@ -349,24 +263,17 @@ export class IgeEngine extends IgeEntity {
      * @private
      */
     _resizeEvent = (event) => {
-        console.log("Engine resize event");
-        let canvasBoundingRect;
-        if (this._autoSize) {
-            const arr = this._children;
-            const newWidth = window.innerWidth;
-            const newHeight = window.innerHeight;
-            let arrCount = arr.length;
-            this._bounds2d = new IgePoint2d(newWidth, newHeight);
-            // Loop any mounted children and check if
-            // they should also get resized
-            while (arrCount--) {
-                arr[arrCount]._resizeEvent(event);
-            }
-        }
-        else {
-            if (this._canvas) {
-                this._bounds2d = new IgePoint2d(this._canvas.width, this._canvas.height);
-            }
+        if (!this._autoSize)
+            return;
+        const arr = this._children;
+        const newWidth = window.innerWidth;
+        const newHeight = window.innerHeight;
+        let arrCount = arr.length;
+        this._bounds2d = new IgePoint2d(newWidth, newHeight);
+        // Loop any mounted children and check if
+        // they should also get resized
+        while (arrCount--) {
+            arr[arrCount]._resizeEvent(event);
         }
         // if (this._showSgTree) {
         // 	const sgTreeElem = document.getElementById("igeSgTree");
@@ -382,45 +289,11 @@ export class IgeEngine extends IgeEntity {
         this._resized = true;
     };
     /**
-     * Gets the bounding rectangle for the HTML canvas element being
-     * used as the front buffer for the engine. Uses DOM methods.
-     * @returns {ClientRect}
-     * @private
-     */
-    _canvasPosition() {
-        if (!this._canvas) {
-            return {
-                top: 0,
-                left: 0
-            };
-        }
-        try {
-            return this._canvas.getBoundingClientRect();
-        }
-        catch (e) {
-            return {
-                top: this._canvas.offsetTop,
-                left: this._canvas.offsetLeft
-            };
-        }
-    }
-    /**
-     * Toggles full-screen output of the main ige canvas. Only works
+     * Toggles full-screen output of the renderer canvas. Only works
      * if called from within a user-generated HTML event listener.
      */
     toggleFullScreen = () => {
-        const elem = this._canvas;
-        if (!elem)
-            return;
-        if (elem.requestFullscreen) {
-            return elem.requestFullscreen();
-        }
-        else if (elem.mozRequestFullScreen) {
-            return elem.mozRequestFullScreen();
-        }
-        else if (elem.webkitRequestFullscreen) {
-            return elem.webkitRequestFullscreen();
-        }
+        this._renderer?.toggleFullScreen();
     };
     /**
      * Finds the first Ige* based class that the passed object
@@ -1362,6 +1235,7 @@ export class IgeEngine extends IgeEntity {
         return this._renderContext;
     }
     /**
+     * @deprecated Please create a renderer instance and assign it via engine.renderer() instead.
      * Creates a front-buffer or "drawing surface" for the renderer.
      *
      * @param {Boolean} autoSize Determines if the canvas will auto-resize
@@ -1375,25 +1249,6 @@ export class IgeEngine extends IgeEntity {
      */
     createFrontBuffer(autoSize = true, dontScale = false) {
         throw new Error("IgeEngine.createFrontBuffer() is now deprecated, please assign a renderer instead e.g. `ige.engine.renderer(new IgeCanvas2dRenderer());`");
-        // if (!isClient) {
-        // 	return;
-        // }
-        // if (this._canvas) {
-        // 	return;
-        // }
-        //
-        // this._createdFrontBuffer = true;
-        // this._pixelRatioScaling = !dontScale;
-        // this._frontBufferSetup(autoSize, dontScale);
-    }
-    _frontBufferSetup(autoSize, dontScale) {
-        // Create a new canvas element to use as the
-        // rendering front-buffer
-        const tempCanvas = document.createElement("canvas");
-        // Set the canvas element id
-        tempCanvas.id = "igeFrontBuffer";
-        this.canvas(tempCanvas, autoSize);
-        document.body.appendChild(tempCanvas);
     }
     /**
      * Returns the mouse position relative to the main front buffer. Mouse
@@ -1563,7 +1418,7 @@ export class IgeEngine extends IgeEntity {
         this.stop();
         // Remove the front buffer (canvas) if we created it
         if (isClient) {
-            this.removeCanvas();
+            this._renderer?.destroy();
         }
         super.destroy();
         this.log("Engine destroy complete.");

@@ -2,9 +2,10 @@ import { type IgeEngine, type IgeViewport } from "../../export/exports.js"
 import { IgeEventingClass } from "./IgeEventingClass.js"
 import { IgePoint2d } from "./IgePoint2d.js";
 export declare class IgeBaseRenderer extends IgeEventingClass {
-    _hasRunSetup: boolean;
-    _isReady: boolean;
-    _bounds2d: IgePoint2d;
+    protected _canvas?: HTMLCanvasElement;
+    protected _hasRunSetup: boolean;
+    protected _isReady: boolean;
+    protected _bounds2d: IgePoint2d;
     constructor();
     setup(): Promise<void>;
     /**
@@ -16,7 +17,13 @@ export declare class IgeBaseRenderer extends IgeEventingClass {
     isReady(): boolean;
     isReady(val: boolean): this;
     destroy(): void;
+    canvasElement(): HTMLCanvasElement | undefined;
     _resizeEvent: (event?: Event) => void;
     renderSceneGraph(engine: IgeEngine, viewports: IgeViewport[]): boolean;
+    /**
+     * Toggles full-screen output of the renderer canvas. Only works
+     * if called from within a user-generated HTML event listener.
+     */
+    toggleFullScreen: () => void;
     _renderSceneGraph(engine: IgeEngine, viewports: IgeViewport[]): boolean;
 }

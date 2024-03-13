@@ -22,6 +22,12 @@ class IgeBaseRenderer extends IgeEventingClass_1.IgeEventingClass {
         this._bounds2d = new IgePoint2d_1.IgePoint2d(800, 600);
         this._resizeEvent = (event) => {
         };
+        /**
+         * Toggles full-screen output of the renderer canvas. Only works
+         * if called from within a user-generated HTML event listener.
+         */
+        this.toggleFullScreen = () => {
+        };
     }
     setup() {
         return __awaiter(this, void 0, void 0, function* () {
@@ -55,6 +61,9 @@ class IgeBaseRenderer extends IgeEventingClass_1.IgeEventingClass {
         return this;
     }
     destroy() {
+    }
+    canvasElement() {
+        return this._canvas;
     }
     renderSceneGraph(engine, viewports) {
         return this._renderSceneGraph(engine, viewports);

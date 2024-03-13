@@ -1,4 +1,4 @@
-import { IgeEventingClass } from "@/export/exports";
+import { getElementPosition, IgeEventingClass } from "@/export/exports";
 import { IgePoint3d } from "@/export/exports";
 import type { IgeViewport } from "@/export/exports";
 import { ige } from "@/export/exports";
@@ -271,7 +271,7 @@ export class IgeInputComponent extends IgeEventingClass implements IgeIsReadyPro
 			pointerEvent.igePageY = pointerEvent.pageY;
 		}
 
-		const canvasPosition = ige.engine._canvasPosition();
+		const canvasPosition = getElementPosition(ige.engine._renderer?.canvasElement());
 		event.igeX = event.igePageX - canvasPosition.left;
 		event.igeY = event.igePageY - canvasPosition.top;
 

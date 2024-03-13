@@ -2,7 +2,6 @@ import {} from "../../export/exports.js"
 import { getElementPosition, ige, IgePoint2d, isClient, isServer } from "../../export/exports.js"
 import { IgeBaseRenderer } from "./IgeBaseRenderer.js"
 export class IgeCanvas2dRenderer extends IgeBaseRenderer {
-    _canvas;
     _ctx;
     _createdFrontBuffer = false;
     _pixelRatioScaling = true;
@@ -202,6 +201,30 @@ export class IgeCanvas2dRenderer extends IgeBaseRenderer {
         }
         this._resized = true;
     };
+    /**
+     * Toggles full-screen output of the main ige canvas. Only works
+     * if called from within a user-generated HTML event listener.
+     */
+    toggleFullScreen = () => {
+        const elem = this._canvas;
+        if (!elem)
+            return;
+        if (elem.requestFullscreen) {
+            return elem.requestFullscreen();
+        }
+        else if (elem.mozRequestFullScreen) {
+            return elem.mozRequestFullScreen();
+        }
+        else if (elem.webkitRequestFullscreen) {
+            return elem.webkitRequestFullscreen();
+        }
+    };
+    destroy() {
+        super.destroy();
+        if (isClient) {
+            this.removeCanvas();
+        }
+    }
     _frontBufferSetup(autoSize, dontScale) {
         // Create a new canvas element to use as the
         // rendering front-buffer

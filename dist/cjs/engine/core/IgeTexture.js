@@ -386,9 +386,7 @@ class IgeTexture extends exports_2.IgeAsset {
         if (entity._cell === null) {
             return;
         }
-        if (exports_3.ige.engine._ctx) {
-            exports_3.ige.engine._ctx.imageSmoothingEnabled = this._smoothing;
-        }
+        ctx.imageSmoothingEnabled = this._smoothing;
         if (this._renderMode === exports_4.IgeTextureRenderMode.image) {
             // This texture is image-based
             if (!this._originalImage || !this.image) {

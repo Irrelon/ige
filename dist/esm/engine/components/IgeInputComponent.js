@@ -1,4 +1,4 @@
-import { IgeEventingClass } from "../../export/exports.js"
+import { getElementPosition, IgeEventingClass } from "../../export/exports.js"
 import { IgePoint3d } from "../../export/exports.js"
 import { ige } from "../../export/exports.js"
 import { IgeInputControlMap } from "../../export/exports.js"
@@ -218,7 +218,7 @@ export class IgeInputComponent extends IgeEventingClass {
             pointerEvent.igePageX = pointerEvent.pageX;
             pointerEvent.igePageY = pointerEvent.pageY;
         }
-        const canvasPosition = ige.engine._canvasPosition();
+        const canvasPosition = getElementPosition(ige.engine._renderer?.canvasElement());
         event.igeX = event.igePageX - canvasPosition.left;
         event.igeY = event.igePageY - canvasPosition.top;
         this.emit("inputEvent", event);

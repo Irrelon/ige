@@ -202,30 +202,30 @@ export class IgeUiEntity extends IgeEntity {
 	_anyBorderColor (): boolean {
 		return Boolean(
 			this._borderColor ||
-				this._borderLeftColor ||
-				this._borderTopColor ||
-				this._borderRightColor ||
-				this._borderBottomColor
+			this._borderLeftColor ||
+			this._borderTopColor ||
+			this._borderRightColor ||
+			this._borderBottomColor
 		);
 	}
 
 	_anyBorderWidth (): boolean {
 		return Boolean(
 			this._borderWidth ||
-				this._borderLeftWidth ||
-				this._borderTopWidth ||
-				this._borderRightWidth ||
-				this._borderBottomWidth
+			this._borderLeftWidth ||
+			this._borderTopWidth ||
+			this._borderRightWidth ||
+			this._borderBottomWidth
 		);
 	}
 
 	_anyBorderRadius (): boolean {
 		return Boolean(
 			this._borderRadius ||
-				this._borderTopRightRadius ||
-				this._borderBottomRightRadius ||
-				this._borderBottomLeftRadius ||
-				this._borderTopLeftRadius
+			this._borderTopRightRadius ||
+			this._borderBottomRightRadius ||
+			this._borderBottomLeftRadius ||
+			this._borderTopLeftRadius
 		);
 	}
 
@@ -406,8 +406,8 @@ export class IgeUiEntity extends IgeEntity {
 		}
 	}
 
-	cell(val: number | null): this;
-	cell(): number | null;
+	cell (val: number | null): this;
+	cell (): number | null;
 	cell (val?: number | null) {
 		if (val === undefined) {
 			return this._cell;
@@ -495,7 +495,8 @@ export class IgeUiEntity extends IgeEntity {
 		super._resizeEvent(event);
 	}
 
-	_updateStyle () {}
+	_updateStyle () {
+	}
 
 	/**
 	 * Gets / sets the entity's x position relative to the left of
@@ -504,8 +505,8 @@ export class IgeUiEntity extends IgeEntity {
 	 * @param {Boolean=} noUpdate
 	 * @return {number}
 	 */
-	left(px: number | string, noUpdate?: boolean): this;
-	left(): number;
+	left (px: number | string, noUpdate?: boolean): this;
+	left (): number;
 	left (px?: number | string, noUpdate: boolean = false) {
 		if (px === undefined) {
 			return this._uiLeft;
@@ -559,8 +560,8 @@ export class IgeUiEntity extends IgeEntity {
 	 * @param {Boolean=} noUpdate
 	 * @return {number}
 	 */
-	right(px: number | string, noUpdate?: boolean): this;
-	right(): number;
+	right (px: number | string, noUpdate?: boolean): this;
+	right (): number;
 	right (px?: number | string, noUpdate = false) {
 		if (px !== undefined) {
 			if (px === null) {
@@ -613,8 +614,8 @@ export class IgeUiEntity extends IgeEntity {
 	 * @param {Boolean=} noUpdate
 	 * @return {number}
 	 */
-	center(px: number | string, noUpdate?: boolean): this;
-	center(): number;
+	center (px: number | string, noUpdate?: boolean): this;
+	center (): number;
 	center (px?: number | string, noUpdate = false) {
 		if (px !== undefined) {
 			if (px === null) {
@@ -669,8 +670,8 @@ export class IgeUiEntity extends IgeEntity {
 	 * @param {Boolean=} noUpdate
 	 * @return {number}
 	 */
-	top(px: number | string, noUpdate?: boolean): this;
-	top(): number;
+	top (px: number | string, noUpdate?: boolean): this;
+	top (): number;
 	top (px?: number | string, noUpdate: boolean = false) {
 		if (px === undefined) {
 			return this._uiTop;
@@ -725,8 +726,8 @@ export class IgeUiEntity extends IgeEntity {
 	 * @param {Boolean=} noUpdate
 	 * @return {number}
 	 */
-	bottom(px: number | string, noUpdate?: boolean): this;
-	bottom(): number;
+	bottom (px: number | string, noUpdate?: boolean): this;
+	bottom (): number;
 	bottom (px?: number | string, noUpdate: boolean = false) {
 		if (px !== undefined) {
 			if (px === null) {
@@ -779,8 +780,8 @@ export class IgeUiEntity extends IgeEntity {
 	 * @param {Boolean=} noUpdate
 	 * @return {number}
 	 */
-	middle(px: number | string, noUpdate?: boolean): this;
-	middle(): number;
+	middle (px: number | string, noUpdate?: boolean): this;
+	middle (): number;
 	middle (px?: number | string, noUpdate: boolean = false) {
 		if (px !== undefined) {
 			if (px === null) {
@@ -838,8 +839,8 @@ export class IgeUiEntity extends IgeEntity {
 	 * @param {Boolean=} noUpdate
 	 * @return {*}
 	 */
-	width(px: number | string, lockAspect?: boolean, modifier?: number, noUpdate?: boolean): this;
-	width(): number;
+	width (px: number | string, lockAspect?: boolean, modifier?: number, noUpdate?: boolean): this;
+	width (): number;
 	width (px?: number | string, lockAspect = false, modifier?: number, noUpdate = false) {
 		if (px !== undefined) {
 			if (px === null) {
@@ -914,8 +915,8 @@ export class IgeUiEntity extends IgeEntity {
 	 *
 	 * @return {*}
 	 */
-	height(px: number | string, lockAspect?: boolean, modifier?: number, noUpdate?: boolean): this;
-	height(): number;
+	height (px: number | string, lockAspect?: boolean, modifier?: number, noUpdate?: boolean): this;
+	height (): number;
 	height (px?: number | string, lockAspect: boolean = false, modifier?: number, noUpdate: boolean = false) {
 		if (px !== undefined) {
 			if (px === null) {
@@ -1174,8 +1175,8 @@ export class IgeUiEntity extends IgeEntity {
 	 * @param {string | CanvasGradient | CanvasPattern=} color
 	 * @return {*} Returns this when setting the value or the current value if none is specified.
 	 */
-	color(color?: string | CanvasGradient | CanvasPattern): this;
-	color(): string | CanvasGradient | CanvasPattern;
+	color (color?: string | CanvasGradient | CanvasPattern): this;
+	color (): string | CanvasGradient | CanvasPattern;
 	color (color?: string | CanvasGradient | CanvasPattern) {
 		if (color !== undefined) {
 			this._color = color;
@@ -1195,7 +1196,7 @@ export class IgeUiEntity extends IgeEntity {
 	 * @return {*} Returns this if any parameter is specified or
 	 * the current background image if no parameters are specified.
 	 */
-	backgroundImage (texture?: IgeTexture, repeatType?: IgeRepeatType) {
+	backgroundImage (texture?: IgeTexture, repeatType?: IgeRepeatType): this | CanvasPattern | undefined {
 		if (!(texture && texture.image)) {
 			return this._patternFill;
 		}
@@ -1224,16 +1225,15 @@ export class IgeUiEntity extends IgeEntity {
 			this._patternHeight = texture.image.height;
 		}
 
+		const canvas = new OffscreenCanvas(2, 2);
+		const ctx = canvas.getContext("2d") as OffscreenCanvasRenderingContext2D;
+
+		if (!ctx) {
+			throw new Error("Couldn't get texture canvas 2d context!");
+		}
+
 		if (this._cell && this._cell > 1) {
-			// We are using a cell sheet, render the cell to a
-			// temporary canvas and set that as the pattern image
-			const canvas = new OffscreenCanvas(2, 2);
-			const ctx = canvas.getContext("2d") as OffscreenCanvasRenderingContext2D;
-
-			if (!ctx) {
-				throw new Error("Couldn't get texture canvas 2d context!");
-			}
-
+			// Render the cell to a temporary canvas and set that as the pattern image
 			const cellData = texture._cells[this._cell];
 
 			canvas.width = cellData[2];
@@ -1252,10 +1252,10 @@ export class IgeUiEntity extends IgeEntity {
 			);
 
 			// Create the pattern from the texture cell
-			this._patternFill = ige.engine._ctx?.createPattern(canvas, repeatType) || undefined;
+			this._patternFill = ctx.createPattern(canvas, repeatType) || undefined;
 		} else {
 			// Create the pattern from the texture
-			this._patternFill = ige.engine._ctx?.createPattern(texture.image, repeatType) || undefined;
+			this._patternFill = ctx.createPattern(texture.image, repeatType) || undefined;
 		}
 
 		texture.restoreOriginal();
@@ -1331,8 +1331,8 @@ export class IgeUiEntity extends IgeEntity {
 	 * @param {CSSColor, CanvasGradient, CanvasPattern=} color
 	 * @return {*} Returns this when setting the value or the current value if none is specified.
 	 */
-	backgroundColor(color: string | CanvasGradient | CanvasPattern): this;
-	backgroundColor(): string | CanvasGradient | CanvasPattern;
+	backgroundColor (color: string | CanvasGradient | CanvasPattern): this;
+	backgroundColor (): string | CanvasGradient | CanvasPattern;
 	backgroundColor (color?: string | CanvasGradient | CanvasPattern) {
 		if (color !== undefined) {
 			this._backgroundColor = color;
@@ -1359,8 +1359,8 @@ export class IgeUiEntity extends IgeEntity {
 		return this._backgroundPosition;
 	}
 
-	borderColor(color: string): this;
-	borderColor(): string;
+	borderColor (color: string): this;
+	borderColor (): string;
 	borderColor (color?: string) {
 		if (color !== undefined) {
 			this._borderColor = color;
@@ -1415,8 +1415,8 @@ export class IgeUiEntity extends IgeEntity {
 		return this._borderBottomColor;
 	}
 
-	borderWidth(px: number): this;
-	borderWidth(): number;
+	borderWidth (px: number): this;
+	borderWidth (): number;
 	borderWidth (px?: number) {
 		if (px !== undefined) {
 			this._borderWidth = px;
@@ -1473,8 +1473,8 @@ export class IgeUiEntity extends IgeEntity {
 		return this._borderBottomWidth;
 	}
 
-	borderRadius(px: number): this;
-	borderRadius(): number;
+	borderRadius (px: number): this;
+	borderRadius (): number;
 	borderRadius (px?: number) {
 		if (px !== undefined) {
 			this._borderRadius = px;
@@ -1534,8 +1534,8 @@ export class IgeUiEntity extends IgeEntity {
 		return this._borderBottomRightRadius;
 	}
 
-	padding(...args: [number]): this;
-	padding(...args: [number, number, number, number]): this;
+	padding (...args: [number]): this;
+	padding (...args: [number, number, number, number]): this;
 	padding (...args: number[]) {
 		if (args.length === 0) return this._padding;
 
@@ -1557,8 +1557,8 @@ export class IgeUiEntity extends IgeEntity {
 		return this;
 	}
 
-	paddingX(px: number): this;
-	paddingX(): number;
+	paddingX (px: number): this;
+	paddingX (): number;
 	paddingX (px?: number) {
 		if (px !== undefined) {
 			this._paddingLeft = px;
@@ -1571,8 +1571,8 @@ export class IgeUiEntity extends IgeEntity {
 		return this._paddingLeft;
 	}
 
-	paddingY(px: number): this;
-	paddingY(): number;
+	paddingY (px: number): this;
+	paddingY (): number;
 	paddingY (px?: number) {
 		if (px !== undefined) {
 			this._paddingTop = px;
@@ -1585,8 +1585,8 @@ export class IgeUiEntity extends IgeEntity {
 		return this._paddingTop;
 	}
 
-	paddingLeft(px: number): this;
-	paddingLeft(): number;
+	paddingLeft (px: number): this;
+	paddingLeft (): number;
 	paddingLeft (px?: number) {
 		if (px !== undefined) {
 			this._paddingLeft = px;
@@ -1598,8 +1598,8 @@ export class IgeUiEntity extends IgeEntity {
 		return this._paddingLeft;
 	}
 
-	paddingTop(px: number): this;
-	paddingTop(): number;
+	paddingTop (px: number): this;
+	paddingTop (): number;
 	paddingTop (px?: number) {
 		if (px !== undefined) {
 			this._paddingTop = px;
@@ -1611,8 +1611,8 @@ export class IgeUiEntity extends IgeEntity {
 		return this._paddingTop;
 	}
 
-	paddingRight(px: number): this;
-	paddingRight(): number;
+	paddingRight (px: number): this;
+	paddingRight (): number;
 	paddingRight (px?: number) {
 		if (px !== undefined) {
 			this._paddingRight = px;
@@ -1624,8 +1624,8 @@ export class IgeUiEntity extends IgeEntity {
 		return this._paddingRight;
 	}
 
-	paddingBottom(px: number): this;
-	paddingBottom(): number;
+	paddingBottom (px: number): this;
+	paddingBottom (): number;
 	paddingBottom (px?: number) {
 		if (px !== undefined) {
 			this._paddingBottom = px;
@@ -1637,8 +1637,8 @@ export class IgeUiEntity extends IgeEntity {
 		return this._paddingBottom;
 	}
 
-	margin(...args: [number]): this;
-	margin(...args: [number, number, number, number]): this;
+	margin (...args: [number]): this;
+	margin (...args: [number, number, number, number]): this;
 	margin (...args: number[]) {
 		if (args.length === 0) return this._margin;
 

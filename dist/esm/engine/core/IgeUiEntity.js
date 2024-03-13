@@ -340,7 +340,8 @@ export class IgeUiEntity extends IgeEntity {
         }
         super._resizeEvent(event);
     }
-    _updateStyle() { }
+    _updateStyle() {
+    }
     left(px, noUpdate = false) {
         if (px === undefined) {
             return this._uiLeft;
@@ -895,24 +896,23 @@ export class IgeUiEntity extends IgeEntity {
             this._patternWidth = texture.image.width;
             this._patternHeight = texture.image.height;
         }
+        const canvas = new OffscreenCanvas(2, 2);
+        const ctx = canvas.getContext("2d");
+        if (!ctx) {
+            throw new Error("Couldn't get texture canvas 2d context!");
+        }
         if (this._cell && this._cell > 1) {
-            // We are using a cell sheet, render the cell to a
-            // temporary canvas and set that as the pattern image
-            const canvas = new OffscreenCanvas(2, 2);
-            const ctx = canvas.getContext("2d");
-            if (!ctx) {
-                throw new Error("Couldn't get texture canvas 2d context!");
-            }
+            // Render the cell to a temporary canvas and set that as the pattern image
             const cellData = texture._cells[this._cell];
             canvas.width = cellData[2];
             canvas.height = cellData[3];
             ctx.drawImage(texture.image, cellData[0], cellData[1], cellData[2], cellData[3], 0, 0, cellData[2], cellData[3]);
             // Create the pattern from the texture cell
-            this._patternFill = ige.engine._ctx?.createPattern(canvas, repeatType) || undefined;
+            this._patternFill = ctx.createPattern(canvas, repeatType) || undefined;
         }
         else {
             // Create the pattern from the texture
-            this._patternFill = ige.engine._ctx?.createPattern(texture.image, repeatType) || undefined;
+            this._patternFill = ctx.createPattern(texture.image, repeatType) || undefined;
         }
         texture.restoreOriginal();
         this.cacheDirty(true);
