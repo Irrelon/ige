@@ -261,3 +261,25 @@ export const delay = (ms: number) => {
 		setTimeout(resolve, ms);
 	});
 };
+
+/**
+ * Gets the bounding rectangle for the passed HTML element.
+ * Uses DOM methods.
+ */
+export const getElementPosition = (elem?: HTMLElement) => {
+	if (!elem) {
+		return {
+			top: 0,
+			left: 0
+		};
+	}
+
+	try {
+		return elem.getBoundingClientRect();
+	} catch (e) {
+		return {
+			top: elem.offsetTop,
+			left: elem.offsetLeft
+		};
+	}
+};

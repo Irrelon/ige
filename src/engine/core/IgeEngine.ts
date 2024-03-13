@@ -1,3 +1,4 @@
+import type { IgeBaseRenderer } from "@/engine/core/IgeBaseRenderer";
 import type { IgeBaseClass } from "@/export/exports";
 import type { IgeCamera } from "@/export/exports";
 import type { IgeComponent } from "@/export/exports";
@@ -26,13 +27,13 @@ export class IgeEngine extends IgeEntity {
 	_idRegistered: boolean = true;
 	_canvas?: HTMLCanvasElement;
 	_ctx: IgeCanvasRenderingContext2d | null;
+	_renderer?: IgeBaseRenderer | null = null;
 	_idCounter: number;
 	_pause: boolean = false;
 	_useManualRender: boolean = false;
 	_manualRenderQueued: boolean = false;
 	_useManualTicks: boolean = false;
 	_manualFrameAlternator: boolean = false;
-	_renderContextModes: string[];
 	_pixelRatioScaling: boolean;
 	_requireScriptTotal: number;
 	_requireScriptLoading: number;
@@ -76,12 +77,11 @@ export class IgeEngine extends IgeEntity {
 	_dependencyCheckStart?: number;
 	_dependencyCheckTimeout: number = 5000; // Wait 30 seconds to load all dependencies then timeout;
 	_debugEvents: Record<string, boolean | number>;
-	_autoSize?: boolean;
+	_autoSize: boolean = true;
 	_syncIndex: number = 0;
 	_syncArr: SyncEntry[] = [];
 	_webFonts: FontFace[];
 	_cssFonts: string[];
-	_pointerOverVp?: IgeViewport;
 	_devicePixelRatio: number = 1;
 	_createdFrontBuffer: boolean = false;
 	_resized: boolean = false;
@@ -101,7 +101,6 @@ export class IgeEngine extends IgeEntity {
 		super();
 
 		this._idCounter = 0;
-		this._renderContextModes = ["2d", "three"];
 		this._pixelRatioScaling = true; // Default to scaling the canvas to get non-blurry output
 		this._requireScriptTotal = 0;
 		this._requireScriptLoading = 0;
@@ -174,6 +173,21 @@ export class IgeEngine extends IgeEntity {
 		if (isClient) {
 			this._resizeEvent();
 		}
+	}
+
+	renderer (val: IgeBaseRenderer): this;
+	renderer (): IgeBaseRenderer | null;
+	renderer (val?: IgeBaseRenderer) {
+		if (val === undefined) {
+			return this._renderer;
+		}
+
+		this._renderer = val;
+
+		// Make sure the renderer has been setup
+		void val.setup();
+
+		return this;
 	}
 
 	addComponent (id: string, Component: typeof IgeComponent<IgeEngine>, options?: any): this {
@@ -427,44 +441,14 @@ export class IgeEngine extends IgeEntity {
 	 * @private
 	 */
 	_resizeEvent = (event?: Event) => {
+		console.log("Engine resize event");
 		let canvasBoundingRect;
 
 		if (this._autoSize) {
 			const arr = this._children;
-			let newWidth = window.innerWidth;
-			let newHeight = window.innerHeight;
+			const newWidth = window.innerWidth;
+			const newHeight = window.innerHeight;
 			let arrCount = arr.length;
-
-			// Only update canvas dimensions if it exists
-			if (this._canvas) {
-				// Check if we can get the position of the canvas
-				canvasBoundingRect = this._canvasPosition();
-
-				// Adjust the newWidth and newHeight by the canvas offset
-				newWidth -= canvasBoundingRect.left;
-				newHeight -= canvasBoundingRect.top;
-
-				// Make sure we can divide the new width and height by 2...
-				// otherwise minus 1 so we get an even number so that we
-				// negate the blur effect of sub-pixel rendering
-				if (newWidth % 2) {
-					newWidth--;
-				}
-				if (newHeight % 2) {
-					newHeight--;
-				}
-
-				this._canvas.width = newWidth * this._devicePixelRatio;
-				this._canvas.height = newHeight * this._devicePixelRatio;
-
-				if (this._devicePixelRatio !== 1) {
-					this._canvas.style.width = newWidth + "px";
-					this._canvas.style.height = newHeight + "px";
-
-					// Scale the canvas context to account for the change
-					this._ctx?.scale(this._devicePixelRatio, this._devicePixelRatio);
-				}
-			}
 
 			this._bounds2d = new IgePoint2d(newWidth, newHeight);
 
@@ -479,17 +463,17 @@ export class IgeEngine extends IgeEntity {
 			}
 		}
 
-		if (this._showSgTree) {
-			const sgTreeElem = document.getElementById("igeSgTree");
-
-			if (sgTreeElem) {
-				canvasBoundingRect = this._canvasPosition();
-
-				sgTreeElem.style.top = canvasBoundingRect.top + 5 + "px";
-				sgTreeElem.style.left = canvasBoundingRect.left + 5 + "px";
-				sgTreeElem.style.height = this._bounds2d.y - 30 + "px";
-			}
-		}
+		// if (this._showSgTree) {
+		// 	const sgTreeElem = document.getElementById("igeSgTree");
+		//
+		// 	if (sgTreeElem) {
+		// 		canvasBoundingRect = this._canvasPosition();
+		//
+		// 		sgTreeElem.style.top = canvasBoundingRect.top + 5 + "px";
+		// 		sgTreeElem.style.left = canvasBoundingRect.left + 5 + "px";
+		// 		sgTreeElem.style.height = this._bounds2d.y - 30 + "px";
+		// 	}
+		// }
 
 		this._resized = true;
 	};
@@ -681,8 +665,8 @@ export class IgeEngine extends IgeEntity {
 		return new Promise<void>((resolve, reject) => {
 			if (this._manualFrameAlternator !== this._frameAlternator) {
 				this._manualFrameAlternator = this._frameAlternator;
-				this.requestAnimFrame((timeStamp: number, ctx?: IgeCanvasRenderingContext2d | null) => {
-					this.engineStep(timeStamp, ctx);
+				this.requestAnimFrame((timeStamp: number) => {
+					this.engineStep(timeStamp);
 					resolve();
 				});
 			} else {
@@ -1248,9 +1232,9 @@ export class IgeEngine extends IgeEntity {
 
 	/**
 	 * Checks if all engine start dependencies have been satisfied.
-	 * @return {Boolean}
+	 * @return {boolean}
 	 */
-	dependencyCheck () {
+	dependencyCheck (): boolean {
 		const arr = this._dependencyQueue;
 		let arrCount = arr.length;
 
@@ -1331,10 +1315,11 @@ export class IgeEngine extends IgeEntity {
 	/**
 	 * Checks to ensure that a canvas has been assigned to the engine or that the
 	 * engine is in server mode.
-	 * @return {Boolean}
+	 * @return {boolean}
 	 */
-	canvasReady = () => {
-		return this._canvas !== undefined || isWorker || isServer;
+	canvasReady = (): boolean => {
+		//return this._canvas !== undefined || isWorker || isServer;
+		return this._renderer?.isReady() || isWorker || isServer;
 	};
 
 	/**
@@ -1456,9 +1441,9 @@ export class IgeEngine extends IgeEntity {
 
 	/**
 	 * Stops the engine.
-	 * @return {Boolean}
+	 * @return {boolean}
 	 */
-	stop () {
+	stop (): boolean {
 		// If we are running, stop the engine
 		if (this._state) {
 			this.log("Stopping engine...");
@@ -1490,11 +1475,12 @@ export class IgeEngine extends IgeEntity {
 	/**
 	 * Called each frame to traverse and render the scenegraph.
 	 */
-	engineStep = (timeStamp: number, ctx?: IgeCanvasRenderingContext2d | null) => {
+	engineStep = (timeStamp: number) => {
 		/* TODO:
             Make the scenegraph process simplified. Walk the scenegraph once and grab the order in a flat array
             then process updates and ticks. This will also allow a layered rendering system that can render the
             first x number of entities then stop, allowing a step through of the renderer in realtime.
+            We can probably implement this in the new renderer subsystem.
          */
 
 		// Scale the timestamp according to the current
@@ -1511,11 +1497,6 @@ export class IgeEngine extends IgeEntity {
 		}
 
 		if (this._state === IgeEngineState.started) {
-			// Check if we were passed a context to work with
-			if (ctx === undefined) {
-				ctx = this._ctx;
-			}
-
 			// Alternate the boolean frame alternator flag
 			this._frameAlternator = !this._frameAlternator;
 
@@ -1539,7 +1520,7 @@ export class IgeEngine extends IgeEntity {
 				this._tickDelta = 0;
 			} else {
 				// Calculate the tick delta - how much time has elapsed
-				// between the last time we ran engineTick() and now
+				// between the last time we ran engineStep() and now
 				this._tickDelta = this._tickStart - this.lastTick;
 			}
 
@@ -1548,18 +1529,25 @@ export class IgeEngine extends IgeEntity {
 
 			// Check if updates are enabled
 			if (this._enableUpdates) {
+				// Process any behaviours assigned to the engine
+				this._processBehaviours(IgeBehaviourType.preUpdate, this._tickDelta);
+
 				// Update the scenegraph
 				if (ige.config.debug._timing) {
 					const updateStart = new Date().getTime();
-					ctx && this.updateSceneGraph(ctx);
+					this.updateSceneGraph();
 					this._updateTime = new Date().getTime() - updateStart;
 				} else {
-					ctx && this.updateSceneGraph(ctx);
+					this.updateSceneGraph();
 				}
+
+				this._processBehaviours(IgeBehaviourType.postUpdate, this._tickDelta);
 			}
 
 			// Check if renders are enabled
 			if (this._enableRenders) {
+				this._processBehaviours(IgeBehaviourType.preTick, this._tickDelta);
+
 				// Check if we should only render after manualRender() has been called
 				// or if we just render each frame automatically
 				if (this._useManualRender) {
@@ -1569,10 +1557,10 @@ export class IgeEngine extends IgeEntity {
 						// A manual render was queued, so we can render a frame now
 						if (ige.config.debug._timing) {
 							const renderStart = new Date().getTime();
-							ctx && this.renderSceneGraph(ctx);
+							this.renderSceneGraph();
 							this._renderTime = new Date().getTime() - renderStart;
 						} else {
-							ctx && this.renderSceneGraph(ctx);
+							this.renderSceneGraph();
 						}
 						this._manualRenderQueued = false;
 					}
@@ -1580,16 +1568,16 @@ export class IgeEngine extends IgeEntity {
 					// We are not in manual render mode so render the scenegraph
 					if (ige.config.debug._timing) {
 						const renderStart = new Date().getTime();
-						ctx && this.renderSceneGraph(ctx);
+						this.renderSceneGraph();
 						this._renderTime = new Date().getTime() - renderStart;
 					} else {
-						ctx && this.renderSceneGraph(ctx);
+						this.renderSceneGraph();
 					}
 				}
-			}
 
-			// Call post-tick methods
-			this._processBehaviours(IgeBehaviourType.postTick, ctx);
+				// Call post-tick methods
+				this._processBehaviours(IgeBehaviourType.postTick);
+			}
 
 			// Record the lastTick value, so we can
 			// calculate delta on the next tick
@@ -1668,16 +1656,17 @@ export class IgeEngine extends IgeEntity {
 	 * those whose pixel ratio is different from 1 to 1.
 	 */
 	createFrontBuffer (autoSize = true, dontScale = false) {
-		if (!isClient) {
-			return;
-		}
-		if (this._canvas) {
-			return;
-		}
-
-		this._createdFrontBuffer = true;
-		this._pixelRatioScaling = !dontScale;
-		this._frontBufferSetup(autoSize, dontScale);
+		throw new Error("IgeEngine.createFrontBuffer() is now deprecated, please assign a renderer instead e.g. `ige.engine.renderer(new IgeCanvas2dRenderer());`");
+		// if (!isClient) {
+		// 	return;
+		// }
+		// if (this._canvas) {
+		// 	return;
+		// }
+		//
+		// this._createdFrontBuffer = true;
+		// this._pixelRatioScaling = !dontScale;
+		// this._frontBufferSetup(autoSize, dontScale);
 	}
 
 	_frontBufferSetup (autoSize: boolean, dontScale: boolean) {
@@ -1783,12 +1772,9 @@ export class IgeEngine extends IgeEntity {
 		super._childMounted(child);
 	}
 
-	updateSceneGraph (ctx: IgeCanvasRenderingContext2d) {
+	updateSceneGraph () {
 		const arr = this._children;
 		const tickDelta = ige.engine._tickDelta;
-
-		// Process any behaviours assigned to the engine
-		this._processBehaviours(IgeBehaviourType.preUpdate, ctx, tickDelta);
 
 		if (arr) {
 			let arrCount = arr.length;
@@ -1797,7 +1783,7 @@ export class IgeEngine extends IgeEntity {
 			if (ige.config.debug._timing) {
 				while (arrCount--) {
 					const us = new Date().getTime();
-					arr[arrCount].update(ctx, tickDelta);
+					arr[arrCount].update(tickDelta);
 					const ud = new Date().getTime() - us;
 
 					if (arr[arrCount]) {
@@ -1815,17 +1801,14 @@ export class IgeEngine extends IgeEntity {
 				}
 			} else {
 				while (arrCount--) {
-					arr[arrCount].update(ctx, tickDelta);
+					arr[arrCount].update(tickDelta);
 				}
 			}
 		}
 	}
 
-	renderSceneGraph (ctx: IgeCanvasRenderingContext2d) {
-		let ts, td;
-
-		// Process any behaviours assigned to the engine
-		this._processBehaviours(IgeBehaviourType.preTick, ctx);
+	renderSceneGraph () {
+		let ts: number, td: number;
 
 		// Depth-sort the viewports
 		if (this._viewportDepth) {
@@ -1844,47 +1827,50 @@ export class IgeEngine extends IgeEntity {
 			}
 		}
 
-		ctx.save();
-		ctx.translate(this._bounds2d.x2, this._bounds2d.y2);
-		//ctx.scale(this._globalScale.x, this._globalScale.y);
+		// Hand rendering tasks to the renderer
+		this._renderer?.renderSceneGraph(this, this._children as IgeViewport[]);
 
-		// Process the current engine tick for all child objects
-		const arr = this._children;
-
-		if (arr) {
-			let arrCount = arr.length;
-
-			// Loop our viewports and call their tick methods
-			if (ige.config.debug._timing) {
-				while (arrCount--) {
-					ctx.save();
-					ts = new Date().getTime();
-					arr[arrCount].tick(ctx);
-					td = new Date().getTime() - ts;
-					if (arr[arrCount]) {
-						if (!ige.engine._timeSpentInTick[arr[arrCount].id()]) {
-							ige.engine._timeSpentInTick[arr[arrCount].id()] = 0;
-						}
-
-						if (!ige.engine._timeSpentLastTick[arr[arrCount].id()]) {
-							ige.engine._timeSpentLastTick[arr[arrCount].id()] = {};
-						}
-
-						ige.engine._timeSpentInTick[arr[arrCount].id()] += td;
-						ige.engine._timeSpentLastTick[arr[arrCount].id()].ms = td;
-					}
-					ctx.restore();
-				}
-			} else {
-				while (arrCount--) {
-					ctx.save();
-					arr[arrCount].tick(ctx);
-					ctx.restore();
-				}
-			}
-		}
-
-		ctx.restore();
+		// ctx.save();
+		// ctx.translate(this._bounds2d.x2, this._bounds2d.y2);
+		// //ctx.scale(this._globalScale.x, this._globalScale.y);
+		//
+		// // Process the current engine tick for all child objects
+		// const arr = this._children;
+		//
+		// if (arr) {
+		// 	let arrCount = arr.length;
+		//
+		// 	// Loop our viewports and call their tick methods
+		// 	if (ige.config.debug._timing) {
+		// 		while (arrCount--) {
+		// 			ctx.save();
+		// 			ts = new Date().getTime();
+		// 			arr[arrCount].tick(ctx);
+		// 			td = new Date().getTime() - ts;
+		// 			if (arr[arrCount]) {
+		// 				if (!ige.engine._timeSpentInTick[arr[arrCount].id()]) {
+		// 					ige.engine._timeSpentInTick[arr[arrCount].id()] = 0;
+		// 				}
+		//
+		// 				if (!ige.engine._timeSpentLastTick[arr[arrCount].id()]) {
+		// 					ige.engine._timeSpentLastTick[arr[arrCount].id()] = {};
+		// 				}
+		//
+		// 				ige.engine._timeSpentInTick[arr[arrCount].id()] += td;
+		// 				ige.engine._timeSpentLastTick[arr[arrCount].id()].ms = td;
+		// 			}
+		// 			ctx.restore();
+		// 		}
+		// 	} else {
+		// 		while (arrCount--) {
+		// 			ctx.save();
+		// 			arr[arrCount].tick(ctx);
+		// 			ctx.restore();
+		// 		}
+		// 	}
+		// }
+		//
+		// ctx.restore();
 	}
 
 	destroy () {

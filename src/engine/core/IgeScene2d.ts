@@ -113,8 +113,8 @@ export class IgeScene2d extends IgeEntity {
 	 * @param {Boolean=} val True to ignore, false to not ignore.
 	 * @return {*}
 	 */
-	ignoreCamera(val: boolean): this;
-	ignoreCamera(): boolean;
+	ignoreCamera (val: boolean): this;
+	ignoreCamera (): boolean;
 	ignoreCamera (val?: boolean) {
 		if (val !== undefined) {
 			this._ignoreCamera = val;
@@ -124,7 +124,7 @@ export class IgeScene2d extends IgeEntity {
 		return this._ignoreCamera;
 	}
 
-	update = (ctx: IgeCanvasRenderingContext2d, tickDelta: number) => {
+	update = (tickDelta: number) => {
 		if (this._ignoreCamera) {
 			// Translate the scene, so it is always center of the camera
 			const cam = ige.engine._currentCamera;
@@ -137,7 +137,7 @@ export class IgeScene2d extends IgeEntity {
 			}
 		}
 
-		super.update(ctx, tickDelta);
+		super.update(tickDelta);
 	};
 
 	/**

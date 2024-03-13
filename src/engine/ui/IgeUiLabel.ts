@@ -4,7 +4,6 @@ import { IgeUiElement } from "@/export/exports";
 import { registerClass } from "@/export/exports";
 import { IgeFontEntity } from "@/export/exports";
 import { IgeFontAlignX, IgeFontAlignY } from "@/export/exports";
-import type { IgeCanvasRenderingContext2d } from "@/export/exports";
 
 /**
  * Provides a UI label entity. Basic on-screen text label.
@@ -44,8 +43,8 @@ export class IgeUiLabel extends IgeUiElement {
 		}
 	}
 
-	textAlignX(val: IgeFontAlignX): this;
-	textAlignX(): IgeFontAlignX;
+	textAlignX (val: IgeFontAlignX): this;
+	textAlignX (): IgeFontAlignX;
 	textAlignX (val?: IgeFontAlignX) {
 		if (val !== undefined) {
 			this._fontEntity.textAlignX(val);
@@ -55,8 +54,8 @@ export class IgeUiLabel extends IgeUiElement {
 		return this._fontEntity.textAlignX();
 	}
 
-	textAlignY(val: IgeFontAlignY): this;
-	textAlignY(): IgeFontAlignY;
+	textAlignY (val: IgeFontAlignY): this;
+	textAlignY (): IgeFontAlignY;
 	textAlignY (val?: IgeFontAlignY) {
 		if (val !== undefined) {
 			this._fontEntity.textAlignY(val);
@@ -66,8 +65,8 @@ export class IgeUiLabel extends IgeUiElement {
 		return this._fontEntity.textAlignY();
 	}
 
-	textLineSpacing(val: number): this;
-	textLineSpacing(): number;
+	textLineSpacing (val: number): this;
+	textLineSpacing (): number;
 	textLineSpacing (val?: number) {
 		if (val !== undefined) {
 			this._fontEntity.textLineSpacing(val);
@@ -94,8 +93,8 @@ export class IgeUiLabel extends IgeUiElement {
 	 * @param noUpdate
 	 * @return {*}
 	 */
-	width(px: number | string, lockAspect?: boolean, modifier?: number, noUpdate?: boolean): this;
-	width(): number;
+	width (px: number | string, lockAspect?: boolean, modifier?: number, noUpdate?: boolean): this;
+	width (): number;
 	width (px?: number | string, lockAspect = false, modifier?: number, noUpdate = false) {
 		if (px !== undefined) {
 			// Call the main super class method
@@ -117,8 +116,8 @@ export class IgeUiLabel extends IgeUiElement {
 	 * @param noUpdate
 	 * @return {*}
 	 */
-	height(px: number | string, lockAspect?: boolean, modifier?: number, noUpdate?: boolean): this;
-	height(): number;
+	height (px: number | string, lockAspect?: boolean, modifier?: number, noUpdate?: boolean): this;
+	height (): number;
 	height (px?: number | string, lockAspect: boolean = false, modifier?: number, noUpdate: boolean = false) {
 		if (px !== undefined) {
 			// Call the main super class method
@@ -136,8 +135,8 @@ export class IgeUiLabel extends IgeUiElement {
 	 * @param {String=} val The text value.
 	 * @return {*}
 	 */
-	value(val: string): this;
-	value(): string;
+	value (val: string): this;
+	value (): string;
 	value (val?: string) {
 		if (val === undefined) {
 			return this._value;
@@ -188,8 +187,8 @@ export class IgeUiLabel extends IgeUiElement {
 		return this._fontSheet;
 	}
 
-	font(val: string | IgeFontSheet): this;
-	font(): string | IgeFontSheet;
+	font (val: string | IgeFontSheet): this;
+	font (): string | IgeFontSheet;
 	font (val?: string | IgeFontSheet) {
 		if (val !== undefined) {
 			if (typeof val === "string") {
@@ -237,8 +236,8 @@ export class IgeUiLabel extends IgeUiElement {
 		return this._fontEntity.nativeStrokeColor();
 	}
 
-	color(val: string): this;
-	color(): string;
+	color (val: string): this;
+	color (): string;
 	color (val?: string) {
 		if (val !== undefined) {
 			this._color = val;
@@ -254,13 +253,13 @@ export class IgeUiLabel extends IgeUiElement {
 		return this._color;
 	}
 
-	update (ctx: IgeCanvasRenderingContext2d, tickDelta: number) {
+	update (tickDelta: number) {
 		if (this._widthFromText && this._valueChanged !== this._value) {
 			this._valueChanged = false;
 			this.width(this._fontEntity.measureTextWidth(this._value) + this._paddingLeft + this._paddingRight);
 		}
 
-		super.update(ctx, tickDelta);
+		super.update(tickDelta);
 	}
 
 	_mounted () {

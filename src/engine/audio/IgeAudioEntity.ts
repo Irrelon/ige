@@ -3,9 +3,9 @@ import { isClient } from "@/export/exports";
 import { registerClass } from "@/export/exports";
 import { IgeEntity } from "@/export/exports";
 import { ige } from "@/export/exports";
-import type { IgeCanvasRenderingContext2d } from "@/export/exports";
 
-export interface IgeAudioEntityPanner extends PannerOptions {}
+export interface IgeAudioEntityPanner extends PannerOptions {
+}
 
 export interface IgeAudioEntityOptions {
 	started?: boolean;
@@ -71,8 +71,8 @@ export class IgeAudioEntity extends IgeEntity {
 		}
 	}
 
-	relativeTo(val: IgeEntity): this;
-	relativeTo(): IgeEntity | undefined;
+	relativeTo (val: IgeEntity): this;
+	relativeTo (): IgeEntity | undefined;
 	relativeTo (val?: IgeEntity) {
 		if (val !== undefined) {
 			const audioInterface = this.audioInterface();
@@ -109,8 +109,8 @@ export class IgeAudioEntity extends IgeEntity {
 	 * @param {string=} url The url that serves the audio file.
 	 * @returns {IgeAudioEntity}
 	 */
-	url(url: string): this;
-	url(): string;
+	url (url: string): this;
+	url (): string;
 	url (url?: string) {
 		if (url !== undefined) {
 			this.audioInterface()?.url(url);
@@ -168,8 +168,8 @@ export class IgeAudioEntity extends IgeEntity {
 	 * @param {IgeAudioItem=} audio
 	 * @returns {*}
 	 */
-	audioInterface(audio: IgeAudioItem): this;
-	audioInterface(): IgeAudioItem | undefined;
+	audioInterface (audio: IgeAudioItem): this;
+	audioInterface (): IgeAudioItem | undefined;
 	audioInterface (audio?: IgeAudioItem) {
 		if (audio !== undefined) {
 			this._audioInterface = audio;
@@ -188,7 +188,7 @@ export class IgeAudioEntity extends IgeEntity {
 		return [this._audioId, this._options];
 	}
 
-	update (ctx: IgeCanvasRenderingContext2d, tickDelta: number) {
+	update (tickDelta: number) {
 		if (this._relativeTo && this._panner) {
 			const audioWorldPos = this.worldPosition();
 			const relativeToWorldPos = this._relativeTo.worldPosition();
@@ -208,7 +208,7 @@ export class IgeAudioEntity extends IgeEntity {
 			}
 		}
 
-		super.update(ctx, tickDelta);
+		super.update(tickDelta);
 	}
 
 	/**

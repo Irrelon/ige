@@ -580,7 +580,7 @@ export class IgeObject
 		return this._bounds3dPolygon;
 	}
 
-	update (ctx: IgeCanvasRenderingContext2d, tickDelta: number) {
+	update (tickDelta: number) {
 		// Check that we are alive before processing further
 		if (!this._alive) {
 			return;
@@ -617,7 +617,7 @@ export class IgeObject
 		// Loop our children and call their update methods
 		if (!ige.config.debug._timing) {
 			while (arrCount--) {
-				arr[arrCount].update(ctx, tickDelta);
+				arr[arrCount].update(tickDelta);
 			}
 
 			return;
@@ -625,7 +625,7 @@ export class IgeObject
 
 		while (arrCount--) {
 			const ts = new Date().getTime();
-			arr[arrCount].update(ctx, tickDelta);
+			arr[arrCount].update(tickDelta);
 			const td = new Date().getTime() - ts;
 
 			if (!arr[arrCount]) {

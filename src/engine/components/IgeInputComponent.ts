@@ -157,15 +157,13 @@ export class IgeInputComponent extends IgeEventingClass implements IgeIsReadyPro
 		window.addEventListener("keyup", this._evRef.keyup, false);
 	};
 
-	destroyListeners = () => {
+	destroyListeners = (canvas?: HTMLCanvasElement) => {
 		this.log("Removing input event listeners...");
 
 		// Keyboard events
 		window.removeEventListener("keydown", this._evRef.keydown, false);
 		window.removeEventListener("keyup", this._evRef.keyup, false);
 
-		// Get the canvas element
-		const canvas = ige.engine._canvas;
 		if (!canvas) return;
 
 		// Pointer events
@@ -198,9 +196,7 @@ export class IgeInputComponent extends IgeEventingClass implements IgeIsReadyPro
 				this._evRef[eventName](eventObj);
 			} else {
 				this.log(
-					'Cannot fire manual event "' +
-						eventName +
-						'" because no listener exists in the engine for this event type!',
+					`Cannot fire manual event "${eventName}" because no listener exists in the engine for this event type!`,
 					"warning"
 				);
 			}
@@ -227,11 +223,11 @@ export class IgeInputComponent extends IgeEventingClass implements IgeIsReadyPro
 	 * @param type
 	 * @private
 	 */
-	_rationalise(event: PointerEvent, type: "pointer"): void;
-	_rationalise(event: KeyboardEvent, type: "keyboard"): void;
-	_rationalise(event: TouchEvent, type: "touch"): void;
-	_rationalise(event: WheelEvent, type: "wheel"): void;
-	_rationalise(event: GamepadEvent, type: "gamepad"): void;
+	_rationalise (event: PointerEvent, type: "pointer"): void;
+	_rationalise (event: KeyboardEvent, type: "keyboard"): void;
+	_rationalise (event: TouchEvent, type: "touch"): void;
+	_rationalise (event: WheelEvent, type: "wheel"): void;
+	_rationalise (event: GamepadEvent, type: "gamepad"): void;
 	_rationalise (
 		event: PointerEvent | KeyboardEvent | TouchEvent | WheelEvent | GamepadEvent,
 		type: Event["igeType"]
@@ -570,7 +566,7 @@ export class IgeInputComponent extends IgeEventingClass implements IgeIsReadyPro
 		const my = event.igeY - ige.engine._bounds2d.y2 - ige.engine._translate.y;
 
 		let arrCount = arr.length;
-		let vpUpdated;
+		let vpUpdated: IgeViewport | undefined;
 
 		ige._pointerPos.x = mx;
 		ige._pointerPos.y = my;
@@ -599,7 +595,7 @@ export class IgeInputComponent extends IgeEventingClass implements IgeIsReadyPro
 			}
 		}
 
-		return vpUpdated as IgeViewport;
+		return vpUpdated;
 	};
 
 	/**

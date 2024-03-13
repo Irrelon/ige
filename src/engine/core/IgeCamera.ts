@@ -249,9 +249,9 @@ export class IgeCamera extends IgeEntity {
 		return this;
 	}
 
-	update (ctx: IgeCanvasRenderingContext2d) {
+	update () {
 		// Process any behaviours assigned to the camera
-		this._processBehaviours(IgeBehaviourType.preUpdate, ctx);
+		this._processBehaviours(IgeBehaviourType.preUpdate);
 
 		// Check if we are tracking the translation value of a target
 		if (this._trackTranslateTarget) {
@@ -383,21 +383,21 @@ export class IgeCamera extends IgeEntity {
 				case "_trackTranslateTarget":
 					if (this._trackTranslateTarget) {
 						str +=
-								".trackTranslate(ige.$('" +
-								this._trackTranslateTarget.id() +
-								"'), " +
-								this.trackTranslateSmoothing() +
-								")";
+							".trackTranslate(ige.$('" +
+							this._trackTranslateTarget.id() +
+							"'), " +
+							this.trackTranslateSmoothing() +
+							")";
 					}
 					break;
 				case "_trackRotateTarget":
 					if (this._trackRotateTarget) {
 						str +=
-								".trackRotate(ige.$('" +
-								this._trackRotateTarget.id() +
-								"'), " +
-								this.trackRotateSmoothing() +
-								")";
+							".trackRotate(ige.$('" +
+							this._trackRotateTarget.id() +
+							"'), " +
+							this.trackRotateSmoothing() +
+							")";
 					}
 					break;
 				}

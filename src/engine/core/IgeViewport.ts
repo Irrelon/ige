@@ -102,8 +102,8 @@ export class IgeViewport extends IgeUiEntity implements IgeCanRegisterById {
 	 * @param id
 	 * @return {*}
 	 */
-	autoSize(id: boolean): this;
-	autoSize(): boolean;
+	autoSize (id: boolean): this;
+	autoSize (): boolean;
 	autoSize (val?: boolean) {
 		if (typeof val !== "undefined") {
 			this._autoSize = val;
@@ -118,8 +118,8 @@ export class IgeViewport extends IgeUiEntity implements IgeCanRegisterById {
 	 * @param id
 	 * @return {*}
 	 */
-	scene(id: IgeScene2d): this;
-	scene(): IgeScene2d;
+	scene (id: IgeScene2d): this;
+	scene (): IgeScene2d;
 	scene (scene?: IgeScene2d) {
 		if (scene !== undefined) {
 			this._scene = scene;
@@ -160,10 +160,9 @@ export class IgeViewport extends IgeUiEntity implements IgeCanRegisterById {
 
 	/**
 	 * Processes the updates before the render tick is called.
-	 * @param ctx
 	 * @param tickDelta
 	 */
-	update (ctx: IgeCanvasRenderingContext2d, tickDelta: number) {
+	update (tickDelta: number) {
 		// Check if we have a scene attached to this viewport
 		if (!this._scene) {
 			return;
@@ -173,12 +172,12 @@ export class IgeViewport extends IgeUiEntity implements IgeCanRegisterById {
 		ige.engine._currentViewport = this;
 		this._scene._parent = this;
 
-		this.camera.update(ctx);
+		this.camera.update();
 
-		super.update(ctx, tickDelta);
+		super.update(tickDelta);
 
 		if (this._scene.newFrame()) {
-			this._scene.update(ctx, tickDelta);
+			this._scene.update(tickDelta);
 		}
 	}
 
@@ -308,8 +307,8 @@ export class IgeViewport extends IgeUiEntity implements IgeCanRegisterById {
 		);
 	}
 
-	drawViewArea(): boolean;
-	drawViewArea(val: boolean): this;
+	drawViewArea (): boolean;
+	drawViewArea (val: boolean): this;
 	drawViewArea (val?: boolean) {
 		if (val !== undefined) {
 			this._drawViewArea = val;
@@ -319,8 +318,8 @@ export class IgeViewport extends IgeUiEntity implements IgeCanRegisterById {
 		return this._drawViewArea;
 	}
 
-	drawBoundsLimitId(): string | string[] | undefined;
-	drawBoundsLimitId(id: string | string[]): this;
+	drawBoundsLimitId (): string | string[] | undefined;
+	drawBoundsLimitId (id: string | string[]): this;
 	drawBoundsLimitId (id?: string | string[]) {
 		if (id !== undefined) {
 			this._drawBoundsLimitId = id;
@@ -330,8 +329,8 @@ export class IgeViewport extends IgeUiEntity implements IgeCanRegisterById {
 		return this._drawBoundsLimitId;
 	}
 
-	drawBoundsLimitCategory(): string | undefined;
-	drawBoundsLimitCategory(category: string): this;
+	drawBoundsLimitCategory (): string | undefined;
+	drawBoundsLimitCategory (category: string): this;
 	drawBoundsLimitCategory (category?: string) {
 		if (category !== undefined) {
 			this._drawBoundsLimitCategory = category;
@@ -341,8 +340,8 @@ export class IgeViewport extends IgeUiEntity implements IgeCanRegisterById {
 		return this._drawBoundsLimitCategory;
 	}
 
-	drawCompositeBounds(): boolean | undefined;
-	drawCompositeBounds(val: boolean): this;
+	drawCompositeBounds (): boolean | undefined;
+	drawCompositeBounds (val: boolean): this;
 	drawCompositeBounds (val?: boolean) {
 		if (val !== undefined) {
 			this._drawCompositeBounds = val;
@@ -352,8 +351,8 @@ export class IgeViewport extends IgeUiEntity implements IgeCanRegisterById {
 		return this._drawCompositeBounds;
 	}
 
-	drawGuides(): boolean | undefined;
-	drawGuides(val: boolean): this;
+	drawGuides (): boolean | undefined;
+	drawGuides (val: boolean): this;
 	drawGuides (val?: boolean) {
 		if (val !== undefined) {
 			this._drawGuides = val;
@@ -572,26 +571,26 @@ export class IgeViewport extends IgeUiEntity implements IgeCanRegisterById {
 								ctx.fillStyle = "#f6ff00";
 								ctx.fillText(
 									"ID: " +
-										obj.id() +
-										" " +
-										"(" +
-										obj.classId +
-										") " +
-										obj.layer() +
-										":" +
-										obj.depth().toFixed(0),
+									obj.id() +
+									" " +
+									"(" +
+									obj.classId +
+									") " +
+									obj.layer() +
+									":" +
+									obj.depth().toFixed(0),
 									aabb.x + aabb.width + 3,
 									aabb.y + 10
 								);
 								ctx.fillText(
 									"X: " +
-										obj._translate.x.toFixed(2) +
-										", " +
-										"Y: " +
-										obj._translate.y.toFixed(2) +
-										", " +
-										"Z: " +
-										obj._translate.z.toFixed(2),
+									obj._translate.x.toFixed(2) +
+									", " +
+									"Y: " +
+									obj._translate.y.toFixed(2) +
+									", " +
+									"Z: " +
+									obj._translate.z.toFixed(2),
 									aabb.x + aabb.width + 3,
 									aabb.y + 20
 								);

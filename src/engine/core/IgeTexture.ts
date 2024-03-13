@@ -52,7 +52,7 @@ export class IgeTexture extends IgeAsset {
 
 		if (isServer) {
 			this.log(
-				`Cannot create a texture on the server. Textures are only client-side objects. Please alter your code so that you don't try to load a texture on the server-side using something like an if statement around your texture laoding such as "if (isClient) {...}".`,
+				`Cannot create a texture on the server. Textures are only client-side objects. Please alter your code so that you don't try to load a texture on the server-side, using something like an if statement around your texture loading such as "if (isClient) {...}".`,
 				"error"
 			);
 			return this;
@@ -97,8 +97,8 @@ export class IgeTexture extends IgeAsset {
 	 * @param {string=} url "The url used to load the file for this texture.
 	 * @return {*}
 	 */
-	url(url: string): this;
-	url(): string | undefined;
+	url (url: string): this;
+	url (): string | undefined;
 	url (url?: string) {
 		if (url !== undefined) {
 			this._url = url;
@@ -189,7 +189,7 @@ export class IgeTexture extends IgeAsset {
 				if (image.width % 2) {
 					this.log(
 						"This texture's width is not divisible by 2 which will cause the texture to use sub-pixel rendering resulting in a blurred image. This may also slow down the renderer on some browsers. Image file: " +
-							this._url,
+						this._url,
 						"warning"
 					);
 				}
@@ -197,7 +197,7 @@ export class IgeTexture extends IgeAsset {
 				if (image.height % 2) {
 					this.log(
 						"This texture's height is not divisible by 2 which will cause the texture to use sub-pixel rendering resulting in a blurred image. This may also slow down the renderer on some browsers. Image file: " +
-							this._url,
+						this._url,
 						"warning"
 					);
 				}
@@ -237,7 +237,7 @@ export class IgeTexture extends IgeAsset {
 				.then(({ image }) => {
 					console.log("Loaded module", image);
 
-					this.log('Texture script "' + scriptUrl + '" loaded successfully');
+					this.log(`Texture script "${scriptUrl}" loaded successfully`);
 					// Parse the JS with evil eval and store the result in the asset
 
 					// Store the eval data (the "image" variable is declared

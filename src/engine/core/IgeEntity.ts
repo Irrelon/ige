@@ -3371,10 +3371,9 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 	 * simulation is being rendered to, whereas the update() method is only called
 	 * once. It is therefore the perfect place to put code that will control your
 	 * entity's motion, AI etc.
-	 * @param {CanvasRenderingContext2D} ctx The canvas context to render to.
 	 * @param {number} tickDelta The delta between the last tick time and this one.
 	 */
-	update (ctx: IgeCanvasRenderingContext2d, tickDelta: number) {
+	update (tickDelta: number) {
 		// Check if the entity should still exist
 		if (this._deathTime !== undefined && this._deathTime <= ige.engine._tickStart) {
 			// Check if the deathCallBack was set
@@ -3394,7 +3393,7 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 			this._streamDataCache = "";
 
 			// Process any behaviours assigned to the entity
-			this._processBehaviours(IgeBehaviourType.preUpdate, ctx, tickDelta);
+			this._processBehaviours(IgeBehaviourType.preUpdate, tickDelta);
 
 			// Process velocity
 			if (this._velocity.x || this._velocity.y) {
@@ -3433,7 +3432,7 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 		}
 
 		// Process super class
-		super.update(ctx, tickDelta);
+		super.update(tickDelta);
 
 		// TODO: This could be a behaviour instead to enable
 		//   customisation of the flow
