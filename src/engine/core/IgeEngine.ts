@@ -180,8 +180,8 @@ export class IgeEngine extends IgeEntity {
 		return super.addComponent(id, Component as typeof IgeComponent, options);
 	}
 
-	id(): string;
-	id(id: string): this;
+	id (): string;
+	id (id: string): this;
 	id (id?: string): this | string | undefined {
 		if (!id) {
 			return "ige";
@@ -250,6 +250,21 @@ export class IgeEngine extends IgeEntity {
 
 		// converted to set then arr to filter repetitive values
 		return [...new Set(arr)];
+	}
+
+	/**
+	 * Gets / sets the headless flag in the engine denoting
+	 * if the engine is in non-render mode or not.
+	 */
+	headless (): boolean;
+	headless (val: boolean): this;
+	headless (val?: boolean) {
+		if (val === undefined) {
+			return this._headless;
+		}
+
+		this._headless = val;
+		return this;
 	}
 
 	/**
@@ -647,8 +662,8 @@ export class IgeEngine extends IgeEntity {
 	 * @param {Boolean=} val
 	 * @return {*}
 	 */
-	useManualTicks(): boolean;
-	useManualTicks(val: boolean): IgeEngine;
+	useManualTicks (): boolean;
+	useManualTicks (val: boolean): IgeEngine;
 	useManualTicks (val?: boolean): boolean | IgeEngine {
 		if (val !== undefined) {
 			this._useManualTicks = val;
@@ -793,14 +808,14 @@ export class IgeEngine extends IgeEntity {
 
 			console.log(
 				depthSpace +
-					obj.id() +
-					" (" +
-					obj.constructor.name +
-					") : " +
-					obj._inView +
-					" Timing(" +
-					timingString +
-					")"
+				obj.id() +
+				" (" +
+				obj.constructor.name +
+				") : " +
+				obj._inView +
+				" Timing(" +
+				timingString +
+				")"
 			);
 		} else {
 			console.log(depthSpace + obj.id() + " (" + obj.constructor.name + ") : " + obj._inView);
@@ -837,15 +852,15 @@ export class IgeEngine extends IgeEntity {
 
 								console.log(
 									depthSpace +
-										"----" +
-										vp.id() +
-										" (" +
-										vp.constructor.name +
-										") : " +
-										vp._inView +
-										" Timing(" +
-										timingString +
-										")"
+									"----" +
+									vp.id() +
+									" (" +
+									vp.constructor.name +
+									") : " +
+									vp._inView +
+									" Timing(" +
+									timingString +
+									")"
 								);
 							} else {
 								console.log(
@@ -1035,9 +1050,9 @@ export class IgeEngine extends IgeEntity {
 				delete this._graphInstances[classObj.name];
 			} else {
 				this.log(
-					'Cannot remove graph for class name "' +
-						className +
-						'" because the class instance could not be found. Did you add it via ige.addGraph() ?',
+					"Cannot remove graph for class name \"" +
+					className +
+					"\" because the class instance could not be found. Did you add it via ige.addGraph() ?",
 					"error"
 				);
 			}
@@ -1426,8 +1441,8 @@ export class IgeEngine extends IgeEntity {
 					return reject(
 						new Error(
 							"Engine start failed because the dependency check timed out after " +
-								this._dependencyCheckTimeout / 1000 +
-								" seconds"
+							this._dependencyCheckTimeout / 1000 +
+							" seconds"
 						)
 					);
 				}
@@ -2026,8 +2041,8 @@ export class IgeEngine extends IgeEntity {
 	 * @param id
 	 * @param recursive
 	 */
-	drawBounds(id: boolean, recursive?: boolean): this;
-	drawBounds(): boolean;
+	drawBounds (id: boolean, recursive?: boolean): this;
+	drawBounds (): boolean;
 	drawBounds (val?: boolean, recursive: boolean = false) {
 		if (val === undefined) {
 			return this._drawBounds;
