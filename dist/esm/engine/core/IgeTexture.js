@@ -175,32 +175,28 @@ export class IgeTexture extends IgeAsset {
      * script data.
      * @private
      */
-    _loadScript(scriptUrl) {
-        if (isClient) {
-            import(scriptUrl)
-                .then(({ image }) => {
-                console.log("Loaded module", image);
-                this.log(`Texture script "${scriptUrl}" loaded successfully`);
-                // Parse the JS with evil eval and store the result in the asset
-                // Store the eval data (the "image" variable is declared
-                // by the texture script and becomes available in this scope
-                // because we evaluated it above)
-                this._renderMode = 1;
-                this.script = image;
-                // Run the asset script init method
-                if (typeof image.init === "function") {
-                    image.init.apply(image, [self]);
-                }
-                //self.sizeX(image.width);
-                //self.sizeY(image.height);
-                // Mark texture as loaded
-                this._textureLoaded();
-            })
-                .catch((err) => {
-                console.log("Module error", err);
-            });
+    _loadScript = (scriptUrl) => {
+        if (!isClient) {
+            return;
         }
-    }
+        import(/*webpackIgnore: true*/ scriptUrl)
+            .then(({ image }) => {
+            this.log(`Texture script "${scriptUrl}" loaded successfully`);
+            // Store the function exported in the `image` variable
+            // by the texture script
+            this._renderMode = IgeTextureRenderMode.smartTexture;
+            this.script = image;
+            // Run the asset script init method
+            if (typeof image.init === "function") {
+                image.init.apply(image, [this]);
+            }
+            // Mark texture as loaded
+            this._textureLoaded();
+        })
+            .catch((err) => {
+            this.log(`Module error ${err}`, "error");
+        });
+    };
     /**
      * Assigns a render script to the smart texture.
      * @param {string} scriptObj The script object.

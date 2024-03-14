@@ -57,6 +57,34 @@ class IgeTexture extends exports_2.IgeAsset {
         this._preFiltersData = [];
         this._cells = []; // The fist index of this array is 1 for some reason
         this.dependencies = new exports_2.IgeDependencies();
+        /**
+         * Loads a render script into a script tag and sets an onload
+         * event to capture when the script has finished loading.
+         * @param {string} scriptUrl The script url used to load the
+         * script data.
+         * @private
+         */
+        this._loadScript = (scriptUrl) => {
+            if (!exports_3.isClient) {
+                return;
+            }
+            Promise.resolve(`${scriptUrl}`).then(s => __importStar(require(s))).then(({ image }) => {
+                this.log(`Texture script "${scriptUrl}" loaded successfully`);
+                // Store the function exported in the `image` variable
+                // by the texture script
+                this._renderMode = exports_4.IgeTextureRenderMode.smartTexture;
+                this.script = image;
+                // Run the asset script init method
+                if (typeof image.init === "function") {
+                    image.init.apply(image, [this]);
+                }
+                // Mark texture as loaded
+                this._textureLoaded();
+            })
+                .catch((err) => {
+                this.log(`Module error ${err}`, "error");
+            });
+        };
         this._loaded = false;
         if (exports_3.isServer) {
             this.log(`Cannot create a texture on the server. Textures are only client-side objects. Please alter your code so that you don't try to load a texture on the server-side, using something like an if statement around your texture loading such as "if (isClient) {...}".`, "error");
@@ -187,38 +215,6 @@ class IgeTexture extends exports_2.IgeAsset {
             // Inform the engine that this image has loaded
             //ige.textures.onLoadEnd((this.image as IgeImage).src, this);
         }, 5);
-    }
-    /**
-     * Loads a render script into a script tag and sets an onload
-     * event to capture when the script has finished loading.
-     * @param {string} scriptUrl The script url used to load the
-     * script data.
-     * @private
-     */
-    _loadScript(scriptUrl) {
-        if (exports_3.isClient) {
-            Promise.resolve(`${scriptUrl}`).then(s => __importStar(require(s))).then(({ image }) => {
-                console.log("Loaded module", image);
-                this.log(`Texture script "${scriptUrl}" loaded successfully`);
-                // Parse the JS with evil eval and store the result in the asset
-                // Store the eval data (the "image" variable is declared
-                // by the texture script and becomes available in this scope
-                // because we evaluated it above)
-                this._renderMode = 1;
-                this.script = image;
-                // Run the asset script init method
-                if (typeof image.init === "function") {
-                    image.init.apply(image, [self]);
-                }
-                //self.sizeX(image.width);
-                //self.sizeY(image.height);
-                // Mark texture as loaded
-                this._textureLoaded();
-            })
-                .catch((err) => {
-                console.log("Module error", err);
-            });
-        }
     }
     /**
      * Assigns a render script to the smart texture.

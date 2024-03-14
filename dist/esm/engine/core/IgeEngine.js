@@ -71,6 +71,7 @@ export class IgeEngine extends IgeEntity {
     _resized = false;
     _timeScaleLastTimestamp = 0;
     lastTick = 0;
+    _setTickout = [];
     // The engine entity is always "in view" as in, no occlusion will stop it from rendering
     // because it's only the child entities that need occlusion testing
     _alwaysInView = true;
@@ -752,12 +753,6 @@ export class IgeEngine extends IgeEntity {
         }
         return this._enableUpdates;
     }
-    /**
-     * Allows the tick() methods of the entire scenegraph to
-     * be temporarily enabled or disabled. Useful for debugging.
-     * @param {Boolean=} val If false, will disable all tick() calls.
-     * @returns {*}
-     */
     enableRenders(val) {
         if (val !== undefined) {
             this._enableRenders = val;
@@ -1039,7 +1034,9 @@ export class IgeEngine extends IgeEntity {
                             }
                         }
                     }
-                    this.requestAnimFrame(this.engineStep);
+                    if (!this._useManualTicks) {
+                        this.requestAnimFrame(this.engineStep);
+                    }
                     this.log("Engine started");
                     return resolve(true);
                 }
@@ -1200,7 +1197,14 @@ export class IgeEngine extends IgeEntity {
             const endTime = new Date().getTime();
             this._tickTime = endTime - startTime;
         }
+        const tickOut = this._setTickout.shift();
+        tickOut?.();
     };
+    setTickout(callback, count = 0) {
+        this._setTickout.length = count + 1;
+        this._setTickout[count] = callback;
+        return this;
+    }
     /**
      * Gets / sets the _autoSize property. If set to true, the engine will listen
      * for any change in screen size and resize the front-buffer (canvas) element

@@ -29,6 +29,7 @@ class IgeEntity extends exports_3.IgeObject {
         //_entity?: IgeEntity; // We comment this because any class wanting to override return values of methods can do so individually e.g. viewport.camera.width().height()
         this._parent = null;
         this._children = [];
+        this.customTriggerPolygon = () => new exports_7.IgeRect();
         this._sortChildren = (compareFn) => {
             return this._children.sort(compareFn);
         };
@@ -1139,16 +1140,15 @@ class IgeEntity extends exports_3.IgeObject {
             super.tick(ctx);
         }
     }
-    _processTriggerHitTests() {
+    _processTriggerHitTests(mp) {
         if (!exports_9.ige.engine._currentViewport) {
             return false;
         }
         if (this._pointerAlwaysInside) {
             return true;
         }
-        const mp = this.mousePosWorld();
         if (!mp) {
-            return false;
+            mp = this.mousePosWorld();
         }
         let mouseTriggerPoly;
         // Use the trigger polygon function if defined
@@ -1747,9 +1747,9 @@ class IgeEntity extends exports_3.IgeObject {
         delete this._pointerWheel;
         return this;
     }
-    triggerPolygonFunctionName(setting) {
-        if (setting !== undefined) {
-            this._triggerPolygonFunctionName = setting;
+    triggerPolygonFunctionName(funcName) {
+        if (funcName !== undefined) {
+            this._triggerPolygonFunctionName = funcName;
             return this;
         }
         return this._triggerPolygonFunctionName;
@@ -1911,17 +1911,36 @@ class IgeEntity extends exports_3.IgeObject {
             let finalZ;
             // Handle being passed a z co-ordinate
             if (z !== undefined) {
-                finalZ = z * this._parent._tileWidth;
+                finalZ = z * this._parent._tileDepth;
             }
             else {
                 finalZ = this._translate.z;
             }
-            this.translateTo(x * this._parent._tileWidth + this._parent._tileWidth / 2, y * this._parent._tileHeight + this._parent._tileWidth / 2, finalZ);
+            this.translateTo(x * this._parent._tileWidth + this._parent._tileWidth / 2, y * this._parent._tileHeight + this._parent._tileHeight / 2, finalZ);
         }
         else {
             this.log("Cannot translate to tile because the entity is not currently mounted to a tile map or the tile map has no tileWidth or tileHeight values.", "warning");
         }
         return this;
+    }
+    tileX() {
+        if (this._parent && this._parent._tileWidth !== undefined) {
+            return Math.floor(this._translate.x / this._parent._tileWidth);
+        }
+    }
+    tileY() {
+        if (this._parent && this._parent._tileHeight !== undefined) {
+            return Math.floor(this._translate.y / this._parent._tileHeight);
+        }
+    }
+    tileZ(val) {
+        if (this._parent && val !== undefined) {
+            this._translate.z = val * this._parent._tileDepth;
+            return this;
+        }
+        if (this._parent && this._parent._tileDepth !== undefined) {
+            return this._translate.z / this._parent._tileDepth;
+        }
     }
     /**
      * Gets the `translate` accessor object.

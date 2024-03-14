@@ -122,6 +122,11 @@ export declare const WithUiStyleMixin: <BaseClassType extends Mixin<IgeObject>>(
         _parent: IgeObject | null;
         _children: IgeObject[];
         _transformChanged: boolean;
+        /**
+         * Gets / sets the color to use as the font color.
+         * @param {CSSColor, CanvasGradient, CanvasPattern=} color
+         * @return {*} Returns this when setting the value or the current value if none is specified.
+         */
         _tileWidth: number;
         _tileHeight: number;
         _tileDepth: number;

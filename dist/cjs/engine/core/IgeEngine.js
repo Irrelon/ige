@@ -41,6 +41,7 @@ class IgeEngine extends exports_1.IgeEntity {
         this._resized = false;
         this._timeScaleLastTimestamp = 0;
         this.lastTick = 0;
+        this._setTickout = [];
         // The engine entity is always "in view" as in, no occlusion will stop it from rendering
         // because it's only the child entities that need occlusion testing
         this._alwaysInView = true;
@@ -258,6 +259,8 @@ class IgeEngine extends exports_1.IgeEntity {
                 const endTime = new Date().getTime();
                 this._tickTime = endTime - startTime;
             }
+            const tickOut = this._setTickout.shift();
+            tickOut === null || tickOut === void 0 ? void 0 : tickOut();
         };
         /**
          * Walks the scenegraph and returns an array of all entities that the mouse
@@ -918,12 +921,6 @@ class IgeEngine extends exports_1.IgeEntity {
         }
         return this._enableUpdates;
     }
-    /**
-     * Allows the tick() methods of the entire scenegraph to
-     * be temporarily enabled or disabled. Useful for debugging.
-     * @param {Boolean=} val If false, will disable all tick() calls.
-     * @returns {*}
-     */
     enableRenders(val) {
         if (val !== undefined) {
             this._enableRenders = val;
@@ -1198,7 +1195,9 @@ class IgeEngine extends exports_1.IgeEntity {
                             }
                         }
                     }
-                    this.requestAnimFrame(this.engineStep);
+                    if (!this._useManualTicks) {
+                        this.requestAnimFrame(this.engineStep);
+                    }
                     this.log("Engine started");
                     return resolve(true);
                 }
@@ -1246,6 +1245,11 @@ class IgeEngine extends exports_1.IgeEntity {
                 unbornQueue.splice(unbornIndex, 1);
             }
         }
+    }
+    setTickout(callback, count = 0) {
+        this._setTickout.length = count + 1;
+        this._setTickout[count] = callback;
+        return this;
     }
     /**
      * Gets / sets the _autoSize property. If set to true, the engine will listen
