@@ -36,7 +36,7 @@ export class IgeUiManagerController extends IgeEventingClass implements IgeIsRea
 	 * style.
 	 * @returns {*}
 	 */
-	style (name?: string, data?: IgeUiStyleObject) {
+	style<StyleClassType = any> (name?: string, data?: IgeUiStyleObject<StyleClassType>) {
 		if (name !== undefined) {
 			if (data !== undefined) {
 				// Set the data against the name, update any elements using the style
