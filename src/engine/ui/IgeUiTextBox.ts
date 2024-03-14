@@ -1,17 +1,14 @@
-import { registerClass } from "@/export/exports";
-import { IgeFontEntity } from "@/export/exports";
-import type { IgeFontSheet } from "@/export/exports";
-import type { IgeTexture } from "@/export/exports";
-import { IgeUiElement } from "@/export/exports";
-import { ige } from "@/export/exports";
-import type { IgeInputComponent } from "@/export/exports";
+import type { IgeFontSheet, IgeInputComponent, IgeTexture } from "@/export/exports";
+import { ige, IgeFontAlignY, IgeFontEntity, IgeUiElement, registerClass } from "@/export/exports";
 
 /**
  * Provides a UI text entry box. When provided with focus this UI entity will
  * capture keyboard input and display it, similar in usage to the HTML input
- * text element.
+ * text element. Font defaults to aligning h-left and v-middle. You can change
+ * this by accessing the textBox._fontEntity.textAlignY(IgeFontAlignY).
  */
-//TODO: Make cursor a text entry cursor on hover
+// TODO: Make cursor a text entry cursor on hover
+// TODO: Make a flashing cursor
 export class IgeUiTextBox extends IgeUiElement {
 	classId = "IgeUiTextBox";
 
@@ -29,7 +26,8 @@ export class IgeUiTextBox extends IgeUiElement {
 
 		this._value = "";
 
-		this._fontEntity = new IgeFontEntity().left(5).middle(0).textAlignX(0).textAlignY(0).mount(this);
+		this._fontEntity = new IgeFontEntity();
+		this._fontEntity.left(5).middle(0).textAlignX(0).textAlignY(IgeFontAlignY.multiLineMiddle).mount(this);
 
 		const blurFunc = () => {
 			if (this._domElement) {
@@ -130,8 +128,8 @@ export class IgeUiTextBox extends IgeUiElement {
 	 * @param noUpdate
 	 * @return {*}
 	 */
-	width(px: number | string, lockAspect?: boolean, modifier?: number, noUpdate?: boolean): this;
-	width(): number;
+	width (px: number | string, lockAspect?: boolean, modifier?: number, noUpdate?: boolean): this;
+	width (): number;
 	width (px?: number | string, lockAspect = false, modifier?: number, noUpdate = false) {
 		if (px !== undefined) {
 			// Call the main super class method
@@ -153,8 +151,8 @@ export class IgeUiTextBox extends IgeUiElement {
 	 * @param noUpdate
 	 * @return {*}
 	 */
-	height(px: number | string, lockAspect?: boolean, modifier?: number, noUpdate?: boolean): this;
-	height(): number;
+	height (px: number | string, lockAspect?: boolean, modifier?: number, noUpdate?: boolean): this;
+	height (): number;
 	height (px?: number | string, lockAspect: boolean = false, modifier?: number, noUpdate: boolean = false) {
 		if (px !== undefined) {
 			// Call the main super class method
@@ -172,8 +170,8 @@ export class IgeUiTextBox extends IgeUiElement {
 	 * @param {String=} val The text value.
 	 * @return {*}
 	 */
-	value(val: string): this;
-	value(): string;
+	value (val: string): this;
+	value (): string;
 	value (val?: string) {
 		if (val === undefined) {
 			return this._value;
@@ -205,8 +203,8 @@ export class IgeUiTextBox extends IgeUiElement {
 		return this;
 	}
 
-	placeHolder(val: string): this;
-	placeHolder(): string;
+	placeHolder (val: string): this;
+	placeHolder (): string;
 	placeHolder (val?: string) {
 		if (val !== undefined) {
 			this._placeHolder = val;
@@ -299,8 +297,8 @@ export class IgeUiTextBox extends IgeUiElement {
 		return this._fontEntity.nativeStrokeColor();
 	}
 
-	color(color?: string | CanvasGradient | CanvasPattern): this;
-	color(): string | CanvasGradient | CanvasPattern;
+	color (color?: string | CanvasGradient | CanvasPattern): this;
+	color (): string | CanvasGradient | CanvasPattern;
 	color (color?: string | CanvasGradient | CanvasPattern) {
 		if (color !== undefined) {
 			this._color = color;
