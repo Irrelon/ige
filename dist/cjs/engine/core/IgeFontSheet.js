@@ -100,36 +100,35 @@ class IgeFontSheet extends exports_1.IgeTexture {
      * @returns {number}
      */
     measureTextWidth(text) {
-        if (this._loaded) {
-            const charCodeMap = this._charCodeMap, measuredWidthMap = this._measuredWidthMap;
-            let characterIndex, charIndex, lineArr = [], lineIndex, measuredWidth, maxWidth = 0;
-            // Handle multi-line text
-            if (text.indexOf("\n") > -1) {
-                // Split each line into an array item
-                lineArr = text.split("\n");
-            }
-            else {
-                // Store the text as a single line
-                lineArr.push(text);
-            }
-            for (lineIndex = 0; lineIndex < lineArr.length; lineIndex++) {
-                // Calculate the total width of the line of text
-                measuredWidth = 0;
-                for (characterIndex = 0; characterIndex < lineArr[lineIndex].length; characterIndex++) {
-                    charIndex = charCodeMap[lineArr[lineIndex].charCodeAt(characterIndex)];
-                    measuredWidth += measuredWidthMap[charIndex] || 0;
-                }
-                if (measuredWidth > maxWidth) {
-                    maxWidth = measuredWidth;
-                }
-            }
-            // Store the width of this line so we can align it correctly
-            return measuredWidth;
+        if (!this._loaded)
+            return -1;
+        const charCodeMap = this._charCodeMap, measuredWidthMap = this._measuredWidthMap;
+        let characterIndex, charIndex, lineArr = [], lineIndex, measuredWidth, maxWidth = 0;
+        // Handle multi-line text
+        if (text.indexOf("\n") > -1) {
+            // Split each line into an array item
+            lineArr = text.split("\n");
         }
-        return -1;
+        else {
+            // Store the text as a single line
+            lineArr.push(text);
+        }
+        for (lineIndex = 0; lineIndex < lineArr.length; lineIndex++) {
+            // Calculate the total width of the line of text
+            measuredWidth = 0;
+            for (characterIndex = 0; characterIndex < lineArr[lineIndex].length; characterIndex++) {
+                charIndex = charCodeMap[lineArr[lineIndex].charCodeAt(characterIndex)];
+                measuredWidth += measuredWidthMap[charIndex] || 0;
+            }
+            if (measuredWidth > maxWidth) {
+                maxWidth = measuredWidth;
+            }
+        }
+        // Store the width of this line, so we can align it correctly
+        return measuredWidth;
     }
     render(ctx, entity) {
-        if (entity._renderText && this._loaded) {
+        if (entity._renderText && this._loaded && this.image) {
             const _ctx = ctx, text = entity._renderText, charCodeMap = this._charCodeMap, charPosMap = this._charPosMap, measuredWidthMap = this._measuredWidthMap, pixelWidthMap = this._pixelWidthMap, masterX = 0, masterY = 0, lineWidth = [], lineHeight = this._sizeY - 2;
             let lineText, lineArr = [], lineIndex, characterIndex, renderX = 0, renderY = 0, renderStartX = 0, renderStartY = 0, singleLineWidth = 0, totalWidth = 0, charIndex;
             // Handle multi-line text
@@ -165,7 +164,7 @@ class IgeFontSheet extends exports_1.IgeTexture {
                     charIndex = charCodeMap[lineText.charCodeAt(characterIndex)];
                     singleLineWidth += measuredWidthMap[charIndex] || 0;
                 }
-                // Store the width of this line so we can align it correctly
+                // Store the width of this line, so we can align it correctly
                 lineWidth[lineIndex] = singleLineWidth;
                 if (singleLineWidth > totalWidth) {
                     totalWidth = singleLineWidth;

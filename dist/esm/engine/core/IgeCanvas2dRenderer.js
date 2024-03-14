@@ -1,6 +1,5 @@
-import {} from "../../export/exports.js"
-import { getElementPosition, ige, IgePoint2d, isClient, isServer } from "../../export/exports.js"
 import { IgeBaseRenderer } from "./IgeBaseRenderer.js"
+import { getElementPosition, ige, IgePoint2d, isClient, isServer } from "../../export/exports.js";
 export class IgeCanvas2dRenderer extends IgeBaseRenderer {
     _ctx;
     _createdFrontBuffer = false;
@@ -152,7 +151,6 @@ export class IgeCanvas2dRenderer extends IgeBaseRenderer {
      * @private
      */
     _resizeEvent = (event) => {
-        console.log("Renderer resize event");
         ige.engine._resizeEvent(event);
         let canvasBoundingRect;
         if (this._autoSize) {
@@ -185,10 +183,8 @@ export class IgeCanvas2dRenderer extends IgeBaseRenderer {
             }
             this._bounds2d = new IgePoint2d(newWidth, newHeight);
         }
-        else {
-            if (this._canvas) {
-                this._bounds2d = new IgePoint2d(this._canvas.width, this._canvas.height);
-            }
+        else if (this._canvas) {
+            this._bounds2d = new IgePoint2d(this._canvas.width, this._canvas.height);
         }
         if (ige.engine._showSgTree) {
             const sgTreeElem = document.getElementById("igeSgTree");

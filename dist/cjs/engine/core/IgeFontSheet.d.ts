@@ -1,5 +1,5 @@
-import { IgeTexture } from "../../export/exports.js"
-import type { IgeSmartTexture } from "../../export/exports.js"
+import { type IgeCanvasRenderingContext2d, IgeTexture } from "../../export/exports.js"
+import type { IgeSmartTexture, IgeFontEntity } from "../../export/exports.js"
 /**
  * Creates a new font sheet. A font sheet is an image that contains
  * letters and numbers rendered to specifications. It allows you to
@@ -25,7 +25,7 @@ export declare class IgeFontSheet extends IgeTexture {
      * @param {string} text The text to measure.
      * @returns {number}
      */
-    measureTextWidth(text: any): any;
-    render(ctx: any, entity: any): void;
+    measureTextWidth(text: string): number;
+    render(ctx: IgeCanvasRenderingContext2d, entity: IgeFontEntity): void;
     destroy(): this;
 }

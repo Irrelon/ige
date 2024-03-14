@@ -1,5 +1,5 @@
 import { IgeUiEntity } from "../../export/exports.js"
-export type IgeUiStyleObject = Record<string, any>;
+export type IgeUiStyleObject<InterfaceType = any> = Record<string, InterfaceType>;
 export type IgeUiStyleState = "focus" | "hover" | "active";
 /**
  * Creates a new UI element. UI elements use more resources and CPU

@@ -1,13 +1,12 @@
-import { registerClass } from "../../export/exports.js"
-import { IgeFontEntity } from "../../export/exports.js"
-import { IgeUiElement } from "../../export/exports.js"
-import { ige } from "../../export/exports.js"
+import { ige, IgeFontAlignY, IgeFontEntity, IgeUiElement, registerClass } from "../../export/exports.js"
 /**
  * Provides a UI text entry box. When provided with focus this UI entity will
  * capture keyboard input and display it, similar in usage to the HTML input
- * text element.
+ * text element. Font defaults to aligning h-left and v-middle. You can change
+ * this by accessing the textBox._fontEntity.textAlignY(IgeFontAlignY).
  */
-//TODO: Make cursor a text entry cursor on hover
+// TODO: Make cursor a text entry cursor on hover
+// TODO: Make a flashing cursor
 export class IgeUiTextBox extends IgeUiElement {
     classId = "IgeUiTextBox";
     _caretStart = 0;
@@ -21,7 +20,8 @@ export class IgeUiTextBox extends IgeUiElement {
     constructor() {
         super();
         this._value = "";
-        this._fontEntity = new IgeFontEntity().left(5).middle(0).textAlignX(0).textAlignY(0).mount(this);
+        this._fontEntity = new IgeFontEntity();
+        this._fontEntity.left(5).middle(0).textAlignX(0).textAlignY(IgeFontAlignY.multiLineMiddle).mount(this);
         const blurFunc = () => {
             if (this._domElement) {
                 this._domElement.parentNode?.removeChild(this._domElement);

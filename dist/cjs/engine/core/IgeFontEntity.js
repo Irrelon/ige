@@ -287,16 +287,16 @@ class IgeFontEntity extends exports_2.IgeUiEntity {
      * @returns {number} The width of the text in pixels.
      */
     measureTextWidth(text) {
-        var _a, _b, _c, _d, _e, _f;
-        text = text || this._text;
+        var _a, _b, _c, _d;
+        text = text || this._text || " ";
         // Both IgeFontSheet and the IgeFontSmartTexture have a method
         // called measureTextWidth() so we can just ask the current
         // texture for the width :)
         if (((_a = this._texture) === null || _a === void 0 ? void 0 : _a._renderMode) === exports_5.IgeTextureRenderMode.image) {
-            return ((_c = (_b = this._texture.script) === null || _b === void 0 ? void 0 : _b.meta) === null || _c === void 0 ? void 0 : _c.measureTextWidth(text, this)) || -1;
+            return this._texture.measureTextWidth(text) || -1;
         }
-        else if (((_d = this._texture) === null || _d === void 0 ? void 0 : _d._renderMode) === exports_5.IgeTextureRenderMode.smartTexture) {
-            return ((_f = (_e = this._texture.script) === null || _e === void 0 ? void 0 : _e.meta) === null || _f === void 0 ? void 0 : _f.measureTextWidth(text, this)) || -1;
+        else if (((_b = this._texture) === null || _b === void 0 ? void 0 : _b._renderMode) === exports_5.IgeTextureRenderMode.smartTexture) {
+            return ((_d = (_c = this._texture.script) === null || _c === void 0 ? void 0 : _c.meta) === null || _d === void 0 ? void 0 : _d.measureTextWidth(text, this)) || -1;
         }
         return -1;
     }

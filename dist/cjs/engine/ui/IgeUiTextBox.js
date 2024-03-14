@@ -2,16 +2,15 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.IgeUiTextBox = void 0;
 const exports_1 = require("../../export/exports.js");
-const exports_2 = require("../../export/exports.js");
-const exports_3 = require("../../export/exports.js");
-const exports_4 = require("../../export/exports.js");
 /**
  * Provides a UI text entry box. When provided with focus this UI entity will
  * capture keyboard input and display it, similar in usage to the HTML input
- * text element.
+ * text element. Font defaults to aligning h-left and v-middle. You can change
+ * this by accessing the textBox._fontEntity.textAlignY(IgeFontAlignY).
  */
-//TODO: Make cursor a text entry cursor on hover
-class IgeUiTextBox extends exports_3.IgeUiElement {
+// TODO: Make cursor a text entry cursor on hover
+// TODO: Make a flashing cursor
+class IgeUiTextBox extends exports_1.IgeUiElement {
     constructor() {
         super();
         this.classId = "IgeUiTextBox";
@@ -21,7 +20,8 @@ class IgeUiTextBox extends exports_3.IgeUiElement {
         this._placeHolderColor = "";
         this._mask = "";
         this._value = "";
-        this._fontEntity = new exports_2.IgeFontEntity().left(5).middle(0).textAlignX(0).textAlignY(0).mount(this);
+        this._fontEntity = new exports_1.IgeFontEntity();
+        this._fontEntity.left(5).middle(0).textAlignX(0).textAlignY(exports_1.IgeFontAlignY.multiLineMiddle).mount(this);
         const blurFunc = () => {
             var _a;
             if (this._domElement) {
@@ -30,7 +30,7 @@ class IgeUiTextBox extends exports_3.IgeUiElement {
             }
         };
         const focusFunc = () => {
-            exports_4.ige.input.stopPropagation();
+            exports_1.ige.input.stopPropagation();
             blurFunc();
             const entScreenPos = this.screenPosition();
             const input = document.createElement("input");
@@ -76,7 +76,7 @@ class IgeUiTextBox extends exports_3.IgeUiElement {
         this.on("focus", focusFunc);
         this.on("pointerUp", focusFunc);
         this.on("pointerDown", () => {
-            exports_4.ige.input.stopPropagation();
+            exports_1.ige.input.stopPropagation();
         });
         this.on("uiUpdate", () => {
             if (this._domElement) {

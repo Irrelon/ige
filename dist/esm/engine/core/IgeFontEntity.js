@@ -294,12 +294,12 @@ export class IgeFontEntity extends IgeUiEntity {
      * @returns {number} The width of the text in pixels.
      */
     measureTextWidth(text) {
-        text = text || this._text;
+        text = text || this._text || " ";
         // Both IgeFontSheet and the IgeFontSmartTexture have a method
         // called measureTextWidth() so we can just ask the current
         // texture for the width :)
         if (this._texture?._renderMode === IgeTextureRenderMode.image) {
-            return this._texture.script?.meta?.measureTextWidth(text, this) || -1;
+            return this._texture.measureTextWidth(text) || -1;
         }
         else if (this._texture?._renderMode === IgeTextureRenderMode.smartTexture) {
             return this._texture.script?.meta?.measureTextWidth(text, this) || -1;

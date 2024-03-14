@@ -64,6 +64,8 @@ class IgeEngine extends exports_1.IgeEntity {
          * @private
          */
         this._resizeEvent = (event) => {
+            if (exports_8.isServer)
+                return;
             if (!this._autoSize)
                 return;
             const arr = this._children;

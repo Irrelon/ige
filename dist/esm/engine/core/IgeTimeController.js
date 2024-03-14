@@ -14,7 +14,7 @@ export class IgeTimeController extends IgeEventingClass {
         return new Promise((resolve) => {
             setTimeout(() => {
                 ige.dependencies.waitFor(["engine"], () => {
-                    // Add the animation behaviour to the entity
+                    // Add the time behaviour to the entity
                     ige.engine.addBehaviour(IgeBehaviourType.preUpdate, "time", this._update);
                     resolve();
                 });

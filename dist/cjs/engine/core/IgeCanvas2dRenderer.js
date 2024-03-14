@@ -10,8 +10,8 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.IgeCanvas2dRenderer = void 0;
-const exports_1 = require("../../export/exports.js");
 const IgeBaseRenderer_1 = require("./IgeBaseRenderer.js");
+const exports_1 = require("../../export/exports.js");
 class IgeCanvas2dRenderer extends IgeBaseRenderer_1.IgeBaseRenderer {
     constructor() {
         super(...arguments);
@@ -27,7 +27,6 @@ class IgeCanvas2dRenderer extends IgeBaseRenderer_1.IgeBaseRenderer {
          */
         this._resizeEvent = (event) => {
             var _a;
-            console.log("Renderer resize event");
             exports_1.ige.engine._resizeEvent(event);
             let canvasBoundingRect;
             if (this._autoSize) {
@@ -60,10 +59,8 @@ class IgeCanvas2dRenderer extends IgeBaseRenderer_1.IgeBaseRenderer {
                 }
                 this._bounds2d = new exports_1.IgePoint2d(newWidth, newHeight);
             }
-            else {
-                if (this._canvas) {
-                    this._bounds2d = new exports_1.IgePoint2d(this._canvas.width, this._canvas.height);
-                }
+            else if (this._canvas) {
+                this._bounds2d = new exports_1.IgePoint2d(this._canvas.width, this._canvas.height);
             }
             if (exports_1.ige.engine._showSgTree) {
                 const sgTreeElem = document.getElementById("igeSgTree");

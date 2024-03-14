@@ -1,10 +1,10 @@
-import { IgeFontEntity } from "../../export/exports.js"
 import type { IgeFontSheet } from "../../export/exports.js"
-import { IgeUiElement } from "../../export/exports.js"
+import { IgeFontEntity, IgeUiElement } from "../../export/exports.js"
 /**
  * Provides a UI text entry box. When provided with focus this UI entity will
  * capture keyboard input and display it, similar in usage to the HTML input
- * text element.
+ * text element. Font defaults to aligning h-left and v-middle. You can change
+ * this by accessing the textBox._fontEntity.textAlignY(IgeFontAlignY).
  */
 export declare class IgeUiTextBox extends IgeUiElement {
     classId: string;

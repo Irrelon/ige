@@ -65,7 +65,7 @@ export const IgeFontSmartTexture = {
         }
         for (let lineArrIndex = 0; lineArrIndex < lineArr.length; lineArrIndex++) {
             const lineArrItem = lineArr[lineArrIndex];
-            if (entity._textAlignY === 3) {
+            if (entity._textAlignY === IgeFontAlignY.multiLineMiddle) {
                 renderY = renderStartY + lineHeight * lineArrIndex + entity._textLineSpacing * lineArrIndex;
             }
             else {

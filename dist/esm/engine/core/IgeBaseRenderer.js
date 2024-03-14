@@ -1,7 +1,7 @@
 import {} from "../../export/exports.js"
 import { ige } from "../../export/exports.js"
 import { isServer } from "../clientServer.js"
-import { IgeEventingClass } from "./IgeEventingClass.js"
+import { IgeEventingClass } from "./IgeEventingClass.js";
 import { IgePoint2d } from "./IgePoint2d.js"
 export class IgeBaseRenderer extends IgeEventingClass {
     _canvas;
