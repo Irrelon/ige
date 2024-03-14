@@ -4,7 +4,7 @@ import { registerClass } from "@/export/exports";
 import { IgeFontAlignX, IgeFontAlignY } from "@/export/exports";
 import { IgeTextureRenderMode } from "@/export/exports";
 import { IgeFontSmartTexture } from "@/export/exports";
-import type { IgeCanvasRenderingContext2d } from "@/export/exports";
+import type { IgeCanvasRenderingContext2d , IgeFontSheet} from "@/export/exports";
 
 /**
  * Creates a new font entity. A font entity will use a font sheet
@@ -46,8 +46,8 @@ export class IgeFontEntity extends IgeUiEntity {
 	 * @param [noUpdate]
 	 * @returns {*}
 	 */
-	width(px: number | string, lockAspect?: boolean, modifier?: number, noUpdate?: boolean): this;
-	width(): number;
+	width (px: number | string, lockAspect?: boolean, modifier?: number, noUpdate?: boolean): this;
+	width (): number;
 	width (px?: number | string, lockAspect?: boolean, modifier?: number, noUpdate?: boolean) {
 		if (px !== undefined) {
 			if (this._bounds2d.x !== px) {
@@ -74,8 +74,8 @@ export class IgeFontEntity extends IgeUiEntity {
 	 * @param [noUpdate]
 	 * @returns {*|number}
 	 */
-	height(px: number | string, lockAspect?: boolean, modifier?: number, noUpdate?: boolean): this;
-	height(): number;
+	height (px: number | string, lockAspect?: boolean, modifier?: number, noUpdate?: boolean): this;
+	height (): number;
 	height (px?: number | string, lockAspect: boolean = false, modifier?: number, noUpdate: boolean = false) {
 		if (px !== undefined) {
 			if (this._bounds2d.y !== px) {
@@ -157,8 +157,8 @@ export class IgeFontEntity extends IgeUiEntity {
 	 * @param {number} val The new value.
 	 * @returns {*}
 	 */
-	textAlignX(val: IgeFontAlignX): this;
-	textAlignX(): IgeFontAlignX;
+	textAlignX (val: IgeFontAlignX): this;
+	textAlignX (): IgeFontAlignX;
 	textAlignX (val?: IgeFontAlignX) {
 		if (val !== undefined) {
 			if (this._textAlignX !== val) {
@@ -177,8 +177,8 @@ export class IgeFontEntity extends IgeUiEntity {
 	 * @param {number} val The new value.
 	 * @returns {*}
 	 */
-	textAlignY(val: IgeFontAlignY): this;
-	textAlignY(): IgeFontAlignY;
+	textAlignY (val: IgeFontAlignY): this;
+	textAlignY (): IgeFontAlignY;
 	textAlignY (val?: IgeFontAlignY) {
 		if (val !== undefined) {
 			if (this._textAlignY !== val) {
@@ -196,8 +196,8 @@ export class IgeFontEntity extends IgeUiEntity {
 	 * @param {number=} val
 	 * @returns {*}
 	 */
-	textLineSpacing(val: number): this;
-	textLineSpacing(): number;
+	textLineSpacing (val: number): this;
+	textLineSpacing (): number;
 	textLineSpacing (val?: number) {
 		if (val !== undefined) {
 			if (this._textLineSpacing !== val) {
@@ -233,8 +233,8 @@ export class IgeFontEntity extends IgeUiEntity {
 	/**
 	 * A proxy for colorOverlay().
 	 */
-	color(val: string): this;
-	color(): string;
+	color (val: string): this;
+	color (): string;
 	color (val?: string) {
 		return this.colorOverlay(val);
 	}
@@ -395,13 +395,13 @@ export class IgeFontEntity extends IgeUiEntity {
 	 * @returns {number} The width of the text in pixels.
 	 */
 	measureTextWidth (text?: string): number {
-		text = text || this._text;
+		text = text || this._text || " ";
 
 		// Both IgeFontSheet and the IgeFontSmartTexture have a method
 		// called measureTextWidth() so we can just ask the current
 		// texture for the width :)
 		if (this._texture?._renderMode === IgeTextureRenderMode.image) {
-			return this._texture.script?.meta?.measureTextWidth(text, this) || -1;
+			return (this._texture as IgeFontSheet).measureTextWidth(text) || -1;
 		} else if (this._texture?._renderMode === IgeTextureRenderMode.smartTexture) {
 			return this._texture.script?.meta?.measureTextWidth(text, this) || -1;
 		}
