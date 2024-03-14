@@ -21,13 +21,13 @@ export class IgeInterval extends IgeEventingClass {
 	/**
 	 * Creates a new timer that will call the method every given number of
 	 * milliseconds specified by the interval parameter.
-	 * @param {Function} method The method to call each interval.
+	 * @param {IgeIntervalCallback} method The method to call each interval.
 	 * @param {number} interval The number of milliseconds between each interval.
-	 * @param {Boolean} catchup If true, the interval will fire multiple times
+	 * @param {boolean} [catchup=true] If true, the interval will fire multiple times
 	 * retrospectively when the engine jumps in time. If false, the interval will
 	 * only fire a single time even if a large period of engine time has elapsed.
 	 */
-	constructor (method: IgeIntervalCallback, interval: number, catchup = true) {
+	constructor (method: IgeIntervalCallback, interval: number, catchup: boolean = true) {
 		super();
 
 		this._method = method;
@@ -45,7 +45,7 @@ export class IgeInterval extends IgeEventingClass {
 	 * @param {number} time The time in milliseconds to add to the timer's internal clock.
 	 * @returns {*}
 	 */
-	addTime (time: number) {
+	addTime (time: number): this {
 		this._time += time;
 		return this;
 	}
@@ -54,7 +54,7 @@ export class IgeInterval extends IgeEventingClass {
 	 * Cancels the timer stopping all future method calls.
 	 * @returns {*}
 	 */
-	cancel () {
+	cancel (): this {
 		(ige.time as IgeTimeController).removeTimer(this);
 		return this;
 	}
@@ -65,8 +65,8 @@ export class IgeInterval extends IgeEventingClass {
 	 * called manually.
 	 * @returns {*}
 	 */
-	update () {
-		let intendedTime;
+	update (): this {
+		let intendedTime: number;
 		const overTime = this._time - this._interval;
 
 		if (overTime > 0) {
