@@ -78,3 +78,15 @@ https://www.irrelon.com
 - Video Tutorials: https://www.isogenicengine.com/docs-tutorials.html
 - Twitter: @IsogenicEngine https://twitter.com/IsogenicEngine
 - Youtube: https://www.youtube.com/user/coolbloke1324
+
+## Gotcha Hints
+
+### UI Entities
+
+When working with the provided UI classes (IgeUiEntity and IgeUiElement) it's important to
+understand the differences. IgeUiElement instances stop pointer even propagation by default.
+This means if you mount one IgeUiElement inside another one, only the parent will get
+pointer events like pointerDown and pointerUp.
+
+IgeUiEntity instances have the same general capabilities but are considered graphical rather
+than interactive so don't hook or interfere with pointer events by default.
