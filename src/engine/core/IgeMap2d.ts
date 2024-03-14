@@ -20,24 +20,25 @@ export class IgeMap2d extends IgeBaseClass {
 	 * @param {*=} val The data to set on the map tile co-ordinate.
 	 * @return {*}
 	 */
+	tileData (x: number, y: number, val: any): this;
+	tileData (x: number, y: number): any;
+	tileData (): undefined;
 	tileData (x?: number, y?: number, val?: any) {
-		if (x !== undefined && y !== undefined) {
-			if (val !== undefined) {
-				// Assign a value
-				this._mapData[y] = this._mapData[y] || [];
-				this._mapData[y][x] = val;
-				return this;
-			} else {
-				// No assignment so see if we have data to return
-				if (this._mapData[y]) {
-					return this._mapData[y][x];
-				}
-			}
+		if ((x === undefined || y === undefined)) {
+			return;
 		}
 
-		// Either no x, y was specified or there was
-		// no data at the x, y so return undefined
-		return undefined;
+		if (val !== undefined) {
+			// Assign a value
+			this._mapData[y] = this._mapData[y] || [];
+			this._mapData[y][x] = val;
+			return this;
+		}
+
+		// No assignment so see if we have data to return
+		if (this._mapData[y]) {
+			return this._mapData[y][x];
+		}
 	}
 
 	/**
@@ -168,9 +169,9 @@ export class IgeMap2d extends IgeBaseClass {
 	 * @param startY The start y co-ordinate of the data.
 	 * @return {*}
 	 */
-	mapData(val: number[][], startX: number, startY: number): this;
-	mapData(val: number[][]): this;
-	mapData(): number[][];
+	mapData (val: number[][], startX: number, startY: number): this;
+	mapData (val: number[][]): this;
+	mapData (): number[][];
 	mapData (val?: number[][], startX?: number, startY?: number) {
 		if (val === undefined) {
 			return this._mapData;
