@@ -473,7 +473,7 @@ export class IgePathComponent extends IgeComponent {
 	 * @return {*}
 	 */
 	start = (startTime?: number) => {
-		let startPoint;
+		let startPoint: IgePathNode;
 
 		if (!this._active) {
 			this._active = true;
@@ -488,7 +488,7 @@ export class IgePathComponent extends IgeComponent {
 				this._currentPointTo = 1;
 
 				startPoint = this._points[0];
-				this.emit("started", this._entity, startPoint.x, startPoint.y, this._startTime);
+				this.emit("started", this._entity, new IgePoint3d(startPoint.x, startPoint.y, startPoint.z), this._startTime);
 			}
 		} else {
 			this._finished = false;
@@ -632,11 +632,11 @@ export class IgePathComponent extends IgeComponent {
 	};
 
 	multiplyPoint = (point: IgePathNode | IgePoint3d) => {
-		return point.multiply(this._entity._parent._tileWidth, this._entity._parent._tileHeight, 1);
+		return point.multiply(this._entity._parent._tileWidth, this._entity._parent._tileHeight, this._entity._parent._tileDepth || 1);
 	};
 
 	dividePoint = (point: IgePathNode | IgePoint3d) => {
-		return point.divide(this._entity._parent._tileWidth, this._entity._parent._tileHeight, 1);
+		return point.divide(this._entity._parent._tileWidth, this._entity._parent._tileHeight, this._entity._parent._tileDepth || 1);
 	};
 
 	transformPoint = (point: IgePathNode | IgePoint3d) => {
@@ -714,6 +714,7 @@ export class IgePathComponent extends IgeComponent {
 						p = this._nextPointToProcess++;
 						effectiveTime = this._startTime + pointArr[p]._absoluteTimeToNext;
 
+						const pointCurrent = pointArr[p];
 						pointNext = pointArr[p + 1];
 						newPoint = this.multiplyPoint(pointNext);
 						newPoint = this.transformPoint(newPoint);
@@ -724,10 +725,8 @@ export class IgePathComponent extends IgeComponent {
 						this.emit(
 							"pointComplete",
 							this._entity,
-							pointArr[p].x,
-							pointArr[p].y,
-							pointNext.x,
-							pointNext.y,
+							new IgePoint3d(pointCurrent.x, pointCurrent.y, pointCurrent.z),
+							new IgePoint3d(pointNext.x, pointNext.y, pointNext.z),
 							p,
 							p + 1,
 							effectiveTime
@@ -747,16 +746,15 @@ export class IgePathComponent extends IgeComponent {
 					if (dynamicResult === true) {
 						// Re-assign the points to the new ones that the dynamic path
 						// spliced into our points array
+						const previousPointFrom = pointArr[this._previousPointFrom];
 						pointFrom = pointArr[this._currentPointFrom];
 						pointTo = pointArr[this._currentPointTo];
 
 						this.emit(
 							"pathRecalculated",
 							this._entity,
-							pointArr[this._previousPointFrom].x,
-							pointArr[this._previousPointFrom].y,
-							pointArr[this._currentPointFrom].x,
-							pointArr[this._currentPointFrom].y
+							new IgePoint3d(previousPointFrom.x, previousPointFrom.y, previousPointFrom.z),
+							new IgePoint3d(pointFrom.x, pointFrom.y, pointFrom.z)
 						);
 					}
 
@@ -793,6 +791,7 @@ export class IgePathComponent extends IgeComponent {
 					p = this._nextPointToProcess++;
 					effectiveTime = this._startTime + pointArr[p]._absoluteTimeToNext;
 
+					const pointCurrent = pointArr[p];
 					pointNext = pointArr[p + 1];
 					newPoint = this.multiplyPoint(pointNext);
 					newPoint = this.transformPoint(newPoint);
@@ -803,10 +802,8 @@ export class IgePathComponent extends IgeComponent {
 					this.emit(
 						"pointComplete",
 						this._entity,
-						pointArr[p].x,
-						pointArr[p].y,
-						pointNext.x,
-						pointNext.y,
+						new IgePoint3d(pointCurrent.x, pointCurrent.y, pointCurrent.z),
+						new IgePoint3d(pointNext.x, pointNext.y, pointNext.z),
 						p,
 						p + 1,
 						effectiveTime
@@ -823,11 +820,12 @@ export class IgePathComponent extends IgeComponent {
 
 				this._finished = true;
 				effectiveTime = this._startTime + this._totalTime;
+
+				const previousPointFrom = pointArr[this._previousPointFrom];
 				this.emit(
 					"pathComplete",
 					this._entity,
-					pointArr[this._previousPointFrom].x,
-					pointArr[this._previousPointFrom].y,
+					new IgePoint3d(previousPointFrom.x, previousPointFrom.y, previousPointFrom.z),
 					effectiveTime
 				);
 			}
@@ -1078,29 +1076,31 @@ export class IgePathComponent extends IgeComponent {
 	 * @return {IgePoint3d}
 	 * @private
 	 */
-	_positionAlongVector = (p1: IgePoint3d, p2: IgePoint3d, speed: number, deltaTime: number) => {
+	_positionAlongVector = (p1: IgePoint3d, p2: IgePoint3d, speed: number, deltaTime: number): IgePoint3d => {
 		const p1X = p1.x;
 		const p1Y = p1.y;
+		const p1Z = p1.z;
+
 		const p2X = p2.x;
 		const p2Y = p2.y;
+		const p2Z = p2.z;
+
 		const deltaX = p2X - p1X;
 		const deltaY = p2Y - p1Y;
+		const deltaZ = p2Z - p1Z;
 		const magnitude = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
 		const normalisedX = deltaX / magnitude;
 		const normalisedY = deltaY / magnitude;
+		const normalisedZ = deltaZ / magnitude;
 
-		let newPoint;
-
-		if (deltaX !== 0 || deltaY !== 0) {
-			newPoint = new IgePoint3d(
+		if (deltaX !== 0 || deltaY !== 0 || deltaZ !== 0) {
+			return new IgePoint3d(
 				p1X + normalisedX * (speed * deltaTime),
 				p1Y + normalisedY * (speed * deltaTime),
-				0
+				p1Z + normalisedZ * (speed * deltaTime)
 			);
-		} else {
-			newPoint = new IgePoint3d(0, 0, 0);
 		}
 
-		return newPoint;
+		return new IgePoint3d(0, 0, 0);
 	};
 }
