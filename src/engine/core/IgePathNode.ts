@@ -1,4 +1,5 @@
 import { IgePoint3d } from "@/export/exports";
+import type { IgeCompassDirection } from "@/types/IgeCompassDirection";
 
 /**
  * Creates a new path node for use with the IgePathFinder class.
@@ -12,7 +13,7 @@ export class IgePathNode extends IgePoint3d {
 	link?: IgePathNode;
 	hash: string;
 	listType: number;
-	direction: string;
+	direction: IgeCompassDirection | "";
 	_mode: number;
 	_distanceToNext: number = 0;
 	_absoluteTimeToNext: number = 0;
@@ -37,7 +38,7 @@ export class IgePathNode extends IgePoint3d {
 		moveCost: number = 0,
 		heuristic: number = 0,
 		parent?: IgePathNode,
-		direction: string = ""
+		direction: IgeCompassDirection | "" = ""
 	) {
 		super();
 

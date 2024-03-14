@@ -21,7 +21,7 @@ const exports_14 = require("../../export/exports.js");
  * paint a bunch of tiles to a grid.
  */
 class IgeTileMap2d extends exports_1.IgeEntity {
-    constructor(tileWidth, tileHeight) {
+    constructor(tileWidth, tileHeight, tileDepth) {
         super();
         this.classId = "IgeTileMap2d";
         this.IgeTileMap2d = true;
@@ -30,14 +30,17 @@ class IgeTileMap2d extends exports_1.IgeEntity {
         this._gridSize = new exports_4.IgePoint2d(40, 40);
         tileWidth = tileWidth !== undefined ? tileWidth : 40;
         tileHeight = tileHeight !== undefined ? tileHeight : 40;
+        tileDepth = tileDepth !== undefined ? tileDepth : 16;
         if (!exports_12.isServer) {
             const tex = new exports_8.IgeTexture((0, exports_14.newIdHex)(), exports_13.IgeTileMap2dSmartTexture);
             this.texture(tex);
         }
         this.map = new exports_2.IgeMap2d();
+        this.heightMap = new exports_2.IgeMap2d();
         this._adjustmentMatrix = new exports_3.IgeMatrix2d();
         this.tileWidth(tileWidth);
         this.tileHeight(tileHeight);
+        this.tileDepth(tileDepth);
         this.gridSize(3, 3);
         this._drawGrid = false;
         this._gridColor = "#ffffff";
@@ -81,6 +84,13 @@ class IgeTileMap2d extends exports_1.IgeEntity {
             return this;
         }
         return this._tileHeight;
+    }
+    tileDepth(val) {
+        if (val !== undefined) {
+            this._tileDepth = val;
+            return this;
+        }
+        return this._tileDepth;
     }
     gridSize(x, y) {
         if (x !== undefined && y !== undefined) {
@@ -178,15 +188,9 @@ class IgeTileMap2d extends exports_1.IgeEntity {
      * @param {number=} height The height of the area (default is 1).
      * @return {this} Returns the current instance of the object.
      */
-    unOccupyTile(x, y, width, height) {
+    unOccupyTile(x, y, width = 1, height = 1) {
         if (!(x !== undefined && y !== undefined)) {
             return this;
-        }
-        if (width === undefined) {
-            width = 1;
-        }
-        if (height === undefined) {
-            height = 1;
         }
         // Floor the values
         x = Math.floor(x);
@@ -196,7 +200,7 @@ class IgeTileMap2d extends exports_1.IgeEntity {
         for (let xi = 0; xi < width; xi++) {
             for (let yi = 0; yi < height; yi++) {
                 const item = this.map.tileData(x + xi, y + yi);
-                if (item && item._occupiedRect) {
+                if (item && typeof item === "object" && item._occupiedRect) {
                     delete item._occupiedRect;
                 }
                 this.map.clearData(x + xi, y + yi);
@@ -213,29 +217,27 @@ class IgeTileMap2d extends exports_1.IgeEntity {
      * @param {number=} height
      * @return {*}
      */
-    isTileOccupied(x, y, width, height) {
-        if (width === undefined) {
-            width = 1;
-        }
-        if (height === undefined) {
-            height = 1;
-        }
+    isTileOccupied(x, y, width = 1, height = 1) {
         return this.map.collision(x, y, width, height);
     }
     /**
      * Returns the data of the occupied tile at the given coordinates.
+     * This is a proxy for `this.map.tileData(x, y);`
      *
      * @param {number} x The x-coordinate of the tile.
      * @param {number} y The y-coordinate of the tile.
-     * @returns {ResultType} The data of the occupied tile at the given coordinates.
+     * @returns The data of the occupied tile at the given coordinates.
      */
     tileOccupiedBy(x, y) {
         return this.map.tileData(x, y);
     }
     /**
      * Returns the tile co-ordinates of the tile that the point's world
-     * co-ordinates reside inside.
-     * @param {IgePoint3d} point
+     * co-ordinates reside inside. Useful for things like getting the tile
+     * the mouse is currently hovering over, or checking what tile an entity
+     * is "standing" on etc.
+     * @param {IgePoint3d} point The world co-ordinate to translate to
+     * a tile co-ordinate.
      * @return {IgePoint3d} The tile co-ordinates as a point object.
      */
     pointToTile(point) {

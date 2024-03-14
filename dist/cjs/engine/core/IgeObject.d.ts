@@ -3,6 +3,7 @@ import { IgeDummyCanvas, IgeEventingClass, IgeMatrix2d, IgePoint2d, IgePoint3d, 
 import type { IgeBehaviourType } from "../../export/exports.js"
 import { IgeIsometricDepthSortMode, IgeMountMode, IgeStreamMode } from "../../export/exports.js"
 import type { IgeBehaviourStore, IgeCanAcceptComponents, IgeCanRegisterByCategory, IgeCanRegisterById, IgeCanvasRenderingContext2d, IgeChildSortFunction, IgeDepthSortObject, IgeEntityBehaviourMethod, IgeInputEvent, IgePoint, IgeSmartTexture, IgeTimeStreamPacket } from "../../export/exports.js"
+import type { IgeTriggerPolygonFunctionName } from "../../types/IgeTriggerPolygonFunctionName.js"
 export declare class IgeObject extends IgeEventingClass implements IgeCanRegisterById, IgeCanRegisterByCategory, IgeCanAcceptComponents {
     classId: string;
     _id?: string;
@@ -19,6 +20,7 @@ export declare class IgeObject extends IgeEventingClass implements IgeCanRegiste
     _transformChanged: boolean;
     _tileWidth: number;
     _tileHeight: number;
+    _tileDepth: number;
     _orphans?: IgeObject[];
     _specialProp: string[];
     _streamMode?: IgeStreamMode;
@@ -51,7 +53,7 @@ export declare class IgeObject extends IgeEventingClass implements IgeCanRegiste
     _depthSortMode: IgeIsometricDepthSortMode;
     _inView: boolean;
     _managed: number;
-    _triggerPolygonFunctionName: "aabb" | "bounds3dPolygon" | "localBounds3dPolygon";
+    _triggerPolygonFunctionName: IgeTriggerPolygonFunctionName;
     _compositeCache: boolean;
     _compositeParent: boolean;
     _anchor: IgePoint2d;

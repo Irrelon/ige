@@ -5,6 +5,7 @@ import { IgePathNode } from "../../export/exports.js"
 import { IgePoint3d } from "../../export/exports.js"
 import type { IgeTileMap2d } from "../../export/exports.js"
 import type { IgeEntityBehaviourMethod } from "../../export/exports.js"
+import type { IgeCompassDirection } from "../../types/IgeCompassDirection.js"
 /**
  * Handles entity path traversal. This component is supposed to be added
  * to individual entities wishing to traverse paths. When added to an entity
@@ -98,28 +99,44 @@ export declare class IgePathComponent extends IgeComponent {
      * @param {number} toX The x tile to path to.
      * @param {number} toY The y tile to path to.
      * @param {number} toZ The z tile to path to.
-     * @param {boolean=} findNearest If the destination is unreachable, when set to
+     * @param {boolean} [findNearest=false] If the destination is unreachable, when set to
      * true this option will allow the pathfinder to return the closest path to the
      * destination tile.
-     * @returns {*}
      */
     set: (fromX: number, fromY: number, fromZ: number, toX: number, toY: number, toZ: number, findNearest?: boolean) => this;
-    add: (x: number, y: number, z: number, findNearest?: boolean) => this;
     /**
-     * Sets a new destination for a path including the point currently being traversed if a path is active
-     * This creates a smooth transition and flow of pointComplete events between the old and new paths
+     * Adds a new location to path to. If an existing path is already in place,
+     * this will add the new location to the end of the path rather than
+     * overwriting the existing one.
+     *
+     * @param {number} x - The x-coordinate of the new path.
+     * @param {number} y - The y-coordinate of the new path.
+     * @param {number} z - The z-coordinate of the new path.
+     * @param {boolean} [allowInvalidDestination=false] - If true, the closest
+     * valid destination will be used if the specified destination is not
+     * valid, e.g. pathing past a wall tile might not be allowed so your
+     * character might want to be moved as close to the wall tile as is allowed.
+     * @returns {this} - The current instance of the component.
+     * @throws {Error} If no pathfinder (IgePathFinder) is assigned to IgePathComponent.
+     * @throws {Error} If no tile map (IgeTileMap2d) is assigned to IgePathComponent.
+     */
+    add: (x: number, y: number, z: number, allowInvalidDestination?: boolean) => this;
+    /**
+     * Sets a new destination for a path including the point currently being
+     * traversed if a path is active. This creates a smooth transition and
+     * flow of pointComplete events between the old and new paths
      * @param {number} x The x tile to path to.
      * @param {number} y The y tile to path to.
      * @param {number} z The z tile to path to.
-     * @param {boolean=} findNearest If the destination is unreachable, when set to
-     * true this option will allow the pathfinder to return the closest path to the
-     * destination tile.
-     * @returns {*}
+     * @param {boolean} [allowInvalidDestination=false] - If true, the closest
+     * valid destination will be used if the specified destination is not
+     * valid, e.g. pathing past a wall tile might not be allowed so your
+     * character might want to be moved as close to the wall tile as is allowed.
      */
-    reRoute: (x: number, y: number, z: number, findNearest?: boolean) => this;
+    reRoute: (x: number, y: number, z: number, allowInvalidDestination?: boolean) => this;
     /**
      * Adds a path array containing path points (IgePoint3d instances) to the points queue.
-     * @param {Array} path An array of path points.
+     * @param {IgePathNode[]} [path] An array of path points.
      * @return {*}
      */
     addPoints: (path?: IgePathNode[]) => this;
@@ -147,7 +164,7 @@ export declare class IgePathComponent extends IgeComponent {
      * @return {string} A string such as N, S, E, W, NW, NE, SW, SE.
      * If there is currently no direction then the return value is a blank string.
      */
-    getDirection: () => string;
+    getDirection: () => IgeCompassDirection | "";
     /**
      * Gets / sets the time towards the end of the path when the path
      * component will emit a "almostComplete" event.
@@ -264,5 +281,5 @@ export declare class IgePathComponent extends IgeComponent {
      * @return {IgePoint3d}
      * @private
      */
-    _positionAlongVector: (p1: IgePoint3d, p2: IgePoint3d, speed: number, deltaTime: number) => any;
+    _positionAlongVector: (p1: IgePoint3d, p2: IgePoint3d, speed: number, deltaTime: number) => IgePoint3d;
 }

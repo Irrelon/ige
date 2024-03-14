@@ -15,7 +15,7 @@ export interface IgeTileMap2dSavedMap {
  * NOTE: These are not to be confused with IgeTextureMap's which allow you to
  * paint a bunch of tiles to a grid.
  */
-export declare class IgeTileMap2d extends IgeEntity {
+export declare class IgeTileMap2d<MapDataType = any> extends IgeEntity {
     classId: string;
     IgeTileMap2d: boolean;
     _drawGrid?: boolean;
@@ -24,8 +24,9 @@ export declare class IgeTileMap2d extends IgeEntity {
     _gridColor?: string;
     _gridSize: IgePoint2d;
     _hoverColor?: string;
-    map: IgeMap2d;
-    constructor(tileWidth?: number, tileHeight?: number);
+    map: IgeMap2d<MapDataType>;
+    heightMap: IgeMap2d;
+    constructor(tileWidth?: number, tileHeight?: number, tileDepth?: number);
     /**
      * Gets / sets the flag that determines if the tile map will paint the
      * occupied tiles with an overlay colour so that it is easy to spot them.
@@ -50,6 +51,13 @@ export declare class IgeTileMap2d extends IgeEntity {
      */
     tileHeight(val: number): this;
     tileHeight(): number;
+    /**
+     * Gets / sets the map's tile depth (z axis).
+     * @param {number} [val] Tile depth.
+     * @return {*}
+     */
+    tileDepth(val: number): this;
+    tileDepth(): number;
     gridSize(x: number, y: number): this;
     gridSize(): IgePoint2d;
     /**
@@ -107,16 +115,20 @@ export declare class IgeTileMap2d extends IgeEntity {
     isTileOccupied(x: number, y: number, width?: number, height?: number): boolean;
     /**
      * Returns the data of the occupied tile at the given coordinates.
+     * This is a proxy for `this.map.tileData(x, y);`
      *
      * @param {number} x The x-coordinate of the tile.
      * @param {number} y The y-coordinate of the tile.
-     * @returns {ResultType} The data of the occupied tile at the given coordinates.
+     * @returns The data of the occupied tile at the given coordinates.
      */
-    tileOccupiedBy<ResultType = any>(x: number, y: number): ResultType;
+    tileOccupiedBy(x: number, y: number): MapDataType;
     /**
      * Returns the tile co-ordinates of the tile that the point's world
-     * co-ordinates reside inside.
-     * @param {IgePoint3d} point
+     * co-ordinates reside inside. Useful for things like getting the tile
+     * the mouse is currently hovering over, or checking what tile an entity
+     * is "standing" on etc.
+     * @param {IgePoint3d} point The world co-ordinate to translate to
+     * a tile co-ordinate.
      * @return {IgePoint3d} The tile co-ordinates as a point object.
      */
     pointToTile(point: IgePoint2d | IgePoint3d): IgePoint3d;

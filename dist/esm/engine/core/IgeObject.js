@@ -18,6 +18,7 @@ export class IgeObject extends IgeEventingClass {
     _transformChanged = false;
     _tileWidth = 1;
     _tileHeight = 1;
+    _tileDepth = 1;
     _orphans;
     _specialProp = [];
     _streamMode;
@@ -459,7 +460,8 @@ export class IgeObject extends IgeEventingClass {
             }
         }
     }
-    updateTransform() { }
+    updateTransform() {
+    }
     aabb(recalculate = true, inverse = false) {
         return this._aabb;
     }
@@ -771,19 +773,22 @@ export class IgeObject extends IgeEventingClass {
      * @param obj
      * @private
      */
-    _childUnMounted(obj) { }
+    _childUnMounted(obj) {
+    }
     /**
      * Called when this object is mounted to an object.
      * @param obj
      * @private
      */
-    _mounted(obj) { }
+    _mounted(obj) {
+    }
     /**
      * Called when this object is un-mounted from its parent.
      * @param obj
      * @private
      */
-    _unMounted(obj) { }
+    _unMounted(obj) {
+    }
     isMounted() {
         return Boolean(this._parent);
     }

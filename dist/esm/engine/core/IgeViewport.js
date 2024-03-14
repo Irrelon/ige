@@ -103,8 +103,8 @@ export class IgeViewport extends IgeUiEntity {
      * in the world. The co-ordinates are in world space.
      * @returns {IgeRect}
      */
-    viewArea() {
-        const aabb = this.aabb(), camTrans = this.camera._translate, camScale = this.camera._scale, width = aabb.width * (1 / camScale.x), height = aabb.height * (1 / camScale.y);
+    viewArea(camScaleX = this.camera._scale.x, camScaleY = this.camera._scale.y) {
+        const aabb = this.aabb(), camTrans = this.camera._translate, width = aabb.width * (1 / camScaleX), height = aabb.height * (1 / camScaleY);
         return new IgeRect(camTrans.x - width / 2, camTrans.y - height / 2, width, height);
     }
     /**

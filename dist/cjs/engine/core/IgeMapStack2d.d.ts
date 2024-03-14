@@ -62,5 +62,5 @@ export declare class IgeMapStack2d extends IgeBaseClass {
      * @param {Array} val The map data array.
      * @return {*}
      */
-    mapData(val: any): any[][] | this;
+    mapData(val: any): this | any[][];
 }

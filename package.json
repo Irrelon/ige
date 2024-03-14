@@ -31,7 +31,7 @@
 		"build-cjs-watch": "tsc -p tsconfig-cjs.json --watch",
 		"fix-paths-watch": "npx @irrelon/fix-paths --write --watch",
 		"generate-exports": "node update-indexes.cjs",
-		"test": "NODE_OPTIONS=--experimental-vm-modules npx jest -f \".test.js\"",
+		"test": "NODE_OPTIONS=--experimental-vm-modules npx jest --all -f \".test.js\"",
 		"test-watch": "NODE_OPTIONS=--experimental-vm-modules npx jest -f \".test.js\" --watch --all",
 		"eslint-fix": "eslint --ext .ts,.tsx . --fix"
 	},

@@ -2,10 +2,10 @@ import { IgeBaseClass } from "../../export/exports.js"
 /**
  * Creates a new map that has two dimensions (x and y) to its data.
  */
-export declare class IgeMap2d extends IgeBaseClass {
+export declare class IgeMap2d<MapDataType = any> extends IgeBaseClass {
     classId: string;
-    _mapData: any[][];
-    constructor(data?: any[][]);
+    _mapData: MapDataType[][];
+    constructor(data?: MapDataType[][]);
     /**
      * Gets / sets a value on the specified map tile co-ordinates.
      * @param {number} x
@@ -13,7 +13,9 @@ export declare class IgeMap2d extends IgeBaseClass {
      * @param {*=} val The data to set on the map tile co-ordinate.
      * @return {*}
      */
-    tileData(x?: number, y?: number, val?: any): any;
+    tileData(x: number, y: number, val: MapDataType): this;
+    tileData(x: number, y: number): MapDataType;
+    tileData(): undefined;
     /**
      * Clears any data set at the specified map tile co-ordinates.
      * @param x
@@ -39,7 +41,7 @@ export declare class IgeMap2d extends IgeBaseClass {
      * @param height
      * @param data
      */
-    collisionWith(x?: number, y?: number, width?: number, height?: number, data?: any): boolean;
+    collisionWith(x?: number, y?: number, width?: number, height?: number, data?: MapDataType): boolean;
     /**
      * Checks if the tile area passed has data stored in it that matches
      * the passed data and does not collide with any other stored tile
@@ -50,7 +52,7 @@ export declare class IgeMap2d extends IgeBaseClass {
      * @param height
      * @param data
      */
-    collisionWithOnly(x?: number, y?: number, width?: number, height?: number, data?: any): boolean;
+    collisionWithOnly(x?: number, y?: number, width?: number, height?: number, data?: MapDataType): boolean;
     /**
      * Gets / sets the map's tile data.
      * @param val The map data array.
@@ -58,10 +60,10 @@ export declare class IgeMap2d extends IgeBaseClass {
      * @param startY The start y co-ordinate of the data.
      * @return {*}
      */
-    mapData(val: number[][], startX: number, startY: number): this;
-    mapData(val: number[][]): this;
-    mapData(): number[][];
-    sortedMapDataAsArray(): number[][];
+    mapData(val: MapDataType[][], startX: number, startY: number): this;
+    mapData(val: MapDataType[][]): this;
+    mapData(): MapDataType[][];
+    sortedMapDataAsArray(): MapDataType[][];
     _sortKeys(obj: Record<string, any>): string[];
     /**
      * Returns a string of the map's data in JSON format.

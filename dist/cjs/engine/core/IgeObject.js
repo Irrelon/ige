@@ -22,6 +22,7 @@ class IgeObject extends exports_2.IgeEventingClass {
         this._transformChanged = false;
         this._tileWidth = 1;
         this._tileHeight = 1;
+        this._tileDepth = 1;
         this._specialProp = [];
         this._streamDataCache = "";
         this._streamSections = ["transform", "props"];
@@ -403,7 +404,8 @@ class IgeObject extends exports_2.IgeEventingClass {
             }
         }
     }
-    updateTransform() { }
+    updateTransform() {
+    }
     aabb(recalculate = true, inverse = false) {
         return this._aabb;
     }
@@ -715,19 +717,22 @@ class IgeObject extends exports_2.IgeEventingClass {
      * @param obj
      * @private
      */
-    _childUnMounted(obj) { }
+    _childUnMounted(obj) {
+    }
     /**
      * Called when this object is mounted to an object.
      * @param obj
      * @private
      */
-    _mounted(obj) { }
+    _mounted(obj) {
+    }
     /**
      * Called when this object is un-mounted from its parent.
      * @param obj
      * @private
      */
-    _unMounted(obj) { }
+    _unMounted(obj) {
+    }
     isMounted() {
         return Boolean(this._parent);
     }

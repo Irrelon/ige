@@ -203,7 +203,7 @@ export declare class IgeUiEntity extends IgeEntity {
      * the current background image if no parameters are specified.
      */
     backgroundImage(texture?: IgeTexture, repeatType?: IgeRepeatType): CanvasPattern | this | undefined;
-    backgroundSize(x?: number | string, y?: number | string): this | IgePointXY;
+    backgroundSize(x?: number | string, y?: number | string): IgePointXY | this;
     /**
      * Gets / sets the color to use as a background when
      * rendering the UI element.
@@ -218,7 +218,7 @@ export declare class IgeUiEntity extends IgeEntity {
      * @param {number=} y
      * @return {*} Returns this when setting the value or the current value if none is specified.
      */
-    backgroundPosition(x: number, y: number): this | IgePointXY;
+    backgroundPosition(x: number, y: number): IgePointXY | this;
     borderColor(color: string): this;
     borderColor(): string;
     borderLeftColor(color: string): string | this | undefined;

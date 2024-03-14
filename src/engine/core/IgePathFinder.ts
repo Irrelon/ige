@@ -295,8 +295,8 @@ export class IgePathFinder extends IgeEventingClass {
 		let newX = 0;
 		let newY = 0;
 		let newZ = 0;
-		const mapData = tileMap.map._mapData;
-		const currentNodeData: IgePathNode | undefined = mapData[y] && mapData[y][x] ? mapData[y][x] : undefined;
+
+		const currentNodeData = tileMap.map.tileData(x, y);
 
 		let tileData: any;
 
@@ -304,7 +304,7 @@ export class IgePathFinder extends IgeEventingClass {
 			newX = x - 1;
 			newY = y;
 			newZ = z;
-			tileData = mapData[newY] && mapData[newY][newX] ? mapData[newY][newX] : null;
+			tileData = tileMap.map.tileData(newX, newY) || null;
 			if (comparisonCallback(tileData, newX, newY, newZ, currentNodeData, x, y, z)) {
 				const newNode = new IgePathNode(
 					newX,
@@ -321,7 +321,7 @@ export class IgePathFinder extends IgeEventingClass {
 
 			newX = x + 1;
 			newY = y;
-			tileData = mapData[newY] && mapData[newY][newX] ? mapData[newY][newX] : null;
+			tileData = tileMap.map.tileData(newX, newY) || null;
 			if (comparisonCallback(tileData, newX, newY, newZ, currentNodeData, x, y, z)) {
 				const newNode = new IgePathNode(
 					newX,
@@ -338,7 +338,7 @@ export class IgePathFinder extends IgeEventingClass {
 
 			newX = x;
 			newY = y - 1;
-			tileData = mapData[newY] && mapData[newY][newX] ? mapData[newY][newX] : null;
+			tileData = tileMap.map.tileData(newX, newY) || null;
 			if (comparisonCallback(tileData, newX, newY, newZ, currentNodeData, x, y, z)) {
 				const newNode = new IgePathNode(
 					newX,
@@ -355,7 +355,7 @@ export class IgePathFinder extends IgeEventingClass {
 
 			newX = x;
 			newY = y + 1;
-			tileData = mapData[newY] && mapData[newY][newX] ? mapData[newY][newX] : null;
+			tileData = tileMap.map.tileData(newX, newY) || null;
 			if (comparisonCallback(tileData, newX, newY, newZ, currentNodeData, x, y, z)) {
 				const newNode = new IgePathNode(
 					newX,
@@ -374,7 +374,7 @@ export class IgePathFinder extends IgeEventingClass {
 		if (allowDiagonal) {
 			newX = x - 1;
 			newY = y - 1;
-			tileData = mapData[newY] && mapData[newY][newX] ? mapData[newY][newX] : null;
+			tileData = tileMap.map.tileData(newX, newY) || null;
 			if (comparisonCallback(tileData, newX, newY, newZ, currentNodeData, x, y, z)) {
 				const newNode = new IgePathNode(
 					newX,
@@ -391,7 +391,7 @@ export class IgePathFinder extends IgeEventingClass {
 
 			newX = x + 1;
 			newY = y - 1;
-			tileData = mapData[newY] && mapData[newY][newX] ? mapData[newY][newX] : null;
+			tileData = tileMap.map.tileData(newX, newY) || null;
 			if (comparisonCallback(tileData, newX, newY, newZ, currentNodeData, x, y, z)) {
 				const newNode = new IgePathNode(
 					newX,
@@ -408,7 +408,7 @@ export class IgePathFinder extends IgeEventingClass {
 
 			newX = x - 1;
 			newY = y + 1;
-			tileData = mapData[newY] && mapData[newY][newX] ? mapData[newY][newX] : null;
+			tileData = tileMap.map.tileData(newX, newY) || null;
 			if (comparisonCallback(tileData, newX, newY, newZ, currentNodeData, x, y, z)) {
 				const newNode = new IgePathNode(
 					newX,
@@ -425,7 +425,7 @@ export class IgePathFinder extends IgeEventingClass {
 
 			newX = x + 1;
 			newY = y + 1;
-			tileData = mapData[newY] && mapData[newY][newX] ? mapData[newY][newX] : null;
+			tileData = tileMap.map.tileData(newX, newY) || null;
 			if (comparisonCallback(tileData, newX, newY, newZ, currentNodeData, x, y, z)) {
 				const newNode = new IgePathNode(
 					newX,

@@ -97,8 +97,8 @@ export class IgeTexture extends IgeAsset {
 	 * @param {string=} url "The url used to load the file for this texture.
 	 * @return {*}
 	 */
-	url(url: string): this;
-	url(): string | undefined;
+	url (url: string): this;
+	url (): string | undefined;
 	url (url?: string) {
 		if (url !== undefined) {
 			this._url = url;
@@ -189,7 +189,7 @@ export class IgeTexture extends IgeAsset {
 				if (image.width % 2) {
 					this.log(
 						"This texture's width is not divisible by 2 which will cause the texture to use sub-pixel rendering resulting in a blurred image. This may also slow down the renderer on some browsers. Image file: " +
-							this._url,
+						this._url,
 						"warning"
 					);
 				}
@@ -197,7 +197,7 @@ export class IgeTexture extends IgeAsset {
 				if (image.height % 2) {
 					this.log(
 						"This texture's height is not divisible by 2 which will cause the texture to use sub-pixel rendering resulting in a blurred image. This may also slow down the renderer on some browsers. Image file: " +
-							this._url,
+						this._url,
 						"warning"
 					);
 				}
@@ -231,37 +231,32 @@ export class IgeTexture extends IgeAsset {
 	 * script data.
 	 * @private
 	 */
-	_loadScript (scriptUrl: string) {
-		if (isClient) {
-			import(scriptUrl)
-				.then(({ image }) => {
-					console.log("Loaded module", image);
-
-					this.log('Texture script "' + scriptUrl + '" loaded successfully');
-					// Parse the JS with evil eval and store the result in the asset
-
-					// Store the eval data (the "image" variable is declared
-					// by the texture script and becomes available in this scope
-					// because we evaluated it above)
-					this._renderMode = 1;
-					this.script = image;
-
-					// Run the asset script init method
-					if (typeof image.init === "function") {
-						image.init.apply(image, [self]);
-					}
-
-					//self.sizeX(image.width);
-					//self.sizeY(image.height);
-
-					// Mark texture as loaded
-					this._textureLoaded();
-				})
-				.catch((err) => {
-					console.log("Module error", err);
-				});
+	_loadScript = (scriptUrl: string) => {
+		if (!isClient) {
+			return;
 		}
-	}
+
+		import(/*webpackIgnore: true*/ scriptUrl)
+			.then(({ image }) => {
+				this.log(`Texture script "${scriptUrl}" loaded successfully`);
+
+				// Store the function exported in the `image` variable
+				// by the texture script
+				this._renderMode = IgeTextureRenderMode.smartTexture;
+				this.script = image;
+
+				// Run the asset script init method
+				if (typeof image.init === "function") {
+					image.init.apply(image, [this]);
+				}
+
+				// Mark texture as loaded
+				this._textureLoaded();
+			})
+			.catch((err) => {
+				this.log(`Module error ${err}`, "error");
+			});
+	};
 
 	/**
 	 * Assigns a render script to the smart texture.

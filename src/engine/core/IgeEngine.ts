@@ -18,6 +18,7 @@ import type { GenericClass } from "@/export/exports";
 import type { IgeCanvasRenderingContext2d } from "@/export/exports";
 import type { IgeSceneGraphDataEntry } from "@/export/exports";
 import type { SyncEntry, SyncMethod } from "@/export/exports";
+import type { AnyFunction } from "@/types/AnyFunction";
 
 export class IgeEngine extends IgeEntity {
 	classId = "IgeEngine";
@@ -87,6 +88,7 @@ export class IgeEngine extends IgeEntity {
 	_resized: boolean = false;
 	_timeScaleLastTimestamp: number = 0;
 	lastTick: number = 0;
+	_setTickout: AnyFunction[] = [];
 
 	// The engine entity is always "in view" as in, no occlusion will stop it from rendering
 	// because it's only the child entities that need occlusion testing
@@ -96,6 +98,7 @@ export class IgeEngine extends IgeEntity {
 		callback: (time: number, ctx?: IgeCanvasRenderingContext2d) => void,
 		element?: Element
 	) => void;
+
 
 	constructor () {
 		super();
@@ -180,8 +183,8 @@ export class IgeEngine extends IgeEntity {
 		return super.addComponent(id, Component as typeof IgeComponent, options);
 	}
 
-	id(): string;
-	id(id: string): this;
+	id (): string;
+	id (id: string): this;
 	id (id?: string): this | string | undefined {
 		if (!id) {
 			return "ige";
@@ -647,8 +650,8 @@ export class IgeEngine extends IgeEntity {
 	 * @param {Boolean=} val
 	 * @return {*}
 	 */
-	useManualTicks(): boolean;
-	useManualTicks(val: boolean): IgeEngine;
+	useManualTicks (): boolean;
+	useManualTicks (val: boolean): IgeEngine;
 	useManualTicks (val?: boolean): boolean | IgeEngine {
 		if (val !== undefined) {
 			this._useManualTicks = val;
@@ -793,14 +796,14 @@ export class IgeEngine extends IgeEntity {
 
 			console.log(
 				depthSpace +
-					obj.id() +
-					" (" +
-					obj.constructor.name +
-					") : " +
-					obj._inView +
-					" Timing(" +
-					timingString +
-					")"
+				obj.id() +
+				" (" +
+				obj.constructor.name +
+				") : " +
+				obj._inView +
+				" Timing(" +
+				timingString +
+				")"
 			);
 		} else {
 			console.log(depthSpace + obj.id() + " (" + obj.constructor.name + ") : " + obj._inView);
@@ -837,15 +840,15 @@ export class IgeEngine extends IgeEntity {
 
 								console.log(
 									depthSpace +
-										"----" +
-										vp.id() +
-										" (" +
-										vp.constructor.name +
-										") : " +
-										vp._inView +
-										" Timing(" +
-										timingString +
-										")"
+									"----" +
+									vp.id() +
+									" (" +
+									vp.constructor.name +
+									") : " +
+									vp._inView +
+									" Timing(" +
+									timingString +
+									")"
 								);
 							} else {
 								console.log(
@@ -1035,9 +1038,9 @@ export class IgeEngine extends IgeEntity {
 				delete this._graphInstances[classObj.name];
 			} else {
 				this.log(
-					'Cannot remove graph for class name "' +
-						className +
-						'" because the class instance could not be found. Did you add it via ige.addGraph() ?',
+					"Cannot remove graph for class name \"" +
+					className +
+					"\" because the class instance could not be found. Did you add it via ige.addGraph() ?",
 					"error"
 				);
 			}
@@ -1064,9 +1067,10 @@ export class IgeEngine extends IgeEntity {
 	/**
 	 * Allows the tick() methods of the entire scenegraph to
 	 * be temporarily enabled or disabled. Useful for debugging.
-	 * @param {Boolean=} val If false, will disable all tick() calls.
-	 * @returns {*}
+	 * @param {boolean} [val] If false, will disable all tick() calls.
 	 */
+	enableRenders (val: boolean): this;
+	enableRenders (): boolean;
 	enableRenders (val?: boolean) {
 		if (val !== undefined) {
 			this._enableRenders = val;
@@ -1406,7 +1410,9 @@ export class IgeEngine extends IgeEntity {
 						}
 					}
 
-					this.requestAnimFrame(this.engineStep);
+					if (!this._useManualTicks) {
+						this.requestAnimFrame(this.engineStep);
+					}
 
 					this.log("Engine started");
 
@@ -1426,8 +1432,8 @@ export class IgeEngine extends IgeEntity {
 					return reject(
 						new Error(
 							"Engine start failed because the dependency check timed out after " +
-								this._dependencyCheckTimeout / 1000 +
-								" seconds"
+							this._dependencyCheckTimeout / 1000 +
+							" seconds"
 						)
 					);
 				}
@@ -1595,7 +1601,16 @@ export class IgeEngine extends IgeEntity {
 			const endTime = new Date().getTime();
 			this._tickTime = endTime - startTime;
 		}
+
+		const tickOut = this._setTickout.shift();
+		tickOut?.();
 	};
+
+	setTickout (callback: AnyFunction, count = 0) {
+		this._setTickout.length = count + 1;
+		this._setTickout[count] = callback;
+		return this;
+	}
 
 	/**
 	 * Gets / sets the _autoSize property. If set to true, the engine will listen
@@ -2026,8 +2041,8 @@ export class IgeEngine extends IgeEntity {
 	 * @param id
 	 * @param recursive
 	 */
-	drawBounds(id: boolean, recursive?: boolean): this;
-	drawBounds(): boolean;
+	drawBounds (id: boolean, recursive?: boolean): this;
+	drawBounds (): boolean;
 	drawBounds (val?: boolean, recursive: boolean = false) {
 		if (val === undefined) {
 			return this._drawBounds;

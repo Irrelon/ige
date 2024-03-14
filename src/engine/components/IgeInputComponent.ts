@@ -198,9 +198,7 @@ export class IgeInputComponent extends IgeEventingClass implements IgeIsReadyPro
 				this._evRef[eventName](eventObj);
 			} else {
 				this.log(
-					'Cannot fire manual event "' +
-						eventName +
-						'" because no listener exists in the engine for this event type!',
+					`Cannot fire manual event "${eventName}" because no listener exists in the engine for this event type!`,
 					"warning"
 				);
 			}

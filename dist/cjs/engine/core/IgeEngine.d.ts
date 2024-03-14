@@ -12,6 +12,7 @@ import type { GenericClass } from "../../export/exports.js"
 import type { IgeCanvasRenderingContext2d } from "../../export/exports.js"
 import type { IgeSceneGraphDataEntry } from "../../export/exports.js"
 import type { SyncEntry, SyncMethod } from "../../export/exports.js"
+import type { AnyFunction } from "../../types/AnyFunction.js"
 export declare class IgeEngine extends IgeEntity {
     classId: string;
     client?: IgeBaseClass;
@@ -80,6 +81,7 @@ export declare class IgeEngine extends IgeEntity {
     _resized: boolean;
     _timeScaleLastTimestamp: number;
     lastTick: number;
+    _setTickout: AnyFunction[];
     _alwaysInView: boolean;
     basePath: string;
     _requestAnimFrame?: (callback: (time: number, ctx?: IgeCanvasRenderingContext2d) => void, element?: Element) => void;
@@ -262,10 +264,10 @@ export declare class IgeEngine extends IgeEntity {
     /**
      * Allows the tick() methods of the entire scenegraph to
      * be temporarily enabled or disabled. Useful for debugging.
-     * @param {Boolean=} val If false, will disable all tick() calls.
-     * @returns {*}
+     * @param {boolean} [val] If false, will disable all tick() calls.
      */
-    enableRenders(val?: boolean): boolean | this;
+    enableRenders(val: boolean): this;
+    enableRenders(): boolean;
     /**
      * Enables or disables the engine's debug mode. Enabled by default.
      * @param {Boolean=} val If true, will enable debug mode.
@@ -384,10 +386,12 @@ export declare class IgeEngine extends IgeEntity {
      * @return {Boolean}
      */
     stop(): boolean;
+    _birthUnbornEntities(): void;
     /**
      * Called each frame to traverse and render the scenegraph.
      */
     engineStep: (timeStamp: number, ctx?: IgeCanvasRenderingContext2d | null) => void;
+    setTickout(callback: AnyFunction, count?: number): this;
     /**
      * Gets / sets the _autoSize property. If set to true, the engine will listen
      * for any change in screen size and resize the front-buffer (canvas) element

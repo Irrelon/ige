@@ -21,6 +21,7 @@ export * from "../types/IgeCanRegisterById";
 export * from "../types/IgeCanvas";
 export * from "../types/IgeCanvasRenderingContext2d";
 export * from "../types/IgeChildSortFunction";
+export * from "../types/IgeCompassDirection";
 export * from "../types/IgeConfig";
 export * from "../types/IgeDepthSortObject";
 export * from "../types/IgeEntityBehaviour";

@@ -12,31 +12,20 @@ class IgeMap2d extends exports_1.IgeBaseClass {
         this.classId = "IgeMap2d";
         this._mapData = data || [];
     }
-    /**
-     * Gets / sets a value on the specified map tile co-ordinates.
-     * @param {number} x
-     * @param {number} y
-     * @param {*=} val The data to set on the map tile co-ordinate.
-     * @return {*}
-     */
     tileData(x, y, val) {
-        if (x !== undefined && y !== undefined) {
-            if (val !== undefined) {
-                // Assign a value
-                this._mapData[y] = this._mapData[y] || [];
-                this._mapData[y][x] = val;
-                return this;
-            }
-            else {
-                // No assignment so see if we have data to return
-                if (this._mapData[y]) {
-                    return this._mapData[y][x];
-                }
-            }
+        if ((x === undefined || y === undefined)) {
+            return;
         }
-        // Either no x, y was specified or there was
-        // no data at the x, y so return undefined
-        return undefined;
+        if (val !== undefined) {
+            // Assign a value
+            this._mapData[y] = this._mapData[y] || [];
+            this._mapData[y][x] = val;
+            return this;
+        }
+        // No assignment so see if we have data to return
+        if (this._mapData[y]) {
+            return this._mapData[y][x];
+        }
     }
     /**
      * Clears any data set at the specified map tile co-ordinates.

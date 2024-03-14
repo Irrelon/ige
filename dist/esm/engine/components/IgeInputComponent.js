@@ -171,9 +171,7 @@ export class IgeInputComponent extends IgeEventingClass {
                 this._evRef[eventName](eventObj);
             }
             else {
-                this.log('Cannot fire manual event "' +
-                    eventName +
-                    '" because no listener exists in the engine for this event type!', "warning");
+                this.log(`Cannot fire manual event "${eventName}" because no listener exists in the engine for this event type!`, "warning");
             }
         }
         else {
@@ -221,6 +219,11 @@ export class IgeInputComponent extends IgeEventingClass {
             const pointerEvent = event;
             pointerEvent.igePageX = pointerEvent.pageX;
             pointerEvent.igePageY = pointerEvent.pageY;
+        }
+        if (type === "wheel") {
+            const wheelEvent = event;
+            wheelEvent.igePageX = wheelEvent.pageX;
+            wheelEvent.igePageY = wheelEvent.pageY;
         }
         const canvasPosition = ige.engine._canvasPosition();
         event.igeX = event.igePageX - canvasPosition.left;

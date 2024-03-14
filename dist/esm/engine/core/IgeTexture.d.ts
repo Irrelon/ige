@@ -59,7 +59,7 @@ export declare class IgeTexture extends IgeAsset {
      * script data.
      * @private
      */
-    _loadScript(scriptUrl: string): void;
+    _loadScript: (scriptUrl: string) => void;
     /**
      * Assigns a render script to the smart texture.
      * @param {string} scriptObj The script object.

@@ -127,6 +127,7 @@ export declare const WithUiPositionMixin: <BaseClassType extends Mixin<IgeObject
         _transformChanged: boolean;
         _tileWidth: number;
         _tileHeight: number;
+        _tileDepth: number;
         _orphans?: IgeObject[] | undefined;
         _specialProp: string[];
         _streamMode?: import("../../export/exports.js").IgeStreamMode | undefined;
@@ -159,13 +160,19 @@ export declare const WithUiPositionMixin: <BaseClassType extends Mixin<IgeObject
         _depthSortMode: import("../../export/exports.js").IgeIsometricDepthSortMode;
         _inView: boolean;
         _managed: number;
-        _triggerPolygonFunctionName: "localBounds3dPolygon" | "bounds3dPolygon" | "aabb";
+        _triggerPolygonFunctionName: import("../../export/exports.js").IgeTriggerPolygonFunctionName;
         _compositeCache: boolean;
         _compositeParent: boolean;
         _anchor: import("../../export/exports.js").IgePoint2d;
         _renderPos: {
             x: number;
-            y: number;
+            y: number; /**
+             * Gets / sets the viewport's x position relative to the center of
+             * the entity parent.
+             * @param {number} px
+             * @param {boolean=} noUpdate
+             * @return {number}
+             */
         };
         _computedOpacity: number;
         _opacity: number;
@@ -253,7 +260,7 @@ export declare const WithUiPositionMixin: <BaseClassType extends Mixin<IgeObject
         updateTransform(): void;
         aabb(recalculate?: boolean, inverse?: boolean): import("../../export/exports.js").IgeRect;
         _processBehaviours(type: import("../../export/exports.js").IgeBehaviourType, ...args: any[]): void;
-        parent(): IgeObject | import("../../export/exports.js").IgeTileMap2d | null | undefined;
+        parent(): IgeObject | import("../../export/exports.js").IgeTileMap2d<any> | null | undefined;
         parent(id: string): IgeObject | null;
         children(): IgeObject[];
         mount(obj: IgeObject): any;

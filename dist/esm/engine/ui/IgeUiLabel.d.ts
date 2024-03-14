@@ -59,7 +59,8 @@ export declare class IgeUiLabel extends IgeUiElement {
      * @param fontSheet
      * @return {*}
      */
-    fontSheet(fontSheet?: IgeFontSheet): IgeFontSheet | this | undefined;
+    fontSheet(fontSheet: IgeFontSheet): this;
+    fontSheet(): IgeFontSheet | undefined;
     font(val: string | IgeFontSheet): this;
     font(): string | IgeFontSheet;
     nativeFont(val?: string): string | IgeFontEntity | this | undefined;
