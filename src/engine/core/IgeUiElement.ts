@@ -4,7 +4,7 @@ import { registerClass } from "@/export/exports";
 import { ige } from "@/export/exports";
 import type { IgeInputComponent } from "@/export/exports";
 
-export type IgeUiStyleObject = Record<string, any>;
+export type IgeUiStyleObject<InterfaceType = any> = Record<string, InterfaceType>;
 export type IgeUiStyleState = "focus" | "hover" | "active";
 
 /**
@@ -85,8 +85,8 @@ export class IgeUiElement extends IgeUiEntity {
 		this.pointerEventsActive(true);
 	}
 
-	allowHover(val: boolean): this;
-	allowHover(): boolean;
+	allowHover (val: boolean): this;
+	allowHover (): boolean;
 	allowHover (val?: boolean) {
 		if (val !== undefined) {
 			this._allowHover = val;
@@ -96,8 +96,8 @@ export class IgeUiElement extends IgeUiEntity {
 		return this._allowHover;
 	}
 
-	allowFocus(val: boolean): this;
-	allowFocus(): boolean;
+	allowFocus (val: boolean): this;
+	allowFocus (): boolean;
 	allowFocus (val?: boolean) {
 		if (val !== undefined) {
 			this._allowFocus = val;
@@ -107,8 +107,8 @@ export class IgeUiElement extends IgeUiEntity {
 		return this._allowFocus;
 	}
 
-	allowActive(val: boolean): this;
-	allowActive(): boolean;
+	allowActive (val: boolean): this;
+	allowActive (): boolean;
 	allowActive (val?: boolean) {
 		if (val !== undefined) {
 			this._allowActive = val;
@@ -123,8 +123,8 @@ export class IgeUiElement extends IgeUiEntity {
 	 * @param {string=} name The style name to apply.
 	 * @returns {*}
 	 */
-	styleClass(name?: string): this;
-	styleClass(): string;
+	styleClass (name?: string): this;
+	styleClass (): string;
 	styleClass (name?: string) {
 		if (name === undefined) {
 			return this._styleClass;
@@ -157,8 +157,8 @@ export class IgeUiElement extends IgeUiEntity {
 	 * @param {*=} value The value to set for the property.
 	 * @return {*}
 	 */
-	style(property: string, value: any): this;
-	style(property: string): any;
+	style (property: string, value: any): this;
+	style (property: string): any;
 	style (property: string, value?: any) {
 		const ui = ige.ui as IgeUiManagerController;
 		const allStyles: Record<string, any> = {};
