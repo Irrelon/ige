@@ -19,7 +19,7 @@ export declare const WithUiStyleMixin: <BaseClassType extends Mixin<IgeObject>>(
         _patternHeight?: number | undefined;
         _patternFill?: CanvasPattern | undefined;
         _cell: number | null;
-        _backgroundColor?: string | CanvasGradient | CanvasPattern | undefined;
+        _backgroundColor?: string | CanvasPattern | CanvasGradient | undefined;
         _borderColor?: string | undefined;
         _borderLeftColor?: string | undefined;
         _borderTopColor?: string | undefined;
@@ -50,7 +50,7 @@ export declare const WithUiStyleMixin: <BaseClassType extends Mixin<IgeObject>>(
          * @param {CSSColor, CanvasGradient, CanvasPattern=} color
          * @return {*} Returns this when setting the value or the current value if none is specified.
          */
-        color(color: string | CanvasGradient | CanvasPattern): string | CanvasGradient | CanvasPattern | any;
+        color(color: string | CanvasGradient | CanvasPattern): string | CanvasPattern | CanvasGradient | any;
         /**
          * Sets the current background texture and the repeatType
          * to determine in which axis the image should be repeated.
@@ -71,7 +71,7 @@ export declare const WithUiStyleMixin: <BaseClassType extends Mixin<IgeObject>>(
          * @param {CSSColor, CanvasGradient, CanvasPattern=} color
          * @return {*} Returns this when setting the value or the current value if none is specified.
          */
-        backgroundColor(color: string | CanvasGradient | CanvasPattern): string | CanvasGradient | CanvasPattern | any | undefined;
+        backgroundColor(color: string | CanvasGradient | CanvasPattern): string | CanvasPattern | CanvasGradient | any | undefined;
         /**
          * Gets / sets the position to start rendering the background image at.
          * @param {number=} x
@@ -124,6 +124,7 @@ export declare const WithUiStyleMixin: <BaseClassType extends Mixin<IgeObject>>(
         _transformChanged: boolean;
         _tileWidth: number;
         _tileHeight: number;
+        _tileDepth: number;
         _orphans?: IgeObject[] | undefined;
         _specialProp: string[];
         _streamMode?: import("../../export/exports.js").IgeStreamMode | undefined;
@@ -156,7 +157,7 @@ export declare const WithUiStyleMixin: <BaseClassType extends Mixin<IgeObject>>(
         _depthSortMode: import("../../export/exports.js").IgeIsometricDepthSortMode;
         _inView: boolean;
         _managed: number;
-        _triggerPolygonFunctionName: "localBounds3dPolygon" | "bounds3dPolygon" | "aabb";
+        _triggerPolygonFunctionName: import("../../export/exports.js").IgeTriggerPolygonFunctionName;
         _compositeCache: boolean;
         _compositeParent: boolean;
         _anchor: import("../../export/exports.js").IgePoint2d;
@@ -249,7 +250,7 @@ export declare const WithUiStyleMixin: <BaseClassType extends Mixin<IgeObject>>(
         updateTransform(): void;
         aabb(recalculate?: boolean, inverse?: boolean): import("../../export/exports.js").IgeRect;
         _processBehaviours(type: import("../../export/exports.js").IgeBehaviourType, ...args: any[]): void;
-        parent(): IgeObject | import("../../export/exports.js").IgeTileMap2d | null | undefined;
+        parent(): IgeObject | import("../../export/exports.js").IgeTileMap2d<any> | null | undefined;
         parent(id: string): IgeObject | null;
         children(): IgeObject[];
         mount(obj: IgeObject): any;

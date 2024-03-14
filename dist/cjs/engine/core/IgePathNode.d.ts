@@ -1,12 +1,10 @@
 import { IgePoint3d } from "../../export/exports.js"
+import type { IgeCompassDirection } from "../../types/IgeCompassDirection.js"
 /**
  * Creates a new path node for use with the IgePathFinder class.
  */
 export declare class IgePathNode extends IgePoint3d {
     classId: string;
-    x: number;
-    y: number;
-    z: number;
     g: number;
     h: number;
     moveCost: number;
@@ -14,7 +12,7 @@ export declare class IgePathNode extends IgePoint3d {
     link?: IgePathNode;
     hash: string;
     listType: number;
-    direction: string;
+    direction: IgeCompassDirection | "";
     _mode: number;
     _distanceToNext: number;
     _absoluteTimeToNext: number;
@@ -23,14 +21,15 @@ export declare class IgePathNode extends IgePoint3d {
      * @constructor
      * @param {number} x
      * @param {number} y
+     * @param {number} z
      * @param {number} g
      * @param {number} moveCost
      * @param {number} heuristic
      * @param {Object} parent
      * @param {string} direction
      */
-    constructor(x: number, y: number, g: number, moveCost?: number, heuristic?: number, parent?: IgePathNode, direction?: string);
-    static fromPoint3d(point3d: IgePoint3d): IgePathNode;
+    constructor(x: number, y: number, z: number, g: number, moveCost?: number, heuristic?: number, parent?: IgePathNode, direction?: IgeCompassDirection | "");
+    static fromPoint3d(point3d: IgePoint3d, g?: number): IgePathNode;
     /**
      * Gets / sets the path node mode. The mode determines if the co-ordinates
      * will be in tile or absolute co-ordinates.

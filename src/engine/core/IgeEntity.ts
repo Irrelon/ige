@@ -29,6 +29,7 @@ import type { IgePoint } from "@/export/exports";
 import type { IgePolygonFunctionality } from "@/export/exports";
 import type { IgeSmartTexture } from "@/export/exports";
 import type { IgeTimeStreamPacket, IgeTimeStreamParsedTransformData } from "@/export/exports";
+import type { IgeTriggerPolygonFunctionName } from "@/types/IgeTriggerPolygonFunctionName";
 
 export interface IgeEntityTransformAccessor {
 	x: (val?: number) => number | IgeEntity;
@@ -68,6 +69,8 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 		// Set the default stream sections as just the transform data
 		this.streamSections(["transform"]);
 	}
+
+	customTriggerPolygon: () => IgePolygonFunctionality = () => new IgeRect();
 
 	_sortChildren: (comparatorFunction: (a: any, b: any) => number) => void = (compareFn) => {
 		return this._children.sort(compareFn);
@@ -1497,7 +1500,7 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 		}
 	}
 
-	_processTriggerHitTests () {
+	_processTriggerHitTests (mp?: IgePoint3d) {
 		if (!ige.engine._currentViewport) {
 			return false;
 		}
@@ -1506,13 +1509,11 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 			return true;
 		}
 
-		const mp = this.mousePosWorld();
-
 		if (!mp) {
-			return false;
+			mp = this.mousePosWorld();
 		}
 
-		let mouseTriggerPoly;
+		let mouseTriggerPoly: IgePolygonFunctionality;
 
 		// Use the trigger polygon function if defined
 		if (this._triggerPolygonFunctionName && this[this._triggerPolygonFunctionName]) {
@@ -2331,13 +2332,13 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 	/**
 	 * Sets the name of the function that will be called to return the polygon
 	 * used when determining if a pointer event occurs on this entity.
-	 * @param poly
+	 * @param funcName
 	 */
-	triggerPolygonFunctionName (poly: "aabb" | "bounds3dPolygon" | "localBounds3dPolygon"): this;
-	triggerPolygonFunctionName (): "aabb" | "bounds3dPolygon" | "localBounds3dPolygon";
-	triggerPolygonFunctionName (setting?: "aabb" | "bounds3dPolygon" | "localBounds3dPolygon") {
-		if (setting !== undefined) {
-			this._triggerPolygonFunctionName = setting;
+	triggerPolygonFunctionName (funcName: IgeTriggerPolygonFunctionName): this;
+	triggerPolygonFunctionName (): IgeTriggerPolygonFunctionName;
+	triggerPolygonFunctionName (funcName?: IgeTriggerPolygonFunctionName) {
+		if (funcName !== undefined) {
+			this._triggerPolygonFunctionName = funcName;
 			return this;
 		}
 
@@ -2690,14 +2691,14 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 
 			// Handle being passed a z co-ordinate
 			if (z !== undefined) {
-				finalZ = z * this._parent._tileWidth;
+				finalZ = z * this._parent._tileDepth;
 			} else {
 				finalZ = this._translate.z;
 			}
 
 			this.translateTo(
 				x * this._parent._tileWidth + this._parent._tileWidth / 2,
-				y * this._parent._tileHeight + this._parent._tileWidth / 2,
+				y * this._parent._tileHeight + this._parent._tileHeight / 2,
 				finalZ
 			);
 		} else {
@@ -2708,6 +2709,31 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 		}
 
 		return this;
+	}
+
+	tileX () {
+		if (this._parent && this._parent._tileWidth !== undefined) {
+			return Math.floor(this._translate.x / this._parent._tileWidth);
+		}
+	}
+
+	tileY () {
+		if (this._parent && this._parent._tileHeight !== undefined) {
+			return Math.floor(this._translate.y / this._parent._tileHeight);
+		}
+	}
+
+	tileZ (val: number): this;
+	tileZ (): number;
+	tileZ (val?: number) {
+		if (this._parent && val !== undefined) {
+			this._translate.z = val * this._parent._tileDepth;
+			return this;
+		}
+
+		if (this._parent && this._parent._tileDepth !== undefined) {
+			return this._translate.z / this._parent._tileDepth;
+		}
 	}
 
 	/**

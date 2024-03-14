@@ -1,49 +1,59 @@
-export * from "../types/global";
-export * from "../types/SyncEntry";
-export * from "../types/Mixin";
-export * from "../types/IgeTimeStream";
-export * from "../types/IgeTextureCellArray";
-export * from "../types/IgeTextureCell";
-export * from "../types/IgeTextureAnimation";
-export * from "../types/IgeStreaming";
-export * from "../types/IgeSmartTexture";
-export * from "../types/IgeSmartFilter";
-export * from "../types/IgeSceneGraphDataEntry";
-export * from "../types/IgeRouteDefinition";
-export * from "../types/IgeRepeatType";
-export * from "../types/IgePolygonFunctionality";
-export * from "../types/IgePointXY";
-export * from "../types/IgePoint";
-export * from "../types/IgeObjectWithValueProperty";
-export * from "../types/IgeNetworkStream";
-export * from "../types/IgeNetworkMessage";
-export * from "../types/IgeNetworkChat";
-export * from "../types/IgeIsReadyPromise";
-export * from "../types/IgeInputEventControl";
-export * from "../types/IgeInputEvent";
-export * from "../types/IgeImage";
-export * from "../types/IgeEntityBehaviour";
-export * from "../types/IgeDepthSortObject";
-export * from "../types/IgeConfig";
-export * from "../types/IgeChildSortFunction";
-export * from "../types/IgeCanvasRenderingContext2d";
-export * from "../types/IgeCanvas";
-export * from "../types/IgeCanRegisterById";
-export * from "../types/IgeCanRegisterByGroup";
-export * from "../types/IgeCanRegisterByCategory";
-export * from "../types/IgeCanRegisterAndCanDestroy";
-export * from "../types/IgeCanInit";
-export * from "../types/IgeCanBeDestroyed";
-export * from "../types/IgeCanAsyncLoad";
-export * from "../types/IgeCanAcceptComponents";
-export * from "../types/IgeBox2dFixtureDefShape";
-export * from "../types/IgeBox2dFixtureDef";
-export * from "../types/IgeBox2dContactSolverCallback";
-export * from "../types/IgeBox2dContactListenerCallback";
-export * from "../types/IgeBox2dBodyDef";
-export * from "../types/IgeBehaviourStore";
+//////////////////////////////////////////////////////////////////////
+// Types
+//////////////////////////////////////////////////////////////////////
+export * from "../types/AnyFunction";
 export * from "../types/GenericClass";
+export * from "../types/global";
+export * from "../types/IgeBehaviourStore";
+export * from "../types/IgeBox2dBodyDef";
+export * from "../types/IgeBox2dContactListenerCallback";
+export * from "../types/IgeBox2dContactSolverCallback";
+export * from "../types/IgeBox2dFixtureDef";
+export * from "../types/IgeBox2dFixtureDefShape";
+export * from "../types/IgeCanAcceptComponents";
+export * from "../types/IgeCanAsyncLoad";
+export * from "../types/IgeCanBeDestroyed";
+export * from "../types/IgeCanInit";
+export * from "../types/IgeCanRegisterAndCanDestroy";
+export * from "../types/IgeCanRegisterByCategory";
+export * from "../types/IgeCanRegisterByGroup";
+export * from "../types/IgeCanRegisterById";
+export * from "../types/IgeCanvas";
+export * from "../types/IgeCanvasRenderingContext2d";
+export * from "../types/IgeChildSortFunction";
+export * from "../types/IgeCompassDirection";
+export * from "../types/IgeConfig";
+export * from "../types/IgeDepthSortObject";
+export * from "../types/IgeEntityBehaviour";
+export * from "../types/IgeImage";
+export * from "../types/IgeInputEvent";
+export * from "../types/IgeInputEventControl";
+export * from "../types/IgeIsReadyPromise";
+export * from "../types/IgeNetworkChat";
+export * from "../types/IgeNetworkMessage";
+export * from "../types/IgeNetworkStream";
+export * from "../types/IgeObjectWithValueProperty";
+export * from "../types/IgePathFinderComparisonCallback";
+export * from "../types/IgePoint";
+export * from "../types/IgePointXY";
+export * from "../types/IgePolygonFunctionality";
+export * from "../types/IgeRepeatType";
+export * from "../types/IgeRouteDefinition";
+export * from "../types/IgeSceneGraphDataEntry";
+export * from "../types/IgeSmartFilter";
+export * from "../types/IgeSmartTexture";
+export * from "../types/IgeStreaming";
+export * from "../types/IgeTextureAnimation";
+export * from "../types/IgeTextureCell";
+export * from "../types/IgeTextureCellArray";
+export * from "../types/IgeTimeStream";
+export * from "../types/IgeTriggerPolygonFunctionName";
+export * from "../types/Mixin";
+export * from "../types/SyncEntry";
 
+//////////////////////////////////////////////////////////////////////
+// Enums
+//////////////////////////////////////////////////////////////////////
 export * from "../enums/IgeTextureRenderMode";
 export * from "../enums/IgeStreamMode";
 export * from "../enums/IgeNetworkConstants";
@@ -59,8 +69,14 @@ export * from "../enums/IgeBox2dFixtureShapeType";
 export * from "../enums/IgeBox2dBodyType";
 export * from "../enums/IgeBehaviourType";
 
+//////////////////////////////////////////////////////////////////////
+// Class Store
+//////////////////////////////////////////////////////////////////////
 export * from "../engine/igeClassStore";
 
+//////////////////////////////////////////////////////////////////////
+// Engine Main Classes
+//////////////////////////////////////////////////////////////////////
 export * from "../engine/core/_global";
 export * from "../engine/core/config";
 export * from "../engine/core/IgeBaseClass";
@@ -110,7 +126,6 @@ export * from "../engine/core/IgeUiEntity";
 export * from "../engine/core/IgeUiElement";
 export * from "../engine/core/IgeInterval";
 export * from "../engine/core/IgeTimeout";
-/////////////////////////////////////////////////////////////////////
 
 export * from "../engine/primitives/IgeCuboid";
 export * from "../engine/network/server/IgeNetIoServerController";
@@ -119,6 +134,9 @@ export * from "../engine/network/chat/IgeChatServer";
 
 export * from "../engine/network/chat/IgeChatClient";
 
+//////////////////////////////////////////////////////////////////////
+// Mixins
+//////////////////////////////////////////////////////////////////////
 export * from "../engine/mixins/IgeUiStyleMixin";
 export * from "../engine/mixins/IgeUiPositionMixin";
 export * from "../engine/mixins/IgeExampleMixin";
@@ -126,6 +144,9 @@ export * from "../engine/mixins/IgeEventingMixin";
 export * from "../engine/mixins/IgeDataMixin";
 export * from "../engine/mixins/IgeComponentMixin";
 
+//////////////////////////////////////////////////////////////////////
+// Image Filters
+//////////////////////////////////////////////////////////////////////
 export * from "../engine/filters/threshold";
 export * from "../engine/filters/sobel";
 export * from "../engine/filters/sharpen";
@@ -141,6 +162,9 @@ export * from "../engine/filters/colorOverlay";
 export * from "../engine/filters/brighten";
 export * from "../engine/filters/blur";
 
+//////////////////////////////////////////////////////////////////////
+// Some More Engine Classes (export order matters to avoid circular refs)
+//////////////////////////////////////////////////////////////////////
 export * from "../engine/core/IgeViewport";
 export * from "../engine/core/IgeUiManagerController";
 
@@ -171,6 +195,9 @@ export * from "../engine/core/IgeCellSheet";
 
 export * from "../engine/core/IgeBaseScene";
 
+//////////////////////////////////////////////////////////////////////
+// Components
+//////////////////////////////////////////////////////////////////////
 export * from "../engine/components/stackTrace/lib_stack";
 export * from "../engine/components/physics/box2d/lib/exports";
 export * from "../engine/components/physics/box2d/igeBox2dContactHelpers";
@@ -194,6 +221,9 @@ export * from "../engine/components/IgeEntityManagerComponent";
 export * from "../engine/audio/IgeAudioItem";
 export * from "../engine/audio/IgeAudioEntity";
 
+//////////////////////////////////////////////////////////////////////
+// UI Element Classes
+//////////////////////////////////////////////////////////////////////
 export * from "../engine/ui/IgeUiWindow";
 export * from "../engine/ui/IgeUiTooltip";
 export * from "../engine/ui/IgeUiTogglePanel";
@@ -209,5 +239,9 @@ export * from "../engine/ui/IgeUiInlineFlow";
 export * from "../engine/ui/IgeUiDropDown";
 export * from "../engine/ui/IgeUiColumn";
 export * from "../engine/ui/IgeUiAutoFlow";
+
+//////////////////////////////////////////////////////////////////////
+// Finally, the core Ige class and then the global class instance
+//////////////////////////////////////////////////////////////////////
 export * from "../engine/core/Ige";
 export * from "../engine/instance";

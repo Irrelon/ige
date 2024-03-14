@@ -4,11 +4,11 @@ import { registerClass } from "@/export/exports";
 /**
  * Creates a new map that has two dimensions (x and y) to its data.
  */
-export class IgeMap2d extends IgeBaseClass {
+export class IgeMap2d<MapDataType = any> extends IgeBaseClass {
 	classId = "IgeMap2d";
-	_mapData: any[][];
+	_mapData: MapDataType[][];
 
-	constructor (data?: any[][]) {
+	constructor (data?: MapDataType[][]) {
 		super();
 		this._mapData = data || [];
 	}
@@ -20,24 +20,25 @@ export class IgeMap2d extends IgeBaseClass {
 	 * @param {*=} val The data to set on the map tile co-ordinate.
 	 * @return {*}
 	 */
-	tileData (x?: number, y?: number, val?: any) {
-		if (x !== undefined && y !== undefined) {
-			if (val !== undefined) {
-				// Assign a value
-				this._mapData[y] = this._mapData[y] || [];
-				this._mapData[y][x] = val;
-				return this;
-			} else {
-				// No assignment so see if we have data to return
-				if (this._mapData[y]) {
-					return this._mapData[y][x];
-				}
-			}
+	tileData (x: number, y: number, val: MapDataType): this;
+	tileData (x: number, y: number): MapDataType;
+	tileData (): undefined;
+	tileData (x?: number, y?: number, val?: MapDataType) {
+		if ((x === undefined || y === undefined)) {
+			return;
 		}
 
-		// Either no x, y was specified or there was
-		// no data at the x, y so return undefined
-		return undefined;
+		if (val !== undefined) {
+			// Assign a value
+			this._mapData[y] = this._mapData[y] || [];
+			this._mapData[y][x] = val;
+			return this;
+		}
+
+		// No assignment so see if we have data to return
+		if (this._mapData[y]) {
+			return this._mapData[y][x];
+		}
 	}
 
 	/**
@@ -66,7 +67,7 @@ export class IgeMap2d extends IgeBaseClass {
 	 * @param height
 	 */
 	collision (x?: number, y?: number, width?: number, height?: number) {
-		let xi, yi;
+		let xi: number, yi: number;
 
 		if (width === undefined) {
 			width = 1;
@@ -97,8 +98,8 @@ export class IgeMap2d extends IgeBaseClass {
 	 * @param height
 	 * @param data
 	 */
-	collisionWith (x?: number, y?: number, width?: number, height?: number, data?: any) {
-		let xi, yi;
+	collisionWith (x?: number, y?: number, width?: number, height?: number, data?: MapDataType) {
+		let xi: number, yi: number;
 
 		if (width === undefined) {
 			width = 1;
@@ -130,10 +131,10 @@ export class IgeMap2d extends IgeBaseClass {
 	 * @param height
 	 * @param data
 	 */
-	collisionWithOnly (x?: number, y?: number, width?: number, height?: number, data?: any) {
-		let xi,
-			yi,
-			tileData,
+	collisionWithOnly (x?: number, y?: number, width?: number, height?: number, data?: MapDataType) {
+		let xi: number,
+			yi: number,
+			tileData: MapDataType,
 			withData = false;
 
 		if (width === undefined) {
@@ -168,10 +169,10 @@ export class IgeMap2d extends IgeBaseClass {
 	 * @param startY The start y co-ordinate of the data.
 	 * @return {*}
 	 */
-	mapData(val: number[][], startX: number, startY: number): this;
-	mapData(val: number[][]): this;
-	mapData(): number[][];
-	mapData (val?: number[][], startX?: number, startY?: number) {
+	mapData (val: MapDataType[][], startX: number, startY: number): this;
+	mapData (val: MapDataType[][]): this;
+	mapData (): MapDataType[][];
+	mapData (val?: MapDataType[][], startX?: number, startY?: number) {
 		if (val === undefined) {
 			return this._mapData;
 		}
@@ -193,7 +194,7 @@ export class IgeMap2d extends IgeBaseClass {
 
 	sortedMapDataAsArray () {
 		const data = this.mapData();
-		const finalData: number[][] = [];
+		const finalData: MapDataType[][] = [];
 
 		const yArr = this._sortKeys(data);
 
@@ -227,7 +228,7 @@ export class IgeMap2d extends IgeBaseClass {
 
 	translateDataBy (transX: number, transY: number) {
 		const yArr = this.mapData();
-		const newArr: number[][] = [];
+		const newArr: MapDataType[][] = [];
 
 		for (let y = 0; y < yArr.length; y++) {
 			const xArr = yArr[y];

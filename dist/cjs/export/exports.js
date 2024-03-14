@@ -14,51 +14,61 @@ var __exportStar = (this && this.__exportStar) || function(m, exports) {
     for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-__exportStar(require("../types/global"), exports);
-__exportStar(require("../types/SyncEntry"), exports);
-__exportStar(require("../types/Mixin"), exports);
-__exportStar(require("../types/IgeTimeStream"), exports);
-__exportStar(require("../types/IgeTextureCellArray"), exports);
-__exportStar(require("../types/IgeTextureCell"), exports);
-__exportStar(require("../types/IgeTextureAnimation"), exports);
-__exportStar(require("../types/IgeStreaming"), exports);
-__exportStar(require("../types/IgeSmartTexture"), exports);
-__exportStar(require("../types/IgeSmartFilter"), exports);
-__exportStar(require("../types/IgeSceneGraphDataEntry"), exports);
-__exportStar(require("../types/IgeRouteDefinition"), exports);
-__exportStar(require("../types/IgeRepeatType"), exports);
-__exportStar(require("../types/IgePolygonFunctionality"), exports);
-__exportStar(require("../types/IgePointXY"), exports);
-__exportStar(require("../types/IgePoint"), exports);
-__exportStar(require("../types/IgeObjectWithValueProperty"), exports);
-__exportStar(require("../types/IgeNetworkStream"), exports);
-__exportStar(require("../types/IgeNetworkMessage"), exports);
-__exportStar(require("../types/IgeNetworkChat"), exports);
-__exportStar(require("../types/IgeIsReadyPromise"), exports);
-__exportStar(require("../types/IgeInputEventControl"), exports);
-__exportStar(require("../types/IgeInputEvent"), exports);
-__exportStar(require("../types/IgeImage"), exports);
-__exportStar(require("../types/IgeEntityBehaviour"), exports);
-__exportStar(require("../types/IgeDepthSortObject"), exports);
-__exportStar(require("../types/IgeConfig"), exports);
-__exportStar(require("../types/IgeChildSortFunction"), exports);
-__exportStar(require("../types/IgeCanvasRenderingContext2d"), exports);
-__exportStar(require("../types/IgeCanvas"), exports);
-__exportStar(require("../types/IgeCanRegisterById"), exports);
-__exportStar(require("../types/IgeCanRegisterByGroup"), exports);
-__exportStar(require("../types/IgeCanRegisterByCategory"), exports);
-__exportStar(require("../types/IgeCanRegisterAndCanDestroy"), exports);
-__exportStar(require("../types/IgeCanInit"), exports);
-__exportStar(require("../types/IgeCanBeDestroyed"), exports);
-__exportStar(require("../types/IgeCanAsyncLoad"), exports);
-__exportStar(require("../types/IgeCanAcceptComponents"), exports);
-__exportStar(require("../types/IgeBox2dFixtureDefShape"), exports);
-__exportStar(require("../types/IgeBox2dFixtureDef"), exports);
-__exportStar(require("../types/IgeBox2dContactSolverCallback"), exports);
-__exportStar(require("../types/IgeBox2dContactListenerCallback"), exports);
-__exportStar(require("../types/IgeBox2dBodyDef"), exports);
-__exportStar(require("../types/IgeBehaviourStore"), exports);
+//////////////////////////////////////////////////////////////////////
+// Types
+//////////////////////////////////////////////////////////////////////
+__exportStar(require("../types/AnyFunction"), exports);
 __exportStar(require("../types/GenericClass"), exports);
+__exportStar(require("../types/global"), exports);
+__exportStar(require("../types/IgeBehaviourStore"), exports);
+__exportStar(require("../types/IgeBox2dBodyDef"), exports);
+__exportStar(require("../types/IgeBox2dContactListenerCallback"), exports);
+__exportStar(require("../types/IgeBox2dContactSolverCallback"), exports);
+__exportStar(require("../types/IgeBox2dFixtureDef"), exports);
+__exportStar(require("../types/IgeBox2dFixtureDefShape"), exports);
+__exportStar(require("../types/IgeCanAcceptComponents"), exports);
+__exportStar(require("../types/IgeCanAsyncLoad"), exports);
+__exportStar(require("../types/IgeCanBeDestroyed"), exports);
+__exportStar(require("../types/IgeCanInit"), exports);
+__exportStar(require("../types/IgeCanRegisterAndCanDestroy"), exports);
+__exportStar(require("../types/IgeCanRegisterByCategory"), exports);
+__exportStar(require("../types/IgeCanRegisterByGroup"), exports);
+__exportStar(require("../types/IgeCanRegisterById"), exports);
+__exportStar(require("../types/IgeCanvas"), exports);
+__exportStar(require("../types/IgeCanvasRenderingContext2d"), exports);
+__exportStar(require("../types/IgeChildSortFunction"), exports);
+__exportStar(require("../types/IgeCompassDirection"), exports);
+__exportStar(require("../types/IgeConfig"), exports);
+__exportStar(require("../types/IgeDepthSortObject"), exports);
+__exportStar(require("../types/IgeEntityBehaviour"), exports);
+__exportStar(require("../types/IgeImage"), exports);
+__exportStar(require("../types/IgeInputEvent"), exports);
+__exportStar(require("../types/IgeInputEventControl"), exports);
+__exportStar(require("../types/IgeIsReadyPromise"), exports);
+__exportStar(require("../types/IgeNetworkChat"), exports);
+__exportStar(require("../types/IgeNetworkMessage"), exports);
+__exportStar(require("../types/IgeNetworkStream"), exports);
+__exportStar(require("../types/IgeObjectWithValueProperty"), exports);
+__exportStar(require("../types/IgePathFinderComparisonCallback"), exports);
+__exportStar(require("../types/IgePoint"), exports);
+__exportStar(require("../types/IgePointXY"), exports);
+__exportStar(require("../types/IgePolygonFunctionality"), exports);
+__exportStar(require("../types/IgeRepeatType"), exports);
+__exportStar(require("../types/IgeRouteDefinition"), exports);
+__exportStar(require("../types/IgeSceneGraphDataEntry"), exports);
+__exportStar(require("../types/IgeSmartFilter"), exports);
+__exportStar(require("../types/IgeSmartTexture"), exports);
+__exportStar(require("../types/IgeStreaming"), exports);
+__exportStar(require("../types/IgeTextureAnimation"), exports);
+__exportStar(require("../types/IgeTextureCell"), exports);
+__exportStar(require("../types/IgeTextureCellArray"), exports);
+__exportStar(require("../types/IgeTimeStream"), exports);
+__exportStar(require("../types/IgeTriggerPolygonFunctionName"), exports);
+__exportStar(require("../types/Mixin"), exports);
+__exportStar(require("../types/SyncEntry"), exports);
+//////////////////////////////////////////////////////////////////////
+// Enums
+//////////////////////////////////////////////////////////////////////
 __exportStar(require("../enums/IgeTextureRenderMode"), exports);
 __exportStar(require("../enums/IgeStreamMode"), exports);
 __exportStar(require("../enums/IgeNetworkConstants"), exports);
@@ -73,7 +83,13 @@ __exportStar(require("../enums/IgeBox2dTimingMode"), exports);
 __exportStar(require("../enums/IgeBox2dFixtureShapeType"), exports);
 __exportStar(require("../enums/IgeBox2dBodyType"), exports);
 __exportStar(require("../enums/IgeBehaviourType"), exports);
+//////////////////////////////////////////////////////////////////////
+// Class Store
+//////////////////////////////////////////////////////////////////////
 __exportStar(require("../engine/igeClassStore"), exports);
+//////////////////////////////////////////////////////////////////////
+// Engine Main Classes
+//////////////////////////////////////////////////////////////////////
 __exportStar(require("../engine/core/_global"), exports);
 __exportStar(require("../engine/core/config"), exports);
 __exportStar(require("../engine/core/IgeBaseClass"), exports);
@@ -123,18 +139,23 @@ __exportStar(require("../engine/core/IgeUiEntity"), exports);
 __exportStar(require("../engine/core/IgeUiElement"), exports);
 __exportStar(require("../engine/core/IgeInterval"), exports);
 __exportStar(require("../engine/core/IgeTimeout"), exports);
-/////////////////////////////////////////////////////////////////////
 __exportStar(require("../engine/primitives/IgeCuboid"), exports);
 __exportStar(require("../engine/network/server/IgeNetIoServerController"), exports);
 __exportStar(require("../engine/network/client/IgeNetIoClientController"), exports);
 __exportStar(require("../engine/network/chat/IgeChatServer"), exports);
 __exportStar(require("../engine/network/chat/IgeChatClient"), exports);
+//////////////////////////////////////////////////////////////////////
+// Mixins
+//////////////////////////////////////////////////////////////////////
 __exportStar(require("../engine/mixins/IgeUiStyleMixin"), exports);
 __exportStar(require("../engine/mixins/IgeUiPositionMixin"), exports);
 __exportStar(require("../engine/mixins/IgeExampleMixin"), exports);
 __exportStar(require("../engine/mixins/IgeEventingMixin"), exports);
 __exportStar(require("../engine/mixins/IgeDataMixin"), exports);
 __exportStar(require("../engine/mixins/IgeComponentMixin"), exports);
+//////////////////////////////////////////////////////////////////////
+// Image Filters
+//////////////////////////////////////////////////////////////////////
 __exportStar(require("../engine/filters/threshold"), exports);
 __exportStar(require("../engine/filters/sobel"), exports);
 __exportStar(require("../engine/filters/sharpen"), exports);
@@ -149,6 +170,9 @@ __exportStar(require("../engine/filters/convolute"), exports);
 __exportStar(require("../engine/filters/colorOverlay"), exports);
 __exportStar(require("../engine/filters/brighten"), exports);
 __exportStar(require("../engine/filters/blur"), exports);
+//////////////////////////////////////////////////////////////////////
+// Some More Engine Classes (export order matters to avoid circular refs)
+//////////////////////////////////////////////////////////////////////
 __exportStar(require("../engine/core/IgeViewport"), exports);
 __exportStar(require("../engine/core/IgeUiManagerController"), exports);
 __exportStar(require("../engine/core/IgeTweenController"), exports);
@@ -171,6 +195,9 @@ __exportStar(require("../engine/core/IgeFontEntity"), exports);
 __exportStar(require("../engine/core/IgeCollisionMap2d"), exports);
 __exportStar(require("../engine/core/IgeCellSheet"), exports);
 __exportStar(require("../engine/core/IgeBaseScene"), exports);
+//////////////////////////////////////////////////////////////////////
+// Components
+//////////////////////////////////////////////////////////////////////
 __exportStar(require("../engine/components/stackTrace/lib_stack"), exports);
 __exportStar(require("../engine/components/physics/box2d/lib/exports"), exports);
 __exportStar(require("../engine/components/physics/box2d/igeBox2dContactHelpers"), exports);
@@ -191,6 +218,9 @@ __exportStar(require("../engine/components/IgeGamePadComponent"), exports);
 __exportStar(require("../engine/components/IgeEntityManagerComponent"), exports);
 __exportStar(require("../engine/audio/IgeAudioItem"), exports);
 __exportStar(require("../engine/audio/IgeAudioEntity"), exports);
+//////////////////////////////////////////////////////////////////////
+// UI Element Classes
+//////////////////////////////////////////////////////////////////////
 __exportStar(require("../engine/ui/IgeUiWindow"), exports);
 __exportStar(require("../engine/ui/IgeUiTooltip"), exports);
 __exportStar(require("../engine/ui/IgeUiTogglePanel"), exports);
@@ -206,5 +236,8 @@ __exportStar(require("../engine/ui/IgeUiInlineFlow"), exports);
 __exportStar(require("../engine/ui/IgeUiDropDown"), exports);
 __exportStar(require("../engine/ui/IgeUiColumn"), exports);
 __exportStar(require("../engine/ui/IgeUiAutoFlow"), exports);
+//////////////////////////////////////////////////////////////////////
+// Finally, the core Ige class and then the global class instance
+//////////////////////////////////////////////////////////////////////
 __exportStar(require("../engine/core/Ige"), exports);
 __exportStar(require("../engine/instance"), exports);

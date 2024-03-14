@@ -175,6 +175,8 @@ export class IgeUiLabel extends IgeUiElement {
 	 * @param fontSheet
 	 * @return {*}
 	 */
+	fontSheet (fontSheet: IgeFontSheet): this;
+	fontSheet (): IgeFontSheet | undefined;
 	fontSheet (fontSheet?: IgeFontSheet) {
 		if (fontSheet !== undefined) {
 			this._fontSheet = fontSheet;
@@ -256,7 +258,7 @@ export class IgeUiLabel extends IgeUiElement {
 	update (tickDelta: number) {
 		if (this._widthFromText && this._valueChanged !== this._value) {
 			this._valueChanged = false;
-			this.width(this._fontEntity.measureTextWidth(this._value) + this._paddingLeft + this._paddingRight);
+			this.width(this._fontEntity.measureTextWidth(this._value || " ") + this._paddingLeft + this._paddingRight);
 		}
 
 		super.update(tickDelta);

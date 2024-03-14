@@ -1,13 +1,11 @@
 import { IgePoint3d } from "@/export/exports";
+import type { IgeCompassDirection } from "@/types/IgeCompassDirection";
 
 /**
  * Creates a new path node for use with the IgePathFinder class.
  */
 export class IgePathNode extends IgePoint3d {
 	classId = "IgePathNode";
-	x: number;
-	y: number;
-	z: number;
 	g: number;
 	h: number;
 	moveCost: number;
@@ -15,7 +13,7 @@ export class IgePathNode extends IgePoint3d {
 	link?: IgePathNode;
 	hash: string;
 	listType: number;
-	direction: string;
+	direction: IgeCompassDirection | "";
 	_mode: number;
 	_distanceToNext: number = 0;
 	_absoluteTimeToNext: number = 0;
@@ -25,6 +23,7 @@ export class IgePathNode extends IgePoint3d {
 	 * @constructor
 	 * @param {number} x
 	 * @param {number} y
+	 * @param {number} z
 	 * @param {number} g
 	 * @param {number} moveCost
 	 * @param {number} heuristic
@@ -34,17 +33,18 @@ export class IgePathNode extends IgePoint3d {
 	constructor (
 		x: number,
 		y: number,
+		z: number,
 		g: number,
 		moveCost: number = 0,
 		heuristic: number = 0,
 		parent?: IgePathNode,
-		direction: string = ""
+		direction: IgeCompassDirection | "" = ""
 	) {
 		super();
 
 		this.x = x;
 		this.y = y;
-		this.z = 0; // Compat with IgePoint3d
+		this.z = z;
 		this.g = g + moveCost; // Cost of moving from the start point along the path to this node (parentNode.g + moveCost)
 		this.h = heuristic; // Rough distance to target node
 		this.moveCost = moveCost;
@@ -56,8 +56,8 @@ export class IgePathNode extends IgePoint3d {
 		this._mode = 0;
 	}
 
-	static fromPoint3d (point3d: IgePoint3d): IgePathNode {
-		return new IgePathNode(point3d.x, point3d.y, point3d.z);
+	static fromPoint3d (point3d: IgePoint3d, g: number = 0): IgePathNode {
+		return new IgePathNode(point3d.x, point3d.y, point3d.z, g);
 	}
 
 	/**

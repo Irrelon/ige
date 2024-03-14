@@ -13,6 +13,18 @@ import type { IgeTileMap2d } from "@/export/exports";
 import { distance } from "@/export/exports";
 import type { IgeCanvasRenderingContext2d } from "@/export/exports";
 import type { IgeEntityBehaviourMethod } from "@/export/exports";
+import type { IgeCompassDirection } from "@/types/IgeCompassDirection";
+
+const isoDirectionMap: { [key: string]: IgeCompassDirection } = {
+	"E": "SE",
+	"S": "SW",
+	"W": "NW",
+	"N": "NE",
+	"NE": "E",
+	"SW": "W",
+	"NW": "N",
+	"SE": "S"
+};
 
 /**
  * Handles entity path traversal. This component is supposed to be added
@@ -72,13 +84,13 @@ export class IgePathComponent extends IgeComponent {
 	 * @param {IgeTileMap2d} val The tileMap to use for path calculations.
 	 * @returns {*}
 	 */
-	tileMap = (val?: IgeTileMap2d) => {
-		if (val !== undefined) {
-			this._tileMap = val;
-			return this;
+	tileMap = (val?: IgeTileMap2d): IgeTileMap2d | this | undefined => {
+		if (val === undefined) {
+			return this._tileMap;
 		}
 
-		return this._tileMap;
+		this._tileMap = val;
+		return this;
 	};
 
 	/**
@@ -86,13 +98,13 @@ export class IgePathComponent extends IgeComponent {
 	 * @param {IgePathFinder} val The pathfinder class instance to use to generate paths.
 	 * @returns {*}
 	 */
-	finder = (val?: IgePathFinder) => {
-		if (val !== undefined) {
-			this._finder = val;
-			return this;
+	finder = (val?: IgePathFinder): IgePathFinder | this | undefined => {
+		if (val === undefined) {
+			return this._finder;
 		}
 
-		return this._finder;
+		this._finder = val;
+		return this;
 	};
 
 	/**
@@ -180,10 +192,9 @@ export class IgePathComponent extends IgeComponent {
 	 * @param {number} toX The x tile to path to.
 	 * @param {number} toY The y tile to path to.
 	 * @param {number} toZ The z tile to path to.
-	 * @param {boolean=} findNearest If the destination is unreachable, when set to
+	 * @param {boolean} [findNearest=false] If the destination is unreachable, when set to
 	 * true this option will allow the pathfinder to return the closest path to the
 	 * destination tile.
-	 * @returns {*}
 	 */
 	set = (
 		fromX: number,
@@ -193,7 +204,7 @@ export class IgePathComponent extends IgeComponent {
 		toY: number,
 		toZ: number,
 		findNearest: boolean = false
-	) => {
+	): this => {
 		// Clear existing path
 		this.clear();
 
@@ -203,8 +214,8 @@ export class IgePathComponent extends IgeComponent {
 		// Create a new path
 		const path = this._finder.generate(
 			this._tileMap,
-			new IgePathNode(fromX, fromY, fromZ),
-			new IgePathNode(toX, toY, toZ),
+			new IgePathNode(fromX, fromY, fromZ, 0),
+			new IgePathNode(toX, toY, toZ, 0),
 			this._tileChecker,
 			this._allowSquare,
 			this._allowDiagonal,
@@ -216,8 +227,25 @@ export class IgePathComponent extends IgeComponent {
 		return this;
 	};
 
-	add = (x: number, y: number, z: number, findNearest: boolean = false) => {
-		if (!this._finder) throw new Error("No path finder (IgePathFinder) assigned to IgePathComponent");
+
+	/**
+	 * Adds a new location to path to. If an existing path is already in place,
+	 * this will add the new location to the end of the path rather than
+	 * overwriting the existing one.
+	 *
+	 * @param {number} x - The x-coordinate of the new path.
+	 * @param {number} y - The y-coordinate of the new path.
+	 * @param {number} z - The z-coordinate of the new path.
+	 * @param {boolean} [allowInvalidDestination=false] - If true, the closest
+	 * valid destination will be used if the specified destination is not
+	 * valid, e.g. pathing past a wall tile might not be allowed so your
+	 * character might want to be moved as close to the wall tile as is allowed.
+	 * @returns {this} - The current instance of the component.
+	 * @throws {Error} If no pathfinder (IgePathFinder) is assigned to IgePathComponent.
+	 * @throws {Error} If no tile map (IgeTileMap2d) is assigned to IgePathComponent.
+	 */
+	add = (x: number, y: number, z: number, allowInvalidDestination: boolean = false): this => {
+		if (!this._finder) throw new Error("No pathfinder (IgePathFinder) assigned to IgePathComponent");
 		if (!this._tileMap) throw new Error("No tile map (IgeTileMap2d) assigned to IgePathComponent");
 
 		// Get the endPoint of the current path
@@ -234,11 +262,11 @@ export class IgePathComponent extends IgeComponent {
 		const path = this._finder.generate(
 			this._tileMap,
 			endPoint,
-			new IgePathNode(x, y, z),
+			new IgePathNode(x, y, z, 0),
 			this._tileChecker,
 			this._allowSquare,
 			this._allowDiagonal,
-			findNearest
+			allowInvalidDestination
 		);
 
 		if (shift) {
@@ -252,17 +280,18 @@ export class IgePathComponent extends IgeComponent {
 	};
 
 	/**
-	 * Sets a new destination for a path including the point currently being traversed if a path is active
-	 * This creates a smooth transition and flow of pointComplete events between the old and new paths
+	 * Sets a new destination for a path including the point currently being
+	 * traversed if a path is active. This creates a smooth transition and
+	 * flow of pointComplete events between the old and new paths
 	 * @param {number} x The x tile to path to.
 	 * @param {number} y The y tile to path to.
 	 * @param {number} z The z tile to path to.
-	 * @param {boolean=} findNearest If the destination is unreachable, when set to
-	 * true this option will allow the pathfinder to return the closest path to the
-	 * destination tile.
-	 * @returns {*}
+	 * @param {boolean} [allowInvalidDestination=false] - If true, the closest
+	 * valid destination will be used if the specified destination is not
+	 * valid, e.g. pathing past a wall tile might not be allowed so your
+	 * character might want to be moved as close to the wall tile as is allowed.
 	 */
-	reRoute = (x: number, y: number, z: number, findNearest: boolean = false) => {
+	reRoute = (x: number, y: number, z: number, allowInvalidDestination: boolean = false): this => {
 		if (!this._finder) throw new Error("No path finder (IgePathFinder) assigned to IgePathComponent");
 		if (!this._tileMap) throw new Error("No tile map (IgeTileMap2d) assigned to IgePathComponent");
 
@@ -280,11 +309,11 @@ export class IgePathComponent extends IgeComponent {
 		const path = this._finder.generate(
 			this._tileMap,
 			toPoint,
-			new IgePathNode(x, y, z),
+			new IgePathNode(x, y, z, 0),
 			this._tileChecker,
 			this._allowSquare,
 			this._allowDiagonal,
-			findNearest
+			allowInvalidDestination
 		);
 
 		// Do nothing if the new path is empty or invalid
@@ -300,19 +329,16 @@ export class IgePathComponent extends IgeComponent {
 
 	/**
 	 * Adds a path array containing path points (IgePoint3d instances) to the points queue.
-	 * @param {Array} path An array of path points.
+	 * @param {IgePathNode[]} [path] An array of path points.
 	 * @return {*}
 	 */
-	addPoints = (path?: IgePathNode[]) => {
-		if (path !== undefined) {
-			// Check the path array has items in it!
-			if (path.length) {
-				this._points = this._points.concat(path);
-				this._calculatePathData();
-			} else {
-				this.log("Cannot add an empty path to the path queue!", "warning");
-			}
+	addPoints = (path?: IgePathNode[]): this => {
+		if (!path || !path.length) {
+			return this;
 		}
+
+		this._points = this._points.concat(path);
+		this._calculatePathData();
 
 		return this;
 	};
@@ -321,7 +347,7 @@ export class IgePathComponent extends IgeComponent {
 	 * Gets the path node point that the entity is travelling from.
 	 * @return {IgePathNode} A new point representing the travelled from node.
 	 */
-	getFromPoint = () => {
+	getFromPoint = (): IgePathNode => {
 		return this._points[this._currentPointFrom];
 	};
 
@@ -329,7 +355,7 @@ export class IgePathComponent extends IgeComponent {
 	 * Gets the path node point that the entity is travelling to.
 	 * @return {IgePathNode} A new point representing the travelling to node.
 	 */
-	getToPoint = () => {
+	getToPoint = (): IgePathNode => {
 		return this._points[this._currentPointTo];
 	};
 
@@ -347,57 +373,25 @@ export class IgePathComponent extends IgeComponent {
 	 * @return {string} A string such as N, S, E, W, NW, NE, SW, SE.
 	 * If there is currently no direction then the return value is a blank string.
 	 */
-	getDirection = () => {
-		let dir: string = "";
-
-		if (!this._finished) {
-			const cell = this.getToPoint();
-
-			if (cell) {
-				dir = cell.direction;
-
-				if (this._entity._renderMode === IgeEntityRenderMode.iso) {
-					// Convert direction for isometric
-					switch (dir) {
-					case "E":
-						dir = "SE";
-						break;
-
-					case "S":
-						dir = "SW";
-						break;
-
-					case "W":
-						dir = "NW";
-						break;
-
-					case "N":
-						dir = "NE";
-						break;
-
-					case "NE":
-						dir = "E";
-						break;
-
-					case "SW":
-						dir = "W";
-						break;
-
-					case "NW":
-						dir = "N";
-						break;
-
-					case "SE":
-						dir = "S";
-						break;
-					}
-				}
-			}
-		} else {
-			dir = "";
+	getDirection = (): IgeCompassDirection | "" => {
+		if (this._finished) {
+			return "";
 		}
 
-		return dir;
+		const cell = this.getToPoint();
+
+		if (cell) {
+			let dir = cell.direction;
+
+			if (this._entity._renderMode === IgeEntityRenderMode.iso) {
+				// Convert direction for isometric
+				dir = isoDirectionMap[dir];
+			}
+
+			return dir;
+		}
+
+		return "";
 	};
 
 	/**
@@ -473,7 +467,7 @@ export class IgePathComponent extends IgeComponent {
 	 * @return {*}
 	 */
 	start = (startTime?: number) => {
-		let startPoint;
+		let startPoint: IgePathNode;
 
 		if (!this._active) {
 			this._active = true;
@@ -488,7 +482,7 @@ export class IgePathComponent extends IgeComponent {
 				this._currentPointTo = 1;
 
 				startPoint = this._points[0];
-				this.emit("started", this._entity, startPoint.x, startPoint.y, this._startTime);
+				this.emit("started", this._entity, new IgePoint3d(startPoint.x, startPoint.y, startPoint.z), this._startTime);
 			}
 		} else {
 			this._finished = false;
@@ -632,11 +626,11 @@ export class IgePathComponent extends IgeComponent {
 	};
 
 	multiplyPoint = (point: IgePathNode | IgePoint3d) => {
-		return point.multiply(this._entity._parent._tileWidth, this._entity._parent._tileHeight, 1);
+		return point.multiply(this._entity._parent._tileWidth, this._entity._parent._tileHeight, this._entity._parent._tileDepth || 1);
 	};
 
 	dividePoint = (point: IgePathNode | IgePoint3d) => {
-		return point.divide(this._entity._parent._tileWidth, this._entity._parent._tileHeight, 1);
+		return point.divide(this._entity._parent._tileWidth, this._entity._parent._tileHeight, this._entity._parent._tileDepth || 1);
 	};
 
 	transformPoint = (point: IgePathNode | IgePoint3d) => {
@@ -714,6 +708,7 @@ export class IgePathComponent extends IgeComponent {
 						p = this._nextPointToProcess++;
 						effectiveTime = this._startTime + pointArr[p]._absoluteTimeToNext;
 
+						const pointCurrent = pointArr[p];
 						pointNext = pointArr[p + 1];
 						newPoint = this.multiplyPoint(pointNext);
 						newPoint = this.transformPoint(newPoint);
@@ -724,10 +719,8 @@ export class IgePathComponent extends IgeComponent {
 						this.emit(
 							"pointComplete",
 							this._entity,
-							pointArr[p].x,
-							pointArr[p].y,
-							pointNext.x,
-							pointNext.y,
+							new IgePoint3d(pointCurrent.x, pointCurrent.y, pointCurrent.z),
+							new IgePoint3d(pointNext.x, pointNext.y, pointNext.z),
 							p,
 							p + 1,
 							effectiveTime
@@ -747,16 +740,15 @@ export class IgePathComponent extends IgeComponent {
 					if (dynamicResult === true) {
 						// Re-assign the points to the new ones that the dynamic path
 						// spliced into our points array
+						const previousPointFrom = pointArr[this._previousPointFrom];
 						pointFrom = pointArr[this._currentPointFrom];
 						pointTo = pointArr[this._currentPointTo];
 
 						this.emit(
 							"pathRecalculated",
 							this._entity,
-							pointArr[this._previousPointFrom].x,
-							pointArr[this._previousPointFrom].y,
-							pointArr[this._currentPointFrom].x,
-							pointArr[this._currentPointFrom].y
+							new IgePoint3d(previousPointFrom.x, previousPointFrom.y, previousPointFrom.z),
+							new IgePoint3d(pointFrom.x, pointFrom.y, pointFrom.z)
 						);
 					}
 
@@ -793,6 +785,7 @@ export class IgePathComponent extends IgeComponent {
 					p = this._nextPointToProcess++;
 					effectiveTime = this._startTime + pointArr[p]._absoluteTimeToNext;
 
+					const pointCurrent = pointArr[p];
 					pointNext = pointArr[p + 1];
 					newPoint = this.multiplyPoint(pointNext);
 					newPoint = this.transformPoint(newPoint);
@@ -803,10 +796,8 @@ export class IgePathComponent extends IgeComponent {
 					this.emit(
 						"pointComplete",
 						this._entity,
-						pointArr[p].x,
-						pointArr[p].y,
-						pointNext.x,
-						pointNext.y,
+						new IgePoint3d(pointCurrent.x, pointCurrent.y, pointCurrent.z),
+						new IgePoint3d(pointNext.x, pointNext.y, pointNext.z),
 						p,
 						p + 1,
 						effectiveTime
@@ -823,11 +814,12 @@ export class IgePathComponent extends IgeComponent {
 
 				this._finished = true;
 				effectiveTime = this._startTime + this._totalTime;
+
+				const previousPointFrom = pointArr[this._previousPointFrom];
 				this.emit(
 					"pathComplete",
 					this._entity,
-					pointArr[this._previousPointFrom].x,
-					pointArr[this._previousPointFrom].y,
+					new IgePoint3d(previousPointFrom.x, previousPointFrom.y, previousPointFrom.z),
 					effectiveTime
 				);
 			}
@@ -840,20 +832,18 @@ export class IgePathComponent extends IgeComponent {
 		if (!this._finder) throw new Error("No path finder (IgePathFinder) assigned to IgePathComponent");
 		if (!this._tileMap) throw new Error("No tile map (IgeTileMap2d) assigned to IgePathComponent");
 
-		let newPathPoints;
+		let newPathPoints: string | any[];
 
 		// We are in dynamic mode, check steps ahead to see if they
 		// have been blocked or not
-		const tileMapData = this._tileMap.map._mapData;
-		const tileCheckData =
-			tileMapData[pointTo.y] && tileMapData[pointTo.y][pointTo.x] ? tileMapData[pointTo.y][pointTo.x] : null;
+		const tileCheckData = this._tileMap.map.tileData(pointTo.x, pointTo.y) || null;
 
-		if (!this._tileChecker(tileCheckData, pointTo.x, pointTo.y, null, null, null, true)) {
+		if (!this._tileChecker(tileCheckData, pointTo.x, pointTo.y, pointTo.z, null, null, null, null, true)) {
 			// The new destination tile is blocked, recalculate path
 			newPathPoints = this._finder.generate(
 				this._tileMap,
-				new IgePathNode(pointFrom.x, pointFrom.y, pointFrom.z),
-				new IgePathNode(destinationPoint.x, destinationPoint.y, destinationPoint.z),
+				new IgePathNode(pointFrom.x, pointFrom.y, pointFrom.z, 0),
+				new IgePathNode(destinationPoint.x, destinationPoint.y, destinationPoint.z, 0),
 				this._tileChecker,
 				this._allowSquare,
 				this._allowDiagonal,
@@ -1078,29 +1068,31 @@ export class IgePathComponent extends IgeComponent {
 	 * @return {IgePoint3d}
 	 * @private
 	 */
-	_positionAlongVector = (p1: IgePoint3d, p2: IgePoint3d, speed: number, deltaTime: number) => {
+	_positionAlongVector = (p1: IgePoint3d, p2: IgePoint3d, speed: number, deltaTime: number): IgePoint3d => {
 		const p1X = p1.x;
 		const p1Y = p1.y;
+		const p1Z = p1.z;
+
 		const p2X = p2.x;
 		const p2Y = p2.y;
+		const p2Z = p2.z;
+
 		const deltaX = p2X - p1X;
 		const deltaY = p2Y - p1Y;
+		const deltaZ = p2Z - p1Z;
 		const magnitude = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
 		const normalisedX = deltaX / magnitude;
 		const normalisedY = deltaY / magnitude;
+		const normalisedZ = deltaZ / magnitude;
 
-		let newPoint;
-
-		if (deltaX !== 0 || deltaY !== 0) {
-			newPoint = new IgePoint3d(
+		if (deltaX !== 0 || deltaY !== 0 || deltaZ !== 0) {
+			return new IgePoint3d(
 				p1X + normalisedX * (speed * deltaTime),
 				p1Y + normalisedY * (speed * deltaTime),
-				0
+				p1Z + normalisedZ * (speed * deltaTime)
 			);
-		} else {
-			newPoint = new IgePoint3d(0, 0, 0);
 		}
 
-		return newPoint;
+		return new IgePoint3d(0, 0, 0);
 	};
 }

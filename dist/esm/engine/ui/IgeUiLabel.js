@@ -107,12 +107,6 @@ export class IgeUiLabel extends IgeUiElement {
         this.emit("change", this._value);
         return this;
     }
-    /**
-     * Gets / sets the font sheet (texture) that the text box will
-     * use when rendering text inside the box.
-     * @param fontSheet
-     * @return {*}
-     */
     fontSheet(fontSheet) {
         if (fontSheet !== undefined) {
             this._fontSheet = fontSheet;
@@ -179,7 +173,7 @@ export class IgeUiLabel extends IgeUiElement {
     update(tickDelta) {
         if (this._widthFromText && this._valueChanged !== this._value) {
             this._valueChanged = false;
-            this.width(this._fontEntity.measureTextWidth(this._value) + this._paddingLeft + this._paddingRight);
+            this.width(this._fontEntity.measureTextWidth(this._value || " ") + this._paddingLeft + this._paddingRight);
         }
         super.update(tickDelta);
     }

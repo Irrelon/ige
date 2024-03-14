@@ -10,13 +10,14 @@ class IgePathNode extends exports_1.IgePoint3d {
      * @constructor
      * @param {number} x
      * @param {number} y
+     * @param {number} z
      * @param {number} g
      * @param {number} moveCost
      * @param {number} heuristic
      * @param {Object} parent
      * @param {string} direction
      */
-    constructor(x, y, g, moveCost = 0, heuristic = 0, parent, direction = "") {
+    constructor(x, y, z, g, moveCost = 0, heuristic = 0, parent, direction = "") {
         super();
         this.classId = "IgePathNode";
         this._distanceToNext = 0;
@@ -24,7 +25,7 @@ class IgePathNode extends exports_1.IgePoint3d {
         this._deltaTimeToNext = 0;
         this.x = x;
         this.y = y;
-        this.z = 0; // Compat with IgePoint3d
+        this.z = z;
         this.g = g + moveCost; // Cost of moving from the start point along the path to this node (parentNode.g + moveCost)
         this.h = heuristic; // Rough distance to target node
         this.moveCost = moveCost;
@@ -35,8 +36,8 @@ class IgePathNode extends exports_1.IgePoint3d {
         this.direction = direction;
         this._mode = 0;
     }
-    static fromPoint3d(point3d) {
-        return new IgePathNode(point3d.x, point3d.y, point3d.z);
+    static fromPoint3d(point3d, g = 0) {
+        return new IgePathNode(point3d.x, point3d.y, point3d.z, g);
     }
     /**
      * Gets / sets the path node mode. The mode determines if the co-ordinates

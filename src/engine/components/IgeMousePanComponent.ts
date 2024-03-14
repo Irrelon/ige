@@ -153,7 +153,8 @@ export class IgeMousePanComponent extends IgeComponent {
 		if (this._panPreStart) {
 			// Check if we've reached the start threshold
 			if (distX > this._startThreshold || distY > this._startThreshold) {
-				this._entity.camera.translateTo(panFinalX, panFinalY, 0);
+				// Added Math.floor() to the cam translate based on PR https://github.com/Irrelon/ige/pull/480/files#diff-62b741c85b3e221e93c63d1dabefe7e78dc80a3a3ec16f7d31b5b1839f88d115R87
+				this._entity.camera.translateTo(Math.floor(panFinalX), Math.floor(panFinalY), 0);
 				this.emit("panStart");
 				this._panPreStart = false;
 				this._panStarted = true;
@@ -162,7 +163,8 @@ export class IgeMousePanComponent extends IgeComponent {
 			}
 		} else {
 			// Pan has already started
-			this._entity.camera.translateTo(panFinalX, panFinalY, 0);
+			// Added Math.floor() to the cam translate based on PR https://github.com/Irrelon/ige/pull/480/files#diff-62b741c85b3e221e93c63d1dabefe7e78dc80a3a3ec16f7d31b5b1839f88d115R96
+			this._entity.camera.translateTo(Math.floor(panFinalX), Math.floor(panFinalY), 0);
 
 			this.emit("panMove");
 		}
@@ -219,7 +221,8 @@ export class IgeMousePanComponent extends IgeComponent {
 			}
 		}
 
-		this._entity.camera.translateTo(panFinalX, panFinalY, 0);
+		// From PR https://github.com/Irrelon/ige/pull/480/files#diff-62b741c85b3e221e93c63d1dabefe7e78dc80a3a3ec16f7d31b5b1839f88d115R96
+		this._entity.camera.translateTo(Math.floor(panFinalX), Math.floor(panFinalY), 0);
 
 		delete this._panStartMouse;
 		delete this._panStartCamera;

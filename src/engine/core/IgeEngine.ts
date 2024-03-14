@@ -17,6 +17,7 @@ import type { GenericClass } from "@/export/exports";
 import type { IgeCanvasRenderingContext2d } from "@/export/exports";
 import type { IgeSceneGraphDataEntry } from "@/export/exports";
 import type { SyncEntry, SyncMethod } from "@/export/exports";
+import type { AnyFunction } from "@/types/AnyFunction";
 
 export class IgeEngine extends IgeEntity {
 	classId = "IgeEngine";
@@ -83,6 +84,7 @@ export class IgeEngine extends IgeEntity {
 	_resized: boolean = false;
 	_timeScaleLastTimestamp: number = 0;
 	lastTick: number = 0;
+	_setTickout: AnyFunction[] = [];
 
 	// The engine entity is always "in view" as in, no occlusion will stop it from rendering
 	// because it's only the child entities that need occlusion testing
@@ -92,6 +94,7 @@ export class IgeEngine extends IgeEntity {
 		callback: (time: number, ctx?: IgeCanvasRenderingContext2d) => void,
 		element?: Element
 	) => void;
+
 
 	constructor () {
 		super();
@@ -919,9 +922,10 @@ export class IgeEngine extends IgeEntity {
 	/**
 	 * Allows the tick() methods of the entire scenegraph to
 	 * be temporarily enabled or disabled. Useful for debugging.
-	 * @param {Boolean=} val If false, will disable all tick() calls.
-	 * @returns {*}
+	 * @param {boolean} [val] If false, will disable all tick() calls.
 	 */
+	enableRenders (val: boolean): this;
+	enableRenders (): boolean;
 	enableRenders (val?: boolean) {
 		if (val !== undefined) {
 			this._enableRenders = val;
@@ -1262,7 +1266,9 @@ export class IgeEngine extends IgeEntity {
 						}
 					}
 
-					this.requestAnimFrame(this.engineStep);
+					if (!this._useManualTicks) {
+						this.requestAnimFrame(this.engineStep);
+					}
 
 					this.log("Engine started");
 
@@ -1454,7 +1460,16 @@ export class IgeEngine extends IgeEntity {
 			const endTime = new Date().getTime();
 			this._tickTime = endTime - startTime;
 		}
+
+		const tickOut = this._setTickout.shift();
+		tickOut?.();
 	};
+
+	setTickout (callback: AnyFunction, count = 0) {
+		this._setTickout.length = count + 1;
+		this._setTickout[count] = callback;
+		return this;
+	}
 
 	/**
 	 * Gets / sets the _autoSize property. If set to true, the engine will listen

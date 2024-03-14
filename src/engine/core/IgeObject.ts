@@ -37,6 +37,7 @@ import type {
 	IgeTimeStreamPacket,
 	IgeTimeStreamTransformData
 } from "@/export/exports";
+import type { IgeTriggerPolygonFunctionName } from "@/types/IgeTriggerPolygonFunctionName";
 
 export class IgeObject
 	extends IgeEventingClass
@@ -56,6 +57,7 @@ export class IgeObject
 	_transformChanged: boolean = false;
 	_tileWidth: number = 1;
 	_tileHeight: number = 1;
+	_tileDepth: number = 1;
 	_orphans?: IgeObject[];
 	_specialProp: string[] = [];
 	_streamMode?: IgeStreamMode;
@@ -88,7 +90,7 @@ export class IgeObject
 	_depthSortMode = IgeIsometricDepthSortMode.bounds3d;
 	_inView = true;
 	_managed = 1;
-	_triggerPolygonFunctionName: "aabb" | "bounds3dPolygon" | "localBounds3dPolygon" = "aabb";
+	_triggerPolygonFunctionName: IgeTriggerPolygonFunctionName = "aabb";
 	_compositeCache: boolean = false;
 	_compositeParent: boolean = false;
 	_anchor: IgePoint2d;

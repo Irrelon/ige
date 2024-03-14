@@ -67,7 +67,7 @@ export declare class IgeViewport extends IgeUiEntity implements IgeCanRegisterBy
      * in the world. The co-ordinates are in world space.
      * @returns {IgeRect}
      */
-    viewArea(): IgeRect;
+    viewArea(camScaleX?: number, camScaleY?: number): IgeRect;
     /**
      * Processes the updates before the render tick is called.
      * @param tickDelta

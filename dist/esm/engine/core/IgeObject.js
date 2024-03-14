@@ -18,6 +18,7 @@ export class IgeObject extends IgeEventingClass {
     _transformChanged = false;
     _tileWidth = 1;
     _tileHeight = 1;
+    _tileDepth = 1;
     _orphans;
     _specialProp = [];
     _streamMode;

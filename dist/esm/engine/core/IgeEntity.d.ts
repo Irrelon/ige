@@ -13,6 +13,7 @@ import type { IgeInputEventControl } from "../../export/exports.js"
 import type { IgePoint } from "../../export/exports.js"
 import type { IgePolygonFunctionality } from "../../export/exports.js"
 import type { IgeSmartTexture } from "../../export/exports.js"
+import type { IgeTriggerPolygonFunctionName } from "../../types/IgeTriggerPolygonFunctionName.js"
 export interface IgeEntityTransformAccessor {
     x: (val?: number) => number | IgeEntity;
     y: (val?: number) => number | IgeEntity;
@@ -33,6 +34,7 @@ export declare class IgeEntity extends IgeObject implements IgeCanRegisterById, 
     };
     _textureOffset?: IgePoint2d;
     constructor();
+    customTriggerPolygon: () => IgePolygonFunctionality;
     _sortChildren: (comparatorFunction: (a: any, b: any) => number) => void;
     /**
      * Calculates the distance to the passed entity from this one.
@@ -585,7 +587,7 @@ export declare class IgeEntity extends IgeObject implements IgeCanRegisterById, 
      * method.
      */
     tick(ctx: IgeCanvasRenderingContext2d, dontTransform?: boolean): void;
-    _processTriggerHitTests(): any;
+    _processTriggerHitTests(mp?: IgePoint3d): boolean;
     _refreshCache(dontTransform?: boolean): void;
     /**
      * Handles calling the texture.render() method if a texture
@@ -804,10 +806,10 @@ export declare class IgeEntity extends IgeObject implements IgeCanRegisterById, 
     /**
      * Sets the name of the function that will be called to return the polygon
      * used when determining if a pointer event occurs on this entity.
-     * @param poly
+     * @param funcName
      */
-    triggerPolygonFunctionName(poly: "aabb" | "bounds3dPolygon" | "localBounds3dPolygon"): this;
-    triggerPolygonFunctionName(): "aabb" | "bounds3dPolygon" | "localBounds3dPolygon";
+    triggerPolygonFunctionName(funcName: IgeTriggerPolygonFunctionName): this;
+    triggerPolygonFunctionName(): IgeTriggerPolygonFunctionName;
     /**
      * Will return the polygon used when determining if a pointer event occurs
      * on this entity.
@@ -925,6 +927,10 @@ export declare class IgeEntity extends IgeObject implements IgeCanRegisterById, 
      * method chaining.
      */
     translateToTile(x: number, y: number, z?: number): this;
+    tileX(): number | undefined;
+    tileY(): number | undefined;
+    tileZ(val: number): this;
+    tileZ(): number;
     /**
      * Gets the `translate` accessor object.
      * @example #Use the `translate` accessor object to alter the y co-ordinate of the entity to 10
