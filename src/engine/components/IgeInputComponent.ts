@@ -227,11 +227,11 @@ export class IgeInputComponent extends IgeEventingClass implements IgeIsReadyPro
 	 * @param type
 	 * @private
 	 */
-	_rationalise(event: PointerEvent, type: "pointer"): void;
-	_rationalise(event: KeyboardEvent, type: "keyboard"): void;
-	_rationalise(event: TouchEvent, type: "touch"): void;
-	_rationalise(event: WheelEvent, type: "wheel"): void;
-	_rationalise(event: GamepadEvent, type: "gamepad"): void;
+	_rationalise (event: PointerEvent, type: "pointer"): void;
+	_rationalise (event: KeyboardEvent, type: "keyboard"): void;
+	_rationalise (event: TouchEvent, type: "touch"): void;
+	_rationalise (event: WheelEvent, type: "wheel"): void;
+	_rationalise (event: GamepadEvent, type: "gamepad"): void;
 	_rationalise (
 		event: PointerEvent | KeyboardEvent | TouchEvent | WheelEvent | GamepadEvent,
 		type: Event["igeType"]
@@ -273,6 +273,12 @@ export class IgeInputComponent extends IgeEventingClass implements IgeIsReadyPro
 			const pointerEvent = event as PointerEvent;
 			pointerEvent.igePageX = pointerEvent.pageX;
 			pointerEvent.igePageY = pointerEvent.pageY;
+		}
+
+		if (type === "wheel") {
+			const wheelEvent = event as WheelEvent;
+			wheelEvent.igePageX = wheelEvent.pageX;
+			wheelEvent.igePageY = wheelEvent.pageY;
 		}
 
 		const canvasPosition = ige.engine._canvasPosition();
