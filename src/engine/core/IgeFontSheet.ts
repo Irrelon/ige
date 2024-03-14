@@ -1,6 +1,6 @@
-import { IgeTexture } from "@/export/exports";
+import { type IgeCanvasRenderingContext2d, IgeTexture } from "@/export/exports";
 import { ige } from "@/export/exports";
-import type { IgeSmartTexture } from "@/export/exports";
+import type { IgeSmartTexture, IgeFontEntity } from "@/export/exports";
 
 /* TODO: URGENT - Make this alignment stuff work inside the bounds of the entity it is attached to
  *    so that bottom-right aligns to the lower-right point of the bounding box of the entity
@@ -53,12 +53,12 @@ export class IgeFontSheet extends IgeTexture {
 				const header = this._fontData.font;
 				this.log(
 					"Loaded font sheet for font: " +
-						header.fontName +
-						" @ " +
-						header.fontSize +
-						header.fontSizeUnit +
-						" in " +
-						header.fontColor
+					header.fontName +
+					" @ " +
+					header.fontSize +
+					header.fontSizeUnit +
+					" in " +
+					header.fontColor
 				);
 			} else {
 				this.log("Could not load data header for font sheet: " + this.image.src, "error");
@@ -130,49 +130,46 @@ export class IgeFontSheet extends IgeTexture {
 	 * @param {string} text The text to measure.
 	 * @returns {number}
 	 */
-	measureTextWidth (text) {
-		if (this._loaded) {
-			const charCodeMap = this._charCodeMap,
-				measuredWidthMap = this._measuredWidthMap;
+	measureTextWidth (text: string): number {
+		if (!this._loaded) return -1;
+		const charCodeMap = this._charCodeMap,
+			measuredWidthMap = this._measuredWidthMap;
 
-			let characterIndex,
-				charIndex,
-				lineArr: string[] = [],
-				lineIndex,
-				measuredWidth,
-				maxWidth = 0;
+		let characterIndex,
+			charIndex,
+			lineArr: string[] = [],
+			lineIndex,
+			measuredWidth,
+			maxWidth = 0;
 
-			// Handle multi-line text
-			if (text.indexOf("\n") > -1) {
-				// Split each line into an array item
-				lineArr = text.split("\n");
-			} else {
-				// Store the text as a single line
-				lineArr.push(text);
-			}
-
-			for (lineIndex = 0; lineIndex < lineArr.length; lineIndex++) {
-				// Calculate the total width of the line of text
-				measuredWidth = 0;
-				for (characterIndex = 0; characterIndex < lineArr[lineIndex].length; characterIndex++) {
-					charIndex = charCodeMap[lineArr[lineIndex].charCodeAt(characterIndex)];
-					measuredWidth += measuredWidthMap[charIndex] || 0;
-				}
-
-				if (measuredWidth > maxWidth) {
-					maxWidth = measuredWidth;
-				}
-			}
-
-			// Store the width of this line so we can align it correctly
-			return measuredWidth;
+		// Handle multi-line text
+		if (text.indexOf("\n") > -1) {
+			// Split each line into an array item
+			lineArr = text.split("\n");
+		} else {
+			// Store the text as a single line
+			lineArr.push(text);
 		}
 
-		return -1;
+		for (lineIndex = 0; lineIndex < lineArr.length; lineIndex++) {
+			// Calculate the total width of the line of text
+			measuredWidth = 0;
+			for (characterIndex = 0; characterIndex < lineArr[lineIndex].length; characterIndex++) {
+				charIndex = charCodeMap[lineArr[lineIndex].charCodeAt(characterIndex)];
+				measuredWidth += measuredWidthMap[charIndex] || 0;
+			}
+
+			if (measuredWidth > maxWidth) {
+				maxWidth = measuredWidth;
+			}
+		}
+
+		// Store the width of this line, so we can align it correctly
+		return measuredWidth;
 	}
 
-	render (ctx, entity) {
-		if (entity._renderText && this._loaded) {
+	render (ctx: IgeCanvasRenderingContext2d, entity: IgeFontEntity) {
+		if (entity._renderText && this._loaded && this.image) {
 			const _ctx = ctx,
 				text = entity._renderText,
 				charCodeMap = this._charCodeMap,
@@ -212,17 +209,17 @@ export class IgeFontSheet extends IgeTexture {
 			switch (entity._textAlignY) {
 			case 0: // Align top
 				renderStartY =
-						-((lineHeight * lineArr.length) / 2) - entity._textLineSpacing * ((lineArr.length - 1) / 2); //0;
+					-((lineHeight * lineArr.length) / 2) - entity._textLineSpacing * ((lineArr.length - 1) / 2); //0;
 				break;
 
 			case 1: // Align middle
 				renderStartY =
-						-((lineHeight * lineArr.length) / 2) - entity._textLineSpacing * ((lineArr.length - 1) / 2);
+					-((lineHeight * lineArr.length) / 2) - entity._textLineSpacing * ((lineArr.length - 1) / 2);
 				break;
 
 			case 2: // Align bottom
 				renderStartY =
-						-((lineHeight * lineArr.length) / 2) - entity._textLineSpacing * ((lineArr.length - 1) / 2); //-((lineHeight) * (lineArr.length)) - (entity._textLineSpacing * (lineArr.length - 1));
+					-((lineHeight * lineArr.length) / 2) - entity._textLineSpacing * ((lineArr.length - 1) / 2); //-((lineHeight) * (lineArr.length)) - (entity._textLineSpacing * (lineArr.length - 1));
 				break;
 			}
 
@@ -234,7 +231,7 @@ export class IgeFontSheet extends IgeTexture {
 					singleLineWidth += measuredWidthMap[charIndex] || 0;
 				}
 
-				// Store the width of this line so we can align it correctly
+				// Store the width of this line, so we can align it correctly
 				lineWidth[lineIndex] = singleLineWidth;
 
 				if (singleLineWidth > totalWidth) {
