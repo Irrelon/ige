@@ -337,6 +337,7 @@ export class IgeEngine extends IgeEntity {
 	 * @private
 	 */
 	_resizeEvent = (event?: Event) => {
+		if (isServer) return;
 		if (!this._autoSize) return;
 
 		const arr = this._children;
@@ -461,7 +462,7 @@ export class IgeEngine extends IgeEntity {
 	 * delta internally in the method.
 	 * @returns {number}
 	 */
-	incrementTime (val: number, lastVal?: number) {
+	incrementTime (val: number, lastVal?: number): number {
 		if (!this._pause) {
 			if (!lastVal) {
 				lastVal = val;
@@ -475,7 +476,7 @@ export class IgeEngine extends IgeEntity {
 	 * Get the current time from the engine.
 	 * @return {number} The current time.
 	 */
-	currentTime () {
+	currentTime (): number {
 		return this._currentTime;
 	}
 
