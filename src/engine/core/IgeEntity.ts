@@ -23,7 +23,7 @@ import type { IgeCanRegisterByCategory } from "@/export/exports";
 import type { IgeCanRegisterById } from "@/export/exports";
 import type { IgeCanvasRenderingContext2d } from "@/export/exports";
 import type { IgeDepthSortObject } from "@/export/exports";
-import type { IgeInputEvent } from "@/export/exports";
+import type { IgeInputEventHandler } from "@/export/exports";
 import type { IgeInputEventControl } from "@/export/exports";
 import type { IgePoint } from "@/export/exports";
 import type { IgePolygonFunctionality } from "@/export/exports";
@@ -1483,9 +1483,9 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 		}
 
 		// WEBGPU - Move to postTick?
-		if (this._streamMode === IgeStreamMode.simple) {
-			this.streamSync();
-		}
+		// if (this._streamMode === IgeStreamMode.simple) {
+		// 	this.streamSync();
+		// }
 
 		if (this._compositeCache) {
 			if (this._cacheDirty && this._cacheCtx) {
@@ -2081,9 +2081,9 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 	 *     });
 	 * @return {*}
 	 */
-	pointerMove (callback: IgeInputEvent | null): this;
-	pointerMove (): IgeInputEvent;
-	pointerMove (callback?: IgeInputEvent | null) {
+	pointerMove (callback: IgeInputEventHandler | null): this;
+	pointerMove (): IgeInputEventHandler;
+	pointerMove (callback?: IgeInputEventHandler | null) {
 		if (callback !== undefined) {
 			if (callback === null) {
 				this._pointerMove = undefined;
@@ -2115,9 +2115,9 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 	 *     });
 	 * @return {*}
 	 */
-	pointerOver (callback: IgeInputEvent | null): this;
-	pointerOver (): IgeInputEvent;
-	pointerOver (callback?: IgeInputEvent | null) {
+	pointerOver (callback: IgeInputEventHandler | null): this;
+	pointerOver (): IgeInputEventHandler;
+	pointerOver (callback?: IgeInputEventHandler | null) {
 		if (callback !== undefined) {
 			if (callback === null) {
 				this._pointerOver = undefined;
@@ -2149,9 +2149,9 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 	 *     });
 	 * @return {*}
 	 */
-	pointerOut (callback: IgeInputEvent | null): this;
-	pointerOut (): IgeInputEvent;
-	pointerOut (callback?: IgeInputEvent | null) {
+	pointerOut (callback: IgeInputEventHandler | null): this;
+	pointerOut (): IgeInputEventHandler;
+	pointerOut (callback?: IgeInputEventHandler | null) {
 		if (callback !== undefined) {
 			if (callback === null) {
 				this._pointerOut = undefined;
@@ -2183,9 +2183,10 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 	 *     });
 	 * @return {*}
 	 */
-	pointerUp (callback: IgeInputEvent | null): this;
-	pointerUp (): IgeInputEvent;
-	pointerUp (callback?: IgeInputEvent | null) {
+	pointerUp (callback: IgeInputEventHandler): this;
+	pointerUp (callback: null): this;
+	pointerUp (): IgeInputEventHandler | undefined;
+	pointerUp (callback?: IgeInputEventHandler | null): IgeInputEventHandler | this | undefined {
 		if (callback !== undefined) {
 			if (callback === null) {
 				this._pointerUp = undefined;
@@ -2217,9 +2218,9 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 	 *     });
 	 * @return {*}
 	 */
-	pointerDown (callback: IgeInputEvent | null): this;
-	pointerDown (): IgeInputEvent;
-	pointerDown (callback?: IgeInputEvent | null) {
+	pointerDown (callback: IgeInputEventHandler | null): this;
+	pointerDown (): IgeInputEventHandler;
+	pointerDown (callback?: IgeInputEventHandler | null) {
 		if (callback !== undefined) {
 			if (callback === null) {
 				this._pointerDown = undefined;
@@ -2252,9 +2253,9 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 	 *     });
 	 * @return {*}
 	 */
-	pointerWheel (callback: IgeInputEvent | null): this;
-	pointerWheel (): IgeInputEvent;
-	pointerWheel (callback?: IgeInputEvent | null) {
+	pointerWheel (callback: IgeInputEventHandler | null): this;
+	pointerWheel (): IgeInputEventHandler;
+	pointerWheel (callback?: IgeInputEventHandler | null) {
 		if (callback !== undefined) {
 			if (callback === null) {
 				this._pointerWheel = undefined;
@@ -3449,6 +3450,10 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 			// which allows us to determine if we are still on the
 			// same frame
 			this._frameAlternatorCurrent = ige.engine._frameAlternator;
+
+			if (this._streamMode === IgeStreamMode.simple) {
+				this.streamSync();
+			}
 		} else {
 			// The entity is not yet born, unmount it and add to the spawn queue
 			this._birthMount = this._parent?.id();

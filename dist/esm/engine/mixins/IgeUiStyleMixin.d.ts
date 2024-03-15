@@ -122,11 +122,6 @@ export declare const WithUiStyleMixin: <BaseClassType extends Mixin<IgeObject>>(
         _parent: IgeObject | null;
         _children: IgeObject[];
         _transformChanged: boolean;
-        /**
-         * Gets / sets the color to use as the font color.
-         * @param {CSSColor, CanvasGradient, CanvasPattern=} color
-         * @return {*} Returns this when setting the value or the current value if none is specified.
-         */
         _tileWidth: number;
         _tileHeight: number;
         _tileDepth: number;
@@ -139,7 +134,15 @@ export declare const WithUiStyleMixin: <BaseClassType extends Mixin<IgeObject>>(
         _streamEmitCreated?: boolean | undefined;
         _streamSections: string[];
         _streamProperty: Record<string, any>;
-        _streamSyncInterval?: number | undefined;
+        _streamSyncInterval?: number | undefined; /**
+         * Sets the current background texture and the repeatType
+         * to determine in which axis the image should be repeated.
+         * @param {IgeTexture=} texture
+         * @param {string=} repeatType Accepts "repeat", "repeat-x",
+         * "repeat-y" and "no-repeat".
+         * @return {*} Returns this if any parameter is specified or
+         * the current background image if no parameters are specified.
+         */
         _streamSyncDelta: number;
         _streamSyncSectionInterval: Record<string, number>;
         _streamSyncSectionDelta: Record<string, number>;
@@ -188,12 +191,12 @@ export declare const WithUiStyleMixin: <BaseClassType extends Mixin<IgeObject>>(
         _pointerStateDown: boolean;
         _pointerStateOver: boolean;
         _pointerAlwaysInside: boolean;
-        _pointerOut?: import("../../export/exports.js").IgeInputEvent | undefined;
-        _pointerOver?: import("../../export/exports.js").IgeInputEvent | undefined;
-        _pointerMove?: import("../../export/exports.js").IgeInputEvent | undefined;
-        _pointerWheel?: import("../../export/exports.js").IgeInputEvent | undefined;
-        _pointerUp?: import("../../export/exports.js").IgeInputEvent | undefined;
-        _pointerDown?: import("../../export/exports.js").IgeInputEvent | undefined;
+        _pointerOut?: import("../../export/exports.js").IgeInputEventHandler | undefined;
+        _pointerOver?: import("../../export/exports.js").IgeInputEventHandler | undefined;
+        _pointerMove?: import("../../export/exports.js").IgeInputEventHandler | undefined;
+        _pointerWheel?: import("../../export/exports.js").IgeInputEventHandler | undefined;
+        _pointerUp?: import("../../export/exports.js").IgeInputEventHandler | undefined;
+        _pointerDown?: import("../../export/exports.js").IgeInputEventHandler | undefined;
         _velocity: import("../../export/exports.js").IgePoint3d;
         _localMatrix: import("../../export/exports.js").IgeMatrix2d;
         _worldMatrix: import("../../export/exports.js").IgeMatrix2d;

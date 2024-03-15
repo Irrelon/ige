@@ -24,6 +24,8 @@ export declare class IgeNetIoServerController extends IgeNetIoBaseController {
      * network has started.
      */
     start(port?: number, callback?: () => void): Promise<void>;
+    _onJoinRoom: (data: [string, boolean], clientId: string) => void;
+    _onLeaveRoom: (data: string, clientId: string) => void;
     /**
      * Called on receipt of a request message from a client.
      * @param data The data the client sent with the request.

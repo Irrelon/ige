@@ -26,7 +26,7 @@ export * from "../types/IgeConfig";
 export * from "../types/IgeDepthSortObject";
 export * from "../types/IgeEntityBehaviour";
 export * from "../types/IgeImage";
-export * from "../types/IgeInputEvent";
+export * from "../types/IgeInputEventHandler";
 export * from "../types/IgeInputEventControl";
 export * from "../types/IgeIsReadyPromise";
 export * from "../types/IgeNetworkChat";

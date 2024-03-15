@@ -9,7 +9,7 @@ export class IgeNetIoBaseController extends IgeEventingClass {
 	_debugCounter: number = 0;
 	_debugMax: number = 100;
 	_clientRooms: Record<string, string[]> = {};
-	_socketsByRoomId: Record<string, Record<string, IgeNetIoSocket>> = {}; // Any should be socket, figure out what that is
+	_socketsByRoomId: Record<string, Record<string, IgeNetIoSocket>> = {};
 	_timeSyncInterval: number = 10000; // Sync the client/server clocks every ten seconds by default
 	_timeSyncLog: Record<string, number> = {};
 	_latency: number = 0;
@@ -27,8 +27,8 @@ export class IgeNetIoBaseController extends IgeEventingClass {
 	 * @param val
 	 * @return {*}
 	 */
-	timeSyncInterval(val: number): this;
-	timeSyncInterval(): number;
+	timeSyncInterval (val: number): this;
+	timeSyncInterval (): number;
 	timeSyncInterval (val?: number) {
 		if (val !== undefined) {
 			this._timeSyncInterval = val;
@@ -46,8 +46,8 @@ export class IgeNetIoBaseController extends IgeEventingClass {
 	 * @param {number} time The client timestamp, usually
 	 * the result of new Date().getTime() or ige.currentTime().
 	 */
-	timeToServerTime(time: number): number;
-	timeToServerTime(): number;
+	timeToServerTime (time: number): number;
+	timeToServerTime (): number;
 	timeToServerTime (time?: number) {
 		if (time !== undefined) {
 			return time + this._latency;
@@ -62,8 +62,8 @@ export class IgeNetIoBaseController extends IgeEventingClass {
 	 * @param {boolean=} val
 	 * @return {*}
 	 */
-	debug(val: boolean): this;
-	debug(): boolean;
+	debug (val: boolean): this;
+	debug (): boolean;
 	debug (val?: boolean) {
 		if (val !== undefined) {
 			this._debug = val;
@@ -94,8 +94,8 @@ export class IgeNetIoBaseController extends IgeEventingClass {
 	 * infinite amounts.
 	 * @return {*}
 	 */
-	debugMax(val: number): this;
-	debugMax(): number;
+	debugMax (val: number): this;
+	debugMax (): number;
 	debugMax (val?: number) {
 		if (val !== undefined) {
 			this._debugMax = val;

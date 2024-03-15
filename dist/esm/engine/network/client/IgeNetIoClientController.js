@@ -1,4 +1,4 @@
-import { IgeNetIoClient } from "../../../export/exports.js"
+import { IGE_NETWORK_JOIN_ROOM, IGE_NETWORK_LEAVE_ROOM, IgeNetIoClient } from "../../../export/exports.js"
 import { ige } from "../../../export/exports.js"
 import { IGE_NETWORK_REQUEST, IGE_NETWORK_RESPONSE, IGE_NETWORK_STREAM_CREATE, IGE_NETWORK_STREAM_DATA, IGE_NETWORK_STREAM_DESTROY, IGE_NETWORK_STREAM_TIME, IGE_NETWORK_TIME_SYNC } from "../../../export/exports.js"
 import { igeClassStore } from "../../../export/exports.js"
@@ -340,6 +340,27 @@ export class IgeNetIoClientController extends IgeNetIoBaseController {
         return this._renderLatency;
     }
     /**
+     * Asks the server to assign us to a room by the room
+     * id. When assigning a client to a room, any streaming
+     * entities for that room start to stream to the client.
+     *
+     * A client can be joined to multiple rooms. If you want
+     * to join a room without leaving the others the client
+     * is already part of, set the leaveAllOthers flag to
+     * false.
+     * @param roomId
+     * @param leaveAllOthers
+     */
+    joinRoom(roomId, leaveAllOthers = true) {
+        this.send(IGE_NETWORK_JOIN_ROOM, [roomId, leaveAllOthers]);
+    }
+    leaveRoom(roomId) {
+        this.send(IGE_NETWORK_LEAVE_ROOM, roomId);
+    }
+    leaveAllRooms() {
+        this.send(IGE_NETWORK_LEAVE_ROOM, "");
+    }
+    /**
      * Handles receiving the start time of the stream data.
      * @param data
      * @private
@@ -355,13 +376,14 @@ export class IgeNetIoClientController extends IgeNetIoBaseController {
         const transformData = data[4];
         const initialData = data[5];
         const parent = ige.$(parentId);
+        //console.log("Stream create", data);
         // Check the required class exists
         if (parent) {
             // Check that the entity doesn't already exist
             if (!ige.$(entityId)) {
                 const ClassConstructor = igeClassStore[classId];
                 if (ClassConstructor) {
-                    console.log("Creating ", classId, createDataArgs);
+                    //console.log("Creating ", classId, createDataArgs);
                     // The entity does not currently exist so create it!
                     const entity = new ClassConstructor(...createDataArgs).id(entityId).mount(parent);
                     entity.streamSectionData("transform", transformData, true);
@@ -395,7 +417,7 @@ export class IgeNetIoClientController extends IgeNetIoBaseController {
     };
     _onStreamDestroy = (data) => {
         const entity = ige.$(data[1]);
-        console.log("Stream destroy", data);
+        //console.log("Stream destroy", data);
         if (!entity) {
             return;
         }

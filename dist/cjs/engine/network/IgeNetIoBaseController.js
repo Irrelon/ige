@@ -12,7 +12,7 @@ class IgeNetIoBaseController extends exports_1.IgeEventingClass {
         this._debugCounter = 0;
         this._debugMax = 100;
         this._clientRooms = {};
-        this._socketsByRoomId = {}; // Any should be socket, figure out what that is
+        this._socketsByRoomId = {};
         this._timeSyncInterval = 10000; // Sync the client/server clocks every ten seconds by default
         this._timeSyncLog = {};
         this._latency = 0;

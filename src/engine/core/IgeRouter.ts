@@ -14,11 +14,15 @@ export class IgeRouter extends IgeBaseClass {
 	/**
 	 * Sets or gets the route handler(s) for a given path.
 	 *
-	 * @param {string} path - The path for the route.
-	 * @param {IgeRouteDefinition} definition - The definition for the route.
-	 * @returns {this|IgeRouteDefinition|Object} - Returns this object when setting a route, returns the definition for a given path when getting a route, or returns all routes if no arguments
-	 * are provided.
+	 * @param path The path for the route.
+	 * @param definition The definition for the route.
+	 * @returns Returns this object when setting a route, returns the
+	 * definition for a given path when getting a route, or returns all
+	 * routes if no arguments are provided.
 	 */
+	route (path: string, definition: IgeRouteDefinition): this;
+	route (path: string): IgeRouteDefinition;
+	route (): Record<string, IgeRouteDefinition>;
 	route (path?: string, definition?: IgeRouteDefinition) {
 		if (path !== undefined) {
 			if (definition !== undefined) {
@@ -131,9 +135,12 @@ export class IgeRouter extends IgeBaseClass {
 		return path1 + PATH_DELIMITER + path2;
 	}
 
-	_routeAdd (path: string) {}
+	_routeAdd (path: string) {
+	}
 
-	_routeRemove (path?: string) {}
+	_routeRemove (path?: string) {
+	}
 
-	_processQueue () {}
+	_processQueue () {
+	}
 }

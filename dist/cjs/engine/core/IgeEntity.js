@@ -1124,9 +1124,9 @@ class IgeEntity extends exports_3.IgeObject {
             this._renderEntity(ctx);
         }
         // WEBGPU - Move to postTick?
-        if (this._streamMode === exports_14.IgeStreamMode.simple) {
-            this.streamSync();
-        }
+        // if (this._streamMode === IgeStreamMode.simple) {
+        // 	this.streamSync();
+        // }
         if (this._compositeCache) {
             if (this._cacheDirty && this._cacheCtx) {
                 // Process children
@@ -2402,6 +2402,9 @@ class IgeEntity extends exports_3.IgeObject {
             // which allows us to determine if we are still on the
             // same frame
             this._frameAlternatorCurrent = exports_9.ige.engine._frameAlternator;
+            if (this._streamMode === exports_14.IgeStreamMode.simple) {
+                this.streamSync();
+            }
         }
         else {
             // The entity is not yet born, unmount it and add to the spawn queue

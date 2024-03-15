@@ -1,4 +1,4 @@
-import { IgeNetIoServer } from "../../../export/exports.js"
+import { IGE_NETWORK_JOIN_ROOM, IGE_NETWORK_LEAVE_ROOM, IgeNetIoServer } from "../../../export/exports.js"
 import { ige } from "../../../export/exports.js"
 import { IgeEventReturnFlag } from "../../../export/exports.js"
 import { IGE_NETWORK_REQUEST, IGE_NETWORK_RESPONSE, IGE_NETWORK_STREAM_CREATE, IGE_NETWORK_STREAM_DATA, IGE_NETWORK_STREAM_DESTROY, IGE_NETWORK_STREAM_TIME, IGE_NETWORK_TIME_SYNC } from "../../../export/exports.js"
@@ -53,12 +53,31 @@ export class IgeNetIoServerController extends IgeNetIoBaseController {
             this.define(IGE_NETWORK_REQUEST, this._onRequest);
             this.define(IGE_NETWORK_RESPONSE, this._onResponse);
             this.define(IGE_NETWORK_TIME_SYNC, this._onTimeSync);
+            this.define(IGE_NETWORK_JOIN_ROOM, this._onJoinRoom);
+            this.define(IGE_NETWORK_LEAVE_ROOM, this._onLeaveRoom);
             // Start network sync
             this.timeSyncStart();
             this.log("Starting delta stream...");
             this._streamTimer = setInterval(this._sendQueue, this._streamInterval);
         });
     }
+    _onJoinRoom = (data, clientId) => {
+        if (data[1]) {
+            // Remove client from all rooms first
+            this.clientLeaveAllRooms(clientId);
+        }
+        this.clientJoinRoom(clientId, data[0]);
+        console.log("Client requested to join room with data", data);
+    };
+    _onLeaveRoom = (data, clientId) => {
+        if (data) {
+            this.clientLeaveRoom(clientId, data[0]);
+        }
+        else {
+            this.clientLeaveAllRooms(clientId);
+        }
+        console.log("Client requested to leave room with data", data);
+    };
     /**
      * Called on receipt of a request message from a client.
      * @param data The data the client sent with the request.

@@ -42,7 +42,7 @@ __exportStar(require("../types/IgeConfig"), exports);
 __exportStar(require("../types/IgeDepthSortObject"), exports);
 __exportStar(require("../types/IgeEntityBehaviour"), exports);
 __exportStar(require("../types/IgeImage"), exports);
-__exportStar(require("../types/IgeInputEvent"), exports);
+__exportStar(require("../types/IgeInputEventHandler"), exports);
 __exportStar(require("../types/IgeInputEventControl"), exports);
 __exportStar(require("../types/IgeIsReadyPromise"), exports);
 __exportStar(require("../types/IgeNetworkChat"), exports);

@@ -2,7 +2,7 @@ import type { IgeComponent, IgeTexture, IgeTileMap2d, IgeViewport } from "../../
 import { IgeDummyCanvas, IgeEventingClass, IgeMatrix2d, IgePoint2d, IgePoint3d, IgePoly2d, IgeRect } from "../../export/exports.js"
 import type { IgeBehaviourType } from "../../export/exports.js"
 import { IgeIsometricDepthSortMode, IgeMountMode, IgeStreamMode } from "../../export/exports.js"
-import type { IgeBehaviourStore, IgeCanAcceptComponents, IgeCanRegisterByCategory, IgeCanRegisterById, IgeCanvasRenderingContext2d, IgeChildSortFunction, IgeDepthSortObject, IgeEntityBehaviourMethod, IgeInputEvent, IgePoint, IgeSmartTexture, IgeTimeStreamPacket } from "../../export/exports.js"
+import type { IgeBehaviourStore, IgeCanAcceptComponents, IgeCanRegisterByCategory, IgeCanRegisterById, IgeCanvasRenderingContext2d, IgeChildSortFunction, IgeDepthSortObject, IgeEntityBehaviourMethod, IgeInputEventHandler, IgePoint, IgeSmartTexture, IgeTimeStreamPacket } from "../../export/exports.js"
 import type { IgeTriggerPolygonFunctionName } from "../../types/IgeTriggerPolygonFunctionName.js"
 export declare class IgeObject extends IgeEventingClass implements IgeCanRegisterById, IgeCanRegisterByCategory, IgeCanAcceptComponents {
     classId: string;
@@ -80,12 +80,12 @@ export declare class IgeObject extends IgeEventingClass implements IgeCanRegiste
     _pointerStateDown: boolean;
     _pointerStateOver: boolean;
     _pointerAlwaysInside: boolean;
-    _pointerOut?: IgeInputEvent;
-    _pointerOver?: IgeInputEvent;
-    _pointerMove?: IgeInputEvent;
-    _pointerWheel?: IgeInputEvent;
-    _pointerUp?: IgeInputEvent;
-    _pointerDown?: IgeInputEvent;
+    _pointerOut?: IgeInputEventHandler;
+    _pointerOver?: IgeInputEventHandler;
+    _pointerMove?: IgeInputEventHandler;
+    _pointerWheel?: IgeInputEventHandler;
+    _pointerUp?: IgeInputEventHandler;
+    _pointerDown?: IgeInputEventHandler;
     _velocity: IgePoint3d;
     _localMatrix: IgeMatrix2d;
     _worldMatrix: IgeMatrix2d;

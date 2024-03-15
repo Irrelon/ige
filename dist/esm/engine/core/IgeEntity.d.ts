@@ -8,7 +8,7 @@ import { IgeEntityRenderMode } from "../../export/exports.js"
 import type { IgeCanRegisterByCategory } from "../../export/exports.js"
 import type { IgeCanRegisterById } from "../../export/exports.js"
 import type { IgeCanvasRenderingContext2d } from "../../export/exports.js"
-import type { IgeInputEvent } from "../../export/exports.js"
+import type { IgeInputEventHandler } from "../../export/exports.js"
 import type { IgeInputEventControl } from "../../export/exports.js"
 import type { IgePoint } from "../../export/exports.js"
 import type { IgePolygonFunctionality } from "../../export/exports.js"
@@ -669,8 +669,8 @@ export declare class IgeEntity extends IgeObject implements IgeCanRegisterById, 
      *     });
      * @return {*}
      */
-    pointerMove(callback: IgeInputEvent | null): this;
-    pointerMove(): IgeInputEvent;
+    pointerMove(callback: IgeInputEventHandler | null): this;
+    pointerMove(): IgeInputEventHandler;
     /**
      * Gets / sets the callback that is fired when a mouse
      * over event is triggered.
@@ -689,8 +689,8 @@ export declare class IgeEntity extends IgeObject implements IgeCanRegisterById, 
      *     });
      * @return {*}
      */
-    pointerOver(callback: IgeInputEvent | null): this;
-    pointerOver(): IgeInputEvent;
+    pointerOver(callback: IgeInputEventHandler | null): this;
+    pointerOver(): IgeInputEventHandler;
     /**
      * Gets / sets the callback that is fired when a mouse
      * out event is triggered.
@@ -709,8 +709,8 @@ export declare class IgeEntity extends IgeObject implements IgeCanRegisterById, 
      *     });
      * @return {*}
      */
-    pointerOut(callback: IgeInputEvent | null): this;
-    pointerOut(): IgeInputEvent;
+    pointerOut(callback: IgeInputEventHandler | null): this;
+    pointerOut(): IgeInputEventHandler;
     /**
      * Gets / sets the callback that is fired when a mouse
      * up event is triggered.
@@ -729,8 +729,9 @@ export declare class IgeEntity extends IgeObject implements IgeCanRegisterById, 
      *     });
      * @return {*}
      */
-    pointerUp(callback: IgeInputEvent | null): this;
-    pointerUp(): IgeInputEvent;
+    pointerUp(callback: IgeInputEventHandler): this;
+    pointerUp(callback: null): this;
+    pointerUp(): IgeInputEventHandler | undefined;
     /**
      * Gets / sets the callback that is fired when a mouse
      * down event is triggered.
@@ -749,8 +750,8 @@ export declare class IgeEntity extends IgeObject implements IgeCanRegisterById, 
      *     });
      * @return {*}
      */
-    pointerDown(callback: IgeInputEvent | null): this;
-    pointerDown(): IgeInputEvent;
+    pointerDown(callback: IgeInputEventHandler | null): this;
+    pointerDown(): IgeInputEventHandler;
     /**
      * Gets / sets the callback that is fired when a mouse
      * wheel event is triggered.
@@ -770,8 +771,8 @@ export declare class IgeEntity extends IgeObject implements IgeCanRegisterById, 
      *     });
      * @return {*}
      */
-    pointerWheel(callback: IgeInputEvent | null): this;
-    pointerWheel(): IgeInputEvent;
+    pointerWheel(callback: IgeInputEventHandler | null): this;
+    pointerWheel(): IgeInputEventHandler;
     /**
      * Removes the callback that is fired when a mouse
      * move event is triggered.

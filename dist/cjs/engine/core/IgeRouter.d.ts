@@ -10,12 +10,15 @@ export declare class IgeRouter extends IgeBaseClass {
     /**
      * Sets or gets the route handler(s) for a given path.
      *
-     * @param {string} path - The path for the route.
-     * @param {IgeRouteDefinition} definition - The definition for the route.
-     * @returns {this|IgeRouteDefinition|Object} - Returns this object when setting a route, returns the definition for a given path when getting a route, or returns all routes if no arguments
-     * are provided.
+     * @param path The path for the route.
+     * @param definition The definition for the route.
+     * @returns Returns this object when setting a route, returns the
+     * definition for a given path when getting a route, or returns all
+     * routes if no arguments are provided.
      */
-    route(path?: string, definition?: IgeRouteDefinition): IgeRouteDefinition | this | Record<string, IgeRouteDefinition>;
+    route(path: string, definition: IgeRouteDefinition): this;
+    route(path: string): IgeRouteDefinition;
+    route(): Record<string, IgeRouteDefinition>;
     /**
      * Navigate to a given path and execute the corresponding route handler(s).
      *

@@ -111,6 +111,21 @@ export declare class IgeNetIoClientController extends IgeNetIoBaseController {
      */
     renderLatency(latency?: number): number | this;
     /**
+     * Asks the server to assign us to a room by the room
+     * id. When assigning a client to a room, any streaming
+     * entities for that room start to stream to the client.
+     *
+     * A client can be joined to multiple rooms. If you want
+     * to join a room without leaving the others the client
+     * is already part of, set the leaveAllOthers flag to
+     * false.
+     * @param roomId
+     * @param leaveAllOthers
+     */
+    joinRoom(roomId: string, leaveAllOthers?: boolean): void;
+    leaveRoom(roomId: string): void;
+    leaveAllRooms(): void;
+    /**
      * Handles receiving the start time of the stream data.
      * @param data
      * @private

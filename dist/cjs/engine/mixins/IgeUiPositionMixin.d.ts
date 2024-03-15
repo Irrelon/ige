@@ -166,13 +166,7 @@ export declare const WithUiPositionMixin: <BaseClassType extends Mixin<IgeObject
         _anchor: import("../../export/exports.js").IgePoint2d;
         _renderPos: {
             x: number;
-            y: number; /**
-             * Gets / sets the viewport's x position relative to the center of
-             * the entity parent.
-             * @param {number} px
-             * @param {boolean=} noUpdate
-             * @return {number}
-             */
+            y: number;
         };
         _computedOpacity: number;
         _opacity: number;
@@ -193,12 +187,12 @@ export declare const WithUiPositionMixin: <BaseClassType extends Mixin<IgeObject
         _pointerStateDown: boolean;
         _pointerStateOver: boolean;
         _pointerAlwaysInside: boolean;
-        _pointerOut?: import("../../export/exports.js").IgeInputEvent | undefined;
-        _pointerOver?: import("../../export/exports.js").IgeInputEvent | undefined;
-        _pointerMove?: import("../../export/exports.js").IgeInputEvent | undefined;
-        _pointerWheel?: import("../../export/exports.js").IgeInputEvent | undefined;
-        _pointerUp?: import("../../export/exports.js").IgeInputEvent | undefined;
-        _pointerDown?: import("../../export/exports.js").IgeInputEvent | undefined;
+        _pointerOut?: import("../../export/exports.js").IgeInputEventHandler | undefined;
+        _pointerOver?: import("../../export/exports.js").IgeInputEventHandler | undefined;
+        _pointerMove?: import("../../export/exports.js").IgeInputEventHandler | undefined;
+        _pointerWheel?: import("../../export/exports.js").IgeInputEventHandler | undefined;
+        _pointerUp?: import("../../export/exports.js").IgeInputEventHandler | undefined;
+        _pointerDown?: import("../../export/exports.js").IgeInputEventHandler | undefined;
         _velocity: import("../../export/exports.js").IgePoint3d;
         _localMatrix: import("../../export/exports.js").IgeMatrix2d;
         _worldMatrix: import("../../export/exports.js").IgeMatrix2d;

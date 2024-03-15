@@ -30,7 +30,7 @@ import type {
 	IgeChildSortFunction,
 	IgeDepthSortObject,
 	IgeEntityBehaviourMethod,
-	IgeInputEvent,
+	IgeInputEventHandler,
 	IgePoint,
 	IgeSmartTexture,
 	IgeStreamCreateMessageData,
@@ -114,12 +114,12 @@ export class IgeObject
 	_pointerStateDown: boolean = false;
 	_pointerStateOver: boolean = false;
 	_pointerAlwaysInside: boolean = false;
-	_pointerOut?: IgeInputEvent;
-	_pointerOver?: IgeInputEvent;
-	_pointerMove?: IgeInputEvent;
-	_pointerWheel?: IgeInputEvent;
-	_pointerUp?: IgeInputEvent;
-	_pointerDown?: IgeInputEvent;
+	_pointerOut?: IgeInputEventHandler;
+	_pointerOver?: IgeInputEventHandler;
+	_pointerMove?: IgeInputEventHandler;
+	_pointerWheel?: IgeInputEventHandler;
+	_pointerUp?: IgeInputEventHandler;
+	_pointerDown?: IgeInputEventHandler;
 	_velocity: IgePoint3d;
 	_localMatrix: IgeMatrix2d;
 	_worldMatrix: IgeMatrix2d;
@@ -1600,6 +1600,9 @@ export class IgeObject
 		return this;
 	}
 
+	/**
+	 * Registers ourself to the ige.classStore.
+	 */
 	registerNetworkClass () {
 		ige.classStore[this.constructor.name] = this.constructor as GenericClass;
 	}

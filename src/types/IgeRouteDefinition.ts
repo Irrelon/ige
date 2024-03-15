@@ -1,8 +1,18 @@
-export type IgeAsyncFunction<ReturnType> = () => Promise<ReturnType>;
-export type IgeEffectFunction = IgeAsyncFunction<IgeAsyncFunction<void>>;
+declare const UNDEFINED_VOID_ONLY: unique symbol;
+type Destructor = () => Promise<void | { [UNDEFINED_VOID_ONLY]: never }>;
 
-export interface IgeRouteDefinition {
-	shared?: IgeEffectFunction;
-	client?: IgeEffectFunction;
-	server?: IgeEffectFunction;
+export type IgeEffectFunction<PropType extends any[] = any[]> = (...props: PropType) => Promise<void | Destructor>;
+
+export interface IgeRouteDefinition<RouteHandlerProps extends any[] = any[]> {
+	shared?: IgeEffectFunction<RouteHandlerProps>;
+	client?: IgeEffectFunction<RouteHandlerProps>;
+	server?: IgeEffectFunction<RouteHandlerProps>;
 }
+
+// const rd: IgeRouteDefinition<[{ name: string }]> = {
+// 	client: async () => {
+// 		return async () => {
+//
+// 		};
+// 	}
+// };

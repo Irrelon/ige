@@ -95,13 +95,14 @@ class IgeNetIoClientController extends exports_6.IgeNetIoBaseController {
             const transformData = data[4];
             const initialData = data[5];
             const parent = exports_2.ige.$(parentId);
+            //console.log("Stream create", data);
             // Check the required class exists
             if (parent) {
                 // Check that the entity doesn't already exist
                 if (!exports_2.ige.$(entityId)) {
                     const ClassConstructor = exports_4.igeClassStore[classId];
                     if (ClassConstructor) {
-                        console.log("Creating ", classId, createDataArgs);
+                        //console.log("Creating ", classId, createDataArgs);
                         // The entity does not currently exist so create it!
                         const entity = new ClassConstructor(...createDataArgs).id(entityId).mount(parent);
                         entity.streamSectionData("transform", transformData, true);
@@ -135,7 +136,7 @@ class IgeNetIoClientController extends exports_6.IgeNetIoBaseController {
         };
         this._onStreamDestroy = (data) => {
             const entity = exports_2.ige.$(data[1]);
-            console.log("Stream destroy", data);
+            //console.log("Stream destroy", data);
             if (!entity) {
                 return;
             }
@@ -450,6 +451,27 @@ class IgeNetIoClientController extends exports_6.IgeNetIoBaseController {
             return this;
         }
         return this._renderLatency;
+    }
+    /**
+     * Asks the server to assign us to a room by the room
+     * id. When assigning a client to a room, any streaming
+     * entities for that room start to stream to the client.
+     *
+     * A client can be joined to multiple rooms. If you want
+     * to join a room without leaving the others the client
+     * is already part of, set the leaveAllOthers flag to
+     * false.
+     * @param roomId
+     * @param leaveAllOthers
+     */
+    joinRoom(roomId, leaveAllOthers = true) {
+        this.send(exports_1.IGE_NETWORK_JOIN_ROOM, [roomId, leaveAllOthers]);
+    }
+    leaveRoom(roomId) {
+        this.send(exports_1.IGE_NETWORK_LEAVE_ROOM, roomId);
+    }
+    leaveAllRooms() {
+        this.send(exports_1.IGE_NETWORK_LEAVE_ROOM, "");
     }
 }
 exports.IgeNetIoClientController = IgeNetIoClientController;
