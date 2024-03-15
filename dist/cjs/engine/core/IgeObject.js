@@ -942,6 +942,9 @@ class IgeObject extends exports_2.IgeEventingClass {
         }
         return this;
     }
+    /**
+     * Registers ourself to the ige.classStore.
+     */
     registerNetworkClass() {
         exports_3.ige.classStore[this.constructor.name] = this.constructor;
     }

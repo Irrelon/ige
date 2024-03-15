@@ -7,7 +7,7 @@ import { ige, IgeFontAlignY, IgeFontEntity, IgeUiElement, registerClass } from "
  * text element. Font defaults to aligning h-left and v-middle. You can change
  * this by accessing the textBox._fontEntity.textAlignY(IgeFontAlignY).
  */
-// TODO: Make cursor a text entry cursor on hover
+// TODO: Make mouse pointer a text entry cursor on hover
 // TODO: Make a flashing cursor
 export class IgeUiTextBox extends IgeUiElement {
 	classId = "IgeUiTextBox";
@@ -39,14 +39,17 @@ export class IgeUiTextBox extends IgeUiElement {
 		const focusFunc = () => {
 			(ige.input as IgeInputComponent).stopPropagation();
 
+			// First call blur to remove any previous background DOM element
 			blurFunc();
 
+			// Now we grab the screen position of the IGE element, so we
+			// can position a DOM element over it
 			const entScreenPos = this.screenPosition();
 
 			const input = document.createElement("input");
 			input.setAttribute("type", "text");
 
-			// Position the infobox and set content
+			// Position the DOM input element and set content
 			input.style.position = "absolute";
 			input.style.top = entScreenPos.y - this._bounds2d.y2 + "px";
 			input.style.left = entScreenPos.x - this._bounds2d.x2 + "px";
@@ -55,14 +58,17 @@ export class IgeUiTextBox extends IgeUiElement {
 			input.style.opacity = "0";
 
 			const body = document.getElementsByTagName("body")[0];
-
 			body.appendChild(input);
+
+			// Place browser focus on the DOM input element
 			input.focus();
 
-			// Now add the existing text to the box
+			// Now add the existing text to the DOM input element
 			input.setAttribute("value", this._value);
 
-			// Set the caret position
+			// Set the caret position to the end of the current value
+			// so when the user types, text is appended to the end of
+			// the existing value
 			input.selectionStart = this._value.length;
 			input.selectionEnd = this._value.length;
 
@@ -84,6 +90,7 @@ export class IgeUiTextBox extends IgeUiElement {
 			});
 
 			input.addEventListener("mouseup", (event) => {
+				// Sync our internal caret position with the DOM element
 				this._caretStart = input.selectionStart;
 				this._caretEnd = input.selectionEnd;
 			});
@@ -102,6 +109,9 @@ export class IgeUiTextBox extends IgeUiElement {
 			(ige.input as IgeInputComponent).stopPropagation();
 		});
 
+		// Hook the uiUpdate event (emitted by the underlying IgeUiEntity) that
+		// gets emitted when any updates have occurred to the ui styling of
+		// the element / entity
 		this.on("uiUpdate", () => {
 			if (this._domElement) {
 				// Update the transformation matrix
@@ -120,8 +130,10 @@ export class IgeUiTextBox extends IgeUiElement {
 	}
 
 	/**
-	 * Extended method to auto-update the width of the child
-	 * font entity automatically to fill the text box.
+	 * Gets / sets the textbox width.
+	 * This method has been extended here to auto-update the width of the child
+	 * font entity automatically to fill the text box when changes occur to the
+	 * width of this entity.
 	 * @param px
 	 * @param lockAspect
 	 * @param modifier
@@ -143,6 +155,7 @@ export class IgeUiTextBox extends IgeUiElement {
 	}
 
 	/**
+	 * Gets / sets the textbox height.
 	 * Extended method to auto-update the height of the child
 	 * font entity automatically to fill the text box.
 	 * @param px
@@ -203,6 +216,11 @@ export class IgeUiTextBox extends IgeUiElement {
 		return this;
 	}
 
+	/**
+	 * Gets / sets the placeholder text that is displayed inside the
+	 * textbox when no current value is present.
+	 * @param val
+	 */
 	placeHolder (val: string): this;
 	placeHolder (): string;
 	placeHolder (val?: string) {
@@ -214,15 +232,34 @@ export class IgeUiTextBox extends IgeUiElement {
 		return this._placeHolder;
 	}
 
+	/**
+	 * Gets / sets the font colour for the placeholder text.
+	 * @param val
+	 */
+	placeHolderColor (val: string): this;
+	placeHolderColor (): string;
 	placeHolderColor (val?: string) {
 		if (val !== undefined) {
 			this._placeHolderColor = val;
+			this._resolveTextColor();
 			return this;
 		}
 
 		return this._placeHolderColor;
 	}
 
+	/**
+	 * Gets / sets the text mask character to use that masks the input
+	 * of the text rather than displaying the actual value. Useful for
+	 * password entry boxes or other sensitive data. Will display one
+	 * mask character per value character e.g.
+	 * 		value = "hello"
+	 * 		mask = "*"
+	 * 		textbox will show: *****
+	 * @param val
+	 */
+	mask (val: string): this;
+	mask (): string;
 	mask (val?: string) {
 		if (val !== undefined) {
 			this._mask = val;
@@ -238,6 +275,8 @@ export class IgeUiTextBox extends IgeUiElement {
 	 * @param fontSheet
 	 * @return {*}
 	 */
+	fontSheet (fontSheet: IgeFontSheet): this;
+	fontSheet (): IgeFontSheet | undefined;
 	fontSheet (fontSheet?: IgeFontSheet) {
 		if (fontSheet !== undefined) {
 			this._fontSheet = fontSheet;
@@ -250,6 +289,24 @@ export class IgeUiTextBox extends IgeUiElement {
 		return this._fontSheet;
 	}
 
+	/**
+	 * Gets / sets the current font for the textbox. If you pass
+	 * a string, the textbox will automatically use native font
+	 * rendering (use the canvas drawText() function). You can pass
+	 *
+	 * @example Get the current font
+	 * 		const currentFont = textbox.font()
+	 *
+	 * @example Use a Native Font
+	 * 		textbox.font("12px Verdana");
+	 *
+	 * @example Use an IgeFontSheet
+	 * 		textbox.font(fontSheetInstance);
+	 *
+	 * @param val
+	 */
+	font (val: string | IgeFontSheet): this;
+	font (): string | IgeFontSheet | undefined;
 	font (val?: string | IgeFontSheet) {
 		if (val !== undefined) {
 			if (typeof val === "string") {
@@ -270,6 +327,13 @@ export class IgeUiTextBox extends IgeUiElement {
 		}
 	}
 
+	/**
+	 * Explicitly set the font to a native font.
+	 * @see font
+	 * @param val
+	 */
+	nativeFont (val: string): this;
+	nativeFont (): string;
 	nativeFont (val?: string) {
 		if (val !== undefined) {
 			this._fontEntity.nativeFont(val);
@@ -279,6 +343,17 @@ export class IgeUiTextBox extends IgeUiElement {
 		return this._fontEntity.nativeFont();
 	}
 
+	/**
+	 * Gets / sets the native font's stroke setting (how thick the font
+	 * lines are). This is used in the canvas drawText() call.
+	 *
+	 * @example Set the stroke width to 2
+	 * 		textbox.nativeStroke(2);
+	 *
+	 * @param val
+	 */
+	nativeStroke (val: number): this;
+	nativeStroke (): number | undefined;
 	nativeStroke (val?: number) {
 		if (val !== undefined) {
 			this._fontEntity.nativeStroke(val);
@@ -288,6 +363,16 @@ export class IgeUiTextBox extends IgeUiElement {
 		return this._fontEntity.nativeStroke();
 	}
 
+	/**
+	 * Gets / sets the native font's stroke colour.
+	 *
+	 * @example Set the stroke colour to red
+	 * 		textbox.nativeStroke("#ff0000");
+	 *
+	 * @param val
+	 */
+	nativeStrokeColor (val: string): this;
+	nativeStrokeColor (): string | undefined;
 	nativeStrokeColor (val?: string) {
 		if (val !== undefined) {
 			this._fontEntity.nativeStrokeColor(val);
@@ -297,12 +382,21 @@ export class IgeUiTextBox extends IgeUiElement {
 		return this._fontEntity.nativeStrokeColor();
 	}
 
+	/**
+	 * Gets / sets the font colour of the textbox text displayed
+	 * when the user types into the textbox.
+	 *
+	 * @example Set the text colour to black
+	 * 		textbox.color("#000000");
+	 *
+	 * @param color
+	 */
 	color (color?: string | CanvasGradient | CanvasPattern): this;
 	color (): string | CanvasGradient | CanvasPattern;
 	color (color?: string | CanvasGradient | CanvasPattern) {
 		if (color !== undefined) {
 			this._color = color;
-
+			this._resolveTextColor();
 			if (!this._value && this._placeHolder && this._placeHolderColor) {
 				this._fontEntity.color(this._placeHolderColor);
 			} else {
@@ -312,6 +406,24 @@ export class IgeUiTextBox extends IgeUiElement {
 		}
 
 		return this._color;
+	}
+
+	_resolveTextColor () {
+		// Check if the textbox has a text value, if so we want
+		// to render the text in the color defined in this._color.
+		if (this._value) {
+			if (this._color) {
+				this._fontEntity.color(this._color);
+			}
+			return;
+		}
+
+		// There is no current textbox text value so set the color
+		// to the placeholder color if there is one
+		if (this._placeHolderColor && this._placeHolder) {
+			this._fontEntity.color(this._placeHolderColor);
+			return;
+		}
 	}
 
 	_mounted () {

@@ -26,8 +26,8 @@ export * from "../types/IgeConfig";
 export * from "../types/IgeDepthSortObject";
 export * from "../types/IgeEntityBehaviour";
 export * from "../types/IgeImage";
-export * from "../types/IgeInputEventHandler";
 export * from "../types/IgeInputEventControl";
+export * from "../types/IgeInputEventHandler";
 export * from "../types/IgeIsReadyPromise";
 export * from "../types/IgeNetworkChat";
 export * from "../types/IgeNetworkMessage";
@@ -48,6 +48,8 @@ export * from "../types/IgeTextureCell";
 export * from "../types/IgeTextureCellArray";
 export * from "../types/IgeTimeStream";
 export * from "../types/IgeTriggerPolygonFunctionName";
+export * from "../types/IgeUiStyleModifier";
+export * from "../types/IgeUiStyleObject";
 export * from "../types/Mixin";
 export * from "../types/SyncEntry";
 

@@ -3,9 +3,8 @@ import type { IgeUiManagerController } from "@/export/exports";
 import { registerClass } from "@/export/exports";
 import { ige } from "@/export/exports";
 import type { IgeInputComponent } from "@/export/exports";
-
-export type IgeUiStyleObject<InterfaceType = any> = Record<string, InterfaceType>;
-export type IgeUiStyleState = "focus" | "hover" | "active";
+import type { IgeUiStyleModifier } from "@/export/exports";
+import type { IgeUiStyleObject } from "@/export/exports";
 
 /**
  * Creates a new UI element. UI elements use more resources and CPU
@@ -200,6 +199,13 @@ export class IgeUiElement extends IgeUiEntity {
 		return allStyles;
 	}
 
+	/**
+	 * Uses the entity's classId, styleClass and id to apply any styles
+	 * defined that match those values. Styles are applied in the order:
+	 * classId -> styleClass -> id so a style targeting the entity's id
+	 * would override any of the same style parameters defined in a style
+	 * class or classId.
+	 */
 	_updateStyle () {
 		// Apply styles in order of class, class:focus, class:hover, class:active,
 		// id, id:focus, id:hover, id:active
@@ -226,7 +232,35 @@ export class IgeUiElement extends IgeUiEntity {
 		}
 	}
 
-	_processStyle (styleName?: string, state?: IgeUiStyleState) {
+	/**
+	 * Process a given style + state and apply it to the element.
+	 * This means method provides a way for the style system to apply styles
+	 * based on both the style name and the current state of the element.
+	 * The style system supports common modifier states similar to CSS.
+	 * For instance, you can define a style in the ui system via:
+	 *
+	 * 		ige.ui.style(".myStyleClass", {paddingLeft: 10});
+	 *
+	 * You can then define a modifier to that style:
+	 *
+	 * 		ige.ui.style(".myStyleClass:focus", {paddingLeft: 20});
+	 *
+	 * When you assign the style class to an IgeUiElement, the focus state of
+	 * that element will affect the style being applied:
+	 *
+	 * 		new IgeUiTextbox().styleClass("myStyleClass");
+	 *
+	 * When un-focussed, the textbox will have left-padding of 10. When the
+	 * user clicks into the textbox and it gains focus, the left-padding will
+	 * update to 20. When it loses focus the left-padding will reset to 10.
+	 *
+	 * @see IgeUiManagerController.style()
+	 * @param {string} styleName - The name of the style to process.
+	 * @param {IgeUiStyleModifier} [state] - The state of the style.
+	 *
+	 * @return {void}
+	 */
+	_processStyle (styleName?: string, state?: IgeUiStyleModifier): undefined {
 		if (!styleName) {
 			return;
 		}
@@ -252,7 +286,7 @@ export class IgeUiElement extends IgeUiEntity {
 	 *
 	 * Style property names must correspond to method names in the element
 	 * class that the style is being applied to. You can see the default
-	 * ui style methods available in the ./engine/extensions/IgeUi* files.
+	 * ui style methods available in the ./engine/ui/IgeUi* files.
 	 *
 	 * In the example below showing padding, you can see how the data assigned
 	 * is passed to the "padding()" method as arguments, which is the same
@@ -264,37 +298,44 @@ export class IgeUiElement extends IgeUiEntity {
 	 *             'backgroundColor': '#ffffff' // Set background color to white
 	 *         });
 	 *
+	 *     Internally, this call is equivalent to `elem.backgroundColor("#ffffff");`
+	 *
 	 * @example #Apply padding with multiple arguments
 	 *     var elem = new IgeUiElement()
 	 *         .applyStyle({
 	 *             'padding': [10, 10, 10, 10] // Set padding using multiple values
 	 *         });
 	 *
+	 *     Internally, this call is equivalent to `elem.padding(10, 10, 10, 10);`
+	 *
 	 * @param {Object} styleData The style object to apply. This object should
 	 * contain key/value pairs where the key matches a method name and the value
-	 * is the parameter to pass it.
+	 * is the argument or array of arguments to pass it. Arrays of arguments are
+	 * spread using the `...args` spread operator e.g. `someFunc(...args);`
 	 */
+	applyStyle (styleData: IgeUiStyleObject): this;
+	applyStyle (): IgeUiStyleObject;
 	applyStyle (styleData?: IgeUiStyleObject) {
 		if (styleData === undefined) {
 			return this;
 		}
 
 		// Loop the style data and apply styles as required
-		for (const i in styleData) {
+		for (const functionName in styleData) {
 			// Check that the style method exists
 			// @ts-ignore
-			if (typeof this[i] === "function") {
+			if (typeof this[functionName] === "function") {
 				// The method exists, call it with the arguments
-				let args;
+				let args: any[];
 
-				if (styleData[i] instanceof Array) {
-					args = styleData[i];
+				if (styleData[functionName] instanceof Array) {
+					args = styleData[functionName];
 				} else {
-					args = [styleData[i]];
+					args = [styleData[functionName]];
 				}
 
 				// @ts-ignore
-				this[i](...args);
+				this[functionName](...args);
 			}
 		}
 

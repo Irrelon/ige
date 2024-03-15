@@ -4,7 +4,7 @@ import { registerClass } from "@/export/exports";
 import { IgeFontAlignX, IgeFontAlignY } from "@/export/exports";
 import { IgeTextureRenderMode } from "@/export/exports";
 import { IgeFontSmartTexture } from "@/export/exports";
-import type { IgeCanvasRenderingContext2d , IgeFontSheet} from "@/export/exports";
+import type { IgeCanvasRenderingContext2d, IgeFontSheet } from "@/export/exports";
 
 /**
  * Creates a new font entity. A font entity will use a font sheet
@@ -23,7 +23,7 @@ export class IgeFontEntity extends IgeUiEntity {
 	_nativeStroke?: number;
 	_nativeStrokeColor?: string;
 	_autoWrap: boolean = false;
-	_colorOverlay?: string;
+	_colorOverlay?: string | CanvasGradient | CanvasPattern;
 	_bindDataObject?: any;
 	_bindDataProperty?: string;
 	_bindDataPreText?: string;
@@ -218,7 +218,7 @@ export class IgeFontEntity extends IgeUiEntity {
 	 * @return {*} "this" when arguments are passed to allow method
 	 * chaining or the current value if no arguments are specified.
 	 */
-	colorOverlay (val?: string) {
+	colorOverlay (val?: string | CanvasGradient | CanvasPattern) {
 		if (val !== undefined) {
 			if (this._colorOverlay !== val) {
 				this.clearCache();
@@ -233,9 +233,9 @@ export class IgeFontEntity extends IgeUiEntity {
 	/**
 	 * A proxy for colorOverlay().
 	 */
-	color (val: string): this;
-	color (): string;
-	color (val?: string) {
+	color (val: string | CanvasGradient | CanvasPattern): this;
+	color (): string | CanvasGradient | CanvasPattern;
+	color (val?: string | CanvasGradient | CanvasPattern) {
 		return this.colorOverlay(val);
 	}
 

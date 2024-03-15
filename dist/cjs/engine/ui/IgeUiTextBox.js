@@ -8,7 +8,7 @@ const exports_1 = require("../../export/exports.js");
  * text element. Font defaults to aligning h-left and v-middle. You can change
  * this by accessing the textBox._fontEntity.textAlignY(IgeFontAlignY).
  */
-// TODO: Make cursor a text entry cursor on hover
+// TODO: Make mouse pointer a text entry cursor on hover
 // TODO: Make a flashing cursor
 class IgeUiTextBox extends exports_1.IgeUiElement {
     constructor() {
@@ -31,11 +31,14 @@ class IgeUiTextBox extends exports_1.IgeUiElement {
         };
         const focusFunc = () => {
             exports_1.ige.input.stopPropagation();
+            // First call blur to remove any previous background DOM element
             blurFunc();
+            // Now we grab the screen position of the IGE element, so we
+            // can position a DOM element over it
             const entScreenPos = this.screenPosition();
             const input = document.createElement("input");
             input.setAttribute("type", "text");
-            // Position the infobox and set content
+            // Position the DOM input element and set content
             input.style.position = "absolute";
             input.style.top = entScreenPos.y - this._bounds2d.y2 + "px";
             input.style.left = entScreenPos.x - this._bounds2d.x2 + "px";
@@ -44,10 +47,13 @@ class IgeUiTextBox extends exports_1.IgeUiElement {
             input.style.opacity = "0";
             const body = document.getElementsByTagName("body")[0];
             body.appendChild(input);
+            // Place browser focus on the DOM input element
             input.focus();
-            // Now add the existing text to the box
+            // Now add the existing text to the DOM input element
             input.setAttribute("value", this._value);
-            // Set the caret position
+            // Set the caret position to the end of the current value
+            // so when the user types, text is appended to the end of
+            // the existing value
             input.selectionStart = this._value.length;
             input.selectionEnd = this._value.length;
             this._caretStart = this._value.length;
@@ -64,6 +70,7 @@ class IgeUiTextBox extends exports_1.IgeUiElement {
                 this.value(input.value);
             });
             input.addEventListener("mouseup", (event) => {
+                // Sync our internal caret position with the DOM element
                 this._caretStart = input.selectionStart;
                 this._caretEnd = input.selectionEnd;
             });
@@ -78,6 +85,9 @@ class IgeUiTextBox extends exports_1.IgeUiElement {
         this.on("pointerDown", () => {
             exports_1.ige.input.stopPropagation();
         });
+        // Hook the uiUpdate event (emitted by the underlying IgeUiEntity) that
+        // gets emitted when any updates have occurred to the ui styling of
+        // the element / entity
         this.on("uiUpdate", () => {
             if (this._domElement) {
                 // Update the transformation matrix
@@ -146,6 +156,7 @@ class IgeUiTextBox extends exports_1.IgeUiElement {
     placeHolderColor(val) {
         if (val !== undefined) {
             this._placeHolderColor = val;
+            this._resolveTextColor();
             return this;
         }
         return this._placeHolderColor;
@@ -157,12 +168,6 @@ class IgeUiTextBox extends exports_1.IgeUiElement {
         }
         return this._mask;
     }
-    /**
-     * Gets / sets the font sheet (texture) that the text box will
-     * use when rendering text inside the box.
-     * @param fontSheet
-     * @return {*}
-     */
     fontSheet(fontSheet) {
         if (fontSheet !== undefined) {
             this._fontSheet = fontSheet;
@@ -216,6 +221,7 @@ class IgeUiTextBox extends exports_1.IgeUiElement {
     color(color) {
         if (color !== undefined) {
             this._color = color;
+            this._resolveTextColor();
             if (!this._value && this._placeHolder && this._placeHolderColor) {
                 this._fontEntity.color(this._placeHolderColor);
             }
@@ -225,6 +231,22 @@ class IgeUiTextBox extends exports_1.IgeUiElement {
             return this;
         }
         return this._color;
+    }
+    _resolveTextColor() {
+        // Check if the textbox has a text value, if so we want
+        // to render the text in the color defined in this._color.
+        if (this._value) {
+            if (this._color) {
+                this._fontEntity.color(this._color);
+            }
+            return;
+        }
+        // There is no current textbox text value so set the color
+        // to the placeholder color if there is one
+        if (this._placeHolderColor && this._placeHolder) {
+            this._fontEntity.color(this._placeHolderColor);
+            return;
+        }
     }
     _mounted() {
         // Check if we have a text value

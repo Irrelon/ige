@@ -724,6 +724,9 @@ export declare class IgeObject extends IgeEventingClass implements IgeCanRegiste
      */
     cacheDirty(val: boolean): this;
     cacheDirty(): boolean;
+    /**
+     * Registers ourself to the ige.classStore.
+     */
     registerNetworkClass(): void;
     /**
      * Gets / sets the `disable interpolation` flag. If set to true then

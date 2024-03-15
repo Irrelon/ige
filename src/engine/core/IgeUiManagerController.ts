@@ -30,12 +30,69 @@ export class IgeUiManagerController extends IgeEventingClass implements IgeIsRea
 	}
 
 	/**
-	 * Get / set a style by name.
+	 * Get / set a style by name. This is the main way to define styles using
+	 * the engine's style system. A style name can be any string that maps to
+	 * a method name on the target entity that the style will be applied to.
+	 *
+	 * The style() function supports a similar naming convention to CSS so to
+	 * create a style for an entity that has a specific id you would start the
+	 * style name with a hash # character. To create a style class that can be
+	 * shared and applied to multiple entities at the same time, the name starts
+	 * with a period . character. You can also define styles for a specific
+	 * entity constructor e.g. IgeUiTextbox.
+	 *
+	 * Finally, all style types support the addition of modifier states to a
+	 * style that respond to the internal state of the entity it's applied to.
+	 * You denote modifier state names by providing the style name, then a
+	 * colon : character, then the modifier name. Supported modifiers are
+	 * defined in the type IgeUiStyleModifier. Styles are always applied in
+	 * the order of least specific to most specific, so constructor styles
+	 * first, then style classes and finally id-based styles.
+	 *
+	 * @example Create an id-based style
+	 * 		> Styles with a # are auto-applied to IgeUiElement() instances
+	 * 		> where the id matches the name after the #
+	 * 		// Create the style targeting the id
+	 * 		ige.ui.style("#myEntityId", {color: "blue"});
+	 *
+	 * 		// Create the entity with the id - the style is auto-applied
+	 * 		new IgeUiElement().id("myEntityId");
+	 *
+	 * @example Create a style class that can be shared
+	 * 		> Styles starting with a . are considered "style classes"
+	 * 		> and can be applied to multiple ui entities
+	 * 		// Create a style class
+	 * 		ige.ui.style(".blueText", {color: "blue"});
+	 *
+	 * 		// Create an entity and assign the style class
+	 * 		new IgeUiElement().styleClass("blueText");
+	 *
+	 * @example Create a style targeting a constructor
+	 * 		> Styles that don't start with a # or . are considered
+	 * 		> constructor selectors
+	 * 		// Create a style that targets a constructor
+	 * 		ige.ui.style("IgeUiTextbox", {color: "purple"});
+	 *
+	 * 		// Create an entity with the IgeUiTextbox constructor
+	 * 		// the style for this constructor is automatically applied
+	 * 		new IgeUiTextbox();
+	 *
+	 * @example Create a modifier style
+	 * 		> Style names that have a colon : in their name are
+	 * 		> considered to be modifier styles
+	 * 		ige.ui.style("IgeUiTextbox:focus", {
+	 * 			borderColor: "red",
+	 * 			borderWidth: 1
+	 * 		});
+	 *
 	 * @param {string} name The unique name of the style.
 	 * @param {Object=} data The style properties and values to assign to the
 	 * style.
 	 * @returns {*}
 	 */
+	style<StyleClassType = any> (name: string, data: IgeUiStyleObject<StyleClassType>): this;
+	style<StyleClassType = any> (name: string | undefined): IgeUiStyleObject<StyleClassType> | undefined;
+	style<StyleClassType = any> (): this;
 	style<StyleClassType = any> (name?: string, data?: IgeUiStyleObject<StyleClassType>) {
 		if (name !== undefined) {
 			if (data !== undefined) {
@@ -48,7 +105,7 @@ export class IgeUiManagerController extends IgeEventingClass implements IgeIsRea
 			return this._styles[name];
 		}
 
-		return this;
+		return;
 	}
 
 	/**
@@ -106,7 +163,7 @@ export class IgeUiManagerController extends IgeEventingClass implements IgeIsRea
 				// The element is not our current focus so focus to it
 				const previousFocus = this._focus;
 
-				// Tell the current focused element that it is about to loose focus
+				// Tell the current focused element that it is about to lose focus
 				if (!previousFocus || previousFocus.emit("blur", elem) !== IgeEventReturnFlag.cancel) {
 					if (previousFocus) {
 						previousFocus._focused = false;

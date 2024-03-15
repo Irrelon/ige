@@ -18,8 +18,10 @@ export declare class IgeUiTextBox extends IgeUiElement {
     _mask: string;
     constructor();
     /**
-     * Extended method to auto-update the width of the child
-     * font entity automatically to fill the text box.
+     * Gets / sets the textbox width.
+     * This method has been extended here to auto-update the width of the child
+     * font entity automatically to fill the text box when changes occur to the
+     * width of this entity.
      * @param px
      * @param lockAspect
      * @param modifier
@@ -29,6 +31,7 @@ export declare class IgeUiTextBox extends IgeUiElement {
     width(px: number | string, lockAspect?: boolean, modifier?: number, noUpdate?: boolean): this;
     width(): number;
     /**
+     * Gets / sets the textbox height.
      * Extended method to auto-update the height of the child
      * font entity automatically to fill the text box.
      * @param px
@@ -46,23 +49,97 @@ export declare class IgeUiTextBox extends IgeUiElement {
      */
     value(val: string): this;
     value(): string;
+    /**
+     * Gets / sets the placeholder text that is displayed inside the
+     * textbox when no current value is present.
+     * @param val
+     */
     placeHolder(val: string): this;
     placeHolder(): string;
-    placeHolderColor(val?: string): string | this;
-    mask(val?: string): string | this;
+    /**
+     * Gets / sets the font colour for the placeholder text.
+     * @param val
+     */
+    placeHolderColor(val: string): this;
+    placeHolderColor(): string;
+    /**
+     * Gets / sets the text mask character to use that masks the input
+     * of the text rather than displaying the actual value. Useful for
+     * password entry boxes or other sensitive data. Will display one
+     * mask character per value character e.g.
+     * 		value = "hello"
+     * 		mask = "*"
+     * 		textbox will show: *****
+     * @param val
+     */
+    mask(val: string): this;
+    mask(): string;
     /**
      * Gets / sets the font sheet (texture) that the text box will
      * use when rendering text inside the box.
      * @param fontSheet
      * @return {*}
      */
-    fontSheet(fontSheet?: IgeFontSheet): IgeFontSheet | this | undefined;
-    font(val?: string | IgeFontSheet): string | IgeFontEntity | IgeFontSheet | this | undefined;
-    nativeFont(val?: string): string | IgeFontEntity | this | undefined;
-    nativeStroke(val?: number): number | IgeFontEntity | this | undefined;
-    nativeStrokeColor(val?: string): string | IgeFontEntity | this | undefined;
+    fontSheet(fontSheet: IgeFontSheet): this;
+    fontSheet(): IgeFontSheet | undefined;
+    /**
+     * Gets / sets the current font for the textbox. If you pass
+     * a string, the textbox will automatically use native font
+     * rendering (use the canvas drawText() function). You can pass
+     *
+     * @example Get the current font
+     * 		const currentFont = textbox.font()
+     *
+     * @example Use a Native Font
+     * 		textbox.font("12px Verdana");
+     *
+     * @example Use an IgeFontSheet
+     * 		textbox.font(fontSheetInstance);
+     *
+     * @param val
+     */
+    font(val: string | IgeFontSheet): this;
+    font(): string | IgeFontSheet | undefined;
+    /**
+     * Explicitly set the font to a native font.
+     * @see font
+     * @param val
+     */
+    nativeFont(val: string): this;
+    nativeFont(): string;
+    /**
+     * Gets / sets the native font's stroke setting (how thick the font
+     * lines are). This is used in the canvas drawText() call.
+     *
+     * @example Set the stroke width to 2
+     * 		textbox.nativeStroke(2);
+     *
+     * @param val
+     */
+    nativeStroke(val: number): this;
+    nativeStroke(): number | undefined;
+    /**
+     * Gets / sets the native font's stroke colour.
+     *
+     * @example Set the stroke colour to red
+     * 		textbox.nativeStroke("#ff0000");
+     *
+     * @param val
+     */
+    nativeStrokeColor(val: string): this;
+    nativeStrokeColor(): string | undefined;
+    /**
+     * Gets / sets the font colour of the textbox text displayed
+     * when the user types into the textbox.
+     *
+     * @example Set the text colour to black
+     * 		textbox.color("#000000");
+     *
+     * @param color
+     */
     color(color?: string | CanvasGradient | CanvasPattern): this;
     color(): string | CanvasGradient | CanvasPattern;
+    _resolveTextColor(): void;
     _mounted(): void;
     destroy(): this;
 }

@@ -17,7 +17,7 @@ export declare class IgeFontEntity extends IgeUiEntity {
     _nativeStroke?: number;
     _nativeStrokeColor?: string;
     _autoWrap: boolean;
-    _colorOverlay?: string;
+    _colorOverlay?: string | CanvasGradient | CanvasPattern;
     _bindDataObject?: any;
     _bindDataProperty?: string;
     _bindDataPreText?: string;
@@ -109,12 +109,12 @@ export declare class IgeFontEntity extends IgeUiEntity {
      * @return {*} "this" when arguments are passed to allow method
      * chaining or the current value if no arguments are specified.
      */
-    colorOverlay(val?: string): string | this | undefined;
+    colorOverlay(val?: string | CanvasGradient | CanvasPattern): string | CanvasPattern | CanvasGradient | this | undefined;
     /**
      * A proxy for colorOverlay().
      */
-    color(val: string): this;
-    color(): string;
+    color(val: string | CanvasGradient | CanvasPattern): this;
+    color(): string | CanvasGradient | CanvasPattern;
     /**
      * Clears the texture cache for this entity's text string.
      */
