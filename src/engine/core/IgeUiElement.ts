@@ -207,6 +207,17 @@ export class IgeUiElement extends IgeUiEntity {
 	 * class or classId.
 	 */
 	_updateStyle () {
+		// TODO: We could aggregate the final style object then apply it once
+		//   rather than applying each one separately which currently increases
+		//   overall CPU usage as styles are applied and methods called that
+		//   don't need to be
+
+		// TODO: We need to create a base style (perhaps follow CSS and use *)
+		//   so that if we "un-apply" a style like going from focus to not focussed
+		//   the base styles are applied that essentially "undo" the focussed
+		//   state. We can identify the style method call (e.g. borderColor) and
+		//   only apply those that the focus state affected to save on CPU cycles
+
 		// Apply styles in order of class, class:focus, class:hover, class:active,
 		// id, id:focus, id:hover, id:active
 		this._processStyle(this.classId);

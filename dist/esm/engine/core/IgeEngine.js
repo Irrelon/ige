@@ -106,7 +106,7 @@ export class IgeEngine extends IgeEntity {
         this._currentViewport = null; // Set in IgeViewport.js tick(), holds the current rendering viewport
         this._currentCamera = null; // Set in IgeViewport.js tick(), holds the current rendering viewport's camera
         this._currentTime = 0; // The current engine time
-        this._globalSmoothing = false; // Determines the default smoothing setting for new textures
+        this._globalSmoothing = true; // Determines the default smoothing setting for new textures
         this._timeSpentInUpdate = {}; // An object holding time-spent-in-update (total time spent in this object's update method)
         this._timeSpentLastUpdate = {}; // An object holding time-spent-last-update (time spent in this object's update method last tick)
         this._timeSpentInTick = {}; // An object holding time-spent-in-tick (total time spent in this object's tick method)

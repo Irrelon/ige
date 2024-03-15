@@ -35,6 +35,9 @@ export class IgeUiTextBox extends IgeUiElement {
             // Now we grab the screen position of the IGE element, so we
             // can position a DOM element over it
             const entScreenPos = this.screenPosition();
+            // We create this DOM element ONLY because, on tablets and phones the browser
+            // will not display the on-screen keyboard to allow text entry unless a
+            // DOM element exists to type into
             const input = document.createElement("input");
             input.setAttribute("type", "text");
             // Position the DOM input element and set content
@@ -42,6 +45,7 @@ export class IgeUiTextBox extends IgeUiElement {
             input.style.top = entScreenPos.y - this._bounds2d.y2 + "px";
             input.style.left = entScreenPos.x - this._bounds2d.x2 + "px";
             input.style.width = this._bounds2d.x + "px";
+            input.style.height = this._bounds2d.y + "px";
             input.style.zIndex = "-1";
             input.style.opacity = "0";
             const body = document.getElementsByTagName("body")[0];
@@ -58,24 +62,26 @@ export class IgeUiTextBox extends IgeUiElement {
             this._caretStart = this._value.length;
             this._caretEnd = this._value.length;
             // Listen for events from the temp input element
-            input.addEventListener("keyup", (event) => {
+            input.addEventListener("input", (event) => {
                 this.value(input.value);
+            });
+            input.addEventListener("keyup", (event) => {
                 if (event.key === "Enter") {
                     // Enter pressed
                     this.emit("enter", this._value);
                 }
-            });
-            input.addEventListener("keydown", (event) => {
-                this.value(input.value);
             });
             input.addEventListener("mouseup", (event) => {
                 // Sync our internal caret position with the DOM element
                 this._caretStart = input.selectionStart;
                 this._caretEnd = input.selectionEnd;
             });
-            input.addEventListener("blur", (event) => {
-                this.focus();
-            });
+            // Not sure what to do here or if we need to. Blurring after instantiation is the issue
+            // and only seems to occur on desktop, where an onscreen keyboard is not required anyway
+            //input.addEventListener("blur", (event) => {
+            //	console.log("Internal dom element lost focus");
+            //	this.focus();
+            //});
             this._domElement = input;
         };
         // On focus, create a temp input element in the DOM and focus to it

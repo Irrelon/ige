@@ -78,10 +78,10 @@ exports.IgeFontSmartTexture = {
             //textSize = ctx.measureText(lineArrItem);
             // Check if we should stroke the text too
             if (entity._nativeStroke) {
-                ctx.strokeText(lineArrItem, 0, renderY);
+                ctx.strokeText(lineArrItem, 0, Math.floor(renderY));
             }
             // Draw text
-            ctx.fillText(lineArrItem, 0, renderY);
+            ctx.fillText(lineArrItem, 0, Math.floor(renderY));
         }
     },
     meta: {

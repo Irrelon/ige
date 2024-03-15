@@ -15,9 +15,9 @@ export const IgeFontSmartTexture: IgeSmartTexture = {
 
 		const text = entity._renderText;
 
-		let lineArr;
+		let lineArr: string | string[];
 		let renderStartY = 0;
-		let renderY;
+		let renderY: number;
 		let lineHeight = 0;
 
 		ctx.font = entity._nativeFont;
@@ -78,7 +78,7 @@ export const IgeFontSmartTexture: IgeSmartTexture = {
 			lineHeight = Math.floor(entity._bounds2d.y / lineArr.length);
 			renderStartY = -((lineHeight + entity._textLineSpacing) / 2) * (lineArr.length - 1);
 		}
-		
+
 		for (let lineArrIndex = 0; lineArrIndex < lineArr.length; lineArrIndex++) {
 			const lineArrItem = lineArr[lineArrIndex];
 
@@ -93,11 +93,11 @@ export const IgeFontSmartTexture: IgeSmartTexture = {
 
 			// Check if we should stroke the text too
 			if (entity._nativeStroke) {
-				ctx.strokeText(lineArrItem, 0, renderY);
+				ctx.strokeText(lineArrItem, 0, Math.floor(renderY));
 			}
 
 			// Draw text
-			ctx.fillText(lineArrItem, 0, renderY);
+			ctx.fillText(lineArrItem, 0, Math.floor(renderY));
 		}
 	},
 	meta: {

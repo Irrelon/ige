@@ -1,4 +1,4 @@
-import { arrPull } from "@/export/exports";
+import { type AnyFunction, arrPull } from "@/export/exports";
 import { IgeEventingClass } from "@/export/exports";
 import type { IgeInputComponent, IgeUiElement, IgeUiStyleObject } from "@/export/exports";
 import { ige } from "@/export/exports";
@@ -19,15 +19,29 @@ export class IgeUiManagerController extends IgeEventingClass implements IgeIsRea
 	isReady () {
 		return new Promise<void>((resolve) => {
 			setTimeout(() => {
-				ige.dependencies.waitFor(["input"], () => {
-					(ige.input as IgeInputComponent).on("keyDown", (event) => {
-						this._keyDown(event);
-					});
-					resolve();
-				});
+				this._addEventListeners(resolve);
 			}, 1);
 		});
 	}
+
+	_addEventListeners = (callback?: AnyFunction) => {
+		// Remove any previous listeners
+		this._removeEventListeners();
+
+		ige.dependencies.waitFor(["input"], () => {
+			(ige.input as IgeInputComponent).on("keyDown", this._keyDown);
+
+			callback?.();
+		});
+	};
+
+	_removeEventListeners = (callback?: AnyFunction) => {
+		ige.dependencies.waitFor(["input"], () => {
+			(ige.input as IgeInputComponent).off("keyDown", this._keyDown);
+
+			callback?.();
+		});
+	};
 
 	/**
 	 * Get / set a style by name. This is the main way to define styles using
@@ -158,8 +172,10 @@ export class IgeUiManagerController extends IgeEventingClass implements IgeIsRea
 	}
 
 	focus (elem: IgeUiElement) {
+		console.log("Global focus call", elem, new Error().stack);
 		if (elem !== undefined) {
 			if (elem !== this._focus) {
+				console.log("Global focus being set to", elem, new Error().stack);
 				// The element is not our current focus so focus to it
 				const previousFocus = this._focus;
 
@@ -193,7 +209,7 @@ export class IgeUiManagerController extends IgeEventingClass implements IgeIsRea
 		if (elem !== undefined) {
 			if (elem === this._focus) {
 				// The element is currently focused
-				// Tell the current focused element that it is about to loose focus
+				// Tell the current focused element that it is about to lose focus
 				if (elem.emit("blur") !== IgeEventReturnFlag.cancel) {
 					// The blur was not cancelled
 					this._focus = null;

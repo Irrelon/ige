@@ -42,8 +42,8 @@ __exportStar(require("../types/IgeConfig"), exports);
 __exportStar(require("../types/IgeDepthSortObject"), exports);
 __exportStar(require("../types/IgeEntityBehaviour"), exports);
 __exportStar(require("../types/IgeImage"), exports);
-__exportStar(require("../types/IgeInputEventHandler"), exports);
 __exportStar(require("../types/IgeInputEventControl"), exports);
+__exportStar(require("../types/IgeInputEventHandler"), exports);
 __exportStar(require("../types/IgeIsReadyPromise"), exports);
 __exportStar(require("../types/IgeNetworkChat"), exports);
 __exportStar(require("../types/IgeNetworkMessage"), exports);
@@ -64,6 +64,8 @@ __exportStar(require("../types/IgeTextureCell"), exports);
 __exportStar(require("../types/IgeTextureCellArray"), exports);
 __exportStar(require("../types/IgeTimeStream"), exports);
 __exportStar(require("../types/IgeTriggerPolygonFunctionName"), exports);
+__exportStar(require("../types/IgeUiStyleModifier"), exports);
+__exportStar(require("../types/IgeUiStyleObject"), exports);
 __exportStar(require("../types/Mixin"), exports);
 __exportStar(require("../types/SyncEntry"), exports);
 //////////////////////////////////////////////////////////////////////
