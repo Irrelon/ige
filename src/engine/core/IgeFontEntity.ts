@@ -261,7 +261,9 @@ export class IgeFontEntity extends IgeUiEntity {
 	 * @return {*} "this" when arguments are passed to allow method
 	 * chaining or the current value if no arguments are specified.
 	 */
-	nativeFont (val?: string) {
+	nativeFont (val: string): this;
+	nativeFont (): string | undefined;
+	nativeFont (val?: string): string | this | undefined {
 		if (val !== undefined) {
 			// Check if this font is different from the current
 			// assigned font
@@ -290,7 +292,9 @@ export class IgeFontEntity extends IgeUiEntity {
 	 * @param {number=} val The size of the text stroke.
 	 * @return {*}
 	 */
-	nativeStroke (val?: number) {
+	nativeStroke (val: number): this;
+	nativeStroke (): number | undefined;
+	nativeStroke (val?: number): number | this | undefined {
 		if (val !== undefined) {
 			if (this._nativeStroke !== val) {
 				this.clearCache();
@@ -308,6 +312,8 @@ export class IgeFontEntity extends IgeUiEntity {
 	 * @param val The color of the text stroke.
 	 * @return {*}
 	 */
+	nativeStrokeColor (val: string): this;
+	nativeStrokeColor (): string | undefined;
 	nativeStrokeColor (val?: string) {
 		if (val !== undefined) {
 			if (this._nativeStrokeColor !== val) {

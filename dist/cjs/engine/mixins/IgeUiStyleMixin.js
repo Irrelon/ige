@@ -123,12 +123,6 @@ const WithUiStyleMixin = (Base) => class extends Base {
         this.cacheDirty(true);
         return this;
     }
-    /**
-     * Gets / sets the color to use as a background when
-     * rendering the UI element.
-     * @param {CSSColor, CanvasGradient, CanvasPattern=} color
-     * @return {*} Returns this when setting the value or the current value if none is specified.
-     */
     backgroundColor(color) {
         if (color !== undefined) {
             this._backgroundColor = color;

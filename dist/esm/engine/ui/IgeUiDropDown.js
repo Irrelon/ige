@@ -12,7 +12,7 @@ export class IgeUiDropDown extends IgeUiElement {
         // Define some default styles
         if (!ige.ui.style(".IgeUiDropDownOption")) {
             ige.ui.style(".IgeUiDropDownOption", {
-                backgroundColor: null
+                backgroundColor: undefined
             });
             ige.ui.style(".IgeUiDropDownOption:hover", {
                 backgroundColor: "#00b4ff",
@@ -100,10 +100,9 @@ export class IgeUiDropDown extends IgeUiElement {
         if (this._toggleState) {
             const mainTop = this._bounds2d.y + 5;
             const mainHeight = this._options.length * 30;
-            const optionContainer = new IgeUiElement()
-                .id(this._id + "_options")
-                .backgroundColor(this._backgroundColor)
-                .borderColor(this._borderColor)
+            const optionContainer = new IgeUiElement().id(this._id + "_options");
+            optionContainer.backgroundColor(this._backgroundColor);
+            optionContainer.borderColor(this._borderColor)
                 .borderWidth(this._borderWidth)
                 .top(mainTop)
                 .width(this._bounds2d.x)

@@ -200,7 +200,9 @@ export const WithUiStyleMixin = <BaseClassType extends Mixin<IgeObject>> (Base: 
 		 * @param {CSSColor, CanvasGradient, CanvasPattern=} color
 		 * @return {*} Returns this when setting the value or the current value if none is specified.
 		 */
-		backgroundColor (color: string | CanvasGradient | CanvasPattern) {
+		backgroundColor (color: string | CanvasGradient | CanvasPattern): this;
+		backgroundColor (): string | CanvasGradient | CanvasPattern | undefined;
+		backgroundColor (color?: string | CanvasGradient | CanvasPattern): string | CanvasGradient | CanvasPattern | undefined | this {
 			if (color !== undefined) {
 				this._backgroundColor = color;
 				this.cacheDirty(true);

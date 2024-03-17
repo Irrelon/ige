@@ -48,7 +48,6 @@ class IgeUiElement extends exports_1.IgeUiEntity {
             }
         });
         this.on("pointerDown", () => {
-            console.log("pointerDown event on element", this);
             if (this._allowActive) {
                 this._updateStyle();
                 exports_3.ige.input.stopPropagation();
@@ -57,15 +56,13 @@ class IgeUiElement extends exports_1.IgeUiEntity {
                 this._pointerStateDown = false;
             }
         });
-        this.on("pointerUp", () => {
-            console.log("pointerUp event on element", this);
+        this.on("pointerUp", (event, evc) => {
+            console.log("Pointer up on element", event, evc);
             if (this._allowFocus) {
                 // Try to focus the entity
-                if (!this.focus()) {
-                    this._updateStyle();
-                }
-                else {
+                if (this.focus()) {
                     exports_3.ige.input.stopPropagation();
+                    //this._updateStyle();
                 }
             }
             else if (this._allowActive) {

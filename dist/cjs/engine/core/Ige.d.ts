@@ -27,7 +27,7 @@ export declare class Ige implements IgeIsReadyPromise {
     server: any;
     config: IgeConfig;
     version: string;
-    classStore: Record<string, import("../../export/exports.js").GenericClass>;
+    classStore: Record<string, import("../../types/GenericClass.js").GenericClass>;
     _data: Record<string, any>;
     _watch: (string | IgeObjectWithValueProperty)[];
     _drawBounds: boolean;

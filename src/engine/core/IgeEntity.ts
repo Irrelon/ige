@@ -646,18 +646,12 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 
 	/**
 	 * Gets / sets the geometry x value (this._bounds2d.x).
-	 * @param {number=} px The new x value in pixels.
-	 * @param {Boolean} lockAspect
 	 * @example #Set the entity width
 	 *     entity.width(40);
-	 * @return {*} "this" when arguments are passed to allow method
-	 * chaining or the current value if no arguments are specified.
 	 */
+	width (): number;
 	width (px: number | string, lockAspect?: boolean): this;
-	width (px: number | string, lockAspect: boolean): this;
-	// @ts-ignore
-	width (): number | string;
-	width (px?: number | string, lockAspect = false) {
+	width (px?: number | string, lockAspect: boolean = false): number | this {
 		if (px === undefined) {
 			return this._bounds2d.x;
 		}
@@ -679,16 +673,12 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 
 	/**
 	 * Gets / sets the geometry y value.
-	 * @param {number=} px The new y value in pixels.
-	 * @param {boolean} [lockAspect]
 	 * @example #Set the entity height
 	 *     entity.height(40);
-	 * @return {*} "this" when arguments are passed to allow method
-	 * chaining or the current value if no arguments are specified.
 	 */
-	height (px: number | string, lockAspect?: boolean): this;
 	height (): number;
-	height (px?: number | string, lockAspect = false) {
+	height (px: number | string, lockAspect?: boolean): this;
+	height (px?: number | string, lockAspect: boolean = false): number | this {
 		if (px === undefined) {
 			return this._bounds2d.y;
 		}
@@ -714,16 +704,12 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 	 * rendering textures for the entity and positioning in world space as
 	 * well as UI positioning calculations. It holds no bearing on isometric
 	 * positioning.
-	 * @param {number=} x The new x value in pixels.
-	 * @param {number=} y The new y value in pixels.
 	 * @example #Set the dimensions of the entity (width and height)
 	 *     entity.bounds2d(40, 40);
-	 * @return {*} "this" when arguments are passed to allow method
-	 * chaining or the current value if no arguments are specified.
 	 */
-	bounds2d (x: number, y: number): this;
 	bounds2d (): IgePoint2d;
 	bounds2d (x: IgePoint2d): this;
+	bounds2d (x: number, y: number): this;
 	bounds2d (x?: number | IgePoint2d, y?: number) {
 		if (x !== undefined && y !== undefined && typeof x === "number") {
 			this._bounds2d = new IgePoint2d(x, y);
@@ -745,16 +731,11 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 	 * relative to the center of the entity and the z value is wholly
 	 * positive from the "floor". Used to define a 3d bounding cuboid for
 	 * the entity used in isometric depth sorting and hit testing.
-	 * @param {number=} x The new x value in pixels.
-	 * @param {number=} y The new y value in pixels.
-	 * @param {number=} z The new z value in pixels.
 	 * @example #Set the dimensions of the entity (width, height and length)
 	 *     entity.bounds3d(40, 40, 20);
-	 * @return {*} "this" when arguments are passed to allow method
-	 * chaining or the current value if no arguments are specified.
 	 */
-	bounds3d (x: number, y: number, z: number): this;
 	bounds3d (): IgePoint3d;
+	bounds3d (x: number, y: number, z: number): this;
 	bounds3d (x?: number, y?: number, z?: number) {
 		if (x !== undefined && y !== undefined && z !== undefined) {
 			this._bounds3d = new IgePoint3d(x, y, z);

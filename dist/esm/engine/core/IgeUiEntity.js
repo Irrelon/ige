@@ -88,187 +88,6 @@ export class IgeUiEntity extends IgeEntity {
         }
         return this._overflow;
     }
-    _renderBackground(ctx) {
-        const geom = this._bounds2d;
-        if ((!this._backgroundColor && !this._patternFill) || !ctx) {
-            return;
-        }
-        const left = -(geom.x / 2) | 0;
-        const top = -(geom.y / 2) | 0;
-        const width = geom.x;
-        const height = geom.y;
-        ctx.save();
-        ctx.beginPath();
-        if (!this._borderTopRightRadius &&
-            !this._borderBottomRightRadius &&
-            !this._borderBottomLeftRadius &&
-            !this._borderTopLeftRadius) {
-            ctx.rect(left, top, width, height);
-        }
-        else {
-            // Top border
-            ctx.moveTo(left + this._borderTopLeftRadius, top);
-            ctx.lineTo(left + width - this._borderTopRightRadius, top);
-            if (this._borderTopRightRadius > 0) {
-                // Top-right corner
-                ctx.arcTo(left + width, top, left + width, top + this._borderTopRightRadius, this._borderTopRightRadius);
-            }
-            // Right border
-            ctx.lineTo(left + width, top + height - this._borderBottomRightRadius);
-            if (this._borderBottomRightRadius > 0) {
-                // Bottom-right corner
-                ctx.arcTo(left + width, top + height, left + width - this._borderBottomRightRadius, top + height, this._borderBottomRightRadius);
-            }
-            // Bottom border
-            ctx.lineTo(left + this._borderBottomLeftRadius, top + height);
-            if (this._borderBottomLeftRadius > 0) {
-                // Bottom-left corner
-                ctx.arcTo(left, top + height, left, top + height - this._borderBottomLeftRadius, this._borderBottomLeftRadius);
-            }
-            // Left border
-            ctx.lineTo(left, top + this._borderTopLeftRadius);
-            if (this._borderTopLeftRadius > 0) {
-                // Top-left corner
-                ctx.arcTo(left, top, left + this._borderTopLeftRadius, top, this._borderTopLeftRadius);
-            }
-            ctx.clip();
-        }
-        if (this._backgroundColor) {
-            ctx.fillStyle = this._backgroundColor;
-            ctx.fill();
-        }
-        if (this._patternFill) {
-            ctx.translate(-((width / 2) | 0) + this._backgroundPosition.x, -((height / 2) | 0) + this._backgroundPosition.y);
-            ctx.fillStyle = this._patternFill;
-            ctx.fill();
-        }
-        ctx.restore();
-    }
-    _anyBorderColor() {
-        return Boolean(this._borderColor ||
-            this._borderLeftColor ||
-            this._borderTopColor ||
-            this._borderRightColor ||
-            this._borderBottomColor);
-    }
-    _anyBorderWidth() {
-        return Boolean(this._borderWidth ||
-            this._borderLeftWidth ||
-            this._borderTopWidth ||
-            this._borderRightWidth ||
-            this._borderBottomWidth);
-    }
-    _anyBorderRadius() {
-        return Boolean(this._borderRadius ||
-            this._borderTopRightRadius ||
-            this._borderBottomRightRadius ||
-            this._borderBottomLeftRadius ||
-            this._borderTopLeftRadius);
-    }
-    _borderWidthsMatch() {
-        return (this._borderLeftWidth === this._borderWidth &&
-            this._borderTopWidth === this._borderWidth &&
-            this._borderRightWidth === this._borderWidth &&
-            this._borderBottomWidth === this._borderWidth);
-    }
-    _renderBorder(ctx) {
-        const geom = this._bounds2d;
-        const left = (-geom.x2 | 0) + 0.5;
-        const top = (-geom.y2 | 0) + 0.5;
-        const width = geom.x - 1;
-        const height = geom.y - 1;
-        if (!this._anyBorderColor())
-            return;
-        if (!this._anyBorderWidth())
-            return;
-        // Check for early exit if we are rendering a rectangle
-        if (!this._anyBorderRadius() && this._borderWidthsMatch()) {
-            ctx.strokeStyle = this._borderColor;
-            ctx.lineWidth = this._borderWidth;
-            ctx.strokeRect(left, top, width, height);
-        }
-        else {
-            const startNewStroke = function () {
-                ctx.stroke();
-                ctx.beginPath();
-            };
-            ctx.beginPath();
-            if (this._borderTopWidth) {
-                // Top-left corner top-half
-                ctx.strokeStyle = this._borderTopColor;
-                ctx.lineWidth = this._borderTopWidth;
-                if (this._borderTopLeftRadius > 0) {
-                    // Top-left corner top-half
-                    ctx.arc(left + this._borderTopLeftRadius, top + this._borderTopLeftRadius, this._borderTopLeftRadius, 225 * PI180, 270 * PI180);
-                }
-                // Top border
-                ctx.moveTo(left + this._borderTopLeftRadius, top);
-                ctx.lineTo(left + width - this._borderTopRightRadius, top);
-                if (this._borderTopRightRadius > 0) {
-                    // Top-right corner top-half
-                    ctx.arc(left + width - this._borderTopRightRadius, top + this._borderTopRightRadius, this._borderTopRightRadius, -90 * PI180, -44 * PI180); // use -44 instead of -45 to fully connect with next piece
-                }
-            }
-            if (!this._borderRightWidth ||
-                this._borderTopColor !== this._borderRightColor ||
-                this._borderTopWidth !== this._borderRightWidth)
-                startNewStroke();
-            if (this._borderRightWidth) {
-                // Top-right corner bottom-half
-                ctx.strokeStyle = this._borderRightColor;
-                ctx.lineWidth = this._borderRightWidth;
-                if (this._borderTopRightRadius > 0) {
-                    ctx.arc(left + width - this._borderTopRightRadius, top + this._borderTopRightRadius, this._borderTopRightRadius, -45 * PI180, 0);
-                }
-                // Right border
-                ctx.moveTo(left + width, top + this._borderTopRightRadius);
-                ctx.lineTo(left + width, top + height - this._borderBottomRightRadius);
-                if (this._borderBottomRightRadius > 0) {
-                    // Bottom-right corner top-half
-                    ctx.arc(left + width - this._borderBottomRightRadius, top + height - this._borderBottomRightRadius, this._borderTopRightRadius, 0, 46 * PI180); // use 46 instead of 45 to fully connect with next piece
-                }
-            }
-            if (!this._borderBottomWidth ||
-                this._borderRightColor !== this._borderBottomColor ||
-                this._borderRightWidth !== this._borderBottomWidth)
-                startNewStroke();
-            if (this._borderBottomWidth) {
-                // Bottom-right corner bottom-half
-                ctx.strokeStyle = this._borderBottomColor;
-                ctx.lineWidth = this._borderBottomWidth;
-                if (this._borderBottomRightRadius > 0) {
-                    ctx.arc(left + width - this._borderBottomRightRadius, top + height - this._borderBottomRightRadius, this._borderBottomRightRadius, 45 * PI180, 90 * PI180);
-                }
-                // Bottom border
-                ctx.moveTo(left + width - this._borderBottomRightRadius, top + height);
-                ctx.lineTo(left + this._borderBottomLeftRadius, top + height);
-                if (this._borderBottomLeftRadius > 0) {
-                    // Bottom-left corner bottom-half
-                    ctx.arc(left + this._borderBottomLeftRadius, top + height - this._borderBottomLeftRadius, this._borderBottomLeftRadius, 90 * PI180, 136 * PI180); // use 136 instead of 135 to fully connect with next piece
-                }
-            }
-            if (!this._borderLeftWidth ||
-                this._borderBottomColor !== this._borderLeftColor ||
-                this._borderBottomWidth !== this._borderLeftWidth)
-                startNewStroke();
-            if (this._borderLeftWidth) {
-                // Bottom-left corner top-half
-                ctx.strokeStyle = this._borderLeftColor;
-                ctx.lineWidth = this._borderLeftWidth;
-                if (this._borderBottomLeftRadius > 0) {
-                    ctx.arc(left + this._borderBottomLeftRadius, top + height - this._borderBottomLeftRadius, this._borderBottomLeftRadius, 135 * PI180, 180 * PI180);
-                }
-                // Left border
-                ctx.moveTo(left, top + height - this._borderBottomLeftRadius);
-                ctx.lineTo(left, top + this._borderTopLeftRadius);
-                if (this._borderTopLeftRadius > 0) {
-                    // Top-left corner bottom-half
-                    ctx.arc(left + this._borderTopLeftRadius, top + this._borderTopLeftRadius, this._borderTopLeftRadius, 180 * PI180, 226 * PI180); // use 226 instead of 225 to fully connect with next piece
-                }
-            }
-            ctx.stroke();
-        }
-    }
     cell(val) {
         if (val === undefined) {
             return this._cell;
@@ -864,21 +683,9 @@ export class IgeUiEntity extends IgeEntity {
         }
         return this._color;
     }
-    /**
-     * Sets the current background texture and the repeatType
-     * to determine in which axis the image should be repeated.
-     * @param {IgeTexture=} texture
-     * @param {string=} repeatType Accepts "repeat", "repeat-x",
-     * "repeat-y" and "no-repeat".
-     * @return {*} Returns this if any parameter is specified or
-     * the current background image if no parameters are specified.
-     */
-    backgroundImage(texture, repeatType) {
+    backgroundImage(texture, repeatType = "no-repeat") {
         if (!(texture && texture.image)) {
             return this._patternFill;
-        }
-        if (!repeatType) {
-            repeatType = "no-repeat";
         }
         // Store the repeatType
         this._patternRepeat = repeatType;
@@ -981,12 +788,6 @@ export class IgeUiEntity extends IgeEntity {
         }
         return this._backgroundColor;
     }
-    /**
-     * Gets / sets the position to start rendering the background image at.
-     * @param {number=} x
-     * @param {number=} y
-     * @return {*} Returns this when setting the value or the current value if none is specified.
-     */
     backgroundPosition(x, y) {
         if (x !== undefined && y !== undefined) {
             this._backgroundPosition = { x, y };
@@ -1242,6 +1043,188 @@ export class IgeUiEntity extends IgeEntity {
             return this;
         }
         return this._marginBottom;
+    }
+    _renderBackground(ctx) {
+        const geom = this._bounds2d;
+        if ((!this._backgroundColor && !this._patternFill) || !ctx) {
+            return;
+        }
+        const left = -(geom.x / 2) | 0;
+        const top = -(geom.y / 2) | 0;
+        const width = geom.x;
+        const height = geom.y;
+        ctx.save();
+        ctx.beginPath();
+        if (!this._borderTopRightRadius &&
+            !this._borderBottomRightRadius &&
+            !this._borderBottomLeftRadius &&
+            !this._borderTopLeftRadius) {
+            ctx.rect(left, top, width, height);
+        }
+        else {
+            // Top border
+            ctx.moveTo(left + this._borderTopLeftRadius, top);
+            ctx.lineTo(left + width - this._borderTopRightRadius, top);
+            if (this._borderTopRightRadius > 0) {
+                // Top-right corner
+                ctx.arcTo(left + width, top, left + width, top + this._borderTopRightRadius, this._borderTopRightRadius);
+            }
+            // Right border
+            ctx.lineTo(left + width, top + height - this._borderBottomRightRadius);
+            if (this._borderBottomRightRadius > 0) {
+                // Bottom-right corner
+                ctx.arcTo(left + width, top + height, left + width - this._borderBottomRightRadius, top + height, this._borderBottomRightRadius);
+            }
+            // Bottom border
+            ctx.lineTo(left + this._borderBottomLeftRadius, top + height);
+            if (this._borderBottomLeftRadius > 0) {
+                // Bottom-left corner
+                ctx.arcTo(left, top + height, left, top + height - this._borderBottomLeftRadius, this._borderBottomLeftRadius);
+            }
+            // Left border
+            ctx.lineTo(left, top + this._borderTopLeftRadius);
+            if (this._borderTopLeftRadius > 0) {
+                // Top-left corner
+                ctx.arcTo(left, top, left + this._borderTopLeftRadius, top, this._borderTopLeftRadius);
+            }
+            ctx.clip();
+        }
+        if (this._backgroundColor) {
+            ctx.fillStyle = this._backgroundColor;
+            ctx.fill();
+        }
+        if (this._patternFill) {
+            ctx.translate(-((width / 2) | 0) + this._backgroundPosition.x, -((height / 2) | 0) + this._backgroundPosition.y);
+            ctx.fillStyle = this._patternFill;
+            ctx.fill();
+        }
+        ctx.restore();
+    }
+    _anyBorderColor() {
+        return Boolean(this._borderColor ||
+            this._borderLeftColor ||
+            this._borderTopColor ||
+            this._borderRightColor ||
+            this._borderBottomColor);
+    }
+    _anyBorderWidth() {
+        return Boolean(this._borderWidth ||
+            this._borderLeftWidth ||
+            this._borderTopWidth ||
+            this._borderRightWidth ||
+            this._borderBottomWidth);
+    }
+    _anyBorderRadius() {
+        return Boolean(this._borderRadius ||
+            this._borderTopRightRadius ||
+            this._borderBottomRightRadius ||
+            this._borderBottomLeftRadius ||
+            this._borderTopLeftRadius);
+    }
+    _borderWidthsMatch() {
+        return (this._borderLeftWidth === this._borderWidth &&
+            this._borderTopWidth === this._borderWidth &&
+            this._borderRightWidth === this._borderWidth &&
+            this._borderBottomWidth === this._borderWidth);
+    }
+    // TODO: Refactor this to reduce size, breakout
+    _renderBorder(ctx) {
+        const geom = this._bounds2d;
+        const left = (-geom.x2 | 0) + 0.5;
+        const top = (-geom.y2 | 0) + 0.5;
+        const width = geom.x - 1;
+        const height = geom.y - 1;
+        if (!this._anyBorderColor())
+            return;
+        if (!this._anyBorderWidth())
+            return;
+        // Check for early exit if we are rendering a rectangle
+        if (!this._anyBorderRadius() && this._borderWidthsMatch()) {
+            ctx.strokeStyle = this._borderColor;
+            ctx.lineWidth = this._borderWidth;
+            ctx.strokeRect(left, top, width, height);
+        }
+        else {
+            const startNewStroke = function () {
+                ctx.stroke();
+                ctx.beginPath();
+            };
+            ctx.beginPath();
+            if (this._borderTopWidth) {
+                // Top-left corner top-half
+                ctx.strokeStyle = this._borderTopColor;
+                ctx.lineWidth = this._borderTopWidth;
+                if (this._borderTopLeftRadius > 0) {
+                    // Top-left corner top-half
+                    ctx.arc(left + this._borderTopLeftRadius, top + this._borderTopLeftRadius, this._borderTopLeftRadius, 225 * PI180, 270 * PI180);
+                }
+                // Top border
+                ctx.moveTo(left + this._borderTopLeftRadius, top);
+                ctx.lineTo(left + width - this._borderTopRightRadius, top);
+                if (this._borderTopRightRadius > 0) {
+                    // Top-right corner top-half
+                    ctx.arc(left + width - this._borderTopRightRadius, top + this._borderTopRightRadius, this._borderTopRightRadius, -90 * PI180, -44 * PI180); // use -44 instead of -45 to fully connect with next piece
+                }
+            }
+            if (!this._borderRightWidth ||
+                this._borderTopColor !== this._borderRightColor ||
+                this._borderTopWidth !== this._borderRightWidth)
+                startNewStroke();
+            if (this._borderRightWidth) {
+                // Top-right corner bottom-half
+                ctx.strokeStyle = this._borderRightColor;
+                ctx.lineWidth = this._borderRightWidth;
+                if (this._borderTopRightRadius > 0) {
+                    ctx.arc(left + width - this._borderTopRightRadius, top + this._borderTopRightRadius, this._borderTopRightRadius, -45 * PI180, 0);
+                }
+                // Right border
+                ctx.moveTo(left + width, top + this._borderTopRightRadius);
+                ctx.lineTo(left + width, top + height - this._borderBottomRightRadius);
+                if (this._borderBottomRightRadius > 0) {
+                    // Bottom-right corner top-half
+                    ctx.arc(left + width - this._borderBottomRightRadius, top + height - this._borderBottomRightRadius, this._borderTopRightRadius, 0, 46 * PI180); // use 46 instead of 45 to fully connect with next piece
+                }
+            }
+            if (!this._borderBottomWidth ||
+                this._borderRightColor !== this._borderBottomColor ||
+                this._borderRightWidth !== this._borderBottomWidth)
+                startNewStroke();
+            if (this._borderBottomWidth) {
+                // Bottom-right corner bottom-half
+                ctx.strokeStyle = this._borderBottomColor;
+                ctx.lineWidth = this._borderBottomWidth;
+                if (this._borderBottomRightRadius > 0) {
+                    ctx.arc(left + width - this._borderBottomRightRadius, top + height - this._borderBottomRightRadius, this._borderBottomRightRadius, 45 * PI180, 90 * PI180);
+                }
+                // Bottom border
+                ctx.moveTo(left + width - this._borderBottomRightRadius, top + height);
+                ctx.lineTo(left + this._borderBottomLeftRadius, top + height);
+                if (this._borderBottomLeftRadius > 0) {
+                    // Bottom-left corner bottom-half
+                    ctx.arc(left + this._borderBottomLeftRadius, top + height - this._borderBottomLeftRadius, this._borderBottomLeftRadius, 90 * PI180, 136 * PI180); // use 136 instead of 135 to fully connect with next piece
+                }
+            }
+            if (!this._borderLeftWidth ||
+                this._borderBottomColor !== this._borderLeftColor ||
+                this._borderBottomWidth !== this._borderLeftWidth)
+                startNewStroke();
+            if (this._borderLeftWidth) {
+                // Bottom-left corner top-half
+                ctx.strokeStyle = this._borderLeftColor;
+                ctx.lineWidth = this._borderLeftWidth;
+                if (this._borderBottomLeftRadius > 0) {
+                    ctx.arc(left + this._borderBottomLeftRadius, top + height - this._borderBottomLeftRadius, this._borderBottomLeftRadius, 135 * PI180, 180 * PI180);
+                }
+                // Left border
+                ctx.moveTo(left, top + height - this._borderBottomLeftRadius);
+                ctx.lineTo(left, top + this._borderTopLeftRadius);
+                if (this._borderTopLeftRadius > 0) {
+                    // Top-left corner bottom-half
+                    ctx.arc(left + this._borderTopLeftRadius, top + this._borderTopLeftRadius, this._borderTopLeftRadius, 180 * PI180, 226 * PI180); // use 226 instead of 225 to fully connect with next piece
+                }
+            }
+            ctx.stroke();
+        }
     }
 }
 registerClass(IgeUiEntity);

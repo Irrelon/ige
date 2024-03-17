@@ -170,14 +170,6 @@ export class IgeFontEntity extends IgeUiEntity {
         // 	delete this._texture._cacheText[this._renderText];
         // }
     }
-    /**
-     * When using native font rendering (canvasContext.fillText())
-     * this sets the font and size as per the canvasContext.font
-     * string specification.
-     * @param {string=} val The font style string.
-     * @return {*} "this" when arguments are passed to allow method
-     * chaining or the current value if no arguments are specified.
-     */
     nativeFont(val) {
         if (val !== undefined) {
             // Check if this font is different from the current
@@ -196,12 +188,6 @@ export class IgeFontEntity extends IgeUiEntity {
         }
         return this._nativeFont;
     }
-    /**
-     * Gets / sets the text stroke size that applies when using
-     * a native font for text rendering.
-     * @param {number=} val The size of the text stroke.
-     * @return {*}
-     */
     nativeStroke(val) {
         if (val !== undefined) {
             if (this._nativeStroke !== val) {
@@ -212,12 +198,6 @@ export class IgeFontEntity extends IgeUiEntity {
         }
         return this._nativeStroke;
     }
-    /**
-     * Gets / sets the text stroke color that applies when using
-     * a native font for text rendering.
-     * @param val The color of the text stroke.
-     * @return {*}
-     */
     nativeStrokeColor(val) {
         if (val !== undefined) {
             if (this._nativeStrokeColor !== val) {

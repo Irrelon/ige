@@ -86,11 +86,26 @@ export class IgeUiManagerController extends IgeEventingClass {
     canFocus(elem) {
         return elem._allowFocus;
     }
+    /**
+     * Tells the currently focussed element to blur. Can still
+     * be cancelled by an event listener that returns a cancel signal.
+     */
+    blurCurrent() {
+        if (!this._focus)
+            return;
+        this._focus.blur();
+    }
+    /**
+     * Attempts to place focus on the passed element. If focus is successful
+     * or the element is already focussed, returns true, otherwise returns
+     * false.
+     * @param elem
+     */
     focus(elem) {
-        console.log("Global focus call", elem, new Error().stack);
+        //console.log("Global focus call", elem, new Error().stack);
         if (elem !== undefined) {
             if (elem !== this._focus) {
-                console.log("Global focus being set to", elem, new Error().stack);
+                //console.log("Global focus being set to", elem, new Error().stack);
                 // The element is not our current focus so focus to it
                 const previousFocus = this._focus;
                 // Tell the current focused element that it is about to lose focus

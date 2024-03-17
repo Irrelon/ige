@@ -68,17 +68,14 @@ export declare class IgeUiEntity extends IgeEntity {
     _disabled?: boolean;
     _display?: string;
     _overflow?: string;
-    disabled(val?: boolean): boolean | this | undefined;
-    display(val?: string): string | this | undefined;
-    overflow(val?: string): string | this | undefined;
-    _renderBackground(ctx?: IgeCanvasRenderingContext2d): void;
-    _anyBorderColor(): boolean;
-    _anyBorderWidth(): boolean;
-    _anyBorderRadius(): boolean;
-    _borderWidthsMatch(): boolean;
-    _renderBorder(ctx: IgeCanvasRenderingContext2d): void;
-    cell(val: number | null): this;
+    disabled(): boolean | undefined;
+    disabled(val: boolean): this;
+    display(): string | undefined;
+    display(val: string): this;
+    overflow(): string | undefined;
+    overflow(val: string): this;
     cell(): number | null;
+    cell(val: number | null): this;
     mount(obj: IgeObject): this;
     tick(ctx: IgeCanvasRenderingContext2d, dontTransform?: boolean): void;
     /**
@@ -91,57 +88,39 @@ export declare class IgeUiEntity extends IgeEntity {
     /**
      * Gets / sets the entity's x position relative to the left of
      * the canvas.
-     * @param {number} px
-     * @param {Boolean=} noUpdate
-     * @return {number}
      */
+    left(): number | undefined;
     left(px: number | string, noUpdate?: boolean): this;
-    left(): number;
     /**
      * Gets / sets the entity's x position relative to the right of
      * the canvas.
-     * @param {number} px
-     * @param {Boolean=} noUpdate
-     * @return {number}
      */
+    right(): number | undefined;
     right(px: number | string, noUpdate?: boolean): this;
-    right(): number;
     /**
      * Gets / sets the viewport's x position relative to the center of
      * the entity parent.
-     * @param {number} px
-     * @param {Boolean=} noUpdate
-     * @return {number}
      */
+    center(): number | undefined;
     center(px: number | string, noUpdate?: boolean): this;
-    center(): number;
     /**
      * Gets / sets the entity's y position relative to the top of
      * the canvas.
-     * @param {number} px
-     * @param {Boolean=} noUpdate
-     * @return {number}
      */
+    top(): number | undefined;
     top(px: number | string, noUpdate?: boolean): this;
-    top(): number;
     /**
      * Gets / sets the entity's y position relative to the bottom of
      * the canvas.
-     * @param {number} px
-     * @param {Boolean=} noUpdate
-     * @return {number}
      */
+    bottom(): number | undefined;
     bottom(px: number | string, noUpdate?: boolean): this;
-    bottom(): number;
     /**
      * Gets / sets the viewport's y position relative to the middle of
      * the canvas.
-     * @param {number} px
-     * @param {Boolean=} noUpdate
-     * @return {number}
      */
+    middle(): number | undefined;
     middle(px: number | string, noUpdate?: boolean): this;
-    middle(): number;
     /**
      * Gets / sets the geometry.x in pixels.
      * @param {number | string=} px Either the width in pixels or a percentage
@@ -152,8 +131,8 @@ export declare class IgeUiEntity extends IgeEntity {
      * @param {Boolean=} noUpdate
      * @return {*}
      */
-    width(px: number | string, lockAspect?: boolean, modifier?: number, noUpdate?: boolean): this;
     width(): number;
+    width(px: number | string, lockAspect?: boolean, modifier?: number, noUpdate?: boolean): this;
     /**
      * Gets / sets the geometry.y in pixels.
      * @param {number|string=} px
@@ -169,11 +148,14 @@ export declare class IgeUiEntity extends IgeEntity {
      *
      * @return {*}
      */
-    height(px: number | string, lockAspect?: boolean, modifier?: number, noUpdate?: boolean): this;
     height(): number;
-    flex(val?: number): number | this | undefined;
-    autoScaleX(val?: string, lockAspect?: boolean): string | this | undefined;
-    autoScaleY(val?: string, lockAspect?: boolean): string | this | undefined;
+    height(px: number | string, lockAspect?: boolean, modifier?: number, noUpdate?: boolean): this;
+    flex(): number | undefined;
+    flex(val?: number): this;
+    autoScaleX(): string | undefined;
+    autoScaleX(val: string, lockAspect: boolean): this;
+    autoScaleY(): string | undefined;
+    autoScaleY(val: string, lockAspect: boolean): this;
     /**
      * Updates the UI position of every child entity down the scenegraph
      * for this UI entity.
@@ -188,11 +170,9 @@ export declare class IgeUiEntity extends IgeEntity {
     _updateUiPosition(): void;
     /**
      * Gets / sets the color to use as the font color.
-     * @param {string | CanvasGradient | CanvasPattern=} color
-     * @return {*} Returns this when setting the value or the current value if none is specified.
      */
-    color(color?: string | CanvasGradient | CanvasPattern): this;
     color(): string | CanvasGradient | CanvasPattern;
+    color(color: string | CanvasGradient | CanvasPattern): this;
     /**
      * Sets the current background texture and the repeatType
      * to determine in which axis the image should be repeated.
@@ -202,59 +182,82 @@ export declare class IgeUiEntity extends IgeEntity {
      * @return {*} Returns this if any parameter is specified or
      * the current background image if no parameters are specified.
      */
-    backgroundImage(texture?: IgeTexture, repeatType?: IgeRepeatType): this | CanvasPattern | undefined;
-    backgroundSize(x?: number | string, y?: number | string): IgePointXY | this;
+    backgroundImage(): CanvasPattern | undefined;
+    backgroundImage(texture: IgeTexture, repeatType?: IgeRepeatType): this;
+    backgroundSize(): IgePointXY;
+    backgroundSize(x: number | string, y: number | string): this;
     /**
      * Gets / sets the color to use as a background when
      * rendering the UI element.
-     * @param {CSSColor, CanvasGradient, CanvasPattern=} color
+     * @param {string, CanvasGradient, CanvasPattern=} color
      * @return {*} Returns this when setting the value or the current value if none is specified.
      */
-    backgroundColor(color: string | CanvasGradient | CanvasPattern): this;
-    backgroundColor(): string | CanvasGradient | CanvasPattern;
+    backgroundColor(): string | CanvasGradient | CanvasPattern | undefined;
+    backgroundColor(color: string | CanvasGradient | CanvasPattern | undefined): this;
     /**
      * Gets / sets the position to start rendering the background image at.
-     * @param {number=} x
-     * @param {number=} y
-     * @return {*} Returns this when setting the value or the current value if none is specified.
      */
-    backgroundPosition(x: number, y: number): IgePointXY | this;
+    backgroundPosition(): IgePointXY;
+    backgroundPosition(x: number, y: number): this;
+    borderColor(): string | undefined;
     borderColor(color: string): this;
-    borderColor(): string;
-    borderLeftColor(color: string): string | this | undefined;
-    borderTopColor(color: string): string | this | undefined;
-    borderRightColor(color: string): string | this | undefined;
-    borderBottomColor(color: string): string | this | undefined;
-    borderWidth(px: number): this;
+    borderLeftColor(): string | undefined;
+    borderLeftColor(color: string): this;
+    borderTopColor(): string | undefined;
+    borderTopColor(color: string): this;
+    borderRightColor(): string | undefined;
+    borderRightColor(color: string): this;
+    borderBottomColor(): string | undefined;
+    borderBottomColor(color: string): this;
     borderWidth(): number;
-    borderLeftWidth(px?: number): number | this;
-    borderTopWidth(px?: number): number | this;
-    borderRightWidth(px?: number): number | this;
-    borderBottomWidth(px?: number): number | this;
-    borderRadius(px: number): this;
+    borderWidth(px: number): this;
+    borderLeftWidth(): number;
+    borderLeftWidth(px: number): this;
+    borderTopWidth(): number;
+    borderTopWidth(px: number): this;
+    borderRightWidth(): number;
+    borderRightWidth(px: number): this;
+    borderBottomWidth(): number;
+    borderBottomWidth(px: number): this;
     borderRadius(): number;
-    borderTopLeftRadius(px?: number): number | this;
-    borderTopRightRadius(px?: number): number | this;
-    borderBottomLeftRadius(px?: number): number | this;
-    borderBottomRightRadius(px?: number): number | this;
+    borderRadius(px: number): this;
+    borderTopLeftRadius(): number;
+    borderTopLeftRadius(px: number): this;
+    borderTopRightRadius(): number;
+    borderTopRightRadius(px: number): this;
+    borderBottomLeftRadius(): number;
+    borderBottomLeftRadius(px: number): this;
+    borderBottomRightRadius(): number;
+    borderBottomRightRadius(px: number): this;
+    padding(): number | undefined;
     padding(...args: [number]): this;
     padding(...args: [number, number, number, number]): this;
-    paddingX(px: number): this;
     paddingX(): number;
-    paddingY(px: number): this;
+    paddingX(px: number): this;
     paddingY(): number;
-    paddingLeft(px: number): this;
+    paddingY(px: number): this;
     paddingLeft(): number;
-    paddingTop(px: number): this;
+    paddingLeft(px: number): this;
     paddingTop(): number;
-    paddingRight(px: number): this;
+    paddingTop(px: number): this;
     paddingRight(): number;
-    paddingBottom(px: number): this;
+    paddingRight(px: number): this;
     paddingBottom(): number;
-    margin(...args: [number]): this;
-    margin(...args: [number, number, number, number]): this;
-    marginLeft(px?: number): number | this | undefined;
-    marginTop(px?: number): number | this;
-    marginRight(px?: number): number | this;
-    marginBottom(px?: number): number | this;
+    paddingBottom(px: number): this;
+    margin(): number | undefined;
+    margin(...args: number[]): this;
+    marginLeft(): number;
+    marginLeft(px: number): this;
+    marginTop(): number;
+    marginTop(px: number): this;
+    marginRight(): number;
+    marginRight(px: number): this;
+    marginBottom(): number;
+    marginBottom(px: number): this;
+    _renderBackground(ctx?: IgeCanvasRenderingContext2d): void;
+    _anyBorderColor(): boolean;
+    _anyBorderWidth(): boolean;
+    _anyBorderRadius(): boolean;
+    _borderWidthsMatch(): boolean;
+    _renderBorder(ctx: IgeCanvasRenderingContext2d): void;
 }

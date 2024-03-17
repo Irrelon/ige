@@ -22,6 +22,14 @@ export declare class IgeUiTextBox extends IgeUiElement {
      * This method has been extended here to auto-update the width of the child
      * font entity automatically to fill the text box when changes occur to the
      * width of this entity.
+     * @return {*}
+     */
+    width(): number;
+    /**
+     * Gets / sets the textbox width.
+     * This method has been extended here to auto-update the width of the child
+     * font entity automatically to fill the text box when changes occur to the
+     * width of this entity.
      * @param px
      * @param lockAspect
      * @param modifier
@@ -29,7 +37,6 @@ export declare class IgeUiTextBox extends IgeUiElement {
      * @return {*}
      */
     width(px: number | string, lockAspect?: boolean, modifier?: number, noUpdate?: boolean): this;
-    width(): number;
     /**
      * Gets / sets the textbox height.
      * Extended method to auto-update the height of the child

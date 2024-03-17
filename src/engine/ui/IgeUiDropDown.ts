@@ -23,11 +23,11 @@ export class IgeUiDropDown extends IgeUiElement {
 
 		// Define some default styles
 		if (!(ige.ui as IgeUiManagerController).style(".IgeUiDropDownOption")) {
-			(ige.ui as IgeUiManagerController).style(".IgeUiDropDownOption", {
-				backgroundColor: null
+			(ige.ui as IgeUiManagerController).style<IgeUiLabel>(".IgeUiDropDownOption", {
+				backgroundColor: undefined
 			});
 
-			(ige.ui as IgeUiManagerController).style(".IgeUiDropDownOption:hover", {
+			(ige.ui as IgeUiManagerController).style<IgeUiLabel>(".IgeUiDropDownOption:hover", {
 				backgroundColor: "#00b4ff",
 				color: "#ffffff"
 			});
@@ -137,10 +137,9 @@ export class IgeUiDropDown extends IgeUiElement {
 			const mainTop = this._bounds2d.y + 5;
 			const mainHeight = this._options.length * 30;
 
-			const optionContainer = new IgeUiElement()
-				.id(this._id + "_options")
-				.backgroundColor(this._backgroundColor as string)
-				.borderColor(this._borderColor as string)
+			const optionContainer = new IgeUiElement().id(this._id + "_options");
+			optionContainer.backgroundColor(this._backgroundColor);
+			optionContainer.borderColor(this._borderColor as string)
 				.borderWidth(this._borderWidth)
 				.top(mainTop)
 				.width(this._bounds2d.x)
@@ -148,7 +147,7 @@ export class IgeUiDropDown extends IgeUiElement {
 				.mount(this);
 
 			for (let i = 0; i < this._options.length; i++) {
-				(ige.ui as IgeUiManagerController).style("#" + this._id + "_options_" + i, {
+				(ige.ui as IgeUiManagerController).style<IgeUiDropDown>("#" + this._id + "_options_" + i, {
 					color: this._color
 				});
 

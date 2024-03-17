@@ -71,7 +71,14 @@ export declare const WithUiStyleMixin: <BaseClassType extends Mixin<IgeObject>>(
          * @param {CSSColor, CanvasGradient, CanvasPattern=} color
          * @return {*} Returns this when setting the value or the current value if none is specified.
          */
-        backgroundColor(color: string | CanvasGradient | CanvasPattern): string | CanvasPattern | CanvasGradient | any | undefined;
+        backgroundColor(color: string | CanvasGradient | CanvasPattern): this;
+        /**
+         * Gets / sets the color to use as a background when
+         * rendering the UI element.
+         * @param {CSSColor, CanvasGradient, CanvasPattern=} color
+         * @return {*} Returns this when setting the value or the current value if none is specified.
+         */
+        backgroundColor(): string | CanvasGradient | CanvasPattern | undefined;
         /**
          * Gets / sets the position to start rendering the background image at.
          * @param {number=} x
@@ -127,7 +134,7 @@ export declare const WithUiStyleMixin: <BaseClassType extends Mixin<IgeObject>>(
         _tileDepth: number;
         _orphans?: IgeObject[] | undefined;
         _specialProp: string[];
-        _streamMode?: import("../../export/exports.js").IgeStreamMode | undefined;
+        _streamMode?: import("../../enums/IgeStreamMode.js").IgeStreamMode | undefined;
         _streamRoomId?: string | undefined;
         _streamDataCache: string;
         _streamJustCreated?: boolean | undefined;
@@ -149,9 +156,9 @@ export declare const WithUiStyleMixin: <BaseClassType extends Mixin<IgeObject>>(
         _timeStreamCurrentInterpolateTime?: number | undefined;
         _timeStreamDataDelta?: number | undefined;
         _timeStreamOffsetDelta?: number | undefined;
-        _timeStreamPreviousData?: import("../../export/exports.js").IgeTimeStreamPacket | undefined;
-        _timeStreamNextData?: import("../../export/exports.js").IgeTimeStreamPacket | undefined;
-        _timeStream: import("../../export/exports.js").IgeTimeStreamPacket[];
+        _timeStreamPreviousData?: import("../../types/IgeTimeStream.js").IgeTimeStreamPacket | undefined;
+        _timeStreamNextData?: import("../../types/IgeTimeStream.js").IgeTimeStreamPacket | undefined;
+        _timeStream: import("../../types/IgeTimeStream.js").IgeTimeStreamPacket[];
         _streamFloatPrecision: number;
         _floatRemoveRegExp: RegExp;
         _compositeStream: boolean;
@@ -159,13 +166,13 @@ export declare const WithUiStyleMixin: <BaseClassType extends Mixin<IgeObject>>(
         _streamControl?: ((clientId: string, roomId?: string | undefined) => boolean) | undefined;
         _newBorn: boolean;
         _alive: boolean;
-        _mountMode: import("../../export/exports.js").IgeMountMode;
+        _mountMode: import("../../enums/IgeMountMode.js").IgeMountMode;
         _layer: number;
         _depth: number;
-        _depthSortMode: import("../../export/exports.js").IgeIsometricDepthSortMode;
+        _depthSortMode: import("../../enums/IgeIsometricDepthSortMode.js").IgeIsometricDepthSortMode;
         _inView: boolean;
         _managed: number;
-        _triggerPolygonFunctionName: import("../../export/exports.js").IgeTriggerPolygonFunctionName;
+        _triggerPolygonFunctionName: import("../../types/IgeTriggerPolygonFunctionName.js").IgeTriggerPolygonFunctionName;
         _compositeCache: boolean;
         _compositeParent: boolean;
         _anchor: import("../../export/exports.js").IgePoint2d;
@@ -191,12 +198,12 @@ export declare const WithUiStyleMixin: <BaseClassType extends Mixin<IgeObject>>(
         _pointerStateDown: boolean;
         _pointerStateOver: boolean;
         _pointerAlwaysInside: boolean;
-        _pointerOut?: import("../../export/exports.js").IgeInputEventHandler | undefined;
-        _pointerOver?: import("../../export/exports.js").IgeInputEventHandler | undefined;
-        _pointerMove?: import("../../export/exports.js").IgeInputEventHandler | undefined;
-        _pointerWheel?: import("../../export/exports.js").IgeInputEventHandler | undefined;
-        _pointerUp?: import("../../export/exports.js").IgeInputEventHandler | undefined;
-        _pointerDown?: import("../../export/exports.js").IgeInputEventHandler | undefined;
+        _pointerOut?: import("../../types/IgeInputEventHandler.js").IgeInputEventHandler | undefined;
+        _pointerOver?: import("../../types/IgeInputEventHandler.js").IgeInputEventHandler | undefined;
+        _pointerMove?: import("../../types/IgeInputEventHandler.js").IgeInputEventHandler | undefined;
+        _pointerWheel?: import("../../types/IgeInputEventHandler.js").IgeInputEventHandler | undefined;
+        _pointerUp?: import("../../types/IgeInputEventHandler.js").IgeInputEventHandler | undefined;
+        _pointerDown?: import("../../types/IgeInputEventHandler.js").IgeInputEventHandler | undefined;
         _velocity: import("../../export/exports.js").IgePoint3d;
         _localMatrix: import("../../export/exports.js").IgeMatrix2d;
         _worldMatrix: import("../../export/exports.js").IgeMatrix2d;
@@ -204,7 +211,7 @@ export declare const WithUiStyleMixin: <BaseClassType extends Mixin<IgeObject>>(
         _adjustmentMatrix?: import("../../export/exports.js").IgeMatrix2d | undefined;
         _hidden: boolean;
         _cache: boolean;
-        _cacheCtx?: import("../../export/exports.js").IgeCanvasRenderingContext2d | null | undefined;
+        _cacheCtx?: import("../../types/IgeCanvasRenderingContext2d.js").IgeCanvasRenderingContext2d | null | undefined;
         _cacheCanvas?: OffscreenCanvas | import("../../export/exports.js").IgeDummyCanvas | undefined;
         _cacheDirty: boolean;
         _cacheSmoothing: boolean;
@@ -216,9 +223,9 @@ export declare const WithUiStyleMixin: <BaseClassType extends Mixin<IgeObject>>(
         _texture?: IgeTexture | undefined;
         _indestructible: boolean;
         _shouldRender?: boolean | undefined;
-        _smartBackground?: import("../../export/exports.js").IgeSmartTexture<import("../../export/exports.js").IgeEntity> | undefined;
+        _smartBackground?: import("../../types/IgeSmartTexture.js").IgeSmartTexture<import("../../export/exports.js").IgeEntity> | undefined;
         _lastUpdate?: number | undefined;
-        _behaviours?: import("../../export/exports.js").IgeBehaviourStore | undefined;
+        _behaviours?: import("../../types/IgeBehaviourStore.js").IgeBehaviourStore | undefined;
         _birthMount?: string | undefined;
         _frameAlternatorCurrent: boolean;
         _backgroundPattern?: IgeTexture | undefined;
@@ -232,7 +239,7 @@ export declare const WithUiStyleMixin: <BaseClassType extends Mixin<IgeObject>>(
         _localAabb?: import("../../export/exports.js").IgeRect | undefined;
         _deathCallBack?: ((...args: any[]) => void) | undefined;
         components: Record<string, import("../../export/exports.js").IgeComponent<any>>;
-        _sortChildren: import("../../export/exports.js").IgeChildSortFunction;
+        _sortChildren: import("../../types/IgeChildSortFunction.js").IgeChildSortFunction;
         id(id: string): any;
         id(): string;
         category(val: string): any;
@@ -247,17 +254,17 @@ export declare const WithUiStyleMixin: <BaseClassType extends Mixin<IgeObject>>(
         drawMouseData(val: boolean): any;
         worldPosition(): import("../../export/exports.js").IgePoint3d;
         worldRotationZ(): number;
-        localToWorld(points: import("../../export/exports.js").IgePoint[], viewport?: import("../../export/exports.js").IgeViewport | null | undefined, inverse?: boolean): void;
+        localToWorld(points: import("../../types/IgePoint.js").IgePoint[], viewport?: import("../../export/exports.js").IgeViewport | null | undefined, inverse?: boolean): void;
         localToWorldPoint(point: import("../../export/exports.js").IgePoint3d, viewport?: import("../../export/exports.js").IgeViewport | null | undefined): void;
         screenPosition(): import("../../export/exports.js").IgePoint3d;
         localIsoBoundsPoly(): void;
         localBounds3dPolygon(recalculate?: boolean): import("../../export/exports.js").IgePoly2d;
         bounds3dPolygon(recalculate?: boolean): import("../../export/exports.js").IgePoly2d;
         update(tickDelta: number): void;
-        tick(ctx: import("../../export/exports.js").IgeCanvasRenderingContext2d): void;
+        tick(ctx: import("../../types/IgeCanvasRenderingContext2d.js").IgeCanvasRenderingContext2d): void;
         updateTransform(): void;
         aabb(recalculate?: boolean, inverse?: boolean): import("../../export/exports.js").IgeRect;
-        _processBehaviours(type: import("../../export/exports.js").IgeBehaviourType, ...args: any[]): void;
+        _processBehaviours(type: import("../../enums/IgeBehaviourType.js").IgeBehaviourType, ...args: any[]): void;
         parent(): IgeObject | import("../../export/exports.js").IgeTileMap2d<any> | null | undefined;
         parent(id: string): IgeObject | null;
         children(): IgeObject[];
@@ -276,21 +283,21 @@ export declare const WithUiStyleMixin: <BaseClassType extends Mixin<IgeObject>>(
         destroyChildren(): any;
         isometricMounts(): boolean;
         isometricMounts(val: boolean): any;
-        depthSortMode(): import("../../export/exports.js").IgeIsometricDepthSortMode;
-        depthSortMode(val: import("../../export/exports.js").IgeIsometricDepthSortMode): any;
+        depthSortMode(): import("../../enums/IgeIsometricDepthSortMode.js").IgeIsometricDepthSortMode;
+        depthSortMode(val: import("../../enums/IgeIsometricDepthSortMode.js").IgeIsometricDepthSortMode): any;
         depthSortChildren(): void;
-        _depthSortVisit(u: number, sortObj: import("../../export/exports.js").IgeDepthSortObject): void;
+        _depthSortVisit(u: number, sortObj: import("../../types/IgeDepthSortObject.js").IgeDepthSortObject): void;
         _resizeEvent(event?: Event | undefined): void;
         _childUnMounted(obj: IgeObject): void;
         _mounted(obj: IgeObject): void;
         _unMounted(obj: IgeObject): void;
         isMounted(): boolean;
-        childSortingAlgorithm(val: import("../../export/exports.js").IgeChildSortFunction): any;
-        childSortingAlgorithm(): import("../../export/exports.js").IgeChildSortFunction;
+        childSortingAlgorithm(val: import("../../types/IgeChildSortFunction.js").IgeChildSortFunction): any;
+        childSortingAlgorithm(): import("../../types/IgeChildSortFunction.js").IgeChildSortFunction;
         _transformPoint(point: import("../../export/exports.js").IgePoint3d): import("../../export/exports.js").IgePoint3d;
-        addBehaviour<ParentType extends IgeObject = IgeObject>(type: import("../../export/exports.js").IgeBehaviourType, id: string, behaviour: import("../../export/exports.js").IgeEntityBehaviourMethod<ParentType>): any;
-        removeBehaviour(type: import("../../export/exports.js").IgeBehaviourType, id: string): any | undefined;
-        hasBehaviour(type: import("../../export/exports.js").IgeBehaviourType, id: string): boolean;
+        addBehaviour<ParentType extends IgeObject = IgeObject>(type: import("../../enums/IgeBehaviourType.js").IgeBehaviourType, id: string, behaviour: import("../../types/IgeEntityBehaviour.js").IgeEntityBehaviourMethod<ParentType>): any;
+        removeBehaviour(type: import("../../enums/IgeBehaviourType.js").IgeBehaviourType, id: string): any | undefined;
+        hasBehaviour(type: import("../../enums/IgeBehaviourType.js").IgeBehaviourType, id: string): boolean;
         cache(val: boolean, propagateToChildren?: boolean | undefined): any;
         cache(): boolean;
         compositeCache(val: boolean, propagateToChildren?: boolean | undefined): any;
@@ -308,8 +315,8 @@ export declare const WithUiStyleMixin: <BaseClassType extends Mixin<IgeObject>>(
         streamSectionsPull(sectionName: string): any;
         streamProperty(propName: string, propVal?: any): any;
         onStreamProperty(propName: string, propVal: any): any;
-        streamMode(val: import("../../export/exports.js").IgeStreamMode): any;
-        streamMode(): import("../../export/exports.js").IgeStreamMode;
+        streamMode(val: import("../../enums/IgeStreamMode.js").IgeStreamMode): any;
+        streamMode(): import("../../enums/IgeStreamMode.js").IgeStreamMode;
         streamControl(method: (clientId: string, roomId?: string | undefined) => boolean): any;
         streamControl(): (clientId: string, roomId?: string | undefined) => boolean;
         streamSyncInterval(val: number, sectionId: string): any;
@@ -353,7 +360,7 @@ export declare const WithUiStyleMixin: <BaseClassType extends Mixin<IgeObject>>(
         off(eventName: string, id: string, listener?: import("../../export/exports.js").IgeEventListenerCallback | undefined): any;
         off(eventName: string, listener?: import("../../export/exports.js").IgeEventListenerCallback | undefined): any;
         off(eventName: string): any;
-        emit(eventName: string, ...data: any[]): import("../../export/exports.js").IgeEventReturnFlag;
+        emit(eventName: string, ...data: any[]): import("../../enums/IgeEventReturnFlag.js").IgeEventReturnFlag;
         emitId(eventName: string, id: string, ...data: any[]): any;
         emitStatic(eventName: string, ...data: any[]): any;
         emitStaticId(eventName: string, id: string, ...data: any[]): any;

@@ -67,13 +67,13 @@ export class IgeUiElement extends IgeUiEntity {
 			}
 		});
 
-		this.on("pointerUp", () => {
+		this.on("pointerUp", (event, evc) => {
+			console.log("Pointer up on element", event, evc);
 			if (this._allowFocus) {
 				// Try to focus the entity
-				if (!this.focus()) {
-					this._updateStyle();
-				} else {
+				if (this.focus()) {
 					(ige.input as IgeInputComponent).stopPropagation();
+					//this._updateStyle();
 				}
 			} else if (this._allowActive) {
 				this._updateStyle();
@@ -326,7 +326,7 @@ export class IgeUiElement extends IgeUiEntity {
 	 */
 	applyStyle (styleData: IgeUiStyleObject): this;
 	applyStyle (): IgeUiStyleObject;
-	applyStyle (styleData?: IgeUiStyleObject) {
+	applyStyle (styleData?: IgeUiStyleObject): this | IgeUiStyleObject {
 		if (styleData === undefined) {
 			return this;
 		}
@@ -337,10 +337,10 @@ export class IgeUiElement extends IgeUiEntity {
 			// @ts-ignore
 			if (typeof this[functionName] === "function") {
 				// The method exists, call it with the arguments
-				let args: any[];
+				let args: unknown[];
 
 				if (styleData[functionName] instanceof Array) {
-					args = styleData[functionName];
+					args = styleData[functionName] as unknown[];
 				} else {
 					args = [styleData[functionName]];
 				}

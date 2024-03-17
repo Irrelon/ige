@@ -4,6 +4,7 @@ import type { IgeInputComponent, IgeUiElement, IgeUiStyleObject } from "@/export
 import { ige } from "@/export/exports";
 import { IgeEventReturnFlag } from "@/export/exports";
 import type { IgeIsReadyPromise } from "@/export/exports";
+import type { ClassRecord } from "@/types/ClassRecord";
 
 export class IgeUiManagerController extends IgeEventingClass implements IgeIsReadyPromise {
 	static componentTargetClass = "IgeEngine";
@@ -104,10 +105,10 @@ export class IgeUiManagerController extends IgeEventingClass implements IgeIsRea
 	 * style.
 	 * @returns {*}
 	 */
-	style<StyleClassType = any> (name: string, data: IgeUiStyleObject<StyleClassType>): this;
-	style<StyleClassType = any> (name: string | undefined): IgeUiStyleObject<StyleClassType> | undefined;
-	style<StyleClassType = any> (): this;
-	style<StyleClassType = any> (name?: string, data?: IgeUiStyleObject<StyleClassType>) {
+	style<StyleClassType> (name: string, data: ClassRecord<Partial<StyleClassType>>): this;
+	style<StyleClassType> (name: string | undefined): ClassRecord<Partial<StyleClassType>> | undefined;
+	style<StyleClassType> (): this;
+	style<StyleClassType> (name?: string, data?: ClassRecord<Partial<StyleClassType>>) {
 		if (name !== undefined) {
 			if (data !== undefined) {
 				// Set the data against the name, update any elements using the style
@@ -171,11 +172,26 @@ export class IgeUiManagerController extends IgeEventingClass implements IgeIsRea
 		return elem._allowFocus;
 	}
 
+	/**
+	 * Tells the currently focussed element to blur. Can still
+	 * be cancelled by an event listener that returns a cancel signal.
+	 */
+	blurCurrent () {
+		if (!this._focus) return;
+		this._focus.blur();
+	}
+
+	/**
+	 * Attempts to place focus on the passed element. If focus is successful
+	 * or the element is already focussed, returns true, otherwise returns
+	 * false.
+	 * @param elem
+	 */
 	focus (elem: IgeUiElement) {
-		console.log("Global focus call", elem, new Error().stack);
+		//console.log("Global focus call", elem, new Error().stack);
 		if (elem !== undefined) {
 			if (elem !== this._focus) {
-				console.log("Global focus being set to", elem, new Error().stack);
+				//console.log("Global focus being set to", elem, new Error().stack);
 				// The element is not our current focus so focus to it
 				const previousFocus = this._focus;
 

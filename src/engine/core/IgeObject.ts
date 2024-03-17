@@ -219,7 +219,7 @@ export class IgeObject
 	 */
 	id (id: string): this;
 	id (): string;
-	id (id?: string): this | string | undefined {
+	id (id?: string): this | string {
 		if (id !== undefined) {
 			// Check if we're changing the id
 			if (id === this._id) {

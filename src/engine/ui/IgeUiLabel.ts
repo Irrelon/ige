@@ -43,9 +43,9 @@ export class IgeUiLabel extends IgeUiElement {
 		}
 	}
 
-	textAlignX (val: IgeFontAlignX): this;
 	textAlignX (): IgeFontAlignX;
-	textAlignX (val?: IgeFontAlignX) {
+	textAlignX (val: IgeFontAlignX): this;
+	textAlignX (val?: IgeFontAlignX): IgeFontAlignX | this {
 		if (val !== undefined) {
 			this._fontEntity.textAlignX(val);
 			return this;
@@ -54,9 +54,9 @@ export class IgeUiLabel extends IgeUiElement {
 		return this._fontEntity.textAlignX();
 	}
 
-	textAlignY (val: IgeFontAlignY): this;
 	textAlignY (): IgeFontAlignY;
-	textAlignY (val?: IgeFontAlignY) {
+	textAlignY (val: IgeFontAlignY): this;
+	textAlignY (val?: IgeFontAlignY): IgeFontAlignY | this {
 		if (val !== undefined) {
 			this._fontEntity.textAlignY(val);
 			return this;
@@ -65,9 +65,9 @@ export class IgeUiLabel extends IgeUiElement {
 		return this._fontEntity.textAlignY();
 	}
 
-	textLineSpacing (val: number): this;
 	textLineSpacing (): number;
-	textLineSpacing (val?: number) {
+	textLineSpacing (val: number): this;
+	textLineSpacing (val?: number): number | this {
 		if (val !== undefined) {
 			this._fontEntity.textLineSpacing(val);
 			return this;
@@ -76,7 +76,7 @@ export class IgeUiLabel extends IgeUiElement {
 		return this._fontEntity.textLineSpacing();
 	}
 
-	autoWrap (val?: boolean) {
+	autoWrap (val?: boolean): boolean | IgeFontEntity {
 		if (val !== undefined) {
 			return this._fontEntity.autoWrap(val);
 		}
@@ -84,6 +84,8 @@ export class IgeUiLabel extends IgeUiElement {
 		return this._fontEntity.autoWrap();
 	}
 
+
+	width (): number;
 	/**
 	 * Extended method to auto-update the width of the child
 	 * font entity automatically to fill the text box.
@@ -94,8 +96,7 @@ export class IgeUiLabel extends IgeUiElement {
 	 * @return {*}
 	 */
 	width (px: number | string, lockAspect?: boolean, modifier?: number, noUpdate?: boolean): this;
-	width (): number;
-	width (px?: number | string, lockAspect = false, modifier?: number, noUpdate = false) {
+	width (px?: number | string, lockAspect = false, modifier?: number, noUpdate = false): number | this {
 		if (px !== undefined) {
 			// Call the main super class method
 			const returnValue = super.width(px, lockAspect, modifier, noUpdate);
@@ -107,6 +108,7 @@ export class IgeUiLabel extends IgeUiElement {
 		return this._fontEntity.width();
 	}
 
+	height (): number;
 	/**
 	 * Extended method to auto-update the height of the child
 	 * font entity automatically to fill the text box.
@@ -117,8 +119,7 @@ export class IgeUiLabel extends IgeUiElement {
 	 * @return {*}
 	 */
 	height (px: number | string, lockAspect?: boolean, modifier?: number, noUpdate?: boolean): this;
-	height (): number;
-	height (px?: number | string, lockAspect: boolean = false, modifier?: number, noUpdate: boolean = false) {
+	height (px?: number | string, lockAspect: boolean = false, modifier?: number, noUpdate: boolean = false): number | this {
 		if (px !== undefined) {
 			// Call the main super class method
 			const returnValue = super.height(px, lockAspect, modifier, noUpdate);
@@ -130,14 +131,14 @@ export class IgeUiLabel extends IgeUiElement {
 		return this._fontEntity.height();
 	}
 
+	value (): string;
 	/**
 	 * Gets / sets the text value of the label.
 	 * @param {String=} val The text value.
 	 * @return {*}
 	 */
 	value (val: string): this;
-	value (): string;
-	value (val?: string) {
+	value (val?: string): string | this {
 		if (val === undefined) {
 			return this._value;
 		}
@@ -169,6 +170,7 @@ export class IgeUiLabel extends IgeUiElement {
 		return this;
 	}
 
+	fontSheet (): IgeFontSheet | undefined;
 	/**
 	 * Gets / sets the font sheet (texture) that the text box will
 	 * use when rendering text inside the box.
@@ -176,8 +178,7 @@ export class IgeUiLabel extends IgeUiElement {
 	 * @return {*}
 	 */
 	fontSheet (fontSheet: IgeFontSheet): this;
-	fontSheet (): IgeFontSheet | undefined;
-	fontSheet (fontSheet?: IgeFontSheet) {
+	fontSheet (fontSheet?: IgeFontSheet): IgeFontSheet | this | undefined {
 		if (fontSheet !== undefined) {
 			this._fontSheet = fontSheet;
 
@@ -189,9 +190,9 @@ export class IgeUiLabel extends IgeUiElement {
 		return this._fontSheet;
 	}
 
-	font (val: string | IgeFontSheet): this;
 	font (): string | IgeFontSheet;
-	font (val?: string | IgeFontSheet) {
+	font (val: string | IgeFontSheet): this;
+	font (val?: string | IgeFontSheet): string | IgeFontEntity | IgeFontSheet | this | undefined {
 		if (val !== undefined) {
 			if (typeof val === "string") {
 				// Native font name
@@ -211,7 +212,9 @@ export class IgeUiLabel extends IgeUiElement {
 		}
 	}
 
-	nativeFont (val?: string) {
+	nativeFont (val: string): this;
+	nativeFont (): string | undefined;
+	nativeFont (val?: string): string | this | undefined {
 		if (val !== undefined) {
 			this._fontEntity.nativeFont(val);
 			return this;
@@ -220,7 +223,9 @@ export class IgeUiLabel extends IgeUiElement {
 		return this._fontEntity.nativeFont();
 	}
 
-	nativeStroke (val?: number) {
+	nativeStroke (val: number): this;
+	nativeStroke (): number | undefined;
+	nativeStroke (val?: number): number | this | undefined {
 		if (val !== undefined) {
 			this._fontEntity.nativeStroke(val);
 			return this;
@@ -229,6 +234,8 @@ export class IgeUiLabel extends IgeUiElement {
 		return this._fontEntity.nativeStroke();
 	}
 
+	nativeStrokeColor (val: string): this;
+	nativeStrokeColor (): string | undefined;
 	nativeStrokeColor (val?: string) {
 		if (val !== undefined) {
 			this._fontEntity.nativeStrokeColor(val);
@@ -238,9 +245,9 @@ export class IgeUiLabel extends IgeUiElement {
 		return this._fontEntity.nativeStrokeColor();
 	}
 
+	color (): string | CanvasGradient | CanvasPattern;
 	color (val: string): this;
-	color (): string;
-	color (val?: string) {
+	color (val?: string): this | string | CanvasGradient | CanvasPattern {
 		if (val !== undefined) {
 			this._color = val;
 
@@ -255,7 +262,7 @@ export class IgeUiLabel extends IgeUiElement {
 		return this._color;
 	}
 
-	update (tickDelta: number) {
+	update (tickDelta: number): void {
 		if (this._widthFromText && this._valueChanged !== this._value) {
 			this._valueChanged = false;
 			this.width(this._fontEntity.measureTextWidth(this._value || " ") + this._paddingLeft + this._paddingRight);

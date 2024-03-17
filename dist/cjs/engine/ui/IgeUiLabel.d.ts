@@ -16,13 +16,14 @@ export declare class IgeUiLabel extends IgeUiElement {
     _widthFromText: boolean;
     _valueChanged: boolean;
     constructor(label?: string);
-    textAlignX(val: IgeFontAlignX): this;
     textAlignX(): IgeFontAlignX;
-    textAlignY(val: IgeFontAlignY): this;
+    textAlignX(val: IgeFontAlignX): this;
     textAlignY(): IgeFontAlignY;
-    textLineSpacing(val: number): this;
+    textAlignY(val: IgeFontAlignY): this;
     textLineSpacing(): number;
+    textLineSpacing(val: number): this;
     autoWrap(val?: boolean): boolean | IgeFontEntity;
+    width(): number;
     /**
      * Extended method to auto-update the width of the child
      * font entity automatically to fill the text box.
@@ -33,7 +34,7 @@ export declare class IgeUiLabel extends IgeUiElement {
      * @return {*}
      */
     width(px: number | string, lockAspect?: boolean, modifier?: number, noUpdate?: boolean): this;
-    width(): number;
+    height(): number;
     /**
      * Extended method to auto-update the height of the child
      * font entity automatically to fill the text box.
@@ -44,14 +45,14 @@ export declare class IgeUiLabel extends IgeUiElement {
      * @return {*}
      */
     height(px: number | string, lockAspect?: boolean, modifier?: number, noUpdate?: boolean): this;
-    height(): number;
+    value(): string;
     /**
      * Gets / sets the text value of the label.
      * @param {String=} val The text value.
      * @return {*}
      */
     value(val: string): this;
-    value(): string;
+    fontSheet(): IgeFontSheet | undefined;
     /**
      * Gets / sets the font sheet (texture) that the text box will
      * use when rendering text inside the box.
@@ -59,14 +60,16 @@ export declare class IgeUiLabel extends IgeUiElement {
      * @return {*}
      */
     fontSheet(fontSheet: IgeFontSheet): this;
-    fontSheet(): IgeFontSheet | undefined;
-    font(val: string | IgeFontSheet): this;
     font(): string | IgeFontSheet;
-    nativeFont(val?: string): string | IgeFontEntity | this | undefined;
-    nativeStroke(val?: number): number | IgeFontEntity | this | undefined;
-    nativeStrokeColor(val?: string): string | IgeFontEntity | this | undefined;
+    font(val: string | IgeFontSheet): this;
+    nativeFont(val: string): this;
+    nativeFont(): string | undefined;
+    nativeStroke(val: number): this;
+    nativeStroke(): number | undefined;
+    nativeStrokeColor(val: string): this;
+    nativeStrokeColor(): string | undefined;
+    color(): string | CanvasGradient | CanvasPattern;
     color(val: string): this;
-    color(): string;
     update(tickDelta: number): void;
     _mounted(): void;
 }

@@ -2,6 +2,7 @@ import { type AnyFunction } from "../../export/exports.js"
 import { IgeEventingClass } from "../../export/exports.js"
 import type { IgeUiElement, IgeUiStyleObject } from "../../export/exports.js"
 import type { IgeIsReadyPromise } from "../../export/exports.js"
+import type { ClassRecord } from "../../types/ClassRecord.js"
 export declare class IgeUiManagerController extends IgeEventingClass implements IgeIsReadyPromise {
     static componentTargetClass: string;
     componentId: string;
@@ -75,9 +76,9 @@ export declare class IgeUiManagerController extends IgeEventingClass implements 
      * style.
      * @returns {*}
      */
-    style<StyleClassType = any>(name: string, data: IgeUiStyleObject<StyleClassType>): this;
-    style<StyleClassType = any>(name: string | undefined): IgeUiStyleObject<StyleClassType> | undefined;
-    style<StyleClassType = any>(): this;
+    style<StyleClassType>(name: string, data: ClassRecord<Partial<StyleClassType>>): this;
+    style<StyleClassType>(name: string | undefined): ClassRecord<Partial<StyleClassType>> | undefined;
+    style<StyleClassType>(): this;
     /**
      * Registers a UI element with the UI manager.
      * @param elem
@@ -99,6 +100,17 @@ export declare class IgeUiManagerController extends IgeEventingClass implements 
      */
     unRegisterElementStyle(elem: IgeUiElement): void;
     canFocus(elem: IgeUiElement): boolean;
+    /**
+     * Tells the currently focussed element to blur. Can still
+     * be cancelled by an event listener that returns a cancel signal.
+     */
+    blurCurrent(): void;
+    /**
+     * Attempts to place focus on the passed element. If focus is successful
+     * or the element is already focussed, returns true, otherwise returns
+     * false.
+     * @param elem
+     */
     focus(elem: IgeUiElement): boolean;
     blur(elem: IgeUiElement): boolean;
     _keyUp: (event: Event) => void;

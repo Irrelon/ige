@@ -127,21 +127,24 @@ export declare class IgeFontEntity extends IgeUiEntity {
      * @return {*} "this" when arguments are passed to allow method
      * chaining or the current value if no arguments are specified.
      */
-    nativeFont(val?: string): string | this | undefined;
+    nativeFont(val: string): this;
+    nativeFont(): string | undefined;
     /**
      * Gets / sets the text stroke size that applies when using
      * a native font for text rendering.
      * @param {number=} val The size of the text stroke.
      * @return {*}
      */
-    nativeStroke(val?: number): number | this | undefined;
+    nativeStroke(val: number): this;
+    nativeStroke(): number | undefined;
     /**
      * Gets / sets the text stroke color that applies when using
      * a native font for text rendering.
      * @param val The color of the text stroke.
      * @return {*}
      */
-    nativeStrokeColor(val?: string): string | this | undefined;
+    nativeStrokeColor(val: string): this;
+    nativeStrokeColor(): string | undefined;
     /**
      * Gets / sets the auto-wrapping mode. If set to true then the
      * text this font entity renders will be automatically line-broken

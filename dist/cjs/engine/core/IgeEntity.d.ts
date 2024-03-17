@@ -241,9 +241,7 @@ export declare class IgeEntity extends IgeObject implements IgeCanRegisterById, 
      * @return {*} "this" when arguments are passed to allow method
      * chaining or the current value if no arguments are specified.
      */
-    width(px: number | string, lockAspect?: boolean): this;
-    width(px: number | string, lockAspect: boolean): this;
-    width(): number | string;
+    width(px?: number | string, lockAspect?: boolean): number | this;
     /**
      * Gets / sets the geometry y value.
      * @param {number=} px The new y value in pixels.
@@ -253,8 +251,7 @@ export declare class IgeEntity extends IgeObject implements IgeCanRegisterById, 
      * @return {*} "this" when arguments are passed to allow method
      * chaining or the current value if no arguments are specified.
      */
-    height(px: number | string, lockAspect?: boolean): this;
-    height(): number;
+    height(px?: number | string, lockAspect?: boolean): number | this;
     /**
      * Gets / sets the 2d geometry of the entity. The x and y values are
      * relative to the center of the entity. This geometry is used when

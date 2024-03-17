@@ -15,7 +15,7 @@
 	"type": "module",
 	"main": "dist/cjs/index.js",
 	"module": "dist/esm/index.js",
-	"types": "dist/esm/index.d.ts",
+	"types": "dist/cjs/index.d.ts",
 	"scripts": {
 		"tsc-b": "tsc -b",
 		"build": "npm run build-esm && npm run build-cjs",
@@ -75,7 +75,7 @@
 		"stacktrace-js": "^2.0.2",
 		"tsc-watch": "^6.0.0",
 		"ttypescript": "^1.5.15",
-		"typescript": "^5.3.3",
+		"typescript": "^5.4.2",
 		"yargs": "^17.7.2"
 	}
 }
