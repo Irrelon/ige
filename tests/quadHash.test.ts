@@ -1,4 +1,4 @@
-import { extentsToHash, hashToExtents } from "../src/engine/quadHash";
+import { extentsToHash, hashToExtents } from "../src/engine/utils/quadHash";
 
 describe("hashToExtents()", () => {
 	it("should correctly convert a 4-level hash to its extents", () => {

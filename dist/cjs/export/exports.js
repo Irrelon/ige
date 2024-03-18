@@ -91,7 +91,7 @@ __exportStar(require("../enums/IgeBehaviourType"), exports);
 //////////////////////////////////////////////////////////////////////
 // Class Store
 //////////////////////////////////////////////////////////////////////
-__exportStar(require("../engine/igeClassStore"), exports);
+__exportStar(require("../engine/utils/igeClassStore"), exports);
 //////////////////////////////////////////////////////////////////////
 // Engine Main Classes
 //////////////////////////////////////////////////////////////////////
@@ -105,9 +105,16 @@ __exportStar(require("../engine/core/IgeMap2d"), exports);
 __exportStar(require("../engine/core/IgeMapStack2d"), exports);
 __exportStar(require("../engine/core/IgeMatrix2d"), exports);
 __exportStar(require("../engine/core/IgeRouter"), exports);
-__exportStar(require("../engine/utils"), exports);
-__exportStar(require("../engine/quadHash"), exports);
-__exportStar(require("../engine/clientServer"), exports);
+__exportStar(require("../engine/utils/arrays"), exports);
+__exportStar(require("../engine/utils/clientServer"), exports);
+__exportStar(require("../engine/utils/easing"), exports);
+__exportStar(require("../engine/utils/general"), exports);
+__exportStar(require("../engine/utils/ids"), exports);
+__exportStar(require("../engine/utils/igeFilters"), exports);
+__exportStar(require("../engine/utils/maths"), exports);
+__exportStar(require("../engine/utils/mixin"), exports);
+__exportStar(require("../engine/utils/quadHash"), exports);
+__exportStar(require("../engine/utils/trace"), exports);
 __exportStar(require("../engine/textures/IgeTileMap2dSmartTexture"), exports);
 __exportStar(require("../engine/textures/IgeFontSmartTexture"), exports);
 __exportStar(require("../engine/textures/IgeCuboidSmartTexture"), exports);
@@ -125,8 +132,6 @@ __exportStar(require("../engine/core/IgeQuest"), exports);
 __exportStar(require("../engine/core/IgeGenericPathFinder"), exports);
 __exportStar(require("../engine/core/IgeCanvas"), exports);
 __exportStar(require("../engine/audio/IgeAudioController"), exports);
-__exportStar(require("../engine/igeFilters"), exports);
-__exportStar(require("../engine/easing"), exports);
 __exportStar(require("../engine/network/client/IgeNetIoClient"), exports);
 __exportStar(require("../engine/network/server/IgeNetIoSocket"), exports);
 __exportStar(require("../engine/network/server/IgeNetIoServer"), exports);

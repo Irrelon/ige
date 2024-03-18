@@ -1,6 +1,6 @@
 import { type IgeEngine, type IgeViewport } from "@/export/exports";
 import { ige } from "@/export/exports";
-import { isServer } from "@/engine/clientServer";
+import { isServer } from "@/engine/utils/clientServer";
 import { IgeEventingClass } from "@/engine/core/IgeEventingClass";
 import { IgePoint2d } from "@/engine/core/IgePoint2d";
 

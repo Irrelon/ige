@@ -77,7 +77,7 @@ export * from "../enums/IgeBehaviourType";
 //////////////////////////////////////////////////////////////////////
 // Class Store
 //////////////////////////////////////////////////////////////////////
-export * from "../engine/igeClassStore";
+export * from "../engine/utils/igeClassStore";
 
 //////////////////////////////////////////////////////////////////////
 // Engine Main Classes
@@ -92,9 +92,16 @@ export * from "../engine/core/IgeMap2d";
 export * from "../engine/core/IgeMapStack2d";
 export * from "../engine/core/IgeMatrix2d";
 export * from "../engine/core/IgeRouter";
-export * from "../engine/utils";
-export * from "../engine/quadHash";
-export * from "../engine/clientServer";
+export * from "../engine/utils/arrays";
+export * from "../engine/utils/clientServer";
+export * from "../engine/utils/easing";
+export * from "../engine/utils/general";
+export * from "../engine/utils/ids";
+export * from "../engine/utils/igeFilters";
+export * from "../engine/utils/maths";
+export * from "../engine/utils/mixin";
+export * from "../engine/utils/quadHash";
+export * from "../engine/utils/trace";
 export * from "../engine/textures/IgeTileMap2dSmartTexture";
 export * from "../engine/textures/IgeFontSmartTexture";
 export * from "../engine/textures/IgeCuboidSmartTexture";
@@ -112,8 +119,6 @@ export * from "../engine/core/IgeQuest";
 export * from "../engine/core/IgeGenericPathFinder";
 export * from "../engine/core/IgeCanvas";
 export * from "../engine/audio/IgeAudioController";
-export * from "../engine/igeFilters";
-export * from "../engine/easing";
 export * from "../engine/network/client/IgeNetIoClient";
 export * from "../engine/network/server/IgeNetIoSocket";
 export * from "../engine/network/server/IgeNetIoServer";

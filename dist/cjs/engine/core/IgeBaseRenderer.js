@@ -11,7 +11,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.IgeBaseRenderer = void 0;
 const exports_1 = require("../../export/exports.js");
-const clientServer_1 = require("../clientServer.js");
+const clientServer_1 = require("../utils/clientServer.js");
 const IgeEventingClass_1 = require("./IgeEventingClass.js");
 const IgePoint2d_1 = require("./IgePoint2d.js");
 class IgeBaseRenderer extends IgeEventingClass_1.IgeEventingClass {
