@@ -24,38 +24,26 @@ export declare class IgeUiTextBox extends IgeUiElement {
      * width of this entity.
      * @return {*}
      */
-    width(): number;
     /**
      * Gets / sets the textbox width.
      * This method has been extended here to auto-update the width of the child
      * font entity automatically to fill the text box when changes occur to the
      * width of this entity.
-     * @param px
-     * @param lockAspect
-     * @param modifier
-     * @param noUpdate
-     * @return {*}
      */
+    width(): number;
     width(px: number | string, lockAspect?: boolean, modifier?: number, noUpdate?: boolean): this;
     /**
      * Gets / sets the textbox height.
      * Extended method to auto-update the height of the child
      * font entity automatically to fill the text box.
-     * @param px
-     * @param lockAspect
-     * @param modifier
-     * @param noUpdate
-     * @return {*}
      */
-    height(px: number | string, lockAspect?: boolean, modifier?: number, noUpdate?: boolean): this;
     height(): number;
+    height(px: number | string, lockAspect?: boolean, modifier?: number, noUpdate?: boolean): this;
     /**
      * Gets / sets the text value of the input box.
-     * @param {String=} val The text value.
-     * @return {*}
      */
-    value(val: string): this;
     value(): string;
+    value(val: string): this;
     /**
      * Gets / sets the placeholder text that is displayed inside the
      * textbox when no current value is present.
@@ -105,8 +93,8 @@ export declare class IgeUiTextBox extends IgeUiElement {
      *
      * @param val
      */
-    font(val: string | IgeFontSheet): this;
     font(): string | IgeFontSheet | undefined;
+    font(val: string | IgeFontSheet): this;
     /**
      * Explicitly set the font to a native font.
      * @see font
@@ -144,8 +132,8 @@ export declare class IgeUiTextBox extends IgeUiElement {
      *
      * @param color
      */
-    color(color?: string | CanvasGradient | CanvasPattern): this;
     color(): string | CanvasGradient | CanvasPattern;
+    color(color?: string | CanvasGradient | CanvasPattern): this;
     _resolveTextColor(): void;
     _mounted(): void;
     destroy(): this;

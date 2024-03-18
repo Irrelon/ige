@@ -162,6 +162,11 @@ export class IgeUiElement extends IgeUiEntity {
         //   the base styles are applied that essentially "undo" the focussed
         //   state. We can identify the style method call (e.g. borderColor) and
         //   only apply those that the focus state affected to save on CPU cycles
+        // TODO: If you apply a style via an element, id or style class selector
+        //   then a style method is called directly on the instance, the instance
+        //   value should override all the others - as in, most specific.
+        //	 This would need to work with modifiers as well though, how to specify
+        //   those when using a direct method call?
         // Apply styles in order of class, class:focus, class:hover, class:active,
         // id, id:focus, id:hover, id:active
         this._processStyle(this.classId);

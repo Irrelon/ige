@@ -1,6 +1,6 @@
 import type { IgeBaseClass } from "../../export/exports.js"
-import type { Mixin } from "../../export/exports.js"
-export declare const WithExampleMixin: <BaseClassType extends Mixin<IgeBaseClass>>(Base: BaseClassType) => {
+import type { IgeMixin } from "../../export/exports.js"
+export declare const WithExampleMixin: <BaseClassType extends IgeMixin<IgeBaseClass>>(Base: BaseClassType) => {
     new (...args: any[]): {
         classId: string;
         _data: Record<string, any>;

@@ -1,5 +1,5 @@
 import { IgeBaseRenderer } from "./IgeBaseRenderer.js"
-import { getElementPosition, ige, IgePoint2d, isClient, isServer } from "../../export/exports.js";
+import { getElementPosition, ige, IgePoint2d, isClient, isServer } from "../../export/exports.js"
 export class IgeCanvas2dRenderer extends IgeBaseRenderer {
     _ctx;
     _createdFrontBuffer = false;

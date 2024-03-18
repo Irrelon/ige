@@ -1,9 +1,10 @@
 //////////////////////////////////////////////////////////////////////
 // Types
 //////////////////////////////////////////////////////////////////////
-export * from "../types/AnyFunction";
-export * from "../types/GenericClass";
 export * from "../types/global";
+export * from "../types/IgeAnyFunction";
+export * from "../types/IgeAnyInterface";
+export * from "../types/IgeAnyStringToFunctionInterface";
 export * from "../types/IgeBehaviourStore";
 export * from "../types/IgeBox2dBodyDef";
 export * from "../types/IgeBox2dContactListenerCallback";
@@ -25,10 +26,12 @@ export * from "../types/IgeCompassDirection";
 export * from "../types/IgeConfig";
 export * from "../types/IgeDepthSortObject";
 export * from "../types/IgeEntityBehaviour";
+export * from "../types/IgeGenericClass";
 export * from "../types/IgeImage";
 export * from "../types/IgeInputEventControl";
 export * from "../types/IgeInputEventHandler";
 export * from "../types/IgeIsReadyPromise";
+export * from "../types/IgeMixin";
 export * from "../types/IgeNetworkChat";
 export * from "../types/IgeNetworkMessage";
 export * from "../types/IgeNetworkStream";
@@ -43,6 +46,7 @@ export * from "../types/IgeSceneGraphDataEntry";
 export * from "../types/IgeSmartFilter";
 export * from "../types/IgeSmartTexture";
 export * from "../types/IgeStreaming";
+export * from "../types/IgeSyncEntry";
 export * from "../types/IgeTextureAnimation";
 export * from "../types/IgeTextureCell";
 export * from "../types/IgeTextureCellArray";
@@ -50,8 +54,7 @@ export * from "../types/IgeTimeStream";
 export * from "../types/IgeTriggerPolygonFunctionName";
 export * from "../types/IgeUiStyleModifier";
 export * from "../types/IgeUiStyleObject";
-export * from "../types/Mixin";
-export * from "../types/SyncEntry";
+export * from "../types/IgeVec4";
 
 //////////////////////////////////////////////////////////////////////
 // Enums
@@ -90,6 +93,7 @@ export * from "../engine/core/IgeMapStack2d";
 export * from "../engine/core/IgeMatrix2d";
 export * from "../engine/core/IgeRouter";
 export * from "../engine/utils";
+export * from "../engine/quadHash";
 export * from "../engine/clientServer";
 export * from "../engine/textures/IgeTileMap2dSmartTexture";
 export * from "../engine/textures/IgeFontSmartTexture";

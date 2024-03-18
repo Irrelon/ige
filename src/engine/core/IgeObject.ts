@@ -21,7 +21,7 @@ import {
 	IgeStreamMode
 } from "@/export/exports";
 import type {
-	GenericClass,
+	IgeGenericClass,
 	IgeBehaviourStore,
 	IgeCanAcceptComponents,
 	IgeCanRegisterByCategory,
@@ -1604,7 +1604,7 @@ export class IgeObject
 	 * Registers ourself to the ige.classStore.
 	 */
 	registerNetworkClass () {
-		ige.classStore[this.constructor.name] = this.constructor as GenericClass;
+		ige.classStore[this.constructor.name] = this.constructor as IgeGenericClass;
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////

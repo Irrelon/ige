@@ -9,11 +9,11 @@ import { IgePoint3d } from "../../export/exports.js"
 import type { IgeSceneGraph } from "../../export/exports.js"
 import { IgeViewport } from "../../export/exports.js"
 import { IgeEngineState } from "../../export/exports.js"
-import type { GenericClass } from "../../export/exports.js"
+import type { IgeGenericClass } from "../../export/exports.js"
 import type { IgeCanvasRenderingContext2d } from "../../export/exports.js"
 import type { IgeSceneGraphDataEntry } from "../../export/exports.js"
-import type { SyncEntry, SyncMethod } from "../../export/exports.js"
-import type { AnyFunction } from "../../types/AnyFunction.js"
+import type { IgeSyncEntry, IgeSyncMethod } from "../../export/exports.js"
+import type { IgeAnyFunction } from "../../types/IgeAnyFunction.js"
 export declare class IgeEngine extends IgeEntity {
     classId: string;
     client?: IgeBaseClass;
@@ -71,7 +71,7 @@ export declare class IgeEngine extends IgeEntity {
     _debugEvents: Record<string, boolean | number>;
     _autoSize: boolean;
     _syncIndex: number;
-    _syncArr: SyncEntry[];
+    _syncArr: IgeSyncEntry[];
     _webFonts: FontFace[];
     _cssFonts: string[];
     _devicePixelRatio: number;
@@ -79,7 +79,7 @@ export declare class IgeEngine extends IgeEntity {
     _resized: boolean;
     _timeScaleLastTimestamp: number;
     lastTick: number;
-    _setTickout: AnyFunction[];
+    _setTickout: IgeAnyFunction[];
     _alwaysInView: boolean;
     basePath: string;
     _requestAnimFrame?: (callback: (time: number, ctx?: IgeCanvasRenderingContext2d) => void, element?: Element) => void;
@@ -296,7 +296,7 @@ export declare class IgeEngine extends IgeEntity {
      * @param {string} id The ID of the class to retrieve.
      * @return {Object} The class definition.
      */
-    getClass(id: string | GenericClass): GenericClass;
+    getClass(id: string | IgeGenericClass): IgeGenericClass;
     /**
      * Returns true if the class specified has been defined.
      * @param {string} id The ID of the class to check for.
@@ -311,7 +311,7 @@ export declare class IgeEngine extends IgeEntity {
      * @param args
      * @return {*}
      */
-    newClassInstance(id: string | GenericClass, ...args: any[]): any;
+    newClassInstance(id: string | IgeGenericClass, ...args: any[]): any;
     /**
      * Checks if all engine start dependencies have been satisfied.
      * @return {boolean}
@@ -372,7 +372,7 @@ export declare class IgeEngine extends IgeEntity {
      * Called each frame to traverse and render the scenegraph.
      */
     engineStep: (timeStamp: number) => void;
-    setTickout(callback: AnyFunction, count?: number): this;
+    setTickout(callback: IgeAnyFunction, count?: number): this;
     /**
      * Gets / sets the _autoSize property. If set to true, the engine will listen
      * for any change in screen size and resize the front-buffer (canvas) element
@@ -437,7 +437,7 @@ export declare class IgeEngine extends IgeEntity {
      * @param {String} url The file's path or url.
      */
     requireStylesheet(url: string): Promise<void>;
-    sync(method: SyncMethod, attrArr: any): void;
+    sync(method: IgeSyncMethod, attrArr: any): void;
     _processSync: () => Promise<void>;
     /**
      * Returns the engine's children as an array of IgeViewport

@@ -40,9 +40,9 @@ const WithEventingMixin = (Base) => class extends Base {
             if (typeof eventName !== "string") {
                 eventName = "*Multi-Event*";
             }
-            this.log('Cannot register event listener for event "' +
+            this.log("Cannot register event listener for event \"" +
                 eventName +
-                '" because the passed callback is not a function!', "error");
+                "\" because the passed callback is not a function!", "error");
         }
         if (typeof eventName === "string") {
             // Compose the new listener
@@ -132,7 +132,7 @@ const WithEventingMixin = (Base) => class extends Base {
                         return true;
                     }
                     else {
-                        this.log('Failed to cancel event listener for event named "' + eventName + '" !', "warning", evtListener);
+                        this.log("Failed to cancel event listener for event named \"" + eventName + "\" !", "warning", evtListener);
                     }
                 }
                 else {

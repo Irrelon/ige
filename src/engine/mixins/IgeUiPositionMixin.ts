@@ -1,9 +1,9 @@
 import type { IgeUiEntity } from "@/export/exports";
 import type { IgeObject } from "@/export/exports";
 import { ige } from "@/export/exports";
-import type { Mixin } from "@/export/exports";
+import type { IgeMixin } from "@/export/exports";
 
-export const WithUiPositionMixin = <BaseClassType extends Mixin<IgeObject>>(Base: BaseClassType) =>
+export const WithUiPositionMixin = <BaseClassType extends IgeMixin<IgeObject>> (Base: BaseClassType) =>
 	class extends Base {
 		_uiLeft?: number;
 		_uiLeftPercent?: string;

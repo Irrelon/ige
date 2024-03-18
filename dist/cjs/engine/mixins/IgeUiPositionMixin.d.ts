@@ -1,6 +1,6 @@
 import type { IgeObject } from "../../export/exports.js"
-import type { Mixin } from "../../export/exports.js"
-export declare const WithUiPositionMixin: <BaseClassType extends Mixin<IgeObject>>(Base: BaseClassType) => {
+import type { IgeMixin } from "../../export/exports.js"
+export declare const WithUiPositionMixin: <BaseClassType extends IgeMixin<IgeObject>>(Base: BaseClassType) => {
     new (...args: any[]): {
         _uiLeft?: number | undefined;
         _uiLeftPercent?: string | undefined;
@@ -212,7 +212,13 @@ export declare const WithUiPositionMixin: <BaseClassType extends Mixin<IgeObject
         _texture?: import("../../export/exports.js").IgeTexture | undefined;
         _indestructible: boolean;
         _shouldRender?: boolean | undefined;
-        _smartBackground?: import("../../types/IgeSmartTexture.js").IgeSmartTexture<import("../../export/exports.js").IgeEntity> | undefined;
+        _smartBackground?: import("../../types/IgeSmartTexture.js").IgeSmartTexture<import("../../export/exports.js").IgeEntity> | undefined; /**
+         * Gets / sets the entity's y position relative to the top of
+         * the canvas.
+         * @param {number} px
+         * @param {boolean=} noUpdate
+         * @return {number}
+         */
         _lastUpdate?: number | undefined;
         _behaviours?: import("../../types/IgeBehaviourStore.js").IgeBehaviourStore | undefined;
         _birthMount?: string | undefined;

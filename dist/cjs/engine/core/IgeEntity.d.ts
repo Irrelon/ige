@@ -234,55 +234,40 @@ export declare class IgeEntity extends IgeObject implements IgeCanRegisterById, 
     anchor(): IgePoint2d;
     /**
      * Gets / sets the geometry x value (this._bounds2d.x).
-     * @param {number=} px The new x value in pixels.
-     * @param {Boolean} lockAspect
      * @example #Set the entity width
      *     entity.width(40);
-     * @return {*} "this" when arguments are passed to allow method
-     * chaining or the current value if no arguments are specified.
      */
-    width(px?: number | string, lockAspect?: boolean): number | this;
+    width(): number;
+    width(px: number | string, lockAspect?: boolean): this;
     /**
      * Gets / sets the geometry y value.
-     * @param {number=} px The new y value in pixels.
-     * @param {boolean} [lockAspect]
      * @example #Set the entity height
      *     entity.height(40);
-     * @return {*} "this" when arguments are passed to allow method
-     * chaining or the current value if no arguments are specified.
      */
-    height(px?: number | string, lockAspect?: boolean): number | this;
+    height(): number;
+    height(px: number | string, lockAspect?: boolean): this;
     /**
      * Gets / sets the 2d geometry of the entity. The x and y values are
      * relative to the center of the entity. This geometry is used when
      * rendering textures for the entity and positioning in world space as
      * well as UI positioning calculations. It holds no bearing on isometric
      * positioning.
-     * @param {number=} x The new x value in pixels.
-     * @param {number=} y The new y value in pixels.
      * @example #Set the dimensions of the entity (width and height)
      *     entity.bounds2d(40, 40);
-     * @return {*} "this" when arguments are passed to allow method
-     * chaining or the current value if no arguments are specified.
      */
-    bounds2d(x: number, y: number): this;
     bounds2d(): IgePoint2d;
     bounds2d(x: IgePoint2d): this;
+    bounds2d(x: number, y: number): this;
     /**
      * Gets / sets the 3d geometry of the entity. The x and y values are
      * relative to the center of the entity and the z value is wholly
      * positive from the "floor". Used to define a 3d bounding cuboid for
      * the entity used in isometric depth sorting and hit testing.
-     * @param {number=} x The new x value in pixels.
-     * @param {number=} y The new y value in pixels.
-     * @param {number=} z The new z value in pixels.
      * @example #Set the dimensions of the entity (width, height and length)
      *     entity.bounds3d(40, 40, 20);
-     * @return {*} "this" when arguments are passed to allow method
-     * chaining or the current value if no arguments are specified.
      */
-    bounds3d(x: number, y: number, z: number): this;
     bounds3d(): IgePoint3d;
+    bounds3d(x: number, y: number, z: number): this;
     /**
      * Gets / sets the life span of the object in milliseconds. The life
      * span is how long the object will exist for before being automatically

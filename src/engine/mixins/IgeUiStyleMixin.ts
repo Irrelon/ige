@@ -2,11 +2,11 @@
 import type { IgeObject } from "@/export/exports";
 import type { IgeTexture } from "@/export/exports";
 import type { IgeRepeatType } from "@/export/exports";
-import type { Mixin } from "@/export/exports";
+import type { IgeMixin } from "@/export/exports";
 
 // TODO: Update this mixin so it extends from IgeBaseClass, moving anything that relies on IgeEntity
 //    to another class, probably IgeEntity or IgeUiEntity?
-export const WithUiStyleMixin = <BaseClassType extends Mixin<IgeObject>> (Base: BaseClassType) =>
+export const WithUiStyleMixin = <BaseClassType extends IgeMixin<IgeObject>> (Base: BaseClassType) =>
 	class extends Base {
 		_color: string | CanvasGradient | CanvasPattern = "#000000";
 		_patternRepeat?: IgeRepeatType;

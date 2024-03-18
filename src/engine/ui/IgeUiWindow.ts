@@ -25,7 +25,7 @@ export class IgeUiWindow extends IgeUiElement {
 		// Define some default styles
 		if (!ui.style("IgeUiWindow")) {
 			ui.style("IgeUiWindow", {
-				backgroundColor: null
+				backgroundColor: undefined
 			});
 		}
 
@@ -135,8 +135,8 @@ export class IgeUiWindow extends IgeUiElement {
 		return super.blur();
 	}
 
-	title(val: string): this;
-	title(): string;
+	title (val: string): this;
+	title (): string;
 	title (val?: string) {
 		if (val !== undefined) {
 			this._label.value(val);
@@ -146,8 +146,8 @@ export class IgeUiWindow extends IgeUiElement {
 		return this._label.value();
 	}
 
-	titleColor(val: string): this;
-	titleColor(): string;
+	titleColor (val: string): this;
+	titleColor (): string;
 	titleColor (val?: string) {
 		if (val !== undefined) {
 			this._label.color(val);
@@ -157,8 +157,8 @@ export class IgeUiWindow extends IgeUiElement {
 		return this._label.color();
 	}
 
-	titleFont(val: string): this;
-	titleFont(): string;
+	titleFont (val: string): this;
+	titleFont (): string;
 	titleFont (val?: string) {
 		if (val !== undefined) {
 			this._label.style("font", val);

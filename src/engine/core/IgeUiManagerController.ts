@@ -1,10 +1,10 @@
-import { type AnyFunction, arrPull } from "@/export/exports";
+import { type IgeAnyFunction, arrPull } from "@/export/exports";
 import { IgeEventingClass } from "@/export/exports";
 import type { IgeInputComponent, IgeUiElement, IgeUiStyleObject } from "@/export/exports";
 import { ige } from "@/export/exports";
 import { IgeEventReturnFlag } from "@/export/exports";
 import type { IgeIsReadyPromise } from "@/export/exports";
-import type { ClassRecord } from "@/types/ClassRecord";
+import type { IgeClassRecord } from "@/types/IgeClassRecord";
 
 export class IgeUiManagerController extends IgeEventingClass implements IgeIsReadyPromise {
 	static componentTargetClass = "IgeEngine";
@@ -25,7 +25,7 @@ export class IgeUiManagerController extends IgeEventingClass implements IgeIsRea
 		});
 	}
 
-	_addEventListeners = (callback?: AnyFunction) => {
+	_addEventListeners = (callback?: IgeAnyFunction) => {
 		// Remove any previous listeners
 		this._removeEventListeners();
 
@@ -36,7 +36,7 @@ export class IgeUiManagerController extends IgeEventingClass implements IgeIsRea
 		});
 	};
 
-	_removeEventListeners = (callback?: AnyFunction) => {
+	_removeEventListeners = (callback?: IgeAnyFunction) => {
 		ige.dependencies.waitFor(["input"], () => {
 			(ige.input as IgeInputComponent).off("keyDown", this._keyDown);
 
@@ -105,10 +105,10 @@ export class IgeUiManagerController extends IgeEventingClass implements IgeIsRea
 	 * style.
 	 * @returns {*}
 	 */
-	style<StyleClassType> (name: string, data: ClassRecord<Partial<StyleClassType>>): this;
-	style<StyleClassType> (name: string | undefined): ClassRecord<Partial<StyleClassType>> | undefined;
+	style<StyleClassType> (name: string, data: IgeClassRecord<Partial<StyleClassType>>): this;
+	style<StyleClassType> (name: string | undefined): IgeClassRecord<Partial<StyleClassType>> | undefined;
 	style<StyleClassType> (): this;
-	style<StyleClassType> (name?: string, data?: ClassRecord<Partial<StyleClassType>>) {
+	style<StyleClassType> (name?: string, data?: IgeClassRecord<Partial<StyleClassType>>) {
 		if (name !== undefined) {
 			if (data !== undefined) {
 				// Set the data against the name, update any elements using the style

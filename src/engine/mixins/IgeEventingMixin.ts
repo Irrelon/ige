@@ -1,5 +1,5 @@
 import type { IgeBaseClass } from "@/export/exports";
-import type { Mixin } from "@/export/exports";
+import type { IgeMixin } from "@/export/exports";
 
 export interface IgeEventListenerObject {
 	type: "single";
@@ -19,7 +19,7 @@ export interface IgeMultiEventListenerObject extends Omit<IgeEventListenerObject
 export type IgeEventListenerRegister = Record<string, (IgeEventListenerObject | IgeMultiEventListenerObject)[]>;
 export type IgeEventRemovalResultCallback = (success: boolean) => void;
 
-export const WithEventingMixin = <BaseClassType extends Mixin<IgeBaseClass>>(Base: BaseClassType) =>
+export const WithEventingMixin = <BaseClassType extends IgeMixin<IgeBaseClass>> (Base: BaseClassType) =>
 	class extends Base {
 		// Private
 		_eventsProcessing: boolean = false;
@@ -65,9 +65,9 @@ export const WithEventingMixin = <BaseClassType extends Mixin<IgeBaseClass>>(Bas
 					eventName = "*Multi-Event*";
 				}
 				this.log(
-					'Cannot register event listener for event "' +
-						eventName +
-						'" because the passed callback is not a function!',
+					"Cannot register event listener for event \"" +
+					eventName +
+					"\" because the passed callback is not a function!",
 					"error"
 				);
 			}
@@ -176,7 +176,7 @@ export const WithEventingMixin = <BaseClassType extends Mixin<IgeBaseClass>>(Bas
 							return true;
 						} else {
 							this.log(
-								'Failed to cancel event listener for event named "' + eventName + '" !',
+								"Failed to cancel event listener for event named \"" + eventName + "\" !",
 								"warning",
 								evtListener
 							);

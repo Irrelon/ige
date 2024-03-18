@@ -1,8 +1,8 @@
 import type { IgeObject } from "../../export/exports.js"
 import type { IgeTexture } from "../../export/exports.js"
 import type { IgeRepeatType } from "../../export/exports.js"
-import type { Mixin } from "../../export/exports.js"
-export declare const WithUiStyleMixin: <BaseClassType extends Mixin<IgeObject>>(Base: BaseClassType) => {
+import type { IgeMixin } from "../../export/exports.js"
+export declare const WithUiStyleMixin: <BaseClassType extends IgeMixin<IgeObject>>(Base: BaseClassType) => {
     new (...args: any[]): {
         _color: string | CanvasGradient | CanvasPattern;
         _patternRepeat?: IgeRepeatType | undefined;
@@ -141,15 +141,7 @@ export declare const WithUiStyleMixin: <BaseClassType extends Mixin<IgeObject>>(
         _streamEmitCreated?: boolean | undefined;
         _streamSections: string[];
         _streamProperty: Record<string, any>;
-        _streamSyncInterval?: number | undefined; /**
-         * Sets the current background texture and the repeatType
-         * to determine in which axis the image should be repeated.
-         * @param {IgeTexture=} texture
-         * @param {string=} repeatType Accepts "repeat", "repeat-x",
-         * "repeat-y" and "no-repeat".
-         * @return {*} Returns this if any parameter is specified or
-         * the current background image if no parameters are specified.
-         */
+        _streamSyncInterval?: number | undefined;
         _streamSyncDelta: number;
         _streamSyncSectionInterval: Record<string, number>;
         _streamSyncSectionDelta: Record<string, number>;

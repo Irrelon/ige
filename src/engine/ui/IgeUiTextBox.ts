@@ -141,20 +141,15 @@ export class IgeUiTextBox extends IgeUiElement {
 	 * width of this entity.
 	 * @return {*}
 	 */
-	width (): number;
 	/**
 	 * Gets / sets the textbox width.
 	 * This method has been extended here to auto-update the width of the child
 	 * font entity automatically to fill the text box when changes occur to the
 	 * width of this entity.
-	 * @param px
-	 * @param lockAspect
-	 * @param modifier
-	 * @param noUpdate
-	 * @return {*}
 	 */
+	width (): number;
 	width (px: number | string, lockAspect?: boolean, modifier?: number, noUpdate?: boolean): this;
-	width (px?: number | string, lockAspect = false, modifier?: number, noUpdate = false) {
+	width (px?: number | string, lockAspect = false, modifier?: number, noUpdate = false): number | this {
 		if (px !== undefined) {
 			// Call the main super class method
 			const returnValue = super.width(px, lockAspect, modifier, noUpdate);
@@ -170,15 +165,10 @@ export class IgeUiTextBox extends IgeUiElement {
 	 * Gets / sets the textbox height.
 	 * Extended method to auto-update the height of the child
 	 * font entity automatically to fill the text box.
-	 * @param px
-	 * @param lockAspect
-	 * @param modifier
-	 * @param noUpdate
-	 * @return {*}
 	 */
-	height (px: number | string, lockAspect?: boolean, modifier?: number, noUpdate?: boolean): this;
 	height (): number;
-	height (px?: number | string, lockAspect: boolean = false, modifier?: number, noUpdate: boolean = false) {
+	height (px: number | string, lockAspect?: boolean, modifier?: number, noUpdate?: boolean): this;
+	height (px?: number | string, lockAspect: boolean = false, modifier?: number, noUpdate: boolean = false): number | this {
 		if (px !== undefined) {
 			// Call the main super class method
 			const returnValue = super.height(px, lockAspect, modifier, noUpdate);
@@ -192,11 +182,9 @@ export class IgeUiTextBox extends IgeUiElement {
 
 	/**
 	 * Gets / sets the text value of the input box.
-	 * @param {String=} val The text value.
-	 * @return {*}
 	 */
-	value (val: string): this;
 	value (): string;
+	value (val: string): this;
 	value (val?: string) {
 		if (val === undefined) {
 			return this._value;
@@ -317,9 +305,9 @@ export class IgeUiTextBox extends IgeUiElement {
 	 *
 	 * @param val
 	 */
-	font (val: string | IgeFontSheet): this;
 	font (): string | IgeFontSheet | undefined;
-	font (val?: string | IgeFontSheet) {
+	font (val: string | IgeFontSheet): this;
+	font (val?: string | IgeFontSheet): string | IgeFontSheet | this | undefined {
 		if (val !== undefined) {
 			if (typeof val === "string") {
 				// Native font name
@@ -403,9 +391,9 @@ export class IgeUiTextBox extends IgeUiElement {
 	 *
 	 * @param color
 	 */
-	color (color?: string | CanvasGradient | CanvasPattern): this;
 	color (): string | CanvasGradient | CanvasPattern;
-	color (color?: string | CanvasGradient | CanvasPattern) {
+	color (color?: string | CanvasGradient | CanvasPattern): this;
+	color (color?: string | CanvasGradient | CanvasPattern): string | CanvasGradient | CanvasPattern | this {
 		if (color !== undefined) {
 			this._color = color;
 			this._resolveTextColor();

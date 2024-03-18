@@ -1,3 +1,3 @@
-import type { ClassRecord } from "@/types/ClassRecord";
+import type { IgeClassRecord } from "@/types/IgeClassRecord";
 
-export type IgeUiStyleObject<InterfaceType = any> = ClassRecord<InterfaceType>;
+export type IgeUiStyleObject<InterfaceType = any> = IgeClassRecord<InterfaceType>;

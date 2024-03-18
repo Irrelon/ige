@@ -1,8 +1,8 @@
-import { type AnyFunction } from "../../export/exports.js"
+import { type IgeAnyFunction } from "../../export/exports.js"
 import { IgeEventingClass } from "../../export/exports.js"
 import type { IgeUiElement, IgeUiStyleObject } from "../../export/exports.js"
 import type { IgeIsReadyPromise } from "../../export/exports.js"
-import type { ClassRecord } from "../../types/ClassRecord.js"
+import type { IgeClassRecord } from "../../types/IgeClassRecord.js"
 export declare class IgeUiManagerController extends IgeEventingClass implements IgeIsReadyPromise {
     static componentTargetClass: string;
     componentId: string;
@@ -13,8 +13,8 @@ export declare class IgeUiManagerController extends IgeEventingClass implements 
     _styles: Record<string, IgeUiStyleObject>;
     _elementsByStyle: Record<string, IgeUiElement[]>;
     isReady(): Promise<void>;
-    _addEventListeners: (callback?: AnyFunction) => void;
-    _removeEventListeners: (callback?: AnyFunction) => void;
+    _addEventListeners: (callback?: IgeAnyFunction) => void;
+    _removeEventListeners: (callback?: IgeAnyFunction) => void;
     /**
      * Get / set a style by name. This is the main way to define styles using
      * the engine's style system. A style name can be any string that maps to
@@ -76,8 +76,8 @@ export declare class IgeUiManagerController extends IgeEventingClass implements 
      * style.
      * @returns {*}
      */
-    style<StyleClassType>(name: string, data: ClassRecord<Partial<StyleClassType>>): this;
-    style<StyleClassType>(name: string | undefined): ClassRecord<Partial<StyleClassType>> | undefined;
+    style<StyleClassType>(name: string, data: IgeClassRecord<Partial<StyleClassType>>): this;
+    style<StyleClassType>(name: string | undefined): IgeClassRecord<Partial<StyleClassType>> | undefined;
     style<StyleClassType>(): this;
     /**
      * Registers a UI element with the UI manager.

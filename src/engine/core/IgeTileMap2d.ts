@@ -401,8 +401,8 @@ export class IgeTileMap2d<MapDataType = any> extends IgeEntity {
 	 * Returns the tile co-ordinates of the tile the mouse is currently over.
 	 * @return {IgePoint3d}
 	 */
-	mouseToTile () {
-		let tilePos;
+	mouseToTile (): IgePoint3d {
+		let tilePos: IgePoint3d;
 
 		if (this._mountMode === IgeMountMode.flat) {
 			tilePos = this.pointToTile(this.mousePos());
@@ -435,7 +435,7 @@ export class IgeTileMap2d<MapDataType = any> extends IgeEntity {
 	 * in a rectangle or not.
 	 * @return {Array}
 	 */
-	scanRects (callback?: IgeTileMap2dScanRectCallback) {
+	scanRects (callback?: IgeTileMap2dScanRectCallback): Array<any> {
 		const rectArray: { x: number; y: number; width: number; height: number }[] = [];
 		const mapData = arrClone(this.map._mapData) as any[][];
 

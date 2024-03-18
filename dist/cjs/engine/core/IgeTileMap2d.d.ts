@@ -136,13 +136,13 @@ export declare class IgeTileMap2d<MapDataType = any> extends IgeEntity {
      * Returns the world co-ordinates of the tile the mouse is currently over.
      * @return {IgePoint3d}
      */
-    mouseTilePoint(): any;
+    mouseTilePoint(): IgePoint3d;
     tileToPoint(x: number, y: number): any;
     /**
      * Returns the tile co-ordinates of the tile the mouse is currently over.
      * @return {IgePoint3d}
      */
-    mouseToTile(): any;
+    mouseToTile(): IgePoint3d;
     tileToWorld(tileX: number, tileY: number): IgePoint3d;
     /**
      * Scans the map data and returns an array of rectangle
@@ -153,12 +153,7 @@ export declare class IgeTileMap2d<MapDataType = any> extends IgeEntity {
      * in a rectangle or not.
      * @return {Array}
      */
-    scanRects(callback?: IgeTileMap2dScanRectCallback): {
-        x: number;
-        y: number;
-        width: number;
-        height: number;
-    }[];
+    scanRects(callback?: IgeTileMap2dScanRectCallback): Array<any>;
     _scanRects(mapData: any[][], x: number, y: number, callback?: IgeTileMap2dScanRectCallback): {
         x: number;
         y: number;

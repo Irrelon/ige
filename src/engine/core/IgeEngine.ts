@@ -13,11 +13,11 @@ import { ige } from "@/export/exports";
 import { IgeBehaviourType } from "@/export/exports";
 import { IgeEngineState } from "@/export/exports";
 import { isClient, isServer, isWorker } from "@/export/exports";
-import type { GenericClass } from "@/export/exports";
+import type { IgeGenericClass } from "@/export/exports";
 import type { IgeCanvasRenderingContext2d } from "@/export/exports";
 import type { IgeSceneGraphDataEntry } from "@/export/exports";
-import type { SyncEntry, SyncMethod } from "@/export/exports";
-import type { AnyFunction } from "@/types/AnyFunction";
+import type { IgeSyncEntry, IgeSyncMethod } from "@/export/exports";
+import type { IgeAnyFunction } from "@/types/IgeAnyFunction";
 
 export class IgeEngine extends IgeEntity {
 	classId = "IgeEngine";
@@ -76,7 +76,7 @@ export class IgeEngine extends IgeEntity {
 	_debugEvents: Record<string, boolean | number>;
 	_autoSize: boolean = true;
 	_syncIndex: number = 0;
-	_syncArr: SyncEntry[] = [];
+	_syncArr: IgeSyncEntry[] = [];
 	_webFonts: FontFace[];
 	_cssFonts: string[];
 	_devicePixelRatio: number = 1;
@@ -84,7 +84,7 @@ export class IgeEngine extends IgeEntity {
 	_resized: boolean = false;
 	_timeScaleLastTimestamp: number = 0;
 	lastTick: number = 0;
-	_setTickout: AnyFunction[] = [];
+	_setTickout: IgeAnyFunction[] = [];
 
 	// The engine entity is always "in view" as in, no occlusion will stop it from rendering
 	// because it's only the child entities that need occlusion testing
@@ -1061,7 +1061,7 @@ export class IgeEngine extends IgeEntity {
 	 * @param {string} id The ID of the class to retrieve.
 	 * @return {Object} The class definition.
 	 */
-	getClass (id: string | GenericClass) {
+	getClass (id: string | IgeGenericClass) {
 		if (typeof id === "object" || typeof id === "function") {
 			return id;
 		}
@@ -1085,7 +1085,7 @@ export class IgeEngine extends IgeEntity {
 	 * @param args
 	 * @return {*}
 	 */
-	newClassInstance (id: string | GenericClass, ...args: any[]) {
+	newClassInstance (id: string | IgeGenericClass, ...args: any[]) {
 		const ClassDefinition = this.getClass(id);
 		return new ClassDefinition(...args);
 	}
@@ -1465,7 +1465,7 @@ export class IgeEngine extends IgeEntity {
 		tickOut?.();
 	};
 
-	setTickout (callback: AnyFunction, count = 0) {
+	setTickout (callback: IgeAnyFunction, count = 0) {
 		this._setTickout.length = count + 1;
 		this._setTickout[count] = callback;
 		return this;
@@ -1808,7 +1808,7 @@ export class IgeEngine extends IgeEntity {
 		this.log("Load css stylesheet from: " + url);
 	}
 
-	sync (method: SyncMethod, attrArr: any) {
+	sync (method: IgeSyncMethod, attrArr: any) {
 		if (!Array.isArray(attrArr)) {
 			attrArr = [attrArr];
 		}

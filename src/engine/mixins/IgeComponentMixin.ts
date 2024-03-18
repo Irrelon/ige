@@ -1,12 +1,12 @@
 import type { IgeBaseClass } from "@/export/exports";
 import type { IgeComponent } from "@/export/exports";
 import { arrPull } from "@/export/exports";
-import type { Mixin } from "@/export/exports";
+import type { IgeMixin } from "@/export/exports";
 
 export const WithComponentMixin = <
 	ComponentTargetType,
-	MixinBaseClassType extends Mixin<IgeBaseClass> = Mixin<IgeBaseClass>
->(
+	MixinBaseClassType extends IgeMixin<IgeBaseClass> = IgeMixin<IgeBaseClass>
+> (
 		Base: MixinBaseClassType
 	) =>
 		class extends Base {

@@ -455,15 +455,6 @@ export class IgeEntity extends IgeObject {
         }
         return this._anchor;
     }
-    /**
-     * Gets / sets the geometry x value (this._bounds2d.x).
-     * @param {number=} px The new x value in pixels.
-     * @param {Boolean} lockAspect
-     * @example #Set the entity width
-     *     entity.width(40);
-     * @return {*} "this" when arguments are passed to allow method
-     * chaining or the current value if no arguments are specified.
-     */
     width(px, lockAspect = false) {
         if (px === undefined) {
             return this._bounds2d.x;
@@ -480,15 +471,6 @@ export class IgeEntity extends IgeObject {
         this._bounds2d.x2 = px / 2;
         return this;
     }
-    /**
-     * Gets / sets the geometry y value.
-     * @param {number=} px The new y value in pixels.
-     * @param {boolean} [lockAspect]
-     * @example #Set the entity height
-     *     entity.height(40);
-     * @return {*} "this" when arguments are passed to allow method
-     * chaining or the current value if no arguments are specified.
-     */
     height(px, lockAspect = false) {
         if (px === undefined) {
             return this._bounds2d.y;

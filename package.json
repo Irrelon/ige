@@ -36,6 +36,7 @@
 		"eslint-fix": "eslint --ext .ts,.tsx . --fix"
 	},
 	"dependencies": {
+		"gl-matrix": "^3.4.3",
 		"websocket": "^1.0.34"
 	},
 	"devDependencies": {
@@ -45,9 +46,9 @@
 		"@types/jest": "^29.5.12",
 		"@types/node": "^20.11.21",
 		"@types/websocket": "^1.0.5",
-		"@webgpu/types": "^0.1.40",
 		"@typescript-eslint/eslint-plugin": "^7.1.0",
 		"@typescript-eslint/parser": "^7.1.0",
+		"@webgpu/types": "^0.1.40",
 		"@zoltu/typescript-transformer-append-js-extension": "^1.0.1",
 		"chokidar": "^3.5.3",
 		"easyimage": "0.1.3",

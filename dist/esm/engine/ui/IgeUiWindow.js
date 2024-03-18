@@ -19,7 +19,7 @@ export class IgeUiWindow extends IgeUiElement {
         // Define some default styles
         if (!ui.style("IgeUiWindow")) {
             ui.style("IgeUiWindow", {
-                backgroundColor: null
+                backgroundColor: undefined
             });
         }
         // Set defaults
