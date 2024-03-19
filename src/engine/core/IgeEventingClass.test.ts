@@ -1,4 +1,4 @@
-import { IgeEventingClass } from "./IgeEventingClass";
+import { IgeEventingClass } from "@/export/exports";
 import assert from "node:assert";
 
 let expectedAssertions = 0;

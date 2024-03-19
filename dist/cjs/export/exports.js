@@ -30,6 +30,7 @@ __exportStar(require("../types/IgeBox2dFixtureDefShape"), exports);
 __exportStar(require("../types/IgeCanAcceptComponents"), exports);
 __exportStar(require("../types/IgeCanAsyncLoad"), exports);
 __exportStar(require("../types/IgeCanBeDestroyed"), exports);
+__exportStar(require("../types/IgeCanIndexItems"), exports);
 __exportStar(require("../types/IgeCanInit"), exports);
 __exportStar(require("../types/IgeCanRegisterAndCanDestroy"), exports);
 __exportStar(require("../types/IgeCanRegisterByCategory"), exports);
@@ -44,6 +45,7 @@ __exportStar(require("../types/IgeDepthSortObject"), exports);
 __exportStar(require("../types/IgeEntityBehaviour"), exports);
 __exportStar(require("../types/IgeGenericClass"), exports);
 __exportStar(require("../types/IgeImage"), exports);
+__exportStar(require("../types/IgeIndexTreeNode"), exports);
 __exportStar(require("../types/IgeInputEventControl"), exports);
 __exportStar(require("../types/IgeInputEventHandler"), exports);
 __exportStar(require("../types/IgeIsReadyPromise"), exports);
@@ -70,7 +72,9 @@ __exportStar(require("../types/IgeTimeStream"), exports);
 __exportStar(require("../types/IgeTriggerPolygonFunctionName"), exports);
 __exportStar(require("../types/IgeUiStyleModifier"), exports);
 __exportStar(require("../types/IgeUiStyleObject"), exports);
+__exportStar(require("../types/IgeVec3"), exports);
 __exportStar(require("../types/IgeVec4"), exports);
+__exportStar(require("../types/IgeVec6"), exports);
 //////////////////////////////////////////////////////////////////////
 // Enums
 //////////////////////////////////////////////////////////////////////
@@ -118,6 +122,7 @@ __exportStar(require("../engine/utils/trace"), exports);
 __exportStar(require("../engine/textures/IgeTileMap2dSmartTexture"), exports);
 __exportStar(require("../engine/textures/IgeFontSmartTexture"), exports);
 __exportStar(require("../engine/textures/IgeCuboidSmartTexture"), exports);
+__exportStar(require("../engine/core/IgeIndexTree"), exports);
 __exportStar(require("../engine/core/IgeObjectRegister"), exports);
 __exportStar(require("../engine/core/IgeOptions"), exports);
 __exportStar(require("../engine/core/IgeMetrics"), exports);

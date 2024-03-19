@@ -14,6 +14,7 @@ export * from "../types/IgeBox2dFixtureDefShape";
 export * from "../types/IgeCanAcceptComponents";
 export * from "../types/IgeCanAsyncLoad";
 export * from "../types/IgeCanBeDestroyed";
+export * from "../types/IgeCanIndexItems";
 export * from "../types/IgeCanInit";
 export * from "../types/IgeCanRegisterAndCanDestroy";
 export * from "../types/IgeCanRegisterByCategory";
@@ -28,6 +29,7 @@ export * from "../types/IgeDepthSortObject";
 export * from "../types/IgeEntityBehaviour";
 export * from "../types/IgeGenericClass";
 export * from "../types/IgeImage";
+export * from "../types/IgeIndexTreeNode";
 export * from "../types/IgeInputEventControl";
 export * from "../types/IgeInputEventHandler";
 export * from "../types/IgeIsReadyPromise";
@@ -54,7 +56,9 @@ export * from "../types/IgeTimeStream";
 export * from "../types/IgeTriggerPolygonFunctionName";
 export * from "../types/IgeUiStyleModifier";
 export * from "../types/IgeUiStyleObject";
+export * from "../types/IgeVec3";
 export * from "../types/IgeVec4";
+export * from "../types/IgeVec6";
 
 //////////////////////////////////////////////////////////////////////
 // Enums
@@ -105,6 +109,7 @@ export * from "../engine/utils/trace";
 export * from "../engine/textures/IgeTileMap2dSmartTexture";
 export * from "../engine/textures/IgeFontSmartTexture";
 export * from "../engine/textures/IgeCuboidSmartTexture";
+export * from "../engine/core/IgeIndexTree";
 export * from "../engine/core/IgeObjectRegister";
 export * from "../engine/core/IgeOptions";
 export * from "../engine/core/IgeMetrics";

@@ -44,7 +44,6 @@
 		"engine/components/physics/cannon",
 		"engine/components/three",
 		"src/**/*.old*",
-		"src/**/*.test*",
 		"other/*",
 		"other/**",
 		"other/**/*"

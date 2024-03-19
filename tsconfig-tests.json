@@ -1,0 +1,13 @@
+{
+	"extends": "./tsconfig.json",
+	"include": [
+		"src/tests/*"
+	],
+	"compilerOptions": {
+		"rootDir": "./src",
+		"module": "commonjs",
+		"outDir": "dist/cjs",
+		"target": "es2015",
+		"verbatimModuleSyntax": false
+	}
+}
