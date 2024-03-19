@@ -1,16 +1,29 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.IgePoly2d = void 0;
+const intersections_1 = require("../utils/intersections.js");
 const exports_1 = require("../../export/exports.js");
-const exports_2 = require("../../export/exports.js");
 /**
  * Creates a new 2d polygon made up of IgePoint2d instances.
  */
 class IgePoly2d {
     constructor() {
         this.classId = "IgePoly2d";
+        this.x = 0;
+        this.y = 0;
+        this._igeShapeType = "polygon";
         this._poly = [];
         this._scale = new exports_1.IgePoint2d(1, 1);
+    }
+    translateTo(x, y) {
+        this.x = x;
+        this.y = y;
+        return this;
+    }
+    translateBy(x, y) {
+        this.x += x;
+        this.y += y;
+        return this;
     }
     scale(x, y) {
         if (x !== undefined && y !== undefined) {
@@ -123,7 +136,7 @@ class IgePoly2d {
         const minY = Math.min(...yArr);
         const maxX = Math.max(...xArr);
         const maxY = Math.max(...yArr);
-        return new exports_2.IgeRect(minX, minY, maxX - minX, maxY - minY);
+        return new exports_1.IgeRect(minX, minY, maxX - minX, maxY - minY);
     }
     /**
      * Returns a copy of this IgePoly2d object that is its own version,
@@ -158,12 +171,12 @@ class IgePoly2d {
      */
     makeClockWiseTriangle() {
         // If our data is already clockwise exit
-        if (!this.clockWiseTriangle()) {
-            const p1 = this._poly[1];
-            const p2 = this._poly[2];
-            this._poly[2] = p1;
-            this._poly[1] = p2;
-        }
+        if (this.clockWiseTriangle())
+            return;
+        const p1 = this._poly[1];
+        const p2 = this._poly[2];
+        this._poly[2] = p1;
+        this._poly[1] = p2;
     }
     /**
      * Converts this polygon into many triangles so that there are no convex
@@ -300,12 +313,21 @@ class IgePoly2d {
         const bCROSScp = bx * cpy - by * cpx;
         return aCROSSbp >= 0.0 && bCROSScp >= 0.0 && cCROSSap >= 0.0;
     }
+    intersects(shape) {
+        switch (shape._igeShapeType) {
+            case "circle":
+                return (0, intersections_1.circleIntersectsPolygon)(shape, this);
+            case "rect":
+                return (0, intersections_1.rectIntersectsPolygon)(shape, this);
+            case "polygon":
+                return (0, intersections_1.polygonIntersectsPolygon)(this, shape);
+        }
+        return false;
+    }
     /**
      * Draws the polygon bounding lines to the passed context.
-     * @param {CanvasRenderingContext2D} ctx
-     * @param fill
      */
-    render(ctx, fill = false) {
+    render(ctx, fillStyle = "") {
         const polyPoints = this._poly;
         const pointCount = polyPoints.length;
         const scaleX = this._scale.x;
@@ -316,7 +338,8 @@ class IgePoly2d {
             ctx.lineTo(polyPoints[i].x * scaleX, polyPoints[i].y * scaleY);
         }
         ctx.lineTo(polyPoints[0].x * scaleX, polyPoints[0].y * scaleY);
-        if (fill) {
+        if (fillStyle) {
+            ctx.fillStyle = fillStyle;
             ctx.fill();
         }
         ctx.stroke();

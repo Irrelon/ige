@@ -1,12 +1,14 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.IgeRect = void 0;
+const intersections_1 = require("../utils/intersections.js");
 /**
  * Creates a new rectangle (x, y, width, height).
  */
 class IgeRect {
     constructor(x = 0, y = 0, width = 0, height = 0) {
         this.classId = "IgeRect";
+        this._igeShapeType = "rect";
         this.x = 0;
         this.y = 0;
         this.width = 0;
@@ -19,6 +21,15 @@ class IgeRect {
         this.height = height;
         this.x2 = this.x / 2;
         this.y2 = this.y / 2;
+    }
+    translateTo(x, y) {
+        this.x = x;
+        this.y = y;
+        return this;
+    }
+    translateBy(x, y) {
+        this.x += x;
+        this.y += y;
         return this;
     }
     /**
@@ -51,7 +62,7 @@ class IgeRect {
      * Compares this rects dimensions with the passed rect and returns
      * true if they are the same and false if any is different.
      * @param {IgeRect} rect
-     * @return {Boolean}
+     * @return {boolean}
      */
     compare(rect) {
         return (rect && this.x === rect.x && this.y === rect.y && this.width === rect.width && this.height === rect.height);
@@ -82,19 +93,6 @@ class IgeRect {
      */
     rectIntersect() {
         throw new Error("Deprecated, please use intersects() instead.");
-    }
-    /**
-     * Returns boolean indicating if the passed IgeRect is
-     * intersecting the rectangle.
-     * @param {IgeRect} rect
-     * @return {Boolean}
-     */
-    intersects(rect) {
-        if (!rect) {
-            return false;
-        }
-        const sX1 = this.x, sY1 = this.y, sW = this.width, sH = this.height, dX1 = rect.x, dY1 = rect.y, dW = rect.width, dH = rect.height, sX2 = sX1 + sW, sY2 = sY1 + sH, dX2 = dX1 + dW, dY2 = dY1 + dH;
-        return sX1 < dX2 && sX2 > dX1 && sY1 < dY2 && sY2 > dY1;
     }
     /**
      * Multiplies this rects data by the values specified
@@ -153,13 +151,29 @@ class IgeRect {
             this.height.toFixed(precision));
     }
     /**
-     * Draws the polygon bounding lines to the passed context.
-     * @param {CanvasRenderingContext2D} ctx
-     * @param fill
+     * Returns boolean indicating if the passed IgeRect is
+     * intersecting the rectangle.
+     * @param {IgeShape} shape
+     * @return {boolean}
      */
-    render(ctx, fill = false) {
+    intersects(shape) {
+        switch (shape._igeShapeType) {
+            case "circle":
+                return (0, intersections_1.circleIntersectsRect)(shape, this);
+            case "rect":
+                return (0, intersections_1.rectIntersectsRect)(this, shape);
+            case "polygon":
+                return (0, intersections_1.rectIntersectsPolygon)(this, shape);
+        }
+        return false;
+    }
+    /**
+     * Draws the polygon bounding lines to the passed context.
+     */
+    render(ctx, fillStyle = "") {
         ctx.rect(this.x, this.y, this.width, this.height);
-        if (fill) {
+        if (fillStyle) {
+            ctx.fillStyle = fillStyle;
             ctx.fill();
         }
         ctx.stroke();

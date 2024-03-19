@@ -26,7 +26,7 @@ import type { IgeDepthSortObject } from "@/export/exports";
 import type { IgeInputEventHandler } from "@/export/exports";
 import type { IgeInputEventControl } from "@/export/exports";
 import type { IgePoint } from "@/export/exports";
-import type { IgePolygonFunctionality } from "@/export/exports";
+import type { IgeShapeFunctionality } from "@/export/exports";
 import type { IgeSmartTexture } from "@/export/exports";
 import type { IgeTimeStreamPacket, IgeTimeStreamParsedTransformData } from "@/export/exports";
 import type { IgeTriggerPolygonFunctionName } from "@/types/IgeTriggerPolygonFunctionName";
@@ -70,7 +70,7 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 		this.streamSections(["transform"]);
 	}
 
-	customTriggerPolygon: () => IgePolygonFunctionality = () => new IgeRect();
+	customTriggerPolygon: () => IgeShapeFunctionality = () => new IgeRect();
 
 	_sortChildren: (comparatorFunction: (a: any, b: any) => number) => void = (compareFn) => {
 		return this._children.sort(compareFn);
@@ -1494,7 +1494,7 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 			mp = this.mousePosWorld();
 		}
 
-		let mouseTriggerPoly: IgePolygonFunctionality;
+		let mouseTriggerPoly: IgeShapeFunctionality;
 
 		// Use the trigger polygon function if defined
 		if (this._triggerPolygonFunctionName && this[this._triggerPolygonFunctionName]) {
@@ -2331,7 +2331,7 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 	 * Will return the polygon used when determining if a pointer event occurs
 	 * on this entity.
 	 */
-	triggerPolygon (): IgePolygonFunctionality {
+	triggerPolygon (): IgeShapeFunctionality {
 		return this[this._triggerPolygonFunctionName]();
 	}
 

@@ -2,15 +2,15 @@
  * Stores a pre-calculated PI / 180 value.
  * @type {number}
  */
-export const PI180 = Math.PI / 180;
+export const PI180: number = Math.PI / 180;
 
 /**
  * Stores a pre-calculated 180 / PI value.
  * @type {number}
  */
-export const PI180R = 180 / Math.PI;
+export const PI180R: number = 180 / Math.PI;
 
-export const PI2 = Math.PI * 2;
+export const PI2: number = Math.PI * 2;
 
 export const toIso = (x: number, y: number, z: number) => {
 	const sx = x - y;
@@ -24,7 +24,7 @@ export const toIso = (x: number, y: number, z: number) => {
  * @param {number} degrees
  * @return {number} radians
  */
-export const degreesToRadians = (degrees: number) => {
+export const degreesToRadians = (degrees: number): number => {
 	return degrees * PI180;
 };
 
@@ -33,7 +33,7 @@ export const degreesToRadians = (degrees: number) => {
  * @param {number} radians
  * @return {number} degrees
  */
-export const radiansToDegrees = (radians: number) => {
+export const radiansToDegrees = (radians: number): number => {
 	return radians * PI180R;
 };
 
@@ -45,6 +45,6 @@ export const radiansToDegrees = (radians: number) => {
  * @param y2
  * @return {number}
  */
-export const distance = (x1: number, y1: number, x2: number, y2: number) => {
+export const distance = (x1: number, y1: number, x2: number, y2: number): number => {
 	return Math.sqrt((x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2));
 };

@@ -1,20 +1,35 @@
-import { IgePoint2d } from "@/export/exports";
-import { IgeRect } from "@/export/exports";
-import type { IgePoint3d } from "@/export/exports";
-import type { IgeCanvasRenderingContext2d } from "@/export/exports";
-import type { IgePolygonFunctionality } from "@/export/exports";
+import { circleIntersectsPolygon, polygonIntersectsPolygon, rectIntersectsPolygon } from "@/engine/utils/intersections";
+import type { IgeCanvasRenderingContext2d, IgeCircle, IgePoint3d, IgeShapeFunctionality } from "@/export/exports";
+import { IgePoint2d, IgeRect, type IgeShape } from "@/export/exports";
 
 /**
  * Creates a new 2d polygon made up of IgePoint2d instances.
  */
-export class IgePoly2d implements IgePolygonFunctionality {
+export class IgePoly2d implements IgeShapeFunctionality {
 	classId = "IgePoly2d";
+	x: number = 0;
+	y: number = 0;
+	_igeShapeType = "polygon";
 	_poly: IgePoint2d[];
 	_scale: IgePoint2d;
 
 	constructor () {
 		this._poly = [];
 		this._scale = new IgePoint2d(1, 1);
+	}
+
+	translateTo (x: number, y: number) {
+		this.x = x;
+		this.y = y;
+
+		return this;
+	}
+
+	translateBy (x: number, y: number) {
+		this.x += x;
+		this.y += y;
+
+		return this;
 	}
 
 	scale (x?: number, y?: number) {
@@ -81,7 +96,7 @@ export class IgePoly2d implements IgePolygonFunctionality {
 	 * Returns the length of the poly array.
 	 * @return {number}
 	 */
-	length () {
+	length (): number {
 		return this._poly.length;
 	}
 
@@ -118,9 +133,9 @@ export class IgePoly2d implements IgePolygonFunctionality {
 			if (
 				polyPoints[pointIndex].y > y !== polyPoints[oldPointIndex].y > y &&
 				x <
-					((polyPoints[oldPointIndex].x - polyPoints[pointIndex].x) * (y - polyPoints[pointIndex].y)) /
-						(polyPoints[oldPointIndex].y - polyPoints[pointIndex].y) +
-						polyPoints[pointIndex].x
+				((polyPoints[oldPointIndex].x - polyPoints[pointIndex].x) * (y - polyPoints[pointIndex].y)) /
+				(polyPoints[oldPointIndex].y - polyPoints[pointIndex].y) +
+				polyPoints[pointIndex].x
 			) {
 				c = !c;
 			}
@@ -175,7 +190,7 @@ export class IgePoly2d implements IgePolygonFunctionality {
 	 * Determines if the polygon is clockwise or not.
 	 * @return {boolean} A boolean true if clockwise or false if not.
 	 */
-	clockWiseTriangle () {
+	clockWiseTriangle (): boolean {
 		// Loop the polygon points and determine if they are counter-clockwise
 		const arr = this._poly;
 
@@ -193,13 +208,13 @@ export class IgePoly2d implements IgePolygonFunctionality {
 	 */
 	makeClockWiseTriangle () {
 		// If our data is already clockwise exit
-		if (!this.clockWiseTriangle()) {
-			const p1 = this._poly[1];
-			const p2 = this._poly[2];
+		if (this.clockWiseTriangle()) return;
 
-			this._poly[2] = p1;
-			this._poly[1] = p2;
-		}
+		const p1 = this._poly[1];
+		const p2 = this._poly[2];
+
+		this._poly[2] = p1;
+		this._poly[1] = p2;
 	}
 
 	/**
@@ -253,7 +268,7 @@ export class IgePoly2d implements IgePolygonFunctionality {
 		let nv = n;
 		let count = 2 * nv;
 
-		for (let v = nv - 1; nv > 2; ) {
+		for (let v = nv - 1; nv > 2;) {
 			if (count-- <= 0) {
 				return indices;
 			}
@@ -369,12 +384,23 @@ export class IgePoly2d implements IgePolygonFunctionality {
 		return aCROSSbp >= 0.0 && bCROSScp >= 0.0 && cCROSSap >= 0.0;
 	}
 
+	intersects (shape: IgeShape): boolean {
+		switch (shape._igeShapeType) {
+		case "circle":
+			return circleIntersectsPolygon(shape as IgeCircle, this);
+		case "rect":
+			return rectIntersectsPolygon(shape as IgeRect, this);
+		case "polygon":
+			return polygonIntersectsPolygon(this, shape as IgePoly2d);
+		}
+
+		return false;
+	}
+
 	/**
 	 * Draws the polygon bounding lines to the passed context.
-	 * @param {CanvasRenderingContext2D} ctx
-	 * @param fill
 	 */
-	render (ctx: IgeCanvasRenderingContext2d, fill: boolean = false) {
+	render (ctx: IgeCanvasRenderingContext2d, fillStyle: string = "") {
 		const polyPoints = this._poly;
 		const pointCount = polyPoints.length;
 		const scaleX = this._scale.x;
@@ -386,11 +412,13 @@ export class IgePoly2d implements IgePolygonFunctionality {
 			ctx.lineTo(polyPoints[i].x * scaleX, polyPoints[i].y * scaleY);
 		}
 		ctx.lineTo(polyPoints[0].x * scaleX, polyPoints[0].y * scaleY);
-		if (fill) {
+
+		if (fillStyle) {
+			ctx.fillStyle = fillStyle;
 			ctx.fill();
 		}
-		ctx.stroke();
 
+		ctx.stroke();
 		return this;
 	}
 }

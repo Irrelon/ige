@@ -1,16 +1,18 @@
-import { IgePoint2d } from "../../export/exports.js"
-import { IgeRect } from "../../export/exports.js"
-import type { IgePoint3d } from "../../export/exports.js"
-import type { IgeCanvasRenderingContext2d } from "../../export/exports.js"
-import type { IgePolygonFunctionality } from "../../export/exports.js"
+import type { IgeCanvasRenderingContext2d, IgePoint3d, IgeShapeFunctionality } from "../../export/exports.js"
+import { IgePoint2d, IgeRect, type IgeShape } from "../../export/exports.js"
 /**
  * Creates a new 2d polygon made up of IgePoint2d instances.
  */
-export declare class IgePoly2d implements IgePolygonFunctionality {
+export declare class IgePoly2d implements IgeShapeFunctionality {
     classId: string;
+    x: number;
+    y: number;
+    _igeShapeType: string;
     _poly: IgePoint2d[];
     _scale: IgePoint2d;
     constructor();
+    translateTo(x: number, y: number): this;
+    translateBy(x: number, y: number): this;
     scale(x?: number, y?: number): IgePoint2d | this;
     /**
      * Multiplies the points of the polygon by the supplied factor.
@@ -89,10 +91,9 @@ export declare class IgePoly2d implements IgePolygonFunctionality {
      * @param {IgePoint2d} P
      */
     _insideTriangle(A: IgePoint2d, B: IgePoint2d, C: IgePoint2d, P: IgePoint2d): boolean;
+    intersects(shape: IgeShape): boolean;
     /**
      * Draws the polygon bounding lines to the passed context.
-     * @param {CanvasRenderingContext2D} ctx
-     * @param fill
      */
-    render(ctx: IgeCanvasRenderingContext2d, fill?: boolean): this;
+    render(ctx: IgeCanvasRenderingContext2d, fillStyle?: string): this;
 }

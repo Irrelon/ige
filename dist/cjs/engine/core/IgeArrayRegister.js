@@ -10,7 +10,24 @@ class IgeArrayRegister {
         this._field = field;
         this._registeredField = registeredField;
     }
+    /**
+     * Returns the reference to the store array for the
+     * specified id. Warning, you are given the actual
+     * reference to the array so mutating it will affect
+     * all other references. Use getImmutable() to get
+     * a mutation-safe version.
+     * @param id
+     */
     get(id) {
+        this._store[id] = this._store[id] || [];
+        return this._store[id];
+    }
+    /**
+     * Gets an array of the store data by id. The returned
+     * array is not by reference, so you can mutate it safely.
+     * @param id
+     */
+    getImmutable(id) {
         return [...(this._store[id] || [])];
     }
     /**

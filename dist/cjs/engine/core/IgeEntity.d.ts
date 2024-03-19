@@ -11,7 +11,7 @@ import type { IgeCanvasRenderingContext2d } from "../../export/exports.js"
 import type { IgeInputEventHandler } from "../../export/exports.js"
 import type { IgeInputEventControl } from "../../export/exports.js"
 import type { IgePoint } from "../../export/exports.js"
-import type { IgePolygonFunctionality } from "../../export/exports.js"
+import type { IgeShapeFunctionality } from "../../export/exports.js"
 import type { IgeSmartTexture } from "../../export/exports.js"
 import type { IgeTriggerPolygonFunctionName } from "../../types/IgeTriggerPolygonFunctionName.js"
 export interface IgeEntityTransformAccessor {
@@ -34,7 +34,7 @@ export declare class IgeEntity extends IgeObject implements IgeCanRegisterById, 
     };
     _textureOffset?: IgePoint2d;
     constructor();
-    customTriggerPolygon: () => IgePolygonFunctionality;
+    customTriggerPolygon: () => IgeShapeFunctionality;
     _sortChildren: (comparatorFunction: (a: any, b: any) => number) => void;
     /**
      * Calculates the distance to the passed entity from this one.
@@ -797,7 +797,7 @@ export declare class IgeEntity extends IgeObject implements IgeCanRegisterById, 
      * Will return the polygon used when determining if a pointer event occurs
      * on this entity.
      */
-    triggerPolygon(): IgePolygonFunctionality;
+    triggerPolygon(): IgeShapeFunctionality;
     /**
      * Gets / sets the shape / polygon that the mouse events
      * are triggered against. There are two options, 'aabb' and

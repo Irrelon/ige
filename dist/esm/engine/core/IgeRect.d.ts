@@ -1,12 +1,13 @@
-import type { IgePoint2d } from "../../export/exports.js"
+import { type IgePoint2d, type IgeShape } from "../../export/exports.js"
 import type { IgePoint3d } from "../../export/exports.js"
 import type { IgeCanvasRenderingContext2d } from "../../export/exports.js"
-import type { IgePolygonFunctionality } from "../../export/exports.js"
+import type { IgeShapeFunctionality } from "../../export/exports.js"
 /**
  * Creates a new rectangle (x, y, width, height).
  */
-export declare class IgeRect implements IgePolygonFunctionality {
+export declare class IgeRect implements IgeShapeFunctionality {
     classId: string;
+    _igeShapeType: string;
     x: number;
     y: number;
     width: number;
@@ -14,6 +15,8 @@ export declare class IgeRect implements IgePolygonFunctionality {
     x2: number;
     y2: number;
     constructor(x?: number, y?: number, width?: number, height?: number);
+    translateTo(x: number, y: number): this;
+    translateBy(x: number, y: number): this;
     /**
      * Combines the extents of the passed IgeRect with this rect
      * to create a new rect whose bounds encapsulate both rects.
@@ -33,7 +36,7 @@ export declare class IgeRect implements IgePolygonFunctionality {
      * Compares this rects dimensions with the passed rect and returns
      * true if they are the same and false if any is different.
      * @param {IgeRect} rect
-     * @return {Boolean}
+     * @return {boolean}
      */
     compare(rect: IgeRect): boolean;
     /**
@@ -57,13 +60,6 @@ export declare class IgeRect implements IgePolygonFunctionality {
      * @deprecated Please use intersects() instead.
      */
     rectIntersect(): void;
-    /**
-     * Returns boolean indicating if the passed IgeRect is
-     * intersecting the rectangle.
-     * @param {IgeRect} rect
-     * @return {Boolean}
-     */
-    intersects(rect: IgeRect): boolean;
     /**
      * Multiplies this rects data by the values specified
      * and returns a new IgeRect whose values are the result.
@@ -100,9 +96,14 @@ export declare class IgeRect implements IgePolygonFunctionality {
      */
     toString(precision?: number): string;
     /**
-     * Draws the polygon bounding lines to the passed context.
-     * @param {CanvasRenderingContext2D} ctx
-     * @param fill
+     * Returns boolean indicating if the passed IgeRect is
+     * intersecting the rectangle.
+     * @param {IgeShape} shape
+     * @return {boolean}
      */
-    render(ctx: IgeCanvasRenderingContext2d, fill?: boolean): this;
+    intersects(shape: IgeShape): boolean;
+    /**
+     * Draws the polygon bounding lines to the passed context.
+     */
+    render(ctx: IgeCanvasRenderingContext2d, fillStyle?: string): this;
 }

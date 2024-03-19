@@ -63,7 +63,9 @@ export class Ige {
      * Returns an object from the engine's object register by
      * the object's id. If the item passed is not a string id
      * then the item is returned as is. If no item is passed
-     * the engine itself is returned.
+     * the engine itself is returned. The object is returned
+     * by reference so mutations will affect any other references
+     * to the object. There is no mutation-safe version of this.
      * @param {string | Object} item The id of the item to return,
      * or if an object, returns the object as-is.
      */
@@ -75,11 +77,19 @@ export class Ige {
     }
     /**
      * Returns an array of all objects that have been assigned
-     * the passed category name.
+     * the passed category name. By default, the returned array
+     * is by reference, so you only need to get this array once,
+     * and it will receive updates when other objects are added
+     * to a category. Use the `immutable` flag to control this.
      * @param {String} categoryName The name of the category to return
      * all objects for.
+     * @param {boolean} [immutable=false] If true, returns a mutation-safe
+     * array where mutations to the array will not affect the underlying
+     * reference.
      */
-    $$(categoryName) {
+    $$(categoryName, immutable = false) {
+        if (immutable)
+            return (this.categoryRegister.getImmutable(categoryName) || []);
         return (this.categoryRegister.get(categoryName) || []);
     }
     // /**
