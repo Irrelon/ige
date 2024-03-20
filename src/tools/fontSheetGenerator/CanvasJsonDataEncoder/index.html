@@ -1,0 +1,51 @@
+<html>
+	<head>
+		<style type="text/css">
+			#testCanvas {
+				position: relative;
+				left: 100px;
+				top: 100px;
+				border: 1px #000 solid;
+			}
+		</style>
+	</head>
+	<body>
+		<canvas id="testCanvas" width="600" height="400"></canvas>
+
+		<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
+		<script type="text/javascript" src="canvasDataEncoder.js"></script>
+		<script>
+			$(document).ready(function () {
+				canvasDataEncoder.encode(
+					$('#testCanvas')[0],
+					0, 0, 10,
+					{
+						data: 'Test',
+						someArrayData: [
+								'Apples',
+								'Bananas',
+								'Oranges',
+								'Milk',
+								'Cheese',
+								'Honey'
+						],
+						moreData: {
+							id: 'something',
+							jsonData: 'is cool',
+							but: 'if encoded',
+							on: 'a canvas image',
+							itIs: 'even cooler!'
+						}
+					}
+				);
+
+				var decodedImageData = canvasDataEncoder.decode(
+					$('#testCanvas')[0],
+					0, 0, 10
+				);
+
+				console.log(decodedImageData);
+			});
+		</script>
+	</body>
+</html>
