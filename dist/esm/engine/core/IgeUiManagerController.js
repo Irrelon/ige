@@ -1,7 +1,7 @@
-import { arrPull } from "../../export/exports.js"
-import { IgeEventingClass } from "../../export/exports.js"
-import { ige } from "../../export/exports.js"
-import { IgeEventReturnFlag } from "../../export/exports.js"
+import { IgeEventingClass } from "./IgeEventingClass.js"
+import { ige } from "../instance.js"
+import { arrPull } from "../utils/arrays.js"
+import { IgeEventReturnFlag } from "../../enums/index.js"
 export class IgeUiManagerController extends IgeEventingClass {
     static componentTargetClass = "IgeEngine";
     componentId = "ui";

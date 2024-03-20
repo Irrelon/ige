@@ -1,22 +1,22 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.IgeUiDropDown = void 0;
-const exports_1 = require("../../export/exports.js");
-const exports_2 = require("../../export/exports.js");
-const exports_3 = require("../../export/exports.js");
-const exports_4 = require("../../export/exports.js");
-class IgeUiDropDown extends exports_1.IgeUiElement {
+const IgeUiElement_1 = require("../core/IgeUiElement.js");
+const instance_1 = require("../instance.js");
+const IgeUiLabel_1 = require("./IgeUiLabel.js");
+const igeClassStore_1 = require("../utils/igeClassStore.js");
+class IgeUiDropDown extends IgeUiElement_1.IgeUiElement {
     constructor() {
         super();
         this.classId = "IgeUiDropDown";
         this._toggleState = false;
         this._options = [];
         // Define some default styles
-        if (!exports_2.ige.ui.style(".IgeUiDropDownOption")) {
-            exports_2.ige.ui.style(".IgeUiDropDownOption", {
+        if (!instance_1.ige.ui.style(".IgeUiDropDownOption")) {
+            instance_1.ige.ui.style(".IgeUiDropDownOption", {
                 backgroundColor: undefined
             });
-            exports_2.ige.ui.style(".IgeUiDropDownOption:hover", {
+            instance_1.ige.ui.style(".IgeUiDropDownOption:hover", {
                 backgroundColor: "#00b4ff",
                 color: "#ffffff"
             });
@@ -28,7 +28,7 @@ class IgeUiDropDown extends exports_1.IgeUiElement {
         this.color("#000000");
         this.width(200);
         this.height(30);
-        this._label = new exports_4.IgeUiLabel().left(0).right(30).top(0).bottom(0).textAlignY(1).mount(this);
+        this._label = new IgeUiLabel_1.IgeUiLabel().left(0).right(30).top(0).bottom(0).textAlignY(1).mount(this);
         this.on("pointerUp", () => {
             // Toggle the list drop-down
             this.toggle();
@@ -103,7 +103,7 @@ class IgeUiDropDown extends exports_1.IgeUiElement {
         if (this._toggleState) {
             const mainTop = this._bounds2d.y + 5;
             const mainHeight = this._options.length * 30;
-            const optionContainer = new exports_1.IgeUiElement().id(this._id + "_options");
+            const optionContainer = new IgeUiElement_1.IgeUiElement().id(this._id + "_options");
             optionContainer.backgroundColor(this._backgroundColor);
             optionContainer.borderColor(this._borderColor)
                 .borderWidth(this._borderWidth)
@@ -112,10 +112,10 @@ class IgeUiDropDown extends exports_1.IgeUiElement {
                 .height(mainHeight)
                 .mount(this);
             for (let i = 0; i < this._options.length; i++) {
-                exports_2.ige.ui.style("#" + this._id + "_options_" + i, {
+                instance_1.ige.ui.style("#" + this._id + "_options_" + i, {
                     color: this._color
                 });
-                new exports_4.IgeUiLabel()
+                new IgeUiLabel_1.IgeUiLabel()
                     .id(`${this._id}_options_${i}`)
                     .data("optionIndex", i)
                     .styleClass("IgeUiDropDownOption")
@@ -135,7 +135,7 @@ class IgeUiDropDown extends exports_1.IgeUiElement {
             }
         }
         else {
-            (_a = exports_2.ige.$(`${this._id}_options`)) === null || _a === void 0 ? void 0 : _a.destroy();
+            (_a = instance_1.ige.$(`${this._id}_options`)) === null || _a === void 0 ? void 0 : _a.destroy();
         }
     }
     tick(ctx) {
@@ -154,4 +154,4 @@ class IgeUiDropDown extends exports_1.IgeUiElement {
     }
 }
 exports.IgeUiDropDown = IgeUiDropDown;
-(0, exports_3.registerClass)(IgeUiDropDown);
+(0, igeClassStore_1.registerClass)(IgeUiDropDown);

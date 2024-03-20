@@ -1,18 +1,18 @@
-import { IgeObject } from "../../export/exports.js"
-import { IgePoint2d } from "../../export/exports.js"
-import { IgePoint3d } from "../../export/exports.js"
-import { IgeRect } from "../../export/exports.js"
-import type { IgeTexture } from "../../export/exports.js"
-import type { IgeViewport } from "../../export/exports.js"
-import { IgeEntityRenderMode } from "../../export/exports.js"
-import type { IgeCanRegisterByCategory } from "../../export/exports.js"
-import type { IgeCanRegisterById } from "../../export/exports.js"
-import type { IgeCanvasRenderingContext2d } from "../../export/exports.js"
-import type { IgeInputEventHandler } from "../../export/exports.js"
-import type { IgeInputEventControl } from "../../export/exports.js"
-import type { IgePoint } from "../../export/exports.js"
-import type { IgeShapeFunctionality } from "../../export/exports.js"
-import type { IgeSmartTexture } from "../../export/exports.js"
+import { IgeObject } from "./IgeObject.js"
+import { IgePoint2d } from "./IgePoint2d.js";
+import { IgePoint3d } from "./IgePoint3d.js"
+import { IgeRect } from "./IgeRect.js";
+import type { IgeTexture } from "./IgeTexture.js"
+import type { IgeViewport } from "./IgeViewport.js";
+import { IgeEntityRenderMode } from "../../enums/index.js";
+import type { IgeCanRegisterByCategory } from "../../types/IgeCanRegisterByCategory.js"
+import type { IgeCanRegisterById } from "../../types/IgeCanRegisterById.js"
+import type { IgeCanvasRenderingContext2d } from "../../types/IgeCanvasRenderingContext2d.js"
+import type { IgeInputEventControl } from "../../types/IgeInputEventControl.js"
+import type { IgeInputEventHandler } from "../../types/IgeInputEventHandler.js"
+import type { IgePoint } from "../../types/IgePoint.js"
+import type { IgeShapeFunctionality } from "../../types/IgeShapeFunctionality.js"
+import type { IgeSmartTexture } from "../../types/IgeSmartTexture.js"
 import type { IgeTriggerPolygonFunctionName } from "../../types/IgeTriggerPolygonFunctionName.js"
 export interface IgeEntityTransformAccessor {
     x: (val?: number) => number | IgeEntity;
@@ -859,27 +859,6 @@ export declare class IgeEntity extends IgeObject implements IgeCanRegisterById, 
     velocityTo(x?: number, y?: number, z?: number): this;
     velocityBy(x?: number, y?: number, z?: number): this;
     /**
-     * Translates the entity by adding the passed values to
-     * the current translation values.
-     * @param {number} x The x co-ordinate.
-     * @param {number} y The y co-ordinate.
-     * @param {number} z The z co-ordinate.
-     * @example #Translate the entity by 10 along the x axis
-     *     entity.translateBy(10, 0, 0);
-     * @return {*}
-     */
-    translateBy(x: number, y: number, z: number): this;
-    /**
-     * Translates the entity to the passed values.
-     * @param {number} x The x co-ordinate.
-     * @param {number} y The y co-ordinate.
-     * @param {number} z The z co-ordinate.
-     * @example #Translate the entity to 10, 0, 0
-     *     entity.translateTo(10, 0, 0);
-     * @return {*}
-     */
-    translateTo(x: number, y: number, z: number): this;
-    /**
      * Translates the entity to the passed point.
      * @param {IgePoint3d} point The point with co-ordinates.
      * @example #Translate the entity to 10, 0, 0
@@ -952,27 +931,6 @@ export declare class IgeEntity extends IgeObject implements IgeCanRegisterById, 
     _translateAccessorZ(val: number): this;
     _translateAccessorZ(): number;
     /**
-     * Rotates the entity by adding the passed values to
-     * the current rotation values.
-     * @param {number} x The x co-ordinate.
-     * @param {number} y The y co-ordinate.
-     * @param {number} z The z co-ordinate.
-     * @example #Rotate the entity by 10 degrees about the z axis
-     *     entity.rotateBy(0, 0, degreesToRadians(10));
-     * @return {*}
-     */
-    rotateBy(x?: number, y?: number, z?: number): this;
-    /**
-     * Rotates the entity to the passed values.
-     * @param {number} x The x co-ordinate.
-     * @param {number} y The y co-ordinate.
-     * @param {number} z The z co-ordinate.
-     * @example #Rotate the entity to 10 degrees about the z axis
-     *     entity.rotateTo(0, 0, degreesToRadians(10));
-     * @return {*}
-     */
-    rotateTo(x: number, y: number, z: number): this;
-    /**
      * Gets the `translate` accessor object.
      * @example #Use the `rotate` accessor object to rotate the entity about the z-axis 10 degrees
      *     entity.rotate().z(degreesToRadians(10));
@@ -1009,27 +967,6 @@ export declare class IgeEntity extends IgeObject implements IgeCanRegisterById, 
      */
     _rotateAccessorZ(val: number): this;
     _rotateAccessorZ(): number;
-    /**
-     * Scales the entity by adding the passed values to
-     * the current scale values.
-     * @param {number} x The x co-ordinate.
-     * @param {number} y The y co-ordinate.
-     * @param {number} z The z co-ordinate.
-     * @example #Scale the entity by 2 on the x-axis
-     *     entity.scaleBy(2, 0, 0);
-     * @return {*}
-     */
-    scaleBy(x?: number, y?: number, z?: number): this;
-    /**
-     * Scale the entity to the passed values.
-     * @param {number} x The x co-ordinate.
-     * @param {number} y The y co-ordinate.
-     * @param {number} z The z co-ordinate.
-     * @example #Set the entity scale to 1 on all axes
-     *     entity.scaleTo(1, 1, 1);
-     * @return {*}
-     */
-    scaleTo(x?: number, y?: number, z?: number): this;
     /**
      * Gets the `scale` accessor object.
      * @example #Use the scale accessor object to set the scale of the entity on the x axis to 1

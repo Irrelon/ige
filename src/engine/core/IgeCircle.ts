@@ -1,13 +1,16 @@
+import type { IgePoint2d } from "@/engine/core/IgePoint2d";
+import type { IgePoint3d } from "@/engine/core/IgePoint3d";
+import type { IgePoly2d } from "@/engine/core/IgePoly2d";
+import type { IgeRect } from "@/engine/core/IgeRect";
 import {
 	circleIntersectsCircle,
-	pointIntersectsCircle, circleIntersectsPolygon,
-	circleIntersectsRect
+	circleIntersectsPolygon,
+	circleIntersectsRect,
+	pointIntersectsCircle
 } from "@/engine/utils/intersections";
-import type { IgePoint2d, IgePoly2d, IgeRect } from "@/export/exports";
-import type { IgePoint3d } from "@/export/exports";
-import type { IgeCanvasRenderingContext2d } from "@/export/exports";
-import type { IgeShapeFunctionality } from "@/export/exports";
-import type { IgeShape } from "@/export/exports";
+import type { IgeCanvasRenderingContext2d } from "@/types/IgeCanvasRenderingContext2d";
+import type { IgeShape } from "@/types/IgeShape";
+import type { IgeShapeFunctionality } from "@/types/IgeShapeFunctionality";
 
 /**
  * Creates a new circle (x, y, radius).

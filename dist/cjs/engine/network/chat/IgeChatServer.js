@@ -1,28 +1,27 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.IgeChatServer = void 0;
-const exports_1 = require("../../../export/exports.js");
-const exports_2 = require("../../../export/exports.js");
-const exports_3 = require("../../../export/exports.js");
-const exports_4 = require("../../../export/exports.js");
-const exports_5 = require("../../../export/exports.js");
+const instance_1 = require("../../instance.js");
+const IgeChatComponent_1 = require("./IgeChatComponent.js");
+const ids_1 = require("../../utils/ids.js");
+const enums_1 = require("../../../enums/index.js");
 /**
  * The server-side chat component. Handles all server-side
  * chat methods and events.
  */
-class IgeChatServer extends exports_2.IgeChatComponent {
+class IgeChatServer extends IgeChatComponent_1.IgeChatComponent {
     constructor() {
         super();
-        exports_1.ige.dependencies.waitFor(["network"], () => {
+        instance_1.ige.dependencies.waitFor(["network"], () => {
             // Define the chat system network command listeners
-            const network = exports_1.ige.network;
-            network.define(exports_5.IGE_NETWORK_CHAT_MSG, this._onMessageFromClient);
-            network.define(exports_5.IGE_NETWORK_CHAT_JOIN_ROOM, this._onJoinRoomRequestFromClient);
-            network.define(exports_5.IGE_NETWORK_CHAT_LEAVE_ROOM, this._onLeaveRoomRequestFromClient);
-            network.define(exports_5.IGE_NETWORK_CHAT_LIST_ROOMS, this._onClientWantsRoomList);
-            network.define(exports_5.IGE_NETWORK_CHAT_ROOM_LIST_USERS, this._onClientWantsRoomUserList);
-            network.define(exports_5.IGE_NETWORK_CHAT_ROOM_CREATED);
-            network.define(exports_5.IGE_NETWORK_CHAT_ROOM_REMOVED);
+            const network = instance_1.ige.network;
+            network.define(enums_1.IGE_NETWORK_CHAT_MSG, this._onMessageFromClient);
+            network.define(enums_1.IGE_NETWORK_CHAT_JOIN_ROOM, this._onJoinRoomRequestFromClient);
+            network.define(enums_1.IGE_NETWORK_CHAT_LEAVE_ROOM, this._onLeaveRoomRequestFromClient);
+            network.define(enums_1.IGE_NETWORK_CHAT_LIST_ROOMS, this._onClientWantsRoomList);
+            network.define(enums_1.IGE_NETWORK_CHAT_ROOM_LIST_USERS, this._onClientWantsRoomUserList);
+            network.define(enums_1.IGE_NETWORK_CHAT_ROOM_CREATED);
+            network.define(enums_1.IGE_NETWORK_CHAT_ROOM_REMOVED);
             this.log("Chat server component initiated!");
         });
     }
@@ -34,8 +33,8 @@ class IgeChatServer extends exports_2.IgeChatComponent {
      * @return {string} The new room's ID.
      */
     createRoom(roomName, roomId, options) {
-        const network = exports_1.ige.network;
-        const newRoomId = roomId || (0, exports_3.newIdHex)();
+        const network = instance_1.ige.network;
+        const newRoomId = roomId || (0, ids_1.newIdHex)();
         this._rooms[newRoomId] = {
             id: newRoomId,
             name: roomName,
@@ -43,7 +42,7 @@ class IgeChatServer extends exports_2.IgeChatComponent {
             options
         };
         // Inform all users that the room was created
-        network.send(exports_5.IGE_NETWORK_CHAT_ROOM_CREATED, newRoomId);
+        network.send(enums_1.IGE_NETWORK_CHAT_ROOM_CREATED, newRoomId);
         return roomId;
     }
     /**
@@ -52,10 +51,10 @@ class IgeChatServer extends exports_2.IgeChatComponent {
      * @return {boolean}
      */
     removeRoom(roomId) {
-        const network = exports_1.ige.network;
+        const network = instance_1.ige.network;
         if (this._rooms[roomId]) {
             // Inform all users that the room was removed
-            network.send(exports_5.IGE_NETWORK_CHAT_ROOM_REMOVED, roomId);
+            network.send(enums_1.IGE_NETWORK_CHAT_ROOM_REMOVED, roomId);
             delete this._rooms[roomId];
             return true;
         }
@@ -71,7 +70,7 @@ class IgeChatServer extends exports_2.IgeChatComponent {
      * @param {string} from The id of the user that sent the message.
      */
     sendToRoom(roomId, message, to, from) {
-        const network = exports_1.ige.network;
+        const network = instance_1.ige.network;
         if (this._rooms[roomId]) {
             const room = this._rooms[roomId];
             if (message !== undefined) {
@@ -84,7 +83,7 @@ class IgeChatServer extends exports_2.IgeChatComponent {
                 if (to) {
                     // Send message to individual user
                     if (room.users.indexOf(to) > -1) {
-                        network.send(exports_5.IGE_NETWORK_CHAT_MSG, msg, to);
+                        network.send(enums_1.IGE_NETWORK_CHAT_MSG, msg, to);
                     }
                     else {
                         this.log("Cannot send to user because specified user is not in room: " + to);
@@ -93,7 +92,7 @@ class IgeChatServer extends exports_2.IgeChatComponent {
                 else {
                     // Send this message to all users in the room
                     this.log("Sending to all users...");
-                    network.send(exports_5.IGE_NETWORK_CHAT_MSG, msg, room.users);
+                    network.send(enums_1.IGE_NETWORK_CHAT_MSG, msg, room.users);
                 }
             }
             else {
@@ -101,13 +100,13 @@ class IgeChatServer extends exports_2.IgeChatComponent {
             }
         }
         else {
-            this.log('Cannot send message to room with id "' + roomId + '" because it does not exist!');
+            this.log("Cannot send message to room with id \"" + roomId + "\" because it does not exist!");
         }
     }
     _onMessageFromClient(msg, clientId) {
         // Emit the event and if it wasn't cancelled (by returning true) then
         // process this ourselves
-        if (this.emit("messageFromClient", msg, clientId) !== exports_4.IgeEventReturnFlag.cancel) {
+        if (this.emit("messageFromClient", msg, clientId) !== enums_1.IgeEventReturnFlag.cancel) {
             console.log("Message from client: (" + clientId + ")", msg);
             if (msg.roomId) {
                 const room = this._rooms[msg.roomId];
@@ -138,10 +137,10 @@ class IgeChatServer extends exports_2.IgeChatComponent {
         }
     }
     _onJoinRoomRequestFromClient(roomId, clientId) {
-        const network = exports_1.ige.network;
+        const network = instance_1.ige.network;
         // Emit the event and if it wasn't cancelled (by returning true) then
         // process this ourselves
-        if (this.emit("clientJoinRoomRequest", roomId, clientId) !== exports_4.IgeEventReturnFlag.cancel) {
+        if (this.emit("clientJoinRoomRequest", roomId, clientId) !== enums_1.IgeEventReturnFlag.cancel) {
             const room = this._rooms[roomId];
             this.log("Client wants to join room: (" + clientId + ")", roomId);
             // Check the room exists
@@ -150,8 +149,8 @@ class IgeChatServer extends exports_2.IgeChatComponent {
                 if (room.users.indexOf(clientId) === -1) {
                     // Add the user to the room
                     room.users.push(clientId);
-                    network.send(exports_5.IGE_NETWORK_CHAT_JOIN_ROOM, { roomId: roomId, joined: true }, clientId);
-                    console.log('User "' + clientId + '" joined room ' + roomId);
+                    network.send(enums_1.IGE_NETWORK_CHAT_JOIN_ROOM, { roomId: roomId, joined: true }, clientId);
+                    console.log("User \"" + clientId + "\" joined room " + roomId);
                 }
                 else {
                     // User is already in the room!
@@ -165,21 +164,21 @@ class IgeChatServer extends exports_2.IgeChatComponent {
     _onLeaveRoomRequestFromClient(roomId, clientId) {
         // Emit the event and if it wasn't cancelled (by returning true) then
         // process this ourselves
-        if (this.emit("clientLeaveRoomRequest", roomId, clientId) !== exports_4.IgeEventReturnFlag.cancel) {
+        if (this.emit("clientLeaveRoomRequest", roomId, clientId) !== enums_1.IgeEventReturnFlag.cancel) {
             console.log("Client wants to leave room: (" + clientId + ")", roomId);
         }
     }
     _onClientWantsRoomList(data, clientId) {
         // Emit the event and if it wasn't cancelled (by returning true) then
         // process this ourselves
-        if (this.emit("clientRoomListRequest", data, clientId) !== exports_4.IgeEventReturnFlag.cancel) {
+        if (this.emit("clientRoomListRequest", data, clientId) !== enums_1.IgeEventReturnFlag.cancel) {
             console.log("Client wants the room list: (" + clientId + ")", data);
         }
     }
     _onClientWantsRoomUserList(roomId, clientId) {
         // Emit the event and if it wasn't cancelled (by returning true) then
         // process this ourselves
-        if (this.emit("clientRoomUserListRequest", roomId, clientId) !== exports_4.IgeEventReturnFlag.cancel) {
+        if (this.emit("clientRoomUserListRequest", roomId, clientId) !== enums_1.IgeEventReturnFlag.cancel) {
             console.log("Client wants the room user list: (" + clientId + ")", roomId);
         }
     }

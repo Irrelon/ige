@@ -1,7 +1,11 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.IgeUiTextBox = void 0;
-const exports_1 = require("../../export/exports.js");
+const IgeFontEntity_1 = require("../core/IgeFontEntity.js");
+const IgeUiElement_1 = require("../core/IgeUiElement.js");
+const instance_1 = require("../instance.js");
+const igeClassStore_1 = require("../utils/igeClassStore.js");
+const enums_1 = require("../../enums/index.js");
 /**
  * Provides a UI text entry box. When provided with focus this UI entity will
  * capture keyboard input and display it, similar in usage to the HTML input
@@ -10,7 +14,7 @@ const exports_1 = require("../../export/exports.js");
  */
 // TODO: Make mouse pointer a text entry cursor on hover
 // TODO: Make a flashing cursor
-class IgeUiTextBox extends exports_1.IgeUiElement {
+class IgeUiTextBox extends IgeUiElement_1.IgeUiElement {
     constructor() {
         super();
         this.classId = "IgeUiTextBox";
@@ -20,8 +24,8 @@ class IgeUiTextBox extends exports_1.IgeUiElement {
         this._placeHolderColor = "";
         this._mask = "";
         this._value = "";
-        this._fontEntity = new exports_1.IgeFontEntity();
-        this._fontEntity.left(5).middle(0).textAlignX(0).textAlignY(exports_1.IgeFontAlignY.multiLineMiddle).mount(this);
+        this._fontEntity = new IgeFontEntity_1.IgeFontEntity();
+        this._fontEntity.left(5).middle(0).textAlignX(0).textAlignY(enums_1.IgeFontAlignY.multiLineMiddle).mount(this);
         const blurFunc = () => {
             var _a;
             if (this._domElement) {
@@ -30,7 +34,7 @@ class IgeUiTextBox extends exports_1.IgeUiElement {
             }
         };
         const focusFunc = () => {
-            exports_1.ige.input.stopPropagation();
+            instance_1.ige.input.stopPropagation();
             // First call blur to remove any previous background DOM element
             blurFunc();
             // Now we grab the screen position of the IGE element, so we
@@ -89,7 +93,7 @@ class IgeUiTextBox extends exports_1.IgeUiElement {
         this.on("focus", focusFunc);
         this.on("pointerUp", focusFunc);
         this.on("pointerDown", () => {
-            exports_1.ige.input.stopPropagation();
+            instance_1.ige.input.stopPropagation();
         });
         // Hook the uiUpdate event (emitted by the underlying IgeUiEntity) that
         // gets emitted when any updates have occurred to the ui styling of
@@ -270,4 +274,4 @@ class IgeUiTextBox extends exports_1.IgeUiElement {
     }
 }
 exports.IgeUiTextBox = IgeUiTextBox;
-(0, exports_1.registerClass)(IgeUiTextBox);
+(0, igeClassStore_1.registerClass)(IgeUiTextBox);

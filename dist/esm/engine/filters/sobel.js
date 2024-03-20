@@ -1,5 +1,5 @@
-import { convoluteHelper } from "../../export/exports.js"
-import { igeFilters } from "../../export/exports.js"
+import { convoluteHelper } from "./convolute.js"
+import { igeFilters } from "../utils/igeFilters.js"
 export const sobel = function (canvas, ctx, originalImage, texture, data) {
     let strength = 1, loop;
     if (data && data.value) {

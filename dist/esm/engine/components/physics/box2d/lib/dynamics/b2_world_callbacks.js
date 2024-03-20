@@ -24,24 +24,29 @@ import { b2BodyType } from "./b2_body.js"
 export class b2DestructionListener {
     /// Called when any joint is about to be destroyed due
     /// to the destruction of one of its attached bodies.
-    SayGoodbyeJoint(joint) { }
+    SayGoodbyeJoint(joint) {
+    }
     /// Called when any fixture is about to be destroyed due
     /// to the destruction of its parent body.
-    SayGoodbyeFixture(fixture) { }
+    SayGoodbyeFixture(fixture) {
+    }
     // #if B2_ENABLE_PARTICLE
     /// Called when any particle group is about to be destroyed.
-    SayGoodbyeParticleGroup(group) { }
+    SayGoodbyeParticleGroup(group) {
+    }
     /// Called when a particle is about to be destroyed.
     /// The index can be used in conjunction with
     /// b2ParticleSystem::GetUserDataBuffer() or
     /// b2ParticleSystem::GetParticleHandleFromIndex() to determine which
     /// particle has been destroyed.
-    SayGoodbyeParticle(system, index) { }
+    SayGoodbyeParticle(system, index) {
+    }
 }
 /// Implement this class to provide collision filtering. In other words, you can implement
 /// this class if you want finer control over contact creation.
 export class b2ContactFilter {
     /// Return true if contact calculations should be performed between these two shapes.
+    static b2_defaultFilter = new b2ContactFilter();
     /// @warning for performance reasons this is only called when the AABBs begin to overlap.
     ShouldCollide(fixtureA, fixtureB) {
         const bodyA = fixtureA.GetBody();
@@ -66,11 +71,10 @@ export class b2ContactFilter {
     ShouldCollideFixtureParticle(fixture, system, index) {
         return true;
     }
+    // #endif
     ShouldCollideParticleParticle(system, indexA, indexB) {
         return true;
     }
-    // #endif
-    static b2_defaultFilter = new b2ContactFilter();
 }
 /// Contact impulses for reporting. Impulses are used instead of forces because
 /// sub-step forces may approach infinity for rigid body collisions. These
@@ -90,15 +94,20 @@ export class b2ContactImpulse {
 /// many callbacks per time step.
 /// @warning You cannot create/destroy Box2D entities inside these callbacks.
 export class b2ContactListener {
+    static b2_defaultListener = new b2ContactListener();
     /// Called when two fixtures begin to touch.
-    BeginContact(contact) { }
+    BeginContact(contact) {
+    }
     /// Called when two fixtures cease to touch.
-    EndContact(contact) { }
+    EndContact(contact) {
+    }
     // #if B2_ENABLE_PARTICLE
-    BeginContactFixtureParticle(system, contact) { }
-    EndContactFixtureParticle(system, contact) { }
-    BeginContactParticleParticle(system, contact) { }
-    EndContactParticleParticle(system, contact) { }
+    BeginContactFixtureParticle(system, contact) {
+    }
+    EndContactFixtureParticle(system, contact) {
+    }
+    BeginContactParticleParticle(system, contact) {
+    }
     // #endif
     /// This is called after a contact is updated. This allows you to inspect a
     /// contact before it goes to the solver. If you are careful, you can modify the
@@ -109,16 +118,19 @@ export class b2ContactListener {
     /// Note: this is not called for sensors.
     /// Note: if you set the number of contact points to zero, you will not
     /// get an EndContact callback. However, you may get a BeginContact callback
-    /// the next step.
-    PreSolve(contact, oldManifold) { }
+    EndContactParticleParticle(system, contact) {
+    }
     /// This lets you inspect a contact after the solver is finished. This is useful
     /// for inspecting impulses.
     /// Note: the contact manifold does not include time of impact impulses, which can be
     /// arbitrarily large if the sub-step is small. Hence the impulse is provided explicitly
     /// in a separate data structure.
+    /// the next step.
+    PreSolve(contact, oldManifold) {
+    }
     /// Note: this is only called for contacts that are touching, solid, and awake.
-    PostSolve(contact, impulse) { }
-    static b2_defaultListener = new b2ContactListener();
+    PostSolve(contact, impulse) {
+    }
 }
 /// Callback class for AABB queries.
 /// See b2World::Query

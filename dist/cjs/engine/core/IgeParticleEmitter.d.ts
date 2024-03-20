@@ -1,8 +1,8 @@
-import type { IgeObject } from "../../export/exports.js"
-import type { IgeParticle } from "../../export/exports.js"
-import type { IgePoint3d } from "../../export/exports.js"
-import { IgeUiEntity } from "../../export/exports.js"
-import type { IgeCanvasRenderingContext2d } from "../../export/exports.js"
+import type { IgeObject } from "./IgeObject.js"
+import type { IgeParticle } from "./IgeParticle.js";
+import type { IgePoint3d } from "./IgePoint3d.js"
+import { IgeUiEntity } from "./IgeUiEntity.js";
+import type { IgeCanvasRenderingContext2d } from "../../types/IgeCanvasRenderingContext2d.js"
 export interface IgeParticleVectorBaseMinMax {
     base: IgePoint3d;
     min: IgePoint3d;

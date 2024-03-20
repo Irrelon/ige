@@ -1,5 +1,5 @@
-import { IgeEventingClass } from "@/export/exports";
-import type { IgeCanAsyncLoad } from "@/export/exports";
+import { IgeEventingClass } from "@/engine/core/IgeEventingClass";
+import type { IgeCanAsyncLoad } from "@/types/IgeCanAsyncLoad";
 
 export class IgeAsset extends IgeEventingClass implements IgeCanAsyncLoad {
 	_loaded: boolean = false;

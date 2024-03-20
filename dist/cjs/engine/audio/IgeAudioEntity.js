@@ -1,11 +1,11 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.IgeAudioEntity = void 0;
-const exports_1 = require("../../export/exports.js");
-const exports_2 = require("../../export/exports.js");
-const exports_3 = require("../../export/exports.js");
-const exports_4 = require("../../export/exports.js");
-const exports_5 = require("../../export/exports.js");
+const IgeAudioItem_1 = require("./IgeAudioItem.js");
+const IgeEntity_1 = require("../core/IgeEntity.js");
+const instance_1 = require("../instance.js");
+const clientServer_1 = require("../utils/clientServer.js");
+const igeClassStore_1 = require("../utils/igeClassStore.js");
 // Set default data for any audio panner node
 const defaultPanner = {
     panningModel: "HRTF",
@@ -17,7 +17,7 @@ const defaultPanner = {
     coneInnerAngle: 360,
     coneOuterGain: 0
 };
-class IgeAudioEntity extends exports_4.IgeEntity {
+class IgeAudioEntity extends IgeEntity_1.IgeEntity {
     constructor(audioId, options = {
         started: false,
         loop: false,
@@ -33,7 +33,7 @@ class IgeAudioEntity extends exports_4.IgeEntity {
             panner: defaultPanner
         };
         this._audioId = audioId;
-        this._audioInterface = new exports_1.IgeAudioItem(audioId);
+        this._audioInterface = new IgeAudioItem_1.IgeAudioItem(audioId);
         this._options = options;
         if (this._options.relativeTo) {
             this.relativeTo(this._options.relativeTo);
@@ -55,14 +55,14 @@ class IgeAudioEntity extends exports_4.IgeEntity {
             const audioInterface = this.audioInterface();
             if (!audioInterface)
                 return;
-            if (!exports_5.ige.audio || !exports_5.ige.audio._ctx)
+            if (!instance_1.ige.audio || !instance_1.ige.audio._ctx)
                 return;
             this._relativeTo = val;
-            this._listener = exports_5.ige.audio._ctx.listener;
+            this._listener = instance_1.ige.audio._ctx.listener;
             // Check if we have a panner node yet or not
             if (!audioInterface.panner()) {
                 // Create a panner node for the audio output
-                this._panner = new PannerNode(exports_5.ige.audio._ctx, this._options.panner);
+                this._panner = new PannerNode(instance_1.ige.audio._ctx, this._options.panner);
                 (_a = this.audioInterface()) === null || _a === void 0 ? void 0 : _a.panner(this._panner);
             }
             return this;
@@ -165,7 +165,7 @@ class IgeAudioEntity extends exports_4.IgeEntity {
      */
     destroy() {
         var _a;
-        if (exports_2.isClient) {
+        if (clientServer_1.isClient) {
             (_a = this.audioInterface()) === null || _a === void 0 ? void 0 : _a.stop();
         }
         super.destroy();
@@ -173,4 +173,4 @@ class IgeAudioEntity extends exports_4.IgeEntity {
     }
 }
 exports.IgeAudioEntity = IgeAudioEntity;
-(0, exports_3.registerClass)(IgeAudioEntity);
+(0, igeClassStore_1.registerClass)(IgeAudioEntity);

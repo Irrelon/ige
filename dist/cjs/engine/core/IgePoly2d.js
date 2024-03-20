@@ -1,8 +1,9 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.IgePoly2d = void 0;
+const IgePoint2d_1 = require("./IgePoint2d.js");
+const IgeRect_1 = require("./IgeRect.js");
 const intersections_1 = require("../utils/intersections.js");
-const exports_1 = require("../../export/exports.js");
 /**
  * Creates a new 2d polygon made up of IgePoint2d instances.
  */
@@ -13,7 +14,7 @@ class IgePoly2d {
         this.y = 0;
         this._igeShapeType = "polygon";
         this._poly = [];
-        this._scale = new exports_1.IgePoint2d(1, 1);
+        this._scale = new IgePoint2d_1.IgePoint2d(1, 1);
     }
     translateTo(x, y) {
         this.x = x;
@@ -72,7 +73,7 @@ class IgePoly2d {
      * @param {number} y
      */
     addPoint(x, y) {
-        this._poly.push(new exports_1.IgePoint2d(x, y));
+        this._poly.push(new IgePoint2d_1.IgePoint2d(x, y));
         return this;
     }
     /**
@@ -136,7 +137,7 @@ class IgePoly2d {
         const minY = Math.min(...yArr);
         const maxX = Math.max(...xArr);
         const maxY = Math.max(...yArr);
-        return new exports_1.IgeRect(minX, minY, maxX - minX, maxY - minY);
+        return new IgeRect_1.IgeRect(minX, minY, maxX - minX, maxY - minY);
     }
     /**
      * Returns a copy of this IgePoly2d object that is its own version,

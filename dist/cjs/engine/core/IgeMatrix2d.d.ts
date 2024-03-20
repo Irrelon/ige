@@ -1,9 +1,9 @@
-import { IgeBaseClass } from "../../export/exports.js"
-import type { IgeEntity } from "../../export/exports.js"
-import type { IgeObject } from "../../export/exports.js"
-import { IgePoint3d } from "../../export/exports.js"
-import type { IgeCanvasRenderingContext2d } from "../../export/exports.js"
-import type { IgePoint } from "../../export/exports.js"
+import { IgeBaseClass } from "./IgeBaseClass.js"
+import type { IgeEntity } from "./IgeEntity.js";
+import type { IgeObject } from "./IgeObject.js"
+import { IgePoint3d } from "./IgePoint3d.js";
+import type { IgeCanvasRenderingContext2d } from "../../types/IgeCanvasRenderingContext2d.js"
+import type { IgePoint } from "../../types/IgePoint.js"
 /**
  * Creates a new transformation matrix.
  */

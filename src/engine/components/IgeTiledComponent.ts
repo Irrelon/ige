@@ -1,9 +1,9 @@
-import { IgeCellSheet } from "@/export/exports";
-import { IgeComponent } from "@/export/exports";
-import type { IgeEntity } from "@/export/exports";
-import { IgeTextureMap } from "@/export/exports";
-import { IgeTileMap2d } from "@/export/exports";
-import { isClient, isServer } from "@/export/exports";
+import { IgeCellSheet } from "@/engine/core/IgeCellSheet";
+import { IgeComponent } from "@/engine/core/IgeComponent";
+import type { IgeEntity } from "@/engine/core/IgeEntity";
+import { IgeTextureMap } from "@/engine/core/IgeTextureMap";
+import { IgeTileMap2d } from "@/engine/core/IgeTileMap2d";
+import { isClient, isServer } from "@/engine/utils/clientServer";
 
 /**
  * Loads slightly modified Tiled-format json map data into the Isogenic Engine.

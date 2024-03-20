@@ -1,4 +1,4 @@
-import { IgeEventingClass } from "../../export/exports.js"
+import { IgeEventingClass } from "./IgeEventingClass.js"
 declare enum ListType {
     "closed" = 0,
     "open" = 1

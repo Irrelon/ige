@@ -24,34 +24,46 @@ var __importStar = (this && this.__importStar) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Ige = void 0;
-const exports_1 = require("../../export/exports.js");
-const exports_2 = require("../../export/exports.js");
-const exports_3 = require("../../export/exports.js");
-const exports_4 = require("../../export/exports.js");
+const IgeInputComponent_1 = require("../components/IgeInputComponent.js");
+const IgeBox2dController_1 = require("../components/physics/box2d/IgeBox2dController.js");
+const config_1 = require("./config.js");
+const IgeArrayRegister_1 = require("./IgeArrayRegister.js");
+const IgeDependencies_1 = require("./IgeDependencies.js");
+const IgeEngine_1 = require("./IgeEngine.js");
+const IgeMetrics_1 = require("./IgeMetrics.js");
+const IgeObjectRegister_1 = require("./IgeObjectRegister.js");
+const IgePoint3d_1 = require("./IgePoint3d.js");
+const IgeRouter_1 = require("./IgeRouter.js");
+const IgeTextureStore_1 = require("./IgeTextureStore.js");
+const IgeTimeController_1 = require("./IgeTimeController.js");
+const IgeTweenController_1 = require("./IgeTweenController.js");
+const IgeUiManagerController_1 = require("./IgeUiManagerController.js");
+const clientServer_1 = require("../utils/clientServer.js");
+const igeClassStore_1 = require("../utils/igeClassStore.js");
 const version = "3.0.1";
 class Ige {
     constructor() {
         this.app = null;
-        this.router = new exports_1.IgeRouter();
-        this.engine = new exports_1.IgeEngine();
-        this.box2d = new exports_4.IgeBox2dController();
-        this.textures = new exports_1.IgeTextureStore();
-        this.input = new exports_3.IgeInputComponent();
-        this.tween = new exports_1.IgeTweenController();
-        this.time = new exports_1.IgeTimeController();
-        this.ui = new exports_1.IgeUiManagerController();
-        this.register = new exports_1.IgeObjectRegister();
-        this.categoryRegister = new exports_1.IgeArrayRegister("_category", "_categoryRegistered");
-        this.groupRegister = new exports_1.IgeArrayRegister("_group", "_groupRegistered");
-        this.dependencies = new exports_1.IgeDependencies();
-        this.metrics = new exports_1.IgeMetrics();
-        this.config = exports_1.igeConfig;
+        this.router = new IgeRouter_1.IgeRouter();
+        this.engine = new IgeEngine_1.IgeEngine();
+        this.box2d = new IgeBox2dController_1.IgeBox2dController();
+        this.textures = new IgeTextureStore_1.IgeTextureStore();
+        this.input = new IgeInputComponent_1.IgeInputComponent();
+        this.tween = new IgeTweenController_1.IgeTweenController();
+        this.time = new IgeTimeController_1.IgeTimeController();
+        this.ui = new IgeUiManagerController_1.IgeUiManagerController();
+        this.register = new IgeObjectRegister_1.IgeObjectRegister();
+        this.categoryRegister = new IgeArrayRegister_1.IgeArrayRegister("_category", "_categoryRegistered");
+        this.groupRegister = new IgeArrayRegister_1.IgeArrayRegister("_group", "_groupRegistered");
+        this.dependencies = new IgeDependencies_1.IgeDependencies();
+        this.metrics = new IgeMetrics_1.IgeMetrics();
+        this.config = config_1.igeConfig;
         this.version = version;
-        this.classStore = exports_2.igeClassStore;
+        this.classStore = igeClassStore_1.igeClassStore;
         this._data = {};
         this._watch = [];
         this._drawBounds = false;
-        this._pointerPos = new exports_1.IgePoint3d(); // Could probably be just {x: number, y: number}
+        this._pointerPos = new IgePoint3d_1.IgePoint3d(); // Could probably be just {x: number, y: number}
         // /**
         //  * Returns an array of all objects that have been assigned
         //  * the passed group name.
@@ -84,17 +96,23 @@ class Ige {
             this._watch = this._watch || [];
             this._watch.splice(index, 1);
         };
-        if (exports_2.isClient) {
+        // Output our header
+        console.log("-----------------------------------------");
+        console.log(`Powered by Isogenic Engine`);
+        console.log("(C)opyright " + new Date().getFullYear() + " Irrelon Software Limited");
+        console.log("https://www.isogenicengine.com");
+        console.log("-----------------------------------------");
+        if (clientServer_1.isClient) {
             this.dependencies.add("network", Promise.resolve().then(() => __importStar(require("../network/client/IgeNetIoClientController.js"))).then(({ IgeNetIoClientController: Module }) => {
                 this.network = new Module();
             }));
-            if (!exports_2.isWorker) {
+            if (!clientServer_1.isWorker) {
                 this.dependencies.add("audio", Promise.resolve().then(() => __importStar(require("../audio/IgeAudioController.js"))).then(({ IgeAudioController: Module }) => {
                     this.audio = new Module();
                 }));
             }
         }
-        if (exports_2.isServer) {
+        if (clientServer_1.isServer) {
             this.dependencies.add("network", Promise.resolve().then(() => __importStar(require("../network/server/IgeNetIoServerController.js"))).then(({ IgeNetIoServerController: Module }) => {
                 this.network = new Module();
             }));
@@ -144,7 +162,21 @@ class Ige {
             return (this.categoryRegister.getImmutable(categoryName) || []);
         return (this.categoryRegister.get(categoryName) || []);
     }
-    drawBounds(val, recursive = false) {
+    /**
+     * Gets / sets the boolean flag determining if this object should have
+     * its bounds drawn when the bounds for all objects are being drawn.
+     * In order for bounds to be drawn the viewport the object is being drawn
+     * to must also have draw bounds enabled.
+     * @example #Enable draw bounds
+     *     var entity = new IgeEntity();
+     *     entity.drawBounds(true);
+     * @example #Disable draw bounds
+     *     var entity = new IgeEntity();
+     *     entity.drawBounds(false);
+     * @example #Get the current flag value
+     *     console.log(entity.drawBounds());
+     */
+    drawBounds(val, recursive = true) {
         if (val === undefined) {
             return this._drawBounds;
         }

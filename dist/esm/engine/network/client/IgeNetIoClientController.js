@@ -1,9 +1,9 @@
-import { IGE_NETWORK_JOIN_ROOM, IGE_NETWORK_LEAVE_ROOM, IgeNetIoClient } from "../../../export/exports.js"
-import { ige } from "../../../export/exports.js"
-import { IGE_NETWORK_REQUEST, IGE_NETWORK_RESPONSE, IGE_NETWORK_STREAM_CREATE, IGE_NETWORK_STREAM_DATA, IGE_NETWORK_STREAM_DESTROY, IGE_NETWORK_STREAM_TIME, IGE_NETWORK_TIME_SYNC } from "../../../export/exports.js"
-import { igeClassStore } from "../../../export/exports.js"
-import { newIdHex } from "../../../export/exports.js"
-import { IgeNetIoBaseController } from "../../../export/exports.js"
+import { ige } from "../../instance.js"
+import { IgeNetIoClient } from "./IgeNetIoClient.js"
+import { IgeNetIoBaseController } from "../IgeNetIoBaseController.js"
+import { newIdHex } from "../../utils/ids.js"
+import { igeClassStore } from "../../utils/igeClassStore.js"
+import { IGE_NETWORK_JOIN_ROOM, IGE_NETWORK_LEAVE_ROOM, IGE_NETWORK_REQUEST, IGE_NETWORK_RESPONSE, IGE_NETWORK_STREAM_CREATE, IGE_NETWORK_STREAM_DATA, IGE_NETWORK_STREAM_DESTROY, IGE_NETWORK_STREAM_TIME, IGE_NETWORK_TIME_SYNC } from "../../../enums/index.js"
 /**
  * The client-side net.io component. Handles all client-side
  * networking systems.

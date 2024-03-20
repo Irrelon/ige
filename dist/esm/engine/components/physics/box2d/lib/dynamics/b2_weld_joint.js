@@ -295,13 +295,27 @@ export class b2WeldJoint extends b2Joint {
     GetReactionTorque(inv_dt) {
         return inv_dt * this.m_impulse.z;
     }
-    GetLocalAnchorA() { return this.m_localAnchorA; }
-    GetLocalAnchorB() { return this.m_localAnchorB; }
-    GetReferenceAngle() { return this.m_referenceAngle; }
-    SetStiffness(stiffness) { this.m_stiffness = stiffness; }
-    GetStiffness() { return this.m_stiffness; }
-    SetDamping(damping) { this.m_damping = damping; }
-    GetDamping() { return this.m_damping; }
+    GetLocalAnchorA() {
+        return this.m_localAnchorA;
+    }
+    GetLocalAnchorB() {
+        return this.m_localAnchorB;
+    }
+    GetReferenceAngle() {
+        return this.m_referenceAngle;
+    }
+    SetStiffness(stiffness) {
+        this.m_stiffness = stiffness;
+    }
+    GetStiffness() {
+        return this.m_stiffness;
+    }
+    SetDamping(damping) {
+        this.m_damping = damping;
+    }
+    GetDamping() {
+        return this.m_damping;
+    }
     Dump(log) {
         const indexA = this.m_bodyA.m_islandIndex;
         const indexB = this.m_bodyB.m_islandIndex;

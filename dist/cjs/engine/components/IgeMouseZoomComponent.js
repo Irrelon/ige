@@ -1,15 +1,15 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.IgeMouseZoomComponent = void 0;
-const exports_1 = require("../../export/exports.js");
-const exports_2 = require("../../export/exports.js");
-const exports_3 = require("../../export/exports.js");
-const exports_4 = require("../../export/exports.js");
+const IgeComponent_1 = require("../core/IgeComponent.js");
+const IgePoint2d_1 = require("../core/IgePoint2d.js");
+const IgePoint3d_1 = require("../core/IgePoint3d.js");
+const instance_1 = require("../instance.js");
 /**
  * When added to a viewport, automatically adds mouse zooming
  * capabilities to the viewport's camera.
  */
-class IgeMouseZoomComponent extends exports_1.IgeComponent {
+class IgeMouseZoomComponent extends IgeComponent_1.IgeComponent {
     constructor() {
         super(...arguments);
         this.classId = "IgeMouseZoomComponent";
@@ -25,9 +25,9 @@ class IgeMouseZoomComponent extends exports_1.IgeComponent {
             if (!this._enabled || event.igeViewport.id() !== this._entity.id()) {
                 return;
             }
-            const curMousePos = exports_4.ige._pointerPos;
-            this._zoomStartMouse = new exports_3.IgePoint3d(curMousePos.x, curMousePos.y, 0);
-            this._zoomStartCamera = new exports_2.IgePoint2d(this._entity.camera._scale.x, this._entity.camera._scale.y);
+            const curMousePos = instance_1.ige._pointerPos;
+            this._zoomStartMouse = new IgePoint3d_1.IgePoint3d(curMousePos.x, curMousePos.y, 0);
+            this._zoomStartCamera = new IgePoint2d_1.IgePoint2d(this._entity.camera._scale.x, this._entity.camera._scale.y);
         };
         /**
          * Handles the mouse wheel event. Scales the camera as the wheel goes
@@ -57,7 +57,7 @@ class IgeMouseZoomComponent extends exports_1.IgeComponent {
             if (!this._zoomStartMouse || !this._zoomStartCamera) {
                 return;
             }
-            const curMousePos = exports_4.ige._pointerPos;
+            const curMousePos = instance_1.ige._pointerPos;
             const zoomCords = {
                 x: -(this._zoomStartMouse.x - curMousePos.x) / 100,
                 y: -(this._zoomStartMouse.y - curMousePos.y) / 100

@@ -19,22 +19,22 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.b2WheelJoint = exports.b2WheelJointDef = void 0;
 // DEBUG: import { b2Assert } from "../common/b2_settings.js"
-const b2_settings_js_1 = require("../common/b2_settings.js");
-const b2_math_js_1 = require("../common/b2_math.js");
-const b2_joint_js_1 = require("./b2_joint.js");
-const b2_draw_js_1 = require("../common/b2_draw.js");
+const b2_settings_1 = require("../common/b2_settings");
+const b2_math_1 = require("../common/b2_math");
+const b2_joint_1 = require("./b2_joint");
+const b2_draw_1 = require("../common/b2_draw");
 /// Wheel joint definition. This requires defining a line of
 /// motion using an axis and an anchor point. The definition uses local
 /// anchor points and a local axis so that the initial configuration
 /// can violate the constraint slightly. The joint translation is zero
 /// when the local anchor points coincide in world space. Using local
 /// anchors and a local axis helps when saving and loading a game.
-class b2WheelJointDef extends b2_joint_js_1.b2JointDef {
+class b2WheelJointDef extends b2_joint_1.b2JointDef {
     constructor() {
-        super(b2_joint_js_1.b2JointType.e_wheelJoint);
-        this.localAnchorA = new b2_math_js_1.b2Vec2(0, 0);
-        this.localAnchorB = new b2_math_js_1.b2Vec2(0, 0);
-        this.localAxisA = new b2_math_js_1.b2Vec2(1, 0);
+        super(b2_joint_1.b2JointType.e_wheelJoint);
+        this.localAnchorA = new b2_math_1.b2Vec2(0, 0);
+        this.localAnchorB = new b2_math_1.b2Vec2(0, 0);
+        this.localAxisA = new b2_math_1.b2Vec2(1, 0);
         this.enableLimit = false;
         this.lowerTranslation = 0;
         this.upperTranslation = 0;
@@ -53,13 +53,13 @@ class b2WheelJointDef extends b2_joint_js_1.b2JointDef {
     }
 }
 exports.b2WheelJointDef = b2WheelJointDef;
-class b2WheelJoint extends b2_joint_js_1.b2Joint {
+class b2WheelJoint extends b2_joint_1.b2Joint {
     constructor(def) {
         super(def);
-        this.m_localAnchorA = new b2_math_js_1.b2Vec2();
-        this.m_localAnchorB = new b2_math_js_1.b2Vec2();
-        this.m_localXAxisA = new b2_math_js_1.b2Vec2();
-        this.m_localYAxisA = new b2_math_js_1.b2Vec2();
+        this.m_localAnchorA = new b2_math_1.b2Vec2();
+        this.m_localAnchorB = new b2_math_1.b2Vec2();
+        this.m_localXAxisA = new b2_math_1.b2Vec2();
+        this.m_localYAxisA = new b2_math_1.b2Vec2();
         this.m_impulse = 0;
         this.m_motorImpulse = 0;
         this.m_springImpulse = 0;
@@ -77,14 +77,14 @@ class b2WheelJoint extends b2_joint_js_1.b2Joint {
         // Solver temp
         this.m_indexA = 0;
         this.m_indexB = 0;
-        this.m_localCenterA = new b2_math_js_1.b2Vec2();
-        this.m_localCenterB = new b2_math_js_1.b2Vec2();
+        this.m_localCenterA = new b2_math_1.b2Vec2();
+        this.m_localCenterB = new b2_math_1.b2Vec2();
         this.m_invMassA = 0;
         this.m_invMassB = 0;
         this.m_invIA = 0;
         this.m_invIB = 0;
-        this.m_ax = new b2_math_js_1.b2Vec2();
-        this.m_ay = new b2_math_js_1.b2Vec2();
+        this.m_ax = new b2_math_1.b2Vec2();
+        this.m_ay = new b2_math_1.b2Vec2();
         this.m_sAx = 0;
         this.m_sBx = 0;
         this.m_sAy = 0;
@@ -95,26 +95,26 @@ class b2WheelJoint extends b2_joint_js_1.b2Joint {
         this.m_springMass = 0;
         this.m_bias = 0;
         this.m_gamma = 0;
-        this.m_qA = new b2_math_js_1.b2Rot();
-        this.m_qB = new b2_math_js_1.b2Rot();
-        this.m_lalcA = new b2_math_js_1.b2Vec2();
-        this.m_lalcB = new b2_math_js_1.b2Vec2();
-        this.m_rA = new b2_math_js_1.b2Vec2();
-        this.m_rB = new b2_math_js_1.b2Vec2();
-        this.m_localAnchorA.Copy((0, b2_settings_js_1.b2Maybe)(def.localAnchorA, b2_math_js_1.b2Vec2.ZERO));
-        this.m_localAnchorB.Copy((0, b2_settings_js_1.b2Maybe)(def.localAnchorB, b2_math_js_1.b2Vec2.ZERO));
-        this.m_localXAxisA.Copy((0, b2_settings_js_1.b2Maybe)(def.localAxisA, b2_math_js_1.b2Vec2.UNITX));
-        b2_math_js_1.b2Vec2.CrossOneV(this.m_localXAxisA, this.m_localYAxisA);
-        this.m_lowerTranslation = (0, b2_settings_js_1.b2Maybe)(def.lowerTranslation, 0);
-        this.m_upperTranslation = (0, b2_settings_js_1.b2Maybe)(def.upperTranslation, 0);
-        this.m_enableLimit = (0, b2_settings_js_1.b2Maybe)(def.enableLimit, false);
-        this.m_maxMotorTorque = (0, b2_settings_js_1.b2Maybe)(def.maxMotorTorque, 0);
-        this.m_motorSpeed = (0, b2_settings_js_1.b2Maybe)(def.motorSpeed, 0);
-        this.m_enableMotor = (0, b2_settings_js_1.b2Maybe)(def.enableMotor, false);
+        this.m_qA = new b2_math_1.b2Rot();
+        this.m_qB = new b2_math_1.b2Rot();
+        this.m_lalcA = new b2_math_1.b2Vec2();
+        this.m_lalcB = new b2_math_1.b2Vec2();
+        this.m_rA = new b2_math_1.b2Vec2();
+        this.m_rB = new b2_math_1.b2Vec2();
+        this.m_localAnchorA.Copy((0, b2_settings_1.b2Maybe)(def.localAnchorA, b2_math_1.b2Vec2.ZERO));
+        this.m_localAnchorB.Copy((0, b2_settings_1.b2Maybe)(def.localAnchorB, b2_math_1.b2Vec2.ZERO));
+        this.m_localXAxisA.Copy((0, b2_settings_1.b2Maybe)(def.localAxisA, b2_math_1.b2Vec2.UNITX));
+        b2_math_1.b2Vec2.CrossOneV(this.m_localXAxisA, this.m_localYAxisA);
+        this.m_lowerTranslation = (0, b2_settings_1.b2Maybe)(def.lowerTranslation, 0);
+        this.m_upperTranslation = (0, b2_settings_1.b2Maybe)(def.upperTranslation, 0);
+        this.m_enableLimit = (0, b2_settings_1.b2Maybe)(def.enableLimit, false);
+        this.m_maxMotorTorque = (0, b2_settings_1.b2Maybe)(def.maxMotorTorque, 0);
+        this.m_motorSpeed = (0, b2_settings_1.b2Maybe)(def.motorSpeed, 0);
+        this.m_enableMotor = (0, b2_settings_1.b2Maybe)(def.enableMotor, false);
         this.m_ax.SetZero();
         this.m_ay.SetZero();
-        this.m_stiffness = (0, b2_settings_js_1.b2Maybe)(def.stiffness, 0);
-        this.m_damping = (0, b2_settings_js_1.b2Maybe)(def.damping, 0);
+        this.m_stiffness = (0, b2_settings_1.b2Maybe)(def.stiffness, 0);
+        this.m_damping = (0, b2_settings_1.b2Maybe)(def.damping, 0);
     }
     GetMotorSpeed() {
         return this.m_motorSpeed;
@@ -156,30 +156,30 @@ class b2WheelJoint extends b2_joint_js_1.b2Joint {
         const qA = this.m_qA.SetAngle(aA), qB = this.m_qB.SetAngle(aB);
         // Compute the effective masses.
         // b2Vec2 rA = b2Mul(qA, m_localAnchorA - m_localCenterA);
-        b2_math_js_1.b2Vec2.SubVV(this.m_localAnchorA, this.m_localCenterA, this.m_lalcA);
-        const rA = b2_math_js_1.b2Rot.MulRV(qA, this.m_lalcA, this.m_rA);
+        b2_math_1.b2Vec2.SubVV(this.m_localAnchorA, this.m_localCenterA, this.m_lalcA);
+        const rA = b2_math_1.b2Rot.MulRV(qA, this.m_lalcA, this.m_rA);
         // b2Vec2 rB = b2Mul(qB, m_localAnchorB - m_localCenterB);
-        b2_math_js_1.b2Vec2.SubVV(this.m_localAnchorB, this.m_localCenterB, this.m_lalcB);
-        const rB = b2_math_js_1.b2Rot.MulRV(qB, this.m_lalcB, this.m_rB);
+        b2_math_1.b2Vec2.SubVV(this.m_localAnchorB, this.m_localCenterB, this.m_lalcB);
+        const rB = b2_math_1.b2Rot.MulRV(qB, this.m_lalcB, this.m_rB);
         // b2Vec2 d = cB + rB - cA - rA;
-        const d = b2_math_js_1.b2Vec2.SubVV(b2_math_js_1.b2Vec2.AddVV(cB, rB, b2_math_js_1.b2Vec2.s_t0), b2_math_js_1.b2Vec2.AddVV(cA, rA, b2_math_js_1.b2Vec2.s_t1), b2WheelJoint.InitVelocityConstraints_s_d);
+        const d = b2_math_1.b2Vec2.SubVV(b2_math_1.b2Vec2.AddVV(cB, rB, b2_math_1.b2Vec2.s_t0), b2_math_1.b2Vec2.AddVV(cA, rA, b2_math_1.b2Vec2.s_t1), b2WheelJoint.InitVelocityConstraints_s_d);
         // Point to line constraint
         {
             // m_ay = b2Mul(qA, m_localYAxisA);
-            b2_math_js_1.b2Rot.MulRV(qA, this.m_localYAxisA, this.m_ay);
+            b2_math_1.b2Rot.MulRV(qA, this.m_localYAxisA, this.m_ay);
             // m_sAy = b2Cross(d + rA, m_ay);
-            this.m_sAy = b2_math_js_1.b2Vec2.CrossVV(b2_math_js_1.b2Vec2.AddVV(d, rA, b2_math_js_1.b2Vec2.s_t0), this.m_ay);
+            this.m_sAy = b2_math_1.b2Vec2.CrossVV(b2_math_1.b2Vec2.AddVV(d, rA, b2_math_1.b2Vec2.s_t0), this.m_ay);
             // m_sBy = b2Cross(rB, m_ay);
-            this.m_sBy = b2_math_js_1.b2Vec2.CrossVV(rB, this.m_ay);
+            this.m_sBy = b2_math_1.b2Vec2.CrossVV(rB, this.m_ay);
             this.m_mass = mA + mB + iA * this.m_sAy * this.m_sAy + iB * this.m_sBy * this.m_sBy;
             if (this.m_mass > 0) {
                 this.m_mass = 1 / this.m_mass;
             }
         }
         // Spring constraint
-        b2_math_js_1.b2Rot.MulRV(qA, this.m_localXAxisA, this.m_ax); // m_ax = b2Mul(qA, m_localXAxisA);
-        this.m_sAx = b2_math_js_1.b2Vec2.CrossVV(b2_math_js_1.b2Vec2.AddVV(d, rA, b2_math_js_1.b2Vec2.s_t0), this.m_ax);
-        this.m_sBx = b2_math_js_1.b2Vec2.CrossVV(rB, this.m_ax);
+        b2_math_1.b2Rot.MulRV(qA, this.m_localXAxisA, this.m_ax); // m_ax = b2Mul(qA, m_localXAxisA);
+        this.m_sAx = b2_math_1.b2Vec2.CrossVV(b2_math_1.b2Vec2.AddVV(d, rA, b2_math_1.b2Vec2.s_t0), this.m_ax);
+        this.m_sBx = b2_math_1.b2Vec2.CrossVV(rB, this.m_ax);
         const invMass = mA + mB + iA * this.m_sAx * this.m_sAx + iB * this.m_sBx * this.m_sBx;
         if (invMass > 0.0) {
             this.m_axialMass = 1.0 / invMass;
@@ -192,7 +192,7 @@ class b2WheelJoint extends b2_joint_js_1.b2Joint {
         this.m_gamma = 0;
         if (this.m_stiffness > 0.0 && invMass > 0.0) {
             this.m_springMass = 1.0 / invMass;
-            const C = b2_math_js_1.b2Vec2.DotVV(d, this.m_ax);
+            const C = b2_math_1.b2Vec2.DotVV(d, this.m_ax);
             // magic formulas
             const h = data.step.dt;
             this.m_gamma = h * (this.m_damping + h * this.m_stiffness);
@@ -209,7 +209,7 @@ class b2WheelJoint extends b2_joint_js_1.b2Joint {
             this.m_springImpulse = 0.0;
         }
         if (this.m_enableLimit) {
-            this.m_translation = b2_math_js_1.b2Vec2.DotVV(this.m_ax, d);
+            this.m_translation = b2_math_1.b2Vec2.DotVV(this.m_ax, d);
         }
         else {
             this.m_lowerImpulse = 0.0;
@@ -232,7 +232,7 @@ class b2WheelJoint extends b2_joint_js_1.b2Joint {
             this.m_motorImpulse *= data.step.dtRatio;
             const axialImpulse = this.m_springImpulse + this.m_lowerImpulse - this.m_upperImpulse;
             // b2Vec2 P = m_impulse * m_ay + m_springImpulse * m_ax;
-            const P = b2_math_js_1.b2Vec2.AddVV(b2_math_js_1.b2Vec2.MulSV(this.m_impulse, this.m_ay, b2_math_js_1.b2Vec2.s_t0), b2_math_js_1.b2Vec2.MulSV(axialImpulse, this.m_ax, b2_math_js_1.b2Vec2.s_t1), b2WheelJoint.InitVelocityConstraints_s_P);
+            const P = b2_math_1.b2Vec2.AddVV(b2_math_1.b2Vec2.MulSV(this.m_impulse, this.m_ay, b2_math_1.b2Vec2.s_t0), b2_math_1.b2Vec2.MulSV(axialImpulse, this.m_ax, b2_math_1.b2Vec2.s_t1), b2WheelJoint.InitVelocityConstraints_s_P);
             // float32 LA = m_impulse * m_sAy + m_springImpulse * m_sAx + m_motorImpulse;
             const LA = this.m_impulse * this.m_sAy + axialImpulse * this.m_sAx + this.m_motorImpulse;
             // float32 LB = m_impulse * m_sBy + m_springImpulse * m_sBx + m_motorImpulse;
@@ -265,11 +265,11 @@ class b2WheelJoint extends b2_joint_js_1.b2Joint {
         let wB = data.velocities[this.m_indexB].w;
         // Solve spring constraint
         {
-            const Cdot = b2_math_js_1.b2Vec2.DotVV(this.m_ax, b2_math_js_1.b2Vec2.SubVV(vB, vA, b2_math_js_1.b2Vec2.s_t0)) + this.m_sBx * wB - this.m_sAx * wA;
+            const Cdot = b2_math_1.b2Vec2.DotVV(this.m_ax, b2_math_1.b2Vec2.SubVV(vB, vA, b2_math_1.b2Vec2.s_t0)) + this.m_sBx * wB - this.m_sAx * wA;
             const impulse = -this.m_springMass * (Cdot + this.m_bias + this.m_gamma * this.m_springImpulse);
             this.m_springImpulse += impulse;
             // b2Vec2 P = impulse * m_ax;
-            const P = b2_math_js_1.b2Vec2.MulSV(impulse, this.m_ax, b2WheelJoint.SolveVelocityConstraints_s_P);
+            const P = b2_math_1.b2Vec2.MulSV(impulse, this.m_ax, b2WheelJoint.SolveVelocityConstraints_s_P);
             const LA = impulse * this.m_sAx;
             const LB = impulse * this.m_sBx;
             // vA -= mA * P;
@@ -285,7 +285,7 @@ class b2WheelJoint extends b2_joint_js_1.b2Joint {
             let impulse = -this.m_motorMass * Cdot;
             const oldImpulse = this.m_motorImpulse;
             const maxImpulse = data.step.dt * this.m_maxMotorTorque;
-            this.m_motorImpulse = (0, b2_math_js_1.b2Clamp)(this.m_motorImpulse + impulse, -maxImpulse, maxImpulse);
+            this.m_motorImpulse = (0, b2_math_1.b2Clamp)(this.m_motorImpulse + impulse, -maxImpulse, maxImpulse);
             impulse = this.m_motorImpulse - oldImpulse;
             wA -= iA * impulse;
             wB += iB * impulse;
@@ -294,13 +294,13 @@ class b2WheelJoint extends b2_joint_js_1.b2Joint {
             // Lower limit
             {
                 const C = this.m_translation - this.m_lowerTranslation;
-                const Cdot = b2_math_js_1.b2Vec2.DotVV(this.m_ax, b2_math_js_1.b2Vec2.SubVV(vB, vA, b2_math_js_1.b2Vec2.s_t0)) + this.m_sBx * wB - this.m_sAx * wA;
-                let impulse = -this.m_axialMass * (Cdot + (0, b2_math_js_1.b2Max)(C, 0.0) * data.step.inv_dt);
+                const Cdot = b2_math_1.b2Vec2.DotVV(this.m_ax, b2_math_1.b2Vec2.SubVV(vB, vA, b2_math_1.b2Vec2.s_t0)) + this.m_sBx * wB - this.m_sAx * wA;
+                let impulse = -this.m_axialMass * (Cdot + (0, b2_math_1.b2Max)(C, 0.0) * data.step.inv_dt);
                 const oldImpulse = this.m_lowerImpulse;
-                this.m_lowerImpulse = (0, b2_math_js_1.b2Max)(this.m_lowerImpulse + impulse, 0.0);
+                this.m_lowerImpulse = (0, b2_math_1.b2Max)(this.m_lowerImpulse + impulse, 0.0);
                 impulse = this.m_lowerImpulse - oldImpulse;
                 // b2Vec2 P = impulse * this.m_ax;
-                const P = b2_math_js_1.b2Vec2.MulSV(impulse, this.m_ax, b2WheelJoint.SolveVelocityConstraints_s_P);
+                const P = b2_math_1.b2Vec2.MulSV(impulse, this.m_ax, b2WheelJoint.SolveVelocityConstraints_s_P);
                 const LA = impulse * this.m_sAx;
                 const LB = impulse * this.m_sBx;
                 // vA -= mA * P;
@@ -315,13 +315,13 @@ class b2WheelJoint extends b2_joint_js_1.b2Joint {
             // This also keeps the impulse positive when the limit is active.
             {
                 const C = this.m_upperTranslation - this.m_translation;
-                const Cdot = b2_math_js_1.b2Vec2.DotVV(this.m_ax, b2_math_js_1.b2Vec2.SubVV(vA, vB, b2_math_js_1.b2Vec2.s_t0)) + this.m_sAx * wA - this.m_sBx * wB;
-                let impulse = -this.m_axialMass * (Cdot + (0, b2_math_js_1.b2Max)(C, 0.0) * data.step.inv_dt);
+                const Cdot = b2_math_1.b2Vec2.DotVV(this.m_ax, b2_math_1.b2Vec2.SubVV(vA, vB, b2_math_1.b2Vec2.s_t0)) + this.m_sAx * wA - this.m_sBx * wB;
+                let impulse = -this.m_axialMass * (Cdot + (0, b2_math_1.b2Max)(C, 0.0) * data.step.inv_dt);
                 const oldImpulse = this.m_upperImpulse;
-                this.m_upperImpulse = (0, b2_math_js_1.b2Max)(this.m_upperImpulse + impulse, 0.0);
+                this.m_upperImpulse = (0, b2_math_1.b2Max)(this.m_upperImpulse + impulse, 0.0);
                 impulse = this.m_upperImpulse - oldImpulse;
                 // b2Vec2 P = impulse * this.m_ax;
-                const P = b2_math_js_1.b2Vec2.MulSV(impulse, this.m_ax, b2WheelJoint.SolveVelocityConstraints_s_P);
+                const P = b2_math_1.b2Vec2.MulSV(impulse, this.m_ax, b2WheelJoint.SolveVelocityConstraints_s_P);
                 const LA = impulse * this.m_sAx;
                 const LB = impulse * this.m_sBx;
                 // vA += mA * P;
@@ -334,11 +334,11 @@ class b2WheelJoint extends b2_joint_js_1.b2Joint {
         }
         // Solve point to line constraint
         {
-            const Cdot = b2_math_js_1.b2Vec2.DotVV(this.m_ay, b2_math_js_1.b2Vec2.SubVV(vB, vA, b2_math_js_1.b2Vec2.s_t0)) + this.m_sBy * wB - this.m_sAy * wA;
+            const Cdot = b2_math_1.b2Vec2.DotVV(this.m_ay, b2_math_1.b2Vec2.SubVV(vB, vA, b2_math_1.b2Vec2.s_t0)) + this.m_sBy * wB - this.m_sAy * wA;
             const impulse = -this.m_mass * Cdot;
             this.m_impulse += impulse;
             // b2Vec2 P = impulse * m_ay;
-            const P = b2_math_js_1.b2Vec2.MulSV(impulse, this.m_ay, b2WheelJoint.SolveVelocityConstraints_s_P);
+            const P = b2_math_1.b2Vec2.MulSV(impulse, this.m_ay, b2WheelJoint.SolveVelocityConstraints_s_P);
             const LA = impulse * this.m_sAy;
             const LB = impulse * this.m_sBy;
             // vA -= mA * P;
@@ -403,29 +403,29 @@ class b2WheelJoint extends b2_joint_js_1.b2Joint {
             // b2Vec2 rB = b2Mul(qB, this.m_localAnchorB - this.m_localCenterB);
             // b2Vec2 d = (cB - cA) + rB - rA;
             // b2Vec2 rA = b2Mul(qA, m_localAnchorA - m_localCenterA);
-            b2_math_js_1.b2Vec2.SubVV(this.m_localAnchorA, this.m_localCenterA, this.m_lalcA);
-            const rA = b2_math_js_1.b2Rot.MulRV(qA, this.m_lalcA, this.m_rA);
+            b2_math_1.b2Vec2.SubVV(this.m_localAnchorA, this.m_localCenterA, this.m_lalcA);
+            const rA = b2_math_1.b2Rot.MulRV(qA, this.m_lalcA, this.m_rA);
             // b2Vec2 rB = b2Mul(qB, m_localAnchorB - m_localCenterB);
-            b2_math_js_1.b2Vec2.SubVV(this.m_localAnchorB, this.m_localCenterB, this.m_lalcB);
-            const rB = b2_math_js_1.b2Rot.MulRV(qB, this.m_lalcB, this.m_rB);
+            b2_math_1.b2Vec2.SubVV(this.m_localAnchorB, this.m_localCenterB, this.m_lalcB);
+            const rB = b2_math_1.b2Rot.MulRV(qB, this.m_lalcB, this.m_rB);
             // b2Vec2 d = (cB - cA) + rB - rA;
-            const d = b2_math_js_1.b2Vec2.AddVV(b2_math_js_1.b2Vec2.SubVV(cB, cA, b2_math_js_1.b2Vec2.s_t0), b2_math_js_1.b2Vec2.SubVV(rB, rA, b2_math_js_1.b2Vec2.s_t1), b2WheelJoint.SolvePositionConstraints_s_d);
+            const d = b2_math_1.b2Vec2.AddVV(b2_math_1.b2Vec2.SubVV(cB, cA, b2_math_1.b2Vec2.s_t0), b2_math_1.b2Vec2.SubVV(rB, rA, b2_math_1.b2Vec2.s_t1), b2WheelJoint.SolvePositionConstraints_s_d);
             // b2Vec2 ax = b2Mul(qA, this.m_localXAxisA);
-            const ax = b2_math_js_1.b2Rot.MulRV(qA, this.m_localXAxisA, this.m_ax);
+            const ax = b2_math_1.b2Rot.MulRV(qA, this.m_localXAxisA, this.m_ax);
             // float sAx = b2Cross(d + rA, this.m_ax);
-            const sAx = b2_math_js_1.b2Vec2.CrossVV(b2_math_js_1.b2Vec2.AddVV(d, rA, b2_math_js_1.b2Vec2.s_t0), this.m_ax);
+            const sAx = b2_math_1.b2Vec2.CrossVV(b2_math_1.b2Vec2.AddVV(d, rA, b2_math_1.b2Vec2.s_t0), this.m_ax);
             // float sBx = b2Cross(rB, this.m_ax);
-            const sBx = b2_math_js_1.b2Vec2.CrossVV(rB, this.m_ax);
+            const sBx = b2_math_1.b2Vec2.CrossVV(rB, this.m_ax);
             let C = 0.0;
-            const translation = b2_math_js_1.b2Vec2.DotVV(ax, d);
-            if ((0, b2_math_js_1.b2Abs)(this.m_upperTranslation - this.m_lowerTranslation) < 2.0 * b2_settings_js_1.b2_linearSlop) {
+            const translation = b2_math_1.b2Vec2.DotVV(ax, d);
+            if ((0, b2_math_1.b2Abs)(this.m_upperTranslation - this.m_lowerTranslation) < 2.0 * b2_settings_1.b2_linearSlop) {
                 C = translation;
             }
             else if (translation <= this.m_lowerTranslation) {
-                C = (0, b2_math_js_1.b2Min)(translation - this.m_lowerTranslation, 0.0);
+                C = (0, b2_math_1.b2Min)(translation - this.m_lowerTranslation, 0.0);
             }
             else if (translation >= this.m_upperTranslation) {
-                C = (0, b2_math_js_1.b2Max)(translation - this.m_upperTranslation, 0.0);
+                C = (0, b2_math_1.b2Max)(translation - this.m_upperTranslation, 0.0);
             }
             if (C !== 0.0) {
                 const invMass = this.m_invMassA + this.m_invMassB + this.m_invIA * sAx * sAx + this.m_invIB * sBx * sBx;
@@ -433,7 +433,7 @@ class b2WheelJoint extends b2_joint_js_1.b2Joint {
                 if (invMass !== 0.0) {
                     impulse = -C / invMass;
                 }
-                const P = b2_math_js_1.b2Vec2.MulSV(impulse, ax, b2WheelJoint.SolvePositionConstraints_s_P);
+                const P = b2_math_1.b2Vec2.MulSV(impulse, ax, b2WheelJoint.SolvePositionConstraints_s_P);
                 const LA = impulse * sAx;
                 const LB = impulse * sBx;
                 // cA -= m_invMassA * P;
@@ -443,7 +443,7 @@ class b2WheelJoint extends b2_joint_js_1.b2Joint {
                 cB.SelfMulAdd(this.m_invMassB, P);
                 // aB += m_invIB * LB;
                 aB += this.m_invIB * LB;
-                linearError = (0, b2_math_js_1.b2Abs)(C);
+                linearError = (0, b2_math_1.b2Abs)(C);
             }
         }
         // Solve perpendicular constraint
@@ -454,21 +454,21 @@ class b2WheelJoint extends b2_joint_js_1.b2Joint {
             // b2Vec2 rB = b2Mul(qB, m_localAnchorB - m_localCenterB);
             // b2Vec2 d = (cB - cA) + rB - rA;
             // b2Vec2 rA = b2Mul(qA, m_localAnchorA - m_localCenterA);
-            b2_math_js_1.b2Vec2.SubVV(this.m_localAnchorA, this.m_localCenterA, this.m_lalcA);
-            const rA = b2_math_js_1.b2Rot.MulRV(qA, this.m_lalcA, this.m_rA);
+            b2_math_1.b2Vec2.SubVV(this.m_localAnchorA, this.m_localCenterA, this.m_lalcA);
+            const rA = b2_math_1.b2Rot.MulRV(qA, this.m_lalcA, this.m_rA);
             // b2Vec2 rB = b2Mul(qB, m_localAnchorB - m_localCenterB);
-            b2_math_js_1.b2Vec2.SubVV(this.m_localAnchorB, this.m_localCenterB, this.m_lalcB);
-            const rB = b2_math_js_1.b2Rot.MulRV(qB, this.m_lalcB, this.m_rB);
+            b2_math_1.b2Vec2.SubVV(this.m_localAnchorB, this.m_localCenterB, this.m_lalcB);
+            const rB = b2_math_1.b2Rot.MulRV(qB, this.m_lalcB, this.m_rB);
             // b2Vec2 d = (cB - cA) + rB - rA;
-            const d = b2_math_js_1.b2Vec2.AddVV(b2_math_js_1.b2Vec2.SubVV(cB, cA, b2_math_js_1.b2Vec2.s_t0), b2_math_js_1.b2Vec2.SubVV(rB, rA, b2_math_js_1.b2Vec2.s_t1), b2WheelJoint.SolvePositionConstraints_s_d);
+            const d = b2_math_1.b2Vec2.AddVV(b2_math_1.b2Vec2.SubVV(cB, cA, b2_math_1.b2Vec2.s_t0), b2_math_1.b2Vec2.SubVV(rB, rA, b2_math_1.b2Vec2.s_t1), b2WheelJoint.SolvePositionConstraints_s_d);
             // b2Vec2 ay = b2Mul(qA, m_localYAxisA);
-            const ay = b2_math_js_1.b2Rot.MulRV(qA, this.m_localYAxisA, this.m_ay);
+            const ay = b2_math_1.b2Rot.MulRV(qA, this.m_localYAxisA, this.m_ay);
             // float sAy = b2Cross(d + rA, ay);
-            const sAy = b2_math_js_1.b2Vec2.CrossVV(b2_math_js_1.b2Vec2.AddVV(d, rA, b2_math_js_1.b2Vec2.s_t0), ay);
+            const sAy = b2_math_1.b2Vec2.CrossVV(b2_math_1.b2Vec2.AddVV(d, rA, b2_math_1.b2Vec2.s_t0), ay);
             // float sBy = b2Cross(rB, ay);
-            const sBy = b2_math_js_1.b2Vec2.CrossVV(rB, ay);
+            const sBy = b2_math_1.b2Vec2.CrossVV(rB, ay);
             // float C = b2Dot(d, ay);
-            const C = b2_math_js_1.b2Vec2.DotVV(d, ay);
+            const C = b2_math_1.b2Vec2.DotVV(d, ay);
             const invMass = this.m_invMassA + this.m_invMassB + this.m_invIA * this.m_sAy * this.m_sAy + this.m_invIB * this.m_sBy * this.m_sBy;
             let impulse = 0.0;
             if (invMass !== 0.0) {
@@ -477,7 +477,7 @@ class b2WheelJoint extends b2_joint_js_1.b2Joint {
             // b2Vec2 P = impulse * ay;
             // const LA: number = impulse * sAy;
             // const LB: number = impulse * sBy;
-            const P = b2_math_js_1.b2Vec2.MulSV(impulse, ay, b2WheelJoint.SolvePositionConstraints_s_P);
+            const P = b2_math_1.b2Vec2.MulSV(impulse, ay, b2WheelJoint.SolvePositionConstraints_s_P);
             const LA = impulse * sAy;
             const LB = impulse * sBy;
             // cA -= m_invMassA * P;
@@ -486,13 +486,13 @@ class b2WheelJoint extends b2_joint_js_1.b2Joint {
             // cB += m_invMassB * P;
             cB.SelfMulAdd(this.m_invMassB, P);
             aB += this.m_invIB * LB;
-            linearError = (0, b2_math_js_1.b2Max)(linearError, (0, b2_math_js_1.b2Abs)(C));
+            linearError = (0, b2_math_1.b2Max)(linearError, (0, b2_math_1.b2Abs)(C));
         }
         // data.positions[this.m_indexA].c = cA;
         data.positions[this.m_indexA].a = aA;
         // data.positions[this.m_indexB].c = cB;
         data.positions[this.m_indexB].a = aB;
-        return linearError <= b2_settings_js_1.b2_linearSlop;
+        return linearError <= b2_settings_1.b2_linearSlop;
     }
     GetDefinition(def) {
         // DEBUG: b2Assert(false); // TODO
@@ -512,9 +512,15 @@ class b2WheelJoint extends b2_joint_js_1.b2Joint {
     GetReactionTorque(inv_dt) {
         return inv_dt * this.m_motorImpulse;
     }
-    GetLocalAnchorA() { return this.m_localAnchorA; }
-    GetLocalAnchorB() { return this.m_localAnchorB; }
-    GetLocalAxisA() { return this.m_localXAxisA; }
+    GetLocalAnchorA() {
+        return this.m_localAnchorA;
+    }
+    GetLocalAnchorB() {
+        return this.m_localAnchorB;
+    }
+    GetLocalAxisA() {
+        return this.m_localXAxisA;
+    }
     GetJointTranslation() {
         return this.GetPrismaticJointTranslation();
     }
@@ -530,37 +536,37 @@ class b2WheelJoint extends b2_joint_js_1.b2Joint {
     GetPrismaticJointTranslation() {
         const bA = this.m_bodyA;
         const bB = this.m_bodyB;
-        const pA = bA.GetWorldPoint(this.m_localAnchorA, new b2_math_js_1.b2Vec2());
-        const pB = bB.GetWorldPoint(this.m_localAnchorB, new b2_math_js_1.b2Vec2());
-        const d = b2_math_js_1.b2Vec2.SubVV(pB, pA, new b2_math_js_1.b2Vec2());
-        const axis = bA.GetWorldVector(this.m_localXAxisA, new b2_math_js_1.b2Vec2());
-        const translation = b2_math_js_1.b2Vec2.DotVV(d, axis);
+        const pA = bA.GetWorldPoint(this.m_localAnchorA, new b2_math_1.b2Vec2());
+        const pB = bB.GetWorldPoint(this.m_localAnchorB, new b2_math_1.b2Vec2());
+        const d = b2_math_1.b2Vec2.SubVV(pB, pA, new b2_math_1.b2Vec2());
+        const axis = bA.GetWorldVector(this.m_localXAxisA, new b2_math_1.b2Vec2());
+        const translation = b2_math_1.b2Vec2.DotVV(d, axis);
         return translation;
     }
     GetPrismaticJointSpeed() {
         const bA = this.m_bodyA;
         const bB = this.m_bodyB;
         // b2Vec2 rA = b2Mul(bA.m_xf.q, m_localAnchorA - bA.m_sweep.localCenter);
-        b2_math_js_1.b2Vec2.SubVV(this.m_localAnchorA, bA.m_sweep.localCenter, this.m_lalcA);
-        const rA = b2_math_js_1.b2Rot.MulRV(bA.m_xf.q, this.m_lalcA, this.m_rA);
+        b2_math_1.b2Vec2.SubVV(this.m_localAnchorA, bA.m_sweep.localCenter, this.m_lalcA);
+        const rA = b2_math_1.b2Rot.MulRV(bA.m_xf.q, this.m_lalcA, this.m_rA);
         // b2Vec2 rB = b2Mul(bB.m_xf.q, m_localAnchorB - bB.m_sweep.localCenter);
-        b2_math_js_1.b2Vec2.SubVV(this.m_localAnchorB, bB.m_sweep.localCenter, this.m_lalcB);
-        const rB = b2_math_js_1.b2Rot.MulRV(bB.m_xf.q, this.m_lalcB, this.m_rB);
+        b2_math_1.b2Vec2.SubVV(this.m_localAnchorB, bB.m_sweep.localCenter, this.m_lalcB);
+        const rB = b2_math_1.b2Rot.MulRV(bB.m_xf.q, this.m_lalcB, this.m_rB);
         // b2Vec2 pA = bA.m_sweep.c + rA;
-        const pA = b2_math_js_1.b2Vec2.AddVV(bA.m_sweep.c, rA, b2_math_js_1.b2Vec2.s_t0); // pA uses s_t0
+        const pA = b2_math_1.b2Vec2.AddVV(bA.m_sweep.c, rA, b2_math_1.b2Vec2.s_t0); // pA uses s_t0
         // b2Vec2 pB = bB.m_sweep.c + rB;
-        const pB = b2_math_js_1.b2Vec2.AddVV(bB.m_sweep.c, rB, b2_math_js_1.b2Vec2.s_t1); // pB uses s_t1
+        const pB = b2_math_1.b2Vec2.AddVV(bB.m_sweep.c, rB, b2_math_1.b2Vec2.s_t1); // pB uses s_t1
         // b2Vec2 d = pB - pA;
-        const d = b2_math_js_1.b2Vec2.SubVV(pB, pA, b2_math_js_1.b2Vec2.s_t2); // d uses s_t2
+        const d = b2_math_1.b2Vec2.SubVV(pB, pA, b2_math_1.b2Vec2.s_t2); // d uses s_t2
         // b2Vec2 axis = b2Mul(bA.m_xf.q, m_localXAxisA);
-        const axis = bA.GetWorldVector(this.m_localXAxisA, new b2_math_js_1.b2Vec2());
+        const axis = bA.GetWorldVector(this.m_localXAxisA, new b2_math_1.b2Vec2());
         const vA = bA.m_linearVelocity;
         const vB = bB.m_linearVelocity;
         const wA = bA.m_angularVelocity;
         const wB = bB.m_angularVelocity;
         // float32 speed = b2Dot(d, b2Cross(wA, axis)) + b2Dot(axis, vB + b2Cross(wB, rB) - vA - b2Cross(wA, rA));
-        const speed = b2_math_js_1.b2Vec2.DotVV(d, b2_math_js_1.b2Vec2.CrossSV(wA, axis, b2_math_js_1.b2Vec2.s_t0)) +
-            b2_math_js_1.b2Vec2.DotVV(axis, b2_math_js_1.b2Vec2.SubVV(b2_math_js_1.b2Vec2.AddVCrossSV(vB, wB, rB, b2_math_js_1.b2Vec2.s_t0), b2_math_js_1.b2Vec2.AddVCrossSV(vA, wA, rA, b2_math_js_1.b2Vec2.s_t1), b2_math_js_1.b2Vec2.s_t0));
+        const speed = b2_math_1.b2Vec2.DotVV(d, b2_math_1.b2Vec2.CrossSV(wA, axis, b2_math_1.b2Vec2.s_t0)) +
+            b2_math_1.b2Vec2.DotVV(axis, b2_math_1.b2Vec2.SubVV(b2_math_1.b2Vec2.AddVCrossSV(vB, wB, rB, b2_math_1.b2Vec2.s_t0), b2_math_1.b2Vec2.AddVCrossSV(vA, wA, rA, b2_math_1.b2Vec2.s_t1), b2_math_1.b2Vec2.s_t0));
         return speed;
     }
     GetRevoluteJointAngle() {
@@ -655,10 +661,10 @@ class b2WheelJoint extends b2_joint_js_1.b2Joint {
     Draw(draw) {
         const xfA = this.m_bodyA.GetTransform();
         const xfB = this.m_bodyB.GetTransform();
-        const pA = b2_math_js_1.b2Transform.MulXV(xfA, this.m_localAnchorA, b2WheelJoint.Draw_s_pA);
-        const pB = b2_math_js_1.b2Transform.MulXV(xfB, this.m_localAnchorB, b2WheelJoint.Draw_s_pB);
+        const pA = b2_math_1.b2Transform.MulXV(xfA, this.m_localAnchorA, b2WheelJoint.Draw_s_pA);
+        const pB = b2_math_1.b2Transform.MulXV(xfB, this.m_localAnchorB, b2WheelJoint.Draw_s_pB);
         // b2Vec2 axis = b2Mul(xfA.q, m_localXAxisA);
-        const axis = b2_math_js_1.b2Rot.MulRV(xfA.q, this.m_localXAxisA, b2WheelJoint.Draw_s_axis);
+        const axis = b2_math_1.b2Rot.MulRV(xfA.q, this.m_localXAxisA, b2WheelJoint.Draw_s_axis);
         const c1 = b2WheelJoint.Draw_s_c1; // b2Color c1(0.7f, 0.7f, 0.7f);
         const c2 = b2WheelJoint.Draw_s_c2; // b2Color c2(0.3f, 0.9f, 0.3f);
         const c3 = b2WheelJoint.Draw_s_c3; // b2Color c3(0.9f, 0.3f, 0.3f);
@@ -667,41 +673,41 @@ class b2WheelJoint extends b2_joint_js_1.b2Joint {
         draw.DrawSegment(pA, pB, c5);
         if (this.m_enableLimit) {
             // b2Vec2 lower = pA + m_lowerTranslation * axis;
-            const lower = b2_math_js_1.b2Vec2.AddVMulSV(pA, this.m_lowerTranslation, axis, b2WheelJoint.Draw_s_lower);
+            const lower = b2_math_1.b2Vec2.AddVMulSV(pA, this.m_lowerTranslation, axis, b2WheelJoint.Draw_s_lower);
             // b2Vec2 upper = pA + m_upperTranslation * axis;
-            const upper = b2_math_js_1.b2Vec2.AddVMulSV(pA, this.m_upperTranslation, axis, b2WheelJoint.Draw_s_upper);
+            const upper = b2_math_1.b2Vec2.AddVMulSV(pA, this.m_upperTranslation, axis, b2WheelJoint.Draw_s_upper);
             // b2Vec2 perp = b2Mul(xfA.q, m_localYAxisA);
-            const perp = b2_math_js_1.b2Rot.MulRV(xfA.q, this.m_localYAxisA, b2WheelJoint.Draw_s_perp);
+            const perp = b2_math_1.b2Rot.MulRV(xfA.q, this.m_localYAxisA, b2WheelJoint.Draw_s_perp);
             // draw.DrawSegment(lower, upper, c1);
             draw.DrawSegment(lower, upper, c1);
             // draw.DrawSegment(lower - 0.5f * perp, lower + 0.5f * perp, c2);
-            draw.DrawSegment(b2_math_js_1.b2Vec2.AddVMulSV(lower, -0.5, perp, b2_math_js_1.b2Vec2.s_t0), b2_math_js_1.b2Vec2.AddVMulSV(lower, 0.5, perp, b2_math_js_1.b2Vec2.s_t1), c2);
+            draw.DrawSegment(b2_math_1.b2Vec2.AddVMulSV(lower, -0.5, perp, b2_math_1.b2Vec2.s_t0), b2_math_1.b2Vec2.AddVMulSV(lower, 0.5, perp, b2_math_1.b2Vec2.s_t1), c2);
             // draw.DrawSegment(upper - 0.5f * perp, upper + 0.5f * perp, c3);
-            draw.DrawSegment(b2_math_js_1.b2Vec2.AddVMulSV(upper, -0.5, perp, b2_math_js_1.b2Vec2.s_t0), b2_math_js_1.b2Vec2.AddVMulSV(upper, 0.5, perp, b2_math_js_1.b2Vec2.s_t1), c3);
+            draw.DrawSegment(b2_math_1.b2Vec2.AddVMulSV(upper, -0.5, perp, b2_math_1.b2Vec2.s_t0), b2_math_1.b2Vec2.AddVMulSV(upper, 0.5, perp, b2_math_1.b2Vec2.s_t1), c3);
         }
         else {
             // draw.DrawSegment(pA - 1.0f * axis, pA + 1.0f * axis, c1);
-            draw.DrawSegment(b2_math_js_1.b2Vec2.AddVMulSV(pA, -1.0, axis, b2_math_js_1.b2Vec2.s_t0), b2_math_js_1.b2Vec2.AddVMulSV(pA, 1.0, axis, b2_math_js_1.b2Vec2.s_t1), c1);
+            draw.DrawSegment(b2_math_1.b2Vec2.AddVMulSV(pA, -1.0, axis, b2_math_1.b2Vec2.s_t0), b2_math_1.b2Vec2.AddVMulSV(pA, 1.0, axis, b2_math_1.b2Vec2.s_t1), c1);
         }
         draw.DrawPoint(pA, 5.0, c1);
         draw.DrawPoint(pB, 5.0, c4);
     }
 }
 exports.b2WheelJoint = b2WheelJoint;
-b2WheelJoint.InitVelocityConstraints_s_d = new b2_math_js_1.b2Vec2();
-b2WheelJoint.InitVelocityConstraints_s_P = new b2_math_js_1.b2Vec2();
-b2WheelJoint.SolveVelocityConstraints_s_P = new b2_math_js_1.b2Vec2();
-b2WheelJoint.SolvePositionConstraints_s_d = new b2_math_js_1.b2Vec2();
-b2WheelJoint.SolvePositionConstraints_s_P = new b2_math_js_1.b2Vec2();
+b2WheelJoint.InitVelocityConstraints_s_d = new b2_math_1.b2Vec2();
+b2WheelJoint.InitVelocityConstraints_s_P = new b2_math_1.b2Vec2();
+b2WheelJoint.SolveVelocityConstraints_s_P = new b2_math_1.b2Vec2();
+b2WheelJoint.SolvePositionConstraints_s_d = new b2_math_1.b2Vec2();
+b2WheelJoint.SolvePositionConstraints_s_P = new b2_math_1.b2Vec2();
 ///
-b2WheelJoint.Draw_s_pA = new b2_math_js_1.b2Vec2();
-b2WheelJoint.Draw_s_pB = new b2_math_js_1.b2Vec2();
-b2WheelJoint.Draw_s_axis = new b2_math_js_1.b2Vec2();
-b2WheelJoint.Draw_s_c1 = new b2_draw_js_1.b2Color(0.7, 0.7, 0.7);
-b2WheelJoint.Draw_s_c2 = new b2_draw_js_1.b2Color(0.3, 0.9, 0.3);
-b2WheelJoint.Draw_s_c3 = new b2_draw_js_1.b2Color(0.9, 0.3, 0.3);
-b2WheelJoint.Draw_s_c4 = new b2_draw_js_1.b2Color(0.3, 0.3, 0.9);
-b2WheelJoint.Draw_s_c5 = new b2_draw_js_1.b2Color(0.4, 0.4, 0.4);
-b2WheelJoint.Draw_s_lower = new b2_math_js_1.b2Vec2();
-b2WheelJoint.Draw_s_upper = new b2_math_js_1.b2Vec2();
-b2WheelJoint.Draw_s_perp = new b2_math_js_1.b2Vec2();
+b2WheelJoint.Draw_s_pA = new b2_math_1.b2Vec2();
+b2WheelJoint.Draw_s_pB = new b2_math_1.b2Vec2();
+b2WheelJoint.Draw_s_axis = new b2_math_1.b2Vec2();
+b2WheelJoint.Draw_s_c1 = new b2_draw_1.b2Color(0.7, 0.7, 0.7);
+b2WheelJoint.Draw_s_c2 = new b2_draw_1.b2Color(0.3, 0.9, 0.3);
+b2WheelJoint.Draw_s_c3 = new b2_draw_1.b2Color(0.9, 0.3, 0.3);
+b2WheelJoint.Draw_s_c4 = new b2_draw_1.b2Color(0.3, 0.3, 0.9);
+b2WheelJoint.Draw_s_c5 = new b2_draw_1.b2Color(0.4, 0.4, 0.4);
+b2WheelJoint.Draw_s_lower = new b2_math_1.b2Vec2();
+b2WheelJoint.Draw_s_upper = new b2_math_1.b2Vec2();
+b2WheelJoint.Draw_s_perp = new b2_math_1.b2Vec2();

@@ -1,11 +1,12 @@
-import { IgeComponent } from "../../export/exports.js"
-import type { IgeEntity } from "../../export/exports.js"
-import type { IgePathFinder, IgePathFinderComparisonCallback } from "../../export/exports.js"
-import { IgePathNode } from "../../export/exports.js"
-import { IgePoint3d } from "../../export/exports.js"
-import type { IgeTileMap2d } from "../../export/exports.js"
-import type { IgeEntityBehaviourMethod } from "../../export/exports.js"
+import { IgeComponent } from "../core/IgeComponent.js"
+import type { IgeEntity } from "../core/IgeEntity.js";
+import type { IgePathFinder } from "../core/IgePathFinder.js"
+import { IgePathNode } from "../core/IgePathNode.js";
+import { IgePoint3d } from "../core/IgePoint3d.js"
+import type { IgeTileMap2d } from "../core/IgeTileMap2d.js";
 import type { IgeCompassDirection } from "../../types/IgeCompassDirection.js"
+import type { IgeEntityBehaviourMethod } from "../../types/IgeEntityBehaviour.js"
+import type { IgePathFinderComparisonCallback } from "../../types/IgePathFinderComparisonCallback.js"
 /**
  * Handles entity path traversal. This component is supposed to be added
  * to individual entities wishing to traverse paths. When added to an entity

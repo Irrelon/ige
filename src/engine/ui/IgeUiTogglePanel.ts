@@ -1,7 +1,7 @@
-import { IgeFontEntity } from "@/export/exports";
-import { IgeUiElement } from "@/export/exports";
-import { registerClass } from "@/export/exports";
-import type { IgeTexture } from "@/export/exports";
+import { IgeFontEntity } from "@/engine/core/IgeFontEntity";
+import type { IgeTexture } from "@/engine/core/IgeTexture";
+import { IgeUiElement } from "@/engine/core/IgeUiElement";
+import { registerClass } from "@/engine/utils/igeClassStore";
 
 export class IgeUiTogglePanel extends IgeUiElement {
 	classId = "IgeUiTogglePanel";

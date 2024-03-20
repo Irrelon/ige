@@ -68,6 +68,9 @@ export class b2FixtureDef {
 }
 /// This proxy is used internally to connect fixtures to the broad-phase.
 export class b2FixtureProxy {
+    static Synchronize_s_aabb1 = new b2AABB();
+    static Synchronize_s_aabb2 = new b2AABB();
+    static Synchronize_s_displacement = new b2Vec2();
     aabb = new b2AABB();
     fixture;
     childIndex = 0;
@@ -84,9 +87,6 @@ export class b2FixtureProxy {
     Touch() {
         this.fixture.m_body.m_world.m_contactManager.m_broadPhase.TouchProxy(this.treeNode);
     }
-    static Synchronize_s_aabb1 = new b2AABB();
-    static Synchronize_s_aabb2 = new b2AABB();
-    static Synchronize_s_displacement = new b2Vec2();
     Synchronize(transform1, transform2) {
         if (transform1 === transform2) {
             this.fixture.m_shape.ComputeAABB(this.aabb, transform1, this.childIndex);
@@ -119,7 +119,6 @@ export class b2Fixture {
     m_restitution = 0;
     m_restitutionThreshold = 1.0 * b2_lengthUnitsPerMeter;
     m_proxies = [];
-    get m_proxyCount() { return this.m_proxies.length; }
     m_filter = new b2Filter();
     m_isSensor = false;
     m_userData = null;
@@ -133,6 +132,9 @@ export class b2Fixture {
         this.m_filter.Copy(b2Maybe(def.filter, b2Filter.DEFAULT));
         this.m_isSensor = b2Maybe(def.isSensor, false);
         this.m_density = b2Maybe(def.density, 0);
+    }
+    get m_proxyCount() {
+        return this.m_proxies.length;
     }
     Reset() {
         // The proxies must be destroyed before calling this.

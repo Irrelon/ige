@@ -1,10 +1,13 @@
-import { type IgeAnyFunction, arrPull } from "@/export/exports";
-import { IgeEventingClass } from "@/export/exports";
-import type { IgeInputComponent, IgeUiElement, IgeUiStyleObject } from "@/export/exports";
-import { ige } from "@/export/exports";
-import { IgeEventReturnFlag } from "@/export/exports";
-import type { IgeIsReadyPromise } from "@/export/exports";
+import type { IgeInputComponent } from "@/engine/components/IgeInputComponent";
+import { IgeEventingClass } from "@/engine/core/IgeEventingClass";
+import type { IgeUiElement } from "@/engine/core/IgeUiElement";
+import { ige } from "@/engine/instance";
+import { arrPull } from "@/engine/utils/arrays";
+import { IgeEventReturnFlag } from "@/enums";
+import type { IgeAnyFunction } from "@/types/IgeAnyFunction";
 import type { IgeClassRecord } from "@/types/IgeClassRecord";
+import type { IgeIsReadyPromise } from "@/types/IgeIsReadyPromise";
+import type { IgeUiStyleObject } from "@/types/IgeUiStyleObject";
 
 export class IgeUiManagerController extends IgeEventingClass implements IgeIsReadyPromise {
 	static componentTargetClass = "IgeEngine";

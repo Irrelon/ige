@@ -1,7 +1,7 @@
-import { IgeNetIoServer } from "../../../export/exports.js"
-import type { IgeNetIoSocket } from "../../../export/exports.js"
-import { IgeNetIoBaseController } from "../../../export/exports.js"
-import type { IgeNetworkMessageData, IgeNetworkMessageStructure, IgeNetworkRequestMessageStructure, IgeNetworkServerSideMessageHandler, IgeNetworkServerSideRequestHandler, IgeNetworkServerSideResponseData } from "../../../export/exports.js"
+import { IgeNetIoBaseController } from "../IgeNetIoBaseController.js"
+import { IgeNetIoServer } from "./IgeNetIoServer.js";
+import type { IgeNetIoSocket } from "./IgeNetIoSocket.js"
+import type { IgeNetworkMessageData, IgeNetworkMessageStructure, IgeNetworkRequestMessageStructure, IgeNetworkServerSideMessageHandler, IgeNetworkServerSideRequestHandler, IgeNetworkServerSideResponseData } from "../../../types/IgeNetworkMessage.js";
 export declare class IgeNetIoServerController extends IgeNetIoBaseController {
     _idCounter: number;
     _networkCommands: Record<string, IgeNetworkServerSideMessageHandler | IgeNetworkServerSideRequestHandler | undefined>;

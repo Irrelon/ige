@@ -1,19 +1,18 @@
-import { ige } from "@/export/exports";
-import { IgeBehaviourType } from "@/export/exports";
-import { IgeEntityRenderMode } from "@/export/exports";
-import { IgeMountMode } from "@/export/exports";
-import { isClient } from "@/export/exports";
-import { IgeComponent } from "@/export/exports";
-import type { IgeEntity } from "@/export/exports";
-import type { IgeObject } from "@/export/exports";
-import type { IgePathFinder, IgePathFinderComparisonCallback } from "@/export/exports";
-import { IgePathNode } from "@/export/exports";
-import { IgePoint3d } from "@/export/exports";
-import type { IgeTileMap2d } from "@/export/exports";
-import { distance } from "@/export/exports";
-import type { IgeCanvasRenderingContext2d } from "@/export/exports";
-import type { IgeEntityBehaviourMethod } from "@/export/exports";
+import { IgeComponent } from "@/engine/core/IgeComponent";
+import type { IgeEntity } from "@/engine/core/IgeEntity";
+import type { IgeObject } from "@/engine/core/IgeObject";
+import type { IgePathFinder } from "@/engine/core/IgePathFinder";
+import { IgePathNode } from "@/engine/core/IgePathNode";
+import { IgePoint3d } from "@/engine/core/IgePoint3d";
+import type { IgeTileMap2d } from "@/engine/core/IgeTileMap2d";
+import { ige } from "@/engine/instance";
+import { isClient } from "@/engine/utils/clientServer";
+import { distance } from "@/engine/utils/maths";
+import { IgeBehaviourType, IgeEntityRenderMode, IgeMountMode } from "@/enums";
+import type { IgeCanvasRenderingContext2d } from "@/types/IgeCanvasRenderingContext2d";
 import type { IgeCompassDirection } from "@/types/IgeCompassDirection";
+import type { IgeEntityBehaviourMethod } from "@/types/IgeEntityBehaviour";
+import type { IgePathFinderComparisonCallback } from "@/types/IgePathFinderComparisonCallback";
 
 const isoDirectionMap: { [key: string]: IgeCompassDirection } = {
 	"E": "SE",

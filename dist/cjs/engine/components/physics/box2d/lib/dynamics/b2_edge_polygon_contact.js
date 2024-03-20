@@ -18,16 +18,16 @@
 */
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.b2EdgeAndPolygonContact = void 0;
-const b2_collide_edge_js_1 = require("../collision/b2_collide_edge.js");
-const b2_contact_js_1 = require("./b2_contact.js");
-class b2EdgeAndPolygonContact extends b2_contact_js_1.b2Contact {
+const b2_collide_edge_1 = require("../collision/b2_collide_edge");
+const b2_contact_1 = require("./b2_contact");
+class b2EdgeAndPolygonContact extends b2_contact_1.b2Contact {
     static Create() {
         return new b2EdgeAndPolygonContact();
     }
     static Destroy(contact) {
     }
     Evaluate(manifold, xfA, xfB) {
-        (0, b2_collide_edge_js_1.b2CollideEdgeAndPolygon)(manifold, this.GetShapeA(), xfA, this.GetShapeB(), xfB);
+        (0, b2_collide_edge_1.b2CollideEdgeAndPolygon)(manifold, this.GetShapeA(), xfA, this.GetShapeB(), xfB);
     }
 }
 exports.b2EdgeAndPolygonContact = b2EdgeAndPolygonContact;

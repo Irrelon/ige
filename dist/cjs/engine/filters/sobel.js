@@ -1,8 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.sobel = void 0;
-const exports_1 = require("../../export/exports.js");
-const exports_2 = require("../../export/exports.js");
+const convolute_1 = require("./convolute.js");
+const igeFilters_1 = require("../utils/igeFilters.js");
 const sobel = function (canvas, ctx, originalImage, texture, data) {
     let strength = 1, loop;
     if (data && data.value) {
@@ -13,11 +13,11 @@ const sobel = function (canvas, ctx, originalImage, texture, data) {
         if (!imgData)
             return;
         // Apply the filter and then put the new pixel data
-        const imageData = (0, exports_1.convoluteHelper)(imgData, [-1, -1, 1, -2, 0, 2, -1, 1, 1], true);
+        const imageData = (0, convolute_1.convoluteHelper)(imgData, [-1, -1, 1, -2, 0, 2, -1, 1, 1], true);
         if (!imageData)
             return;
         ctx.putImageData(imageData, 0, 0);
     }
 };
 exports.sobel = sobel;
-exports_2.igeFilters.registerFilter("sobel", exports.sobel);
+igeFilters_1.igeFilters.registerFilter("sobel", exports.sobel);

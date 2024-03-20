@@ -1,5 +1,5 @@
-import { IgeComponent } from "../../export/exports.js"
-import type { IgeEntity } from "../../export/exports.js"
+import { IgeComponent } from "../core/IgeComponent.js"
+import type { IgeEntity } from "../core/IgeEntity.js";
 /**
  * Loads slightly modified Tiled-format json map data into the Isogenic Engine.
  */

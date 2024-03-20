@@ -1,5 +1,6 @@
-import type { IgeFontSheet } from "../../export/exports.js"
-import { IgeFontEntity, IgeUiElement } from "../../export/exports.js"
+import { IgeFontEntity } from "../core/IgeFontEntity.js"
+import type { IgeFontSheet } from "../core/IgeFontSheet.js";
+import { IgeUiElement } from "../core/IgeUiElement.js"
 /**
  * Provides a UI text entry box. When provided with focus this UI entity will
  * capture keyboard input and display it, similar in usage to the HTML input

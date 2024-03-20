@@ -1,10 +1,9 @@
-import { getElementPosition, IgeEventingClass } from "../../export/exports.js"
-import { IgePoint3d } from "../../export/exports.js"
-import { ige } from "../../export/exports.js"
-import { IgeInputControlMap } from "../../export/exports.js"
-import { IgeBehaviourType } from "../../export/exports.js"
-import { IgeEventReturnFlag } from "../../export/exports.js"
-import { IgeInputDevice, IgeInputKeyboardMap, IgeInputPointerMap } from "../../export/exports.js"
+import { IgeInputControlMap } from "./IgeInputControlMap.js"
+import { IgeEventingClass } from "../core/IgeEventingClass.js"
+import { IgePoint3d } from "../core/IgePoint3d.js"
+import { ige } from "../instance.js"
+import { getElementPosition } from "../utils/general.js"
+import { IgeBehaviourType, IgeEventReturnFlag, IgeInputDevice, IgeInputKeyboardMap, IgeInputPointerMap } from "../../enums/index.js"
 export class IgeInputComponent extends IgeEventingClass {
     classId = "IgeInputComponent";
     componentId = "input";

@@ -18,30 +18,30 @@ exports.b2CollidePolygons = void 0;
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
-const b2_settings_js_1 = require("../common/b2_settings.js");
-const b2_math_js_1 = require("../common/b2_math.js");
-const b2_collision_js_1 = require("./b2_collision.js");
+const b2_settings_1 = require("../common/b2_settings");
+const b2_math_1 = require("../common/b2_math");
+const b2_collision_1 = require("./b2_collision");
 // Find the max separation between poly1 and poly2 using edge normals from poly1.
-const b2FindMaxSeparation_s_xf = new b2_math_js_1.b2Transform();
-const b2FindMaxSeparation_s_n = new b2_math_js_1.b2Vec2();
-const b2FindMaxSeparation_s_v1 = new b2_math_js_1.b2Vec2();
+const b2FindMaxSeparation_s_xf = new b2_math_1.b2Transform();
+const b2FindMaxSeparation_s_n = new b2_math_1.b2Vec2();
+const b2FindMaxSeparation_s_v1 = new b2_math_1.b2Vec2();
 function b2FindMaxSeparation(edgeIndex, poly1, xf1, poly2, xf2) {
     const count1 = poly1.m_count;
     const count2 = poly2.m_count;
     const n1s = poly1.m_normals;
     const v1s = poly1.m_vertices;
     const v2s = poly2.m_vertices;
-    const xf = b2_math_js_1.b2Transform.MulTXX(xf2, xf1, b2FindMaxSeparation_s_xf);
+    const xf = b2_math_1.b2Transform.MulTXX(xf2, xf1, b2FindMaxSeparation_s_xf);
     let bestIndex = 0;
-    let maxSeparation = -b2_settings_js_1.b2_maxFloat;
+    let maxSeparation = -b2_settings_1.b2_maxFloat;
     for (let i = 0; i < count1; ++i) {
         // Get poly1 normal in frame2.
-        const n = b2_math_js_1.b2Rot.MulRV(xf.q, n1s[i], b2FindMaxSeparation_s_n);
-        const v1 = b2_math_js_1.b2Transform.MulXV(xf, v1s[i], b2FindMaxSeparation_s_v1);
+        const n = b2_math_1.b2Rot.MulRV(xf.q, n1s[i], b2FindMaxSeparation_s_n);
+        const v1 = b2_math_1.b2Transform.MulXV(xf, v1s[i], b2FindMaxSeparation_s_v1);
         // Find deepest point for normal i.
-        let si = b2_settings_js_1.b2_maxFloat;
+        let si = b2_settings_1.b2_maxFloat;
         for (let j = 0; j < count2; ++j) {
-            const sij = b2_math_js_1.b2Vec2.DotVV(n, b2_math_js_1.b2Vec2.SubVV(v2s[j], v1, b2_math_js_1.b2Vec2.s_t0));
+            const sij = b2_math_1.b2Vec2.DotVV(n, b2_math_1.b2Vec2.SubVV(v2s[j], v1, b2_math_1.b2Vec2.s_t0));
             if (sij < si) {
                 si = sij;
             }
@@ -54,7 +54,7 @@ function b2FindMaxSeparation(edgeIndex, poly1, xf1, poly2, xf2) {
     edgeIndex[0] = bestIndex;
     return maxSeparation;
 }
-const b2FindIncidentEdge_s_normal1 = new b2_math_js_1.b2Vec2();
+const b2FindIncidentEdge_s_normal1 = new b2_math_1.b2Vec2();
 function b2FindIncidentEdge(c, poly1, xf1, edge1, poly2, xf2) {
     const normals1 = poly1.m_normals;
     const count2 = poly2.m_count;
@@ -62,12 +62,12 @@ function b2FindIncidentEdge(c, poly1, xf1, edge1, poly2, xf2) {
     const normals2 = poly2.m_normals;
     // DEBUG: b2Assert(0 <= edge1 && edge1 < poly1.m_count);
     // Get the normal of the reference edge in poly2's frame.
-    const normal1 = b2_math_js_1.b2Rot.MulTRV(xf2.q, b2_math_js_1.b2Rot.MulRV(xf1.q, normals1[edge1], b2_math_js_1.b2Vec2.s_t0), b2FindIncidentEdge_s_normal1);
+    const normal1 = b2_math_1.b2Rot.MulTRV(xf2.q, b2_math_1.b2Rot.MulRV(xf1.q, normals1[edge1], b2_math_1.b2Vec2.s_t0), b2FindIncidentEdge_s_normal1);
     // Find the incident edge on poly2.
     let index = 0;
-    let minDot = b2_settings_js_1.b2_maxFloat;
+    let minDot = b2_settings_1.b2_maxFloat;
     for (let i = 0; i < count2; ++i) {
-        const dot = b2_math_js_1.b2Vec2.DotVV(normal1, normals2[i]);
+        const dot = b2_math_1.b2Vec2.DotVV(normal1, normals2[i]);
         if (dot < minDot) {
             minDot = dot;
             index = i;
@@ -77,19 +77,19 @@ function b2FindIncidentEdge(c, poly1, xf1, edge1, poly2, xf2) {
     const i1 = index;
     const i2 = i1 + 1 < count2 ? i1 + 1 : 0;
     const c0 = c[0];
-    b2_math_js_1.b2Transform.MulXV(xf2, vertices2[i1], c0.v);
+    b2_math_1.b2Transform.MulXV(xf2, vertices2[i1], c0.v);
     const cf0 = c0.id.cf;
     cf0.indexA = edge1;
     cf0.indexB = i1;
-    cf0.typeA = b2_collision_js_1.b2ContactFeatureType.e_face;
-    cf0.typeB = b2_collision_js_1.b2ContactFeatureType.e_vertex;
+    cf0.typeA = b2_collision_1.b2ContactFeatureType.e_face;
+    cf0.typeB = b2_collision_1.b2ContactFeatureType.e_vertex;
     const c1 = c[1];
-    b2_math_js_1.b2Transform.MulXV(xf2, vertices2[i2], c1.v);
+    b2_math_1.b2Transform.MulXV(xf2, vertices2[i2], c1.v);
     const cf1 = c1.id.cf;
     cf1.indexA = edge1;
     cf1.indexB = i2;
-    cf1.typeA = b2_collision_js_1.b2ContactFeatureType.e_face;
-    cf1.typeB = b2_collision_js_1.b2ContactFeatureType.e_vertex;
+    cf1.typeA = b2_collision_1.b2ContactFeatureType.e_face;
+    cf1.typeB = b2_collision_1.b2ContactFeatureType.e_vertex;
 }
 // Find edge normal of max separation on A - return if separating axis is found
 // Find edge normal of max separation on B - return if separation axis is found
@@ -97,19 +97,19 @@ function b2FindIncidentEdge(c, poly1, xf1, edge1, poly2, xf2) {
 // Find incident edge
 // Clip
 // The normal points from 1 to 2
-const b2CollidePolygons_s_incidentEdge = [new b2_collision_js_1.b2ClipVertex(), new b2_collision_js_1.b2ClipVertex()];
-const b2CollidePolygons_s_clipPoints1 = [new b2_collision_js_1.b2ClipVertex(), new b2_collision_js_1.b2ClipVertex()];
-const b2CollidePolygons_s_clipPoints2 = [new b2_collision_js_1.b2ClipVertex(), new b2_collision_js_1.b2ClipVertex()];
+const b2CollidePolygons_s_incidentEdge = [new b2_collision_1.b2ClipVertex(), new b2_collision_1.b2ClipVertex()];
+const b2CollidePolygons_s_clipPoints1 = [new b2_collision_1.b2ClipVertex(), new b2_collision_1.b2ClipVertex()];
+const b2CollidePolygons_s_clipPoints2 = [new b2_collision_1.b2ClipVertex(), new b2_collision_1.b2ClipVertex()];
 const b2CollidePolygons_s_edgeA = [0];
 const b2CollidePolygons_s_edgeB = [0];
-const b2CollidePolygons_s_localTangent = new b2_math_js_1.b2Vec2();
-const b2CollidePolygons_s_localNormal = new b2_math_js_1.b2Vec2();
-const b2CollidePolygons_s_planePoint = new b2_math_js_1.b2Vec2();
-const b2CollidePolygons_s_normal = new b2_math_js_1.b2Vec2();
-const b2CollidePolygons_s_tangent = new b2_math_js_1.b2Vec2();
-const b2CollidePolygons_s_ntangent = new b2_math_js_1.b2Vec2();
-const b2CollidePolygons_s_v11 = new b2_math_js_1.b2Vec2();
-const b2CollidePolygons_s_v12 = new b2_math_js_1.b2Vec2();
+const b2CollidePolygons_s_localTangent = new b2_math_1.b2Vec2();
+const b2CollidePolygons_s_localNormal = new b2_math_1.b2Vec2();
+const b2CollidePolygons_s_planePoint = new b2_math_1.b2Vec2();
+const b2CollidePolygons_s_normal = new b2_math_1.b2Vec2();
+const b2CollidePolygons_s_tangent = new b2_math_1.b2Vec2();
+const b2CollidePolygons_s_ntangent = new b2_math_1.b2Vec2();
+const b2CollidePolygons_s_v11 = new b2_math_1.b2Vec2();
+const b2CollidePolygons_s_v12 = new b2_math_1.b2Vec2();
 function b2CollidePolygons(manifold, polyA, xfA, polyB, xfB) {
     manifold.pointCount = 0;
     const totalRadius = polyA.m_radius + polyB.m_radius;
@@ -130,14 +130,14 @@ function b2CollidePolygons(manifold, polyA, xfA, polyB, xfB) {
     let xf1, xf2;
     let edge1 = 0; // reference edge
     let flip = 0;
-    const k_tol = 0.1 * b2_settings_js_1.b2_linearSlop;
+    const k_tol = 0.1 * b2_settings_1.b2_linearSlop;
     if (separationB > separationA + k_tol) {
         poly1 = polyB;
         poly2 = polyA;
         xf1 = xfB;
         xf2 = xfA;
         edge1 = edgeB[0];
-        manifold.type = b2_collision_js_1.b2ManifoldType.e_faceB;
+        manifold.type = b2_collision_1.b2ManifoldType.e_faceB;
         flip = 1;
     }
     else {
@@ -146,7 +146,7 @@ function b2CollidePolygons(manifold, polyA, xfA, polyB, xfB) {
         xf1 = xfA;
         xf2 = xfB;
         edge1 = edgeA[0];
-        manifold.type = b2_collision_js_1.b2ManifoldType.e_faceA;
+        manifold.type = b2_collision_1.b2ManifoldType.e_faceA;
         flip = 0;
     }
     const incidentEdge = b2CollidePolygons_s_incidentEdge;
@@ -157,31 +157,31 @@ function b2CollidePolygons(manifold, polyA, xfA, polyB, xfB) {
     const iv2 = edge1 + 1 < count1 ? edge1 + 1 : 0;
     const local_v11 = vertices1[iv1];
     const local_v12 = vertices1[iv2];
-    const localTangent = b2_math_js_1.b2Vec2.SubVV(local_v12, local_v11, b2CollidePolygons_s_localTangent);
+    const localTangent = b2_math_1.b2Vec2.SubVV(local_v12, local_v11, b2CollidePolygons_s_localTangent);
     localTangent.Normalize();
-    const localNormal = b2_math_js_1.b2Vec2.CrossVOne(localTangent, b2CollidePolygons_s_localNormal);
-    const planePoint = b2_math_js_1.b2Vec2.MidVV(local_v11, local_v12, b2CollidePolygons_s_planePoint);
-    const tangent = b2_math_js_1.b2Rot.MulRV(xf1.q, localTangent, b2CollidePolygons_s_tangent);
-    const normal = b2_math_js_1.b2Vec2.CrossVOne(tangent, b2CollidePolygons_s_normal);
-    const v11 = b2_math_js_1.b2Transform.MulXV(xf1, local_v11, b2CollidePolygons_s_v11);
-    const v12 = b2_math_js_1.b2Transform.MulXV(xf1, local_v12, b2CollidePolygons_s_v12);
+    const localNormal = b2_math_1.b2Vec2.CrossVOne(localTangent, b2CollidePolygons_s_localNormal);
+    const planePoint = b2_math_1.b2Vec2.MidVV(local_v11, local_v12, b2CollidePolygons_s_planePoint);
+    const tangent = b2_math_1.b2Rot.MulRV(xf1.q, localTangent, b2CollidePolygons_s_tangent);
+    const normal = b2_math_1.b2Vec2.CrossVOne(tangent, b2CollidePolygons_s_normal);
+    const v11 = b2_math_1.b2Transform.MulXV(xf1, local_v11, b2CollidePolygons_s_v11);
+    const v12 = b2_math_1.b2Transform.MulXV(xf1, local_v12, b2CollidePolygons_s_v12);
     // Face offset.
-    const frontOffset = b2_math_js_1.b2Vec2.DotVV(normal, v11);
+    const frontOffset = b2_math_1.b2Vec2.DotVV(normal, v11);
     // Side offsets, extended by polytope skin thickness.
-    const sideOffset1 = -b2_math_js_1.b2Vec2.DotVV(tangent, v11) + totalRadius;
-    const sideOffset2 = b2_math_js_1.b2Vec2.DotVV(tangent, v12) + totalRadius;
+    const sideOffset1 = -b2_math_1.b2Vec2.DotVV(tangent, v11) + totalRadius;
+    const sideOffset2 = b2_math_1.b2Vec2.DotVV(tangent, v12) + totalRadius;
     // Clip incident edge against extruded edge1 side edges.
     const clipPoints1 = b2CollidePolygons_s_clipPoints1;
     const clipPoints2 = b2CollidePolygons_s_clipPoints2;
     let np;
     // Clip to box side 1
-    const ntangent = b2_math_js_1.b2Vec2.NegV(tangent, b2CollidePolygons_s_ntangent);
-    np = (0, b2_collision_js_1.b2ClipSegmentToLine)(clipPoints1, incidentEdge, ntangent, sideOffset1, iv1);
+    const ntangent = b2_math_1.b2Vec2.NegV(tangent, b2CollidePolygons_s_ntangent);
+    np = (0, b2_collision_1.b2ClipSegmentToLine)(clipPoints1, incidentEdge, ntangent, sideOffset1, iv1);
     if (np < 2) {
         return;
     }
     // Clip to negative box side 1
-    np = (0, b2_collision_js_1.b2ClipSegmentToLine)(clipPoints2, clipPoints1, tangent, sideOffset2, iv2);
+    np = (0, b2_collision_1.b2ClipSegmentToLine)(clipPoints2, clipPoints1, tangent, sideOffset2, iv2);
     if (np < 2) {
         return;
     }
@@ -189,12 +189,12 @@ function b2CollidePolygons(manifold, polyA, xfA, polyB, xfB) {
     manifold.localNormal.Copy(localNormal);
     manifold.localPoint.Copy(planePoint);
     let pointCount = 0;
-    for (let i = 0; i < b2_settings_js_1.b2_maxManifoldPoints; ++i) {
+    for (let i = 0; i < b2_settings_1.b2_maxManifoldPoints; ++i) {
         const cv = clipPoints2[i];
-        const separation = b2_math_js_1.b2Vec2.DotVV(normal, cv.v) - frontOffset;
+        const separation = b2_math_1.b2Vec2.DotVV(normal, cv.v) - frontOffset;
         if (separation <= totalRadius) {
             const cp = manifold.points[pointCount];
-            b2_math_js_1.b2Transform.MulTXV(xf2, cv.v, cp.localPoint);
+            b2_math_1.b2Transform.MulTXV(xf2, cv.v, cp.localPoint);
             cp.id.Copy(cv.id);
             if (flip) {
                 // Swap features

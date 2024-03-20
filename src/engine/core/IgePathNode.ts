@@ -1,4 +1,4 @@
-import { IgePoint3d } from "@/export/exports";
+import { IgePoint3d } from "@/engine/core/IgePoint3d";
 import type { IgeCompassDirection } from "@/types/IgeCompassDirection";
 
 /**

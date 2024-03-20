@@ -1,13 +1,10 @@
 import { IgeBaseRenderer } from "@/engine/core/IgeBaseRenderer";
-import {
-	getElementPosition,
-	ige,
-	type IgeEngine,
-	IgePoint2d,
-	type IgeViewport,
-	isClient,
-	isServer
-} from "@/export/exports";
+import type { IgeEngine } from "@/engine/core/IgeEngine";
+import { IgePoint2d } from "@/engine/core/IgePoint2d";
+import type { IgeViewport } from "@/engine/core/IgeViewport";
+import { ige } from "@/engine/instance";
+import { isClient, isServer } from "@/engine/utils/clientServer";
+import { getElementPosition } from "@/engine/utils/general";
 import type { IgeCanvasRenderingContext2d } from "@/types/IgeCanvasRenderingContext2d";
 
 export class IgeCanvas2dRenderer extends IgeBaseRenderer {
@@ -227,7 +224,7 @@ export class IgeCanvas2dRenderer extends IgeBaseRenderer {
 		} else if (this._canvas) {
 			this._bounds2d = new IgePoint2d(this._canvas.width, this._canvas.height);
 		}
-		
+
 		if (ige.engine._showSgTree) {
 			const sgTreeElem = document.getElementById("igeSgTree");
 

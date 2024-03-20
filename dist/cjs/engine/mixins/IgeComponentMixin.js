@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.WithComponentMixin = void 0;
-const exports_1 = require("../../export/exports.js");
+const arrays_1 = require("../utils/arrays.js");
 const WithComponentMixin = (Base) => class extends Base {
     constructor(...args) {
         super(...args);
@@ -56,7 +56,7 @@ const WithComponentMixin = (Base) => class extends Base {
         }
         // Remove the component from the class component array
         if (this._components) {
-            (0, exports_1.arrPull)(this._components, component);
+            (0, arrays_1.arrPull)(this._components, component);
         }
         // Remove the component from the class object
         delete this.components[componentId];

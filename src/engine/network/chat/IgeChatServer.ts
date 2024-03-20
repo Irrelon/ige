@@ -1,9 +1,8 @@
-import { ige } from "@/export/exports";
-import type { IgeChatRoomOptions } from "@/export/exports";
-import { IgeChatComponent } from "@/export/exports";
-import type { IgeNetIoServerController } from "@/export/exports";
-import { newIdHex } from "@/export/exports";
-import { IgeEventReturnFlag } from "@/export/exports";
+import { ige } from "@/engine/instance";
+import type { IgeChatRoomOptions } from "@/engine/network/chat/IgeChatComponent";
+import { IgeChatComponent } from "@/engine/network/chat/IgeChatComponent";
+import type { IgeNetIoServerController } from "@/engine/network/server/IgeNetIoServerController";
+import { newIdHex } from "@/engine/utils/ids";
 import {
 	IGE_NETWORK_CHAT_JOIN_ROOM,
 	IGE_NETWORK_CHAT_LEAVE_ROOM,
@@ -11,19 +10,16 @@ import {
 	IGE_NETWORK_CHAT_MSG,
 	IGE_NETWORK_CHAT_ROOM_CREATED,
 	IGE_NETWORK_CHAT_ROOM_LIST_USERS,
-	IGE_NETWORK_CHAT_ROOM_REMOVED
-} from "@/export/exports";
+	IGE_NETWORK_CHAT_ROOM_REMOVED,
+	IgeEventReturnFlag
+} from "@/enums";
 import type {
-	IgeNetworkChatFromClientJoinRoomRequestStructure,
-	IgeNetworkChatFromClientLeaveRoomRequestStructure,
-	IgeNetworkChatFromServerJoinRoomResponseStructure,
+	IgeNetworkChatFromClientJoinRoomRequestStructure, IgeNetworkChatFromClientLeaveRoomRequestStructure,
+	IgeNetworkChatFromClientMessageStructure, IgeNetworkChatFromServerJoinRoomResponseStructure,
+	IgeNetworkChatFromServerMessageStructure,
 	IgeNetworkChatRoomCreatedMessageStructure,
 	IgeNetworkChatRoomRemovedMessageStructure
-} from "@/export/exports";
-import type {
-	IgeNetworkChatFromClientMessageStructure,
-	IgeNetworkChatFromServerMessageStructure
-} from "@/export/exports";
+} from "@/types/IgeNetworkChat";
 
 /**
  * The server-side chat component. Handles all server-side
@@ -129,7 +125,7 @@ export class IgeChatServer extends IgeChatComponent {
 				this.log("Cannot send message to room with blank message!");
 			}
 		} else {
-			this.log('Cannot send message to room with id "' + roomId + '" because it does not exist!');
+			this.log("Cannot send message to room with id \"" + roomId + "\" because it does not exist!");
 		}
 	}
 
@@ -186,7 +182,7 @@ export class IgeChatServer extends IgeChatComponent {
 						{ roomId: roomId, joined: true },
 						clientId
 					);
-					console.log('User "' + clientId + '" joined room ' + roomId);
+					console.log("User \"" + clientId + "\" joined room " + roomId);
 				} else {
 					// User is already in the room!
 				}

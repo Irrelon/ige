@@ -1,8 +1,9 @@
-import { type IgeEngine, type IgeViewport } from "@/export/exports";
-import { ige } from "@/export/exports";
-import { isServer } from "@/engine/utils/clientServer";
+import type { IgeEngine } from "@/engine/core/IgeEngine";
 import { IgeEventingClass } from "@/engine/core/IgeEventingClass";
 import { IgePoint2d } from "@/engine/core/IgePoint2d";
+import type { IgeViewport } from "@/engine/core/IgeViewport";
+import { ige } from "@/engine/instance";
+import { isServer } from "@/engine/utils/clientServer";
 
 export class IgeBaseRenderer extends IgeEventingClass {
 	protected _canvas?: HTMLCanvasElement;

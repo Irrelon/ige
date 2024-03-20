@@ -1,6 +1,7 @@
-import { type IgeEngine, type IgeViewport } from "../../export/exports.js"
-import { IgeEventingClass } from "./IgeEventingClass.js"
-import { IgePoint2d } from "./IgePoint2d.js";
+import type { IgeEngine } from "./IgeEngine.js"
+import { IgeEventingClass } from "./IgeEventingClass.js";
+import { IgePoint2d } from "./IgePoint2d.js"
+import type { IgeViewport } from "./IgeViewport.js";
 export declare class IgeBaseRenderer extends IgeEventingClass {
     protected _canvas?: HTMLCanvasElement;
     protected _hasRunSetup: boolean;

@@ -1,6 +1,6 @@
-import { IgeTexture } from "@/export/exports";
-import type { IgeImage } from "@/export/exports";
-import type { IgeSmartTexture } from "@/export/exports";
+import { IgeTexture } from "@/engine/core/IgeTexture";
+import type { IgeImage } from "@/types/IgeImage";
+import type { IgeSmartTexture } from "@/types/IgeSmartTexture";
 
 /**
  * Creates a new cell sheet. Cell sheets are textures that are
@@ -54,8 +54,8 @@ export class IgeCellSheet extends IgeTexture {
 	 * Gets / sets the number of horizontal cells in the cell sheet.
 	 * @param {number=} val The integer count of the number of horizontal cells in the cell sheet.
 	 */
-	horizontalCells(val: number): this;
-	horizontalCells(): number;
+	horizontalCells (val: number): this;
+	horizontalCells (): number;
 	horizontalCells (val?: number) {
 		if (val !== undefined) {
 			this._cellColumns = val;
@@ -69,8 +69,8 @@ export class IgeCellSheet extends IgeTexture {
 	 * Gets / sets the number of vertical cells in the cell sheet.
 	 * @param {number=} val The integer count of the number of vertical cells in the cell sheet.
 	 */
-	verticalCells(val: number): this;
-	verticalCells(): number;
+	verticalCells (val: number): this;
+	verticalCells (): number;
 	verticalCells (val?: number) {
 		if (val !== undefined) {
 			this._cellRows = val;

@@ -513,9 +513,15 @@ export class b2WheelJoint extends b2Joint {
     GetReactionTorque(inv_dt) {
         return inv_dt * this.m_motorImpulse;
     }
-    GetLocalAnchorA() { return this.m_localAnchorA; }
-    GetLocalAnchorB() { return this.m_localAnchorB; }
-    GetLocalAxisA() { return this.m_localXAxisA; }
+    GetLocalAnchorA() {
+        return this.m_localAnchorA;
+    }
+    GetLocalAnchorB() {
+        return this.m_localAnchorB;
+    }
+    GetLocalAxisA() {
+        return this.m_localXAxisA;
+    }
     GetJointTranslation() {
         return this.GetPrismaticJointTranslation();
     }

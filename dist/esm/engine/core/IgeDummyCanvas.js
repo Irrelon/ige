@@ -1,4 +1,4 @@
-import { IgeDummyContext } from "../../export/exports.js"
+import { IgeDummyContext } from "./IgeDummyContext.js"
 export class IgeDummyCanvas {
     dummy = true;
     width = 0;

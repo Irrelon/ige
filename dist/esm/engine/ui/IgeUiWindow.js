@@ -1,9 +1,9 @@
-import { registerClass } from "../../export/exports.js"
-import { IgeUiButton } from "../../export/exports.js"
-import { IgeUiLabel } from "../../export/exports.js"
-import { ige } from "../../export/exports.js"
-import { IgeEventReturnFlag } from "../../export/exports.js"
-import { IgeUiElement } from "../../export/exports.js"
+import { IgeUiElement } from "../core/IgeUiElement.js"
+import { ige } from "../instance.js"
+import { IgeUiButton } from "./IgeUiButton.js"
+import { IgeUiLabel } from "./IgeUiLabel.js"
+import { registerClass } from "../utils/igeClassStore.js"
+import { IgeEventReturnFlag } from "../../enums/index.js"
 export class IgeUiWindow extends IgeUiElement {
     classId = "IgeUiWindow";
     _draggable = false;

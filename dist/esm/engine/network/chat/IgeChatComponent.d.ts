@@ -1,4 +1,4 @@
-import { IgeEventingClass } from "../../../export/exports.js"
+import { IgeEventingClass } from "../../core/IgeEventingClass.js"
 export type IgeChatRoomOptions = Record<string, any>;
 export interface IgeChatRoom {
     id: string;

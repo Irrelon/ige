@@ -1,6 +1,6 @@
-import { IgeComponent } from "../../export/exports.js"
-import { ige } from "../../export/exports.js"
-import { IgeBehaviourType } from "../../export/exports.js"
+import { IgeComponent } from "../core/IgeComponent.js"
+import { ige } from "../instance.js"
+import { IgeBehaviourType } from "../../enums/index.js"
 /**
  * The animation component class. Handles defining and controlling
  * frame-based animations based on cells from a texture.

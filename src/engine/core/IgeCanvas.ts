@@ -1,4 +1,4 @@
-import type { IgeCanvas } from "@/export/exports";
+import type { IgeCanvas } from "@/types/IgeCanvas";
 
 export const newCanvas = (): IgeCanvas => {
 	const instance = new OffscreenCanvas(2, 2);

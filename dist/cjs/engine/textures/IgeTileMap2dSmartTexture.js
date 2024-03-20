@@ -1,8 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.IgeTileMap2dSmartTexture = void 0;
-const exports_1 = require("../../export/exports.js");
-const exports_2 = require("../../export/exports.js");
+const IgePoint2d_1 = require("../core/IgePoint2d.js");
+const enums_1 = require("../../enums/index.js");
 exports.IgeTileMap2dSmartTexture = {
     render: (ctx, entity) => {
         const ent = entity;
@@ -35,9 +35,9 @@ exports.IgeTileMap2dSmartTexture = {
             const gridMaxY = y + tileHeight * gridSize.y;
             let index, gStart, gEnd;
             for (index = 0; index <= gridSize.y; index++) {
-                gStart = new exports_2.IgePoint2d(x, y + tileHeight * index);
-                gEnd = new exports_2.IgePoint2d(gridMaxX, y + tileHeight * index);
-                if (ent._mountMode === exports_1.IgeMountMode.iso) {
+                gStart = new IgePoint2d_1.IgePoint2d(x, y + tileHeight * index);
+                gEnd = new IgePoint2d_1.IgePoint2d(gridMaxX, y + tileHeight * index);
+                if (ent._mountMode === enums_1.IgeMountMode.iso) {
                     // Iso grid
                     gStart = gStart.toIso();
                     gEnd = gEnd.toIso();
@@ -48,9 +48,9 @@ exports.IgeTileMap2dSmartTexture = {
                 ctx.stroke();
             }
             for (index = 0; index <= gridSize.x; index++) {
-                gStart = new exports_2.IgePoint2d(x + tileWidth * index, y);
-                gEnd = new exports_2.IgePoint2d(x + tileWidth * index, gridMaxY);
-                if (ent._mountMode === exports_1.IgeMountMode.iso) {
+                gStart = new IgePoint2d_1.IgePoint2d(x + tileWidth * index, y);
+                gEnd = new IgePoint2d_1.IgePoint2d(x + tileWidth * index, gridMaxY);
+                if (ent._mountMode === enums_1.IgeMountMode.iso) {
                     // Iso grid
                     gStart = gStart.toIso();
                     gEnd = gEnd.toIso();
@@ -68,13 +68,13 @@ exports.IgeTileMap2dSmartTexture = {
                     for (x of ent.map._mapData[y].keys()) {
                         if (ent.map._mapData[y][x]) {
                             // Tile is occupied
-                            tilePoint = new exports_2.IgePoint2d(tileWidth * x, tileHeight * y);
+                            tilePoint = new IgePoint2d_1.IgePoint2d(tileWidth * x, tileHeight * y);
                             // TODO: Abstract out the tile drawing method so that it can be overridden for other projections etc
-                            if (ent._mountMode === exports_1.IgeMountMode.flat) {
+                            if (ent._mountMode === enums_1.IgeMountMode.flat) {
                                 // 2d
                                 ctx.fillRect(tilePoint.x, tilePoint.y, tileWidth, tileHeight);
                             }
-                            if (ent._mountMode === exports_1.IgeMountMode.iso) {
+                            if (ent._mountMode === enums_1.IgeMountMode.iso) {
                                 // iso
                                 tilePoint.thisToIso();
                                 ctx.beginPath();
@@ -95,13 +95,13 @@ exports.IgeTileMap2dSmartTexture = {
             for (y = ent._highlightTileRect.y; y < ent._highlightTileRect.y + ent._highlightTileRect.height; y++) {
                 for (x = ent._highlightTileRect.x; x < ent._highlightTileRect.x + ent._highlightTileRect.width; x++) {
                     // Tile is occupied
-                    tilePoint = new exports_2.IgePoint2d(tileWidth * x, tileHeight * y);
+                    tilePoint = new IgePoint2d_1.IgePoint2d(tileWidth * x, tileHeight * y);
                     // TODO: Abstract out the tile drawing method so that it can be overridden for other projections etc
-                    if (ent._mountMode === exports_1.IgeMountMode.flat) {
+                    if (ent._mountMode === enums_1.IgeMountMode.flat) {
                         // 2d
                         ctx.fillRect(tilePoint.x, tilePoint.y, tileWidth, tileHeight);
                     }
-                    if (ent._mountMode === exports_1.IgeMountMode.iso) {
+                    if (ent._mountMode === enums_1.IgeMountMode.iso) {
                         // iso
                         tilePoint.thisToIso();
                         ctx.beginPath();
@@ -122,11 +122,11 @@ exports.IgeTileMap2dSmartTexture = {
             if (mouseTile.x >= 0 && mouseTile.y >= 0 && mouseTile.x < gridSize.x && mouseTile.y < gridSize.y) {
                 // Paint the tile the mouse is currently intersecting
                 ctx.fillStyle = ent._hoverColor || "#6000ff";
-                if (ent._mountMode === exports_1.IgeMountMode.flat) {
+                if (ent._mountMode === enums_1.IgeMountMode.flat) {
                     // 2d
                     ctx.fillRect(mouseTile.x * tileWidth, mouseTile.y * tileHeight, tileWidth, tileHeight);
                 }
-                if (ent._mountMode === exports_1.IgeMountMode.iso) {
+                if (ent._mountMode === enums_1.IgeMountMode.iso) {
                     // iso
                     tilePoint = mouseTile.clone().thisMultiply(tileWidth, tileHeight, 0).thisToIso();
                     tilePoint.y += tileHeight / 2;

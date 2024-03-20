@@ -1,12 +1,12 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.IgeEventingClass = void 0;
-const exports_1 = require("../../export/exports.js");
-const exports_2 = require("../../export/exports.js");
+const IgeBaseClass_1 = require("./IgeBaseClass.js");
+const IgeEventReturnFlag_1 = require("../../enums/IgeEventReturnFlag.js");
 /**
  * Creates a new class with the capability to emit events.
  */
-class IgeEventingClass extends exports_1.IgeBaseClass {
+class IgeEventingClass extends IgeBaseClass_1.IgeBaseClass {
     constructor() {
         super(...arguments);
         this._eventsEmitting = false;
@@ -179,10 +179,10 @@ class IgeEventingClass extends exports_1.IgeBaseClass {
      */
     emit(eventName, ...data) {
         if (!this._eventListeners) {
-            return exports_2.IgeEventReturnFlag.none;
+            return IgeEventReturnFlag_1.IgeEventReturnFlag.none;
         }
         const id = "*";
-        let returnFlag = exports_2.IgeEventReturnFlag.none;
+        let returnFlag = IgeEventReturnFlag_1.IgeEventReturnFlag.none;
         this._eventsEmitting = true;
         if (this._eventListeners[eventName] && this._eventListeners[eventName][id]) {
             // Handle global emit
@@ -194,7 +194,7 @@ class IgeEventingClass extends exports_1.IgeBaseClass {
                 if (typeof tmpFunc === "function") {
                     const result = tmpFunc(...data);
                     if (result) {
-                        returnFlag = exports_2.IgeEventReturnFlag.cancel;
+                        returnFlag = IgeEventReturnFlag_1.IgeEventReturnFlag.cancel;
                     }
                 }
             }

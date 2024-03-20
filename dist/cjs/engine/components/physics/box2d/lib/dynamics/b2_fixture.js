@@ -19,10 +19,10 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.b2Fixture = exports.b2FixtureProxy = exports.b2FixtureDef = exports.b2Filter = void 0;
 // DEBUG: import { b2Assert } from "../common/b2_settings.js"
-const b2_settings_js_1 = require("../common/b2_settings.js");
-const b2_math_js_1 = require("../common/b2_math.js");
-const b2_collision_js_1 = require("../collision/b2_collision.js");
-const b2_shape_js_1 = require("../collision/b2_shape.js");
+const b2_settings_1 = require("../common/b2_settings");
+const b2_math_1 = require("../common/b2_math");
+const b2_collision_1 = require("../collision/b2_collision");
+const b2_shape_1 = require("../collision/b2_shape");
 /// This holds contact filtering data.
 class b2Filter {
     constructor() {
@@ -61,7 +61,7 @@ class b2FixtureDef {
         this.restitution = 0;
         /// Restitution velocity threshold, usually in m/s. Collisions above this
         /// speed have restitution applied (will bounce).
-        this.restitutionThreshold = 1.0 * b2_settings_js_1.b2_lengthUnitsPerMeter;
+        this.restitutionThreshold = 1.0 * b2_settings_1.b2_lengthUnitsPerMeter;
         /// The density, usually in kg/m^2.
         this.density = 0;
         /// A sensor shape collects contact information but never generates a collision
@@ -75,7 +75,7 @@ exports.b2FixtureDef = b2FixtureDef;
 /// This proxy is used internally to connect fixtures to the broad-phase.
 class b2FixtureProxy {
     constructor(fixture, childIndex) {
-        this.aabb = new b2_collision_js_1.b2AABB();
+        this.aabb = new b2_collision_1.b2AABB();
         this.childIndex = 0;
         this.fixture = fixture;
         this.childIndex = childIndex;
@@ -91,7 +91,7 @@ class b2FixtureProxy {
     Synchronize(transform1, transform2) {
         if (transform1 === transform2) {
             this.fixture.m_shape.ComputeAABB(this.aabb, transform1, this.childIndex);
-            this.fixture.m_body.m_world.m_contactManager.m_broadPhase.MoveProxy(this.treeNode, this.aabb, b2_math_js_1.b2Vec2.ZERO);
+            this.fixture.m_body.m_world.m_contactManager.m_broadPhase.MoveProxy(this.treeNode, this.aabb, b2_math_1.b2Vec2.ZERO);
         }
         else {
             // Compute an AABB that covers the swept shape (may miss some rotation effect).
@@ -107,35 +107,37 @@ class b2FixtureProxy {
     }
 }
 exports.b2FixtureProxy = b2FixtureProxy;
-b2FixtureProxy.Synchronize_s_aabb1 = new b2_collision_js_1.b2AABB();
-b2FixtureProxy.Synchronize_s_aabb2 = new b2_collision_js_1.b2AABB();
-b2FixtureProxy.Synchronize_s_displacement = new b2_math_js_1.b2Vec2();
+b2FixtureProxy.Synchronize_s_aabb1 = new b2_collision_1.b2AABB();
+b2FixtureProxy.Synchronize_s_aabb2 = new b2_collision_1.b2AABB();
+b2FixtureProxy.Synchronize_s_displacement = new b2_math_1.b2Vec2();
 /// A fixture is used to attach a shape to a body for collision detection. A fixture
 /// inherits its transform from its parent. Fixtures hold additional non-geometric data
 /// such as friction, collision filters, etc.
 /// Fixtures are created via b2Body::CreateFixture.
 /// @warning you cannot reuse fixtures.
 class b2Fixture {
-    get m_proxyCount() { return this.m_proxies.length; }
     constructor(body, def) {
         this.m_density = 0;
         this.m_next = null;
         this.m_friction = 0;
         this.m_restitution = 0;
-        this.m_restitutionThreshold = 1.0 * b2_settings_js_1.b2_lengthUnitsPerMeter;
+        this.m_restitutionThreshold = 1.0 * b2_settings_1.b2_lengthUnitsPerMeter;
         this.m_proxies = [];
         this.m_filter = new b2Filter();
         this.m_isSensor = false;
         this.m_userData = null;
         this.m_body = body;
         this.m_shape = def.shape.Clone();
-        this.m_userData = (0, b2_settings_js_1.b2Maybe)(def.userData, null);
-        this.m_friction = (0, b2_settings_js_1.b2Maybe)(def.friction, 0.2);
-        this.m_restitution = (0, b2_settings_js_1.b2Maybe)(def.restitution, 0);
-        this.m_restitutionThreshold = (0, b2_settings_js_1.b2Maybe)(def.restitutionThreshold, 0);
-        this.m_filter.Copy((0, b2_settings_js_1.b2Maybe)(def.filter, b2Filter.DEFAULT));
-        this.m_isSensor = (0, b2_settings_js_1.b2Maybe)(def.isSensor, false);
-        this.m_density = (0, b2_settings_js_1.b2Maybe)(def.density, 0);
+        this.m_userData = (0, b2_settings_1.b2Maybe)(def.userData, null);
+        this.m_friction = (0, b2_settings_1.b2Maybe)(def.friction, 0.2);
+        this.m_restitution = (0, b2_settings_1.b2Maybe)(def.restitution, 0);
+        this.m_restitutionThreshold = (0, b2_settings_1.b2Maybe)(def.restitutionThreshold, 0);
+        this.m_filter.Copy((0, b2_settings_1.b2Maybe)(def.filter, b2Filter.DEFAULT));
+        this.m_isSensor = (0, b2_settings_1.b2Maybe)(def.isSensor, false);
+        this.m_density = (0, b2_settings_1.b2Maybe)(def.density, 0);
+    }
+    get m_proxyCount() {
+        return this.m_proxies.length;
     }
     Reset() {
         // The proxies must be destroyed before calling this.
@@ -229,7 +231,7 @@ class b2Fixture {
     /// Get the mass data for this fixture. The mass data is based on the density and
     /// the shape. The rotational inertia is about the shape's origin. This operation
     /// may be expensive.
-    GetMassData(massData = new b2_shape_js_1.b2MassData()) {
+    GetMassData(massData = new b2_shape_1.b2MassData()) {
         this.m_shape.ComputeMass(massData, this.m_density);
         return massData;
     }

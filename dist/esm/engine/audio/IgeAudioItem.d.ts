@@ -1,4 +1,4 @@
-import { IgeEventingClass } from "../../export/exports.js"
+import { IgeEventingClass } from "../core/IgeEventingClass.js"
 export declare class IgeAudioItem extends IgeEventingClass {
     classId: string;
     _url?: string;

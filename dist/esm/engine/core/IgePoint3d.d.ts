@@ -1,4 +1,4 @@
-import type { IgeTween, IgeTweenOptions, IgeTweenPropertyObject } from "../../export/exports.js"
+import type { IgeTween, IgeTweenOptions, IgeTweenPropertyObject } from "./IgeTween.js"
 /**
  * Creates a new 3d point (x, y, z).
  */

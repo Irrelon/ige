@@ -1,7 +1,7 @@
-import type { IgeCollisionMap2d } from "../../export/exports.js"
-import { IgeEventingClass } from "../../export/exports.js"
-import { IgePathNode } from "../../export/exports.js"
-import type { IgeTileMap2d } from "../../export/exports.js"
+import type { IgeCollisionMap2d } from "./IgeCollisionMap2d.js"
+import { IgeEventingClass } from "./IgeEventingClass.js";
+import { IgePathNode } from "./IgePathNode.js"
+import type { IgeTileMap2d } from "./IgeTileMap2d.js";
 import type { IgePathFinderComparisonCallback } from "../../types/IgePathFinderComparisonCallback.js"
 /**
  * Creates a new path using the A* path-finding algorithm.

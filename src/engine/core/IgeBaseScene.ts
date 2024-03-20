@@ -1,8 +1,8 @@
-import { IgeScene2d } from "@/export/exports";
-import { IgeSceneGraph } from "@/export/exports";
-import { IgeViewport } from "@/export/exports";
-import { registerClass } from "@/export/exports";
-import { ige } from "@/export/exports";
+import { IgeScene2d } from "@/engine/core/IgeScene2d";
+import { IgeSceneGraph } from "@/engine/core/IgeSceneGraph";
+import { IgeViewport } from "@/engine/core/IgeViewport";
+import { ige } from "@/engine/instance";
+import { registerClass } from "@/engine/utils/igeClassStore";
 
 /**
  * When loaded into memory using ige.addGraph('IgeBaseScene') will create

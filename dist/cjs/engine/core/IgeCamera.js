@@ -1,14 +1,14 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.IgeCamera = void 0;
-const exports_1 = require("../../export/exports.js");
-const exports_2 = require("../../export/exports.js");
-const exports_3 = require("../../export/exports.js");
-const exports_4 = require("../../export/exports.js");
+const IgeEntity_1 = require("./IgeEntity.js");
+const IgeTween_1 = require("./IgeTween.js");
+const igeClassStore_1 = require("../utils/igeClassStore.js");
+const enums_1 = require("../../enums/index.js");
 /**
  * Creates a new camera that will be attached to a viewport.
  */
-class IgeCamera extends exports_1.IgeEntity {
+class IgeCamera extends IgeEntity_1.IgeEntity {
     constructor(viewport) {
         super();
         this.classId = "IgeCamera";
@@ -42,7 +42,7 @@ class IgeCamera extends exports_1.IgeEntity {
      */
     panTo(point, durationMs, easing = "none") {
         if (point !== undefined) {
-            new exports_2.IgeTween(this._translate)
+            new IgeTween_1.IgeTween(this._translate)
                 .properties({
                 x: point.x,
                 y: point.y,
@@ -211,7 +211,7 @@ class IgeCamera extends exports_1.IgeEntity {
     }
     update() {
         // Process any behaviours assigned to the camera
-        this._processBehaviours(exports_4.IgeBehaviourType.preUpdate);
+        this._processBehaviours(enums_1.IgeBehaviourType.preUpdate);
         // Check if we are tracking the translation value of a target
         if (this._trackTranslateTarget) {
             const targetEntity = this._trackTranslateTarget;
@@ -280,7 +280,7 @@ class IgeCamera extends exports_1.IgeEntity {
      */
     tick(ctx) {
         // Process any behaviours assigned to the camera
-        this._processBehaviours(exports_4.IgeBehaviourType.preTick, ctx);
+        this._processBehaviours(enums_1.IgeBehaviourType.preTick, ctx);
         // Updated local transform matrix and then transform the context
         this._localMatrix.transformRenderingContext(ctx);
     }
@@ -350,4 +350,4 @@ class IgeCamera extends exports_1.IgeEntity {
     }
 }
 exports.IgeCamera = IgeCamera;
-(0, exports_3.registerClass)(IgeCamera);
+(0, igeClassStore_1.registerClass)(IgeCamera);

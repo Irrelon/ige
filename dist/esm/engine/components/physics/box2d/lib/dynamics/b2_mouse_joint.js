@@ -32,6 +32,9 @@ export class b2MouseJointDef extends b2JointDef {
     }
 }
 export class b2MouseJoint extends b2Joint {
+    static SolveVelocityConstraints_s_Cdot = new b2Vec2();
+    static SolveVelocityConstraints_s_impulse = new b2Vec2();
+    static SolveVelocityConstraints_s_oldImpulse = new b2Vec2();
     m_localAnchorB = new b2Vec2();
     m_targetA = new b2Vec2();
     m_stiffness = 0;
@@ -153,9 +156,6 @@ export class b2MouseJoint extends b2Joint {
         // data.velocities[this.m_indexB].v = vB;
         data.velocities[this.m_indexB].w = wB;
     }
-    static SolveVelocityConstraints_s_Cdot = new b2Vec2();
-    static SolveVelocityConstraints_s_impulse = new b2Vec2();
-    static SolveVelocityConstraints_s_oldImpulse = new b2Vec2();
     SolveVelocityConstraints(data) {
         const vB = data.velocities[this.m_indexB].v;
         let wB = data.velocities[this.m_indexB].w;

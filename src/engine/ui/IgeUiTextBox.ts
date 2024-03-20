@@ -1,5 +1,11 @@
-import type { IgeFontSheet, IgeInputComponent, IgeTexture } from "@/export/exports";
-import { ige, IgeFontAlignY, IgeFontEntity, IgeUiElement, registerClass } from "@/export/exports";
+import type { IgeInputComponent } from "@/engine/components/IgeInputComponent";
+import { IgeFontEntity } from "@/engine/core/IgeFontEntity";
+import type { IgeFontSheet } from "@/engine/core/IgeFontSheet";
+import type { IgeTexture } from "@/engine/core/IgeTexture";
+import { IgeUiElement } from "@/engine/core/IgeUiElement";
+import { ige } from "@/engine/instance";
+import { registerClass } from "@/engine/utils/igeClassStore";
+import { IgeFontAlignY } from "@/enums";
 
 /**
  * Provides a UI text entry box. When provided with focus this UI entity will

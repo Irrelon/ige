@@ -1,5 +1,5 @@
-import type { IgeTexture } from "../export/exports.js"
-import type { IgeCanvas } from "../export/exports.js"
+import type { IgeTexture } from "../engine/core/IgeTexture.js"
+import type { IgeCanvas } from "./IgeCanvas.js"
 declare global {
     interface ImageBitmap {
         _igeTextures: IgeTexture[];

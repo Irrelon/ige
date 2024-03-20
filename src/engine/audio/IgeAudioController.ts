@@ -1,4 +1,5 @@
-import { IgeEventingClass, isClient } from "@/export/exports";
+import { IgeEventingClass } from "@/engine/core/IgeEventingClass";
+import { isClient } from "@/engine/utils/clientServer";
 
 export class IgeAudioController extends IgeEventingClass {
 	classId = "IgeAudioController";
@@ -60,8 +61,8 @@ export class IgeAudioController extends IgeEventingClass {
 	 * @param {string} id The id to assign the audio in the register.
 	 * @param url
 	 */
-	register(id: string, url: string): this;
-	register(id: string): AudioBuffer;
+	register (id: string, url: string): this;
+	register (id: string): AudioBuffer;
 	register (id: string, url?: string) {
 		if (!id) {
 			return this._register;

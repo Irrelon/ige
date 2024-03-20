@@ -19,10 +19,10 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.b2DynamicTree = exports.b2TreeNode = void 0;
 // DEBUG: import { b2Assert } from "../common/b2_settings.js"
-const b2_settings_js_1 = require("../common/b2_settings.js");
-const b2_math_js_1 = require("../common/b2_math.js");
-const b2_growable_stack_js_1 = require("../common/b2_growable_stack.js");
-const b2_collision_js_1 = require("./b2_collision.js");
+const b2_settings_1 = require("../common/b2_settings");
+const b2_math_1 = require("../common/b2_math");
+const b2_growable_stack_1 = require("../common/b2_growable_stack");
+const b2_collision_1 = require("./b2_collision");
 function verify(value) {
     if (value === null) {
         throw new Error();
@@ -45,7 +45,7 @@ class b2TreeNode {
     }
     constructor(id = 0) {
         this.m_id = 0;
-        this.aabb = new b2_collision_js_1.b2AABB();
+        this.aabb = new b2_collision_1.b2AABB();
         this._userData = null;
         this.parent = null; // or next
         this.child1 = null;
@@ -70,7 +70,7 @@ class b2DynamicTree {
         // int32 public m_nodeCapacity;
         this.m_freeList = null;
         this.m_insertionCount = 0;
-        this.m_stack = new b2_growable_stack_js_1.b2GrowableStack(256);
+        this.m_stack = new b2_growable_stack_1.b2GrowableStack(256);
     }
     // public GetUserData(node: b2TreeNode<T>): T {
     //   // DEBUG: b2Assert(node !== null);
@@ -133,12 +133,12 @@ class b2DynamicTree {
     RayCast(input, callback) {
         const p1 = input.p1;
         const p2 = input.p2;
-        const r = b2_math_js_1.b2Vec2.SubVV(p2, p1, b2DynamicTree.s_r);
+        const r = b2_math_1.b2Vec2.SubVV(p2, p1, b2DynamicTree.s_r);
         // DEBUG: b2Assert(r.LengthSquared() > 0);
         r.Normalize();
         // v is perpendicular to the segment.
-        const v = b2_math_js_1.b2Vec2.CrossOneV(r, b2DynamicTree.s_v);
-        const abs_v = b2_math_js_1.b2Vec2.AbsV(v, b2DynamicTree.s_abs_v);
+        const v = b2_math_1.b2Vec2.CrossOneV(r, b2DynamicTree.s_v);
+        const abs_v = b2_math_1.b2Vec2.AbsV(v, b2DynamicTree.s_abs_v);
         // Separating axis for segment (Gino, p80).
         // |dot(v, p1 - c)| > dot(|v|, h)
         let maxFraction = input.maxFraction;
@@ -146,10 +146,10 @@ class b2DynamicTree {
         const segmentAABB = b2DynamicTree.s_segmentAABB;
         let t_x = p1.x + maxFraction * (p2.x - p1.x);
         let t_y = p1.y + maxFraction * (p2.y - p1.y);
-        segmentAABB.lowerBound.x = (0, b2_math_js_1.b2Min)(p1.x, t_x);
-        segmentAABB.lowerBound.y = (0, b2_math_js_1.b2Min)(p1.y, t_y);
-        segmentAABB.upperBound.x = (0, b2_math_js_1.b2Max)(p1.x, t_x);
-        segmentAABB.upperBound.y = (0, b2_math_js_1.b2Max)(p1.y, t_y);
+        segmentAABB.lowerBound.x = (0, b2_math_1.b2Min)(p1.x, t_x);
+        segmentAABB.lowerBound.y = (0, b2_math_1.b2Min)(p1.y, t_y);
+        segmentAABB.upperBound.x = (0, b2_math_1.b2Max)(p1.x, t_x);
+        segmentAABB.upperBound.y = (0, b2_math_1.b2Max)(p1.y, t_y);
         const stack = this.m_stack.Reset();
         stack.Push(this.m_root);
         while (stack.GetCount() > 0) {
@@ -157,14 +157,14 @@ class b2DynamicTree {
             if (node === null) {
                 continue;
             }
-            if (!(0, b2_collision_js_1.b2TestOverlapAABB)(node.aabb, segmentAABB)) {
+            if (!(0, b2_collision_1.b2TestOverlapAABB)(node.aabb, segmentAABB)) {
                 continue;
             }
             // Separating axis for segment (Gino, p80).
             // |dot(v, p1 - c)| > dot(|v|, h)
             const c = node.aabb.GetCenter();
             const h = node.aabb.GetExtents();
-            const separation = (0, b2_math_js_1.b2Abs)(b2_math_js_1.b2Vec2.DotVV(v, b2_math_js_1.b2Vec2.SubVV(p1, c, b2_math_js_1.b2Vec2.s_t0))) - b2_math_js_1.b2Vec2.DotVV(abs_v, h);
+            const separation = (0, b2_math_1.b2Abs)(b2_math_1.b2Vec2.DotVV(v, b2_math_1.b2Vec2.SubVV(p1, c, b2_math_1.b2Vec2.s_t0))) - b2_math_1.b2Vec2.DotVV(abs_v, h);
             if (separation > 0) {
                 continue;
             }
@@ -183,10 +183,10 @@ class b2DynamicTree {
                     maxFraction = value;
                     t_x = p1.x + maxFraction * (p2.x - p1.x);
                     t_y = p1.y + maxFraction * (p2.y - p1.y);
-                    segmentAABB.lowerBound.x = (0, b2_math_js_1.b2Min)(p1.x, t_x);
-                    segmentAABB.lowerBound.y = (0, b2_math_js_1.b2Min)(p1.y, t_y);
-                    segmentAABB.upperBound.x = (0, b2_math_js_1.b2Max)(p1.x, t_x);
-                    segmentAABB.upperBound.y = (0, b2_math_js_1.b2Max)(p1.y, t_y);
+                    segmentAABB.lowerBound.x = (0, b2_math_1.b2Min)(p1.x, t_x);
+                    segmentAABB.lowerBound.y = (0, b2_math_1.b2Min)(p1.y, t_y);
+                    segmentAABB.upperBound.x = (0, b2_math_1.b2Max)(p1.x, t_x);
+                    segmentAABB.upperBound.y = (0, b2_math_1.b2Max)(p1.y, t_y);
                 }
             }
             else {
@@ -220,8 +220,8 @@ class b2DynamicTree {
     CreateProxy(aabb, userData) {
         const node = this.AllocateNode();
         // Fatten the aabb.
-        const r_x = b2_settings_js_1.b2_aabbExtension;
-        const r_y = b2_settings_js_1.b2_aabbExtension;
+        const r_x = b2_settings_1.b2_aabbExtension;
+        const r_y = b2_settings_1.b2_aabbExtension;
         node.aabb.lowerBound.x = aabb.lowerBound.x - r_x;
         node.aabb.lowerBound.y = aabb.lowerBound.y - r_y;
         node.aabb.upperBound.x = aabb.upperBound.x + r_x;
@@ -241,15 +241,15 @@ class b2DynamicTree {
         // DEBUG: b2Assert(node.IsLeaf());
         // Extend AABB
         const fatAABB = b2DynamicTree.MoveProxy_s_fatAABB;
-        const r_x = b2_settings_js_1.b2_aabbExtension;
-        const r_y = b2_settings_js_1.b2_aabbExtension;
+        const r_x = b2_settings_1.b2_aabbExtension;
+        const r_y = b2_settings_1.b2_aabbExtension;
         fatAABB.lowerBound.x = aabb.lowerBound.x - r_x;
         fatAABB.lowerBound.y = aabb.lowerBound.y - r_y;
         fatAABB.upperBound.x = aabb.upperBound.x + r_x;
         fatAABB.upperBound.y = aabb.upperBound.y + r_y;
         // Predict AABB movement
-        const d_x = b2_settings_js_1.b2_aabbMultiplier * displacement.x;
-        const d_y = b2_settings_js_1.b2_aabbMultiplier * displacement.y;
+        const d_x = b2_settings_1.b2_aabbMultiplier * displacement.x;
+        const d_y = b2_settings_1.b2_aabbMultiplier * displacement.y;
         if (d_x < 0.0) {
             fatAABB.lowerBound.x += d_x;
         }
@@ -378,7 +378,7 @@ class b2DynamicTree {
             node = this.Balance(node);
             const child1 = verify(node.child1);
             const child2 = verify(node.child2);
-            node.height = 1 + (0, b2_math_js_1.b2Max)(child1.height, child2.height);
+            node.height = 1 + (0, b2_math_1.b2Max)(child1.height, child2.height);
             node.aabb.Combine2(child1.aabb, child2.aabb);
             node = node.parent;
         }
@@ -409,7 +409,7 @@ class b2DynamicTree {
                 const child1 = verify(index.child1);
                 const child2 = verify(index.child2);
                 index.aabb.Combine2(child1.aabb, child2.aabb);
-                index.height = 1 + (0, b2_math_js_1.b2Max)(child1.height, child2.height);
+                index.height = 1 + (0, b2_math_1.b2Max)(child1.height, child2.height);
                 index = index.parent;
             }
         }
@@ -456,8 +456,8 @@ class b2DynamicTree {
                 G.parent = A;
                 A.aabb.Combine2(B.aabb, G.aabb);
                 C.aabb.Combine2(A.aabb, F.aabb);
-                A.height = 1 + (0, b2_math_js_1.b2Max)(B.height, G.height);
-                C.height = 1 + (0, b2_math_js_1.b2Max)(A.height, F.height);
+                A.height = 1 + (0, b2_math_1.b2Max)(B.height, G.height);
+                C.height = 1 + (0, b2_math_1.b2Max)(A.height, F.height);
             }
             else {
                 C.child2 = G;
@@ -465,8 +465,8 @@ class b2DynamicTree {
                 F.parent = A;
                 A.aabb.Combine2(B.aabb, F.aabb);
                 C.aabb.Combine2(A.aabb, G.aabb);
-                A.height = 1 + (0, b2_math_js_1.b2Max)(B.height, F.height);
-                C.height = 1 + (0, b2_math_js_1.b2Max)(A.height, G.height);
+                A.height = 1 + (0, b2_math_1.b2Max)(B.height, F.height);
+                C.height = 1 + (0, b2_math_1.b2Max)(A.height, G.height);
             }
             return C;
         }
@@ -498,8 +498,8 @@ class b2DynamicTree {
                 E.parent = A;
                 A.aabb.Combine2(C.aabb, E.aabb);
                 B.aabb.Combine2(A.aabb, D.aabb);
-                A.height = 1 + (0, b2_math_js_1.b2Max)(C.height, E.height);
-                B.height = 1 + (0, b2_math_js_1.b2Max)(A.height, D.height);
+                A.height = 1 + (0, b2_math_1.b2Max)(C.height, E.height);
+                B.height = 1 + (0, b2_math_1.b2Max)(A.height, D.height);
             }
             else {
                 B.child2 = E;
@@ -507,8 +507,8 @@ class b2DynamicTree {
                 D.parent = A;
                 A.aabb.Combine2(C.aabb, D.aabb);
                 B.aabb.Combine2(A.aabb, E.aabb);
-                A.height = 1 + (0, b2_math_js_1.b2Max)(C.height, D.height);
-                B.height = 1 + (0, b2_math_js_1.b2Max)(A.height, E.height);
+                A.height = 1 + (0, b2_math_1.b2Max)(C.height, D.height);
+                B.height = 1 + (0, b2_math_1.b2Max)(A.height, E.height);
             }
             return B;
         }
@@ -562,7 +562,7 @@ class b2DynamicTree {
         }
         const height1 = b2DynamicTree.ComputeHeightNode(node.child1);
         const height2 = b2DynamicTree.ComputeHeightNode(node.child2);
-        return 1 + (0, b2_math_js_1.b2Max)(height1, height2);
+        return 1 + (0, b2_math_1.b2Max)(height1, height2);
     }
     ComputeHeight() {
         const height = b2DynamicTree.ComputeHeightNode(this.m_root);
@@ -633,8 +633,8 @@ class b2DynamicTree {
         // DEBUG: b2Assert(!node.IsLeaf());
         const child1 = verify(node.child1);
         const child2 = verify(node.child2);
-        const balance = (0, b2_math_js_1.b2Abs)(child2.height - child1.height);
-        return (0, b2_math_js_1.b2Max)(maxBalance, balance);
+        const balance = (0, b2_math_1.b2Abs)(child2.height - child1.height);
+        return (0, b2_math_1.b2Max)(maxBalance, balance);
     }
     GetMaxBalance() {
         const maxBalance = b2DynamicTree.GetMaxBalanceNode(this.m_root, 0);
@@ -749,13 +749,13 @@ class b2DynamicTree {
     }
 }
 exports.b2DynamicTree = b2DynamicTree;
-b2DynamicTree.s_r = new b2_math_js_1.b2Vec2();
-b2DynamicTree.s_v = new b2_math_js_1.b2Vec2();
-b2DynamicTree.s_abs_v = new b2_math_js_1.b2Vec2();
-b2DynamicTree.s_segmentAABB = new b2_collision_js_1.b2AABB();
-b2DynamicTree.s_subInput = new b2_collision_js_1.b2RayCastInput();
-b2DynamicTree.s_combinedAABB = new b2_collision_js_1.b2AABB();
-b2DynamicTree.s_aabb = new b2_collision_js_1.b2AABB();
+b2DynamicTree.s_r = new b2_math_1.b2Vec2();
+b2DynamicTree.s_v = new b2_math_1.b2Vec2();
+b2DynamicTree.s_abs_v = new b2_math_1.b2Vec2();
+b2DynamicTree.s_segmentAABB = new b2_collision_1.b2AABB();
+b2DynamicTree.s_subInput = new b2_collision_1.b2RayCastInput();
+b2DynamicTree.s_combinedAABB = new b2_collision_1.b2AABB();
+b2DynamicTree.s_aabb = new b2_collision_1.b2AABB();
 b2DynamicTree.s_node_id = 0;
-b2DynamicTree.MoveProxy_s_fatAABB = new b2_collision_js_1.b2AABB();
-b2DynamicTree.MoveProxy_s_hugeAABB = new b2_collision_js_1.b2AABB();
+b2DynamicTree.MoveProxy_s_fatAABB = new b2_collision_1.b2AABB();
+b2DynamicTree.MoveProxy_s_hugeAABB = new b2_collision_1.b2AABB();

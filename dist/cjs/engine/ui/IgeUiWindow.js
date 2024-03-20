@@ -1,20 +1,20 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.IgeUiWindow = void 0;
-const exports_1 = require("../../export/exports.js");
-const exports_2 = require("../../export/exports.js");
-const exports_3 = require("../../export/exports.js");
-const exports_4 = require("../../export/exports.js");
-const exports_5 = require("../../export/exports.js");
-const exports_6 = require("../../export/exports.js");
-class IgeUiWindow extends exports_6.IgeUiElement {
+const IgeUiElement_1 = require("../core/IgeUiElement.js");
+const instance_1 = require("../instance.js");
+const IgeUiButton_1 = require("./IgeUiButton.js");
+const IgeUiLabel_1 = require("./IgeUiLabel.js");
+const igeClassStore_1 = require("../utils/igeClassStore.js");
+const enums_1 = require("../../enums/index.js");
+class IgeUiWindow extends IgeUiElement_1.IgeUiElement {
     constructor() {
         super();
         this.classId = "IgeUiWindow";
         this._draggable = false;
         this._dragging = false;
         this._opStartTranslate = {};
-        const ui = exports_4.ige.ui;
+        const ui = instance_1.ige.ui;
         // Define some default styles
         if (!ui.style("IgeUiWindow")) {
             ui.style("IgeUiWindow", {
@@ -28,8 +28,8 @@ class IgeUiWindow extends exports_6.IgeUiElement {
         this.color("#000000");
         this.width(200);
         this.height(30);
-        this._topNav = new exports_6.IgeUiElement().backgroundColor("#212121").top(0).left(0).right(0).height(42).mount(this);
-        this._label = new exports_3.IgeUiLabel()
+        this._topNav = new IgeUiElement_1.IgeUiElement().backgroundColor("#212121").top(0).left(0).right(0).height(42).mount(this);
+        this._label = new IgeUiLabel_1.IgeUiLabel()
             .left(0)
             .top(0)
             .right(0)
@@ -38,7 +38,7 @@ class IgeUiWindow extends exports_6.IgeUiElement {
             .textAlignY(1)
             .mount(this._topNav);
         this._label.color("#ffffff").value("Window Title");
-        this._closeButton = new exports_2.IgeUiButton()
+        this._closeButton = new IgeUiButton_1.IgeUiButton()
             .backgroundColor("#cccccc")
             .borderColor("#000000")
             .borderWidth(1)
@@ -49,10 +49,10 @@ class IgeUiWindow extends exports_6.IgeUiElement {
             .value("X")
             .color("#000000")
             .pointerUp(() => {
-            if (this.emit("beforeClose") !== exports_5.IgeEventReturnFlag.cancel) {
+            if (this.emit("beforeClose") !== enums_1.IgeEventReturnFlag.cancel) {
                 this.destroy();
             }
-            exports_4.ige.input.stopPropagation();
+            instance_1.ige.input.stopPropagation();
         })
             .mount(this._topNav);
     }
@@ -61,7 +61,7 @@ class IgeUiWindow extends exports_6.IgeUiElement {
             return;
         }
         this._dragging = true;
-        this._opStartMouse = exports_4.ige._pointerPos.clone();
+        this._opStartMouse = instance_1.ige._pointerPos.clone();
         this._opStartTranslate = {
             x: this._translate.x,
             y: this._translate.y
@@ -71,16 +71,16 @@ class IgeUiWindow extends exports_6.IgeUiElement {
     _dragMove() {
         if (!this._draggable || !this._dragging)
             return;
-        if (!exports_4.ige.engine._currentViewport)
+        if (!instance_1.ige.engine._currentViewport)
             return;
         if (!this._opStartMouse)
             return;
         // Update window co-ordinates
-        const curMousePos = exports_4.ige._pointerPos;
+        const curMousePos = instance_1.ige._pointerPos;
         const panCordsX = this._opStartMouse.x - curMousePos.x;
         const panCordsY = this._opStartMouse.y - curMousePos.y;
-        const panFinalX = this._opStartTranslate.x - panCordsX / exports_4.ige.engine._currentViewport.camera._scale.x;
-        const panFinalY = this._opStartTranslate.y - panCordsY / exports_4.ige.engine._currentViewport.camera._scale.y;
+        const panFinalX = this._opStartTranslate.x - panCordsX / instance_1.ige.engine._currentViewport.camera._scale.x;
+        const panFinalY = this._opStartTranslate.y - panCordsY / instance_1.ige.engine._currentViewport.camera._scale.y;
         this.style("left", panFinalX);
         this.style("top", panFinalY);
         // Cancel further propagation
@@ -97,14 +97,14 @@ class IgeUiWindow extends exports_6.IgeUiElement {
         if (val) {
             this._draggable = true;
             this._topNav.on("pointerDown", this._dragStart);
-            exports_4.ige.input.on("preMouseUp", this._dragEnd);
-            exports_4.ige.input.on("preMouseMove", this._dragMove);
+            instance_1.ige.input.on("preMouseUp", this._dragEnd);
+            instance_1.ige.input.on("preMouseMove", this._dragMove);
         }
         else {
             this._draggable = false;
             this._topNav.off("pointerDown", this._dragStart);
-            exports_4.ige.input.off("preMouseUp", this._dragEnd);
-            exports_4.ige.input.off("preMouseMove", this._dragMove);
+            instance_1.ige.input.off("preMouseUp", this._dragEnd);
+            instance_1.ige.input.off("preMouseMove", this._dragMove);
         }
     }
     blur() {
@@ -133,4 +133,4 @@ class IgeUiWindow extends exports_6.IgeUiElement {
     }
 }
 exports.IgeUiWindow = IgeUiWindow;
-(0, exports_1.registerClass)(IgeUiWindow);
+(0, igeClassStore_1.registerClass)(IgeUiWindow);

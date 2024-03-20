@@ -1,5 +1,5 @@
-import { IgeBaseClass } from "../../export/exports.js"
-import { IgeEventReturnFlag } from "../../export/exports.js"
+import { IgeBaseClass } from "./IgeBaseClass.js"
+import { IgeEventReturnFlag } from "../../enums/IgeEventReturnFlag.js"
 /**
  * Creates a new class with the capability to emit events.
  */

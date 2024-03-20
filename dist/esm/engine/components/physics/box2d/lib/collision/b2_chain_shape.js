@@ -39,7 +39,10 @@ export class b2ChainShape extends b2Shape {
             if (vertices.length % 2 !== 0) {
                 throw new Error();
             }
-            return this._CreateLoop((index) => ({ x: vertices[index * 2], y: vertices[index * 2 + 1] }), vertices.length / 2);
+            return this._CreateLoop((index) => ({
+                x: vertices[index * 2],
+                y: vertices[index * 2 + 1]
+            }), vertices.length / 2);
         }
         else {
             const vertices = args[0];
@@ -75,7 +78,10 @@ export class b2ChainShape extends b2Shape {
             if (vertices.length % 2 !== 0) {
                 throw new Error();
             }
-            return this._CreateChain((index) => ({ x: vertices[index * 2], y: vertices[index * 2 + 1] }), vertices.length / 2, prevVertex, nextVertex);
+            return this._CreateChain((index) => ({
+                x: vertices[index * 2],
+                y: vertices[index * 2 + 1]
+            }), vertices.length / 2, prevVertex, nextVertex);
         }
         else {
             const vertices = args[0];

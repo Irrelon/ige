@@ -1,5 +1,7 @@
-import { type IgeCanvasRenderingContext2d, IgeTexture } from "../../export/exports.js"
-import type { IgeSmartTexture, IgeFontEntity } from "../../export/exports.js"
+import type { IgeFontEntity } from "./IgeFontEntity.js"
+import { IgeTexture } from "./IgeTexture.js";
+import type { IgeCanvasRenderingContext2d } from "../../types/IgeCanvasRenderingContext2d.js"
+import type { IgeSmartTexture } from "../../types/IgeSmartTexture.js"
 /**
  * Creates a new font sheet. A font sheet is an image that contains
  * letters and numbers rendered to specifications. It allows you to

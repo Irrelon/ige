@@ -1,7 +1,7 @@
-import { IgeComponent } from "../../export/exports.js"
-import { IgePoint2d } from "../../export/exports.js"
-import type { IgePoint3d } from "../../export/exports.js"
-import type { IgeRect } from "../../export/exports.js"
+import { IgeComponent } from "../core/IgeComponent.js"
+import { IgePoint2d } from "../core/IgePoint2d.js";
+import type { IgePoint3d } from "../core/IgePoint3d.js"
+import type { IgeRect } from "../core/IgeRect.js";
 /**
  * When added to a viewport, automatically adds mouse panning
  * capabilities to the viewport's camera.

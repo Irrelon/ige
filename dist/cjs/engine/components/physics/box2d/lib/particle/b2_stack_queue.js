@@ -21,7 +21,9 @@ exports.b2StackQueue = void 0;
 // #if B2_ENABLE_PARTICLE
 // DEBUG: import { b2Assert } from "../common/b2_settings.js"
 class b2StackQueue {
-    get m_capacity() { return this.m_buffer.length; }
+    get m_capacity() {
+        return this.m_buffer.length;
+    }
     constructor(capacity) {
         this.m_buffer = [];
         this.m_front = 0;

@@ -19,7 +19,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.b2GrowableStack = void 0;
 // DEBUG: import { b2Assert } from "./b2_settings.js"
-const b2_settings_js_1 = require("./b2_settings.js");
+const b2_settings_1 = require("./b2_settings");
 /// This is a growable LIFO stack with an initial capacity of N.
 /// If the stack size exceeds the initial capacity, the heap is used
 /// to increase the size of the stack.
@@ -27,7 +27,7 @@ class b2GrowableStack {
     constructor(N) {
         this.m_stack = [];
         this.m_count = 0;
-        this.m_stack = (0, b2_settings_js_1.b2MakeArray)(N, (index) => null);
+        this.m_stack = (0, b2_settings_1.b2MakeArray)(N, (index) => null);
         this.m_count = 0;
     }
     Reset() {

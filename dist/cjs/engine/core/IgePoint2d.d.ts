@@ -1,4 +1,4 @@
-import type { IgePoint3d } from "../../export/exports.js"
+import type { IgePoint3d } from "./IgePoint3d.js"
 /**
  * Creates a new 2d point (x, y).
  */

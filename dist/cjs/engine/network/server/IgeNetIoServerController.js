@@ -1,13 +1,13 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.IgeNetIoServerController = void 0;
-const exports_1 = require("../../../export/exports.js");
-const exports_2 = require("../../../export/exports.js");
-const exports_3 = require("../../../export/exports.js");
-const exports_4 = require("../../../export/exports.js");
-const exports_5 = require("../../../export/exports.js");
-const exports_6 = require("../../../export/exports.js");
-class IgeNetIoServerController extends exports_6.IgeNetIoBaseController {
+const instance_1 = require("../../instance.js");
+const IgeNetIoBaseController_1 = require("../IgeNetIoBaseController.js");
+const IgeNetIoServer_1 = require("./IgeNetIoServer.js");
+const arrays_1 = require("../../utils/arrays.js");
+const ids_1 = require("../../utils/ids.js");
+const enums_1 = require("../../../enums/index.js");
+class IgeNetIoServerController extends IgeNetIoBaseController_1.IgeNetIoBaseController {
     constructor() {
         super();
         this._idCounter = 0;
@@ -88,7 +88,7 @@ class IgeNetIoServerController extends exports_6.IgeNetIoBaseController {
         this._onTimeSync = (data, clientId) => {
             if (!clientId)
                 return;
-            const localTime = Math.floor(exports_2.ige.engine._currentTime);
+            const localTime = Math.floor(instance_1.ige.engine._currentTime);
             const sendTime = parseInt(data[1], 10);
             //const roundTrip = (localTime - parseInt(data[0], 10));
             /*if (localTime < sendTime) {
@@ -117,7 +117,7 @@ class IgeNetIoServerController extends exports_6.IgeNetIoBaseController {
                 return;
             }
             // Check if any listener cancels this
-            if (this.emit("connect", socket) === exports_3.IgeEventReturnFlag.cancel) {
+            if (this.emit("connect", socket) === enums_1.IgeEventReturnFlag.cancel) {
                 // Reject the connection
                 socket.close();
                 return;
@@ -136,8 +136,8 @@ class IgeNetIoServerController extends exports_6.IgeNetIoBaseController {
             socket.send({
                 cmd: "init",
                 ncmds: this._networkCommandsLookup,
-                ts: exports_2.ige.engine._timeScale,
-                ct: exports_2.ige.engine._currentTime
+                ts: instance_1.ige.engine._timeScale,
+                ct: instance_1.ige.engine._currentTime
             });
             // Send a clock sync command
             this._sendTimeSync(socket._id);
@@ -150,8 +150,8 @@ class IgeNetIoServerController extends exports_6.IgeNetIoBaseController {
         this._sendQueue = () => {
             const st = new Date().getTime();
             const queueObj = this._queuedData;
-            const network = exports_2.ige.network;
-            const currentTime = exports_2.ige.engine._currentTime;
+            const network = instance_1.ige.network;
+            const currentTime = instance_1.ige.engine._currentTime;
             const hasSentTimeDataByClientId = {};
             // Send the stream data
             for (const entityId in queueObj) {
@@ -162,10 +162,10 @@ class IgeNetIoServerController extends exports_6.IgeNetIoBaseController {
                     // TODO: Commented this because the receiving client never uses this data at all!
                     if (!hasSentTimeDataByClientId[clientId]) {
                         // Send the stream start time
-                        network.send(exports_4.IGE_NETWORK_STREAM_TIME, currentTime, clientId);
+                        network.send(enums_1.IGE_NETWORK_STREAM_TIME, currentTime, clientId);
                         hasSentTimeDataByClientId[clientId] = true;
                     }
-                    network.send(exports_4.IGE_NETWORK_STREAM_DATA, item[0], clientId);
+                    network.send(enums_1.IGE_NETWORK_STREAM_DATA, item[0], clientId);
                     // Store the new data for later comparison
                     this._streamClientData[entityId][clientId] = item[0];
                 });
@@ -182,10 +182,10 @@ class IgeNetIoServerController extends exports_6.IgeNetIoBaseController {
             }
         };
         // Define the network stream commands
-        this.define(exports_4.IGE_NETWORK_STREAM_CREATE);
-        this.define(exports_4.IGE_NETWORK_STREAM_DESTROY);
-        this.define(exports_4.IGE_NETWORK_STREAM_DATA);
-        this.define(exports_4.IGE_NETWORK_STREAM_TIME);
+        this.define(enums_1.IGE_NETWORK_STREAM_CREATE);
+        this.define(enums_1.IGE_NETWORK_STREAM_DESTROY);
+        this.define(enums_1.IGE_NETWORK_STREAM_DATA);
+        this.define(enums_1.IGE_NETWORK_STREAM_TIME);
     }
     /**
      * Starts the network for the server.
@@ -202,7 +202,7 @@ class IgeNetIoServerController extends exports_6.IgeNetIoBaseController {
             }
             // Start net.io
             this.log("Starting net.io listener on port " + this._port);
-            this._io = new exports_1.IgeNetIoServer(this._port, () => {
+            this._io = new IgeNetIoServer_1.IgeNetIoServer(this._port, () => {
                 if (callback) {
                     callback();
                 }
@@ -211,11 +211,11 @@ class IgeNetIoServerController extends exports_6.IgeNetIoBaseController {
             // Setup listeners
             this._io.on("connection", this._onClientConnect);
             // Set up default commands
-            this.define(exports_4.IGE_NETWORK_REQUEST, this._onRequest);
-            this.define(exports_4.IGE_NETWORK_RESPONSE, this._onResponse);
-            this.define(exports_4.IGE_NETWORK_TIME_SYNC, this._onTimeSync);
-            this.define(exports_1.IGE_NETWORK_JOIN_ROOM, this._onJoinRoom);
-            this.define(exports_1.IGE_NETWORK_LEAVE_ROOM, this._onLeaveRoom);
+            this.define(enums_1.IGE_NETWORK_REQUEST, this._onRequest);
+            this.define(enums_1.IGE_NETWORK_RESPONSE, this._onResponse);
+            this.define(enums_1.IGE_NETWORK_TIME_SYNC, this._onTimeSync);
+            this.define(enums_1.IGE_NETWORK_JOIN_ROOM, this._onJoinRoom);
+            this.define(enums_1.IGE_NETWORK_LEAVE_ROOM, this._onLeaveRoom);
             // Start network sync
             this.timeSyncStart();
             this.log("Starting delta stream...");
@@ -284,7 +284,7 @@ class IgeNetIoServerController extends exports_6.IgeNetIoBaseController {
      */
     clientLeaveRoom(clientId, roomId) {
         if (this._clientRooms[clientId]) {
-            (0, exports_5.arrPull)(this._clientRooms[clientId], roomId);
+            (0, arrays_1.arrPull)(this._clientRooms[clientId], roomId);
             delete this._socketsByRoomId[roomId][clientId];
         }
         return this;
@@ -392,7 +392,7 @@ class IgeNetIoServerController extends exports_6.IgeNetIoBaseController {
     request(cmd, data, clientIdOrArrayOfIds, callback) {
         // Build the request object
         const req = {
-            id: (0, exports_5.newIdHex)(),
+            id: (0, ids_1.newIdHex)(),
             cmd,
             data,
             callback,
@@ -401,7 +401,7 @@ class IgeNetIoServerController extends exports_6.IgeNetIoBaseController {
         // Store the request object
         this._requests[req.id] = req;
         // Send the network request packet
-        this.send(exports_4.IGE_NETWORK_REQUEST, {
+        this.send(enums_1.IGE_NETWORK_REQUEST, {
             id: req.id,
             cmd,
             data: req.data
@@ -418,7 +418,7 @@ class IgeNetIoServerController extends exports_6.IgeNetIoBaseController {
         if (!req) {
             return;
         }
-        this.send(exports_4.IGE_NETWORK_RESPONSE, {
+        this.send(enums_1.IGE_NETWORK_RESPONSE, {
             id: requestId,
             cmd: req.cmd,
             data
@@ -437,8 +437,8 @@ class IgeNetIoServerController extends exports_6.IgeNetIoBaseController {
     }
     _sendTimeSync(clientId) {
         // Send the time sync command
-        const data = [exports_2.ige.engine._currentTime];
-        this.send(exports_4.IGE_NETWORK_TIME_SYNC, data, clientId);
+        const data = [instance_1.ige.engine._currentTime];
+        this.send(enums_1.IGE_NETWORK_TIME_SYNC, data, clientId);
     }
     /**
      * Called when the server receives a network message from a client.
@@ -475,8 +475,8 @@ class IgeNetIoServerController extends exports_6.IgeNetIoBaseController {
      */
     sendInterval(ms) {
         if (ms !== undefined) {
-            this.log("Setting delta stream interval to " + ms / exports_2.ige.engine._timeScale + "ms");
-            this._streamInterval = ms / exports_2.ige.engine._timeScale;
+            this.log("Setting delta stream interval to " + ms / instance_1.ige.engine._timeScale + "ms");
+            this._streamInterval = ms / instance_1.ige.engine._timeScale;
             return this;
         }
         return this._streamInterval;

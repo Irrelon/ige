@@ -1,6 +1,6 @@
-import { IgeChatComponent } from "@/export/exports";
-import { ige } from "@/export/exports";
-import { IgeEventReturnFlag } from "@/export/exports";
+import { ige } from "@/engine/instance";
+import { IgeChatComponent } from "@/engine/network/chat/IgeChatComponent";
+import type { IgeNetIoClientController } from "@/engine/network/client/IgeNetIoClientController";
 import {
 	IGE_NETWORK_CHAT_JOIN_ROOM,
 	IGE_NETWORK_CHAT_LEAVE_ROOM,
@@ -8,19 +8,15 @@ import {
 	IGE_NETWORK_CHAT_MSG,
 	IGE_NETWORK_CHAT_ROOM_CREATED,
 	IGE_NETWORK_CHAT_ROOM_LIST_USERS,
-	IGE_NETWORK_CHAT_ROOM_REMOVED
-} from "@/export/exports";
-import type { IgeNetIoClientController } from "@/export/exports";
+	IGE_NETWORK_CHAT_ROOM_REMOVED,
+	IgeEventReturnFlag
+} from "@/enums";
 import type {
 	IgeNetworkChatFromClientJoinRoomRequestStructure,
-	IgeNetworkChatFromServerJoinRoomResponseStructure,
-	IgeNetworkChatFromServerLeaveRoomResponseStructure,
-	IgeNetworkChatFromServerRoomStructure
-} from "@/export/exports";
-import type {
 	IgeNetworkChatFromClientMessageStructure,
-	IgeNetworkChatFromServerMessageStructure
-} from "@/export/exports";
+	IgeNetworkChatFromServerJoinRoomResponseStructure, IgeNetworkChatFromServerLeaveRoomResponseStructure,
+	IgeNetworkChatFromServerMessageStructure, IgeNetworkChatFromServerRoomStructure
+} from "@/types/IgeNetworkChat";
 
 /**
  * The client-side chat component. Handles all client-side
@@ -74,7 +70,7 @@ export class IgeChatClient extends IgeChatComponent {
 		// process this ourselves
 		if (this.emit("messageFromServer", data) !== IgeEventReturnFlag.cancel) {
 			console.log(
-				'Server sent us a message in the room "' + data.roomId + '" from the user id "' + data.from + '":',
+				"Server sent us a message in the room \"" + data.roomId + "\" from the user id \"" + data.from + "\":",
 				data.text
 			);
 		}

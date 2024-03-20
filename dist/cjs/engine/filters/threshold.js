@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.threshold = exports.thresholdHelper = void 0;
-const exports_1 = require("../../export/exports.js");
+const igeFilters_1 = require("../utils/igeFilters.js");
 const thresholdHelper = function (imageData, texture, data) {
     let i, r, g, b, v;
     const thresholdVal = texture.data("IgeFilters.threshold.value") || data.value;
@@ -25,4 +25,4 @@ const threshold = function (canvas, ctx, originalImage, texture, data) {
     ctx.putImageData((0, exports.thresholdHelper)(imgData, texture, data), 0, 0);
 };
 exports.threshold = threshold;
-exports_1.igeFilters.registerFilter("threshold", exports.threshold);
+igeFilters_1.igeFilters.registerFilter("threshold", exports.threshold);

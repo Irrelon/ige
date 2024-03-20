@@ -1,5 +1,5 @@
-import { IgeEventingClass } from "@/export/exports";
-import type { IgeNetIoSocket } from "@/export/exports";
+import { IgeEventingClass } from "@/engine/core/IgeEventingClass";
+import type { IgeNetIoSocket } from "@/engine/network/server/IgeNetIoSocket";
 
 export class IgeNetIoBaseController extends IgeEventingClass {
 	classId = "IgeNetIoBaseController";

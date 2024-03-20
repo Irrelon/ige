@@ -1,2 +1,2 @@
-import type { IgeConfig } from "../../export/exports.js"
+import type { IgeConfig } from "../../types/IgeConfig.js"
 export declare const igeConfig: IgeConfig;

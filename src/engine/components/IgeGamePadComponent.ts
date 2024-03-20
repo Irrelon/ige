@@ -1,9 +1,9 @@
-import type { IgeEngine } from "@/export/exports";
-import { IgeComponent } from "@/export/exports";
-import type { IgeEntity } from "@/export/exports";
-import { isClient } from "@/export/exports";
-import { IgeBehaviourType } from "@/export/exports";
-import type { IgeEntityBehaviourMethod } from "@/export/exports";
+import { IgeComponent } from "@/engine/core/IgeComponent";
+import type { IgeEngine } from "@/engine/core/IgeEngine";
+import type { IgeEntity } from "@/engine/core/IgeEntity";
+import { isClient } from "@/engine/utils/clientServer";
+import { IgeBehaviourType } from "@/enums";
+import type { IgeEntityBehaviourMethod } from "@/types/IgeEntityBehaviour";
 
 export class IgeGamePadComponent extends IgeComponent<IgeEngine> {
 	"classId" = "IgeGamePadComponent";

@@ -1,4 +1,4 @@
-import { IgeEventingClass } from "../../export/exports.js"
+import { IgeEventingClass } from "./IgeEventingClass.js"
 export class IgeComponent extends IgeEventingClass {
     _entity;
     _options;

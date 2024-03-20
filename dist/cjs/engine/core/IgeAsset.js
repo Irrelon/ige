@@ -1,8 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.IgeAsset = void 0;
-const exports_1 = require("../../export/exports.js");
-class IgeAsset extends exports_1.IgeEventingClass {
+const IgeEventingClass_1 = require("./IgeEventingClass.js");
+class IgeAsset extends IgeEventingClass_1.IgeEventingClass {
     constructor() {
         super(...arguments);
         this._loaded = false;

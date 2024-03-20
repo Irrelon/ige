@@ -1,5 +1,5 @@
-import { IgeEventingClass } from "@/export/exports";
-import { ige } from "@/export/exports";
+import { IgeEventingClass } from "@/engine/core/IgeEventingClass";
+import { ige } from "@/engine/instance";
 
 export class IgeAudioItem extends IgeEventingClass {
 	classId = "IgeAudioItem";
@@ -30,8 +30,8 @@ export class IgeAudioItem extends IgeEventingClass {
 		return this._playing;
 	}
 
-	audioId(audioId: string): this;
-	audioId(): string;
+	audioId (audioId: string): this;
+	audioId (): string;
 	audioId (audioId?: string) {
 		if (audioId === undefined) {
 			return this._audioId;
@@ -45,8 +45,8 @@ export class IgeAudioItem extends IgeEventingClass {
 		return this;
 	}
 
-	url(url: string): this;
-	url(): string;
+	url (url: string): this;
+	url (): string;
 	url (url?: string) {
 		if (url === undefined) {
 			return this._url;
@@ -73,8 +73,8 @@ export class IgeAudioItem extends IgeEventingClass {
 	 * @param {AudioBuffer} buffer
 	 * @returns {*}
 	 */
-	buffer(buffer: AudioBuffer): this;
-	buffer(): AudioBuffer;
+	buffer (buffer: AudioBuffer): this;
+	buffer (): AudioBuffer;
 	buffer (buffer?: AudioBuffer) {
 		if (buffer === undefined) {
 			return this._buffer;
@@ -89,8 +89,8 @@ export class IgeAudioItem extends IgeEventingClass {
 		return this;
 	}
 
-	panner(val: PannerNode): this;
-	panner(): PannerNode;
+	panner (val: PannerNode): this;
+	panner (): PannerNode;
 	panner (val?: PannerNode) {
 		if (val === undefined) {
 			return this._panner;

@@ -1,8 +1,8 @@
 // TODO: Implement the _stringify() method for this class
-import { IgeEntity } from "../../export/exports.js"
-import { registerClass } from "../../export/exports.js"
-import { PI180 } from "../../export/exports.js"
-import { ige } from "../../export/exports.js"
+import { IgeEntity } from "./IgeEntity.js"
+import { ige } from "../instance.js"
+import { registerClass } from "../utils/igeClassStore.js"
+import { PI180 } from "../utils/maths.js"
 /**
  * Creates a new UI entity. UI entities use more resources and CPU
  * than standard IgeEntity instances so only use them if an IgeEntity

@@ -19,27 +19,27 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.b2GravityController = void 0;
 // #if B2_ENABLE_CONTROLLER
-const b2_controller_js_1 = require("./b2_controller.js");
-const b2_settings_js_1 = require("../common/b2_settings.js");
-const b2_math_js_1 = require("../common/b2_math.js");
+const b2_controller_1 = require("./b2_controller");
+const b2_settings_1 = require("../common/b2_settings");
+const b2_math_1 = require("../common/b2_math");
 /**
  * Applies simplified gravity between every pair of bodies
  */
-class b2GravityController extends b2_controller_js_1.b2Controller {
+class b2GravityController extends b2_controller_1.b2Controller {
     constructor() {
         super(...arguments);
         /**
-       * Specifies the strength of the gravitiation force
-       */
+         * Specifies the strength of the gravitiation force
+         */
         this.G = 1;
         /**
-       * If true, gravity is proportional to r^-2, otherwise r^-1
-       */
+         * If true, gravity is proportional to r^-2, otherwise r^-1
+         */
         this.invSqr = true;
     }
     /**
-   * @see b2Controller::Step
-   */
+     * @see b2Controller::Step
+     */
     Step(step) {
         if (this.invSqr) {
             for (let i = this.m_bodyList; i; i = i.nextBody) {
@@ -53,11 +53,11 @@ class b2GravityController extends b2_controller_js_1.b2Controller {
                     const dx = p2.x - p1.x;
                     const dy = p2.y - p1.y;
                     const r2 = dx * dx + dy * dy;
-                    if (r2 < b2_settings_js_1.b2_epsilon) {
+                    if (r2 < b2_settings_1.b2_epsilon) {
                         continue;
                     }
                     const f = b2GravityController.Step_s_f.Set(dx, dy);
-                    f.SelfMul(this.G / r2 / (0, b2_math_js_1.b2Sqrt)(r2) * mass1 * mass2);
+                    f.SelfMul(this.G / r2 / (0, b2_math_1.b2Sqrt)(r2) * mass1 * mass2);
                     if (body1.IsAwake()) {
                         body1.ApplyForce(f, p1);
                     }
@@ -79,7 +79,7 @@ class b2GravityController extends b2_controller_js_1.b2Controller {
                     const dx = p2.x - p1.x;
                     const dy = p2.y - p1.y;
                     const r2 = dx * dx + dy * dy;
-                    if (r2 < b2_settings_js_1.b2_epsilon) {
+                    if (r2 < b2_settings_1.b2_epsilon) {
                         continue;
                     }
                     const f = b2GravityController.Step_s_f.Set(dx, dy);
@@ -94,8 +94,9 @@ class b2GravityController extends b2_controller_js_1.b2Controller {
             }
         }
     }
-    Draw(draw) { }
+    Draw(draw) {
+    }
 }
 exports.b2GravityController = b2GravityController;
-b2GravityController.Step_s_f = new b2_math_js_1.b2Vec2();
+b2GravityController.Step_s_f = new b2_math_1.b2Vec2();
 // #endif

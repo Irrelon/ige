@@ -1,8 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.glowMask = void 0;
-const exports_1 = require("../../export/exports.js");
-const exports_2 = require("../../export/exports.js");
+const convolute_1 = require("./convolute.js");
+const igeFilters_1 = require("../utils/igeFilters.js");
 const glowMask = function (canvas, ctx, originalImage, texture, data) {
     const oneNinth = 1 / 9;
     let pixelData, tempCanvas, tempCtx, i;
@@ -14,7 +14,7 @@ const glowMask = function (canvas, ctx, originalImage, texture, data) {
         for (i = 0; i < data.blurPasses; i++) {
             if (!pixelData)
                 return;
-            pixelData = (0, exports_1.convoluteHelper)(pixelData, [oneNinth, oneNinth, oneNinth, oneNinth, oneNinth, oneNinth, oneNinth, oneNinth, oneNinth], false);
+            pixelData = (0, convolute_1.convoluteHelper)(pixelData, [oneNinth, oneNinth, oneNinth, oneNinth, oneNinth, oneNinth, oneNinth, oneNinth, oneNinth], false);
         }
         if (!pixelData)
             return;
@@ -35,4 +35,4 @@ const glowMask = function (canvas, ctx, originalImage, texture, data) {
     }
 };
 exports.glowMask = glowMask;
-exports_2.igeFilters.registerFilter("glowMask", exports.glowMask);
+igeFilters_1.igeFilters.registerFilter("glowMask", exports.glowMask);

@@ -1,4 +1,4 @@
-import type { IgeTexture } from "@/export/exports";
+import type { IgeTexture } from "@/engine/core/IgeTexture";
 
 export interface IgeCanvas extends OffscreenCanvas {
 	_igeTextures: IgeTexture[];

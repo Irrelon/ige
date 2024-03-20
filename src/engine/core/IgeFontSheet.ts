@@ -1,11 +1,13 @@
-import { type IgeCanvasRenderingContext2d, IgeTexture } from "@/export/exports";
-import { ige } from "@/export/exports";
-import type { IgeSmartTexture, IgeFontEntity } from "@/export/exports";
-
 /* TODO: URGENT - Make this alignment stuff work inside the bounds of the entity it is attached to
  *    so that bottom-right aligns to the lower-right point of the bounding box of the entity
  *    whilst maintaining the current text-alignment as well
  * */
+
+import type { IgeFontEntity } from "@/engine/core/IgeFontEntity";
+import { IgeTexture } from "@/engine/core/IgeTexture";
+import { ige } from "@/engine/instance";
+import type { IgeCanvasRenderingContext2d } from "@/types/IgeCanvasRenderingContext2d";
+import type { IgeSmartTexture } from "@/types/IgeSmartTexture";
 
 /**
  * Creates a new font sheet. A font sheet is an image that contains

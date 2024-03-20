@@ -19,16 +19,16 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.b2Island = void 0;
 // DEBUG: import { b2Assert } from "../common/b2_settings.js"
-const b2_settings_js_1 = require("../common/b2_settings.js");
-const b2_settings_js_2 = require("../common/b2_settings.js");
-const b2_settings_js_3 = require("../common/b2_settings.js");
-const b2_settings_js_4 = require("../common/b2_settings.js");
-const b2_math_js_1 = require("../common/b2_math.js");
-const b2_timer_js_1 = require("../common/b2_timer.js");
-const b2_contact_solver_js_1 = require("./b2_contact_solver.js");
-const b2_body_js_1 = require("./b2_body.js");
-const b2_time_step_js_1 = require("./b2_time_step.js");
-const b2_world_callbacks_js_1 = require("./b2_world_callbacks.js");
+const b2_settings_1 = require("../common/b2_settings");
+const b2_settings_2 = require("../common/b2_settings");
+const b2_settings_3 = require("../common/b2_settings");
+const b2_settings_4 = require("../common/b2_settings");
+const b2_math_1 = require("../common/b2_math");
+const b2_timer_1 = require("../common/b2_timer");
+const b2_contact_solver_1 = require("./b2_contact_solver");
+const b2_body_1 = require("./b2_body");
+const b2_time_step_1 = require("./b2_time_step");
+const b2_world_callbacks_1 = require("./b2_world_callbacks");
 /*
 Position Correction Notes
 =========================
@@ -149,8 +149,8 @@ class b2Island {
         this.m_bodies = [ /*1024*/]; // TODO: b2Settings
         this.m_contacts = [ /*1024*/]; // TODO: b2Settings
         this.m_joints = [ /*1024*/]; // TODO: b2Settings
-        this.m_positions = b2_time_step_js_1.b2Position.MakeArray(1024); // TODO: b2Settings
-        this.m_velocities = b2_time_step_js_1.b2Velocity.MakeArray(1024); // TODO: b2Settings
+        this.m_positions = b2_time_step_1.b2Position.MakeArray(1024); // TODO: b2Settings
+        this.m_velocities = b2_time_step_1.b2Velocity.MakeArray(1024); // TODO: b2Settings
         this.m_bodyCount = 0;
         this.m_jointCount = 0;
         this.m_contactCount = 0;
@@ -180,16 +180,16 @@ class b2Island {
         // }
         // TODO:
         if (this.m_positions.length < bodyCapacity) {
-            const new_length = (0, b2_math_js_1.b2Max)(this.m_positions.length * 2, bodyCapacity);
+            const new_length = (0, b2_math_1.b2Max)(this.m_positions.length * 2, bodyCapacity);
             while (this.m_positions.length < new_length) {
-                this.m_positions[this.m_positions.length] = new b2_time_step_js_1.b2Position();
+                this.m_positions[this.m_positions.length] = new b2_time_step_1.b2Position();
             }
         }
         // TODO:
         if (this.m_velocities.length < bodyCapacity) {
-            const new_length = (0, b2_math_js_1.b2Max)(this.m_velocities.length * 2, bodyCapacity);
+            const new_length = (0, b2_math_1.b2Max)(this.m_velocities.length * 2, bodyCapacity);
             while (this.m_velocities.length < new_length) {
-                this.m_velocities[this.m_velocities.length] = new b2_time_step_js_1.b2Velocity();
+                this.m_velocities[this.m_velocities.length] = new b2_time_step_1.b2Velocity();
             }
         }
     }
@@ -225,7 +225,7 @@ class b2Island {
             // Store positions for continuous collision.
             b.m_sweep.c0.Copy(b.m_sweep.c);
             b.m_sweep.a0 = b.m_sweep.a;
-            if (b.m_type === b2_body_js_1.b2BodyType.b2_dynamicBody) {
+            if (b.m_type === b2_body_1.b2BodyType.b2_dynamicBody) {
                 // Integrate velocities.
                 // v += h * b->m_invMass * (b->m_gravityScale * b->m_mass * gravity + b->m_force);
                 v.x += h * b.m_invMass * (b.m_gravityScale * b.m_mass * gravity.x + b.m_force.x);
@@ -286,14 +286,14 @@ class b2Island {
             const v = this.m_velocities[i].v;
             let w = this.m_velocities[i].w;
             // Check for large velocities
-            const translation = b2_math_js_1.b2Vec2.MulSV(h, v, b2Island.s_translation);
-            if (b2_math_js_1.b2Vec2.DotVV(translation, translation) > b2_settings_js_2.b2_maxTranslationSquared) {
-                const ratio = b2_settings_js_2.b2_maxTranslation / translation.Length();
+            const translation = b2_math_1.b2Vec2.MulSV(h, v, b2Island.s_translation);
+            if (b2_math_1.b2Vec2.DotVV(translation, translation) > b2_settings_2.b2_maxTranslationSquared) {
+                const ratio = b2_settings_2.b2_maxTranslation / translation.Length();
                 v.SelfMul(ratio);
             }
             const rotation = h * w;
-            if (rotation * rotation > b2_settings_js_3.b2_maxRotationSquared) {
-                const ratio = b2_settings_js_3.b2_maxRotation / (0, b2_math_js_1.b2Abs)(rotation);
+            if (rotation * rotation > b2_settings_3.b2_maxRotationSquared) {
+                const ratio = b2_settings_3.b2_maxRotation / (0, b2_math_1.b2Abs)(rotation);
                 w *= ratio;
             }
             // Integrate
@@ -333,26 +333,26 @@ class b2Island {
         profile.solvePosition = timer.GetMilliseconds();
         this.Report(contactSolver.m_velocityConstraints);
         if (allowSleep) {
-            let minSleepTime = b2_settings_js_1.b2_maxFloat;
-            const linTolSqr = b2_settings_js_4.b2_linearSleepTolerance * b2_settings_js_4.b2_linearSleepTolerance;
-            const angTolSqr = b2_settings_js_4.b2_angularSleepTolerance * b2_settings_js_4.b2_angularSleepTolerance;
+            let minSleepTime = b2_settings_1.b2_maxFloat;
+            const linTolSqr = b2_settings_4.b2_linearSleepTolerance * b2_settings_4.b2_linearSleepTolerance;
+            const angTolSqr = b2_settings_4.b2_angularSleepTolerance * b2_settings_4.b2_angularSleepTolerance;
             for (let i = 0; i < this.m_bodyCount; ++i) {
                 const b = this.m_bodies[i];
-                if (b.GetType() === b2_body_js_1.b2BodyType.b2_staticBody) {
+                if (b.GetType() === b2_body_1.b2BodyType.b2_staticBody) {
                     continue;
                 }
                 if (!b.m_autoSleepFlag ||
                     b.m_angularVelocity * b.m_angularVelocity > angTolSqr ||
-                    b2_math_js_1.b2Vec2.DotVV(b.m_linearVelocity, b.m_linearVelocity) > linTolSqr) {
+                    b2_math_1.b2Vec2.DotVV(b.m_linearVelocity, b.m_linearVelocity) > linTolSqr) {
                     b.m_sleepTime = 0;
                     minSleepTime = 0;
                 }
                 else {
                     b.m_sleepTime += h;
-                    minSleepTime = (0, b2_math_js_1.b2Min)(minSleepTime, b.m_sleepTime);
+                    minSleepTime = (0, b2_math_1.b2Min)(minSleepTime, b.m_sleepTime);
                 }
             }
-            if (minSleepTime >= b2_settings_js_1.b2_timeToSleep && positionSolved) {
+            if (minSleepTime >= b2_settings_1.b2_timeToSleep && positionSolved) {
                 for (let i = 0; i < this.m_bodyCount; ++i) {
                     const b = this.m_bodies[i];
                     b.SetAwake(false);
@@ -439,14 +439,14 @@ class b2Island {
             const v = this.m_velocities[i].v;
             let w = this.m_velocities[i].w;
             // Check for large velocities
-            const translation = b2_math_js_1.b2Vec2.MulSV(h, v, b2Island.s_translation);
-            if (b2_math_js_1.b2Vec2.DotVV(translation, translation) > b2_settings_js_2.b2_maxTranslationSquared) {
-                const ratio = b2_settings_js_2.b2_maxTranslation / translation.Length();
+            const translation = b2_math_1.b2Vec2.MulSV(h, v, b2Island.s_translation);
+            if (b2_math_1.b2Vec2.DotVV(translation, translation) > b2_settings_2.b2_maxTranslationSquared) {
+                const ratio = b2_settings_2.b2_maxTranslation / translation.Length();
                 v.SelfMul(ratio);
             }
             const rotation = h * w;
-            if (rotation * rotation > b2_settings_js_3.b2_maxRotationSquared) {
-                const ratio = b2_settings_js_3.b2_maxRotation / (0, b2_math_js_1.b2Abs)(rotation);
+            if (rotation * rotation > b2_settings_3.b2_maxRotationSquared) {
+                const ratio = b2_settings_3.b2_maxRotation / (0, b2_math_1.b2Abs)(rotation);
                 w *= ratio;
             }
             // Integrate
@@ -487,9 +487,9 @@ class b2Island {
     }
 }
 exports.b2Island = b2Island;
-b2Island.s_timer = new b2_timer_js_1.b2Timer();
-b2Island.s_solverData = new b2_time_step_js_1.b2SolverData();
-b2Island.s_contactSolverDef = new b2_contact_solver_js_1.b2ContactSolverDef();
-b2Island.s_contactSolver = new b2_contact_solver_js_1.b2ContactSolver();
-b2Island.s_translation = new b2_math_js_1.b2Vec2();
-b2Island.s_impulse = new b2_world_callbacks_js_1.b2ContactImpulse();
+b2Island.s_timer = new b2_timer_1.b2Timer();
+b2Island.s_solverData = new b2_time_step_1.b2SolverData();
+b2Island.s_contactSolverDef = new b2_contact_solver_1.b2ContactSolverDef();
+b2Island.s_contactSolver = new b2_contact_solver_1.b2ContactSolver();
+b2Island.s_translation = new b2_math_1.b2Vec2();
+b2Island.s_impulse = new b2_world_callbacks_1.b2ContactImpulse();

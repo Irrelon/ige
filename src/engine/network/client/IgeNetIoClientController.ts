@@ -1,33 +1,31 @@
-import { IGE_NETWORK_JOIN_ROOM, IGE_NETWORK_LEAVE_ROOM, IgeNetIoClient } from "@/export/exports";
-import { ige } from "@/export/exports";
+import type { IgeEntity } from "@/engine/core/IgeEntity";
+import { ige } from "@/engine/instance";
+import { IgeNetIoClient } from "@/engine/network/client/IgeNetIoClient";
+import { IgeNetIoBaseController } from "@/engine/network/IgeNetIoBaseController";
+import { newIdHex } from "@/engine/utils/ids";
+import { igeClassStore } from "@/engine/utils/igeClassStore";
 import {
-	IGE_NETWORK_REQUEST,
-	IGE_NETWORK_RESPONSE,
+	IGE_NETWORK_JOIN_ROOM, IGE_NETWORK_LEAVE_ROOM,
+	IGE_NETWORK_REQUEST, IGE_NETWORK_RESPONSE,
 	IGE_NETWORK_STREAM_CREATE,
 	IGE_NETWORK_STREAM_DATA,
 	IGE_NETWORK_STREAM_DESTROY,
-	IGE_NETWORK_STREAM_TIME,
-	IGE_NETWORK_TIME_SYNC
-} from "@/export/exports";
-import type { IgeEntity } from "@/export/exports";
-import { igeClassStore } from "@/export/exports";
-import { newIdHex } from "@/export/exports";
-import { IgeNetIoBaseController } from "@/export/exports";
+	IGE_NETWORK_STREAM_TIME, IGE_NETWORK_TIME_SYNC
+} from "@/enums";
 import type {
+	IgeNetworkClientSideMessageHandler,
+	IgeNetworkClientSideResponseHandler,
+	IgeNetworkEncodedMessageData,
+	IgeNetworkMessageData,
 	IgeNetworkMessageStructure,
 	IgeNetworkRequestMessageStructure,
-	IgeNetworkMessageData,
-	IgeNetworkEncodedMessageData,
-	IgeNetworkTimeSyncResponseFromClient,
-	IgeNetworkTimeSyncRequestFromServer,
-	IgeNetworkClientSideMessageHandler,
-	IgeNetworkClientSideResponseHandler
-} from "@/export/exports";
+	IgeNetworkTimeSyncRequestFromServer, IgeNetworkTimeSyncResponseFromClient
+} from "@/types/IgeNetworkMessage";
 import type {
 	IgeStreamCreateMessageData,
 	IgeStreamDestroyMessageData,
 	IgeStreamUpdateMessageData
-} from "@/export/exports";
+} from "@/types/IgeNetworkStream";
 
 /**
  * The client-side net.io component. Handles all client-side

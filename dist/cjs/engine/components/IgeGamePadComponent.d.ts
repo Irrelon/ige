@@ -1,7 +1,7 @@
-import type { IgeEngine } from "../../export/exports.js"
-import { IgeComponent } from "../../export/exports.js"
-import type { IgeEntity } from "../../export/exports.js"
-import type { IgeEntityBehaviourMethod } from "../../export/exports.js"
+import { IgeComponent } from "../core/IgeComponent.js"
+import type { IgeEngine } from "../core/IgeEngine.js";
+import type { IgeEntity } from "../core/IgeEntity.js"
+import type { IgeEntityBehaviourMethod } from "../../types/IgeEntityBehaviour.js";
 export declare class IgeGamePadComponent extends IgeComponent<IgeEngine> {
     "classId": string;
     "componentId": string;

@@ -1,4 +1,4 @@
-import type { IgeViewport } from "../export/exports.js"
+import type { IgeViewport } from "../engine/core/IgeViewport.js"
 declare global {
     interface Event {
         igeX: number;

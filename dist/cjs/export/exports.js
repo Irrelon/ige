@@ -258,4 +258,3 @@ __exportStar(require("../engine/ui/IgeUiAutoFlow"), exports);
 // Finally, the core Ige class and then the global class instance
 //////////////////////////////////////////////////////////////////////
 __exportStar(require("../engine/core/Ige"), exports);
-__exportStar(require("../engine/instance"), exports);

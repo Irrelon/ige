@@ -1,7 +1,7 @@
-import { IgeEntity } from "@/export/exports";
-import { registerClass } from "@/export/exports";
-import { ige } from "@/export/exports";
-import type { IgeCanvasRenderingContext2d } from "@/export/exports";
+import { IgeEntity } from "@/engine/core/IgeEntity";
+import { ige } from "@/engine/instance";
+import { registerClass } from "@/engine/utils/igeClassStore";
+import type { IgeCanvasRenderingContext2d } from "@/types/IgeCanvasRenderingContext2d";
 
 /**
  * Creates a new 2d scene.

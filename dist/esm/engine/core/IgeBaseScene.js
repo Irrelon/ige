@@ -1,8 +1,8 @@
-import { IgeScene2d } from "../../export/exports.js"
-import { IgeSceneGraph } from "../../export/exports.js"
-import { IgeViewport } from "../../export/exports.js"
-import { registerClass } from "../../export/exports.js"
-import { ige } from "../../export/exports.js"
+import { IgeScene2d } from "./IgeScene2d.js"
+import { IgeSceneGraph } from "./IgeSceneGraph.js"
+import { IgeViewport } from "./IgeViewport.js"
+import { ige } from "../instance.js"
+import { registerClass } from "../utils/igeClassStore.js"
 /**
  * When loaded into memory using ige.addGraph('IgeBaseScene') will create
  * the scene "baseScene" and the viewport "vp1" that are used in almost all

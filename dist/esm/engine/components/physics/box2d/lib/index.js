@@ -70,7 +70,7 @@ export { /*const*/ b2_maxTranslationSquared as maxTranslationSquared } from "./c
 export { /*const*/ b2_maxTriadDistance as maxTriadDistance } from "./common/b2_settings.js"
 export { /*const*/ b2_maxTriadDistanceSquared as maxTriadDistanceSquared } from "./common/b2_settings.js"
 export { 
-/*const*/ b2_minParticleSystemBufferCapacity as minParticleSystemBufferCapacity } from "./common/b2_settings.js";
+/*const*/ b2_minParticleSystemBufferCapacity as minParticleSystemBufferCapacity } from "./common/b2_settings";
 export { /*const*/ b2_minParticleWeight as minParticleWeight } from "./common/b2_settings.js"
 export { /*const*/ b2_particleStride as particleStride } from "./common/b2_settings.js"
 export { /*const*/ b2_pi as pi } from "./common/b2_settings.js"
@@ -204,7 +204,7 @@ export { /*class*/ b2MotorJoint as MotorJoint } from "./dynamics/b2_motor_joint.
 export { /*class*/ b2MouseJointDef as MouseJointDef } from "./dynamics/b2_mouse_joint.js"
 export { /*class*/ b2MouseJoint as MouseJoint } from "./dynamics/b2_mouse_joint.js"
 export { 
-/*class*/ b2PolygonAndCircleContact as PolygonAndCircleContact } from "./dynamics/b2_polygon_circle_contact.js";
+/*class*/ b2PolygonAndCircleContact as PolygonAndCircleContact } from "./dynamics/b2_polygon_circle_contact";
 export { /*class*/ b2PolygonContact as PolygonContact } from "./dynamics/b2_polygon_contact.js"
 export { /*class*/ b2PrismaticJointDef as PrismaticJointDef } from "./dynamics/b2_prismatic_joint.js"
 export { /*class*/ b2PrismaticJoint as PrismaticJoint } from "./dynamics/b2_prismatic_joint.js"
@@ -244,19 +244,19 @@ export const pbdStretchingModel = b2StretchingModel.b2_pbdStretchingModel;
 export const xpbdStretchingModel = b2StretchingModel.b2_xpbdStretchingModel;
 export { /*class*/ b2BuoyancyController as BuoyancyController } from "./controllers/b2_buoyancy_controller.js"
 export { 
-/*class*/ b2ConstantAccelController as ConstantAccelController } from "./controllers/b2_constant_accel_controller.js";
+/*class*/ b2ConstantAccelController as ConstantAccelController } from "./controllers/b2_constant_accel_controller";
 export { 
-/*class*/ b2ConstantForceController as ConstantForceController } from "./controllers/b2_constant_force_controller.js";
+/*class*/ b2ConstantForceController as ConstantForceController } from "./controllers/b2_constant_force_controller";
 export { /*abstract class*/ b2Controller as Controller } from "./controllers/b2_controller.js"
 export { /*class*/ b2ControllerEdge as ControllerEdge } from "./controllers/b2_controller.js"
 export { /*class*/ b2GravityController as GravityController } from "./controllers/b2_gravity_controller.js"
 export { 
-/*class*/ b2TensorDampingController as TensorDampingController } from "./controllers/b2_tensor_damping_controller.js";
+/*class*/ b2TensorDampingController as TensorDampingController } from "./controllers/b2_tensor_damping_controller";
 export { /*class*/ b2ParticleGroup as ParticleGroup } from "./particle/b2_particle_group.js"
 export { /*class*/ b2ParticleGroupDef as ParticleGroupDef } from "./particle/b2_particle_group.js"
 export { /*enum*/ b2ParticleGroupFlag as ParticleGroupFlag } from "./particle/b2_particle_group.js"
 export { 
-/*class*/ b2FixtureParticleQueryCallback as FixtureParticleQueryCallback } from "./particle/b2_particle_system.js";
+/*class*/ b2FixtureParticleQueryCallback as FixtureParticleQueryCallback } from "./particle/b2_particle_system";
 export { /*class*/ b2GrowableBuffer as GrowableBuffer } from "./particle/b2_particle_system.js"
 export { /*class*/ b2ParticleBodyContact as ParticleBodyContact } from "./particle/b2_particle_system.js"
 export { /*class*/ b2ParticleContact as ParticleContact } from "./particle/b2_particle_system.js"
@@ -264,35 +264,35 @@ export { /*class*/ b2ParticlePair as ParticlePair } from "./particle/b2_particle
 export { /*class*/ b2ParticlePairSet as ParticlePairSet } from "./particle/b2_particle_system.js"
 export { /*class*/ b2ParticleSystem as ParticleSystem } from "./particle/b2_particle_system.js"
 export { 
-/*class*/ b2ParticleSystem_CompositeShape as ParticleSystem_CompositeShape } from "./particle/b2_particle_system.js";
+/*class*/ b2ParticleSystem_CompositeShape as ParticleSystem_CompositeShape } from "./particle/b2_particle_system";
 export { 
-/*class*/ b2ParticleSystem_ConnectionFilter as ParticleSystem_ConnectionFilter } from "./particle/b2_particle_system.js";
+/*class*/ b2ParticleSystem_ConnectionFilter as ParticleSystem_ConnectionFilter } from "./particle/b2_particle_system";
 export { /*class*/ b2ParticleSystemDef as ParticleSystemDef } from "./particle/b2_particle_system.js"
 export { 
-/*class*/ b2ParticleSystem_DestroyParticlesInShapeCallback as ParticleSystem_DestroyParticlesInShapeCallback } from "./particle/b2_particle_system.js";
+/*class*/ b2ParticleSystem_DestroyParticlesInShapeCallback as ParticleSystem_DestroyParticlesInShapeCallback } from "./particle/b2_particle_system";
 export { 
-/*class*/ b2ParticleSystem_FixedSetAllocator as ParticleSystem_FixedSetAllocator } from "./particle/b2_particle_system.js";
+/*class*/ b2ParticleSystem_FixedSetAllocator as ParticleSystem_FixedSetAllocator } from "./particle/b2_particle_system";
 export { 
-/*class*/ b2ParticleSystem_FixtureParticle as ParticleSystem_FixtureParticle } from "./particle/b2_particle_system.js";
+/*class*/ b2ParticleSystem_FixtureParticle as ParticleSystem_FixtureParticle } from "./particle/b2_particle_system";
 export { 
-/*class*/ b2ParticleSystem_FixtureParticleSet as ParticleSystem_FixtureParticleSet } from "./particle/b2_particle_system.js";
+/*class*/ b2ParticleSystem_FixtureParticleSet as ParticleSystem_FixtureParticleSet } from "./particle/b2_particle_system";
 export { 
-/*class*/ b2ParticleSystem_InsideBoundsEnumerator as ParticleSystem_InsideBoundsEnumerator } from "./particle/b2_particle_system.js";
+/*class*/ b2ParticleSystem_InsideBoundsEnumerator as ParticleSystem_InsideBoundsEnumerator } from "./particle/b2_particle_system";
 export { 
-/*class*/ b2ParticleSystem_JoinParticleGroupsFilter as ParticleSystem_JoinParticleGroupsFilter } from "./particle/b2_particle_system.js";
+/*class*/ b2ParticleSystem_JoinParticleGroupsFilter as ParticleSystem_JoinParticleGroupsFilter } from "./particle/b2_particle_system";
 export { 
-/*class*/ b2ParticleSystem_ParticleListNode as ParticleSystem_ParticleListNode } from "./particle/b2_particle_system.js";
+/*class*/ b2ParticleSystem_ParticleListNode as ParticleSystem_ParticleListNode } from "./particle/b2_particle_system";
 export { 
-/*class*/ b2ParticleSystem_ParticlePair as ParticleSystem_ParticlePair } from "./particle/b2_particle_system.js";
+/*class*/ b2ParticleSystem_ParticlePair as ParticleSystem_ParticlePair } from "./particle/b2_particle_system";
 export { /*class*/ b2ParticleSystem_Proxy as ParticleSystem_Proxy } from "./particle/b2_particle_system.js"
 export { 
-/*class*/ b2ParticleSystem_ReactiveFilter as ParticleSystem_ReactiveFilter } from "./particle/b2_particle_system.js";
+/*class*/ b2ParticleSystem_ReactiveFilter as ParticleSystem_ReactiveFilter } from "./particle/b2_particle_system";
 export { 
-/*class*/ b2ParticleSystem_SolveCollisionCallback as ParticleSystem_SolveCollisionCallback } from "./particle/b2_particle_system.js";
+/*class*/ b2ParticleSystem_SolveCollisionCallback as ParticleSystem_SolveCollisionCallback } from "./particle/b2_particle_system";
 export { 
-/*class*/ b2ParticleSystem_UpdateBodyContactsCallback as ParticleSystem_UpdateBodyContactsCallback } from "./particle/b2_particle_system.js";
+/*class*/ b2ParticleSystem_UpdateBodyContactsCallback as ParticleSystem_UpdateBodyContactsCallback } from "./particle/b2_particle_system";
 export { 
-/*class*/ b2ParticleSystem_UserOverridableBuffer as ParticleSystem_UserOverridableBuffer } from "./particle/b2_particle_system.js";
+/*class*/ b2ParticleSystem_UserOverridableBuffer as ParticleSystem_UserOverridableBuffer } from "./particle/b2_particle_system";
 export { /*class*/ b2ParticleTriad as ParticleTriad } from "./particle/b2_particle_system.js"
 export { /*class*/ b2ParticleDef as ParticleDef } from "./particle/b2_particle.js"
 export { /*class*/ b2ParticleHandle as ParticleHandle } from "./particle/b2_particle.js"

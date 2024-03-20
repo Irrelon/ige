@@ -89,7 +89,11 @@ export function b2CalculateParticleIterations(gravity, radius, timeStep) {
 }
 export class b2ParticleHandle {
     m_index = b2_invalidParticleIndex;
-    GetIndex() { return this.m_index; }
-    SetIndex(index) { this.m_index = index; }
+    GetIndex() {
+        return this.m_index;
+    }
+    SetIndex(index) {
+        this.m_index = index;
+    }
 }
 // #endif

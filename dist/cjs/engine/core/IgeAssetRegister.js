@@ -1,8 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.IgeAssetRegister = void 0;
-const exports_1 = require("../../export/exports.js");
-class IgeAssetRegister extends exports_1.IgeEventingClass {
+const IgeEventingClass_1 = require("./IgeEventingClass.js");
+class IgeAssetRegister extends IgeEventingClass_1.IgeEventingClass {
     constructor() {
         super(...arguments);
         this._assetById = {};

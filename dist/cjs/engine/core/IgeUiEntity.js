@@ -2,16 +2,16 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.IgeUiEntity = void 0;
 // TODO: Implement the _stringify() method for this class
-const exports_1 = require("../../export/exports.js");
-const exports_2 = require("../../export/exports.js");
-const exports_3 = require("../../export/exports.js");
-const exports_4 = require("../../export/exports.js");
+const IgeEntity_1 = require("./IgeEntity.js");
+const instance_1 = require("../instance.js");
+const igeClassStore_1 = require("../utils/igeClassStore.js");
+const maths_1 = require("../utils/maths.js");
 /**
  * Creates a new UI entity. UI entities use more resources and CPU
  * than standard IgeEntity instances so only use them if an IgeEntity
  * won't do the job.
  */
-class IgeUiEntity extends exports_1.IgeEntity {
+class IgeUiEntity extends IgeEntity_1.IgeEntity {
     constructor() {
         super(...arguments);
         this.classId = "IgeUiEntity";
@@ -153,10 +153,10 @@ class IgeUiEntity extends exports_1.IgeEntity {
                     // We have a parent, use it's geometry
                     parentWidth = this._parent._bounds2d.x;
                 }
-                else if (exports_4.ige.engine) {
+                else if (instance_1.ige.engine) {
                     // We don't have a parent so use the main canvas
                     // as a reference
-                    parentWidth = exports_4.ige.engine._bounds2d.x;
+                    parentWidth = instance_1.ige.engine._bounds2d.x;
                 }
                 // Calculate real width from percentage
                 this._uiLeft = ((parentWidth / 100) * val) | 0;
@@ -192,10 +192,10 @@ class IgeUiEntity extends exports_1.IgeEntity {
                         // We have a parent, use it's geometry
                         parentWidth = this._parent._bounds2d.x;
                     }
-                    else if (exports_4.ige.engine) {
+                    else if (instance_1.ige.engine) {
                         // We don't have a parent so use the main canvas
                         // as a reference
-                        parentWidth = exports_4.ige.engine._bounds2d.x;
+                        parentWidth = instance_1.ige.engine._bounds2d.x;
                     }
                     // Calculate real width from percentage
                     this._uiRight = ((parentWidth / 100) * val) | 0;
@@ -235,10 +235,10 @@ class IgeUiEntity extends exports_1.IgeEntity {
                         // We have a parent, use it's geometry
                         parentWidth = this._parent._bounds2d.x2;
                     }
-                    else if (exports_4.ige.engine) {
+                    else if (instance_1.ige.engine) {
                         // We don't have a parent so use the main canvas
                         // as a reference
-                        parentWidth = exports_4.ige.engine._bounds2d.x2;
+                        parentWidth = instance_1.ige.engine._bounds2d.x2;
                     }
                     // Calculate real width from percentage
                     this._uiCenter = ((parentWidth / 100) * val) | 0;
@@ -279,10 +279,10 @@ class IgeUiEntity extends exports_1.IgeEntity {
                     // We have a parent, use it's geometry
                     parentHeight = this._parent._bounds2d.y;
                 }
-                else if (exports_4.ige.engine) {
+                else if (instance_1.ige.engine) {
                     // We don't have a parent so use the main canvas
                     // as a reference
-                    parentHeight = exports_4.ige.engine._bounds2d.y;
+                    parentHeight = instance_1.ige.engine._bounds2d.y;
                 }
                 // Calculate real width from percentage
                 this._uiTop = ((parentHeight / 100) * val) | 0;
@@ -318,10 +318,10 @@ class IgeUiEntity extends exports_1.IgeEntity {
                         // We have a parent, use it's geometry
                         parentHeight = this._parent._bounds2d.y;
                     }
-                    else if (exports_4.ige.engine) {
+                    else if (instance_1.ige.engine) {
                         // We don't have a parent so use the main canvas
                         // as a reference
-                        parentHeight = exports_4.ige.engine._bounds2d.y;
+                        parentHeight = instance_1.ige.engine._bounds2d.y;
                     }
                     // Calculate real width from percentage
                     this._uiBottom = ((parentHeight / 100) * val) | 0;
@@ -361,10 +361,10 @@ class IgeUiEntity extends exports_1.IgeEntity {
                         // We have a parent, use it's geometry
                         parentWidth = this._parent._bounds2d.y2;
                     }
-                    else if (exports_4.ige.engine) {
+                    else if (instance_1.ige.engine) {
                         // We don't have a parent so use the main canvas
                         // as a reference
-                        parentWidth = exports_4.ige.engine._bounds2d.y2;
+                        parentWidth = instance_1.ige.engine._bounds2d.y2;
                     }
                     // Calculate real width from percentage
                     this._uiMiddle = ((parentWidth / 100) * val) | 0;
@@ -408,10 +408,10 @@ class IgeUiEntity extends exports_1.IgeEntity {
                         this._bounds2d.x = newVal;
                         this._bounds2d.x2 = Math.floor(this._bounds2d.x / 2);
                     }
-                    else if (exports_4.ige.engine) {
+                    else if (instance_1.ige.engine) {
                         // We don't have a parent so use the main canvas
                         // as a reference
-                        const parentWidth = exports_4.ige.engine._bounds2d.x;
+                        const parentWidth = instance_1.ige.engine._bounds2d.x;
                         const val = parseInt(px, 10);
                         // Calculate real height from percentage
                         this._bounds2d.x = ((parentWidth / 100) * val + this._widthModifier) | 0;
@@ -462,10 +462,10 @@ class IgeUiEntity extends exports_1.IgeEntity {
                         this._bounds2d.y = newVal;
                         this._bounds2d.y2 = Math.floor(this._bounds2d.y / 2);
                     }
-                    else if (exports_4.ige.engine) {
+                    else if (instance_1.ige.engine) {
                         // We don't have a parent so use the main canvas
                         // as a reference
-                        const parentHeight = exports_4.ige.engine._bounds2d.y;
+                        const parentHeight = instance_1.ige.engine._bounds2d.y;
                         const val = parseInt(px, 10);
                         // Calculate real height from percentage
                         this._bounds2d.y = ((parentHeight / 100) * val + this._heightModifier) | 0;
@@ -1126,14 +1126,14 @@ class IgeUiEntity extends exports_1.IgeEntity {
                 ctx.lineWidth = this._borderTopWidth;
                 if (this._borderTopLeftRadius > 0) {
                     // Top-left corner top-half
-                    ctx.arc(left + this._borderTopLeftRadius, top + this._borderTopLeftRadius, this._borderTopLeftRadius, 225 * exports_3.PI180, 270 * exports_3.PI180);
+                    ctx.arc(left + this._borderTopLeftRadius, top + this._borderTopLeftRadius, this._borderTopLeftRadius, 225 * maths_1.PI180, 270 * maths_1.PI180);
                 }
                 // Top border
                 ctx.moveTo(left + this._borderTopLeftRadius, top);
                 ctx.lineTo(left + width - this._borderTopRightRadius, top);
                 if (this._borderTopRightRadius > 0) {
                     // Top-right corner top-half
-                    ctx.arc(left + width - this._borderTopRightRadius, top + this._borderTopRightRadius, this._borderTopRightRadius, -90 * exports_3.PI180, -44 * exports_3.PI180); // use -44 instead of -45 to fully connect with next piece
+                    ctx.arc(left + width - this._borderTopRightRadius, top + this._borderTopRightRadius, this._borderTopRightRadius, -90 * maths_1.PI180, -44 * maths_1.PI180); // use -44 instead of -45 to fully connect with next piece
                 }
             }
             if (!this._borderRightWidth ||
@@ -1145,14 +1145,14 @@ class IgeUiEntity extends exports_1.IgeEntity {
                 ctx.strokeStyle = this._borderRightColor;
                 ctx.lineWidth = this._borderRightWidth;
                 if (this._borderTopRightRadius > 0) {
-                    ctx.arc(left + width - this._borderTopRightRadius, top + this._borderTopRightRadius, this._borderTopRightRadius, -45 * exports_3.PI180, 0);
+                    ctx.arc(left + width - this._borderTopRightRadius, top + this._borderTopRightRadius, this._borderTopRightRadius, -45 * maths_1.PI180, 0);
                 }
                 // Right border
                 ctx.moveTo(left + width, top + this._borderTopRightRadius);
                 ctx.lineTo(left + width, top + height - this._borderBottomRightRadius);
                 if (this._borderBottomRightRadius > 0) {
                     // Bottom-right corner top-half
-                    ctx.arc(left + width - this._borderBottomRightRadius, top + height - this._borderBottomRightRadius, this._borderTopRightRadius, 0, 46 * exports_3.PI180); // use 46 instead of 45 to fully connect with next piece
+                    ctx.arc(left + width - this._borderBottomRightRadius, top + height - this._borderBottomRightRadius, this._borderTopRightRadius, 0, 46 * maths_1.PI180); // use 46 instead of 45 to fully connect with next piece
                 }
             }
             if (!this._borderBottomWidth ||
@@ -1164,14 +1164,14 @@ class IgeUiEntity extends exports_1.IgeEntity {
                 ctx.strokeStyle = this._borderBottomColor;
                 ctx.lineWidth = this._borderBottomWidth;
                 if (this._borderBottomRightRadius > 0) {
-                    ctx.arc(left + width - this._borderBottomRightRadius, top + height - this._borderBottomRightRadius, this._borderBottomRightRadius, 45 * exports_3.PI180, 90 * exports_3.PI180);
+                    ctx.arc(left + width - this._borderBottomRightRadius, top + height - this._borderBottomRightRadius, this._borderBottomRightRadius, 45 * maths_1.PI180, 90 * maths_1.PI180);
                 }
                 // Bottom border
                 ctx.moveTo(left + width - this._borderBottomRightRadius, top + height);
                 ctx.lineTo(left + this._borderBottomLeftRadius, top + height);
                 if (this._borderBottomLeftRadius > 0) {
                     // Bottom-left corner bottom-half
-                    ctx.arc(left + this._borderBottomLeftRadius, top + height - this._borderBottomLeftRadius, this._borderBottomLeftRadius, 90 * exports_3.PI180, 136 * exports_3.PI180); // use 136 instead of 135 to fully connect with next piece
+                    ctx.arc(left + this._borderBottomLeftRadius, top + height - this._borderBottomLeftRadius, this._borderBottomLeftRadius, 90 * maths_1.PI180, 136 * maths_1.PI180); // use 136 instead of 135 to fully connect with next piece
                 }
             }
             if (!this._borderLeftWidth ||
@@ -1183,14 +1183,14 @@ class IgeUiEntity extends exports_1.IgeEntity {
                 ctx.strokeStyle = this._borderLeftColor;
                 ctx.lineWidth = this._borderLeftWidth;
                 if (this._borderBottomLeftRadius > 0) {
-                    ctx.arc(left + this._borderBottomLeftRadius, top + height - this._borderBottomLeftRadius, this._borderBottomLeftRadius, 135 * exports_3.PI180, 180 * exports_3.PI180);
+                    ctx.arc(left + this._borderBottomLeftRadius, top + height - this._borderBottomLeftRadius, this._borderBottomLeftRadius, 135 * maths_1.PI180, 180 * maths_1.PI180);
                 }
                 // Left border
                 ctx.moveTo(left, top + height - this._borderBottomLeftRadius);
                 ctx.lineTo(left, top + this._borderTopLeftRadius);
                 if (this._borderTopLeftRadius > 0) {
                     // Top-left corner bottom-half
-                    ctx.arc(left + this._borderTopLeftRadius, top + this._borderTopLeftRadius, this._borderTopLeftRadius, 180 * exports_3.PI180, 226 * exports_3.PI180); // use 226 instead of 225 to fully connect with next piece
+                    ctx.arc(left + this._borderTopLeftRadius, top + this._borderTopLeftRadius, this._borderTopLeftRadius, 180 * maths_1.PI180, 226 * maths_1.PI180); // use 226 instead of 225 to fully connect with next piece
                 }
             }
             ctx.stroke();
@@ -1198,4 +1198,4 @@ class IgeUiEntity extends exports_1.IgeEntity {
     }
 }
 exports.IgeUiEntity = IgeUiEntity;
-(0, exports_2.registerClass)(IgeUiEntity);
+(0, igeClassStore_1.registerClass)(IgeUiEntity);

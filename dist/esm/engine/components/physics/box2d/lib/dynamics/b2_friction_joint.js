@@ -209,8 +209,12 @@ export class b2FrictionJoint extends b2Joint {
     GetReactionTorque(inv_dt) {
         return inv_dt * this.m_angularImpulse;
     }
-    GetLocalAnchorA() { return this.m_localAnchorA; }
-    GetLocalAnchorB() { return this.m_localAnchorB; }
+    GetLocalAnchorA() {
+        return this.m_localAnchorA;
+    }
+    GetLocalAnchorB() {
+        return this.m_localAnchorB;
+    }
     SetMaxForce(force) {
         this.m_maxForce = force;
     }

@@ -1,4 +1,4 @@
-import { IgeEventingClass } from "../../export/exports.js"
+import { IgeEventingClass } from "./IgeEventingClass.js"
 export declare class IgeQuest extends IgeEventingClass {
     classId: string;
     private _linear;

@@ -1,5 +1,5 @@
-import { IgeEntity } from "../../../../export/exports.js"
-import type { IgeCanvasRenderingContext2d } from "../../../../export/exports.js"
+import { IgeEntity } from "../../../core/IgeEntity.js"
+import { IgeCanvasRenderingContext2d } from "../../../../types/IgeCanvasRenderingContext2d.js"
 export declare class IgeBox2dDebugPainter extends IgeEntity {
     classId: string;
     _entity: IgeEntity;

@@ -1,5 +1,5 @@
-import { IgeEntity } from "@/export/exports";
-import { IgeMap2d } from "@/export/exports";
+import { IgeEntity } from "@/engine/core/IgeEntity";
+import { IgeMap2d } from "@/engine/core/IgeMap2d";
 
 // TODO: Does this NEED to be an IgeEntity or can it be an IgeObject?
 export class IgeCollisionMap2d extends IgeEntity {

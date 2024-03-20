@@ -1,5 +1,5 @@
-import { IgeEventingClass } from "../../export/exports.js"
-import { ige } from "../../export/exports.js"
+import { IgeEventingClass } from "../core/IgeEventingClass.js"
+import { ige } from "../instance.js"
 export class IgeAudioItem extends IgeEventingClass {
     classId = "IgeAudioItem";
     _url;

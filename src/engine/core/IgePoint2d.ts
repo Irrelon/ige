@@ -1,4 +1,5 @@
-import type { IgePoint3d } from "@/export/exports";
+import type { IgePoint3d } from "@/engine/core/IgePoint3d";
+
 
 /**
  * Creates a new 2d point (x, y).
@@ -33,8 +34,8 @@ export class IgePoint2d {
 	 * @param {Boolean=} val True or false.
 	 * @return {*} Either `this` for chaining or current floor setting.
 	 */
-	floor(val: boolean): this;
-	floor(): boolean;
+	floor (val: boolean): this;
+	floor (): boolean;
 	floor (val?: boolean) {
 		if (val !== undefined) {
 			this._floor = val;

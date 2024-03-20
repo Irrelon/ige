@@ -18,15 +18,15 @@
 */
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.b2Contact = exports.b2ContactEdge = exports.b2MixRestitutionThreshold = exports.b2MixRestitution = exports.b2MixFriction = void 0;
-const b2_settings_js_1 = require("../common/b2_settings.js");
-const b2_math_js_1 = require("../common/b2_math.js");
-const b2_collision_js_1 = require("../collision/b2_collision.js");
-const b2_collision_js_2 = require("../collision/b2_collision.js");
-const b2_time_of_impact_js_1 = require("../collision/b2_time_of_impact.js");
+const b2_settings_1 = require("../common/b2_settings");
+const b2_math_1 = require("../common/b2_math");
+const b2_collision_1 = require("../collision/b2_collision");
+const b2_collision_2 = require("../collision/b2_collision");
+const b2_time_of_impact_1 = require("../collision/b2_time_of_impact");
 /// Friction mixing law. The idea is to allow either fixture to drive the friction to zero.
 /// For example, anything slides on ice.
 function b2MixFriction(friction1, friction2) {
-    return (0, b2_math_js_1.b2Sqrt)(friction1 * friction2);
+    return (0, b2_math_1.b2Sqrt)(friction1 * friction2);
 }
 exports.b2MixFriction = b2MixFriction;
 /// Restitution mixing law. The idea is allow for anything to bounce off an inelastic surface.
@@ -80,14 +80,14 @@ class b2Contact {
         this.m_nodeB = new b2ContactEdge(this);
         this.m_indexA = 0;
         this.m_indexB = 0;
-        this.m_manifold = new b2_collision_js_1.b2Manifold(); // TODO: readonly
+        this.m_manifold = new b2_collision_1.b2Manifold(); // TODO: readonly
         this.m_toiCount = 0;
         this.m_toi = 0;
         this.m_friction = 0;
         this.m_restitution = 0;
         this.m_restitutionThreshold = 0;
         this.m_tangentSpeed = 0;
-        this.m_oldManifold = new b2_collision_js_1.b2Manifold(); // TODO: readonly
+        this.m_oldManifold = new b2_collision_1.b2Manifold(); // TODO: readonly
     }
     GetManifold() {
         return this.m_manifold;
@@ -209,7 +209,7 @@ class b2Contact {
         if (sensor) {
             const shapeA = this.GetShapeA();
             const shapeB = this.GetShapeB();
-            touching = (0, b2_collision_js_2.b2TestOverlapShape)(shapeA, this.m_indexA, shapeB, this.m_indexB, xfA, xfB);
+            touching = (0, b2_collision_2.b2TestOverlapShape)(shapeA, this.m_indexA, shapeB, this.m_indexB, xfA, xfB);
             // Sensors don't generate manifolds.
             this.m_manifold.pointCount = 0;
         }
@@ -254,12 +254,12 @@ class b2Contact {
         input.proxyB.SetShape(this.GetShapeB(), this.m_indexB);
         input.sweepA.Copy(sweepA);
         input.sweepB.Copy(sweepB);
-        input.tMax = b2_settings_js_1.b2_linearSlop;
+        input.tMax = b2_settings_1.b2_linearSlop;
         const output = b2Contact.ComputeTOI_s_output;
-        (0, b2_time_of_impact_js_1.b2TimeOfImpact)(output, input);
+        (0, b2_time_of_impact_1.b2TimeOfImpact)(output, input);
         return output.t;
     }
 }
 exports.b2Contact = b2Contact;
-b2Contact.ComputeTOI_s_input = new b2_time_of_impact_js_1.b2TOIInput();
-b2Contact.ComputeTOI_s_output = new b2_time_of_impact_js_1.b2TOIOutput();
+b2Contact.ComputeTOI_s_input = new b2_time_of_impact_1.b2TOIInput();
+b2Contact.ComputeTOI_s_output = new b2_time_of_impact_1.b2TOIOutput();

@@ -1,19 +1,19 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.IgeEntityBox2d = void 0;
-const exports_1 = require("../../../../export/exports.js");
-const exports_2 = require("../../../../export/exports.js");
-const exports_3 = require("../../../../export/exports.js");
-const exports_4 = require("../../../../export/exports.js");
+const igeBox2dContactHelpers_1 = require("./igeBox2dContactHelpers.js");
+const b2_math_1 = require("./lib/common/b2_math.js");
+const IgeEntity_1 = require("../../../core/IgeEntity.js");
+const instance_1 = require("../../../instance.js");
 /**
  * Creates a new entity with Box2D integration.
  */
-class IgeEntityBox2d extends exports_4.IgeEntity {
+class IgeEntityBox2d extends IgeEntity_1.IgeEntity {
     constructor() {
         super();
         this.classId = "IgeEntityBox2d";
         this._box2dNoDebug = false;
-        this._b2dRef = exports_1.ige.box2d;
+        this._b2dRef = instance_1.ige.box2d;
     }
     /**
      * Gets / sets the Box2D body's active flag which determines
@@ -135,11 +135,11 @@ class IgeEntityBox2d extends exports_4.IgeEntity {
     _checkContact(contact, arr) {
         const arrCount = arr.length;
         let otherEntity;
-        if ((0, exports_2.igeBox2dContactEntityA)(contact)._id === this._id) {
-            otherEntity = (0, exports_2.igeBox2dContactEntityB)(contact);
+        if ((0, igeBox2dContactHelpers_1.igeBox2dContactEntityA)(contact)._id === this._id) {
+            otherEntity = (0, igeBox2dContactHelpers_1.igeBox2dContactEntityB)(contact);
         }
-        else if ((0, exports_2.igeBox2dContactEntityB)(contact)._id === this._id) {
-            otherEntity = (0, exports_2.igeBox2dContactEntityA)(contact);
+        else if ((0, igeBox2dContactHelpers_1.igeBox2dContactEntityB)(contact)._id === this._id) {
+            otherEntity = (0, igeBox2dContactHelpers_1.igeBox2dContactEntityA)(contact);
         }
         else {
             // This contact has nothing to do with us
@@ -182,7 +182,7 @@ class IgeEntityBox2d extends exports_4.IgeEntity {
             // not currently updating so let's override the standard
             // transform op and take over
             // Translate the body
-            entBox2d.SetPosition(new exports_3.b2Vec2(x / this._b2dRef._scaleRatio, y / this._b2dRef._scaleRatio));
+            entBox2d.SetPosition(new b2_math_1.b2Vec2(x / this._b2dRef._scaleRatio, y / this._b2dRef._scaleRatio));
             entBox2d.SetAwake(true);
         }
         return this;

@@ -1,7 +1,7 @@
-import { ige } from "../../../../export/exports.js"
-import { igeBox2dContactEntityA, igeBox2dContactEntityB } from "../../../../export/exports.js"
-import { b2Vec2 } from "../../../../export/exports.js"
-import { IgeEntity } from "../../../../export/exports.js"
+import { igeBox2dContactEntityA, igeBox2dContactEntityB } from "./igeBox2dContactHelpers.js"
+import { b2Vec2 } from "./lib/common/b2_math.js"
+import { IgeEntity } from "../../../core/IgeEntity.js"
+import { ige } from "../../../instance.js"
 /**
  * Creates a new entity with Box2D integration.
  */

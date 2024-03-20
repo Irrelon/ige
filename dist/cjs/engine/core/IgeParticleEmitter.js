@@ -1,15 +1,15 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.IgeParticleEmitter = void 0;
-const exports_1 = require("../../export/exports.js");
-const exports_2 = require("../../export/exports.js");
-const exports_3 = require("../../export/exports.js");
-const exports_4 = require("../../export/exports.js");
-const exports_5 = require("../../export/exports.js");
+const IgeTween_1 = require("./IgeTween.js");
+const IgeUiEntity_1 = require("./IgeUiEntity.js");
+const instance_1 = require("../instance.js");
+const igeClassStore_1 = require("../utils/igeClassStore.js");
+const maths_1 = require("../utils/maths.js");
 /**
  * Creates a new particle emitter.
  */
-class IgeParticleEmitter extends exports_2.IgeUiEntity {
+class IgeParticleEmitter extends IgeUiEntity_1.IgeUiEntity {
     constructor() {
         super();
         this.classId = "IgeParticleEmitter";
@@ -385,7 +385,7 @@ class IgeParticleEmitter extends exports_2.IgeUiEntity {
      * @param ctx
      */
     tick(ctx) {
-        this._currentDelta += exports_5.ige.engine._tickDelta;
+        this._currentDelta += instance_1.ige.engine._tickDelta;
         if (!this._particle)
             return;
         // Check if the emitter is mounted to anything and started, if not
@@ -517,7 +517,7 @@ class IgeParticleEmitter extends exports_2.IgeUiEntity {
                             // entity definition because some components may already
                             // have initialised due to the particle template
                             tempParticle.translateTo(translateX, translateY, translateZ);
-                            tempParticle.rotateTo(0, 0, (0, exports_4.degreesToRadians)(rotate));
+                            tempParticle.rotateTo(0, 0, (0, maths_1.degreesToRadians)(rotate));
                             tempParticle.scaleTo(scaleX, scaleY, scaleZ);
                             tempParticle.opacity(opacity);
                             if (this._applyDepthToParticles) {
@@ -534,13 +534,13 @@ class IgeParticleEmitter extends exports_2.IgeUiEntity {
                             }
                             tweens = [];
                             if (typeof deathRotate !== "undefined") {
-                                tweens.push(new exports_1.IgeTween(exports_5.ige)
+                                tweens.push(new IgeTween_1.IgeTween(instance_1.ige)
                                     .targetObj(tempParticle._rotate)
-                                    .properties({ z: (0, exports_4.degreesToRadians)(deathRotate) })
+                                    .properties({ z: (0, maths_1.degreesToRadians)(deathRotate) })
                                     .duration(life));
                             }
                             if (typeof deathOpacity !== "undefined") {
-                                tweens.push(new exports_1.IgeTween(exports_5.ige)
+                                tweens.push(new IgeTween_1.IgeTween(instance_1.ige)
                                     .targetObj(tempParticle)
                                     .properties({ _opacity: deathOpacity })
                                     .duration(life));
@@ -556,7 +556,7 @@ class IgeParticleEmitter extends exports_2.IgeUiEntity {
                                 scaleProps.z = deathScaleZ;
                             }
                             if (scaleProps.x || scaleProps.y || scaleProps.z) {
-                                tweens.push(new exports_1.IgeTween().targetObj(tempParticle._scale).properties(scaleProps).duration(life));
+                                tweens.push(new IgeTween_1.IgeTween().targetObj(tempParticle._scale).properties(scaleProps).duration(life));
                             }
                             if (typeof life === "number") {
                                 tempParticle.lifeSpan(life);
@@ -586,4 +586,4 @@ class IgeParticleEmitter extends exports_2.IgeUiEntity {
     }
 }
 exports.IgeParticleEmitter = IgeParticleEmitter;
-(0, exports_3.registerClass)(IgeParticleEmitter);
+(0, igeClassStore_1.registerClass)(IgeParticleEmitter);

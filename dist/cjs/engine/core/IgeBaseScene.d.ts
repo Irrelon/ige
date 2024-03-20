@@ -1,4 +1,4 @@
-import { IgeSceneGraph } from "../../export/exports.js"
+import { IgeSceneGraph } from "./IgeSceneGraph.js"
 /**
  * When loaded into memory using ige.addGraph('IgeBaseScene') will create
  * the scene "baseScene" and the viewport "vp1" that are used in almost all

@@ -57,4 +57,4 @@ function b2Log(message, ...args) {
     // console.log(message, ...args);
 }
 exports.b2Log = b2Log;
-__exportStar(require("./b2_common.js"), exports);
+__exportStar(require("./b2_common"), exports);

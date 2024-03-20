@@ -1,6 +1,6 @@
-import { IgeUiButton } from "@/export/exports";
-import { registerClass } from "@/export/exports";
-import type { IgeObject } from "@/export/exports";
+import type { IgeObject } from "@/engine/core/IgeObject";
+import { IgeUiButton } from "@/engine/ui/IgeUiButton";
+import { registerClass } from "@/engine/utils/igeClassStore";
 
 export class IgeUiRadioButton extends IgeUiButton {
 	classId = "IgeUiRadioButton";

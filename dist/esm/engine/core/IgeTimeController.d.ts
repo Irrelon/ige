@@ -1,7 +1,7 @@
-import type { IgeInterval } from "../../export/exports.js"
-import { IgeEventingClass } from "../../export/exports.js"
-import type { IgeEntityBehaviourMethod } from "../../export/exports.js"
-import type { IgeIsReadyPromise } from "../../export/exports.js"
+import { IgeEventingClass } from "./IgeEventingClass.js"
+import type { IgeInterval } from "./IgeInterval.js";
+import type { IgeEntityBehaviourMethod } from "../../types/IgeEntityBehaviour.js"
+import type { IgeIsReadyPromise } from "../../types/IgeIsReadyPromise.js"
 export declare class IgeTimeController extends IgeEventingClass implements IgeIsReadyPromise {
     static componentTargetClass: string;
     classId: string;

@@ -1,6 +1,6 @@
-import { IgeUiEntity } from "../../export/exports.js"
-import { IgeFontAlignX, IgeFontAlignY } from "../../export/exports.js"
-import type { IgeCanvasRenderingContext2d } from "../../export/exports.js"
+import { IgeUiEntity } from "./IgeUiEntity.js"
+import { IgeFontAlignX, IgeFontAlignY } from "../../enums/index.js";
+import type { IgeCanvasRenderingContext2d } from "../../types/IgeCanvasRenderingContext2d.js"
 /**
  * Creates a new font entity. A font entity will use a font sheet
  * (IgeFontSheet) or native font and render text.
@@ -109,7 +109,7 @@ export declare class IgeFontEntity extends IgeUiEntity {
      * @return {*} "this" when arguments are passed to allow method
      * chaining or the current value if no arguments are specified.
      */
-    colorOverlay(val?: string | CanvasGradient | CanvasPattern): string | CanvasPattern | CanvasGradient | this | undefined;
+    colorOverlay(val?: string | CanvasGradient | CanvasPattern): string | CanvasGradient | CanvasPattern | this | undefined;
     /**
      * A proxy for colorOverlay().
      */

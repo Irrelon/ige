@@ -1,8 +1,28 @@
-import type { IgeComponent, IgeTexture, IgeTileMap2d, IgeViewport } from "../../export/exports.js"
-import { IgeDummyCanvas, IgeEventingClass, IgeMatrix2d, IgePoint2d, IgePoint3d, IgePoly2d, IgeRect } from "../../export/exports.js"
-import type { IgeBehaviourType } from "../../export/exports.js"
-import { IgeIsometricDepthSortMode, IgeMountMode, IgeStreamMode } from "../../export/exports.js"
-import type { IgeBehaviourStore, IgeCanAcceptComponents, IgeCanRegisterByCategory, IgeCanRegisterById, IgeCanvasRenderingContext2d, IgeChildSortFunction, IgeDepthSortObject, IgeEntityBehaviourMethod, IgeInputEventHandler, IgePoint, IgeSmartTexture, IgeTimeStreamPacket } from "../../export/exports.js"
+import type { IgeComponent } from "./IgeComponent.js"
+import { IgeDummyCanvas } from "./IgeDummyCanvas.js";
+import { IgeEventingClass } from "./IgeEventingClass.js"
+import { IgeMatrix2d } from "./IgeMatrix2d.js";
+import { IgePoint2d } from "./IgePoint2d.js"
+import { IgePoint3d } from "./IgePoint3d.js";
+import { IgePoly2d } from "./IgePoly2d.js"
+import { IgeRect } from "./IgeRect.js";
+import type { IgeTexture } from "./IgeTexture.js"
+import type { IgeTileMap2d } from "./IgeTileMap2d.js";
+import type { IgeViewport } from "./IgeViewport.js"
+import type { IgeBehaviourType } from "../../enums/index.js";
+import { IgeIsometricDepthSortMode, IgeMountMode, IgeStreamMode } from "../../enums/index.js";
+import type { IgeBehaviourStore } from "../../types/IgeBehaviourStore.js"
+import type { IgeCanAcceptComponents } from "../../types/IgeCanAcceptComponents.js"
+import type { IgeCanRegisterByCategory } from "../../types/IgeCanRegisterByCategory.js"
+import type { IgeCanRegisterById } from "../../types/IgeCanRegisterById.js"
+import type { IgeCanvasRenderingContext2d } from "../../types/IgeCanvasRenderingContext2d.js"
+import type { IgeChildSortFunction } from "../../types/IgeChildSortFunction.js"
+import type { IgeDepthSortObject } from "../../types/IgeDepthSortObject.js"
+import type { IgeEntityBehaviourMethod } from "../../types/IgeEntityBehaviour.js"
+import type { IgeInputEventHandler } from "../../types/IgeInputEventHandler.js"
+import type { IgePoint } from "../../types/IgePoint.js"
+import type { IgeSmartTexture } from "../../types/IgeSmartTexture.js"
+import type { IgeTimeStreamPacket } from "../../types/IgeTimeStream.js"
 import type { IgeTriggerPolygonFunctionName } from "../../types/IgeTriggerPolygonFunctionName.js"
 export declare class IgeObject extends IgeEventingClass implements IgeCanRegisterById, IgeCanRegisterByCategory, IgeCanAcceptComponents {
     classId: string;
@@ -185,12 +205,9 @@ export declare class IgeObject extends IgeEventingClass implements IgeCanRegiste
      *     entity.drawBounds(false);
      * @example #Get the current flag value
      *     console.log(entity.drawBounds());
-     * @return {*}
-     * @param val
-     * @param recursive
      */
-    drawBounds(val: boolean, recursive?: boolean): this;
     drawBounds(): boolean;
+    drawBounds(val: boolean, recursive?: boolean): this;
     /**
      * Gets / sets the boolean flag determining if this object should have
      * its bounds data drawn when the bounds for all objects are being drawn.
@@ -725,9 +742,73 @@ export declare class IgeObject extends IgeEventingClass implements IgeCanRegiste
     cacheDirty(val: boolean): this;
     cacheDirty(): boolean;
     /**
-     * Registers ourself to the ige.classStore.
+     * Registers ourselves to the ige.classStore.
      */
     registerNetworkClass(): void;
+    /**
+     * Translates the entity to the passed values.
+     * @param {number} x The x co-ordinate.
+     * @param {number} y The y co-ordinate.
+     * @param {number} z The z co-ordinate.
+     * @example #Translate the entity to 10, 0, 0
+     *     entity.translateTo(10, 0, 0);
+     * @return {*}
+     */
+    translateTo(x: number, y: number, z: number): this;
+    /**
+     * Translates the entity by adding the passed values to
+     * the current translation values.
+     * @param {number} x The x co-ordinate.
+     * @param {number} y The y co-ordinate.
+     * @param {number} z The z co-ordinate.
+     * @example #Translate the entity by 10 along the x axis
+     *     entity.translateBy(10, 0, 0);
+     * @return {*}
+     */
+    translateBy(x: number, y: number, z: number): this;
+    /**
+     * Scale the entity to the passed values.
+     * @param {number} x The x co-ordinate.
+     * @param {number} y The y co-ordinate.
+     * @param {number} z The z co-ordinate.
+     * @example #Set the entity scale to 1 on all axes
+     *     entity.scaleTo(1, 1, 1);
+     * @return {*}
+     */
+    scaleTo(x: number, y: number, z: number): this;
+    /**
+     * Scales the entity by adding the passed values to
+     * the current scale values.
+     * @param {number} x The x co-ordinate.
+     * @param {number} y The y co-ordinate.
+     * @param {number} z The z co-ordinate.
+     * @example #Scale the entity by 2 on the x-axis
+     *     entity.scaleBy(2, 0, 0);
+     * @return {*}
+     */
+    scaleBy(x: number, y: number, z: number): this;
+    /**
+     * Rotates the entity by adding the passed values to
+     * the current rotation values.
+     * @param {number} x The x co-ordinate.
+     * @param {number} y The y co-ordinate.
+     * @param {number} z The z co-ordinate.
+     * @example #Rotate the entity by 10 degrees about the z axis
+     *     entity.rotateBy(0, 0, degreesToRadians(10));
+     * @return {*}
+     */
+    rotateBy(x: number, y: number, z: number): this;
+    /**
+     * Rotates the entity to the passed values.
+     * @param {number} x The x co-ordinate.
+     * @param {number} y The y co-ordinate.
+     * @param {number} z The z co-ordinate.
+     * @example #Rotate the entity to 10 degrees about the z axis
+     *     entity.rotateTo(0, 0, degreesToRadians(10));
+     * @return {*}
+     */
+    rotateTo(x: number, y: number, z: number): this;
+    originTo(x: number, y: number, z: number): this;
     /**
      * Gets / sets the `disable interpolation` flag. If set to true then
      * stream data being received by the client will not be interpolated

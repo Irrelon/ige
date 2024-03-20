@@ -64,7 +64,10 @@ export class b2PolygonShape extends b2Shape {
             if (vertices.length % 2 !== 0) {
                 throw new Error();
             }
-            return this._Set((index) => ({ x: vertices[index * 2], y: vertices[index * 2 + 1] }), vertices.length / 2);
+            return this._Set((index) => ({
+                x: vertices[index * 2],
+                y: vertices[index * 2 + 1]
+            }), vertices.length / 2);
         }
         else {
             const vertices = args[0];

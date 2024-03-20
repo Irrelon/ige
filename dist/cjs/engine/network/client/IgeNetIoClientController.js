@@ -1,17 +1,17 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.IgeNetIoClientController = void 0;
-const exports_1 = require("../../../export/exports.js");
-const exports_2 = require("../../../export/exports.js");
-const exports_3 = require("../../../export/exports.js");
-const exports_4 = require("../../../export/exports.js");
-const exports_5 = require("../../../export/exports.js");
-const exports_6 = require("../../../export/exports.js");
+const instance_1 = require("../../instance.js");
+const IgeNetIoClient_1 = require("./IgeNetIoClient.js");
+const IgeNetIoBaseController_1 = require("../IgeNetIoBaseController.js");
+const ids_1 = require("../../utils/ids.js");
+const igeClassStore_1 = require("../../utils/igeClassStore.js");
+const enums_1 = require("../../../enums/index.js");
 /**
  * The client-side net.io component. Handles all client-side
  * networking systems.
  */
-class IgeNetIoClientController extends exports_6.IgeNetIoBaseController {
+class IgeNetIoClientController extends IgeNetIoBaseController_1.IgeNetIoBaseController {
     constructor() {
         super();
         this.version = "1.0.0";
@@ -55,7 +55,7 @@ class IgeNetIoClientController extends exports_6.IgeNetIoBaseController {
             }
         };
         this._onTimeSync = (data) => {
-            const localTime = Math.floor(exports_2.ige.engine._currentTime);
+            const localTime = Math.floor(instance_1.ige.engine._currentTime);
             const serverTime = data[0];
             this._latency = localTime - serverTime;
             /*if (localTime < sendTime) {
@@ -94,13 +94,13 @@ class IgeNetIoClientController extends exports_6.IgeNetIoBaseController {
             const createDataArgs = data[3] || [];
             const transformData = data[4];
             const initialData = data[5];
-            const parent = exports_2.ige.$(parentId);
+            const parent = instance_1.ige.$(parentId);
             //console.log("Stream create", data);
             // Check the required class exists
             if (parent) {
                 // Check that the entity doesn't already exist
-                if (!exports_2.ige.$(entityId)) {
-                    const ClassConstructor = exports_4.igeClassStore[classId];
+                if (!instance_1.ige.$(entityId)) {
+                    const ClassConstructor = igeClassStore_1.igeClassStore[classId];
                     if (ClassConstructor) {
                         //console.log("Creating ", classId, createDataArgs);
                         // The entity does not currently exist so create it!
@@ -119,8 +119,8 @@ class IgeNetIoClientController extends exports_6.IgeNetIoBaseController {
                         this.emit("entityCreated", entity);
                     }
                     else {
-                        exports_2.ige.network.stop();
-                        exports_2.ige.engine.stop();
+                        instance_1.ige.network.stop();
+                        instance_1.ige.engine.stop();
                         this.log(`Network stream cannot create entity with class "${classId}" because the class has not been defined! The engine will now stop.`, "error");
                     }
                 }
@@ -129,18 +129,18 @@ class IgeNetIoClientController extends exports_6.IgeNetIoBaseController {
                 }
             }
             else {
-                exports_2.ige.network.stop();
-                exports_2.ige.engine.stop();
+                instance_1.ige.network.stop();
+                instance_1.ige.engine.stop();
                 this.log(`Cannot properly handle network streamed entity with id "${entityId}" because it's parent with id "${parentId}" does not exist on the scenegraph!`, "warning");
             }
         };
         this._onStreamDestroy = (data) => {
-            const entity = exports_2.ige.$(data[1]);
+            const entity = instance_1.ige.$(data[1]);
             //console.log("Stream destroy", data);
             if (!entity) {
                 return;
             }
-            const destroyDelta = this._renderLatency + (exports_2.ige.engine._currentTime - data[0]);
+            const destroyDelta = this._renderLatency + (instance_1.ige.engine._currentTime - data[0]);
             if (destroyDelta > 0) {
                 // Give the entity a lifespan to destroy it in x ms
                 entity.lifeSpan(destroyDelta, () => {
@@ -169,7 +169,7 @@ class IgeNetIoClientController extends exports_6.IgeNetIoBaseController {
             if (!entityId)
                 return;
             // Check if the entity with this ID currently exists
-            const entity = exports_2.ige.$(entityId);
+            const entity = instance_1.ige.$(entityId);
             if (!entity) {
                 //this.log("+++ Stream: Data received for unknown entity (" + entityId + ")");
                 //this.stop();
@@ -191,10 +191,10 @@ class IgeNetIoClientController extends exports_6.IgeNetIoBaseController {
             delete entity._streamJustCreated;
         };
         // Define the network stream commands
-        this.define(exports_3.IGE_NETWORK_STREAM_CREATE, this._onStreamCreate);
-        this.define(exports_3.IGE_NETWORK_STREAM_DESTROY, this._onStreamDestroy);
-        this.define(exports_3.IGE_NETWORK_STREAM_DATA, this._onStreamData);
-        this.define(exports_3.IGE_NETWORK_STREAM_TIME, this._onStreamTime);
+        this.define(enums_1.IGE_NETWORK_STREAM_CREATE, this._onStreamCreate);
+        this.define(enums_1.IGE_NETWORK_STREAM_DESTROY, this._onStreamDestroy);
+        this.define(enums_1.IGE_NETWORK_STREAM_DATA, this._onStreamData);
+        this.define(enums_1.IGE_NETWORK_STREAM_TIME, this._onStreamTime);
     }
     /**
      * Gets the current socket id.
@@ -226,7 +226,7 @@ class IgeNetIoClientController extends exports_6.IgeNetIoBaseController {
             if (typeof WebSocket === "undefined") {
                 return;
             }
-            this._io = new exports_1.IgeNetIoClient(url);
+            this._io = new IgeNetIoClient_1.IgeNetIoClient(url);
             this._state = 1;
             this._io.on("connect", (clientId) => {
                 this._state = 2; // Connected
@@ -254,13 +254,13 @@ class IgeNetIoClientController extends exports_6.IgeNetIoBaseController {
                         }
                     }
                     // Set up default commands
-                    this.define(exports_3.IGE_NETWORK_REQUEST, this._onRequest);
-                    this.define(exports_3.IGE_NETWORK_RESPONSE, this._onResponse);
-                    this.define(exports_3.IGE_NETWORK_TIME_SYNC, this._onTimeSync);
+                    this.define(enums_1.IGE_NETWORK_REQUEST, this._onRequest);
+                    this.define(enums_1.IGE_NETWORK_RESPONSE, this._onResponse);
+                    this.define(enums_1.IGE_NETWORK_TIME_SYNC, this._onTimeSync);
                     this.log("Received network command list with count: " + commandCount);
                     // Setup timescale and current time
-                    exports_2.ige.engine.timeScale(parseFloat(data.ts));
-                    exports_2.ige.engine._currentTime = parseInt(data.ct);
+                    instance_1.ige.engine.timeScale(parseFloat(data.ts));
+                    instance_1.ige.engine._currentTime = parseInt(data.ct);
                     // Now fire the start() callback
                     if (callback) {
                         callback();
@@ -346,7 +346,7 @@ class IgeNetIoClientController extends exports_6.IgeNetIoBaseController {
         return new Promise((resolve) => {
             // Build the request object
             const req = {
-                id: (0, exports_5.newIdHex)(),
+                id: (0, ids_1.newIdHex)(),
                 cmd: commandName,
                 data: data,
                 callback: (...args) => {
@@ -362,7 +362,7 @@ class IgeNetIoClientController extends exports_6.IgeNetIoBaseController {
             // Store the request object
             this._requests[req.id] = req;
             // Send the network request packet
-            this.send(exports_3.IGE_NETWORK_REQUEST, {
+            this.send(enums_1.IGE_NETWORK_REQUEST, {
                 id: req.id,
                 cmd: commandName,
                 data: req.data
@@ -379,7 +379,7 @@ class IgeNetIoClientController extends exports_6.IgeNetIoBaseController {
         const req = this._requests[requestId];
         if (req) {
             // Send the network response packet
-            this.send(exports_3.IGE_NETWORK_RESPONSE, {
+            this.send(enums_1.IGE_NETWORK_RESPONSE, {
                 id: requestId,
                 cmd: req.cmd,
                 data: data
@@ -429,7 +429,7 @@ class IgeNetIoClientController extends exports_6.IgeNetIoBaseController {
     }
     _sendTimeSync(data) {
         // Send the time sync command
-        this.send(exports_3.IGE_NETWORK_TIME_SYNC, data);
+        this.send(enums_1.IGE_NETWORK_TIME_SYNC, data);
     }
     /**
      * Gets /Sets the amount of milliseconds in the past that the renderer will
@@ -465,13 +465,13 @@ class IgeNetIoClientController extends exports_6.IgeNetIoBaseController {
      * @param leaveAllOthers
      */
     joinRoom(roomId, leaveAllOthers = true) {
-        this.send(exports_1.IGE_NETWORK_JOIN_ROOM, [roomId, leaveAllOthers]);
+        this.send(enums_1.IGE_NETWORK_JOIN_ROOM, [roomId, leaveAllOthers]);
     }
     leaveRoom(roomId) {
-        this.send(exports_1.IGE_NETWORK_LEAVE_ROOM, roomId);
+        this.send(enums_1.IGE_NETWORK_LEAVE_ROOM, roomId);
     }
     leaveAllRooms() {
-        this.send(exports_1.IGE_NETWORK_LEAVE_ROOM, "");
+        this.send(enums_1.IGE_NETWORK_LEAVE_ROOM, "");
     }
 }
 exports.IgeNetIoClientController = IgeNetIoClientController;

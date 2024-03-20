@@ -18,6 +18,16 @@ export declare class b2GearJointDef extends b2JointDef implements b2IGearJointDe
     constructor();
 }
 export declare class b2GearJoint extends b2Joint {
+    private static InitVelocityConstraints_s_u;
+    private static InitVelocityConstraints_s_rA;
+    private static InitVelocityConstraints_s_rB;
+    private static InitVelocityConstraints_s_rC;
+    private static InitVelocityConstraints_s_rD;
+    private static SolvePositionConstraints_s_u;
+    private static SolvePositionConstraints_s_rA;
+    private static SolvePositionConstraints_s_rB;
+    private static SolvePositionConstraints_s_rC;
+    private static SolvePositionConstraints_s_rD;
     m_joint1: b2RevoluteJoint | b2PrismaticJoint;
     m_joint2: b2RevoluteJoint | b2PrismaticJoint;
     m_typeA: b2JointType;
@@ -67,18 +77,8 @@ export declare class b2GearJoint extends b2Joint {
     readonly m_lalcC: b2Vec2;
     readonly m_lalcD: b2Vec2;
     constructor(def: b2IGearJointDef);
-    private static InitVelocityConstraints_s_u;
-    private static InitVelocityConstraints_s_rA;
-    private static InitVelocityConstraints_s_rB;
-    private static InitVelocityConstraints_s_rC;
-    private static InitVelocityConstraints_s_rD;
     InitVelocityConstraints(data: b2SolverData): void;
     SolveVelocityConstraints(data: b2SolverData): void;
-    private static SolvePositionConstraints_s_u;
-    private static SolvePositionConstraints_s_rA;
-    private static SolvePositionConstraints_s_rB;
-    private static SolvePositionConstraints_s_rC;
-    private static SolvePositionConstraints_s_rD;
     SolvePositionConstraints(data: b2SolverData): boolean;
     GetAnchorA<T extends XY>(out: T): T;
     GetAnchorB<T extends XY>(out: T): T;

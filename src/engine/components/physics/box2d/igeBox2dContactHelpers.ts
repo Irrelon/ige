@@ -1,5 +1,5 @@
-import type { IgeEntityBox2d } from "@/export/exports";
-import type { b2Contact } from "@/export/exports";
+import { IgeEntityBox2d } from "@/engine/components/physics/box2d/IgeEntityBox2d";
+import { b2Contact } from "@/engine/components/physics/box2d/lib/dynamics/b2_contact";
 
 export function igeBox2dContactEntityA (contact: b2Contact) {
 	const ent = contact.m_fixtureA.m_body.m_userData._entity;

@@ -1,4 +1,4 @@
-import { IgeEventingClass } from "../../../export/exports.js"
+import { IgeEventingClass } from "../../core/IgeEventingClass.js"
 export interface IgeNetIoClientOptions {
     connectionRetry?: boolean;
     connectionRetryMax?: number;

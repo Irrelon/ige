@@ -1,6 +1,5 @@
-import { IgeChatComponent } from "../../../export/exports.js"
-import type { IgeNetworkChatFromServerJoinRoomResponseStructure, IgeNetworkChatFromServerLeaveRoomResponseStructure, IgeNetworkChatFromServerRoomStructure } from "../../../export/exports.js"
-import type { IgeNetworkChatFromServerMessageStructure } from "../../../export/exports.js"
+import { IgeChatComponent } from "./IgeChatComponent.js"
+import type { IgeNetworkChatFromServerJoinRoomResponseStructure, IgeNetworkChatFromServerLeaveRoomResponseStructure, IgeNetworkChatFromServerMessageStructure, IgeNetworkChatFromServerRoomStructure } from "../../../types/IgeNetworkChat.js";
 /**
  * The client-side chat component. Handles all client-side
  * chat methods and events.

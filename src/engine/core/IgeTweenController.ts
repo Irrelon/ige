@@ -1,8 +1,11 @@
-import type { IgeTween, IgeTweenDestination } from "@/export/exports";
-import { IgeEventingClass } from "@/export/exports";
-import { arrPull, easingFunctions, ige } from "@/export/exports";
-import { IgeBehaviourType } from "@/export/exports";
-import type { IgeEntityBehaviourMethod, IgeIsReadyPromise } from "@/export/exports";
+import { IgeEventingClass } from "@/engine/core/IgeEventingClass";
+import type { IgeTween, IgeTweenDestination } from "@/engine/core/IgeTween";
+import { ige } from "@/engine/instance";
+import { arrPull } from "@/engine/utils/arrays";
+import { easingFunctions } from "@/engine/utils/easing";
+import { IgeBehaviourType } from "@/enums";
+import type { IgeEntityBehaviourMethod } from "@/types/IgeEntityBehaviour";
+import type { IgeIsReadyPromise } from "@/types/IgeIsReadyPromise";
 
 /**
  * This component is already included in the IgeRoot (ige)

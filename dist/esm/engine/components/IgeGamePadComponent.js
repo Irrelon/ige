@@ -1,6 +1,6 @@
-import { IgeComponent } from "../../export/exports.js"
-import { isClient } from "../../export/exports.js"
-import { IgeBehaviourType } from "../../export/exports.js"
+import { IgeComponent } from "../core/IgeComponent.js"
+import { isClient } from "../utils/clientServer.js"
+import { IgeBehaviourType } from "../../enums/index.js"
 export class IgeGamePadComponent extends IgeComponent {
     "classId" = "IgeGamePadComponent";
     "componentId" = "gamePad";
@@ -26,7 +26,7 @@ export class IgeGamePadComponent extends IgeComponent {
     prevTimestamps = [];
     constructor(entity, options) {
         super(entity, options);
-        if (!isClient) {
+        if (!isClient || typeof navigator.getGamepads === "undefined") {
             return;
         }
         this.gamepadAvailable = Boolean(navigator.getGamepads());

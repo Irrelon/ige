@@ -1,6 +1,6 @@
-import { IgeTexture } from "../../export/exports.js"
-import type { IgeImage } from "../../export/exports.js"
-import type { IgeSmartTexture } from "../../export/exports.js"
+import { IgeTexture } from "./IgeTexture.js"
+import type { IgeImage } from "../../types/IgeImage.js";
+import type { IgeSmartTexture } from "../../types/IgeSmartTexture.js"
 /**
  * Creates a new cell sheet. Cell sheets are textures that are
  * automatically split up into individual cells based on a cell

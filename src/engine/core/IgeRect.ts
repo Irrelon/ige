@@ -1,12 +1,15 @@
+import type { IgeCircle } from "@/engine/core/IgeCircle";
+import type { IgePoint2d } from "@/engine/core/IgePoint2d";
+import type { IgePoint3d } from "@/engine/core/IgePoint3d";
+import type { IgePoly2d } from "@/engine/core/IgePoly2d";
 import {
 	circleIntersectsRect,
 	rectIntersectsPolygon,
 	rectIntersectsRect
 } from "@/engine/utils/intersections";
-import { type IgeCircle, type IgePoint2d, type IgeShape } from "@/export/exports";
-import type { IgePoint3d, IgePoly2d } from "@/export/exports";
-import type { IgeCanvasRenderingContext2d } from "@/export/exports";
-import type { IgeShapeFunctionality } from "@/export/exports";
+import type { IgeCanvasRenderingContext2d } from "@/types/IgeCanvasRenderingContext2d";
+import type { IgeShape } from "@/types/IgeShape";
+import type { IgeShapeFunctionality } from "@/types/IgeShapeFunctionality";
 
 /**
  * Creates a new rectangle (x, y, width, height).

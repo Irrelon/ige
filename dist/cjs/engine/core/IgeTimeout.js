@@ -1,14 +1,14 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.IgeTimeout = void 0;
-const exports_1 = require("../../export/exports.js");
-const exports_2 = require("../../export/exports.js");
+const IgeInterval_1 = require("./IgeInterval.js");
+const instance_1 = require("../instance.js");
 /**
  * Provides an alternative to setTimeout() which works based on the engine's internal
  * time system allowing timeouts to fire correctly, taking into account pausing the
  * game and differences in rendering speed etc.
  */
-class IgeTimeout extends exports_1.IgeInterval {
+class IgeTimeout extends IgeInterval_1.IgeInterval {
     /**
      * Creates a new timeout that will call the passed method after the number of
      * milliseconds specified by the timeout parameter has been reached.
@@ -25,8 +25,8 @@ class IgeTimeout extends exports_1.IgeInterval {
      */
     reset() {
         this._time = 0;
-        if (exports_2.ige.time._timers.indexOf(this) === -1) {
-            exports_2.ige.time.addTimer(this);
+        if (instance_1.ige.time._timers.indexOf(this) === -1) {
+            instance_1.ige.time.addTimer(this);
         }
     }
     /**
@@ -39,10 +39,10 @@ class IgeTimeout extends exports_1.IgeInterval {
         let intendedTime;
         const overTime = this._time - this._interval;
         if (overTime > 0) {
-            intendedTime = exports_2.ige.engine._currentTime - overTime;
+            intendedTime = instance_1.ige.engine._currentTime - overTime;
             // Fire an interval
-            this._method(exports_2.ige.engine._currentTime, intendedTime);
-            exports_2.ige.time.removeTimer(this);
+            this._method(instance_1.ige.engine._currentTime, intendedTime);
+            instance_1.ige.time.removeTimer(this);
         }
         return this;
     }

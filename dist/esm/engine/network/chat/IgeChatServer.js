@@ -1,8 +1,7 @@
-import { ige } from "../../../export/exports.js"
-import { IgeChatComponent } from "../../../export/exports.js"
-import { newIdHex } from "../../../export/exports.js"
-import { IgeEventReturnFlag } from "../../../export/exports.js"
-import { IGE_NETWORK_CHAT_JOIN_ROOM, IGE_NETWORK_CHAT_LEAVE_ROOM, IGE_NETWORK_CHAT_LIST_ROOMS, IGE_NETWORK_CHAT_MSG, IGE_NETWORK_CHAT_ROOM_CREATED, IGE_NETWORK_CHAT_ROOM_LIST_USERS, IGE_NETWORK_CHAT_ROOM_REMOVED } from "../../../export/exports.js"
+import { ige } from "../../instance.js"
+import { IgeChatComponent } from "./IgeChatComponent.js"
+import { newIdHex } from "../../utils/ids.js"
+import { IGE_NETWORK_CHAT_JOIN_ROOM, IGE_NETWORK_CHAT_LEAVE_ROOM, IGE_NETWORK_CHAT_LIST_ROOMS, IGE_NETWORK_CHAT_MSG, IGE_NETWORK_CHAT_ROOM_CREATED, IGE_NETWORK_CHAT_ROOM_LIST_USERS, IGE_NETWORK_CHAT_ROOM_REMOVED, IgeEventReturnFlag } from "../../../enums/index.js"
 /**
  * The server-side chat component. Handles all server-side
  * chat methods and events.
@@ -98,7 +97,7 @@ export class IgeChatServer extends IgeChatComponent {
             }
         }
         else {
-            this.log('Cannot send message to room with id "' + roomId + '" because it does not exist!');
+            this.log("Cannot send message to room with id \"" + roomId + "\" because it does not exist!");
         }
     }
     _onMessageFromClient(msg, clientId) {
@@ -148,7 +147,7 @@ export class IgeChatServer extends IgeChatComponent {
                     // Add the user to the room
                     room.users.push(clientId);
                     network.send(IGE_NETWORK_CHAT_JOIN_ROOM, { roomId: roomId, joined: true }, clientId);
-                    console.log('User "' + clientId + '" joined room ' + roomId);
+                    console.log("User \"" + clientId + "\" joined room " + roomId);
                 }
                 else {
                     // User is already in the room!

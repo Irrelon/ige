@@ -1,8 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.IgeNetIoSocket = void 0;
-const exports_1 = require("../../../export/exports.js");
-class IgeNetIoSocket extends exports_1.IgeEventingClass {
+const IgeEventingClass_1 = require("../../core/IgeEventingClass.js");
+class IgeNetIoSocket extends IgeEventingClass_1.IgeEventingClass {
     constructor(connection, options) {
         super();
         this.classId = "IgeNetIoSocket";

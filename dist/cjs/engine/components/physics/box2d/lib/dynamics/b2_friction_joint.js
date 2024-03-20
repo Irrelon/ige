@@ -18,15 +18,15 @@
 */
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.b2FrictionJoint = exports.b2FrictionJointDef = void 0;
-const b2_settings_js_1 = require("../common/b2_settings.js");
-const b2_math_js_1 = require("../common/b2_math.js");
-const b2_joint_js_1 = require("./b2_joint.js");
+const b2_settings_1 = require("../common/b2_settings");
+const b2_math_1 = require("../common/b2_math");
+const b2_joint_1 = require("./b2_joint");
 /// Friction joint definition.
-class b2FrictionJointDef extends b2_joint_js_1.b2JointDef {
+class b2FrictionJointDef extends b2_joint_1.b2JointDef {
     constructor() {
-        super(b2_joint_js_1.b2JointType.e_frictionJoint);
-        this.localAnchorA = new b2_math_js_1.b2Vec2();
-        this.localAnchorB = new b2_math_js_1.b2Vec2();
+        super(b2_joint_1.b2JointType.e_frictionJoint);
+        this.localAnchorA = new b2_math_1.b2Vec2();
+        this.localAnchorB = new b2_math_1.b2Vec2();
         this.maxForce = 0;
         this.maxTorque = 0;
     }
@@ -38,39 +38,39 @@ class b2FrictionJointDef extends b2_joint_js_1.b2JointDef {
     }
 }
 exports.b2FrictionJointDef = b2FrictionJointDef;
-class b2FrictionJoint extends b2_joint_js_1.b2Joint {
+class b2FrictionJoint extends b2_joint_1.b2Joint {
     constructor(def) {
         super(def);
-        this.m_localAnchorA = new b2_math_js_1.b2Vec2();
-        this.m_localAnchorB = new b2_math_js_1.b2Vec2();
+        this.m_localAnchorA = new b2_math_1.b2Vec2();
+        this.m_localAnchorB = new b2_math_1.b2Vec2();
         // Solver shared
-        this.m_linearImpulse = new b2_math_js_1.b2Vec2();
+        this.m_linearImpulse = new b2_math_1.b2Vec2();
         this.m_angularImpulse = 0;
         this.m_maxForce = 0;
         this.m_maxTorque = 0;
         // Solver temp
         this.m_indexA = 0;
         this.m_indexB = 0;
-        this.m_rA = new b2_math_js_1.b2Vec2();
-        this.m_rB = new b2_math_js_1.b2Vec2();
-        this.m_localCenterA = new b2_math_js_1.b2Vec2();
-        this.m_localCenterB = new b2_math_js_1.b2Vec2();
+        this.m_rA = new b2_math_1.b2Vec2();
+        this.m_rB = new b2_math_1.b2Vec2();
+        this.m_localCenterA = new b2_math_1.b2Vec2();
+        this.m_localCenterB = new b2_math_1.b2Vec2();
         this.m_invMassA = 0;
         this.m_invMassB = 0;
         this.m_invIA = 0;
         this.m_invIB = 0;
-        this.m_linearMass = new b2_math_js_1.b2Mat22();
+        this.m_linearMass = new b2_math_1.b2Mat22();
         this.m_angularMass = 0;
-        this.m_qA = new b2_math_js_1.b2Rot();
-        this.m_qB = new b2_math_js_1.b2Rot();
-        this.m_lalcA = new b2_math_js_1.b2Vec2();
-        this.m_lalcB = new b2_math_js_1.b2Vec2();
-        this.m_K = new b2_math_js_1.b2Mat22();
-        this.m_localAnchorA.Copy((0, b2_settings_js_1.b2Maybe)(def.localAnchorA, b2_math_js_1.b2Vec2.ZERO));
-        this.m_localAnchorB.Copy((0, b2_settings_js_1.b2Maybe)(def.localAnchorB, b2_math_js_1.b2Vec2.ZERO));
+        this.m_qA = new b2_math_1.b2Rot();
+        this.m_qB = new b2_math_1.b2Rot();
+        this.m_lalcA = new b2_math_1.b2Vec2();
+        this.m_lalcB = new b2_math_1.b2Vec2();
+        this.m_K = new b2_math_1.b2Mat22();
+        this.m_localAnchorA.Copy((0, b2_settings_1.b2Maybe)(def.localAnchorA, b2_math_1.b2Vec2.ZERO));
+        this.m_localAnchorB.Copy((0, b2_settings_1.b2Maybe)(def.localAnchorB, b2_math_1.b2Vec2.ZERO));
         this.m_linearImpulse.SetZero();
-        this.m_maxForce = (0, b2_settings_js_1.b2Maybe)(def.maxForce, 0);
-        this.m_maxTorque = (0, b2_settings_js_1.b2Maybe)(def.maxTorque, 0);
+        this.m_maxForce = (0, b2_settings_1.b2Maybe)(def.maxForce, 0);
+        this.m_maxTorque = (0, b2_settings_1.b2Maybe)(def.maxTorque, 0);
         this.m_linearMass.SetZero();
     }
     InitVelocityConstraints(data) {
@@ -94,11 +94,11 @@ class b2FrictionJoint extends b2_joint_js_1.b2Joint {
         const qA = this.m_qA.SetAngle(aA), qB = this.m_qB.SetAngle(aB);
         // Compute the effective mass matrix.
         // m_rA = b2Mul(qA, m_localAnchorA - m_localCenterA);
-        b2_math_js_1.b2Vec2.SubVV(this.m_localAnchorA, this.m_localCenterA, this.m_lalcA);
-        const rA = b2_math_js_1.b2Rot.MulRV(qA, this.m_lalcA, this.m_rA);
+        b2_math_1.b2Vec2.SubVV(this.m_localAnchorA, this.m_localCenterA, this.m_lalcA);
+        const rA = b2_math_1.b2Rot.MulRV(qA, this.m_lalcA, this.m_rA);
         // m_rB = b2Mul(qB, m_localAnchorB - m_localCenterB);
-        b2_math_js_1.b2Vec2.SubVV(this.m_localAnchorB, this.m_localCenterB, this.m_lalcB);
-        const rB = b2_math_js_1.b2Rot.MulRV(qB, this.m_lalcB, this.m_rB);
+        b2_math_1.b2Vec2.SubVV(this.m_localAnchorB, this.m_localCenterB, this.m_lalcB);
+        const rB = b2_math_1.b2Rot.MulRV(qB, this.m_lalcB, this.m_rB);
         // J = [-I -r1_skew I r2_skew]
         //     [ 0       -1 0       1]
         // r_skew = [-ry; rx]
@@ -128,11 +128,11 @@ class b2FrictionJoint extends b2_joint_js_1.b2Joint {
             // vA -= mA * P;
             vA.SelfMulSub(mA, P);
             // wA -= iA * (b2Cross(m_rA, P) + m_angularImpulse);
-            wA -= iA * (b2_math_js_1.b2Vec2.CrossVV(this.m_rA, P) + this.m_angularImpulse);
+            wA -= iA * (b2_math_1.b2Vec2.CrossVV(this.m_rA, P) + this.m_angularImpulse);
             // vB += mB * P;
             vB.SelfMulAdd(mB, P);
             // wB += iB * (b2Cross(m_rB, P) + m_angularImpulse);
-            wB += iB * (b2_math_js_1.b2Vec2.CrossVV(this.m_rB, P) + this.m_angularImpulse);
+            wB += iB * (b2_math_1.b2Vec2.CrossVV(this.m_rB, P) + this.m_angularImpulse);
         }
         else {
             this.m_linearImpulse.SetZero();
@@ -157,7 +157,7 @@ class b2FrictionJoint extends b2_joint_js_1.b2Joint {
             let impulse = (-this.m_angularMass * Cdot);
             const oldImpulse = this.m_angularImpulse;
             const maxImpulse = h * this.m_maxTorque;
-            this.m_angularImpulse = (0, b2_math_js_1.b2Clamp)(this.m_angularImpulse + impulse, (-maxImpulse), maxImpulse);
+            this.m_angularImpulse = (0, b2_math_1.b2Clamp)(this.m_angularImpulse + impulse, (-maxImpulse), maxImpulse);
             impulse = this.m_angularImpulse - oldImpulse;
             wA -= iA * impulse;
             wB += iB * impulse;
@@ -165,9 +165,9 @@ class b2FrictionJoint extends b2_joint_js_1.b2Joint {
         // Solve linear friction
         {
             // b2Vec2 Cdot = vB + b2Cross(wB, m_rB) - vA - b2Cross(wA, m_rA);
-            const Cdot_v2 = b2_math_js_1.b2Vec2.SubVV(b2_math_js_1.b2Vec2.AddVCrossSV(vB, wB, this.m_rB, b2_math_js_1.b2Vec2.s_t0), b2_math_js_1.b2Vec2.AddVCrossSV(vA, wA, this.m_rA, b2_math_js_1.b2Vec2.s_t1), b2FrictionJoint.SolveVelocityConstraints_s_Cdot_v2);
+            const Cdot_v2 = b2_math_1.b2Vec2.SubVV(b2_math_1.b2Vec2.AddVCrossSV(vB, wB, this.m_rB, b2_math_1.b2Vec2.s_t0), b2_math_1.b2Vec2.AddVCrossSV(vA, wA, this.m_rA, b2_math_1.b2Vec2.s_t1), b2FrictionJoint.SolveVelocityConstraints_s_Cdot_v2);
             // b2Vec2 impulse = -b2Mul(m_linearMass, Cdot);
-            const impulseV = b2_math_js_1.b2Mat22.MulMV(this.m_linearMass, Cdot_v2, b2FrictionJoint.SolveVelocityConstraints_s_impulseV).SelfNeg();
+            const impulseV = b2_math_1.b2Mat22.MulMV(this.m_linearMass, Cdot_v2, b2FrictionJoint.SolveVelocityConstraints_s_impulseV).SelfNeg();
             // b2Vec2 oldImpulse = m_linearImpulse;
             const oldImpulseV = b2FrictionJoint.SolveVelocityConstraints_s_oldImpulseV.Copy(this.m_linearImpulse);
             // m_linearImpulse += impulse;
@@ -178,15 +178,15 @@ class b2FrictionJoint extends b2_joint_js_1.b2Joint {
                 this.m_linearImpulse.SelfMul(maxImpulse);
             }
             // impulse = m_linearImpulse - oldImpulse;
-            b2_math_js_1.b2Vec2.SubVV(this.m_linearImpulse, oldImpulseV, impulseV);
+            b2_math_1.b2Vec2.SubVV(this.m_linearImpulse, oldImpulseV, impulseV);
             // vA -= mA * impulse;
             vA.SelfMulSub(mA, impulseV);
             // wA -= iA * b2Cross(m_rA, impulse);
-            wA -= iA * b2_math_js_1.b2Vec2.CrossVV(this.m_rA, impulseV);
+            wA -= iA * b2_math_1.b2Vec2.CrossVV(this.m_rA, impulseV);
             // vB += mB * impulse;
             vB.SelfMulAdd(mB, impulseV);
             // wB += iB * b2Cross(m_rB, impulse);
-            wB += iB * b2_math_js_1.b2Vec2.CrossVV(this.m_rB, impulseV);
+            wB += iB * b2_math_1.b2Vec2.CrossVV(this.m_rB, impulseV);
         }
         // data.velocities[this.m_indexA].v = vA;
         data.velocities[this.m_indexA].w = wA;
@@ -210,8 +210,12 @@ class b2FrictionJoint extends b2_joint_js_1.b2Joint {
     GetReactionTorque(inv_dt) {
         return inv_dt * this.m_angularImpulse;
     }
-    GetLocalAnchorA() { return this.m_localAnchorA; }
-    GetLocalAnchorB() { return this.m_localAnchorB; }
+    GetLocalAnchorA() {
+        return this.m_localAnchorA;
+    }
+    GetLocalAnchorB() {
+        return this.m_localAnchorB;
+    }
     SetMaxForce(force) {
         this.m_maxForce = force;
     }
@@ -239,6 +243,6 @@ class b2FrictionJoint extends b2_joint_js_1.b2Joint {
     }
 }
 exports.b2FrictionJoint = b2FrictionJoint;
-b2FrictionJoint.SolveVelocityConstraints_s_Cdot_v2 = new b2_math_js_1.b2Vec2();
-b2FrictionJoint.SolveVelocityConstraints_s_impulseV = new b2_math_js_1.b2Vec2();
-b2FrictionJoint.SolveVelocityConstraints_s_oldImpulseV = new b2_math_js_1.b2Vec2();
+b2FrictionJoint.SolveVelocityConstraints_s_Cdot_v2 = new b2_math_1.b2Vec2();
+b2FrictionJoint.SolveVelocityConstraints_s_impulseV = new b2_math_1.b2Vec2();
+b2FrictionJoint.SolveVelocityConstraints_s_oldImpulseV = new b2_math_1.b2Vec2();

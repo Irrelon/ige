@@ -1,9 +1,9 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.IgeUiProgressBar = void 0;
-const exports_1 = require("../../export/exports.js");
-const exports_2 = require("../../export/exports.js");
-class IgeUiProgressBar extends exports_1.IgeUiElement {
+const IgeUiElement_1 = require("../core/IgeUiElement.js");
+const igeClassStore_1 = require("../utils/igeClassStore.js");
+class IgeUiProgressBar extends IgeUiElement_1.IgeUiElement {
     constructor() {
         super();
         this.classId = "IgeUiProgressBar";
@@ -129,4 +129,4 @@ class IgeUiProgressBar extends exports_1.IgeUiElement {
     }
 }
 exports.IgeUiProgressBar = IgeUiProgressBar;
-(0, exports_2.registerClass)(IgeUiProgressBar);
+(0, igeClassStore_1.registerClass)(IgeUiProgressBar);

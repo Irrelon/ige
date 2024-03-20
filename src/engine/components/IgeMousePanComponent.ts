@@ -1,8 +1,8 @@
-import { IgeComponent } from "@/export/exports";
-import { IgePoint2d } from "@/export/exports";
-import type { IgePoint3d } from "@/export/exports";
-import type { IgeRect } from "@/export/exports";
-import { ige } from "@/export/exports";
+import { IgeComponent } from "@/engine/core/IgeComponent";
+import { IgePoint2d } from "@/engine/core/IgePoint2d";
+import type { IgePoint3d } from "@/engine/core/IgePoint3d";
+import type { IgeRect } from "@/engine/core/IgeRect";
+import { ige } from "@/engine/instance";
 
 /**
  * When added to a viewport, automatically adds mouse panning

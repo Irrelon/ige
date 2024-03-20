@@ -51,6 +51,24 @@ export class b2RevoluteJointDef extends b2JointDef {
     }
 }
 export class b2RevoluteJoint extends b2Joint {
+    static InitVelocityConstraints_s_P = new b2Vec2();
+    // private static SolveVelocityConstraints_s_P: b2Vec2 = new b2Vec2();
+    static SolveVelocityConstraints_s_Cdot_v2 = new b2Vec2();
+    // private static SolveVelocityConstraints_s_reduced_v2: b2Vec2 = new b2Vec2();
+    static SolveVelocityConstraints_s_impulse_v2 = new b2Vec2();
+    static SolvePositionConstraints_s_C_v2 = new b2Vec2();
+    static SolvePositionConstraints_s_impulse = new b2Vec2();
+    static Draw_s_pA = new b2Vec2();
+    static Draw_s_pB = new b2Vec2();
+    static Draw_s_c1 = new b2Color(0.7, 0.7, 0.7);
+    static Draw_s_c2 = new b2Color(0.3, 0.9, 0.3);
+    static Draw_s_c3 = new b2Color(0.9, 0.3, 0.3);
+    static Draw_s_c4 = new b2Color(0.3, 0.3, 0.9);
+    static Draw_s_c5 = new b2Color(0.4, 0.4, 0.4);
+    static Draw_s_color_ = new b2Color(0.5, 0.8, 0.8);
+    static Draw_s_r = new b2Vec2();
+    static Draw_s_rlo = new b2Vec2();
+    static Draw_s_rhi = new b2Vec2();
     // Solver shared
     m_localAnchorA = new b2Vec2();
     m_localAnchorB = new b2Vec2();
@@ -71,6 +89,8 @@ export class b2RevoluteJoint extends b2Joint {
     m_rA = new b2Vec2();
     m_rB = new b2Vec2();
     m_localCenterA = new b2Vec2();
+    // private static SolveVelocityConstraints_s_Cdot1: b2Vec2 = new b2Vec2();
+    // private static SolveVelocityConstraints_s_impulse_v3: b2Vec3 = new b2Vec3();
     m_localCenterB = new b2Vec2();
     m_invMassA = 0;
     m_invMassB = 0;
@@ -97,7 +117,6 @@ export class b2RevoluteJoint extends b2Joint {
         this.m_enableLimit = b2Maybe(def.enableLimit, false);
         this.m_enableMotor = b2Maybe(def.enableMotor, false);
     }
-    static InitVelocityConstraints_s_P = new b2Vec2();
     InitVelocityConstraints(data) {
         this.m_indexA = this.m_bodyA.m_islandIndex;
         this.m_indexB = this.m_bodyB.m_islandIndex;
@@ -176,12 +195,6 @@ export class b2RevoluteJoint extends b2Joint {
         // data.velocities[this.m_indexB].v = vB;
         data.velocities[this.m_indexB].w = wB;
     }
-    // private static SolveVelocityConstraints_s_P: b2Vec2 = new b2Vec2();
-    static SolveVelocityConstraints_s_Cdot_v2 = new b2Vec2();
-    // private static SolveVelocityConstraints_s_Cdot1: b2Vec2 = new b2Vec2();
-    // private static SolveVelocityConstraints_s_impulse_v3: b2Vec3 = new b2Vec3();
-    // private static SolveVelocityConstraints_s_reduced_v2: b2Vec2 = new b2Vec2();
-    static SolveVelocityConstraints_s_impulse_v2 = new b2Vec2();
     SolveVelocityConstraints(data) {
         const vA = data.velocities[this.m_indexA].v;
         let wA = data.velocities[this.m_indexA].w;
@@ -248,8 +261,6 @@ export class b2RevoluteJoint extends b2Joint {
         // data.velocities[this.m_indexB].v = vB;
         data.velocities[this.m_indexB].w = wB;
     }
-    static SolvePositionConstraints_s_C_v2 = new b2Vec2();
-    static SolvePositionConstraints_s_impulse = new b2Vec2();
     SolvePositionConstraints(data) {
         const cA = data.positions[this.m_indexA].c;
         let aA = data.positions[this.m_indexA].a;
@@ -333,9 +344,15 @@ export class b2RevoluteJoint extends b2Joint {
     GetReactionTorque(inv_dt) {
         return inv_dt * (this.m_lowerImpulse - this.m_upperImpulse);
     }
-    GetLocalAnchorA() { return this.m_localAnchorA; }
-    GetLocalAnchorB() { return this.m_localAnchorB; }
-    GetReferenceAngle() { return this.m_referenceAngle; }
+    GetLocalAnchorA() {
+        return this.m_localAnchorA;
+    }
+    GetLocalAnchorB() {
+        return this.m_localAnchorB;
+    }
+    GetReferenceAngle() {
+        return this.m_referenceAngle;
+    }
     GetJointAngle() {
         // b2Body* bA = this.m_bodyA;
         // b2Body* bB = this.m_bodyB;
@@ -371,7 +388,9 @@ export class b2RevoluteJoint extends b2Joint {
             this.m_maxMotorTorque = torque;
         }
     }
-    GetMaxMotorTorque() { return this.m_maxMotorTorque; }
+    GetMaxMotorTorque() {
+        return this.m_maxMotorTorque;
+    }
     IsLimitEnabled() {
         return this.m_enableLimit;
     }
@@ -425,17 +444,6 @@ export class b2RevoluteJoint extends b2Joint {
         log("  jd.maxMotorTorque = %.15f;\n", this.m_maxMotorTorque);
         log("  joints[%d] = this.m_world.CreateJoint(jd);\n", this.m_index);
     }
-    static Draw_s_pA = new b2Vec2();
-    static Draw_s_pB = new b2Vec2();
-    static Draw_s_c1 = new b2Color(0.7, 0.7, 0.7);
-    static Draw_s_c2 = new b2Color(0.3, 0.9, 0.3);
-    static Draw_s_c3 = new b2Color(0.9, 0.3, 0.3);
-    static Draw_s_c4 = new b2Color(0.3, 0.3, 0.9);
-    static Draw_s_c5 = new b2Color(0.4, 0.4, 0.4);
-    static Draw_s_color_ = new b2Color(0.5, 0.8, 0.8);
-    static Draw_s_r = new b2Vec2();
-    static Draw_s_rlo = new b2Vec2();
-    static Draw_s_rhi = new b2Vec2();
     Draw(draw) {
         const xfA = this.m_bodyA.GetTransform();
         const xfB = this.m_bodyB.GetTransform();

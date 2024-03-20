@@ -1,9 +1,9 @@
-import { IgeEntity } from "../../export/exports.js"
-import type { IgeObject } from "../../export/exports.js"
-import type { IgeTexture } from "../../export/exports.js"
-import type { IgeCanvasRenderingContext2d } from "../../export/exports.js"
-import type { IgePointXY } from "../../export/exports.js"
-import type { IgeRepeatType } from "../../export/exports.js"
+import { IgeEntity } from "./IgeEntity.js"
+import type { IgeObject } from "./IgeObject.js";
+import type { IgeTexture } from "./IgeTexture.js"
+import type { IgeCanvasRenderingContext2d } from "../../types/IgeCanvasRenderingContext2d.js";
+import type { IgePointXY } from "../../types/IgePointXY.js"
+import type { IgeRepeatType } from "../../types/IgeRepeatType.js"
 /**
  * Creates a new UI entity. UI entities use more resources and CPU
  * than standard IgeEntity instances so only use them if an IgeEntity

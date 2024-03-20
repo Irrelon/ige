@@ -1,16 +1,16 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.IgeBaseClass = void 0;
-const exports_1 = require("../../export/exports.js");
+const _global_1 = require("./_global.js");
 const getIndentString = () => {
     let indent = "";
-    if (exports_1.global._globalLogIndent) {
+    if (_global_1.global._globalLogIndent) {
         indent = "|";
     }
-    for (let i = 0; i < exports_1.global._globalLogIndent; i++) {
+    for (let i = 0; i < _global_1.global._globalLogIndent; i++) {
         indent += "———";
     }
-    if (exports_1.global._globalLogIndent) {
+    if (_global_1.global._globalLogIndent) {
         indent += " ";
     }
     return indent;
@@ -106,12 +106,12 @@ class IgeBaseClass {
         return this;
     }
     logIndent() {
-        exports_1.global._globalLogIndent++;
+        _global_1.global._globalLogIndent++;
     }
     logOutdent() {
-        exports_1.global._globalLogIndent--;
-        if (exports_1.global._globalLogIndent < 0)
-            exports_1.global._globalLogIndent = 0;
+        _global_1.global._globalLogIndent--;
+        if (_global_1.global._globalLogIndent < 0)
+            _global_1.global._globalLogIndent = 0;
     }
     data(key, value) {
         if (value !== undefined) {

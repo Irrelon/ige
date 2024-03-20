@@ -1,6 +1,6 @@
-import { IgeUiEntity } from "../../export/exports.js"
-import type { IgeUiStyleModifier } from "../../export/exports.js"
-import type { IgeUiStyleObject } from "../../export/exports.js"
+import { IgeUiEntity } from "./IgeUiEntity.js"
+import type { IgeUiStyleModifier } from "../../types/IgeUiStyleModifier.js";
+import type { IgeUiStyleObject } from "../../types/IgeUiStyleObject.js"
 /**
  * Creates a new UI element. UI elements use more resources and CPU
  * than standard IgeEntity instances but provide a rich set of extra

@@ -19,22 +19,22 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.b2ChainShape = void 0;
 // DEBUG: import { b2Assert, b2_linearSlop } from "../common/b2_settings.js"
-const b2_settings_js_1 = require("../common/b2_settings.js");
-const b2_math_js_1 = require("../common/b2_math.js");
-const b2_shape_js_1 = require("./b2_shape.js");
-const b2_edge_shape_js_1 = require("./b2_edge_shape.js");
+const b2_settings_1 = require("../common/b2_settings");
+const b2_math_1 = require("../common/b2_math");
+const b2_shape_1 = require("./b2_shape");
+const b2_edge_shape_1 = require("./b2_edge_shape");
 /// A chain shape is a free form sequence of line segments.
 /// The chain has one-sided collision, with the surface normal pointing to the right of the edge.
 /// This provides a counter-clockwise winding like the polygon shape.
 /// Connectivity information is used to create smooth collisions.
 /// @warning the chain will not collide properly if there are self-intersections.
-class b2ChainShape extends b2_shape_js_1.b2Shape {
+class b2ChainShape extends b2_shape_1.b2Shape {
     constructor() {
-        super(b2_shape_js_1.b2ShapeType.e_chainShape, b2_settings_js_1.b2_polygonRadius);
+        super(b2_shape_1.b2ShapeType.e_chainShape, b2_settings_1.b2_polygonRadius);
         this.m_vertices = [];
         this.m_count = 0;
-        this.m_prevVertex = new b2_math_js_1.b2Vec2();
-        this.m_nextVertex = new b2_math_js_1.b2Vec2();
+        this.m_prevVertex = new b2_math_1.b2Vec2();
+        this.m_nextVertex = new b2_math_1.b2Vec2();
     }
     CreateLoop(...args) {
         if (typeof args[0][0] === "number") {
@@ -42,7 +42,10 @@ class b2ChainShape extends b2_shape_js_1.b2Shape {
             if (vertices.length % 2 !== 0) {
                 throw new Error();
             }
-            return this._CreateLoop((index) => ({ x: vertices[index * 2], y: vertices[index * 2 + 1] }), vertices.length / 2);
+            return this._CreateLoop((index) => ({
+                x: vertices[index * 2],
+                y: vertices[index * 2 + 1]
+            }), vertices.length / 2);
         }
         else {
             const vertices = args[0];
@@ -61,7 +64,7 @@ class b2ChainShape extends b2_shape_js_1.b2Shape {
         // DEBUG:   b2Assert(b2Vec2.DistanceSquaredVV(v1, v2) > b2_linearSlop * b2_linearSlop);
         // DEBUG: }
         this.m_count = count + 1;
-        this.m_vertices = b2_math_js_1.b2Vec2.MakeArray(this.m_count);
+        this.m_vertices = b2_math_1.b2Vec2.MakeArray(this.m_count);
         for (let i = 0; i < count; ++i) {
             this.m_vertices[i].Copy(vertices(i));
         }
@@ -78,7 +81,10 @@ class b2ChainShape extends b2_shape_js_1.b2Shape {
             if (vertices.length % 2 !== 0) {
                 throw new Error();
             }
-            return this._CreateChain((index) => ({ x: vertices[index * 2], y: vertices[index * 2 + 1] }), vertices.length / 2, prevVertex, nextVertex);
+            return this._CreateChain((index) => ({
+                x: vertices[index * 2],
+                y: vertices[index * 2 + 1]
+            }), vertices.length / 2, prevVertex, nextVertex);
         }
         else {
             const vertices = args[0];
@@ -96,7 +102,7 @@ class b2ChainShape extends b2_shape_js_1.b2Shape {
         // DEBUG:   b2Assert(b2Vec2.DistanceSquaredVV(v1, v2) > b2_linearSlop * b2_linearSlop);
         // DEBUG: }
         this.m_count = count;
-        this.m_vertices = b2_math_js_1.b2Vec2.MakeArray(count);
+        this.m_vertices = b2_math_1.b2Vec2.MakeArray(count);
         for (let i = 0; i < count; ++i) {
             this.m_vertices[i].Copy(vertices(i));
         }
@@ -162,10 +168,10 @@ class b2ChainShape extends b2_shape_js_1.b2Shape {
         // DEBUG: b2Assert(childIndex < this.m_count);
         const vertexi1 = this.m_vertices[childIndex];
         const vertexi2 = this.m_vertices[(childIndex + 1) % this.m_count];
-        const v1 = b2_math_js_1.b2Transform.MulXV(xf, vertexi1, b2ChainShape.ComputeAABB_s_v1);
-        const v2 = b2_math_js_1.b2Transform.MulXV(xf, vertexi2, b2ChainShape.ComputeAABB_s_v2);
-        const lower = b2_math_js_1.b2Vec2.MinV(v1, v2, b2ChainShape.ComputeAABB_s_lower);
-        const upper = b2_math_js_1.b2Vec2.MaxV(v1, v2, b2ChainShape.ComputeAABB_s_upper);
+        const v1 = b2_math_1.b2Transform.MulXV(xf, vertexi1, b2ChainShape.ComputeAABB_s_v1);
+        const v2 = b2_math_1.b2Transform.MulXV(xf, vertexi2, b2ChainShape.ComputeAABB_s_v2);
+        const lower = b2_math_1.b2Vec2.MinV(v1, v2, b2ChainShape.ComputeAABB_s_lower);
+        const upper = b2_math_1.b2Vec2.MaxV(v1, v2, b2ChainShape.ComputeAABB_s_upper);
         aabb.lowerBound.x = lower.x - this.m_radius;
         aabb.lowerBound.y = lower.y - this.m_radius;
         aabb.upperBound.x = upper.x + this.m_radius;
@@ -209,12 +215,12 @@ class b2ChainShape extends b2_shape_js_1.b2Shape {
 exports.b2ChainShape = b2ChainShape;
 // #if B2_ENABLE_PARTICLE
 /// @see b2Shape::ComputeDistance
-b2ChainShape.ComputeDistance_s_edgeShape = new b2_edge_shape_js_1.b2EdgeShape();
+b2ChainShape.ComputeDistance_s_edgeShape = new b2_edge_shape_1.b2EdgeShape();
 // #endif
 /// Implement b2Shape.
-b2ChainShape.RayCast_s_edgeShape = new b2_edge_shape_js_1.b2EdgeShape();
+b2ChainShape.RayCast_s_edgeShape = new b2_edge_shape_1.b2EdgeShape();
 /// @see b2Shape::ComputeAABB
-b2ChainShape.ComputeAABB_s_v1 = new b2_math_js_1.b2Vec2();
-b2ChainShape.ComputeAABB_s_v2 = new b2_math_js_1.b2Vec2();
-b2ChainShape.ComputeAABB_s_lower = new b2_math_js_1.b2Vec2();
-b2ChainShape.ComputeAABB_s_upper = new b2_math_js_1.b2Vec2();
+b2ChainShape.ComputeAABB_s_v1 = new b2_math_1.b2Vec2();
+b2ChainShape.ComputeAABB_s_v2 = new b2_math_1.b2Vec2();
+b2ChainShape.ComputeAABB_s_lower = new b2_math_1.b2Vec2();
+b2ChainShape.ComputeAABB_s_upper = new b2_math_1.b2Vec2();

@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.invert = void 0;
-const exports_1 = require("../../export/exports.js");
+const igeFilters_1 = require("../utils/igeFilters.js");
 const invert = function (canvas, ctx, originalImage, texture, data) {
     const w = canvas.width, h = canvas.height;
     const canvasData = ctx.getImageData(0, 0, w, h);
@@ -15,4 +15,4 @@ const invert = function (canvas, ctx, originalImage, texture, data) {
     ctx.putImageData(canvasData, 0, 0);
 };
 exports.invert = invert;
-exports_1.igeFilters.registerFilter("invert", exports.invert);
+igeFilters_1.igeFilters.registerFilter("invert", exports.invert);

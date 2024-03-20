@@ -1,6 +1,7 @@
-import { IgeNetIoSocket } from "@/export/exports";
-import { IgeEventingClass } from "@/export/exports";
-import { arrClone, newIdHex } from "@/export/exports";
+import { IgeEventingClass } from "@/engine/core/IgeEventingClass";
+import { IgeNetIoSocket } from "@/engine/network/server/IgeNetIoSocket";
+import { arrClone } from "@/engine/utils/arrays";
+import { newIdHex } from "@/engine/utils/ids";
 import http from "http";
 import websocket from "websocket";
 
@@ -111,8 +112,8 @@ export class IgeNetIoServer extends IgeEventingClass {
 			case "EADDRINUSE":
 				this.log(
 					"Cannot start server on port " +
-							this._port +
-							" because the port is already in use by another application!",
+					this._port +
+					" because the port is already in use by another application!",
 					"error"
 				);
 				break;

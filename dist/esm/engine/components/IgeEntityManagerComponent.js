@@ -1,10 +1,8 @@
-import { IgeComponent } from "../../export/exports.js"
-import { IgePoint3d } from "../../export/exports.js"
-import { IgeRect } from "../../export/exports.js"
-import { ige } from "../../export/exports.js"
-import { IgeBehaviourType } from "../../export/exports.js"
-import { IgeEntityRenderMode } from "../../export/exports.js"
-import { IgeMountMode } from "../../export/exports.js"
+import { IgeComponent } from "../core/IgeComponent.js"
+import { IgePoint3d } from "../core/IgePoint3d.js"
+import { IgeRect } from "../core/IgeRect.js"
+import { ige } from "../instance.js"
+import { IgeBehaviourType, IgeEntityRenderMode, IgeMountMode } from "../../enums/index.js"
 export class IgeEntityManagerComponent extends IgeComponent {
     classId = "IgeEntityManagerComponent";
     componentId = "entityManager";

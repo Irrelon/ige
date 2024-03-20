@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.IgeGenericPathFinder = void 0;
-const exports_1 = require("../../export/exports.js");
+const IgeEventingClass_1 = require("./IgeEventingClass.js");
 var ListType;
 (function (ListType) {
     ListType[ListType["closed"] = 0] = "closed";
@@ -10,7 +10,7 @@ var ListType;
 /**
  * Creates a new path using the A* path-finding algorithm.
  */
-class IgeGenericPathFinder extends exports_1.IgeEventingClass {
+class IgeGenericPathFinder extends IgeEventingClass_1.IgeEventingClass {
     constructor() {
         super(...arguments);
         this.classId = "IgePathFinder";

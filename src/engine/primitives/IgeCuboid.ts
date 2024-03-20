@@ -1,6 +1,6 @@
-import { IgeEntity } from "@/export/exports";
-import { IgeTexture } from "@/export/exports";
-import { IgeCuboidSmartTexture } from "@/export/exports";
+import { IgeEntity } from "@/engine/core/IgeEntity";
+import { IgeTexture } from "@/engine/core/IgeTexture";
+import { IgeCuboidSmartTexture } from "@/engine/textures/IgeCuboidSmartTexture";
 
 export class IgeCuboid extends IgeEntity {
 	classId = "IgeCuboid";

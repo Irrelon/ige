@@ -18,54 +18,54 @@
  */
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.b2BuoyancyController = void 0;
-const b2_controller_js_1 = require("./b2_controller.js");
-const b2_math_js_1 = require("../common/b2_math.js");
-const b2_settings_js_1 = require("../common/b2_settings.js");
-const b2_draw_js_1 = require("../common/b2_draw.js");
+const b2_controller_1 = require("./b2_controller");
+const b2_math_1 = require("../common/b2_math");
+const b2_settings_1 = require("../common/b2_settings");
+const b2_draw_1 = require("../common/b2_draw");
 /**
  * Calculates buoyancy forces for fluids in the form of a half
  * plane.
  */
-class b2BuoyancyController extends b2_controller_js_1.b2Controller {
+class b2BuoyancyController extends b2_controller_1.b2Controller {
     constructor() {
         super(...arguments);
         /**
-       * The outer surface normal
-       */
-        this.normal = new b2_math_js_1.b2Vec2(0, 1);
+         * The outer surface normal
+         */
+        this.normal = new b2_math_1.b2Vec2(0, 1);
         /**
-       * The height of the fluid surface along the normal
-       */
+         * The height of the fluid surface along the normal
+         */
         this.offset = 0;
         /**
-       * The fluid density
-       */
+         * The fluid density
+         */
         this.density = 0;
         /**
-       * Fluid velocity, for drag calculations
-       */
-        this.velocity = new b2_math_js_1.b2Vec2(0, 0);
+         * Fluid velocity, for drag calculations
+         */
+        this.velocity = new b2_math_1.b2Vec2(0, 0);
         /**
-       * Linear drag co-efficient
-       */
+         * Linear drag co-efficient
+         */
         this.linearDrag = 0;
         /**
-       * Angular drag co-efficient
-       */
+         * Angular drag co-efficient
+         */
         this.angularDrag = 0;
         /**
-       * If false, bodies are assumed to be uniformly dense, otherwise
-       * use the shapes densities
-       */
+         * If false, bodies are assumed to be uniformly dense, otherwise
+         * use the shapes densities
+         */
         this.useDensity = false; //False by default to prevent a gotcha
         /**
-       * If true, gravity is taken from the world instead of the
-       */
+         * If true, gravity is taken from the world instead of the
+         */
         this.useWorldGravity = true;
         /**
-       * Gravity vector, if the world's gravity is not used
-       */
-        this.gravity = new b2_math_js_1.b2Vec2(0, 0);
+         * Gravity vector, if the world's gravity is not used
+         */
+        this.gravity = new b2_math_1.b2Vec2(0, 0);
     }
     Step(step) {
         if (!this.m_bodyList) {
@@ -81,12 +81,12 @@ class b2BuoyancyController extends b2_controller_js_1.b2Controller {
                 //so unlike most forces, it is safe to ignore sleeping bodes
                 continue;
             }
-            const areac = new b2_math_js_1.b2Vec2();
-            const massc = new b2_math_js_1.b2Vec2();
+            const areac = new b2_math_1.b2Vec2();
+            const massc = new b2_math_1.b2Vec2();
             let area = 0;
             let mass = 0;
             for (let fixture = body.GetFixtureList(); fixture; fixture = fixture.m_next) {
-                const sc = new b2_math_js_1.b2Vec2();
+                const sc = new b2_math_1.b2Vec2();
                 const sarea = fixture.GetShape().ComputeSubmergedArea(this.normal, this.offset, body.GetTransform(), sc);
                 area += sarea;
                 areac.x += sarea * sc.x;
@@ -108,7 +108,7 @@ class b2BuoyancyController extends b2_controller_js_1.b2Controller {
             //    b2Vec2 localCentroid = b2MulT(body->GetXForm(),areac);
             massc.x /= mass;
             massc.y /= mass;
-            if (area < b2_settings_js_1.b2_epsilon) {
+            if (area < b2_settings_1.b2_epsilon) {
                 continue;
             }
             //Buoyancy
@@ -116,7 +116,7 @@ class b2BuoyancyController extends b2_controller_js_1.b2Controller {
             buoyancyForce.SelfMul(this.density * area);
             body.ApplyForce(buoyancyForce, massc);
             //Linear drag
-            const dragForce = body.GetLinearVelocityFromWorldPoint(areac, new b2_math_js_1.b2Vec2());
+            const dragForce = body.GetLinearVelocityFromWorldPoint(areac, new b2_math_1.b2Vec2());
             dragForce.SelfSub(this.velocity);
             dragForce.SelfMul((-this.linearDrag * area));
             body.ApplyForce(dragForce, areac);
@@ -127,13 +127,13 @@ class b2BuoyancyController extends b2_controller_js_1.b2Controller {
     }
     Draw(debugDraw) {
         const r = 100;
-        const p1 = new b2_math_js_1.b2Vec2();
-        const p2 = new b2_math_js_1.b2Vec2();
+        const p1 = new b2_math_1.b2Vec2();
+        const p2 = new b2_math_1.b2Vec2();
         p1.x = this.normal.x * this.offset + this.normal.y * r;
         p1.y = this.normal.y * this.offset - this.normal.x * r;
         p2.x = this.normal.x * this.offset - this.normal.y * r;
         p2.y = this.normal.y * this.offset + this.normal.x * r;
-        const color = new b2_draw_js_1.b2Color(0, 0, 0.8);
+        const color = new b2_draw_1.b2Color(0, 0, 0.8);
         debugDraw.DrawSegment(p1, p2, color);
     }
 }

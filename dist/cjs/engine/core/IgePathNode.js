@@ -1,11 +1,11 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.IgePathNode = void 0;
-const exports_1 = require("../../export/exports.js");
+const IgePoint3d_1 = require("./IgePoint3d.js");
 /**
  * Creates a new path node for use with the IgePathFinder class.
  */
-class IgePathNode extends exports_1.IgePoint3d {
+class IgePathNode extends IgePoint3d_1.IgePoint3d {
     /**
      * @constructor
      * @param {number} x

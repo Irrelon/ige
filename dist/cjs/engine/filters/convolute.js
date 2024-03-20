@@ -1,10 +1,10 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.convoluteHelper = void 0;
-const exports_1 = require("../../export/exports.js");
+const igeFilters_1 = require("../utils/igeFilters.js");
 const createImageData = function (w, h) {
     var _a;
-    return (_a = exports_1.igeFilters.tmpCtx) === null || _a === void 0 ? void 0 : _a.createImageData(w, h);
+    return (_a = igeFilters_1.igeFilters.tmpCtx) === null || _a === void 0 ? void 0 : _a.createImageData(w, h);
 };
 const convoluteHelper = function (pixels, weights, opaque = false) {
     const side = Math.round(Math.sqrt(weights.length));
@@ -52,4 +52,4 @@ const convoluteHelper = function (pixels, weights, opaque = false) {
     return output;
 };
 exports.convoluteHelper = convoluteHelper;
-exports_1.igeFilters.registerHelper("convoluteHelper", exports.convoluteHelper);
+igeFilters_1.igeFilters.registerHelper("convoluteHelper", exports.convoluteHelper);

@@ -104,8 +104,12 @@ export class b2DistanceJoint extends b2Joint {
     GetReactionTorque(inv_dt) {
         return 0;
     }
-    GetLocalAnchorA() { return this.m_localAnchorA; }
-    GetLocalAnchorB() { return this.m_localAnchorB; }
+    GetLocalAnchorA() {
+        return this.m_localAnchorA;
+    }
+    GetLocalAnchorB() {
+        return this.m_localAnchorB;
+    }
     SetLength(length) {
         this.m_impulse = 0;
         this.m_length = b2Max(b2_linearSlop, length);

@@ -1,4 +1,4 @@
-import { arrPull } from "../../export/exports.js"
+import { arrPull } from "../utils/arrays.js"
 export class IgeArrayRegister {
     _store = {};
     _field = "";

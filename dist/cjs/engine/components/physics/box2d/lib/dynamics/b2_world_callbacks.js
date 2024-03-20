@@ -18,8 +18,8 @@
 */
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.b2RayCastCallback = exports.b2QueryCallback = exports.b2ContactListener = exports.b2ContactImpulse = exports.b2ContactFilter = exports.b2DestructionListener = void 0;
-const b2_settings_js_1 = require("../common/b2_settings.js");
-const b2_body_js_1 = require("./b2_body.js");
+const b2_settings_1 = require("../common/b2_settings");
+const b2_body_1 = require("./b2_body");
 // #endif
 /// Joints and fixtures are destroyed when their associated
 /// body is destroyed. Implement this listener so that you
@@ -27,31 +27,34 @@ const b2_body_js_1 = require("./b2_body.js");
 class b2DestructionListener {
     /// Called when any joint is about to be destroyed due
     /// to the destruction of one of its attached bodies.
-    SayGoodbyeJoint(joint) { }
+    SayGoodbyeJoint(joint) {
+    }
     /// Called when any fixture is about to be destroyed due
     /// to the destruction of its parent body.
-    SayGoodbyeFixture(fixture) { }
+    SayGoodbyeFixture(fixture) {
+    }
     // #if B2_ENABLE_PARTICLE
     /// Called when any particle group is about to be destroyed.
-    SayGoodbyeParticleGroup(group) { }
+    SayGoodbyeParticleGroup(group) {
+    }
     /// Called when a particle is about to be destroyed.
     /// The index can be used in conjunction with
     /// b2ParticleSystem::GetUserDataBuffer() or
     /// b2ParticleSystem::GetParticleHandleFromIndex() to determine which
     /// particle has been destroyed.
-    SayGoodbyeParticle(system, index) { }
+    SayGoodbyeParticle(system, index) {
+    }
 }
 exports.b2DestructionListener = b2DestructionListener;
 /// Implement this class to provide collision filtering. In other words, you can implement
 /// this class if you want finer control over contact creation.
 class b2ContactFilter {
-    /// Return true if contact calculations should be performed between these two shapes.
     /// @warning for performance reasons this is only called when the AABBs begin to overlap.
     ShouldCollide(fixtureA, fixtureB) {
         const bodyA = fixtureA.GetBody();
         const bodyB = fixtureB.GetBody();
         // At least one body should be dynamic or kinematic.
-        if (bodyB.GetType() === b2_body_js_1.b2BodyType.b2_staticBody && bodyA.GetType() === b2_body_js_1.b2BodyType.b2_staticBody) {
+        if (bodyB.GetType() === b2_body_1.b2BodyType.b2_staticBody && bodyA.GetType() === b2_body_1.b2BodyType.b2_staticBody) {
             return false;
         }
         // Does a joint prevent collision?
@@ -70,20 +73,21 @@ class b2ContactFilter {
     ShouldCollideFixtureParticle(fixture, system, index) {
         return true;
     }
+    // #endif
     ShouldCollideParticleParticle(system, indexA, indexB) {
         return true;
     }
 }
 exports.b2ContactFilter = b2ContactFilter;
-// #endif
+/// Return true if contact calculations should be performed between these two shapes.
 b2ContactFilter.b2_defaultFilter = new b2ContactFilter();
 /// Contact impulses for reporting. Impulses are used instead of forces because
 /// sub-step forces may approach infinity for rigid body collisions. These
 /// match up one-to-one with the contact points in b2Manifold.
 class b2ContactImpulse {
     constructor() {
-        this.normalImpulses = (0, b2_settings_js_1.b2MakeNumberArray)(b2_settings_js_1.b2_maxManifoldPoints);
-        this.tangentImpulses = (0, b2_settings_js_1.b2MakeNumberArray)(b2_settings_js_1.b2_maxManifoldPoints);
+        this.normalImpulses = (0, b2_settings_1.b2MakeNumberArray)(b2_settings_1.b2_maxManifoldPoints);
+        this.tangentImpulses = (0, b2_settings_1.b2MakeNumberArray)(b2_settings_1.b2_maxManifoldPoints);
         this.count = 0;
     }
 }
@@ -99,14 +103,18 @@ exports.b2ContactImpulse = b2ContactImpulse;
 /// @warning You cannot create/destroy Box2D entities inside these callbacks.
 class b2ContactListener {
     /// Called when two fixtures begin to touch.
-    BeginContact(contact) { }
+    BeginContact(contact) {
+    }
     /// Called when two fixtures cease to touch.
-    EndContact(contact) { }
+    EndContact(contact) {
+    }
     // #if B2_ENABLE_PARTICLE
-    BeginContactFixtureParticle(system, contact) { }
-    EndContactFixtureParticle(system, contact) { }
-    BeginContactParticleParticle(system, contact) { }
-    EndContactParticleParticle(system, contact) { }
+    BeginContactFixtureParticle(system, contact) {
+    }
+    EndContactFixtureParticle(system, contact) {
+    }
+    BeginContactParticleParticle(system, contact) {
+    }
     // #endif
     /// This is called after a contact is updated. This allows you to inspect a
     /// contact before it goes to the solver. If you are careful, you can modify the
@@ -117,15 +125,19 @@ class b2ContactListener {
     /// Note: this is not called for sensors.
     /// Note: if you set the number of contact points to zero, you will not
     /// get an EndContact callback. However, you may get a BeginContact callback
-    /// the next step.
-    PreSolve(contact, oldManifold) { }
+    EndContactParticleParticle(system, contact) {
+    }
     /// This lets you inspect a contact after the solver is finished. This is useful
     /// for inspecting impulses.
     /// Note: the contact manifold does not include time of impact impulses, which can be
     /// arbitrarily large if the sub-step is small. Hence the impulse is provided explicitly
     /// in a separate data structure.
+    /// the next step.
+    PreSolve(contact, oldManifold) {
+    }
     /// Note: this is only called for contacts that are touching, solid, and awake.
-    PostSolve(contact, impulse) { }
+    PostSolve(contact, impulse) {
+    }
 }
 exports.b2ContactListener = b2ContactListener;
 b2ContactListener.b2_defaultListener = new b2ContactListener();

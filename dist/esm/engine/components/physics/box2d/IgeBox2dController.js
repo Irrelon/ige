@@ -1,18 +1,14 @@
-import { IgeEntityBox2d } from "../../../../export/exports.js"
-import { b2CircleShape } from "../../../../export/exports.js"
-import { b2PolygonShape } from "../../../../export/exports.js"
-import { b2Filter } from "../../../../export/exports.js"
-import { b2FixtureDef } from "../../../../export/exports.js"
-import { b2ContactListener } from "../../../../export/exports.js"
-import { IgeEventingClass } from "../../../../export/exports.js"
-import { ige } from "../../../../export/exports.js"
-import { b2Vec2 } from "../../../../export/exports.js"
-import { b2BodyDef, b2BodyType } from "../../../../export/exports.js"
-import { b2World } from "../../../../export/exports.js"
-import { IgeBehaviourType } from "../../../../export/exports.js"
-import { IgeBox2dBodyType } from "../../../../export/exports.js"
-import { IgeBox2dFixtureShapeType } from "../../../../export/exports.js"
-import { IgeBox2dTimingMode } from "../../../../export/exports.js"
+import { IgeEntityBox2d } from "./IgeEntityBox2d.js"
+import { b2CircleShape } from "./lib/collision/b2_circle_shape.js"
+import { b2PolygonShape } from "./lib/collision/b2_polygon_shape.js"
+import { b2Vec2 } from "./lib/common/b2_math.js"
+import { b2BodyDef, b2BodyType } from "./lib/dynamics/b2_body.js"
+import { b2Filter, b2FixtureDef } from "./lib/dynamics/b2_fixture.js"
+import { b2World } from "./lib/dynamics/b2_world.js"
+import { b2ContactListener } from "./lib/dynamics/b2_world_callbacks.js"
+import { IgeEventingClass } from "../../../core/IgeEventingClass.js"
+import { ige } from "../../../instance.js"
+import { IgeBehaviourType, IgeBox2dBodyType, IgeBox2dFixtureShapeType, IgeBox2dTimingMode } from "../../../../enums/index.js"
 /**
  * The engine's Box2D component class.
  */
@@ -405,16 +401,19 @@ export class IgeBox2dController extends IgeEventingClass {
                 // We are enabled so disable all physics contacts
                 this.contactListener(
                 // Begin contact
-                function (contact) { }, 
+                function (contact) {
+                }, 
                 // End contact
-                function (contact) { }, 
+                function (contact) {
+                }, 
                 // Pre-solve
                 function (contact) {
                     // Cancel the contact
                     contact.SetEnabled(false);
                 }, 
                 // Post-solve
-                function (contact) { });
+                function (contact) {
+                });
             }
             else {
                 // Re-enable contacts

@@ -19,19 +19,19 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.b2TensorDampingController = void 0;
 // #if B2_ENABLE_CONTROLLER
-const b2_controller_js_1 = require("./b2_controller.js");
-const b2_math_js_1 = require("../common/b2_math.js");
-const b2_settings_js_1 = require("../common/b2_settings.js");
+const b2_controller_1 = require("./b2_controller");
+const b2_math_1 = require("../common/b2_math");
+const b2_settings_1 = require("../common/b2_settings");
 /**
  * Applies top down linear damping to the controlled bodies
  * The damping is calculated by multiplying velocity by a matrix
  * in local co-ordinates.
  */
-class b2TensorDampingController extends b2_controller_js_1.b2Controller {
+class b2TensorDampingController extends b2_controller_1.b2Controller {
     constructor() {
         super(...arguments);
         /// Tensor to use in damping model
-        this.T = new b2_math_js_1.b2Mat22();
+        this.T = new b2_math_1.b2Mat22();
         /*Some examples (matrixes in format (row1; row2))
         (-a 0; 0 -a)    Standard isotropic damping with strength a
         ( 0 a; -a 0)    Electron in fixed field - a force at right angles to velocity with proportional magnitude
@@ -47,7 +47,7 @@ class b2TensorDampingController extends b2_controller_js_1.b2Controller {
      */
     Step(step) {
         let timestep = step.dt;
-        if (timestep <= b2_settings_js_1.b2_epsilon) {
+        if (timestep <= b2_settings_1.b2_epsilon) {
             return;
         }
         if (timestep > this.maxTimestep && this.maxTimestep > 0) {
@@ -58,12 +58,13 @@ class b2TensorDampingController extends b2_controller_js_1.b2Controller {
             if (!body.IsAwake()) {
                 continue;
             }
-            const damping = body.GetWorldVector(b2_math_js_1.b2Mat22.MulMV(this.T, body.GetLocalVector(body.GetLinearVelocity(), b2_math_js_1.b2Vec2.s_t0), b2_math_js_1.b2Vec2.s_t1), b2TensorDampingController.Step_s_damping);
+            const damping = body.GetWorldVector(b2_math_1.b2Mat22.MulMV(this.T, body.GetLocalVector(body.GetLinearVelocity(), b2_math_1.b2Vec2.s_t0), b2_math_1.b2Vec2.s_t1), b2TensorDampingController.Step_s_damping);
             //    body->SetLinearVelocity(body->GetLinearVelocity() + timestep * damping);
-            body.SetLinearVelocity(b2_math_js_1.b2Vec2.AddVV(body.GetLinearVelocity(), b2_math_js_1.b2Vec2.MulSV(timestep, damping, b2_math_js_1.b2Vec2.s_t0), b2_math_js_1.b2Vec2.s_t1));
+            body.SetLinearVelocity(b2_math_1.b2Vec2.AddVV(body.GetLinearVelocity(), b2_math_1.b2Vec2.MulSV(timestep, damping, b2_math_1.b2Vec2.s_t0), b2_math_1.b2Vec2.s_t1));
         }
     }
-    Draw(draw) { }
+    Draw(draw) {
+    }
     /**
      * Sets damping independantly along the x and y axes
      */
@@ -73,7 +74,7 @@ class b2TensorDampingController extends b2_controller_js_1.b2Controller {
         this.T.ey.x = 0;
         this.T.ey.y = (-yDamping);
         if (xDamping > 0 || yDamping > 0) {
-            this.maxTimestep = 1 / (0, b2_math_js_1.b2Max)(xDamping, yDamping);
+            this.maxTimestep = 1 / (0, b2_math_1.b2Max)(xDamping, yDamping);
         }
         else {
             this.maxTimestep = 0;
@@ -81,5 +82,5 @@ class b2TensorDampingController extends b2_controller_js_1.b2Controller {
     }
 }
 exports.b2TensorDampingController = b2TensorDampingController;
-b2TensorDampingController.Step_s_damping = new b2_math_js_1.b2Vec2();
+b2TensorDampingController.Step_s_damping = new b2_math_1.b2Vec2();
 // #endif

@@ -1,6 +1,6 @@
-import { ige } from "../../../../export/exports.js"
-import { IgeEntity } from "../../../../export/exports.js"
-import { registerClass } from "../../../../export/exports.js"
+import { IgeEntity } from "../../../core/IgeEntity.js"
+import { ige } from "../../../instance.js"
+import { registerClass } from "../../../utils/igeClassStore.js"
 // TODO: Check if this is still supported with the new version of Box2d we are using. Does DrawDebugData() need calling?
 export class IgeBox2dDebugPainter extends IgeEntity {
     classId = "IgeBox2dDebugPainter";

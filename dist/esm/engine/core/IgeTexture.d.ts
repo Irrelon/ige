@@ -1,7 +1,13 @@
-import type { IgeEntity } from "../../export/exports.js"
-import { IgeAsset, IgeDependencies } from "../../export/exports.js"
-import { IgeTextureRenderMode } from "../../export/exports.js"
-import type { IgeCanvas, IgeCanvasRenderingContext2d, IgeImage, IgeSmartFilter, IgeSmartTexture, IgeTextureCellArray } from "../../export/exports.js"
+import { IgeAsset } from "./IgeAsset.js"
+import { IgeDependencies } from "./IgeDependencies.js";
+import type { IgeEntity } from "./IgeEntity.js"
+import { IgeTextureRenderMode } from "../../enums/index.js";
+import type { IgeCanvas } from "../../types/IgeCanvas.js"
+import type { IgeCanvasRenderingContext2d } from "../../types/IgeCanvasRenderingContext2d.js"
+import type { IgeImage } from "../../types/IgeImage.js"
+import type { IgeSmartFilter } from "../../types/IgeSmartFilter.js"
+import type { IgeSmartTexture } from "../../types/IgeSmartTexture.js"
+import type { IgeTextureCellArray } from "../../types/IgeTextureCellArray.js"
 /**
  * Creates a new texture.
  */

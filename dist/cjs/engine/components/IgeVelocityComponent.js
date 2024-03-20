@@ -1,12 +1,11 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.IgeVelocityComponent = void 0;
-// TODO: Doc this class!
-const exports_1 = require("../../export/exports.js");
-const exports_2 = require("../../export/exports.js");
-const exports_3 = require("../../export/exports.js");
-const exports_4 = require("../../export/exports.js");
-class IgeVelocityComponent extends exports_3.IgeComponent {
+const IgeComponent_1 = require("../core/IgeComponent.js");
+const IgePoint3d_1 = require("../core/IgePoint3d.js");
+const instance_1 = require("../instance.js");
+const enums_1 = require("../../enums/index.js");
+class IgeVelocityComponent extends IgeComponent_1.IgeComponent {
     constructor(entity, options) {
         super(entity, options);
         this.classId = "IgeVelocityComponent";
@@ -84,21 +83,21 @@ class IgeVelocityComponent extends exports_3.IgeComponent {
             if (finalFriction < 0) {
                 finalFriction = 0;
             }
-            this._friction = new exports_4.IgePoint3d(finalFriction, finalFriction, finalFriction);
+            this._friction = new IgePoint3d_1.IgePoint3d(finalFriction, finalFriction, finalFriction);
             return this._entity;
         };
         this.linearForce = (degrees, power) => {
             power /= 1000;
             const radians = (degrees * Math.PI) / 180, x = Math.cos(radians) * power, y = Math.sin(radians) * power, z = x * y;
-            this._linearForce = new exports_4.IgePoint3d(x, y, z);
+            this._linearForce = new IgePoint3d_1.IgePoint3d(x, y, z);
             return this._entity;
         };
         this.linearForceXYZ = (x, y, z) => {
-            this._linearForce = new exports_4.IgePoint3d(x, y, z);
+            this._linearForce = new IgePoint3d_1.IgePoint3d(x, y, z);
             return this._entity;
         };
         this.linearForceVector3 = (vector, relative = false) => {
-            const force = (this._linearForce = this._linearForce || new exports_4.IgePoint3d(0, 0, 0)), x = vector.x / 1000, y = vector.y / 1000, z = vector.z / 1000;
+            const force = (this._linearForce = this._linearForce || new IgePoint3d_1.IgePoint3d(0, 0, 0)), x = vector.x / 1000, y = vector.y / 1000, z = vector.z / 1000;
             if (!relative) {
                 force.x = x || 0;
                 force.y = y || 0;
@@ -125,10 +124,10 @@ class IgeVelocityComponent extends exports_3.IgeComponent {
             vel.y *= fric.y;
             vel.z *= fric.z;
         };
-        this._velocity = new exports_4.IgePoint3d(0, 0, 0);
-        this._friction = new exports_4.IgePoint3d(1, 1, 1);
+        this._velocity = new IgePoint3d_1.IgePoint3d(0, 0, 0);
+        this._friction = new IgePoint3d_1.IgePoint3d(1, 1, 1);
         // Add the velocity behaviour to the entity
-        entity.addBehaviour(exports_2.IgeBehaviourType.preUpdate, "velocity", this._behaviour);
+        entity.addBehaviour(enums_1.IgeBehaviourType.preUpdate, "velocity", this._behaviour);
     }
     byAngleAndPower(radians, power, relative = false) {
         const vel = this._velocity, x = Math.cos(radians) * power, y = Math.sin(radians) * power, z = 0;
@@ -145,7 +144,7 @@ class IgeVelocityComponent extends exports_3.IgeComponent {
         return this._entity;
     }
     tick() {
-        const delta = exports_1.ige.engine._tickDelta;
+        const delta = instance_1.ige.engine._tickDelta;
         const vel = this._velocity;
         if (delta) {
             this._applyLinearForce(delta);

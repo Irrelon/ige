@@ -1,4 +1,4 @@
-import type { IgeConfig } from "@/export/exports";
+import type { IgeConfig } from "@/types/IgeConfig";
 
 export const igeConfig: IgeConfig = {
 	debug: {

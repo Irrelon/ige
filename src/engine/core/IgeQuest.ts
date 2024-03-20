@@ -1,5 +1,5 @@
-import { IgeEventingClass } from "@/export/exports";
-import { registerClass } from "@/export/exports";
+import { IgeEventingClass } from "@/engine/core/IgeEventingClass";
+import { registerClass } from "@/engine/utils/igeClassStore";
 
 export class IgeQuest extends IgeEventingClass {
 	classId = "IgeQuest";

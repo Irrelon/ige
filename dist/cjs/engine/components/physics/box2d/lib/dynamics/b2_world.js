@@ -19,35 +19,35 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.b2World = void 0;
 // DEBUG: import { b2Assert } from "../common/b2_settings.js"
-const b2_settings_js_1 = require("../common/b2_settings.js");
-const b2_math_js_1 = require("../common/b2_math.js");
-const b2_timer_js_1 = require("../common/b2_timer.js");
-const b2_draw_js_1 = require("../common/b2_draw.js");
-const b2_collision_js_1 = require("../collision/b2_collision.js");
-const b2_time_of_impact_js_1 = require("../collision/b2_time_of_impact.js");
-const b2_shape_js_1 = require("../collision/b2_shape.js");
-const b2_joint_js_1 = require("./b2_joint.js");
-const b2_area_joint_js_1 = require("./b2_area_joint.js");
-const b2_distance_joint_js_1 = require("./b2_distance_joint.js");
-const b2_friction_joint_js_1 = require("./b2_friction_joint.js");
-const b2_gear_joint_js_1 = require("./b2_gear_joint.js");
-const b2_motor_joint_js_1 = require("./b2_motor_joint.js");
-const b2_mouse_joint_js_1 = require("./b2_mouse_joint.js");
-const b2_prismatic_joint_js_1 = require("./b2_prismatic_joint.js");
-const b2_pulley_joint_js_1 = require("./b2_pulley_joint.js");
-const b2_revolute_joint_js_1 = require("./b2_revolute_joint.js");
-const b2_weld_joint_js_1 = require("./b2_weld_joint.js");
-const b2_wheel_joint_js_1 = require("./b2_wheel_joint.js");
-const b2_body_js_1 = require("./b2_body.js");
-const b2_contact_manager_js_1 = require("./b2_contact_manager.js");
-const b2_island_js_1 = require("./b2_island.js");
-const b2_time_step_js_1 = require("./b2_time_step.js");
-const b2_world_callbacks_js_1 = require("./b2_world_callbacks.js");
-const b2_world_callbacks_js_2 = require("./b2_world_callbacks.js");
+const b2_settings_1 = require("../common/b2_settings");
+const b2_math_1 = require("../common/b2_math");
+const b2_timer_1 = require("../common/b2_timer");
+const b2_draw_1 = require("../common/b2_draw");
+const b2_collision_1 = require("../collision/b2_collision");
+const b2_time_of_impact_1 = require("../collision/b2_time_of_impact");
+const b2_shape_1 = require("../collision/b2_shape");
+const b2_joint_1 = require("./b2_joint");
+const b2_area_joint_1 = require("./b2_area_joint");
+const b2_distance_joint_1 = require("./b2_distance_joint");
+const b2_friction_joint_1 = require("./b2_friction_joint");
+const b2_gear_joint_1 = require("./b2_gear_joint");
+const b2_motor_joint_1 = require("./b2_motor_joint");
+const b2_mouse_joint_1 = require("./b2_mouse_joint");
+const b2_prismatic_joint_1 = require("./b2_prismatic_joint");
+const b2_pulley_joint_1 = require("./b2_pulley_joint");
+const b2_revolute_joint_1 = require("./b2_revolute_joint");
+const b2_weld_joint_1 = require("./b2_weld_joint");
+const b2_wheel_joint_1 = require("./b2_wheel_joint");
+const b2_body_1 = require("./b2_body");
+const b2_contact_manager_1 = require("./b2_contact_manager");
+const b2_island_1 = require("./b2_island");
+const b2_time_step_1 = require("./b2_time_step");
+const b2_world_callbacks_1 = require("./b2_world_callbacks");
+const b2_world_callbacks_2 = require("./b2_world_callbacks");
 // #if B2_ENABLE_PARTICLE
-const b2_settings_js_2 = require("../common/b2_settings.js");
-const b2_particle_js_1 = require("../particle/b2_particle.js");
-const b2_particle_system_js_1 = require("../particle/b2_particle_system.js");
+const b2_settings_2 = require("../common/b2_settings");
+const b2_particle_1 = require("../particle/b2_particle");
+const b2_particle_system_1 = require("../particle/b2_particle_system");
 // #endif
 /// The world class manages all physics entities, dynamic simulation,
 /// and asynchronous queries. The world also contains efficient memory
@@ -57,7 +57,7 @@ class b2World {
     /// Construct a world object.
     /// @param gravity the world gravity vector.
     constructor(gravity) {
-        this.m_contactManager = new b2_contact_manager_js_1.b2ContactManager();
+        this.m_contactManager = new b2_contact_manager_1.b2ContactManager();
         this.m_bodyList = null;
         this.m_jointList = null;
         // #if B2_ENABLE_PARTICLE
@@ -65,7 +65,7 @@ class b2World {
         // #endif
         this.m_bodyCount = 0;
         this.m_jointCount = 0;
-        this.m_gravity = new b2_math_js_1.b2Vec2();
+        this.m_gravity = new b2_math_1.b2Vec2();
         this.m_allowSleep = true;
         this.m_destructionListener = null;
         this.m_debugDraw = null;
@@ -80,8 +80,8 @@ class b2World {
         this.m_continuousPhysics = true;
         this.m_subStepping = false;
         this.m_stepComplete = true;
-        this.m_profile = new b2_time_step_js_1.b2Profile();
-        this.m_island = new b2_island_js_1.b2Island();
+        this.m_profile = new b2_time_step_1.b2Profile();
+        this.m_island = new b2_island_1.b2Island();
         this.s_stack = [];
         // #if B2_ENABLE_CONTROLLER
         this.m_controllerList = null;
@@ -117,7 +117,7 @@ class b2World {
         if (this.IsLocked()) {
             throw new Error();
         }
-        const b = new b2_body_js_1.b2Body(def, this);
+        const b = new b2_body_1.b2Body(def, this);
         // Add to world doubly linked list.
         b.m_prev = null;
         b.m_next = this.m_bodyList;
@@ -195,17 +195,28 @@ class b2World {
     }
     static _Joint_Create(def) {
         switch (def.type) {
-            case b2_joint_js_1.b2JointType.e_distanceJoint: return new b2_distance_joint_js_1.b2DistanceJoint(def);
-            case b2_joint_js_1.b2JointType.e_mouseJoint: return new b2_mouse_joint_js_1.b2MouseJoint(def);
-            case b2_joint_js_1.b2JointType.e_prismaticJoint: return new b2_prismatic_joint_js_1.b2PrismaticJoint(def);
-            case b2_joint_js_1.b2JointType.e_revoluteJoint: return new b2_revolute_joint_js_1.b2RevoluteJoint(def);
-            case b2_joint_js_1.b2JointType.e_pulleyJoint: return new b2_pulley_joint_js_1.b2PulleyJoint(def);
-            case b2_joint_js_1.b2JointType.e_gearJoint: return new b2_gear_joint_js_1.b2GearJoint(def);
-            case b2_joint_js_1.b2JointType.e_wheelJoint: return new b2_wheel_joint_js_1.b2WheelJoint(def);
-            case b2_joint_js_1.b2JointType.e_weldJoint: return new b2_weld_joint_js_1.b2WeldJoint(def);
-            case b2_joint_js_1.b2JointType.e_frictionJoint: return new b2_friction_joint_js_1.b2FrictionJoint(def);
-            case b2_joint_js_1.b2JointType.e_motorJoint: return new b2_motor_joint_js_1.b2MotorJoint(def);
-            case b2_joint_js_1.b2JointType.e_areaJoint: return new b2_area_joint_js_1.b2AreaJoint(def);
+            case b2_joint_1.b2JointType.e_distanceJoint:
+                return new b2_distance_joint_1.b2DistanceJoint(def);
+            case b2_joint_1.b2JointType.e_mouseJoint:
+                return new b2_mouse_joint_1.b2MouseJoint(def);
+            case b2_joint_1.b2JointType.e_prismaticJoint:
+                return new b2_prismatic_joint_1.b2PrismaticJoint(def);
+            case b2_joint_1.b2JointType.e_revoluteJoint:
+                return new b2_revolute_joint_1.b2RevoluteJoint(def);
+            case b2_joint_1.b2JointType.e_pulleyJoint:
+                return new b2_pulley_joint_1.b2PulleyJoint(def);
+            case b2_joint_1.b2JointType.e_gearJoint:
+                return new b2_gear_joint_1.b2GearJoint(def);
+            case b2_joint_1.b2JointType.e_wheelJoint:
+                return new b2_wheel_joint_1.b2WheelJoint(def);
+            case b2_joint_1.b2JointType.e_weldJoint:
+                return new b2_weld_joint_1.b2WeldJoint(def);
+            case b2_joint_1.b2JointType.e_frictionJoint:
+                return new b2_friction_joint_1.b2FrictionJoint(def);
+            case b2_joint_1.b2JointType.e_motorJoint:
+                return new b2_motor_joint_1.b2MotorJoint(def);
+            case b2_joint_1.b2JointType.e_areaJoint:
+                return new b2_area_joint_1.b2AreaJoint(def);
         }
         throw new Error();
     }
@@ -323,7 +334,7 @@ class b2World {
         if (this.IsLocked()) {
             throw new Error();
         }
-        const p = new b2_particle_system_js_1.b2ParticleSystem(def, this);
+        const p = new b2_particle_system_1.b2ParticleSystem(def, this);
         // Add to world doubly linked list.
         p.m_prev = null;
         p.m_next = this.m_particleSystemList;
@@ -353,14 +364,14 @@ class b2World {
             return 1;
         }
         function GetSmallestRadius(world) {
-            let smallestRadius = b2_settings_js_2.b2_maxFloat;
+            let smallestRadius = b2_settings_2.b2_maxFloat;
             for (let system = world.GetParticleSystemList(); system !== null; system = system.m_next) {
-                smallestRadius = (0, b2_math_js_1.b2Min)(smallestRadius, system.GetRadius());
+                smallestRadius = (0, b2_math_1.b2Min)(smallestRadius, system.GetRadius());
             }
             return smallestRadius;
         }
         // Use the smallest radius, since that represents the worst-case.
-        return (0, b2_particle_js_1.b2CalculateParticleIterations)(this.m_gravity.Length(), GetSmallestRadius(this), timeStep);
+        return (0, b2_particle_1.b2CalculateParticleIterations)(this.m_gravity.Length(), GetSmallestRadius(this), timeStep);
     }
     // #if B2_ENABLE_PARTICLE
     Step(dt, velocityIterations, positionIterations, particleIterations = this.CalculateReasonableParticleIterations(dt)) {
@@ -456,24 +467,24 @@ class b2World {
         }
         const flags = this.m_debugDraw.GetFlags();
         const color = b2World.DebugDraw_s_color.SetRGB(0, 0, 0);
-        if (flags & b2_draw_js_1.b2DrawFlags.e_shapeBit) {
+        if (flags & b2_draw_1.b2DrawFlags.e_shapeBit) {
             for (let b = this.m_bodyList; b; b = b.m_next) {
                 const xf = b.m_xf;
                 this.m_debugDraw.PushTransform(xf);
                 for (let f = b.GetFixtureList(); f; f = f.m_next) {
-                    if (b.GetType() === b2_body_js_1.b2BodyType.b2_dynamicBody && b.m_mass === 0.0) {
+                    if (b.GetType() === b2_body_1.b2BodyType.b2_dynamicBody && b.m_mass === 0.0) {
                         // Bad body
-                        this.DrawShape(f, new b2_draw_js_1.b2Color(1.0, 0.0, 0.0));
+                        this.DrawShape(f, new b2_draw_1.b2Color(1.0, 0.0, 0.0));
                     }
                     else if (!b.IsEnabled()) {
                         color.SetRGB(0.5, 0.5, 0.3);
                         this.DrawShape(f, color);
                     }
-                    else if (b.GetType() === b2_body_js_1.b2BodyType.b2_staticBody) {
+                    else if (b.GetType() === b2_body_1.b2BodyType.b2_staticBody) {
                         color.SetRGB(0.5, 0.9, 0.5);
                         this.DrawShape(f, color);
                     }
-                    else if (b.GetType() === b2_body_js_1.b2BodyType.b2_kinematicBody) {
+                    else if (b.GetType() === b2_body_1.b2BodyType.b2_kinematicBody) {
                         color.SetRGB(0.5, 0.5, 0.9);
                         this.DrawShape(f, color);
                     }
@@ -490,18 +501,18 @@ class b2World {
             }
         }
         // #if B2_ENABLE_PARTICLE
-        if (flags & b2_draw_js_1.b2DrawFlags.e_particleBit) {
+        if (flags & b2_draw_1.b2DrawFlags.e_particleBit) {
             for (let p = this.m_particleSystemList; p; p = p.m_next) {
                 this.DrawParticleSystem(p);
             }
         }
         // #endif
-        if (flags & b2_draw_js_1.b2DrawFlags.e_jointBit) {
+        if (flags & b2_draw_1.b2DrawFlags.e_jointBit) {
             for (let j = this.m_jointList; j; j = j.m_next) {
                 j.Draw(this.m_debugDraw);
             }
         }
-        if (flags & b2_draw_js_1.b2DrawFlags.e_pairBit) {
+        if (flags & b2_draw_1.b2DrawFlags.e_pairBit) {
             color.SetRGB(0.3, 0.9, 0.9);
             for (let contact = this.m_contactManager.m_contactList; contact; contact = contact.m_next) {
                 const fixtureA = contact.GetFixtureA();
@@ -513,7 +524,7 @@ class b2World {
                 this.m_debugDraw.DrawSegment(cA, cB, color);
             }
         }
-        if (flags & b2_draw_js_1.b2DrawFlags.e_aabbBit) {
+        if (flags & b2_draw_1.b2DrawFlags.e_aabbBit) {
             color.SetRGB(0.9, 0.3, 0.9);
             const vs = b2World.DebugDraw_s_vs;
             for (let b = this.m_bodyList; b; b = b.m_next) {
@@ -533,7 +544,7 @@ class b2World {
                 }
             }
         }
-        if (flags & b2_draw_js_1.b2DrawFlags.e_centerOfMassBit) {
+        if (flags & b2_draw_1.b2DrawFlags.e_centerOfMassBit) {
             for (let b = this.m_bodyList; b; b = b.m_next) {
                 const xf = b2World.DebugDraw_s_xf;
                 xf.q.Copy(b.m_xf.q);
@@ -543,7 +554,7 @@ class b2World {
         }
         // #if B2_ENABLE_CONTROLLER
         // @see b2Controller list
-        if (flags & b2_draw_js_1.b2DrawFlags.e_controllerBit) {
+        if (flags & b2_draw_1.b2DrawFlags.e_controllerBit) {
             for (let c = this.m_controllerList; c; c = c.m_next) {
                 c.Draw(this.m_debugDraw);
             }
@@ -551,7 +562,7 @@ class b2World {
         // #endif
     }
     QueryAABB(...args) {
-        if (args[0] instanceof b2_world_callbacks_js_1.b2QueryCallback) {
+        if (args[0] instanceof b2_world_callbacks_1.b2QueryCallback) {
             this._QueryAABB(args[0], args[1]);
         }
         else {
@@ -572,7 +583,7 @@ class b2World {
             return true;
         });
         // #if B2_ENABLE_PARTICLE
-        if (callback instanceof b2_world_callbacks_js_1.b2QueryCallback) {
+        if (callback instanceof b2_world_callbacks_1.b2QueryCallback) {
             for (let p = this.m_particleSystemList; p; p = p.m_next) {
                 if (callback.ShouldQueryParticleSystem(p)) {
                     p.QueryAABB(callback, aabb);
@@ -582,11 +593,14 @@ class b2World {
         // #endif
     }
     QueryAllAABB(aabb, out = []) {
-        this.QueryAABB(aabb, (fixture) => { out.push(fixture); return true; });
+        this.QueryAABB(aabb, (fixture) => {
+            out.push(fixture);
+            return true;
+        });
         return out;
     }
     QueryPointAABB(...args) {
-        if (args[0] instanceof b2_world_callbacks_js_1.b2QueryCallback) {
+        if (args[0] instanceof b2_world_callbacks_1.b2QueryCallback) {
             this._QueryPointAABB(args[0], args[1]);
         }
         else {
@@ -607,7 +621,7 @@ class b2World {
             return true;
         });
         // #if B2_ENABLE_PARTICLE
-        if (callback instanceof b2_world_callbacks_js_1.b2QueryCallback) {
+        if (callback instanceof b2_world_callbacks_1.b2QueryCallback) {
             for (let p = this.m_particleSystemList; p; p = p.m_next) {
                 if (callback.ShouldQueryParticleSystem(p)) {
                     p.QueryPointAABB(callback, point);
@@ -617,11 +631,14 @@ class b2World {
         // #endif
     }
     QueryAllPointAABB(point, out = []) {
-        this.QueryPointAABB(point, (fixture) => { out.push(fixture); return true; });
+        this.QueryPointAABB(point, (fixture) => {
+            out.push(fixture);
+            return true;
+        });
         return out;
     }
     QueryFixtureShape(...args) {
-        if (args[0] instanceof b2_world_callbacks_js_1.b2QueryCallback) {
+        if (args[0] instanceof b2_world_callbacks_1.b2QueryCallback) {
             this._QueryFixtureShape(args[0], args[1], args[2], args[3]);
         }
         else {
@@ -635,7 +652,7 @@ class b2World {
             const fixture_proxy = proxy.userData;
             // DEBUG: b2Assert(fixture_proxy instanceof b2FixtureProxy);
             const fixture = fixture_proxy.fixture;
-            if ((0, b2_collision_js_1.b2TestOverlapShape)(shape, index, fixture.GetShape(), fixture_proxy.childIndex, transform, fixture.GetBody().GetTransform())) {
+            if ((0, b2_collision_1.b2TestOverlapShape)(shape, index, fixture.GetShape(), fixture_proxy.childIndex, transform, fixture.GetBody().GetTransform())) {
                 if (callback) {
                     return callback.ReportFixture(fixture);
                 }
@@ -646,7 +663,7 @@ class b2World {
             return true;
         });
         // #if B2_ENABLE_PARTICLE
-        if (callback instanceof b2_world_callbacks_js_1.b2QueryCallback) {
+        if (callback instanceof b2_world_callbacks_1.b2QueryCallback) {
             for (let p = this.m_particleSystemList; p; p = p.m_next) {
                 if (callback.ShouldQueryParticleSystem(p)) {
                     p.QueryAABB(callback, aabb);
@@ -656,11 +673,14 @@ class b2World {
         // #endif
     }
     QueryAllFixtureShape(shape, index, transform, out = []) {
-        this.QueryFixtureShape(shape, index, transform, (fixture) => { out.push(fixture); return true; });
+        this.QueryFixtureShape(shape, index, transform, (fixture) => {
+            out.push(fixture);
+            return true;
+        });
         return out;
     }
     QueryFixturePoint(...args) {
-        if (args[0] instanceof b2_world_callbacks_js_1.b2QueryCallback) {
+        if (args[0] instanceof b2_world_callbacks_1.b2QueryCallback) {
             this._QueryFixturePoint(args[0], args[1]);
         }
         else {
@@ -693,11 +713,14 @@ class b2World {
         // #endif
     }
     QueryAllFixturePoint(point, out = []) {
-        this.QueryFixturePoint(point, (fixture) => { out.push(fixture); return true; });
+        this.QueryFixturePoint(point, (fixture) => {
+            out.push(fixture);
+            return true;
+        });
         return out;
     }
     RayCast(...args) {
-        if (args[0] instanceof b2_world_callbacks_js_2.b2RayCastCallback) {
+        if (args[0] instanceof b2_world_callbacks_2.b2RayCastCallback) {
             this._RayCast(args[0], args[1], args[2]);
         }
         else {
@@ -850,7 +873,7 @@ class b2World {
     }
     /// Change the global gravity vector.
     SetGravity(gravity, wake = true) {
-        if (!b2_math_js_1.b2Vec2.IsEqualToV(this.m_gravity, gravity)) {
+        if (!b2_math_1.b2Vec2.IsEqualToV(this.m_gravity, gravity)) {
             this.m_gravity.Copy(gravity);
             if (wake) {
                 for (let b = this.m_bodyList; b; b = b.m_next) {
@@ -924,7 +947,7 @@ class b2World {
         }
         // First pass on joints, skip gear joints.
         for (let j = this.m_jointList; j; j = j.m_next) {
-            if (j.m_type === b2_joint_js_1.b2JointType.e_gearJoint) {
+            if (j.m_type === b2_joint_1.b2JointType.e_gearJoint) {
                 continue;
             }
             log("{\n");
@@ -933,7 +956,7 @@ class b2World {
         }
         // Second pass on joints, only gear joints.
         for (let j = this.m_jointList; j; j = j.m_next) {
-            if (j.m_type !== b2_joint_js_1.b2JointType.e_gearJoint) {
+            if (j.m_type !== b2_joint_1.b2JointType.e_gearJoint) {
                 continue;
             }
             log("{\n");
@@ -948,15 +971,15 @@ class b2World {
         }
         const shape = fixture.GetShape();
         switch (shape.m_type) {
-            case b2_shape_js_1.b2ShapeType.e_circleShape: {
+            case b2_shape_1.b2ShapeType.e_circleShape: {
                 const circle = shape;
                 const center = circle.m_p;
                 const radius = circle.m_radius;
-                const axis = b2_math_js_1.b2Vec2.UNITX;
+                const axis = b2_math_1.b2Vec2.UNITX;
                 this.m_debugDraw.DrawSolidCircle(center, radius, axis, color);
                 break;
             }
-            case b2_shape_js_1.b2ShapeType.e_edgeShape: {
+            case b2_shape_1.b2ShapeType.e_edgeShape: {
                 const edge = shape;
                 const v1 = edge.m_vertex1;
                 const v2 = edge.m_vertex2;
@@ -967,7 +990,7 @@ class b2World {
                 }
                 break;
             }
-            case b2_shape_js_1.b2ShapeType.e_chainShape: {
+            case b2_shape_1.b2ShapeType.e_chainShape: {
                 const chain = shape;
                 const count = chain.m_count;
                 const vertices = chain.m_vertices;
@@ -979,7 +1002,7 @@ class b2World {
                 }
                 break;
             }
-            case b2_shape_js_1.b2ShapeType.e_polygonShape: {
+            case b2_shape_1.b2ShapeType.e_polygonShape: {
                 const poly = shape;
                 const vertexCount = poly.m_count;
                 const vertices = poly.m_vertices;
@@ -1028,7 +1051,7 @@ class b2World {
                 continue;
             }
             // The seed can be dynamic or kinematic.
-            if (seed.GetType() === b2_body_js_1.b2BodyType.b2_staticBody) {
+            if (seed.GetType() === b2_body_1.b2BodyType.b2_staticBody) {
                 continue;
             }
             // Reset island and stack.
@@ -1047,7 +1070,7 @@ class b2World {
                 island.AddBody(b);
                 // To keep islands as small as possible, we don't
                 // propagate islands across static bodies.
-                if (b.GetType() === b2_body_js_1.b2BodyType.b2_staticBody) {
+                if (b.GetType() === b2_body_1.b2BodyType.b2_staticBody) {
                     continue;
                 }
                 // Make sure the body is awake. (without resetting sleep timer).
@@ -1100,7 +1123,7 @@ class b2World {
                     other.m_islandFlag = true;
                 }
             }
-            const profile = new b2_time_step_js_1.b2Profile();
+            const profile = new b2_time_step_1.b2Profile();
             island.Solve(profile, step, this.m_gravity, this.m_allowSleep);
             this.m_profile.solveInit += profile.solveInit;
             this.m_profile.solveVelocity += profile.solveVelocity;
@@ -1109,7 +1132,7 @@ class b2World {
             for (let i = 0; i < island.m_bodyCount; ++i) {
                 // Allow static bodies to participate in other islands.
                 const b = island.m_bodies[i];
-                if (b.GetType() === b2_body_js_1.b2BodyType.b2_staticBody) {
+                if (b.GetType() === b2_body_1.b2BodyType.b2_staticBody) {
                     b.m_islandFlag = false;
                 }
             }
@@ -1120,14 +1143,14 @@ class b2World {
             }
             stack[i] = null;
         }
-        const timer = new b2_timer_js_1.b2Timer();
+        const timer = new b2_timer_1.b2Timer();
         // Synchronize fixtures, check for out of range bodies.
         for (let b = this.m_bodyList; b; b = b.m_next) {
             // If a body was not in an island then it did not move.
             if (!b.m_islandFlag) {
                 continue;
             }
-            if (b.GetType() === b2_body_js_1.b2BodyType.b2_staticBody) {
+            if (b.GetType() === b2_body_1.b2BodyType.b2_staticBody) {
                 continue;
             }
             // Update fixtures (for broad-phase).
@@ -1139,7 +1162,7 @@ class b2World {
     }
     SolveTOI(step) {
         const island = this.m_island;
-        island.Initialize(2 * b2_settings_js_1.b2_maxTOIContacts, b2_settings_js_1.b2_maxTOIContacts, 0, this.m_contactManager.m_contactListener);
+        island.Initialize(2 * b2_settings_1.b2_maxTOIContacts, b2_settings_1.b2_maxTOIContacts, 0, this.m_contactManager.m_contactListener);
         if (this.m_stepComplete) {
             for (let b = this.m_bodyList; b; b = b.m_next) {
                 b.m_islandFlag = false;
@@ -1164,7 +1187,7 @@ class b2World {
                     continue;
                 }
                 // Prevent excessive sub-stepping.
-                if (c.m_toiCount > b2_settings_js_1.b2_maxSubSteps) {
+                if (c.m_toiCount > b2_settings_1.b2_maxSubSteps) {
                     continue;
                 }
                 let alpha = 1;
@@ -1184,14 +1207,14 @@ class b2World {
                     const typeA = bA.m_type;
                     const typeB = bB.m_type;
                     // DEBUG: b2Assert(typeA !== b2BodyType.b2_staticBody || typeB !== b2BodyType.b2_staticBody);
-                    const activeA = bA.IsAwake() && typeA !== b2_body_js_1.b2BodyType.b2_staticBody;
-                    const activeB = bB.IsAwake() && typeB !== b2_body_js_1.b2BodyType.b2_staticBody;
+                    const activeA = bA.IsAwake() && typeA !== b2_body_1.b2BodyType.b2_staticBody;
+                    const activeB = bB.IsAwake() && typeB !== b2_body_1.b2BodyType.b2_staticBody;
                     // Is at least one body active (awake and dynamic or kinematic)?
                     if (!activeA && !activeB) {
                         continue;
                     }
-                    const collideA = bA.IsBullet() || typeA !== b2_body_js_1.b2BodyType.b2_dynamicBody;
-                    const collideB = bB.IsBullet() || typeB !== b2_body_js_1.b2BodyType.b2_dynamicBody;
+                    const collideA = bA.IsBullet() || typeA !== b2_body_1.b2BodyType.b2_dynamicBody;
+                    const collideB = bB.IsBullet() || typeB !== b2_body_1.b2BodyType.b2_dynamicBody;
                     // Are these two non-bullet dynamic bodies?
                     if (!collideA && !collideB) {
                         continue;
@@ -1218,11 +1241,11 @@ class b2World {
                     input.sweepB.Copy(bB.m_sweep);
                     input.tMax = 1;
                     const output = b2World.SolveTOI_s_toi_output;
-                    (0, b2_time_of_impact_js_1.b2TimeOfImpact)(output, input);
+                    (0, b2_time_of_impact_1.b2TimeOfImpact)(output, input);
                     // Beta is the fraction of the remaining portion of the .
                     const beta = output.t;
-                    if (output.state === b2_time_of_impact_js_1.b2TOIOutputState.e_touching) {
-                        alpha = (0, b2_math_js_1.b2Min)(alpha0 + (1 - alpha0) * beta, 1);
+                    if (output.state === b2_time_of_impact_1.b2TOIOutputState.e_touching) {
+                        alpha = (0, b2_math_1.b2Min)(alpha0 + (1 - alpha0) * beta, 1);
                     }
                     else {
                         alpha = 1;
@@ -1236,7 +1259,7 @@ class b2World {
                     minAlpha = alpha;
                 }
             }
-            if (minContact === null || 1 - 10 * b2_settings_js_1.b2_epsilon < minAlpha) {
+            if (minContact === null || 1 - 10 * b2_settings_1.b2_epsilon < minAlpha) {
                 // No more TOI events. Done!
                 this.m_stepComplete = true;
                 break;
@@ -1278,7 +1301,7 @@ class b2World {
             // const bodies: b2Body[] = [bA, bB];
             for (let i = 0; i < 2; ++i) {
                 const body = (i === 0) ? (bA) : (bB); // bodies[i];
-                if (body.m_type === b2_body_js_1.b2BodyType.b2_dynamicBody) {
+                if (body.m_type === b2_body_1.b2BodyType.b2_dynamicBody) {
                     for (let ce = body.m_contactList; ce; ce = ce.next) {
                         if (island.m_bodyCount === island.m_bodyCapacity) {
                             break;
@@ -1293,7 +1316,7 @@ class b2World {
                         }
                         // Only add static, kinematic, or bullet bodies.
                         const other = ce.other;
-                        if (other.m_type === b2_body_js_1.b2BodyType.b2_dynamicBody &&
+                        if (other.m_type === b2_body_1.b2BodyType.b2_dynamicBody &&
                             !body.IsBullet() && !other.IsBullet()) {
                             continue;
                         }
@@ -1331,7 +1354,7 @@ class b2World {
                         }
                         // Add the other body to the island.
                         other.m_islandFlag = true;
-                        if (other.m_type !== b2_body_js_1.b2BodyType.b2_staticBody) {
+                        if (other.m_type !== b2_body_1.b2BodyType.b2_staticBody) {
                             other.SetAwake(true);
                         }
                         island.AddBody(other);
@@ -1353,7 +1376,7 @@ class b2World {
             for (let i = 0; i < island.m_bodyCount; ++i) {
                 const body = island.m_bodies[i];
                 body.m_islandFlag = false;
-                if (body.m_type !== b2_body_js_1.b2BodyType.b2_dynamicBody) {
+                if (body.m_type !== b2_body_1.b2BodyType.b2_dynamicBody) {
                     continue;
                 }
                 body.SynchronizeFixtures();
@@ -1410,21 +1433,21 @@ exports.b2World = b2World;
 /// @param timeStep the amount of time to simulate, this should not vary.
 /// @param velocityIterations for the velocity constraint solver.
 /// @param positionIterations for the position constraint solver.
-b2World.Step_s_step = new b2_time_step_js_1.b2TimeStep();
-b2World.Step_s_stepTimer = new b2_timer_js_1.b2Timer();
-b2World.Step_s_timer = new b2_timer_js_1.b2Timer();
+b2World.Step_s_step = new b2_time_step_1.b2TimeStep();
+b2World.Step_s_stepTimer = new b2_timer_1.b2Timer();
+b2World.Step_s_timer = new b2_timer_1.b2Timer();
 // #endif
 /// Call this to draw shapes and other debug draw data.
-b2World.DebugDraw_s_color = new b2_draw_js_1.b2Color(0, 0, 0);
-b2World.DebugDraw_s_vs = b2_math_js_1.b2Vec2.MakeArray(4);
-b2World.DebugDraw_s_xf = new b2_math_js_1.b2Transform();
-b2World.QueryFixtureShape_s_aabb = new b2_collision_js_1.b2AABB();
-b2World.RayCast_s_input = new b2_collision_js_1.b2RayCastInput();
-b2World.RayCast_s_output = new b2_collision_js_1.b2RayCastOutput();
-b2World.RayCast_s_point = new b2_math_js_1.b2Vec2();
-b2World.SolveTOI_s_subStep = new b2_time_step_js_1.b2TimeStep();
-b2World.SolveTOI_s_backup = new b2_math_js_1.b2Sweep();
-b2World.SolveTOI_s_backup1 = new b2_math_js_1.b2Sweep();
-b2World.SolveTOI_s_backup2 = new b2_math_js_1.b2Sweep();
-b2World.SolveTOI_s_toi_input = new b2_time_of_impact_js_1.b2TOIInput();
-b2World.SolveTOI_s_toi_output = new b2_time_of_impact_js_1.b2TOIOutput();
+b2World.DebugDraw_s_color = new b2_draw_1.b2Color(0, 0, 0);
+b2World.DebugDraw_s_vs = b2_math_1.b2Vec2.MakeArray(4);
+b2World.DebugDraw_s_xf = new b2_math_1.b2Transform();
+b2World.QueryFixtureShape_s_aabb = new b2_collision_1.b2AABB();
+b2World.RayCast_s_input = new b2_collision_1.b2RayCastInput();
+b2World.RayCast_s_output = new b2_collision_1.b2RayCastOutput();
+b2World.RayCast_s_point = new b2_math_1.b2Vec2();
+b2World.SolveTOI_s_subStep = new b2_time_step_1.b2TimeStep();
+b2World.SolveTOI_s_backup = new b2_math_1.b2Sweep();
+b2World.SolveTOI_s_backup1 = new b2_math_1.b2Sweep();
+b2World.SolveTOI_s_backup2 = new b2_math_1.b2Sweep();
+b2World.SolveTOI_s_toi_input = new b2_time_of_impact_1.b2TOIInput();
+b2World.SolveTOI_s_toi_output = new b2_time_of_impact_1.b2TOIOutput();

@@ -1,11 +1,11 @@
-import { IgeCamera } from "../../export/exports.js"
-import type { IgeObject } from "../../export/exports.js"
-import { IgePoint3d } from "../../export/exports.js"
-import { IgeRect } from "../../export/exports.js"
-import type { IgeScene2d } from "../../export/exports.js"
-import { IgeUiEntity } from "../../export/exports.js"
-import type { IgeCanRegisterById } from "../../export/exports.js"
-import type { IgeCanvasRenderingContext2d } from "../../export/exports.js"
+import { IgeCamera } from "./IgeCamera.js"
+import type { IgeObject } from "./IgeObject.js";
+import { IgePoint3d } from "./IgePoint3d.js"
+import { IgeRect } from "./IgeRect.js";
+import type { IgeScene2d } from "./IgeScene2d.js"
+import { IgeUiEntity } from "./IgeUiEntity.js";
+import type { IgeCanRegisterById } from "../../types/IgeCanRegisterById.js"
+import type { IgeCanvasRenderingContext2d } from "../../types/IgeCanvasRenderingContext2d.js"
 export interface IgeViewportOptions {
     width: number;
     height: number;

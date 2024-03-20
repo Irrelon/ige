@@ -1,35 +1,32 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.IgeEntity = void 0;
-const exports_1 = require("../../export/exports.js");
-const exports_2 = require("../../export/exports.js");
-const exports_3 = require("../../export/exports.js");
-const exports_4 = require("../../export/exports.js");
-const exports_5 = require("../../export/exports.js");
-const exports_6 = require("../../export/exports.js");
-const exports_7 = require("../../export/exports.js");
-const exports_8 = require("../../export/exports.js");
-const exports_9 = require("../../export/exports.js");
-const exports_10 = require("../../export/exports.js");
-const exports_11 = require("../../export/exports.js");
-const exports_12 = require("../../export/exports.js");
-const exports_13 = require("../../export/exports.js");
-const exports_14 = require("../../export/exports.js");
-const exports_15 = require("../../export/exports.js");
-const exports_16 = require("../../export/exports.js");
+const instance_1 = require("../instance.js");
+const IgeDummyCanvas_1 = require("./IgeDummyCanvas.js");
+const IgeMatrix2d_1 = require("./IgeMatrix2d.js");
+const IgeObject_1 = require("./IgeObject.js");
+const IgePoint2d_1 = require("./IgePoint2d.js");
+const IgePoint3d_1 = require("./IgePoint3d.js");
+const IgePoly2d_1 = require("./IgePoly2d.js");
+const IgeRect_1 = require("./IgeRect.js");
+const clientServer_1 = require("../utils/clientServer.js");
+const igeClassStore_1 = require("../utils/igeClassStore.js");
+const maths_1 = require("../utils/maths.js");
+const trace_1 = require("../utils/trace.js");
+const enums_1 = require("../../enums/index.js");
 /**
  * Creates an entity and handles the entity's life cycle and
  * all related entity actions / methods.
  */
-class IgeEntity extends exports_3.IgeObject {
+class IgeEntity extends IgeObject_1.IgeObject {
     constructor() {
         super();
         this.classId = "IgeEntity";
-        this._renderMode = exports_11.IgeEntityRenderMode.flat;
+        this._renderMode = enums_1.IgeEntityRenderMode.flat;
         //_entity?: IgeEntity; // We comment this because any class wanting to override return values of methods can do so individually e.g. viewport.camera.width().height()
         this._parent = null;
         this._children = [];
-        this.customTriggerPolygon = () => new exports_7.IgeRect();
+        this.customTriggerPolygon = () => new IgeRect_1.IgeRect();
         this._sortChildren = (compareFn) => {
             return this._children.sort(compareFn);
         };
@@ -165,7 +162,7 @@ class IgeEntity extends exports_3.IgeObject {
          * @private
          */
         this._mouseInTrigger = (evc, eventData) => {
-            const input = exports_9.ige.input;
+            const input = instance_1.ige.input;
             if (input.pointerMove) {
                 // There is a mouse move event
                 this._handleMouseIn(input.pointerMove, evc, eventData);
@@ -189,7 +186,7 @@ class IgeEntity extends exports_3.IgeObject {
         this._specialProp.push("_eventListeners");
         this._specialProp.push("_aabb");
         //this._mouseEventTrigger = 0;
-        if (exports_15.isServer) {
+        if (clientServer_1.isServer) {
             // Set the stream floating point precision to 2 as default
             this.streamFloatPrecision(2);
         }
@@ -234,13 +231,13 @@ class IgeEntity extends exports_3.IgeObject {
      */
     updateTransform() {
         this._localMatrix.identity();
-        if (this._renderMode === exports_11.IgeEntityRenderMode.flat) {
+        if (this._renderMode === enums_1.IgeEntityRenderMode.flat) {
             // 2d translation
             this._localMatrix.multiply(this._localMatrix._newTranslate(this._translate.x, this._translate.y));
         }
-        if (this._renderMode === exports_11.IgeEntityRenderMode.iso) {
+        if (this._renderMode === enums_1.IgeEntityRenderMode.iso) {
             // iso translation
-            const isoPoint = (this._translateIso = new exports_5.IgePoint3d(this._translate.x, this._translate.y, this._translate.z + this._bounds3d.z / 2).toIso());
+            const isoPoint = (this._translateIso = new IgePoint3d_1.IgePoint3d(this._translate.x, this._translate.y, this._translate.z + this._bounds3d.z / 2).toIso());
             if (this._parent && this._parent._bounds3d.z) {
                 // This adjusts the child entity so that 0, 0, 0 inside the
                 // parent is the center of the base of the parent
@@ -344,9 +341,9 @@ class IgeEntity extends exports_3.IgeObject {
      * center.
      */
     mousePos(viewport) {
-        viewport = viewport || exports_9.ige.engine._currentViewport;
+        viewport = viewport || instance_1.ige.engine._currentViewport;
         if (!viewport) {
-            return new exports_5.IgePoint3d(0, 0, 0);
+            return new IgePoint3d_1.IgePoint3d(0, 0, 0);
         }
         const mp = viewport._pointerPos.clone();
         // if (this._ignoreCamera) {
@@ -376,13 +373,13 @@ class IgeEntity extends exports_3.IgeObject {
      * center.
      */
     mousePosAbsolute(viewport) {
-        viewport = viewport || exports_9.ige.engine._currentViewport;
+        viewport = viewport || instance_1.ige.engine._currentViewport;
         if (viewport) {
             const mp = viewport._pointerPos.clone();
             this._transformPoint(mp);
             return mp;
         }
-        return new exports_5.IgePoint3d(0, 0, 0);
+        return new IgePoint3d_1.IgePoint3d(0, 0, 0);
     }
     /**
      * Gets the position of the mouse in world co-ordinates.
@@ -396,7 +393,7 @@ class IgeEntity extends exports_3.IgeObject {
      * center.
      */
     mousePosWorld(viewport) {
-        viewport = viewport || exports_9.ige.engine._currentViewport;
+        viewport = viewport || instance_1.ige.engine._currentViewport;
         const mp = this.mousePos(viewport);
         this.localToWorldPoint(mp, viewport);
         if (this._ignoreCamera) {
@@ -421,7 +418,7 @@ class IgeEntity extends exports_3.IgeObject {
         const worldPos = this.worldPosition();
         this.rotateTo(this._rotate.x, this._rotate.y, Math.atan2(worldPos.y - point.y, worldPos.x - point.x) -
             ((_c = (_b = (_a = this._parent) === null || _a === void 0 ? void 0 : _a._rotate) === null || _b === void 0 ? void 0 : _b.z) !== null && _c !== void 0 ? _c : 0) +
-            (0, exports_16.degreesToRadians)(270));
+            (0, maths_1.degreesToRadians)(270));
         return this;
     }
     backgroundPattern(texture, repeat = "repeat", trackCamera = false, isoTile = false) {
@@ -463,7 +460,7 @@ class IgeEntity extends exports_3.IgeObject {
             this._parent._tileHeight !== undefined)) {
             throw new Error("Cannot set width by tile because the entity is not currently mounted to a tile map or the tile map has no tileWidth or tileHeight values.");
         }
-        const tileSize = this._renderMode === exports_11.IgeEntityRenderMode.flat ? this._parent._tileWidth : this._parent._tileWidth * 2;
+        const tileSize = this._renderMode === enums_1.IgeEntityRenderMode.flat ? this._parent._tileWidth : this._parent._tileWidth * 2;
         if (lockAspect) {
             if (this._texture) {
                 this.width(val * tileSize);
@@ -502,7 +499,7 @@ class IgeEntity extends exports_3.IgeObject {
             this._parent._tileHeight !== undefined)) {
             throw new Error("Cannot set height by tile because the entity is not currently mounted to a tile map or the tile map has no tileWidth or tileHeight values.");
         }
-        const tileSize = this._renderMode === exports_11.IgeEntityRenderMode.flat ? this._parent._tileHeight : this._parent._tileHeight * 2;
+        const tileSize = this._renderMode === enums_1.IgeEntityRenderMode.flat ? this._parent._tileHeight : this._parent._tileHeight * 2;
         this.height(val * tileSize);
         if (lockAspect) {
             if (this._texture) {
@@ -538,9 +535,9 @@ class IgeEntity extends exports_3.IgeObject {
             return this;
         }
         // Occupy tiles based upon tile point and tile width/height
-        const trPoint = new exports_5.IgePoint3d(this._translate.x - (this._tileWidth / 2 - 0.5) * this._parent._tileWidth, this._translate.y - (this._tileHeight / 2 - 0.5) * this._parent._tileHeight, 0);
+        const trPoint = new IgePoint3d_1.IgePoint3d(this._translate.x - (this._tileWidth / 2 - 0.5) * this._parent._tileWidth, this._translate.y - (this._tileHeight / 2 - 0.5) * this._parent._tileHeight, 0);
         const tilePoint = this._parent.pointToTile(trPoint);
-        if (this._parent._mountMode === exports_13.IgeMountMode.iso) {
+        if (this._parent._mountMode === enums_1.IgeMountMode.iso) {
             tilePoint.thisToIso();
         }
         this._parent.occupyTile(tilePoint.x, tilePoint.y, this._tileWidth, this._tileHeight, this);
@@ -569,8 +566,8 @@ class IgeEntity extends exports_3.IgeObject {
             return this;
         }
         // Un-occupy tiles based upon tile point and tile width/height
-        const trPoint = new exports_5.IgePoint3d(this._translate.x - (this._tileWidth / 2 - 0.5) * this._parent._tileWidth, this._translate.y - (this._tileHeight / 2 - 0.5) * this._parent._tileHeight, 0), tilePoint = this._parent.pointToTile(trPoint);
-        if (this._parent._mountMode === exports_13.IgeMountMode.iso) {
+        const trPoint = new IgePoint3d_1.IgePoint3d(this._translate.x - (this._tileWidth / 2 - 0.5) * this._parent._tileWidth, this._translate.y - (this._tileHeight / 2 - 0.5) * this._parent._tileHeight, 0), tilePoint = this._parent.pointToTile(trPoint);
+        if (this._parent._mountMode === enums_1.IgeMountMode.iso) {
             tilePoint.thisToIso();
         }
         this._parent.unOccupyTile(tilePoint.x, tilePoint.y, this._tileWidth, this._tileHeight);
@@ -595,14 +592,14 @@ class IgeEntity extends exports_3.IgeObject {
         const tileArr = [];
         for (let x = 0; x < tileWidth; x++) {
             for (let y = 0; y < tileHeight; y++) {
-                tileArr.push(new exports_5.IgePoint3d(tile.x + x, tile.y + y, 0));
+                tileArr.push(new IgePoint3d_1.IgePoint3d(tile.x + x, tile.y + y, 0));
             }
         }
         return tileArr;
     }
     anchor(x, y) {
         if (x !== undefined && y !== undefined) {
-            this._anchor = new exports_4.IgePoint2d(x, y);
+            this._anchor = new IgePoint2d_1.IgePoint2d(x, y);
             return this;
         }
         return this._anchor;
@@ -641,30 +638,30 @@ class IgeEntity extends exports_3.IgeObject {
     }
     bounds2d(x, y) {
         if (x !== undefined && y !== undefined && typeof x === "number") {
-            this._bounds2d = new exports_4.IgePoint2d(x, y);
+            this._bounds2d = new IgePoint2d_1.IgePoint2d(x, y);
             return this;
         }
         // TODO: Is this exception still something we use?
         if (typeof x === "object" && y === undefined) {
             const bounds = x;
             // x is considered an IgePoint2d instance
-            this._bounds2d = new exports_4.IgePoint2d(bounds.x, bounds.y);
+            this._bounds2d = new IgePoint2d_1.IgePoint2d(bounds.x, bounds.y);
         }
         return this._bounds2d;
     }
     bounds3d(x, y, z) {
         if (x !== undefined && y !== undefined && z !== undefined) {
-            this._bounds3d = new exports_5.IgePoint3d(x, y, z);
+            this._bounds3d = new IgePoint3d_1.IgePoint3d(x, y, z);
             return this;
         }
         return this._bounds3d;
     }
     lifeSpan(milliseconds, deathCallback) {
         if (milliseconds !== undefined) {
-            this.deathTime(exports_9.ige.engine._currentTime + milliseconds, deathCallback);
+            this.deathTime(instance_1.ige.engine._currentTime + milliseconds, deathCallback);
             return this;
         }
-        return (this.deathTime() || 0) - exports_9.ige.engine._currentTime;
+        return (this.deathTime() || 0) - instance_1.ige.engine._currentTime;
     }
     deathTime(val, deathCallback) {
         if (val !== undefined) {
@@ -846,7 +843,7 @@ class IgeEntity extends exports_3.IgeObject {
             return this._aabb;
         }
         //  && this.newFrame()
-        const poly = new exports_6.IgePoly2d();
+        const poly = new IgePoly2d_1.IgePoly2d();
         const anc = this._anchor;
         const ancX = anc.x;
         const ancY = anc.y;
@@ -870,7 +867,7 @@ class IgeEntity extends exports_3.IgeObject {
         if (isNaN(minX) || isNaN(minY) || isNaN(maxX) || isNaN(maxY)) {
             debugger;
         }
-        this._aabb = new exports_7.IgeRect(minX, minY, maxX - minX, maxY - minY);
+        this._aabb = new IgeRect_1.IgeRect(minX, minY, maxX - minX, maxY - minY);
         this._aabbDirty = false;
         return this._aabb;
     }
@@ -902,7 +899,7 @@ class IgeEntity extends exports_3.IgeObject {
             return this._localAabb;
         }
         const aabb = this.aabb();
-        this._localAabb = new exports_7.IgeRect(-Math.floor(aabb.width / 2), -Math.floor(aabb.height / 2), Math.floor(aabb.width), Math.floor(aabb.height));
+        this._localAabb = new IgeRect_1.IgeRect(-Math.floor(aabb.width / 2), -Math.floor(aabb.height / 2), Math.floor(aabb.width), Math.floor(aabb.height));
     }
     /**
      * Takes two values and returns them as an array where argument[0]
@@ -988,7 +985,7 @@ class IgeEntity extends exports_3.IgeObject {
             otherTranslate.x += otherObject._bounds2d.x * (0.5 - otherObject._origin.x);
             otherTranslate.y += otherObject._bounds2d.y * (0.5 - otherObject._origin.y);
         }
-        const thisX = thisTranslate.x, thisY = thisTranslate.y, otherX = otherTranslate.x, otherY = otherTranslate.y, thisMin = new exports_5.IgePoint3d(thisX - thisG3d.x / 2, thisY - thisG3d.y / 2, this._translate.z), thisMax = new exports_5.IgePoint3d(thisX + thisG3d.x / 2, thisY + thisG3d.y / 2, this._translate.z + thisG3d.z), otherMin = new exports_5.IgePoint3d(otherX - otherG3d.x / 2, otherY - otherG3d.y / 2, otherObject._translate.z), otherMax = new exports_5.IgePoint3d(otherX + otherG3d.x / 2, otherY + otherG3d.y / 2, otherObject._translate.z + otherG3d.z);
+        const thisX = thisTranslate.x, thisY = thisTranslate.y, otherX = otherTranslate.x, otherY = otherTranslate.y, thisMin = new IgePoint3d_1.IgePoint3d(thisX - thisG3d.x / 2, thisY - thisG3d.y / 2, this._translate.z), thisMax = new IgePoint3d_1.IgePoint3d(thisX + thisG3d.x / 2, thisY + thisG3d.y / 2, this._translate.z + thisG3d.z), otherMin = new IgePoint3d_1.IgePoint3d(otherX - otherG3d.x / 2, otherY - otherG3d.y / 2, otherObject._translate.z), otherMax = new IgePoint3d_1.IgePoint3d(otherX + otherG3d.x / 2, otherY + otherG3d.y / 2, otherObject._translate.z + otherG3d.z);
         if (thisMax.x <= otherMin.x) {
             return false;
         }
@@ -1051,7 +1048,7 @@ class IgeEntity extends exports_3.IgeObject {
      * not yet been processed for this tick.
      */
     newFrame() {
-        return exports_9.ige.engine._frameAlternator !== this._frameAlternatorCurrent;
+        return instance_1.ige.engine._frameAlternator !== this._frameAlternatorCurrent;
     }
     /**
      * Sets the canvas context transform properties to match the game
@@ -1103,7 +1100,7 @@ class IgeEntity extends exports_3.IgeObject {
         if (!(!this._hidden && this._inView && (!this._parent || this._parent._inView) && !this._streamJustCreated)) {
             return;
         }
-        this._processBehaviours(exports_10.IgeBehaviourType.preTick, ctx);
+        this._processBehaviours(enums_1.IgeBehaviourType.preTick, ctx);
         // Check for cached version
         if (this._cache || this._compositeCache) {
             // Caching is enabled
@@ -1141,7 +1138,7 @@ class IgeEntity extends exports_3.IgeObject {
         }
     }
     _processTriggerHitTests(mp) {
-        if (!exports_9.ige.engine._currentViewport) {
+        if (!instance_1.ige.engine._currentViewport) {
             return false;
         }
         if (this._pointerAlwaysInside) {
@@ -1157,7 +1154,7 @@ class IgeEntity extends exports_3.IgeObject {
         }
         else {
             // Default to either aabb or bounds3dPolygon depending on entity parent mounting mode
-            if (this._parent && this._parent._mountMode === exports_13.IgeMountMode.iso) {
+            if (this._parent && this._parent._mountMode === enums_1.IgeMountMode.iso) {
                 // Use bounds3dPolygon
                 mouseTriggerPoly = this.bounds3dPolygon();
             }
@@ -1183,7 +1180,7 @@ class IgeEntity extends exports_3.IgeObject {
             const aabbC = this.compositeAabb();
             this._compositeAabbCache = aabbC;
             if (aabbC.width > 0 && aabbC.height > 0) {
-                exports_9.ige.engine._setInternalCanvasSize(_canvas, _ctx, aabbC.width, aabbC.height);
+                instance_1.ige.engine._setInternalCanvasSize(_canvas, _ctx, aabbC.width, aabbC.height);
                 /*_canvas.width = Math.ceil(aabbC.width);
                 _canvas.height = Math.ceil(aabbC.height);*/
             }
@@ -1203,7 +1200,7 @@ class IgeEntity extends exports_3.IgeObject {
         }
         else {
             if (this._bounds2d.x > 0 && this._bounds2d.y > 0) {
-                exports_9.ige.engine._setInternalCanvasSize(_canvas, _ctx, this._bounds2d.x, this._bounds2d.y);
+                instance_1.ige.engine._setInternalCanvasSize(_canvas, _ctx, this._bounds2d.x, this._bounds2d.y);
                 /*_canvas.width = this._bounds2d.x;
                 _canvas.height = this._bounds2d.y;*/
             }
@@ -1233,7 +1230,7 @@ class IgeEntity extends exports_3.IgeObject {
      * @private
      */
     _renderEntity(ctx) {
-        if (this._opacity <= 0 || !exports_9.ige.engine._currentCamera || !exports_9.ige.engine._currentViewport) {
+        if (this._opacity <= 0 || !instance_1.ige.engine._currentCamera || !instance_1.ige.engine._currentViewport) {
             return;
         }
         if (this._backgroundPattern && this._backgroundPattern.image) {
@@ -1261,15 +1258,15 @@ class IgeEntity extends exports_3.IgeObject {
                     ctx.translate(-this._bounds2d.x2, -this._bounds2d.y2);
                     ctx.rect(0, 0, this._bounds2d.x, this._bounds2d.y);
                     if (this._backgroundPatternTrackCamera) {
-                        ctx.translate(-exports_9.ige.engine._currentCamera._translate.x, -exports_9.ige.engine._currentCamera._translate.y);
-                        ctx.scale(exports_9.ige.engine._currentCamera._scale.x, exports_9.ige.engine._currentCamera._scale.y);
+                        ctx.translate(-instance_1.ige.engine._currentCamera._translate.x, -instance_1.ige.engine._currentCamera._translate.y);
+                        ctx.scale(instance_1.ige.engine._currentCamera._scale.x, instance_1.ige.engine._currentCamera._scale.y);
                     }
                     ctx.fill();
-                    exports_9.ige.metrics.drawCount++;
+                    instance_1.ige.metrics.drawCount++;
                     if (this._backgroundPatternIsoTile) {
                         ctx.translate(-Math.floor(this._backgroundPattern.image.width) / 2, -Math.floor(this._backgroundPattern.image.height / 2));
                         ctx.fill();
-                        exports_9.ige.metrics.drawCount++;
+                        instance_1.ige.metrics.drawCount++;
                     }
                 }
                 ctx.restore();
@@ -1289,7 +1286,7 @@ class IgeEntity extends exports_3.IgeObject {
                 ctx.restore();
             }
         }
-        if (this._compositeCache && exports_9.ige.engine._currentViewport._drawCompositeBounds) {
+        if (this._compositeCache && instance_1.ige.engine._currentViewport._drawCompositeBounds) {
             //console.log('moo');
             ctx.fillStyle = "rgba(0, 0, 255, 0.3)";
             ctx.fillRect(-this._bounds2d.x2, -this._bounds2d.y2, this._bounds2d.x, this._bounds2d.y);
@@ -1306,9 +1303,9 @@ class IgeEntity extends exports_3.IgeObject {
      * @private
      */
     _renderCache(ctx) {
-        if (!exports_9.ige.engine._currentViewport)
+        if (!instance_1.ige.engine._currentViewport)
             return;
-        if (!this._cacheCanvas || this._cacheCanvas instanceof exports_1.IgeDummyCanvas)
+        if (!this._cacheCanvas || this._cacheCanvas instanceof IgeDummyCanvas_1.IgeDummyCanvas)
             return;
         ctx.save();
         if (this._compositeCache && this._compositeAabbCache) {
@@ -1316,7 +1313,7 @@ class IgeEntity extends exports_3.IgeObject {
             ctx.translate(this._bounds2d.x2 + aabbC.x, this._bounds2d.y2 + aabbC.y);
             if (this._parent && this._parent._ignoreCamera) {
                 // Translate the entity back to negate the scene translate
-                const cam = exports_9.ige.engine._currentCamera;
+                const cam = instance_1.ige.engine._currentCamera;
                 //ctx.translate(-cam._translate.x, -cam._translate.y);
                 /*this.scaleTo(1 / cam._scale.x, 1 / cam._scale.y, 1 / cam._scale.z);
                 this.rotateTo(-cam._rotate.x, -cam._rotate.y, -cam._rotate.z);*/
@@ -1327,14 +1324,14 @@ class IgeEntity extends exports_3.IgeObject {
         // as it is rendered (usually because of device pixel ratio related stuff)
         ctx.drawImage(this._cacheCanvas, -this._bounds2d.x2, -this._bounds2d.y2);
         //, this._bounds2d.x, this._bounds2d.y);
-        if (exports_9.ige.engine._currentViewport._drawCompositeBounds) {
+        if (instance_1.ige.engine._currentViewport._drawCompositeBounds) {
             ctx.fillStyle = "rgba(0, 255, 0, 0.5)";
             ctx.fillRect(-this._bounds2d.x2, -this._bounds2d.y2, this._cacheCanvas.width, this._cacheCanvas.height);
             ctx.fillStyle = "#ffffff";
             ctx.fillText("Composite Cache", -this._bounds2d.x2, -this._bounds2d.y2 - 15);
             ctx.fillText(this.id(), -this._bounds2d.x2, -this._bounds2d.y2 - 5);
         }
-        exports_9.ige.metrics.drawCount++;
+        instance_1.ige.metrics.drawCount++;
         ctx.restore();
     }
     /**
@@ -1347,7 +1344,7 @@ class IgeEntity extends exports_3.IgeObject {
         while (pointCount--) {
             point = points[pointCount];
             if (this._parent) {
-                const tempMat = new exports_2.IgeMatrix2d();
+                const tempMat = new IgeMatrix2d_1.IgeMatrix2d();
                 // Copy the parent world matrix
                 tempMat.copy(this._parent._worldMatrix);
                 // Apply any local transforms
@@ -1456,10 +1453,10 @@ class IgeEntity extends exports_3.IgeObject {
         if (val !== undefined) {
             // TODO: When setting to true, do we also want to automatically set
             //  the triggerPolygonFunctionName to "bounds3dPolygon" ?
-            this._renderMode = val ? exports_11.IgeEntityRenderMode.iso : exports_11.IgeEntityRenderMode.flat;
+            this._renderMode = val ? enums_1.IgeEntityRenderMode.iso : enums_1.IgeEntityRenderMode.flat;
             return this;
         }
-        return this._renderMode === exports_11.IgeEntityRenderMode.iso;
+        return this._renderMode === enums_1.IgeEntityRenderMode.iso;
     }
     /**
      * Destroys the entity by removing it from the scenegraph,
@@ -1473,7 +1470,7 @@ class IgeEntity extends exports_3.IgeObject {
     destroy() {
         this._alive = false;
         // Check if the entity is streaming
-        if (exports_15.isServer && this._streamMode === exports_14.IgeStreamMode.simple) {
+        if (clientServer_1.isServer && this._streamMode === enums_1.IgeStreamMode.simple) {
             this._streamDataCache = "";
             this.streamDestroy();
         }
@@ -1490,7 +1487,7 @@ class IgeEntity extends exports_3.IgeObject {
             this.destroyChildren();
         }
         // Remove the object from the lookup system
-        exports_9.ige.register.remove(this);
+        instance_1.ige.register.remove(this);
         // Set a flag in case a reference to this object
         // has been held somewhere, shows that the object
         // should no longer be interacted with
@@ -1504,10 +1501,10 @@ class IgeEntity extends exports_3.IgeObject {
      * Sorts the _children array by the layer and then depth of each object.
      */
     depthSortChildren() {
-        if (this._depthSortMode === exports_12.IgeIsometricDepthSortMode.none) {
+        if (this._depthSortMode === enums_1.IgeIsometricDepthSortMode.none) {
             return;
         }
-        if (this._mountMode === exports_13.IgeMountMode.flat) {
+        if (this._mountMode === enums_1.IgeMountMode.flat) {
             // The mount mode for this entity is a 2d plane or "flat" mode, so we don't have any
             // isometric rendering to deal with and as such, just called the IgeObject version
             // of this method because IgeObject as a base class has no understanding of isometric
@@ -1520,7 +1517,7 @@ class IgeEntity extends exports_3.IgeObject {
         if (!arr || !arrCount) {
             return;
         }
-        if (this._depthSortMode === exports_12.IgeIsometricDepthSortMode.bounds3d) {
+        if (this._depthSortMode === enums_1.IgeIsometricDepthSortMode.bounds3d) {
             // Slowest, uses 3d bounds
             // Calculate depths from 3d bounds
             const sortObj = {
@@ -1574,7 +1571,7 @@ class IgeEntity extends exports_3.IgeObject {
                 }
             });
         }
-        if (this._depthSortMode === exports_12.IgeIsometricDepthSortMode.cuboid) {
+        if (this._depthSortMode === enums_1.IgeIsometricDepthSortMode.cuboid) {
             // Medium speed, optimised for almost-cube shaped 3d bounds
             // Now sort the entities by depth
             this._sortChildren((a, b) => {
@@ -1596,7 +1593,7 @@ class IgeEntity extends exports_3.IgeObject {
                 }
             });
         }
-        if (this._depthSortMode === exports_12.IgeIsometricDepthSortMode.cube) {
+        if (this._depthSortMode === enums_1.IgeIsometricDepthSortMode.cube) {
             // Fastest, optimised for cube-shaped 3d bounds
             while (arrCount--) {
                 const sortObj = arr[arrCount];
@@ -1774,31 +1771,31 @@ class IgeEntity extends exports_3.IgeObject {
      */
     debugTransforms() {
         this.log("Debug transforms enabled");
-        (0, exports_16.traceSet)(this._translate, "x", 1, (val) => {
+        (0, trace_1.traceSet)(this._translate, "x", 1, (val) => {
             return isNaN(val);
         });
-        (0, exports_16.traceSet)(this._translate, "y", 1, (val) => {
+        (0, trace_1.traceSet)(this._translate, "y", 1, (val) => {
             return isNaN(val);
         });
-        (0, exports_16.traceSet)(this._translate, "z", 1, (val) => {
+        (0, trace_1.traceSet)(this._translate, "z", 1, (val) => {
             return isNaN(val);
         });
-        (0, exports_16.traceSet)(this._rotate, "x", 1, (val) => {
+        (0, trace_1.traceSet)(this._rotate, "x", 1, (val) => {
             return isNaN(val);
         });
-        (0, exports_16.traceSet)(this._rotate, "y", 1, (val) => {
+        (0, trace_1.traceSet)(this._rotate, "y", 1, (val) => {
             return isNaN(val);
         });
-        (0, exports_16.traceSet)(this._rotate, "z", 1, (val) => {
+        (0, trace_1.traceSet)(this._rotate, "z", 1, (val) => {
             return isNaN(val);
         });
-        (0, exports_16.traceSet)(this._scale, "x", 1, (val) => {
+        (0, trace_1.traceSet)(this._scale, "x", 1, (val) => {
             return isNaN(val);
         });
-        (0, exports_16.traceSet)(this._scale, "y", 1, (val) => {
+        (0, trace_1.traceSet)(this._scale, "y", 1, (val) => {
             return isNaN(val);
         });
-        (0, exports_16.traceSet)(this._scale, "z", 1, (val) => {
+        (0, trace_1.traceSet)(this._scale, "z", 1, (val) => {
             return isNaN(val);
         });
         return this;
@@ -1822,47 +1819,6 @@ class IgeEntity extends exports_3.IgeObject {
         }
         else {
             this.log("velocityBy() called with a missing or undefined x, y or z parameter!", "error");
-        }
-        return this; // Used to include this._entity
-    }
-    /**
-     * Translates the entity by adding the passed values to
-     * the current translation values.
-     * @param {number} x The x co-ordinate.
-     * @param {number} y The y co-ordinate.
-     * @param {number} z The z co-ordinate.
-     * @example #Translate the entity by 10 along the x axis
-     *     entity.translateBy(10, 0, 0);
-     * @return {*}
-     */
-    translateBy(x, y, z) {
-        if (x !== undefined && y !== undefined && z !== undefined) {
-            this._translate.x += x;
-            this._translate.y += y;
-            this._translate.z += z;
-        }
-        else {
-            this.log("translateBy() called with a missing or undefined x, y or z parameter!", "error");
-        }
-        return this; // Used to include this._entity
-    }
-    /**
-     * Translates the entity to the passed values.
-     * @param {number} x The x co-ordinate.
-     * @param {number} y The y co-ordinate.
-     * @param {number} z The z co-ordinate.
-     * @example #Translate the entity to 10, 0, 0
-     *     entity.translateTo(10, 0, 0);
-     * @return {*}
-     */
-    translateTo(x, y, z) {
-        if (x !== undefined && y !== undefined && z !== undefined) {
-            this._translate.x = x;
-            this._translate.y = y;
-            this._translate.z = z;
-        }
-        else {
-            this.log("translateTo() called with a missing or undefined x, y or z parameter!", "error");
         }
         return this; // Used to include this._entity
     }
@@ -1983,47 +1939,6 @@ class IgeEntity extends exports_3.IgeObject {
         return this._translate.z;
     }
     /**
-     * Rotates the entity by adding the passed values to
-     * the current rotation values.
-     * @param {number} x The x co-ordinate.
-     * @param {number} y The y co-ordinate.
-     * @param {number} z The z co-ordinate.
-     * @example #Rotate the entity by 10 degrees about the z axis
-     *     entity.rotateBy(0, 0, degreesToRadians(10));
-     * @return {*}
-     */
-    rotateBy(x, y, z) {
-        if (x !== undefined && y !== undefined && z !== undefined) {
-            this._rotate.x += x;
-            this._rotate.y += y;
-            this._rotate.z += z;
-        }
-        else {
-            this.log("rotateBy() called with a missing or undefined x, y or z parameter!", "error");
-        }
-        return this; // Used to include this._entity
-    }
-    /**
-     * Rotates the entity to the passed values.
-     * @param {number} x The x co-ordinate.
-     * @param {number} y The y co-ordinate.
-     * @param {number} z The z co-ordinate.
-     * @example #Rotate the entity to 10 degrees about the z axis
-     *     entity.rotateTo(0, 0, degreesToRadians(10));
-     * @return {*}
-     */
-    rotateTo(x, y, z) {
-        if (x !== undefined && y !== undefined && z !== undefined) {
-            this._rotate.x = x;
-            this._rotate.y = y;
-            this._rotate.z = z;
-        }
-        else {
-            this.log("rotateTo() called with a missing or undefined x, y or z parameter!", "error");
-        }
-        return this; // Used to include this._entity
-    }
-    /**
      * Gets the `translate` accessor object.
      * @example #Use the `rotate` accessor object to rotate the entity about the z-axis 10 degrees
      *     entity.rotate().z(degreesToRadians(10));
@@ -2060,46 +1975,6 @@ class IgeEntity extends exports_3.IgeObject {
             return this; // Used to include this._entity
         }
         return this._rotate.z;
-    }
-    /**
-     * Scales the entity by adding the passed values to
-     * the current scale values.
-     * @param {number} x The x co-ordinate.
-     * @param {number} y The y co-ordinate.
-     * @param {number} z The z co-ordinate.
-     * @example #Scale the entity by 2 on the x-axis
-     *     entity.scaleBy(2, 0, 0);
-     * @return {*}
-     */
-    scaleBy(x, y, z) {
-        if (x !== undefined && y !== undefined && z !== undefined) {
-            this._scale.x += x;
-            this._scale.y += y;
-            this._scale.z += z;
-        }
-        else {
-            this.log("scaleBy() called with a missing or undefined x, y or z parameter!", "error");
-        }
-        return this; // Used to include this._entity
-    }
-    /**
-     * Scale the entity to the passed values.
-     * @param {number} x The x co-ordinate.
-     * @param {number} y The y co-ordinate.
-     * @param {number} z The z co-ordinate.
-     * @example #Set the entity scale to 1 on all axes
-     *     entity.scaleTo(1, 1, 1);
-     * @return {*}
-     */
-    scaleTo(x, y, z) {
-        if (x === undefined || y === undefined || z === undefined) {
-            this.log("scaleTo() called with a missing or undefined x, y or z parameter!", "error");
-            return this;
-        }
-        this._scale.x = x;
-        this._scale.y = y;
-        this._scale.z = z;
-        return this; // Used to include this._entity
     }
     /**
      * Gets the `scale` accessor object.
@@ -2365,7 +2240,7 @@ class IgeEntity extends exports_3.IgeObject {
     update(tickDelta) {
         var _a;
         // Check if the entity should still exist
-        if (this._deathTime !== undefined && this._deathTime <= exports_9.ige.engine._tickStart) {
+        if (this._deathTime !== undefined && this._deathTime <= instance_1.ige.engine._tickStart) {
             // Check if the deathCallBack was set
             if (this._deathCallBack) {
                 this._deathCallBack.apply(this);
@@ -2376,11 +2251,11 @@ class IgeEntity extends exports_3.IgeObject {
             return;
         }
         // Check that the entity has been born
-        if (exports_9.ige.engine._currentTime >= this._bornTime) {
+        if (instance_1.ige.engine._currentTime >= this._bornTime) {
             // Remove the stream data cache
             this._streamDataCache = "";
             // Process any behaviours assigned to the entity
-            this._processBehaviours(exports_10.IgeBehaviourType.preUpdate, tickDelta);
+            this._processBehaviours(enums_1.IgeBehaviourType.preUpdate, tickDelta);
             // Process velocity
             if (this._velocity.x || this._velocity.y) {
                 this._translate.x += (this._velocity.x / 16) * tickDelta;
@@ -2388,7 +2263,7 @@ class IgeEntity extends exports_3.IgeObject {
             }
             if (this._timeStream.length) {
                 // Process any interpolation
-                this._processInterpolate(exports_9.ige.engine._tickStart - exports_9.ige.network._renderLatency);
+                this._processInterpolate(instance_1.ige.engine._tickStart - instance_1.ige.network._renderLatency);
             }
             // Check for changes to the transform values
             // directly without calling the transform methods
@@ -2401,8 +2276,8 @@ class IgeEntity extends exports_3.IgeObject {
             // Update this object's current frame alternator value
             // which allows us to determine if we are still on the
             // same frame
-            this._frameAlternatorCurrent = exports_9.ige.engine._frameAlternator;
-            if (this._streamMode === exports_14.IgeStreamMode.simple) {
+            this._frameAlternatorCurrent = instance_1.ige.engine._frameAlternator;
+            if (this._streamMode === enums_1.IgeStreamMode.simple) {
                 this.streamSync();
             }
         }
@@ -2410,14 +2285,14 @@ class IgeEntity extends exports_3.IgeObject {
             // The entity is not yet born, unmount it and add to the spawn queue
             this._birthMount = (_a = this._parent) === null || _a === void 0 ? void 0 : _a.id();
             this.unMount();
-            exports_9.ige.engine.spawnQueue(this);
+            instance_1.ige.engine.spawnQueue(this);
         }
         // Process super class
         super.update(tickDelta);
         // TODO: This could be a behaviour instead to enable
         //   customisation of the flow
         if (this._pointerEventsActive) {
-            const input = exports_9.ige.input;
+            const input = instance_1.ige.input;
             if (this._processTriggerHitTests()) {
                 // Point is inside the trigger bounds
                 input.queueEvent(this._mouseInTrigger, null);
@@ -2457,7 +2332,7 @@ class IgeEntity extends exports_3.IgeObject {
         switch (sectionId) {
             case "bounds2d":
                 if (data !== undefined) {
-                    if (exports_15.isClient) {
+                    if (clientServer_1.isClient) {
                         const geom = data.split(",");
                         this.bounds2d(parseFloat(geom[0]), parseFloat(geom[1]));
                     }
@@ -2468,7 +2343,7 @@ class IgeEntity extends exports_3.IgeObject {
                 break;
             case "bounds3d":
                 if (data !== undefined) {
-                    if (exports_15.isClient) {
+                    if (clientServer_1.isClient) {
                         const geom = data.split(",");
                         this.bounds3d(parseFloat(geom[0]), parseFloat(geom[1]), parseFloat(geom[2]));
                     }
@@ -2479,7 +2354,7 @@ class IgeEntity extends exports_3.IgeObject {
                 break;
             case "hidden":
                 if (data !== undefined) {
-                    if (exports_15.isClient) {
+                    if (clientServer_1.isClient) {
                         if (data === "true") {
                             this.hide();
                         }
@@ -2494,7 +2369,7 @@ class IgeEntity extends exports_3.IgeObject {
                 break;
             case "width":
                 if (data !== undefined) {
-                    if (exports_15.isClient) {
+                    if (clientServer_1.isClient) {
                         this.width(parseInt(data));
                     }
                 }
@@ -2504,7 +2379,7 @@ class IgeEntity extends exports_3.IgeObject {
                 break;
             case "height":
                 if (data !== undefined) {
-                    if (exports_15.isClient) {
+                    if (clientServer_1.isClient) {
                         this.height(parseInt(data));
                     }
                 }
@@ -2518,4 +2393,4 @@ class IgeEntity extends exports_3.IgeObject {
     }
 }
 exports.IgeEntity = IgeEntity;
-(0, exports_8.registerClass)(IgeEntity);
+(0, igeClassStore_1.registerClass)(IgeEntity);

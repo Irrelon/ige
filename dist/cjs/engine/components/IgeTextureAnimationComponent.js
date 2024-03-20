@@ -1,9 +1,9 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.IgeTextureAnimationComponent = void 0;
-const exports_1 = require("../../export/exports.js");
-const exports_2 = require("../../export/exports.js");
-const exports_3 = require("../../export/exports.js");
+const IgeComponent_1 = require("../core/IgeComponent.js");
+const instance_1 = require("../instance.js");
+const enums_1 = require("../../enums/index.js");
 /**
  * The animation component class. Handles defining and controlling
  * frame-based animations based on cells from a texture.
@@ -12,7 +12,7 @@ const exports_3 = require("../../export/exports.js");
  * @event loopComplete - The animation has completed a full cycle (shown all frames).
  * @event complete - The animation has completed all assigned loop cycles.
  */
-class IgeTextureAnimationComponent extends exports_1.IgeComponent {
+class IgeTextureAnimationComponent extends IgeComponent_1.IgeComponent {
     /**
      * @constructor
      * @param {Object} entity The parent object that this component is being added to.
@@ -261,7 +261,7 @@ class IgeTextureAnimationComponent extends exports_1.IgeComponent {
                 if (anim) {
                     anim.currentDelta = 0;
                     anim.currentLoop = 0;
-                    anim.startTime = exports_2.ige.engine._currentTime;
+                    anim.startTime = instance_1.ige.engine._currentTime;
                     this._anim = anim;
                     this._animId = animId;
                     // Check for any callbacks in the options object
@@ -335,7 +335,7 @@ class IgeTextureAnimationComponent extends exports_1.IgeComponent {
          */
         this._update = (entity, ctx, tickDelta) => {
             // Just in case someone forgets to pass it in their update call!
-            tickDelta = tickDelta || exports_2.ige.engine._tickDelta;
+            tickDelta = tickDelta || instance_1.ige.engine._tickDelta;
             if (this._anim) {
                 const anim = this._anim;
                 // Advance the internal animation timer
@@ -403,7 +403,7 @@ class IgeTextureAnimationComponent extends exports_1.IgeComponent {
         };
         this._anims = {};
         // Add the animation behaviour to the entity
-        entity.addBehaviour(exports_3.IgeBehaviourType.preUpdate, "tween", this._update);
+        entity.addBehaviour(enums_1.IgeBehaviourType.preUpdate, "tween", this._update);
     }
 }
 exports.IgeTextureAnimationComponent = IgeTextureAnimationComponent;

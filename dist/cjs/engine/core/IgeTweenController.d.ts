@@ -1,6 +1,7 @@
-import type { IgeTween } from "../../export/exports.js"
-import { IgeEventingClass } from "../../export/exports.js"
-import type { IgeEntityBehaviourMethod, IgeIsReadyPromise } from "../../export/exports.js"
+import { IgeEventingClass } from "./IgeEventingClass.js"
+import type { IgeTween } from "./IgeTween.js";
+import type { IgeEntityBehaviourMethod } from "../../types/IgeEntityBehaviour.js"
+import type { IgeIsReadyPromise } from "../../types/IgeIsReadyPromise.js"
 /**
  * This component is already included in the IgeRoot (ige)
  * instance and is not designed for use in any other way!

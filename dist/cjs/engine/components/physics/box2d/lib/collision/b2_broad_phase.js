@@ -18,7 +18,7 @@
 */
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.b2BroadPhase = exports.b2Pair = void 0;
-const b2_dynamic_tree_js_1 = require("./b2_dynamic_tree.js");
+const b2_dynamic_tree_1 = require("./b2_dynamic_tree");
 class b2Pair {
     constructor(proxyA, proxyB) {
         this.proxyA = proxyA;
@@ -31,7 +31,7 @@ exports.b2Pair = b2Pair;
 /// It is up to the client to consume the new pairs and to track subsequent overlap.
 class b2BroadPhase {
     constructor() {
-        this.m_tree = new b2_dynamic_tree_js_1.b2DynamicTree();
+        this.m_tree = new b2_dynamic_tree_1.b2DynamicTree();
         this.m_proxyCount = 0;
         // public m_moveCapacity: number = 16;
         this.m_moveCount = 0;

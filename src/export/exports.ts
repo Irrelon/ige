@@ -262,4 +262,3 @@ export * from "../engine/ui/IgeUiAutoFlow";
 // Finally, the core Ige class and then the global class instance
 //////////////////////////////////////////////////////////////////////
 export * from "../engine/core/Ige";
-export * from "../engine/instance";

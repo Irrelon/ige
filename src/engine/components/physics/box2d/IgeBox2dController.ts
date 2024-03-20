@@ -1,26 +1,24 @@
-import { IgeEntityBox2d } from "@/export/exports";
-import { b2CircleShape } from "@/export/exports";
-import { b2PolygonShape } from "@/export/exports";
-import { b2Filter } from "@/export/exports";
-import { b2FixtureDef } from "@/export/exports";
-import { b2ContactListener } from "@/export/exports";
-import type { IgeEntity } from "@/export/exports";
-import { IgeEventingClass } from "@/export/exports";
-import type { IgeTileMap2d, IgeTileMap2dScanRectCallback } from "@/export/exports";
-import { ige } from "@/export/exports";
-import { b2Vec2 } from "@/export/exports";
-import type { b2Body } from "@/export/exports";
-import { b2BodyDef, b2BodyType } from "@/export/exports";
-import { b2World } from "@/export/exports";
-import { IgeBehaviourType } from "@/export/exports";
-import { IgeBox2dBodyType } from "@/export/exports";
-import { IgeBox2dFixtureShapeType } from "@/export/exports";
-import { IgeBox2dTimingMode } from "@/export/exports";
-import type { IgeBox2dBodyDef } from "@/export/exports";
-import type { IgeBox2dContactListenerCallback } from "@/export/exports";
-import type { IgeBox2dContactPostSolveCallback, IgeBox2dContactPreSolveCallback } from "@/export/exports";
-import type { IgeBox2dFixtureDef } from "@/export/exports";
-import type { IgeEntityBehaviourMethod } from "@/export/exports";
+import { IgeEntityBox2d } from "@/engine/components/physics/box2d/IgeEntityBox2d";
+import { b2CircleShape } from "@/engine/components/physics/box2d/lib/collision/b2_circle_shape";
+import { b2PolygonShape } from "@/engine/components/physics/box2d/lib/collision/b2_polygon_shape";
+import { b2Vec2 } from "@/engine/components/physics/box2d/lib/common/b2_math";
+import { b2Body, b2BodyDef, b2BodyType } from "@/engine/components/physics/box2d/lib/dynamics/b2_body";
+import { b2Filter, b2FixtureDef } from "@/engine/components/physics/box2d/lib/dynamics/b2_fixture";
+import { b2World } from "@/engine/components/physics/box2d/lib/dynamics/b2_world";
+import { b2ContactListener } from "@/engine/components/physics/box2d/lib/dynamics/b2_world_callbacks";
+import { IgeEntity } from "@/engine/core/IgeEntity";
+import { IgeEventingClass } from "@/engine/core/IgeEventingClass";
+import { IgeTileMap2d, IgeTileMap2dScanRectCallback } from "@/engine/core/IgeTileMap2d";
+import { ige } from "@/engine/instance";
+import { IgeBehaviourType, IgeBox2dBodyType, IgeBox2dFixtureShapeType, IgeBox2dTimingMode } from "@/enums";
+import { IgeBox2dBodyDef } from "@/types/IgeBox2dBodyDef";
+import { IgeBox2dContactListenerCallback } from "@/types/IgeBox2dContactListenerCallback";
+import {
+	IgeBox2dContactPostSolveCallback,
+	IgeBox2dContactPreSolveCallback
+} from "@/types/IgeBox2dContactSolverCallback";
+import { IgeBox2dFixtureDef } from "@/types/IgeBox2dFixtureDef";
+import { IgeEntityBehaviourMethod } from "@/types/IgeEntityBehaviour";
 
 /**
  * The engine's Box2D component class.
@@ -135,8 +133,8 @@ export class IgeBox2dController extends IgeEventingClass {
 	 * @param {boolean=} val
 	 * @return {*}
 	 */
-	sleep(val: boolean): this;
-	sleep(): boolean;
+	sleep (val: boolean): this;
+	sleep (): boolean;
 	sleep (val?: boolean) {
 		if (val !== undefined) {
 			this._sleep = val;
@@ -166,8 +164,8 @@ export class IgeBox2dController extends IgeEventingClass {
 	 * @param y
 	 * @return {*}
 	 */
-	gravity(x: number, y: number): this;
-	gravity(): b2Vec2;
+	gravity (x: number, y: number): this;
+	gravity (): b2Vec2;
 	gravity (x?: number, y?: number) {
 		if (x !== undefined && y !== undefined) {
 			this._gravity = new b2Vec2(x, y);
@@ -312,7 +310,7 @@ export class IgeBox2dController extends IgeEventingClass {
 								tempShape = new b2CircleShape();
 								if (
 									fixtureDef.shape.data &&
-											typeof fixtureDef.shape.data.radius !== "undefined"
+									typeof fixtureDef.shape.data.radius !== "undefined"
 								) {
 									tempShape.SetRadius(fixtureDef.shape.data.radius / this._scaleRatio);
 								} else {
@@ -321,9 +319,9 @@ export class IgeBox2dController extends IgeEventingClass {
 
 								if (fixtureDef.shape.data) {
 									finalX =
-												fixtureDef.shape.data.x !== undefined ? fixtureDef.shape.data.x : 0;
+										fixtureDef.shape.data.x !== undefined ? fixtureDef.shape.data.x : 0;
 									finalY =
-												fixtureDef.shape.data.y !== undefined ? fixtureDef.shape.data.y : 0;
+										fixtureDef.shape.data.y !== undefined ? fixtureDef.shape.data.y : 0;
 
 									tempShape.SetLocalPosition(
 										new b2Vec2(finalX / this._scaleRatio, finalY / this._scaleRatio)
@@ -344,17 +342,17 @@ export class IgeBox2dController extends IgeEventingClass {
 
 								if (fixtureDef.shape.data) {
 									finalX =
-												fixtureDef.shape.data.x !== undefined ? fixtureDef.shape.data.x : 0;
+										fixtureDef.shape.data.x !== undefined ? fixtureDef.shape.data.x : 0;
 									finalY =
-												fixtureDef.shape.data.y !== undefined ? fixtureDef.shape.data.y : 0;
+										fixtureDef.shape.data.y !== undefined ? fixtureDef.shape.data.y : 0;
 									finalWidth =
-												fixtureDef.shape.data.width !== undefined
-													? fixtureDef.shape.data.width
-													: entity._bounds2d.x / 2;
+										fixtureDef.shape.data.width !== undefined
+											? fixtureDef.shape.data.width
+											: entity._bounds2d.x / 2;
 									finalHeight =
-												fixtureDef.shape.data.height !== undefined
-													? fixtureDef.shape.data.height
-													: entity._bounds2d.y / 2;
+										fixtureDef.shape.data.height !== undefined
+											? fixtureDef.shape.data.height
+											: entity._bounds2d.y / 2;
 								} else {
 									finalX = 0;
 									finalY = 0;
@@ -528,16 +526,19 @@ export class IgeBox2dController extends IgeEventingClass {
 				// We are enabled so disable all physics contacts
 				this.contactListener(
 					// Begin contact
-					function (contact) {},
+					function (contact) {
+					},
 					// End contact
-					function (contact) {},
+					function (contact) {
+					},
 					// Pre-solve
 					function (contact) {
 						// Cancel the contact
 						contact.SetEnabled(false);
 					},
 					// Post-solve
-					function (contact) {}
+					function (contact) {
+					}
 				);
 			} else {
 				// Re-enable contacts

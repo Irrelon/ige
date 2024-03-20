@@ -1,7 +1,7 @@
-import { IgeNetIoClient } from "../../../export/exports.js"
-import { IgeNetIoBaseController } from "../../../export/exports.js"
-import type { IgeNetworkMessageStructure, IgeNetworkRequestMessageStructure, IgeNetworkMessageData, IgeNetworkEncodedMessageData, IgeNetworkTimeSyncResponseFromClient, IgeNetworkTimeSyncRequestFromServer, IgeNetworkClientSideMessageHandler, IgeNetworkClientSideResponseHandler } from "../../../export/exports.js"
-import type { IgeStreamCreateMessageData, IgeStreamDestroyMessageData } from "../../../export/exports.js"
+import { IgeNetIoClient } from "./IgeNetIoClient.js"
+import { IgeNetIoBaseController } from "../IgeNetIoBaseController.js";
+import type { IgeNetworkClientSideMessageHandler, IgeNetworkClientSideResponseHandler, IgeNetworkEncodedMessageData, IgeNetworkMessageData, IgeNetworkMessageStructure, IgeNetworkRequestMessageStructure, IgeNetworkTimeSyncRequestFromServer, IgeNetworkTimeSyncResponseFromClient } from "../../../types/IgeNetworkMessage.js"
+import type { IgeStreamCreateMessageData, IgeStreamDestroyMessageData } from "../../../types/IgeNetworkStream.js"
 /**
  * The client-side net.io component. Handles all client-side
  * networking systems.

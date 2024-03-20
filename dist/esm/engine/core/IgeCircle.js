@@ -1,4 +1,4 @@
-import { circleIntersectsCircle, pointIntersectsCircle, circleIntersectsPolygon, circleIntersectsRect } from "../utils/intersections.js"
+import { circleIntersectsCircle, circleIntersectsPolygon, circleIntersectsRect, pointIntersectsCircle } from "../utils/intersections.js"
 /**
  * Creates a new circle (x, y, radius).
  */

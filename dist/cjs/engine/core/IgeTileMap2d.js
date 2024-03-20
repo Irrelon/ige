@@ -1,43 +1,44 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.IgeTileMap2d = void 0;
-const exports_1 = require("../../export/exports.js");
-const exports_2 = require("../../export/exports.js");
-const exports_3 = require("../../export/exports.js");
-const exports_4 = require("../../export/exports.js");
-const exports_5 = require("../../export/exports.js");
-const exports_6 = require("../../export/exports.js");
-const exports_7 = require("../../export/exports.js");
-const exports_8 = require("../../export/exports.js");
-const exports_9 = require("../../export/exports.js");
-const exports_10 = require("../../export/exports.js");
-const exports_11 = require("../../export/exports.js");
-const exports_12 = require("../../export/exports.js");
-const exports_13 = require("../../export/exports.js");
-const exports_14 = require("../../export/exports.js");
+const IgeEntity_1 = require("./IgeEntity.js");
+const IgeMap2d_1 = require("./IgeMap2d.js");
+const IgeMatrix2d_1 = require("./IgeMatrix2d.js");
+const IgePoint2d_1 = require("./IgePoint2d.js");
+const IgePoint3d_1 = require("./IgePoint3d.js");
+const IgePoly2d_1 = require("./IgePoly2d.js");
+const IgeRect_1 = require("./IgeRect.js");
+const IgeTexture_1 = require("./IgeTexture.js");
+const instance_1 = require("../instance.js");
+const IgeTileMap2dSmartTexture_1 = require("../textures/IgeTileMap2dSmartTexture.js");
+const arrays_1 = require("../utils/arrays.js");
+const clientServer_1 = require("../utils/clientServer.js");
+const ids_1 = require("../utils/ids.js");
+const igeClassStore_1 = require("../utils/igeClassStore.js");
+const enums_1 = require("../../enums/index.js");
 /**
  * Tile maps provide a way to align mounted child objects to a tile-based grid.
  * NOTE: These are not to be confused with IgeTextureMap's which allow you to
  * paint a bunch of tiles to a grid.
  */
-class IgeTileMap2d extends exports_1.IgeEntity {
+class IgeTileMap2d extends IgeEntity_1.IgeEntity {
     constructor(tileWidth, tileHeight, tileDepth) {
         super();
         this.classId = "IgeTileMap2d";
         this.IgeTileMap2d = true;
         this._highlightOccupied = false;
         this._highlightTileRect = null;
-        this._gridSize = new exports_4.IgePoint2d(40, 40);
+        this._gridSize = new IgePoint2d_1.IgePoint2d(40, 40);
         tileWidth = tileWidth !== undefined ? tileWidth : 40;
         tileHeight = tileHeight !== undefined ? tileHeight : 40;
         tileDepth = tileDepth !== undefined ? tileDepth : 16;
-        if (!exports_12.isServer) {
-            const tex = new exports_8.IgeTexture((0, exports_14.newIdHex)(), exports_13.IgeTileMap2dSmartTexture);
+        if (!clientServer_1.isServer) {
+            const tex = new IgeTexture_1.IgeTexture((0, ids_1.newIdHex)(), IgeTileMap2dSmartTexture_1.IgeTileMap2dSmartTexture);
             this.texture(tex);
         }
-        this.map = new exports_2.IgeMap2d();
-        this.heightMap = new exports_2.IgeMap2d();
-        this._adjustmentMatrix = new exports_3.IgeMatrix2d();
+        this.map = new IgeMap2d_1.IgeMap2d();
+        this.heightMap = new IgeMap2d_1.IgeMap2d();
+        this._adjustmentMatrix = new IgeMatrix2d_1.IgeMatrix2d();
         this.tileWidth(tileWidth);
         this.tileHeight(tileHeight);
         this.tileDepth(tileDepth);
@@ -94,15 +95,15 @@ class IgeTileMap2d extends exports_1.IgeEntity {
     }
     gridSize(x, y) {
         if (x !== undefined && y !== undefined) {
-            this._gridSize = new exports_4.IgePoint2d(x, y);
+            this._gridSize = new IgePoint2d_1.IgePoint2d(x, y);
             // If in 2d mount mode
-            if (this._mountMode === exports_11.IgeMountMode.flat) {
+            if (this._mountMode === enums_1.IgeMountMode.flat) {
                 if (this._tileWidth) {
                     this.width(this._tileWidth * this._gridSize.x);
                 }
             }
             // If in isometric mount mode
-            if (this._mountMode === exports_11.IgeMountMode.iso) {
+            if (this._mountMode === enums_1.IgeMountMode.iso) {
                 if (this._tileWidth) {
                     this.width(this._tileWidth * 2 * this._gridSize.x);
                 }
@@ -175,7 +176,7 @@ class IgeTileMap2d extends exports_1.IgeEntity {
         // Create an IgeRect to represent the tiles this
         // entity has just occupied
         if (obj.classId) {
-            obj._occupiedRect = new exports_7.IgeRect(x, y, width, height);
+            obj._occupiedRect = new IgeRect_1.IgeRect(x, y, width, height);
         }
         return this;
     }
@@ -246,17 +247,17 @@ class IgeTileMap2d extends exports_1.IgeEntity {
         const mx = point.x;
         const my = point.y;
         let dx, dy, tilePos;
-        if (this._mountMode === exports_11.IgeMountMode.flat) {
+        if (this._mountMode === enums_1.IgeMountMode.flat) {
             // 2d
             dx = mx; //+ this._tileWidth / 2;
             dy = my; //+ this._tileHeight / 2;
-            tilePos = new exports_5.IgePoint3d(Math.floor(dx / this._tileWidth), Math.floor(dy / this._tileWidth), 0);
+            tilePos = new IgePoint3d_1.IgePoint3d(Math.floor(dx / this._tileWidth), Math.floor(dy / this._tileWidth), 0);
         }
         else {
             // iso
             dx = mx;
             dy = my;
-            tilePos = new exports_5.IgePoint3d(Math.floor(dx / this._tileWidth), Math.floor(dy / this._tileHeight), 0);
+            tilePos = new IgePoint3d_1.IgePoint3d(Math.floor(dx / this._tileWidth), Math.floor(dy / this._tileHeight), 0);
         }
         return tilePos;
     }
@@ -272,13 +273,13 @@ class IgeTileMap2d extends exports_1.IgeEntity {
     }
     tileToPoint(x, y) {
         let point;
-        if (this._mountMode === exports_11.IgeMountMode.flat) {
-            point = new exports_5.IgePoint3d(x, y, 0).thisMultiply(this._tileWidth, this._tileHeight, 1);
+        if (this._mountMode === enums_1.IgeMountMode.flat) {
+            point = new IgePoint3d_1.IgePoint3d(x, y, 0).thisMultiply(this._tileWidth, this._tileHeight, 1);
             point.x -= this._bounds2d.x2 - this._tileWidth / 2;
             point.y -= this._bounds2d.y2 - this._tileHeight / 2;
         }
         else {
-            point = new exports_5.IgePoint3d(x * this._tileWidth + this._tileWidth / 2, y * this._tileHeight + this._tileHeight / 2, 0);
+            point = new IgePoint3d_1.IgePoint3d(x * this._tileWidth + this._tileWidth / 2, y * this._tileHeight + this._tileHeight / 2, 0);
             point.x -= this._bounds2d.x2 / 2;
             point.y -= this._bounds2d.y2;
         }
@@ -292,7 +293,7 @@ class IgeTileMap2d extends exports_1.IgeEntity {
      */
     mouseToTile() {
         let tilePos;
-        if (this._mountMode === exports_11.IgeMountMode.flat) {
+        if (this._mountMode === enums_1.IgeMountMode.flat) {
             tilePos = this.pointToTile(this.mousePos());
         }
         else {
@@ -301,10 +302,10 @@ class IgeTileMap2d extends exports_1.IgeEntity {
         return tilePos;
     }
     tileToWorld(tileX, tileY) {
-        const tilePos = new exports_5.IgePoint3d(tileX, tileY).thisMultiply(this._tileWidth, this._tileHeight, 0);
+        const tilePos = new IgePoint3d_1.IgePoint3d(tileX, tileY).thisMultiply(this._tileWidth, this._tileHeight, 0);
         tilePos.x += this._tileWidth / 2;
         tilePos.y += this._tileHeight / 2;
-        if (this._mountMode === exports_11.IgeMountMode.iso) {
+        if (this._mountMode === enums_1.IgeMountMode.iso) {
             tilePos.thisToIso();
         }
         return tilePos;
@@ -320,7 +321,7 @@ class IgeTileMap2d extends exports_1.IgeEntity {
      */
     scanRects(callback) {
         const rectArray = [];
-        const mapData = (0, exports_14.arrClone)(this.map._mapData);
+        const mapData = (0, arrays_1.arrClone)(this.map._mapData);
         // Loop the map data and scan for blocks that can
         // be converted into static box2d rectangle areas
         for (const y in mapData) {
@@ -445,14 +446,14 @@ class IgeTileMap2d extends exports_1.IgeEntity {
             this._updateAdjustmentMatrix();
             return this;
         }
-        return this._mountMode === exports_11.IgeMountMode.iso;
+        return this._mountMode === enums_1.IgeMountMode.iso;
     }
     tileMapHitPolygon() {
-        if (this._mountMode === exports_11.IgeMountMode.flat) {
+        if (this._mountMode === enums_1.IgeMountMode.flat) {
             return this.aabb();
         }
-        if (this._mountMode === exports_11.IgeMountMode.iso) {
-            const aabb = this.aabb(), poly = new exports_6.IgePoly2d();
+        if (this._mountMode === enums_1.IgeMountMode.iso) {
+            const aabb = this.aabb(), poly = new IgePoly2d_1.IgePoly2d();
             poly.addPoint(aabb.x + aabb.width / 2, aabb.y);
             poly.addPoint(aabb.x + aabb.width, aabb.y + aabb.height / 2);
             poly.addPoint(aabb.x + aabb.width / 2, aabb.y + aabb.height - 1);
@@ -462,7 +463,7 @@ class IgeTileMap2d extends exports_1.IgeEntity {
     }
     _processTriggerHitTests() {
         // This method overrides the one in IgeEntity
-        if (this._pointerEventsActive && exports_10.ige.engine._currentViewport) {
+        if (this._pointerEventsActive && instance_1.ige.engine._currentViewport) {
             if (!this._pointerAlwaysInside) {
                 const mouseTile = this.mouseToTile();
                 if (mouseTile.x >= 0 &&
@@ -484,10 +485,10 @@ class IgeTileMap2d extends exports_1.IgeEntity {
     _updateAdjustmentMatrix() {
         var _a, _b;
         if (this._bounds2d.x2 && this._bounds2d.y2 && this._tileWidth && this._tileHeight) {
-            if (this._mountMode === exports_11.IgeMountMode.flat) {
+            if (this._mountMode === enums_1.IgeMountMode.flat) {
                 (_a = this._adjustmentMatrix) === null || _a === void 0 ? void 0 : _a.translateTo(this._bounds2d.x2, this._bounds2d.y2);
             }
-            if (this._mountMode === exports_11.IgeMountMode.iso) {
+            if (this._mountMode === enums_1.IgeMountMode.iso) {
                 (_b = this._adjustmentMatrix) === null || _b === void 0 ? void 0 : _b.translateTo(0, this._bounds2d.y2);
             }
         }
@@ -507,4 +508,4 @@ class IgeTileMap2d extends exports_1.IgeEntity {
     }
 }
 exports.IgeTileMap2d = IgeTileMap2d;
-(0, exports_9.registerClass)(IgeTileMap2d);
+(0, igeClassStore_1.registerClass)(IgeTileMap2d);

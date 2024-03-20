@@ -1,2 +1,2 @@
-import type { IgeCanvas } from "../../export/exports.js"
+import type { IgeCanvas } from "../../types/IgeCanvas.js"
 export declare const newCanvas: () => IgeCanvas;

@@ -1,7 +1,7 @@
-import type { IgeIntervalCallback } from "@/export/exports";
-import { IgeInterval } from "@/export/exports";
-import type { IgeTimeController } from "@/export/exports";
-import { ige } from "@/export/exports";
+import type { IgeIntervalCallback } from "@/engine/core/IgeInterval";
+import { IgeInterval } from "@/engine/core/IgeInterval";
+import type { IgeTimeController } from "@/engine/core/IgeTimeController";
+import { ige } from "@/engine/instance";
 
 /**
  * Provides an alternative to setTimeout() which works based on the engine's internal

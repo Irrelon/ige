@@ -1,4 +1,4 @@
-import { global } from "../../export/exports.js"
+import { global } from "./_global.js"
 const getIndentString = () => {
     let indent = "";
     if (global._globalLogIndent) {

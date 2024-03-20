@@ -1,5 +1,5 @@
-import type { IgeRouteDefinition } from "../../export/exports.js"
-import { IgeBaseClass } from "../../export/exports.js"
+import { IgeBaseClass } from "./IgeBaseClass.js"
+import type { IgeRouteDefinition } from "../../types/IgeRouteDefinition.js";
 export declare class IgeRouter extends IgeBaseClass {
     classId: string;
     _routeLoad: Record<string, IgeRouteDefinition>;

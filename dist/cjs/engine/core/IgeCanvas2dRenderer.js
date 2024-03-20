@@ -11,7 +11,10 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.IgeCanvas2dRenderer = void 0;
 const IgeBaseRenderer_1 = require("./IgeBaseRenderer.js");
-const exports_1 = require("../../export/exports.js");
+const IgePoint2d_1 = require("./IgePoint2d.js");
+const instance_1 = require("../instance.js");
+const clientServer_1 = require("../utils/clientServer.js");
+const general_1 = require("../utils/general.js");
 class IgeCanvas2dRenderer extends IgeBaseRenderer_1.IgeBaseRenderer {
     constructor() {
         super(...arguments);
@@ -27,7 +30,7 @@ class IgeCanvas2dRenderer extends IgeBaseRenderer_1.IgeBaseRenderer {
          */
         this._resizeEvent = (event) => {
             var _a;
-            exports_1.ige.engine._resizeEvent(event);
+            instance_1.ige.engine._resizeEvent(event);
             let canvasBoundingRect;
             if (this._autoSize) {
                 let newWidth = window.innerWidth;
@@ -35,7 +38,7 @@ class IgeCanvas2dRenderer extends IgeBaseRenderer_1.IgeBaseRenderer {
                 // Only update canvas dimensions if it exists
                 if (this._canvas) {
                     // Check if we can get the position of the canvas
-                    canvasBoundingRect = (0, exports_1.getElementPosition)(this._canvas);
+                    canvasBoundingRect = (0, general_1.getElementPosition)(this._canvas);
                     // Adjust the newWidth and newHeight by the canvas offset
                     newWidth -= canvasBoundingRect.left;
                     newHeight -= canvasBoundingRect.top;
@@ -57,15 +60,15 @@ class IgeCanvas2dRenderer extends IgeBaseRenderer_1.IgeBaseRenderer {
                         (_a = this._ctx) === null || _a === void 0 ? void 0 : _a.scale(this._devicePixelRatio, this._devicePixelRatio);
                     }
                 }
-                this._bounds2d = new exports_1.IgePoint2d(newWidth, newHeight);
+                this._bounds2d = new IgePoint2d_1.IgePoint2d(newWidth, newHeight);
             }
             else if (this._canvas) {
-                this._bounds2d = new exports_1.IgePoint2d(this._canvas.width, this._canvas.height);
+                this._bounds2d = new IgePoint2d_1.IgePoint2d(this._canvas.width, this._canvas.height);
             }
-            if (exports_1.ige.engine._showSgTree) {
+            if (instance_1.ige.engine._showSgTree) {
                 const sgTreeElem = document.getElementById("igeSgTree");
                 if (sgTreeElem) {
-                    canvasBoundingRect = (0, exports_1.getElementPosition)(this._canvas);
+                    canvasBoundingRect = (0, general_1.getElementPosition)(this._canvas);
                     sgTreeElem.style.top = canvasBoundingRect.top + 5 + "px";
                     sgTreeElem.style.left = canvasBoundingRect.left + 5 + "px";
                     sgTreeElem.style.height = this._bounds2d.y - 30 + "px";
@@ -118,7 +121,7 @@ class IgeCanvas2dRenderer extends IgeBaseRenderer_1.IgeBaseRenderer {
      * those whose pixel ratio is different from 1 to 1.
      */
     createFrontBuffer(autoSize = true, dontScale = false) {
-        if (!exports_1.isClient) {
+        if (!clientServer_1.isClient) {
             return;
         }
         if (this._canvas) {
@@ -135,7 +138,7 @@ class IgeCanvas2dRenderer extends IgeBaseRenderer_1.IgeBaseRenderer {
      * the canvas to the width and height of the window upon window resize.
      */
     canvas(elem, autoSize = true) {
-        if (exports_1.isServer)
+        if (clientServer_1.isServer)
             return this;
         if (elem === undefined) {
             // Return current value
@@ -164,9 +167,9 @@ class IgeCanvas2dRenderer extends IgeBaseRenderer_1.IgeBaseRenderer {
         window.addEventListener("resize", this._resizeEvent);
         this._resizeEvent();
         this._ctx = this._canvas.getContext("2d");
-        exports_1.ige.engine.headless(false);
+        instance_1.ige.engine.headless(false);
         // Ask the input component to set up any listeners it has
-        exports_1.ige.input.setupListeners(this._canvas);
+        instance_1.ige.input.setupListeners(this._canvas);
     }
     /**
      * Clears the entire canvas.
@@ -181,7 +184,7 @@ class IgeCanvas2dRenderer extends IgeBaseRenderer_1.IgeBaseRenderer {
      */
     removeCanvas() {
         // Stop listening for input events
-        exports_1.ige.input.destroyListeners(this._canvas);
+        instance_1.ige.input.destroyListeners(this._canvas);
         // Remove event listener
         window.removeEventListener("resize", this._resizeEvent);
         if (this._createdFrontBuffer && this._canvas) {
@@ -191,7 +194,7 @@ class IgeCanvas2dRenderer extends IgeBaseRenderer_1.IgeBaseRenderer {
         // Clear internal references
         delete this._canvas;
         this._ctx = null;
-        exports_1.ige.engine.headless(true);
+        instance_1.ige.engine.headless(true);
     }
     _renderSceneGraph(engine, viewports) {
         const ctx = this._ctx;
@@ -205,21 +208,21 @@ class IgeCanvas2dRenderer extends IgeBaseRenderer_1.IgeBaseRenderer {
             let arrCount = viewports.length;
             let ts, td;
             // Loop our viewports and call their tick methods
-            if (exports_1.ige.config.debug._timing) {
+            if (instance_1.ige.config.debug._timing) {
                 while (arrCount--) {
                     ctx.save();
                     ts = new Date().getTime();
                     viewports[arrCount].tick(ctx);
                     td = new Date().getTime() - ts;
                     if (viewports[arrCount]) {
-                        if (!exports_1.ige.engine._timeSpentInTick[viewports[arrCount].id()]) {
-                            exports_1.ige.engine._timeSpentInTick[viewports[arrCount].id()] = 0;
+                        if (!instance_1.ige.engine._timeSpentInTick[viewports[arrCount].id()]) {
+                            instance_1.ige.engine._timeSpentInTick[viewports[arrCount].id()] = 0;
                         }
-                        if (!exports_1.ige.engine._timeSpentLastTick[viewports[arrCount].id()]) {
-                            exports_1.ige.engine._timeSpentLastTick[viewports[arrCount].id()] = {};
+                        if (!instance_1.ige.engine._timeSpentLastTick[viewports[arrCount].id()]) {
+                            instance_1.ige.engine._timeSpentLastTick[viewports[arrCount].id()] = {};
                         }
-                        exports_1.ige.engine._timeSpentInTick[viewports[arrCount].id()] += td;
-                        exports_1.ige.engine._timeSpentLastTick[viewports[arrCount].id()].ms = td;
+                        instance_1.ige.engine._timeSpentInTick[viewports[arrCount].id()] += td;
+                        instance_1.ige.engine._timeSpentLastTick[viewports[arrCount].id()].ms = td;
                     }
                     ctx.restore();
                 }
@@ -237,7 +240,7 @@ class IgeCanvas2dRenderer extends IgeBaseRenderer_1.IgeBaseRenderer {
     }
     destroy() {
         super.destroy();
-        if (exports_1.isClient) {
+        if (clientServer_1.isClient) {
             this.removeCanvas();
         }
     }

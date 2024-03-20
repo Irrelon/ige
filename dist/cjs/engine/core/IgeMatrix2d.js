@@ -1,18 +1,18 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.IgeMatrix2d = void 0;
-const exports_1 = require("../../export/exports.js");
-const exports_2 = require("../../export/exports.js");
-const exports_3 = require("../../export/exports.js");
+const IgeBaseClass_1 = require("./IgeBaseClass.js");
+const IgePoint3d_1 = require("./IgePoint3d.js");
+const maths_1 = require("../utils/maths.js");
 /**
  * Creates a new transformation matrix.
  */
-class IgeMatrix2d extends exports_1.IgeBaseClass {
+class IgeMatrix2d extends IgeBaseClass_1.IgeBaseClass {
     constructor() {
         super(...arguments);
         this.matrix = [1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0];
-        this._rotateOrigin = new exports_2.IgePoint3d(0, 0, 0);
-        this._scaleOrigin = new exports_2.IgePoint3d(0, 0, 0);
+        this._rotateOrigin = new IgePoint3d_1.IgePoint3d(0, 0, 0);
+        this._scaleOrigin = new IgePoint3d_1.IgePoint3d(0, 0, 0);
     }
     transformCoord(point, obj) {
         const { x, y } = point;
@@ -101,7 +101,7 @@ class IgeMatrix2d extends exports_1.IgeBaseClass {
      * @return {number}
      */
     rotationDegrees() {
-        return (0, exports_3.radiansToDegrees)(Math.acos(this.matrix[0]));
+        return (0, maths_1.radiansToDegrees)(Math.acos(this.matrix[0]));
     }
     /**
      * Create a scale matrix.

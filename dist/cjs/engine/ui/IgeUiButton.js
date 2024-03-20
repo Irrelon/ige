@@ -1,9 +1,9 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.IgeUiButton = void 0;
-const exports_1 = require("../../export/exports.js");
-const exports_2 = require("../../export/exports.js");
-class IgeUiButton extends exports_1.IgeUiElement {
+const IgeUiElement_1 = require("../core/IgeUiElement.js");
+const igeClassStore_1 = require("../utils/igeClassStore.js");
+class IgeUiButton extends IgeUiElement_1.IgeUiElement {
     constructor() {
         super();
         this.classId = "IgeUiButton";
@@ -80,4 +80,4 @@ class IgeUiButton extends exports_1.IgeUiElement {
     }
 }
 exports.IgeUiButton = IgeUiButton;
-(0, exports_2.registerClass)(IgeUiButton);
+(0, igeClassStore_1.registerClass)(IgeUiButton);

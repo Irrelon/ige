@@ -1,4 +1,29 @@
-import { IgeEventingClass } from "../../../export/exports.js"
+// /**
+//  * Define the debug options object.
+//  * @type {Object}
+//  * @private
+//  */
+// NetIo._debug = {
+// 	_enabled: true,
+// 	_node: typeof (module) !== "undefined" && typeof (module.exports) !== "undefined",
+// 	_level: ["log", "warning", "error"],
+// 	_stacks: false,
+// 	_throwErrors: true,
+// 	_trace: {
+// 		setup: false,
+// 		enabled: false,
+// 		match: ""
+// 	},
+// 	enabled: function (val) {
+// 		if (val !== undefined) {
+// 			this._enabled = val;
+// 			return this;
+// 		}
+//
+// 		return this._enabled;
+// 	}
+// };
+import { IgeEventingClass } from "../../core/IgeEventingClass.js"
 export class IgeNetIoClient extends IgeEventingClass {
     classId = "IgeNetIoClient";
     _networkId;

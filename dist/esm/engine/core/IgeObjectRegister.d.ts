@@ -1,5 +1,5 @@
-import type { IgeCanBeDestroyed } from "../../export/exports.js"
-import type { IgeCanRegisterById } from "../../export/exports.js"
+import type { IgeCanBeDestroyed } from "../../types/IgeCanBeDestroyed.js"
+import type { IgeCanRegisterById } from "../../types/IgeCanRegisterById.js"
 export declare class IgeObjectRegister {
     _store: Record<string, IgeCanRegisterById & IgeCanBeDestroyed>;
     get(id: string): IgeCanRegisterById & IgeCanBeDestroyed;

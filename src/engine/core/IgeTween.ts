@@ -1,5 +1,8 @@
-import type { IgeTweenController } from "@/export/exports";
-import { arrPull, easingFunctions, ige, IgeBaseClass } from "@/export/exports";
+import { IgeBaseClass } from "@/engine/core/IgeBaseClass";
+import type { IgeTweenController } from "@/engine/core/IgeTweenController";
+import { ige } from "@/engine/instance";
+import { arrPull } from "@/engine/utils/arrays";
+import { easingFunctions } from "@/engine/utils/easing";
 
 export interface IgeTweenStep {
 	props: Record<string, number>;
@@ -124,8 +127,8 @@ export class IgeTween extends IgeBaseClass {
 	 * @param count
 	 * @return {*}
 	 */
-	repeatMode(val: number, count?: number): this;
-	repeatMode(): number;
+	repeatMode (val: number, count?: number): this;
+	repeatMode (): number;
 	repeatMode (val?: number, count?: number) {
 		if (val !== undefined) {
 			this._repeatMode = val;
@@ -297,8 +300,8 @@ export class IgeTween extends IgeBaseClass {
 	 * @param {string=} methodName
 	 * @return {*}
 	 */
-	easing(methodName: string): this;
-	easing(): string;
+	easing (methodName: string): this;
+	easing (): string;
 	easing (methodName?: string) {
 		if (methodName === undefined) {
 			return this._easing;

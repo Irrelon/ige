@@ -1,7 +1,7 @@
-import { registerClass } from "@/export/exports";
-import { IgeUiElement } from "@/export/exports";
-import type { IgeUiEntity } from "@/export/exports";
-import type { IgeCanvasRenderingContext2d } from "@/export/exports";
+import { IgeUiElement } from "@/engine/core/IgeUiElement";
+import type { IgeUiEntity } from "@/engine/core/IgeUiEntity";
+import { registerClass } from "@/engine/utils/igeClassStore";
+import type { IgeCanvasRenderingContext2d } from "@/types/IgeCanvasRenderingContext2d";
 
 export class IgeUiRow extends IgeUiElement {
 	classId = "IgeUiRow";

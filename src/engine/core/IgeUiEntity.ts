@@ -1,13 +1,13 @@
 // TODO: Implement the _stringify() method for this class
-import { IgeEntity } from "@/export/exports";
-import type { IgeObject } from "@/export/exports";
-import type { IgeTexture } from "@/export/exports";
-import { registerClass } from "@/export/exports";
-import { PI180 } from "@/export/exports";
-import { ige } from "@/export/exports";
-import type { IgeCanvasRenderingContext2d } from "@/export/exports";
-import type { IgePointXY } from "@/export/exports";
-import type { IgeRepeatType } from "@/export/exports";
+import { IgeEntity } from "@/engine/core/IgeEntity";
+import type { IgeObject } from "@/engine/core/IgeObject";
+import type { IgeTexture } from "@/engine/core/IgeTexture";
+import { ige } from "@/engine/instance";
+import { registerClass } from "@/engine/utils/igeClassStore";
+import { PI180 } from "@/engine/utils/maths";
+import type { IgeCanvasRenderingContext2d } from "@/types/IgeCanvasRenderingContext2d";
+import type { IgePointXY } from "@/types/IgePointXY";
+import type { IgeRepeatType } from "@/types/IgeRepeatType";
 
 /**
  * Creates a new UI entity. UI entities use more resources and CPU

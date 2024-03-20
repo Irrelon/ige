@@ -18,8 +18,8 @@
 */
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.b2SolverData = exports.b2Velocity = exports.b2Position = exports.b2TimeStep = exports.b2Profile = void 0;
-const b2_settings_js_1 = require("../common/b2_settings.js");
-const b2_math_js_1 = require("../common/b2_math.js");
+const b2_settings_1 = require("../common/b2_settings");
+const b2_math_1 = require("../common/b2_math");
 /// Profiling data. Times are in milliseconds.
 class b2Profile {
     constructor() {
@@ -74,21 +74,21 @@ class b2TimeStep {
 exports.b2TimeStep = b2TimeStep;
 class b2Position {
     constructor() {
-        this.c = new b2_math_js_1.b2Vec2();
+        this.c = new b2_math_1.b2Vec2();
         this.a = 0;
     }
     static MakeArray(length) {
-        return (0, b2_settings_js_1.b2MakeArray)(length, (i) => new b2Position());
+        return (0, b2_settings_1.b2MakeArray)(length, (i) => new b2Position());
     }
 }
 exports.b2Position = b2Position;
 class b2Velocity {
     constructor() {
-        this.v = new b2_math_js_1.b2Vec2();
+        this.v = new b2_math_1.b2Vec2();
         this.w = 0;
     }
     static MakeArray(length) {
-        return (0, b2_settings_js_1.b2MakeArray)(length, (i) => new b2Velocity());
+        return (0, b2_settings_1.b2MakeArray)(length, (i) => new b2Velocity());
     }
 }
 exports.b2Velocity = b2Velocity;

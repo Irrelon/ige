@@ -1,5 +1,5 @@
-import type { IgeCanvasRenderingContext2d } from "../../export/exports.js"
-import type { IgeSmartFilter } from "../../export/exports.js"
+import type { IgeCanvasRenderingContext2d } from "../../types/IgeCanvasRenderingContext2d.js"
+import type { IgeSmartFilter } from "../../types/IgeSmartFilter.js"
 export type IgeFilterHelperFunction = (...args: any[]) => any;
 export declare class IgeFilters {
     filter: Record<string, IgeSmartFilter>;

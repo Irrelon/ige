@@ -31,11 +31,21 @@ export class b2GearJointDef extends b2JointDef {
     }
 }
 export class b2GearJoint extends b2Joint {
+    static InitVelocityConstraints_s_u = new b2Vec2();
+    static InitVelocityConstraints_s_rA = new b2Vec2();
+    static InitVelocityConstraints_s_rB = new b2Vec2();
+    static InitVelocityConstraints_s_rC = new b2Vec2();
+    // Body A is connected to body C
+    static InitVelocityConstraints_s_rD = new b2Vec2();
+    static SolvePositionConstraints_s_u = new b2Vec2();
+    static SolvePositionConstraints_s_rA = new b2Vec2();
+    static SolvePositionConstraints_s_rB = new b2Vec2();
+    static SolvePositionConstraints_s_rC = new b2Vec2();
+    static SolvePositionConstraints_s_rD = new b2Vec2();
     m_joint1;
     m_joint2;
     m_typeA = b2JointType.e_unknownJoint;
     m_typeB = b2JointType.e_unknownJoint;
-    // Body A is connected to body C
     // Body B is connected to body D
     m_bodyC;
     m_bodyD;
@@ -157,11 +167,6 @@ export class b2GearJoint extends b2Joint {
         this.m_constant = coordinateA + this.m_ratio * coordinateB;
         this.m_impulse = 0;
     }
-    static InitVelocityConstraints_s_u = new b2Vec2();
-    static InitVelocityConstraints_s_rA = new b2Vec2();
-    static InitVelocityConstraints_s_rB = new b2Vec2();
-    static InitVelocityConstraints_s_rC = new b2Vec2();
-    static InitVelocityConstraints_s_rD = new b2Vec2();
     InitVelocityConstraints(data) {
         this.m_indexA = this.m_bodyA.m_islandIndex;
         this.m_indexB = this.m_bodyB.m_islandIndex;
@@ -304,11 +309,6 @@ export class b2GearJoint extends b2Joint {
         // data.velocities[this.m_indexD].v = vD;
         data.velocities[this.m_indexD].w = wD;
     }
-    static SolvePositionConstraints_s_u = new b2Vec2();
-    static SolvePositionConstraints_s_rA = new b2Vec2();
-    static SolvePositionConstraints_s_rB = new b2Vec2();
-    static SolvePositionConstraints_s_rC = new b2Vec2();
-    static SolvePositionConstraints_s_rD = new b2Vec2();
     SolvePositionConstraints(data) {
         const cA = data.positions[this.m_indexA].c;
         let aA = data.positions[this.m_indexA].a;
@@ -425,8 +425,12 @@ export class b2GearJoint extends b2Joint {
         // return inv_dt * L;
         return inv_dt * this.m_impulse * this.m_JwA;
     }
-    GetJoint1() { return this.m_joint1; }
-    GetJoint2() { return this.m_joint2; }
+    GetJoint1() {
+        return this.m_joint1;
+    }
+    GetJoint2() {
+        return this.m_joint2;
+    }
     GetRatio() {
         return this.m_ratio;
     }

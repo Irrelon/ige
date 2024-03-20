@@ -1,14 +1,14 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.IgeUiLabel = void 0;
-const exports_1 = require("../../export/exports.js");
-const exports_2 = require("../../export/exports.js");
-const exports_3 = require("../../export/exports.js");
-const exports_4 = require("../../export/exports.js");
+const IgeFontEntity_1 = require("../core/IgeFontEntity.js");
+const IgeUiElement_1 = require("../core/IgeUiElement.js");
+const igeClassStore_1 = require("../utils/igeClassStore.js");
+const enums_1 = require("../../enums/index.js");
 /**
  * Provides a UI label entity. Basic on-screen text label.
  */
-class IgeUiLabel extends exports_1.IgeUiElement {
+class IgeUiLabel extends IgeUiElement_1.IgeUiElement {
     constructor(label = "") {
         super();
         this.classId = "IgeUiLabel";
@@ -17,11 +17,11 @@ class IgeUiLabel extends exports_1.IgeUiElement {
         this._mask = "";
         this._widthFromText = true;
         this._valueChanged = true;
-        this._fontEntity = new exports_3.IgeFontEntity()
+        this._fontEntity = new IgeFontEntity_1.IgeFontEntity()
             .left(0)
             .middle(0)
-            .textAlignX(exports_4.IgeFontAlignX.left)
-            .textAlignY(exports_4.IgeFontAlignY.middle)
+            .textAlignX(enums_1.IgeFontAlignX.left)
+            .textAlignY(enums_1.IgeFontAlignY.middle)
             .textLineSpacing(10);
         this._fontEntity.mount(this);
         // Set defaults
@@ -188,4 +188,4 @@ class IgeUiLabel extends exports_1.IgeUiElement {
     }
 }
 exports.IgeUiLabel = IgeUiLabel;
-(0, exports_2.registerClass)(IgeUiLabel);
+(0, igeClassStore_1.registerClass)(IgeUiLabel);

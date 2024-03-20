@@ -1,7 +1,7 @@
-import { arrPull } from "../../export/exports.js"
-import { IgeEventingClass } from "../../export/exports.js"
-import { ige } from "../../export/exports.js"
-import { IgeBehaviourType } from "../../export/exports.js"
+import { IgeEventingClass } from "./IgeEventingClass.js"
+import { ige } from "../instance.js"
+import { arrPull } from "../utils/arrays.js"
+import { IgeBehaviourType } from "../../enums/index.js"
 export class IgeTimeController extends IgeEventingClass {
     static componentTargetClass = "Ige";
     classId = "IgeTimeController";

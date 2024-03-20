@@ -7,8 +7,8 @@ import type { b2Draw } from "../common/b2_draw.js"
  */
 export declare class b2ConstantForceController extends b2Controller {
     /**
-   * The force to apply
-   */
+     * The force to apply
+     */
     readonly F: b2Vec2;
     Step(step: b2TimeStep): void;
     Draw(draw: b2Draw): void;

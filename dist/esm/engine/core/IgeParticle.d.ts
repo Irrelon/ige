@@ -1,5 +1,5 @@
-import { IgeEntity } from "../../export/exports.js"
-import type { IgeParticleEmitter } from "../../export/exports.js"
+import { IgeEntity } from "./IgeEntity.js"
+import type { IgeParticleEmitter } from "./IgeParticleEmitter.js";
 export declare class IgeParticle extends IgeEntity {
     classId: string;
     _emitter: IgeParticleEmitter;

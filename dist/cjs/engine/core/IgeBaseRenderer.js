@@ -10,10 +10,10 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.IgeBaseRenderer = void 0;
-const exports_1 = require("../../export/exports.js");
-const clientServer_1 = require("../utils/clientServer.js");
 const IgeEventingClass_1 = require("./IgeEventingClass.js");
 const IgePoint2d_1 = require("./IgePoint2d.js");
+const instance_1 = require("../instance.js");
+const clientServer_1 = require("../utils/clientServer.js");
 class IgeBaseRenderer extends IgeEventingClass_1.IgeEventingClass {
     constructor() {
         super();
@@ -39,7 +39,7 @@ class IgeBaseRenderer extends IgeEventingClass_1.IgeEventingClass {
             if (this._hasRunSetup)
                 return;
             yield this._setup();
-            exports_1.ige.engine.headless(false);
+            instance_1.ige.engine.headless(false);
             this._isReady = true;
             this.log("Setup executed");
         });

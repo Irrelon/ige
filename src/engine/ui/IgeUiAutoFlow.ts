@@ -1,6 +1,6 @@
-import { registerClass } from "@/export/exports";
-import { IgeUiElement } from "@/export/exports";
-import type { IgeCanvasRenderingContext2d } from "@/export/exports";
+import { IgeUiElement } from "@/engine/core/IgeUiElement";
+import { registerClass } from "@/engine/utils/igeClassStore";
+import type { IgeCanvasRenderingContext2d } from "@/types/IgeCanvasRenderingContext2d";
 
 export class IgeUiAutoFlow extends IgeUiElement {
 	classId = "IgeUiAutoFlow";

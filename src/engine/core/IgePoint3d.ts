@@ -1,4 +1,5 @@
-import type { IgeTween, IgeTweenOptions, IgeTweenPropertyObject } from "@/export/exports";
+import type { IgeTween, IgeTweenOptions, IgeTweenPropertyObject } from "@/engine/core/IgeTween";
+
 
 let IgeTweenModule: typeof IgeTween;
 

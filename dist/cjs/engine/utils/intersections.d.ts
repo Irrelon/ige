@@ -18,6 +18,8 @@ interface BasicRect extends BasicPoint {
 interface BasicPolygon extends BasicPoint {
     _poly: BasicPoint[];
 }
+export declare function rectToPolygon(rect: BasicRect): BasicPolygon;
+export declare function pointIntersectsRect(point: BasicPoint, rect: BasicRect): boolean;
 export declare function pointIntersectsCircle(point: BasicPoint, circle: BasicCircle): boolean;
 export declare function pointIntersectsPolygon(point: BasicPoint, polygon: BasicPolygon): boolean;
 export declare function lineIntersectsLine(line1: BasicLine, line2: BasicLine): boolean;

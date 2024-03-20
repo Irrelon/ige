@@ -1,6 +1,6 @@
-import { IgeEntity } from "../../export/exports.js"
-import { IgeTexture } from "../../export/exports.js"
-import { IgeCuboidSmartTexture } from "../../export/exports.js"
+import { IgeEntity } from "../core/IgeEntity.js"
+import { IgeTexture } from "../core/IgeTexture.js"
+import { IgeCuboidSmartTexture } from "../textures/IgeCuboidSmartTexture.js"
 export class IgeCuboid extends IgeEntity {
     classId = "IgeCuboid";
     constructor() {

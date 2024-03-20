@@ -1,4 +1,4 @@
-import { encode, decode } from "../index";
+import { decode, encode } from "@/engine/utils/quadHash";
 
 describe("hashToExtents()", () => {
 	it("should correctly encode `A`", () => {

@@ -1,5 +1,5 @@
-import { igeFilters } from "@/export/exports";
-import type { IgeSmartFilter } from "@/export/exports";
+import { igeFilters } from "@/engine/utils/igeFilters";
+import type { IgeSmartFilter } from "@/types/IgeSmartFilter";
 
 export const brighten: IgeSmartFilter = function (canvas, ctx, originalImage, texture, data) {
 	// Apply the filter and then put the new pixel data

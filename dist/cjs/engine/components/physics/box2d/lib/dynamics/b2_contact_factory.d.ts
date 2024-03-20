@@ -9,8 +9,8 @@ export declare class b2ContactRegister {
 export declare class b2ContactFactory {
     readonly m_registers: b2ContactRegister[][];
     constructor();
-    private AddType;
-    private InitializeRegisters;
     Create(fixtureA: b2Fixture, indexA: number, fixtureB: b2Fixture, indexB: number): b2Contact | null;
     Destroy(contact: b2Contact): void;
+    private AddType;
+    private InitializeRegisters;
 }

@@ -17,6 +17,8 @@ export declare class b2Color implements RGBA {
     static readonly GREEN: Readonly<b2Color>;
     static readonly BLUE: Readonly<b2Color>;
     constructor(r?: number, g?: number, b?: number, a?: number);
+    static MixColors(colorA: RGBA, colorB: RGBA, strength: number): void;
+    static MakeStyleString(r: number, g: number, b: number, a?: number): string;
     Clone(): b2Color;
     Copy(other: RGBA): this;
     IsEqual(color: RGBA): boolean;
@@ -33,12 +35,14 @@ export declare class b2Color implements RGBA {
     SelfMul(s: number): this;
     Mul<T extends RGBA>(s: number, out: T): T;
     Mix(mixColor: RGBA, strength: number): void;
-    static MixColors(colorA: RGBA, colorB: RGBA, strength: number): void;
     MakeStyleString(alpha?: number): string;
-    static MakeStyleString(r: number, g: number, b: number, a?: number): string;
 }
 export declare class b2TypedColor implements b2Color {
     readonly data: Float32Array;
+    constructor();
+    constructor(data: Float32Array);
+    constructor(rr: number, gg: number, bb: number);
+    constructor(rr: number, gg: number, bb: number, aa: number);
     get r(): number;
     set r(value: number);
     get g(): number;
@@ -47,10 +51,6 @@ export declare class b2TypedColor implements b2Color {
     set b(value: number);
     get a(): number;
     set a(value: number);
-    constructor();
-    constructor(data: Float32Array);
-    constructor(rr: number, gg: number, bb: number);
-    constructor(rr: number, gg: number, bb: number, aa: number);
     Clone(): b2TypedColor;
     Copy(other: RGBA): this;
     IsEqual(color: RGBA): boolean;

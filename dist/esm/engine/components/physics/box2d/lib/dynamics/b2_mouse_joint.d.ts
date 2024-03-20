@@ -17,6 +17,9 @@ export declare class b2MouseJointDef extends b2JointDef implements b2IMouseJoint
     constructor();
 }
 export declare class b2MouseJoint extends b2Joint {
+    private static SolveVelocityConstraints_s_Cdot;
+    private static SolveVelocityConstraints_s_impulse;
+    private static SolveVelocityConstraints_s_oldImpulse;
     readonly m_localAnchorB: b2Vec2;
     readonly m_targetA: b2Vec2;
     m_stiffness: number;
@@ -46,9 +49,6 @@ export declare class b2MouseJoint extends b2Joint {
     SetDamping(damping: number): void;
     GetDamping(): number;
     InitVelocityConstraints(data: b2SolverData): void;
-    private static SolveVelocityConstraints_s_Cdot;
-    private static SolveVelocityConstraints_s_impulse;
-    private static SolveVelocityConstraints_s_oldImpulse;
     SolveVelocityConstraints(data: b2SolverData): void;
     SolvePositionConstraints(data: b2SolverData): boolean;
     GetAnchorA<T extends XY>(out: T): T;

@@ -1,6 +1,6 @@
-import { IgeBaseClass } from "../../export/exports.js"
-import { IgePoint3d } from "../../export/exports.js"
-import { radiansToDegrees } from "../../export/exports.js"
+import { IgeBaseClass } from "./IgeBaseClass.js"
+import { IgePoint3d } from "./IgePoint3d.js"
+import { radiansToDegrees } from "../utils/maths.js"
 /**
  * Creates a new transformation matrix.
  */

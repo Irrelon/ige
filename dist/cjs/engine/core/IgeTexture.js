@@ -24,14 +24,17 @@ var __importStar = (this && this.__importStar) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.IgeTexture = void 0;
-const exports_1 = require("../../export/exports.js");
-const exports_2 = require("../../export/exports.js");
-const exports_3 = require("../../export/exports.js");
-const exports_4 = require("../../export/exports.js");
+const IgeAsset_1 = require("./IgeAsset.js");
+const IgeCanvas_1 = require("./IgeCanvas.js");
+const IgeDependencies_1 = require("./IgeDependencies.js");
+const instance_1 = require("../instance.js");
+const arrays_1 = require("../utils/arrays.js");
+const clientServer_1 = require("../utils/clientServer.js");
+const enums_1 = require("../../enums/index.js");
 /**
  * Creates a new texture.
  */
-class IgeTexture extends exports_2.IgeAsset {
+class IgeTexture extends IgeAsset_1.IgeAsset {
     /**
      * Constructor for a new IgeTexture.
      * @param id
@@ -46,7 +49,7 @@ class IgeTexture extends exports_2.IgeAsset {
         this._noDimensions = false;
         this._sizeX = 0;
         this._sizeY = 0;
-        this._renderMode = exports_4.IgeTextureRenderMode.none;
+        this._renderMode = enums_1.IgeTextureRenderMode.none;
         this._loaded = false;
         this._smoothing = false;
         this._filterImageDrawn = false;
@@ -56,7 +59,7 @@ class IgeTexture extends exports_2.IgeAsset {
         this._preFilters = [];
         this._preFiltersData = [];
         this._cells = []; // The fist index of this array is 1 for some reason
-        this.dependencies = new exports_2.IgeDependencies();
+        this.dependencies = new IgeDependencies_1.IgeDependencies();
         /**
          * Loads a render script into a script tag and sets an onload
          * event to capture when the script has finished loading.
@@ -65,14 +68,14 @@ class IgeTexture extends exports_2.IgeAsset {
          * @private
          */
         this._loadScript = (scriptUrl) => {
-            if (!exports_3.isClient) {
+            if (!clientServer_1.isClient) {
                 return;
             }
             Promise.resolve(`${scriptUrl}`).then(s => __importStar(require(s))).then(({ image }) => {
                 this.log(`Texture script "${scriptUrl}" loaded successfully`);
                 // Store the function exported in the `image` variable
                 // by the texture script
-                this._renderMode = exports_4.IgeTextureRenderMode.smartTexture;
+                this._renderMode = enums_1.IgeTextureRenderMode.smartTexture;
                 this.script = image;
                 // Run the asset script init method
                 if (typeof image.init === "function") {
@@ -86,21 +89,21 @@ class IgeTexture extends exports_2.IgeAsset {
             });
         };
         this._loaded = false;
-        if (exports_3.isServer) {
+        if (clientServer_1.isServer) {
             this.log(`Cannot create a texture on the server. Textures are only client-side objects. Please alter your code so that you don't try to load a texture on the server-side, using something like an if statement around your texture loading such as "if (isClient) {...}".`, "error");
             return this;
         }
         if (id) {
-            const alreadyExists = exports_3.ige.textures.exists(id);
+            const alreadyExists = instance_1.ige.textures.exists(id);
             if (alreadyExists) {
-                return exports_3.ige.textures.get(id);
+                return instance_1.ige.textures.get(id);
             }
             this.id(id);
-            exports_3.ige.textures.add(id, this);
+            instance_1.ige.textures.add(id, this);
         }
         // Create an array that is used to store cell dimensions
         this._cells = [];
-        this._smoothing = exports_3.ige.engine._globalSmoothing;
+        this._smoothing = instance_1.ige.engine._globalSmoothing;
         // Instantiate filter lists for filter combinations
         this._applyFilters = [];
         this._applyFiltersData = [];
@@ -142,15 +145,15 @@ class IgeTexture extends exports_2.IgeAsset {
      * @private
      */
     _loadImage(imageUrl) {
-        if (!exports_3.isClient) {
+        if (!clientServer_1.isClient) {
             return false;
         }
-        if (!exports_3.ige.textures._textureImageStore[imageUrl]) {
+        if (!instance_1.ige.textures._textureImageStore[imageUrl]) {
             fetch(imageUrl)
                 .then((resp) => resp.blob())
                 .then((blob) => createImageBitmap(blob))
                 .then((image) => {
-                exports_3.ige.textures._textureImageStore[imageUrl] = this.image = this._originalImage = image;
+                instance_1.ige.textures._textureImageStore[imageUrl] = this.image = this._originalImage = image;
                 image._igeTextures = image._igeTextures || [];
                 // Add this texture to the textures that are using this image
                 image._igeTextures.push(this);
@@ -170,7 +173,7 @@ class IgeTexture extends exports_2.IgeAsset {
                 const arrCount = arr.length;
                 for (let i = 0; i < arrCount; i++) {
                     const item = arr[i];
-                    item._renderMode = exports_4.IgeTextureRenderMode.image;
+                    item._renderMode = enums_1.IgeTextureRenderMode.image;
                     item.sizeX(image.width);
                     item.sizeY(image.height);
                     item._cells[1] = [0, 0, item._sizeX, item._sizeY];
@@ -181,13 +184,13 @@ class IgeTexture extends exports_2.IgeAsset {
         }
         else {
             // Grab the cached image object
-            const image = (this.image = this._originalImage = exports_3.ige.textures._textureImageStore[imageUrl]);
+            const image = (this.image = this._originalImage = instance_1.ige.textures._textureImageStore[imageUrl]);
             // Add this texture to the textures that are using this image
             image._igeTextures.push(this);
             if (image._loaded) {
                 // The cached image object is already loaded so
                 // fire off the relevant events
-                this._renderMode = exports_4.IgeTextureRenderMode.image;
+                this._renderMode = enums_1.IgeTextureRenderMode.image;
                 this.sizeX(image.width);
                 this.sizeY(image.height);
                 if (image.width % 2) {
@@ -227,7 +230,7 @@ class IgeTexture extends exports_2.IgeAsset {
             throw new Error("Cannot assign smart texture because it doesn't have a render() method!");
         }
         // Store the script data
-        this._renderMode = exports_4.IgeTextureRenderMode.smartTexture;
+        this._renderMode = enums_1.IgeTextureRenderMode.smartTexture;
         this.script = scriptObj;
         // Run the asset script init method
         if (typeof scriptObj.init === "function") {
@@ -246,12 +249,12 @@ class IgeTexture extends exports_2.IgeAsset {
      * @private
      */
     _setImage(imageElement) {
-        if (exports_3.isClient) {
+        if (clientServer_1.isClient) {
             // Create the image object
             const image = (this.image = this._originalImage = imageElement);
             // Mark the image as loaded
             image._loaded = true;
-            this._renderMode = exports_4.IgeTextureRenderMode.image;
+            this._renderMode = enums_1.IgeTextureRenderMode.image;
             this.sizeX(image.width);
             this.sizeY(image.height);
             this._cells[1] = [0, 0, this._sizeX, this._sizeY];
@@ -289,7 +292,7 @@ class IgeTexture extends exports_2.IgeAsset {
             }
             if (!this._textureCtx || !this._textureCanvas) {
                 // Create a new canvas
-                this._textureCanvas = (0, exports_2.newCanvas)();
+                this._textureCanvas = (0, IgeCanvas_1.newCanvas)();
             }
             this._textureCanvas.width = x;
             this._textureCanvas.height = y;
@@ -332,7 +335,7 @@ class IgeTexture extends exports_2.IgeAsset {
         y = Math.floor((this._originalImage.height / 100) * y);
         if (!this._textureCtx || !this._textureCanvas) {
             // Create a new canvas
-            this._textureCanvas = (0, exports_2.newCanvas)();
+            this._textureCanvas = (0, IgeCanvas_1.newCanvas)();
         }
         this._textureCanvas.width = x;
         this._textureCanvas.height = y;
@@ -383,7 +386,7 @@ class IgeTexture extends exports_2.IgeAsset {
             return;
         }
         ctx.imageSmoothingEnabled = this._smoothing;
-        if (this._renderMode === exports_4.IgeTextureRenderMode.image) {
+        if (this._renderMode === enums_1.IgeTextureRenderMode.image) {
             // This texture is image-based
             if (!this._originalImage || !this.image) {
                 throw new Error("No image is available to render but the IgeTexture is in mode zero (image based render)!");
@@ -423,9 +426,9 @@ class IgeTexture extends exports_2.IgeAsset {
             geom.x, // render width
             geom.y // render height
             );
-            exports_3.ige.metrics.drawCount++;
+            instance_1.ige.metrics.drawCount++;
         }
-        if (this._renderMode === exports_4.IgeTextureRenderMode.smartTexture) {
+        if (this._renderMode === enums_1.IgeTextureRenderMode.smartTexture) {
             if (!this.script) {
                 throw new Error("No smart texture is available to render but the IgeTexture is in mode one (script based render)!");
             }
@@ -433,7 +436,7 @@ class IgeTexture extends exports_2.IgeAsset {
             ctx.save();
             this.script.render(ctx, entity, this);
             ctx.restore();
-            exports_3.ige.metrics.drawCount++;
+            instance_1.ige.metrics.drawCount++;
         }
     }
     /**
@@ -513,7 +516,7 @@ class IgeTexture extends exports_2.IgeAsset {
         }
         if (!this._textureCtx || !this._textureCanvas) {
             // Create a new canvas
-            this._textureCanvas = (0, exports_2.newCanvas)();
+            this._textureCanvas = (0, IgeCanvas_1.newCanvas)();
             this._textureCanvas.width = this._originalImage.width;
             this._textureCanvas.height = this._originalImage.height;
             const tmpCtx = this._textureCanvas.getContext("2d");
@@ -549,7 +552,7 @@ class IgeTexture extends exports_2.IgeAsset {
         }
         if (!this._textureCtx || !this._textureCanvas) {
             // Create a new canvas
-            this._textureCanvas = (0, exports_2.newCanvas)();
+            this._textureCanvas = (0, IgeCanvas_1.newCanvas)();
             this._textureCanvas.width = this._originalImage.width;
             this._textureCanvas.height = this._originalImage.height;
             const tmpCtx = this._textureCanvas.getContext("2d");
@@ -595,7 +598,7 @@ class IgeTexture extends exports_2.IgeAsset {
         // Check if the texture is already using a canvas
         if (!this._textureCtx || !this._textureCanvas) {
             // Create a new canvas
-            this._textureCanvas = (0, exports_2.newCanvas)();
+            this._textureCanvas = (0, IgeCanvas_1.newCanvas)();
             this._textureCanvas.width = this.image.width;
             this._textureCanvas.height = this.image.height;
             const tmpCtx = this._textureCanvas.getContext("2d");
@@ -685,7 +688,7 @@ class IgeTexture extends exports_2.IgeAsset {
         // Create a new IgeTexture, then draw the existing cell
         // to its internal canvas
         const cell = this._cells[index];
-        const canvas = (0, exports_2.newCanvas)();
+        const canvas = (0, IgeCanvas_1.newCanvas)();
         if (!canvas)
             return;
         const ctx = canvas.getContext("2d");
@@ -737,12 +740,12 @@ class IgeTexture extends exports_2.IgeAsset {
         delete this._eventListeners;
         // Remove us from the image store reference array
         if (this.image && this.image._igeTextures) {
-            (0, exports_1.arrPull)(this.image._igeTextures, this);
+            (0, arrays_1.arrPull)(this.image._igeTextures, this);
         }
         // Remove the texture from the texture store
         const id = this.id();
         if (id) {
-            exports_3.ige.textures.remove(id);
+            instance_1.ige.textures.remove(id);
         }
         delete this.image;
         delete this.script;

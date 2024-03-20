@@ -32,6 +32,29 @@ export declare class b2PrismaticJointDef extends b2JointDef implements b2IPrisma
     Initialize(bA: b2Body, bB: b2Body, anchor: XY, axis: XY): void;
 }
 export declare class b2PrismaticJoint extends b2Joint {
+    private static InitVelocityConstraints_s_d;
+    private static InitVelocityConstraints_s_P;
+    private static SolveVelocityConstraints_s_P;
+    private static SolveVelocityConstraints_s_df;
+    private static SolvePositionConstraints_s_d;
+    private static SolvePositionConstraints_s_impulse;
+    private static SolvePositionConstraints_s_impulse1;
+    private static SolvePositionConstraints_s_P;
+    private static GetJointTranslation_s_pA;
+    private static GetJointTranslation_s_pB;
+    private static GetJointTranslation_s_d;
+    private static GetJointTranslation_s_axis;
+    private static Draw_s_pA;
+    private static Draw_s_pB;
+    private static Draw_s_axis;
+    private static Draw_s_c1;
+    private static Draw_s_c2;
+    private static Draw_s_c3;
+    private static Draw_s_c4;
+    private static Draw_s_c5;
+    private static Draw_s_lower;
+    private static Draw_s_upper;
+    private static Draw_s_perp;
     readonly m_localAnchorA: b2Vec2;
     readonly m_localAnchorB: b2Vec2;
     readonly m_localXAxisA: b2Vec2;
@@ -73,16 +96,8 @@ export declare class b2PrismaticJoint extends b2Joint {
     readonly m_rA: b2Vec2;
     readonly m_rB: b2Vec2;
     constructor(def: b2IPrismaticJointDef);
-    private static InitVelocityConstraints_s_d;
-    private static InitVelocityConstraints_s_P;
     InitVelocityConstraints(data: b2SolverData): void;
-    private static SolveVelocityConstraints_s_P;
-    private static SolveVelocityConstraints_s_df;
     SolveVelocityConstraints(data: b2SolverData): void;
-    private static SolvePositionConstraints_s_d;
-    private static SolvePositionConstraints_s_impulse;
-    private static SolvePositionConstraints_s_impulse1;
-    private static SolvePositionConstraints_s_P;
     SolvePositionConstraints(data: b2SolverData): boolean;
     GetAnchorA<T extends XY>(out: T): T;
     GetAnchorB<T extends XY>(out: T): T;
@@ -92,10 +107,6 @@ export declare class b2PrismaticJoint extends b2Joint {
     GetLocalAnchorB(): Readonly<b2Vec2>;
     GetLocalAxisA(): Readonly<b2Vec2>;
     GetReferenceAngle(): number;
-    private static GetJointTranslation_s_pA;
-    private static GetJointTranslation_s_pB;
-    private static GetJointTranslation_s_d;
-    private static GetJointTranslation_s_axis;
     GetJointTranslation(): number;
     GetJointSpeed(): number;
     IsLimitEnabled(): boolean;
@@ -111,16 +122,5 @@ export declare class b2PrismaticJoint extends b2Joint {
     GetMaxMotorForce(): number;
     GetMotorForce(inv_dt: number): number;
     Dump(log: (format: string, ...args: any[]) => void): void;
-    private static Draw_s_pA;
-    private static Draw_s_pB;
-    private static Draw_s_axis;
-    private static Draw_s_c1;
-    private static Draw_s_c2;
-    private static Draw_s_c3;
-    private static Draw_s_c4;
-    private static Draw_s_c5;
-    private static Draw_s_lower;
-    private static Draw_s_upper;
-    private static Draw_s_perp;
     Draw(draw: b2Draw): void;
 }

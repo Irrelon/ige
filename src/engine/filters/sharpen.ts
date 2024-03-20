@@ -1,6 +1,6 @@
-import { convoluteHelper } from "@/export/exports";
-import { igeFilters } from "@/export/exports";
-import type { IgeSmartFilter } from "@/export/exports";
+import { convoluteHelper } from "@/engine/filters/convolute";
+import { igeFilters } from "@/engine/utils/igeFilters";
+import type { IgeSmartFilter } from "@/types/IgeSmartFilter";
 
 export const sharpen: IgeSmartFilter = function (canvas, ctx, originalImage, texture, data) {
 	let strength = 1,

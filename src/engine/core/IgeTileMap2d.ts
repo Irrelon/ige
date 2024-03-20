@@ -1,18 +1,20 @@
-import { IgeEntity } from "@/export/exports";
-import { IgeMap2d } from "@/export/exports";
-import { IgeMatrix2d } from "@/export/exports";
-import type { IgeObject } from "@/export/exports";
-import { IgePoint2d } from "@/export/exports";
-import { IgePoint3d } from "@/export/exports";
-import { IgePoly2d } from "@/export/exports";
-import { IgeRect } from "@/export/exports";
-import { IgeTexture } from "@/export/exports";
-import { registerClass } from "@/export/exports";
-import { ige } from "@/export/exports";
-import { IgeMountMode } from "@/export/exports";
-import { isServer } from "@/export/exports";
-import { IgeTileMap2dSmartTexture } from "@/export/exports";
-import { arrClone, newIdHex } from "@/export/exports";
+import { IgeEntity } from "@/engine/core/IgeEntity";
+import { IgeMap2d } from "@/engine/core/IgeMap2d";
+import { IgeMatrix2d } from "@/engine/core/IgeMatrix2d";
+import type { IgeObject } from "@/engine/core/IgeObject";
+import { IgePoint2d } from "@/engine/core/IgePoint2d";
+import { IgePoint3d } from "@/engine/core/IgePoint3d";
+import { IgePoly2d } from "@/engine/core/IgePoly2d";
+import { IgeRect } from "@/engine/core/IgeRect";
+import { IgeTexture } from "@/engine/core/IgeTexture";
+import { ige } from "@/engine/instance";
+import { IgeTileMap2dSmartTexture } from "@/engine/textures/IgeTileMap2dSmartTexture";
+import { arrClone } from "@/engine/utils/arrays";
+import { isServer } from "@/engine/utils/clientServer";
+import { newIdHex } from "@/engine/utils/ids";
+import { registerClass } from "@/engine/utils/igeClassStore";
+import { IgeMountMode } from "@/enums";
+
 
 export type IgeTileMap2dScanRectCallback = (mapData: any, x: number, y: number) => boolean;
 

@@ -1,7 +1,19 @@
-import { IgeArrayRegister, igeConfig, IgeDependencies, IgeEngine, IgeMetrics, IgeObjectRegister, IgePoint3d, IgeRouter, IgeTextureStore, IgeTimeController, IgeTweenController, IgeUiManagerController } from "../../export/exports.js"
-import { igeClassStore, isClient, isServer, isWorker } from "../../export/exports.js"
-import { IgeInputComponent } from "../../export/exports.js"
-import { IgeBox2dController } from "../../export/exports.js"
+import { IgeInputComponent } from "../components/IgeInputComponent.js"
+import { IgeBox2dController } from "../components/physics/box2d/IgeBox2dController.js"
+import { igeConfig } from "./config.js"
+import { IgeArrayRegister } from "./IgeArrayRegister.js"
+import { IgeDependencies } from "./IgeDependencies.js"
+import { IgeEngine } from "./IgeEngine.js"
+import { IgeMetrics } from "./IgeMetrics.js"
+import { IgeObjectRegister } from "./IgeObjectRegister.js"
+import { IgePoint3d } from "./IgePoint3d.js"
+import { IgeRouter } from "./IgeRouter.js"
+import { IgeTextureStore } from "./IgeTextureStore.js"
+import { IgeTimeController } from "./IgeTimeController.js"
+import { IgeTweenController } from "./IgeTweenController.js"
+import { IgeUiManagerController } from "./IgeUiManagerController.js"
+import { isClient, isServer, isWorker } from "../utils/clientServer.js"
+import { igeClassStore } from "../utils/igeClassStore.js"
 const version = "3.0.1";
 export class Ige {
     app = null;
@@ -32,6 +44,12 @@ export class Ige {
     _pointerOverVp;
     _pointerPos = new IgePoint3d(); // Could probably be just {x: number, y: number}
     constructor() {
+        // Output our header
+        console.log("-----------------------------------------");
+        console.log(`Powered by Isogenic Engine`);
+        console.log("(C)opyright " + new Date().getFullYear() + " Irrelon Software Limited");
+        console.log("https://www.isogenicengine.com");
+        console.log("-----------------------------------------");
         if (isClient) {
             this.dependencies.add("network", import("../network/client/IgeNetIoClientController.js").then(({ IgeNetIoClientController: Module }) => {
                 this.network = new Module();
@@ -124,7 +142,21 @@ export class Ige {
         this._watch = this._watch || [];
         this._watch.splice(index, 1);
     };
-    drawBounds(val, recursive = false) {
+    /**
+     * Gets / sets the boolean flag determining if this object should have
+     * its bounds drawn when the bounds for all objects are being drawn.
+     * In order for bounds to be drawn the viewport the object is being drawn
+     * to must also have draw bounds enabled.
+     * @example #Enable draw bounds
+     *     var entity = new IgeEntity();
+     *     entity.drawBounds(true);
+     * @example #Disable draw bounds
+     *     var entity = new IgeEntity();
+     *     entity.drawBounds(false);
+     * @example #Get the current flag value
+     *     console.log(entity.drawBounds());
+     */
+    drawBounds(val, recursive = true) {
         if (val === undefined) {
             return this._drawBounds;
         }

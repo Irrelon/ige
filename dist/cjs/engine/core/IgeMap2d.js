@@ -1,12 +1,12 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.IgeMap2d = void 0;
-const exports_1 = require("../../export/exports.js");
-const exports_2 = require("../../export/exports.js");
+const IgeBaseClass_1 = require("./IgeBaseClass.js");
+const igeClassStore_1 = require("../utils/igeClassStore.js");
 /**
  * Creates a new map that has two dimensions (x and y) to its data.
  */
-class IgeMap2d extends exports_1.IgeBaseClass {
+class IgeMap2d extends IgeBaseClass_1.IgeBaseClass {
     constructor(data) {
         super();
         this.classId = "IgeMap2d";
@@ -188,4 +188,4 @@ class IgeMap2d extends exports_1.IgeBaseClass {
     }
 }
 exports.IgeMap2d = IgeMap2d;
-(0, exports_2.registerClass)(IgeMap2d);
+(0, igeClassStore_1.registerClass)(IgeMap2d);

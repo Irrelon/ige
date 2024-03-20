@@ -1,6 +1,6 @@
-import { IgeUiElement } from "../../export/exports.js"
-import { IgeUiLabel } from "../../export/exports.js"
-import type { IgeCanvasRenderingContext2d } from "../../export/exports.js"
+import { IgeUiElement } from "../core/IgeUiElement.js"
+import { IgeUiLabel } from "./IgeUiLabel.js";
+import type { IgeCanvasRenderingContext2d } from "../../types/IgeCanvasRenderingContext2d.js"
 export interface IgeUiDropDownOption {
     text: string;
     value: string;

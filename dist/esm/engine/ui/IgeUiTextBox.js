@@ -1,4 +1,8 @@
-import { ige, IgeFontAlignY, IgeFontEntity, IgeUiElement, registerClass } from "../../export/exports.js"
+import { IgeFontEntity } from "../core/IgeFontEntity.js"
+import { IgeUiElement } from "../core/IgeUiElement.js"
+import { ige } from "../instance.js"
+import { registerClass } from "../utils/igeClassStore.js"
+import { IgeFontAlignY } from "../../enums/index.js"
 /**
  * Provides a UI text entry box. When provided with focus this UI entity will
  * capture keyboard input and display it, similar in usage to the HTML input

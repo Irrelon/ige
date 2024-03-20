@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.WithUiStyleMixin = void 0;
+// TODO: Add "overflow" with automatic scroll-bars
 // TODO: Update this mixin so it extends from IgeBaseClass, moving anything that relies on IgeEntity
 //    to another class, probably IgeEntity or IgeUiEntity?
 const WithUiStyleMixin = (Base) => class extends Base {

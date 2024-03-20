@@ -1,15 +1,17 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.IgeTweenController = void 0;
-const exports_1 = require("../../export/exports.js");
-const exports_2 = require("../../export/exports.js");
-const exports_3 = require("../../export/exports.js");
+const IgeEventingClass_1 = require("./IgeEventingClass.js");
+const instance_1 = require("../instance.js");
+const arrays_1 = require("../utils/arrays.js");
+const easing_1 = require("../utils/easing.js");
+const enums_1 = require("../../enums/index.js");
 /**
  * This component is already included in the IgeRoot (ige)
  * instance and is not designed for use in any other way!
  * It handles global tween processing on all tweening values.
  */
-class IgeTweenController extends exports_1.IgeEventingClass {
+class IgeTweenController extends IgeEventingClass_1.IgeEventingClass {
     constructor() {
         super(...arguments);
         this.classId = "IgeTweenController";
@@ -21,7 +23,7 @@ class IgeTweenController extends exports_1.IgeEventingClass {
          */
         this.update = () => {
             if (this._tweens && this._tweens.length) {
-                const currentTime = exports_2.ige.engine._tickStart;
+                const currentTime = instance_1.ige.engine._tickStart;
                 const tweens = this._tweens;
                 let tweenCount = tweens.length;
                 // Loop the item's tweens
@@ -79,7 +81,7 @@ class IgeTweenController extends exports_1.IgeEventingClass {
                                     // a divide by zero error resulting in a NaN value
                                     if (destTime !== 0) {
                                         // Add the delta amount to destination
-                                        currentDelta = exports_2.easingFunctions[easing](destTime, item.deltaVal, destTime);
+                                        currentDelta = easing_1.easingFunctions[easing](destTime, item.deltaVal, destTime);
                                     }
                                     else {
                                         currentDelta = item.deltaVal;
@@ -190,7 +192,7 @@ class IgeTweenController extends exports_1.IgeEventingClass {
                             for (const targetIndex in targets) {
                                 if (targets.hasOwnProperty(targetIndex)) {
                                     const item = targets[targetIndex];
-                                    const currentDelta = exports_2.easingFunctions[easing](deltaTime, item.deltaVal, destTime);
+                                    const currentDelta = easing_1.easingFunctions[easing](deltaTime, item.deltaVal, destTime);
                                     item.targetObj[item.propName] += currentDelta - item.oldDelta;
                                     item.oldDelta = currentDelta;
                                 }
@@ -207,9 +209,9 @@ class IgeTweenController extends exports_1.IgeEventingClass {
     isReady() {
         return new Promise((resolve) => {
             setTimeout(() => {
-                exports_2.ige.dependencies.waitFor(["engine"], () => {
+                instance_1.ige.dependencies.waitFor(["engine"], () => {
                     // Add the tween behaviour to the entity
-                    exports_2.ige.engine.addBehaviour(exports_3.IgeBehaviourType.preUpdate, "tween", this.update);
+                    instance_1.ige.engine.addBehaviour(enums_1.IgeBehaviourType.preUpdate, "tween", this.update);
                     resolve();
                 });
             }, 1);
@@ -221,7 +223,7 @@ class IgeTweenController extends exports_1.IgeEventingClass {
      * @return {number} The index of the added tween or -1 on error.
      */
     start(tween) {
-        if (tween._startTime !== undefined && tween._startTime > exports_2.ige.engine._currentTime) {
+        if (tween._startTime !== undefined && tween._startTime > instance_1.ige.engine._currentTime) {
             // The tween is scheduled for later
             // Push the tween into the IgeTweenController's _tweens array
             this._tweens.push(tween);
@@ -254,13 +256,13 @@ class IgeTweenController extends exports_1.IgeEventingClass {
         if (tween._currentStep === 0 && !newTime) {
             // Because we are on step zero we can check for a start time
             if (tween._startTime === undefined) {
-                tween._startTime = exports_2.ige.engine._currentTime;
+                tween._startTime = instance_1.ige.engine._currentTime;
             }
         }
         else {
             // We're not on step zero anymore so the new step start time
             // is NOW!
-            tween._startTime = exports_2.ige.engine._currentTime;
+            tween._startTime = instance_1.ige.engine._currentTime;
         }
         const durationMs = step.durationMs ? step.durationMs : tween._durationMs;
         tween._selectedEasing = step.easing ? step.easing : tween._easing;
@@ -286,7 +288,7 @@ class IgeTweenController extends exports_1.IgeEventingClass {
      */
     stop(tween) {
         // Store the new tween details in the item
-        (0, exports_2.arrPull)(this._tweens, tween);
+        (0, arrays_1.arrPull)(this._tweens, tween);
         if (!this._tweens.length) {
             // Disable tweening on this item as there are
             // no more tweens to process

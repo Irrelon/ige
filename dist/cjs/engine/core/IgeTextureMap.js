@@ -1,13 +1,16 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.IgeTextureMap = void 0;
-const exports_1 = require("../../export/exports.js");
-const exports_2 = require("../../export/exports.js");
-const exports_3 = require("../../export/exports.js");
+// TODO: Implement the _stringify() method for this class
+const IgeMap2d_1 = require("./IgeMap2d.js");
+const IgePoint3d_1 = require("./IgePoint3d.js");
+const IgeTileMap2d_1 = require("./IgeTileMap2d.js");
+const instance_1 = require("../instance.js");
+const enums_1 = require("../../enums/index.js");
 /**
  * Texture maps provide a way to display textures / cells across a tile map.
  */
-class IgeTextureMap extends exports_1.IgeTileMap2d {
+class IgeTextureMap extends IgeTileMap2d_1.IgeTileMap2d {
     constructor(tileWidth, tileHeight) {
         super(tileWidth, tileHeight);
         this.classId = "IgeTextureMap";
@@ -15,9 +18,9 @@ class IgeTextureMap extends exports_1.IgeTileMap2d {
         this._allTexturesLoaded = false;
         this._sections = [];
         this._sectionCtx = [];
-        this.map = new exports_1.IgeMap2d();
+        this.map = new IgeMap2d_1.IgeMap2d();
         this._textureList = [];
-        this._renderCenter = new exports_1.IgePoint3d(0, 0, 0);
+        this._renderCenter = new IgePoint3d_1.IgePoint3d(0, 0, 0);
         this._cacheDirty = true;
     }
     /**
@@ -311,12 +314,12 @@ class IgeTextureMap extends exports_1.IgeTileMap2d {
                                     // Calculate the tile's final resting position in absolute
                                     // co-ordinates so we can work out which section canvas to
                                     // paint the tile to
-                                    if (this._mountMode === exports_3.IgeMountMode.flat) {
+                                    if (this._mountMode === enums_1.IgeMountMode.flat) {
                                         // We're rendering a 2d map
                                         finalX = xInt;
                                         finalY = yInt;
                                     }
-                                    if (this._mountMode === exports_3.IgeMountMode.iso) {
+                                    if (this._mountMode === enums_1.IgeMountMode.iso) {
                                         // We're rendering an iso map
                                         // Convert the tile x, y to isometric
                                         tx = xInt * this._tileWidth;
@@ -416,7 +419,7 @@ class IgeTextureMap extends exports_1.IgeTileMap2d {
             this._sections[sectionX][sectionY].height = this._tileHeight * autoSection;
             sectionCtx = this._sectionCtx[sectionX][sectionY] = this._sections[sectionX][sectionY].getContext("2d");
             // Ensure the canvas is using the correct image antialiasing mode
-            if (!exports_2.ige.engine._globalSmoothing) {
+            if (!instance_1.ige.engine._globalSmoothing) {
                 sectionCtx.imageSmoothingEnabled = false;
             }
             else {
@@ -432,10 +435,10 @@ class IgeTextureMap extends exports_1.IgeTileMap2d {
      * @private
      */
     _drawSectionsToCtx(ctx, autoSection) {
-        if (exports_2.ige.engine._currentCamera === null || exports_2.ige.engine._currentViewport === null) {
+        if (instance_1.ige.engine._currentCamera === null || instance_1.ige.engine._currentViewport === null) {
             throw new Error("Engine was not ready");
         }
-        const viewArea = exports_2.ige.engine._currentViewport.viewArea(), sectionWidth = this._tileWidth * autoSection, sectionHeight = this._tileHeight * autoSection;
+        const viewArea = instance_1.ige.engine._currentViewport.viewArea(), sectionWidth = this._tileWidth * autoSection, sectionHeight = this._tileHeight * autoSection;
         let x, y, tileData, sectionRenderX, sectionRenderY, sectionAbsX, sectionAbsY;
         // Render the map sections
         //ctx.translate(-(this._tileWidth / 2), -(this._tileHeight / 2));
@@ -445,10 +448,10 @@ class IgeTextureMap extends exports_1.IgeTileMap2d {
                     if (this._sections[x].hasOwnProperty(y)) {
                         sectionRenderX = x * (this._tileWidth * autoSection);
                         sectionRenderY = y * (this._tileHeight * autoSection);
-                        sectionAbsX = this._translate.x + sectionRenderX - exports_2.ige.engine._currentCamera._translate.x;
-                        sectionAbsY = this._translate.y + sectionRenderY - exports_2.ige.engine._currentCamera._translate.y;
+                        sectionAbsX = this._translate.x + sectionRenderX - instance_1.ige.engine._currentCamera._translate.x;
+                        sectionAbsY = this._translate.y + sectionRenderY - instance_1.ige.engine._currentCamera._translate.y;
                         // Check if we are drawing isometrically and adjust
-                        if (this._mountMode === exports_3.IgeMountMode.iso) {
+                        if (this._mountMode === enums_1.IgeMountMode.iso) {
                             sectionAbsX -= this._tileWidth / 2;
                             sectionAbsY -= this._tileHeight / 2;
                         }
@@ -460,7 +463,7 @@ class IgeTextureMap extends exports_1.IgeTileMap2d {
                             // Grab the canvas to paint
                             tileData = this._sections[x][y];
                             ctx.drawImage(tileData, 0, 0, sectionWidth, sectionHeight, sectionRenderX, sectionRenderY, sectionWidth, sectionHeight);
-                            exports_2.ige.metrics.drawCount++;
+                            instance_1.ige.metrics.drawCount++;
                             if (this._drawSectionBounds) {
                                 // Draw a bounding rectangle around the section
                                 ctx.strokeStyle = "#ff00f6";
@@ -488,14 +491,14 @@ class IgeTextureMap extends exports_1.IgeTileMap2d {
      */
     _renderTile(ctx, x, y, tileData, tileEntity, rect, sectionX, sectionY) {
         // TODO: Handle scaling so tiles don't loose res on scaled cached sections
-        const xAdjust = this._mountMode === exports_3.IgeMountMode.iso ? this._tileWidth / 2 : 0, yAdjust = this._mountMode === exports_3.IgeMountMode.iso ? this._tileHeight / 2 : 0;
+        const xAdjust = this._mountMode === enums_1.IgeMountMode.iso ? this._tileWidth / 2 : 0, yAdjust = this._mountMode === enums_1.IgeMountMode.iso ? this._tileHeight / 2 : 0;
         let finalX, finalY, regions, xm1, xp1, ym1, yp1, regObj, tx, ty, sx, sy;
         // Translate the canvas to the tile position
-        if (this._mountMode === exports_3.IgeMountMode.flat) {
+        if (this._mountMode === enums_1.IgeMountMode.flat) {
             finalX = x * this._tileWidth;
             finalY = y * this._tileHeight;
         }
-        if (this._mountMode === exports_3.IgeMountMode.iso) {
+        if (this._mountMode === enums_1.IgeMountMode.iso) {
             // Convert the tile x, y to isometric
             tx = x * this._tileWidth;
             ty = y * this._tileHeight;
@@ -556,7 +559,7 @@ class IgeTextureMap extends exports_1.IgeTileMap2d {
         tileEntity._cell = tileData[1];
         // Paint the texture
         if (texture) {
-            texture.render(ctx, tileEntity, exports_2.ige.engine._tickDelta);
+            texture.render(ctx, tileEntity, instance_1.ige.engine._tickDelta);
         }
         ctx.restore();
         return regions;
@@ -570,7 +573,7 @@ class IgeTextureMap extends exports_1.IgeTileMap2d {
      * @private
      */
     _newTileEntity() {
-        if (this._mountMode === exports_3.IgeMountMode.flat) {
+        if (this._mountMode === enums_1.IgeMountMode.flat) {
             return {
                 _cell: 1,
                 _bounds2d: {
@@ -583,7 +586,7 @@ class IgeTextureMap extends exports_1.IgeTileMap2d {
                 }
             };
         }
-        if (this._mountMode === exports_3.IgeMountMode.iso) {
+        if (this._mountMode === enums_1.IgeMountMode.iso) {
             return {
                 _cell: 1,
                 _bounds2d: {

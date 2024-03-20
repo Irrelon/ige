@@ -90,6 +90,31 @@ export class b2PrismaticJointDef extends b2JointDef {
 // s1 = cross(d + r1, u), s2 = cross(r2, u)
 // a1 = cross(d + r1, v), a2 = cross(r2, v)
 export class b2PrismaticJoint extends b2Joint {
+    static InitVelocityConstraints_s_d = new b2Vec2();
+    static InitVelocityConstraints_s_P = new b2Vec2();
+    static SolveVelocityConstraints_s_P = new b2Vec2();
+    // private static SolveVelocityConstraints_s_df3 = new b2Vec3();
+    static SolveVelocityConstraints_s_df = new b2Vec2();
+    // solver indicates the limit is inactive.
+    static SolvePositionConstraints_s_d = new b2Vec2();
+    static SolvePositionConstraints_s_impulse = new b2Vec3();
+    static SolvePositionConstraints_s_impulse1 = new b2Vec2();
+    static SolvePositionConstraints_s_P = new b2Vec2();
+    static GetJointTranslation_s_pA = new b2Vec2();
+    static GetJointTranslation_s_pB = new b2Vec2();
+    static GetJointTranslation_s_d = new b2Vec2();
+    static GetJointTranslation_s_axis = new b2Vec2();
+    static Draw_s_pA = new b2Vec2();
+    static Draw_s_pB = new b2Vec2();
+    static Draw_s_axis = new b2Vec2();
+    static Draw_s_c1 = new b2Color(0.7, 0.7, 0.7);
+    static Draw_s_c2 = new b2Color(0.3, 0.9, 0.3);
+    static Draw_s_c3 = new b2Color(0.9, 0.3, 0.3);
+    static Draw_s_c4 = new b2Color(0.3, 0.3, 0.9);
+    static Draw_s_c5 = new b2Color(0.4, 0.4, 0.4);
+    static Draw_s_lower = new b2Vec2();
+    static Draw_s_upper = new b2Vec2();
+    static Draw_s_perp = new b2Vec2();
     m_localAnchorA = new b2Vec2();
     m_localAnchorB = new b2Vec2();
     m_localXAxisA = new b2Vec2();
@@ -113,8 +138,16 @@ export class b2PrismaticJoint extends b2Joint {
     m_invMassA = 0;
     m_invMassB = 0;
     m_invIA = 0;
+    // private static SolveVelocityConstraints_s_f2r = new b2Vec2();
+    // private static SolveVelocityConstraints_s_f1 = new b2Vec3();
     m_invIB = 0;
     m_axis = new b2Vec2(0, 0);
+    // A velocity based solver computes reaction forces(impulses) using the velocity constraint solver.Under this context,
+    // the position solver is not there to resolve forces.It is only there to cope with integration error.
+    //
+    // Therefore, the pseudo impulses in the position solver do not have any physical meaning.Thus it is okay if they suck.
+    //
+    // We could take the active state from the velocity solver.However, the joint might push past the limit when the velocity
     m_perp = new b2Vec2(0, 0);
     m_s1 = 0;
     m_s2 = 0;
@@ -146,8 +179,6 @@ export class b2PrismaticJoint extends b2Joint {
         this.m_enableLimit = b2Maybe(def.enableLimit, false);
         this.m_enableMotor = b2Maybe(def.enableMotor, false);
     }
-    static InitVelocityConstraints_s_d = new b2Vec2();
-    static InitVelocityConstraints_s_P = new b2Vec2();
     InitVelocityConstraints(data) {
         this.m_indexA = this.m_bodyA.m_islandIndex;
         this.m_indexB = this.m_bodyB.m_islandIndex;
@@ -255,11 +286,6 @@ export class b2PrismaticJoint extends b2Joint {
         // data.velocities[this.m_indexB].v = vB;
         data.velocities[this.m_indexB].w = wB;
     }
-    static SolveVelocityConstraints_s_P = new b2Vec2();
-    // private static SolveVelocityConstraints_s_f2r = new b2Vec2();
-    // private static SolveVelocityConstraints_s_f1 = new b2Vec3();
-    // private static SolveVelocityConstraints_s_df3 = new b2Vec3();
-    static SolveVelocityConstraints_s_df = new b2Vec2();
     SolveVelocityConstraints(data) {
         const vA = data.velocities[this.m_indexA].v;
         let wA = data.velocities[this.m_indexA].w;
@@ -358,17 +384,6 @@ export class b2PrismaticJoint extends b2Joint {
         // data.velocities[this.m_indexB].v = vB;
         data.velocities[this.m_indexB].w = wB;
     }
-    // A velocity based solver computes reaction forces(impulses) using the velocity constraint solver.Under this context,
-    // the position solver is not there to resolve forces.It is only there to cope with integration error.
-    //
-    // Therefore, the pseudo impulses in the position solver do not have any physical meaning.Thus it is okay if they suck.
-    //
-    // We could take the active state from the velocity solver.However, the joint might push past the limit when the velocity
-    // solver indicates the limit is inactive.
-    static SolvePositionConstraints_s_d = new b2Vec2();
-    static SolvePositionConstraints_s_impulse = new b2Vec3();
-    static SolvePositionConstraints_s_impulse1 = new b2Vec2();
-    static SolvePositionConstraints_s_P = new b2Vec2();
     SolvePositionConstraints(data) {
         const cA = data.positions[this.m_indexA].c;
         let aA = data.positions[this.m_indexA].a;
@@ -511,14 +526,18 @@ export class b2PrismaticJoint extends b2Joint {
     GetReactionTorque(inv_dt) {
         return inv_dt * this.m_impulse.y;
     }
-    GetLocalAnchorA() { return this.m_localAnchorA; }
-    GetLocalAnchorB() { return this.m_localAnchorB; }
-    GetLocalAxisA() { return this.m_localXAxisA; }
-    GetReferenceAngle() { return this.m_referenceAngle; }
-    static GetJointTranslation_s_pA = new b2Vec2();
-    static GetJointTranslation_s_pB = new b2Vec2();
-    static GetJointTranslation_s_d = new b2Vec2();
-    static GetJointTranslation_s_axis = new b2Vec2();
+    GetLocalAnchorA() {
+        return this.m_localAnchorA;
+    }
+    GetLocalAnchorB() {
+        return this.m_localAnchorB;
+    }
+    GetLocalAxisA() {
+        return this.m_localXAxisA;
+    }
+    GetReferenceAngle() {
+        return this.m_referenceAngle;
+    }
     GetJointTranslation() {
         // b2Vec2 pA = m_bodyA.GetWorldPoint(m_localAnchorA);
         const pA = this.m_bodyA.GetWorldPoint(this.m_localAnchorA, b2PrismaticJoint.GetJointTranslation_s_pA);
@@ -613,7 +632,9 @@ export class b2PrismaticJoint extends b2Joint {
             this.m_maxMotorForce = force;
         }
     }
-    GetMaxMotorForce() { return this.m_maxMotorForce; }
+    GetMaxMotorForce() {
+        return this.m_maxMotorForce;
+    }
     GetMotorForce(inv_dt) {
         return inv_dt * this.m_motorImpulse;
     }
@@ -636,17 +657,6 @@ export class b2PrismaticJoint extends b2Joint {
         log("  jd.maxMotorForce = %.15f;\n", this.m_maxMotorForce);
         log("  joints[%d] = this.m_world.CreateJoint(jd);\n", this.m_index);
     }
-    static Draw_s_pA = new b2Vec2();
-    static Draw_s_pB = new b2Vec2();
-    static Draw_s_axis = new b2Vec2();
-    static Draw_s_c1 = new b2Color(0.7, 0.7, 0.7);
-    static Draw_s_c2 = new b2Color(0.3, 0.9, 0.3);
-    static Draw_s_c3 = new b2Color(0.9, 0.3, 0.3);
-    static Draw_s_c4 = new b2Color(0.3, 0.3, 0.9);
-    static Draw_s_c5 = new b2Color(0.4, 0.4, 0.4);
-    static Draw_s_lower = new b2Vec2();
-    static Draw_s_upper = new b2Vec2();
-    static Draw_s_perp = new b2Vec2();
     Draw(draw) {
         const xfA = this.m_bodyA.GetTransform();
         const xfB = this.m_bodyB.GetTransform();

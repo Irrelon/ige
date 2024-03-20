@@ -1,9 +1,9 @@
-import { IgeTexture } from "../../export/exports.js"
-import { ige } from "../../export/exports.js"
 /* TODO: URGENT - Make this alignment stuff work inside the bounds of the entity it is attached to
  *    so that bottom-right aligns to the lower-right point of the bounding box of the entity
  *    whilst maintaining the current text-alignment as well
  * */
+import { IgeTexture } from "./IgeTexture.js"
+import { ige } from "../instance.js"
 /**
  * Creates a new font sheet. A font sheet is an image that contains
  * letters and numbers rendered to specifications. It allows you to

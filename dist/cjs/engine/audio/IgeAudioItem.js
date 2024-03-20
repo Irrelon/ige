@@ -1,9 +1,9 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.IgeAudioItem = void 0;
-const exports_1 = require("../../export/exports.js");
-const exports_2 = require("../../export/exports.js");
-class IgeAudioItem extends exports_1.IgeEventingClass {
+const IgeEventingClass_1 = require("../core/IgeEventingClass.js");
+const instance_1 = require("../instance.js");
+class IgeAudioItem extends IgeEventingClass_1.IgeEventingClass {
     constructor(audioId) {
         super();
         this.classId = "IgeAudioItem";
@@ -26,10 +26,10 @@ class IgeAudioItem extends exports_1.IgeEventingClass {
         if (audioId === undefined) {
             return this._audioId;
         }
-        if (!exports_2.ige.audio)
+        if (!instance_1.ige.audio)
             return this;
         this._audioId = audioId;
-        this.buffer(exports_2.ige.audio.register(audioId));
+        this.buffer(instance_1.ige.audio.register(audioId));
         return this;
     }
     url(url) {
@@ -37,9 +37,9 @@ class IgeAudioItem extends exports_1.IgeEventingClass {
             return this._url;
         }
         this._url = url;
-        if (!exports_2.ige.audio)
+        if (!instance_1.ige.audio)
             return this;
-        exports_2.ige.audio
+        instance_1.ige.audio
             ._load(url)
             .then((buffer) => {
             this.buffer(buffer);
@@ -64,10 +64,10 @@ class IgeAudioItem extends exports_1.IgeEventingClass {
             return this._panner;
         }
         this._panner = val;
-        if (this._bufferSource && exports_2.ige.audio) {
+        if (this._bufferSource && instance_1.ige.audio) {
             // Make sure we include the panner in the connections
             this._bufferSource.connect(this._panner);
-            this._panner.connect(exports_2.ige.audio._masterVolumeNode);
+            this._panner.connect(instance_1.ige.audio._masterVolumeNode);
         }
         return this;
     }
@@ -75,26 +75,26 @@ class IgeAudioItem extends exports_1.IgeEventingClass {
      * Plays the audio.
      */
     play(loop = false) {
-        if (!exports_2.ige.audio)
+        if (!instance_1.ige.audio)
             return;
-        if (!this._buffer || !exports_2.ige.audio._ctx) {
+        if (!this._buffer || !instance_1.ige.audio._ctx) {
             this._playWhenReady = true;
             this._loop = loop;
             this._playing = true;
             return;
         }
-        this._bufferSource = exports_2.ige.audio._ctx.createBufferSource();
+        this._bufferSource = instance_1.ige.audio._ctx.createBufferSource();
         if (!this._bufferSource)
             return;
         this._bufferSource.buffer = this._buffer;
         if (this._panner) {
             // Connect through the panner
             this._bufferSource.connect(this._panner);
-            this._panner.connect(exports_2.ige.audio._masterVolumeNode);
+            this._panner.connect(instance_1.ige.audio._masterVolumeNode);
         }
         else {
             // Connect directly to the destination
-            this._bufferSource.connect(exports_2.ige.audio._masterVolumeNode);
+            this._bufferSource.connect(instance_1.ige.audio._masterVolumeNode);
         }
         this._bufferSource.loop = loop;
         this._bufferSource.start(0);

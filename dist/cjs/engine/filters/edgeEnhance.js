@@ -1,8 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.edgeEnhance = void 0;
-const exports_1 = require("../../export/exports.js");
-const exports_2 = require("../../export/exports.js");
+const convolute_1 = require("./convolute.js");
+const igeFilters_1 = require("../utils/igeFilters.js");
 const edgeEnhance = function (canvas, ctx, originalImage, texture, data) {
     if (!texture._filterImageDrawn || !data || !data.cumulative) {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -13,10 +13,10 @@ const edgeEnhance = function (canvas, ctx, originalImage, texture, data) {
     if (!imgData)
         return;
     // Apply the filter and then put the new pixel data
-    const imageData = (0, exports_1.convoluteHelper)(imgData, [0, 0, 0, -1, 1, 0, 0, 0, 0], true);
+    const imageData = (0, convolute_1.convoluteHelper)(imgData, [0, 0, 0, -1, 1, 0, 0, 0, 0], true);
     if (!imageData)
         return;
     ctx.putImageData(imageData, 0, 0);
 };
 exports.edgeEnhance = edgeEnhance;
-exports_2.igeFilters.registerFilter("edgeEnhance", exports.edgeEnhance);
+igeFilters_1.igeFilters.registerFilter("edgeEnhance", exports.edgeEnhance);

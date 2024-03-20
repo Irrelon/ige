@@ -1,4 +1,4 @@
-import { IgeEventingClass } from "../../export/exports.js"
+import { IgeEventingClass } from "./IgeEventingClass.js"
 export type IgeIntervalCallback = (...args: any[]) => void;
 /**
  * Provides a kind of setInterval() that works based on the engine's internal

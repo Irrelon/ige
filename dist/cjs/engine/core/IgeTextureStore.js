@@ -1,8 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.IgeTextureStore = void 0;
-const exports_1 = require("../../export/exports.js");
-class IgeTextureStore extends exports_1.IgeAssetRegister {
+const IgeAssetRegister_1 = require("./IgeAssetRegister.js");
+class IgeTextureStore extends IgeAssetRegister_1.IgeAssetRegister {
     constructor() {
         super(...arguments);
         this._textureImageStore = {};

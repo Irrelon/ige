@@ -1,7 +1,8 @@
-import { type IgePoint2d, type IgeShape } from "../../export/exports.js"
-import type { IgePoint3d } from "../../export/exports.js"
-import type { IgeCanvasRenderingContext2d } from "../../export/exports.js"
-import type { IgeShapeFunctionality } from "../../export/exports.js"
+import type { IgePoint2d } from "./IgePoint2d.js"
+import type { IgePoint3d } from "./IgePoint3d.js";
+import type { IgeCanvasRenderingContext2d } from "../../types/IgeCanvasRenderingContext2d.js"
+import type { IgeShape } from "../../types/IgeShape.js"
+import type { IgeShapeFunctionality } from "../../types/IgeShapeFunctionality.js"
 /**
  * Creates a new rectangle (x, y, width, height).
  */

@@ -26,13 +26,13 @@ export declare class b2Jacobian {
     Set(x: XY, a1: number, a2: number): b2Jacobian;
 }
 export declare class b2JointEdge {
-    private _other;
-    get other(): b2Body;
-    set other(value: b2Body);
     readonly joint: b2Joint;
     prev: b2JointEdge | null;
     next: b2JointEdge | null;
     constructor(joint: b2Joint);
+    private _other;
+    get other(): b2Body;
+    set other(value: b2Body);
     Reset(): void;
 }
 export interface b2IJointDef {
@@ -59,6 +59,10 @@ export declare function b2AngularStiffness(def: {
     damping: number;
 }, frequencyHertz: number, dampingRatio: number, bodyA: b2Body, bodyB: b2Body): void;
 export declare abstract class b2Joint {
+    private static Draw_s_p1;
+    private static Draw_s_p2;
+    private static Draw_s_color;
+    private static Draw_s_c;
     readonly m_type: b2JointType;
     m_prev: b2Joint | null;
     m_next: b2Joint | null;
@@ -85,10 +89,6 @@ export declare abstract class b2Joint {
     GetCollideConnected(): boolean;
     Dump(log: (format: string, ...args: any[]) => void): void;
     ShiftOrigin(newOrigin: XY): void;
-    private static Draw_s_p1;
-    private static Draw_s_p2;
-    private static Draw_s_color;
-    private static Draw_s_c;
     Draw(draw: b2Draw): void;
     abstract InitVelocityConstraints(data: b2SolverData): void;
     abstract SolveVelocityConstraints(data: b2SolverData): void;

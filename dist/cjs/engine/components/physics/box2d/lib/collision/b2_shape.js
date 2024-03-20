@@ -18,14 +18,14 @@
 */
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.b2Shape = exports.b2ShapeType = exports.b2MassData = void 0;
-const b2_math_js_1 = require("../common/b2_math.js");
+const b2_math_1 = require("../common/b2_math");
 /// This holds the mass data computed for a shape.
 class b2MassData {
     constructor() {
         /// The mass of the shape, usually in kilograms.
         this.mass = 0;
         /// The position of the shape's centroid relative to the shape's origin.
-        this.center = new b2_math_js_1.b2Vec2(0, 0);
+        this.center = new b2_math_1.b2Vec2(0, 0);
         /// The rotational inertia of the shape about the local origin.
         this.I = 0;
     }

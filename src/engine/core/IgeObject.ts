@@ -1,47 +1,47 @@
-import type { IgeNetIoClientController } from "@/export/exports";
-import type { IgeNetIoServerController } from "@/export/exports";
-import { arrPull, newIdHex, toIso } from "@/export/exports";
-import type { IgeComponent, IgeTexture, IgeTileMap2d, IgeViewport } from "@/export/exports";
+import { ige } from "@/engine/instance";
+import type { IgeComponent } from "@/engine/core/IgeComponent";
+import { IgeDummyCanvas } from "@/engine/core/IgeDummyCanvas";
+import { IgeEventingClass } from "@/engine/core/IgeEventingClass";
+import { IgeMatrix2d } from "@/engine/core/IgeMatrix2d";
+import { IgePoint2d } from "@/engine/core/IgePoint2d";
+import { IgePoint3d } from "@/engine/core/IgePoint3d";
+import { IgePoly2d } from "@/engine/core/IgePoly2d";
+import { IgeRect } from "@/engine/core/IgeRect";
+import type { IgeTexture } from "@/engine/core/IgeTexture";
+import type { IgeTileMap2d } from "@/engine/core/IgeTileMap2d";
+import type { IgeViewport } from "@/engine/core/IgeViewport";
+import type { IgeNetIoClientController } from "@/engine/network/client/IgeNetIoClientController";
+import type { IgeNetIoServerController } from "@/engine/network/server/IgeNetIoServerController";
+import { arrPull } from "@/engine/utils/arrays";
+import { isClient, isServer } from "@/engine/utils/clientServer";
+import { newIdHex } from "@/engine/utils/ids";
+import { toIso } from "@/engine/utils/maths";
+import type {
+	IgeBehaviourType
+} from "@/enums";
 import {
-	IgeDummyCanvas,
-	IgeEventingClass,
-	IgeMatrix2d,
-	IgePoint2d,
-	IgePoint3d,
-	IgePoly2d,
-	IgeRect
-} from "@/export/exports";
-import { ige, isClient, isServer } from "@/export/exports";
-import type { IgeBehaviourType } from "@/export/exports";
-import {
-	IGE_NETWORK_STREAM_CREATE,
-	IGE_NETWORK_STREAM_DESTROY,
+	IGE_NETWORK_STREAM_CREATE, IGE_NETWORK_STREAM_DESTROY,
 	IgeIsometricDepthSortMode,
 	IgeMountMode,
 	IgeStreamMode
-} from "@/export/exports";
-import type {
-	IgeGenericClass,
-	IgeBehaviourStore,
-	IgeCanAcceptComponents,
-	IgeCanRegisterByCategory,
-	IgeCanRegisterById,
-	IgeCanvasRenderingContext2d,
-	IgeChildSortFunction,
-	IgeDepthSortObject,
-	IgeEntityBehaviourMethod,
-	IgeInputEventHandler,
-	IgePoint,
-	IgeSmartTexture,
-	IgeStreamCreateMessageData,
-	IgeTimeStreamPacket,
-	IgeTimeStreamTransformData
-} from "@/export/exports";
+} from "@/enums";
+import type { IgeBehaviourStore } from "@/types/IgeBehaviourStore";
+import type { IgeCanAcceptComponents } from "@/types/IgeCanAcceptComponents";
+import type { IgeCanRegisterByCategory } from "@/types/IgeCanRegisterByCategory";
+import type { IgeCanRegisterById } from "@/types/IgeCanRegisterById";
+import type { IgeCanvasRenderingContext2d } from "@/types/IgeCanvasRenderingContext2d";
+import type { IgeChildSortFunction } from "@/types/IgeChildSortFunction";
+import type { IgeDepthSortObject } from "@/types/IgeDepthSortObject";
+import type { IgeEntityBehaviourMethod } from "@/types/IgeEntityBehaviour";
+import type { IgeGenericClass } from "@/types/IgeGenericClass";
+import type { IgeInputEventHandler } from "@/types/IgeInputEventHandler";
+import type { IgeStreamCreateMessageData } from "@/types/IgeNetworkStream";
+import type { IgePoint } from "@/types/IgePoint";
+import type { IgeSmartTexture } from "@/types/IgeSmartTexture";
+import type { IgeTimeStreamPacket, IgeTimeStreamTransformData } from "@/types/IgeTimeStream";
 import type { IgeTriggerPolygonFunctionName } from "@/types/IgeTriggerPolygonFunctionName";
 
-export class IgeObject
-	extends IgeEventingClass
-	implements IgeCanRegisterById, IgeCanRegisterByCategory, IgeCanAcceptComponents {
+export class IgeObject extends IgeEventingClass implements IgeCanRegisterById, IgeCanRegisterByCategory, IgeCanAcceptComponents {
 	classId = "IgeObject";
 	_id?: string;
 	_idRegistered: boolean = false;
@@ -332,13 +332,10 @@ export class IgeObject
 	 *     entity.drawBounds(false);
 	 * @example #Get the current flag value
 	 *     console.log(entity.drawBounds());
-	 * @return {*}
-	 * @param val
-	 * @param recursive
 	 */
-	drawBounds (val: boolean, recursive?: boolean): this;
 	drawBounds (): boolean;
-	drawBounds (val?: boolean, recursive: boolean = false) {
+	drawBounds (val: boolean, recursive?: boolean): this;
+	drawBounds (val?: boolean, recursive: boolean = true) {
 		if (val === undefined) {
 			return this._drawBounds;
 		}

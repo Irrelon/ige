@@ -1,14 +1,13 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.IgeInputComponent = void 0;
-const exports_1 = require("../../export/exports.js");
-const exports_2 = require("../../export/exports.js");
-const exports_3 = require("../../export/exports.js");
-const exports_4 = require("../../export/exports.js");
-const exports_5 = require("../../export/exports.js");
-const exports_6 = require("../../export/exports.js");
-const exports_7 = require("../../export/exports.js");
-class IgeInputComponent extends exports_1.IgeEventingClass {
+const IgeInputControlMap_1 = require("./IgeInputControlMap.js");
+const IgeEventingClass_1 = require("../core/IgeEventingClass.js");
+const IgePoint3d_1 = require("../core/IgePoint3d.js");
+const instance_1 = require("../instance.js");
+const general_1 = require("../utils/general.js");
+const enums_1 = require("../../enums/index.js");
+class IgeInputComponent extends IgeEventingClass_1.IgeEventingClass {
     constructor() {
         super();
         this.classId = "IgeInputComponent";
@@ -147,28 +146,28 @@ class IgeInputComponent extends exports_1.IgeEventingClass {
             }
             // Update the pointer position within the viewports
             this._updatePointerData(event);
-            const mx = event.igeX - exports_3.ige.engine._bounds2d.x2;
-            const my = event.igeY - exports_3.ige.engine._bounds2d.y2;
+            const mx = event.igeX - instance_1.ige.engine._bounds2d.x2;
+            const my = event.igeY - instance_1.ige.engine._bounds2d.y2;
             if (event.button === 0) {
-                this._updateState(exports_7.IgeInputDevice.pointer1, exports_7.IgeInputPointerMap.button0, true);
+                this._updateState(enums_1.IgeInputDevice.pointer1, enums_1.IgeInputPointerMap.button0, true);
             }
             if (event.button === 1) {
-                this._updateState(exports_7.IgeInputDevice.pointer1, exports_7.IgeInputPointerMap.button1, true);
+                this._updateState(enums_1.IgeInputDevice.pointer1, enums_1.IgeInputPointerMap.button1, true);
             }
             if (event.button === 2) {
-                this._updateState(exports_7.IgeInputDevice.pointer1, exports_7.IgeInputPointerMap.button2, true);
+                this._updateState(enums_1.IgeInputDevice.pointer1, enums_1.IgeInputPointerMap.button2, true);
             }
             if (event.button === 3) {
-                this._updateState(exports_7.IgeInputDevice.pointer1, exports_7.IgeInputPointerMap.button3, true);
+                this._updateState(enums_1.IgeInputDevice.pointer1, enums_1.IgeInputPointerMap.button3, true);
             }
             if (event.button === 4) {
-                this._updateState(exports_7.IgeInputDevice.pointer1, exports_7.IgeInputPointerMap.button4, true);
+                this._updateState(enums_1.IgeInputDevice.pointer1, enums_1.IgeInputPointerMap.button4, true);
             }
             if (event.button === 5) {
-                this._updateState(exports_7.IgeInputDevice.pointer1, exports_7.IgeInputPointerMap.button5, true);
+                this._updateState(enums_1.IgeInputDevice.pointer1, enums_1.IgeInputPointerMap.button5, true);
             }
             this.pointerDown = event;
-            if (this.emit("prePointerDown", event, mx, my, event.button) !== exports_6.IgeEventReturnFlag.cancel) {
+            if (this.emit("prePointerDown", event, mx, my, event.button) !== enums_1.IgeEventReturnFlag.cancel) {
                 this.queueEvent(() => {
                     this.emit("pointerDown", event, mx, my, event.button);
                 });
@@ -185,28 +184,28 @@ class IgeInputComponent extends exports_1.IgeEventingClass {
             }
             // Update the pointer position within the viewports
             this._updatePointerData(event);
-            const mx = event.igeX - exports_3.ige.engine._bounds2d.x2;
-            const my = event.igeY - exports_3.ige.engine._bounds2d.y2;
+            const mx = event.igeX - instance_1.ige.engine._bounds2d.x2;
+            const my = event.igeY - instance_1.ige.engine._bounds2d.y2;
             if (event.button === 0) {
-                this._updateState(exports_7.IgeInputDevice.pointer1, exports_7.IgeInputPointerMap.button0, false);
+                this._updateState(enums_1.IgeInputDevice.pointer1, enums_1.IgeInputPointerMap.button0, false);
             }
             if (event.button === 1) {
-                this._updateState(exports_7.IgeInputDevice.pointer1, exports_7.IgeInputPointerMap.button1, false);
+                this._updateState(enums_1.IgeInputDevice.pointer1, enums_1.IgeInputPointerMap.button1, false);
             }
             if (event.button === 2) {
-                this._updateState(exports_7.IgeInputDevice.pointer1, exports_7.IgeInputPointerMap.button2, false);
+                this._updateState(enums_1.IgeInputDevice.pointer1, enums_1.IgeInputPointerMap.button2, false);
             }
             if (event.button === 3) {
-                this._updateState(exports_7.IgeInputDevice.pointer1, exports_7.IgeInputPointerMap.button3, false);
+                this._updateState(enums_1.IgeInputDevice.pointer1, enums_1.IgeInputPointerMap.button3, false);
             }
             if (event.button === 4) {
-                this._updateState(exports_7.IgeInputDevice.pointer1, exports_7.IgeInputPointerMap.button4, false);
+                this._updateState(enums_1.IgeInputDevice.pointer1, enums_1.IgeInputPointerMap.button4, false);
             }
             if (event.button === 5) {
-                this._updateState(exports_7.IgeInputDevice.pointer1, exports_7.IgeInputPointerMap.button5, false);
+                this._updateState(enums_1.IgeInputDevice.pointer1, enums_1.IgeInputPointerMap.button5, false);
             }
             this.pointerUp = event;
-            if (this.emit("prePointerUp", event, mx, my, event.button) !== exports_6.IgeEventReturnFlag.cancel) {
+            if (this.emit("prePointerUp", event, mx, my, event.button) !== enums_1.IgeEventReturnFlag.cancel) {
                 this.queueEvent(() => {
                     this.emit("pointerUp", event, mx, my, event.button);
                 });
@@ -218,28 +217,28 @@ class IgeInputComponent extends exports_1.IgeEventingClass {
             }
             // Update the pointer position within the viewports
             this._updatePointerData(event);
-            const mx = event.igeX - exports_3.ige.engine._bounds2d.x2;
-            const my = event.igeY - exports_3.ige.engine._bounds2d.y2;
+            const mx = event.igeX - instance_1.ige.engine._bounds2d.x2;
+            const my = event.igeY - instance_1.ige.engine._bounds2d.y2;
             if (event.button === 0) {
-                this._updateState(exports_7.IgeInputDevice.pointer1, exports_7.IgeInputPointerMap.button0, false);
+                this._updateState(enums_1.IgeInputDevice.pointer1, enums_1.IgeInputPointerMap.button0, false);
             }
             if (event.button === 1) {
-                this._updateState(exports_7.IgeInputDevice.pointer1, exports_7.IgeInputPointerMap.button1, false);
+                this._updateState(enums_1.IgeInputDevice.pointer1, enums_1.IgeInputPointerMap.button1, false);
             }
             if (event.button === 2) {
-                this._updateState(exports_7.IgeInputDevice.pointer1, exports_7.IgeInputPointerMap.button2, false);
+                this._updateState(enums_1.IgeInputDevice.pointer1, enums_1.IgeInputPointerMap.button2, false);
             }
             if (event.button === 3) {
-                this._updateState(exports_7.IgeInputDevice.pointer1, exports_7.IgeInputPointerMap.button3, false);
+                this._updateState(enums_1.IgeInputDevice.pointer1, enums_1.IgeInputPointerMap.button3, false);
             }
             if (event.button === 4) {
-                this._updateState(exports_7.IgeInputDevice.pointer1, exports_7.IgeInputPointerMap.button4, false);
+                this._updateState(enums_1.IgeInputDevice.pointer1, enums_1.IgeInputPointerMap.button4, false);
             }
             if (event.button === 5) {
-                this._updateState(exports_7.IgeInputDevice.pointer1, exports_7.IgeInputPointerMap.button5, false);
+                this._updateState(enums_1.IgeInputDevice.pointer1, enums_1.IgeInputPointerMap.button5, false);
             }
             this.contextMenu = event;
-            if (this.emit("preContextMenu", event, mx, my, event.button) !== exports_6.IgeEventReturnFlag.cancel) {
+            if (this.emit("preContextMenu", event, mx, my, event.button) !== enums_1.IgeEventReturnFlag.cancel) {
                 this.queueEvent(() => {
                     this.emit("contextMenu", event, mx, my, event.button);
                 });
@@ -252,13 +251,13 @@ class IgeInputComponent extends exports_1.IgeEventingClass {
          */
         this._pointerMove = (event) => {
             // Update the pointer position within the viewports
-            exports_3.ige._pointerOverVp = this._updatePointerData(event);
-            const mx = event.igeX - exports_3.ige.engine._bounds2d.x2;
-            const my = event.igeY - exports_3.ige.engine._bounds2d.y2;
-            this._updateState(exports_7.IgeInputDevice.pointer1, exports_7.IgeInputPointerMap.x, mx);
-            this._updateState(exports_7.IgeInputDevice.pointer1, exports_7.IgeInputPointerMap.y, my);
+            instance_1.ige._pointerOverVp = this._updatePointerData(event);
+            const mx = event.igeX - instance_1.ige.engine._bounds2d.x2;
+            const my = event.igeY - instance_1.ige.engine._bounds2d.y2;
+            this._updateState(enums_1.IgeInputDevice.pointer1, enums_1.IgeInputPointerMap.x, mx);
+            this._updateState(enums_1.IgeInputDevice.pointer1, enums_1.IgeInputPointerMap.y, my);
             this.pointerMove = event;
-            if (this.emit("prePointerMove", event, mx, my, event.button) !== exports_6.IgeEventReturnFlag.cancel) {
+            if (this.emit("prePointerMove", event, mx, my, event.button) !== enums_1.IgeEventReturnFlag.cancel) {
                 this.queueEvent(() => {
                     this.emit("pointerMove", event, mx, my, event.button);
                 });
@@ -275,43 +274,43 @@ class IgeInputComponent extends exports_1.IgeEventingClass {
             }
             // Update the pointer position within the viewports
             this._updatePointerData(event);
-            const mx = event.igeX - exports_3.ige.engine._bounds2d.x2;
-            const my = event.igeY - exports_3.ige.engine._bounds2d.y2;
+            const mx = event.igeX - instance_1.ige.engine._bounds2d.x2;
+            const my = event.igeY - instance_1.ige.engine._bounds2d.y2;
             if (event.deltaX !== 0) {
-                this._updateState(exports_7.IgeInputDevice.pointer1, exports_7.IgeInputPointerMap.wheelX, event.deltaX);
+                this._updateState(enums_1.IgeInputDevice.pointer1, enums_1.IgeInputPointerMap.wheelX, event.deltaX);
                 if (event.deltaX > 0) {
-                    this._updateState(exports_7.IgeInputDevice.pointer1, exports_7.IgeInputPointerMap.wheelRight, true);
-                    this._updateState(exports_7.IgeInputDevice.pointer1, exports_7.IgeInputPointerMap.wheelLeft, false);
+                    this._updateState(enums_1.IgeInputDevice.pointer1, enums_1.IgeInputPointerMap.wheelRight, true);
+                    this._updateState(enums_1.IgeInputDevice.pointer1, enums_1.IgeInputPointerMap.wheelLeft, false);
                 }
                 else {
-                    this._updateState(exports_7.IgeInputDevice.pointer1, exports_7.IgeInputPointerMap.wheelLeft, true);
-                    this._updateState(exports_7.IgeInputDevice.pointer1, exports_7.IgeInputPointerMap.wheelRight, false);
+                    this._updateState(enums_1.IgeInputDevice.pointer1, enums_1.IgeInputPointerMap.wheelLeft, true);
+                    this._updateState(enums_1.IgeInputDevice.pointer1, enums_1.IgeInputPointerMap.wheelRight, false);
                 }
             }
             if (event.deltaY !== 0) {
-                this._updateState(exports_7.IgeInputDevice.pointer1, exports_7.IgeInputPointerMap.wheelY, event.deltaY);
+                this._updateState(enums_1.IgeInputDevice.pointer1, enums_1.IgeInputPointerMap.wheelY, event.deltaY);
                 if (event.deltaY > 0) {
-                    this._updateState(exports_7.IgeInputDevice.pointer1, exports_7.IgeInputPointerMap.wheelUp, true);
-                    this._updateState(exports_7.IgeInputDevice.pointer1, exports_7.IgeInputPointerMap.wheelDown, false);
+                    this._updateState(enums_1.IgeInputDevice.pointer1, enums_1.IgeInputPointerMap.wheelUp, true);
+                    this._updateState(enums_1.IgeInputDevice.pointer1, enums_1.IgeInputPointerMap.wheelDown, false);
                 }
                 else {
-                    this._updateState(exports_7.IgeInputDevice.pointer1, exports_7.IgeInputPointerMap.wheelDown, true);
-                    this._updateState(exports_7.IgeInputDevice.pointer1, exports_7.IgeInputPointerMap.wheelUp, false);
+                    this._updateState(enums_1.IgeInputDevice.pointer1, enums_1.IgeInputPointerMap.wheelDown, true);
+                    this._updateState(enums_1.IgeInputDevice.pointer1, enums_1.IgeInputPointerMap.wheelUp, false);
                 }
             }
             if (event.deltaZ !== 0) {
-                this._updateState(exports_7.IgeInputDevice.pointer1, exports_7.IgeInputPointerMap.wheelZ, event.deltaZ);
+                this._updateState(enums_1.IgeInputDevice.pointer1, enums_1.IgeInputPointerMap.wheelZ, event.deltaZ);
                 if (event.deltaZ > 0) {
-                    this._updateState(exports_7.IgeInputDevice.pointer1, exports_7.IgeInputPointerMap.wheelBackward, true);
-                    this._updateState(exports_7.IgeInputDevice.pointer1, exports_7.IgeInputPointerMap.wheelForward, false);
+                    this._updateState(enums_1.IgeInputDevice.pointer1, enums_1.IgeInputPointerMap.wheelBackward, true);
+                    this._updateState(enums_1.IgeInputDevice.pointer1, enums_1.IgeInputPointerMap.wheelForward, false);
                 }
                 else {
-                    this._updateState(exports_7.IgeInputDevice.pointer1, exports_7.IgeInputPointerMap.wheelForward, true);
-                    this._updateState(exports_7.IgeInputDevice.pointer1, exports_7.IgeInputPointerMap.wheelBackward, false);
+                    this._updateState(enums_1.IgeInputDevice.pointer1, enums_1.IgeInputPointerMap.wheelForward, true);
+                    this._updateState(enums_1.IgeInputDevice.pointer1, enums_1.IgeInputPointerMap.wheelBackward, false);
                 }
             }
             this.pointerWheel = event;
-            if (this.emit("prePointerWheel", event, mx, my, event.button) !== exports_6.IgeEventReturnFlag.cancel) {
+            if (this.emit("prePointerWheel", event, mx, my, event.button) !== enums_1.IgeEventReturnFlag.cancel) {
                 this.queueEvent(() => {
                     this.emit("pointerWheel", event, mx, my, event.button);
                 });
@@ -323,11 +322,11 @@ class IgeInputComponent extends exports_1.IgeEventingClass {
          * @private
          */
         this._keyDown = (event) => {
-            this._updateState(exports_7.IgeInputDevice.keyboard, exports_7.IgeInputKeyboardMap[event.code], true);
+            this._updateState(enums_1.IgeInputDevice.keyboard, enums_1.IgeInputKeyboardMap[event.code], true);
             if (this._debug) {
                 console.log("Key Down", event);
             }
-            if (this.emit("preKeyDown", event, event.code) !== exports_6.IgeEventReturnFlag.cancel) {
+            if (this.emit("preKeyDown", event, event.code) !== enums_1.IgeEventReturnFlag.cancel) {
                 this.queueEvent(() => {
                     this.emit("keyDown", event, event.code);
                 });
@@ -339,11 +338,11 @@ class IgeInputComponent extends exports_1.IgeEventingClass {
          * @private
          */
         this._keyUp = (event) => {
-            this._updateState(exports_7.IgeInputDevice.keyboard, exports_7.IgeInputKeyboardMap[event.code], false);
+            this._updateState(enums_1.IgeInputDevice.keyboard, enums_1.IgeInputKeyboardMap[event.code], false);
             if (this._debug) {
                 console.log("Key Up", event);
             }
-            if (this.emit("preKeyUp", event, event.code) !== exports_6.IgeEventReturnFlag.cancel) {
+            if (this.emit("preKeyUp", event, event.code) !== enums_1.IgeEventReturnFlag.cancel) {
                 this.queueEvent(() => {
                     this.emit("keyUp", event, event.code);
                 });
@@ -360,13 +359,13 @@ class IgeInputComponent extends exports_1.IgeEventingClass {
          */
         this._updatePointerData = (event) => {
             // Loop the viewports and check if the pointer is inside
-            const arr = exports_3.ige.engine._children;
-            const mx = event.igeX - exports_3.ige.engine._bounds2d.x2 - exports_3.ige.engine._translate.x;
-            const my = event.igeY - exports_3.ige.engine._bounds2d.y2 - exports_3.ige.engine._translate.y;
+            const arr = instance_1.ige.engine._children;
+            const mx = event.igeX - instance_1.ige.engine._bounds2d.x2 - instance_1.ige.engine._translate.x;
+            const my = event.igeY - instance_1.ige.engine._bounds2d.y2 - instance_1.ige.engine._translate.y;
             let arrCount = arr.length;
             let vpUpdated;
-            exports_3.ige._pointerPos.x = mx;
-            exports_3.ige._pointerPos.y = my;
+            instance_1.ige._pointerPos.x = mx;
+            instance_1.ige._pointerPos.y = my;
             while (arrCount--) {
                 const vp = arr[arr.length - (arrCount + 1)];
                 // Check if the pointer is inside this viewport's bounds
@@ -374,7 +373,7 @@ class IgeInputComponent extends exports_1.IgeEventingClass {
                 if (mx > vp._translate.x - vp._bounds2d.x / 2 && mx < vp._translate.x + vp._bounds2d.x / 2) {
                     if (my > vp._translate.y - vp._bounds2d.y / 2 && my < vp._translate.y + vp._bounds2d.y / 2) {
                         // Pointer is inside this viewport
-                        vp._pointerPos = new exports_2.IgePoint3d(Math.floor((mx - vp._translate.x) / vp.camera._scale.x + vp.camera._translate.x), Math.floor((my - vp._translate.y) / vp.camera._scale.y + vp.camera._translate.y), 0);
+                        vp._pointerPos = new IgePoint3d_1.IgePoint3d(Math.floor((mx - vp._translate.x) / vp.camera._scale.x + vp.camera._translate.x), Math.floor((my - vp._translate.y) / vp.camera._scale.y + vp.camera._translate.y), 0);
                         vpUpdated = vp;
                         // Record the viewport that this event occurred on in the
                         // event object
@@ -407,26 +406,26 @@ class IgeInputComponent extends exports_1.IgeEventingClass {
             }
         };
         this.tick();
-        this._ensureState(exports_7.IgeInputDevice.pointer1);
-        this._ensureState(exports_7.IgeInputDevice.keyboard);
-        this._ensureState(exports_7.IgeInputDevice.gamePad1);
-        this._ensureState(exports_7.IgeInputDevice.gamePad2);
-        this._ensureState(exports_7.IgeInputDevice.gamePad3);
-        this._ensureState(exports_7.IgeInputDevice.gamePad4);
-        this._ensureState(exports_7.IgeInputDevice.gamePad5);
-        this._ensureState(exports_7.IgeInputDevice.gamePad6);
-        this._ensureState(exports_7.IgeInputDevice.gamePad7);
-        this._ensureState(exports_7.IgeInputDevice.gamePad8);
+        this._ensureState(enums_1.IgeInputDevice.pointer1);
+        this._ensureState(enums_1.IgeInputDevice.keyboard);
+        this._ensureState(enums_1.IgeInputDevice.gamePad1);
+        this._ensureState(enums_1.IgeInputDevice.gamePad2);
+        this._ensureState(enums_1.IgeInputDevice.gamePad3);
+        this._ensureState(enums_1.IgeInputDevice.gamePad4);
+        this._ensureState(enums_1.IgeInputDevice.gamePad5);
+        this._ensureState(enums_1.IgeInputDevice.gamePad6);
+        this._ensureState(enums_1.IgeInputDevice.gamePad7);
+        this._ensureState(enums_1.IgeInputDevice.gamePad8);
         // Set default values for the pointer position
-        this._updateState(exports_7.IgeInputDevice.pointer1, exports_7.IgeInputPointerMap.x, 0);
-        this._updateState(exports_7.IgeInputDevice.pointer1, exports_7.IgeInputPointerMap.y, 0);
+        this._updateState(enums_1.IgeInputDevice.pointer1, enums_1.IgeInputPointerMap.x, 0);
+        this._updateState(enums_1.IgeInputDevice.pointer1, enums_1.IgeInputPointerMap.y, 0);
     }
     isReady() {
         return new Promise((resolve) => {
             setTimeout(() => {
-                exports_3.ige.dependencies.waitFor(["engine"], () => {
+                instance_1.ige.dependencies.waitFor(["engine"], () => {
                     // Register a post-tick behaviour with the engine
-                    exports_3.ige.engine.addBehaviour(exports_5.IgeBehaviourType.postTick, "inputComponentPostTick", this.tick.bind(this));
+                    instance_1.ige.engine.addBehaviour(enums_1.IgeBehaviourType.postTick, "inputComponentPostTick", this.tick.bind(this));
                     resolve();
                 });
             }, 1);
@@ -480,7 +479,7 @@ class IgeInputComponent extends exports_1.IgeEventingClass {
             wheelEvent.igePageX = wheelEvent.pageX;
             wheelEvent.igePageY = wheelEvent.pageY;
         }
-        const canvasPosition = (0, exports_1.getElementPosition)((_a = exports_3.ige.engine._renderer) === null || _a === void 0 ? void 0 : _a.canvasElement());
+        const canvasPosition = (0, general_1.getElementPosition)((_a = instance_1.ige.engine._renderer) === null || _a === void 0 ? void 0 : _a.canvasElement());
         event.igeX = event.igePageX - canvasPosition.left;
         event.igeY = event.igePageY - canvasPosition.top;
         this.emit("inputEvent", event);
@@ -492,7 +491,7 @@ class IgeInputComponent extends exports_1.IgeEventingClass {
      * @param inputMap
      */
     mapAction(actionCode, inputMap) {
-        this._controlMap[actionCode] = this._controlMap[actionCode] || new exports_4.IgeInputControlMap();
+        this._controlMap[actionCode] = this._controlMap[actionCode] || new IgeInputControlMap_1.IgeInputControlMap();
         for (let i = 0; i < inputMap.length; i++) {
             this._controlMap[actionCode].push(inputMap[i]);
         }
@@ -593,11 +592,11 @@ class IgeInputComponent extends exports_1.IgeEventingClass {
      */
     emit(eventName, ...data) {
         if (!this._eventListeners) {
-            return exports_6.IgeEventReturnFlag.none;
+            return enums_1.IgeEventReturnFlag.none;
         }
         const evc = this._eventControl;
         const id = "*";
-        let returnFlag = exports_6.IgeEventReturnFlag.none;
+        let returnFlag = enums_1.IgeEventReturnFlag.none;
         this._eventsEmitting = true;
         if (this._eventListeners[eventName] && this._eventListeners[eventName][id]) {
             // Handle global emit
@@ -613,7 +612,7 @@ class IgeInputComponent extends exports_1.IgeEventingClass {
                 if (typeof tmpFunc === "function") {
                     const result = tmpFunc(...data);
                     if (result || evc._cancelled) {
-                        returnFlag = exports_6.IgeEventReturnFlag.cancel;
+                        returnFlag = enums_1.IgeEventReturnFlag.cancel;
                     }
                 }
             }

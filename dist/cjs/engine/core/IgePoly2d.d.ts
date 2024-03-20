@@ -1,5 +1,9 @@
-import type { IgeCanvasRenderingContext2d, IgePoint3d, IgeShapeFunctionality } from "../../export/exports.js"
-import { IgePoint2d, IgeRect, type IgeShape } from "../../export/exports.js"
+import { IgePoint2d } from "./IgePoint2d.js"
+import type { IgePoint3d } from "./IgePoint3d.js";
+import { IgeRect } from "./IgeRect.js"
+import type { IgeCanvasRenderingContext2d } from "../../types/IgeCanvasRenderingContext2d.js";
+import type { IgeShape } from "../../types/IgeShape.js"
+import type { IgeShapeFunctionality } from "../../types/IgeShapeFunctionality.js"
 /**
  * Creates a new 2d polygon made up of IgePoint2d instances.
  */

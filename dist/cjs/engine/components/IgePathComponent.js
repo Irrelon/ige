@@ -1,15 +1,13 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.IgePathComponent = void 0;
-const exports_1 = require("../../export/exports.js");
-const exports_2 = require("../../export/exports.js");
-const exports_3 = require("../../export/exports.js");
-const exports_4 = require("../../export/exports.js");
-const exports_5 = require("../../export/exports.js");
-const exports_6 = require("../../export/exports.js");
-const exports_7 = require("../../export/exports.js");
-const exports_8 = require("../../export/exports.js");
-const exports_9 = require("../../export/exports.js");
+const IgeComponent_1 = require("../core/IgeComponent.js");
+const IgePathNode_1 = require("../core/IgePathNode.js");
+const IgePoint3d_1 = require("../core/IgePoint3d.js");
+const instance_1 = require("../instance.js");
+const clientServer_1 = require("../utils/clientServer.js");
+const maths_1 = require("../utils/maths.js");
+const enums_1 = require("../../enums/index.js");
 const isoDirectionMap = {
     "E": "SE",
     "S": "SW",
@@ -26,7 +24,7 @@ const isoDirectionMap = {
  * the component will add a behaviour to the entity that is called each update()
  * and will operate to move the entity along a defined path.
  */
-class IgePathComponent extends exports_6.IgeComponent {
+class IgePathComponent extends IgeComponent_1.IgeComponent {
     constructor(entity, options) {
         super(entity, options);
         this.classId = "IgePathComponent";
@@ -154,7 +152,7 @@ class IgePathComponent extends exports_6.IgeComponent {
             if (!this._tileMap)
                 throw new Error("No tile map (IgeTileMap2d) assigned to IgePathComponent");
             // Create a new path
-            const path = this._finder.generate(this._tileMap, new exports_7.IgePathNode(fromX, fromY, fromZ, 0), new exports_7.IgePathNode(toX, toY, toZ, 0), this._tileChecker, this._allowSquare, this._allowDiagonal, findNearest);
+            const path = this._finder.generate(this._tileMap, new IgePathNode_1.IgePathNode(fromX, fromY, fromZ, 0), new IgePathNode_1.IgePathNode(toX, toY, toZ, 0), this._tileChecker, this._allowSquare, this._allowDiagonal, findNearest);
             this.addPoints(path);
             return this;
         };
@@ -183,11 +181,11 @@ class IgePathComponent extends exports_6.IgeComponent {
             let endPoint = this.getEndPoint(), shift = true;
             if (!endPoint) {
                 // There is no existing path, detect current tile position
-                endPoint = exports_7.IgePathNode.fromPoint3d(this._tileMap.pointToTile(this._entity._translate));
+                endPoint = IgePathNode_1.IgePathNode.fromPoint3d(this._tileMap.pointToTile(this._entity._translate));
                 shift = false;
             }
             // Create a new path
-            const path = this._finder.generate(this._tileMap, endPoint, new exports_7.IgePathNode(x, y, z, 0), this._tileChecker, this._allowSquare, this._allowDiagonal, allowInvalidDestination);
+            const path = this._finder.generate(this._tileMap, endPoint, new IgePathNode_1.IgePathNode(x, y, z, 0), this._tileChecker, this._allowSquare, this._allowDiagonal, allowInvalidDestination);
             if (shift) {
                 // Remove the first tile, it's the last one on the list already
                 path.shift();
@@ -217,11 +215,11 @@ class IgePathComponent extends exports_6.IgeComponent {
             let toPoint = this.getToPoint();
             if (!toPoint) {
                 // There is no existing path, detect current tile position
-                toPoint = exports_7.IgePathNode.fromPoint3d(this._tileMap.pointToTile(this._entity._translate));
+                toPoint = IgePathNode_1.IgePathNode.fromPoint3d(this._tileMap.pointToTile(this._entity._translate));
             }
             // Create a new path, making sure we include the points that we're currently working between
             const prePath = fromPoint ? [fromPoint] : [];
-            const path = this._finder.generate(this._tileMap, toPoint, new exports_7.IgePathNode(x, y, z, 0), this._tileChecker, this._allowSquare, this._allowDiagonal, allowInvalidDestination);
+            const path = this._finder.generate(this._tileMap, toPoint, new IgePathNode_1.IgePathNode(x, y, z, 0), this._tileChecker, this._allowSquare, this._allowDiagonal, allowInvalidDestination);
             // Do nothing if the new path is empty or invalid
             if (path.length > 0) {
                 this.clear();
@@ -280,7 +278,7 @@ class IgePathComponent extends exports_6.IgeComponent {
             const cell = this.getToPoint();
             if (cell) {
                 let dir = cell.direction;
-                if (this._entity._renderMode === exports_3.IgeEntityRenderMode.iso) {
+                if (this._entity._renderMode === enums_1.IgeEntityRenderMode.iso) {
                     // Convert direction for isometric
                     dir = isoDirectionMap[dir];
                 }
@@ -332,7 +330,7 @@ class IgePathComponent extends exports_6.IgeComponent {
                     // Need to round the restart co-ordinates as the speed could have changed with an entity halfway between
                     // points and this upsets the tile checker
                     this.set(Math.round(restartPoint.x), Math.round(restartPoint.y), restartPoint.z, endPoint.x, endPoint.y, endPoint.z);
-                    this.restart(startTime || exports_1.ige.engine._currentTime);
+                    this.restart(startTime || instance_1.ige.engine._currentTime);
                 }
                 return this;
             }
@@ -349,14 +347,14 @@ class IgePathComponent extends exports_6.IgeComponent {
             if (!this._active) {
                 this._active = true;
                 this._finished = false;
-                this._startTime = startTime || exports_1.ige.engine._currentTime;
+                this._startTime = startTime || instance_1.ige.engine._currentTime;
                 this._calculatePathData();
                 if (this._points.length > 1) {
                     this._nextPointToProcess = 0;
                     this._currentPointFrom = 0;
                     this._currentPointTo = 1;
                     startPoint = this._points[0];
-                    this.emit("started", this._entity, new exports_8.IgePoint3d(startPoint.x, startPoint.y, startPoint.z), this._startTime);
+                    this.emit("started", this._entity, new IgePoint3d_1.IgePoint3d(startPoint.x, startPoint.y, startPoint.z), this._startTime);
                 }
             }
             else {
@@ -376,7 +374,7 @@ class IgePathComponent extends exports_6.IgeComponent {
                 this._finished = false;
                 if (!this._active) {
                     this._active = true;
-                    this._startTime = startTime || exports_1.ige.engine._currentTime;
+                    this._startTime = startTime || instance_1.ige.engine._currentTime;
                     if (this._points.length > 1) {
                         this._currentPointFrom = this._nextPointToProcess;
                         this._currentPointTo = this._nextPointToProcess + 1;
@@ -399,7 +397,7 @@ class IgePathComponent extends exports_6.IgeComponent {
         this.pause = () => {
             this._active = false;
             this._paused = true;
-            this._pauseTime = exports_1.ige.engine._currentTime;
+            this._pauseTime = instance_1.ige.engine._currentTime;
             this.emit("paused", this._entity);
             return this;
         };
@@ -443,10 +441,10 @@ class IgePathComponent extends exports_6.IgeComponent {
             if (val !== undefined) {
                 this._drawPath = val;
                 if (val) {
-                    this._entity.addBehaviour(exports_2.IgeBehaviourType.preTick, "path", this._tickBehaviour);
+                    this._entity.addBehaviour(enums_1.IgeBehaviourType.preTick, "path", this._tickBehaviour);
                 }
                 else {
-                    this._entity.removeBehaviour(exports_2.IgeBehaviourType.preTick, "path");
+                    this._entity.removeBehaviour(enums_1.IgeBehaviourType.preTick, "path");
                 }
                 return this;
             }
@@ -486,10 +484,10 @@ class IgePathComponent extends exports_6.IgeComponent {
             return point.divide(this._entity._parent._tileWidth, this._entity._parent._tileHeight, this._entity._parent._tileDepth || 1);
         };
         this.transformPoint = (point) => {
-            return new exports_8.IgePoint3d(point.x + this._entity._parent._tileWidth / 2, point.y + this._entity._parent._tileHeight / 2, point.z);
+            return new IgePoint3d_1.IgePoint3d(point.x + this._entity._parent._tileWidth / 2, point.y + this._entity._parent._tileHeight / 2, point.z);
         };
         this.unTransformPoint = (point) => {
-            return new exports_8.IgePoint3d(point.x - this._entity._parent._tileWidth / 2, point.y - this._entity._parent._tileHeight / 2, point.z);
+            return new IgePoint3d_1.IgePoint3d(point.x - this._entity._parent._tileWidth / 2, point.y - this._entity._parent._tileHeight / 2, point.z);
         };
         /**
          * The behaviour method executed each tick.
@@ -505,7 +503,7 @@ class IgePathComponent extends exports_6.IgeComponent {
                 return;
             if (this._totalTime === undefined)
                 return;
-            const currentTime = exports_1.ige.engine._currentTime;
+            const currentTime = instance_1.ige.engine._currentTime;
             const progressTime = currentTime - this._startTime;
             // Check if we should be processing paths
             if (this._active &&
@@ -543,7 +541,7 @@ class IgePathComponent extends exports_6.IgeComponent {
                             newPoint = this.transformPoint(newPoint);
                             // We must translate the entity at a minimum once per point to ensure it's coords are correct if a new path starts
                             this._entity.translateToPoint(newPoint);
-                            this.emit("pointComplete", this._entity, new exports_8.IgePoint3d(pointCurrent.x, pointCurrent.y, pointCurrent.z), new exports_8.IgePoint3d(pointNext.x, pointNext.y, pointNext.z), p, p + 1, effectiveTime);
+                            this.emit("pointComplete", this._entity, new IgePoint3d_1.IgePoint3d(pointCurrent.x, pointCurrent.y, pointCurrent.z), new IgePoint3d_1.IgePoint3d(pointNext.x, pointNext.y, pointNext.z), p, p + 1, effectiveTime);
                             if (this._nextPointToProcess <= p) {
                                 // The path has restarted so bomb out and catch up next tick
                                 return;
@@ -559,7 +557,7 @@ class IgePathComponent extends exports_6.IgeComponent {
                             const previousPointFrom = pointArr[this._previousPointFrom];
                             pointFrom = pointArr[this._currentPointFrom];
                             pointTo = pointArr[this._currentPointTo];
-                            this.emit("pathRecalculated", this._entity, new exports_8.IgePoint3d(previousPointFrom.x, previousPointFrom.y, previousPointFrom.z), new exports_8.IgePoint3d(pointFrom.x, pointFrom.y, pointFrom.z));
+                            this.emit("pathRecalculated", this._entity, new IgePoint3d_1.IgePoint3d(previousPointFrom.x, previousPointFrom.y, previousPointFrom.z), new IgePoint3d_1.IgePoint3d(pointFrom.x, pointFrom.y, pointFrom.z));
                         }
                         if (dynamicResult === -1) {
                             // Failed to find a new dynamic path
@@ -589,7 +587,7 @@ class IgePathComponent extends exports_6.IgeComponent {
                         newPoint = this.transformPoint(newPoint);
                         // We must translate the entity at a minimum once per point to ensure it's coords are correct if a new path starts
                         this._entity.translateToPoint(newPoint);
-                        this.emit("pointComplete", this._entity, new exports_8.IgePoint3d(pointCurrent.x, pointCurrent.y, pointCurrent.z), new exports_8.IgePoint3d(pointNext.x, pointNext.y, pointNext.z), p, p + 1, effectiveTime);
+                        this.emit("pointComplete", this._entity, new IgePoint3d_1.IgePoint3d(pointCurrent.x, pointCurrent.y, pointCurrent.z), new IgePoint3d_1.IgePoint3d(pointNext.x, pointNext.y, pointNext.z), p, p + 1, effectiveTime);
                         if (this._nextPointToProcess <= p) {
                             // The path has restarted so bomb out and catch up next tick
                             return;
@@ -600,7 +598,7 @@ class IgePathComponent extends exports_6.IgeComponent {
                     this._finished = true;
                     effectiveTime = this._startTime + this._totalTime;
                     const previousPointFrom = pointArr[this._previousPointFrom];
-                    this.emit("pathComplete", this._entity, new exports_8.IgePoint3d(previousPointFrom.x, previousPointFrom.y, previousPointFrom.z), effectiveTime);
+                    this.emit("pathComplete", this._entity, new IgePoint3d_1.IgePoint3d(previousPointFrom.x, previousPointFrom.y, previousPointFrom.z), effectiveTime);
                 }
             }
             else if (this._active && this._totalDistance == 0 && !this._finished) {
@@ -618,14 +616,14 @@ class IgePathComponent extends exports_6.IgeComponent {
             const tileCheckData = this._tileMap.map.tileData(pointTo.x, pointTo.y) || null;
             if (!this._tileChecker(tileCheckData, pointTo.x, pointTo.y, pointTo.z, null, null, null, null, true)) {
                 // The new destination tile is blocked, recalculate path
-                newPathPoints = this._finder.generate(this._tileMap, new exports_7.IgePathNode(pointFrom.x, pointFrom.y, pointFrom.z, 0), new exports_7.IgePathNode(destinationPoint.x, destinationPoint.y, destinationPoint.z, 0), this._tileChecker, this._allowSquare, this._allowDiagonal, false);
+                newPathPoints = this._finder.generate(this._tileMap, new IgePathNode_1.IgePathNode(pointFrom.x, pointFrom.y, pointFrom.z, 0), new IgePathNode_1.IgePathNode(destinationPoint.x, destinationPoint.y, destinationPoint.z, 0), this._tileChecker, this._allowSquare, this._allowDiagonal, false);
                 if (newPathPoints.length) {
                     this.replacePoints(this._currentPointFrom, this._points.length - this._currentPointFrom, newPathPoints);
                     return true;
                 }
                 else {
                     // Cannot generate valid path, delete this path
-                    this.emit("dynamicFail", this._entity, new exports_8.IgePoint3d(pointFrom.x, pointFrom.y, pointFrom.z), new exports_8.IgePoint3d(destinationPoint.x, destinationPoint.y, destinationPoint.z));
+                    this.emit("dynamicFail", this._entity, new IgePoint3d_1.IgePoint3d(pointFrom.x, pointFrom.y, pointFrom.z), new IgePoint3d_1.IgePoint3d(destinationPoint.x, destinationPoint.y, destinationPoint.z));
                     this.clear();
                     return -1;
                 }
@@ -639,13 +637,13 @@ class IgePathComponent extends exports_6.IgeComponent {
                 startPoint = this._entity._translate.clone();
                 startPoint = this.unTransformPoint(startPoint);
                 startPoint = this.dividePoint(startPoint);
-                this._points[0] = exports_7.IgePathNode.fromPoint3d(startPoint);
+                this._points[0] = IgePathNode_1.IgePathNode.fromPoint3d(startPoint);
             }
             // Calculate total distance to travel
             for (i = 1; i < this._points.length; i++) {
                 pointFrom = this._points[i - 1];
                 pointTo = this._points[i];
-                pointFrom._distanceToNext = (0, exports_9.distance)(pointFrom.x, pointFrom.y, pointTo.x, pointTo.y);
+                pointFrom._distanceToNext = (0, maths_1.distance)(pointFrom.x, pointFrom.y, pointTo.x, pointTo.y);
                 totalDistance += Math.abs(pointFrom._distanceToNext);
                 pointFrom._deltaTimeToNext = pointFrom._distanceToNext / this._speed;
                 pointFrom._absoluteTimeToNext = totalDistance / this._speed;
@@ -665,7 +663,7 @@ class IgePathComponent extends exports_6.IgeComponent {
             this._calculatePathData();
         };
         this._tickBehaviour = (entity, ctx) => {
-            if (!exports_5.isClient)
+            if (!clientServer_1.isClient)
                 return;
             if (!this._tileMap)
                 throw new Error("No tile map (IgeTileMap2d) assigned to IgePathComponent");
@@ -682,10 +680,10 @@ class IgePathComponent extends exports_6.IgeComponent {
                     for (pathPointIndex = 0; pathPointIndex < currentPath.length; pathPointIndex++) {
                         ctx.strokeStyle = "#0096ff";
                         ctx.fillStyle = "#0096ff";
-                        tracePathPoint = new exports_8.IgePoint3d(currentPath[pathPointIndex].x, currentPath[pathPointIndex].y, currentPath[pathPointIndex].z);
+                        tracePathPoint = new IgePoint3d_1.IgePoint3d(currentPath[pathPointIndex].x, currentPath[pathPointIndex].y, currentPath[pathPointIndex].z);
                         tracePathPoint = this.multiplyPoint(tracePathPoint);
                         tracePathPoint = this.transformPoint(tracePathPoint);
-                        if (this._tileMap._mountMode === exports_4.IgeMountMode.iso) {
+                        if (this._tileMap._mountMode === enums_1.IgeMountMode.iso) {
                             tracePathPoint = tracePathPoint.toIso();
                         }
                         if (!oldTracePathPoint) {
@@ -797,9 +795,9 @@ class IgePathComponent extends exports_6.IgeComponent {
             const normalisedY = deltaY / magnitude;
             const normalisedZ = deltaZ / magnitude;
             if (deltaX !== 0 || deltaY !== 0 || deltaZ !== 0) {
-                return new exports_8.IgePoint3d(p1X + normalisedX * (speed * deltaTime), p1Y + normalisedY * (speed * deltaTime), p1Z + normalisedZ * (speed * deltaTime));
+                return new IgePoint3d_1.IgePoint3d(p1X + normalisedX * (speed * deltaTime), p1Y + normalisedY * (speed * deltaTime), p1Z + normalisedZ * (speed * deltaTime));
             }
-            return new exports_8.IgePoint3d(0, 0, 0);
+            return new IgePoint3d_1.IgePoint3d(0, 0, 0);
         };
         this._speed = 1 / 1000;
         this._nextPointToProcess = 0;
@@ -808,7 +806,7 @@ class IgePathComponent extends exports_6.IgeComponent {
         this._previousPointTo = 0;
         this._currentPointTo = 0;
         // Add the path behaviour to the entity
-        entity.addBehaviour(exports_2.IgeBehaviourType.preUpdate, "path", this._updateBehaviour);
+        entity.addBehaviour(enums_1.IgeBehaviourType.preUpdate, "path", this._updateBehaviour);
     }
 }
 exports.IgePathComponent = IgePathComponent;

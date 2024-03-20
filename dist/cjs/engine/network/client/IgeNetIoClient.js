@@ -1,8 +1,33 @@
 "use strict";
+// /**
+//  * Define the debug options object.
+//  * @type {Object}
+//  * @private
+//  */
+// NetIo._debug = {
+// 	_enabled: true,
+// 	_node: typeof (module) !== "undefined" && typeof (module.exports) !== "undefined",
+// 	_level: ["log", "warning", "error"],
+// 	_stacks: false,
+// 	_throwErrors: true,
+// 	_trace: {
+// 		setup: false,
+// 		enabled: false,
+// 		match: ""
+// 	},
+// 	enabled: function (val) {
+// 		if (val !== undefined) {
+// 			this._enabled = val;
+// 			return this;
+// 		}
+//
+// 		return this._enabled;
+// 	}
+// };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.IgeNetIoClient = void 0;
-const exports_1 = require("../../../export/exports.js");
-class IgeNetIoClient extends exports_1.IgeEventingClass {
+const IgeEventingClass_1 = require("../../core/IgeEventingClass.js");
+class IgeNetIoClient extends IgeEventingClass_1.IgeEventingClass {
     constructor(url, options = {
         connectionRetry: true,
         connectionRetryMax: 10,

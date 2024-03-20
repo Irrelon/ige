@@ -1,14 +1,14 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.IgeUiTooltip = void 0;
-const exports_1 = require("../../export/exports.js");
-const exports_2 = require("../../export/exports.js");
-const exports_3 = require("../../export/exports.js");
+const IgeFontEntity_1 = require("../core/IgeFontEntity.js");
+const IgeUiElement_1 = require("../core/IgeUiElement.js");
+const igeClassStore_1 = require("../utils/igeClassStore.js");
 /**
  * Provides a UI tooltip. Change properties (textBox, fonts, backgroundcolor)
  * at free will.
  */
-class IgeUiTooltip extends exports_2.IgeUiElement {
+class IgeUiTooltip extends IgeUiElement_1.IgeUiElement {
     /**
      * @constructor
      * @param parent Where the mousemove is captured i.e. on which element the tooltip should appear
@@ -42,19 +42,19 @@ class IgeUiTooltip extends exports_2.IgeUiElement {
         this._mouseout = (event) => {
             this.hide();
         };
-        this.titleBox = new exports_2.IgeUiElement().left(0).top(0).width(width).height(30).mount(this);
+        this.titleBox = new IgeUiElement_1.IgeUiElement().left(0).top(0).width(width).height(30).mount(this);
         this.titleBox.borderBottomColor("#ffffff");
         this.titleBox.borderBottomWidth(1);
-        this.textBox = new exports_2.IgeUiElement()
+        this.textBox = new IgeUiElement_1.IgeUiElement()
             .left(0)
             .top(30)
             .width(width)
             .height(height - 30)
             .mount(this);
-        this.fontEntityTitle = new exports_1.IgeFontEntity();
+        this.fontEntityTitle = new IgeFontEntity_1.IgeFontEntity();
         this.fontEntityTitle.left(5).top(-4).textAlignX(0).textAlignY(0).nativeFont("10pt Arial");
         this.fontEntityTitle.textLineSpacing(-5).mount(this.titleBox);
-        this.fontEntityText = new exports_1.IgeFontEntity();
+        this.fontEntityText = new IgeFontEntity_1.IgeFontEntity();
         this.fontEntityText.left(5).top(0).textAlignX(0).textAlignY(0).nativeFont("10pt Arial");
         this.fontEntityText.textLineSpacing(-5).mount(this.textBox);
         this.setContent(content);
@@ -156,4 +156,4 @@ class IgeUiTooltip extends exports_2.IgeUiElement {
     }
 }
 exports.IgeUiTooltip = IgeUiTooltip;
-(0, exports_3.registerClass)(IgeUiTooltip);
+(0, igeClassStore_1.registerClass)(IgeUiTooltip);

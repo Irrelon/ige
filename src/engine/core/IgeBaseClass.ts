@@ -1,4 +1,4 @@
-import { global } from "@/export/exports";
+import { global } from "@/engine/core/_global";
 
 const getIndentString = () => {
 	let indent = "";
@@ -126,8 +126,8 @@ export class IgeBaseClass {
 		if (global._globalLogIndent < 0) global._globalLogIndent = 0;
 	}
 
-	data(key: string, value: any): this;
-	data(key: string): any;
+	data (key: string, value: any): this;
+	data (key: string): any;
 	data (key: string, value?: any) {
 		if (value !== undefined) {
 			this._data = this._data || {};

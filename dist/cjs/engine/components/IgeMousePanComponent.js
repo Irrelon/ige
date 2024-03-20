@@ -1,14 +1,14 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.IgeMousePanComponent = void 0;
-const exports_1 = require("../../export/exports.js");
-const exports_2 = require("../../export/exports.js");
-const exports_3 = require("../../export/exports.js");
+const IgeComponent_1 = require("../core/IgeComponent.js");
+const IgePoint2d_1 = require("../core/IgePoint2d.js");
+const instance_1 = require("../instance.js");
 /**
  * When added to a viewport, automatically adds mouse panning
  * capabilities to the viewport's camera.
  */
-class IgeMousePanComponent extends exports_1.IgeComponent {
+class IgeMousePanComponent extends IgeComponent_1.IgeComponent {
     constructor() {
         super(...arguments);
         this.classId = "IgeMousePanComponent";
@@ -40,9 +40,9 @@ class IgeMousePanComponent extends exports_1.IgeComponent {
             if (!(!this._panStarted && this._enabled && event.igeViewport.id() === this._entity.id())) {
                 return;
             }
-            const curMousePos = exports_3.ige._pointerPos;
+            const curMousePos = instance_1.ige._pointerPos;
             this._panStartMouse = curMousePos.clone();
-            this._panStartCamera = new exports_2.IgePoint2d(this._entity.camera._translate.x, this._entity.camera._translate.y);
+            this._panStartCamera = new IgePoint2d_1.IgePoint2d(this._entity.camera._translate.x, this._entity.camera._translate.y);
             this._panPreStart = true;
             this._panStarted = false;
         };
@@ -59,7 +59,7 @@ class IgeMousePanComponent extends exports_1.IgeComponent {
             if (!this._panStartMouse || !this._panStartCamera) {
                 return;
             }
-            const curMousePos = exports_3.ige._pointerPos;
+            const curMousePos = instance_1.ige._pointerPos;
             const panCords = {
                 x: this._panStartMouse.x - curMousePos.x,
                 y: this._panStartMouse.y - curMousePos.y
@@ -121,7 +121,7 @@ class IgeMousePanComponent extends exports_1.IgeComponent {
             if (!this._panStartMouse || !this._panStartCamera) {
                 return;
             }
-            const curMousePos = exports_3.ige._pointerPos;
+            const curMousePos = instance_1.ige._pointerPos;
             const panCords = {
                 x: this._panStartMouse.x - curMousePos.x,
                 y: this._panStartMouse.y - curMousePos.y

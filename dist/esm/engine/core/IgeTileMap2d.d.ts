@@ -1,10 +1,10 @@
-import { IgeEntity } from "../../export/exports.js"
-import { IgeMap2d } from "../../export/exports.js"
-import type { IgeObject } from "../../export/exports.js"
-import { IgePoint2d } from "../../export/exports.js"
-import { IgePoint3d } from "../../export/exports.js"
-import { IgePoly2d } from "../../export/exports.js"
-import { IgeRect } from "../../export/exports.js"
+import { IgeEntity } from "./IgeEntity.js"
+import { IgeMap2d } from "./IgeMap2d.js";
+import type { IgeObject } from "./IgeObject.js"
+import { IgePoint2d } from "./IgePoint2d.js";
+import { IgePoint3d } from "./IgePoint3d.js"
+import { IgePoly2d } from "./IgePoly2d.js";
+import { IgeRect } from "./IgeRect.js"
 export type IgeTileMap2dScanRectCallback = (mapData: any, x: number, y: number) => boolean;
 export interface IgeTileMap2dSavedMap {
     data: any[][];

@@ -1,11 +1,11 @@
-import { IgeEntity } from "@/export/exports";
-import type { IgePoint3d } from "@/export/exports";
-import type { IgeRect } from "@/export/exports";
-import { IgeTween } from "@/export/exports";
-import type { IgeViewport } from "@/export/exports";
-import { registerClass } from "@/export/exports";
-import { IgeBehaviourType } from "@/export/exports";
-import type { IgeCanvasRenderingContext2d } from "@/export/exports";
+import { IgeEntity } from "@/engine/core/IgeEntity";
+import type { IgePoint3d } from "@/engine/core/IgePoint3d";
+import type { IgeRect } from "@/engine/core/IgeRect";
+import { IgeTween } from "@/engine/core/IgeTween";
+import type { IgeViewport } from "@/engine/core/IgeViewport";
+import { registerClass } from "@/engine/utils/igeClassStore";
+import { IgeBehaviourType } from "@/enums";
+import type { IgeCanvasRenderingContext2d } from "@/types/IgeCanvasRenderingContext2d";
 
 /**
  * Creates a new camera that will be attached to a viewport.

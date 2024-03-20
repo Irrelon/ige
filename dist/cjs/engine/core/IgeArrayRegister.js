@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.IgeArrayRegister = void 0;
-const exports_1 = require("../../export/exports.js");
+const arrays_1 = require("../utils/arrays.js");
 class IgeArrayRegister {
     constructor(field, registeredField) {
         this._store = {};
@@ -53,7 +53,7 @@ class IgeArrayRegister {
         if (!this._store[objFieldValue]) {
             return this;
         }
-        (0, exports_1.arrPull)(this._store[objFieldValue], obj);
+        (0, arrays_1.arrPull)(this._store[objFieldValue], obj);
         // @ts-ignore
         obj[this._registeredField] = false;
         return this;

@@ -19,20 +19,20 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.b2ContactManager = void 0;
 // DEBUG: import { b2Assert } from "../common/b2_settings.js"
-const b2_broad_phase_js_1 = require("../collision/b2_broad_phase.js");
-const b2_collision_js_1 = require("../collision/b2_collision.js");
-const b2_contact_factory_js_1 = require("./b2_contact_factory.js");
-const b2_body_js_1 = require("./b2_body.js");
-const b2_world_callbacks_js_1 = require("./b2_world_callbacks.js");
+const b2_broad_phase_1 = require("../collision/b2_broad_phase");
+const b2_collision_1 = require("../collision/b2_collision");
+const b2_contact_factory_1 = require("./b2_contact_factory");
+const b2_body_1 = require("./b2_body");
+const b2_world_callbacks_1 = require("./b2_world_callbacks");
 // Delegate of b2World.
 class b2ContactManager {
     constructor() {
-        this.m_broadPhase = new b2_broad_phase_js_1.b2BroadPhase();
+        this.m_broadPhase = new b2_broad_phase_1.b2BroadPhase();
         this.m_contactList = null;
         this.m_contactCount = 0;
-        this.m_contactFilter = b2_world_callbacks_js_1.b2ContactFilter.b2_defaultFilter;
-        this.m_contactListener = b2_world_callbacks_js_1.b2ContactListener.b2_defaultListener;
-        this.m_contactFactory = new b2_contact_factory_js_1.b2ContactFactory();
+        this.m_contactFilter = b2_world_callbacks_1.b2ContactFilter.b2_defaultFilter;
+        this.m_contactListener = b2_world_callbacks_1.b2ContactListener.b2_defaultListener;
+        this.m_contactFactory = new b2_contact_factory_1.b2ContactFactory();
     }
     // Broad-phase callback.
     AddPair(proxyA, proxyB) {
@@ -190,8 +190,8 @@ class b2ContactManager {
                 // Clear the filtering flag.
                 c.m_filterFlag = false;
             }
-            const activeA = bodyA.IsAwake() && bodyA.m_type !== b2_body_js_1.b2BodyType.b2_staticBody;
-            const activeB = bodyB.IsAwake() && bodyB.m_type !== b2_body_js_1.b2BodyType.b2_staticBody;
+            const activeA = bodyA.IsAwake() && bodyA.m_type !== b2_body_1.b2BodyType.b2_staticBody;
+            const activeB = bodyB.IsAwake() && bodyB.m_type !== b2_body_1.b2BodyType.b2_staticBody;
             // At least one body must be awake and it must be dynamic or kinematic.
             if (!activeA && !activeB) {
                 c = c.m_next;
@@ -199,7 +199,7 @@ class b2ContactManager {
             }
             const treeNodeA = fixtureA.m_proxies[indexA].treeNode;
             const treeNodeB = fixtureB.m_proxies[indexB].treeNode;
-            const overlap = (0, b2_collision_js_1.b2TestOverlapAABB)(treeNodeA.aabb, treeNodeB.aabb);
+            const overlap = (0, b2_collision_1.b2TestOverlapAABB)(treeNodeA.aabb, treeNodeB.aabb);
             // Here we destroy contacts that cease to overlap in the broad-phase.
             if (!overlap) {
                 const cNuke = c;

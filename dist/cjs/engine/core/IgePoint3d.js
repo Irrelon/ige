@@ -27,6 +27,13 @@ exports.IgePoint3d = void 0;
 let IgeTweenModule;
 Promise.resolve().then(() => __importStar(require("./IgeTween.js"))).then((module) => {
     IgeTweenModule = module.IgeTween;
+}).catch(() => {
+    class IgeTweenFake {
+        constructor() {
+            throw new Error("Could not dynamically load IgeTween class!");
+        }
+    }
+    IgeTweenModule = IgeTweenFake;
 });
 /**
  * Creates a new 3d point (x, y, z).

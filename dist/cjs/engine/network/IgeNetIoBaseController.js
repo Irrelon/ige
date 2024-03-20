@@ -1,8 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.IgeNetIoBaseController = void 0;
-const exports_1 = require("../../export/exports.js");
-class IgeNetIoBaseController extends exports_1.IgeEventingClass {
+const IgeEventingClass_1 = require("../core/IgeEventingClass.js");
+class IgeNetIoBaseController extends IgeEventingClass_1.IgeEventingClass {
     constructor() {
         super(...arguments);
         this.classId = "IgeNetIoBaseController";

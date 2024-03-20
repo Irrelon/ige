@@ -242,4 +242,3 @@ export * from "../engine/ui/IgeUiAutoFlow.js"
 // Finally, the core Ige class and then the global class instance
 //////////////////////////////////////////////////////////////////////
 export * from "../engine/core/Ige.js"
-export * from "../engine/instance.js"

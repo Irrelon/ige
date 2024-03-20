@@ -1,8 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.edgeDetect = void 0;
-const exports_1 = require("../../export/exports.js");
-const exports_2 = require("../../export/exports.js");
+const convolute_1 = require("./convolute.js");
+const igeFilters_1 = require("../utils/igeFilters.js");
 const edgeDetect = function (canvas, ctx, originalImage, texture, data) {
     if (!texture._filterImageDrawn || !data || !data.cumulative) {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -12,7 +12,7 @@ const edgeDetect = function (canvas, ctx, originalImage, texture, data) {
     const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
     if (!imgData)
         return;
-    const newData = (0, exports_1.convoluteHelper)(imgData, [-1, -1, -1, -1, -1, -1, 2, 2, 2, -1, -1, 2, 0, 2, -1, -1, 2, 2, 2, -1, -1, -1, -1, -1, -1], true);
+    const newData = (0, convolute_1.convoluteHelper)(imgData, [-1, -1, -1, -1, -1, -1, 2, 2, 2, -1, -1, 2, 0, 2, -1, -1, 2, 2, 2, -1, -1, -1, -1, -1, -1], true);
     if (!newData)
         return;
     const arr = newData.data;
@@ -31,4 +31,4 @@ const edgeDetect = function (canvas, ctx, originalImage, texture, data) {
     ctx.putImageData(newData, 0, 0);
 };
 exports.edgeDetect = edgeDetect;
-exports_2.igeFilters.registerFilter("edgeDetect", exports.edgeDetect);
+igeFilters_1.igeFilters.registerFilter("edgeDetect", exports.edgeDetect);

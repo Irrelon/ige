@@ -1,5 +1,3 @@
-import { IgeEventingClass } from "@/export/exports";
-
 // /**
 //  * Define the debug options object.
 //  * @type {Object}
@@ -25,6 +23,8 @@ import { IgeEventingClass } from "@/export/exports";
 // 		return this._enabled;
 // 	}
 // };
+
+import { IgeEventingClass } from "@/engine/core/IgeEventingClass";
 
 export interface IgeNetIoClientOptions {
 	connectionRetry?: boolean;

@@ -24,16 +24,16 @@ import { b2Sqrt, b2Vec2 } from "../common/b2_math.js"
  */
 export class b2GravityController extends b2Controller {
     /**
-   * Specifies the strength of the gravitiation force
-   */
+     * Specifies the strength of the gravitiation force
+     */
     G = 1;
     /**
-   * If true, gravity is proportional to r^-2, otherwise r^-1
-   */
+     * If true, gravity is proportional to r^-2, otherwise r^-1
+     */
     invSqr = true;
     /**
-   * @see b2Controller::Step
-   */
+     * @see b2Controller::Step
+     */
     Step(step) {
         if (this.invSqr) {
             for (let i = this.m_bodyList; i; i = i.nextBody) {
@@ -89,6 +89,7 @@ export class b2GravityController extends b2Controller {
         }
     }
     static Step_s_f = new b2Vec2();
-    Draw(draw) { }
+    Draw(draw) {
+    }
 }
 // #endif

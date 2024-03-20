@@ -1,13 +1,12 @@
-import { getElementPosition, IgeEventingClass } from "@/export/exports";
-import { IgePoint3d } from "@/export/exports";
-import type { IgeViewport } from "@/export/exports";
-import { ige } from "@/export/exports";
-import { IgeInputControlMap } from "@/export/exports";
-import { IgeBehaviourType } from "@/export/exports";
-import { IgeEventReturnFlag } from "@/export/exports";
-import { IgeInputDevice, IgeInputKeyboardMap, IgeInputPointerMap } from "@/export/exports";
-import type { IgeInputEventControl } from "@/export/exports";
-import type { IgeIsReadyPromise } from "@/export/exports";
+import { IgeInputControlMap } from "@/engine/components/IgeInputControlMap";
+import { IgeEventingClass } from "@/engine/core/IgeEventingClass";
+import { IgePoint3d } from "@/engine/core/IgePoint3d";
+import type { IgeViewport } from "@/engine/core/IgeViewport";
+import { ige } from "@/engine/instance";
+import { getElementPosition } from "@/engine/utils/general";
+import { IgeBehaviourType, IgeEventReturnFlag, IgeInputDevice, IgeInputKeyboardMap, IgeInputPointerMap } from "@/enums";
+import type { IgeInputEventControl } from "@/types/IgeInputEventControl";
+import type { IgeIsReadyPromise } from "@/types/IgeIsReadyPromise";
 
 export class IgeInputComponent extends IgeEventingClass implements IgeIsReadyPromise {
 	classId = "IgeInputComponent";

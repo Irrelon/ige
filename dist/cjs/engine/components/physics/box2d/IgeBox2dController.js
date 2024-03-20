@@ -1,31 +1,27 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.IgeBox2dController = void 0;
-const exports_1 = require("../../../../export/exports.js");
-const exports_2 = require("../../../../export/exports.js");
-const exports_3 = require("../../../../export/exports.js");
-const exports_4 = require("../../../../export/exports.js");
-const exports_5 = require("../../../../export/exports.js");
-const exports_6 = require("../../../../export/exports.js");
-const exports_7 = require("../../../../export/exports.js");
-const exports_8 = require("../../../../export/exports.js");
-const exports_9 = require("../../../../export/exports.js");
-const exports_10 = require("../../../../export/exports.js");
-const exports_11 = require("../../../../export/exports.js");
-const exports_12 = require("../../../../export/exports.js");
-const exports_13 = require("../../../../export/exports.js");
-const exports_14 = require("../../../../export/exports.js");
-const exports_15 = require("../../../../export/exports.js");
+const IgeEntityBox2d_1 = require("./IgeEntityBox2d.js");
+const b2_circle_shape_1 = require("./lib/collision/b2_circle_shape.js");
+const b2_polygon_shape_1 = require("./lib/collision/b2_polygon_shape.js");
+const b2_math_1 = require("./lib/common/b2_math.js");
+const b2_body_1 = require("./lib/dynamics/b2_body.js");
+const b2_fixture_1 = require("./lib/dynamics/b2_fixture.js");
+const b2_world_1 = require("./lib/dynamics/b2_world.js");
+const b2_world_callbacks_1 = require("./lib/dynamics/b2_world_callbacks.js");
+const IgeEventingClass_1 = require("../../../core/IgeEventingClass.js");
+const instance_1 = require("../../../instance.js");
+const enums_1 = require("../../../../enums/index.js");
 /**
  * The engine's Box2D component class.
  */
-class IgeBox2dController extends exports_7.IgeEventingClass {
+class IgeBox2dController extends IgeEventingClass_1.IgeEventingClass {
     constructor() {
         super();
         this.classId = "IgeBox2dController";
         this.componentId = "box2d";
         this._active = false;
-        this._renderMode = exports_15.IgeBox2dTimingMode.matchEngine;
+        this._renderMode = enums_1.IgeBox2dTimingMode.matchEngine;
         this._useWorker = false;
         this._sleep = true;
         this._scaleRatio = 1;
@@ -60,8 +56,8 @@ class IgeBox2dController extends exports_7.IgeEventingClass {
                     }
                 }
                 // Call the world step; frame-rate, velocity iterations, position iterations
-                if (this._renderMode === exports_15.IgeBox2dTimingMode.matchEngine) {
-                    this._world.Step(exports_8.ige.engine._tickDelta / 1000, 8, 3);
+                if (this._renderMode === enums_1.IgeBox2dTimingMode.matchEngine) {
+                    this._world.Step(instance_1.ige.engine._tickDelta / 1000, 8, 3);
                 }
                 else {
                     this._world.Step(1 / 60, 8, 3);
@@ -107,10 +103,10 @@ class IgeBox2dController extends exports_7.IgeEventingClass {
                 }
             }
         };
-        this._renderMode = exports_15.IgeBox2dTimingMode.matchEngine;
+        this._renderMode = enums_1.IgeBox2dTimingMode.matchEngine;
         this._sleep = true;
         this._scaleRatio = 30;
-        this._gravity = new exports_9.b2Vec2(0, 0);
+        this._gravity = new b2_math_1.b2Vec2(0, 0);
         this._removeWhenReady = [];
     }
     /**
@@ -128,8 +124,8 @@ class IgeBox2dController extends exports_7.IgeEventingClass {
             return;
         }
         // Add the box2D behaviour to the engine
-        if (this._renderMode === exports_15.IgeBox2dTimingMode.matchEngine) {
-            exports_8.ige.engine.addBehaviour(exports_12.IgeBehaviourType.preUpdate, "box2dStep", this._behaviour);
+        if (this._renderMode === enums_1.IgeBox2dTimingMode.matchEngine) {
+            instance_1.ige.engine.addBehaviour(enums_1.IgeBehaviourType.preUpdate, "box2dStep", this._behaviour);
         }
         else {
             this._intervalTimer = setInterval(this._behaviour, 1000 / 60);
@@ -144,8 +140,8 @@ class IgeBox2dController extends exports_7.IgeEventingClass {
         }
         this._active = false;
         // Remove the box2D behaviour from the engine
-        if (this._renderMode === exports_15.IgeBox2dTimingMode.matchEngine) {
-            exports_8.ige.engine.removeBehaviour(exports_12.IgeBehaviourType.preUpdate, "box2dStep");
+        if (this._renderMode === enums_1.IgeBox2dTimingMode.matchEngine) {
+            instance_1.ige.engine.removeBehaviour(enums_1.IgeBehaviourType.preUpdate, "box2dStep");
         }
         else {
             clearInterval(this._intervalTimer);
@@ -200,7 +196,7 @@ class IgeBox2dController extends exports_7.IgeEventingClass {
     }
     gravity(x, y) {
         if (x !== undefined && y !== undefined) {
-            this._gravity = new exports_9.b2Vec2(x, y);
+            this._gravity = new b2_math_1.b2Vec2(x, y);
             return this;
         }
         return this._gravity;
@@ -217,7 +213,7 @@ class IgeBox2dController extends exports_7.IgeEventingClass {
      * @return {*}
      */
     createWorld() {
-        this._world = new exports_11.b2World(this._gravity);
+        this._world = new b2_world_1.b2World(this._gravity);
         this.log("World created");
         return this;
     }
@@ -227,7 +223,7 @@ class IgeBox2dController extends exports_7.IgeEventingClass {
      * @return {b2FixtureDef}
      */
     createFixture(params) {
-        const tempDef = new exports_5.b2FixtureDef();
+        const tempDef = new b2_fixture_1.b2FixtureDef();
         for (const param in params) {
             if (param !== "shape" && param !== "filter") {
                 tempDef[param] = params[param];
@@ -246,18 +242,18 @@ class IgeBox2dController extends exports_7.IgeEventingClass {
         if (!this._world) {
             throw new Error("No box2D world instantiated!");
         }
-        const tempDef = new exports_10.b2BodyDef();
+        const tempDef = new b2_body_1.b2BodyDef();
         let param, fixtureDef, tempFixture, finalFixture, tempShape, tempFilterData, i, finalX, finalY, finalWidth, finalHeight;
         // Process body definition and create a box2D body for it
         switch (body.type) {
-            case exports_13.IgeBox2dBodyType.static: // "static"
-                tempDef.type = exports_10.b2BodyType.b2_staticBody;
+            case enums_1.IgeBox2dBodyType.static: // "static"
+                tempDef.type = b2_body_1.b2BodyType.b2_staticBody;
                 break;
-            case exports_13.IgeBox2dBodyType.dynamic: // "dynamic"
-                tempDef.type = exports_10.b2BodyType.b2_dynamicBody;
+            case enums_1.IgeBox2dBodyType.dynamic: // "dynamic"
+                tempDef.type = b2_body_1.b2BodyType.b2_dynamicBody;
                 break;
-            case exports_13.IgeBox2dBodyType.kinematic: // "kinematic"
-                tempDef.type = exports_10.b2BodyType.b2_kinematicBody;
+            case enums_1.IgeBox2dBodyType.kinematic: // "kinematic"
+                tempDef.type = b2_body_1.b2BodyType.b2_kinematicBody;
                 break;
         }
         // Add the parameters of the body to the new body instance
@@ -306,8 +302,8 @@ class IgeBox2dController extends exports_7.IgeEventingClass {
                             if (fixtureDef.shape) {
                                 // Create based on the shape type
                                 switch (fixtureDef.shape.type) {
-                                    case exports_14.IgeBox2dFixtureShapeType.circle:
-                                        tempShape = new exports_2.b2CircleShape();
+                                    case enums_1.IgeBox2dFixtureShapeType.circle:
+                                        tempShape = new b2_circle_shape_1.b2CircleShape();
                                         if (fixtureDef.shape.data &&
                                             typeof fixtureDef.shape.data.radius !== "undefined") {
                                             tempShape.SetRadius(fixtureDef.shape.data.radius / this._scaleRatio);
@@ -320,15 +316,15 @@ class IgeBox2dController extends exports_7.IgeEventingClass {
                                                 fixtureDef.shape.data.x !== undefined ? fixtureDef.shape.data.x : 0;
                                             finalY =
                                                 fixtureDef.shape.data.y !== undefined ? fixtureDef.shape.data.y : 0;
-                                            tempShape.SetLocalPosition(new exports_9.b2Vec2(finalX / this._scaleRatio, finalY / this._scaleRatio));
+                                            tempShape.SetLocalPosition(new b2_math_1.b2Vec2(finalX / this._scaleRatio, finalY / this._scaleRatio));
                                         }
                                         break;
-                                    case exports_14.IgeBox2dFixtureShapeType.polygon:
-                                        tempShape = new exports_3.b2PolygonShape();
+                                    case enums_1.IgeBox2dFixtureShapeType.polygon:
+                                        tempShape = new b2_polygon_shape_1.b2PolygonShape();
                                         tempShape.SetAsArray(fixtureDef.shape.data._poly, fixtureDef.shape.data.length());
                                         break;
-                                    case exports_14.IgeBox2dFixtureShapeType.rectangle:
-                                        tempShape = new exports_3.b2PolygonShape();
+                                    case enums_1.IgeBox2dFixtureShapeType.rectangle:
+                                        tempShape = new b2_polygon_shape_1.b2PolygonShape();
                                         if (fixtureDef.shape.data) {
                                             finalX =
                                                 fixtureDef.shape.data.x !== undefined ? fixtureDef.shape.data.x : 0;
@@ -350,7 +346,7 @@ class IgeBox2dController extends exports_7.IgeEventingClass {
                                             finalHeight = entity._bounds2d.y / 2;
                                         }
                                         // Set the polygon as a box
-                                        tempShape.SetAsOrientedBox(finalWidth / this._scaleRatio, finalHeight / this._scaleRatio, new exports_9.b2Vec2(finalX / this._scaleRatio, finalY / this._scaleRatio), 0);
+                                        tempShape.SetAsOrientedBox(finalWidth / this._scaleRatio, finalHeight / this._scaleRatio, new b2_math_1.b2Vec2(finalX / this._scaleRatio, finalY / this._scaleRatio), 0);
                                         break;
                                 }
                                 if (tempShape) {
@@ -361,7 +357,7 @@ class IgeBox2dController extends exports_7.IgeEventingClass {
                                 }
                             }
                             if (fixtureDef.filter && finalFixture) {
-                                tempFilterData = new exports_4.b2Filter();
+                                tempFilterData = new b2_fixture_1.b2Filter();
                                 if (fixtureDef.filter.categoryBits !== undefined) {
                                     tempFilterData.categoryBits = fixtureDef.filter.categoryBits;
                                 }
@@ -412,19 +408,19 @@ class IgeBox2dController extends exports_7.IgeEventingClass {
                 const rect = rectArray[rectCount];
                 const posX = tileWidth * (rect.width / 2);
                 const posY = tileHeight * (rect.height / 2);
-                new exports_1.IgeEntityBox2d()
+                new IgeEntityBox2d_1.IgeEntityBox2d()
                     .translateTo(rect.x * tileWidth + posX, rect.y * tileHeight + posY, 0)
                     .width(rect.width * tileWidth)
                     .height(rect.height * tileHeight)
                     .drawBounds(true)
                     .drawBoundsData(false)
                     .box2dBody({
-                    type: exports_13.IgeBox2dBodyType.static,
+                    type: enums_1.IgeBox2dBodyType.static,
                     allowSleep: true,
                     fixtures: [
                         {
                             shape: {
-                                type: exports_14.IgeBox2dFixtureShapeType.rectangle
+                                type: enums_1.IgeBox2dFixtureShapeType.rectangle
                             }
                         }
                     ]
@@ -448,7 +444,7 @@ class IgeBox2dController extends exports_7.IgeEventingClass {
         if (!this._world) {
             throw new Error("No box2D world instantiated!");
         }
-        const contactListener = new exports_6.b2ContactListener();
+        const contactListener = new b2_world_callbacks_1.b2ContactListener();
         if (beginContactCallback !== undefined) {
             contactListener.BeginContact = beginContactCallback;
         }
@@ -479,16 +475,19 @@ class IgeBox2dController extends exports_7.IgeEventingClass {
                 // We are enabled so disable all physics contacts
                 this.contactListener(
                 // Begin contact
-                function (contact) { }, 
+                function (contact) {
+                }, 
                 // End contact
-                function (contact) { }, 
+                function (contact) {
+                }, 
                 // Pre-solve
                 function (contact) {
                     // Cancel the contact
                     contact.SetEnabled(false);
                 }, 
                 // Post-solve
-                function (contact) { });
+                function (contact) {
+                });
             }
             else {
                 // Re-enable contacts

@@ -1,11 +1,10 @@
-import { IgeEntity } from "../../export/exports.js"
-import { IgePoint2d } from "../../export/exports.js"
-import { IgePoint3d } from "../../export/exports.js"
-import { IgeViewport } from "../../export/exports.js"
-import { ige } from "../../export/exports.js"
-import { IgeBehaviourType } from "../../export/exports.js"
-import { IgeEngineState } from "../../export/exports.js"
-import { isClient, isServer, isWorker } from "../../export/exports.js"
+import { IgeEntity } from "./IgeEntity.js"
+import { IgePoint2d } from "./IgePoint2d.js"
+import { IgePoint3d } from "./IgePoint3d.js"
+import { IgeViewport } from "./IgeViewport.js"
+import { ige } from "../instance.js"
+import { isClient, isServer, isWorker } from "../utils/clientServer.js"
+import { IgeBehaviourType, IgeEngineState } from "../../enums/index.js"
 export class IgeEngine extends IgeEntity {
     classId = "IgeEngine";
     client;
@@ -119,12 +118,6 @@ export class IgeEngine extends IgeEntity {
         this._webFonts = []; // Holds an array of web fonts to load
         this._cssFonts = []; // Holds an array of css fonts we want to wait for (loaded via HTML or CSS rather than our own loadWebFont())
         this._headless = true;
-        // Output our header
-        console.log("-----------------------------------------");
-        console.log(`Powered by Isogenic Engine`);
-        console.log("(C)opyright " + new Date().getFullYear() + " Irrelon Software Limited");
-        console.log("https://www.isogenicengine.com");
-        console.log("-----------------------------------------");
         // Set the initial id as the current time in milliseconds. This ensures that under successive
         // restarts of the engine, new ids will still always be created compared to earlier runs -
         // which is important when storing persistent data with ids etc
@@ -1528,7 +1521,7 @@ export class IgeEngine extends IgeEntity {
         // Children of the ige.engine are ONLY IgeViewports
         return this._children;
     }
-    drawBounds(val, recursive = false) {
+    drawBounds(val, recursive = true) {
         if (val === undefined) {
             return this._drawBounds;
         }

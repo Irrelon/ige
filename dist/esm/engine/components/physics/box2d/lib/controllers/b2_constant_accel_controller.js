@@ -23,8 +23,8 @@ import { b2Vec2 } from "../common/b2_math.js"
  */
 export class b2ConstantAccelController extends b2Controller {
     /**
-   * The acceleration to apply
-   */
+     * The acceleration to apply
+     */
     A = new b2Vec2(0, 0);
     Step(step) {
         const dtA = b2Vec2.MulSV(step.dt, this.A, b2ConstantAccelController.Step_s_dtA);
@@ -37,6 +37,7 @@ export class b2ConstantAccelController extends b2Controller {
         }
     }
     static Step_s_dtA = new b2Vec2();
-    Draw(draw) { }
+    Draw(draw) {
+    }
 }
 // #endif

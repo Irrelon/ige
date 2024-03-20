@@ -1,14 +1,14 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.IgeMapStack2d = void 0;
-const exports_1 = require("../../export/exports.js");
-const exports_2 = require("../../export/exports.js");
+const IgeBaseClass_1 = require("./IgeBaseClass.js");
+const arrays_1 = require("../utils/arrays.js");
 /**
  * Creates a new map that has two dimensions (x and y) to its data
  * and allows multiple items to be stored or "stacked" on a single
  * x, y map position.
  */
-class IgeMapStack2d extends exports_1.IgeBaseClass {
+class IgeMapStack2d extends IgeBaseClass_1.IgeBaseClass {
     constructor(data) {
         super();
         this.classId = "IgeMapStack2d";
@@ -80,7 +80,7 @@ class IgeMapStack2d extends exports_1.IgeBaseClass {
      */
     pull(x, y, val) {
         if (this._mapData[y] && this._mapData[y][x]) {
-            (0, exports_2.arrPull)(this._mapData[y][x], val);
+            (0, arrays_1.arrPull)(this._mapData[y][x], val);
             return this;
         }
         return false;

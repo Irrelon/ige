@@ -1,17 +1,18 @@
-import { IgeCamera } from "@/export/exports";
-import type { IgeEntity } from "@/export/exports";
-import type { IgeObject } from "@/export/exports";
-import { IgePoint2d } from "@/export/exports";
-import { IgePoint3d } from "@/export/exports";
-import { IgeRect } from "@/export/exports";
-import type { IgeScene2d } from "@/export/exports";
-import { IgeUiEntity } from "@/export/exports";
-import { registerClass } from "@/export/exports";
-import { ige } from "@/export/exports";
-import { IgeMountMode } from "@/export/exports";
-import { isClient } from "@/export/exports";
-import type { IgeCanRegisterById } from "@/export/exports";
-import type { IgeCanvasRenderingContext2d } from "@/export/exports";
+import { IgeCamera } from "@/engine/core/IgeCamera";
+import type { IgeEntity } from "@/engine/core/IgeEntity";
+import type { IgeObject } from "@/engine/core/IgeObject";
+import { IgePoint2d } from "@/engine/core/IgePoint2d";
+import { IgePoint3d } from "@/engine/core/IgePoint3d";
+import { IgeRect } from "@/engine/core/IgeRect";
+import type { IgeScene2d } from "@/engine/core/IgeScene2d";
+import { IgeUiEntity } from "@/engine/core/IgeUiEntity";
+import { ige } from "@/engine/instance";
+import { isClient } from "@/engine/utils/clientServer";
+import { registerClass } from "@/engine/utils/igeClassStore";
+import { IgeMountMode } from "@/enums";
+import type { IgeCanRegisterById } from "@/types/IgeCanRegisterById";
+import type { IgeCanvasRenderingContext2d } from "@/types/IgeCanvasRenderingContext2d";
+
 
 export interface IgeViewportOptions {
 	width: number;

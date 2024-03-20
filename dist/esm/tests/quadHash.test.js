@@ -1,4 +1,4 @@
-import { encode, decode } from "../index.js"
+import { decode, encode } from "../engine/utils/quadHash.js"
 describe("hashToExtents()", () => {
     it("should correctly encode `A`", () => {
         const hash = "A";

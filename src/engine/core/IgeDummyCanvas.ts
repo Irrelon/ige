@@ -1,4 +1,4 @@
-import { IgeDummyContext } from "@/export/exports";
+import { IgeDummyContext } from "@/engine/core/IgeDummyContext";
 
 export class IgeDummyCanvas {
 	dummy = true;

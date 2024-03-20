@@ -1,11 +1,25 @@
-import type { IgeAudioController } from "../../export/exports.js"
-import type { IgeNetIoClientController } from "../../export/exports.js"
-import type { IgeNetIoServerController } from "../../export/exports.js"
-import type { IgeViewport } from "../../export/exports.js"
-import { IgeArrayRegister, IgeDependencies, IgeEngine, IgeMetrics, IgeObjectRegister, IgePoint3d, IgeRouter, IgeTextureStore, IgeTimeController, IgeTweenController, IgeUiManagerController } from "../../export/exports.js"
-import { IgeInputComponent } from "../../export/exports.js"
-import { IgeBox2dController } from "../../export/exports.js"
-import type { IgeCanRegisterAndCanDestroy, IgeCanRegisterByCategory, IgeConfig, IgeIsReadyPromise, IgeObjectWithValueProperty } from "../../export/exports.js"
+import type { IgeAudioController } from "../audio/IgeAudioController.js"
+import { IgeInputComponent } from "../components/IgeInputComponent.js";
+import { IgeBox2dController } from "../components/physics/box2d/IgeBox2dController.js"
+import { IgeArrayRegister } from "./IgeArrayRegister.js";
+import { IgeDependencies } from "./IgeDependencies.js"
+import { IgeEngine } from "./IgeEngine.js";
+import { IgeMetrics } from "./IgeMetrics.js"
+import { IgeObjectRegister } from "./IgeObjectRegister.js";
+import { IgePoint3d } from "./IgePoint3d.js"
+import { IgeRouter } from "./IgeRouter.js";
+import { IgeTextureStore } from "./IgeTextureStore.js"
+import { IgeTimeController } from "./IgeTimeController.js";
+import { IgeTweenController } from "./IgeTweenController.js"
+import { IgeUiManagerController } from "./IgeUiManagerController.js";
+import type { IgeViewport } from "./IgeViewport.js"
+import type { IgeNetIoClientController } from "../network/client/IgeNetIoClientController.js";
+import type { IgeNetIoServerController } from "../network/server/IgeNetIoServerController.js"
+import type { IgeCanRegisterAndCanDestroy } from "../../types/IgeCanRegisterAndCanDestroy.js";
+import type { IgeCanRegisterByCategory } from "../../types/IgeCanRegisterByCategory.js"
+import type { IgeConfig } from "../../types/IgeConfig.js"
+import type { IgeIsReadyPromise } from "../../types/IgeIsReadyPromise.js"
+import type { IgeObjectWithValueProperty } from "../../types/IgeObjectWithValueProperty.js"
 export declare class Ige implements IgeIsReadyPromise {
     app: any;
     audio?: IgeAudioController;
@@ -27,7 +41,7 @@ export declare class Ige implements IgeIsReadyPromise {
     server: any;
     config: IgeConfig;
     version: string;
-    classStore: Record<string, import("../../types/IgeGenericClass.js").IgeGenericClass>;
+    classStore: Record<string, import("../../index.js").IgeGenericClass>;
     _data: Record<string, any>;
     _watch: (string | IgeObjectWithValueProperty)[];
     _drawBounds: boolean;
@@ -75,6 +89,20 @@ export declare class Ige implements IgeIsReadyPromise {
      * remove from the watch array.
      */
     watchStop: (index: number) => void;
+    /**
+     * Gets / sets the boolean flag determining if this object should have
+     * its bounds drawn when the bounds for all objects are being drawn.
+     * In order for bounds to be drawn the viewport the object is being drawn
+     * to must also have draw bounds enabled.
+     * @example #Enable draw bounds
+     *     var entity = new IgeEntity();
+     *     entity.drawBounds(true);
+     * @example #Disable draw bounds
+     *     var entity = new IgeEntity();
+     *     entity.drawBounds(false);
+     * @example #Get the current flag value
+     *     console.log(entity.drawBounds());
+     */
     drawBounds(val?: boolean, recursive?: boolean): boolean | this;
     data(key: string, value: any): this;
     data(key: string): any;

@@ -7,8 +7,8 @@ import type { b2Draw } from "../common/b2_draw.js"
  */
 export declare class b2ConstantAccelController extends b2Controller {
     /**
-   * The acceleration to apply
-   */
+     * The acceleration to apply
+     */
     readonly A: b2Vec2;
     Step(step: b2TimeStep): void;
     private static Step_s_dtA;

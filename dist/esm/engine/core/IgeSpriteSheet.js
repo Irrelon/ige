@@ -1,4 +1,4 @@
-import { IgeTexture } from "../../export/exports.js"
+import { IgeTexture } from "./IgeTexture.js"
 /**
  * Creates a new sprite sheet that cuts an image up into
  * arbitrary sections.

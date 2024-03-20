@@ -1,9 +1,8 @@
-// TODO: Doc this class!
-import { ige } from "@/export/exports";
-import { IgeBehaviourType } from "@/export/exports";
-import { IgeComponent } from "@/export/exports";
-import type { IgeEntity } from "@/export/exports";
-import { IgePoint3d } from "@/export/exports";
+import { IgeComponent } from "@/engine/core/IgeComponent";
+import type { IgeEntity } from "@/engine/core/IgeEntity";
+import { IgePoint3d } from "@/engine/core/IgePoint3d";
+import { ige } from "@/engine/instance";
+import { IgeBehaviourType } from "@/enums";
 
 export class IgeVelocityComponent extends IgeComponent {
 	classId = "IgeVelocityComponent";

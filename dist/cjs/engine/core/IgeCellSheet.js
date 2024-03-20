@@ -1,13 +1,13 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.IgeCellSheet = void 0;
-const exports_1 = require("../../export/exports.js");
+const IgeTexture_1 = require("./IgeTexture.js");
 /**
  * Creates a new cell sheet. Cell sheets are textures that are
  * automatically split up into individual cells based on a cell
  * width and height.
  */
-class IgeCellSheet extends exports_1.IgeTexture {
+class IgeCellSheet extends IgeTexture_1.IgeTexture {
     constructor(id, urlOrObject, horizontalCells = 1, verticalCells = 1) {
         super(id, urlOrObject);
         this.classId = "IgeCellSheet";

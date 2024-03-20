@@ -19,9 +19,9 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.b2ParticleHandle = exports.b2CalculateParticleIterations = exports.b2ParticleDef = exports.b2ParticleFlag = void 0;
 // #if B2_ENABLE_PARTICLE
-const b2_settings_js_1 = require("../common/b2_settings.js");
-const b2_math_js_1 = require("../common/b2_math.js");
-const b2_draw_js_1 = require("../common/b2_draw.js");
+const b2_settings_1 = require("../common/b2_settings");
+const b2_math_1 = require("../common/b2_math");
+const b2_draw_1 = require("../common/b2_draw");
 /**
  * The particle type. Can be combined with the | operator.
  */
@@ -76,9 +76,9 @@ var b2ParticleFlag;
 class b2ParticleDef {
     constructor() {
         this.flags = 0;
-        this.position = new b2_math_js_1.b2Vec2();
-        this.velocity = new b2_math_js_1.b2Vec2();
-        this.color = new b2_draw_js_1.b2Color(0, 0, 0, 0);
+        this.position = new b2_math_1.b2Vec2();
+        this.velocity = new b2_math_1.b2Vec2();
+        this.color = new b2_draw_1.b2Color(0, 0, 0, 0);
         this.lifetime = 0.0;
         this.userData = null;
         this.group = null;
@@ -91,15 +91,19 @@ function b2CalculateParticleIterations(gravity, radius, timeStep) {
     const B2_MAX_RECOMMENDED_PARTICLE_ITERATIONS = 8;
     const B2_RADIUS_THRESHOLD = 0.01;
     const iterations = Math.ceil(Math.sqrt(gravity / (B2_RADIUS_THRESHOLD * radius)) * timeStep);
-    return (0, b2_math_js_1.b2Clamp)(iterations, 1, B2_MAX_RECOMMENDED_PARTICLE_ITERATIONS);
+    return (0, b2_math_1.b2Clamp)(iterations, 1, B2_MAX_RECOMMENDED_PARTICLE_ITERATIONS);
 }
 exports.b2CalculateParticleIterations = b2CalculateParticleIterations;
 class b2ParticleHandle {
     constructor() {
-        this.m_index = b2_settings_js_1.b2_invalidParticleIndex;
+        this.m_index = b2_settings_1.b2_invalidParticleIndex;
     }
-    GetIndex() { return this.m_index; }
-    SetIndex(index) { this.m_index = index; }
+    GetIndex() {
+        return this.m_index;
+    }
+    SetIndex(index) {
+        this.m_index = index;
+    }
 }
 exports.b2ParticleHandle = b2ParticleHandle;
 // #endif

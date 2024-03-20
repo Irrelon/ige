@@ -20,54 +20,54 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.b2MouseJoint = exports.b2MouseJointDef = void 0;
 // DEBUG: import { b2Assert, b2_epsilon } from "../common/b2_settings.js"
 // DEBUG: import { b2IsValid } from "../common/b2_math.js"
-const b2_settings_js_1 = require("../common/b2_settings.js");
-const b2_math_js_1 = require("../common/b2_math.js");
-const b2_joint_js_1 = require("./b2_joint.js");
+const b2_settings_1 = require("../common/b2_settings");
+const b2_math_1 = require("../common/b2_math");
+const b2_joint_1 = require("./b2_joint");
 /// Mouse joint definition. This requires a world target point,
 /// tuning parameters, and the time step.
-class b2MouseJointDef extends b2_joint_js_1.b2JointDef {
+class b2MouseJointDef extends b2_joint_1.b2JointDef {
     constructor() {
-        super(b2_joint_js_1.b2JointType.e_mouseJoint);
-        this.target = new b2_math_js_1.b2Vec2();
+        super(b2_joint_1.b2JointType.e_mouseJoint);
+        this.target = new b2_math_1.b2Vec2();
         this.maxForce = 0;
         this.stiffness = 5;
         this.damping = 0.7;
     }
 }
 exports.b2MouseJointDef = b2MouseJointDef;
-class b2MouseJoint extends b2_joint_js_1.b2Joint {
+class b2MouseJoint extends b2_joint_1.b2Joint {
     constructor(def) {
         super(def);
-        this.m_localAnchorB = new b2_math_js_1.b2Vec2();
-        this.m_targetA = new b2_math_js_1.b2Vec2();
+        this.m_localAnchorB = new b2_math_1.b2Vec2();
+        this.m_targetA = new b2_math_1.b2Vec2();
         this.m_stiffness = 0;
         this.m_damping = 0;
         this.m_beta = 0;
         // Solver shared
-        this.m_impulse = new b2_math_js_1.b2Vec2();
+        this.m_impulse = new b2_math_1.b2Vec2();
         this.m_maxForce = 0;
         this.m_gamma = 0;
         // Solver temp
         this.m_indexA = 0;
         this.m_indexB = 0;
-        this.m_rB = new b2_math_js_1.b2Vec2();
-        this.m_localCenterB = new b2_math_js_1.b2Vec2();
+        this.m_rB = new b2_math_1.b2Vec2();
+        this.m_localCenterB = new b2_math_1.b2Vec2();
         this.m_invMassB = 0;
         this.m_invIB = 0;
-        this.m_mass = new b2_math_js_1.b2Mat22();
-        this.m_C = new b2_math_js_1.b2Vec2();
-        this.m_qB = new b2_math_js_1.b2Rot();
-        this.m_lalcB = new b2_math_js_1.b2Vec2();
-        this.m_K = new b2_math_js_1.b2Mat22();
-        this.m_targetA.Copy((0, b2_settings_js_1.b2Maybe)(def.target, b2_math_js_1.b2Vec2.ZERO));
+        this.m_mass = new b2_math_1.b2Mat22();
+        this.m_C = new b2_math_1.b2Vec2();
+        this.m_qB = new b2_math_1.b2Rot();
+        this.m_lalcB = new b2_math_1.b2Vec2();
+        this.m_K = new b2_math_1.b2Mat22();
+        this.m_targetA.Copy((0, b2_settings_1.b2Maybe)(def.target, b2_math_1.b2Vec2.ZERO));
         // DEBUG: b2Assert(this.m_targetA.IsValid());
-        b2_math_js_1.b2Transform.MulTXV(this.m_bodyB.GetTransform(), this.m_targetA, this.m_localAnchorB);
-        this.m_maxForce = (0, b2_settings_js_1.b2Maybe)(def.maxForce, 0);
+        b2_math_1.b2Transform.MulTXV(this.m_bodyB.GetTransform(), this.m_targetA, this.m_localAnchorB);
+        this.m_maxForce = (0, b2_settings_1.b2Maybe)(def.maxForce, 0);
         // DEBUG: b2Assert(b2IsValid(this.m_maxForce) && this.m_maxForce >= 0);
         this.m_impulse.SetZero();
-        this.m_stiffness = (0, b2_settings_js_1.b2Maybe)(def.stiffness, 0);
+        this.m_stiffness = (0, b2_settings_1.b2Maybe)(def.stiffness, 0);
         // DEBUG: b2Assert(b2IsValid(this.m_stiffness) && this.m_stiffness >= 0);
-        this.m_damping = (0, b2_settings_js_1.b2Maybe)(def.damping, 0);
+        this.m_damping = (0, b2_settings_1.b2Maybe)(def.damping, 0);
         // DEBUG: b2Assert(b2IsValid(this.m_damping) && this.m_damping >= 0);
         this.m_beta = 0;
         this.m_gamma = 0;
@@ -111,7 +111,7 @@ class b2MouseJoint extends b2_joint_js_1.b2Joint {
         const qB = this.m_qB.SetAngle(aB);
         const mass = this.m_bodyB.GetMass();
         // Frequency
-        const omega = 2 * b2_settings_js_1.b2_pi * this.m_stiffness;
+        const omega = 2 * b2_settings_1.b2_pi * this.m_stiffness;
         // Damping coefficient
         const d = 2 * mass * this.m_damping * omega;
         // Spring stiffness
@@ -126,8 +126,8 @@ class b2MouseJoint extends b2_joint_js_1.b2Joint {
         }
         this.m_beta = h * k * this.m_gamma;
         // Compute the effective mass matrix.
-        b2_math_js_1.b2Vec2.SubVV(this.m_localAnchorB, this.m_localCenterB, this.m_lalcB);
-        b2_math_js_1.b2Rot.MulRV(qB, this.m_lalcB, this.m_rB);
+        b2_math_1.b2Vec2.SubVV(this.m_localAnchorB, this.m_localCenterB, this.m_lalcB);
+        b2_math_1.b2Rot.MulRV(qB, this.m_lalcB, this.m_rB);
         // K    = [(1/m1 + 1/m2) * eye(2) - skew(r1) * invI1 * skew(r1) - skew(r2) * invI2 * skew(r2)]
         //      = [1/m1+1/m2     0    ] + invI1 * [r1.y*r1.y -r1.x*r1.y] + invI2 * [r1.y*r1.y -r1.x*r1.y]
         //        [    0     1/m1+1/m2]           [-r1.x*r1.y r1.x*r1.x]           [-r1.x*r1.y r1.x*r1.x]
@@ -149,7 +149,7 @@ class b2MouseJoint extends b2_joint_js_1.b2Joint {
             // vB += m_invMassB * m_impulse;
             vB.x += this.m_invMassB * this.m_impulse.x;
             vB.y += this.m_invMassB * this.m_impulse.y;
-            wB += this.m_invIB * b2_math_js_1.b2Vec2.CrossVV(this.m_rB, this.m_impulse);
+            wB += this.m_invIB * b2_math_1.b2Vec2.CrossVV(this.m_rB, this.m_impulse);
         }
         else {
             this.m_impulse.SetZero();
@@ -162,9 +162,9 @@ class b2MouseJoint extends b2_joint_js_1.b2Joint {
         let wB = data.velocities[this.m_indexB].w;
         // Cdot = v + cross(w, r)
         // b2Vec2 Cdot = vB + b2Cross(wB, m_rB);
-        const Cdot = b2_math_js_1.b2Vec2.AddVCrossSV(vB, wB, this.m_rB, b2MouseJoint.SolveVelocityConstraints_s_Cdot);
+        const Cdot = b2_math_1.b2Vec2.AddVCrossSV(vB, wB, this.m_rB, b2MouseJoint.SolveVelocityConstraints_s_Cdot);
         //  b2Vec2 impulse = b2Mul(m_mass, -(Cdot + m_C + m_gamma * m_impulse));
-        const impulse = b2_math_js_1.b2Mat22.MulMV(this.m_mass, b2_math_js_1.b2Vec2.AddVV(Cdot, b2_math_js_1.b2Vec2.AddVV(this.m_C, b2_math_js_1.b2Vec2.MulSV(this.m_gamma, this.m_impulse, b2_math_js_1.b2Vec2.s_t0), b2_math_js_1.b2Vec2.s_t0), b2_math_js_1.b2Vec2.s_t0).SelfNeg(), b2MouseJoint.SolveVelocityConstraints_s_impulse);
+        const impulse = b2_math_1.b2Mat22.MulMV(this.m_mass, b2_math_1.b2Vec2.AddVV(Cdot, b2_math_1.b2Vec2.AddVV(this.m_C, b2_math_1.b2Vec2.MulSV(this.m_gamma, this.m_impulse, b2_math_1.b2Vec2.s_t0), b2_math_1.b2Vec2.s_t0), b2_math_1.b2Vec2.s_t0).SelfNeg(), b2MouseJoint.SolveVelocityConstraints_s_impulse);
         // b2Vec2 oldImpulse = m_impulse;
         const oldImpulse = b2MouseJoint.SolveVelocityConstraints_s_oldImpulse.Copy(this.m_impulse);
         // m_impulse += impulse;
@@ -174,10 +174,10 @@ class b2MouseJoint extends b2_joint_js_1.b2Joint {
             this.m_impulse.SelfMul(maxImpulse / this.m_impulse.Length());
         }
         // impulse = m_impulse - oldImpulse;
-        b2_math_js_1.b2Vec2.SubVV(this.m_impulse, oldImpulse, impulse);
+        b2_math_1.b2Vec2.SubVV(this.m_impulse, oldImpulse, impulse);
         // vB += m_invMassB * impulse;
         vB.SelfMulAdd(this.m_invMassB, impulse);
-        wB += this.m_invIB * b2_math_js_1.b2Vec2.CrossVV(this.m_rB, impulse);
+        wB += this.m_invIB * b2_math_1.b2Vec2.CrossVV(this.m_rB, impulse);
         // data.velocities[this.m_indexB].v = vB;
         data.velocities[this.m_indexB].w = wB;
     }
@@ -193,7 +193,7 @@ class b2MouseJoint extends b2_joint_js_1.b2Joint {
         return this.m_bodyB.GetWorldPoint(this.m_localAnchorB, out);
     }
     GetReactionForce(inv_dt, out) {
-        return b2_math_js_1.b2Vec2.MulSV(inv_dt, this.m_impulse, out);
+        return b2_math_1.b2Vec2.MulSV(inv_dt, this.m_impulse, out);
     }
     GetReactionTorque(inv_dt) {
         return 0;
@@ -206,6 +206,6 @@ class b2MouseJoint extends b2_joint_js_1.b2Joint {
     }
 }
 exports.b2MouseJoint = b2MouseJoint;
-b2MouseJoint.SolveVelocityConstraints_s_Cdot = new b2_math_js_1.b2Vec2();
-b2MouseJoint.SolveVelocityConstraints_s_impulse = new b2_math_js_1.b2Vec2();
-b2MouseJoint.SolveVelocityConstraints_s_oldImpulse = new b2_math_js_1.b2Vec2();
+b2MouseJoint.SolveVelocityConstraints_s_Cdot = new b2_math_1.b2Vec2();
+b2MouseJoint.SolveVelocityConstraints_s_impulse = new b2_math_1.b2Vec2();
+b2MouseJoint.SolveVelocityConstraints_s_oldImpulse = new b2_math_1.b2Vec2();

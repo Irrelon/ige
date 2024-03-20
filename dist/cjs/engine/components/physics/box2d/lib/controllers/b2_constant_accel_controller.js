@@ -19,31 +19,32 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.b2ConstantAccelController = void 0;
 // #if B2_ENABLE_CONTROLLER
-const b2_controller_js_1 = require("./b2_controller.js");
-const b2_math_js_1 = require("../common/b2_math.js");
+const b2_controller_1 = require("./b2_controller");
+const b2_math_1 = require("../common/b2_math");
 /**
  * Applies a force every frame
  */
-class b2ConstantAccelController extends b2_controller_js_1.b2Controller {
+class b2ConstantAccelController extends b2_controller_1.b2Controller {
     constructor() {
         super(...arguments);
         /**
-       * The acceleration to apply
-       */
-        this.A = new b2_math_js_1.b2Vec2(0, 0);
+         * The acceleration to apply
+         */
+        this.A = new b2_math_1.b2Vec2(0, 0);
     }
     Step(step) {
-        const dtA = b2_math_js_1.b2Vec2.MulSV(step.dt, this.A, b2ConstantAccelController.Step_s_dtA);
+        const dtA = b2_math_1.b2Vec2.MulSV(step.dt, this.A, b2ConstantAccelController.Step_s_dtA);
         for (let i = this.m_bodyList; i; i = i.nextBody) {
             const body = i.body;
             if (!body.IsAwake()) {
                 continue;
             }
-            body.SetLinearVelocity(b2_math_js_1.b2Vec2.AddVV(body.GetLinearVelocity(), dtA, b2_math_js_1.b2Vec2.s_t0));
+            body.SetLinearVelocity(b2_math_1.b2Vec2.AddVV(body.GetLinearVelocity(), dtA, b2_math_1.b2Vec2.s_t0));
         }
     }
-    Draw(draw) { }
+    Draw(draw) {
+    }
 }
 exports.b2ConstantAccelController = b2ConstantAccelController;
-b2ConstantAccelController.Step_s_dtA = new b2_math_js_1.b2Vec2();
+b2ConstantAccelController.Step_s_dtA = new b2_math_1.b2Vec2();
 // #endif

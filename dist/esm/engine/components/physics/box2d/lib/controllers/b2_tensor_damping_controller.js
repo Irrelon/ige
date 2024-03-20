@@ -58,7 +58,8 @@ export class b2TensorDampingController extends b2Controller {
         }
     }
     static Step_s_damping = new b2Vec2();
-    Draw(draw) { }
+    Draw(draw) {
+    }
     /**
      * Sets damping independantly along the x and y axes
      */

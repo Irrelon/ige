@@ -40,6 +40,9 @@ export declare class b2FixtureDef implements b2IFixtureDef {
     readonly filter: b2Filter;
 }
 export declare class b2FixtureProxy {
+    private static Synchronize_s_aabb1;
+    private static Synchronize_s_aabb2;
+    private static Synchronize_s_displacement;
     readonly aabb: b2AABB;
     readonly fixture: b2Fixture;
     readonly childIndex: number;
@@ -47,9 +50,6 @@ export declare class b2FixtureProxy {
     constructor(fixture: b2Fixture, childIndex: number);
     Reset(): void;
     Touch(): void;
-    private static Synchronize_s_aabb1;
-    private static Synchronize_s_aabb2;
-    private static Synchronize_s_displacement;
     Synchronize(transform1: b2Transform, transform2: b2Transform): void;
 }
 export declare class b2Fixture {
@@ -61,11 +61,11 @@ export declare class b2Fixture {
     m_restitution: number;
     m_restitutionThreshold: number;
     readonly m_proxies: b2FixtureProxy[];
-    get m_proxyCount(): number;
     readonly m_filter: b2Filter;
     m_isSensor: boolean;
     m_userData: any;
     constructor(body: b2Body, def: b2IFixtureDef);
+    get m_proxyCount(): number;
     Reset(): void;
     GetType(): b2ShapeType;
     GetShape(): b2Shape;

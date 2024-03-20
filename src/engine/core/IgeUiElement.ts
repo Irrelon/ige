@@ -1,10 +1,10 @@
-import { IgeUiEntity } from "@/export/exports";
-import type { IgeUiManagerController } from "@/export/exports";
-import { registerClass } from "@/export/exports";
-import { ige } from "@/export/exports";
-import type { IgeInputComponent } from "@/export/exports";
-import type { IgeUiStyleModifier } from "@/export/exports";
-import type { IgeUiStyleObject } from "@/export/exports";
+import type { IgeInputComponent } from "@/engine/components/IgeInputComponent";
+import { IgeUiEntity } from "@/engine/core/IgeUiEntity";
+import type { IgeUiManagerController } from "@/engine/core/IgeUiManagerController";
+import { ige } from "@/engine/instance";
+import { registerClass } from "@/engine/utils/igeClassStore";
+import type { IgeUiStyleModifier } from "@/types/IgeUiStyleModifier";
+import type { IgeUiStyleObject } from "@/types/IgeUiStyleObject";
 
 /**
  * Creates a new UI element. UI elements use more resources and CPU

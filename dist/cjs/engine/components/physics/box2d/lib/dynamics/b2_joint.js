@@ -19,9 +19,9 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.b2Joint = exports.b2AngularStiffness = exports.b2LinearStiffness = exports.b2JointDef = exports.b2JointEdge = exports.b2Jacobian = exports.b2JointType = void 0;
 // DEBUG: import { b2Assert } from "../common/b2_settings.js"
-const b2_settings_js_1 = require("../common/b2_settings.js");
-const b2_math_js_1 = require("../common/b2_math.js");
-const b2_draw_js_1 = require("../common/b2_draw.js");
+const b2_settings_1 = require("../common/b2_settings");
+const b2_math_1 = require("../common/b2_math");
+const b2_draw_1 = require("../common/b2_draw");
 var b2JointType;
 (function (b2JointType) {
     b2JointType[b2JointType["e_unknownJoint"] = 0] = "e_unknownJoint";
@@ -40,7 +40,7 @@ var b2JointType;
 })(b2JointType || (exports.b2JointType = b2JointType = {}));
 class b2Jacobian {
     constructor() {
-        this.linear = new b2_math_js_1.b2Vec2();
+        this.linear = new b2_math_1.b2Vec2();
         this.angularA = 0;
         this.angularB = 0;
     }
@@ -64,6 +64,12 @@ exports.b2Jacobian = b2Jacobian;
 /// maintained in each attached body. Each joint has two joint
 /// nodes, one for each attached body.
 class b2JointEdge {
+    constructor(joint) {
+        this.prev = null; ///< the previous joint edge in the body's joint list
+        this.next = null; ///< the next joint edge in the body's joint list
+        this._other = null; ///< provides quick access to the other body attached.
+        this.joint = joint;
+    }
     get other() {
         if (this._other === null) {
             throw new Error();
@@ -75,12 +81,6 @@ class b2JointEdge {
             throw new Error();
         }
         this._other = value;
-    }
-    constructor(joint) {
-        this._other = null; ///< provides quick access to the other body attached.
-        this.prev = null; ///< the previous joint edge in the body's joint list
-        this.next = null; ///< the next joint edge in the body's joint list
-        this.joint = joint;
     }
     Reset() {
         this._other = null;
@@ -119,7 +119,7 @@ function b2LinearStiffness(def, frequencyHertz, dampingRatio, bodyA, bodyB) {
     else {
         mass = massB;
     }
-    const omega = 2.0 * b2_settings_js_1.b2_pi * frequencyHertz;
+    const omega = 2.0 * b2_settings_1.b2_pi * frequencyHertz;
     def.stiffness = mass * omega * omega;
     def.damping = 2.0 * mass * dampingRatio * omega;
 }
@@ -141,7 +141,7 @@ function b2AngularStiffness(def, frequencyHertz, dampingRatio, bodyA, bodyB) {
     else {
         I = IB;
     }
-    const omega = 2.0 * b2_settings_js_1.b2_pi * frequencyHertz;
+    const omega = 2.0 * b2_settings_1.b2_pi * frequencyHertz;
     def.stiffness = I * omega * omega;
     def.damping = 2.0 * I * dampingRatio * omega;
 }
@@ -165,8 +165,8 @@ class b2Joint {
         this.m_edgeB.other = def.bodyA;
         this.m_bodyA = def.bodyA;
         this.m_bodyB = def.bodyB;
-        this.m_collideConnected = (0, b2_settings_js_1.b2Maybe)(def.collideConnected, false);
-        this.m_userData = (0, b2_settings_js_1.b2Maybe)(def.userData, null);
+        this.m_collideConnected = (0, b2_settings_1.b2Maybe)(def.collideConnected, false);
+        this.m_userData = (0, b2_settings_1.b2Maybe)(def.userData, null);
     }
     /// Get the type of the concrete joint.
     GetType() {
@@ -180,6 +180,8 @@ class b2Joint {
     GetBodyB() {
         return this.m_bodyB;
     }
+    /// Get collide connected.
+    /// Note: modifying the collide connect flag won't work correctly because
     /// Get the next joint the world joint list.
     GetNext() {
         return this.m_next;
@@ -196,8 +198,6 @@ class b2Joint {
     IsEnabled() {
         return this.m_bodyA.IsEnabled() && this.m_bodyB.IsEnabled();
     }
-    /// Get collide connected.
-    /// Note: modifying the collide connect flag won't work correctly because
     /// the flag is only checked when fixture AABBs begin to overlap.
     GetCollideConnected() {
         return this.m_collideConnected;
@@ -207,7 +207,8 @@ class b2Joint {
         log("// Dump is not supported for this joint type.\n");
     }
     /// Shift the origin for any points stored in world coordinates.
-    ShiftOrigin(newOrigin) { }
+    ShiftOrigin(newOrigin) {
+    }
     Draw(draw) {
         const xf1 = this.m_bodyA.GetTransform();
         const xf2 = this.m_bodyB.GetTransform();
@@ -249,7 +250,7 @@ class b2Joint {
 }
 exports.b2Joint = b2Joint;
 /// Debug draw this joint
-b2Joint.Draw_s_p1 = new b2_math_js_1.b2Vec2();
-b2Joint.Draw_s_p2 = new b2_math_js_1.b2Vec2();
-b2Joint.Draw_s_color = new b2_draw_js_1.b2Color(0.5, 0.8, 0.8);
-b2Joint.Draw_s_c = new b2_draw_js_1.b2Color();
+b2Joint.Draw_s_p1 = new b2_math_1.b2Vec2();
+b2Joint.Draw_s_p2 = new b2_math_1.b2Vec2();
+b2Joint.Draw_s_color = new b2_draw_1.b2Color(0.5, 0.8, 0.8);
+b2Joint.Draw_s_c = new b2_draw_1.b2Color();

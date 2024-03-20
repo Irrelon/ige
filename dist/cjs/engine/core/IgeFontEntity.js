@@ -1,22 +1,21 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.IgeFontEntity = void 0;
-const exports_1 = require("../../export/exports.js");
-const exports_2 = require("../../export/exports.js");
-const exports_3 = require("../../export/exports.js");
-const exports_4 = require("../../export/exports.js");
-const exports_5 = require("../../export/exports.js");
-const exports_6 = require("../../export/exports.js");
+const IgeTexture_1 = require("./IgeTexture.js");
+const IgeUiEntity_1 = require("./IgeUiEntity.js");
+const IgeFontSmartTexture_1 = require("../textures/IgeFontSmartTexture.js");
+const igeClassStore_1 = require("../utils/igeClassStore.js");
+const enums_1 = require("../../enums/index.js");
 /**
  * Creates a new font entity. A font entity will use a font sheet
  * (IgeFontSheet) or native font and render text.
  */
-class IgeFontEntity extends exports_2.IgeUiEntity {
+class IgeFontEntity extends IgeUiEntity_1.IgeUiEntity {
     constructor() {
         super();
         this["classId"] = "IgeFontEntity";
-        this._textAlignX = exports_4.IgeFontAlignX.center;
-        this._textAlignY = exports_4.IgeFontAlignY.multiLineMiddle;
+        this._textAlignX = enums_1.IgeFontAlignX.center;
+        this._textAlignY = enums_1.IgeFontAlignY.multiLineMiddle;
         this._textLineSpacing = 0;
         this._nativeMode = true;
         this._autoWrap = false;
@@ -173,7 +172,7 @@ class IgeFontEntity extends exports_2.IgeUiEntity {
             }
             this._nativeFont = val;
             // Assign the native font smart texture
-            const tex = new exports_1.IgeTexture("igeFontSmartTexture", exports_6.IgeFontSmartTexture);
+            const tex = new IgeTexture_1.IgeTexture("igeFontSmartTexture", IgeFontSmartTexture_1.IgeFontSmartTexture);
             this.texture(tex);
             // Set the flag indicating we are using a native font
             this._nativeMode = true;
@@ -272,10 +271,10 @@ class IgeFontEntity extends exports_2.IgeUiEntity {
         // Both IgeFontSheet and the IgeFontSmartTexture have a method
         // called measureTextWidth() so we can just ask the current
         // texture for the width :)
-        if (((_a = this._texture) === null || _a === void 0 ? void 0 : _a._renderMode) === exports_5.IgeTextureRenderMode.image) {
+        if (((_a = this._texture) === null || _a === void 0 ? void 0 : _a._renderMode) === enums_1.IgeTextureRenderMode.image) {
             return this._texture.measureTextWidth(text) || -1;
         }
-        else if (((_b = this._texture) === null || _b === void 0 ? void 0 : _b._renderMode) === exports_5.IgeTextureRenderMode.smartTexture) {
+        else if (((_b = this._texture) === null || _b === void 0 ? void 0 : _b._renderMode) === enums_1.IgeTextureRenderMode.smartTexture) {
             return ((_d = (_c = this._texture.script) === null || _c === void 0 ? void 0 : _c.meta) === null || _d === void 0 ? void 0 : _d.measureTextWidth(text, this)) || -1;
         }
         return -1;
@@ -304,7 +303,7 @@ class IgeFontEntity extends exports_2.IgeUiEntity {
      */
     _stringify() {
         // Get the properties for all the super-classes
-        let str = exports_2.IgeUiEntity.prototype._stringify.call(this);
+        let str = IgeUiEntity_1.IgeUiEntity.prototype._stringify.call(this);
         let i;
         // Loop properties and add property assignment code to string
         for (i in this) {
@@ -329,4 +328,4 @@ class IgeFontEntity extends exports_2.IgeUiEntity {
     }
 }
 exports.IgeFontEntity = IgeFontEntity;
-(0, exports_3.registerClass)(IgeFontEntity);
+(0, igeClassStore_1.registerClass)(IgeFontEntity);

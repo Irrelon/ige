@@ -1,9 +1,9 @@
-import { IgeComponent } from "@/export/exports";
-import type { IgeEntity } from "@/export/exports";
-import { ige } from "@/export/exports";
-import { IgeBehaviourType } from "@/export/exports";
-import type { IgeCanvasRenderingContext2d } from "@/export/exports";
-import type { IgeTextureAnimation } from "@/export/exports";
+import { IgeComponent } from "@/engine/core/IgeComponent";
+import type { IgeEntity } from "@/engine/core/IgeEntity";
+import { ige } from "@/engine/instance";
+import { IgeBehaviourType } from "@/enums";
+import type { IgeCanvasRenderingContext2d } from "@/types/IgeCanvasRenderingContext2d";
+import type { IgeTextureAnimation } from "@/types/IgeTextureAnimation";
 
 export interface IgeAnimationStartOptions {
 	onComplete?: (anim: IgeTextureAnimation) => void;
@@ -95,7 +95,7 @@ export class IgeTextureAnimationComponent extends IgeComponent {
 						} else {
 							this.log(
 								"You can increase the performance of id-based cell animations by specifying the animation.define AFTER you have assigned your sprite sheet to the entity on entity with ID: " +
-									this._entity.id(),
+								this._entity.id(),
 								"warning"
 							);
 							break;

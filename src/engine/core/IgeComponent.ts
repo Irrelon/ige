@@ -1,4 +1,4 @@
-import { IgeEventingClass } from "@/export/exports";
+import { IgeEventingClass } from "@/engine/core/IgeEventingClass";
 
 export class IgeComponent<EntityType = any> extends IgeEventingClass {
 	_entity: EntityType;

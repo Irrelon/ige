@@ -1,9 +1,9 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.IgeUiElement = void 0;
-const exports_1 = require("../../export/exports.js");
-const exports_2 = require("../../export/exports.js");
-const exports_3 = require("../../export/exports.js");
+const IgeUiEntity_1 = require("./IgeUiEntity.js");
+const instance_1 = require("../instance.js");
+const igeClassStore_1 = require("../utils/igeClassStore.js");
 /**
  * Creates a new UI element. UI elements use more resources and CPU
  * than standard IgeEntity instances but provide a rich set of extra
@@ -18,7 +18,7 @@ const exports_3 = require("../../export/exports.js");
  * those will use fewer resources and will not block pointer events
  * from propagating to lower depth entities by default.
  */
-class IgeUiElement extends exports_1.IgeUiEntity {
+class IgeUiElement extends IgeUiEntity_1.IgeUiEntity {
     constructor() {
         super();
         this.classId = "IgeUiElement";
@@ -26,13 +26,13 @@ class IgeUiElement extends exports_1.IgeUiEntity {
         this._allowHover = true;
         this._allowFocus = true;
         this._allowActive = true;
-        if (!exports_3.ige.ui)
+        if (!instance_1.ige.ui)
             throw new Error("Engine UI component has not been added to the engine, please add the component IgeUiManagerController to the engine");
-        exports_3.ige.ui.registerElement(this);
+        instance_1.ige.ui.registerElement(this);
         this.on("pointerOver", () => {
             if (this._allowHover) {
                 this._updateStyle();
-                exports_3.ige.input.stopPropagation();
+                instance_1.ige.input.stopPropagation();
             }
             else {
                 this._pointerStateOver = false;
@@ -41,7 +41,7 @@ class IgeUiElement extends exports_1.IgeUiEntity {
         this.on("pointerOut", () => {
             if (this._allowHover) {
                 this._updateStyle();
-                exports_3.ige.input.stopPropagation();
+                instance_1.ige.input.stopPropagation();
             }
             else {
                 this._pointerStateOver = false;
@@ -50,7 +50,7 @@ class IgeUiElement extends exports_1.IgeUiEntity {
         this.on("pointerDown", () => {
             if (this._allowActive) {
                 this._updateStyle();
-                exports_3.ige.input.stopPropagation();
+                instance_1.ige.input.stopPropagation();
             }
             else {
                 this._pointerStateDown = false;
@@ -61,7 +61,7 @@ class IgeUiElement extends exports_1.IgeUiEntity {
             if (this._allowFocus) {
                 // Try to focus the entity
                 if (this.focus()) {
-                    exports_3.ige.input.stopPropagation();
+                    instance_1.ige.input.stopPropagation();
                     //this._updateStyle();
                 }
             }
@@ -102,18 +102,18 @@ class IgeUiElement extends exports_1.IgeUiEntity {
         // Check for existing assigned style
         if (this._styleClass && this._styleClass !== name) {
             // Unregister this element from the style
-            exports_3.ige.ui.unRegisterElementStyle(this);
+            instance_1.ige.ui.unRegisterElementStyle(this);
         }
         // Assign the new style
         this._styleClass = name;
         // Register the element for this style
-        exports_3.ige.ui.registerElementStyle(this);
+        instance_1.ige.ui.registerElementStyle(this);
         // Update the element style
         this._updateStyle();
         return this;
     }
     style(property, value) {
-        const ui = exports_3.ige.ui;
+        const ui = instance_1.ige.ui;
         const allStyles = {};
         const elementStyles = ui.style(this.classId) || {}; // Get styles by element type (e.g. "IgeUiButton")
         const classStyles = ui.style(this._styleClass) || {}; // Get styles by class name (e.g. ".helpButton")
@@ -223,7 +223,7 @@ class IgeUiElement extends exports_1.IgeUiEntity {
         if (state) {
             styleName += ":" + state;
         }
-        const styleData = exports_3.ige.ui.style(styleName);
+        const styleData = instance_1.ige.ui.style(styleName);
         if (styleData) {
             //this.log('Applying styles with selector "' + styleName + '"');
             this.applyStyle(styleData);
@@ -256,7 +256,7 @@ class IgeUiElement extends exports_1.IgeUiEntity {
      * Sets global UI focus to this element.
      */
     focus() {
-        if (exports_3.ige.ui.focus(this)) {
+        if (instance_1.ige.ui.focus(this)) {
             // Re-apply styles since the change
             this._updateStyle();
             return true;
@@ -267,7 +267,7 @@ class IgeUiElement extends exports_1.IgeUiEntity {
      * The blur method removes global UI focus from this UI element.
      */
     blur() {
-        if (exports_3.ige.ui.blur(this)) {
+        if (instance_1.ige.ui.blur(this)) {
             // Re-apply styles since the change
             this._updateStyle();
             return true;
@@ -291,9 +291,9 @@ class IgeUiElement extends exports_1.IgeUiEntity {
      * Destructor
      */
     destroy() {
-        exports_3.ige.ui.unRegisterElement(this);
+        instance_1.ige.ui.unRegisterElement(this);
         return super.destroy();
     }
 }
 exports.IgeUiElement = IgeUiElement;
-(0, exports_2.registerClass)(IgeUiElement);
+(0, igeClassStore_1.registerClass)(IgeUiElement);

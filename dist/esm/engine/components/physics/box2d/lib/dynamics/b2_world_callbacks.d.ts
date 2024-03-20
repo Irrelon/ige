@@ -12,10 +12,10 @@ export declare class b2DestructionListener {
     SayGoodbyeParticle(system: b2ParticleSystem, index: number): void;
 }
 export declare class b2ContactFilter {
+    static readonly b2_defaultFilter: b2ContactFilter;
     ShouldCollide(fixtureA: b2Fixture, fixtureB: b2Fixture): boolean;
     ShouldCollideFixtureParticle(fixture: b2Fixture, system: b2ParticleSystem, index: number): boolean;
     ShouldCollideParticleParticle(system: b2ParticleSystem, indexA: number, indexB: number): boolean;
-    static readonly b2_defaultFilter: b2ContactFilter;
 }
 export declare class b2ContactImpulse {
     normalImpulses: number[];
@@ -23,6 +23,7 @@ export declare class b2ContactImpulse {
     count: number;
 }
 export declare class b2ContactListener {
+    static readonly b2_defaultListener: b2ContactListener;
     BeginContact(contact: b2Contact): void;
     EndContact(contact: b2Contact): void;
     BeginContactFixtureParticle(system: b2ParticleSystem, contact: b2ParticleBodyContact): void;
@@ -31,7 +32,6 @@ export declare class b2ContactListener {
     EndContactParticleParticle(system: b2ParticleSystem, contact: b2ParticleContact): void;
     PreSolve(contact: b2Contact, oldManifold: b2Manifold): void;
     PostSolve(contact: b2Contact, impulse: b2ContactImpulse): void;
-    static readonly b2_defaultListener: b2ContactListener;
 }
 export declare class b2QueryCallback {
     ReportFixture(fixture: b2Fixture): boolean;

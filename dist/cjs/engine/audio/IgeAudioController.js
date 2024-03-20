@@ -10,8 +10,9 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.IgeAudioController = void 0;
-const exports_1 = require("../../export/exports.js");
-class IgeAudioController extends exports_1.IgeEventingClass {
+const IgeEventingClass_1 = require("../core/IgeEventingClass.js");
+const clientServer_1 = require("../utils/clientServer.js");
+class IgeAudioController extends IgeEventingClass_1.IgeEventingClass {
     constructor() {
         super();
         this.classId = "IgeAudioController";
@@ -83,7 +84,7 @@ class IgeAudioController extends exports_1.IgeEventingClass {
      * it is explicitly stopped.
      */
     play(id, loop = false) {
-        if (!exports_1.isClient || !this._ctx) {
+        if (!clientServer_1.isClient || !this._ctx) {
             return;
         }
         const buffer = this.register(id);

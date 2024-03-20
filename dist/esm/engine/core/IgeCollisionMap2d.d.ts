@@ -1,5 +1,5 @@
-import { IgeEntity } from "../../export/exports.js"
-import { IgeMap2d } from "../../export/exports.js"
+import { IgeEntity } from "./IgeEntity.js"
+import { IgeMap2d } from "./IgeMap2d.js";
 export declare class IgeCollisionMap2d extends IgeEntity {
     classId: string;
     map: IgeMap2d;

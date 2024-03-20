@@ -24,8 +24,12 @@ import { b2TimeStep } from "./b2_time_step.js"
 // Solver debugging is normally disabled because the block solver sometimes has to deal with a poorly conditioned effective mass matrix.
 // #define B2_DEBUG_SOLVER 0
 export let g_blockSolve = false;
-export function get_g_blockSolve() { return g_blockSolve; }
-export function set_g_blockSolve(value) { g_blockSolve = value; }
+export function get_g_blockSolve() {
+    return g_blockSolve;
+}
+export function set_g_blockSolve(value) {
+    g_blockSolve = value;
+}
 export class b2VelocityConstraintPoint {
     rA = new b2Vec2();
     rB = new b2Vec2();

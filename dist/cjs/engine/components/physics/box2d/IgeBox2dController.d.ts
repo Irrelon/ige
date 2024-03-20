@@ -1,18 +1,18 @@
-import { IgeEntityBox2d } from "../../../../export/exports.js"
-import { b2FixtureDef } from "../../../../export/exports.js"
-import { b2ContactListener } from "../../../../export/exports.js"
-import type { IgeEntity } from "../../../../export/exports.js"
-import { IgeEventingClass } from "../../../../export/exports.js"
-import type { IgeTileMap2d, IgeTileMap2dScanRectCallback } from "../../../../export/exports.js"
-import { b2Vec2 } from "../../../../export/exports.js"
-import type { b2Body } from "../../../../export/exports.js"
-import { b2World } from "../../../../export/exports.js"
-import { IgeBox2dTimingMode } from "../../../../export/exports.js"
-import type { IgeBox2dBodyDef } from "../../../../export/exports.js"
-import type { IgeBox2dContactListenerCallback } from "../../../../export/exports.js"
-import type { IgeBox2dContactPostSolveCallback, IgeBox2dContactPreSolveCallback } from "../../../../export/exports.js"
-import type { IgeBox2dFixtureDef } from "../../../../export/exports.js"
-import type { IgeEntityBehaviourMethod } from "../../../../export/exports.js"
+import { IgeEntityBox2d } from "./IgeEntityBox2d.js"
+import { b2Vec2 } from "./lib/common/b2_math.js";
+import { b2Body } from "./lib/dynamics/b2_body.js"
+import { b2FixtureDef } from "./lib/dynamics/b2_fixture.js";
+import { b2World } from "./lib/dynamics/b2_world.js"
+import { b2ContactListener } from "./lib/dynamics/b2_world_callbacks.js";
+import { IgeEntity } from "../../../core/IgeEntity.js"
+import { IgeEventingClass } from "../../../core/IgeEventingClass.js"
+import { IgeTileMap2d, IgeTileMap2dScanRectCallback } from "../../../core/IgeTileMap2d.js"
+import { IgeBox2dTimingMode } from "../../../../enums/index.js";
+import { IgeBox2dBodyDef } from "../../../../types/IgeBox2dBodyDef.js"
+import { IgeBox2dContactListenerCallback } from "../../../../types/IgeBox2dContactListenerCallback.js"
+import { IgeBox2dContactPostSolveCallback, IgeBox2dContactPreSolveCallback } from "../../../../types/IgeBox2dContactSolverCallback.js"
+import { IgeBox2dFixtureDef } from "../../../../types/IgeBox2dFixtureDef.js"
+import { IgeEntityBehaviourMethod } from "../../../../types/IgeEntityBehaviour.js"
 /**
  * The engine's Box2D component class.
  */

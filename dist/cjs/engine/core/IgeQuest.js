@@ -1,9 +1,9 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.IgeQuest = void 0;
-const exports_1 = require("../../export/exports.js");
-const exports_2 = require("../../export/exports.js");
-class IgeQuest extends exports_1.IgeEventingClass {
+const IgeEventingClass_1 = require("./IgeEventingClass.js");
+const igeClassStore_1 = require("../utils/igeClassStore.js");
+class IgeQuest extends IgeEventingClass_1.IgeEventingClass {
     constructor(questDefinition, completeCallback) {
         super();
         this.classId = "IgeQuest";
@@ -303,4 +303,4 @@ class IgeQuest extends exports_1.IgeEventingClass {
     }
 }
 exports.IgeQuest = IgeQuest;
-(0, exports_2.registerClass)(IgeQuest);
+(0, igeClassStore_1.registerClass)(IgeQuest);

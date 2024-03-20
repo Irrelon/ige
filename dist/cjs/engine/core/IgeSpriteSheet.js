@@ -1,12 +1,12 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.IgeSpriteSheet = void 0;
-const exports_1 = require("../../export/exports.js");
+const IgeTexture_1 = require("./IgeTexture.js");
 /**
  * Creates a new sprite sheet that cuts an image up into
  * arbitrary sections.
  */
-class IgeSpriteSheet extends exports_1.IgeTexture {
+class IgeSpriteSheet extends IgeTexture_1.IgeTexture {
     constructor(id, urlOrObject, cells) {
         super(id, urlOrObject);
         this.classId = "IgeSpriteSheet";

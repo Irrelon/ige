@@ -1,11 +1,11 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.IgeUiManagerController = void 0;
-const exports_1 = require("../../export/exports.js");
-const exports_2 = require("../../export/exports.js");
-const exports_3 = require("../../export/exports.js");
-const exports_4 = require("../../export/exports.js");
-class IgeUiManagerController extends exports_2.IgeEventingClass {
+const IgeEventingClass_1 = require("./IgeEventingClass.js");
+const instance_1 = require("../instance.js");
+const arrays_1 = require("../utils/arrays.js");
+const enums_1 = require("../../enums/index.js");
+class IgeUiManagerController extends IgeEventingClass_1.IgeEventingClass {
     constructor() {
         super(...arguments);
         this.componentId = "ui";
@@ -18,14 +18,14 @@ class IgeUiManagerController extends exports_2.IgeEventingClass {
         this._addEventListeners = (callback) => {
             // Remove any previous listeners
             this._removeEventListeners();
-            exports_3.ige.dependencies.waitFor(["input"], () => {
-                exports_3.ige.input.on("keyDown", this._keyDown);
+            instance_1.ige.dependencies.waitFor(["input"], () => {
+                instance_1.ige.input.on("keyDown", this._keyDown);
                 callback === null || callback === void 0 ? void 0 : callback();
             });
         };
         this._removeEventListeners = (callback) => {
-            exports_3.ige.dependencies.waitFor(["input"], () => {
-                exports_3.ige.input.off("keyDown", this._keyDown);
+            instance_1.ige.dependencies.waitFor(["input"], () => {
+                instance_1.ige.input.off("keyDown", this._keyDown);
                 callback === null || callback === void 0 ? void 0 : callback();
             });
         };
@@ -33,14 +33,14 @@ class IgeUiManagerController extends exports_2.IgeEventingClass {
             // Direct the key event to the focused element
             if (this._focus) {
                 this._focus.emit("keyUp", event);
-                exports_3.ige.input.stopPropagation();
+                instance_1.ige.input.stopPropagation();
             }
         };
         this._keyDown = (event) => {
             // Direct the key event to the focused element
             if (this._focus) {
                 this._focus.emit("keyDown", event);
-                exports_3.ige.input.stopPropagation();
+                instance_1.ige.input.stopPropagation();
             }
         };
     }
@@ -75,7 +75,7 @@ class IgeUiManagerController extends exports_2.IgeEventingClass {
      * @param elem
      */
     unRegisterElement(elem) {
-        (0, exports_1.arrPull)(this._register, elem);
+        (0, arrays_1.arrPull)(this._register, elem);
         // Kill any styles defined for this element id
         delete this._styles["#" + elem._id];
         delete this._styles["#" + elem._id + ":active"];
@@ -128,13 +128,13 @@ class IgeUiManagerController extends exports_2.IgeEventingClass {
                 // The element is not our current focus so focus to it
                 const previousFocus = this._focus;
                 // Tell the current focused element that it is about to lose focus
-                if (!previousFocus || previousFocus.emit("blur", elem) !== exports_4.IgeEventReturnFlag.cancel) {
+                if (!previousFocus || previousFocus.emit("blur", elem) !== enums_1.IgeEventReturnFlag.cancel) {
                     if (previousFocus) {
                         previousFocus._focused = false;
                         previousFocus.blur();
                     }
                     // The blur was not cancelled
-                    if (elem.emit("focus", previousFocus) !== exports_4.IgeEventReturnFlag.cancel) {
+                    if (elem.emit("focus", previousFocus) !== enums_1.IgeEventReturnFlag.cancel) {
                         // The focus was not cancelled
                         this._focus = elem;
                         elem._focused = true;
@@ -155,7 +155,7 @@ class IgeUiManagerController extends exports_2.IgeEventingClass {
             if (elem === this._focus) {
                 // The element is currently focused
                 // Tell the current focused element that it is about to lose focus
-                if (elem.emit("blur") !== exports_4.IgeEventReturnFlag.cancel) {
+                if (elem.emit("blur") !== enums_1.IgeEventReturnFlag.cancel) {
                     // The blur was not cancelled
                     this._focus = null;
                     elem._focused = false;

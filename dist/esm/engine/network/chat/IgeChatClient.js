@@ -1,7 +1,6 @@
-import { IgeChatComponent } from "../../../export/exports.js"
-import { ige } from "../../../export/exports.js"
-import { IgeEventReturnFlag } from "../../../export/exports.js"
-import { IGE_NETWORK_CHAT_JOIN_ROOM, IGE_NETWORK_CHAT_LEAVE_ROOM, IGE_NETWORK_CHAT_LIST_ROOMS, IGE_NETWORK_CHAT_MSG, IGE_NETWORK_CHAT_ROOM_CREATED, IGE_NETWORK_CHAT_ROOM_LIST_USERS, IGE_NETWORK_CHAT_ROOM_REMOVED } from "../../../export/exports.js"
+import { ige } from "../../instance.js"
+import { IgeChatComponent } from "./IgeChatComponent.js"
+import { IGE_NETWORK_CHAT_JOIN_ROOM, IGE_NETWORK_CHAT_LEAVE_ROOM, IGE_NETWORK_CHAT_LIST_ROOMS, IGE_NETWORK_CHAT_MSG, IGE_NETWORK_CHAT_ROOM_CREATED, IGE_NETWORK_CHAT_ROOM_LIST_USERS, IGE_NETWORK_CHAT_ROOM_REMOVED, IgeEventReturnFlag } from "../../../enums/index.js"
 /**
  * The client-side chat component. Handles all client-side
  * chat methods and events.
@@ -45,7 +44,7 @@ export class IgeChatClient extends IgeChatComponent {
         // Emit the event and if it wasn't cancelled (by returning true) then
         // process this ourselves
         if (this.emit("messageFromServer", data) !== IgeEventReturnFlag.cancel) {
-            console.log('Server sent us a message in the room "' + data.roomId + '" from the user id "' + data.from + '":', data.text);
+            console.log("Server sent us a message in the room \"" + data.roomId + "\" from the user id \"" + data.from + "\":", data.text);
         }
     }
     _onJoinedRoom(data) {

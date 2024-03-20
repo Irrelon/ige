@@ -1,14 +1,14 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.IgeInterval = void 0;
-const exports_1 = require("../../export/exports.js");
-const exports_2 = require("../../export/exports.js");
+const IgeEventingClass_1 = require("./IgeEventingClass.js");
+const instance_1 = require("../instance.js");
 /**
  * Provides a kind of setInterval() that works based on the engine's internal
  * time system allowing intervals to fire correctly, taking into account pausing
  * the game and differences in rendering speed etc.
  */
-class IgeInterval extends exports_1.IgeEventingClass {
+class IgeInterval extends IgeEventingClass_1.IgeEventingClass {
     /**
      * Creates a new timer that will call the method every given number of
      * milliseconds specified by the interval parameter.
@@ -24,10 +24,10 @@ class IgeInterval extends exports_1.IgeEventingClass {
         this._method = method;
         this._interval = interval;
         this._time = 0;
-        this._started = exports_2.ige.engine._currentTime;
+        this._started = instance_1.ige.engine._currentTime;
         this._catchup = catchup;
         // Attach ourselves to the time system
-        exports_2.ige.time.addTimer(this);
+        instance_1.ige.time.addTimer(this);
     }
     /**
      * Adds time to the timer's internal clock.
@@ -43,7 +43,7 @@ class IgeInterval extends exports_1.IgeEventingClass {
      * @returns {*}
      */
     cancel() {
-        exports_2.ige.time.removeTimer(this);
+        instance_1.ige.time.removeTimer(this);
         return this;
     }
     /**
@@ -56,9 +56,9 @@ class IgeInterval extends exports_1.IgeEventingClass {
         let intendedTime;
         const overTime = this._time - this._interval;
         if (overTime > 0) {
-            intendedTime = exports_2.ige.engine._currentTime - overTime;
+            intendedTime = instance_1.ige.engine._currentTime - overTime;
             // Fire an interval
-            this._method(exports_2.ige.engine._currentTime, intendedTime);
+            this._method(instance_1.ige.engine._currentTime, intendedTime);
             if (this._catchup) {
                 this._time -= this._interval;
             }

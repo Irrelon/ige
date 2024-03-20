@@ -1,7 +1,7 @@
-import { IgeTexture } from "@/export/exports";
-import type { IgeCanvas } from "@/export/exports";
-import type { IgeImage } from "@/export/exports";
-import type { IgeSmartTexture } from "@/export/exports";
+import { IgeTexture } from "@/engine/core/IgeTexture";
+import type { IgeCanvas } from "@/types/IgeCanvas";
+import type { IgeImage } from "@/types/IgeImage";
+import type { IgeSmartTexture } from "@/types/IgeSmartTexture";
 
 type IgeTextureCell = [number, number, number, number, string?];
 type IgeTextureCellArray = IgeTextureCell[];
@@ -54,7 +54,7 @@ export class IgeSpriteSheet extends IgeTexture {
 					if (cells[i][2] % 2) {
 						this.log(
 							"This texture's cell definition defines a cell width is not divisible by 2 which can cause the texture to use sub-pixel rendering resulting in a blurred image. This may also slow down the renderer on some browsers. Image file: " +
-								this._url,
+							this._url,
 							"warning",
 							cells[i]
 						);
@@ -63,7 +63,7 @@ export class IgeSpriteSheet extends IgeTexture {
 					if (cells[i][3] % 2) {
 						this.log(
 							"This texture's cell definition defines a cell height is not divisible by 2 which can cause the texture to use sub-pixel rendering resulting in a blurred image. This may also slow down the renderer on some browsers. Image file: " +
-								this._url,
+							this._url,
 							"warning",
 							cells[i]
 						);

@@ -1,10 +1,10 @@
-import { IgeBaseClass } from "@/export/exports";
-import type { IgeEntity } from "@/export/exports";
-import type { IgeObject } from "@/export/exports";
-import { IgePoint3d } from "@/export/exports";
-import { radiansToDegrees } from "@/export/exports";
-import type { IgeCanvasRenderingContext2d } from "@/export/exports";
-import type { IgePoint } from "@/export/exports";
+import { IgeBaseClass } from "@/engine/core/IgeBaseClass";
+import type { IgeEntity } from "@/engine/core/IgeEntity";
+import type { IgeObject } from "@/engine/core/IgeObject";
+import { IgePoint3d } from "@/engine/core/IgePoint3d";
+import { radiansToDegrees } from "@/engine/utils/maths";
+import type { IgeCanvasRenderingContext2d } from "@/types/IgeCanvasRenderingContext2d";
+import type { IgePoint } from "@/types/IgePoint";
 
 /**
  * Creates a new transformation matrix.

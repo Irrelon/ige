@@ -1,4 +1,4 @@
-import { IgeBaseClass } from "../../export/exports.js"
+import { IgeBaseClass } from "./IgeBaseClass.js"
 export class IgeSceneGraph extends IgeBaseClass {
     classId = "IgeSceneGraph";
     /**
@@ -6,10 +6,12 @@ export class IgeSceneGraph extends IgeBaseClass {
      * @param {Object=} options The options that were passed with the call
      * to ige.addGraph().
      */
-    addGraph(options) { }
+    addGraph(options) {
+    }
     /**
      * The method called when the graph items are to be removed from the
      * active graph.
      */
-    removeGraph(options) { }
+    removeGraph(options) {
+    }
 }

@@ -1,7 +1,7 @@
-import { IgeTexture } from "../../export/exports.js"
-import type { IgeCanvas } from "../../export/exports.js"
-import type { IgeImage } from "../../export/exports.js"
-import type { IgeSmartTexture } from "../../export/exports.js"
+import { IgeTexture } from "./IgeTexture.js"
+import type { IgeCanvas } from "../../types/IgeCanvas.js";
+import type { IgeImage } from "../../types/IgeImage.js"
+import type { IgeSmartTexture } from "../../types/IgeSmartTexture.js"
 type IgeTextureCell = [number, number, number, number, string?];
 type IgeTextureCellArray = IgeTextureCell[];
 /**

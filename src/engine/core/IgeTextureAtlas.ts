@@ -1,4 +1,4 @@
-import { IgeTextureMap } from "@/export/exports";
+import { IgeTextureMap } from "@/engine/core/IgeTextureMap";
 
 /**
  * Texture maps provide a way to display textures across a tile map.

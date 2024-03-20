@@ -1,19 +1,19 @@
-import type { IgeBaseRenderer } from "./IgeBaseRenderer.js"
-import type { IgeBaseClass } from "../../export/exports.js";
-import type { IgeCamera } from "../../export/exports.js"
-import type { IgeComponent } from "../../export/exports.js"
-import type { IgeDummyCanvas } from "../../export/exports.js"
-import { IgeEntity } from "../../export/exports.js"
-import type { IgeObject } from "../../export/exports.js"
-import { IgePoint3d } from "../../export/exports.js"
-import type { IgeSceneGraph } from "../../export/exports.js"
-import { IgeViewport } from "../../export/exports.js"
-import { IgeEngineState } from "../../export/exports.js"
-import type { IgeGenericClass } from "../../export/exports.js"
-import type { IgeCanvasRenderingContext2d } from "../../export/exports.js"
-import type { IgeSceneGraphDataEntry } from "../../export/exports.js"
-import type { IgeSyncEntry, IgeSyncMethod } from "../../export/exports.js"
+import type { IgeBaseClass } from "./IgeBaseClass.js"
+import type { IgeBaseRenderer } from "./IgeBaseRenderer.js";
+import type { IgeCamera } from "./IgeCamera.js"
+import type { IgeComponent } from "./IgeComponent.js";
+import type { IgeDummyCanvas } from "./IgeDummyCanvas.js"
+import { IgeEntity } from "./IgeEntity.js";
+import type { IgeObject } from "./IgeObject.js"
+import { IgePoint3d } from "./IgePoint3d.js";
+import type { IgeSceneGraph } from "./IgeSceneGraph.js"
+import { IgeViewport } from "./IgeViewport.js";
+import { IgeEngineState } from "../../enums/index.js";
 import type { IgeAnyFunction } from "../../types/IgeAnyFunction.js"
+import type { IgeCanvasRenderingContext2d } from "../../types/IgeCanvasRenderingContext2d.js"
+import type { IgeGenericClass } from "../../types/IgeGenericClass.js"
+import type { IgeSceneGraphDataEntry } from "../../types/IgeSceneGraphDataEntry.js"
+import type { IgeSyncEntry, IgeSyncMethod } from "../../types/IgeSyncEntry.js"
 export declare class IgeEngine extends IgeEntity {
     classId: string;
     client?: IgeBaseClass;
@@ -104,7 +104,7 @@ export declare class IgeEngine extends IgeEntity {
      * @param {IgeEntity} entity The entity to add.
      * @returns {Ige|[]} Either this, or the spawn queue.
      */
-    spawnQueue(entity: IgeObject): IgeObject[] | this;
+    spawnQueue(entity: IgeObject): this | IgeObject[];
     currentViewport(viewport?: IgeObject): IgeViewport | null;
     createCanvas(options?: {
         smoothing: boolean;
@@ -388,7 +388,7 @@ export declare class IgeEngine extends IgeEntity {
      * @param {String=} contextId The context such as '2d'. Defaults to '2d'.
      * @return {*}
      */
-    renderContext(contextId: "2d" | "three"): this | "2d" | "three";
+    renderContext(contextId: "2d" | "three"): "2d" | this | "three";
     /**
      * @deprecated Please create a renderer instance and assign it via engine.renderer() instead.
      * Creates a front-buffer or "drawing surface" for the renderer.
@@ -460,10 +460,7 @@ export declare class IgeEngine extends IgeEntity {
      *     entity.drawBounds(false);
      * @example #Get the current flag value
      *     console.log(entity.drawBounds());
-     * @return {*}
-     * @param id
-     * @param recursive
      */
-    drawBounds(id: boolean, recursive?: boolean): this;
     drawBounds(): boolean;
+    drawBounds(id: boolean, recursive?: boolean): this;
 }

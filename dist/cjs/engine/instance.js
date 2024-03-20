@@ -9,5 +9,5 @@ exports.ige = void 0;
  * code in order to support a highly edge-case scenario where you might want more than
  * one engine instance to operate on at a time.
  */
-const exports_1 = require("../export/exports.js");
-exports.ige = new exports_1.Ige();
+const Ige_1 = require("./core/Ige.js");
+exports.ige = new Ige_1.Ige();

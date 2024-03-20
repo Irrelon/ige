@@ -1,6 +1,6 @@
 /// <reference types="node" />
-import { IgeNetIoSocket } from "../../../export/exports.js"
-import { IgeEventingClass } from "../../../export/exports.js"
+import { IgeEventingClass } from "../../core/IgeEventingClass.js"
+import { IgeNetIoSocket } from "./IgeNetIoSocket.js"
 import http from "http";
 import websocket from "websocket";
 export declare class IgeNetIoServer extends IgeEventingClass {

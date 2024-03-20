@@ -2,13 +2,13 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.b2AreaJoint = exports.b2AreaJointDef = void 0;
 // DEBUG: import { b2Assert } from "../common/b2_settings.js"
-const b2_settings_js_1 = require("../common/b2_settings.js");
-const b2_math_js_1 = require("../common/b2_math.js");
-const b2_joint_js_1 = require("./b2_joint.js");
-const b2_distance_joint_js_1 = require("./b2_distance_joint.js");
-class b2AreaJointDef extends b2_joint_js_1.b2JointDef {
+const b2_settings_1 = require("../common/b2_settings");
+const b2_math_1 = require("../common/b2_math");
+const b2_joint_1 = require("./b2_joint");
+const b2_distance_joint_1 = require("./b2_distance_joint");
+class b2AreaJointDef extends b2_joint_1.b2JointDef {
     constructor() {
-        super(b2_joint_js_1.b2JointType.e_areaJoint);
+        super(b2_joint_1.b2JointType.e_areaJoint);
         this.bodies = [];
         this.stiffness = 0;
         this.damping = 0;
@@ -24,7 +24,7 @@ class b2AreaJointDef extends b2_joint_js_1.b2JointDef {
     }
 }
 exports.b2AreaJointDef = b2AreaJointDef;
-class b2AreaJoint extends b2_joint_js_1.b2Joint {
+class b2AreaJoint extends b2_joint_1.b2Joint {
     constructor(def) {
         super(def);
         this.m_stiffness = 0;
@@ -32,16 +32,16 @@ class b2AreaJoint extends b2_joint_js_1.b2Joint {
         // Solver shared
         this.m_impulse = 0;
         this.m_targetArea = 0;
-        this.m_delta = new b2_math_js_1.b2Vec2();
+        this.m_delta = new b2_math_1.b2Vec2();
         // DEBUG: b2Assert(def.bodies.length >= 3, "You cannot create an area joint with less than three bodies.");
         this.m_bodies = def.bodies;
-        this.m_stiffness = (0, b2_settings_js_1.b2Maybe)(def.stiffness, 0);
-        this.m_damping = (0, b2_settings_js_1.b2Maybe)(def.damping, 0);
-        this.m_targetLengths = (0, b2_settings_js_1.b2MakeNumberArray)(def.bodies.length);
-        this.m_normals = b2_math_js_1.b2Vec2.MakeArray(def.bodies.length);
+        this.m_stiffness = (0, b2_settings_1.b2Maybe)(def.stiffness, 0);
+        this.m_damping = (0, b2_settings_1.b2Maybe)(def.damping, 0);
+        this.m_targetLengths = (0, b2_settings_1.b2MakeNumberArray)(def.bodies.length);
+        this.m_normals = b2_math_1.b2Vec2.MakeArray(def.bodies.length);
         this.m_joints = []; // b2MakeNullArray(def.bodies.length);
-        this.m_deltas = b2_math_js_1.b2Vec2.MakeArray(def.bodies.length);
-        const djd = new b2_distance_joint_js_1.b2DistanceJointDef();
+        this.m_deltas = b2_math_1.b2Vec2.MakeArray(def.bodies.length);
+        const djd = new b2_distance_joint_1.b2DistanceJointDef();
         djd.stiffness = this.m_stiffness;
         djd.damping = this.m_damping;
         this.m_targetArea = 0;
@@ -50,8 +50,8 @@ class b2AreaJoint extends b2_joint_js_1.b2Joint {
             const next = this.m_bodies[(i + 1) % this.m_bodies.length];
             const body_c = body.GetWorldCenter();
             const next_c = next.GetWorldCenter();
-            this.m_targetLengths[i] = b2_math_js_1.b2Vec2.DistanceVV(body_c, next_c);
-            this.m_targetArea += b2_math_js_1.b2Vec2.CrossVV(body_c, next_c);
+            this.m_targetLengths[i] = b2_math_1.b2Vec2.DistanceVV(body_c, next_c);
+            this.m_targetArea += b2_math_1.b2Vec2.CrossVV(body_c, next_c);
             djd.Initialize(body, next, body_c, next_c);
             this.m_joints[i] = body.GetWorld().CreateJoint(djd);
         }
@@ -97,7 +97,7 @@ class b2AreaJoint extends b2_joint_js_1.b2Joint {
             const prev_c = data.positions[prev.m_islandIndex].c;
             const next_c = data.positions[next.m_islandIndex].c;
             const delta = this.m_deltas[i];
-            b2_math_js_1.b2Vec2.SubVV(next_c, prev_c, delta);
+            b2_math_1.b2Vec2.SubVV(next_c, prev_c, delta);
         }
         if (data.step.warmStarting) {
             this.m_impulse *= data.step.dtRatio;
@@ -121,7 +121,7 @@ class b2AreaJoint extends b2_joint_js_1.b2Joint {
             const body_v = data.velocities[body.m_islandIndex].v;
             const delta = this.m_deltas[i];
             dotMassSum += delta.LengthSquared() / body.GetMass();
-            crossMassSum += b2_math_js_1.b2Vec2.CrossVV(body_v, delta);
+            crossMassSum += b2_math_1.b2Vec2.CrossVV(body_v, delta);
         }
         const lambda = -2 * crossMassSum / dotMassSum;
         // lambda = b2Clamp(lambda, -b2_maxLinearCorrection, b2_maxLinearCorrection);
@@ -142,15 +142,15 @@ class b2AreaJoint extends b2_joint_js_1.b2Joint {
             const next = this.m_bodies[(i + 1) % this.m_bodies.length];
             const body_c = data.positions[body.m_islandIndex].c;
             const next_c = data.positions[next.m_islandIndex].c;
-            const delta = b2_math_js_1.b2Vec2.SubVV(next_c, body_c, this.m_delta);
+            const delta = b2_math_1.b2Vec2.SubVV(next_c, body_c, this.m_delta);
             let dist = delta.Length();
-            if (dist < b2_settings_js_1.b2_epsilon) {
+            if (dist < b2_settings_1.b2_epsilon) {
                 dist = 1;
             }
             this.m_normals[i].x = delta.y / dist;
             this.m_normals[i].y = -delta.x / dist;
             perimeter += dist;
-            area += b2_math_js_1.b2Vec2.CrossVV(body_c, next_c);
+            area += b2_math_1.b2Vec2.CrossVV(body_c, next_c);
         }
         area *= 0.5;
         const deltaArea = this.m_targetArea - area;
@@ -160,13 +160,13 @@ class b2AreaJoint extends b2_joint_js_1.b2Joint {
             const body = this.m_bodies[i];
             const body_c = data.positions[body.m_islandIndex].c;
             const next_i = (i + 1) % this.m_bodies.length;
-            const delta = b2_math_js_1.b2Vec2.AddVV(this.m_normals[i], this.m_normals[next_i], this.m_delta);
+            const delta = b2_math_1.b2Vec2.AddVV(this.m_normals[i], this.m_normals[next_i], this.m_delta);
             delta.SelfMul(toExtrude);
             const norm_sq = delta.LengthSquared();
-            if (norm_sq > (0, b2_math_js_1.b2Sq)(b2_settings_js_1.b2_maxLinearCorrection)) {
-                delta.SelfMul(b2_settings_js_1.b2_maxLinearCorrection / (0, b2_math_js_1.b2Sqrt)(norm_sq));
+            if (norm_sq > (0, b2_math_1.b2Sq)(b2_settings_1.b2_maxLinearCorrection)) {
+                delta.SelfMul(b2_settings_1.b2_maxLinearCorrection / (0, b2_math_1.b2Sqrt)(norm_sq));
             }
-            if (norm_sq > (0, b2_math_js_1.b2Sq)(b2_settings_js_1.b2_linearSlop)) {
+            if (norm_sq > (0, b2_math_1.b2Sq)(b2_settings_1.b2_linearSlop)) {
                 done = false;
             }
             body_c.x += delta.x;

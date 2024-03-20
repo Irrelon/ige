@@ -1,13 +1,13 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.IgeScene2d = void 0;
-const exports_1 = require("../../export/exports.js");
-const exports_2 = require("../../export/exports.js");
-const exports_3 = require("../../export/exports.js");
+const IgeEntity_1 = require("./IgeEntity.js");
+const instance_1 = require("../instance.js");
+const igeClassStore_1 = require("../utils/igeClassStore.js");
 /**
  * Creates a new 2d scene.
  */
-class IgeScene2d extends exports_1.IgeEntity {
+class IgeScene2d extends IgeEntity_1.IgeEntity {
     constructor() {
         super();
         this.classId = "IgeScene2d";
@@ -86,7 +86,7 @@ class IgeScene2d extends exports_1.IgeEntity {
         this.update = (tickDelta) => {
             if (this._ignoreCamera) {
                 // Translate the scene, so it is always center of the camera
-                const cam = exports_3.ige.engine._currentCamera;
+                const cam = instance_1.ige.engine._currentCamera;
                 if (cam) {
                     this.translateTo(cam._translate.x, cam._translate.y, cam._translate.z);
                     this.scaleTo(1 / cam._scale.x, 1 / cam._scale.y, 1 / cam._scale.z);
@@ -103,8 +103,8 @@ class IgeScene2d extends exports_1.IgeEntity {
          */
         this._resizeEvent = (event) => {
             // Set width / height of scene to match main ige (SCENES ARE ALWAYS THE FULL IGE SIZE!!)
-            if (this._autoSize && exports_3.ige.engine) {
-                this._bounds2d = exports_3.ige.engine._bounds2d.clone();
+            if (this._autoSize && instance_1.ige.engine) {
+                this._bounds2d = instance_1.ige.engine._bounds2d.clone();
             }
             // Resize any children
             const arr = this._children;
@@ -119,8 +119,8 @@ class IgeScene2d extends exports_1.IgeEntity {
         this._autoSize = true;
         // Set the geometry of the scene to the main canvas
         // width / height - used when positioning UI elements
-        this._bounds2d.x = exports_3.ige.engine._bounds2d.x;
-        this._bounds2d.y = exports_3.ige.engine._bounds2d.y;
+        this._bounds2d.x = instance_1.ige.engine._bounds2d.x;
+        this._bounds2d.y = instance_1.ige.engine._bounds2d.y;
         this.streamSections(["transform", "ignoreCamera"]);
     }
     ignoreCamera(val) {
@@ -168,4 +168,4 @@ class IgeScene2d extends exports_1.IgeEntity {
     }
 }
 exports.IgeScene2d = IgeScene2d;
-(0, exports_2.registerClass)(IgeScene2d);
+(0, igeClassStore_1.registerClass)(IgeScene2d);

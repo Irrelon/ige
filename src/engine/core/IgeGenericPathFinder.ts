@@ -1,4 +1,4 @@
-import { IgeEventingClass } from "@/export/exports";
+import { IgeEventingClass } from "@/engine/core/IgeEventingClass";
 
 enum ListType {
 	"closed",

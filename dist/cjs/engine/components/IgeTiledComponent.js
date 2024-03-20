@@ -1,15 +1,15 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.IgeTiledComponent = void 0;
-const exports_1 = require("../../export/exports.js");
-const exports_2 = require("../../export/exports.js");
-const exports_3 = require("../../export/exports.js");
-const exports_4 = require("../../export/exports.js");
-const exports_5 = require("../../export/exports.js");
+const IgeCellSheet_1 = require("../core/IgeCellSheet.js");
+const IgeComponent_1 = require("../core/IgeComponent.js");
+const IgeTextureMap_1 = require("../core/IgeTextureMap.js");
+const IgeTileMap2d_1 = require("../core/IgeTileMap2d.js");
+const clientServer_1 = require("../utils/clientServer.js");
 /**
  * Loads slightly modified Tiled-format json map data into the Isogenic Engine.
  */
-class IgeTiledComponent extends exports_2.IgeComponent {
+class IgeTiledComponent extends IgeComponent_1.IgeComponent {
     constructor(entity, options) {
         super(entity, options);
         this.classId = "IgeTiledComponent";
@@ -24,7 +24,7 @@ class IgeTiledComponent extends exports_2.IgeComponent {
         this.loadJson = (url, callback) => {
             let scriptElem;
             if (typeof url === "string") {
-                if (exports_5.isClient) {
+                if (clientServer_1.isClient) {
                     scriptElem = document.createElement("script");
                     scriptElem.src = url;
                     scriptElem.onload = function () {
@@ -42,7 +42,7 @@ class IgeTiledComponent extends exports_2.IgeComponent {
             }
         };
         this._processData = (data, callback) => {
-            const mapClass = exports_5.isServer === true ? exports_4.IgeTileMap2d : exports_3.IgeTextureMap, mapWidth = data.width, mapHeight = data.height, layerArray = data.layers, layerCount = layerArray.length, maps = [], layersById = {}, tileSetArray = data.tilesets, tileSetsTotal = tileSetArray.length, textureCellLookup = [], textures = [];
+            const mapClass = clientServer_1.isServer === true ? IgeTileMap2d_1.IgeTileMap2d : IgeTextureMap_1.IgeTextureMap, mapWidth = data.width, mapHeight = data.height, layerArray = data.layers, layerCount = layerArray.length, maps = [], layersById = {}, tileSetArray = data.tilesets, tileSetsTotal = tileSetArray.length, textureCellLookup = [], textures = [];
             let tileSetCount = tileSetArray.length, layer, layerType, layerData, layerDataCount, tileSetItem, tileSetsLoaded = 0, currentTexture, currentCell, onLoadFunc, image, i, k, x, y, z, ent;
             // Define the function to call when all textures have finished loading
             const allTexturesLoadedFunc = function () {
@@ -64,7 +64,7 @@ class IgeTiledComponent extends exports_2.IgeComponent {
                         }
                         layersById[layer.name] = maps[i];
                         tileSetCount = tileSetArray.length;
-                        if (exports_5.isClient) {
+                        if (clientServer_1.isClient) {
                             const textureMap = maps[i];
                             textureMap.type = layerType;
                             for (k = 0; k < tileSetCount; k++) {
@@ -77,7 +77,7 @@ class IgeTiledComponent extends exports_2.IgeComponent {
                             for (x = 0; x < mapWidth; x++) {
                                 z = x + y * mapWidth;
                                 if (layerData[z] > 0 && layerData[z] !== 2147483712) {
-                                    if (exports_5.isClient) {
+                                    if (clientServer_1.isClient) {
                                         const textureMap = maps[i];
                                         // Paint the tile
                                         currentTexture = textureCellLookup[layerData[z]];
@@ -104,11 +104,11 @@ class IgeTiledComponent extends exports_2.IgeComponent {
                 }
                 callback(maps, layersById);
             };
-            if (exports_5.isClient) {
+            if (clientServer_1.isClient) {
                 onLoadFunc = function (_textures, _tileSetCount, _tileSetItem) {
                     return function () {
                         let cc;
-                        const cs = new exports_1.IgeCellSheet(_tileSetItem.name, _tileSetItem.image, this.width / _tileSetItem.tilewidth, this.height / _tileSetItem.tileheight).on("loaded", function () {
+                        const cs = new IgeCellSheet_1.IgeCellSheet(_tileSetItem.name, _tileSetItem.image, this.width / _tileSetItem.tilewidth, this.height / _tileSetItem.tileheight).on("loaded", function () {
                             cc = this.cellCount();
                             const tiledStartingId = _tileSetItem.firstgid;
                             // Fill the lookup array

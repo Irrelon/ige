@@ -1,4 +1,4 @@
-import { IgeBaseClass } from "../../export/exports.js"
+import { IgeBaseClass } from "./IgeBaseClass.js"
 /**
  * Creates a new map that has two dimensions (x and y) to its data
  * and allows multiple items to be stored or "stacked" on a single
@@ -62,5 +62,5 @@ export declare class IgeMapStack2d extends IgeBaseClass {
      * @param {Array} val The map data array.
      * @return {*}
      */
-    mapData(val: any): this | any[][];
+    mapData(val: any): any[][] | this;
 }

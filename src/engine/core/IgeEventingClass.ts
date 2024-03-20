@@ -1,5 +1,5 @@
-import { IgeBaseClass } from "@/export/exports";
-import { IgeEventReturnFlag } from "@/export/exports";
+import { IgeBaseClass } from "@/engine/core/IgeBaseClass";
+import { IgeEventReturnFlag } from "@/enums/IgeEventReturnFlag";
 
 export type IgeEventListenerCallback = (...args: any[]) => boolean | undefined | void;
 
@@ -141,8 +141,8 @@ export class IgeEventingClass extends IgeBaseClass {
 	 * @param {Function} listener The method to call when the event is fired.
 	 * @returns {IgeEventingClass} The emitter instance.
 	 */
-	on(eventName: string, id: string, listener: IgeEventListenerCallback): this;
-	on(eventName: string, listener: IgeEventListenerCallback): this;
+	on (eventName: string, id: string, listener: IgeEventListenerCallback): this;
+	on (eventName: string, listener: IgeEventListenerCallback): this;
 	on (eventName: string, ...rest: any[]): this {
 		const restTypes = rest.map((arg) => typeof arg);
 
@@ -161,8 +161,8 @@ export class IgeEventingClass extends IgeBaseClass {
 	 * @param listener
 	 * @returns {IgeEventingClass} The emitter instance.
 	 */
-	once(eventName: string, id: string, listener: IgeEventListenerCallback): this;
-	once(eventName: string, listener: IgeEventListenerCallback): this;
+	once (eventName: string, id: string, listener: IgeEventListenerCallback): this;
+	once (eventName: string, listener: IgeEventListenerCallback): this;
 	once (eventName: string, ...rest: any[]): this {
 		const restTypes = rest.map((arg) => typeof arg);
 
@@ -185,8 +185,8 @@ export class IgeEventingClass extends IgeBaseClass {
 	 * @param {Function} listener The method to call when the event is fired.
 	 * @returns {IgeEventingClass} The emitter instance.
 	 */
-	overwrite(eventName: string, id: string, listener: IgeEventListenerCallback): this;
-	overwrite(eventName: string, listener: IgeEventListenerCallback): this;
+	overwrite (eventName: string, id: string, listener: IgeEventListenerCallback): this;
+	overwrite (eventName: string, listener: IgeEventListenerCallback): this;
 	overwrite (eventName: string, ...rest: any[]) {
 		const restTypes = rest.map((arg) => typeof arg);
 
@@ -207,9 +207,9 @@ export class IgeEventingClass extends IgeBaseClass {
 	 * or once() call to cancel.
 	 * @returns {IgeEventingClass} The emitter instance.
 	 */
-	public off(eventName: string, id: string, listener?: IgeEventListenerCallback): this;
-	public off(eventName: string, listener?: IgeEventListenerCallback): this;
-	public off(eventName: string): this;
+	public off (eventName: string, id: string, listener?: IgeEventListenerCallback): this;
+	public off (eventName: string, listener?: IgeEventListenerCallback): this;
+	public off (eventName: string): this;
 	public off (eventName: string, ...rest: any[]) {
 		if (rest.length === 0) {
 			// Only event was provided, use * as the id to mean "any without"

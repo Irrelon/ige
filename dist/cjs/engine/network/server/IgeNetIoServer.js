@@ -4,9 +4,10 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.IgeNetIoServer = void 0;
-const exports_1 = require("../../../export/exports.js");
-const exports_2 = require("../../../export/exports.js");
-const exports_3 = require("../../../export/exports.js");
+const IgeEventingClass_1 = require("../../core/IgeEventingClass.js");
+const IgeNetIoSocket_1 = require("./IgeNetIoSocket.js");
+const arrays_1 = require("../../utils/arrays.js");
+const ids_1 = require("../../utils/ids.js");
 const http_1 = __importDefault(require("http"));
 const websocket_1 = __importDefault(require("websocket"));
 // /**
@@ -25,7 +26,7 @@ const websocket_1 = __importDefault(require("websocket"));
 // 		match: ''
 // 	}
 // };
-class IgeNetIoServer extends exports_2.IgeEventingClass {
+class IgeNetIoServer extends IgeEventingClass_1.IgeEventingClass {
     constructor(port, callback) {
         super();
         this.classId = "IgeNetIoServer";
@@ -61,8 +62,8 @@ class IgeNetIoServer extends exports_2.IgeEventingClass {
             this.log("Client connecting...");
             const connection = request.accept("netio1", request.origin);
             // Give the socket a unique ID
-            const id = (0, exports_3.newIdHex)();
-            const socket = new exports_1.IgeNetIoSocket(connection, {
+            const id = (0, ids_1.newIdHex)();
+            const socket = new IgeNetIoSocket_1.IgeNetIoSocket(connection, {
                 id,
                 encode: this._encode,
                 decode: this._decode
@@ -120,7 +121,7 @@ class IgeNetIoServer extends exports_2.IgeEventingClass {
         const encodedData = this._encode(data);
         if (clientIdOrArrayOfIds === undefined) {
             // No client id provided, send to all connected clients
-            this._sendToEach((0, exports_3.arrClone)(this._sockets), encodedData);
+            this._sendToEach((0, arrays_1.arrClone)(this._sockets), encodedData);
             return;
         }
         if (typeof clientIdOrArrayOfIds === "string") {

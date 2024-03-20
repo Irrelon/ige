@@ -1,8 +1,9 @@
-import { type IgeAnyFunction } from "../../export/exports.js"
-import { IgeEventingClass } from "../../export/exports.js"
-import type { IgeUiElement, IgeUiStyleObject } from "../../export/exports.js"
-import type { IgeIsReadyPromise } from "../../export/exports.js"
+import { IgeEventingClass } from "./IgeEventingClass.js"
+import type { IgeUiElement } from "./IgeUiElement.js";
+import type { IgeAnyFunction } from "../../types/IgeAnyFunction.js"
 import type { IgeClassRecord } from "../../types/IgeClassRecord.js"
+import type { IgeIsReadyPromise } from "../../types/IgeIsReadyPromise.js"
+import type { IgeUiStyleObject } from "../../types/IgeUiStyleObject.js"
 export declare class IgeUiManagerController extends IgeEventingClass implements IgeIsReadyPromise {
     static componentTargetClass: string;
     componentId: string;

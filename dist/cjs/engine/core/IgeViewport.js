@@ -1,21 +1,21 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.IgeViewport = void 0;
-const exports_1 = require("../../export/exports.js");
-const exports_2 = require("../../export/exports.js");
-const exports_3 = require("../../export/exports.js");
-const exports_4 = require("../../export/exports.js");
-const exports_5 = require("../../export/exports.js");
-const exports_6 = require("../../export/exports.js");
-const exports_7 = require("../../export/exports.js");
-const exports_8 = require("../../export/exports.js");
-const exports_9 = require("../../export/exports.js");
+const IgeCamera_1 = require("./IgeCamera.js");
+const IgePoint2d_1 = require("./IgePoint2d.js");
+const IgePoint3d_1 = require("./IgePoint3d.js");
+const IgeRect_1 = require("./IgeRect.js");
+const IgeUiEntity_1 = require("./IgeUiEntity.js");
+const instance_1 = require("../instance.js");
+const clientServer_1 = require("../utils/clientServer.js");
+const igeClassStore_1 = require("../utils/igeClassStore.js");
+const enums_1 = require("../../enums/index.js");
 // TODO: Turns out we need IgeObject because IgeViewport cannot extend IgeEntity
 //    because IgeEntity imports IgeViewport, creating a circular referencing issue
 /**
  * Creates a new viewport.
  */
-class IgeViewport extends exports_5.IgeUiEntity {
+class IgeViewport extends IgeUiEntity_1.IgeUiEntity {
     constructor(options) {
         super();
         this.classId = "IgeViewport";
@@ -24,7 +24,7 @@ class IgeViewport extends exports_5.IgeUiEntity {
         let width, height;
         this._alwaysInView = true;
         this._pointerAlwaysInside = true;
-        this._pointerPos = new exports_3.IgePoint3d(0, 0, 0);
+        this._pointerPos = new IgePoint3d_1.IgePoint3d(0, 0, 0);
         this._overflow = "";
         this._clipping = true;
         this._bornTime = 0;
@@ -35,15 +35,15 @@ class IgeViewport extends exports_5.IgeUiEntity {
             height = options.height;
             if (options && options.scaleToWidth && options.scaleToHeight) {
                 // Store the w/h we want to lock to
-                this._lockDimension = new exports_3.IgePoint3d(options.scaleToWidth, options.scaleToHeight, 0);
+                this._lockDimension = new IgePoint3d_1.IgePoint3d(options.scaleToWidth, options.scaleToHeight, 0);
             }
         }
-        if (!exports_7.ige.engine) {
+        if (!instance_1.ige.engine) {
             throw new Error("IgeViewport instantiated before IgeEngine instance was created!");
         }
         // Setup default objects
-        this._bounds2d = new exports_2.IgePoint2d(width || exports_7.ige.engine._bounds2d.x, height || exports_7.ige.engine._bounds2d.y);
-        this.camera = new exports_1.IgeCamera(this);
+        this._bounds2d = new IgePoint2d_1.IgePoint2d(width || instance_1.ige.engine._bounds2d.x, height || instance_1.ige.engine._bounds2d.y);
+        this.camera = new IgeCamera_1.IgeCamera(this);
         this.camera._entity = this;
         //this._drawMouse = true;
     }
@@ -58,8 +58,8 @@ class IgeViewport extends exports_5.IgeUiEntity {
      */
     minimumVisibleArea(width, height) {
         // Store the w/h we want to lock to
-        this._lockDimension = new exports_3.IgePoint3d(width, height, 0);
-        if (exports_9.isClient) {
+        this._lockDimension = new IgePoint3d_1.IgePoint3d(width, height, 0);
+        if (clientServer_1.isClient) {
             this._resizeEvent();
         }
         return this;
@@ -97,7 +97,7 @@ class IgeViewport extends exports_5.IgeUiEntity {
      */
     viewArea(camScaleX = this.camera._scale.x, camScaleY = this.camera._scale.y) {
         const aabb = this.aabb(), camTrans = this.camera._translate, width = aabb.width * (1 / camScaleX), height = aabb.height * (1 / camScaleY);
-        return new exports_4.IgeRect(camTrans.x - width / 2, camTrans.y - height / 2, width, height);
+        return new IgeRect_1.IgeRect(camTrans.x - width / 2, camTrans.y - height / 2, width, height);
     }
     /**
      * Processes the updates before the render tick is called.
@@ -108,8 +108,8 @@ class IgeViewport extends exports_5.IgeUiEntity {
         if (!this._scene) {
             return;
         }
-        exports_7.ige.engine._currentCamera = this.camera;
-        exports_7.ige.engine._currentViewport = this;
+        instance_1.ige.engine._currentCamera = this.camera;
+        instance_1.ige.engine._currentViewport = this;
         this._scene._parent = this;
         this.camera.update();
         super.update(tickDelta);
@@ -122,18 +122,18 @@ class IgeViewport extends exports_5.IgeUiEntity {
      */
     tick(ctx) {
         // Check if we have a scene attached to this viewport and ige has a root object
-        if (!this._scene || !exports_7.ige.engine) {
+        if (!this._scene || !instance_1.ige.engine) {
             return;
         }
-        exports_7.ige.engine._currentCamera = this.camera;
-        exports_7.ige.engine._currentViewport = this;
+        instance_1.ige.engine._currentCamera = this.camera;
+        instance_1.ige.engine._currentViewport = this;
         this._scene._parent = this;
         super.tick(ctx);
         ctx.translate(-(this._bounds2d.x * this._origin.x) | 0, -(this._bounds2d.y * this._origin.y) | 0);
         ctx.clearRect(0, 0, this._bounds2d.x, this._bounds2d.y);
         if (this._clipping || this._borderColor) {
             ctx.beginPath();
-            ctx.rect(0, 0, this._bounds2d.x / exports_7.ige.engine._scale.x, this._bounds2d.y / exports_7.ige.engine._scale.x);
+            ctx.rect(0, 0, this._bounds2d.x / instance_1.ige.engine._scale.x, this._bounds2d.y / instance_1.ige.engine._scale.x);
             // Paint a border if required
             if (this._borderColor) {
                 ctx.strokeStyle = this._borderColor;
@@ -143,9 +143,9 @@ class IgeViewport extends exports_5.IgeUiEntity {
                 ctx.clip();
             }
         }
-        ctx.translate(((this._bounds2d.x / 2) | 0) + exports_7.ige.engine._translate.x, ((this._bounds2d.y / 2) | 0) + exports_7.ige.engine._translate.y);
-        if (exports_7.ige.engine._scale.x !== 1 || exports_7.ige.engine._scale.y !== 1) {
-            ctx.scale(exports_7.ige.engine._scale.x, exports_7.ige.engine._scale.y);
+        ctx.translate(((this._bounds2d.x / 2) | 0) + instance_1.ige.engine._translate.x, ((this._bounds2d.y / 2) | 0) + instance_1.ige.engine._translate.y);
+        if (instance_1.ige.engine._scale.x !== 1 || instance_1.ige.engine._scale.y !== 1) {
+            ctx.scale(instance_1.ige.engine._scale.x, instance_1.ige.engine._scale.y);
         }
         this.camera.tick(ctx);
         ctx.save();
@@ -208,7 +208,7 @@ class IgeViewport extends exports_5.IgeUiEntity {
      */
     screenPosition() {
         var _a, _b;
-        return new exports_3.IgePoint3d(Math.floor(this._worldMatrix.matrix[2] + (((_a = exports_7.ige.engine._bounds2d) === null || _a === void 0 ? void 0 : _a.x2) || 0)), Math.floor(this._worldMatrix.matrix[5] + (((_b = exports_7.ige.engine._bounds2d) === null || _b === void 0 ? void 0 : _b.y2) || 0)), 0);
+        return new IgePoint3d_1.IgePoint3d(Math.floor(this._worldMatrix.matrix[2] + (((_a = instance_1.ige.engine._bounds2d) === null || _a === void 0 ? void 0 : _a.x2) || 0)), Math.floor(this._worldMatrix.matrix[5] + (((_b = instance_1.ige.engine._bounds2d) === null || _b === void 0 ? void 0 : _b.y2) || 0)), 0);
     }
     drawViewArea(val) {
         if (val !== undefined) {
@@ -246,9 +246,9 @@ class IgeViewport extends exports_5.IgeUiEntity {
         return this._drawGuides;
     }
     paintGuides(ctx) {
-        if (!exports_7.ige.engine)
+        if (!instance_1.ige.engine)
             return;
-        const geom = exports_7.ige.engine._bounds2d;
+        const geom = instance_1.ige.engine._bounds2d;
         // Check draw-guides setting
         if (this._drawGuides) {
             ctx.strokeStyle = "#ffffff";
@@ -310,7 +310,7 @@ class IgeViewport extends exports_5.IgeUiEntity {
                                 ctx.strokeRect(aabb.x, aabb.y, aabb.width, aabb.height);
                                 //}
                                 // Check if the object is mounted to an isometric mount
-                                if (obj._parent && obj._parent._mountMode === exports_8.IgeMountMode.iso) {
+                                if (obj._parent && obj._parent._mountMode === enums_1.IgeMountMode.iso) {
                                     bounds3dPoly = obj.bounds3dPolygon().aabb();
                                     ctx.save();
                                     ctx.strokeStyle = "#0068b8";
@@ -321,22 +321,22 @@ class IgeViewport extends exports_5.IgeUiEntity {
                                     //obj._transformContext(ctx);
                                     // Calculate the 3d bounds data
                                     r3d = obj._bounds3d;
-                                    xl1 = new exports_3.IgePoint3d(-(r3d.x / 2), 0, 0).toIso();
-                                    xl2 = new exports_3.IgePoint3d(+(r3d.x / 2), 0, 0).toIso();
-                                    xl3 = new exports_3.IgePoint3d(0, -(r3d.y / 2), 0).toIso();
-                                    xl4 = new exports_3.IgePoint3d(0, +(r3d.y / 2), 0).toIso();
-                                    xl5 = new exports_3.IgePoint3d(0, 0, -(r3d.z / 2)).toIso();
-                                    xl6 = new exports_3.IgePoint3d(0, 0, +(r3d.z / 2)).toIso();
+                                    xl1 = new IgePoint3d_1.IgePoint3d(-(r3d.x / 2), 0, 0).toIso();
+                                    xl2 = new IgePoint3d_1.IgePoint3d(+(r3d.x / 2), 0, 0).toIso();
+                                    xl3 = new IgePoint3d_1.IgePoint3d(0, -(r3d.y / 2), 0).toIso();
+                                    xl4 = new IgePoint3d_1.IgePoint3d(0, +(r3d.y / 2), 0).toIso();
+                                    xl5 = new IgePoint3d_1.IgePoint3d(0, 0, -(r3d.z / 2)).toIso();
+                                    xl6 = new IgePoint3d_1.IgePoint3d(0, 0, +(r3d.z / 2)).toIso();
                                     // Bottom face
-                                    bf1 = new exports_3.IgePoint3d(-(r3d.x / 2), -(r3d.y / 2), -(r3d.z / 2)).toIso();
-                                    bf2 = new exports_3.IgePoint3d(+(r3d.x / 2), -(r3d.y / 2), -(r3d.z / 2)).toIso();
-                                    bf3 = new exports_3.IgePoint3d(+(r3d.x / 2), +(r3d.y / 2), -(r3d.z / 2)).toIso();
-                                    bf4 = new exports_3.IgePoint3d(-(r3d.x / 2), +(r3d.y / 2), -(r3d.z / 2)).toIso();
+                                    bf1 = new IgePoint3d_1.IgePoint3d(-(r3d.x / 2), -(r3d.y / 2), -(r3d.z / 2)).toIso();
+                                    bf2 = new IgePoint3d_1.IgePoint3d(+(r3d.x / 2), -(r3d.y / 2), -(r3d.z / 2)).toIso();
+                                    bf3 = new IgePoint3d_1.IgePoint3d(+(r3d.x / 2), +(r3d.y / 2), -(r3d.z / 2)).toIso();
+                                    bf4 = new IgePoint3d_1.IgePoint3d(-(r3d.x / 2), +(r3d.y / 2), -(r3d.z / 2)).toIso();
                                     // Top face
-                                    tf1 = new exports_3.IgePoint3d(-(r3d.x / 2), -(r3d.y / 2), r3d.z / 2).toIso();
-                                    tf2 = new exports_3.IgePoint3d(+(r3d.x / 2), -(r3d.y / 2), r3d.z / 2).toIso();
-                                    tf3 = new exports_3.IgePoint3d(+(r3d.x / 2), +(r3d.y / 2), r3d.z / 2).toIso();
-                                    tf4 = new exports_3.IgePoint3d(-(r3d.x / 2), +(r3d.y / 2), r3d.z / 2).toIso();
+                                    tf1 = new IgePoint3d_1.IgePoint3d(-(r3d.x / 2), -(r3d.y / 2), r3d.z / 2).toIso();
+                                    tf2 = new IgePoint3d_1.IgePoint3d(+(r3d.x / 2), -(r3d.y / 2), r3d.z / 2).toIso();
+                                    tf3 = new IgePoint3d_1.IgePoint3d(+(r3d.x / 2), +(r3d.y / 2), r3d.z / 2).toIso();
+                                    tf4 = new IgePoint3d_1.IgePoint3d(-(r3d.x / 2), +(r3d.y / 2), r3d.z / 2).toIso();
                                     ga = ctx.globalAlpha;
                                     // Axis lines
                                     ctx.globalAlpha = 1;
@@ -496,4 +496,4 @@ class IgeViewport extends exports_5.IgeUiEntity {
     }
 }
 exports.IgeViewport = IgeViewport;
-(0, exports_6.registerClass)(IgeViewport);
+(0, igeClassStore_1.registerClass)(IgeViewport);

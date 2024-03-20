@@ -21,8 +21,12 @@ export const b2_pi_over_180 = b2_pi / 180;
 export const b2_180_over_pi = 180 / b2_pi;
 export const b2_two_pi = 2 * b2_pi;
 export const b2Abs = Math.abs;
-export function b2Min(a, b) { return a < b ? a : b; }
-export function b2Max(a, b) { return a > b ? a : b; }
+export function b2Min(a, b) {
+    return a < b ? a : b;
+}
+export function b2Max(a, b) {
+    return a > b ? a : b;
+}
 export function b2Clamp(a, lo, hi) {
     return (a < lo) ? (lo) : ((a > hi) ? (hi) : (a));
 }
@@ -86,6 +90,131 @@ export class b2Vec2 {
     constructor(x = 0, y = 0) {
         this.x = x;
         this.y = y;
+    }
+    static MakeArray(length) {
+        return b2MakeArray(length, (i) => new b2Vec2());
+    }
+    static AbsV(v, out) {
+        out.x = b2Abs(v.x);
+        out.y = b2Abs(v.y);
+        return out;
+    }
+    static MinV(a, b, out) {
+        out.x = b2Min(a.x, b.x);
+        out.y = b2Min(a.y, b.y);
+        return out;
+    }
+    static MaxV(a, b, out) {
+        out.x = b2Max(a.x, b.x);
+        out.y = b2Max(a.y, b.y);
+        return out;
+    }
+    static ClampV(v, lo, hi, out) {
+        out.x = b2Clamp(v.x, lo.x, hi.x);
+        out.y = b2Clamp(v.y, lo.y, hi.y);
+        return out;
+    }
+    static RotateV(v, radians, out) {
+        const v_x = v.x, v_y = v.y;
+        const c = Math.cos(radians);
+        const s = Math.sin(radians);
+        out.x = c * v_x - s * v_y;
+        out.y = s * v_x + c * v_y;
+        return out;
+    }
+    static DotVV(a, b) {
+        return a.x * b.x + a.y * b.y;
+    }
+    static CrossVV(a, b) {
+        return a.x * b.y - a.y * b.x;
+    }
+    static CrossVS(v, s, out) {
+        const v_x = v.x;
+        out.x = s * v.y;
+        out.y = -s * v_x;
+        return out;
+    }
+    static CrossVOne(v, out) {
+        const v_x = v.x;
+        out.x = v.y;
+        out.y = -v_x;
+        return out;
+    }
+    static CrossSV(s, v, out) {
+        const v_x = v.x;
+        out.x = -s * v.y;
+        out.y = s * v_x;
+        return out;
+    }
+    static CrossOneV(v, out) {
+        const v_x = v.x;
+        out.x = -v.y;
+        out.y = v_x;
+        return out;
+    }
+    static AddVV(a, b, out) {
+        out.x = a.x + b.x;
+        out.y = a.y + b.y;
+        return out;
+    }
+    static SubVV(a, b, out) {
+        out.x = a.x - b.x;
+        out.y = a.y - b.y;
+        return out;
+    }
+    static MulSV(s, v, out) {
+        out.x = v.x * s;
+        out.y = v.y * s;
+        return out;
+    }
+    static MulVS(v, s, out) {
+        out.x = v.x * s;
+        out.y = v.y * s;
+        return out;
+    }
+    static AddVMulSV(a, s, b, out) {
+        out.x = a.x + (s * b.x);
+        out.y = a.y + (s * b.y);
+        return out;
+    }
+    static SubVMulSV(a, s, b, out) {
+        out.x = a.x - (s * b.x);
+        out.y = a.y - (s * b.y);
+        return out;
+    }
+    static AddVCrossSV(a, s, v, out) {
+        const v_x = v.x;
+        out.x = a.x - (s * v.y);
+        out.y = a.y + (s * v_x);
+        return out;
+    }
+    static MidVV(a, b, out) {
+        out.x = (a.x + b.x) * 0.5;
+        out.y = (a.y + b.y) * 0.5;
+        return out;
+    }
+    static ExtVV(a, b, out) {
+        out.x = (b.x - a.x) * 0.5;
+        out.y = (b.y - a.y) * 0.5;
+        return out;
+    }
+    static IsEqualToV(a, b) {
+        return a.x === b.x && a.y === b.y;
+    }
+    static DistanceVV(a, b) {
+        const c_x = a.x - b.x;
+        const c_y = a.y - b.y;
+        return Math.sqrt(c_x * c_x + c_y * c_y);
+    }
+    static DistanceSquaredVV(a, b) {
+        const c_x = a.x - b.x;
+        const c_y = a.y - b.y;
+        return (c_x * c_x + c_y * c_y);
+    }
+    static NegV(v, out) {
+        out.x = -v.x;
+        out.y = -v.y;
+        return out;
     }
     Clone() {
         return new b2Vec2(this.x, this.y);
@@ -227,103 +356,10 @@ export class b2Vec2 {
         this.y = x;
         return this;
     }
-    static MakeArray(length) {
-        return b2MakeArray(length, (i) => new b2Vec2());
-    }
-    static AbsV(v, out) {
-        out.x = b2Abs(v.x);
-        out.y = b2Abs(v.y);
-        return out;
-    }
-    static MinV(a, b, out) {
-        out.x = b2Min(a.x, b.x);
-        out.y = b2Min(a.y, b.y);
-        return out;
-    }
-    static MaxV(a, b, out) {
-        out.x = b2Max(a.x, b.x);
-        out.y = b2Max(a.y, b.y);
-        return out;
-    }
-    static ClampV(v, lo, hi, out) {
-        out.x = b2Clamp(v.x, lo.x, hi.x);
-        out.y = b2Clamp(v.y, lo.y, hi.y);
-        return out;
-    }
-    static RotateV(v, radians, out) {
-        const v_x = v.x, v_y = v.y;
-        const c = Math.cos(radians);
-        const s = Math.sin(radians);
-        out.x = c * v_x - s * v_y;
-        out.y = s * v_x + c * v_y;
-        return out;
-    }
-    static DotVV(a, b) {
-        return a.x * b.x + a.y * b.y;
-    }
-    static CrossVV(a, b) {
-        return a.x * b.y - a.y * b.x;
-    }
-    static CrossVS(v, s, out) {
-        const v_x = v.x;
-        out.x = s * v.y;
-        out.y = -s * v_x;
-        return out;
-    }
-    static CrossVOne(v, out) {
-        const v_x = v.x;
-        out.x = v.y;
-        out.y = -v_x;
-        return out;
-    }
-    static CrossSV(s, v, out) {
-        const v_x = v.x;
-        out.x = -s * v.y;
-        out.y = s * v_x;
-        return out;
-    }
-    static CrossOneV(v, out) {
-        const v_x = v.x;
-        out.x = -v.y;
-        out.y = v_x;
-        return out;
-    }
-    static AddVV(a, b, out) { out.x = a.x + b.x; out.y = a.y + b.y; return out; }
-    static SubVV(a, b, out) { out.x = a.x - b.x; out.y = a.y - b.y; return out; }
-    static MulSV(s, v, out) { out.x = v.x * s; out.y = v.y * s; return out; }
-    static MulVS(v, s, out) { out.x = v.x * s; out.y = v.y * s; return out; }
-    static AddVMulSV(a, s, b, out) { out.x = a.x + (s * b.x); out.y = a.y + (s * b.y); return out; }
-    static SubVMulSV(a, s, b, out) { out.x = a.x - (s * b.x); out.y = a.y - (s * b.y); return out; }
-    static AddVCrossSV(a, s, v, out) {
-        const v_x = v.x;
-        out.x = a.x - (s * v.y);
-        out.y = a.y + (s * v_x);
-        return out;
-    }
-    static MidVV(a, b, out) { out.x = (a.x + b.x) * 0.5; out.y = (a.y + b.y) * 0.5; return out; }
-    static ExtVV(a, b, out) { out.x = (b.x - a.x) * 0.5; out.y = (b.y - a.y) * 0.5; return out; }
-    static IsEqualToV(a, b) {
-        return a.x === b.x && a.y === b.y;
-    }
-    static DistanceVV(a, b) {
-        const c_x = a.x - b.x;
-        const c_y = a.y - b.y;
-        return Math.sqrt(c_x * c_x + c_y * c_y);
-    }
-    static DistanceSquaredVV(a, b) {
-        const c_x = a.x - b.x;
-        const c_y = a.y - b.y;
-        return (c_x * c_x + c_y * c_y);
-    }
-    static NegV(v, out) { out.x = -v.x; out.y = -v.y; return out; }
 }
 export const b2Vec2_zero = new b2Vec2(0, 0);
 export class b2TypedVec2 {
     data;
-    get x() { return this.data[0]; }
-    set x(value) { this.data[0] = value; }
-    get y() { return this.data[1]; }
-    set y(value) { this.data[1] = value; }
     constructor(...args) {
         if (args[0] instanceof Float32Array) {
             if (args[0].length !== 2) {
@@ -336,6 +372,18 @@ export class b2TypedVec2 {
             const y = typeof args[1] === "number" ? args[1] : 0;
             this.data = new Float32Array([x, y]);
         }
+    }
+    get x() {
+        return this.data[0];
+    }
+    set x(value) {
+        this.data[0] = value;
+    }
+    get y() {
+        return this.data[1];
+    }
+    set y(value) {
+        this.data[1] = value;
     }
     Clone() {
         return new b2TypedVec2(new Float32Array(this.data));
@@ -488,12 +536,6 @@ export class b2Vec3 {
     static ZERO = new b2Vec3(0, 0, 0);
     static s_t0 = new b2Vec3();
     data;
-    get x() { return this.data[0]; }
-    set x(value) { this.data[0] = value; }
-    get y() { return this.data[1]; }
-    set y(value) { this.data[1] = value; }
-    get z() { return this.data[2]; }
-    set z(value) { this.data[2] = value; }
     constructor(...args) {
         if (args[0] instanceof Float32Array) {
             if (args[0].length !== 3) {
@@ -507,6 +549,35 @@ export class b2Vec3 {
             const z = typeof args[2] === "number" ? args[2] : 0;
             this.data = new Float32Array([x, y, z]);
         }
+    }
+    get x() {
+        return this.data[0];
+    }
+    set x(value) {
+        this.data[0] = value;
+    }
+    get y() {
+        return this.data[1];
+    }
+    set y(value) {
+        this.data[1] = value;
+    }
+    get z() {
+        return this.data[2];
+    }
+    set z(value) {
+        this.data[2] = value;
+    }
+    static DotV3V3(a, b) {
+        return a.x * b.x + a.y * b.y + a.z * b.z;
+    }
+    static CrossV3V3(a, b, out) {
+        const a_x = a.x, a_y = a.y, a_z = a.z;
+        const b_x = b.x, b_y = b.y, b_z = b.z;
+        out.x = a_y * b_z - a_z * b_y;
+        out.y = a_z * b_x - a_x * b_z;
+        out.z = a_x * b_y - a_y * b_x;
+        return out;
     }
     Clone() {
         return new b2Vec3(this.x, this.y, this.z);
@@ -565,17 +636,6 @@ export class b2Vec3 {
         this.z *= s;
         return this;
     }
-    static DotV3V3(a, b) {
-        return a.x * b.x + a.y * b.y + a.z * b.z;
-    }
-    static CrossV3V3(a, b, out) {
-        const a_x = a.x, a_y = a.y, a_z = a.z;
-        const b_x = b.x, b_y = b.y, b_z = b.z;
-        out.x = a_y * b_z - a_z * b_y;
-        out.y = a_z * b_x - a_x * b_z;
-        out.z = a_x * b_y - a_y * b_x;
-        return out;
-    }
 }
 /// A 2-by-2 matrix. Stored in column-major order.
 export class b2Mat22 {
@@ -585,9 +645,6 @@ export class b2Mat22 {
     // public readonly ey: b2Vec2 = new b2Vec2(this.data.subarray(2, 4));
     ex = new b2Vec2(1, 0);
     ey = new b2Vec2(0, 1);
-    Clone() {
-        return new b2Mat22().Copy(this);
-    }
     static FromVV(c1, c2) {
         return new b2Mat22().SetVV(c1, c2);
     }
@@ -596,6 +653,62 @@ export class b2Mat22 {
     }
     static FromAngle(radians) {
         return new b2Mat22().SetAngle(radians);
+    }
+    static AbsM(M, out) {
+        const M_ex = M.ex, M_ey = M.ey;
+        out.ex.x = b2Abs(M_ex.x);
+        out.ex.y = b2Abs(M_ex.y);
+        out.ey.x = b2Abs(M_ey.x);
+        out.ey.y = b2Abs(M_ey.y);
+        return out;
+    }
+    static MulMV(M, v, out) {
+        const M_ex = M.ex, M_ey = M.ey;
+        const v_x = v.x, v_y = v.y;
+        out.x = M_ex.x * v_x + M_ey.x * v_y;
+        out.y = M_ex.y * v_x + M_ey.y * v_y;
+        return out;
+    }
+    static MulTMV(M, v, out) {
+        const M_ex = M.ex, M_ey = M.ey;
+        const v_x = v.x, v_y = v.y;
+        out.x = M_ex.x * v_x + M_ex.y * v_y;
+        out.y = M_ey.x * v_x + M_ey.y * v_y;
+        return out;
+    }
+    static AddMM(A, B, out) {
+        const A_ex = A.ex, A_ey = A.ey;
+        const B_ex = B.ex, B_ey = B.ey;
+        out.ex.x = A_ex.x + B_ex.x;
+        out.ex.y = A_ex.y + B_ex.y;
+        out.ey.x = A_ey.x + B_ey.x;
+        out.ey.y = A_ey.y + B_ey.y;
+        return out;
+    }
+    static MulMM(A, B, out) {
+        const A_ex_x = A.ex.x, A_ex_y = A.ex.y;
+        const A_ey_x = A.ey.x, A_ey_y = A.ey.y;
+        const B_ex_x = B.ex.x, B_ex_y = B.ex.y;
+        const B_ey_x = B.ey.x, B_ey_y = B.ey.y;
+        out.ex.x = A_ex_x * B_ex_x + A_ey_x * B_ex_y;
+        out.ex.y = A_ex_y * B_ex_x + A_ey_y * B_ex_y;
+        out.ey.x = A_ex_x * B_ey_x + A_ey_x * B_ey_y;
+        out.ey.y = A_ex_y * B_ey_x + A_ey_y * B_ey_y;
+        return out;
+    }
+    static MulTMM(A, B, out) {
+        const A_ex_x = A.ex.x, A_ex_y = A.ex.y;
+        const A_ey_x = A.ey.x, A_ey_y = A.ey.y;
+        const B_ex_x = B.ex.x, B_ex_y = B.ex.y;
+        const B_ey_x = B.ey.x, B_ey_y = B.ey.y;
+        out.ex.x = A_ex_x * B_ex_x + A_ex_y * B_ex_y;
+        out.ex.y = A_ey_x * B_ex_x + A_ey_y * B_ex_y;
+        out.ey.x = A_ex_x * B_ey_x + A_ex_y * B_ey_y;
+        out.ey.y = A_ey_x * B_ey_x + A_ey_y * B_ey_y;
+        return out;
+    }
+    Clone() {
+        return new b2Mat22().Copy(this);
     }
     SetSSSS(r1c1, r1c2, r2c1, r2c2) {
         this.ex.Set(r1c1, r2c1);
@@ -677,59 +790,6 @@ export class b2Mat22 {
         this.ey.SelfSub(M.ey);
         return this;
     }
-    static AbsM(M, out) {
-        const M_ex = M.ex, M_ey = M.ey;
-        out.ex.x = b2Abs(M_ex.x);
-        out.ex.y = b2Abs(M_ex.y);
-        out.ey.x = b2Abs(M_ey.x);
-        out.ey.y = b2Abs(M_ey.y);
-        return out;
-    }
-    static MulMV(M, v, out) {
-        const M_ex = M.ex, M_ey = M.ey;
-        const v_x = v.x, v_y = v.y;
-        out.x = M_ex.x * v_x + M_ey.x * v_y;
-        out.y = M_ex.y * v_x + M_ey.y * v_y;
-        return out;
-    }
-    static MulTMV(M, v, out) {
-        const M_ex = M.ex, M_ey = M.ey;
-        const v_x = v.x, v_y = v.y;
-        out.x = M_ex.x * v_x + M_ex.y * v_y;
-        out.y = M_ey.x * v_x + M_ey.y * v_y;
-        return out;
-    }
-    static AddMM(A, B, out) {
-        const A_ex = A.ex, A_ey = A.ey;
-        const B_ex = B.ex, B_ey = B.ey;
-        out.ex.x = A_ex.x + B_ex.x;
-        out.ex.y = A_ex.y + B_ex.y;
-        out.ey.x = A_ey.x + B_ey.x;
-        out.ey.y = A_ey.y + B_ey.y;
-        return out;
-    }
-    static MulMM(A, B, out) {
-        const A_ex_x = A.ex.x, A_ex_y = A.ex.y;
-        const A_ey_x = A.ey.x, A_ey_y = A.ey.y;
-        const B_ex_x = B.ex.x, B_ex_y = B.ex.y;
-        const B_ey_x = B.ey.x, B_ey_y = B.ey.y;
-        out.ex.x = A_ex_x * B_ex_x + A_ey_x * B_ex_y;
-        out.ex.y = A_ex_y * B_ex_x + A_ey_y * B_ex_y;
-        out.ey.x = A_ex_x * B_ey_x + A_ey_x * B_ey_y;
-        out.ey.y = A_ex_y * B_ey_x + A_ey_y * B_ey_y;
-        return out;
-    }
-    static MulTMM(A, B, out) {
-        const A_ex_x = A.ex.x, A_ex_y = A.ex.y;
-        const A_ey_x = A.ey.x, A_ey_y = A.ey.y;
-        const B_ex_x = B.ex.x, B_ex_y = B.ex.y;
-        const B_ey_x = B.ey.x, B_ey_y = B.ey.y;
-        out.ex.x = A_ex_x * B_ex_x + A_ex_y * B_ex_y;
-        out.ex.y = A_ey_x * B_ex_x + A_ey_y * B_ex_y;
-        out.ey.x = A_ex_x * B_ey_x + A_ex_y * B_ey_y;
-        out.ey.y = A_ey_x * B_ey_x + A_ey_y * B_ey_y;
-        return out;
-    }
 }
 /// A 3-by-3 matrix. Stored in column-major order.
 export class b2Mat33 {
@@ -738,6 +798,30 @@ export class b2Mat33 {
     ex = new b2Vec3(this.data.subarray(0, 3));
     ey = new b2Vec3(this.data.subarray(3, 6));
     ez = new b2Vec3(this.data.subarray(6, 9));
+    static MulM33V3(A, v, out) {
+        const v_x = v.x, v_y = v.y, v_z = v.z;
+        out.x = A.ex.x * v_x + A.ey.x * v_y + A.ez.x * v_z;
+        out.y = A.ex.y * v_x + A.ey.y * v_y + A.ez.y * v_z;
+        out.z = A.ex.z * v_x + A.ey.z * v_y + A.ez.z * v_z;
+        return out;
+    }
+    static MulM33XYZ(A, x, y, z, out) {
+        out.x = A.ex.x * x + A.ey.x * y + A.ez.x * z;
+        out.y = A.ex.y * x + A.ey.y * y + A.ez.y * z;
+        out.z = A.ex.z * x + A.ey.z * y + A.ez.z * z;
+        return out;
+    }
+    static MulM33V2(A, v, out) {
+        const v_x = v.x, v_y = v.y;
+        out.x = A.ex.x * v_x + A.ey.x * v_y;
+        out.y = A.ex.y * v_x + A.ey.y * v_y;
+        return out;
+    }
+    static MulM33XY(A, x, y, out) {
+        out.x = A.ex.x * x + A.ey.x * y;
+        out.y = A.ex.y * x + A.ey.y * y;
+        return out;
+    }
     Clone() {
         return new b2Mat33().Copy(this);
     }
@@ -829,30 +913,6 @@ export class b2Mat33 {
         M.ez.y = M.ey.z;
         M.ez.z = det * (a11 * a22 - a12 * a12);
     }
-    static MulM33V3(A, v, out) {
-        const v_x = v.x, v_y = v.y, v_z = v.z;
-        out.x = A.ex.x * v_x + A.ey.x * v_y + A.ez.x * v_z;
-        out.y = A.ex.y * v_x + A.ey.y * v_y + A.ez.y * v_z;
-        out.z = A.ex.z * v_x + A.ey.z * v_y + A.ez.z * v_z;
-        return out;
-    }
-    static MulM33XYZ(A, x, y, z, out) {
-        out.x = A.ex.x * x + A.ey.x * y + A.ez.x * z;
-        out.y = A.ex.y * x + A.ey.y * y + A.ez.y * z;
-        out.z = A.ex.z * x + A.ey.z * y + A.ez.z * z;
-        return out;
-    }
-    static MulM33V2(A, v, out) {
-        const v_x = v.x, v_y = v.y;
-        out.x = A.ex.x * v_x + A.ey.x * v_y;
-        out.y = A.ex.y * v_x + A.ey.y * v_y;
-        return out;
-    }
-    static MulM33XY(A, x, y, out) {
-        out.x = A.ex.x * x + A.ey.x * y;
-        out.y = A.ex.y * x + A.ey.y * y;
-        return out;
-    }
 }
 /// Rotation
 export class b2Rot {
@@ -864,37 +924,6 @@ export class b2Rot {
             this.s = Math.sin(angle);
             this.c = Math.cos(angle);
         }
-    }
-    Clone() {
-        return new b2Rot().Copy(this);
-    }
-    Copy(other) {
-        this.s = other.s;
-        this.c = other.c;
-        return this;
-    }
-    SetAngle(angle) {
-        this.s = Math.sin(angle);
-        this.c = Math.cos(angle);
-        return this;
-    }
-    SetIdentity() {
-        this.s = 0;
-        this.c = 1;
-        return this;
-    }
-    GetAngle() {
-        return Math.atan2(this.s, this.c);
-    }
-    GetXAxis(out) {
-        out.x = this.c;
-        out.y = this.s;
-        return out;
-    }
-    GetYAxis(out) {
-        out.x = -this.s;
-        out.y = this.c;
-        return out;
     }
     static MulRR(q, r, out) {
         // [qc -qs] * [rc -rs] = [qc*rc-qs*rs -qc*rs-qs*rc]
@@ -932,6 +961,37 @@ export class b2Rot {
         out.y = -q_s * v_x + q_c * v_y;
         return out;
     }
+    Clone() {
+        return new b2Rot().Copy(this);
+    }
+    Copy(other) {
+        this.s = other.s;
+        this.c = other.c;
+        return this;
+    }
+    SetAngle(angle) {
+        this.s = Math.sin(angle);
+        this.c = Math.cos(angle);
+        return this;
+    }
+    SetIdentity() {
+        this.s = 0;
+        this.c = 1;
+        return this;
+    }
+    GetAngle() {
+        return Math.atan2(this.s, this.c);
+    }
+    GetXAxis(out) {
+        out.x = this.c;
+        out.y = this.s;
+        return out;
+    }
+    GetYAxis(out) {
+        out.x = -this.s;
+        out.y = this.c;
+        return out;
+    }
 }
 /// A transform contains translation and rotation. It is used to represent
 /// the position and orientation of rigid frames.
@@ -939,6 +999,39 @@ export class b2Transform {
     static IDENTITY = new b2Transform();
     p = new b2Vec2();
     q = new b2Rot();
+    static MulXV(T, v, out) {
+        // float32 x = (T.q.c * v.x - T.q.s * v.y) + T.p.x;
+        // float32 y = (T.q.s * v.x + T.q.c * v.y) + T.p.y;
+        // return b2Vec2(x, y);
+        const T_q_c = T.q.c, T_q_s = T.q.s;
+        const v_x = v.x, v_y = v.y;
+        out.x = (T_q_c * v_x - T_q_s * v_y) + T.p.x;
+        out.y = (T_q_s * v_x + T_q_c * v_y) + T.p.y;
+        return out;
+    }
+    static MulTXV(T, v, out) {
+        // float32 px = v.x - T.p.x;
+        // float32 py = v.y - T.p.y;
+        // float32 x = (T.q.c * px + T.q.s * py);
+        // float32 y = (-T.q.s * px + T.q.c * py);
+        // return b2Vec2(x, y);
+        const T_q_c = T.q.c, T_q_s = T.q.s;
+        const p_x = v.x - T.p.x;
+        const p_y = v.y - T.p.y;
+        out.x = (T_q_c * p_x + T_q_s * p_y);
+        out.y = (-T_q_s * p_x + T_q_c * p_y);
+        return out;
+    }
+    static MulXX(A, B, out) {
+        b2Rot.MulRR(A.q, B.q, out.q);
+        b2Vec2.AddVV(b2Rot.MulRV(A.q, B.p, out.p), A.p, out.p);
+        return out;
+    }
+    static MulTXX(A, B, out) {
+        b2Rot.MulTRR(A.q, B.q, out.q);
+        b2Rot.MulTRV(A.q, b2Vec2.SubVV(B.p, A.p, out.p), out.p);
+        return out;
+    }
     Clone() {
         return new b2Transform().Copy(this);
     }
@@ -989,39 +1082,6 @@ export class b2Transform {
     }
     GetAngle() {
         return this.q.GetAngle();
-    }
-    static MulXV(T, v, out) {
-        // float32 x = (T.q.c * v.x - T.q.s * v.y) + T.p.x;
-        // float32 y = (T.q.s * v.x + T.q.c * v.y) + T.p.y;
-        // return b2Vec2(x, y);
-        const T_q_c = T.q.c, T_q_s = T.q.s;
-        const v_x = v.x, v_y = v.y;
-        out.x = (T_q_c * v_x - T_q_s * v_y) + T.p.x;
-        out.y = (T_q_s * v_x + T_q_c * v_y) + T.p.y;
-        return out;
-    }
-    static MulTXV(T, v, out) {
-        // float32 px = v.x - T.p.x;
-        // float32 py = v.y - T.p.y;
-        // float32 x = (T.q.c * px + T.q.s * py);
-        // float32 y = (-T.q.s * px + T.q.c * py);
-        // return b2Vec2(x, y);
-        const T_q_c = T.q.c, T_q_s = T.q.s;
-        const p_x = v.x - T.p.x;
-        const p_y = v.y - T.p.y;
-        out.x = (T_q_c * p_x + T_q_s * p_y);
-        out.y = (-T_q_s * p_x + T_q_c * p_y);
-        return out;
-    }
-    static MulXX(A, B, out) {
-        b2Rot.MulRR(A.q, B.q, out.q);
-        b2Vec2.AddVV(b2Rot.MulRV(A.q, B.p, out.p), A.p, out.p);
-        return out;
-    }
-    static MulTXX(A, B, out) {
-        b2Rot.MulTRR(A.q, B.q, out.q);
-        b2Rot.MulTRV(A.q, b2Vec2.SubVV(B.p, A.p, out.p), out.p);
-        return out;
     }
 }
 /// This describes the motion of a body/shape for TOI computation.

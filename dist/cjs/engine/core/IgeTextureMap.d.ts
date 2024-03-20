@@ -1,5 +1,7 @@
-import type { IgeRect, IgeTexture } from "../../export/exports.js"
-import { IgePoint3d, IgeTileMap2d } from "../../export/exports.js"
+import { IgePoint3d } from "./IgePoint3d.js"
+import type { IgeRect } from "./IgeRect.js";
+import type { IgeTexture } from "./IgeTexture.js"
+import { IgeTileMap2d } from "./IgeTileMap2d.js";
 /**
  * Texture maps provide a way to display textures / cells across a tile map.
  */

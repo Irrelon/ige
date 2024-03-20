@@ -58,6 +58,12 @@ export class b2Jacobian {
 /// maintained in each attached body. Each joint has two joint
 /// nodes, one for each attached body.
 export class b2JointEdge {
+    joint; ///< the joint
+    prev = null; ///< the previous joint edge in the body's joint list
+    next = null; ///< the next joint edge in the body's joint list
+    constructor(joint) {
+        this.joint = joint;
+    }
     _other = null; ///< provides quick access to the other body attached.
     get other() {
         if (this._other === null) {
@@ -70,12 +76,6 @@ export class b2JointEdge {
             throw new Error();
         }
         this._other = value;
-    }
-    joint; ///< the joint
-    prev = null; ///< the previous joint edge in the body's joint list
-    next = null; ///< the next joint edge in the body's joint list
-    constructor(joint) {
-        this.joint = joint;
     }
     Reset() {
         this._other = null;
@@ -144,6 +144,11 @@ export function b2AngularStiffness(def, frequencyHertz, dampingRatio, bodyA, bod
 /// The base joint class. Joints are used to constraint two bodies together in
 /// various fashions. Some joints also feature limits and motors.
 export class b2Joint {
+    /// Debug draw this joint
+    static Draw_s_p1 = new b2Vec2();
+    static Draw_s_p2 = new b2Vec2();
+    static Draw_s_color = new b2Color(0.5, 0.8, 0.8);
+    static Draw_s_c = new b2Color();
     m_type = b2JointType.e_unknownJoint;
     m_prev = null;
     m_next = null;
@@ -177,6 +182,8 @@ export class b2Joint {
     GetBodyB() {
         return this.m_bodyB;
     }
+    /// Get collide connected.
+    /// Note: modifying the collide connect flag won't work correctly because
     /// Get the next joint the world joint list.
     GetNext() {
         return this.m_next;
@@ -193,8 +200,6 @@ export class b2Joint {
     IsEnabled() {
         return this.m_bodyA.IsEnabled() && this.m_bodyB.IsEnabled();
     }
-    /// Get collide connected.
-    /// Note: modifying the collide connect flag won't work correctly because
     /// the flag is only checked when fixture AABBs begin to overlap.
     GetCollideConnected() {
         return this.m_collideConnected;
@@ -204,12 +209,8 @@ export class b2Joint {
         log("// Dump is not supported for this joint type.\n");
     }
     /// Shift the origin for any points stored in world coordinates.
-    ShiftOrigin(newOrigin) { }
-    /// Debug draw this joint
-    static Draw_s_p1 = new b2Vec2();
-    static Draw_s_p2 = new b2Vec2();
-    static Draw_s_color = new b2Color(0.5, 0.8, 0.8);
-    static Draw_s_c = new b2Color();
+    ShiftOrigin(newOrigin) {
+    }
     Draw(draw) {
         const xf1 = this.m_bodyA.GetTransform();
         const xf2 = this.m_bodyB.GetTransform();

@@ -1,19 +1,19 @@
 "use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.IgeFontSheet = void 0;
-const exports_1 = require("../../export/exports.js");
-const exports_2 = require("../../export/exports.js");
 /* TODO: URGENT - Make this alignment stuff work inside the bounds of the entity it is attached to
  *    so that bottom-right aligns to the lower-right point of the bounding box of the entity
  *    whilst maintaining the current text-alignment as well
  * */
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.IgeFontSheet = void 0;
+const IgeTexture_1 = require("./IgeTexture.js");
+const instance_1 = require("../instance.js");
 /**
  * Creates a new font sheet. A font sheet is an image that contains
  * letters and numbers rendered to specifications. It allows you to
  * use and render text fonts without the font actually existing on
  * the target system that the engine is running in.
  */
-class IgeFontSheet extends exports_1.IgeTexture {
+class IgeFontSheet extends IgeTexture_1.IgeTexture {
     constructor(id, urlOrObject) {
         super(id, urlOrObject);
         this.classId = "IgeFontSheet";
@@ -225,7 +225,7 @@ class IgeFontSheet extends exports_1.IgeTexture {
                         _ctx.restore();
                     }
                     renderX += measuredWidthMap[charIndex] || 0;
-                    exports_2.ige.metrics.drawCount++;
+                    instance_1.ige.metrics.drawCount++;
                 }
                 renderX = 0;
             }

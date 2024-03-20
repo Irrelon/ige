@@ -1,6 +1,6 @@
-import { IgeComponent } from "../../../export/exports.js"
-import type { IgeEntity } from "../../../export/exports.js"
-import type { IgeEntityBehaviourMethod } from "../../../export/exports.js"
+import { IgeComponent } from "../../core/IgeComponent.js"
+import type { IgeEntity } from "../../core/IgeEntity.js"
+import type { IgeEntityBehaviourMethod } from "../../../types/IgeEntityBehaviour.js"
 /**
  * This component should be mounted to a parent entity such as an IgeScene2d but can
  * be mounted to any instance that extends IgeEntity.

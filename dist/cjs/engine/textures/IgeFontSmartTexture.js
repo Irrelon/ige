@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.IgeFontSmartTexture = void 0;
-const exports_1 = require("../../export/exports.js");
+const enums_1 = require("../../enums/index.js");
 /**
  * Provides native canvas font rendering supporting multi-line
  * text and alignment options.
@@ -49,26 +49,26 @@ exports.IgeFontSmartTexture = {
             // Store the text as a single line
             lineArr = [text];
         }
-        if (entity._textAlignY === exports_1.IgeFontAlignY.top) {
+        if (entity._textAlignY === enums_1.IgeFontAlignY.top) {
             ctx.textBaseline = "top";
             renderStartY = -(entity._bounds2d.y / 2);
         }
-        if (entity._textAlignY === exports_1.IgeFontAlignY.middle) {
+        if (entity._textAlignY === enums_1.IgeFontAlignY.middle) {
             ctx.textBaseline = "middle";
             renderStartY = -(entity._textLineSpacing / 2) * (lineArr.length - 1);
         }
-        if (entity._textAlignY === exports_1.IgeFontAlignY.bottom) {
+        if (entity._textAlignY === enums_1.IgeFontAlignY.bottom) {
             ctx.textBaseline = "bottom";
             renderStartY = entity._bounds2d.y / 2 - entity._textLineSpacing * (lineArr.length - 1);
         }
-        if (entity._textAlignY === exports_1.IgeFontAlignY.multiLineMiddle) {
+        if (entity._textAlignY === enums_1.IgeFontAlignY.multiLineMiddle) {
             ctx.textBaseline = "middle";
             lineHeight = Math.floor(entity._bounds2d.y / lineArr.length);
             renderStartY = -((lineHeight + entity._textLineSpacing) / 2) * (lineArr.length - 1);
         }
         for (let lineArrIndex = 0; lineArrIndex < lineArr.length; lineArrIndex++) {
             const lineArrItem = lineArr[lineArrIndex];
-            if (entity._textAlignY === exports_1.IgeFontAlignY.multiLineMiddle) {
+            if (entity._textAlignY === enums_1.IgeFontAlignY.multiLineMiddle) {
                 renderY = renderStartY + lineHeight * lineArrIndex + entity._textLineSpacing * lineArrIndex;
             }
             else {

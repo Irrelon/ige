@@ -1,12 +1,10 @@
-import { IgeComponent } from "@/export/exports";
-import type { IgeEntity } from "@/export/exports";
-import { IgePoint3d } from "@/export/exports";
-import { IgeRect } from "@/export/exports";
-import { ige } from "@/export/exports";
-import { IgeBehaviourType } from "@/export/exports";
-import { IgeEntityRenderMode } from "@/export/exports";
-import { IgeMountMode } from "@/export/exports";
-import type { IgeCanvasRenderingContext2d } from "@/export/exports";
+import { IgeComponent } from "@/engine/core/IgeComponent";
+import type { IgeEntity } from "@/engine/core/IgeEntity";
+import { IgePoint3d } from "@/engine/core/IgePoint3d";
+import { IgeRect } from "@/engine/core/IgeRect";
+import { ige } from "@/engine/instance";
+import { IgeBehaviourType, IgeEntityRenderMode, IgeMountMode } from "@/enums";
+import type { IgeCanvasRenderingContext2d } from "@/types/IgeCanvasRenderingContext2d";
 
 export class IgeEntityManagerComponent extends IgeComponent {
 	classId = "IgeEntityManagerComponent";

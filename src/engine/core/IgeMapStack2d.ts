@@ -1,5 +1,5 @@
-import { IgeBaseClass } from "@/export/exports";
-import { arrPull } from "@/export/exports";
+import { IgeBaseClass } from "@/engine/core/IgeBaseClass";
+import { arrPull } from "@/engine/utils/arrays";
 
 /**
  * Creates a new map that has two dimensions (x and y) to its data

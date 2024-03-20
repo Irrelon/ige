@@ -1,12 +1,12 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.IgePathFinder = void 0;
-const exports_1 = require("../../export/exports.js");
-const exports_2 = require("../../export/exports.js");
+const IgeEventingClass_1 = require("./IgeEventingClass.js");
+const IgePathNode_1 = require("./IgePathNode.js");
 /**
  * Creates a new path using the A* path-finding algorithm.
  */
-class IgePathFinder extends exports_1.IgeEventingClass {
+class IgePathFinder extends IgeEventingClass_1.IgeEventingClass {
     constructor() {
         super(...arguments);
         this.classId = "IgePathFinder";
@@ -88,7 +88,7 @@ class IgePathFinder extends exports_1.IgeEventingClass {
             return [];
         }
         // Starting point to open list
-        const startNode = new exports_2.IgePathNode(startPoint.x, startPoint.y, startPoint.z, 0, this._heuristic(startPoint.x, startPoint.y, startPoint.z, endPoint.x, endPoint.y, endPoint.z, 10));
+        const startNode = new IgePathNode_1.IgePathNode(startPoint.x, startPoint.y, startPoint.z, 0, this._heuristic(startPoint.x, startPoint.y, startPoint.z, endPoint.x, endPoint.y, endPoint.z, 10));
         // TODO this makes no sense, why did we assign as one?
         //startNode.link = 1;
         openList.push(startNode);
@@ -216,28 +216,28 @@ class IgePathFinder extends exports_1.IgeEventingClass {
             newZ = z;
             tileData = tileMap.map.tileData(newX, newY) || null;
             if (comparisonCallback(tileData, newX, newY, newZ, currentNodeData, x, y, z)) {
-                const newNode = new exports_2.IgePathNode(newX, newY, newZ, currentNode.g, this._squareCost, this._heuristic(newX, newY, newZ, endPoint.x, endPoint.y, endPoint.z, this._squareCost), currentNode, "W");
+                const newNode = new IgePathNode_1.IgePathNode(newX, newY, newZ, currentNode.g, this._squareCost, this._heuristic(newX, newY, newZ, endPoint.x, endPoint.y, endPoint.z, this._squareCost), currentNode, "W");
                 list.push(newNode);
             }
             newX = x + 1;
             newY = y;
             tileData = tileMap.map.tileData(newX, newY) || null;
             if (comparisonCallback(tileData, newX, newY, newZ, currentNodeData, x, y, z)) {
-                const newNode = new exports_2.IgePathNode(newX, newY, newZ, currentNode.g, this._squareCost, this._heuristic(newX, newY, newZ, endPoint.x, endPoint.y, endPoint.z, this._squareCost), currentNode, "E");
+                const newNode = new IgePathNode_1.IgePathNode(newX, newY, newZ, currentNode.g, this._squareCost, this._heuristic(newX, newY, newZ, endPoint.x, endPoint.y, endPoint.z, this._squareCost), currentNode, "E");
                 list.push(newNode);
             }
             newX = x;
             newY = y - 1;
             tileData = tileMap.map.tileData(newX, newY) || null;
             if (comparisonCallback(tileData, newX, newY, newZ, currentNodeData, x, y, z)) {
-                const newNode = new exports_2.IgePathNode(newX, newY, newZ, currentNode.g, this._squareCost, this._heuristic(newX, newY, newZ, endPoint.x, endPoint.y, endPoint.z, this._squareCost), currentNode, "N");
+                const newNode = new IgePathNode_1.IgePathNode(newX, newY, newZ, currentNode.g, this._squareCost, this._heuristic(newX, newY, newZ, endPoint.x, endPoint.y, endPoint.z, this._squareCost), currentNode, "N");
                 list.push(newNode);
             }
             newX = x;
             newY = y + 1;
             tileData = tileMap.map.tileData(newX, newY) || null;
             if (comparisonCallback(tileData, newX, newY, newZ, currentNodeData, x, y, z)) {
-                const newNode = new exports_2.IgePathNode(newX, newY, newZ, currentNode.g, this._squareCost, this._heuristic(newX, newY, newZ, endPoint.x, endPoint.y, endPoint.z, this._squareCost), currentNode, "S");
+                const newNode = new IgePathNode_1.IgePathNode(newX, newY, newZ, currentNode.g, this._squareCost, this._heuristic(newX, newY, newZ, endPoint.x, endPoint.y, endPoint.z, this._squareCost), currentNode, "S");
                 list.push(newNode);
             }
         }
@@ -246,28 +246,28 @@ class IgePathFinder extends exports_1.IgeEventingClass {
             newY = y - 1;
             tileData = tileMap.map.tileData(newX, newY) || null;
             if (comparisonCallback(tileData, newX, newY, newZ, currentNodeData, x, y, z)) {
-                const newNode = new exports_2.IgePathNode(newX, newY, newZ, currentNode.g, this._diagonalCost, this._heuristic(newX, newY, newZ, endPoint.x, endPoint.y, endPoint.z, this._diagonalCost), currentNode, "NW");
+                const newNode = new IgePathNode_1.IgePathNode(newX, newY, newZ, currentNode.g, this._diagonalCost, this._heuristic(newX, newY, newZ, endPoint.x, endPoint.y, endPoint.z, this._diagonalCost), currentNode, "NW");
                 list.push(newNode);
             }
             newX = x + 1;
             newY = y - 1;
             tileData = tileMap.map.tileData(newX, newY) || null;
             if (comparisonCallback(tileData, newX, newY, newZ, currentNodeData, x, y, z)) {
-                const newNode = new exports_2.IgePathNode(newX, newY, newZ, currentNode.g, this._diagonalCost, this._heuristic(newX, newY, newZ, endPoint.x, endPoint.y, endPoint.z, this._diagonalCost), currentNode, "NE");
+                const newNode = new IgePathNode_1.IgePathNode(newX, newY, newZ, currentNode.g, this._diagonalCost, this._heuristic(newX, newY, newZ, endPoint.x, endPoint.y, endPoint.z, this._diagonalCost), currentNode, "NE");
                 list.push(newNode);
             }
             newX = x - 1;
             newY = y + 1;
             tileData = tileMap.map.tileData(newX, newY) || null;
             if (comparisonCallback(tileData, newX, newY, newZ, currentNodeData, x, y, z)) {
-                const newNode = new exports_2.IgePathNode(newX, newY, newZ, currentNode.g, this._diagonalCost, this._heuristic(newX, newY, newZ, endPoint.x, endPoint.y, endPoint.z, this._diagonalCost), currentNode, "SW");
+                const newNode = new IgePathNode_1.IgePathNode(newX, newY, newZ, currentNode.g, this._diagonalCost, this._heuristic(newX, newY, newZ, endPoint.x, endPoint.y, endPoint.z, this._diagonalCost), currentNode, "SW");
                 list.push(newNode);
             }
             newX = x + 1;
             newY = y + 1;
             tileData = tileMap.map.tileData(newX, newY) || null;
             if (comparisonCallback(tileData, newX, newY, newZ, currentNodeData, x, y, z)) {
-                const newNode = new exports_2.IgePathNode(newX, newY, newZ, currentNode.g, this._diagonalCost, this._heuristic(newX, newY, newZ, endPoint.x, endPoint.y, endPoint.z, this._diagonalCost), currentNode, "SE");
+                const newNode = new IgePathNode_1.IgePathNode(newX, newY, newZ, currentNode.g, this._diagonalCost, this._heuristic(newX, newY, newZ, endPoint.x, endPoint.y, endPoint.z, this._diagonalCost), currentNode, "SE");
                 list.push(newNode);
             }
         }

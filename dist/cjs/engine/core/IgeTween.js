@@ -1,11 +1,14 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.createTween = exports.IgeTween = void 0;
-const exports_1 = require("../../export/exports.js");
+const IgeBaseClass_1 = require("./IgeBaseClass.js");
+const instance_1 = require("../instance.js");
+const arrays_1 = require("../utils/arrays.js");
+const easing_1 = require("../utils/easing.js");
 /**
  * Creates a new tween instance.
  */
-class IgeTween extends exports_1.IgeBaseClass {
+class IgeTween extends IgeBaseClass_1.IgeBaseClass {
     constructor(targetObj, propertyObj, durationMs, options) {
         super();
         this.classId = "IgeTween";
@@ -220,7 +223,7 @@ class IgeTween extends exports_1.IgeBaseClass {
         if (methodName === undefined) {
             return this._easing;
         }
-        if (!exports_1.easingFunctions[methodName]) {
+        if (!easing_1.easingFunctions[methodName]) {
             throw new Error("The easing method you have selected does not exist, please use a valid easing method. For a list of easing methods please inspect `easingFunctions`");
         }
         this._easing = methodName;
@@ -244,9 +247,9 @@ class IgeTween extends exports_1.IgeBaseClass {
      */
     start(timeMs) {
         if (timeMs !== undefined) {
-            this.startTime(timeMs + exports_1.ige.engine._currentTime);
+            this.startTime(timeMs + instance_1.ige.engine._currentTime);
         }
-        exports_1.ige.tween.start(this);
+        instance_1.ige.tween.start(this);
         // Add the tween to the target object's tween array
         this._targetObj._tweenArr = this._targetObj._tweenArr || [];
         this._targetObj._tweenArr.push(this);
@@ -256,9 +259,9 @@ class IgeTween extends exports_1.IgeBaseClass {
      * Stops the tweening operation.
      */
     stop() {
-        exports_1.ige.tween.stop(this);
+        instance_1.ige.tween.stop(this);
         if (this._targetObj._tweenArr) {
-            (0, exports_1.arrPull)(this._targetObj._tweenArr, this);
+            (0, arrays_1.arrPull)(this._targetObj._tweenArr, this);
         }
         return this;
     }

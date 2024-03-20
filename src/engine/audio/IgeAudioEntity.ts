@@ -1,8 +1,8 @@
-import { IgeAudioItem } from "@/export/exports";
-import { isClient } from "@/export/exports";
-import { registerClass } from "@/export/exports";
-import { IgeEntity } from "@/export/exports";
-import { ige } from "@/export/exports";
+import { IgeAudioItem } from "@/engine/audio/IgeAudioItem";
+import { IgeEntity } from "@/engine/core/IgeEntity";
+import { ige } from "@/engine/instance";
+import { isClient } from "@/engine/utils/clientServer";
+import { registerClass } from "@/engine/utils/igeClassStore";
 
 export interface IgeAudioEntityPanner extends PannerOptions {
 }

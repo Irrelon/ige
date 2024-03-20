@@ -1,31 +1,29 @@
-import type { IgeAudioController } from "@/export/exports";
-import type { IgeNetIoClientController } from "@/export/exports";
-import type { IgeNetIoServerController } from "@/export/exports";
-import type { IgeViewport } from "@/export/exports";
-import {
-	IgeArrayRegister,
-	igeConfig,
-	IgeDependencies,
-	IgeEngine,
-	IgeMetrics,
-	IgeObjectRegister,
-	IgePoint3d,
-	IgeRouter,
-	IgeTextureStore,
-	IgeTimeController,
-	IgeTweenController,
-	IgeUiManagerController
-} from "@/export/exports";
-import { igeClassStore, isClient, isServer, isWorker } from "@/export/exports";
-import { IgeInputComponent } from "@/export/exports";
-import { IgeBox2dController } from "@/export/exports";
-import type {
-	IgeCanRegisterAndCanDestroy,
-	IgeCanRegisterByCategory,
-	IgeConfig,
-	IgeIsReadyPromise,
-	IgeObjectWithValueProperty
-} from "@/export/exports";
+import type { IgeAudioController } from "@/engine/audio/IgeAudioController";
+import { IgeInputComponent } from "@/engine/components/IgeInputComponent";
+import { IgeBox2dController } from "@/engine/components/physics/box2d/IgeBox2dController";
+import { igeConfig } from "@/engine/core/config";
+import { IgeArrayRegister } from "@/engine/core/IgeArrayRegister";
+import { IgeDependencies } from "@/engine/core/IgeDependencies";
+import { IgeEngine } from "@/engine/core/IgeEngine";
+import { IgeMetrics } from "@/engine/core/IgeMetrics";
+import { IgeObjectRegister } from "@/engine/core/IgeObjectRegister";
+import { IgePoint3d } from "@/engine/core/IgePoint3d";
+import { IgeRouter } from "@/engine/core/IgeRouter";
+import { IgeTextureStore } from "@/engine/core/IgeTextureStore";
+import { IgeTimeController } from "@/engine/core/IgeTimeController";
+import { IgeTweenController } from "@/engine/core/IgeTweenController";
+import { IgeUiManagerController } from "@/engine/core/IgeUiManagerController";
+import type { IgeViewport } from "@/engine/core/IgeViewport";
+import type { IgeNetIoClientController } from "@/engine/network/client/IgeNetIoClientController";
+import type { IgeNetIoServerController } from "@/engine/network/server/IgeNetIoServerController";
+import { isClient, isServer, isWorker } from "@/engine/utils/clientServer";
+import { igeClassStore } from "@/engine/utils/igeClassStore";
+import type { IgeCanRegisterAndCanDestroy } from "@/types/IgeCanRegisterAndCanDestroy";
+import type { IgeCanRegisterByCategory } from "@/types/IgeCanRegisterByCategory";
+import type { IgeConfig } from "@/types/IgeConfig";
+import type { IgeIsReadyPromise } from "@/types/IgeIsReadyPromise";
+import type { IgeObjectWithValueProperty } from "@/types/IgeObjectWithValueProperty";
+
 
 const version = "3.0.1";
 

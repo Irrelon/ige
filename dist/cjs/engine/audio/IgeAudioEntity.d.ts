@@ -1,5 +1,5 @@
-import { IgeAudioItem } from "../../export/exports.js"
-import { IgeEntity } from "../../export/exports.js"
+import { IgeAudioItem } from "./IgeAudioItem.js"
+import { IgeEntity } from "../core/IgeEntity.js";
 export interface IgeAudioEntityPanner extends PannerOptions {
 }
 export interface IgeAudioEntityOptions {

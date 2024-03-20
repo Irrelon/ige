@@ -1,5 +1,5 @@
-import type { IgeBaseClass } from "@/export/exports";
-import type { IgeMixin } from "@/export/exports";
+import type { IgeBaseClass } from "@/engine/core/IgeBaseClass";
+import type { IgeMixin } from "@/types/IgeMixin";
 
 export const WithDataMixin = <BaseClassType extends IgeMixin<IgeBaseClass>> (Base: BaseClassType) =>
 	class extends Base {

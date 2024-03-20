@@ -1,11 +1,11 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.IgeTextureAtlas = void 0;
-const exports_1 = require("../../export/exports.js");
+const IgeTextureMap_1 = require("./IgeTextureMap.js");
 /**
  * Texture maps provide a way to display textures across a tile map.
  */
-class IgeTextureAtlas extends exports_1.IgeTextureMap {
+class IgeTextureAtlas extends IgeTextureMap_1.IgeTextureMap {
     constructor(tileWidth, tileHeight) {
         super(tileWidth, tileHeight);
         this.classId = "IgeTextureAtlas";

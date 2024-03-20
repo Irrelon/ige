@@ -26,6 +26,33 @@ class b2Color {
         this.b = b;
         this.a = a;
     }
+    static MixColors(colorA, colorB, strength) {
+        const dr = (strength * (colorB.r - colorA.r));
+        const dg = (strength * (colorB.g - colorA.g));
+        const db = (strength * (colorB.b - colorA.b));
+        const da = (strength * (colorB.a - colorA.a));
+        colorA.r += dr;
+        colorA.g += dg;
+        colorA.b += db;
+        colorA.a += da;
+        colorB.r -= dr;
+        colorB.g -= dg;
+        colorB.b -= db;
+        colorB.a -= da;
+    }
+    static MakeStyleString(r, g, b, a = 1.0) {
+        // function clamp(x: number, lo: number, hi: number) { return x < lo ? lo : hi < x ? hi : x; }
+        r *= 255; // r = clamp(r, 0, 255);
+        g *= 255; // g = clamp(g, 0, 255);
+        b *= 255; // b = clamp(b, 0, 255);
+        // a = clamp(a, 0, 1);
+        if (a < 1) {
+            return `rgba(${r},${g},${b},${a})`;
+        }
+        else {
+            return `rgb(${r},${g},${b})`;
+        }
+    }
     Clone() {
         return new b2Color().Copy(this);
     }
@@ -116,35 +143,8 @@ class b2Color {
     Mix(mixColor, strength) {
         b2Color.MixColors(this, mixColor, strength);
     }
-    static MixColors(colorA, colorB, strength) {
-        const dr = (strength * (colorB.r - colorA.r));
-        const dg = (strength * (colorB.g - colorA.g));
-        const db = (strength * (colorB.b - colorA.b));
-        const da = (strength * (colorB.a - colorA.a));
-        colorA.r += dr;
-        colorA.g += dg;
-        colorA.b += db;
-        colorA.a += da;
-        colorB.r -= dr;
-        colorB.g -= dg;
-        colorB.b -= db;
-        colorB.a -= da;
-    }
     MakeStyleString(alpha = this.a) {
         return b2Color.MakeStyleString(this.r, this.g, this.b, alpha);
-    }
-    static MakeStyleString(r, g, b, a = 1.0) {
-        // function clamp(x: number, lo: number, hi: number) { return x < lo ? lo : hi < x ? hi : x; }
-        r *= 255; // r = clamp(r, 0, 255);
-        g *= 255; // g = clamp(g, 0, 255);
-        b *= 255; // b = clamp(b, 0, 255);
-        // a = clamp(a, 0, 1);
-        if (a < 1) {
-            return `rgba(${r},${g},${b},${a})`;
-        }
-        else {
-            return `rgb(${r},${g},${b})`;
-        }
     }
 }
 exports.b2Color = b2Color;
@@ -153,14 +153,6 @@ b2Color.RED = new b2Color(1, 0, 0);
 b2Color.GREEN = new b2Color(0, 1, 0);
 b2Color.BLUE = new b2Color(0, 0, 1);
 class b2TypedColor {
-    get r() { return this.data[0]; }
-    set r(value) { this.data[0] = value; }
-    get g() { return this.data[1]; }
-    set g(value) { this.data[1] = value; }
-    get b() { return this.data[2]; }
-    set b(value) { this.data[2] = value; }
-    get a() { return this.data[3]; }
-    set a(value) { this.data[3] = value; }
     constructor(...args) {
         if (args[0] instanceof Float32Array) {
             if (args[0].length !== 4) {
@@ -175,6 +167,30 @@ class b2TypedColor {
             const aa = typeof args[3] === "number" ? args[3] : 1.0;
             this.data = new Float32Array([rr, gg, bb, aa]);
         }
+    }
+    get r() {
+        return this.data[0];
+    }
+    set r(value) {
+        this.data[0] = value;
+    }
+    get g() {
+        return this.data[1];
+    }
+    set g(value) {
+        this.data[1] = value;
+    }
+    get b() {
+        return this.data[2];
+    }
+    set b(value) {
+        this.data[2] = value;
+    }
+    get a() {
+        return this.data[3];
+    }
+    set a(value) {
+        this.data[3] = value;
     }
     Clone() {
         return new b2TypedColor(new Float32Array(this.data));

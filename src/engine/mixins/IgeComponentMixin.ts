@@ -1,7 +1,7 @@
-import type { IgeBaseClass } from "@/export/exports";
-import type { IgeComponent } from "@/export/exports";
-import { arrPull } from "@/export/exports";
-import type { IgeMixin } from "@/export/exports";
+import type { IgeBaseClass } from "@/engine/core/IgeBaseClass";
+import type { IgeComponent } from "@/engine/core/IgeComponent";
+import { arrPull } from "@/engine/utils/arrays";
+import type { IgeMixin } from "@/types/IgeMixin";
 
 export const WithComponentMixin = <
 	ComponentTargetType,

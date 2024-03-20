@@ -1,10 +1,10 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.IgeGamePadComponent = void 0;
-const exports_1 = require("../../export/exports.js");
-const exports_2 = require("../../export/exports.js");
-const exports_3 = require("../../export/exports.js");
-class IgeGamePadComponent extends exports_1.IgeComponent {
+const IgeComponent_1 = require("../core/IgeComponent.js");
+const clientServer_1 = require("../utils/clientServer.js");
+const enums_1 = require("../../enums/index.js");
+class IgeGamePadComponent extends IgeComponent_1.IgeComponent {
     constructor(entity, options) {
         super(entity, options);
         this["classId"] = "IgeGamePadComponent";
@@ -36,7 +36,7 @@ class IgeGamePadComponent extends exports_1.IgeComponent {
         this._behaviour = (entity) => {
             //entity.gamePad.pollStatus();
         };
-        if (!exports_2.isClient) {
+        if (!clientServer_1.isClient || typeof navigator.getGamepads === "undefined") {
             return;
         }
         this.gamepadAvailable = Boolean(navigator.getGamepads());
@@ -47,7 +47,7 @@ class IgeGamePadComponent extends exports_1.IgeComponent {
         }
         window.addEventListener("gamepadconnected", this.onGamepadConnect);
         window.addEventListener("gamepaddisconnected", this.onGamepadDisconnect);
-        entity.addBehaviour(exports_3.IgeBehaviourType.preUpdate, "gamePadComponent", this._behaviour);
+        entity.addBehaviour(enums_1.IgeBehaviourType.preUpdate, "gamePadComponent", this._behaviour);
     }
     onGamepadConnect(event) {
         // Add the new gamepad on the list of gamepads to look after.

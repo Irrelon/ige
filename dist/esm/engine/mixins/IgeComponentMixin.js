@@ -1,4 +1,4 @@
-import { arrPull } from "../../export/exports.js"
+import { arrPull } from "../utils/arrays.js"
 export const WithComponentMixin = (Base) => class extends Base {
     components = {};
     _components = []; // TODO: Rename this to _componentsArr

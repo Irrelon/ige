@@ -10,9 +10,10 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.IgeRouter = void 0;
-const exports_1 = require("../../export/exports.js");
+const IgeBaseClass_1 = require("./IgeBaseClass.js");
+const clientServer_1 = require("../utils/clientServer.js");
 const PATH_DELIMITER = "/";
-class IgeRouter extends exports_1.IgeBaseClass {
+class IgeRouter extends IgeBaseClass_1.IgeBaseClass {
     constructor() {
         super(...arguments);
         this.classId = "IgeRouter";
@@ -89,10 +90,10 @@ class IgeRouter extends exports_1.IgeBaseClass {
                     continue;
                 }
                 let routeHandlerFunction;
-                if (exports_1.isClient && routeHandlerDefinition.client) {
+                if (clientServer_1.isClient && routeHandlerDefinition.client) {
                     routeHandlerFunction = routeHandlerDefinition.client;
                 }
-                if (exports_1.isServer && routeHandlerDefinition.server) {
+                if (clientServer_1.isServer && routeHandlerDefinition.server) {
                     routeHandlerFunction = routeHandlerDefinition.server;
                 }
                 if (routeHandlerFunction) {

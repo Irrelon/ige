@@ -192,17 +192,28 @@ export class b2World {
     }
     static _Joint_Create(def) {
         switch (def.type) {
-            case b2JointType.e_distanceJoint: return new b2DistanceJoint(def);
-            case b2JointType.e_mouseJoint: return new b2MouseJoint(def);
-            case b2JointType.e_prismaticJoint: return new b2PrismaticJoint(def);
-            case b2JointType.e_revoluteJoint: return new b2RevoluteJoint(def);
-            case b2JointType.e_pulleyJoint: return new b2PulleyJoint(def);
-            case b2JointType.e_gearJoint: return new b2GearJoint(def);
-            case b2JointType.e_wheelJoint: return new b2WheelJoint(def);
-            case b2JointType.e_weldJoint: return new b2WeldJoint(def);
-            case b2JointType.e_frictionJoint: return new b2FrictionJoint(def);
-            case b2JointType.e_motorJoint: return new b2MotorJoint(def);
-            case b2JointType.e_areaJoint: return new b2AreaJoint(def);
+            case b2JointType.e_distanceJoint:
+                return new b2DistanceJoint(def);
+            case b2JointType.e_mouseJoint:
+                return new b2MouseJoint(def);
+            case b2JointType.e_prismaticJoint:
+                return new b2PrismaticJoint(def);
+            case b2JointType.e_revoluteJoint:
+                return new b2RevoluteJoint(def);
+            case b2JointType.e_pulleyJoint:
+                return new b2PulleyJoint(def);
+            case b2JointType.e_gearJoint:
+                return new b2GearJoint(def);
+            case b2JointType.e_wheelJoint:
+                return new b2WheelJoint(def);
+            case b2JointType.e_weldJoint:
+                return new b2WeldJoint(def);
+            case b2JointType.e_frictionJoint:
+                return new b2FrictionJoint(def);
+            case b2JointType.e_motorJoint:
+                return new b2MotorJoint(def);
+            case b2JointType.e_areaJoint:
+                return new b2AreaJoint(def);
         }
         throw new Error();
     }
@@ -593,7 +604,10 @@ export class b2World {
         // #endif
     }
     QueryAllAABB(aabb, out = []) {
-        this.QueryAABB(aabb, (fixture) => { out.push(fixture); return true; });
+        this.QueryAABB(aabb, (fixture) => {
+            out.push(fixture);
+            return true;
+        });
         return out;
     }
     QueryPointAABB(...args) {
@@ -628,7 +642,10 @@ export class b2World {
         // #endif
     }
     QueryAllPointAABB(point, out = []) {
-        this.QueryPointAABB(point, (fixture) => { out.push(fixture); return true; });
+        this.QueryPointAABB(point, (fixture) => {
+            out.push(fixture);
+            return true;
+        });
         return out;
     }
     QueryFixtureShape(...args) {
@@ -668,7 +685,10 @@ export class b2World {
         // #endif
     }
     QueryAllFixtureShape(shape, index, transform, out = []) {
-        this.QueryFixtureShape(shape, index, transform, (fixture) => { out.push(fixture); return true; });
+        this.QueryFixtureShape(shape, index, transform, (fixture) => {
+            out.push(fixture);
+            return true;
+        });
         return out;
     }
     QueryFixturePoint(...args) {
@@ -705,7 +725,10 @@ export class b2World {
         // #endif
     }
     QueryAllFixturePoint(point, out = []) {
-        this.QueryFixturePoint(point, (fixture) => { out.push(fixture); return true; });
+        this.QueryFixturePoint(point, (fixture) => {
+            out.push(fixture);
+            return true;
+        });
         return out;
     }
     RayCast(...args) {

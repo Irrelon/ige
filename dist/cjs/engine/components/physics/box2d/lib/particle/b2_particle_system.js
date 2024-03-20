@@ -20,24 +20,26 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.b2ParticleSystem_SolveCollisionCallback = exports.b2ParticleSystem_UpdateBodyContactsCallback = exports.b2ParticleSystem_ReactiveFilter = exports.b2ParticleSystem_CompositeShape = exports.b2ParticleSystem_JoinParticleGroupsFilter = exports.b2ParticleSystem_DestroyParticlesInShapeCallback = exports.b2ParticleSystem_ConnectionFilter = exports.b2ParticlePairSet = exports.b2ParticleSystem_ParticlePair = exports.b2ParticleSystem_FixtureParticleSet = exports.b2ParticleSystem_FixtureParticle = exports.b2ParticleSystem_FixedSetAllocator = exports.b2ParticleSystem_ParticleListNode = exports.b2ParticleSystem_InsideBoundsEnumerator = exports.b2ParticleSystem_Proxy = exports.b2ParticleSystem_UserOverridableBuffer = exports.b2ParticleSystem = exports.b2ParticleSystemDef = exports.b2ParticleTriad = exports.b2ParticlePair = exports.b2ParticleBodyContact = exports.b2ParticleContact = exports.b2FixtureParticleQueryCallback = exports.b2GrowableBuffer = void 0;
 // #if B2_ENABLE_PARTICLE
 // DEBUG: import { b2Assert, b2_maxParticleIndex } from "../common/b2_settings.js"
-const b2_settings_js_1 = require("../common/b2_settings.js");
-const b2_settings_js_2 = require("../common/b2_settings.js");
-const b2_math_js_1 = require("../common/b2_math.js");
-const b2_draw_js_1 = require("../common/b2_draw.js");
-const b2_collision_js_1 = require("../collision/b2_collision.js");
-const b2_shape_js_1 = require("../collision/b2_shape.js");
-const b2_edge_shape_js_1 = require("../collision/b2_edge_shape.js");
-const b2_time_step_js_1 = require("../dynamics/b2_time_step.js");
-const b2_world_callbacks_js_1 = require("../dynamics/b2_world_callbacks.js");
-const b2_particle_js_1 = require("./b2_particle.js");
-const b2_particle_group_js_1 = require("./b2_particle_group.js");
-const b2_voronoi_diagram_js_1 = require("./b2_voronoi_diagram.js");
+const b2_settings_1 = require("../common/b2_settings");
+const b2_settings_2 = require("../common/b2_settings");
+const b2_math_1 = require("../common/b2_math");
+const b2_draw_1 = require("../common/b2_draw");
+const b2_collision_1 = require("../collision/b2_collision");
+const b2_shape_1 = require("../collision/b2_shape");
+const b2_edge_shape_1 = require("../collision/b2_edge_shape");
+const b2_time_step_1 = require("../dynamics/b2_time_step");
+const b2_world_callbacks_1 = require("../dynamics/b2_world_callbacks");
+const b2_particle_1 = require("./b2_particle");
+const b2_particle_group_1 = require("./b2_particle_group");
+const b2_voronoi_diagram_1 = require("./b2_voronoi_diagram");
 function std_iter_swap(array, a, b) {
     const tmp = array[a];
     array[a] = array[b];
     array[b] = tmp;
 }
-function default_compare(a, b) { return a < b; }
+function default_compare(a, b) {
+    return a < b;
+}
 function std_sort(array, first = 0, len = array.length - first, cmp = default_compare) {
     let left = first;
     const stack = [];
@@ -47,8 +49,10 @@ function std_sort(array, first = 0, len = array.length - first, cmp = default_co
             const pivot = array[left + Math.floor(Math.random() * (len - left))]; /* pick random pivot */
             stack[pos++] = len; /* sort right part later */
             for (let right = left - 1;;) { /* inner loop: partitioning */
-                while (cmp(array[++right], pivot)) { } /* look for greater element */
-                while (cmp(pivot, array[--len])) { } /* look for smaller element */
+                while (cmp(array[++right], pivot)) {
+                } /* look for greater element */
+                while (cmp(pivot, array[--len])) {
+                } /* look for smaller element */
                 if (right >= len) {
                     break;
                 } /* partition point found? */
@@ -163,7 +167,7 @@ class b2GrowableBuffer {
     }
     Grow() {
         // Double the capacity.
-        const newCapacity = this.capacity ? 2 * this.capacity : b2_settings_js_1.b2_minParticleSystemBufferCapacity;
+        const newCapacity = this.capacity ? 2 * this.capacity : b2_settings_1.b2_minParticleSystemBufferCapacity;
         // DEBUG: b2Assert(newCapacity > this.capacity);
         this.Reserve(newCapacity);
     }
@@ -206,7 +210,7 @@ class b2GrowableBuffer {
     }
 }
 exports.b2GrowableBuffer = b2GrowableBuffer;
-class b2FixtureParticleQueryCallback extends b2_world_callbacks_js_1.b2QueryCallback {
+class b2FixtureParticleQueryCallback extends b2_world_callbacks_1.b2QueryCallback {
     constructor(system) {
         super();
         this.m_system = system;
@@ -244,7 +248,7 @@ class b2ParticleContact {
         this.indexA = 0;
         this.indexB = 0;
         this.weight = 0;
-        this.normal = new b2_math_js_1.b2Vec2();
+        this.normal = new b2_math_1.b2Vec2();
         this.flags = 0;
     }
     SetIndices(a, b) {
@@ -285,7 +289,7 @@ class b2ParticleContact {
     ApproximatelyEqual(rhs) {
         const MAX_WEIGHT_DIFF = 0.01; // Weight 0 ~ 1, so about 1%
         const MAX_NORMAL_DIFF_SQ = 0.01 * 0.01; // Normal length = 1, so 1%
-        return this.indexA === rhs.indexA && this.indexB === rhs.indexB && this.flags === rhs.flags && (0, b2_math_js_1.b2Abs)(this.weight - rhs.weight) < MAX_WEIGHT_DIFF && b2_math_js_1.b2Vec2.DistanceSquaredVV(this.normal, rhs.normal) < MAX_NORMAL_DIFF_SQ;
+        return this.indexA === rhs.indexA && this.indexB === rhs.indexB && this.flags === rhs.flags && (0, b2_math_1.b2Abs)(this.weight - rhs.weight) < MAX_WEIGHT_DIFF && b2_math_1.b2Vec2.DistanceSquaredVV(this.normal, rhs.normal) < MAX_NORMAL_DIFF_SQ;
     }
 }
 exports.b2ParticleContact = b2ParticleContact;
@@ -293,7 +297,7 @@ class b2ParticleBodyContact {
     constructor() {
         this.index = 0; // Index of the particle making contact.
         this.weight = 0.0; // Weight of the contact. A value between 0.0f and 1.0f.
-        this.normal = new b2_math_js_1.b2Vec2(); // The normalized direction from the particle to the body.
+        this.normal = new b2_math_1.b2Vec2(); // The normalized direction from the particle to the body.
         this.mass = 0.0; // The effective mass used in calculating force.
     }
 }
@@ -315,9 +319,9 @@ class b2ParticleTriad {
         this.indexC = 0;
         this.flags = 0; // The logical sum of the particle flags. See the b2ParticleFlag enum.
         this.strength = 0.0; // The strength of cohesion among the particles.
-        this.pa = new b2_math_js_1.b2Vec2(0.0, 0.0); // Values used for calculation.
-        this.pb = new b2_math_js_1.b2Vec2(0.0, 0.0);
-        this.pc = new b2_math_js_1.b2Vec2(0.0, 0.0);
+        this.pa = new b2_math_1.b2Vec2(0.0, 0.0); // Values used for calculation.
+        this.pb = new b2_math_1.b2Vec2(0.0, 0.0);
+        this.pc = new b2_math_1.b2Vec2(0.0, 0.0);
         this.ka = 0.0;
         this.kb = 0.0;
         this.kc = 0.0;
@@ -330,124 +334,124 @@ class b2ParticleSystemDef {
         // Initialize physical coefficients to the maximum values that
         // maintain numerical stability.
         /**
-       * Enable strict Particle/Body contact check.
-       * See SetStrictContactCheck for details.
-       */
+         * Enable strict Particle/Body contact check.
+         * See SetStrictContactCheck for details.
+         */
         this.strictContactCheck = false;
         /**
-       * Set the particle density.
-       * See SetDensity for details.
-       */
+         * Set the particle density.
+         * See SetDensity for details.
+         */
         this.density = 1.0;
         /**
-       * Change the particle gravity scale. Adjusts the effect of the
-       * global gravity vector on particles. Default value is 1.0f.
-       */
+         * Change the particle gravity scale. Adjusts the effect of the
+         * global gravity vector on particles. Default value is 1.0f.
+         */
         this.gravityScale = 1.0;
         /**
-       * Particles behave as circles with this radius. In Box2D units.
-       */
+         * Particles behave as circles with this radius. In Box2D units.
+         */
         this.radius = 1.0;
         /**
-       * Set the maximum number of particles.
-       * By default, there is no maximum. The particle buffers can
-       * continue to grow while b2World's block allocator still has
-       * memory.
-       * See SetMaxParticleCount for details.
-       */
+         * Set the maximum number of particles.
+         * By default, there is no maximum. The particle buffers can
+         * continue to grow while b2World's block allocator still has
+         * memory.
+         * See SetMaxParticleCount for details.
+         */
         this.maxCount = 0;
         /**
-       * Increases pressure in response to compression
-       * Smaller values allow more compression
-       */
+         * Increases pressure in response to compression
+         * Smaller values allow more compression
+         */
         this.pressureStrength = 0.005;
         /**
-       * Reduces velocity along the collision normal
-       * Smaller value reduces less
-       */
+         * Reduces velocity along the collision normal
+         * Smaller value reduces less
+         */
         this.dampingStrength = 1.0;
         /**
-       * Restores shape of elastic particle groups
-       * Larger values increase elastic particle velocity
-       */
+         * Restores shape of elastic particle groups
+         * Larger values increase elastic particle velocity
+         */
         this.elasticStrength = 0.25;
         /**
-       * Restores length of spring particle groups
-       * Larger values increase spring particle velocity
-       */
+         * Restores length of spring particle groups
+         * Larger values increase spring particle velocity
+         */
         this.springStrength = 0.25;
         /**
-       * Reduces relative velocity of viscous particles
-       * Larger values slow down viscous particles more
-       */
+         * Reduces relative velocity of viscous particles
+         * Larger values slow down viscous particles more
+         */
         this.viscousStrength = 0.25;
         /**
-       * Produces pressure on tensile particles
-       * 0~0.2. Larger values increase the amount of surface tension.
-       */
+         * Produces pressure on tensile particles
+         * 0~0.2. Larger values increase the amount of surface tension.
+         */
         this.surfaceTensionPressureStrength = 0.2;
         /**
-       * Smoothes outline of tensile particles
-       * 0~0.2. Larger values result in rounder, smoother,
-       * water-drop-like clusters of particles.
-       */
+         * Smoothes outline of tensile particles
+         * 0~0.2. Larger values result in rounder, smoother,
+         * water-drop-like clusters of particles.
+         */
         this.surfaceTensionNormalStrength = 0.2;
         /**
-       * Produces additional pressure on repulsive particles
-       * Larger values repulse more
-       * Negative values mean attraction. The range where particles
-       * behave stably is about -0.2 to 2.0.
-       */
+         * Produces additional pressure on repulsive particles
+         * Larger values repulse more
+         * Negative values mean attraction. The range where particles
+         * behave stably is about -0.2 to 2.0.
+         */
         this.repulsiveStrength = 1.0;
         /**
-       * Produces repulsion between powder particles
-       * Larger values repulse more
-       */
+         * Produces repulsion between powder particles
+         * Larger values repulse more
+         */
         this.powderStrength = 0.5;
         /**
-       * Pushes particles out of solid particle group
-       * Larger values repulse more
-       */
+         * Pushes particles out of solid particle group
+         * Larger values repulse more
+         */
         this.ejectionStrength = 0.5;
         /**
-       * Produces static pressure
-       * Larger values increase the pressure on neighboring partilces
-       * For a description of static pressure, see
-       * http://en.wikipedia.org/wiki/Static_pressure#Static_pressure_in_fluid_dynamics
-       */
+         * Produces static pressure
+         * Larger values increase the pressure on neighboring partilces
+         * For a description of static pressure, see
+         * http://en.wikipedia.org/wiki/Static_pressure#Static_pressure_in_fluid_dynamics
+         */
         this.staticPressureStrength = 0.2;
         /**
-       * Reduces instability in static pressure calculation
-       * Larger values make stabilize static pressure with fewer
-       * iterations
-       */
+         * Reduces instability in static pressure calculation
+         * Larger values make stabilize static pressure with fewer
+         * iterations
+         */
         this.staticPressureRelaxation = 0.2;
         /**
-       * Computes static pressure more precisely
-       * See SetStaticPressureIterations for details
-       */
+         * Computes static pressure more precisely
+         * See SetStaticPressureIterations for details
+         */
         this.staticPressureIterations = 8;
         /**
-       * Determines how fast colors are mixed
-       * 1.0f ==> mixed immediately
-       * 0.5f ==> mixed half way each simulation step (see
-       * b2World::Step())
-       */
+         * Determines how fast colors are mixed
+         * 1.0f ==> mixed immediately
+         * 0.5f ==> mixed half way each simulation step (see
+         * b2World::Step())
+         */
         this.colorMixingStrength = 0.5;
         /**
-       * Whether to destroy particles by age when no more particles
-       * can be created.  See #b2ParticleSystem::SetDestructionByAge()
-       * for more information.
-       */
+         * Whether to destroy particles by age when no more particles
+         * can be created.  See #b2ParticleSystem::SetDestructionByAge()
+         * for more information.
+         */
         this.destroyByAge = true;
         /**
-       * Granularity of particle lifetimes in seconds.  By default
-       * this is set to (1.0f / 60.0f) seconds.  b2ParticleSystem uses
-       * a 32-bit signed value to track particle lifetimes so the
-       * maximum lifetime of a particle is (2^32 - 1) / (1.0f /
-       * lifetimeGranularity) seconds. With the value set to 1/60 the
-       * maximum lifetime or age of a particle is 2.27 years.
-       */
+         * Granularity of particle lifetimes in seconds.  By default
+         * this is set to (1.0f / 60.0f) seconds.  b2ParticleSystem uses
+         * a 32-bit signed value to track particle lifetimes so the
+         * maximum lifetime of a particle is (2^32 - 1) / (1.0f /
+         * lifetimeGranularity) seconds. With the value set to 1/60 the
+         * maximum lifetime or age of a particle is 2.27 years.
+         */
         this.lifetimeGranularity = 1.0 / 60.0;
     }
     Copy(def) {
@@ -504,54 +508,54 @@ class b2ParticleSystem {
         this.m_count = 0;
         this.m_internalAllocatedCapacity = 0;
         /**
-       * Allocator for b2ParticleHandle instances.
-       */
+         * Allocator for b2ParticleHandle instances.
+         */
         ///m_handleAllocator: any = null;
         /**
-       * Maps particle indicies to handles.
-       */
+         * Maps particle indicies to handles.
+         */
         this.m_handleIndexBuffer = new b2ParticleSystem_UserOverridableBuffer();
         this.m_flagsBuffer = new b2ParticleSystem_UserOverridableBuffer();
         this.m_positionBuffer = new b2ParticleSystem_UserOverridableBuffer();
         this.m_velocityBuffer = new b2ParticleSystem_UserOverridableBuffer();
         this.m_forceBuffer = [];
         /**
-       * this.m_weightBuffer is populated in ComputeWeight and used in
-       * ComputeDepth(), SolveStaticPressure() and SolvePressure().
-       */
+         * this.m_weightBuffer is populated in ComputeWeight and used in
+         * ComputeDepth(), SolveStaticPressure() and SolvePressure().
+         */
         this.m_weightBuffer = [];
         /**
-       * When any particles have the flag b2_staticPressureParticle,
-       * this.m_staticPressureBuffer is first allocated and used in
-       * SolveStaticPressure() and SolvePressure().  It will be
-       * reallocated on subsequent CreateParticle() calls.
-       */
+         * When any particles have the flag b2_staticPressureParticle,
+         * this.m_staticPressureBuffer is first allocated and used in
+         * SolveStaticPressure() and SolvePressure().  It will be
+         * reallocated on subsequent CreateParticle() calls.
+         */
         this.m_staticPressureBuffer = [];
         /**
-       * this.m_accumulationBuffer is used in many functions as a temporary
-       * buffer for scalar values.
-       */
+         * this.m_accumulationBuffer is used in many functions as a temporary
+         * buffer for scalar values.
+         */
         this.m_accumulationBuffer = [];
         /**
-       * When any particles have the flag b2_tensileParticle,
-       * this.m_accumulation2Buffer is first allocated and used in
-       * SolveTensile() as a temporary buffer for vector values.  It
-       * will be reallocated on subsequent CreateParticle() calls.
-       */
+         * When any particles have the flag b2_tensileParticle,
+         * this.m_accumulation2Buffer is first allocated and used in
+         * SolveTensile() as a temporary buffer for vector values.  It
+         * will be reallocated on subsequent CreateParticle() calls.
+         */
         this.m_accumulation2Buffer = [];
         /**
-       * When any particle groups have the flag b2_solidParticleGroup,
-       * this.m_depthBuffer is first allocated and populated in
-       * ComputeDepth() and used in SolveSolid(). It will be
-       * reallocated on subsequent CreateParticle() calls.
-       */
+         * When any particle groups have the flag b2_solidParticleGroup,
+         * this.m_depthBuffer is first allocated and populated in
+         * ComputeDepth() and used in SolveSolid(). It will be
+         * reallocated on subsequent CreateParticle() calls.
+         */
         this.m_depthBuffer = [];
         this.m_colorBuffer = new b2ParticleSystem_UserOverridableBuffer();
         this.m_groupBuffer = [];
         this.m_userDataBuffer = new b2ParticleSystem_UserOverridableBuffer();
         /**
-       * Stuck particle detection parameters and record keeping
-       */
+         * Stuck particle detection parameters and record keeping
+         */
         this.m_stuckThreshold = 0;
         this.m_lastBodyContactStepBuffer = new b2ParticleSystem_UserOverridableBuffer();
         this.m_bodyContactCountBuffer = new b2ParticleSystem_UserOverridableBuffer();
@@ -563,26 +567,26 @@ class b2ParticleSystem {
         this.m_pairBuffer = new b2GrowableBuffer(() => new b2ParticlePair());
         this.m_triadBuffer = new b2GrowableBuffer(() => new b2ParticleTriad());
         /**
-       * Time each particle should be destroyed relative to the last
-       * time this.m_timeElapsed was initialized.  Each unit of time
-       * corresponds to b2ParticleSystemDef::lifetimeGranularity
-       * seconds.
-       */
+         * Time each particle should be destroyed relative to the last
+         * time this.m_timeElapsed was initialized.  Each unit of time
+         * corresponds to b2ParticleSystemDef::lifetimeGranularity
+         * seconds.
+         */
         this.m_expirationTimeBuffer = new b2ParticleSystem_UserOverridableBuffer();
         /**
-       * List of particle indices sorted by expiration time.
-       */
+         * List of particle indices sorted by expiration time.
+         */
         this.m_indexByExpirationTimeBuffer = new b2ParticleSystem_UserOverridableBuffer();
         /**
-       * Time elapsed in 32:32 fixed point.  Each non-fractional unit
-       * of time corresponds to
-       * b2ParticleSystemDef::lifetimeGranularity seconds.
-       */
+         * Time elapsed in 32:32 fixed point.  Each non-fractional unit
+         * of time corresponds to
+         * b2ParticleSystemDef::lifetimeGranularity seconds.
+         */
         this.m_timeElapsed = 0;
         /**
-       * Whether the expiration time buffer has been modified and
-       * needs to be resorted.
-       */
+         * Whether the expiration time buffer has been modified and
+         * needs to be resorted.
+         */
         this.m_expirationTimeBufferRequiresSorting = false;
         this.m_groupCount = 0;
         this.m_groupList = null;
@@ -625,24 +629,24 @@ class b2ParticleSystem {
         this.FreeBuffer(this.m_groupBuffer, this.m_internalAllocatedCapacity);
     }
     /**
-   * Create a particle whose properties have been defined.
-   *
-   * No reference to the definition is retained.
-   *
-   * A simulation step must occur before it's possible to interact
-   * with a newly created particle.  For example,
-   * DestroyParticleInShape() will not destroy a particle until
-   * b2World::Step() has been called.
-   *
-   * warning: This function is locked during callbacks.
-   */
+     * Create a particle whose properties have been defined.
+     *
+     * No reference to the definition is retained.
+     *
+     * A simulation step must occur before it's possible to interact
+     * with a newly created particle.  For example,
+     * DestroyParticleInShape() will not destroy a particle until
+     * b2World::Step() has been called.
+     *
+     * warning: This function is locked during callbacks.
+     */
     CreateParticle(def) {
         if (this.m_world.IsLocked()) {
             throw new Error();
         }
         if (this.m_count >= this.m_internalAllocatedCapacity) {
             // Double the particle capacity.
-            const capacity = this.m_count ? 2 * this.m_count : b2_settings_js_1.b2_minParticleSystemBufferCapacity;
+            const capacity = this.m_count ? 2 * this.m_count : b2_settings_1.b2_minParticleSystemBufferCapacity;
             this.ReallocateInternalAllocatedBuffers(capacity);
         }
         if (this.m_count >= this.m_internalAllocatedCapacity) {
@@ -654,7 +658,7 @@ class b2ParticleSystem {
                 this.SolveZombie();
             }
             else {
-                return b2_settings_js_1.b2_invalidParticleIndex;
+                return b2_settings_1.b2_invalidParticleIndex;
             }
         }
         const index = this.m_count++;
@@ -668,20 +672,20 @@ class b2ParticleSystem {
         if (this.m_consecutiveContactStepsBuffer.data) {
             this.m_consecutiveContactStepsBuffer.data[index] = 0;
         }
-        this.m_positionBuffer.data[index] = (this.m_positionBuffer.data[index] || new b2_math_js_1.b2Vec2()).Copy((0, b2_settings_js_1.b2Maybe)(def.position, b2_math_js_1.b2Vec2.ZERO));
-        this.m_velocityBuffer.data[index] = (this.m_velocityBuffer.data[index] || new b2_math_js_1.b2Vec2()).Copy((0, b2_settings_js_1.b2Maybe)(def.velocity, b2_math_js_1.b2Vec2.ZERO));
+        this.m_positionBuffer.data[index] = (this.m_positionBuffer.data[index] || new b2_math_1.b2Vec2()).Copy((0, b2_settings_1.b2Maybe)(def.position, b2_math_1.b2Vec2.ZERO));
+        this.m_velocityBuffer.data[index] = (this.m_velocityBuffer.data[index] || new b2_math_1.b2Vec2()).Copy((0, b2_settings_1.b2Maybe)(def.velocity, b2_math_1.b2Vec2.ZERO));
         this.m_weightBuffer[index] = 0;
-        this.m_forceBuffer[index] = (this.m_forceBuffer[index] || new b2_math_js_1.b2Vec2()).SetZero();
+        this.m_forceBuffer[index] = (this.m_forceBuffer[index] || new b2_math_1.b2Vec2()).SetZero();
         if (this.m_staticPressureBuffer) {
             this.m_staticPressureBuffer[index] = 0;
         }
         if (this.m_depthBuffer) {
             this.m_depthBuffer[index] = 0;
         }
-        const color = new b2_draw_js_1.b2Color().Copy((0, b2_settings_js_1.b2Maybe)(def.color, b2_draw_js_1.b2Color.ZERO));
+        const color = new b2_draw_1.b2Color().Copy((0, b2_settings_1.b2Maybe)(def.color, b2_draw_1.b2Color.ZERO));
         if (this.m_colorBuffer.data || !color.IsZero()) {
             this.m_colorBuffer.data = this.RequestBuffer(this.m_colorBuffer.data);
-            this.m_colorBuffer.data[index] = (this.m_colorBuffer.data[index] || new b2_draw_js_1.b2Color()).Copy(color);
+            this.m_colorBuffer.data[index] = (this.m_colorBuffer.data[index] || new b2_draw_1.b2Color()).Copy(color);
         }
         if (this.m_userDataBuffer.data || def.userData) {
             this.m_userDataBuffer.data = this.RequestBuffer(this.m_userDataBuffer.data);
@@ -694,7 +698,7 @@ class b2ParticleSystem {
         const proxy = this.m_proxyBuffer.data[this.m_proxyBuffer.Append()];
         // If particle lifetimes are enabled or the lifetime is set in the particle
         // definition, initialize the lifetime.
-        const lifetime = (0, b2_settings_js_1.b2Maybe)(def.lifetime, 0.0);
+        const lifetime = (0, b2_settings_1.b2Maybe)(def.lifetime, 0.0);
         const finiteLifetime = lifetime > 0.0;
         if (this.m_expirationTimeBuffer.data || finiteLifetime) {
             this.SetParticleLifetime(index, finiteLifetime ? lifetime :
@@ -704,7 +708,7 @@ class b2ParticleSystem {
             this.m_indexByExpirationTimeBuffer.data[index] = index;
         }
         proxy.index = index;
-        const group = (0, b2_settings_js_1.b2Maybe)(def.group, null);
+        const group = (0, b2_settings_1.b2Maybe)(def.group, null);
         this.m_groupBuffer[index] = group;
         if (group) {
             if (group.m_firstIndex < group.m_lastIndex) {
@@ -721,14 +725,14 @@ class b2ParticleSystem {
                 group.m_lastIndex = index + 1;
             }
         }
-        this.SetParticleFlags(index, (0, b2_settings_js_1.b2Maybe)(def.flags, 0));
+        this.SetParticleFlags(index, (0, b2_settings_1.b2Maybe)(def.flags, 0));
         return index;
     }
     /**
-   * Retrieve a handle to the particle at the specified index.
-   *
-   * Please see #b2ParticleHandle for why you might want a handle.
-   */
+     * Retrieve a handle to the particle at the specified index.
+     *
+     * Please see #b2ParticleHandle for why you might want a handle.
+     */
     GetParticleHandleFromIndex(index) {
         // DEBUG: b2Assert(index >= 0 && index < this.GetParticleCount() && index !== b2_invalidParticleIndex);
         this.m_handleIndexBuffer.data = this.RequestBuffer(this.m_handleIndexBuffer.data);
@@ -738,42 +742,42 @@ class b2ParticleSystem {
         }
         // Create a handle.
         ///handle = m_handleAllocator.Allocate();
-        handle = new b2_particle_js_1.b2ParticleHandle();
+        handle = new b2_particle_1.b2ParticleHandle();
         // DEBUG: b2Assert(handle !== null);
         handle.SetIndex(index);
         this.m_handleIndexBuffer.data[index] = handle;
         return handle;
     }
     /**
-   * Destroy a particle.
-   *
-   * The particle is removed after the next simulation step (see
-   * b2World::Step()).
-   *
-   * @param index Index of the particle to destroy.
-   * @param callDestructionListener Whether to call the
-   *      destruction listener just before the particle is
-   *      destroyed.
-   */
+     * Destroy a particle.
+     *
+     * The particle is removed after the next simulation step (see
+     * b2World::Step()).
+     *
+     * @param index Index of the particle to destroy.
+     * @param callDestructionListener Whether to call the
+     *      destruction listener just before the particle is
+     *      destroyed.
+     */
     DestroyParticle(index, callDestructionListener = false) {
-        let flags = b2_particle_js_1.b2ParticleFlag.b2_zombieParticle;
+        let flags = b2_particle_1.b2ParticleFlag.b2_zombieParticle;
         if (callDestructionListener) {
-            flags |= b2_particle_js_1.b2ParticleFlag.b2_destructionListenerParticle;
+            flags |= b2_particle_1.b2ParticleFlag.b2_destructionListenerParticle;
         }
         this.SetParticleFlags(index, this.m_flagsBuffer.data[index] | flags);
     }
     /**
-   * Destroy the Nth oldest particle in the system.
-   *
-   * The particle is removed after the next b2World::Step().
-   *
-   * @param index Index of the Nth oldest particle to
-   *      destroy, 0 will destroy the oldest particle in the
-   *      system, 1 will destroy the next oldest particle etc.
-   * @param callDestructionListener Whether to call the
-   *      destruction listener just before the particle is
-   *      destroyed.
-   */
+     * Destroy the Nth oldest particle in the system.
+     *
+     * The particle is removed after the next b2World::Step().
+     *
+     * @param index Index of the Nth oldest particle to
+     *      destroy, 0 will destroy the oldest particle in the
+     *      system, 1 will destroy the next oldest particle etc.
+     * @param callDestructionListener Whether to call the
+     *      destruction listener just before the particle is
+     *      destroyed.
+     */
     DestroyOldestParticle(index, callDestructionListener = false) {
         const particleCount = this.GetParticleCount();
         // DEBUG: b2Assert(index >= 0 && index < particleCount);
@@ -787,22 +791,22 @@ class b2ParticleSystem {
             oldestFiniteLifetimeParticle : oldestInfiniteLifetimeParticle, callDestructionListener);
     }
     /**
-   * Destroy particles inside a shape.
-   *
-   * warning: This function is locked during callbacks.
-   *
-   * In addition, this function immediately destroys particles in
-   * the shape in constrast to DestroyParticle() which defers the
-   * destruction until the next simulation step.
-   *
-   * @return Number of particles destroyed.
-   * @param shape Shape which encloses particles
-   *      that should be destroyed.
-   * @param xf Transform applied to the shape.
-   * @param callDestructionListener Whether to call the
-   *      world b2DestructionListener for each particle
-   *      destroyed.
-   */
+     * Destroy particles inside a shape.
+     *
+     * warning: This function is locked during callbacks.
+     *
+     * In addition, this function immediately destroys particles in
+     * the shape in constrast to DestroyParticle() which defers the
+     * destruction until the next simulation step.
+     *
+     * @return Number of particles destroyed.
+     * @param shape Shape which encloses particles
+     *      that should be destroyed.
+     * @param xf Transform applied to the shape.
+     * @param callDestructionListener Whether to call the
+     *      world b2DestructionListener for each particle
+     *      destroyed.
+     */
     DestroyParticlesInShape(shape, xf, callDestructionListener = false) {
         const s_aabb = b2ParticleSystem.DestroyParticlesInShape_s_aabb;
         if (this.m_world.IsLocked()) {
@@ -815,38 +819,38 @@ class b2ParticleSystem {
         return callback.Destroyed();
     }
     /**
-   * Create a particle group whose properties have been defined.
-   *
-   * No reference to the definition is retained.
-   *
-   * warning: This function is locked during callbacks.
-   */
+     * Create a particle group whose properties have been defined.
+     *
+     * No reference to the definition is retained.
+     *
+     * warning: This function is locked during callbacks.
+     */
     CreateParticleGroup(groupDef) {
         const s_transform = b2ParticleSystem.CreateParticleGroup_s_transform;
         if (this.m_world.IsLocked()) {
             throw new Error();
         }
         const transform = s_transform;
-        transform.SetPositionAngle((0, b2_settings_js_1.b2Maybe)(groupDef.position, b2_math_js_1.b2Vec2.ZERO), (0, b2_settings_js_1.b2Maybe)(groupDef.angle, 0));
+        transform.SetPositionAngle((0, b2_settings_1.b2Maybe)(groupDef.position, b2_math_1.b2Vec2.ZERO), (0, b2_settings_1.b2Maybe)(groupDef.angle, 0));
         const firstIndex = this.m_count;
         if (groupDef.shape) {
             this.CreateParticlesWithShapeForGroup(groupDef.shape, groupDef, transform);
         }
         if (groupDef.shapes) {
-            this.CreateParticlesWithShapesForGroup(groupDef.shapes, (0, b2_settings_js_1.b2Maybe)(groupDef.shapeCount, groupDef.shapes.length), groupDef, transform);
+            this.CreateParticlesWithShapesForGroup(groupDef.shapes, (0, b2_settings_1.b2Maybe)(groupDef.shapeCount, groupDef.shapes.length), groupDef, transform);
         }
         if (groupDef.positionData) {
-            const count = (0, b2_settings_js_1.b2Maybe)(groupDef.particleCount, groupDef.positionData.length);
+            const count = (0, b2_settings_1.b2Maybe)(groupDef.particleCount, groupDef.positionData.length);
             for (let i = 0; i < count; i++) {
                 const p = groupDef.positionData[i];
                 this.CreateParticleForGroup(groupDef, transform, p);
             }
         }
         const lastIndex = this.m_count;
-        let group = new b2_particle_group_js_1.b2ParticleGroup(this);
+        let group = new b2_particle_group_1.b2ParticleGroup(this);
         group.m_firstIndex = firstIndex;
         group.m_lastIndex = lastIndex;
-        group.m_strength = (0, b2_settings_js_1.b2Maybe)(groupDef.strength, 1);
+        group.m_strength = (0, b2_settings_1.b2Maybe)(groupDef.strength, 1);
         group.m_userData = groupDef.userData;
         group.m_transform.Copy(transform);
         group.m_prev = null;
@@ -859,7 +863,7 @@ class b2ParticleSystem {
         for (let i = firstIndex; i < lastIndex; i++) {
             this.m_groupBuffer[i] = group;
         }
-        this.SetGroupFlags(group, (0, b2_settings_js_1.b2Maybe)(groupDef.groupFlags, 0));
+        this.SetGroupFlags(group, (0, b2_settings_1.b2Maybe)(groupDef.groupFlags, 0));
         // Create pairs and triads between particles in the group.
         const filter = new b2ParticleSystem_ConnectionFilter();
         this.UpdateContacts(true);
@@ -871,13 +875,13 @@ class b2ParticleSystem {
         return group;
     }
     /**
-   * Join two particle groups.
-   *
-   * warning: This function is locked during callbacks.
-   *
-   * @param groupA the first group. Expands to encompass the second group.
-   * @param groupB the second group. It is destroyed.
-   */
+     * Join two particle groups.
+     *
+     * warning: This function is locked during callbacks.
+     *
+     * @param groupA the first group. Expands to encompass the second group.
+     * @param groupB the second group. It is destroyed.
+     */
     JoinParticleGroups(groupA, groupB) {
         if (this.m_world.IsLocked()) {
             throw new Error();
@@ -901,17 +905,17 @@ class b2ParticleSystem {
         this.DestroyParticleGroup(groupB);
     }
     /**
-   * Split particle group into multiple disconnected groups.
-   *
-   * warning: This function is locked during callbacks.
-   *
-   * @param group the group to be split.
-   */
+     * Split particle group into multiple disconnected groups.
+     *
+     * warning: This function is locked during callbacks.
+     *
+     * @param group the group to be split.
+     */
     SplitParticleGroup(group) {
         this.UpdateContacts(true);
         const particleCount = group.GetParticleCount();
         // We create several linked lists. Each list represents a set of connected particles.
-        const nodeBuffer = (0, b2_settings_js_1.b2MakeArray)(particleCount, (index) => new b2ParticleSystem_ParticleListNode());
+        const nodeBuffer = (0, b2_settings_1.b2MakeArray)(particleCount, (index) => new b2ParticleSystem_ParticleListNode());
         b2ParticleSystem.InitializeParticleLists(group, nodeBuffer);
         this.MergeParticleListsInContact(group, nodeBuffer);
         const survivingList = b2ParticleSystem.FindLongestParticleList(group, nodeBuffer);
@@ -920,243 +924,243 @@ class b2ParticleSystem {
         this.UpdatePairsAndTriadsWithParticleList(group, nodeBuffer);
     }
     /**
-   * Get the world particle group list. With the returned group,
-   * use b2ParticleGroup::GetNext to get the next group in the
-   * world list.
-   *
-   * A null group indicates the end of the list.
-   *
-   * @return the head of the world particle group list.
-   */
+     * Get the world particle group list. With the returned group,
+     * use b2ParticleGroup::GetNext to get the next group in the
+     * world list.
+     *
+     * A null group indicates the end of the list.
+     *
+     * @return the head of the world particle group list.
+     */
     GetParticleGroupList() {
         return this.m_groupList;
     }
     /**
-   * Get the number of particle groups.
-   */
+     * Get the number of particle groups.
+     */
     GetParticleGroupCount() {
         return this.m_groupCount;
     }
     /**
-   * Get the number of particles.
-   */
+     * Get the number of particles.
+     */
     GetParticleCount() {
         return this.m_count;
     }
     /**
-   * Get the maximum number of particles.
-   */
+     * Get the maximum number of particles.
+     */
     GetMaxParticleCount() {
         return this.m_def.maxCount;
     }
     /**
-   * Set the maximum number of particles.
-   *
-   * A value of 0 means there is no maximum. The particle buffers
-   * can continue to grow while b2World's block allocator still
-   * has memory.
-   *
-   * Note: If you try to CreateParticle() with more than this
-   * count, b2_invalidParticleIndex is returned unless
-   * SetDestructionByAge() is used to enable the destruction of
-   * the oldest particles in the system.
-   */
+     * Set the maximum number of particles.
+     *
+     * A value of 0 means there is no maximum. The particle buffers
+     * can continue to grow while b2World's block allocator still
+     * has memory.
+     *
+     * Note: If you try to CreateParticle() with more than this
+     * count, b2_invalidParticleIndex is returned unless
+     * SetDestructionByAge() is used to enable the destruction of
+     * the oldest particles in the system.
+     */
     SetMaxParticleCount(count) {
         // DEBUG: b2Assert(this.m_count <= count);
         this.m_def.maxCount = count;
     }
     /**
-   * Get all existing particle flags.
-   */
+     * Get all existing particle flags.
+     */
     GetAllParticleFlags() {
         return this.m_allParticleFlags;
     }
     /**
-   * Get all existing particle group flags.
-   */
+     * Get all existing particle group flags.
+     */
     GetAllGroupFlags() {
         return this.m_allGroupFlags;
     }
     /**
-   * Pause or unpause the particle system. When paused,
-   * b2World::Step() skips over this particle system. All
-   * b2ParticleSystem function calls still work.
-   *
-   * @param paused paused is true to pause, false to un-pause.
-   */
+     * Pause or unpause the particle system. When paused,
+     * b2World::Step() skips over this particle system. All
+     * b2ParticleSystem function calls still work.
+     *
+     * @param paused paused is true to pause, false to un-pause.
+     */
     SetPaused(paused) {
         this.m_paused = paused;
     }
     /**
-   * Initially, true, then, the last value passed into
-   * SetPaused().
-   *
-   * @return true if the particle system is being updated in b2World::Step().
-   */
+     * Initially, true, then, the last value passed into
+     * SetPaused().
+     *
+     * @return true if the particle system is being updated in b2World::Step().
+     */
     GetPaused() {
         return this.m_paused;
     }
     /**
-   * Change the particle density.
-   *
-   * Particle density affects the mass of the particles, which in
-   * turn affects how the particles interact with b2Bodies. Note
-   * that the density does not affect how the particles interact
-   * with each other.
-   */
+     * Change the particle density.
+     *
+     * Particle density affects the mass of the particles, which in
+     * turn affects how the particles interact with b2Bodies. Note
+     * that the density does not affect how the particles interact
+     * with each other.
+     */
     SetDensity(density) {
         this.m_def.density = density;
         this.m_inverseDensity = 1 / this.m_def.density;
     }
     /**
-   * Get the particle density.
-   */
+     * Get the particle density.
+     */
     GetDensity() {
         return this.m_def.density;
     }
     /**
-   * Change the particle gravity scale. Adjusts the effect of the
-   * global gravity vector on particles.
-   */
+     * Change the particle gravity scale. Adjusts the effect of the
+     * global gravity vector on particles.
+     */
     SetGravityScale(gravityScale) {
         this.m_def.gravityScale = gravityScale;
     }
     /**
-   * Get the particle gravity scale.
-   */
+     * Get the particle gravity scale.
+     */
     GetGravityScale() {
         return this.m_def.gravityScale;
     }
     /**
-   * Damping is used to reduce the velocity of particles. The
-   * damping parameter can be larger than 1.0f but the damping
-   * effect becomes sensitive to the time step when the damping
-   * parameter is large.
-   */
+     * Damping is used to reduce the velocity of particles. The
+     * damping parameter can be larger than 1.0f but the damping
+     * effect becomes sensitive to the time step when the damping
+     * parameter is large.
+     */
     SetDamping(damping) {
         this.m_def.dampingStrength = damping;
     }
     /**
-   * Get damping for particles
-   */
+     * Get damping for particles
+     */
     GetDamping() {
         return this.m_def.dampingStrength;
     }
     /**
-   * Change the number of iterations when calculating the static
-   * pressure of particles. By default, 8 iterations. You can
-   * reduce the number of iterations down to 1 in some situations,
-   * but this may cause instabilities when many particles come
-   * together. If you see particles popping away from each other
-   * like popcorn, you may have to increase the number of
-   * iterations.
-   *
-   * For a description of static pressure, see
-   * http://en.wikipedia.org/wiki/Static_pressure#Static_pressure_in_fluid_dynamics
-   */
+     * Change the number of iterations when calculating the static
+     * pressure of particles. By default, 8 iterations. You can
+     * reduce the number of iterations down to 1 in some situations,
+     * but this may cause instabilities when many particles come
+     * together. If you see particles popping away from each other
+     * like popcorn, you may have to increase the number of
+     * iterations.
+     *
+     * For a description of static pressure, see
+     * http://en.wikipedia.org/wiki/Static_pressure#Static_pressure_in_fluid_dynamics
+     */
     SetStaticPressureIterations(iterations) {
         this.m_def.staticPressureIterations = iterations;
     }
     /**
-   * Get the number of iterations for static pressure of
-   * particles.
-   */
+     * Get the number of iterations for static pressure of
+     * particles.
+     */
     GetStaticPressureIterations() {
         return this.m_def.staticPressureIterations;
     }
     /**
-   * Change the particle radius.
-   *
-   * You should set this only once, on world start.
-   * If you change the radius during execution, existing particles
-   * may explode, shrink, or behave unexpectedly.
-   */
+     * Change the particle radius.
+     *
+     * You should set this only once, on world start.
+     * If you change the radius during execution, existing particles
+     * may explode, shrink, or behave unexpectedly.
+     */
     SetRadius(radius) {
         this.m_particleDiameter = 2 * radius;
         this.m_squaredDiameter = this.m_particleDiameter * this.m_particleDiameter;
         this.m_inverseDiameter = 1 / this.m_particleDiameter;
     }
     /**
-   * Get the particle radius.
-   */
+     * Get the particle radius.
+     */
     GetRadius() {
         return this.m_particleDiameter / 2;
     }
     /**
-   * Get the position of each particle
-   *
-   * Array is length GetParticleCount()
-   *
-   * @return the pointer to the head of the particle positions array.
-   */
+     * Get the position of each particle
+     *
+     * Array is length GetParticleCount()
+     *
+     * @return the pointer to the head of the particle positions array.
+     */
     GetPositionBuffer() {
         return this.m_positionBuffer.data;
     }
     /**
-   * Get the velocity of each particle
-   *
-   * Array is length GetParticleCount()
-   *
-   * @return the pointer to the head of the particle velocities array.
-   */
+     * Get the velocity of each particle
+     *
+     * Array is length GetParticleCount()
+     *
+     * @return the pointer to the head of the particle velocities array.
+     */
     GetVelocityBuffer() {
         return this.m_velocityBuffer.data;
     }
     /**
-   * Get the color of each particle
-   *
-   * Array is length GetParticleCount()
-   *
-   * @return the pointer to the head of the particle colors array.
-   */
+     * Get the color of each particle
+     *
+     * Array is length GetParticleCount()
+     *
+     * @return the pointer to the head of the particle colors array.
+     */
     GetColorBuffer() {
         this.m_colorBuffer.data = this.RequestBuffer(this.m_colorBuffer.data);
         return this.m_colorBuffer.data;
     }
     /**
-   * Get the particle-group of each particle.
-   *
-   * Array is length GetParticleCount()
-   *
-   * @return the pointer to the head of the particle group array.
-   */
+     * Get the particle-group of each particle.
+     *
+     * Array is length GetParticleCount()
+     *
+     * @return the pointer to the head of the particle group array.
+     */
     GetGroupBuffer() {
         return this.m_groupBuffer;
     }
     /**
-   * Get the weight of each particle
-   *
-   * Array is length GetParticleCount()
-   *
-   * @return the pointer to the head of the particle positions array.
-   */
+     * Get the weight of each particle
+     *
+     * Array is length GetParticleCount()
+     *
+     * @return the pointer to the head of the particle positions array.
+     */
     GetWeightBuffer() {
         return this.m_weightBuffer;
     }
     /**
-   * Get the user-specified data of each particle.
-   *
-   * Array is length GetParticleCount()
-   *
-   * @return the pointer to the head of the particle user-data array.
-   */
+     * Get the user-specified data of each particle.
+     *
+     * Array is length GetParticleCount()
+     *
+     * @return the pointer to the head of the particle user-data array.
+     */
     GetUserDataBuffer() {
         this.m_userDataBuffer.data = this.RequestBuffer(this.m_userDataBuffer.data);
         return this.m_userDataBuffer.data;
     }
     /**
-   * Get the flags for each particle. See the b2ParticleFlag enum.
-   *
-   * Array is length GetParticleCount()
-   *
-   * @return the pointer to the head of the particle-flags array.
-   */
+     * Get the flags for each particle. See the b2ParticleFlag enum.
+     *
+     * Array is length GetParticleCount()
+     *
+     * @return the pointer to the head of the particle-flags array.
+     */
     GetFlagsBuffer() {
         return this.m_flagsBuffer.data;
     }
     /**
-   * Set flags for a particle. See the b2ParticleFlag enum.
-   */
+     * Set flags for a particle. See the b2ParticleFlag enum.
+     */
     SetParticleFlags(index, newFlags) {
         const oldFlags = this.m_flagsBuffer.data[index];
         if (oldFlags & ~newFlags) {
@@ -1165,10 +1169,10 @@ class b2ParticleSystem {
         }
         if (~this.m_allParticleFlags & newFlags) {
             // If any flags were added
-            if (newFlags & b2_particle_js_1.b2ParticleFlag.b2_tensileParticle) {
+            if (newFlags & b2_particle_1.b2ParticleFlag.b2_tensileParticle) {
                 this.m_accumulation2Buffer = this.RequestBuffer(this.m_accumulation2Buffer);
             }
-            if (newFlags & b2_particle_js_1.b2ParticleFlag.b2_colorMixingParticle) {
+            if (newFlags & b2_particle_1.b2ParticleFlag.b2_colorMixingParticle) {
                 this.m_colorBuffer.data = this.RequestBuffer(this.m_colorBuffer.data);
             }
             this.m_allParticleFlags |= newFlags;
@@ -1176,27 +1180,27 @@ class b2ParticleSystem {
         this.m_flagsBuffer.data[index] = newFlags;
     }
     /**
-   * Get flags for a particle. See the b2ParticleFlag enum.
-   */
+     * Get flags for a particle. See the b2ParticleFlag enum.
+     */
     GetParticleFlags(index) {
         return this.m_flagsBuffer.data[index];
     }
     /**
-   * Set an external buffer for particle data.
-   *
-   * Normally, the b2World's block allocator is used for particle
-   * data. However, sometimes you may have an OpenGL or Java
-   * buffer for particle data. To avoid data duplication, you may
-   * supply this external buffer.
-   *
-   * Note that, when b2World's block allocator is used, the
-   * particle data buffers can grow as required. However, when
-   * external buffers are used, the maximum number of particles is
-   * clamped to the size of the smallest external buffer.
-   *
-   * @param buffer a pointer to a block of memory.
-   * @param capacity the number of values in the block.
-   */
+     * Set an external buffer for particle data.
+     *
+     * Normally, the b2World's block allocator is used for particle
+     * data. However, sometimes you may have an OpenGL or Java
+     * buffer for particle data. To avoid data duplication, you may
+     * supply this external buffer.
+     *
+     * Note that, when b2World's block allocator is used, the
+     * particle data buffers can grow as required. However, when
+     * external buffers are used, the maximum number of particles is
+     * clamped to the size of the smallest external buffer.
+     *
+     * @param buffer a pointer to a block of memory.
+     * @param capacity the number of values in the block.
+     */
     SetFlagsBuffer(buffer) {
         this.SetUserOverridableBuffer(this.m_flagsBuffer, buffer);
     }
@@ -1208,7 +1212,7 @@ class b2ParticleSystem {
             const count = buffer.length / 2;
             const array = new Array(count);
             for (let i = 0; i < count; ++i) {
-                array[i] = new b2_math_js_1.b2TypedVec2(buffer.subarray(i * 2, i * 2 + 2));
+                array[i] = new b2_math_1.b2TypedVec2(buffer.subarray(i * 2, i * 2 + 2));
             }
             buffer = array;
         }
@@ -1222,7 +1226,7 @@ class b2ParticleSystem {
             const count = buffer.length / 2;
             const array = new Array(count);
             for (let i = 0; i < count; ++i) {
-                array[i] = new b2_math_js_1.b2TypedVec2(buffer.subarray(i * 2, i * 2 + 2));
+                array[i] = new b2_math_1.b2TypedVec2(buffer.subarray(i * 2, i * 2 + 2));
             }
             buffer = array;
         }
@@ -1236,7 +1240,7 @@ class b2ParticleSystem {
             const count = buffer.length / 4;
             const array = new Array(count);
             for (let i = 0; i < count; ++i) {
-                array[i] = new b2_draw_js_1.b2TypedColor(buffer.subarray(i * 4, i * 4 + 4));
+                array[i] = new b2_draw_1.b2TypedColor(buffer.subarray(i * 4, i * 4 + 4));
             }
             buffer = array;
         }
@@ -1246,10 +1250,10 @@ class b2ParticleSystem {
         this.SetUserOverridableBuffer(this.m_userDataBuffer, buffer);
     }
     /**
-   * Get contacts between particles
-   * Contact data can be used for many reasons, for example to
-   * trigger rendering or audio effects.
-   */
+     * Get contacts between particles
+     * Contact data can be used for many reasons, for example to
+     * trigger rendering or audio effects.
+     */
     GetContacts() {
         return this.m_contactBuffer.data;
     }
@@ -1257,11 +1261,11 @@ class b2ParticleSystem {
         return this.m_contactBuffer.count;
     }
     /**
-   * Get contacts between particles and bodies
-   *
-   * Contact data can be used for many reasons, for example to
-   * trigger rendering or audio effects.
-   */
+     * Get contacts between particles and bodies
+     *
+     * Contact data can be used for many reasons, for example to
+     * trigger rendering or audio effects.
+     */
     GetBodyContacts() {
         return this.m_bodyContactBuffer.data;
     }
@@ -1269,21 +1273,21 @@ class b2ParticleSystem {
         return this.m_bodyContactBuffer.count;
     }
     /**
-   * Get array of particle pairs. The particles in a pair:
-   *   (1) are contacting,
-   *   (2) are in the same particle group,
-   *   (3) are part of a rigid particle group, or are spring, elastic,
-   *       or wall particles.
-   *   (4) have at least one particle that is a spring or barrier
-   *       particle (i.e. one of the types in k_pairFlags),
-   *   (5) have at least one particle that returns true for
-   *       ConnectionFilter::IsNecessary,
-   *   (6) are not zombie particles.
-   *
-   * Essentially, this is an array of spring or barrier particles
-   * that are interacting. The array is sorted by b2ParticlePair's
-   * indexA, and then indexB. There are no duplicate entries.
-   */
+     * Get array of particle pairs. The particles in a pair:
+     *   (1) are contacting,
+     *   (2) are in the same particle group,
+     *   (3) are part of a rigid particle group, or are spring, elastic,
+     *       or wall particles.
+     *   (4) have at least one particle that is a spring or barrier
+     *       particle (i.e. one of the types in k_pairFlags),
+     *   (5) have at least one particle that returns true for
+     *       ConnectionFilter::IsNecessary,
+     *   (6) are not zombie particles.
+     *
+     * Essentially, this is an array of spring or barrier particles
+     * that are interacting. The array is sorted by b2ParticlePair's
+     * indexA, and then indexB. There are no duplicate entries.
+     */
     GetPairs() {
         return this.m_pairBuffer.data;
     }
@@ -1291,22 +1295,22 @@ class b2ParticleSystem {
         return this.m_pairBuffer.count;
     }
     /**
-   * Get array of particle triads. The particles in a triad:
-   *   (1) are in the same particle group,
-   *   (2) are in a Voronoi triangle together,
-   *   (3) are within b2_maxTriadDistance particle diameters of each
-   *       other,
-   *   (4) return true for ConnectionFilter::ShouldCreateTriad
-   *   (5) have at least one particle of type elastic (i.e. one of the
-   *       types in k_triadFlags),
-   *   (6) are part of a rigid particle group, or are spring, elastic,
-   *       or wall particles.
-   *   (7) are not zombie particles.
-   *
-   * Essentially, this is an array of elastic particles that are
-   * interacting. The array is sorted by b2ParticleTriad's indexA,
-   * then indexB, then indexC. There are no duplicate entries.
-   */
+     * Get array of particle triads. The particles in a triad:
+     *   (1) are in the same particle group,
+     *   (2) are in a Voronoi triangle together,
+     *   (3) are within b2_maxTriadDistance particle diameters of each
+     *       other,
+     *   (4) return true for ConnectionFilter::ShouldCreateTriad
+     *   (5) have at least one particle of type elastic (i.e. one of the
+     *       types in k_triadFlags),
+     *   (6) are part of a rigid particle group, or are spring, elastic,
+     *       or wall particles.
+     *   (7) are not zombie particles.
+     *
+     * Essentially, this is an array of elastic particles that are
+     * interacting. The array is sorted by b2ParticleTriad's indexA,
+     * then indexB, then indexC. There are no duplicate entries.
+     */
     GetTriads() {
         return this.m_triadBuffer.data;
     }
@@ -1314,11 +1318,11 @@ class b2ParticleSystem {
         return this.m_triadBuffer.count;
     }
     /**
-   * Set an optional threshold for the maximum number of
-   * consecutive particle iterations that a particle may contact
-   * multiple bodies before it is considered a candidate for being
-   * "stuck". Setting to zero or less disables.
-   */
+     * Set an optional threshold for the maximum number of
+     * consecutive particle iterations that a particle may contact
+     * multiple bodies before it is considered a candidate for being
+     * "stuck". Setting to zero or less disables.
+     */
     SetStuckThreshold(steps) {
         this.m_stuckThreshold = steps;
         if (steps > 0) {
@@ -1328,25 +1332,25 @@ class b2ParticleSystem {
         }
     }
     /**
-   * Get potentially stuck particles from the last step; the user
-   * must decide if they are stuck or not, and if so, delete or
-   * move them
-   */
+     * Get potentially stuck particles from the last step; the user
+     * must decide if they are stuck or not, and if so, delete or
+     * move them
+     */
     GetStuckCandidates() {
         ///return m_stuckParticleBuffer.Data();
         return this.m_stuckParticleBuffer.Data();
     }
     /**
-   * Get the number of stuck particle candidates from the last
-   * step.
-   */
+     * Get the number of stuck particle candidates from the last
+     * step.
+     */
     GetStuckCandidateCount() {
         ///return m_stuckParticleBuffer.GetCount();
         return this.m_stuckParticleBuffer.GetCount();
     }
     /**
-   * Compute the kinetic energy that can be lost by damping force
-   */
+     * Compute the kinetic energy that can be lost by damping force
+     */
     ComputeCollisionEnergy() {
         const s_v = b2ParticleSystem.ComputeCollisionEnergy_s_v;
         const vel_data = this.m_velocityBuffer.data;
@@ -1357,8 +1361,8 @@ class b2ParticleSystem {
             const b = contact.indexB;
             const n = contact.normal;
             ///b2Vec2 v = m_velocityBuffer.data[b] - m_velocityBuffer.data[a];
-            const v = b2_math_js_1.b2Vec2.SubVV(vel_data[b], vel_data[a], s_v);
-            const vn = b2_math_js_1.b2Vec2.DotVV(v, n);
+            const v = b2_math_1.b2Vec2.SubVV(vel_data[b], vel_data[a], s_v);
+            const vn = b2_math_1.b2Vec2.DotVV(v, n);
             if (vn < 0) {
                 sum_v2 += vn * vn;
             }
@@ -1366,30 +1370,30 @@ class b2ParticleSystem {
         return 0.5 * this.GetParticleMass() * sum_v2;
     }
     /**
-   * Set strict Particle/Body contact check.
-   *
-   * This is an option that will help ensure correct behavior if
-   * there are corners in the world model where Particle/Body
-   * contact is ambiguous. This option scales at n*log(n) of the
-   * number of Particle/Body contacts, so it is best to only
-   * enable if it is necessary for your geometry. Enable if you
-   * see strange particle behavior around b2Body intersections.
-   */
+     * Set strict Particle/Body contact check.
+     *
+     * This is an option that will help ensure correct behavior if
+     * there are corners in the world model where Particle/Body
+     * contact is ambiguous. This option scales at n*log(n) of the
+     * number of Particle/Body contacts, so it is best to only
+     * enable if it is necessary for your geometry. Enable if you
+     * see strange particle behavior around b2Body intersections.
+     */
     SetStrictContactCheck(enabled) {
         this.m_def.strictContactCheck = enabled;
     }
     /**
-   * Get the status of the strict contact check.
-   */
+     * Get the status of the strict contact check.
+     */
     GetStrictContactCheck() {
         return this.m_def.strictContactCheck;
     }
     /**
-   * Set the lifetime (in seconds) of a particle relative to the
-   * current time.  A lifetime of less than or equal to 0.0f
-   * results in the particle living forever until it's manually
-   * destroyed by the application.
-   */
+     * Set the lifetime (in seconds) of a particle relative to the
+     * current time.  A lifetime of less than or equal to 0.0f
+     * results in the particle living forever until it's manually
+     * destroyed by the application.
+     */
     SetParticleLifetime(index, lifetime) {
         // DEBUG: b2Assert(this.ValidateParticleIndex(index));
         const initializeExpirationTimes = this.m_indexByExpirationTimeBuffer.data === null;
@@ -1413,26 +1417,26 @@ class b2ParticleSystem {
         }
     }
     /**
-   * Get the lifetime (in seconds) of a particle relative to the
-   * current time.  A value > 0.0f is returned if the particle is
-   * scheduled to be destroyed in the future, values <= 0.0f
-   * indicate the particle has an infinite lifetime.
-   */
+     * Get the lifetime (in seconds) of a particle relative to the
+     * current time.  A value > 0.0f is returned if the particle is
+     * scheduled to be destroyed in the future, values <= 0.0f
+     * indicate the particle has an infinite lifetime.
+     */
     GetParticleLifetime(index) {
         // DEBUG: b2Assert(this.ValidateParticleIndex(index));
         return this.ExpirationTimeToLifetime(this.GetExpirationTimeBuffer()[index]);
     }
     /**
-   * Enable / disable destruction of particles in CreateParticle()
-   * when no more particles can be created due to a prior call to
-   * SetMaxParticleCount().  When this is enabled, the oldest
-   * particle is destroyed in CreateParticle() favoring the
-   * destruction of particles with a finite lifetime over
-   * particles with infinite lifetimes. This feature is enabled by
-   * default when particle lifetimes are tracked.  Explicitly
-   * enabling this feature using this function enables particle
-   * lifetime tracking.
-   */
+     * Enable / disable destruction of particles in CreateParticle()
+     * when no more particles can be created due to a prior call to
+     * SetMaxParticleCount().  When this is enabled, the oldest
+     * particle is destroyed in CreateParticle() favoring the
+     * destruction of particles with a finite lifetime over
+     * particles with infinite lifetimes. This feature is enabled by
+     * default when particle lifetimes are tracked.  Explicitly
+     * enabling this feature using this function enables particle
+     * lifetime tracking.
+     */
     SetDestructionByAge(enable) {
         if (enable) {
             this.GetExpirationTimeBuffer();
@@ -1440,44 +1444,44 @@ class b2ParticleSystem {
         this.m_def.destroyByAge = enable;
     }
     /**
-   * Get whether the oldest particle will be destroyed in
-   * CreateParticle() when the maximum number of particles are
-   * present in the system.
-   */
+     * Get whether the oldest particle will be destroyed in
+     * CreateParticle() when the maximum number of particles are
+     * present in the system.
+     */
     GetDestructionByAge() {
         return this.m_def.destroyByAge;
     }
     /**
-   * Get the array of particle expiration times indexed by
-   * particle index.
-   *
-   * GetParticleCount() items are in the returned array.
-   */
+     * Get the array of particle expiration times indexed by
+     * particle index.
+     *
+     * GetParticleCount() items are in the returned array.
+     */
     GetExpirationTimeBuffer() {
         this.m_expirationTimeBuffer.data = this.RequestBuffer(this.m_expirationTimeBuffer.data);
         return this.m_expirationTimeBuffer.data;
     }
     /**
-   * Convert a expiration time value in returned by
-   * GetExpirationTimeBuffer() to a time in seconds relative to
-   * the current simulation time.
-   */
+     * Convert a expiration time value in returned by
+     * GetExpirationTimeBuffer() to a time in seconds relative to
+     * the current simulation time.
+     */
     ExpirationTimeToLifetime(expirationTime) {
         return (expirationTime > 0 ?
             expirationTime - this.GetQuantizedTimeElapsed() :
             expirationTime) * this.m_def.lifetimeGranularity;
     }
     /**
-   * Get the array of particle indices ordered by reverse
-   * lifetime. The oldest particle indexes are at the end of the
-   * array with the newest at the start.  Particles with infinite
-   * lifetimes (i.e expiration times less than or equal to 0) are
-   * placed at the start of the array.
-   * ExpirationTimeToLifetime(GetExpirationTimeBuffer()[index]) is
-   * equivalent to GetParticleLifetime(index).
-   *
-   * GetParticleCount() items are in the returned array.
-   */
+     * Get the array of particle indices ordered by reverse
+     * lifetime. The oldest particle indexes are at the end of the
+     * array with the newest at the start.  Particles with infinite
+     * lifetimes (i.e expiration times less than or equal to 0) are
+     * placed at the start of the array.
+     * ExpirationTimeToLifetime(GetExpirationTimeBuffer()[index]) is
+     * equivalent to GetParticleLifetime(index).
+     *
+     * GetParticleCount() items are in the returned array.
+     */
     GetIndexByExpirationTimeBuffer() {
         // If particles are present, initialize / reinitialize the lifetime buffer.
         if (this.GetParticleCount()) {
@@ -1489,34 +1493,34 @@ class b2ParticleSystem {
         return this.m_indexByExpirationTimeBuffer.data;
     }
     /**
-   * Apply an impulse to one particle. This immediately modifies
-   * the velocity. Similar to b2Body::ApplyLinearImpulse.
-   *
-   * @param index the particle that will be modified.
-   * @param impulse impulse the world impulse vector, usually in N-seconds or kg-m/s.
-   */
+     * Apply an impulse to one particle. This immediately modifies
+     * the velocity. Similar to b2Body::ApplyLinearImpulse.
+     *
+     * @param index the particle that will be modified.
+     * @param impulse impulse the world impulse vector, usually in N-seconds or kg-m/s.
+     */
     ParticleApplyLinearImpulse(index, impulse) {
         this.ApplyLinearImpulse(index, index + 1, impulse);
     }
     /**
-   * Apply an impulse to all particles between 'firstIndex' and
-   * 'lastIndex'. This immediately modifies the velocity. Note
-   * that the impulse is applied to the total mass of all
-   * particles. So, calling ParticleApplyLinearImpulse(0, impulse)
-   * and ParticleApplyLinearImpulse(1, impulse) will impart twice
-   * as much velocity as calling just ApplyLinearImpulse(0, 1,
-   * impulse).
-   *
-   * @param firstIndex the first particle to be modified.
-   * @param lastIndex the last particle to be modified.
-   * @param impulse the world impulse vector, usually in N-seconds or kg-m/s.
-   */
+     * Apply an impulse to all particles between 'firstIndex' and
+     * 'lastIndex'. This immediately modifies the velocity. Note
+     * that the impulse is applied to the total mass of all
+     * particles. So, calling ParticleApplyLinearImpulse(0, impulse)
+     * and ParticleApplyLinearImpulse(1, impulse) will impart twice
+     * as much velocity as calling just ApplyLinearImpulse(0, 1,
+     * impulse).
+     *
+     * @param firstIndex the first particle to be modified.
+     * @param lastIndex the last particle to be modified.
+     * @param impulse the world impulse vector, usually in N-seconds or kg-m/s.
+     */
     ApplyLinearImpulse(firstIndex, lastIndex, impulse) {
         const vel_data = this.m_velocityBuffer.data;
         const numParticles = (lastIndex - firstIndex);
         const totalMass = numParticles * this.GetParticleMass();
         ///const b2Vec2 velocityDelta = impulse / totalMass;
-        const velocityDelta = new b2_math_js_1.b2Vec2().Copy(impulse).SelfMul(1 / totalMass);
+        const velocityDelta = new b2_math_1.b2Vec2().Copy(impulse).SelfMul(1 / totalMass);
         for (let i = firstIndex; i < lastIndex; i++) {
             ///m_velocityBuffer.data[i] += velocityDelta;
             vel_data[i].SelfAdd(velocityDelta);
@@ -1526,11 +1530,11 @@ class b2ParticleSystem {
         return force.x !== 0 || force.y !== 0;
     }
     /**
-   * Apply a force to the center of a particle.
-   *
-   * @param index the particle that will be modified.
-   * @param force the world force vector, usually in Newtons (N).
-   */
+     * Apply a force to the center of a particle.
+     *
+     * @param index the particle that will be modified.
+     * @param force the world force vector, usually in Newtons (N).
+     */
     ParticleApplyForce(index, force) {
         if (b2ParticleSystem.IsSignificantForce(force) &&
             this.ForceCanBeApplied(this.m_flagsBuffer.data[index])) {
@@ -1540,16 +1544,16 @@ class b2ParticleSystem {
         }
     }
     /**
-   * Distribute a force across several particles. The particles
-   * must not be wall particles. Note that the force is
-   * distributed across all the particles, so calling this
-   * function for indices 0..N is not the same as calling
-   * ParticleApplyForce(i, force) for i in 0..N.
-   *
-   * @param firstIndex the first particle to be modified.
-   * @param lastIndex the last particle to be modified.
-   * @param force the world force vector, usually in Newtons (N).
-   */
+     * Distribute a force across several particles. The particles
+     * must not be wall particles. Note that the force is
+     * distributed across all the particles, so calling this
+     * function for indices 0..N is not the same as calling
+     * ParticleApplyForce(i, force) for i in 0..N.
+     *
+     * @param firstIndex the first particle to be modified.
+     * @param lastIndex the last particle to be modified.
+     * @param force the world force vector, usually in Newtons (N).
+     */
     ApplyForce(firstIndex, lastIndex, force) {
         // Ensure we're not trying to apply force to particles that can't move,
         // such as wall particles.
@@ -1560,7 +1564,7 @@ class b2ParticleSystem {
         // DEBUG: b2Assert(this.ForceCanBeApplied(flags));
         // Early out if force does nothing (optimization).
         ///const b2Vec2 distributedForce = force / (float32)(lastIndex - firstIndex);
-        const distributedForce = new b2_math_js_1.b2Vec2().Copy(force).SelfMul(1 / (lastIndex - firstIndex));
+        const distributedForce = new b2_math_1.b2Vec2().Copy(force).SelfMul(1 / (lastIndex - firstIndex));
         if (b2ParticleSystem.IsSignificantForce(distributedForce)) {
             this.PrepareForceBuffer();
             // Distribute the force over all the particles.
@@ -1571,20 +1575,20 @@ class b2ParticleSystem {
         }
     }
     /**
-   * Get the next particle-system in the world's particle-system
-   * list.
-   */
+     * Get the next particle-system in the world's particle-system
+     * list.
+     */
     GetNext() {
         return this.m_next;
     }
     /**
-   * Query the particle system for all particles that potentially
-   * overlap the provided AABB.
-   * b2QueryCallback::ShouldQueryParticleSystem is ignored.
-   *
-   * @param callback a user implemented callback class.
-   * @param aabb the query box.
-   */
+     * Query the particle system for all particles that potentially
+     * overlap the provided AABB.
+     * b2QueryCallback::ShouldQueryParticleSystem is ignored.
+     *
+     * @param callback a user implemented callback class.
+     * @param aabb the query box.
+     */
     QueryAABB(callback, aabb) {
         if (this.m_proxyBuffer.count === 0) {
             return;
@@ -1607,23 +1611,23 @@ class b2ParticleSystem {
         }
     }
     /**
-   * Query the particle system for all particles that potentially
-   * overlap the provided shape's AABB. Calls QueryAABB
-   * internally. b2QueryCallback::ShouldQueryParticleSystem is
-   * ignored.
-   *
-   * @param callback a user implemented callback class.
-   * @param shape the query shape
-   * @param xf the transform of the AABB
-   * @param childIndex
-   */
+     * Query the particle system for all particles that potentially
+     * overlap the provided shape's AABB. Calls QueryAABB
+     * internally. b2QueryCallback::ShouldQueryParticleSystem is
+     * ignored.
+     *
+     * @param callback a user implemented callback class.
+     * @param shape the query shape
+     * @param xf the transform of the AABB
+     * @param childIndex
+     */
     QueryShapeAABB(callback, shape, xf, childIndex = 0) {
         const s_aabb = b2ParticleSystem.QueryShapeAABB_s_aabb;
         const aabb = s_aabb;
         shape.ComputeAABB(aabb, xf, childIndex);
         this.QueryAABB(callback, aabb);
     }
-    QueryPointAABB(callback, point, slop = b2_settings_js_1.b2_linearSlop) {
+    QueryPointAABB(callback, point, slop = b2_settings_1.b2_linearSlop) {
         const s_aabb = b2ParticleSystem.QueryPointAABB_s_aabb;
         const aabb = s_aabb;
         aabb.lowerBound.Set(point.x - slop, point.y - slop);
@@ -1631,16 +1635,16 @@ class b2ParticleSystem {
         this.QueryAABB(callback, aabb);
     }
     /**
-   * Ray-cast the particle system for all particles in the path of
-   * the ray. Your callback controls whether you get the closest
-   * point, any point, or n-points. The ray-cast ignores particles
-   * that contain the starting point.
-   * b2RayCastCallback::ShouldQueryParticleSystem is ignored.
-   *
-   * @param callback a user implemented callback class.
-   * @param point1 the ray starting point
-   * @param point2 the ray ending point
-   */
+     * Ray-cast the particle system for all particles in the path of
+     * the ray. Your callback controls whether you get the closest
+     * point, any point, or n-points. The ray-cast ignores particles
+     * that contain the starting point.
+     * b2RayCastCallback::ShouldQueryParticleSystem is ignored.
+     *
+     * @param callback a user implemented callback class.
+     * @param point1 the ray starting point
+     * @param point2 the ray ending point
+     */
     RayCast(callback, point1, point2) {
         const s_aabb = b2ParticleSystem.RayCast_s_aabb;
         const s_p = b2ParticleSystem.RayCast_s_p;
@@ -1652,25 +1656,25 @@ class b2ParticleSystem {
         }
         const pos_data = this.m_positionBuffer.data;
         const aabb = s_aabb;
-        b2_math_js_1.b2Vec2.MinV(point1, point2, aabb.lowerBound);
-        b2_math_js_1.b2Vec2.MaxV(point1, point2, aabb.upperBound);
+        b2_math_1.b2Vec2.MinV(point1, point2, aabb.lowerBound);
+        b2_math_1.b2Vec2.MaxV(point1, point2, aabb.upperBound);
         let fraction = 1;
         // solving the following equation:
         // ((1-t)*point1+t*point2-position)^2=diameter^2
         // where t is a potential fraction
         ///b2Vec2 v = point2 - point1;
-        const v = b2_math_js_1.b2Vec2.SubVV(point2, point1, s_v);
-        const v2 = b2_math_js_1.b2Vec2.DotVV(v, v);
+        const v = b2_math_1.b2Vec2.SubVV(point2, point1, s_v);
+        const v2 = b2_math_1.b2Vec2.DotVV(v, v);
         const enumerator = this.GetInsideBoundsEnumerator(aabb);
         let i;
         while ((i = enumerator.GetNext()) >= 0) {
             ///b2Vec2 p = point1 - m_positionBuffer.data[i];
-            const p = b2_math_js_1.b2Vec2.SubVV(point1, pos_data[i], s_p);
-            const pv = b2_math_js_1.b2Vec2.DotVV(p, v);
-            const p2 = b2_math_js_1.b2Vec2.DotVV(p, p);
+            const p = b2_math_1.b2Vec2.SubVV(point1, pos_data[i], s_p);
+            const pv = b2_math_1.b2Vec2.DotVV(p, v);
+            const p2 = b2_math_1.b2Vec2.DotVV(p, p);
             const determinant = pv * pv - v2 * (p2 - this.m_squaredDiameter);
             if (determinant >= 0) {
-                const sqrtDeterminant = (0, b2_math_js_1.b2Sqrt)(determinant);
+                const sqrtDeterminant = (0, b2_math_1.b2Sqrt)(determinant);
                 // find a solution between 0 and fraction
                 let t = (-pv - sqrtDeterminant) / v2;
                 if (t > fraction) {
@@ -1683,11 +1687,11 @@ class b2ParticleSystem {
                     }
                 }
                 ///b2Vec2 n = p + t * v;
-                const n = b2_math_js_1.b2Vec2.AddVMulSV(p, t, v, s_n);
+                const n = b2_math_1.b2Vec2.AddVMulSV(p, t, v, s_n);
                 n.Normalize();
                 ///float32 f = callback.ReportParticle(this, i, point1 + t * v, n, t);
-                const f = callback.ReportParticle(this, i, b2_math_js_1.b2Vec2.AddVMulSV(point1, t, v, s_point), n, t);
-                fraction = (0, b2_math_js_1.b2Min)(fraction, f);
+                const f = callback.ReportParticle(this, i, b2_math_1.b2Vec2.AddVMulSV(point1, t, v, s_point), n, t);
+                fraction = (0, b2_math_1.b2Min)(fraction, f);
                 if (fraction <= 0) {
                     break;
                 }
@@ -1695,22 +1699,22 @@ class b2ParticleSystem {
         }
     }
     /**
-   * Compute the axis-aligned bounding box for all particles
-   * contained within this particle system.
-   * @param aabb Returns the axis-aligned bounding box of the system.
-   */
+     * Compute the axis-aligned bounding box for all particles
+     * contained within this particle system.
+     * @param aabb Returns the axis-aligned bounding box of the system.
+     */
     ComputeAABB(aabb) {
         const particleCount = this.GetParticleCount();
         // DEBUG: b2Assert(aabb !== null);
-        aabb.lowerBound.x = +b2_settings_js_1.b2_maxFloat;
-        aabb.lowerBound.y = +b2_settings_js_1.b2_maxFloat;
-        aabb.upperBound.x = -b2_settings_js_1.b2_maxFloat;
-        aabb.upperBound.y = -b2_settings_js_1.b2_maxFloat;
+        aabb.lowerBound.x = +b2_settings_1.b2_maxFloat;
+        aabb.lowerBound.y = +b2_settings_1.b2_maxFloat;
+        aabb.upperBound.x = -b2_settings_1.b2_maxFloat;
+        aabb.upperBound.y = -b2_settings_1.b2_maxFloat;
         const pos_data = this.m_positionBuffer.data;
         for (let i = 0; i < particleCount; i++) {
             const p = pos_data[i];
-            b2_math_js_1.b2Vec2.MinV(aabb.lowerBound, p, aabb.lowerBound);
-            b2_math_js_1.b2Vec2.MaxV(aabb.upperBound, p, aabb.upperBound);
+            b2_math_1.b2Vec2.MinV(aabb.lowerBound, p, aabb.lowerBound);
+            b2_math_1.b2Vec2.MaxV(aabb.upperBound, p, aabb.upperBound);
         }
         aabb.lowerBound.x -= this.m_particleDiameter;
         aabb.lowerBound.y -= this.m_particleDiameter;
@@ -1729,8 +1733,8 @@ class b2ParticleSystem {
         }
     }
     /**
-   * Reallocate a buffer
-   */
+     * Reallocate a buffer
+     */
     ReallocateBuffer3(oldBuffer, oldCapacity, newCapacity) {
         // b2Assert(newCapacity > oldCapacity);
         if (newCapacity <= oldCapacity) {
@@ -1741,8 +1745,8 @@ class b2ParticleSystem {
         return newBuffer;
     }
     /**
-   * Reallocate a buffer
-   */
+     * Reallocate a buffer
+     */
     ReallocateBuffer5(buffer, userSuppliedCapacity, oldCapacity, newCapacity, deferred) {
         // b2Assert(newCapacity > oldCapacity);
         if (newCapacity <= oldCapacity) {
@@ -1761,8 +1765,8 @@ class b2ParticleSystem {
         return buffer; // TODO: fix this
     }
     /**
-   * Reallocate a buffer
-   */
+     * Reallocate a buffer
+     */
     ReallocateBuffer4(buffer, oldCapacity, newCapacity, deferred) {
         // DEBUG: b2Assert(newCapacity > oldCapacity);
         return this.ReallocateBuffer5(buffer.data, buffer.userSuppliedCapacity, oldCapacity, newCapacity, deferred);
@@ -1770,7 +1774,7 @@ class b2ParticleSystem {
     RequestBuffer(buffer) {
         if (!buffer) {
             if (this.m_internalAllocatedCapacity === 0) {
-                this.ReallocateInternalAllocatedBuffers(b2_settings_js_1.b2_minParticleSystemBufferCapacity);
+                this.ReallocateInternalAllocatedBuffers(b2_settings_1.b2_minParticleSystemBufferCapacity);
             }
             buffer = [];
             buffer.length = this.m_internalAllocatedCapacity;
@@ -1778,9 +1782,9 @@ class b2ParticleSystem {
         return buffer;
     }
     /**
-   * Reallocate the handle / index map and schedule the allocation
-   * of a new pool for handle allocation.
-   */
+     * Reallocate the handle / index map and schedule the allocation
+     * of a new pool for handle allocation.
+     */
     ReallocateHandleBuffers(newCapacity) {
         // DEBUG: b2Assert(newCapacity > this.m_internalAllocatedCapacity);
         // Reallocate a new handle / index map buffer, copying old handle pointers
@@ -1826,17 +1830,17 @@ class b2ParticleSystem {
         }
     }
     CreateParticleForGroup(groupDef, xf, p) {
-        const particleDef = new b2_particle_js_1.b2ParticleDef();
-        particleDef.flags = (0, b2_settings_js_1.b2Maybe)(groupDef.flags, 0);
+        const particleDef = new b2_particle_1.b2ParticleDef();
+        particleDef.flags = (0, b2_settings_1.b2Maybe)(groupDef.flags, 0);
         ///particleDef.position = b2Mul(xf, p);
-        b2_math_js_1.b2Transform.MulXV(xf, p, particleDef.position);
+        b2_math_1.b2Transform.MulXV(xf, p, particleDef.position);
         ///particleDef.velocity =
         ///  groupDef.linearVelocity +
         ///  b2Cross(groupDef.angularVelocity,
         ///      particleDef.position - groupDef.position);
-        b2_math_js_1.b2Vec2.AddVV((0, b2_settings_js_1.b2Maybe)(groupDef.linearVelocity, b2_math_js_1.b2Vec2.ZERO), b2_math_js_1.b2Vec2.CrossSV((0, b2_settings_js_1.b2Maybe)(groupDef.angularVelocity, 0), b2_math_js_1.b2Vec2.SubVV(particleDef.position, (0, b2_settings_js_1.b2Maybe)(groupDef.position, b2_math_js_1.b2Vec2.ZERO), b2_math_js_1.b2Vec2.s_t0), b2_math_js_1.b2Vec2.s_t0), particleDef.velocity);
-        particleDef.color.Copy((0, b2_settings_js_1.b2Maybe)(groupDef.color, b2_draw_js_1.b2Color.ZERO));
-        particleDef.lifetime = (0, b2_settings_js_1.b2Maybe)(groupDef.lifetime, 0);
+        b2_math_1.b2Vec2.AddVV((0, b2_settings_1.b2Maybe)(groupDef.linearVelocity, b2_math_1.b2Vec2.ZERO), b2_math_1.b2Vec2.CrossSV((0, b2_settings_1.b2Maybe)(groupDef.angularVelocity, 0), b2_math_1.b2Vec2.SubVV(particleDef.position, (0, b2_settings_1.b2Maybe)(groupDef.position, b2_math_1.b2Vec2.ZERO), b2_math_1.b2Vec2.s_t0), b2_math_1.b2Vec2.s_t0), particleDef.velocity);
+        particleDef.color.Copy((0, b2_settings_1.b2Maybe)(groupDef.color, b2_draw_1.b2Color.ZERO));
+        particleDef.lifetime = (0, b2_settings_1.b2Maybe)(groupDef.lifetime, 0);
         particleDef.userData = groupDef.userData;
         this.CreateParticle(particleDef);
     }
@@ -1844,7 +1848,7 @@ class b2ParticleSystem {
         const s_edge = b2ParticleSystem.CreateParticlesStrokeShapeForGroup_s_edge;
         const s_d = b2ParticleSystem.CreateParticlesStrokeShapeForGroup_s_d;
         const s_p = b2ParticleSystem.CreateParticlesStrokeShapeForGroup_s_p;
-        let stride = (0, b2_settings_js_1.b2Maybe)(groupDef.stride, 0);
+        let stride = (0, b2_settings_1.b2Maybe)(groupDef.stride, 0);
         if (stride === 0) {
             stride = this.GetParticleStride();
         }
@@ -1852,7 +1856,7 @@ class b2ParticleSystem {
         const childCount = shape.GetChildCount();
         for (let childIndex = 0; childIndex < childCount; childIndex++) {
             let edge = null;
-            if (shape.GetType() === b2_shape_js_1.b2ShapeType.e_edgeShape) {
+            if (shape.GetType() === b2_shape_1.b2ShapeType.e_edgeShape) {
                 edge = shape;
             }
             else {
@@ -1860,11 +1864,11 @@ class b2ParticleSystem {
                 edge = s_edge;
                 shape.GetChildEdge(edge, childIndex);
             }
-            const d = b2_math_js_1.b2Vec2.SubVV(edge.m_vertex2, edge.m_vertex1, s_d);
+            const d = b2_math_1.b2Vec2.SubVV(edge.m_vertex2, edge.m_vertex1, s_d);
             const edgeLength = d.Length();
             while (positionOnEdge < edgeLength) {
                 ///b2Vec2 p = edge.m_vertex1 + positionOnEdge / edgeLength * d;
-                const p = b2_math_js_1.b2Vec2.AddVMulSV(edge.m_vertex1, positionOnEdge / edgeLength, d, s_p);
+                const p = b2_math_1.b2Vec2.AddVMulSV(edge.m_vertex1, positionOnEdge / edgeLength, d, s_p);
                 this.CreateParticleForGroup(groupDef, xf, p);
                 positionOnEdge += stride;
             }
@@ -1874,13 +1878,13 @@ class b2ParticleSystem {
     CreateParticlesFillShapeForGroup(shape, groupDef, xf) {
         const s_aabb = b2ParticleSystem.CreateParticlesFillShapeForGroup_s_aabb;
         const s_p = b2ParticleSystem.CreateParticlesFillShapeForGroup_s_p;
-        let stride = (0, b2_settings_js_1.b2Maybe)(groupDef.stride, 0);
+        let stride = (0, b2_settings_1.b2Maybe)(groupDef.stride, 0);
         if (stride === 0) {
             stride = this.GetParticleStride();
         }
         ///b2Transform identity;
         /// identity.SetIdentity();
-        const identity = b2_math_js_1.b2Transform.IDENTITY;
+        const identity = b2_math_1.b2Transform.IDENTITY;
         const aabb = s_aabb;
         // DEBUG: b2Assert(shape.GetChildCount() === 1);
         shape.ComputeAABB(aabb, identity, 0);
@@ -1895,12 +1899,12 @@ class b2ParticleSystem {
     }
     CreateParticlesWithShapeForGroup(shape, groupDef, xf) {
         switch (shape.GetType()) {
-            case b2_shape_js_1.b2ShapeType.e_edgeShape:
-            case b2_shape_js_1.b2ShapeType.e_chainShape:
+            case b2_shape_1.b2ShapeType.e_edgeShape:
+            case b2_shape_1.b2ShapeType.e_chainShape:
                 this.CreateParticlesStrokeShapeForGroup(shape, groupDef, xf);
                 break;
-            case b2_shape_js_1.b2ShapeType.e_polygonShape:
-            case b2_shape_js_1.b2ShapeType.e_circleShape:
+            case b2_shape_1.b2ShapeType.e_polygonShape:
+            case b2_shape_1.b2ShapeType.e_circleShape:
                 this.CreateParticlesFillShapeForGroup(shape, groupDef, xf);
                 break;
             default:
@@ -1913,7 +1917,7 @@ class b2ParticleSystem {
         this.CreateParticlesFillShapeForGroup(compositeShape, groupDef, xf);
     }
     CloneParticle(oldIndex, group) {
-        const def = new b2_particle_js_1.b2ParticleDef();
+        const def = new b2_particle_1.b2ParticleDef();
         def.flags = this.m_flagsBuffer.data[oldIndex];
         def.position.Copy(this.m_positionBuffer.data[oldIndex]);
         def.velocity.Copy(this.m_velocityBuffer.data[oldIndex]);
@@ -1987,8 +1991,8 @@ class b2ParticleSystem {
         --this.m_groupCount;
     }
     static ParticleCanBeConnected(flags, group) {
-        return ((flags & (b2_particle_js_1.b2ParticleFlag.b2_wallParticle | b2_particle_js_1.b2ParticleFlag.b2_springParticle | b2_particle_js_1.b2ParticleFlag.b2_elasticParticle)) !== 0) ||
-            ((group !== null) && ((group.GetGroupFlags() & b2_particle_group_js_1.b2ParticleGroupFlag.b2_rigidParticleGroup) !== 0));
+        return ((flags & (b2_particle_1.b2ParticleFlag.b2_wallParticle | b2_particle_1.b2ParticleFlag.b2_springParticle | b2_particle_1.b2ParticleFlag.b2_elasticParticle)) !== 0) ||
+            ((group !== null) && ((group.GetGroupFlags() & b2_particle_group_1.b2ParticleGroupFlag.b2_rigidParticleGroup) !== 0));
     }
     UpdatePairsAndTriads(firstIndex, lastIndex, filter) {
         const s_dab = b2ParticleSystem.UpdatePairsAndTriads_s_dab;
@@ -2020,7 +2024,7 @@ class b2ParticleSystem {
                 const groupB = this.m_groupBuffer[b];
                 if (a >= firstIndex && a < lastIndex &&
                     b >= firstIndex && b < lastIndex &&
-                    !((af | bf) & b2_particle_js_1.b2ParticleFlag.b2_zombieParticle) &&
+                    !((af | bf) & b2_particle_1.b2ParticleFlag.b2_zombieParticle) &&
                     ((af | bf) & b2ParticleSystem.k_pairFlags) &&
                     (filter.IsNecessary(a) || filter.IsNecessary(b)) &&
                     b2ParticleSystem.ParticleCanBeConnected(af, groupA) &&
@@ -2031,9 +2035,9 @@ class b2ParticleSystem {
                     pair.indexA = a;
                     pair.indexB = b;
                     pair.flags = contact.flags;
-                    pair.strength = (0, b2_math_js_1.b2Min)(groupA ? groupA.m_strength : 1, groupB ? groupB.m_strength : 1);
+                    pair.strength = (0, b2_math_1.b2Min)(groupA ? groupA.m_strength : 1, groupB ? groupB.m_strength : 1);
                     ///pair.distance = b2Distance(pos_data[a], pos_data[b]); // TODO: this was wrong!
-                    pair.distance = b2_math_js_1.b2Vec2.DistanceVV(pos_data[a], pos_data[b]);
+                    pair.distance = b2_math_1.b2Vec2.DistanceVV(pos_data[a], pos_data[b]);
                 }
                 ///std::stable_sort(m_pairBuffer.Begin(), m_pairBuffer.End(), ComparePairIndices);
                 std_stable_sort(this.m_pairBuffer.data, 0, this.m_pairBuffer.count, b2ParticleSystem.ComparePairIndices);
@@ -2042,12 +2046,12 @@ class b2ParticleSystem {
             }
         }
         if (particleFlags & b2ParticleSystem.k_triadFlags) {
-            const diagram = new b2_voronoi_diagram_js_1.b2VoronoiDiagram(lastIndex - firstIndex);
+            const diagram = new b2_voronoi_diagram_1.b2VoronoiDiagram(lastIndex - firstIndex);
             ///let necessary_count = 0;
             for (let i = firstIndex; i < lastIndex; i++) {
                 const flags = this.m_flagsBuffer.data[i];
                 const group = this.m_groupBuffer[i];
-                if (!(flags & b2_particle_js_1.b2ParticleFlag.b2_zombieParticle) &&
+                if (!(flags & b2_particle_1.b2ParticleFlag.b2_zombieParticle) &&
                     b2ParticleSystem.ParticleCanBeConnected(flags, group)) {
                     ///if (filter.IsNecessary(i)) {
                     ///++necessary_count;
@@ -2073,13 +2077,13 @@ class b2ParticleSystem {
                     const pa = pos_data[a];
                     const pb = pos_data[b];
                     const pc = pos_data[c];
-                    const dab = b2_math_js_1.b2Vec2.SubVV(pa, pb, s_dab);
-                    const dbc = b2_math_js_1.b2Vec2.SubVV(pb, pc, s_dbc);
-                    const dca = b2_math_js_1.b2Vec2.SubVV(pc, pa, s_dca);
-                    const maxDistanceSquared = b2_settings_js_1.b2_maxTriadDistanceSquared * system.m_squaredDiameter;
-                    if (b2_math_js_1.b2Vec2.DotVV(dab, dab) > maxDistanceSquared ||
-                        b2_math_js_1.b2Vec2.DotVV(dbc, dbc) > maxDistanceSquared ||
-                        b2_math_js_1.b2Vec2.DotVV(dca, dca) > maxDistanceSquared) {
+                    const dab = b2_math_1.b2Vec2.SubVV(pa, pb, s_dab);
+                    const dbc = b2_math_1.b2Vec2.SubVV(pb, pc, s_dbc);
+                    const dca = b2_math_1.b2Vec2.SubVV(pc, pa, s_dca);
+                    const maxDistanceSquared = b2_settings_1.b2_maxTriadDistanceSquared * system.m_squaredDiameter;
+                    if (b2_math_1.b2Vec2.DotVV(dab, dab) > maxDistanceSquared ||
+                        b2_math_1.b2Vec2.DotVV(dbc, dbc) > maxDistanceSquared ||
+                        b2_math_1.b2Vec2.DotVV(dca, dca) > maxDistanceSquared) {
                         return;
                     }
                     const groupA = system.m_groupBuffer[a];
@@ -2091,7 +2095,7 @@ class b2ParticleSystem {
                     triad.indexB = b;
                     triad.indexC = c;
                     triad.flags = af | bf | cf;
-                    triad.strength = (0, b2_math_js_1.b2Min)((0, b2_math_js_1.b2Min)(groupA ? groupA.m_strength : 1, groupB ? groupB.m_strength : 1), groupC ? groupC.m_strength : 1);
+                    triad.strength = (0, b2_math_1.b2Min)((0, b2_math_1.b2Min)(groupA ? groupA.m_strength : 1, groupB ? groupB.m_strength : 1), groupC ? groupC.m_strength : 1);
                     ///let midPoint = b2Vec2.MulSV(1.0 / 3.0, b2Vec2.AddVV(pa, b2Vec2.AddVV(pb, pc, new b2Vec2()), new b2Vec2()), new b2Vec2());
                     const midPoint_x = (pa.x + pb.x + pc.x) / 3.0;
                     const midPoint_y = (pa.y + pb.y + pc.y) / 3.0;
@@ -2104,10 +2108,10 @@ class b2ParticleSystem {
                     ///triad.pc = b2Vec2.SubVV(pc, midPoint, new b2Vec2());
                     triad.pc.x = pc.x - midPoint_x;
                     triad.pc.y = pc.y - midPoint_y;
-                    triad.ka = -b2_math_js_1.b2Vec2.DotVV(dca, dab);
-                    triad.kb = -b2_math_js_1.b2Vec2.DotVV(dab, dbc);
-                    triad.kc = -b2_math_js_1.b2Vec2.DotVV(dbc, dca);
-                    triad.s = b2_math_js_1.b2Vec2.CrossVV(pa, pb) + b2_math_js_1.b2Vec2.CrossVV(pb, pc) + b2_math_js_1.b2Vec2.CrossVV(pc, pa);
+                    triad.ka = -b2_math_1.b2Vec2.DotVV(dca, dab);
+                    triad.kb = -b2_math_1.b2Vec2.DotVV(dab, dbc);
+                    triad.kc = -b2_math_1.b2Vec2.DotVV(dbc, dca);
+                    triad.s = b2_math_1.b2Vec2.CrossVV(pa, pb) + b2_math_1.b2Vec2.CrossVV(pb, pc) + b2_math_1.b2Vec2.CrossVV(pc, pa);
                 }
             };
             diagram.GetNodes(callback);
@@ -2121,9 +2125,9 @@ class b2ParticleSystem {
         const filter = new b2ParticleSystem_ReactiveFilter(this.m_flagsBuffer);
         this.UpdatePairsAndTriads(0, this.m_count, filter);
         for (let i = 0; i < this.m_count; i++) {
-            this.m_flagsBuffer.data[i] &= ~b2_particle_js_1.b2ParticleFlag.b2_reactiveParticle;
+            this.m_flagsBuffer.data[i] &= ~b2_particle_1.b2ParticleFlag.b2_reactiveParticle;
         }
-        this.m_allParticleFlags &= ~b2_particle_js_1.b2ParticleFlag.b2_reactiveParticle;
+        this.m_allParticleFlags &= ~b2_particle_1.b2ParticleFlag.b2_reactiveParticle;
     }
     static ComparePairIndices(a, b) {
         const diffA = a.indexA - b.indexA;
@@ -2225,7 +2229,7 @@ class b2ParticleSystem {
         for (let i = 0; i < particleCount; i++) {
             const node = nodeBuffer[i];
             if (node !== survivingList &&
-                (this.m_flagsBuffer.data[node.index] & b2_particle_js_1.b2ParticleFlag.b2_zombieParticle)) {
+                (this.m_flagsBuffer.data[node.index] & b2_particle_1.b2ParticleFlag.b2_zombieParticle)) {
                 b2ParticleSystem.MergeParticleListAndNode(survivingList, node);
             }
         }
@@ -2248,7 +2252,7 @@ class b2ParticleSystem {
     }
     CreateParticleGroupsFromParticleList(group, nodeBuffer, survivingList) {
         const particleCount = group.GetParticleCount();
-        const def = new b2_particle_group_js_1.b2ParticleGroupDef();
+        const def = new b2_particle_group_1.b2ParticleGroupDef();
         def.groupFlags = group.GetGroupFlags();
         def.userData = group.GetUserData();
         for (let i = 0; i < particleCount; i++) {
@@ -2263,7 +2267,7 @@ class b2ParticleSystem {
                 // DEBUG: const flags = this.m_flagsBuffer.data[oldIndex];
                 // DEBUG: b2Assert(!(flags & b2ParticleFlag.b2_zombieParticle));
                 const newIndex = this.CloneParticle(oldIndex, newGroup);
-                this.m_flagsBuffer.data[oldIndex] |= b2_particle_js_1.b2ParticleFlag.b2_zombieParticle;
+                this.m_flagsBuffer.data[oldIndex] |= b2_particle_1.b2ParticleFlag.b2_zombieParticle;
                 node.index = newIndex;
             }
         }
@@ -2311,17 +2315,17 @@ class b2ParticleSystem {
             const groupA = this.m_groupBuffer[a];
             const groupB = this.m_groupBuffer[b];
             if (groupA && groupA === groupB &&
-                (groupA.m_groupFlags & b2_particle_group_js_1.b2ParticleGroupFlag.b2_particleGroupNeedsUpdateDepth)) {
+                (groupA.m_groupFlags & b2_particle_group_1.b2ParticleGroupFlag.b2_particleGroupNeedsUpdateDepth)) {
                 contactGroups[contactGroupsCount++] = contact;
             }
         }
         const groupsToUpdate = []; // TODO: static
         let groupsToUpdateCount = 0;
         for (let group = this.m_groupList; group; group = group.GetNext()) {
-            if (group.m_groupFlags & b2_particle_group_js_1.b2ParticleGroupFlag.b2_particleGroupNeedsUpdateDepth) {
+            if (group.m_groupFlags & b2_particle_group_1.b2ParticleGroupFlag.b2_particleGroupNeedsUpdateDepth) {
                 groupsToUpdate[groupsToUpdateCount++] = group;
                 this.SetGroupFlags(group, group.m_groupFlags &
-                    ~b2_particle_group_js_1.b2ParticleGroupFlag.b2_particleGroupNeedsUpdateDepth);
+                    ~b2_particle_group_1.b2ParticleGroupFlag.b2_particleGroupNeedsUpdateDepth);
                 for (let i = group.m_firstIndex; i < group.m_lastIndex; i++) {
                     this.m_accumulationBuffer[i] = 0;
                 }
@@ -2341,14 +2345,14 @@ class b2ParticleSystem {
             const group = groupsToUpdate[i];
             for (let i = group.m_firstIndex; i < group.m_lastIndex; i++) {
                 const w = this.m_accumulationBuffer[i];
-                this.m_depthBuffer[i] = w < 0.8 ? 0 : b2_settings_js_1.b2_maxFloat;
+                this.m_depthBuffer[i] = w < 0.8 ? 0 : b2_settings_1.b2_maxFloat;
             }
         }
         // The number of iterations is equal to particle number from the deepest
         // particle to the nearest surface particle, and in general it is smaller
         // than sqrt of total particle number.
         ///int32 iterationCount = (int32)b2Sqrt((float)m_count);
-        const iterationCount = (0, b2_math_js_1.b2Sqrt)(this.m_count) >> 0;
+        const iterationCount = (0, b2_math_1.b2Sqrt)(this.m_count) >> 0;
         for (let t = 0; t < iterationCount; t++) {
             let updated = false;
             for (let k = 0; k < contactGroupsCount; k++) {
@@ -2380,7 +2384,7 @@ class b2ParticleSystem {
         for (let i = 0; i < groupsToUpdateCount; i++) {
             const group = groupsToUpdate[i];
             for (let i = group.m_firstIndex; i < group.m_lastIndex; i++) {
-                if (this.m_depthBuffer[i] < b2_settings_js_1.b2_maxFloat) {
+                if (this.m_depthBuffer[i] < b2_settings_1.b2_maxFloat) {
                     this.m_depthBuffer[i] *= this.m_particleDiameter;
                 }
                 else {
@@ -2424,10 +2428,10 @@ class b2ParticleSystem {
         const flags_data = this.m_flagsBuffer.data;
         const pos_data = this.m_positionBuffer.data;
         ///b2Vec2 d = m_positionBuffer.data[b] - m_positionBuffer.data[a];
-        const d = b2_math_js_1.b2Vec2.SubVV(pos_data[b], pos_data[a], b2ParticleSystem.AddContact_s_d);
-        const distBtParticlesSq = b2_math_js_1.b2Vec2.DotVV(d, d);
+        const d = b2_math_1.b2Vec2.SubVV(pos_data[b], pos_data[a], b2ParticleSystem.AddContact_s_d);
+        const distBtParticlesSq = b2_math_1.b2Vec2.DotVV(d, d);
         if (0 < distBtParticlesSq && distBtParticlesSq < this.m_squaredDiameter) {
-            const invD = (0, b2_math_js_1.b2InvSqrt)(distBtParticlesSq);
+            const invD = (0, b2_math_1.b2InvSqrt)(distBtParticlesSq);
             ///b2ParticleContact& contact = contacts.Append();
             const contact = this.m_contactBuffer.data[this.m_contactBuffer.Append()];
             contact.indexA = a;
@@ -2507,7 +2511,7 @@ class b2ParticleSystem {
         // DEBUG: b2Assert(contacts === this.m_contactBuffer);
         const system = this;
         const predicate = (contact) => {
-            return ((contact.flags & b2_particle_js_1.b2ParticleFlag.b2_particleContactFilterParticle) !== 0) && !contactFilter.ShouldCollideParticleParticle(system, contact.indexA, contact.indexB);
+            return ((contact.flags & b2_particle_1.b2ParticleFlag.b2_particleContactFilterParticle) !== 0) && !contactFilter.ShouldCollideParticleParticle(system, contact.indexA, contact.indexB);
         };
         this.m_contactBuffer.RemoveIf(predicate);
     }
@@ -2560,7 +2564,7 @@ class b2ParticleSystem {
         throw new Error(); // TODO: notify
     }
     static b2ParticleContactIsZombie(contact) {
-        return (contact.flags & b2_particle_js_1.b2ParticleFlag.b2_zombieParticle) === b2_particle_js_1.b2ParticleFlag.b2_zombieParticle;
+        return (contact.flags & b2_particle_1.b2ParticleFlag.b2_zombieParticle) === b2_particle_1.b2ParticleFlag.b2_zombieParticle;
     }
     UpdateContacts(exceptZombie) {
         this.UpdateProxies(this.m_proxyBuffer);
@@ -2664,7 +2668,7 @@ class b2ParticleSystem {
         if (this.m_expirationTimeBuffer.data) {
             this.SolveLifetimes(step);
         }
-        if (this.m_allParticleFlags & b2_particle_js_1.b2ParticleFlag.b2_zombieParticle) {
+        if (this.m_allParticleFlags & b2_particle_1.b2ParticleFlag.b2_zombieParticle) {
             this.SolveZombie();
         }
         if (this.m_needsUpdateAllParticleFlags) {
@@ -2684,35 +2688,35 @@ class b2ParticleSystem {
             this.UpdateContacts(false);
             this.UpdateBodyContacts();
             this.ComputeWeight();
-            if (this.m_allGroupFlags & b2_particle_group_js_1.b2ParticleGroupFlag.b2_particleGroupNeedsUpdateDepth) {
+            if (this.m_allGroupFlags & b2_particle_group_1.b2ParticleGroupFlag.b2_particleGroupNeedsUpdateDepth) {
                 this.ComputeDepth();
             }
-            if (this.m_allParticleFlags & b2_particle_js_1.b2ParticleFlag.b2_reactiveParticle) {
+            if (this.m_allParticleFlags & b2_particle_1.b2ParticleFlag.b2_reactiveParticle) {
                 this.UpdatePairsAndTriadsWithReactiveParticles();
             }
             if (this.m_hasForce) {
                 this.SolveForce(subStep);
             }
-            if (this.m_allParticleFlags & b2_particle_js_1.b2ParticleFlag.b2_viscousParticle) {
+            if (this.m_allParticleFlags & b2_particle_1.b2ParticleFlag.b2_viscousParticle) {
                 this.SolveViscous();
             }
-            if (this.m_allParticleFlags & b2_particle_js_1.b2ParticleFlag.b2_repulsiveParticle) {
+            if (this.m_allParticleFlags & b2_particle_1.b2ParticleFlag.b2_repulsiveParticle) {
                 this.SolveRepulsive(subStep);
             }
-            if (this.m_allParticleFlags & b2_particle_js_1.b2ParticleFlag.b2_powderParticle) {
+            if (this.m_allParticleFlags & b2_particle_1.b2ParticleFlag.b2_powderParticle) {
                 this.SolvePowder(subStep);
             }
-            if (this.m_allParticleFlags & b2_particle_js_1.b2ParticleFlag.b2_tensileParticle) {
+            if (this.m_allParticleFlags & b2_particle_1.b2ParticleFlag.b2_tensileParticle) {
                 this.SolveTensile(subStep);
             }
-            if (this.m_allGroupFlags & b2_particle_group_js_1.b2ParticleGroupFlag.b2_solidParticleGroup) {
+            if (this.m_allGroupFlags & b2_particle_group_1.b2ParticleGroupFlag.b2_solidParticleGroup) {
                 this.SolveSolid(subStep);
             }
-            if (this.m_allParticleFlags & b2_particle_js_1.b2ParticleFlag.b2_colorMixingParticle) {
+            if (this.m_allParticleFlags & b2_particle_1.b2ParticleFlag.b2_colorMixingParticle) {
                 this.SolveColorMixing();
             }
             this.SolveGravity(subStep);
-            if (this.m_allParticleFlags & b2_particle_js_1.b2ParticleFlag.b2_staticPressureParticle) {
+            if (this.m_allParticleFlags & b2_particle_1.b2ParticleFlag.b2_staticPressureParticle) {
                 this.SolveStaticPressure(subStep);
             }
             this.SolvePressure(subStep);
@@ -2722,27 +2726,27 @@ class b2ParticleSystem {
             }
             // SolveElastic and SolveSpring refer the current velocities for
             // numerical stability, they should be called as late as possible.
-            if (this.m_allParticleFlags & b2_particle_js_1.b2ParticleFlag.b2_elasticParticle) {
+            if (this.m_allParticleFlags & b2_particle_1.b2ParticleFlag.b2_elasticParticle) {
                 this.SolveElastic(subStep);
             }
-            if (this.m_allParticleFlags & b2_particle_js_1.b2ParticleFlag.b2_springParticle) {
+            if (this.m_allParticleFlags & b2_particle_1.b2ParticleFlag.b2_springParticle) {
                 this.SolveSpring(subStep);
             }
             this.LimitVelocity(subStep);
-            if (this.m_allGroupFlags & b2_particle_group_js_1.b2ParticleGroupFlag.b2_rigidParticleGroup) {
+            if (this.m_allGroupFlags & b2_particle_group_1.b2ParticleGroupFlag.b2_rigidParticleGroup) {
                 this.SolveRigidDamping();
             }
-            if (this.m_allParticleFlags & b2_particle_js_1.b2ParticleFlag.b2_barrierParticle) {
+            if (this.m_allParticleFlags & b2_particle_1.b2ParticleFlag.b2_barrierParticle) {
                 this.SolveBarrier(subStep);
             }
             // SolveCollision, SolveRigid and SolveWall should be called after
             // other force functions because they may require particles to have
             // specific velocities.
             this.SolveCollision(subStep);
-            if (this.m_allGroupFlags & b2_particle_group_js_1.b2ParticleGroupFlag.b2_rigidParticleGroup) {
+            if (this.m_allGroupFlags & b2_particle_group_1.b2ParticleGroupFlag.b2_rigidParticleGroup) {
                 this.SolveRigid(subStep);
             }
-            if (this.m_allParticleFlags & b2_particle_js_1.b2ParticleFlag.b2_wallParticle) {
+            if (this.m_allParticleFlags & b2_particle_1.b2ParticleFlag.b2_wallParticle) {
                 this.SolveWall();
             }
             // The particle positions can be updated only at the end of substep.
@@ -2761,10 +2765,10 @@ class b2ParticleSystem {
         // boundary. This function function also applies the reaction force to
         // bodies as precisely as the numerical stability is kept.
         const aabb = s_aabb;
-        aabb.lowerBound.x = +b2_settings_js_1.b2_maxFloat;
-        aabb.lowerBound.y = +b2_settings_js_1.b2_maxFloat;
-        aabb.upperBound.x = -b2_settings_js_1.b2_maxFloat;
-        aabb.upperBound.y = -b2_settings_js_1.b2_maxFloat;
+        aabb.lowerBound.x = +b2_settings_1.b2_maxFloat;
+        aabb.lowerBound.y = +b2_settings_1.b2_maxFloat;
+        aabb.upperBound.x = -b2_settings_1.b2_maxFloat;
+        aabb.upperBound.y = -b2_settings_1.b2_maxFloat;
         for (let i = 0; i < this.m_count; i++) {
             const v = vel_data[i];
             const p1 = pos_data[i];
@@ -2772,11 +2776,11 @@ class b2ParticleSystem {
             const p2_x = p1.x + step.dt * v.x;
             const p2_y = p1.y + step.dt * v.y;
             ///aabb.lowerBound = b2Min(aabb.lowerBound, b2Min(p1, p2));
-            aabb.lowerBound.x = (0, b2_math_js_1.b2Min)(aabb.lowerBound.x, (0, b2_math_js_1.b2Min)(p1.x, p2_x));
-            aabb.lowerBound.y = (0, b2_math_js_1.b2Min)(aabb.lowerBound.y, (0, b2_math_js_1.b2Min)(p1.y, p2_y));
+            aabb.lowerBound.x = (0, b2_math_1.b2Min)(aabb.lowerBound.x, (0, b2_math_1.b2Min)(p1.x, p2_x));
+            aabb.lowerBound.y = (0, b2_math_1.b2Min)(aabb.lowerBound.y, (0, b2_math_1.b2Min)(p1.y, p2_y));
             ///aabb.upperBound = b2Max(aabb.upperBound, b2Max(p1, p2));
-            aabb.upperBound.x = (0, b2_math_js_1.b2Max)(aabb.upperBound.x, (0, b2_math_js_1.b2Max)(p1.x, p2_x));
-            aabb.upperBound.y = (0, b2_math_js_1.b2Max)(aabb.upperBound.y, (0, b2_math_js_1.b2Max)(p1.y, p2_y));
+            aabb.upperBound.x = (0, b2_math_1.b2Max)(aabb.upperBound.x, (0, b2_math_1.b2Max)(p1.x, p2_x));
+            aabb.upperBound.y = (0, b2_math_1.b2Max)(aabb.upperBound.y, (0, b2_math_1.b2Max)(p1.y, p2_y));
         }
         if (this.SolveCollision_callback === null) {
             this.SolveCollision_callback = new b2ParticleSystem_SolveCollisionCallback(this, step);
@@ -2790,10 +2794,10 @@ class b2ParticleSystem {
         const criticalVelocitySquared = this.GetCriticalVelocitySquared(step);
         for (let i = 0; i < this.m_count; i++) {
             const v = vel_data[i];
-            const v2 = b2_math_js_1.b2Vec2.DotVV(v, v);
+            const v2 = b2_math_1.b2Vec2.DotVV(v, v);
             if (v2 > criticalVelocitySquared) {
                 ///v *= b2Sqrt(criticalVelocitySquared / v2);
-                v.SelfMul((0, b2_math_js_1.b2Sqrt)(criticalVelocitySquared / v2));
+                v.SelfMul((0, b2_math_1.b2Sqrt)(criticalVelocitySquared / v2));
             }
         }
     }
@@ -2801,7 +2805,7 @@ class b2ParticleSystem {
         const s_gravity = b2ParticleSystem.SolveGravity_s_gravity;
         const vel_data = this.m_velocityBuffer.data;
         ///b2Vec2 gravity = step.dt * m_def.gravityScale * m_world.GetGravity();
-        const gravity = b2_math_js_1.b2Vec2.MulSV(step.dt * this.m_def.gravityScale, this.m_world.GetGravity(), s_gravity);
+        const gravity = b2_math_1.b2Vec2.MulSV(step.dt * this.m_def.gravityScale, this.m_world.GetGravity(), s_gravity);
         for (let i = 0; i < this.m_count; i++) {
             vel_data[i].SelfAdd(gravity);
         }
@@ -2830,11 +2834,11 @@ class b2ParticleSystem {
                 vel_data[i].SetZero();
             }
         }
-        const tmax = b2_settings_js_1.b2_barrierCollisionTime * step.dt;
+        const tmax = b2_settings_1.b2_barrierCollisionTime * step.dt;
         const mass = this.GetParticleMass();
         for (let k = 0; k < this.m_pairBuffer.count; k++) {
             const pair = this.m_pairBuffer.data[k];
-            if (pair.flags & b2_particle_js_1.b2ParticleFlag.b2_barrierParticle) {
+            if (pair.flags & b2_particle_1.b2ParticleFlag.b2_barrierParticle) {
                 const a = pair.indexA;
                 const b = pair.indexB;
                 const pa = pos_data[a];
@@ -2842,9 +2846,9 @@ class b2ParticleSystem {
                 /// b2AABB aabb;
                 const aabb = s_aabb;
                 ///aabb.lowerBound = b2Min(pa, pb);
-                b2_math_js_1.b2Vec2.MinV(pa, pb, aabb.lowerBound);
+                b2_math_1.b2Vec2.MinV(pa, pb, aabb.lowerBound);
                 ///aabb.upperBound = b2Max(pa, pb);
-                b2_math_js_1.b2Vec2.MaxV(pa, pb, aabb.upperBound);
+                b2_math_1.b2Vec2.MaxV(pa, pb, aabb.upperBound);
                 const aGroup = this.m_groupBuffer[a];
                 const bGroup = this.m_groupBuffer[b];
                 ///b2Vec2 va = GetLinearVelocity(aGroup, a, pa);
@@ -2852,9 +2856,9 @@ class b2ParticleSystem {
                 ///b2Vec2 vb = GetLinearVelocity(bGroup, b, pb);
                 const vb = this.GetLinearVelocity(bGroup, b, pb, s_vb);
                 ///b2Vec2 pba = pb - pa;
-                const pba = b2_math_js_1.b2Vec2.SubVV(pb, pa, s_pba);
+                const pba = b2_math_1.b2Vec2.SubVV(pb, pa, s_pba);
                 ///b2Vec2 vba = vb - va;
-                const vba = b2_math_js_1.b2Vec2.SubVV(vb, va, s_vba);
+                const vba = b2_math_1.b2Vec2.SubVV(vb, va, s_vba);
                 ///InsideBoundsEnumerator enumerator = GetInsideBoundsEnumerator(aabb);
                 const enumerator = this.GetInsideBoundsEnumerator(aabb);
                 let c;
@@ -2870,12 +2874,12 @@ class b2ParticleSystem {
                         // connecting the particles a and b at the time of t.
                         // if s is between 0 and 1, c will pass between a and b.
                         ///b2Vec2 pca = pc - pa;
-                        const pca = b2_math_js_1.b2Vec2.SubVV(pc, pa, s_pca);
+                        const pca = b2_math_1.b2Vec2.SubVV(pc, pa, s_pca);
                         ///b2Vec2 vca = vc - va;
-                        const vca = b2_math_js_1.b2Vec2.SubVV(vc, va, s_vca);
-                        const e2 = b2_math_js_1.b2Vec2.CrossVV(vba, vca);
-                        const e1 = b2_math_js_1.b2Vec2.CrossVV(pba, vca) - b2_math_js_1.b2Vec2.CrossVV(pca, vba);
-                        const e0 = b2_math_js_1.b2Vec2.CrossVV(pba, pca);
+                        const vca = b2_math_1.b2Vec2.SubVV(vc, va, s_vca);
+                        const e2 = b2_math_1.b2Vec2.CrossVV(vba, vca);
+                        const e1 = b2_math_1.b2Vec2.CrossVV(pba, vca) - b2_math_1.b2Vec2.CrossVV(pca, vba);
+                        const e0 = b2_math_1.b2Vec2.CrossVV(pba, pca);
                         let s, t;
                         ///b2Vec2 qba, qca;
                         const qba = s_qba, qca = s_qca;
@@ -2888,10 +2892,10 @@ class b2ParticleSystem {
                                 continue;
                             }
                             ///qba = pba + t * vba;
-                            b2_math_js_1.b2Vec2.AddVMulSV(pba, t, vba, qba);
+                            b2_math_1.b2Vec2.AddVMulSV(pba, t, vba, qba);
                             ///qca = pca + t * vca;
-                            b2_math_js_1.b2Vec2.AddVMulSV(pca, t, vca, qca);
-                            s = b2_math_js_1.b2Vec2.DotVV(qba, qca) / b2_math_js_1.b2Vec2.DotVV(qba, qba);
+                            b2_math_1.b2Vec2.AddVMulSV(pca, t, vca, qca);
+                            s = b2_math_1.b2Vec2.DotVV(qba, qca) / b2_math_1.b2Vec2.DotVV(qba, qba);
                             if (!(s >= 0 && s <= 1)) {
                                 continue;
                             }
@@ -2901,7 +2905,7 @@ class b2ParticleSystem {
                             if (det < 0) {
                                 continue;
                             }
-                            const sqrtDet = (0, b2_math_js_1.b2Sqrt)(det);
+                            const sqrtDet = (0, b2_math_1.b2Sqrt)(det);
                             let t1 = (-e1 - sqrtDet) / (2 * e2);
                             let t2 = (-e1 + sqrtDet) / (2 * e2);
                             ///if (t1 > t2) b2Swap(t1, t2);
@@ -2912,22 +2916,22 @@ class b2ParticleSystem {
                             }
                             t = t1;
                             ///qba = pba + t * vba;
-                            b2_math_js_1.b2Vec2.AddVMulSV(pba, t, vba, qba);
+                            b2_math_1.b2Vec2.AddVMulSV(pba, t, vba, qba);
                             ///qca = pca + t * vca;
-                            b2_math_js_1.b2Vec2.AddVMulSV(pca, t, vca, qca);
+                            b2_math_1.b2Vec2.AddVMulSV(pca, t, vca, qca);
                             ///s = b2Dot(qba, qca) / b2Dot(qba, qba);
-                            s = b2_math_js_1.b2Vec2.DotVV(qba, qca) / b2_math_js_1.b2Vec2.DotVV(qba, qba);
+                            s = b2_math_1.b2Vec2.DotVV(qba, qca) / b2_math_1.b2Vec2.DotVV(qba, qba);
                             if (!(t >= 0 && t < tmax && s >= 0 && s <= 1)) {
                                 t = t2;
                                 if (!(t >= 0 && t < tmax)) {
                                     continue;
                                 }
                                 ///qba = pba + t * vba;
-                                b2_math_js_1.b2Vec2.AddVMulSV(pba, t, vba, qba);
+                                b2_math_1.b2Vec2.AddVMulSV(pba, t, vba, qba);
                                 ///qca = pca + t * vca;
-                                b2_math_js_1.b2Vec2.AddVMulSV(pca, t, vca, qca);
+                                b2_math_1.b2Vec2.AddVMulSV(pca, t, vca, qca);
                                 ///s = b2Dot(qba, qca) / b2Dot(qba, qba);
-                                s = b2_math_js_1.b2Vec2.DotVV(qba, qca) / b2_math_js_1.b2Vec2.DotVV(qba, qba);
+                                s = b2_math_1.b2Vec2.DotVV(qba, qca) / b2_math_1.b2Vec2.DotVV(qba, qba);
                                 if (!(s >= 0 && s <= 1)) {
                                     continue;
                                 }
@@ -2940,7 +2944,7 @@ class b2ParticleSystem {
                         dv.x = va.x + s * vba.x - vc.x;
                         dv.y = va.y + s * vba.y - vc.y;
                         ///b2Vec2 f = GetParticleMass() * dv;
-                        const f = b2_math_js_1.b2Vec2.MulSV(mass, dv, s_f);
+                        const f = b2_math_1.b2Vec2.MulSV(mass, dv, s_f);
                         if (cGroup && this.IsRigidGroup(cGroup)) {
                             // If c belongs to a rigid group, the force will be
                             // distributed in the group.
@@ -2952,7 +2956,7 @@ class b2ParticleSystem {
                             }
                             if (inertia > 0) {
                                 ///cGroup.m_angularVelocity += b2Cross(pc - cGroup.GetCenter(), f) / inertia;
-                                cGroup.m_angularVelocity += b2_math_js_1.b2Vec2.CrossVV(b2_math_js_1.b2Vec2.SubVV(pc, cGroup.GetCenter(), b2_math_js_1.b2Vec2.s_t0), f) / inertia;
+                                cGroup.m_angularVelocity += b2_math_1.b2Vec2.CrossVV(b2_math_1.b2Vec2.SubVV(pc, cGroup.GetCenter(), b2_math_1.b2Vec2.s_t0), f) / inertia;
                             }
                         }
                         else {
@@ -2972,7 +2976,7 @@ class b2ParticleSystem {
         this.m_staticPressureBuffer = this.RequestBuffer(this.m_staticPressureBuffer);
         const criticalPressure = this.GetCriticalPressure(step);
         const pressurePerWeight = this.m_def.staticPressureStrength * criticalPressure;
-        const maxPressure = b2_settings_js_2.b2_maxParticlePressure * criticalPressure;
+        const maxPressure = b2_settings_2.b2_maxParticlePressure * criticalPressure;
         const relaxation = this.m_def.staticPressureRelaxation;
         /// Compute pressure satisfying the modified Poisson equation:
         ///   Sum_for_j((p_i - p_j) * w_ij) + relaxation * p_i =
@@ -2991,7 +2995,7 @@ class b2ParticleSystem {
             }
             for (let k = 0; k < this.m_contactBuffer.count; k++) {
                 const contact = this.m_contactBuffer.data[k];
-                if (contact.flags & b2_particle_js_1.b2ParticleFlag.b2_staticPressureParticle) {
+                if (contact.flags & b2_particle_1.b2ParticleFlag.b2_staticPressureParticle) {
                     const a = contact.indexA;
                     const b = contact.indexB;
                     const w = contact.weight;
@@ -3001,11 +3005,11 @@ class b2ParticleSystem {
             }
             for (let i = 0; i < this.m_count; i++) {
                 const w = this.m_weightBuffer[i];
-                if (this.m_flagsBuffer.data[i] & b2_particle_js_1.b2ParticleFlag.b2_staticPressureParticle) {
+                if (this.m_flagsBuffer.data[i] & b2_particle_1.b2ParticleFlag.b2_staticPressureParticle) {
                     const wh = this.m_accumulationBuffer[i];
-                    const h = (wh + pressurePerWeight * (w - b2_settings_js_2.b2_minParticleWeight)) /
+                    const h = (wh + pressurePerWeight * (w - b2_settings_2.b2_minParticleWeight)) /
                         (w + relaxation);
-                    this.m_staticPressureBuffer[i] = (0, b2_math_js_1.b2Clamp)(h, 0.0, maxPressure);
+                    this.m_staticPressureBuffer[i] = (0, b2_math_1.b2Clamp)(h, 0.0, maxPressure);
                 }
                 else {
                     this.m_staticPressureBuffer[i] = 0;
@@ -3042,11 +3046,11 @@ class b2ParticleSystem {
         // calculates pressure as a linear function of density
         const criticalPressure = this.GetCriticalPressure(step);
         const pressurePerWeight = this.m_def.pressureStrength * criticalPressure;
-        const maxPressure = b2_settings_js_2.b2_maxParticlePressure * criticalPressure;
+        const maxPressure = b2_settings_2.b2_maxParticlePressure * criticalPressure;
         for (let i = 0; i < this.m_count; i++) {
             const w = this.m_weightBuffer[i];
-            const h = pressurePerWeight * (0, b2_math_js_1.b2Max)(0.0, w - b2_settings_js_2.b2_minParticleWeight);
-            this.m_accumulationBuffer[i] = (0, b2_math_js_1.b2Min)(h, maxPressure);
+            const h = pressurePerWeight * (0, b2_math_1.b2Max)(0.0, w - b2_settings_2.b2_minParticleWeight);
+            this.m_accumulationBuffer[i] = (0, b2_math_1.b2Min)(h, maxPressure);
         }
         // ignores particles which have their own repulsive force
         if (this.m_allParticleFlags & b2ParticleSystem.k_noPressureFlags) {
@@ -3057,10 +3061,10 @@ class b2ParticleSystem {
             }
         }
         // static pressure
-        if (this.m_allParticleFlags & b2_particle_js_1.b2ParticleFlag.b2_staticPressureParticle) {
+        if (this.m_allParticleFlags & b2_particle_1.b2ParticleFlag.b2_staticPressureParticle) {
             // DEBUG: b2Assert(this.m_staticPressureBuffer !== null);
             for (let i = 0; i < this.m_count; i++) {
-                if (this.m_flagsBuffer.data[i] & b2_particle_js_1.b2ParticleFlag.b2_staticPressureParticle) {
+                if (this.m_flagsBuffer.data[i] & b2_particle_1.b2ParticleFlag.b2_staticPressureParticle) {
                     this.m_accumulationBuffer[i] += this.m_staticPressureBuffer[i];
                 }
             }
@@ -3078,7 +3082,7 @@ class b2ParticleSystem {
             const p = pos_data[a];
             const h = this.m_accumulationBuffer[a] + pressurePerWeight * w;
             ///b2Vec2 f = velocityPerPressure * w * m * h * n;
-            const f = b2_math_js_1.b2Vec2.MulSV(velocityPerPressure * w * m * h, n, s_f);
+            const f = b2_math_1.b2Vec2.MulSV(velocityPerPressure * w * m * h, n, s_f);
             ///m_velocityBuffer.data[a] -= GetParticleInvMass() * f;
             vel_data[a].SelfMulSub(inv_mass, f);
             b.ApplyLinearImpulse(f, p, true);
@@ -3091,7 +3095,7 @@ class b2ParticleSystem {
             const n = contact.normal;
             const h = this.m_accumulationBuffer[a] + this.m_accumulationBuffer[b];
             ///b2Vec2 f = velocityPerPressure * w * h * n;
-            const f = b2_math_js_1.b2Vec2.MulSV(velocityPerPressure * w * h, n, s_f);
+            const f = b2_math_1.b2Vec2.MulSV(velocityPerPressure * w * h, n, s_f);
             ///m_velocityBuffer.data[a] -= f;
             vel_data[a].SelfSub(f);
             ///m_velocityBuffer.data[b] += f;
@@ -3116,12 +3120,12 @@ class b2ParticleSystem {
             const n = contact.normal;
             const p = pos_data[a];
             ///b2Vec2 v = b.GetLinearVelocityFromWorldPoint(p) - m_velocityBuffer.data[a];
-            const v = b2_math_js_1.b2Vec2.SubVV(b.GetLinearVelocityFromWorldPoint(p, b2_math_js_1.b2Vec2.s_t0), vel_data[a], s_v);
-            const vn = b2_math_js_1.b2Vec2.DotVV(v, n);
+            const v = b2_math_1.b2Vec2.SubVV(b.GetLinearVelocityFromWorldPoint(p, b2_math_1.b2Vec2.s_t0), vel_data[a], s_v);
+            const vn = b2_math_1.b2Vec2.DotVV(v, n);
             if (vn < 0) {
-                const damping = (0, b2_math_js_1.b2Max)(linearDamping * w, (0, b2_math_js_1.b2Min)(-quadraticDamping * vn, 0.5));
+                const damping = (0, b2_math_1.b2Max)(linearDamping * w, (0, b2_math_1.b2Min)(-quadraticDamping * vn, 0.5));
                 ///b2Vec2 f = damping * m * vn * n;
-                const f = b2_math_js_1.b2Vec2.MulSV(damping * m * vn, n, s_f);
+                const f = b2_math_1.b2Vec2.MulSV(damping * m * vn, n, s_f);
                 ///m_velocityBuffer.data[a] += GetParticleInvMass() * f;
                 vel_data[a].SelfMulAdd(inv_mass, f);
                 ///b.ApplyLinearImpulse(-f, p, true);
@@ -3135,13 +3139,13 @@ class b2ParticleSystem {
             const w = contact.weight;
             const n = contact.normal;
             ///b2Vec2 v = m_velocityBuffer.data[b] - m_velocityBuffer.data[a];
-            const v = b2_math_js_1.b2Vec2.SubVV(vel_data[b], vel_data[a], s_v);
-            const vn = b2_math_js_1.b2Vec2.DotVV(v, n);
+            const v = b2_math_1.b2Vec2.SubVV(vel_data[b], vel_data[a], s_v);
+            const vn = b2_math_1.b2Vec2.DotVV(v, n);
             if (vn < 0) {
                 ///float32 damping = b2Max(linearDamping * w, b2Min(- quadraticDamping * vn, 0.5f));
-                const damping = (0, b2_math_js_1.b2Max)(linearDamping * w, (0, b2_math_js_1.b2Min)(-quadraticDamping * vn, 0.5));
+                const damping = (0, b2_math_1.b2Max)(linearDamping * w, (0, b2_math_1.b2Min)(-quadraticDamping * vn, 0.5));
                 ///b2Vec2 f = damping * vn * n;
-                const f = b2_math_js_1.b2Vec2.MulSV(damping * vn, n, s_f);
+                const f = b2_math_1.b2Vec2.MulSV(damping * vn, n, s_f);
                 ///this.m_velocityBuffer.data[a] += f;
                 vel_data[a].SelfAdd(f);
                 ///this.m_velocityBuffer.data[b] -= f;
@@ -3170,8 +3174,8 @@ class b2ParticleSystem {
                 const w = contact.weight;
                 const p = pos_data[a];
                 ///b2Vec2 v = b.GetLinearVelocityFromWorldPoint(p) - aGroup.GetLinearVelocityFromWorldPoint(p);
-                const v = b2_math_js_1.b2Vec2.SubVV(b.GetLinearVelocityFromWorldPoint(p, s_t0), aGroup.GetLinearVelocityFromWorldPoint(p, s_t1), s_v);
-                const vn = b2_math_js_1.b2Vec2.DotVV(v, n);
+                const v = b2_math_1.b2Vec2.SubVV(b.GetLinearVelocityFromWorldPoint(p, s_t0), aGroup.GetLinearVelocityFromWorldPoint(p, s_t1), s_v);
+                const vn = b2_math_1.b2Vec2.DotVV(v, n);
                 if (vn < 0) {
                     // The group's average velocity at particle position 'p' is pushing
                     // the particle into the body.
@@ -3181,11 +3185,11 @@ class b2ParticleSystem {
                     ///this.InitDampingParameter(&invMassB, &invInertiaB, &tangentDistanceB, b.GetMass(), b.GetInertia() - b.GetMass() * b.GetLocalCenter().LengthSquared(), b.GetWorldCenter(), p, n);
                     this.InitDampingParameter(invMassB, invInertiaB, tangentDistanceB, b.GetMass(), b.GetInertia() - b.GetMass() * b.GetLocalCenter().LengthSquared(), b.GetWorldCenter(), p, n);
                     ///float32 f = damping * b2Min(w, 1.0) * this.ComputeDampingImpulse(invMassA, invInertiaA, tangentDistanceA, invMassB, invInertiaB, tangentDistanceB, vn);
-                    const f = damping * (0, b2_math_js_1.b2Min)(w, 1.0) * this.ComputeDampingImpulse(invMassA[0], invInertiaA[0], tangentDistanceA[0], invMassB[0], invInertiaB[0], tangentDistanceB[0], vn);
+                    const f = damping * (0, b2_math_1.b2Min)(w, 1.0) * this.ComputeDampingImpulse(invMassA[0], invInertiaA[0], tangentDistanceA[0], invMassB[0], invInertiaB[0], tangentDistanceB[0], vn);
                     ///this.ApplyDamping(invMassA, invInertiaA, tangentDistanceA, true, aGroup, a, f, n);
                     this.ApplyDamping(invMassA[0], invInertiaA[0], tangentDistanceA[0], true, aGroup, a, f, n);
                     ///b.ApplyLinearImpulse(-f * n, p, true);
-                    b.ApplyLinearImpulse(b2_math_js_1.b2Vec2.MulSV(-f, n, b2_math_js_1.b2Vec2.s_t0), p, true);
+                    b.ApplyLinearImpulse(b2_math_1.b2Vec2.MulSV(-f, n, b2_math_1.b2Vec2.s_t0), p, true);
                 }
             }
         }
@@ -3201,10 +3205,10 @@ class b2ParticleSystem {
             const bRigid = this.IsRigidGroup(bGroup);
             if (aGroup !== bGroup && (aRigid || bRigid)) {
                 ///b2Vec2 p = 0.5f * (this.m_positionBuffer.data[a] + this.m_positionBuffer.data[b]);
-                const p = b2_math_js_1.b2Vec2.MidVV(pos_data[a], pos_data[b], s_p);
+                const p = b2_math_1.b2Vec2.MidVV(pos_data[a], pos_data[b], s_p);
                 ///b2Vec2 v = GetLinearVelocity(bGroup, b, p) - GetLinearVelocity(aGroup, a, p);
-                const v = b2_math_js_1.b2Vec2.SubVV(this.GetLinearVelocity(bGroup, b, p, s_t0), this.GetLinearVelocity(aGroup, a, p, s_t1), s_v);
-                const vn = b2_math_js_1.b2Vec2.DotVV(v, n);
+                const v = b2_math_1.b2Vec2.SubVV(this.GetLinearVelocity(bGroup, b, p, s_t0), this.GetLinearVelocity(aGroup, a, p, s_t1), s_v);
+                const vn = b2_math_1.b2Vec2.DotVV(v, n);
                 if (vn < 0) {
                     ///this.InitDampingParameterWithRigidGroupOrParticle(&invMassA, &invInertiaA, &tangentDistanceA, aRigid, aGroup, a, p, n);
                     this.InitDampingParameterWithRigidGroupOrParticle(invMassA, invInertiaA, tangentDistanceA, aRigid, aGroup, a, p, n);
@@ -3238,12 +3242,12 @@ class b2ParticleSystem {
                 const n = contact.normal;
                 const p = pos_data[a];
                 ///b2Vec2 v = b.GetLinearVelocityFromWorldPoint(p) - m_velocityBuffer.data[a];
-                const v = b2_math_js_1.b2Vec2.SubVV(b.GetLinearVelocityFromWorldPoint(p, b2_math_js_1.b2Vec2.s_t0), vel_data[a], s_v);
+                const v = b2_math_1.b2Vec2.SubVV(b.GetLinearVelocityFromWorldPoint(p, b2_math_1.b2Vec2.s_t0), vel_data[a], s_v);
                 ///float32 vn = b2Dot(v, n);
-                const vn = b2_math_js_1.b2Vec2.DotVV(v, n);
+                const vn = b2_math_1.b2Vec2.DotVV(v, n);
                 if (vn < 0) {
                     ///b2Vec2 f = 0.5f * m * vn * n;
-                    const f = b2_math_js_1.b2Vec2.MulSV(0.5 * m * vn, n, s_f);
+                    const f = b2_math_1.b2Vec2.MulSV(0.5 * m * vn, n, s_f);
                     ///m_velocityBuffer.data[a] += GetParticleInvMass() * f;
                     vel_data[a].SelfMulAdd(inv_mass, f);
                     ///b.ApplyLinearImpulse(-f, p, true);
@@ -3255,7 +3259,7 @@ class b2ParticleSystem {
     SolveWall() {
         const vel_data = this.m_velocityBuffer.data;
         for (let i = 0; i < this.m_count; i++) {
-            if (this.m_flagsBuffer.data[i] & b2_particle_js_1.b2ParticleFlag.b2_wallParticle) {
+            if (this.m_flagsBuffer.data[i] & b2_particle_1.b2ParticleFlag.b2_wallParticle) {
                 vel_data[i].SetZero();
             }
         }
@@ -3268,17 +3272,17 @@ class b2ParticleSystem {
         const pos_data = this.m_positionBuffer.data;
         const vel_data = this.m_velocityBuffer.data;
         for (let group = this.m_groupList; group; group = group.GetNext()) {
-            if (group.m_groupFlags & b2_particle_group_js_1.b2ParticleGroupFlag.b2_rigidParticleGroup) {
+            if (group.m_groupFlags & b2_particle_group_1.b2ParticleGroupFlag.b2_rigidParticleGroup) {
                 group.UpdateStatistics();
                 ///b2Rot rotation(step.dt * group.m_angularVelocity);
                 const rotation = s_rotation;
                 rotation.SetAngle(step.dt * group.m_angularVelocity);
                 ///b2Transform transform(group.m_center + step.dt * group.m_linearVelocity - b2Mul(rotation, group.m_center), rotation);
-                const position = b2_math_js_1.b2Vec2.AddVV(group.m_center, b2_math_js_1.b2Vec2.SubVV(b2_math_js_1.b2Vec2.MulSV(step.dt, group.m_linearVelocity, b2_math_js_1.b2Vec2.s_t0), b2_math_js_1.b2Rot.MulRV(rotation, group.m_center, b2_math_js_1.b2Vec2.s_t1), b2_math_js_1.b2Vec2.s_t0), s_position);
+                const position = b2_math_1.b2Vec2.AddVV(group.m_center, b2_math_1.b2Vec2.SubVV(b2_math_1.b2Vec2.MulSV(step.dt, group.m_linearVelocity, b2_math_1.b2Vec2.s_t0), b2_math_1.b2Rot.MulRV(rotation, group.m_center, b2_math_1.b2Vec2.s_t1), b2_math_1.b2Vec2.s_t0), s_position);
                 const transform = s_transform;
                 transform.SetPositionRotation(position, rotation);
                 ///group.m_transform = b2Mul(transform, group.m_transform);
-                b2_math_js_1.b2Transform.MulXX(transform, group.m_transform, group.m_transform);
+                b2_math_1.b2Transform.MulXX(transform, group.m_transform, group.m_transform);
                 const velocityTransform = s_velocityTransform;
                 velocityTransform.p.x = step.inv_dt * transform.p.x;
                 velocityTransform.p.y = step.inv_dt * transform.p.y;
@@ -3286,7 +3290,7 @@ class b2ParticleSystem {
                 velocityTransform.q.c = step.inv_dt * (transform.q.c - 1);
                 for (let i = group.m_firstIndex; i < group.m_lastIndex; i++) {
                     ///m_velocityBuffer.data[i] = b2Mul(velocityTransform, m_positionBuffer.data[i]);
-                    b2_math_js_1.b2Transform.MulXV(velocityTransform, pos_data[i], vel_data[i]);
+                    b2_math_1.b2Transform.MulXV(velocityTransform, pos_data[i], vel_data[i]);
                 }
             }
         }
@@ -3302,7 +3306,7 @@ class b2ParticleSystem {
         const elasticStrength = step.inv_dt * this.m_def.elasticStrength;
         for (let k = 0; k < this.m_triadBuffer.count; k++) {
             const triad = this.m_triadBuffer.data[k];
-            if (triad.flags & b2_particle_js_1.b2ParticleFlag.b2_elasticParticle) {
+            if (triad.flags & b2_particle_1.b2ParticleFlag.b2_elasticParticle) {
                 const a = triad.indexA;
                 const b = triad.indexB;
                 const c = triad.indexC;
@@ -3338,10 +3342,10 @@ class b2ParticleSystem {
                 pc.y -= midPoint_y;
                 ///b2Rot r;
                 const r = s_r;
-                r.s = b2_math_js_1.b2Vec2.CrossVV(oa, pa) + b2_math_js_1.b2Vec2.CrossVV(ob, pb) + b2_math_js_1.b2Vec2.CrossVV(oc, pc);
-                r.c = b2_math_js_1.b2Vec2.DotVV(oa, pa) + b2_math_js_1.b2Vec2.DotVV(ob, pb) + b2_math_js_1.b2Vec2.DotVV(oc, pc);
+                r.s = b2_math_1.b2Vec2.CrossVV(oa, pa) + b2_math_1.b2Vec2.CrossVV(ob, pb) + b2_math_1.b2Vec2.CrossVV(oc, pc);
+                r.c = b2_math_1.b2Vec2.DotVV(oa, pa) + b2_math_1.b2Vec2.DotVV(ob, pb) + b2_math_1.b2Vec2.DotVV(oc, pc);
                 const r2 = r.s * r.s + r.c * r.c;
-                let invR = (0, b2_math_js_1.b2InvSqrt)(r2);
+                let invR = (0, b2_math_1.b2InvSqrt)(r2);
                 if (!isFinite(invR)) {
                     invR = 1.98177537e+019;
                 }
@@ -3350,19 +3354,19 @@ class b2ParticleSystem {
                 ///r.angle = Math.atan2(r.s, r.c); // TODO: optimize
                 const strength = elasticStrength * triad.strength;
                 ///va += strength * (b2Mul(r, oa) - pa);
-                b2_math_js_1.b2Rot.MulRV(r, oa, s_t0);
-                b2_math_js_1.b2Vec2.SubVV(s_t0, pa, s_t0);
-                b2_math_js_1.b2Vec2.MulSV(strength, s_t0, s_t0);
+                b2_math_1.b2Rot.MulRV(r, oa, s_t0);
+                b2_math_1.b2Vec2.SubVV(s_t0, pa, s_t0);
+                b2_math_1.b2Vec2.MulSV(strength, s_t0, s_t0);
                 va.SelfAdd(s_t0);
                 ///vb += strength * (b2Mul(r, ob) - pb);
-                b2_math_js_1.b2Rot.MulRV(r, ob, s_t0);
-                b2_math_js_1.b2Vec2.SubVV(s_t0, pb, s_t0);
-                b2_math_js_1.b2Vec2.MulSV(strength, s_t0, s_t0);
+                b2_math_1.b2Rot.MulRV(r, ob, s_t0);
+                b2_math_1.b2Vec2.SubVV(s_t0, pb, s_t0);
+                b2_math_1.b2Vec2.MulSV(strength, s_t0, s_t0);
                 vb.SelfAdd(s_t0);
                 ///vc += strength * (b2Mul(r, oc) - pc);
-                b2_math_js_1.b2Rot.MulRV(r, oc, s_t0);
-                b2_math_js_1.b2Vec2.SubVV(s_t0, pc, s_t0);
-                b2_math_js_1.b2Vec2.MulSV(strength, s_t0, s_t0);
+                b2_math_1.b2Rot.MulRV(r, oc, s_t0);
+                b2_math_1.b2Vec2.SubVV(s_t0, pc, s_t0);
+                b2_math_1.b2Vec2.MulSV(strength, s_t0, s_t0);
                 vc.SelfAdd(s_t0);
             }
         }
@@ -3377,7 +3381,7 @@ class b2ParticleSystem {
         const springStrength = step.inv_dt * this.m_def.springStrength;
         for (let k = 0; k < this.m_pairBuffer.count; k++) {
             const pair = this.m_pairBuffer.data[k];
-            if (pair.flags & b2_particle_js_1.b2ParticleFlag.b2_springParticle) {
+            if (pair.flags & b2_particle_1.b2ParticleFlag.b2_springParticle) {
                 ///int32 a = pair.indexA;
                 const a = pair.indexA;
                 ///int32 b = pair.indexB;
@@ -3395,7 +3399,7 @@ class b2ParticleSystem {
                 ///pb += step.dt * vb;
                 pb.SelfMulAdd(step.dt, vb);
                 ///b2Vec2 d = pb - pa;
-                const d = b2_math_js_1.b2Vec2.SubVV(pb, pa, s_d);
+                const d = b2_math_1.b2Vec2.SubVV(pb, pa, s_d);
                 ///float32 r0 = pair.distance;
                 const r0 = pair.distance;
                 ///float32 r1 = d.Length();
@@ -3403,7 +3407,7 @@ class b2ParticleSystem {
                 ///float32 strength = springStrength * pair.strength;
                 const strength = springStrength * pair.strength;
                 ///b2Vec2 f = strength * (r0 - r1) / r1 * d;
-                const f = b2_math_js_1.b2Vec2.MulSV(strength * (r0 - r1) / r1, d, s_f);
+                const f = b2_math_1.b2Vec2.MulSV(strength * (r0 - r1) / r1, d, s_f);
                 ///va -= f;
                 va.SelfSub(f);
                 ///vb += f;
@@ -3418,18 +3422,18 @@ class b2ParticleSystem {
         const vel_data = this.m_velocityBuffer.data;
         // DEBUG: b2Assert(this.m_accumulation2Buffer !== null);
         for (let i = 0; i < this.m_count; i++) {
-            this.m_accumulation2Buffer[i] = new b2_math_js_1.b2Vec2();
+            this.m_accumulation2Buffer[i] = new b2_math_1.b2Vec2();
             this.m_accumulation2Buffer[i].SetZero();
         }
         for (let k = 0; k < this.m_contactBuffer.count; k++) {
             const contact = this.m_contactBuffer.data[k];
-            if (contact.flags & b2_particle_js_1.b2ParticleFlag.b2_tensileParticle) {
+            if (contact.flags & b2_particle_1.b2ParticleFlag.b2_tensileParticle) {
                 const a = contact.indexA;
                 const b = contact.indexB;
                 const w = contact.weight;
                 const n = contact.normal;
                 ///b2Vec2 weightedNormal = (1 - w) * w * n;
-                const weightedNormal = b2_math_js_1.b2Vec2.MulSV((1 - w) * w, n, s_weightedNormal);
+                const weightedNormal = b2_math_1.b2Vec2.MulSV((1 - w) * w, n, s_weightedNormal);
                 ///m_accumulation2Buffer[a] -= weightedNormal;
                 this.m_accumulation2Buffer[a].SelfSub(weightedNormal);
                 ///m_accumulation2Buffer[b] += weightedNormal;
@@ -3439,20 +3443,20 @@ class b2ParticleSystem {
         const criticalVelocity = this.GetCriticalVelocity(step);
         const pressureStrength = this.m_def.surfaceTensionPressureStrength * criticalVelocity;
         const normalStrength = this.m_def.surfaceTensionNormalStrength * criticalVelocity;
-        const maxVelocityVariation = b2_settings_js_2.b2_maxParticleForce * criticalVelocity;
+        const maxVelocityVariation = b2_settings_2.b2_maxParticleForce * criticalVelocity;
         for (let k = 0; k < this.m_contactBuffer.count; k++) {
             const contact = this.m_contactBuffer.data[k];
-            if (contact.flags & b2_particle_js_1.b2ParticleFlag.b2_tensileParticle) {
+            if (contact.flags & b2_particle_1.b2ParticleFlag.b2_tensileParticle) {
                 const a = contact.indexA;
                 const b = contact.indexB;
                 const w = contact.weight;
                 const n = contact.normal;
                 const h = this.m_weightBuffer[a] + this.m_weightBuffer[b];
                 ///b2Vec2 s = m_accumulation2Buffer[b] - m_accumulation2Buffer[a];
-                const s = b2_math_js_1.b2Vec2.SubVV(this.m_accumulation2Buffer[b], this.m_accumulation2Buffer[a], s_s);
-                const fn = (0, b2_math_js_1.b2Min)(pressureStrength * (h - 2) + normalStrength * b2_math_js_1.b2Vec2.DotVV(s, n), maxVelocityVariation) * w;
+                const s = b2_math_1.b2Vec2.SubVV(this.m_accumulation2Buffer[b], this.m_accumulation2Buffer[a], s_s);
+                const fn = (0, b2_math_1.b2Min)(pressureStrength * (h - 2) + normalStrength * b2_math_1.b2Vec2.DotVV(s, n), maxVelocityVariation) * w;
                 ///b2Vec2 f = fn * n;
-                const f = b2_math_js_1.b2Vec2.MulSV(fn, n, s_f);
+                const f = b2_math_1.b2Vec2.MulSV(fn, n, s_f);
                 ///m_velocityBuffer.data[a] -= f;
                 vel_data[a].SelfSub(f);
                 ///m_velocityBuffer.data[b] += f;
@@ -3470,15 +3474,15 @@ class b2ParticleSystem {
         for (let k = 0; k < this.m_bodyContactBuffer.count; k++) {
             const contact = this.m_bodyContactBuffer.data[k];
             const a = contact.index;
-            if (this.m_flagsBuffer.data[a] & b2_particle_js_1.b2ParticleFlag.b2_viscousParticle) {
+            if (this.m_flagsBuffer.data[a] & b2_particle_1.b2ParticleFlag.b2_viscousParticle) {
                 const b = contact.body;
                 const w = contact.weight;
                 const m = contact.mass;
                 const p = pos_data[a];
                 ///b2Vec2 v = b.GetLinearVelocityFromWorldPoint(p) - m_velocityBuffer.data[a];
-                const v = b2_math_js_1.b2Vec2.SubVV(b.GetLinearVelocityFromWorldPoint(p, b2_math_js_1.b2Vec2.s_t0), vel_data[a], s_v);
+                const v = b2_math_1.b2Vec2.SubVV(b.GetLinearVelocityFromWorldPoint(p, b2_math_1.b2Vec2.s_t0), vel_data[a], s_v);
                 ///b2Vec2 f = viscousStrength * m * w * v;
-                const f = b2_math_js_1.b2Vec2.MulSV(viscousStrength * m * w, v, s_f);
+                const f = b2_math_1.b2Vec2.MulSV(viscousStrength * m * w, v, s_f);
                 ///m_velocityBuffer.data[a] += GetParticleInvMass() * f;
                 vel_data[a].SelfMulAdd(inv_mass, f);
                 ///b.ApplyLinearImpulse(-f, p, true);
@@ -3487,14 +3491,14 @@ class b2ParticleSystem {
         }
         for (let k = 0; k < this.m_contactBuffer.count; k++) {
             const contact = this.m_contactBuffer.data[k];
-            if (contact.flags & b2_particle_js_1.b2ParticleFlag.b2_viscousParticle) {
+            if (contact.flags & b2_particle_1.b2ParticleFlag.b2_viscousParticle) {
                 const a = contact.indexA;
                 const b = contact.indexB;
                 const w = contact.weight;
                 ///b2Vec2 v = m_velocityBuffer.data[b] - m_velocityBuffer.data[a];
-                const v = b2_math_js_1.b2Vec2.SubVV(vel_data[b], vel_data[a], s_v);
+                const v = b2_math_1.b2Vec2.SubVV(vel_data[b], vel_data[a], s_v);
                 ///b2Vec2 f = viscousStrength * w * v;
-                const f = b2_math_js_1.b2Vec2.MulSV(viscousStrength * w, v, s_f);
+                const f = b2_math_1.b2Vec2.MulSV(viscousStrength * w, v, s_f);
                 ///m_velocityBuffer.data[a] += f;
                 vel_data[a].SelfAdd(f);
                 ///m_velocityBuffer.data[b] -= f;
@@ -3508,14 +3512,14 @@ class b2ParticleSystem {
         const repulsiveStrength = this.m_def.repulsiveStrength * this.GetCriticalVelocity(step);
         for (let k = 0; k < this.m_contactBuffer.count; k++) {
             const contact = this.m_contactBuffer.data[k];
-            if (contact.flags & b2_particle_js_1.b2ParticleFlag.b2_repulsiveParticle) {
+            if (contact.flags & b2_particle_1.b2ParticleFlag.b2_repulsiveParticle) {
                 const a = contact.indexA;
                 const b = contact.indexB;
                 if (this.m_groupBuffer[a] !== this.m_groupBuffer[b]) {
                     const w = contact.weight;
                     const n = contact.normal;
                     ///b2Vec2 f = repulsiveStrength * w * n;
-                    const f = b2_math_js_1.b2Vec2.MulSV(repulsiveStrength * w, n, s_f);
+                    const f = b2_math_1.b2Vec2.MulSV(repulsiveStrength * w, n, s_f);
                     ///m_velocityBuffer.data[a] -= f;
                     vel_data[a].SelfSub(f);
                     ///m_velocityBuffer.data[b] += f;
@@ -3529,19 +3533,19 @@ class b2ParticleSystem {
         const pos_data = this.m_positionBuffer.data;
         const vel_data = this.m_velocityBuffer.data;
         const powderStrength = this.m_def.powderStrength * this.GetCriticalVelocity(step);
-        const minWeight = 1.0 - b2_settings_js_2.b2_particleStride;
+        const minWeight = 1.0 - b2_settings_2.b2_particleStride;
         const inv_mass = this.GetParticleInvMass();
         for (let k = 0; k < this.m_bodyContactBuffer.count; k++) {
             const contact = this.m_bodyContactBuffer.data[k];
             const a = contact.index;
-            if (this.m_flagsBuffer.data[a] & b2_particle_js_1.b2ParticleFlag.b2_powderParticle) {
+            if (this.m_flagsBuffer.data[a] & b2_particle_1.b2ParticleFlag.b2_powderParticle) {
                 const w = contact.weight;
                 if (w > minWeight) {
                     const b = contact.body;
                     const m = contact.mass;
                     const p = pos_data[a];
                     const n = contact.normal;
-                    const f = b2_math_js_1.b2Vec2.MulSV(powderStrength * m * (w - minWeight), n, s_f);
+                    const f = b2_math_1.b2Vec2.MulSV(powderStrength * m * (w - minWeight), n, s_f);
                     vel_data[a].SelfMulSub(inv_mass, f);
                     b.ApplyLinearImpulse(f, p, true);
                 }
@@ -3549,13 +3553,13 @@ class b2ParticleSystem {
         }
         for (let k = 0; k < this.m_contactBuffer.count; k++) {
             const contact = this.m_contactBuffer.data[k];
-            if (contact.flags & b2_particle_js_1.b2ParticleFlag.b2_powderParticle) {
+            if (contact.flags & b2_particle_1.b2ParticleFlag.b2_powderParticle) {
                 const w = contact.weight;
                 if (w > minWeight) {
                     const a = contact.indexA;
                     const b = contact.indexB;
                     const n = contact.normal;
-                    const f = b2_math_js_1.b2Vec2.MulSV(powderStrength * (w - minWeight), n, s_f);
+                    const f = b2_math_1.b2Vec2.MulSV(powderStrength * (w - minWeight), n, s_f);
                     vel_data[a].SelfSub(f);
                     vel_data[b].SelfAdd(f);
                 }
@@ -3576,7 +3580,7 @@ class b2ParticleSystem {
                 const w = contact.weight;
                 const n = contact.normal;
                 const h = this.m_depthBuffer[a] + this.m_depthBuffer[b];
-                const f = b2_math_js_1.b2Vec2.MulSV(ejectionStrength * h * w, n, s_f);
+                const f = b2_math_1.b2Vec2.MulSV(ejectionStrength * h * w, n, s_f);
                 vel_data[a].SelfSub(f);
                 vel_data[b].SelfAdd(f);
             }
@@ -3600,12 +3604,12 @@ class b2ParticleSystem {
                 const a = contact.indexA;
                 const b = contact.indexB;
                 if (this.m_flagsBuffer.data[a] & this.m_flagsBuffer.data[b] &
-                    b2_particle_js_1.b2ParticleFlag.b2_colorMixingParticle) {
+                    b2_particle_1.b2ParticleFlag.b2_colorMixingParticle) {
                     const colorA = this.m_colorBuffer.data[a];
                     const colorB = this.m_colorBuffer.data[b];
                     // Use the static method to ensure certain compilers inline
                     // this correctly.
-                    b2_draw_js_1.b2Color.MixColors(colorA, colorB, colorMixing);
+                    b2_draw_1.b2Color.MixColors(colorA, colorB, colorMixing);
                 }
             }
         }
@@ -3615,27 +3619,27 @@ class b2ParticleSystem {
         let newCount = 0;
         const newIndices = []; // TODO: static
         for (let i = 0; i < this.m_count; i++) {
-            newIndices[i] = b2_settings_js_1.b2_invalidParticleIndex;
+            newIndices[i] = b2_settings_1.b2_invalidParticleIndex;
         }
         // DEBUG: b2Assert(newIndices.length === this.m_count);
         let allParticleFlags = 0;
         for (let i = 0; i < this.m_count; i++) {
             const flags = this.m_flagsBuffer.data[i];
-            if (flags & b2_particle_js_1.b2ParticleFlag.b2_zombieParticle) {
+            if (flags & b2_particle_1.b2ParticleFlag.b2_zombieParticle) {
                 const destructionListener = this.m_world.m_destructionListener;
-                if ((flags & b2_particle_js_1.b2ParticleFlag.b2_destructionListenerParticle) && destructionListener) {
+                if ((flags & b2_particle_1.b2ParticleFlag.b2_destructionListenerParticle) && destructionListener) {
                     destructionListener.SayGoodbyeParticle(this, i);
                 }
                 // Destroy particle handle.
                 if (this.m_handleIndexBuffer.data) {
                     const handle = this.m_handleIndexBuffer.data[i];
                     if (handle) {
-                        handle.SetIndex(b2_settings_js_1.b2_invalidParticleIndex);
+                        handle.SetIndex(b2_settings_1.b2_invalidParticleIndex);
                         this.m_handleIndexBuffer.data[i] = null;
                         ///m_handleAllocator.Free(handle);
                     }
                 }
-                newIndices[i] = b2_settings_js_1.b2_invalidParticleIndex;
+                newIndices[i] = b2_settings_1.b2_invalidParticleIndex;
             }
             else {
                 newIndices[i] = newCount;
@@ -3705,7 +3709,7 @@ class b2ParticleSystem {
             ///static bool IsTriadInvalid(const b2ParticleTriad& triad)
             IsTriadInvalid: (triad) => {
                 return triad.indexA < 0 || triad.indexB < 0 || triad.indexC < 0;
-            },
+            }
         };
         // update proxies
         for (let k = 0; k < this.m_proxyBuffer.count; k++) {
@@ -3746,7 +3750,7 @@ class b2ParticleSystem {
             let writeOffset = 0;
             for (let readOffset = 0; readOffset < this.m_count; readOffset++) {
                 const newIndex = newIndices[this.m_indexByExpirationTimeBuffer.data[readOffset]];
-                if (newIndex !== b2_settings_js_1.b2_invalidParticleIndex) {
+                if (newIndex !== b2_settings_1.b2_invalidParticleIndex) {
                     this.m_indexByExpirationTimeBuffer.data[writeOffset++] = newIndex;
                 }
             }
@@ -3759,8 +3763,8 @@ class b2ParticleSystem {
             for (let i = group.m_firstIndex; i < group.m_lastIndex; i++) {
                 const j = newIndices[i];
                 if (j >= 0) {
-                    firstIndex = (0, b2_math_js_1.b2Min)(firstIndex, j);
-                    lastIndex = (0, b2_math_js_1.b2Max)(lastIndex, j + 1);
+                    firstIndex = (0, b2_math_1.b2Min)(firstIndex, j);
+                    lastIndex = (0, b2_math_1.b2Max)(lastIndex, j + 1);
                 }
                 else {
                     modified = true;
@@ -3770,16 +3774,16 @@ class b2ParticleSystem {
                 group.m_firstIndex = firstIndex;
                 group.m_lastIndex = lastIndex;
                 if (modified) {
-                    if (group.m_groupFlags & b2_particle_group_js_1.b2ParticleGroupFlag.b2_solidParticleGroup) {
-                        this.SetGroupFlags(group, group.m_groupFlags | b2_particle_group_js_1.b2ParticleGroupFlag.b2_particleGroupNeedsUpdateDepth);
+                    if (group.m_groupFlags & b2_particle_group_1.b2ParticleGroupFlag.b2_solidParticleGroup) {
+                        this.SetGroupFlags(group, group.m_groupFlags | b2_particle_group_1.b2ParticleGroupFlag.b2_particleGroupNeedsUpdateDepth);
                     }
                 }
             }
             else {
                 group.m_firstIndex = 0;
                 group.m_lastIndex = 0;
-                if (!(group.m_groupFlags & b2_particle_group_js_1.b2ParticleGroupFlag.b2_particleGroupCanBeEmpty)) {
-                    this.SetGroupFlags(group, group.m_groupFlags | b2_particle_group_js_1.b2ParticleGroupFlag.b2_particleGroupWillBeDestroyed);
+                if (!(group.m_groupFlags & b2_particle_group_1.b2ParticleGroupFlag.b2_particleGroupCanBeEmpty)) {
+                    this.SetGroupFlags(group, group.m_groupFlags | b2_particle_group_1.b2ParticleGroupFlag.b2_particleGroupWillBeDestroyed);
                 }
             }
         }
@@ -3790,16 +3794,16 @@ class b2ParticleSystem {
         // destroy bodies with no particles
         for (let group = this.m_groupList; group;) {
             const next = group.GetNext();
-            if (group.m_groupFlags & b2_particle_group_js_1.b2ParticleGroupFlag.b2_particleGroupWillBeDestroyed) {
+            if (group.m_groupFlags & b2_particle_group_1.b2ParticleGroupFlag.b2_particleGroupWillBeDestroyed) {
                 this.DestroyParticleGroup(group);
             }
             group = next;
         }
     }
     /**
-   * Destroy all particles which have outlived their lifetimes set
-   * by SetParticleLifetime().
-   */
+     * Destroy all particles which have outlived their lifetimes set
+     * by SetParticleLifetime().
+     */
     SolveLifetimes(step) {
         // Update the time elapsed.
         this.m_timeElapsed = this.LifetimeToExpirationTime(step.dt);
@@ -3813,19 +3817,19 @@ class b2ParticleSystem {
             ///const ExpirationTimeComparator expirationTimeComparator(expirationTimes);
             ///std::sort(expirationTimeIndices, expirationTimeIndices + particleCount, expirationTimeComparator);
             /**
-       * Compare the lifetime of particleIndexA and particleIndexB
-       * returning true if the lifetime of A is greater than B for
-       * particles that will expire.  If either particle's lifetime is
-       * infinite (<= 0.0f) this function return true if the lifetime
-       * of A is lesser than B. When used with std::sort() this
-       * results in an array of particle indicies sorted in reverse
-       * order by particle lifetime.
-       *
-       * For example, the set of lifetimes
-       * (1.0, 0.7, 0.3, 0.0, -1.0, 2.0)
-       * would be sorted as
-       * (0.0, 1.0, -2.0, 1.0, 0.7, 0.3)
-       */
+             * Compare the lifetime of particleIndexA and particleIndexB
+             * returning true if the lifetime of A is greater than B for
+             * particles that will expire.  If either particle's lifetime is
+             * infinite (<= 0.0f) this function return true if the lifetime
+             * of A is lesser than B. When used with std::sort() this
+             * results in an array of particle indicies sorted in reverse
+             * order by particle lifetime.
+             *
+             * For example, the set of lifetimes
+             * (1.0, 0.7, 0.3, 0.0, -1.0, 2.0)
+             * would be sorted as
+             * (0.0, 1.0, -2.0, 1.0, 0.7, 0.3)
+             */
             const ExpirationTimeComparator = (particleIndexA, particleIndexB) => {
                 const expirationTimeA = expirationTimes[particleIndexA];
                 const expirationTimeB = expirationTimes[particleIndexB];
@@ -3976,7 +3980,7 @@ class b2ParticleSystem {
         return this.m_def.density * this.GetCriticalVelocitySquared(step);
     }
     GetParticleStride() {
-        return b2_settings_js_2.b2_particleStride * this.m_particleDiameter;
+        return b2_settings_2.b2_particleStride * this.m_particleDiameter;
     }
     GetParticleMass() {
         const stride = this.GetParticleStride();
@@ -3985,42 +3989,42 @@ class b2ParticleSystem {
     GetParticleInvMass() {
         ///return 1.777777 * this.m_inverseDensity * this.m_inverseDiameter * this.m_inverseDiameter;
         // mass = density * stride^2, so we take the inverse of this.
-        const inverseStride = this.m_inverseDiameter * (1.0 / b2_settings_js_2.b2_particleStride);
+        const inverseStride = this.m_inverseDiameter * (1.0 / b2_settings_2.b2_particleStride);
         return this.m_inverseDensity * inverseStride * inverseStride;
     }
     /**
-   * Get the world's contact filter if any particles with the
-   * b2_contactFilterParticle flag are present in the system.
-   */
+     * Get the world's contact filter if any particles with the
+     * b2_contactFilterParticle flag are present in the system.
+     */
     GetFixtureContactFilter() {
-        return (this.m_allParticleFlags & b2_particle_js_1.b2ParticleFlag.b2_fixtureContactFilterParticle) ?
+        return (this.m_allParticleFlags & b2_particle_1.b2ParticleFlag.b2_fixtureContactFilterParticle) ?
             this.m_world.m_contactManager.m_contactFilter : null;
     }
     /**
-   * Get the world's contact filter if any particles with the
-   * b2_particleContactFilterParticle flag are present in the
-   * system.
-   */
+     * Get the world's contact filter if any particles with the
+     * b2_particleContactFilterParticle flag are present in the
+     * system.
+     */
     GetParticleContactFilter() {
-        return (this.m_allParticleFlags & b2_particle_js_1.b2ParticleFlag.b2_particleContactFilterParticle) ?
+        return (this.m_allParticleFlags & b2_particle_1.b2ParticleFlag.b2_particleContactFilterParticle) ?
             this.m_world.m_contactManager.m_contactFilter : null;
     }
     /**
-   * Get the world's contact listener if any particles with the
-   * b2_fixtureContactListenerParticle flag are present in the
-   * system.
-   */
+     * Get the world's contact listener if any particles with the
+     * b2_fixtureContactListenerParticle flag are present in the
+     * system.
+     */
     GetFixtureContactListener() {
-        return (this.m_allParticleFlags & b2_particle_js_1.b2ParticleFlag.b2_fixtureContactListenerParticle) ?
+        return (this.m_allParticleFlags & b2_particle_1.b2ParticleFlag.b2_fixtureContactListenerParticle) ?
             this.m_world.m_contactManager.m_contactListener : null;
     }
     /**
-   * Get the world's contact listener if any particles with the
-   * b2_particleContactListenerParticle flag are present in the
-   * system.
-   */
+     * Get the world's contact listener if any particles with the
+     * b2_particleContactListenerParticle flag are present in the
+     * system.
+     */
     GetParticleContactListener() {
-        return (this.m_allParticleFlags & b2_particle_js_1.b2ParticleFlag.b2_particleContactListenerParticle) ?
+        return (this.m_allParticleFlags & b2_particle_1.b2ParticleFlag.b2_particleContactListenerParticle) ?
             this.m_world.m_contactManager.m_contactListener : null;
     }
     SetUserOverridableBuffer(buffer, data) {
@@ -4029,9 +4033,9 @@ class b2ParticleSystem {
     }
     SetGroupFlags(group, newFlags) {
         const oldFlags = group.m_groupFlags;
-        if ((oldFlags ^ newFlags) & b2_particle_group_js_1.b2ParticleGroupFlag.b2_solidParticleGroup) {
+        if ((oldFlags ^ newFlags) & b2_particle_group_1.b2ParticleGroupFlag.b2_solidParticleGroup) {
             // If the b2_solidParticleGroup flag changed schedule depth update.
-            newFlags |= b2_particle_group_js_1.b2ParticleGroupFlag.b2_particleGroupNeedsUpdateDepth;
+            newFlags |= b2_particle_group_1.b2ParticleGroupFlag.b2_particleGroupNeedsUpdateDepth;
         }
         if (oldFlags & ~newFlags) {
             // If any flags might be removed
@@ -4039,7 +4043,7 @@ class b2ParticleSystem {
         }
         if (~this.m_allGroupFlags & newFlags) {
             // If any flags were added
-            if (newFlags & b2_particle_group_js_1.b2ParticleGroupFlag.b2_solidParticleGroup) {
+            if (newFlags & b2_particle_group_1.b2ParticleGroupFlag.b2_solidParticleGroup) {
                 this.m_depthBuffer = this.RequestBuffer(this.m_depthBuffer);
             }
             this.m_allGroupFlags |= newFlags;
@@ -4116,7 +4120,7 @@ class b2ParticleSystem {
             ///n *= system.m_particleDiameter * (1 - contact.weight);
             n.SelfMul(system.m_particleDiameter * (1 - contact.weight));
             ///b2Vec2 pos = system.m_positionBuffer.data[contact.index] + n;
-            const pos = b2_math_js_1.b2Vec2.AddVV(system.m_positionBuffer.data[contact.index], n, s_pos);
+            const pos = b2_math_1.b2Vec2.AddVV(system.m_positionBuffer.data[contact.index], n, s_pos);
             // pos is now a point projected back along the contact normal to the
             // contact distance. If the surface makes sense for a contact, pos will
             // now lie on or in the fixture generating
@@ -4125,7 +4129,7 @@ class b2ParticleSystem {
                 for (let childIndex = 0; childIndex < childCount; childIndex++) {
                     const normal = s_normal;
                     const distance = contact.fixture.ComputeDistance(pos, normal, childIndex);
-                    if (distance < b2_settings_js_1.b2_linearSlop) {
+                    if (distance < b2_settings_1.b2_linearSlop) {
                         return false;
                     }
                 }
@@ -4172,29 +4176,29 @@ class b2ParticleSystem {
         this.m_lastBodyContactStepBuffer.data[particle] = this.m_timestamp;
     }
     /**
-   * Determine whether a particle index is valid.
-   */
+     * Determine whether a particle index is valid.
+     */
     ValidateParticleIndex(index) {
         return index >= 0 && index < this.GetParticleCount() &&
-            index !== b2_settings_js_1.b2_invalidParticleIndex;
+            index !== b2_settings_1.b2_invalidParticleIndex;
     }
     /**
-   * Get the time elapsed in
-   * b2ParticleSystemDef::lifetimeGranularity.
-   */
+     * Get the time elapsed in
+     * b2ParticleSystemDef::lifetimeGranularity.
+     */
     GetQuantizedTimeElapsed() {
         ///return (int32)(m_timeElapsed >> 32);
         return Math.floor(this.m_timeElapsed / 0x100000000);
     }
     /**
-   * Convert a lifetime in seconds to an expiration time.
-   */
+     * Convert a lifetime in seconds to an expiration time.
+     */
     LifetimeToExpirationTime(lifetime) {
         ///return m_timeElapsed + (int64)((lifetime / m_def.lifetimeGranularity) * (float32)(1LL << 32));
         return this.m_timeElapsed + Math.floor(((lifetime / this.m_def.lifetimeGranularity) * 0x100000000));
     }
     ForceCanBeApplied(flags) {
-        return !(flags & b2_particle_js_1.b2ParticleFlag.b2_wallParticle);
+        return !(flags & b2_particle_1.b2ParticleFlag.b2_wallParticle);
     }
     PrepareForceBuffer() {
         if (!this.m_hasForce) {
@@ -4206,7 +4210,7 @@ class b2ParticleSystem {
         }
     }
     IsRigidGroup(group) {
-        return (group !== null) && ((group.m_groupFlags & b2_particle_group_js_1.b2ParticleGroupFlag.b2_rigidParticleGroup) !== 0);
+        return (group !== null) && ((group.m_groupFlags & b2_particle_group_1.b2ParticleGroupFlag.b2_rigidParticleGroup) !== 0);
     }
     GetLinearVelocity(group, particleIndex, point, out) {
         if (group && this.IsRigidGroup(group)) {
@@ -4223,7 +4227,7 @@ class b2ParticleSystem {
         ///*invInertia = inertia > 0 ? 1 / inertia : 0;
         invInertia[0] = inertia > 0 ? 1 / inertia : 0;
         ///*tangentDistance = b2Cross(point - center, normal);
-        tangentDistance[0] = b2_math_js_1.b2Vec2.CrossVV(b2_math_js_1.b2Vec2.SubVV(point, center, b2_math_js_1.b2Vec2.s_t0), normal);
+        tangentDistance[0] = b2_math_1.b2Vec2.CrossVV(b2_math_1.b2Vec2.SubVV(point, center, b2_math_1.b2Vec2.s_t0), normal);
     }
     InitDampingParameterWithRigidGroupOrParticle(invMass, invInertia, tangentDistance, isRigidGroup, group, particleIndex, point, normal) {
         if (group && isRigidGroup) {
@@ -4231,7 +4235,7 @@ class b2ParticleSystem {
         }
         else {
             const flags = this.m_flagsBuffer.data[particleIndex];
-            this.InitDampingParameter(invMass, invInertia, tangentDistance, flags & b2_particle_js_1.b2ParticleFlag.b2_wallParticle ? 0 : this.GetParticleMass(), 0, point, point, normal);
+            this.InitDampingParameter(invMass, invInertia, tangentDistance, flags & b2_particle_1.b2ParticleFlag.b2_wallParticle ? 0 : this.GetParticleMass(), 0, point, point, normal);
         }
     }
     ComputeDampingImpulse(invMassA, invInertiaA, tangentDistanceA, invMassB, invInertiaB, tangentDistanceB, normalVelocity) {
@@ -4263,103 +4267,107 @@ b2ParticleSystem.xScale = 1 << b2ParticleSystem.xShift;
 b2ParticleSystem.xOffset = b2ParticleSystem.xScale * (1 << (b2ParticleSystem.xTruncBits - 1));
 b2ParticleSystem.yMask = ((1 << b2ParticleSystem.yTruncBits) - 1) << b2ParticleSystem.yShift;
 b2ParticleSystem.xMask = ~b2ParticleSystem.yMask;
-b2ParticleSystem.DestroyParticlesInShape_s_aabb = new b2_collision_js_1.b2AABB();
-b2ParticleSystem.CreateParticleGroup_s_transform = new b2_math_js_1.b2Transform();
-b2ParticleSystem.ComputeCollisionEnergy_s_v = new b2_math_js_1.b2Vec2();
-b2ParticleSystem.QueryShapeAABB_s_aabb = new b2_collision_js_1.b2AABB();
-b2ParticleSystem.QueryPointAABB_s_aabb = new b2_collision_js_1.b2AABB();
-b2ParticleSystem.RayCast_s_aabb = new b2_collision_js_1.b2AABB();
-b2ParticleSystem.RayCast_s_p = new b2_math_js_1.b2Vec2();
-b2ParticleSystem.RayCast_s_v = new b2_math_js_1.b2Vec2();
-b2ParticleSystem.RayCast_s_n = new b2_math_js_1.b2Vec2();
-b2ParticleSystem.RayCast_s_point = new b2_math_js_1.b2Vec2();
+b2ParticleSystem.DestroyParticlesInShape_s_aabb = new b2_collision_1.b2AABB();
+b2ParticleSystem.CreateParticleGroup_s_transform = new b2_math_1.b2Transform();
+b2ParticleSystem.ComputeCollisionEnergy_s_v = new b2_math_1.b2Vec2();
+b2ParticleSystem.QueryShapeAABB_s_aabb = new b2_collision_1.b2AABB();
+b2ParticleSystem.QueryPointAABB_s_aabb = new b2_collision_1.b2AABB();
+b2ParticleSystem.RayCast_s_aabb = new b2_collision_1.b2AABB();
+b2ParticleSystem.RayCast_s_p = new b2_math_1.b2Vec2();
+b2ParticleSystem.RayCast_s_v = new b2_math_1.b2Vec2();
+b2ParticleSystem.RayCast_s_n = new b2_math_1.b2Vec2();
+b2ParticleSystem.RayCast_s_point = new b2_math_1.b2Vec2();
 /**
-* All particle types that require creating pairs
-*/
-b2ParticleSystem.k_pairFlags = b2_particle_js_1.b2ParticleFlag.b2_springParticle;
+ * All particle types that require creating pairs
+ */
+b2ParticleSystem.k_pairFlags = b2_particle_1.b2ParticleFlag.b2_springParticle;
 /**
-* All particle types that require creating triads
-*/
-b2ParticleSystem.k_triadFlags = b2_particle_js_1.b2ParticleFlag.b2_elasticParticle;
+ * All particle types that require creating triads
+ */
+b2ParticleSystem.k_triadFlags = b2_particle_1.b2ParticleFlag.b2_elasticParticle;
 /**
-* All particle types that do not produce dynamic pressure
-*/
-b2ParticleSystem.k_noPressureFlags = b2_particle_js_1.b2ParticleFlag.b2_powderParticle | b2_particle_js_1.b2ParticleFlag.b2_tensileParticle;
+ * All particle types that do not produce dynamic pressure
+ */
+b2ParticleSystem.k_noPressureFlags = b2_particle_1.b2ParticleFlag.b2_powderParticle | b2_particle_1.b2ParticleFlag.b2_tensileParticle;
 /**
-* All particle types that apply extra damping force with bodies
-*/
-b2ParticleSystem.k_extraDampingFlags = b2_particle_js_1.b2ParticleFlag.b2_staticPressureParticle;
-b2ParticleSystem.k_barrierWallFlags = b2_particle_js_1.b2ParticleFlag.b2_barrierParticle | b2_particle_js_1.b2ParticleFlag.b2_wallParticle;
-b2ParticleSystem.CreateParticlesStrokeShapeForGroup_s_edge = new b2_edge_shape_js_1.b2EdgeShape();
-b2ParticleSystem.CreateParticlesStrokeShapeForGroup_s_d = new b2_math_js_1.b2Vec2();
-b2ParticleSystem.CreateParticlesStrokeShapeForGroup_s_p = new b2_math_js_1.b2Vec2();
-b2ParticleSystem.CreateParticlesFillShapeForGroup_s_aabb = new b2_collision_js_1.b2AABB();
-b2ParticleSystem.CreateParticlesFillShapeForGroup_s_p = new b2_math_js_1.b2Vec2();
-b2ParticleSystem.UpdatePairsAndTriads_s_dab = new b2_math_js_1.b2Vec2();
-b2ParticleSystem.UpdatePairsAndTriads_s_dbc = new b2_math_js_1.b2Vec2();
-b2ParticleSystem.UpdatePairsAndTriads_s_dca = new b2_math_js_1.b2Vec2();
-b2ParticleSystem.AddContact_s_d = new b2_math_js_1.b2Vec2();
-b2ParticleSystem.UpdateBodyContacts_s_aabb = new b2_collision_js_1.b2AABB();
-b2ParticleSystem.Solve_s_subStep = new b2_time_step_js_1.b2TimeStep();
-b2ParticleSystem.SolveCollision_s_aabb = new b2_collision_js_1.b2AABB();
-b2ParticleSystem.SolveGravity_s_gravity = new b2_math_js_1.b2Vec2();
-b2ParticleSystem.SolveBarrier_s_aabb = new b2_collision_js_1.b2AABB();
-b2ParticleSystem.SolveBarrier_s_va = new b2_math_js_1.b2Vec2();
-b2ParticleSystem.SolveBarrier_s_vb = new b2_math_js_1.b2Vec2();
-b2ParticleSystem.SolveBarrier_s_pba = new b2_math_js_1.b2Vec2();
-b2ParticleSystem.SolveBarrier_s_vba = new b2_math_js_1.b2Vec2();
-b2ParticleSystem.SolveBarrier_s_vc = new b2_math_js_1.b2Vec2();
-b2ParticleSystem.SolveBarrier_s_pca = new b2_math_js_1.b2Vec2();
-b2ParticleSystem.SolveBarrier_s_vca = new b2_math_js_1.b2Vec2();
-b2ParticleSystem.SolveBarrier_s_qba = new b2_math_js_1.b2Vec2();
-b2ParticleSystem.SolveBarrier_s_qca = new b2_math_js_1.b2Vec2();
-b2ParticleSystem.SolveBarrier_s_dv = new b2_math_js_1.b2Vec2();
-b2ParticleSystem.SolveBarrier_s_f = new b2_math_js_1.b2Vec2();
-b2ParticleSystem.SolvePressure_s_f = new b2_math_js_1.b2Vec2();
-b2ParticleSystem.SolveDamping_s_v = new b2_math_js_1.b2Vec2();
-b2ParticleSystem.SolveDamping_s_f = new b2_math_js_1.b2Vec2();
-b2ParticleSystem.SolveRigidDamping_s_t0 = new b2_math_js_1.b2Vec2();
-b2ParticleSystem.SolveRigidDamping_s_t1 = new b2_math_js_1.b2Vec2();
-b2ParticleSystem.SolveRigidDamping_s_p = new b2_math_js_1.b2Vec2();
-b2ParticleSystem.SolveRigidDamping_s_v = new b2_math_js_1.b2Vec2();
-b2ParticleSystem.SolveExtraDamping_s_v = new b2_math_js_1.b2Vec2();
-b2ParticleSystem.SolveExtraDamping_s_f = new b2_math_js_1.b2Vec2();
-b2ParticleSystem.SolveRigid_s_position = new b2_math_js_1.b2Vec2();
-b2ParticleSystem.SolveRigid_s_rotation = new b2_math_js_1.b2Rot();
-b2ParticleSystem.SolveRigid_s_transform = new b2_math_js_1.b2Transform();
-b2ParticleSystem.SolveRigid_s_velocityTransform = new b2_math_js_1.b2Transform();
-b2ParticleSystem.SolveElastic_s_pa = new b2_math_js_1.b2Vec2();
-b2ParticleSystem.SolveElastic_s_pb = new b2_math_js_1.b2Vec2();
-b2ParticleSystem.SolveElastic_s_pc = new b2_math_js_1.b2Vec2();
-b2ParticleSystem.SolveElastic_s_r = new b2_math_js_1.b2Rot();
-b2ParticleSystem.SolveElastic_s_t0 = new b2_math_js_1.b2Vec2();
-b2ParticleSystem.SolveSpring_s_pa = new b2_math_js_1.b2Vec2();
-b2ParticleSystem.SolveSpring_s_pb = new b2_math_js_1.b2Vec2();
-b2ParticleSystem.SolveSpring_s_d = new b2_math_js_1.b2Vec2();
-b2ParticleSystem.SolveSpring_s_f = new b2_math_js_1.b2Vec2();
-b2ParticleSystem.SolveTensile_s_weightedNormal = new b2_math_js_1.b2Vec2();
-b2ParticleSystem.SolveTensile_s_s = new b2_math_js_1.b2Vec2();
-b2ParticleSystem.SolveTensile_s_f = new b2_math_js_1.b2Vec2();
-b2ParticleSystem.SolveViscous_s_v = new b2_math_js_1.b2Vec2();
-b2ParticleSystem.SolveViscous_s_f = new b2_math_js_1.b2Vec2();
-b2ParticleSystem.SolveRepulsive_s_f = new b2_math_js_1.b2Vec2();
-b2ParticleSystem.SolvePowder_s_f = new b2_math_js_1.b2Vec2();
-b2ParticleSystem.SolveSolid_s_f = new b2_math_js_1.b2Vec2();
-b2ParticleSystem.RemoveSpuriousBodyContacts_s_n = new b2_math_js_1.b2Vec2();
-b2ParticleSystem.RemoveSpuriousBodyContacts_s_pos = new b2_math_js_1.b2Vec2();
-b2ParticleSystem.RemoveSpuriousBodyContacts_s_normal = new b2_math_js_1.b2Vec2();
+ * All particle types that apply extra damping force with bodies
+ */
+b2ParticleSystem.k_extraDampingFlags = b2_particle_1.b2ParticleFlag.b2_staticPressureParticle;
+b2ParticleSystem.k_barrierWallFlags = b2_particle_1.b2ParticleFlag.b2_barrierParticle | b2_particle_1.b2ParticleFlag.b2_wallParticle;
+b2ParticleSystem.CreateParticlesStrokeShapeForGroup_s_edge = new b2_edge_shape_1.b2EdgeShape();
+b2ParticleSystem.CreateParticlesStrokeShapeForGroup_s_d = new b2_math_1.b2Vec2();
+b2ParticleSystem.CreateParticlesStrokeShapeForGroup_s_p = new b2_math_1.b2Vec2();
+b2ParticleSystem.CreateParticlesFillShapeForGroup_s_aabb = new b2_collision_1.b2AABB();
+b2ParticleSystem.CreateParticlesFillShapeForGroup_s_p = new b2_math_1.b2Vec2();
+b2ParticleSystem.UpdatePairsAndTriads_s_dab = new b2_math_1.b2Vec2();
+b2ParticleSystem.UpdatePairsAndTriads_s_dbc = new b2_math_1.b2Vec2();
+b2ParticleSystem.UpdatePairsAndTriads_s_dca = new b2_math_1.b2Vec2();
+b2ParticleSystem.AddContact_s_d = new b2_math_1.b2Vec2();
+b2ParticleSystem.UpdateBodyContacts_s_aabb = new b2_collision_1.b2AABB();
+b2ParticleSystem.Solve_s_subStep = new b2_time_step_1.b2TimeStep();
+b2ParticleSystem.SolveCollision_s_aabb = new b2_collision_1.b2AABB();
+b2ParticleSystem.SolveGravity_s_gravity = new b2_math_1.b2Vec2();
+b2ParticleSystem.SolveBarrier_s_aabb = new b2_collision_1.b2AABB();
+b2ParticleSystem.SolveBarrier_s_va = new b2_math_1.b2Vec2();
+b2ParticleSystem.SolveBarrier_s_vb = new b2_math_1.b2Vec2();
+b2ParticleSystem.SolveBarrier_s_pba = new b2_math_1.b2Vec2();
+b2ParticleSystem.SolveBarrier_s_vba = new b2_math_1.b2Vec2();
+b2ParticleSystem.SolveBarrier_s_vc = new b2_math_1.b2Vec2();
+b2ParticleSystem.SolveBarrier_s_pca = new b2_math_1.b2Vec2();
+b2ParticleSystem.SolveBarrier_s_vca = new b2_math_1.b2Vec2();
+b2ParticleSystem.SolveBarrier_s_qba = new b2_math_1.b2Vec2();
+b2ParticleSystem.SolveBarrier_s_qca = new b2_math_1.b2Vec2();
+b2ParticleSystem.SolveBarrier_s_dv = new b2_math_1.b2Vec2();
+b2ParticleSystem.SolveBarrier_s_f = new b2_math_1.b2Vec2();
+b2ParticleSystem.SolvePressure_s_f = new b2_math_1.b2Vec2();
+b2ParticleSystem.SolveDamping_s_v = new b2_math_1.b2Vec2();
+b2ParticleSystem.SolveDamping_s_f = new b2_math_1.b2Vec2();
+b2ParticleSystem.SolveRigidDamping_s_t0 = new b2_math_1.b2Vec2();
+b2ParticleSystem.SolveRigidDamping_s_t1 = new b2_math_1.b2Vec2();
+b2ParticleSystem.SolveRigidDamping_s_p = new b2_math_1.b2Vec2();
+b2ParticleSystem.SolveRigidDamping_s_v = new b2_math_1.b2Vec2();
+b2ParticleSystem.SolveExtraDamping_s_v = new b2_math_1.b2Vec2();
+b2ParticleSystem.SolveExtraDamping_s_f = new b2_math_1.b2Vec2();
+b2ParticleSystem.SolveRigid_s_position = new b2_math_1.b2Vec2();
+b2ParticleSystem.SolveRigid_s_rotation = new b2_math_1.b2Rot();
+b2ParticleSystem.SolveRigid_s_transform = new b2_math_1.b2Transform();
+b2ParticleSystem.SolveRigid_s_velocityTransform = new b2_math_1.b2Transform();
+b2ParticleSystem.SolveElastic_s_pa = new b2_math_1.b2Vec2();
+b2ParticleSystem.SolveElastic_s_pb = new b2_math_1.b2Vec2();
+b2ParticleSystem.SolveElastic_s_pc = new b2_math_1.b2Vec2();
+b2ParticleSystem.SolveElastic_s_r = new b2_math_1.b2Rot();
+b2ParticleSystem.SolveElastic_s_t0 = new b2_math_1.b2Vec2();
+b2ParticleSystem.SolveSpring_s_pa = new b2_math_1.b2Vec2();
+b2ParticleSystem.SolveSpring_s_pb = new b2_math_1.b2Vec2();
+b2ParticleSystem.SolveSpring_s_d = new b2_math_1.b2Vec2();
+b2ParticleSystem.SolveSpring_s_f = new b2_math_1.b2Vec2();
+b2ParticleSystem.SolveTensile_s_weightedNormal = new b2_math_1.b2Vec2();
+b2ParticleSystem.SolveTensile_s_s = new b2_math_1.b2Vec2();
+b2ParticleSystem.SolveTensile_s_f = new b2_math_1.b2Vec2();
+b2ParticleSystem.SolveViscous_s_v = new b2_math_1.b2Vec2();
+b2ParticleSystem.SolveViscous_s_f = new b2_math_1.b2Vec2();
+b2ParticleSystem.SolveRepulsive_s_f = new b2_math_1.b2Vec2();
+b2ParticleSystem.SolvePowder_s_f = new b2_math_1.b2Vec2();
+b2ParticleSystem.SolveSolid_s_f = new b2_math_1.b2Vec2();
+b2ParticleSystem.RemoveSpuriousBodyContacts_s_n = new b2_math_1.b2Vec2();
+b2ParticleSystem.RemoveSpuriousBodyContacts_s_pos = new b2_math_1.b2Vec2();
+b2ParticleSystem.RemoveSpuriousBodyContacts_s_normal = new b2_math_1.b2Vec2();
 class b2ParticleSystem_UserOverridableBuffer {
     constructor() {
         this._data = null;
         this.userSuppliedCapacity = 0;
     }
-    get data() { return this._data; } // HACK: may return null
-    set data(value) { this._data = value; }
+    get data() {
+        return this._data;
+    } // HACK: may return null
+    set data(value) {
+        this._data = value;
+    }
 }
 exports.b2ParticleSystem_UserOverridableBuffer = b2ParticleSystem_UserOverridableBuffer;
 class b2ParticleSystem_Proxy {
     constructor() {
-        this.index = b2_settings_js_1.b2_invalidParticleIndex;
+        this.index = b2_settings_1.b2_invalidParticleIndex;
         this.tag = 0;
     }
     static CompareProxyProxy(a, b) {
@@ -4375,12 +4383,12 @@ class b2ParticleSystem_Proxy {
 exports.b2ParticleSystem_Proxy = b2ParticleSystem_Proxy;
 class b2ParticleSystem_InsideBoundsEnumerator {
     /**
-   * InsideBoundsEnumerator enumerates all particles inside the
-   * given bounds.
-   *
-   * Construct an enumerator with bounds of tags and a range of
-   * proxies.
-   */
+     * InsideBoundsEnumerator enumerates all particles inside the
+     * given bounds.
+     *
+     * Construct an enumerator with bounds of tags and a range of
+     * proxies.
+     */
     constructor(system, lower, upper, first, last) {
         this.m_system = system;
         this.m_xLower = (lower & b2ParticleSystem.xMask) >>> 0;
@@ -4392,9 +4400,9 @@ class b2ParticleSystem_InsideBoundsEnumerator {
         // DEBUG: b2Assert(this.m_first <= this.m_last);
     }
     /**
-   * Get index of the next particle. Returns
-   * b2_invalidParticleIndex if there are no more particles.
-   */
+     * Get index of the next particle. Returns
+     * b2_invalidParticleIndex if there are no more particles.
+     */
     GetNext() {
         while (this.m_first < this.m_last) {
             const xTag = (this.m_system.m_proxyBuffer.data[this.m_first].tag & b2ParticleSystem.xMask) >>> 0;
@@ -4408,24 +4416,24 @@ class b2ParticleSystem_InsideBoundsEnumerator {
             }
             this.m_first++;
         }
-        return b2_settings_js_1.b2_invalidParticleIndex;
+        return b2_settings_1.b2_invalidParticleIndex;
     }
 }
 exports.b2ParticleSystem_InsideBoundsEnumerator = b2ParticleSystem_InsideBoundsEnumerator;
 class b2ParticleSystem_ParticleListNode {
     constructor() {
         /**
-       * The next node in the list.
-       */
+         * The next node in the list.
+         */
         this.next = null;
         /**
-       * Number of entries in the list. Valid only for the node at the
-       * head of the list.
-       */
+         * Number of entries in the list. Valid only for the node at the
+         * head of the list.
+         */
         this.count = 0;
         /**
-       * Particle index.
-       */
+         * Particle index.
+         */
         this.index = 0;
     }
 }
@@ -4463,7 +4471,7 @@ class b2ParticleSystem_FixedSetAllocator {
 exports.b2ParticleSystem_FixedSetAllocator = b2ParticleSystem_FixedSetAllocator;
 class b2ParticleSystem_FixtureParticle {
     constructor(fixture, particle) {
-        this.second = b2_settings_js_1.b2_invalidParticleIndex;
+        this.second = b2_settings_1.b2_invalidParticleIndex;
         this.first = fixture;
         this.second = particle;
     }
@@ -4475,14 +4483,14 @@ class b2ParticleSystem_FixtureParticleSet extends b2ParticleSystem_FixedSetAlloc
     }
     Find(pair) {
         // TODO
-        return b2_settings_js_1.b2_invalidParticleIndex;
+        return b2_settings_1.b2_invalidParticleIndex;
     }
 }
 exports.b2ParticleSystem_FixtureParticleSet = b2ParticleSystem_FixtureParticleSet;
 class b2ParticleSystem_ParticlePair {
     constructor(particleA, particleB) {
-        this.first = b2_settings_js_1.b2_invalidParticleIndex;
-        this.second = b2_settings_js_1.b2_invalidParticleIndex;
+        this.first = b2_settings_1.b2_invalidParticleIndex;
+        this.second = b2_settings_1.b2_invalidParticleIndex;
         this.first = particleA;
         this.second = particleB;
     }
@@ -4494,34 +4502,34 @@ class b2ParticlePairSet extends b2ParticleSystem_FixedSetAllocator {
     }
     Find(pair) {
         // TODO
-        return b2_settings_js_1.b2_invalidParticleIndex;
+        return b2_settings_1.b2_invalidParticleIndex;
     }
 }
 exports.b2ParticlePairSet = b2ParticlePairSet;
 class b2ParticleSystem_ConnectionFilter {
     /**
-   * Is the particle necessary for connection?
-   * A pair or a triad should contain at least one 'necessary'
-   * particle.
-   */
+     * Is the particle necessary for connection?
+     * A pair or a triad should contain at least one 'necessary'
+     * particle.
+     */
     IsNecessary(index) {
         return true;
     }
     /**
-   * An additional condition for creating a pair.
-   */
+     * An additional condition for creating a pair.
+     */
     ShouldCreatePair(a, b) {
         return true;
     }
     /**
-   * An additional condition for creating a triad.
-   */
+     * An additional condition for creating a triad.
+     */
     ShouldCreateTriad(a, b, c) {
         return true;
     }
 }
 exports.b2ParticleSystem_ConnectionFilter = b2ParticleSystem_ConnectionFilter;
-class b2ParticleSystem_DestroyParticlesInShapeCallback extends b2_world_callbacks_js_1.b2QueryCallback {
+class b2ParticleSystem_DestroyParticlesInShapeCallback extends b2_world_callbacks_1.b2QueryCallback {
     constructor(system, shape, xf, callDestructionListener) {
         super();
         this.m_callDestructionListener = false;
@@ -4558,24 +4566,24 @@ class b2ParticleSystem_JoinParticleGroupsFilter extends b2ParticleSystem_Connect
         this.m_threshold = threshold;
     }
     /**
-   * An additional condition for creating a pair.
-   */
+     * An additional condition for creating a pair.
+     */
     ShouldCreatePair(a, b) {
         return (a < this.m_threshold && this.m_threshold <= b) ||
             (b < this.m_threshold && this.m_threshold <= a);
     }
     /**
-   * An additional condition for creating a triad.
-   */
+     * An additional condition for creating a triad.
+     */
     ShouldCreateTriad(a, b, c) {
         return (a < this.m_threshold || b < this.m_threshold || c < this.m_threshold) &&
             (this.m_threshold <= a || this.m_threshold <= b || this.m_threshold <= c);
     }
 }
 exports.b2ParticleSystem_JoinParticleGroupsFilter = b2ParticleSystem_JoinParticleGroupsFilter;
-class b2ParticleSystem_CompositeShape extends b2_shape_js_1.b2Shape {
+class b2ParticleSystem_CompositeShape extends b2_shape_1.b2Shape {
     constructor(shapes, shapeCount = shapes.length) {
-        super(b2_shape_js_1.b2ShapeType.e_unknown, 0);
+        super(b2_shape_1.b2ShapeType.e_unknown, 0);
         this.m_shapeCount = 0;
         this.m_shapes = shapes;
         this.m_shapeCount = shapeCount;
@@ -4588,8 +4596,8 @@ class b2ParticleSystem_CompositeShape extends b2_shape_js_1.b2Shape {
         return 1;
     }
     /**
-   * @see b2Shape::TestPoint
-   */
+     * @see b2Shape::TestPoint
+     */
     TestPoint(xf, p) {
         for (let i = 0; i < this.m_shapeCount; i++) {
             if (this.m_shapes[i].TestPoint(xf, p)) {
@@ -4599,28 +4607,28 @@ class b2ParticleSystem_CompositeShape extends b2_shape_js_1.b2Shape {
         return false;
     }
     /**
-   * @see b2Shape::ComputeDistance
-   */
+     * @see b2Shape::ComputeDistance
+     */
     ComputeDistance(xf, p, normal, childIndex) {
         // DEBUG: b2Assert(false);
         return 0;
     }
     /**
-   * Implement b2Shape.
-   */
+     * Implement b2Shape.
+     */
     RayCast(output, input, xf, childIndex) {
         // DEBUG: b2Assert(false);
         return false;
     }
     /**
-   * @see b2Shape::ComputeAABB
-   */
+     * @see b2Shape::ComputeAABB
+     */
     ComputeAABB(aabb, xf, childIndex) {
-        const s_subaabb = new b2_collision_js_1.b2AABB();
-        aabb.lowerBound.x = +b2_settings_js_1.b2_maxFloat;
-        aabb.lowerBound.y = +b2_settings_js_1.b2_maxFloat;
-        aabb.upperBound.x = -b2_settings_js_1.b2_maxFloat;
-        aabb.upperBound.y = -b2_settings_js_1.b2_maxFloat;
+        const s_subaabb = new b2_collision_1.b2AABB();
+        aabb.lowerBound.x = +b2_settings_1.b2_maxFloat;
+        aabb.lowerBound.y = +b2_settings_1.b2_maxFloat;
+        aabb.upperBound.x = -b2_settings_1.b2_maxFloat;
+        aabb.upperBound.y = -b2_settings_1.b2_maxFloat;
         // DEBUG: b2Assert(childIndex === 0);
         for (let i = 0; i < this.m_shapeCount; i++) {
             const childCount = this.m_shapes[i].GetChildCount();
@@ -4632,8 +4640,8 @@ class b2ParticleSystem_CompositeShape extends b2_shape_js_1.b2Shape {
         }
     }
     /**
-   * @see b2Shape::ComputeMass
-   */
+     * @see b2Shape::ComputeMass
+     */
     ComputeMass(massData, density) {
         // DEBUG: b2Assert(false);
     }
@@ -4655,7 +4663,7 @@ class b2ParticleSystem_ReactiveFilter extends b2ParticleSystem_ConnectionFilter 
         this.m_flagsBuffer = flagsBuffer;
     }
     IsNecessary(index) {
-        return (this.m_flagsBuffer.data[index] & b2_particle_js_1.b2ParticleFlag.b2_reactiveParticle) !== 0;
+        return (this.m_flagsBuffer.data[index] & b2_particle_1.b2ParticleFlag.b2_reactiveParticle) !== 0;
     }
 }
 exports.b2ParticleSystem_ReactiveFilter = b2ParticleSystem_ReactiveFilter;
@@ -4671,7 +4679,7 @@ class b2ParticleSystem_UpdateBodyContactsCallback extends b2FixtureParticleQuery
         // be performed, false otherwise.
         if (this.m_contactFilter) {
             const flags = this.m_system.GetFlagsBuffer();
-            if (flags[particleIndex] & b2_particle_js_1.b2ParticleFlag.b2_fixtureContactFilterParticle) {
+            if (flags[particleIndex] & b2_particle_1.b2ParticleFlag.b2_fixtureContactFilterParticle) {
                 return this.m_contactFilter.ShouldCollideFixtureParticle(fixture, this.m_system, particleIndex);
             }
         }
@@ -4691,10 +4699,10 @@ class b2ParticleSystem_UpdateBodyContactsCallback extends b2FixtureParticleQuery
             const invBm = bm > 0 ? 1 / bm : 0;
             const invBI = bI > 0 ? 1 / bI : 0;
             const invAm = this.m_system.m_flagsBuffer.data[a] &
-                b2_particle_js_1.b2ParticleFlag.b2_wallParticle ? 0 : this.m_system.GetParticleInvMass();
+                b2_particle_1.b2ParticleFlag.b2_wallParticle ? 0 : this.m_system.GetParticleInvMass();
             ///b2Vec2 rp = ap - bp;
-            const rp = b2_math_js_1.b2Vec2.SubVV(ap, bp, s_rp);
-            const rpn = b2_math_js_1.b2Vec2.CrossVV(rp, n);
+            const rp = b2_math_1.b2Vec2.SubVV(ap, bp, s_rp);
+            const rpn = b2_math_1.b2Vec2.CrossVV(rp, n);
             const invM = invAm + invBm + invBI * rpn * rpn;
             ///b2ParticleBodyContact& contact = m_system.m_bodyContactBuffer.Append();
             const contact = this.m_system.m_bodyContactBuffer.data[this.m_system.m_bodyContactBuffer.Append()];
@@ -4710,8 +4718,8 @@ class b2ParticleSystem_UpdateBodyContactsCallback extends b2FixtureParticleQuery
     }
 }
 exports.b2ParticleSystem_UpdateBodyContactsCallback = b2ParticleSystem_UpdateBodyContactsCallback;
-b2ParticleSystem_UpdateBodyContactsCallback.ReportFixtureAndParticle_s_n = new b2_math_js_1.b2Vec2();
-b2ParticleSystem_UpdateBodyContactsCallback.ReportFixtureAndParticle_s_rp = new b2_math_js_1.b2Vec2();
+b2ParticleSystem_UpdateBodyContactsCallback.ReportFixtureAndParticle_s_n = new b2_math_1.b2Vec2();
+b2ParticleSystem_UpdateBodyContactsCallback.ReportFixtureAndParticle_s_rp = new b2_math_1.b2Vec2();
 class b2ParticleSystem_SolveCollisionCallback extends b2FixtureParticleQueryCallback {
     constructor(system, step) {
         super(system); // base class constructor
@@ -4732,38 +4740,38 @@ class b2ParticleSystem_SolveCollisionCallback extends b2FixtureParticleQueryCall
         if (this.m_system.m_iterationIndex === 0) {
             // Put 'ap' in the local space of the previous frame
             ///b2Vec2 p1 = b2MulT(body.m_xf0, ap);
-            const p1 = b2_math_js_1.b2Transform.MulTXV(body.m_xf0, ap, s_p1);
-            if (fixture.GetShape().GetType() === b2_shape_js_1.b2ShapeType.e_circleShape) {
+            const p1 = b2_math_1.b2Transform.MulTXV(body.m_xf0, ap, s_p1);
+            if (fixture.GetShape().GetType() === b2_shape_1.b2ShapeType.e_circleShape) {
                 // Make relative to the center of the circle
                 ///p1 -= body.GetLocalCenter();
                 p1.SelfSub(body.GetLocalCenter());
                 // Re-apply rotation about the center of the circle
                 ///p1 = b2Mul(body.m_xf0.q, p1);
-                b2_math_js_1.b2Rot.MulRV(body.m_xf0.q, p1, p1);
+                b2_math_1.b2Rot.MulRV(body.m_xf0.q, p1, p1);
                 // Subtract rotation of the current frame
                 ///p1 = b2MulT(body.m_xf.q, p1);
-                b2_math_js_1.b2Rot.MulTRV(body.m_xf.q, p1, p1);
+                b2_math_1.b2Rot.MulTRV(body.m_xf.q, p1, p1);
                 // Return to local space
                 ///p1 += body.GetLocalCenter();
                 p1.SelfAdd(body.GetLocalCenter());
             }
             // Return to global space and apply rotation of current frame
             ///input.p1 = b2Mul(body.m_xf, p1);
-            b2_math_js_1.b2Transform.MulXV(body.m_xf, p1, input.p1);
+            b2_math_1.b2Transform.MulXV(body.m_xf, p1, input.p1);
         }
         else {
             ///input.p1 = ap;
             input.p1.Copy(ap);
         }
         ///input.p2 = ap + m_step.dt * av;
-        b2_math_js_1.b2Vec2.AddVMulSV(ap, this.m_step.dt, av, input.p2);
+        b2_math_1.b2Vec2.AddVMulSV(ap, this.m_step.dt, av, input.p2);
         input.maxFraction = 1;
         if (fixture.RayCast(output, input, childIndex)) {
             const n = output.normal;
             ///b2Vec2 p = (1 - output.fraction) * input.p1 + output.fraction * input.p2 + b2_linearSlop * n;
             const p = s_p;
-            p.x = (1 - output.fraction) * input.p1.x + output.fraction * input.p2.x + b2_settings_js_1.b2_linearSlop * n.x;
-            p.y = (1 - output.fraction) * input.p1.y + output.fraction * input.p2.y + b2_settings_js_1.b2_linearSlop * n.y;
+            p.x = (1 - output.fraction) * input.p1.x + output.fraction * input.p2.x + b2_settings_1.b2_linearSlop * n.x;
+            p.y = (1 - output.fraction) * input.p1.y + output.fraction * input.p2.y + b2_settings_1.b2_linearSlop * n.y;
             ///b2Vec2 v = m_step.inv_dt * (p - ap);
             const v = s_v;
             v.x = this.m_step.inv_dt * (p.x - ap.x);
@@ -4782,10 +4790,10 @@ class b2ParticleSystem_SolveCollisionCallback extends b2FixtureParticleQueryCall
     }
 }
 exports.b2ParticleSystem_SolveCollisionCallback = b2ParticleSystem_SolveCollisionCallback;
-b2ParticleSystem_SolveCollisionCallback.ReportFixtureAndParticle_s_p1 = new b2_math_js_1.b2Vec2();
-b2ParticleSystem_SolveCollisionCallback.ReportFixtureAndParticle_s_output = new b2_collision_js_1.b2RayCastOutput();
-b2ParticleSystem_SolveCollisionCallback.ReportFixtureAndParticle_s_input = new b2_collision_js_1.b2RayCastInput();
-b2ParticleSystem_SolveCollisionCallback.ReportFixtureAndParticle_s_p = new b2_math_js_1.b2Vec2();
-b2ParticleSystem_SolveCollisionCallback.ReportFixtureAndParticle_s_v = new b2_math_js_1.b2Vec2();
-b2ParticleSystem_SolveCollisionCallback.ReportFixtureAndParticle_s_f = new b2_math_js_1.b2Vec2();
+b2ParticleSystem_SolveCollisionCallback.ReportFixtureAndParticle_s_p1 = new b2_math_1.b2Vec2();
+b2ParticleSystem_SolveCollisionCallback.ReportFixtureAndParticle_s_output = new b2_collision_1.b2RayCastOutput();
+b2ParticleSystem_SolveCollisionCallback.ReportFixtureAndParticle_s_input = new b2_collision_1.b2RayCastInput();
+b2ParticleSystem_SolveCollisionCallback.ReportFixtureAndParticle_s_p = new b2_math_1.b2Vec2();
+b2ParticleSystem_SolveCollisionCallback.ReportFixtureAndParticle_s_v = new b2_math_1.b2Vec2();
+b2ParticleSystem_SolveCollisionCallback.ReportFixtureAndParticle_s_f = new b2_math_1.b2Vec2();
 // #endif

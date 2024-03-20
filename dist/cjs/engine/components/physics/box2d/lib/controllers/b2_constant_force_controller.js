@@ -19,18 +19,18 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.b2ConstantForceController = void 0;
 // #if B2_ENABLE_CONTROLLER
-const b2_controller_js_1 = require("./b2_controller.js");
-const b2_math_js_1 = require("../common/b2_math.js");
+const b2_controller_1 = require("./b2_controller");
+const b2_math_1 = require("../common/b2_math");
 /**
  * Applies a force every frame
  */
-class b2ConstantForceController extends b2_controller_js_1.b2Controller {
+class b2ConstantForceController extends b2_controller_1.b2Controller {
     constructor() {
         super(...arguments);
         /**
-       * The force to apply
-       */
-        this.F = new b2_math_js_1.b2Vec2(0, 0);
+         * The force to apply
+         */
+        this.F = new b2_math_1.b2Vec2(0, 0);
     }
     Step(step) {
         for (let i = this.m_bodyList; i; i = i.nextBody) {
@@ -41,7 +41,8 @@ class b2ConstantForceController extends b2_controller_js_1.b2Controller {
             body.ApplyForce(this.F, body.GetWorldCenter());
         }
     }
-    Draw(draw) { }
+    Draw(draw) {
+    }
 }
 exports.b2ConstantForceController = b2ConstantForceController;
 // #endif

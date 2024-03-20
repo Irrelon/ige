@@ -1,4 +1,4 @@
-import type { IgeTexture } from "../export/exports.js"
+import type { IgeTexture } from "../engine/core/IgeTexture.js"
 export interface IgeCanvas extends OffscreenCanvas {
     _igeTextures: IgeTexture[];
     _loaded: boolean;

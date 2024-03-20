@@ -1,5 +1,4 @@
 import { circleIntersectsRect, rectIntersectsPolygon, rectIntersectsRect } from "../utils/intersections.js"
-import {} from "../../export/exports.js"
 /**
  * Creates a new rectangle (x, y, width, height).
  */

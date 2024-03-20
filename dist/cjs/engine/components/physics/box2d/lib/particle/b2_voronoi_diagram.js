@@ -20,9 +20,9 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.b2VoronoiDiagram_Task = exports.b2VoronoiDiagram_Generator = exports.b2VoronoiDiagram = void 0;
 // #if B2_ENABLE_PARTICLE
 // DEBUG: import { b2Assert } from "../common/b2_settings.js"
-const b2_settings_js_1 = require("../common/b2_settings.js");
-const b2_math_js_1 = require("../common/b2_math.js");
-const b2_stack_queue_js_1 = require("./b2_stack_queue.js");
+const b2_settings_1 = require("../common/b2_settings");
+const b2_math_1 = require("../common/b2_math");
+const b2_stack_queue_1 = require("./b2_stack_queue");
 /**
  * A field representing the nearest generator from each point.
  */
@@ -33,16 +33,16 @@ class b2VoronoiDiagram {
         this.m_countX = 0;
         this.m_countY = 0;
         this.m_diagram = [];
-        this.m_generatorBuffer = (0, b2_settings_js_1.b2MakeArray)(generatorCapacity, (index) => new b2VoronoiDiagram_Generator());
+        this.m_generatorBuffer = (0, b2_settings_1.b2MakeArray)(generatorCapacity, (index) => new b2VoronoiDiagram_Generator());
         this.m_generatorCapacity = generatorCapacity;
     }
     /**
-   * Add a generator.
-   *
-   * @param center the position of the generator.
-   * @param tag a tag used to identify the generator in callback functions.
-   * @param necessary whether to callback for nodes associated with the generator.
-   */
+     * Add a generator.
+     *
+     * @param center the position of the generator.
+     * @param tag a tag used to identify the generator in callback functions.
+     * @param necessary whether to callback for nodes associated with the generator.
+     */
     AddGenerator(center, tag, necessary) {
         // DEBUG: b2Assert(this.m_generatorCount < this.m_generatorCapacity);
         const g = this.m_generatorBuffer[this.m_generatorCount++];
@@ -51,22 +51,22 @@ class b2VoronoiDiagram {
         g.necessary = necessary;
     }
     /**
-   * Generate the Voronoi diagram. It is rasterized with a given
-   * interval in the same range as the necessary generators exist.
-   *
-   * @param radius the interval of the diagram.
-   * @param margin margin for which the range of the diagram is extended.
-   */
+     * Generate the Voronoi diagram. It is rasterized with a given
+     * interval in the same range as the necessary generators exist.
+     *
+     * @param radius the interval of the diagram.
+     * @param margin margin for which the range of the diagram is extended.
+     */
     Generate(radius, margin) {
         const inverseRadius = 1 / radius;
-        const lower = new b2_math_js_1.b2Vec2(+b2_settings_js_1.b2_maxFloat, +b2_settings_js_1.b2_maxFloat);
-        const upper = new b2_math_js_1.b2Vec2(-b2_settings_js_1.b2_maxFloat, -b2_settings_js_1.b2_maxFloat);
+        const lower = new b2_math_1.b2Vec2(+b2_settings_1.b2_maxFloat, +b2_settings_1.b2_maxFloat);
+        const upper = new b2_math_1.b2Vec2(-b2_settings_1.b2_maxFloat, -b2_settings_1.b2_maxFloat);
         let necessary_count = 0;
         for (let k = 0; k < this.m_generatorCount; k++) {
             const g = this.m_generatorBuffer[k];
             if (g.necessary) {
-                b2_math_js_1.b2Vec2.MinV(lower, g.center, lower);
-                b2_math_js_1.b2Vec2.MaxV(upper, g.center, upper);
+                b2_math_1.b2Vec2.MinV(lower, g.center, lower);
+                b2_math_1.b2Vec2.MaxV(upper, g.center, upper);
                 ++necessary_count;
             }
         }
@@ -85,7 +85,7 @@ class b2VoronoiDiagram {
         this.m_diagram = []; // b2MakeArray(this.m_countX * this.m_countY, (index) => null);
         // (4 * m_countX * m_countY) is the queue capacity that is experimentally
         // known to be necessary and sufficient for general particle distributions.
-        const queue = new b2_stack_queue_js_1.b2StackQueue(4 * this.m_countX * this.m_countY);
+        const queue = new b2_stack_queue_1.b2StackQueue(4 * this.m_countX * this.m_countY);
         for (let k = 0; k < this.m_generatorCount; k++) {
             const g = this.m_generatorBuffer[k];
             ///  g.center = inverseRadius * (g.center - lower);
@@ -176,9 +176,9 @@ class b2VoronoiDiagram {
         }
     }
     /**
-   * Enumerate all nodes that contain at least one necessary
-   * generator.
-   */
+     * Enumerate all nodes that contain at least one necessary
+     * generator.
+     */
     GetNodes(callback) {
         for (let y = 0; y < this.m_countY - 1; y++) {
             for (let x = 0; x < this.m_countX - 1; x++) {
@@ -204,7 +204,7 @@ class b2VoronoiDiagram {
 exports.b2VoronoiDiagram = b2VoronoiDiagram;
 class b2VoronoiDiagram_Generator {
     constructor() {
-        this.center = new b2_math_js_1.b2Vec2();
+        this.center = new b2_math_1.b2Vec2();
         this.tag = 0;
         this.necessary = false;
     }

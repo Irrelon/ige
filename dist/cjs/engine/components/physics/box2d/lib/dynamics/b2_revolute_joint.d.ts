@@ -30,6 +30,22 @@ export declare class b2RevoluteJointDef extends b2JointDef implements b2IRevolut
     Initialize(bA: b2Body, bB: b2Body, anchor: XY): void;
 }
 export declare class b2RevoluteJoint extends b2Joint {
+    private static InitVelocityConstraints_s_P;
+    private static SolveVelocityConstraints_s_Cdot_v2;
+    private static SolveVelocityConstraints_s_impulse_v2;
+    private static SolvePositionConstraints_s_C_v2;
+    private static SolvePositionConstraints_s_impulse;
+    private static Draw_s_pA;
+    private static Draw_s_pB;
+    private static Draw_s_c1;
+    private static Draw_s_c2;
+    private static Draw_s_c3;
+    private static Draw_s_c4;
+    private static Draw_s_c5;
+    private static Draw_s_color_;
+    private static Draw_s_r;
+    private static Draw_s_rlo;
+    private static Draw_s_rhi;
     readonly m_localAnchorA: b2Vec2;
     readonly m_localAnchorB: b2Vec2;
     readonly m_impulse: b2Vec2;
@@ -61,13 +77,8 @@ export declare class b2RevoluteJoint extends b2Joint {
     readonly m_lalcA: b2Vec2;
     readonly m_lalcB: b2Vec2;
     constructor(def: b2IRevoluteJointDef);
-    private static InitVelocityConstraints_s_P;
     InitVelocityConstraints(data: b2SolverData): void;
-    private static SolveVelocityConstraints_s_Cdot_v2;
-    private static SolveVelocityConstraints_s_impulse_v2;
     SolveVelocityConstraints(data: b2SolverData): void;
-    private static SolvePositionConstraints_s_C_v2;
-    private static SolvePositionConstraints_s_impulse;
     SolvePositionConstraints(data: b2SolverData): boolean;
     GetAnchorA<T extends XY>(out: T): T;
     GetAnchorB<T extends XY>(out: T): T;
@@ -91,16 +102,5 @@ export declare class b2RevoluteJoint extends b2Joint {
     SetLimits(lower: number, upper: number): void;
     SetMotorSpeed(speed: number): void;
     Dump(log: (format: string, ...args: any[]) => void): void;
-    private static Draw_s_pA;
-    private static Draw_s_pB;
-    private static Draw_s_c1;
-    private static Draw_s_c2;
-    private static Draw_s_c3;
-    private static Draw_s_c4;
-    private static Draw_s_c5;
-    private static Draw_s_color_;
-    private static Draw_s_r;
-    private static Draw_s_rlo;
-    private static Draw_s_rhi;
     Draw(draw: b2Draw): void;
 }

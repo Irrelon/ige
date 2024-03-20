@@ -1,8 +1,7 @@
-// TODO: Doc this class!
-import { ige } from "../../export/exports.js"
-import { IgeBehaviourType } from "../../export/exports.js"
-import { IgeComponent } from "../../export/exports.js"
-import { IgePoint3d } from "../../export/exports.js"
+import { IgeComponent } from "../core/IgeComponent.js"
+import { IgePoint3d } from "../core/IgePoint3d.js"
+import { ige } from "../instance.js"
+import { IgeBehaviourType } from "../../enums/index.js"
 export class IgeVelocityComponent extends IgeComponent {
     classId = "IgeVelocityComponent";
     componentId = "velocity";

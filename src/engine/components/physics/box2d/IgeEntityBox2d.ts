@@ -1,15 +1,17 @@
-import type { IgeEventListenerCallback } from "@/export/exports";
-import { ige } from "@/export/exports";
-import type { IgeBox2dController } from "@/export/exports";
-import { igeBox2dContactEntityA, igeBox2dContactEntityB } from "@/export/exports";
-import { b2Vec2 } from "@/export/exports";
-import type { b2Body } from "@/export/exports";
-import type { b2Contact } from "@/export/exports";
-import type { b2Fixture } from "@/export/exports";
-import type { b2ContactListener } from "@/export/exports";
-import { IgeEntity } from "@/export/exports";
-import type { IgeBox2dBodyDef } from "@/export/exports";
-import type { IgeCanvasRenderingContext2d } from "@/export/exports";
+import {
+	igeBox2dContactEntityA,
+	igeBox2dContactEntityB
+} from "@/engine/components/physics/box2d/igeBox2dContactHelpers";
+import { IgeBox2dController } from "@/engine/components/physics/box2d/IgeBox2dController";
+import { b2Vec2 } from "@/engine/components/physics/box2d/lib/common/b2_math";
+import { b2Body } from "@/engine/components/physics/box2d/lib/dynamics/b2_body";
+import { b2Contact } from "@/engine/components/physics/box2d/lib/dynamics/b2_contact";
+import { b2Fixture } from "@/engine/components/physics/box2d/lib/dynamics/b2_fixture";
+import { b2ContactListener } from "@/engine/components/physics/box2d/lib/dynamics/b2_world_callbacks";
+import { IgeEntity } from "@/engine/core/IgeEntity";
+import { IgeEventListenerCallback } from "@/engine/core/IgeEventingClass";
+import { ige } from "@/engine/instance";
+import { IgeBox2dBodyDef } from "@/types/IgeBox2dBodyDef";
 
 export interface IgeEntityBox2dCollisionListener {
 	type: number;

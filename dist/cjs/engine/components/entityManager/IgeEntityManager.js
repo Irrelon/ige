@@ -1,12 +1,10 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.IgeEntityManager = void 0;
-const exports_1 = require("../../../export/exports.js");
-const exports_2 = require("../../../export/exports.js");
-const exports_3 = require("../../../export/exports.js");
-const exports_4 = require("../../../export/exports.js");
-const exports_5 = require("../../../export/exports.js");
-const exports_6 = require("../../../export/exports.js");
+const IgeComponent_1 = require("../../core/IgeComponent.js");
+const instance_1 = require("../../instance.js");
+const arrays_1 = require("../../utils/arrays.js");
+const enums_1 = require("../../../enums/index.js");
 /**
  * This component should be mounted to a parent entity such as an IgeScene2d but can
  * be mounted to any instance that extends IgeEntity.
@@ -15,7 +13,7 @@ const exports_6 = require("../../../export/exports.js");
  * ensure they are still inside the visible area of any viewport. If not they are
  * unmounted until they come back into view and are then mounted again.
  */
-class IgeEntityManager extends exports_2.IgeComponent {
+class IgeEntityManager extends IgeComponent_1.IgeComponent {
     constructor(entity, options) {
         super(entity, options);
         this.classId = "IgeEntityManager";
@@ -57,7 +55,7 @@ class IgeEntityManager extends exports_2.IgeComponent {
          */
         this._updateOrphans = () => {
             const arr = this._entity._children;
-            const viewportArr = exports_3.ige.engine._children;
+            const viewportArr = instance_1.ige.engine._children;
             const vpCount = viewportArr.length;
             let arrCount = arr.length;
             while (arrCount--) {
@@ -65,8 +63,8 @@ class IgeEntityManager extends exports_2.IgeComponent {
                 if (item._managed) {
                     if (item.aabb) {
                         let itemAabb;
-                        if (item._renderMode === exports_5.IgeEntityRenderMode.iso ||
-                            (item._parent && item._parent._mountMode === exports_6.IgeMountMode.iso)) {
+                        if (item._renderMode === enums_1.IgeEntityRenderMode.iso ||
+                            (item._parent && item._parent._mountMode === enums_1.IgeMountMode.iso)) {
                             itemAabb = item.bounds3dPolygon().aabb();
                         }
                         else {
@@ -114,7 +112,7 @@ class IgeEntityManager extends exports_2.IgeComponent {
             let arrCount = arr.length;
             while (arrCount--) {
                 const item = arr[arrCount];
-                (0, exports_1.arrPull)(this._entity._orphans, item);
+                (0, arrays_1.arrPull)(this._entity._orphans, item);
                 item.mount(this._entity);
             }
             this._mountQueue = [];
@@ -136,7 +134,7 @@ class IgeEntityManager extends exports_2.IgeComponent {
         // Create the _orphans array on the entity
         entity._orphans = [];
         // Set a method (behaviour) that will be called on every update
-        entity.addBehaviour(exports_4.IgeBehaviourType.preUpdate, "entityManager", this._updateBehaviour);
+        entity.addBehaviour(enums_1.IgeBehaviourType.preUpdate, "entityManager", this._updateBehaviour);
     }
     /**
      * Checks all the un-mounted entities of our component parent to see if they are
@@ -145,7 +143,7 @@ class IgeEntityManager extends exports_2.IgeComponent {
      */
     _updateChildren() {
         const arr = this._entity._orphans;
-        const viewportArr = exports_3.ige.engine._children;
+        const viewportArr = instance_1.ige.engine._children;
         const vpCount = viewportArr.length;
         let arrCount = arr.length;
         while (arrCount--) {
@@ -153,8 +151,8 @@ class IgeEntityManager extends exports_2.IgeComponent {
             if (item._managed) {
                 if (item.aabb) {
                     let itemAabb;
-                    if (item._renderMode === exports_5.IgeEntityRenderMode.iso ||
-                        (item._parent && item._parent._mountMode === exports_6.IgeMountMode.iso)) {
+                    if (item._renderMode === enums_1.IgeEntityRenderMode.iso ||
+                        (item._parent && item._parent._mountMode === enums_1.IgeMountMode.iso)) {
                         itemAabb = item.bounds3dPolygon().aabb();
                     }
                     else {

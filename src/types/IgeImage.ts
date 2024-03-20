@@ -1,5 +1,5 @@
-import type { IgeTexture } from "@/export/exports";
-import type { IgeCanvas } from "@/export/exports";
+import type { IgeTexture } from "@/engine/core/IgeTexture";
+import type { IgeCanvas } from "@/types/IgeCanvas";
 
 declare global {
 	interface ImageBitmap {

@@ -1,5 +1,5 @@
-import { IgeAssetRegister } from "@/export/exports";
-import type { IgeTexture } from "@/export/exports";
+import { IgeAssetRegister } from "@/engine/core/IgeAssetRegister";
+import type { IgeTexture } from "@/engine/core/IgeTexture";
 
 export class IgeTextureStore extends IgeAssetRegister<IgeTexture> {
 	_textureImageStore: Record<string, ImageBitmap> = {};

@@ -1,7 +1,8 @@
-import type { IgeFontSheet, IgeObject } from "@/export/exports";
-import { IgeFontEntity } from "@/export/exports";
-import { IgeUiElement } from "@/export/exports";
-import { registerClass } from "@/export/exports";
+import { IgeFontEntity } from "@/engine/core/IgeFontEntity";
+import type { IgeFontSheet } from "@/engine/core/IgeFontSheet";
+import type { IgeObject } from "@/engine/core/IgeObject";
+import { IgeUiElement } from "@/engine/core/IgeUiElement";
+import { registerClass } from "@/engine/utils/igeClassStore";
 
 /**
  * Provides a UI tooltip. Change properties (textBox, fonts, backgroundcolor)
@@ -83,8 +84,8 @@ export class IgeUiTooltip extends IgeUiElement {
 	 * @param noUpdate
 	 * @return {*}
 	 */
-	width(px: number | string, lockAspect?: boolean, modifier?: number, noUpdate?: boolean): this;
-	width(): number;
+	width (px: number | string, lockAspect?: boolean, modifier?: number, noUpdate?: boolean): this;
+	width (): number;
 	width (px?: number | string, lockAspect = false, modifier?: number, noUpdate = false) {
 		let val: number | this;
 
@@ -111,8 +112,8 @@ export class IgeUiTooltip extends IgeUiElement {
 	 * @param noUpdate
 	 * @return {*}
 	 */
-	height(px: number | string, lockAspect?: boolean, modifier?: number, noUpdate?: boolean): this;
-	height(): number;
+	height (px: number | string, lockAspect?: boolean, modifier?: number, noUpdate?: boolean): this;
+	height (): number;
 	height (px?: number | string, lockAspect: boolean = false, modifier?: number, noUpdate: boolean = false) {
 		let val: number | this;
 

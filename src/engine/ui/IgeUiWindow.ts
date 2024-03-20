@@ -1,11 +1,11 @@
-import type { IgePoint3d } from "@/export/exports";
-import { registerClass } from "@/export/exports";
-import { IgeUiButton } from "@/export/exports";
-import { IgeUiLabel } from "@/export/exports";
-import { ige } from "@/export/exports";
-import { IgeEventReturnFlag } from "@/export/exports";
-import { IgeUiElement } from "@/export/exports";
-import type { IgeUiManagerController } from "@/export/exports";
+import type { IgePoint3d } from "@/engine/core/IgePoint3d";
+import { IgeUiElement } from "@/engine/core/IgeUiElement";
+import type { IgeUiManagerController } from "@/engine/core/IgeUiManagerController";
+import { ige } from "@/engine/instance";
+import { IgeUiButton } from "@/engine/ui/IgeUiButton";
+import { IgeUiLabel } from "@/engine/ui/IgeUiLabel";
+import { registerClass } from "@/engine/utils/igeClassStore";
+import { IgeEventReturnFlag } from "@/enums";
 
 export class IgeUiWindow extends IgeUiElement {
 	classId = "IgeUiWindow";

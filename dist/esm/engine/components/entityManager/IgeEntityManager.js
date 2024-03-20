@@ -1,9 +1,7 @@
-import { arrPull } from "../../../export/exports.js"
-import { IgeComponent } from "../../../export/exports.js"
-import { ige } from "../../../export/exports.js"
-import { IgeBehaviourType } from "../../../export/exports.js"
-import { IgeEntityRenderMode } from "../../../export/exports.js"
-import { IgeMountMode } from "../../../export/exports.js"
+import { IgeComponent } from "../../core/IgeComponent.js"
+import { ige } from "../../instance.js"
+import { arrPull } from "../../utils/arrays.js"
+import { IgeBehaviourType, IgeEntityRenderMode, IgeMountMode } from "../../../enums/index.js"
 /**
  * This component should be mounted to a parent entity such as an IgeScene2d but can
  * be mounted to any instance that extends IgeEntity.

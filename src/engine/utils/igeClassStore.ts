@@ -1,4 +1,4 @@
-import type { IgeGenericClass } from "@/export/exports";
+import type { IgeGenericClass } from "@/types/IgeGenericClass";
 
 export const igeClassStore: Record<string, IgeGenericClass> = {};
 export const registerClass = (cls: IgeGenericClass) => {

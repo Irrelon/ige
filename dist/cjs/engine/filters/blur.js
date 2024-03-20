@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.blur = void 0;
-const exports_1 = require("../../export/exports.js");
+const igeFilters_1 = require("../utils/igeFilters.js");
 const blur = function (canvas, ctx, originalImage, texture, data) {
     const oneNinth = 1 / 9;
     let strength = 1, loop, pixelData;
@@ -12,7 +12,7 @@ const blur = function (canvas, ctx, originalImage, texture, data) {
         strength = data.value;
     }
     for (loop = 0; loop < strength; loop++) {
-        pixelData = exports_1.igeFilters.helper._convolute(pixelData, [
+        pixelData = igeFilters_1.igeFilters.helper._convolute(pixelData, [
             oneNinth,
             oneNinth,
             oneNinth,
@@ -28,4 +28,4 @@ const blur = function (canvas, ctx, originalImage, texture, data) {
     ctx.putImageData(pixelData, 0, 0);
 };
 exports.blur = blur;
-exports_1.igeFilters.registerFilter("blur", exports.blur);
+igeFilters_1.igeFilters.registerFilter("blur", exports.blur);

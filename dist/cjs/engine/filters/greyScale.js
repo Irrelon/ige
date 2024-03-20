@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.greyScale = exports.greyScaleHelper = void 0;
-const exports_1 = require("../../export/exports.js");
+const igeFilters_1 = require("../utils/igeFilters.js");
 const greyScaleHelper = function (imageData) {
     const data = imageData.data;
     const dataLength = data.length;
@@ -29,4 +29,4 @@ const greyScale = function (canvas, ctx, originalImage, texture, data) {
     ctx.putImageData(imageData, 0, 0);
 };
 exports.greyScale = greyScale;
-exports_1.igeFilters.registerFilter("greyScale", exports.greyScale);
+igeFilters_1.igeFilters.registerFilter("greyScale", exports.greyScale);

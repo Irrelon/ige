@@ -1,11 +1,11 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.IgeTimeController = void 0;
-const exports_1 = require("../../export/exports.js");
-const exports_2 = require("../../export/exports.js");
-const exports_3 = require("../../export/exports.js");
-const exports_4 = require("../../export/exports.js");
-class IgeTimeController extends exports_2.IgeEventingClass {
+const IgeEventingClass_1 = require("./IgeEventingClass.js");
+const instance_1 = require("../instance.js");
+const arrays_1 = require("../utils/arrays.js");
+const enums_1 = require("../../enums/index.js");
+class IgeTimeController extends IgeEventingClass_1.IgeEventingClass {
     constructor() {
         super(...arguments);
         this.classId = "IgeTimeController";
@@ -28,7 +28,7 @@ class IgeTimeController extends exports_2.IgeEventingClass {
         this.removeTimer = (timer) => {
             if (timer) {
                 if (!this._updating) {
-                    (0, exports_1.arrPull)(this._timers, timer);
+                    (0, arrays_1.arrPull)(this._timers, timer);
                 }
                 else {
                     this._removals.push(timer);
@@ -38,7 +38,7 @@ class IgeTimeController extends exports_2.IgeEventingClass {
         };
         this._update = () => {
             // Get the ige tick delta and tell our timers / intervals that an update has occurred
-            const delta = exports_3.ige.engine._tickDelta;
+            const delta = instance_1.ige.engine._tickDelta;
             const arr = this._timers;
             let arrCount = arr.length;
             while (arrCount--) {
@@ -66,7 +66,7 @@ class IgeTimeController extends exports_2.IgeEventingClass {
             let arrCount = arr.length;
             if (arrCount) {
                 while (arrCount--) {
-                    (0, exports_1.arrPull)(this._timers, arr[arrCount]);
+                    (0, arrays_1.arrPull)(this._timers, arr[arrCount]);
                 }
                 this._removals = [];
             }
@@ -76,9 +76,9 @@ class IgeTimeController extends exports_2.IgeEventingClass {
     isReady() {
         return new Promise((resolve) => {
             setTimeout(() => {
-                exports_3.ige.dependencies.waitFor(["engine"], () => {
+                instance_1.ige.dependencies.waitFor(["engine"], () => {
                     // Add the time behaviour to the entity
-                    exports_3.ige.engine.addBehaviour(exports_4.IgeBehaviourType.preUpdate, "time", this._update);
+                    instance_1.ige.engine.addBehaviour(enums_1.IgeBehaviourType.preUpdate, "time", this._update);
                     resolve();
                 });
             }, 1);

@@ -1,8 +1,8 @@
-import type { IgeBox2dController } from "@/export/exports";
-import { ige } from "@/export/exports";
-import { IgeEntity } from "@/export/exports";
-import { registerClass } from "@/export/exports";
-import type { IgeCanvasRenderingContext2d } from "@/export/exports";
+import { IgeBox2dController } from "@/engine/components/physics/box2d/IgeBox2dController";
+import { IgeEntity } from "@/engine/core/IgeEntity";
+import { ige } from "@/engine/instance";
+import { registerClass } from "@/engine/utils/igeClassStore";
+import { IgeCanvasRenderingContext2d } from "@/types/IgeCanvasRenderingContext2d";
 
 // TODO: Check if this is still supported with the new version of Box2d we are using. Does DrawDebugData() need calling?
 export class IgeBox2dDebugPainter extends IgeEntity {

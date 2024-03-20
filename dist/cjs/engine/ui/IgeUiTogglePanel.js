@@ -1,10 +1,10 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.IgeUiTogglePanel = void 0;
-const exports_1 = require("../../export/exports.js");
-const exports_2 = require("../../export/exports.js");
-const exports_3 = require("../../export/exports.js");
-class IgeUiTogglePanel extends exports_2.IgeUiElement {
+const IgeFontEntity_1 = require("../core/IgeFontEntity.js");
+const IgeUiElement_1 = require("../core/IgeUiElement.js");
+const igeClassStore_1 = require("../utils/igeClassStore.js");
+class IgeUiTogglePanel extends IgeUiElement_1.IgeUiElement {
     constructor(title, titleTexture, toggleOffTexture, toggleOnTexture) {
         super();
         this.classId = "IgeUiTogglePanel";
@@ -12,10 +12,10 @@ class IgeUiTogglePanel extends exports_2.IgeUiElement {
         this._toggleState = false;
         this._toggleOffTexture = toggleOffTexture;
         this._toggleOnTexture = toggleOnTexture;
-        this._panelImage = new exports_2.IgeUiElement().id("panelImage");
+        this._panelImage = new IgeUiElement_1.IgeUiElement().id("panelImage");
         this._panelImage.texture(toggleOffTexture);
         this._panelImage.left(5).middle(0.5).width(16).height(16).mount(this);
-        this._panelTitle = new exports_1.IgeFontEntity().id("panelTitle");
+        this._panelTitle = new IgeFontEntity_1.IgeFontEntity().id("panelTitle");
         this._panelTitle
             .texture(titleTexture)
             .left(25)
@@ -58,4 +58,4 @@ class IgeUiTogglePanel extends exports_2.IgeUiElement {
     }
 }
 exports.IgeUiTogglePanel = IgeUiTogglePanel;
-(0, exports_3.registerClass)(IgeUiTogglePanel);
+(0, igeClassStore_1.registerClass)(IgeUiTogglePanel);
