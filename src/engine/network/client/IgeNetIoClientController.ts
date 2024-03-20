@@ -59,7 +59,7 @@ export class IgeNetIoClientController extends IgeNetIoBaseController {
 	 * Gets the current socket id.
 	 * @returns {string} The id of the socket connection to the server.
 	 */
-	id () {
+	id (): string {
 		return this._id || "";
 	}
 
@@ -70,7 +70,7 @@ export class IgeNetIoClientController extends IgeNetIoBaseController {
 	 * @param {Function=} callback A callback method to call once the
 	 * network has started, or you can use the returned promise.
 	 */
-	start (url?: string, callback?: () => void) {
+	start (url?: string, callback?: () => void): Promise<void> {
 		return new Promise<void>((resolve) => {
 			if (this._state === IgeNetworkConnectionState.ready) {
 				// We're already connected
@@ -155,7 +155,7 @@ export class IgeNetIoClientController extends IgeNetIoBaseController {
 		});
 	}
 
-	_onRequest = (data: IgeNetworkRequestMessageStructure<IgeNetworkClientSideMessageHandler>) => {
+	_onRequest = (data: IgeNetworkRequestMessageStructure<IgeNetworkClientSideMessageHandler>): void => {
 		// Store the network request by its id
 		this._requests[data.id] = data;
 
@@ -173,7 +173,7 @@ export class IgeNetIoClientController extends IgeNetIoBaseController {
 		this.emit(data.cmd, data.id, data.data);
 	};
 
-	_onResponse = (responseObj: IgeNetworkMessageStructure) => {
+	_onResponse = (responseObj: IgeNetworkMessageStructure): void => {
 		// The message is a network response
 		// to a request we sent earlier
 		const id = responseObj.id;
@@ -196,7 +196,7 @@ export class IgeNetIoClientController extends IgeNetIoBaseController {
 		}
 	};
 
-	_onTimeSync = (data: IgeNetworkTimeSyncRequestFromServer) => {
+	_onTimeSync = (data: IgeNetworkTimeSyncRequestFromServer): void => {
 		const localTime = Math.floor(ige.engine._currentTime);
 		const serverTime = data[0];
 
@@ -216,7 +216,7 @@ export class IgeNetIoClientController extends IgeNetIoBaseController {
 		this._sendTimeSync([serverTime, localTime]);
 	};
 
-	stop () {
+	stop (): void {
 		// Check we are connected
 		if (this._state === IgeNetworkConnectionState.ready) {
 			this._io?.disconnect("Client requested disconnect");
@@ -233,22 +233,17 @@ export class IgeNetIoClientController extends IgeNetIoBaseController {
 	 * command is received by the network.
 	 * @return {*}
 	 */
-	define (commandName: string, callback: (...args: any[]) => void) {
-		if (commandName !== undefined && callback !== undefined) {
-			// Check if this command has been defined by the server
-			//if (this._networkCommandsLookup[commandName] !== undefined) {
-			this._networkCommands[commandName] = callback;
-			//} else {
-			//	this.log(`Cannot define network command "${commandName}" because it does not exist on the server. Please edit your server code and define the network command there before trying to define it on the client!`, 'error');
-			//}
-
-			return this;
-		} else {
+	define (commandName: string, callback: (...args: any[]) => void): this | undefined {
+		if (!commandName || !callback) {
 			this.log(
 				"Cannot define network command either the commandName or callback parameters were undefined!",
 				"error"
 			);
+			return this;
 		}
+
+		this._networkCommands[commandName] = callback;
+		return this;
 	}
 
 	/**
