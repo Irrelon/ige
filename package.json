@@ -33,7 +33,7 @@
 		"build-cjs-watch": "tsc -p tsconfig-cjs.json --watch",
 		"fix-paths-watch": "npx @irrelon/fix-paths --write --watch",
 		"generate-exports": "node update-indexes.cjs",
-		"test": "npx jest --testMatch \"**/cjs/**/**.test.js\"",
+		"test": "npx jest --testMatch \"**.test.ts\"",
 		"build-test": "npm run build-tests && NODE_OPTIONS=--experimental-vm-modules npx jest --all -f --testMatch \"**/cjs/**/**.test.js\"",
 		"test-watch": "NODE_OPTIONS=--experimental-vm-modules npx jest -f \".test.js\" --watch --all",
 		"eslint-fix": "eslint --ext .ts,.tsx . --fix"
@@ -77,7 +77,9 @@
 		"mysql": "2.18.1",
 		"prettier": "^3.2.5",
 		"stacktrace-js": "^2.0.2",
+		"ts-jest": "^29.1.2",
 		"tsc-watch": "^6.0.0",
+		"tsconfig-paths": "^4.2.0",
 		"ttypescript": "^1.5.15",
 		"typescript": "^5.4.2",
 		"yargs": "^17.7.2"

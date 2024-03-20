@@ -26,7 +26,7 @@
 		"declaration": true,
 		"noImplicitAny": false,
 		"composite": false,
-		"verbatimModuleSyntax": true,
+		"verbatimModuleSyntax": false,
 		"paths": {
 			"@/*": [
 				"./src/*"
