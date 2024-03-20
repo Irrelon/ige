@@ -16,10 +16,10 @@
 * 3. This notice may not be removed or altered from any source distribution.
 */
 
-// DEBUG: import { b2Assert } from "../common/b2_settings.js";
-import { b2_epsilon, b2_epsilon_sq, b2_polygonRadius, b2_linearSlop } from "../common/b2_settings.js";
-import { b2Max, b2Vec2, b2Rot, b2Transform } from "../common/b2_math.js";
-import type { b2Shape } from "./b2_shape.js";
+// DEBUG: import { b2Assert } from "../common/b2_settings";
+import { b2_epsilon, b2_epsilon_sq, b2_polygonRadius, b2_linearSlop } from "../common/b2_settings";
+import { b2Max, b2Vec2, b2Rot, b2Transform } from "../common/b2_math";
+import type { b2Shape } from "./b2_shape";
 
 /// A distance proxy is used by the GJK algorithm.
 /// It encapsulates any shape.
@@ -162,6 +162,7 @@ export class b2ShapeCastOutput {
 export let b2_gjkCalls: number = 0;
 export let b2_gjkIters: number = 0;
 export let b2_gjkMaxIters: number = 0;
+
 export function b2_gjk_reset (): void {
 	b2_gjkCalls = 0;
 	b2_gjkIters = 0;
@@ -482,6 +483,7 @@ export class b2Simplex {
 		this.m_v3.a = d123_3 * inv_d123;
 		this.m_count = 3;
 	}
+
 	private static s_e12: b2Vec2 = new b2Vec2();
 	private static s_e13: b2Vec2 = new b2Vec2();
 	private static s_e23: b2Vec2 = new b2Vec2();
@@ -495,6 +497,7 @@ const b2Distance_s_d: b2Vec2 = new b2Vec2();
 const b2Distance_s_normal: b2Vec2 = new b2Vec2();
 const b2Distance_s_supportA: b2Vec2 = new b2Vec2();
 const b2Distance_s_supportB: b2Vec2 = new b2Vec2();
+
 export function b2Distance (output: b2DistanceOutput, cache: b2SimplexCache, input: b2DistanceInput): void {
 	++b2_gjkCalls;
 
@@ -642,6 +645,7 @@ const b2ShapeCast_s_v = new b2Vec2();
 const b2ShapeCast_s_p = new b2Vec2();
 const b2ShapeCast_s_pointA = new b2Vec2();
 const b2ShapeCast_s_pointB = new b2Vec2();
+
 export function b2ShapeCast (output: b2ShapeCastOutput, input: b2ShapeCastInput): boolean {
 	output.iterations = 0;
 	output.lambda = 1.0;
@@ -772,7 +776,7 @@ export function b2ShapeCast (output: b2ShapeCastOutput, input: b2ShapeCastInput)
 			break;
 
 		default:
-      // DEBUG: b2Assert(false);
+			// DEBUG: b2Assert(false);
 		}
 
 		// If we have 3 points, then the origin is in the corresponding triangle.

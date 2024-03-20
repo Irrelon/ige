@@ -16,11 +16,11 @@
 * 3. This notice may not be removed or altered from any source distribution.
 */
 
-// DEBUG: import { b2Assert } from "../common/b2_settings.js";
-import { b2_linearSlop, b2_maxPolygonVertices } from "../common/b2_settings.js";
-import { b2Abs, b2Max, b2Vec2, b2Rot, b2Transform, b2Sweep } from "../common/b2_math.js";
-import { b2Timer } from "../common/b2_timer.js";
-import { b2Distance, b2DistanceInput, b2DistanceOutput, b2DistanceProxy, b2SimplexCache } from "./b2_distance.js";
+// DEBUG: import { b2Assert } from "../common/b2_settings";
+import { b2_linearSlop, b2_maxPolygonVertices } from "../common/b2_settings";
+import { b2Abs, b2Max, b2Vec2, b2Rot, b2Transform, b2Sweep } from "../common/b2_math";
+import { b2Timer } from "../common/b2_timer";
+import { b2Distance, b2DistanceInput, b2DistanceOutput, b2DistanceProxy, b2SimplexCache } from "./b2_distance";
 
 export let b2_toiTime: number = 0;
 export let b2_toiMaxTime: number = 0;
@@ -29,6 +29,7 @@ export let b2_toiIters: number = 0;
 export let b2_toiMaxIters: number = 0;
 export let b2_toiRootIters: number = 0;
 export let b2_toiMaxRootIters: number = 0;
+
 export function b2_toi_reset (): void {
 	b2_toiTime = 0;
 	b2_toiMaxTime = 0;
@@ -58,11 +59,11 @@ export class b2TOIInput {
 
 /// Output parameters for b2TimeOfImpact.
 export enum b2TOIOutputState {
-  e_unknown = 0,
-  e_failed = 1,
-  e_overlapped = 2,
-  e_touching = 3,
-  e_separated = 4,
+	e_unknown = 0,
+	e_failed = 1,
+	e_overlapped = 2,
+	e_touching = 3,
+	e_separated = 4,
 }
 
 export class b2TOIOutput {
@@ -71,10 +72,10 @@ export class b2TOIOutput {
 }
 
 export enum b2SeparationFunctionType {
-  e_unknown = -1,
-  e_points = 0,
-  e_faceA = 1,
-  e_faceB = 2,
+	e_unknown = -1,
+	e_points = 0,
+	e_faceA = 1,
+	e_faceB = 2,
 }
 
 export class b2SeparationFunction {
@@ -273,10 +274,11 @@ const b2TimeOfImpact_s_cache: b2SimplexCache = new b2SimplexCache();
 const b2TimeOfImpact_s_distanceInput: b2DistanceInput = new b2DistanceInput();
 const b2TimeOfImpact_s_distanceOutput: b2DistanceOutput = new b2DistanceOutput();
 const b2TimeOfImpact_s_fcn: b2SeparationFunction = new b2SeparationFunction();
-const b2TimeOfImpact_s_indexA: [number] = [ 0 ];
-const b2TimeOfImpact_s_indexB: [number] = [ 0 ];
+const b2TimeOfImpact_s_indexA: [number] = [0];
+const b2TimeOfImpact_s_indexB: [number] = [0];
 const b2TimeOfImpact_s_sweepA: b2Sweep = new b2Sweep();
 const b2TimeOfImpact_s_sweepB: b2Sweep = new b2Sweep();
+
 export function b2TimeOfImpact (output: b2TOIOutput, input: b2TOIInput): void {
 	const timer: b2Timer = b2TimeOfImpact_s_timer.Reset();
 
@@ -318,7 +320,7 @@ export function b2TimeOfImpact (output: b2TOIOutput, input: b2TOIInput): void {
 
 	// The outer loop progressively attempts to compute new separating axes.
 	// This loop terminates when an axis is repeated (no progress is made).
-	for (; ; ) {
+	for (; ;) {
 		const xfA: b2Transform = b2TimeOfImpact_s_xfA;
 		const xfB: b2Transform = b2TimeOfImpact_s_xfB;
 		sweepA.GetTransform(xfA, t1);
@@ -380,7 +382,7 @@ export function b2TimeOfImpact (output: b2TOIOutput, input: b2TOIInput): void {
 		let done: boolean = false;
 		let t2: number = tMax;
 		let pushBackIter: number = 0;
-		for (; ; ) {
+		for (; ;) {
 			// Find the deepest point at t2. Store the witness point indices.
 			const indexA: [number] = b2TimeOfImpact_s_indexA;
 			const indexB: [number] = b2TimeOfImpact_s_indexB;
@@ -427,7 +429,7 @@ export function b2TimeOfImpact (output: b2TOIOutput, input: b2TOIInput): void {
 			let rootIterCount: number = 0;
 			let a1: number = t1;
 			let a2: number = t2;
-			for (; ; ) {
+			for (; ;) {
 				// Use a mix of the secant rule and bisection.
 				let t: number = 0;
 				if (rootIterCount & 1) {

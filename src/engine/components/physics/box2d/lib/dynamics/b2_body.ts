@@ -16,19 +16,19 @@
 * 3. This notice may not be removed or altered from any source distribution.
 */
 
-// DEBUG: import { b2Assert } from "../common/b2_settings.js";
-// DEBUG: import { b2IsValid } from "../common/b2_math.js";
-import { b2Maybe } from "../common/b2_settings.js";
-import type { XY } from "../common/b2_math.js";
-import { b2Vec2, b2Rot, b2Transform, b2Sweep } from "../common/b2_math.js";
-import { b2Shape, b2MassData } from "../collision/b2_shape.js";
-import type { b2ContactEdge } from "./b2_contact.js";
-import type { b2JointEdge } from "./b2_joint.js";
-import type { b2IFixtureDef } from "./b2_fixture.js";
-import { b2Fixture, b2FixtureDef } from "./b2_fixture.js";
-import type { b2World } from "./b2_world.js";
+// DEBUG: import { b2Assert } from "../common/b2_settings";
+// DEBUG: import { b2IsValid } from "../common/b2_math";
+import { b2Maybe } from "../common/b2_settings";
+import type { XY } from "../common/b2_math";
+import { b2Vec2, b2Rot, b2Transform, b2Sweep } from "../common/b2_math";
+import { b2Shape, b2MassData } from "../collision/b2_shape";
+import type { b2ContactEdge } from "./b2_contact";
+import type { b2JointEdge } from "./b2_joint";
+import type { b2IFixtureDef } from "./b2_fixture";
+import { b2Fixture, b2FixtureDef } from "./b2_fixture";
+import type { b2World } from "./b2_world";
 // #if B2_ENABLE_CONTROLLER
-import type { b2ControllerEdge } from "../controllers/b2_controller.js";
+import type { b2ControllerEdge } from "../controllers/b2_controller";
 // #endif
 
 /// The body type.
@@ -36,69 +36,69 @@ import type { b2ControllerEdge } from "../controllers/b2_controller.js";
 /// kinematic: zero mass, non-zero velocity set by user, moved by solver
 /// dynamic: positive mass, non-zero velocity determined by forces, moved by solver
 export enum b2BodyType {
-  b2_unknown = -1,
-  b2_staticBody = 0,
-  b2_kinematicBody = 1,
-  b2_dynamicBody = 2,
+	b2_unknown = -1,
+	b2_staticBody = 0,
+	b2_kinematicBody = 1,
+	b2_dynamicBody = 2,
 
-  // TODO_ERIN
-  // b2_bulletBody = 3
+	// TODO_ERIN
+	// b2_bulletBody = 3
 }
 
 export interface b2IBodyDef {
-  /// The body type: static, kinematic, or dynamic.
-  /// Note: if a dynamic body would have zero mass, the mass is set to one.
-  type?: b2BodyType;
+	/// The body type: static, kinematic, or dynamic.
+	/// Note: if a dynamic body would have zero mass, the mass is set to one.
+	type?: b2BodyType;
 
-  /// The world position of the body. Avoid creating bodies at the origin
-  /// since this can lead to many overlapping shapes.
-  position?: XY;
+	/// The world position of the body. Avoid creating bodies at the origin
+	/// since this can lead to many overlapping shapes.
+	position?: XY;
 
-  /// The world angle of the body in radians.
-  angle?: number;
+	/// The world angle of the body in radians.
+	angle?: number;
 
-  /// The linear velocity of the body's origin in world co-ordinates.
-  linearVelocity?: XY;
+	/// The linear velocity of the body's origin in world co-ordinates.
+	linearVelocity?: XY;
 
-  /// The angular velocity of the body.
-  angularVelocity?: number;
+	/// The angular velocity of the body.
+	angularVelocity?: number;
 
-  /// Linear damping is use to reduce the linear velocity. The damping parameter
-  /// can be larger than 1.0f but the damping effect becomes sensitive to the
-  /// time step when the damping parameter is large.
-  /// Units are 1/time
-  linearDamping?: number;
+	/// Linear damping is use to reduce the linear velocity. The damping parameter
+	/// can be larger than 1.0f but the damping effect becomes sensitive to the
+	/// time step when the damping parameter is large.
+	/// Units are 1/time
+	linearDamping?: number;
 
-  /// Angular damping is use to reduce the angular velocity. The damping parameter
-  /// can be larger than 1.0f but the damping effect becomes sensitive to the
-  /// time step when the damping parameter is large.
-  /// Units are 1/time
-  angularDamping?: number;
+	/// Angular damping is use to reduce the angular velocity. The damping parameter
+	/// can be larger than 1.0f but the damping effect becomes sensitive to the
+	/// time step when the damping parameter is large.
+	/// Units are 1/time
+	angularDamping?: number;
 
-  /// Set this flag to false if this body should never fall asleep. Note that
-  /// this increases CPU usage.
-  allowSleep?: boolean;
+	/// Set this flag to false if this body should never fall asleep. Note that
+	/// this increases CPU usage.
+	allowSleep?: boolean;
 
-  /// Is this body initially awake or sleeping?
-  awake?: boolean;
+	/// Is this body initially awake or sleeping?
+	awake?: boolean;
 
-  /// Should this body be prevented from rotating? Useful for characters.
-  fixedRotation?: boolean;
+	/// Should this body be prevented from rotating? Useful for characters.
+	fixedRotation?: boolean;
 
-  /// Is this a fast moving body that should be prevented from tunneling through
-  /// other moving bodies? Note that all bodies are prevented from tunneling through
-  /// kinematic and static bodies. This setting is only considered on dynamic bodies.
-  /// @warning You should use this flag sparingly since it increases processing time.
-  bullet?: boolean;
+	/// Is this a fast moving body that should be prevented from tunneling through
+	/// other moving bodies? Note that all bodies are prevented from tunneling through
+	/// kinematic and static bodies. This setting is only considered on dynamic bodies.
+	/// @warning You should use this flag sparingly since it increases processing time.
+	bullet?: boolean;
 
-  /// Does this body start out enabled?
-  enabled?: boolean;
+	/// Does this body start out enabled?
+	enabled?: boolean;
 
-  /// Use this to store application specific body data.
-  userData?: any;
+	/// Use this to store application specific body data.
+	userData?: any;
 
-  /// Scale the gravity applied to this body.
-  gravityScale?: number;
+	/// Scale the gravity applied to this body.
+	gravityScale?: number;
 }
 
 /// A body definition holds all the data needed to construct a rigid body.
@@ -211,6 +211,7 @@ export class b2Body {
 	// #if B2_ENABLE_CONTROLLER
 	public m_controllerList: b2ControllerEdge | null = null;
 	public m_controllerCount: number = 0;
+
 	// #endif
 
 	constructor (bd: b2IBodyDef, world: b2World) {
@@ -274,9 +275,9 @@ export class b2Body {
 		// #endif
 	}
 
-	public CreateFixture(def: b2IFixtureDef): b2Fixture;
-	public CreateFixture(shape: b2Shape): b2Fixture;
-	public CreateFixture(shape: b2Shape, density: number): b2Fixture;
+	public CreateFixture (def: b2IFixtureDef): b2Fixture;
+	public CreateFixture (shape: b2Shape): b2Fixture;
+	public CreateFixture (shape: b2Shape, density: number): b2Fixture;
 	public CreateFixture (a: b2IFixtureDef | b2Shape, b: number = 0): b2Fixture {
 		if (a instanceof b2Shape) {
 			return this.CreateFixtureShapeDensity(a, b);
@@ -293,7 +294,9 @@ export class b2Body {
 	/// @param def the fixture definition.
 	/// @warning This function is locked during callbacks.
 	public CreateFixtureDef (def: b2IFixtureDef): b2Fixture {
-		if (this.m_world.IsLocked()) { throw new Error(); }
+		if (this.m_world.IsLocked()) {
+			throw new Error();
+		}
 
 		const fixture: b2Fixture = new b2Fixture(this, def);
 
@@ -327,6 +330,7 @@ export class b2Body {
 	/// @param density the shape density (set to zero for static bodies).
 	/// @warning This function is locked during callbacks.
 	private static CreateFixtureShapeDensity_s_def: b2FixtureDef = new b2FixtureDef();
+
 	public CreateFixtureShapeDensity (shape: b2Shape, density: number = 0): b2Fixture {
 		const def: b2FixtureDef = b2Body.CreateFixtureShapeDensity_s_def;
 		def.shape = shape;
@@ -342,7 +346,9 @@ export class b2Body {
 	/// @param fixture the fixture to be removed.
 	/// @warning This function is locked during callbacks.
 	public DestroyFixture (fixture: b2Fixture): void {
-		if (this.m_world.IsLocked()) { throw new Error(); }
+		if (this.m_world.IsLocked()) {
+			throw new Error();
+		}
 
 		// DEBUG: b2Assert(fixture.m_body === this);
 
@@ -409,7 +415,9 @@ export class b2Body {
 	}
 
 	public SetTransformXY (x: number, y: number, angle: number): void {
-		if (this.m_world.IsLocked()) { throw new Error(); }
+		if (this.m_world.IsLocked()) {
+			throw new Error();
+		}
 
 		this.m_xf.q.SetAngle(angle);
 		this.m_xf.p.Set(x, y);
@@ -680,8 +688,11 @@ export class b2Body {
 	/// This function has no effect if the body isn't dynamic.
 	/// @param massData the mass properties.
 	private static SetMassData_s_oldCenter: b2Vec2 = new b2Vec2();
+
 	public SetMassData (massData: b2MassData): void {
-		if (this.m_world.IsLocked()) { throw new Error(); }
+		if (this.m_world.IsLocked()) {
+			throw new Error();
+		}
 
 		if (this.m_type !== b2BodyType.b2_dynamicBody) {
 			return;
@@ -720,6 +731,7 @@ export class b2Body {
 	private static ResetMassData_s_localCenter: b2Vec2 = new b2Vec2();
 	private static ResetMassData_s_oldCenter: b2Vec2 = new b2Vec2();
 	private static ResetMassData_s_massData: b2MassData = new b2MassData();
+
 	public ResetMassData (): void {
 		// Compute mass data from shapes. Each shape has its own density.
 		this.m_mass = 0;
@@ -853,7 +865,9 @@ export class b2Body {
 
 	/// Set the type of this body. This may alter the mass and velocity.
 	public SetType (type: b2BodyType): void {
-		if (this.m_world.IsLocked()) { throw new Error(); }
+		if (this.m_world.IsLocked()) {
+			throw new Error();
+		}
 
 		if (this.m_type === type) {
 			return;
@@ -960,7 +974,9 @@ export class b2Body {
 	/// An diabled body is still owned by a b2World object and remains
 	/// in the body list.
 	public SetEnabled (flag: boolean): void {
-		if (this.m_world.IsLocked()) { throw new Error(); }
+		if (this.m_world.IsLocked()) {
+			throw new Error();
+		}
 
 		if (flag === this.IsEnabled()) {
 			return;
@@ -1098,6 +1114,7 @@ export class b2Body {
 	}
 
 	private static SynchronizeFixtures_s_xf1: b2Transform = new b2Transform();
+
 	public SynchronizeFixtures (): void {
 		if (this.m_awakeFlag) {
 			const xf1: b2Transform = b2Body.SynchronizeFixtures_s_xf1;
@@ -1162,5 +1179,6 @@ export class b2Body {
 	public GetControllerCount (): number {
 		return this.m_controllerCount;
 	}
+
 	// #endif
 }

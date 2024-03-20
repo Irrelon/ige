@@ -18,18 +18,18 @@
 
 // #if B2_ENABLE_CONTROLLER
 
-import { b2Controller } from "./b2_controller.js";
-import { b2Vec2 } from "../common/b2_math.js";
-import type { b2TimeStep } from "../dynamics/b2_time_step.js";
-import type { b2Draw } from "../common/b2_draw.js";
+import { b2Controller } from "./b2_controller";
+import { b2Vec2 } from "../common/b2_math";
+import type { b2TimeStep } from "../dynamics/b2_time_step";
+import type { b2Draw } from "../common/b2_draw";
 
 /**
  * Applies a force every frame
  */
 export class b2ConstantAccelController extends b2Controller {
 	/**
-   * The acceleration to apply
-   */
+	 * The acceleration to apply
+	 */
 	public readonly A = new b2Vec2(0, 0);
 
 	public Step (step: b2TimeStep) {
@@ -42,9 +42,11 @@ export class b2ConstantAccelController extends b2Controller {
 			body.SetLinearVelocity(b2Vec2.AddVV(body.GetLinearVelocity(), dtA, b2Vec2.s_t0));
 		}
 	}
+
 	private static Step_s_dtA = new b2Vec2();
 
-	public Draw (draw: b2Draw) {}
+	public Draw (draw: b2Draw) {
+	}
 }
 
 // #endif

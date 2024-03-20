@@ -18,28 +18,28 @@
 
 // #if B2_ENABLE_CONTROLLER
 
-import { b2Controller } from "./b2_controller.js";
-import type { b2TimeStep } from "../dynamics/b2_time_step.js";
-import { b2_epsilon } from "../common/b2_settings.js";
-import { b2Sqrt, b2Vec2 } from "../common/b2_math.js";
-import type { b2Draw } from "../common/b2_draw.js";
+import { b2Controller } from "./b2_controller";
+import type { b2TimeStep } from "../dynamics/b2_time_step";
+import { b2_epsilon } from "../common/b2_settings";
+import { b2Sqrt, b2Vec2 } from "../common/b2_math";
+import type { b2Draw } from "../common/b2_draw";
 
 /**
  * Applies simplified gravity between every pair of bodies
  */
 export class b2GravityController extends b2Controller {
 	/**
-   * Specifies the strength of the gravitiation force
-   */
+	 * Specifies the strength of the gravitiation force
+	 */
 	public G = 1;
 	/**
-   * If true, gravity is proportional to r^-2, otherwise r^-1
-   */
+	 * If true, gravity is proportional to r^-2, otherwise r^-1
+	 */
 	public invSqr = true;
 
 	/**
-   * @see b2Controller::Step
-   */
+	 * @see b2Controller::Step
+	 */
 	public Step (step: b2TimeStep) {
 		if (this.invSqr) {
 			for (let i = this.m_bodyList; i; i = i.nextBody) {
@@ -93,9 +93,11 @@ export class b2GravityController extends b2Controller {
 			}
 		}
 	}
+
 	private static Step_s_f = new b2Vec2();
 
-	public Draw (draw: b2Draw) { }
+	public Draw (draw: b2Draw) {
+	}
 }
 
 // #endif

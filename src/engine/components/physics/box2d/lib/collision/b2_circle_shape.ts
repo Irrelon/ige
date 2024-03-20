@@ -16,14 +16,14 @@
 * 3. This notice may not be removed or altered from any source distribution.
 */
 
-// DEBUG: import { b2Assert } from "../common/b2_settings.js";
-import { b2_pi, b2_epsilon } from "../common/b2_settings.js";
-import type { XY } from "../common/b2_math.js";
-import { b2Sq, b2Sqrt, b2Asin, b2Pow, b2Vec2, b2Transform } from "../common/b2_math.js";
-import type { b2AABB, b2RayCastInput, b2RayCastOutput } from "./b2_collision.js";
-import type { b2DistanceProxy } from "./b2_distance.js";
-import type { b2MassData } from "./b2_shape.js";
-import { b2Shape, b2ShapeType } from "./b2_shape.js";
+// DEBUG: import { b2Assert } from "../common/b2_settings";
+import { b2_pi, b2_epsilon } from "../common/b2_settings";
+import type { XY } from "../common/b2_math";
+import { b2Sq, b2Sqrt, b2Asin, b2Pow, b2Vec2, b2Transform } from "../common/b2_math";
+import type { b2AABB, b2RayCastInput, b2RayCastOutput } from "./b2_collision";
+import type { b2DistanceProxy } from "./b2_distance";
+import type { b2MassData } from "./b2_shape";
+import { b2Shape, b2ShapeType } from "./b2_shape";
 
 /// A solid circle shape
 export class b2CircleShape extends b2Shape {
@@ -61,6 +61,7 @@ export class b2CircleShape extends b2Shape {
 	/// Implement b2Shape.
 	private static TestPoint_s_center = new b2Vec2();
 	private static TestPoint_s_d = new b2Vec2();
+
 	public TestPoint (transform: b2Transform, p: XY): boolean {
 		const center: b2Vec2 = b2Transform.MulXV(transform, this.m_p, b2CircleShape.TestPoint_s_center);
 		const d: b2Vec2 = b2Vec2.SubVV(p, center, b2CircleShape.TestPoint_s_d);
@@ -70,11 +71,13 @@ export class b2CircleShape extends b2Shape {
 	// #if B2_ENABLE_PARTICLE
 	/// @see b2Shape::ComputeDistance
 	private static ComputeDistance_s_center = new b2Vec2();
+
 	public ComputeDistance (xf: b2Transform, p: b2Vec2, normal: b2Vec2, childIndex: number): number {
 		const center = b2Transform.MulXV(xf, this.m_p, b2CircleShape.ComputeDistance_s_center);
 		b2Vec2.SubVV(p, center, normal);
 		return normal.Normalize() - this.m_radius;
 	}
+
 	// #endif
 
 	/// Implement b2Shape.
@@ -87,6 +90,7 @@ export class b2CircleShape extends b2Shape {
 	private static RayCast_s_position = new b2Vec2();
 	private static RayCast_s_s = new b2Vec2();
 	private static RayCast_s_r = new b2Vec2();
+
 	public RayCast (output: b2RayCastOutput, input: b2RayCastInput, transform: b2Transform, childIndex: number): boolean {
 		const position: b2Vec2 = b2Transform.MulXV(transform, this.m_p, b2CircleShape.RayCast_s_position);
 		const s: b2Vec2 = b2Vec2.SubVV(input.p1, position, b2CircleShape.RayCast_s_s);
@@ -119,6 +123,7 @@ export class b2CircleShape extends b2Shape {
 
 	/// @see b2Shape::ComputeAABB
 	private static ComputeAABB_s_p = new b2Vec2();
+
 	public ComputeAABB (aabb: b2AABB, transform: b2Transform, childIndex: number): void {
 		const p: b2Vec2 = b2Transform.MulXV(transform, this.m_p, b2CircleShape.ComputeAABB_s_p);
 		aabb.lowerBound.Set(p.x - this.m_radius, p.y - this.m_radius);

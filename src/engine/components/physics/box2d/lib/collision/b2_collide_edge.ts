@@ -1,12 +1,12 @@
-// DEBUG: import { b2Assert } from "../common/b2_settings.js";
-import { b2_maxManifoldPoints } from "../common/b2_settings.js";
-import { b2Min, b2Vec2, b2Rot, b2Transform } from "../common/b2_math.js";
-import { b2ContactFeatureType, b2ContactID } from "./b2_collision.js";
-import type { b2Manifold, b2ManifoldPoint} from "./b2_collision.js";
-import { b2ManifoldType, b2ClipVertex, b2ClipSegmentToLine } from "./b2_collision.js";
-import type { b2CircleShape } from "./b2_circle_shape.js";
-import type { b2PolygonShape } from "./b2_polygon_shape.js";
-import type { b2EdgeShape } from "./b2_edge_shape.js";
+// DEBUG: import { b2Assert } from "../common/b2_settings";
+import { b2_maxManifoldPoints } from "../common/b2_settings";
+import { b2Min, b2Vec2, b2Rot, b2Transform } from "../common/b2_math";
+import { b2ContactFeatureType, b2ContactID } from "./b2_collision";
+import type { b2Manifold, b2ManifoldPoint } from "./b2_collision";
+import { b2ManifoldType, b2ClipVertex, b2ClipSegmentToLine } from "./b2_collision";
+import type { b2CircleShape } from "./b2_circle_shape";
+import type { b2PolygonShape } from "./b2_polygon_shape";
+import type { b2EdgeShape } from "./b2_edge_shape";
 
 const b2CollideEdgeAndCircle_s_Q: b2Vec2 = new b2Vec2();
 const b2CollideEdgeAndCircle_s_e: b2Vec2 = new b2Vec2();
@@ -16,6 +16,7 @@ const b2CollideEdgeAndCircle_s_e2: b2Vec2 = new b2Vec2();
 const b2CollideEdgeAndCircle_s_P: b2Vec2 = new b2Vec2();
 const b2CollideEdgeAndCircle_s_n: b2Vec2 = new b2Vec2();
 const b2CollideEdgeAndCircle_s_id: b2ContactID = new b2ContactID();
+
 export function b2CollideEdgeAndCircle (manifold: b2Manifold, edgeA: b2EdgeShape, xfA: b2Transform, circleB: b2CircleShape, xfB: b2Transform): void {
 	manifold.pointCount = 0;
 
@@ -149,9 +150,9 @@ export function b2CollideEdgeAndCircle (manifold: b2Manifold, edgeA: b2EdgeShape
 }
 
 enum b2EPAxisType {
-  e_unknown = 0,
-  e_edgeA = 1,
-  e_edgeB = 2,
+	e_unknown = 0,
+	e_edgeA = 1,
+	e_edgeB = 2,
 }
 
 class b2EPAxis {
@@ -181,7 +182,8 @@ class b2ReferenceFace {
 
 // static b2EPAxis b2ComputeEdgeSeparation(const b2TempPolygon& polygonB, const b2Vec2& v1, const b2Vec2& normal1)
 const b2ComputeEdgeSeparation_s_axis = new b2EPAxis();
-const b2ComputeEdgeSeparation_s_axes: [ b2Vec2, b2Vec2 ] = [ new b2Vec2(), new b2Vec2() ];
+const b2ComputeEdgeSeparation_s_axes: [b2Vec2, b2Vec2] = [new b2Vec2(), new b2Vec2()];
+
 function b2ComputeEdgeSeparation (polygonB: Readonly<b2TempPolygon>, v1: Readonly<b2Vec2>, normal1: Readonly<b2Vec2>): b2EPAxis {
 	// b2EPAxis axis;
 	const axis: b2EPAxis = b2ComputeEdgeSeparation_s_axis;
@@ -221,6 +223,7 @@ function b2ComputeEdgeSeparation (polygonB: Readonly<b2TempPolygon>, v1: Readonl
 // static b2EPAxis b2ComputePolygonSeparation(const b2TempPolygon& polygonB, const b2Vec2& v1, const b2Vec2& v2)
 const b2ComputePolygonSeparation_s_axis = new b2EPAxis();
 const b2ComputePolygonSeparation_s_n = new b2Vec2();
+
 function b2ComputePolygonSeparation (polygonB: Readonly<b2TempPolygon>, v1: Readonly<b2Vec2>, v2: Readonly<b2Vec2>): b2EPAxis {
 	const axis: b2EPAxis = b2ComputePolygonSeparation_s_axis;
 	axis.type = b2EPAxisType.e_unknown;
@@ -260,9 +263,10 @@ const b2CollideEdgeAndPolygon_s_edge2 = new b2Vec2();
 const b2CollideEdgeAndPolygon_s_normal2 = new b2Vec2();
 const b2CollideEdgeAndPolygon_s_tempPolygonB = new b2TempPolygon();
 const b2CollideEdgeAndPolygon_s_ref = new b2ReferenceFace();
-const b2CollideEdgeAndPolygon_s_clipPoints: [b2ClipVertex, b2ClipVertex] = [ new b2ClipVertex(), new b2ClipVertex() ];
-const b2CollideEdgeAndPolygon_s_clipPoints1: [b2ClipVertex, b2ClipVertex] = [ new b2ClipVertex(), new b2ClipVertex() ];
-const b2CollideEdgeAndPolygon_s_clipPoints2: [b2ClipVertex, b2ClipVertex] = [ new b2ClipVertex(), new b2ClipVertex() ];
+const b2CollideEdgeAndPolygon_s_clipPoints: [b2ClipVertex, b2ClipVertex] = [new b2ClipVertex(), new b2ClipVertex()];
+const b2CollideEdgeAndPolygon_s_clipPoints1: [b2ClipVertex, b2ClipVertex] = [new b2ClipVertex(), new b2ClipVertex()];
+const b2CollideEdgeAndPolygon_s_clipPoints2: [b2ClipVertex, b2ClipVertex] = [new b2ClipVertex(), new b2ClipVertex()];
+
 export function b2CollideEdgeAndPolygon (manifold: b2Manifold, edgeA: b2EdgeShape, xfA: b2Transform, polygonB: b2PolygonShape, xfB: b2Transform): void {
 	manifold.pointCount = 0;
 
@@ -297,8 +301,12 @@ export function b2CollideEdgeAndPolygon (manifold: b2Manifold, edgeA: b2EdgeShap
 	const tempPolygonB: b2TempPolygon = b2CollideEdgeAndPolygon_s_tempPolygonB;
 	tempPolygonB.count = polygonB.m_count;
 	for (let i = 0; i < polygonB.m_count; ++i) {
-		if (tempPolygonB.vertices.length <= i) { tempPolygonB.vertices.push(new b2Vec2()); }
-		if (tempPolygonB.normals.length <= i) { tempPolygonB.normals.push(new b2Vec2()); }
+		if (tempPolygonB.vertices.length <= i) {
+			tempPolygonB.vertices.push(new b2Vec2());
+		}
+		if (tempPolygonB.normals.length <= i) {
+			tempPolygonB.normals.push(new b2Vec2());
+		}
 		// tempPolygonB.vertices[i] = b2Mul(xf, polygonB.m_vertices[i]);
 		b2Transform.MulXV(xf, polygonB.m_vertices[i], tempPolygonB.vertices[i]);
 		// tempPolygonB.normals[i] = b2Mul(xf.q, polygonB.m_normals[i]);

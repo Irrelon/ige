@@ -1,22 +1,22 @@
-// DEBUG: import { b2Assert } from "../common/b2_settings.js";
-import { b2_epsilon, b2_linearSlop, b2_maxLinearCorrection, b2MakeNumberArray, b2Maybe } from "../common/b2_settings.js";
-import type { XY } from "../common/b2_math.js";
-import { b2Sq, b2Sqrt, b2Vec2 } from "../common/b2_math.js";
-import type { b2IJointDef } from "./b2_joint.js";
-import { b2Joint, b2JointDef, b2JointType } from "./b2_joint.js";
-import type { b2DistanceJoint} from "./b2_distance_joint.js";
-import { b2DistanceJointDef } from "./b2_distance_joint.js";
-import type { b2SolverData } from "./b2_time_step.js";
-import type { b2Body } from "./b2_body.js";
+// DEBUG: import { b2Assert } from "../common/b2_settings";
+import { b2_epsilon, b2_linearSlop, b2_maxLinearCorrection, b2MakeNumberArray, b2Maybe } from "../common/b2_settings";
+import type { XY } from "../common/b2_math";
+import { b2Sq, b2Sqrt, b2Vec2 } from "../common/b2_math";
+import type { b2IJointDef } from "./b2_joint";
+import { b2Joint, b2JointDef, b2JointType } from "./b2_joint";
+import type { b2DistanceJoint } from "./b2_distance_joint";
+import { b2DistanceJointDef } from "./b2_distance_joint";
+import type { b2SolverData } from "./b2_time_step";
+import type { b2Body } from "./b2_body";
 
 export interface b2IAreaJointDef extends b2IJointDef {
-  // world: b2World;
+	// world: b2World;
 
-  bodies: b2Body[];
+	bodies: b2Body[];
 
-  stiffness?: number;
+	stiffness?: number;
 
-  damping?: number;
+	damping?: number;
 }
 
 export class b2AreaJointDef extends b2JointDef implements b2IAreaJointDef {
@@ -158,7 +158,7 @@ export class b2AreaJoint extends b2Joint {
 				const body_v: b2Vec2 = data.velocities[body.m_islandIndex].v;
 				const delta: b2Vec2 = this.m_deltas[i];
 
-				body_v.x += body.m_invMass *  delta.y * 0.5 * this.m_impulse;
+				body_v.x += body.m_invMass * delta.y * 0.5 * this.m_impulse;
 				body_v.y += body.m_invMass * -delta.x * 0.5 * this.m_impulse;
 			}
 		} else {
@@ -189,7 +189,7 @@ export class b2AreaJoint extends b2Joint {
 			const body_v: b2Vec2 = data.velocities[body.m_islandIndex].v;
 			const delta: b2Vec2 = this.m_deltas[i];
 
-			body_v.x += body.m_invMass *  delta.y * 0.5 * lambda;
+			body_v.x += body.m_invMass * delta.y * 0.5 * lambda;
 			body_v.y += body.m_invMass * -delta.x * 0.5 * lambda;
 		}
 	}
@@ -211,7 +211,7 @@ export class b2AreaJoint extends b2Joint {
 				dist = 1;
 			}
 
-			this.m_normals[i].x =  delta.y / dist;
+			this.m_normals[i].x = delta.y / dist;
 			this.m_normals[i].y = -delta.x / dist;
 
 			perimeter += dist;

@@ -16,16 +16,16 @@
 * 3. This notice may not be removed or altered from any source distribution.
 */
 
-import type { b2Transform, XY } from "./b2_math.js";
+import type { b2Transform, XY } from "./b2_math";
 
 export interface RGB {
-  r: number;
-  g: number;
-  b: number;
+	r: number;
+	g: number;
+	b: number;
 }
 
 export interface RGBA extends RGB {
-  a: number;
+	a: number;
 }
 
 /// Color for debug drawing. Each value has the range [0,1].
@@ -36,7 +36,36 @@ export class b2Color implements RGBA {
 	public static readonly GREEN: Readonly<b2Color> = new b2Color(0, 1, 0);
 	public static readonly BLUE: Readonly<b2Color> = new b2Color(0, 0, 1);
 
-	constructor (public r: number = 0.5, public g: number = 0.5, public b: number = 0.5, public a: number = 1.0) {}
+	constructor (public r: number = 0.5, public g: number = 0.5, public b: number = 0.5, public a: number = 1.0) {
+	}
+
+	public static MixColors (colorA: RGBA, colorB: RGBA, strength: number): void {
+		const dr = (strength * (colorB.r - colorA.r));
+		const dg = (strength * (colorB.g - colorA.g));
+		const db = (strength * (colorB.b - colorA.b));
+		const da = (strength * (colorB.a - colorA.a));
+		colorA.r += dr;
+		colorA.g += dg;
+		colorA.b += db;
+		colorA.a += da;
+		colorB.r -= dr;
+		colorB.g -= dg;
+		colorB.b -= db;
+		colorB.a -= da;
+	}
+
+	public static MakeStyleString (r: number, g: number, b: number, a: number = 1.0): string {
+		// function clamp(x: number, lo: number, hi: number) { return x < lo ? lo : hi < x ? hi : x; }
+		r *= 255; // r = clamp(r, 0, 255);
+		g *= 255; // g = clamp(g, 0, 255);
+		b *= 255; // b = clamp(b, 0, 255);
+		// a = clamp(a, 0, 1);
+		if (a < 1) {
+			return `rgba(${r},${g},${b},${a})`;
+		} else {
+			return `rgb(${r},${g},${b})`;
+		}
+	}
 
 	public Clone (): b2Color {
 		return new b2Color().Copy(this);
@@ -144,61 +173,67 @@ export class b2Color implements RGBA {
 		b2Color.MixColors(this, mixColor, strength);
 	}
 
-	public static MixColors (colorA: RGBA, colorB: RGBA, strength: number): void {
-		const dr = (strength * (colorB.r - colorA.r));
-		const dg = (strength * (colorB.g - colorA.g));
-		const db = (strength * (colorB.b - colorA.b));
-		const da = (strength * (colorB.a - colorA.a));
-		colorA.r += dr;
-		colorA.g += dg;
-		colorA.b += db;
-		colorA.a += da;
-		colorB.r -= dr;
-		colorB.g -= dg;
-		colorB.b -= db;
-		colorB.a -= da;
-	}
-
 	public MakeStyleString (alpha: number = this.a): string {
 		return b2Color.MakeStyleString(this.r, this.g, this.b, alpha);
-	}
-
-	public static MakeStyleString (r: number, g: number, b: number, a: number = 1.0): string {
-		// function clamp(x: number, lo: number, hi: number) { return x < lo ? lo : hi < x ? hi : x; }
-		r *= 255; // r = clamp(r, 0, 255);
-		g *= 255; // g = clamp(g, 0, 255);
-		b *= 255; // b = clamp(b, 0, 255);
-		// a = clamp(a, 0, 1);
-		if (a < 1) {
-			return `rgba(${r},${g},${b},${a})`;
-		} else {
-			return `rgb(${r},${g},${b})`;
-		}
 	}
 }
 
 export class b2TypedColor implements b2Color {
 	public readonly data: Float32Array;
-	public get r (): number { return this.data[0]; } public set r (value: number) { this.data[0] = value; }
-	public get g (): number { return this.data[1]; } public set g (value: number) { this.data[1] = value; }
-	public get b (): number { return this.data[2]; } public set b (value: number) { this.data[2] = value; }
-	public get a (): number { return this.data[3]; } public set a (value: number) { this.data[3] = value; }
 
-	constructor();
-	constructor(data: Float32Array);
-	constructor(rr: number, gg: number, bb: number);
-	constructor(rr: number, gg: number, bb: number, aa: number);
+	constructor ();
+
+	constructor (data: Float32Array);
+
+	constructor (rr: number, gg: number, bb: number);
+
+	constructor (rr: number, gg: number, bb: number, aa: number);
+
 	constructor (...args: any[]) {
 		if (args[0] instanceof Float32Array) {
-			if (args[0].length !== 4) { throw new Error(); }
+			if (args[0].length !== 4) {
+				throw new Error();
+			}
 			this.data = args[0];
 		} else {
 			const rr: number = typeof args[0] === "number" ? args[0] : 0.5;
 			const gg: number = typeof args[1] === "number" ? args[1] : 0.5;
 			const bb: number = typeof args[2] === "number" ? args[2] : 0.5;
 			const aa: number = typeof args[3] === "number" ? args[3] : 1.0;
-			this.data = new Float32Array([ rr, gg, bb, aa ]);
+			this.data = new Float32Array([rr, gg, bb, aa]);
 		}
+	}
+
+	public get r (): number {
+		return this.data[0];
+	}
+
+	public set r (value: number) {
+		this.data[0] = value;
+	}
+
+	public get g (): number {
+		return this.data[1];
+	}
+
+	public set g (value: number) {
+		this.data[1] = value;
+	}
+
+	public get b (): number {
+		return this.data[2];
+	}
+
+	public set b (value: number) {
+		this.data[2] = value;
+	}
+
+	public get a (): number {
+		return this.data[3];
+	}
+
+	public set a (value: number) {
+		this.data[3] = value;
 	}
 
 	public Clone (): b2TypedColor {
@@ -208,8 +243,7 @@ export class b2TypedColor implements b2Color {
 	public Copy (other: RGBA): this {
 		if (other instanceof b2TypedColor) {
 			this.data.set(other.data);
-		}
-		else {
+		} else {
 			this.r = other.r;
 			this.g = other.g;
 			this.b = other.b;
@@ -318,19 +352,19 @@ export class b2TypedColor implements b2Color {
 }
 
 export enum b2DrawFlags {
-  e_none = 0,
-  e_shapeBit = 0x0001, ///< draw shapes
-  e_jointBit = 0x0002, ///< draw joint connections
-  e_aabbBit = 0x0004, ///< draw axis aligned bounding boxes
-  e_pairBit = 0x0008, ///< draw broad-phase pairs
-  e_centerOfMassBit = 0x0010, ///< draw center of mass frame
-  // #if B2_ENABLE_PARTICLE
-  e_particleBit = 0x0020, ///< draw particles
-  // #endif
-  // #if B2_ENABLE_CONTROLLER
-  e_controllerBit = 0x0040, /// @see b2Controller list
-  // #endif
-  e_all = 0x003f,
+	e_none = 0,
+	e_shapeBit = 0x0001, ///< draw shapes
+	e_jointBit = 0x0002, ///< draw joint connections
+	e_aabbBit = 0x0004, ///< draw axis aligned bounding boxes
+	e_pairBit = 0x0008, ///< draw broad-phase pairs
+	e_centerOfMassBit = 0x0010, ///< draw center of mass frame
+	// #if B2_ENABLE_PARTICLE
+	e_particleBit = 0x0020, ///< draw particles
+	// #endif
+	// #if B2_ENABLE_CONTROLLER
+	e_controllerBit = 0x0040, /// @see b2Controller list
+	// #endif
+	e_all = 0x003f,
 }
 
 /// Implement and register this class with a b2World to provide debug drawing of physics
@@ -354,25 +388,26 @@ export abstract class b2Draw {
 		this.m_drawFlags &= ~flags;
 	}
 
-  public abstract PushTransform(xf: b2Transform): void;
+	public abstract PushTransform (xf: b2Transform): void;
 
-  public abstract PopTransform(xf: b2Transform): void;
+	public abstract PopTransform (xf: b2Transform): void;
 
-  public abstract DrawPolygon(vertices: XY[], vertexCount: number, color: RGBA): void;
+	public abstract DrawPolygon (vertices: XY[], vertexCount: number, color: RGBA): void;
 
-  public abstract DrawSolidPolygon(vertices: XY[], vertexCount: number, color: RGBA): void;
+	public abstract DrawSolidPolygon (vertices: XY[], vertexCount: number, color: RGBA): void;
 
-  public abstract DrawCircle(center: XY, radius: number, color: RGBA): void;
+	public abstract DrawCircle (center: XY, radius: number, color: RGBA): void;
 
-  public abstract DrawSolidCircle(center: XY, radius: number, axis: XY, color: RGBA): void;
+	public abstract DrawSolidCircle (center: XY, radius: number, axis: XY, color: RGBA): void;
 
-  // #if B2_ENABLE_PARTICLE
-  public abstract DrawParticles(centers: XY[], radius: number, colors: RGBA[] | null, count: number): void;
-  // #endif
+	// #if B2_ENABLE_PARTICLE
+	public abstract DrawParticles (centers: XY[], radius: number, colors: RGBA[] | null, count: number): void;
 
-  public abstract DrawSegment(p1: XY, p2: XY, color: RGBA): void;
+	// #endif
 
-  public abstract DrawTransform(xf: b2Transform): void;
+	public abstract DrawSegment (p1: XY, p2: XY, color: RGBA): void;
 
-  public abstract DrawPoint(p: XY, size: number, color: RGBA): void;
+	public abstract DrawTransform (xf: b2Transform): void;
+
+	public abstract DrawPoint (p: XY, size: number, color: RGBA): void;
 }

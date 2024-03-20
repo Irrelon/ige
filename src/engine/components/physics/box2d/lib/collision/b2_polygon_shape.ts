@@ -16,14 +16,14 @@
 * 3. This notice may not be removed or altered from any source distribution.
 */
 
-// DEBUG: import { b2Assert, b2_epsilon_sq } from "../common/b2_settings.js";
-import { b2_epsilon, b2_maxFloat, b2_linearSlop, b2_polygonRadius } from "../common/b2_settings.js";
-import type { XY } from "../common/b2_math.js";
-import { b2Vec2, b2Rot, b2Transform } from "../common/b2_math.js";
-import type { b2AABB, b2RayCastInput, b2RayCastOutput } from "./b2_collision.js";
-import type { b2DistanceProxy } from "./b2_distance.js";
-import { b2MassData } from "./b2_shape.js";
-import { b2Shape, b2ShapeType } from "./b2_shape.js";
+// DEBUG: import { b2Assert, b2_epsilon_sq } from "../common/b2_settings";
+import { b2_epsilon, b2_maxFloat, b2_linearSlop, b2_polygonRadius } from "../common/b2_settings";
+import type { XY } from "../common/b2_math";
+import { b2Vec2, b2Rot, b2Transform } from "../common/b2_math";
+import type { b2AABB, b2RayCastInput, b2RayCastOutput } from "./b2_collision";
+import type { b2DistanceProxy } from "./b2_distance";
+import { b2MassData } from "./b2_shape";
+import { b2Shape, b2ShapeType } from "./b2_shape";
 
 /// A solid convex polygon. It is assumed that the interior of the polygon is to
 /// the left of each edge.
@@ -70,20 +70,27 @@ export class b2PolygonShape extends b2Shape {
 	/// may lead to poor stacking behavior.
 	private static Set_s_r = new b2Vec2();
 	private static Set_s_v = new b2Vec2();
-	public Set(vertices: XY[]): b2PolygonShape;
-	public Set(vertices: XY[], count: number): b2PolygonShape;
-	public Set(vertices: number[]): b2PolygonShape;
+
+	public Set (vertices: XY[]): b2PolygonShape;
+	public Set (vertices: XY[], count: number): b2PolygonShape;
+	public Set (vertices: number[]): b2PolygonShape;
 	public Set (...args: any[]): b2PolygonShape {
 		if (typeof args[0][0] === "number") {
 			const vertices: number[] = args[0];
-			if (vertices.length % 2 !== 0) { throw new Error(); }
-			return this._Set((index: number): XY => ({ x: vertices[index * 2], y: vertices[index * 2 + 1] }), vertices.length / 2);
+			if (vertices.length % 2 !== 0) {
+				throw new Error();
+			}
+			return this._Set((index: number): XY => ({
+				x: vertices[index * 2],
+				y: vertices[index * 2 + 1]
+			}), vertices.length / 2);
 		} else {
 			const vertices: XY[] = args[0];
 			const count: number = args[1] || vertices.length;
 			return this._Set((index: number): XY => vertices[index], count);
 		}
 	}
+
 	public _Set (vertices: (index: number) => XY, count: number): b2PolygonShape {
 
 		// DEBUG: b2Assert(3 <= count);
@@ -229,6 +236,7 @@ export class b2PolygonShape extends b2Shape {
 
 	/// @see b2Shape::TestPoint
 	private static TestPoint_s_pLocal = new b2Vec2();
+
 	public TestPoint (xf: b2Transform, p: XY): boolean {
 		const pLocal: b2Vec2 = b2Transform.MulTXV(xf, p, b2PolygonShape.TestPoint_s_pLocal);
 
@@ -248,6 +256,7 @@ export class b2PolygonShape extends b2Shape {
 	private static ComputeDistance_s_normalForMaxDistance = new b2Vec2();
 	private static ComputeDistance_s_minDistance = new b2Vec2();
 	private static ComputeDistance_s_distance = new b2Vec2();
+
 	public ComputeDistance (xf: b2Transform, p: b2Vec2, normal: b2Vec2, childIndex: number): number {
 		const pLocal = b2Transform.MulTXV(xf, p, b2PolygonShape.ComputeDistance_s_pLocal);
 		let maxDistance = -b2_maxFloat;
@@ -281,6 +290,7 @@ export class b2PolygonShape extends b2Shape {
 			return maxDistance;
 		}
 	}
+
 	// #endif
 
 	/// Implement b2Shape.
@@ -289,6 +299,7 @@ export class b2PolygonShape extends b2Shape {
 	private static RayCast_s_p1 = new b2Vec2();
 	private static RayCast_s_p2 = new b2Vec2();
 	private static RayCast_s_d = new b2Vec2();
+
 	public RayCast (output: b2RayCastOutput, input: b2RayCastInput, xf: b2Transform, childIndex: number): boolean {
 		// Put the ray into the polygon's frame of reference.
 		const p1: b2Vec2 = b2Transform.MulTXV(xf, input.p1, b2PolygonShape.RayCast_s_p1);
@@ -349,6 +360,7 @@ export class b2PolygonShape extends b2Shape {
 
 	/// @see b2Shape::ComputeAABB
 	private static ComputeAABB_s_v = new b2Vec2();
+
 	public ComputeAABB (aabb: b2AABB, xf: b2Transform, childIndex: number): void {
 		const lower: b2Vec2 = b2Transform.MulXV(xf, this.m_vertices[0], aabb.lowerBound);
 		const upper: b2Vec2 = aabb.upperBound.Copy(lower);
@@ -369,6 +381,7 @@ export class b2PolygonShape extends b2Shape {
 	private static ComputeMass_s_s = new b2Vec2();
 	private static ComputeMass_s_e1 = new b2Vec2();
 	private static ComputeMass_s_e2 = new b2Vec2();
+
 	public ComputeMass (massData: b2MassData, density: number): void {
 		// Polygon mass, centroid, and inertia.
 		// Let rho be the polygon density in mass per unit area.
@@ -447,6 +460,7 @@ export class b2PolygonShape extends b2Shape {
 
 	private static Validate_s_e = new b2Vec2();
 	private static Validate_s_v = new b2Vec2();
+
 	public Validate (): boolean {
 		for (let i: number = 0; i < this.m_count; ++i) {
 			const i1 = i;
@@ -481,6 +495,7 @@ export class b2PolygonShape extends b2Shape {
 	private static ComputeSubmergedArea_s_intoVec = new b2Vec2();
 	private static ComputeSubmergedArea_s_outoVec = new b2Vec2();
 	private static ComputeSubmergedArea_s_center = new b2Vec2();
+
 	public ComputeSubmergedArea (normal: b2Vec2, offset: number, xf: b2Transform, c: b2Vec2): number {
 		// Transform plane into shape co-ordinates
 		const normalL: b2Vec2 = b2Rot.MulTRV(xf.q, normal, b2PolygonShape.ComputeSubmergedArea_s_normalL);
@@ -589,10 +604,12 @@ export class b2PolygonShape extends b2Shape {
 	private static ComputeCentroid_s_p3 = new b2Vec2();
 	private static ComputeCentroid_s_e1 = new b2Vec2();
 	private static ComputeCentroid_s_e2 = new b2Vec2();
+
 	public static ComputeCentroid (vs: b2Vec2[], count: number, out: b2Vec2): b2Vec2 {
 		// DEBUG: b2Assert(count >= 3);
 
-		const c: b2Vec2 = out; c.SetZero();
+		const c: b2Vec2 = out;
+		c.SetZero();
 		let area: number = 0;
 
 		// Get a reference point for forming triangles.

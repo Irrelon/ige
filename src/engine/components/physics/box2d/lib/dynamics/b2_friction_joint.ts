@@ -16,22 +16,22 @@
 * 3. This notice may not be removed or altered from any source distribution.
 */
 
-import { b2Maybe } from "../common/b2_settings.js";
-import type { XY } from "../common/b2_math.js";
-import { b2Clamp, b2Vec2, b2Mat22, b2Rot } from "../common/b2_math.js";
-import type { b2IJointDef } from "./b2_joint.js";
-import { b2Joint, b2JointDef, b2JointType } from "./b2_joint.js";
-import type { b2SolverData } from "./b2_time_step.js";
-import type { b2Body } from "./b2_body.js";
+import { b2Maybe } from "../common/b2_settings";
+import type { XY } from "../common/b2_math";
+import { b2Clamp, b2Vec2, b2Mat22, b2Rot } from "../common/b2_math";
+import type { b2IJointDef } from "./b2_joint";
+import { b2Joint, b2JointDef, b2JointType } from "./b2_joint";
+import type { b2SolverData } from "./b2_time_step";
+import type { b2Body } from "./b2_body";
 
 export interface b2IFrictionJointDef extends b2IJointDef {
-  localAnchorA?: XY;
+	localAnchorA?: XY;
 
-  localAnchorB?: XY;
+	localAnchorB?: XY;
 
-  maxForce?: number;
+	maxForce?: number;
 
-  maxTorque?: number;
+	maxTorque?: number;
 }
 
 /// Friction joint definition.
@@ -186,6 +186,7 @@ export class b2FrictionJoint extends b2Joint {
 	private static SolveVelocityConstraints_s_Cdot_v2 = new b2Vec2();
 	private static SolveVelocityConstraints_s_impulseV = new b2Vec2();
 	private static SolveVelocityConstraints_s_oldImpulseV = new b2Vec2();
+
 	public SolveVelocityConstraints (data: b2SolverData): void {
 		const vA: b2Vec2 = data.velocities[this.m_indexA].v;
 		let wA: number = data.velocities[this.m_indexA].w;
@@ -275,9 +276,13 @@ export class b2FrictionJoint extends b2Joint {
 		return inv_dt * this.m_angularImpulse;
 	}
 
-	public GetLocalAnchorA (): Readonly<b2Vec2> { return this.m_localAnchorA; }
+	public GetLocalAnchorA (): Readonly<b2Vec2> {
+		return this.m_localAnchorA;
+	}
 
-	public GetLocalAnchorB (): Readonly<b2Vec2> { return this.m_localAnchorB; }
+	public GetLocalAnchorB (): Readonly<b2Vec2> {
+		return this.m_localAnchorB;
+	}
 
 	public SetMaxForce (force: number): void {
 		this.m_maxForce = force;

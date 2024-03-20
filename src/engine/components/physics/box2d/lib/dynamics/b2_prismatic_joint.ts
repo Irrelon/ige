@@ -16,36 +16,36 @@
 * 3. This notice may not be removed or altered from any source distribution.
 */
 
-import { b2_linearSlop, b2_angularSlop, b2Maybe } from "../common/b2_settings.js";
-import type { XY} from "../common/b2_math.js";
-import { b2Abs, b2Min, b2Max, b2Clamp, b2Vec2, b2Mat22, b2Vec3, b2Mat33, b2Rot, b2Transform } from "../common/b2_math.js";
-import type { b2Body } from "./b2_body.js";
-import type { b2IJointDef } from "./b2_joint.js";
-import { b2Joint, b2JointDef, b2JointType } from "./b2_joint.js";
-import type { b2SolverData } from "./b2_time_step.js";
-import type { b2Draw} from "../common/b2_draw.js";
-import { b2Color } from "../common/b2_draw.js";
+import { b2_linearSlop, b2_angularSlop, b2Maybe } from "../common/b2_settings";
+import type { XY } from "../common/b2_math";
+import { b2Abs, b2Min, b2Max, b2Clamp, b2Vec2, b2Mat22, b2Vec3, b2Mat33, b2Rot, b2Transform } from "../common/b2_math";
+import type { b2Body } from "./b2_body";
+import type { b2IJointDef } from "./b2_joint";
+import { b2Joint, b2JointDef, b2JointType } from "./b2_joint";
+import type { b2SolverData } from "./b2_time_step";
+import type { b2Draw } from "../common/b2_draw";
+import { b2Color } from "../common/b2_draw";
 
 export interface b2IPrismaticJointDef extends b2IJointDef {
-  localAnchorA?: XY;
+	localAnchorA?: XY;
 
-  localAnchorB?: XY;
+	localAnchorB?: XY;
 
-  localAxisA?: XY;
+	localAxisA?: XY;
 
-  referenceAngle?: number;
+	referenceAngle?: number;
 
-  enableLimit?: boolean;
+	enableLimit?: boolean;
 
-  lowerTranslation?: number;
+	lowerTranslation?: number;
 
-  upperTranslation?: number;
+	upperTranslation?: number;
 
-  enableMotor?: boolean;
+	enableMotor?: boolean;
 
-  maxMotorForce?: number;
+	maxMotorForce?: number;
 
-  motorSpeed?: number;
+	motorSpeed?: number;
 }
 
 /// Prismatic joint definition. This requires defining a line of
@@ -135,6 +135,31 @@ export class b2PrismaticJointDef extends b2JointDef implements b2IPrismaticJoint
 // a1 = cross(d + r1, v), a2 = cross(r2, v)
 
 export class b2PrismaticJoint extends b2Joint {
+	private static InitVelocityConstraints_s_d = new b2Vec2();
+	private static InitVelocityConstraints_s_P = new b2Vec2();
+	private static SolveVelocityConstraints_s_P = new b2Vec2();
+	// private static SolveVelocityConstraints_s_df3 = new b2Vec3();
+	private static SolveVelocityConstraints_s_df = new b2Vec2();
+	// solver indicates the limit is inactive.
+	private static SolvePositionConstraints_s_d = new b2Vec2();
+	private static SolvePositionConstraints_s_impulse = new b2Vec3();
+	private static SolvePositionConstraints_s_impulse1 = new b2Vec2();
+	private static SolvePositionConstraints_s_P = new b2Vec2();
+	private static GetJointTranslation_s_pA = new b2Vec2();
+	private static GetJointTranslation_s_pB = new b2Vec2();
+	private static GetJointTranslation_s_d = new b2Vec2();
+	private static GetJointTranslation_s_axis = new b2Vec2();
+	private static Draw_s_pA = new b2Vec2();
+	private static Draw_s_pB = new b2Vec2();
+	private static Draw_s_axis = new b2Vec2();
+	private static Draw_s_c1 = new b2Color(0.7, 0.7, 0.7);
+	private static Draw_s_c2 = new b2Color(0.3, 0.9, 0.3);
+	private static Draw_s_c3 = new b2Color(0.9, 0.3, 0.3);
+	private static Draw_s_c4 = new b2Color(0.3, 0.3, 0.9);
+	private static Draw_s_c5 = new b2Color(0.4, 0.4, 0.4);
+	private static Draw_s_lower = new b2Vec2();
+	private static Draw_s_upper = new b2Vec2();
+	private static Draw_s_perp = new b2Vec2();
 	public readonly m_localAnchorA: b2Vec2 = new b2Vec2();
 	public readonly m_localAnchorB: b2Vec2 = new b2Vec2();
 	public readonly m_localXAxisA: b2Vec2 = new b2Vec2();
@@ -150,7 +175,6 @@ export class b2PrismaticJoint extends b2Joint {
 	public m_motorSpeed: number = 0;
 	public m_enableLimit: boolean = false;
 	public m_enableMotor: boolean = false;
-
 	// Solver temp
 	public m_indexA: number = 0;
 	public m_indexB: number = 0;
@@ -159,8 +183,17 @@ export class b2PrismaticJoint extends b2Joint {
 	public m_invMassA: number = 0;
 	public m_invMassB: number = 0;
 	public m_invIA: number = 0;
+	// private static SolveVelocityConstraints_s_f2r = new b2Vec2();
+	// private static SolveVelocityConstraints_s_f1 = new b2Vec3();
 	public m_invIB: number = 0;
 	public readonly m_axis: b2Vec2 = new b2Vec2(0, 0);
+
+	// A velocity based solver computes reaction forces(impulses) using the velocity constraint solver.Under this context,
+	// the position solver is not there to resolve forces.It is only there to cope with integration error.
+	//
+	// Therefore, the pseudo impulses in the position solver do not have any physical meaning.Thus it is okay if they suck.
+	//
+	// We could take the active state from the velocity solver.However, the joint might push past the limit when the velocity
 	public readonly m_perp: b2Vec2 = new b2Vec2(0, 0);
 	public m_s1: number = 0;
 	public m_s2: number = 0;
@@ -171,7 +204,6 @@ export class b2PrismaticJoint extends b2Joint {
 	public readonly m_K2: b2Mat22 = new b2Mat22();
 	public m_translation: number = 0;
 	public m_axialMass: number = 0;
-
 	public readonly m_qA: b2Rot = new b2Rot();
 	public readonly m_qB: b2Rot = new b2Rot();
 	public readonly m_lalcA: b2Vec2 = new b2Vec2();
@@ -196,8 +228,6 @@ export class b2PrismaticJoint extends b2Joint {
 		this.m_enableMotor = b2Maybe(def.enableMotor, false);
 	}
 
-	private static InitVelocityConstraints_s_d = new b2Vec2();
-	private static InitVelocityConstraints_s_P = new b2Vec2();
 	public InitVelocityConstraints (data: b2SolverData): void {
 		this.m_indexA = this.m_bodyA.m_islandIndex;
 		this.m_indexB = this.m_bodyB.m_islandIndex;
@@ -328,11 +358,6 @@ export class b2PrismaticJoint extends b2Joint {
 		data.velocities[this.m_indexB].w = wB;
 	}
 
-	private static SolveVelocityConstraints_s_P = new b2Vec2();
-	// private static SolveVelocityConstraints_s_f2r = new b2Vec2();
-	// private static SolveVelocityConstraints_s_f1 = new b2Vec3();
-	// private static SolveVelocityConstraints_s_df3 = new b2Vec3();
-	private static SolveVelocityConstraints_s_df = new b2Vec2();
 	public SolveVelocityConstraints (data: b2SolverData): void {
 		const vA: b2Vec2 = data.velocities[this.m_indexA].v;
 		let wA: number = data.velocities[this.m_indexA].w;
@@ -448,17 +473,6 @@ export class b2PrismaticJoint extends b2Joint {
 		data.velocities[this.m_indexB].w = wB;
 	}
 
-	// A velocity based solver computes reaction forces(impulses) using the velocity constraint solver.Under this context,
-	// the position solver is not there to resolve forces.It is only there to cope with integration error.
-	//
-	// Therefore, the pseudo impulses in the position solver do not have any physical meaning.Thus it is okay if they suck.
-	//
-	// We could take the active state from the velocity solver.However, the joint might push past the limit when the velocity
-	// solver indicates the limit is inactive.
-	private static SolvePositionConstraints_s_d = new b2Vec2();
-	private static SolvePositionConstraints_s_impulse = new b2Vec3();
-	private static SolvePositionConstraints_s_impulse1 = new b2Vec2();
-	private static SolvePositionConstraints_s_P = new b2Vec2();
 	public SolvePositionConstraints (data: b2SolverData): boolean {
 		const cA: b2Vec2 = data.positions[this.m_indexA].c;
 		let aA: number = data.positions[this.m_indexA].a;
@@ -627,18 +641,22 @@ export class b2PrismaticJoint extends b2Joint {
 		return inv_dt * this.m_impulse.y;
 	}
 
-	public GetLocalAnchorA (): Readonly<b2Vec2> { return this.m_localAnchorA; }
+	public GetLocalAnchorA (): Readonly<b2Vec2> {
+		return this.m_localAnchorA;
+	}
 
-	public GetLocalAnchorB (): Readonly<b2Vec2> { return this.m_localAnchorB; }
+	public GetLocalAnchorB (): Readonly<b2Vec2> {
+		return this.m_localAnchorB;
+	}
 
-	public GetLocalAxisA (): Readonly<b2Vec2> { return this.m_localXAxisA; }
+	public GetLocalAxisA (): Readonly<b2Vec2> {
+		return this.m_localXAxisA;
+	}
 
-	public GetReferenceAngle () { return this.m_referenceAngle; }
+	public GetReferenceAngle () {
+		return this.m_referenceAngle;
+	}
 
-	private static GetJointTranslation_s_pA = new b2Vec2();
-	private static GetJointTranslation_s_pB = new b2Vec2();
-	private static GetJointTranslation_s_d = new b2Vec2();
-	private static GetJointTranslation_s_axis = new b2Vec2();
 	public GetJointTranslation (): number {
 		// b2Vec2 pA = m_bodyA.GetWorldPoint(m_localAnchorA);
 		const pA = this.m_bodyA.GetWorldPoint(this.m_localAnchorA, b2PrismaticJoint.GetJointTranslation_s_pA);
@@ -680,13 +698,13 @@ export class b2PrismaticJoint extends b2Joint {
 
 		// float32 speed = b2Dot(d, b2Cross(wA, axis)) + b2Dot(axis, vB + b2Cross(wB, rB) - vA - b2Cross(wA, rA));
 		const speed =
-      b2Vec2.DotVV(d, b2Vec2.CrossSV(wA, axis, b2Vec2.s_t0)) +
-      b2Vec2.DotVV(
-      	axis,
-      	b2Vec2.SubVV(
-      		b2Vec2.AddVCrossSV(vB, wB, rB, b2Vec2.s_t0),
-      		b2Vec2.AddVCrossSV(vA, wA, rA, b2Vec2.s_t1),
-      		b2Vec2.s_t0));
+			b2Vec2.DotVV(d, b2Vec2.CrossSV(wA, axis, b2Vec2.s_t0)) +
+			b2Vec2.DotVV(
+				axis,
+				b2Vec2.SubVV(
+					b2Vec2.AddVCrossSV(vB, wB, rB, b2Vec2.s_t0),
+					b2Vec2.AddVCrossSV(vA, wA, rA, b2Vec2.s_t1),
+					b2Vec2.s_t0));
 		return speed;
 	}
 
@@ -755,7 +773,9 @@ export class b2PrismaticJoint extends b2Joint {
 		}
 	}
 
-	public GetMaxMotorForce (): number { return this.m_maxMotorForce; }
+	public GetMaxMotorForce (): number {
+		return this.m_maxMotorForce;
+	}
 
 	public GetMotorForce (inv_dt: number): number {
 		return inv_dt * this.m_motorImpulse;
@@ -782,17 +802,6 @@ export class b2PrismaticJoint extends b2Joint {
 		log("  joints[%d] = this.m_world.CreateJoint(jd);\n", this.m_index);
 	}
 
-	private static Draw_s_pA = new b2Vec2();
-	private static Draw_s_pB = new b2Vec2();
-	private static Draw_s_axis = new b2Vec2();
-	private static Draw_s_c1 = new b2Color(0.7, 0.7, 0.7);
-	private static Draw_s_c2 = new b2Color(0.3, 0.9, 0.3);
-	private static Draw_s_c3 = new b2Color(0.9, 0.3, 0.3);
-	private static Draw_s_c4 = new b2Color(0.3, 0.3, 0.9);
-	private static Draw_s_c5 = new b2Color(0.4, 0.4, 0.4);
-	private static Draw_s_lower = new b2Vec2();
-	private static Draw_s_upper = new b2Vec2();
-	private static Draw_s_perp = new b2Vec2();
 	public override Draw (draw: b2Draw): void {
 		const xfA: Readonly<b2Transform> = this.m_bodyA.GetTransform();
 		const xfB: Readonly<b2Transform> = this.m_bodyB.GetTransform();

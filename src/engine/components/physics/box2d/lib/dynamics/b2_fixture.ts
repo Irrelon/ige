@@ -16,30 +16,30 @@
 * 3. This notice may not be removed or altered from any source distribution.
 */
 
-// DEBUG: import { b2Assert } from "../common/b2_settings.js";
-import { b2Maybe, b2_lengthUnitsPerMeter } from "../common/b2_settings.js";
-import type { b2Transform, XY } from "../common/b2_math.js";
-import { b2Vec2 } from "../common/b2_math.js";
-import type { b2RayCastInput, b2RayCastOutput } from "../collision/b2_collision.js";
-import { b2AABB } from "../collision/b2_collision.js";
-import type { b2TreeNode } from "../collision/b2_dynamic_tree.js";
-import type { b2Shape, b2ShapeType} from "../collision/b2_shape.js";
-import { b2MassData } from "../collision/b2_shape.js";
-import type { b2Body } from "./b2_body.js";
+// DEBUG: import { b2Assert } from "../common/b2_settings";
+import { b2Maybe, b2_lengthUnitsPerMeter } from "../common/b2_settings";
+import type { b2Transform, XY } from "../common/b2_math";
+import { b2Vec2 } from "../common/b2_math";
+import type { b2RayCastInput, b2RayCastOutput } from "../collision/b2_collision";
+import { b2AABB } from "../collision/b2_collision";
+import type { b2TreeNode } from "../collision/b2_dynamic_tree";
+import type { b2Shape, b2ShapeType } from "../collision/b2_shape";
+import { b2MassData } from "../collision/b2_shape";
+import type { b2Body } from "./b2_body";
 
 /// This holds contact filtering data.
 export interface b2IFilter {
-  /// The collision category bits. Normally you would just set one bit.
-  categoryBits: number;
+	/// The collision category bits. Normally you would just set one bit.
+	categoryBits: number;
 
-  /// The collision mask bits. This states the categories that this
-  /// shape would accept for collision.
-  maskBits: number;
+	/// The collision mask bits. This states the categories that this
+	/// shape would accept for collision.
+	maskBits: number;
 
-  /// Collision groups allow a certain group of objects to never collide (negative)
-  /// or always collide (positive). Zero means no collision group. Non-zero group
-  /// filtering always wins against the mask bits.
-  groupIndex?: number;
+	/// Collision groups allow a certain group of objects to never collide (negative)
+	/// or always collide (positive). Zero means no collision group. Non-zero group
+	/// filtering always wins against the mask bits.
+	groupIndex?: number;
 }
 
 /// This holds contact filtering data.
@@ -74,32 +74,32 @@ export class b2Filter implements b2IFilter {
 /// A fixture definition is used to create a fixture. This class defines an
 /// abstract fixture definition. You can reuse fixture definitions safely.
 export interface b2IFixtureDef {
-  /// The shape, this must be set. The shape will be cloned, so you
-  /// can create the shape on the stack.
-  shape: b2Shape;
+	/// The shape, this must be set. The shape will be cloned, so you
+	/// can create the shape on the stack.
+	shape: b2Shape;
 
-  /// Use this to store application specific fixture data.
-  userData?: any;
+	/// Use this to store application specific fixture data.
+	userData?: any;
 
-  /// The friction coefficient, usually in the range [0,1].
-  friction?: number;
+	/// The friction coefficient, usually in the range [0,1].
+	friction?: number;
 
-  /// The restitution (elasticity) usually in the range [0,1].
-  restitution?: number;
+	/// The restitution (elasticity) usually in the range [0,1].
+	restitution?: number;
 
-  /// Restitution velocity threshold, usually in m/s. Collisions above this
-  /// speed have restitution applied (will bounce).
-  restitutionThreshold?: number;
+	/// Restitution velocity threshold, usually in m/s. Collisions above this
+	/// speed have restitution applied (will bounce).
+	restitutionThreshold?: number;
 
-  /// The density, usually in kg/m^2.
-  density?: number;
+	/// The density, usually in kg/m^2.
+	density?: number;
 
-  /// A sensor shape collects contact information but never generates a collision
-  /// response.
-  isSensor?: boolean;
+	/// A sensor shape collects contact information but never generates a collision
+	/// response.
+	isSensor?: boolean;
 
-  /// Contact filtering data.
-  filter?: b2IFilter;
+	/// Contact filtering data.
+	filter?: b2IFilter;
 }
 
 /// A fixture definition is used to create a fixture. This class defines an
@@ -135,25 +135,29 @@ export class b2FixtureDef implements b2IFixtureDef {
 
 /// This proxy is used internally to connect fixtures to the broad-phase.
 export class b2FixtureProxy {
+	private static Synchronize_s_aabb1 = new b2AABB();
+	private static Synchronize_s_aabb2 = new b2AABB();
+	private static Synchronize_s_displacement = new b2Vec2();
 	public readonly aabb: b2AABB = new b2AABB();
 	public readonly fixture: b2Fixture;
 	public readonly childIndex: number = 0;
 	public treeNode: b2TreeNode<b2FixtureProxy>;
+
 	constructor (fixture: b2Fixture, childIndex: number) {
 		this.fixture = fixture;
 		this.childIndex = childIndex;
 		this.fixture.m_shape.ComputeAABB(this.aabb, this.fixture.m_body.GetTransform(), childIndex);
 		this.treeNode = this.fixture.m_body.m_world.m_contactManager.m_broadPhase.CreateProxy(this.aabb, this);
 	}
+
 	public Reset (): void {
 		this.fixture.m_body.m_world.m_contactManager.m_broadPhase.DestroyProxy(this.treeNode);
 	}
+
 	public Touch (): void {
 		this.fixture.m_body.m_world.m_contactManager.m_broadPhase.TouchProxy(this.treeNode);
 	}
-	private static Synchronize_s_aabb1 = new b2AABB();
-	private static Synchronize_s_aabb2 = new b2AABB();
-	private static Synchronize_s_displacement = new b2Vec2();
+
 	public Synchronize (transform1: b2Transform, transform2: b2Transform): void {
 		if (transform1 === transform2) {
 			this.fixture.m_shape.ComputeAABB(this.aabb, transform1, this.childIndex);
@@ -190,12 +194,8 @@ export class b2Fixture {
 	public m_restitutionThreshold: number = 1.0 * b2_lengthUnitsPerMeter;
 
 	public readonly m_proxies: b2FixtureProxy[] = [];
-	public get m_proxyCount (): number { return this.m_proxies.length; }
-
 	public readonly m_filter: b2Filter = new b2Filter();
-
 	public m_isSensor: boolean = false;
-
 	public m_userData: any = null;
 
 	constructor (body: b2Body, def: b2IFixtureDef) {
@@ -208,6 +208,10 @@ export class b2Fixture {
 		this.m_filter.Copy(b2Maybe(def.filter, b2Filter.DEFAULT));
 		this.m_isSensor = b2Maybe(def.isSensor, false);
 		this.m_density = b2Maybe(def.density, 0);
+	}
+
+	public get m_proxyCount (): number {
+		return this.m_proxies.length;
 	}
 
 	public Reset (): void {
@@ -309,6 +313,7 @@ export class b2Fixture {
 	public ComputeDistance (p: b2Vec2, normal: b2Vec2, childIndex: number): number {
 		return this.m_shape.ComputeDistance(this.m_body.GetTransform(), p, normal, childIndex);
 	}
+
 	// #endif
 
 	/// Cast a ray against this shape.
@@ -401,7 +406,9 @@ export class b2Fixture {
 
 	// These support body activation/deactivation.
 	public CreateProxies (): void {
-		if (this.m_proxies.length !== 0) { throw new Error(); }
+		if (this.m_proxies.length !== 0) {
+			throw new Error();
+		}
 		// Create proxies in the broad-phase.
 		for (let i: number = 0; i < this.m_shape.GetChildCount(); ++i) {
 			this.m_proxies[i] = new b2FixtureProxy(this, i);

@@ -16,23 +16,23 @@
 * 3. This notice may not be removed or altered from any source distribution.
 */
 
-// DEBUG: import { b2Assert } from "../common/b2_settings.js";
-import { b2_maxFloat, b2_timeToSleep } from "../common/b2_settings.js";
-import { b2_maxTranslation, b2_maxTranslationSquared } from "../common/b2_settings.js";
-import { b2_maxRotation, b2_maxRotationSquared } from "../common/b2_settings.js";
-import { b2_linearSleepTolerance, b2_angularSleepTolerance } from "../common/b2_settings.js";
-import { b2Abs, b2Min, b2Max, b2Vec2 } from "../common/b2_math.js";
-import { b2Timer } from "../common/b2_timer.js";
-import type { b2Contact } from "./b2_contact.js";
-import { b2ContactSolver, b2ContactSolverDef } from "./b2_contact_solver.js";
-import type { b2ContactVelocityConstraint } from "./b2_contact_solver.js";
-import type { b2Joint } from "./b2_joint.js";
-import type { b2Body} from "./b2_body.js";
-import { b2BodyType } from "./b2_body.js";
-import type { b2TimeStep, b2Profile} from "./b2_time_step.js";
-import { b2SolverData, b2Position, b2Velocity } from "./b2_time_step.js";
-import type { b2ContactListener } from "./b2_world_callbacks.js";
-import { b2ContactImpulse } from "./b2_world_callbacks.js";
+// DEBUG: import { b2Assert } from "../common/b2_settings";
+import { b2_maxFloat, b2_timeToSleep } from "../common/b2_settings";
+import { b2_maxTranslation, b2_maxTranslationSquared } from "../common/b2_settings";
+import { b2_maxRotation, b2_maxRotationSquared } from "../common/b2_settings";
+import { b2_linearSleepTolerance, b2_angularSleepTolerance } from "../common/b2_settings";
+import { b2Abs, b2Min, b2Max, b2Vec2 } from "../common/b2_math";
+import { b2Timer } from "../common/b2_timer";
+import type { b2Contact } from "./b2_contact";
+import { b2ContactSolver, b2ContactSolverDef } from "./b2_contact_solver";
+import type { b2ContactVelocityConstraint } from "./b2_contact_solver";
+import type { b2Joint } from "./b2_joint";
+import type { b2Body } from "./b2_body";
+import { b2BodyType } from "./b2_body";
+import type { b2TimeStep, b2Profile } from "./b2_time_step";
+import { b2SolverData, b2Position, b2Velocity } from "./b2_time_step";
+import type { b2ContactListener } from "./b2_world_callbacks";
+import { b2ContactImpulse } from "./b2_world_callbacks";
 
 /*
 Position Correction Notes
@@ -236,6 +236,7 @@ export class b2Island {
 	private static s_contactSolverDef = new b2ContactSolverDef();
 	private static s_contactSolver = new b2ContactSolver();
 	private static s_translation = new b2Vec2();
+
 	public Solve (profile: b2Profile, step: b2TimeStep, gravity: b2Vec2, allowSleep: boolean): void {
 		const timer: b2Timer = b2Island.s_timer.Reset();
 
@@ -399,8 +400,8 @@ export class b2Island {
 				}
 
 				if (!b.m_autoSleepFlag ||
-          b.m_angularVelocity * b.m_angularVelocity > angTolSqr ||
-          b2Vec2.DotVV(b.m_linearVelocity, b.m_linearVelocity) > linTolSqr) {
+					b.m_angularVelocity * b.m_angularVelocity > angTolSqr ||
+					b2Vec2.DotVV(b.m_linearVelocity, b.m_linearVelocity) > linTolSqr) {
 					b.m_sleepTime = 0;
 					minSleepTime = 0;
 				} else {
@@ -542,6 +543,7 @@ export class b2Island {
 	}
 
 	private static s_impulse = new b2ContactImpulse();
+
 	public Report (constraints: b2ContactVelocityConstraint[]): void {
 		if (this.m_listener === null) {
 			return;
@@ -550,7 +552,9 @@ export class b2Island {
 		for (let i: number = 0; i < this.m_contactCount; ++i) {
 			const c: b2Contact = this.m_contacts[i];
 
-			if (!c) { continue; }
+			if (!c) {
+				continue;
+			}
 
 			const vc: b2ContactVelocityConstraint = constraints[i];
 

@@ -20,16 +20,17 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-import { b2_linearSlop, b2_maxFloat, b2_maxManifoldPoints } from "../common/b2_settings.js";
-import { b2Vec2, b2Transform, b2Rot } from "../common/b2_math.js";
-import type { b2Manifold, b2ContactFeature, b2ManifoldPoint } from "./b2_collision.js";
-import { b2ClipVertex, b2ContactFeatureType, b2ManifoldType, b2ClipSegmentToLine } from "./b2_collision.js";
-import type { b2PolygonShape } from "./b2_polygon_shape.js";
+import { b2_linearSlop, b2_maxFloat, b2_maxManifoldPoints } from "../common/b2_settings";
+import { b2Vec2, b2Transform, b2Rot } from "../common/b2_math";
+import type { b2Manifold, b2ContactFeature, b2ManifoldPoint } from "./b2_collision";
+import { b2ClipVertex, b2ContactFeatureType, b2ManifoldType, b2ClipSegmentToLine } from "./b2_collision";
+import type { b2PolygonShape } from "./b2_polygon_shape";
 
 // Find the max separation between poly1 and poly2 using edge normals from poly1.
 const b2FindMaxSeparation_s_xf: b2Transform = new b2Transform();
 const b2FindMaxSeparation_s_n: b2Vec2 = new b2Vec2();
 const b2FindMaxSeparation_s_v1: b2Vec2 = new b2Vec2();
+
 function b2FindMaxSeparation (edgeIndex: [number], poly1: b2PolygonShape, xf1: b2Transform, poly2: b2PolygonShape, xf2: b2Transform): number {
 	const count1: number = poly1.m_count;
 	const count2: number = poly2.m_count;
@@ -66,6 +67,7 @@ function b2FindMaxSeparation (edgeIndex: [number], poly1: b2PolygonShape, xf1: b
 }
 
 const b2FindIncidentEdge_s_normal1: b2Vec2 = new b2Vec2();
+
 function b2FindIncidentEdge (c: [b2ClipVertex, b2ClipVertex], poly1: b2PolygonShape, xf1: b2Transform, edge1: number, poly2: b2PolygonShape, xf2: b2Transform): void {
 	const normals1: b2Vec2[] = poly1.m_normals;
 
@@ -117,11 +119,11 @@ function b2FindIncidentEdge (c: [b2ClipVertex, b2ClipVertex], poly1: b2PolygonSh
 // Clip
 
 // The normal points from 1 to 2
-const b2CollidePolygons_s_incidentEdge: [b2ClipVertex, b2ClipVertex] = [ new b2ClipVertex(), new b2ClipVertex() ];
-const b2CollidePolygons_s_clipPoints1: [b2ClipVertex, b2ClipVertex] = [ new b2ClipVertex(), new b2ClipVertex() ];
-const b2CollidePolygons_s_clipPoints2: [b2ClipVertex, b2ClipVertex] = [ new b2ClipVertex(), new b2ClipVertex() ];
-const b2CollidePolygons_s_edgeA: [number] = [ 0 ];
-const b2CollidePolygons_s_edgeB: [number] = [ 0 ];
+const b2CollidePolygons_s_incidentEdge: [b2ClipVertex, b2ClipVertex] = [new b2ClipVertex(), new b2ClipVertex()];
+const b2CollidePolygons_s_clipPoints1: [b2ClipVertex, b2ClipVertex] = [new b2ClipVertex(), new b2ClipVertex()];
+const b2CollidePolygons_s_clipPoints2: [b2ClipVertex, b2ClipVertex] = [new b2ClipVertex(), new b2ClipVertex()];
+const b2CollidePolygons_s_edgeA: [number] = [0];
+const b2CollidePolygons_s_edgeB: [number] = [0];
 const b2CollidePolygons_s_localTangent: b2Vec2 = new b2Vec2();
 const b2CollidePolygons_s_localNormal: b2Vec2 = new b2Vec2();
 const b2CollidePolygons_s_planePoint: b2Vec2 = new b2Vec2();
@@ -130,17 +132,20 @@ const b2CollidePolygons_s_tangent: b2Vec2 = new b2Vec2();
 const b2CollidePolygons_s_ntangent: b2Vec2 = new b2Vec2();
 const b2CollidePolygons_s_v11: b2Vec2 = new b2Vec2();
 const b2CollidePolygons_s_v12: b2Vec2 = new b2Vec2();
+
 export function b2CollidePolygons (manifold: b2Manifold, polyA: b2PolygonShape, xfA: b2Transform, polyB: b2PolygonShape, xfB: b2Transform): void {
 	manifold.pointCount = 0;
 	const totalRadius: number = polyA.m_radius + polyB.m_radius;
 
-	const edgeA: [number] = b2CollidePolygons_s_edgeA; edgeA[0] = 0;
+	const edgeA: [number] = b2CollidePolygons_s_edgeA;
+	edgeA[0] = 0;
 	const separationA: number = b2FindMaxSeparation(edgeA, polyA, xfA, polyB, xfB);
 	if (separationA > totalRadius) {
 		return;
 	}
 
-	const edgeB: [number] = b2CollidePolygons_s_edgeB; edgeB[0] = 0;
+	const edgeB: [number] = b2CollidePolygons_s_edgeB;
+	edgeB[0] = 0;
 	const separationB: number = b2FindMaxSeparation(edgeB, polyB, xfB, polyA, xfA);
 	if (separationB > totalRadius) {
 		return;

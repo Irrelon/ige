@@ -16,26 +16,39 @@
 * 3. This notice may not be removed or altered from any source distribution.
 */
 
-// DEBUG: import { b2Assert } from "../common/b2_settings.js";
-import { b2_linearSlop, b2_maxManifoldPoints, b2_maxLinearCorrection, b2_baumgarte, b2_toiBaumgarte, b2MakeArray } from "../common/b2_settings.js";
-import { b2Min, b2Max, b2Clamp, b2Vec2, b2Mat22, b2Rot, b2Transform } from "../common/b2_math.js";
-import type { b2Manifold } from "../collision/b2_collision.js";
-import type { b2ManifoldPoint } from "../collision/b2_collision.js";
-import { b2WorldManifold } from "../collision/b2_collision.js";
-import { b2ManifoldType } from "../collision/b2_collision.js";
-import type { b2Shape } from "../collision/b2_shape.js";
-import type { b2Contact } from "./b2_contact.js";
-import type { b2Body } from "./b2_body.js";
-import type { b2Fixture } from "./b2_fixture.js";
-import type { b2Position, b2Velocity } from "./b2_time_step.js";
-import { b2TimeStep } from "./b2_time_step.js";
+// DEBUG: import { b2Assert } from "../common/b2_settings";
+import {
+	b2_linearSlop,
+	b2_maxManifoldPoints,
+	b2_maxLinearCorrection,
+	b2_baumgarte,
+	b2_toiBaumgarte,
+	b2MakeArray
+} from "../common/b2_settings";
+import { b2Min, b2Max, b2Clamp, b2Vec2, b2Mat22, b2Rot, b2Transform } from "../common/b2_math";
+import type { b2Manifold } from "../collision/b2_collision";
+import type { b2ManifoldPoint } from "../collision/b2_collision";
+import { b2WorldManifold } from "../collision/b2_collision";
+import { b2ManifoldType } from "../collision/b2_collision";
+import type { b2Shape } from "../collision/b2_shape";
+import type { b2Contact } from "./b2_contact";
+import type { b2Body } from "./b2_body";
+import type { b2Fixture } from "./b2_fixture";
+import type { b2Position, b2Velocity } from "./b2_time_step";
+import { b2TimeStep } from "./b2_time_step";
 
 // Solver debugging is normally disabled because the block solver sometimes has to deal with a poorly conditioned effective mass matrix.
 // #define B2_DEBUG_SOLVER 0
 
 export let g_blockSolve: boolean = false;
-export function get_g_blockSolve (): boolean { return g_blockSolve; }
-export function set_g_blockSolve (value: boolean): void { g_blockSolve = value; }
+
+export function get_g_blockSolve (): boolean {
+	return g_blockSolve;
+}
+
+export function set_g_blockSolve (value: boolean): void {
+	g_blockSolve = value;
+}
 
 export class b2VelocityConstraintPoint {
 	public readonly rA: b2Vec2 = new b2Vec2();
@@ -114,6 +127,7 @@ export class b2PositionSolverManifold {
 	private static Initialize_s_pointB = new b2Vec2();
 	private static Initialize_s_planePoint = new b2Vec2();
 	private static Initialize_s_clipPoint = new b2Vec2();
+
 	public Initialize (pc: b2ContactPositionConstraint, xfA: b2Transform, xfB: b2Transform, index: number): void {
 		const pointA: b2Vec2 = b2PositionSolverManifold.Initialize_s_pointA;
 		const pointB: b2Vec2 = b2PositionSolverManifold.Initialize_s_pointB;
@@ -282,6 +296,7 @@ export class b2ContactSolver {
 	private static InitializeVelocityConstraints_s_xfA = new b2Transform();
 	private static InitializeVelocityConstraints_s_xfB = new b2Transform();
 	private static InitializeVelocityConstraints_s_worldManifold = new b2WorldManifold();
+
 	public InitializeVelocityConstraints (): void {
 		const xfA: b2Transform = b2ContactSolver.InitializeVelocityConstraints_s_xfA;
 		const xfB: b2Transform = b2ContactSolver.InitializeVelocityConstraints_s_xfB;
@@ -400,6 +415,7 @@ export class b2ContactSolver {
 	}
 
 	private static WarmStart_s_P = new b2Vec2();
+
 	public WarmStart (): void {
 		const P: b2Vec2 = b2ContactSolver.WarmStart_s_P;
 
@@ -459,6 +475,7 @@ export class b2ContactSolver {
 	private static SolveVelocityConstraints_s_P1 = new b2Vec2();
 	private static SolveVelocityConstraints_s_P2 = new b2Vec2();
 	private static SolveVelocityConstraints_s_P1P2 = new b2Vec2();
+
 	public SolveVelocityConstraints (): void {
 		const dv: b2Vec2 = b2ContactSolver.SolveVelocityConstraints_s_dv;
 		const dv1: b2Vec2 = b2ContactSolver.SolveVelocityConstraints_s_dv1;
@@ -643,7 +660,7 @@ export class b2ContactSolver {
         #endif
         */
 
-				for (; ; ) {
+				for (; ;) {
 					//
 					// Case 1: vn = 0
 					//
@@ -866,6 +883,7 @@ export class b2ContactSolver {
 	private static SolvePositionConstraints_s_rA = new b2Vec2();
 	private static SolvePositionConstraints_s_rB = new b2Vec2();
 	private static SolvePositionConstraints_s_P = new b2Vec2();
+
 	public SolvePositionConstraints (): boolean {
 		const xfA: b2Transform = b2ContactSolver.SolvePositionConstraints_s_xfA;
 		const xfB: b2Transform = b2ContactSolver.SolvePositionConstraints_s_xfB;
@@ -928,7 +946,7 @@ export class b2ContactSolver {
 				const K: number = mA + mB + iA * rnA * rnA + iB * rnB * rnB;
 
 				// Compute normal impulse
-				const impulse: number = K > 0 ? - C / K : 0;
+				const impulse: number = K > 0 ? -C / K : 0;
 
 				// b2Vec2 P = impulse * normal;
 				b2Vec2.MulSV(impulse, normal, P);
@@ -962,6 +980,7 @@ export class b2ContactSolver {
 	private static SolveTOIPositionConstraints_s_rA = new b2Vec2();
 	private static SolveTOIPositionConstraints_s_rB = new b2Vec2();
 	private static SolveTOIPositionConstraints_s_P = new b2Vec2();
+
 	public SolveTOIPositionConstraints (toiIndexA: number, toiIndexB: number): boolean {
 		const xfA: b2Transform = b2ContactSolver.SolveTOIPositionConstraints_s_xfA;
 		const xfB: b2Transform = b2ContactSolver.SolveTOIPositionConstraints_s_xfB;
@@ -1034,7 +1053,7 @@ export class b2ContactSolver {
 				const K: number = mA + mB + iA * rnA * rnA + iB * rnB * rnB;
 
 				// Compute normal impulse
-				const impulse: number = K > 0 ? - C / K : 0;
+				const impulse: number = K > 0 ? -C / K : 0;
 
 				// b2Vec2 P = impulse * normal;
 				b2Vec2.MulSV(impulse, normal, P);

@@ -16,24 +16,24 @@
 * 3. This notice may not be removed or altered from any source distribution.
 */
 
-// DEBUG: import { b2Assert } from "../common/b2_settings.js";
-// DEBUG: import { b2IsValid } from "../common/b2_math.js";
-import { b2_linearSlop, b2Maybe } from "../common/b2_settings.js";
-import type { b2Transform, XY } from "../common/b2_math.js";
-import { b2Vec2, b2Rot } from "../common/b2_math.js";
-import type { b2IJointDef } from "./b2_joint.js";
-import { b2Joint, b2JointDef, b2JointType } from "./b2_joint.js";
-import type { b2PrismaticJoint } from "./b2_prismatic_joint.js";
-import type { b2RevoluteJoint } from "./b2_revolute_joint.js";
-import type { b2SolverData } from "./b2_time_step.js";
-import type { b2Body } from "./b2_body.js";
+// DEBUG: import { b2Assert } from "../common/b2_settings";
+// DEBUG: import { b2IsValid } from "../common/b2_math";
+import { b2_linearSlop, b2Maybe } from "../common/b2_settings";
+import type { b2Transform, XY } from "../common/b2_math";
+import { b2Vec2, b2Rot } from "../common/b2_math";
+import type { b2IJointDef } from "./b2_joint";
+import { b2Joint, b2JointDef, b2JointType } from "./b2_joint";
+import type { b2PrismaticJoint } from "./b2_prismatic_joint";
+import type { b2RevoluteJoint } from "./b2_revolute_joint";
+import type { b2SolverData } from "./b2_time_step";
+import type { b2Body } from "./b2_body";
 
 export interface b2IGearJointDef extends b2IJointDef {
-  joint1: b2RevoluteJoint | b2PrismaticJoint;
+	joint1: b2RevoluteJoint | b2PrismaticJoint;
 
-  joint2: b2RevoluteJoint | b2PrismaticJoint;
+	joint2: b2RevoluteJoint | b2PrismaticJoint;
 
-  ratio?: number;
+	ratio?: number;
 }
 
 /// Gear joint definition. This definition requires two existing
@@ -51,34 +51,37 @@ export class b2GearJointDef extends b2JointDef implements b2IGearJointDef {
 }
 
 export class b2GearJoint extends b2Joint {
-	public m_joint1: b2RevoluteJoint | b2PrismaticJoint;
-	public m_joint2: b2RevoluteJoint | b2PrismaticJoint;
-
-	public m_typeA: b2JointType = b2JointType.e_unknownJoint;
-	public m_typeB: b2JointType = b2JointType.e_unknownJoint;
+	private static InitVelocityConstraints_s_u = new b2Vec2();
+	private static InitVelocityConstraints_s_rA = new b2Vec2();
+	private static InitVelocityConstraints_s_rB = new b2Vec2();
+	private static InitVelocityConstraints_s_rC = new b2Vec2();
 
 	// Body A is connected to body C
+	private static InitVelocityConstraints_s_rD = new b2Vec2();
+	private static SolvePositionConstraints_s_u = new b2Vec2();
+	private static SolvePositionConstraints_s_rA = new b2Vec2();
+	private static SolvePositionConstraints_s_rB = new b2Vec2();
+	private static SolvePositionConstraints_s_rC = new b2Vec2();
+	private static SolvePositionConstraints_s_rD = new b2Vec2();
+	public m_joint1: b2RevoluteJoint | b2PrismaticJoint;
+	public m_joint2: b2RevoluteJoint | b2PrismaticJoint;
+	public m_typeA: b2JointType = b2JointType.e_unknownJoint;
+	public m_typeB: b2JointType = b2JointType.e_unknownJoint;
 	// Body B is connected to body D
 	public m_bodyC: b2Body;
 	public m_bodyD: b2Body;
-
 	// Solver shared
 	public readonly m_localAnchorA: b2Vec2 = new b2Vec2();
 	public readonly m_localAnchorB: b2Vec2 = new b2Vec2();
 	public readonly m_localAnchorC: b2Vec2 = new b2Vec2();
 	public readonly m_localAnchorD: b2Vec2 = new b2Vec2();
-
 	public readonly m_localAxisC: b2Vec2 = new b2Vec2();
 	public readonly m_localAxisD: b2Vec2 = new b2Vec2();
-
 	public m_referenceAngleA: number = 0;
 	public m_referenceAngleB: number = 0;
-
 	public m_constant: number = 0;
 	public m_ratio: number = 0;
-
 	public m_impulse: number = 0;
-
 	// Solver temp
 	public m_indexA: number = 0;
 	public m_indexB: number = 0;
@@ -103,7 +106,6 @@ export class b2GearJoint extends b2Joint {
 	public m_JwC: number = 0;
 	public m_JwD: number = 0;
 	public m_mass: number = 0;
-
 	public readonly m_qA: b2Rot = new b2Rot();
 	public readonly m_qB: b2Rot = new b2Rot();
 	public readonly m_qC: b2Rot = new b2Rot();
@@ -218,11 +220,6 @@ export class b2GearJoint extends b2Joint {
 		this.m_impulse = 0;
 	}
 
-	private static InitVelocityConstraints_s_u = new b2Vec2();
-	private static InitVelocityConstraints_s_rA = new b2Vec2();
-	private static InitVelocityConstraints_s_rB = new b2Vec2();
-	private static InitVelocityConstraints_s_rC = new b2Vec2();
-	private static InitVelocityConstraints_s_rD = new b2Vec2();
 	public InitVelocityConstraints (data: b2SolverData): void {
 		this.m_indexA = this.m_bodyA.m_islandIndex;
 		this.m_indexB = this.m_bodyB.m_islandIndex;
@@ -353,8 +350,8 @@ export class b2GearJoint extends b2Joint {
 
 		// float32 Cdot = b2Dot(m_JvAC, vA - vC) + b2Dot(m_JvBD, vB - vD);
 		let Cdot =
-      b2Vec2.DotVV(this.m_JvAC, b2Vec2.SubVV(vA, vC, b2Vec2.s_t0)) +
-      b2Vec2.DotVV(this.m_JvBD, b2Vec2.SubVV(vB, vD, b2Vec2.s_t0));
+			b2Vec2.DotVV(this.m_JvAC, b2Vec2.SubVV(vA, vC, b2Vec2.s_t0)) +
+			b2Vec2.DotVV(this.m_JvBD, b2Vec2.SubVV(vB, vD, b2Vec2.s_t0));
 		Cdot += (this.m_JwA * wA - this.m_JwC * wC) + (this.m_JwB * wB - this.m_JwD * wD);
 
 		const impulse: number = -this.m_mass * Cdot;
@@ -383,11 +380,6 @@ export class b2GearJoint extends b2Joint {
 		data.velocities[this.m_indexD].w = wD;
 	}
 
-	private static SolvePositionConstraints_s_u = new b2Vec2();
-	private static SolvePositionConstraints_s_rA = new b2Vec2();
-	private static SolvePositionConstraints_s_rB = new b2Vec2();
-	private static SolvePositionConstraints_s_rC = new b2Vec2();
-	private static SolvePositionConstraints_s_rD = new b2Vec2();
 	public SolvePositionConstraints (data: b2SolverData): boolean {
 		const cA: b2Vec2 = data.positions[this.m_indexA].c;
 		let aA: number = data.positions[this.m_indexA].a;
@@ -537,9 +529,13 @@ export class b2GearJoint extends b2Joint {
 		return inv_dt * this.m_impulse * this.m_JwA;
 	}
 
-	public GetJoint1 () { return this.m_joint1; }
+	public GetJoint1 () {
+		return this.m_joint1;
+	}
 
-	public GetJoint2 () { return this.m_joint2; }
+	public GetJoint2 () {
+		return this.m_joint2;
+	}
 
 	public GetRatio () {
 		return this.m_ratio;

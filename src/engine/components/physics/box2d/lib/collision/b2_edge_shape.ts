@@ -16,14 +16,14 @@
 * 3. This notice may not be removed or altered from any source distribution.
 */
 
-// DEBUG: import { b2Assert } from "../common/b2_settings.js";
-import { b2_polygonRadius } from "../common/b2_settings.js";
-import type { XY } from "../common/b2_math.js";
-import { b2Vec2, b2Rot, b2Transform } from "../common/b2_math.js";
-import type { b2AABB, b2RayCastInput, b2RayCastOutput } from "./b2_collision.js";
-import type { b2DistanceProxy } from "./b2_distance.js";
-import type { b2MassData } from "./b2_shape.js";
-import { b2Shape, b2ShapeType } from "./b2_shape.js";
+// DEBUG: import { b2Assert } from "../common/b2_settings";
+import { b2_polygonRadius } from "../common/b2_settings";
+import type { XY } from "../common/b2_math";
+import { b2Vec2, b2Rot, b2Transform } from "../common/b2_math";
+import type { b2AABB, b2RayCastInput, b2RayCastOutput } from "./b2_collision";
+import type { b2DistanceProxy } from "./b2_distance";
+import type { b2MassData } from "./b2_shape";
+import { b2Shape, b2ShapeType } from "./b2_shape";
 
 /// A line segment (edge) shape. These can be connected in chains or loops
 /// to other edge shapes. Edges created independently are two-sided and do
@@ -98,6 +98,7 @@ export class b2EdgeShape extends b2Shape {
 	private static ComputeDistance_s_v2 = new b2Vec2();
 	private static ComputeDistance_s_d = new b2Vec2();
 	private static ComputeDistance_s_s = new b2Vec2();
+
 	public ComputeDistance (xf: b2Transform, p: b2Vec2, normal: b2Vec2, childIndex: number): number {
 		const v1 = b2Transform.MulXV(xf, this.m_vertex1, b2EdgeShape.ComputeDistance_s_v1);
 		const v2 = b2Transform.MulXV(xf, this.m_vertex2, b2EdgeShape.ComputeDistance_s_v2);
@@ -116,6 +117,7 @@ export class b2EdgeShape extends b2Shape {
 		normal.Copy(d);
 		return normal.Normalize();
 	}
+
 	// #endif
 
 	/// Implement b2Shape.
@@ -129,6 +131,7 @@ export class b2EdgeShape extends b2Shape {
 	private static RayCast_s_e = new b2Vec2();
 	private static RayCast_s_q = new b2Vec2();
 	private static RayCast_s_r = new b2Vec2();
+
 	public RayCast (output: b2RayCastOutput, input: b2RayCastInput, xf: b2Transform, childIndex: number): boolean {
 		// Put the ray into the edge's frame of reference.
 		const p1: b2Vec2 = b2Transform.MulTXV(xf, input.p1, b2EdgeShape.RayCast_s_p1);
@@ -139,7 +142,7 @@ export class b2EdgeShape extends b2Shape {
 		const v2: b2Vec2 = this.m_vertex2;
 		const e: b2Vec2 = b2Vec2.SubVV(v2, v1, b2EdgeShape.RayCast_s_e);
 
-  	// Normal points to the right, looking from v1 at v2
+		// Normal points to the right, looking from v1 at v2
 		const normal: b2Vec2 = output.normal.Set(e.y, -e.x).SelfNormalize();
 
 		// q = p1 + t * d
@@ -187,6 +190,7 @@ export class b2EdgeShape extends b2Shape {
 	/// @see b2Shape::ComputeAABB
 	private static ComputeAABB_s_v1 = new b2Vec2();
 	private static ComputeAABB_s_v2 = new b2Vec2();
+
 	public ComputeAABB (aabb: b2AABB, xf: b2Transform, childIndex: number): void {
 		const v1: b2Vec2 = b2Transform.MulXV(xf, this.m_vertex1, b2EdgeShape.ComputeAABB_s_v1);
 		const v2: b2Vec2 = b2Transform.MulXV(xf, this.m_vertex2, b2EdgeShape.ComputeAABB_s_v2);

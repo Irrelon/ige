@@ -16,7 +16,7 @@
 * 3. This notice may not be removed or altered from any source distribution.
 */
 
-// import { b2_lengthUnitsPerMeter } from "./b2_settings.js";
+// import { b2_lengthUnitsPerMeter } from "./b2_settings";
 
 export function b2Assert (condition: boolean, ...args: any[]): asserts condition {
 	if (!condition) {

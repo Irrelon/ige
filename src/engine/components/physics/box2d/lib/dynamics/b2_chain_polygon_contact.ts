@@ -16,13 +16,13 @@
 * 3. This notice may not be removed or altered from any source distribution.
 */
 
-import type { b2Transform } from "../common/b2_math.js";
-import { b2CollideEdgeAndPolygon } from "../collision/b2_collide_edge.js";
-import type { b2Manifold } from "../collision/b2_collision.js";
-import type { b2ChainShape } from "../collision/b2_chain_shape.js";
-import { b2EdgeShape } from "../collision/b2_edge_shape.js";
-import type { b2PolygonShape } from "../collision/b2_polygon_shape.js";
-import { b2Contact } from "./b2_contact.js";
+import type { b2Transform } from "../common/b2_math";
+import { b2CollideEdgeAndPolygon } from "../collision/b2_collide_edge";
+import type { b2Manifold } from "../collision/b2_collision";
+import type { b2ChainShape } from "../collision/b2_chain_shape";
+import { b2EdgeShape } from "../collision/b2_edge_shape";
+import type { b2PolygonShape } from "../collision/b2_polygon_shape";
+import { b2Contact } from "./b2_contact";
 
 export class b2ChainAndPolygonContact extends b2Contact<b2ChainShape, b2PolygonShape> {
 	public static Create (): b2Contact {
@@ -33,6 +33,7 @@ export class b2ChainAndPolygonContact extends b2Contact<b2ChainShape, b2PolygonS
 	}
 
 	private static Evaluate_s_edge = new b2EdgeShape();
+
 	public Evaluate (manifold: b2Manifold, xfA: b2Transform, xfB: b2Transform): void {
 		const edge: b2EdgeShape = b2ChainAndPolygonContact.Evaluate_s_edge;
 		this.GetShapeA().GetChildEdge(edge, this.m_indexA);

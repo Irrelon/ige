@@ -1,14 +1,14 @@
-// DEBUG: import { b2Assert } from "../common/b2_settings.js";
-import { b2ShapeType } from "../collision/b2_shape.js";
-import type { b2Contact } from "./b2_contact.js";
-import { b2CircleContact } from "./b2_circle_contact.js";
-import { b2PolygonContact } from "./b2_polygon_contact.js";
-import { b2PolygonAndCircleContact } from "./b2_polygon_circle_contact.js";
-import { b2EdgeAndCircleContact } from "./b2_edge_circle_contact.js";
-import { b2EdgeAndPolygonContact } from "./b2_edge_polygon_contact.js";
-import { b2ChainAndCircleContact } from "./b2_chain_circle_contact.js";
-import { b2ChainAndPolygonContact } from "./b2_chain_polygon_contact.js";
-import type { b2Fixture } from "./b2_fixture.js";
+// DEBUG: import { b2Assert } from "../common/b2_settings";
+import { b2ShapeType } from "../collision/b2_shape";
+import type { b2Contact } from "./b2_contact";
+import { b2CircleContact } from "./b2_circle_contact";
+import { b2PolygonContact } from "./b2_polygon_contact";
+import { b2PolygonAndCircleContact } from "./b2_polygon_circle_contact";
+import { b2EdgeAndCircleContact } from "./b2_edge_circle_contact";
+import { b2EdgeAndPolygonContact } from "./b2_edge_polygon_contact";
+import { b2ChainAndCircleContact } from "./b2_chain_circle_contact";
+import { b2ChainAndPolygonContact } from "./b2_chain_polygon_contact";
+import type { b2Fixture } from "./b2_fixture";
 
 export class b2ContactRegister {
 	public pool: b2Contact[] = [];
@@ -22,47 +22,6 @@ export class b2ContactFactory {
 
 	constructor () {
 		this.InitializeRegisters();
-	}
-
-	private AddType (createFcn: () => b2Contact, destroyFcn: (contact: b2Contact) => void, typeA: b2ShapeType, typeB: b2ShapeType): void {
-		const pool: b2Contact[] = [];
-
-		function poolCreateFcn (): b2Contact {
-			return pool.pop() || createFcn();
-		}
-
-		function poolDestroyFcn (contact: b2Contact): void {
-			pool.push(contact);
-		}
-
-		this.m_registers[typeA][typeB].pool = pool;
-		this.m_registers[typeA][typeB].createFcn = poolCreateFcn; // createFcn;
-		this.m_registers[typeA][typeB].destroyFcn = poolDestroyFcn; // destroyFcn;
-		this.m_registers[typeA][typeB].primary = true;
-
-		if (typeA !== typeB) {
-			this.m_registers[typeB][typeA].pool = pool;
-			this.m_registers[typeB][typeA].createFcn = poolCreateFcn; // createFcn;
-			this.m_registers[typeB][typeA].destroyFcn = poolDestroyFcn; // destroyFcn;
-			this.m_registers[typeB][typeA].primary = false;
-		}
-	}
-
-	private InitializeRegisters (): void {
-		for (let i: number = 0; i < b2ShapeType.e_shapeTypeCount; i++) {
-			this.m_registers[i] = [];
-			for (let j: number = 0; j < b2ShapeType.e_shapeTypeCount; j++) {
-				this.m_registers[i][j] = new b2ContactRegister();
-			}
-		}
-
-		this.AddType(          b2CircleContact.Create,           b2CircleContact.Destroy, b2ShapeType.e_circleShape,  b2ShapeType.e_circleShape);
-		this.AddType(b2PolygonAndCircleContact.Create, b2PolygonAndCircleContact.Destroy, b2ShapeType.e_polygonShape, b2ShapeType.e_circleShape);
-		this.AddType(         b2PolygonContact.Create,          b2PolygonContact.Destroy, b2ShapeType.e_polygonShape, b2ShapeType.e_polygonShape);
-		this.AddType(   b2EdgeAndCircleContact.Create,    b2EdgeAndCircleContact.Destroy, b2ShapeType.e_edgeShape,    b2ShapeType.e_circleShape);
-		this.AddType(  b2EdgeAndPolygonContact.Create,   b2EdgeAndPolygonContact.Destroy, b2ShapeType.e_edgeShape,    b2ShapeType.e_polygonShape);
-		this.AddType(  b2ChainAndCircleContact.Create,   b2ChainAndCircleContact.Destroy, b2ShapeType.e_chainShape,   b2ShapeType.e_circleShape);
-		this.AddType( b2ChainAndPolygonContact.Create,  b2ChainAndPolygonContact.Destroy, b2ShapeType.e_chainShape,   b2ShapeType.e_polygonShape);
 	}
 
 	public Create (fixtureA: b2Fixture, indexA: number, fixtureB: b2Fixture, indexB: number): b2Contact | null {
@@ -97,5 +56,46 @@ export class b2ContactFactory {
 		if (reg.destroyFcn) {
 			reg.destroyFcn(contact);
 		}
+	}
+
+	private AddType (createFcn: () => b2Contact, destroyFcn: (contact: b2Contact) => void, typeA: b2ShapeType, typeB: b2ShapeType): void {
+		const pool: b2Contact[] = [];
+
+		function poolCreateFcn (): b2Contact {
+			return pool.pop() || createFcn();
+		}
+
+		function poolDestroyFcn (contact: b2Contact): void {
+			pool.push(contact);
+		}
+
+		this.m_registers[typeA][typeB].pool = pool;
+		this.m_registers[typeA][typeB].createFcn = poolCreateFcn; // createFcn;
+		this.m_registers[typeA][typeB].destroyFcn = poolDestroyFcn; // destroyFcn;
+		this.m_registers[typeA][typeB].primary = true;
+
+		if (typeA !== typeB) {
+			this.m_registers[typeB][typeA].pool = pool;
+			this.m_registers[typeB][typeA].createFcn = poolCreateFcn; // createFcn;
+			this.m_registers[typeB][typeA].destroyFcn = poolDestroyFcn; // destroyFcn;
+			this.m_registers[typeB][typeA].primary = false;
+		}
+	}
+
+	private InitializeRegisters (): void {
+		for (let i: number = 0; i < b2ShapeType.e_shapeTypeCount; i++) {
+			this.m_registers[i] = [];
+			for (let j: number = 0; j < b2ShapeType.e_shapeTypeCount; j++) {
+				this.m_registers[i][j] = new b2ContactRegister();
+			}
+		}
+
+		this.AddType(b2CircleContact.Create, b2CircleContact.Destroy, b2ShapeType.e_circleShape, b2ShapeType.e_circleShape);
+		this.AddType(b2PolygonAndCircleContact.Create, b2PolygonAndCircleContact.Destroy, b2ShapeType.e_polygonShape, b2ShapeType.e_circleShape);
+		this.AddType(b2PolygonContact.Create, b2PolygonContact.Destroy, b2ShapeType.e_polygonShape, b2ShapeType.e_polygonShape);
+		this.AddType(b2EdgeAndCircleContact.Create, b2EdgeAndCircleContact.Destroy, b2ShapeType.e_edgeShape, b2ShapeType.e_circleShape);
+		this.AddType(b2EdgeAndPolygonContact.Create, b2EdgeAndPolygonContact.Destroy, b2ShapeType.e_edgeShape, b2ShapeType.e_polygonShape);
+		this.AddType(b2ChainAndCircleContact.Create, b2ChainAndCircleContact.Destroy, b2ShapeType.e_chainShape, b2ShapeType.e_circleShape);
+		this.AddType(b2ChainAndPolygonContact.Create, b2ChainAndPolygonContact.Destroy, b2ShapeType.e_chainShape, b2ShapeType.e_polygonShape);
 	}
 }

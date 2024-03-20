@@ -18,10 +18,10 @@
 
 // #if B2_ENABLE_PARTICLE
 
-// DEBUG: import { b2Assert } from "../common/b2_settings.js";
-import { b2_maxFloat, b2MakeArray } from "../common/b2_settings.js";
-import { b2Vec2 } from "../common/b2_math.js";
-import { b2StackQueue } from "./b2_stack_queue.js";
+// DEBUG: import { b2Assert } from "../common/b2_settings";
+import { b2_maxFloat, b2MakeArray } from "../common/b2_settings";
+import { b2Vec2 } from "../common/b2_math";
+import { b2StackQueue } from "./b2_stack_queue";
 
 /**
  * A field representing the nearest generator from each point.
@@ -40,12 +40,12 @@ export class b2VoronoiDiagram {
 	}
 
 	/**
-   * Add a generator.
-   *
-   * @param center the position of the generator.
-   * @param tag a tag used to identify the generator in callback functions.
-   * @param necessary whether to callback for nodes associated with the generator.
-   */
+	 * Add a generator.
+	 *
+	 * @param center the position of the generator.
+	 * @param tag a tag used to identify the generator in callback functions.
+	 * @param necessary whether to callback for nodes associated with the generator.
+	 */
 	public AddGenerator (center: b2Vec2, tag: number, necessary: boolean): void {
 		// DEBUG: b2Assert(this.m_generatorCount < this.m_generatorCapacity);
 		const g = this.m_generatorBuffer[this.m_generatorCount++];
@@ -55,12 +55,12 @@ export class b2VoronoiDiagram {
 	}
 
 	/**
-   * Generate the Voronoi diagram. It is rasterized with a given
-   * interval in the same range as the necessary generators exist.
-   *
-   * @param radius the interval of the diagram.
-   * @param margin margin for which the range of the diagram is extended.
-   */
+	 * Generate the Voronoi diagram. It is rasterized with a given
+	 * interval in the same range as the necessary generators exist.
+	 *
+	 * @param radius the interval of the diagram.
+	 * @param margin margin for which the range of the diagram is extended.
+	 */
 	public Generate (radius: number, margin: number): void {
 		const inverseRadius = 1 / radius;
 		const lower = new b2Vec2(+b2_maxFloat, +b2_maxFloat);
@@ -182,9 +182,9 @@ export class b2VoronoiDiagram {
 	}
 
 	/**
-   * Enumerate all nodes that contain at least one necessary
-   * generator.
-   */
+	 * Enumerate all nodes that contain at least one necessary
+	 * generator.
+	 */
 	public GetNodes (callback: b2VoronoiDiagram_NodeCallback): void {
 		for (let y = 0; y < this.m_countY - 1; y++) {
 			for (let x = 0; x < this.m_countX - 1; x++) {
@@ -195,11 +195,11 @@ export class b2VoronoiDiagram {
 				const d = this.m_diagram[i + 1 + this.m_countX];
 				if (b !== c) {
 					if (a !== b && a !== c &&
-            (a.necessary || b.necessary || c.necessary)) {
+						(a.necessary || b.necessary || c.necessary)) {
 						callback(a.tag, b.tag, c.tag);
 					}
 					if (d !== b && d !== c &&
-            (a.necessary || b.necessary || c.necessary)) {
+						(a.necessary || b.necessary || c.necessary)) {
 						callback(b.tag, d.tag, c.tag);
 					}
 				}
@@ -226,6 +226,7 @@ export class b2VoronoiDiagram_Task {
 	public m_y: number;
 	public m_i: number;
 	public m_generator: b2VoronoiDiagram_Generator;
+
 	constructor (x: number, y: number, i: number, g: b2VoronoiDiagram_Generator) {
 		this.m_x = x;
 		this.m_y = y;

@@ -16,23 +16,23 @@
 * 3. This notice may not be removed or altered from any source distribution.
 */
 
-// DEBUG: import { b2Assert, b2_epsilon } from "../common/b2_settings.js";
-// DEBUG: import { b2IsValid } from "../common/b2_math.js";
-import { b2_pi, b2Maybe } from "../common/b2_settings.js";
-import type { XY } from "../common/b2_math.js";
-import { b2Vec2, b2Mat22, b2Rot, b2Transform } from "../common/b2_math.js";
-import type { b2IJointDef } from "./b2_joint.js";
-import { b2Joint, b2JointDef, b2JointType } from "./b2_joint.js";
-import type { b2SolverData } from "./b2_time_step.js";
+// DEBUG: import { b2Assert, b2_epsilon } from "../common/b2_settings";
+// DEBUG: import { b2IsValid } from "../common/b2_math";
+import { b2_pi, b2Maybe } from "../common/b2_settings";
+import type { XY } from "../common/b2_math";
+import { b2Vec2, b2Mat22, b2Rot, b2Transform } from "../common/b2_math";
+import type { b2IJointDef } from "./b2_joint";
+import { b2Joint, b2JointDef, b2JointType } from "./b2_joint";
+import type { b2SolverData } from "./b2_time_step";
 
 export interface b2IMouseJointDef extends b2IJointDef {
-  target?: XY;
+	target?: XY;
 
-  maxForce?: number;
+	maxForce?: number;
 
-  stiffness?: number;
+	stiffness?: number;
 
-  damping?: number;
+	damping?: number;
 }
 
 /// Mouse joint definition. This requires a world target point,
@@ -52,17 +52,18 @@ export class b2MouseJointDef extends b2JointDef implements b2IMouseJointDef {
 }
 
 export class b2MouseJoint extends b2Joint {
+	private static SolveVelocityConstraints_s_Cdot = new b2Vec2();
+	private static SolveVelocityConstraints_s_impulse = new b2Vec2();
+	private static SolveVelocityConstraints_s_oldImpulse = new b2Vec2();
 	public readonly m_localAnchorB: b2Vec2 = new b2Vec2();
 	public readonly m_targetA: b2Vec2 = new b2Vec2();
 	public m_stiffness: number = 0;
 	public m_damping: number = 0;
 	public m_beta: number = 0;
-
 	// Solver shared
 	public readonly m_impulse: b2Vec2 = new b2Vec2();
 	public m_maxForce: number = 0;
 	public m_gamma: number = 0;
-
 	// Solver temp
 	public m_indexA: number = 0;
 	public m_indexB: number = 0;
@@ -203,9 +204,6 @@ export class b2MouseJoint extends b2Joint {
 		data.velocities[this.m_indexB].w = wB;
 	}
 
-	private static SolveVelocityConstraints_s_Cdot = new b2Vec2();
-	private static SolveVelocityConstraints_s_impulse = new b2Vec2();
-	private static SolveVelocityConstraints_s_oldImpulse = new b2Vec2();
 	public SolveVelocityConstraints (data: b2SolverData): void {
 		const vB: b2Vec2 = data.velocities[this.m_indexB].v;
 		let wB: number = data.velocities[this.m_indexB].w;

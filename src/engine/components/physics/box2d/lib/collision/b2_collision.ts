@@ -16,20 +16,27 @@
 * 3. This notice may not be removed or altered from any source distribution.
 */
 
-// DEBUG: import { b2Assert } from "../common/b2_settings.js";
-import { b2_maxFloat, b2_epsilon, b2_epsilon_sq, b2_maxManifoldPoints, b2MakeArray, b2MakeNumberArray } from "../common/b2_settings.js";
-import type { XY } from "../common/b2_math.js";
-import { b2Abs, b2Min, b2Max, b2Vec2, b2Rot, b2Transform } from "../common/b2_math.js";
-import type { b2Shape } from "./b2_shape.js";
-import { b2Distance, b2DistanceInput, b2DistanceOutput, b2SimplexCache } from "./b2_distance.js";
+// DEBUG: import { b2Assert } from "../common/b2_settings";
+import {
+	b2_maxFloat,
+	b2_epsilon,
+	b2_epsilon_sq,
+	b2_maxManifoldPoints,
+	b2MakeArray,
+	b2MakeNumberArray
+} from "../common/b2_settings";
+import type { XY } from "../common/b2_math";
+import { b2Abs, b2Min, b2Max, b2Vec2, b2Rot, b2Transform } from "../common/b2_math";
+import type { b2Shape } from "./b2_shape";
+import { b2Distance, b2DistanceInput, b2DistanceOutput, b2SimplexCache } from "./b2_distance";
 
 /// @file
 /// Structures and functions used for computing contact points, distance
 /// queries, and TOI queries.
 
 export enum b2ContactFeatureType {
-  e_vertex = 0,
-  e_face = 1,
+	e_vertex = 0,
+	e_face = 1,
 }
 
 /// The features that intersect to form the contact point
@@ -155,10 +162,10 @@ export class b2ManifoldPoint {
 }
 
 export enum b2ManifoldType {
-  e_unknown = -1,
-  e_circles = 0,
-  e_faceA = 1,
-  e_faceB = 2,
+	e_unknown = -1,
+	e_circles = 0,
+	e_faceA = 1,
+	e_faceB = 2,
 }
 
 /// A manifold for two touching convex shapes.
@@ -223,6 +230,7 @@ export class b2WorldManifold {
 	private static Initialize_s_cB = new b2Vec2();
 	private static Initialize_s_planePoint = new b2Vec2();
 	private static Initialize_s_clipPoint = new b2Vec2();
+
 	public Initialize (manifold: b2Manifold, xfA: b2Transform, radiusA: number, xfB: b2Transform, radiusB: number): void {
 		if (manifold.pointCount === 0) {
 			return;
@@ -282,10 +290,10 @@ export class b2WorldManifold {
 
 /// This is used for determining the state of contact points.
 export enum b2PointState {
-  b2_nullState = 0, ///< point does not exist
-  b2_addState = 1, ///< point was added in the update
-  b2_persistState = 2, ///< point persisted across the update
-  b2_removeState = 3,  ///< point was removed in the update
+	b2_nullState = 0, ///< point does not exist
+	b2_addState = 1, ///< point was added in the update
+	b2_persistState = 2, ///< point persisted across the update
+	b2_removeState = 3,  ///< point was removed in the update
 }
 
 /// Compute the point states given two manifolds. The states pertain to the transition from manifold1
@@ -388,10 +396,18 @@ export class b2AABB {
 
 	/// Verify that the bounds are sorted.
 	public IsValid (): boolean {
-		if (!this.lowerBound.IsValid()) { return false; }
-		if (!this.upperBound.IsValid()) { return false; }
-		if (this.upperBound.x < this.lowerBound.x) { return false; }
-		if (this.upperBound.y < this.lowerBound.y) { return false; }
+		if (!this.lowerBound.IsValid()) {
+			return false;
+		}
+		if (!this.upperBound.IsValid()) {
+			return false;
+		}
+		if (this.upperBound.x < this.lowerBound.x) {
+			return false;
+		}
+		if (this.upperBound.y < this.lowerBound.y) {
+			return false;
+		}
 		return true;
 	}
 
@@ -542,25 +558,45 @@ export class b2AABB {
 	}
 
 	public TestContain (point: XY): boolean {
-		if (point.x < this.lowerBound.x || this.upperBound.x < point.x) { return false; }
-		if (point.y < this.lowerBound.y || this.upperBound.y < point.y) { return false; }
+		if (point.x < this.lowerBound.x || this.upperBound.x < point.x) {
+			return false;
+		}
+		if (point.y < this.lowerBound.y || this.upperBound.y < point.y) {
+			return false;
+		}
 		return true;
 	}
 
 	public TestOverlap (other: b2AABB): boolean {
-		if (this.upperBound.x < other.lowerBound.x) { return false; }
-		if (this.upperBound.y < other.lowerBound.y) { return false; }
-		if (other.upperBound.x < this.lowerBound.x) { return false; }
-		if (other.upperBound.y < this.lowerBound.y) { return false; }
+		if (this.upperBound.x < other.lowerBound.x) {
+			return false;
+		}
+		if (this.upperBound.y < other.lowerBound.y) {
+			return false;
+		}
+		if (other.upperBound.x < this.lowerBound.x) {
+			return false;
+		}
+		if (other.upperBound.y < this.lowerBound.y) {
+			return false;
+		}
 		return true;
 	}
 }
 
 export function b2TestOverlapAABB (a: b2AABB, b: b2AABB): boolean {
-	if (a.upperBound.x < b.lowerBound.x) { return false; }
-	if (a.upperBound.y < b.lowerBound.y) { return false; }
-	if (b.upperBound.x < a.lowerBound.x) { return false; }
-	if (b.upperBound.y < a.lowerBound.y) { return false; }
+	if (a.upperBound.x < b.lowerBound.x) {
+		return false;
+	}
+	if (a.upperBound.y < b.lowerBound.y) {
+		return false;
+	}
+	if (b.upperBound.x < a.lowerBound.x) {
+		return false;
+	}
+	if (b.upperBound.y < a.lowerBound.y) {
+		return false;
+	}
 	return true;
 }
 
@@ -577,8 +613,12 @@ export function b2ClipSegmentToLine (vOut: [b2ClipVertex, b2ClipVertex], vIn: [b
 	const distance1: number = b2Vec2.DotVV(normal, vIn1.v) - offset;
 
 	// If the points are behind the plane
-	if (distance0 <= 0) { vOut[count++].Copy(vIn0); }
-	if (distance1 <= 0) { vOut[count++].Copy(vIn1); }
+	if (distance0 <= 0) {
+		vOut[count++].Copy(vIn0);
+	}
+	if (distance1 <= 0) {
+		vOut[count++].Copy(vIn1);
+	}
 
 	// If the points are on different sides of the plane
 	if (distance0 * distance1 < 0) {
@@ -606,6 +646,7 @@ export function b2ClipSegmentToLine (vOut: [b2ClipVertex, b2ClipVertex], vIn: [b
 const b2TestOverlapShape_s_input: b2DistanceInput = new b2DistanceInput();
 const b2TestOverlapShape_s_simplexCache: b2SimplexCache = new b2SimplexCache();
 const b2TestOverlapShape_s_output: b2DistanceOutput = new b2DistanceOutput();
+
 export function b2TestOverlapShape (shapeA: b2Shape, indexA: number, shapeB: b2Shape, indexB: number, xfA: b2Transform, xfB: b2Transform): boolean {
 	const input: b2DistanceInput = b2TestOverlapShape_s_input.Reset();
 	input.proxyA.SetShape(shapeA, indexA);

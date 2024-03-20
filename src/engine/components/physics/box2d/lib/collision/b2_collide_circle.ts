@@ -1,12 +1,13 @@
-import { b2_maxFloat, b2_epsilon } from "../common/b2_settings.js";
-import { b2Vec2, b2Transform } from "../common/b2_math.js";
-import type { b2Manifold} from "./b2_collision.js";
-import { b2ManifoldType } from "./b2_collision.js";
-import type { b2CircleShape } from "./b2_circle_shape.js";
-import type { b2PolygonShape } from "./b2_polygon_shape.js";
+import { b2_maxFloat, b2_epsilon } from "../common/b2_settings";
+import { b2Vec2, b2Transform } from "../common/b2_math";
+import type { b2Manifold } from "./b2_collision";
+import { b2ManifoldType } from "./b2_collision";
+import type { b2CircleShape } from "./b2_circle_shape";
+import type { b2PolygonShape } from "./b2_polygon_shape";
 
 const b2CollideCircles_s_pA: b2Vec2 = new b2Vec2();
 const b2CollideCircles_s_pB: b2Vec2 = new b2Vec2();
+
 export function b2CollideCircles (manifold: b2Manifold, circleA: b2CircleShape, xfA: b2Transform, circleB: b2CircleShape, xfB: b2Transform): void {
 	manifold.pointCount = 0;
 
@@ -31,6 +32,7 @@ export function b2CollideCircles (manifold: b2Manifold, circleA: b2CircleShape, 
 const b2CollidePolygonAndCircle_s_c: b2Vec2 = new b2Vec2();
 const b2CollidePolygonAndCircle_s_cLocal: b2Vec2 = new b2Vec2();
 const b2CollidePolygonAndCircle_s_faceCenter: b2Vec2 = new b2Vec2();
+
 export function b2CollidePolygonAndCircle (manifold: b2Manifold, polygonA: b2PolygonShape, xfA: b2Transform, circleB: b2CircleShape, xfB: b2Transform): void {
 	manifold.pointCount = 0;
 

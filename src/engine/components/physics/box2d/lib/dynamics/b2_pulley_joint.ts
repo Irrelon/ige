@@ -16,31 +16,31 @@
 * 3. This notice may not be removed or altered from any source distribution.
 */
 
-// DEBUG: import { b2Assert, b2_epsilon } from "../common/b2_settings.js";
-import { b2_linearSlop, b2Maybe } from "../common/b2_settings.js";
-import type { XY } from "../common/b2_math.js";
-import { b2Abs, b2Vec2, b2Rot } from "../common/b2_math.js";
-import type { b2Body } from "./b2_body.js";
-import type { b2IJointDef } from "./b2_joint.js";
-import { b2Joint, b2JointDef, b2JointType } from "./b2_joint.js";
-import type { b2SolverData } from "./b2_time_step.js";
+// DEBUG: import { b2Assert, b2_epsilon } from "../common/b2_settings";
+import { b2_linearSlop, b2Maybe } from "../common/b2_settings";
+import type { XY } from "../common/b2_math";
+import { b2Abs, b2Vec2, b2Rot } from "../common/b2_math";
+import type { b2Body } from "./b2_body";
+import type { b2IJointDef } from "./b2_joint";
+import { b2Joint, b2JointDef, b2JointType } from "./b2_joint";
+import type { b2SolverData } from "./b2_time_step";
 
 export const b2_minPulleyLength: number = 2;
 
 export interface b2IPulleyJointDef extends b2IJointDef {
-  groundAnchorA?: XY;
+	groundAnchorA?: XY;
 
-  groundAnchorB?: XY;
+	groundAnchorB?: XY;
 
-  localAnchorA?: XY;
+	localAnchorA?: XY;
 
-  localAnchorB?: XY;
+	localAnchorB?: XY;
 
-  lengthA?: number;
+	lengthA?: number;
 
-  lengthB?: number;
+	lengthB?: number;
 
-  ratio?: number;
+	ratio?: number;
 }
 
 /// Pulley joint definition. This requires two ground anchors,
@@ -136,6 +136,7 @@ export class b2PulleyJoint extends b2Joint {
 
 	private static InitVelocityConstraints_s_PA = new b2Vec2();
 	private static InitVelocityConstraints_s_PB = new b2Vec2();
+
 	public InitVelocityConstraints (data: b2SolverData): void {
 		this.m_indexA = this.m_bodyA.m_islandIndex;
 		this.m_indexB = this.m_bodyB.m_islandIndex;
@@ -230,6 +231,7 @@ export class b2PulleyJoint extends b2Joint {
 	private static SolveVelocityConstraints_s_vpB = new b2Vec2();
 	private static SolveVelocityConstraints_s_PA = new b2Vec2();
 	private static SolveVelocityConstraints_s_PB = new b2Vec2();
+
 	public SolveVelocityConstraints (data: b2SolverData): void {
 		const vA: b2Vec2 = data.velocities[this.m_indexA].v;
 		let wA: number = data.velocities[this.m_indexA].w;
@@ -264,6 +266,7 @@ export class b2PulleyJoint extends b2Joint {
 
 	private static SolvePositionConstraints_s_PA = new b2Vec2();
 	private static SolvePositionConstraints_s_PB = new b2Vec2();
+
 	public SolvePositionConstraints (data: b2SolverData): boolean {
 		const cA: b2Vec2 = data.positions[this.m_indexA].c;
 		let aA: number = data.positions[this.m_indexA].a;
@@ -380,6 +383,7 @@ export class b2PulleyJoint extends b2Joint {
 	}
 
 	private static GetCurrentLengthA_s_p = new b2Vec2();
+
 	public GetCurrentLengthA () {
 		// b2Vec2 p = m_bodyA->GetWorldPoint(m_localAnchorA);
 		// b2Vec2 s = m_groundAnchorA;
@@ -391,6 +395,7 @@ export class b2PulleyJoint extends b2Joint {
 	}
 
 	private static GetCurrentLengthB_s_p = new b2Vec2();
+
 	public GetCurrentLengthB () {
 		// b2Vec2 p = m_bodyB->GetWorldPoint(m_localAnchorB);
 		// b2Vec2 s = m_groundAnchorB;

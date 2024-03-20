@@ -16,16 +16,16 @@
 * 3. This notice may not be removed or altered from any source distribution.
 */
 
-// DEBUG: import { b2Assert } from "../common/b2_settings.js";
-import { b2BroadPhase } from "../collision/b2_broad_phase.js";
-import type { b2TreeNode } from "../collision/b2_dynamic_tree.js";
-import { b2TestOverlapAABB } from "../collision/b2_collision.js";
-import type { b2Contact, b2ContactEdge } from "./b2_contact.js";
-import { b2ContactFactory } from "./b2_contact_factory.js";
-import type { b2Body} from "./b2_body.js";
-import { b2BodyType } from "./b2_body.js";
-import type { b2Fixture, b2FixtureProxy } from "./b2_fixture.js";
-import { b2ContactFilter, b2ContactListener } from "./b2_world_callbacks.js";
+// DEBUG: import { b2Assert } from "../common/b2_settings";
+import { b2BroadPhase } from "../collision/b2_broad_phase";
+import type { b2TreeNode } from "../collision/b2_dynamic_tree";
+import { b2TestOverlapAABB } from "../collision/b2_collision";
+import type { b2Contact, b2ContactEdge } from "./b2_contact";
+import { b2ContactFactory } from "./b2_contact_factory";
+import type { b2Body } from "./b2_body";
+import { b2BodyType } from "./b2_body";
+import type { b2Fixture, b2FixtureProxy } from "./b2_fixture";
+import { b2ContactFilter, b2ContactListener } from "./b2_world_callbacks";
 
 // Delegate of b2World.
 export class b2ContactManager {
@@ -190,8 +190,8 @@ export class b2ContactManager {
 
 		// moved this from b2ContactFactory:Destroy
 		if (c.m_manifold.pointCount > 0 &&
-      !fixtureA.IsSensor() &&
-      !fixtureB.IsSensor()) {
+			!fixtureA.IsSensor() &&
+			!fixtureB.IsSensor()) {
 			fixtureA.GetBody().SetAwake(true);
 			fixtureB.GetBody().SetAwake(true);
 		}

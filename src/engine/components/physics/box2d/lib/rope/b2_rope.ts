@@ -20,23 +20,23 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-import { b2Vec2, b2Atan2 } from "../common/b2_math.js";
-import type { b2Draw} from "../common/b2_draw.js";
-import { b2Color } from "../common/b2_draw.js";
-import { b2_pi } from "../common/b2_settings.js";
+import { b2Vec2, b2Atan2 } from "../common/b2_math";
+import type { b2Draw } from "../common/b2_draw";
+import { b2Color } from "../common/b2_draw";
+import { b2_pi } from "../common/b2_settings";
 
 export enum b2StretchingModel {
-  b2_pbdStretchingModel,
-  b2_xpbdStretchingModel,
+	b2_pbdStretchingModel,
+	b2_xpbdStretchingModel,
 }
 
 export enum b2BendingModel {
-  b2_springAngleBendingModel = 0,
-  b2_pbdAngleBendingModel,
-  b2_xpbdAngleBendingModel,
-  b2_pbdDistanceBendingModel,
-  b2_pbdHeightBendingModel,
-  b2_pbdTriangleBendingModel,
+	b2_springAngleBendingModel = 0,
+	b2_pbdAngleBendingModel,
+	b2_xpbdAngleBendingModel,
+	b2_pbdDistanceBendingModel,
+	b2_pbdHeightBendingModel,
+	b2_pbdTriangleBendingModel,
 }
 
 ///
@@ -147,11 +147,13 @@ export class b2Rope {
 		// b2Assert(def.count >= 3);
 		this.m_position.Copy(def.position);
 		this.m_count = def.count;
+
 		function make_array<T> (array: T[], count: number, make: (index: number) => T): void {
 			for (let index = 0; index < count; ++index) {
 				array[index] = make(index);
 			}
 		}
+
 		// this.m_bindPositions = (b2Vec2*)b2Alloc(this.m_count * sizeof(b2Vec2));
 		make_array(this.m_bindPositions, this.m_count, () => new b2Vec2());
 		// this.m_ps = (b2Vec2*)b2Alloc(this.m_count * sizeof(b2Vec2));
@@ -321,7 +323,7 @@ export class b2Rope {
 		}
 
 		const inv_dt: number = 1.0 / dt;
-		const d: number = Math.exp(- dt * this.m_tuning.damping);
+		const d: number = Math.exp(-dt * this.m_tuning.damping);
 
 		// Apply gravity and damping
 		for (let i = 0; i < this.m_count; ++i) {
@@ -332,8 +334,7 @@ export class b2Rope {
 				// this.m_vs[i] += dt * this.m_gravity;
 				this.m_vs[i].x += dt * this.m_gravity.x;
 				this.m_vs[i].y += dt * this.m_gravity.y;
-			}
-			else {
+			} else {
 				// this.m_vs[i] = inv_dt * (this.m_bindPositions[i] + position - this.m_p0s[i]);
 				this.m_vs[i].x = inv_dt * (this.m_bindPositions[i].x + position.x - this.m_p0s[i].x);
 				this.m_vs[i].y = inv_dt * (this.m_bindPositions[i].y + position.y - this.m_p0s[i].y);
@@ -364,24 +365,19 @@ export class b2Rope {
 		for (let i = 0; i < iterations; ++i) {
 			if (this.m_tuning.bendingModel === b2BendingModel.b2_pbdAngleBendingModel) {
 				this.SolveBend_PBD_Angle();
-			}
-			else if (this.m_tuning.bendingModel === b2BendingModel.b2_xpbdAngleBendingModel) {
+			} else if (this.m_tuning.bendingModel === b2BendingModel.b2_xpbdAngleBendingModel) {
 				this.SolveBend_XPBD_Angle(dt);
-			}
-			else if (this.m_tuning.bendingModel === b2BendingModel.b2_pbdDistanceBendingModel) {
+			} else if (this.m_tuning.bendingModel === b2BendingModel.b2_pbdDistanceBendingModel) {
 				this.SolveBend_PBD_Distance();
-			}
-			else if (this.m_tuning.bendingModel === b2BendingModel.b2_pbdHeightBendingModel) {
+			} else if (this.m_tuning.bendingModel === b2BendingModel.b2_pbdHeightBendingModel) {
 				this.SolveBend_PBD_Height();
-			}
-			else if (this.m_tuning.bendingModel === b2BendingModel.b2_pbdTriangleBendingModel) {
+			} else if (this.m_tuning.bendingModel === b2BendingModel.b2_pbdTriangleBendingModel) {
 				this.SolveBend_PBD_Triangle();
 			}
 
 			if (this.m_tuning.stretchingModel === b2StretchingModel.b2_pbdStretchingModel) {
 				this.SolveStretch_PBD();
-			}
-			else if (this.m_tuning.stretchingModel === b2StretchingModel.b2_xpbdStretchingModel) {
+			} else if (this.m_tuning.stretchingModel === b2StretchingModel.b2_xpbdStretchingModel) {
 				this.SolveStretch_XPBD(dt);
 			}
 		}
@@ -542,8 +538,7 @@ export class b2Rope {
 			if (this.m_tuning.isometric) {
 				L1sqr = c.L1 * c.L1;
 				L2sqr = c.L2 * c.L2;
-			}
-			else {
+			} else {
 				L1sqr = d1.LengthSquared();
 				L2sqr = d2.LengthSquared();
 			}
@@ -567,8 +562,7 @@ export class b2Rope {
 			let sum: number = 0.0;
 			if (this.m_tuning.fixedEffectiveMass) {
 				sum = c.invEffectiveMass;
-			}
-			else {
+			} else {
 				sum = c.invMass1 * b2Vec2.DotVV(J1, J1) + c.invMass2 * b2Vec2.DotVV(J2, J2) + c.invMass3 * b2Vec2.DotVV(J3, J3);
 			}
 
@@ -618,8 +612,7 @@ export class b2Rope {
 			if (this.m_tuning.isometric) {
 				L1sqr = c.L1 * c.L1;
 				L2sqr = c.L2 * c.L2;
-			}
-			else {
+			} else {
 				L1sqr = d1.LengthSquared();
 				L2sqr = d2.LengthSquared();
 			}
@@ -655,8 +648,7 @@ export class b2Rope {
 			let sum: number;
 			if (this.m_tuning.fixedEffectiveMass) {
 				sum = c.invEffectiveMass;
-			}
-			else {
+			} else {
 				sum = c.invMass1 * b2Vec2.DotVV(J1, J1) + c.invMass2 * b2Vec2.DotVV(J2, J2) + c.invMass3 * b2Vec2.DotVV(J3, J3);
 			}
 
@@ -854,8 +846,7 @@ export class b2Rope {
 			if (this.m_tuning.isometric) {
 				L1sqr = c.L1 * c.L1;
 				L2sqr = c.L2 * c.L2;
-			}
-			else {
+			} else {
 				L1sqr = d1.LengthSquared();
 				L2sqr = d2.LengthSquared();
 			}
@@ -891,8 +882,7 @@ export class b2Rope {
 			let sum: number = 0.0;
 			if (this.m_tuning.fixedEffectiveMass) {
 				sum = c.invEffectiveMass;
-			}
-			else {
+			} else {
 				sum = c.invMass1 * b2Vec2.DotVV(J1, J1) + c.invMass2 * b2Vec2.DotVV(J2, J2) + c.invMass3 * b2Vec2.DotVV(J3, J3);
 			}
 

@@ -16,15 +16,17 @@
 * 3. This notice may not be removed or altered from any source distribution.
 */
 
-// DEBUG: import { b2Assert } from "../common/b2_settings.js";
-import { b2_aabbExtension, b2_aabbMultiplier } from "../common/b2_settings.js";
-import type { XY } from "../common/b2_math.js";
-import { b2Abs, b2Min, b2Max, b2Vec2 } from "../common/b2_math.js";
-import { b2GrowableStack } from "../common/b2_growable_stack.js";
-import { b2AABB, b2RayCastInput, b2TestOverlapAABB } from "./b2_collision.js";
+// DEBUG: import { b2Assert } from "../common/b2_settings";
+import { b2_aabbExtension, b2_aabbMultiplier } from "../common/b2_settings";
+import type { XY } from "../common/b2_math";
+import { b2Abs, b2Min, b2Max, b2Vec2 } from "../common/b2_math";
+import { b2GrowableStack } from "../common/b2_growable_stack";
+import { b2AABB, b2RayCastInput, b2TestOverlapAABB } from "./b2_collision";
 
 function verify<T> (value: T | null): T {
-	if (value === null) { throw new Error(); }
+	if (value === null) {
+		throw new Error();
+	}
 	return value;
 }
 
@@ -34,13 +36,19 @@ export class b2TreeNode<T> {
 	public readonly aabb: b2AABB = new b2AABB();
 	private _userData: T | null = null;
 	public get userData (): T {
-		if (this._userData === null) { throw new Error(); }
+		if (this._userData === null) {
+			throw new Error();
+		}
 		return this._userData;
 	}
+
 	public set userData (value: T) {
-		if (this._userData !== null) { throw new Error(); }
+		if (this._userData !== null) {
+			throw new Error();
+		}
 		this._userData = value;
 	}
+
 	public parent: b2TreeNode<T> | null = null; // or next
 	public child1: b2TreeNode<T> | null = null;
 	public child2: b2TreeNode<T> | null = null;
@@ -279,6 +287,7 @@ export class b2DynamicTree<T> {
 
 	private static MoveProxy_s_fatAABB = new b2AABB();
 	private static MoveProxy_s_hugeAABB = new b2AABB();
+
 	public MoveProxy (node: b2TreeNode<T>, aabb: b2AABB, displacement: b2Vec2): boolean {
 		// DEBUG: b2Assert(node.IsLeaf());
 

@@ -18,13 +18,13 @@
 
 // #if B2_ENABLE_CONTROLLER
 
-import type { b2ControllerEdge } from "./b2_controller.js";
-import { b2Controller } from "./b2_controller.js";
-import { b2Vec2 } from "../common/b2_math.js";
-import type { b2TimeStep } from "../dynamics/b2_time_step.js";
-import { b2_epsilon } from "../common/b2_settings.js";
-import type { b2Draw} from "../common/b2_draw.js";
-import { b2Color } from "../common/b2_draw.js";
+import type { b2ControllerEdge } from "./b2_controller";
+import { b2Controller } from "./b2_controller";
+import { b2Vec2 } from "../common/b2_math";
+import type { b2TimeStep } from "../dynamics/b2_time_step";
+import { b2_epsilon } from "../common/b2_settings";
+import type { b2Draw } from "../common/b2_draw";
+import { b2Color } from "../common/b2_draw";
 
 /**
  * Calculates buoyancy forces for fluids in the form of a half
@@ -32,41 +32,41 @@ import { b2Color } from "../common/b2_draw.js";
  */
 export class b2BuoyancyController extends b2Controller {
 	/**
-   * The outer surface normal
-   */
+	 * The outer surface normal
+	 */
 	public readonly normal = new b2Vec2(0, 1);
 	/**
-   * The height of the fluid surface along the normal
-   */
+	 * The height of the fluid surface along the normal
+	 */
 	public offset = 0;
 	/**
-   * The fluid density
-   */
+	 * The fluid density
+	 */
 	public density = 0;
 	/**
-   * Fluid velocity, for drag calculations
-   */
+	 * Fluid velocity, for drag calculations
+	 */
 	public readonly velocity = new b2Vec2(0, 0);
 	/**
-   * Linear drag co-efficient
-   */
+	 * Linear drag co-efficient
+	 */
 	public linearDrag = 0;
 	/**
-   * Angular drag co-efficient
-   */
+	 * Angular drag co-efficient
+	 */
 	public angularDrag = 0;
 	/**
-   * If false, bodies are assumed to be uniformly dense, otherwise
-   * use the shapes densities
-   */
+	 * If false, bodies are assumed to be uniformly dense, otherwise
+	 * use the shapes densities
+	 */
 	public useDensity = false; //False by default to prevent a gotcha
 	/**
-   * If true, gravity is taken from the world instead of the
-   */
+	 * If true, gravity is taken from the world instead of the
+	 */
 	public useWorldGravity = true;
 	/**
-   * Gravity vector, if the world's gravity is not used
-   */
+	 * Gravity vector, if the world's gravity is not used
+	 */
 	public readonly gravity = new b2Vec2(0, 0);
 
 	public Step (step: b2TimeStep) {

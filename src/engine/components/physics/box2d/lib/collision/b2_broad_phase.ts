@@ -16,13 +16,14 @@
 * 3. This notice may not be removed or altered from any source distribution.
 */
 
-import type { b2Vec2, XY } from "../common/b2_math.js";
-import type { b2AABB, b2RayCastInput } from "./b2_collision.js";
-import type { b2TreeNode} from "./b2_dynamic_tree.js";
-import { b2DynamicTree } from "./b2_dynamic_tree.js";
+import type { b2Vec2, XY } from "../common/b2_math";
+import type { b2AABB, b2RayCastInput } from "./b2_collision";
+import type { b2TreeNode } from "./b2_dynamic_tree";
+import { b2DynamicTree } from "./b2_dynamic_tree";
 
 export class b2Pair<T> {
-	constructor (public proxyA: b2TreeNode<T>, public proxyB: b2TreeNode<T>) { }
+	constructor (public proxyA: b2TreeNode<T>, public proxyB: b2TreeNode<T>) {
+	}
 }
 
 /// The broad-phase is used for computing pairs and performing volume queries and ray casts.

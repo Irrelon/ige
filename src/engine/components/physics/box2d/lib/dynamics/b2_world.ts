@@ -16,68 +16,68 @@
 * 3. This notice may not be removed or altered from any source distribution.
 */
 
-// DEBUG: import { b2Assert } from "../common/b2_settings.js";
-import { b2_epsilon, b2_maxSubSteps, b2_maxTOIContacts } from "../common/b2_settings.js";
-import type { XY } from "../common/b2_math.js";
-import { b2Min, b2Vec2, b2Transform, b2Sweep } from "../common/b2_math.js";
-import { b2Timer } from "../common/b2_timer.js";
-import type { b2Draw} from "../common/b2_draw.js";
-import { b2Color, b2DrawFlags } from "../common/b2_draw.js";
-import { b2AABB, b2RayCastInput, b2RayCastOutput, b2TestOverlapShape } from "../collision/b2_collision.js";
-import type { b2TreeNode } from "../collision/b2_dynamic_tree.js";
-import { b2TimeOfImpact, b2TOIInput, b2TOIOutput, b2TOIOutputState } from "../collision/b2_time_of_impact.js";
-import type { b2Shape} from "../collision/b2_shape.js";
-import { b2ShapeType } from "../collision/b2_shape.js";
-import type { b2ChainShape } from "../collision/b2_chain_shape.js";
-import type { b2CircleShape } from "../collision/b2_circle_shape.js";
-import type { b2EdgeShape } from "../collision/b2_edge_shape.js";
-import type { b2PolygonShape } from "../collision/b2_polygon_shape.js";
-import type { b2Contact, b2ContactEdge } from "./b2_contact.js";
-import type { b2Joint, b2IJointDef, b2JointEdge } from "./b2_joint.js";
-import { b2JointType } from "./b2_joint.js";
-import type { b2IAreaJointDef } from "./b2_area_joint.js";
-import { b2AreaJoint } from "./b2_area_joint.js";
-import type { b2IDistanceJointDef } from "./b2_distance_joint.js";
-import { b2DistanceJoint } from "./b2_distance_joint.js";
-import type { b2IFrictionJointDef } from "./b2_friction_joint.js";
-import { b2FrictionJoint } from "./b2_friction_joint.js";
-import type { b2IGearJointDef } from "./b2_gear_joint.js";
-import { b2GearJoint } from "./b2_gear_joint.js";
-import type { b2IMotorJointDef } from "./b2_motor_joint.js";
-import { b2MotorJoint } from "./b2_motor_joint.js";
-import type { b2IMouseJointDef } from "./b2_mouse_joint.js";
-import { b2MouseJoint } from "./b2_mouse_joint.js";
-import type { b2IPrismaticJointDef } from "./b2_prismatic_joint.js";
-import { b2PrismaticJoint } from "./b2_prismatic_joint.js";
-import type { b2IPulleyJointDef } from "./b2_pulley_joint.js";
-import { b2PulleyJoint } from "./b2_pulley_joint.js";
-import type { b2IRevoluteJointDef } from "./b2_revolute_joint.js";
-import { b2RevoluteJoint } from "./b2_revolute_joint.js";
-import type { b2IWeldJointDef } from "./b2_weld_joint.js";
-import { b2WeldJoint } from "./b2_weld_joint.js";
-import type { b2IWheelJointDef } from "./b2_wheel_joint.js";
-import { b2WheelJoint } from "./b2_wheel_joint.js";
-import type { b2IBodyDef} from "./b2_body.js";
-import { b2Body, b2BodyType } from "./b2_body.js";
-import { b2ContactManager } from "./b2_contact_manager.js";
-import type { b2Fixture, b2FixtureProxy } from "./b2_fixture.js";
-import { b2Island } from "./b2_island.js";
-import { b2Profile, b2TimeStep } from "./b2_time_step.js";
-import type { b2ContactFilter } from "./b2_world_callbacks.js";
-import type { b2ContactListener } from "./b2_world_callbacks.js";
-import type { b2DestructionListener } from "./b2_world_callbacks.js";
-import type { b2QueryCallbackFunction } from "./b2_world_callbacks.js";
-import { b2QueryCallback } from "./b2_world_callbacks.js";
-import type { b2RayCastCallbackFunction } from "./b2_world_callbacks.js";
-import { b2RayCastCallback } from "./b2_world_callbacks.js";
+// DEBUG: import { b2Assert } from "../common/b2_settings";
+import { b2_epsilon, b2_maxSubSteps, b2_maxTOIContacts } from "../common/b2_settings";
+import type { XY } from "../common/b2_math";
+import { b2Min, b2Vec2, b2Transform, b2Sweep } from "../common/b2_math";
+import { b2Timer } from "../common/b2_timer";
+import type { b2Draw } from "../common/b2_draw";
+import { b2Color, b2DrawFlags } from "../common/b2_draw";
+import { b2AABB, b2RayCastInput, b2RayCastOutput, b2TestOverlapShape } from "../collision/b2_collision";
+import type { b2TreeNode } from "../collision/b2_dynamic_tree";
+import { b2TimeOfImpact, b2TOIInput, b2TOIOutput, b2TOIOutputState } from "../collision/b2_time_of_impact";
+import type { b2Shape } from "../collision/b2_shape";
+import { b2ShapeType } from "../collision/b2_shape";
+import type { b2ChainShape } from "../collision/b2_chain_shape";
+import type { b2CircleShape } from "../collision/b2_circle_shape";
+import type { b2EdgeShape } from "../collision/b2_edge_shape";
+import type { b2PolygonShape } from "../collision/b2_polygon_shape";
+import type { b2Contact, b2ContactEdge } from "./b2_contact";
+import type { b2Joint, b2IJointDef, b2JointEdge } from "./b2_joint";
+import { b2JointType } from "./b2_joint";
+import type { b2IAreaJointDef } from "./b2_area_joint";
+import { b2AreaJoint } from "./b2_area_joint";
+import type { b2IDistanceJointDef } from "./b2_distance_joint";
+import { b2DistanceJoint } from "./b2_distance_joint";
+import type { b2IFrictionJointDef } from "./b2_friction_joint";
+import { b2FrictionJoint } from "./b2_friction_joint";
+import type { b2IGearJointDef } from "./b2_gear_joint";
+import { b2GearJoint } from "./b2_gear_joint";
+import type { b2IMotorJointDef } from "./b2_motor_joint";
+import { b2MotorJoint } from "./b2_motor_joint";
+import type { b2IMouseJointDef } from "./b2_mouse_joint";
+import { b2MouseJoint } from "./b2_mouse_joint";
+import type { b2IPrismaticJointDef } from "./b2_prismatic_joint";
+import { b2PrismaticJoint } from "./b2_prismatic_joint";
+import type { b2IPulleyJointDef } from "./b2_pulley_joint";
+import { b2PulleyJoint } from "./b2_pulley_joint";
+import type { b2IRevoluteJointDef } from "./b2_revolute_joint";
+import { b2RevoluteJoint } from "./b2_revolute_joint";
+import type { b2IWeldJointDef } from "./b2_weld_joint";
+import { b2WeldJoint } from "./b2_weld_joint";
+import type { b2IWheelJointDef } from "./b2_wheel_joint";
+import { b2WheelJoint } from "./b2_wheel_joint";
+import type { b2IBodyDef } from "./b2_body";
+import { b2Body, b2BodyType } from "./b2_body";
+import { b2ContactManager } from "./b2_contact_manager";
+import type { b2Fixture, b2FixtureProxy } from "./b2_fixture";
+import { b2Island } from "./b2_island";
+import { b2Profile, b2TimeStep } from "./b2_time_step";
+import type { b2ContactFilter } from "./b2_world_callbacks";
+import type { b2ContactListener } from "./b2_world_callbacks";
+import type { b2DestructionListener } from "./b2_world_callbacks";
+import type { b2QueryCallbackFunction } from "./b2_world_callbacks";
+import { b2QueryCallback } from "./b2_world_callbacks";
+import type { b2RayCastCallbackFunction } from "./b2_world_callbacks";
+import { b2RayCastCallback } from "./b2_world_callbacks";
 // #if B2_ENABLE_PARTICLE
-import { b2_maxFloat } from "../common/b2_settings.js";
-import { b2CalculateParticleIterations } from "../particle/b2_particle.js";
-import type { b2ParticleSystemDef} from "../particle/b2_particle_system.js";
-import { b2ParticleSystem } from "../particle/b2_particle_system.js";
+import { b2_maxFloat } from "../common/b2_settings";
+import { b2CalculateParticleIterations } from "../particle/b2_particle";
+import type { b2ParticleSystemDef } from "../particle/b2_particle_system";
+import { b2ParticleSystem } from "../particle/b2_particle_system";
 // #endif
 // #if B2_ENABLE_CONTROLLER
-import type { b2Controller, b2ControllerEdge } from "../controllers/b2_controller.js";
+import type { b2Controller, b2ControllerEdge } from "../controllers/b2_controller";
 // #endif
 
 /// The world class manages all physics entities, dynamic simulation,
@@ -164,7 +164,9 @@ export class b2World {
 	/// is retained.
 	/// @warning This function is locked during callbacks.
 	public CreateBody (def: b2IBodyDef = {}): b2Body {
-		if (this.IsLocked()) { throw new Error(); }
+		if (this.IsLocked()) {
+			throw new Error();
+		}
 
 		const b: b2Body = new b2Body(def, this);
 
@@ -186,7 +188,9 @@ export class b2World {
 	/// @warning This function is locked during callbacks.
 	public DestroyBody (b: b2Body): void {
 		// DEBUG: b2Assert(this.m_bodyCount > 0);
-		if (this.IsLocked()) { throw new Error(); }
+		if (this.IsLocked()) {
+			throw new Error();
+		}
 
 		// Delete the attached joints.
 		let je: b2JointEdge | null = b.m_jointList;
@@ -260,17 +264,28 @@ export class b2World {
 
 	private static _Joint_Create (def: b2IJointDef): b2Joint {
 		switch (def.type) {
-		case b2JointType.e_distanceJoint: return new b2DistanceJoint(def as b2IDistanceJointDef);
-		case b2JointType.e_mouseJoint: return new b2MouseJoint(def as b2IMouseJointDef);
-		case b2JointType.e_prismaticJoint: return new b2PrismaticJoint(def as b2IPrismaticJointDef);
-		case b2JointType.e_revoluteJoint: return new b2RevoluteJoint(def as b2IRevoluteJointDef);
-		case b2JointType.e_pulleyJoint: return new b2PulleyJoint(def as b2IPulleyJointDef);
-		case b2JointType.e_gearJoint: return new b2GearJoint(def as b2IGearJointDef);
-		case b2JointType.e_wheelJoint: return new b2WheelJoint(def as b2IWheelJointDef);
-		case b2JointType.e_weldJoint: return new b2WeldJoint(def as b2IWeldJointDef);
-		case b2JointType.e_frictionJoint: return new b2FrictionJoint(def as b2IFrictionJointDef);
-		case b2JointType.e_motorJoint: return new b2MotorJoint(def as b2IMotorJointDef);
-		case b2JointType.e_areaJoint: return new b2AreaJoint(def as b2IAreaJointDef);
+		case b2JointType.e_distanceJoint:
+			return new b2DistanceJoint(def as b2IDistanceJointDef);
+		case b2JointType.e_mouseJoint:
+			return new b2MouseJoint(def as b2IMouseJointDef);
+		case b2JointType.e_prismaticJoint:
+			return new b2PrismaticJoint(def as b2IPrismaticJointDef);
+		case b2JointType.e_revoluteJoint:
+			return new b2RevoluteJoint(def as b2IRevoluteJointDef);
+		case b2JointType.e_pulleyJoint:
+			return new b2PulleyJoint(def as b2IPulleyJointDef);
+		case b2JointType.e_gearJoint:
+			return new b2GearJoint(def as b2IGearJointDef);
+		case b2JointType.e_wheelJoint:
+			return new b2WheelJoint(def as b2IWheelJointDef);
+		case b2JointType.e_weldJoint:
+			return new b2WeldJoint(def as b2IWeldJointDef);
+		case b2JointType.e_frictionJoint:
+			return new b2FrictionJoint(def as b2IFrictionJointDef);
+		case b2JointType.e_motorJoint:
+			return new b2MotorJoint(def as b2IMotorJointDef);
+		case b2JointType.e_areaJoint:
+			return new b2AreaJoint(def as b2IAreaJointDef);
 		}
 		throw new Error();
 	}
@@ -281,19 +296,21 @@ export class b2World {
 	/// Create a joint to constrain bodies together. No reference to the definition
 	/// is retained. This may cause the connected bodies to cease colliding.
 	/// @warning This function is locked during callbacks.
-	public CreateJoint(def: b2IAreaJointDef): b2AreaJoint;
-	public CreateJoint(def: b2IDistanceJointDef): b2DistanceJoint;
-	public CreateJoint(def: b2IFrictionJointDef): b2FrictionJoint;
-	public CreateJoint(def: b2IGearJointDef): b2GearJoint;
-	public CreateJoint(def: b2IMotorJointDef): b2MotorJoint;
-	public CreateJoint(def: b2IMouseJointDef): b2MouseJoint;
-	public CreateJoint(def: b2IPrismaticJointDef): b2PrismaticJoint;
-	public CreateJoint(def: b2IPulleyJointDef): b2PulleyJoint;
-	public CreateJoint(def: b2IRevoluteJointDef): b2RevoluteJoint;
-	public CreateJoint(def: b2IWeldJointDef): b2WeldJoint;
-	public CreateJoint(def: b2IWheelJointDef): b2WheelJoint;
+	public CreateJoint (def: b2IAreaJointDef): b2AreaJoint;
+	public CreateJoint (def: b2IDistanceJointDef): b2DistanceJoint;
+	public CreateJoint (def: b2IFrictionJointDef): b2FrictionJoint;
+	public CreateJoint (def: b2IGearJointDef): b2GearJoint;
+	public CreateJoint (def: b2IMotorJointDef): b2MotorJoint;
+	public CreateJoint (def: b2IMouseJointDef): b2MouseJoint;
+	public CreateJoint (def: b2IPrismaticJointDef): b2PrismaticJoint;
+	public CreateJoint (def: b2IPulleyJointDef): b2PulleyJoint;
+	public CreateJoint (def: b2IRevoluteJointDef): b2RevoluteJoint;
+	public CreateJoint (def: b2IWeldJointDef): b2WeldJoint;
+	public CreateJoint (def: b2IWheelJointDef): b2WheelJoint;
 	public CreateJoint (def: b2IJointDef): b2Joint {
-		if (this.IsLocked()) { throw new Error(); }
+		if (this.IsLocked()) {
+			throw new Error();
+		}
 
 		const j: b2Joint = b2World._Joint_Create(def);
 
@@ -310,13 +327,17 @@ export class b2World {
 		// j.m_edgeA.other = j.m_bodyB; // done in b2Joint constructor
 		j.m_edgeA.prev = null;
 		j.m_edgeA.next = j.m_bodyA.m_jointList;
-		if (j.m_bodyA.m_jointList) { j.m_bodyA.m_jointList.prev = j.m_edgeA; }
+		if (j.m_bodyA.m_jointList) {
+			j.m_bodyA.m_jointList.prev = j.m_edgeA;
+		}
 		j.m_bodyA.m_jointList = j.m_edgeA;
 
 		// j.m_edgeB.other = j.m_bodyA; // done in b2Joint constructor
 		j.m_edgeB.prev = null;
 		j.m_edgeB.next = j.m_bodyB.m_jointList;
-		if (j.m_bodyB.m_jointList) { j.m_bodyB.m_jointList.prev = j.m_edgeB; }
+		if (j.m_bodyB.m_jointList) {
+			j.m_bodyB.m_jointList.prev = j.m_edgeB;
+		}
 		j.m_bodyB.m_jointList = j.m_edgeB;
 
 		const bodyA: b2Body = j.m_bodyA;
@@ -345,7 +366,9 @@ export class b2World {
 	/// Destroy a joint. This may cause the connected bodies to begin colliding.
 	/// @warning This function is locked during callbacks.
 	public DestroyJoint (j: b2Joint): void {
-		if (this.IsLocked()) { throw new Error(); }
+		if (this.IsLocked()) {
+			throw new Error();
+		}
 
 		// Remove from the doubly linked list.
 		if (j.m_prev) {
@@ -422,7 +445,9 @@ export class b2World {
 	// #if B2_ENABLE_PARTICLE
 
 	public CreateParticleSystem (def: b2ParticleSystemDef): b2ParticleSystem {
-		if (this.IsLocked()) { throw new Error(); }
+		if (this.IsLocked()) {
+			throw new Error();
+		}
 
 		const p = new b2ParticleSystem(def, this);
 
@@ -438,7 +463,9 @@ export class b2World {
 	}
 
 	public DestroyParticleSystem (p: b2ParticleSystem): void {
-		if (this.IsLocked()) { throw new Error(); }
+		if (this.IsLocked()) {
+			throw new Error();
+		}
 
 		// Remove world particleSystem list.
 		if (p.m_prev) {
@@ -481,6 +508,7 @@ export class b2World {
 	private static Step_s_step = new b2TimeStep();
 	private static Step_s_stepTimer = new b2Timer();
 	private static Step_s_timer = new b2Timer();
+
 	// #if B2_ENABLE_PARTICLE
 	public Step (dt: number, velocityIterations: number, positionIterations: number, particleIterations: number = this.CalculateReasonableParticleIterations(dt)): void {
 		// #else
@@ -589,6 +617,7 @@ export class b2World {
 	private static DebugDraw_s_color = new b2Color(0, 0, 0);
 	private static DebugDraw_s_vs = b2Vec2.MakeArray(4);
 	private static DebugDraw_s_xf = new b2Transform();
+
 	public DebugDraw (): void {
 		if (this.m_debugDraw === null) {
 			return;
@@ -705,8 +734,8 @@ export class b2World {
 	/// provided AABB.
 	/// @param callback a user implemented callback class.
 	/// @param aabb the query box.
-	public QueryAABB(callback: b2QueryCallback, aabb: b2AABB): void;
-	public QueryAABB(aabb: b2AABB, fn: b2QueryCallbackFunction): void;
+	public QueryAABB (callback: b2QueryCallback, aabb: b2AABB): void;
+	public QueryAABB (aabb: b2AABB, fn: b2QueryCallbackFunction): void;
 	public QueryAABB (...args: any[]): void {
 		if (args[0] instanceof b2QueryCallback) {
 			this._QueryAABB(args[0], args[1]);
@@ -714,6 +743,7 @@ export class b2World {
 			this._QueryAABB(null, args[0], args[1]);
 		}
 	}
+
 	private _QueryAABB (callback: b2QueryCallback | null, aabb: b2AABB, fn?: b2QueryCallbackFunction): void {
 		this.m_contactManager.m_broadPhase.Query(aabb, (proxy: b2TreeNode<b2FixtureProxy>): boolean => {
 			const fixture_proxy: b2FixtureProxy = proxy.userData;
@@ -738,7 +768,10 @@ export class b2World {
 	}
 
 	public QueryAllAABB (aabb: b2AABB, out: b2Fixture[] = []): b2Fixture[] {
-		this.QueryAABB(aabb, (fixture: b2Fixture): boolean => { out.push(fixture); return true; });
+		this.QueryAABB(aabb, (fixture: b2Fixture): boolean => {
+			out.push(fixture);
+			return true;
+		});
 		return out;
 	}
 
@@ -746,8 +779,8 @@ export class b2World {
 	/// provided point.
 	/// @param callback a user implemented callback class.
 	/// @param point the query point.
-	public QueryPointAABB(callback: b2QueryCallback, point: XY): void;
-	public QueryPointAABB(point: XY, fn: b2QueryCallbackFunction): void;
+	public QueryPointAABB (callback: b2QueryCallback, point: XY): void;
+	public QueryPointAABB (point: XY, fn: b2QueryCallbackFunction): void;
 	public QueryPointAABB (...args: any[]): void {
 		if (args[0] instanceof b2QueryCallback) {
 			this._QueryPointAABB(args[0], args[1]);
@@ -755,6 +788,7 @@ export class b2World {
 			this._QueryPointAABB(null, args[0], args[1]);
 		}
 	}
+
 	private _QueryPointAABB (callback: b2QueryCallback | null, point: XY, fn?: b2QueryCallbackFunction): void {
 		this.m_contactManager.m_broadPhase.QueryPoint(point, (proxy: b2TreeNode<b2FixtureProxy>): boolean => {
 			const fixture_proxy: b2FixtureProxy = proxy.userData;
@@ -779,12 +813,15 @@ export class b2World {
 	}
 
 	public QueryAllPointAABB (point: XY, out: b2Fixture[] = []): b2Fixture[] {
-		this.QueryPointAABB(point, (fixture: b2Fixture): boolean => { out.push(fixture); return true; });
+		this.QueryPointAABB(point, (fixture: b2Fixture): boolean => {
+			out.push(fixture);
+			return true;
+		});
 		return out;
 	}
 
-	public QueryFixtureShape(callback: b2QueryCallback, shape: b2Shape, index: number, transform: b2Transform): void;
-	public QueryFixtureShape(shape: b2Shape, index: number, transform: b2Transform, fn: b2QueryCallbackFunction): void;
+	public QueryFixtureShape (callback: b2QueryCallback, shape: b2Shape, index: number, transform: b2Transform): void;
+	public QueryFixtureShape (shape: b2Shape, index: number, transform: b2Transform, fn: b2QueryCallbackFunction): void;
 	public QueryFixtureShape (...args: any[]): void {
 		if (args[0] instanceof b2QueryCallback) {
 			this._QueryFixtureShape(args[0], args[1], args[2], args[3]);
@@ -792,7 +829,9 @@ export class b2World {
 			this._QueryFixtureShape(null, args[0], args[1], args[2], args[3]);
 		}
 	}
+
 	private static QueryFixtureShape_s_aabb = new b2AABB();
+
 	private _QueryFixtureShape (callback: b2QueryCallback | null, shape: b2Shape, index: number, transform: b2Transform, fn?: b2QueryCallbackFunction): void {
 		const aabb: b2AABB = b2World.QueryFixtureShape_s_aabb;
 		shape.ComputeAABB(aabb, transform, index);
@@ -821,12 +860,15 @@ export class b2World {
 	}
 
 	public QueryAllFixtureShape (shape: b2Shape, index: number, transform: b2Transform, out: b2Fixture[] = []): b2Fixture[] {
-		this.QueryFixtureShape(shape, index, transform, (fixture: b2Fixture): boolean => { out.push(fixture); return true; });
+		this.QueryFixtureShape(shape, index, transform, (fixture: b2Fixture): boolean => {
+			out.push(fixture);
+			return true;
+		});
 		return out;
 	}
 
-	public QueryFixturePoint(callback: b2QueryCallback, point: XY): void;
-	public QueryFixturePoint(point: XY, fn: b2QueryCallbackFunction): void;
+	public QueryFixturePoint (callback: b2QueryCallback, point: XY): void;
+	public QueryFixturePoint (point: XY, fn: b2QueryCallbackFunction): void;
 	public QueryFixturePoint (...args: any[]): void {
 		if (args[0] instanceof b2QueryCallback) {
 			this._QueryFixturePoint(args[0], args[1]);
@@ -834,6 +876,7 @@ export class b2World {
 			this._QueryFixturePoint(null, args[0], args[1]);
 		}
 	}
+
 	private _QueryFixturePoint (callback: b2QueryCallback | null, point: XY, fn?: b2QueryCallbackFunction): void {
 		this.m_contactManager.m_broadPhase.QueryPoint(point, (proxy: b2TreeNode<b2FixtureProxy>): boolean => {
 			const fixture_proxy: b2FixtureProxy = proxy.userData;
@@ -860,7 +903,10 @@ export class b2World {
 	}
 
 	public QueryAllFixturePoint (point: XY, out: b2Fixture[] = []): b2Fixture[] {
-		this.QueryFixturePoint(point, (fixture: b2Fixture): boolean => { out.push(fixture); return true; });
+		this.QueryFixturePoint(point, (fixture: b2Fixture): boolean => {
+			out.push(fixture);
+			return true;
+		});
 		return out;
 	}
 
@@ -870,8 +916,8 @@ export class b2World {
 	/// @param callback a user implemented callback class.
 	/// @param point1 the ray starting point
 	/// @param point2 the ray ending point
-	public RayCast(callback: b2RayCastCallback, point1: XY, point2: XY): void;
-	public RayCast(point1: XY, point2: XY, fn: b2RayCastCallbackFunction): void;
+	public RayCast (callback: b2RayCastCallback, point1: XY, point2: XY): void;
+	public RayCast (point1: XY, point2: XY, fn: b2RayCastCallbackFunction): void;
 	public RayCast (...args: any[]): void {
 		if (args[0] instanceof b2RayCastCallback) {
 			this._RayCast(args[0], args[1], args[2]);
@@ -879,9 +925,11 @@ export class b2World {
 			this._RayCast(null, args[0], args[1], args[2]);
 		}
 	}
+
 	private static RayCast_s_input = new b2RayCastInput();
 	private static RayCast_s_output = new b2RayCastOutput();
 	private static RayCast_s_point = new b2Vec2();
+
 	private _RayCast (callback: b2RayCastCallback | null, point1: XY, point2: XY, fn?: b2RayCastCallbackFunction): void {
 		const input: b2RayCastInput = b2World.RayCast_s_input;
 		input.maxFraction = 1;
@@ -956,6 +1004,7 @@ export class b2World {
 	public GetParticleSystemList (): b2ParticleSystem | null {
 		return this.m_particleSystemList;
 	}
+
 	// #endif
 
 	/// Get the world contact list. With the returned contact, use b2Contact::GetNext to get
@@ -1085,7 +1134,9 @@ export class b2World {
 	/// The body shift formula is: position -= newOrigin
 	/// @param newOrigin the new origin with respect to the old origin
 	public ShiftOrigin (newOrigin: XY): void {
-		if (this.IsLocked()) { throw new Error(); }
+		if (this.IsLocked()) {
+			throw new Error();
+		}
 
 		for (let b: b2Body | null = this.m_bodyList; b; b = b.m_next) {
 			b.m_xf.p.SelfSub(newOrigin);
@@ -1279,7 +1330,9 @@ export class b2World {
 			while (stackCount > 0) {
 				// Grab the next body off the stack and add it to the island.
 				const b: b2Body | null = stack[--stackCount];
-				if (!b) { throw new Error(); }
+				if (!b) {
+					throw new Error();
+				}
 				// DEBUG: b2Assert(b.IsEnabled());
 				island.AddBody(b);
 
@@ -1371,7 +1424,9 @@ export class b2World {
 		}
 
 		for (let i: number = 0; i < stack.length; ++i) {
-			if (!stack[i]) { break; }
+			if (!stack[i]) {
+				break;
+			}
 			stack[i] = null;
 		}
 
@@ -1403,6 +1458,7 @@ export class b2World {
 	private static SolveTOI_s_backup2 = new b2Sweep();
 	private static SolveTOI_s_toi_input = new b2TOIInput();
 	private static SolveTOI_s_toi_output = new b2TOIOutput();
+
 	public SolveTOI (step: b2TimeStep): void {
 		const island: b2Island = this.m_island;
 		island.Initialize(2 * b2_maxTOIContacts, b2_maxTOIContacts, 0, this.m_contactManager.m_contactListener);
@@ -1593,7 +1649,7 @@ export class b2World {
 						// Only add static, kinematic, or bullet bodies.
 						const other: b2Body = ce.other;
 						if (other.m_type === b2BodyType.b2_dynamicBody &&
-              !body.IsBullet() && !other.IsBullet()) {
+							!body.IsBullet() && !other.IsBullet()) {
 							continue;
 						}
 
@@ -1720,5 +1776,6 @@ export class b2World {
 		// delete controller.m_world; // = null;
 		return controller;
 	}
+
 	// #endif
 }

@@ -16,24 +16,24 @@
 * 3. This notice may not be removed or altered from any source distribution.
 */
 
-import { b2_linearSlop, b2_angularSlop, b2Maybe } from "../common/b2_settings.js";
-import type { XY } from "../common/b2_math.js";
-import { b2Abs, b2Vec2, b2Vec3, b2Mat33, b2Rot } from "../common/b2_math.js";
-import type { b2Body } from "./b2_body.js";
-import type { b2IJointDef } from "./b2_joint.js";
-import { b2Joint, b2JointDef, b2JointType } from "./b2_joint.js";
-import type { b2SolverData } from "./b2_time_step.js";
+import { b2_linearSlop, b2_angularSlop, b2Maybe } from "../common/b2_settings";
+import type { XY } from "../common/b2_math";
+import { b2Abs, b2Vec2, b2Vec3, b2Mat33, b2Rot } from "../common/b2_math";
+import type { b2Body } from "./b2_body";
+import type { b2IJointDef } from "./b2_joint";
+import { b2Joint, b2JointDef, b2JointType } from "./b2_joint";
+import type { b2SolverData } from "./b2_time_step";
 
 export interface b2IWeldJointDef extends b2IJointDef {
-  localAnchorA?: XY;
+	localAnchorA?: XY;
 
-  localAnchorB?: XY;
+	localAnchorB?: XY;
 
-  referenceAngle?: number;
+	referenceAngle?: number;
 
-  stiffness?: number;
+	stiffness?: number;
 
-  damping?: number;
+	damping?: number;
 }
 
 /// Weld joint definition. You need to specify local anchor points
@@ -107,6 +107,7 @@ export class b2WeldJoint extends b2Joint {
 	}
 
 	private static InitVelocityConstraints_s_P = new b2Vec2();
+
 	public InitVelocityConstraints (data: b2SolverData): void {
 		this.m_indexA = this.m_bodyA.m_islandIndex;
 		this.m_indexB = this.m_bodyB.m_islandIndex;
@@ -212,6 +213,7 @@ export class b2WeldJoint extends b2Joint {
 	private static SolveVelocityConstraints_s_impulse1 = new b2Vec2();
 	private static SolveVelocityConstraints_s_impulse = new b2Vec3();
 	private static SolveVelocityConstraints_s_P = new b2Vec2();
+
 	public SolveVelocityConstraints (data: b2SolverData): void {
 		const vA: b2Vec2 = data.velocities[this.m_indexA].v;
 		let wA: number = data.velocities[this.m_indexA].w;
@@ -287,6 +289,7 @@ export class b2WeldJoint extends b2Joint {
 	private static SolvePositionConstraints_s_C1 = new b2Vec2();
 	private static SolvePositionConstraints_s_P = new b2Vec2();
 	private static SolvePositionConstraints_s_impulse = new b2Vec3();
+
 	public SolvePositionConstraints (data: b2SolverData): boolean {
 		const cA: b2Vec2 = data.positions[this.m_indexA].c;
 		let aA: number = data.positions[this.m_indexA].a;
@@ -321,10 +324,10 @@ export class b2WeldJoint extends b2Joint {
 		if (this.m_stiffness > 0) {
 			// b2Vec2 C1 =  cB + rB - cA - rA;
 			const C1 =
-        b2Vec2.SubVV(
-        	b2Vec2.AddVV(cB, rB, b2Vec2.s_t0),
-        	b2Vec2.AddVV(cA, rA, b2Vec2.s_t1),
-        	b2WeldJoint.SolvePositionConstraints_s_C1);
+				b2Vec2.SubVV(
+					b2Vec2.AddVV(cB, rB, b2Vec2.s_t0),
+					b2Vec2.AddVV(cA, rA, b2Vec2.s_t1),
+					b2WeldJoint.SolvePositionConstraints_s_C1);
 			positionError = C1.Length();
 			angularError = 0;
 
@@ -341,10 +344,10 @@ export class b2WeldJoint extends b2Joint {
 		} else {
 			// b2Vec2 C1 =  cB + rB - cA - rA;
 			const C1 =
-        b2Vec2.SubVV(
-        	b2Vec2.AddVV(cB, rB, b2Vec2.s_t0),
-        	b2Vec2.AddVV(cA, rA, b2Vec2.s_t1),
-        	b2WeldJoint.SolvePositionConstraints_s_C1);
+				b2Vec2.SubVV(
+					b2Vec2.AddVV(cB, rB, b2Vec2.s_t0),
+					b2Vec2.AddVV(cA, rA, b2Vec2.s_t1),
+					b2WeldJoint.SolvePositionConstraints_s_C1);
 			const C2: number = aB - aA - this.m_referenceAngle;
 
 			positionError = C1.Length();
@@ -395,17 +398,33 @@ export class b2WeldJoint extends b2Joint {
 		return inv_dt * this.m_impulse.z;
 	}
 
-	public GetLocalAnchorA (): Readonly<b2Vec2> { return this.m_localAnchorA; }
+	public GetLocalAnchorA (): Readonly<b2Vec2> {
+		return this.m_localAnchorA;
+	}
 
-	public GetLocalAnchorB (): Readonly<b2Vec2> { return this.m_localAnchorB; }
+	public GetLocalAnchorB (): Readonly<b2Vec2> {
+		return this.m_localAnchorB;
+	}
 
-	public GetReferenceAngle (): number { return this.m_referenceAngle; }
+	public GetReferenceAngle (): number {
+		return this.m_referenceAngle;
+	}
 
-	public SetStiffness (stiffness: number): void { this.m_stiffness = stiffness; }
-	public GetStiffness (): number { return this.m_stiffness; }
+	public SetStiffness (stiffness: number): void {
+		this.m_stiffness = stiffness;
+	}
 
-	public SetDamping (damping: number) { this.m_damping = damping; }
-	public GetDamping () { return this.m_damping; }
+	public GetStiffness (): number {
+		return this.m_stiffness;
+	}
+
+	public SetDamping (damping: number) {
+		this.m_damping = damping;
+	}
+
+	public GetDamping () {
+		return this.m_damping;
+	}
 
 	public override Dump (log: (format: string, ...args: any[]) => void) {
 		const indexA = this.m_bodyA.m_islandIndex;

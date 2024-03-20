@@ -16,24 +16,24 @@
 * 3. This notice may not be removed or altered from any source distribution.
 */
 
-import { b2_linearSlop, b2Maybe, b2_maxFloat } from "../common/b2_settings.js";
-import type { XY} from "../common/b2_math.js";
-import { b2Abs, b2Clamp, b2Vec2, b2Rot, b2Max, b2Transform } from "../common/b2_math.js";
-import type { b2IJointDef } from "./b2_joint.js";
-import { b2Joint, b2JointDef, b2JointType } from "./b2_joint.js";
-import type { b2SolverData } from "./b2_time_step.js";
-import type { b2Body } from "./b2_body.js";
-import type { b2Draw } from "../common/b2_draw.js";
-import { b2Color } from "../common/b2_draw.js";
+import { b2_linearSlop, b2Maybe, b2_maxFloat } from "../common/b2_settings";
+import type { XY } from "../common/b2_math";
+import { b2Abs, b2Clamp, b2Vec2, b2Rot, b2Max, b2Transform } from "../common/b2_math";
+import type { b2IJointDef } from "./b2_joint";
+import { b2Joint, b2JointDef, b2JointType } from "./b2_joint";
+import type { b2SolverData } from "./b2_time_step";
+import type { b2Body } from "./b2_body";
+import type { b2Draw } from "../common/b2_draw";
+import { b2Color } from "../common/b2_draw";
 
 export interface b2IDistanceJointDef extends b2IJointDef {
-  localAnchorA?: XY;
-  localAnchorB?: XY;
-  length?: number;
-  minLength?: number;
-  maxLength?: number;
-  stiffness?: number;
-  damping?: number;
+	localAnchorA?: XY;
+	localAnchorB?: XY;
+	length?: number;
+	minLength?: number;
+	maxLength?: number;
+	stiffness?: number;
+	damping?: number;
 }
 
 /// Distance joint definition. This requires defining an
@@ -134,9 +134,13 @@ export class b2DistanceJoint extends b2Joint {
 		return 0;
 	}
 
-	public GetLocalAnchorA (): Readonly<b2Vec2> { return this.m_localAnchorA; }
+	public GetLocalAnchorA (): Readonly<b2Vec2> {
+		return this.m_localAnchorA;
+	}
 
-	public GetLocalAnchorB (): Readonly<b2Vec2> { return this.m_localAnchorB; }
+	public GetLocalAnchorB (): Readonly<b2Vec2> {
+		return this.m_localAnchorB;
+	}
 
 	public SetLength (length: number): number {
 		this.m_impulse = 0;
@@ -201,6 +205,7 @@ export class b2DistanceJoint extends b2Joint {
 	}
 
 	private static InitVelocityConstraints_s_P = new b2Vec2();
+
 	public InitVelocityConstraints (data: b2SolverData): void {
 		this.m_indexA = this.m_bodyA.m_islandIndex;
 		this.m_indexB = this.m_bodyB.m_islandIndex;
@@ -272,8 +277,7 @@ export class b2DistanceJoint extends b2Joint {
 
 			invMass += this.m_gamma;
 			this.m_softMass = invMass !== 0 ? 1 / invMass : 0;
-		}
-		else {
+		} else {
 			// rigid
 			this.m_gamma = 0;
 			this.m_bias = 0;
@@ -291,8 +295,7 @@ export class b2DistanceJoint extends b2Joint {
 			wA -= this.m_invIA * b2Vec2.CrossVV(this.m_rA, P);
 			vB.SelfMulAdd(this.m_invMassB, P);
 			wB += this.m_invIB * b2Vec2.CrossVV(this.m_rB, P);
-		}
-		else {
+		} else {
 			this.m_impulse = 0;
 		}
 
@@ -305,6 +308,7 @@ export class b2DistanceJoint extends b2Joint {
 	private static SolveVelocityConstraints_s_vpA = new b2Vec2();
 	private static SolveVelocityConstraints_s_vpB = new b2Vec2();
 	private static SolveVelocityConstraints_s_P = new b2Vec2();
+
 	public SolveVelocityConstraints (data: b2SolverData): void {
 		const vA: b2Vec2 = data.velocities[this.m_indexA].v;
 		let wA: number = data.velocities[this.m_indexA].w;
@@ -369,8 +373,7 @@ export class b2DistanceJoint extends b2Joint {
 				vB.SelfMulAdd(this.m_invMassB, P);
 				wB += this.m_invIB * b2Vec2.CrossVV(this.m_rB, P);
 			}
-		}
-		else {
+		} else {
 			// Equal limits
 
 			// Cdot = dot(u, v + cross(w, r))
@@ -395,6 +398,7 @@ export class b2DistanceJoint extends b2Joint {
 	}
 
 	private static SolvePositionConstraints_s_P = new b2Vec2();
+
 	public SolvePositionConstraints (data: b2SolverData): boolean {
 		const cA: b2Vec2 = data.positions[this.m_indexA].c;
 		let aA: number = data.positions[this.m_indexA].a;
@@ -415,20 +419,13 @@ export class b2DistanceJoint extends b2Joint {
 
 		const length: number = this.m_u.Normalize();
 		let C: number;
-		if (this.m_minLength == this.m_maxLength)
-		{
+		if (this.m_minLength == this.m_maxLength) {
 			C = length - this.m_minLength;
-		}
-		else if (length < this.m_minLength)
-		{
+		} else if (length < this.m_minLength) {
 			C = length - this.m_minLength;
-		}
-		else if (this.m_maxLength < length)
-		{
+		} else if (this.m_maxLength < length) {
 			C = length - this.m_maxLength;
-		}
-		else
-		{
+		} else {
 			return true;
 		}
 
@@ -458,6 +455,7 @@ export class b2DistanceJoint extends b2Joint {
 	private static Draw_s_pRest = new b2Vec2();
 	private static Draw_s_pMin = new b2Vec2();
 	private static Draw_s_pMax = new b2Vec2();
+
 	public override Draw (draw: b2Draw): void {
 		const xfA: Readonly<b2Transform> = this.m_bodyA.GetTransform();
 		const xfB: Readonly<b2Transform> = this.m_bodyB.GetTransform();
@@ -466,25 +464,25 @@ export class b2DistanceJoint extends b2Joint {
 
 		const axis: b2Vec2 = b2Vec2.SubVV(pB, pA, b2DistanceJoint.Draw_s_axis);
 		axis.Normalize();
-  
+
 		const c1 = b2DistanceJoint.Draw_s_c1; // b2Color c1(0.7f, 0.7f, 0.7f);
 		const c2 = b2DistanceJoint.Draw_s_c2; // b2Color c2(0.3f, 0.9f, 0.3f);
 		const c3 = b2DistanceJoint.Draw_s_c3; // b2Color c3(0.9f, 0.3f, 0.3f);
 		const c4 = b2DistanceJoint.Draw_s_c4; // b2Color c4(0.4f, 0.4f, 0.4f);
-  
+
 		draw.DrawSegment(pA, pB, c4);
-    
+
 		// b2Vec2 pRest = pA + this.m_length * axis;
 		const pRest: b2Vec2 = b2Vec2.AddVMulSV(pA, this.m_length, axis, b2DistanceJoint.Draw_s_pRest);
 		draw.DrawPoint(pRest, 8.0, c1);
-  
+
 		if (this.m_minLength != this.m_maxLength) {
 			if (this.m_minLength > b2_linearSlop) {
 				// b2Vec2 pMin = pA + this.m_minLength * axis;
 				const pMin: b2Vec2 = b2Vec2.AddVMulSV(pA, this.m_minLength, axis, b2DistanceJoint.Draw_s_pMin);
 				draw.DrawPoint(pMin, 4.0, c2);
 			}
-  
+
 			if (this.m_maxLength < b2_maxFloat) {
 				// b2Vec2 pMax = pA + this.m_maxLength * axis;
 				const pMax: b2Vec2 = b2Vec2.AddVMulSV(pA, this.m_maxLength, axis, b2DistanceJoint.Draw_s_pMax);

@@ -16,50 +16,50 @@
 * 3. This notice may not be removed or altered from any source distribution.
 */
 
-// DEBUG: import { b2Assert } from "../common/b2_settings.js";
-import { b2_linearSlop, b2Maybe } from "../common/b2_settings.js";
-import type { XY} from "../common/b2_math.js";
-import { b2Abs, b2Clamp, b2Vec2, b2Rot, b2Max, b2Min, b2Transform } from "../common/b2_math.js";
-import type { b2IJointDef } from "./b2_joint.js";
-import { b2Joint, b2JointDef, b2JointType } from "./b2_joint.js";
-import type { b2SolverData } from "./b2_time_step.js";
-import type { b2Body } from "./b2_body.js";
-import type { b2Draw} from "../common/b2_draw.js";
-import { b2Color } from "../common/b2_draw.js";
+// DEBUG: import { b2Assert } from "../common/b2_settings";
+import { b2_linearSlop, b2Maybe } from "../common/b2_settings";
+import type { XY } from "../common/b2_math";
+import { b2Abs, b2Clamp, b2Vec2, b2Rot, b2Max, b2Min, b2Transform } from "../common/b2_math";
+import type { b2IJointDef } from "./b2_joint";
+import { b2Joint, b2JointDef, b2JointType } from "./b2_joint";
+import type { b2SolverData } from "./b2_time_step";
+import type { b2Body } from "./b2_body";
+import type { b2Draw } from "../common/b2_draw";
+import { b2Color } from "../common/b2_draw";
 
 export interface b2IWheelJointDef extends b2IJointDef {
-  /// The local anchor point relative to bodyA's origin.
-  localAnchorA?: XY;
+	/// The local anchor point relative to bodyA's origin.
+	localAnchorA?: XY;
 
-  /// The local anchor point relative to bodyB's origin.
-  localAnchorB?: XY;
+	/// The local anchor point relative to bodyB's origin.
+	localAnchorB?: XY;
 
-  /// The local translation axis in bodyA.
-  localAxisA?: XY;
+	/// The local translation axis in bodyA.
+	localAxisA?: XY;
 
-  /// Enable/disable the joint limit.
-  enableLimit?: boolean;
+	/// Enable/disable the joint limit.
+	enableLimit?: boolean;
 
-  /// The lower translation limit, usually in meters.
-  lowerTranslation?: number;
+	/// The lower translation limit, usually in meters.
+	lowerTranslation?: number;
 
-  /// The upper translation limit, usually in meters.
-  upperTranslation?: number;
+	/// The upper translation limit, usually in meters.
+	upperTranslation?: number;
 
-  /// Enable/disable the joint motor.
-  enableMotor?: boolean;
+	/// Enable/disable the joint motor.
+	enableMotor?: boolean;
 
-  /// The maximum motor torque, usually in N-m.
-  maxMotorTorque?: number;
+	/// The maximum motor torque, usually in N-m.
+	maxMotorTorque?: number;
 
-  /// The desired motor speed in radians per second.
-  motorSpeed?: number;
+	/// The desired motor speed in radians per second.
+	motorSpeed?: number;
 
-  /// Suspension stiffness. Typically in units N/m.
-  stiffness?: number;
+	/// Suspension stiffness. Typically in units N/m.
+	stiffness?: number;
 
-  /// Suspension damping. Typically in units of N*s/m.
-  damping?: number;
+	/// Suspension damping. Typically in units of N*s/m.
+	damping?: number;
 }
 
 /// Wheel joint definition. This requires defining a line of
@@ -210,6 +210,7 @@ export class b2WheelJoint extends b2Joint {
 
 	private static InitVelocityConstraints_s_d = new b2Vec2();
 	private static InitVelocityConstraints_s_P = new b2Vec2();
+
 	public InitVelocityConstraints (data: b2SolverData): void {
 		this.m_indexA = this.m_bodyA.m_islandIndex;
 		this.m_indexB = this.m_bodyB.m_islandIndex;
@@ -358,6 +359,7 @@ export class b2WheelJoint extends b2Joint {
 	}
 
 	private static SolveVelocityConstraints_s_P = new b2Vec2();
+
 	public SolveVelocityConstraints (data: b2SolverData): void {
 		const mA: number = this.m_invMassA, mB: number = this.m_invMassB;
 		const iA: number = this.m_invIA, iB: number = this.m_invIB;
@@ -477,6 +479,7 @@ export class b2WheelJoint extends b2Joint {
 
 	private static SolvePositionConstraints_s_d = new b2Vec2();
 	private static SolvePositionConstraints_s_P = new b2Vec2();
+
 	public SolvePositionConstraints (data: b2SolverData): boolean {
 		const cA: b2Vec2 = data.positions[this.m_indexA].c;
 		let aA: number = data.positions[this.m_indexA].a;
@@ -628,7 +631,7 @@ export class b2WheelJoint extends b2Joint {
 
 			let impulse: number = 0.0;
 			if (invMass !== 0.0) {
-				impulse = - C / invMass;
+				impulse = -C / invMass;
 			}
 
 			// b2Vec2 P = impulse * ay;
@@ -679,11 +682,17 @@ export class b2WheelJoint extends b2Joint {
 		return inv_dt * this.m_motorImpulse;
 	}
 
-	public GetLocalAnchorA (): Readonly<b2Vec2> { return this.m_localAnchorA; }
+	public GetLocalAnchorA (): Readonly<b2Vec2> {
+		return this.m_localAnchorA;
+	}
 
-	public GetLocalAnchorB (): Readonly<b2Vec2> { return this.m_localAnchorB; }
+	public GetLocalAnchorB (): Readonly<b2Vec2> {
+		return this.m_localAnchorB;
+	}
 
-	public GetLocalAxisA (): Readonly<b2Vec2> { return this.m_localXAxisA; }
+	public GetLocalAxisA (): Readonly<b2Vec2> {
+		return this.m_localXAxisA;
+	}
 
 	public GetJointTranslation (): number {
 		return this.GetPrismaticJointTranslation();
@@ -740,13 +749,13 @@ export class b2WheelJoint extends b2Joint {
 
 		// float32 speed = b2Dot(d, b2Cross(wA, axis)) + b2Dot(axis, vB + b2Cross(wB, rB) - vA - b2Cross(wA, rA));
 		const speed =
-      b2Vec2.DotVV(d, b2Vec2.CrossSV(wA, axis, b2Vec2.s_t0)) +
-      b2Vec2.DotVV(
-      	axis,
-      	b2Vec2.SubVV(
-      		b2Vec2.AddVCrossSV(vB, wB, rB, b2Vec2.s_t0),
-      		b2Vec2.AddVCrossSV(vA, wA, rA, b2Vec2.s_t1),
-      		b2Vec2.s_t0));
+			b2Vec2.DotVV(d, b2Vec2.CrossSV(wA, axis, b2Vec2.s_t0)) +
+			b2Vec2.DotVV(
+				axis,
+				b2Vec2.SubVV(
+					b2Vec2.AddVCrossSV(vB, wB, rB, b2Vec2.s_t0),
+					b2Vec2.AddVCrossSV(vA, wA, rA, b2Vec2.s_t1),
+					b2Vec2.s_t0));
 		return speed;
 	}
 
@@ -865,6 +874,7 @@ export class b2WheelJoint extends b2Joint {
 	private static Draw_s_lower = new b2Vec2();
 	private static Draw_s_upper = new b2Vec2();
 	private static Draw_s_perp = new b2Vec2();
+
 	public override Draw (draw: b2Draw): void {
 		const xfA: Readonly<b2Transform> = this.m_bodyA.GetTransform();
 		const xfB: Readonly<b2Transform> = this.m_bodyB.GetTransform();

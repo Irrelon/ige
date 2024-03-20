@@ -16,15 +16,15 @@
 * 3. This notice may not be removed or altered from any source distribution.
 */
 
-// DEBUG: import { b2Assert } from "../common/b2_settings.js";
-// DEBUG: import { b2IsValid } from "../common/b2_math.js";
-import { b2Maybe } from "../common/b2_settings.js";
-import type { XY } from "../common/b2_math.js";
-import { b2Clamp, b2Vec2, b2Mat22, b2Rot } from "../common/b2_math.js";
-import type { b2Body } from "./b2_body.js";
-import type { b2IJointDef } from "./b2_joint.js";
-import { b2Joint, b2JointDef, b2JointType } from "./b2_joint.js";
-import type { b2SolverData } from "./b2_time_step.js";
+// DEBUG: import { b2Assert } from "../common/b2_settings";
+// DEBUG: import { b2IsValid } from "../common/b2_math";
+import { b2Maybe } from "../common/b2_settings";
+import type { XY } from "../common/b2_math";
+import { b2Clamp, b2Vec2, b2Mat22, b2Rot } from "../common/b2_math";
+import type { b2Body } from "./b2_body";
+import type { b2IJointDef } from "./b2_joint";
+import { b2Joint, b2JointDef, b2JointType } from "./b2_joint";
+import type { b2SolverData } from "./b2_time_step";
 
 // Point-to-point constraint
 // Cdot = v2 - v1
@@ -42,15 +42,15 @@ import type { b2SolverData } from "./b2_time_step.js";
 // K = invI1 + invI2
 
 export interface b2IMotorJointDef extends b2IJointDef {
-  linearOffset?: XY;
+	linearOffset?: XY;
 
-  angularOffset?: number;
+	angularOffset?: number;
 
-  maxForce?: number;
+	maxForce?: number;
 
-  maxTorque?: number;
+	maxTorque?: number;
 
-  correctionFactor?: number;
+	correctionFactor?: number;
 }
 
 export class b2MotorJointDef extends b2JointDef implements b2IMotorJointDef {
@@ -127,6 +127,7 @@ export class b2MotorJoint extends b2Joint {
 		out.y = pos.y;
 		return out;
 	}
+
 	public GetAnchorB<T extends XY> (out: T): T {
 		const pos: Readonly<b2Vec2> = this.m_bodyB.GetPosition();
 		out.x = pos.x;
@@ -150,6 +151,7 @@ export class b2MotorJoint extends b2Joint {
 			this.m_linearOffset.Copy(linearOffset);
 		}
 	}
+
 	public GetLinearOffset () {
 		return this.m_linearOffset;
 	}
@@ -161,6 +163,7 @@ export class b2MotorJoint extends b2Joint {
 			this.m_angularOffset = angularOffset;
 		}
 	}
+
 	public GetAngularOffset () {
 		return this.m_angularOffset;
 	}
@@ -272,6 +275,7 @@ export class b2MotorJoint extends b2Joint {
 	private static SolveVelocityConstraints_s_Cdot_v2 = new b2Vec2();
 	private static SolveVelocityConstraints_s_impulse_v2 = new b2Vec2();
 	private static SolveVelocityConstraints_s_oldImpulse_v2 = new b2Vec2();
+
 	public SolveVelocityConstraints (data: b2SolverData): void {
 		const vA: b2Vec2 = data.velocities[this.m_indexA].v;
 		let wA: number = data.velocities[this.m_indexA].w;
@@ -305,12 +309,12 @@ export class b2MotorJoint extends b2Joint {
 
 			// b2Vec2 Cdot = vB + b2Vec2.CrossSV(wB, rB) - vA - b2Vec2.CrossSV(wA, rA) + inv_h * this.m_correctionFactor * this.m_linearError;
 			const Cdot_v2 =
-        b2Vec2.AddVV(
-        	b2Vec2.SubVV(
-        		b2Vec2.AddVV(vB, b2Vec2.CrossSV(wB, rB, b2Vec2.s_t0), b2Vec2.s_t0),
-        		b2Vec2.AddVV(vA, b2Vec2.CrossSV(wA, rA, b2Vec2.s_t1), b2Vec2.s_t1), b2Vec2.s_t2),
-        	b2Vec2.MulSV(inv_h * this.m_correctionFactor, this.m_linearError, b2Vec2.s_t3),
-        	b2MotorJoint.SolveVelocityConstraints_s_Cdot_v2);
+				b2Vec2.AddVV(
+					b2Vec2.SubVV(
+						b2Vec2.AddVV(vB, b2Vec2.CrossSV(wB, rB, b2Vec2.s_t0), b2Vec2.s_t0),
+						b2Vec2.AddVV(vA, b2Vec2.CrossSV(wA, rA, b2Vec2.s_t1), b2Vec2.s_t1), b2Vec2.s_t2),
+					b2Vec2.MulSV(inv_h * this.m_correctionFactor, this.m_linearError, b2Vec2.s_t3),
+					b2MotorJoint.SolveVelocityConstraints_s_Cdot_v2);
 
 			// b2Vec2 impulse = -b2Mul(this.m_linearMass, Cdot);
 			const impulse_v2: b2Vec2 = b2Mat22.MulMV(this.m_linearMass, Cdot_v2, b2MotorJoint.SolveVelocityConstraints_s_impulse_v2).SelfNeg();

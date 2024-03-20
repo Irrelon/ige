@@ -18,11 +18,11 @@
 
 // #if B2_ENABLE_CONTROLLER
 
-import { b2Controller } from "./b2_controller.js";
-import { b2Mat22, b2Vec2, b2Max } from "../common/b2_math.js";
-import type { b2TimeStep } from "../dynamics/b2_time_step.js";
-import { b2_epsilon } from "../common/b2_settings.js";
-import type { b2Draw } from "../common/b2_draw.js";
+import { b2Controller } from "./b2_controller";
+import { b2Mat22, b2Vec2, b2Max } from "../common/b2_math";
+import type { b2TimeStep } from "../dynamics/b2_time_step";
+import { b2_epsilon } from "../common/b2_settings";
+import type { b2Draw } from "../common/b2_draw";
 
 /**
  * Applies top down linear damping to the controlled bodies
@@ -41,11 +41,12 @@ export class b2TensorDampingController extends b2Controller {
 
 	/// Set this to a positive number to clamp the maximum amount of damping done.
 	public maxTimestep = 0;
+
 	// Typically one wants maxTimestep to be 1/(max eigenvalue of T), so that damping will never cause something to reverse direction
 
 	/**
-     * @see b2Controller::Step
-     */
+	 * @see b2Controller::Step
+	 */
 	public Step (step: b2TimeStep) {
 		let timestep = step.dt;
 		if (timestep <= b2_epsilon) {
@@ -71,13 +72,15 @@ export class b2TensorDampingController extends b2Controller {
 			body.SetLinearVelocity(b2Vec2.AddVV(body.GetLinearVelocity(), b2Vec2.MulSV(timestep, damping, b2Vec2.s_t0), b2Vec2.s_t1));
 		}
 	}
+
 	private static Step_s_damping = new b2Vec2();
 
-	public Draw (draw: b2Draw) {}
+	public Draw (draw: b2Draw) {
+	}
 
 	/**
-     * Sets damping independantly along the x and y axes
-     */
+	 * Sets damping independantly along the x and y axes
+	 */
 	public SetAxisAligned (xDamping: number, yDamping: number) {
 		this.T.ex.x = (-xDamping);
 		this.T.ex.y = 0;
