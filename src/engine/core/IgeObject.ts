@@ -1742,9 +1742,9 @@ export class IgeObject
 		return this;
 	}
 
-	origin (x: number, y: number, z: number) {
+	originTo (x: number, y: number, z: number) {
 		if (x === undefined || y === undefined || z === undefined) {
-			this.log("origin() called with a missing or undefined x, y or z parameter!", "error");
+			this.log("originTo() called with a missing or undefined x, y or z parameter!", "error");
 			return this;
 		}
 
@@ -2501,7 +2501,7 @@ export class IgeObject
 			if (data !== undefined) {
 				if (isClient) {
 					const geom = data.split(",");
-					this.origin(parseFloat(geom[0]), parseFloat(geom[1]), parseFloat(geom[2]));
+					this.originTo(parseFloat(geom[0]), parseFloat(geom[1]), parseFloat(geom[2]));
 					//this._origin.x = parseFloat(geom[0]);
 					//this._origin.y = parseFloat(geom[1]);
 					//this._origin.z = parseFloat(geom[2]);
