@@ -25,9 +25,41 @@ interface BasicPolygon extends BasicPoint {
 	_poly: BasicPoint[];
 }
 
+export function rectToPolygon (rect: BasicRect): BasicPolygon {
+	const rectW2 = rect.width / 2;
+	const rectH2 = rect.height / 2;
+
+	return {
+		x: rect.x,
+		y: rect.y,
+		_poly: [
+			{ x: rect.x - rectW2, y: rect.y - rectH2 },
+			{ x: rect.x + rectW2, y: rect.y - rectH2 },
+			{ x: rect.x + rectW2, y: rect.y + rectH2 },
+			{ x: rect.x - rectW2, y: rect.y + rectH2 }
+		]
+	};
+}
+
 //////////////////////////////////////////////////////////////////////
 // Source is point
 //////////////////////////////////////////////////////////////////////
+export function pointIntersectsRect (point: BasicPoint, rect: BasicRect): boolean {
+	const halfWidth = rect.width / 2;
+	const halfHeight = rect.height / 2;
+	const rectLeft = rect.x - halfWidth;
+	const rectRight = rect.x + halfWidth;
+	const rectTop = rect.y - halfHeight;
+	const rectBottom = rect.y + halfHeight;
+
+	return (
+		point.x >= rectLeft &&
+		point.x <= rectRight &&
+		point.y >= rectTop &&
+		point.y <= rectBottom
+	);
+}
+
 export function pointIntersectsCircle (point: BasicPoint, circle: BasicCircle): boolean {
 	const dist = distance(circle.x, circle.y, point.x, point.y);
 	return dist < circle.radius;
@@ -120,17 +152,27 @@ export function circleIntersectsCircle (circle1: BasicCircle, circle2: BasicCirc
 }
 
 export function circleIntersectsRect (circle: BasicCircle, rect: BasicRect): boolean {
-	// Calculate the distance from the circle center to the closest point on the rectangle
-	const closestX = Math.max(rect.x, Math.min(circle.x, rect.x + rect.width));
-	const closestY = Math.max(rect.y, Math.min(circle.y, rect.y + rect.height));
+	if (pointIntersectsRect(circle, rect)) return true;
 
-	// Calculate the distance between the circle center and the closest point on the rectangle
+	// Calculate the half-width and half-height of the rectangle
+	const halfWidth = rect.width / 2;
+	const halfHeight = rect.height / 2;
+
+	// Calculate the center coordinates of the rectangle
+	const rectCenterX = rect.x;
+	const rectCenterY = rect.y;
+
+	// Calculate the closest point on the rectangle to the circle
+	const closestX = Math.max(rectCenterX - halfWidth, Math.min(circle.x, rectCenterX + halfWidth));
+	const closestY = Math.max(rectCenterY - halfHeight, Math.min(circle.y, rectCenterY + halfHeight));
+
+	// Calculate the distance between the closest point and the circle center
 	const distanceX = circle.x - closestX;
 	const distanceY = circle.y - closestY;
-	const distanceSquared = (distanceX * distanceX) + (distanceY * distanceY);
+	const distanceSquared = distanceX * distanceX + distanceY * distanceY;
 
-	// Check if the distance is less than or equal to the radius
-	return distanceSquared <= (circle.radius * circle.radius);
+	// Check if the distance is less than or equal to the square of the circle's radius
+	return distanceSquared <= circle.radius * circle.radius;
 }
 
 export function circleIntersectsPolygon (circle: BasicCircle, polygon: BasicPolygon) {
@@ -163,12 +205,12 @@ export function rectIntersectsRect (rect1: BasicRect, rect2: BasicRect): boolean
 		return false;
 	}
 
-	const sX1 = rect1.x,
-		sY1 = rect1.y,
+	const sX1 = rect1.x - rect1.width / 2,
+		sY1 = rect1.y - rect1.height / 2,
 		sW = rect1.width,
 		sH = rect1.height,
-		dX1 = rect2.x,
-		dY1 = rect2.y,
+		dX1 = rect2.x - rect2.width / 2,
+		dY1 = rect2.y - rect2.height / 2,
 		dW = rect2.width,
 		dH = rect2.height,
 		sX2 = sX1 + sW,
@@ -180,21 +222,14 @@ export function rectIntersectsRect (rect1: BasicRect, rect2: BasicRect): boolean
 }
 
 export function rectIntersectsPolygon (rect: BasicRect, polygon: BasicPolygon): boolean {
-	return polygonIntersectsPolygon({
-		x: 0, y: 0, _poly: [
-			{ x: rect.x, y: rect.y },
-			{ x: rect.x + rect.width, y: rect.y },
-			{ x: rect.x + rect.width, y: rect.y + rect.height },
-			{ x: rect.x, y: rect.y + rect.height }
-		]
-	}, polygon);
+	return polygonIntersectsPolygon(rectToPolygon(rect), polygon);
 }
 
 //////////////////////////////////////////////////////////////////////
 // Source is polygon
 //////////////////////////////////////////////////////////////////////
 export function polygonIntersectsPolygon (polygon1: BasicPolygon, polygon2: BasicPolygon): boolean {
-// Check if any edge of polygon1 intersects with any edge of polygon2
+	// Check if any edge of polygon1 intersects with any edge of polygon2
 	for (let i = 0; i < polygon1._poly.length; i++) {
 		const edge1Vertex1 = polygon1._poly[i];
 		const edge1Vertex2 = polygon1._poly[(i + 1) % polygon1._poly.length];
