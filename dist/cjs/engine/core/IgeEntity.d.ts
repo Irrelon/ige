@@ -1,7 +1,7 @@
 import { IgeObject } from "./IgeObject.js"
 import { IgePoint2d } from "./IgePoint2d.js";
 import { IgePoint3d } from "./IgePoint3d.js"
-import { IgeRect } from "./IgeRect.js";
+import { IgeBounds } from "./IgeBounds.js";
 import type { IgeTexture } from "./IgeTexture.js"
 import type { IgeViewport } from "./IgeViewport.js";
 import { IgeEntityRenderMode } from "../../enums/index.js";
@@ -446,9 +446,9 @@ export declare class IgeEntity extends IgeObject implements IgeCanRegisterById, 
      *     console.log(aabb.y);
      *     console.log(aabb.width);
      *     console.log(aabb.height);
-     * @return {IgeRect} The axis-aligned bounding box in world co-ordinates.
+     * @return {IgeBounds} The axis-aligned bounding box in world co-ordinates.
      */
-    aabb(recalculate?: boolean, inverse?: boolean): IgeRect;
+    aabb(recalculate?: boolean, inverse?: boolean): IgeBounds;
     /**
      * Calculates and returns the local axis-aligned bounding box
      * for the entity. This is the AABB relative to the entity's
@@ -470,9 +470,9 @@ export declare class IgeEntity extends IgeObject implements IgeCanRegisterById, 
      *     console.log(aabb.y);
      *     console.log(aabb.width);
      *     console.log(aabb.height);
-     * @return {IgeRect} The local AABB.
+     * @return {IgeBounds} The local AABB.
      */
-    localAabb(recalculate?: boolean): IgeRect | undefined;
+    localAabb(recalculate?: boolean): IgeBounds | undefined;
     /**
      * Takes two values and returns them as an array where argument[0]
      * is the y argument and argument[1] is the x argument. This method

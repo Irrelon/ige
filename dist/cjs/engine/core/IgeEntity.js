@@ -8,7 +8,7 @@ const IgeObject_1 = require("./IgeObject.js");
 const IgePoint2d_1 = require("./IgePoint2d.js");
 const IgePoint3d_1 = require("./IgePoint3d.js");
 const IgePoly2d_1 = require("./IgePoly2d.js");
-const IgeRect_1 = require("./IgeRect.js");
+const IgeBounds_1 = require("./IgeBounds.js");
 const clientServer_1 = require("../utils/clientServer.js");
 const igeClassStore_1 = require("../utils/igeClassStore.js");
 const maths_1 = require("../utils/maths.js");
@@ -26,7 +26,7 @@ class IgeEntity extends IgeObject_1.IgeObject {
         //_entity?: IgeEntity; // We comment this because any class wanting to override return values of methods can do so individually e.g. viewport.camera.width().height()
         this._parent = null;
         this._children = [];
-        this.customTriggerPolygon = () => new IgeRect_1.IgeRect();
+        this.customTriggerPolygon = () => new IgeBounds_1.IgeBounds();
         this._sortChildren = (compareFn) => {
             return this._children.sort(compareFn);
         };
@@ -836,7 +836,7 @@ class IgeEntity extends IgeObject_1.IgeObject {
      *     console.log(aabb.y);
      *     console.log(aabb.width);
      *     console.log(aabb.height);
-     * @return {IgeRect} The axis-aligned bounding box in world co-ordinates.
+     * @return {IgeBounds} The axis-aligned bounding box in world co-ordinates.
      */
     aabb(recalculate = true, inverse = false) {
         if (!(this._aabbDirty || !this._aabb || recalculate)) {
@@ -867,7 +867,7 @@ class IgeEntity extends IgeObject_1.IgeObject {
         if (isNaN(minX) || isNaN(minY) || isNaN(maxX) || isNaN(maxY)) {
             debugger;
         }
-        this._aabb = new IgeRect_1.IgeRect(minX, minY, maxX - minX, maxY - minY);
+        this._aabb = new IgeBounds_1.IgeBounds(minX, minY, maxX - minX, maxY - minY);
         this._aabbDirty = false;
         return this._aabb;
     }
@@ -892,14 +892,14 @@ class IgeEntity extends IgeObject_1.IgeObject {
      *     console.log(aabb.y);
      *     console.log(aabb.width);
      *     console.log(aabb.height);
-     * @return {IgeRect} The local AABB.
+     * @return {IgeBounds} The local AABB.
      */
     localAabb(recalculate = false) {
         if (this._localAabb && !recalculate) {
             return this._localAabb;
         }
         const aabb = this.aabb();
-        this._localAabb = new IgeRect_1.IgeRect(-Math.floor(aabb.width / 2), -Math.floor(aabb.height / 2), Math.floor(aabb.width), Math.floor(aabb.height));
+        this._localAabb = new IgeBounds_1.IgeBounds(-Math.floor(aabb.width / 2), -Math.floor(aabb.height / 2), Math.floor(aabb.width), Math.floor(aabb.height));
     }
     /**
      * Takes two values and returns them as an array where argument[0]

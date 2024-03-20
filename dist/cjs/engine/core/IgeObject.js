@@ -8,7 +8,7 @@ const IgeMatrix2d_1 = require("./IgeMatrix2d.js");
 const IgePoint2d_1 = require("./IgePoint2d.js");
 const IgePoint3d_1 = require("./IgePoint3d.js");
 const IgePoly2d_1 = require("./IgePoly2d.js");
-const IgeRect_1 = require("./IgeRect.js");
+const IgeBounds_1 = require("./IgeBounds.js");
 const arrays_1 = require("../utils/arrays.js");
 const clientServer_1 = require("../utils/clientServer.js");
 const ids_1 = require("../utils/ids.js");
@@ -64,7 +64,7 @@ class IgeObject extends IgeEventingClass_1.IgeEventingClass {
         this._cacheDirty = false;
         this._cacheSmoothing = false;
         this._aabbDirty = false;
-        this._aabb = new IgeRect_1.IgeRect();
+        this._aabb = new IgeBounds_1.IgeBounds();
         this._indestructible = false;
         this._shouldRender = true;
         this._frameAlternatorCurrent = false;
@@ -1819,7 +1819,7 @@ class IgeObject extends IgeEventingClass_1.IgeEventingClass {
      * @example #Get the composite AABB
      *     var entity = new IgeEntity(),
      *         aabb = entity.compositeAabb();
-     * @return {IgeRect}
+     * @return {IgeBounds}
      */
     compositeAabb(inverse = false) {
         const arr = this._children;

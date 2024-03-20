@@ -25,8 +25,8 @@ export class IgeCamera extends IgeEntity {
     }
     /**
      * Gets / sets the rectangle that the camera translate
-     * will be limited to using an IgeRect instance.
-     * @param {IgeRect=} rect
+     * will be limited to using an IgeBounds instance.
+     * @param {IgeBounds=} rect
      * @return {*}
      */
     limit(rect) {

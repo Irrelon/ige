@@ -173,7 +173,13 @@ export declare const WithUiPositionMixin: <BaseClassType extends IgeMixin<IgeObj
         _cell: number | null;
         _deathTime?: number | undefined;
         _bornTime: number;
-        _translate: import("../../index.js").IgePoint3d;
+        _translate: import("../../index.js").IgePoint3d; /**
+         * Gets / sets the entity's y position relative to the top of
+         * the canvas.
+         * @param {number} px
+         * @param {boolean=} noUpdate
+         * @return {number}
+         */
         _oldTranslate: import("../../index.js").IgePoint3d;
         _rotate: import("../../index.js").IgePoint3d;
         _scale: import("../../index.js").IgePoint3d;
@@ -205,8 +211,8 @@ export declare const WithUiPositionMixin: <BaseClassType extends IgeMixin<IgeObj
         _cacheDirty: boolean;
         _cacheSmoothing: boolean;
         _aabbDirty: boolean;
-        _aabb: import("../../index.js").IgeRect;
-        _compositeAabbCache?: import("../../index.js").IgeRect | undefined;
+        _aabb: import("../../index.js").IgeBounds;
+        _compositeAabbCache?: import("../../index.js").IgeBounds | undefined;
         _noAabb?: boolean | undefined;
         _hasParent?: Record<string, boolean> | undefined;
         _texture?: import("../../index.js").IgeTexture | undefined;
@@ -225,7 +231,7 @@ export declare const WithUiPositionMixin: <BaseClassType extends IgeMixin<IgeObj
         _bounds3dPolygonDirty: boolean;
         _localBounds3dPolygon?: import("../../index.js").IgePoly2d | undefined;
         _bounds3dPolygon?: import("../../index.js").IgePoly2d | undefined;
-        _localAabb?: import("../../index.js").IgeRect | undefined;
+        _localAabb?: import("../../index.js").IgeBounds | undefined;
         _deathCallBack?: ((...args: any[]) => void) | undefined;
         components: Record<string, import("../../index.js").IgeComponent<any>>;
         _sortChildren: import("../../index.js").IgeChildSortFunction;
@@ -252,7 +258,7 @@ export declare const WithUiPositionMixin: <BaseClassType extends IgeMixin<IgeObj
         update(tickDelta: number): void;
         tick(ctx: import("../../index.js").IgeCanvasRenderingContext2d): void;
         updateTransform(): void;
-        aabb(recalculate?: boolean, inverse?: boolean): import("../../index.js").IgeRect;
+        aabb(recalculate?: boolean, inverse?: boolean): import("../../index.js").IgeBounds;
         _processBehaviours(type: import("../../enums/index.js").IgeBehaviourType, ...args: any[]): void;
         parent(): IgeObject | import("../../index.js").IgeTileMap2d<any> | null | undefined;
         parent(id: string): IgeObject | null;
@@ -333,7 +339,7 @@ export declare const WithUiPositionMixin: <BaseClassType extends IgeMixin<IgeObj
         _generateStreamData(): string;
         destroyBehaviours(): void;
         destroy(): any;
-        compositeAabb(inverse?: boolean): import("../../index.js").IgeRect;
+        compositeAabb(inverse?: boolean): import("../../index.js").IgeBounds;
         stringify(options?: Record<string, boolean>): string;
         _stringify(options?: Record<string, boolean>): string;
         addComponent(id: string, Component: typeof import("../../index.js").IgeComponent, options?: any): any;

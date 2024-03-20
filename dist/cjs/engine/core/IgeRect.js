@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.IgeRect = void 0;
+const IgePoint2d_1 = require("./IgePoint2d.js");
 const intersections_1 = require("../utils/intersections.js");
 /**
  * Creates a new rectangle (x, y, width, height).
@@ -9,6 +10,7 @@ class IgeRect {
     constructor(x = 0, y = 0, width = 0, height = 0) {
         this.classId = "IgeRect";
         this._igeShapeType = "rect";
+        this._origin = new IgePoint2d_1.IgePoint2d(0.5, 0.5);
         this.x = 0;
         this.y = 0;
         this.width = 0;
@@ -75,7 +77,7 @@ class IgeRect {
      * @return {Boolean}
      */
     xyInside(x, y) {
-        return x >= this.x && y > this.y && x <= this.x + this.width && y <= this.y + this.height;
+        return (0, intersections_1.pointIntersectsRect)({ x, y }, this);
     }
     /**
      * Returns boolean indicating if the passed point is
@@ -84,7 +86,7 @@ class IgeRect {
      * @return {Boolean}
      */
     pointInside(point) {
-        return this.xyInside(point.x, point.y);
+        return (0, intersections_1.pointIntersectsRect)(point, this);
     }
     /**
      * Returns boolean indicating if the passed IgeRect is

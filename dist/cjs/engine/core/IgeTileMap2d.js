@@ -7,7 +7,7 @@ const IgeMatrix2d_1 = require("./IgeMatrix2d.js");
 const IgePoint2d_1 = require("./IgePoint2d.js");
 const IgePoint3d_1 = require("./IgePoint3d.js");
 const IgePoly2d_1 = require("./IgePoly2d.js");
-const IgeRect_1 = require("./IgeRect.js");
+const IgeBounds_1 = require("./IgeBounds.js");
 const IgeTexture_1 = require("./IgeTexture.js");
 const instance_1 = require("../instance.js");
 const IgeTileMap2dSmartTexture_1 = require("../textures/IgeTileMap2dSmartTexture.js");
@@ -173,10 +173,10 @@ class IgeTileMap2d extends IgeEntity_1.IgeEntity {
                 this.map.tileData(x + xi, y + yi, obj);
             }
         }
-        // Create an IgeRect to represent the tiles this
+        // Create an IgeBounds to represent the tiles this
         // entity has just occupied
         if (obj.classId) {
-            obj._occupiedRect = new IgeRect_1.IgeRect(x, y, width, height);
+            obj._occupiedRect = new IgeBounds_1.IgeBounds(x, y, width, height);
         }
         return this;
     }

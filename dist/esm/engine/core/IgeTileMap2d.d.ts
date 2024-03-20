@@ -4,7 +4,7 @@ import type { IgeObject } from "./IgeObject.js"
 import { IgePoint2d } from "./IgePoint2d.js";
 import { IgePoint3d } from "./IgePoint3d.js"
 import { IgePoly2d } from "./IgePoly2d.js";
-import { IgeRect } from "./IgeRect.js"
+import { IgeBounds } from "./IgeBounds.js"
 export type IgeTileMap2dScanRectCallback = (mapData: any, x: number, y: number) => boolean;
 export interface IgeTileMap2dSavedMap {
     data: any[][];
@@ -20,7 +20,7 @@ export declare class IgeTileMap2d<MapDataType = any> extends IgeEntity {
     IgeTileMap2d: boolean;
     _drawGrid?: boolean;
     _highlightOccupied: boolean;
-    _highlightTileRect: IgeRect | null;
+    _highlightTileRect: IgeBounds | null;
     _gridColor?: string;
     _gridSize: IgePoint2d;
     _hoverColor?: string;
@@ -35,8 +35,8 @@ export declare class IgeTileMap2d<MapDataType = any> extends IgeEntity {
      */
     highlightOccupied(val: boolean): this;
     highlightOccupied(): boolean;
-    highlightTileRect(val: IgeRect | null): this;
-    highlightTileRect(): IgeRect;
+    highlightTileRect(val: IgeBounds | null): this;
+    highlightTileRect(): IgeBounds;
     /**
      * Gets / sets the map's tile width.
      * @param {number} val Tile width.
@@ -181,7 +181,7 @@ export declare class IgeTileMap2d<MapDataType = any> extends IgeEntity {
     saveMap(): string;
     isometricMounts(): boolean;
     isometricMounts(val: boolean): this;
-    tileMapHitPolygon(): IgeRect | IgePoly2d | undefined;
+    tileMapHitPolygon(): IgePoly2d | IgeBounds | undefined;
     _processTriggerHitTests(): boolean;
     _updateAdjustmentMatrix(): void;
     _childMounted(obj: IgeObject): void;

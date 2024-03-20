@@ -1,0 +1,174 @@
+<!DOCTYPE html><html class="default" lang="en"><head><meta charSet="utf-8"/><meta http-equiv="x-ua-compatible" content="IE=edge"/><title>PI2 | @irrelon/ige</title><meta name="description" content="Documentation for @irrelon/ige"/><meta name="viewport" content="width=device-width, initial-scale=1"/><link rel="stylesheet" href="../assets/style.css"/><link rel="stylesheet" href="../assets/highlight.css"/><script defer src="../assets/main.js"></script><script async src="../assets/icons.js" id="tsd-icons-script"></script><script async src="../assets/search.js" id="tsd-search-script"></script><script async src="../assets/navigation.js" id="tsd-nav-script"></script><style>
+@media (prefers-color-scheme: dark) {
+  :root {
+    --md-sys-color-primary: #4fd8eb;
+    --md-sys-color-on-primary: #00363d;
+    --md-sys-color-primary-container: #004f58;
+    --md-sys-color-on-primary-container: #97f0ff;
+    --md-sys-color-secondary: #b1cbd0;
+    --md-sys-color-on-secondary: #1c3438;
+    --md-sys-color-secondary-container: #334b4f;
+    --md-sys-color-on-secondary-container: #cde7ec;
+    --md-sys-color-tertiary: #bac6ea;
+    --md-sys-color-on-tertiary: #24304d;
+    --md-sys-color-tertiary-container: #3b4664;
+    --md-sys-color-on-tertiary-container: #dae2ff;
+    --md-sys-color-error: #ffb4ab;
+    --md-sys-color-on-error: #690005;
+    --md-sys-color-error-container: #93000a;
+    --md-sys-color-on-error-container: #ffb4ab;
+    --md-sys-color-background: #191c1d;
+    --md-sys-color-on-background: #e1e3e3;
+    --md-sys-color-surface: #191c1d;
+    --md-sys-color-on-surface: #e1e3e3;
+    --md-sys-color-surface-variant: #3f484a;
+    --md-sys-color-on-surface-variant: #bfc8ca;
+    --md-sys-color-outline: #899294;
+    --md-sys-color-outline-variant: #3f484a;
+    --md-sys-color-shadow: #000000;
+    --md-sys-color-scrim: #000000;
+    --md-sys-color-inverse-surface: #e1e3e3;
+    --md-sys-color-inverse-on-surface: #2e3132;
+    --md-sys-color-inverse-primary: #006874;
+    --md-sys-color-surface-dim: #101415;
+    --md-sys-color-surface-bright: #363a3a;
+    --md-sys-color-surface-container-lowest: #0b0f0f;
+    --md-sys-color-surface-container-low: #191c1d;
+    --md-sys-color-surface-container: #1d2021;
+    --md-sys-color-surface-container-high: #272b2b;
+    --md-sys-color-surface-container-highest: #323536
+  }
+}
+:root[data-theme="dark"] {
+  --md-sys-color-primary: #4fd8eb;
+  --md-sys-color-on-primary: #00363d;
+  --md-sys-color-primary-container: #004f58;
+  --md-sys-color-on-primary-container: #97f0ff;
+  --md-sys-color-secondary: #b1cbd0;
+  --md-sys-color-on-secondary: #1c3438;
+  --md-sys-color-secondary-container: #334b4f;
+  --md-sys-color-on-secondary-container: #cde7ec;
+  --md-sys-color-tertiary: #bac6ea;
+  --md-sys-color-on-tertiary: #24304d;
+  --md-sys-color-tertiary-container: #3b4664;
+  --md-sys-color-on-tertiary-container: #dae2ff;
+  --md-sys-color-error: #ffb4ab;
+  --md-sys-color-on-error: #690005;
+  --md-sys-color-error-container: #93000a;
+  --md-sys-color-on-error-container: #ffb4ab;
+  --md-sys-color-background: #191c1d;
+  --md-sys-color-on-background: #e1e3e3;
+  --md-sys-color-surface: #191c1d;
+  --md-sys-color-on-surface: #e1e3e3;
+  --md-sys-color-surface-variant: #3f484a;
+  --md-sys-color-on-surface-variant: #bfc8ca;
+  --md-sys-color-outline: #899294;
+  --md-sys-color-outline-variant: #3f484a;
+  --md-sys-color-shadow: #000000;
+  --md-sys-color-scrim: #000000;
+  --md-sys-color-inverse-surface: #e1e3e3;
+  --md-sys-color-inverse-on-surface: #2e3132;
+  --md-sys-color-inverse-primary: #006874;
+  --md-sys-color-surface-dim: #101415;
+  --md-sys-color-surface-bright: #363a3a;
+  --md-sys-color-surface-container-lowest: #0b0f0f;
+  --md-sys-color-surface-container-low: #191c1d;
+  --md-sys-color-surface-container: #1d2021;
+  --md-sys-color-surface-container-high: #272b2b;
+  --md-sys-color-surface-container-highest: #323536
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    --md-sys-color-primary: #006874;
+    --md-sys-color-on-primary: #ffffff;
+    --md-sys-color-primary-container: #97f0ff;
+    --md-sys-color-on-primary-container: #001f24;
+    --md-sys-color-secondary: #4a6267;
+    --md-sys-color-on-secondary: #ffffff;
+    --md-sys-color-secondary-container: #cde7ec;
+    --md-sys-color-on-secondary-container: #051f23;
+    --md-sys-color-tertiary: #525e7d;
+    --md-sys-color-on-tertiary: #ffffff;
+    --md-sys-color-tertiary-container: #dae2ff;
+    --md-sys-color-on-tertiary-container: #0e1b37;
+    --md-sys-color-error: #ba1a1a;
+    --md-sys-color-on-error: #ffffff;
+    --md-sys-color-error-container: #ffdad6;
+    --md-sys-color-on-error-container: #410002;
+    --md-sys-color-background: #fafdfd;
+    --md-sys-color-on-background: #191c1d;
+    --md-sys-color-surface: #fafdfd;
+    --md-sys-color-on-surface: #191c1d;
+    --md-sys-color-surface-variant: #dbe4e6;
+    --md-sys-color-on-surface-variant: #3f484a;
+    --md-sys-color-outline: #6f797a;
+    --md-sys-color-outline-variant: #bfc8ca;
+    --md-sys-color-shadow: #000000;
+    --md-sys-color-scrim: #000000;
+    --md-sys-color-inverse-surface: #2e3132;
+    --md-sys-color-inverse-on-surface: #eff1f1;
+    --md-sys-color-inverse-primary: #4fd8eb;
+    --md-sys-color-surface-dim: #d8dadb;
+    --md-sys-color-surface-bright: #f8fafa;
+    --md-sys-color-surface-container-lowest: #ffffff;
+    --md-sys-color-surface-container-low: #f2f4f4;
+    --md-sys-color-surface-container: #eceeef;
+    --md-sys-color-surface-container-high: #e6e8e9;
+    --md-sys-color-surface-container-highest: #e1e3e3
+  }
+}
+:root[data-theme="light"] {
+  --md-sys-color-primary: #006874;
+  --md-sys-color-on-primary: #ffffff;
+  --md-sys-color-primary-container: #97f0ff;
+  --md-sys-color-on-primary-container: #001f24;
+  --md-sys-color-secondary: #4a6267;
+  --md-sys-color-on-secondary: #ffffff;
+  --md-sys-color-secondary-container: #cde7ec;
+  --md-sys-color-on-secondary-container: #051f23;
+  --md-sys-color-tertiary: #525e7d;
+  --md-sys-color-on-tertiary: #ffffff;
+  --md-sys-color-tertiary-container: #dae2ff;
+  --md-sys-color-on-tertiary-container: #0e1b37;
+  --md-sys-color-error: #ba1a1a;
+  --md-sys-color-on-error: #ffffff;
+  --md-sys-color-error-container: #ffdad6;
+  --md-sys-color-on-error-container: #410002;
+  --md-sys-color-background: #fafdfd;
+  --md-sys-color-on-background: #191c1d;
+  --md-sys-color-surface: #fafdfd;
+  --md-sys-color-on-surface: #191c1d;
+  --md-sys-color-surface-variant: #dbe4e6;
+  --md-sys-color-on-surface-variant: #3f484a;
+  --md-sys-color-outline: #6f797a;
+  --md-sys-color-outline-variant: #bfc8ca;
+  --md-sys-color-shadow: #000000;
+  --md-sys-color-scrim: #000000;
+  --md-sys-color-inverse-surface: #2e3132;
+  --md-sys-color-inverse-on-surface: #eff1f1;
+  --md-sys-color-inverse-primary: #4fd8eb;
+  --md-sys-color-surface-dim: #d8dadb;
+  --md-sys-color-surface-bright: #f8fafa;
+  --md-sys-color-surface-container-lowest: #ffffff;
+  --md-sys-color-surface-container-low: #f2f4f4;
+  --md-sys-color-surface-container: #eceeef;
+  --md-sys-color-surface-container-high: #e6e8e9;
+  --md-sys-color-surface-container-highest: #e1e3e3
+}
+</style><link rel="stylesheet" href="../assets/material-style.css"/></head><body><script>document.documentElement.dataset.theme = localStorage.getItem("tsd-theme") || "os";document.body.style.display="none";setTimeout(() => app?app.showPage():document.body.style.removeProperty("display"),500)</script><header class="tsd-page-toolbar"><div class="tsd-toolbar-contents container"><div class="table-cell" id="tsd-search" data-base=".."><div class="field"><label for="tsd-search-field" class="tsd-widget tsd-toolbar-icon search no-caption"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><use href="../assets/icons.svg#icon-search"></use></svg></label><input type="text" id="tsd-search-field" aria-label="Search"/></div><div class="field"><div id="tsd-toolbar-links"></div></div><ul class="results"><li class="state loading">Preparing search index...</li><li class="state failure">The search index is not available</li></ul><a href="../index.html" class="title">@irrelon/ige</a></div><div class="table-cell" id="tsd-widgets"><a href="#" class="tsd-widget tsd-toolbar-icon menu no-caption" data-toggle="menu" aria-label="Menu"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><use href="../assets/icons.svg#icon-menu"></use></svg></a></div></div></header><div class="container container-main"><div class="col-content"><div class="tsd-page-title"><ul class="tsd-breadcrumb"><li><a href="../modules.html">@irrelon/ige</a></li><li><a href="PI2.html">PI2</a></li></ul><h1>Variable PI2<code class="tsd-tag ts-flagConst">Const</code> </h1></div><div class="tsd-signature"><span class="tsd-kind-variable">PI2</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol"> = ...</span></div><aside class="tsd-sources"><ul><li>Defined in <a href="https://github.com/Irrelon/ige/blob/d1c43b57/src/engine/utils/maths.ts#L13">src/engine/utils/maths.ts:13</a></li></ul></aside></div><div class="col-sidebar"><div class="page-menu"><div class="tsd-navigation settings"><details class="tsd-index-accordion"><summary class="tsd-accordion-summary"><h3><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><use href="../assets/icons.svg#icon-chevronDown"></use></svg>Settings</h3></summary><div class="tsd-accordion-details"><div class="tsd-filter-visibility"><h4 class="uppercase">Member Visibility</h4><form><ul id="tsd-filter-options"><li class="tsd-filter-item"><label class="tsd-filter-input"><input type="checkbox" id="tsd-filter-protected" name="protected"/><svg width="32" height="32" viewBox="0 0 32 32" aria-hidden="true"><rect class="tsd-checkbox-background" width="30" height="30" x="1" y="1" rx="6" fill="none"></rect><path class="tsd-checkbox-checkmark" d="M8.35422 16.8214L13.2143 21.75L24.6458 10.25" stroke="none" stroke-width="3.5" stroke-linejoin="round" fill="none"></path></svg><span>Protected</span></label></li><li class="tsd-filter-item"><label class="tsd-filter-input"><input type="checkbox" id="tsd-filter-private" name="private"/><svg width="32" height="32" viewBox="0 0 32 32" aria-hidden="true"><rect class="tsd-checkbox-background" width="30" height="30" x="1" y="1" rx="6" fill="none"></rect><path class="tsd-checkbox-checkmark" d="M8.35422 16.8214L13.2143 21.75L24.6458 10.25" stroke="none" stroke-width="3.5" stroke-linejoin="round" fill="none"></path></svg><span>Private</span></label></li><li class="tsd-filter-item"><label class="tsd-filter-input"><input type="checkbox" id="tsd-filter-inherited" name="inherited" checked/><svg width="32" height="32" viewBox="0 0 32 32" aria-hidden="true"><rect class="tsd-checkbox-background" width="30" height="30" x="1" y="1" rx="6" fill="none"></rect><path class="tsd-checkbox-checkmark" d="M8.35422 16.8214L13.2143 21.75L24.6458 10.25" stroke="none" stroke-width="3.5" stroke-linejoin="round" fill="none"></path></svg><span>Inherited</span></label></li><li class="tsd-filter-item"><label class="tsd-filter-input"><input type="checkbox" id="tsd-filter-external" name="external"/><svg width="32" height="32" viewBox="0 0 32 32" aria-hidden="true"><rect class="tsd-checkbox-background" width="30" height="30" x="1" y="1" rx="6" fill="none"></rect><path class="tsd-checkbox-checkmark" d="M8.35422 16.8214L13.2143 21.75L24.6458 10.25" stroke="none" stroke-width="3.5" stroke-linejoin="round" fill="none"></path></svg><span>External</span></label></li></ul></form></div><div class="tsd-theme-toggle"><h4 class="uppercase">Theme</h4><select id="tsd-theme"><option value="os">OS</option><option value="light">Light</option><option value="dark">Dark</option></select></div></div></details></div></div><div class="site-menu"><nav class="tsd-navigation"><a href="../modules.html"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="../assets/icons.svg#icon-1"></use></svg><span>@irrelon/ige</span></a><ul class="tsd-small-nested-navigation" id="tsd-nav-container" data-base=".."><li>Loading...</li></ul></nav></div></div></div><div class="tsd-generator"><p>Generated using <a href="https://typedoc.org/" target="_blank">TypeDoc</a></p></div><div class="overlay"></div><script>
+          try {
+            const generateLinkElement = document.querySelector(".tsd-generator a");
+            const link = document.createElement("a");
+            Object.assign(link, {
+              href: "https://github.com/dmnsgn/typedoc-material-theme",
+              target: "_blank",
+              rel: "noreferrer",
+              innerText: "typedoc-material-theme."
+            });
+            generateLinkElement.insertAdjacentElement("afterend", link);
+            generateLinkElement.insertAdjacentText("afterend", " with ");
+          } catch (error) {
+
+          }
+        </script></body></html>

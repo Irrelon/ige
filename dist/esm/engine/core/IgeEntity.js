@@ -5,7 +5,7 @@ import { IgeObject } from "./IgeObject.js";
 import { IgePoint2d } from "./IgePoint2d.js"
 import { IgePoint3d } from "./IgePoint3d.js";
 import { IgePoly2d } from "./IgePoly2d.js"
-import { IgeRect } from "./IgeRect.js";
+import { IgeBounds } from "./IgeBounds.js";
 import { isClient, isServer } from "../utils/clientServer.js"
 import { registerClass } from "../utils/igeClassStore.js";
 import { degreesToRadians } from "../utils/maths.js"
@@ -38,7 +38,7 @@ export class IgeEntity extends IgeObject {
         // Set the default stream sections as just the transform data
         this.streamSections(["transform"]);
     }
-    customTriggerPolygon = () => new IgeRect();
+    customTriggerPolygon = () => new IgeBounds();
     _sortChildren = (compareFn) => {
         return this._children.sort(compareFn);
     };
@@ -684,7 +684,7 @@ export class IgeEntity extends IgeObject {
      *     console.log(aabb.y);
      *     console.log(aabb.width);
      *     console.log(aabb.height);
-     * @return {IgeRect} The axis-aligned bounding box in world co-ordinates.
+     * @return {IgeBounds} The axis-aligned bounding box in world co-ordinates.
      */
     aabb(recalculate = true, inverse = false) {
         if (!(this._aabbDirty || !this._aabb || recalculate)) {
@@ -715,7 +715,7 @@ export class IgeEntity extends IgeObject {
         if (isNaN(minX) || isNaN(minY) || isNaN(maxX) || isNaN(maxY)) {
             debugger;
         }
-        this._aabb = new IgeRect(minX, minY, maxX - minX, maxY - minY);
+        this._aabb = new IgeBounds(minX, minY, maxX - minX, maxY - minY);
         this._aabbDirty = false;
         return this._aabb;
     }
@@ -740,14 +740,14 @@ export class IgeEntity extends IgeObject {
      *     console.log(aabb.y);
      *     console.log(aabb.width);
      *     console.log(aabb.height);
-     * @return {IgeRect} The local AABB.
+     * @return {IgeBounds} The local AABB.
      */
     localAabb(recalculate = false) {
         if (this._localAabb && !recalculate) {
             return this._localAabb;
         }
         const aabb = this.aabb();
-        this._localAabb = new IgeRect(-Math.floor(aabb.width / 2), -Math.floor(aabb.height / 2), Math.floor(aabb.width), Math.floor(aabb.height));
+        this._localAabb = new IgeBounds(-Math.floor(aabb.width / 2), -Math.floor(aabb.height / 2), Math.floor(aabb.width), Math.floor(aabb.height));
     }
     /**
      * Takes two values and returns them as an array where argument[0]

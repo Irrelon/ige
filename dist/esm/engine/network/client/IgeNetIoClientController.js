@@ -4,6 +4,7 @@ import { IgeNetIoBaseController } from "../IgeNetIoBaseController.js"
 import { newIdHex } from "../../utils/ids.js"
 import { igeClassStore } from "../../utils/igeClassStore.js"
 import { IGE_NETWORK_JOIN_ROOM, IGE_NETWORK_LEAVE_ROOM, IGE_NETWORK_REQUEST, IGE_NETWORK_RESPONSE, IGE_NETWORK_STREAM_CREATE, IGE_NETWORK_STREAM_DATA, IGE_NETWORK_STREAM_DESTROY, IGE_NETWORK_STREAM_TIME, IGE_NETWORK_TIME_SYNC } from "../../../enums/index.js"
+import { IgeNetworkConnectionState } from "../../../enums/IgeNetworkConnectionState.js"
 /**
  * The client-side net.io component. Handles all client-side
  * networking systems.
@@ -14,7 +15,7 @@ export class IgeNetIoClientController extends IgeNetIoBaseController {
     _initDone = false;
     _idCounter = 0;
     _requests = {};
-    _state = 0;
+    _state = IgeNetworkConnectionState.disconnected;
     _io;
     _id;
     _url;
@@ -36,14 +37,15 @@ export class IgeNetIoClientController extends IgeNetIoBaseController {
         return this._id || "";
     }
     /**
-     * Starts the network for the client.
-     * @param {*} url The game server URL.
+     * Connects to the specified server. The promise this function returns
+     * will only resolve when the connection to the server is ready to use.
+     * @param {*} url The game server URL e.g. `http://localhost:2000`.
      * @param {Function=} callback A callback method to call once the
-     * network has started.
+     * network has started, or you can use the returned promise.
      */
     start(url, callback) {
         return new Promise((resolve) => {
-            if (this._state === 3) {
+            if (this._state === IgeNetworkConnectionState.ready) {
                 // We're already connected
                 if (callback) {
                     callback();
@@ -59,9 +61,9 @@ export class IgeNetIoClientController extends IgeNetIoBaseController {
                 return;
             }
             this._io = new IgeNetIoClient(url);
-            this._state = 1;
+            this._state = IgeNetworkConnectionState.connecting;
             this._io.on("connect", (clientId) => {
-                this._state = 2; // Connected
+                this._state = IgeNetworkConnectionState.connected; // Connected
                 this._id = clientId;
                 this._onConnectToServer();
             });
@@ -75,7 +77,7 @@ export class IgeNetIoClientController extends IgeNetIoBaseController {
                 if (data.cmd === "init") {
                     // Set flag to show we've now received an init command
                     this._initDone = true;
-                    this._state = 3; // Connected and init done
+                    this._state = IgeNetworkConnectionState.ready; // Connected and init done
                     // Set up the network commands storage
                     this._networkCommandsLookup = data.ncmds;
                     // Fill the reverse lookup on the commands
@@ -101,7 +103,7 @@ export class IgeNetIoClientController extends IgeNetIoBaseController {
                 }
             });
             this._io.on("disconnect", (data) => {
-                this._state = 0; // Disconnected
+                this._state = IgeNetworkConnectionState.disconnected; // Disconnected
                 this._onDisconnectFromServer(data);
             });
             this._io.on("error", this._onError);
@@ -157,7 +159,7 @@ export class IgeNetIoClientController extends IgeNetIoBaseController {
     };
     stop() {
         // Check we are connected
-        if (this._state === 3) {
+        if (this._state === IgeNetworkConnectionState.ready) {
             this._io?.disconnect("Client requested disconnect");
         }
     }
@@ -172,18 +174,12 @@ export class IgeNetIoClientController extends IgeNetIoBaseController {
      * @return {*}
      */
     define(commandName, callback) {
-        if (commandName !== undefined && callback !== undefined) {
-            // Check if this command has been defined by the server
-            //if (this._networkCommandsLookup[commandName] !== undefined) {
-            this._networkCommands[commandName] = callback;
-            //} else {
-            //	this.log(`Cannot define network command "${commandName}" because it does not exist on the server. Please edit your server code and define the network command there before trying to define it on the client!`, 'error');
-            //}
+        if (!commandName || !callback) {
+            this.log("Cannot define network command either the commandName or callback parameters were undefined!", "error");
             return this;
         }
-        else {
-            this.log("Cannot define network command either the commandName or callback parameters were undefined!", "error");
-        }
+        this._networkCommands[commandName] = callback;
+        return this;
     }
     /**
      * Sends a network message with the given command name

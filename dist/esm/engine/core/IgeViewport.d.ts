@@ -1,7 +1,7 @@
-import { IgeCamera } from "./IgeCamera.js"
-import type { IgeObject } from "./IgeObject.js";
-import { IgePoint3d } from "./IgePoint3d.js"
-import { IgeRect } from "./IgeRect.js";
+import { IgeBounds } from "./IgeBounds.js"
+import { IgeCamera } from "./IgeCamera.js";
+import type { IgeObject } from "./IgeObject.js"
+import { IgePoint3d } from "./IgePoint3d.js";
 import type { IgeScene2d } from "./IgeScene2d.js"
 import { IgeUiEntity } from "./IgeUiEntity.js";
 import type { IgeCanRegisterById } from "../../types/IgeCanRegisterById.js"
@@ -65,9 +65,9 @@ export declare class IgeViewport extends IgeUiEntity implements IgeCanRegisterBy
     /**
      * Gets the current rectangular area that the viewport is "looking at"
      * in the world. The co-ordinates are in world space.
-     * @returns {IgeRect}
+     * @returns {IgeBounds}
      */
-    viewArea(camScaleX?: number, camScaleY?: number): IgeRect;
+    viewArea(camScaleX?: number, camScaleY?: number): IgeBounds;
     /**
      * Processes the updates before the render tick is called.
      * @param tickDelta

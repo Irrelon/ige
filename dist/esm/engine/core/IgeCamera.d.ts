@@ -1,6 +1,6 @@
 import { IgeEntity } from "./IgeEntity.js"
 import type { IgePoint3d } from "./IgePoint3d.js";
-import type { IgeRect } from "./IgeRect.js"
+import type { IgeBounds } from "./IgeBounds.js"
 import type { IgeViewport } from "./IgeViewport.js";
 import type { IgeCanvasRenderingContext2d } from "../../types/IgeCanvasRenderingContext2d.js"
 /**
@@ -14,15 +14,15 @@ export declare class IgeCamera extends IgeEntity {
     _trackRotateSmoothing?: number;
     _trackTranslateSmoothing?: number;
     _trackTranslateRounding?: boolean;
-    _limit?: IgeRect;
+    _limit?: IgeBounds;
     constructor(viewport: IgeViewport);
     /**
      * Gets / sets the rectangle that the camera translate
-     * will be limited to using an IgeRect instance.
-     * @param {IgeRect=} rect
+     * will be limited to using an IgeBounds instance.
+     * @param {IgeBounds=} rect
      * @return {*}
      */
-    limit(rect?: IgeRect): IgeRect | IgeViewport | undefined;
+    limit(rect?: IgeBounds): IgeViewport | IgeBounds | undefined;
     /**
      * Pan (tween) the camera to the new specified point in
      * the specified time.

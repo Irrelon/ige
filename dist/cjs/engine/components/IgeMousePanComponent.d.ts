@@ -1,7 +1,7 @@
 import { IgeComponent } from "../core/IgeComponent.js"
 import { IgePoint2d } from "../core/IgePoint2d.js";
 import type { IgePoint3d } from "../core/IgePoint3d.js"
-import type { IgeRect } from "../core/IgeRect.js";
+import type { IgeBounds } from "../core/IgeBounds.js";
 /**
  * When added to a viewport, automatically adds mouse panning
  * capabilities to the viewport's camera.
@@ -12,7 +12,7 @@ export declare class IgeMousePanComponent extends IgeComponent {
     componentId: string;
     _enabled: boolean;
     _startThreshold: number;
-    _limit?: IgeRect;
+    _limit?: IgeBounds;
     _panPreStart: boolean;
     _panStarted: boolean;
     _panStartMouse?: IgePoint3d;
@@ -26,11 +26,11 @@ export declare class IgeMousePanComponent extends IgeComponent {
     startThreshold: (val?: number) => any;
     /**
      * Gets / sets the rectangle that the pan operation will be limited
-     * to using an IgeRect instance.
-     * @param {IgeRect=} rect
+     * to using an IgeBounds instance.
+     * @param {IgeBounds=} rect
      * @return {*}
      */
-    limit(rect?: IgeRect): any;
+    limit(rect?: IgeBounds): any;
     /**
      * Gets / sets the enabled flag. If set to true, pan
      * operations will be processed. If false, no panning will

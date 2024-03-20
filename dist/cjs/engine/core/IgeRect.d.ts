@@ -1,7 +1,6 @@
-import type { IgePoint2d } from "./IgePoint2d.js"
+import { IgePoint2d } from "./IgePoint2d.js"
 import type { IgePoint3d } from "./IgePoint3d.js";
 import type { IgeCanvasRenderingContext2d } from "../../types/IgeCanvasRenderingContext2d.js"
-import type { IgeShape } from "../../types/IgeShape.js"
 import type { IgeShapeFunctionality } from "../../types/IgeShapeFunctionality.js"
 /**
  * Creates a new rectangle (x, y, width, height).
@@ -9,6 +8,7 @@ import type { IgeShapeFunctionality } from "../../types/IgeShapeFunctionality.js
 export declare class IgeRect implements IgeShapeFunctionality {
     classId: string;
     _igeShapeType: string;
+    _origin: IgePoint2d;
     x: number;
     y: number;
     width: number;
@@ -102,7 +102,7 @@ export declare class IgeRect implements IgeShapeFunctionality {
      * @param {IgeShape} shape
      * @return {boolean}
      */
-    intersects(shape: IgeShape): boolean;
+    intersects(shape: IgeShapeFunctionality): boolean;
     /**
      * Draws the polygon bounding lines to the passed context.
      */

@@ -1,11 +1,11 @@
 import { IgeComponent } from "../core/IgeComponent.js"
 import type { IgeEntity } from "../core/IgeEntity.js";
-import { IgeRect } from "../core/IgeRect.js"
+import { IgeBounds } from "../core/IgeBounds.js"
 import type { IgeCanvasRenderingContext2d } from "../../types/IgeCanvasRenderingContext2d.js";
 export declare class IgeEntityManagerComponent extends IgeComponent {
     classId: string;
     componentId: string;
-    _lastArea: IgeRect;
+    _lastArea: IgeBounds;
     private _maps;
     private _overwatchMode;
     private _removeMode;
@@ -126,9 +126,9 @@ export declare class IgeEntityManagerComponent extends IgeComponent {
     areaRectAutoSize: (val: any, options: any) => any;
     /**
      * Returns the current management area.
-     * @return {IgeRect}
+     * @return {IgeBounds}
      */
-    currentArea: () => IgeRect;
+    currentArea: () => IgeBounds;
     /**
      * Gets / sets the mode that entities will be removed with.
      * If set to 0 (default) the entities will be removed via a

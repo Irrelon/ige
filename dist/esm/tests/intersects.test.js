@@ -1,11 +1,15 @@
 import { pointIntersectsRect, polygonIntersectsPolygon } from "../engine/utils/intersections.js"
 describe("pointIntersectsRect()", () => {
-    it("should correctly use rect x, y as centre of rect", () => {
-        const rect = { x: 0, y: 0, width: 40, height: 40 };
+    it("should correctly use rect origin as centre of rect", () => {
+        const rect1 = { x: 0, y: 0, width: 40, height: 40, _origin: { x: 0, y: 0 } };
+        const rect2 = { x: 0, y: 0, width: 40, height: 40, _origin: { x: 0.5, y: 0.5 } };
         const point = { x: -10, y: -10 };
-        // The point is at -10, -10 and the width/height of the entity should mean
+        // The point is at -10, -10 and the origin of the entity should mean
+        // its bounds are 0, 0 to 40, 40
+        expect(pointIntersectsRect(point, rect1)).toBe(false);
+        // The point is at -10, -10 and the origin of the entity should mean
         // its bounds are -20, -20 to 20, 20
-        expect(pointIntersectsRect(point, rect)).toBe(true);
+        expect(pointIntersectsRect(point, rect2)).toBe(true);
     });
 });
 describe("polygonIntersectsPolygon()", () => {

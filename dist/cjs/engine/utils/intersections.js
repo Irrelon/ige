@@ -3,8 +3,9 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.polygonIntersectsPolygon = exports.rectIntersectsPolygon = exports.rectIntersectsRect = exports.circleIntersectsPolygon = exports.circleIntersectsRect = exports.circleIntersectsCircle = exports.lineIntersectsCircle = exports.lineIntersectsPolygon = exports.lineIntersectsLine = exports.pointIntersectsPolygon = exports.pointIntersectsCircle = exports.pointIntersectsRect = exports.rectToPolygon = void 0;
 const maths_1 = require("./maths.js");
 function rectToPolygon(rect) {
-    const rectW2 = rect.width / 2;
-    const rectH2 = rect.height / 2;
+    var _a, _b;
+    const rectW2 = rect.width * (((_a = rect._origin) === null || _a === void 0 ? void 0 : _a.x) || 0);
+    const rectH2 = rect.height * (((_b = rect._origin) === null || _b === void 0 ? void 0 : _b.y) || 0);
     return {
         x: rect.x,
         y: rect.y,
@@ -21,12 +22,13 @@ exports.rectToPolygon = rectToPolygon;
 // Source is point
 //////////////////////////////////////////////////////////////////////
 function pointIntersectsRect(point, rect) {
-    const halfWidth = rect.width / 2;
-    const halfHeight = rect.height / 2;
-    const rectLeft = rect.x - halfWidth;
-    const rectRight = rect.x + halfWidth;
-    const rectTop = rect.y - halfHeight;
-    const rectBottom = rect.y + halfHeight;
+    var _a, _b;
+    const rectOriginX = rect.width * (((_a = rect._origin) === null || _a === void 0 ? void 0 : _a.x) || 0);
+    const rectOriginY = rect.height * (((_b = rect._origin) === null || _b === void 0 ? void 0 : _b.y) || 0);
+    const rectLeft = rect.x - rectOriginX;
+    const rectRight = rect.x + rect.width - rectOriginX;
+    const rectTop = rect.y - rectOriginY;
+    const rectBottom = rect.y + rect.height - rectOriginY;
     return (point.x >= rectLeft &&
         point.x <= rectRight &&
         point.y >= rectTop &&
@@ -112,11 +114,12 @@ function circleIntersectsCircle(circle1, circle2) {
 }
 exports.circleIntersectsCircle = circleIntersectsCircle;
 function circleIntersectsRect(circle, rect) {
+    var _a, _b;
     if (pointIntersectsRect(circle, rect))
         return true;
     // Calculate the half-width and half-height of the rectangle
-    const halfWidth = rect.width / 2;
-    const halfHeight = rect.height / 2;
+    const halfWidth = rect.width * (((_a = rect._origin) === null || _a === void 0 ? void 0 : _a.x) || 0);
+    const halfHeight = rect.height * (((_b = rect._origin) === null || _b === void 0 ? void 0 : _b.y) || 0);
     // Calculate the center coordinates of the rectangle
     const rectCenterX = rect.x;
     const rectCenterY = rect.y;
@@ -155,10 +158,11 @@ exports.circleIntersectsPolygon = circleIntersectsPolygon;
 // Source is rect
 //////////////////////////////////////////////////////////////////////
 function rectIntersectsRect(rect1, rect2) {
+    var _a, _b, _c, _d;
     if (!rect1 || !rect2) {
         return false;
     }
-    const sX1 = rect1.x - rect1.width / 2, sY1 = rect1.y - rect1.height / 2, sW = rect1.width, sH = rect1.height, dX1 = rect2.x - rect2.width / 2, dY1 = rect2.y - rect2.height / 2, dW = rect2.width, dH = rect2.height, sX2 = sX1 + sW, sY2 = sY1 + sH, dX2 = dX1 + dW, dY2 = dY1 + dH;
+    const sX1 = rect1.x - (rect1.width * (((_a = rect1._origin) === null || _a === void 0 ? void 0 : _a.x) || 0)), sY1 = rect1.y - (rect1.height * (((_b = rect1._origin) === null || _b === void 0 ? void 0 : _b.x) || 0)), sW = rect1.width, sH = rect1.height, dX1 = rect2.x - (rect2.width * (((_c = rect2._origin) === null || _c === void 0 ? void 0 : _c.x) || 0)), dY1 = rect2.y - (rect2.height * (((_d = rect2._origin) === null || _d === void 0 ? void 0 : _d.x) || 0)), dW = rect2.width, dH = rect2.height, sX2 = sX1 + sW, sY2 = sY1 + sH, dX2 = dX1 + dW, dY2 = dY1 + dH;
     return sX1 < dX2 && sX2 > dX1 && sY1 < dY2 && sY2 > dY1;
 }
 exports.rectIntersectsRect = rectIntersectsRect;

@@ -208,8 +208,8 @@ export declare const WithUiStyleMixin: <BaseClassType extends IgeMixin<IgeObject
         _cacheDirty: boolean;
         _cacheSmoothing: boolean;
         _aabbDirty: boolean;
-        _aabb: import("../../index.js").IgeRect;
-        _compositeAabbCache?: import("../../index.js").IgeRect | undefined;
+        _aabb: import("../../index.js").IgeBounds;
+        _compositeAabbCache?: import("../../index.js").IgeBounds | undefined;
         _noAabb?: boolean | undefined;
         _hasParent?: Record<string, boolean> | undefined;
         _texture?: IgeTexture | undefined;
@@ -228,7 +228,7 @@ export declare const WithUiStyleMixin: <BaseClassType extends IgeMixin<IgeObject
         _bounds3dPolygonDirty: boolean;
         _localBounds3dPolygon?: import("../../index.js").IgePoly2d | undefined;
         _bounds3dPolygon?: import("../../index.js").IgePoly2d | undefined;
-        _localAabb?: import("../../index.js").IgeRect | undefined;
+        _localAabb?: import("../../index.js").IgeBounds | undefined;
         _deathCallBack?: ((...args: any[]) => void) | undefined;
         components: Record<string, import("../../index.js").IgeComponent<any>>;
         _sortChildren: import("../../index.js").IgeChildSortFunction;
@@ -255,7 +255,7 @@ export declare const WithUiStyleMixin: <BaseClassType extends IgeMixin<IgeObject
         update(tickDelta: number): void;
         tick(ctx: import("../../index.js").IgeCanvasRenderingContext2d): void;
         updateTransform(): void;
-        aabb(recalculate?: boolean, inverse?: boolean): import("../../index.js").IgeRect;
+        aabb(recalculate?: boolean, inverse?: boolean): import("../../index.js").IgeBounds;
         _processBehaviours(type: import("../../enums/index.js").IgeBehaviourType, ...args: any[]): void;
         parent(): IgeObject | import("../../index.js").IgeTileMap2d<any> | null | undefined;
         parent(id: string): IgeObject | null;
@@ -336,7 +336,7 @@ export declare const WithUiStyleMixin: <BaseClassType extends IgeMixin<IgeObject
         _generateStreamData(): string;
         destroyBehaviours(): void;
         destroy(): any;
-        compositeAabb(inverse?: boolean): import("../../index.js").IgeRect;
+        compositeAabb(inverse?: boolean): import("../../index.js").IgeBounds;
         stringify(options?: Record<string, boolean>): string;
         _stringify(options?: Record<string, boolean>): string;
         addComponent(id: string, Component: typeof import("../../index.js").IgeComponent, options?: any): any;

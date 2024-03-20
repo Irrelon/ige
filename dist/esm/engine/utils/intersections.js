@@ -1,7 +1,7 @@
 import { distance } from "./maths.js"
 export function rectToPolygon(rect) {
-    const rectW2 = rect.width / 2;
-    const rectH2 = rect.height / 2;
+    const rectW2 = rect.width * (rect._origin?.x || 0);
+    const rectH2 = rect.height * (rect._origin?.y || 0);
     return {
         x: rect.x,
         y: rect.y,
@@ -17,12 +17,12 @@ export function rectToPolygon(rect) {
 // Source is point
 //////////////////////////////////////////////////////////////////////
 export function pointIntersectsRect(point, rect) {
-    const halfWidth = rect.width / 2;
-    const halfHeight = rect.height / 2;
-    const rectLeft = rect.x - halfWidth;
-    const rectRight = rect.x + halfWidth;
-    const rectTop = rect.y - halfHeight;
-    const rectBottom = rect.y + halfHeight;
+    const rectOriginX = rect.width * (rect._origin?.x || 0);
+    const rectOriginY = rect.height * (rect._origin?.y || 0);
+    const rectLeft = rect.x - rectOriginX;
+    const rectRight = rect.x + rect.width - rectOriginX;
+    const rectTop = rect.y - rectOriginY;
+    const rectBottom = rect.y + rect.height - rectOriginY;
     return (point.x >= rectLeft &&
         point.x <= rectRight &&
         point.y >= rectTop &&
@@ -104,8 +104,8 @@ export function circleIntersectsRect(circle, rect) {
     if (pointIntersectsRect(circle, rect))
         return true;
     // Calculate the half-width and half-height of the rectangle
-    const halfWidth = rect.width / 2;
-    const halfHeight = rect.height / 2;
+    const halfWidth = rect.width * (rect._origin?.x || 0);
+    const halfHeight = rect.height * (rect._origin?.y || 0);
     // Calculate the center coordinates of the rectangle
     const rectCenterX = rect.x;
     const rectCenterY = rect.y;
@@ -145,7 +145,7 @@ export function rectIntersectsRect(rect1, rect2) {
     if (!rect1 || !rect2) {
         return false;
     }
-    const sX1 = rect1.x - rect1.width / 2, sY1 = rect1.y - rect1.height / 2, sW = rect1.width, sH = rect1.height, dX1 = rect2.x - rect2.width / 2, dY1 = rect2.y - rect2.height / 2, dW = rect2.width, dH = rect2.height, sX2 = sX1 + sW, sY2 = sY1 + sH, dX2 = dX1 + dW, dY2 = dY1 + dH;
+    const sX1 = rect1.x - (rect1.width * (rect1._origin?.x || 0)), sY1 = rect1.y - (rect1.height * (rect1._origin?.x || 0)), sW = rect1.width, sH = rect1.height, dX1 = rect2.x - (rect2.width * (rect2._origin?.x || 0)), dY1 = rect2.y - (rect2.height * (rect2._origin?.x || 0)), dW = rect2.width, dH = rect2.height, sX2 = sX1 + sW, sY2 = sY1 + sH, dX2 = dX1 + dW, dY2 = dY1 + dH;
     return sX1 < dX2 && sX2 > dX1 && sY1 < dY2 && sY2 > dY1;
 }
 export function rectIntersectsPolygon(rect, polygon) {

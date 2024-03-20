@@ -5,7 +5,7 @@ import { IgeMatrix2d } from "./IgeMatrix2d.js";
 import { IgePoint2d } from "./IgePoint2d.js"
 import { IgePoint3d } from "./IgePoint3d.js";
 import { IgePoly2d } from "./IgePoly2d.js"
-import { IgeRect } from "./IgeRect.js";
+import { IgeBounds } from "./IgeBounds.js";
 import type { IgeTexture } from "./IgeTexture.js"
 import type { IgeTileMap2d } from "./IgeTileMap2d.js";
 import type { IgeViewport } from "./IgeViewport.js"
@@ -118,8 +118,8 @@ export declare class IgeObject extends IgeEventingClass implements IgeCanRegiste
     _cacheDirty: boolean;
     _cacheSmoothing: boolean;
     _aabbDirty: boolean;
-    _aabb: IgeRect;
-    _compositeAabbCache?: IgeRect;
+    _aabb: IgeBounds;
+    _compositeAabbCache?: IgeBounds;
     _noAabb?: boolean;
     _hasParent?: Record<string, boolean>;
     _texture?: IgeTexture;
@@ -138,7 +138,7 @@ export declare class IgeObject extends IgeEventingClass implements IgeCanRegiste
     _bounds3dPolygonDirty: boolean;
     _localBounds3dPolygon?: IgePoly2d;
     _bounds3dPolygon?: IgePoly2d;
-    _localAabb?: IgeRect;
+    _localAabb?: IgeBounds;
     _deathCallBack?: (...args: any[]) => void;
     components: Record<string, IgeComponent>;
     constructor();
@@ -320,7 +320,7 @@ export declare class IgeObject extends IgeEventingClass implements IgeCanRegiste
     update(tickDelta: number): void;
     tick(ctx: IgeCanvasRenderingContext2d): void;
     updateTransform(): void;
-    aabb(recalculate?: boolean, inverse?: boolean): IgeRect;
+    aabb(recalculate?: boolean, inverse?: boolean): IgeBounds;
     /**
      * Calls each behaviour method for the object.
      */
@@ -1156,9 +1156,9 @@ export declare class IgeObject extends IgeEventingClass implements IgeCanRegiste
      * @example #Get the composite AABB
      *     var entity = new IgeEntity(),
      *         aabb = entity.compositeAabb();
-     * @return {IgeRect}
+     * @return {IgeBounds}
      */
-    compositeAabb(inverse?: boolean): IgeRect;
+    compositeAabb(inverse?: boolean): IgeBounds;
     /**
      * Returns a string containing a code fragment that when
      * evaluated will reproduce this object.

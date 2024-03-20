@@ -1,7 +1,6 @@
 import type { IgePoint2d } from "./IgePoint2d.js"
 import type { IgePoint3d } from "./IgePoint3d.js";
 import type { IgeCanvasRenderingContext2d } from "../../types/IgeCanvasRenderingContext2d.js"
-import type { IgeShape } from "../../types/IgeShape.js"
 import type { IgeShapeFunctionality } from "../../types/IgeShapeFunctionality.js"
 /**
  * Creates a new circle (x, y, radius).
@@ -20,7 +19,7 @@ export declare class IgeCircle implements IgeShapeFunctionality {
     translateBy(x: number, y: number): this;
     xyInside(x: number, y: number): boolean;
     pointInside(point: IgePoint2d | IgePoint3d): boolean;
-    intersects(shape: IgeShape): boolean;
+    intersects(shape: IgeShapeFunctionality): boolean;
     /**
      * Draws the circle to the passed context.
      */

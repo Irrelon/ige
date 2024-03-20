@@ -1,8 +1,7 @@
-import { IgePoint2d } from "./IgePoint2d.js"
-import type { IgePoint3d } from "./IgePoint3d.js";
-import { IgeRect } from "./IgeRect.js"
+import { IgeBounds } from "./IgeBounds.js"
+import { IgePoint2d } from "./IgePoint2d.js";
+import type { IgePoint3d } from "./IgePoint3d.js"
 import type { IgeCanvasRenderingContext2d } from "../../types/IgeCanvasRenderingContext2d.js";
-import type { IgeShape } from "../../types/IgeShape.js"
 import type { IgeShapeFunctionality } from "../../types/IgeShapeFunctionality.js"
 /**
  * Creates a new 2d polygon made up of IgePoint2d instances.
@@ -62,7 +61,7 @@ export declare class IgePoly2d implements IgeShapeFunctionality {
     /**
      * Calculates and returns the axis-aligned bounding-box for this polygon.
      */
-    aabb(): IgeRect;
+    aabb(): IgeBounds;
     /**
      * Returns a copy of this IgePoly2d object that is its own version,
      * separate from the original.
@@ -95,7 +94,7 @@ export declare class IgePoly2d implements IgeShapeFunctionality {
      * @param {IgePoint2d} P
      */
     _insideTriangle(A: IgePoint2d, B: IgePoint2d, C: IgePoint2d, P: IgePoint2d): boolean;
-    intersects(shape: IgeShape): boolean;
+    intersects(shape: IgeShapeFunctionality): boolean;
     /**
      * Draws the polygon bounding lines to the passed context.
      */

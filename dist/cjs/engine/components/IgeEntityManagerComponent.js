@@ -3,7 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.IgeEntityManagerComponent = void 0;
 const IgeComponent_1 = require("../core/IgeComponent.js");
 const IgePoint3d_1 = require("../core/IgePoint3d.js");
-const IgeRect_1 = require("../core/IgeRect.js");
+const IgeBounds_1 = require("../core/IgeBounds.js");
 const instance_1 = require("../instance.js");
 const enums_1 = require("../../enums/index.js");
 class IgeEntityManagerComponent extends IgeComponent_1.IgeComponent {
@@ -16,7 +16,7 @@ class IgeEntityManagerComponent extends IgeComponent_1.IgeComponent {
         super(entity, options);
         this.classId = "IgeEntityManagerComponent";
         this.componentId = "entityManager";
-        this._lastArea = new IgeRect_1.IgeRect();
+        this._lastArea = new IgeBounds_1.IgeBounds();
         this._active = false;
         this._areaRectAutoSize = false;
         /**
@@ -191,7 +191,7 @@ class IgeEntityManagerComponent extends IgeComponent_1.IgeComponent {
          */
         this.areaRect = (x, y, width, height) => {
             if (x !== undefined && y !== undefined && width !== undefined && height !== undefined) {
-                this._areaRect = new IgeRect_1.IgeRect(x, y, width, height);
+                this._areaRect = new IgeBounds_1.IgeBounds(x, y, width, height);
                 return this._entity;
             }
             return this._areaRect;
@@ -206,7 +206,7 @@ class IgeEntityManagerComponent extends IgeComponent_1.IgeComponent {
         };
         /**
          * Returns the current management area.
-         * @return {IgeRect}
+         * @return {IgeBounds}
          */
         this.currentArea = () => {
             // Check if we are tracking an entity that is used to
@@ -224,10 +224,10 @@ class IgeEntityManagerComponent extends IgeComponent_1.IgeComponent {
             }
             const areaRect = this._areaRect, areaCenter = this._areaCenter;
             if (areaRect && areaCenter) {
-                return new IgeRect_1.IgeRect(Math.floor(areaRect.x + areaCenter.x), Math.floor(areaRect.y + areaCenter.y), Math.floor(areaRect.width), Math.floor(areaRect.height));
+                return new IgeBounds_1.IgeBounds(Math.floor(areaRect.x + areaCenter.x), Math.floor(areaRect.y + areaCenter.y), Math.floor(areaRect.width), Math.floor(areaRect.height));
             }
             else {
-                return new IgeRect_1.IgeRect(0, 0, 0, 0);
+                return new IgeBounds_1.IgeBounds(0, 0, 0, 0);
             }
         };
         /**
@@ -303,13 +303,13 @@ class IgeEntityManagerComponent extends IgeComponent_1.IgeComponent {
                 // Check if we are rendering in 2d or isometric mode
                 if (this._entity._mountMode === enums_1.IgeMountMode.flat) {
                     // 2d
-                    currentAreaTiles = new IgeRect_1.IgeRect(renderX - Math.floor(renderWidth / 2) - 1, renderY - Math.floor(renderHeight / 2) - 1, renderX + Math.floor(renderWidth / 2) + 1 - (renderX - Math.floor(renderWidth / 2) - 1), renderY + Math.floor(renderHeight / 2) + 1 - (renderY - Math.floor(renderHeight / 2) - 1));
+                    currentAreaTiles = new IgeBounds_1.IgeBounds(renderX - Math.floor(renderWidth / 2) - 1, renderY - Math.floor(renderHeight / 2) - 1, renderX + Math.floor(renderWidth / 2) + 1 - (renderX - Math.floor(renderWidth / 2) - 1), renderY + Math.floor(renderHeight / 2) + 1 - (renderY - Math.floor(renderHeight / 2) - 1));
                 }
                 if (this._entity._mountMode === enums_1.IgeMountMode.iso) {
                     // Isometric
                     renderSize = Math.abs(renderWidth) > Math.abs(renderHeight) ? renderWidth : renderHeight;
                     ratio = 0.6;
-                    currentAreaTiles = new IgeRect_1.IgeRect(renderX - Math.floor(renderSize * ratio), renderY - Math.floor(renderSize * ratio), renderX + Math.floor(renderSize * ratio) + 1 - (renderX - Math.floor(renderSize * ratio)), renderY + Math.floor(renderSize * ratio) + 1 - (renderY - Math.floor(renderSize * ratio)));
+                    currentAreaTiles = new IgeBounds_1.IgeBounds(renderX - Math.floor(renderSize * ratio), renderY - Math.floor(renderSize * ratio), renderX + Math.floor(renderSize * ratio) + 1 - (renderX - Math.floor(renderSize * ratio)), renderY + Math.floor(renderSize * ratio) + 1 - (renderY - Math.floor(renderSize * ratio)));
                 }
                 // Generate the bounds rectangle
                 if (this._entity._drawBounds) {

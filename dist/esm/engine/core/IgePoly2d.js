@@ -1,5 +1,5 @@
-import { IgePoint2d } from "./IgePoint2d.js"
-import { IgeRect } from "./IgeRect.js";
+import { IgeBounds } from "./IgeBounds.js"
+import { IgePoint2d } from "./IgePoint2d.js";
 import { circleIntersectsPolygon, polygonIntersectsPolygon, rectIntersectsPolygon } from "../utils/intersections.js"
 /**
  * Creates a new 2d polygon made up of IgePoint2d instances.
@@ -39,7 +39,7 @@ export class IgePoly2d {
      * @return {*}
      */
     multiply(factor) {
-        // TODO: Look at IgeRect and normalise this function name
+        // TODO: Look at IgeBounds and normalise this function name
         if (factor !== undefined) {
             const polyPoints = this._poly;
             const pointCount = polyPoints.length;
@@ -136,7 +136,7 @@ export class IgePoly2d {
         const minY = Math.min(...yArr);
         const maxX = Math.max(...xArr);
         const maxY = Math.max(...yArr);
-        return new IgeRect(minX, minY, maxX - minX, maxY - minY);
+        return new IgeBounds(minX, minY, maxX - minX, maxY - minY);
     }
     /**
      * Returns a copy of this IgePoly2d object that is its own version,

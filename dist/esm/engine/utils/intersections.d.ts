@@ -12,6 +12,7 @@ interface BasicCircle extends BasicPoint {
     radius: number;
 }
 interface BasicRect extends BasicPoint {
+    _origin?: BasicPoint;
     width: number;
     height: number;
 }

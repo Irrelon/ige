@@ -5,7 +5,7 @@ import { IgeMatrix2d } from "./IgeMatrix2d.js";
 import { IgePoint2d } from "./IgePoint2d.js"
 import { IgePoint3d } from "./IgePoint3d.js";
 import { IgePoly2d } from "./IgePoly2d.js"
-import { IgeRect } from "./IgeRect.js";
+import { IgeBounds } from "./IgeBounds.js";
 import { arrPull } from "../utils/arrays.js"
 import { isClient, isServer } from "../utils/clientServer.js";
 import { newIdHex } from "../utils/ids.js"
@@ -102,7 +102,7 @@ export class IgeObject extends IgeEventingClass {
     _cacheDirty = false;
     _cacheSmoothing = false;
     _aabbDirty = false;
-    _aabb = new IgeRect();
+    _aabb = new IgeBounds();
     _compositeAabbCache;
     _noAabb;
     _hasParent;
@@ -1875,7 +1875,7 @@ export class IgeObject extends IgeEventingClass {
      * @example #Get the composite AABB
      *     var entity = new IgeEntity(),
      *         aabb = entity.compositeAabb();
-     * @return {IgeRect}
+     * @return {IgeBounds}
      */
     compositeAabb(inverse = false) {
         const arr = this._children;

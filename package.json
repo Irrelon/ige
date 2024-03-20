@@ -37,10 +37,12 @@
 		"build-test": "npm run build-tests && NODE_OPTIONS=--experimental-vm-modules npx jest --all -f --testMatch \"**/cjs/**/**.test.js\"",
 		"test-watch": "NODE_OPTIONS=--experimental-vm-modules npx jest -f \".test.js\" --watch --all",
 		"eslint-fix": "eslint --ext .ts,.tsx . --fix",
-		"scandeps": "npx madge ./src --ts"
+		"scan-deps": "npx madge ./src --ts",
+		"generate-docs": "npx typedoc ./src --options typedoc.cjs"
 	},
 	"dependencies": {
 		"gl-matrix": "^3.4.3",
+		"typedoc-material-theme": "^1.0.2",
 		"websocket": "^1.0.34"
 	},
 	"devDependencies": {
@@ -83,6 +85,7 @@
 		"tsc-watch": "^6.0.0",
 		"tsconfig-paths": "^4.2.0",
 		"ttypescript": "^1.5.15",
+		"typedoc": "^0.25.12",
 		"typescript": "^5.4.2",
 		"yargs": "^17.7.2"
 	}

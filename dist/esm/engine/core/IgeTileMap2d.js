@@ -4,7 +4,7 @@ import { IgeMatrix2d } from "./IgeMatrix2d.js"
 import { IgePoint2d } from "./IgePoint2d.js";
 import { IgePoint3d } from "./IgePoint3d.js"
 import { IgePoly2d } from "./IgePoly2d.js";
-import { IgeRect } from "./IgeRect.js"
+import { IgeBounds } from "./IgeBounds.js"
 import { IgeTexture } from "./IgeTexture.js";
 import { ige } from "../instance.js"
 import { IgeTileMap2dSmartTexture } from "../textures/IgeTileMap2dSmartTexture.js";
@@ -175,10 +175,10 @@ export class IgeTileMap2d extends IgeEntity {
                 this.map.tileData(x + xi, y + yi, obj);
             }
         }
-        // Create an IgeRect to represent the tiles this
+        // Create an IgeBounds to represent the tiles this
         // entity has just occupied
         if (obj.classId) {
-            obj._occupiedRect = new IgeRect(x, y, width, height);
+            obj._occupiedRect = new IgeBounds(x, y, width, height);
         }
         return this;
     }

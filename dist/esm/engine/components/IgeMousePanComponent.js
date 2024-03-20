@@ -31,8 +31,8 @@ export class IgeMousePanComponent extends IgeComponent {
     };
     /**
      * Gets / sets the rectangle that the pan operation will be limited
-     * to using an IgeRect instance.
-     * @param {IgeRect=} rect
+     * to using an IgeBounds instance.
+     * @param {IgeBounds=} rect
      * @return {*}
      */
     limit(rect) {

@@ -1,10 +1,12 @@
-import { circleIntersectsRect, rectIntersectsPolygon, rectIntersectsRect } from "../utils/intersections.js"
+import { IgePoint2d } from "./IgePoint2d.js"
+import { circleIntersectsRect, pointIntersectsRect, rectIntersectsPolygon, rectIntersectsRect } from "../utils/intersections.js";
 /**
  * Creates a new rectangle (x, y, width, height).
  */
 export class IgeRect {
     classId = "IgeRect";
     _igeShapeType = "rect";
+    _origin = new IgePoint2d(0.5, 0.5);
     x = 0;
     y = 0;
     width = 0;
@@ -72,7 +74,7 @@ export class IgeRect {
      * @return {Boolean}
      */
     xyInside(x, y) {
-        return x >= this.x && y > this.y && x <= this.x + this.width && y <= this.y + this.height;
+        return pointIntersectsRect({ x, y }, this);
     }
     /**
      * Returns boolean indicating if the passed point is
@@ -81,7 +83,7 @@ export class IgeRect {
      * @return {Boolean}
      */
     pointInside(point) {
-        return this.xyInside(point.x, point.y);
+        return pointIntersectsRect(point, this);
     }
     /**
      * Returns boolean indicating if the passed IgeRect is

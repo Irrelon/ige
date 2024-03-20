@@ -1,5 +1,5 @@
 import { IgePoint3d } from "./IgePoint3d.js"
-import type { IgeRect } from "./IgeRect.js";
+import type { IgeBounds } from "./IgeBounds.js";
 import type { IgeTexture } from "./IgeTexture.js"
 import { IgeTileMap2d } from "./IgeTileMap2d.js";
 /**
@@ -151,13 +151,13 @@ export declare class IgeTextureMap extends IgeTileMap2d {
      * @param {number} y The tile y co-ordinate.
      * @param {Object} tileData The tile's texture and cell data.
      * @param {Object} tileEntity The object that represents the tile.
-     * @param {IgeRect=} rect The rectangular area to limit drawing to.
+     * @param {IgeBounds=} rect The rectangular area to limit drawing to.
      * @param {number} sectionX The x co-ordinate of the section to draw to.
      * @param {number} sectionY The y co-ordinate of the section to draw to.
      * @return {*}
      * @private
      */
-    _renderTile(ctx: any, x: any, y: any, tileData: any, tileEntity: any, rect?: IgeRect, sectionX?: any, sectionY?: any): any;
+    _renderTile(ctx: any, x: any, y: any, tileData: any, tileEntity: any, rect?: IgeBounds, sectionX?: any, sectionY?: any): any;
     /**
      * Private method, creates an entity object that a texture can use to render
      * itself. This is basically a dummy object that has the minimum amount of data

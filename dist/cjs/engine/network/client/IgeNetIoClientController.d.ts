@@ -1,5 +1,6 @@
 import { IgeNetIoClient } from "./IgeNetIoClient.js"
 import { IgeNetIoBaseController } from "../IgeNetIoBaseController.js";
+import { IgeNetworkConnectionState } from "../../../enums/IgeNetworkConnectionState.js"
 import type { IgeNetworkClientSideMessageHandler, IgeNetworkClientSideResponseHandler, IgeNetworkEncodedMessageData, IgeNetworkMessageData, IgeNetworkMessageStructure, IgeNetworkRequestMessageStructure, IgeNetworkTimeSyncRequestFromServer, IgeNetworkTimeSyncResponseFromClient } from "../../../types/IgeNetworkMessage.js"
 import type { IgeStreamCreateMessageData, IgeStreamDestroyMessageData } from "../../../types/IgeNetworkStream.js"
 /**
@@ -12,7 +13,7 @@ export declare class IgeNetIoClientController extends IgeNetIoBaseController {
     _initDone: boolean;
     _idCounter: number;
     _requests: Record<string, IgeNetworkRequestMessageStructure<IgeNetworkClientSideResponseHandler>>;
-    _state: number;
+    _state: IgeNetworkConnectionState;
     _io?: IgeNetIoClient;
     _id?: string;
     _url?: string;
@@ -25,10 +26,11 @@ export declare class IgeNetIoClientController extends IgeNetIoBaseController {
      */
     id(): string;
     /**
-     * Starts the network for the client.
-     * @param {*} url The game server URL.
+     * Connects to the specified server. The promise this function returns
+     * will only resolve when the connection to the server is ready to use.
+     * @param {*} url The game server URL e.g. `http://localhost:2000`.
      * @param {Function=} callback A callback method to call once the
-     * network has started.
+     * network has started, or you can use the returned promise.
      */
     start(url?: string, callback?: () => void): Promise<void>;
     _onRequest: (data: IgeNetworkRequestMessageStructure<IgeNetworkClientSideMessageHandler>) => void;

@@ -483,7 +483,7 @@ class IgeTextureMap extends IgeTileMap2d_1.IgeTileMap2d {
      * @param {number} y The tile y co-ordinate.
      * @param {Object} tileData The tile's texture and cell data.
      * @param {Object} tileEntity The object that represents the tile.
-     * @param {IgeRect=} rect The rectangular area to limit drawing to.
+     * @param {IgeBounds=} rect The rectangular area to limit drawing to.
      * @param {number} sectionX The x co-ordinate of the section to draw to.
      * @param {number} sectionY The y co-ordinate of the section to draw to.
      * @return {*}
