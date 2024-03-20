@@ -13,7 +13,7 @@ export class IgeDependencies {
 				this._onDependencySatisfied(dependencyName);
 			})
 			.catch((err) => {
-				throw new Error(`Dependency ${dependencyName} threw an error: ${err}`);
+				throw new Error(`Dependency "${dependencyName}" threw an error: ${err}`);
 			});
 	}
 
