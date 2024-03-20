@@ -1,7 +1,6 @@
 import type { IgePoint2d } from "@/engine/core/IgePoint2d";
 import type { IgePoint3d } from "@/engine/core/IgePoint3d";
 import type { IgeCanvasRenderingContext2d } from "@/types/IgeCanvasRenderingContext2d";
-import type { IgeShape } from "@/types/IgeShape";
 
 export interface IgeShapeFunctionality {
 	_igeShapeType: string;
@@ -10,7 +9,7 @@ export interface IgeShapeFunctionality {
 
 	xyInside (x: number, y: number): boolean;
 
-	intersects (shape: IgeShape): boolean;
+	intersects (shape: IgeShapeFunctionality): boolean;
 
 	translateTo (x: number, y: number): this;
 

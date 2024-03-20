@@ -1,7 +1,7 @@
 import { IgeComponent } from "@/engine/core/IgeComponent";
 import type { IgeEntity } from "@/engine/core/IgeEntity";
 import { IgePoint3d } from "@/engine/core/IgePoint3d";
-import { IgeRect } from "@/engine/core/IgeRect";
+import { IgeBounds } from "@/engine/core/IgeBounds";
 import { ige } from "@/engine/instance";
 import { IgeBehaviourType, IgeEntityRenderMode, IgeMountMode } from "@/enums";
 import type { IgeCanvasRenderingContext2d } from "@/types/IgeCanvasRenderingContext2d";
@@ -9,7 +9,7 @@ import type { IgeCanvasRenderingContext2d } from "@/types/IgeCanvasRenderingCont
 export class IgeEntityManagerComponent extends IgeComponent {
 	classId = "IgeEntityManagerComponent";
 	componentId = "entityManager";
-	_lastArea: IgeRect = new IgeRect();
+	_lastArea: IgeBounds = new IgeBounds();
 	private _maps: any[];
 	private _overwatchMode: number;
 	private _removeMode: number;
@@ -22,7 +22,7 @@ export class IgeEntityManagerComponent extends IgeComponent {
 	private _removeCheck?: (item) => boolean;
 	private _trackTranslateTarget?: IgeEntity;
 	private _areaCenter?: IgePoint3d;
-	private _areaRect?: IgeRect;
+	private _areaRect?: IgeBounds;
 	private _areaRectAutoSize: boolean = false;
 	private _areaRectAutoSizeOptions: any;
 
@@ -245,7 +245,7 @@ export class IgeEntityManagerComponent extends IgeComponent {
 	 */
 	areaRect = (x, y, width, height) => {
 		if (x !== undefined && y !== undefined && width !== undefined && height !== undefined) {
-			this._areaRect = new IgeRect(x, y, width, height);
+			this._areaRect = new IgeBounds(x, y, width, height);
 			return this._entity;
 		}
 
@@ -264,7 +264,7 @@ export class IgeEntityManagerComponent extends IgeComponent {
 
 	/**
 	 * Returns the current management area.
-	 * @return {IgeRect}
+	 * @return {IgeBounds}
 	 */
 	currentArea = () => {
 		// Check if we are tracking an entity that is used to
@@ -286,14 +286,14 @@ export class IgeEntityManagerComponent extends IgeComponent {
 			areaCenter = this._areaCenter;
 
 		if (areaRect && areaCenter) {
-			return new IgeRect(
+			return new IgeBounds(
 				Math.floor(areaRect.x + areaCenter.x),
 				Math.floor(areaRect.y + areaCenter.y),
 				Math.floor(areaRect.width),
 				Math.floor(areaRect.height)
 			);
 		} else {
-			return new IgeRect(0, 0, 0, 0);
+			return new IgeBounds(0, 0, 0, 0);
 		}
 	};
 
@@ -397,7 +397,7 @@ export class IgeEntityManagerComponent extends IgeComponent {
 			// Check if we are rendering in 2d or isometric mode
 			if (this._entity._mountMode === IgeMountMode.flat) {
 				// 2d
-				currentAreaTiles = new IgeRect(
+				currentAreaTiles = new IgeBounds(
 					renderX - Math.floor(renderWidth / 2) - 1,
 					renderY - Math.floor(renderHeight / 2) - 1,
 					renderX + Math.floor(renderWidth / 2) + 1 - (renderX - Math.floor(renderWidth / 2) - 1),
@@ -409,7 +409,7 @@ export class IgeEntityManagerComponent extends IgeComponent {
 				// Isometric
 				renderSize = Math.abs(renderWidth) > Math.abs(renderHeight) ? renderWidth : renderHeight;
 				ratio = 0.6;
-				currentAreaTiles = new IgeRect(
+				currentAreaTiles = new IgeBounds(
 					renderX - Math.floor(renderSize * ratio),
 					renderY - Math.floor(renderSize * ratio),
 					renderX + Math.floor(renderSize * ratio) + 1 - (renderX - Math.floor(renderSize * ratio)),

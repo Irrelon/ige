@@ -17,6 +17,7 @@ interface BasicCircle extends BasicPoint {
 }
 
 interface BasicRect extends BasicPoint {
+	_origin?: BasicPoint;
 	width: number;
 	height: number;
 }
@@ -26,8 +27,8 @@ interface BasicPolygon extends BasicPoint {
 }
 
 export function rectToPolygon (rect: BasicRect): BasicPolygon {
-	const rectW2 = rect.width / 2;
-	const rectH2 = rect.height / 2;
+	const rectW2 = rect.width * (rect._origin?.x || 0);
+	const rectH2 = rect.height * (rect._origin?.y || 0);
 
 	return {
 		x: rect.x,
@@ -45,12 +46,13 @@ export function rectToPolygon (rect: BasicRect): BasicPolygon {
 // Source is point
 //////////////////////////////////////////////////////////////////////
 export function pointIntersectsRect (point: BasicPoint, rect: BasicRect): boolean {
-	const halfWidth = rect.width / 2;
-	const halfHeight = rect.height / 2;
-	const rectLeft = rect.x - halfWidth;
-	const rectRight = rect.x + halfWidth;
-	const rectTop = rect.y - halfHeight;
-	const rectBottom = rect.y + halfHeight;
+	const rectOriginX = rect.width * (rect._origin?.x || 0);
+	const rectOriginY = rect.height * (rect._origin?.y || 0);
+
+	const rectLeft = rect.x - rectOriginX;
+	const rectRight = rect.x + rect.width - rectOriginX;
+	const rectTop = rect.y - rectOriginY;
+	const rectBottom = rect.y + rect.height - rectOriginY;
 
 	return (
 		point.x >= rectLeft &&
@@ -155,8 +157,8 @@ export function circleIntersectsRect (circle: BasicCircle, rect: BasicRect): boo
 	if (pointIntersectsRect(circle, rect)) return true;
 
 	// Calculate the half-width and half-height of the rectangle
-	const halfWidth = rect.width / 2;
-	const halfHeight = rect.height / 2;
+	const halfWidth = rect.width * (rect._origin?.x || 0);
+	const halfHeight = rect.height * (rect._origin?.y || 0);
 
 	// Calculate the center coordinates of the rectangle
 	const rectCenterX = rect.x;
@@ -205,12 +207,12 @@ export function rectIntersectsRect (rect1: BasicRect, rect2: BasicRect): boolean
 		return false;
 	}
 
-	const sX1 = rect1.x - rect1.width / 2,
-		sY1 = rect1.y - rect1.height / 2,
+	const sX1 = rect1.x - (rect1.width * (rect1._origin?.x || 0)),
+		sY1 = rect1.y - (rect1.height * (rect1._origin?.x || 0)),
 		sW = rect1.width,
 		sH = rect1.height,
-		dX1 = rect2.x - rect2.width / 2,
-		dY1 = rect2.y - rect2.height / 2,
+		dX1 = rect2.x - (rect2.width * (rect2._origin?.x || 0)),
+		dY1 = rect2.y - (rect2.height * (rect2._origin?.x || 0)),
 		dW = rect2.width,
 		dH = rect2.height,
 		sX2 = sX1 + sW,

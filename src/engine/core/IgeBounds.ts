@@ -1,5 +1,5 @@
 import type { IgeCircle } from "@/engine/core/IgeCircle";
-import { IgePoint2d } from "@/engine/core/IgePoint2d";
+import type { IgePoint2d } from "@/engine/core/IgePoint2d";
 import type { IgePoint3d } from "@/engine/core/IgePoint3d";
 import type { IgePoly2d } from "@/engine/core/IgePoly2d";
 import {
@@ -12,12 +12,14 @@ import type { IgeCanvasRenderingContext2d } from "@/types/IgeCanvasRenderingCont
 import type { IgeShapeFunctionality } from "@/types/IgeShapeFunctionality";
 
 /**
- * Creates a new rectangle (x, y, width, height).
+ * Creates a new bounds rectangle (x, y, width, height).
+ * This differs from the IgeRect in that the x, y are the top-left
+ * co-ordinates of the bounds rectangle, whereas the IgeRect assumes
+ * that the x, y are the centre co-ordinates.
  */
-export class IgeRect implements IgeShapeFunctionality {
-	classId = "IgeRect";
+export class IgeBounds implements IgeShapeFunctionality {
+	classId = "IgeBounds";
 	_igeShapeType = "rect";
-	_origin: IgePoint2d = new IgePoint2d(0.5, 0.5);
 	x: number = 0;
 	y: number = 0;
 	width: number = 0;
@@ -50,12 +52,12 @@ export class IgeRect implements IgeShapeFunctionality {
 	}
 
 	/**
-	 * Combines the extents of the passed IgeRect with this rect
+	 * Combines the extents of the passed IgeBounds with this rect
 	 * to create a new rect whose bounds encapsulate both rects.
-	 * @param {IgeRect} rect The rect to combine with this one.
-	 * @return {IgeRect} The new rect encapsulating both rects.
+	 * @param {IgeBounds} rect The rect to combine with this one.
+	 * @return {IgeBounds} The new rect encapsulating both rects.
 	 */
-	combineRect (rect: IgeRect): IgeRect {
+	combineRect (rect: IgeBounds): IgeBounds {
 		const thisRectMaxX = this.x + this.width,
 			thisRectMaxY = this.y + this.height,
 			thatRectMaxX = rect.x + rect.width,
@@ -65,16 +67,16 @@ export class IgeRect implements IgeShapeFunctionality {
 			width = Math.max(thisRectMaxX - this.x, thatRectMaxX - this.x),
 			height = Math.max(thisRectMaxY - this.y, thatRectMaxY - this.y);
 
-		return new IgeRect(x, y, width, height);
+		return new IgeBounds(x, y, width, height);
 	}
 
 	/**
-	 * Combines the extents of the passed IgeRect with this rect
+	 * Combines the extents of the passed IgeBounds with this rect
 	 * and replaces this rect with one whose bounds encapsulate
 	 * both rects.
-	 * @param {IgeRect} rect The rect to combine with this one.
+	 * @param {IgeBounds} rect The rect to combine with this one.
 	 */
-	thisCombineRect (rect: IgeRect) {
+	thisCombineRect (rect: IgeBounds) {
 		const thisRectMaxX = this.x + this.width,
 			thisRectMaxY = this.y + this.height,
 			thatRectMaxX = rect.x + rect.width,
@@ -87,17 +89,17 @@ export class IgeRect implements IgeShapeFunctionality {
 		this.height = Math.max(thisRectMaxY - this.y, thatRectMaxY - this.y);
 	}
 
-	minusPoint (point: IgePoint2d | IgePoint3d): IgeRect {
-		return new IgeRect(this.x - point.x, this.y - point.y, this.width, this.height);
+	minusPoint (point: IgePoint2d | IgePoint3d): IgeBounds {
+		return new IgeBounds(this.x - point.x, this.y - point.y, this.width, this.height);
 	}
 
 	/**
 	 * Compares this rects dimensions with the passed rect and returns
 	 * true if they are the same and false if any is different.
-	 * @param {IgeRect} rect
+	 * @param {IgeBounds} rect
 	 * @return {boolean}
 	 */
-	compare (rect: IgeRect): boolean {
+	compare (rect: IgeBounds): boolean {
 		return (
 			rect && this.x === rect.x && this.y === rect.y && this.width === rect.width && this.height === rect.height
 		);
@@ -111,6 +113,7 @@ export class IgeRect implements IgeShapeFunctionality {
 	 * @return {Boolean}
 	 */
 	xyInside (x: number, y: number): boolean {
+		//return x >= this.x && y > this.y && x <= this.x + this.width && y <= this.y + this.height;
 		return pointIntersectsRect({ x, y }, this);
 	}
 
@@ -125,25 +128,16 @@ export class IgeRect implements IgeShapeFunctionality {
 	}
 
 	/**
-	 * Returns boolean indicating if the passed IgeRect is
-	 * intersecting the rectangle.
-	 * @deprecated Please use intersects() instead.
-	 */
-	rectIntersect () {
-		throw new Error("Deprecated, please use intersects() instead.");
-	}
-
-	/**
 	 * Multiplies this rects data by the values specified
-	 * and returns a new IgeRect whose values are the result.
+	 * and returns a new IgeBounds whose values are the result.
 	 * @param x1
 	 * @param y1
 	 * @param x2
 	 * @param y2
 	 * @return {*}
 	 */
-	multiply (x1: number, y1: number, x2: number, y2: number): IgeRect {
-		return new IgeRect(this.x * x1, this.y * y1, this.width * x2, this.height * y2);
+	multiply (x1: number, y1: number, x2: number, y2: number): IgeBounds {
+		return new IgeBounds(this.x * x1, this.y * y1, this.width * x2, this.height * y2);
 	}
 
 	/**
@@ -167,10 +161,10 @@ export class IgeRect implements IgeShapeFunctionality {
 	/**
 	 * Returns a clone of this object that is not a reference
 	 * but retains the same values.
-	 * @return {IgeRect}
+	 * @return {IgeBounds}
 	 */
-	clone (): IgeRect {
-		return new IgeRect(this.x, this.y, this.width, this.height);
+	clone (): IgeBounds {
+		return new IgeBounds(this.x, this.y, this.width, this.height);
 	}
 
 	/**
@@ -197,7 +191,7 @@ export class IgeRect implements IgeShapeFunctionality {
 	}
 
 	/**
-	 * Returns boolean indicating if the passed IgeRect is
+	 * Returns boolean indicating if the passed IgeBounds is
 	 * intersecting the rectangle.
 	 * @param {IgeShape} shape
 	 * @return {boolean}
@@ -207,7 +201,7 @@ export class IgeRect implements IgeShapeFunctionality {
 			case "circle":
 				return circleIntersectsRect(shape as IgeCircle, this);
 			case "rect":
-				return rectIntersectsRect(this, shape as IgeRect);
+				return rectIntersectsRect(this, shape as IgeBounds);
 			case "polygon":
 				return rectIntersectsPolygon(this, shape as IgePoly2d);
 		}

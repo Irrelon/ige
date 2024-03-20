@@ -1,7 +1,7 @@
 import { IgeComponent } from "@/engine/core/IgeComponent";
 import { IgePoint2d } from "@/engine/core/IgePoint2d";
 import type { IgePoint3d } from "@/engine/core/IgePoint3d";
-import type { IgeRect } from "@/engine/core/IgeRect";
+import type { IgeBounds } from "@/engine/core/IgeBounds";
 import { ige } from "@/engine/instance";
 
 /**
@@ -15,7 +15,7 @@ export class IgeMousePanComponent extends IgeComponent {
 
 	_enabled: boolean = false; // Set the pan component to `inactive` to start with
 	_startThreshold: number = 5; // The number of pixels the mouse should move to activate a pan
-	_limit?: IgeRect;
+	_limit?: IgeBounds;
 	_panPreStart: boolean = false;
 	_panStarted: boolean = false;
 	_panStartMouse?: IgePoint3d;
@@ -38,11 +38,11 @@ export class IgeMousePanComponent extends IgeComponent {
 
 	/**
 	 * Gets / sets the rectangle that the pan operation will be limited
-	 * to using an IgeRect instance.
-	 * @param {IgeRect=} rect
+	 * to using an IgeBounds instance.
+	 * @param {IgeBounds=} rect
 	 * @return {*}
 	 */
-	limit (rect?: IgeRect) {
+	limit (rect?: IgeBounds) {
 		if (rect !== undefined) {
 			this._limit = rect;
 			return this._entity;

@@ -1,6 +1,6 @@
 import { IgeEntity } from "@/engine/core/IgeEntity";
 import type { IgePoint3d } from "@/engine/core/IgePoint3d";
-import type { IgeRect } from "@/engine/core/IgeRect";
+import type { IgeBounds } from "@/engine/core/IgeBounds";
 import { IgeTween } from "@/engine/core/IgeTween";
 import type { IgeViewport } from "@/engine/core/IgeViewport";
 import { registerClass } from "@/engine/utils/igeClassStore";
@@ -18,7 +18,7 @@ export class IgeCamera extends IgeEntity {
 	_trackRotateSmoothing?: number;
 	_trackTranslateSmoothing?: number;
 	_trackTranslateRounding?: boolean;
-	_limit?: IgeRect;
+	_limit?: IgeBounds;
 
 	constructor (viewport: IgeViewport) {
 		super();
@@ -34,11 +34,11 @@ export class IgeCamera extends IgeEntity {
 
 	/**
 	 * Gets / sets the rectangle that the camera translate
-	 * will be limited to using an IgeRect instance.
-	 * @param {IgeRect=} rect
+	 * will be limited to using an IgeBounds instance.
+	 * @param {IgeBounds=} rect
 	 * @return {*}
 	 */
-	limit (rect?: IgeRect) {
+	limit (rect?: IgeBounds) {
 		// TODO: Write the usage of this limit data, currently does nothing
 		if (rect !== undefined) {
 			this._limit = rect;

@@ -6,7 +6,7 @@ import { IgeObject } from "@/engine/core/IgeObject";
 import { IgePoint2d } from "@/engine/core/IgePoint2d";
 import { IgePoint3d } from "@/engine/core/IgePoint3d";
 import { IgePoly2d } from "@/engine/core/IgePoly2d";
-import { IgeRect } from "@/engine/core/IgeRect";
+import { IgeBounds } from "@/engine/core/IgeBounds";
 import type { IgeTexture } from "@/engine/core/IgeTexture";
 import type { IgeTileMap2d } from "@/engine/core/IgeTileMap2d";
 import type { IgeViewport } from "@/engine/core/IgeViewport";
@@ -67,7 +67,7 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 		this.streamSections(["transform"]);
 	}
 
-	customTriggerPolygon: () => IgeShapeFunctionality = () => new IgeRect();
+	customTriggerPolygon: () => IgeShapeFunctionality = () => new IgeBounds();
 
 	_sortChildren: (comparatorFunction: (a: any, b: any) => number) => void = (compareFn) => {
 		return this._children.sort(compareFn);
@@ -1074,9 +1074,9 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 	 *     console.log(aabb.y);
 	 *     console.log(aabb.width);
 	 *     console.log(aabb.height);
-	 * @return {IgeRect} The axis-aligned bounding box in world co-ordinates.
+	 * @return {IgeBounds} The axis-aligned bounding box in world co-ordinates.
 	 */
-	aabb (recalculate = true, inverse = false): IgeRect {
+	aabb (recalculate: boolean = true, inverse = false): IgeBounds {
 		if (!(this._aabbDirty || !this._aabb || recalculate)) {
 			return this._aabb;
 		}
@@ -1114,7 +1114,7 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 			debugger;
 		}
 
-		this._aabb = new IgeRect(minX, minY, maxX - minX, maxY - minY);
+		this._aabb = new IgeBounds(minX, minY, maxX - minX, maxY - minY);
 		this._aabbDirty = false;
 
 		return this._aabb;
@@ -1141,7 +1141,7 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 	 *     console.log(aabb.y);
 	 *     console.log(aabb.width);
 	 *     console.log(aabb.height);
-	 * @return {IgeRect} The local AABB.
+	 * @return {IgeBounds} The local AABB.
 	 */
 	localAabb (recalculate = false) {
 		if (this._localAabb && !recalculate) {
@@ -1150,7 +1150,7 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 
 		const aabb = this.aabb();
 
-		this._localAabb = new IgeRect(
+		this._localAabb = new IgeBounds(
 			-Math.floor(aabb.width / 2),
 			-Math.floor(aabb.height / 2),
 			Math.floor(aabb.width),
@@ -1754,71 +1754,71 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 		for (const i in this) {
 			if (this.hasOwnProperty(i) && this[i] !== undefined) {
 				switch (i) {
-				case "_opacity":
-					str += `.opacity(${this.opacity()})`;
-					break;
-				case "_texture":
-					const tmpTexture = this.texture();
-					if (tmpTexture) {
-						str += `.texture(ige.$('${tmpTexture.id()}'))`;
-					}
-					break;
-				case "_cell":
-					str += ".cell(" + this.cell() + ")";
-					break;
-				case "_translate":
-					if (options.transform && options.translate) {
-						str += `.translateTo(${this._translate.x}, ${this._translate.y}, ${this._translate.z})`;
-					}
-					break;
-				case "_rotate":
-					if (options.transform && options.rotate) {
-						str += `.rotateTo(${this._rotate.x}, ${this._rotate.y}, ${this._rotate.z})`;
-					}
-					break;
-				case "_scale":
-					if (options.transform && options.scale) {
-						str += `.scaleTo(${this._scale.x}, ${this._scale.y}, ${this._scale.z})`;
-					}
-					break;
-				case "_origin":
-					if (options.origin) {
-						str += `.originTo(${this._origin.x}, ${this._origin.y}, ${this._origin.z})`;
-					}
-					break;
-				case "_anchor":
-					if (options.anchor) {
-						str += `.anchor(${this._anchor.x}, ${this._anchor.y})`;
-					}
-					break;
-				case "_width":
-					if (typeof this.width() === "string") {
-						str += `.width('${this.width()}')`;
-					} else {
-						str += `.width(${this.width()})`;
-					}
-					break;
-				case "_height":
-					if (typeof this.height() === "string") {
-						str += `.height('${this.height()}')`;
-					} else {
-						str += `.height(${this.height()})`;
-					}
-					break;
-				case "_bounds3d":
-					str += `.bounds3d(${this._bounds3d.x}, ${this._bounds3d.y}, ${this._bounds3d.z})`;
-					break;
-				case "_deathTime":
-					if (options.deathTime && options.lifeSpan) {
-						str += `.deathTime(${this.deathTime()})`;
-					}
-					break;
-				case "_highlight":
-					str += `.highlight(${this.highlight()})`;
-					break;
-				case "_renderMode":
-					str += ".mode(" + this._renderMode + ")";
-					break;
+					case "_opacity":
+						str += `.opacity(${this.opacity()})`;
+						break;
+					case "_texture":
+						const tmpTexture = this.texture();
+						if (tmpTexture) {
+							str += `.texture(ige.$('${tmpTexture.id()}'))`;
+						}
+						break;
+					case "_cell":
+						str += ".cell(" + this.cell() + ")";
+						break;
+					case "_translate":
+						if (options.transform && options.translate) {
+							str += `.translateTo(${this._translate.x}, ${this._translate.y}, ${this._translate.z})`;
+						}
+						break;
+					case "_rotate":
+						if (options.transform && options.rotate) {
+							str += `.rotateTo(${this._rotate.x}, ${this._rotate.y}, ${this._rotate.z})`;
+						}
+						break;
+					case "_scale":
+						if (options.transform && options.scale) {
+							str += `.scaleTo(${this._scale.x}, ${this._scale.y}, ${this._scale.z})`;
+						}
+						break;
+					case "_origin":
+						if (options.origin) {
+							str += `.originTo(${this._origin.x}, ${this._origin.y}, ${this._origin.z})`;
+						}
+						break;
+					case "_anchor":
+						if (options.anchor) {
+							str += `.anchor(${this._anchor.x}, ${this._anchor.y})`;
+						}
+						break;
+					case "_width":
+						if (typeof this.width() === "string") {
+							str += `.width('${this.width()}')`;
+						} else {
+							str += `.width(${this.width()})`;
+						}
+						break;
+					case "_height":
+						if (typeof this.height() === "string") {
+							str += `.height('${this.height()}')`;
+						} else {
+							str += `.height(${this.height()})`;
+						}
+						break;
+					case "_bounds3d":
+						str += `.bounds3d(${this._bounds3d.x}, ${this._bounds3d.y}, ${this._bounds3d.z})`;
+						break;
+					case "_deathTime":
+						if (options.deathTime && options.lifeSpan) {
+							str += `.deathTime(${this.deathTime()})`;
+						}
+						break;
+					case "_highlight":
+						str += `.highlight(${this.highlight()})`;
+						break;
+					case "_renderMode":
+						str += ".mode(" + this._renderMode + ")";
+						break;
 				}
 			}
 		}
@@ -3360,64 +3360,64 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 		bypassChangeDetection: boolean = false
 	): string | undefined {
 		switch (sectionId) {
-		case "bounds2d":
-			if (data !== undefined) {
-				if (isClient) {
-					const geom = data.split(",");
-					this.bounds2d(parseFloat(geom[0]), parseFloat(geom[1]));
-				}
-			} else {
-				return String(this._bounds2d.x + "," + this._bounds2d.y);
-			}
-			break;
-
-		case "bounds3d":
-			if (data !== undefined) {
-				if (isClient) {
-					const geom = data.split(",");
-					this.bounds3d(parseFloat(geom[0]), parseFloat(geom[1]), parseFloat(geom[2]));
-				}
-			} else {
-				return String(this._bounds3d.x + "," + this._bounds3d.y + "," + this._bounds3d.z);
-			}
-			break;
-
-		case "hidden":
-			if (data !== undefined) {
-				if (isClient) {
-					if (data === "true") {
-						this.hide();
-					} else {
-						this.show();
+			case "bounds2d":
+				if (data !== undefined) {
+					if (isClient) {
+						const geom = data.split(",");
+						this.bounds2d(parseFloat(geom[0]), parseFloat(geom[1]));
 					}
+				} else {
+					return String(this._bounds2d.x + "," + this._bounds2d.y);
 				}
-			} else {
-				return String(this.isHidden());
-			}
-			break;
+				break;
 
-		case "width":
-			if (data !== undefined) {
-				if (isClient) {
-					this.width(parseInt(data));
+			case "bounds3d":
+				if (data !== undefined) {
+					if (isClient) {
+						const geom = data.split(",");
+						this.bounds3d(parseFloat(geom[0]), parseFloat(geom[1]), parseFloat(geom[2]));
+					}
+				} else {
+					return String(this._bounds3d.x + "," + this._bounds3d.y + "," + this._bounds3d.z);
 				}
-			} else {
-				return String(this.width());
-			}
-			break;
+				break;
 
-		case "height":
-			if (data !== undefined) {
-				if (isClient) {
-					this.height(parseInt(data));
+			case "hidden":
+				if (data !== undefined) {
+					if (isClient) {
+						if (data === "true") {
+							this.hide();
+						} else {
+							this.show();
+						}
+					}
+				} else {
+					return String(this.isHidden());
 				}
-			} else {
-				return String(this.height());
-			}
-			break;
+				break;
 
-		default:
-			return super.streamSectionData(sectionId, data, bypassTimeStream, bypassChangeDetection);
+			case "width":
+				if (data !== undefined) {
+					if (isClient) {
+						this.width(parseInt(data));
+					}
+				} else {
+					return String(this.width());
+				}
+				break;
+
+			case "height":
+				if (data !== undefined) {
+					if (isClient) {
+						this.height(parseInt(data));
+					}
+				} else {
+					return String(this.height());
+				}
+				break;
+
+			default:
+				return super.streamSectionData(sectionId, data, bypassTimeStream, bypassChangeDetection);
 		}
 	}
 }

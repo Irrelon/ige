@@ -1,7 +1,7 @@
+import type { IgeBounds } from "@/engine/core/IgeBounds";
 import type { IgePoint2d } from "@/engine/core/IgePoint2d";
 import type { IgePoint3d } from "@/engine/core/IgePoint3d";
 import type { IgePoly2d } from "@/engine/core/IgePoly2d";
-import type { IgeRect } from "@/engine/core/IgeRect";
 import {
 	circleIntersectsCircle,
 	circleIntersectsPolygon,
@@ -9,7 +9,6 @@ import {
 	pointIntersectsCircle
 } from "@/engine/utils/intersections";
 import type { IgeCanvasRenderingContext2d } from "@/types/IgeCanvasRenderingContext2d";
-import type { IgeShape } from "@/types/IgeShape";
 import type { IgeShapeFunctionality } from "@/types/IgeShapeFunctionality";
 
 /**
@@ -56,16 +55,16 @@ export class IgeCircle implements IgeShapeFunctionality {
 		return pointIntersectsCircle(point, this);
 	}
 
-	intersects (shape: IgeShape): boolean {
+	intersects (shape: IgeShapeFunctionality): boolean {
 		switch (shape._igeShapeType) {
-		// case "line":
-		// 	return this._intersectsLine(shape as IgeLine);
-		case "circle":
-			return circleIntersectsCircle(this, shape as IgeCircle);
-		case "rect":
-			return circleIntersectsRect(this, shape as IgeRect);
-		case "polygon":
-			return circleIntersectsPolygon(this, shape as IgePoly2d);
+			// case "line":
+			// 	return this._intersectsLine(shape as IgeLine);
+			case "circle":
+				return circleIntersectsCircle(this, shape as IgeCircle);
+			case "rect":
+				return circleIntersectsRect(this, shape as IgeBounds);
+			case "polygon":
+				return circleIntersectsPolygon(this, shape as IgePoly2d);
 		}
 
 		return false;

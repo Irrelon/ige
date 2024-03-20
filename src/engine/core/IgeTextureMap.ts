@@ -1,7 +1,7 @@
 // TODO: Implement the _stringify() method for this class
 import { IgeMap2d } from "@/engine/core/IgeMap2d";
 import { IgePoint3d } from "@/engine/core/IgePoint3d";
-import type { IgeRect } from "@/engine/core/IgeRect";
+import type { IgeBounds } from "@/engine/core/IgeBounds";
 import type { IgeTexture } from "@/engine/core/IgeTexture";
 import { IgeTileMap2d } from "@/engine/core/IgeTileMap2d";
 import { ige } from "@/engine/instance";
@@ -624,13 +624,13 @@ export class IgeTextureMap extends IgeTileMap2d {
 	 * @param {number} y The tile y co-ordinate.
 	 * @param {Object} tileData The tile's texture and cell data.
 	 * @param {Object} tileEntity The object that represents the tile.
-	 * @param {IgeRect=} rect The rectangular area to limit drawing to.
+	 * @param {IgeBounds=} rect The rectangular area to limit drawing to.
 	 * @param {number} sectionX The x co-ordinate of the section to draw to.
 	 * @param {number} sectionY The y co-ordinate of the section to draw to.
 	 * @return {*}
 	 * @private
 	 */
-	_renderTile (ctx, x, y, tileData, tileEntity, rect?: IgeRect, sectionX?, sectionY?) {
+	_renderTile (ctx, x, y, tileData, tileEntity, rect?: IgeBounds, sectionX?, sectionY?) {
 		// TODO: Handle scaling so tiles don't loose res on scaled cached sections
 		const xAdjust = this._mountMode === IgeMountMode.iso ? this._tileWidth / 2 : 0,
 			yAdjust = this._mountMode === IgeMountMode.iso ? this._tileHeight / 2 : 0;

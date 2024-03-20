@@ -5,7 +5,7 @@ import type { IgeObject } from "@/engine/core/IgeObject";
 import { IgePoint2d } from "@/engine/core/IgePoint2d";
 import { IgePoint3d } from "@/engine/core/IgePoint3d";
 import { IgePoly2d } from "@/engine/core/IgePoly2d";
-import { IgeRect } from "@/engine/core/IgeRect";
+import { IgeBounds } from "@/engine/core/IgeBounds";
 import { IgeTexture } from "@/engine/core/IgeTexture";
 import { ige } from "@/engine/instance";
 import { IgeTileMap2dSmartTexture } from "@/engine/textures/IgeTileMap2dSmartTexture";
@@ -33,7 +33,7 @@ export class IgeTileMap2d<MapDataType = any> extends IgeEntity {
 	IgeTileMap2d = true;
 	_drawGrid?: boolean;
 	_highlightOccupied: boolean = false;
-	_highlightTileRect: IgeRect | null = null;
+	_highlightTileRect: IgeBounds | null = null;
 	_gridColor?: string;
 	_gridSize: IgePoint2d = new IgePoint2d(40, 40);
 	_hoverColor?: string;
@@ -82,9 +82,9 @@ export class IgeTileMap2d<MapDataType = any> extends IgeEntity {
 		return this._highlightOccupied;
 	}
 
-	highlightTileRect (val: IgeRect | null): this;
-	highlightTileRect (): IgeRect;
-	highlightTileRect (val?: IgeRect | null) {
+	highlightTileRect (val: IgeBounds | null): this;
+	highlightTileRect (): IgeBounds;
+	highlightTileRect (val?: IgeBounds | null) {
 		if (val !== undefined) {
 			this._highlightTileRect = val;
 			return this;
@@ -260,10 +260,10 @@ export class IgeTileMap2d<MapDataType = any> extends IgeEntity {
 			}
 		}
 
-		// Create an IgeRect to represent the tiles this
+		// Create an IgeBounds to represent the tiles this
 		// entity has just occupied
 		if (obj.classId) {
-			obj._occupiedRect = new IgeRect(x, y, width, height);
+			obj._occupiedRect = new IgeBounds(x, y, width, height);
 		}
 
 		return this;

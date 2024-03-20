@@ -1,7 +1,7 @@
 import { IgeComponent } from "@/engine/core/IgeComponent";
 import { IgePoint2d } from "@/engine/core/IgePoint2d";
 import { IgePoint3d } from "@/engine/core/IgePoint3d";
-import type { IgeRect } from "@/engine/core/IgeRect";
+import type { IgeBounds } from "@/engine/core/IgeBounds";
 import { ige } from "@/engine/instance";
 
 /**
@@ -14,7 +14,7 @@ export class IgeMouseZoomComponent extends IgeComponent {
 	componentId = "mouseZoom";
 
 	_enabled: boolean = false; // Set the zoom component to `inactive` to start with
-	_limit?: IgeRect;
+	_limit?: IgeBounds;
 	_zoomStartMouse?: IgePoint3d;
 	_zoomStartCamera?: IgePoint2d;
 

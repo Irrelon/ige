@@ -1,10 +1,9 @@
+import { IgeBounds } from "@/engine/core/IgeBounds";
 import type { IgeCircle } from "@/engine/core/IgeCircle";
 import { IgePoint2d } from "@/engine/core/IgePoint2d";
 import type { IgePoint3d } from "@/engine/core/IgePoint3d";
-import { IgeRect } from "@/engine/core/IgeRect";
 import { circleIntersectsPolygon, polygonIntersectsPolygon, rectIntersectsPolygon } from "@/engine/utils/intersections";
 import type { IgeCanvasRenderingContext2d } from "@/types/IgeCanvasRenderingContext2d";
-import type { IgeShape } from "@/types/IgeShape";
 import type { IgeShapeFunctionality } from "@/types/IgeShapeFunctionality";
 
 /**
@@ -54,7 +53,7 @@ export class IgePoly2d implements IgeShapeFunctionality {
 	 * @return {*}
 	 */
 	multiply (factor?: number) {
-		// TODO: Look at IgeRect and normalise this function name
+		// TODO: Look at IgeBounds and normalise this function name
 		if (factor !== undefined) {
 			const polyPoints = this._poly;
 			const pointCount = polyPoints.length;
@@ -152,7 +151,7 @@ export class IgePoly2d implements IgeShapeFunctionality {
 	/**
 	 * Calculates and returns the axis-aligned bounding-box for this polygon.
 	 */
-	aabb (): IgeRect {
+	aabb (): IgeBounds {
 		const xArr: number[] = [];
 		const yArr: number[] = [];
 		const arr = this._poly;
@@ -169,7 +168,7 @@ export class IgePoly2d implements IgeShapeFunctionality {
 		const maxX = Math.max(...xArr);
 		const maxY = Math.max(...yArr);
 
-		return new IgeRect(minX, minY, maxX - minX, maxY - minY);
+		return new IgeBounds(minX, minY, maxX - minX, maxY - minY);
 	}
 
 	/**
@@ -389,14 +388,14 @@ export class IgePoly2d implements IgeShapeFunctionality {
 		return aCROSSbp >= 0.0 && bCROSScp >= 0.0 && cCROSSap >= 0.0;
 	}
 
-	intersects (shape: IgeShape): boolean {
+	intersects (shape: IgeShapeFunctionality): boolean {
 		switch (shape._igeShapeType) {
-		case "circle":
-			return circleIntersectsPolygon(shape as IgeCircle, this);
-		case "rect":
-			return rectIntersectsPolygon(shape as IgeRect, this);
-		case "polygon":
-			return polygonIntersectsPolygon(this, shape as IgePoly2d);
+			case "circle":
+				return circleIntersectsPolygon(shape as IgeCircle, this);
+			case "rect":
+				return rectIntersectsPolygon(shape as IgeBounds, this);
+			case "polygon":
+				return polygonIntersectsPolygon(this, shape as IgePoly2d);
 		}
 
 		return false;

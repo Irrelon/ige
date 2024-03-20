@@ -1,9 +1,9 @@
+import { IgeBounds } from "@/engine/core/IgeBounds";
 import { IgeCamera } from "@/engine/core/IgeCamera";
 import type { IgeEntity } from "@/engine/core/IgeEntity";
 import type { IgeObject } from "@/engine/core/IgeObject";
 import { IgePoint2d } from "@/engine/core/IgePoint2d";
 import { IgePoint3d } from "@/engine/core/IgePoint3d";
-import { IgeRect } from "@/engine/core/IgeRect";
 import type { IgeScene2d } from "@/engine/core/IgeScene2d";
 import { IgeUiEntity } from "@/engine/core/IgeUiEntity";
 import { ige } from "@/engine/instance";
@@ -147,15 +147,15 @@ export class IgeViewport extends IgeUiEntity implements IgeCanRegisterById {
 	/**
 	 * Gets the current rectangular area that the viewport is "looking at"
 	 * in the world. The co-ordinates are in world space.
-	 * @returns {IgeRect}
+	 * @returns {IgeBounds}
 	 */
-	viewArea (camScaleX: number = this.camera._scale.x, camScaleY: number = this.camera._scale.y): IgeRect {
+	viewArea (camScaleX: number = this.camera._scale.x, camScaleY: number = this.camera._scale.y): IgeBounds {
 		const aabb = this.aabb(),
 			camTrans = this.camera._translate,
 			width = aabb.width * (1 / camScaleX),
 			height = aabb.height * (1 / camScaleY);
 
-		return new IgeRect(camTrans.x - width / 2, camTrans.y - height / 2, width, height);
+		return new IgeBounds(camTrans.x - width / 2, camTrans.y - height / 2, width, height);
 	}
 
 	/**
@@ -425,187 +425,188 @@ export class IgeViewport extends IgeUiEntity implements IgeCanRegisterById {
 			obj = arr[arrCount];
 			index++;
 
-			if (obj._shouldRender !== false) {
-				if (
-					(obj.classId !== "IgeScene2d" && !this._drawBoundsLimitId && !this._drawBoundsLimitCategory) ||
-					(this._drawBoundsLimitId &&
-						(this._drawBoundsLimitId instanceof Array
-							? this._drawBoundsLimitId.indexOf(obj.id()) > -1
-							: this._drawBoundsLimitId === obj.id())) ||
-					(this._drawBoundsLimitCategory && this._drawBoundsLimitCategory === obj.category())
-				) {
-					if (typeof obj.aabb === "function") {
-						// Grab the AABB and then draw it
-						aabb = obj.aabb();
+			if (!obj._shouldRender) {
+				continue;
+			}
 
-						if (this._drawCompositeBounds && obj._compositeCache) {
-							aabbC = obj.compositeAabb();
+			if (
+				(obj.classId !== "IgeScene2d" && !this._drawBoundsLimitId && !this._drawBoundsLimitCategory) ||
+				(this._drawBoundsLimitId &&
+					(this._drawBoundsLimitId instanceof Array
+						? this._drawBoundsLimitId.indexOf(obj.id()) > -1
+						: this._drawBoundsLimitId === obj.id())) ||
+				(this._drawBoundsLimitCategory && this._drawBoundsLimitCategory === obj.category())
+			) {
+				if (typeof obj.aabb === "function") {
+					// Grab the AABB and then draw it
+					aabb = obj.aabb();
 
-							// Draw composite bounds
-							ctx.strokeStyle = "#ff0000";
-							ctx.strokeRect(aabbC.x, aabbC.y, aabbC.width, aabbC.height);
+					if (this._drawCompositeBounds && obj._compositeCache) {
+						aabbC = obj.compositeAabb();
+
+						// Draw composite bounds
+						ctx.strokeStyle = "#ff0000";
+						ctx.strokeRect(aabbC.x, aabbC.y, aabbC.width, aabbC.height);
+					}
+
+					if (aabb) {
+						if (obj._drawBounds || obj._drawBounds === undefined) {
+							//if (!obj._parent || (obj._parent && obj._parent._mountMode !== IgeMountMode.iso)) {
+							// Draw a rect around the bounds of the object transformed in world space
+							/*ctx.save();
+								obj._worldMatrix.transformRenderingContext(ctx);
+								ctx.strokeStyle = '#9700ae';
+								ctx.strokeRect(-obj._bounds2d.x2, -obj._bounds2d.y2, obj._bounds2d.x, obj._bounds2d.y);
+							  ctx.restore();*/
+
+							// Draw individual bounds
+							ctx.strokeStyle = "#00deff";
+							ctx.strokeRect(aabb.x, aabb.y, aabb.width, aabb.height);
+							//}
+
+							// Check if the object is mounted to an isometric mount
+							if (obj._parent && obj._parent._mountMode === IgeMountMode.iso) {
+								bounds3dPoly = (obj as IgeEntity).bounds3dPolygon().aabb();
+								ctx.save();
+								ctx.strokeStyle = "#0068b8";
+								ctx.strokeRect(
+									bounds3dPoly.x,
+									bounds3dPoly.y,
+									bounds3dPoly.width,
+									bounds3dPoly.height
+								);
+								ctx.restore();
+
+								ctx.save();
+								ctx.translate(
+									bounds3dPoly.x + bounds3dPoly.width / 2,
+									bounds3dPoly.y + bounds3dPoly.height / 2
+								);
+								//obj._transformContext(ctx);
+
+								// Calculate the 3d bounds data
+								r3d = obj._bounds3d;
+								xl1 = new IgePoint3d(-(r3d.x / 2), 0, 0).toIso();
+								xl2 = new IgePoint3d(+(r3d.x / 2), 0, 0).toIso();
+								xl3 = new IgePoint3d(0, -(r3d.y / 2), 0).toIso();
+								xl4 = new IgePoint3d(0, +(r3d.y / 2), 0).toIso();
+								xl5 = new IgePoint3d(0, 0, -(r3d.z / 2)).toIso();
+								xl6 = new IgePoint3d(0, 0, +(r3d.z / 2)).toIso();
+								// Bottom face
+								bf1 = new IgePoint3d(-(r3d.x / 2), -(r3d.y / 2), -(r3d.z / 2)).toIso();
+								bf2 = new IgePoint3d(+(r3d.x / 2), -(r3d.y / 2), -(r3d.z / 2)).toIso();
+								bf3 = new IgePoint3d(+(r3d.x / 2), +(r3d.y / 2), -(r3d.z / 2)).toIso();
+								bf4 = new IgePoint3d(-(r3d.x / 2), +(r3d.y / 2), -(r3d.z / 2)).toIso();
+								// Top face
+								tf1 = new IgePoint3d(-(r3d.x / 2), -(r3d.y / 2), r3d.z / 2).toIso();
+								tf2 = new IgePoint3d(+(r3d.x / 2), -(r3d.y / 2), r3d.z / 2).toIso();
+								tf3 = new IgePoint3d(+(r3d.x / 2), +(r3d.y / 2), r3d.z / 2).toIso();
+								tf4 = new IgePoint3d(-(r3d.x / 2), +(r3d.y / 2), r3d.z / 2).toIso();
+
+								ga = ctx.globalAlpha;
+
+								// Axis lines
+								ctx.globalAlpha = 1;
+								ctx.strokeStyle = "#ff0000";
+								ctx.beginPath();
+								ctx.moveTo(xl1.x, xl1.y);
+								ctx.lineTo(xl2.x, xl2.y);
+								ctx.stroke();
+								ctx.strokeStyle = "#00ff00";
+								ctx.beginPath();
+								ctx.moveTo(xl3.x, xl3.y);
+								ctx.lineTo(xl4.x, xl4.y);
+								ctx.stroke();
+								ctx.strokeStyle = "#fffc00";
+								ctx.beginPath();
+								ctx.moveTo(xl5.x, xl5.y);
+								ctx.lineTo(xl6.x, xl6.y);
+								ctx.stroke();
+
+								ctx.strokeStyle = "#a200ff";
+
+								if (obj._highlight) {
+									ctx.globalAlpha = 0.9;
+								} else {
+									ctx.globalAlpha = 0.6;
+								}
+
+								// Left face
+								ctx.fillStyle = "#545454";
+								ctx.beginPath();
+								ctx.moveTo(bf3.x, bf3.y);
+								ctx.lineTo(bf4.x, bf4.y);
+								ctx.lineTo(tf4.x, tf4.y);
+								ctx.lineTo(tf3.x, tf3.y);
+								ctx.lineTo(bf3.x, bf3.y);
+								ctx.fill();
+								ctx.stroke();
+
+								// Right face
+								ctx.fillStyle = "#282828";
+								ctx.beginPath();
+								ctx.moveTo(bf3.x, bf3.y);
+								ctx.lineTo(bf2.x, bf2.y);
+								ctx.lineTo(tf2.x, tf2.y);
+								ctx.lineTo(tf3.x, tf3.y);
+								ctx.lineTo(bf3.x, bf3.y);
+								ctx.fill();
+								ctx.stroke();
+
+								// Top face
+								ctx.fillStyle = "#676767";
+								ctx.beginPath();
+								ctx.moveTo(tf1.x, tf1.y);
+								ctx.lineTo(tf2.x, tf2.y);
+								ctx.lineTo(tf3.x, tf3.y);
+								ctx.lineTo(tf4.x, tf4.y);
+								ctx.lineTo(tf1.x, tf1.y);
+								ctx.fill();
+								ctx.stroke();
+
+								ctx.globalAlpha = ga;
+								ctx.restore();
+							}
 						}
 
-						if (aabb) {
-							if (obj._drawBounds || obj._drawBounds === undefined) {
-								//if (!obj._parent || (obj._parent && obj._parent._mountMode !== IgeMountMode.iso)) {
-								// Draw a rect around the bounds of the object transformed in world space
-								/*ctx.save();
-									obj._worldMatrix.transformRenderingContext(ctx);
-									ctx.strokeStyle = '#9700ae';
-									ctx.strokeRect(-obj._bounds2d.x2, -obj._bounds2d.y2, obj._bounds2d.x, obj._bounds2d.y);
-								  ctx.restore();*/
-
-								// Draw individual bounds
-								ctx.strokeStyle = "#00deff";
-								ctx.strokeRect(aabb.x, aabb.y, aabb.width, aabb.height);
-								//}
-
-								// Check if the object is mounted to an isometric mount
-								if (obj._parent && obj._parent._mountMode === IgeMountMode.iso) {
-									bounds3dPoly = (obj as IgeEntity).bounds3dPolygon().aabb();
-									ctx.save();
-									ctx.strokeStyle = "#0068b8";
-									ctx.strokeRect(
-										bounds3dPoly.x,
-										bounds3dPoly.y,
-										bounds3dPoly.width,
-										bounds3dPoly.height
-									);
-									ctx.restore();
-
-									ctx.save();
-									ctx.translate(
-										bounds3dPoly.x + bounds3dPoly.width / 2,
-										bounds3dPoly.y + bounds3dPoly.height / 2
-									);
-									//obj._transformContext(ctx);
-
-									// Calculate the 3d bounds data
-									r3d = obj._bounds3d;
-									xl1 = new IgePoint3d(-(r3d.x / 2), 0, 0).toIso();
-									xl2 = new IgePoint3d(+(r3d.x / 2), 0, 0).toIso();
-									xl3 = new IgePoint3d(0, -(r3d.y / 2), 0).toIso();
-									xl4 = new IgePoint3d(0, +(r3d.y / 2), 0).toIso();
-									xl5 = new IgePoint3d(0, 0, -(r3d.z / 2)).toIso();
-									xl6 = new IgePoint3d(0, 0, +(r3d.z / 2)).toIso();
-									// Bottom face
-									bf1 = new IgePoint3d(-(r3d.x / 2), -(r3d.y / 2), -(r3d.z / 2)).toIso();
-									bf2 = new IgePoint3d(+(r3d.x / 2), -(r3d.y / 2), -(r3d.z / 2)).toIso();
-									bf3 = new IgePoint3d(+(r3d.x / 2), +(r3d.y / 2), -(r3d.z / 2)).toIso();
-									bf4 = new IgePoint3d(-(r3d.x / 2), +(r3d.y / 2), -(r3d.z / 2)).toIso();
-									// Top face
-									tf1 = new IgePoint3d(-(r3d.x / 2), -(r3d.y / 2), r3d.z / 2).toIso();
-									tf2 = new IgePoint3d(+(r3d.x / 2), -(r3d.y / 2), r3d.z / 2).toIso();
-									tf3 = new IgePoint3d(+(r3d.x / 2), +(r3d.y / 2), r3d.z / 2).toIso();
-									tf4 = new IgePoint3d(-(r3d.x / 2), +(r3d.y / 2), r3d.z / 2).toIso();
-
-									ga = ctx.globalAlpha;
-
-									// Axis lines
-									ctx.globalAlpha = 1;
-									ctx.strokeStyle = "#ff0000";
-									ctx.beginPath();
-									ctx.moveTo(xl1.x, xl1.y);
-									ctx.lineTo(xl2.x, xl2.y);
-									ctx.stroke();
-									ctx.strokeStyle = "#00ff00";
-									ctx.beginPath();
-									ctx.moveTo(xl3.x, xl3.y);
-									ctx.lineTo(xl4.x, xl4.y);
-									ctx.stroke();
-									ctx.strokeStyle = "#fffc00";
-									ctx.beginPath();
-									ctx.moveTo(xl5.x, xl5.y);
-									ctx.lineTo(xl6.x, xl6.y);
-									ctx.stroke();
-
-									ctx.strokeStyle = "#a200ff";
-
-									if (obj._highlight) {
-										ctx.globalAlpha = 0.9;
-									} else {
-										ctx.globalAlpha = 0.6;
-									}
-
-									// Left face
-									ctx.fillStyle = "#545454";
-									ctx.beginPath();
-									ctx.moveTo(bf3.x, bf3.y);
-									ctx.lineTo(bf4.x, bf4.y);
-									ctx.lineTo(tf4.x, tf4.y);
-									ctx.lineTo(tf3.x, tf3.y);
-									ctx.lineTo(bf3.x, bf3.y);
-									ctx.fill();
-									ctx.stroke();
-
-									// Right face
-									ctx.fillStyle = "#282828";
-									ctx.beginPath();
-									ctx.moveTo(bf3.x, bf3.y);
-									ctx.lineTo(bf2.x, bf2.y);
-									ctx.lineTo(tf2.x, tf2.y);
-									ctx.lineTo(tf3.x, tf3.y);
-									ctx.lineTo(bf3.x, bf3.y);
-									ctx.fill();
-									ctx.stroke();
-
-									// Top face
-									ctx.fillStyle = "#676767";
-									ctx.beginPath();
-									ctx.moveTo(tf1.x, tf1.y);
-									ctx.lineTo(tf2.x, tf2.y);
-									ctx.lineTo(tf3.x, tf3.y);
-									ctx.lineTo(tf4.x, tf4.y);
-									ctx.lineTo(tf1.x, tf1.y);
-									ctx.fill();
-									ctx.stroke();
-
-									ctx.globalAlpha = ga;
-									ctx.restore();
-								}
-							}
-
-							if (this._drawBoundsData && (obj._drawBounds || obj._drawBoundsData === undefined)) {
-								ctx.globalAlpha = 1;
-								ctx.fillStyle = "#f6ff00";
-								ctx.fillText(
-									"ID: " +
-									obj.id() +
-									" " +
-									"(" +
-									obj.classId +
-									") " +
-									obj.layer() +
-									":" +
-									obj.depth().toFixed(0),
-									aabb.x + aabb.width + 3,
-									aabb.y + 10
-								);
-								ctx.fillText(
-									"X: " +
-									obj._translate.x.toFixed(2) +
-									", " +
-									"Y: " +
-									obj._translate.y.toFixed(2) +
-									", " +
-									"Z: " +
-									obj._translate.z.toFixed(2),
-									aabb.x + aabb.width + 3,
-									aabb.y + 20
-								);
-								ctx.fillText(
-									"Num Children: " + obj._children.length,
-									aabb.x + aabb.width + 3,
-									aabb.y + 40
-								);
-							}
+						if (this._drawBoundsData && (obj._drawBounds || obj._drawBoundsData === undefined)) {
+							ctx.globalAlpha = 1;
+							ctx.fillStyle = "#f6ff00";
+							ctx.fillText(
+								"ID: " +
+								obj.id() +
+								" " +
+								"(" +
+								obj.classId +
+								") " +
+								obj.layer() +
+								":" +
+								obj.depth().toFixed(0),
+								aabb.x + aabb.width + 3,
+								aabb.y + 10
+							);
+							ctx.fillText(
+								"X: " +
+								obj._translate.x.toFixed(2) +
+								", " +
+								"Y: " +
+								obj._translate.y.toFixed(2) +
+								", " +
+								"Z: " +
+								obj._translate.z.toFixed(2),
+								aabb.x + aabb.width + 3,
+								aabb.y + 20
+							);
+							ctx.fillText(
+								"Num Children: " + obj._children.length,
+								aabb.x + aabb.width + 3,
+								aabb.y + 40
+							);
 						}
 					}
 				}
-
-				this.paintAabbs(ctx, obj, index);
 			}
+			this.paintAabbs(ctx, obj, index);
 		}
 	}
 
@@ -679,12 +680,12 @@ export class IgeViewport extends IgeUiEntity implements IgeCanRegisterById {
 		for (const i in this) {
 			if (this.hasOwnProperty(i) && this[i] !== undefined) {
 				switch (i) {
-				case "_autoSize":
-					str += ".autoSize(" + this._autoSize + ")";
-					break;
-				case "_scene":
-					str += ".scene(ige.$('" + this.scene().id() + "'))";
-					break;
+					case "_autoSize":
+						str += ".autoSize(" + this._autoSize + ")";
+						break;
+					case "_scene":
+						str += ".scene(ige.$('" + this.scene().id() + "'))";
+						break;
 				}
 			}
 		}

@@ -6,7 +6,7 @@ import { IgeMatrix2d } from "@/engine/core/IgeMatrix2d";
 import { IgePoint2d } from "@/engine/core/IgePoint2d";
 import { IgePoint3d } from "@/engine/core/IgePoint3d";
 import { IgePoly2d } from "@/engine/core/IgePoly2d";
-import { IgeRect } from "@/engine/core/IgeRect";
+import { IgeBounds } from "@/engine/core/IgeBounds";
 import type { IgeTexture } from "@/engine/core/IgeTexture";
 import type { IgeTileMap2d } from "@/engine/core/IgeTileMap2d";
 import type { IgeViewport } from "@/engine/core/IgeViewport";
@@ -132,8 +132,8 @@ export class IgeObject extends IgeEventingClass implements IgeCanRegisterById, I
 	_cacheDirty: boolean = false;
 	_cacheSmoothing: boolean = false;
 	_aabbDirty: boolean = false;
-	_aabb: IgeRect = new IgeRect();
-	_compositeAabbCache?: IgeRect;
+	_aabb: IgeBounds = new IgeBounds();
+	_compositeAabbCache?: IgeBounds;
 	_noAabb?: boolean;
 	_hasParent?: Record<string, boolean>;
 	_texture?: IgeTexture;
@@ -152,7 +152,7 @@ export class IgeObject extends IgeEventingClass implements IgeCanRegisterById, I
 	_bounds3dPolygonDirty: boolean = false;
 	_localBounds3dPolygon?: IgePoly2d;
 	_bounds3dPolygon?: IgePoly2d;
-	_localAabb?: IgeRect;
+	_localAabb?: IgeBounds;
 	_deathCallBack?: (...args: any[]) => void; // TODO: Rename this to _deathCallback (lower case B)
 	components: Record<string, IgeComponent> = {};
 
@@ -709,7 +709,7 @@ export class IgeObject extends IgeEventingClass implements IgeCanRegisterById, I
 	updateTransform () {
 	}
 
-	aabb (recalculate = true, inverse = false): IgeRect {
+	aabb (recalculate = true, inverse = false): IgeBounds {
 		return this._aabb;
 	}
 
@@ -2726,7 +2726,7 @@ export class IgeObject extends IgeEventingClass implements IgeCanRegisterById, I
 	 * @example #Get the composite AABB
 	 *     var entity = new IgeEntity(),
 	 *         aabb = entity.compositeAabb();
-	 * @return {IgeRect}
+	 * @return {IgeBounds}
 	 */
 	compositeAabb (inverse = false) {
 		const arr = this._children;
