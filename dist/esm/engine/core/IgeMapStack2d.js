@@ -1,5 +1,5 @@
 import { IgeBaseClass } from "./IgeBaseClass.js"
-import { arrPull } from "../utils/arrays.js"
+import { arrPull } from "../utils/arrays.js";
 /**
  * Creates a new map that has two dimensions (x and y) to its data
  * and allows multiple items to be stored or "stacked" on a single

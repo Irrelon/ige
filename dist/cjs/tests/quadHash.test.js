@@ -201,7 +201,6 @@ describe("extentsToHash()", () => {
     it("should correctly encode DACDBCABDABCBCABDABC", () => {
         const hash = "DACDBCABDABCBCABDABC";
         const expectedArr = (0, quadHash_1.decode)(hash);
-        console.log("DACDBCABDABCBCABDABC", expectedArr);
         const result = (0, quadHash_1.encode)(expectedArr, 20);
         expect(result).toBeDefined();
         expect(result).toEqual(hash);

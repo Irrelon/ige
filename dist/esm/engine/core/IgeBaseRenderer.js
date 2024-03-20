@@ -1,7 +1,7 @@
 import { IgeEventingClass } from "./IgeEventingClass.js"
-import { IgePoint2d } from "./IgePoint2d.js"
+import { IgePoint2d } from "./IgePoint2d.js";
 import { ige } from "../instance.js"
-import { isServer } from "../utils/clientServer.js"
+import { isServer } from "../utils/clientServer.js";
 export class IgeBaseRenderer extends IgeEventingClass {
     _canvas;
     _hasRunSetup = false;

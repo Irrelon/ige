@@ -1,7 +1,7 @@
 import { IgeAudioItem } from "./IgeAudioItem.js"
-import { IgeEntity } from "../core/IgeEntity.js"
+import { IgeEntity } from "../core/IgeEntity.js";
 import { ige } from "../instance.js"
-import { isClient } from "../utils/clientServer.js"
+import { isClient } from "../utils/clientServer.js";
 import { registerClass } from "../utils/igeClassStore.js"
 // Set default data for any audio panner node
 const defaultPanner = {

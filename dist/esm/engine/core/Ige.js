@@ -1,32 +1,35 @@
 import { IgeInputComponent } from "../components/IgeInputComponent.js"
-import { IgeBox2dController } from "../components/physics/box2d/IgeBox2dController.js"
-import { igeConfig } from "./config.js"
+import { igeConfig } from "./config.js";
 import { IgeArrayRegister } from "./IgeArrayRegister.js"
-import { IgeDependencies } from "./IgeDependencies.js"
-import { IgeEngine } from "./IgeEngine.js"
+import { IgeDependencies } from "./IgeDependencies.js";
 import { IgeMetrics } from "./IgeMetrics.js"
-import { IgeObjectRegister } from "./IgeObjectRegister.js"
+import { IgeObjectRegister } from "./IgeObjectRegister.js";
 import { IgePoint3d } from "./IgePoint3d.js"
-import { IgeRouter } from "./IgeRouter.js"
+import { IgeRouter } from "./IgeRouter.js";
 import { IgeTextureStore } from "./IgeTextureStore.js"
-import { IgeTimeController } from "./IgeTimeController.js"
-import { IgeTweenController } from "./IgeTweenController.js"
-import { IgeUiManagerController } from "./IgeUiManagerController.js"
+import { IgeTimeController } from "./IgeTimeController.js";
 import { isClient, isServer, isWorker } from "../utils/clientServer.js"
-import { igeClassStore } from "../utils/igeClassStore.js"
+import { igeClassStore } from "../utils/igeClassStore.js";
 const version = "3.0.1";
 export class Ige {
     app = null;
+    // @ts-ignore
     audio;
+    // @ts-ignore
     router = new IgeRouter();
-    engine = new IgeEngine();
-    box2d = new IgeBox2dController();
+    // @ts-ignore
+    box2d;
+    // @ts-ignore
+    network;
+    // @ts-ignore
+    tween;
+    // @ts-ignore
+    ui;
+    // @ts-ignore
+    engine;
     textures = new IgeTextureStore();
     input = new IgeInputComponent();
-    tween = new IgeTweenController();
     time = new IgeTimeController();
-    ui = new IgeUiManagerController();
-    network;
     register = new IgeObjectRegister();
     categoryRegister = new IgeArrayRegister("_category", "_categoryRegistered");
     groupRegister = new IgeArrayRegister("_group", "_groupRegistered");
@@ -40,41 +43,85 @@ export class Ige {
     _data = {};
     _watch = [];
     _drawBounds = false;
+    _uses = [];
     // Questionable properties, think about them and potentially move
     _pointerOverVp;
     _pointerPos = new IgePoint3d(); // Could probably be just {x: number, y: number}
     constructor() {
+    }
+    init() {
         // Output our header
         console.log("-----------------------------------------");
         console.log(`Powered by Isogenic Engine`);
         console.log("(C)opyright " + new Date().getFullYear() + " Irrelon Software Limited");
         console.log("https://www.isogenicengine.com");
         console.log("-----------------------------------------");
-        if (isClient) {
-            this.dependencies.add("network", import("../network/client/IgeNetIoClientController.js").then(({ IgeNetIoClientController: Module }) => {
-                this.network = new Module();
-            }));
-            if (!isWorker) {
-                this.dependencies.add("audio", import("../audio/IgeAudioController.js").then(({ IgeAudioController: Module }) => {
-                    this.audio = new Module();
+        this.uses("engine");
+        this.uses("input");
+        this.uses("time");
+        //this.dependencies.markAsSatisfied("engine");
+        //this.dependencies.markAsSatisfied("box2d");
+    }
+    uses(moduleName) {
+        this._uses.push(moduleName);
+        console.log("Using dependency:", moduleName);
+        switch (moduleName) {
+            case "input":
+                this.dependencies.add("input", this.input.isReady());
+                break;
+            case "time":
+                this.dependencies.add("time", this.time.isReady());
+                break;
+            case "engine":
+                this.dependencies.add("engine", import("./IgeEngine.js").then(({ IgeEngine: Module }) => {
+                    this.engine = new Module();
                 }));
-            }
+                break;
+            case "network":
+                if (isClient) {
+                    this.dependencies.add("network", import("../network/client/IgeNetIoClientController.js").then(({ IgeNetIoClientController: Module }) => {
+                        this.network = new Module();
+                    }));
+                }
+                if (isServer) {
+                    this.dependencies.add("network", import("../network/server/IgeNetIoServerController.js").then(({ IgeNetIoServerController: Module }) => {
+                        this.network = new Module();
+                    }));
+                }
+                break;
+            case "audio":
+                if (isClient && !isWorker) {
+                    this.dependencies.add("audio", import("../audio/IgeAudioController.js").then(({ IgeAudioController: Module }) => {
+                        this.audio = new Module();
+                    }));
+                }
+                break;
+            case "box2d":
+                this.dependencies.add("box2d", import("../components/physics/box2d/IgeBox2dController.js").then(({ IgeBox2dController: Module }) => {
+                    this.box2d = new Module();
+                }));
+                break;
+            case "tweening":
+                this.dependencies.add("tweening", import("./IgeTweenController.js").then(({ IgeTweenController: Module }) => {
+                    this.tween = new Module();
+                    this.dependencies.add("tween", this.tween.isReady());
+                }));
+                break;
+            case "ui":
+                this.dependencies.add("ui", import("./IgeUiManagerController.js").then(({ IgeUiManagerController: Module }) => {
+                    this.ui = new Module();
+                    this.dependencies.add("ui", this.ui.isReady());
+                }));
+                break;
+            default:
+                throw new Error(`Unknown optional module "${moduleName}", please remove your call to ige.uses("${moduleName}")`);
         }
-        if (isServer) {
-            this.dependencies.add("network", import("../network/server/IgeNetIoServerController.js").then(({ IgeNetIoServerController: Module }) => {
-                this.network = new Module();
-            }));
-        }
-        this.dependencies.add("tween", this.tween.isReady());
-        this.dependencies.add("input", this.input.isReady());
-        this.dependencies.add("time", this.time.isReady());
-        this.dependencies.add("ui", this.ui.isReady());
-        this.dependencies.markAsSatisfied("engine");
-        this.dependencies.markAsSatisfied("box2d");
     }
     isReady() {
         return new Promise((resolve) => {
-            this.dependencies.waitFor(["network", "engine", "tween", "time", "ui"], resolve);
+            // ["network", "engine", "tween", "time", "ui"]
+            console.log("Waiting for dependencies", this._uses);
+            this.dependencies.waitFor(this._uses, resolve);
         });
     }
     /**

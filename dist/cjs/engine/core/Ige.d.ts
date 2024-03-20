@@ -1,17 +1,17 @@
 import type { IgeAudioController } from "../audio/IgeAudioController.js"
 import { IgeInputComponent } from "../components/IgeInputComponent.js";
-import { IgeBox2dController } from "../components/physics/box2d/IgeBox2dController.js"
+import type { IgeBox2dController } from "../components/physics/box2d/IgeBox2dController.js"
 import { IgeArrayRegister } from "./IgeArrayRegister.js";
 import { IgeDependencies } from "./IgeDependencies.js"
-import { IgeEngine } from "./IgeEngine.js";
+import type { IgeEngine } from "./IgeEngine.js";
 import { IgeMetrics } from "./IgeMetrics.js"
 import { IgeObjectRegister } from "./IgeObjectRegister.js";
 import { IgePoint3d } from "./IgePoint3d.js"
 import { IgeRouter } from "./IgeRouter.js";
 import { IgeTextureStore } from "./IgeTextureStore.js"
 import { IgeTimeController } from "./IgeTimeController.js";
-import { IgeTweenController } from "./IgeTweenController.js"
-import { IgeUiManagerController } from "./IgeUiManagerController.js";
+import type { IgeTweenController } from "./IgeTweenController.js"
+import type { IgeUiManagerController } from "./IgeUiManagerController.js";
 import type { IgeViewport } from "./IgeViewport.js"
 import type { IgeNetIoClientController } from "../network/client/IgeNetIoClientController.js";
 import type { IgeNetIoServerController } from "../network/server/IgeNetIoServerController.js"
@@ -22,16 +22,16 @@ import type { IgeIsReadyPromise } from "../../types/IgeIsReadyPromise.js"
 import type { IgeObjectWithValueProperty } from "../../types/IgeObjectWithValueProperty.js"
 export declare class Ige implements IgeIsReadyPromise {
     app: any;
-    audio?: IgeAudioController;
+    audio: IgeAudioController;
     router: IgeRouter;
-    engine: IgeEngine;
     box2d: IgeBox2dController;
+    network: IgeNetIoClientController | IgeNetIoServerController;
+    tween: IgeTweenController;
+    ui: IgeUiManagerController;
+    engine: IgeEngine;
     textures: IgeTextureStore;
     input: IgeInputComponent;
-    tween: IgeTweenController;
     time: IgeTimeController;
-    ui: IgeUiManagerController;
-    network?: IgeNetIoClientController | IgeNetIoServerController;
     register: IgeObjectRegister;
     categoryRegister: IgeArrayRegister<IgeCanRegisterByCategory>;
     groupRegister: IgeArrayRegister<IgeCanRegisterByCategory>;
@@ -45,9 +45,12 @@ export declare class Ige implements IgeIsReadyPromise {
     _data: Record<string, any>;
     _watch: (string | IgeObjectWithValueProperty)[];
     _drawBounds: boolean;
+    _uses: string[];
     _pointerOverVp?: IgeViewport;
     _pointerPos: IgePoint3d;
     constructor();
+    init(): void;
+    uses(moduleName: string): void;
     isReady(): Promise<void>;
     /**
      * Returns an object from the engine's object register by

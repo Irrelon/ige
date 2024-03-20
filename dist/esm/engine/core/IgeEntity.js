@@ -1,16 +1,16 @@
 import { ige } from "../instance.js"
-import { IgeDummyCanvas } from "./IgeDummyCanvas.js"
+import { IgeDummyCanvas } from "./IgeDummyCanvas.js";
 import { IgeMatrix2d } from "./IgeMatrix2d.js"
-import { IgeObject } from "./IgeObject.js"
+import { IgeObject } from "./IgeObject.js";
 import { IgePoint2d } from "./IgePoint2d.js"
-import { IgePoint3d } from "./IgePoint3d.js"
+import { IgePoint3d } from "./IgePoint3d.js";
 import { IgePoly2d } from "./IgePoly2d.js"
-import { IgeRect } from "./IgeRect.js"
+import { IgeRect } from "./IgeRect.js";
 import { isClient, isServer } from "../utils/clientServer.js"
-import { registerClass } from "../utils/igeClassStore.js"
+import { registerClass } from "../utils/igeClassStore.js";
 import { degreesToRadians } from "../utils/maths.js"
-import { traceSet } from "../utils/trace.js"
-import { IgeBehaviourType, IgeEntityRenderMode, IgeIsometricDepthSortMode, IgeMountMode, IgeStreamMode } from "../../enums/index.js"
+import { traceSet } from "../utils/trace.js";
+import { IgeBehaviourType, IgeEntityRenderMode, IgeIsometricDepthSortMode, IgeMountMode, IgeStreamMode } from "../../enums/index.js";
 /**
  * Creates an entity and handles the entity's life cycle and
  * all related entity actions / methods.

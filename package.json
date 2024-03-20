@@ -36,7 +36,8 @@
 		"test": "npx jest --testMatch \"**.test.ts\"",
 		"build-test": "npm run build-tests && NODE_OPTIONS=--experimental-vm-modules npx jest --all -f --testMatch \"**/cjs/**/**.test.js\"",
 		"test-watch": "NODE_OPTIONS=--experimental-vm-modules npx jest -f \".test.js\" --watch --all",
-		"eslint-fix": "eslint --ext .ts,.tsx . --fix"
+		"eslint-fix": "eslint --ext .ts,.tsx . --fix",
+		"scandeps": "npx madge ./src --ts"
 	},
 	"dependencies": {
 		"gl-matrix": "^3.4.3",
@@ -72,6 +73,7 @@
 		"esprima": "^4.0.1",
 		"glob": "^10.3.10",
 		"jest": "^29.7.0",
+		"madge": "^6.1.0",
 		"minimatch": "^7.4.2",
 		"mongodb": "6.3.0",
 		"mysql": "2.18.1",
