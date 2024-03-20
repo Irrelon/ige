@@ -18,7 +18,7 @@ export class IgeArrayRegister<RegisterType extends Record<string, any>> {
 	 * a mutation-safe version.
 	 * @param id
 	 */
-	get (id: string) {
+	get (id: string): RegisterType[] {
 		this._store[id] = this._store[id] || [];
 		return this._store[id];
 	}
@@ -28,7 +28,7 @@ export class IgeArrayRegister<RegisterType extends Record<string, any>> {
 	 * array is not by reference, so you can mutate it safely.
 	 * @param id
 	 */
-	getImmutable (id: string) {
+	getImmutable (id: string): RegisterType[] {
 		return [...(this._store[id] || [])];
 	}
 
@@ -37,7 +37,7 @@ export class IgeArrayRegister<RegisterType extends Record<string, any>> {
 	 * @param {Object} obj The object to register.
 	 * @return {*}
 	 */
-	add (obj: RegisterType) {
+	add (obj: RegisterType): this {
 		const objFieldValue = obj[this._field] as string;
 		this._store[objFieldValue] = this._store[objFieldValue] || [];
 		this._store[objFieldValue].push(obj);
@@ -53,7 +53,7 @@ export class IgeArrayRegister<RegisterType extends Record<string, any>> {
 	 * @param {Object} obj The object to un-register.
 	 * @return {*}
 	 */
-	remove (obj: RegisterType) {
+	remove (obj: RegisterType): this {
 		const objFieldValue = obj[this._field] as string;
 
 		if (!this._store[objFieldValue]) {
