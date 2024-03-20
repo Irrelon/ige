@@ -63,6 +63,13 @@ export class Ige implements IgeIsReadyPromise {
 	_pointerPos: IgePoint3d = new IgePoint3d(); // Could probably be just {x: number, y: number}
 
 	constructor () {
+		// Output our header
+		console.log("-----------------------------------------");
+		console.log(`Powered by Isogenic Engine`);
+		console.log("(C)opyright " + new Date().getFullYear() + " Irrelon Software Limited");
+		console.log("https://www.isogenicengine.com");
+		console.log("-----------------------------------------");
+
 		if (isClient) {
 			this.dependencies.add(
 				"network",
@@ -181,7 +188,21 @@ export class Ige implements IgeIsReadyPromise {
 		this._watch.splice(index, 1);
 	};
 
-	drawBounds (val?: boolean, recursive: boolean = false) {
+	/**
+	 * Gets / sets the boolean flag determining if this object should have
+	 * its bounds drawn when the bounds for all objects are being drawn.
+	 * In order for bounds to be drawn the viewport the object is being drawn
+	 * to must also have draw bounds enabled.
+	 * @example #Enable draw bounds
+	 *     var entity = new IgeEntity();
+	 *     entity.drawBounds(true);
+	 * @example #Disable draw bounds
+	 *     var entity = new IgeEntity();
+	 *     entity.drawBounds(false);
+	 * @example #Get the current flag value
+	 *     console.log(entity.drawBounds());
+	 */
+	drawBounds (val?: boolean, recursive: boolean = true) {
 		if (val === undefined) {
 			return this._drawBounds;
 		}

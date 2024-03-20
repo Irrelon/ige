@@ -140,13 +140,6 @@ export class IgeEngine extends IgeEntity {
 		this._cssFonts = []; // Holds an array of css fonts we want to wait for (loaded via HTML or CSS rather than our own loadWebFont())
 		this._headless = true;
 
-		// Output our header
-		console.log("-----------------------------------------");
-		console.log(`Powered by Isogenic Engine`);
-		console.log("(C)opyright " + new Date().getFullYear() + " Irrelon Software Limited");
-		console.log("https://www.isogenicengine.com");
-		console.log("-----------------------------------------");
-
 		// Set the initial id as the current time in milliseconds. This ensures that under successive
 		// restarts of the engine, new ids will still always be created compared to earlier runs -
 		// which is important when storing persistent data with ids etc
@@ -1873,13 +1866,10 @@ export class IgeEngine extends IgeEntity {
 	 *     entity.drawBounds(false);
 	 * @example #Get the current flag value
 	 *     console.log(entity.drawBounds());
-	 * @return {*}
-	 * @param id
-	 * @param recursive
 	 */
-	drawBounds (id: boolean, recursive?: boolean): this;
 	drawBounds (): boolean;
-	drawBounds (val?: boolean, recursive: boolean = false) {
+	drawBounds (id: boolean, recursive?: boolean): this;
+	drawBounds (val?: boolean, recursive: boolean = true) {
 		if (val === undefined) {
 			return this._drawBounds;
 		}
