@@ -12,6 +12,7 @@ import {
 	IGE_NETWORK_STREAM_DESTROY,
 	IGE_NETWORK_STREAM_TIME, IGE_NETWORK_TIME_SYNC
 } from "@/enums";
+import { IgeNetworkConnectionState } from "@/enums/IgeNetworkConnectionState";
 import type {
 	IgeNetworkClientSideMessageHandler,
 	IgeNetworkClientSideResponseHandler,
@@ -37,7 +38,7 @@ export class IgeNetIoClientController extends IgeNetIoBaseController {
 	_initDone: boolean = false;
 	_idCounter: number = 0;
 	_requests: Record<string, IgeNetworkRequestMessageStructure<IgeNetworkClientSideResponseHandler>> = {};
-	_state: number = 0;
+	_state: IgeNetworkConnectionState = IgeNetworkConnectionState.disconnected;
 	_io?: IgeNetIoClient;
 	_id?: string;
 	_url?: string;
@@ -63,14 +64,15 @@ export class IgeNetIoClientController extends IgeNetIoBaseController {
 	}
 
 	/**
-	 * Starts the network for the client.
-	 * @param {*} url The game server URL.
+	 * Connects to the specified server. The promise this function returns
+	 * will only resolve when the connection to the server is ready to use.
+	 * @param {*} url The game server URL e.g. `http://localhost:2000`.
 	 * @param {Function=} callback A callback method to call once the
-	 * network has started.
+	 * network has started, or you can use the returned promise.
 	 */
 	start (url?: string, callback?: () => void) {
 		return new Promise<void>((resolve) => {
-			if (this._state === 3) {
+			if (this._state === IgeNetworkConnectionState.ready) {
 				// We're already connected
 				if (callback) {
 					callback();
@@ -91,10 +93,10 @@ export class IgeNetIoClientController extends IgeNetIoBaseController {
 			}
 
 			this._io = new IgeNetIoClient(url);
-			this._state = 1;
+			this._state = IgeNetworkConnectionState.connecting;
 
 			this._io.on("connect", (clientId) => {
-				this._state = 2; // Connected
+				this._state = IgeNetworkConnectionState.connected; // Connected
 				this._id = clientId;
 				this._onConnectToServer();
 			});
@@ -111,7 +113,7 @@ export class IgeNetIoClientController extends IgeNetIoBaseController {
 				if (data.cmd === "init") {
 					// Set flag to show we've now received an init command
 					this._initDone = true;
-					this._state = 3; // Connected and init done
+					this._state = IgeNetworkConnectionState.ready; // Connected and init done
 
 					// Set up the network commands storage
 					this._networkCommandsLookup = data.ncmds;
@@ -145,7 +147,7 @@ export class IgeNetIoClientController extends IgeNetIoBaseController {
 			});
 
 			this._io.on("disconnect", (data) => {
-				this._state = 0; // Disconnected
+				this._state = IgeNetworkConnectionState.disconnected; // Disconnected
 				this._onDisconnectFromServer(data);
 			});
 
@@ -216,7 +218,7 @@ export class IgeNetIoClientController extends IgeNetIoBaseController {
 
 	stop () {
 		// Check we are connected
-		if (this._state === 3) {
+		if (this._state === IgeNetworkConnectionState.ready) {
 			this._io?.disconnect("Client requested disconnect");
 		}
 	}
