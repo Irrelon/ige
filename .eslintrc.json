@@ -27,7 +27,10 @@
 		"unused-imports/no-unused-imports": "warn",
 		"indent": [
 			"error",
-			"tab"
+			"tab",
+			{
+				"SwitchCase": 1
+			}
 		],
 		"space-before-function-paren": [
 			"error",
