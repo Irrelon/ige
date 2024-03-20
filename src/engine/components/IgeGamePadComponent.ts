@@ -39,11 +39,11 @@ export class IgeGamePadComponent extends IgeComponent<IgeEngine> {
 	constructor (entity: IgeEntity, options?: any) {
 		super(entity, options);
 
-		if (!isClient) {
+		if (!isClient || typeof (navigator as Navigator).getGamepads === "undefined") {
 			return;
 		}
 
-		this.gamepadAvailable = Boolean(navigator.getGamepads());
+		this.gamepadAvailable = Boolean((navigator as Navigator).getGamepads());
 
 		if (!this.gamepadAvailable) {
 			// It doesn't seem Gamepad API is available
