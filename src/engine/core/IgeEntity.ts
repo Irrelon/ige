@@ -2584,49 +2584,6 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 	}
 
 	/**
-	 * Translates the entity by adding the passed values to
-	 * the current translation values.
-	 * @param {number} x The x co-ordinate.
-	 * @param {number} y The y co-ordinate.
-	 * @param {number} z The z co-ordinate.
-	 * @example #Translate the entity by 10 along the x axis
-	 *     entity.translateBy(10, 0, 0);
-	 * @return {*}
-	 */
-	translateBy (x: number, y: number, z: number): this {
-		if (x !== undefined && y !== undefined && z !== undefined) {
-			this._translate.x += x;
-			this._translate.y += y;
-			this._translate.z += z;
-		} else {
-			this.log("translateBy() called with a missing or undefined x, y or z parameter!", "error");
-		}
-
-		return this; // Used to include this._entity
-	}
-
-	/**
-	 * Translates the entity to the passed values.
-	 * @param {number} x The x co-ordinate.
-	 * @param {number} y The y co-ordinate.
-	 * @param {number} z The z co-ordinate.
-	 * @example #Translate the entity to 10, 0, 0
-	 *     entity.translateTo(10, 0, 0);
-	 * @return {*}
-	 */
-	translateTo (x: number, y: number, z: number): this {
-		if (x !== undefined && y !== undefined && z !== undefined) {
-			this._translate.x = x;
-			this._translate.y = y;
-			this._translate.z = z;
-		} else {
-			this.log("translateTo() called with a missing or undefined x, y or z parameter!", "error");
-		}
-
-		return this; // Used to include this._entity
-	}
-
-	/**
 	 * Translates the entity to the passed point.
 	 * @param {IgePoint3d} point The point with co-ordinates.
 	 * @example #Translate the entity to 10, 0, 0
@@ -2799,49 +2756,6 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 	}
 
 	/**
-	 * Rotates the entity by adding the passed values to
-	 * the current rotation values.
-	 * @param {number} x The x co-ordinate.
-	 * @param {number} y The y co-ordinate.
-	 * @param {number} z The z co-ordinate.
-	 * @example #Rotate the entity by 10 degrees about the z axis
-	 *     entity.rotateBy(0, 0, degreesToRadians(10));
-	 * @return {*}
-	 */
-	rotateBy (x?: number, y?: number, z?: number) {
-		if (x !== undefined && y !== undefined && z !== undefined) {
-			this._rotate.x += x;
-			this._rotate.y += y;
-			this._rotate.z += z;
-		} else {
-			this.log("rotateBy() called with a missing or undefined x, y or z parameter!", "error");
-		}
-
-		return this; // Used to include this._entity
-	}
-
-	/**
-	 * Rotates the entity to the passed values.
-	 * @param {number} x The x co-ordinate.
-	 * @param {number} y The y co-ordinate.
-	 * @param {number} z The z co-ordinate.
-	 * @example #Rotate the entity to 10 degrees about the z axis
-	 *     entity.rotateTo(0, 0, degreesToRadians(10));
-	 * @return {*}
-	 */
-	rotateTo (x: number, y: number, z: number) {
-		if (x !== undefined && y !== undefined && z !== undefined) {
-			this._rotate.x = x;
-			this._rotate.y = y;
-			this._rotate.z = z;
-		} else {
-			this.log("rotateTo() called with a missing or undefined x, y or z parameter!", "error");
-		}
-
-		return this; // Used to include this._entity
-	}
-
-	/**
 	 * Gets the `translate` accessor object.
 	 * @example #Use the `rotate` accessor object to rotate the entity about the z-axis 10 degrees
 	 *     entity.rotate().z(degreesToRadians(10));
@@ -2917,49 +2831,6 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 		return this._rotate.z;
 	}
 
-	/**
-	 * Scales the entity by adding the passed values to
-	 * the current scale values.
-	 * @param {number} x The x co-ordinate.
-	 * @param {number} y The y co-ordinate.
-	 * @param {number} z The z co-ordinate.
-	 * @example #Scale the entity by 2 on the x-axis
-	 *     entity.scaleBy(2, 0, 0);
-	 * @return {*}
-	 */
-	scaleBy (x?: number, y?: number, z?: number) {
-		if (x !== undefined && y !== undefined && z !== undefined) {
-			this._scale.x += x;
-			this._scale.y += y;
-			this._scale.z += z;
-		} else {
-			this.log("scaleBy() called with a missing or undefined x, y or z parameter!", "error");
-		}
-
-		return this; // Used to include this._entity
-	}
-
-	/**
-	 * Scale the entity to the passed values.
-	 * @param {number} x The x co-ordinate.
-	 * @param {number} y The y co-ordinate.
-	 * @param {number} z The z co-ordinate.
-	 * @example #Set the entity scale to 1 on all axes
-	 *     entity.scaleTo(1, 1, 1);
-	 * @return {*}
-	 */
-	scaleTo (x?: number, y?: number, z?: number) {
-		if (x === undefined || y === undefined || z === undefined) {
-			this.log("scaleTo() called with a missing or undefined x, y or z parameter!", "error");
-			return this;
-		}
-
-		this._scale.x = x;
-		this._scale.y = y;
-		this._scale.z = z;
-
-		return this; // Used to include this._entity
-	}
 
 	/**
 	 * Gets the `scale` accessor object.

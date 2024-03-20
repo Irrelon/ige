@@ -1601,10 +1601,158 @@ export class IgeObject
 	}
 
 	/**
-	 * Registers ourself to the ige.classStore.
+	 * Registers ourselves to the ige.classStore.
 	 */
 	registerNetworkClass () {
 		ige.classStore[this.constructor.name] = this.constructor as IgeGenericClass;
+	}
+
+	/**
+	 * Translates the entity to the passed values.
+	 * @param {number} x The x co-ordinate.
+	 * @param {number} y The y co-ordinate.
+	 * @param {number} z The z co-ordinate.
+	 * @example #Translate the entity to 10, 0, 0
+	 *     entity.translateTo(10, 0, 0);
+	 * @return {*}
+	 */
+	translateTo (x: number, y: number, z: number): this {
+		if (x === undefined || y === undefined || z === undefined) {
+			this.log("translateTo() called with a missing or undefined x, y or z parameter!", "error");
+			return this;
+		}
+
+		this._translate.x = x;
+		this._translate.y = y;
+		this._translate.z = z;
+
+		return this;
+	}
+
+	/**
+	 * Translates the entity by adding the passed values to
+	 * the current translation values.
+	 * @param {number} x The x co-ordinate.
+	 * @param {number} y The y co-ordinate.
+	 * @param {number} z The z co-ordinate.
+	 * @example #Translate the entity by 10 along the x axis
+	 *     entity.translateBy(10, 0, 0);
+	 * @return {*}
+	 */
+	translateBy (x: number, y: number, z: number): this {
+		if (x === undefined || y === undefined || z === undefined) {
+			this.log("translateBy() called with a missing or undefined x, y or z parameter!", "error");
+			return this;
+		}
+
+		this._translate.x += x;
+		this._translate.y += y;
+		this._translate.z += z;
+
+		return this;
+	}
+
+	/**
+	 * Scale the entity to the passed values.
+	 * @param {number} x The x co-ordinate.
+	 * @param {number} y The y co-ordinate.
+	 * @param {number} z The z co-ordinate.
+	 * @example #Set the entity scale to 1 on all axes
+	 *     entity.scaleTo(1, 1, 1);
+	 * @return {*}
+	 */
+	scaleTo (x: number, y: number, z: number): this {
+		if (x === undefined || y === undefined || z === undefined) {
+			this.log("scaleTo() called with a missing or undefined x, y or z parameter!", "error");
+			return this;
+		}
+
+		this._scale.x = x;
+		this._scale.y = y;
+		this._scale.z = z;
+
+		return this; // Used to include this._entity
+	}
+
+	/**
+	 * Scales the entity by adding the passed values to
+	 * the current scale values.
+	 * @param {number} x The x co-ordinate.
+	 * @param {number} y The y co-ordinate.
+	 * @param {number} z The z co-ordinate.
+	 * @example #Scale the entity by 2 on the x-axis
+	 *     entity.scaleBy(2, 0, 0);
+	 * @return {*}
+	 */
+	scaleBy (x: number, y: number, z: number): this {
+		if (x === undefined || y === undefined || z === undefined) {
+			this.log("scaleBy() called with a missing or undefined x, y or z parameter!", "error");
+			return this;
+		}
+
+		this._scale.x += x;
+		this._scale.y += y;
+		this._scale.z += z;
+
+		return this;
+	}
+
+	/**
+	 * Rotates the entity by adding the passed values to
+	 * the current rotation values.
+	 * @param {number} x The x co-ordinate.
+	 * @param {number} y The y co-ordinate.
+	 * @param {number} z The z co-ordinate.
+	 * @example #Rotate the entity by 10 degrees about the z axis
+	 *     entity.rotateBy(0, 0, degreesToRadians(10));
+	 * @return {*}
+	 */
+	rotateBy (x: number, y: number, z: number): this {
+		if (x === undefined || y === undefined || z === undefined) {
+			this.log("rotateBy() called with a missing or undefined x, y or z parameter!", "error");
+			return this;
+		}
+
+		this._rotate.x += x;
+		this._rotate.y += y;
+		this._rotate.z += z;
+
+		return this; // Used to include this._entity
+	}
+
+	/**
+	 * Rotates the entity to the passed values.
+	 * @param {number} x The x co-ordinate.
+	 * @param {number} y The y co-ordinate.
+	 * @param {number} z The z co-ordinate.
+	 * @example #Rotate the entity to 10 degrees about the z axis
+	 *     entity.rotateTo(0, 0, degreesToRadians(10));
+	 * @return {*}
+	 */
+	rotateTo (x: number, y: number, z: number): this {
+		if (x === undefined || y === undefined || z === undefined) {
+			this.log("rotateTo() called with a missing or undefined x, y or z parameter!", "error");
+			return this;
+		}
+
+		this._rotate.x = x;
+		this._rotate.y = y;
+		this._rotate.z = z;
+
+		return this;
+	}
+
+	origin (x: number, y: number, z: number) {
+		if (x === undefined || y === undefined || z === undefined) {
+			this.log("origin() called with a missing or undefined x, y or z parameter!", "error");
+			return this;
+		}
+
+		this._origin.x = x;
+		this._origin.y = y;
+		this._origin.z = z;
+
+		return this;
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -2270,19 +2418,22 @@ export class IgeObject
 					}
 				} else {
 					// Assign all the transform values immediately
-					this._translate.x = parseFloat(dataArr[0]);
-					this._translate.y = parseFloat(dataArr[1]);
-					this._translate.z = parseFloat(dataArr[2]);
+					this.translateTo(parseFloat(dataArr[0]), parseFloat(dataArr[1]), parseFloat(dataArr[2]));
+					//this._translate.x = parseFloat(dataArr[0]);
+					//this._translate.y = parseFloat(dataArr[1]);
+					//this._translate.z = parseFloat(dataArr[2]);
 
 					// Scale
-					this._scale.x = parseFloat(dataArr[3]);
-					this._scale.y = parseFloat(dataArr[4]);
-					this._scale.z = parseFloat(dataArr[5]);
+					this.scaleTo(parseFloat(dataArr[3]), parseFloat(dataArr[4]), parseFloat(dataArr[5]));
+					//this._scale.x = parseFloat(dataArr[3]);
+					//this._scale.y = parseFloat(dataArr[4]);
+					//this._scale.z = parseFloat(dataArr[5]);
 
 					// Rotate
-					this._rotate.x = parseFloat(dataArr[6]);
-					this._rotate.y = parseFloat(dataArr[7]);
-					this._rotate.z = parseFloat(dataArr[8]);
+					this.rotateTo(parseFloat(dataArr[6]), parseFloat(dataArr[7]), parseFloat(dataArr[8]));
+					//this._rotate.x = parseFloat(dataArr[6]);
+					//this._rotate.y = parseFloat(dataArr[7]);
+					//this._rotate.z = parseFloat(dataArr[8]);
 
 					// If we are using composite caching ensure we update the cache
 					if (this._compositeCache) {
@@ -2350,9 +2501,10 @@ export class IgeObject
 			if (data !== undefined) {
 				if (isClient) {
 					const geom = data.split(",");
-					this._origin.x = parseFloat(geom[0]);
-					this._origin.y = parseFloat(geom[1]);
-					this._origin.z = parseFloat(geom[2]);
+					this.origin(parseFloat(geom[0]), parseFloat(geom[1]), parseFloat(geom[2]));
+					//this._origin.x = parseFloat(geom[0]);
+					//this._origin.y = parseFloat(geom[1]);
+					//this._origin.z = parseFloat(geom[2]);
 				}
 			} else {
 				return String(this._origin.x + "," + this._origin.y + "," + this._origin.z);
