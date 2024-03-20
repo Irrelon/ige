@@ -1,9 +1,9 @@
 // TODO: Implement the _stringify() method for this class
 import { IgeMap2d } from "./IgeMap2d.js"
-import { IgePoint3d } from "./IgePoint3d.js"
+import { IgePoint3d } from "./IgePoint3d.js";
 import { IgeTileMap2d } from "./IgeTileMap2d.js"
-import { ige } from "../instance.js"
-import { IgeMountMode } from "../../enums/index.js"
+import { ige } from "../instance.js";
+import { IgeMountMode } from "../../enums/index.js";
 /**
  * Texture maps provide a way to display textures / cells across a tile map.
  */

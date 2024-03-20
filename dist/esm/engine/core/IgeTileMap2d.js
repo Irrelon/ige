@@ -1,18 +1,18 @@
 import { IgeEntity } from "./IgeEntity.js"
-import { IgeMap2d } from "./IgeMap2d.js"
+import { IgeMap2d } from "./IgeMap2d.js";
 import { IgeMatrix2d } from "./IgeMatrix2d.js"
-import { IgePoint2d } from "./IgePoint2d.js"
+import { IgePoint2d } from "./IgePoint2d.js";
 import { IgePoint3d } from "./IgePoint3d.js"
-import { IgePoly2d } from "./IgePoly2d.js"
+import { IgePoly2d } from "./IgePoly2d.js";
 import { IgeRect } from "./IgeRect.js"
-import { IgeTexture } from "./IgeTexture.js"
+import { IgeTexture } from "./IgeTexture.js";
 import { ige } from "../instance.js"
-import { IgeTileMap2dSmartTexture } from "../textures/IgeTileMap2dSmartTexture.js"
+import { IgeTileMap2dSmartTexture } from "../textures/IgeTileMap2dSmartTexture.js";
 import { arrClone } from "../utils/arrays.js"
-import { isServer } from "../utils/clientServer.js"
+import { isServer } from "../utils/clientServer.js";
 import { newIdHex } from "../utils/ids.js"
-import { registerClass } from "../utils/igeClassStore.js"
-import { IgeMountMode } from "../../enums/index.js"
+import { registerClass } from "../utils/igeClassStore.js";
+import { IgeMountMode } from "../../enums/index.js";
 /**
  * Tile maps provide a way to align mounted child objects to a tile-based grid.
  * NOTE: These are not to be confused with IgeTextureMap's which allow you to

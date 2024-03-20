@@ -1,5 +1,5 @@
 import { IgeBaseClass } from "./IgeBaseClass.js"
-import { isClient, isServer } from "../utils/clientServer.js"
+import { isClient, isServer } from "../utils/clientServer.js";
 const PATH_DELIMITER = "/";
 export class IgeRouter extends IgeBaseClass {
     classId = "IgeRouter";
