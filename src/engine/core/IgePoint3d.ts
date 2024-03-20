@@ -4,6 +4,14 @@ let IgeTweenModule: typeof IgeTween;
 
 import("./IgeTween.js").then((module) => {
 	IgeTweenModule = module.IgeTween;
+}).catch(() => {
+	class IgeTweenFake {
+		constructor () {
+			throw new Error("Could not dynamically load IgeTween class!");
+		}
+	}
+
+	IgeTweenModule = IgeTweenFake as unknown as typeof IgeTween;
 });
 
 /**
@@ -45,8 +53,8 @@ export class IgePoint3d {
 	 * @param {boolean=} val True or false.
 	 * @return {*} Either `this` for chaining or current floor setting.
 	 */
-	floor(val: boolean): this;
-	floor(): boolean;
+	floor (val: boolean): this;
+	floor (): boolean;
 	floor (val?: boolean) {
 		if (val !== undefined) {
 			this._floor = val;
