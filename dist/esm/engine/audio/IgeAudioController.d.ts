@@ -1,12 +1,22 @@
-import { IgeEventingClass } from "../core/IgeEventingClass.js"
-export declare class IgeAudioController extends IgeEventingClass {
+import type { IgeAudioSource } from "./IgeAudioSource.js"
+import { IgeAssetRegister } from "../core/IgeAssetRegister.js";
+export declare class IgeAudioController extends IgeAssetRegister<IgeAudioSource> {
     classId: string;
     _active: boolean;
     _disabled: boolean;
-    _register: Record<string, AudioBuffer>;
     _ctx?: AudioContext;
     _masterVolumeNode: GainNode;
+    _audioBufferStore: Record<string, AudioBuffer>;
     constructor();
+    /**
+     * When first instantiated the audio context might
+     * be in a suspended state because the browser doesn't
+     * let us play audio until the user interacts with the
+     * elements on the page. This function should be called
+     * in an event listener triggered by a user interaction
+     * such as a click handler etc.
+     */
+    interact(): boolean;
     /**
      * Gets / sets the master volume for sound output.
      * @param val
@@ -18,14 +28,6 @@ export declare class IgeAudioController extends IgeEventingClass {
      * @returns {*}
      */
     getContext(): AudioContext;
-    /**
-     * Gets / loads an audio file from the given url and assigns it the id specified
-     * in the global audio register.
-     * @param {string} id The id to assign the audio in the register.
-     * @param url
-     */
-    register(id: string, url: string): this;
-    register(id: string): AudioBuffer;
     /**
      * Plays audio by its assigned id.
      * @param {string} id The id of the audio file to play.

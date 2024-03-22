@@ -76,6 +76,8 @@ export * from "../enums/IgeBox2dTimingMode.js"
 export * from "../enums/IgeBox2dFixtureShapeType.js"
 export * from "../enums/IgeBox2dBodyType.js"
 export * from "../enums/IgeBehaviourType.js"
+export * from "../enums/IgeAudioSourceType.js"
+export * from "../enums/IgeNetworkConnectionState.js"
 //////////////////////////////////////////////////////////////////////
 // Class Store
 //////////////////////////////////////////////////////////////////////
@@ -218,7 +220,9 @@ export * from "../engine/components/IgeInputControlMap.js"
 export * from "../engine/components/IgeInputComponent.js"
 export * from "../engine/components/IgeGamePadComponent.js"
 export * from "../engine/components/IgeEntityManagerComponent.js"
-export * from "../engine/audio/IgeAudioItem.js"
+export * from "../engine/audio/IgeSmartAudioSource.js"
+export * from "../engine/audio/IgeAudioSource.js"
+export * from "../engine/audio/IgeAudioControl.js"
 export * from "../engine/audio/IgeAudioEntity.js"
 //////////////////////////////////////////////////////////////////////
 // UI Element Classes

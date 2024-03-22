@@ -854,17 +854,21 @@ export declare class IgeObject extends IgeEventingClass implements IgeCanRegiste
     /**
      * Gets / sets a streaming property on this entity. If set, the
      * property's new value is streamed to clients on the next packet.
-     * Stream properties only work if you specify "props" as a stream
-     * section via `streamSectionsPush("props");` or
-     * `streamSections("transform", "props");`.
+     * Stream properties are affected by stream sections. If you have
+     * modified the stream sections for this entity, properties will
+     * only work if you specify "props" as a stream section via
+     * `streamSectionsPush("props");` or
+     * `streamSections("transform", "props");`. The stream sections
+     * setting includes props by default
      *
      * @param {string} propName The name of the property to get / set.
-     * @param {*=} propVal Optional. If provided, the property is set
+     * @param {any} [propVal] Optional. If provided, the property is set
      * to this value.
      * @return {*} "this" when a propVal argument is passed to allow method
      * chaining or the current value if no propVal argument is specified.
      */
-    streamProperty(propName: string, propVal?: any): any;
+    streamProperty(propName: string): any;
+    streamProperty(propName: string, propVal: any): this;
     /**
      * Called on the client-side when a property updated is received for this
      * object from the server. Override this method in your own class to handle

@@ -18,7 +18,6 @@ export declare class IgeTexture extends IgeAsset {
     _sizeX: number;
     _sizeY: number;
     _renderMode: IgeTextureRenderMode;
-    _loaded: boolean;
     _smoothing: boolean;
     _filterImageDrawn: boolean;
     _destroyed: boolean;
@@ -57,7 +56,6 @@ export declare class IgeTexture extends IgeAsset {
      * @private
      */
     _loadImage(imageUrl: string): false | undefined;
-    _textureLoaded(): void;
     /**
      * Loads a render script into a script tag and sets an onload
      * event to capture when the script has finished loading.

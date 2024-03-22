@@ -108,13 +108,13 @@ class IgeUiLabel extends IgeUiElement_1.IgeUiElement {
         return this;
     }
     fontSheet(fontSheet) {
-        if (fontSheet !== undefined) {
-            this._fontSheet = fontSheet;
-            // Set the font sheet as the texture for our font entity
-            this._fontEntity.texture(fontSheet);
-            return this;
+        if (fontSheet === undefined) {
+            return this._fontSheet;
         }
-        return this._fontSheet;
+        this._fontSheet = fontSheet;
+        // Set the font sheet as the texture for our font entity
+        this._fontEntity.texture(fontSheet);
+        return this;
     }
     font(val) {
         if (val !== undefined) {

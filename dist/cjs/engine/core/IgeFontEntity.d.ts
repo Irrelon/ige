@@ -58,10 +58,11 @@ export declare class IgeFontEntity extends IgeUiEntity {
      * contains the unaltered version of your original text and
      * "_renderText" will be either the same as "_text" if auto-wrapping
      * is disabled or a wrapped version otherwise.
-     * @param {string} text The text string to render.
+     * @param {string} [text] The text string to render.
      * @returns {*}
      */
-    text(text?: string): string | this | undefined;
+    text(): string | undefined;
+    text(text: string): this;
     /**
      * Allows you to bind the text output of this font entity to match
      * the value of an object's property so that when it is updated the

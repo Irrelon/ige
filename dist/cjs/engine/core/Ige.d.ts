@@ -107,6 +107,6 @@ export declare class Ige implements IgeIsReadyPromise {
      *     console.log(entity.drawBounds());
      */
     drawBounds(val?: boolean, recursive?: boolean): boolean | this;
-    data(key: string, value: any): this;
-    data(key: string): any;
+    data<ValueType = any>(key: string, value: ValueType): this;
+    data<ValueType = any>(key: string): ValueType;
 }

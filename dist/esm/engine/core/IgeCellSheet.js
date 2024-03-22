@@ -28,7 +28,7 @@ export class IgeCellSheet extends IgeTexture {
             // TODO: Low-priority - Support cell sheets from smart-textures
             this.log("Cannot create cell-sheet because texture has not loaded an image!", "error");
         }
-        super._textureLoaded();
+        super._assetLoaded();
     }
     /**
      * Returns the total number of cells in the cell sheet.

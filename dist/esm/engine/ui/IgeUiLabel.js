@@ -1,7 +1,7 @@
 import { IgeFontEntity } from "../core/IgeFontEntity.js"
-import { IgeUiElement } from "../core/IgeUiElement.js"
+import { IgeUiElement } from "../core/IgeUiElement.js";
 import { registerClass } from "../utils/igeClassStore.js"
-import { IgeFontAlignX, IgeFontAlignY } from "../../enums/index.js"
+import { IgeFontAlignX, IgeFontAlignY } from "../../enums/index.js";
 /**
  * Provides a UI label entity. Basic on-screen text label.
  */
@@ -108,13 +108,13 @@ export class IgeUiLabel extends IgeUiElement {
         return this;
     }
     fontSheet(fontSheet) {
-        if (fontSheet !== undefined) {
-            this._fontSheet = fontSheet;
-            // Set the font sheet as the texture for our font entity
-            this._fontEntity.texture(fontSheet);
-            return this;
+        if (fontSheet === undefined) {
+            return this._fontSheet;
         }
-        return this._fontSheet;
+        this._fontSheet = fontSheet;
+        // Set the font sheet as the texture for our font entity
+        this._fontEntity.texture(fontSheet);
+        return this;
     }
     font(val) {
         if (val !== undefined) {

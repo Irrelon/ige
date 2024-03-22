@@ -15,7 +15,6 @@ export class IgeTexture extends IgeAsset {
     _sizeX = 0;
     _sizeY = 0;
     _renderMode = IgeTextureRenderMode.none;
-    _loaded = false;
     _smoothing = false;
     _filterImageDrawn = false;
     _destroyed = false;
@@ -77,7 +76,7 @@ export class IgeTexture extends IgeAsset {
     url(url) {
         if (url !== undefined) {
             this._url = url;
-            if (url.substr(url.length - 2, 2) === "js") {
+            if (url.substr(url.length - 3, 3) === ".js") {
                 // This is a script-based texture, load the script
                 this._loadScript(url);
             }
@@ -131,7 +130,7 @@ export class IgeTexture extends IgeAsset {
                     item._cells[1] = [0, 0, item._sizeX, item._sizeY];
                 }
                 // Mark texture as loaded
-                this._textureLoaded();
+                this._assetLoaded();
             });
         }
         else {
@@ -155,21 +154,9 @@ export class IgeTexture extends IgeAsset {
                 }
                 this._cells[1] = [0, 0, this._sizeX, this._sizeY];
                 // Mark texture as loaded
-                this._textureLoaded();
+                this._assetLoaded();
             }
         }
-    }
-    _textureLoaded() {
-        // Set a timeout here so that when this event is emitted,
-        // the code creating the texture is given a chance to
-        // set a listener first, otherwise this will be emitted
-        // but nothing will have time to register a listener!
-        setTimeout(() => {
-            this._loaded = true;
-            this.emit("loaded");
-            // Inform the engine that this image has loaded
-            //ige.textures.onLoadEnd((this.image as IgeImage).src, this);
-        }, 5);
     }
     /**
      * Loads a render script into a script tag and sets an onload
@@ -194,7 +181,7 @@ export class IgeTexture extends IgeAsset {
                 image.init.apply(image, [this]);
             }
             // Mark texture as loaded
-            this._textureLoaded();
+            this._assetLoaded();
         })
             .catch((err) => {
             this.log(`Module error ${err}`, "error");

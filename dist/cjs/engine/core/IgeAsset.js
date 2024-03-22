@@ -27,6 +27,16 @@ class IgeAsset extends IgeEventingClass_1.IgeEventingClass {
             this.on("loaded", listener);
         });
     }
+    _assetLoaded() {
+        // Set a timeout here so that when this event is emitted,
+        // the code creating the asset is given a chance to
+        // set a listener first, otherwise this will be emitted
+        // but nothing will have time to register a listener!
+        setTimeout(() => {
+            this._loaded = true;
+            this.emit("loaded");
+        }, 5);
+    }
     destroy() {
         return this;
     }

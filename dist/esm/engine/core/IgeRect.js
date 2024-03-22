@@ -31,6 +31,13 @@ export class IgeRect {
         this.y += y;
         return this;
     }
+    scaleBy(x, y) {
+        this.x *= x;
+        this.y *= y;
+        this.width *= x;
+        this.height *= y;
+        return this;
+    }
     /**
      * Combines the extents of the passed IgeRect with this rect
      * to create a new rect whose bounds encapsulate both rects.

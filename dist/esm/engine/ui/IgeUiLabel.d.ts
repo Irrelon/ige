@@ -52,13 +52,11 @@ export declare class IgeUiLabel extends IgeUiElement {
      * @return {*}
      */
     value(val: string): this;
-    fontSheet(): IgeFontSheet | undefined;
     /**
      * Gets / sets the font sheet (texture) that the text box will
      * use when rendering text inside the box.
-     * @param fontSheet
-     * @return {*}
      */
+    fontSheet(): IgeFontSheet | undefined;
     fontSheet(fontSheet: IgeFontSheet): this;
     font(): string | IgeFontSheet;
     font(val: string | IgeFontSheet): this;

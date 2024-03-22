@@ -312,7 +312,8 @@ export declare const WithUiStyleMixin: <BaseClassType extends IgeMixin<IgeObject
         streamSections(): string[];
         streamSectionsPush(sectionName: string): any;
         streamSectionsPull(sectionName: string): any;
-        streamProperty(propName: string, propVal?: any): any;
+        streamProperty(propName: string): any;
+        streamProperty(propName: string, propVal: any): any;
         onStreamProperty(propName: string, propVal: any): any;
         streamMode(val: import("../../enums/index.js").IgeStreamMode): any;
         streamMode(): import("../../enums/index.js").IgeStreamMode;

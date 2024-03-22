@@ -50,7 +50,6 @@ class IgeTexture extends IgeAsset_1.IgeAsset {
         this._sizeX = 0;
         this._sizeY = 0;
         this._renderMode = enums_1.IgeTextureRenderMode.none;
-        this._loaded = false;
         this._smoothing = false;
         this._filterImageDrawn = false;
         this._destroyed = false;
@@ -82,7 +81,7 @@ class IgeTexture extends IgeAsset_1.IgeAsset {
                     image.init.apply(image, [this]);
                 }
                 // Mark texture as loaded
-                this._textureLoaded();
+                this._assetLoaded();
             })
                 .catch((err) => {
                 this.log(`Module error ${err}`, "error");
@@ -125,7 +124,7 @@ class IgeTexture extends IgeAsset_1.IgeAsset {
     url(url) {
         if (url !== undefined) {
             this._url = url;
-            if (url.substr(url.length - 2, 2) === "js") {
+            if (url.substr(url.length - 3, 3) === ".js") {
                 // This is a script-based texture, load the script
                 this._loadScript(url);
             }
@@ -179,7 +178,7 @@ class IgeTexture extends IgeAsset_1.IgeAsset {
                     item._cells[1] = [0, 0, item._sizeX, item._sizeY];
                 }
                 // Mark texture as loaded
-                this._textureLoaded();
+                this._assetLoaded();
             });
         }
         else {
@@ -203,21 +202,9 @@ class IgeTexture extends IgeAsset_1.IgeAsset {
                 }
                 this._cells[1] = [0, 0, this._sizeX, this._sizeY];
                 // Mark texture as loaded
-                this._textureLoaded();
+                this._assetLoaded();
             }
         }
-    }
-    _textureLoaded() {
-        // Set a timeout here so that when this event is emitted,
-        // the code creating the texture is given a chance to
-        // set a listener first, otherwise this will be emitted
-        // but nothing will have time to register a listener!
-        setTimeout(() => {
-            this._loaded = true;
-            this.emit("loaded");
-            // Inform the engine that this image has loaded
-            //ige.textures.onLoadEnd((this.image as IgeImage).src, this);
-        }, 5);
     }
     /**
      * Assigns a render script to the smart texture.

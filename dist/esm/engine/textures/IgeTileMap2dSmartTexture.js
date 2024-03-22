@@ -1,5 +1,5 @@
 import { IgePoint2d } from "../core/IgePoint2d.js"
-import { IgeMountMode } from "../../enums/index.js"
+import { IgeMountMode } from "../../enums/index.js";
 export const IgeTileMap2dSmartTexture = {
     render: (ctx, entity) => {
         const ent = entity;

@@ -19,7 +19,7 @@ class IgeFontSheet extends IgeTexture_1.IgeTexture {
         this.classId = "IgeFontSheet";
         this._lineHeightModifier = 0;
         // Set the _noDimensions flag which tells any entity
-        // that assigns this texture that the texture has an
+        // that assigns this texture that the texture has anI
         // unknown width/height, so it should not get its
         // dimension data from the texture
         this._noDimensions = true;

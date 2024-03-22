@@ -43,39 +43,25 @@ class IgeFontEntity extends IgeUiEntity_1.IgeUiEntity {
         }
         return this._bounds2d.y;
     }
-    /**
-     * Sets the text to render for this font entity. This sets both
-     * the private properties "_text" and "_renderText". If auto-wrapping
-     * has been enabled then the "_text" remains equal to whatever
-     * text you pass into this method but "_renderText" becomes the
-     * line-broken text that the auto-wrapper method creates. When the
-     * entity renders its text string it ALWAYS renders from "_renderText"
-     * and not the value of "_text". Effectively this means that "_text"
-     * contains the unaltered version of your original text and
-     * "_renderText" will be either the same as "_text" if auto-wrapping
-     * is disabled or a wrapped version otherwise.
-     * @param {string} text The text string to render.
-     * @returns {*}
-     */
     text(text) {
-        if (text !== undefined) {
-            let wasDifferent = false;
-            // Ensure we have a string
-            text = String(text);
-            if (this._text !== text) {
-                this.clearCache();
-                wasDifferent = true;
-            }
-            this._text = text;
-            if (this._autoWrap && wasDifferent) {
-                this._applyAutoWrap();
-            }
-            else {
-                this._renderText = text;
-            }
-            return this;
+        if (text === undefined) {
+            return this._text;
         }
-        return this._text;
+        let wasDifferent = false;
+        // Ensure we have a string
+        text = String(text);
+        if (this._text !== text) {
+            this.clearCache();
+            wasDifferent = true;
+        }
+        this._text = text;
+        if (this._autoWrap && wasDifferent) {
+            this._applyAutoWrap();
+        }
+        else {
+            this._renderText = text;
+        }
+        return this;
     }
     /**
      * Allows you to bind the text output of this font entity to match

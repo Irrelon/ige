@@ -626,11 +626,11 @@ class IgeObject extends IgeEventingClass_1.IgeEventingClass {
         return this._layer;
     }
     depth(val) {
-        if (val !== undefined) {
-            this._depth = val;
-            return this;
+        if (val === undefined) {
+            return this._depth;
         }
-        return this._depth;
+        this._depth = val;
+        return this;
     }
     /**
      * Loops through all child objects of this object and destroys them
@@ -1127,19 +1127,6 @@ class IgeObject extends IgeEventingClass_1.IgeEventingClass {
         }
         return this;
     }
-    /**
-     * Gets / sets a streaming property on this entity. If set, the
-     * property's new value is streamed to clients on the next packet.
-     * Stream properties only work if you specify "props" as a stream
-     * section via `streamSectionsPush("props");` or
-     * `streamSections("transform", "props");`.
-     *
-     * @param {string} propName The name of the property to get / set.
-     * @param {*=} propVal Optional. If provided, the property is set
-     * to this value.
-     * @return {*} "this" when a propVal argument is passed to allow method
-     * chaining or the current value if no propVal argument is specified.
-     */
     streamProperty(propName, propVal) {
         if (!this._id)
             return;

@@ -95,6 +95,9 @@ export class Ige {
                         this.audio = new Module();
                     }));
                 }
+                else {
+                    this.dependencies.markAsSatisfied("audio");
+                }
                 break;
             case "box2d":
                 this.dependencies.add("box2d", import("../components/physics/box2d/IgeBox2dController.js").then(({ IgeBox2dController: Module }) => {

@@ -92,6 +92,8 @@ __exportStar(require("../enums/IgeBox2dTimingMode"), exports);
 __exportStar(require("../enums/IgeBox2dFixtureShapeType"), exports);
 __exportStar(require("../enums/IgeBox2dBodyType"), exports);
 __exportStar(require("../enums/IgeBehaviourType"), exports);
+__exportStar(require("../enums/IgeAudioSourceType"), exports);
+__exportStar(require("../enums/IgeNetworkConnectionState"), exports);
 //////////////////////////////////////////////////////////////////////
 // Class Store
 //////////////////////////////////////////////////////////////////////
@@ -234,7 +236,9 @@ __exportStar(require("../engine/components/IgeInputControlMap"), exports);
 __exportStar(require("../engine/components/IgeInputComponent"), exports);
 __exportStar(require("../engine/components/IgeGamePadComponent"), exports);
 __exportStar(require("../engine/components/IgeEntityManagerComponent"), exports);
-__exportStar(require("../engine/audio/IgeAudioItem"), exports);
+__exportStar(require("../engine/audio/IgeSmartAudioSource"), exports);
+__exportStar(require("../engine/audio/IgeAudioSource"), exports);
+__exportStar(require("../engine/audio/IgeAudioControl"), exports);
 __exportStar(require("../engine/audio/IgeAudioEntity"), exports);
 //////////////////////////////////////////////////////////////////////
 // UI Element Classes

@@ -18,6 +18,7 @@ export declare class IgeRect implements IgeShapeFunctionality {
     constructor(x?: number, y?: number, width?: number, height?: number);
     translateTo(x: number, y: number): this;
     translateBy(x: number, y: number): this;
+    scaleBy(x: number, y: number): this;
     /**
      * Combines the extents of the passed IgeRect with this rect
      * to create a new rect whose bounds encapsulate both rects.

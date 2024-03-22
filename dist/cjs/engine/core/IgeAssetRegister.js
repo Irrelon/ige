@@ -5,6 +5,7 @@ const IgeEventingClass_1 = require("./IgeEventingClass.js");
 class IgeAssetRegister extends IgeEventingClass_1.IgeEventingClass {
     constructor() {
         super(...arguments);
+        this.classId = "IgeAssetRegister";
         this._assetById = {};
         this._assetsLoading = 0;
         this._assetsTotal = 0;
@@ -14,7 +15,7 @@ class IgeAssetRegister extends IgeEventingClass_1.IgeEventingClass {
     }
     get(id) {
         if (!this._assetById[id])
-            throw new Error(`No texture registered with the id: ${id}`);
+            throw new Error(`No asset registered with the id: ${id}`);
         return this._assetById[id];
     }
     add(id, item) {
@@ -45,11 +46,11 @@ class IgeAssetRegister extends IgeEventingClass_1.IgeEventingClass {
         });
     }
     removeList(list) {
-        list.forEach((texture) => texture.destroy());
+        list.forEach((tmpAsset) => tmpAsset.destroy());
     }
     whenLoaded() {
-        const promiseArr = Object.values(this._assetById).map((tmpIgeTexture) => {
-            return tmpIgeTexture.whenLoaded();
+        const promiseArr = Object.values(this._assetById).map((tmpAsset) => {
+            return tmpAsset.whenLoaded();
         });
         return Promise.all(promiseArr);
     }
