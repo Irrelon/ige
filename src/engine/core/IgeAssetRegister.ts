@@ -2,6 +2,7 @@ import type { IgeAsset } from "@/engine/core/IgeAsset";
 import { IgeEventingClass } from "@/engine/core/IgeEventingClass";
 
 export class IgeAssetRegister<AssetType extends IgeAsset> extends IgeEventingClass {
+	classId = "IgeAssetRegister";
 	_assetById: Record<string, AssetType> = {};
 	_assetsLoading: number = 0;
 	_assetsTotal: number = 0;
@@ -11,7 +12,7 @@ export class IgeAssetRegister<AssetType extends IgeAsset> extends IgeEventingCla
 	}
 
 	get (id: string) {
-		if (!this._assetById[id]) throw new Error(`No texture registered with the id: ${id}`);
+		if (!this._assetById[id]) throw new Error(`No asset registered with the id: ${id}`);
 		return this._assetById[id];
 	}
 
@@ -49,12 +50,12 @@ export class IgeAssetRegister<AssetType extends IgeAsset> extends IgeEventingCla
 	}
 
 	removeList (list: AssetType[]) {
-		list.forEach((texture) => texture.destroy());
+		list.forEach((tmpAsset) => tmpAsset.destroy());
 	}
 
 	whenLoaded () {
-		const promiseArr = Object.values(this._assetById).map((tmpIgeTexture) => {
-			return tmpIgeTexture.whenLoaded();
+		const promiseArr = Object.values(this._assetById).map((tmpAsset) => {
+			return tmpAsset.whenLoaded();
 		});
 
 		return Promise.all(promiseArr);

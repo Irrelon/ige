@@ -1105,13 +1105,13 @@ export class IgeObject extends IgeEventingClass implements IgeCanRegisterById, I
 	 */
 	depth (): number;
 	depth (val: number): this;
-	depth (val?: number) {
-		if (val !== undefined) {
-			this._depth = val;
-			return this;
+	depth (val?: number): number | this {
+		if (val === undefined) {
+			return this._depth;
 		}
 
-		return this._depth;
+		this._depth = val;
+		return this;
 	}
 
 	/**
@@ -1844,17 +1844,22 @@ export class IgeObject extends IgeEventingClass implements IgeCanRegisterById, I
 	/**
 	 * Gets / sets a streaming property on this entity. If set, the
 	 * property's new value is streamed to clients on the next packet.
-	 * Stream properties only work if you specify "props" as a stream
-	 * section via `streamSectionsPush("props");` or
-	 * `streamSections("transform", "props");`.
+	 * Stream properties are affected by stream sections. If you have
+	 * modified the stream sections for this entity, properties will
+	 * only work if you specify "props" as a stream section via
+	 * `streamSectionsPush("props");` or
+	 * `streamSections("transform", "props");`. The stream sections
+	 * setting includes props by default
 	 *
 	 * @param {string} propName The name of the property to get / set.
-	 * @param {*=} propVal Optional. If provided, the property is set
+	 * @param {any} [propVal] Optional. If provided, the property is set
 	 * to this value.
 	 * @return {*} "this" when a propVal argument is passed to allow method
 	 * chaining or the current value if no propVal argument is specified.
 	 */
-	streamProperty (propName: string, propVal?: any) {
+	streamProperty (propName: string): any;
+	streamProperty (propName: string, propVal: any): this;
+	streamProperty (propName: string, propVal?: any): this | any | undefined {
 		if (!this._id) return;
 
 		const network = ige.network as IgeNetIoServerController;
@@ -2394,156 +2399,156 @@ export class IgeObject extends IgeEventingClass implements IgeCanRegisterById, I
 		bypassChangeDetection: boolean = false
 	) {
 		switch (sectionId) {
-		case "transform":
-			if (data) {
-				// We have received updated data
-				const dataArr = data.split(",");
-				const network = ige.network as IgeNetIoClientController;
+			case "transform":
+				if (data) {
+					// We have received updated data
+					const dataArr = data.split(",");
+					const network = ige.network as IgeNetIoClientController;
 
-				if (!this._disableInterpolation && !bypassTimeStream && !this._streamJustCreated) {
-					const parsedDataArr: IgeTimeStreamTransformData = dataArr.map((dataItem) => {
-						return parseFloat(dataItem);
-					}) as unknown as IgeTimeStreamTransformData;
+					if (!this._disableInterpolation && !bypassTimeStream && !this._streamJustCreated) {
+						const parsedDataArr: IgeTimeStreamTransformData = dataArr.map((dataItem) => {
+							return parseFloat(dataItem);
+						}) as unknown as IgeTimeStreamTransformData;
 
-					// Add it to the time stream
-					this._timeStream.push([network._streamDataTime + network._latency, parsedDataArr]);
+						// Add it to the time stream
+						this._timeStream.push([network._streamDataTime + network._latency, parsedDataArr]);
 
-					// Check stream length, don't allow higher than 10 items
-					if (this._timeStream.length > 10) {
-						// Remove the first item
-						this._timeStream.shift();
-					}
-				} else {
-					// Assign all the transform values immediately
-					this.translateTo(parseFloat(dataArr[0]), parseFloat(dataArr[1]), parseFloat(dataArr[2]));
-					//this._translate.x = parseFloat(dataArr[0]);
-					//this._translate.y = parseFloat(dataArr[1]);
-					//this._translate.z = parseFloat(dataArr[2]);
-
-					// Scale
-					this.scaleTo(parseFloat(dataArr[3]), parseFloat(dataArr[4]), parseFloat(dataArr[5]));
-					//this._scale.x = parseFloat(dataArr[3]);
-					//this._scale.y = parseFloat(dataArr[4]);
-					//this._scale.z = parseFloat(dataArr[5]);
-
-					// Rotate
-					this.rotateTo(parseFloat(dataArr[6]), parseFloat(dataArr[7]), parseFloat(dataArr[8]));
-					//this._rotate.x = parseFloat(dataArr[6]);
-					//this._rotate.y = parseFloat(dataArr[7]);
-					//this._rotate.z = parseFloat(dataArr[8]);
-
-					// If we are using composite caching ensure we update the cache
-					if (this._compositeCache) {
-						this.cacheDirty(true);
-					}
-				}
-			} else {
-				// We should return the transform data as a comma separated string
-				return (
-					this._translate.toString(this._streamFloatPrecision) +
-					"," + // translate
-					this._scale.toString(this._streamFloatPrecision) +
-					"," + // scale
-					this._rotate.toString(this._streamFloatPrecision)
-				); // rotate
-			}
-			break;
-
-		case "depth":
-			if (data !== undefined) {
-				if (isClient) {
-					this.depth(parseInt(data));
-				}
-			} else {
-				return String(this.depth());
-			}
-			break;
-
-		case "layer":
-			if (data !== undefined) {
-				if (isClient) {
-					this.layer(parseInt(data));
-				}
-			} else {
-				return String(this.layer());
-			}
-			break;
-
-		case "mount":
-			if (data !== undefined) {
-				if (isClient) {
-					if (data) {
-						const newParent = ige.$(data) as IgeObject;
-
-						if (newParent) {
-							this.mount(newParent);
+						// Check stream length, don't allow higher than 10 items
+						if (this._timeStream.length > 10) {
+							// Remove the first item
+							this._timeStream.shift();
 						}
 					} else {
-						// Unmount
-						this.unMount();
-					}
-				}
-			} else {
-				const parent = this.parent();
+						// Assign all the transform values immediately
+						this.translateTo(parseFloat(dataArr[0]), parseFloat(dataArr[1]), parseFloat(dataArr[2]));
+						//this._translate.x = parseFloat(dataArr[0]);
+						//this._translate.y = parseFloat(dataArr[1]);
+						//this._translate.z = parseFloat(dataArr[2]);
 
-				if (parent) {
-					return parent.id();
-				} else {
-					return "";
-				}
-			}
-			break;
+						// Scale
+						this.scaleTo(parseFloat(dataArr[3]), parseFloat(dataArr[4]), parseFloat(dataArr[5]));
+						//this._scale.x = parseFloat(dataArr[3]);
+						//this._scale.y = parseFloat(dataArr[4]);
+						//this._scale.z = parseFloat(dataArr[5]);
 
-		case "origin":
-			if (data !== undefined) {
-				if (isClient) {
-					const geom = data.split(",");
-					this.originTo(parseFloat(geom[0]), parseFloat(geom[1]), parseFloat(geom[2]));
-					//this._origin.x = parseFloat(geom[0]);
-					//this._origin.y = parseFloat(geom[1]);
-					//this._origin.z = parseFloat(geom[2]);
-				}
-			} else {
-				return String(this._origin.x + "," + this._origin.y + "," + this._origin.z);
-			}
-			break;
+						// Rotate
+						this.rotateTo(parseFloat(dataArr[6]), parseFloat(dataArr[7]), parseFloat(dataArr[8]));
+						//this._rotate.x = parseFloat(dataArr[6]);
+						//this._rotate.y = parseFloat(dataArr[7]);
+						//this._rotate.z = parseFloat(dataArr[8]);
 
-		case "props":
-			if (data !== undefined) {
-				if (isClient) {
-					this._streamProperty = this._streamProperty || {};
-					const props = JSON.parse(data);
-
-					// Update properties that have been sent through
-					for (const i in props) {
-						if (this._streamProperty[i] !== props[i]) {
-							//console.log('Updated stream property ' + i + ' to', props[i]);
-							this._streamProperty[i] = props[i];
-							if (this.onStreamProperty) {
-								this.onStreamProperty(i, props[i]);
-							}
-							this.emit("streamPropChange", i, props[i]);
+						// If we are using composite caching ensure we update the cache
+						if (this._compositeCache) {
+							this.cacheDirty(true);
 						}
 					}
+				} else {
+					// We should return the transform data as a comma separated string
+					return (
+						this._translate.toString(this._streamFloatPrecision) +
+						"," + // translate
+						this._scale.toString(this._streamFloatPrecision) +
+						"," + // scale
+						this._rotate.toString(this._streamFloatPrecision)
+					); // rotate
 				}
-			} else {
-				const newData: Record<string, any> = {};
-				const network = ige.network as IgeNetIoServerController;
+				break;
 
-				for (const i in this._streamProperty) {
-					if (
-						(network._streamPropertyChange &&
-							network._streamPropertyChange[this._id as string] &&
-							network._streamPropertyChange[this._id as string][i]) ||
-						bypassChangeDetection
-					) {
-						newData[i] = this._streamProperty[i];
+			case "depth":
+				if (data !== undefined) {
+					if (isClient) {
+						this.depth(parseInt(data));
+					}
+				} else {
+					return String(this.depth());
+				}
+				break;
+
+			case "layer":
+				if (data !== undefined) {
+					if (isClient) {
+						this.layer(parseInt(data));
+					}
+				} else {
+					return String(this.layer());
+				}
+				break;
+
+			case "mount":
+				if (data !== undefined) {
+					if (isClient) {
+						if (data) {
+							const newParent = ige.$(data) as IgeObject;
+
+							if (newParent) {
+								this.mount(newParent);
+							}
+						} else {
+							// Unmount
+							this.unMount();
+						}
+					}
+				} else {
+					const parent = this.parent();
+
+					if (parent) {
+						return parent.id();
+					} else {
+						return "";
 					}
 				}
+				break;
 
-				return JSON.stringify(newData);
-			}
-			break;
+			case "origin":
+				if (data !== undefined) {
+					if (isClient) {
+						const geom = data.split(",");
+						this.originTo(parseFloat(geom[0]), parseFloat(geom[1]), parseFloat(geom[2]));
+						//this._origin.x = parseFloat(geom[0]);
+						//this._origin.y = parseFloat(geom[1]);
+						//this._origin.z = parseFloat(geom[2]);
+					}
+				} else {
+					return String(this._origin.x + "," + this._origin.y + "," + this._origin.z);
+				}
+				break;
+
+			case "props":
+				if (data !== undefined) {
+					if (isClient) {
+						this._streamProperty = this._streamProperty || {};
+						const props = JSON.parse(data);
+
+						// Update properties that have been sent through
+						for (const i in props) {
+							if (this._streamProperty[i] !== props[i]) {
+								//console.log('Updated stream property ' + i + ' to', props[i]);
+								this._streamProperty[i] = props[i];
+								if (this.onStreamProperty) {
+									this.onStreamProperty(i, props[i]);
+								}
+								this.emit("streamPropChange", i, props[i]);
+							}
+						}
+					}
+				} else {
+					const newData: Record<string, any> = {};
+					const network = ige.network as IgeNetIoServerController;
+
+					for (const i in this._streamProperty) {
+						if (
+							(network._streamPropertyChange &&
+								network._streamPropertyChange[this._id as string] &&
+								network._streamPropertyChange[this._id as string][i]) ||
+							bypassChangeDetection
+						) {
+							newData[i] = this._streamProperty[i];
+						}
+					}
+
+					return JSON.stringify(newData);
+				}
+				break;
 		}
 	}
 
@@ -2785,30 +2790,30 @@ export class IgeObject extends IgeEventingClass implements IgeCanRegisterById, I
 		for (const key in this) {
 			if (this.hasOwnProperty(key) && this[key] !== undefined) {
 				switch (key) {
-				case "_category":
-					str += ".category(" + this.category() + ")";
-					break;
-				case "_drawBounds":
-					str += ".drawBounds(" + this.drawBounds() + ")";
-					break;
-				case "_drawBoundsData":
-					str += ".drawBoundsData(" + this.drawBoundsData() + ")";
-					break;
-				case "_drawMouse":
-					str += ".drawMouse(" + this.drawMouse() + ")";
-					break;
-				case "_isometricMounts":
-					str += ".isometricMounts(" + this.isometricMounts() + ")";
-					break;
-				case "_indestructible":
-					str += ".indestructible(" + this.indestructible() + ")";
-					break;
-				case "_layer":
-					str += ".layer(" + this.layer() + ")";
-					break;
-				case "_depth":
-					str += ".depth(" + this.depth() + ")";
-					break;
+					case "_category":
+						str += ".category(" + this.category() + ")";
+						break;
+					case "_drawBounds":
+						str += ".drawBounds(" + this.drawBounds() + ")";
+						break;
+					case "_drawBoundsData":
+						str += ".drawBoundsData(" + this.drawBoundsData() + ")";
+						break;
+					case "_drawMouse":
+						str += ".drawMouse(" + this.drawMouse() + ")";
+						break;
+					case "_isometricMounts":
+						str += ".isometricMounts(" + this.isometricMounts() + ")";
+						break;
+					case "_indestructible":
+						str += ".indestructible(" + this.indestructible() + ")";
+						break;
+					case "_layer":
+						str += ".layer(" + this.layer() + ")";
+						break;
+					case "_depth":
+						str += ".depth(" + this.depth() + ")";
+						break;
 				}
 			}
 		}

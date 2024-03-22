@@ -1,6 +1,5 @@
 import type { IgeTween, IgeTweenOptions, IgeTweenPropertyObject } from "@/engine/core/IgeTween";
 
-
 let IgeTweenModule: typeof IgeTween;
 
 import("./IgeTween.js").then((module) => {
@@ -346,7 +345,7 @@ export class IgePoint3d {
 	 * @param {number=} precision
 	 * @return {string}
 	 */
-	toString (precision: number = 2) {
+	toString (precision: number = 2): string {
 		return this.x.toFixed(precision) + "," + this.y.toFixed(precision) + "," + this.z.toFixed(precision);
 	}
 

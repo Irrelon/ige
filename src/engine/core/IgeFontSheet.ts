@@ -33,7 +33,7 @@ export class IgeFontSheet extends IgeTexture {
 		super(id, urlOrObject);
 
 		// Set the _noDimensions flag which tells any entity
-		// that assigns this texture that the texture has an
+		// that assigns this texture that the texture has anI
 		// unknown width/height, so it should not get its
 		// dimension data from the texture
 		this._noDimensions = true;
@@ -209,20 +209,20 @@ export class IgeFontSheet extends IgeTexture {
 			// TODO: Y-based alignment doesn't work at the moment. Fix it!
 			// Handle text alignment y
 			switch (entity._textAlignY) {
-			case 0: // Align top
-				renderStartY =
-					-((lineHeight * lineArr.length) / 2) - entity._textLineSpacing * ((lineArr.length - 1) / 2); //0;
-				break;
+				case 0: // Align top
+					renderStartY =
+						-((lineHeight * lineArr.length) / 2) - entity._textLineSpacing * ((lineArr.length - 1) / 2); //0;
+					break;
 
-			case 1: // Align middle
-				renderStartY =
-					-((lineHeight * lineArr.length) / 2) - entity._textLineSpacing * ((lineArr.length - 1) / 2);
-				break;
+				case 1: // Align middle
+					renderStartY =
+						-((lineHeight * lineArr.length) / 2) - entity._textLineSpacing * ((lineArr.length - 1) / 2);
+					break;
 
-			case 2: // Align bottom
-				renderStartY =
-					-((lineHeight * lineArr.length) / 2) - entity._textLineSpacing * ((lineArr.length - 1) / 2); //-((lineHeight) * (lineArr.length)) - (entity._textLineSpacing * (lineArr.length - 1));
-				break;
+				case 2: // Align bottom
+					renderStartY =
+						-((lineHeight * lineArr.length) / 2) - entity._textLineSpacing * ((lineArr.length - 1) / 2); //-((lineHeight) * (lineArr.length)) - (entity._textLineSpacing * (lineArr.length - 1));
+					break;
 			}
 
 			// Calculate the total text width of each line
@@ -245,17 +245,17 @@ export class IgeFontSheet extends IgeTexture {
 
 			// Handle text cached alignment x
 			switch (entity._textAlignX) {
-			case 0: // Align left
-				renderStartX = -entity._bounds2d.x2;
-				break;
+				case 0: // Align left
+					renderStartX = -entity._bounds2d.x2;
+					break;
 
-			case 1: // Align center
-				renderStartX = -totalWidth / 2;
-				break;
+				case 1: // Align center
+					renderStartX = -totalWidth / 2;
+					break;
 
-			case 2: // Align right
-				renderStartX = entity._bounds2d.x2 - totalWidth;
-				break;
+				case 2: // Align right
+					renderStartX = entity._bounds2d.x2 - totalWidth;
+					break;
 			}
 
 			/*_ctx.strokeStyle = '#ff0000';
@@ -267,17 +267,17 @@ export class IgeFontSheet extends IgeTexture {
 
 				// Handle text alignment x
 				switch (entity._textAlignX) {
-				case 0: // Align left
-					renderX = -entity._bounds2d.x2;
-					break;
+					case 0: // Align left
+						renderX = -entity._bounds2d.x2;
+						break;
 
-				case 1: // Align center
-					renderX = -lineWidth[lineIndex] / 2;
-					break;
+					case 1: // Align center
+						renderX = -lineWidth[lineIndex] / 2;
+						break;
 
-				case 2: // Align right
-					renderX = entity._bounds2d.x2 - lineWidth[lineIndex];
-					break;
+					case 2: // Align right
+						renderX = entity._bounds2d.x2 - lineWidth[lineIndex];
+						break;
 				}
 
 				for (characterIndex = 0; characterIndex < lineText.length; characterIndex++) {

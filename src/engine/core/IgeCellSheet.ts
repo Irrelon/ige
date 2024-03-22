@@ -39,7 +39,7 @@ export class IgeCellSheet extends IgeTexture {
 			this.log("Cannot create cell-sheet because texture has not loaded an image!", "error");
 		}
 
-		super._textureLoaded();
+		super._assetLoaded();
 	}
 
 	/**

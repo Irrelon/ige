@@ -99,33 +99,35 @@ export class IgeFontEntity extends IgeUiEntity {
 	 * contains the unaltered version of your original text and
 	 * "_renderText" will be either the same as "_text" if auto-wrapping
 	 * is disabled or a wrapped version otherwise.
-	 * @param {string} text The text string to render.
+	 * @param {string} [text] The text string to render.
 	 * @returns {*}
 	 */
-	text (text?: string) {
-		if (text !== undefined) {
-			let wasDifferent = false;
-
-			// Ensure we have a string
-			text = String(text);
-
-			if (this._text !== text) {
-				this.clearCache();
-				wasDifferent = true;
-			}
-
-			this._text = text;
-
-			if (this._autoWrap && wasDifferent) {
-				this._applyAutoWrap();
-			} else {
-				this._renderText = text;
-			}
-
-			return this;
+	text (): string | undefined;
+	text (text: string): this;
+	text (text?: string): string | this | undefined {
+		if (text === undefined) {
+			return this._text;
 		}
 
-		return this._text;
+		let wasDifferent = false;
+
+		// Ensure we have a string
+		text = String(text);
+
+		if (this._text !== text) {
+			this.clearCache();
+			wasDifferent = true;
+		}
+
+		this._text = text;
+
+		if (this._autoWrap && wasDifferent) {
+			this._applyAutoWrap();
+		} else {
+			this._renderText = text;
+		}
+
+		return this;
 	}
 
 	/**
@@ -449,18 +451,18 @@ export class IgeFontEntity extends IgeUiEntity {
 		for (i in this) {
 			if (this.hasOwnProperty(i) && this[i] !== undefined) {
 				switch (i) {
-				case "_text":
-					str += ".text(" + this.text() + ")";
-					break;
-				case "_textAlignX":
-					str += ".textAlignX(" + this.textAlignX() + ")";
-					break;
-				case "_textAlignY":
-					str += ".textAlignY(" + this.textAlignY() + ")";
-					break;
-				case "_textLineSpacing":
-					str += ".textLineSpacing(" + this.textLineSpacing() + ")";
-					break;
+					case "_text":
+						str += ".text(" + this.text() + ")";
+						break;
+					case "_textAlignX":
+						str += ".textAlignX(" + this.textAlignX() + ")";
+						break;
+					case "_textAlignY":
+						str += ".textAlignY(" + this.textAlignY() + ")";
+						break;
+					case "_textLineSpacing":
+						str += ".textLineSpacing(" + this.textLineSpacing() + ")";
+						break;
 				}
 			}
 		}

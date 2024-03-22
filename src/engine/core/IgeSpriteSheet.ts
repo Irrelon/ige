@@ -32,7 +32,7 @@ export class IgeSpriteSheet extends IgeTexture {
 			// TODO: Low-priority - Support cell sheets from smart-textures
 			this.log("Cannot create cell-sheet because texture has not loaded an image!", "error");
 		} else {
-			super._textureLoaded();
+			super._assetLoaded();
 
 			// Store the cell sheet image
 			this._sheetImage = this.image;
