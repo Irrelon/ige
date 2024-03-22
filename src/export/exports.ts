@@ -77,6 +77,8 @@ export * from "../enums/IgeBox2dTimingMode";
 export * from "../enums/IgeBox2dFixtureShapeType";
 export * from "../enums/IgeBox2dBodyType";
 export * from "../enums/IgeBehaviourType";
+export * from "../enums/IgeAudioSourceType";
+export * from "../enums/IgeNetworkConnectionState";
 
 //////////////////////////////////////////////////////////////////////
 // Class Store
@@ -236,7 +238,9 @@ export * from "../engine/components/IgeInputComponent";
 export * from "../engine/components/IgeGamePadComponent";
 export * from "../engine/components/IgeEntityManagerComponent";
 
-export * from "../engine/audio/IgeAudioItem";
+export * from "../engine/audio/IgeSmartAudioSource";
+export * from "../engine/audio/IgeAudioSource";
+export * from "../engine/audio/IgeAudioControl";
 export * from "../engine/audio/IgeAudioEntity";
 
 //////////////////////////////////////////////////////////////////////
