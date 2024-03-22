@@ -36,7 +36,7 @@ class IgeMouseZoomComponent extends IgeComponent_1.IgeComponent {
          * @private
          */
         this._pointerWheel = (event) => {
-            if (!this._enabled) {
+            if (!this._enabled || !event) {
                 return;
             }
             const zoomDelta = event.deltaY / 500;

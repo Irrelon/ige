@@ -15,7 +15,7 @@ export interface IgeAnimationStartOptions {
  * @event loopComplete - The animation has completed a full cycle (shown all frames).
  * @event complete - The animation has completed all assigned loop cycles.
  */
-export declare class IgeTextureAnimationComponent extends IgeComponent {
+export declare class IgeTextureAnimationComponent extends IgeComponent<IgeEntity> {
     classId: string;
     componentId: string;
     _anim?: IgeTextureAnimation;
@@ -54,7 +54,7 @@ export declare class IgeTextureAnimationComponent extends IgeComponent {
      *         .animation.define('anim1', [1, 2, 3, 4], 25, -1);
      * @return {*}
      */
-    define: (id: string, frames: (number | string | null)[], fps: number, loop: number, convertIdsToIndex?: boolean) => any;
+    define: (id: string, frames: (number | string | null)[], fps: number, loop: number, convertIdsToIndex?: boolean) => IgeEntity;
     addFrame: (id: string, frameId: number | string) => void;
     removeFrame: (id: string, frameIndex: number) => void;
     /**
@@ -62,7 +62,7 @@ export declare class IgeTextureAnimationComponent extends IgeComponent {
      * @param {string} id The id of the animation to remove.
      * @returns {*}
      */
-    remove: (id: string) => any;
+    remove: (id: string) => IgeEntity;
     /**
      * Returns true if the specified animation has been defined.
      * @param {string} id The id of the animation to check for.
@@ -85,7 +85,7 @@ export declare class IgeTextureAnimationComponent extends IgeComponent {
      *     entity.animation.setFps('anim1', 12);
      * @return {*}
      */
-    setFps: (id: string, fps: number) => any;
+    setFps: (id: string, fps: number) => IgeEntity;
     /**
      * Sets all the animations assigned to an entity to the specified FPS.
      * @param {number=} fps The number of frames per second the animations
@@ -102,7 +102,7 @@ export declare class IgeTextureAnimationComponent extends IgeComponent {
      *     entity.animation.setAllFps(12);
      * @return {*}
      */
-    setAllFps: (fps: number) => any;
+    setAllFps: (fps: number) => IgeEntity;
     /**
      * Checks the current animation state, either started
      * or stopped.
@@ -178,7 +178,7 @@ export declare class IgeTextureAnimationComponent extends IgeComponent {
      *     entity.animation.start('anim1');
      * @return {*}
      */
-    start: (animId: string, options?: IgeAnimationStartOptions) => any;
+    start: (animId: string, options?: IgeAnimationStartOptions) => IgeEntity;
     /**
      * Starts an animation only if the passed animation is not already
      * started.
@@ -199,14 +199,14 @@ export declare class IgeTextureAnimationComponent extends IgeComponent {
      *     entity.animation.select('anim1');
      * @return {*}
      */
-    select: (animId: string, options?: IgeAnimationStartOptions) => any;
+    select: (animId: string, options?: IgeAnimationStartOptions) => IgeEntity;
     /**
      * Stops the current animation.
      * @example #Stop the current animation
      *     entity.animation.stop();
      * @return {*}
      */
-    stop: () => any;
+    stop: () => IgeEntity;
     /**
      * Handles the animation processing each update.
      * @param {CanvasRenderingContext2D} ctx The rendering context to use when doing draw operations.

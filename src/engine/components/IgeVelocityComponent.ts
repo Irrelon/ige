@@ -4,7 +4,7 @@ import { IgePoint3d } from "@/engine/core/IgePoint3d";
 import { ige } from "@/engine/instance";
 import { IgeBehaviourType } from "@/enums";
 
-export class IgeVelocityComponent extends IgeComponent {
+export class IgeVelocityComponent extends IgeComponent<IgeEntity> {
 	classId = "IgeVelocityComponent";
 	componentId = "velocity";
 

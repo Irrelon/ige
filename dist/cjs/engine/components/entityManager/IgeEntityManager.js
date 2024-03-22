@@ -14,8 +14,8 @@ const enums_1 = require("../../../enums/index.js");
  * unmounted until they come back into view and are then mounted again.
  */
 class IgeEntityManager extends IgeComponent_1.IgeComponent {
-    constructor(entity, options) {
-        super(entity, options);
+    constructor(parent, options) {
+        super(parent, options);
         this.classId = "IgeEntityManager";
         this.componentId = "entityManager";
         // Create queue arrays that will store entities waiting to
@@ -132,9 +132,9 @@ class IgeEntityManager extends IgeComponent_1.IgeComponent {
             this._unMountQueue = [];
         };
         // Create the _orphans array on the entity
-        entity._orphans = [];
+        parent._orphans = [];
         // Set a method (behaviour) that will be called on every update
-        entity.addBehaviour(enums_1.IgeBehaviourType.preUpdate, "entityManager", this._updateBehaviour);
+        parent.addBehaviour(enums_1.IgeBehaviourType.preUpdate, "entityManager", this._updateBehaviour);
     }
     /**
      * Checks all the un-mounted entities of our component parent to see if they are
@@ -189,3 +189,4 @@ class IgeEntityManager extends IgeComponent_1.IgeComponent {
     }
 }
 exports.IgeEntityManager = IgeEntityManager;
+IgeEntityManager.componentTargetClass = "IgeEntity";

@@ -114,12 +114,12 @@ export class IgeObject extends IgeEventingClass implements IgeCanRegisterById, I
 	_pointerStateDown: boolean = false;
 	_pointerStateOver: boolean = false;
 	_pointerAlwaysInside: boolean = false;
-	_pointerOut?: IgeInputEventHandler;
-	_pointerOver?: IgeInputEventHandler;
-	_pointerMove?: IgeInputEventHandler;
-	_pointerWheel?: IgeInputEventHandler;
-	_pointerUp?: IgeInputEventHandler;
-	_pointerDown?: IgeInputEventHandler;
+	_pointerOut?: IgeInputEventHandler<PointerEvent | TouchEvent>;
+	_pointerOver?: IgeInputEventHandler<PointerEvent | TouchEvent>;
+	_pointerMove?: IgeInputEventHandler<PointerEvent | TouchEvent>;
+	_pointerWheel?: IgeInputEventHandler<WheelEvent>;
+	_pointerUp?: IgeInputEventHandler<PointerEvent | TouchEvent>;
+	_pointerDown?: IgeInputEventHandler<PointerEvent | TouchEvent>;
 	_velocity: IgePoint3d;
 	_localMatrix: IgeMatrix2d;
 	_worldMatrix: IgeMatrix2d;
@@ -154,7 +154,7 @@ export class IgeObject extends IgeEventingClass implements IgeCanRegisterById, I
 	_bounds3dPolygon?: IgePoly2d;
 	_localAabb?: IgeBounds;
 	_deathCallBack?: (...args: any[]) => void; // TODO: Rename this to _deathCallback (lower case B)
-	components: Record<string, IgeComponent> = {};
+	components: Record<string, IgeComponent<IgeObject>> = {};
 
 	constructor () {
 		super();
@@ -2821,7 +2821,7 @@ export class IgeObject extends IgeEventingClass implements IgeCanRegisterById, I
 		return str;
 	}
 
-	addComponent (id: string, Component: typeof IgeComponent, options?: any) {
+	addComponent (id: string, Component: typeof IgeComponent<IgeObject>, options?: any) {
 		const instance = new Component(this, options);
 		instance._entity = this;
 		this.components[id] = instance;

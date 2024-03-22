@@ -90,10 +90,11 @@ class IgeTextureAnimationComponent extends IgeComponent_1.IgeComponent {
             return this._entity;
         };
         this.addFrame = (id, frameId) => {
+            var _a;
             if (this._anims[id]) {
                 const anim = this._anims[id];
                 if (typeof frameId === "string") {
-                    frameId = this._entity._texture.cellIdToIndex(frameId);
+                    frameId = ((_a = this._entity._texture) === null || _a === void 0 ? void 0 : _a.cellIdToIndex(frameId)) || -1;
                 }
                 anim.frames.push(frameId);
                 anim.frameCount++;

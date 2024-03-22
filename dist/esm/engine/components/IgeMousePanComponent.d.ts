@@ -2,11 +2,12 @@ import { IgeComponent } from "../core/IgeComponent.js"
 import { IgePoint2d } from "../core/IgePoint2d.js";
 import type { IgePoint3d } from "../core/IgePoint3d.js"
 import type { IgeBounds } from "../core/IgeBounds.js";
+import type { IgeViewport } from "../core/IgeViewport.js"
 /**
  * When added to a viewport, automatically adds mouse panning
  * capabilities to the viewport's camera.
  */
-export declare class IgeMousePanComponent extends IgeComponent {
+export declare class IgeMousePanComponent extends IgeComponent<IgeViewport> {
     static componentTargetClass: string;
     classId: string;
     componentId: string;
@@ -23,14 +24,14 @@ export declare class IgeMousePanComponent extends IgeComponent {
      * @param val
      * @return {*}
      */
-    startThreshold: (val?: number) => any;
+    startThreshold: (val?: number) => number | IgeViewport;
     /**
      * Gets / sets the rectangle that the pan operation will be limited
      * to using an IgeBounds instance.
      * @param {IgeBounds=} rect
      * @return {*}
      */
-    limit(rect?: IgeBounds): any;
+    limit(rect?: IgeBounds): IgeViewport | IgeBounds | undefined;
     /**
      * Gets / sets the enabled flag. If set to true, pan
      * operations will be processed. If false, no panning will
@@ -38,26 +39,26 @@ export declare class IgeMousePanComponent extends IgeComponent {
      * @param {boolean=} val
      * @return {*}
      */
-    enabled(val?: boolean): any;
+    enabled(val?: boolean): boolean | IgeViewport;
     /**
      * Handles the pointerDown event. Records the starting position of the
      * camera pan and the current camera translation.
      * @param event
      * @private
      */
-    _pointerDown: (event: Event) => void;
+    _pointerDown: (event?: PointerEvent) => void;
     /**
      * Handles the mouse move event. Translates the camera as the mouse
      * moves across the screen.
      * @param event
      * @private
      */
-    _pointerMove: (event: Event) => void;
+    _pointerMove: (event?: PointerEvent) => void;
     /**
      * Handles the mouse up event. Finishes the camera translate and
      * removes the starting pan data.
      * @param event
      * @private
      */
-    _pointerUp: (event: Event) => void;
+    _pointerUp: (event?: PointerEvent) => void;
 }

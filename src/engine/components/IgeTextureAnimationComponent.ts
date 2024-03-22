@@ -19,7 +19,7 @@ export interface IgeAnimationStartOptions {
  * @event loopComplete - The animation has completed a full cycle (shown all frames).
  * @event complete - The animation has completed all assigned loop cycles.
  */
-export class IgeTextureAnimationComponent extends IgeComponent {
+export class IgeTextureAnimationComponent extends IgeComponent<IgeEntity> {
 	classId = "IgeTextureAnimationComponent";
 	componentId = "animation";
 	_anim?: IgeTextureAnimation;
@@ -128,7 +128,7 @@ export class IgeTextureAnimationComponent extends IgeComponent {
 			const anim = this._anims[id];
 
 			if (typeof frameId === "string") {
-				frameId = this._entity._texture.cellIdToIndex(frameId);
+				frameId = this._entity._texture?.cellIdToIndex(frameId) || -1;
 			}
 
 			anim.frames.push(frameId);

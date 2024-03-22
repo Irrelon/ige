@@ -1,10 +1,10 @@
 import { IgeComponent } from "../core/IgeComponent.js"
 import type { IgeEngine } from "../core/IgeEngine.js";
-import type { IgeEntity } from "../core/IgeEntity.js"
-import type { IgeEntityBehaviourMethod } from "../../types/IgeEntityBehaviour.js";
+import type { IgeEntityBehaviourMethod } from "../../types/IgeEntityBehaviour.js"
 export declare class IgeGamePadComponent extends IgeComponent<IgeEngine> {
-    "classId": string;
-    "componentId": string;
+    static componentTargetClass: string;
+    classId: string;
+    componentId: string;
     gamepadAvailable: boolean | null;
     TYPICAL_BUTTON_COUNT: number;
     TYPICAL_AXIS_COUNT: number;
@@ -12,7 +12,7 @@ export declare class IgeGamePadComponent extends IgeComponent<IgeEngine> {
     gamepads: Gamepad[];
     prevRawGamepadTypes: never[];
     prevTimestamps: never[];
-    constructor(entity: IgeEntity, options?: any);
+    constructor(entity: IgeEngine, options?: any);
     onGamepadConnect(event: GamepadEvent): void;
     /**
      * React to the gamepad being disconnected.

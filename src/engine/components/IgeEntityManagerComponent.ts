@@ -2,11 +2,12 @@ import { IgeComponent } from "@/engine/core/IgeComponent";
 import type { IgeEntity } from "@/engine/core/IgeEntity";
 import { IgePoint3d } from "@/engine/core/IgePoint3d";
 import { IgeBounds } from "@/engine/core/IgeBounds";
+import type { IgeTileMap2d } from "@/engine/core/IgeTileMap2d";
 import { ige } from "@/engine/instance";
 import { IgeBehaviourType, IgeEntityRenderMode, IgeMountMode } from "@/enums";
 import type { IgeCanvasRenderingContext2d } from "@/types/IgeCanvasRenderingContext2d";
 
-export class IgeEntityManagerComponent extends IgeComponent {
+export class IgeEntityManagerComponent extends IgeComponent<IgeTileMap2d> {
 	classId = "IgeEntityManagerComponent";
 	componentId = "entityManager";
 	_lastArea: IgeBounds = new IgeBounds();
@@ -31,7 +32,7 @@ export class IgeEntityManagerComponent extends IgeComponent {
 	 * @param {Object} entity The parent object that this component is being added to.
 	 * @param {Object=} options An optional object that is passed to the component when it is being initialised.
 	 */
-	constructor (entity: IgeEntity, options?: any) {
+	constructor (entity: IgeTileMap2d, options?: any) {
 		super(entity, options);
 
 		// Check we are being added to a tile map
@@ -114,7 +115,7 @@ export class IgeEntityManagerComponent extends IgeComponent {
 	/**
 	 * Gets / sets the overwatch mode for the entity manager. This
 	 * is the mode that the manager will use when monitoring the
-	 * entities under it's control to determine if any should be
+	 * entities under its control to determine if any should be
 	 * removed or not.
 	 * @param {number=} val Overwatch mode, defaults to 0.
 	 * @return {*}
@@ -521,35 +522,39 @@ export class IgeEntityManagerComponent extends IgeComponent {
 	 */
 	_resizeEvent = (event) => {
 		// Set width / height of scene to match parent
-		if (this._areaRectAutoSize) {
-			const geom = this._entity._parent._bounds2d;
-			let additionX = 0,
-				additionY = 0;
+		if (!this._areaRectAutoSize || !this._entity._parent) {
+			return;
+		}
 
-			if (this._areaRectAutoSizeOptions) {
-				if (this._areaRectAutoSizeOptions.bufferMultiple) {
-					additionX = geom.x * this._areaRectAutoSizeOptions.bufferMultiple.x - geom.x;
-					additionY = geom.y * this._areaRectAutoSizeOptions.bufferMultiple.y - geom.y;
-				}
+		const geom = this._entity._parent._bounds2d;
 
-				if (this._areaRectAutoSizeOptions.bufferPixels) {
-					additionX = this._areaRectAutoSizeOptions.bufferPixels.x;
-					additionY = this._areaRectAutoSizeOptions.bufferPixels.y;
-				}
+		let additionX = 0,
+			additionY = 0;
+
+		if (this._areaRectAutoSizeOptions) {
+			if (this._areaRectAutoSizeOptions.bufferMultiple) {
+				additionX = geom.x * this._areaRectAutoSizeOptions.bufferMultiple.x - geom.x;
+				additionY = geom.y * this._areaRectAutoSizeOptions.bufferMultiple.y - geom.y;
 			}
 
-			this.areaRect(
-				-Math.floor((geom.x + additionX) / 2),
-				-Math.floor((geom.y + additionY) / 2),
-				geom.x + additionX,
-				geom.y + additionY
-			);
-
-			// Check if caching is enabled
-			if (this._entity._caching > 0) {
-				this._entity._resizeCacheCanvas();
+			if (this._areaRectAutoSizeOptions.bufferPixels) {
+				additionX = this._areaRectAutoSizeOptions.bufferPixels.x;
+				additionY = this._areaRectAutoSizeOptions.bufferPixels.y;
 			}
 		}
+
+		this.areaRect(
+			-Math.floor((geom.x + additionX) / 2),
+			-Math.floor((geom.y + additionY) / 2),
+			geom.x + additionX,
+			geom.y + additionY
+		);
+
+		// TODO: This should be updated, _caching and _resizeCacheCanvas() don't
+		//   exist on an IgeTileMap2d instance, figure out what they were renamed to
+		// if (this._entity._caching > 0) {
+		// 	this._entity._resizeCacheCanvas();
+		// }
 	};
 
 	private _createEntityFromMapData: () => any = () => undefined;

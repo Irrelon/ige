@@ -2,13 +2,14 @@ import { IgeComponent } from "@/engine/core/IgeComponent";
 import { IgePoint2d } from "@/engine/core/IgePoint2d";
 import { IgePoint3d } from "@/engine/core/IgePoint3d";
 import type { IgeBounds } from "@/engine/core/IgeBounds";
+import type { IgeViewport } from "@/engine/core/IgeViewport";
 import { ige } from "@/engine/instance";
 
 /**
  * When added to a viewport, automatically adds mouse zooming
  * capabilities to the viewport's camera.
  */
-export class IgeMouseZoomComponent extends IgeComponent {
+export class IgeMouseZoomComponent extends IgeComponent<IgeViewport> {
 	static componentTargetClass = "IgeViewport";
 	classId = "IgeMouseZoomComponent";
 	componentId = "mouseZoom";
@@ -67,8 +68,8 @@ export class IgeMouseZoomComponent extends IgeComponent {
 	 * @param event
 	 * @private
 	 */
-	_pointerWheel = (event: WheelEvent) => {
-		if (!this._enabled) {
+	_pointerWheel = (event?: WheelEvent) => {
+		if (!this._enabled || !event) {
 			return;
 		}
 

@@ -9,14 +9,15 @@ import type { IgeEntityBehaviourMethod } from "../../../types/IgeEntityBehaviour
  * ensure they are still inside the visible area of any viewport. If not they are
  * unmounted until they come back into view and are then mounted again.
  */
-export declare class IgeEntityManager extends IgeComponent {
+export declare class IgeEntityManager extends IgeComponent<IgeEntity> {
+    static componentTargetClass: string;
     classId: string;
     componentId: string;
     _mountQueue: IgeEntity[];
     _unMountQueue: IgeEntity[];
     _maxMountsPerOp: number;
     _maxUnMountsPerOp: number;
-    constructor(entity: IgeEntity, options?: any);
+    constructor(parent: IgeEntity, options?: any);
     /**
      * Called each update frame from the component parent and calls various private
      * methods to ensure that entities that should be mounted are mounted and those

@@ -2164,7 +2164,7 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 	pointerUp (callback: IgeInputEventHandler): this;
 	pointerUp (callback: null): this;
 	pointerUp (): IgeInputEventHandler | undefined;
-	pointerUp (callback?: IgeInputEventHandler | null): IgeInputEventHandler | this | undefined {
+	pointerUp (callback?: IgeInputEventHandler<PointerEvent | TouchEvent> | null): IgeInputEventHandler<PointerEvent | TouchEvent> | this | undefined {
 		if (callback !== undefined) {
 			if (callback === null) {
 				this._pointerUp = undefined;
@@ -2231,9 +2231,9 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 	 *     });
 	 * @return {*}
 	 */
-	pointerWheel (callback: IgeInputEventHandler | null): this;
-	pointerWheel (): IgeInputEventHandler;
-	pointerWheel (callback?: IgeInputEventHandler | null) {
+	pointerWheel (callback: IgeInputEventHandler<WheelEvent> | null): this;
+	pointerWheel (): IgeInputEventHandler<WheelEvent>;
+	pointerWheel (callback?: IgeInputEventHandler<WheelEvent> | null) {
 		if (callback !== undefined) {
 			if (callback === null) {
 				this._pointerWheel = undefined;
@@ -2349,7 +2349,7 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 	 * to fire, a mouse-over or a mouse-move.
 	 * @private
 	 */
-	_handleMouseIn = (event: Event, evc?: IgeInputEventControl, data?: any) => {
+	_handleMouseIn = (event: PointerEvent | TouchEvent, evc?: IgeInputEventControl, data?: any) => {
 		// Check if the mouse move is a mouse over
 		if (!this._pointerStateOver) {
 			this._pointerStateOver = true;
@@ -2379,7 +2379,7 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 	 * should be fired.
 	 * @private
 	 */
-	_handleMouseOut = (event: Event, evc?: IgeInputEventControl, data?: any) => {
+	_handleMouseOut = (event: PointerEvent | TouchEvent, evc?: IgeInputEventControl, data?: any) => {
 		// The mouse went away from this entity so
 		// set mouse-down to false, regardless of the situation
 		this._pointerStateDown = false;
@@ -2410,7 +2410,7 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 	 * should be fired.
 	 * @private
 	 */
-	_handleMouseWheel = (event: Event, evc?: IgeInputEventControl, data?: any) => {
+	_handleMouseWheel = (event: WheelEvent, evc?: IgeInputEventControl, data?: any) => {
 		if (this._pointerWheel) {
 			this._pointerWheel(event, evc, data);
 		}
@@ -2430,7 +2430,7 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 	 * should be fired.
 	 * @private
 	 */
-	_handleMouseUp = (event: Event, evc?: IgeInputEventControl, data?: any) => {
+	_handleMouseUp = (event: PointerEvent | TouchEvent, evc?: IgeInputEventControl, data?: any) => {
 		// Reset the mouse-down flag
 		this._pointerStateDown = false;
 		if (this._pointerUp) {
@@ -2452,7 +2452,7 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 	 * should be fired.
 	 * @private
 	 */
-	_handleMouseDown = (event: Event, evc?: IgeInputEventControl, data?: any) => {
+	_handleMouseDown = (event: PointerEvent | TouchEvent, evc?: IgeInputEventControl, data?: any) => {
 		if (!this._pointerStateDown) {
 			this._pointerStateDown = true;
 

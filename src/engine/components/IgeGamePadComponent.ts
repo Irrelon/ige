@@ -1,13 +1,13 @@
 import { IgeComponent } from "@/engine/core/IgeComponent";
 import type { IgeEngine } from "@/engine/core/IgeEngine";
-import type { IgeEntity } from "@/engine/core/IgeEntity";
 import { isClient } from "@/engine/utils/clientServer";
 import { IgeBehaviourType } from "@/enums";
 import type { IgeEntityBehaviourMethod } from "@/types/IgeEntityBehaviour";
 
 export class IgeGamePadComponent extends IgeComponent<IgeEngine> {
-	"classId" = "IgeGamePadComponent";
-	"componentId" = "gamePad";
+	static componentTargetClass = "IgeViewport";
+	classId = "IgeGamePadComponent";
+	componentId = "gamePad";
 
 	gamepadAvailable: boolean | null = null; // True if the browser supports them
 
@@ -19,7 +19,7 @@ export class IgeGamePadComponent extends IgeComponent<IgeEngine> {
 	// standard controls. Any extraneous buttons will have larger indexes.
 	TYPICAL_AXIS_COUNT = 4;
 
-	// Whether we’re requestAnimationFrameing like it’s 1999.
+	// Whether we’re requestAnimationFraming like it’s 1999 (with an interval)
 	ticking = false;
 
 	// The canonical list of attached gamepads, without “holes” (always
@@ -36,7 +36,7 @@ export class IgeGamePadComponent extends IgeComponent<IgeEngine> {
 	// as last time).
 	prevTimestamps = [];
 
-	constructor (entity: IgeEntity, options?: any) {
+	constructor (entity: IgeEngine, options?: any) {
 		super(entity, options);
 
 		if (!isClient || typeof (navigator as Navigator).getGamepads === "undefined") {

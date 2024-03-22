@@ -1,10 +1,10 @@
 import { IgeComponent } from "../core/IgeComponent.js"
-import { IgePathNode } from "../core/IgePathNode.js";
+import { IgePathNode } from "../core/IgePathNode.js"
 import { IgePoint3d } from "../core/IgePoint3d.js"
-import { ige } from "../instance.js";
+import { ige } from "../instance.js"
 import { isClient } from "../utils/clientServer.js"
-import { distance } from "../utils/maths.js";
-import { IgeBehaviourType, IgeEntityRenderMode, IgeMountMode } from "../../enums/index.js";
+import { distance } from "../utils/maths.js"
+import { IgeBehaviourType, IgeEntityRenderMode, IgeMountMode } from "../../enums/index.js"
 const isoDirectionMap = {
     "E": "SE",
     "S": "SW",
@@ -82,19 +82,21 @@ export class IgePathComponent extends IgeComponent {
         if (val === undefined) {
             return this._finder;
         }
+        val._allowDiagonal = this._allowDiagonal;
+        val._allowSquare = this._allowSquare;
         this._finder = val;
         return this;
     };
     /**
      * Gets / sets the dynamic mode enabled flag. If dynamic mode is enabled
-     * then at the end of every path point (reaching a tile along the path)
+     * then at the end of every path point (reaching a point along the path)
      * the pathfinder will evaluate the path by looking ahead and seeing if
-     * the path has changed (the tiles along the path have now been marked as
-     * cannot path on). If any tile along the path up to the look-ahead value
+     * the path has changed (the points along the path have now been marked as
+     * cannot path on). If any point along the path up to the look-ahead value
      * has been blocked, the path will auto re-calculate to avoid the new block.
      *
      * For dynamic mode to work you need to supply a pathfinder instance by
-     * calling .finder(), a tile checker method by calling .tileChecker() and
+     * calling .finder(), a point checker method by calling .pointChecker() and
      * the number of look-ahead steps by calling .lookAheadSteps(). See the
      * doc for those methods for usage and required arguments.
      * @param {boolean} enable If set to true, enables dynamic mode.
@@ -171,8 +173,9 @@ export class IgePathComponent extends IgeComponent {
             throw new Error("No path finder (IgePathFinder) assigned to IgePathComponent");
         if (!this._tileMap)
             throw new Error("No tile map (IgeTileMap2d) assigned to IgePathComponent");
+        this._finder._tileMap = this._tileMap;
         // Create a new path
-        const path = this._finder.generate(this._tileMap, new IgePathNode(fromX, fromY, fromZ, 0), new IgePathNode(toX, toY, toZ, 0), this._tileChecker, this._allowSquare, this._allowDiagonal, findNearest);
+        const path = this._finder.generate(new IgePathNode(fromX, fromY, fromZ, 0), new IgePathNode(toX, toY, toZ, 0), findNearest);
         this.addPoints(path);
         return this;
     };
@@ -205,7 +208,7 @@ export class IgePathComponent extends IgeComponent {
             shift = false;
         }
         // Create a new path
-        const path = this._finder.generate(this._tileMap, endPoint, new IgePathNode(x, y, z, 0), this._tileChecker, this._allowSquare, this._allowDiagonal, allowInvalidDestination);
+        const path = this._finder.generate(endPoint, new IgePathNode(x, y, z, 0), allowInvalidDestination);
         if (shift) {
             // Remove the first tile, it's the last one on the list already
             path.shift();
@@ -239,7 +242,7 @@ export class IgePathComponent extends IgeComponent {
         }
         // Create a new path, making sure we include the points that we're currently working between
         const prePath = fromPoint ? [fromPoint] : [];
-        const path = this._finder.generate(this._tileMap, toPoint, new IgePathNode(x, y, z, 0), this._tileChecker, this._allowSquare, this._allowDiagonal, allowInvalidDestination);
+        const path = this._finder.generate(toPoint, new IgePathNode(x, y, z, 0), allowInvalidDestination);
         // Do nothing if the new path is empty or invalid
         if (path.length > 0) {
             this.clear();
@@ -498,15 +501,23 @@ export class IgePathComponent extends IgeComponent {
         return this._drawPathText;
     };
     multiplyPoint = (point) => {
+        if (!this._entity._parent)
+            return point;
         return point.multiply(this._entity._parent._tileWidth, this._entity._parent._tileHeight, this._entity._parent._tileDepth || 1);
     };
     dividePoint = (point) => {
+        if (!this._entity._parent)
+            return point;
         return point.divide(this._entity._parent._tileWidth, this._entity._parent._tileHeight, this._entity._parent._tileDepth || 1);
     };
     transformPoint = (point) => {
+        if (!this._entity._parent)
+            return point;
         return new IgePoint3d(point.x + this._entity._parent._tileWidth / 2, point.y + this._entity._parent._tileHeight / 2, point.z);
     };
     unTransformPoint = (point) => {
+        if (!this._entity._parent)
+            return point;
         return new IgePoint3d(point.x - this._entity._parent._tileWidth / 2, point.y - this._entity._parent._tileHeight / 2, point.z);
     };
     /**
@@ -636,7 +647,7 @@ export class IgePathComponent extends IgeComponent {
         const tileCheckData = this._tileMap.map.tileData(pointTo.x, pointTo.y) || null;
         if (!this._tileChecker(tileCheckData, pointTo.x, pointTo.y, pointTo.z, null, null, null, null, true)) {
             // The new destination tile is blocked, recalculate path
-            newPathPoints = this._finder.generate(this._tileMap, new IgePathNode(pointFrom.x, pointFrom.y, pointFrom.z, 0), new IgePathNode(destinationPoint.x, destinationPoint.y, destinationPoint.z, 0), this._tileChecker, this._allowSquare, this._allowDiagonal, false);
+            newPathPoints = this._finder.generate(new IgePathNode(pointFrom.x, pointFrom.y, pointFrom.z, 0), new IgePathNode(destinationPoint.x, destinationPoint.y, destinationPoint.z, 0), false);
             if (newPathPoints.length) {
                 this.replacePoints(this._currentPointFrom, this._points.length - this._currentPointFrom, newPathPoints);
                 return true;

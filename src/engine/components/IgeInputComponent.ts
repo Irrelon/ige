@@ -9,6 +9,7 @@ import type { IgeInputEventControl } from "@/types/IgeInputEventControl";
 import type { IgeIsReadyPromise } from "@/types/IgeIsReadyPromise";
 
 export class IgeInputComponent extends IgeEventingClass implements IgeIsReadyPromise {
+	static componentTargetClass = "Ige";
 	classId = "IgeInputComponent";
 	componentId = "input";
 	_eventQueue: [(evc: IgeInputEventControl, eventData?: any) => void, any][];
@@ -20,11 +21,11 @@ export class IgeInputComponent extends IgeEventingClass implements IgeIsReadyPro
 	_previousState: Record<number, Record<number, string | number | boolean>> = {};
 	_controlMap: Record<number, IgeInputControlMap> = {};
 	dblClick?: Event;
-	pointerMove?: Event;
-	pointerDown?: Event;
-	pointerUp?: Event;
-	pointerWheel?: Event;
-	contextMenu?: Event;
+	pointerMove?: PointerEvent | TouchEvent;
+	pointerDown?: PointerEvent | TouchEvent;
+	pointerUp?: PointerEvent | TouchEvent;
+	pointerWheel?: WheelEvent;
+	contextMenu?: PointerEvent | TouchEvent;
 
 	constructor () {
 		super();

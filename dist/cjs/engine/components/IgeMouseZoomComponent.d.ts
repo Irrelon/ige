@@ -2,11 +2,12 @@ import { IgeComponent } from "../core/IgeComponent.js"
 import { IgePoint2d } from "../core/IgePoint2d.js";
 import { IgePoint3d } from "../core/IgePoint3d.js"
 import type { IgeBounds } from "../core/IgeBounds.js";
+import type { IgeViewport } from "../core/IgeViewport.js"
 /**
  * When added to a viewport, automatically adds mouse zooming
  * capabilities to the viewport's camera.
  */
-export declare class IgeMouseZoomComponent extends IgeComponent {
+export declare class IgeMouseZoomComponent extends IgeComponent<IgeViewport> {
     static componentTargetClass: string;
     classId: string;
     componentId: string;
@@ -21,7 +22,7 @@ export declare class IgeMouseZoomComponent extends IgeComponent {
      * @param {boolean=} val
      * @return {*}
      */
-    enabled(val?: boolean): any;
+    enabled(val?: boolean): boolean | IgeViewport;
     /**
      * Handles the pointerDown event. Records the starting position of the
      * camera zoom and the current camera translation.
@@ -35,7 +36,7 @@ export declare class IgeMouseZoomComponent extends IgeComponent {
      * @param event
      * @private
      */
-    _pointerWheel: (event: WheelEvent) => void;
+    _pointerWheel: (event?: WheelEvent) => void;
     /**
      * Handles the mouse up event. Finishes the camera scale and
      * removes the starting zoom data.

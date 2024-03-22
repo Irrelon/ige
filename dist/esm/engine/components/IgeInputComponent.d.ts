@@ -5,6 +5,7 @@ import { IgeEventReturnFlag, IgeInputDevice } from "../../enums/index.js";
 import type { IgeInputEventControl } from "../../types/IgeInputEventControl.js"
 import type { IgeIsReadyPromise } from "../../types/IgeIsReadyPromise.js"
 export declare class IgeInputComponent extends IgeEventingClass implements IgeIsReadyPromise {
+    static componentTargetClass: string;
     classId: string;
     componentId: string;
     _eventQueue: [(evc: IgeInputEventControl, eventData?: any) => void, any][];
@@ -15,11 +16,11 @@ export declare class IgeInputComponent extends IgeEventingClass implements IgeIs
     _previousState: Record<number, Record<number, string | number | boolean>>;
     _controlMap: Record<number, IgeInputControlMap>;
     dblClick?: Event;
-    pointerMove?: Event;
-    pointerDown?: Event;
-    pointerUp?: Event;
-    pointerWheel?: Event;
-    contextMenu?: Event;
+    pointerMove?: PointerEvent | TouchEvent;
+    pointerDown?: PointerEvent | TouchEvent;
+    pointerUp?: PointerEvent | TouchEvent;
+    pointerWheel?: WheelEvent;
+    contextMenu?: PointerEvent | TouchEvent;
     constructor();
     isReady(): Promise<void>;
     debug: (val?: boolean) => boolean | this | undefined;

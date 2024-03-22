@@ -37,7 +37,7 @@ class IgeMousePanComponent extends IgeComponent_1.IgeComponent {
          * @private
          */
         this._pointerDown = (event) => {
-            if (!(!this._panStarted && this._enabled && event.igeViewport.id() === this._entity.id())) {
+            if (!(!this._panStarted && this._enabled && (event === null || event === void 0 ? void 0 : event.igeViewport.id()) === this._entity.id())) {
                 return;
             }
             const curMousePos = instance_1.ige._pointerPos;

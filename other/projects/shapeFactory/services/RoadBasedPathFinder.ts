@@ -14,6 +14,7 @@ export class RoadBasedPathFinder extends IgeGenericPathFinder {
 			_id: building._id as string,
 			x: building._translate.x,
 			y: building._translate.y,
+			z: building._translate.z,
 			cost: 0
 		};
 	}
@@ -29,7 +30,7 @@ export class RoadBasedPathFinder extends IgeGenericPathFinder {
 			if (road._fromId === currentNode._id) {
 				const pathNode = this.getNode(road._toId);
 				if (pathNode) {
-					pathNode.cost = this.cost(pathNode.x, pathNode.y, targetNode.x, targetNode.y);
+					pathNode.cost = this.cost(pathNode.x, pathNode.y, pathNode.z, targetNode.x, targetNode.y, targetNode.z);
 					pathNode.link = currentNode;
 					pathNodes.push(pathNode);
 				}
@@ -39,7 +40,7 @@ export class RoadBasedPathFinder extends IgeGenericPathFinder {
 			const pathNode = this.getNode(road._fromId);
 
 			if (pathNode) {
-				pathNode.cost = this.cost(pathNode.x, pathNode.y, targetNode.x, targetNode.y);
+				pathNode.cost = this.cost(pathNode.x, pathNode.y, pathNode.z, targetNode.x, targetNode.y, targetNode.z);
 				pathNode.link = currentNode;
 				pathNodes.push(pathNode);
 			}

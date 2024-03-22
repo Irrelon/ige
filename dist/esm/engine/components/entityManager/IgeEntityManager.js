@@ -1,7 +1,7 @@
 import { IgeComponent } from "../../core/IgeComponent.js"
 import { ige } from "../../instance.js"
 import { arrPull } from "../../utils/arrays.js"
-import { IgeBehaviourType, IgeEntityRenderMode, IgeMountMode } from "../../../enums/index.js";
+import { IgeBehaviourType, IgeEntityRenderMode, IgeMountMode } from "../../../enums/index.js"
 /**
  * This component should be mounted to a parent entity such as an IgeScene2d but can
  * be mounted to any instance that extends IgeEntity.
@@ -11,6 +11,7 @@ import { IgeBehaviourType, IgeEntityRenderMode, IgeMountMode } from "../../../en
  * unmounted until they come back into view and are then mounted again.
  */
 export class IgeEntityManager extends IgeComponent {
+    static componentTargetClass = "IgeEntity";
     classId = "IgeEntityManager";
     componentId = "entityManager";
     // Create queue arrays that will store entities waiting to
@@ -19,12 +20,12 @@ export class IgeEntityManager extends IgeComponent {
     _unMountQueue = [];
     _maxMountsPerOp = 0;
     _maxUnMountsPerOp = 0;
-    constructor(entity, options) {
-        super(entity, options);
+    constructor(parent, options) {
+        super(parent, options);
         // Create the _orphans array on the entity
-        entity._orphans = [];
+        parent._orphans = [];
         // Set a method (behaviour) that will be called on every update
-        entity.addBehaviour(IgeBehaviourType.preUpdate, "entityManager", this._updateBehaviour);
+        parent.addBehaviour(IgeBehaviourType.preUpdate, "entityManager", this._updateBehaviour);
     }
     /**
      * Called each update frame from the component parent and calls various private

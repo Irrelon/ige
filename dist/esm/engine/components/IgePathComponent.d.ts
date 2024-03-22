@@ -13,7 +13,7 @@ import type { IgePathFinderComparisonCallback } from "../../types/IgePathFinderC
  * the component will add a behaviour to the entity that is called each update()
  * and will operate to move the entity along a defined path.
  */
-export declare class IgePathComponent extends IgeComponent {
+export declare class IgePathComponent extends IgeComponent<IgeEntity> {
     classId: string;
     componentId: string;
     _tileMap?: IgeTileMap2d;
@@ -57,14 +57,14 @@ export declare class IgePathComponent extends IgeComponent {
     finder: (val?: IgePathFinder) => IgePathFinder | this | undefined;
     /**
      * Gets / sets the dynamic mode enabled flag. If dynamic mode is enabled
-     * then at the end of every path point (reaching a tile along the path)
+     * then at the end of every path point (reaching a point along the path)
      * the pathfinder will evaluate the path by looking ahead and seeing if
-     * the path has changed (the tiles along the path have now been marked as
-     * cannot path on). If any tile along the path up to the look-ahead value
+     * the path has changed (the points along the path have now been marked as
+     * cannot path on). If any point along the path up to the look-ahead value
      * has been blocked, the path will auto re-calculate to avoid the new block.
      *
      * For dynamic mode to work you need to supply a pathfinder instance by
-     * calling .finder(), a tile checker method by calling .tileChecker() and
+     * calling .finder(), a point checker method by calling .pointChecker() and
      * the number of look-ahead steps by calling .lookAheadSteps(). See the
      * doc for those methods for usage and required arguments.
      * @param {boolean} enable If set to true, enables dynamic mode.
@@ -77,7 +77,7 @@ export declare class IgePathComponent extends IgeComponent {
      * to traverse when calculating paths.
      * @returns {*}
      */
-    tileChecker: (val?: IgePathFinderComparisonCallback) => IgePathFinderComparisonCallback | this;
+    tileChecker: (val?: IgePathFinderComparisonCallback) => this | IgePathFinderComparisonCallback;
     lookAheadSteps: (val?: number) => number | this | undefined;
     /**
      * Gets / sets the flag determining if a path can use N, S, E and W movement.

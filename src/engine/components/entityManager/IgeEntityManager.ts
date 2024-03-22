@@ -14,7 +14,8 @@ import type { IgeEntityBehaviourMethod } from "@/types/IgeEntityBehaviour";
  * ensure they are still inside the visible area of any viewport. If not they are
  * unmounted until they come back into view and are then mounted again.
  */
-export class IgeEntityManager extends IgeComponent {
+export class IgeEntityManager extends IgeComponent<IgeEntity> {
+	static componentTargetClass = "IgeEntity";
 	classId = "IgeEntityManager";
 	componentId = "entityManager";
 
@@ -25,14 +26,14 @@ export class IgeEntityManager extends IgeComponent {
 	_maxMountsPerOp: number = 0;
 	_maxUnMountsPerOp: number = 0;
 
-	constructor (entity: IgeEntity, options?: any) {
-		super(entity, options);
+	constructor (parent: IgeEntity, options?: any) {
+		super(parent, options);
 
 		// Create the _orphans array on the entity
-		entity._orphans = [];
+		parent._orphans = [];
 
 		// Set a method (behaviour) that will be called on every update
-		entity.addBehaviour(IgeBehaviourType.preUpdate, "entityManager", this._updateBehaviour);
+		parent.addBehaviour(IgeBehaviourType.preUpdate, "entityManager", this._updateBehaviour);
 	}
 
 	/**
@@ -70,7 +71,7 @@ export class IgeEntityManager extends IgeComponent {
 	 * @private
 	 */
 	_updateOrphans = () => {
-		const arr = this._entity._children;
+		const arr = this._entity._children as IgeEntity[];
 		const viewportArr = ige.engine._children as IgeViewport[];
 		const vpCount = viewportArr.length;
 
@@ -131,7 +132,7 @@ export class IgeEntityManager extends IgeComponent {
 	 * @private
 	 */
 	_updateChildren () {
-		const arr = this._entity._orphans;
+		const arr = this._entity._orphans as IgeEntity[];
 		const viewportArr = ige.engine._children as IgeViewport[];
 		const vpCount = viewportArr.length;
 
@@ -193,7 +194,7 @@ export class IgeEntityManager extends IgeComponent {
 		while (arrCount--) {
 			const item = arr[arrCount];
 
-			arrPull(this._entity._orphans, item);
+			arrPull(this._entity._orphans as IgeEntity[], item);
 			item.mount(this._entity);
 		}
 
@@ -212,7 +213,7 @@ export class IgeEntityManager extends IgeComponent {
 			const item = arr[arrCount];
 			item.unMount();
 
-			this._entity._orphans.push(item);
+			(this._entity._orphans as IgeEntity[]).push(item);
 		}
 
 		this._unMountQueue = [];

@@ -1,5 +1,5 @@
 import { IgeComponent } from "../core/IgeComponent.js"
-import { IgePoint2d } from "../core/IgePoint2d.js";
+import { IgePoint2d } from "../core/IgePoint2d.js"
 import { ige } from "../instance.js"
 /**
  * When added to a viewport, automatically adds mouse panning
@@ -78,7 +78,7 @@ export class IgeMousePanComponent extends IgeComponent {
      * @private
      */
     _pointerDown = (event) => {
-        if (!(!this._panStarted && this._enabled && event.igeViewport.id() === this._entity.id())) {
+        if (!(!this._panStarted && this._enabled && event?.igeViewport.id() === this._entity.id())) {
             return;
         }
         const curMousePos = ige._pointerPos;

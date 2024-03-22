@@ -3,8 +3,8 @@ import type { IgeComponent } from "../core/IgeComponent.js";
 import type { IgeMixin } from "../../types/IgeMixin.js"
 export declare const WithComponentMixin: <ComponentTargetType, MixinBaseClassType extends IgeMixin<IgeBaseClass> = IgeMixin<IgeBaseClass>>(Base: MixinBaseClassType) => {
     new (...args: any[]): {
-        components: Record<string, IgeComponent>;
-        _components: IgeComponent[];
+        components: Record<string, IgeComponent<any>>;
+        _components: IgeComponent<any>[];
         _componentBase: ComponentTargetType | any;
         /**
      * Creates a new instance of the component argument passing

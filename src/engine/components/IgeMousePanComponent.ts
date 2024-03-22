@@ -2,13 +2,14 @@ import { IgeComponent } from "@/engine/core/IgeComponent";
 import { IgePoint2d } from "@/engine/core/IgePoint2d";
 import type { IgePoint3d } from "@/engine/core/IgePoint3d";
 import type { IgeBounds } from "@/engine/core/IgeBounds";
+import type { IgeViewport } from "@/engine/core/IgeViewport";
 import { ige } from "@/engine/instance";
 
 /**
  * When added to a viewport, automatically adds mouse panning
  * capabilities to the viewport's camera.
  */
-export class IgeMousePanComponent extends IgeComponent {
+export class IgeMousePanComponent extends IgeComponent<IgeViewport> {
 	static componentTargetClass = "IgeViewport";
 	classId = "IgeMousePanComponent";
 	componentId = "mousePan";
@@ -90,8 +91,8 @@ export class IgeMousePanComponent extends IgeComponent {
 	 * @param event
 	 * @private
 	 */
-	_pointerDown = (event: Event) => {
-		if (!(!this._panStarted && this._enabled && event.igeViewport.id() === this._entity.id())) {
+	_pointerDown = (event?: PointerEvent) => {
+		if (!(!this._panStarted && this._enabled && event?.igeViewport.id() === this._entity.id())) {
 			return;
 		}
 
@@ -110,7 +111,7 @@ export class IgeMousePanComponent extends IgeComponent {
 	 * @param event
 	 * @private
 	 */
-	_pointerMove = (event: Event) => {
+	_pointerMove = (event?: PointerEvent) => {
 		if (!this._enabled) {
 			return;
 		}
@@ -176,7 +177,7 @@ export class IgeMousePanComponent extends IgeComponent {
 	 * @param event
 	 * @private
 	 */
-	_pointerUp = (event: Event) => {
+	_pointerUp = (event?: PointerEvent) => {
 		if (!this._enabled) {
 			return;
 		}

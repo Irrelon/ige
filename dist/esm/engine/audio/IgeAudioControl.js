@@ -1,5 +1,5 @@
 import { IgeEventingClass } from "../core/IgeEventingClass.js"
-import { ige } from "../instance.js";
+import { ige } from "../instance.js"
 import { isServer } from "../utils/clientServer.js"
 /**
  * Handles controlling an audio source.

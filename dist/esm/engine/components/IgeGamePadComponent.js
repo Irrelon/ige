@@ -1,9 +1,10 @@
 import { IgeComponent } from "../core/IgeComponent.js"
-import { isClient } from "../utils/clientServer.js";
-import { IgeBehaviourType } from "../../enums/index.js";
+import { isClient } from "../utils/clientServer.js"
+import { IgeBehaviourType } from "../../enums/index.js"
 export class IgeGamePadComponent extends IgeComponent {
-    "classId" = "IgeGamePadComponent";
-    "componentId" = "gamePad";
+    static componentTargetClass = "IgeViewport";
+    classId = "IgeGamePadComponent";
+    componentId = "gamePad";
     gamepadAvailable = null; // True if the browser supports them
     // A number of typical buttons recognized by Gamepad API and mapped to
     // standard controls. Any extraneous buttons will have larger indexes.
@@ -11,7 +12,7 @@ export class IgeGamePadComponent extends IgeComponent {
     // A number of typical axes recognized by Gamepad API and mapped to
     // standard controls. Any extraneous buttons will have larger indexes.
     TYPICAL_AXIS_COUNT = 4;
-    // Whether we’re requestAnimationFrameing like it’s 1999.
+    // Whether we’re requestAnimationFraming like it’s 1999 (with an interval)
     ticking = false;
     // The canonical list of attached gamepads, without “holes” (always
     // starting at [0]) and unified between Firefox and Chrome.

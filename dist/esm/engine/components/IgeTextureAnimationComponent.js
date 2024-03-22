@@ -1,6 +1,6 @@
 import { IgeComponent } from "../core/IgeComponent.js"
-import { ige } from "../instance.js";
-import { IgeBehaviourType } from "../../enums/index.js";
+import { ige } from "../instance.js"
+import { IgeBehaviourType } from "../../enums/index.js"
 /**
  * The animation component class. Handles defining and controlling
  * frame-based animations based on cells from a texture.
@@ -100,7 +100,7 @@ export class IgeTextureAnimationComponent extends IgeComponent {
         if (this._anims[id]) {
             const anim = this._anims[id];
             if (typeof frameId === "string") {
-                frameId = this._entity._texture.cellIdToIndex(frameId);
+                frameId = this._entity._texture?.cellIdToIndex(frameId) || -1;
             }
             anim.frames.push(frameId);
             anim.frameCount++;

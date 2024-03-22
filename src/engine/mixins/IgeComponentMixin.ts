@@ -10,8 +10,8 @@ export const WithComponentMixin = <
 		Base: MixinBaseClassType
 	) =>
 		class extends Base {
-			components: Record<string, IgeComponent> = {};
-			_components: IgeComponent[] = []; // TODO: Rename this to _componentsArr
+			components: Record<string, IgeComponent<any>> = {};
+			_components: IgeComponent<any>[] = []; // TODO: Rename this to _componentsArr
 			_componentBase: this | ComponentTargetType;
 
 			constructor (...args: any[]) {

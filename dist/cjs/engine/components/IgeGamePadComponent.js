@@ -7,8 +7,8 @@ const enums_1 = require("../../enums/index.js");
 class IgeGamePadComponent extends IgeComponent_1.IgeComponent {
     constructor(entity, options) {
         super(entity, options);
-        this["classId"] = "IgeGamePadComponent";
-        this["componentId"] = "gamePad";
+        this.classId = "IgeGamePadComponent";
+        this.componentId = "gamePad";
         this.gamepadAvailable = null; // True if the browser supports them
         // A number of typical buttons recognized by Gamepad API and mapped to
         // standard controls. Any extraneous buttons will have larger indexes.
@@ -16,7 +16,7 @@ class IgeGamePadComponent extends IgeComponent_1.IgeComponent {
         // A number of typical axes recognized by Gamepad API and mapped to
         // standard controls. Any extraneous buttons will have larger indexes.
         this.TYPICAL_AXIS_COUNT = 4;
-        // Whether we’re requestAnimationFrameing like it’s 1999.
+        // Whether we’re requestAnimationFraming like it’s 1999 (with an interval)
         this.ticking = false;
         // The canonical list of attached gamepads, without “holes” (always
         // starting at [0]) and unified between Firefox and Chrome.
@@ -77,3 +77,4 @@ class IgeGamePadComponent extends IgeComponent_1.IgeComponent {
     }
 }
 exports.IgeGamePadComponent = IgeGamePadComponent;
+IgeGamePadComponent.componentTargetClass = "IgeViewport";

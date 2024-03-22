@@ -1,8 +1,10 @@
 import { IgeComponent } from "../core/IgeComponent.js"
 import type { IgeEntity } from "../core/IgeEntity.js";
-import { IgeBounds } from "../core/IgeBounds.js"
+import { IgePoint3d } from "../core/IgePoint3d.js"
+import { IgeBounds } from "../core/IgeBounds.js";
+import type { IgeTileMap2d } from "../core/IgeTileMap2d.js"
 import type { IgeCanvasRenderingContext2d } from "../../types/IgeCanvasRenderingContext2d.js";
-export declare class IgeEntityManagerComponent extends IgeComponent {
+export declare class IgeEntityManagerComponent extends IgeComponent<IgeTileMap2d> {
     classId: string;
     componentId: string;
     _lastArea: IgeBounds;
@@ -26,21 +28,21 @@ export declare class IgeEntityManagerComponent extends IgeComponent {
      * @param {Object} entity The parent object that this component is being added to.
      * @param {Object=} options An optional object that is passed to the component when it is being initialised.
      */
-    constructor(entity: IgeEntity, options?: any);
+    constructor(entity: IgeTileMap2d, options?: any);
     /**
      * Adds a map that will be used to read data and convert
      * to entities as the visible map area is moved.
      * @param {IgeTileMap2d=} map
      * @return {*}
      */
-    addMap: (map: any) => any;
+    addMap: (map: any) => IgeTileMap2d<any>;
     /**
      * Gets / sets the boolean flag determining if the entity
      * manager is enabled or not.
      * @param {boolean=} val
      * @return {*}
      */
-    active: (val: any) => any;
+    active: (val: any) => boolean | IgeTileMap2d<any>;
     /**
      * Gets / sets the number of entities the entity manager can
      * create per tick. If the number of entities that need to be
@@ -49,7 +51,7 @@ export declare class IgeEntityManagerComponent extends IgeComponent {
      * @param val
      * @return {*}
      */
-    maxCreatePerTick: (val: any) => any;
+    maxCreatePerTick: (val: any) => number | IgeTileMap2d<any> | undefined;
     /**
      * Gets / sets the number of entities the entity manager can
      * remove per tick. If the number of entities that need to be
@@ -58,16 +60,16 @@ export declare class IgeEntityManagerComponent extends IgeComponent {
      * @param val
      * @return {*}
      */
-    maxRemovePerTick: (val: any) => any;
+    maxRemovePerTick: (val: any) => number | IgeTileMap2d<any> | undefined;
     /**
      * Gets / sets the overwatch mode for the entity manager. This
      * is the mode that the manager will use when monitoring the
-     * entities under it's control to determine if any should be
+     * entities under its control to determine if any should be
      * removed or not.
      * @param {number=} val Overwatch mode, defaults to 0.
      * @return {*}
      */
-    overwatchMode: (val: any) => any;
+    overwatchMode: (val: any) => number | IgeTileMap2d<any>;
     /**
      * Adds a callback method that is called before an entity is
      * created and asks the callback to return true if the entity
@@ -75,7 +77,7 @@ export declare class IgeEntityManagerComponent extends IgeComponent {
      * @param {Function=} val The callback method.
      * @return {*}
      */
-    createCheck: (val: any) => any;
+    createCheck: (val: any) => IgeTileMap2d<any> | ((item: any, x: any, y: any, tileData: any) => boolean) | undefined;
     /**
      * Adds a callback method that is called to allow you to execute
      * the required code to create the desired entity from the map
@@ -83,7 +85,7 @@ export declare class IgeEntityManagerComponent extends IgeComponent {
      * @param {Function=} val The callback method.
      * @return {*}
      */
-    createEntityFromMapData: (val: any) => any;
+    createEntityFromMapData: (val: any) => IgeTileMap2d<any> | (() => any);
     /**
      * Adds a callback method that is called before an entity is removed
      * and if the callback returns true then the entity will be removed
@@ -91,7 +93,7 @@ export declare class IgeEntityManagerComponent extends IgeComponent {
      * @param {Function=} val The callback method.
      * @return {*}
      */
-    removeCheck: (val: any) => any;
+    removeCheck: (val: any) => IgeTileMap2d<any> | ((item: any) => boolean) | undefined;
     /**
      * Get / sets the entity that will be used to determine the
      * center point of the area to manage. This allows the
@@ -110,7 +112,7 @@ export declare class IgeEntityManagerComponent extends IgeComponent {
      * @param {number=} y
      * @return {*}
      */
-    areaCenter: (x: any, y: any) => any;
+    areaCenter: (x: any, y: any) => IgePoint3d | IgeTileMap2d<any> | undefined;
     /**
      * Gets / sets the area rectangle of the management area where
      * entities outside this area are considered for removal and map
@@ -122,8 +124,8 @@ export declare class IgeEntityManagerComponent extends IgeComponent {
      * @param {number=} height
      * @return {*}
      */
-    areaRect: (x: any, y: any, width: any, height: any) => any;
-    areaRectAutoSize: (val: any, options: any) => any;
+    areaRect: (x: any, y: any, width: any, height: any) => IgeBounds | IgeTileMap2d<any> | undefined;
+    areaRectAutoSize: (val: any, options: any) => boolean | IgeTileMap2d<any>;
     /**
      * Returns the current management area.
      * @return {IgeBounds}
@@ -139,7 +141,7 @@ export declare class IgeEntityManagerComponent extends IgeComponent {
      * @param val
      * @return {*}
      */
-    removeMode: (val: any) => any;
+    removeMode: (val: any) => number | IgeTileMap2d<any>;
     /**
      * The behaviour method executed each tick.
      * @param entity

@@ -623,3 +623,4 @@ class IgeInputComponent extends IgeEventingClass_1.IgeEventingClass {
     }
 }
 exports.IgeInputComponent = IgeInputComponent;
+IgeInputComponent.componentTargetClass = "Ige";

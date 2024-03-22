@@ -1,15 +1,15 @@
 import { IgeInputComponent } from "../components/IgeInputComponent.js"
-import { igeConfig } from "./config.js";
+import { igeConfig } from "./config.js"
 import { IgeArrayRegister } from "./IgeArrayRegister.js"
-import { IgeDependencies } from "./IgeDependencies.js";
+import { IgeDependencies } from "./IgeDependencies.js"
 import { IgeMetrics } from "./IgeMetrics.js"
-import { IgeObjectRegister } from "./IgeObjectRegister.js";
+import { IgeObjectRegister } from "./IgeObjectRegister.js"
 import { IgePoint3d } from "./IgePoint3d.js"
-import { IgeRouter } from "./IgeRouter.js";
+import { IgeRouter } from "./IgeRouter.js"
 import { IgeTextureStore } from "./IgeTextureStore.js"
-import { IgeTimeController } from "./IgeTimeController.js";
+import { IgeTimeController } from "./IgeTimeController.js"
 import { isClient, isServer, isWorker } from "../utils/clientServer.js"
-import { igeClassStore } from "../utils/igeClassStore.js";
+import { igeClassStore } from "../utils/igeClassStore.js"
 const version = "3.0.1";
 export class Ige {
     app = null;

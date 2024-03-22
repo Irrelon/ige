@@ -100,12 +100,12 @@ export declare class IgeObject extends IgeEventingClass implements IgeCanRegiste
     _pointerStateDown: boolean;
     _pointerStateOver: boolean;
     _pointerAlwaysInside: boolean;
-    _pointerOut?: IgeInputEventHandler;
-    _pointerOver?: IgeInputEventHandler;
-    _pointerMove?: IgeInputEventHandler;
-    _pointerWheel?: IgeInputEventHandler;
-    _pointerUp?: IgeInputEventHandler;
-    _pointerDown?: IgeInputEventHandler;
+    _pointerOut?: IgeInputEventHandler<PointerEvent | TouchEvent>;
+    _pointerOver?: IgeInputEventHandler<PointerEvent | TouchEvent>;
+    _pointerMove?: IgeInputEventHandler<PointerEvent | TouchEvent>;
+    _pointerWheel?: IgeInputEventHandler<WheelEvent>;
+    _pointerUp?: IgeInputEventHandler<PointerEvent | TouchEvent>;
+    _pointerDown?: IgeInputEventHandler<PointerEvent | TouchEvent>;
     _velocity: IgePoint3d;
     _localMatrix: IgeMatrix2d;
     _worldMatrix: IgeMatrix2d;
@@ -140,7 +140,7 @@ export declare class IgeObject extends IgeEventingClass implements IgeCanRegiste
     _bounds3dPolygon?: IgePoly2d;
     _localAabb?: IgeBounds;
     _deathCallBack?: (...args: any[]) => void;
-    components: Record<string, IgeComponent>;
+    components: Record<string, IgeComponent<IgeObject>>;
     constructor();
     _sortChildren: IgeChildSortFunction;
     /**
@@ -1178,6 +1178,6 @@ export declare class IgeObject extends IgeEventingClass implements IgeCanRegiste
      * @return {String}
      */
     _stringify(options?: Record<keyof IgeObject | string, boolean>): string;
-    addComponent(id: string, Component: typeof IgeComponent, options?: any): this;
+    addComponent(id: string, Component: typeof IgeComponent<IgeObject>, options?: any): this;
     removeComponent(id: string): this;
 }

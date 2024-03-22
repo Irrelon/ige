@@ -1,6 +1,6 @@
 import { IgeCellSheet } from "@/engine/core/IgeCellSheet";
 import { IgeComponent } from "@/engine/core/IgeComponent";
-import type { IgeEntity } from "@/engine/core/IgeEntity";
+import type { IgeEngine } from "@/engine/core/IgeEngine";
 import { IgeTextureMap } from "@/engine/core/IgeTextureMap";
 import { IgeTileMap2d } from "@/engine/core/IgeTileMap2d";
 import { isClient, isServer } from "@/engine/utils/clientServer";
@@ -8,11 +8,11 @@ import { isClient, isServer } from "@/engine/utils/clientServer";
 /**
  * Loads slightly modified Tiled-format json map data into the Isogenic Engine.
  */
-export class IgeTiledComponent extends IgeComponent {
+export class IgeTiledComponent extends IgeComponent<IgeEngine> {
 	classId = "IgeTiledComponent";
 	componentId = "tiled";
 
-	constructor (entity: IgeEntity, options?: any) {
+	constructor (entity: IgeEngine, options?: any) {
 		super(entity, options);
 	}
 

@@ -193,12 +193,12 @@ export declare const WithUiPositionMixin: <BaseClassType extends IgeMixin<IgeObj
         _pointerStateDown: boolean;
         _pointerStateOver: boolean;
         _pointerAlwaysInside: boolean;
-        _pointerOut?: import("../../index.js").IgeInputEventHandler | undefined;
-        _pointerOver?: import("../../index.js").IgeInputEventHandler | undefined;
-        _pointerMove?: import("../../index.js").IgeInputEventHandler | undefined;
-        _pointerWheel?: import("../../index.js").IgeInputEventHandler | undefined;
-        _pointerUp?: import("../../index.js").IgeInputEventHandler | undefined;
-        _pointerDown?: import("../../index.js").IgeInputEventHandler | undefined;
+        _pointerOut?: import("../../index.js").IgeInputEventHandler<PointerEvent | TouchEvent> | undefined;
+        _pointerOver?: import("../../index.js").IgeInputEventHandler<PointerEvent | TouchEvent> | undefined;
+        _pointerMove?: import("../../index.js").IgeInputEventHandler<PointerEvent | TouchEvent> | undefined;
+        _pointerWheel?: import("../../index.js").IgeInputEventHandler<WheelEvent> | undefined;
+        _pointerUp?: import("../../index.js").IgeInputEventHandler<PointerEvent | TouchEvent> | undefined;
+        _pointerDown?: import("../../index.js").IgeInputEventHandler<PointerEvent | TouchEvent> | undefined;
         _velocity: import("../../index.js").IgePoint3d;
         _localMatrix: import("../../index.js").IgeMatrix2d;
         _worldMatrix: import("../../index.js").IgeMatrix2d;
@@ -216,6 +216,13 @@ export declare const WithUiPositionMixin: <BaseClassType extends IgeMixin<IgeObj
         _noAabb?: boolean | undefined;
         _hasParent?: Record<string, boolean> | undefined;
         _texture?: import("../../index.js").IgeTexture | undefined;
+        /**
+         * Gets / sets the entity's y position relative to the bottom of
+         * the canvas.
+         * @param {number} px
+         * @param {boolean=} noUpdate
+         * @return {number}
+         */
         _indestructible: boolean;
         _shouldRender?: boolean | undefined;
         _smartBackground?: import("../../index.js").IgeSmartTexture<import("../../index.js").IgeEntity> | undefined;
@@ -233,7 +240,7 @@ export declare const WithUiPositionMixin: <BaseClassType extends IgeMixin<IgeObj
         _bounds3dPolygon?: import("../../index.js").IgePoly2d | undefined;
         _localAabb?: import("../../index.js").IgeBounds | undefined;
         _deathCallBack?: ((...args: any[]) => void) | undefined;
-        components: Record<string, import("../../index.js").IgeComponent<any>>;
+        components: Record<string, import("../../index.js").IgeComponent<IgeObject>>;
         _sortChildren: import("../../index.js").IgeChildSortFunction;
         id(id: string): any;
         id(): string;
@@ -343,7 +350,9 @@ export declare const WithUiPositionMixin: <BaseClassType extends IgeMixin<IgeObj
         compositeAabb(inverse?: boolean): import("../../index.js").IgeBounds;
         stringify(options?: Record<string, boolean>): string;
         _stringify(options?: Record<string, boolean>): string;
-        addComponent(id: string, Component: typeof import("../../index.js").IgeComponent, options?: any): any;
+        addComponent(id: string, Component: {
+            new (parent: IgeObject, options?: any): import("../../index.js").IgeComponent<IgeObject>;
+        }, options?: any): any;
         removeComponent(id: string): any;
         _eventsEmitting: boolean;
         _eventRemovalQueue: any[];
