@@ -31,7 +31,7 @@ const isoDirectionMap: { [key: string]: IgeCompassDirection } = {
  * the component will add a behaviour to the entity that is called each update()
  * and will operate to move the entity along a defined path.
  */
-export class IgePathComponent extends IgeComponent {
+export class IgePathComponent extends IgeComponent<IgeEntity> {
 	classId = "IgePathComponent";
 	componentId = "path";
 
@@ -102,20 +102,23 @@ export class IgePathComponent extends IgeComponent {
 			return this._finder;
 		}
 
+		val._allowDiagonal = this._allowDiagonal;
+		val._allowSquare = this._allowSquare;
+
 		this._finder = val;
 		return this;
 	};
 
 	/**
 	 * Gets / sets the dynamic mode enabled flag. If dynamic mode is enabled
-	 * then at the end of every path point (reaching a tile along the path)
+	 * then at the end of every path point (reaching a point along the path)
 	 * the pathfinder will evaluate the path by looking ahead and seeing if
-	 * the path has changed (the tiles along the path have now been marked as
-	 * cannot path on). If any tile along the path up to the look-ahead value
+	 * the path has changed (the points along the path have now been marked as
+	 * cannot path on). If any point along the path up to the look-ahead value
 	 * has been blocked, the path will auto re-calculate to avoid the new block.
 	 *
 	 * For dynamic mode to work you need to supply a pathfinder instance by
-	 * calling .finder(), a tile checker method by calling .tileChecker() and
+	 * calling .finder(), a point checker method by calling .pointChecker() and
 	 * the number of look-ahead steps by calling .lookAheadSteps(). See the
 	 * doc for those methods for usage and required arguments.
 	 * @param {boolean} enable If set to true, enables dynamic mode.
@@ -210,14 +213,12 @@ export class IgePathComponent extends IgeComponent {
 		if (!this._finder) throw new Error("No path finder (IgePathFinder) assigned to IgePathComponent");
 		if (!this._tileMap) throw new Error("No tile map (IgeTileMap2d) assigned to IgePathComponent");
 
+		this._finder._tileMap = this._tileMap;
+
 		// Create a new path
 		const path = this._finder.generate(
-			this._tileMap,
 			new IgePathNode(fromX, fromY, fromZ, 0),
 			new IgePathNode(toX, toY, toZ, 0),
-			this._tileChecker,
-			this._allowSquare,
-			this._allowDiagonal,
 			findNearest
 		);
 
@@ -259,12 +260,8 @@ export class IgePathComponent extends IgeComponent {
 
 		// Create a new path
 		const path = this._finder.generate(
-			this._tileMap,
 			endPoint,
 			new IgePathNode(x, y, z, 0),
-			this._tileChecker,
-			this._allowSquare,
-			this._allowDiagonal,
 			allowInvalidDestination
 		);
 
@@ -306,12 +303,8 @@ export class IgePathComponent extends IgeComponent {
 		// Create a new path, making sure we include the points that we're currently working between
 		const prePath = fromPoint ? [fromPoint] : [];
 		const path = this._finder.generate(
-			this._tileMap,
 			toPoint,
 			new IgePathNode(x, y, z, 0),
-			this._tileChecker,
-			this._allowSquare,
-			this._allowDiagonal,
 			allowInvalidDestination
 		);
 
@@ -625,14 +618,17 @@ export class IgePathComponent extends IgeComponent {
 	};
 
 	multiplyPoint = (point: IgePathNode | IgePoint3d) => {
+		if (!this._entity._parent) return point;
 		return point.multiply(this._entity._parent._tileWidth, this._entity._parent._tileHeight, this._entity._parent._tileDepth || 1);
 	};
 
 	dividePoint = (point: IgePathNode | IgePoint3d) => {
+		if (!this._entity._parent) return point;
 		return point.divide(this._entity._parent._tileWidth, this._entity._parent._tileHeight, this._entity._parent._tileDepth || 1);
 	};
 
 	transformPoint = (point: IgePathNode | IgePoint3d) => {
+		if (!this._entity._parent) return point;
 		return new IgePoint3d(
 			point.x + this._entity._parent._tileWidth / 2,
 			point.y + this._entity._parent._tileHeight / 2,
@@ -641,6 +637,7 @@ export class IgePathComponent extends IgeComponent {
 	};
 
 	unTransformPoint = (point: IgePathNode | IgePoint3d) => {
+		if (!this._entity._parent) return point;
 		return new IgePoint3d(
 			point.x - this._entity._parent._tileWidth / 2,
 			point.y - this._entity._parent._tileHeight / 2,
@@ -840,12 +837,8 @@ export class IgePathComponent extends IgeComponent {
 		if (!this._tileChecker(tileCheckData, pointTo.x, pointTo.y, pointTo.z, null, null, null, null, true)) {
 			// The new destination tile is blocked, recalculate path
 			newPathPoints = this._finder.generate(
-				this._tileMap,
 				new IgePathNode(pointFrom.x, pointFrom.y, pointFrom.z, 0),
 				new IgePathNode(destinationPoint.x, destinationPoint.y, destinationPoint.z, 0),
-				this._tileChecker,
-				this._allowSquare,
-				this._allowDiagonal,
 				false
 			);
 
