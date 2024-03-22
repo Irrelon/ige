@@ -92,83 +92,85 @@ export class Ige implements IgeIsReadyPromise {
 		console.log("Using dependency:", moduleName);
 
 		switch (moduleName) {
-		case "input":
-			this.dependencies.add("input", this.input.isReady());
-			break;
+			case "input":
+				this.dependencies.add("input", this.input.isReady());
+				break;
 
-		case "time":
-			this.dependencies.add("time", this.time.isReady());
-			break;
+			case "time":
+				this.dependencies.add("time", this.time.isReady());
+				break;
 
-		case "engine":
-			this.dependencies.add(
-				"engine",
-				import("./IgeEngine.js").then(({ IgeEngine: Module }) => {
-					this.engine = new Module();
-				})
-			);
-			break;
-		case "network":
-			if (isClient) {
+			case "engine":
 				this.dependencies.add(
-					"network",
-					import("../network/client/IgeNetIoClientController.js").then(({ IgeNetIoClientController: Module }) => {
-						this.network = new Module();
+					"engine",
+					import("./IgeEngine.js").then(({ IgeEngine: Module }) => {
+						this.engine = new Module();
 					})
 				);
-			}
+				break;
+			case "network":
+				if (isClient) {
+					this.dependencies.add(
+						"network",
+						import("../network/client/IgeNetIoClientController.js").then(({ IgeNetIoClientController: Module }) => {
+							this.network = new Module();
+						})
+					);
+				}
 
-			if (isServer) {
+				if (isServer) {
+					this.dependencies.add(
+						"network",
+						import("../network/server/IgeNetIoServerController.js").then(({ IgeNetIoServerController: Module }) => {
+							this.network = new Module();
+						})
+					);
+				}
+				break;
+
+			case "audio":
+				if (isClient && !isWorker) {
+					this.dependencies.add(
+						"audio",
+						import("../audio/IgeAudioController.js").then(({ IgeAudioController: Module }) => {
+							this.audio = new Module();
+						})
+					);
+				} else {
+					this.dependencies.markAsSatisfied("audio");
+				}
+				break;
+
+			case "box2d":
 				this.dependencies.add(
-					"network",
-					import("../network/server/IgeNetIoServerController.js").then(({ IgeNetIoServerController: Module }) => {
-						this.network = new Module();
+					"box2d",
+					import("../components/physics/box2d/IgeBox2dController.js").then(({ IgeBox2dController: Module }) => {
+						this.box2d = new Module();
 					})
 				);
-			}
-			break;
+				break;
 
-		case "audio":
-			if (isClient && !isWorker) {
+			case "tweening":
 				this.dependencies.add(
-					"audio",
-					import("../audio/IgeAudioController.js").then(({ IgeAudioController: Module }) => {
-						this.audio = new Module();
+					"tweening",
+					import("./IgeTweenController.js").then(({ IgeTweenController: Module }) => {
+						this.tween = new Module();
+						this.dependencies.add("tween", this.tween.isReady());
 					})
 				);
-			}
-			break;
+				break;
 
-		case "box2d":
-			this.dependencies.add(
-				"box2d",
-				import("../components/physics/box2d/IgeBox2dController.js").then(({ IgeBox2dController: Module }) => {
-					this.box2d = new Module();
-				})
-			);
-			break;
-
-		case "tweening":
-			this.dependencies.add(
-				"tweening",
-				import("./IgeTweenController.js").then(({ IgeTweenController: Module }) => {
-					this.tween = new Module();
-					this.dependencies.add("tween", this.tween.isReady());
-				})
-			);
-			break;
-
-		case "ui":
-			this.dependencies.add(
-				"ui",
-				import("./IgeUiManagerController.js").then(({ IgeUiManagerController: Module }) => {
-					this.ui = new Module();
-					this.dependencies.add("ui", this.ui.isReady());
-				})
-			);
-			break;
-		default:
-			throw new Error(`Unknown optional module "${moduleName}", please remove your call to ige.uses("${moduleName}")`);
+			case "ui":
+				this.dependencies.add(
+					"ui",
+					import("./IgeUiManagerController.js").then(({ IgeUiManagerController: Module }) => {
+						this.ui = new Module();
+						this.dependencies.add("ui", this.ui.isReady());
+					})
+				);
+				break;
+			default:
+				throw new Error(`Unknown optional module "${moduleName}", please remove your call to ige.uses("${moduleName}")`);
 		}
 	}
 
@@ -282,9 +284,9 @@ export class Ige implements IgeIsReadyPromise {
 		return this;
 	}
 
-	data (key: string, value: any): this;
-	data (key: string): any;
-	data (key: string, value?: any) {
+	data<ValueType = any> (key: string, value: ValueType): this;
+	data<ValueType = any> (key: string): ValueType;
+	data<ValueType = any> (key: string, value?: ValueType) {
 		if (value !== undefined) {
 			this._data = this._data || {};
 			this._data[key] = value;

@@ -1,23 +1,27 @@
 import { IgeEventingClass } from "@/engine/core/IgeEventingClass";
 import { ige } from "@/engine/instance";
+import { isServer } from "@/engine/utils/clientServer";
 
-export class IgeAudioItem extends IgeEventingClass {
-	classId = "IgeAudioItem";
-	_url?: string;
+/**
+ * Handles controlling an audio source.
+ * You can use an instance of IgeAudioControl to
+ * start or stop playback of audio.
+ */
+export class IgeAudioControl extends IgeEventingClass {
+	classId = "IgeAudioControl";
 	_buffer?: AudioBuffer;
 	_bufferSource?: AudioBufferSourceNode;
 	_playWhenReady: boolean = false;
-	_loaded: boolean = false;
 	_loop: boolean = false;
 	_playing: boolean = false;
-	_audioId?: string;
 	_panner?: PannerNode;
+	_audioSourceId?: string;
 
-	constructor (audioId?: string) {
+	constructor (audioSourceId?: string) {
 		super();
 
-		if (audioId) {
-			this.audioId(audioId);
+		if (audioSourceId) {
+			this.audioSourceId(audioSourceId);
 		}
 	}
 
@@ -30,52 +34,40 @@ export class IgeAudioItem extends IgeEventingClass {
 		return this._playing;
 	}
 
-	audioId (audioId: string): this;
-	audioId (): string;
-	audioId (audioId?: string) {
-		if (audioId === undefined) {
-			return this._audioId;
+	/**
+	 * Gets or sets the audioSourceId for this item. If setting an audioSourceId,
+	 * you must first have created the audio source with the global audio
+	 * controller via `new IgeAudioSource(audioSourceId, url);`.
+	 * @param {string} [audioSourceId]
+	 */
+	audioSourceId (): string;
+	audioSourceId (audioSourceId: string): this;
+	audioSourceId (audioSourceId?: string) {
+		if (audioSourceId === undefined) {
+			return this._audioSourceId;
 		}
 
-		if (!ige.audio) return this;
+		this._audioSourceId = audioSourceId;
 
-		this._audioId = audioId;
-		this.buffer(ige.audio.register(audioId));
+		if (!ige.audio || isServer) return this;
 
-		return this;
-	}
-
-	url (url: string): this;
-	url (): string;
-	url (url?: string) {
-		if (url === undefined) {
-			return this._url;
+		const audioItem = ige.audio.get(audioSourceId);
+		if (!audioItem || !audioItem.buffer) {
+			throw new Error(`The audio asset with id ${audioSourceId} does not exist. Add it with \`new IgeAudioSource(audioSourceId, url);\` first!`);
 		}
 
-		this._url = url;
-
-		if (!ige.audio) return this;
-
-		ige.audio
-			._load(url)
-			.then((buffer) => {
-				this.buffer(buffer);
-			})
-			.catch((err) => {
-				throw new Error(`Unable to load audio: ${err}`);
-			});
-
+		this.buffer(audioItem.buffer);
 		return this;
 	}
 
 	/**
 	 * Gets / sets the current audio buffer.
-	 * @param {AudioBuffer} buffer
+	 * @param {AudioBuffer} [buffer]
 	 * @returns {*}
 	 */
-	buffer (buffer: AudioBuffer): this;
 	buffer (): AudioBuffer;
-	buffer (buffer?: AudioBuffer) {
+	buffer (buffer: AudioBuffer): this;
+	buffer (buffer?: AudioBuffer): AudioBuffer | this | undefined {
 		if (buffer === undefined) {
 			return this._buffer;
 		}
@@ -110,11 +102,13 @@ export class IgeAudioItem extends IgeEventingClass {
 	/**
 	 * Plays the audio.
 	 */
-	play (loop: boolean = false) {
+	play (loop?: boolean) {
 		if (!ige.audio) return;
 		if (!this._buffer || !ige.audio._ctx) {
 			this._playWhenReady = true;
-			this._loop = loop;
+			if (loop !== undefined) {
+				this.loop(loop);
+			}
 			this._playing = true;
 			return;
 		}
@@ -132,11 +126,24 @@ export class IgeAudioItem extends IgeEventingClass {
 			this._bufferSource.connect(ige.audio._masterVolumeNode);
 		}
 
-		this._bufferSource.loop = loop;
+		this._bufferSource.loop = this.loop();
 		this._bufferSource.start(0);
 
 		this._playing = true;
-		this.log(`Audio file (${this._url}) playing...`);
+		this.log(`Audio file (${this._audioSourceId}) playing...`);
+	}
+
+	loop (): boolean;
+	loop (loop: boolean): this;
+	loop (loop?: boolean): boolean | this {
+		if (loop === undefined) {
+			return this._loop;
+		}
+
+		this._loop = loop;
+		if (!this._bufferSource) return this;
+		this._bufferSource.loop = loop;
+		return this;
 	}
 
 	/**
@@ -144,7 +151,7 @@ export class IgeAudioItem extends IgeEventingClass {
 	 */
 	stop () {
 		if (this._bufferSource) {
-			this.log("Audio file (" + this._url + ") stopping...");
+			this.log(`Audio file (${this._audioSourceId}) stopping...`);
 			this._bufferSource.stop();
 		} else {
 			this._playWhenReady = false;

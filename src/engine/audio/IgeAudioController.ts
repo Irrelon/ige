@@ -1,19 +1,19 @@
-import { IgeEventingClass } from "@/engine/core/IgeEventingClass";
+import type { IgeAudioSource } from "@/engine/audio/IgeAudioSource";
+import { IgeAssetRegister } from "@/engine/core/IgeAssetRegister";
 import { isClient } from "@/engine/utils/clientServer";
 
-export class IgeAudioController extends IgeEventingClass {
+export class IgeAudioController extends IgeAssetRegister<IgeAudioSource> {
 	classId = "IgeAudioController";
 	_active: boolean = false;
 	_disabled: boolean = false;
-	_register: Record<string, AudioBuffer> = {};
 	_ctx?: AudioContext;
 	_masterVolumeNode: GainNode;
+	_audioBufferStore: Record<string, AudioBuffer> = {};
 
 	constructor () {
 		super();
 		this._active = false;
 		this._disabled = false;
-		this._register = {};
 
 		this._ctx = this.getContext();
 
@@ -22,13 +22,40 @@ export class IgeAudioController extends IgeEventingClass {
 			this._disabled = true;
 		}
 
+		if (this._ctx.state === "suspended") {
+			this.log("Audio support is available but we cannot play sound without user interaction");
+		}
+
 		this._masterVolumeNode = this._ctx.createGain();
 		this._masterVolumeNode.connect(this._ctx.destination);
 
 		// Set listener orientation to match our 2d plane
+		// The setOrientation() method is deprecated but still supported.
+		// FireFox has (of writing) currently not provided any other way to set orientation,
+		// so we must continue to use this method until that changes
+		// TODO: Wait for Firefox to support accessor properties and then update this
 		this._ctx.listener.setOrientation(Math.cos(0.1), 0, Math.sin(0.1), 0, 1, 0);
 
 		this.log("Web audio API connected successfully");
+	}
+
+	/**
+	 * When first instantiated the audio context might
+	 * be in a suspended state because the browser doesn't
+	 * let us play audio until the user interacts with the
+	 * elements on the page. This function should be called
+	 * in an event listener triggered by a user interaction
+	 * such as a click handler etc.
+	 */
+	interact () {
+		if (!this._ctx) return false;
+		if (this._ctx.state !== "suspended") return true;
+
+		void this._ctx.resume().then((...args: any[]) => {
+			console.log("Audio resume", args);
+		});
+
+		return true;
 	}
 
 	/**
@@ -51,33 +78,8 @@ export class IgeAudioController extends IgeEventingClass {
 	 * Returns an audio context.
 	 * @returns {*}
 	 */
-	getContext () {
+	getContext (): AudioContext {
 		return new window.AudioContext();
-	}
-
-	/**
-	 * Gets / loads an audio file from the given url and assigns it the id specified
-	 * in the global audio register.
-	 * @param {string} id The id to assign the audio in the register.
-	 * @param url
-	 */
-	register (id: string, url: string): this;
-	register (id: string): AudioBuffer;
-	register (id: string, url?: string) {
-		if (!id) {
-			return this._register;
-		}
-
-		if (!url) {
-			return this._register[id];
-		}
-
-		// Assign new audio to register
-		this._load(url).then((buffer) => {
-			this._register[id] = buffer;
-		});
-
-		return this;
 	}
 
 	/**
@@ -91,9 +93,9 @@ export class IgeAudioController extends IgeEventingClass {
 			return;
 		}
 
-		const buffer = this.register(id);
+		const audioSource = this.get(id);
 
-		if (!buffer) {
+		if (!audioSource || !audioSource.buffer) {
 			this.log(`Audio file (${id}) could not play, no buffer exists in register for: ${id}`, "warning");
 			return;
 		}
@@ -101,7 +103,7 @@ export class IgeAudioController extends IgeEventingClass {
 		if (!this._masterVolumeNode) return;
 
 		const bufferSource = this._ctx.createBufferSource();
-		bufferSource.buffer = this.register(id);
+		bufferSource.buffer = audioSource.buffer;
 		bufferSource.connect(this._masterVolumeNode);
 		bufferSource.loop = loop;
 		bufferSource.start(0);
@@ -114,7 +116,7 @@ export class IgeAudioController extends IgeEventingClass {
 	 * @param {boolean=} val True to enable audio support.
 	 * @returns {*}
 	 */
-	active (val?: boolean) {
+	active (val?: boolean): boolean | this {
 		if (val !== undefined && !this._disabled) {
 			this._active = val;
 			return this;
@@ -129,6 +131,7 @@ export class IgeAudioController extends IgeEventingClass {
 	 * file has loaded or on error.
 	 */
 	async _load (url: string) {
+		this.log(`Request to load audio file (${url})...`);
 		return new Promise<AudioBuffer>((resolve, reject) => {
 			const request = new XMLHttpRequest();
 
@@ -161,7 +164,6 @@ export class IgeAudioController extends IgeEventingClass {
 	async _loaded (url: string, data: ArrayBuffer) {
 		return this._decode(data)
 			.then((buffer) => {
-				this.log(`Audio file (${url}) loaded successfully`);
 				return buffer;
 			})
 			.catch((err: any) => {

@@ -170,24 +170,22 @@ export class IgeUiLabel extends IgeUiElement {
 		return this;
 	}
 
-	fontSheet (): IgeFontSheet | undefined;
 	/**
 	 * Gets / sets the font sheet (texture) that the text box will
 	 * use when rendering text inside the box.
-	 * @param fontSheet
-	 * @return {*}
 	 */
+	fontSheet (): IgeFontSheet | undefined;
 	fontSheet (fontSheet: IgeFontSheet): this;
 	fontSheet (fontSheet?: IgeFontSheet): IgeFontSheet | this | undefined {
-		if (fontSheet !== undefined) {
-			this._fontSheet = fontSheet;
-
-			// Set the font sheet as the texture for our font entity
-			this._fontEntity.texture(fontSheet as unknown as IgeTexture);
-			return this;
+		if (fontSheet === undefined) {
+			return this._fontSheet;
 		}
+		
+		this._fontSheet = fontSheet;
 
-		return this._fontSheet;
+		// Set the font sheet as the texture for our font entity
+		this._fontEntity.texture(fontSheet as unknown as IgeTexture);
+		return this;
 	}
 
 	font (): string | IgeFontSheet;
