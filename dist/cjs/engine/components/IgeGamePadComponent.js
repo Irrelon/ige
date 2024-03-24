@@ -9,7 +9,7 @@ class IgeGamePadComponent extends IgeComponent_1.IgeComponent {
         super(entity, options);
         this.classId = "IgeGamePadComponent";
         this.componentId = "gamePad";
-        this.gamepadAvailable = null; // True if the browser supports them
+        this.gamepadApiAvailable = null; // True if the browser supports them
         // A number of typical buttons recognized by Gamepad API and mapped to
         // standard controls. Any extraneous buttons will have larger indexes.
         this.TYPICAL_BUTTON_COUNT = 16;
@@ -37,10 +37,12 @@ class IgeGamePadComponent extends IgeComponent_1.IgeComponent {
             //entity.gamePad.pollStatus();
         };
         if (!clientServer_1.isClient || typeof navigator.getGamepads === "undefined") {
+            this.gamepadApiAvailable = false;
             return;
         }
-        this.gamepadAvailable = Boolean(navigator.getGamepads());
-        if (!this.gamepadAvailable) {
+        this.gamepadApiAvailable = true;
+        //this.gamepadApiAvailable = Boolean((navigator as Navigator).getGamepads());
+        if (!this.gamepadApiAvailable) {
             // It doesn't seem Gamepad API is available
             this.emit("notSupported");
             return;
@@ -52,6 +54,7 @@ class IgeGamePadComponent extends IgeComponent_1.IgeComponent {
     onGamepadConnect(event) {
         // Add the new gamepad on the list of gamepads to look after.
         this.gamepads.push(event.gamepad);
+        console.log("Gamepad connected", event.gamepad);
         // Start the polling loop to monitor button changes.
         //this.startPolling();
         // Ask the tester to update the screen to show more gamepads.
@@ -61,6 +64,7 @@ class IgeGamePadComponent extends IgeComponent_1.IgeComponent {
      * React to the gamepad being disconnected.
      */
     onGamepadDisconnect(event) {
+        console.log("Gamepad disconnected", event.gamepad);
         // Remove the gamepad from the list of gamepads to monitor.
         for (const i of this.gamepads.keys()) {
             if (this.gamepads[i].index == event.gamepad.index) {
@@ -77,4 +81,4 @@ class IgeGamePadComponent extends IgeComponent_1.IgeComponent {
     }
 }
 exports.IgeGamePadComponent = IgeGamePadComponent;
-IgeGamePadComponent.componentTargetClass = "IgeViewport";
+IgeGamePadComponent.componentTargetClass = "IgeEngine";

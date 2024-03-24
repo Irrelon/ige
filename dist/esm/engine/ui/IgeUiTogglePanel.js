@@ -1,5 +1,5 @@
 import { IgeFontEntity } from "../core/IgeFontEntity.js"
-import { IgeUiElement } from "../core/IgeUiElement.js"
+import { IgeUiElement } from "../core/IgeUiElement.js";
 import { registerClass } from "../utils/igeClassStore.js"
 export class IgeUiTogglePanel extends IgeUiElement {
     classId = "IgeUiTogglePanel";

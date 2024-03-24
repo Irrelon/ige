@@ -1,5 +1,5 @@
 import { IgeUiEntity } from "./IgeUiEntity.js"
-import { ige } from "../instance.js"
+import { ige } from "../instance.js";
 import { registerClass } from "../utils/igeClassStore.js"
 /**
  * Creates a new UI element. UI elements use more resources and CPU

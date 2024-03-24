@@ -1,11 +1,11 @@
 import { IgeComponent } from "../core/IgeComponent.js"
-import { isClient } from "../utils/clientServer.js"
-import { IgeBehaviourType } from "../../enums/index.js"
+import { isClient } from "../utils/clientServer.js";
+import { IgeBehaviourType } from "../../enums/index.js";
 export class IgeGamePadComponent extends IgeComponent {
-    static componentTargetClass = "IgeViewport";
+    static componentTargetClass = "IgeEngine";
     classId = "IgeGamePadComponent";
     componentId = "gamePad";
-    gamepadAvailable = null; // True if the browser supports them
+    gamepadApiAvailable = null; // True if the browser supports them
     // A number of typical buttons recognized by Gamepad API and mapped to
     // standard controls. Any extraneous buttons will have larger indexes.
     TYPICAL_BUTTON_COUNT = 16;
@@ -28,10 +28,12 @@ export class IgeGamePadComponent extends IgeComponent {
     constructor(entity, options) {
         super(entity, options);
         if (!isClient || typeof navigator.getGamepads === "undefined") {
+            this.gamepadApiAvailable = false;
             return;
         }
-        this.gamepadAvailable = Boolean(navigator.getGamepads());
-        if (!this.gamepadAvailable) {
+        this.gamepadApiAvailable = true;
+        //this.gamepadApiAvailable = Boolean((navigator as Navigator).getGamepads());
+        if (!this.gamepadApiAvailable) {
             // It doesn't seem Gamepad API is available
             this.emit("notSupported");
             return;
@@ -43,6 +45,7 @@ export class IgeGamePadComponent extends IgeComponent {
     onGamepadConnect(event) {
         // Add the new gamepad on the list of gamepads to look after.
         this.gamepads.push(event.gamepad);
+        console.log("Gamepad connected", event.gamepad);
         // Start the polling loop to monitor button changes.
         //this.startPolling();
         // Ask the tester to update the screen to show more gamepads.
@@ -52,6 +55,7 @@ export class IgeGamePadComponent extends IgeComponent {
      * React to the gamepad being disconnected.
      */
     onGamepadDisconnect(event) {
+        console.log("Gamepad disconnected", event.gamepad);
         // Remove the gamepad from the list of gamepads to monitor.
         for (const i of this.gamepads.keys()) {
             if (this.gamepads[i].index == event.gamepad.index) {

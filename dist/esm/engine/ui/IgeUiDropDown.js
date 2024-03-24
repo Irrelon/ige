@@ -1,7 +1,7 @@
 import { IgeUiElement } from "../core/IgeUiElement.js"
-import { ige } from "../instance.js"
+import { ige } from "../instance.js";
 import { IgeUiLabel } from "./IgeUiLabel.js"
-import { registerClass } from "../utils/igeClassStore.js"
+import { registerClass } from "../utils/igeClassStore.js";
 export class IgeUiDropDown extends IgeUiElement {
     classId = "IgeUiDropDown";
     _toggleState = false;

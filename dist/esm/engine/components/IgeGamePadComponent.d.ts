@@ -5,7 +5,7 @@ export declare class IgeGamePadComponent extends IgeComponent<IgeEngine> {
     static componentTargetClass: string;
     classId: string;
     componentId: string;
-    gamepadAvailable: boolean | null;
+    gamepadApiAvailable: boolean | null;
     TYPICAL_BUTTON_COUNT: number;
     TYPICAL_AXIS_COUNT: number;
     ticking: boolean;

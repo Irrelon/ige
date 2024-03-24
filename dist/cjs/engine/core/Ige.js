@@ -36,7 +36,7 @@ const IgeTextureStore_1 = require("./IgeTextureStore.js");
 const IgeTimeController_1 = require("./IgeTimeController.js");
 const clientServer_1 = require("../utils/clientServer.js");
 const igeClassStore_1 = require("../utils/igeClassStore.js");
-const version = "3.0.1";
+const version = "3.0.2";
 class Ige {
     constructor() {
         this.app = null;

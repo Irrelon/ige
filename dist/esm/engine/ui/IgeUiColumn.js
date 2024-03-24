@@ -1,5 +1,5 @@
 import { IgeUiElement } from "../core/IgeUiElement.js"
-import { registerClass } from "../utils/igeClassStore.js"
+import { registerClass } from "../utils/igeClassStore.js";
 export class IgeUiColumn extends IgeUiElement {
     classId = "IgeUiColumn";
     tick(ctx) {
