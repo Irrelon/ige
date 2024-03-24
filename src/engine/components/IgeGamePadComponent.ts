@@ -5,11 +5,11 @@ import { IgeBehaviourType } from "@/enums";
 import type { IgeEntityBehaviourMethod } from "@/types/IgeEntityBehaviour";
 
 export class IgeGamePadComponent extends IgeComponent<IgeEngine> {
-	static componentTargetClass = "IgeViewport";
+	static componentTargetClass = "IgeEngine";
 	classId = "IgeGamePadComponent";
 	componentId = "gamePad";
 
-	gamepadAvailable: boolean | null = null; // True if the browser supports them
+	gamepadApiAvailable: boolean | null = null; // True if the browser supports them
 
 	// A number of typical buttons recognized by Gamepad API and mapped to
 	// standard controls. Any extraneous buttons will have larger indexes.
@@ -40,12 +40,14 @@ export class IgeGamePadComponent extends IgeComponent<IgeEngine> {
 		super(entity, options);
 
 		if (!isClient || typeof (navigator as Navigator).getGamepads === "undefined") {
+			this.gamepadApiAvailable = false;
 			return;
 		}
 
-		this.gamepadAvailable = Boolean((navigator as Navigator).getGamepads());
+		this.gamepadApiAvailable = true;
+		//this.gamepadApiAvailable = Boolean((navigator as Navigator).getGamepads());
 
-		if (!this.gamepadAvailable) {
+		if (!this.gamepadApiAvailable) {
 			// It doesn't seem Gamepad API is available
 			this.emit("notSupported");
 			return;
@@ -61,6 +63,8 @@ export class IgeGamePadComponent extends IgeComponent<IgeEngine> {
 		// Add the new gamepad on the list of gamepads to look after.
 		this.gamepads.push(event.gamepad);
 
+		console.log("Gamepad connected", event.gamepad);
+
 		// Start the polling loop to monitor button changes.
 		//this.startPolling();
 
@@ -72,6 +76,7 @@ export class IgeGamePadComponent extends IgeComponent<IgeEngine> {
 	 * React to the gamepad being disconnected.
 	 */
 	onGamepadDisconnect (event: GamepadEvent) {
+		console.log("Gamepad disconnected", event.gamepad);
 		// Remove the gamepad from the list of gamepads to monitor.
 		for (const i of this.gamepads.keys()) {
 			if (this.gamepads[i].index == event.gamepad.index) {

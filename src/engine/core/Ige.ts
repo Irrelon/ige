@@ -24,7 +24,7 @@ import type { IgeConfig } from "@/types/IgeConfig";
 import type { IgeIsReadyPromise } from "@/types/IgeIsReadyPromise";
 import type { IgeObjectWithValueProperty } from "@/types/IgeObjectWithValueProperty";
 
-const version = "3.0.1";
+const version = "3.0.2";
 
 export class Ige implements IgeIsReadyPromise {
 	app: any = null;
