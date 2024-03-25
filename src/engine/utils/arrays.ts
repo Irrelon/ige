@@ -2,16 +2,13 @@
  * Removes the passed item from an array, the opposite of push().
  * @param arr
  * @param item
- * @return {number} The array index that was removed
+ * @return {number} The array item that was removed
  */
-export const arrPull = (arr: any[], item: any): number => {
+export const arrPull = (arr: any[], item: any): any => {
 	const index = arr.indexOf(item);
 
 	if (index > -1) {
-		arr.splice(index, 1);
-		return index;
-	} else {
-		return -1;
+		return arr.splice(index, 1);
 	}
 };
 
@@ -21,14 +18,11 @@ export const arrPull = (arr: any[], item: any): number => {
  * @param func
  * @return {number} The array index that was removed
  */
-export const arrPullConditional = (arr: any[], func: (item: any) => boolean): number => {
+export const arrPullConditional = (arr: any[], func: (item: any) => boolean): any => {
 	const index = arr.findIndex(func);
 
 	if (index > -1) {
-		arr.splice(index, 1);
-		return index;
-	} else {
-		return -1;
+		return arr.splice(index, 1);
 	}
 };
 

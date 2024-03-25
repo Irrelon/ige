@@ -302,10 +302,6 @@ export declare class IgeObject extends IgeEventingClass implements IgeCanRegiste
      */
     screenPosition(): IgePoint3d;
     /**
-     * @deprecated Use bounds3dPolygon instead
-     */
-    localIsoBoundsPoly(): void;
-    /**
      * Gets the polygon that encompasses the 3d bounds of the entity in local space.
      * @param {boolean=false} recalculate If true, will force a recalculation
      * of the polygon instead of using an existing cached value.

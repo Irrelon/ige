@@ -1,8 +1,9 @@
-import type { IgeAudioEntityPanner } from "../engine/components/audio/IgeAudioEntity.js"
 import type { IgeEntity } from "../engine/core/IgeEntity.js"
 export interface IgeAudioPlaybackOptions {
     loop?: boolean;
-    gain?: number;
-    pannerSettings?: IgeAudioEntityPanner;
+    volume?: number;
+    pannerSettings?: PannerOptions;
     relativeTo?: IgeEntity | string;
+    onEnded?: () => void;
+    isPersistent?: boolean;
 }

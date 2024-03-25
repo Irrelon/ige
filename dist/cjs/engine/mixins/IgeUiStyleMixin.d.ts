@@ -249,7 +249,6 @@ export declare const WithUiStyleMixin: <BaseClassType extends IgeMixin<IgeObject
         localToWorld(points: import("../../index.js").IgePoint[], viewport?: import("../../index.js").IgeViewport | null | undefined, inverse?: boolean): void;
         localToWorldPoint(point: import("../../index.js").IgePoint3d, viewport?: import("../../index.js").IgeViewport | null | undefined): void;
         screenPosition(): import("../../index.js").IgePoint3d;
-        localIsoBoundsPoly(): void;
         localBounds3dPolygon(recalculate?: boolean): import("../../index.js").IgePoly2d;
         bounds3dPolygon(recalculate?: boolean): import("../../index.js").IgePoly2d;
         update(tickDelta: number): void;

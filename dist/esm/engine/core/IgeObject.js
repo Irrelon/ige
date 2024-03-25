@@ -324,12 +324,6 @@ export class IgeObject extends IgeEventingClass {
             ige.engine._bounds2d.y2), 0);
     }
     /**
-     * @deprecated Use bounds3dPolygon instead
-     */
-    localIsoBoundsPoly() {
-        throw new Error("localIsoBoundsPoly() is deprecated, please use bounds3dPolygon() instead.");
-    }
-    /**
      * Gets the polygon that encompasses the 3d bounds of the entity in local space.
      * @param {boolean=false} recalculate If true, will force a recalculation
      * of the polygon instead of using an existing cached value.
@@ -1184,7 +1178,7 @@ export class IgeObject extends IgeEventingClass {
         return this;
     }
     streamProperty(propName, propVal) {
-        if (!this._id)
+        if (!this._id || isClient)
             return;
         const network = ige.network;
         this._streamProperty = this._streamProperty || {};

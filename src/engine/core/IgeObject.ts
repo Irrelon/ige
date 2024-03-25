@@ -432,7 +432,7 @@ export class IgeObject extends IgeEventingClass implements IgeCanRegisterById, I
 	 * @return {IgePoint3d} The absolute world position of the
 	 * entity.
 	 */
-	worldPosition () {
+	worldPosition (): IgePoint3d {
 		return new IgePoint3d(this._worldMatrix.matrix[2], this._worldMatrix.matrix[5], 0);
 	}
 
@@ -444,7 +444,7 @@ export class IgeObject extends IgeEventingClass implements IgeCanRegisterById, I
 	 * @return {number} The absolute world rotation z of the
 	 * entity.
 	 */
-	worldRotationZ () {
+	worldRotationZ (): number {
 		return this._worldMatrix.rotationRadians();
 	}
 
@@ -456,7 +456,7 @@ export class IgeObject extends IgeEventingClass implements IgeCanRegisterById, I
 	 * @param viewport
 	 * @param inverse
 	 */
-	localToWorld (points: IgePoint[], viewport?: IgeViewport | null, inverse = false) {
+	localToWorld (points: IgePoint[], viewport?: IgeViewport | null, inverse = false): void {
 		// TODO: Commented as this was doing literally nothing
 		//viewport = viewport || ige.engine._currentViewport;
 
@@ -485,7 +485,7 @@ export class IgeObject extends IgeEventingClass implements IgeCanRegisterById, I
 	 * point's data directly.
 	 * @param {IgePoint3d} point The IgePoint3d to convert.
 	 */
-	localToWorldPoint (point: IgePoint3d, viewport?: IgeViewport | null) {
+	localToWorldPoint (point: IgePoint3d, viewport?: IgeViewport | null): void {
 		// TODO: We commented this because it doesn't even get used... is this a mistake?
 		//viewport = viewport || ige.engine._currentViewport;
 		this._worldMatrix.transform([point], this);
@@ -519,13 +519,6 @@ export class IgeObject extends IgeEventingClass implements IgeCanRegisterById, I
 			),
 			0
 		);
-	}
-
-	/**
-	 * @deprecated Use bounds3dPolygon instead
-	 */
-	localIsoBoundsPoly () {
-		throw new Error("localIsoBoundsPoly() is deprecated, please use bounds3dPolygon() instead.");
 	}
 
 	/**
@@ -1860,7 +1853,7 @@ export class IgeObject extends IgeEventingClass implements IgeCanRegisterById, I
 	streamProperty (propName: string): any;
 	streamProperty (propName: string, propVal: any): this;
 	streamProperty (propName: string, propVal?: any): this | any | undefined {
-		if (!this._id) return;
+		if (!this._id || isClient) return;
 
 		const network = ige.network as IgeNetIoServerController;
 

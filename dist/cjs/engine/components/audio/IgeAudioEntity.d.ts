@@ -1,12 +1,9 @@
-import { IgeAudioControl } from "./IgeAudioControl.js"
-import { IgeEntity } from "../../core/IgeEntity.js";
+import { IgeEntity } from "../../core/IgeEntity.js"
 import type { IgeAudioPlaybackOptions } from "../../../types/IgeAudioPlaybackOptions.js"
-export interface IgeAudioEntityPanner extends PannerOptions {
-}
-export declare const defaultPannerSettings: IgeAudioEntityPanner;
+export declare const defaultPannerSettings: PannerOptions;
 export interface IgeAudioEntityProps extends IgeAudioPlaybackOptions {
     audioId?: string;
-    playing?: boolean;
+    playOnMount?: boolean;
 }
 /**
  * Creates an audio entity that automatically handles
@@ -29,14 +26,15 @@ export interface IgeAudioEntityProps extends IgeAudioPlaybackOptions {
  */
 export declare class IgeAudioEntity extends IgeEntity {
     classId: string;
-    _audioControl?: IgeAudioControl;
-    _playing: boolean;
+    _isPlaying: boolean;
+    _playOnMount: boolean;
     _loop: boolean;
-    _gain: number;
+    _volume: number;
     _pannerSettings: PannerOptions;
-    _relativeTo?: IgeEntity;
+    _relativeTo?: IgeEntity | string;
     _panner?: PannerNode;
     _audioSourceId?: string;
+    _playbackControlId?: string;
     constructor(props?: IgeAudioEntityProps);
     /**
      * Returns the data sent to each client when the entity
@@ -44,16 +42,19 @@ export declare class IgeAudioEntity extends IgeEntity {
      */
     streamCreateConstructorArgs(): [IgeAudioEntityProps];
     onStreamProperty(propName: string, propVal: any): this;
-    relativeTo(val: IgeEntity): this;
-    relativeTo(): IgeEntity | undefined;
+    playOnMount(): boolean;
+    playOnMount(val: boolean): this;
+    pannerSettings(): PannerOptions;
+    pannerSettings(val: PannerOptions): this;
+    relativeTo(): IgeEntity | string | undefined;
+    relativeTo(val: IgeEntity | string): this;
     /**
-     * Gets the playing boolean flag state.
+     * Gets the playing state.
      * @returns {boolean} True if playing, false if not.
      */
-    playing(): boolean;
+    isPlaying(): boolean;
     /**
-     * Gets / sets the id of the audio stream to use for
-     * playback.
+     * Gets / sets the id of the audio stream to use for playback.
      * @param {string} [id] The audio id. Must match
      * a previously registered audio stream that was
      * registered via `ige.engine.audio.register()`.
@@ -62,34 +63,25 @@ export declare class IgeAudioEntity extends IgeEntity {
      * @returns {*}
      */
     audioSourceId(): string | undefined;
-    audioSourceId(id: string): this;
-    gain(gain?: number): number | this;
-    loop(loop?: boolean): boolean | this;
+    audioSourceId(val: string): this;
+    volume(val?: number): number | this;
+    loop(val?: boolean): boolean | this;
     /**
      * Starts playback of the audio.
-     * @param {boolean} loop If true, loops the audio until
-     * explicitly stopped by calling stop() or the entity
-     * being destroyed.
      * @returns {IgeAudioEntity}
      */
-    play(loop?: boolean): this;
+    play(): this | null;
     /**
      * Stops playback of the audio.
      * @returns {IgeAudioEntity}
      */
     stop(): this;
-    /**
-     * Gets / sets the IgeAudioControl instance used to control
-     * playback of the audio stream.
-     * @param {IgeAudioControl=} [audio]
-     * @returns {*}
-     */
-    audioControl(): IgeAudioControl | undefined;
-    audioControl(audio: IgeAudioControl): this;
     update(tickDelta: number): void;
     /**
      * Called when the entity is to be destroyed. Stops any
      * current audio stream playback.
      */
     destroy(): this;
+    _mounted(obj: IgeEntity): void;
+    _unMounted(obj: IgeEntity): void;
 }

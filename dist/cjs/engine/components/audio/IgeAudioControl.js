@@ -4,28 +4,47 @@ exports.IgeAudioControl = void 0;
 const IgeEventingClass_1 = require("../../core/IgeEventingClass.js");
 const instance_1 = require("../../instance.js");
 const clientServer_1 = require("../../utils/clientServer.js");
+const ids_1 = require("../../utils/ids.js");
+const synthesize_1 = require("../../utils/synthesize.js");
 /**
- * Handles controlling an audio source.
- * You can use an instance of IgeAudioControl to
- * start or stop playback of audio.
+ * Handles controlling an audio source. You can use an instance of
+ * IgeAudioControl to start or stop playback of audio, but usually
+ * you would do this directly via `ige.audio.play()` or by using
+ * an `IgeAudioEntity` to allow streaming and further manipulation.
  */
 class IgeAudioControl extends IgeEventingClass_1.IgeEventingClass {
-    constructor(audioSourceId) {
+    constructor() {
         super();
         this.classId = "IgeAudioControl";
         this._playWhenReady = false;
+        this._isPersistent = false;
         this._loop = false;
-        this._playing = false;
-        if (audioSourceId) {
-            this.audioSourceId(audioSourceId);
+        this._isPlaying = false;
+        this._id = (0, ids_1.newIdHex)();
+        if (!instance_1.ige.audio) {
+            if (clientServer_1.isServer) {
+                throw new Error("Cannot instantiate an IgeAudioControl on the server!");
+            }
+            throw new Error(`The audio subsystem is not present, did you add the audio controller via ige.uses("audio")?`);
         }
+        if (!instance_1.ige.audio._ctx) {
+            throw new Error("Cannot instantiate an IgeAudioControl without an audio context!");
+        }
+        // We are going to create a node graph like this:
+        // buffer -> this volume (gain) -> panner -> master volume (gain) -> speaker output
+        this._pannerNode = new PannerNode(instance_1.ige.audio._ctx, this._pannerSettings);
+        this._pannerNode.connect(instance_1.ige.audio.masterVolumeNode);
+        this._gainNode = new GainNode(instance_1.ige.audio._ctx);
+        this._gainNode.connect(this._pannerNode);
+        this._bufferNode = new AudioBufferSourceNode(instance_1.ige.audio._ctx);
+        this._bufferNode.connect(this._gainNode);
     }
-    playing(val) {
-        if (val !== undefined) {
-            this._playing = val;
-            return this;
+    volume(val) {
+        if (val === undefined) {
+            return this._gainNode.gain.value;
         }
-        return this._playing;
+        this._gainNode.gain.value = val;
+        return this;
     }
     audioSourceId(audioSourceId) {
         if (audioSourceId === undefined) {
@@ -38,61 +57,34 @@ class IgeAudioControl extends IgeEventingClass_1.IgeEventingClass {
         if (!audioItem || !audioItem.buffer) {
             throw new Error(`The audio asset with id ${audioSourceId} does not exist. Add it with \`new IgeAudioSource(audioSourceId, url);\` first!`);
         }
-        this.buffer(audioItem.buffer);
-        return this;
-    }
-    buffer(buffer) {
-        if (buffer === undefined) {
-            return this._buffer;
-        }
-        this._buffer = buffer;
+        this._bufferNode.buffer = audioItem.buffer;
         if (this._playWhenReady) {
-            this.play(this._loop);
-        }
-        return this;
-    }
-    panner(val) {
-        if (val === undefined) {
-            return this._panner;
-        }
-        this._panner = val;
-        if (this._bufferSource && instance_1.ige.audio) {
-            // Make sure we include the panner in the connections
-            this._bufferSource.connect(this._panner);
-            this._panner.connect(instance_1.ige.audio._masterVolumeNode);
+            this.play();
         }
         return this;
     }
     /**
      * Plays the audio.
      */
-    play(loop) {
+    play() {
         if (!instance_1.ige.audio)
             return;
-        if (!this._buffer || !instance_1.ige.audio._ctx) {
+        if (!this._bufferNode.buffer || !instance_1.ige.audio._ctx) {
             this._playWhenReady = true;
-            if (loop !== undefined) {
-                this.loop(loop);
-            }
-            this._playing = true;
             return;
         }
-        this._bufferSource = instance_1.ige.audio._ctx.createBufferSource();
-        if (!this._bufferSource)
-            return;
-        this._bufferSource.buffer = this._buffer;
-        if (this._panner) {
+        if (this._pannerNode) {
             // Connect through the panner
-            this._bufferSource.connect(this._panner);
-            this._panner.connect(instance_1.ige.audio._masterVolumeNode);
+            this._bufferNode.connect(this._pannerNode);
+            this._pannerNode.connect(instance_1.ige.audio.masterVolumeNode);
         }
         else {
             // Connect directly to the destination
-            this._bufferSource.connect(instance_1.ige.audio._masterVolumeNode);
+            this._bufferNode.connect(instance_1.ige.audio.masterVolumeNode);
         }
-        this._bufferSource.loop = this.loop();
-        this._bufferSource.start(0);
-        this._playing = true;
+        this._bufferNode.loop = this.loop();
+        this._bufferNode.start(0);
+        this._isPlaying = true;
         this.log(`Audio file (${this._audioSourceId}) playing...`);
     }
     loop(loop) {
@@ -100,23 +92,35 @@ class IgeAudioControl extends IgeEventingClass_1.IgeEventingClass {
             return this._loop;
         }
         this._loop = loop;
-        if (!this._bufferSource)
-            return this;
-        this._bufferSource.loop = loop;
+        this._bufferNode.loop = loop;
         return this;
     }
     /**
      * Stops the currently playing audio.
      */
     stop() {
-        if (this._bufferSource) {
+        if (this._bufferNode) {
             this.log(`Audio file (${this._audioSourceId}) stopping...`);
-            this._bufferSource.stop();
+            this._bufferNode.stop(0);
         }
-        else {
-            this._playWhenReady = false;
-        }
-        this._playing = false;
+        this._playWhenReady = false;
+        this._isPlaying = false;
+    }
+    /**
+     * Called when the audio control is to be destroyed. Stops any
+     * current audio stream playback.
+     */
+    destroy() {
+        this.stop();
+        instance_1.ige.audio.removePlaybackControl(this._id);
+        return this;
     }
 }
 exports.IgeAudioControl = IgeAudioControl;
+(0, synthesize_1.synthesize)(IgeAudioControl, "isPersistent");
+(0, synthesize_1.synthesize)(IgeAudioControl, "isPlaying");
+(0, synthesize_1.synthesize)(IgeAudioControl, "playWhenReady");
+(0, synthesize_1.synthesize)(IgeAudioControl, "relativeTo");
+(0, synthesize_1.synthesize)(IgeAudioControl, "onEnded");
+(0, synthesize_1.synthesize)(IgeAudioControl, "pannerSettings");
+(0, synthesize_1.synthesize)(IgeAudioControl, "position");

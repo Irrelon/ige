@@ -1,15 +1,11 @@
-import { IgeAudioControl } from "@/engine/components/audio/IgeAudioControl";
 import { IgeEntity } from "@/engine/core/IgeEntity";
 import { ige } from "@/engine/instance";
-import { isClient } from "@/engine/utils/clientServer";
+import { isServer } from "@/engine/utils/clientServer";
 import { registerClass } from "@/engine/utils/igeClassStore";
 import type { IgeAudioPlaybackOptions } from "@/types/IgeAudioPlaybackOptions";
 
-export interface IgeAudioEntityPanner extends PannerOptions {
-}
-
 // Set default data for any audio panner node
-export const defaultPannerSettings: IgeAudioEntityPanner = {
+export const defaultPannerSettings: PannerOptions = {
 	panningModel: "HRTF",
 	distanceModel: "inverse",
 	refDistance: 100,
@@ -22,7 +18,7 @@ export const defaultPannerSettings: IgeAudioEntityPanner = {
 
 export interface IgeAudioEntityProps extends IgeAudioPlaybackOptions {
 	audioId?: string;
-	playing?: boolean;
+	playOnMount?: boolean;
 }
 
 /**
@@ -46,63 +42,36 @@ export interface IgeAudioEntityProps extends IgeAudioPlaybackOptions {
  */
 export class IgeAudioEntity extends IgeEntity {
 	classId = "IgeAudioEntity";
-	_audioControl?: IgeAudioControl;
-	_playing: boolean = false;
+	_isPlaying: boolean = false;
+	_playOnMount: boolean = false;
 	_loop: boolean = false;
-	_gain: number = 1;
+	_volume: number = 1;
 	_pannerSettings: PannerOptions = defaultPannerSettings;
-	_relativeTo?: IgeEntity;
+	_relativeTo?: IgeEntity | string;
 	_panner?: PannerNode;
 	_audioSourceId?: string;
+	_playbackControlId?: string;
 
 	constructor (props: IgeAudioEntityProps = {}) {
 		super();
 
 		const {
 			audioId = "",
-			playing = false,
+			playOnMount = false,
 			loop = false,
-			gain = 1,
+			volume = 1,
 			pannerSettings = defaultPannerSettings,
 			relativeTo = ""
 		} = props;
 
 		console.log("Creating IgeAudioEntity with args", props);
 
-		if (audioId) {
-			this._audioSourceId = audioId;
-			this._audioControl = new IgeAudioControl(audioId);
-		}
-
-		if (gain !== undefined) {
-			this._gain = gain;
-		}
-
-		if (pannerSettings !== undefined) {
-			this._pannerSettings = pannerSettings;
-		}
-
-		if (loop !== undefined) {
-			this.loop(loop);
-		}
-
-		if (relativeTo) {
-			if (typeof relativeTo === "string") {
-				this.relativeTo(ige.$(relativeTo));
-			} else {
-				this.relativeTo(relativeTo);
-			}
-		}
-
-		if (playing) {
-			// We take this out of process so that there is time
-			// to handle other calls that may modify the audio
-			// before playback starts
-			setTimeout(() => {
-				if (!this._audioControl) return;
-				this._audioControl.play(this._loop);
-			}, 1);
-		}
+		this.audioSourceId(audioId);
+		this.pannerSettings(pannerSettings);
+		this.playOnMount(playOnMount);
+		this.relativeTo(relativeTo);
+		this.volume(volume);
+		this.loop(loop);
 	}
 
 	/**
@@ -112,87 +81,100 @@ export class IgeAudioEntity extends IgeEntity {
 	streamCreateConstructorArgs (): [IgeAudioEntityProps] {
 		return [{
 			audioId: this._audioSourceId || "",
-			playing: this._playing,
-			loop: this._loop,
-			gain: this._gain,
+			relativeTo: this._relativeTo || "",
 			pannerSettings: this._pannerSettings,
-			relativeTo: this._relativeTo?.id() || ""
+			playOnMount: this._playOnMount,
+			loop: this._loop,
+			volume: this._volume
 		}];
 	}
 
 	onStreamProperty (propName: string, propVal: any): this {
 		super.onStreamProperty(propName, propVal);
 
-		console.log("STREAM PROP", propName, propVal);
-
 		switch (propName) {
 			case "audioId":
 				this.audioSourceId(propVal);
 				break;
 
-			case "playing":
-				if (propVal === true) {
-					this.play();
-				} else {
-					this.stop();
-				}
+			case "relativeTo":
+				this.relativeTo(propVal);
+				break;
+
+			case "pannerSettings":
+				this.pannerSettings(propVal);
+				break;
+
+			case "playOnMount":
+				this.playOnMount(propVal);
 				break;
 
 			case "loop":
 				this.loop(propVal);
 				break;
 
-			case "gain":
-				this.gain(propVal);
+			case "volume":
+				this.volume(propVal);
 				break;
 
-			case "pannerSettings":
-				this._pannerSettings = propVal;
-				break;
-
-			case "relativeTo":
-				this.relativeTo(propVal);
+			case "isPlaying":
+				if (propVal === true) {
+					void this.play();
+				} else {
+					this.stop();
+				}
 				break;
 		}
 
 		return this;
 	}
 
-	relativeTo (val: IgeEntity): this;
-	relativeTo (): IgeEntity | undefined;
-	relativeTo (val?: IgeEntity) {
-		if (val !== undefined) {
-			const audioInterface = this.audioControl();
-			if (!audioInterface) return;
-			if (!ige.audio || !ige.audio._ctx) return;
-
-			this._relativeTo = val;
-
-			// Check if we have a panner node yet or not
-			if (!audioInterface.panner()) {
-				// Create a panner node for the audio output
-				this._panner = new PannerNode(ige.audio._ctx, this._pannerSettings);
-
-				this.audioControl()?.panner(this._panner);
-			}
-
-			return this;
+	playOnMount (): boolean;
+	playOnMount (val: boolean): this;
+	playOnMount (val?: boolean): boolean | this {
+		if (val === undefined) {
+			return this._playOnMount;
 		}
 
-		return this._relativeTo;
+		this._playOnMount = val;
+		this.streamProperty("playOnMount", val);
+		return this;
+	}
+
+	pannerSettings (): PannerOptions;
+	pannerSettings (val: PannerOptions): this;
+	pannerSettings (val?: PannerOptions): PannerOptions | this {
+		if (val === undefined) {
+			return this._pannerSettings;
+		}
+
+		this._pannerSettings = val;
+		this.streamProperty("pannerSettings", val);
+		return this;
+	}
+
+	relativeTo (): IgeEntity | string | undefined;
+	relativeTo (val: IgeEntity | string): this;
+	relativeTo (val?: IgeEntity | string): IgeEntity | string | this | undefined {
+		if (val === undefined) {
+			return this._relativeTo;
+		}
+
+		this._relativeTo = val;
+		this.streamProperty("relativeTo", val);
+		return this;
 	}
 
 	/**
-	 * Gets the playing boolean flag state.
+	 * Gets the playing state.
 	 * @returns {boolean} True if playing, false if not.
 	 */
-	playing (): boolean {
-		return this._playing;
+	isPlaying (): boolean {
+		return this._isPlaying;
 	}
 
 	/**
-	 * Gets / sets the id of the audio stream to use for
-	 * playback.
+	 * Gets / sets the id of the audio stream to use for playback.
 	 * @param {string} [id] The audio id. Must match
 	 * a previously registered audio stream that was
 	 * registered via `ige.engine.audio.register()`.
@@ -201,51 +183,64 @@ export class IgeAudioEntity extends IgeEntity {
 	 * @returns {*}
 	 */
 	audioSourceId (): string | undefined;
-	audioSourceId (id: string): this;
-	audioSourceId (id?: string): string | this | undefined {
-		if (id === undefined) {
-			return this.audioControl()?.audioSourceId();
+	audioSourceId (val: string): this;
+	audioSourceId (val?: string): string | this | undefined {
+		if (val === undefined) {
+			return this._audioSourceId;
 		}
 
-		this._audioSourceId = id;
-		this.audioControl()?.audioSourceId(id);
+		this._audioSourceId = val;
+		this.streamProperty("audioSourceId", val);
 		return this;
 	}
 
-	gain (gain?: number) {
-		if (gain === undefined) {
-			return this._gain;
+	volume (val?: number) {
+		if (val === undefined) {
+			return this._volume;
 		}
 
-		this._gain = gain;
-		this.streamProperty("gain", gain);
+		this._volume = val;
+		this.streamProperty("volume", val);
 		return this;
 	}
 
-	loop (loop?: boolean) {
-		if (loop === undefined) {
+	loop (val?: boolean) {
+		if (val === undefined) {
 			return this._loop;
 		}
 
-		this._loop = loop;
-		this.audioControl()?.loop(loop);
-		this.streamProperty("loop", loop);
+		this._loop = val;
+		this.streamProperty("loop", val);
 		return this;
 	}
 
 	/**
 	 * Starts playback of the audio.
-	 * @param {boolean} loop If true, loops the audio until
-	 * explicitly stopped by calling stop() or the entity
-	 * being destroyed.
 	 * @returns {IgeAudioEntity}
 	 */
-	play (loop: boolean = false) {
-		this._playing = true;
-		this.loop(loop);
-		this.audioControl()?.play(loop);
-		this.streamProperty("playing", true);
-		this.streamProperty("loop", loop);
+	play (): this | null {
+		// If we're not yet mounted, set the playOnMount flag instead
+		// so that when we get mounted, playback will start automatically
+		if (!this.isMounted()) {
+			this.playOnMount(true);
+			return null;
+		}
+
+		this.streamProperty("isPlaying", true);
+
+		// Start playback using the audio controller component
+		const playbackItem = ige.audio.createPlaybackControl(this._audioSourceId, {
+			loop: this._loop,
+			volume: this._volume,
+			pannerSettings: this._pannerSettings,
+			relativeTo: this._relativeTo,
+			isPersistent: true
+		});
+
+		if (playbackItem === null) return null;
+
+		this._playbackControlId = playbackItem._id;
+		ige.audio.startPlaybackItem(this._playbackControlId);
 		return this;
 	}
 
@@ -253,44 +248,18 @@ export class IgeAudioEntity extends IgeEntity {
 	 * Stops playback of the audio.
 	 * @returns {IgeAudioEntity}
 	 */
-	stop () {
-		this.audioControl()?.stop();
-		this.streamProperty("playing", false);
+	stop (): this {
+		this._isPlaying = false;
+		this.streamProperty("isPlaying", false);
 		return this;
 	}
 
-	/**
-	 * Gets / sets the IgeAudioControl instance used to control
-	 * playback of the audio stream.
-	 * @param {IgeAudioControl=} [audio]
-	 * @returns {*}
-	 */
-	audioControl (): IgeAudioControl | undefined;
-	audioControl (audio: IgeAudioControl): this;
-	audioControl (audio?: IgeAudioControl) {
-		if (audio !== undefined) {
-			this._audioControl = audio;
-			return this;
-		}
-
-		return this._audioControl;
-	}
-
 	update (tickDelta: number) {
-		if (!this._relativeTo || !this._panner) {
+		if (isServer || !this._relativeTo || !this._panner || !this._audioSourceId) {
 			return super.update(tickDelta);
 		}
 
-		const audioWorldPos = this.worldPosition();
-		const relativeToWorldPos = this._relativeTo.worldPosition();
-
-		// Update the audio origin position
-		if (this._panner) {
-			this._panner.positionX.value = audioWorldPos.x - relativeToWorldPos.x;
-			this._panner.positionY.value = -audioWorldPos.y - -relativeToWorldPos.y;
-			this._panner.positionZ.value = audioWorldPos.z - relativeToWorldPos.z;
-		}
-
+		ige.audio.setPosition(this._audioSourceId, this.worldPosition());
 		return super.update(tickDelta);
 	}
 
@@ -299,12 +268,23 @@ export class IgeAudioEntity extends IgeEntity {
 	 * current audio stream playback.
 	 */
 	destroy () {
-		if (isClient) {
-			this.audioControl()?.stop();
-		}
-
+		this.stop();
 		super.destroy();
 		return this;
+	}
+
+	_mounted (obj: IgeEntity) {
+		super._mounted(obj);
+
+		// If the playOnMount flag is true, start playback
+		if (this._playOnMount) {
+			void this.play();
+		}
+	}
+
+	_unMounted (obj: IgeEntity) {
+		void this.stop();
+		super._unMounted(obj);
 	}
 }
 

@@ -2,16 +2,16 @@
  * Removes the passed item from an array, the opposite of push().
  * @param arr
  * @param item
- * @return {number} The array index that was removed
+ * @return {number} The array item that was removed
  */
-export declare const arrPull: (arr: any[], item: any) => number;
+export declare const arrPull: (arr: any[], item: any) => any;
 /**
  * Removes the passed item from an array, the opposite of push().
  * @param arr
  * @param func
  * @return {number} The array index that was removed
  */
-export declare const arrPullConditional: (arr: any[], func: (item: any) => boolean) => number;
+export declare const arrPullConditional: (arr: any[], func: (item: any) => boolean) => any;
 /**
  * Adds an item to an array, only if it does not already exist in the array.
  * @param arr
