@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.IgeIndexTree = void 0;
-const quadHash_1 = require("../utils/quadHash.js");
+const octaHash_1 = require("../utils/octaHash.js");
 /**
  * An implementation of a tree index similar to a binary tree but is not binary,
  * can have any number of branches. I've created this to support the quadHash
@@ -17,8 +17,8 @@ class IgeIndexTree {
             values: [],
             branches: {}
         };
-        this.encodeHash = quadHash_1.encode;
-        this.decodeHash = quadHash_1.decode;
+        this.encodeHash = octaHash_1.encode;
+        this.decodeHash = octaHash_1.decode;
     }
     /**
      * Gets the current hash for a given value.

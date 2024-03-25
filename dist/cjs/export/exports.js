@@ -119,7 +119,7 @@ __exportStar(require("../engine/utils/ids"), exports);
 __exportStar(require("../engine/utils/igeFilters"), exports);
 __exportStar(require("../engine/utils/maths"), exports);
 __exportStar(require("../engine/utils/mixin"), exports);
-__exportStar(require("../engine/utils/quadHash"), exports);
+__exportStar(require("../engine/utils/octaHash"), exports);
 __exportStar(require("../engine/utils/trace"), exports);
 __exportStar(require("../engine/textures/IgeTileMap2dSmartTexture"), exports);
 __exportStar(require("../engine/textures/IgeFontSmartTexture"), exports);

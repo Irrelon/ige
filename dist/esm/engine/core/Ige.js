@@ -44,7 +44,8 @@ export class Ige {
     _watch = [];
     _drawBounds = false;
     _uses = [];
-    // Questionable properties, think about them and potentially move
+    // TODO: Questionable properties, think about them and potentially move,
+    //    were these added to support the editor component?
     _pointerOverVp;
     _pointerPos = new IgePoint3d(); // Could probably be just {x: number, y: number}
     constructor() {

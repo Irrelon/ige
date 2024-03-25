@@ -1,4 +1,4 @@
-import { decode, encode } from "../utils/quadHash.js"
+import { decode, encode } from "../utils/octaHash.js"
 /**
  * An implementation of a tree index similar to a binary tree but is not binary,
  * can have any number of branches. I've created this to support the quadHash
