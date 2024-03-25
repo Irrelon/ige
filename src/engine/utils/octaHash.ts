@@ -9,33 +9,33 @@ export const decode = (hash: string): number[] => {
 		const midZ = (z1 + z2) / 2;
 
 		switch (quadrant) {
-		case "A":
-			extents = [x1, y1, z1, midX, midY, midZ];
-			break;
-		case "B":
-			extents = [midX, y1, z1, x2, midY, midZ];
-			break;
-		case "C":
-			extents = [x1, midY, z1, midX, y2, midZ];
-			break;
-		case "D":
-			extents = [midX, midY, z1, x2, y2, midZ];
-			break;
+			case "A":
+				extents = [x1, y1, z1, midX, midY, midZ];
+				break;
+			case "B":
+				extents = [midX, y1, z1, x2, midY, midZ];
+				break;
+			case "C":
+				extents = [x1, midY, z1, midX, y2, midZ];
+				break;
+			case "D":
+				extents = [midX, midY, z1, x2, y2, midZ];
+				break;
 
-		case "E":
-			extents = [x1, y1, midZ, midX, midY, z2];
-			break;
-		case "F":
-			extents = [midX, y1, midZ, x2, midY, z2];
-			break;
-		case "G":
-			extents = [x1, midY, midZ, midX, y2, z2];
-			break;
-		case "H":
-			extents = [midX, midY, midZ, x2, y2, z2];
-			break;
-		default:
-			throw new Error("Invalid quadrant identifier");
+			case "E":
+				extents = [x1, y1, midZ, midX, midY, z2];
+				break;
+			case "F":
+				extents = [midX, y1, midZ, x2, midY, z2];
+				break;
+			case "G":
+				extents = [x1, midY, midZ, midX, y2, z2];
+				break;
+			case "H":
+				extents = [midX, midY, midZ, x2, y2, z2];
+				break;
+			default:
+				throw new Error("Invalid quadrant identifier");
 		}
 	}
 	return extents;

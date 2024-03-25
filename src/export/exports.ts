@@ -106,7 +106,7 @@ export * from "../engine/utils/ids";
 export * from "../engine/utils/igeFilters";
 export * from "../engine/utils/maths";
 export * from "../engine/utils/mixin";
-export * from "../engine/utils/quadHash";
+export * from "../engine/utils/octaHash";
 export * from "../engine/utils/trace";
 export * from "../engine/textures/IgeTileMap2dSmartTexture";
 export * from "../engine/textures/IgeFontSmartTexture";

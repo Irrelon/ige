@@ -1,4 +1,4 @@
-import { decode, encode } from "@/engine/utils/quadHash";
+import { decode, encode } from "@/engine/utils/octaHash";
 import type { IgeCanIndexItems } from "@/types/IgeCanIndexItems";
 import type { IgeIndexTreeNode } from "@/types/IgeIndexTreeNode";
 

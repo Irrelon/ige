@@ -63,7 +63,8 @@ export class Ige implements IgeIsReadyPromise {
 	_drawBounds: boolean = false;
 	_uses: string[] = [];
 
-	// Questionable properties, think about them and potentially move
+	// TODO: Questionable properties, think about them and potentially move,
+	//    were these added to support the editor component?
 	_pointerOverVp?: IgeViewport;
 	_pointerPos: IgePoint3d = new IgePoint3d(); // Could probably be just {x: number, y: number}
 
