@@ -3,6 +3,7 @@ import { IgeEntity } from "@/engine/core/IgeEntity";
 import { ige } from "@/engine/instance";
 import { isClient } from "@/engine/utils/clientServer";
 import { registerClass } from "@/engine/utils/igeClassStore";
+import type { IgeAudioPlaybackOptions } from "@/types/IgeAudioPlaybackOptions";
 
 export interface IgeAudioEntityPanner extends PannerOptions {
 }
@@ -19,13 +20,9 @@ export const defaultPannerSettings: IgeAudioEntityPanner = {
 	coneOuterGain: 0
 };
 
-export interface IgeAudioEntityProps {
+export interface IgeAudioEntityProps extends IgeAudioPlaybackOptions {
 	audioId?: string;
 	playing?: boolean;
-	loop?: boolean;
-	gain?: number;
-	pannerSettings?: IgeAudioEntityPanner;
-	relativeTo?: IgeEntity | string;
 }
 
 /**
@@ -40,7 +37,12 @@ export interface IgeAudioEntityProps {
  * position it in the simulation, an IgeAudioEntity is
  * overkill. You can use an IgeAudioControl instance instead.
  * The IgeAudioEntity uses an IgeAudioControl under the
- * hood anyway.
+ * hood anyway. This class is also designed for persistent
+ * sound sources rather than incidental ones. If you are
+ * looking to create incidental sound at a location you
+ * can call the ige.audio.play() function instead.
+ *
+ * @see IgeAudioController.play()
  */
 export class IgeAudioEntity extends IgeEntity {
 	classId = "IgeAudioEntity";
@@ -50,7 +52,6 @@ export class IgeAudioEntity extends IgeEntity {
 	_gain: number = 1;
 	_pannerSettings: PannerOptions = defaultPannerSettings;
 	_relativeTo?: IgeEntity;
-	_listener?: AudioListener;
 	_panner?: PannerNode;
 	_audioSourceId?: string;
 
@@ -166,7 +167,6 @@ export class IgeAudioEntity extends IgeEntity {
 			if (!ige.audio || !ige.audio._ctx) return;
 
 			this._relativeTo = val;
-			this._listener = ige.audio._ctx.listener;
 
 			// Check if we have a panner node yet or not
 			if (!audioInterface.panner()) {
@@ -277,26 +277,21 @@ export class IgeAudioEntity extends IgeEntity {
 	}
 
 	update (tickDelta: number) {
-		if (this._relativeTo && this._panner) {
-			const audioWorldPos = this.worldPosition();
-			const relativeToWorldPos = this._relativeTo.worldPosition();
-
-			// Update the audio origin position
-			if (this._panner) {
-				this._panner.positionX.value = audioWorldPos.x;
-				this._panner.positionY.value = -audioWorldPos.y;
-				this._panner.positionZ.value = audioWorldPos.z;
-			}
-
-			// Update the listener
-			if (this._listener) {
-				this._listener.positionX.value = relativeToWorldPos.x;
-				this._listener.positionY.value = -relativeToWorldPos.y;
-				this._listener.positionZ.value = relativeToWorldPos.z;
-			}
+		if (!this._relativeTo || !this._panner) {
+			return super.update(tickDelta);
 		}
 
-		super.update(tickDelta);
+		const audioWorldPos = this.worldPosition();
+		const relativeToWorldPos = this._relativeTo.worldPosition();
+
+		// Update the audio origin position
+		if (this._panner) {
+			this._panner.positionX.value = audioWorldPos.x - relativeToWorldPos.x;
+			this._panner.positionY.value = -audioWorldPos.y - -relativeToWorldPos.y;
+			this._panner.positionZ.value = audioWorldPos.z - relativeToWorldPos.z;
+		}
+
+		return super.update(tickDelta);
 	}
 
 	/**

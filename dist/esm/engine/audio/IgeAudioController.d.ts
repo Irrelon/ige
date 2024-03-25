@@ -1,5 +1,5 @@
 import type { IgeAudioSource } from "./IgeAudioSource.js"
-import { IgeAssetRegister } from "../core/IgeAssetRegister.js";
+import { IgeAssetRegister } from "../core/IgeAssetRegister.js"
 export declare class IgeAudioController extends IgeAssetRegister<IgeAudioSource> {
     classId: string;
     _active: boolean;

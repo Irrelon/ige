@@ -1,7 +1,7 @@
 import { IgeAsset } from "../core/IgeAsset.js"
-import { ige } from "../instance.js";
+import { ige } from "../instance.js"
 import { isServer } from "../utils/clientServer.js"
-import { IgeAudioSourceType } from "../../enums/IgeAudioSourceType.js";
+import { IgeAudioSourceType } from "../../enums/IgeAudioSourceType.js"
 /**
  * Creates a new audio source.
  */

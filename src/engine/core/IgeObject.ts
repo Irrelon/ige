@@ -1358,7 +1358,7 @@ export class IgeObject extends IgeEventingClass implements IgeCanRegisterById, I
 		type: IgeBehaviourType,
 		id: string,
 		behaviour: IgeEntityBehaviourMethod<ParentType>
-	) {
+	): this {
 		this._behaviours = this._behaviours || {};
 		this._behaviours[type] = this._behaviours[type] || [];
 		this._behaviours[type].push({

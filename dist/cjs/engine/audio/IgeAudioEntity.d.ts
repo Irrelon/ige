@@ -1,5 +1,5 @@
 import { IgeAudioControl } from "./IgeAudioControl.js"
-import { IgeEntity } from "../core/IgeEntity.js";
+import { IgeEntity } from "../core/IgeEntity.js"
 export interface IgeAudioEntityPanner extends PannerOptions {
 }
 export declare const defaultPannerSettings: IgeAudioEntityPanner;

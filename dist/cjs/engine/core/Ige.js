@@ -101,8 +101,6 @@ class Ige {
         this.uses("engine");
         this.uses("input");
         this.uses("time");
-        //this.dependencies.markAsSatisfied("engine");
-        //this.dependencies.markAsSatisfied("box2d");
     }
     uses(moduleName) {
         this._uses.push(moduleName);
@@ -133,7 +131,7 @@ class Ige {
                 break;
             case "audio":
                 if (clientServer_1.isClient && !clientServer_1.isWorker) {
-                    this.dependencies.add("audio", Promise.resolve().then(() => __importStar(require("../audio/IgeAudioController.js"))).then(({ IgeAudioController: Module }) => {
+                    this.dependencies.add("audio", Promise.resolve().then(() => __importStar(require("../components/audio/IgeAudioController.js"))).then(({ IgeAudioController: Module }) => {
                         this.audio = new Module();
                     }));
                 }

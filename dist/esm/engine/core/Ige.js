@@ -48,8 +48,6 @@ export class Ige {
     //    were these added to support the editor component?
     _pointerOverVp;
     _pointerPos = new IgePoint3d(); // Could probably be just {x: number, y: number}
-    constructor() {
-    }
     init() {
         // Output our header
         console.log("-----------------------------------------");
@@ -60,8 +58,6 @@ export class Ige {
         this.uses("engine");
         this.uses("input");
         this.uses("time");
-        //this.dependencies.markAsSatisfied("engine");
-        //this.dependencies.markAsSatisfied("box2d");
     }
     uses(moduleName) {
         this._uses.push(moduleName);
@@ -92,7 +88,7 @@ export class Ige {
                 break;
             case "audio":
                 if (isClient && !isWorker) {
-                    this.dependencies.add("audio", import("../audio/IgeAudioController.js").then(({ IgeAudioController: Module }) => {
+                    this.dependencies.add("audio", import("../components/audio/IgeAudioController.js").then(({ IgeAudioController: Module }) => {
                         this.audio = new Module();
                     }));
                 }

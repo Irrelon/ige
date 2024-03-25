@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.arrClone = exports.pushUnique = exports.arrPull = void 0;
+exports.arrClone = exports.pushUnique = exports.arrPullConditional = exports.arrPull = void 0;
 /**
  * Removes the passed item from an array, the opposite of push().
  * @param arr
@@ -18,6 +18,23 @@ const arrPull = (arr, item) => {
     }
 };
 exports.arrPull = arrPull;
+/**
+ * Removes the passed item from an array, the opposite of push().
+ * @param arr
+ * @param func
+ * @return {number} The array index that was removed
+ */
+const arrPullConditional = (arr, func) => {
+    const index = arr.findIndex(func);
+    if (index > -1) {
+        arr.splice(index, 1);
+        return index;
+    }
+    else {
+        return -1;
+    }
+};
+exports.arrPullConditional = arrPullConditional;
 /**
  * Adds an item to an array, only if it does not already exist in the array.
  * @param arr

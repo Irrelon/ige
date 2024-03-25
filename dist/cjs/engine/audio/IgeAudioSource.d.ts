@@ -1,5 +1,5 @@
 import type { IgeSmartAudioSource } from "./IgeSmartAudioSource.js"
-import { IgeAsset } from "../core/IgeAsset.js";
+import { IgeAsset } from "../core/IgeAsset.js"
 import { IgeAudioSourceType } from "../../enums/IgeAudioSourceType.js"
 /**
  * Creates a new audio source.

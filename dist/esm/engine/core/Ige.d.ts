@@ -1,4 +1,4 @@
-import type { IgeAudioController } from "../audio/IgeAudioController.js"
+import type { IgeAudioController } from "../components/audio/IgeAudioController.js"
 import { IgeInputComponent } from "../components/IgeInputComponent.js";
 import type { IgeBox2dController } from "../components/physics/box2d/IgeBox2dController.js"
 import { IgeArrayRegister } from "./IgeArrayRegister.js";
@@ -48,7 +48,6 @@ export declare class Ige implements IgeIsReadyPromise {
     _uses: string[];
     _pointerOverVp?: IgeViewport;
     _pointerPos: IgePoint3d;
-    constructor();
     init(): void;
     uses(moduleName: string): void;
     isReady(): Promise<void>;

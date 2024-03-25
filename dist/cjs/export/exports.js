@@ -138,7 +138,7 @@ __exportStar(require("../engine/core/IgeArrayRegister"), exports);
 __exportStar(require("../engine/core/IgeQuest"), exports);
 __exportStar(require("../engine/core/IgeGenericPathFinder"), exports);
 __exportStar(require("../engine/core/IgeCanvas"), exports);
-__exportStar(require("../engine/audio/IgeAudioController"), exports);
+__exportStar(require("../engine/components/audio/IgeAudioController.js"), exports);
 __exportStar(require("../engine/network/client/IgeNetIoClient"), exports);
 __exportStar(require("../engine/network/server/IgeNetIoSocket"), exports);
 __exportStar(require("../engine/network/server/IgeNetIoServer"), exports);
@@ -236,10 +236,10 @@ __exportStar(require("../engine/components/IgeInputControlMap"), exports);
 __exportStar(require("../engine/components/IgeInputComponent"), exports);
 __exportStar(require("../engine/components/IgeGamePadComponent"), exports);
 __exportStar(require("../engine/components/IgeEntityManagerComponent"), exports);
-__exportStar(require("../engine/audio/IgeSmartAudioSource"), exports);
-__exportStar(require("../engine/audio/IgeAudioSource"), exports);
-__exportStar(require("../engine/audio/IgeAudioControl"), exports);
-__exportStar(require("../engine/audio/IgeAudioEntity"), exports);
+__exportStar(require("../engine/components/audio/IgeSmartAudioSource.js"), exports);
+__exportStar(require("../engine/components/audio/IgeAudioSource.js"), exports);
+__exportStar(require("../engine/components/audio/IgeAudioControl.js"), exports);
+__exportStar(require("../engine/components/audio/IgeAudioEntity.js"), exports);
 //////////////////////////////////////////////////////////////////////
 // UI Element Classes
 //////////////////////////////////////////////////////////////////////

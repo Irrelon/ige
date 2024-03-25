@@ -1,5 +1,5 @@
 import { IgeAssetRegister } from "../core/IgeAssetRegister.js"
-import { isClient } from "../utils/clientServer.js";
+import { isClient } from "../utils/clientServer.js"
 export class IgeAudioController extends IgeAssetRegister {
     classId = "IgeAudioController";
     _active = false;

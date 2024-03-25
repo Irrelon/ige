@@ -6,6 +6,13 @@
  */
 export declare const arrPull: (arr: any[], item: any) => number;
 /**
+ * Removes the passed item from an array, the opposite of push().
+ * @param arr
+ * @param func
+ * @return {number} The array index that was removed
+ */
+export declare const arrPullConditional: (arr: any[], func: (item: any) => boolean) => number;
+/**
  * Adds an item to an array, only if it does not already exist in the array.
  * @param arr
  * @param item

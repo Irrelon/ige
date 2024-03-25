@@ -1,6 +1,13 @@
+import { defaultPannerSettings } from "@/engine/components/audio/IgeAudioEntity";
 import type { IgeAudioSource } from "@/engine/components/audio/IgeAudioSource";
 import { IgeAssetRegister } from "@/engine/core/IgeAssetRegister";
+import type { IgeEngine } from "@/engine/core/IgeEngine";
+import { ige } from "@/engine/instance";
+import { arrPullConditional } from "@/engine/utils/arrays";
 import { isClient } from "@/engine/utils/clientServer";
+import { IgeBehaviourType } from "@/enums";
+import type { IgeAudioPlaybackData } from "@/types/IgeAudioPlaybackData";
+import type { IgeAudioPlaybackOptions } from "@/types/IgeAudioPlaybackOptions";
 
 export class IgeAudioController extends IgeAssetRegister<IgeAudioSource> {
 	classId = "IgeAudioController";
@@ -9,6 +16,7 @@ export class IgeAudioController extends IgeAssetRegister<IgeAudioSource> {
 	_ctx?: AudioContext;
 	_masterVolumeNode: GainNode;
 	_audioBufferStore: Record<string, AudioBuffer> = {};
+	_playbackArr: IgeAudioPlaybackData[] = [];
 
 	constructor () {
 		super();
@@ -18,12 +26,12 @@ export class IgeAudioController extends IgeAssetRegister<IgeAudioSource> {
 		this._ctx = this.getContext();
 
 		if (!this._ctx) {
-			this.log("No web audio API support, sound is disabled!");
+			this.log("No web audio API support, audio is disabled!");
 			this._disabled = true;
 		}
 
 		if (this._ctx.state === "suspended") {
-			this.log("Audio support is available but we cannot play sound without user interaction");
+			this.log("Audio support is available, waiting for user interaction to be allowed to play audio");
 		}
 
 		this._masterVolumeNode = this._ctx.createGain();
@@ -34,9 +42,23 @@ export class IgeAudioController extends IgeAssetRegister<IgeAudioSource> {
 		// FireFox has (of writing) currently not provided any other way to set orientation,
 		// so we must continue to use this method until that changes
 		// TODO: Wait for Firefox to support accessor properties and then update this
-		this._ctx.listener.setOrientation(Math.cos(0.1), 0, Math.sin(0.1), 0, 1, 0);
+		this.setListenerOrientation(Math.cos(0.1), 0, Math.sin(0.1), 0, 1, 0);
+
+		// Register the engine behaviour that will get called at the end of any updates
+		// so we can check for entities we need to track and alter the panning of any
+		// active audio to pan relative to the entity in question
+		ige.engine.addBehaviour<IgeEngine>(IgeBehaviourType.postUpdate, "audioPanning", this._onPostUpdate);
 
 		this.log("Web audio API connected successfully");
+	}
+
+	setListenerOrientation (x, y, z, xUp, yUp, zUp) {
+		if (!this._ctx) {
+			this.log("Cannot set listener orientation, the audio context is not initialised", "warning");
+			return;
+		}
+
+		this._ctx.listener.setOrientation(x, y, z, xUp, yUp, zUp);
 	}
 
 	/**
@@ -83,32 +105,65 @@ export class IgeAudioController extends IgeAssetRegister<IgeAudioSource> {
 	}
 
 	/**
-	 * Plays audio by its assigned id.
+	 * Plays audio by its assigned id and returns a promise.
+	 * If the audio context is unavailable, or we are on the server,
+	 * the promise resolves immediately with a `false` value.
+	 *
+	 * Once playback has ended the promise will resolve with `true`.
 	 * @param {string} id The id of the audio file to play.
-	 * @param {boolean} loop If true, will loop the audio until
-	 * it is explicitly stopped.
+	 * @param {IgeAudioPlaybackOptions} [options={}]
 	 */
-	play (id: string, loop: boolean = false) {
-		if (!isClient || !this._ctx) {
-			return;
-		}
+	play (id: string, options: IgeAudioPlaybackOptions = {}): Promise<boolean> {
+		return new Promise((resolve) => {
+			if (!isClient || !this._ctx) {
+				resolve(false);
+				return;
+			}
 
-		const audioSource = this.get(id);
+			const relativeTo = options.relativeTo;
+			const gain: number = typeof options.gain !== "undefined" ? options.gain : 1;
+			const loop: boolean = typeof options.loop !== "undefined" ? options.loop : false;
+			const pannerSettings = typeof options.pannerSettings !== "undefined" ? options.pannerSettings : defaultPannerSettings;
 
-		if (!audioSource || !audioSource.buffer) {
-			this.log(`Audio file (${id}) could not play, no buffer exists in register for: ${id}`, "warning");
-			return;
-		}
+			const audioSource = this.get(id);
 
-		if (!this._masterVolumeNode) return;
+			if (!audioSource || !audioSource.buffer) {
+				this.log(`Audio file (${id}) could not play, no buffer exists in register for: ${id}`, "warning");
+				return;
+			}
 
-		const bufferSource = this._ctx.createBufferSource();
-		bufferSource.buffer = audioSource.buffer;
-		bufferSource.connect(this._masterVolumeNode);
-		bufferSource.loop = loop;
-		bufferSource.start(0);
+			if (!this._masterVolumeNode) return;
 
-		this.log(`Audio file (${id}) playing...`);
+			let pannerNode: PannerNode | undefined;
+			const bufferNode = this._ctx.createBufferSource();
+
+			if (relativeTo) {
+				// Create a panner node for the audio output
+				pannerNode = new PannerNode(this._ctx, pannerSettings);
+				bufferNode.connect(pannerNode);
+				pannerNode.connect(ige.audio._masterVolumeNode);
+			} else {
+				bufferNode.connect(this._masterVolumeNode);
+			}
+
+			bufferNode.buffer = audioSource.buffer;
+			bufferNode.loop = options.loop as boolean;
+			bufferNode.start(0);
+
+			bufferNode.onended = () => {
+				resolve(true);
+				arrPullConditional(this._playbackArr, (item) => item.bufferNode === bufferNode);
+			};
+
+			this._playbackArr.push({
+				audioId: id,
+				bufferNode,
+				pannerNode,
+				loop
+			});
+
+			this.log(`Audio file (${id}) playing...`);
+		});
 	}
 
 	/**
@@ -180,4 +235,24 @@ export class IgeAudioController extends IgeAssetRegister<IgeAudioSource> {
 		if (!this._ctx) return;
 		return this._ctx.decodeAudioData(data);
 	};
+
+	/**
+	 * Called after all engine update() scenegraph calls and loops the currently
+	 * playing audio to ensure that the panning of that audio matches the position
+	 * of the entity it should emit audio relative to.
+	 */
+	_onPostUpdate () {
+		this._playbackArr.forEach((audioPlayback) => {
+			if (!audioPlayback.relativeTo || !audioPlayback.position || !audioPlayback.pannerNode) return;
+
+			const audioWorldPos = audioPlayback.position;
+			const relativeToWorldPos = audioPlayback.relativeTo.worldPosition();
+			const pannerNode = audioPlayback.pannerNode;
+
+			// Update the audio origin position
+			pannerNode.positionX.value = audioWorldPos.x - relativeToWorldPos.x;
+			pannerNode.positionY.value = -audioWorldPos.y - -relativeToWorldPos.y;
+			pannerNode.positionZ.value = audioWorldPos.z - relativeToWorldPos.z;
+		});
+	}
 }
