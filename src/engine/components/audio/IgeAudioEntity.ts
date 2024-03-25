@@ -1,4 +1,4 @@
-import { IgeAudioControl } from "@/engine/audio/IgeAudioControl";
+import { IgeAudioControl } from "@/engine/components/audio/IgeAudioControl";
 import { IgeEntity } from "@/engine/core/IgeEntity";
 import { ige } from "@/engine/instance";
 import { isClient } from "@/engine/utils/clientServer";

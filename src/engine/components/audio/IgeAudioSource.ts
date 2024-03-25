@@ -1,4 +1,4 @@
-import type { IgeSmartAudioSource } from "@/engine/audio/IgeSmartAudioSource";
+import type { IgeSmartAudioSource } from "@/engine/components/audio/IgeSmartAudioSource";
 import { IgeAsset } from "@/engine/core/IgeAsset";
 import { ige } from "@/engine/instance";
 import { isServer } from "@/engine/utils/clientServer";

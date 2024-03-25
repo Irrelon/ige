@@ -1,4 +1,4 @@
-import type { IgeAudioController } from "@/engine/audio/IgeAudioController";
+import type { IgeAudioController } from "@/engine/components/audio/IgeAudioController";
 import { IgeInputComponent } from "@/engine/components/IgeInputComponent";
 import type { IgeBox2dController } from "@/engine/components/physics/box2d/IgeBox2dController";
 import { igeConfig } from "@/engine/core/config";
@@ -68,10 +68,6 @@ export class Ige implements IgeIsReadyPromise {
 	_pointerOverVp?: IgeViewport;
 	_pointerPos: IgePoint3d = new IgePoint3d(); // Could probably be just {x: number, y: number}
 
-	constructor () {
-
-	}
-
 	init () {
 		// Output our header
 		console.log("-----------------------------------------");
@@ -83,9 +79,6 @@ export class Ige implements IgeIsReadyPromise {
 		this.uses("engine");
 		this.uses("input");
 		this.uses("time");
-
-		//this.dependencies.markAsSatisfied("engine");
-		//this.dependencies.markAsSatisfied("box2d");
 	}
 
 	uses (moduleName: string) {
@@ -133,7 +126,7 @@ export class Ige implements IgeIsReadyPromise {
 				if (isClient && !isWorker) {
 					this.dependencies.add(
 						"audio",
-						import("../audio/IgeAudioController.js").then(({ IgeAudioController: Module }) => {
+						import("@/engine/components/audio/IgeAudioController.js").then(({ IgeAudioController: Module }) => {
 							this.audio = new Module();
 						})
 					);

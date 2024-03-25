@@ -125,7 +125,7 @@ export * from "../engine/core/IgeArrayRegister";
 export * from "../engine/core/IgeQuest";
 export * from "../engine/core/IgeGenericPathFinder";
 export * from "../engine/core/IgeCanvas";
-export * from "../engine/audio/IgeAudioController";
+export * from "@/engine/components/audio/IgeAudioController";
 export * from "../engine/network/client/IgeNetIoClient";
 export * from "../engine/network/server/IgeNetIoSocket";
 export * from "../engine/network/server/IgeNetIoServer";
@@ -238,10 +238,10 @@ export * from "../engine/components/IgeInputComponent";
 export * from "../engine/components/IgeGamePadComponent";
 export * from "../engine/components/IgeEntityManagerComponent";
 
-export * from "../engine/audio/IgeSmartAudioSource";
-export * from "../engine/audio/IgeAudioSource";
-export * from "../engine/audio/IgeAudioControl";
-export * from "../engine/audio/IgeAudioEntity";
+export * from "@/engine/components/audio/IgeSmartAudioSource";
+export * from "@/engine/components/audio/IgeAudioSource";
+export * from "@/engine/components/audio/IgeAudioControl";
+export * from "@/engine/components/audio/IgeAudioEntity";
 
 //////////////////////////////////////////////////////////////////////
 // UI Element Classes
