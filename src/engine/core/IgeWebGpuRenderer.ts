@@ -1,13 +1,8 @@
-import { bufferRangeData, getMultipleOf, packArraysByFormat } from "@/engine/buffers";
-import { IgeBaseRenderer } from "@/engine/core/IgeBaseRenderer";
 import { getPipeline } from "@/engine/shaders/2d";
+import { bufferRangeData, getMultipleOf, packArraysByFormat } from "@/engine/utils/buffers";
+import { IgeBaseRenderer } from "@/engine/core/IgeBaseRenderer";
 import type { IgeCanvasRenderingContext3d } from "@/types/IgeCanvasRenderingContext3d";
 import { mat4 } from "gl-matrix";
-
-export interface IgeRendererWebGPUProps {
-	containerElement?: IgeBaseRendererProps["containerElement"];
-	canvasElement?: IgeBaseRendererProps["canvasElement"];
-}
 
 export class IgeWebGpuRenderer extends IgeBaseRenderer {
 	_canvasContext?: IgeCanvasRenderingContext3d;
@@ -26,11 +21,11 @@ export class IgeWebGpuRenderer extends IgeBaseRenderer {
 	_resolutionValue: Float32Array | null = null;
 	_renderPassDescriptor: GPURenderPassDescriptor | null = null;
 
-	constructor ({ canvasElement, containerElement }: IgeRendererWebGPUProps) {
-		super({ canvasElement, containerElement, mode: "webgpu" });
+	constructor () {
+		super();
 
 		if (!navigator.gpu) {
-			this.logError("Cannot start because `navigator.gpu` did not return a value");
+			this.logError("Cannot use WebGPU renderer because `navigator.gpu` did not return a value");
 		}
 	}
 

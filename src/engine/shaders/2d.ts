@@ -1,4 +1,4 @@
-import { vertexBufferLayoutByFormat } from "@/engine/buffers";
+import { vertexBufferLayoutByFormat } from "@/engine/utils/buffers";
 
 const shaderSource = `
 struct Uniforms {
