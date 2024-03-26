@@ -1,27 +1,45 @@
-> This is a beta branch at present. It is a re-write utilising TypeScript
-> and compiling to both CommonJS (for Node.js) and ESM modules (for Webpack).
-> Client and server-side rendering are working and various examples have been
-> updated. If you see an index.ts in an example folder, it's been updated to
-> work with ES6 modules.
->
-> Compiling the engine: run the `build` npm command will compile the TypeScript
-> to JavaScript files. The `build` command also runs `npx @irrelon/fix-paths` to
-> automatically resolve TypeScript paths e.g. `@/engine/something` in .js files
-> to their relative equivalents.
->
-> From version 3.0.1 you can use the engine with `import { ige } from "@irrelon/ige";`
->
-> All the engine's classes, functionality, types etc. are exported from that module
-> and can be imported as required.
->
-> A `create-ige-app` npx script is on the way as well, almost ready! This will
-> create a basic app with the webpack and Node.js setup to create games with
-> this version of the engine without configuring all the things yourself.
-> This will also support templates, so we can get started on something faster.
+# Isogenic Game Engine
 
-#### Breaking Changes in This Version
+HTML5 2D and isometric scenegraph-based game engine written entirely in TypeScript / JavaScript.
 
-##### Streaming Transform Data
+## Main Features
+
+- Full un-obfuscated source code
+- Advanced networking system with built-in server
+- Particle system
+- Scenegraph-based
+- Tile maps
+- Box2D physics component for easy integration with 2d and isometric games
+- Multiple viewport support
+- Tweening support
+- Cell-based animation support
+- Native and font-sheet text support
+- WebGPU support is incoming, currently all the above renders using canvas 2d context
+
+## Latest Updates & Changelog
+
+### Version 3.0.3
+
+Merge es6 branch to stable.
+
+### Version 3.0.2
+
+#### Module Based Import
+
+From version 3.0.1 the engine expects to be installed into a project and used as
+a module via npm:
+
+```bash
+npm i @irrelon/ige
+```
+
+You should use the engine via an import statement:
+
+```typescript
+import { ige } from "@irrelon/ige";
+```
+
+#### Streaming Transform Data
 
 The stream code has been updated so any transform data (translate, rotate and scale)
 sent to the client/s by the server are no longer directly assigned via
@@ -33,7 +51,7 @@ overrides those base class methods will get called correctly when the streamed
 entity is transformed. Previously there was no way to detect that a transform had
 changed by streaming data.
 
-##### IGE initialisation
+#### IGE Initialisation
 
 > The optional modules you can call uses() for are currently:
 > `network`, `audio`, `box2d`, `tweening` and `ui`
@@ -43,11 +61,13 @@ that are now optional, then wait for them to load. For instance, if your app
 is using networking you should tell the engine about that up front via
 
 ```typescript
-ige.uses("engine");
+ige.uses("network");
 ```
 
-After you've specified all the modules via uses() calls, you need to call init()
-and then wait for the isReady signal before proceeding further.
+You should call this for each module you wish to use before calling `ige.init();`.
+
+After you've specified all the modules via uses() calls, you need to call `init()`
+and then wait for the isReady signal before proceeding further:
 
 ```typescript
 ige.uses("network");
@@ -62,38 +82,73 @@ ige.isReady().then(() => {
 });
 ```
 
-# Isogenic Game Engine
+### Version 3.0.0
 
-HTML5 2D and isometric scenegraph-based game engine written entirely in TypeScript.
+The original engine was written over 12 years ago, and it is a testament to that work
+that it is still by far the most feature-rich browser-based game engine available today.
+There is still NO OTHER engine that supports realtime multiplayer streaming out of the
+box written purely in JavaScript in a 2d and isometric rendering engine.
 
-## Latest Updates & Changelog
+With all that said, it's 2024 and back in 2011, ES classes, ES modules, TypeScript, webpack
+etc did not exist. As such, language functionality such as classes were custom-created to
+facilitate an inheritance-style codebase. This was great, as was the magic of using ES
+classes years before they even existed, but now we have native functionality in JavaScript,
+a rewrite of the engine needs to happen to make use of that new functionality.
 
-https://www.isogenicengine.com/forum/viewforum.php?f=8
+Minor changes exist as well as some breaking changes (such as the removal of ClientConfig
+and ServerConfig files) that were ultimately made to increase functionality or update
+anachronistic coding patterns to more modern expectations.
 
-## Main Features
+**The major changes are:**
 
-- Full un-obfuscated source code
-- Advanced networking system with built-in server
-- Particle system
-- Scenegraph-based
-- Tile maps
-- Box2D physics component for easy integration with 2d and isometric games
-- Multiple viewport support
-- Tweening support
-- Cell-based animation support
-- Native and font-sheet text support
+The built-in compiler is no longer required since `import` now exists in browsers natively,
+so it is no longer a requirement to compile using the engine's compiler to get a runnable
+project / game. You should code with ES modules `import` and `export`, not CommonJS `require`
+and `module.exports` (although CommonJS is still currently supported).
 
-## Installation
+The node.js server-side executable system that ran IGE on your server for multiplayer support
+has been removed as the isomorphic JavaScript output runs natively in Node.js - again due to
+the support for ES modules, ES classes and there is no need to "package" projects / games
+anymore! :)
 
-After downloading or cloning this repository, please change to the folder you cloned the
-repository to and then run:
+The `ClientConfig.js` and `ServerConfig.js` are no longer required and can be removed everywhere.
+The engine simply uses ES module imports and exports now, directly in the files that need them.
+
+Many of the examples in the `examples` folder have been converted to TypeScript and ES modules
+although this work is still ongoing. You can tell which ones can be run because there will be an
+`index.ts` rather than only an `index.js` file. Examples might be in a broken state for a while
+but focus has been on the core functionality of the engine and bringing it up to modern standards
+of code rather than updating example code for the moment.
+
+## Developing / Building / Modifying the Engine
+
+> This is only required if you intend to make changes to the core engine. If you only
+> want to use the engine in a project, you do not need to clone the repo from GitHub
+> since you can use the engine via `npm i @irrelon/ige` and then import it normally.
+
+After downloading or cloning this repository, please change to the folder you cloned
+the repository to and then run:
 
 ```bash
 npm i
 ```
 
-You must have Node.js installed for the installation to work.
-This version of the engine has been tested against Node.js 16.13.1.
+You must have Node.js installed for the installation to work. This version of the engine
+has been tested against Node.js 16.13.1 and higher.
+
+### Compiling the Engine from Source
+
+> Run the `build` npm command will compile the TypeScript to JavaScript files.
+> The `build` command also runs `npx @irrelon/fix-paths` to automatically resolve
+> TypeScript paths e.g. `@/engine/something` in .js files to their relative
+> equivalents like `../engine/something`.
+
+```bash
+npm run build
+```
+
+The resulting build will be available in the `dist` folder. The `docs` folder will
+also update during the build to output JSDoc compatible documentation.
 
 ## Examples
 
@@ -108,22 +163,14 @@ https://www.isogenicengine.com/docs-manual.html
 
 If you have any comments, questions, requests etc. you can post on the GitHub issue tracker.
 
-## License
-
-MIT
-
-## Intellectual Property, Ownership & Copyright
-
-(C)opyright 2023 Irrelon Software Limited
-https://www.irrelon.com
-
-- Website: https://www.isogenicengine.com
-- API Docs: https://www.isogenicengine.com/docs-reference.html
-- Video Tutorials: https://www.isogenicengine.com/docs-tutorials.html
-- Twitter: @IsogenicEngine https://twitter.com/IsogenicEngine
-- Youtube: https://www.youtube.com/user/coolbloke1324
-
 ## Gotcha Hints
+
+### Create IGE App Helper
+
+A `create-ige-app` npx script is on the way as well, almost ready! This will
+create a basic app with the webpack and Node.js setup to create games with
+this version of the engine without configuring all the things yourself.
+This will also support templates, so we can get started on something faster.
 
 ### UI Entities
 
@@ -134,3 +181,18 @@ pointer events like pointerDown and pointerUp.
 
 IgeUiEntity instances have the same general capabilities but are considered graphical rather
 than interactive so don't hook or interfere with pointer events by default.
+
+## License
+
+MIT
+
+## Intellectual Property, Ownership & Copyright
+
+(C)opyright 2023 Irrelon Software Limited
+https://www.irrelon.com
+
+* Website: https://www.isogenicengine.com
+* Download: https://www.isogenicengine.com/download.html
+* API Docs: https://www.isogenicengine.com/docs-reference.html
+* Twitter: @IsogenicEngine https://twitter.com/IsogenicEngine
+* Youtube: http://www.youtube.com/user/coolbloke1324
