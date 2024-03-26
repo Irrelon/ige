@@ -4,11 +4,19 @@
 SRC_DIR="./src"
 DIST_DIR="./dist/esm"
 
+# Ensure these are absolute paths to avoid issues with sed and path manipulation
+ABS_SRC_DIR=$(realpath "$SRC_DIR")
+ABS_DIST_DIR=$(realpath "$DIST_DIR")
+
 # Find and copy all files except .ts and .tsx, maintaining the directory structure
-find "$SRC_DIR" -type f ! \( -name '*.ts' -o -name '*.tsx' \) -exec sh -c '
+find "$ABS_SRC_DIR" -type f ! \( -name '*.ts' -o -name '*.tsx' \) -exec bash -c '
+  ABS_SRC_DIR="${1}";
+  ABS_DIST_DIR="${2}";
   file="{}";
-  # Remove the leading src directory from the path and prepend the destination directory
-  dest="'$DIST_DIR'/${file#*/}";
-  dest="${dest/'$SRC_DIR'//}"; # Ensure src directory is removed from the destination path
+  rel_path="${file#$ABS_SRC_DIR/}";
+  echo ABS_SRC_DIR = $ABS_SRC_DIR
+  echo file = $file
+  echo rel_path = $rel_path
+  dest="/$ABS_DIST_DIR/$rel_path";
   mkdir -p "$(dirname "$dest")" && cp "$file" "$dest"
-' \;
+' bash "$ABS_SRC_DIR" "$ABS_DIST_DIR" \;
