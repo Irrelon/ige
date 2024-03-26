@@ -18,6 +18,10 @@ HTML5 2D and isometric scenegraph-based game engine written entirely in TypeScri
 
 ## Latest Updates & Changelog
 
+### Version 3.0.3
+
+Merge es6 branch to stable.
+
 ### Version 3.0.2
 
 #### Module Based Import
