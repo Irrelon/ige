@@ -1,16 +1,16 @@
 import { ige } from "../instance.js"
-import { IgeDummyCanvas } from "./IgeDummyCanvas.js"
+import { IgeDummyCanvas } from "./IgeDummyCanvas.js";
 import { IgeEventingClass } from "./IgeEventingClass.js"
-import { IgeMatrix2d } from "./IgeMatrix2d.js"
+import { IgeMatrix2d } from "./IgeMatrix2d.js";
 import { IgePoint2d } from "./IgePoint2d.js"
-import { IgePoint3d } from "./IgePoint3d.js"
+import { IgePoint3d } from "./IgePoint3d.js";
 import { IgePoly2d } from "./IgePoly2d.js"
-import { IgeBounds } from "./IgeBounds.js"
+import { IgeBounds } from "./IgeBounds.js";
 import { arrPull } from "../utils/arrays.js"
-import { isClient, isServer } from "../utils/clientServer.js"
+import { isClient, isServer } from "../utils/clientServer.js";
 import { newIdHex } from "../utils/ids.js"
-import { toIso } from "../utils/maths.js"
-import { IGE_NETWORK_STREAM_CREATE, IGE_NETWORK_STREAM_DESTROY, IgeIsometricDepthSortMode, IgeMountMode, IgeStreamMode } from "../../enums/index.js"
+import { toIso } from "../utils/maths.js";
+import { IGE_NETWORK_STREAM_CREATE, IGE_NETWORK_STREAM_DESTROY, IgeIsometricDepthSortMode, IgeMountMode, IgeStreamMode } from "../../enums/index.js";
 export class IgeObject extends IgeEventingClass {
     classId = "IgeObject";
     _id;

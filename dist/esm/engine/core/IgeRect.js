@@ -1,5 +1,5 @@
 import { IgePoint2d } from "./IgePoint2d.js"
-import { circleIntersectsRect, pointIntersectsRect, rectIntersectsPolygon, rectIntersectsRect } from "../utils/intersections.js"
+import { circleIntersectsRect, pointIntersectsRect, rectIntersectsPolygon, rectIntersectsRect } from "../utils/intersections.js";
 /**
  * Creates a new rectangle (x, y, width, height).
  */

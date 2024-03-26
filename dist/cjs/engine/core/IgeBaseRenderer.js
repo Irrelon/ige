@@ -63,7 +63,7 @@ class IgeBaseRenderer extends IgeEventingClass_1.IgeEventingClass {
     destroy() {
     }
     canvasElement() {
-        return this._canvas;
+        return this._canvasElement;
     }
     renderSceneGraph(engine, viewports) {
         return this._renderSceneGraph(engine, viewports);

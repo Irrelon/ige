@@ -1,7 +1,7 @@
 import { IgeBaseRenderer } from "./IgeBaseRenderer.js"
-import { IgePoint2d } from "./IgePoint2d.js"
+import { IgePoint2d } from "./IgePoint2d.js";
 import { ige } from "../instance.js"
-import { isClient, isServer } from "../utils/clientServer.js"
+import { isClient, isServer } from "../utils/clientServer.js";
 import { getElementPosition } from "../utils/general.js"
 export class IgeCanvas2dRenderer extends IgeBaseRenderer {
     _ctx;
@@ -13,9 +13,9 @@ export class IgeCanvas2dRenderer extends IgeBaseRenderer {
     async _setup() {
         await super._setup();
         this.createFrontBuffer();
-        if (!this._canvas)
+        if (!this._canvasElement)
             return;
-        this._ctx = this._canvas.getContext("2d");
+        this._ctx = this._canvasElement.getContext("2d");
         this.isReady(true);
     }
     /**
@@ -34,7 +34,7 @@ export class IgeCanvas2dRenderer extends IgeBaseRenderer {
         if (!isClient) {
             return;
         }
-        if (this._canvas) {
+        if (this._canvasElement) {
             return;
         }
         this._createdFrontBuffer = true;
@@ -52,14 +52,14 @@ export class IgeCanvas2dRenderer extends IgeBaseRenderer {
             return this;
         if (elem === undefined) {
             // Return current value
-            return this._canvas;
+            return this._canvasElement;
         }
-        if (this._canvas) {
+        if (this._canvasElement) {
             // We already have a canvas
             return this;
         }
-        this._canvas = elem;
-        this._ctx = this._canvas.getContext("2d");
+        this._canvasElement = elem;
+        this._ctx = this._canvasElement.getContext("2d");
         if (!this._ctx) {
             throw new Error("Could not get canvas context!");
         }
@@ -76,33 +76,33 @@ export class IgeCanvas2dRenderer extends IgeBaseRenderer {
         this._autoSize = autoSize;
         window.addEventListener("resize", this._resizeEvent);
         this._resizeEvent();
-        this._ctx = this._canvas.getContext("2d");
+        this._ctx = this._canvasElement.getContext("2d");
         ige.engine.headless(false);
         // Ask the input component to set up any listeners it has
-        ige.input.setupListeners(this._canvas);
+        ige.input.setupListeners(this._canvasElement);
     }
     /**
      * Clears the entire canvas.
      */
     clearCanvas() {
-        if (!this._canvas || !this._ctx)
+        if (!this._canvasElement || !this._ctx)
             return;
-        this._ctx.clearRect(0, 0, this._canvas.width, this._canvas.height);
+        this._ctx.clearRect(0, 0, this._canvasElement.width, this._canvasElement.height);
     }
     /**
      * Removes the engine's canvas from the DOM.
      */
     removeCanvas() {
         // Stop listening for input events
-        ige.input.destroyListeners(this._canvas);
+        ige.input.destroyListeners(this._canvasElement);
         // Remove event listener
         window.removeEventListener("resize", this._resizeEvent);
-        if (this._createdFrontBuffer && this._canvas) {
+        if (this._createdFrontBuffer && this._canvasElement) {
             // Remove the canvas from the DOM
-            document.body.removeChild(this._canvas);
+            document.body.removeChild(this._canvasElement);
         }
         // Clear internal references
-        delete this._canvas;
+        delete this._canvasElement;
         this._ctx = null;
         ige.engine.headless(true);
     }
@@ -160,9 +160,9 @@ export class IgeCanvas2dRenderer extends IgeBaseRenderer {
             let newWidth = window.innerWidth;
             let newHeight = window.innerHeight;
             // Only update canvas dimensions if it exists
-            if (this._canvas) {
+            if (this._canvasElement) {
                 // Check if we can get the position of the canvas
-                canvasBoundingRect = getElementPosition(this._canvas);
+                canvasBoundingRect = getElementPosition(this._canvasElement);
                 // Adjust the newWidth and newHeight by the canvas offset
                 newWidth -= canvasBoundingRect.left;
                 newHeight -= canvasBoundingRect.top;
@@ -175,24 +175,24 @@ export class IgeCanvas2dRenderer extends IgeBaseRenderer {
                 if (newHeight % 2) {
                     newHeight--;
                 }
-                this._canvas.width = newWidth * this._devicePixelRatio;
-                this._canvas.height = newHeight * this._devicePixelRatio;
+                this._canvasElement.width = newWidth * this._devicePixelRatio;
+                this._canvasElement.height = newHeight * this._devicePixelRatio;
                 if (this._devicePixelRatio !== 1) {
-                    this._canvas.style.width = newWidth + "px";
-                    this._canvas.style.height = newHeight + "px";
+                    this._canvasElement.style.width = newWidth + "px";
+                    this._canvasElement.style.height = newHeight + "px";
                     // Scale the canvas context to account for the change
                     this._ctx?.scale(this._devicePixelRatio, this._devicePixelRatio);
                 }
             }
             this._bounds2d = new IgePoint2d(newWidth, newHeight);
         }
-        else if (this._canvas) {
-            this._bounds2d = new IgePoint2d(this._canvas.width, this._canvas.height);
+        else if (this._canvasElement) {
+            this._bounds2d = new IgePoint2d(this._canvasElement.width, this._canvasElement.height);
         }
         if (ige.engine._showSgTree) {
             const sgTreeElem = document.getElementById("igeSgTree");
             if (sgTreeElem) {
-                canvasBoundingRect = getElementPosition(this._canvas);
+                canvasBoundingRect = getElementPosition(this._canvasElement);
                 sgTreeElem.style.top = canvasBoundingRect.top + 5 + "px";
                 sgTreeElem.style.left = canvasBoundingRect.left + 5 + "px";
                 sgTreeElem.style.height = this._bounds2d.y - 30 + "px";
@@ -205,7 +205,7 @@ export class IgeCanvas2dRenderer extends IgeBaseRenderer {
      * if called from within a user-generated HTML event listener.
      */
     toggleFullScreen = () => {
-        const elem = this._canvas;
+        const elem = this._canvasElement;
         if (!elem)
             return;
         if (elem.requestFullscreen) {

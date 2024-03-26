@@ -1,10 +1,10 @@
 import { IgeAudioControl } from "./IgeAudioControl.js"
-import { defaultPannerSettings } from "./IgeAudioEntity.js"
+import { defaultPannerSettings } from "./IgeAudioEntity.js";
 import { IgeAssetRegister } from "../../core/IgeAssetRegister.js"
 import { ige } from "../../instance.js"
 import { arrPullConditional } from "../../utils/arrays.js"
 import { isClient } from "../../utils/clientServer.js"
-import { IgeBehaviourType } from "../../../enums/index.js"
+import { IgeBehaviourType } from "../../../enums/index.js";
 /**
  * This class is a component that you use by telling the engine it's a
  * dependency by calling `ige.uses("audio");`. After that, you can directly

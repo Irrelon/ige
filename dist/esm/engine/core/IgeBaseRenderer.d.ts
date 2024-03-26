@@ -3,7 +3,7 @@ import { IgeEventingClass } from "./IgeEventingClass.js";
 import { IgePoint2d } from "./IgePoint2d.js"
 import type { IgeViewport } from "./IgeViewport.js";
 export declare class IgeBaseRenderer extends IgeEventingClass {
-    protected _canvas?: HTMLCanvasElement;
+    protected _canvasElement?: HTMLCanvasElement;
     protected _hasRunSetup: boolean;
     protected _isReady: boolean;
     protected _bounds2d: IgePoint2d;

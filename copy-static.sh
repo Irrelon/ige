@@ -14,9 +14,7 @@ find "$ABS_SRC_DIR" -type f ! \( -name '*.ts' -o -name '*.tsx' \) -exec bash -c 
   ABS_DIST_DIR="${2}";
   file="{}";
   rel_path="${file#$ABS_SRC_DIR/}";
-  echo ABS_SRC_DIR = $ABS_SRC_DIR
-  echo file = $file
-  echo rel_path = $rel_path
-  dest="/$ABS_DIST_DIR/$rel_path";
+  dest="$ABS_DIST_DIR/$rel_path";
+  echo $dest
   mkdir -p "$(dirname "$dest")" && cp "$file" "$dest"
 ' bash "$ABS_SRC_DIR" "$ABS_DIST_DIR" \;
