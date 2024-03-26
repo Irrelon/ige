@@ -1,0 +1,25 @@
+#sheetSettings {
+    margin-top: -20px;
+}
+
+#fontPreview {
+    line-height: normal;
+    white-space: nowrap;
+}
+
+#fontLoaded {
+    color: #1a9e00;
+    margin-bottom: 5px;
+}
+
+.webFontPreLoad {
+    display: none;
+}
+
+#fontPreviewBackBuffer {
+    display: none;
+}
+
+.fontScroll {
+    overflow: scroll;
+}

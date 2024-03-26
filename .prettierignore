@@ -1,0 +1,11 @@
+dist
+artifacts
+cache
+node_modules
+.next
+yarn.lock
+package-lock.json
+public
+.yarn
+.yarnrc
+.min.js

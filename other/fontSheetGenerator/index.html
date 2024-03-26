@@ -1,0 +1,224 @@
+<!--
+/**
+ * Copyright (c) 2012 Irrelon Software Limited
+ * http://www.isogenicengine.com
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining
+ * a copy of this software and associated documentation files (the
+ * "Software"), to deal in the Software without restriction, including
+ * without limitation the rights to use, copy, modify, merge, publish,
+ * distribute, sublicense, and/or sell copies of the Software, and to
+ * permit persons to whom the Software is furnished to do so, subject to
+ * the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be
+ * included in all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+ * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+ * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
+ * LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+ * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+ * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+*/
+-->
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<title>Font Sheet Generator - Isogenic Game Engine</title>
+		<link href="css/bootstrap.min.css" rel="stylesheet" type="text/css">
+		<link href="css/bootstrap-responsive.min.css" rel="stylesheet" type="text/css">
+		<link href="css/default.css" rel="stylesheet" type="text/css">
+		<link href="ColorPicker/css/colorpicker.css" rel="stylesheet" type="text/css" />
+	    <style>
+			body {
+				padding-top: 60px;
+			}
+	    </style>
+	</head>
+	<body>
+		<div class="navbar navbar-fixed-top">
+			<div class="navbar-inner">
+				<div class="container">
+					<a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+						<span class="icon-bar"></span>
+						<span class="icon-bar"></span>
+						<span class="icon-bar"></span>
+					</a>
+					<a class="brand" href="#">Isogenic Game Engine</a>
+					<div class="nav-collapse">
+						<ul class="nav">
+							<li class="active"><a href="#">Font Sheet Generator</a></li>
+							<li><a href="https://www.isogenicengine.com">Isogenic Game Engine</a></li>
+						</ul>
+					</div><!--/.nav-collapse -->
+				</div>
+			</div>
+		</div>
+
+		<div class="container">
+			<header class="jumbotron subhead">
+				<h1>Font Sheet Generator</h1>
+				<p>
+					This tool allows you to generate font sheets that you can use with your
+					<a href="https://www.isogenicengine.com" target="_blank">Isogenic Game Engine</a> game projects to render any font in your game without
+					the font being available on the target platform / device. It creates an
+					image from the font with all the letters, numbers and symbols that you
+					might want to use. You can then save the image for use in your project.
+				</p>
+			</header>
+			<section id="sheetSettings">
+				<div class="page-header"></div>
+				<div class="row">
+					<div class="span8">
+						<h2>Sheet Settings</h2>
+						<form class="well">
+							<table>
+								<tr>
+									<td>Font Name:</td>
+									<td width="10">&nbsp;</td>
+									<td colspan="2">Font Size:</td>
+									<td width="10">&nbsp;</td>
+									<td>Font Style:</td>
+									<td width="10">&nbsp;</td>
+									<td>Font Wight:</td>
+								</tr>
+								<tr>
+									<td><select class="span3" id="fontList" onchange="displayPreview();"></select></td>
+									<td width="10">&nbsp;</td>
+									<td><input class="span1" type="number" min="1" step="1" value="26" id="fontSize" onchange="displayPreview();" /></td>
+									<td>
+										<select class="span1" id="fontSizeUnit" onchange="displayPreview();">
+											<option value="pt">pt</option>
+											<option value="px">px</option>
+										</select>
+									</td>
+									<td width="10">&nbsp;</td>
+									<td>
+										<select class="span2" id="fontStyle" onchange="displayPreview();">
+											<option value="">Normal</option>
+											<option value="Italic">Italic</option>
+										</select>
+									</td>
+									<td width="10">&nbsp;</td>
+									<td>
+										<select class="span2" id="fontWeight" onchange="displayPreview();">
+											<option value="">Normal</option>
+											<option value="Bold">Bold</option>
+											<option value="100">100</option>
+											<option value="200">200</option>
+											<option value="300">300</option>
+											<option value="400">400 (normal)</option>
+											<option value="500">500</option>
+											<option value="600">600</option>
+											<option value="700">700 (bold)</option>
+											<option value="800">800</option>
+											<option value="900">900</option>
+										</select>
+									</td>
+								</tr>
+							</table>
+							<table>
+								<tr>
+									<td>Character List:</td>
+								</tr>
+								<tr>
+									<td><input class="span7" type="text" value="" id="characterList" onkeyup="displayPreview();" /></td>
+								</tr>
+							</table>
+							<table>
+								<tr>
+									<td>Spacing:</td>
+									<td width="10">&nbsp;</td>
+									<td>Colour:</td>
+									<td>Debug Lines:</td>
+								</tr>
+								<tr>
+									<td><input class="span1" type="number" min="1" step="1" value="1" id="characterSpacing" onchange="displayPreview();" /></td>
+									<td width="10">&nbsp;</td>
+									<td>
+										<div id="fontColorPicker" class="input-append color span2" data-color="rgb(0, 0, 0)" data-color-format="hex">
+											<input id="fontColor" type="text" class="span1" value="#000000" onchange="displayPreview();" >
+											<span class="add-on"><i style="background-color: rgb(0, 0, 0)"></i></span>
+										</div>
+									</td>
+									<td><input type="checkbox" id="debugCanvas" value="1" /></td>
+								</tr>
+							</table>
+							<div id="generateButton" class="btn btn-primary" onclick="displayPreview(); generateCanvasFont();">Generate Sheet...</div>
+						</form>
+					</div>
+					<div class="span3">
+						<h2>Add Google Web Font</h2>
+						<form class="well">
+							<label for="fontName">Font Name:</label>
+							<input type="text" id="fontName" placeholder="Font Name" />
+							<div id="fontLoaded"></div>
+							<input class="btn" type="button" value="Load Font" onclick="addGoogleWebFont($('#fontName').val());" />
+						</form>
+					</div>
+					<div class="span12" id="previewWell" style="display: none;">
+						<h2>Output Preview<span class="fontPreviewName"></span></h2>
+						<h6>Final background colour is actually transparent but displayed background is auto-selected for best character viewing fidelity.</h6>
+						<div class="well">
+							<div class="fontScroll">
+								<div id="fontPreview" style="font-size: 26pt;"></div>
+							</div>
+						</div>
+					</div>
+					<div class="span12" id="finalWell" style="display: none;">
+						<h2>Final Font Sheet<span class="fontPreviewName"></span></h2>
+						<h6>Final background colour is actually transparent but displayed background is auto-selected for best character viewing fidelity.</h6>
+						<div class="well">
+							<div class="fontScroll">
+								<canvas id="fontPreviewCanvas" width="600" height="40" style="display: block;"></canvas>
+							</div>
+							<div id="imageBase64"></div><br />
+							<form action="saver/savePng.php" method="post">
+								<input type="hidden" id="formImageFileName" name="imageFileName">
+								<input type="hidden" id="formImageData" name="imageData" value="" />
+								<input type="submit" class="btn btn-primary" id="saveImageButton" value="Save Image..." />
+							</form>
+						</div>
+					</div>
+				</div>
+			</section>
+		</div>
+
+		<canvas id="fontPreviewBackBuffer" width="40" height="40"></canvas>
+
+		<!-- Load all our JS -->
+		<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
+		<script type="text/javascript" src="js/bootstrap.min.js"></script>
+		<script type="text/javascript" src="CanvasJsonDataEncoder/canvasDataEncoder.js"></script>
+		<script type="text/javascript" src="ColorPicker/js/bootstrap-colorpicker.js"></script>
+		<script type="text/javascript" src="js/generator.js"></script>
+
+		<!-- Setup the color picker -->
+		<script type="text/javascript">
+			$('#fontColorPicker').colorpicker().on('changeColor', function (ev) {
+				$('#fontColor').val(ev.color.toHex());
+				displayPreview();
+			});
+
+			// Fill the character list with default characters
+			var chars = '', i;
+
+			for (i = 32; i <= 126; i++) {
+				chars += String.fromCharCode(i);
+			}
+
+			$('#characterList').val(chars);
+		</script>
+
+		<!-- Add the FontList flash object to grab fonts from the system -->
+		<!-- Original from: http://hasseg.org/blog/post/526/getting-a-list-of-installed-fonts-with-flash-and-javascript/ -->
+		<object id="fontListSWF" name="fontListSWF" type="application/x-shockwave-flash" data="swf/FontList.swf" width="1" height="1">
+		    <param name="movie" value="./swf/FontList.swf">
+			<embed src="swf/FontList.swf" width="1" height="1"></embed>
+		</object>
+	</body>
+</html>

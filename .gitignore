@@ -136,8 +136,8 @@ Desktop.ini
 # Packages
 *.egg
 *.egg-info
-dist
-build
+
+/build
 eggs
 parts
 bin
@@ -170,4 +170,6 @@ pip-log.txt
 npm-debug.log
 
 # Ignore all node_modules
-server/node_modules*
+node_modules
+tsconfig.tsbuildinfo
+.ai

@@ -1,0 +1,56 @@
+{
+	"extends": [
+		"prettier",
+		"plugin:@typescript-eslint/recommended"
+	],
+	"plugins": [
+		"prettier",
+		"@typescript-eslint",
+		"unused-imports",
+		"tree-shaking"
+	],
+	"rules": {
+		"@typescript-eslint/no-unnecessary-type-assertion": "off",
+		"@typescript-eslint/consistent-type-definitions": "off",
+		"@typescript-eslint/no-unused-vars": "off",
+		"@typescript-eslint/no-empty-interface": "off",
+		"@typescript-eslint/no-empty-arrow-function": "off",
+		"@typescript-eslint/no-empty-function": "off",
+		"@typescript-eslint/no-inferrable-types": "off",
+		"@typescript-eslint/strict-boolean-expressions": "off",
+		"@typescript-eslint/ban-ts-comment": "off",
+		"@typescript-eslint/no-this-alias": "off",
+		"@typescript-eslint/no-explicit-any": "off",
+		"@typescript-eslint/no-shadow": "error",
+		"@typescript-eslint/no-namespace": "off",
+		"@typescript-eslint/consistent-type-imports": "error",
+		"unused-imports/no-unused-imports": "warn",
+		"indent": [
+			"error",
+			"tab",
+			{
+				"SwitchCase": 1
+			}
+		],
+		"space-before-function-paren": [
+			"error",
+			"always"
+		],
+		"no-shadow": "off",
+		"complexity": [
+			"warn",
+			20
+		],
+		"max-depth": [
+			"warn",
+			4
+		],
+		"prefer-rest-params": "off"
+	},
+	"ignorePatterns": [
+		"**/box2d/**",
+		"dist",
+		"other/**",
+		"lib_stack.ts"
+	]
+}

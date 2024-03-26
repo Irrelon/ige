@@ -1,0 +1,183 @@
+<!DOCTYPE html><html class="default" lang="en"><head><meta charSet="utf-8"/><meta http-equiv="x-ua-compatible" content="IE=edge"/><title>b2Manifold | @irrelon/ige</title><meta name="description" content="Documentation for @irrelon/ige"/><meta name="viewport" content="width=device-width, initial-scale=1"/><link rel="stylesheet" href="../assets/style.css"/><link rel="stylesheet" href="../assets/highlight.css"/><script defer src="../assets/main.js"></script><script async src="../assets/icons.js" id="tsd-icons-script"></script><script async src="../assets/search.js" id="tsd-search-script"></script><script async src="../assets/navigation.js" id="tsd-nav-script"></script><style>
+@media (prefers-color-scheme: dark) {
+  :root {
+    --md-sys-color-primary: #4fd8eb;
+    --md-sys-color-on-primary: #00363d;
+    --md-sys-color-primary-container: #004f58;
+    --md-sys-color-on-primary-container: #97f0ff;
+    --md-sys-color-secondary: #b1cbd0;
+    --md-sys-color-on-secondary: #1c3438;
+    --md-sys-color-secondary-container: #334b4f;
+    --md-sys-color-on-secondary-container: #cde7ec;
+    --md-sys-color-tertiary: #bac6ea;
+    --md-sys-color-on-tertiary: #24304d;
+    --md-sys-color-tertiary-container: #3b4664;
+    --md-sys-color-on-tertiary-container: #dae2ff;
+    --md-sys-color-error: #ffb4ab;
+    --md-sys-color-on-error: #690005;
+    --md-sys-color-error-container: #93000a;
+    --md-sys-color-on-error-container: #ffb4ab;
+    --md-sys-color-background: #191c1d;
+    --md-sys-color-on-background: #e1e3e3;
+    --md-sys-color-surface: #191c1d;
+    --md-sys-color-on-surface: #e1e3e3;
+    --md-sys-color-surface-variant: #3f484a;
+    --md-sys-color-on-surface-variant: #bfc8ca;
+    --md-sys-color-outline: #899294;
+    --md-sys-color-outline-variant: #3f484a;
+    --md-sys-color-shadow: #000000;
+    --md-sys-color-scrim: #000000;
+    --md-sys-color-inverse-surface: #e1e3e3;
+    --md-sys-color-inverse-on-surface: #2e3132;
+    --md-sys-color-inverse-primary: #006874;
+    --md-sys-color-surface-dim: #101415;
+    --md-sys-color-surface-bright: #363a3a;
+    --md-sys-color-surface-container-lowest: #0b0f0f;
+    --md-sys-color-surface-container-low: #191c1d;
+    --md-sys-color-surface-container: #1d2021;
+    --md-sys-color-surface-container-high: #272b2b;
+    --md-sys-color-surface-container-highest: #323536
+  }
+}
+:root[data-theme="dark"] {
+  --md-sys-color-primary: #4fd8eb;
+  --md-sys-color-on-primary: #00363d;
+  --md-sys-color-primary-container: #004f58;
+  --md-sys-color-on-primary-container: #97f0ff;
+  --md-sys-color-secondary: #b1cbd0;
+  --md-sys-color-on-secondary: #1c3438;
+  --md-sys-color-secondary-container: #334b4f;
+  --md-sys-color-on-secondary-container: #cde7ec;
+  --md-sys-color-tertiary: #bac6ea;
+  --md-sys-color-on-tertiary: #24304d;
+  --md-sys-color-tertiary-container: #3b4664;
+  --md-sys-color-on-tertiary-container: #dae2ff;
+  --md-sys-color-error: #ffb4ab;
+  --md-sys-color-on-error: #690005;
+  --md-sys-color-error-container: #93000a;
+  --md-sys-color-on-error-container: #ffb4ab;
+  --md-sys-color-background: #191c1d;
+  --md-sys-color-on-background: #e1e3e3;
+  --md-sys-color-surface: #191c1d;
+  --md-sys-color-on-surface: #e1e3e3;
+  --md-sys-color-surface-variant: #3f484a;
+  --md-sys-color-on-surface-variant: #bfc8ca;
+  --md-sys-color-outline: #899294;
+  --md-sys-color-outline-variant: #3f484a;
+  --md-sys-color-shadow: #000000;
+  --md-sys-color-scrim: #000000;
+  --md-sys-color-inverse-surface: #e1e3e3;
+  --md-sys-color-inverse-on-surface: #2e3132;
+  --md-sys-color-inverse-primary: #006874;
+  --md-sys-color-surface-dim: #101415;
+  --md-sys-color-surface-bright: #363a3a;
+  --md-sys-color-surface-container-lowest: #0b0f0f;
+  --md-sys-color-surface-container-low: #191c1d;
+  --md-sys-color-surface-container: #1d2021;
+  --md-sys-color-surface-container-high: #272b2b;
+  --md-sys-color-surface-container-highest: #323536
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    --md-sys-color-primary: #006874;
+    --md-sys-color-on-primary: #ffffff;
+    --md-sys-color-primary-container: #97f0ff;
+    --md-sys-color-on-primary-container: #001f24;
+    --md-sys-color-secondary: #4a6267;
+    --md-sys-color-on-secondary: #ffffff;
+    --md-sys-color-secondary-container: #cde7ec;
+    --md-sys-color-on-secondary-container: #051f23;
+    --md-sys-color-tertiary: #525e7d;
+    --md-sys-color-on-tertiary: #ffffff;
+    --md-sys-color-tertiary-container: #dae2ff;
+    --md-sys-color-on-tertiary-container: #0e1b37;
+    --md-sys-color-error: #ba1a1a;
+    --md-sys-color-on-error: #ffffff;
+    --md-sys-color-error-container: #ffdad6;
+    --md-sys-color-on-error-container: #410002;
+    --md-sys-color-background: #fafdfd;
+    --md-sys-color-on-background: #191c1d;
+    --md-sys-color-surface: #fafdfd;
+    --md-sys-color-on-surface: #191c1d;
+    --md-sys-color-surface-variant: #dbe4e6;
+    --md-sys-color-on-surface-variant: #3f484a;
+    --md-sys-color-outline: #6f797a;
+    --md-sys-color-outline-variant: #bfc8ca;
+    --md-sys-color-shadow: #000000;
+    --md-sys-color-scrim: #000000;
+    --md-sys-color-inverse-surface: #2e3132;
+    --md-sys-color-inverse-on-surface: #eff1f1;
+    --md-sys-color-inverse-primary: #4fd8eb;
+    --md-sys-color-surface-dim: #d8dadb;
+    --md-sys-color-surface-bright: #f8fafa;
+    --md-sys-color-surface-container-lowest: #ffffff;
+    --md-sys-color-surface-container-low: #f2f4f4;
+    --md-sys-color-surface-container: #eceeef;
+    --md-sys-color-surface-container-high: #e6e8e9;
+    --md-sys-color-surface-container-highest: #e1e3e3
+  }
+}
+:root[data-theme="light"] {
+  --md-sys-color-primary: #006874;
+  --md-sys-color-on-primary: #ffffff;
+  --md-sys-color-primary-container: #97f0ff;
+  --md-sys-color-on-primary-container: #001f24;
+  --md-sys-color-secondary: #4a6267;
+  --md-sys-color-on-secondary: #ffffff;
+  --md-sys-color-secondary-container: #cde7ec;
+  --md-sys-color-on-secondary-container: #051f23;
+  --md-sys-color-tertiary: #525e7d;
+  --md-sys-color-on-tertiary: #ffffff;
+  --md-sys-color-tertiary-container: #dae2ff;
+  --md-sys-color-on-tertiary-container: #0e1b37;
+  --md-sys-color-error: #ba1a1a;
+  --md-sys-color-on-error: #ffffff;
+  --md-sys-color-error-container: #ffdad6;
+  --md-sys-color-on-error-container: #410002;
+  --md-sys-color-background: #fafdfd;
+  --md-sys-color-on-background: #191c1d;
+  --md-sys-color-surface: #fafdfd;
+  --md-sys-color-on-surface: #191c1d;
+  --md-sys-color-surface-variant: #dbe4e6;
+  --md-sys-color-on-surface-variant: #3f484a;
+  --md-sys-color-outline: #6f797a;
+  --md-sys-color-outline-variant: #bfc8ca;
+  --md-sys-color-shadow: #000000;
+  --md-sys-color-scrim: #000000;
+  --md-sys-color-inverse-surface: #2e3132;
+  --md-sys-color-inverse-on-surface: #eff1f1;
+  --md-sys-color-inverse-primary: #4fd8eb;
+  --md-sys-color-surface-dim: #d8dadb;
+  --md-sys-color-surface-bright: #f8fafa;
+  --md-sys-color-surface-container-lowest: #ffffff;
+  --md-sys-color-surface-container-low: #f2f4f4;
+  --md-sys-color-surface-container: #eceeef;
+  --md-sys-color-surface-container-high: #e6e8e9;
+  --md-sys-color-surface-container-highest: #e1e3e3
+}
+</style><link rel="stylesheet" href="../assets/material-style.css"/></head><body><script>document.documentElement.dataset.theme = localStorage.getItem("tsd-theme") || "os";document.body.style.display="none";setTimeout(() => app?app.showPage():document.body.style.removeProperty("display"),500)</script><header class="tsd-page-toolbar"><div class="tsd-toolbar-contents container"><div class="table-cell" id="tsd-search" data-base=".."><div class="field"><label for="tsd-search-field" class="tsd-widget tsd-toolbar-icon search no-caption"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><use href="../assets/icons.svg#icon-search"></use></svg></label><input type="text" id="tsd-search-field" aria-label="Search"/></div><div class="field"><div id="tsd-toolbar-links"></div></div><ul class="results"><li class="state loading">Preparing search index...</li><li class="state failure">The search index is not available</li></ul><a href="../index.html" class="title">@irrelon/ige</a></div><div class="table-cell" id="tsd-widgets"><a href="#" class="tsd-widget tsd-toolbar-icon menu no-caption" data-toggle="menu" aria-label="Menu"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><use href="../assets/icons.svg#icon-menu"></use></svg></a></div></div></header><div class="container container-main"><div class="col-content"><div class="tsd-page-title"><ul class="tsd-breadcrumb"><li><a href="../modules.html">@irrelon/ige</a></li><li><a href="b2Manifold.html">b2Manifold</a></li></ul><h1>Class b2Manifold</h1></div><aside class="tsd-sources"><ul><li>Defined in <a href="https://github.com/Irrelon/ige/blob/84c35e8b/src/engine/components/physics/box2d/lib/collision/b2_collision.ts#L187">src/engine/components/physics/box2d/lib/collision/b2_collision.ts:187</a></li></ul></aside><section class="tsd-panel-group tsd-index-group"><section class="tsd-panel tsd-index-panel"><details class="tsd-index-content tsd-index-accordion" open><summary class="tsd-accordion-summary tsd-index-summary"><h5 class="tsd-index-heading uppercase" role="button" aria-expanded="false" tabIndex="0"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><use href="../assets/icons.svg#icon-chevronSmall"></use></svg> Index</h5></summary><div class="tsd-accordion-details"><section class="tsd-index-section"><h3 class="tsd-index-heading">Constructors</h3><div class="tsd-index-list"><a href="b2Manifold.html#constructor" class="tsd-index-link"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="../assets/icons.svg#icon-512"></use></svg><span>constructor</span></a>
+</div></section><section class="tsd-index-section"><h3 class="tsd-index-heading">Properties</h3><div class="tsd-index-list"><a href="b2Manifold.html#localNormal" class="tsd-index-link"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="../assets/icons.svg#icon-1024"></use></svg><span>local<wbr/>Normal</span></a>
+<a href="b2Manifold.html#localPoint" class="tsd-index-link"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="../assets/icons.svg#icon-1024"></use></svg><span>local<wbr/>Point</span></a>
+<a href="b2Manifold.html#pointCount" class="tsd-index-link"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="../assets/icons.svg#icon-1024"></use></svg><span>point<wbr/>Count</span></a>
+<a href="b2Manifold.html#points" class="tsd-index-link"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="../assets/icons.svg#icon-1024"></use></svg><span>points</span></a>
+<a href="b2Manifold.html#type" class="tsd-index-link"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="../assets/icons.svg#icon-1024"></use></svg><span>type</span></a>
+</div></section><section class="tsd-index-section"><h3 class="tsd-index-heading">Methods</h3><div class="tsd-index-list"><a href="b2Manifold.html#Clone" class="tsd-index-link"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="../assets/icons.svg#icon-2048"></use></svg><span>Clone</span></a>
+<a href="b2Manifold.html#Copy" class="tsd-index-link"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="../assets/icons.svg#icon-2048"></use></svg><span>Copy</span></a>
+<a href="b2Manifold.html#Reset" class="tsd-index-link"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="../assets/icons.svg#icon-2048"></use></svg><span>Reset</span></a>
+</div></section></div></details></section></section><section class="tsd-panel-group tsd-member-group"><h2>Constructors</h2><section class="tsd-panel tsd-member"><a id="constructor" class="tsd-anchor"></a><h3 class="tsd-anchor-link"><span>constructor</span><a href="#constructor" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3><ul class="tsd-signatures"><li class="tsd-signature tsd-anchor-link"><a id="constructor.new_b2Manifold" class="tsd-anchor"></a><span class="tsd-kind-constructor-signature">new b2<wbr/>Manifold</span><span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="b2Manifold.html" class="tsd-signature-type tsd-kind-class">b2Manifold</a><a href="#constructor.new_b2Manifold" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></li><li class="tsd-description"><h4 class="tsd-returns-title">Returns <a href="b2Manifold.html" class="tsd-signature-type tsd-kind-class">b2Manifold</a></h4></li></ul></section></section><section class="tsd-panel-group tsd-member-group"><h2>Properties</h2><section class="tsd-panel tsd-member"><a id="localNormal" class="tsd-anchor"></a><h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagReadonly">Readonly</code> <span>local<wbr/>Normal</span><a href="#localNormal" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3><div class="tsd-signature"><span class="tsd-kind-property">local<wbr/>Normal</span><span class="tsd-signature-symbol">:</span> <a href="b2Vec2.html" class="tsd-signature-type tsd-kind-class">b2Vec2</a><span class="tsd-signature-symbol"> = ...</span></div><aside class="tsd-sources"><ul><li>Defined in <a href="https://github.com/Irrelon/ige/blob/84c35e8b/src/engine/components/physics/box2d/lib/collision/b2_collision.ts#L189">src/engine/components/physics/box2d/lib/collision/b2_collision.ts:189</a></li></ul></aside></section><section class="tsd-panel tsd-member"><a id="localPoint" class="tsd-anchor"></a><h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagReadonly">Readonly</code> <span>local<wbr/>Point</span><a href="#localPoint" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3><div class="tsd-signature"><span class="tsd-kind-property">local<wbr/>Point</span><span class="tsd-signature-symbol">:</span> <a href="b2Vec2.html" class="tsd-signature-type tsd-kind-class">b2Vec2</a><span class="tsd-signature-symbol"> = ...</span></div><aside class="tsd-sources"><ul><li>Defined in <a href="https://github.com/Irrelon/ige/blob/84c35e8b/src/engine/components/physics/box2d/lib/collision/b2_collision.ts#L190">src/engine/components/physics/box2d/lib/collision/b2_collision.ts:190</a></li></ul></aside></section><section class="tsd-panel tsd-member"><a id="pointCount" class="tsd-anchor"></a><h3 class="tsd-anchor-link"><span>point<wbr/>Count</span><a href="#pointCount" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3><div class="tsd-signature"><span class="tsd-kind-property">point<wbr/>Count</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol"> = 0</span></div><aside class="tsd-sources"><ul><li>Defined in <a href="https://github.com/Irrelon/ige/blob/84c35e8b/src/engine/components/physics/box2d/lib/collision/b2_collision.ts#L192">src/engine/components/physics/box2d/lib/collision/b2_collision.ts:192</a></li></ul></aside></section><section class="tsd-panel tsd-member"><a id="points" class="tsd-anchor"></a><h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagReadonly">Readonly</code> <span>points</span><a href="#points" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3><div class="tsd-signature"><span class="tsd-kind-property">points</span><span class="tsd-signature-symbol">:</span> <a href="b2ManifoldPoint.html" class="tsd-signature-type tsd-kind-class">b2ManifoldPoint</a><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol"> = ...</span></div><aside class="tsd-sources"><ul><li>Defined in <a href="https://github.com/Irrelon/ige/blob/84c35e8b/src/engine/components/physics/box2d/lib/collision/b2_collision.ts#L188">src/engine/components/physics/box2d/lib/collision/b2_collision.ts:188</a></li></ul></aside></section><section class="tsd-panel tsd-member"><a id="type" class="tsd-anchor"></a><h3 class="tsd-anchor-link"><span>type</span><a href="#type" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3><div class="tsd-signature"><span class="tsd-kind-property">type</span><span class="tsd-signature-symbol">:</span> <a href="../enums/b2ManifoldType.html" class="tsd-signature-type tsd-kind-enum">b2ManifoldType</a><span class="tsd-signature-symbol"> = b2ManifoldType.e_unknown</span></div><aside class="tsd-sources"><ul><li>Defined in <a href="https://github.com/Irrelon/ige/blob/84c35e8b/src/engine/components/physics/box2d/lib/collision/b2_collision.ts#L191">src/engine/components/physics/box2d/lib/collision/b2_collision.ts:191</a></li></ul></aside></section></section><section class="tsd-panel-group tsd-member-group"><h2>Methods</h2><section class="tsd-panel tsd-member"><a id="Clone" class="tsd-anchor"></a><h3 class="tsd-anchor-link"><span>Clone</span><a href="#Clone" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3><ul class="tsd-signatures"><li class="tsd-signature tsd-anchor-link"><a id="Clone.Clone-1" class="tsd-anchor"></a><span class="tsd-kind-call-signature">Clone</span><span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="b2Manifold.html" class="tsd-signature-type tsd-kind-class">b2Manifold</a><a href="#Clone.Clone-1" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></li><li class="tsd-description"><h4 class="tsd-returns-title">Returns <a href="b2Manifold.html" class="tsd-signature-type tsd-kind-class">b2Manifold</a></h4><aside class="tsd-sources"><ul><li>Defined in <a href="https://github.com/Irrelon/ige/blob/84c35e8b/src/engine/components/physics/box2d/lib/collision/b2_collision.ts#L217">src/engine/components/physics/box2d/lib/collision/b2_collision.ts:217</a></li></ul></aside></li></ul></section><section class="tsd-panel tsd-member"><a id="Copy" class="tsd-anchor"></a><h3 class="tsd-anchor-link"><span>Copy</span><a href="#Copy" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3><ul class="tsd-signatures"><li class="tsd-signature tsd-anchor-link"><a id="Copy.Copy-1" class="tsd-anchor"></a><span class="tsd-kind-call-signature">Copy</span><span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">o</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="b2Manifold.html" class="tsd-signature-type tsd-kind-class">b2Manifold</a><a href="#Copy.Copy-1" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></li><li class="tsd-description"><div class="tsd-parameters"><h4 class="tsd-parameters-title">Parameters</h4><ul class="tsd-parameter-list"><li><span><span class="tsd-kind-parameter">o</span>: <a href="b2Manifold.html" class="tsd-signature-type tsd-kind-class">b2Manifold</a></span></li></ul></div><h4 class="tsd-returns-title">Returns <a href="b2Manifold.html" class="tsd-signature-type tsd-kind-class">b2Manifold</a></h4><aside class="tsd-sources"><ul><li>Defined in <a href="https://github.com/Irrelon/ige/blob/84c35e8b/src/engine/components/physics/box2d/lib/collision/b2_collision.ts#L205">src/engine/components/physics/box2d/lib/collision/b2_collision.ts:205</a></li></ul></aside></li></ul></section><section class="tsd-panel tsd-member"><a id="Reset" class="tsd-anchor"></a><h3 class="tsd-anchor-link"><span>Reset</span><a href="#Reset" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3><ul class="tsd-signatures"><li class="tsd-signature tsd-anchor-link"><a id="Reset.Reset-1" class="tsd-anchor"></a><span class="tsd-kind-call-signature">Reset</span><span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span><a href="#Reset.Reset-1" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></li><li class="tsd-description"><h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4><aside class="tsd-sources"><ul><li>Defined in <a href="https://github.com/Irrelon/ige/blob/84c35e8b/src/engine/components/physics/box2d/lib/collision/b2_collision.ts#L194">src/engine/components/physics/box2d/lib/collision/b2_collision.ts:194</a></li></ul></aside></li></ul></section></section></div><div class="col-sidebar"><div class="page-menu"><div class="tsd-navigation settings"><details class="tsd-index-accordion"><summary class="tsd-accordion-summary"><h3><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><use href="../assets/icons.svg#icon-chevronDown"></use></svg>Settings</h3></summary><div class="tsd-accordion-details"><div class="tsd-filter-visibility"><h4 class="uppercase">Member Visibility</h4><form><ul id="tsd-filter-options"><li class="tsd-filter-item"><label class="tsd-filter-input"><input type="checkbox" id="tsd-filter-protected" name="protected"/><svg width="32" height="32" viewBox="0 0 32 32" aria-hidden="true"><rect class="tsd-checkbox-background" width="30" height="30" x="1" y="1" rx="6" fill="none"></rect><path class="tsd-checkbox-checkmark" d="M8.35422 16.8214L13.2143 21.75L24.6458 10.25" stroke="none" stroke-width="3.5" stroke-linejoin="round" fill="none"></path></svg><span>Protected</span></label></li><li class="tsd-filter-item"><label class="tsd-filter-input"><input type="checkbox" id="tsd-filter-private" name="private"/><svg width="32" height="32" viewBox="0 0 32 32" aria-hidden="true"><rect class="tsd-checkbox-background" width="30" height="30" x="1" y="1" rx="6" fill="none"></rect><path class="tsd-checkbox-checkmark" d="M8.35422 16.8214L13.2143 21.75L24.6458 10.25" stroke="none" stroke-width="3.5" stroke-linejoin="round" fill="none"></path></svg><span>Private</span></label></li><li class="tsd-filter-item"><label class="tsd-filter-input"><input type="checkbox" id="tsd-filter-inherited" name="inherited" checked/><svg width="32" height="32" viewBox="0 0 32 32" aria-hidden="true"><rect class="tsd-checkbox-background" width="30" height="30" x="1" y="1" rx="6" fill="none"></rect><path class="tsd-checkbox-checkmark" d="M8.35422 16.8214L13.2143 21.75L24.6458 10.25" stroke="none" stroke-width="3.5" stroke-linejoin="round" fill="none"></path></svg><span>Inherited</span></label></li><li class="tsd-filter-item"><label class="tsd-filter-input"><input type="checkbox" id="tsd-filter-external" name="external"/><svg width="32" height="32" viewBox="0 0 32 32" aria-hidden="true"><rect class="tsd-checkbox-background" width="30" height="30" x="1" y="1" rx="6" fill="none"></rect><path class="tsd-checkbox-checkmark" d="M8.35422 16.8214L13.2143 21.75L24.6458 10.25" stroke="none" stroke-width="3.5" stroke-linejoin="round" fill="none"></path></svg><span>External</span></label></li></ul></form></div><div class="tsd-theme-toggle"><h4 class="uppercase">Theme</h4><select id="tsd-theme"><option value="os">OS</option><option value="light">Light</option><option value="dark">Dark</option></select></div></div></details></div><details open class="tsd-index-accordion tsd-page-navigation"><summary class="tsd-accordion-summary"><h3><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><use href="../assets/icons.svg#icon-chevronDown"></use></svg>On This Page</h3></summary><div class="tsd-accordion-details"><a href="#constructor" class=""><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="../assets/icons.svg#icon-512"></use></svg><span>constructor</span></a><a href="#localNormal" class=""><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="../assets/icons.svg#icon-1024"></use></svg><span>local<wbr/>Normal</span></a><a href="#localPoint" class=""><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="../assets/icons.svg#icon-1024"></use></svg><span>local<wbr/>Point</span></a><a href="#pointCount" class=""><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="../assets/icons.svg#icon-1024"></use></svg><span>point<wbr/>Count</span></a><a href="#points" class=""><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="../assets/icons.svg#icon-1024"></use></svg><span>points</span></a><a href="#type" class=""><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="../assets/icons.svg#icon-1024"></use></svg><span>type</span></a><a href="#Clone" class=""><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="../assets/icons.svg#icon-2048"></use></svg><span>Clone</span></a><a href="#Copy" class=""><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="../assets/icons.svg#icon-2048"></use></svg><span>Copy</span></a><a href="#Reset" class=""><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="../assets/icons.svg#icon-2048"></use></svg><span>Reset</span></a></div></details></div><div class="site-menu"><nav class="tsd-navigation"><a href="../modules.html"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="../assets/icons.svg#icon-1"></use></svg><span>@irrelon/ige</span></a><ul class="tsd-small-nested-navigation" id="tsd-nav-container" data-base=".."><li>Loading...</li></ul></nav></div></div></div><div class="tsd-generator"><p>Generated using <a href="https://typedoc.org/" target="_blank">TypeDoc</a></p></div><div class="overlay"></div><script>
+          try {
+            const generateLinkElement = document.querySelector(".tsd-generator a");
+            const link = document.createElement("a");
+            Object.assign(link, {
+              href: "https://github.com/dmnsgn/typedoc-material-theme",
+              target: "_blank",
+              rel: "noreferrer",
+              innerText: "typedoc-material-theme."
+            });
+            generateLinkElement.insertAdjacentElement("afterend", link);
+            generateLinkElement.insertAdjacentText("afterend", " with ");
+          } catch (error) {
+
+          }
+        </script></body></html>
