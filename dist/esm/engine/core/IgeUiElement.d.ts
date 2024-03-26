@@ -1,5 +1,5 @@
 import { IgeUiEntity } from "./IgeUiEntity.js"
-import type { IgeUiStyleModifier } from "../../types/IgeUiStyleModifier.js";
+import type { IgeUiStyleModifier } from "../../types/IgeUiStyleModifier.js"
 import type { IgeUiStyleObject } from "../../types/IgeUiStyleObject.js"
 /**
  * Creates a new UI element. UI elements use more resources and CPU

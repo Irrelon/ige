@@ -1,5 +1,5 @@
 import { IgeAudioControl } from "./IgeAudioControl.js"
-import type { IgeAudioSource } from "./IgeAudioSource.js";
+import type { IgeAudioSource } from "./IgeAudioSource.js"
 import { IgeAssetRegister } from "../../core/IgeAssetRegister.js"
 import type { IgePoint3d } from "../../core/IgePoint3d.js"
 import type { IgeAudioPlaybackOptions } from "../../../types/IgeAudioPlaybackOptions.js"

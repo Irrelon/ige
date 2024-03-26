@@ -1,12 +1,12 @@
 import { IgeBounds } from "./IgeBounds.js"
-import { IgeCamera } from "./IgeCamera.js";
+import { IgeCamera } from "./IgeCamera.js"
 import { IgePoint2d } from "./IgePoint2d.js"
-import { IgePoint3d } from "./IgePoint3d.js";
+import { IgePoint3d } from "./IgePoint3d.js"
 import { IgeUiEntity } from "./IgeUiEntity.js"
-import { ige } from "../instance.js";
+import { ige } from "../instance.js"
 import { isClient } from "../utils/clientServer.js"
-import { registerClass } from "../utils/igeClassStore.js";
-import { IgeMountMode } from "../../enums/index.js";
+import { registerClass } from "../utils/igeClassStore.js"
+import { IgeMountMode } from "../../enums/index.js"
 // TODO: Turns out we need IgeObject because IgeViewport cannot extend IgeEntity
 //    because IgeEntity imports IgeViewport, creating a circular referencing issue
 /**

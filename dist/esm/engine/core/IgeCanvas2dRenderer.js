@@ -1,7 +1,7 @@
 import { IgeBaseRenderer } from "./IgeBaseRenderer.js"
-import { IgePoint2d } from "./IgePoint2d.js";
+import { IgePoint2d } from "./IgePoint2d.js"
 import { ige } from "../instance.js"
-import { isClient, isServer } from "../utils/clientServer.js";
+import { isClient, isServer } from "../utils/clientServer.js"
 import { getElementPosition } from "../utils/general.js"
 export class IgeCanvas2dRenderer extends IgeBaseRenderer {
     _ctx;

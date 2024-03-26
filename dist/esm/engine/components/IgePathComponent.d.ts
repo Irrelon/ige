@@ -1,9 +1,9 @@
 import { IgeComponent } from "../core/IgeComponent.js"
-import type { IgeEntity } from "../core/IgeEntity.js";
+import type { IgeEntity } from "../core/IgeEntity.js"
 import type { IgePathFinder } from "../core/IgePathFinder.js"
-import { IgePathNode } from "../core/IgePathNode.js";
+import { IgePathNode } from "../core/IgePathNode.js"
 import { IgePoint3d } from "../core/IgePoint3d.js"
-import type { IgeTileMap2d } from "../core/IgeTileMap2d.js";
+import type { IgeTileMap2d } from "../core/IgeTileMap2d.js"
 import type { IgeCompassDirection } from "../../types/IgeCompassDirection.js"
 import type { IgeEntityBehaviourMethod } from "../../types/IgeEntityBehaviour.js"
 import type { IgePathFinderComparisonCallback } from "../../types/IgePathFinderComparisonCallback.js"

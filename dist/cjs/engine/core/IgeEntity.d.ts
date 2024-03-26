@@ -1,10 +1,10 @@
 import { IgeObject } from "./IgeObject.js"
-import { IgePoint2d } from "./IgePoint2d.js";
+import { IgePoint2d } from "./IgePoint2d.js"
 import { IgePoint3d } from "./IgePoint3d.js"
-import { IgeBounds } from "./IgeBounds.js";
+import { IgeBounds } from "./IgeBounds.js"
 import type { IgeTexture } from "./IgeTexture.js"
-import type { IgeViewport } from "./IgeViewport.js";
-import { IgeEntityRenderMode } from "../../enums/index.js";
+import type { IgeViewport } from "./IgeViewport.js"
+import { IgeEntityRenderMode } from "../../enums/index.js"
 import type { IgeCanRegisterByCategory } from "../../types/IgeCanRegisterByCategory.js"
 import type { IgeCanRegisterById } from "../../types/IgeCanRegisterById.js"
 import type { IgeCanvasRenderingContext2d } from "../../types/IgeCanvasRenderingContext2d.js"

@@ -1,5 +1,5 @@
 import { IgeEventingClass } from "./IgeEventingClass.js"
-import { IgePathFinderListType } from "../../enums/IgePathFinderListType.js";
+import { IgePathFinderListType } from "../../enums/IgePathFinderListType.js"
 /**
  * This is a generic base class that must be extended to function properly.
  * It provides the basic structure for a path-finding system utilising A*

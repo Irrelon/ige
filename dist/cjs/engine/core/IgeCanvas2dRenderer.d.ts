@@ -1,7 +1,7 @@
 import { IgeBaseRenderer } from "./IgeBaseRenderer.js"
-import type { IgeEngine } from "./IgeEngine.js";
+import type { IgeEngine } from "./IgeEngine.js"
 import type { IgeViewport } from "./IgeViewport.js"
-import type { IgeCanvasRenderingContext2d } from "../../types/IgeCanvasRenderingContext2d.js";
+import type { IgeCanvasRenderingContext2d } from "../../types/IgeCanvasRenderingContext2d.js"
 export declare class IgeCanvas2dRenderer extends IgeBaseRenderer {
     protected _ctx?: IgeCanvasRenderingContext2d | null;
     protected _createdFrontBuffer: boolean;

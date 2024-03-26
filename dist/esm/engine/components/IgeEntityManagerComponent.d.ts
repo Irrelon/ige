@@ -1,9 +1,9 @@
 import { IgeComponent } from "../core/IgeComponent.js"
-import type { IgeEntity } from "../core/IgeEntity.js";
+import type { IgeEntity } from "../core/IgeEntity.js"
 import { IgePoint3d } from "../core/IgePoint3d.js"
-import { IgeBounds } from "../core/IgeBounds.js";
+import { IgeBounds } from "../core/IgeBounds.js"
 import type { IgeTileMap2d } from "../core/IgeTileMap2d.js"
-import type { IgeCanvasRenderingContext2d } from "../../types/IgeCanvasRenderingContext2d.js";
+import type { IgeCanvasRenderingContext2d } from "../../types/IgeCanvasRenderingContext2d.js"
 export declare class IgeEntityManagerComponent extends IgeComponent<IgeTileMap2d> {
     classId: string;
     componentId: string;

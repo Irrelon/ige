@@ -1,5 +1,5 @@
 import { IgeEventingClass } from "./IgeEventingClass.js"
-import { ige } from "../instance.js";
+import { ige } from "../instance.js"
 /**
  * Provides a kind of setInterval() that works based on the engine's internal
  * time system allowing intervals to fire correctly, taking into account pausing

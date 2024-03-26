@@ -1,7 +1,7 @@
 import { IgeBaseRenderer } from "./IgeBaseRenderer.js"
-import { ige } from "../instance.js";
+import { ige } from "../instance.js"
 import { getPipeline } from "../shaders/2d.js"
-import { bufferRangeData, getMultipleOf, packArraysByFormat } from "../utils/buffers.js";
+import { bufferRangeData, getMultipleOf, packArraysByFormat } from "../utils/buffers.js"
 import { mat4 } from "gl-matrix";
 export class IgeWebGpuRenderer extends IgeBaseRenderer {
     _canvasContext;

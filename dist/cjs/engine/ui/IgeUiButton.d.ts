@@ -1,5 +1,5 @@
 import { IgeUiElement } from "../core/IgeUiElement.js"
-import type { IgeCanvasRenderingContext2d } from "../../types/IgeCanvasRenderingContext2d.js";
+import type { IgeCanvasRenderingContext2d } from "../../types/IgeCanvasRenderingContext2d.js"
 export declare class IgeUiButton extends IgeUiElement {
     classId: string;
     _autoCell: boolean;

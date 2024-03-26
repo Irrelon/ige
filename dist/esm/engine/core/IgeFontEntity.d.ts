@@ -1,5 +1,5 @@
 import { IgeUiEntity } from "./IgeUiEntity.js"
-import { IgeFontAlignX, IgeFontAlignY } from "../../enums/index.js";
+import { IgeFontAlignX, IgeFontAlignY } from "../../enums/index.js"
 import type { IgeCanvasRenderingContext2d } from "../../types/IgeCanvasRenderingContext2d.js"
 /**
  * Creates a new font entity. A font entity will use a font sheet

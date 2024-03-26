@@ -1,16 +1,16 @@
 import type { IgeComponent } from "./IgeComponent.js"
-import { IgeDummyCanvas } from "./IgeDummyCanvas.js";
+import { IgeDummyCanvas } from "./IgeDummyCanvas.js"
 import { IgeEventingClass } from "./IgeEventingClass.js"
-import { IgeMatrix2d } from "./IgeMatrix2d.js";
+import { IgeMatrix2d } from "./IgeMatrix2d.js"
 import { IgePoint2d } from "./IgePoint2d.js"
-import { IgePoint3d } from "./IgePoint3d.js";
+import { IgePoint3d } from "./IgePoint3d.js"
 import { IgePoly2d } from "./IgePoly2d.js"
-import { IgeBounds } from "./IgeBounds.js";
+import { IgeBounds } from "./IgeBounds.js"
 import type { IgeTexture } from "./IgeTexture.js"
-import type { IgeTileMap2d } from "./IgeTileMap2d.js";
+import type { IgeTileMap2d } from "./IgeTileMap2d.js"
 import type { IgeViewport } from "./IgeViewport.js"
-import type { IgeBehaviourType } from "../../enums/index.js";
-import { IgeIsometricDepthSortMode, IgeMountMode, IgeStreamMode } from "../../enums/index.js";
+import type { IgeBehaviourType } from "../../enums/index.js"
+import { IgeIsometricDepthSortMode, IgeMountMode, IgeStreamMode } from "../../enums/index.js"
 import type { IgeBehaviourStore } from "../../types/IgeBehaviourStore.js"
 import type { IgeCanAcceptComponents } from "../../types/IgeCanAcceptComponents.js"
 import type { IgeCanRegisterByCategory } from "../../types/IgeCanRegisterByCategory.js"

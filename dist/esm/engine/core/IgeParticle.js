@@ -1,5 +1,5 @@
 import { IgeVelocityComponent } from "../components/IgeVelocityComponent.js"
-import { IgeEntity } from "./IgeEntity.js";
+import { IgeEntity } from "./IgeEntity.js"
 import { arrPull } from "../utils/arrays.js"
 export class IgeParticle extends IgeEntity {
     classId = "IgeParticle";

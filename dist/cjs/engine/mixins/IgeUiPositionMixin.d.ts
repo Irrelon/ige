@@ -1,5 +1,5 @@
 import type { IgeObject } from "../core/IgeObject.js"
-import type { IgeMixin } from "../../types/IgeMixin.js";
+import type { IgeMixin } from "../../types/IgeMixin.js"
 export declare const WithUiPositionMixin: <BaseClassType extends IgeMixin<IgeObject>>(Base: BaseClassType) => {
     new (...args: any[]): {
         _uiLeft?: number | undefined;

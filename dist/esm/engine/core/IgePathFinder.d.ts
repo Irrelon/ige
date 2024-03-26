@@ -1,7 +1,7 @@
 import type { IgeCollisionMap2d } from "./IgeCollisionMap2d.js"
-import { IgeGenericPathFinder } from "./IgeGenericPathFinder.js";
+import { IgeGenericPathFinder } from "./IgeGenericPathFinder.js"
 import { IgePathNode } from "./IgePathNode.js"
-import type { IgeTileMap2d } from "./IgeTileMap2d.js";
+import type { IgeTileMap2d } from "./IgeTileMap2d.js"
 /**
  * Creates a new tile-based pathfinder using the A*
  * path-finding algorithm. Extends the IgeGenericPathFinder

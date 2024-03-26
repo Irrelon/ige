@@ -1,14 +1,14 @@
 import type { IgeBaseClass } from "./IgeBaseClass.js"
-import type { IgeBaseRenderer } from "./IgeBaseRenderer.js";
+import type { IgeBaseRenderer } from "./IgeBaseRenderer.js"
 import type { IgeCamera } from "./IgeCamera.js"
-import type { IgeComponent } from "./IgeComponent.js";
+import type { IgeComponent } from "./IgeComponent.js"
 import type { IgeDummyCanvas } from "./IgeDummyCanvas.js"
-import { IgeEntity } from "./IgeEntity.js";
+import { IgeEntity } from "./IgeEntity.js"
 import type { IgeObject } from "./IgeObject.js"
-import { IgePoint3d } from "./IgePoint3d.js";
+import { IgePoint3d } from "./IgePoint3d.js"
 import type { IgeSceneGraph } from "./IgeSceneGraph.js"
-import { IgeViewport } from "./IgeViewport.js";
-import { IgeEngineState } from "../../enums/index.js";
+import { IgeViewport } from "./IgeViewport.js"
+import { IgeEngineState } from "../../enums/index.js"
 import type { IgeAnyFunction } from "../../types/IgeAnyFunction.js"
 import type { IgeCanvasRenderingContext2d } from "../../types/IgeCanvasRenderingContext2d.js"
 import type { IgeGenericClass } from "../../types/IgeGenericClass.js"

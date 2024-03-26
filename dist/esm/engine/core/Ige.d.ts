@@ -1,21 +1,21 @@
 import type { IgeAudioController } from "../components/audio/IgeAudioController.js"
-import { IgeInputComponent } from "../components/IgeInputComponent.js";
+import { IgeInputComponent } from "../components/IgeInputComponent.js"
 import type { IgeBox2dController } from "../components/physics/box2d/IgeBox2dController.js"
-import { IgeArrayRegister } from "./IgeArrayRegister.js";
+import { IgeArrayRegister } from "./IgeArrayRegister.js"
 import { IgeDependencies } from "./IgeDependencies.js"
-import type { IgeEngine } from "./IgeEngine.js";
+import type { IgeEngine } from "./IgeEngine.js"
 import { IgeMetrics } from "./IgeMetrics.js"
-import { IgeObjectRegister } from "./IgeObjectRegister.js";
+import { IgeObjectRegister } from "./IgeObjectRegister.js"
 import { IgePoint3d } from "./IgePoint3d.js"
-import { IgeRouter } from "./IgeRouter.js";
+import { IgeRouter } from "./IgeRouter.js"
 import { IgeTextureStore } from "./IgeTextureStore.js"
-import { IgeTimeController } from "./IgeTimeController.js";
+import { IgeTimeController } from "./IgeTimeController.js"
 import type { IgeTweenController } from "./IgeTweenController.js"
-import type { IgeUiManagerController } from "./IgeUiManagerController.js";
+import type { IgeUiManagerController } from "./IgeUiManagerController.js"
 import type { IgeViewport } from "./IgeViewport.js"
-import type { IgeNetIoClientController } from "../network/client/IgeNetIoClientController.js";
+import type { IgeNetIoClientController } from "../network/client/IgeNetIoClientController.js"
 import type { IgeNetIoServerController } from "../network/server/IgeNetIoServerController.js"
-import type { IgeCanRegisterAndCanDestroy } from "../../types/IgeCanRegisterAndCanDestroy.js";
+import type { IgeCanRegisterAndCanDestroy } from "../../types/IgeCanRegisterAndCanDestroy.js"
 import type { IgeCanRegisterByCategory } from "../../types/IgeCanRegisterByCategory.js"
 import type { IgeConfig } from "../../types/IgeConfig.js"
 import type { IgeIsReadyPromise } from "../../types/IgeIsReadyPromise.js"

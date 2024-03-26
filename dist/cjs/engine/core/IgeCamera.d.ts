@@ -1,7 +1,7 @@
 import { IgeEntity } from "./IgeEntity.js"
-import type { IgePoint3d } from "./IgePoint3d.js";
+import type { IgePoint3d } from "./IgePoint3d.js"
 import type { IgeBounds } from "./IgeBounds.js"
-import type { IgeViewport } from "./IgeViewport.js";
+import type { IgeViewport } from "./IgeViewport.js"
 import type { IgeCanvasRenderingContext2d } from "../../types/IgeCanvasRenderingContext2d.js"
 /**
  * Creates a new camera that will be attached to a viewport.

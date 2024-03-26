@@ -1,6 +1,6 @@
 import { IgeEventingClass } from "../../core/IgeEventingClass.js"
 import { IgeNetIoSocket } from "./IgeNetIoSocket.js"
-import { arrClone } from "../../utils/arrays.js";
+import { arrClone } from "../../utils/arrays.js"
 import { newIdHex } from "../../utils/ids.js"
 import http from "http";
 import websocket from "websocket";

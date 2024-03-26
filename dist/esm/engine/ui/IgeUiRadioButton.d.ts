@@ -1,5 +1,5 @@
 import type { IgeObject } from "../core/IgeObject.js"
-import { IgeUiButton } from "./IgeUiButton.js";
+import { IgeUiButton } from "./IgeUiButton.js"
 export declare class IgeUiRadioButton extends IgeUiButton {
     classId: string;
     _uiRadioGroup?: number;

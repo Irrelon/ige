@@ -13,6 +13,7 @@ exports.Client = void 0;
 // @ts-ignore
 const IgeBaseClass_1 = require("../../engine/core/IgeBaseClass.js");
 const IgeTexture_1 = require("../../engine/core/IgeTexture.js");
+const IgeWebGpuRenderer_1 = require("../../engine/core/IgeWebGpuRenderer.js");
 const instance_1 = require("../../engine/instance.js");
 // @ts-ignore
 window.ige = instance_1.ige;
@@ -25,11 +26,11 @@ class Client extends IgeBaseClass_1.IgeBaseClass {
     init() {
         return __awaiter(this, void 0, void 0, function* () {
             // Load the game textures
-            new IgeTexture_1.IgeTexture("fairy", "./assets/textures/sprites/fairy.png");
+            new IgeTexture_1.IgeTexture("fairy", "../../assets/textures/sprites/fairy.png");
             // Wait for our textures to load before continuing
             yield instance_1.ige.textures.whenLoaded();
             // Create the HTML canvas
-            instance_1.ige.engine.createFrontBuffer(true);
+            instance_1.ige.engine.renderer(new IgeWebGpuRenderer_1.IgeWebGpuRenderer());
             // Start the engine
             yield instance_1.ige.engine.start();
         });
