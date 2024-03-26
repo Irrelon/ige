@@ -5,10 +5,13 @@ export class Game {
 	classId = "Game";
 
 	constructor (options?: any) {
-		if (isClient) {
-			import("./client.js").then(({ Client: App }) => {
-				ige.client = new App();
-			});
-		}
+		ige.init();
+		ige.isReady().then(() => {
+			if (isClient) {
+				import("./client.js").then(({ Client: App }) => {
+					ige.client = new App();
+				});
+			}
+		});
 	}
 }

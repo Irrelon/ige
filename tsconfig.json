@@ -33,7 +33,8 @@
 			]
 		},
 		"types": [
-			"@webgpu/types"
+			"@webgpu/types",
+			"@types/jest"
 		]
 	},
 	"include": [

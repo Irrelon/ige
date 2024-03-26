@@ -18,7 +18,7 @@
 	"types": "dist/cjs/index.d.ts",
 	"scripts": {
 		"tsc-b": "tsc -b",
-		"build": "npm run build-esm && npm run build-cjs",
+		"build": "npm run build-esm && npm run build-cjs && npm run copy-static",
 		"build-all": "npm run build-esm && npm run build-cjs && npm run generate-docs",
 		"build-esm": "(npm run compile-esm 2>/dev/null || exit 0) && sh ./fixup-esm.sh && npm run fix-paths-esm",
 		"build-cjs": "(npm run compile-cjs 2>/dev/null || exit 0) && sh ./fixup-cjs.sh && npm run fix-paths-cjs",
@@ -40,14 +40,14 @@
 		"eslint-fix": "eslint --ext .ts,.tsx . --fix",
 		"scan-deps": "npx madge ./src --ts",
 		"generate-docs": "npx typedoc ./src --options typedoc.cjs",
-		"copy-static": "find src -type f \\( -name '*.html' -o -name '*.css' \\) -exec sh -c 'mkdir -p dist/esm/$(dirname {}) && cp {} dist/esm/{}' \\;"
+		"copy-static": "sh ./copy-static.sh"
 	},
 	"dependencies": {
 		"gl-matrix": "^3.4.3",
-		"typedoc-material-theme": "^1.0.2",
 		"websocket": "^1.0.34"
 	},
 	"devDependencies": {
+		"typedoc-material-theme": "^1.0.2",
 		"@irrelon/fix-paths": "^1.0.7",
 		"@trivago/prettier-plugin-sort-imports": "^4.3.0",
 		"@types/esprima": "^4.0.6",
