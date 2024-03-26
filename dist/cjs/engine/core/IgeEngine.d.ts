@@ -12,9 +12,10 @@ import { IgeEngineState } from "../../enums/index.js";
 import type { IgeAnyFunction } from "../../types/IgeAnyFunction.js"
 import type { IgeCanvasRenderingContext2d } from "../../types/IgeCanvasRenderingContext2d.js"
 import type { IgeGenericClass } from "../../types/IgeGenericClass.js"
+import type { IgeIsReadyPromise } from "../../types/IgeIsReadyPromise.js"
 import type { IgeSceneGraphDataEntry } from "../../types/IgeSceneGraphDataEntry.js"
 import type { IgeSyncEntry, IgeSyncMethod } from "../../types/IgeSyncEntry.js"
-export declare class IgeEngine extends IgeEntity {
+export declare class IgeEngine extends IgeEntity implements IgeIsReadyPromise {
     classId: string;
     client?: IgeBaseClass;
     server?: IgeBaseClass;
@@ -84,6 +85,7 @@ export declare class IgeEngine extends IgeEntity {
     basePath: string;
     _requestAnimFrame?: (callback: (time: number, ctx?: IgeCanvasRenderingContext2d) => void, element?: Element) => void;
     constructor();
+    isReady(): Promise<void>;
     renderer(val: IgeBaseRenderer): this;
     renderer(): IgeBaseRenderer | null;
     addComponent(id: string, Component: typeof IgeComponent<IgeEngine>, options?: any): this;

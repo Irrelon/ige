@@ -16,11 +16,15 @@ class IgeAudioControl extends IgeEventingClass_1.IgeEventingClass {
     constructor() {
         super();
         this.classId = "IgeAudioControl";
-        this._playWhenReady = false;
+        this._bufferNode = null;
+        this._shouldPlayWhenReady = false;
         this._isPersistent = false;
         this._loop = false;
         this._isPlaying = false;
+        this._resumePlaybackOffset = 0;
+        this._startTime = 0;
         this._id = (0, ids_1.newIdHex)();
+        console.log("IgeAudioControl create", this._id);
         if (!instance_1.ige.audio) {
             if (clientServer_1.isServer) {
                 throw new Error("Cannot instantiate an IgeAudioControl on the server!");
@@ -57,8 +61,8 @@ class IgeAudioControl extends IgeEventingClass_1.IgeEventingClass {
         if (!audioItem || !audioItem.buffer) {
             throw new Error(`The audio asset with id ${audioSourceId} does not exist. Add it with \`new IgeAudioSource(audioSourceId, url);\` first!`);
         }
-        this._bufferNode.buffer = audioItem.buffer;
-        if (this._playWhenReady) {
+        this._audioSourceBuffer = audioItem.buffer;
+        if (this.shouldPlayWhenReady()) {
             this.play();
         }
         return this;
@@ -66,25 +70,42 @@ class IgeAudioControl extends IgeEventingClass_1.IgeEventingClass {
     /**
      * Plays the audio.
      */
-    play() {
+    play(playbackFromOffset) {
         if (!instance_1.ige.audio)
             return;
-        if (!this._bufferNode.buffer || !instance_1.ige.audio._ctx) {
-            this._playWhenReady = true;
+        if (!this._audioSourceBuffer || !instance_1.ige.audio._ctx) {
+            this.shouldPlayWhenReady(true);
             return;
         }
-        if (this._pannerNode) {
-            // Connect through the panner
-            this._bufferNode.connect(this._pannerNode);
-            this._pannerNode.connect(instance_1.ige.audio.masterVolumeNode);
+        if (this.isPlaying())
+            return;
+        // Create our buffer source node
+        this._bufferNode = new AudioBufferSourceNode(instance_1.ige.audio._ctx);
+        this._bufferNode.connect(this._gainNode);
+        this._bufferNode.buffer = this._audioSourceBuffer;
+        this._bufferNode.loop = this._loop;
+        if (playbackFromOffset) {
+            // Start playback from the designated location
+            this._bufferNode.start(0, playbackFromOffset);
+            this._resumePlaybackOffset = instance_1.ige.audio._ctx.currentTime - playbackFromOffset;
         }
         else {
-            // Connect directly to the destination
-            this._bufferNode.connect(instance_1.ige.audio.masterVolumeNode);
+            // Start playback from our resume location
+            this._bufferNode.start(0, this._resumePlaybackOffset);
+            this._resumePlaybackOffset = instance_1.ige.audio._ctx.currentTime - this._resumePlaybackOffset;
+            if (this._startTime) {
+                this._startTime = this._startTime + (instance_1.ige.audio._ctx.currentTime - this._startTime);
+            }
+            else {
+                this._startTime = instance_1.ige.audio._ctx.currentTime;
+            }
         }
-        this._bufferNode.loop = this.loop();
-        this._bufferNode.start(0);
-        this._isPlaying = true;
+        // Set internal playing flag
+        this.isPlaying(true);
+        // Check if we need to do anything when playback ends
+        if (this._onEnded) {
+            this._bufferNode.onended = this._onEnded;
+        }
         this.log(`Audio file (${this._audioSourceId}) playing...`);
     }
     loop(loop) {
@@ -92,34 +113,65 @@ class IgeAudioControl extends IgeEventingClass_1.IgeEventingClass {
             return this._loop;
         }
         this._loop = loop;
-        this._bufferNode.loop = loop;
+        if (this._bufferNode) {
+            this._bufferNode.loop = loop;
+        }
         return this;
+    }
+    /**
+     * Similar to stop but will keep the current payback progress / location
+     * and when play() is called, playback will resume from the current
+     * location. If you pause() then stop() then play(), playback will start
+     * from the beginning again. Calling stop() will reset the playback
+     * location to the start of the audio track.
+     */
+    pause() {
+        if (this._bufferNode) {
+            this.log(`Audio file (${this._audioSourceId}) stopping...`);
+            this._bufferNode.stop(0);
+            this._bufferNode.disconnect();
+            if (instance_1.ige.audio._ctx) {
+                this._resumePlaybackOffset = instance_1.ige.audio._ctx.currentTime - this._resumePlaybackOffset;
+            }
+            this._bufferNode = null;
+        }
+        this.shouldPlayWhenReady(false);
+        this.isPlaying(false);
     }
     /**
      * Stops the currently playing audio.
      */
     stop() {
+        this.log(`Audio file (${this._audioSourceId}) stopping...`);
         if (this._bufferNode) {
-            this.log(`Audio file (${this._audioSourceId}) stopping...`);
             this._bufferNode.stop(0);
+            this._bufferNode.disconnect();
+            this._bufferNode = null;
         }
-        this._playWhenReady = false;
-        this._isPlaying = false;
+        this._resumePlaybackOffset = 0;
+        this._startTime = 0;
+        this.shouldPlayWhenReady(false);
+        this.isPlaying(false);
     }
     /**
      * Called when the audio control is to be destroyed. Stops any
      * current audio stream playback.
      */
     destroy() {
+        var _a, _b, _c;
+        console.log("IgeAudioControl destroy", this._id);
         this.stop();
-        instance_1.ige.audio.removePlaybackControl(this._id);
+        (_a = this._pannerNode) === null || _a === void 0 ? void 0 : _a.disconnect();
+        (_b = this._gainNode) === null || _b === void 0 ? void 0 : _b.disconnect();
+        (_c = this._bufferNode) === null || _c === void 0 ? void 0 : _c.disconnect();
+        instance_1.ige.audio.removeAudioControl(this._id);
         return this;
     }
 }
 exports.IgeAudioControl = IgeAudioControl;
 (0, synthesize_1.synthesize)(IgeAudioControl, "isPersistent");
 (0, synthesize_1.synthesize)(IgeAudioControl, "isPlaying");
-(0, synthesize_1.synthesize)(IgeAudioControl, "playWhenReady");
+(0, synthesize_1.synthesize)(IgeAudioControl, "shouldPlayWhenReady");
 (0, synthesize_1.synthesize)(IgeAudioControl, "relativeTo");
 (0, synthesize_1.synthesize)(IgeAudioControl, "onEnded");
 (0, synthesize_1.synthesize)(IgeAudioControl, "pannerSettings");

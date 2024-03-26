@@ -13,6 +13,7 @@ import {
 	IGE_NETWORK_STREAM_TIME, IGE_NETWORK_TIME_SYNC
 } from "@/enums";
 import { IgeNetworkConnectionState } from "@/enums/IgeNetworkConnectionState";
+import type { IgeIsReadyPromise } from "@/types/IgeIsReadyPromise";
 import type {
 	IgeNetworkClientSideMessageHandler,
 	IgeNetworkClientSideResponseHandler,
@@ -32,7 +33,7 @@ import type {
  * The client-side net.io component. Handles all client-side
  * networking systems.
  */
-export class IgeNetIoClientController extends IgeNetIoBaseController {
+export class IgeNetIoClientController extends IgeNetIoBaseController implements IgeIsReadyPromise {
 	version: string = "1.0.0";
 	_networkCommands: Record<string, IgeNetworkClientSideMessageHandler> = {}; // Maps a command name to a command handler function
 	_initDone: boolean = false;
@@ -53,6 +54,10 @@ export class IgeNetIoClientController extends IgeNetIoBaseController {
 		this.define(IGE_NETWORK_STREAM_DESTROY, this._onStreamDestroy);
 		this.define(IGE_NETWORK_STREAM_DATA, this._onStreamData);
 		this.define(IGE_NETWORK_STREAM_TIME, this._onStreamTime);
+	}
+
+	isReady () {
+		return Promise.resolve();
 	}
 
 	/**

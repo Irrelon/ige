@@ -19,11 +19,12 @@ import {
 } from "@/types/IgeBox2dContactSolverCallback";
 import { IgeBox2dFixtureDef } from "@/types/IgeBox2dFixtureDef";
 import { IgeEntityBehaviourMethod } from "@/types/IgeEntityBehaviour";
+import type { IgeIsReadyPromise } from "@/types/IgeIsReadyPromise";
 
 /**
  * The engine's Box2D component class.
  */
-export class IgeBox2dController extends IgeEventingClass {
+export class IgeBox2dController extends IgeEventingClass implements IgeIsReadyPromise {
 	classId = "IgeBox2dController";
 	componentId = "box2d";
 
@@ -49,6 +50,10 @@ export class IgeBox2dController extends IgeEventingClass {
 		this._gravity = new b2Vec2(0, 0);
 
 		this._removeWhenReady = [];
+	}
+
+	isReady () {
+		return Promise.resolve();
 	}
 
 	/**
@@ -239,34 +244,34 @@ export class IgeBox2dController extends IgeEventingClass {
 
 		// Process body definition and create a box2D body for it
 		switch (body.type) {
-		case IgeBox2dBodyType.static: // "static"
-			tempDef.type = b2BodyType.b2_staticBody;
-			break;
+			case IgeBox2dBodyType.static: // "static"
+				tempDef.type = b2BodyType.b2_staticBody;
+				break;
 
-		case IgeBox2dBodyType.dynamic: // "dynamic"
-			tempDef.type = b2BodyType.b2_dynamicBody;
-			break;
+			case IgeBox2dBodyType.dynamic: // "dynamic"
+				tempDef.type = b2BodyType.b2_dynamicBody;
+				break;
 
-		case IgeBox2dBodyType.kinematic: // "kinematic"
-			tempDef.type = b2BodyType.b2_kinematicBody;
-			break;
+			case IgeBox2dBodyType.kinematic: // "kinematic"
+				tempDef.type = b2BodyType.b2_kinematicBody;
+				break;
 		}
 
 		// Add the parameters of the body to the new body instance
 		for (param in body) {
 			switch (param) {
-			case "type":
-			case "gravitic":
-			case "fixedRotation":
-			case "fixtures":
-				// Ignore these for now, we process them
-				// below as post-creation attributes
-				break;
+				case "type":
+				case "gravitic":
+				case "fixedRotation":
+				case "fixtures":
+					// Ignore these for now, we process them
+					// below as post-creation attributes
+					break;
 
-			default:
-				// @ts-ignore
-				tempDef[param] = body[param as keyof IgeBox2dBodyDef];
-				break;
+				default:
+					// @ts-ignore
+					tempDef[param] = body[param as keyof IgeBox2dBodyDef];
+					break;
 			}
 		}
 
@@ -279,132 +284,132 @@ export class IgeBox2dController extends IgeEventingClass {
 		// Now apply any post-creation attributes we need to
 		for (param in body) {
 			switch (param) {
-			case "gravitic":
-				// TODO: Modify box2d to allow gravitic mode again
-				// if (!body.gravitic) {
-				// 	tempBod.m_nonGravitic = true;
-				// }
-				break;
+				case "gravitic":
+					// TODO: Modify box2d to allow gravitic mode again
+					// if (!body.gravitic) {
+					// 	tempBod.m_nonGravitic = true;
+					// }
+					break;
 
-			case "fixedRotation":
-				if (body.fixedRotation) {
-					tempBod.SetFixedRotation(true);
-				}
-				break;
-
-			case "fixtures":
-				if (body.fixtures && body.fixtures.length) {
-					for (i = 0; i < body.fixtures.length; i++) {
-						// Grab the fixture definition
-						fixtureDef = body.fixtures[i];
-
-						// Create the fixture
-						tempFixture = this.createFixture(fixtureDef);
-						tempFixture.igeId = fixtureDef.igeId;
-
-						// Check for a shape definition for the fixture
-						if (fixtureDef.shape) {
-							// Create based on the shape type
-							switch (fixtureDef.shape.type) {
-							case IgeBox2dFixtureShapeType.circle:
-								tempShape = new b2CircleShape();
-								if (
-									fixtureDef.shape.data &&
-									typeof fixtureDef.shape.data.radius !== "undefined"
-								) {
-									tempShape.SetRadius(fixtureDef.shape.data.radius / this._scaleRatio);
-								} else {
-									tempShape.SetRadius(entity._bounds2d.x / this._scaleRatio / 2);
-								}
-
-								if (fixtureDef.shape.data) {
-									finalX =
-										fixtureDef.shape.data.x !== undefined ? fixtureDef.shape.data.x : 0;
-									finalY =
-										fixtureDef.shape.data.y !== undefined ? fixtureDef.shape.data.y : 0;
-
-									tempShape.SetLocalPosition(
-										new b2Vec2(finalX / this._scaleRatio, finalY / this._scaleRatio)
-									);
-								}
-								break;
-
-							case IgeBox2dFixtureShapeType.polygon:
-								tempShape = new b2PolygonShape();
-								tempShape.SetAsArray(
-									fixtureDef.shape.data._poly,
-									fixtureDef.shape.data.length()
-								);
-								break;
-
-							case IgeBox2dFixtureShapeType.rectangle:
-								tempShape = new b2PolygonShape();
-
-								if (fixtureDef.shape.data) {
-									finalX =
-										fixtureDef.shape.data.x !== undefined ? fixtureDef.shape.data.x : 0;
-									finalY =
-										fixtureDef.shape.data.y !== undefined ? fixtureDef.shape.data.y : 0;
-									finalWidth =
-										fixtureDef.shape.data.width !== undefined
-											? fixtureDef.shape.data.width
-											: entity._bounds2d.x / 2;
-									finalHeight =
-										fixtureDef.shape.data.height !== undefined
-											? fixtureDef.shape.data.height
-											: entity._bounds2d.y / 2;
-								} else {
-									finalX = 0;
-									finalY = 0;
-									finalWidth = entity._bounds2d.x / 2;
-									finalHeight = entity._bounds2d.y / 2;
-								}
-
-								// Set the polygon as a box
-								tempShape.SetAsOrientedBox(
-									finalWidth / this._scaleRatio,
-									finalHeight / this._scaleRatio,
-									new b2Vec2(finalX / this._scaleRatio, finalY / this._scaleRatio),
-									0
-								);
-								break;
-							}
-
-							if (tempShape) {
-								tempFixture.shape = tempShape;
-								finalFixture = tempBod.CreateFixture(tempFixture);
-								// @ts-ignore
-								finalFixture.igeId = tempFixture.igeId;
-							}
-						}
-
-						if (fixtureDef.filter && finalFixture) {
-							tempFilterData = new b2Filter();
-
-							if (fixtureDef.filter.categoryBits !== undefined) {
-								tempFilterData.categoryBits = fixtureDef.filter.categoryBits;
-							}
-							if (fixtureDef.filter.maskBits !== undefined) {
-								tempFilterData.maskBits = fixtureDef.filter.maskBits;
-							}
-							if (fixtureDef.filter.categoryIndex !== undefined) {
-								tempFilterData.categoryIndex = fixtureDef.filter.categoryIndex;
-							}
-
-							finalFixture.SetFilterData(tempFilterData);
-						}
-
-						if (fixtureDef.density !== undefined && finalFixture) {
-							finalFixture.SetDensity(fixtureDef.density);
-						}
+				case "fixedRotation":
+					if (body.fixedRotation) {
+						tempBod.SetFixedRotation(true);
 					}
-				} else {
-					this.log(
-						"Box2D body has no fixtures, have you specified fixtures correctly? They are supposed to be an array of fixture objects.",
-						"warning"
-					);
-				}
-				break;
+					break;
+
+				case "fixtures":
+					if (body.fixtures && body.fixtures.length) {
+						for (i = 0; i < body.fixtures.length; i++) {
+							// Grab the fixture definition
+							fixtureDef = body.fixtures[i];
+
+							// Create the fixture
+							tempFixture = this.createFixture(fixtureDef);
+							tempFixture.igeId = fixtureDef.igeId;
+
+							// Check for a shape definition for the fixture
+							if (fixtureDef.shape) {
+								// Create based on the shape type
+								switch (fixtureDef.shape.type) {
+									case IgeBox2dFixtureShapeType.circle:
+										tempShape = new b2CircleShape();
+										if (
+											fixtureDef.shape.data &&
+											typeof fixtureDef.shape.data.radius !== "undefined"
+										) {
+											tempShape.SetRadius(fixtureDef.shape.data.radius / this._scaleRatio);
+										} else {
+											tempShape.SetRadius(entity._bounds2d.x / this._scaleRatio / 2);
+										}
+
+										if (fixtureDef.shape.data) {
+											finalX =
+												fixtureDef.shape.data.x !== undefined ? fixtureDef.shape.data.x : 0;
+											finalY =
+												fixtureDef.shape.data.y !== undefined ? fixtureDef.shape.data.y : 0;
+
+											tempShape.SetLocalPosition(
+												new b2Vec2(finalX / this._scaleRatio, finalY / this._scaleRatio)
+											);
+										}
+										break;
+
+									case IgeBox2dFixtureShapeType.polygon:
+										tempShape = new b2PolygonShape();
+										tempShape.SetAsArray(
+											fixtureDef.shape.data._poly,
+											fixtureDef.shape.data.length()
+										);
+										break;
+
+									case IgeBox2dFixtureShapeType.rectangle:
+										tempShape = new b2PolygonShape();
+
+										if (fixtureDef.shape.data) {
+											finalX =
+												fixtureDef.shape.data.x !== undefined ? fixtureDef.shape.data.x : 0;
+											finalY =
+												fixtureDef.shape.data.y !== undefined ? fixtureDef.shape.data.y : 0;
+											finalWidth =
+												fixtureDef.shape.data.width !== undefined
+													? fixtureDef.shape.data.width
+													: entity._bounds2d.x / 2;
+											finalHeight =
+												fixtureDef.shape.data.height !== undefined
+													? fixtureDef.shape.data.height
+													: entity._bounds2d.y / 2;
+										} else {
+											finalX = 0;
+											finalY = 0;
+											finalWidth = entity._bounds2d.x / 2;
+											finalHeight = entity._bounds2d.y / 2;
+										}
+
+										// Set the polygon as a box
+										tempShape.SetAsOrientedBox(
+											finalWidth / this._scaleRatio,
+											finalHeight / this._scaleRatio,
+											new b2Vec2(finalX / this._scaleRatio, finalY / this._scaleRatio),
+											0
+										);
+										break;
+								}
+
+								if (tempShape) {
+									tempFixture.shape = tempShape;
+									finalFixture = tempBod.CreateFixture(tempFixture);
+									// @ts-ignore
+									finalFixture.igeId = tempFixture.igeId;
+								}
+							}
+
+							if (fixtureDef.filter && finalFixture) {
+								tempFilterData = new b2Filter();
+
+								if (fixtureDef.filter.categoryBits !== undefined) {
+									tempFilterData.categoryBits = fixtureDef.filter.categoryBits;
+								}
+								if (fixtureDef.filter.maskBits !== undefined) {
+									tempFilterData.maskBits = fixtureDef.filter.maskBits;
+								}
+								if (fixtureDef.filter.categoryIndex !== undefined) {
+									tempFilterData.categoryIndex = fixtureDef.filter.categoryIndex;
+								}
+
+								finalFixture.SetFilterData(tempFilterData);
+							}
+
+							if (fixtureDef.density !== undefined && finalFixture) {
+								finalFixture.SetDensity(fixtureDef.density);
+							}
+						}
+					} else {
+						this.log(
+							"Box2D body has no fixtures, have you specified fixtures correctly? They are supposed to be an array of fixture objects.",
+							"warning"
+						);
+					}
+					break;
 			}
 		}
 

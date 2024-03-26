@@ -13,10 +13,11 @@ import { IgeBox2dContactListenerCallback } from "../../../../types/IgeBox2dConta
 import { IgeBox2dContactPostSolveCallback, IgeBox2dContactPreSolveCallback } from "../../../../types/IgeBox2dContactSolverCallback.js"
 import { IgeBox2dFixtureDef } from "../../../../types/IgeBox2dFixtureDef.js"
 import { IgeEntityBehaviourMethod } from "../../../../types/IgeEntityBehaviour.js"
+import type { IgeIsReadyPromise } from "../../../../types/IgeIsReadyPromise.js"
 /**
  * The engine's Box2D component class.
  */
-export declare class IgeBox2dController extends IgeEventingClass {
+export declare class IgeBox2dController extends IgeEventingClass implements IgeIsReadyPromise {
     classId: string;
     componentId: string;
     _intervalTimer?: number;
@@ -32,6 +33,7 @@ export declare class IgeBox2dController extends IgeEventingClass {
     _updateCallback?: () => void;
     _world?: b2World;
     constructor();
+    isReady(): Promise<void>;
     /**
      * Starts the physics simulation. Without calling this, no physics operations will be processed.
      */

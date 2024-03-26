@@ -74,8 +74,6 @@ __exportStar(require("../types/IgeStreaming"), exports);
 __exportStar(require("../types/IgeSyncEntry"), exports);
 __exportStar(require("../types/IgeTextureAnimation"), exports);
 __exportStar(require("../types/IgeTextureCell"), exports);
-__exportStar(require("../types/IgeTextureCell"), exports);
-__exportStar(require("../types/IgeTextureCellArray"), exports);
 __exportStar(require("../types/IgeTextureCellArray"), exports);
 __exportStar(require("../types/IgeTimeStream"), exports);
 __exportStar(require("../types/IgeTriggerPolygonFunctionName"), exports);
@@ -103,6 +101,7 @@ __exportStar(require("../enums/IgeBox2dBodyType"), exports);
 __exportStar(require("../enums/IgeBehaviourType"), exports);
 __exportStar(require("../enums/IgeAudioSourceType"), exports);
 __exportStar(require("../enums/IgeNetworkConnectionState"), exports);
+__exportStar(require("../enums/IgePathFinderListType"), exports);
 //////////////////////////////////////////////////////////////////////
 // Class Store
 //////////////////////////////////////////////////////////////////////

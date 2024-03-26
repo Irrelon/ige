@@ -10,6 +10,7 @@ import { arrPullConditional } from "@/engine/utils/arrays";
 import { isClient } from "@/engine/utils/clientServer";
 import { IgeBehaviourType } from "@/enums";
 import type { IgeAudioPlaybackOptions } from "@/types/IgeAudioPlaybackOptions";
+import type { IgeIsReadyPromise } from "@/types/IgeIsReadyPromise";
 
 /**
  * This class is a component that you use by telling the engine it's a
@@ -79,7 +80,7 @@ import type { IgeAudioPlaybackOptions } from "@/types/IgeAudioPlaybackOptions";
  *
  *      audioEntity.mount(myScene);
  */
-export class IgeAudioController extends IgeAssetRegister<IgeAudioSource> {
+export class IgeAudioController extends IgeAssetRegister<IgeAudioSource> implements IgeIsReadyPromise {
 	classId = "IgeAudioController";
 	masterVolumeNode: GainNode;
 	_ctx?: AudioContext;
@@ -114,12 +115,21 @@ export class IgeAudioController extends IgeAssetRegister<IgeAudioSource> {
 		// TODO: Wait for Firefox to support accessor properties and then update this
 		this.setListenerOrientation(Math.cos(0.1), 0, Math.sin(0.1), 0, 1, 0);
 
-		// Register the engine behaviour that will get called at the end of any updates,
-		// so we can check for entities we need to track and alter the panning of any
-		// active audio to pan relative to the entity in question
-		ige.engine.addBehaviour<IgeEngine>(IgeBehaviourType.postUpdate, "audioPanning", this._onPostUpdate);
-
 		this.log("Web audio API connected successfully");
+	}
+
+	isReady () {
+		return new Promise<void>((resolve) => {
+			setTimeout(() => {
+				ige.dependencies.waitFor(["engine"], () => {
+					// Register the engine behaviour that will get called at the end of any updates,
+					// so we can check for entities we need to track and alter the panning of any
+					// active audio to pan relative to the entity in question
+					ige.engine.addBehaviour<IgeEngine>(IgeBehaviourType.postUpdate, "audioPanning", this._onPostUpdate);
+					resolve();
+				});
+			}, 1);
+		});
 	}
 
 	/**
@@ -198,37 +208,36 @@ export class IgeAudioController extends IgeAssetRegister<IgeAudioSource> {
 			return null;
 		}
 
-		const playbackItem = this.createPlaybackControl(audioSourceId, options);
+		const audioControl = this.createAudioControl(audioSourceId, options);
 
-		if (!playbackItem) return null;
-		playbackItem._bufferNode.start(0);
+		if (!audioControl) return null;
+		audioControl.play();
 
-		this.log(`Audio file (${audioSourceId}) playing...`);
-
-		return playbackItem._id;
+		return audioControl._id;
 	}
 
-	startPlaybackItem (playbackControlId: string) {
-		const playbackItem = this.playbackControlById(playbackControlId);
+	startPlaybackItem (audioControlId: string) {
+		const playbackItem = this.playbackControlById(audioControlId);
 		if (!playbackItem) return this;
 
-		playbackItem._bufferNode.start(0);
+		playbackItem.play();
 		return this;
 	}
 
-	stopPlaybackItem (playbackControlId: string) {
-		const playbackItem = this.playbackControlById(playbackControlId);
+	stopPlaybackItem (audioControlId?: string) {
+		if (!audioControlId) return;
+		const playbackItem = this.playbackControlById(audioControlId);
 		if (!playbackItem) return this;
 
-		playbackItem._bufferNode.stop(0);
+		playbackItem.stop();
 		return this;
 	}
 
-	createPlaybackControl (audioSourceId?: string, options: IgeAudioPlaybackOptions = {}): IgeAudioControl | null {
+	createAudioControl (audioSourceId?: string, options: IgeAudioPlaybackOptions = {}): IgeAudioControl | null {
 		if (!audioSourceId || !isClient || !this._ctx) {
 			return null;
 		}
-
+		console.log("ige.audio, createAudioControl");
 		const relativeTo = options.relativeTo;
 		const onEnded = options.onEnded;
 		const isPersistent = typeof options.isPersistent !== "undefined" ? options.isPersistent : false;
@@ -257,18 +266,19 @@ export class IgeAudioController extends IgeAssetRegister<IgeAudioSource> {
 		return audioControl;
 	}
 
-	removePlaybackControl (playbackControlId: string): IgeAudioControl {
-		return arrPullConditional(this._playbackArr, (item) => item._id === playbackControlId);
+	removeAudioControl (audioControlId: string): IgeAudioControl | undefined {
+		console.log("ige.audio, removeAudioControl");
+		return arrPullConditional(this._playbackArr, (item) => item._id === audioControlId);
 	}
 
 	/**
 	 * Retrieves a playback item from the internal playback array
-	 * based on the passed playbackControlId. If no item with that id exists
+	 * based on the passed audioControlId. If no item with that id exists
 	 * on the array, `undefined` is returned instead.
-	 * @param playbackControlId
+	 * @param audioControlId
 	 */
-	playbackControlById (playbackControlId: string): IgeAudioControl | undefined {
-		return this._playbackArr.find((item) => item._id === playbackControlId);
+	playbackControlById (audioControlId: string): IgeAudioControl | undefined {
+		return this._playbackArr.find((item) => item._id === audioControlId);
 	}
 
 	/**
@@ -334,7 +344,15 @@ export class IgeAudioController extends IgeAssetRegister<IgeAudioSource> {
 		});
 	}
 
-	async _loaded (url: string, data: ArrayBuffer) {
+	/**
+	 * Asynchronously decodes audio data from an ArrayBuffer to an AudioBuffer.
+	 *
+	 * @param {string} url - The URL of the audio file.
+	 * @param {ArrayBuffer} data - The audio data to be decoded.
+	 * @returns {Promise<AudioBuffer>} A promise that resolves with the decoded audio data.
+	 * @throws {Error} If decoding the audio data fails.
+	 */
+	async _loaded (url: string, data: ArrayBuffer): Promise<AudioBuffer | undefined> {
 		return this._decode(data)
 			.then((buffer) => {
 				return buffer;
@@ -359,7 +377,7 @@ export class IgeAudioController extends IgeAssetRegister<IgeAudioSource> {
 	 * playing audio to ensure that the panning of that audio matches the position
 	 * of the entity it should emit audio relative to.
 	 */
-	_onPostUpdate () {
+	_onPostUpdate = () => {
 		this._playbackArr.forEach((audioControl) => {
 			if (!audioControl._relativeTo || !audioControl._position || !audioControl._pannerNode) return;
 			if (typeof audioControl._relativeTo === "string") {
@@ -377,5 +395,5 @@ export class IgeAudioController extends IgeAssetRegister<IgeAudioSource> {
 			pannerNode.positionY.value = -audioWorldPos.y - -relativeToWorldPos.y;
 			pannerNode.positionZ.value = audioWorldPos.z - relativeToWorldPos.z;
 		});
-	}
+	};
 }

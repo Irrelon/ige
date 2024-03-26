@@ -1,5 +1,5 @@
 import { convoluteHelper } from "./convolute.js"
-import { igeFilters } from "../utils/igeFilters.js";
+import { igeFilters } from "../utils/igeFilters.js"
 export const outlineDetect = function (canvas, ctx, originalImage, texture, data) {
     const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
     if (!imgData)

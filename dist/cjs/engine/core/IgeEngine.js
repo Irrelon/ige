@@ -382,6 +382,9 @@ class IgeEngine extends IgeEntity_1.IgeEntity {
             this._resizeEvent();
         }
     }
+    isReady() {
+        return Promise.resolve();
+    }
     renderer(val) {
         if (val === undefined) {
             return this._renderer;

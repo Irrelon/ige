@@ -12,8 +12,9 @@ export declare class IgeAudioControl extends IgeEventingClass implements IgeCanI
     classId: string;
     _id: string;
     _gainNode: GainNode;
-    _bufferNode: AudioBufferSourceNode;
-    _playWhenReady: boolean;
+    _audioSourceBuffer?: AudioBuffer;
+    _bufferNode: AudioBufferSourceNode | null;
+    _shouldPlayWhenReady: boolean;
     _isPersistent: boolean;
     _loop: boolean;
     _isPlaying: boolean;
@@ -23,10 +24,12 @@ export declare class IgeAudioControl extends IgeEventingClass implements IgeCanI
     _relativeTo?: string | IgeEntity;
     _audioSourceId?: string;
     _onEnded?: () => void;
+    _resumePlaybackOffset: number;
+    _startTime: number;
     constructor();
     abstract isPersistent(val?: boolean): boolean | this;
     abstract isPlaying(val?: boolean): boolean | this;
-    abstract playWhenReady(val?: boolean): boolean | this;
+    abstract shouldPlayWhenReady(val?: boolean): boolean | this;
     abstract relativeTo(val?: IgeEntity | string): IgeEntity | string | this | undefined;
     abstract onEnded(val?: () => void): () => void | this | undefined;
     abstract pannerSettings(val?: PannerOptions): PannerOptions | this | undefined;
@@ -43,9 +46,17 @@ export declare class IgeAudioControl extends IgeEventingClass implements IgeCanI
     /**
      * Plays the audio.
      */
-    play(): void;
+    play(playbackFromOffset?: number): void;
     loop(): boolean;
     loop(loop: boolean): this;
+    /**
+     * Similar to stop but will keep the current payback progress / location
+     * and when play() is called, playback will resume from the current
+     * location. If you pause() then stop() then play(), playback will start
+     * from the beginning again. Calling stop() will reset the playback
+     * location to the start of the audio track.
+     */
+    pause(): void;
     /**
      * Stops the currently playing audio.
      */

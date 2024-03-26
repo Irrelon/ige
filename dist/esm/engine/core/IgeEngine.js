@@ -1,10 +1,10 @@
 import { IgeEntity } from "./IgeEntity.js"
-import { IgePoint2d } from "./IgePoint2d.js";
+import { IgePoint2d } from "./IgePoint2d.js"
 import { IgePoint3d } from "./IgePoint3d.js"
-import { IgeViewport } from "./IgeViewport.js";
+import { IgeViewport } from "./IgeViewport.js"
 import { ige } from "../instance.js"
-import { isClient, isServer, isWorker } from "../utils/clientServer.js";
-import { IgeBehaviourType, IgeEngineState } from "../../enums/index.js";
+import { isClient, isServer, isWorker } from "../utils/clientServer.js"
+import { IgeBehaviourType, IgeEngineState } from "../../enums/index.js"
 export class IgeEngine extends IgeEntity {
     classId = "IgeEngine";
     client;
@@ -127,6 +127,9 @@ export class IgeEngine extends IgeEntity {
         if (isClient) {
             this._resizeEvent();
         }
+    }
+    isReady() {
+        return Promise.resolve();
     }
     renderer(val) {
         if (val === undefined) {

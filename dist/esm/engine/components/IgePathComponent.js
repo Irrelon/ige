@@ -1,10 +1,10 @@
 import { IgeComponent } from "../core/IgeComponent.js"
-import { IgePathNode } from "../core/IgePathNode.js";
+import { IgePathNode } from "../core/IgePathNode.js"
 import { IgePoint3d } from "../core/IgePoint3d.js"
-import { ige } from "../instance.js";
+import { ige } from "../instance.js"
 import { isClient } from "../utils/clientServer.js"
-import { distance } from "../utils/maths.js";
-import { IgeBehaviourType, IgeEntityRenderMode, IgeMountMode } from "../../enums/index.js";
+import { distance } from "../utils/maths.js"
+import { IgeBehaviourType, IgeEntityRenderMode, IgeMountMode } from "../../enums/index.js"
 const isoDirectionMap = {
     "E": "SE",
     "S": "SW",

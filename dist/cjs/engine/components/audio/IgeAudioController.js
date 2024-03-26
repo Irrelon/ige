@@ -103,6 +103,30 @@ class IgeAudioController extends IgeAssetRegister_1.IgeAssetRegister {
                 return;
             return this._ctx.decodeAudioData(data);
         });
+        /**
+         * Called after all engine update() scenegraph calls and loops the currently
+         * playing audio to ensure that the panning of that audio matches the position
+         * of the entity it should emit audio relative to.
+         */
+        this._onPostUpdate = () => {
+            this._playbackArr.forEach((audioControl) => {
+                if (!audioControl._relativeTo || !audioControl._position || !audioControl._pannerNode)
+                    return;
+                if (typeof audioControl._relativeTo === "string") {
+                    const ent = instance_1.ige.$(audioControl._relativeTo);
+                    if (!ent)
+                        return;
+                    audioControl._relativeTo = ent;
+                }
+                const audioWorldPos = audioControl._position;
+                const relativeToWorldPos = audioControl._relativeTo.worldPosition();
+                const pannerNode = audioControl._pannerNode;
+                // Update the audio origin position
+                pannerNode.positionX.value = audioWorldPos.x - relativeToWorldPos.x;
+                pannerNode.positionY.value = -audioWorldPos.y - -relativeToWorldPos.y;
+                pannerNode.positionZ.value = audioWorldPos.z - relativeToWorldPos.z;
+            });
+        };
         this._active = false;
         this._disabled = false;
         this._ctx = this.getContext();
@@ -121,11 +145,20 @@ class IgeAudioController extends IgeAssetRegister_1.IgeAssetRegister {
         // so we must continue to use this method until that changes
         // TODO: Wait for Firefox to support accessor properties and then update this
         this.setListenerOrientation(Math.cos(0.1), 0, Math.sin(0.1), 0, 1, 0);
-        // Register the engine behaviour that will get called at the end of any updates,
-        // so we can check for entities we need to track and alter the panning of any
-        // active audio to pan relative to the entity in question
-        instance_1.ige.engine.addBehaviour(enums_1.IgeBehaviourType.postUpdate, "audioPanning", this._onPostUpdate);
         this.log("Web audio API connected successfully");
+    }
+    isReady() {
+        return new Promise((resolve) => {
+            setTimeout(() => {
+                instance_1.ige.dependencies.waitFor(["engine"], () => {
+                    // Register the engine behaviour that will get called at the end of any updates,
+                    // so we can check for entities we need to track and alter the panning of any
+                    // active audio to pan relative to the entity in question
+                    instance_1.ige.engine.addBehaviour(enums_1.IgeBehaviourType.postUpdate, "audioPanning", this._onPostUpdate);
+                    resolve();
+                });
+            }, 1);
+        });
     }
     /**
      * Sets the orientation of the audio listener.
@@ -197,31 +230,33 @@ class IgeAudioController extends IgeAssetRegister_1.IgeAssetRegister {
         if (!audioSourceId || !clientServer_1.isClient || !this._ctx) {
             return null;
         }
-        const playbackItem = this.createPlaybackControl(audioSourceId, options);
-        if (!playbackItem)
+        const audioControl = this.createAudioControl(audioSourceId, options);
+        if (!audioControl)
             return null;
-        playbackItem._bufferNode.start(0);
-        this.log(`Audio file (${audioSourceId}) playing...`);
-        return playbackItem._id;
+        audioControl.play();
+        return audioControl._id;
     }
-    startPlaybackItem(playbackControlId) {
-        const playbackItem = this.playbackControlById(playbackControlId);
+    startPlaybackItem(audioControlId) {
+        const playbackItem = this.playbackControlById(audioControlId);
         if (!playbackItem)
             return this;
-        playbackItem._bufferNode.start(0);
+        playbackItem.play();
         return this;
     }
-    stopPlaybackItem(playbackControlId) {
-        const playbackItem = this.playbackControlById(playbackControlId);
+    stopPlaybackItem(audioControlId) {
+        if (!audioControlId)
+            return;
+        const playbackItem = this.playbackControlById(audioControlId);
         if (!playbackItem)
             return this;
-        playbackItem._bufferNode.stop(0);
+        playbackItem.stop();
         return this;
     }
-    createPlaybackControl(audioSourceId, options = {}) {
+    createAudioControl(audioSourceId, options = {}) {
         if (!audioSourceId || !clientServer_1.isClient || !this._ctx) {
             return null;
         }
+        console.log("ige.audio, createAudioControl");
         const relativeTo = options.relativeTo;
         const onEnded = options.onEnded;
         const isPersistent = typeof options.isPersistent !== "undefined" ? options.isPersistent : false;
@@ -246,17 +281,18 @@ class IgeAudioController extends IgeAssetRegister_1.IgeAssetRegister {
         this._playbackArr.push(audioControl);
         return audioControl;
     }
-    removePlaybackControl(playbackControlId) {
-        return (0, arrays_1.arrPullConditional)(this._playbackArr, (item) => item._id === playbackControlId);
+    removeAudioControl(audioControlId) {
+        console.log("ige.audio, removeAudioControl");
+        return (0, arrays_1.arrPullConditional)(this._playbackArr, (item) => item._id === audioControlId);
     }
     /**
      * Retrieves a playback item from the internal playback array
-     * based on the passed playbackControlId. If no item with that id exists
+     * based on the passed audioControlId. If no item with that id exists
      * on the array, `undefined` is returned instead.
-     * @param playbackControlId
+     * @param audioControlId
      */
-    playbackControlById(playbackControlId) {
-        return this._playbackArr.find((item) => item._id === playbackControlId);
+    playbackControlById(audioControlId) {
+        return this._playbackArr.find((item) => item._id === audioControlId);
     }
     /**
      * Sets the position of an existing playback item by its id.
@@ -314,6 +350,14 @@ class IgeAudioController extends IgeAssetRegister_1.IgeAssetRegister {
             });
         });
     }
+    /**
+     * Asynchronously decodes audio data from an ArrayBuffer to an AudioBuffer.
+     *
+     * @param {string} url - The URL of the audio file.
+     * @param {ArrayBuffer} data - The audio data to be decoded.
+     * @returns {Promise<AudioBuffer>} A promise that resolves with the decoded audio data.
+     * @throws {Error} If decoding the audio data fails.
+     */
     _loaded(url, data) {
         return __awaiter(this, void 0, void 0, function* () {
             return this._decode(data)
@@ -323,30 +367,6 @@ class IgeAudioController extends IgeAssetRegister_1.IgeAssetRegister {
                 .catch((err) => {
                 throw new Error(`Failed to decode audio "${url}": ${err}`);
             });
-        });
-    }
-    /**
-     * Called after all engine update() scenegraph calls and loops the currently
-     * playing audio to ensure that the panning of that audio matches the position
-     * of the entity it should emit audio relative to.
-     */
-    _onPostUpdate() {
-        this._playbackArr.forEach((audioControl) => {
-            if (!audioControl._relativeTo || !audioControl._position || !audioControl._pannerNode)
-                return;
-            if (typeof audioControl._relativeTo === "string") {
-                const ent = instance_1.ige.$(audioControl._relativeTo);
-                if (!ent)
-                    return;
-                audioControl._relativeTo = ent;
-            }
-            const audioWorldPos = audioControl._position;
-            const relativeToWorldPos = audioControl._relativeTo.worldPosition();
-            const pannerNode = audioControl._pannerNode;
-            // Update the audio origin position
-            pannerNode.positionX.value = audioWorldPos.x - relativeToWorldPos.x;
-            pannerNode.positionY.value = -audioWorldPos.y - -relativeToWorldPos.y;
-            pannerNode.positionZ.value = audioWorldPos.z - relativeToWorldPos.z;
         });
     }
 }

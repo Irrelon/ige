@@ -1,13 +1,14 @@
 import { IgeNetIoClient } from "./IgeNetIoClient.js"
 import { IgeNetIoBaseController } from "../IgeNetIoBaseController.js";
 import { IgeNetworkConnectionState } from "../../../enums/IgeNetworkConnectionState.js"
+import type { IgeIsReadyPromise } from "../../../types/IgeIsReadyPromise.js"
 import type { IgeNetworkClientSideMessageHandler, IgeNetworkClientSideResponseHandler, IgeNetworkEncodedMessageData, IgeNetworkMessageData, IgeNetworkMessageStructure, IgeNetworkRequestMessageStructure, IgeNetworkTimeSyncRequestFromServer, IgeNetworkTimeSyncResponseFromClient } from "../../../types/IgeNetworkMessage.js"
 import type { IgeStreamCreateMessageData, IgeStreamDestroyMessageData } from "../../../types/IgeNetworkStream.js"
 /**
  * The client-side net.io component. Handles all client-side
  * networking systems.
  */
-export declare class IgeNetIoClientController extends IgeNetIoBaseController {
+export declare class IgeNetIoClientController extends IgeNetIoBaseController implements IgeIsReadyPromise {
     version: string;
     _networkCommands: Record<string, IgeNetworkClientSideMessageHandler>;
     _initDone: boolean;
@@ -20,6 +21,7 @@ export declare class IgeNetIoClientController extends IgeNetIoBaseController {
     _renderLatency: number;
     _streamDataTime: number;
     constructor();
+    isReady(): Promise<void>;
     /**
      * Gets the current socket id.
      * @returns {string} The id of the socket connection to the server.

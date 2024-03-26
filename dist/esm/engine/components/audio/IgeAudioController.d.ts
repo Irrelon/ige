@@ -3,6 +3,7 @@ import type { IgeAudioSource } from "./IgeAudioSource.js";
 import { IgeAssetRegister } from "../../core/IgeAssetRegister.js"
 import type { IgePoint3d } from "../../core/IgePoint3d.js"
 import type { IgeAudioPlaybackOptions } from "../../../types/IgeAudioPlaybackOptions.js"
+import type { IgeIsReadyPromise } from "../../../types/IgeIsReadyPromise.js"
 /**
  * This class is a component that you use by telling the engine it's a
  * dependency by calling `ige.uses("audio");`. After that, you can directly
@@ -71,7 +72,7 @@ import type { IgeAudioPlaybackOptions } from "../../../types/IgeAudioPlaybackOpt
  *
  *      audioEntity.mount(myScene);
  */
-export declare class IgeAudioController extends IgeAssetRegister<IgeAudioSource> {
+export declare class IgeAudioController extends IgeAssetRegister<IgeAudioSource> implements IgeIsReadyPromise {
     classId: string;
     masterVolumeNode: GainNode;
     _ctx?: AudioContext;
@@ -80,6 +81,7 @@ export declare class IgeAudioController extends IgeAssetRegister<IgeAudioSource>
     _audioBufferStore: Record<string, AudioBuffer>;
     _playbackArr: IgeAudioControl[];
     constructor();
+    isReady(): Promise<void>;
     /**
      * Sets the orientation of the audio listener.
      *
@@ -124,17 +126,17 @@ export declare class IgeAudioController extends IgeAssetRegister<IgeAudioSource>
      * @param {IgeAudioPlaybackOptions} [options={}]
      */
     play(audioSourceId?: string, options?: IgeAudioPlaybackOptions): string | null;
-    startPlaybackItem(playbackControlId: string): this;
-    stopPlaybackItem(playbackControlId: string): this;
-    createPlaybackControl(audioSourceId?: string, options?: IgeAudioPlaybackOptions): IgeAudioControl | null;
-    removePlaybackControl(playbackControlId: string): IgeAudioControl;
+    startPlaybackItem(audioControlId: string): this;
+    stopPlaybackItem(audioControlId?: string): this | undefined;
+    createAudioControl(audioSourceId?: string, options?: IgeAudioPlaybackOptions): IgeAudioControl | null;
+    removeAudioControl(audioControlId: string): IgeAudioControl | undefined;
     /**
      * Retrieves a playback item from the internal playback array
-     * based on the passed playbackControlId. If no item with that id exists
+     * based on the passed audioControlId. If no item with that id exists
      * on the array, `undefined` is returned instead.
-     * @param playbackControlId
+     * @param audioControlId
      */
-    playbackControlById(playbackControlId: string): IgeAudioControl | undefined;
+    playbackControlById(audioControlId: string): IgeAudioControl | undefined;
     /**
      * Sets the position of an existing playback item by its id.
      * @param id
@@ -153,6 +155,14 @@ export declare class IgeAudioController extends IgeAssetRegister<IgeAudioSource>
      * file has loaded or on error.
      */
     _load(url: string): Promise<AudioBuffer>;
+    /**
+     * Asynchronously decodes audio data from an ArrayBuffer to an AudioBuffer.
+     *
+     * @param {string} url - The URL of the audio file.
+     * @param {ArrayBuffer} data - The audio data to be decoded.
+     * @returns {Promise<AudioBuffer>} A promise that resolves with the decoded audio data.
+     * @throws {Error} If decoding the audio data fails.
+     */
     _loaded(url: string, data: ArrayBuffer): Promise<AudioBuffer | undefined>;
     /**
      * Decodes audio data and calls back with an audio buffer.
@@ -165,5 +175,5 @@ export declare class IgeAudioController extends IgeAssetRegister<IgeAudioSource>
      * playing audio to ensure that the panning of that audio matches the position
      * of the entity it should emit audio relative to.
      */
-    _onPostUpdate(): void;
+    _onPostUpdate: () => void;
 }

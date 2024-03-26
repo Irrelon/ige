@@ -187,6 +187,9 @@ class IgeNetIoServerController extends IgeNetIoBaseController_1.IgeNetIoBaseCont
         this.define(enums_1.IGE_NETWORK_STREAM_DATA);
         this.define(enums_1.IGE_NETWORK_STREAM_TIME);
     }
+    isReady() {
+        return Promise.resolve();
+    }
     /**
      * Starts the network for the server.
      * @param {*} port The port to listen on.

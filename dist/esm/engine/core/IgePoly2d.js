@@ -1,5 +1,5 @@
 import { IgeBounds } from "./IgeBounds.js"
-import { IgePoint2d } from "./IgePoint2d.js";
+import { IgePoint2d } from "./IgePoint2d.js"
 import { circleIntersectsPolygon, polygonIntersectsPolygon, rectIntersectsPolygon } from "../utils/intersections.js"
 /**
  * Creates a new 2d polygon made up of IgePoint2d instances.

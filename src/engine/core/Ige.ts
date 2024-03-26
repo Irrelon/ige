@@ -128,6 +128,7 @@ export class Ige implements IgeIsReadyPromise {
 						"audio",
 						import("@/engine/components/audio/IgeAudioController.js").then(({ IgeAudioController: Module }) => {
 							this.audio = new Module();
+							this.dependencies.add("audio", this.audio.isReady());
 						})
 					);
 				} else {

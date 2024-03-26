@@ -1,8 +1,9 @@
 import { IgeNetIoBaseController } from "../IgeNetIoBaseController.js"
 import { IgeNetIoServer } from "./IgeNetIoServer.js";
 import type { IgeNetIoSocket } from "./IgeNetIoSocket.js"
-import type { IgeNetworkMessageData, IgeNetworkMessageStructure, IgeNetworkRequestMessageStructure, IgeNetworkServerSideMessageHandler, IgeNetworkServerSideRequestHandler, IgeNetworkServerSideResponseData } from "../../../types/IgeNetworkMessage.js";
-export declare class IgeNetIoServerController extends IgeNetIoBaseController {
+import type { IgeIsReadyPromise } from "../../../types/IgeIsReadyPromise.js";
+import type { IgeNetworkMessageData, IgeNetworkMessageStructure, IgeNetworkRequestMessageStructure, IgeNetworkServerSideMessageHandler, IgeNetworkServerSideRequestHandler, IgeNetworkServerSideResponseData } from "../../../types/IgeNetworkMessage.js"
+export declare class IgeNetIoServerController extends IgeNetIoBaseController implements IgeIsReadyPromise {
     _idCounter: number;
     _networkCommands: Record<string, IgeNetworkServerSideMessageHandler | IgeNetworkServerSideRequestHandler | undefined>;
     _requests: Record<string, IgeNetworkRequestMessageStructure<IgeNetworkServerSideRequestHandler>>;
@@ -17,6 +18,7 @@ export declare class IgeNetIoServerController extends IgeNetIoBaseController {
     _streamClientCreated: Record<string, Record<string, boolean>>;
     _streamPropertyChange: Record<string, Record<string, boolean>>;
     constructor();
+    isReady(): Promise<void>;
     /**
      * Starts the network for the server.
      * @param {*} port The port to listen on.

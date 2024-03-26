@@ -1,7 +1,7 @@
 import { IgeEntity } from "../../core/IgeEntity.js"
 import type { IgeAudioPlaybackOptions } from "../../../types/IgeAudioPlaybackOptions.js"
 export declare const defaultPannerSettings: PannerOptions;
-export interface IgeAudioEntityProps extends IgeAudioPlaybackOptions {
+export interface IgeAudioEntityProps extends Omit<IgeAudioPlaybackOptions, "relativeTo"> {
     audioId?: string;
     playOnMount?: boolean;
 }
@@ -31,8 +31,6 @@ export declare class IgeAudioEntity extends IgeEntity {
     _loop: boolean;
     _volume: number;
     _pannerSettings: PannerOptions;
-    _relativeTo?: IgeEntity | string;
-    _panner?: PannerNode;
     _audioSourceId?: string;
     _playbackControlId?: string;
     constructor(props?: IgeAudioEntityProps);
@@ -42,17 +40,19 @@ export declare class IgeAudioEntity extends IgeEntity {
      */
     streamCreateConstructorArgs(): [IgeAudioEntityProps];
     onStreamProperty(propName: string, propVal: any): this;
-    playOnMount(): boolean;
-    playOnMount(val: boolean): this;
-    pannerSettings(): PannerOptions;
-    pannerSettings(val: PannerOptions): this;
-    relativeTo(): IgeEntity | string | undefined;
-    relativeTo(val: IgeEntity | string): this;
     /**
      * Gets the playing state.
      * @returns {boolean} True if playing, false if not.
      */
     isPlaying(): boolean;
+    isPlaying(val: boolean): this;
+    abstract isPlaying(val?: boolean): this | boolean;
+    playOnMount(): boolean;
+    playOnMount(val: boolean): this;
+    abstract playOnMount(val?: boolean): boolean | this;
+    pannerSettings(): PannerOptions;
+    pannerSettings(val: PannerOptions): this;
+    abstract pannerSettings(val?: PannerOptions): PannerOptions | this;
     /**
      * Gets / sets the id of the audio stream to use for playback.
      * @param {string} [id] The audio id. Must match
@@ -64,13 +64,18 @@ export declare class IgeAudioEntity extends IgeEntity {
      */
     audioSourceId(): string | undefined;
     audioSourceId(val: string): this;
-    volume(val?: number): number | this;
-    loop(val?: boolean): boolean | this;
+    abstract audioSourceId(val?: string): string | this | undefined;
+    volume(): number;
+    volume(val: number): this;
+    abstract volume(val?: number): this | number;
+    loop(): boolean;
+    loop(val: boolean): this;
+    abstract loop(val?: boolean): this | boolean;
     /**
      * Starts playback of the audio.
      * @returns {IgeAudioEntity}
      */
-    play(): this | null;
+    play(): this;
     /**
      * Stops playback of the audio.
      * @returns {IgeAudioEntity}

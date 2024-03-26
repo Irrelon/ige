@@ -12,6 +12,7 @@ import {
 	IGE_NETWORK_STREAM_DESTROY,
 	IGE_NETWORK_STREAM_TIME, IGE_NETWORK_TIME_SYNC, IgeEventReturnFlag
 } from "@/enums";
+import type { IgeIsReadyPromise } from "@/types/IgeIsReadyPromise";
 import type {
 	IgeNetworkMessageData,
 	IgeNetworkMessageStructure,
@@ -20,7 +21,7 @@ import type {
 	IgeNetworkServerSideRequestHandler, IgeNetworkServerSideResponseData, IgeNetworkTimeSyncRequestFromServer
 } from "@/types/IgeNetworkMessage";
 
-export class IgeNetIoServerController extends IgeNetIoBaseController {
+export class IgeNetIoServerController extends IgeNetIoBaseController implements IgeIsReadyPromise {
 	_idCounter: number = 0;
 	_networkCommands: Record<
 		string,
@@ -46,6 +47,10 @@ export class IgeNetIoServerController extends IgeNetIoBaseController {
 		this.define(IGE_NETWORK_STREAM_DESTROY);
 		this.define(IGE_NETWORK_STREAM_DATA);
 		this.define(IGE_NETWORK_STREAM_TIME);
+	}
+
+	isReady () {
+		return Promise.resolve();
 	}
 
 	/**

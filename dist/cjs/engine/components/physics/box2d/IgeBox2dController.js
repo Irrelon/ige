@@ -109,6 +109,9 @@ class IgeBox2dController extends IgeEventingClass_1.IgeEventingClass {
         this._gravity = new b2_math_1.b2Vec2(0, 0);
         this._removeWhenReady = [];
     }
+    isReady() {
+        return Promise.resolve();
+    }
     /**
      * Starts the physics simulation. Without calling this, no physics operations will be processed.
      */

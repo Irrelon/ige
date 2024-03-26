@@ -15,10 +15,11 @@ import { IgeBehaviourType, IgeEngineState } from "@/enums";
 import type { IgeAnyFunction } from "@/types/IgeAnyFunction";
 import type { IgeCanvasRenderingContext2d } from "@/types/IgeCanvasRenderingContext2d";
 import type { IgeGenericClass } from "@/types/IgeGenericClass";
+import type { IgeIsReadyPromise } from "@/types/IgeIsReadyPromise";
 import type { IgeSceneGraphDataEntry } from "@/types/IgeSceneGraphDataEntry";
 import type { IgeSyncEntry, IgeSyncMethod } from "@/types/IgeSyncEntry";
 
-export class IgeEngine extends IgeEntity {
+export class IgeEngine extends IgeEntity implements IgeIsReadyPromise {
 	classId = "IgeEngine";
 	client?: IgeBaseClass;
 	server?: IgeBaseClass;
@@ -150,6 +151,10 @@ export class IgeEngine extends IgeEntity {
 		if (isClient) {
 			this._resizeEvent();
 		}
+	}
+
+	isReady () {
+		return Promise.resolve();
 	}
 
 	renderer (val: IgeBaseRenderer): this;

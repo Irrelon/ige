@@ -1,14 +1,14 @@
 import { IgeEntityBox2d } from "./IgeEntityBox2d.js"
-import { b2CircleShape } from "./lib/collision/b2_circle_shape.js";
+import { b2CircleShape } from "./lib/collision/b2_circle_shape.js"
 import { b2PolygonShape } from "./lib/collision/b2_polygon_shape.js"
-import { b2Vec2 } from "./lib/common/b2_math.js";
+import { b2Vec2 } from "./lib/common/b2_math.js"
 import { b2BodyDef, b2BodyType } from "./lib/dynamics/b2_body.js"
-import { b2Filter, b2FixtureDef } from "./lib/dynamics/b2_fixture.js";
+import { b2Filter, b2FixtureDef } from "./lib/dynamics/b2_fixture.js"
 import { b2World } from "./lib/dynamics/b2_world.js"
-import { b2ContactListener } from "./lib/dynamics/b2_world_callbacks.js";
+import { b2ContactListener } from "./lib/dynamics/b2_world_callbacks.js"
 import { IgeEventingClass } from "../../../core/IgeEventingClass.js"
 import { ige } from "../../../instance.js"
-import { IgeBehaviourType, IgeBox2dBodyType, IgeBox2dFixtureShapeType, IgeBox2dTimingMode } from "../../../../enums/index.js";
+import { IgeBehaviourType, IgeBox2dBodyType, IgeBox2dFixtureShapeType, IgeBox2dTimingMode } from "../../../../enums/index.js"
 /**
  * The engine's Box2D component class.
  */
@@ -34,6 +34,9 @@ export class IgeBox2dController extends IgeEventingClass {
         this._scaleRatio = 30;
         this._gravity = new b2Vec2(0, 0);
         this._removeWhenReady = [];
+    }
+    isReady() {
+        return Promise.resolve();
     }
     /**
      * Starts the physics simulation. Without calling this, no physics operations will be processed.

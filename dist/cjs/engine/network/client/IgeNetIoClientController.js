@@ -197,6 +197,9 @@ class IgeNetIoClientController extends IgeNetIoBaseController_1.IgeNetIoBaseCont
         this.define(enums_1.IGE_NETWORK_STREAM_DATA, this._onStreamData);
         this.define(enums_1.IGE_NETWORK_STREAM_TIME, this._onStreamTime);
     }
+    isReady() {
+        return Promise.resolve();
+    }
     /**
      * Gets the current socket id.
      * @returns {string} The id of the socket connection to the server.

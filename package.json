@@ -18,7 +18,8 @@
 	"types": "dist/cjs/index.d.ts",
 	"scripts": {
 		"tsc-b": "tsc -b",
-		"build": "npm run build-esm && npm run build-cjs && npm run generate-docs",
+		"build": "npm run build-esm && npm run build-cjs",
+		"build-all": "npm run build-esm && npm run build-cjs && npm run generate-docs",
 		"build-esm": "(npm run compile-esm 2>/dev/null || exit 0) && sh ./fixup-esm.sh && npm run fix-paths-esm",
 		"build-cjs": "(npm run compile-cjs 2>/dev/null || exit 0) && sh ./fixup-cjs.sh && npm run fix-paths-cjs",
 		"build-tests": "(npm run compile-tests 2>/dev/null || exit 0) && sh ./fixup-cjs.sh && npm run fix-paths-cjs",

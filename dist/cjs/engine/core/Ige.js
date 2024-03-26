@@ -133,6 +133,7 @@ class Ige {
                 if (clientServer_1.isClient && !clientServer_1.isWorker) {
                     this.dependencies.add("audio", Promise.resolve().then(() => __importStar(require("../components/audio/IgeAudioController.js"))).then(({ IgeAudioController: Module }) => {
                         this.audio = new Module();
+                        this.dependencies.add("audio", this.audio.isReady());
                     }));
                 }
                 else {

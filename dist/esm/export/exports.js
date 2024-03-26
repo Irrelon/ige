@@ -58,8 +58,6 @@ export * from "../types/IgeStreaming.js"
 export * from "../types/IgeSyncEntry.js"
 export * from "../types/IgeTextureAnimation.js"
 export * from "../types/IgeTextureCell.js"
-export * from "../types/IgeTextureCell.js"
-export * from "../types/IgeTextureCellArray.js"
 export * from "../types/IgeTextureCellArray.js"
 export * from "../types/IgeTimeStream.js"
 export * from "../types/IgeTriggerPolygonFunctionName.js"
@@ -87,6 +85,7 @@ export * from "../enums/IgeBox2dBodyType.js"
 export * from "../enums/IgeBehaviourType.js"
 export * from "../enums/IgeAudioSourceType.js"
 export * from "../enums/IgeNetworkConnectionState.js"
+export * from "../enums/IgePathFinderListType.js"
 //////////////////////////////////////////////////////////////////////
 // Class Store
 //////////////////////////////////////////////////////////////////////
