@@ -1,6 +1,10 @@
+import { IgeBaseRenderer } from "@/engine/core/IgeBaseRenderer";
+import type { IgeEngine } from "@/engine/core/IgeEngine";
+import type { IgeObject } from "@/engine/core/IgeObject";
+import type { IgeViewport } from "@/engine/core/IgeViewport";
+import { ige } from "@/engine/instance";
 import { getPipeline } from "@/engine/shaders/2d";
 import { bufferRangeData, getMultipleOf, packArraysByFormat } from "@/engine/utils/buffers";
-import { IgeBaseRenderer } from "@/engine/core/IgeBaseRenderer";
 import type { IgeCanvasRenderingContext3d } from "@/types/IgeCanvasRenderingContext3d";
 import { mat4 } from "gl-matrix";
 
@@ -136,18 +140,18 @@ export class IgeWebGpuRenderer extends IgeBaseRenderer {
 		});
 	}
 
-	renderSceneGraph (arr: IgeObject[], bounds: IgePoint2d): boolean {
+	renderSceneGraph (engine: IgeEngine, viewports: IgeViewport[]): boolean {
 		const ctx = this._canvasContext;
 		if (!ctx) return false;
 
 		let ts: number;
 		let td: number;
 
-		if (arr) {
+		if (viewports) {
 			//ctx.save();
 			//ctx.translate(bounds.x2, bounds.y2);
 			//ctx.scale(this._globalScale.x, this._globalScale.y);
-			let arrCount = arr.length;
+			let arrCount = viewports.length;
 
 			// Loop our viewports and call their tick methods
 			if (ige.config.debug._timing) {
@@ -156,17 +160,17 @@ export class IgeWebGpuRenderer extends IgeBaseRenderer {
 					ts = new Date().getTime();
 					//arr[arrCount].tick(ctx);
 					td = new Date().getTime() - ts;
-					if (arr[arrCount]) {
-						if (!ige.engine._timeSpentInTick[arr[arrCount].id()]) {
-							ige.engine._timeSpentInTick[arr[arrCount].id()] = 0;
+					if (viewports[arrCount]) {
+						if (!ige.engine._timeSpentInTick[viewports[arrCount].id()]) {
+							ige.engine._timeSpentInTick[viewports[arrCount].id()] = 0;
 						}
 
-						if (!ige.engine._timeSpentLastTick[arr[arrCount].id()]) {
-							ige.engine._timeSpentLastTick[arr[arrCount].id()] = {};
+						if (!ige.engine._timeSpentLastTick[viewports[arrCount].id()]) {
+							ige.engine._timeSpentLastTick[viewports[arrCount].id()] = {};
 						}
 
-						ige.engine._timeSpentInTick[arr[arrCount].id()] += td;
-						ige.engine._timeSpentLastTick[arr[arrCount].id()].ms = td;
+						ige.engine._timeSpentInTick[viewports[arrCount].id()] += td;
+						ige.engine._timeSpentLastTick[viewports[arrCount].id()].ms = td;
 					}
 					//ctx.restore();
 				}
@@ -175,16 +179,16 @@ export class IgeWebGpuRenderer extends IgeBaseRenderer {
 					//ctx.save();
 					//arr[arrCount].tick(ctx);
 					//ctx.restore();
-					const entity = arr[arrCount];
+					const entity = viewports[arrCount];
 				}
 			}
 
 			//ctx.restore();
 		}
 
-		this._webgpuRender(arr);
+		this._webgpuRender(viewports);
 
-		return super.renderSceneGraph(arr, bounds);
+		return super.renderSceneGraph(engine, viewports);
 	}
 
 	_createRect (width: number, height: number) {
@@ -225,7 +229,7 @@ export class IgeWebGpuRenderer extends IgeBaseRenderer {
 
 	async _setup (): Promise<void> {
 		await super._setup();
-		window.mat4 = mat4;
+
 		if (!this._device) return;
 		if (!this._textureFormat) return;
 		if (!this._canvasElement) return;
@@ -367,8 +371,13 @@ export class IgeWebGpuRenderer extends IgeBaseRenderer {
 		pass.setBindGroup(0, this._uniformsBindGroup);
 		pass.setBindGroup(1, this._textureBindGroup);
 
+		// TEMP CODE UNTIL WE FIGURE OUT BEST WAY TO HANDLE THIS WITH CAMERA AND VIEWPORT
+		const viewMatrix = mat4.lookAt(mat4.create(), [0, 0, 1], [0, 0, 0], [0, 1, 0]);
+		const projectionViewMatrix = mat4.create();
+		mat4.multiply(projectionViewMatrix, projectionViewMatrix, viewMatrix);
+
 		// Set the uniform values in our JavaScript side Float32Array
-		this._projectionViewMatrixValue.set(viewport.camera._projectionViewMatrix);
+		this._projectionViewMatrixValue.set(projectionViewMatrix);
 		this._resolutionValue.set([this._canvasElement.width, this._canvasElement.height]);
 
 		// upload the uniform values to the uniform buffer

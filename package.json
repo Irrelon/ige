@@ -39,7 +39,8 @@
 		"test-watch": "NODE_OPTIONS=--experimental-vm-modules npx jest -f \".test.js\" --watch --all",
 		"eslint-fix": "eslint --ext .ts,.tsx . --fix",
 		"scan-deps": "npx madge ./src --ts",
-		"generate-docs": "npx typedoc ./src --options typedoc.cjs"
+		"generate-docs": "npx typedoc ./src --options typedoc.cjs",
+		"copy-static": "find src -type f \\( -name '*.html' -o -name '*.css' \\) -exec sh -c 'mkdir -p dist/esm/$(dirname {}) && cp {} dist/esm/{}' \\;"
 	},
 	"dependencies": {
 		"gl-matrix": "^3.4.3",

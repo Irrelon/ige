@@ -6,7 +6,7 @@ import { ige } from "@/engine/instance";
 import { isServer } from "@/engine/utils/clientServer";
 
 export class IgeBaseRenderer extends IgeEventingClass {
-	protected _canvas?: HTMLCanvasElement;
+	protected _canvasElement?: HTMLCanvasElement;
 	protected _hasRunSetup: boolean = false;
 	protected _isReady: boolean = false;
 	protected _bounds2d: IgePoint2d = new IgePoint2d(800, 600);
@@ -53,7 +53,7 @@ export class IgeBaseRenderer extends IgeEventingClass {
 	}
 
 	canvasElement () {
-		return this._canvas;
+		return this._canvasElement;
 	}
 
 	_resizeEvent = (event?: Event) => {

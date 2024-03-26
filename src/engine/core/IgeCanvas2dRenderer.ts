@@ -19,8 +19,8 @@ export class IgeCanvas2dRenderer extends IgeBaseRenderer {
 		await super._setup();
 		this.createFrontBuffer();
 
-		if (!this._canvas) return;
-		this._ctx = this._canvas.getContext("2d");
+		if (!this._canvasElement) return;
+		this._ctx = this._canvasElement.getContext("2d");
 		this.isReady(true);
 	}
 
@@ -41,7 +41,7 @@ export class IgeCanvas2dRenderer extends IgeBaseRenderer {
 			return;
 		}
 
-		if (this._canvas) {
+		if (this._canvasElement) {
 			return;
 		}
 
@@ -61,16 +61,16 @@ export class IgeCanvas2dRenderer extends IgeBaseRenderer {
 
 		if (elem === undefined) {
 			// Return current value
-			return this._canvas;
+			return this._canvasElement;
 		}
 
-		if (this._canvas) {
+		if (this._canvasElement) {
 			// We already have a canvas
 			return this;
 		}
 
-		this._canvas = elem;
-		this._ctx = this._canvas.getContext("2d") as CanvasRenderingContext2D;
+		this._canvasElement = elem;
+		this._ctx = this._canvasElement.getContext("2d") as CanvasRenderingContext2D;
 
 		if (!this._ctx) {
 			throw new Error("Could not get canvas context!");
@@ -91,19 +91,19 @@ export class IgeCanvas2dRenderer extends IgeBaseRenderer {
 		window.addEventListener("resize", this._resizeEvent);
 		this._resizeEvent();
 
-		this._ctx = this._canvas.getContext("2d") as CanvasRenderingContext2D;
+		this._ctx = this._canvasElement.getContext("2d") as CanvasRenderingContext2D;
 		ige.engine.headless(false);
 
 		// Ask the input component to set up any listeners it has
-		ige.input.setupListeners(this._canvas);
+		ige.input.setupListeners(this._canvasElement);
 	}
 
 	/**
 	 * Clears the entire canvas.
 	 */
 	clearCanvas () {
-		if (!this._canvas || !this._ctx) return;
-		this._ctx.clearRect(0, 0, this._canvas.width, this._canvas.height);
+		if (!this._canvasElement || !this._ctx) return;
+		this._ctx.clearRect(0, 0, this._canvasElement.width, this._canvasElement.height);
 	}
 
 	/**
@@ -111,18 +111,18 @@ export class IgeCanvas2dRenderer extends IgeBaseRenderer {
 	 */
 	removeCanvas () {
 		// Stop listening for input events
-		ige.input.destroyListeners(this._canvas);
+		ige.input.destroyListeners(this._canvasElement);
 
 		// Remove event listener
 		window.removeEventListener("resize", this._resizeEvent);
 
-		if (this._createdFrontBuffer && this._canvas) {
+		if (this._createdFrontBuffer && this._canvasElement) {
 			// Remove the canvas from the DOM
-			document.body.removeChild(this._canvas);
+			document.body.removeChild(this._canvasElement);
 		}
 
 		// Clear internal references
-		delete this._canvas;
+		delete this._canvasElement;
 		this._ctx = null;
 		ige.engine.headless(true);
 	}
@@ -190,9 +190,9 @@ export class IgeCanvas2dRenderer extends IgeBaseRenderer {
 			let newHeight = window.innerHeight;
 
 			// Only update canvas dimensions if it exists
-			if (this._canvas) {
+			if (this._canvasElement) {
 				// Check if we can get the position of the canvas
-				canvasBoundingRect = getElementPosition(this._canvas);
+				canvasBoundingRect = getElementPosition(this._canvasElement);
 
 				// Adjust the newWidth and newHeight by the canvas offset
 				newWidth -= canvasBoundingRect.left;
@@ -208,12 +208,12 @@ export class IgeCanvas2dRenderer extends IgeBaseRenderer {
 					newHeight--;
 				}
 
-				this._canvas.width = newWidth * this._devicePixelRatio;
-				this._canvas.height = newHeight * this._devicePixelRatio;
+				this._canvasElement.width = newWidth * this._devicePixelRatio;
+				this._canvasElement.height = newHeight * this._devicePixelRatio;
 
 				if (this._devicePixelRatio !== 1) {
-					this._canvas.style.width = newWidth + "px";
-					this._canvas.style.height = newHeight + "px";
+					this._canvasElement.style.width = newWidth + "px";
+					this._canvasElement.style.height = newHeight + "px";
 
 					// Scale the canvas context to account for the change
 					this._ctx?.scale(this._devicePixelRatio, this._devicePixelRatio);
@@ -221,15 +221,15 @@ export class IgeCanvas2dRenderer extends IgeBaseRenderer {
 			}
 
 			this._bounds2d = new IgePoint2d(newWidth, newHeight);
-		} else if (this._canvas) {
-			this._bounds2d = new IgePoint2d(this._canvas.width, this._canvas.height);
+		} else if (this._canvasElement) {
+			this._bounds2d = new IgePoint2d(this._canvasElement.width, this._canvasElement.height);
 		}
 
 		if (ige.engine._showSgTree) {
 			const sgTreeElem = document.getElementById("igeSgTree");
 
 			if (sgTreeElem) {
-				canvasBoundingRect = getElementPosition(this._canvas);
+				canvasBoundingRect = getElementPosition(this._canvasElement);
 
 				sgTreeElem.style.top = canvasBoundingRect.top + 5 + "px";
 				sgTreeElem.style.left = canvasBoundingRect.left + 5 + "px";
@@ -245,7 +245,7 @@ export class IgeCanvas2dRenderer extends IgeBaseRenderer {
 	 * if called from within a user-generated HTML event listener.
 	 */
 	toggleFullScreen = () => {
-		const elem = this._canvas as any;
+		const elem = this._canvasElement as any;
 
 		if (!elem) return;
 
