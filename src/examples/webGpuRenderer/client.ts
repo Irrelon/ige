@@ -1,6 +1,7 @@
 // @ts-ignore
 import { IgeBaseClass } from "@/engine/core/IgeBaseClass";
 import { IgeTexture } from "@/engine/core/IgeTexture";
+import { IgeWebGpuRenderer } from "@/engine/core/IgeWebGpuRenderer";
 import { ige } from "@/engine/instance";
 import type { IgeCanInit } from "@/types/IgeCanInit";
 
@@ -17,13 +18,13 @@ export class Client extends IgeBaseClass implements IgeCanInit {
 
 	async init () {
 		// Load the game textures
-		new IgeTexture("fairy", "./assets/textures/sprites/fairy.png");
+		new IgeTexture("fairy", "../../assets/textures/sprites/fairy.png");
 
 		// Wait for our textures to load before continuing
 		await ige.textures.whenLoaded();
 
 		// Create the HTML canvas
-		ige.engine.createFrontBuffer(true);
+		ige.engine.renderer(new IgeWebGpuRenderer());
 
 		// Start the engine
 		await ige.engine.start();

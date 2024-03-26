@@ -19,10 +19,11 @@
 	"scripts": {
 		"tsc-b": "tsc -b",
 		"build": "npm run build-esm && npm run build-cjs && npm run copy-static",
+		"build-watch": "sh ./scripts/build-watch.sh",
 		"build-all": "npm run build-esm && npm run build-cjs && npm run generate-docs",
-		"build-esm": "(npm run compile-esm 2>/dev/null || exit 0) && sh ./fixup-esm.sh && npm run fix-paths-esm",
-		"build-cjs": "(npm run compile-cjs 2>/dev/null || exit 0) && sh ./fixup-cjs.sh && npm run fix-paths-cjs",
-		"build-tests": "(npm run compile-tests 2>/dev/null || exit 0) && sh ./fixup-cjs.sh && npm run fix-paths-cjs",
+		"build-esm": "(npm run compile-esm 2>/dev/null || exit 0) && sh scripts/fixup-esm.sh && npm run fix-paths-esm",
+		"build-cjs": "(npm run compile-cjs 2>/dev/null || exit 0) && sh scripts/fixup-cjs.sh && npm run fix-paths-cjs",
+		"build-tests": "(npm run compile-tests 2>/dev/null || exit 0) && sh scripts/fixup-cjs.sh && npm run fix-paths-cjs",
 		"compile": "npm run compile-esm && npm run compile-cjs",
 		"compile-esm": "tsc -p tsconfig-esm.json",
 		"compile-cjs": "tsc -p tsconfig-cjs.json",
@@ -33,14 +34,14 @@
 		"build-esm-watch": "tsc -p tsconfig-esm.json --watch",
 		"build-cjs-watch": "tsc -p tsconfig-cjs.json --watch",
 		"fix-paths-watch": "npx @irrelon/fix-paths --write --watch",
-		"generate-exports": "node update-indexes.cjs",
+		"generate-exports": "node scripts/update-indexes.cjs",
 		"test": "npx jest --testMatch \"**.test.ts\"",
 		"build-test": "npm run build-tests && NODE_OPTIONS=--experimental-vm-modules npx jest --all -f --testMatch \"**/cjs/**/**.test.js\"",
 		"test-watch": "NODE_OPTIONS=--experimental-vm-modules npx jest -f \".test.js\" --watch --all",
 		"eslint-fix": "eslint --ext .ts,.tsx . --fix",
 		"scan-deps": "npx madge ./src --ts",
 		"generate-docs": "npx typedoc ./src --options typedoc.cjs",
-		"copy-static": "sh ./copy-static.sh"
+		"copy-static": "sh scripts/copy-static.sh"
 	},
 	"dependencies": {
 		"gl-matrix": "^3.4.3",
