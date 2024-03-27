@@ -18,7 +18,7 @@ export class Client extends IgeBaseClass implements IgeCanInit {
 
 	async init () {
 		// Load the game textures
-		new IgeTexture("fairy", "../../assets/textures/sprites/fairy.png");
+		new IgeTexture("fairy", "../../esm/assets/textures/sprites/fairy.png");
 
 		// Wait for our textures to load before continuing
 		await ige.textures.whenLoaded();

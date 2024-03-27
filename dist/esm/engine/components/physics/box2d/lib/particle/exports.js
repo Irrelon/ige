@@ -1,5 +1,0 @@
-export * from "./b2_voronoi_diagram.js"
-export * from "./b2_stack_queue.js"
-export * from "./b2_particle_system.js"
-export * from "./b2_particle_group.js"
-export * from "./b2_particle.js"
