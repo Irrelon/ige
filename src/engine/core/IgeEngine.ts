@@ -150,6 +150,8 @@ export class IgeEngine extends IgeEntity implements IgeIsReadyPromise {
 
 		if (isClient) {
 			this._resizeEvent();
+
+			window.addEventListener("resize", this._resizeEvent);
 		}
 	}
 
@@ -339,6 +341,8 @@ export class IgeEngine extends IgeEntity implements IgeIsReadyPromise {
 	_resizeEvent = (event?: Event) => {
 		if (isServer) return;
 		if (!this._autoSize) return;
+
+		this.renderer()?._resizeEvent(event);
 
 		const arr = this._children;
 		const newWidth = window.innerWidth;
@@ -839,7 +843,7 @@ export class IgeEngine extends IgeEntity implements IgeIsReadyPromise {
 	 * @param {Object=} options Optional object to pass to the scenegraph class graph() method.
 	 * @returns {*}
 	 */
-	async addGraph (className: string | typeof IgeSceneGraph, options?: any) {
+	async addGraph (className: string | typeof IgeSceneGraph, options?: any): Promise<this> {
 		if (className !== undefined) {
 			const classObj = this.getClass(className);
 
@@ -1727,6 +1731,7 @@ export class IgeEngine extends IgeEntity implements IgeIsReadyPromise {
 		// Remove the front buffer (canvas) if we created it
 		if (isClient) {
 			this._renderer?.destroy();
+			window.removeEventListener("resize", this._resizeEvent);
 		}
 
 		super.destroy();

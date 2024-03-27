@@ -87,7 +87,6 @@ export class IgeCanvas2dRenderer extends IgeBaseRenderer {
 		this.log(`Device pixel ratio is ${this._devicePixelRatio}`);
 		this._autoSize = autoSize;
 
-		window.addEventListener("resize", this._resizeEvent);
 		this._resizeEvent();
 
 		this._canvasContext = this._canvasElement.getContext("2d") as CanvasRenderingContext2D;
@@ -95,14 +94,6 @@ export class IgeCanvas2dRenderer extends IgeBaseRenderer {
 
 		// Ask the input component to set up any listeners it has
 		ige.input.setupListeners(this._canvasElement);
-	}
-
-	_addEventListeners () {
-		window.addEventListener("resize", this._resizeEvent);
-	}
-
-	_removeEventListeners () {
-		window.removeEventListener("resize", this._resizeEvent);
 	}
 
 	/**
@@ -188,8 +179,6 @@ export class IgeCanvas2dRenderer extends IgeBaseRenderer {
 	 * @private
 	 */
 	_resizeEvent = (event?: Event) => {
-		ige.engine._resizeEvent(event);
-
 		let canvasBoundingRect: DOMRect | { top: number; left: number; };
 
 		if (this._autoSize) {
