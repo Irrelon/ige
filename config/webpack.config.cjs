@@ -11,7 +11,7 @@ const plugins = [new CircularDependencyPlugin({
 	//include: /src/,
 	// add errors to webpack instead of warnings
 	failOnError: true,
-	// allow import cycles that include an asyncronous import,
+	// allow import cycles that include an asynchronous import,
 	// e.g. via import(/* webpackMode: "weak" */ './file.js')
 	allowAsyncCycles: true,
 	// set the current working directory for displaying module paths
@@ -19,15 +19,16 @@ const plugins = [new CircularDependencyPlugin({
 })];
 
 // Path to the folder containing all your projects
-const projectsPath = path.resolve(basePath, "examples");
+const projectsPath = path.resolve(basePath, "src/examples");
 
 // Get a list of all sub-folders (projects) in the main folder
 const projects = fs.readdirSync(projectsPath).filter(item => fs.statSync(path.join(projectsPath, item)).isDirectory());
 const configArr = projects.map(project => ({
 	mode: "development",
+	target: "web",
 	// Entry point: dynamically set based on project folder
 	entry: {
-		index: path.resolve(projectsPath, project, "index.js")
+		index: path.resolve(projectsPath, project, "index.ts")
 	},
 	plugins: [],
 	optimization: {
@@ -92,7 +93,7 @@ const configArr = projects.map(project => ({
 	},
 	output: {
 		// Output directory: each project will have its own output folder
-		path: path.resolve(basePath, "dist/examples", project),
+		path: path.resolve(basePath, "dist/esm/examples", project),
 		filename: "[name].bundle.js"
 	}
 	// Add your loaders, plugins, and other configuration here

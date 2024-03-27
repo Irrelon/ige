@@ -8,19 +8,14 @@ import { getElementPosition } from "@/engine/utils/general";
 import type { IgeCanvasRenderingContext2d } from "@/types/IgeCanvasRenderingContext2d";
 
 export class IgeCanvas2dRenderer extends IgeBaseRenderer {
-	protected _ctx?: IgeCanvasRenderingContext2d | null;
-	protected _createdFrontBuffer: boolean = false;
-	protected _pixelRatioScaling: boolean = true;
-	protected _devicePixelRatio: number = 1;
-	protected _autoSize: boolean = true;
-	protected _resized: boolean = false;
+	classId = "IgeCanvas2dRenderer";
+	protected _canvasContext?: IgeCanvasRenderingContext2d | null;
 
 	async _setup (): Promise<void> {
 		await super._setup();
 		this.createFrontBuffer();
 
 		if (!this._canvasElement) return;
-		this._ctx = this._canvasElement.getContext("2d");
 		this.isReady(true);
 	}
 
@@ -47,7 +42,16 @@ export class IgeCanvas2dRenderer extends IgeBaseRenderer {
 
 		this._createdFrontBuffer = true;
 		this._pixelRatioScaling = !dontScale;
-		this._frontBufferSetup(autoSize, dontScale);
+
+		// Create a new canvas element to use as the
+		// rendering front-buffer
+		const tempCanvas = document.createElement("canvas");
+
+		// Set the canvas element id
+		tempCanvas.id = "igeFrontBuffer";
+
+		this.canvasElement(tempCanvas, autoSize);
+		document.body.appendChild(tempCanvas);
 	}
 
 	/**
@@ -56,23 +60,18 @@ export class IgeCanvas2dRenderer extends IgeBaseRenderer {
 	 * @param autoSize If set to true, the engine will automatically size
 	 * the canvas to the width and height of the window upon window resize.
 	 */
-	canvas (elem?: HTMLCanvasElement, autoSize: boolean = true) {
-		if (isServer) return this;
+	canvasElement (elem?: HTMLCanvasElement, autoSize: boolean = true): HTMLCanvasElement | undefined {
+		if (isServer) return;
 
 		if (elem === undefined) {
 			// Return current value
 			return this._canvasElement;
 		}
 
-		if (this._canvasElement) {
-			// We already have a canvas
-			return this;
-		}
-
 		this._canvasElement = elem;
-		this._ctx = this._canvasElement.getContext("2d") as CanvasRenderingContext2D;
+		this._canvasContext = this._canvasElement.getContext("2d") as CanvasRenderingContext2D;
 
-		if (!this._ctx) {
+		if (!this._canvasContext) {
 			throw new Error("Could not get canvas context!");
 		}
 
@@ -91,19 +90,27 @@ export class IgeCanvas2dRenderer extends IgeBaseRenderer {
 		window.addEventListener("resize", this._resizeEvent);
 		this._resizeEvent();
 
-		this._ctx = this._canvasElement.getContext("2d") as CanvasRenderingContext2D;
+		this._canvasContext = this._canvasElement.getContext("2d") as CanvasRenderingContext2D;
 		ige.engine.headless(false);
 
 		// Ask the input component to set up any listeners it has
 		ige.input.setupListeners(this._canvasElement);
 	}
 
+	_addEventListeners () {
+		window.addEventListener("resize", this._resizeEvent);
+	}
+
+	_removeEventListeners () {
+		window.removeEventListener("resize", this._resizeEvent);
+	}
+
 	/**
 	 * Clears the entire canvas.
 	 */
 	clearCanvas () {
-		if (!this._canvasElement || !this._ctx) return;
-		this._ctx.clearRect(0, 0, this._canvasElement.width, this._canvasElement.height);
+		if (!this._canvasElement || !this._canvasContext) return;
+		this._canvasContext.clearRect(0, 0, this._canvasElement.width, this._canvasElement.height);
 	}
 
 	/**
@@ -123,12 +130,12 @@ export class IgeCanvas2dRenderer extends IgeBaseRenderer {
 
 		// Clear internal references
 		delete this._canvasElement;
-		this._ctx = null;
+		this._canvasContext = null;
 		ige.engine.headless(true);
 	}
 
 	_renderSceneGraph (engine: IgeEngine, viewports: IgeViewport[]): boolean {
-		const ctx = this._ctx;
+		const ctx = this._canvasContext;
 		if (!ctx) return false;
 
 		ctx.save();
@@ -211,13 +218,7 @@ export class IgeCanvas2dRenderer extends IgeBaseRenderer {
 				this._canvasElement.width = newWidth * this._devicePixelRatio;
 				this._canvasElement.height = newHeight * this._devicePixelRatio;
 
-				if (this._devicePixelRatio !== 1) {
-					this._canvasElement.style.width = newWidth + "px";
-					this._canvasElement.style.height = newHeight + "px";
-
-					// Scale the canvas context to account for the change
-					this._ctx?.scale(this._devicePixelRatio, this._devicePixelRatio);
-				}
+				this._updateDevicePixelRatio();
 			}
 
 			this._bounds2d = new IgePoint2d(newWidth, newHeight);
@@ -240,6 +241,13 @@ export class IgeCanvas2dRenderer extends IgeBaseRenderer {
 		this._resized = true;
 	};
 
+	_updateDevicePixelRatio () {
+		super._updateDevicePixelRatio();
+
+		// Scale the canvas context to account for the change
+		this._canvasContext?.scale(this._devicePixelRatio, this._devicePixelRatio);
+	}
+
 	/**
 	 * Toggles full-screen output of the main ige canvas. Only works
 	 * if called from within a user-generated HTML event listener.
@@ -261,20 +269,9 @@ export class IgeCanvas2dRenderer extends IgeBaseRenderer {
 	destroy () {
 		super.destroy();
 
+
 		if (isClient) {
 			this.removeCanvas();
 		}
-	}
-
-	private _frontBufferSetup (autoSize: boolean, dontScale: boolean) {
-		// Create a new canvas element to use as the
-		// rendering front-buffer
-		const tempCanvas = document.createElement("canvas");
-
-		// Set the canvas element id
-		tempCanvas.id = "igeFrontBuffer";
-
-		this.canvas(tempCanvas, autoSize);
-		document.body.appendChild(tempCanvas);
 	}
 }

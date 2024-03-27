@@ -97,7 +97,7 @@ export class Ige implements IgeIsReadyPromise {
 			case "engine":
 				this.dependencies.add(
 					"engine",
-					import("./IgeEngine.js").then(({ IgeEngine: Module }) => {
+					import("./IgeEngine").then(({ IgeEngine: Module }) => {
 						this.engine = new Module();
 					})
 				);
@@ -106,7 +106,7 @@ export class Ige implements IgeIsReadyPromise {
 				if (isClient) {
 					this.dependencies.add(
 						"network",
-						import("../network/client/IgeNetIoClientController.js").then(({ IgeNetIoClientController: Module }) => {
+						import("../network/client/IgeNetIoClientController").then(({ IgeNetIoClientController: Module }) => {
 							this.network = new Module();
 						})
 					);
@@ -115,7 +115,7 @@ export class Ige implements IgeIsReadyPromise {
 				if (isServer) {
 					this.dependencies.add(
 						"network",
-						import("../network/server/IgeNetIoServerController.js").then(({ IgeNetIoServerController: Module }) => {
+						import("../network/server/IgeNetIoServerController").then(({ IgeNetIoServerController: Module }) => {
 							this.network = new Module();
 						})
 					);
@@ -126,7 +126,7 @@ export class Ige implements IgeIsReadyPromise {
 				if (isClient && !isWorker) {
 					this.dependencies.add(
 						"audio",
-						import("@/engine/components/audio/IgeAudioController.js").then(({ IgeAudioController: Module }) => {
+						import("@/engine/components/audio/IgeAudioController").then(({ IgeAudioController: Module }) => {
 							this.audio = new Module();
 							this.dependencies.add("audio", this.audio.isReady());
 						})
@@ -139,7 +139,7 @@ export class Ige implements IgeIsReadyPromise {
 			case "box2d":
 				this.dependencies.add(
 					"box2d",
-					import("../components/physics/box2d/IgeBox2dController.js").then(({ IgeBox2dController: Module }) => {
+					import("../components/physics/box2d/IgeBox2dController").then(({ IgeBox2dController: Module }) => {
 						this.box2d = new Module();
 					})
 				);
@@ -148,7 +148,7 @@ export class Ige implements IgeIsReadyPromise {
 			case "tweening":
 				this.dependencies.add(
 					"tweening",
-					import("./IgeTweenController.js").then(({ IgeTweenController: Module }) => {
+					import("./IgeTweenController").then(({ IgeTweenController: Module }) => {
 						this.tween = new Module();
 						this.dependencies.add("tween", this.tween.isReady());
 					})
@@ -158,7 +158,7 @@ export class Ige implements IgeIsReadyPromise {
 			case "ui":
 				this.dependencies.add(
 					"ui",
-					import("./IgeUiManagerController.js").then(({ IgeUiManagerController: Module }) => {
+					import("./IgeUiManagerController").then(({ IgeUiManagerController: Module }) => {
 						this.ui = new Module();
 						this.dependencies.add("ui", this.ui.isReady());
 					})

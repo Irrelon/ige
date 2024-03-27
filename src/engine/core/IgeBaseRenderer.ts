@@ -6,10 +6,16 @@ import { ige } from "@/engine/instance";
 import { isServer } from "@/engine/utils/clientServer";
 
 export class IgeBaseRenderer extends IgeEventingClass {
+	classId = "IgeBaseRenderer";
 	protected _canvasElement?: HTMLCanvasElement;
 	protected _hasRunSetup: boolean = false;
 	protected _isReady: boolean = false;
 	protected _bounds2d: IgePoint2d = new IgePoint2d(800, 600);
+	protected _createdFrontBuffer: boolean = false;
+	protected _pixelRatioScaling: boolean = true;
+	protected _devicePixelRatio: number = 1;
+	protected _autoSize: boolean = true;
+	protected _resized: boolean = false;
 
 	constructor () {
 		super();
@@ -22,10 +28,15 @@ export class IgeBaseRenderer extends IgeEventingClass {
 
 		// Check if we've already run setup before
 		if (this._hasRunSetup) return;
+
+		// Now call the _setup() method which gets called
+		// on the extending class, so we can control the order
+		// that code executes rather than the extending class
+		// overriding the setup() method
 		await this._setup();
 
 		ige.engine.headless(false);
-		this._isReady = true;
+		this.isReady(true);
 
 		this.log("Setup executed");
 	}
@@ -50,14 +61,23 @@ export class IgeBaseRenderer extends IgeEventingClass {
 	}
 
 	destroy () {
+		this._removeEventListeners();
 	}
 
-	canvasElement () {
+	canvasElement (elem?: HTMLCanvasElement, autoSize: boolean = true): HTMLCanvasElement | undefined {
 		return this._canvasElement;
 	}
 
 	_resizeEvent = (event?: Event) => {
 	};
+
+	_addEventListeners () {
+		//window.addEventListener("resize", this._resizeEvent);
+	}
+
+	_removeEventListeners () {
+		//window.removeEventListener("resize", this._resizeEvent);
+	}
 
 	renderSceneGraph (engine: IgeEngine, viewports: IgeViewport[]): boolean {
 		return this._renderSceneGraph(engine, viewports);
@@ -73,5 +93,25 @@ export class IgeBaseRenderer extends IgeEventingClass {
 
 	_renderSceneGraph (engine: IgeEngine, viewports: IgeViewport[]): boolean {
 		return false;
+	}
+
+	_updateDevicePixelRatio () {
+		if (!this._canvasElement) return;
+
+		if (ige.engine._pixelRatioScaling) {
+			// Support high-definition devices and "retina" displays by adjusting
+			// for device and back store pixels ratios
+			this._devicePixelRatio = window.devicePixelRatio || 1;
+		} else {
+			// No auto-scaling
+			this._devicePixelRatio = 1;
+		}
+
+		if (this._devicePixelRatio !== 1) {
+			this._canvasElement.style.width = this._bounds2d.x + "px";
+			this._canvasElement.style.height = this._bounds2d.y + "px";
+		}
+
+		//this.log(`Device pixel ratio is ${this._devicePixelRatio}`);
 	}
 }

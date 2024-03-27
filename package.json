@@ -18,10 +18,11 @@
 	"types": "dist/cjs/index.d.ts",
 	"scripts": {
 		"tsc-b": "tsc -b",
-		"build": "npm run build-esm && npm run build-cjs && npm run copy-static",
+		"build": "npm run build-esm && npm run build-cjs && npm run copy-static && npm run build-examples",
 		"build-watch": "sh ./scripts/build-watch.sh",
 		"build-examples": "webpack --config ./config/webpack.config.cjs",
-		"build-all": "npm run build-esm && npm run build-cjs && npm run generate-docs",
+		"build-examples-watch": "webpack --config ./config/webpack.config.cjs --watch",
+		"build-all": "npm run build && npm run generate-docs",
 		"build-esm": "(npm run compile-esm 2>/dev/null || exit 0) && sh scripts/fixup-esm.sh && npm run fix-paths-esm",
 		"build-cjs": "(npm run compile-cjs 2>/dev/null || exit 0) && sh scripts/fixup-cjs.sh && npm run fix-paths-cjs",
 		"build-tests": "(npm run compile-tests 2>/dev/null || exit 0) && sh scripts/fixup-cjs.sh && npm run fix-paths-cjs",
@@ -49,6 +50,7 @@
 		"websocket": "^1.0.34"
 	},
 	"devDependencies": {
+		"ts-loader": "^9.5.1",
 		"webpack": "^5.89.0",
 		"webpack-cli": "^5.1.4",
 		"tsconfig-paths-webpack-plugin": "^4.1.0",

@@ -8,11 +8,12 @@ export class Game {
 		ige.init();
 		ige.isReady().then(() => {
 			if (isClient) {
-				// @ts-ignore
-				import("./client.js").then(({ Client: App }) => {
+				import("./client").then(({ Client: App }) => {
 					ige.client = new App();
 				});
 			}
 		});
 	}
 }
+
+new Game();

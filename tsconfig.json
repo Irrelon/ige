@@ -23,7 +23,7 @@
 		"isolatedModules": true,
 		"jsx": "react-jsx",
 		"jsxImportSource": "ige-jsx",
-		"declaration": true,
+		"declaration": false,
 		"noImplicitAny": false,
 		"composite": false,
 		"verbatimModuleSyntax": false,
@@ -50,6 +50,10 @@
 		"src/**/*.old*",
 		"other/*",
 		"other/**",
-		"other/**/*"
+		"other/**/*",
+		"dist",
+		"dist/*",
+		"dist/**",
+		"dist/**/*"
 	]
 }

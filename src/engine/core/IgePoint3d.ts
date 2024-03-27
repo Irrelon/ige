@@ -2,7 +2,7 @@ import type { IgeTween, IgeTweenOptions, IgeTweenPropertyObject } from "@/engine
 
 let IgeTweenModule: typeof IgeTween;
 
-import("./IgeTween.js").then((module) => {
+import("./IgeTween").then((module) => {
 	IgeTweenModule = module.IgeTween;
 }).catch(() => {
 	class IgeTweenFake {

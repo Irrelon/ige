@@ -5,10 +5,12 @@ import type { IgeViewport } from "@/engine/core/IgeViewport";
 import { ige } from "@/engine/instance";
 import { getPipeline } from "@/engine/shaders/2d";
 import { bufferRangeData, getMultipleOf, packArraysByFormat } from "@/engine/utils/buffers";
+import { isClient, isServer } from "@/engine/utils/clientServer";
 import type { IgeCanvasRenderingContext3d } from "@/types/IgeCanvasRenderingContext3d";
 import { mat4 } from "gl-matrix";
 
 export class IgeWebGpuRenderer extends IgeBaseRenderer {
+	classId = "IgeWebGpuRenderer";
 	_canvasContext?: IgeCanvasRenderingContext3d;
 	_adapter: GPUAdapter | null = null;
 	_device: GPUDevice | null = null;
@@ -31,6 +33,69 @@ export class IgeWebGpuRenderer extends IgeBaseRenderer {
 		if (!navigator.gpu) {
 			this.logError("Cannot use WebGPU renderer because `navigator.gpu` did not return a value");
 		}
+	}
+
+	/**
+	 * Creates a front-buffer or "drawing surface" for the renderer.
+	 *
+	 * @param {Boolean} autoSize Determines if the canvas will auto-resize
+	 * when the browser window changes dimensions. If true the canvas will
+	 * automatically fill the window when it is resized.
+	 *
+	 * @param {Boolean=} dontScale If set to true, IGE will ignore device
+	 * pixel ratios when setting the width and height of the canvas and will
+	 * therefore not take into account "retina", high-definition displays or
+	 * those whose pixel ratio is different from 1 to 1.
+	 */
+	createFrontBuffer (autoSize: boolean = true, dontScale: boolean = false): void {
+		if (!isClient) {
+			return;
+		}
+
+		if (this._canvasElement) {
+			return;
+		}
+
+		this._createdFrontBuffer = true;
+		this._pixelRatioScaling = !dontScale;
+
+		// Create a new canvas element to use as the
+		// rendering front-buffer
+		const tempCanvas = document.createElement("canvas");
+
+		this.canvasElement(tempCanvas, autoSize);
+		document.body.appendChild(tempCanvas);
+	}
+
+	/**
+	 * Gets / sets the canvas element that will be used as the front-buffer.
+	 * @param elem The canvas element.
+	 * @param autoSize If set to true, the engine will automatically size
+	 * the canvas to the width and height of the window upon window resize.
+	 */
+	canvasElement (elem?: HTMLCanvasElement, autoSize: boolean = true): HTMLCanvasElement | undefined {
+		if (isServer) return;
+
+		if (elem === undefined) {
+			// Return current value
+			return this._canvasElement;
+		}
+
+		this._canvasElement = elem;
+		this._canvasElement.className = "igeRendererOutput";
+
+		this._updateDevicePixelRatio();
+
+		this.log(`Device pixel ratio is ${this._devicePixelRatio}`);
+		this._autoSize = autoSize;
+
+		window.addEventListener("resize", this._resizeEvent);
+		this._resizeEvent();
+
+		ige.engine.headless(false);
+
+		// Ask the input component to set up any listeners it has
+		ige.input.setupListeners(this._canvasElement);
 	}
 
 	_createRectVertexBuffer (device: GPUDevice, size = 32) {
@@ -88,6 +153,7 @@ export class IgeWebGpuRenderer extends IgeBaseRenderer {
 	}
 
 	async _getAdaptor () {
+		if (this._adapter) throw new Error("Already have an adapter");
 		this._adapter = await navigator.gpu.requestAdapter();
 
 		if (!this._adapter) {
@@ -96,6 +162,7 @@ export class IgeWebGpuRenderer extends IgeBaseRenderer {
 	}
 
 	async _getDevice () {
+		if (this._device) throw new Error("Already have a device");
 		if (!this._adapter) {
 			this.logError("Cannot get device because no adaptor is present");
 			return;
@@ -115,6 +182,7 @@ export class IgeWebGpuRenderer extends IgeBaseRenderer {
 	}
 
 	_getContext () {
+		if (this._canvasContext) throw new Error("Already have a context");
 		if (!this._canvasElement) {
 			throw new Error("No canvas element was found when trying to get context");
 		}
@@ -229,6 +297,13 @@ export class IgeWebGpuRenderer extends IgeBaseRenderer {
 
 	async _setup (): Promise<void> {
 		await super._setup();
+		this.createFrontBuffer();
+		await this._getAdaptor();
+		await this._getDevice();
+		this._updateDevicePixelRatio();
+		this._getContext();
+		this._addEventListeners();
+		this._resizeEvent();
 
 		if (!this._device) return;
 		if (!this._textureFormat) return;
@@ -330,6 +405,8 @@ export class IgeWebGpuRenderer extends IgeBaseRenderer {
 				}
 			]
 		});
+
+		this.isReady(true);
 	}
 
 	_webgpuRender (arr: IgeObject[]) {
