@@ -26,8 +26,6 @@ export declare class IgeCanvas2dRenderer extends IgeBaseRenderer {
      * the canvas to the width and height of the window upon window resize.
      */
     canvasElement(elem?: HTMLCanvasElement, autoSize?: boolean): HTMLCanvasElement | undefined;
-    _addEventListeners(): void;
-    _removeEventListeners(): void;
     /**
      * Clears the entire canvas.
      */

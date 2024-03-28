@@ -126,6 +126,7 @@ export class IgeEngine extends IgeEntity {
         this._secondTimer = setInterval(this._secondTick, 1000);
         if (isClient) {
             this._resizeEvent();
+            window.addEventListener("resize", this._resizeEvent);
         }
     }
     isReady() {
@@ -264,6 +265,7 @@ export class IgeEngine extends IgeEntity {
             return;
         if (!this._autoSize)
             return;
+        this.renderer()?._resizeEvent(event);
         const arr = this._children;
         const newWidth = window.innerWidth;
         const newHeight = window.innerHeight;
@@ -1421,6 +1423,7 @@ export class IgeEngine extends IgeEntity {
         // Remove the front buffer (canvas) if we created it
         if (isClient) {
             this._renderer?.destroy();
+            window.removeEventListener("resize", this._resizeEvent);
         }
         super.destroy();
         this.log("Engine destroy complete.");

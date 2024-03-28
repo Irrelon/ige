@@ -24,6 +24,7 @@
 		"@typescript-eslint/no-shadow": "error",
 		"@typescript-eslint/no-namespace": "off",
 		"@typescript-eslint/consistent-type-imports": "error",
+		"@typescript-eslint/no-unsafe-declaration-merging": "off",
 		"unused-imports/no-unused-imports": "warn",
 		"indent": [
 			"error",

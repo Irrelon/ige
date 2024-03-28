@@ -60,27 +60,6 @@ export class IgeAudioControl extends IgeEventingClass implements IgeCanId {
 		this._bufferNode.connect(this._gainNode);
 	}
 
-	// @ts-ignore
-	abstract isPersistent (val?: boolean): boolean | this;
-
-	// @ts-ignore
-	abstract isPlaying (val?: boolean): boolean | this;
-
-	// @ts-ignore
-	abstract shouldPlayWhenReady (val?: boolean): boolean | this;
-
-	// @ts-ignore
-	abstract relativeTo (val?: IgeEntity | string): IgeEntity | string | this | undefined;
-
-	// @ts-ignore
-	abstract onEnded (val?: () => void): () => void | this | undefined;
-
-	// @ts-ignore
-	abstract pannerSettings (val?: PannerOptions): PannerOptions | this | undefined;
-
-	// @ts-ignore
-	abstract position (val?: IgePoint3d): IgePoint3d | this | undefined;
-
 	volume (val?: number): number | this {
 		if (val === undefined) {
 			return this._gainNode.gain.value;
@@ -232,6 +211,22 @@ export class IgeAudioControl extends IgeEventingClass implements IgeCanId {
 		ige.audio.removeAudioControl(this._id);
 		return this;
 	}
+}
+
+export interface IgeAudioControl {
+	isPersistent (val?: boolean): boolean | this;
+
+	isPlaying (val?: boolean): boolean | this;
+
+	shouldPlayWhenReady (val?: boolean): boolean | this;
+
+	relativeTo (val?: IgeEntity | string): IgeEntity | string | this | undefined;
+
+	onEnded (val?: () => void): () => void | this | undefined;
+
+	pannerSettings (val?: PannerOptions): PannerOptions | this | undefined;
+
+	position (val?: IgePoint3d): IgePoint3d | this | undefined;
 }
 
 synthesize(IgeAudioControl, "isPersistent");

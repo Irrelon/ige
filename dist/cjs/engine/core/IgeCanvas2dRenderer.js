@@ -25,7 +25,6 @@ class IgeCanvas2dRenderer extends IgeBaseRenderer_1.IgeBaseRenderer {
          * @private
          */
         this._resizeEvent = (event) => {
-            instance_1.ige.engine._resizeEvent(event);
             let canvasBoundingRect;
             if (this._autoSize) {
                 let newWidth = window.innerWidth;
@@ -155,18 +154,11 @@ class IgeCanvas2dRenderer extends IgeBaseRenderer_1.IgeBaseRenderer {
         }
         this.log(`Device pixel ratio is ${this._devicePixelRatio}`);
         this._autoSize = autoSize;
-        window.addEventListener("resize", this._resizeEvent);
         this._resizeEvent();
         this._canvasContext = this._canvasElement.getContext("2d");
         instance_1.ige.engine.headless(false);
         // Ask the input component to set up any listeners it has
         instance_1.ige.input.setupListeners(this._canvasElement);
-    }
-    _addEventListeners() {
-        window.addEventListener("resize", this._resizeEvent);
-    }
-    _removeEventListeners() {
-        window.removeEventListener("resize", this._resizeEvent);
     }
     /**
      * Clears the entire canvas.

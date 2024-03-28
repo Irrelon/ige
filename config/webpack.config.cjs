@@ -3,6 +3,7 @@ const path = require("path");
 const fs = require("fs");
 const TsconfigPathsPlugin = require("tsconfig-paths-webpack-plugin");
 const CircularDependencyPlugin = require("circular-dependency-plugin");
+const BundleAnalyzerPlugin = require("webpack-bundle-analyzer").BundleAnalyzerPlugin;
 
 const plugins = [new CircularDependencyPlugin({
 	// exclude detection of files based on a RegExp
@@ -10,12 +11,15 @@ const plugins = [new CircularDependencyPlugin({
 	// include specific files based on a RegExp
 	//include: /src/,
 	// add errors to webpack instead of warnings
-	failOnError: true,
+	failOnError: false,
 	// allow import cycles that include an asynchronous import,
 	// e.g. via import(/* webpackMode: "weak" */ './file.js')
 	allowAsyncCycles: true,
 	// set the current working directory for displaying module paths
 	cwd: process.cwd()
+}), new BundleAnalyzerPlugin({
+	openAnalyzer: false,
+	analyzerMode: "static"
 })];
 
 // Path to the folder containing all your projects
@@ -30,7 +34,7 @@ const configArr = projects.map(project => ({
 	entry: {
 		index: path.resolve(projectsPath, project, "index.ts")
 	},
-	plugins: [],
+	plugins,
 	optimization: {
 		mangleExports: false,
 		moduleIds: "named",

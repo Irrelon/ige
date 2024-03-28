@@ -1,5 +1,5 @@
 let IgeTweenModule;
-import("./IgeTween").then((module) => {
+import("./IgeTween.js").then((module) => {
     IgeTweenModule = module.IgeTween;
 }).catch(() => {
     class IgeTweenFake {

@@ -203,7 +203,6 @@ export * from "../engine/core/IgeTimeController";
 export * from "../engine/core/IgeTileMap2d";
 export * from "../engine/core/IgeTextureStore";
 export * from "../engine/core/IgeTextureMap";
-export * from "../engine/core/IgeTextureAtlas";
 export * from "../engine/core/IgeTexture";
 export * from "../engine/core/IgeSpriteSheet";
 export * from "../engine/core/IgeScene2d";

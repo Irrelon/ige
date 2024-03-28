@@ -25,7 +25,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.IgePoint3d = void 0;
 let IgeTweenModule;
-Promise.resolve().then(() => __importStar(require("./IgeTween"))).then((module) => {
+Promise.resolve().then(() => __importStar(require("./IgeTween.js"))).then((module) => {
     IgeTweenModule = module.IgeTween;
 }).catch(() => {
     class IgeTweenFake {

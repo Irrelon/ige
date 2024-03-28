@@ -122,49 +122,6 @@ export class IgeAudioEntity extends IgeEntity {
 	}
 
 	/**
-	 * Gets the playing state.
-	 * @returns {boolean} True if playing, false if not.
-	 */
-	isPlaying (): boolean;
-	isPlaying (val: boolean): this;
-	// @ts-ignore
-	abstract isPlaying (val?: boolean): this | boolean;
-
-	playOnMount (): boolean;
-	playOnMount (val: boolean): this;
-	// @ts-ignore
-	abstract playOnMount (val?: boolean): boolean | this;
-
-	pannerSettings (): PannerOptions;
-	pannerSettings (val: PannerOptions): this;
-	// @ts-ignore
-	abstract pannerSettings (val?: PannerOptions): PannerOptions | this;
-
-	/**
-	 * Gets / sets the id of the audio stream to use for playback.
-	 * @param {string} [id] The audio id. Must match
-	 * a previously registered audio stream that was
-	 * registered via `ige.engine.audio.register()`.
-	 * The audio component must be active in the engine to
-	 * use this service via `ige.uses("audio");`.
-	 * @returns {*}
-	 */
-	audioSourceId (): string | undefined;
-	audioSourceId (val: string): this;
-	// @ts-ignore
-	abstract audioSourceId (val?: string): string | this | undefined;
-
-	volume (): number;
-	volume (val: number): this;
-	// @ts-ignore
-	abstract volume (val?: number): this | number;
-
-	loop (): boolean;
-	loop (val: boolean): this;
-	// @ts-ignore
-	abstract loop (val?: boolean): this | boolean;
-
-	/**
 	 * Starts playback of the audio.
 	 * @returns {IgeAudioEntity}
 	 */
@@ -237,6 +194,57 @@ export class IgeAudioEntity extends IgeEntity {
 		void this.stop();
 		super._unMounted(obj);
 	}
+}
+
+export interface IgeAudioEntity {
+	/**
+	 * Gets the playing state.
+	 * @returns {boolean} True if playing, false if not.
+	 */
+	isPlaying (): boolean;
+
+	isPlaying (val: boolean): this;
+
+	isPlaying (val?: boolean): this | boolean;
+
+	playOnMount (): boolean;
+
+	playOnMount (val: boolean): this;
+
+	playOnMount (val?: boolean): boolean | this;
+
+	pannerSettings (): PannerOptions;
+
+	pannerSettings (val: PannerOptions): this;
+
+	pannerSettings (val?: PannerOptions): PannerOptions | this;
+
+	/**
+	 * Gets / sets the id of the audio stream to use for playback.
+	 * @param {string} [id] The audio id. Must match
+	 * a previously registered audio stream that was
+	 * registered via `ige.engine.audio.register()`.
+	 * The audio component must be active in the engine to
+	 * use this service via `ige.uses("audio");`.
+	 * @returns {*}
+	 */
+	audioSourceId (): string | undefined;
+
+	audioSourceId (val: string): this;
+
+	audioSourceId (val?: string): string | this | undefined;
+
+	volume (): number;
+
+	volume (val: number): this;
+
+	volume (val?: number): this | number;
+
+	loop (): boolean;
+
+	loop (val: boolean): this;
+
+	loop (val?: boolean): this | boolean;
 }
 
 synthesize(IgeAudioEntity, "playOnMount", true);

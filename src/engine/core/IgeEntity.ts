@@ -41,7 +41,6 @@ export interface IgeEntityTransformAccessor {
 export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRegisterByCategory {
 	classId = "IgeEntity";
 	_renderMode: IgeEntityRenderMode = IgeEntityRenderMode.flat;
-	//_entity?: IgeEntity; // We comment this because any class wanting to override return values of methods can do so individually e.g. viewport.camera.width().height()
 	_parent: IgeObject | null = null;
 	_children: IgeObject[] = [];
 	_translateIso?: IgePoint3d | { x: number; y: number };

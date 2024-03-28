@@ -189,7 +189,7 @@ export class IgeWebGpuRenderer extends IgeBaseRenderer {
 		if (!this._adapter) return;
 		if (!this._device) return;
 
-		this._canvasContext = this._canvasElement.getContext("webgpu") as GPUCanvasContext;
+		this._canvasContext = this._canvasElement.getContext("webgpu") as IgeCanvasRenderingContext3d;
 
 		// If we didn't get a context, fail completely
 		if (!this._canvasContext) {

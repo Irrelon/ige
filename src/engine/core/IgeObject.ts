@@ -1,3 +1,4 @@
+import type { IgeMaterial } from "@/engine/core/IgeMaterial";
 import { ige } from "@/engine/instance";
 import type { IgeComponent } from "@/engine/core/IgeComponent";
 import { IgeDummyCanvas } from "@/engine/core/IgeDummyCanvas";
@@ -10,12 +11,14 @@ import { IgeBounds } from "@/engine/core/IgeBounds";
 import type { IgeTexture } from "@/engine/core/IgeTexture";
 import type { IgeTileMap2d } from "@/engine/core/IgeTileMap2d";
 import type { IgeViewport } from "@/engine/core/IgeViewport";
+import { IgeQuad } from "@/engine/models/IgeQuad";
 import type { IgeNetIoClientController } from "@/engine/network/client/IgeNetIoClientController";
 import type { IgeNetIoServerController } from "@/engine/network/server/IgeNetIoServerController";
 import { arrPull } from "@/engine/utils/arrays";
 import { isClient, isServer } from "@/engine/utils/clientServer";
 import { newIdHex } from "@/engine/utils/ids";
 import { toIso } from "@/engine/utils/maths";
+import { synthesize } from "@/engine/utils/synthesize";
 import type {
 	IgeBehaviourType
 } from "@/enums";
@@ -35,6 +38,7 @@ import type { IgeDepthSortObject } from "@/types/IgeDepthSortObject";
 import type { IgeEntityBehaviourMethod } from "@/types/IgeEntityBehaviour";
 import type { IgeGenericClass } from "@/types/IgeGenericClass";
 import type { IgeInputEventHandler } from "@/types/IgeInputEventHandler";
+import type { IgeModel3d } from "@/types/IgeModel3d";
 import type { IgeStreamCreateMessageData } from "@/types/IgeNetworkStream";
 import type { IgePoint } from "@/types/IgePoint";
 import type { IgeSmartTexture } from "@/types/IgeSmartTexture";
@@ -153,6 +157,8 @@ export class IgeObject extends IgeEventingClass implements IgeCanRegisterById, I
 	_localBounds3dPolygon?: IgePoly2d;
 	_bounds3dPolygon?: IgePoly2d;
 	_localAabb?: IgeBounds;
+	_model: IgeModel3d | null = IgeQuad; // Default to a basic quad
+	_material: IgeMaterial | null = null;
 	_deathCallBack?: (...args: any[]) => void; // TODO: Rename this to _deathCallback (lower case B)
 	components: Record<string, IgeComponent<IgeObject>> = {};
 
@@ -2835,3 +2841,20 @@ export class IgeObject extends IgeEventingClass implements IgeCanRegisterById, I
 		return this;
 	}
 }
+
+export interface IgeObject {
+	model (): IgeModel3d | null;
+
+	model (val: IgeModel3d): this;
+
+	model (val?: IgeModel3d): this | IgeModel3d | null;
+
+	material (): IgeMaterial | null;
+
+	material (val: IgeMaterial): this;
+
+	material (val?: IgeMaterial): this | IgeMaterial | null;
+}
+
+synthesize(IgeObject, "model");
+synthesize(IgeObject, "material");

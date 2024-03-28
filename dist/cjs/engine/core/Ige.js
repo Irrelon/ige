@@ -113,18 +113,18 @@ class Ige {
                 this.dependencies.add("time", this.time.isReady());
                 break;
             case "engine":
-                this.dependencies.add("engine", Promise.resolve().then(() => __importStar(require("./IgeEngine"))).then(({ IgeEngine: Module }) => {
+                this.dependencies.add("engine", Promise.resolve().then(() => __importStar(require("./IgeEngine.js"))).then(({ IgeEngine: Module }) => {
                     this.engine = new Module();
                 }));
                 break;
             case "network":
                 if (clientServer_1.isClient) {
-                    this.dependencies.add("network", Promise.resolve().then(() => __importStar(require("../network/client/IgeNetIoClientController"))).then(({ IgeNetIoClientController: Module }) => {
+                    this.dependencies.add("network", Promise.resolve().then(() => __importStar(require("../network/client/IgeNetIoClientController.js"))).then(({ IgeNetIoClientController: Module }) => {
                         this.network = new Module();
                     }));
                 }
                 if (clientServer_1.isServer) {
-                    this.dependencies.add("network", Promise.resolve().then(() => __importStar(require("../network/server/IgeNetIoServerController"))).then(({ IgeNetIoServerController: Module }) => {
+                    this.dependencies.add("network", Promise.resolve().then(() => __importStar(require("../network/server/IgeNetIoServerController.js"))).then(({ IgeNetIoServerController: Module }) => {
                         this.network = new Module();
                     }));
                 }
@@ -141,18 +141,18 @@ class Ige {
                 }
                 break;
             case "box2d":
-                this.dependencies.add("box2d", Promise.resolve().then(() => __importStar(require("../components/physics/box2d/IgeBox2dController"))).then(({ IgeBox2dController: Module }) => {
+                this.dependencies.add("box2d", Promise.resolve().then(() => __importStar(require("../components/physics/box2d/IgeBox2dController.js"))).then(({ IgeBox2dController: Module }) => {
                     this.box2d = new Module();
                 }));
                 break;
             case "tweening":
-                this.dependencies.add("tweening", Promise.resolve().then(() => __importStar(require("./IgeTweenController"))).then(({ IgeTweenController: Module }) => {
+                this.dependencies.add("tweening", Promise.resolve().then(() => __importStar(require("./IgeTweenController.js"))).then(({ IgeTweenController: Module }) => {
                     this.tween = new Module();
                     this.dependencies.add("tween", this.tween.isReady());
                 }));
                 break;
             case "ui":
-                this.dependencies.add("ui", Promise.resolve().then(() => __importStar(require("./IgeUiManagerController"))).then(({ IgeUiManagerController: Module }) => {
+                this.dependencies.add("ui", Promise.resolve().then(() => __importStar(require("./IgeUiManagerController.js"))).then(({ IgeUiManagerController: Module }) => {
                     this.ui = new Module();
                     this.dependencies.add("ui", this.ui.isReady());
                 }));

@@ -70,18 +70,18 @@ export class Ige {
                 this.dependencies.add("time", this.time.isReady());
                 break;
             case "engine":
-                this.dependencies.add("engine", import("./IgeEngine").then(({ IgeEngine: Module }) => {
+                this.dependencies.add("engine", import("./IgeEngine.js").then(({ IgeEngine: Module }) => {
                     this.engine = new Module();
                 }));
                 break;
             case "network":
                 if (isClient) {
-                    this.dependencies.add("network", import("../network/client/IgeNetIoClientController").then(({ IgeNetIoClientController: Module }) => {
+                    this.dependencies.add("network", import("../network/client/IgeNetIoClientController.js").then(({ IgeNetIoClientController: Module }) => {
                         this.network = new Module();
                     }));
                 }
                 if (isServer) {
-                    this.dependencies.add("network", import("../network/server/IgeNetIoServerController").then(({ IgeNetIoServerController: Module }) => {
+                    this.dependencies.add("network", import("../network/server/IgeNetIoServerController.js").then(({ IgeNetIoServerController: Module }) => {
                         this.network = new Module();
                     }));
                 }
@@ -98,18 +98,18 @@ export class Ige {
                 }
                 break;
             case "box2d":
-                this.dependencies.add("box2d", import("../components/physics/box2d/IgeBox2dController").then(({ IgeBox2dController: Module }) => {
+                this.dependencies.add("box2d", import("../components/physics/box2d/IgeBox2dController.js").then(({ IgeBox2dController: Module }) => {
                     this.box2d = new Module();
                 }));
                 break;
             case "tweening":
-                this.dependencies.add("tweening", import("./IgeTweenController").then(({ IgeTweenController: Module }) => {
+                this.dependencies.add("tweening", import("./IgeTweenController.js").then(({ IgeTweenController: Module }) => {
                     this.tween = new Module();
                     this.dependencies.add("tween", this.tween.isReady());
                 }));
                 break;
             case "ui":
-                this.dependencies.add("ui", import("./IgeUiManagerController").then(({ IgeUiManagerController: Module }) => {
+                this.dependencies.add("ui", import("./IgeUiManagerController.js").then(({ IgeUiManagerController: Module }) => {
                     this.ui = new Module();
                     this.dependencies.add("ui", this.ui.isReady());
                 }));
