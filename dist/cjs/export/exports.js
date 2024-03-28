@@ -209,7 +209,6 @@ __exportStar(require("../engine/core/IgeTimeController"), exports);
 __exportStar(require("../engine/core/IgeTileMap2d"), exports);
 __exportStar(require("../engine/core/IgeTextureStore"), exports);
 __exportStar(require("../engine/core/IgeTextureMap"), exports);
-__exportStar(require("../engine/core/IgeTextureAtlas"), exports);
 __exportStar(require("../engine/core/IgeTexture"), exports);
 __exportStar(require("../engine/core/IgeSpriteSheet"), exports);
 __exportStar(require("../engine/core/IgeScene2d"), exports);

@@ -229,6 +229,8 @@ export declare const WithUiStyleMixin: <BaseClassType extends IgeMixin<IgeObject
         _localBounds3dPolygon?: import("../../index.js").IgePoly2d | undefined;
         _bounds3dPolygon?: import("../../index.js").IgePoly2d | undefined;
         _localAabb?: import("../../index.js").IgeBounds | undefined;
+        _model: import("../../types/IgeModel3d.js").IgeModel3d | null;
+        _material: import("../core/IgeMaterial.js").IgeMaterial | null;
         _deathCallBack?: ((...args: any[]) => void) | undefined;
         components: Record<string, import("../../index.js").IgeComponent<IgeObject>>;
         _sortChildren: import("../../index.js").IgeChildSortFunction;
@@ -343,6 +345,12 @@ export declare const WithUiStyleMixin: <BaseClassType extends IgeMixin<IgeObject
             new (parent: IgeObject, options?: any): import("../../index.js").IgeComponent<IgeObject>;
         }, options?: any): any;
         removeComponent(id: string): any;
+        model(): import("../../types/IgeModel3d.js").IgeModel3d | null;
+        model(val: import("../../types/IgeModel3d.js").IgeModel3d): any;
+        model(val?: import("../../types/IgeModel3d.js").IgeModel3d | undefined): import("../../types/IgeModel3d.js").IgeModel3d | any | null;
+        material(): import("../core/IgeMaterial.js").IgeMaterial | null;
+        material(val: import("../core/IgeMaterial.js").IgeMaterial): any;
+        material(val?: import("../core/IgeMaterial.js").IgeMaterial | undefined): import("../core/IgeMaterial.js").IgeMaterial | any | null;
         _eventsEmitting: boolean;
         _eventRemovalQueue: any[];
         _eventListeners?: Record<string, Record<string, import("../../index.js").IgeEventListenerCallback[]>> | undefined;

@@ -6,10 +6,12 @@ import { IgePoint2d } from "./IgePoint2d.js"
 import { IgePoint3d } from "./IgePoint3d.js";
 import { IgePoly2d } from "./IgePoly2d.js"
 import { IgeBounds } from "./IgeBounds.js";
-import { arrPull } from "../utils/arrays.js"
-import { isClient, isServer } from "../utils/clientServer.js";
-import { newIdHex } from "../utils/ids.js"
-import { toIso } from "../utils/maths.js";
+import { IgeQuad } from "../models/IgeQuad.js"
+import { arrPull } from "../utils/arrays.js";
+import { isClient, isServer } from "../utils/clientServer.js"
+import { newIdHex } from "../utils/ids.js";
+import { toIso } from "../utils/maths.js"
+import { synthesize } from "../utils/synthesize.js";
 import { IGE_NETWORK_STREAM_CREATE, IGE_NETWORK_STREAM_DESTROY, IgeIsometricDepthSortMode, IgeMountMode, IgeStreamMode } from "../../enums/index.js";
 export class IgeObject extends IgeEventingClass {
     classId = "IgeObject";
@@ -123,6 +125,8 @@ export class IgeObject extends IgeEventingClass {
     _localBounds3dPolygon;
     _bounds3dPolygon;
     _localAabb;
+    _model = IgeQuad; // Default to a basic quad
+    _material = null;
     _deathCallBack; // TODO: Rename this to _deathCallback (lower case B)
     components = {};
     constructor() {
@@ -1952,3 +1956,5 @@ export class IgeObject extends IgeEventingClass {
         return this;
     }
 }
+synthesize(IgeObject, "model");
+synthesize(IgeObject, "material");

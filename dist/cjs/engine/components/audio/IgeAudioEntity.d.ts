@@ -41,37 +41,6 @@ export declare class IgeAudioEntity extends IgeEntity {
     streamCreateConstructorArgs(): [IgeAudioEntityProps];
     onStreamProperty(propName: string, propVal: any): this;
     /**
-     * Gets the playing state.
-     * @returns {boolean} True if playing, false if not.
-     */
-    isPlaying(): boolean;
-    isPlaying(val: boolean): this;
-    abstract isPlaying(val?: boolean): this | boolean;
-    playOnMount(): boolean;
-    playOnMount(val: boolean): this;
-    abstract playOnMount(val?: boolean): boolean | this;
-    pannerSettings(): PannerOptions;
-    pannerSettings(val: PannerOptions): this;
-    abstract pannerSettings(val?: PannerOptions): PannerOptions | this;
-    /**
-     * Gets / sets the id of the audio stream to use for playback.
-     * @param {string} [id] The audio id. Must match
-     * a previously registered audio stream that was
-     * registered via `ige.engine.audio.register()`.
-     * The audio component must be active in the engine to
-     * use this service via `ige.uses("audio");`.
-     * @returns {*}
-     */
-    audioSourceId(): string | undefined;
-    audioSourceId(val: string): this;
-    abstract audioSourceId(val?: string): string | this | undefined;
-    volume(): number;
-    volume(val: number): this;
-    abstract volume(val?: number): this | number;
-    loop(): boolean;
-    loop(val: boolean): this;
-    abstract loop(val?: boolean): this | boolean;
-    /**
      * Starts playback of the audio.
      * @returns {IgeAudioEntity}
      */
@@ -89,4 +58,37 @@ export declare class IgeAudioEntity extends IgeEntity {
     destroy(): this;
     _mounted(obj: IgeEntity): void;
     _unMounted(obj: IgeEntity): void;
+}
+export interface IgeAudioEntity {
+    /**
+     * Gets the playing state.
+     * @returns {boolean} True if playing, false if not.
+     */
+    isPlaying(): boolean;
+    isPlaying(val: boolean): this;
+    isPlaying(val?: boolean): this | boolean;
+    playOnMount(): boolean;
+    playOnMount(val: boolean): this;
+    playOnMount(val?: boolean): boolean | this;
+    pannerSettings(): PannerOptions;
+    pannerSettings(val: PannerOptions): this;
+    pannerSettings(val?: PannerOptions): PannerOptions | this;
+    /**
+     * Gets / sets the id of the audio stream to use for playback.
+     * @param {string} [id] The audio id. Must match
+     * a previously registered audio stream that was
+     * registered via `ige.engine.audio.register()`.
+     * The audio component must be active in the engine to
+     * use this service via `ige.uses("audio");`.
+     * @returns {*}
+     */
+    audioSourceId(): string | undefined;
+    audioSourceId(val: string): this;
+    audioSourceId(val?: string): string | this | undefined;
+    volume(): number;
+    volume(val: number): this;
+    volume(val?: number): this | number;
+    loop(): boolean;
+    loop(val: boolean): this;
+    loop(val?: boolean): this | boolean;
 }

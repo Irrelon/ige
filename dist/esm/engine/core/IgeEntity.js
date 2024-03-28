@@ -18,7 +18,6 @@ import { IgeBehaviourType, IgeEntityRenderMode, IgeIsometricDepthSortMode, IgeMo
 export class IgeEntity extends IgeObject {
     classId = "IgeEntity";
     _renderMode = IgeEntityRenderMode.flat;
-    //_entity?: IgeEntity; // We comment this because any class wanting to override return values of methods can do so individually e.g. viewport.camera.width().height()
     _parent = null;
     _children = [];
     _translateIso;

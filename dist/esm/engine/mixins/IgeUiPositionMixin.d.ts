@@ -133,7 +133,13 @@ export declare const WithUiPositionMixin: <BaseClassType extends IgeMixin<IgeObj
         _streamMode?: import("../../enums/index.js").IgeStreamMode | undefined;
         _streamRoomId?: string | undefined;
         _streamDataCache: string;
-        _streamJustCreated?: boolean | undefined;
+        _streamJustCreated?: boolean | undefined; /**
+         * Gets / sets the viewport's x position relative to the center of
+         * the entity parent.
+         * @param {number} px
+         * @param {boolean=} noUpdate
+         * @return {number}
+         */
         _streamEmitCreated?: boolean | undefined;
         _streamSections: string[];
         _streamProperty: Record<string, any>;
@@ -173,13 +179,7 @@ export declare const WithUiPositionMixin: <BaseClassType extends IgeMixin<IgeObj
         _cell: number | null;
         _deathTime?: number | undefined;
         _bornTime: number;
-        _translate: import("../../index.js").IgePoint3d; /**
-         * Gets / sets the entity's y position relative to the top of
-         * the canvas.
-         * @param {number} px
-         * @param {boolean=} noUpdate
-         * @return {number}
-         */
+        _translate: import("../../index.js").IgePoint3d;
         _oldTranslate: import("../../index.js").IgePoint3d;
         _rotate: import("../../index.js").IgePoint3d;
         _scale: import("../../index.js").IgePoint3d;
@@ -216,13 +216,6 @@ export declare const WithUiPositionMixin: <BaseClassType extends IgeMixin<IgeObj
         _noAabb?: boolean | undefined;
         _hasParent?: Record<string, boolean> | undefined;
         _texture?: import("../../index.js").IgeTexture | undefined;
-        /**
-         * Gets / sets the entity's y position relative to the bottom of
-         * the canvas.
-         * @param {number} px
-         * @param {boolean=} noUpdate
-         * @return {number}
-         */
         _indestructible: boolean;
         _shouldRender?: boolean | undefined;
         _smartBackground?: import("../../index.js").IgeSmartTexture<import("../../index.js").IgeEntity> | undefined;
@@ -239,6 +232,8 @@ export declare const WithUiPositionMixin: <BaseClassType extends IgeMixin<IgeObj
         _localBounds3dPolygon?: import("../../index.js").IgePoly2d | undefined;
         _bounds3dPolygon?: import("../../index.js").IgePoly2d | undefined;
         _localAabb?: import("../../index.js").IgeBounds | undefined;
+        _model: import("../../types/IgeModel3d.js").IgeModel3d | null;
+        _material: import("../core/IgeMaterial.js").IgeMaterial | null;
         _deathCallBack?: ((...args: any[]) => void) | undefined;
         components: Record<string, import("../../index.js").IgeComponent<IgeObject>>;
         _sortChildren: import("../../index.js").IgeChildSortFunction;
@@ -353,6 +348,12 @@ export declare const WithUiPositionMixin: <BaseClassType extends IgeMixin<IgeObj
             new (parent: IgeObject, options?: any): import("../../index.js").IgeComponent<IgeObject>;
         }, options?: any): any;
         removeComponent(id: string): any;
+        model(): import("../../types/IgeModel3d.js").IgeModel3d | null;
+        model(val: import("../../types/IgeModel3d.js").IgeModel3d): any;
+        model(val?: import("../../types/IgeModel3d.js").IgeModel3d | undefined): import("../../types/IgeModel3d.js").IgeModel3d | any | null;
+        material(): import("../core/IgeMaterial.js").IgeMaterial | null;
+        material(val: import("../core/IgeMaterial.js").IgeMaterial): any;
+        material(val?: import("../core/IgeMaterial.js").IgeMaterial | undefined): import("../core/IgeMaterial.js").IgeMaterial | any | null;
         _eventsEmitting: boolean;
         _eventRemovalQueue: any[];
         _eventListeners?: Record<string, Record<string, import("../../index.js").IgeEventListenerCallback[]>> | undefined;

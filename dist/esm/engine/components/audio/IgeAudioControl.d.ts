@@ -27,13 +27,6 @@ export declare class IgeAudioControl extends IgeEventingClass implements IgeCanI
     _resumePlaybackOffset: number;
     _startTime: number;
     constructor();
-    abstract isPersistent(val?: boolean): boolean | this;
-    abstract isPlaying(val?: boolean): boolean | this;
-    abstract shouldPlayWhenReady(val?: boolean): boolean | this;
-    abstract relativeTo(val?: IgeEntity | string): IgeEntity | string | this | undefined;
-    abstract onEnded(val?: () => void): () => void | this | undefined;
-    abstract pannerSettings(val?: PannerOptions): PannerOptions | this | undefined;
-    abstract position(val?: IgePoint3d): IgePoint3d | this | undefined;
     volume(val?: number): number | this;
     /**
      * Gets or sets the audioSourceId for this item. If setting an audioSourceId,
@@ -66,4 +59,13 @@ export declare class IgeAudioControl extends IgeEventingClass implements IgeCanI
      * current audio stream playback.
      */
     destroy(): this;
+}
+export interface IgeAudioControl {
+    isPersistent(val?: boolean): boolean | this;
+    isPlaying(val?: boolean): boolean | this;
+    shouldPlayWhenReady(val?: boolean): boolean | this;
+    relativeTo(val?: IgeEntity | string): IgeEntity | string | this | undefined;
+    onEnded(val?: () => void): () => void | this | undefined;
+    pannerSettings(val?: PannerOptions): PannerOptions | this | undefined;
+    position(val?: IgePoint3d): IgePoint3d | this | undefined;
 }

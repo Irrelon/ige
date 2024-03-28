@@ -9,10 +9,12 @@ const IgePoint2d_1 = require("./IgePoint2d.js");
 const IgePoint3d_1 = require("./IgePoint3d.js");
 const IgePoly2d_1 = require("./IgePoly2d.js");
 const IgeBounds_1 = require("./IgeBounds.js");
+const IgeQuad_1 = require("../models/IgeQuad.js");
 const arrays_1 = require("../utils/arrays.js");
 const clientServer_1 = require("../utils/clientServer.js");
 const ids_1 = require("../utils/ids.js");
 const maths_1 = require("../utils/maths.js");
+const synthesize_1 = require("../utils/synthesize.js");
 const enums_1 = require("../../enums/index.js");
 class IgeObject extends IgeEventingClass_1.IgeEventingClass {
     constructor() {
@@ -70,6 +72,8 @@ class IgeObject extends IgeEventingClass_1.IgeEventingClass {
         this._frameAlternatorCurrent = false;
         this._backgroundPatternRepeat = null;
         this._bounds3dPolygonDirty = false;
+        this._model = IgeQuad_1.IgeQuad; // Default to a basic quad
+        this._material = null;
         this.components = {};
         this._sortChildren = (compareFn) => {
             return this._children.sort(compareFn);
@@ -1897,3 +1901,5 @@ class IgeObject extends IgeEventingClass_1.IgeEventingClass {
     }
 }
 exports.IgeObject = IgeObject;
+(0, synthesize_1.synthesize)(IgeObject, "model");
+(0, synthesize_1.synthesize)(IgeObject, "material");

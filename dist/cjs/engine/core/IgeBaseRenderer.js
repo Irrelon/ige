@@ -89,8 +89,6 @@ class IgeBaseRenderer extends IgeEventingClass_1.IgeEventingClass {
         return false;
     }
     _updateDevicePixelRatio() {
-        if (!this._canvasElement)
-            return;
         if (instance_1.ige.engine._pixelRatioScaling) {
             // Support high-definition devices and "retina" displays by adjusting
             // for device and back store pixels ratios
@@ -100,6 +98,8 @@ class IgeBaseRenderer extends IgeEventingClass_1.IgeEventingClass {
             // No auto-scaling
             this._devicePixelRatio = 1;
         }
+        if (!this._canvasElement)
+            return;
         if (this._devicePixelRatio !== 1) {
             this._canvasElement.style.width = this._bounds2d.x + "px";
             this._canvasElement.style.height = this._bounds2d.y + "px";

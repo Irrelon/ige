@@ -1,14 +1,15 @@
-import type { IgeComponent } from "./IgeComponent.js"
-import { IgeDummyCanvas } from "./IgeDummyCanvas.js";
-import { IgeEventingClass } from "./IgeEventingClass.js"
-import { IgeMatrix2d } from "./IgeMatrix2d.js";
-import { IgePoint2d } from "./IgePoint2d.js"
-import { IgePoint3d } from "./IgePoint3d.js";
-import { IgePoly2d } from "./IgePoly2d.js"
-import { IgeBounds } from "./IgeBounds.js";
-import type { IgeTexture } from "./IgeTexture.js"
-import type { IgeTileMap2d } from "./IgeTileMap2d.js";
-import type { IgeViewport } from "./IgeViewport.js"
+import type { IgeMaterial } from "./IgeMaterial.js"
+import type { IgeComponent } from "./IgeComponent.js";
+import { IgeDummyCanvas } from "./IgeDummyCanvas.js"
+import { IgeEventingClass } from "./IgeEventingClass.js";
+import { IgeMatrix2d } from "./IgeMatrix2d.js"
+import { IgePoint2d } from "./IgePoint2d.js";
+import { IgePoint3d } from "./IgePoint3d.js"
+import { IgePoly2d } from "./IgePoly2d.js";
+import { IgeBounds } from "./IgeBounds.js"
+import type { IgeTexture } from "./IgeTexture.js";
+import type { IgeTileMap2d } from "./IgeTileMap2d.js"
+import type { IgeViewport } from "./IgeViewport.js";
 import type { IgeBehaviourType } from "../../enums/index.js";
 import { IgeIsometricDepthSortMode, IgeMountMode, IgeStreamMode } from "../../enums/index.js";
 import type { IgeBehaviourStore } from "../../types/IgeBehaviourStore.js"
@@ -20,6 +21,7 @@ import type { IgeChildSortFunction } from "../../types/IgeChildSortFunction.js"
 import type { IgeDepthSortObject } from "../../types/IgeDepthSortObject.js"
 import type { IgeEntityBehaviourMethod } from "../../types/IgeEntityBehaviour.js"
 import type { IgeInputEventHandler } from "../../types/IgeInputEventHandler.js"
+import type { IgeModel3d } from "../../types/IgeModel3d.js"
 import type { IgePoint } from "../../types/IgePoint.js"
 import type { IgeSmartTexture } from "../../types/IgeSmartTexture.js"
 import type { IgeTimeStreamPacket } from "../../types/IgeTimeStream.js"
@@ -139,6 +141,8 @@ export declare class IgeObject extends IgeEventingClass implements IgeCanRegiste
     _localBounds3dPolygon?: IgePoly2d;
     _bounds3dPolygon?: IgePoly2d;
     _localAabb?: IgeBounds;
+    _model: IgeModel3d | null;
+    _material: IgeMaterial | null;
     _deathCallBack?: (...args: any[]) => void;
     components: Record<string, IgeComponent<IgeObject>>;
     constructor();
@@ -1176,4 +1180,12 @@ export declare class IgeObject extends IgeEventingClass implements IgeCanRegiste
     _stringify(options?: Record<keyof IgeObject | string, boolean>): string;
     addComponent(id: string, Component: typeof IgeComponent<IgeObject>, options?: any): this;
     removeComponent(id: string): this;
+}
+export interface IgeObject {
+    model(): IgeModel3d | null;
+    model(val: IgeModel3d): this;
+    model(val?: IgeModel3d): this | IgeModel3d | null;
+    material(): IgeMaterial | null;
+    material(val: IgeMaterial): this;
+    material(val?: IgeMaterial): this | IgeMaterial | null;
 }

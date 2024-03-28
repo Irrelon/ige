@@ -23,7 +23,6 @@ class IgeEntity extends IgeObject_1.IgeObject {
         super();
         this.classId = "IgeEntity";
         this._renderMode = enums_1.IgeEntityRenderMode.flat;
-        //_entity?: IgeEntity; // We comment this because any class wanting to override return values of methods can do so individually e.g. viewport.camera.width().height()
         this._parent = null;
         this._children = [];
         this.customTriggerPolygon = () => new IgeBounds_1.IgeBounds();
