@@ -1,4 +1,4 @@
-import type { IgeMaterial } from "@/engine/core/IgeMaterial";
+import type { IgeMaterialData } from "@/types/IgeMaterialData";
 import { ige } from "@/engine/instance";
 import type { IgeComponent } from "@/engine/core/IgeComponent";
 import { IgeDummyCanvas } from "@/engine/core/IgeDummyCanvas";
@@ -11,7 +11,6 @@ import { IgeBounds } from "@/engine/core/IgeBounds";
 import type { IgeTexture } from "@/engine/core/IgeTexture";
 import type { IgeTileMap2d } from "@/engine/core/IgeTileMap2d";
 import type { IgeViewport } from "@/engine/core/IgeViewport";
-import { IgeQuad } from "@/engine/models/IgeQuad";
 import type { IgeNetIoClientController } from "@/engine/network/client/IgeNetIoClientController";
 import type { IgeNetIoServerController } from "@/engine/network/server/IgeNetIoServerController";
 import { arrPull } from "@/engine/utils/arrays";
@@ -37,13 +36,15 @@ import type { IgeChildSortFunction } from "@/types/IgeChildSortFunction";
 import type { IgeDepthSortObject } from "@/types/IgeDepthSortObject";
 import type { IgeEntityBehaviourMethod } from "@/types/IgeEntityBehaviour";
 import type { IgeGenericClass } from "@/types/IgeGenericClass";
+import type { IgeGeometryData3d } from "@/types/IgeGeometryData3d";
 import type { IgeInputEventHandler } from "@/types/IgeInputEventHandler";
-import type { IgeModel3d } from "@/types/IgeModel3d";
+import type { IgeMeshData3d } from "@/types/IgeMeshData3d";
 import type { IgeStreamCreateMessageData } from "@/types/IgeNetworkStream";
 import type { IgePoint } from "@/types/IgePoint";
 import type { IgeSmartTexture } from "@/types/IgeSmartTexture";
 import type { IgeTimeStreamPacket, IgeTimeStreamTransformData } from "@/types/IgeTimeStream";
 import type { IgeTriggerPolygonFunctionName } from "@/types/IgeTriggerPolygonFunctionName";
+import { IgeQuadGeometry } from "../geometry/IgeQuadGeometry";
 
 export class IgeObject extends IgeEventingClass implements IgeCanRegisterById, IgeCanRegisterByCategory, IgeCanAcceptComponents {
 	classId = "IgeObject";
@@ -63,7 +64,6 @@ export class IgeObject extends IgeEventingClass implements IgeCanRegisterById, I
 	_tileHeight: number = 1;
 	_tileDepth: number = 1;
 	_orphans?: IgeObject[];
-	_specialProp: string[] = [];
 	_streamMode?: IgeStreamMode;
 	_streamRoomId?: string;
 	_streamDataCache: string = "";
@@ -157,17 +157,14 @@ export class IgeObject extends IgeEventingClass implements IgeCanRegisterById, I
 	_localBounds3dPolygon?: IgePoly2d;
 	_bounds3dPolygon?: IgePoly2d;
 	_localAabb?: IgeBounds;
-	_model: IgeModel3d | null = IgeQuad; // Default to a basic quad
-	_material: IgeMaterial | null = null;
+	_geometryData: IgeGeometryData3d | null = IgeQuadGeometry; // Default to a basic quad (square)
+	_materialData: IgeMaterialData | null = null;
+	_meshData: IgeMeshData3d | null = null;
 	_deathCallBack?: (...args: any[]) => void; // TODO: Rename this to _deathCallback (lower case B)
 	components: Record<string, IgeComponent<IgeObject>> = {};
 
 	constructor () {
 		super();
-
-		this._specialProp.push("_id");
-		this._specialProp.push("_parent");
-		this._specialProp.push("_children");
 
 		this._anchor = new IgePoint2d(0, 0);
 		this._renderPos = { x: 0, y: 0 };
@@ -2843,18 +2840,25 @@ export class IgeObject extends IgeEventingClass implements IgeCanRegisterById, I
 }
 
 export interface IgeObject {
-	model (): IgeModel3d | null;
+	geometryData (): IgeGeometryData3d | null;
 
-	model (val: IgeModel3d): this;
+	geometryData (val: IgeGeometryData3d): this;
 
-	model (val?: IgeModel3d): this | IgeModel3d | null;
+	geometryData (val?: IgeGeometryData3d): this | IgeGeometryData3d | null;
 
-	material (): IgeMaterial | null;
+	materialData (): IgeMaterialData | null;
 
-	material (val: IgeMaterial): this;
+	materialData (val: IgeMaterialData): this;
 
-	material (val?: IgeMaterial): this | IgeMaterial | null;
+	materialData (val?: IgeMaterialData): this | IgeMaterialData | null;
+
+	meshData (): IgeMeshData3d | null;
+
+	meshData (val: IgeMeshData3d): this;
+
+	meshData (val?: IgeMeshData3d): this | IgeMeshData3d | null;
 }
 
-synthesize(IgeObject, "model");
-synthesize(IgeObject, "material");
+synthesize(IgeObject, "geometryData");
+synthesize(IgeObject, "materialData");
+synthesize(IgeObject, "meshData");

@@ -49,12 +49,6 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 	constructor () {
 		super();
 
-		// Register the IgeEntity special properties handler for
-		// serialise and de-serialise support
-		this._specialProp.push("_texture");
-		this._specialProp.push("_eventListeners");
-		this._specialProp.push("_aabb");
-
 		//this._mouseEventTrigger = 0;
 
 		if (isServer) {
