@@ -1845,54 +1845,6 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 	}
 
 	/**
-	 * Destroys the entity by removing it from the scenegraph,
-	 * calling destroy() on any child entities and removing
-	 * any active event listeners for the entity. Once an entity
-	 * has been destroyed it's this._alive flag is also set to
-	 * false.
-	 * @example #Destroy the entity
-	 *     entity.destroy();
-	 */
-	destroy (): this {
-		this._alive = false;
-
-		// Check if the entity is streaming
-		if (isServer && this._streamMode === IgeStreamMode.simple) {
-			this._streamDataCache = "";
-			this.streamDestroy();
-		}
-
-		/**
-		 * Fires when the entity has been destroyed.
-		 * @event IgeEntity#destroyed
-		 * @param {IgeEntity} The entity that has been destroyed.
-		 */
-		this.emit("destroyed", this);
-
-		// Remove ourselves from any parent
-		this.unMount();
-
-		// Remove any children
-		if (this._children) {
-			this.destroyChildren();
-		}
-
-		// Remove the object from the lookup system
-		ige.register.remove(this);
-
-		// Set a flag in case a reference to this object
-		// has been held somewhere, shows that the object
-		// should no longer be interacted with
-		this._alive = false;
-
-		// Remove the event listeners array in case any
-		// object references still exist there
-		this._eventListeners = {};
-
-		return super.destroy();
-	}
-
-	/**
 	 * Sorts the _children array by the layer and then depth of each object.
 	 */
 	depthSortChildren () {
@@ -2352,7 +2304,7 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 			}
 
 			/**
-			 * Fires when the mouse moves over the entity.
+			 * Fires once when the pointer was outside the entity's bounds and then enters them.
 			 * @event IgeEntity#pointerOver
 			 * @param {Object} The DOM event object.
 			 * @param {Object} The IGE event control object.
@@ -2364,6 +2316,14 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 		if (this._pointerMove) {
 			this._pointerMove(event, evc, data);
 		}
+
+		/**
+		 * Fires for each change in position when the pointer moves while inside the entity's bounds.
+		 * @event IgeEntity#pointerMove
+		 * @param {Object} The DOM event object.
+		 * @param {Object} The IGE event control object.
+		 * @param {*} Any further event data.
+		 */
 		this.emit("pointerMove", event, evc, data);
 	};
 
@@ -2389,7 +2349,7 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 		}
 
 		/**
-		 * Fires when the mouse moves away from the entity.
+		 * Fires once when the pointer was inside the entity's bounds and then moves outside of them.
 		 * @event IgeEntity#pointerOut
 		 * @param {Object} The DOM event object.
 		 * @param {Object} The IGE event control object.
@@ -2409,7 +2369,7 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 		}
 
 		/**
-		 * Fires when the mouse wheel is moved over the entity.
+		 * Fires when the mouse wheel is moved while inside the entity's bounds.
 		 * @event IgeEntity#pointerWheel
 		 * @param {Object} The DOM event object.
 		 * @param {Object} The IGE event control object.
@@ -2431,7 +2391,7 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 		}
 
 		/**
-		 * Fires when a mouse up occurs on the entity.
+		 * Fires when a pointer up occurs while inside the entity's bounds.
 		 * @event IgeEntity#pointerUp
 		 * @param {Object} The DOM event object.
 		 * @param {Object} The IGE event control object.
@@ -2454,7 +2414,7 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 			}
 
 			/**
-			 * Fires when a mouse down occurs on the entity.
+			 * Fires when a pointer down occurs while inside the entity's bounds.
 			 * @event IgeEntity#pointerDown
 			 * @param {Object} The DOM event object.
 			 * @param {Object} The IGE event control object.

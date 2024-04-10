@@ -857,6 +857,12 @@ export class IgeObject extends IgeEventingClass implements IgeCanRegisterById, I
 		}
 
 		this._mounted(this._parent);
+
+		/**
+		 * Fires when the object has been mounted to a parent.
+		 * @event IgeObject#mounted
+		 * @param {IgeObject} The parent the object was mounted to.
+		 */
 		this.emit("mounted", this._parent);
 
 		return this;
@@ -2523,6 +2529,13 @@ export class IgeObject extends IgeEventingClass implements IgeCanRegisterById, I
 								if (this.onStreamProperty) {
 									this.onStreamProperty(i, props[i]);
 								}
+
+								/**
+								 * Fires when one of the stream properties of the object changes.
+								 * @event IgeObject#streamPropChange
+								 * @param {string} The property key.
+								 * @param {any} The property value.
+								 */
 								this.emit("streamPropChange", i, props[i]);
 							}
 						}
@@ -2688,10 +2701,26 @@ export class IgeObject extends IgeEventingClass implements IgeCanRegisterById, I
 	}
 
 	/**
-	 * Destroys the object and all it's child objects, removing them from the
-	 * scenegraph and from memory.
+	 * Destroys the object by removing it from the scenegraph,
+	 * calling destroy() on any child objects and removing
+	 * any active event listeners for the object. Once an object
+	 * has been destroyed it's `_alive` flag is also set to
+	 * false.
+	 * @example #Destroy the object
+	 *     obj.destroy();
 	 */
 	destroy () {
+		// Set a flag in case a reference to this object
+		// has been held somewhere, shows that the object
+		// should no longer be interacted with
+		this._alive = false;
+
+		// Check if the entity is streaming
+		if (isServer && this._streamMode === IgeStreamMode.simple) {
+			this._streamDataCache = "";
+			this.streamDestroy();
+		}
+
 		// Remove ourselves from any parent
 		this.unMount();
 
@@ -2708,10 +2737,12 @@ export class IgeObject extends IgeEventingClass implements IgeCanRegisterById, I
 		ige.categoryRegister.remove(this);
 		ige.groupRegister.remove(this);
 
-		// Set a flag in case a reference to this object
-		// has been held somewhere, shows that the object
-		// should no longer be interacted with
-		this._alive = false;
+		/**
+		 * Fires when the object has been destroyed.
+		 * @event IgeObject#destroyed
+		 * @param {IgeObject} The object that has been destroyed.
+		 */
+		this.emit("destroyed", this);
 
 		// Remove the event listeners array in case any
 		// object references still exist there
