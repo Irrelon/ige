@@ -9,13 +9,15 @@
 			"dom.iterable",
 			"esnext"
 		],
+		"allowSyntheticDefaultImports": true,
+		"forceConsistentCasingInFileNames": true,
 		"allowJs": true,
 		"skipLibCheck": true,
 		"strict": true,
 		"strictNullChecks": true,
-		"forceConsistentCasingInFileNames": true,
 		"noEmit": false,
-		"incremental": false,
+		"incremental": true,
+		"noErrorTruncation": true,
 		"esModuleInterop": true,
 		"module": "esnext",
 		"moduleResolution": "node",
@@ -47,13 +49,8 @@
 		"engine/components/editor",
 		"engine/components/physics/cannon",
 		"engine/components/three",
-		"src/**/*.old*",
-		"other/*",
-		"other/**",
-		"other/**/*",
-		"dist",
-		"dist/*",
-		"dist/**",
-		"dist/**/*"
+		"*.old*",
+		"other",
+		"dist"
 	]
 }

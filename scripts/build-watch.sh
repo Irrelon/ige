@@ -16,10 +16,10 @@ sleep 6
 webpack --config ./config/webpack.config.cjs --watch &
 WEBPACK_PID_1=$!
 
-npx @irrelon/fix-paths -p ./tsconfig-esm.json -i "**/*.js, **/*.ts" --write --watch &
+npx @irrelon/fix-paths -p "$TS_CONFIG_1" -i "**/*.js, **/*.ts" --write --watch &
 NPX_PID_1=$!
 
-npx @irrelon/fix-paths -p ./tsconfig-cjs.json -i "**/*.js, **/*.ts" --write --watch &
+npx @irrelon/fix-paths -p "$TS_CONFIG_2" -i "**/*.js, **/*.ts" --write --watch &
 NPX_PID_2=$!
 
 # Function to kill background processes on script exit
