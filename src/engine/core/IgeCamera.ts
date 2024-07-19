@@ -3,6 +3,7 @@ import type { IgePoint3d } from "@/engine/core/IgePoint3d";
 import type { IgeBounds } from "@/engine/core/IgeBounds";
 import { IgeTween } from "@/engine/core/IgeTween";
 import type { IgeViewport } from "@/engine/core/IgeViewport";
+import type { IgeTweenEasingFunctions } from "@/engine/utils/easing";
 import { registerClass } from "@/engine/utils/igeClassStore";
 import { IgeBehaviourType } from "@/enums";
 import type { IgeCanvasRenderingContext2d } from "@/types/IgeCanvasRenderingContext2d";
@@ -55,7 +56,7 @@ export class IgeCamera extends IgeEntity {
 	 * @param {number} durationMs The number of milliseconds to span the pan operation over.
 	 * @param {string=} easing Optional easing method name.
 	 */
-	panTo (point?: IgePoint3d, durationMs?: number, easing: string = "none") {
+	panTo (point?: IgePoint3d, durationMs?: number, easing: IgeTweenEasingFunctions = "none") {
 		if (point !== undefined) {
 			new IgeTween(this._translate)
 				.properties({
@@ -78,7 +79,7 @@ export class IgeCamera extends IgeEntity {
 	 * @param {number} durationMs The number of milliseconds to span the pan operation over.
 	 * @param {string=} easing Optional easing method name.
 	 */
-	panBy (point?: IgePoint3d, durationMs?: number, easing: string = "none") {
+	panBy (point?: IgePoint3d, durationMs?: number, easing: IgeTweenEasingFunctions = "none") {
 		if (point !== undefined) {
 			this._translate
 				.tween()
@@ -222,7 +223,7 @@ export class IgeCamera extends IgeEntity {
 	 * tweening by duration.
 	 * @return {*}
 	 */
-	lookAt (entity?: IgeEntity, durationMs?: number, easing: string = "none") {
+	lookAt (entity?: IgeEntity, durationMs?: number, easing: IgeTweenEasingFunctions = "none") {
 		if (entity !== undefined) {
 			entity.updateTransform();
 
@@ -380,26 +381,26 @@ export class IgeCamera extends IgeEntity {
 		for (i in this) {
 			if (this.hasOwnProperty(i) && this[i] !== undefined) {
 				switch (i) {
-				case "_trackTranslateTarget":
-					if (this._trackTranslateTarget) {
-						str +=
-							".trackTranslate(ige.$('" +
-							this._trackTranslateTarget.id() +
-							"'), " +
-							this.trackTranslateSmoothing() +
-							")";
-					}
-					break;
-				case "_trackRotateTarget":
-					if (this._trackRotateTarget) {
-						str +=
-							".trackRotate(ige.$('" +
-							this._trackRotateTarget.id() +
-							"'), " +
-							this.trackRotateSmoothing() +
-							")";
-					}
-					break;
+					case "_trackTranslateTarget":
+						if (this._trackTranslateTarget) {
+							str +=
+								".trackTranslate(ige.$('" +
+								this._trackTranslateTarget.id() +
+								"'), " +
+								this.trackTranslateSmoothing() +
+								")";
+						}
+						break;
+					case "_trackRotateTarget":
+						if (this._trackRotateTarget) {
+							str +=
+								".trackRotate(ige.$('" +
+								this._trackRotateTarget.id() +
+								"'), " +
+								this.trackRotateSmoothing() +
+								")";
+						}
+						break;
 				}
 			}
 		}
