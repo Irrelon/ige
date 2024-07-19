@@ -45,7 +45,12 @@ export const pushUnique = (arr: any[], item: any): boolean => {
 
 /**
  * Clones the array and returns a new non-referenced
- * array.
+ * array. Object references for items inside the array
+ * are kept but any array inside the array is converted
+ * to a non-referenced version. Essentially, you can be
+ * sure that any modification to any array in the return
+ * data will not affect the original array or sub-arrays
+ * of the original array.
  * @param arr
  * @return {*}
  */
