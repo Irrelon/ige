@@ -5,12 +5,15 @@ import { IgeNetIoBaseController } from "@/engine/network/IgeNetIoBaseController"
 import { newIdHex } from "@/engine/utils/ids";
 import { igeClassStore } from "@/engine/utils/igeClassStore";
 import {
-	IGE_NETWORK_JOIN_ROOM, IGE_NETWORK_LEAVE_ROOM,
-	IGE_NETWORK_REQUEST, IGE_NETWORK_RESPONSE,
+	IGE_NETWORK_JOIN_ROOM,
+	IGE_NETWORK_LEAVE_ROOM,
+	IGE_NETWORK_REQUEST,
+	IGE_NETWORK_RESPONSE,
 	IGE_NETWORK_STREAM_CREATE,
 	IGE_NETWORK_STREAM_DATA,
 	IGE_NETWORK_STREAM_DESTROY,
-	IGE_NETWORK_STREAM_TIME, IGE_NETWORK_TIME_SYNC
+	IGE_NETWORK_STREAM_TIME,
+	IGE_NETWORK_TIME_SYNC
 } from "@/enums";
 import { IgeNetworkConnectionState } from "@/enums/IgeNetworkConnectionState";
 import type { IgeIsReadyPromise } from "@/types/IgeIsReadyPromise";

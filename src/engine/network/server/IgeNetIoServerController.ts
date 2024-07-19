@@ -5,12 +5,16 @@ import type { IgeNetIoSocket } from "@/engine/network/server/IgeNetIoSocket";
 import { arrPull } from "@/engine/utils/arrays";
 import { newIdHex } from "@/engine/utils/ids";
 import {
-	IGE_NETWORK_JOIN_ROOM, IGE_NETWORK_LEAVE_ROOM,
-	IGE_NETWORK_REQUEST, IGE_NETWORK_RESPONSE,
+	IGE_NETWORK_JOIN_ROOM,
+	IGE_NETWORK_LEAVE_ROOM,
+	IGE_NETWORK_REQUEST,
+	IGE_NETWORK_RESPONSE,
 	IGE_NETWORK_STREAM_CREATE,
 	IGE_NETWORK_STREAM_DATA,
 	IGE_NETWORK_STREAM_DESTROY,
-	IGE_NETWORK_STREAM_TIME, IGE_NETWORK_TIME_SYNC, IgeEventReturnFlag
+	IGE_NETWORK_STREAM_TIME,
+	IGE_NETWORK_TIME_SYNC,
+	IgeEventReturnFlag
 } from "@/enums";
 import type { IgeIsReadyPromise } from "@/types/IgeIsReadyPromise";
 import type {
@@ -59,7 +63,7 @@ export class IgeNetIoServerController extends IgeNetIoBaseController implements 
 	 * @param {Function=} callback A callback method to call once the
 	 * network has started.
 	 */
-	start (port?: number, callback?: () => void) {
+	start (port?: number, callback?: () => void): Promise<void> {
 		return new Promise<void>((resolve) => {
 			this._socketById = {};
 			this._socketsByRoomId = {};
@@ -120,7 +124,7 @@ export class IgeNetIoServerController extends IgeNetIoBaseController implements 
 	 * @param data The data the client sent with the request.
 	 * @param clientId The id of the client that sent the request.
 	 */
-	_onRequest = (data: IgeNetworkRequestMessageStructure<IgeNetworkServerSideMessageHandler>, clientId: string) => {
+	_onRequest = (data: IgeNetworkRequestMessageStructure<IgeNetworkServerSideMessageHandler>, clientId: string): void => {
 		if (!clientId) return;
 
 		const responseCallback = (...args: any[]) => {
@@ -148,7 +152,7 @@ export class IgeNetIoServerController extends IgeNetIoBaseController implements 
 		this.emit(data.cmd, data.data, clientId, responseCallback);
 	};
 
-	_onResponse = (data: IgeNetworkMessageStructure, clientId?: string) => {
+	_onResponse = (data: IgeNetworkMessageStructure, clientId?: string): void => {
 		if (!clientId) return;
 
 		// The message is a network response
@@ -173,7 +177,7 @@ export class IgeNetIoServerController extends IgeNetIoBaseController implements 
 		}
 	};
 
-	_onTimeSync = (data: IgeNetworkMessageData, clientId?: string) => {
+	_onTimeSync = (data: IgeNetworkMessageData, clientId?: string): void => {
 		if (!clientId) return;
 		const localTime = Math.floor(ige.engine._currentTime);
 		const sendTime = parseInt(data[1], 10);
@@ -192,7 +196,7 @@ export class IgeNetIoServerController extends IgeNetIoBaseController implements 
 		this._timeSyncLog[clientId] = localTime - sendTime;
 	};
 
-	timeSyncStart () {
+	timeSyncStart (): this {
 		this._timeSyncStarted = true;
 
 		// Send a time sync request now, so we
@@ -207,7 +211,7 @@ export class IgeNetIoServerController extends IgeNetIoBaseController implements 
 		return this;
 	}
 
-	timeSyncStop () {
+	timeSyncStop (): this {
 		this.log("Stopping client/server clock sync...");
 		clearInterval(this._timeSyncTimer);
 		this._timeSyncStarted = false;
@@ -221,11 +225,11 @@ export class IgeNetIoServerController extends IgeNetIoBaseController implements 
 	 * automatically be called and passed the data from the incoming network
 	 * packet.
 	 * @param {string} commandName The name of the command to define.
-	 * @param {Function=} callback A function to call when the defined network
+	 * @param {IgeNetworkServerSideMessageHandler | IgeNetworkServerSideRequestHandler} [callback] A function to call when the defined network
 	 * command is received by the network.
-	 * @return {*}
+	 * @return {this}
 	 */
-	define (commandName: string, callback?: IgeNetworkServerSideMessageHandler | IgeNetworkServerSideRequestHandler) {
+	define (commandName: string, callback?: IgeNetworkServerSideMessageHandler | IgeNetworkServerSideRequestHandler): this {
 		this._networkCommands[commandName] = callback;
 
 		// Record reverse lookups
@@ -241,9 +245,9 @@ export class IgeNetIoServerController extends IgeNetIoBaseController implements 
 	 * "ige" by default when they connect to the server.
 	 * @param {string} clientId The id of the client to add to the room.
 	 * @param {string} roomId The id of the room to add the client to.
-	 * @returns {*}
+	 * @returns {this}
 	 */
-	clientJoinRoom (clientId: string, roomId: string) {
+	clientJoinRoom (clientId: string, roomId: string): this {
 		this._clientRooms[clientId] = this._clientRooms[clientId] || [];
 		this._clientRooms[clientId].push(roomId);
 
@@ -263,9 +267,9 @@ export class IgeNetIoServerController extends IgeNetIoBaseController implements 
 	 * them from it if your game defines custom rooms etc.
 	 * @param {string} clientId The id of the client to remove from the room.
 	 * @param {string} roomId The id of the room to remove the client from.
-	 * @returns {*}
+	 * @returns {this}
 	 */
-	clientLeaveRoom (clientId: string, roomId: string) {
+	clientLeaveRoom (clientId: string, roomId: string): this {
 		if (this._clientRooms[clientId]) {
 			arrPull(this._clientRooms[clientId], roomId);
 			delete this._socketsByRoomId[roomId][clientId];
@@ -277,9 +281,9 @@ export class IgeNetIoServerController extends IgeNetIoBaseController implements 
 	/**
 	 * Removes a client from all rooms that it is a member of.
 	 * @param {string} clientId The client id to remove from all rooms.
-	 * @returns {*}
+	 * @returns {this}
 	 */
-	clientLeaveAllRooms (clientId: string) {
+	clientLeaveAllRooms (clientId: string): this {
 		const arr = this._clientRooms[clientId];
 		let arrCount = arr.length;
 
@@ -294,9 +298,9 @@ export class IgeNetIoServerController extends IgeNetIoBaseController implements 
 	/**
 	 * Gets the array of room ids that the client has joined.
 	 * @param clientId
-	 * @returns {Array} An array of string ids for each room the client has joined.
+	 * @returns {string[]} An array of string ids for each room the client has joined.
 	 */
-	clientRooms (clientId: string) {
+	clientRooms (clientId: string): string[] {
 		return this._clientRooms[clientId] || [];
 	}
 
@@ -305,19 +309,19 @@ export class IgeNetIoServerController extends IgeNetIoBaseController implements 
 	 * by their ID.
 	 * @param {string=} roomId Optional, if provided will only return clients
 	 * that have joined room specified by the passed roomId.
-	 * @return
+	 * @return {Record<string, IgeNetIoSocket>}
 	 */
-	clients (roomId?: string) {
+	clients (roomId?: string): Record<string, IgeNetIoSocket> {
 		if (!roomId) return this._socketById;
 		return this._socketsByRoomId[roomId] || {};
 	}
 
 	/**
 	 * Returns the socket associated with the specified client id.
-	 * @param {string=} clientId
-	 * @return {*}
+	 * @param {string} clientId
+	 * @return {IgeNetIoSocket}
 	 */
-	socket (clientId: string) {
+	socket (clientId: string): IgeNetIoSocket {
 		return this._socketById[clientId];
 	}
 
@@ -326,9 +330,9 @@ export class IgeNetIoServerController extends IgeNetIoBaseController implements 
 	 * should be allowed to connect (true) or dropped instantly (false).
 	 * @param {boolean} val Set to true to allow connections or false
 	 * to drop any incoming connections.
-	 * @return {*}
+	 * @return {boolean|this}
 	 */
-	acceptConnections (val?: boolean) {
+	acceptConnections (val?: boolean): boolean | this {
 		if (typeof val === "undefined") {
 			return this._acceptConnections;
 		}
@@ -389,7 +393,7 @@ export class IgeNetIoServerController extends IgeNetIoBaseController implements 
 	 * respond by calling ige.network.response(). When the response
 	 * is received, the callback method that was passed in the
 	 * callback parameter will be fired with the response data.
-	 * @param {string} commandName
+	 * @param {string} cmd
 	 * @param {Object} data
 	 * @param clientIdOrArrayOfIds
 	 * @param {Function} callback
@@ -399,7 +403,7 @@ export class IgeNetIoServerController extends IgeNetIoBaseController implements 
 		data: DataType,
 		clientIdOrArrayOfIds: string | string[],
 		callback: IgeNetworkServerSideRequestHandler
-	) {
+	): void {
 		// Build the request object
 		const req: IgeNetworkRequestMessageStructure<IgeNetworkServerSideRequestHandler> = {
 			id: newIdHex(),
@@ -540,7 +544,7 @@ export class IgeNetIoServerController extends IgeNetIoBaseController implements 
 	 * @param {Object} socket The client socket object.
 	 * @private
 	 */
-	_onClientDisconnect (data: IgeNetworkMessageData, socket: IgeNetIoSocket) {
+	_onClientDisconnect (data: IgeNetworkMessageData, socket: IgeNetIoSocket): void {
 		this.log(`Client disconnected with id "${socket._id}"`);
 		this.emit("disconnect", socket._id);
 
@@ -552,11 +556,13 @@ export class IgeNetIoServerController extends IgeNetIoBaseController implements 
 
 	/**
 	 * Gets / sets the interval by which updates to the game world are packaged
-	 * and transmitted to connected clients. The greater the value, the less
+	 * and transmitted to connected clients. The greater the value, the fewer
 	 * updates are sent per second.
-	 * @param {number=} ms The number of milliseconds between stream messages.
+	 * @param {number} [ms] The number of milliseconds between stream messages.
 	 */
-	sendInterval (ms?: number) {
+	sendInterval (ms: number): this;
+	sendInterval (): number;
+	sendInterval (ms?: number): number | this {
 		if (ms !== undefined) {
 			this.log("Setting delta stream interval to " + ms / ige.engine._timeScale + "ms");
 			this._streamInterval = ms / ige.engine._timeScale;
@@ -581,9 +587,9 @@ export class IgeNetIoServerController extends IgeNetIoBaseController implements 
 	 * @param {string} entityId The id of the entity that this data belongs to.
 	 * @param {string} data The data queued for delivery to the client.
 	 * @param {string} clientId The client id this data is queued for.
-	 * @return {*}
+	 * @return {this}
 	 */
-	queue (entityId: string, data: string, clientId: string[]) {
+	queue (entityId: string, data: string, clientId: string[]): this {
 		this._queuedData[entityId] = [data, clientId];
 		return this;
 	}

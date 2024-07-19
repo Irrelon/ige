@@ -108,18 +108,18 @@ export class IgeNetIoServer extends IgeEventingClass {
 
 		this._httpServer.on("error", (err: any) => {
 			switch (err.code) {
-			// TODO: Add all the error codes and human readable error here!
-			case "EADDRINUSE":
-				this.log(
-					"Cannot start server on port " +
-					this._port +
-					" because the port is already in use by another application!",
-					"error"
-				);
-				break;
-			default:
-				this.log("Cannot start server, error code: " + err.code);
-				break;
+				// TODO: Add all the error codes and human readable error here!
+				case "EADDRINUSE":
+					this.log(
+						"Cannot start server on port " +
+						this._port +
+						" because the port is already in use by another application!",
+						"error"
+					);
+					break;
+				default:
+					this.log("Cannot start server, error code: " + err.code);
+					break;
 			}
 		});
 
