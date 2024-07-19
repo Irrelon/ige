@@ -5,6 +5,7 @@ export class Game {
 	classId = "Game";
 
 	constructor (options?: any) {
+		ige.uses("tweening");
 		ige.init();
 		ige.isReady().then(() => {
 			if (isClient) {

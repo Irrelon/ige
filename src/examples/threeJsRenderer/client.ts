@@ -4,7 +4,10 @@ import { IgeBaseScene } from "@/engine/core/IgeBaseScene";
 import { IgeEntity } from "@/engine/core/IgeEntity";
 import { IgeTexture } from "@/engine/core/IgeTexture";
 import { IgeThreeJsRenderer } from "@/engine/core/IgeThreeJsRenderer";
+import { IgeTween } from "@/engine/core/IgeTween";
 import { ige } from "@/engine/instance";
+import { degreesToRadians } from "@/engine/utils/maths";
+import { IgeTweenRepeatMode } from "@/enums/IgeTweenRepeatMode";
 import type { IgeCanInit } from "@/types/IgeCanInit";
 
 // @ts-ignore
@@ -35,15 +38,64 @@ export class Client extends IgeBaseClass implements IgeCanInit {
 		void ige.engine.addGraph(IgeBaseScene);
 
 		new IgeEntity()
-			.id("testEntity")
-			.material({
+			.id("testEntity1")
+			.materialData({
 				color: "#e1b9b9"
 			})
 			.width(100)
 			.height(100)
-			.translateTo(100, 0, 0)
+			.translateTo(100, -100, 0)
 			.rotateTo(0, 0, 0)
 			.scaleTo(1, 1, 1)
 			.mount(ige.$("baseScene"));
+
+		const numEntities = 150;
+		const columns = Math.floor(Math.sqrt(numEntities));
+		for (let i = 0; i < numEntities; i++) {
+			const row = Math.floor(i / (numEntities / columns));
+			const y = 0;//(row * 100);
+			const x = 0;//(i * 100) - (row * (columns * 100));
+			const entity = new IgeEntity()
+				.materialData({
+					color: "#ffffff",
+					url: "./lenna.png"
+				})
+				.width(100)
+				.height(100)
+				.translateTo(x, y, 0)
+				.rotateTo(0, 0, 0)
+				.scaleTo(1, 1, 1)
+				.mount(ige.$("baseScene"));
+
+			new IgeTween(entity._translate)
+				.stepTo({
+					x: (Math.random() * 2000) - 1000,
+					y: (Math.random() * 2000) - 1000,
+					z: (Math.random() * 100) - 50
+				})
+				.stepTo({
+					x: x,
+					y: y,
+					z: 0
+				})
+				.duration(5000)
+				.repeatMode(IgeTweenRepeatMode.reverse, -1)
+				.easing("inOutExpo")
+				.start();
+
+			new IgeTween(entity._rotate)
+				.stepTo({
+					x: degreesToRadians(Math.random() * 360),
+					z: degreesToRadians(Math.random() * 360)
+				})
+				.stepTo({
+					x: 0,
+					z: 0
+				})
+				.duration(5000)
+				.repeatMode(IgeTweenRepeatMode.reverse, -1)
+				.easing("inOutExpo")
+				.start();
+		}
 	}
 }
