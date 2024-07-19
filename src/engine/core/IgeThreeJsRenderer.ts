@@ -1,11 +1,14 @@
 import { IgeBaseRenderer } from "@/engine/core/IgeBaseRenderer";
 import type { IgeEngine } from "@/engine/core/IgeEngine";
 import type { IgeEntity } from "@/engine/core/IgeEntity";
+import type { IgeObject } from "@/engine/core/IgeObject";
+import { IgeScene2d } from "@/engine/core/IgeScene2d";
 import type { IgeViewport } from "@/engine/core/IgeViewport";
 import { PI180 } from "@/engine/utils/maths";
 import * as THREE from "three";
 
 export class IgeThreeJsRenderer extends IgeBaseRenderer {
+	classId = "IgeThreeJsRenderer";
 	protected _threeJsRenderer: THREE.WebGLRenderer;
 	protected _threeJsScene: THREE.Scene;
 	protected _threeJsCamera: THREE.PerspectiveCamera;
@@ -36,13 +39,13 @@ export class IgeThreeJsRenderer extends IgeBaseRenderer {
 
 		this._recalculatePixelScale();
 
-		const texture = new THREE.TextureLoader().load("./lenna.png");
-		const geometry = new THREE.PlaneGeometry(1, 1);
-		this.normaliseScale(geometry, 100, 100);
+		//const texture = new THREE.TextureLoader().load("./lenna.png");
+		//const geometry = new THREE.PlaneGeometry(1, 1);
+		//this.normaliseScale(geometry, 100, 100);
 
-		const material = new THREE.MeshBasicMaterial({ map: texture });
-		const planeMesh = new THREE.Mesh(geometry, material);
-		this._threeJsScene.add(planeMesh);
+		//const material = new THREE.MeshBasicMaterial({ map: texture });
+		//const planeMesh = new THREE.Mesh(geometry, material);
+		//this._threeJsScene.add(planeMesh);
 	}
 
 	_recalculatePixelScale () {
@@ -55,11 +58,12 @@ export class IgeThreeJsRenderer extends IgeBaseRenderer {
 		this._pixelScale.pixelHeight = viewportDimensions.height; // in pixels
 	}
 
-	normaliseScale (geometry: THREE.BufferGeometry, targetWidth: number, targetHeight: number) {
-		const scaleWidth = (targetWidth / this._pixelScale.pixelWidth) * this._pixelScale.fovWidth;
-		const scaleHeight = (targetHeight / this._pixelScale.pixelHeight) * this._pixelScale.fovHeight;
+	normaliseScale (mesh: THREE.Mesh, targetWidth: number, targetHeight: number) {
+		const scaleWidth = this.normaliseX(targetWidth);
+		const scaleHeight = this.normaliseY(targetHeight);
 
-		geometry.scale(scaleWidth, scaleHeight, 1);
+		mesh.scale.x = scaleWidth;
+		mesh.scale.y = scaleHeight;
 	}
 
 	normaliseX (targetX: number) {
@@ -81,6 +85,15 @@ export class IgeThreeJsRenderer extends IgeBaseRenderer {
 		this._recalculatePixelScale();
 	};
 
+	_renderEntities (entityArr?: IgeEntity[]) {
+		if (!entityArr || !entityArr.length) return;
+		entityArr.forEach((child) => {
+			this._ensureFrameworkInterface(child);
+			this._transformObject(child);
+			this._renderEntities(child.children() as IgeEntity[]);
+		});
+	}
+
 	renderSceneGraph (engine: IgeEngine, viewports: IgeViewport[]): boolean {
 		this._threeJsRenderer.render(this._threeJsScene, this._threeJsCamera);
 
@@ -93,50 +106,101 @@ export class IgeThreeJsRenderer extends IgeBaseRenderer {
 
 			// TODO: Create the corresponding three.js scene for the IGE scene
 
-			(scene.children() as IgeEntity[]).forEach((child) => {
-				const childModel = child.model();
-				const childMaterial = child.material();
-
-				if (!childModel) return;
-				if (!childMaterial) return;
-
-				childMaterial.meta = childMaterial.meta || {};
-				if (!childMaterial.meta.three) {
-					// Create the material
-					const material = new THREE.MeshBasicMaterial({ color: childMaterial.color });
-					childMaterial.meta = {
-						"three": { material }
-					};
-				}
-
-				childModel.meta = childModel.meta || {};
-				if (!childModel.meta.three) {
-					// Create the geometry
-					const geometry = new THREE.PlaneGeometry(1, 1);
-					const mesh = new THREE.Mesh(geometry, childMaterial.meta.three.material);
-					mesh.position.x = this.normaliseX(child._translate.x);
-					mesh.position.y = this.normaliseY(child._translate.y);
-					mesh.position.z = child._translate.z;
-
-					mesh.rotation.x = child._rotate.x;
-					mesh.rotation.y = child._rotate.y;
-					mesh.rotation.z = child._rotate.z;
-
-					this.normaliseScale(geometry, child.width() * child._scale.x, child.height() * child._scale.y);
-					this._threeJsScene.add(mesh);
-
-					childModel.meta = {
-						"three": {
-							geometry,
-							mesh
-						}
-					};
-				}
-
-
-			});
+			this._renderEntities(scene.children() as IgeEntity[]);
 		});
 
 		return true;
+	}
+
+	_ensureFrameworkScene (scene: IgeScene2d) {
+		const childGeometryData = scene.geometryData();
+		const childMaterialData = scene.materialData();
+
+		if (!childGeometryData) return;
+		if (!childMaterialData) return;
+
+		const mesh = new THREE.Scene();
+		this._threeJsScene.add(mesh);
+
+		const newChildMeshData = {
+			id: scene.id(),
+			meta: {}
+		};
+
+		this.setData(newChildMeshData, mesh);
+		scene.meshData(newChildMeshData);
+	}
+
+	_ensureFrameworkEntity (entity: IgeObject) {
+		const childMeshData = entity.meshData();
+		const childGeometryData = entity.geometryData();
+		const childMaterialData = entity.materialData();
+
+		if (!childGeometryData) return;
+		if (!childMaterialData) return;
+
+		let material: THREE.Material | undefined = this.getData(childMaterialData);
+
+		if (!material) {
+			const finalMaterial: THREE.MeshBasicMaterialParameters = {
+				color: childMaterialData.color,
+				side: THREE.DoubleSide
+			};
+
+			// Create the material
+			if (childMaterialData.url) {
+				finalMaterial.map = new THREE.TextureLoader().load(childMaterialData.url);
+			}
+
+			material = new THREE.MeshBasicMaterial(finalMaterial);
+			this.setData(childMaterialData, material);
+		}
+
+		let geometry: THREE.BufferGeometry | undefined = this.getData(childGeometryData);
+
+		if (!geometry) {
+			// Create the geometry
+			geometry = new THREE.PlaneGeometry(1, 1);
+			this.setData(childGeometryData, geometry);
+		}
+
+		if (!childMeshData) {
+			// We don't have a defined mesh yet, let's create one
+			const mesh = new THREE.Mesh(geometry, material);
+			this._threeJsScene.add(mesh);
+
+			const newChildMeshData = {
+				id: entity.id(),
+				meta: {}
+			};
+
+			this.setData(newChildMeshData, mesh);
+			entity.meshData(newChildMeshData);
+		}
+	}
+
+	_ensureFrameworkInterface (obj: IgeObject) {
+		const isScene = obj instanceof IgeScene2d;
+
+		if (isScene) {
+			return this._ensureFrameworkScene(obj);
+		}
+
+		return this._ensureFrameworkEntity(obj);
+	}
+
+	_transformObject (obj: IgeEntity) {
+		const mesh = this.getData<THREE.Mesh>(obj.meshData());
+		if (!mesh) return;
+
+		mesh.position.x = this.normaliseX(obj._translate.x);
+		mesh.position.y = this.normaliseY(obj._translate.y);
+		mesh.position.z = obj._translate.z;
+
+		mesh.rotation.x = obj._rotate.x;
+		mesh.rotation.y = obj._rotate.y;
+		mesh.rotation.z = obj._rotate.z;
+
+		this.normaliseScale(mesh, obj.width() * obj._scale.x, obj.height() * obj._scale.y);
 	}
 }
