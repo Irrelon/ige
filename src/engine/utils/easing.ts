@@ -249,7 +249,49 @@ export const outInBounce = (t: number, c: number, d: number) => {
 	return inBounce(t * 2 - d, c / 2, c / 2);
 };
 
-export const easingFunctions: Record<string, (...args: any[]) => number> = {
+export type IgeTweenEasingFunctions =
+	"none" |
+	"inQuad" |
+	"outQuad" |
+	"inOutQuad" |
+	"inCubic" |
+	"outCubic" |
+	"inOutCubic" |
+	"outInCubic" |
+	"inQuart" |
+	"outQuart" |
+	"inOutQuart" |
+	"outInQuart" |
+	"inQuint" |
+	"outQuint" |
+	"inOutQuint" |
+	"outInQuint" |
+	"inSine" |
+	"outSine" |
+	"inOutSine" |
+	"outInSine" |
+	"inExpo" |
+	"outExpo" |
+	"inOutExpo" |
+	"outInExpo" |
+	"inCirc" |
+	"outCirc" |
+	"inOutCirc" |
+	"outInCirc" |
+	"inElastic" |
+	"outElastic" |
+	"inOutElastic" |
+	"outInElastic" |
+	"inBack" |
+	"outBack" |
+	"inOutBack" |
+	"outInBack" |
+	"inBounce" |
+	"outBounce" |
+	"inOutBounce" |
+	"outInBounce";
+
+export const easingFunctions: Record<IgeTweenEasingFunctions, (...args: any[]) => number> = {
 	none,
 	inQuad,
 	outQuad,
