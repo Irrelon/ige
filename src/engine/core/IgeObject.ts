@@ -575,6 +575,16 @@ export class IgeObject extends IgeEventingClass implements IgeCanRegisterById, I
 		return this._bounds3dPolygon;
 	}
 
+	statStart (funcName: string, statType: string): number {
+		if (!ige.config.debug._timing) return 0;
+		return ige.stats.start(`${funcName}.${this.id()}.${statType}`);
+	}
+
+	statEnd (funcName: string, statType: string): number {
+		if (!ige.config.debug._timing) return 0;
+		return ige.stats.end(`${funcName}.${this.id()}.${statType}`);
+	}
+
 	update (tickDelta: number) {
 		// Check that we are alive before processing further
 		if (!this._alive) {
@@ -596,17 +606,9 @@ export class IgeObject extends IgeEventingClass implements IgeCanRegisterById, I
 		// Depth sort all child objects
 		// if (arrCount && !ige.engine._headless) {
 		if (arrCount) {
-			if (ige.config.debug._timing) {
-				if (!ige.engine._timeSpentLastTick[this.id()]) {
-					ige.engine._timeSpentLastTick[this.id()] = {};
-				}
-
-				const ts = new Date().getTime();
-				this.depthSortChildren();
-				ige.engine._timeSpentLastTick[this.id()].depthSortChildren = new Date().getTime() - ts;
-			} else {
-				this.depthSortChildren();
-			}
+			this.statStart("update", "depthSortChildren");
+			this.depthSortChildren();
+			this.statEnd("update", "depthSortChildren");
 		}
 
 		// Loop our children and call their update methods
@@ -619,24 +621,10 @@ export class IgeObject extends IgeEventingClass implements IgeCanRegisterById, I
 		}
 
 		while (arrCount--) {
-			const ts = new Date().getTime();
+			this.statStart("update", "");
 			arr[arrCount].update(tickDelta);
-			const td = new Date().getTime() - ts;
-
-			if (!arr[arrCount]) {
-				continue;
-			}
-
-			if (!ige.engine._timeSpentInTick[arr[arrCount].id()]) {
-				ige.engine._timeSpentInTick[arr[arrCount].id()] = 0;
-			}
-
-			if (!ige.engine._timeSpentLastTick[arr[arrCount].id()]) {
-				ige.engine._timeSpentLastTick[arr[arrCount].id()] = {};
-			}
-
-			ige.engine._timeSpentInTick[arr[arrCount].id()] += td;
-			ige.engine._timeSpentLastTick[arr[arrCount].id()].tick = td;
+			this.statEnd("update", "");
+			this.statEnd("update", "tick");
 		}
 
 		return;
@@ -663,28 +651,28 @@ export class IgeObject extends IgeEventingClass implements IgeCanRegisterById, I
 					continue;
 				}
 
-				if (!arr[arrCount]._newBorn) {
-					ctx.save();
+				if (arr[arrCount]._newBorn) continue;
 
-					const ts = new Date().getTime();
-					arr[arrCount].tick(ctx);
-					const td = new Date().getTime() - ts;
+				ctx.save();
 
-					if (arr[arrCount]) {
-						if (!ige.engine._timeSpentInTick[arr[arrCount].id()]) {
-							ige.engine._timeSpentInTick[arr[arrCount].id()] = 0;
-						}
+				const ts = new Date().getTime();
+				arr[arrCount].tick(ctx);
+				const td = new Date().getTime() - ts;
 
-						if (!ige.engine._timeSpentLastTick[arr[arrCount].id()]) {
-							ige.engine._timeSpentLastTick[arr[arrCount].id()] = {};
-						}
-
-						ige.engine._timeSpentInTick[arr[arrCount].id()] += td;
-						ige.engine._timeSpentLastTick[arr[arrCount].id()].tick = td;
+				if (arr[arrCount]) {
+					if (!ige.engine._timeSpentInTick[arr[arrCount].id()]) {
+						ige.engine._timeSpentInTick[arr[arrCount].id()] = 0;
 					}
 
-					ctx.restore();
+					if (!ige.engine._timeSpentLastTick[arr[arrCount].id()]) {
+						ige.engine._timeSpentLastTick[arr[arrCount].id()] = {};
+					}
+
+					ige.engine._timeSpentInTick[arr[arrCount].id()] += td;
+					ige.engine._timeSpentLastTick[arr[arrCount].id()].tick = td;
 				}
+
+				ctx.restore();
 			}
 		} else {
 			while (arrCount--) {
