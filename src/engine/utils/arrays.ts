@@ -49,7 +49,7 @@ export const pushUnique = (arr: any[], item: any): boolean => {
  * @param arr
  * @return {*}
  */
-export const arrClone = <ArrType extends any[] = any[]> (arr: ArrType[]): ArrType[] => {
+export const arrClone = <ArrType = any> (arr: ArrType[]): ArrType[] => {
 	const newArray: any[] = [];
 
 	for (const i in arr) {

@@ -95,7 +95,7 @@
 		"ttypescript": "^1.5.15",
 		"typedoc": "^0.25.12",
 		"typedoc-material-theme": "^1.0.2",
-		"typescript": "^5.4.2",
+		"typescript": "^5.5.3",
 		"webpack": "^5.89.0",
 		"webpack-bundle-analyzer": "^4.10.1",
 		"webpack-cli": "^5.1.4",
