@@ -3,6 +3,7 @@ import { IgeInputComponent } from "@/engine/components/IgeInputComponent";
 import type { IgeBox2dController } from "@/engine/components/physics/box2d/IgeBox2dController";
 import { igeConfig } from "@/engine/core/config";
 import { IgeArrayRegister } from "@/engine/core/IgeArrayRegister";
+import { IgeStats } from "@/engine/core/IgeStats";
 import { IgeDependencies } from "@/engine/core/IgeDependencies";
 import type { IgeEngine } from "@/engine/core/IgeEngine";
 import { IgeMetrics } from "@/engine/core/IgeMetrics";
@@ -42,6 +43,7 @@ export class Ige implements IgeIsReadyPromise {
 	ui: IgeUiManagerController;
 	// @ts-ignore
 	engine: IgeEngine;
+	stats: IgeStats = new IgeStats();
 	textures: IgeTextureStore = new IgeTextureStore();
 	input: IgeInputComponent = new IgeInputComponent();
 	time: IgeTimeController = new IgeTimeController();
