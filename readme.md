@@ -49,7 +49,7 @@ related to the data e.g. `this.translateTo(streamData.x, streamData.y, streamDat
 The same goes for rotateTo() and scaleTo(). This is so that code is written that
 overrides those base class methods will get called correctly when the streamed
 entity is transformed. Previously there was no way to detect that a transform had
-changed by streaming data.
+changed by data that had been set after being received from streaming data.
 
 #### IGE Initialisation
 
