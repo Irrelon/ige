@@ -1,5 +1,5 @@
-import type { IgeMaterial } from "@/engine/core/IgeMaterial";
+import type { IgeMaterialData } from "@/types/IgeMaterialData";
 
-export const IgeMaterialBlank: IgeMaterial = {
+export const IgeMaterialBlank: IgeMaterialData = {
 	meta: {}
 };
