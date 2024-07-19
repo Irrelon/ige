@@ -49,16 +49,16 @@ export const pushUnique = (arr: any[], item: any): boolean => {
  * @param arr
  * @return {*}
  */
-export const arrClone = (arr: any[]) => {
+export const arrClone = <ArrType extends any[] = any[]> (arr: ArrType[]): ArrType[] => {
 	const newArray: any[] = [];
 
 	for (const i in arr) {
-		if (arr.hasOwnProperty(i)) {
-			if (arr[i] instanceof Array) {
-				newArray[i] = arrClone(arr[i]);
-			} else {
-				newArray[i] = arr[i];
-			}
+		if (!arr.hasOwnProperty(i)) continue;
+
+		if (arr[i] instanceof Array) {
+			newArray[i] = arrClone(arr[i]);
+		} else {
+			newArray[i] = arr[i];
 		}
 	}
 
