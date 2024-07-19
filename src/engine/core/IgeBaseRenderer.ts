@@ -4,6 +4,7 @@ import { IgePoint2d } from "@/engine/core/IgePoint2d";
 import type { IgeViewport } from "@/engine/core/IgeViewport";
 import { ige } from "@/engine/instance";
 import { isServer } from "@/engine/utils/clientServer";
+import type { IgeAbstractData3d } from "@/types/IgeAbstractData3d";
 
 export class IgeBaseRenderer extends IgeEventingClass {
 	classId = "IgeBaseRenderer";
@@ -106,12 +107,45 @@ export class IgeBaseRenderer extends IgeEventingClass {
 		}
 
 		if (!this._canvasElement) return;
-		
+
 		if (this._devicePixelRatio !== 1) {
 			this._canvasElement.style.width = this._bounds2d.x + "px";
 			this._canvasElement.style.height = this._bounds2d.y + "px";
 		}
 
 		//this.log(`Device pixel ratio is ${this._devicePixelRatio}`);
+	}
+
+	getData<DataType = any> (obj: IgeAbstractData3d | null | undefined, defaultVal?: DataType): DataType | undefined {
+		if (!obj) return defaultVal;
+
+		obj.meta = obj.meta || {};
+		const val = obj?.meta[this.classId];
+		if (val === undefined) return defaultVal;
+
+		return val as DataType;
+	}
+
+	setData<DataType = any> (obj: IgeAbstractData3d, val: DataType) {
+		obj.meta = obj.meta || {};
+		obj.meta[this.classId] = val;
+
+		return this;
+	}
+
+	getDataProp<DataType = any> (obj: IgeAbstractData3d | null | undefined, propName: string, defaultVal?: DataType) {
+		if (!obj) return defaultVal;
+
+		const val = obj?.meta?.[this.classId]?.[propName];
+		if (val === undefined) return defaultVal;
+
+		return val as DataType;
+	}
+
+	setDataProp<DataType = any> (obj: IgeAbstractData3d, propName: string, val: DataType) {
+		obj.meta = obj.meta || {};
+		(obj.meta[this.classId] = obj.meta[this.classId] || {})[propName] = val;
+
+		return this;
 	}
 }
