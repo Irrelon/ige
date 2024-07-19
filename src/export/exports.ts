@@ -148,6 +148,7 @@ export * from "../engine/core/IgeEntity";
 export * from "../engine/core/IgeCamera";
 export * from "../engine/core/IgeBaseRenderer";
 export * from "../engine/core/IgeCanvas2dRenderer";
+export * from "../engine/core/IgeThreeJsRenderer";
 export * from "../engine/core/IgeEngine";
 export * from "../engine/network/chat/IgeChatComponent";
 export * from "../engine/core/IgeUiEntity";
