@@ -9,13 +9,13 @@ const IgePoint2d_1 = require("./IgePoint2d.js");
 const IgePoint3d_1 = require("./IgePoint3d.js");
 const IgePoly2d_1 = require("./IgePoly2d.js");
 const IgeBounds_1 = require("./IgeBounds.js");
-const IgeQuad_1 = require("../models/IgeQuad.js");
 const arrays_1 = require("../utils/arrays.js");
 const clientServer_1 = require("../utils/clientServer.js");
 const ids_1 = require("../utils/ids.js");
 const maths_1 = require("../utils/maths.js");
 const synthesize_1 = require("../utils/synthesize.js");
 const enums_1 = require("../../enums/index.js");
+const IgeQuadGeometry_1 = require("../geometry/IgeQuadGeometry");
 class IgeObject extends IgeEventingClass_1.IgeEventingClass {
     constructor() {
         super();
@@ -34,7 +34,6 @@ class IgeObject extends IgeEventingClass_1.IgeEventingClass {
         this._tileWidth = 1;
         this._tileHeight = 1;
         this._tileDepth = 1;
-        this._specialProp = [];
         this._streamDataCache = "";
         this._streamSections = ["transform", "props"];
         this._streamProperty = {};
@@ -72,15 +71,13 @@ class IgeObject extends IgeEventingClass_1.IgeEventingClass {
         this._frameAlternatorCurrent = false;
         this._backgroundPatternRepeat = null;
         this._bounds3dPolygonDirty = false;
-        this._model = IgeQuad_1.IgeQuad; // Default to a basic quad
-        this._material = null;
+        this._geometryData = IgeQuadGeometry_1.IgeQuadGeometry; // Default to a basic quad (square)
+        this._materialData = null;
+        this._meshData = null;
         this.components = {};
         this._sortChildren = (compareFn) => {
             return this._children.sort(compareFn);
         };
-        this._specialProp.push("_id");
-        this._specialProp.push("_parent");
-        this._specialProp.push("_children");
         this._anchor = new IgePoint2d_1.IgePoint2d(0, 0);
         this._renderPos = { x: 0, y: 0 };
         this._computedOpacity = 1;
@@ -309,6 +306,16 @@ class IgeObject extends IgeEventingClass_1.IgeEventingClass {
         }
         return this._bounds3dPolygon;
     }
+    statStart(funcName, statType) {
+        if (!instance_1.ige.config.debug._timing)
+            return 0;
+        return instance_1.ige.stats.start(`${funcName}.${this.id()}.${statType}`);
+    }
+    statEnd(funcName, statType) {
+        if (!instance_1.ige.config.debug._timing)
+            return 0;
+        return instance_1.ige.stats.end(`${funcName}.${this.id()}.${statType}`);
+    }
     update(tickDelta) {
         // Check that we are alive before processing further
         if (!this._alive) {
@@ -325,17 +332,9 @@ class IgeObject extends IgeEventingClass_1.IgeEventingClass {
         // Depth sort all child objects
         // if (arrCount && !ige.engine._headless) {
         if (arrCount) {
-            if (instance_1.ige.config.debug._timing) {
-                if (!instance_1.ige.engine._timeSpentLastTick[this.id()]) {
-                    instance_1.ige.engine._timeSpentLastTick[this.id()] = {};
-                }
-                const ts = new Date().getTime();
-                this.depthSortChildren();
-                instance_1.ige.engine._timeSpentLastTick[this.id()].depthSortChildren = new Date().getTime() - ts;
-            }
-            else {
-                this.depthSortChildren();
-            }
+            this.statStart("update", "depthSortChildren");
+            this.depthSortChildren();
+            this.statEnd("update", "depthSortChildren");
         }
         // Loop our children and call their update methods
         if (!instance_1.ige.config.debug._timing) {
@@ -345,20 +344,10 @@ class IgeObject extends IgeEventingClass_1.IgeEventingClass {
             return;
         }
         while (arrCount--) {
-            const ts = new Date().getTime();
+            this.statStart("update", "");
             arr[arrCount].update(tickDelta);
-            const td = new Date().getTime() - ts;
-            if (!arr[arrCount]) {
-                continue;
-            }
-            if (!instance_1.ige.engine._timeSpentInTick[arr[arrCount].id()]) {
-                instance_1.ige.engine._timeSpentInTick[arr[arrCount].id()] = 0;
-            }
-            if (!instance_1.ige.engine._timeSpentLastTick[arr[arrCount].id()]) {
-                instance_1.ige.engine._timeSpentLastTick[arr[arrCount].id()] = {};
-            }
-            instance_1.ige.engine._timeSpentInTick[arr[arrCount].id()] += td;
-            instance_1.ige.engine._timeSpentLastTick[arr[arrCount].id()].tick = td;
+            this.statEnd("update", "");
+            this.statEnd("update", "tick");
         }
         return;
     }
@@ -378,23 +367,23 @@ class IgeObject extends IgeEventingClass_1.IgeEventingClass {
                     this.log("Object _children is undefined for index " + arrCount + " and _id: " + this._id, "error");
                     continue;
                 }
-                if (!arr[arrCount]._newBorn) {
-                    ctx.save();
-                    const ts = new Date().getTime();
-                    arr[arrCount].tick(ctx);
-                    const td = new Date().getTime() - ts;
-                    if (arr[arrCount]) {
-                        if (!instance_1.ige.engine._timeSpentInTick[arr[arrCount].id()]) {
-                            instance_1.ige.engine._timeSpentInTick[arr[arrCount].id()] = 0;
-                        }
-                        if (!instance_1.ige.engine._timeSpentLastTick[arr[arrCount].id()]) {
-                            instance_1.ige.engine._timeSpentLastTick[arr[arrCount].id()] = {};
-                        }
-                        instance_1.ige.engine._timeSpentInTick[arr[arrCount].id()] += td;
-                        instance_1.ige.engine._timeSpentLastTick[arr[arrCount].id()].tick = td;
+                if (arr[arrCount]._newBorn)
+                    continue;
+                ctx.save();
+                const ts = new Date().getTime();
+                arr[arrCount].tick(ctx);
+                const td = new Date().getTime() - ts;
+                if (arr[arrCount]) {
+                    if (!instance_1.ige.engine._timeSpentInTick[arr[arrCount].id()]) {
+                        instance_1.ige.engine._timeSpentInTick[arr[arrCount].id()] = 0;
                     }
-                    ctx.restore();
+                    if (!instance_1.ige.engine._timeSpentLastTick[arr[arrCount].id()]) {
+                        instance_1.ige.engine._timeSpentLastTick[arr[arrCount].id()] = {};
+                    }
+                    instance_1.ige.engine._timeSpentInTick[arr[arrCount].id()] += td;
+                    instance_1.ige.engine._timeSpentLastTick[arr[arrCount].id()].tick = td;
                 }
+                ctx.restore();
             }
         }
         else {
@@ -523,6 +512,11 @@ class IgeObject extends IgeEventingClass_1.IgeEventingClass {
             this._compositeParent = false;
         }
         this._mounted(this._parent);
+        /**
+         * Fires when the object has been mounted to a parent.
+         * @event IgeObject#mounted
+         * @param {IgeObject} The parent the object was mounted to.
+         */
         this.emit("mounted", this._parent);
         return this;
     }
@@ -1635,6 +1629,12 @@ class IgeObject extends IgeEventingClass_1.IgeEventingClass {
                                 if (this.onStreamProperty) {
                                     this.onStreamProperty(i, props[i]);
                                 }
+                                /**
+                                 * Fires when one of the stream properties of the object changes.
+                                 * @event IgeObject#streamPropChange
+                                 * @param {string} The property key.
+                                 * @param {any} The property value.
+                                 */
                                 this.emit("streamPropChange", i, props[i]);
                             }
                         }
@@ -1772,10 +1772,24 @@ class IgeObject extends IgeEventingClass_1.IgeEventingClass {
         this._behaviours = {};
     }
     /**
-     * Destroys the object and all it's child objects, removing them from the
-     * scenegraph and from memory.
+     * Destroys the object by removing it from the scenegraph,
+     * calling destroy() on any child objects and removing
+     * any active event listeners for the object. Once an object
+     * has been destroyed it's `_alive` flag is also set to
+     * false.
+     * @example #Destroy the object
+     *     obj.destroy();
      */
     destroy() {
+        // Set a flag in case a reference to this object
+        // has been held somewhere, shows that the object
+        // should no longer be interacted with
+        this._alive = false;
+        // Check if the entity is streaming
+        if (clientServer_1.isServer && this._streamMode === enums_1.IgeStreamMode.simple) {
+            this._streamDataCache = "";
+            this.streamDestroy();
+        }
         // Remove ourselves from any parent
         this.unMount();
         // Remove any children
@@ -1788,10 +1802,12 @@ class IgeObject extends IgeEventingClass_1.IgeEventingClass {
         instance_1.ige.register.remove(this);
         instance_1.ige.categoryRegister.remove(this);
         instance_1.ige.groupRegister.remove(this);
-        // Set a flag in case a reference to this object
-        // has been held somewhere, shows that the object
-        // should no longer be interacted with
-        this._alive = false;
+        /**
+         * Fires when the object has been destroyed.
+         * @event IgeObject#destroyed
+         * @param {IgeObject} The object that has been destroyed.
+         */
+        this.emit("destroyed", this);
         // Remove the event listeners array in case any
         // object references still exist there
         this._eventListeners = {};
@@ -1901,5 +1917,6 @@ class IgeObject extends IgeEventingClass_1.IgeEventingClass {
     }
 }
 exports.IgeObject = IgeObject;
-(0, synthesize_1.synthesize)(IgeObject, "model");
-(0, synthesize_1.synthesize)(IgeObject, "material");
+(0, synthesize_1.synthesize)(IgeObject, "geometryData");
+(0, synthesize_1.synthesize)(IgeObject, "materialData");
+(0, synthesize_1.synthesize)(IgeObject, "meshData");

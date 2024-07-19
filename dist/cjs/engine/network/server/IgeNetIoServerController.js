@@ -248,9 +248,9 @@ class IgeNetIoServerController extends IgeNetIoBaseController_1.IgeNetIoBaseCont
      * automatically be called and passed the data from the incoming network
      * packet.
      * @param {string} commandName The name of the command to define.
-     * @param {Function=} callback A function to call when the defined network
+     * @param {IgeNetworkServerSideMessageHandler | IgeNetworkServerSideRequestHandler} [callback] A function to call when the defined network
      * command is received by the network.
-     * @return {*}
+     * @return {this}
      */
     define(commandName, callback) {
         this._networkCommands[commandName] = callback;
@@ -265,7 +265,7 @@ class IgeNetIoServerController extends IgeNetIoBaseController_1.IgeNetIoBaseCont
      * "ige" by default when they connect to the server.
      * @param {string} clientId The id of the client to add to the room.
      * @param {string} roomId The id of the room to add the client to.
-     * @returns {*}
+     * @returns {this}
      */
     clientJoinRoom(clientId, roomId) {
         this._clientRooms[clientId] = this._clientRooms[clientId] || [];
@@ -283,7 +283,7 @@ class IgeNetIoServerController extends IgeNetIoBaseController_1.IgeNetIoBaseCont
      * them from it if your game defines custom rooms etc.
      * @param {string} clientId The id of the client to remove from the room.
      * @param {string} roomId The id of the room to remove the client from.
-     * @returns {*}
+     * @returns {this}
      */
     clientLeaveRoom(clientId, roomId) {
         if (this._clientRooms[clientId]) {
@@ -295,7 +295,7 @@ class IgeNetIoServerController extends IgeNetIoBaseController_1.IgeNetIoBaseCont
     /**
      * Removes a client from all rooms that it is a member of.
      * @param {string} clientId The client id to remove from all rooms.
-     * @returns {*}
+     * @returns {this}
      */
     clientLeaveAllRooms(clientId) {
         const arr = this._clientRooms[clientId];
@@ -309,7 +309,7 @@ class IgeNetIoServerController extends IgeNetIoBaseController_1.IgeNetIoBaseCont
     /**
      * Gets the array of room ids that the client has joined.
      * @param clientId
-     * @returns {Array} An array of string ids for each room the client has joined.
+     * @returns {string[]} An array of string ids for each room the client has joined.
      */
     clientRooms(clientId) {
         return this._clientRooms[clientId] || [];
@@ -319,7 +319,7 @@ class IgeNetIoServerController extends IgeNetIoBaseController_1.IgeNetIoBaseCont
      * by their ID.
      * @param {string=} roomId Optional, if provided will only return clients
      * that have joined room specified by the passed roomId.
-     * @return
+     * @return {Record<string, IgeNetIoSocket>}
      */
     clients(roomId) {
         if (!roomId)
@@ -328,8 +328,8 @@ class IgeNetIoServerController extends IgeNetIoBaseController_1.IgeNetIoBaseCont
     }
     /**
      * Returns the socket associated with the specified client id.
-     * @param {string=} clientId
-     * @return {*}
+     * @param {string} clientId
+     * @return {IgeNetIoSocket}
      */
     socket(clientId) {
         return this._socketById[clientId];
@@ -339,7 +339,7 @@ class IgeNetIoServerController extends IgeNetIoBaseController_1.IgeNetIoBaseCont
      * should be allowed to connect (true) or dropped instantly (false).
      * @param {boolean} val Set to true to allow connections or false
      * to drop any incoming connections.
-     * @return {*}
+     * @return {boolean|this}
      */
     acceptConnections(val) {
         if (typeof val === "undefined") {
@@ -387,7 +387,7 @@ class IgeNetIoServerController extends IgeNetIoBaseController_1.IgeNetIoBaseCont
      * respond by calling ige.network.response(). When the response
      * is received, the callback method that was passed in the
      * callback parameter will be fired with the response data.
-     * @param {string} commandName
+     * @param {string} cmd
      * @param {Object} data
      * @param clientIdOrArrayOfIds
      * @param {Function} callback
@@ -470,12 +470,6 @@ class IgeNetIoServerController extends IgeNetIoBaseController_1.IgeNetIoBaseCont
         this.clientLeaveAllRooms(socket._id);
         delete this._socketById[socket._id];
     }
-    /**
-     * Gets / sets the interval by which updates to the game world are packaged
-     * and transmitted to connected clients. The greater the value, the less
-     * updates are sent per second.
-     * @param {number=} ms The number of milliseconds between stream messages.
-     */
     sendInterval(ms) {
         if (ms !== undefined) {
             this.log("Setting delta stream interval to " + ms / instance_1.ige.engine._timeScale + "ms");
@@ -497,7 +491,7 @@ class IgeNetIoServerController extends IgeNetIoBaseController_1.IgeNetIoBaseCont
      * @param {string} entityId The id of the entity that this data belongs to.
      * @param {string} data The data queued for delivery to the client.
      * @param {string} clientId The client id this data is queued for.
-     * @return {*}
+     * @return {this}
      */
     queue(entityId, data, clientId) {
         this._queuedData[entityId] = [data, clientId];

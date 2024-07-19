@@ -5,8 +5,24 @@ const IgeBaseClass_1 = require("./IgeBaseClass.js");
 const instance_1 = require("../instance.js");
 const arrays_1 = require("../utils/arrays.js");
 const easing_1 = require("../utils/easing.js");
+const IgeTweenRepeatMode_1 = require("../../enums/IgeTweenRepeatMode.js");
 /**
- * Creates a new tween instance.
+ * Creates a new tween instance. A tween instance automatically tweens
+ * properties over time. The engine must have the tweening component
+ * added before you can use IgeTween. You can do this by calling
+ * `ige.uses("tweening");` before your call to `ige.init()`.
+ *
+ * All the actual tweening functionality is calculated and executed
+ * in the IgeTweenController (ige.tweening).
+ *
+ * @example Tween an entity's position
+ *      const entity = new IgeEntity();
+ *      new IgeTween(entity._translate)
+ *          .properties({
+ *              x: 500
+ *          })
+ *          .duration(5000) // 5 seconds
+ *          .start();
  */
 class IgeTween extends IgeBaseClass_1.IgeBaseClass {
     constructor(targetObj, propertyObj, durationMs, options) {
@@ -17,8 +33,8 @@ class IgeTween extends IgeBaseClass_1.IgeBaseClass {
         this._endTime = 0;
         this._targetData = [];
         this._destTime = 0;
-        this._repeatMode = 0;
-        this._repeatCount = 0;
+        this._repeatMode = IgeTweenRepeatMode_1.IgeTweenRepeatMode.none;
+        this._repeatCount = -1;
         this._repeatedCount = 0;
         this._easing = "none";
         // Create a new tween object and return it
@@ -211,13 +227,6 @@ class IgeTween extends IgeBaseClass_1.IgeBaseClass {
             this._afterChange = callback;
         }
         return this;
-    }
-    /**
-     * Returns the object that this tween is modifying.
-     * @return {*}
-     */
-    targetObject() {
-        return this._targetObj;
     }
     easing(methodName) {
         if (methodName === undefined) {

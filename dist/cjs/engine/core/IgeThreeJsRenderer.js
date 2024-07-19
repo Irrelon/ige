@@ -25,11 +25,13 @@ var __importStar = (this && this.__importStar) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.IgeThreeJsRenderer = void 0;
 const IgeBaseRenderer_1 = require("./IgeBaseRenderer.js");
+const IgeScene2d_1 = require("./IgeScene2d.js");
 const maths_1 = require("../utils/maths.js");
 const THREE = __importStar(require("three"));
 class IgeThreeJsRenderer extends IgeBaseRenderer_1.IgeBaseRenderer {
     constructor() {
         super();
+        this.classId = "IgeThreeJsRenderer";
         this._pixelScale = {
             normalDistance: 100,
             fovRadians: 1,
@@ -56,12 +58,12 @@ class IgeThreeJsRenderer extends IgeBaseRenderer_1.IgeBaseRenderer {
         this._threeJsRenderer.setPixelRatio(this._devicePixelRatio);
         document.body.appendChild(this._threeJsRenderer.domElement);
         this._recalculatePixelScale();
-        const texture = new THREE.TextureLoader().load("./lenna.png");
-        const geometry = new THREE.PlaneGeometry(1, 1);
-        this.normaliseScale(geometry, 100, 100);
-        const material = new THREE.MeshBasicMaterial({ map: texture });
-        const planeMesh = new THREE.Mesh(geometry, material);
-        this._threeJsScene.add(planeMesh);
+        //const texture = new THREE.TextureLoader().load("./lenna.png");
+        //const geometry = new THREE.PlaneGeometry(1, 1);
+        //this.normaliseScale(geometry, 100, 100);
+        //const material = new THREE.MeshBasicMaterial({ map: texture });
+        //const planeMesh = new THREE.Mesh(geometry, material);
+        //this._threeJsScene.add(planeMesh);
     }
     _recalculatePixelScale() {
         const viewportDimensions = this._threeJsRenderer.getDrawingBufferSize(new THREE.Vector2());
@@ -71,16 +73,26 @@ class IgeThreeJsRenderer extends IgeBaseRenderer_1.IgeBaseRenderer {
         this._pixelScale.pixelWidth = viewportDimensions.width; // in pixels
         this._pixelScale.pixelHeight = viewportDimensions.height; // in pixels
     }
-    normaliseScale(geometry, targetWidth, targetHeight) {
-        const scaleWidth = (targetWidth / this._pixelScale.pixelWidth) * this._pixelScale.fovWidth;
-        const scaleHeight = (targetHeight / this._pixelScale.pixelHeight) * this._pixelScale.fovHeight;
-        geometry.scale(scaleWidth, scaleHeight, 1);
+    normaliseScale(mesh, targetWidth, targetHeight) {
+        const scaleWidth = this.normaliseX(targetWidth);
+        const scaleHeight = this.normaliseY(targetHeight);
+        mesh.scale.x = scaleWidth;
+        mesh.scale.y = scaleHeight;
     }
     normaliseX(targetX) {
         return (targetX / this._pixelScale.pixelWidth) * this._pixelScale.fovWidth;
     }
     normaliseY(targetY) {
         return (targetY / this._pixelScale.pixelHeight) * this._pixelScale.fovHeight;
+    }
+    _renderEntities(entityArr) {
+        if (!entityArr || !entityArr.length)
+            return;
+        entityArr.forEach((child) => {
+            this._ensureFrameworkInterface(child);
+            this._transformObject(child);
+            this._renderEntities(child.children());
+        });
     }
     renderSceneGraph(engine, viewports) {
         this._threeJsRenderer.render(this._threeJsScene, this._threeJsCamera);
@@ -90,44 +102,83 @@ class IgeThreeJsRenderer extends IgeBaseRenderer_1.IgeBaseRenderer {
             // Grab the viewport scene and start rendering it
             const scene = viewport.scene();
             // TODO: Create the corresponding three.js scene for the IGE scene
-            scene.children().forEach((child) => {
-                const childModel = child.model();
-                const childMaterial = child.material();
-                if (!childModel)
-                    return;
-                if (!childMaterial)
-                    return;
-                childMaterial.meta = childMaterial.meta || {};
-                if (!childMaterial.meta.three) {
-                    // Create the material
-                    const material = new THREE.MeshBasicMaterial({ color: childMaterial.color });
-                    childMaterial.meta = {
-                        "three": { material }
-                    };
-                }
-                childModel.meta = childModel.meta || {};
-                if (!childModel.meta.three) {
-                    // Create the geometry
-                    const geometry = new THREE.PlaneGeometry(1, 1);
-                    const mesh = new THREE.Mesh(geometry, childMaterial.meta.three.material);
-                    mesh.position.x = this.normaliseX(child._translate.x);
-                    mesh.position.y = this.normaliseY(child._translate.y);
-                    mesh.position.z = child._translate.z;
-                    mesh.rotation.x = child._rotate.x;
-                    mesh.rotation.y = child._rotate.y;
-                    mesh.rotation.z = child._rotate.z;
-                    this.normaliseScale(geometry, child.width() * child._scale.x, child.height() * child._scale.y);
-                    this._threeJsScene.add(mesh);
-                    childModel.meta = {
-                        "three": {
-                            geometry,
-                            mesh
-                        }
-                    };
-                }
-            });
+            this._renderEntities(scene.children());
         });
         return true;
+    }
+    _ensureFrameworkScene(scene) {
+        const childGeometryData = scene.geometryData();
+        const childMaterialData = scene.materialData();
+        if (!childGeometryData)
+            return;
+        if (!childMaterialData)
+            return;
+        const mesh = new THREE.Scene();
+        this._threeJsScene.add(mesh);
+        const newChildMeshData = {
+            id: scene.id(),
+            meta: {}
+        };
+        this.setData(newChildMeshData, mesh);
+        scene.meshData(newChildMeshData);
+    }
+    _ensureFrameworkEntity(entity) {
+        const childMeshData = entity.meshData();
+        const childGeometryData = entity.geometryData();
+        const childMaterialData = entity.materialData();
+        if (!childGeometryData)
+            return;
+        if (!childMaterialData)
+            return;
+        let material = this.getData(childMaterialData);
+        if (!material) {
+            const finalMaterial = {
+                color: childMaterialData.color,
+                side: THREE.DoubleSide
+            };
+            // Create the material
+            if (childMaterialData.url) {
+                finalMaterial.map = new THREE.TextureLoader().load(childMaterialData.url);
+            }
+            material = new THREE.MeshBasicMaterial(finalMaterial);
+            this.setData(childMaterialData, material);
+        }
+        let geometry = this.getData(childGeometryData);
+        if (!geometry) {
+            // Create the geometry
+            geometry = new THREE.PlaneGeometry(1, 1);
+            this.setData(childGeometryData, geometry);
+        }
+        if (!childMeshData) {
+            // We don't have a defined mesh yet, let's create one
+            const mesh = new THREE.Mesh(geometry, material);
+            this._threeJsScene.add(mesh);
+            const newChildMeshData = {
+                id: entity.id(),
+                meta: {}
+            };
+            this.setData(newChildMeshData, mesh);
+            entity.meshData(newChildMeshData);
+        }
+    }
+    _ensureFrameworkInterface(obj) {
+        const isScene = obj instanceof IgeScene2d_1.IgeScene2d;
+        if (isScene) {
+            return this._ensureFrameworkScene(obj);
+        }
+        return this._ensureFrameworkEntity(obj);
+    }
+    _transformObject(obj) {
+        const mesh = this.getData(obj.meshData());
+        if (!mesh)
+            return;
+        mesh.position.x = this.normaliseX(obj._translate.x);
+        mesh.position.y = this.normaliseY(obj._translate.y);
+        mesh.position.z = obj._translate.z;
+        mesh.rotation.x = obj._rotate.x;
+        mesh.rotation.y = obj._rotate.y;
+        mesh.rotation.z = obj._rotate.z;
+        this.normaliseScale(mesh, obj.width() * obj._scale.x, obj.height() * obj._scale.y);
     }
 }
 exports.IgeThreeJsRenderer = IgeThreeJsRenderer;

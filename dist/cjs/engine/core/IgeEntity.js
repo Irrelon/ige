@@ -53,7 +53,7 @@ class IgeEntity extends IgeObject_1.IgeObject {
                     this._pointerOver(event, evc, data);
                 }
                 /**
-                 * Fires when the mouse moves over the entity.
+                 * Fires once when the pointer was outside the entity's bounds and then enters them.
                  * @event IgeEntity#pointerOver
                  * @param {Object} The DOM event object.
                  * @param {Object} The IGE event control object.
@@ -64,6 +64,13 @@ class IgeEntity extends IgeObject_1.IgeObject {
             if (this._pointerMove) {
                 this._pointerMove(event, evc, data);
             }
+            /**
+             * Fires for each change in position when the pointer moves while inside the entity's bounds.
+             * @event IgeEntity#pointerMove
+             * @param {Object} The DOM event object.
+             * @param {Object} The IGE event control object.
+             * @param {*} Any further event data.
+             */
             this.emit("pointerMove", event, evc, data);
         };
         /**
@@ -84,7 +91,7 @@ class IgeEntity extends IgeObject_1.IgeObject {
                 this._pointerOut(event, evc, data);
             }
             /**
-             * Fires when the mouse moves away from the entity.
+             * Fires once when the pointer was inside the entity's bounds and then moves outside of them.
              * @event IgeEntity#pointerOut
              * @param {Object} The DOM event object.
              * @param {Object} The IGE event control object.
@@ -102,7 +109,7 @@ class IgeEntity extends IgeObject_1.IgeObject {
                 this._pointerWheel(event, evc, data);
             }
             /**
-             * Fires when the mouse wheel is moved over the entity.
+             * Fires when the mouse wheel is moved while inside the entity's bounds.
              * @event IgeEntity#pointerWheel
              * @param {Object} The DOM event object.
              * @param {Object} The IGE event control object.
@@ -122,7 +129,7 @@ class IgeEntity extends IgeObject_1.IgeObject {
                 this._pointerUp(event, evc, data);
             }
             /**
-             * Fires when a mouse up occurs on the entity.
+             * Fires when a pointer up occurs while inside the entity's bounds.
              * @event IgeEntity#pointerUp
              * @param {Object} The DOM event object.
              * @param {Object} The IGE event control object.
@@ -142,7 +149,7 @@ class IgeEntity extends IgeObject_1.IgeObject {
                     this._pointerDown(event, evc, data);
                 }
                 /**
-                 * Fires when a mouse down occurs on the entity.
+                 * Fires when a pointer down occurs while inside the entity's bounds.
                  * @event IgeEntity#pointerDown
                  * @param {Object} The DOM event object.
                  * @param {Object} The IGE event control object.
@@ -179,11 +186,6 @@ class IgeEntity extends IgeObject_1.IgeObject {
                 this._handleMouseWheel(input.pointerWheel, evc, eventData);
             }
         };
-        // Register the IgeEntity special properties handler for
-        // serialise and de-serialise support
-        this._specialProp.push("_texture");
-        this._specialProp.push("_eventListeners");
-        this._specialProp.push("_aabb");
         //this._mouseEventTrigger = 0;
         if (clientServer_1.isServer) {
             // Set the stream floating point precision to 2 as default
@@ -1456,45 +1458,6 @@ class IgeEntity extends IgeObject_1.IgeObject {
             return this;
         }
         return this._renderMode === enums_1.IgeEntityRenderMode.iso;
-    }
-    /**
-     * Destroys the entity by removing it from the scenegraph,
-     * calling destroy() on any child entities and removing
-     * any active event listeners for the entity. Once an entity
-     * has been destroyed it's this._alive flag is also set to
-     * false.
-     * @example #Destroy the entity
-     *     entity.destroy();
-     */
-    destroy() {
-        this._alive = false;
-        // Check if the entity is streaming
-        if (clientServer_1.isServer && this._streamMode === enums_1.IgeStreamMode.simple) {
-            this._streamDataCache = "";
-            this.streamDestroy();
-        }
-        /**
-         * Fires when the entity has been destroyed.
-         * @event IgeEntity#destroyed
-         * @param {IgeEntity} The entity that has been destroyed.
-         */
-        this.emit("destroyed", this);
-        // Remove ourselves from any parent
-        this.unMount();
-        // Remove any children
-        if (this._children) {
-            this.destroyChildren();
-        }
-        // Remove the object from the lookup system
-        instance_1.ige.register.remove(this);
-        // Set a flag in case a reference to this object
-        // has been held somewhere, shows that the object
-        // should no longer be interacted with
-        this._alive = false;
-        // Remove the event listeners array in case any
-        // object references still exist there
-        this._eventListeners = {};
-        return super.destroy();
     }
     /**
      * Sorts the _children array by the layer and then depth of each object.

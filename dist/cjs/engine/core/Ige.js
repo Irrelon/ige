@@ -27,6 +27,7 @@ exports.Ige = void 0;
 const IgeInputComponent_1 = require("../components/IgeInputComponent.js");
 const config_1 = require("./config.js");
 const IgeArrayRegister_1 = require("./IgeArrayRegister.js");
+const IgeStats_1 = require("./IgeStats.js");
 const IgeDependencies_1 = require("./IgeDependencies.js");
 const IgeMetrics_1 = require("./IgeMetrics.js");
 const IgeObjectRegister_1 = require("./IgeObjectRegister.js");
@@ -42,6 +43,7 @@ class Ige {
         this.app = null;
         // @ts-ignore
         this.router = new IgeRouter_1.IgeRouter();
+        this.stats = new IgeStats_1.IgeStats();
         this.textures = new IgeTextureStore_1.IgeTextureStore();
         this.input = new IgeInputComponent_1.IgeInputComponent();
         this.time = new IgeTimeController_1.IgeTimeController();

@@ -29,6 +29,7 @@ const clientServer_1 = require("../../engine/utils/clientServer.js");
 class Game {
     constructor(options) {
         this.classId = "Game";
+        instance_1.ige.uses("tweening");
         instance_1.ige.init();
         instance_1.ige.isReady().then(() => {
             if (clientServer_1.isClient) {

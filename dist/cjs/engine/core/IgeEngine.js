@@ -385,6 +385,12 @@ class IgeEngine extends IgeEntity_1.IgeEntity {
             window.addEventListener("resize", this._resizeEvent);
         }
     }
+    id(id) {
+        if (!id) {
+            return "ige";
+        }
+        return this;
+    }
     isReady() {
         return Promise.resolve();
     }
@@ -399,12 +405,6 @@ class IgeEngine extends IgeEntity_1.IgeEntity {
     }
     addComponent(id, Component, options) {
         return super.addComponent(id, Component, options);
-    }
-    id(id) {
-        if (!id) {
-            return "ige";
-        }
-        return this;
     }
     loadWebFont(family, url) {
         this.log(`Font (${family}) loading from url(${url})`);

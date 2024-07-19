@@ -106,5 +106,33 @@ class IgeBaseRenderer extends IgeEventingClass_1.IgeEventingClass {
         }
         //this.log(`Device pixel ratio is ${this._devicePixelRatio}`);
     }
+    getData(obj, defaultVal) {
+        if (!obj)
+            return defaultVal;
+        obj.meta = obj.meta || {};
+        const val = obj === null || obj === void 0 ? void 0 : obj.meta[this.classId];
+        if (val === undefined)
+            return defaultVal;
+        return val;
+    }
+    setData(obj, val) {
+        obj.meta = obj.meta || {};
+        obj.meta[this.classId] = val;
+        return this;
+    }
+    getDataProp(obj, propName, defaultVal) {
+        var _a, _b;
+        if (!obj)
+            return defaultVal;
+        const val = (_b = (_a = obj === null || obj === void 0 ? void 0 : obj.meta) === null || _a === void 0 ? void 0 : _a[this.classId]) === null || _b === void 0 ? void 0 : _b[propName];
+        if (val === undefined)
+            return defaultVal;
+        return val;
+    }
+    setDataProp(obj, propName, val) {
+        obj.meta = obj.meta || {};
+        (obj.meta[this.classId] = obj.meta[this.classId] || {})[propName] = val;
+        return this;
+    }
 }
 exports.IgeBaseRenderer = IgeBaseRenderer;
