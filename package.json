@@ -47,7 +47,6 @@
 	},
 	"dependencies": {
 		"gl-matrix": "^3.4.3",
-		"three": "^0.162.0",
 		"websocket": "^1.0.34"
 	},
 	"devDependencies": {
@@ -101,6 +100,9 @@
 		"webpack-bundle-analyzer": "^4.10.1",
 		"webpack-cli": "^5.1.4",
 		"yargs": "^17.7.2"
+	},
+	"peerDependencies": {
+		"three": "^0.162.0"
 	},
 	"sideEfects": false
 }
