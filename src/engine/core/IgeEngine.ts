@@ -14,6 +14,7 @@ import { isClient, isServer, isWorker } from "@/engine/utils/clientServer";
 import { IgeBehaviourType, IgeEngineState } from "@/enums";
 import type { IgeAnyFunction } from "@/types/IgeAnyFunction";
 import type { IgeCanvasRenderingContext2d } from "@/types/IgeCanvasRenderingContext2d";
+import type { IgeStatBreakdown } from "@/types/IgeStatBreakdown";
 import type { IgeGenericClass } from "@/types/IgeGenericClass";
 import type { IgeIsReadyPromise } from "@/types/IgeIsReadyPromise";
 import type { IgeSceneGraphDataEntry } from "@/types/IgeSceneGraphDataEntry";
@@ -59,9 +60,9 @@ export class IgeEngine extends IgeEntity implements IgeIsReadyPromise {
 	_currentTime: number;
 	_globalSmoothing: boolean;
 	_timeSpentInUpdate: Record<string, number>;
-	_timeSpentLastUpdate: Record<string, Record<string, number>>;
+	_timeSpentLastUpdate: Record<string, IgeStatBreakdown>;
 	_timeSpentInTick: Record<string, number>;
-	_timeSpentLastTick: Record<string, Record<string, number>>;
+	_timeSpentLastTick: Record<string, IgeStatBreakdown>;
 	_timeScale: number;
 	_tickStart: number = 0;
 	_globalScale: IgePoint3d;
@@ -94,7 +95,6 @@ export class IgeEngine extends IgeEntity implements IgeIsReadyPromise {
 		callback: (time: number, ctx?: IgeCanvasRenderingContext2d) => void,
 		element?: Element
 	) => void;
-
 
 	constructor () {
 		super();
@@ -155,6 +155,16 @@ export class IgeEngine extends IgeEntity implements IgeIsReadyPromise {
 		}
 	}
 
+	id (): string;
+	id (id: string): this;
+	id (id?: string): this | string | undefined {
+		if (!id) {
+			return "ige";
+		}
+
+		return this;
+	}
+
 	isReady () {
 		return Promise.resolve();
 	}
@@ -176,16 +186,6 @@ export class IgeEngine extends IgeEntity implements IgeIsReadyPromise {
 
 	addComponent (id: string, Component: typeof IgeComponent<IgeEngine>, options?: any): this {
 		return super.addComponent(id, Component as typeof IgeComponent, options);
-	}
-
-	id (): string;
-	id (id: string): this;
-	id (id?: string): this | string | undefined {
-		if (!id) {
-			return "ige";
-		}
-
-		return this;
 	}
 
 	loadWebFont (family: string, url: string) {
