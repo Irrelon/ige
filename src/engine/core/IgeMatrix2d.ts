@@ -23,10 +23,7 @@ export class IgeMatrix2d extends IgeBaseClass {
 		point.y = x * tm[3] + y * tm[4] + tm[5];
 
 		/* DEXCLUDE */
-		if (isNaN(tm[0]) || isNaN(tm[1]) || isNaN(tm[2]) || isNaN(tm[3]) || isNaN(tm[4]) || isNaN(tm[5])) {
-			obj.log("The matrix operation produced a NaN value!", "error");
-			debugger;
-		}
+		this._sanityCheck(tm);
 		/* DEXCLUDE */
 
 		return point;
@@ -46,10 +43,7 @@ export class IgeMatrix2d extends IgeBaseClass {
 		point.y = x * tm[3] + y * tm[4] - tm[5];
 
 		/* DEXCLUDE */
-		if (isNaN(tm[0]) || isNaN(tm[1]) || isNaN(tm[2]) || isNaN(tm[3]) || isNaN(tm[4]) || isNaN(tm[5])) {
-			obj.log("The matrix operation produced a NaN value!", "error");
-			debugger;
-		}
+		this._sanityCheck(tm);
 		/* DEXCLUDE */
 
 		return point;
@@ -74,6 +68,10 @@ export class IgeMatrix2d extends IgeBaseClass {
 		const m = new IgeMatrix2d();
 		m.rotateTo(angle);
 
+		/* DEXCLUDE */
+		this._sanityCheck(m.matrix);
+		/* DEXCLUDE */
+
 		return m;
 	}
 
@@ -83,6 +81,10 @@ export class IgeMatrix2d extends IgeBaseClass {
 		m.translateBy(this._rotateOrigin.x, this._rotateOrigin.y);
 		m.rotateTo(angle);
 		m.translateBy(-this._rotateOrigin.x, -this._rotateOrigin.y);
+
+		/* DEXCLUDE */
+		this._sanityCheck(m.matrix);
+		/* DEXCLUDE */
 
 		this.multiply(m);
 
@@ -100,10 +102,7 @@ export class IgeMatrix2d extends IgeBaseClass {
 		tm[4] = c;
 
 		/* DEXCLUDE */
-		if (isNaN(tm[0]) || isNaN(tm[1]) || isNaN(tm[2]) || isNaN(tm[3]) || isNaN(tm[4]) || isNaN(tm[5])) {
-			this.log("The matrix operation produced a NaN value!", "error");
-			debugger;
-		}
+		this._sanityCheck(tm);
 		/* DEXCLUDE */
 
 		return this;
@@ -142,6 +141,10 @@ export class IgeMatrix2d extends IgeBaseClass {
 		m.matrix[0] = x;
 		m.matrix[4] = y;
 
+		/* DEXCLUDE */
+		this._sanityCheck(m.matrix);
+		/* DEXCLUDE */
+
 		return m;
 	}
 
@@ -150,6 +153,10 @@ export class IgeMatrix2d extends IgeBaseClass {
 
 		m.matrix[0] = x;
 		m.matrix[4] = y;
+
+		/* DEXCLUDE */
+		this._sanityCheck(m.matrix);
+		/* DEXCLUDE */
 
 		this.multiply(m);
 
@@ -163,10 +170,7 @@ export class IgeMatrix2d extends IgeBaseClass {
 		tm[4] = y;
 
 		/* DEXCLUDE */
-		if (isNaN(tm[0]) || isNaN(tm[1]) || isNaN(tm[2]) || isNaN(tm[3]) || isNaN(tm[4]) || isNaN(tm[5])) {
-			this.log("The matrix operation produced a NaN value!", "error");
-			debugger;
-		}
+		this._sanityCheck(tm);
 		/* DEXCLUDE */
 
 		return this;
@@ -184,6 +188,10 @@ export class IgeMatrix2d extends IgeBaseClass {
 		m.matrix[2] = x;
 		m.matrix[5] = y;
 
+		/* DEXCLUDE */
+		this._sanityCheck(m.matrix);
+		/* DEXCLUDE */
+
 		return m;
 	}
 
@@ -192,6 +200,10 @@ export class IgeMatrix2d extends IgeBaseClass {
 
 		m.matrix[2] = x;
 		m.matrix[5] = y;
+
+		/* DEXCLUDE */
+		this._sanityCheck(m.matrix);
+		/* DEXCLUDE */
 
 		this.multiply(m);
 
@@ -210,10 +222,7 @@ export class IgeMatrix2d extends IgeBaseClass {
 		tm[5] = y;
 
 		/* DEXCLUDE */
-		if (isNaN(tm[0]) || isNaN(tm[1]) || isNaN(tm[2]) || isNaN(tm[3]) || isNaN(tm[4]) || isNaN(tm[5])) {
-			this.log("The matrix operation produced a NaN value!", "error");
-			debugger;
-		}
+		this._sanityCheck(tm);
 		/* DEXCLUDE */
 
 		return this;
@@ -432,5 +441,15 @@ export class IgeMatrix2d extends IgeBaseClass {
 		const m = this.matrix;
 		ctx.transform(m[0], m[3], m[1], m[4], Math.floor(m[2]), Math.floor(m[5]));
 		return this;
+	}
+
+	_sanityCheck (matrix: number[]) {
+		if (isNaN(matrix[0]) || isNaN(matrix[1]) || isNaN(matrix[2]) || isNaN(matrix[3]) || isNaN(matrix[4]) || isNaN(matrix[5])) {
+			this.log("The matrix operation produced a NaN value!", "error");
+			debugger;
+			return false;
+		}
+
+		return true;
 	}
 }
