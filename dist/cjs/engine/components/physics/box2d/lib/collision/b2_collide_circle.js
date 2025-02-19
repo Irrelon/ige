@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.b2CollidePolygonAndCircle = exports.b2CollideCircles = void 0;
+exports.b2CollideCircles = b2CollideCircles;
+exports.b2CollidePolygonAndCircle = b2CollidePolygonAndCircle;
 const b2_settings_1 = require("../common/b2_settings");
 const b2_math_1 = require("../common/b2_math");
 const b2_collision_1 = require("./b2_collision");
@@ -22,7 +23,6 @@ function b2CollideCircles(manifold, circleA, xfA, circleB, xfB) {
     manifold.points[0].localPoint.Copy(circleB.m_p);
     manifold.points[0].id.key = 0;
 }
-exports.b2CollideCircles = b2CollideCircles;
 const b2CollidePolygonAndCircle_s_c = new b2_math_1.b2Vec2();
 const b2CollidePolygonAndCircle_s_cLocal = new b2_math_1.b2Vec2();
 const b2CollidePolygonAndCircle_s_faceCenter = new b2_math_1.b2Vec2();
@@ -103,4 +103,3 @@ function b2CollidePolygonAndCircle(manifold, polygonA, xfA, circleB, xfB) {
         manifold.points[0].id.key = 0;
     }
 }
-exports.b2CollidePolygonAndCircle = b2CollidePolygonAndCircle;

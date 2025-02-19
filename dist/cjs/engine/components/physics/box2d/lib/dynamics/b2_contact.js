@@ -17,7 +17,10 @@
 * 3. This notice may not be removed or altered from any source distribution.
 */
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.b2Contact = exports.b2ContactEdge = exports.b2MixRestitutionThreshold = exports.b2MixRestitution = exports.b2MixFriction = void 0;
+exports.b2Contact = exports.b2ContactEdge = void 0;
+exports.b2MixFriction = b2MixFriction;
+exports.b2MixRestitution = b2MixRestitution;
+exports.b2MixRestitutionThreshold = b2MixRestitutionThreshold;
 const b2_settings_1 = require("../common/b2_settings");
 const b2_math_1 = require("../common/b2_math");
 const b2_collision_1 = require("../collision/b2_collision");
@@ -28,18 +31,15 @@ const b2_time_of_impact_1 = require("../collision/b2_time_of_impact");
 function b2MixFriction(friction1, friction2) {
     return (0, b2_math_1.b2Sqrt)(friction1 * friction2);
 }
-exports.b2MixFriction = b2MixFriction;
 /// Restitution mixing law. The idea is allow for anything to bounce off an inelastic surface.
 /// For example, a superball bounces on anything.
 function b2MixRestitution(restitution1, restitution2) {
     return restitution1 > restitution2 ? restitution1 : restitution2;
 }
-exports.b2MixRestitution = b2MixRestitution;
 /// Restitution mixing law. This picks the lowest value.
 function b2MixRestitutionThreshold(threshold1, threshold2) {
     return threshold1 < threshold2 ? threshold1 : threshold2;
 }
-exports.b2MixRestitutionThreshold = b2MixRestitutionThreshold;
 class b2ContactEdge {
     get other() {
         if (this._other === null) {

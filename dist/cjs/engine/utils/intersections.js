@@ -1,6 +1,18 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.polygonIntersectsPolygon = exports.rectIntersectsPolygon = exports.rectIntersectsRect = exports.circleIntersectsPolygon = exports.circleIntersectsRect = exports.circleIntersectsCircle = exports.lineIntersectsCircle = exports.lineIntersectsPolygon = exports.lineIntersectsLine = exports.pointIntersectsPolygon = exports.pointIntersectsCircle = exports.pointIntersectsRect = exports.rectToPolygon = void 0;
+exports.rectToPolygon = rectToPolygon;
+exports.pointIntersectsRect = pointIntersectsRect;
+exports.pointIntersectsCircle = pointIntersectsCircle;
+exports.pointIntersectsPolygon = pointIntersectsPolygon;
+exports.lineIntersectsLine = lineIntersectsLine;
+exports.lineIntersectsPolygon = lineIntersectsPolygon;
+exports.lineIntersectsCircle = lineIntersectsCircle;
+exports.circleIntersectsCircle = circleIntersectsCircle;
+exports.circleIntersectsRect = circleIntersectsRect;
+exports.circleIntersectsPolygon = circleIntersectsPolygon;
+exports.rectIntersectsRect = rectIntersectsRect;
+exports.rectIntersectsPolygon = rectIntersectsPolygon;
+exports.polygonIntersectsPolygon = polygonIntersectsPolygon;
 const maths_1 = require("./maths.js");
 function rectToPolygon(rect) {
     var _a, _b;
@@ -17,7 +29,6 @@ function rectToPolygon(rect) {
         ]
     };
 }
-exports.rectToPolygon = rectToPolygon;
 //////////////////////////////////////////////////////////////////////
 // Source is point
 //////////////////////////////////////////////////////////////////////
@@ -34,12 +45,10 @@ function pointIntersectsRect(point, rect) {
         point.y >= rectTop &&
         point.y <= rectBottom);
 }
-exports.pointIntersectsRect = pointIntersectsRect;
 function pointIntersectsCircle(point, circle) {
     const dist = (0, maths_1.distance)(circle.x, circle.y, point.x, point.y);
     return dist < circle.radius;
 }
-exports.pointIntersectsCircle = pointIntersectsCircle;
 function pointIntersectsPolygon(point, polygon) {
     const polyPoints = polygon._poly;
     const pointCount = polyPoints.length;
@@ -53,7 +62,6 @@ function pointIntersectsPolygon(point, polygon) {
     }
     return c;
 }
-exports.pointIntersectsPolygon = pointIntersectsPolygon;
 //////////////////////////////////////////////////////////////////////
 // Source is line
 //////////////////////////////////////////////////////////////////////
@@ -77,7 +85,6 @@ function lineIntersectsLine(line1, line2) {
     // Check if the intersection point lies within the line segments
     return (s >= 0 && s <= 1 && t >= 0 && t <= 1);
 }
-exports.lineIntersectsLine = lineIntersectsLine;
 function lineIntersectsPolygon(line, polygon) {
     const numVertices = polygon._poly.length;
     // Iterate through each edge of the polygon
@@ -91,7 +98,6 @@ function lineIntersectsPolygon(line, polygon) {
     }
     return false;
 }
-exports.lineIntersectsPolygon = lineIntersectsPolygon;
 function lineIntersectsCircle(line, circle) {
     const dx = line.x2 - line.x1;
     const dy = line.y2 - line.y1;
@@ -105,14 +111,12 @@ function lineIntersectsCircle(line, circle) {
     const dist = Math.sqrt((closestX - circle.x) * (closestX - circle.x) + (closestY - circle.y) * (closestY - circle.y));
     return dist <= circle.radius;
 }
-exports.lineIntersectsCircle = lineIntersectsCircle;
 //////////////////////////////////////////////////////////////////////
 // Source is circle
 //////////////////////////////////////////////////////////////////////
 function circleIntersectsCircle(circle1, circle2) {
     return (0, maths_1.distance)(circle1.x, circle1.y, circle2.x, circle2.y) < (circle2.radius + circle1.radius);
 }
-exports.circleIntersectsCircle = circleIntersectsCircle;
 function circleIntersectsRect(circle, rect) {
     var _a, _b;
     if (pointIntersectsRect(circle, rect))
@@ -133,7 +137,6 @@ function circleIntersectsRect(circle, rect) {
     // Check if the distance is less than or equal to the square of the circle's radius
     return distanceSquared <= circle.radius * circle.radius;
 }
-exports.circleIntersectsRect = circleIntersectsRect;
 function circleIntersectsPolygon(circle, polygon) {
     // Check if the circle's center lies inside the polygon
     if (pointIntersectsPolygon(circle, polygon))
@@ -153,7 +156,6 @@ function circleIntersectsPolygon(circle, polygon) {
     }
     return false;
 }
-exports.circleIntersectsPolygon = circleIntersectsPolygon;
 //////////////////////////////////////////////////////////////////////
 // Source is rect
 //////////////////////////////////////////////////////////////////////
@@ -165,11 +167,9 @@ function rectIntersectsRect(rect1, rect2) {
     const sX1 = rect1.x - (rect1.width * (((_a = rect1._origin) === null || _a === void 0 ? void 0 : _a.x) || 0)), sY1 = rect1.y - (rect1.height * (((_b = rect1._origin) === null || _b === void 0 ? void 0 : _b.x) || 0)), sW = rect1.width, sH = rect1.height, dX1 = rect2.x - (rect2.width * (((_c = rect2._origin) === null || _c === void 0 ? void 0 : _c.x) || 0)), dY1 = rect2.y - (rect2.height * (((_d = rect2._origin) === null || _d === void 0 ? void 0 : _d.x) || 0)), dW = rect2.width, dH = rect2.height, sX2 = sX1 + sW, sY2 = sY1 + sH, dX2 = dX1 + dW, dY2 = dY1 + dH;
     return sX1 < dX2 && sX2 > dX1 && sY1 < dY2 && sY2 > dY1;
 }
-exports.rectIntersectsRect = rectIntersectsRect;
 function rectIntersectsPolygon(rect, polygon) {
     return polygonIntersectsPolygon(rectToPolygon(rect), polygon);
 }
-exports.rectIntersectsPolygon = rectIntersectsPolygon;
 //////////////////////////////////////////////////////////////////////
 // Source is polygon
 //////////////////////////////////////////////////////////////////////
@@ -206,4 +206,3 @@ function polygonIntersectsPolygon(polygon1, polygon2) {
     }
     return false;
 }
-exports.polygonIntersectsPolygon = polygonIntersectsPolygon;

@@ -17,7 +17,14 @@
 * 3. This notice may not be removed or altered from any source distribution.
 */
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.b2MakeNumberArray = exports.b2MakeNullArray = exports.b2MakeArray = exports.b2ParseUInt = exports.b2ParseInt = exports.b2_commit = exports.b2_branch = exports.b2_version = exports.b2Version = exports.b2_angularSleepTolerance = exports.b2_linearSleepTolerance = exports.b2_timeToSleep = exports.b2_barrierCollisionTime = exports.b2_minParticleSystemBufferCapacity = exports.b2_maxTriadDistanceSquared = exports.b2_maxTriadDistance = exports.b2_maxParticleForce = exports.b2_maxParticlePressure = exports.b2_minParticleWeight = exports.b2_particleStride = exports.b2_maxParticleIndex = exports.b2_invalidParticleIndex = exports.b2_toiBaumgarte = exports.b2_baumgarte = exports.b2_maxRotationSquared = exports.b2_maxRotation = exports.b2_maxTranslationSquared = exports.b2_maxTranslation = exports.b2_maxAngularCorrection = exports.b2_maxLinearCorrection = exports.b2_maxTOIContacts = exports.b2_maxSubSteps = exports.b2_polygonRadius = exports.b2_angularSlop = exports.b2_linearSlop = exports.b2_aabbMultiplier = exports.b2_aabbExtension = exports.b2_maxManifoldPoints = exports.b2_maxPolygonVertices = exports.b2_lengthUnitsPerMeter = exports.b2_pi = exports.b2_epsilon_sq = exports.b2_epsilon = exports.b2_maxFloat = exports.b2Maybe = exports.b2Assert = void 0;
+exports.b2_commit = exports.b2_branch = exports.b2_version = exports.b2Version = exports.b2_angularSleepTolerance = exports.b2_linearSleepTolerance = exports.b2_timeToSleep = exports.b2_barrierCollisionTime = exports.b2_minParticleSystemBufferCapacity = exports.b2_maxTriadDistanceSquared = exports.b2_maxTriadDistance = exports.b2_maxParticleForce = exports.b2_maxParticlePressure = exports.b2_minParticleWeight = exports.b2_particleStride = exports.b2_maxParticleIndex = exports.b2_invalidParticleIndex = exports.b2_toiBaumgarte = exports.b2_baumgarte = exports.b2_maxRotationSquared = exports.b2_maxRotation = exports.b2_maxTranslationSquared = exports.b2_maxTranslation = exports.b2_maxAngularCorrection = exports.b2_maxLinearCorrection = exports.b2_maxTOIContacts = exports.b2_maxSubSteps = exports.b2_polygonRadius = exports.b2_angularSlop = exports.b2_linearSlop = exports.b2_aabbMultiplier = exports.b2_aabbExtension = exports.b2_maxManifoldPoints = exports.b2_maxPolygonVertices = exports.b2_lengthUnitsPerMeter = exports.b2_pi = exports.b2_epsilon_sq = exports.b2_epsilon = exports.b2_maxFloat = void 0;
+exports.b2Assert = b2Assert;
+exports.b2Maybe = b2Maybe;
+exports.b2ParseInt = b2ParseInt;
+exports.b2ParseUInt = b2ParseUInt;
+exports.b2MakeArray = b2MakeArray;
+exports.b2MakeNullArray = b2MakeNullArray;
+exports.b2MakeNumberArray = b2MakeNumberArray;
 // import { b2_lengthUnitsPerMeter } from "./b2_settings.js"
 function b2Assert(condition, ...args) {
     if (!condition) {
@@ -25,11 +32,9 @@ function b2Assert(condition, ...args) {
         throw new Error(...args);
     }
 }
-exports.b2Assert = b2Assert;
 function b2Maybe(value, def) {
     return value !== undefined ? value : def;
 }
-exports.b2Maybe = b2Maybe;
 exports.b2_maxFloat = 1E+37; // FLT_MAX instead of Number.MAX_VALUE;
 exports.b2_epsilon = 1E-5; // FLT_EPSILON instead of Number.EPSILON;
 exports.b2_epsilon_sq = (exports.b2_epsilon * exports.b2_epsilon);
@@ -163,11 +168,9 @@ exports.b2_commit = "9ebbbcd960ad424e03e5de6e66a40764c16f51bc";
 function b2ParseInt(v) {
     return parseInt(v, 10);
 }
-exports.b2ParseInt = b2ParseInt;
 function b2ParseUInt(v) {
     return Math.abs(parseInt(v, 10));
 }
-exports.b2ParseUInt = b2ParseUInt;
 function b2MakeArray(length, init) {
     const a = new Array(length);
     for (let i = 0; i < length; ++i) {
@@ -175,7 +178,6 @@ function b2MakeArray(length, init) {
     }
     return a;
 }
-exports.b2MakeArray = b2MakeArray;
 function b2MakeNullArray(length) {
     const a = new Array(length);
     for (let i = 0; i < length; ++i) {
@@ -183,7 +185,6 @@ function b2MakeNullArray(length) {
     }
     return a;
 }
-exports.b2MakeNullArray = b2MakeNullArray;
 function b2MakeNumberArray(length, init = 0) {
     const a = new Array(length);
     for (let i = 0; i < length; ++i) {
@@ -191,4 +192,3 @@ function b2MakeNumberArray(length, init = 0) {
     }
     return a;
 }
-exports.b2MakeNumberArray = b2MakeNumberArray;

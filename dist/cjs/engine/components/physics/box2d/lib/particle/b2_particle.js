@@ -17,7 +17,8 @@
  * 3. This notice may not be removed or altered from any source distribution.
  */
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.b2ParticleHandle = exports.b2CalculateParticleIterations = exports.b2ParticleDef = exports.b2ParticleFlag = void 0;
+exports.b2ParticleHandle = exports.b2ParticleDef = exports.b2ParticleFlag = void 0;
+exports.b2CalculateParticleIterations = b2CalculateParticleIterations;
 // #if B2_ENABLE_PARTICLE
 const b2_settings_1 = require("../common/b2_settings");
 const b2_math_1 = require("../common/b2_math");
@@ -93,7 +94,6 @@ function b2CalculateParticleIterations(gravity, radius, timeStep) {
     const iterations = Math.ceil(Math.sqrt(gravity / (B2_RADIUS_THRESHOLD * radius)) * timeStep);
     return (0, b2_math_1.b2Clamp)(iterations, 1, B2_MAX_RECOMMENDED_PARTICLE_ITERATIONS);
 }
-exports.b2CalculateParticleIterations = b2CalculateParticleIterations;
 class b2ParticleHandle {
     constructor() {
         this.m_index = b2_settings_1.b2_invalidParticleIndex;

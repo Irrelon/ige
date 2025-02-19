@@ -1,32 +1,31 @@
-import type { IgeMaterialData } from "@/types/IgeMaterialData";
 import { ige } from "@/engine/instance";
-import type { IgeComponent } from "@/engine/core/IgeComponent";
+import { IgeBounds } from "@/engine/core/IgeBounds";
 import { IgeDummyCanvas } from "@/engine/core/IgeDummyCanvas";
 import { IgeEventingClass } from "@/engine/core/IgeEventingClass";
 import { IgeMatrix2d } from "@/engine/core/IgeMatrix2d";
 import { IgePoint2d } from "@/engine/core/IgePoint2d";
 import { IgePoint3d } from "@/engine/core/IgePoint3d";
 import { IgePoly2d } from "@/engine/core/IgePoly2d";
-import { IgeBounds } from "@/engine/core/IgeBounds";
+import { arrPull } from "@/engine/utils/arrays";
+import { newIdHex } from "@/engine/utils/ids";
+import { toIso } from "@/engine/utils/maths";
+import { synthesize } from "@/engine/utils/synthesize";
+import { IgeQuadGeometry } from "@/engine/geometry/IgeQuadGeometry";
+import { isClient, isServer } from "@/engine/utils/clientServer";
+import {
+	IGE_NETWORK_STREAM_CREATE,
+	IGE_NETWORK_STREAM_DESTROY,
+	IgeIsometricDepthSortMode,
+	IgeMountMode,
+	IgeStreamMode
+} from "@/enums";
+import type { IgeComponent } from "@/engine/core/IgeComponent";
 import type { IgeTexture } from "@/engine/core/IgeTexture";
 import type { IgeTileMap2d } from "@/engine/core/IgeTileMap2d";
 import type { IgeViewport } from "@/engine/core/IgeViewport";
 import type { IgeNetIoClientController } from "@/engine/network/client/IgeNetIoClientController";
 import type { IgeNetIoServerController } from "@/engine/network/server/IgeNetIoServerController";
-import { arrPull } from "@/engine/utils/arrays";
-import { isClient, isServer } from "@/engine/utils/clientServer";
-import { newIdHex } from "@/engine/utils/ids";
-import { toIso } from "@/engine/utils/maths";
-import { synthesize } from "@/engine/utils/synthesize";
-import type {
-	IgeBehaviourType
-} from "@/enums";
-import {
-	IGE_NETWORK_STREAM_CREATE, IGE_NETWORK_STREAM_DESTROY,
-	IgeIsometricDepthSortMode,
-	IgeMountMode,
-	IgeStreamMode
-} from "@/enums";
+import type { IgeBehaviourType } from "@/enums";
 import type { IgeBehaviourStore } from "@/types/IgeBehaviourStore";
 import type { IgeCanAcceptComponents } from "@/types/IgeCanAcceptComponents";
 import type { IgeCanRegisterByCategory } from "@/types/IgeCanRegisterByCategory";
@@ -38,13 +37,13 @@ import type { IgeEntityBehaviourMethod } from "@/types/IgeEntityBehaviour";
 import type { IgeGenericClass } from "@/types/IgeGenericClass";
 import type { IgeGeometryData3d } from "@/types/IgeGeometryData3d";
 import type { IgeInputEventHandler } from "@/types/IgeInputEventHandler";
+import type { IgeMaterialData } from "@/types/IgeMaterialData";
 import type { IgeMeshData3d } from "@/types/IgeMeshData3d";
 import type { IgeStreamCreateMessageData } from "@/types/IgeNetworkStream";
 import type { IgePoint } from "@/types/IgePoint";
 import type { IgeSmartTexture } from "@/types/IgeSmartTexture";
 import type { IgeTimeStreamPacket, IgeTimeStreamTransformData } from "@/types/IgeTimeStream";
 import type { IgeTriggerPolygonFunctionName } from "@/types/IgeTriggerPolygonFunctionName";
-import { IgeQuadGeometry } from "../geometry/IgeQuadGeometry";
 
 export class IgeObject extends IgeEventingClass implements IgeCanRegisterById, IgeCanRegisterByCategory, IgeCanAcceptComponents {
 	classId = "IgeObject";
@@ -1596,22 +1595,23 @@ export class IgeObject extends IgeEventingClass implements IgeCanRegisterById, I
 
 	/**
 	 * Translates the entity to the passed values.
-	 * @param {number} x The x co-ordinate.
-	 * @param {number} y The y co-ordinate.
-	 * @param {number} z The z co-ordinate.
+	 * @param x The x co-ordinate.
+	 * @param y The y co-ordinate.
+	 * @param z The z co-ordinate.
 	 * @example #Translate the entity to 10, 0, 0
 	 *     entity.translateTo(10, 0, 0);
-	 * @return {*}
+	 * @return {this}
 	 */
-	translateTo (x: number, y: number, z: number): this {
-		if (x === undefined || y === undefined || z === undefined) {
-			this.log("translateTo() called with a missing or undefined x, y or z parameter!", "error");
-			return this;
+	translateTo (x?: number, y?: number, z?: number): this {
+		if (x !== undefined) {
+			this._translate.x = x;
 		}
-
-		this._translate.x = x;
-		this._translate.y = y;
-		this._translate.z = z;
+		if (y !== undefined) {
+			this._translate.y = y;
+		}
+		if (z !== undefined) {
+			this._translate.z = z;
+		}
 
 		return this;
 	}
@@ -1624,7 +1624,7 @@ export class IgeObject extends IgeEventingClass implements IgeCanRegisterById, I
 	 * @param {number} z The z co-ordinate.
 	 * @example #Translate the entity by 10 along the x axis
 	 *     entity.translateBy(10, 0, 0);
-	 * @return {*}
+	 * @return {this}
 	 */
 	translateBy (x: number, y: number, z: number): this {
 		if (x === undefined || y === undefined || z === undefined) {

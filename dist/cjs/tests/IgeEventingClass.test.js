@@ -62,7 +62,7 @@ describe("IgeEventingClass", () => {
                 !((_c = myClass._eventListeners) === null || _c === void 0 ? void 0 : _c.moo["*"].length), true, "Listeners all removed from event");
         }));
         it("The correct arguments are emitted", () => __awaiter(void 0, void 0, void 0, function* () {
-            var _d, _e, _f;
+            var _a, _b, _c;
             const myClass = new IgeEventingClass_1.IgeEventingClass();
             let callCount = 0;
             let receivedArg1;
@@ -79,9 +79,9 @@ describe("IgeEventingClass", () => {
             node_assert_1.default.strictEqual(receivedArg1, 1, "Argument 1 was correct");
             // @ts-ignore
             node_assert_1.default.strictEqual(receivedArg2, "one", "Argument 2 was correct");
-            node_assert_1.default.strictEqual(!((_d = myClass._eventListeners) === null || _d === void 0 ? void 0 : _d.moo) ||
-                !((_e = myClass._eventListeners) === null || _e === void 0 ? void 0 : _e.moo["*"]) ||
-                !((_f = myClass._eventListeners) === null || _f === void 0 ? void 0 : _f.moo["*"].length), true, "Listeners all removed from event");
+            node_assert_1.default.strictEqual(!((_a = myClass._eventListeners) === null || _a === void 0 ? void 0 : _a.moo) ||
+                !((_b = myClass._eventListeners) === null || _b === void 0 ? void 0 : _b.moo["*"]) ||
+                !((_c = myClass._eventListeners) === null || _c === void 0 ? void 0 : _c.moo["*"].length), true, "Listeners all removed from event");
         }));
     });
     describe("off()", () => {

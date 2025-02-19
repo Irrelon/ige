@@ -1,14 +1,14 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.IgeObject = void 0;
-const instance_1 = require("../instance.js");
+const IgeBounds_1 = require("./IgeBounds.js");
 const IgeDummyCanvas_1 = require("./IgeDummyCanvas.js");
 const IgeEventingClass_1 = require("./IgeEventingClass.js");
 const IgeMatrix2d_1 = require("./IgeMatrix2d.js");
 const IgePoint2d_1 = require("./IgePoint2d.js");
 const IgePoint3d_1 = require("./IgePoint3d.js");
 const IgePoly2d_1 = require("./IgePoly2d.js");
-const IgeBounds_1 = require("./IgeBounds.js");
+const instance_1 = require("../instance.js");
 const arrays_1 = require("../utils/arrays.js");
 const clientServer_1 = require("../utils/clientServer.js");
 const ids_1 = require("../utils/ids.js");
@@ -951,21 +951,23 @@ class IgeObject extends IgeEventingClass_1.IgeEventingClass {
     }
     /**
      * Translates the entity to the passed values.
-     * @param {number} x The x co-ordinate.
-     * @param {number} y The y co-ordinate.
-     * @param {number} z The z co-ordinate.
+     * @param x The x co-ordinate.
+     * @param y The y co-ordinate.
+     * @param z The z co-ordinate.
      * @example #Translate the entity to 10, 0, 0
      *     entity.translateTo(10, 0, 0);
-     * @return {*}
+     * @return {this}
      */
     translateTo(x, y, z) {
-        if (x === undefined || y === undefined || z === undefined) {
-            this.log("translateTo() called with a missing or undefined x, y or z parameter!", "error");
-            return this;
+        if (x !== undefined) {
+            this._translate.x = x;
         }
-        this._translate.x = x;
-        this._translate.y = y;
-        this._translate.z = z;
+        if (y !== undefined) {
+            this._translate.y = y;
+        }
+        if (z !== undefined) {
+            this._translate.z = z;
+        }
         return this;
     }
     /**
@@ -976,7 +978,7 @@ class IgeObject extends IgeEventingClass_1.IgeEventingClass {
      * @param {number} z The z co-ordinate.
      * @example #Translate the entity by 10 along the x axis
      *     entity.translateBy(10, 0, 0);
-     * @return {*}
+     * @return {this}
      */
     translateBy(x, y, z) {
         if (x === undefined || y === undefined || z === undefined) {

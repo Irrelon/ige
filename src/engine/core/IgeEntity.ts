@@ -1,12 +1,12 @@
 import { ige } from "@/engine/instance";
 import type { IgeInputComponent } from "@/engine/components/IgeInputComponent";
+import { IgeBounds } from "@/engine/core/IgeBounds";
 import { IgeDummyCanvas } from "@/engine/core/IgeDummyCanvas";
 import { IgeMatrix2d } from "@/engine/core/IgeMatrix2d";
 import { IgeObject } from "@/engine/core/IgeObject";
 import { IgePoint2d } from "@/engine/core/IgePoint2d";
 import { IgePoint3d } from "@/engine/core/IgePoint3d";
 import { IgePoly2d } from "@/engine/core/IgePoly2d";
-import { IgeBounds } from "@/engine/core/IgeBounds";
 import type { IgeTexture } from "@/engine/core/IgeTexture";
 import type { IgeTileMap2d } from "@/engine/core/IgeTileMap2d";
 import type { IgeViewport } from "@/engine/core/IgeViewport";
@@ -208,7 +208,9 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 	}
 
 	/**
-	 * Checks if the entity is visible.
+	 * Checks if the entity is visible. You can make an entity hidden
+	 * by calling `hide()` and make it visible by calling `show()`.
+	 * Entities are visible by default.
 	 * @returns {boolean} True if the entity is visible.
 	 */
 	isVisible () {
@@ -216,7 +218,9 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 	}
 
 	/**
-	 * Checks if the entity is hidden.
+	 * Checks if the entity is hidden. You can make an entity hidden
+	 * by calling `hide()` and make it visible by calling `show()`.
+	 * Entities are visible by default.
 	 * @returns {boolean} True if the entity is hidden.
 	 */
 	isHidden () {
@@ -2541,9 +2545,9 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 	 *         entity = new IgeEntity();
 	 *
 	 *     entity.translateToPoint(point);
-	 * @return {*}
+	 * @return {this}
 	 */
-	translateToPoint (point: IgePoint3d) {
+	translateToPoint (point: IgePoint3d): this {
 		if (point !== undefined) {
 			this._translate.x = point.x;
 			this._translate.y = point.y;
@@ -2557,9 +2561,9 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 
 	/**
 	 * Translates the object to the tile co-ordinates passed.
-	 * @param {number} x The x tile co-ordinate.
-	 * @param {number} y The y tile co-ordinate.
-	 * @param {number=} z The z tile co-ordinate.
+	 * @param x The x tile co-ordinate.
+	 * @param y The y tile co-ordinate.
+	 * @param z The z tile co-ordinate.
 	 * @example #Translate entity to tile
 	 *     // Create a tile map
 	 *     var tileMap = new IgeTileMap2d()
@@ -2569,60 +2573,87 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 	 *     // Mount our entity to the tile map
 	 *     entity.mount(tileMap);
 	 *
-	 *     // Translate the entity to the tile x:10, y:12
+	 *     // Translate the entity to the tile x:10, y:12, z: 0
 	 *     entity.translateToTile(10, 12, 0);
-	 * @return {*} The object this method was called from to allow
+	 * @return {this} The object this method was called from to allow
 	 * method chaining.
 	 */
-	translateToTile (x: number, y: number, z: number = 0) {
-		if (this._parent && this._parent._tileWidth !== undefined && this._parent._tileHeight !== undefined) {
-			let finalZ;
-
-			// Handle being passed a z co-ordinate
-			if (z !== undefined) {
-				finalZ = z * this._parent._tileDepth;
-			} else {
-				finalZ = this._translate.z;
-			}
-
-			this.translateTo(
-				x * this._parent._tileWidth + this._parent._tileWidth / 2,
-				y * this._parent._tileHeight + this._parent._tileHeight / 2,
-				finalZ
-			);
-		} else {
-			this.log(
-				"Cannot translate to tile because the entity is not currently mounted to a tile map or the tile map has no tileWidth or tileHeight values.",
-				"warning"
-			);
+	translateToTile (x?: number, y?: number, z?: number): this {
+		if (!this._parent) {
+			this.log("translateToTile() failed because entity is not currently mounted to a tile map!", "error");
+			return this;
 		}
 
-		return this;
+		if (x === undefined && y === undefined && z === undefined) {
+			// No work to do
+			return this;
+		}
+
+		let finalX = this._translate.x;
+		let finalY = this._translate.y;
+		let finalZ = this._translate.z;
+
+		if (x !== undefined && this._parent._tileWidth !== undefined) {
+			finalX = x * this._parent._tileWidth + this._parent._tileWidth / 2;
+		}
+
+		if (y !== undefined && this._parent._tileHeight !== undefined) {
+			finalY = y * this._parent._tileHeight + this._parent._tileHeight / 2;
+		}
+
+		if (z !== undefined && this._parent._tileDepth !== undefined) {
+			finalZ = z * this._parent._tileDepth + this._parent._tileDepth / 2;
+		}
+
+		return this.translateTo(finalX, finalY, finalZ);
 	}
 
-	tileX () {
-		if (this._parent && this._parent._tileWidth !== undefined) {
-			return Math.floor(this._translate.x / this._parent._tileWidth);
+	tileX (val: number): this;
+	tileX (): number;
+	tileX (val?: number) {
+		if (!this._parent || this._parent._tileWidth === undefined) {
+			this.log("tileX() called but entity is not currently mounted to a tile map!", "error");
+			return this;
 		}
+
+		if (val !== undefined) {
+			this.translateToTile(val, undefined, undefined);
+			return this;
+		}
+
+		return Math.floor(this._translate.x / this._parent._tileWidth);
 	}
 
-	tileY () {
-		if (this._parent && this._parent._tileHeight !== undefined) {
-			return Math.floor(this._translate.y / this._parent._tileHeight);
+	tileY (val: number): this;
+	tileY (): number;
+	tileY (val?: number) {
+		if (!this._parent || this._parent._tileHeight === undefined) {
+			this.log("tileY() called but entity is not currently mounted to a tile map!", "error");
+			return this;
 		}
+
+		if (val !== undefined) {
+			this.translateToTile(undefined, val, undefined);
+			return this;
+		}
+
+		return Math.floor(this._translate.y / this._parent._tileHeight);
 	}
 
 	tileZ (val: number): this;
 	tileZ (): number;
 	tileZ (val?: number) {
-		if (this._parent && val !== undefined) {
-			this._translate.z = val * this._parent._tileDepth;
+		if (!this._parent || this._parent._tileDepth === undefined) {
+			this.log("tileZ() called but entity is not currently mounted to a tile map!", "error");
 			return this;
 		}
 
-		if (this._parent && this._parent._tileDepth !== undefined) {
-			return this._translate.z / this._parent._tileDepth;
+		if (val !== undefined) {
+			this.translateToTile(undefined, undefined, val);
+			return this;
 		}
+
+		return Math.floor(this._translate.z / this._parent._tileDepth);
 	}
 
 	/**

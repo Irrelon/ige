@@ -31,7 +31,9 @@ var __exportStar = (this && this.__exportStar) || function(m, exports) {
     for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.b2Log = exports.b2Free = exports.b2Alloc = void 0;
+exports.b2Alloc = b2Alloc;
+exports.b2Free = b2Free;
+exports.b2Log = b2Log;
 /// @file
 /// Settings that can be overriden for your application
 ///
@@ -47,14 +49,11 @@ exports.b2Log = exports.b2Free = exports.b2Alloc = void 0;
 function b2Alloc(size) {
     return null;
 }
-exports.b2Alloc = b2Alloc;
 /// If you implement b2Alloc, you should also implement this function.
 function b2Free(mem) {
 }
-exports.b2Free = b2Free;
 /// Logging function.
 function b2Log(message, ...args) {
     // console.log(message, ...args);
 }
-exports.b2Log = b2Log;
 __exportStar(require("./b2_common"), exports);

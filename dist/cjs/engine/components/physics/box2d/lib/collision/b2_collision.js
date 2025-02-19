@@ -17,7 +17,11 @@
 * 3. This notice may not be removed or altered from any source distribution.
 */
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.b2TestOverlapShape = exports.b2ClipSegmentToLine = exports.b2TestOverlapAABB = exports.b2AABB = exports.b2RayCastOutput = exports.b2RayCastInput = exports.b2ClipVertex = exports.b2GetPointStates = exports.b2PointState = exports.b2WorldManifold = exports.b2Manifold = exports.b2ManifoldType = exports.b2ManifoldPoint = exports.b2ContactID = exports.b2ContactFeature = exports.b2ContactFeatureType = void 0;
+exports.b2AABB = exports.b2RayCastOutput = exports.b2RayCastInput = exports.b2ClipVertex = exports.b2PointState = exports.b2WorldManifold = exports.b2Manifold = exports.b2ManifoldType = exports.b2ManifoldPoint = exports.b2ContactID = exports.b2ContactFeature = exports.b2ContactFeatureType = void 0;
+exports.b2GetPointStates = b2GetPointStates;
+exports.b2TestOverlapAABB = b2TestOverlapAABB;
+exports.b2ClipSegmentToLine = b2ClipSegmentToLine;
+exports.b2TestOverlapShape = b2TestOverlapShape;
 // DEBUG: import { b2Assert } from "../common/b2_settings.js"
 const b2_settings_1 = require("../common/b2_settings");
 const b2_math_1 = require("../common/b2_math");
@@ -303,7 +307,6 @@ function b2GetPointStates(state1, state2, manifold1, manifold2) {
         state2[i] = b2PointState.b2_nullState;
     }
 }
-exports.b2GetPointStates = b2GetPointStates;
 /// Used for computing contact manifolds.
 class b2ClipVertex {
     constructor() {
@@ -542,7 +545,6 @@ function b2TestOverlapAABB(a, b) {
     }
     return true;
 }
-exports.b2TestOverlapAABB = b2TestOverlapAABB;
 /// Clipping for contact manifolds.
 function b2ClipSegmentToLine(vOut, vIn, normal, offset, vertexIndexA) {
     // Start with no output points
@@ -577,7 +579,6 @@ function b2ClipSegmentToLine(vOut, vIn, normal, offset, vertexIndexA) {
     }
     return count;
 }
-exports.b2ClipSegmentToLine = b2ClipSegmentToLine;
 /// Determine if two generic shapes overlap.
 const b2TestOverlapShape_s_input = new b2_distance_1.b2DistanceInput();
 const b2TestOverlapShape_s_simplexCache = new b2_distance_1.b2SimplexCache();
@@ -595,4 +596,3 @@ function b2TestOverlapShape(shapeA, indexA, shapeB, indexB, xfA, xfB) {
     (0, b2_distance_1.b2Distance)(output, simplexCache, input);
     return output.distance < 10 * b2_settings_1.b2_epsilon;
 }
-exports.b2TestOverlapShape = b2TestOverlapShape;

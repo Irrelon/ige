@@ -7,7 +7,7 @@
 //                  Oyvind Sean Kinsey http://kinsey.no/blog (2010)
 //                  Victor Homyakov <victor-homyakov@users.sourceforge.net> (2010)
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.printStackTrace = void 0;
+exports.printStackTrace = printStackTrace;
 /**
  * Main function giving a function stack trace with a forced or passed in Error
  *
@@ -25,7 +25,6 @@ function printStackTrace(options) {
     }
     return res;
 }
-exports.printStackTrace = printStackTrace;
 printStackTrace.implementation = function () { };
 printStackTrace.implementation.prototype = {
     run: function (ex) {

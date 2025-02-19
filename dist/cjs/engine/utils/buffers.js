@@ -9,7 +9,10 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getMultipleOf = exports.bufferRangeData = exports.createTextureFromImage = exports.vertexBufferLayoutByFormat = exports.packArraysByFormat = void 0;
+exports.getMultipleOf = exports.bufferRangeData = void 0;
+exports.packArraysByFormat = packArraysByFormat;
+exports.vertexBufferLayoutByFormat = vertexBufferLayoutByFormat;
+exports.createTextureFromImage = createTextureFromImage;
 function packArraysByFormat(format, ...dataArgs) {
     // Format is in the structure of array indexes of the passed
     // dataArgs e.g. [x, y, r, g, b, a, u, v] would be expressed
@@ -30,7 +33,6 @@ function packArraysByFormat(format, ...dataArgs) {
     }
     return data;
 }
-exports.packArraysByFormat = packArraysByFormat;
 function vertexBufferLayoutByFormat(format) {
     const shaderLocationRanges = [];
     format.forEach((shaderLocationIndex, formatIndex) => {
@@ -82,7 +84,6 @@ function vertexBufferLayoutByFormat(format) {
     };
     return layout;
 }
-exports.vertexBufferLayoutByFormat = vertexBufferLayoutByFormat;
 function createTextureFromImage(device, image) {
     return __awaiter(this, void 0, void 0, function* () {
         const texture = device.createTexture({
@@ -99,7 +100,6 @@ function createTextureFromImage(device, image) {
         return [texture, sampler];
     });
 }
-exports.createTextureFromImage = createTextureFromImage;
 const bufferRangeData = (bytesPerItem, ...numberOfItems) => {
     const ranges = [];
     let length = 0;

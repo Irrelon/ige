@@ -17,7 +17,9 @@
 * 3. This notice may not be removed or altered from any source distribution.
 */
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.b2TimeOfImpact = exports.b2SeparationFunction = exports.b2SeparationFunctionType = exports.b2TOIOutput = exports.b2TOIOutputState = exports.b2TOIInput = exports.b2_toi_reset = exports.b2_toiMaxRootIters = exports.b2_toiRootIters = exports.b2_toiMaxIters = exports.b2_toiIters = exports.b2_toiCalls = exports.b2_toiMaxTime = exports.b2_toiTime = void 0;
+exports.b2SeparationFunction = exports.b2SeparationFunctionType = exports.b2TOIOutput = exports.b2TOIOutputState = exports.b2TOIInput = exports.b2_toiMaxRootIters = exports.b2_toiRootIters = exports.b2_toiMaxIters = exports.b2_toiIters = exports.b2_toiCalls = exports.b2_toiMaxTime = exports.b2_toiTime = void 0;
+exports.b2_toi_reset = b2_toi_reset;
+exports.b2TimeOfImpact = b2TimeOfImpact;
 // DEBUG: import { b2Assert } from "../common/b2_settings.js"
 const b2_settings_1 = require("../common/b2_settings");
 const b2_math_1 = require("../common/b2_math");
@@ -39,7 +41,6 @@ function b2_toi_reset() {
     exports.b2_toiRootIters = 0;
     exports.b2_toiMaxRootIters = 0;
 }
-exports.b2_toi_reset = b2_toi_reset;
 const b2TimeOfImpact_s_xfA = new b2_math_1.b2Transform();
 const b2TimeOfImpact_s_xfB = new b2_math_1.b2Transform();
 const b2TimeOfImpact_s_pointA = new b2_math_1.b2Vec2();
@@ -427,4 +428,3 @@ function b2TimeOfImpact(output, input) {
     exports.b2_toiMaxTime = (0, b2_math_1.b2Max)(exports.b2_toiMaxTime, time);
     exports.b2_toiTime += time;
 }
-exports.b2TimeOfImpact = b2TimeOfImpact;

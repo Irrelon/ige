@@ -1,14 +1,14 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.IgeEntity = void 0;
-const instance_1 = require("../instance.js");
+const IgeBounds_1 = require("./IgeBounds.js");
 const IgeDummyCanvas_1 = require("./IgeDummyCanvas.js");
 const IgeMatrix2d_1 = require("./IgeMatrix2d.js");
 const IgeObject_1 = require("./IgeObject.js");
 const IgePoint2d_1 = require("./IgePoint2d.js");
 const IgePoint3d_1 = require("./IgePoint3d.js");
 const IgePoly2d_1 = require("./IgePoly2d.js");
-const IgeBounds_1 = require("./IgeBounds.js");
+const instance_1 = require("../instance.js");
 const clientServer_1 = require("../utils/clientServer.js");
 const igeClassStore_1 = require("../utils/igeClassStore.js");
 const maths_1 = require("../utils/maths.js");
@@ -1792,7 +1792,7 @@ class IgeEntity extends IgeObject_1.IgeObject {
      *         entity = new IgeEntity();
      *
      *     entity.translateToPoint(point);
-     * @return {*}
+     * @return {this}
      */
     translateToPoint(point) {
         if (point !== undefined) {
@@ -1807,9 +1807,9 @@ class IgeEntity extends IgeObject_1.IgeObject {
     }
     /**
      * Translates the object to the tile co-ordinates passed.
-     * @param {number} x The x tile co-ordinate.
-     * @param {number} y The y tile co-ordinate.
-     * @param {number=} z The z tile co-ordinate.
+     * @param x The x tile co-ordinate.
+     * @param y The y tile co-ordinate.
+     * @param z The z tile co-ordinate.
      * @example #Translate entity to tile
      *     // Create a tile map
      *     var tileMap = new IgeTileMap2d()
@@ -1819,46 +1819,66 @@ class IgeEntity extends IgeObject_1.IgeObject {
      *     // Mount our entity to the tile map
      *     entity.mount(tileMap);
      *
-     *     // Translate the entity to the tile x:10, y:12
+     *     // Translate the entity to the tile x:10, y:12, z: 0
      *     entity.translateToTile(10, 12, 0);
-     * @return {*} The object this method was called from to allow
+     * @return {this} The object this method was called from to allow
      * method chaining.
      */
-    translateToTile(x, y, z = 0) {
-        if (this._parent && this._parent._tileWidth !== undefined && this._parent._tileHeight !== undefined) {
-            let finalZ;
-            // Handle being passed a z co-ordinate
-            if (z !== undefined) {
-                finalZ = z * this._parent._tileDepth;
-            }
-            else {
-                finalZ = this._translate.z;
-            }
-            this.translateTo(x * this._parent._tileWidth + this._parent._tileWidth / 2, y * this._parent._tileHeight + this._parent._tileHeight / 2, finalZ);
-        }
-        else {
-            this.log("Cannot translate to tile because the entity is not currently mounted to a tile map or the tile map has no tileWidth or tileHeight values.", "warning");
-        }
-        return this;
-    }
-    tileX() {
-        if (this._parent && this._parent._tileWidth !== undefined) {
-            return Math.floor(this._translate.x / this._parent._tileWidth);
-        }
-    }
-    tileY() {
-        if (this._parent && this._parent._tileHeight !== undefined) {
-            return Math.floor(this._translate.y / this._parent._tileHeight);
-        }
-    }
-    tileZ(val) {
-        if (this._parent && val !== undefined) {
-            this._translate.z = val * this._parent._tileDepth;
+    translateToTile(x, y, z) {
+        if (!this._parent) {
+            this.log("translateToTile() failed because entity is not currently mounted to a tile map!", "error");
             return this;
         }
-        if (this._parent && this._parent._tileDepth !== undefined) {
-            return this._translate.z / this._parent._tileDepth;
+        if (x === undefined && y === undefined && z === undefined) {
+            // No work to do
+            return this;
         }
+        let finalX = this._translate.x;
+        let finalY = this._translate.y;
+        let finalZ = this._translate.z;
+        if (x !== undefined && this._parent._tileWidth !== undefined) {
+            finalX = x * this._parent._tileWidth + this._parent._tileWidth / 2;
+        }
+        if (y !== undefined && this._parent._tileHeight !== undefined) {
+            finalY = y * this._parent._tileHeight + this._parent._tileHeight / 2;
+        }
+        if (z !== undefined && this._parent._tileDepth !== undefined) {
+            finalZ = z * this._parent._tileDepth + this._parent._tileDepth / 2;
+        }
+        return this.translateTo(finalX, finalY, finalZ);
+    }
+    tileX(val) {
+        if (!this._parent || this._parent._tileWidth === undefined) {
+            this.log("tileX() called but entity is not currently mounted to a tile map!", "error");
+            return this;
+        }
+        if (val !== undefined) {
+            this.translateToTile(val, undefined, undefined);
+            return this;
+        }
+        return Math.floor(this._translate.x / this._parent._tileWidth);
+    }
+    tileY(val) {
+        if (!this._parent || this._parent._tileHeight === undefined) {
+            this.log("tileY() called but entity is not currently mounted to a tile map!", "error");
+            return this;
+        }
+        if (val !== undefined) {
+            this.translateToTile(undefined, val, undefined);
+            return this;
+        }
+        return Math.floor(this._translate.y / this._parent._tileHeight);
+    }
+    tileZ(val) {
+        if (!this._parent || this._parent._tileDepth === undefined) {
+            this.log("tileZ() called but entity is not currently mounted to a tile map!", "error");
+            return this;
+        }
+        if (val !== undefined) {
+            this.translateToTile(undefined, undefined, val);
+            return this;
+        }
+        return Math.floor(this._translate.z / this._parent._tileDepth);
     }
     /**
      * Gets the `translate` accessor object.

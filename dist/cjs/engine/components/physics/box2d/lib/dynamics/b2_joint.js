@@ -17,7 +17,9 @@
 * 3. This notice may not be removed or altered from any source distribution.
 */
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.b2Joint = exports.b2AngularStiffness = exports.b2LinearStiffness = exports.b2JointDef = exports.b2JointEdge = exports.b2Jacobian = exports.b2JointType = void 0;
+exports.b2Joint = exports.b2JointDef = exports.b2JointEdge = exports.b2Jacobian = exports.b2JointType = void 0;
+exports.b2LinearStiffness = b2LinearStiffness;
+exports.b2AngularStiffness = b2AngularStiffness;
 // DEBUG: import { b2Assert } from "../common/b2_settings.js"
 const b2_settings_1 = require("../common/b2_settings");
 const b2_math_1 = require("../common/b2_math");
@@ -123,7 +125,6 @@ function b2LinearStiffness(def, frequencyHertz, dampingRatio, bodyA, bodyB) {
     def.stiffness = mass * omega * omega;
     def.damping = 2.0 * mass * dampingRatio * omega;
 }
-exports.b2LinearStiffness = b2LinearStiffness;
 /// Utility to compute rotational stiffness values frequency and damping ratio
 // void b2AngularStiffness(float& stiffness, float& damping,
 // 	float frequencyHertz, float dampingRatio,
@@ -145,7 +146,6 @@ function b2AngularStiffness(def, frequencyHertz, dampingRatio, bodyA, bodyB) {
     def.stiffness = I * omega * omega;
     def.damping = 2.0 * I * dampingRatio * omega;
 }
-exports.b2AngularStiffness = b2AngularStiffness;
 /// The base joint class. Joints are used to constraint two bodies together in
 /// various fashions. Some joints also feature limits and motors.
 class b2Joint {

@@ -17,7 +17,19 @@
 * 3. This notice may not be removed or altered from any source distribution.
 */
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.b2Sweep = exports.b2Transform = exports.b2Rot = exports.b2Mat33 = exports.b2Mat22 = exports.b2Vec3 = exports.b2TypedVec2 = exports.b2Vec2_zero = exports.b2Vec2 = exports.b2RandomRange = exports.b2Random = exports.b2IsPowerOfTwo = exports.b2NextPowerOfTwo = exports.b2Atan2 = exports.b2Asin = exports.b2Acos = exports.b2Sin = exports.b2Cos = exports.b2RadToDeg = exports.b2DegToRad = exports.b2Pow = exports.b2Sqrt = exports.b2InvSqrt = exports.b2Sq = exports.b2IsValid = exports.b2Swap = exports.b2Clamp = exports.b2Max = exports.b2Min = exports.b2Abs = exports.b2_two_pi = exports.b2_180_over_pi = exports.b2_pi_over_180 = void 0;
+exports.b2Sweep = exports.b2Transform = exports.b2Rot = exports.b2Mat33 = exports.b2Mat22 = exports.b2Vec3 = exports.b2TypedVec2 = exports.b2Vec2_zero = exports.b2Vec2 = exports.b2Atan2 = exports.b2Asin = exports.b2Acos = exports.b2Sin = exports.b2Cos = exports.b2Pow = exports.b2Sqrt = exports.b2IsValid = exports.b2Abs = exports.b2_two_pi = exports.b2_180_over_pi = exports.b2_pi_over_180 = void 0;
+exports.b2Min = b2Min;
+exports.b2Max = b2Max;
+exports.b2Clamp = b2Clamp;
+exports.b2Swap = b2Swap;
+exports.b2Sq = b2Sq;
+exports.b2InvSqrt = b2InvSqrt;
+exports.b2DegToRad = b2DegToRad;
+exports.b2RadToDeg = b2RadToDeg;
+exports.b2NextPowerOfTwo = b2NextPowerOfTwo;
+exports.b2IsPowerOfTwo = b2IsPowerOfTwo;
+exports.b2Random = b2Random;
+exports.b2RandomRange = b2RandomRange;
 // DEBUG: import { b2Assert } from "./b2_settings.js"
 const b2_settings_1 = require("./b2_settings");
 exports.b2_pi_over_180 = b2_settings_1.b2_pi / 180;
@@ -27,44 +39,36 @@ exports.b2Abs = Math.abs;
 function b2Min(a, b) {
     return a < b ? a : b;
 }
-exports.b2Min = b2Min;
 function b2Max(a, b) {
     return a > b ? a : b;
 }
-exports.b2Max = b2Max;
 function b2Clamp(a, lo, hi) {
     return (a < lo) ? (lo) : ((a > hi) ? (hi) : (a));
 }
-exports.b2Clamp = b2Clamp;
 function b2Swap(a, b) {
     // DEBUG: b2Assert(false);
     const tmp = a[0];
     a[0] = b[0];
     b[0] = tmp;
 }
-exports.b2Swap = b2Swap;
 /// This function is used to ensure that a floating point number is
 /// not a NaN or infinity.
 exports.b2IsValid = isFinite;
 function b2Sq(n) {
     return n * n;
 }
-exports.b2Sq = b2Sq;
 /// This is a approximate yet fast inverse square-root.
 function b2InvSqrt(n) {
     return 1 / Math.sqrt(n);
 }
-exports.b2InvSqrt = b2InvSqrt;
 exports.b2Sqrt = Math.sqrt;
 exports.b2Pow = Math.pow;
 function b2DegToRad(degrees) {
     return degrees * exports.b2_pi_over_180;
 }
-exports.b2DegToRad = b2DegToRad;
 function b2RadToDeg(radians) {
     return radians * exports.b2_180_over_pi;
 }
-exports.b2RadToDeg = b2RadToDeg;
 exports.b2Cos = Math.cos;
 exports.b2Sin = Math.sin;
 exports.b2Acos = Math.acos;
@@ -78,19 +82,15 @@ function b2NextPowerOfTwo(x) {
     x |= (x >> 16) & 0x0000FFFF;
     return x + 1;
 }
-exports.b2NextPowerOfTwo = b2NextPowerOfTwo;
 function b2IsPowerOfTwo(x) {
     return x > 0 && (x & (x - 1)) === 0;
 }
-exports.b2IsPowerOfTwo = b2IsPowerOfTwo;
 function b2Random() {
     return Math.random() * 2 - 1;
 }
-exports.b2Random = b2Random;
 function b2RandomRange(lo, hi) {
     return (hi - lo) * Math.random() + lo;
 }
-exports.b2RandomRange = b2RandomRange;
 /// A 2D column vector.
 class b2Vec2 {
     constructor(x = 0, y = 0) {

@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.synthesize = void 0;
+exports.synthesize = synthesize;
 /**
  * Creates a getter/setter method on the passed `Class` via
  * its prototype. This saves us from having to constantly
@@ -23,4 +23,3 @@ function synthesize(Class, methodName, shouldStreamChange = false) {
         return this;
     };
 }
-exports.synthesize = synthesize;

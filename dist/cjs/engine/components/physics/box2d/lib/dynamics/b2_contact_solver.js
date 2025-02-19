@@ -17,7 +17,9 @@
 * 3. This notice may not be removed or altered from any source distribution.
 */
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.b2ContactSolver = exports.b2PositionSolverManifold = exports.b2ContactSolverDef = exports.b2ContactPositionConstraint = exports.b2ContactVelocityConstraint = exports.b2VelocityConstraintPoint = exports.set_g_blockSolve = exports.get_g_blockSolve = exports.g_blockSolve = void 0;
+exports.b2ContactSolver = exports.b2PositionSolverManifold = exports.b2ContactSolverDef = exports.b2ContactPositionConstraint = exports.b2ContactVelocityConstraint = exports.b2VelocityConstraintPoint = exports.g_blockSolve = void 0;
+exports.get_g_blockSolve = get_g_blockSolve;
+exports.set_g_blockSolve = set_g_blockSolve;
 // DEBUG: import { b2Assert } from "../common/b2_settings.js"
 const b2_settings_1 = require("../common/b2_settings");
 const b2_math_1 = require("../common/b2_math");
@@ -30,11 +32,9 @@ exports.g_blockSolve = false;
 function get_g_blockSolve() {
     return exports.g_blockSolve;
 }
-exports.get_g_blockSolve = get_g_blockSolve;
 function set_g_blockSolve(value) {
     exports.g_blockSolve = value;
 }
-exports.set_g_blockSolve = set_g_blockSolve;
 class b2VelocityConstraintPoint {
     constructor() {
         this.rA = new b2_math_1.b2Vec2();

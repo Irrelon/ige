@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.b2CollideEdgeAndPolygon = exports.b2CollideEdgeAndCircle = void 0;
+exports.b2CollideEdgeAndCircle = b2CollideEdgeAndCircle;
+exports.b2CollideEdgeAndPolygon = b2CollideEdgeAndPolygon;
 // DEBUG: import { b2Assert } from "../common/b2_settings.js"
 const b2_settings_1 = require("../common/b2_settings");
 const b2_math_1 = require("../common/b2_math");
@@ -127,7 +128,6 @@ function b2CollideEdgeAndCircle(manifold, edgeA, xfA, circleB, xfB) {
     // manifold.points[0].id.cf = cf;
     manifold.points[0].localPoint.Copy(circleB.m_p);
 }
-exports.b2CollideEdgeAndCircle = b2CollideEdgeAndCircle;
 var b2EPAxisType;
 (function (b2EPAxisType) {
     b2EPAxisType[b2EPAxisType["e_unknown"] = 0] = "e_unknown";
@@ -446,4 +446,3 @@ function b2CollideEdgeAndPolygon(manifold, edgeA, xfA, polygonB, xfB) {
     }
     manifold.pointCount = pointCount;
 }
-exports.b2CollideEdgeAndPolygon = b2CollideEdgeAndPolygon;

@@ -4,7 +4,6 @@ import { ige } from "@/engine/instance";
 import { isServer } from "@/engine/utils/clientServer";
 import { IgeAudioSourceType } from "@/enums/IgeAudioSourceType";
 
-
 /**
  * Creates a new audio source.
  */

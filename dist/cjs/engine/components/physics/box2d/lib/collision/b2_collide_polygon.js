@@ -1,7 +1,7 @@
 "use strict";
 // MIT License
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.b2CollidePolygons = void 0;
+exports.b2CollidePolygons = b2CollidePolygons;
 // Copyright (c) 2019 Erin Catto
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -209,4 +209,3 @@ function b2CollidePolygons(manifold, polyA, xfA, polyB, xfB) {
     }
     manifold.pointCount = pointCount;
 }
-exports.b2CollidePolygons = b2CollidePolygons;

@@ -17,7 +17,10 @@
 * 3. This notice may not be removed or altered from any source distribution.
 */
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.b2ShapeCast = exports.b2Distance = exports.b2Simplex = exports.b2SimplexVertex = exports.b2_gjk_reset = exports.b2_gjkMaxIters = exports.b2_gjkIters = exports.b2_gjkCalls = exports.b2ShapeCastOutput = exports.b2ShapeCastInput = exports.b2DistanceOutput = exports.b2DistanceInput = exports.b2SimplexCache = exports.b2DistanceProxy = void 0;
+exports.b2Simplex = exports.b2SimplexVertex = exports.b2_gjkMaxIters = exports.b2_gjkIters = exports.b2_gjkCalls = exports.b2ShapeCastOutput = exports.b2ShapeCastInput = exports.b2DistanceOutput = exports.b2DistanceInput = exports.b2SimplexCache = exports.b2DistanceProxy = void 0;
+exports.b2_gjk_reset = b2_gjk_reset;
+exports.b2Distance = b2Distance;
+exports.b2ShapeCast = b2ShapeCast;
 // DEBUG: import { b2Assert } from "../common/b2_settings.js"
 const b2_settings_1 = require("../common/b2_settings");
 const b2_math_1 = require("../common/b2_math");
@@ -167,7 +170,6 @@ function b2_gjk_reset() {
     exports.b2_gjkIters = 0;
     exports.b2_gjkMaxIters = 0;
 }
-exports.b2_gjk_reset = b2_gjk_reset;
 class b2SimplexVertex {
     constructor() {
         this.wA = new b2_math_1.b2Vec2(); // support point in proxyA
@@ -563,7 +565,6 @@ function b2Distance(output, cache, input) {
         }
     }
 }
-exports.b2Distance = b2Distance;
 /// Perform a linear shape cast of shape B moving and shape A fixed. Determines the hit point, normal, and translation fraction.
 // GJK-raycast
 // Algorithm by Gino van den Bergen.
@@ -719,4 +720,3 @@ function b2ShapeCast(output, input) {
     output.iterations = iter;
     return true;
 }
-exports.b2ShapeCast = b2ShapeCast;

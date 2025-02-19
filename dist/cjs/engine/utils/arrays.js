@@ -44,20 +44,25 @@ const pushUnique = (arr, item) => {
 exports.pushUnique = pushUnique;
 /**
  * Clones the array and returns a new non-referenced
- * array.
+ * array. Object references for items inside the array
+ * are kept but any array inside the array is converted
+ * to a non-referenced version. Essentially, you can be
+ * sure that any modification to any array in the return
+ * data will not affect the original array or sub-arrays
+ * of the original array.
  * @param arr
  * @return {*}
  */
 const arrClone = (arr) => {
     const newArray = [];
     for (const i in arr) {
-        if (arr.hasOwnProperty(i)) {
-            if (arr[i] instanceof Array) {
-                newArray[i] = (0, exports.arrClone)(arr[i]);
-            }
-            else {
-                newArray[i] = arr[i];
-            }
+        if (!arr.hasOwnProperty(i))
+            continue;
+        if (arr[i] instanceof Array) {
+            newArray[i] = (0, exports.arrClone)(arr[i]);
+        }
+        else {
+            newArray[i] = arr[i];
         }
     }
     return newArray;
