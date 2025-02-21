@@ -100,7 +100,7 @@ export class IgeObject extends IgeEventingClass implements IgeCanRegisterById, I
 	_renderPos: { x: number; y: number };
 	_computedOpacity: number;
 	_opacity: number;
-	_cell: number | null = 1;
+	_cell: number = 1;
 	_deathTime?: number;
 	_bornTime: number = 0;
 	_translate: IgePoint3d;
