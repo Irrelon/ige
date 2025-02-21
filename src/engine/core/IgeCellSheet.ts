@@ -5,7 +5,9 @@ import type { IgeSmartTexture } from "@/types/IgeSmartTexture";
 /**
  * Creates a new cell sheet. Cell sheets are textures that are
  * automatically split up into individual cells based on a cell
- * width and height.
+ * width and height. If your images are not in cells but placed
+ * at non-uniform positions and dimensions, use an IgeSpriteSheet
+ * instead.
  */
 export class IgeCellSheet extends IgeTexture {
 	classId = "IgeCellSheet";
@@ -26,9 +28,11 @@ export class IgeCellSheet extends IgeTexture {
 
 		this.horizontalCells(horizontalCells);
 		this.verticalCells(verticalCells);
+
+		this.whenLoaded().then(this._textureLoaded);
 	}
 
-	_textureLoaded () {
+	_textureLoaded = () => {
 		if (this.image) {
 			// Store the cell sheet image
 			this._sheetImage = this.image;
@@ -40,7 +44,7 @@ export class IgeCellSheet extends IgeTexture {
 		}
 
 		super._assetLoaded();
-	}
+	};
 
 	/**
 	 * Returns the total number of cells in the cell sheet.

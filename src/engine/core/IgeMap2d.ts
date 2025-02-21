@@ -66,7 +66,7 @@ export class IgeMap2d<MapDataType = any> extends IgeBaseClass {
 	 * @param width
 	 * @param height
 	 */
-	collision (x?: number, y?: number, width?: number, height?: number) {
+	collision (x?: number, y?: number, width?: number, height?: number): boolean {
 		let xi: number, yi: number;
 
 		if (width === undefined) {

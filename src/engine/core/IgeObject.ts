@@ -413,11 +413,11 @@ export class IgeObject extends IgeEventingClass implements IgeCanRegisterById, I
 	 *     entity.drawMouseData(false);
 	 * @example #Get the current flag value
 	 *     console.log(entity.drawMouseData());
-	 * @return {*}
+	 * @return {boolean | this}
 	 */
-	drawMouseData (): boolean;
 	drawMouseData (val: boolean): this;
-	drawMouseData (val?: boolean) {
+	drawMouseData (): boolean;
+	drawMouseData (val?: boolean): boolean | this {
 		if (val !== undefined) {
 			this._drawMouseData = val;
 			return this;
@@ -454,12 +454,14 @@ export class IgeObject extends IgeEventingClass implements IgeCanRegisterById, I
 	 * Converts an array of points from local space to this entity's
 	 * world space using its world transform matrix. This will alter
 	 * the points passed in the array directly.
-	 * @param {Array} points The array of IgePoints to convert.
-	 * @param viewport
-	 * @param inverse
+	 * @param {IgePoint[]} points The array of IgePoint's to convert.
+	 * @param {IgeViewport | null} viewport
+	 * @param {boolean} inverse
 	 */
-	localToWorld (points: IgePoint[], viewport?: IgeViewport | null, inverse = false): void {
+	localToWorld (points: IgePoint[], viewport?: IgeViewport | null, inverse: boolean = false): void {
 		// TODO: Commented as this was doing literally nothing
+		//   we need to allow passing a viewport to calculate the
+		//   return values correctly
 		//viewport = viewport || ige.engine._currentViewport;
 
 		if (this._adjustmentMatrix) {
@@ -486,6 +488,7 @@ export class IgeObject extends IgeEventingClass implements IgeCanRegisterById, I
 	 * using its world transform matrix. This will alter the passed
 	 * point's data directly.
 	 * @param {IgePoint3d} point The IgePoint3d to convert.
+	 * @param {IgeViewport | null} viewport
 	 */
 	localToWorldPoint (point: IgePoint3d, viewport?: IgeViewport | null): void {
 		// TODO: We commented this because it doesn't even get used... is this a mistake?
@@ -576,12 +579,17 @@ export class IgeObject extends IgeEventingClass implements IgeCanRegisterById, I
 
 	statStart (funcName: string, statType: string): number {
 		if (!ige.config.debug._timing) return 0;
-		return ige.stats.start(`${funcName}.${this.id()}.${statType}`);
+		return ige.stats.start(this.classId, this.id(), funcName, statType);
 	}
 
 	statEnd (funcName: string, statType: string): number {
 		if (!ige.config.debug._timing) return 0;
-		return ige.stats.end(`${funcName}.${this.id()}.${statType}`);
+		return ige.stats.end(this.classId, this.id(), funcName, statType);
+	}
+
+	statCutOff () {
+		if (!ige.config.debug._timing) return;
+		return ige.stats.cutOff();
 	}
 
 	update (tickDelta: number) {
@@ -619,12 +627,11 @@ export class IgeObject extends IgeEventingClass implements IgeCanRegisterById, I
 			return;
 		}
 
+		this.statStart("update", "");
 		while (arrCount--) {
-			this.statStart("update", "");
 			arr[arrCount].update(tickDelta);
-			this.statEnd("update", "");
-			this.statEnd("update", "tick");
 		}
+		this.statEnd("update", "");
 
 		return;
 	}
@@ -643,50 +650,20 @@ export class IgeObject extends IgeEventingClass implements IgeCanRegisterById, I
 
 		let arrCount = arr.length;
 
-		if (ige.config.debug._timing) {
-			while (arrCount--) {
-				if (!arr[arrCount]) {
-					this.log("Object _children is undefined for index " + arrCount + " and _id: " + this._id, "error");
-					continue;
-				}
+		this.statStart("tick", "");
+		while (arrCount--) {
+			if (!arr[arrCount]) {
+				this.log(`Object _children is undefined for index ${arrCount} and _id: ${this._id}`, "error");
+				continue;
+			}
 
-				if (arr[arrCount]._newBorn) continue;
-
+			if (!arr[arrCount]._newBorn) {
 				ctx.save();
-
-				const ts = new Date().getTime();
 				arr[arrCount].tick(ctx);
-				const td = new Date().getTime() - ts;
-
-				if (arr[arrCount]) {
-					if (!ige.engine._timeSpentInTick[arr[arrCount].id()]) {
-						ige.engine._timeSpentInTick[arr[arrCount].id()] = 0;
-					}
-
-					if (!ige.engine._timeSpentLastTick[arr[arrCount].id()]) {
-						ige.engine._timeSpentLastTick[arr[arrCount].id()] = {};
-					}
-
-					ige.engine._timeSpentInTick[arr[arrCount].id()] += td;
-					ige.engine._timeSpentLastTick[arr[arrCount].id()].tick = td;
-				}
-
 				ctx.restore();
 			}
-		} else {
-			while (arrCount--) {
-				if (!arr[arrCount]) {
-					this.log(`Object _children is undefined for index ${arrCount} and _id: ${this._id}`, "error");
-					continue;
-				}
-
-				if (!arr[arrCount]._newBorn) {
-					ctx.save();
-					arr[arrCount].tick(ctx);
-					ctx.restore();
-				}
-			}
 		}
+		this.statEnd("tick", "");
 	}
 
 	updateTransform () {
@@ -837,11 +814,15 @@ export class IgeObject extends IgeEventingClass implements IgeCanRegisterById, I
 		obj.updateTransform();
 		obj.aabb(true);
 
-		if (obj._compositeCache) {
-			this._compositeParent = true;
-		} else {
-			this._compositeParent = false;
-		}
+		/**
+		 * Updated from:
+		 * if (obj._compositeCache) {
+		 * 	  this._compositeParent = true;
+		 * } else {
+		 * 	  this._compositeParent = false;
+		 * }
+		 */
+		this._compositeParent = obj._compositeCache;
 
 		this._mounted(this._parent);
 
@@ -1847,8 +1828,8 @@ export class IgeObject extends IgeEventingClass implements IgeCanRegisterById, I
 	 * @return {*} "this" when a propVal argument is passed to allow method
 	 * chaining or the current value if no propVal argument is specified.
 	 */
-	streamProperty (propName: string): any;
 	streamProperty (propName: string, propVal: any): this;
+	streamProperty (propName: string): any;
 	streamProperty (propName: string, propVal?: any): this | any | undefined {
 		if (!this._id || isClient) return;
 
@@ -2379,15 +2360,14 @@ export class IgeObject extends IgeEventingClass implements IgeCanRegisterById, I
 	 * sending stream data to a client for the first time even if the data
 	 * has existed on the server for a while - ensuring that even unchanged
 	 * data makes it to the new client).
-	 * @return {*} "this" when a data argument is passed to allow method
-	 * chaining or the current value if no data argument is specified.
+	 * @return {string | undefined}
 	 */
 	streamSectionData (
 		sectionId: string,
 		data?: string,
 		bypassTimeStream: boolean = false,
 		bypassChangeDetection: boolean = false
-	) {
+	): string | undefined {
 		switch (sectionId) {
 			case "transform":
 				if (data) {
@@ -2564,7 +2544,7 @@ export class IgeObject extends IgeEventingClass implements IgeCanRegisterById, I
 	 *     entity.streamDestroy('43245325');
 	 * @return {Boolean}
 	 */
-	streamDestroy (clientId?: string) {
+	streamDestroy (clientId?: string): boolean {
 		const thisId = this.id();
 		const network = ige.network as IgeNetIoServerController;
 
@@ -2599,11 +2579,11 @@ export class IgeObject extends IgeEventingClass implements IgeCanRegisterById, I
 	 * the last time the stream data was generated. The returned data is
 	 * a string that has been compressed in various ways to reduce network
 	 * overhead during transmission.
-	 * @return {String} The string representation of the stream data for
+	 * @return {string} The string representation of the stream data for
 	 * this entity.
 	 * @private
 	 */
-	_generateStreamData () {
+	_generateStreamData (): string {
 		// Check if we already have a cached version of the streamData
 		if (this._streamDataCache) {
 			return this._streamDataCache;
@@ -2748,7 +2728,7 @@ export class IgeObject extends IgeEventingClass implements IgeCanRegisterById, I
 	 *         aabb = entity.compositeAabb();
 	 * @return {IgeBounds}
 	 */
-	compositeAabb (inverse = false) {
+	compositeAabb (inverse = false): IgeBounds {
 		const arr = this._children;
 		const rect = this.aabb(true, inverse).clone();
 
@@ -2768,9 +2748,9 @@ export class IgeObject extends IgeEventingClass implements IgeCanRegisterById, I
 	/**
 	 * Returns a string containing a code fragment that when
 	 * evaluated will reproduce this object.
-	 * @return {String}
+	 * @return {string}
 	 */
-	stringify (options: Record<keyof IgeObject | string, boolean> = {}) {
+	stringify (options: Record<keyof IgeObject | string, boolean> = {}): string {
 		// TODO: Use the advanced serialiser system from ForerunnerDB
 		let str = `new ${this.constructor.name}()`;
 
@@ -2796,9 +2776,9 @@ export class IgeObject extends IgeEventingClass implements IgeCanRegisterById, I
 	 * chained commands. This method will only check for
 	 * properties that are directly related to this class.
 	 * Other properties are handled by their own class method.
-	 * @return {String}
+	 * @return {string}
 	 */
-	_stringify (options: Record<keyof IgeObject | string, boolean> = {}) {
+	_stringify (options: Record<keyof IgeObject | string, boolean> = {}): string {
 		let str = "";
 
 		// Loop properties and add property assignment code to string

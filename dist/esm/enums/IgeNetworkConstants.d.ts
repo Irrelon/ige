@@ -1,0 +1,16 @@
+export declare const IGE_NETWORK_STREAM_CREATE = "_igeStreamCreate";
+export declare const IGE_NETWORK_STREAM_DESTROY = "_igeStreamDestroy";
+export declare const IGE_NETWORK_STREAM_DATA = "_igeStreamData";
+export declare const IGE_NETWORK_STREAM_TIME = "_igeStreamTime";
+export declare const IGE_NETWORK_REQUEST = "_igeRequest";
+export declare const IGE_NETWORK_RESPONSE = "_igeResponse";
+export declare const IGE_NETWORK_TIME_SYNC = "_igeNetTimeSync";
+export declare const IGE_NETWORK_JOIN_ROOM = "_igeNetJoinRoom";
+export declare const IGE_NETWORK_LEAVE_ROOM = "_igeNetLeaveRoom";
+export declare const IGE_NETWORK_CHAT_MSG = "_igeChatMsg";
+export declare const IGE_NETWORK_CHAT_JOIN_ROOM = "_igeChatJoinRoom";
+export declare const IGE_NETWORK_CHAT_LEAVE_ROOM = "_igeChatLeaveRoom";
+export declare const IGE_NETWORK_CHAT_LIST_ROOMS = "_igeChatRoomList";
+export declare const IGE_NETWORK_CHAT_ROOM_LIST_USERS = "_igeChatRoomUserList";
+export declare const IGE_NETWORK_CHAT_ROOM_CREATED = "_igeChatRoomCreated";
+export declare const IGE_NETWORK_CHAT_ROOM_REMOVED = "_igeChatRoomRemoved";

@@ -5,7 +5,9 @@ const IgeTexture_1 = require("./IgeTexture.js");
 /**
  * Creates a new cell sheet. Cell sheets are textures that are
  * automatically split up into individual cells based on a cell
- * width and height.
+ * width and height. If your images are not in cells but placed
+ * at non-uniform positions and dimensions, use an IgeSpriteSheet
+ * instead.
  */
 class IgeCellSheet extends IgeTexture_1.IgeTexture {
     constructor(id, urlOrObject, horizontalCells = 1, verticalCells = 1) {
@@ -16,21 +18,22 @@ class IgeCellSheet extends IgeTexture_1.IgeTexture {
         this._cellRows = 0;
         this._cellWidth = 0;
         this._cellHeight = 0;
+        this._textureLoaded = () => {
+            if (this.image) {
+                // Store the cell sheet image
+                this._sheetImage = this.image;
+                this._applyCells();
+            }
+            else {
+                // Unable to create cells from non-image texture
+                // TODO: Low-priority - Support cell sheets from smart-textures
+                this.log("Cannot create cell-sheet because texture has not loaded an image!", "error");
+            }
+            super._assetLoaded();
+        };
         this.horizontalCells(horizontalCells);
         this.verticalCells(verticalCells);
-    }
-    _textureLoaded() {
-        if (this.image) {
-            // Store the cell sheet image
-            this._sheetImage = this.image;
-            this._applyCells();
-        }
-        else {
-            // Unable to create cells from non-image texture
-            // TODO: Low-priority - Support cell sheets from smart-textures
-            this.log("Cannot create cell-sheet because texture has not loaded an image!", "error");
-        }
-        super._assetLoaded();
+        this.whenLoaded().then(this._textureLoaded);
     }
     /**
      * Returns the total number of cells in the cell sheet.

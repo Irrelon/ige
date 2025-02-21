@@ -13,7 +13,6 @@ import type { IgeSmartFilter } from "@/types/IgeSmartFilter";
 import type { IgeSmartTexture } from "@/types/IgeSmartTexture";
 import type { IgeTextureCellArray } from "@/types/IgeTextureCellArray";
 
-
 /**
  * Creates a new texture.
  */
@@ -312,17 +311,33 @@ export class IgeTexture extends IgeAsset {
 	}
 
 	/**
+	 * Gets the specified cell X axis size.
+	 * @param {number} cellIndex
+	 */
+	cellSizeX (cellIndex: number) {
+		return this._cells[cellIndex][2];
+	}
+
+	/**
+	 * Gets the specified cell Y axis size.
+	 * @param {number} cellIndex
+	 */
+	cellSizeY (cellIndex: number) {
+		return this._cells[cellIndex][3];
+	}
+
+	/**
 	 * Resizes the original texture image to a new size. This alters
 	 * the image that the texture renders so all entities that use
 	 * this texture will output the newly resized version of the image.
 	 * @param {number} x The new width.
 	 * @param {number} y The new height.
-	 * @param {boolean=} dontDraw If true the resized image will not be
+	 * @param {boolean} dontDraw If true the resized image will not be
 	 * drawn to the texture canvas. Useful for just resizing the texture
 	 * canvas and not the output image. Use in conjunction with the
 	 * applyFilter() and preFilter() methods.
 	 */
-	resize (x: number, y: number, dontDraw = false) {
+	resize (x: number, y: number, dontDraw: boolean = false) {
 		if (this._originalImage) {
 			if (!this._loaded) {
 				throw new Error(
@@ -446,7 +461,9 @@ export class IgeTexture extends IgeAsset {
 		this.removeFilters();
 	}
 
-	smoothing (val?: boolean) {
+	smoothing (val: boolean): this;
+	smoothing (): boolean;
+	smoothing (val?: boolean): this | boolean {
 		if (val !== undefined) {
 			this._smoothing = val;
 			return this;

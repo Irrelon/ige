@@ -25,13 +25,15 @@ export class IgeBaseScene extends IgeSceneGraph {
 		const baseScene = new IgeScene2d().id("baseScene");
 
 		// Create the main viewport to look at "baseScene"
-		new IgeViewport()
+		const vp1 = new IgeViewport()
 			.id("vp1")
 			.autoSize(true)
 			.scene(baseScene)
 			.drawBounds(false)
 			.drawBoundsData(false)
 			.mount(ige.engine);
+
+		vp1.camera.id("vp1_camera");
 	};
 
 	/**

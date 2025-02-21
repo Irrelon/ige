@@ -18,6 +18,37 @@ HTML5 2D and isometric scenegraph-based game engine written entirely in TypeScri
 
 ## Latest Updates & Changelog
 
+## Version 3.0.4
+
+#### Category Selector ige.$$()
+
+The category selector used to default to returning a mutable array of entities that
+matched the category name you provided. The default is now to return an immutable
+array (a cloned copy) of the array instead. If you want a "live" array that is an
+actual reference to the underlying category array in the engine, pass true to the
+second argument e.g. `ige.$$("someCategory", true);`
+
+#### IgeAudioEntity
+
+Updated a bunch of code in here to handle client-server comms when creating and
+streaming audio entities.
+
+#### IgeCellSheet
+
+Got cell sheets working again after the large update to get supporting abstracted
+render pipelines working.
+
+#### IgeStats
+
+There are many more useful stats that the engine is now recording (and in a much
+more performant way than in the past). You can access a report via:
+
+`ige.stats.toObject();`
+
+Passing a number as an argument will filter the results of that call to only timings
+that exceed the value you pass, allowing you to focus on slow-running parts of your
+simulation.
+
 ### Version 3.0.3
 
 Merge es6 branch to stable.
@@ -181,6 +212,35 @@ pointer events like pointerDown and pointerUp.
 
 IgeUiEntity instances have the same general capabilities but are considered graphical rather
 than interactive so don't hook or interfere with pointer events by default.
+
+## Streaming Gotchas
+
+If a class that extends `IgeEntity` is not streaming, make sure you've set its stream mode:
+`streamMode(IgeStreamMode.simple)`.
+
+If your class needs arguments when it is instantiated by the stream on the client-side, make
+sure you define `streamCreateConstructorArgs()`:
+
+```typescript
+import { IgeEntity, registerClass } from "@irrelon/ige";
+
+class MyClass extends IgeEntity {
+	constructor (foo: string, bar: number) {
+		super();
+		this._foo = foo;
+		this._bar = bar;
+	}
+
+	streamCreateConstructorArgs () {
+		return [this._foo, this._bar];
+	}
+}
+
+registerClass(MyClass); // <-- Don't forget to register your class with the engine!
+```
+
+You also need to make sure your class is registered with the engine so that it can be
+instantiated by name. Put the `registerClass(MyClass)` at the end of your class definition.
 
 ## License
 

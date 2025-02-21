@@ -182,8 +182,7 @@ export class Ige implements IgeIsReadyPromise {
 	/**
 	 * Returns an object from the engine's object register by
 	 * the object's id. If the item passed is not a string id
-	 * then the item is returned as is. If no item is passed
-	 * the engine itself is returned. The object is returned
+	 * then the item is returned as is. The object is returned
 	 * by reference so mutations will affect any other references
 	 * to the object. There is no mutation-safe version of this.
 	 * @param {string | Object} item The id of the item to return,
@@ -201,21 +200,23 @@ export class Ige implements IgeIsReadyPromise {
 
 	/**
 	 * Returns an array of all objects that have been assigned
-	 * the passed category name. By default, the returned array
-	 * is by reference, so you only need to get this array once,
-	 * and it will receive updates when other objects are added
-	 * to a category. Use the `immutable` flag to control this.
+	 * the passed category name. If you pass `true` as the second
+	 * argument, the returned array is by reference, so you only
+	 * need to get this array once, and it will receive updates when
+	 * other objects are added to a category, however is it mutable
+	 * and mutating it will actually mess with the underlying data
+	 * in the engine so don't do that unless you want really weird
+	 * stuff to happen.
 	 * @param {String} categoryName The name of the category to return
 	 * all objects for.
-	 * @param {boolean} [immutable=false] If true, returns a mutation-safe
-	 * array where mutations to the array will not affect the underlying
-	 * reference.
+	 * @param {boolean} [live=false] If true, returns the underlying
+	 * reference to the category array.
 	 */
 	$$<ReturnType extends IgeCanRegisterByCategory | undefined = IgeCanRegisterByCategory> (
 		categoryName: string,
-		immutable: boolean = false
+		live: boolean = false
 	): ReturnType[] {
-		if (immutable) return (this.categoryRegister.getImmutable(categoryName) || []) as ReturnType[];
+		if (!live) return (this.categoryRegister.getImmutable(categoryName) || []) as ReturnType[];
 		return (this.categoryRegister.get(categoryName) || []) as ReturnType[];
 	}
 

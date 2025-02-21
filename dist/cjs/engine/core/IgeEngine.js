@@ -152,6 +152,7 @@ class IgeEngine extends IgeEntity_1.IgeEntity {
          * Called each frame to traverse and render the scenegraph.
          */
         this.engineStep = (timeStamp) => {
+            this.statStart("engineStep", "");
             /* TODO:
                 Make the scenegraph process simplified. Walk the scenegraph once and grab the order in a flat array
                 then process updates and ticks. This will also allow a layered rendering system that can render the
@@ -163,10 +164,6 @@ class IgeEngine extends IgeEntity_1.IgeEntity {
             this.incrementTime(timeStamp, this._timeScaleLastTimestamp);
             this._timeScaleLastTimestamp = timeStamp;
             timeStamp = Math.floor(this._currentTime);
-            let startTime = 0;
-            if (instance_1.ige.config.debug._timing) {
-                startTime = new Date().getTime();
-            }
             if (this._state === enums_1.IgeEngineState.started) {
                 // Alternate the boolean frame alternator flag
                 this._frameAlternator = !this._frameAlternator;
@@ -200,14 +197,9 @@ class IgeEngine extends IgeEntity_1.IgeEntity {
                     // Process any behaviours assigned to the engine
                     this._processBehaviours(enums_1.IgeBehaviourType.preUpdate, this._tickDelta);
                     // Update the scenegraph
-                    if (instance_1.ige.config.debug._timing) {
-                        const updateStart = new Date().getTime();
-                        this.updateSceneGraph();
-                        this._updateTime = new Date().getTime() - updateStart;
-                    }
-                    else {
-                        this.updateSceneGraph();
-                    }
+                    this.statStart("engineStep", "updateSceneGraph");
+                    this.updateSceneGraph();
+                    this.statEnd("engineStep", "updateSceneGraph");
                     this._processBehaviours(enums_1.IgeBehaviourType.postUpdate, this._tickDelta);
                 }
                 // Check if renders are enabled
@@ -220,27 +212,17 @@ class IgeEngine extends IgeEntity_1.IgeEntity {
                         // a manual render has been queued by calling manualRender()
                         if (this._manualRenderQueued) {
                             // A manual render was queued, so we can render a frame now
-                            if (instance_1.ige.config.debug._timing) {
-                                const renderStart = new Date().getTime();
-                                this.renderSceneGraph();
-                                this._renderTime = new Date().getTime() - renderStart;
-                            }
-                            else {
-                                this.renderSceneGraph();
-                            }
+                            this.statStart("engineStep", "renderSceneGraph");
+                            this.renderSceneGraph();
                             this._manualRenderQueued = false;
+                            this.statEnd("engineStep", "renderSceneGraph");
                         }
                     }
                     else {
                         // We are not in manual render mode so render the scenegraph
-                        if (instance_1.ige.config.debug._timing) {
-                            const renderStart = new Date().getTime();
-                            this.renderSceneGraph();
-                            this._renderTime = new Date().getTime() - renderStart;
-                        }
-                        else {
-                            this.renderSceneGraph();
-                        }
+                        this.statStart("engineStep", "renderSceneGraph");
+                        this.renderSceneGraph();
+                        this.statEnd("engineStep", "renderSceneGraph");
                     }
                     // Call post-tick methods
                     this._processBehaviours(enums_1.IgeBehaviourType.postTick);
@@ -256,12 +238,10 @@ class IgeEngine extends IgeEntity_1.IgeEntity {
                 this._drawCount = 0;
             }
             this._resized = false;
-            if (instance_1.ige.config.debug._timing) {
-                const endTime = new Date().getTime();
-                this._tickTime = endTime - startTime;
-            }
             const tickOut = this._setTickout.shift();
             tickOut === null || tickOut === void 0 ? void 0 : tickOut();
+            this.statEnd("engineStep", "");
+            this.statCutOff();
         };
         /**
          * Walks the scenegraph and returns an array of all entities that the mouse
@@ -927,11 +907,6 @@ class IgeEngine extends IgeEntity_1.IgeEntity {
         }
         return this._enableRenders;
     }
-    /**
-     * Enables or disables the engine's debug mode. Enabled by default.
-     * @param {Boolean=} val If true, will enable debug mode.
-     * @returns {*}
-     */
     debugEnabled(val) {
         if (val !== undefined) {
             if (instance_1.ige.config.debug) {
@@ -1171,6 +1146,7 @@ class IgeEngine extends IgeEntity_1.IgeEntity {
             if (this._state === enums_1.IgeEngineState.started) {
                 return resolve(true);
             }
+            this.statStart("start", "doDependencyCheck");
             if (clientServer_1.isClient && this._dependencyQueue.length === 0) {
                 // Add the textures loaded dependency
                 this._dependencyQueue.push(instance_1.ige.textures.haveAllTexturesLoaded);
@@ -1198,6 +1174,7 @@ class IgeEngine extends IgeEntity_1.IgeEntity {
                         this.requestAnimFrame(this.engineStep);
                     }
                     this.log("Engine started");
+                    this.statEnd("start", "doDependencyCheck");
                     return resolve(true);
                 }
                 // Get the current timestamp

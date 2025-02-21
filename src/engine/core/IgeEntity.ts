@@ -1,4 +1,3 @@
-import { ige } from "@/engine/instance";
 import type { IgeInputComponent } from "@/engine/components/IgeInputComponent";
 import { IgeBounds } from "@/engine/core/IgeBounds";
 import { IgeDummyCanvas } from "@/engine/core/IgeDummyCanvas";
@@ -10,6 +9,7 @@ import { IgePoly2d } from "@/engine/core/IgePoly2d";
 import type { IgeTexture } from "@/engine/core/IgeTexture";
 import type { IgeTileMap2d } from "@/engine/core/IgeTileMap2d";
 import type { IgeViewport } from "@/engine/core/IgeViewport";
+import { ige } from "@/engine/instance";
 import type { IgeNetIoClientController } from "@/engine/network/client/IgeNetIoClientController";
 import { isClient, isServer } from "@/engine/utils/clientServer";
 import { registerClass } from "@/engine/utils/igeClassStore";
@@ -418,43 +418,36 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 	 *     // Set the entity width to the size of 1 tile with
 	 *     // lock aspect enabled which will automatically size
 	 *     // the height as well, to maintain the aspect
-	 *     // ratio of the entity
+	 *     // ratio of the entity.
 	 *     entity.widthByTile(1, true);
-	 * @return {*} The object this method was called from to allow
+	 * @return {this} The object this method was called from to allow
 	 * method chaining.
 	 */
-	widthByTile (val: number, lockAspect = false) {
-		if (
-			!(
-				this._parent &&
-				(this._parent as IgeTileMap2d).IgeTileMap2d &&
-				this._parent._tileWidth !== undefined &&
-				this._parent._tileHeight !== undefined
-			)
-		) {
-			throw new Error(
-				"Cannot set width by tile because the entity is not currently mounted to a tile map or the tile map has no tileWidth or tileHeight values."
-			);
+	widthByTile (val: number, lockAspect: boolean = false): this {
+		if (!this._parent || !(this._parent as IgeTileMap2d).IgeTileMap2d || this._parent._tileWidth === undefined || this._parent._tileHeight === undefined) {
+			this.log("Cannot set width by tile because the entity is not currently mounted to a tile map or the tile map has no tileWidth or tileHeight values.", "error");
+			return this;
 		}
 
-		const tileSize =
-			this._renderMode === IgeEntityRenderMode.flat ? this._parent._tileWidth : this._parent._tileWidth * 2;
+		const tileSize = this._renderMode === IgeEntityRenderMode.flat ? this._parent._tileWidth : this._parent._tileWidth * 2;
 
-		if (lockAspect) {
-			if (this._texture) {
-				this.width(val * tileSize);
-
-				// Calculate the height based on the new width
-				const ratio = this._texture._sizeX / this._bounds2d.x;
-				this.height(this._texture._sizeY / ratio);
-			} else {
-				// No texture assigned, simply maintain aspect ratio
-				const ratio = this._bounds2d.x / (val * tileSize);
-				this.height(this._bounds2d.y / ratio);
-			}
-		} else {
+		if (!lockAspect) {
 			this.width(val * tileSize);
+			return this;
 		}
+
+		if (this._texture) {
+			this.width(val * tileSize);
+
+			// Calculate the height based on the new width
+			const ratio = this._texture.cellSizeX(this._cell) / this._bounds2d.x;
+			this.height(this._texture.cellSizeY(this._cell) / ratio);
+			return this;
+		}
+
+		// No texture assigned, simply maintain aspect ratio
+		const ratio = this._bounds2d.x / (val * tileSize);
+		this.height(this._bounds2d.y / ratio);
 
 		return this;
 	}
@@ -473,21 +466,12 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 	 * method chaining.
 	 */
 	heightByTile (val: number, lockAspect = false) {
-		if (
-			!(
-				this._parent &&
-				(this._parent as IgeTileMap2d).IgeTileMap2d &&
-				this._parent._tileWidth !== undefined &&
-				this._parent._tileHeight !== undefined
-			)
-		) {
-			throw new Error(
-				"Cannot set height by tile because the entity is not currently mounted to a tile map or the tile map has no tileWidth or tileHeight values."
-			);
+		if (!this._parent || !(this._parent as IgeTileMap2d).IgeTileMap2d || this._parent._tileWidth === undefined || this._parent._tileHeight === undefined) {
+			this.log("Cannot set height by tile because the entity is not currently mounted to a tile map or the tile map has no tileWidth or tileHeight values.", "error");
+			return this;
 		}
 
-		const tileSize =
-			this._renderMode === IgeEntityRenderMode.flat ? this._parent._tileHeight : this._parent._tileHeight * 2;
+		const tileSize = this._renderMode === IgeEntityRenderMode.flat ? this._parent._tileHeight : this._parent._tileHeight * 2;
 
 		this.height(val * tileSize);
 
@@ -870,10 +854,10 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 	 * @return {*} "this" when arguments are passed to allow method
 	 * chaining or the current value if no arguments are specified.
 	 */
-	cell (val: number | null): this;
-	cell (): number | null;
-	cell (val?: number | null) {
-		if (val !== undefined && (val === null || val > 0)) {
+	cell (val: number): this;
+	cell (): number;
+	cell (val?: number) {
+		if (val !== undefined && val > 0) {
 			this._cell = val;
 			return this;
 		}
@@ -902,7 +886,7 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 	 * chaining or the current value if no arguments are specified.
 	 */
 	cellById (val: string | number): this;
-	cellById (): number | null;
+	cellById (): number;
 	cellById (val?: string | number) {
 		if (val !== undefined) {
 			if (this._texture) {
@@ -970,7 +954,7 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 	 * Sets the geometry of the entity to match the width and height
 	 * of the assigned texture cell. If the texture is not cell-based
 	 * the entire texture width / height will be used.
-	 * @param {number=} percent The percentage size to resize to.
+	 * @param percent Optional percentage size to resize to.
 	 * @example #Set the entity dimensions based on the assigned texture and cell
 	 *     var texture = new IgeSpriteSheet('path/to/some/cellSheet.png', [
 	 *         [0, 0, 40, 40, 'robotHead'],
@@ -982,27 +966,32 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 	 *     entity.texture(texture)
 	 *         .cellById('robotHead')
 	 *         .dimensionsFromCell();
-	 * @return {*} The object this method was called from to allow
+	 * @return {this} The object this method was called from to allow
 	 * method chaining
 	 */
-	dimensionsFromCell (percent?: number) {
+	dimensionsFromCell (percent?: number): this {
 		if (typeof this._cell !== "number") {
 			throw new Error("Cell of type string cannot access dimensions");
 		}
-		if (this._texture) {
-			if (this._texture._cells && this._texture._cells.length && this._cell) {
-				if (percent === undefined) {
-					this.width(this._texture._cells[this._cell][2]);
-					this.height(this._texture._cells[this._cell][3]);
-				} else {
-					this.width(Math.floor((this._texture._cells[this._cell][2] / 100) * percent));
-					this.height(Math.floor((this._texture._cells[this._cell][3] / 100) * percent));
-				}
 
-				// Recalculate localAabb
-				this.localAabb(true);
-			}
+		if (!this._texture) {
+			return this;
 		}
+
+		if (!(this._texture._cells && this._texture._cells.length && this._cell)) {
+			return this;
+		}
+
+		if (percent === undefined) {
+			this.width(this._texture._cells[this._cell][2]);
+			this.height(this._texture._cells[this._cell][3]);
+		} else {
+			this.width(Math.floor((this._texture._cells[this._cell][2] / 100) * percent));
+			this.height(Math.floor((this._texture._cells[this._cell][3] / 100) * percent));
+		}
+
+		// Recalculate localAabb
+		this.localAabb(true);
 
 		return this;
 	}
@@ -2608,53 +2597,53 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 		return this.translateTo(finalX, finalY, finalZ);
 	}
 
-	tileX (val: number): this;
-	tileX (): number;
-	tileX (val?: number) {
-		if (!this._parent || this._parent._tileWidth === undefined) {
-			this.log("tileX() called but entity is not currently mounted to a tile map!", "error");
-			return this;
-		}
-
-		if (val !== undefined) {
-			this.translateToTile(val, undefined, undefined);
-			return this;
-		}
-
-		return Math.floor(this._translate.x / this._parent._tileWidth);
-	}
-
-	tileY (val: number): this;
-	tileY (): number;
-	tileY (val?: number) {
-		if (!this._parent || this._parent._tileHeight === undefined) {
-			this.log("tileY() called but entity is not currently mounted to a tile map!", "error");
-			return this;
-		}
-
-		if (val !== undefined) {
-			this.translateToTile(undefined, val, undefined);
-			return this;
-		}
-
-		return Math.floor(this._translate.y / this._parent._tileHeight);
-	}
-
-	tileZ (val: number): this;
-	tileZ (): number;
-	tileZ (val?: number) {
-		if (!this._parent || this._parent._tileDepth === undefined) {
-			this.log("tileZ() called but entity is not currently mounted to a tile map!", "error");
-			return this;
-		}
-
-		if (val !== undefined) {
-			this.translateToTile(undefined, undefined, val);
-			return this;
-		}
-
-		return Math.floor(this._translate.z / this._parent._tileDepth);
-	}
+	// tileX (val: number): this;
+	// tileX (): number;
+	// tileX (val?: number) {
+	// 	if (!this._parent || this._parent._tileWidth === undefined) {
+	// 		this.log("tileX() called but entity is not currently mounted to a tile map!", "error");
+	// 		return this;
+	// 	}
+	//
+	// 	if (val !== undefined) {
+	// 		this.translateToTile(val, undefined, undefined);
+	// 		return this;
+	// 	}
+	//
+	// 	return Math.floor(this._translate.x / this._parent._tileWidth);
+	// }
+	//
+	// tileY (val: number): this;
+	// tileY (): number;
+	// tileY (val?: number) {
+	// 	if (!this._parent || this._parent._tileHeight === undefined) {
+	// 		this.log("tileY() called but entity is not currently mounted to a tile map!", "error");
+	// 		return this;
+	// 	}
+	//
+	// 	if (val !== undefined) {
+	// 		this.translateToTile(undefined, val, undefined);
+	// 		return this;
+	// 	}
+	//
+	// 	return Math.floor(this._translate.y / this._parent._tileHeight);
+	// }
+	//
+	// tileZ (val: number): this;
+	// tileZ (): number;
+	// tileZ (val?: number) {
+	// 	if (!this._parent || this._parent._tileDepth === undefined) {
+	// 		this.log("tileZ() called but entity is not currently mounted to a tile map!", "error");
+	// 		return this;
+	// 	}
+	//
+	// 	if (val !== undefined) {
+	// 		this.translateToTile(undefined, undefined, val);
+	// 		return this;
+	// 	}
+	//
+	// 	return Math.floor(this._translate.z / this._parent._tileDepth);
+	// }
 
 	/**
 	 * Gets the `translate` accessor object.

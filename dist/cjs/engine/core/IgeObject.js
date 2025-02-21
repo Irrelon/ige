@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.IgeObject = void 0;
+const instance_1 = require("../instance.js");
 const IgeBounds_1 = require("./IgeBounds.js");
 const IgeDummyCanvas_1 = require("./IgeDummyCanvas.js");
 const IgeEventingClass_1 = require("./IgeEventingClass.js");
@@ -8,14 +9,13 @@ const IgeMatrix2d_1 = require("./IgeMatrix2d.js");
 const IgePoint2d_1 = require("./IgePoint2d.js");
 const IgePoint3d_1 = require("./IgePoint3d.js");
 const IgePoly2d_1 = require("./IgePoly2d.js");
-const instance_1 = require("../instance.js");
 const arrays_1 = require("../utils/arrays.js");
-const clientServer_1 = require("../utils/clientServer.js");
 const ids_1 = require("../utils/ids.js");
 const maths_1 = require("../utils/maths.js");
 const synthesize_1 = require("../utils/synthesize.js");
+const IgeQuadGeometry_1 = require("../geometry/IgeQuadGeometry.js");
+const clientServer_1 = require("../utils/clientServer.js");
 const enums_1 = require("../../enums/index.js");
-const IgeQuadGeometry_1 = require("../geometry/IgeQuadGeometry");
 class IgeObject extends IgeEventingClass_1.IgeEventingClass {
     constructor() {
         super();
@@ -213,12 +213,14 @@ class IgeObject extends IgeEventingClass_1.IgeEventingClass {
      * Converts an array of points from local space to this entity's
      * world space using its world transform matrix. This will alter
      * the points passed in the array directly.
-     * @param {Array} points The array of IgePoints to convert.
-     * @param viewport
-     * @param inverse
+     * @param {IgePoint[]} points The array of IgePoint's to convert.
+     * @param {IgeViewport | null} viewport
+     * @param {boolean} inverse
      */
     localToWorld(points, viewport, inverse = false) {
         // TODO: Commented as this was doing literally nothing
+        //   we need to allow passing a viewport to calculate the
+        //   return values correctly
         //viewport = viewport || ige.engine._currentViewport;
         if (this._adjustmentMatrix) {
             // Apply the optional adjustment matrix
@@ -242,6 +244,7 @@ class IgeObject extends IgeEventingClass_1.IgeEventingClass {
      * using its world transform matrix. This will alter the passed
      * point's data directly.
      * @param {IgePoint3d} point The IgePoint3d to convert.
+     * @param {IgeViewport | null} viewport
      */
     localToWorldPoint(point, viewport) {
         // TODO: We commented this because it doesn't even get used... is this a mistake?
@@ -309,12 +312,17 @@ class IgeObject extends IgeEventingClass_1.IgeEventingClass {
     statStart(funcName, statType) {
         if (!instance_1.ige.config.debug._timing)
             return 0;
-        return instance_1.ige.stats.start(`${funcName}.${this.id()}.${statType}`);
+        return instance_1.ige.stats.start(this.classId, this.id(), funcName, statType);
     }
     statEnd(funcName, statType) {
         if (!instance_1.ige.config.debug._timing)
             return 0;
-        return instance_1.ige.stats.end(`${funcName}.${this.id()}.${statType}`);
+        return instance_1.ige.stats.end(this.classId, this.id(), funcName, statType);
+    }
+    statCutOff() {
+        if (!instance_1.ige.config.debug._timing)
+            return;
+        return instance_1.ige.stats.cutOff();
     }
     update(tickDelta) {
         // Check that we are alive before processing further
@@ -343,12 +351,11 @@ class IgeObject extends IgeEventingClass_1.IgeEventingClass {
             }
             return;
         }
+        this.statStart("update", "");
         while (arrCount--) {
-            this.statStart("update", "");
             arr[arrCount].update(tickDelta);
-            this.statEnd("update", "");
-            this.statEnd("update", "tick");
         }
+        this.statEnd("update", "");
         return;
     }
     tick(ctx) {
@@ -361,44 +368,19 @@ class IgeObject extends IgeEventingClass_1.IgeEventingClass {
             return;
         }
         let arrCount = arr.length;
-        if (instance_1.ige.config.debug._timing) {
-            while (arrCount--) {
-                if (!arr[arrCount]) {
-                    this.log("Object _children is undefined for index " + arrCount + " and _id: " + this._id, "error");
-                    continue;
-                }
-                if (arr[arrCount]._newBorn)
-                    continue;
+        this.statStart("tick", "");
+        while (arrCount--) {
+            if (!arr[arrCount]) {
+                this.log(`Object _children is undefined for index ${arrCount} and _id: ${this._id}`, "error");
+                continue;
+            }
+            if (!arr[arrCount]._newBorn) {
                 ctx.save();
-                const ts = new Date().getTime();
                 arr[arrCount].tick(ctx);
-                const td = new Date().getTime() - ts;
-                if (arr[arrCount]) {
-                    if (!instance_1.ige.engine._timeSpentInTick[arr[arrCount].id()]) {
-                        instance_1.ige.engine._timeSpentInTick[arr[arrCount].id()] = 0;
-                    }
-                    if (!instance_1.ige.engine._timeSpentLastTick[arr[arrCount].id()]) {
-                        instance_1.ige.engine._timeSpentLastTick[arr[arrCount].id()] = {};
-                    }
-                    instance_1.ige.engine._timeSpentInTick[arr[arrCount].id()] += td;
-                    instance_1.ige.engine._timeSpentLastTick[arr[arrCount].id()].tick = td;
-                }
                 ctx.restore();
             }
         }
-        else {
-            while (arrCount--) {
-                if (!arr[arrCount]) {
-                    this.log(`Object _children is undefined for index ${arrCount} and _id: ${this._id}`, "error");
-                    continue;
-                }
-                if (!arr[arrCount]._newBorn) {
-                    ctx.save();
-                    arr[arrCount].tick(ctx);
-                    ctx.restore();
-                }
-            }
-        }
+        this.statEnd("tick", "");
     }
     updateTransform() {
     }
@@ -505,12 +487,15 @@ class IgeObject extends IgeEventingClass_1.IgeEventingClass {
         this._parent._childMounted(this);
         obj.updateTransform();
         obj.aabb(true);
-        if (obj._compositeCache) {
-            this._compositeParent = true;
-        }
-        else {
-            this._compositeParent = false;
-        }
+        /**
+         * Updated from:
+         * if (obj._compositeCache) {
+         * 	  this._compositeParent = true;
+         * } else {
+         * 	  this._compositeParent = false;
+         * }
+         */
+        this._compositeParent = obj._compositeCache;
         this._mounted(this._parent);
         /**
          * Fires when the object has been mounted to a parent.
@@ -1506,8 +1491,7 @@ class IgeObject extends IgeEventingClass_1.IgeEventingClass {
      * sending stream data to a client for the first time even if the data
      * has existed on the server for a while - ensuring that even unchanged
      * data makes it to the new client).
-     * @return {*} "this" when a data argument is passed to allow method
-     * chaining or the current value if no data argument is specified.
+     * @return {string | undefined}
      */
     streamSectionData(sectionId, data, bypassTimeStream = false, bypassChangeDetection = false) {
         switch (sectionId) {
@@ -1701,7 +1685,7 @@ class IgeObject extends IgeEventingClass_1.IgeEventingClass {
      * the last time the stream data was generated. The returned data is
      * a string that has been compressed in various ways to reduce network
      * overhead during transmission.
-     * @return {String} The string representation of the stream data for
+     * @return {string} The string representation of the stream data for
      * this entity.
      * @private
      */
@@ -1840,7 +1824,7 @@ class IgeObject extends IgeEventingClass_1.IgeEventingClass {
     /**
      * Returns a string containing a code fragment that when
      * evaluated will reproduce this object.
-     * @return {String}
+     * @return {string}
      */
     stringify(options = {}) {
         // TODO: Use the advanced serialiser system from ForerunnerDB
@@ -1864,7 +1848,7 @@ class IgeObject extends IgeEventingClass_1.IgeEventingClass {
      * chained commands. This method will only check for
      * properties that are directly related to this class.
      * Other properties are handled by their own class method.
-     * @return {String}
+     * @return {string}
      */
     _stringify(options = {}) {
         let str = "";

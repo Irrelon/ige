@@ -26,13 +26,14 @@ class IgeBaseScene extends IgeSceneGraph_1.IgeSceneGraph {
             // Create the scene
             const baseScene = new IgeScene2d_1.IgeScene2d().id("baseScene");
             // Create the main viewport to look at "baseScene"
-            new IgeViewport_1.IgeViewport()
+            const vp1 = new IgeViewport_1.IgeViewport()
                 .id("vp1")
                 .autoSize(true)
                 .scene(baseScene)
                 .drawBounds(false)
                 .drawBoundsData(false)
                 .mount(instance_1.ige.engine);
+            vp1.camera.id("vp1_camera");
         };
         /**
          * The method called when the graph items are to be removed from the

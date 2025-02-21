@@ -4,7 +4,9 @@ exports.IgeSpriteSheet = void 0;
 const IgeTexture_1 = require("./IgeTexture.js");
 /**
  * Creates a new sprite sheet that cuts an image up into
- * arbitrary sections.
+ * arbitrary sections. This is different from a cell sheet
+ * in that a cell sheet is a series of uniform image sizes
+ * whereas a sprite sheet can have non-uniform image sizes.
  */
 class IgeSpriteSheet extends IgeTexture_1.IgeTexture {
     constructor(id, urlOrObject, cells) {

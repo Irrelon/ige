@@ -31,57 +31,54 @@ class IgeScene2d extends IgeEntity_1.IgeEntity {
          * data about scenes to the client.
          * @param sectionId
          * @param data
-         * @returns {*}
+         * @returns {string | undefined}
          */
         this.streamSectionData = (sectionId, data) => {
             switch (sectionId) {
                 case "ignoreCamera":
-                    if (data !== undefined) {
-                        // Setter
-                        if (data === "false") {
-                            this.ignoreCamera(false);
-                        }
-                        else {
-                            this.ignoreCamera(true);
-                        }
-                    }
-                    else {
+                    if (data === undefined) {
                         // Getter
                         return String(this._ignoreCamera);
                     }
-                    break;
+                    // Setter
+                    if (data === "false") {
+                        this.ignoreCamera(false);
+                    }
+                    else {
+                        this.ignoreCamera(true);
+                    }
+                    return;
                 default:
-                    super.streamSectionData(sectionId, data);
-                    break;
+                    return super.streamSectionData(sectionId, data);
             }
         };
         /**
          * Gets / sets the auto-size property. If set to true, the scene will
          * automatically resize to the engine's canvas geometry.
-         * @param {Boolean=} val If true, will autosize the scene to match the
+         * @param {boolean=} val If true, will autosize the scene to match the
          * main canvas geometry. This is enabled by default and is unlikely to
          * help you if you switch it off.
-         * @return {*}
+         * @return {boolean | this}
          */
         this.autoSize = (val) => {
-            if (typeof val !== "undefined") {
-                this._autoSize = val;
-                return this;
+            if (val === undefined) {
+                return this._autoSize;
             }
-            return this._autoSize;
+            this._autoSize = val;
+            return this;
         };
         /**
          * Gets / sets the _shouldRender property. If set to true, the scene's child
          * object's tick methods will be called.
-         * @param {Boolean} val If set to false, no child entities will be rendered.
-         * @return {Boolean}
+         * @param {boolean} val If set to false, no child entities will be rendered.
+         * @return {boolean | this | undefined}
          */
         this.shouldRender = (val) => {
-            if (val !== undefined) {
-                this._shouldRender = val;
-                return this;
+            if (val === undefined) {
+                return this._shouldRender;
             }
-            return this._shouldRender;
+            this._shouldRender = val;
+            return this;
         };
         this.update = (tickDelta) => {
             if (this._ignoreCamera) {
@@ -124,11 +121,11 @@ class IgeScene2d extends IgeEntity_1.IgeEntity {
         this.streamSections(["transform", "ignoreCamera"]);
     }
     ignoreCamera(val) {
-        if (val !== undefined) {
-            this._ignoreCamera = val;
-            return this;
+        if (val === undefined) {
+            return this._ignoreCamera;
         }
-        return this._ignoreCamera;
+        this._ignoreCamera = val;
+        return this;
     }
     /**
      * Processes the actions required each render frame.

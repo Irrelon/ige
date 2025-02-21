@@ -939,9 +939,11 @@ export class IgeEngine extends IgeEntity implements IgeIsReadyPromise {
 	/**
 	 * Enables or disables the engine's debug mode. Enabled by default.
 	 * @param {Boolean=} val If true, will enable debug mode.
-	 * @returns {*}
+	 * @returns {boolean | this}
 	 */
-	debugEnabled (val?: boolean) {
+	debugEnabled (val: boolean): this;
+	debugEnabled (): boolean;
+	debugEnabled (val?: boolean): boolean | this {
 		if (val !== undefined) {
 			if (ige.config.debug) {
 				ige.config.debug._enabled = val;
@@ -1235,11 +1237,14 @@ export class IgeEngine extends IgeEntity implements IgeIsReadyPromise {
 	 * Starts the engine or rejects the promise with an error.
 	 */
 	start () {
+
 		return new Promise((resolve, reject) => {
 			// Check if the state is anything other than zero (stopped)
 			if (this._state === IgeEngineState.started) {
 				return resolve(true);
 			}
+
+			this.statStart("start", "doDependencyCheck");
 
 			if (isClient && this._dependencyQueue.length === 0) {
 				// Add the textures loaded dependency
@@ -1272,7 +1277,7 @@ export class IgeEngine extends IgeEntity implements IgeIsReadyPromise {
 					}
 
 					this.log("Engine started");
-
+					this.statEnd("start", "doDependencyCheck");
 					return resolve(true);
 				}
 
@@ -1339,6 +1344,7 @@ export class IgeEngine extends IgeEntity implements IgeIsReadyPromise {
 	 * Called each frame to traverse and render the scenegraph.
 	 */
 	engineStep = (timeStamp: number) => {
+		this.statStart("engineStep", "");
 		/* TODO:
             Make the scenegraph process simplified. Walk the scenegraph once and grab the order in a flat array
             then process updates and ticks. This will also allow a layered rendering system that can render the
@@ -1352,12 +1358,6 @@ export class IgeEngine extends IgeEntity implements IgeIsReadyPromise {
 
 		this._timeScaleLastTimestamp = timeStamp;
 		timeStamp = Math.floor(this._currentTime);
-
-		let startTime = 0;
-
-		if (ige.config.debug._timing) {
-			startTime = new Date().getTime();
-		}
 
 		if (this._state === IgeEngineState.started) {
 			// Alternate the boolean frame alternator flag
@@ -1396,13 +1396,9 @@ export class IgeEngine extends IgeEntity implements IgeIsReadyPromise {
 				this._processBehaviours(IgeBehaviourType.preUpdate, this._tickDelta);
 
 				// Update the scenegraph
-				if (ige.config.debug._timing) {
-					const updateStart = new Date().getTime();
-					this.updateSceneGraph();
-					this._updateTime = new Date().getTime() - updateStart;
-				} else {
-					this.updateSceneGraph();
-				}
+				this.statStart("engineStep", "updateSceneGraph");
+				this.updateSceneGraph();
+				this.statEnd("engineStep", "updateSceneGraph");
 
 				this._processBehaviours(IgeBehaviourType.postUpdate, this._tickDelta);
 			}
@@ -1418,24 +1414,16 @@ export class IgeEngine extends IgeEntity implements IgeIsReadyPromise {
 					// a manual render has been queued by calling manualRender()
 					if (this._manualRenderQueued) {
 						// A manual render was queued, so we can render a frame now
-						if (ige.config.debug._timing) {
-							const renderStart = new Date().getTime();
-							this.renderSceneGraph();
-							this._renderTime = new Date().getTime() - renderStart;
-						} else {
-							this.renderSceneGraph();
-						}
+						this.statStart("engineStep", "renderSceneGraph");
+						this.renderSceneGraph();
 						this._manualRenderQueued = false;
+						this.statEnd("engineStep", "renderSceneGraph");
 					}
 				} else {
 					// We are not in manual render mode so render the scenegraph
-					if (ige.config.debug._timing) {
-						const renderStart = new Date().getTime();
-						this.renderSceneGraph();
-						this._renderTime = new Date().getTime() - renderStart;
-					} else {
-						this.renderSceneGraph();
-					}
+					this.statStart("engineStep", "renderSceneGraph");
+					this.renderSceneGraph();
+					this.statEnd("engineStep", "renderSceneGraph");
 				}
 
 				// Call post-tick methods
@@ -1457,13 +1445,11 @@ export class IgeEngine extends IgeEntity implements IgeIsReadyPromise {
 
 		this._resized = false;
 
-		if (ige.config.debug._timing) {
-			const endTime = new Date().getTime();
-			this._tickTime = endTime - startTime;
-		}
-
 		const tickOut = this._setTickout.shift();
 		tickOut?.();
+
+		this.statEnd("engineStep", "");
+		this.statCutOff();
 	};
 
 	setTickout (callback: IgeAnyFunction, count = 0) {

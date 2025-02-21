@@ -262,12 +262,26 @@ class IgeTexture extends IgeAsset_1.IgeAsset {
         this._sizeY = val;
     }
     /**
+     * Gets the specified cell X axis size.
+     * @param {number} cellIndex
+     */
+    cellSizeX(cellIndex) {
+        return this._cells[cellIndex][2];
+    }
+    /**
+     * Gets the specified cell Y axis size.
+     * @param {number} cellIndex
+     */
+    cellSizeY(cellIndex) {
+        return this._cells[cellIndex][3];
+    }
+    /**
      * Resizes the original texture image to a new size. This alters
      * the image that the texture renders so all entities that use
      * this texture will output the newly resized version of the image.
      * @param {number} x The new width.
      * @param {number} y The new height.
-     * @param {boolean=} dontDraw If true the resized image will not be
+     * @param {boolean} dontDraw If true the resized image will not be
      * drawn to the texture canvas. Useful for just resizing the texture
      * canvas and not the output image. Use in conjunction with the
      * applyFilter() and preFilter() methods.

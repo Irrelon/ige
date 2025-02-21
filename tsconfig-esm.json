@@ -5,6 +5,7 @@
 		"rootDir": "./src",
 		"module": "esnext",
 		"outDir": "dist/esm",
-		"target": "esnext"
+		"target": "esnext",
+		"keepNames": true
 	}
 }

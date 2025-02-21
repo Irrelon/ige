@@ -136,6 +136,10 @@ export class IgeAudioEntity extends IgeEntity {
 
 		this.isPlaying(true);
 
+		if (isServer) {
+			return this;
+		}
+		
 		// Start playback using the audio controller component
 		const playbackItem = ige.audio.createAudioControl(this._audioSourceId, {
 			loop: this._loop,
@@ -158,6 +162,7 @@ export class IgeAudioEntity extends IgeEntity {
 	 */
 	stop (): this {
 		this.isPlaying(false);
+		this.playOnMount(false);
 		ige.audio.stopPlaybackItem(this._playbackControlId);
 		return this;
 	}

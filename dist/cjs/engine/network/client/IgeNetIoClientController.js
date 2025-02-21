@@ -122,7 +122,7 @@ class IgeNetIoClientController extends IgeNetIoBaseController_1.IgeNetIoBaseCont
                     else {
                         instance_1.ige.network.stop();
                         instance_1.ige.engine.stop();
-                        this.log(`Network stream cannot create entity with class "${classId}" because the class has not been defined! The engine will now stop.`, "error");
+                        this.log(`Network stream cannot create entity with class "${classId}" because the class has not been defined! Please remember to register your isomorphic classes at the end of your class file with \`registerClass(${classId});\``, "error");
                     }
                 }
                 else {

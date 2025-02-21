@@ -216,7 +216,7 @@ class IgeTileMap2d extends IgeEntity_1.IgeEntity {
      * @param {number} y
      * @param {number=} width
      * @param {number=} height
-     * @return {*}
+     * @return {boolean}
      */
     isTileOccupied(x, y, width = 1, height = 1) {
         return this.map.collision(x, y, width, height);
@@ -271,22 +271,6 @@ class IgeTileMap2d extends IgeEntity_1.IgeEntity {
         tilePos.y += this._tileHeight / 2;
         return tilePos;
     }
-    tileToPoint(x, y) {
-        let point;
-        if (this._mountMode === enums_1.IgeMountMode.flat) {
-            point = new IgePoint3d_1.IgePoint3d(x, y, 0).thisMultiply(this._tileWidth, this._tileHeight, 1);
-            point.x -= this._bounds2d.x2 - this._tileWidth / 2;
-            point.y -= this._bounds2d.y2 - this._tileHeight / 2;
-        }
-        else {
-            point = new IgePoint3d_1.IgePoint3d(x * this._tileWidth + this._tileWidth / 2, y * this._tileHeight + this._tileHeight / 2, 0);
-            point.x -= this._bounds2d.x2 / 2;
-            point.y -= this._bounds2d.y2;
-        }
-        point.x2 = point.x / 2;
-        point.y2 = point.y / 2;
-        return point;
-    }
     /**
      * Returns the tile co-ordinates of the tile the mouse is currently over.
      * @return {IgePoint3d}
@@ -310,10 +294,27 @@ class IgeTileMap2d extends IgeEntity_1.IgeEntity {
         }
         return tilePos;
     }
+    tileToPoint(x, y) {
+        let point;
+        if (this._mountMode === enums_1.IgeMountMode.flat) {
+            point = new IgePoint3d_1.IgePoint3d(x, y, 0).thisMultiply(this._tileWidth, this._tileHeight, 1);
+            point.x -= this._bounds2d.x2 - this._tileWidth / 2;
+            point.y -= this._bounds2d.y2 - this._tileHeight / 2;
+        }
+        else {
+            point = new IgePoint3d_1.IgePoint3d(x * this._tileWidth + this._tileWidth / 2, y * this._tileHeight + this._tileHeight / 2, 0);
+            point.x -= this._bounds2d.x2 / 2;
+            point.y -= this._bounds2d.y2;
+        }
+        point.x2 = point.x / 2;
+        point.y2 = point.y / 2;
+        return point;
+    }
     /**
      * Scans the map data and returns an array of rectangle
      * objects that encapsulate the map data into discrete
-     * rectangle areas.
+     * rectangle areas. This is useful for creating physics /
+     * box2d static shapes that act as walls etc.
      * @param {Function=} callback Returns true or false for
      * the passed map data determining if it should be included
      * in a rectangle or not.
@@ -381,6 +382,15 @@ class IgeTileMap2d extends IgeEntity_1.IgeEntity {
         }
         return rect;
     }
+    /**
+     * Checks if the specified area is within the boundaries of the tile map grid, based on its dimensions.
+     *
+     * @param {number} x The x-coordinate of the top-left corner of the area.
+     * @param {number} y The y-coordinate of the top-left corner of the area.
+     * @param {number} [width=1] The width of the area to check. Defaults to 1.
+     * @param {number} [height=1] The height of the area to check. Defaults to 1.
+     * @return {boolean} Returns true if the specified area is within the grid boundaries; otherwise, false.
+     */
     inGrid(x, y, width = 1, height = 1) {
         // Checks if the passed area is inside the tile map grid as defined by gridSize
         return x >= 0 && y >= 0 && x + width <= this._gridSize.x && y + height <= this._gridSize.y;
@@ -508,4 +518,5 @@ class IgeTileMap2d extends IgeEntity_1.IgeEntity {
     }
 }
 exports.IgeTileMap2d = IgeTileMap2d;
+debugger;
 (0, igeClassStore_1.registerClass)(IgeTileMap2d);

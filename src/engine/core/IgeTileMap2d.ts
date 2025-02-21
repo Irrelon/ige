@@ -69,11 +69,11 @@ export class IgeTileMap2d<MapDataType = any> extends IgeEntity {
 	 * Gets / sets the flag that determines if the tile map will paint the
 	 * occupied tiles with an overlay colour so that it is easy to spot them.
 	 * @param val
-	 * @return {*}
+	 * @return {this | boolean}
 	 */
 	highlightOccupied (val: boolean): this;
 	highlightOccupied (): boolean;
-	highlightOccupied (val?: boolean) {
+	highlightOccupied (val?: boolean): this | boolean {
 		if (val !== undefined) {
 			this._highlightOccupied = val;
 			return this;
@@ -84,7 +84,7 @@ export class IgeTileMap2d<MapDataType = any> extends IgeEntity {
 
 	highlightTileRect (val: IgeBounds | null): this;
 	highlightTileRect (): IgeBounds;
-	highlightTileRect (val?: IgeBounds | null) {
+	highlightTileRect (val?: IgeBounds | null): this | IgeBounds | null {
 		if (val !== undefined) {
 			this._highlightTileRect = val;
 			return this;
@@ -214,7 +214,7 @@ export class IgeTileMap2d<MapDataType = any> extends IgeEntity {
 	 *    `this` if called with an argument to support method chaining, or undefined if no argument is provided,
 	 *    indicating that the color has not been set.
 	 */
-	gridColor (val?: string) {
+	gridColor (val?: string): string | this | undefined {
 		if (val !== undefined) {
 			this._gridColor = val;
 			return this;
@@ -311,7 +311,7 @@ export class IgeTileMap2d<MapDataType = any> extends IgeEntity {
 	 * @param {number} y
 	 * @param {number=} width
 	 * @param {number=} height
-	 * @return {*}
+	 * @return {boolean}
 	 */
 	isTileOccupied (x: number, y: number, width: number = 1, height: number = 1) {
 		return this.map.collision(x, y, width, height);
@@ -375,30 +375,6 @@ export class IgeTileMap2d<MapDataType = any> extends IgeEntity {
 		return tilePos;
 	}
 
-	tileToPoint (x: number, y: number) {
-		let point;
-
-		if (this._mountMode === IgeMountMode.flat) {
-			point = new IgePoint3d(x, y, 0).thisMultiply(this._tileWidth, this._tileHeight, 1);
-
-			point.x -= this._bounds2d.x2 - this._tileWidth / 2;
-			point.y -= this._bounds2d.y2 - this._tileHeight / 2;
-		} else {
-			point = new IgePoint3d(
-				x * this._tileWidth + this._tileWidth / 2,
-				y * this._tileHeight + this._tileHeight / 2,
-				0
-			);
-			point.x -= this._bounds2d.x2 / 2;
-			point.y -= this._bounds2d.y2;
-		}
-
-		point.x2 = point.x / 2;
-		point.y2 = point.y / 2;
-
-		return point;
-	}
-
 	/**
 	 * Returns the tile co-ordinates of the tile the mouse is currently over.
 	 * @return {IgePoint3d}
@@ -428,10 +404,35 @@ export class IgeTileMap2d<MapDataType = any> extends IgeEntity {
 		return tilePos;
 	}
 
+	tileToPoint (x: number, y: number): IgePoint3d {
+		let point: IgePoint3d;
+
+		if (this._mountMode === IgeMountMode.flat) {
+			point = new IgePoint3d(x, y, 0).thisMultiply(this._tileWidth, this._tileHeight, 1);
+
+			point.x -= this._bounds2d.x2 - this._tileWidth / 2;
+			point.y -= this._bounds2d.y2 - this._tileHeight / 2;
+		} else {
+			point = new IgePoint3d(
+				x * this._tileWidth + this._tileWidth / 2,
+				y * this._tileHeight + this._tileHeight / 2,
+				0
+			);
+			point.x -= this._bounds2d.x2 / 2;
+			point.y -= this._bounds2d.y2;
+		}
+
+		point.x2 = point.x / 2;
+		point.y2 = point.y / 2;
+
+		return point;
+	}
+
 	/**
 	 * Scans the map data and returns an array of rectangle
 	 * objects that encapsulate the map data into discrete
-	 * rectangle areas.
+	 * rectangle areas. This is useful for creating physics /
+	 * box2d static shapes that act as walls etc.
 	 * @param {Function=} callback Returns true or false for
 	 * the passed map data determining if it should be included
 	 * in a rectangle or not.
@@ -517,6 +518,15 @@ export class IgeTileMap2d<MapDataType = any> extends IgeEntity {
 		return rect;
 	}
 
+	/**
+	 * Checks if the specified area is within the boundaries of the tile map grid, based on its dimensions.
+	 *
+	 * @param {number} x The x-coordinate of the top-left corner of the area.
+	 * @param {number} y The y-coordinate of the top-left corner of the area.
+	 * @param {number} [width=1] The width of the area to check. Defaults to 1.
+	 * @param {number} [height=1] The height of the area to check. Defaults to 1.
+	 * @return {boolean} Returns true if the specified area is within the grid boundaries; otherwise, false.
+	 */
 	inGrid (x: number, y: number, width: number = 1, height: number = 1) {
 		// Checks if the passed area is inside the tile map grid as defined by gridSize
 		return x >= 0 && y >= 0 && x + width <= this._gridSize.x && y + height <= this._gridSize.y;
@@ -671,4 +681,5 @@ export class IgeTileMap2d<MapDataType = any> extends IgeEntity {
 	}
 }
 
+debugger;
 registerClass(IgeTileMap2d);
