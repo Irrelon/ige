@@ -518,5 +518,4 @@ class IgeTileMap2d extends IgeEntity_1.IgeEntity {
     }
 }
 exports.IgeTileMap2d = IgeTileMap2d;
-debugger;
 (0, igeClassStore_1.registerClass)(IgeTileMap2d);

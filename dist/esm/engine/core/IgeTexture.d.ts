@@ -22,10 +22,10 @@ export declare class IgeTexture extends IgeAsset {
     _filterImageDrawn: boolean;
     _destroyed: boolean;
     _url?: string;
-    _applyFilters: IgeSmartFilter[];
-    _applyFiltersData: Record<string, any>[];
     _preFilters: IgeSmartFilter[];
     _preFiltersData: Record<string, any>[];
+    _postFilters: IgeSmartFilter[];
+    _postFiltersData: Record<string, any>[];
     _originalImage?: IgeImage;
     _textureCanvas?: IgeCanvas;
     _textureCtx?: IgeCanvasRenderingContext2d;
@@ -168,11 +168,11 @@ export declare class IgeTexture extends IgeAsset {
      * take the canvas, context and originalImage parameters and then
      * use context calls to alter / paint the context with the texture
      * and any filter / adjustments that you want to apply.
-     * @param {Function} method
-     * @param {Object=} data
-     * @return {*}
+     * @param method
+     * @param data
+     * @return {this}
      */
-    applyFilter(method: IgeSmartFilter, data?: any): this;
+    applyFilter<DataType>(method: IgeSmartFilter<DataType> | undefined, data: DataType): this;
     /**
      * Retrieves pixel data from x,y texture coordinate (starts from top-left).
      * Important: If the texture has a cross-domain url, the image host must allow

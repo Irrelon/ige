@@ -185,20 +185,21 @@ __exportStar(require("../engine/mixins/IgeComponentMixin"), exports);
 //////////////////////////////////////////////////////////////////////
 // Image Filters
 //////////////////////////////////////////////////////////////////////
-__exportStar(require("../engine/filters/threshold"), exports);
-__exportStar(require("../engine/filters/sobel"), exports);
-__exportStar(require("../engine/filters/sharpen"), exports);
-__exportStar(require("../engine/filters/outlineDetect"), exports);
-__exportStar(require("../engine/filters/invert"), exports);
-__exportStar(require("../engine/filters/greyScale"), exports);
-__exportStar(require("../engine/filters/glowMask"), exports);
-__exportStar(require("../engine/filters/emboss"), exports);
-__exportStar(require("../engine/filters/edgeEnhance"), exports);
-__exportStar(require("../engine/filters/edgeDetect"), exports);
-__exportStar(require("../engine/filters/convolute"), exports);
-__exportStar(require("../engine/filters/colorOverlay"), exports);
-__exportStar(require("../engine/filters/brighten"), exports);
-__exportStar(require("../engine/filters/blur"), exports);
+__exportStar(require("../engine/filters/igeFilterThreshold"), exports);
+__exportStar(require("../engine/filters/igeFilterSobel"), exports);
+__exportStar(require("../engine/filters/igeFilterSharpen"), exports);
+__exportStar(require("../engine/filters/igeFilterOutlineDetect"), exports);
+__exportStar(require("../engine/filters/igeFilterInvert"), exports);
+__exportStar(require("../engine/filters/igeFilterGreyScale"), exports);
+__exportStar(require("../engine/filters/igeFilterGlowMask"), exports);
+__exportStar(require("../engine/filters/igeFilterEmboss"), exports);
+__exportStar(require("../engine/filters/igeFilterEdgeEnhance"), exports);
+__exportStar(require("../engine/filters/igeFilterEdgeDetect"), exports);
+__exportStar(require("../engine/filters/igeFilterConvolute"), exports);
+__exportStar(require("../engine/filters/igeFilterColorOverlay"), exports);
+__exportStar(require("../engine/filters/igeFilterColorReplace"), exports);
+__exportStar(require("../engine/filters/igeFilterBrighten"), exports);
+__exportStar(require("../engine/filters/igeFilterBlur"), exports);
 //////////////////////////////////////////////////////////////////////
 // Some More Engine Classes (export order matters to avoid circular refs)
 //////////////////////////////////////////////////////////////////////

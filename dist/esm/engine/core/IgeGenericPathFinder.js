@@ -1,5 +1,5 @@
 import { IgeEventingClass } from "./IgeEventingClass.js"
-import { IgePathFinderListType } from "../../enums/IgePathFinderListType.js";
+import { IgePathFinderListType } from "../../enums/IgePathFinderListType.js"
 /**
  * This is a generic base class that must be extended to function properly.
  * It provides the basic structure for a path-finding system utilising A*
@@ -107,7 +107,6 @@ export class IgeGenericPathFinder extends IgeEventingClass {
      * @return {IgeGenericPathFinderNode[]} An array of objects each containing an x, y, z co-ordinate that describes the path from the starting point to the end point in order.
      */
     generate(start, end, allowInvalidDestination = false) {
-        debugger;
         const openList = [];
         const nodeById = {};
         // Check that the end point on the map is actually allowed to be pathed to!

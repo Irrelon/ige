@@ -7,7 +7,7 @@ export declare class IgeAsset extends IgeEventingClass implements IgeCanAsyncLoa
     /**
      * A promise that resolves to true when the asset has loaded.
      */
-    whenLoaded(): Promise<boolean>;
+    whenLoaded(): Promise<this>;
     _assetLoaded(): void;
     destroy(): this;
 }

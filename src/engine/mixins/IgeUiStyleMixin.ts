@@ -22,7 +22,7 @@ export const WithUiStyleMixin = <BaseClassType extends IgeMixin<IgeObject>> (Bas
 		_patternWidth?: number;
 		_patternHeight?: number;
 		_patternFill?: CanvasPattern;
-		_cell: number | null = null;
+		_cell: number = 1;
 		_backgroundColor?: string | CanvasGradient | CanvasPattern;
 		_borderColor?: string;
 		_borderLeftColor?: string;

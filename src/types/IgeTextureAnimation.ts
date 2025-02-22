@@ -4,7 +4,7 @@ export interface IgeTextureAnimation {
 	currentLoop: number;
 	startTime?: number;
 	totalTime: number;
-	frames: (number | string | null)[];
+	frames: (number | string)[];
 	frameTime: number;
 	frameCount: number;
 }

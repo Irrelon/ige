@@ -3,7 +3,7 @@
  *    whilst maintaining the current text-alignment as well
  * */
 import { IgeTexture } from "./IgeTexture.js"
-import { ige } from "../instance.js";
+import { ige } from "../instance.js"
 /**
  * Creates a new font sheet. A font sheet is an image that contains
  * letters and numbers rendered to specifications. It allows you to

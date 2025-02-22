@@ -10,7 +10,7 @@ export const WithUiStyleMixin = (Base) => class extends Base {
     _patternWidth;
     _patternHeight;
     _patternFill;
-    _cell = null;
+    _cell = 1;
     _backgroundColor;
     _borderColor;
     _borderLeftColor;

@@ -1,5 +1,5 @@
 import { IgeGenericPathFinder } from "./IgeGenericPathFinder.js"
-import { IgePathNode } from "./IgePathNode.js";
+import { IgePathNode } from "./IgePathNode.js"
 /**
  * Creates a new tile-based pathfinder using the A*
  * path-finding algorithm. Extends the IgeGenericPathFinder

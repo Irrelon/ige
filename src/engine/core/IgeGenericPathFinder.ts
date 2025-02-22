@@ -139,7 +139,6 @@ export class IgeGenericPathFinder<DataType extends IgeCanId = any> extends IgeEv
 		end: DataType,
 		allowInvalidDestination: boolean = false
 	): DataType[] {
-		debugger;
 		const openList: IgeGenericPathFinderNode<DataType>[] = [];
 		const nodeById: Record<string, IgeGenericPathFinderNode<DataType>> = {};
 

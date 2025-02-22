@@ -1,5 +1,5 @@
 import { IgeBaseRenderer } from "./IgeBaseRenderer.js"
-import { IgeScene2d } from "./IgeScene2d.js";
+import { IgeScene2d } from "./IgeScene2d.js"
 import { PI180 } from "../utils/maths.js"
 import * as THREE from "three";
 export class IgeThreeJsRenderer extends IgeBaseRenderer {

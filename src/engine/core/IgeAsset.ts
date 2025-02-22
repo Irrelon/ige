@@ -13,14 +13,14 @@ export class IgeAsset extends IgeEventingClass implements IgeCanAsyncLoad {
 	/**
 	 * A promise that resolves to true when the asset has loaded.
 	 */
-	whenLoaded (): Promise<boolean> {
+	whenLoaded (): Promise<this> {
 		return new Promise((resolve) => {
 			if (this._loaded) {
-				return resolve(true);
+				return resolve(this);
 			}
 
 			const listener = () => {
-				resolve(true);
+				resolve(this);
 				this.off("loaded", listener);
 			};
 

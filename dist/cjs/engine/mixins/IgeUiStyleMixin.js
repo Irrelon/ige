@@ -8,7 +8,7 @@ const WithUiStyleMixin = (Base) => class extends Base {
     constructor() {
         super(...arguments);
         this._color = "#000000";
-        this._cell = null;
+        this._cell = 1;
     }
     /**
      * Gets / sets the color to use as the font color.

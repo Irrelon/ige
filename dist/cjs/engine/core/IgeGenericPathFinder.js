@@ -113,7 +113,6 @@ class IgeGenericPathFinder extends IgeEventingClass_1.IgeEventingClass {
      * @return {IgeGenericPathFinderNode[]} An array of objects each containing an x, y, z co-ordinate that describes the path from the starting point to the end point in order.
      */
     generate(start, end, allowInvalidDestination = false) {
-        debugger;
         const openList = [];
         const nodeById = {};
         // Check that the end point on the map is actually allowed to be pathed to!

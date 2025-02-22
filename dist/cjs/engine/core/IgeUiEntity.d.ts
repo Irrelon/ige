@@ -74,8 +74,8 @@ export declare class IgeUiEntity extends IgeEntity {
     display(val: string): this;
     overflow(): string | undefined;
     overflow(val: string): this;
-    cell(): number | null;
-    cell(val: number | null): this;
+    cell(): number;
+    cell(val: number): this;
     mount(obj: IgeObject): this;
     tick(ctx: IgeCanvasRenderingContext2d, dontTransform?: boolean): void;
     /**

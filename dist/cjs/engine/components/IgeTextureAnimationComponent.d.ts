@@ -52,9 +52,9 @@ export declare class IgeTextureAnimationComponent extends IgeComponent<IgeEntity
      *     var entity = new IgeEntity()
      *         .addComponent(IgeTextureAnimationComponent)
      *         .animation.define('anim1', [1, 2, 3, 4], 25, -1);
-     * @return {*}
+     * @return {IgeEntity}
      */
-    define: (id: string, frames: (number | string | null)[], fps: number, loop: number, convertIdsToIndex?: boolean) => IgeEntity;
+    define: (id: string, frames: IgeTextureAnimation["frames"], fps: number, loop: number, convertIdsToIndex?: boolean) => IgeEntity;
     addFrame: (id: string, frameId: number | string) => void;
     removeFrame: (id: string, frameIndex: number) => void;
     /**

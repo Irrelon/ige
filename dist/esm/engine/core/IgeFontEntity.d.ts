@@ -110,7 +110,7 @@ export declare class IgeFontEntity extends IgeUiEntity {
      * @return {*} "this" when arguments are passed to allow method
      * chaining or the current value if no arguments are specified.
      */
-    colorOverlay(val?: string | CanvasGradient | CanvasPattern): string | CanvasGradient | CanvasPattern | this | undefined;
+    colorOverlay(val?: string | CanvasGradient | CanvasPattern): string | CanvasPattern | CanvasGradient | this | undefined;
     /**
      * A proxy for colorOverlay().
      */

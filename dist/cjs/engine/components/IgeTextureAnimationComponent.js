@@ -44,7 +44,7 @@ class IgeTextureAnimationComponent extends IgeComponent_1.IgeComponent {
          *     var entity = new IgeEntity()
          *         .addComponent(IgeTextureAnimationComponent)
          *         .animation.define('anim1', [1, 2, 3, 4], 25, -1);
-         * @return {*}
+         * @return {IgeEntity}
          */
         this.define = (id, frames, fps, loop, convertIdsToIndex = true) => {
             if (frames && frames.length) {

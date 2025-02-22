@@ -23,7 +23,7 @@ export declare class IgeCamera extends IgeEntity {
      * @param {IgeBounds=} rect
      * @return {*}
      */
-    limit(rect?: IgeBounds): IgeViewport | IgeBounds | undefined;
+    limit(rect?: IgeBounds): IgeBounds | IgeViewport | undefined;
     /**
      * Pan (tween) the camera to the new specified point in
      * the specified time.

@@ -18,7 +18,7 @@ export declare const WithUiStyleMixin: <BaseClassType extends IgeMixin<IgeObject
         _patternWidth?: number;
         _patternHeight?: number;
         _patternFill?: CanvasPattern;
-        _cell: number | null;
+        _cell: number;
         _backgroundColor?: string | CanvasGradient | CanvasPattern;
         _borderColor?: string;
         _borderLeftColor?: string;
@@ -50,7 +50,7 @@ export declare const WithUiStyleMixin: <BaseClassType extends IgeMixin<IgeObject
          * @param {CSSColor, CanvasGradient, CanvasPattern=} color
          * @return {*} Returns this when setting the value or the current value if none is specified.
          */
-        color(color: string | CanvasGradient | CanvasPattern): string | CanvasGradient | CanvasPattern | any;
+        color(color: string | CanvasGradient | CanvasPattern): string | CanvasPattern | CanvasGradient | any;
         /**
          * Sets the current background texture and the repeatType
          * to determine in which axis the image should be repeated.

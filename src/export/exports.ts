@@ -176,20 +176,21 @@ export * from "../engine/mixins/IgeComponentMixin";
 //////////////////////////////////////////////////////////////////////
 // Image Filters
 //////////////////////////////////////////////////////////////////////
-export * from "../engine/filters/threshold";
-export * from "../engine/filters/sobel";
-export * from "../engine/filters/sharpen";
-export * from "../engine/filters/outlineDetect";
-export * from "../engine/filters/invert";
-export * from "../engine/filters/greyScale";
-export * from "../engine/filters/glowMask";
-export * from "../engine/filters/emboss";
-export * from "../engine/filters/edgeEnhance";
-export * from "../engine/filters/edgeDetect";
-export * from "../engine/filters/convolute";
-export * from "../engine/filters/colorOverlay";
-export * from "../engine/filters/brighten";
-export * from "../engine/filters/blur";
+export * from "../engine/filters/igeFilterThreshold";
+export * from "../engine/filters/igeFilterSobel";
+export * from "../engine/filters/igeFilterSharpen";
+export * from "../engine/filters/igeFilterOutlineDetect";
+export * from "../engine/filters/igeFilterInvert";
+export * from "../engine/filters/igeFilterGreyScale";
+export * from "../engine/filters/igeFilterGlowMask";
+export * from "../engine/filters/igeFilterEmboss";
+export * from "../engine/filters/igeFilterEdgeEnhance";
+export * from "../engine/filters/igeFilterEdgeDetect";
+export * from "../engine/filters/igeFilterConvolute";
+export * from "../engine/filters/igeFilterColorOverlay";
+export * from "../engine/filters/igeFilterColorReplace";
+export * from "../engine/filters/igeFilterBrighten";
+export * from "../engine/filters/igeFilterBlur";
 
 //////////////////////////////////////////////////////////////////////
 // Some More Engine Classes (export order matters to avoid circular refs)

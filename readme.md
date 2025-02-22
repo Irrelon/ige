@@ -18,6 +18,25 @@ HTML5 2D and isometric scenegraph-based game engine written entirely in TypeScri
 
 ## Latest Updates & Changelog
 
+## Version 3.0.5
+
+#### IgeTexture.applyFilter() Updated
+
+The applyFilter() function in IgeTexture has been updated to do what it should have
+always been doing which is to apply a filter incidentally, one-time to the texture.
+
+#### Changed the `cell` Signature
+
+The `cell` property that controls the cell index to use when drawing a texture or
+animation has been changed slightly to remove `null` as a potential value. The `cell`
+property has been changed wherever it is used to default to `1` if not defined.
+
+#### Filter Names Changed
+
+All the filters in the `src/engine/filters` folder have been updated to have `igeFilter`
+prepended to their names. This is to ensure there is no name collision with user-code
+and to keep filters in-line with naming conventions in the engine.
+
 ## Version 3.0.4
 
 #### Category Selector ige.$$()

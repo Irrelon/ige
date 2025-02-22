@@ -703,13 +703,17 @@ export class IgeTexture extends IgeAsset {
 			return this;
 		}
 
-		if (!this._originalImage) {
-			return this;
-		}
-
 		if (!this._loaded) {
 			this.log(
 				"Cannot apply filter, the texture you are trying to apply the filter to has not yet loaded!",
+				"error"
+			);
+			return this;
+		}
+
+		if (!this._originalImage) {
+			this.log(
+				"Cannot apply filter, no originalImage exists on the texture!",
 				"error"
 			);
 			return this;
@@ -739,6 +743,8 @@ export class IgeTexture extends IgeAsset {
 
 		// Swap the current image for this new canvas
 		this.image = this._textureCanvas;
+
+		this.log(`Applying filter: ${method.name}`, "debug");
 
 		// Call the passed method
 		this._textureCtx.save();

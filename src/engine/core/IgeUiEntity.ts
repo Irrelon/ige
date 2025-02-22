@@ -113,9 +113,9 @@ export class IgeUiEntity extends IgeEntity {
 		return this._overflow;
 	}
 
-	cell (): number | null;
-	cell (val: number | null): this;
-	cell (val?: number | null): number | null | this {
+	cell (): number;
+	cell (val: number): this;
+	cell (val?: number): number | this {
 		if (val === undefined) {
 			return this._cell;
 		}

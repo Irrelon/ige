@@ -1,10 +1,10 @@
 import { IgeAsset } from "./IgeAsset.js"
-import { newCanvas } from "./IgeCanvas.js";
+import { newCanvas } from "./IgeCanvas.js"
 import { IgeDependencies } from "./IgeDependencies.js"
-import { ige } from "../instance.js";
+import { ige } from "../instance.js"
 import { arrPull } from "../utils/arrays.js"
-import { isClient, isServer } from "../utils/clientServer.js";
-import { IgeTextureRenderMode } from "../../enums/index.js";
+import { isClient, isServer } from "../utils/clientServer.js"
+import { IgeTextureRenderMode } from "../../enums/index.js"
 /**
  * Creates a new texture.
  */
@@ -19,10 +19,10 @@ export class IgeTexture extends IgeAsset {
     _filterImageDrawn = false;
     _destroyed = false;
     _url;
-    _applyFilters = []; // TODO: Rename to _postFilters
-    _applyFiltersData = [];
     _preFilters = [];
     _preFiltersData = [];
+    _postFilters = [];
+    _postFiltersData = [];
     _originalImage;
     _textureCanvas;
     _textureCtx;
@@ -56,8 +56,8 @@ export class IgeTexture extends IgeAsset {
         this._cells = [];
         this._smoothing = ige.engine._globalSmoothing;
         // Instantiate filter lists for filter combinations
-        this._applyFilters = [];
-        this._applyFiltersData = [];
+        this._postFilters = [];
+        this._postFiltersData = [];
         this._preFilters = [];
         this._preFiltersData = [];
         if (!urlOrObject)
@@ -268,31 +268,33 @@ export class IgeTexture extends IgeAsset {
      * applyFilter() and preFilter() methods.
      */
     resize(x, y, dontDraw = false) {
-        if (this._originalImage) {
-            if (!this._loaded) {
-                throw new Error(`Cannot resize texture because the texture image (${this._url}) has not loaded into memory yet!`);
-            }
-            if (!this._textureCtx || !this._textureCanvas) {
-                // Create a new canvas
-                this._textureCanvas = newCanvas();
-            }
-            this._textureCanvas.width = x;
-            this._textureCanvas.height = y;
-            const tmpCtx = this._textureCanvas.getContext("2d");
-            if (!tmpCtx) {
-                throw new Error("Couldn't get texture canvas 2d context!");
-            }
-            this._textureCtx = tmpCtx;
-            // Set smoothing mode
-            this._textureCtx.imageSmoothingEnabled = this._smoothing;
-            if (!dontDraw) {
-                // Draw the original image to the new canvas
-                // scaled as required
-                this._textureCtx.drawImage(this._originalImage, 0, 0, this._originalImage.width, this._originalImage.height, 0, 0, x, y);
-            }
-            // Swap the current image for this new canvas
-            this.image = this._textureCanvas;
+        if (!this._originalImage) {
+            return;
         }
+        if (!this._loaded) {
+            this.log(`Cannot resize texture because the texture image (${this._url}) has not loaded into memory yet!`, "error");
+            return;
+        }
+        if (!this._textureCtx || !this._textureCanvas) {
+            // Create a new canvas
+            this._textureCanvas = newCanvas();
+        }
+        this._textureCanvas.width = x;
+        this._textureCanvas.height = y;
+        const tmpCtx = this._textureCanvas.getContext("2d");
+        if (!tmpCtx) {
+            throw new Error("Couldn't get texture canvas 2d context!");
+        }
+        this._textureCtx = tmpCtx;
+        // Set smoothing mode
+        this._textureCtx.imageSmoothingEnabled = this._smoothing;
+        if (!dontDraw) {
+            // Draw the original image to the new canvas
+            // scaled as required
+            this._textureCtx.drawImage(this._originalImage, 0, 0, this._originalImage.width, this._originalImage.height, 0, 0, x, y);
+        }
+        // Swap the current image for this new canvas
+        this.image = this._textureCanvas;
     }
     /**
      * Resizes the original texture image to a new size based on percentage.
@@ -310,7 +312,7 @@ export class IgeTexture extends IgeAsset {
             return;
         }
         if (!this._loaded) {
-            throw new Error(`Cannot resize texture because the texture image (${this._url}) has not loaded into memory yet!`);
+            this.log(`Cannot resize texture because the texture image (${this._url}) has not loaded into memory yet!`, "error");
         }
         // Calc final x/y values
         x = Math.floor((this._originalImage.width / 100) * x);
@@ -384,11 +386,11 @@ export class IgeTexture extends IgeAsset {
                 this._textureCtx.clearRect(0, 0, this._textureCanvas.width, this._textureCanvas.height);
                 this._textureCtx.drawImage(this._originalImage, 0, 0);
                 // Call the applyFilter and preFilter methods one by one
-                this._applyFilters.forEach((method, index) => {
+                this._postFilters.forEach((method, index) => {
                     if (!this._textureCanvas || !this._textureCtx || !this._originalImage)
                         return;
                     this._textureCtx.save();
-                    method(this._textureCanvas, this._textureCtx, this._originalImage, this, this._applyFiltersData[index]);
+                    method(this._textureCanvas, this._textureCtx, this._originalImage, this, this._postFiltersData[index]);
                     this._textureCtx.restore();
                 });
                 this._preFilters.forEach((method, index) => {
@@ -435,7 +437,7 @@ export class IgeTexture extends IgeAsset {
                 matchingPreFilterIndexes.push(index);
             }
         });
-        this._applyFilters.forEach((tmpFilterItem, index) => {
+        this._postFilters.forEach((tmpFilterItem, index) => {
             if (tmpFilterItem === method) {
                 matchingApplyFilterIndexes.push(index);
             }
@@ -448,8 +450,8 @@ export class IgeTexture extends IgeAsset {
         }
         for (let i = matchingApplyFilterIndexes.length - 1; i >= 0; i--) {
             const index = matchingApplyFilterIndexes[i];
-            this._applyFilters.splice(index, 1);
-            this._applyFiltersData.splice(index, 1);
+            this._postFilters.splice(index, 1);
+            this._postFiltersData.splice(index, 1);
         }
         this._rerenderFilters();
     }
@@ -458,8 +460,8 @@ export class IgeTexture extends IgeAsset {
      * Useful if you want to keep resizings, etc.
      */
     removeFilters() {
-        this._applyFilters = [];
-        this._applyFiltersData = [];
+        this._postFilters = [];
+        this._postFiltersData = [];
         this._preFilters = [];
         this._preFiltersData = [];
         this._rerenderFilters();
@@ -471,16 +473,16 @@ export class IgeTexture extends IgeAsset {
     _rerenderFilters() {
         if (!this._textureCanvas)
             return;
-        // Rerender applyFilters from scratch:
+        // Rerender postFilters from scratch:
         // Draw the basic image
         // resize it to the old boundaries
         this.resize(this._textureCanvas.width, this._textureCanvas.height, false);
         // Draw applyFilter layers upon it
-        this._applyFilters.forEach((method, index) => {
+        this._postFilters.forEach((method, index) => {
             if (!this._textureCtx || !this._textureCanvas || !this._originalImage)
                 return;
             this._textureCtx.save();
-            method(this._textureCanvas, this._textureCtx, this._originalImage, this, this._applyFiltersData[index]);
+            method(this._textureCanvas, this._textureCtx, this._originalImage, this, this._postFiltersData[index]);
             this._textureCtx.restore();
         });
     }
@@ -521,15 +523,21 @@ export class IgeTexture extends IgeAsset {
      * take the canvas, context and originalImage parameters and then
      * use context calls to alter / paint the context with the texture
      * and any filter / adjustments that you want to apply.
-     * @param {Function} method
-     * @param {Object=} data
-     * @return {*}
+     * @param method
+     * @param data
+     * @return {this}
      */
     applyFilter(method, data) {
+        if (!method) {
+            this.log("Cannot apply filter, no filter method was provided!", "error");
+            return this;
+        }
         if (!this._loaded) {
-            throw new Error("Cannot apply filter, the texture you are trying to apply the filter to has not yet loaded!");
+            this.log("Cannot apply filter, the texture you are trying to apply the filter to has not yet loaded!", "error");
+            return this;
         }
         if (!this._originalImage) {
+            this.log("Cannot apply filter, no originalImage exists on the texture!", "error");
             return this;
         }
         if (!this._textureCtx || !this._textureCanvas) {
@@ -550,15 +558,17 @@ export class IgeTexture extends IgeAsset {
         }
         // Swap the current image for this new canvas
         this.image = this._textureCanvas;
+        this.log(`Applying filter: ${method.name}`, "debug");
         // Call the passed method
-        if (this._preFilters.length <= 0) {
-            this._textureCtx.save();
-            method(this._textureCanvas, this._textureCtx, this._originalImage, this, data);
-            this._textureCtx.restore();
-        }
-        // Save filter in active applyFiler list
-        this._applyFilters[this._applyFilters.length] = method;
-        this._applyFiltersData[this._applyFiltersData.length] = !data ? {} : data;
+        this._textureCtx.save();
+        method(this._textureCanvas, this._textureCtx, this._originalImage, this, data);
+        this._textureCtx.restore();
+        // Save filter in active applyFilter list
+        // Commented because this makes no sense. Wouldn't we add a filter
+        // rather than calling applyFilter() if we wanted this to be more
+        // than a one-time thing?
+        //this._postFilters[this._postFilters.length] = method;
+        //this._postFiltersData[this._postFiltersData.length] = !data ? {} : data;
         return this;
     }
     /**

@@ -12,5 +12,5 @@ export declare class IgeAssetRegister<AssetType extends IgeAsset> extends IgeEve
     addGroup(group: Record<string, AssetType>): void;
     removeGroup(group: Record<string, AssetType>): void;
     removeList(list: AssetType[]): void;
-    whenLoaded(): Promise<boolean[]>;
+    whenLoaded(): Promise<Awaited<AssetType>[]>;
 }

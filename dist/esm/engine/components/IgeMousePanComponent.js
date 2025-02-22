@@ -1,5 +1,5 @@
 import { IgeComponent } from "../core/IgeComponent.js"
-import { IgePoint2d } from "../core/IgePoint2d.js";
+import { IgePoint2d } from "../core/IgePoint2d.js"
 import { ige } from "../instance.js"
 /**
  * When added to a viewport, automatically adds mouse panning

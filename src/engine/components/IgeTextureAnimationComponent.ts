@@ -65,15 +65,15 @@ export class IgeTextureAnimationComponent extends IgeComponent<IgeEntity> {
 	 *     var entity = new IgeEntity()
 	 *         .addComponent(IgeTextureAnimationComponent)
 	 *         .animation.define('anim1', [1, 2, 3, 4], 25, -1);
-	 * @return {*}
+	 * @return {IgeEntity}
 	 */
 	define = (
 		id: string,
-		frames: (number | string | null)[],
+		frames: IgeTextureAnimation["frames"],
 		fps: number,
 		loop: number,
 		convertIdsToIndex: boolean = true
-	) => {
+	): IgeEntity => {
 		if (frames && frames.length) {
 			let i, frame;
 			this._animCount = this._animCount || 0;

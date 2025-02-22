@@ -18,10 +18,10 @@ class IgeAsset extends IgeEventingClass_1.IgeEventingClass {
     whenLoaded() {
         return new Promise((resolve) => {
             if (this._loaded) {
-                return resolve(true);
+                return resolve(this);
             }
             const listener = () => {
-                resolve(true);
+                resolve(this);
                 this.off("loaded", listener);
             };
             this.on("loaded", listener);

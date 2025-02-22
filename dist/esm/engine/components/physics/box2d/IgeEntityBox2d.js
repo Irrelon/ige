@@ -1,5 +1,5 @@
 import { igeBox2dContactEntityA, igeBox2dContactEntityB } from "./igeBox2dContactHelpers.js"
-import { b2Vec2 } from "./lib/common/b2_math.js";
+import { b2Vec2 } from "./lib/common/b2_math.js"
 import { IgeEntity } from "../../../core/IgeEntity.js"
 import { ige } from "../../../instance.js"
 /**

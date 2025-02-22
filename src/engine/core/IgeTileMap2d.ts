@@ -681,5 +681,4 @@ export class IgeTileMap2d<MapDataType = any> extends IgeEntity {
 	}
 }
 
-debugger;
 registerClass(IgeTileMap2d);
