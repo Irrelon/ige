@@ -741,11 +741,9 @@ export class IgeTexture extends IgeAsset {
 		this.image = this._textureCanvas;
 
 		// Call the passed method
-		if (this._preFilters.length <= 0) {
-			this._textureCtx.save();
-			method(this._textureCanvas, this._textureCtx, this._originalImage, this, data);
-			this._textureCtx.restore();
-		}
+		this._textureCtx.save();
+		method(this._textureCanvas, this._textureCtx, this._originalImage, this, data);
+		this._textureCtx.restore();
 
 		// Save filter in active applyFilter list
 		// Commented because this makes no sense. Wouldn't we add a filter
