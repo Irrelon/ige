@@ -1,6 +1,7 @@
 export declare class IgeBaseClass {
     classId: string;
     _data: Record<string, any>;
+    _logEnabled: boolean;
     /**
      * Returns the class id. Primarily used to help identify
      * what class an instance was instantiated with and is also
@@ -13,6 +14,11 @@ export declare class IgeBaseClass {
      *     console.log(entity.classId);
      */
     getClassId(): string;
+    /**
+     * Get or set the flag to enable logging.
+     * @param val Set to `true` to enable or `false` to disable.
+     */
+    logEnabled(val?: boolean): this | boolean;
     /**
      * Provides logging capabilities to all IgeBaseClass instances.
      * @param message
@@ -54,10 +60,10 @@ export declare class IgeBaseClass {
      *     entity.log('An error message', 'error');
      *
      */
-    log(message: string, ...args: any[]): this;
-    logInfo(message: string, ...args: any[]): this;
-    logWarn(message: string, ...args: any[]): this;
-    logError(message: string, ...args: any[]): this;
+    log(message: string, ...args: any[]): this | undefined;
+    logInfo(message: string, ...args: any[]): this | undefined;
+    logWarn(message: string, ...args: any[]): this | undefined;
+    logError(message: string, ...args: any[]): this | undefined;
     logIndent(): void;
     logOutdent(): void;
     data(key: string, value: any): this;

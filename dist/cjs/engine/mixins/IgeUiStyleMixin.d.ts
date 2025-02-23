@@ -50,7 +50,7 @@ export declare const WithUiStyleMixin: <BaseClassType extends IgeMixin<IgeObject
          * @param {CSSColor, CanvasGradient, CanvasPattern=} color
          * @return {*} Returns this when setting the value or the current value if none is specified.
          */
-        color(color: string | CanvasGradient | CanvasPattern): string | CanvasPattern | CanvasGradient | any;
+        color(color: string | CanvasGradient | CanvasPattern): string | CanvasGradient | CanvasPattern | any;
         /**
          * Sets the current background texture and the repeatType
          * to determine in which axis the image should be repeated.
@@ -385,11 +385,13 @@ export declare const WithUiStyleMixin: <BaseClassType extends IgeMixin<IgeObject
         deferEmit(eventName: string, ...data: any[]): any;
         _processRemovalQueue(): void;
         _data: Record<string, any>;
+        _logEnabled: boolean;
         getClassId(): string;
-        log(message: string, ...args: any[]): any;
-        logInfo(message: string, ...args: any[]): any;
-        logWarn(message: string, ...args: any[]): any;
-        logError(message: string, ...args: any[]): any;
+        logEnabled(val?: boolean): any | boolean;
+        log(message: string, ...args: any[]): any | undefined;
+        logInfo(message: string, ...args: any[]): any | undefined;
+        logWarn(message: string, ...args: any[]): any | undefined;
+        logError(message: string, ...args: any[]): any | undefined;
         logIndent(): void;
         logOutdent(): void;
         data(key: string, value: any): any;

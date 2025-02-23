@@ -15,6 +15,7 @@ const getIndentString = () => {
 export class IgeBaseClass {
     classId = "IgeBaseClass";
     _data = {};
+    _logEnabled = true;
     /**
      * Returns the class id. Primarily used to help identify
      * what class an instance was instantiated with and is also
@@ -28,6 +29,17 @@ export class IgeBaseClass {
      */
     getClassId() {
         return this.classId;
+    }
+    /**
+     * Get or set the flag to enable logging.
+     * @param val Set to `true` to enable or `false` to disable.
+     */
+    logEnabled(val) {
+        if (val === undefined) {
+            return this._logEnabled;
+        }
+        this._logEnabled = val;
+        return this;
     }
     /**
      * Provides logging capabilities to all IgeBaseClass instances.
@@ -71,9 +83,13 @@ export class IgeBaseClass {
      *
      */
     log(message, ...args) {
+        if (!this._logEnabled)
+            return;
         return this.logInfo(message, ...args);
     }
     logInfo(message, ...args) {
+        if (!this._logEnabled)
+            return;
         const stack = new Error().stack || "";
         const stackArr = stack.split("\n");
         stackArr.shift();
@@ -81,6 +97,8 @@ export class IgeBaseClass {
         return this;
     }
     logWarn(message, ...args) {
+        if (!this._logEnabled)
+            return;
         const stack = new Error().stack || "";
         const stackArr = stack.split("\n");
         stackArr.shift();
@@ -91,6 +109,8 @@ export class IgeBaseClass {
         return this;
     }
     logError(message, ...args) {
+        if (!this._logEnabled)
+            return;
         const stack = new Error().stack || "";
         const stackArr = stack.split("\n");
         stackArr.shift();

@@ -4,11 +4,13 @@ export declare const WithExampleMixin: <BaseClassType extends IgeMixin<IgeBaseCl
     new (...args: any[]): {
         classId: string;
         _data: Record<string, any>;
+        _logEnabled: boolean;
         getClassId(): string;
-        log(message: string, ...args: any[]): any;
-        logInfo(message: string, ...args: any[]): any;
-        logWarn(message: string, ...args: any[]): any;
-        logError(message: string, ...args: any[]): any;
+        logEnabled(val?: boolean): any | boolean;
+        log(message: string, ...args: any[]): any | undefined;
+        logInfo(message: string, ...args: any[]): any | undefined;
+        logWarn(message: string, ...args: any[]): any | undefined;
+        logError(message: string, ...args: any[]): any | undefined;
         logIndent(): void;
         logOutdent(): void;
         data(key: string, value: any): any;
