@@ -21,6 +21,7 @@ const getIndentString = () => {
 export class IgeBaseClass {
 	classId = "IgeBaseClass";
 	_data: Record<string, any> = {};
+	_logEnabled: boolean = true;
 
 	/**
 	 * Returns the class id. Primarily used to help identify
@@ -35,6 +36,19 @@ export class IgeBaseClass {
 	 */
 	getClassId () {
 		return this.classId;
+	}
+
+	/**
+	 * Get or set the flag to enable logging.
+	 * @param val Set to `true` to enable or `false` to disable.
+	 */
+	logEnabled (val?: boolean): this | boolean {
+		if (val === undefined) {
+			return this._logEnabled;
+		}
+
+		this._logEnabled = val;
+		return this;
 	}
 
 	/**
@@ -79,10 +93,12 @@ export class IgeBaseClass {
 	 *
 	 */
 	log (message: string, ...args: any[]) {
+		if (!this._logEnabled) return;
 		return this.logInfo(message, ...args);
 	}
 
 	logInfo (message: string, ...args: any[]) {
+		if (!this._logEnabled) return;
 		const stack = new Error().stack || "";
 		const stackArr = stack.split("\n");
 		stackArr.shift();
@@ -92,6 +108,7 @@ export class IgeBaseClass {
 	}
 
 	logWarn (message: string, ...args: any[]) {
+		if (!this._logEnabled) return;
 		const stack = new Error().stack || "";
 		const stackArr = stack.split("\n");
 		stackArr.shift();
@@ -105,6 +122,7 @@ export class IgeBaseClass {
 	}
 
 	logError (message: string, ...args: any[]) {
+		if (!this._logEnabled) return;
 		const stack = new Error().stack || "";
 		const stackArr = stack.split("\n");
 		stackArr.shift();
