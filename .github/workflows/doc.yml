@@ -1,0 +1,42 @@
+name: Build API documentation
+
+on:
+  workflow_dispatch:
+    inputs:
+      logLevel:
+        description: 'Log level'
+        required: true
+        default: 'warning'
+        type: choice
+        options:
+        - info
+        - warning
+        - debug
+      tags:
+        description: 'API documentation'
+        required: false
+        type: boolean
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install dependencies
+        run: npm i
+      - name: Generate API documentation
+        run: npm run generate-docs
+      - name: Git commit report
+        run: |
+          git switch -C docs
+          git rm --cached -r .
+          git add -f docs
+          git commit -m "Automated report"
+          git push origin -f docs
