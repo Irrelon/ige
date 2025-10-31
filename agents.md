@@ -91,76 +91,96 @@ The `src/examples/threeJsRenderer/` directory contains a working prototype that:
 
 ### Primary Objective
 
-**Enable full 3D rendering while maintaining the simplicity of the current 2D workflow.**
+**Transition to a unified 3D renderer that can handle both 2D and 3D content seamlessly, similar to modern game engines like Unity and Unreal Engine.**
 
 Users should be able to:
 
 ```typescript
-// This should work in both 2D and 3D modes
+// This should work for both 2D sprites and 3D models
 const entity = new IgeEntity()
-	.texture(myTexture) // 2D texture
+	.texture(myTexture) // 2D sprite as texture on 3D plane
 	.translateTo(100, 50, 25) // 3D positioning
 	.mount(scene); // Simple mounting
+
+// Or with 3D models
+const entity3d = new IgeEntity()
+	.model(my3dModel) // 3D model instead of texture
+	.translateTo(100, 50, 25) // Same positioning API
+	.mount(scene); // Same mounting API
 ```
 
 ### Key Requirements
 
-1. **Backward Compatibility**: All existing 2D functionality must continue to work
-2. **Unified API**: Same methods for both 2D and 3D rendering
-3. **Progressive Enhancement**: 3D features should be additive, not replacements
-4. **Performance**: 3D rendering should be performant enough for real games
-5. **Simplicity**: Maintain IGE's ease of use philosophy
+1. **API Consistency**: Same methods work for both 2D sprites and 3D models
+2. **Unified Renderer**: Single 3D renderer handles all content types
+3. **Performance**: WebGL/3D rendering performant enough for real games
+4. **Simplicity**: Maintain IGE's ease of use philosophy
+5. **Backward Compatibility**: Existing 2D workflows continue to work
 
-### Technical Goals
+### Technical Strategy
 
-1. **Dual Rendering Support**:
+1. **Unified 3D Renderer**:
 
-    - Canvas 2D for 2D/isometric games
-    - WebGL/Three.js for 3D games
-    - Seamless switching between renderers
+    - **Recommended**: Continue with Three.js as the foundation
+    - **Alternative**: Custom WebGL renderer (significantly more work)
+    - **Rationale**: Three.js provides mature 3D model loading, materials, lighting, and shader systems
+    - 2D sprites rendered as textured planes in 3D space
+    - 3D models rendered natively
+    - Single rendering pipeline for all content
 
-2. **3D Model Support**:
+2. **Three.js Integration Benefits**:
 
-    - Load and render 3D models (GLTF, OBJ, etc.)
-    - Assign 3D models to entities like textures
-    - Support for materials, lighting, and shaders
+    - Mature GLTF/GLB model loading
+    - Comprehensive material and lighting systems
+    - Built-in shader support and customization
+    - Active community and extensive documentation
+    - Regular updates and performance improvements
+    - Focus development on game engine features, not low-level 3D rendering
 
-3. **Enhanced Camera System**:
+3. **2D Content in 3D Space**:
 
-    - True 3D camera with perspective projection
-    - Camera controls for 3D navigation
-    - Maintain 2D camera compatibility
+    - 2D textures mapped to 3D planes
+    - Automatic billboarding for sprite-like behavior
+    - Orthographic camera mode for pure 2D feel
+    - Isometric camera presets for isometric games
 
-4. **Lighting System**:
+4. **Enhanced Entity System**:
 
-    - Basic ambient, directional, and point lights
-    - Integration with existing entity system
-    - Optional for maintaining 2D compatibility
+    - Support both `.texture()` and `.model()` methods
+    - Unified material system for both 2D and 3D content
+    - Automatic geometry generation for 2D sprites
+    - Native 3D model support
 
-5. **Physics Integration**:
-    - 3D physics support (potentially Cannon.js or similar)
-    - Maintain existing 2D physics workflows
+5. **Camera Evolution**:
+
+    - True 3D perspective and orthographic cameras
+    - 2D camera mode (orthographic with locked Z)
+    - Isometric camera presets
+    - Smooth transitions between camera modes
 
 ## Development Priorities
 
-### Phase 1: Core 3D Infrastructure
+### Phase 1: Unified Renderer Foundation
 
-1. **Enhance IgeThreeJsRenderer**:
+1. **Complete IgeThreeJsRenderer as Primary Renderer**:
 
-    - Complete the experimental Three.js renderer
+    - Replace Canvas 2D renderer with Three.js renderer
+    - Implement 2D sprite rendering as textured 3D planes
     - Add proper material and lighting support
-    - Implement 3D model loading
+    - Implement 3D model loading (GLTF/GLB)
 
-2. **Extend Entity System**:
+2. **Unified Entity System**:
 
-    - Add 3D model support alongside textures
-    - Enhance material system for 3D rendering
-    - Improve 3D transformation handling
+    - Support both `.texture()` for 2D sprites and `.model()` for 3D content
+    - Unified material system for both content types
+    - Automatic geometry generation for 2D sprites
+    - Enhanced transformation handling in 3D space
 
-3. **Camera Improvements**:
-    - Add perspective projection for 3D cameras
-    - Enhance camera controls for 3D navigation
-    - Maintain backward compatibility
+3. **Camera System Evolution**:
+    - Implement perspective and orthographic cameras
+    - Add 2D camera mode (orthographic, locked Z-axis)
+    - Create isometric camera presets
+    - Maintain API compatibility for existing camera usage
 
 ### Phase 2: Asset Pipeline
 
@@ -223,38 +243,49 @@ When working on IGE, follow these principles:
 
 ### Common Tasks
 
-1. **Adding 3D Features**: Extend existing classes rather than replacing them
-2. **Renderer Work**: Focus on `IgeThreeJsRenderer` for 3D improvements
-3. **Entity Extensions**: Add 3D capabilities to `IgeEntity` class
-4. **Asset Loading**: Enhance texture/asset systems for 3D content
-5. **Camera Work**: Improve `IgeCamera` for 3D functionality
+1. **Renderer Migration**: Transition from Canvas 2D to unified Three.js renderer
+2. **Entity Enhancement**: Add unified 2D/3D content support to `IgeEntity`
+3. **Asset Pipeline**: Implement unified loading for textures and 3D models
+4. **Camera Modernization**: Enhance `IgeCamera` for true 3D with 2D compatibility modes
+5. **API Unification**: Ensure same methods work for both 2D and 3D content
 
 ### Architecture Constraints
 
--   Must support both Canvas 2D and WebGL renderers
+-   Single unified 3D renderer (likely Three.js based)
 -   Entity system must remain simple and intuitive
 -   Scene graph structure should remain unchanged
--   Transformation matrices must work for both 2D and 3D
--   Asset loading should be unified between 2D and 3D
+-   Same transformation APIs for 2D sprites and 3D models
+-   Unified asset loading for textures and 3D models
 
 ## Current Challenges
 
-1. **Renderer Abstraction**: Need better abstraction between 2D and 3D renderers
-2. **Asset Pipeline**: 3D assets require different loading and management
-3. **Performance**: 3D rendering is more demanding than 2D
-4. **Complexity**: Maintaining simplicity while adding 3D features
-5. **Compatibility**: Ensuring 2D workflows aren't disrupted
+1. **Renderer Migration**: Transitioning from Canvas 2D to unified 3D renderer
+2. **Asset Pipeline**: Unified loading for both 2D textures and 3D models
+3. **Performance**: Ensuring 3D renderer performs well for 2D content
+4. **Complexity vs Simplicity**: Leveraging Three.js power while maintaining IGE simplicity
+5. **Migration Path**: Smooth transition for existing IGE users
 
 ## Success Metrics
 
-The 3D implementation will be considered successful when:
+The unified 3D renderer will be considered successful when:
 
-1. **Existing 2D games continue to work unchanged**
-2. **Simple 3D games can be created with minimal code**
-3. **Performance is suitable for real-time gameplay**
+1. **2D sprites work seamlessly in 3D space**
+2. **3D models can be used as easily as 2D textures**
+3. **Performance is suitable for both 2D and 3D games**
 4. **Developer experience remains intuitive and simple**
-5. **3D models can be used as easily as 2D textures**
+5. **Single API works for all content types**
+6. **Existing workflows require minimal changes**
 
 ## Conclusion
 
-IGE has a solid foundation for 3D rendering with existing 3D positioning, transformation systems, and an experimental Three.js renderer. The goal is to build upon this foundation to create a unified 2D/3D game engine that maintains the simplicity and ease of use that makes IGE special, while providing the power and flexibility needed for modern 3D game development.
+IGE has a solid foundation for 3D rendering with existing 3D positioning, transformation systems, and an experimental Three.js renderer. The strategic decision is to transition to a unified 3D renderer (built on Three.js) that can handle both 2D sprites and 3D models seamlessly, following the successful pattern of modern game engines like Unity and Unreal Engine.
+
+This approach allows IGE to:
+
+-   **Focus on game development experience** rather than low-level 3D rendering complexities
+-   **Leverage Three.js's mature ecosystem** for model loading, materials, and lighting
+-   **Maintain API simplicity** while gaining powerful 3D capabilities
+-   **Provide a clear migration path** for existing 2D projects
+-   **Future-proof the engine** for modern game development needs
+
+The goal is to create a game engine where developers can seamlessly mix 2D sprites and 3D models using the same simple, intuitive API that makes IGE special.
