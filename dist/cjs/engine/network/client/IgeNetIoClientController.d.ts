@@ -1,5 +1,5 @@
 import { IgeNetIoClient } from "./IgeNetIoClient.js"
-import { IgeNetIoBaseController } from "../IgeNetIoBaseController.js"
+import { IgeNetIoBaseController } from "../IgeNetIoBaseController.js";
 import { IgeNetworkConnectionState } from "../../../enums/IgeNetworkConnectionState.js"
 import type { IgeIsReadyPromise } from "../../../types/IgeIsReadyPromise.js"
 import type { IgeNetworkClientSideMessageHandler, IgeNetworkClientSideResponseHandler, IgeNetworkEncodedMessageData, IgeNetworkMessageData, IgeNetworkMessageStructure, IgeNetworkRequestMessageStructure, IgeNetworkTimeSyncRequestFromServer, IgeNetworkTimeSyncResponseFromClient } from "../../../types/IgeNetworkMessage.js"
@@ -55,9 +55,8 @@ export declare class IgeNetIoClientController extends IgeNetIoBaseController imp
      * and data.
      * @param commandName
      * @param data
-     * @param callback
      */
-    send<DataType = IgeNetworkMessageData>(commandName: string, data?: DataType, callback?: IgeNetworkClientSideResponseHandler): void;
+    send<DataType = IgeNetworkMessageData>(commandName: string, data?: DataType): void;
     /**
      * Sends a network request. This is different from a standard
      * call to send() because the recipient code will be able to
@@ -68,13 +67,13 @@ export declare class IgeNetIoClientController extends IgeNetIoBaseController imp
      * @param {Object} data
      * @param {Function=} callback
      */
-    request<ResultType = any>(commandName: string, data: IgeNetworkMessageData, callback?: IgeNetworkClientSideMessageHandler): Promise<ResultType>;
+    request<RequestDataType = IgeNetworkMessageData, ResultDataType = IgeNetworkMessageData>(commandName: string, data: RequestDataType, callback?: IgeNetworkClientSideMessageHandler<ResultDataType>): Promise<ResultDataType>;
     /**
      * Sends a response to a network request.
      * @param {string} requestId
      * @param {Object} data
      */
-    response(requestId: string, data: IgeNetworkMessageData): void;
+    response<ResultDataType = IgeNetworkMessageData>(requestId: string, data: ResultDataType): void;
     /**
      * Called when the network connects to the server.
      * @private

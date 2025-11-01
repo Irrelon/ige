@@ -91,6 +91,14 @@ export class IgeBaseRenderer extends IgeEventingClass {
         }
         //this.log(`Device pixel ratio is ${this._devicePixelRatio}`);
     }
+    /**
+     * Gets data for the specific renderer being used. The data is stored
+     * in the meta object INSIDE the passed object. We do not get or use
+     * the actual passed object, only the data inside obj.meta[this.classId]
+     * @param obj
+     * @param defaultVal A default value to return when none exists in the
+     * meta object for this classId
+     */
     getData(obj, defaultVal) {
         if (!obj)
             return defaultVal;

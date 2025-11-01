@@ -275,22 +275,15 @@ export class IgeNetIoServerController extends IgeNetIoBaseController {
         return this;
     }
     /**
-     * Sends a message over the network.
-     * @param {string} commandName
-     * @param {Object} data
+     * Sends a network message with the given command name
+     * and data to the specified client ids. If no client ids are
+     * specified, sends it to all connected clients.
+     * @param commandName
+     * @param data
      * @param {*=} clientIdOrArrayOfIds If specified, sets the recipient socket id or
      * an array of socket ids to send to.
-     * @param callback
      */
-    send(commandName, data, clientIdOrArrayOfIds, callback) {
-        if (callback) {
-            if (!clientIdOrArrayOfIds) {
-                this.log("Attempted to send a request command without specifying the recipient clientId!", "error");
-                return;
-            }
-            this.request(commandName, data, clientIdOrArrayOfIds, callback);
-            return;
-        }
+    send(commandName, data, clientIdOrArrayOfIds) {
         const commandIndex = this._networkCommandsLookup[commandName];
         if (commandIndex !== undefined) {
             const encodedCommandIndex = String.fromCharCode(commandIndex);

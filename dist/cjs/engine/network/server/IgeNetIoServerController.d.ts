@@ -1,8 +1,8 @@
 import { IgeNetIoBaseController } from "../IgeNetIoBaseController.js"
-import { IgeNetIoServer } from "./IgeNetIoServer.js"
+import { IgeNetIoServer } from "./IgeNetIoServer.js";
 import type { IgeNetIoSocket } from "./IgeNetIoSocket.js"
-import type { IgeIsReadyPromise } from "../../../types/IgeIsReadyPromise.js"
-import type { IgeNetworkMessageData, IgeNetworkMessageStructure, IgeNetworkRequestMessageStructure, IgeNetworkServerSideMessageHandler, IgeNetworkServerSideRequestHandler, IgeNetworkServerSideResponseData } from "../../../types/IgeNetworkMessage.js"
+import type { IgeIsReadyPromise } from "../../../types/IgeIsReadyPromise.js";
+import type { IgeNetworkMessageData, IgeNetworkMessageStructure, IgeNetworkRequestMessageStructure, IgeNetworkServerSideMessageHandler, IgeNetworkServerSideRequestHandler } from "../../../types/IgeNetworkMessage.js"
 export declare class IgeNetIoServerController extends IgeNetIoBaseController implements IgeIsReadyPromise {
     _idCounter: number;
     _networkCommands: Record<string, IgeNetworkServerSideMessageHandler | IgeNetworkServerSideRequestHandler | undefined>;
@@ -48,7 +48,7 @@ export declare class IgeNetIoServerController extends IgeNetIoBaseController imp
      * command is received by the network.
      * @return {this}
      */
-    define(commandName: string, callback?: IgeNetworkServerSideMessageHandler | IgeNetworkServerSideRequestHandler): this;
+    define<MessageType>(commandName: string, callback?: IgeNetworkServerSideMessageHandler<MessageType> | IgeNetworkServerSideRequestHandler<MessageType>): this;
     /**
      * Adds a client to a room by id. All clients are added to room id
      * "ige" by default when they connect to the server.
@@ -101,14 +101,15 @@ export declare class IgeNetIoServerController extends IgeNetIoBaseController imp
      */
     acceptConnections(val?: boolean): boolean | this;
     /**
-     * Sends a message over the network.
-     * @param {string} commandName
-     * @param {Object} data
+     * Sends a network message with the given command name
+     * and data to the specified client ids. If no client ids are
+     * specified, sends it to all connected clients.
+     * @param commandName
+     * @param data
      * @param {*=} clientIdOrArrayOfIds If specified, sets the recipient socket id or
      * an array of socket ids to send to.
-     * @param callback
      */
-    send<DataType = IgeNetworkMessageData>(commandName: string, data: DataType, clientIdOrArrayOfIds?: string | string[], callback?: IgeNetworkServerSideMessageHandler | IgeNetworkServerSideRequestHandler): this | undefined;
+    send<DataType = IgeNetworkMessageData>(commandName: string, data: DataType, clientIdOrArrayOfIds?: string | string[]): this;
     /**
      * Sends a network request. This is different from a standard
      * call to send() because the recipient code will be able to
@@ -120,13 +121,13 @@ export declare class IgeNetIoServerController extends IgeNetIoBaseController imp
      * @param clientIdOrArrayOfIds
      * @param {Function} callback
      */
-    request<DataType extends IgeNetworkMessageData = IgeNetworkMessageData>(cmd: string, data: DataType, clientIdOrArrayOfIds: string | string[], callback: IgeNetworkServerSideRequestHandler): void;
+    request<RequestDataType = IgeNetworkMessageData, ResultDataType = IgeNetworkMessageData>(cmd: string, data: RequestDataType, clientIdOrArrayOfIds: string | string[], callback: IgeNetworkServerSideRequestHandler<ResultDataType>): void;
     /**
      * Sends a response to a network request.
      * @param {string} requestId
      * @param {Object} data
      */
-    response(requestId: string, data: IgeNetworkServerSideResponseData): void;
+    response<ResultDataType = IgeNetworkMessageData>(requestId: string, data: ResultDataType): void;
     /**
      * Determines if the origin of a request should be allowed or denied.
      * @param origin

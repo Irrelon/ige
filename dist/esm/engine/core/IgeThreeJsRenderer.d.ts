@@ -18,6 +18,7 @@ export declare class IgeThreeJsRenderer extends IgeBaseRenderer {
         pixelWidth: number;
         pixelHeight: number;
     };
+    protected _pixelScaleDirty: boolean;
     constructor();
     _recalculatePixelScale(): void;
     normaliseScale(mesh: THREE.Mesh, targetWidth: number, targetHeight: number): void;

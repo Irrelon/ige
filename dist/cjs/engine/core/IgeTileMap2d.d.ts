@@ -1,9 +1,9 @@
 import { IgeEntity } from "./IgeEntity.js"
-import { IgeMap2d } from "./IgeMap2d.js"
+import { IgeMap2d } from "./IgeMap2d.js";
 import type { IgeObject } from "./IgeObject.js"
-import { IgePoint2d } from "./IgePoint2d.js"
+import { IgePoint2d } from "./IgePoint2d.js";
 import { IgePoint3d } from "./IgePoint3d.js"
-import { IgePoly2d } from "./IgePoly2d.js"
+import { IgePoly2d } from "./IgePoly2d.js";
 import { IgeBounds } from "./IgeBounds.js"
 export type IgeTileMap2dScanRectCallback = (mapData: any, x: number, y: number) => boolean;
 export interface IgeTileMap2dSavedMap {
@@ -94,8 +94,9 @@ export declare class IgeTileMap2d<MapDataType = any> extends IgeEntity {
      */
     occupyTile(x?: number, y?: number, width?: number, height?: number, obj?: any): this;
     /**
-     * Removes all data from the specified tile or area. If either the x or y arguments
-     * are undefined, the function returns without taking any action.
+     * Removes all occupation data from the specified tile or area.
+     * If either the x or y arguments are undefined, the function
+     * returns without taking any action.
      * @param {number=} x The x-coordinate of the tile or area.
      * @param {number=} y The y-coordinate of the tile or area.
      * @param {number=} width The width of the area (default is 1).
@@ -191,7 +192,7 @@ export declare class IgeTileMap2d<MapDataType = any> extends IgeEntity {
     saveMap(): string;
     isometricMounts(): boolean;
     isometricMounts(val: boolean): this;
-    tileMapHitPolygon(): IgePoly2d | IgeBounds | undefined;
+    tileMapHitPolygon(): IgeBounds | IgePoly2d | undefined;
     _processTriggerHitTests(): boolean;
     _updateAdjustmentMatrix(): void;
     _childMounted(obj: IgeObject): void;

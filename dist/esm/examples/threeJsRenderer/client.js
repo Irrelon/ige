@@ -30,7 +30,9 @@ export class Client extends IgeBaseClass {
         new IgeEntity()
             .id("testEntity1")
             .materialData({
-            color: "#e1b9b9"
+            //color: "#e1b9b9",
+            url: "../../assets/textures/sprites/fairy.png",
+            transparent: true
         })
             .width(100)
             .height(100)

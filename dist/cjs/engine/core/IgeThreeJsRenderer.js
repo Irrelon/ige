@@ -40,6 +40,7 @@ class IgeThreeJsRenderer extends IgeBaseRenderer_1.IgeBaseRenderer {
             pixelWidth: 1,
             pixelHeight: 1
         };
+        this._pixelScaleDirty = true;
         this._resizeEvent = (event) => {
             this._threeJsCamera.aspect = window.innerWidth / window.innerHeight;
             this._threeJsCamera.updateProjectionMatrix();
@@ -47,6 +48,7 @@ class IgeThreeJsRenderer extends IgeBaseRenderer_1.IgeBaseRenderer {
             this._threeJsRenderer.setSize(window.innerWidth, window.innerHeight);
             this._threeJsRenderer.setPixelRatio(this._devicePixelRatio);
             this._recalculatePixelScale();
+            this._pixelScaleDirty = true;
         };
         this._updateDevicePixelRatio();
         this._threeJsScene = new THREE.Scene();
@@ -93,6 +95,7 @@ class IgeThreeJsRenderer extends IgeBaseRenderer_1.IgeBaseRenderer {
             this._transformObject(child);
             this._renderEntities(child.children());
         });
+        this._pixelScaleDirty = false;
     }
     renderSceneGraph(engine, viewports) {
         this._threeJsRenderer.render(this._threeJsScene, this._threeJsCamera);
@@ -133,13 +136,15 @@ class IgeThreeJsRenderer extends IgeBaseRenderer_1.IgeBaseRenderer {
         let material = this.getData(childMaterialData);
         if (!material) {
             const finalMaterial = {
-                color: childMaterialData.color,
-                side: THREE.DoubleSide
+                side: childMaterialData.side !== undefined ? childMaterialData.side : THREE.DoubleSide
             };
-            // Create the material
-            if (childMaterialData.url) {
+            if (childMaterialData.color)
+                finalMaterial.color = childMaterialData.color;
+            if (childMaterialData.transparent)
+                finalMaterial.transparent = childMaterialData.transparent;
+            if (childMaterialData.url)
                 finalMaterial.map = new THREE.TextureLoader().load(childMaterialData.url);
-            }
+            // Create the material
             material = new THREE.MeshBasicMaterial(finalMaterial);
             this.setData(childMaterialData, material);
         }
@@ -172,7 +177,7 @@ class IgeThreeJsRenderer extends IgeBaseRenderer_1.IgeBaseRenderer {
         const mesh = this.getData(obj.meshData());
         if (!mesh)
             return;
-        if (!obj._aabbDirty)
+        if (!obj._transformChanged && !this._pixelScaleDirty)
             return;
         mesh.position.x = this.normaliseX(obj._translate.x);
         mesh.position.y = this.normaliseY(obj._translate.y);

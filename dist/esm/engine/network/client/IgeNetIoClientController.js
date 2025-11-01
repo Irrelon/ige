@@ -189,13 +189,8 @@ export class IgeNetIoClientController extends IgeNetIoBaseController {
      * and data.
      * @param commandName
      * @param data
-     * @param callback
      */
-    send(commandName, data, callback) {
-        if (callback) {
-            this.request(commandName, data, callback);
-            return;
-        }
+    send(commandName, data) {
         const commandIndex = this._networkCommandsLookup[commandName];
         if (commandIndex !== undefined) {
             if (this.debug()) {

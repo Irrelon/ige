@@ -1,7 +1,7 @@
 import type { IgeEngine } from "./IgeEngine.js"
-import { IgeEventingClass } from "./IgeEventingClass.js"
+import { IgeEventingClass } from "./IgeEventingClass.js";
 import { IgePoint2d } from "./IgePoint2d.js"
-import type { IgeViewport } from "./IgeViewport.js"
+import type { IgeViewport } from "./IgeViewport.js";
 import type { IgeAbstractData3d } from "../../types/IgeAbstractData3d.js"
 export declare class IgeBaseRenderer extends IgeEventingClass {
     classId: string;
@@ -37,6 +37,14 @@ export declare class IgeBaseRenderer extends IgeEventingClass {
     toggleFullScreen: () => void;
     _renderSceneGraph(engine: IgeEngine, viewports: IgeViewport[]): boolean;
     _updateDevicePixelRatio(): void;
+    /**
+     * Gets data for the specific renderer being used. The data is stored
+     * in the meta object INSIDE the passed object. We do not get or use
+     * the actual passed object, only the data inside obj.meta[this.classId]
+     * @param obj
+     * @param defaultVal A default value to return when none exists in the
+     * meta object for this classId
+     */
     getData<DataType = any>(obj: IgeAbstractData3d | null | undefined, defaultVal?: DataType): DataType | undefined;
     setData<DataType = any>(obj: IgeAbstractData3d, val: DataType): this;
     getDataProp<DataType = any>(obj: IgeAbstractData3d | null | undefined, propName: string, defaultVal?: DataType): DataType | undefined;

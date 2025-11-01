@@ -8,4 +8,6 @@ import type { IgeAbstractData3d } from "./IgeAbstractData3d.js"
 export interface IgeMaterialData extends IgeAbstractData3d {
     url?: string;
     color?: string;
+    transparent?: boolean;
+    side?: number;
 }

@@ -43,7 +43,9 @@ class Client extends IgeBaseClass_1.IgeBaseClass {
             new IgeEntity_1.IgeEntity()
                 .id("testEntity1")
                 .materialData({
-                color: "#e1b9b9"
+                //color: "#e1b9b9",
+                url: "../../assets/textures/sprites/fairy.png",
+                transparent: true
             })
                 .width(100)
                 .height(100)
