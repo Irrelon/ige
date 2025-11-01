@@ -148,22 +148,22 @@ export class IgeNetIoClient extends IgeEventingClass {
 		if (packet._netioCmd) {
 			// The packet is a netio command
 			switch (packet._netioCmd) {
-			case "id":
-				// Store the new id in the socket
-				this._networkId = packet.data;
+				case "id":
+					// Store the new id in the socket
+					this._networkId = packet.data;
 
-				// Now we have an id, set the state to connected
-				this._state = 3;
+					// Now we have an id, set the state to connected
+					this._state = 3;
 
-				// Emit the connect event
-				this.emit("connect", this._networkId);
-				break;
+					// Emit the connect event
+					this.emit("connect", this._networkId);
+					break;
 
-			case "close":
-				// The server told us our connection has been closed
-				// so store the reason the server gave us!
-				this._disconnectReason = packet.data;
-				break;
+				case "close":
+					// The server told us our connection has been closed
+					// so store the reason the server gave us!
+					this._disconnectReason = packet.data;
+					break;
 			}
 		} else {
 			// The packet is normal data
