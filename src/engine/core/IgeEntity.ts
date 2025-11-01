@@ -2801,7 +2801,6 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 		return this._rotate.z;
 	}
 
-
 	/**
 	 * Gets the `scale` accessor object.
 	 * @example #Use the scale accessor object to set the scale of the entity on the x axis to 1
@@ -3092,6 +3091,29 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 					 */
 					this.emit("interpolationLag");
 				}
+			} else if (timeStream.length === 1) {
+				// Handle the case where there's only one timestream entry
+				const singleData = timeStream[0];
+
+				// Only apply if the timestamp is older than or equal to renderTime
+				// If it's newer, we should wait for more data to interpolate properly
+				if (singleData[0] <= renderTime) {
+					// Apply the transform directly without interpolation
+					const transform = singleData[1].map(parseFloat) as IgeTimeStreamParsedTransformData;
+
+					this.translateTo(transform[0], transform[1], transform[2]);
+					this.scaleTo(transform[3], transform[4], transform[5]);
+					this.rotateTo(transform[6], transform[7], transform[8]);
+
+					// Remove the processed entry
+					timeStream.shift();
+
+					// Record the last update time
+					this._lastUpdate = new Date().getTime();
+					return;
+				}
+				// If the single entry is newer than renderTime, don't process it yet
+				// Wait for more data or let it be processed in a future frame
 			}
 		} else {
 			// TODO: Shouldn't we do this if we find old data as well? e.g. timeStream.length > 2
