@@ -1,7 +1,7 @@
 import { IgeNetIoBaseController } from "../IgeNetIoBaseController.js"
-import { IgeNetIoServer } from "./IgeNetIoServer.js";
+import { IgeNetIoServer } from "./IgeNetIoServer.js"
 import type { IgeNetIoSocket } from "./IgeNetIoSocket.js"
-import type { IgeIsReadyPromise } from "../../../types/IgeIsReadyPromise.js";
+import type { IgeIsReadyPromise } from "../../../types/IgeIsReadyPromise.js"
 import type { IgeNetworkMessageData, IgeNetworkMessageStructure, IgeNetworkRequestMessageStructure, IgeNetworkServerSideMessageHandler, IgeNetworkServerSideRequestHandler, IgeNetworkServerSideResponseData } from "../../../types/IgeNetworkMessage.js"
 export declare class IgeNetIoServerController extends IgeNetIoBaseController implements IgeIsReadyPromise {
     _idCounter: number;

@@ -1,5 +1,5 @@
 import type { IgeFontEntity } from "./IgeFontEntity.js"
-import { IgeTexture } from "./IgeTexture.js";
+import { IgeTexture } from "./IgeTexture.js"
 import type { IgeCanvasRenderingContext2d } from "../../types/IgeCanvasRenderingContext2d.js"
 import type { IgeSmartTexture } from "../../types/IgeSmartTexture.js"
 /**

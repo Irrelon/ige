@@ -172,6 +172,8 @@ class IgeThreeJsRenderer extends IgeBaseRenderer_1.IgeBaseRenderer {
         const mesh = this.getData(obj.meshData());
         if (!mesh)
             return;
+        if (!obj._aabbDirty)
+            return;
         mesh.position.x = this.normaliseX(obj._translate.x);
         mesh.position.y = this.normaliseY(obj._translate.y);
         mesh.position.z = obj._translate.z;

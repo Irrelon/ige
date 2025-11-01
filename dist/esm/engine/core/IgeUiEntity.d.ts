@@ -1,7 +1,7 @@
 import { IgeEntity } from "./IgeEntity.js"
-import type { IgeObject } from "./IgeObject.js";
+import type { IgeObject } from "./IgeObject.js"
 import type { IgeTexture } from "./IgeTexture.js"
-import type { IgeCanvasRenderingContext2d } from "../../types/IgeCanvasRenderingContext2d.js";
+import type { IgeCanvasRenderingContext2d } from "../../types/IgeCanvasRenderingContext2d.js"
 import type { IgePointXY } from "../../types/IgePointXY.js"
 import type { IgeRepeatType } from "../../types/IgeRepeatType.js"
 /**

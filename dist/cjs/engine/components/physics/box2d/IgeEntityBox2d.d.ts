@@ -1,9 +1,9 @@
 import { IgeBox2dController } from "./IgeBox2dController.js"
-import { b2Body } from "./lib/dynamics/b2_body.js";
+import { b2Body } from "./lib/dynamics/b2_body.js"
 import { b2Contact } from "./lib/dynamics/b2_contact.js"
-import { b2Fixture } from "./lib/dynamics/b2_fixture.js";
+import { b2Fixture } from "./lib/dynamics/b2_fixture.js"
 import { b2ContactListener } from "./lib/dynamics/b2_world_callbacks.js"
-import { IgeEntity } from "../../../core/IgeEntity.js";
+import { IgeEntity } from "../../../core/IgeEntity.js"
 import { IgeEventListenerCallback } from "../../../core/IgeEventingClass.js"
 import { IgeBox2dBodyDef } from "../../../../types/IgeBox2dBodyDef.js"
 export interface IgeEntityBox2dCollisionListener {

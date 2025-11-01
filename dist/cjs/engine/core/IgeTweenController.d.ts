@@ -1,5 +1,5 @@
 import { IgeEventingClass } from "./IgeEventingClass.js"
-import type { IgeTween } from "./IgeTween.js";
+import type { IgeTween } from "./IgeTween.js"
 import type { IgeEntityBehaviourMethod } from "../../types/IgeEntityBehaviour.js"
 import type { IgeIsReadyPromise } from "../../types/IgeIsReadyPromise.js"
 /**

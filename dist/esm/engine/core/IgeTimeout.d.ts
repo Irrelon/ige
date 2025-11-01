@@ -1,5 +1,5 @@
 import type { IgeIntervalCallback } from "./IgeInterval.js"
-import { IgeInterval } from "./IgeInterval.js";
+import { IgeInterval } from "./IgeInterval.js"
 /**
  * Provides an alternative to setTimeout() which works based on the engine's internal
  * time system allowing timeouts to fire correctly, taking into account pausing the

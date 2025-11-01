@@ -1,5 +1,5 @@
 import { IgeComponent } from "../core/IgeComponent.js"
-import type { IgeEngine } from "../core/IgeEngine.js";
+import type { IgeEngine } from "../core/IgeEngine.js"
 import type { IgeEntityBehaviourMethod } from "../../types/IgeEntityBehaviour.js"
 export declare class IgeGamePadComponent extends IgeComponent<IgeEngine> {
     static componentTargetClass: string;

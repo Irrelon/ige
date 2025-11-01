@@ -1,5 +1,5 @@
 import { IgeBaseRenderer } from "./IgeBaseRenderer.js"
-import { IgeScene2d } from "./IgeScene2d.js"
+import { IgeScene2d } from "./IgeScene2d.js";
 import { PI180 } from "../utils/maths.js"
 import * as THREE from "three";
 export class IgeThreeJsRenderer extends IgeBaseRenderer {
@@ -148,6 +148,8 @@ export class IgeThreeJsRenderer extends IgeBaseRenderer {
     _transformObject(obj) {
         const mesh = this.getData(obj.meshData());
         if (!mesh)
+            return;
+        if (!obj._aabbDirty)
             return;
         mesh.position.x = this.normaliseX(obj._translate.x);
         mesh.position.y = this.normaliseY(obj._translate.y);
