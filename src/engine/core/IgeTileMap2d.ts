@@ -270,8 +270,9 @@ export class IgeTileMap2d<MapDataType = any> extends IgeEntity {
 	}
 
 	/**
-	 * Removes all data from the specified tile or area. If either the x or y arguments
-	 * are undefined, the function returns without taking any action.
+	 * Removes all occupation data from the specified tile or area.
+	 * If either the x or y arguments are undefined, the function
+	 * returns without taking any action.
 	 * @param {number=} x The x-coordinate of the tile or area.
 	 * @param {number=} y The y-coordinate of the tile or area.
 	 * @param {number=} width The width of the area (default is 1).
