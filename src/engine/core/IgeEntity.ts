@@ -3058,6 +3058,8 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 			nextTransform: IgeTimeStreamParsedTransformData,
 			i = 1;
 
+		// TODO: There is a bug here in that if no previous timestream data exists, the update
+		//   will never get actioned.
 		// Find the point in the time stream that is
 		// closest to the render time and assign the
 		// previous and next data points
