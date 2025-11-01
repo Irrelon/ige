@@ -6,6 +6,7 @@ import { IgeScene2d } from "@/engine/core/IgeScene2d";
 import type { IgeViewport } from "@/engine/core/IgeViewport";
 import { PI180 } from "@/engine/utils/maths";
 import * as THREE from "three";
+import type { Side } from "three/src/constants";
 
 export class IgeThreeJsRenderer extends IgeBaseRenderer {
 	classId = "IgeThreeJsRenderer";
@@ -20,6 +21,7 @@ export class IgeThreeJsRenderer extends IgeBaseRenderer {
 		pixelWidth: 1,
 		pixelHeight: 1
 	};
+	protected _pixelScaleDirty: boolean = true;
 
 	constructor () {
 		super();
@@ -83,6 +85,7 @@ export class IgeThreeJsRenderer extends IgeBaseRenderer {
 		this._threeJsRenderer.setPixelRatio(this._devicePixelRatio);
 
 		this._recalculatePixelScale();
+		this._pixelScaleDirty = true;
 	};
 
 	_renderEntities (entityArr?: IgeEntity[]) {
@@ -92,6 +95,7 @@ export class IgeThreeJsRenderer extends IgeBaseRenderer {
 			this._transformObject(child);
 			this._renderEntities(child.children() as IgeEntity[]);
 		});
+		this._pixelScaleDirty = false;
 	}
 
 	renderSceneGraph (engine: IgeEngine, viewports: IgeViewport[]): boolean {
@@ -143,15 +147,14 @@ export class IgeThreeJsRenderer extends IgeBaseRenderer {
 
 		if (!material) {
 			const finalMaterial: THREE.MeshBasicMaterialParameters = {
-				color: childMaterialData.color,
-				side: THREE.DoubleSide
+				side: childMaterialData.side !== undefined ? childMaterialData.side as Side : THREE.DoubleSide
 			};
 
-			// Create the material
-			if (childMaterialData.url) {
-				finalMaterial.map = new THREE.TextureLoader().load(childMaterialData.url);
-			}
+			if (childMaterialData.color) finalMaterial.color = childMaterialData.color;
+			if (childMaterialData.transparent) finalMaterial.transparent = childMaterialData.transparent;
+			if (childMaterialData.url) finalMaterial.map = new THREE.TextureLoader().load(childMaterialData.url);
 
+			// Create the material
 			material = new THREE.MeshBasicMaterial(finalMaterial);
 			this.setData(childMaterialData, material);
 		}
@@ -192,7 +195,7 @@ export class IgeThreeJsRenderer extends IgeBaseRenderer {
 	_transformObject (obj: IgeEntity) {
 		const mesh = this.getData<THREE.Mesh>(obj.meshData());
 		if (!mesh) return;
-		if (!obj._transformChanged) return;
+		if (!obj._transformChanged && !this._pixelScaleDirty) return;
 
 		mesh.position.x = this.normaliseX(obj._translate.x);
 		mesh.position.y = this.normaliseY(obj._translate.y);
