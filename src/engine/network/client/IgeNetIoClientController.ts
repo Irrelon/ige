@@ -259,18 +259,11 @@ export class IgeNetIoClientController extends IgeNetIoBaseController implements 
 	 * and data.
 	 * @param commandName
 	 * @param data
-	 * @param callback
 	 */
 	send<DataType = IgeNetworkMessageData> (
 		commandName: string,
-		data?: DataType,
-		callback?: IgeNetworkClientSideResponseHandler
+		data?: DataType
 	) {
-		if (callback) {
-			this.request(commandName, data, callback);
-			return;
-		}
-
 		const commandIndex = this._networkCommandsLookup[commandName];
 
 		if (commandIndex !== undefined) {
@@ -299,14 +292,14 @@ export class IgeNetIoClientController extends IgeNetIoBaseController implements 
 	 * @param {Object} data
 	 * @param {Function=} callback
 	 */
-	request<ResultType = any> (
+	request<RequestDataType = IgeNetworkMessageData, ResultDataType = IgeNetworkMessageData> (
 		commandName: string,
-		data: IgeNetworkMessageData,
-		callback?: IgeNetworkClientSideMessageHandler
-	): Promise<ResultType> {
-		return new Promise<ResultType>((resolve) => {
+		data: RequestDataType,
+		callback?: IgeNetworkClientSideMessageHandler<ResultDataType>
+	): Promise<ResultDataType> {
+		return new Promise<ResultDataType>((resolve) => {
 			// Build the request object
-			const req: IgeNetworkRequestMessageStructure<IgeNetworkClientSideMessageHandler> = {
+			const req: IgeNetworkRequestMessageStructure<IgeNetworkClientSideMessageHandler<ResultDataType>> = {
 				id: newIdHex(),
 				cmd: commandName,
 				data: data,
@@ -339,13 +332,13 @@ export class IgeNetIoClientController extends IgeNetIoBaseController implements 
 	 * @param {string} requestId
 	 * @param {Object} data
 	 */
-	response (requestId: string, data: IgeNetworkMessageData) {
+	response<ResultDataType = IgeNetworkMessageData> (requestId: string, data: ResultDataType) {
 		// Grab the original request object
 		const req = this._requests[requestId];
 
 		if (req) {
 			// Send the network response packet
-			this.send(IGE_NETWORK_RESPONSE, {
+			this.send<IgeNetworkMessageStructure<ResultDataType>>(IGE_NETWORK_RESPONSE, {
 				id: requestId,
 				cmd: req.cmd,
 				data: data
