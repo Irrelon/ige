@@ -1,5 +1,5 @@
 import type { IgeBaseClass } from "../core/IgeBaseClass.js"
-import type { IgeMixin } from "../../types/IgeMixin.js";
+import type { IgeMixin } from "../../types/IgeMixin.js"
 export declare const WithDataMixin: <BaseClassType extends IgeMixin<IgeBaseClass>>(Base: BaseClassType) => {
     new (...args: any[]): {
         _data: Record<string, any>;

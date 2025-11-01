@@ -1,9 +1,9 @@
 import { IgeBounds } from "./IgeBounds.js"
-import { IgeCamera } from "./IgeCamera.js";
+import { IgeCamera } from "./IgeCamera.js"
 import type { IgeObject } from "./IgeObject.js"
-import { IgePoint3d } from "./IgePoint3d.js";
+import { IgePoint3d } from "./IgePoint3d.js"
 import type { IgeScene2d } from "./IgeScene2d.js"
-import { IgeUiEntity } from "./IgeUiEntity.js";
+import { IgeUiEntity } from "./IgeUiEntity.js"
 import type { IgeCanRegisterById } from "../../types/IgeCanRegisterById.js"
 import type { IgeCanvasRenderingContext2d } from "../../types/IgeCanvasRenderingContext2d.js"
 export interface IgeViewportOptions {

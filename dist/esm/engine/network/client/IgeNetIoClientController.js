@@ -380,7 +380,9 @@ export class IgeNetIoClientController extends IgeNetIoBaseController {
                     //console.log("Creating ", classId, createDataArgs);
                     // The entity does not currently exist so create it!
                     const entity = new ClassConstructor(...createDataArgs).id(entityId).mount(parent);
+                    // Set the initial transform data so that the newly created entity is in the correctly place
                     entity.streamSectionData("transform", transformData, true);
+                    // Set the initial data after creation
                     entity.onStreamCreateInitialData(initialData);
                     // Set the just created flag which will stop the renderer
                     // from handling this entity until after the first stream
@@ -438,15 +440,17 @@ export class IgeNetIoClientController extends IgeNetIoBaseController {
         // Read the packet data into variables
         const sectionDataArr = data.split(this._sectionDesignator);
         const sectionDataCount = sectionDataArr.length - 1;
-        // We know the first bit of data will always be the
+        // We know the first section of data will always be the
         // target entity's ID
         const entityId = sectionDataArr.shift();
-        if (!entityId)
+        if (!entityId) {
+            this.log("+++ Stream: Data received without an entity id!");
             return;
+        }
         // Check if the entity with this ID currently exists
         const entity = ige.$(entityId);
         if (!entity) {
-            //this.log("+++ Stream: Data received for unknown entity (" + entityId + ")");
+            this.log("+++ Stream: Data received for unknown entity (" + entityId + ")");
             //this.stop();
             //ige.engine.stop();
             return;

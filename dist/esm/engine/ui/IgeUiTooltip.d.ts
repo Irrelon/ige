@@ -1,7 +1,7 @@
 import { IgeFontEntity } from "../core/IgeFontEntity.js"
-import type { IgeFontSheet } from "../core/IgeFontSheet.js";
+import type { IgeFontSheet } from "../core/IgeFontSheet.js"
 import type { IgeObject } from "../core/IgeObject.js"
-import { IgeUiElement } from "../core/IgeUiElement.js";
+import { IgeUiElement } from "../core/IgeUiElement.js"
 /**
  * Provides a UI tooltip. Change properties (textBox, fonts, backgroundcolor)
  * at free will.

@@ -1,9 +1,9 @@
 import { IgeBaseRenderer } from "./IgeBaseRenderer.js"
-import type { IgeEngine } from "./IgeEngine.js";
+import type { IgeEngine } from "./IgeEngine.js"
 import type { IgeEntity } from "./IgeEntity.js"
-import type { IgeObject } from "./IgeObject.js";
+import type { IgeObject } from "./IgeObject.js"
 import { IgeScene2d } from "./IgeScene2d.js"
-import type { IgeViewport } from "./IgeViewport.js";
+import type { IgeViewport } from "./IgeViewport.js"
 import * as THREE from "three";
 export declare class IgeThreeJsRenderer extends IgeBaseRenderer {
     classId: string;
