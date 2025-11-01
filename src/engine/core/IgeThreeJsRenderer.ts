@@ -192,6 +192,7 @@ export class IgeThreeJsRenderer extends IgeBaseRenderer {
 	_transformObject (obj: IgeEntity) {
 		const mesh = this.getData<THREE.Mesh>(obj.meshData());
 		if (!mesh) return;
+		if (!obj._transformChanged) return;
 
 		mesh.position.x = this.normaliseX(obj._translate.x);
 		mesh.position.y = this.normaliseY(obj._translate.y);
