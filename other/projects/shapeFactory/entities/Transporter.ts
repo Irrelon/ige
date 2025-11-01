@@ -354,12 +354,12 @@ export class Transporter extends WorkerUnit {
 		}
 	}
 
-	update (ctx: IgeCanvasRenderingContext2d, tickDelta: number) {
+	update (tickDelta: number) {
 		if (isServer) {
 			this._updateOnServer();
 		}
 
-		super.update(ctx, tickDelta);
+		super.update(tickDelta);
 	}
 }
 
