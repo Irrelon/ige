@@ -57,7 +57,7 @@ class IgeUiElement extends IgeUiEntity_1.IgeUiEntity {
             }
         });
         this.on("pointerUp", (event, evc) => {
-            console.log("Pointer up on element", event, evc);
+            //console.log("Pointer up on element", this, event, evc);
             if (this._allowFocus) {
                 // Try to focus the entity
                 if (this.focus()) {

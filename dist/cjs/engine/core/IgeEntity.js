@@ -2137,6 +2137,8 @@ class IgeEntity extends IgeObject_1.IgeObject {
         const timeStream = this._timeStream;
         const currentTransform = [];
         let previousData, nextData, dataDelta, offsetDelta, currentTime, previousTransform, nextTransform, i = 1;
+        // TODO: There is a bug here in that if no previous timestream data exists, the update
+        //   will never get actioned.
         // Find the point in the time stream that is
         // closest to the render time and assign the
         // previous and next data points
@@ -2167,6 +2169,26 @@ class IgeEntity extends IgeObject_1.IgeObject {
                      */
                     this.emit("interpolationLag");
                 }
+            }
+            else if (timeStream.length === 1) {
+                // Handle the case where there's only one timestream entry
+                const singleData = timeStream[0];
+                // Only apply if the timestamp is older than or equal to renderTime
+                // If it's newer, we should wait for more data to interpolate properly
+                if (singleData[0] <= renderTime) {
+                    // Apply the transform directly without interpolation
+                    const transform = singleData[1].map(parseFloat);
+                    this.translateTo(transform[0], transform[1], transform[2]);
+                    this.scaleTo(transform[3], transform[4], transform[5]);
+                    this.rotateTo(transform[6], transform[7], transform[8]);
+                    // Remove the processed entry
+                    timeStream.shift();
+                    // Record the last update time
+                    this._lastUpdate = new Date().getTime();
+                    return;
+                }
+                // If the single entry is newer than renderTime, don't process it yet
+                // Wait for more data or let it be processed in a future frame
             }
         }
         else {
