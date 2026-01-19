@@ -408,10 +408,12 @@ export class Client extends IgeBaseClass implements IgeCanInit {
 					this.log("Switched to perspective camera mode");
 					break;
 				case "o":
-					// Switch to orthographic mode (keep animation)
+					// Switch to orthographic mode (re-enable camera animation)
 					this.camera.projectionType("orthographic");
+					this.camera._lookAt = undefined; // Clear lookAt to use default
 					this.isPerspective = false;
-					this.updateStatus("Orthographic Mode - P/O/L/1/2/3/4");
+					this.cameraAnimationEnabled = true; // Re-enable orbiting
+					this.updateStatus("Orthographic Mode (Orbiting) - P/O/L/1/2/3/4");
 					this.log("Switched to orthographic camera mode");
 					break;
 				case "1":
