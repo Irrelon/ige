@@ -1,0 +1,6 @@
+/**
+ * Basic 3D model vertex shader.
+ * Supports position, normal, and UV attributes.
+ * This is a simple shader for Phase 1; PBR lighting will be added in Phase 3.
+ */
+export declare const modelVertexShader = "\nprecision mediump float;\n\n// Vertex attributes\nattribute vec3 a_position; // Vertex position\nattribute vec3 a_normal;   // Vertex normal\nattribute vec2 a_uv;       // Texture coordinates\n\n// Uniforms\nuniform mat4 u_worldMatrix;      // Entity world transform matrix\nuniform mat4 u_viewMatrix;       // Camera view matrix\nuniform mat4 u_projectionMatrix; // Camera projection matrix\nuniform mat4 u_normalMatrix;     // Normal transformation matrix (inverse transpose of world)\n\n// Varyings\nvarying vec3 v_worldPosition;\nvarying vec3 v_worldNormal;\nvarying vec2 v_uv;\n\nvoid main() {\n\t// Transform position to world space\n\tvec4 worldPos = u_worldMatrix * vec4(a_position, 1.0);\n\tv_worldPosition = worldPos.xyz;\n\n\t// Transform normal to world space\n\tv_worldNormal = normalize((u_normalMatrix * vec4(a_normal, 0.0)).xyz);\n\n\t// Pass through UV coordinates\n\tv_uv = a_uv;\n\n\t// Transform to clip space\n\tgl_Position = u_projectionMatrix * u_viewMatrix * worldPos;\n}\n";

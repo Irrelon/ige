@@ -3,6 +3,7 @@ import { IgeBounds } from "@/engine/core/IgeBounds";
 import { IgeDummyCanvas } from "@/engine/core/IgeDummyCanvas";
 import { IgeEventingClass } from "@/engine/core/IgeEventingClass";
 import { IgeMatrix2d } from "@/engine/core/IgeMatrix2d";
+import { IgeMatrix4 } from "@/engine/core/IgeMatrix4";
 import { IgePoint2d } from "@/engine/core/IgePoint2d";
 import { IgePoint3d } from "@/engine/core/IgePoint3d";
 import { IgePoly2d } from "@/engine/core/IgePoly2d";
@@ -39,6 +40,7 @@ import type { IgeGeometryData3d } from "@/types/IgeGeometryData3d";
 import type { IgeInputEventHandler } from "@/types/IgeInputEventHandler";
 import type { IgeMaterialData } from "@/types/IgeMaterialData";
 import type { IgeMeshData3d } from "@/types/IgeMeshData3d";
+import type { IgeGltfModel } from "@/engine/webgl/IgeGltfLoader";
 import type { IgeStreamCreateMessageData } from "@/types/IgeNetworkStream";
 import type { IgePoint } from "@/types/IgePoint";
 import type { IgeSmartTexture } from "@/types/IgeSmartTexture";
@@ -127,6 +129,9 @@ export class IgeObject extends IgeEventingClass implements IgeCanRegisterById, I
 	_localMatrix: IgeMatrix2d;
 	_worldMatrix: IgeMatrix2d;
 	_oldWorldMatrix: IgeMatrix2d;
+	_localMatrix4?: IgeMatrix4; // 4x4 matrix for 3D rendering (WebGL)
+	_worldMatrix4?: IgeMatrix4; // 4x4 world matrix for 3D rendering (WebGL)
+	_oldWorldMatrix4?: IgeMatrix4; // Previous 4x4 world matrix for change detection
 	_adjustmentMatrix?: IgeMatrix2d;
 	_hidden: boolean;
 	_cache: boolean = false;
@@ -159,6 +164,7 @@ export class IgeObject extends IgeEventingClass implements IgeCanRegisterById, I
 	_geometryData: IgeGeometryData3d | null = IgeQuadGeometry; // Default to a basic quad (square)
 	_materialData: IgeMaterialData | null = null;
 	_meshData: IgeMeshData3d | null = null;
+	_model?: IgeGltfModel;
 	_deathCallBack?: (...args: any[]) => void; // TODO: Rename this to _deathCallback (lower case B)
 	components: Record<string, IgeComponent<IgeObject>> = {};
 

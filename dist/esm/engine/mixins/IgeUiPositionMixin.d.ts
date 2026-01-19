@@ -1,5 +1,5 @@
 import type { IgeObject } from "../core/IgeObject.js"
-import type { IgeMixin } from "../../types/IgeMixin.js"
+import type { IgeMixin } from "../../types/IgeMixin.js";
 export declare const WithUiPositionMixin: <BaseClassType extends IgeMixin<IgeObject>>(Base: BaseClassType) => {
     new (...args: any[]): {
         _uiLeft?: number;
@@ -196,6 +196,9 @@ export declare const WithUiPositionMixin: <BaseClassType extends IgeMixin<IgeObj
         _localMatrix: import("../..").IgeMatrix2d;
         _worldMatrix: import("../..").IgeMatrix2d;
         _oldWorldMatrix: import("../..").IgeMatrix2d;
+        _localMatrix4?: import("../core/IgeMatrix4").IgeMatrix4;
+        _worldMatrix4?: import("../core/IgeMatrix4").IgeMatrix4;
+        _oldWorldMatrix4?: import("../core/IgeMatrix4").IgeMatrix4;
         _adjustmentMatrix?: import("../..").IgeMatrix2d;
         _hidden: boolean;
         _cache: boolean;

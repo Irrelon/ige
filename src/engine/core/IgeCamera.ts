@@ -21,6 +21,15 @@ export class IgeCamera extends IgeEntity {
 	_trackTranslateRounding?: boolean;
 	_limit?: IgeBounds;
 
+	// 3D camera properties for WebGL renderer
+	_projectionType: "perspective" | "orthographic" = "perspective";
+	_fov: number = 60; // Field of view in degrees (for perspective)
+	_near: number = 0.1; // Near clipping plane
+	_far: number = 1000; // Far clipping plane
+	_orthoSize: number = 10; // Height of orthographic view
+	_lookAt?: IgePoint3d; // 3D point the camera looks at
+	_preset?: string; // Current camera preset name
+
 	constructor (viewport: IgeViewport) {
 		super();
 
@@ -406,6 +415,163 @@ export class IgeCamera extends IgeEntity {
 		}
 
 		return str;
+	}
+
+	/**
+	 * Gets / sets the camera projection type for 3D rendering.
+	 * @param {string=} type Either "perspective" or "orthographic".
+	 * @return {*}
+	 */
+	projectionType (type?: "perspective" | "orthographic") {
+		if (type !== undefined) {
+			this._projectionType = type;
+			return this;
+		}
+
+		return this._projectionType;
+	}
+
+	/**
+	 * Gets / sets the camera field of view in degrees (for perspective projection).
+	 * @param {number=} degrees Field of view in degrees.
+	 * @return {*}
+	 */
+	fov (degrees?: number) {
+		if (degrees !== undefined) {
+			this._fov = degrees;
+			return this;
+		}
+
+		return this._fov;
+	}
+
+	/**
+	 * Gets / sets the camera near clipping plane distance.
+	 * @param {number=} distance Near plane distance.
+	 * @return {*}
+	 */
+	near (distance?: number) {
+		if (distance !== undefined) {
+			this._near = distance;
+			return this;
+		}
+
+		return this._near;
+	}
+
+	/**
+	 * Gets / sets the camera far clipping plane distance.
+	 * @param {number=} distance Far plane distance.
+	 * @return {*}
+	 */
+	far (distance?: number) {
+		if (distance !== undefined) {
+			this._far = distance;
+			return this;
+		}
+
+		return this._far;
+	}
+
+	/**
+	 * Gets / sets the camera orthographic view size (height).
+	 * @param {number=} size Orthographic view height.
+	 * @return {*}
+	 */
+	orthoSize (size?: number) {
+		if (size !== undefined) {
+			this._orthoSize = size;
+			return this;
+		}
+
+		return this._orthoSize;
+	}
+
+	/**
+	 * Gets / sets the 3D point the camera looks at.
+	 * Used by WebGL renderer for view matrix calculation.
+	 * @param {IgePoint3d=} point The point to look at.
+	 * @return {*}
+	 */
+	lookAtPoint (point?: IgePoint3d) {
+		if (point !== undefined) {
+			this._lookAt = point;
+			return this;
+		}
+
+		return this._lookAt;
+	}
+
+	/**
+	 * Applies a camera preset configuration.
+	 * Available presets:
+	 * - "isometric": Classic isometric view (35.264° pitch, orthographic)
+	 * - "isometric45": Isometric rotated 45° around Y
+	 * - "topDown": Top-down orthographic view
+	 * - "sideScroller": Side view for 2D platformers
+	 *
+	 * @param {string} presetName The name of the preset to apply.
+	 * @param {number=} distance Distance from the look-at target (default: 500).
+	 * @return {*}
+	 */
+	preset (presetName?: string, distance: number = 500) {
+		if (presetName !== undefined) {
+			this._preset = presetName;
+
+			// Isometric angle: arctan(1/√2) ≈ 35.264°
+			const isoAngle = Math.atan(1 / Math.sqrt(2));
+
+			switch (presetName) {
+				case "isometric":
+					// Classic isometric: camera pitched down at ~35.264°
+					// Looking at origin from a diagonal position
+					this._projectionType = "orthographic";
+					this._lookAt = { x: 0, y: 0, z: 0 } as IgePoint3d;
+					// Position camera at isometric angle
+					// Y = distance * sin(isoAngle), Z = distance * cos(isoAngle)
+					this._translate.x = 0;
+					this._translate.y = distance * Math.sin(isoAngle);
+					this._translate.z = distance * Math.cos(isoAngle);
+					break;
+
+				case "isometric45":
+					// Isometric rotated 45° around Y axis
+					this._projectionType = "orthographic";
+					this._lookAt = { x: 0, y: 0, z: 0 } as IgePoint3d;
+					const angle45 = Math.PI / 4; // 45 degrees
+					const horizontalDist = distance * Math.cos(isoAngle);
+					this._translate.x = horizontalDist * Math.sin(angle45);
+					this._translate.y = distance * Math.sin(isoAngle);
+					this._translate.z = horizontalDist * Math.cos(angle45);
+					break;
+
+				case "topDown":
+					// Top-down view (looking straight down)
+					this._projectionType = "orthographic";
+					this._lookAt = { x: 0, y: 0, z: 0 } as IgePoint3d;
+					this._translate.x = 0;
+					this._translate.y = distance;
+					this._translate.z = 0.001; // Slight offset to avoid gimbal lock
+					break;
+
+				case "sideScroller":
+					// Side view (classic 2D platformer perspective)
+					this._projectionType = "orthographic";
+					this._lookAt = { x: 0, y: 0, z: 0 } as IgePoint3d;
+					this._translate.x = 0;
+					this._translate.y = 0;
+					this._translate.z = distance;
+					break;
+
+				default:
+					console.warn(`Unknown camera preset: ${presetName}`);
+					break;
+			}
+
+			return this;
+		}
+
+		return this._preset;
 	}
 }
 

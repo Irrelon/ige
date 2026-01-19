@@ -1,6 +1,7 @@
 import { IgeBounds } from "./IgeBounds.js"
 import { IgeDummyCanvas } from "./IgeDummyCanvas.js"
 import { IgeMatrix2d } from "./IgeMatrix2d.js"
+import { IgeMatrix4 } from "./IgeMatrix4.js"
 import { IgeObject } from "./IgeObject.js"
 import { IgePoint2d } from "./IgePoint2d.js"
 import { IgePoint3d } from "./IgePoint3d.js"
@@ -113,6 +114,45 @@ export class IgeEntity extends IgeObject {
         }
         else {
             this._transformChanged = false;
+        }
+        // Compute 4x4 matrices for 3D rendering when using WebGL renderer
+        if (ige.engine.renderer()?.classId === "IgeWebGlRenderer") {
+            // Initialize 4x4 matrices if not already created
+            if (!this._localMatrix4) {
+                this._localMatrix4 = new IgeMatrix4();
+                this._worldMatrix4 = new IgeMatrix4();
+                this._oldWorldMatrix4 = new IgeMatrix4();
+            }
+            // Build local transform matrix: T * R * S * Origin
+            this._localMatrix4.identity();
+            // Apply translation
+            this._localMatrix4.translateBy(this._translate.x, this._translate.y, this._translate.z);
+            // Apply rotation (ZYX order - standard for game engines)
+            // Note: IGE uses radians
+            if (this._rotate.z !== 0)
+                this._localMatrix4.rotateZBy(this._rotate.z);
+            if (this._rotate.y !== 0)
+                this._localMatrix4.rotateYBy(this._rotate.y);
+            if (this._rotate.x !== 0)
+                this._localMatrix4.rotateXBy(this._rotate.x);
+            // Apply scale
+            this._localMatrix4.scaleBy(this._scale.x, this._scale.y, this._scale.z);
+            // Apply origin offset (move pivot point)
+            if (this._origin.x !== 0.5 || this._origin.y !== 0.5 || this._origin.z !== 0.5) {
+                this._localMatrix4.translateBy(this._bounds2d.x * (0.5 - this._origin.x), this._bounds2d.y * (0.5 - this._origin.y), (this._bounds3d.z || 0) * (0.5 - this._origin.z));
+            }
+            // Compute world matrix by multiplying with parent's world matrix
+            if (this._parent && this._parent._worldMatrix4) {
+                this._worldMatrix4.copy(this._parent._worldMatrix4);
+                this._worldMatrix4.multiply(this._localMatrix4);
+            }
+            else {
+                this._worldMatrix4.copy(this._localMatrix4);
+            }
+            // Check if the 4x4 world matrix has changed
+            if (!this._worldMatrix4.compare(this._oldWorldMatrix4)) {
+                this._oldWorldMatrix4.copy(this._worldMatrix4);
+            }
         }
         // Check if the geometry has changed and if so, update the aabb dirty
         if (!this._oldBounds2d.compare(this._bounds2d)) {

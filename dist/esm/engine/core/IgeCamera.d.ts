@@ -1,9 +1,9 @@
 import { IgeEntity } from "./IgeEntity.js"
-import type { IgePoint3d } from "./IgePoint3d.js"
+import type { IgePoint3d } from "./IgePoint3d.js";
 import type { IgeBounds } from "./IgeBounds.js"
-import type { IgeViewport } from "./IgeViewport.js"
+import type { IgeViewport } from "./IgeViewport.js";
 import type { IgeTweenEasingFunctions } from "../utils/easing.js"
-import type { IgeCanvasRenderingContext2d } from "../../types/IgeCanvasRenderingContext2d.js"
+import type { IgeCanvasRenderingContext2d } from "../../types/IgeCanvasRenderingContext2d.js";
 /**
  * Creates a new camera that will be attached to a viewport.
  */
@@ -16,6 +16,13 @@ export declare class IgeCamera extends IgeEntity {
     _trackTranslateSmoothing?: number;
     _trackTranslateRounding?: boolean;
     _limit?: IgeBounds;
+    _projectionType: "perspective" | "orthographic";
+    _fov: number;
+    _near: number;
+    _far: number;
+    _orthoSize: number;
+    _lookAt?: IgePoint3d;
+    _preset?: string;
     constructor(viewport: IgeViewport);
     /**
      * Gets / sets the rectangle that the camera translate
@@ -130,4 +137,54 @@ export declare class IgeCamera extends IgeEntity {
      * @return {string}
      */
     _stringify(): string;
+    /**
+     * Gets / sets the camera projection type for 3D rendering.
+     * @param {string=} type Either "perspective" or "orthographic".
+     * @return {*}
+     */
+    projectionType(type?: "perspective" | "orthographic"): this | "perspective" | "orthographic";
+    /**
+     * Gets / sets the camera field of view in degrees (for perspective projection).
+     * @param {number=} degrees Field of view in degrees.
+     * @return {*}
+     */
+    fov(degrees?: number): number | this;
+    /**
+     * Gets / sets the camera near clipping plane distance.
+     * @param {number=} distance Near plane distance.
+     * @return {*}
+     */
+    near(distance?: number): number | this;
+    /**
+     * Gets / sets the camera far clipping plane distance.
+     * @param {number=} distance Far plane distance.
+     * @return {*}
+     */
+    far(distance?: number): number | this;
+    /**
+     * Gets / sets the camera orthographic view size (height).
+     * @param {number=} size Orthographic view height.
+     * @return {*}
+     */
+    orthoSize(size?: number): number | this;
+    /**
+     * Gets / sets the 3D point the camera looks at.
+     * Used by WebGL renderer for view matrix calculation.
+     * @param {IgePoint3d=} point The point to look at.
+     * @return {*}
+     */
+    lookAtPoint(point?: IgePoint3d): this | IgePoint3d | undefined;
+    /**
+     * Applies a camera preset configuration.
+     * Available presets:
+     * - "isometric": Classic isometric view (35.264° pitch, orthographic)
+     * - "isometric45": Isometric rotated 45° around Y
+     * - "topDown": Top-down orthographic view
+     * - "sideScroller": Side view for 2D platformers
+     *
+     * @param {string} presetName The name of the preset to apply.
+     * @param {number=} distance Distance from the look-at target (default: 500).
+     * @return {*}
+     */
+    preset(presetName?: string, distance?: number): string | this | undefined;
 }

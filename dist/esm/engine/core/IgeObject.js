@@ -95,6 +95,9 @@ export class IgeObject extends IgeEventingClass {
     _localMatrix;
     _worldMatrix;
     _oldWorldMatrix;
+    _localMatrix4; // 4x4 matrix for 3D rendering (WebGL)
+    _worldMatrix4; // 4x4 world matrix for 3D rendering (WebGL)
+    _oldWorldMatrix4; // Previous 4x4 world matrix for change detection
     _adjustmentMatrix;
     _hidden;
     _cache = false;

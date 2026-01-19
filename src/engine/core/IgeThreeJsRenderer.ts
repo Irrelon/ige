@@ -150,7 +150,18 @@ export class IgeThreeJsRenderer extends IgeBaseRenderer {
 				side: childMaterialData.side !== undefined ? childMaterialData.side as Side : THREE.DoubleSide
 			};
 
-			if (childMaterialData.color) finalMaterial.color = childMaterialData.color;
+			if (childMaterialData.color) {
+				// Handle color as object {r,g,b,a} or CSS string
+				if (typeof childMaterialData.color === "object") {
+					finalMaterial.color = new THREE.Color(
+						childMaterialData.color.r,
+						childMaterialData.color.g,
+						childMaterialData.color.b
+					);
+				} else {
+					finalMaterial.color = childMaterialData.color;
+				}
+			}
 			if (childMaterialData.transparent) finalMaterial.transparent = childMaterialData.transparent;
 			if (childMaterialData.url) finalMaterial.map = new THREE.TextureLoader().load(childMaterialData.url);
 
