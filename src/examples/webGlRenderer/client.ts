@@ -169,9 +169,15 @@ export class Client extends IgeBaseClass implements IgeCanInit {
 		this.directionalLight.lightColor(1.0, 0.95, 0.8); // Warm white
 		this.directionalLight.intensity(1.2); // Increased intensity
 		this.directionalLight.direction(-0.3, -0.8, -0.5); // Better angle for cubes
+		this.directionalLight.shadowBias(0.005); // Set shadow bias to reduce shadow acne
 		this.directionalLight.mount(this.scene);
 		lightManager.addLight(this.directionalLight);
 		this.log("Directional light created");
+
+		// Enable shadows for the directional light (disabled for now - debugging)
+		// if (this.renderer.enableShadows(this.directionalLight, 1024)) {
+		// 	this.log("Shadows enabled (1024x1024 shadow map)");
+		// }
 
 		// Create point light - orbiting light source
 		this.pointLight = new IgePointLight();
@@ -472,10 +478,52 @@ export class Client extends IgeBaseClass implements IgeCanInit {
 					// Toggle lighting
 					this.toggleLighting();
 					break;
+				case "s":
+					// Toggle shadows
+					this.toggleShadows();
+					break;
+				case "d":
+					// Cycle shadow debug mode
+					this.cycleShadowDebugMode();
+					break;
 			}
 		});
 
-		this.log("Controls: P=Perspective, O=Orthographic, L=Toggle Lighting, 1-4=Presets");
+		this.log("Controls: P=Perspective, O=Orthographic, L=Toggle Lighting, S=Toggle Shadows, D=Debug Shadows, 1-4=Presets");
+	}
+
+	toggleShadows() {
+		if (!this.renderer || !this.directionalLight) return;
+
+		if (this.renderer.shadowsEnabled()) {
+			this.renderer.disableShadows();
+			this.updateStatus("Shadows Disabled - Press S to enable");
+			this.log("Shadows disabled");
+		} else {
+			if (this.renderer.enableShadows(this.directionalLight, 1024)) {
+				this.updateStatus("Shadows Enabled - Press S to disable");
+				this.log("Shadows enabled");
+			}
+		}
+	}
+
+	cycleShadowDebugMode() {
+		if (!this.renderer) return;
+
+		const debugModes = [
+			"Normal Rendering",
+			"Debug: UV Coords (RG)",
+			"Debug: Fragment Depth",
+			"Debug: Shadow Map Depth",
+			"Debug: Comparison (R=shadow, G=lit)"
+		];
+
+		const currentMode = this.renderer.shadowDebugMode() as number;
+		const nextMode = (currentMode + 1) % debugModes.length;
+		this.renderer.shadowDebugMode(nextMode);
+
+		this.updateStatus(`Shadow ${debugModes[nextMode]}`);
+		this.log(`Shadow debug mode: ${nextMode} - ${debugModes[nextMode]}`);
 	}
 
 	toggleLighting() {

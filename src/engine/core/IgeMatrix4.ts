@@ -217,12 +217,26 @@ export class IgeMatrix4 extends IgeBaseClass {
 	/**
 	 * Multiplies this matrix by another matrix.
 	 * Result = this * m
+	 *
+	 * Can also be called with two matrices: multiply(a, b)
+	 * Result = a * b (stored in this matrix)
 	 */
-	multiply(m: IgeMatrix4): this {
-		const a = this.matrix;
-		const b = m.matrix;
+	multiply(m: IgeMatrix4, n?: IgeMatrix4): this {
+		let a: Float32Array;
+		let b: Float32Array;
 
-		// Store original values
+		if (n !== undefined) {
+			// multiply(a, b) - store result in this
+			a = m.matrix;
+			b = n.matrix;
+		} else {
+			// multiply(m) - this * m
+			a = this.matrix.slice() as unknown as Float32Array; // Copy to avoid overwrite during calculation
+			b = m.matrix;
+		}
+
+		const out = this.matrix;
+
 		const a00 = a[0], a01 = a[1], a02 = a[2], a03 = a[3];
 		const a10 = a[4], a11 = a[5], a12 = a[6], a13 = a[7];
 		const a20 = a[8], a21 = a[9], a22 = a[10], a23 = a[11];
@@ -234,25 +248,25 @@ export class IgeMatrix4 extends IgeBaseClass {
 		const b30 = b[12], b31 = b[13], b32 = b[14], b33 = b[15];
 
 		// Perform multiplication
-		a[0] = a00 * b00 + a10 * b01 + a20 * b02 + a30 * b03;
-		a[1] = a01 * b00 + a11 * b01 + a21 * b02 + a31 * b03;
-		a[2] = a02 * b00 + a12 * b01 + a22 * b02 + a32 * b03;
-		a[3] = a03 * b00 + a13 * b01 + a23 * b02 + a33 * b03;
+		out[0] = a00 * b00 + a10 * b01 + a20 * b02 + a30 * b03;
+		out[1] = a01 * b00 + a11 * b01 + a21 * b02 + a31 * b03;
+		out[2] = a02 * b00 + a12 * b01 + a22 * b02 + a32 * b03;
+		out[3] = a03 * b00 + a13 * b01 + a23 * b02 + a33 * b03;
 
-		a[4] = a00 * b10 + a10 * b11 + a20 * b12 + a30 * b13;
-		a[5] = a01 * b10 + a11 * b11 + a21 * b12 + a31 * b13;
-		a[6] = a02 * b10 + a12 * b11 + a22 * b12 + a32 * b13;
-		a[7] = a03 * b10 + a13 * b11 + a23 * b12 + a33 * b13;
+		out[4] = a00 * b10 + a10 * b11 + a20 * b12 + a30 * b13;
+		out[5] = a01 * b10 + a11 * b11 + a21 * b12 + a31 * b13;
+		out[6] = a02 * b10 + a12 * b11 + a22 * b12 + a32 * b13;
+		out[7] = a03 * b10 + a13 * b11 + a23 * b12 + a33 * b13;
 
-		a[8] = a00 * b20 + a10 * b21 + a20 * b22 + a30 * b23;
-		a[9] = a01 * b20 + a11 * b21 + a21 * b22 + a31 * b23;
-		a[10] = a02 * b20 + a12 * b21 + a22 * b22 + a32 * b23;
-		a[11] = a03 * b20 + a13 * b21 + a23 * b22 + a33 * b23;
+		out[8] = a00 * b20 + a10 * b21 + a20 * b22 + a30 * b23;
+		out[9] = a01 * b20 + a11 * b21 + a21 * b22 + a31 * b23;
+		out[10] = a02 * b20 + a12 * b21 + a22 * b22 + a32 * b23;
+		out[11] = a03 * b20 + a13 * b21 + a23 * b22 + a33 * b23;
 
-		a[12] = a00 * b30 + a10 * b31 + a20 * b32 + a30 * b33;
-		a[13] = a01 * b30 + a11 * b31 + a21 * b32 + a31 * b33;
-		a[14] = a02 * b30 + a12 * b31 + a22 * b32 + a32 * b33;
-		a[15] = a03 * b30 + a13 * b31 + a23 * b32 + a33 * b33;
+		out[12] = a00 * b30 + a10 * b31 + a20 * b32 + a30 * b33;
+		out[13] = a01 * b30 + a11 * b31 + a21 * b32 + a31 * b33;
+		out[14] = a02 * b30 + a12 * b31 + a22 * b32 + a32 * b33;
+		out[15] = a03 * b30 + a13 * b31 + a23 * b32 + a33 * b33;
 
 		return this;
 	}
@@ -321,15 +335,59 @@ export class IgeMatrix4 extends IgeBaseClass {
 
 	/**
 	 * Creates a look-at view matrix.
-	 * @param eye Camera position
-	 * @param target Target position to look at
-	 * @param up Up vector
+	 * @param eye Camera position (or eyeX if using individual coordinates)
+	 * @param target Target position to look at (or eyeY if using individual coordinates)
+	 * @param up Up vector (or eyeZ if using individual coordinates)
+	 * @param targetX Target X (when using individual coordinates)
+	 * @param targetY Target Y (when using individual coordinates)
+	 * @param targetZ Target Z (when using individual coordinates)
+	 * @param upX Up X (when using individual coordinates)
+	 * @param upY Up Y (when using individual coordinates)
+	 * @param upZ Up Z (when using individual coordinates)
 	 */
-	lookAt(eye: IgePoint3d, target: IgePoint3d, up: IgePoint3d): this {
+	lookAt(
+		eye: IgePoint3d | number,
+		target: IgePoint3d | number,
+		up: IgePoint3d | number,
+		targetX?: number,
+		targetY?: number,
+		targetZ?: number,
+		upX?: number,
+		upY?: number,
+		upZ?: number
+	): this {
+		let eyeX: number, eyeY: number, eyeZ: number;
+		let tgtX: number, tgtY: number, tgtZ: number;
+		let upVecX: number, upVecY: number, upVecZ: number;
+
+		if (typeof eye === "number") {
+			// Individual coordinates: lookAt(eyeX, eyeY, eyeZ, targetX, targetY, targetZ, upX, upY, upZ)
+			eyeX = eye;
+			eyeY = target as number;
+			eyeZ = up as number;
+			tgtX = targetX!;
+			tgtY = targetY!;
+			tgtZ = targetZ!;
+			upVecX = upX!;
+			upVecY = upY!;
+			upVecZ = upZ!;
+		} else {
+			// IgePoint3d objects
+			eyeX = eye.x;
+			eyeY = eye.y;
+			eyeZ = eye.z;
+			tgtX = (target as IgePoint3d).x;
+			tgtY = (target as IgePoint3d).y;
+			tgtZ = (target as IgePoint3d).z;
+			upVecX = (up as IgePoint3d).x;
+			upVecY = (up as IgePoint3d).y;
+			upVecZ = (up as IgePoint3d).z;
+		}
+
 		// Calculate forward vector (z-axis)
-		let zx = eye.x - target.x;
-		let zy = eye.y - target.y;
-		let zz = eye.z - target.z;
+		let zx = eyeX - tgtX;
+		let zy = eyeY - tgtY;
+		let zz = eyeZ - tgtZ;
 
 		// Normalize z
 		let len = Math.sqrt(zx * zx + zy * zy + zz * zz);
@@ -341,9 +399,9 @@ export class IgeMatrix4 extends IgeBaseClass {
 		}
 
 		// Calculate right vector (x-axis) = up × forward
-		let xx = up.y * zz - up.z * zy;
-		let xy = up.z * zx - up.x * zz;
-		let xz = up.x * zy - up.y * zx;
+		let xx = upVecY * zz - upVecZ * zy;
+		let xy = upVecZ * zx - upVecX * zz;
+		let xz = upVecX * zy - upVecY * zx;
 
 		// Normalize x
 		len = Math.sqrt(xx * xx + xy * xy + xz * xz);
@@ -376,9 +434,9 @@ export class IgeMatrix4 extends IgeBaseClass {
 		m[11] = 0.0;
 
 		// Translation: negative dot products of eye with each axis
-		m[12] = -(xx * eye.x + xy * eye.y + xz * eye.z); // -dot(right, eye)
-		m[13] = -(yx * eye.x + yy * eye.y + yz * eye.z); // -dot(up, eye)
-		m[14] = -(zx * eye.x + zy * eye.y + zz * eye.z); // -dot(forward, eye)
+		m[12] = -(xx * eyeX + xy * eyeY + xz * eyeZ); // -dot(right, eye)
+		m[13] = -(yx * eyeX + yy * eyeY + yz * eyeZ); // -dot(up, eye)
+		m[14] = -(zx * eyeX + zy * eyeY + zz * eyeZ); // -dot(forward, eye)
 		m[15] = 1.0;
 
 		return this;

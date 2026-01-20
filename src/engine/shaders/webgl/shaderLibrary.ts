@@ -4,6 +4,8 @@ import { modelVertexShader } from "@/engine/shaders/webgl/model.vert";
 import { modelFragmentShader } from "@/engine/shaders/webgl/model.frag";
 import { litVertexShader } from "@/engine/shaders/webgl/lit.vert";
 import { litFragmentShader } from "@/engine/shaders/webgl/lit.frag";
+import { shadowVertexShader } from "@/engine/shaders/webgl/shadow.vert";
+import { shadowFragmentShader } from "@/engine/shaders/webgl/shadow.frag";
 
 /**
  * Shader source definition.
@@ -81,4 +83,11 @@ IgeShaderLibrary.register(
 	litVertexShader,
 	litFragmentShader,
 	"PBR lit shader with support for 2D textures, smart textures, and PBR materials"
+);
+
+IgeShaderLibrary.register(
+	"shadow",
+	shadowVertexShader,
+	shadowFragmentShader,
+	"Shadow depth pass shader for shadow mapping"
 );

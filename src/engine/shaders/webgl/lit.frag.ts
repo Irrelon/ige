@@ -2,6 +2,7 @@
  * PBR Lit fragment shader.
  * Supports both simple 2D textures and full PBR material workflow.
  * Can handle ambient, directional, point, and spot lights.
+ * Supports shadow mapping for directional lights.
  *
  * For simple 2D textures (including smart textures):
  * - Just set u_baseColorTexture and u_baseColor
@@ -30,6 +31,7 @@ varying vec3 v_worldNormal;
 varying vec2 v_uv;
 varying vec3 v_viewDirection;
 varying mat3 v_TBN;
+varying vec4 v_lightSpacePos;
 
 // Material uniforms
 uniform sampler2D u_baseColorTexture;     // Diffuse/albedo texture (works for 2D textures and smart textures)
@@ -76,6 +78,14 @@ uniform float u_spotLightIntensities[MAX_SPOT_LIGHTS];
 uniform float u_spotLightRanges[MAX_SPOT_LIGHTS];
 uniform float u_spotLightAngles[MAX_SPOT_LIGHTS];     // Outer cone angle (cos)
 uniform float u_spotLightPenumbras[MAX_SPOT_LIGHTS];  // Penumbra amount
+
+// Shadow mapping uniforms
+uniform int u_hasShadowMap;           // Whether shadow map is active
+uniform sampler2D u_shadowMap;        // Shadow map texture
+uniform float u_shadowBias;           // Shadow bias to prevent acne
+uniform float u_shadowNormalBias;     // Normal-based bias
+uniform float u_shadowMapSize;        // Size of shadow map for PCF
+uniform int u_usePackedDepth;         // Whether depth is packed (WebGL 1)
 
 // Constants
 const float PI = 3.14159265359;
@@ -136,6 +146,113 @@ float calculateAttenuation(float distance, float range, float decay) {
 	// Smooth falloff at range boundary
 	float cutoff = clamp(1.0 - d, 0.0, 1.0);
 	return attenuation * cutoff * cutoff;
+}
+
+// ============================================================================
+// Shadow Mapping Functions
+// ============================================================================
+
+// Unpack depth from RGBA (WebGL 1)
+float unpackDepth(vec4 packedDepth) {
+	const vec4 bitShift = vec4(1.0 / (256.0 * 256.0 * 256.0), 1.0 / (256.0 * 256.0), 1.0 / 256.0, 1.0);
+	return dot(packedDepth, bitShift);
+}
+
+// Debug uniform - set to visualize different values:
+// 0 = normal shadow, 1 = projCoords.xy, 2 = projCoords.z, 3 = sampleDepth, 4 = comparison
+uniform int u_shadowDebug;
+
+// Calculate shadow factor using PCF (Percentage Closer Filtering)
+float calculateShadow(vec3 normal, vec3 lightDir) {
+	if (u_hasShadowMap == 0) return 1.0;
+
+	// Perform perspective divide
+	vec3 projCoords = v_lightSpacePos.xyz / v_lightSpacePos.w;
+
+	// Transform to [0,1] range
+	projCoords = projCoords * 0.5 + 0.5;
+
+	// Check if outside shadow map bounds
+	if (projCoords.z > 1.0 || projCoords.x < 0.0 || projCoords.x > 1.0 ||
+	    projCoords.y < 0.0 || projCoords.y > 1.0) {
+		return 1.0;
+	}
+
+	// Calculate bias based on surface angle to light
+	float cosTheta = max(dot(normal, lightDir), 0.0);
+	float bias = u_shadowBias + u_shadowNormalBias * (1.0 - cosTheta);
+
+	// Current fragment depth
+	float currentDepth = projCoords.z;
+
+	// Sample center depth for debug
+	float centerDepth;
+	if (u_usePackedDepth == 1) {
+		centerDepth = unpackDepth(texture2D(u_shadowMap, projCoords.xy));
+	} else {
+		centerDepth = texture2D(u_shadowMap, projCoords.xy).r;
+	}
+
+	// PCF sampling for soft shadows
+	float shadow = 0.0;
+	float texelSize = 1.0 / u_shadowMapSize;
+
+	// 3x3 PCF kernel
+	for (int x = -1; x <= 1; x++) {
+		for (int y = -1; y <= 1; y++) {
+			vec2 sampleCoord = projCoords.xy + vec2(float(x), float(y)) * texelSize;
+
+			float sampleDepth;
+			if (u_usePackedDepth == 1) {
+				// WebGL 1: unpack depth from RGBA
+				sampleDepth = unpackDepth(texture2D(u_shadowMap, sampleCoord));
+			} else {
+				// WebGL 2: read depth directly
+				sampleDepth = texture2D(u_shadowMap, sampleCoord).r;
+			}
+
+			shadow += (currentDepth - bias > sampleDepth) ? 0.0 : 1.0;
+		}
+	}
+
+	// Average the samples
+	shadow /= 9.0;
+
+	return shadow;
+}
+
+// Debug function to visualize shadow map values
+vec3 debugShadowValues(vec3 normal, vec3 lightDir) {
+	vec3 projCoords = v_lightSpacePos.xyz / v_lightSpacePos.w;
+	projCoords = projCoords * 0.5 + 0.5;
+
+	float centerDepth;
+	if (u_usePackedDepth == 1) {
+		centerDepth = unpackDepth(texture2D(u_shadowMap, projCoords.xy));
+	} else {
+		centerDepth = texture2D(u_shadowMap, projCoords.xy).r;
+	}
+
+	if (u_shadowDebug == 1) {
+		// Visualize projCoords.xy (should be 0-1 range, show as red/green)
+		return vec3(projCoords.x, projCoords.y, 0.0);
+	} else if (u_shadowDebug == 2) {
+		// Visualize projCoords.z (fragment depth in light space)
+		return vec3(projCoords.z, projCoords.z, projCoords.z);
+	} else if (u_shadowDebug == 3) {
+		// Visualize sampled depth from shadow map
+		return vec3(centerDepth, centerDepth, centerDepth);
+	} else if (u_shadowDebug == 4) {
+		// Visualize depth comparison (red = in shadow, green = lit)
+		float bias = u_shadowBias;
+		if (projCoords.z - bias > centerDepth) {
+			return vec3(1.0, 0.0, 0.0); // Red = in shadow
+		} else {
+			return vec3(0.0, 1.0, 0.0); // Green = lit
+		}
+	}
+
+	return vec3(0.0);
 }
 
 // ============================================================================
@@ -207,9 +324,10 @@ void main() {
 		// Ambient light
 		finalColor += u_ambientLightColor * u_ambientLightIntensity * albedo;
 
-		// Directional light
+		// Directional light with shadows
 		if (u_hasDirectionalLight == 1) {
-			finalColor += calculateSimpleDiffuse(N, u_directionalLightDir, u_directionalLightColor, u_directionalLightIntensity, albedo);
+			float shadow = calculateShadow(N, u_directionalLightDir);
+			finalColor += calculateSimpleDiffuse(N, u_directionalLightDir, u_directionalLightColor, u_directionalLightIntensity, albedo) * shadow;
 		}
 
 		// Point lights
@@ -265,10 +383,11 @@ void main() {
 		vec3 ambient = (kD * albedo + kS * 0.1) * u_ambientLightColor * u_ambientLightIntensity * ao;
 		finalColor += ambient;
 
-		// Directional light
+		// Directional light with shadows
 		if (u_hasDirectionalLight == 1) {
+			float shadow = calculateShadow(N, u_directionalLightDir);
 			vec3 radiance = u_directionalLightColor * u_directionalLightIntensity;
-			finalColor += calculatePBRLight(N, V, u_directionalLightDir, radiance, albedo, metallic, roughness);
+			finalColor += calculatePBRLight(N, V, u_directionalLightDir, radiance, albedo, metallic, roughness) * shadow;
 		}
 
 		// Point lights
@@ -311,6 +430,13 @@ void main() {
 
 	// Apply opacity
 	float finalAlpha = albedoColor.a * u_opacity;
+
+	// Debug output override - visualize shadow map values
+	if (u_shadowDebug > 0 && u_hasShadowMap == 1) {
+		vec3 debugColor = debugShadowValues(N, u_directionalLightDir);
+		gl_FragColor = vec4(debugColor, 1.0);
+		return;
+	}
 
 	// Output final color (no gamma correction - let the display handle it)
 	gl_FragColor = vec4(finalColor, finalAlpha);

@@ -12,10 +12,12 @@ import { IgeWebGlCameraController } from "@/engine/webgl/IgeWebGlCameraControlle
 import { IgeWebGlRenderBatchManager } from "@/engine/webgl/IgeWebGlRenderBatchManager";
 import { IgeWebGlStateManager } from "@/engine/webgl/IgeWebGlStateManager";
 import { IgeWebGlLightManager } from "@/engine/webgl/IgeWebGlLightManager";
+import { IgeWebGlShadowManager } from "@/engine/webgl/IgeWebGlShadowManager";
 import { IgeShaderLibrary } from "@/engine/shaders/webgl/shaderLibrary";
 import type { IgeObject } from "@/engine/core/IgeObject";
 import type { IgeEntity } from "@/engine/core/IgeEntity";
 import { IgePoint3d } from "@/engine/core/IgePoint3d";
+import type { IgeDirectionalLight } from "@/engine/webgl/IgeWebGlLight";
 
 /**
  * Custom WebGL renderer for IGE supporting full 3D rendering.
@@ -54,6 +56,14 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 	protected _cameraController?: IgeWebGlCameraController;
 	protected _stateManager?: IgeWebGlStateManager;
 	protected _lightManager?: IgeWebGlLightManager;
+	protected _shadowManager?: IgeWebGlShadowManager;
+
+	// Shadow-casting directional light reference
+	protected _shadowCastingLight?: IgeDirectionalLight;
+	protected _shadowLightId: string = "mainDirectionalLight";
+
+	// Shadow debug mode (0 = off, 1-4 = different visualizations)
+	protected _shadowDebugMode: number = 0;
 
 	/**
 	 * Initialize the WebGL renderer.
@@ -84,6 +94,11 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 		this._cameraController = new IgeWebGlCameraController();
 		this._stateManager = new IgeWebGlStateManager(this._canvasContext);
 		this._lightManager = new IgeWebGlLightManager();
+		this._shadowManager = new IgeWebGlShadowManager(
+			this._canvasContext,
+			this._resourceManager,
+			this._webglVersion
+		);
 
 		// Compile built-in shaders
 		this._compileBuiltInShaders();
@@ -359,19 +374,6 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 		const vpWidth = Math.floor(viewport._bounds2d.x * dpr);
 		const vpHeight = Math.floor(viewport._bounds2d.y * dpr);
 
-		// Set viewport (using device pixels)
-		this._stateManager.setViewport(vpX, vpY, vpWidth, vpHeight);
-
-		// Enable scissor test for viewport clipping
-		if (viewport._clipping) {
-			this._stateManager.setScissorTest(true);
-			this._stateManager.setScissorBox(vpX, vpY, vpWidth, vpHeight);
-		}
-
-		// Clear viewport area
-		gl.clearColor(0.0, 0.0, 0.0, 0.0);
-		gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-
 		// Get camera and update matrices
 		const camera = viewport.camera;
 		if (!camera) {
@@ -397,6 +399,38 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 		};
 		this._renderBatchManager.prepareForRendering(cameraPos);
 
+		// ============================================================
+		// SHADOW PASS: Render scene from light's perspective
+		// ============================================================
+		if (this.shadowsEnabled() && this._shadowManager && this._shadowCastingLight) {
+			this._renderShadowPass(matrices, cameraPos);
+
+			// Reset state manager after shadow pass - the shadow pass changes GL state
+			// directly (framebuffer, viewport, depth func, cull face) which puts the
+			// state manager's cached state out of sync with actual GL state
+			this._stateManager.reset();
+
+			// Restore depth function to LEQUAL (shadow pass uses LESS)
+			gl.depthFunc(gl.LEQUAL);
+		}
+
+		// ============================================================
+		// MAIN RENDER PASS
+		// ============================================================
+
+		// Set viewport (using device pixels)
+		this._stateManager.setViewport(vpX, vpY, vpWidth, vpHeight);
+
+		// Enable scissor test for viewport clipping
+		if (viewport._clipping) {
+			this._stateManager.setScissorTest(true);
+			this._stateManager.setScissorBox(vpX, vpY, vpWidth, vpHeight);
+		}
+
+		// Clear viewport area
+		gl.clearColor(0.0, 0.0, 0.0, 0.0);
+		gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+
 		// Render opaque objects first (front to back for early Z rejection)
 		this._renderOpaqueBatches(matrices, viewport);
 
@@ -407,6 +441,70 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 		if (viewport._clipping) {
 			this._stateManager.setScissorTest(false);
 		}
+	}
+
+	/**
+	 * Render shadow pass - renders scene from light's perspective to shadow map.
+	 */
+	protected _renderShadowPass(
+		matrices: any,
+		cameraPos: { x: number; y: number; z: number }
+	): void {
+		if (!this._shadowManager || !this._shadowCastingLight || !this._shaderManager || !this._geometryManager || !this._renderBatchManager) {
+			return;
+		}
+
+		const gl = this._canvasContext!;
+
+		// Update light space matrix
+		const lightSpaceMatrix = this._shadowManager.updateLightSpaceMatrix(
+			this._shadowLightId,
+			this._shadowCastingLight,
+			cameraPos
+		);
+
+		if (!lightSpaceMatrix) {
+			return;
+		}
+
+		// Begin shadow pass (binds framebuffer, sets viewport, clears depth)
+		if (!this._shadowManager.beginShadowPass(this._shadowLightId)) {
+			return;
+		}
+
+		// Get shadow shader
+		const shadowProgram = this._shaderManager.getProgram("shadow");
+		if (!shadowProgram) {
+			this._shadowManager.endShadowPass();
+			return;
+		}
+
+		// Use shadow shader
+		shadowProgram.use();
+
+		// Set light space matrix
+		shadowProgram.setUniformMatrix4fv("u_lightSpaceMatrix", lightSpaceMatrix);
+
+		// Render all opaque models to shadow map
+		const renderBatchShadow = (batch: any) => {
+			this._geometryManager!.bindGeometry(batch.geometry, shadowProgram!);
+
+			for (const entity of batch.entities) {
+				if (entity._worldMatrix4) {
+					shadowProgram!.setUniformMatrix4fv("u_worldMatrix", entity._worldMatrix4.matrix);
+				}
+
+				this._geometryManager!.drawGeometry(batch.geometry);
+			}
+
+			this._geometryManager!.unbindGeometry(batch.geometry, shadowProgram!);
+		};
+
+		// Only render opaque models to shadow map (shadows from opaque geometry only)
+		this._renderBatchManager.renderOpaqueModels(shadowProgram, renderBatchShadow);
+
+		// End shadow pass (restores default framebuffer)
+		this._shadowManager.endShadowPass();
 	}
 
 	/**
@@ -665,6 +763,29 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 				this._lightManager.applyLightUniforms(shaderProgram);
 			}
 
+			// Apply shadow uniforms if shadows are enabled
+			if (this.shadowsEnabled() && this._shadowManager) {
+				this._shadowManager.applyShadowUniforms(shaderProgram, this._shadowLightId, 1);
+				// Set light space matrix for vertex shader
+				const lightSpaceMatrix = this._shadowManager.getLightSpaceMatrix(this._shadowLightId);
+				if (lightSpaceMatrix) {
+					shaderProgram.setUniformMatrix4fv("u_lightSpaceMatrix", lightSpaceMatrix);
+				}
+				// Set shadow debug mode
+				shaderProgram.setUniform1i("u_shadowDebug", this._shadowDebugMode);
+			} else {
+				// Disable shadows in shader
+				shaderProgram.setUniform1i("u_hasShadowMap", 0);
+				shaderProgram.setUniform1i("u_shadowDebug", 0);
+				// Set identity matrix for light space when shadows disabled
+				shaderProgram.setUniformMatrix4fv("u_lightSpaceMatrix", new Float32Array([
+					1, 0, 0, 0,
+					0, 1, 0, 0,
+					0, 0, 1, 0,
+					0, 0, 0, 1
+				]));
+			}
+
 			// Default to simple lighting mode (non-PBR)
 			shaderProgram.setUniform1i("u_usePBR", 0);
 			shaderProgram.setUniform1i("u_hasNormalMap", 0);
@@ -766,6 +887,77 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 	 */
 	get lightManager(): IgeWebGlLightManager | undefined {
 		return this._lightManager;
+	}
+
+	/**
+	 * Get the shadow manager for shadow configuration.
+	 */
+	get shadowManager(): IgeWebGlShadowManager | undefined {
+		return this._shadowManager;
+	}
+
+	/**
+	 * Enable shadow casting for a directional light.
+	 * @param light The directional light to cast shadows
+	 * @param shadowMapSize Size of the shadow map texture (default: 1024)
+	 */
+	enableShadows(light: IgeDirectionalLight, shadowMapSize: number = 1024): boolean {
+		if (!this._shadowManager) {
+			this.log("Shadow manager not initialized", "error");
+			return false;
+		}
+
+		// Create shadow map for this light
+		const success = this._shadowManager.createShadowMap(this._shadowLightId, {
+			size: shadowMapSize,
+			bias: light.shadowBias() as number,
+			normalBias: 0.02
+		});
+
+		if (success) {
+			this._shadowCastingLight = light;
+			light.castShadow(true);
+			this.log(`Shadows enabled for directional light (${shadowMapSize}x${shadowMapSize})`);
+		}
+
+		return success;
+	}
+
+	/**
+	 * Disable shadow casting.
+	 */
+	disableShadows(): void {
+		if (!this._shadowManager) return;
+
+		this._shadowManager.deleteShadowMap(this._shadowLightId);
+		if (this._shadowCastingLight) {
+			this._shadowCastingLight.castShadow(false);
+		}
+		this._shadowCastingLight = undefined;
+		this.log("Shadows disabled");
+	}
+
+	/**
+	 * Check if shadows are enabled.
+	 */
+	shadowsEnabled(): boolean {
+		return !!(this._shadowManager?.enabled() && this._shadowCastingLight);
+	}
+
+	/**
+	 * Get or set shadow debug mode.
+	 * 0 = normal rendering
+	 * 1 = visualize projected UV coordinates
+	 * 2 = visualize fragment depth in light space
+	 * 3 = visualize sampled shadow map depth
+	 * 4 = visualize depth comparison (red=shadow, green=lit)
+	 */
+	shadowDebugMode(mode?: number): number | this {
+		if (mode !== undefined) {
+			this._shadowDebugMode = mode;
+			return this;
+		}
+		return this._shadowDebugMode;
 	}
 
 	/**
