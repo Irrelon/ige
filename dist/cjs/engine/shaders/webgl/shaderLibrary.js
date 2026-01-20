@@ -5,6 +5,10 @@ const sprite_vert_1 = require("./sprite.vert.js");
 const sprite_frag_1 = require("./sprite.frag.js");
 const model_vert_1 = require("./model.vert.js");
 const model_frag_1 = require("./model.frag.js");
+const lit_vert_1 = require("./lit.vert.js");
+const lit_frag_1 = require("./lit.frag.js");
+const shadow_vert_1 = require("./shadow.vert.js");
+const shadow_frag_1 = require("./shadow.frag.js");
 /**
  * Built-in shader library for WebGL renderer.
  * Provides centralized registration and lookup of shader programs.
@@ -50,3 +54,5 @@ IgeShaderLibrary._shaders = new Map();
 // Register built-in shaders
 IgeShaderLibrary.register("sprite", sprite_vert_1.spriteVertexShader, sprite_frag_1.spriteFragmentShader, "2D sprite shader with billboarding support");
 IgeShaderLibrary.register("model", model_vert_1.modelVertexShader, model_frag_1.modelFragmentShader, "Basic 3D model shader with simple lighting");
+IgeShaderLibrary.register("lit", lit_vert_1.litVertexShader, lit_frag_1.litFragmentShader, "PBR lit shader with support for 2D textures, smart textures, and PBR materials");
+IgeShaderLibrary.register("shadow", shadow_vert_1.shadowVertexShader, shadow_frag_1.shadowFragmentShader, "Shadow depth pass shader for shadow mapping");

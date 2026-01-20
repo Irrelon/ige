@@ -1,15 +1,18 @@
 import { IgeBaseRenderer } from "./IgeBaseRenderer.js"
-import type { IgeEngine } from "./IgeEngine.js";
+import type { IgeEngine } from "./IgeEngine.js"
 import type { IgeViewport } from "./IgeViewport.js"
-import { IgeWebGlResourceManager } from "../webgl/IgeWebGlResourceManager.js";
+import { IgeWebGlResourceManager } from "../webgl/IgeWebGlResourceManager.js"
 import { IgeWebGlShaderManager } from "../webgl/IgeWebGlShaderManager.js"
-import { IgeWebGlTextureManager } from "../webgl/IgeWebGlTextureManager.js";
+import { IgeWebGlTextureManager } from "../webgl/IgeWebGlTextureManager.js"
 import { IgeWebGlGeometryManager } from "../webgl/IgeWebGlGeometryManager.js"
-import { IgeWebGlCameraController } from "../webgl/IgeWebGlCameraController.js";
+import { IgeWebGlCameraController } from "../webgl/IgeWebGlCameraController.js"
 import { IgeWebGlRenderBatchManager } from "../webgl/IgeWebGlRenderBatchManager.js"
-import { IgeWebGlStateManager } from "../webgl/IgeWebGlStateManager.js";
+import { IgeWebGlStateManager } from "../webgl/IgeWebGlStateManager.js"
+import { IgeWebGlLightManager } from "../webgl/IgeWebGlLightManager.js"
+import { IgeWebGlShadowManager } from "../webgl/IgeWebGlShadowManager.js"
 import type { IgeObject } from "./IgeObject.js"
-import type { IgeEntity } from "./IgeEntity.js";
+import type { IgeEntity } from "./IgeEntity.js"
+import type { IgeDirectionalLight } from "../webgl/IgeWebGlLight.js"
 /**
  * Custom WebGL renderer for IGE supporting full 3D rendering.
  * This renderer replaces the experimental three.js integration with
@@ -41,6 +44,11 @@ export declare class IgeWebGlRenderer extends IgeBaseRenderer {
     protected _renderBatchManager?: IgeWebGlRenderBatchManager;
     protected _cameraController?: IgeWebGlCameraController;
     protected _stateManager?: IgeWebGlStateManager;
+    protected _lightManager?: IgeWebGlLightManager;
+    protected _shadowManager?: IgeWebGlShadowManager;
+    protected _shadowCastingLight?: IgeDirectionalLight;
+    protected _shadowLightId: string;
+    protected _shadowDebugMode: number;
     /**
      * Initialize the WebGL renderer.
      */
@@ -83,6 +91,14 @@ export declare class IgeWebGlRenderer extends IgeBaseRenderer {
      */
     protected _renderViewport(viewport: IgeViewport): void;
     /**
+     * Render shadow pass - renders scene from light's perspective to shadow map.
+     */
+    protected _renderShadowPass(matrices: any, cameraPos: {
+        x: number;
+        y: number;
+        z: number;
+    }): void;
+    /**
      * Traverse the scene graph and add entities to render batches.
      */
     protected _traverseSceneGraph(entity: IgeObject, camera: any, frustum: any): void;
@@ -107,9 +123,41 @@ export declare class IgeWebGlRenderer extends IgeBaseRenderer {
      */
     protected _renderSpriteBatches(matrices: any, transparent: boolean): void;
     /**
-     * Render model batches.
+     * Render model batches using lit shader with full lighting support.
+     * Falls back to simple model shader if lit shader is not available.
      */
     protected _renderModelBatches(matrices: any, transparent: boolean): void;
+    /**
+     * Get the light manager for adding/removing scene lights.
+     */
+    get lightManager(): IgeWebGlLightManager | undefined;
+    /**
+     * Get the shadow manager for shadow configuration.
+     */
+    get shadowManager(): IgeWebGlShadowManager | undefined;
+    /**
+     * Enable shadow casting for a directional light.
+     * @param light The directional light to cast shadows
+     * @param shadowMapSize Size of the shadow map texture (default: 1024)
+     */
+    enableShadows(light: IgeDirectionalLight, shadowMapSize?: number): boolean;
+    /**
+     * Disable shadow casting.
+     */
+    disableShadows(): void;
+    /**
+     * Check if shadows are enabled.
+     */
+    shadowsEnabled(): boolean;
+    /**
+     * Get or set shadow debug mode.
+     * 0 = normal rendering
+     * 1 = visualize projected UV coordinates
+     * 2 = visualize fragment depth in light space
+     * 3 = visualize sampled shadow map depth
+     * 4 = visualize depth comparison (red=shadow, green=lit)
+     */
+    shadowDebugMode(mode?: number): number | this;
     /**
      * Toggle fullscreen mode.
      */

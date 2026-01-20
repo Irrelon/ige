@@ -130,12 +130,13 @@ export class IgeWebGlProgram extends IgeBaseClass {
         return this;
     }
     /**
-     * Set a mat4 uniform from IgeMatrix4.
+     * Set a mat4 uniform from IgeMatrix4 or Float32Array.
      */
     setUniformMatrix4fv(name, matrix, transpose = false) {
         const location = this.getUniformLocation(name);
         if (location !== null) {
-            this._gl.uniformMatrix4fv(location, transpose, matrix.matrix);
+            const data = matrix instanceof Float32Array ? matrix : matrix.matrix;
+            this._gl.uniformMatrix4fv(location, transpose, data);
         }
         return this;
     }

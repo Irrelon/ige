@@ -27,7 +27,8 @@ class IgeWebGlCameraController extends IgeBaseClass_1.IgeBaseClass {
                 view: new IgeMatrix4_1.IgeMatrix4(),
                 projection: new IgeMatrix4_1.IgeMatrix4(),
                 viewProjection: new IgeMatrix4_1.IgeMatrix4(),
-                frustum: new IgeFrustum_1.IgeFrustum()
+                frustum: new IgeFrustum_1.IgeFrustum(),
+                cameraPosition: new IgePoint3d_1.IgePoint3d(0, 0, 0)
             };
             this._cameraMatricesCache.set(cameraId, matrices);
         }
@@ -40,6 +41,10 @@ class IgeWebGlCameraController extends IgeBaseClass_1.IgeBaseClass {
         matrices.viewProjection.multiply(matrices.view);
         // Extract frustum planes
         matrices.frustum.extractFromMatrix(matrices.viewProjection);
+        // Store camera position for lighting calculations
+        matrices.cameraPosition.x = camera._translate.x;
+        matrices.cameraPosition.y = camera._translate.y;
+        matrices.cameraPosition.z = camera._translate.z;
         return matrices;
     }
     /**

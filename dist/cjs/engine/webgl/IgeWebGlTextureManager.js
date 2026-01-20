@@ -16,8 +16,42 @@ class IgeWebGlTextureManager extends IgeBaseClass_1.IgeBaseClass {
         this._igeTextureMap = new Map();
         // Smart texture tracking
         this._smartTextureCanvases = new Map();
+        // Default 1x1 white texture for entities without textures
+        this._defaultWhiteTexture = null;
         this._gl = gl;
         this._resourceManager = resourceManager;
+        // Create the default white texture
+        this._createDefaultWhiteTexture();
+    }
+    /**
+     * Create a 1x1 white texture to use as default when no texture is bound.
+     * This allows the base color to show through properly in shaders.
+     */
+    _createDefaultWhiteTexture() {
+        const gl = this._gl;
+        const texture = gl.createTexture();
+        if (!texture) {
+            this.log("Failed to create default white texture", "error");
+            return;
+        }
+        gl.bindTexture(gl.TEXTURE_2D, texture);
+        // Create 1x1 white pixel
+        const whitePixel = new Uint8Array([255, 255, 255, 255]);
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 1, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE, whitePixel);
+        // Set texture parameters
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+        gl.bindTexture(gl.TEXTURE_2D, null);
+        this._defaultWhiteTexture = texture;
+        this.log("Created default 1x1 white texture");
+    }
+    /**
+     * Get the default 1x1 white texture.
+     */
+    getDefaultWhiteTexture() {
+        return this._defaultWhiteTexture;
     }
     /**
      * Create a WebGL texture from an image element.

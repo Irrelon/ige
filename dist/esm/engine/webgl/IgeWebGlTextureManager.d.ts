@@ -1,7 +1,7 @@
 import { IgeBaseClass } from "../core/IgeBaseClass.js"
-import type { IgeTexture } from "../core/IgeTexture.js";
+import type { IgeTexture } from "../core/IgeTexture.js"
 import type { IgeWebGlResourceManager } from "./IgeWebGlResourceManager.js"
-import type { IgeSmartTexture } from "../../types/IgeSmartTexture.js";
+import type { IgeSmartTexture } from "../../types/IgeSmartTexture.js"
 /**
  * Manages WebGL texture creation, updates, and state for the renderer.
  */
@@ -13,7 +13,17 @@ export declare class IgeWebGlTextureManager extends IgeBaseClass {
     protected _activeTextureUnit: number;
     protected _igeTextureMap: Map<string, WebGLTexture>;
     protected _smartTextureCanvases: Map<string, HTMLCanvasElement>;
+    protected _defaultWhiteTexture: WebGLTexture | null;
     constructor(gl: WebGLRenderingContext | WebGL2RenderingContext, resourceManager: IgeWebGlResourceManager);
+    /**
+     * Create a 1x1 white texture to use as default when no texture is bound.
+     * This allows the base color to show through properly in shaders.
+     */
+    protected _createDefaultWhiteTexture(): void;
+    /**
+     * Get the default 1x1 white texture.
+     */
+    getDefaultWhiteTexture(): WebGLTexture | null;
     /**
      * Create a WebGL texture from an image element.
      */

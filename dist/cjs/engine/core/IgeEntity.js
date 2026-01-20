@@ -734,6 +734,17 @@ class IgeEntity extends IgeObject_1.IgeObject {
         }
         return this._texture;
     }
+    model(model) {
+        if (model !== undefined) {
+            this._model = model;
+            // Set geometry from the first mesh's first primitive
+            if (model.meshes.length > 0 && model.meshes[0].primitives.length > 0) {
+                this._geometryData = model.meshes[0].primitives[0].geometry;
+            }
+            return this;
+        }
+        return this._model;
+    }
     cell(val) {
         if (val !== undefined && val > 0) {
             this._cell = val;

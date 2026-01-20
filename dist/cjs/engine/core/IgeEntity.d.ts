@@ -1,10 +1,10 @@
 import { IgeBounds } from "./IgeBounds.js"
-import { IgeObject } from "./IgeObject.js";
+import { IgeObject } from "./IgeObject.js"
 import { IgePoint2d } from "./IgePoint2d.js"
-import { IgePoint3d } from "./IgePoint3d.js";
+import { IgePoint3d } from "./IgePoint3d.js"
 import type { IgeTexture } from "./IgeTexture.js"
-import type { IgeViewport } from "./IgeViewport.js";
-import { IgeEntityRenderMode } from "../../enums/index.js";
+import type { IgeViewport } from "./IgeViewport.js"
+import { IgeEntityRenderMode } from "../../enums/index.js"
 import type { IgeCanRegisterByCategory } from "../../types/IgeCanRegisterByCategory.js"
 import type { IgeCanRegisterById } from "../../types/IgeCanRegisterById.js"
 import type { IgeCanvasRenderingContext2d } from "../../types/IgeCanvasRenderingContext2d.js"
@@ -14,6 +14,7 @@ import type { IgePoint } from "../../types/IgePoint.js"
 import type { IgeShapeFunctionality } from "../../types/IgeShapeFunctionality.js"
 import type { IgeSmartTexture } from "../../types/IgeSmartTexture.js"
 import type { IgeTriggerPolygonFunctionName } from "../../types/IgeTriggerPolygonFunctionName.js"
+import type { IgeGltfModel } from "../webgl/IgeGltfLoader.js"
 export interface IgeEntityTransformAccessor {
     x: (val?: number) => number | IgeEntity;
     y: (val?: number) => number | IgeEntity;
@@ -342,6 +343,19 @@ export declare class IgeEntity extends IgeObject implements IgeCanRegisterById, 
      */
     texture(texture: IgeTexture): this;
     texture(): IgeTexture | undefined;
+    /**
+     * Gets / sets the 3D model for this entity. When a model is set,
+     * the entity will render using the model's geometry and materials
+     * instead of a 2D texture.
+     * @param {IgeGltfModel=} model The loaded GLTF model.
+     * @example #Set the entity model
+     *     const model = await igeGltfLoader.load('path/to/model.glb');
+     *     entity.model(model);
+     * @return {*} "this" when arguments are passed to allow method
+     * chaining or the current value if no arguments are specified.
+     */
+    model(model: IgeGltfModel): this;
+    model(): IgeGltfModel | undefined;
     /**
      * Gets / sets the current texture cell used when rendering the game
      * object's texture. If the texture is not cell-based, this value is

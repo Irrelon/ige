@@ -1,5 +1,5 @@
 import { IgeEventingClass } from "./IgeEventingClass.js"
-import type { IgeUiElement } from "./IgeUiElement.js";
+import type { IgeUiElement } from "./IgeUiElement.js"
 import type { IgeAnyFunction } from "../../types/IgeAnyFunction.js"
 import type { IgeClassRecord } from "../../types/IgeClassRecord.js"
 import type { IgeIsReadyPromise } from "../../types/IgeIsReadyPromise.js"

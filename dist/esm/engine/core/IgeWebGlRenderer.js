@@ -9,6 +9,8 @@ import { IgeWebGlGeometryManager } from "../webgl/IgeWebGlGeometryManager.js"
 import { IgeWebGlCameraController } from "../webgl/IgeWebGlCameraController.js"
 import { IgeWebGlRenderBatchManager } from "../webgl/IgeWebGlRenderBatchManager.js"
 import { IgeWebGlStateManager } from "../webgl/IgeWebGlStateManager.js"
+import { IgeWebGlLightManager } from "../webgl/IgeWebGlLightManager.js"
+import { IgeWebGlShadowManager } from "../webgl/IgeWebGlShadowManager.js"
 import { IgeShaderLibrary } from "../shaders/webgl/shaderLibrary.js"
 import { IgePoint3d } from "./IgePoint3d.js"
 /**
@@ -44,6 +46,13 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
     _renderBatchManager;
     _cameraController;
     _stateManager;
+    _lightManager;
+    _shadowManager;
+    // Shadow-casting directional light reference
+    _shadowCastingLight;
+    _shadowLightId = "mainDirectionalLight";
+    // Shadow debug mode (0 = off, 1-4 = different visualizations)
+    _shadowDebugMode = 0;
     /**
      * Initialize the WebGL renderer.
      */
@@ -67,6 +76,8 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
         this._renderBatchManager = new IgeWebGlRenderBatchManager(this._canvasContext);
         this._cameraController = new IgeWebGlCameraController();
         this._stateManager = new IgeWebGlStateManager(this._canvasContext);
+        this._lightManager = new IgeWebGlLightManager();
+        this._shadowManager = new IgeWebGlShadowManager(this._canvasContext, this._resourceManager, this._webglVersion);
         // Compile built-in shaders
         this._compileBuiltInShaders();
         this.isReady(true);
@@ -296,16 +307,6 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
         const vpY = Math.floor((viewport._translate?.y || 0) * dpr);
         const vpWidth = Math.floor(viewport._bounds2d.x * dpr);
         const vpHeight = Math.floor(viewport._bounds2d.y * dpr);
-        // Set viewport (using device pixels)
-        this._stateManager.setViewport(vpX, vpY, vpWidth, vpHeight);
-        // Enable scissor test for viewport clipping
-        if (viewport._clipping) {
-            this._stateManager.setScissorTest(true);
-            this._stateManager.setScissorBox(vpX, vpY, vpWidth, vpHeight);
-        }
-        // Clear viewport area
-        gl.clearColor(0.0, 0.0, 0.0, 0.0);
-        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
         // Get camera and update matrices
         const camera = viewport.camera;
         if (!camera) {
@@ -326,6 +327,31 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
             z: camera._translate.z
         };
         this._renderBatchManager.prepareForRendering(cameraPos);
+        // ============================================================
+        // SHADOW PASS: Render scene from light's perspective
+        // ============================================================
+        if (this.shadowsEnabled() && this._shadowManager && this._shadowCastingLight) {
+            this._renderShadowPass(matrices, cameraPos);
+            // Reset state manager after shadow pass - the shadow pass changes GL state
+            // directly (framebuffer, viewport, depth func, cull face) which puts the
+            // state manager's cached state out of sync with actual GL state
+            this._stateManager.reset();
+            // Restore depth function to LEQUAL (shadow pass uses LESS)
+            gl.depthFunc(gl.LEQUAL);
+        }
+        // ============================================================
+        // MAIN RENDER PASS
+        // ============================================================
+        // Set viewport (using device pixels)
+        this._stateManager.setViewport(vpX, vpY, vpWidth, vpHeight);
+        // Enable scissor test for viewport clipping
+        if (viewport._clipping) {
+            this._stateManager.setScissorTest(true);
+            this._stateManager.setScissorBox(vpX, vpY, vpWidth, vpHeight);
+        }
+        // Clear viewport area
+        gl.clearColor(0.0, 0.0, 0.0, 0.0);
+        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
         // Render opaque objects first (front to back for early Z rejection)
         this._renderOpaqueBatches(matrices, viewport);
         // Render transparent objects (back to front for correct blending)
@@ -334,6 +360,49 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
         if (viewport._clipping) {
             this._stateManager.setScissorTest(false);
         }
+    }
+    /**
+     * Render shadow pass - renders scene from light's perspective to shadow map.
+     */
+    _renderShadowPass(matrices, cameraPos) {
+        if (!this._shadowManager || !this._shadowCastingLight || !this._shaderManager || !this._geometryManager || !this._renderBatchManager) {
+            return;
+        }
+        const gl = this._canvasContext;
+        // Update light space matrix
+        const lightSpaceMatrix = this._shadowManager.updateLightSpaceMatrix(this._shadowLightId, this._shadowCastingLight, cameraPos);
+        if (!lightSpaceMatrix) {
+            return;
+        }
+        // Begin shadow pass (binds framebuffer, sets viewport, clears depth)
+        if (!this._shadowManager.beginShadowPass(this._shadowLightId)) {
+            return;
+        }
+        // Get shadow shader
+        const shadowProgram = this._shaderManager.getProgram("shadow");
+        if (!shadowProgram) {
+            this._shadowManager.endShadowPass();
+            return;
+        }
+        // Use shadow shader
+        shadowProgram.use();
+        // Set light space matrix
+        shadowProgram.setUniformMatrix4fv("u_lightSpaceMatrix", lightSpaceMatrix);
+        // Render all opaque models to shadow map
+        const renderBatchShadow = (batch) => {
+            this._geometryManager.bindGeometry(batch.geometry, shadowProgram);
+            for (const entity of batch.entities) {
+                if (entity._worldMatrix4) {
+                    shadowProgram.setUniformMatrix4fv("u_worldMatrix", entity._worldMatrix4.matrix);
+                }
+                this._geometryManager.drawGeometry(batch.geometry);
+            }
+            this._geometryManager.unbindGeometry(batch.geometry, shadowProgram);
+        };
+        // Only render opaque models to shadow map (shadows from opaque geometry only)
+        this._renderBatchManager.renderOpaqueModels(shadowProgram, renderBatchShadow);
+        // End shadow pass (restores default framebuffer)
+        this._shadowManager.endShadowPass();
     }
     /**
      * Traverse the scene graph and add entities to render batches.
@@ -501,58 +570,214 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
         this._geometryManager.unbindGeometry(quadGeometry, spriteProgram);
     }
     /**
-     * Render model batches.
+     * Render model batches using lit shader with full lighting support.
+     * Falls back to simple model shader if lit shader is not available.
      */
     _renderModelBatches(matrices, transparent) {
         if (!this._renderBatchManager || !this._shaderManager || !this._geometryManager || !this._textureManager || !this._stateManager) {
             return;
         }
         const gl = this._canvasContext;
-        const modelProgram = this._shaderManager.getProgram("model");
-        if (!modelProgram) {
+        // Try to use lit shader for full lighting, fall back to model shader
+        let shaderProgram = this._shaderManager.getProgram("lit");
+        const useLitShader = shaderProgram !== undefined;
+        if (!shaderProgram) {
+            shaderProgram = this._shaderManager.getProgram("model");
+        }
+        if (!shaderProgram) {
             return;
         }
-        // Use model shader
-        modelProgram.use();
+        // Use shader
+        shaderProgram.use();
         // Set view and projection matrices
-        modelProgram.setUniformMatrix4fv("u_viewMatrix", matrices.view);
-        modelProgram.setUniformMatrix4fv("u_projectionMatrix", matrices.projection);
-        // Set default uniforms
-        modelProgram.setUniform4f("u_baseColor", 1, 1, 1, 1);
-        modelProgram.setUniform3f("u_ambientLight", 0.3, 0.3, 0.3);
+        shaderProgram.setUniformMatrix4fv("u_viewMatrix", matrices.view);
+        shaderProgram.setUniformMatrix4fv("u_projectionMatrix", matrices.projection);
+        if (useLitShader) {
+            // Set camera position for specular calculations
+            if (matrices.cameraPosition) {
+                shaderProgram.setUniform3f("u_cameraPosition", matrices.cameraPosition.x, matrices.cameraPosition.y, matrices.cameraPosition.z);
+            }
+            // Apply light uniforms
+            if (this._lightManager) {
+                this._lightManager.applyLightUniforms(shaderProgram);
+            }
+            // Apply shadow uniforms if shadows are enabled
+            if (this.shadowsEnabled() && this._shadowManager) {
+                this._shadowManager.applyShadowUniforms(shaderProgram, this._shadowLightId, 1);
+                // Set light space matrix for vertex shader
+                const lightSpaceMatrix = this._shadowManager.getLightSpaceMatrix(this._shadowLightId);
+                if (lightSpaceMatrix) {
+                    shaderProgram.setUniformMatrix4fv("u_lightSpaceMatrix", lightSpaceMatrix);
+                }
+                // Set shadow debug mode
+                shaderProgram.setUniform1i("u_shadowDebug", this._shadowDebugMode);
+            }
+            else {
+                // Disable shadows in shader
+                shaderProgram.setUniform1i("u_hasShadowMap", 0);
+                shaderProgram.setUniform1i("u_shadowDebug", 0);
+                // Set identity matrix for light space when shadows disabled
+                shaderProgram.setUniformMatrix4fv("u_lightSpaceMatrix", new Float32Array([
+                    1, 0, 0, 0,
+                    0, 1, 0, 0,
+                    0, 0, 1, 0,
+                    0, 0, 0, 1
+                ]));
+            }
+            // Default to simple lighting mode (non-PBR)
+            shaderProgram.setUniform1i("u_usePBR", 0);
+            shaderProgram.setUniform1i("u_hasNormalMap", 0);
+            shaderProgram.setUniform1f("u_emissiveIntensity", 0);
+        }
+        else {
+            // Fallback: simple ambient light for model shader
+            shaderProgram.setUniform3f("u_ambientLight", 0.3, 0.3, 0.3);
+        }
+        // Set default base color
+        shaderProgram.setUniform4f("u_baseColor", 1, 1, 1, 1);
         // Render function for each batch
         const renderBatch = (batch) => {
             // Bind geometry
-            this._geometryManager.bindGeometry(batch.geometry, modelProgram);
-            // Bind texture if available
-            if (batch.textureId) {
-                // TODO: Get texture and bind
+            this._geometryManager.bindGeometry(batch.geometry, shaderProgram);
+            // Bind texture if available, otherwise use default white texture
+            // Use state manager to properly track texture bindings
+            if (batch.textureId && batch.texture) {
+                const webGlTexture = this._textureManager.getTextureForIgeTexture(batch.texture);
+                if (webGlTexture) {
+                    this._stateManager.bindTexture(webGlTexture, 0);
+                }
+                else {
+                    // Fallback to default white texture
+                    this._stateManager.bindTexture(this._textureManager.getDefaultWhiteTexture(), 0);
+                }
             }
+            else {
+                // No texture - use default white texture so base color shows correctly
+                this._stateManager.bindTexture(this._textureManager.getDefaultWhiteTexture(), 0);
+            }
+            shaderProgram.setUniform1i("u_baseColorTexture", 0);
             // Render each entity in the batch
             for (const entity of batch.entities) {
                 // Set entity-specific uniforms
                 if (entity._worldMatrix4) {
-                    modelProgram.setUniformMatrix4fv("u_worldMatrix", entity._worldMatrix4);
+                    shaderProgram.setUniformMatrix4fv("u_worldMatrix", entity._worldMatrix4);
                     // Calculate normal matrix (inverse transpose of world matrix)
                     const normalMatrix = entity._worldMatrix4.getInverse();
                     if (normalMatrix) {
-                        modelProgram.setUniformMatrix4fv("u_normalMatrix", normalMatrix);
+                        shaderProgram.setUniformMatrix4fv("u_normalMatrix", normalMatrix);
                     }
                 }
-                modelProgram.setUniform1f("u_opacity", entity._opacity);
+                shaderProgram.setUniform1f("u_opacity", entity._opacity);
+                // Apply material if entity has one and using lit shader
+                if (useLitShader && entity._materialData) {
+                    const mat = entity._materialData;
+                    if (mat.color) {
+                        // Handle color as object {r,g,b,a} or CSS string
+                        if (typeof mat.color === "object") {
+                            shaderProgram.setUniform4f("u_baseColor", mat.color.r, mat.color.g, mat.color.b, mat.color.a ?? 1);
+                        }
+                        else if (typeof mat.color === "string") {
+                            // Parse CSS color string (basic hex support)
+                            const hex = mat.color.replace("#", "");
+                            const r = parseInt(hex.substring(0, 2), 16) / 255;
+                            const g = parseInt(hex.substring(2, 4), 16) / 255;
+                            const b = parseInt(hex.substring(4, 6), 16) / 255;
+                            shaderProgram.setUniform4f("u_baseColor", r, g, b, 1);
+                        }
+                    }
+                    if (mat.metallic !== undefined || mat.roughness !== undefined) {
+                        // Keep PBR disabled for now - simple lighting shows colors better
+                        // shaderProgram!.setUniform1i("u_usePBR", 1);
+                        shaderProgram.setUniform1f("u_metallic", mat.metallic ?? 0);
+                        shaderProgram.setUniform1f("u_roughness", mat.roughness ?? 0.5);
+                    }
+                    if (mat.emissiveColor) {
+                        shaderProgram.setUniform3f("u_emissiveColor", mat.emissiveColor.r, mat.emissiveColor.g, mat.emissiveColor.b);
+                        shaderProgram.setUniform1f("u_emissiveIntensity", mat.emissiveIntensity ?? 1);
+                    }
+                }
                 // Draw geometry
                 this._geometryManager.drawGeometry(batch.geometry);
             }
             // Unbind geometry
-            this._geometryManager.unbindGeometry(batch.geometry, modelProgram);
+            this._geometryManager.unbindGeometry(batch.geometry, shaderProgram);
         };
         // Render appropriate batches
         if (transparent) {
-            this._renderBatchManager.renderTransparentModels(modelProgram, renderBatch);
+            this._renderBatchManager.renderTransparentModels(shaderProgram, renderBatch);
         }
         else {
-            this._renderBatchManager.renderOpaqueModels(modelProgram, renderBatch);
+            this._renderBatchManager.renderOpaqueModels(shaderProgram, renderBatch);
         }
+    }
+    /**
+     * Get the light manager for adding/removing scene lights.
+     */
+    get lightManager() {
+        return this._lightManager;
+    }
+    /**
+     * Get the shadow manager for shadow configuration.
+     */
+    get shadowManager() {
+        return this._shadowManager;
+    }
+    /**
+     * Enable shadow casting for a directional light.
+     * @param light The directional light to cast shadows
+     * @param shadowMapSize Size of the shadow map texture (default: 1024)
+     */
+    enableShadows(light, shadowMapSize = 1024) {
+        if (!this._shadowManager) {
+            this.log("Shadow manager not initialized", "error");
+            return false;
+        }
+        // Create shadow map for this light
+        const success = this._shadowManager.createShadowMap(this._shadowLightId, {
+            size: shadowMapSize,
+            bias: light.shadowBias(),
+            normalBias: 0.02
+        });
+        if (success) {
+            this._shadowCastingLight = light;
+            light.castShadow(true);
+            this.log(`Shadows enabled for directional light (${shadowMapSize}x${shadowMapSize})`);
+        }
+        return success;
+    }
+    /**
+     * Disable shadow casting.
+     */
+    disableShadows() {
+        if (!this._shadowManager)
+            return;
+        this._shadowManager.deleteShadowMap(this._shadowLightId);
+        if (this._shadowCastingLight) {
+            this._shadowCastingLight.castShadow(false);
+        }
+        this._shadowCastingLight = undefined;
+        this.log("Shadows disabled");
+    }
+    /**
+     * Check if shadows are enabled.
+     */
+    shadowsEnabled() {
+        return !!(this._shadowManager?.enabled() && this._shadowCastingLight);
+    }
+    /**
+     * Get or set shadow debug mode.
+     * 0 = normal rendering
+     * 1 = visualize projected UV coordinates
+     * 2 = visualize fragment depth in light space
+     * 3 = visualize sampled shadow map depth
+     * 4 = visualize depth comparison (red=shadow, green=lit)
+     */
+    shadowDebugMode(mode) {
+        if (mode !== undefined) {
+            this._shadowDebugMode = mode;
+            return this;
+        }
+        return this._shadowDebugMode;
     }
     /**
      * Toggle fullscreen mode.

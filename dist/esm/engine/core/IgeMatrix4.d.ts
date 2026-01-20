@@ -1,5 +1,5 @@
 import { IgeBaseClass } from "./IgeBaseClass.js"
-import type { IgePoint3d } from "./IgePoint3d.js";
+import type { IgePoint3d } from "./IgePoint3d.js"
 /**
  * Creates a new 4x4 transformation matrix for 3D operations.
  * Matrix is stored in column-major format (WebGL standard).
@@ -79,8 +79,11 @@ export declare class IgeMatrix4 extends IgeBaseClass {
     /**
      * Multiplies this matrix by another matrix.
      * Result = this * m
+     *
+     * Can also be called with two matrices: multiply(a, b)
+     * Result = a * b (stored in this matrix)
      */
-    multiply(m: IgeMatrix4): this;
+    multiply(m: IgeMatrix4, n?: IgeMatrix4): this;
     /**
      * Multiplies this matrix by a scalar value.
      */
@@ -105,11 +108,17 @@ export declare class IgeMatrix4 extends IgeBaseClass {
     orthographic(left: number, right: number, bottom: number, top: number, near: number, far: number): this;
     /**
      * Creates a look-at view matrix.
-     * @param eye Camera position
-     * @param target Target position to look at
-     * @param up Up vector
+     * @param eye Camera position (or eyeX if using individual coordinates)
+     * @param target Target position to look at (or eyeY if using individual coordinates)
+     * @param up Up vector (or eyeZ if using individual coordinates)
+     * @param targetX Target X (when using individual coordinates)
+     * @param targetY Target Y (when using individual coordinates)
+     * @param targetZ Target Z (when using individual coordinates)
+     * @param upX Up X (when using individual coordinates)
+     * @param upY Up Y (when using individual coordinates)
+     * @param upZ Up Z (when using individual coordinates)
      */
-    lookAt(eye: IgePoint3d, target: IgePoint3d, up: IgePoint3d): this;
+    lookAt(eye: IgePoint3d | number, target: IgePoint3d | number, up: IgePoint3d | number, targetX?: number, targetY?: number, targetZ?: number, upX?: number, upY?: number, upZ?: number): this;
     /**
      * Calculates the inverse of this matrix.
      */

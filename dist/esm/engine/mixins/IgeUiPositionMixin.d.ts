@@ -1,5 +1,5 @@
 import type { IgeObject } from "../core/IgeObject.js"
-import type { IgeMixin } from "../../types/IgeMixin.js";
+import type { IgeMixin } from "../../types/IgeMixin.js"
 export declare const WithUiPositionMixin: <BaseClassType extends IgeMixin<IgeObject>>(Base: BaseClassType) => {
     new (...args: any[]): {
         _uiLeft?: number;
@@ -231,6 +231,7 @@ export declare const WithUiPositionMixin: <BaseClassType extends IgeMixin<IgeObj
         _geometryData: import("../../types/IgeGeometryData3d").IgeGeometryData3d | null;
         _materialData: import("../../types/IgeMaterialData").IgeMaterialData | null;
         _meshData: import("../../types/IgeMeshData3d").IgeMeshData3d | null;
+        _model?: import("../webgl/IgeGltfLoader").IgeGltfModel;
         _deathCallBack?: ((...args: any[]) => void) | undefined;
         components: Record<string, import("../..").IgeComponent<IgeObject>>;
         _sortChildren: import("../..").IgeChildSortFunction;

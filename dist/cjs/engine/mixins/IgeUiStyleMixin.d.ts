@@ -1,5 +1,5 @@
 import type { IgeObject } from "../core/IgeObject.js"
-import type { IgeTexture } from "../core/IgeTexture.js";
+import type { IgeTexture } from "../core/IgeTexture.js"
 import type { IgeMixin } from "../../types/IgeMixin.js"
 import type { IgeRepeatType } from "../../types/IgeRepeatType.js"
 export declare const WithUiStyleMixin: <BaseClassType extends IgeMixin<IgeObject>>(Base: BaseClassType) => {
@@ -50,7 +50,7 @@ export declare const WithUiStyleMixin: <BaseClassType extends IgeMixin<IgeObject
          * @param {CSSColor, CanvasGradient, CanvasPattern=} color
          * @return {*} Returns this when setting the value or the current value if none is specified.
          */
-        color(color: string | CanvasGradient | CanvasPattern): string | CanvasGradient | CanvasPattern | any;
+        color(color: string | CanvasGradient | CanvasPattern): string | CanvasPattern | CanvasGradient | any;
         /**
          * Sets the current background texture and the repeatType
          * to determine in which axis the image should be repeated.
@@ -234,6 +234,7 @@ export declare const WithUiStyleMixin: <BaseClassType extends IgeMixin<IgeObject
         _geometryData: import("../../types/IgeGeometryData3d").IgeGeometryData3d | null;
         _materialData: import("../../types/IgeMaterialData").IgeMaterialData | null;
         _meshData: import("../../types/IgeMeshData3d").IgeMeshData3d | null;
+        _model?: import("../webgl/IgeGltfLoader").IgeGltfModel;
         _deathCallBack?: ((...args: any[]) => void) | undefined;
         components: Record<string, import("../..").IgeComponent<IgeObject>>;
         _sortChildren: import("../..").IgeChildSortFunction;

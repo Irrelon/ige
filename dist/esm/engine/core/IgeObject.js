@@ -130,6 +130,7 @@ export class IgeObject extends IgeEventingClass {
     _geometryData = IgeQuadGeometry; // Default to a basic quad (square)
     _materialData = null;
     _meshData = null;
+    _model;
     _deathCallBack; // TODO: Rename this to _deathCallback (lower case B)
     components = {};
     constructor() {

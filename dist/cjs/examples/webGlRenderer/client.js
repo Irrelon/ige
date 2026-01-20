@@ -18,6 +18,9 @@ const IgeWebGlRenderer_1 = require("../../engine/core/IgeWebGlRenderer.js");
 const IgeViewport_1 = require("../../engine/core/IgeViewport.js");
 const instance_1 = require("../../engine/instance.js");
 const enums_1 = require("../../enums/index.js");
+const IgeWebGlLight_1 = require("../../engine/webgl/IgeWebGlLight.js");
+const IgePrimitiveGeometry_1 = require("../../engine/webgl/IgePrimitiveGeometry.js");
+const IgeGltfLoader_1 = require("../../engine/webgl/IgeGltfLoader.js");
 // @ts-ignore
 window.ige = instance_1.ige;
 class Client extends IgeBaseClass_1.IgeBaseClass {
@@ -25,8 +28,12 @@ class Client extends IgeBaseClass_1.IgeBaseClass {
         super();
         this.classId = "Client";
         this.entities = [];
+        this.cubeEntities = [];
         this.rotationSpeeds = [];
         this.isPerspective = true;
+        this.lightingEnabled = true;
+        this.duckEntities = [];
+        this.cameraAnimationEnabled = true;
         void this.init();
     }
     init() {
@@ -42,11 +49,11 @@ class Client extends IgeBaseClass_1.IgeBaseClass {
                 this.log("Textures loaded successfully");
                 // Create WebGL renderer
                 this.updateStatus("Creating WebGL renderer...");
-                const renderer = new IgeWebGlRenderer_1.IgeWebGlRenderer();
-                instance_1.ige.engine.renderer(renderer);
+                this.renderer = new IgeWebGlRenderer_1.IgeWebGlRenderer();
+                instance_1.ige.engine.renderer(this.renderer);
                 // Setup renderer
-                yield renderer.setup();
-                renderer.createFrontBuffer(true);
+                yield this.renderer.setup();
+                this.renderer.createFrontBuffer(true);
                 this.log("WebGL renderer created and initialized");
                 this.updateStatus("Starting engine...");
                 // Start the engine
@@ -55,16 +62,25 @@ class Client extends IgeBaseClass_1.IgeBaseClass {
                 // Setup scene
                 this.updateStatus("Creating scene...");
                 this.setupScene();
-                // Create test entities
+                // Setup lights
+                this.updateStatus("Setting up lights...");
+                this.setupLights();
+                // Create test entities (2D sprites)
                 this.updateStatus("Creating entities...");
                 this.createTestEntities();
+                // Create 3D cubes to demonstrate lighting
+                this.updateStatus("Creating 3D cubes...");
+                this.create3DEntities();
+                // Load GLTF model
+                this.updateStatus("Loading GLTF model...");
+                yield this.loadGltfModel();
                 // Setup camera animation
                 this.setupCameraAnimation();
                 // Setup keyboard controls for camera mode toggle
                 this.setupKeyboardControls();
                 // Hide loading screen
                 this.hideLoadingScreen();
-                this.updateStatus("Perspective Mode - P/O/1/2/3/4");
+                this.updateStatus("Perspective + Lighting - P/O/L/1/2/3/4");
                 this.log("WebGL Renderer test initialized successfully!");
                 // Start stats update
                 setInterval(() => this.updateStats(), 100);
@@ -99,6 +115,60 @@ class Client extends IgeBaseClass_1.IgeBaseClass {
         // Mount viewport to engine
         this.viewport.mount(instance_1.ige.engine);
         this.log("Scene, camera, and viewport created");
+    }
+    setupLights() {
+        if (!this.scene || !this.renderer)
+            return;
+        const lightManager = this.renderer.lightManager;
+        if (!lightManager) {
+            this.log("Light manager not available", "warning");
+            return;
+        }
+        // Create ambient light - provides base illumination
+        this.ambientLight = new IgeWebGlLight_1.IgeAmbientLight();
+        this.ambientLight.id("ambientLight");
+        this.ambientLight.lightColor(0.4, 0.4, 0.5); // Slight blue tint
+        this.ambientLight.intensity(0.5); // Increased for better visibility
+        this.ambientLight.mount(this.scene);
+        lightManager.addLight(this.ambientLight);
+        this.log("Ambient light created");
+        // Create directional light - simulates sun
+        this.directionalLight = new IgeWebGlLight_1.IgeDirectionalLight();
+        this.directionalLight.id("directionalLight");
+        this.directionalLight.lightColor(1.0, 0.95, 0.8); // Warm white
+        this.directionalLight.intensity(1.2); // Increased intensity
+        this.directionalLight.direction(-0.3, -0.8, -0.5); // Better angle for cubes
+        this.directionalLight.shadowBias(0.005); // Set shadow bias to reduce shadow acne
+        this.directionalLight.mount(this.scene);
+        lightManager.addLight(this.directionalLight);
+        this.log("Directional light created");
+        // Enable shadows for the directional light (disabled for now - debugging)
+        // if (this.renderer.enableShadows(this.directionalLight, 1024)) {
+        // 	this.log("Shadows enabled (1024x1024 shadow map)");
+        // }
+        // Create point light - orbiting light source
+        this.pointLight = new IgeWebGlLight_1.IgePointLight();
+        this.pointLight.id("pointLight");
+        this.pointLight.lightColor(0.2, 0.5, 1.0); // Blue color
+        this.pointLight.intensity(1.5);
+        this.pointLight.range(300);
+        this.pointLight.decay(2);
+        this.pointLight.translateTo(150, 0, 100);
+        this.pointLight.mount(this.scene);
+        lightManager.addLight(this.pointLight);
+        this.log("Point light created");
+        // Animate the point light position
+        let lightAngle = 0;
+        const lightRadius = 200;
+        this.scene.addBehaviour(enums_1.IgeBehaviourType.preUpdate, "animatePointLight", () => {
+            if (!this.pointLight)
+                return;
+            lightAngle += 0.01;
+            const lx = Math.cos(lightAngle) * lightRadius;
+            const lz = Math.sin(lightAngle) * lightRadius;
+            this.pointLight.translateTo(lx, 50, lz);
+        });
+        this.log(`Lights setup complete: ${lightManager.getLightCount().total} lights active`);
     }
     createTestEntities() {
         if (!this.scene)
@@ -144,6 +214,95 @@ class Client extends IgeBaseClass_1.IgeBaseClass {
             });
         });
     }
+    create3DEntities() {
+        if (!this.scene)
+            return;
+        // Create cube geometry
+        const cubeGeometry = IgePrimitiveGeometry_1.IgePrimitiveGeometry.createCube(60, "shared_cube");
+        // Create a row of cubes with different colors
+        const cubeColors = [
+            { r: 1.0, g: 0.3, b: 0.3 }, // Red
+            { r: 0.3, g: 1.0, b: 0.3 }, // Green
+            { r: 0.3, g: 0.3, b: 1.0 }, // Blue
+            { r: 1.0, g: 1.0, b: 0.3 }, // Yellow
+            { r: 1.0, g: 0.3, b: 1.0 }, // Magenta
+        ];
+        const spacing = 120;
+        const startX = -((cubeColors.length - 1) * spacing) / 2;
+        for (let i = 0; i < cubeColors.length; i++) {
+            const cube = new IgeEntity_1.IgeEntity();
+            cube.id(`cube_${i}`);
+            // Set geometry data for 3D rendering
+            cube._geometryData = Object.assign(Object.assign({}, cubeGeometry), { id: `cube_geometry_${i}` });
+            // Set material data with color for lighting
+            cube._materialData = {
+                color: { r: cubeColors[i].r, g: cubeColors[i].g, b: cubeColors[i].b, a: 1 },
+                metallic: 0.1,
+                roughness: 0.6
+            };
+            // Position the cube in the scene (below the sprites)
+            cube.translateTo(startX + i * spacing, -150, 0);
+            cube.mount(this.scene);
+            this.cubeEntities.push(cube);
+        }
+        this.log(`Created ${this.cubeEntities.length} 3D cube entities`);
+        // Animate cube rotations
+        this.scene.addBehaviour(enums_1.IgeBehaviourType.preUpdate, "animateCubes", () => {
+            const time = Date.now() / 1000;
+            this.cubeEntities.forEach((cube, index) => {
+                // Rotate each cube differently
+                const rotX = time * (0.5 + index * 0.1);
+                const rotY = time * (0.3 + index * 0.15);
+                cube.rotateTo(rotX, rotY, 0);
+            });
+        });
+    }
+    loadGltfModel() {
+        return __awaiter(this, void 0, void 0, function* () {
+            if (!this.scene)
+                return;
+            try {
+                // Load the Duck model
+                this.log("Loading Duck.glb model...");
+                this.duckModel = yield IgeGltfLoader_1.igeGltfLoader.load("../../assets/models/Duck.glb", "duck");
+                this.log(`Loaded model: ${this.duckModel.name} with ${this.duckModel.meshes.length} meshes`);
+                // Create duck entities from the model
+                for (let i = 0; i < 3; i++) {
+                    const duck = new IgeEntity_1.IgeEntity();
+                    duck.id(`duck_${i}`);
+                    // Get geometry from first mesh primitive
+                    if (this.duckModel.meshes.length > 0 && this.duckModel.meshes[0].primitives.length > 0) {
+                        const primitive = this.duckModel.meshes[0].primitives[0];
+                        duck._geometryData = Object.assign(Object.assign({}, primitive.geometry), { id: `duck_geometry_${i}` });
+                        // Apply bright yellow material for visibility
+                        duck._materialData = {
+                            color: { r: 1.0, g: 0.9, b: 0.0, a: 1 }, // Bright yellow
+                            metallic: 0.0,
+                            roughness: 0.3
+                        };
+                    }
+                    // Position ducks in a row above the scene
+                    // Duck model from Khronos is large (~200 units), scale down significantly
+                    duck.translateTo(-200 + i * 200, 200, 0);
+                    duck.scaleTo(0.3, 0.3, 0.3); // Scale down to fit scene
+                    duck.mount(this.scene);
+                    this.duckEntities.push(duck);
+                }
+                this.log(`Created ${this.duckEntities.length} duck entities from GLTF model`);
+                // Animate duck rotations
+                this.scene.addBehaviour(enums_1.IgeBehaviourType.preUpdate, "animateDucks", () => {
+                    const time = Date.now() / 1000;
+                    this.duckEntities.forEach((duck, index) => {
+                        const rotY = time * (0.5 + index * 0.2);
+                        duck.rotateTo(0, rotY, 0);
+                    });
+                });
+            }
+            catch (error) {
+                this.log(`Failed to load GLTF model: ${error}`, "error");
+            }
+        });
+    }
     setupCameraAnimation() {
         if (!this.camera)
             return;
@@ -151,10 +310,11 @@ class Client extends IgeBaseClass_1.IgeBaseClass {
         let angle = 0;
         const radius = 300;
         const animateCamera = () => {
-            angle += 0.002;
-            const x = Math.sin(angle) * radius;
-            const z = Math.cos(angle) * radius;
-            if (this.camera) {
+            // Only animate if animation is enabled (perspective mode)
+            if (this.cameraAnimationEnabled && this.camera) {
+                angle += 0.002;
+                const x = Math.sin(angle) * radius;
+                const z = Math.cos(angle) * radius;
                 this.camera.translateTo(x, 0, z);
             }
             requestAnimationFrame(animateCamera);
@@ -172,46 +332,53 @@ class Client extends IgeBaseClass_1.IgeBaseClass {
                     this.camera.projectionType("perspective");
                     this.camera._lookAt = undefined; // Clear lookAt to use default
                     this.isPerspective = true;
-                    this.updateStatus("Perspective Mode - P/O/1/2/3/4");
+                    this.cameraAnimationEnabled = true; // Re-enable orbiting
+                    this.updateStatus("Perspective Mode (Orbiting) - P/O/L/1/2/3/4");
                     this.log("Switched to perspective camera mode");
                     break;
                 case "o":
-                    // Switch to orthographic mode
+                    // Switch to orthographic mode (re-enable camera animation)
                     this.camera.projectionType("orthographic");
+                    this.camera._lookAt = undefined; // Clear lookAt to use default
                     this.isPerspective = false;
-                    this.updateStatus("Orthographic Mode - P/O/1/2/3/4");
+                    this.cameraAnimationEnabled = true; // Re-enable orbiting
+                    this.updateStatus("Orthographic Mode (Orbiting) - P/O/L/1/2/3/4");
                     this.log("Switched to orthographic camera mode");
                     break;
                 case "1":
-                    // Isometric preset
+                    // Isometric preset - disable animation
+                    this.cameraAnimationEnabled = false;
                     this.camera.preset("isometric", 500);
                     this.camera.orthoSize(600);
                     this.isPerspective = false;
-                    this.updateStatus("Isometric Preset - P/O/1/2/3/4");
+                    this.updateStatus("Isometric Preset - P/O/L/1/2/3/4");
                     this.log("Applied isometric camera preset");
                     break;
                 case "2":
-                    // Isometric 45° preset
+                    // Isometric 45° preset - disable animation
+                    this.cameraAnimationEnabled = false;
                     this.camera.preset("isometric45", 500);
                     this.camera.orthoSize(600);
                     this.isPerspective = false;
-                    this.updateStatus("Isometric 45° Preset - P/O/1/2/3/4");
+                    this.updateStatus("Isometric 45° Preset - P/O/L/1/2/3/4");
                     this.log("Applied isometric 45° camera preset");
                     break;
                 case "3":
-                    // Top-down preset
+                    // Top-down preset - disable animation
+                    this.cameraAnimationEnabled = false;
                     this.camera.preset("topDown", 500);
                     this.camera.orthoSize(600);
                     this.isPerspective = false;
-                    this.updateStatus("Top-Down Preset - P/O/1/2/3/4");
+                    this.updateStatus("Top-Down Preset - P/O/L/1/2/3/4");
                     this.log("Applied top-down camera preset");
                     break;
                 case "4":
-                    // Side-scroller preset
+                    // Side-scroller preset - disable animation
+                    this.cameraAnimationEnabled = false;
                     this.camera.preset("sideScroller", 500);
                     this.camera.orthoSize(600);
                     this.isPerspective = false;
-                    this.updateStatus("Side-Scroller Preset - P/O/1/2/3/4");
+                    this.updateStatus("Side-Scroller Preset - P/O/L/1/2/3/4");
                     this.log("Applied side-scroller camera preset");
                     break;
                 case "arrowup":
@@ -230,9 +397,82 @@ class Client extends IgeBaseClass_1.IgeBaseClass {
                         this.log(`Ortho size: ${this.camera.orthoSize()}`);
                     }
                     break;
+                case "l":
+                    // Toggle lighting
+                    this.toggleLighting();
+                    break;
+                case "s":
+                    // Toggle shadows
+                    this.toggleShadows();
+                    break;
+                case "d":
+                    // Cycle shadow debug mode
+                    this.cycleShadowDebugMode();
+                    break;
             }
         });
-        this.log("Controls: P=Perspective, O=Orthographic, 1=Isometric, 2=Iso45, 3=TopDown, 4=SideScroller");
+        this.log("Controls: P=Perspective, O=Orthographic, L=Toggle Lighting, S=Toggle Shadows, D=Debug Shadows, 1-4=Presets");
+    }
+    toggleShadows() {
+        if (!this.renderer || !this.directionalLight)
+            return;
+        if (this.renderer.shadowsEnabled()) {
+            this.renderer.disableShadows();
+            this.updateStatus("Shadows Disabled - Press S to enable");
+            this.log("Shadows disabled");
+        }
+        else {
+            if (this.renderer.enableShadows(this.directionalLight, 1024)) {
+                this.updateStatus("Shadows Enabled - Press S to disable");
+                this.log("Shadows enabled");
+            }
+        }
+    }
+    cycleShadowDebugMode() {
+        if (!this.renderer)
+            return;
+        const debugModes = [
+            "Normal Rendering",
+            "Debug: UV Coords (RG)",
+            "Debug: Fragment Depth",
+            "Debug: Shadow Map Depth",
+            "Debug: Comparison (R=shadow, G=lit)"
+        ];
+        const currentMode = this.renderer.shadowDebugMode();
+        const nextMode = (currentMode + 1) % debugModes.length;
+        this.renderer.shadowDebugMode(nextMode);
+        this.updateStatus(`Shadow ${debugModes[nextMode]}`);
+        this.log(`Shadow debug mode: ${nextMode} - ${debugModes[nextMode]}`);
+    }
+    toggleLighting() {
+        if (!this.renderer)
+            return;
+        const lightManager = this.renderer.lightManager;
+        if (!lightManager)
+            return;
+        this.lightingEnabled = !this.lightingEnabled;
+        if (this.lightingEnabled) {
+            // Re-add lights
+            if (this.ambientLight)
+                lightManager.addLight(this.ambientLight);
+            if (this.directionalLight)
+                lightManager.addLight(this.directionalLight);
+            if (this.pointLight)
+                lightManager.addLight(this.pointLight);
+            this.updateStatus(`Lighting ON - ${lightManager.getLightCount().total} lights`);
+            this.log("Lighting enabled");
+        }
+        else {
+            // Remove lights
+            if (this.ambientLight)
+                lightManager.removeLight(this.ambientLight);
+            if (this.directionalLight)
+                lightManager.removeLight(this.directionalLight);
+            if (this.pointLight)
+                lightManager.removeLight(this.pointLight);
+            this.updateStatus("Lighting OFF - Press L to enable");
+            this.log("Lighting disabled");
+        }
     }
     updateStatus(status) {
         const statusElement = document.getElementById("status");

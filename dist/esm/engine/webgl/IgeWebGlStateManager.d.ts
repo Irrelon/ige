@@ -106,6 +106,8 @@ export declare class IgeWebGlStateManager extends IgeBaseClass {
     setScissorBox(x: number, y: number, width: number, height: number): void;
     /**
      * Reset all state tracking (force re-bind everything).
+     * This invalidates ALL cached state so subsequent state manager calls
+     * will actually make GL calls instead of being skipped.
      */
     reset(): void;
     /**

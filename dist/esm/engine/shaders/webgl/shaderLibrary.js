@@ -2,6 +2,10 @@ import { spriteVertexShader } from "./sprite.vert.js"
 import { spriteFragmentShader } from "./sprite.frag.js"
 import { modelVertexShader } from "./model.vert.js"
 import { modelFragmentShader } from "./model.frag.js"
+import { litVertexShader } from "./lit.vert.js"
+import { litFragmentShader } from "./lit.frag.js"
+import { shadowVertexShader } from "./shadow.vert.js"
+import { shadowFragmentShader } from "./shadow.frag.js"
 /**
  * Built-in shader library for WebGL renderer.
  * Provides centralized registration and lookup of shader programs.
@@ -46,3 +50,5 @@ export class IgeShaderLibrary {
 // Register built-in shaders
 IgeShaderLibrary.register("sprite", spriteVertexShader, spriteFragmentShader, "2D sprite shader with billboarding support");
 IgeShaderLibrary.register("model", modelVertexShader, modelFragmentShader, "Basic 3D model shader with simple lighting");
+IgeShaderLibrary.register("lit", litVertexShader, litFragmentShader, "PBR lit shader with support for 2D textures, smart textures, and PBR materials");
+IgeShaderLibrary.register("shadow", shadowVertexShader, shadowFragmentShader, "Shadow depth pass shader for shadow mapping");

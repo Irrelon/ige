@@ -1,5 +1,5 @@
 import { IgeBaseClass } from "../core/IgeBaseClass.js"
-import type { IgeMatrix4 } from "../core/IgeMatrix4.js";
+import type { IgeMatrix4 } from "../core/IgeMatrix4.js"
 /**
  * Wrapper class for WebGL shader programs.
  * Provides convenient methods for setting uniforms and caching uniform locations.
@@ -60,9 +60,9 @@ export declare class IgeWebGlProgram extends IgeBaseClass {
      */
     setUniform4i(name: string, x: number, y: number, z: number, w: number): this;
     /**
-     * Set a mat4 uniform from IgeMatrix4.
+     * Set a mat4 uniform from IgeMatrix4 or Float32Array.
      */
-    setUniformMatrix4fv(name: string, matrix: IgeMatrix4, transpose?: boolean): this;
+    setUniformMatrix4fv(name: string, matrix: IgeMatrix4 | Float32Array, transpose?: boolean): this;
     /**
      * Set a float array uniform.
      */
