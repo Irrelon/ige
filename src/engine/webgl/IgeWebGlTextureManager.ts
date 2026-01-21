@@ -189,6 +189,86 @@ export class IgeWebGlTextureManager extends IgeBaseClass {
 		return webglTexture;
 	}
 
+	// Cache for blob-based textures (keyed by material ID)
+	protected _blobTextureCache: Map<string, WebGLTexture> = new Map();
+	protected _blobTexturePromises: Map<string, Promise<WebGLTexture | null>> = new Map();
+
+	/**
+	 * Create a WebGL texture from a Blob (e.g., from GLTF embedded image).
+	 * Returns a promise since image loading is asynchronous.
+	 */
+	async createTextureFromBlob(textureId: string, blob: Blob): Promise<WebGLTexture | null> {
+		// Check cache first
+		if (this._blobTextureCache.has(textureId)) {
+			return this._blobTextureCache.get(textureId) || null;
+		}
+
+		// Check if already loading
+		if (this._blobTexturePromises.has(textureId)) {
+			return this._blobTexturePromises.get(textureId) || null;
+		}
+
+		// Create promise for loading
+		const loadPromise = new Promise<WebGLTexture | null>((resolve) => {
+			// Create object URL from blob
+			const url = URL.createObjectURL(blob);
+
+			// Create image element
+			const img = new Image();
+			img.onload = () => {
+				// Clean up object URL
+				URL.revokeObjectURL(url);
+
+				// Create WebGL texture from loaded image
+				// Note: GLTF textures use flipY: false because GLTF UV coordinates
+				// expect origin at top-left, which matches the natural image orientation
+				// Use LINEAR filter (not LINEAR_MIPMAP_LINEAR) to avoid mipmap generation issues
+				const texture = this.createTextureFromImage(textureId, img, {
+					wrapS: this._gl.REPEAT,
+					wrapT: this._gl.REPEAT,
+					minFilter: this._gl.LINEAR,
+					magFilter: this._gl.LINEAR,
+					generateMipmaps: false,
+					flipY: false
+				});
+
+				if (texture) {
+					this._blobTextureCache.set(textureId, texture);
+					this.log(`Created texture "${textureId}" from blob (${img.width}x${img.height})`);
+				}
+
+				this._blobTexturePromises.delete(textureId);
+				resolve(texture);
+			};
+
+			img.onerror = () => {
+				URL.revokeObjectURL(url);
+				this.log(`Failed to load texture "${textureId}" from blob`, "error");
+				this._blobTexturePromises.delete(textureId);
+				resolve(null);
+			};
+
+			img.src = url;
+		});
+
+		this._blobTexturePromises.set(textureId, loadPromise);
+		return loadPromise;
+	}
+
+	/**
+	 * Get a cached blob texture synchronously (returns null if not yet loaded).
+	 */
+	getBlobTexture(textureId: string): WebGLTexture | null {
+		return this._blobTextureCache.get(textureId) || null;
+	}
+
+	/**
+	 * Check if a blob texture is cached.
+	 */
+	hasBlobTexture(textureId: string): boolean {
+		return this._blobTextureCache.has(textureId);
+	}
+
 	/**
 	 * Create a WebGL texture from a smart texture (Canvas2D → WebGL).
 	 * NOTE: Smart texture full support will be implemented in Phase 4.

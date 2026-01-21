@@ -33,6 +33,11 @@ export class IgeWebGlMaterial extends IgeBaseClass {
     _diffuseTexture;
     _normalTexture;
     _emissiveTexture;
+    // Raw texture data from GLTF (Blob for creating WebGL textures)
+    _baseColorTextureData;
+    _baseColorTexCoord = 0;
+    // Texture ID for the loaded WebGL texture
+    _baseColorTextureId;
     // Emissive properties
     _emissiveColor = { r: 0, g: 0, b: 0 };
     _emissiveIntensity = 1.0;
@@ -124,6 +129,30 @@ export class IgeWebGlMaterial extends IgeBaseClass {
             return this;
         }
         return this._emissiveTexture;
+    }
+    /**
+     * Gets / sets the base color texture data (raw Blob from GLTF).
+     */
+    baseColorTextureData(data, texCoord) {
+        if (data !== undefined) {
+            this._baseColorTextureData = data;
+            this._baseColorTexCoord = texCoord ?? 0;
+            this._dirty = true;
+            return this;
+        }
+        return this._baseColorTextureData;
+    }
+    /**
+     * Gets the base color texture coordinate set index.
+     */
+    baseColorTexCoord() {
+        return this._baseColorTexCoord;
+    }
+    /**
+     * Check if material has base color texture data.
+     */
+    hasBaseColorTexture() {
+        return this._baseColorTextureData !== undefined || this._diffuseTexture !== undefined;
     }
     /**
      * Gets / sets the emissive color.

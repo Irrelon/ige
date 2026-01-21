@@ -1,19 +1,19 @@
 import { IgeBaseRenderer } from "./IgeBaseRenderer.js"
-import { IgePoint2d } from "./IgePoint2d.js"
+import { IgePoint2d } from "./IgePoint2d.js";
 import { ige } from "../instance.js"
-import { isClient, isServer } from "../utils/clientServer.js"
+import { isClient, isServer } from "../utils/clientServer.js";
 import { IgeWebGlResourceManager } from "../webgl/IgeWebGlResourceManager.js"
-import { IgeWebGlShaderManager } from "../webgl/IgeWebGlShaderManager.js"
+import { IgeWebGlShaderManager } from "../webgl/IgeWebGlShaderManager.js";
 import { IgeWebGlTextureManager } from "../webgl/IgeWebGlTextureManager.js"
-import { IgeWebGlGeometryManager } from "../webgl/IgeWebGlGeometryManager.js"
+import { IgeWebGlGeometryManager } from "../webgl/IgeWebGlGeometryManager.js";
 import { IgeWebGlCameraController } from "../webgl/IgeWebGlCameraController.js"
-import { IgeWebGlRenderBatchManager } from "../webgl/IgeWebGlRenderBatchManager.js"
+import { IgeWebGlRenderBatchManager } from "../webgl/IgeWebGlRenderBatchManager.js";
 import { IgeWebGlStateManager } from "../webgl/IgeWebGlStateManager.js"
-import { IgeWebGlLightManager } from "../webgl/IgeWebGlLightManager.js"
+import { IgeWebGlLightManager } from "../webgl/IgeWebGlLightManager.js";
 import { IgeWebGlShadowManager } from "../webgl/IgeWebGlShadowManager.js"
-import { IgeWebGlSkeletonManager } from "../webgl/IgeWebGlSkeletonManager.js"
+import { IgeWebGlSkeletonManager } from "../webgl/IgeWebGlSkeletonManager.js";
 import { IgeShaderLibrary } from "../shaders/webgl/shaderLibrary.js"
-import { IgePoint3d } from "./IgePoint3d.js"
+import { IgePoint3d } from "./IgePoint3d.js";
 /**
  * Custom WebGL renderer for IGE supporting full 3D rendering.
  * This renderer replaces the experimental three.js integration with
@@ -730,6 +730,14 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
                     if (mat.emissiveColor) {
                         shaderProgram.setUniform3f("u_emissiveColor", mat.emissiveColor.r, mat.emissiveColor.g, mat.emissiveColor.b);
                         shaderProgram.setUniform1f("u_emissiveIntensity", mat.emissiveIntensity ?? 1);
+                    }
+                    // Bind entity material texture if available (e.g., from GLTF)
+                    if (mat.textureId && this._textureManager) {
+                        const blobTexture = this._textureManager.getBlobTexture(mat.textureId);
+                        if (blobTexture) {
+                            // Force rebind to ensure texture is applied even if state manager thinks it's cached
+                            this._stateManager.bindTexture(blobTexture, 0, true);
+                        }
                     }
                 }
                 // Draw geometry

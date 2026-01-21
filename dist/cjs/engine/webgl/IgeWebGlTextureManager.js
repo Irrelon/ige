@@ -1,4 +1,13 @@
 "use strict";
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.IgeWebGlTextureManager = void 0;
 const IgeBaseClass_1 = require("../core/IgeBaseClass.js");
@@ -18,6 +27,9 @@ class IgeWebGlTextureManager extends IgeBaseClass_1.IgeBaseClass {
         this._smartTextureCanvases = new Map();
         // Default 1x1 white texture for entities without textures
         this._defaultWhiteTexture = null;
+        // Cache for blob-based textures (keyed by material ID)
+        this._blobTextureCache = new Map();
+        this._blobTexturePromises = new Map();
         this._gl = gl;
         this._resourceManager = resourceManager;
         // Create the default white texture
@@ -137,6 +149,72 @@ class IgeWebGlTextureManager extends IgeBaseClass_1.IgeBaseClass {
             this._igeTextureMap.set(textureId, webglTexture);
         }
         return webglTexture;
+    }
+    /**
+     * Create a WebGL texture from a Blob (e.g., from GLTF embedded image).
+     * Returns a promise since image loading is asynchronous.
+     */
+    createTextureFromBlob(textureId, blob) {
+        return __awaiter(this, void 0, void 0, function* () {
+            // Check cache first
+            if (this._blobTextureCache.has(textureId)) {
+                return this._blobTextureCache.get(textureId) || null;
+            }
+            // Check if already loading
+            if (this._blobTexturePromises.has(textureId)) {
+                return this._blobTexturePromises.get(textureId) || null;
+            }
+            // Create promise for loading
+            const loadPromise = new Promise((resolve) => {
+                // Create object URL from blob
+                const url = URL.createObjectURL(blob);
+                // Create image element
+                const img = new Image();
+                img.onload = () => {
+                    // Clean up object URL
+                    URL.revokeObjectURL(url);
+                    // Create WebGL texture from loaded image
+                    // Note: GLTF textures use flipY: false because GLTF UV coordinates
+                    // expect origin at top-left, which matches the natural image orientation
+                    // Use LINEAR filter (not LINEAR_MIPMAP_LINEAR) to avoid mipmap generation issues
+                    const texture = this.createTextureFromImage(textureId, img, {
+                        wrapS: this._gl.REPEAT,
+                        wrapT: this._gl.REPEAT,
+                        minFilter: this._gl.LINEAR,
+                        magFilter: this._gl.LINEAR,
+                        generateMipmaps: false,
+                        flipY: false
+                    });
+                    if (texture) {
+                        this._blobTextureCache.set(textureId, texture);
+                        this.log(`Created texture "${textureId}" from blob (${img.width}x${img.height})`);
+                    }
+                    this._blobTexturePromises.delete(textureId);
+                    resolve(texture);
+                };
+                img.onerror = () => {
+                    URL.revokeObjectURL(url);
+                    this.log(`Failed to load texture "${textureId}" from blob`, "error");
+                    this._blobTexturePromises.delete(textureId);
+                    resolve(null);
+                };
+                img.src = url;
+            });
+            this._blobTexturePromises.set(textureId, loadPromise);
+            return loadPromise;
+        });
+    }
+    /**
+     * Get a cached blob texture synchronously (returns null if not yet loaded).
+     */
+    getBlobTexture(textureId) {
+        return this._blobTextureCache.get(textureId) || null;
+    }
+    /**
+     * Check if a blob texture is cached.
+     */
+    hasBlobTexture(textureId) {
+        return this._blobTextureCache.has(textureId);
     }
     /**
      * Create a WebGL texture from a smart texture (Canvas2D → WebGL).

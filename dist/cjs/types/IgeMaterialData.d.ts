@@ -32,4 +32,6 @@ export interface IgeMaterialData extends IgeAbstractData3d {
     };
     /** Emissive intensity multiplier */
     emissiveIntensity?: number;
+    /** ID of the base color/diffuse texture (loaded via TextureManager) */
+    textureId?: string;
 }

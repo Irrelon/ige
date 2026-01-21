@@ -34,6 +34,9 @@ export declare class IgeWebGlMaterial extends IgeBaseClass {
     protected _diffuseTexture?: IgeTexture;
     protected _normalTexture?: IgeTexture;
     protected _emissiveTexture?: IgeTexture;
+    protected _baseColorTextureData?: Blob;
+    protected _baseColorTexCoord: number;
+    _baseColorTextureId?: string;
     protected _emissiveColor: {
         r: number;
         g: number;
@@ -80,6 +83,18 @@ export declare class IgeWebGlMaterial extends IgeBaseClass {
      * Gets / sets the emissive texture.
      */
     emissiveTexture(texture?: IgeTexture): IgeTexture | undefined | this;
+    /**
+     * Gets / sets the base color texture data (raw Blob from GLTF).
+     */
+    baseColorTextureData(data?: Blob, texCoord?: number): Blob | undefined | this;
+    /**
+     * Gets the base color texture coordinate set index.
+     */
+    baseColorTexCoord(): number;
+    /**
+     * Check if material has base color texture data.
+     */
+    hasBaseColorTexture(): boolean;
     /**
      * Gets / sets the emissive color.
      */

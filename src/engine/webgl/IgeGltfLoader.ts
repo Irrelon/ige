@@ -66,6 +66,34 @@ export interface IgeGltfNode {
 }
 
 /**
+ * GLTF image data - either embedded or external.
+ */
+export interface IgeGltfImage {
+	name?: string;
+	mimeType?: string;
+	/** Image data as Blob for creating textures */
+	data?: Blob;
+	/** URI for external images */
+	uri?: string;
+}
+
+/**
+ * GLTF texture data - references an image and sampler.
+ */
+export interface IgeGltfTexture {
+	name?: string;
+	/** Index into images array */
+	imageIndex: number;
+	/** Sampler settings */
+	sampler?: {
+		magFilter?: number;
+		minFilter?: number;
+		wrapS?: number;
+		wrapT?: number;
+	};
+}
+
+/**
  * Loaded GLTF model data.
  */
 export interface IgeGltfModel {
@@ -75,6 +103,8 @@ export interface IgeGltfModel {
 	defaultSceneIndex: number;
 	meshes: IgeGltfMesh[];
 	materials: IgeWebGlMaterial[];
+	images?: IgeGltfImage[];
+	textures?: IgeGltfTexture[];
 	skins?: IgeGltfSkin[];
 	animations?: IgeAnimationClipData[];
 	nodes?: IgeGltfNode[];
@@ -253,8 +283,12 @@ export class IgeGltfLoader extends IgeBaseClass {
 		// Parse nodes first (needed for skeleton hierarchy)
 		const nodes = this._parseNodes(gltf);
 
-		// Parse materials
-		const materials = this._parseMaterials(gltf);
+		// Parse images and textures
+		const images = this._parseImages(gltf, buffers, baseUrl);
+		const textures = this._parseTextures(gltf);
+
+		// Parse materials (pass textures for texture references)
+		const materials = this._parseMaterials(gltf, textures, images);
 
 		// Parse skins (skeletons)
 		const skins = this._parseSkins(gltf, buffers, nodes);
@@ -286,6 +320,14 @@ export class IgeGltfLoader extends IgeBaseClass {
 			nodes
 		};
 
+		// Add images and textures if present
+		if (images.length > 0) {
+			model.images = images;
+		}
+		if (textures.length > 0) {
+			model.textures = textures;
+		}
+
 		// Add skins and animations if present
 		if (skins.length > 0) {
 			model.skins = skins;
@@ -298,9 +340,97 @@ export class IgeGltfLoader extends IgeBaseClass {
 	}
 
 	/**
+	 * Parse images from GLTF (embedded in bufferViews or external URIs).
+	 */
+	protected _parseImages(gltf: any, buffers: ArrayBuffer[], baseUrl: string): IgeGltfImage[] {
+		const images: IgeGltfImage[] = [];
+
+		if (!gltf.images) {
+			return images;
+		}
+
+		for (const imageDef of gltf.images) {
+			const image: IgeGltfImage = {
+				name: imageDef.name,
+				mimeType: imageDef.mimeType
+			};
+
+			if (imageDef.bufferView !== undefined) {
+				// Image data is embedded in a buffer view
+				const bufferViewDef = gltf.bufferViews[imageDef.bufferView];
+				const bufferIndex = bufferViewDef.buffer || 0;
+				const buffer = buffers[bufferIndex];
+				const byteOffset = bufferViewDef.byteOffset || 0;
+				const byteLength = bufferViewDef.byteLength;
+
+				// Extract image data as a Blob
+				const imageData = new Uint8Array(buffer, byteOffset, byteLength);
+				image.data = new Blob([imageData], { type: imageDef.mimeType || "image/png" });
+			} else if (imageDef.uri) {
+				// External image URI
+				if (imageDef.uri.startsWith("data:")) {
+					// Data URI - decode it
+					const matches = imageDef.uri.match(/^data:([^;]+);base64,(.+)$/);
+					if (matches) {
+						const mimeType = matches[1];
+						const base64Data = matches[2];
+						const binaryStr = atob(base64Data);
+						const bytes = new Uint8Array(binaryStr.length);
+						for (let i = 0; i < binaryStr.length; i++) {
+							bytes[i] = binaryStr.charCodeAt(i);
+						}
+						image.data = new Blob([bytes], { type: mimeType });
+						image.mimeType = mimeType;
+					}
+				} else {
+					// External file reference
+					image.uri = baseUrl + imageDef.uri;
+				}
+			}
+
+			images.push(image);
+		}
+
+		return images;
+	}
+
+	/**
+	 * Parse textures from GLTF.
+	 */
+	protected _parseTextures(gltf: any): IgeGltfTexture[] {
+		const textures: IgeGltfTexture[] = [];
+
+		if (!gltf.textures) {
+			return textures;
+		}
+
+		for (const texDef of gltf.textures) {
+			const texture: IgeGltfTexture = {
+				name: texDef.name,
+				imageIndex: texDef.source
+			};
+
+			// Parse sampler if present
+			if (texDef.sampler !== undefined && gltf.samplers && gltf.samplers[texDef.sampler]) {
+				const samplerDef = gltf.samplers[texDef.sampler];
+				texture.sampler = {
+					magFilter: samplerDef.magFilter,
+					minFilter: samplerDef.minFilter,
+					wrapS: samplerDef.wrapS,
+					wrapT: samplerDef.wrapT
+				};
+			}
+
+			textures.push(texture);
+		}
+
+		return textures;
+	}
+
+	/**
 	 * Parse materials from GLTF.
 	 */
-	protected _parseMaterials(gltf: any): IgeWebGlMaterial[] {
+	protected _parseMaterials(gltf: any, textures: IgeGltfTexture[], images: IgeGltfImage[]): IgeWebGlMaterial[] {
 		const materials: IgeWebGlMaterial[] = [];
 
 		if (!gltf.materials) {
@@ -327,6 +457,22 @@ export class IgeGltfLoader extends IgeBaseClass {
 						pbr.baseColorFactor[2],
 						pbr.baseColorFactor[3] ?? 1
 					);
+				}
+
+				// Base color texture
+				if (pbr.baseColorTexture !== undefined) {
+					const textureIndex = pbr.baseColorTexture.index;
+					const texCoord = pbr.baseColorTexture.texCoord ?? 0;
+
+					if (textureIndex !== undefined && textures[textureIndex]) {
+						const texture = textures[textureIndex];
+						const imageIndex = texture.imageIndex;
+
+						if (imageIndex !== undefined && images[imageIndex] && images[imageIndex].data) {
+							material.baseColorTextureData(images[imageIndex].data, texCoord);
+							this.log(`Material "${matDef.name}" has base color texture from image ${imageIndex}`);
+						}
+					}
 				}
 
 				// Metallic and roughness

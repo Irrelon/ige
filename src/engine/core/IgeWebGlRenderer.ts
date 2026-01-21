@@ -908,6 +908,14 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 						);
 						shaderProgram!.setUniform1f("u_emissiveIntensity", mat.emissiveIntensity ?? 1);
 					}
+					// Bind entity material texture if available (e.g., from GLTF)
+					if (mat.textureId && this._textureManager) {
+						const blobTexture = this._textureManager.getBlobTexture(mat.textureId);
+						if (blobTexture) {
+							// Force rebind to ensure texture is applied even if state manager thinks it's cached
+							this._stateManager!.bindTexture(blobTexture, 0, true);
+						}
+					}
 				}
 
 				// Draw geometry

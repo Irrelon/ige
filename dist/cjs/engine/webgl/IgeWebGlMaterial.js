@@ -32,6 +32,7 @@ class IgeWebGlMaterial extends IgeBaseClass_1.IgeBaseClass {
         this._name = "Untitled Material";
         // Base color (RGBA)
         this._color = { r: 1, g: 1, b: 1, a: 1 };
+        this._baseColorTexCoord = 0;
         // Emissive properties
         this._emissiveColor = { r: 0, g: 0, b: 0 };
         this._emissiveIntensity = 1.0;
@@ -119,6 +120,30 @@ class IgeWebGlMaterial extends IgeBaseClass_1.IgeBaseClass {
             return this;
         }
         return this._emissiveTexture;
+    }
+    /**
+     * Gets / sets the base color texture data (raw Blob from GLTF).
+     */
+    baseColorTextureData(data, texCoord) {
+        if (data !== undefined) {
+            this._baseColorTextureData = data;
+            this._baseColorTexCoord = texCoord !== null && texCoord !== void 0 ? texCoord : 0;
+            this._dirty = true;
+            return this;
+        }
+        return this._baseColorTextureData;
+    }
+    /**
+     * Gets the base color texture coordinate set index.
+     */
+    baseColorTexCoord() {
+        return this._baseColorTexCoord;
+    }
+    /**
+     * Check if material has base color texture data.
+     */
+    hasBaseColorTexture() {
+        return this._baseColorTextureData !== undefined || this._diffuseTexture !== undefined;
     }
     /**
      * Gets / sets the emissive color.

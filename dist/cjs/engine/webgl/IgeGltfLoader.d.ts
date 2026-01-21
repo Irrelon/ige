@@ -28,6 +28,32 @@ export interface IgeGltfNode {
     skin?: number;
 }
 /**
+ * GLTF image data - either embedded or external.
+ */
+export interface IgeGltfImage {
+    name?: string;
+    mimeType?: string;
+    /** Image data as Blob for creating textures */
+    data?: Blob;
+    /** URI for external images */
+    uri?: string;
+}
+/**
+ * GLTF texture data - references an image and sampler.
+ */
+export interface IgeGltfTexture {
+    name?: string;
+    /** Index into images array */
+    imageIndex: number;
+    /** Sampler settings */
+    sampler?: {
+        magFilter?: number;
+        minFilter?: number;
+        wrapS?: number;
+        wrapT?: number;
+    };
+}
+/**
  * Loaded GLTF model data.
  */
 export interface IgeGltfModel {
@@ -37,6 +63,8 @@ export interface IgeGltfModel {
     defaultSceneIndex: number;
     meshes: IgeGltfMesh[];
     materials: IgeWebGlMaterial[];
+    images?: IgeGltfImage[];
+    textures?: IgeGltfTexture[];
     skins?: IgeGltfSkin[];
     animations?: IgeAnimationClipData[];
     nodes?: IgeGltfNode[];
@@ -80,9 +108,17 @@ export declare class IgeGltfLoader extends IgeBaseClass {
      */
     protected _parseGltf(gltf: any, buffers: ArrayBuffer[], baseUrl: string, modelId: string): Promise<IgeGltfModel>;
     /**
+     * Parse images from GLTF (embedded in bufferViews or external URIs).
+     */
+    protected _parseImages(gltf: any, buffers: ArrayBuffer[], baseUrl: string): IgeGltfImage[];
+    /**
+     * Parse textures from GLTF.
+     */
+    protected _parseTextures(gltf: any): IgeGltfTexture[];
+    /**
      * Parse materials from GLTF.
      */
-    protected _parseMaterials(gltf: any): IgeWebGlMaterial[];
+    protected _parseMaterials(gltf: any, textures: IgeGltfTexture[], images: IgeGltfImage[]): IgeWebGlMaterial[];
     /**
      * Parse meshes from GLTF.
      */

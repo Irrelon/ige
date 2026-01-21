@@ -42,6 +42,7 @@ export declare class Client extends IgeBaseClass implements IgeCanInit {
     setupScene(): void;
     setupLights(): void;
     loadAnimatedModel(): Promise<void>;
+    preloadTextures(): Promise<void>;
     createAnimatedEntity(): void;
     setupCameraAnimation(): void;
     setupKeyboardControls(): void;

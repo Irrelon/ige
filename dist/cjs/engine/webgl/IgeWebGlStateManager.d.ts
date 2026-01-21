@@ -59,7 +59,7 @@ export declare class IgeWebGlStateManager extends IgeBaseClass {
     /**
      * Bind a texture to a specific unit (with state tracking).
      */
-    bindTexture(texture: WebGLTexture | null, unit?: number): void;
+    bindTexture(texture: WebGLTexture | null, unit?: number, forceRebind?: boolean): void;
     /**
      * Enable/disable depth testing (with state tracking).
      */

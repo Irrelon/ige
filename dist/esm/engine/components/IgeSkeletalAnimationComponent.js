@@ -1,5 +1,5 @@
 import { IgeComponent } from "../core/IgeComponent.js"
-import { IgeBehaviourType } from "../../enums/index.js";
+import { IgeBehaviourType } from "../../enums/index.js"
 /**
  * Skeletal animation component for GPU-based bone animation.
  * Handles animation playback, keyframe sampling, and animation blending.

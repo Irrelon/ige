@@ -144,6 +144,10 @@ export class Client extends IgeBaseClass {
             this.log(`  Meshes: ${this.animatedModel.meshes.length}`);
             this.log(`  Skins: ${this.animatedModel.skins?.length || 0}`);
             this.log(`  Animations: ${this.animatedModel.animations?.length || 0}`);
+            this.log(`  Images: ${this.animatedModel.images?.length || 0}`);
+            this.log(`  Textures: ${this.animatedModel.textures?.length || 0}`);
+            // Preload textures from materials
+            await this.preloadTextures();
             // Check if model has skeleton and animations
             if (!this.animatedModel.skins || this.animatedModel.skins.length === 0) {
                 this.log("Warning: Model has no skeleton (skin) data!", "warning");
@@ -171,6 +175,28 @@ export class Client extends IgeBaseClass {
             this.log("- Any animated character from Mixamo (export as FBX, convert via Blender)");
             this.log("======================================\n");
         }
+    }
+    async preloadTextures() {
+        if (!this.renderer || !this.animatedModel)
+            return;
+        const textureManager = this.renderer._textureManager;
+        if (!textureManager) {
+            this.log("Texture manager not available", "warning");
+            return;
+        }
+        // Load textures from materials
+        for (let i = 0; i < this.animatedModel.materials.length; i++) {
+            const material = this.animatedModel.materials[i];
+            const textureData = material._baseColorTextureData;
+            if (textureData) {
+                const textureId = `material_${i}_baseColor`;
+                this.log(`Loading texture for material ${i}...`);
+                await textureManager.createTextureFromBlob(textureId, textureData);
+                // Store the texture ID on the material for later reference
+                material._baseColorTextureId = textureId;
+            }
+        }
+        this.log("Texture preloading complete");
     }
     createAnimatedEntity() {
         if (!this.scene || !this.renderer || !this.animatedModel)
@@ -216,12 +242,27 @@ export class Client extends IgeBaseClass {
                 this.log(`  SkeletonId: ${primitive.geometry.skeletonId}`);
             }
         }
-        // Set material
-        this.animatedEntity._materialData = {
-            color: { r: 0.9, g: 0.8, b: 0.7, a: 1 },
-            metallic: 0.0,
-            roughness: 0.5
-        };
+        // Set material - use the GLTF material if available
+        const gltfMaterial = this.animatedModel.materials[0];
+        if (gltfMaterial && gltfMaterial._baseColorTextureId) {
+            // Use GLTF material with texture reference
+            this.animatedEntity._materialData = {
+                color: gltfMaterial._color || { r: 1, g: 1, b: 1, a: 1 },
+                metallic: gltfMaterial._metallic ?? 0.0,
+                roughness: gltfMaterial._roughness ?? 0.5,
+                textureId: gltfMaterial._baseColorTextureId
+            };
+            this.log(`Using GLTF material with texture: ${gltfMaterial._baseColorTextureId}`);
+        }
+        else {
+            // Fallback to default material
+            this.animatedEntity._materialData = {
+                color: { r: 0.9, g: 0.8, b: 0.7, a: 1 },
+                metallic: 0.0,
+                roughness: 0.5
+            };
+            this.log("Using default material (no texture)");
+        }
         // Register skeleton data if available
         if (this.animatedModel.skins && this.animatedModel.skins.length > 0) {
             const skin = this.animatedModel.skins[0];

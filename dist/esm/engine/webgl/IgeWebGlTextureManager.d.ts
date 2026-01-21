@@ -1,7 +1,7 @@
 import { IgeBaseClass } from "../core/IgeBaseClass.js"
-import type { IgeTexture } from "../core/IgeTexture.js"
+import type { IgeTexture } from "../core/IgeTexture.js";
 import type { IgeWebGlResourceManager } from "./IgeWebGlResourceManager.js"
-import type { IgeSmartTexture } from "../../types/IgeSmartTexture.js"
+import type { IgeSmartTexture } from "../../types/IgeSmartTexture.js";
 /**
  * Manages WebGL texture creation, updates, and state for the renderer.
  */
@@ -39,6 +39,21 @@ export declare class IgeWebGlTextureManager extends IgeBaseClass {
      * Create a WebGL texture from an IGE texture.
      */
     createTextureFromIgeTexture(igeTexture: IgeTexture): WebGLTexture | null;
+    protected _blobTextureCache: Map<string, WebGLTexture>;
+    protected _blobTexturePromises: Map<string, Promise<WebGLTexture | null>>;
+    /**
+     * Create a WebGL texture from a Blob (e.g., from GLTF embedded image).
+     * Returns a promise since image loading is asynchronous.
+     */
+    createTextureFromBlob(textureId: string, blob: Blob): Promise<WebGLTexture | null>;
+    /**
+     * Get a cached blob texture synchronously (returns null if not yet loaded).
+     */
+    getBlobTexture(textureId: string): WebGLTexture | null;
+    /**
+     * Check if a blob texture is cached.
+     */
+    hasBlobTexture(textureId: string): boolean;
     /**
      * Create a WebGL texture from a smart texture (Canvas2D → WebGL).
      * NOTE: Smart texture full support will be implemented in Phase 4.

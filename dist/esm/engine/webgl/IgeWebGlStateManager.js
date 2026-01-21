@@ -114,9 +114,9 @@ export class IgeWebGlStateManager extends IgeBaseClass {
     /**
      * Bind a texture to a specific unit (with state tracking).
      */
-    bindTexture(texture, unit = 0) {
+    bindTexture(texture, unit = 0, forceRebind = false) {
         // Check if texture is already bound to this unit
-        if (this._boundTextures[unit] === texture && this._activeTextureUnit === unit) {
+        if (!forceRebind && this._boundTextures[unit] === texture && this._activeTextureUnit === unit) {
             return;
         }
         // Activate texture unit if different
