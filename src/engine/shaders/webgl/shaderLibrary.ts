@@ -6,6 +6,8 @@ import { litVertexShader } from "@/engine/shaders/webgl/lit.vert";
 import { litFragmentShader } from "@/engine/shaders/webgl/lit.frag";
 import { shadowVertexShader } from "@/engine/shaders/webgl/shadow.vert";
 import { shadowFragmentShader } from "@/engine/shaders/webgl/shadow.frag";
+import { skinnedVertexShader } from "@/engine/shaders/webgl/skinned.vert";
+import { skinnedShadowVertexShader } from "@/engine/shaders/webgl/skinned_shadow.vert";
 
 /**
  * Shader source definition.
@@ -90,4 +92,18 @@ IgeShaderLibrary.register(
 	shadowVertexShader,
 	shadowFragmentShader,
 	"Shadow depth pass shader for shadow mapping"
+);
+
+IgeShaderLibrary.register(
+	"skinned",
+	skinnedVertexShader,
+	litFragmentShader, // Uses same fragment shader as lit
+	"Skinned PBR lit shader with skeletal animation support (up to 64 bones, 4 influences per vertex)"
+);
+
+IgeShaderLibrary.register(
+	"skinned_shadow",
+	skinnedShadowVertexShader,
+	shadowFragmentShader, // Uses same fragment shader as shadow
+	"Skinned shadow depth pass shader for shadow mapping with skeletal animation"
 );

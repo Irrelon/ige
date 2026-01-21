@@ -6,6 +6,8 @@ import { litVertexShader } from "./lit.vert.js"
 import { litFragmentShader } from "./lit.frag.js"
 import { shadowVertexShader } from "./shadow.vert.js"
 import { shadowFragmentShader } from "./shadow.frag.js"
+import { skinnedVertexShader } from "./skinned.vert.js"
+import { skinnedShadowVertexShader } from "./skinned_shadow.vert.js"
 /**
  * Built-in shader library for WebGL renderer.
  * Provides centralized registration and lookup of shader programs.
@@ -52,3 +54,7 @@ IgeShaderLibrary.register("sprite", spriteVertexShader, spriteFragmentShader, "2
 IgeShaderLibrary.register("model", modelVertexShader, modelFragmentShader, "Basic 3D model shader with simple lighting");
 IgeShaderLibrary.register("lit", litVertexShader, litFragmentShader, "PBR lit shader with support for 2D textures, smart textures, and PBR materials");
 IgeShaderLibrary.register("shadow", shadowVertexShader, shadowFragmentShader, "Shadow depth pass shader for shadow mapping");
+IgeShaderLibrary.register("skinned", skinnedVertexShader, litFragmentShader, // Uses same fragment shader as lit
+"Skinned PBR lit shader with skeletal animation support (up to 64 bones, 4 influences per vertex)");
+IgeShaderLibrary.register("skinned_shadow", skinnedShadowVertexShader, shadowFragmentShader, // Uses same fragment shader as shadow
+"Skinned shadow depth pass shader for shadow mapping with skeletal animation");

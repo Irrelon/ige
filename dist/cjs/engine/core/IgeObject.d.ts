@@ -25,6 +25,8 @@ import type { IgeInputEventHandler } from "../../types/IgeInputEventHandler.js"
 import type { IgeMaterialData } from "../../types/IgeMaterialData.js"
 import type { IgeMeshData3d } from "../../types/IgeMeshData3d.js"
 import type { IgeGltfModel } from "../webgl/IgeGltfLoader.js"
+import type { IgeSkeleton, IgeSkeletonData } from "../../types/IgeSkeletonData.js"
+import type { IgeAnimationClipData } from "../../types/IgeAnimationClipData.js"
 import type { IgePoint } from "../../types/IgePoint.js"
 import type { IgeSmartTexture } from "../../types/IgeSmartTexture.js"
 import type { IgeTimeStreamPacket } from "../../types/IgeTimeStream.js"
@@ -150,6 +152,9 @@ export declare class IgeObject extends IgeEventingClass implements IgeCanRegiste
     _materialData: IgeMaterialData | null;
     _meshData: IgeMeshData3d | null;
     _model?: IgeGltfModel;
+    _skeleton?: IgeSkeleton;
+    _skeletonData?: IgeSkeletonData;
+    _animationClips?: Map<string, IgeAnimationClipData>;
     _deathCallBack?: (...args: any[]) => void;
     components: Record<string, IgeComponent<IgeObject>>;
     constructor();

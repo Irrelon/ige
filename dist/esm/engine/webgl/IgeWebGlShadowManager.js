@@ -1,5 +1,5 @@
 import { IgeBaseClass } from "../core/IgeBaseClass.js"
-import { IgeMatrix4 } from "../core/IgeMatrix4.js";
+import { IgeMatrix4 } from "../core/IgeMatrix4.js"
 /**
  * Default shadow map configuration.
  */

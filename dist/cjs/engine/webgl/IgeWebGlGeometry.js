@@ -15,6 +15,8 @@ class IgeWebGlGeometry extends IgeBaseClass_1.IgeBaseClass {
         this.vertexCount = 0;
         this.indexCount = 0;
         this.attributes = [];
+        // Skinning information
+        this.isSkinned = false; // Whether this geometry has bone weights/indices
         this.id = id;
         this.drawMode = drawMode;
     }

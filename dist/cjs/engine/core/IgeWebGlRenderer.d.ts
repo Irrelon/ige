@@ -10,6 +10,7 @@ import { IgeWebGlRenderBatchManager } from "../webgl/IgeWebGlRenderBatchManager.
 import { IgeWebGlStateManager } from "../webgl/IgeWebGlStateManager.js"
 import { IgeWebGlLightManager } from "../webgl/IgeWebGlLightManager.js"
 import { IgeWebGlShadowManager } from "../webgl/IgeWebGlShadowManager.js"
+import { IgeWebGlSkeletonManager } from "../webgl/IgeWebGlSkeletonManager.js"
 import type { IgeObject } from "./IgeObject.js"
 import type { IgeEntity } from "./IgeEntity.js"
 import type { IgeDirectionalLight } from "../webgl/IgeWebGlLight.js"
@@ -46,6 +47,7 @@ export declare class IgeWebGlRenderer extends IgeBaseRenderer {
     protected _stateManager?: IgeWebGlStateManager;
     protected _lightManager?: IgeWebGlLightManager;
     protected _shadowManager?: IgeWebGlShadowManager;
+    protected _skeletonManager?: IgeWebGlSkeletonManager;
     protected _shadowCastingLight?: IgeDirectionalLight;
     protected _shadowLightId: string;
     protected _shadowDebugMode: number;
@@ -125,6 +127,7 @@ export declare class IgeWebGlRenderer extends IgeBaseRenderer {
     /**
      * Render model batches using lit shader with full lighting support.
      * Falls back to simple model shader if lit shader is not available.
+     * Supports skinned meshes with skeletal animation.
      */
     protected _renderModelBatches(matrices: any, transparent: boolean): void;
     /**
@@ -135,6 +138,10 @@ export declare class IgeWebGlRenderer extends IgeBaseRenderer {
      * Get the shadow manager for shadow configuration.
      */
     get shadowManager(): IgeWebGlShadowManager | undefined;
+    /**
+     * Get the skeleton manager for skeletal animation.
+     */
+    get skeletonManager(): IgeWebGlSkeletonManager | undefined;
     /**
      * Enable shadow casting for a directional light.
      * @param light The directional light to cast shadows

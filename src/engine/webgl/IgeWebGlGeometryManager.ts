@@ -123,12 +123,17 @@ export class IgeWebGlGeometryManager extends IgeBaseClass {
 		const hasNormals = !!data.normals;
 		const hasUVs = !!data.uvs;
 		const hasColors = !!data.colors;
+		const hasBoneWeights = !!data.boneWeights;
+		const hasBoneIndices = !!data.boneIndices;
+		const isSkinned = hasBoneWeights && hasBoneIndices;
 
 		// Calculate stride
 		let componentsPerVertex = 3; // Position (x, y, z)
 		if (hasNormals) componentsPerVertex += 3; // Normal (nx, ny, nz)
 		if (hasUVs) componentsPerVertex += 2; // UV (u, v)
 		if (hasColors) componentsPerVertex += 4; // Color (r, g, b, a)
+		if (hasBoneWeights) componentsPerVertex += 4; // Bone weights (w0, w1, w2, w3)
+		if (hasBoneIndices) componentsPerVertex += 4; // Bone indices (i0, i1, i2, i3) - stored as floats
 
 		const stride = componentsPerVertex * 4; // * 4 bytes per float
 
@@ -161,6 +166,22 @@ export class IgeWebGlGeometryManager extends IgeBaseClass {
 				interleavedData[offset++] = data.colors[i * 4 + 1];
 				interleavedData[offset++] = data.colors[i * 4 + 2];
 				interleavedData[offset++] = data.colors[i * 4 + 3];
+			}
+
+			// Bone weights (4 floats per vertex from WEIGHTS_0)
+			if (hasBoneWeights && data.boneWeights) {
+				interleavedData[offset++] = data.boneWeights[i * 4];
+				interleavedData[offset++] = data.boneWeights[i * 4 + 1];
+				interleavedData[offset++] = data.boneWeights[i * 4 + 2];
+				interleavedData[offset++] = data.boneWeights[i * 4 + 3];
+			}
+
+			// Bone indices (4 bytes converted to floats from JOINTS_0)
+			if (hasBoneIndices && data.boneIndices) {
+				interleavedData[offset++] = data.boneIndices[i * 4];
+				interleavedData[offset++] = data.boneIndices[i * 4 + 1];
+				interleavedData[offset++] = data.boneIndices[i * 4 + 2];
+				interleavedData[offset++] = data.boneIndices[i * 4 + 3];
 			}
 		}
 
@@ -213,12 +234,31 @@ export class IgeWebGlGeometryManager extends IgeBaseClass {
 			attrOffset += 4 * 4;
 		}
 
+		// Bone weights attribute (4 floats per vertex)
+		if (hasBoneWeights) {
+			geometry.addAttribute("a_boneWeights", 4, gl.FLOAT, false, stride, attrOffset);
+			attrOffset += 4 * 4;
+		}
+
+		// Bone indices attribute (4 floats per vertex - indices stored as floats)
+		if (hasBoneIndices) {
+			geometry.addAttribute("a_boneIndices", 4, gl.FLOAT, false, stride, attrOffset);
+			attrOffset += 4 * 4;
+		}
+
 		geometry.setVertexData(interleavedData, vertexCount);
+
+		// Set skinning information
+		if (isSkinned) {
+			geometry.isSkinned = true;
+			geometry.skeletonId = data.skeletonId;
+			this.log(`Geometry "${geometryId}" is skinned with skeleton "${data.skeletonId}"`);
+		}
 
 		// Cache geometry
 		this._geometries.set(geometryId, geometry);
 
-		this.log(`Created geometry "${geometryId}" with ${vertexCount} vertices`);
+		this.log(`Created geometry "${geometryId}" with ${vertexCount} vertices${isSkinned ? " (skinned)" : ""}`);
 		return geometry;
 	}
 

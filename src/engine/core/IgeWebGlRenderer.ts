@@ -13,6 +13,7 @@ import { IgeWebGlRenderBatchManager } from "@/engine/webgl/IgeWebGlRenderBatchMa
 import { IgeWebGlStateManager } from "@/engine/webgl/IgeWebGlStateManager";
 import { IgeWebGlLightManager } from "@/engine/webgl/IgeWebGlLightManager";
 import { IgeWebGlShadowManager } from "@/engine/webgl/IgeWebGlShadowManager";
+import { IgeWebGlSkeletonManager } from "@/engine/webgl/IgeWebGlSkeletonManager";
 import { IgeShaderLibrary } from "@/engine/shaders/webgl/shaderLibrary";
 import type { IgeObject } from "@/engine/core/IgeObject";
 import type { IgeEntity } from "@/engine/core/IgeEntity";
@@ -57,6 +58,7 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 	protected _stateManager?: IgeWebGlStateManager;
 	protected _lightManager?: IgeWebGlLightManager;
 	protected _shadowManager?: IgeWebGlShadowManager;
+	protected _skeletonManager?: IgeWebGlSkeletonManager;
 
 	// Shadow-casting directional light reference
 	protected _shadowCastingLight?: IgeDirectionalLight;
@@ -99,6 +101,7 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 			this._resourceManager,
 			this._webglVersion
 		);
+		this._skeletonManager = new IgeWebGlSkeletonManager();
 
 		// Compile built-in shaders
 		this._compileBuiltInShaders();
@@ -721,6 +724,7 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 	/**
 	 * Render model batches using lit shader with full lighting support.
 	 * Falls back to simple model shader if lit shader is not available.
+	 * Supports skinned meshes with skeletal animation.
 	 */
 	protected _renderModelBatches(matrices: any, transparent: boolean): void {
 		if (!this._renderBatchManager || !this._shaderManager || !this._geometryManager || !this._textureManager || !this._stateManager) {
@@ -729,92 +733,112 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 
 		const gl = this._canvasContext!;
 
-		// Try to use lit shader for full lighting, fall back to model shader
-		let shaderProgram = this._shaderManager.getProgram("lit");
-		const useLitShader = shaderProgram !== undefined;
+		// Get both regular and skinned shaders
+		const litProgram = this._shaderManager.getProgram("lit");
+		const skinnedProgram = this._shaderManager.getProgram("skinned");
+		const modelProgram = this._shaderManager.getProgram("model");
 
-		if (!shaderProgram) {
-			shaderProgram = this._shaderManager.getProgram("model");
-		}
+		// Determine which shaders are available
+		const useLitShader = litProgram !== undefined;
+		const useSkinnedShader = skinnedProgram !== undefined;
 
-		if (!shaderProgram) {
+		// Select default non-skinned shader
+		let defaultShaderProgram = litProgram || modelProgram;
+		if (!defaultShaderProgram) {
 			return;
 		}
 
-		// Use shader
-		shaderProgram.use();
+		// Identity matrix for when skinning is disabled
+		const identityMatrix = new Float32Array([
+			1, 0, 0, 0,
+			0, 1, 0, 0,
+			0, 0, 1, 0,
+			0, 0, 0, 1
+		]);
 
-		// Set view and projection matrices
-		shaderProgram.setUniformMatrix4fv("u_viewMatrix", matrices.view);
-		shaderProgram.setUniformMatrix4fv("u_projectionMatrix", matrices.projection);
+		// Helper to set up common uniforms for a shader
+		const setupShaderUniforms = (shaderProgram: any, useLit: boolean) => {
+			// Set view and projection matrices
+			shaderProgram.setUniformMatrix4fv("u_viewMatrix", matrices.view);
+			shaderProgram.setUniformMatrix4fv("u_projectionMatrix", matrices.projection);
 
-		if (useLitShader) {
-			// Set camera position for specular calculations
-			if (matrices.cameraPosition) {
-				shaderProgram.setUniform3f("u_cameraPosition",
-					matrices.cameraPosition.x,
-					matrices.cameraPosition.y,
-					matrices.cameraPosition.z
-				);
-			}
-
-			// Apply light uniforms
-			if (this._lightManager) {
-				this._lightManager.applyLightUniforms(shaderProgram);
-			}
-
-			// Apply shadow uniforms if shadows are enabled
-			if (this.shadowsEnabled() && this._shadowManager) {
-				this._shadowManager.applyShadowUniforms(shaderProgram, this._shadowLightId, 1);
-				// Set light space matrix for vertex shader
-				const lightSpaceMatrix = this._shadowManager.getLightSpaceMatrix(this._shadowLightId);
-				if (lightSpaceMatrix) {
-					shaderProgram.setUniformMatrix4fv("u_lightSpaceMatrix", lightSpaceMatrix);
+			if (useLit) {
+				// Set camera position for specular calculations
+				if (matrices.cameraPosition) {
+					shaderProgram.setUniform3f("u_cameraPosition",
+						matrices.cameraPosition.x,
+						matrices.cameraPosition.y,
+						matrices.cameraPosition.z
+					);
 				}
-				// Set shadow debug mode
-				shaderProgram.setUniform1i("u_shadowDebug", this._shadowDebugMode);
+
+				// Apply light uniforms
+				if (this._lightManager) {
+					this._lightManager.applyLightUniforms(shaderProgram);
+				}
+
+				// Apply shadow uniforms if shadows are enabled
+				if (this.shadowsEnabled() && this._shadowManager) {
+					this._shadowManager.applyShadowUniforms(shaderProgram, this._shadowLightId, 1);
+					const lightSpaceMatrix = this._shadowManager.getLightSpaceMatrix(this._shadowLightId);
+					if (lightSpaceMatrix) {
+						shaderProgram.setUniformMatrix4fv("u_lightSpaceMatrix", lightSpaceMatrix);
+					}
+					shaderProgram.setUniform1i("u_shadowDebug", this._shadowDebugMode);
+				} else {
+					shaderProgram.setUniform1i("u_hasShadowMap", 0);
+					shaderProgram.setUniform1i("u_shadowDebug", 0);
+					shaderProgram.setUniformMatrix4fv("u_lightSpaceMatrix", identityMatrix);
+				}
+
+				// Default to simple lighting mode (non-PBR)
+				shaderProgram.setUniform1i("u_usePBR", 0);
+				shaderProgram.setUniform1i("u_hasNormalMap", 0);
+				shaderProgram.setUniform1f("u_emissiveIntensity", 0);
 			} else {
-				// Disable shadows in shader
-				shaderProgram.setUniform1i("u_hasShadowMap", 0);
-				shaderProgram.setUniform1i("u_shadowDebug", 0);
-				// Set identity matrix for light space when shadows disabled
-				shaderProgram.setUniformMatrix4fv("u_lightSpaceMatrix", new Float32Array([
-					1, 0, 0, 0,
-					0, 1, 0, 0,
-					0, 0, 1, 0,
-					0, 0, 0, 1
-				]));
+				// Fallback: simple ambient light for model shader
+				shaderProgram.setUniform3f("u_ambientLight", 0.3, 0.3, 0.3);
 			}
 
-			// Default to simple lighting mode (non-PBR)
-			shaderProgram.setUniform1i("u_usePBR", 0);
-			shaderProgram.setUniform1i("u_hasNormalMap", 0);
-			shaderProgram.setUniform1f("u_emissiveIntensity", 0);
-		} else {
-			// Fallback: simple ambient light for model shader
-			shaderProgram.setUniform3f("u_ambientLight", 0.3, 0.3, 0.3);
-		}
+			// Set default base color
+			shaderProgram.setUniform4f("u_baseColor", 1, 1, 1, 1);
+		};
 
-		// Set default base color
-		shaderProgram.setUniform4f("u_baseColor", 1, 1, 1, 1);
+		// Track current shader to minimize state changes
+		let currentProgram: any = null;
 
 		// Render function for each batch
 		const renderBatch = (batch: any) => {
+			// Check if this batch has skinned geometry
+			const isSkinned = batch.geometry.isSkinned && useSkinnedShader;
+
+			// Select appropriate shader
+			const shaderProgram = isSkinned ? skinnedProgram : defaultShaderProgram;
+
+			// Switch shader if needed
+			if (shaderProgram !== currentProgram) {
+				shaderProgram!.use();
+				setupShaderUniforms(shaderProgram, useLitShader || isSkinned);
+				currentProgram = shaderProgram;
+
+				// For skinned shader, disable skinning by default (will enable per-entity)
+				if (isSkinned) {
+					shaderProgram!.setUniform1i("u_useSkinning", 0);
+				}
+			}
+
 			// Bind geometry
 			this._geometryManager!.bindGeometry(batch.geometry, shaderProgram!);
 
 			// Bind texture if available, otherwise use default white texture
-			// Use state manager to properly track texture bindings
 			if (batch.textureId && batch.texture) {
 				const webGlTexture = this._textureManager!.getTextureForIgeTexture(batch.texture);
 				if (webGlTexture) {
 					this._stateManager!.bindTexture(webGlTexture, 0);
 				} else {
-					// Fallback to default white texture
 					this._stateManager!.bindTexture(this._textureManager!.getDefaultWhiteTexture(), 0);
 				}
 			} else {
-				// No texture - use default white texture so base color shows correctly
 				this._stateManager!.bindTexture(this._textureManager!.getDefaultWhiteTexture(), 0);
 			}
 			shaderProgram!.setUniform1i("u_baseColorTexture", 0);
@@ -834,17 +858,39 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 
 				shaderProgram!.setUniform1f("u_opacity", entity._opacity);
 
-				// Apply material if entity has one and using lit shader
-				if (useLitShader && entity._materialData) {
+				// Handle skeletal animation for skinned meshes
+				if (isSkinned && entity._skeleton && this._skeletonManager) {
+					// Update skeleton matrices
+					this._skeletonManager.updateSkeletonMatrices(entity._skeleton);
+
+					// Enable skinning and upload bone matrices
+					shaderProgram!.setUniform1i("u_useSkinning", 1);
+
+					// Upload bone matrices array
+					const skinMatrices = entity._skeleton.skinMatrices;
+					const boneCount = entity._skeleton.data.boneCount;
+
+					// Set each bone matrix as a uniform
+					// Note: WebGL 1 doesn't support uniform arrays directly in all cases,
+					// so we set the entire array at once
+					const location = gl.getUniformLocation(shaderProgram!.program, "u_boneMatrices[0]");
+					if (location) {
+						gl.uniformMatrix4fv(location, false, skinMatrices.subarray(0, boneCount * 16));
+					}
+				} else if (isSkinned) {
+					// Skinned geometry but no skeleton - disable skinning
+					shaderProgram!.setUniform1i("u_useSkinning", 0);
+				}
+
+				// Apply material if entity has one and using lit-style shader
+				if ((useLitShader || isSkinned) && entity._materialData) {
 					const mat = entity._materialData;
 					if (mat.color) {
-						// Handle color as object {r,g,b,a} or CSS string
 						if (typeof mat.color === "object") {
 							shaderProgram!.setUniform4f("u_baseColor",
 								mat.color.r, mat.color.g, mat.color.b, mat.color.a ?? 1
 							);
 						} else if (typeof mat.color === "string") {
-							// Parse CSS color string (basic hex support)
 							const hex = mat.color.replace("#", "");
 							const r = parseInt(hex.substring(0, 2), 16) / 255;
 							const g = parseInt(hex.substring(2, 4), 16) / 255;
@@ -853,8 +899,6 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 						}
 					}
 					if (mat.metallic !== undefined || mat.roughness !== undefined) {
-						// Keep PBR disabled for now - simple lighting shows colors better
-						// shaderProgram!.setUniform1i("u_usePBR", 1);
 						shaderProgram!.setUniform1f("u_metallic", mat.metallic ?? 0);
 						shaderProgram!.setUniform1f("u_roughness", mat.roughness ?? 0.5);
 					}
@@ -876,9 +920,9 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 
 		// Render appropriate batches
 		if (transparent) {
-			this._renderBatchManager.renderTransparentModels(shaderProgram, renderBatch);
+			this._renderBatchManager.renderTransparentModels(defaultShaderProgram, renderBatch);
 		} else {
-			this._renderBatchManager.renderOpaqueModels(shaderProgram, renderBatch);
+			this._renderBatchManager.renderOpaqueModels(defaultShaderProgram, renderBatch);
 		}
 	}
 
@@ -894,6 +938,13 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 	 */
 	get shadowManager(): IgeWebGlShadowManager | undefined {
 		return this._shadowManager;
+	}
+
+	/**
+	 * Get the skeleton manager for skeletal animation.
+	 */
+	get skeletonManager(): IgeWebGlSkeletonManager | undefined {
+		return this._skeletonManager;
 	}
 
 	/**
@@ -990,6 +1041,7 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 		this._shaderManager?.deleteAllPrograms();
 		this._textureManager?.clearState();
 		this._cameraController?.clearCache();
+		this._skeletonManager?.cleanup();
 		this._resourceManager?.cleanup();
 
 		// Lose WebGL context

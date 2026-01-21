@@ -18,6 +18,8 @@ export interface IgeGeometryData3d extends IgeAbstractData3d {
     indices?: Uint16Array | Uint32Array;
     boneWeights?: Float32Array;
     boneIndices?: Uint8Array;
+    skinIndex?: number;
+    skeletonId?: string;
     boundingBox?: {
         min: [number, number, number];
         max: [number, number, number];

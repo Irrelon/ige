@@ -131,6 +131,9 @@ export class IgeObject extends IgeEventingClass {
     _materialData = null;
     _meshData = null;
     _model;
+    _skeleton; // Runtime skeleton instance for skeletal animation
+    _skeletonData; // Static skeleton data reference
+    _animationClips; // Available animation clips
     _deathCallBack; // TODO: Rename this to _deathCallback (lower case B)
     components = {};
     constructor() {

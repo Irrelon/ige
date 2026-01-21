@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta content="text/html; charset=utf-8" http-equiv="Content-Type" />
+  <meta content="yes" name="mobile-web-app-capable" />
+  <meta content="user-scalable=no, width=device-width, initial-scale=1.0" name="viewport" />
+  <meta content="black" name="apple-mobile-web-app-status-bar-style" />
+  <meta content="https://www.isogenicengine.com" name="game-engine-origin" />
+  <meta content="IE=9" http-equiv="X-UA-Compatible" />
+  <title>Skeletal Animation Test - Isogenic Engine</title>
+
+  <!-- Isogenic Loader -->
+  <link href="../../css/ige.css" media="all" rel="stylesheet" type="text/css" />
+
+  <script src="./index.bundle.js" type="module"></script>
+
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      background: #1a1a2e;
+    }
+
+    #info {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      color: #fff;
+      font-family: monospace;
+      font-size: 14px;
+      background: rgba(0, 0, 0, 0.7);
+      padding: 10px;
+      border-radius: 5px;
+      z-index: 1000;
+    }
+
+    #info h2 {
+      margin: 0 0 10px 0;
+      font-size: 18px;
+      color: #4ecca3;
+    }
+
+    #controls {
+      position: absolute;
+      bottom: 10px;
+      left: 10px;
+      color: #fff;
+      font-family: monospace;
+      font-size: 12px;
+      background: rgba(0, 0, 0, 0.7);
+      padding: 10px;
+      border-radius: 5px;
+      z-index: 1000;
+    }
+  </style>
+</head>
+<body>
+<div id="info">
+  <h2>Skeletal Animation Test</h2>
+  <div>Status: <span id="status">Initializing...</span></div>
+  <div>FPS: <span id="fps">0</span></div>
+  <div>Animation: <span id="currentAnimation">None</span></div>
+  <div>Bones: <span id="boneCount">0</span></div>
+</div>
+
+<div id="controls">
+  <div>Controls:</div>
+  <div>1-5: Play different animations</div>
+  <div>Space: Stop animation</div>
+  <div>P/O: Perspective/Orthographic</div>
+</div>
+
+<div class="igeLoading loadingFloat">
+  <div class="loadingLogo"></div>
+  <div class="loadingCircle"></div>
+  <div class="loadingCircleInner"></div>
+  <div class="loadingText" id="loadingText">Loading Skeletal Animation...</div>
+  <div id="loadingProgress">
+    <div id="loadingProgressBar"></div>
+  </div>
+</div>
+
+<div class="igeLoading loadingLink">
+  Powered By Isogenic Game Engine
+  <a href="https://www.isogenicengine.com" target="_blank">https://www.isogenicengine.com</a>
+</div>
+</body>
+</html>

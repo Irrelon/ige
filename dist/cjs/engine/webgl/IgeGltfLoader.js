@@ -37,6 +37,7 @@ const GLTF_TYPE_SIZES = {
     MAT3: 9,
     MAT4: 16
 };
+// IgeGltfAnimation is now IgeAnimationClipData from types
 /**
  * GLTF/GLB model loader for WebGL renderer.
  * Supports GLTF 2.0 specification.
@@ -165,10 +166,16 @@ class IgeGltfLoader extends IgeBaseClass_1.IgeBaseClass {
     _parseGltf(gltf, buffers, baseUrl, modelId) {
         return __awaiter(this, void 0, void 0, function* () {
             var _a;
+            // Parse nodes first (needed for skeleton hierarchy)
+            const nodes = this._parseNodes(gltf);
             // Parse materials
             const materials = this._parseMaterials(gltf);
-            // Parse meshes
-            const meshes = this._parseMeshes(gltf, buffers);
+            // Parse skins (skeletons)
+            const skins = this._parseSkins(gltf, buffers, nodes);
+            // Parse meshes (pass skins for skinning data)
+            const meshes = this._parseMeshes(gltf, buffers, skins);
+            // Parse animations
+            const animations = this._parseAnimations(gltf, buffers, skins);
             // Parse scenes
             const scenes = [];
             if (gltf.scenes) {
@@ -179,14 +186,23 @@ class IgeGltfLoader extends IgeBaseClass_1.IgeBaseClass {
                     });
                 }
             }
-            return {
+            const model = {
                 id: modelId,
                 name: ((_a = gltf.asset) === null || _a === void 0 ? void 0 : _a.name) || modelId,
                 scenes,
                 defaultSceneIndex: gltf.scene || 0,
                 meshes,
-                materials
+                materials,
+                nodes
             };
+            // Add skins and animations if present
+            if (skins.length > 0) {
+                model.skins = skins;
+            }
+            if (animations.length > 0) {
+                model.animations = animations;
+            }
+            return model;
         });
     }
     /**
@@ -239,15 +255,26 @@ class IgeGltfLoader extends IgeBaseClass_1.IgeBaseClass {
     /**
      * Parse meshes from GLTF.
      */
-    _parseMeshes(gltf, buffers) {
+    _parseMeshes(gltf, buffers, skins) {
         const meshes = [];
         if (!gltf.meshes)
             return meshes;
+        // Build a map of mesh index to skin index from nodes
+        const meshSkinMap = new Map();
+        if (gltf.nodes) {
+            for (const node of gltf.nodes) {
+                if (node.mesh !== undefined && node.skin !== undefined) {
+                    meshSkinMap.set(node.mesh, node.skin);
+                }
+            }
+        }
         let primitiveIndex = 0;
-        for (const meshDef of gltf.meshes) {
+        for (let meshIndex = 0; meshIndex < gltf.meshes.length; meshIndex++) {
+            const meshDef = gltf.meshes[meshIndex];
             const primitives = [];
+            const skinIndex = meshSkinMap.get(meshIndex);
             for (const primDef of meshDef.primitives) {
-                const geometry = this._parsePrimitive(gltf, primDef, buffers, primitiveIndex++);
+                const geometry = this._parsePrimitive(gltf, primDef, buffers, primitiveIndex++, skinIndex, skins);
                 primitives.push({
                     geometry,
                     materialIndex: primDef.material
@@ -263,7 +290,7 @@ class IgeGltfLoader extends IgeBaseClass_1.IgeBaseClass {
     /**
      * Parse a single mesh primitive.
      */
-    _parsePrimitive(gltf, primitive, buffers, primitiveIndex = 0) {
+    _parsePrimitive(gltf, primitive, buffers, primitiveIndex = 0, skinIndex, skins) {
         const geometry = {
             id: `gltf_primitive_${Date.now()}_${primitiveIndex}`,
             type: "gltf"
@@ -284,22 +311,32 @@ class IgeGltfLoader extends IgeBaseClass_1.IgeBaseClass {
         if (primitive.attributes.COLOR_0 !== undefined) {
             geometry.colors = this._getAccessorData(gltf, primitive.attributes.COLOR_0, buffers);
         }
-        // Parse indices
+        // Parse tangents
+        if (primitive.attributes.TANGENT !== undefined) {
+            geometry.tangents = this._getAccessorData(gltf, primitive.attributes.TANGENT, buffers);
+        }
+        // Parse skinning data (bone indices and weights)
+        if (primitive.attributes.JOINTS_0 !== undefined) {
+            // JOINTS_0 should be UNSIGNED_BYTE or UNSIGNED_SHORT
+            geometry.boneIndices = this._getAccessorDataAsUint8(gltf, primitive.attributes.JOINTS_0, buffers);
+        }
+        if (primitive.attributes.WEIGHTS_0 !== undefined) {
+            geometry.boneWeights = this._getAccessorData(gltf, primitive.attributes.WEIGHTS_0, buffers);
+        }
+        // Link to skin/skeleton if this mesh has skinning
+        if (skinIndex !== undefined && skins && skins[skinIndex]) {
+            geometry.skinIndex = skinIndex;
+            geometry.skeletonId = skins[skinIndex].skeleton.id;
+        }
+        // Parse indices - use specialized method for integer data
         if (primitive.indices !== undefined) {
-            const indexData = this._getAccessorData(gltf, primitive.indices, buffers);
-            // Convert to Uint16Array or Uint32Array based on size
-            const accessor = gltf.accessors[primitive.indices];
-            if (accessor.componentType === GltfComponentType.UNSIGNED_INT) {
-                geometry.indices = new Uint32Array(indexData);
-            }
-            else {
-                geometry.indices = new Uint16Array(indexData);
-            }
+            geometry.indices = this._getAccessorDataAsIndices(gltf, primitive.indices, buffers);
         }
         return geometry;
     }
     /**
      * Get typed array data from accessor.
+     * Note: We copy data to new arrays to avoid byte alignment issues.
      */
     _getAccessorData(gltf, accessorIndex, buffers) {
         const accessor = gltf.accessors[accessorIndex];
@@ -308,28 +345,366 @@ class IgeGltfLoader extends IgeBaseClass_1.IgeBaseClass {
         const byteOffset = (bufferView.byteOffset || 0) + (accessor.byteOffset || 0);
         const componentCount = GLTF_TYPE_SIZES[accessor.type];
         const elementCount = accessor.count * componentCount;
+        // Get raw bytes first to avoid alignment issues
+        const rawBytes = new Uint8Array(buffer, byteOffset);
         // Create appropriate typed array based on component type
+        // We copy data to new arrays to avoid byte alignment issues
         switch (accessor.componentType) {
-            case GltfComponentType.FLOAT:
-                return new Float32Array(buffer, byteOffset, elementCount);
-            case GltfComponentType.UNSIGNED_SHORT:
-                const ushortData = new Uint16Array(buffer, byteOffset, elementCount);
-                return new Float32Array(ushortData); // Convert to float
-            case GltfComponentType.UNSIGNED_INT:
-                const uintData = new Uint32Array(buffer, byteOffset, elementCount);
-                return new Float32Array(uintData);
-            case GltfComponentType.UNSIGNED_BYTE:
-                const ubyteData = new Uint8Array(buffer, byteOffset, elementCount);
-                return new Float32Array(ubyteData);
-            case GltfComponentType.SHORT:
-                const shortData = new Int16Array(buffer, byteOffset, elementCount);
-                return new Float32Array(shortData);
-            case GltfComponentType.BYTE:
-                const byteData = new Int8Array(buffer, byteOffset, elementCount);
-                return new Float32Array(byteData);
+            case GltfComponentType.FLOAT: {
+                const result = new Float32Array(elementCount);
+                const dataView = new DataView(buffer, byteOffset, elementCount * 4);
+                for (let i = 0; i < elementCount; i++) {
+                    result[i] = dataView.getFloat32(i * 4, true); // little-endian
+                }
+                return result;
+            }
+            case GltfComponentType.UNSIGNED_SHORT: {
+                const result = new Float32Array(elementCount);
+                const dataView = new DataView(buffer, byteOffset, elementCount * 2);
+                for (let i = 0; i < elementCount; i++) {
+                    result[i] = dataView.getUint16(i * 2, true);
+                }
+                return result;
+            }
+            case GltfComponentType.UNSIGNED_INT: {
+                const result = new Float32Array(elementCount);
+                const dataView = new DataView(buffer, byteOffset, elementCount * 4);
+                for (let i = 0; i < elementCount; i++) {
+                    result[i] = dataView.getUint32(i * 4, true);
+                }
+                return result;
+            }
+            case GltfComponentType.UNSIGNED_BYTE: {
+                const result = new Float32Array(elementCount);
+                for (let i = 0; i < elementCount; i++) {
+                    result[i] = rawBytes[i];
+                }
+                return result;
+            }
+            case GltfComponentType.SHORT: {
+                const result = new Float32Array(elementCount);
+                const dataView = new DataView(buffer, byteOffset, elementCount * 2);
+                for (let i = 0; i < elementCount; i++) {
+                    result[i] = dataView.getInt16(i * 2, true);
+                }
+                return result;
+            }
+            case GltfComponentType.BYTE: {
+                const result = new Float32Array(elementCount);
+                const signedBytes = new Int8Array(buffer, byteOffset, elementCount);
+                for (let i = 0; i < elementCount; i++) {
+                    result[i] = signedBytes[i];
+                }
+                return result;
+            }
             default:
                 throw new Error(`Unsupported accessor component type: ${accessor.componentType}`);
         }
+    }
+    /**
+     * Get accessor data as index array (Uint16Array or Uint32Array).
+     * Note: We copy data to new arrays to avoid byte alignment issues.
+     */
+    _getAccessorDataAsIndices(gltf, accessorIndex, buffers) {
+        const accessor = gltf.accessors[accessorIndex];
+        const bufferView = gltf.bufferViews[accessor.bufferView];
+        const buffer = buffers[bufferView.buffer];
+        const byteOffset = (bufferView.byteOffset || 0) + (accessor.byteOffset || 0);
+        const elementCount = accessor.count;
+        switch (accessor.componentType) {
+            case GltfComponentType.UNSIGNED_INT: {
+                const result = new Uint32Array(elementCount);
+                const dataView = new DataView(buffer, byteOffset, elementCount * 4);
+                for (let i = 0; i < elementCount; i++) {
+                    result[i] = dataView.getUint32(i * 4, true);
+                }
+                return result;
+            }
+            case GltfComponentType.UNSIGNED_SHORT: {
+                const result = new Uint16Array(elementCount);
+                const dataView = new DataView(buffer, byteOffset, elementCount * 2);
+                for (let i = 0; i < elementCount; i++) {
+                    result[i] = dataView.getUint16(i * 2, true);
+                }
+                return result;
+            }
+            case GltfComponentType.UNSIGNED_BYTE: {
+                // Convert to Uint16Array for WebGL compatibility
+                const result = new Uint16Array(elementCount);
+                const rawBytes = new Uint8Array(buffer, byteOffset, elementCount);
+                for (let i = 0; i < elementCount; i++) {
+                    result[i] = rawBytes[i];
+                }
+                return result;
+            }
+            default:
+                throw new Error(`Unsupported index accessor type: ${accessor.componentType}`);
+        }
+    }
+    /**
+     * Get accessor data as Uint8Array (for bone indices).
+     * Note: We copy data to new arrays to avoid byte alignment issues.
+     */
+    _getAccessorDataAsUint8(gltf, accessorIndex, buffers) {
+        const accessor = gltf.accessors[accessorIndex];
+        const bufferView = gltf.bufferViews[accessor.bufferView];
+        const buffer = buffers[bufferView.buffer];
+        const byteOffset = (bufferView.byteOffset || 0) + (accessor.byteOffset || 0);
+        const componentCount = GLTF_TYPE_SIZES[accessor.type];
+        const elementCount = accessor.count * componentCount;
+        // JOINTS_0 can be UNSIGNED_BYTE or UNSIGNED_SHORT
+        switch (accessor.componentType) {
+            case GltfComponentType.UNSIGNED_BYTE: {
+                // Copy to new array to avoid alignment issues
+                const rawBytes = new Uint8Array(buffer, byteOffset, elementCount);
+                const result = new Uint8Array(elementCount);
+                result.set(rawBytes);
+                return result;
+            }
+            case GltfComponentType.UNSIGNED_SHORT: {
+                // Convert UNSIGNED_SHORT to UNSIGNED_BYTE using DataView for safety
+                const result = new Uint8Array(elementCount);
+                const dataView = new DataView(buffer, byteOffset, elementCount * 2);
+                for (let i = 0; i < elementCount; i++) {
+                    result[i] = dataView.getUint16(i * 2, true); // Should fit since bone count < 256
+                }
+                return result;
+            }
+            default:
+                throw new Error(`Unsupported JOINTS accessor type: ${accessor.componentType}`);
+        }
+    }
+    /**
+     * Parse GLTF nodes.
+     */
+    _parseNodes(gltf) {
+        const nodes = [];
+        if (!gltf.nodes)
+            return nodes;
+        for (const nodeDef of gltf.nodes) {
+            nodes.push({
+                name: nodeDef.name,
+                children: nodeDef.children,
+                translation: nodeDef.translation,
+                rotation: nodeDef.rotation,
+                scale: nodeDef.scale,
+                matrix: nodeDef.matrix,
+                mesh: nodeDef.mesh,
+                skin: nodeDef.skin
+            });
+        }
+        return nodes;
+    }
+    /**
+     * Parse GLTF skins (skeletons).
+     */
+    _parseSkins(gltf, buffers, nodes) {
+        const skins = [];
+        if (!gltf.skins)
+            return skins;
+        for (let skinIndex = 0; skinIndex < gltf.skins.length; skinIndex++) {
+            const skinDef = gltf.skins[skinIndex];
+            const jointNodeIndices = skinDef.joints || [];
+            const boneCount = jointNodeIndices.length;
+            // Get inverse bind matrices
+            let inverseBindMatrices;
+            if (skinDef.inverseBindMatrices !== undefined) {
+                inverseBindMatrices = this._getAccessorData(gltf, skinDef.inverseBindMatrices, buffers);
+            }
+            else {
+                // Default to identity matrices
+                inverseBindMatrices = new Float32Array(boneCount * 16);
+                for (let i = 0; i < boneCount; i++) {
+                    const offset = i * 16;
+                    inverseBindMatrices[offset] = 1;
+                    inverseBindMatrices[offset + 5] = 1;
+                    inverseBindMatrices[offset + 10] = 1;
+                    inverseBindMatrices[offset + 15] = 1;
+                }
+            }
+            // Build bone hierarchy
+            const bones = [];
+            // Create a map from node index to bone index
+            const nodeIndexToBoneIndex = new Map();
+            for (let i = 0; i < jointNodeIndices.length; i++) {
+                nodeIndexToBoneIndex.set(jointNodeIndices[i], i);
+            }
+            // Build bones array
+            for (let boneIndex = 0; boneIndex < boneCount; boneIndex++) {
+                const nodeIndex = jointNodeIndices[boneIndex];
+                const nodeDef = gltf.nodes[nodeIndex];
+                // Find parent bone index
+                let parentIndex = -1;
+                for (let i = 0; i < gltf.nodes.length; i++) {
+                    const potentialParent = gltf.nodes[i];
+                    if (potentialParent.children && potentialParent.children.includes(nodeIndex)) {
+                        if (nodeIndexToBoneIndex.has(i)) {
+                            parentIndex = nodeIndexToBoneIndex.get(i);
+                        }
+                        break;
+                    }
+                }
+                // Find child bone indices
+                const childIndices = [];
+                if (nodeDef.children) {
+                    for (const childNodeIndex of nodeDef.children) {
+                        if (nodeIndexToBoneIndex.has(childNodeIndex)) {
+                            childIndices.push(nodeIndexToBoneIndex.get(childNodeIndex));
+                        }
+                    }
+                }
+                // Get local bind transform
+                const localBindTransform = this._getNodeLocalTransform(nodeDef);
+                // Get inverse bind matrix for this bone
+                const inverseBindMatrix = new Float32Array(16);
+                inverseBindMatrix.set(inverseBindMatrices.subarray(boneIndex * 16, boneIndex * 16 + 16));
+                bones.push({
+                    name: nodeDef.name || `bone_${boneIndex}`,
+                    index: boneIndex,
+                    parentIndex,
+                    childIndices,
+                    localBindTransform,
+                    inverseBindMatrix
+                });
+            }
+            // Find root bone indices
+            const rootBoneIndices = bones
+                .filter(bone => bone.parentIndex === -1)
+                .map(bone => bone.index);
+            const skeleton = {
+                id: `skeleton_${skinIndex}_${Date.now()}`,
+                name: skinDef.name || `skeleton_${skinIndex}`,
+                bones,
+                rootBoneIndices,
+                boneCount
+            };
+            skins.push({
+                name: skinDef.name,
+                skeleton,
+                jointNodeIndices
+            });
+        }
+        return skins;
+    }
+    /**
+     * Get local transform matrix from a GLTF node.
+     */
+    _getNodeLocalTransform(nodeDef) {
+        const matrix = new Float32Array(16);
+        if (nodeDef.matrix) {
+            // Use provided matrix directly
+            matrix.set(nodeDef.matrix);
+        }
+        else {
+            // Compose from TRS
+            const t = nodeDef.translation || [0, 0, 0];
+            const r = nodeDef.rotation || [0, 0, 0, 1]; // quaternion (x, y, z, w)
+            const s = nodeDef.scale || [1, 1, 1];
+            // Convert quaternion to rotation matrix and compose with scale and translation
+            this._composeMatrix(matrix, t, r, s);
+        }
+        return matrix;
+    }
+    /**
+     * Compose a 4x4 matrix from translation, rotation (quaternion), and scale.
+     */
+    _composeMatrix(out, translation, rotation, scale) {
+        const x = rotation[0], y = rotation[1], z = rotation[2], w = rotation[3];
+        const x2 = x + x, y2 = y + y, z2 = z + z;
+        const xx = x * x2, xy = x * y2, xz = x * z2;
+        const yy = y * y2, yz = y * z2, zz = z * z2;
+        const wx = w * x2, wy = w * y2, wz = w * z2;
+        const sx = scale[0], sy = scale[1], sz = scale[2];
+        out[0] = (1 - (yy + zz)) * sx;
+        out[1] = (xy + wz) * sx;
+        out[2] = (xz - wy) * sx;
+        out[3] = 0;
+        out[4] = (xy - wz) * sy;
+        out[5] = (1 - (xx + zz)) * sy;
+        out[6] = (yz + wx) * sy;
+        out[7] = 0;
+        out[8] = (xz + wy) * sz;
+        out[9] = (yz - wx) * sz;
+        out[10] = (1 - (xx + yy)) * sz;
+        out[11] = 0;
+        out[12] = translation[0];
+        out[13] = translation[1];
+        out[14] = translation[2];
+        out[15] = 1;
+    }
+    /**
+     * Parse GLTF animations.
+     */
+    _parseAnimations(gltf, buffers, skins) {
+        const animations = [];
+        if (!gltf.animations)
+            return animations;
+        // Build a map from node index to bone index for each skin
+        const skinNodeMaps = [];
+        for (const skin of skins) {
+            const map = new Map();
+            for (let i = 0; i < skin.jointNodeIndices.length; i++) {
+                map.set(skin.jointNodeIndices[i], i);
+            }
+            skinNodeMaps.push(map);
+        }
+        for (let animIndex = 0; animIndex < gltf.animations.length; animIndex++) {
+            const animDef = gltf.animations[animIndex];
+            // Parse samplers
+            const samplers = [];
+            for (const samplerDef of animDef.samplers) {
+                const inputData = this._getAccessorData(gltf, samplerDef.input, buffers);
+                const outputData = this._getAccessorData(gltf, samplerDef.output, buffers);
+                // Determine component count from output accessor
+                const outputAccessor = gltf.accessors[samplerDef.output];
+                const componentCount = GLTF_TYPE_SIZES[outputAccessor.type];
+                samplers.push({
+                    input: inputData,
+                    output: outputData,
+                    interpolation: (samplerDef.interpolation || "LINEAR"),
+                    componentCount
+                });
+            }
+            // Parse channels
+            const channels = [];
+            for (const channelDef of animDef.channels) {
+                const targetNodeIndex = channelDef.target.node;
+                const targetPath = channelDef.target.path;
+                // Find which bone this node corresponds to
+                let targetBoneIndex = -1;
+                for (const nodeMap of skinNodeMaps) {
+                    if (nodeMap.has(targetNodeIndex)) {
+                        targetBoneIndex = nodeMap.get(targetNodeIndex);
+                        break;
+                    }
+                }
+                // Skip channels that don't target skeleton bones
+                if (targetBoneIndex === -1) {
+                    continue;
+                }
+                channels.push({
+                    samplerIndex: channelDef.sampler,
+                    targetBoneIndex,
+                    targetPath
+                });
+            }
+            // Calculate duration from sampler inputs
+            let duration = 0;
+            for (const sampler of samplers) {
+                const maxTime = sampler.input[sampler.input.length - 1];
+                if (maxTime > duration) {
+                    duration = maxTime;
+                }
+            }
+            animations.push({
+                id: `animation_${animIndex}_${Date.now()}`,
+                name: animDef.name || `animation_${animIndex}`,
+                duration,
+                samplers,
+                channels
+            });
+        }
+        return animations;
     }
     /**
      * Create an IgeEntity hierarchy from a loaded model.

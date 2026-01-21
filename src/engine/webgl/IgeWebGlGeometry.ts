@@ -29,6 +29,10 @@ export class IgeWebGlGeometry extends IgeBaseClass {
 	vertexData?: Float32Array;
 	indexData?: Uint16Array | Uint32Array;
 
+	// Skinning information
+	isSkinned: boolean = false; // Whether this geometry has bone weights/indices
+	skeletonId?: string; // Reference to skeleton data ID
+
 	constructor(id: string, drawMode: number) {
 		super();
 		this.id = id;

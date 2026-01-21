@@ -41,6 +41,8 @@ import type { IgeInputEventHandler } from "@/types/IgeInputEventHandler";
 import type { IgeMaterialData } from "@/types/IgeMaterialData";
 import type { IgeMeshData3d } from "@/types/IgeMeshData3d";
 import type { IgeGltfModel } from "@/engine/webgl/IgeGltfLoader";
+import type { IgeSkeleton, IgeSkeletonData } from "@/types/IgeSkeletonData";
+import type { IgeAnimationClipData } from "@/types/IgeAnimationClipData";
 import type { IgeStreamCreateMessageData } from "@/types/IgeNetworkStream";
 import type { IgePoint } from "@/types/IgePoint";
 import type { IgeSmartTexture } from "@/types/IgeSmartTexture";
@@ -165,6 +167,9 @@ export class IgeObject extends IgeEventingClass implements IgeCanRegisterById, I
 	_materialData: IgeMaterialData | null = null;
 	_meshData: IgeMeshData3d | null = null;
 	_model?: IgeGltfModel;
+	_skeleton?: IgeSkeleton; // Runtime skeleton instance for skeletal animation
+	_skeletonData?: IgeSkeletonData; // Static skeleton data reference
+	_animationClips?: Map<string, IgeAnimationClipData>; // Available animation clips
 	_deathCallBack?: (...args: any[]) => void; // TODO: Rename this to _deathCallback (lower case B)
 	components: Record<string, IgeComponent<IgeObject>> = {};
 

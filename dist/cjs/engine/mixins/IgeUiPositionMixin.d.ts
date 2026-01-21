@@ -232,6 +232,9 @@ export declare const WithUiPositionMixin: <BaseClassType extends IgeMixin<IgeObj
         _materialData: import("../../types/IgeMaterialData").IgeMaterialData | null;
         _meshData: import("../../types/IgeMeshData3d").IgeMeshData3d | null;
         _model?: import("../webgl/IgeGltfLoader").IgeGltfModel;
+        _skeleton?: import("../../types/IgeSkeletonData").IgeSkeleton;
+        _skeletonData?: import("../../types/IgeSkeletonData").IgeSkeletonData;
+        _animationClips?: Map<string, import("../../types/IgeAnimationClipData").IgeAnimationClipData>;
         _deathCallBack?: ((...args: any[]) => void) | undefined;
         components: Record<string, import("../..").IgeComponent<IgeObject>>;
         _sortChildren: import("../..").IgeChildSortFunction;

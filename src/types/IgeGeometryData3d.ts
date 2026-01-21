@@ -20,9 +20,11 @@ export interface IgeGeometryData3d extends IgeAbstractData3d {
 	colors?: Float32Array; // Vertex colors (r, g, b, a)
 	indices?: Uint16Array | Uint32Array; // Index data for indexed rendering
 
-	// Skinning data (for future skeletal animation)
-	boneWeights?: Float32Array;
-	boneIndices?: Uint8Array;
+	// Skinning data for skeletal animation
+	boneWeights?: Float32Array; // 4 weights per vertex (WEIGHTS_0)
+	boneIndices?: Uint8Array; // 4 bone indices per vertex (JOINTS_0)
+	skinIndex?: number; // Reference to GLTF skin index
+	skeletonId?: string; // Reference to skeleton data ID
 
 	// Bounding information
 	boundingBox?: {

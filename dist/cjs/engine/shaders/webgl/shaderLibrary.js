@@ -9,6 +9,8 @@ const lit_vert_1 = require("./lit.vert.js");
 const lit_frag_1 = require("./lit.frag.js");
 const shadow_vert_1 = require("./shadow.vert.js");
 const shadow_frag_1 = require("./shadow.frag.js");
+const skinned_vert_1 = require("./skinned.vert.js");
+const skinned_shadow_vert_1 = require("./skinned_shadow.vert.js");
 /**
  * Built-in shader library for WebGL renderer.
  * Provides centralized registration and lookup of shader programs.
@@ -56,3 +58,7 @@ IgeShaderLibrary.register("sprite", sprite_vert_1.spriteVertexShader, sprite_fra
 IgeShaderLibrary.register("model", model_vert_1.modelVertexShader, model_frag_1.modelFragmentShader, "Basic 3D model shader with simple lighting");
 IgeShaderLibrary.register("lit", lit_vert_1.litVertexShader, lit_frag_1.litFragmentShader, "PBR lit shader with support for 2D textures, smart textures, and PBR materials");
 IgeShaderLibrary.register("shadow", shadow_vert_1.shadowVertexShader, shadow_frag_1.shadowFragmentShader, "Shadow depth pass shader for shadow mapping");
+IgeShaderLibrary.register("skinned", skinned_vert_1.skinnedVertexShader, lit_frag_1.litFragmentShader, // Uses same fragment shader as lit
+"Skinned PBR lit shader with skeletal animation support (up to 64 bones, 4 influences per vertex)");
+IgeShaderLibrary.register("skinned_shadow", skinned_shadow_vert_1.skinnedShadowVertexShader, shadow_frag_1.shadowFragmentShader, // Uses same fragment shader as shadow
+"Skinned shadow depth pass shader for shadow mapping with skeletal animation");

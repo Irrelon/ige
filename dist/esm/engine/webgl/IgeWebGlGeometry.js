@@ -14,6 +14,9 @@ export class IgeWebGlGeometry extends IgeBaseClass {
     drawMode; // GL draw mode (TRIANGLES, TRIANGLE_STRIP, etc.)
     vertexData;
     indexData;
+    // Skinning information
+    isSkinned = false; // Whether this geometry has bone weights/indices
+    skeletonId; // Reference to skeleton data ID
     constructor(id, drawMode) {
         super();
         this.id = id;
