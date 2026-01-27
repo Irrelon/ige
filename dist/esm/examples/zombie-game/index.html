@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta content="text/html; charset=utf-8" http-equiv="Content-Type" />
+	<meta content="yes" name="mobile-web-app-capable" />
+	<meta content="user-scalable=no, width=device-width, initial-scale=1.0" name="viewport" />
+	<meta content="black" name="apple-mobile-web-app-status-bar-style" />
+	<meta content="https://www.isogenicengine.com" name="game-engine-origin" />
+	<meta content="IE=9" http-equiv="X-UA-Compatible" />
+	<title>Zombie Game - 4 Player Split Screen - Isogenic Engine</title>
+
+	<link href="../../css/ige.css" media="all" rel="stylesheet" type="text/css" />
+	<script src="./index.bundle.js" type="module"></script>
+
+	<style>
+		body {
+			margin: 0;
+			padding: 0;
+			overflow: hidden;
+			background: #0a0a12;
+		}
+
+		/* Split-screen divider lines */
+		#divider-h {
+			position: absolute;
+			top: 50%;
+			left: 0;
+			right: 0;
+			height: 2px;
+			background: rgba(255, 255, 255, 0.25);
+			z-index: 50;
+			pointer-events: none;
+		}
+
+		#divider-v {
+			position: absolute;
+			top: 0;
+			bottom: 0;
+			left: 50%;
+			width: 2px;
+			background: rgba(255, 255, 255, 0.25);
+			z-index: 50;
+			pointer-events: none;
+		}
+
+		/* Player labels in each viewport quadrant */
+		.vp-label {
+			position: absolute;
+			font-family: monospace;
+			font-size: 13px;
+			font-weight: bold;
+			padding: 4px 8px;
+			background: rgba(0, 0, 0, 0.6);
+			border-radius: 3px;
+			z-index: 100;
+			pointer-events: none;
+			text-transform: uppercase;
+			letter-spacing: 1px;
+		}
+
+		#label-p1 {
+			top: 8px;
+			left: 8px;
+			color: #5588ff;
+		}
+
+		#label-p2 {
+			top: 8px;
+			left: calc(50% + 8px);
+			color: #55ff88;
+		}
+
+		#label-p3 {
+			top: calc(50% + 8px);
+			left: 8px;
+			color: #ff5555;
+		}
+
+		#label-p4 {
+			top: calc(50% + 8px);
+			left: calc(50% + 8px);
+			color: #ffff55;
+		}
+
+		/* HUD panel */
+		#hud {
+			position: absolute;
+			top: 8px;
+			right: 8px;
+			color: #ccc;
+			font-family: monospace;
+			font-size: 12px;
+			background: rgba(0, 0, 0, 0.6);
+			padding: 8px 12px;
+			border-radius: 4px;
+			z-index: 200;
+			pointer-events: none;
+		}
+
+		#hud .title {
+			color: #4ecca3;
+			font-size: 14px;
+			font-weight: bold;
+			margin-bottom: 6px;
+		}
+
+		/* Controls panel */
+		#controls {
+			position: absolute;
+			bottom: 8px;
+			right: 8px;
+			color: #999;
+			font-family: monospace;
+			font-size: 11px;
+			background: rgba(0, 0, 0, 0.6);
+			padding: 8px 12px;
+			border-radius: 4px;
+			z-index: 200;
+			pointer-events: none;
+		}
+
+		#controls .key {
+			color: #ddd;
+			background: rgba(255, 255, 255, 0.1);
+			padding: 1px 4px;
+			border-radius: 2px;
+		}
+	</style>
+</head>
+<body>
+	<!-- Split-screen dividers -->
+	<div id="divider-h"></div>
+	<div id="divider-v"></div>
+
+	<!-- Player viewport labels -->
+	<div id="label-p1" class="vp-label">P1 - Blue [You]</div>
+	<div id="label-p2" class="vp-label">P2 - Green</div>
+	<div id="label-p3" class="vp-label">P3 - Red</div>
+	<div id="label-p4" class="vp-label">P4 - Yellow</div>
+
+	<!-- HUD -->
+	<div id="hud">
+		<div class="title">Zombie Game</div>
+		<div>Status: <span id="status">Initializing...</span></div>
+		<div>FPS: <span id="fps">0</span></div>
+		<div>Players: <span id="playerCount">0</span>/4</div>
+	</div>
+
+	<!-- Controls -->
+	<div id="controls">
+		<div><span class="key">W</span><span class="key">A</span><span class="key">S</span><span class="key">D</span> Move Player 1</div>
+	</div>
+
+	<!-- Loading screen -->
+	<div class="igeLoading loadingFloat">
+		<div class="loadingLogo"></div>
+		<div class="loadingCircle"></div>
+		<div class="loadingCircleInner"></div>
+		<div class="loadingText" id="loadingText">Loading Zombie Game...</div>
+		<div id="loadingProgress">
+			<div id="loadingProgressBar"></div>
+		</div>
+	</div>
+
+	<div class="igeLoading loadingLink">
+		Powered By Isogenic Game Engine
+		<a href="https://www.isogenicengine.com" target="_blank">https://www.isogenicengine.com</a>
+	</div>
+</body>
+</html>
