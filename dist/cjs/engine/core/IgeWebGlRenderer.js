@@ -55,6 +55,10 @@ class IgeWebGlRenderer extends IgeBaseRenderer_1.IgeBaseRenderer {
         this._shadowLightId = "mainDirectionalLight";
         // Shadow debug mode (0 = off, 1-4 = different visualizations)
         this._shadowDebugMode = 0;
+        // When true, the WebGL drawing buffer is preserved after compositing,
+        // allowing gl.readPixels() to work after a frame is rendered.
+        // Must be set before createFrontBuffer() is called.
+        this._preserveDrawingBuffer = false;
         /**
          * Handle canvas resize events.
          */
@@ -180,7 +184,7 @@ class IgeWebGlRenderer extends IgeBaseRenderer_1.IgeBaseRenderer {
             antialias: true,
             depth: true,
             stencil: false,
-            preserveDrawingBuffer: false,
+            preserveDrawingBuffer: this._preserveDrawingBuffer,
             premultipliedAlpha: true,
             powerPreference: "high-performance"
         };
@@ -326,7 +330,7 @@ class IgeWebGlRenderer extends IgeBaseRenderer_1.IgeBaseRenderer {
         if (!gl || !this._renderBatchManager || !this._cameraController || !this._stateManager) {
             return;
         }
-        // Get viewport dimensions in CSS pixels and convert to device pixels
+        // Get viewport dimensions in CSS pixels and convert to device pixels.
         const dpr = this._devicePixelRatio;
         const vpX = Math.floor((((_a = viewport._translate) === null || _a === void 0 ? void 0 : _a.x) || 0) * dpr);
         const vpY = Math.floor((((_b = viewport._translate) === null || _b === void 0 ? void 0 : _b.y) || 0) * dpr);
@@ -853,6 +857,51 @@ class IgeWebGlRenderer extends IgeBaseRenderer_1.IgeBaseRenderer {
             return this;
         }
         return this._shadowDebugMode;
+    }
+    preserveDrawingBuffer(val) {
+        if (val === undefined) {
+            return this._preserveDrawingBuffer;
+        }
+        this._preserveDrawingBuffer = val;
+        return this;
+    }
+    /**
+     * Read the RGBA color of a single pixel at the given screen coordinates.
+     * Requires preserveDrawingBuffer to be true (set before context creation).
+     * @param x Screen X coordinate (0 = left edge)
+     * @param y Screen Y coordinate (0 = top edge, DOM convention)
+     * @returns Uint8Array [R, G, B, A] or null if context unavailable
+     */
+    readPixel(x, y) {
+        const gl = this._canvasContext;
+        if (!gl || !this._canvasElement)
+            return null;
+        const pixel = new Uint8Array(4);
+        // Convert from DOM top-left origin to WebGL bottom-left origin
+        const glY = this._canvasElement.height - Math.round(y) - 1;
+        gl.readPixels(Math.round(x), glY, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, pixel);
+        return pixel;
+    }
+    /**
+     * Read all pixels from the current framebuffer.
+     * Requires preserveDrawingBuffer to be true.
+     * Returns pixel data in WebGL native format (bottom-left origin, RGBA).
+     */
+    readAllPixels() {
+        const gl = this._canvasContext;
+        if (!gl || !this._canvasElement)
+            return null;
+        const w = this._canvasElement.width;
+        const h = this._canvasElement.height;
+        const pixels = new Uint8Array(w * h * 4);
+        gl.readPixels(0, 0, w, h, gl.RGBA, gl.UNSIGNED_BYTE, pixels);
+        return pixels;
+    }
+    /**
+     * Returns the underlying WebGL rendering context, if available.
+     */
+    glContext() {
+        return this._canvasContext;
     }
     /**
      * Clean up and destroy the renderer.

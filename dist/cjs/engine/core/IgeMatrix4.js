@@ -375,17 +375,23 @@ class IgeMatrix4 extends IgeBaseClass_1.IgeBaseClass {
         const yx = zy * xz - zz * xy;
         const yy = zz * xx - zx * xz;
         const yz = zx * xy - zy * xx;
+        // Store as column-major view matrix.
+        // Each column holds one coordinate of all three axes:
+        //   Column 0: [Right.x, Up.x, Forward.x, 0]
+        //   Column 1: [Right.y, Up.y, Forward.y, 0]
+        //   Column 2: [Right.z, Up.z, Forward.z, 0]
+        //   Column 3: [-dot(R,eye), -dot(U,eye), -dot(F,eye), 1]
         const m = this.matrix;
         m[0] = xx;
-        m[1] = xy;
-        m[2] = xz;
+        m[1] = yx;
+        m[2] = zx;
         m[3] = 0.0;
-        m[4] = yx;
+        m[4] = xy;
         m[5] = yy;
-        m[6] = yz;
+        m[6] = zy;
         m[7] = 0.0;
-        m[8] = zx;
-        m[9] = zy;
+        m[8] = xz;
+        m[9] = yz;
         m[10] = zz;
         m[11] = 0.0;
         // Translation: negative dot products of eye with each axis

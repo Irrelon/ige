@@ -69,6 +69,12 @@ export declare class IgeViewport extends IgeUiEntity implements IgeCanRegisterBy
      */
     viewArea(camScaleX?: number, camScaleY?: number): IgeBounds;
     /**
+     * Override updateTransform to prevent viewport's screen-space translate
+     * from leaking into the 3D transform chain. Viewport _translate is used
+     * for 2D screen positioning (gl.viewport), not 3D world transforms.
+     */
+    updateTransform(): this;
+    /**
      * Processes the updates before the render tick is called.
      * @param tickDelta
      */

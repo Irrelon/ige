@@ -1,19 +1,19 @@
 import { IgeBaseRenderer } from "./IgeBaseRenderer.js"
-import type { IgeEngine } from "./IgeEngine.js";
+import type { IgeEngine } from "./IgeEngine.js"
 import type { IgeViewport } from "./IgeViewport.js"
-import { IgeWebGlResourceManager } from "../webgl/IgeWebGlResourceManager.js";
+import { IgeWebGlResourceManager } from "../webgl/IgeWebGlResourceManager.js"
 import { IgeWebGlShaderManager } from "../webgl/IgeWebGlShaderManager.js"
-import { IgeWebGlTextureManager } from "../webgl/IgeWebGlTextureManager.js";
+import { IgeWebGlTextureManager } from "../webgl/IgeWebGlTextureManager.js"
 import { IgeWebGlGeometryManager } from "../webgl/IgeWebGlGeometryManager.js"
-import { IgeWebGlCameraController } from "../webgl/IgeWebGlCameraController.js";
+import { IgeWebGlCameraController } from "../webgl/IgeWebGlCameraController.js"
 import { IgeWebGlRenderBatchManager } from "../webgl/IgeWebGlRenderBatchManager.js"
-import { IgeWebGlStateManager } from "../webgl/IgeWebGlStateManager.js";
+import { IgeWebGlStateManager } from "../webgl/IgeWebGlStateManager.js"
 import { IgeWebGlLightManager } from "../webgl/IgeWebGlLightManager.js"
-import { IgeWebGlShadowManager } from "../webgl/IgeWebGlShadowManager.js";
+import { IgeWebGlShadowManager } from "../webgl/IgeWebGlShadowManager.js"
 import { IgeWebGlSkeletonManager } from "../webgl/IgeWebGlSkeletonManager.js"
-import type { IgeObject } from "./IgeObject.js";
+import type { IgeObject } from "./IgeObject.js"
 import type { IgeEntity } from "./IgeEntity.js"
-import type { IgeDirectionalLight } from "../webgl/IgeWebGlLight.js";
+import type { IgeDirectionalLight } from "../webgl/IgeWebGlLight.js"
 /**
  * Custom WebGL renderer for IGE supporting full 3D rendering.
  * This renderer replaces the experimental three.js integration with
@@ -51,6 +51,7 @@ export declare class IgeWebGlRenderer extends IgeBaseRenderer {
     protected _shadowCastingLight?: IgeDirectionalLight;
     protected _shadowLightId: string;
     protected _shadowDebugMode: number;
+    protected _preserveDrawingBuffer: boolean;
     /**
      * Initialize the WebGL renderer.
      */
@@ -169,6 +170,31 @@ export declare class IgeWebGlRenderer extends IgeBaseRenderer {
      * Toggle fullscreen mode.
      */
     toggleFullScreen: () => void;
+    /**
+     * Gets / sets whether the WebGL drawing buffer should be preserved after
+     * compositing. When true, gl.readPixels() works after a frame is rendered.
+     * Must be called before createFrontBuffer().
+     */
+    preserveDrawingBuffer(): boolean;
+    preserveDrawingBuffer(val: boolean): this;
+    /**
+     * Read the RGBA color of a single pixel at the given screen coordinates.
+     * Requires preserveDrawingBuffer to be true (set before context creation).
+     * @param x Screen X coordinate (0 = left edge)
+     * @param y Screen Y coordinate (0 = top edge, DOM convention)
+     * @returns Uint8Array [R, G, B, A] or null if context unavailable
+     */
+    readPixel(x: number, y: number): Uint8Array | null;
+    /**
+     * Read all pixels from the current framebuffer.
+     * Requires preserveDrawingBuffer to be true.
+     * Returns pixel data in WebGL native format (bottom-left origin, RGBA).
+     */
+    readAllPixels(): Uint8Array | null;
+    /**
+     * Returns the underlying WebGL rendering context, if available.
+     */
+    glContext(): WebGLRenderingContext | WebGL2RenderingContext | null | undefined;
     /**
      * Clean up and destroy the renderer.
      */

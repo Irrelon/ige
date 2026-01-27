@@ -1,19 +1,19 @@
 import { IgeBaseRenderer } from "./IgeBaseRenderer.js"
-import { IgePoint2d } from "./IgePoint2d.js";
+import { IgePoint2d } from "./IgePoint2d.js"
 import { ige } from "../instance.js"
-import { isClient, isServer } from "../utils/clientServer.js";
+import { isClient, isServer } from "../utils/clientServer.js"
 import { IgeWebGlResourceManager } from "../webgl/IgeWebGlResourceManager.js"
-import { IgeWebGlShaderManager } from "../webgl/IgeWebGlShaderManager.js";
+import { IgeWebGlShaderManager } from "../webgl/IgeWebGlShaderManager.js"
 import { IgeWebGlTextureManager } from "../webgl/IgeWebGlTextureManager.js"
-import { IgeWebGlGeometryManager } from "../webgl/IgeWebGlGeometryManager.js";
+import { IgeWebGlGeometryManager } from "../webgl/IgeWebGlGeometryManager.js"
 import { IgeWebGlCameraController } from "../webgl/IgeWebGlCameraController.js"
-import { IgeWebGlRenderBatchManager } from "../webgl/IgeWebGlRenderBatchManager.js";
+import { IgeWebGlRenderBatchManager } from "../webgl/IgeWebGlRenderBatchManager.js"
 import { IgeWebGlStateManager } from "../webgl/IgeWebGlStateManager.js"
-import { IgeWebGlLightManager } from "../webgl/IgeWebGlLightManager.js";
+import { IgeWebGlLightManager } from "../webgl/IgeWebGlLightManager.js"
 import { IgeWebGlShadowManager } from "../webgl/IgeWebGlShadowManager.js"
-import { IgeWebGlSkeletonManager } from "../webgl/IgeWebGlSkeletonManager.js";
+import { IgeWebGlSkeletonManager } from "../webgl/IgeWebGlSkeletonManager.js"
 import { IgeShaderLibrary } from "../shaders/webgl/shaderLibrary.js"
-import { IgePoint3d } from "./IgePoint3d.js";
+import { IgePoint3d } from "./IgePoint3d.js"
 /**
  * Custom WebGL renderer for IGE supporting full 3D rendering.
  * This renderer replaces the experimental three.js integration with
@@ -55,6 +55,10 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
     _shadowLightId = "mainDirectionalLight";
     // Shadow debug mode (0 = off, 1-4 = different visualizations)
     _shadowDebugMode = 0;
+    // When true, the WebGL drawing buffer is preserved after compositing,
+    // allowing gl.readPixels() to work after a frame is rendered.
+    // Must be set before createFrontBuffer() is called.
+    _preserveDrawingBuffer = false;
     /**
      * Initialize the WebGL renderer.
      */
@@ -122,7 +126,7 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
             antialias: true,
             depth: true,
             stencil: false,
-            preserveDrawingBuffer: false,
+            preserveDrawingBuffer: this._preserveDrawingBuffer,
             premultipliedAlpha: true,
             powerPreference: "high-performance"
         };
@@ -304,7 +308,7 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
         if (!gl || !this._renderBatchManager || !this._cameraController || !this._stateManager) {
             return;
         }
-        // Get viewport dimensions in CSS pixels and convert to device pixels
+        // Get viewport dimensions in CSS pixels and convert to device pixels.
         const dpr = this._devicePixelRatio;
         const vpX = Math.floor((viewport._translate?.x || 0) * dpr);
         const vpY = Math.floor((viewport._translate?.y || 0) * dpr);
@@ -844,6 +848,51 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
             document.exitFullscreen();
         }
     };
+    preserveDrawingBuffer(val) {
+        if (val === undefined) {
+            return this._preserveDrawingBuffer;
+        }
+        this._preserveDrawingBuffer = val;
+        return this;
+    }
+    /**
+     * Read the RGBA color of a single pixel at the given screen coordinates.
+     * Requires preserveDrawingBuffer to be true (set before context creation).
+     * @param x Screen X coordinate (0 = left edge)
+     * @param y Screen Y coordinate (0 = top edge, DOM convention)
+     * @returns Uint8Array [R, G, B, A] or null if context unavailable
+     */
+    readPixel(x, y) {
+        const gl = this._canvasContext;
+        if (!gl || !this._canvasElement)
+            return null;
+        const pixel = new Uint8Array(4);
+        // Convert from DOM top-left origin to WebGL bottom-left origin
+        const glY = this._canvasElement.height - Math.round(y) - 1;
+        gl.readPixels(Math.round(x), glY, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, pixel);
+        return pixel;
+    }
+    /**
+     * Read all pixels from the current framebuffer.
+     * Requires preserveDrawingBuffer to be true.
+     * Returns pixel data in WebGL native format (bottom-left origin, RGBA).
+     */
+    readAllPixels() {
+        const gl = this._canvasContext;
+        if (!gl || !this._canvasElement)
+            return null;
+        const w = this._canvasElement.width;
+        const h = this._canvasElement.height;
+        const pixels = new Uint8Array(w * h * 4);
+        gl.readPixels(0, 0, w, h, gl.RGBA, gl.UNSIGNED_BYTE, pixels);
+        return pixels;
+    }
+    /**
+     * Returns the underlying WebGL rendering context, if available.
+     */
+    glContext() {
+        return this._canvasContext;
+    }
     /**
      * Clean up and destroy the renderer.
      */
