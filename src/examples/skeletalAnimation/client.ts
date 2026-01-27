@@ -3,6 +3,7 @@ import { IgeEntity } from "@/engine/core/IgeEntity";
 import { IgeScene2d } from "@/engine/core/IgeScene2d";
 import { IgeWebGlRenderer } from "@/engine/core/IgeWebGlRenderer";
 import { IgeViewport } from "@/engine/core/IgeViewport";
+import { IgePoint3d } from "@/engine/core/IgePoint3d";
 import type { IgeCamera } from "@/engine/core/IgeCamera";
 import { ige } from "@/engine/instance";
 import type { IgeCanInit } from "@/types/IgeCanInit";
@@ -127,6 +128,7 @@ export class Client extends IgeBaseClass implements IgeCanInit {
 		this.camera.near(0.1);
 		this.camera.far(1000);
 		this.camera.translateTo(0, 100, 300);
+		this.camera._lookAt = new IgePoint3d(0, 0, 0);
 
 		// Mount viewport
 		this.viewport.mount(ige.engine);
@@ -369,6 +371,13 @@ export class Client extends IgeBaseClass implements IgeCanInit {
 		this.animatedEntity.translateTo(0, -100, 0); // Lower to center in view
 		this.animatedEntity.scaleTo(100, 100, 100); // Scale up for visibility
 
+		// CesiumMan mesh data is in Z-up space (Blender convention).
+		// The GLTF node transform that converts to Y-up is not yet applied
+		// by the loader, so we rotate manually:
+		//   -90° around X to stand upright (Z-up → Y-up)
+		//   180° around Y to face toward +Z (toward viewer)
+		this.animatedEntity.rotateTo(-Math.PI / 2, Math.PI, 0);
+
 		// Mount to scene
 		this.animatedEntity.mount(this.scene);
 
@@ -420,9 +429,15 @@ export class Client extends IgeBaseClass implements IgeCanInit {
 					break;
 
 				case " ":
-					// Stop animation
-					animComponent.stop();
-					this.updateAnimationDisplay("Stopped");
+					// Toggle animation play/stop
+					if (animComponent.playing()) {
+						animComponent.stop();
+						this.updateAnimationDisplay("Stopped");
+					} else if (this.animatedModel?.animations && this.animatedModel.animations.length > 0) {
+						const clip = this.animatedModel.animations[0];
+						animComponent.play(clip.id, { crossFadeDuration: 0 });
+						this.updateAnimationDisplay(clip.name || clip.id);
+					}
 					break;
 
 				case "p":
