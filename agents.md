@@ -2,7 +2,7 @@
 
 ## Project Overview
 
-The Isogenic Game Engine (IGE) is a custom 2D/isometric game engine written in TypeScript for creating games using web technologies. The engine currently supports 2D and isometric rendering via Canvas 2D, but the ultimate goal is to expand it to support full 3D rendering using WebGL/Three.js while maintaining the simplicity and ease of use that makes IGE special.
+The Isogenic Game Engine (IGE) is a custom 2D/isometric/3D game engine written in TypeScript for creating games using web technologies. The engine supports 2D, isometric, and full 3D rendering via a custom WebGL renderer, maintaining the simplicity and ease of use that makes IGE special.
 
 ## Current State
 
@@ -32,25 +32,23 @@ The engine is built around several key classes that form the foundation of the r
 -   Manages what portion of the scene is visible to the user
 -   Contains an `IgeCamera` for controlling viewpoint
 -   Handles clipping and viewport transformations
--   Currently designed for 2D but has 3D positioning support
+-   Supports both 2D and 3D rendering modes
 
 #### **IgeCamera** (`src/engine/core/IgeCamera.ts`)
 
 -   Controls the viewpoint within a viewport
 -   Supports tracking entities for smooth camera movement
 -   Has 3D transformation support (translate, rotate, scale)
--   Currently optimized for 2D but architecture supports 3D
 
 #### **IgeTexture** (`src/engine/core/IgeTexture.ts`)
 
 -   Handles loading and rendering of 2D images/textures
 -   Supports cell-based sprite sheets
--   Uses Canvas 2D for rendering currently
--   Needs extension for 3D texture mapping
+-   Used in both Canvas 2D and WebGL rendering pipelines
 
 ### 3D Support Infrastructure
 
-The engine already has significant 3D infrastructure in place:
+The engine has extensive 3D infrastructure:
 
 1. **3D Positioning**: All entities support 3D coordinates via `IgePoint3d`
 2. **3D Bounds**: Entities have `_bounds3d` for 3D collision and depth sorting
@@ -60,7 +58,7 @@ The engine already has significant 3D infrastructure in place:
 6. **Material Data**: `_materialData` property for 3D material properties
 7. **Mesh Data**: `_meshData` property for renderer-specific 3D objects
 
-### Current Rendering System
+### Rendering System
 
 #### **IgeCanvas2dRenderer** (`src/engine/core/IgeCanvas2dRenderer.ts`)
 
@@ -69,29 +67,68 @@ The engine already has significant 3D infrastructure in place:
 -   Renders entities using their textures and transformation matrices
 -   Optimized for 2D but supports isometric projection
 
-#### **IgeThreeJsRenderer** (`src/engine/core/IgeThreeJsRenderer.ts`)
+#### **IgeWebGlRenderer** (`src/engine/core/IgeWebGlRenderer.ts`) - PRIMARY 3D RENDERER
 
--   **EXPERIMENTAL** - Three.js WebGL renderer implementation
--   Demonstrates 3D rendering capability with actual 3D meshes
--   Converts IGE entity properties to Three.js objects
--   Handles geometry, material, and mesh creation
--   Shows how 2D textures can be mapped to 3D planes
+-   Custom-built WebGL renderer replacing the earlier experimental Three.js integration
+-   Supports both WebGL 1 and WebGL 2
+-   Full 3D rendering pipeline with a modular manager architecture:
+    -   **Resource Management** (`IgeWebGlResourceManager`) - buffer, texture, and shader allocation
+    -   **Shader Management** (`IgeWebGlShaderManager`) - shader compilation and caching with a shader library
+    -   **Texture Management** (`IgeWebGlTextureManager`) - texture creation and management
+    -   **Geometry Management** (`IgeWebGlGeometryManager`) - geometry creation and caching
+    -   **Render Batch Management** (`IgeWebGlRenderBatchManager`) - batching optimization
+    -   **Camera Controller** (`IgeWebGlCameraController`) - camera controls with preset support
+    -   **Lighting** (`IgeWebGlLightManager`, `IgeWebGlLight`) - directional and point lights
+    -   **Shadow Mapping** (`IgeWebGlShadowManager`) - shadow support
+    -   **Skeletal Animation** (`IgeWebGlSkeletonManager`) - bone-based animations
+    -   **GLTF/GLB Loading** (`IgeGltfLoader`) - 3D model loading
+    -   **Material System** (`IgeWebGlMaterial`) - advanced materials
+    -   **Frustum Culling** (`IgeFrustum`) - performance optimization
+    -   **Primitive Geometry** (`IgePrimitiveGeometry`) - built-in shapes
+    -   **State Management** (`IgeWebGlStateManager`) - WebGL state tracking
+-   Used in multiple working examples: coordTest2d, coordTest3d, coordTestIso, skeletalAnimation, webGlRenderer, zombie-game
 
-### Three.js Example Implementation
+#### **IgeThreeJsRenderer** (`src/engine/core/IgeThreeJsRenderer.ts`) - EXPERIMENTAL
 
-The `src/examples/threeJsRenderer/` directory contains a working prototype that:
+-   Incomplete Three.js-based renderer
+-   Has basic setup (WebGLRenderer, Scene, PerspectiveCamera) but many TODOs remain
+-   Three.js is a peer dependency (optional), not a core dependency
+-   Only one example uses it (`threeJsRenderer/client.ts`)
+-   Not recommended for active development; the custom WebGL renderer is the primary path
 
--   Creates 150 entities with 3D positioning and rotation
--   Uses Three.js for true 3D WebGL rendering
--   Maps 2D textures to 3D plane geometries
--   Demonstrates smooth animation in 3D space
--   Shows how existing IGE entities can work in 3D
+#### **IgeWebGpuRenderer** (`src/engine/core/IgeWebGpuRenderer.ts`) - PROTOTYPE
+
+-   Early WebGPU API prototype
+-   Has basic initialization pipeline but lacks real entity/scene rendering
+-   Future-focused but not production-ready
+
+### WebGL Support Files (`src/engine/webgl/`)
+
+| File | Purpose |
+|------|---------|
+| `IgeWebGlResourceManager.ts` | Core WebGL resource allocation and management |
+| `IgeWebGlShaderManager.ts` | Shader compilation and caching |
+| `IgeWebGlTextureManager.ts` | Texture creation and management |
+| `IgeWebGlGeometryManager.ts` | Geometry creation and caching |
+| `IgeWebGlGeometry.ts` | Individual geometry class |
+| `IgeWebGlCameraController.ts` | Camera controls and projection |
+| `IgeWebGlRenderBatchManager.ts` | Batching optimization |
+| `IgeWebGlStateManager.ts` | WebGL state tracking |
+| `IgeWebGlLightManager.ts` | Light management |
+| `IgeWebGlLight.ts` | Individual light class |
+| `IgeWebGlShadowManager.ts` | Shadow mapping system |
+| `IgeWebGlSkeletonManager.ts` | Skeletal animation support |
+| `IgeWebGlMaterial.ts` | Material system |
+| `IgeWebGlProgram.ts` | GLSL program wrapper |
+| `IgeGltfLoader.ts` | GLTF/GLB model loading |
+| `IgeFrustum.ts` | Frustum culling |
+| `IgePrimitiveGeometry.ts` | Built-in primitive shapes |
 
 ## Ultimate Project Goals
 
 ### Primary Objective
 
-**Transition to a unified 3D renderer that can handle both 2D and 3D content seamlessly, similar to modern game engines like Unity and Unreal Engine.**
+**A unified 3D renderer (custom WebGL) that handles both 2D and 3D content seamlessly, similar to modern game engines like Unity and Unreal Engine.**
 
 Users should be able to:
 
@@ -112,30 +149,30 @@ const entity3d = new IgeEntity()
 ### Key Requirements
 
 1. **API Consistency**: Same methods work for both 2D sprites and 3D models
-2. **Unified Renderer**: Single 3D renderer handles all content types
-3. **Performance**: WebGL/3D rendering performant enough for real games
+2. **Unified Renderer**: Single WebGL renderer handles all content types
+3. **Performance**: Custom WebGL rendering for maximum control and performance
 4. **Simplicity**: Maintain IGE's ease of use philosophy
 5. **Backward Compatibility**: Existing 2D workflows continue to work
 
 ### Technical Strategy
 
-1. **Unified 3D Renderer**:
+1. **Custom WebGL Renderer**:
 
-    - **Recommended**: Continue with Three.js as the foundation
-    - **Alternative**: Custom WebGL renderer (significantly more work)
-    - **Rationale**: Three.js provides mature 3D model loading, materials, lighting, and shader systems
+    - Purpose-built for IGE's specific needs
+    - Maximum control over rendering pipeline and performance
+    - Modular manager architecture for maintainability
     - 2D sprites rendered as textured planes in 3D space
-    - 3D models rendered natively
+    - 3D models rendered natively via GLTF/GLB loader
     - Single rendering pipeline for all content
 
-2. **Three.js Integration Benefits**:
+2. **Custom Renderer Benefits**:
 
-    - Mature GLTF/GLB model loading
-    - Comprehensive material and lighting systems
-    - Built-in shader support and customization
-    - Active community and extensive documentation
-    - Regular updates and performance improvements
-    - Focus development on game engine features, not low-level 3D rendering
+    - No external 3D library dependency for core rendering
+    - Full control over shader pipeline and optimizations
+    - Custom GLTF/GLB model loading tailored to IGE
+    - Built-in lighting, shadows, and skeletal animation
+    - Render batching optimized for IGE's scene graph
+    - Smaller bundle size compared to full Three.js dependency
 
 3. **2D Content in 3D Space**:
 
@@ -160,14 +197,16 @@ const entity3d = new IgeEntity()
 
 ## Development Priorities
 
-### Phase 1: Unified Renderer Foundation
+### Phase 1: Unified Renderer Foundation (Largely Complete)
 
-1. **Complete IgeThreeJsRenderer as Primary Renderer**:
+1. **IgeWebGlRenderer as Primary Renderer** (Done):
 
-    - Replace Canvas 2D renderer with Three.js renderer
-    - Implement 2D sprite rendering as textured 3D planes
-    - Add proper material and lighting support
-    - Implement 3D model loading (GLTF/GLB)
+    - Custom WebGL renderer with modular manager architecture
+    - 2D sprite rendering as textured 3D planes
+    - Material and lighting support
+    - GLTF/GLB 3D model loading
+    - Shadow mapping
+    - Skeletal animation support
 
 2. **Unified Entity System**:
 
@@ -176,17 +215,16 @@ const entity3d = new IgeEntity()
     - Automatic geometry generation for 2D sprites
     - Enhanced transformation handling in 3D space
 
-3. **Camera System Evolution**:
-    - Implement perspective and orthographic cameras
-    - Add 2D camera mode (orthographic, locked Z-axis)
-    - Create isometric camera presets
+3. **Camera System**:
+    - Perspective and orthographic cameras via `IgeWebGlCameraController`
+    - Camera presets for common configurations
     - Maintain API compatibility for existing camera usage
 
 ### Phase 2: Asset Pipeline
 
 1. **3D Asset Loading**:
 
-    - GLTF loader for 3D models
+    - GLTF/GLB loader for 3D models (implemented)
     - Texture loading for 3D materials
     - Asset management for 3D resources
 
@@ -199,14 +237,15 @@ const entity3d = new IgeEntity()
 
 1. **Lighting System**:
 
-    - Dynamic lighting for 3D scenes
-    - Shadow mapping
+    - Dynamic lighting for 3D scenes (implemented - directional and point lights)
+    - Shadow mapping (implemented)
     - Light entity types
 
 2. **Performance Optimization**:
-    - Frustum culling for 3D scenes
+    - Frustum culling for 3D scenes (implemented)
     - Level-of-detail (LOD) systems
     - Instanced rendering for repeated objects
+    - Render batching (implemented)
 
 ### Phase 4: Developer Experience
 
@@ -232,26 +271,32 @@ When working on IGE, follow these principles:
 3. **TypeScript First**: Maintain strict typing throughout
 4. **Test Backward Compatibility**: Ensure 2D examples still work
 5. **Document Changes**: Update inline documentation for new features
+6. **Use Custom WebGL**: Build on `IgeWebGlRenderer`, not Three.js
 
 ### Key Files to Understand
 
 -   `src/engine/core/IgeEntity.ts` - Core entity class
 -   `src/engine/core/IgeObject.ts` - Base object class
--   `src/engine/core/IgeThreeJsRenderer.ts` - 3D renderer implementation
--   `src/engine/core/IgeCanvas2dRenderer.ts` - 2D renderer implementation
--   `src/examples/threeJsRenderer/` - Working 3D example
+-   `src/engine/core/IgeWebGlRenderer.ts` - Primary 3D renderer
+-   `src/engine/core/IgeCanvas2dRenderer.ts` - 2D renderer
+-   `src/engine/core/IgeBaseRenderer.ts` - Base renderer class
+-   `src/engine/webgl/` - WebGL support modules (managers, loaders, etc.)
+-   `src/examples/webGlRenderer/` - WebGL renderer example
+-   `src/examples/coordTest3d/` - 3D coordinate test example
+-   `src/examples/skeletalAnimation/` - Skeletal animation example
 
 ### Common Tasks
 
-1. **Renderer Migration**: Transition from Canvas 2D to unified Three.js renderer
+1. **Renderer Enhancement**: Extend the custom WebGL renderer with new features
 2. **Entity Enhancement**: Add unified 2D/3D content support to `IgeEntity`
-3. **Asset Pipeline**: Implement unified loading for textures and 3D models
-4. **Camera Modernization**: Enhance `IgeCamera` for true 3D with 2D compatibility modes
+3. **Asset Pipeline**: Improve GLTF/GLB loading and material support
+4. **Camera Modernization**: Enhance camera controller for more use cases
 5. **API Unification**: Ensure same methods work for both 2D and 3D content
 
 ### Architecture Constraints
 
--   Single unified 3D renderer (likely Three.js based)
+-   Custom WebGL renderer is the primary 3D rendering path
+-   Three.js renderer exists as an experimental alternative but is not the focus
 -   Entity system must remain simple and intuitive
 -   Scene graph structure should remain unchanged
 -   Same transformation APIs for 2D sprites and 3D models
@@ -259,11 +304,20 @@ When working on IGE, follow these principles:
 
 ## Current Challenges
 
-1. **Renderer Migration**: Transitioning from Canvas 2D to unified 3D renderer
+1. **Feature Completeness**: Continuing to build out the WebGL renderer's feature set
 2. **Asset Pipeline**: Unified loading for both 2D textures and 3D models
-3. **Performance**: Ensuring 3D renderer performs well for 2D content
-4. **Complexity vs Simplicity**: Leveraging Three.js power while maintaining IGE simplicity
-5. **Migration Path**: Smooth transition for existing IGE users
+3. **Performance**: Optimizing the custom WebGL renderer for large scenes
+4. **Complexity vs Simplicity**: Maintaining IGE simplicity with growing 3D capabilities
+5. **Migration Path**: Smooth transition for existing IGE users from Canvas 2D
+
+## Renderer Comparison
+
+| Renderer | Status | Use Case | Maturity |
+|----------|--------|----------|----------|
+| **IgeWebGlRenderer** | Production-ready | Primary 3D rendering | Mature |
+| **IgeCanvas2dRenderer** | Production-ready | 2D rendering | Mature |
+| **IgeThreeJsRenderer** | Experimental | Alternative (not recommended) | Incomplete |
+| **IgeWebGpuRenderer** | Prototype | Future graphics API | Very early |
 
 ## Success Metrics
 
@@ -278,14 +332,13 @@ The unified 3D renderer will be considered successful when:
 
 ## Conclusion
 
-IGE has a solid foundation for 3D rendering with existing 3D positioning, transformation systems, and an experimental Three.js renderer. The strategic decision is to transition to a unified 3D renderer (built on Three.js) that can handle both 2D sprites and 3D models seamlessly, following the successful pattern of modern game engines like Unity and Unreal Engine.
+IGE has a solid and maturing 3D rendering system built on a custom WebGL renderer (`IgeWebGlRenderer`) with a comprehensive modular architecture including lighting, shadows, skeletal animation, GLTF/GLB loading, frustum culling, and render batching. This custom approach replaces the earlier experimental Three.js integration, providing maximum control over the rendering pipeline and performance.
 
 This approach allows IGE to:
 
--   **Focus on game development experience** rather than low-level 3D rendering complexities
--   **Leverage Three.js's mature ecosystem** for model loading, materials, and lighting
+-   **Maintain full control** over the rendering pipeline without external 3D library dependencies
+-   **Optimize specifically for IGE's needs** with custom shader management and render batching
+-   **Keep bundle sizes small** by not requiring Three.js as a core dependency
 -   **Maintain API simplicity** while gaining powerful 3D capabilities
 -   **Provide a clear migration path** for existing 2D projects
--   **Future-proof the engine** for modern game development needs
-
-The goal is to create a game engine where developers can seamlessly mix 2D sprites and 3D models using the same simple, intuitive API that makes IGE special.
+-   **Future-proof the engine** with WebGPU exploration alongside the mature WebGL renderer
