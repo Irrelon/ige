@@ -87,6 +87,26 @@ uniform float u_shadowNormalBias;     // Normal-based bias
 uniform float u_shadowMapSize;        // Size of shadow map for PCF
 uniform int u_usePackedDepth;         // Whether depth is packed (WebGL 1)
 
+// Point light shadow mapping uniforms (supports 1 shadow-casting point light)
+uniform int u_hasPointShadow;              // Whether point shadow is active
+uniform int u_pointShadowLightIndex;       // Which point light index casts shadows
+uniform float u_pointShadowFarPlane;       // Far plane (= light range)
+uniform float u_pointShadowBias;           // Shadow bias
+// 6 face textures for the shadow-casting point light
+uniform sampler2D u_ptShadowFace0;
+uniform sampler2D u_ptShadowFace1;
+uniform sampler2D u_ptShadowFace2;
+uniform sampler2D u_ptShadowFace3;
+uniform sampler2D u_ptShadowFace4;
+uniform sampler2D u_ptShadowFace5;
+// 6 light-space matrices (one per cube face)
+uniform mat4 u_ptShadowMatrix0;
+uniform mat4 u_ptShadowMatrix1;
+uniform mat4 u_ptShadowMatrix2;
+uniform mat4 u_ptShadowMatrix3;
+uniform mat4 u_ptShadowMatrix4;
+uniform mat4 u_ptShadowMatrix5;
+
 // Constants
 const float PI = 3.14159265359;
 const vec3 F0_DIELECTRIC = vec3(0.04); // F0 for non-metals
@@ -221,6 +241,76 @@ float calculateShadow(vec3 normal, vec3 lightDir) {
 	return shadow;
 }
 
+// ============================================================================
+// Point Light Shadow Functions
+// ============================================================================
+
+// Sample the point shadow face texture for a given face index
+float samplePointShadowFace(int face, vec2 uv) {
+	if (face == 0) return texture2D(u_ptShadowFace0, uv).r;
+	if (face == 1) return texture2D(u_ptShadowFace1, uv).r;
+	if (face == 2) return texture2D(u_ptShadowFace2, uv).r;
+	if (face == 3) return texture2D(u_ptShadowFace3, uv).r;
+	if (face == 4) return texture2D(u_ptShadowFace4, uv).r;
+	return texture2D(u_ptShadowFace5, uv).r;
+}
+
+// Get the light-space position for a given cube face
+vec4 getPointShadowLightSpacePos(int face, vec3 worldPos) {
+	if (face == 0) return u_ptShadowMatrix0 * vec4(worldPos, 1.0);
+	if (face == 1) return u_ptShadowMatrix1 * vec4(worldPos, 1.0);
+	if (face == 2) return u_ptShadowMatrix2 * vec4(worldPos, 1.0);
+	if (face == 3) return u_ptShadowMatrix3 * vec4(worldPos, 1.0);
+	if (face == 4) return u_ptShadowMatrix4 * vec4(worldPos, 1.0);
+	return u_ptShadowMatrix5 * vec4(worldPos, 1.0);
+}
+
+// Calculate shadow factor for the point light
+float calculatePointShadow(vec3 lightPos) {
+	if (u_hasPointShadow == 0) return 1.0;
+
+	vec3 fragToLight = v_worldPosition - lightPos;
+	float currentDistance = length(fragToLight) / u_pointShadowFarPlane;
+
+	// Determine which cube face to use based on dominant axis
+	vec3 absDir = abs(fragToLight);
+	int face;
+	if (absDir.x >= absDir.y && absDir.x >= absDir.z) {
+		face = fragToLight.x > 0.0 ? 0 : 1;
+	} else if (absDir.y >= absDir.x && absDir.y >= absDir.z) {
+		face = fragToLight.y > 0.0 ? 2 : 3;
+	} else {
+		face = fragToLight.z > 0.0 ? 4 : 5;
+	}
+
+	// Project world position through the face matrix
+	vec4 lightSpacePos = getPointShadowLightSpacePos(face, v_worldPosition);
+
+	// Perspective divide and map to [0,1]
+	vec3 projCoords = lightSpacePos.xyz / lightSpacePos.w;
+	projCoords = projCoords * 0.5 + 0.5;
+
+	// Bounds check
+	if (projCoords.x < 0.0 || projCoords.x > 1.0 ||
+	    projCoords.y < 0.0 || projCoords.y > 1.0 ||
+	    currentDistance > 1.0) {
+		return 1.0;
+	}
+
+	// Sample the stored distance from the face texture
+	float closestDistance = samplePointShadowFace(face, projCoords.xy);
+
+	// Compare distances
+	return (currentDistance - u_pointShadowBias > closestDistance) ? 0.0 : 1.0;
+}
+
+// Get the point shadow factor for a given point light index
+float getPointLightShadow(int pointLightIndex) {
+	if (u_hasPointShadow == 0) return 1.0;
+	if (pointLightIndex != u_pointShadowLightIndex) return 1.0;
+	return calculatePointShadow(u_pointLightPositions[pointLightIndex]);
+}
+
 // Debug function to visualize shadow map values
 vec3 debugShadowValues(vec3 normal, vec3 lightDir) {
 	vec3 projCoords = v_lightSpacePos.xyz / v_lightSpacePos.w;
@@ -341,7 +431,8 @@ void main() {
 			float attenuation = calculateAttenuation(distance, u_pointLightRanges[i], u_pointLightDecays[i]);
 			float intensity = u_pointLightIntensities[i] * attenuation;
 
-			finalColor += calculateSimpleDiffuse(N, L, u_pointLightColors[i], intensity, albedo);
+			float pointShadow = getPointLightShadow(i);
+			finalColor += calculateSimpleDiffuse(N, L, u_pointLightColors[i], intensity, albedo) * pointShadow;
 		}
 
 		// Spot lights
@@ -401,7 +492,8 @@ void main() {
 			float attenuation = calculateAttenuation(distance, u_pointLightRanges[i], u_pointLightDecays[i]);
 			vec3 radiance = u_pointLightColors[i] * u_pointLightIntensities[i] * attenuation;
 
-			finalColor += calculatePBRLight(N, V, L, radiance, albedo, metallic, roughness);
+			float pointShadow = getPointLightShadow(i);
+			finalColor += calculatePBRLight(N, V, L, radiance, albedo, metallic, roughness) * pointShadow;
 		}
 
 		// Spot lights

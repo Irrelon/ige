@@ -18,7 +18,7 @@ import { IgeShaderLibrary } from "@/engine/shaders/webgl/shaderLibrary";
 import type { IgeObject } from "@/engine/core/IgeObject";
 import type { IgeEntity } from "@/engine/core/IgeEntity";
 import { IgePoint3d } from "@/engine/core/IgePoint3d";
-import type { IgeDirectionalLight } from "@/engine/webgl/IgeWebGlLight";
+import type { IgeDirectionalLight, IgePointLight } from "@/engine/webgl/IgeWebGlLight";
 
 /**
  * Custom WebGL renderer for IGE supporting full 3D rendering.
@@ -66,6 +66,9 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 
 	// Shadow debug mode (0 = off, 1-4 = different visualizations)
 	protected _shadowDebugMode: number = 0;
+
+	// Point lights that cast shadows
+	protected _shadowCastingPointLights: IgePointLight[] = [];
 
 	// When true, the WebGL drawing buffer is preserved after compositing,
 	// allowing gl.readPixels() to work after a frame is rendered.
@@ -423,6 +426,16 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 		}
 
 		// ============================================================
+		// POINT LIGHT SHADOW PASS: Render 6 faces per point light
+		// ============================================================
+		if (this._shadowCastingPointLights.length > 0 && this._shadowManager) {
+			this._renderPointLightShadowPasses();
+
+			this._stateManager.reset();
+			gl.depthFunc(gl.LEQUAL);
+		}
+
+		// ============================================================
 		// MAIN RENDER PASS
 		// ============================================================
 
@@ -513,6 +526,68 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 
 		// End shadow pass (restores default framebuffer)
 		this._shadowManager.endShadowPass();
+	}
+
+	/**
+	 * Render point light shadow passes (6 faces per shadow-casting point light).
+	 */
+	protected _renderPointLightShadowPasses(): void {
+		if (!this._shadowManager || !this._shaderManager || !this._geometryManager || !this._renderBatchManager) {
+			return;
+		}
+
+		const pointShadowProgram = this._shaderManager.getProgram("point_shadow");
+		if (!pointShadowProgram) return;
+
+		for (const pointLight of this._shadowCastingPointLights) {
+			const lightId = pointLight.id();
+
+			// Update the 6 light-space matrices for this light's current position
+			if (!this._shadowManager.updatePointLightSpaceMatrices(lightId, pointLight)) {
+				continue;
+			}
+
+			const pos = pointLight._translate;
+			const range = (pointLight as any)._range as number || 500;
+
+			// Render 6 cube faces
+			for (let face = 0; face < 6; face++) {
+				if (!this._shadowManager.beginPointShadowPass(lightId, face)) {
+					continue;
+				}
+
+				const lightSpaceMatrix = this._shadowManager.getPointLightSpaceMatrix(lightId, face);
+				if (!lightSpaceMatrix) {
+					this._shadowManager.endPointShadowPass();
+					continue;
+				}
+
+				// Use point shadow shader
+				pointShadowProgram.use();
+				pointShadowProgram.setUniformMatrix4fv("u_lightSpaceMatrix", lightSpaceMatrix);
+				pointShadowProgram.setUniform3f("u_pointLightPosition", pos.x, pos.y, pos.z);
+				pointShadowProgram.setUniform1f("u_pointShadowFarPlane", range);
+
+				// Render all opaque models
+				const renderBatch = (batch: any) => {
+					this._geometryManager!.bindGeometry(batch.geometry, pointShadowProgram!);
+
+					for (const entity of batch.entities) {
+						if (entity._worldMatrix4) {
+							pointShadowProgram!.setUniformMatrix4fv("u_worldMatrix", entity._worldMatrix4.matrix);
+						}
+
+						this._geometryManager!.drawGeometry(batch.geometry);
+					}
+
+					this._geometryManager!.unbindGeometry(batch.geometry, pointShadowProgram!);
+				};
+
+				this._renderBatchManager.renderOpaqueModels(pointShadowProgram, renderBatch);
+
+				this._shadowManager.endPointShadowPass();
+			}
+		}
 	}
 
 	/**
@@ -796,6 +871,17 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 					shaderProgram.setUniformMatrix4fv("u_lightSpaceMatrix", identityMatrix);
 				}
 
+				// Apply point light shadow uniforms (supports 1 point light)
+				if (this._shadowCastingPointLights.length > 0 && this._shadowManager && this._lightManager) {
+					const light = this._shadowCastingPointLights[0];
+					// Texture units: 0 = base color, 1 = directional shadow, 2-7 = point shadow faces
+					this._shadowManager.applyPointShadowUniforms(shaderProgram, light.id(), 2);
+					const pointLightIndex = (this._lightManager as any)._pointLights.indexOf(light);
+					shaderProgram.setUniform1i("u_pointShadowLightIndex", pointLightIndex);
+				} else {
+					shaderProgram.setUniform1i("u_hasPointShadow", 0);
+				}
+
 				// Default to simple lighting mode (non-PBR)
 				shaderProgram.setUniform1i("u_usePBR", 0);
 				shaderProgram.setUniform1i("u_hasNormalMap", 0);
@@ -855,8 +941,9 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 					shaderProgram!.setUniformMatrix4fv("u_worldMatrix", entity._worldMatrix4);
 
 					// Calculate normal matrix (inverse transpose of world matrix)
-					const normalMatrix = entity._worldMatrix4.getInverse();
-					if (normalMatrix) {
+					const inverseMatrix = entity._worldMatrix4.getInverse();
+					if (inverseMatrix) {
+						const normalMatrix = inverseMatrix.transpose();
 						shaderProgram!.setUniformMatrix4fv("u_normalMatrix", normalMatrix);
 					}
 				}
@@ -999,6 +1086,59 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 		}
 		this._shadowCastingLight = undefined;
 		this.log("Shadows disabled");
+	}
+
+	/**
+	 * Enable shadow casting for a point light.
+	 * Maximum of 2 shadow-casting point lights supported.
+	 * @param light The point light to cast shadows
+	 * @param shadowMapSize Size of each shadow map face (default: 512)
+	 */
+	enablePointLightShadows(light: IgePointLight, shadowMapSize: number = 512): boolean {
+		if (!this._shadowManager) {
+			this.log("Shadow manager not initialized", "error");
+			return false;
+		}
+
+		if (this._shadowCastingPointLights.length >= 2) {
+			this.log("Maximum of 2 shadow-casting point lights reached", "warning");
+			return false;
+		}
+
+		if (this._shadowCastingPointLights.includes(light)) {
+			return true; // Already enabled
+		}
+
+		const range = (light as any)._range as number || 500;
+		const success = this._shadowManager.createPointShadowMap(light.id(), {
+			size: shadowMapSize,
+			bias: 0.05,
+			nearPlane: 0.5,
+			farPlane: range
+		});
+
+		if (success) {
+			this._shadowCastingPointLights.push(light);
+			light.castShadow(true);
+			this.log(`Point light shadows enabled for ${light.id()} (6x ${shadowMapSize}x${shadowMapSize})`);
+		}
+
+		return success;
+	}
+
+	/**
+	 * Disable shadow casting for a specific point light.
+	 */
+	disablePointLightShadows(light: IgePointLight): void {
+		if (!this._shadowManager) return;
+
+		const index = this._shadowCastingPointLights.indexOf(light);
+		if (index === -1) return;
+
+		this._shadowManager.deletePointShadowMap(light.id());
+		light.castShadow(false);
+		this._shadowCastingPointLights.splice(index, 1);
+		this.log(`Point light shadows disabled for ${light.id()}`);
 	}
 
 	/**

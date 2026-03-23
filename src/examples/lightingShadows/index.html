@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta content="text/html; charset=utf-8" http-equiv="Content-Type" />
+  <meta content="yes" name="mobile-web-app-capable" />
+  <meta content="user-scalable=no, width=device-width, initial-scale=1.0" name="viewport" />
+  <meta content="black" name="apple-mobile-web-app-status-bar-style" />
+  <meta content="https://www.isogenicengine.com" name="game-engine-origin" />
+  <meta content="IE=9" http-equiv="X-UA-Compatible" />
+  <title>Lighting &amp; Shadows - Isogenic Engine</title>
+
+  <!-- Isogenic Loader -->
+  <link href="../../css/ige.css" media="all" rel="stylesheet" type="text/css" />
+
+  <script src="./index.bundle.js" type="module"></script>
+
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      background: #0a0a1a;
+    }
+
+    #info {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      color: #fff;
+      font-family: monospace;
+      font-size: 14px;
+      background: rgba(0, 0, 0, 0.7);
+      padding: 10px;
+      border-radius: 5px;
+      z-index: 1000;
+    }
+
+    #info h2 {
+      margin: 0 0 10px 0;
+      font-size: 18px;
+      color: #f0c040;
+    }
+
+    #controls {
+      position: absolute;
+      bottom: 10px;
+      left: 10px;
+      color: #fff;
+      font-family: monospace;
+      font-size: 12px;
+      background: rgba(0, 0, 0, 0.7);
+      padding: 10px;
+      border-radius: 5px;
+      z-index: 1000;
+    }
+
+    #controls div {
+      margin-bottom: 2px;
+    }
+  </style>
+</head>
+<body>
+<div id="info">
+  <h2>Lighting &amp; Shadows</h2>
+  <div>Status: <span id="status">Initializing...</span></div>
+  <div>FPS: <span id="fps">0</span></div>
+  <div>Lights: <span id="lightCount">0</span></div>
+  <div>Shadows: <span id="shadowStatus">Off</span></div>
+</div>
+
+<div id="controls">
+  <div>Controls:</div>
+  <div>S: Toggle shadows</div>
+  <div>D: Cycle shadow debug mode</div>
+  <div>L: Toggle all lights</div>
+  <div>1: Toggle street lamp</div>
+  <div>2: Toggle swinging light</div>
+  <div>3: Toggle moonlight</div>
+  <div>P/O: Perspective/Orthographic</div>
+  <div>Arrow Up/Down: Zoom</div>
+</div>
+
+<div class="igeLoading loadingFloat">
+  <div class="loadingLogo"></div>
+  <div class="loadingCircle"></div>
+  <div class="loadingCircleInner"></div>
+  <div class="loadingText" id="loadingText">Loading Lighting &amp; Shadows...</div>
+  <div id="loadingProgress">
+    <div id="loadingProgressBar"></div>
+  </div>
+</div>
+
+<div class="igeLoading loadingLink">
+  Powered By Isogenic Game Engine
+  <a href="https://www.isogenicengine.com" target="_blank">https://www.isogenicengine.com</a>
+</div>
+</body>
+</html>

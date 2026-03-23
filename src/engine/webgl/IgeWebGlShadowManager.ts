@@ -1,6 +1,6 @@
 import { IgeBaseClass } from "@/engine/core/IgeBaseClass";
 import type { IgeWebGlResourceManager } from "@/engine/webgl/IgeWebGlResourceManager";
-import type { IgeDirectionalLight } from "@/engine/webgl/IgeWebGlLight";
+import type { IgeDirectionalLight, IgePointLight } from "@/engine/webgl/IgeWebGlLight";
 import type { IgeWebGlProgram } from "@/engine/webgl/IgeWebGlProgram";
 import { IgeMatrix4 } from "@/engine/core/IgeMatrix4";
 
@@ -34,6 +34,32 @@ interface ShadowMapData {
 }
 
 /**
+ * Shadow map data for a point light (cube map, 6 faces).
+ */
+interface PointShadowMapData {
+	framebuffers: WebGLFramebuffer[];    // 6 framebuffers, one per face
+	colorTextures: WebGLTexture[];       // 6 RGBA textures for linear distance
+	lightSpaceMatrices: IgeMatrix4[];    // 6 view-projection matrices
+	size: number;
+	bias: number;
+	nearPlane: number;
+	farPlane: number;
+}
+
+/** Maximum number of point lights that can cast shadows. */
+export const MAX_SHADOW_POINT_LIGHTS = 2;
+
+/** Cube map face directions and up vectors for lookAt. */
+const CUBE_FACE_DIRS = [
+	{ dir: { x: 1, y: 0, z: 0 }, up: { x: 0, y: -1, z: 0 } },  // +X
+	{ dir: { x: -1, y: 0, z: 0 }, up: { x: 0, y: -1, z: 0 } },  // -X
+	{ dir: { x: 0, y: 1, z: 0 }, up: { x: 0, y: 0, z: 1 } },    // +Y
+	{ dir: { x: 0, y: -1, z: 0 }, up: { x: 0, y: 0, z: -1 } },  // -Y
+	{ dir: { x: 0, y: 0, z: 1 }, up: { x: 0, y: -1, z: 0 } },   // +Z
+	{ dir: { x: 0, y: 0, z: -1 }, up: { x: 0, y: -1, z: 0 } }   // -Z
+];
+
+/**
  * Default shadow map configuration.
  */
 const DEFAULT_SHADOW_CONFIG: IgeShadowMapConfig = {
@@ -55,8 +81,11 @@ export class IgeWebGlShadowManager extends IgeBaseClass {
 	protected _resourceManager: IgeWebGlResourceManager;
 	protected _webglVersion: 1 | 2;
 
-	// Shadow maps for each shadow-casting light
+	// Directional shadow maps
 	protected _shadowMaps: Map<string, ShadowMapData> = new Map();
+
+	// Point light shadow maps (cube maps)
+	protected _pointShadowMaps: Map<string, PointShadowMapData> = new Map();
 
 	// Global shadow settings
 	protected _enabled: boolean = true;
@@ -475,6 +504,261 @@ export class IgeWebGlShadowManager extends IgeBaseClass {
 		return this._shadowMaps.has(lightId);
 	}
 
+	// ========================================================================
+	// Point Light Shadow Maps (6-face cube rendering)
+	// ========================================================================
+
+	/**
+	 * Create a point light shadow map (6 framebuffers with RGBA textures).
+	 * Uses RGBA textures storing linear distance, sampled manually per face.
+	 */
+	createPointShadowMap(
+		lightId: string,
+		config?: { size?: number; bias?: number; nearPlane?: number; farPlane?: number }
+	): boolean {
+		const gl = this._gl;
+		const size = config?.size ?? 512;
+		const bias = config?.bias ?? 0.05;
+		const nearPlane = config?.nearPlane ?? 0.5;
+		const farPlane = config?.farPlane ?? 500;
+
+		// Delete existing if present
+		if (this._pointShadowMaps.has(lightId)) {
+			this.deletePointShadowMap(lightId);
+		}
+
+		const framebuffers: WebGLFramebuffer[] = [];
+		const colorTextures: WebGLTexture[] = [];
+
+		for (let face = 0; face < 6; face++) {
+			// Create RGBA color texture for this face
+			const colorTex = gl.createTexture();
+			if (!colorTex) {
+				this.log(`Failed to create point shadow color texture face ${face} for ${lightId}`, "error");
+				// Clean up already created
+				framebuffers.forEach(fb => gl.deleteFramebuffer(fb));
+				colorTextures.forEach(t => gl.deleteTexture(t));
+				return false;
+			}
+
+			gl.bindTexture(gl.TEXTURE_2D, colorTex);
+			gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, size, size, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
+			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+
+			// Create framebuffer for this face
+			const fb = gl.createFramebuffer();
+			if (!fb) {
+				this.log(`Failed to create point shadow framebuffer face ${face} for ${lightId}`, "error");
+				gl.deleteTexture(colorTex);
+				framebuffers.forEach(f => gl.deleteFramebuffer(f));
+				colorTextures.forEach(t => gl.deleteTexture(t));
+				return false;
+			}
+
+			gl.bindFramebuffer(gl.FRAMEBUFFER, fb);
+			gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, colorTex, 0);
+
+			// Create depth renderbuffer for this face
+			const depthBuf = gl.createRenderbuffer();
+			gl.bindRenderbuffer(gl.RENDERBUFFER, depthBuf);
+			gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_COMPONENT16, size, size);
+			gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, depthBuf);
+
+			const status = gl.checkFramebufferStatus(gl.FRAMEBUFFER);
+			if (status !== gl.FRAMEBUFFER_COMPLETE) {
+				this.log(`Point shadow framebuffer face ${face} incomplete: ${status}`, "error");
+				gl.deleteFramebuffer(fb);
+				gl.deleteTexture(colorTex);
+				framebuffers.forEach(f => gl.deleteFramebuffer(f));
+				colorTextures.forEach(t => gl.deleteTexture(t));
+				gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+				return false;
+			}
+
+			framebuffers.push(fb);
+			colorTextures.push(colorTex);
+		}
+
+		gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+		gl.bindTexture(gl.TEXTURE_2D, null);
+
+		// Create 6 light-space matrices
+		const lightSpaceMatrices: IgeMatrix4[] = [];
+		for (let i = 0; i < 6; i++) {
+			lightSpaceMatrices.push(new IgeMatrix4());
+		}
+
+		this._pointShadowMaps.set(lightId, {
+			framebuffers,
+			colorTextures,
+			lightSpaceMatrices,
+			size,
+			bias,
+			nearPlane,
+			farPlane
+		});
+
+		this.log(`Created point shadow map for ${lightId} (6x ${size}x${size})`);
+		return true;
+	}
+
+	/**
+	 * Delete a point light shadow map.
+	 */
+	deletePointShadowMap(lightId: string): void {
+		const data = this._pointShadowMaps.get(lightId);
+		if (!data) return;
+
+		const gl = this._gl;
+		for (const fb of data.framebuffers) {
+			gl.deleteFramebuffer(fb);
+		}
+		for (const tex of data.colorTextures) {
+			gl.deleteTexture(tex);
+		}
+
+		this._pointShadowMaps.delete(lightId);
+		this.log(`Deleted point shadow map for ${lightId}`);
+	}
+
+	/**
+	 * Update the 6 light-space matrices for a point light.
+	 */
+	updatePointLightSpaceMatrices(lightId: string, light: IgePointLight): boolean {
+		const data = this._pointShadowMaps.get(lightId);
+		if (!data) return false;
+
+		const pos = light._translate;
+		const near = data.nearPlane;
+		const far = data.farPlane;
+
+		const projMatrix = new IgeMatrix4();
+		projMatrix.perspective(Math.PI / 2, 1.0, near, far); // 90 degree FOV, 1:1 aspect
+
+		for (let face = 0; face < 6; face++) {
+			const faceDir = CUBE_FACE_DIRS[face];
+
+			const viewMatrix = new IgeMatrix4();
+			viewMatrix.lookAt(
+				pos.x, pos.y, pos.z,
+				pos.x + faceDir.dir.x, pos.y + faceDir.dir.y, pos.z + faceDir.dir.z,
+				faceDir.up.x, faceDir.up.y, faceDir.up.z
+			);
+
+			data.lightSpaceMatrices[face].multiply(projMatrix, viewMatrix);
+		}
+
+		return true;
+	}
+
+	/**
+	 * Begin rendering to one face of a point light shadow map.
+	 */
+	beginPointShadowPass(lightId: string, faceIndex: number): boolean {
+		if (!this._enabled) return false;
+
+		const data = this._pointShadowMaps.get(lightId);
+		if (!data || faceIndex < 0 || faceIndex > 5) return false;
+
+		const gl = this._gl;
+
+		gl.bindFramebuffer(gl.FRAMEBUFFER, data.framebuffers[faceIndex]);
+		gl.viewport(0, 0, data.size, data.size);
+
+		gl.enable(gl.DEPTH_TEST);
+		gl.depthFunc(gl.LESS);
+		gl.depthMask(true);
+		gl.clearDepth(1.0);
+
+		// Clear both color (distance) and depth
+		gl.clearColor(1.0, 1.0, 1.0, 1.0); // Far distance = white
+		gl.clear(gl.DEPTH_BUFFER_BIT | gl.COLOR_BUFFER_BIT);
+
+		gl.enable(gl.CULL_FACE);
+		gl.cullFace(gl.FRONT);
+
+		return true;
+	}
+
+	/**
+	 * End a point light shadow pass (same cleanup as directional).
+	 */
+	endPointShadowPass(): void {
+		this.endShadowPass();
+	}
+
+	/**
+	 * Get a point light shadow map's light-space matrix for a specific face.
+	 */
+	getPointLightSpaceMatrix(lightId: string, faceIndex: number): IgeMatrix4 | null {
+		const data = this._pointShadowMaps.get(lightId);
+		if (!data || faceIndex < 0 || faceIndex > 5) return null;
+		return data.lightSpaceMatrices[faceIndex];
+	}
+
+	/**
+	 * Get point shadow map data for a light.
+	 */
+	getPointShadowMapData(lightId: string): PointShadowMapData | null {
+		return this._pointShadowMaps.get(lightId) ?? null;
+	}
+
+	/**
+	 * Check if a point light has a shadow map.
+	 */
+	hasPointShadowMap(lightId: string): boolean {
+		return this._pointShadowMaps.has(lightId);
+	}
+
+	/**
+	 * Apply point shadow uniforms to a shader program.
+	 * Binds all 6 face textures to sequential texture units.
+	 */
+	applyPointShadowUniforms(
+		program: IgeWebGlProgram,
+		lightId: string,
+		baseTextureUnit: number
+	): boolean {
+		const data = this._pointShadowMaps.get(lightId);
+		if (!data) {
+			program.setUniform1i("u_hasPointShadow", 0);
+			return false;
+		}
+
+		const gl = this._gl;
+		const faceNames = [
+			"u_ptShadowFace0", "u_ptShadowFace1", "u_ptShadowFace2",
+			"u_ptShadowFace3", "u_ptShadowFace4", "u_ptShadowFace5"
+		];
+		const matrixNames = [
+			"u_ptShadowMatrix0", "u_ptShadowMatrix1", "u_ptShadowMatrix2",
+			"u_ptShadowMatrix3", "u_ptShadowMatrix4", "u_ptShadowMatrix5"
+		];
+
+		// Bind all 6 face textures
+		for (let face = 0; face < 6; face++) {
+			const unit = baseTextureUnit + face;
+			gl.activeTexture(gl.TEXTURE0 + unit);
+			gl.bindTexture(gl.TEXTURE_2D, data.colorTextures[face]);
+			program.setUniform1i(faceNames[face], unit);
+		}
+
+		// Set matrices
+		for (let face = 0; face < 6; face++) {
+			program.setUniformMatrix4fv(matrixNames[face], data.lightSpaceMatrices[face]);
+		}
+
+		program.setUniform1i("u_hasPointShadow", 1);
+		program.setUniform1f("u_pointShadowFarPlane", data.farPlane);
+		program.setUniform1f("u_pointShadowBias", data.bias);
+
+		gl.activeTexture(gl.TEXTURE0);
+		return true;
+	}
+
 	/**
 	 * Get statistics about shadow maps.
 	 */
@@ -485,13 +769,15 @@ export class IgeWebGlShadowManager extends IgeBaseClass {
 	} {
 		let totalSize = 0;
 		for (const shadowMap of this._shadowMaps.values()) {
-			// Depth texture: width * height * 4 bytes (RGBA for WebGL1, depth for WebGL2)
 			totalSize += shadowMap.size * shadowMap.size * 4;
+		}
+		for (const pointMap of this._pointShadowMaps.values()) {
+			totalSize += pointMap.size * pointMap.size * 4 * 6; // 6 faces
 		}
 
 		return {
 			enabled: this._enabled,
-			count: this._shadowMaps.size,
+			count: this._shadowMaps.size + this._pointShadowMaps.size,
 			totalSize
 		};
 	}
@@ -502,6 +788,9 @@ export class IgeWebGlShadowManager extends IgeBaseClass {
 	clearAll(): void {
 		for (const lightId of this._shadowMaps.keys()) {
 			this.deleteShadowMap(lightId);
+		}
+		for (const lightId of this._pointShadowMaps.keys()) {
+			this.deletePointShadowMap(lightId);
 		}
 	}
 }

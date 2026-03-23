@@ -8,6 +8,9 @@ import { shadowVertexShader } from "@/engine/shaders/webgl/shadow.vert";
 import { shadowFragmentShader } from "@/engine/shaders/webgl/shadow.frag";
 import { skinnedVertexShader } from "@/engine/shaders/webgl/skinned.vert";
 import { skinnedShadowVertexShader } from "@/engine/shaders/webgl/skinned_shadow.vert";
+import { pointShadowVertexShader } from "@/engine/shaders/webgl/point_shadow.vert";
+import { pointShadowFragmentShader } from "@/engine/shaders/webgl/point_shadow.frag";
+import { skinnedPointShadowVertexShader } from "@/engine/shaders/webgl/skinned_point_shadow.vert";
 
 /**
  * Shader source definition.
@@ -106,4 +109,18 @@ IgeShaderLibrary.register(
 	skinnedShadowVertexShader,
 	shadowFragmentShader, // Uses same fragment shader as shadow
 	"Skinned shadow depth pass shader for shadow mapping with skeletal animation"
+);
+
+IgeShaderLibrary.register(
+	"point_shadow",
+	pointShadowVertexShader,
+	pointShadowFragmentShader,
+	"Point light shadow depth pass shader - writes linear distance to light"
+);
+
+IgeShaderLibrary.register(
+	"skinned_point_shadow",
+	skinnedPointShadowVertexShader,
+	pointShadowFragmentShader, // Uses same fragment shader as point_shadow
+	"Skinned point light shadow depth pass shader with skeletal animation"
 );
