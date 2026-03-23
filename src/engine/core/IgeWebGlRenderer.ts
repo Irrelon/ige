@@ -871,17 +871,6 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 					shaderProgram.setUniformMatrix4fv("u_lightSpaceMatrix", identityMatrix);
 				}
 
-				// Apply point light shadow uniforms (supports 1 point light)
-				if (this._shadowCastingPointLights.length > 0 && this._shadowManager && this._lightManager) {
-					const light = this._shadowCastingPointLights[0];
-					// Texture units: 0 = base color, 1 = directional shadow, 2-7 = point shadow faces
-					this._shadowManager.applyPointShadowUniforms(shaderProgram, light.id(), 2);
-					const pointLightIndex = (this._lightManager as any)._pointLights.indexOf(light);
-					shaderProgram.setUniform1i("u_pointShadowLightIndex", pointLightIndex);
-				} else {
-					shaderProgram.setUniform1i("u_hasPointShadow", 0);
-				}
-
 				// Default to simple lighting mode (non-PBR)
 				shaderProgram.setUniform1i("u_usePBR", 0);
 				shaderProgram.setUniform1i("u_hasNormalMap", 0);
