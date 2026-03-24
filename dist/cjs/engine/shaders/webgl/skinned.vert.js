@@ -29,6 +29,7 @@ uniform vec3 u_cameraPosition;   // Camera world position
 
 // Shadow mapping uniforms
 uniform mat4 u_lightSpaceMatrix; // Light view * projection matrix for shadow mapping
+uniform float u_shadowNormalOffset; // Normal offset to prevent shadow acne
 
 // Skinning uniforms
 uniform mat4 u_boneMatrices[MAX_BONES]; // Bone transformation matrices
@@ -106,7 +107,8 @@ void main() {
 	v_TBN = mat3(T, B, N);
 
 	// Calculate position in light space for shadow mapping
-	v_lightSpacePos = u_lightSpaceMatrix * worldPos;
+	vec3 shadowPos = worldPos.xyz + v_worldNormal * u_shadowNormalOffset;
+	v_lightSpacePos = u_lightSpaceMatrix * vec4(shadowPos, 1.0);
 
 	// Transform to clip space
 	gl_Position = u_projectionMatrix * u_viewMatrix * worldPos;
