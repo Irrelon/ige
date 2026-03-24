@@ -57,6 +57,87 @@
     #controls div {
       margin-bottom: 2px;
     }
+
+    #lightPanel {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      color: #fff;
+      font-family: monospace;
+      font-size: 12px;
+      background: rgba(0, 0, 0, 0.85);
+      padding: 12px;
+      border-radius: 5px;
+      z-index: 1000;
+      width: 280px;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+
+    #lightPanel h3 {
+      margin: 0 0 8px 0;
+      font-size: 14px;
+      color: #f0c040;
+    }
+
+    .light-group {
+      margin-bottom: 10px;
+      padding: 6px;
+      border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 4px;
+    }
+
+    .light-group .light-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 4px;
+    }
+
+    .light-group .light-name {
+      font-weight: bold;
+      font-size: 13px;
+    }
+
+    .light-group label {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin: 3px 0;
+    }
+
+    .light-group input[type="range"] {
+      width: 140px;
+      height: 12px;
+    }
+
+    .light-group .value {
+      width: 36px;
+      text-align: right;
+      font-size: 11px;
+      color: #aaa;
+    }
+
+    .toggle-btn {
+      padding: 2px 8px;
+      font-size: 11px;
+      font-family: monospace;
+      cursor: pointer;
+      border: 1px solid #888;
+      border-radius: 3px;
+      background: #333;
+      color: #fff;
+    }
+
+    .toggle-btn.on {
+      background: #2a6;
+      border-color: #3b7;
+    }
+
+    .toggle-btn.off {
+      background: #822;
+      border-color: #a33;
+    }
   </style>
 </head>
 <body>
@@ -78,6 +159,11 @@
   <div>3: Toggle moonlight</div>
   <div>P/O: Perspective/Orthographic</div>
   <div>Arrow Up/Down: Zoom</div>
+</div>
+
+<div id="lightPanel">
+  <h3>Light Controls</h3>
+  <div id="lightControls"></div>
 </div>
 
 <div class="igeLoading loadingFloat">

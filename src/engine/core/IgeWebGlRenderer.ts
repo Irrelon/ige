@@ -944,7 +944,6 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 					shaderProgram.setUniform1i("u_numShadowPointLights", count);
 					for (let i = 0; i < count; i++) {
 						const light = this._shadowCastingPointLights[i];
-						// Texture units: 0=base color, 1=directional shadow, 2+=point shadow atlases
 						const texUnit = 2 + i;
 						this._shadowManager.applyPointShadowUniforms(shaderProgram, i, light.id(), texUnit);
 						const pointLightIndex = (this._lightManager as any)._pointLights.indexOf(light);
@@ -1044,6 +1043,13 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 				} else if (isSkinned) {
 					// Skinned geometry but no skeleton - disable skinning
 					shaderProgram!.setUniform1i("u_useSkinning", 0);
+				}
+
+				// Reset per-entity material state to prevent leaking from previous entity
+				if (useLitShader || isSkinned) {
+					shaderProgram!.setUniform1f("u_emissiveIntensity", 0);
+					shaderProgram!.setUniform1f("u_metallic", 0);
+					shaderProgram!.setUniform1f("u_roughness", 0.5);
 				}
 
 				// Apply material if entity has one and using lit-style shader

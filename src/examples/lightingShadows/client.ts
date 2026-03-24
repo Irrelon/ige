@@ -44,6 +44,8 @@ export class Client extends IgeBaseClass implements IgeCanInit {
 	moonLight?: IgeDirectionalLight;
 	streetLampLight?: IgeSpotLight;
 	swingingLight?: IgePointLight;
+	orbitLight?: IgePointLight;
+	orbitBulb?: IgeEntity;
 	lightingEnabled: boolean = true;
 
 	// Scene objects
@@ -101,6 +103,9 @@ export class Client extends IgeBaseClass implements IgeCanInit {
 
 			// Setup keyboard controls
 			this.setupKeyboardControls();
+
+			// Build light control GUI
+			this.buildLightGUI();
 
 			// Hide loading screen
 			this.hideLoadingScreen();
@@ -176,7 +181,7 @@ export class Client extends IgeBaseClass implements IgeCanInit {
 		this.streetLampLight = new IgeSpotLight();
 		this.streetLampLight.id("streetLampLight");
 		this.streetLampLight.lightColor(1.0, 0.85, 0.5); // Warm sodium-vapour orange
-		this.streetLampLight.intensity(3.0);
+		this.streetLampLight.intensity(1.5);
 		this.streetLampLight.direction(0, -1, 0); // Pointing straight down
 		this.streetLampLight.angleDegrees(40);
 		this.streetLampLight.penumbra(0.4);
@@ -191,8 +196,8 @@ export class Client extends IgeBaseClass implements IgeCanInit {
 		this.swingingLight = new IgePointLight();
 		this.swingingLight.id("swingingLight");
 		this.swingingLight.lightColor(0.9, 0.95, 1.0); // Cool white
-		this.swingingLight.intensity(2.5);
-		this.swingingLight.range(350);
+		this.swingingLight.intensity(1.2);
+		this.swingingLight.range(250);
 		this.swingingLight.decay(2);
 		// Start position (will be animated)
 		this.swingingLight.translateTo(100, 120, 50);
@@ -203,6 +208,32 @@ export class Client extends IgeBaseClass implements IgeCanInit {
 		if (this.renderer.enablePointLightShadows(this.swingingLight, 512)) {
 			this.log("Point light shadows enabled for swinging light (6x 512x512)");
 		}
+
+		// --- Single orbiting red point light ---
+		this.orbitLight = new IgePointLight();
+		this.orbitLight.id("orbitLight");
+		this.orbitLight.lightColor(1.0, 0.2, 0.2);
+		this.orbitLight.intensity(0.6);
+		this.orbitLight.range(200);
+		this.orbitLight.decay(2);
+		this.orbitLight.translateTo(200, 100, 0);
+		this.orbitLight.mount(this.scene);
+		lightManager.addLight(this.orbitLight);
+
+		// Visual bulb
+		const orbitBulbGeom = IgePrimitiveGeometry.createSphere(5, 8, 8, "orbit_bulb");
+		this.orbitBulb = new IgeEntity();
+		this.orbitBulb.id("orbitBulb");
+		this.orbitBulb._geometryData = { ...orbitBulbGeom, id: "orbit_bulb_geom" };
+		this.orbitBulb._materialData = {
+			color: { r: 1.0, g: 0.2, b: 0.2, a: 1 },
+			metallic: 0.0,
+			roughness: 0.1,
+			emissiveColor: { r: 1.0, g: 0.2, b: 0.2 },
+			emissiveIntensity: 3.0
+		};
+		this.orbitBulb.translateTo(200, 100, 0);
+		this.orbitBulb.mount(this.scene);
 
 		this.updateLightCount();
 		this.log(`Lights created: ${lightManager.getLightCount().total} total`);
@@ -443,7 +474,7 @@ export class Client extends IgeBaseClass implements IgeCanInit {
 			metallic: 0.9,
 			roughness: 0.1
 		};
-		sphere.translateTo(0, 20, 0);
+		sphere.translateTo(-80, 20, -60);
 		sphere.mount(this.scene);
 		this.sceneEntities.push(sphere);
 
@@ -610,6 +641,21 @@ export class Client extends IgeBaseClass implements IgeCanInit {
 			}
 		});
 
+		// --- Orbiting red light ---
+		this.scene.addBehaviour(IgeBehaviourType.preUpdate, "animateOrbitLight", () => {
+			const time = Date.now() / 1000;
+			const angle = time * 0.5;
+			const x = Math.cos(angle) * 200;
+			const z = Math.sin(angle) * 200;
+
+			if (this.orbitLight) {
+				this.orbitLight.translateTo(x, 100, z);
+			}
+			if (this.orbitBulb) {
+				this.orbitBulb.translateTo(x, 100, z);
+			}
+		});
+
 		// --- Slow camera orbit ---
 		let cameraAngle = 0.5; // Start slightly rotated
 		const orbitRadius = 500;
@@ -762,6 +808,120 @@ export class Client extends IgeBaseClass implements IgeCanInit {
 		}
 
 		this.updateLightCount();
+	}
+
+	buildLightGUI () {
+		const container = document.getElementById("lightControls");
+		if (!container || !this.renderer) return;
+
+		const lightManager = this.renderer.lightManager;
+		if (!lightManager) return;
+
+		interface LightDef {
+			name: string;
+			color: string;
+			light: any;
+			hasIntensity: boolean;
+			hasRange: boolean;
+			maxIntensity: number;
+			maxRange: number;
+		}
+
+		const lights: LightDef[] = [
+			{ name: "Ambient", color: "#8888cc", light: this.ambientLight, hasIntensity: true, hasRange: false, maxIntensity: 2, maxRange: 0 },
+			{ name: "Moonlight", color: "#99aadd", light: this.moonLight, hasIntensity: true, hasRange: false, maxIntensity: 2, maxRange: 0 },
+			{ name: "Street Lamp", color: "#ffcc66", light: this.streetLampLight, hasIntensity: true, hasRange: true, maxIntensity: 5, maxRange: 600 },
+			{ name: "Swinging", color: "#eeeeff", light: this.swingingLight, hasIntensity: true, hasRange: true, maxIntensity: 5, maxRange: 600 },
+			{ name: "Red Orbit", color: "#ff4444", light: this.orbitLight, hasIntensity: true, hasRange: true, maxIntensity: 5, maxRange: 600 }
+		];
+
+		for (const def of lights) {
+			if (!def.light) continue;
+
+			const group = document.createElement("div");
+			group.className = "light-group";
+
+			// Header with name and toggle
+			const header = document.createElement("div");
+			header.className = "light-header";
+
+			const nameSpan = document.createElement("span");
+			nameSpan.className = "light-name";
+			nameSpan.style.color = def.color;
+			nameSpan.textContent = def.name;
+			header.appendChild(nameSpan);
+
+			const toggleBtn = document.createElement("button");
+			toggleBtn.className = "toggle-btn on";
+			toggleBtn.textContent = "ON";
+			toggleBtn.addEventListener("click", () => {
+				const isOn = toggleBtn.classList.contains("on");
+				if (isOn) {
+					lightManager.removeLight(def.light);
+					toggleBtn.classList.remove("on");
+					toggleBtn.classList.add("off");
+					toggleBtn.textContent = "OFF";
+				} else {
+					lightManager.addLight(def.light);
+					toggleBtn.classList.remove("off");
+					toggleBtn.classList.add("on");
+					toggleBtn.textContent = "ON";
+				}
+				this.updateLightCount();
+			});
+			header.appendChild(toggleBtn);
+			group.appendChild(header);
+
+			// Intensity slider
+			if (def.hasIntensity) {
+				const currentIntensity = def.light.intensity() as number;
+				const label = document.createElement("label");
+				label.textContent = "Intensity ";
+				const slider = document.createElement("input");
+				slider.type = "range";
+				slider.min = "0";
+				slider.max = String(def.maxIntensity);
+				slider.step = "0.05";
+				slider.value = String(currentIntensity);
+				const valueSpan = document.createElement("span");
+				valueSpan.className = "value";
+				valueSpan.textContent = currentIntensity.toFixed(2);
+				slider.addEventListener("input", () => {
+					const val = parseFloat(slider.value);
+					def.light.intensity(val);
+					valueSpan.textContent = val.toFixed(2);
+				});
+				label.appendChild(slider);
+				label.appendChild(valueSpan);
+				group.appendChild(label);
+			}
+
+			// Range slider
+			if (def.hasRange) {
+				const currentRange = (def.light.range ? def.light.range() : 0) as number;
+				const label = document.createElement("label");
+				label.textContent = "Range     ";
+				const slider = document.createElement("input");
+				slider.type = "range";
+				slider.min = "0";
+				slider.max = String(def.maxRange);
+				slider.step = "5";
+				slider.value = String(currentRange);
+				const valueSpan = document.createElement("span");
+				valueSpan.className = "value";
+				valueSpan.textContent = String(Math.round(currentRange));
+				slider.addEventListener("input", () => {
+					const val = parseFloat(slider.value);
+					if (def.light.range) def.light.range(val);
+					valueSpan.textContent = String(Math.round(val));
+				});
+				label.appendChild(slider);
+				label.appendChild(valueSpan);
+				group.appendChild(label);
+			}
+
+			container.appendChild(group);
+		}
 	}
 
 	updateLightCount () {
