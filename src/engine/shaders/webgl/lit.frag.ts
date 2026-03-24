@@ -281,7 +281,22 @@ mat4 getPointShadowMatrix(int shadowIndex, int face) {
 	return u_pointShadowMatrices[11];
 }
 
-// Internal: compute point shadow for shadow slot 0 with PCF soft shadows
+// VSM: Chebyshev shadow factor from depth moments (mean, mean²)
+float chebyshevShadow(float depth, float mean, float meanSq) {
+	if (depth <= mean) return 1.0;
+
+	// Variance: E(x²) - E(x)²
+	float variance = max(meanSq - mean * mean, 0.00002);
+
+	// Chebyshev's inequality
+	float d = depth - mean;
+	float pMax = variance / (variance + d * d);
+
+	// Reduce light bleeding by remapping [0.3, 1.0] → [0.0, 1.0]
+	return clamp((pMax - 0.3) / 0.7, 0.0, 1.0);
+}
+
+// Internal: VSM point shadow for shadow slot 0 (single sample, no loops)
 float _calcPointShadow0(vec3 lightPos) {
 	vec3 fragToLight = v_worldPosition - lightPos;
 	float currentDistance = length(fragToLight) / u_pointShadowFarPlane[0];
@@ -298,24 +313,13 @@ float _calcPointShadow0(vec3 lightPos) {
 
 	vec2 faceOffset = getAtlasFaceUVOffset(face);
 	vec2 atlasUV = faceOffset + projCoords.xy * vec2(1.0 / 3.0, 0.5);
-	float bias = u_pointShadowBias[0];
 
-	// PCF 3x3 kernel for soft shadow edges
-	// Texel size in atlas UV space: each face is 1/3 width, 1/2 height of atlas
-	float texelU = (1.0 / 3.0) / u_pointShadowFaceSize[0];
-	float texelV = 0.5 / u_pointShadowFaceSize[0];
-	float shadow = 0.0;
-	for (int x = -1; x <= 1; x++) {
-		for (int y = -1; y <= 1; y++) {
-			vec2 offset = vec2(float(x) * texelU, float(y) * texelV);
-			float sampleDist = texture2D(u_pointShadowAtlas[0], atlasUV + offset).r;
-			shadow += (currentDistance - bias > sampleDist) ? 0.0 : 1.0;
-		}
-	}
-	return shadow / 9.0;
+	// Single sample from blurred VSM atlas: R=mean depth, G=mean depth²
+	vec2 moments = texture2D(u_pointShadowAtlas[0], atlasUV).rg;
+	return chebyshevShadow(currentDistance, moments.x, moments.y);
 }
 
-// Internal: compute point shadow for shadow slot 1 with PCF soft shadows
+// Internal: VSM point shadow for shadow slot 1 (single sample, no loops)
 float _calcPointShadow1(vec3 lightPos) {
 	vec3 fragToLight = v_worldPosition - lightPos;
 	float currentDistance = length(fragToLight) / u_pointShadowFarPlane[1];
@@ -332,20 +336,10 @@ float _calcPointShadow1(vec3 lightPos) {
 
 	vec2 faceOffset = getAtlasFaceUVOffset(face);
 	vec2 atlasUV = faceOffset + projCoords.xy * vec2(1.0 / 3.0, 0.5);
-	float bias = u_pointShadowBias[1];
 
-	// PCF 3x3 kernel for soft shadow edges
-	float texelU = (1.0 / 3.0) / u_pointShadowFaceSize[1];
-	float texelV = 0.5 / u_pointShadowFaceSize[1];
-	float shadow = 0.0;
-	for (int x = -1; x <= 1; x++) {
-		for (int y = -1; y <= 1; y++) {
-			vec2 offset = vec2(float(x) * texelU, float(y) * texelV);
-			float sampleDist = texture2D(u_pointShadowAtlas[1], atlasUV + offset).r;
-			shadow += (currentDistance - bias > sampleDist) ? 0.0 : 1.0;
-		}
-	}
-	return shadow / 9.0;
+	// Single sample from blurred VSM atlas: R=mean depth, G=mean depth²
+	vec2 moments = texture2D(u_pointShadowAtlas[1], atlasUV).rg;
+	return chebyshevShadow(currentDistance, moments.x, moments.y);
 }
 
 // Get the point shadow factor for point light at loop index i.

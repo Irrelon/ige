@@ -661,6 +661,12 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 
 				this._shadowManager.endPointShadowPass();
 			}
+
+			// Apply Gaussian blur to the VSM atlas for soft shadows
+			const blurProgram = this._shaderManager.getProgram("blur");
+			if (blurProgram) {
+				this._shadowManager.blurPointShadowMap(lightId, blurProgram);
+			}
 		}
 	}
 

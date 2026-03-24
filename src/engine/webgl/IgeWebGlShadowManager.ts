@@ -39,11 +39,14 @@ interface ShadowMapData {
  * Face layout: row0=[+X, -X, +Y], row1=[-Y, +Z, -Z]
  */
 export interface PointShadowMapData {
-	framebuffer: WebGLFramebuffer;       // Single framebuffer
-	atlasTexture: WebGLTexture;          // Single 3x2 atlas RGBA texture
+	framebuffer: WebGLFramebuffer;        // Single framebuffer for depth rendering
+	atlasTexture: WebGLTexture;           // Single 3x2 atlas texture (VSM: depth + depth²)
 	depthRenderbuffer: WebGLRenderbuffer; // Shared depth renderbuffer
-	lightSpaceMatrices: IgeMatrix4[];    // 6 view-projection matrices
-	faceSize: number;                    // Size of each face (atlas is faceSize*3 x faceSize*2)
+	// Blur pass resources (for VSM Gaussian blur)
+	blurFramebuffer: WebGLFramebuffer;    // Framebuffer for blur output
+	blurTexture: WebGLTexture;            // Temporary texture for intermediate blur
+	lightSpaceMatrices: IgeMatrix4[];     // 6 view-projection matrices
+	faceSize: number;                     // Size of each face (atlas is faceSize*3 x faceSize*2)
 	bias: number;
 	nearPlane: number;
 	farPlane: number;
@@ -86,6 +89,9 @@ export class IgeWebGlShadowManager extends IgeBaseClass {
 
 	// Directional shadow maps
 	protected _shadowMaps: Map<string, ShadowMapData> = new Map();
+
+	// Full-screen quad for blur passes
+	protected _quadBuffer: WebGLBuffer | null = null;
 
 	// Point light shadow maps (cube maps)
 	protected _pointShadowMaps: Map<string, PointShadowMapData> = new Map();
@@ -541,9 +547,19 @@ export class IgeWebGlShadowManager extends IgeBaseClass {
 		}
 
 		gl.bindTexture(gl.TEXTURE_2D, atlasTexture);
-		gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, atlasWidth, atlasHeight, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
-		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
-		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+		// Use float texture for VSM - stores depth and depth² with sufficient precision
+		// EXT_color_buffer_float is required for rendering to float textures in WebGL 2
+		if (this._webglVersion === 2) {
+			const gl2 = gl as WebGL2RenderingContext;
+			gl2.getExtension("EXT_color_buffer_float");
+			gl2.getExtension("OES_texture_float_linear");
+			gl2.texImage2D(gl2.TEXTURE_2D, 0, gl2.RGBA32F, atlasWidth, atlasHeight, 0, gl2.RGBA, gl2.FLOAT, null);
+		} else {
+			gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, atlasWidth, atlasHeight, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
+		}
+		// LINEAR filtering for smooth shadow sampling (requires OES_texture_float_linear for float textures)
+		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
 		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
 		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
 
@@ -584,6 +600,43 @@ export class IgeWebGlShadowManager extends IgeBaseClass {
 		gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 		gl.bindTexture(gl.TEXTURE_2D, null);
 
+		// Create blur pass resources (temporary texture + framebuffer for Gaussian blur)
+		const blurTexture = gl.createTexture();
+		if (!blurTexture) {
+			this.log(`Failed to create blur texture for ${lightId}`, "error");
+			gl.deleteFramebuffer(framebuffer);
+			gl.deleteRenderbuffer(depthRenderbuffer);
+			gl.deleteTexture(atlasTexture);
+			return false;
+		}
+
+		gl.bindTexture(gl.TEXTURE_2D, blurTexture);
+		if (this._webglVersion === 2) {
+			const gl2 = gl as WebGL2RenderingContext;
+			gl2.texImage2D(gl2.TEXTURE_2D, 0, gl2.RGBA32F, atlasWidth, atlasHeight, 0, gl2.RGBA, gl2.FLOAT, null);
+		} else {
+			gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, atlasWidth, atlasHeight, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
+		}
+		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+
+		const blurFramebuffer = gl.createFramebuffer();
+		if (!blurFramebuffer) {
+			this.log(`Failed to create blur framebuffer for ${lightId}`, "error");
+			gl.deleteTexture(blurTexture);
+			gl.deleteFramebuffer(framebuffer);
+			gl.deleteRenderbuffer(depthRenderbuffer);
+			gl.deleteTexture(atlasTexture);
+			return false;
+		}
+
+		gl.bindFramebuffer(gl.FRAMEBUFFER, blurFramebuffer);
+		gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, blurTexture, 0);
+		gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+		gl.bindTexture(gl.TEXTURE_2D, null);
+
 		const lightSpaceMatrices: IgeMatrix4[] = [];
 		for (let i = 0; i < 6; i++) {
 			lightSpaceMatrices.push(new IgeMatrix4());
@@ -593,6 +646,8 @@ export class IgeWebGlShadowManager extends IgeBaseClass {
 			framebuffer,
 			atlasTexture,
 			depthRenderbuffer,
+			blurFramebuffer,
+			blurTexture,
 			lightSpaceMatrices,
 			faceSize,
 			bias,
@@ -613,8 +668,10 @@ export class IgeWebGlShadowManager extends IgeBaseClass {
 
 		const gl = this._gl;
 		gl.deleteFramebuffer(data.framebuffer);
+		gl.deleteFramebuffer(data.blurFramebuffer);
 		gl.deleteRenderbuffer(data.depthRenderbuffer);
 		gl.deleteTexture(data.atlasTexture);
+		gl.deleteTexture(data.blurTexture);
 
 		this._pointShadowMaps.delete(lightId);
 		this.log(`Deleted point shadow map for ${lightId}`);
@@ -720,6 +777,88 @@ export class IgeWebGlShadowManager extends IgeBaseClass {
 		const data = this._pointShadowMaps.get(lightId);
 		if (!data || faceIndex < 0 || faceIndex > 5) return null;
 		return data.lightSpaceMatrices[faceIndex];
+	}
+
+	/**
+	 * Lazily create the full-screen quad VBO for blur passes.
+	 */
+	protected _getQuadBuffer(): WebGLBuffer | null {
+		if (this._quadBuffer) return this._quadBuffer;
+
+		const gl = this._gl;
+		this._quadBuffer = gl.createBuffer();
+		if (!this._quadBuffer) return null;
+
+		gl.bindBuffer(gl.ARRAY_BUFFER, this._quadBuffer);
+		gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([
+			-1, -1,  1, -1,  -1, 1,
+			-1,  1,  1, -1,   1, 1
+		]), gl.STATIC_DRAW);
+		gl.bindBuffer(gl.ARRAY_BUFFER, null);
+
+		return this._quadBuffer;
+	}
+
+	/**
+	 * Apply a two-pass separable Gaussian blur to a point shadow atlas.
+	 * Pass 1: atlas → blurTexture (horizontal blur)
+	 * Pass 2: blurTexture → atlas (vertical blur)
+	 */
+	blurPointShadowMap(lightId: string, blurProgram: any): void {
+		const data = this._pointShadowMaps.get(lightId);
+		if (!data || !blurProgram) return;
+
+		const gl = this._gl;
+		const quadBuffer = this._getQuadBuffer();
+		if (!quadBuffer) return;
+
+		const atlasWidth = data.faceSize * 3;
+		const atlasHeight = data.faceSize * 2;
+
+		// Disable depth test for full-screen quad rendering
+		gl.disable(gl.DEPTH_TEST);
+		gl.disable(gl.CULL_FACE);
+		gl.disable(gl.SCISSOR_TEST);
+
+		blurProgram.use();
+
+		// Bind quad buffer to a_position attribute
+		const posLoc = gl.getAttribLocation(blurProgram.program, "a_position");
+		gl.bindBuffer(gl.ARRAY_BUFFER, quadBuffer);
+		gl.enableVertexAttribArray(posLoc);
+		gl.vertexAttribPointer(posLoc, 2, gl.FLOAT, false, 0, 0);
+
+		// Pass 1: Horizontal blur - atlas → blurTexture
+		gl.bindFramebuffer(gl.FRAMEBUFFER, data.blurFramebuffer);
+		gl.viewport(0, 0, atlasWidth, atlasHeight);
+
+		gl.activeTexture(gl.TEXTURE0);
+		gl.bindTexture(gl.TEXTURE_2D, data.atlasTexture);
+		blurProgram.setUniform1i("u_texture", 0);
+		blurProgram.setUniform2f("u_direction", 1.0 / atlasWidth, 0.0);
+
+		gl.drawArrays(gl.TRIANGLES, 0, 6);
+
+		// Pass 2: Vertical blur - blurTexture → atlas
+		gl.bindFramebuffer(gl.FRAMEBUFFER, data.framebuffer);
+		// Detach depth renderbuffer temporarily so we don't get depth test interference
+		gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, null);
+		gl.viewport(0, 0, atlasWidth, atlasHeight);
+
+		gl.bindTexture(gl.TEXTURE_2D, data.blurTexture);
+		blurProgram.setUniform1i("u_texture", 0);
+		blurProgram.setUniform2f("u_direction", 0.0, 1.0 / atlasHeight);
+
+		gl.drawArrays(gl.TRIANGLES, 0, 6);
+
+		// Reattach depth renderbuffer
+		gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, data.depthRenderbuffer);
+
+		// Cleanup
+		gl.disableVertexAttribArray(posLoc);
+		gl.bindBuffer(gl.ARRAY_BUFFER, null);
+		gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+		gl.bindTexture(gl.TEXTURE_2D, null);
 	}
 
 	/**

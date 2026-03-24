@@ -11,6 +11,8 @@ import { skinnedShadowVertexShader } from "@/engine/shaders/webgl/skinned_shadow
 import { pointShadowVertexShader } from "@/engine/shaders/webgl/point_shadow.vert";
 import { pointShadowFragmentShader } from "@/engine/shaders/webgl/point_shadow.frag";
 import { skinnedPointShadowVertexShader } from "@/engine/shaders/webgl/skinned_point_shadow.vert";
+import { blurVertexShader } from "@/engine/shaders/webgl/blur.vert";
+import { blurFragmentShader } from "@/engine/shaders/webgl/blur.frag";
 
 /**
  * Shader source definition.
@@ -123,4 +125,11 @@ IgeShaderLibrary.register(
 	skinnedPointShadowVertexShader,
 	pointShadowFragmentShader, // Uses same fragment shader as point_shadow
 	"Skinned point light shadow depth pass shader with skeletal animation"
+);
+
+IgeShaderLibrary.register(
+	"blur",
+	blurVertexShader,
+	blurFragmentShader,
+	"Separable Gaussian blur for VSM shadow map softening"
 );
