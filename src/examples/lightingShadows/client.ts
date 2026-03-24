@@ -60,6 +60,12 @@ export class Client extends IgeBaseClass implements IgeCanInit {
 	// Animation state
 	swingAngle: number = 0;
 	swingSpeed: number = 1.5;
+	orbitAngleOffset: number = 0;
+	orbitPaused: boolean = false;
+	cameraAngleOffset: number = 0.5;
+	cameraPaused: boolean = false;
+	cameraOrbitRadius: number = 500;
+	cameraOrbitHeight: number = 250;
 
 	constructor () {
 		super();
@@ -652,7 +658,9 @@ export class Client extends IgeBaseClass implements IgeCanInit {
 		// --- Orbiting red light ---
 		this.scene.addBehaviour(IgeBehaviourType.preUpdate, "animateOrbitLight", () => {
 			const time = ige.engine._currentTime / 1000;
-			const angle = time * 0.5;
+			const angle = this.orbitPaused
+				? this.orbitAngleOffset
+				: time * 0.5 + this.orbitAngleOffset;
 			const x = Math.cos(angle) * 200;
 			const z = Math.sin(angle) * 200;
 
@@ -665,16 +673,15 @@ export class Client extends IgeBaseClass implements IgeCanInit {
 		});
 
 		// --- Slow camera orbit ---
-		let cameraAngle = 0.5; // Start slightly rotated
-		const orbitRadius = 500;
-		const orbitHeight = 250;
-
 		this.scene.addBehaviour(IgeBehaviourType.preUpdate, "animateCamera", () => {
 			if (!this.camera) return;
-			cameraAngle += 0.001;
-			const cx = Math.sin(cameraAngle) * orbitRadius;
-			const cz = Math.cos(cameraAngle) * orbitRadius;
-			this.camera.translateTo(cx, orbitHeight, cz);
+			const time = ige.engine._currentTime / 1000;
+			const angle = this.cameraPaused
+				? this.cameraAngleOffset
+				: time * 0.1 + this.cameraAngleOffset;
+			const cx = Math.sin(angle) * this.cameraOrbitRadius;
+			const cz = Math.cos(angle) * this.cameraOrbitRadius;
+			this.camera.translateTo(cx, this.cameraOrbitHeight, cz);
 		});
 	}
 
@@ -950,6 +957,174 @@ export class Client extends IgeBaseClass implements IgeCanInit {
 
 			container.appendChild(group);
 		}
+
+		// Orbit position control
+		const orbitGroup = document.createElement("div");
+		orbitGroup.className = "light-group";
+
+		const orbitHeader = document.createElement("div");
+		orbitHeader.className = "light-header";
+		const orbitName = document.createElement("span");
+		orbitName.className = "light-name";
+		orbitName.style.color = "#ff8844";
+		orbitName.textContent = "Orbit Position";
+		orbitHeader.appendChild(orbitName);
+
+		const orbitPauseBtn = document.createElement("button");
+		orbitPauseBtn.className = "toggle-btn off";
+		orbitPauseBtn.textContent = "MANUAL";
+		orbitPauseBtn.addEventListener("click", () => {
+			this.orbitPaused = !this.orbitPaused;
+			if (this.orbitPaused) {
+				// Capture current auto angle as the manual starting point
+				const time = ige.engine._currentTime / 1000;
+				this.orbitAngleOffset = time * 0.5 + this.orbitAngleOffset;
+				orbitPauseBtn.classList.remove("off");
+				orbitPauseBtn.classList.add("on");
+				orbitPauseBtn.textContent = "AUTO";
+			} else {
+				// Resume auto: adjust offset so position is continuous
+				const time = ige.engine._currentTime / 1000;
+				this.orbitAngleOffset = this.orbitAngleOffset - time * 0.5;
+				orbitPauseBtn.classList.remove("on");
+				orbitPauseBtn.classList.add("off");
+				orbitPauseBtn.textContent = "MANUAL";
+			}
+		});
+		orbitHeader.appendChild(orbitPauseBtn);
+		orbitGroup.appendChild(orbitHeader);
+
+		const orbitLabel = document.createElement("label");
+		orbitLabel.textContent = "Angle     ";
+		const orbitSlider = document.createElement("input");
+		orbitSlider.type = "range";
+		orbitSlider.min = "0";
+		orbitSlider.max = String(Math.PI * 2);
+		orbitSlider.step = "0.01";
+		orbitSlider.value = "0";
+		const orbitValue = document.createElement("span");
+		orbitValue.className = "value";
+		orbitValue.textContent = "0°";
+		orbitSlider.addEventListener("input", () => {
+			const val = parseFloat(orbitSlider.value);
+			this.orbitAngleOffset = val;
+			orbitValue.textContent = Math.round(val * 180 / Math.PI) + "°";
+			// Auto-switch to manual mode when dragging
+			if (!this.orbitPaused) {
+				this.orbitPaused = true;
+				orbitPauseBtn.classList.remove("off");
+				orbitPauseBtn.classList.add("on");
+				orbitPauseBtn.textContent = "AUTO";
+			}
+		});
+		orbitLabel.appendChild(orbitSlider);
+		orbitLabel.appendChild(orbitValue);
+		orbitGroup.appendChild(orbitLabel);
+
+		container.appendChild(orbitGroup);
+
+		// Camera orbit control
+		const camGroup = document.createElement("div");
+		camGroup.className = "light-group";
+
+		const camHeader = document.createElement("div");
+		camHeader.className = "light-header";
+		const camName = document.createElement("span");
+		camName.className = "light-name";
+		camName.style.color = "#88ccff";
+		camName.textContent = "Camera";
+		camHeader.appendChild(camName);
+
+		const camPauseBtn = document.createElement("button");
+		camPauseBtn.className = "toggle-btn off";
+		camPauseBtn.textContent = "MANUAL";
+		camPauseBtn.addEventListener("click", () => {
+			this.cameraPaused = !this.cameraPaused;
+			if (this.cameraPaused) {
+				const time = ige.engine._currentTime / 1000;
+				this.cameraAngleOffset = time * 0.1 + this.cameraAngleOffset;
+				camPauseBtn.classList.remove("off");
+				camPauseBtn.classList.add("on");
+				camPauseBtn.textContent = "AUTO";
+			} else {
+				const time = ige.engine._currentTime / 1000;
+				this.cameraAngleOffset = this.cameraAngleOffset - time * 0.1;
+				camPauseBtn.classList.remove("on");
+				camPauseBtn.classList.add("off");
+				camPauseBtn.textContent = "MANUAL";
+			}
+		});
+		camHeader.appendChild(camPauseBtn);
+		camGroup.appendChild(camHeader);
+
+		// Angle slider
+		const camAngleLabel = document.createElement("label");
+		camAngleLabel.textContent = "Angle     ";
+		const camAngleSlider = document.createElement("input");
+		camAngleSlider.type = "range";
+		camAngleSlider.min = "0";
+		camAngleSlider.max = String(Math.PI * 2);
+		camAngleSlider.step = "0.01";
+		camAngleSlider.value = String(this.cameraAngleOffset);
+		const camAngleValue = document.createElement("span");
+		camAngleValue.className = "value";
+		camAngleValue.textContent = Math.round(this.cameraAngleOffset * 180 / Math.PI) + "°";
+		camAngleSlider.addEventListener("input", () => {
+			const val = parseFloat(camAngleSlider.value);
+			this.cameraAngleOffset = val;
+			camAngleValue.textContent = Math.round(val * 180 / Math.PI) + "°";
+			if (!this.cameraPaused) {
+				this.cameraPaused = true;
+				camPauseBtn.classList.remove("off");
+				camPauseBtn.classList.add("on");
+				camPauseBtn.textContent = "AUTO";
+			}
+		});
+		camAngleLabel.appendChild(camAngleSlider);
+		camAngleLabel.appendChild(camAngleValue);
+		camGroup.appendChild(camAngleLabel);
+
+		// Height slider
+		const camHeightLabel = document.createElement("label");
+		camHeightLabel.textContent = "Height    ";
+		const camHeightSlider = document.createElement("input");
+		camHeightSlider.type = "range";
+		camHeightSlider.min = "10";
+		camHeightSlider.max = "600";
+		camHeightSlider.step = "5";
+		camHeightSlider.value = String(this.cameraOrbitHeight);
+		const camHeightValue = document.createElement("span");
+		camHeightValue.className = "value";
+		camHeightValue.textContent = String(this.cameraOrbitHeight);
+		camHeightSlider.addEventListener("input", () => {
+			this.cameraOrbitHeight = parseFloat(camHeightSlider.value);
+			camHeightValue.textContent = String(Math.round(this.cameraOrbitHeight));
+		});
+		camHeightLabel.appendChild(camHeightSlider);
+		camHeightLabel.appendChild(camHeightValue);
+		camGroup.appendChild(camHeightLabel);
+
+		// Distance slider
+		const camDistLabel = document.createElement("label");
+		camDistLabel.textContent = "Distance  ";
+		const camDistSlider = document.createElement("input");
+		camDistSlider.type = "range";
+		camDistSlider.min = "100";
+		camDistSlider.max = "1500";
+		camDistSlider.step = "10";
+		camDistSlider.value = String(this.cameraOrbitRadius);
+		const camDistValue = document.createElement("span");
+		camDistValue.className = "value";
+		camDistValue.textContent = String(this.cameraOrbitRadius);
+		camDistSlider.addEventListener("input", () => {
+			this.cameraOrbitRadius = parseFloat(camDistSlider.value);
+			camDistValue.textContent = String(Math.round(this.cameraOrbitRadius));
+		});
+		camDistLabel.appendChild(camDistSlider);
+		camDistLabel.appendChild(camDistValue);
+		camGroup.appendChild(camDistLabel);
+
+		container.appendChild(camGroup);
 	}
 
 	updateLightCount () {
