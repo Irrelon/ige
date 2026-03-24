@@ -123,6 +123,10 @@ class Client extends IgeBaseClass_1.IgeBaseClass {
         const lightManager = this.renderer.lightManager;
         if (!lightManager)
             return;
+        // Use R32F for point shadow atlases (better precision, no banding on curved surfaces)
+        if (this.renderer.shadowManager) {
+            this.renderer.shadowManager.pointShadowFormat("r32f");
+        }
         // --- Ambient light: dim nighttime ambience ---
         this.ambientLight = new IgeWebGlLight_1.IgeAmbientLight();
         this.ambientLight.id("ambientLight");
@@ -136,7 +140,7 @@ class Client extends IgeBaseClass_1.IgeBaseClass {
         this.moonLight.lightColor(0.6, 0.65, 0.9); // Cool blue-white moonlight
         this.moonLight.intensity(0.4);
         this.moonLight.direction(-0.3, -0.8, -0.4);
-        this.moonLight.shadowBias(0.005);
+        this.moonLight.shadowBias(0.0);
         this.moonLight.mount(this.scene);
         lightManager.addLight(this.moonLight);
         // Enable shadows from moonlight

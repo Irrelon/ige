@@ -963,7 +963,7 @@ class IgeWebGlRenderer extends IgeBaseRenderer_1.IgeBaseRenderer {
         const success = this._shadowManager.createShadowMap(this._shadowLightId, {
             size: shadowMapSize,
             bias: light.shadowBias(),
-            normalBias: 0.02
+            normalBias: 0.0
         });
         if (success) {
             this._shadowCastingLight = light;
@@ -1006,7 +1006,7 @@ class IgeWebGlRenderer extends IgeBaseRenderer_1.IgeBaseRenderer {
         const range = light._range || 500;
         const success = this._shadowManager.createPointShadowMap(light.id(), {
             size: shadowMapSize,
-            bias: 0.005,
+            bias: 0.0,
             nearPlane: 0.5,
             farPlane: 1000
         });
