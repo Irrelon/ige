@@ -493,32 +493,62 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 			return;
 		}
 
-		// Get shadow shader
+		// Get shadow shaders (regular and skinned)
 		const shadowProgram = this._shaderManager.getProgram("shadow");
+		const skinnedShadowProgram = this._shaderManager.getProgram("skinned_shadow");
 		if (!shadowProgram) {
 			this._shadowManager.endShadowPass();
 			return;
 		}
 
-		// Use shadow shader
-		shadowProgram.use();
+		// Setup a shadow program with the light space matrix
+		let currentShadowProgram: any = null;
+		const setupShadowProgram = (program: any) => {
+			program.use();
+			program.setUniformMatrix4fv("u_lightSpaceMatrix", lightSpaceMatrix);
+			currentShadowProgram = program;
+		};
 
-		// Set light space matrix
-		shadowProgram.setUniformMatrix4fv("u_lightSpaceMatrix", lightSpaceMatrix);
+		setupShadowProgram(shadowProgram);
 
 		// Render all opaque models to shadow map
 		const renderBatchShadow = (batch: any) => {
-			this._geometryManager!.bindGeometry(batch.geometry, shadowProgram!);
+			const isSkinned = batch.geometry.isSkinned && skinnedShadowProgram;
+			const program = isSkinned ? skinnedShadowProgram : shadowProgram;
+
+			if (program !== currentShadowProgram) {
+				setupShadowProgram(program);
+				if (isSkinned) {
+					program!.setUniform1i("u_useSkinning", 0);
+				}
+			}
+
+			this._geometryManager!.bindGeometry(batch.geometry, program!);
 
 			for (const entity of batch.entities) {
 				if (entity._worldMatrix4) {
-					shadowProgram!.setUniformMatrix4fv("u_worldMatrix", entity._worldMatrix4.matrix);
+					program!.setUniformMatrix4fv("u_worldMatrix", entity._worldMatrix4);
+				}
+
+				// Handle skeletal animation for skinned shadow
+				if (isSkinned && entity._skeleton && this._skeletonManager) {
+					this._skeletonManager.updateSkeletonMatrices(entity._skeleton);
+					program!.setUniform1i("u_useSkinning", 1);
+
+					const skinMatrices = entity._skeleton.skinMatrices;
+					const boneCount = entity._skeleton.data.boneCount;
+					const location = gl.getUniformLocation(program!.program, "u_boneMatrices[0]");
+					if (location) {
+						gl.uniformMatrix4fv(location, false, skinMatrices.subarray(0, boneCount * 16));
+					}
+				} else if (isSkinned) {
+					program!.setUniform1i("u_useSkinning", 0);
 				}
 
 				this._geometryManager!.drawGeometry(batch.geometry);
 			}
 
-			this._geometryManager!.unbindGeometry(batch.geometry, shadowProgram!);
+			this._geometryManager!.unbindGeometry(batch.geometry, program!);
 		};
 
 		// Only render opaque models to shadow map (shadows from opaque geometry only)
@@ -536,7 +566,9 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 			return;
 		}
 
+		const gl = this._canvasContext!;
 		const pointShadowProgram = this._shaderManager.getProgram("point_shadow");
+		const skinnedPointShadowProgram = this._shaderManager.getProgram("skinned_point_shadow");
 		if (!pointShadowProgram) return;
 
 		for (const pointLight of this._shadowCastingPointLights) {
@@ -562,27 +594,62 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 					continue;
 				}
 
-				// Use point shadow shader
-				pointShadowProgram.use();
-				pointShadowProgram.setUniformMatrix4fv("u_lightSpaceMatrix", lightSpaceMatrix);
-				pointShadowProgram.setUniform3f("u_pointLightPosition", pos.x, pos.y, pos.z);
-				pointShadowProgram.setUniform1f("u_pointShadowFarPlane", range);
+				// Track current program to minimize switches
+				let currentProgram: any = null;
+
+				// Setup shared uniforms on a program
+				const setupProgram = (program: any) => {
+					program.use();
+					program.setUniformMatrix4fv("u_lightSpaceMatrix", lightSpaceMatrix);
+					program.setUniform3f("u_pointLightPosition", pos.x, pos.y, pos.z);
+					program.setUniform1f("u_pointShadowFarPlane", range);
+					currentProgram = program;
+				};
 
 				// Render all opaque models
 				const renderBatch = (batch: any) => {
-					this._geometryManager!.bindGeometry(batch.geometry, pointShadowProgram!);
+					const isSkinned = batch.geometry.isSkinned && skinnedPointShadowProgram;
+					const program = isSkinned ? skinnedPointShadowProgram : pointShadowProgram;
+
+					// Switch shader if needed
+					if (program !== currentProgram) {
+						setupProgram(program);
+						if (isSkinned) {
+							program!.setUniform1i("u_useSkinning", 0);
+						}
+					}
+
+					this._geometryManager!.bindGeometry(batch.geometry, program!);
 
 					for (const entity of batch.entities) {
 						if (entity._worldMatrix4) {
-							pointShadowProgram!.setUniformMatrix4fv("u_worldMatrix", entity._worldMatrix4.matrix);
+							program!.setUniformMatrix4fv("u_worldMatrix", entity._worldMatrix4);
+						}
+
+						// Handle skeletal animation
+						if (isSkinned && entity._skeleton && this._skeletonManager) {
+							this._skeletonManager.updateSkeletonMatrices(entity._skeleton);
+							program!.setUniform1i("u_useSkinning", 1);
+
+							const skinMatrices = entity._skeleton.skinMatrices;
+							const boneCount = entity._skeleton.data.boneCount;
+							const location = gl.getUniformLocation(program!.program, "u_boneMatrices[0]");
+							if (location) {
+								gl.uniformMatrix4fv(location, false, skinMatrices.subarray(0, boneCount * 16));
+							}
+						} else if (isSkinned) {
+							program!.setUniform1i("u_useSkinning", 0);
 						}
 
 						this._geometryManager!.drawGeometry(batch.geometry);
 					}
 
-					this._geometryManager!.unbindGeometry(batch.geometry, pointShadowProgram!);
+					this._geometryManager!.unbindGeometry(batch.geometry, program!);
 				};
 
+				// Use pointShadowProgram as the default for renderOpaqueModels
+				// (it needs a program reference but renderBatch handles program selection)
+				setupProgram(pointShadowProgram);
 				this._renderBatchManager.renderOpaqueModels(pointShadowProgram, renderBatch);
 
 				this._shadowManager.endPointShadowPass();
@@ -871,6 +938,22 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 					shaderProgram.setUniformMatrix4fv("u_lightSpaceMatrix", identityMatrix);
 				}
 
+				// Apply point light shadow uniforms
+				if (this._shadowCastingPointLights.length > 0 && this._shadowManager && this._lightManager) {
+					const count = Math.min(this._shadowCastingPointLights.length, 2);
+					shaderProgram.setUniform1i("u_numShadowPointLights", count);
+					for (let i = 0; i < count; i++) {
+						const light = this._shadowCastingPointLights[i];
+						// Texture units: 0=base color, 1=directional shadow, 2+=point shadow atlases
+						const texUnit = 2 + i;
+						this._shadowManager.applyPointShadowUniforms(shaderProgram, i, light.id(), texUnit);
+						const pointLightIndex = (this._lightManager as any)._pointLights.indexOf(light);
+						shaderProgram.setUniform1i(`u_pointShadowLightIndex[${i}]`, pointLightIndex);
+					}
+				} else {
+					shaderProgram.setUniform1i("u_numShadowPointLights", 0);
+				}
+
 				// Default to simple lighting mode (non-PBR)
 				shaderProgram.setUniform1i("u_usePBR", 0);
 				shaderProgram.setUniform1i("u_hasNormalMap", 0);
@@ -1101,7 +1184,7 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 		const range = (light as any)._range as number || 500;
 		const success = this._shadowManager.createPointShadowMap(light.id(), {
 			size: shadowMapSize,
-			bias: 0.05,
+			bias: 0.002,
 			nearPlane: 0.5,
 			farPlane: range
 		});

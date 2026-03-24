@@ -34,13 +34,16 @@ interface ShadowMapData {
 }
 
 /**
- * Shadow map data for a point light (cube map, 6 faces).
+ * Shadow map data for a point light using a 3x2 atlas texture.
+ * All 6 cube faces are rendered into a single texture in a 3-column x 2-row grid.
+ * Face layout: row0=[+X, -X, +Y], row1=[-Y, +Z, -Z]
  */
 interface PointShadowMapData {
-	framebuffers: WebGLFramebuffer[];    // 6 framebuffers, one per face
-	colorTextures: WebGLTexture[];       // 6 RGBA textures for linear distance
+	framebuffer: WebGLFramebuffer;       // Single framebuffer
+	atlasTexture: WebGLTexture;          // Single 3x2 atlas RGBA texture
+	depthRenderbuffer: WebGLRenderbuffer; // Shared depth renderbuffer
 	lightSpaceMatrices: IgeMatrix4[];    // 6 view-projection matrices
-	size: number;
+	faceSize: number;                    // Size of each face (atlas is faceSize*3 x faceSize*2)
 	bias: number;
 	nearPlane: number;
 	farPlane: number;
@@ -509,99 +512,95 @@ export class IgeWebGlShadowManager extends IgeBaseClass {
 	// ========================================================================
 
 	/**
-	 * Create a point light shadow map (6 framebuffers with RGBA textures).
-	 * Uses RGBA textures storing linear distance, sampled manually per face.
+	 * Create a point light shadow map using a 3x2 atlas texture.
+	 * All 6 cube faces are rendered into a single RGBA texture.
+	 * Layout: row0=[+X, -X, +Y], row1=[-Y, +Z, -Z]
 	 */
 	createPointShadowMap(
 		lightId: string,
 		config?: { size?: number; bias?: number; nearPlane?: number; farPlane?: number }
 	): boolean {
 		const gl = this._gl;
-		const size = config?.size ?? 512;
-		const bias = config?.bias ?? 0.05;
+		const faceSize = config?.size ?? 512;
+		const bias = config?.bias ?? 0.002;
 		const nearPlane = config?.nearPlane ?? 0.5;
 		const farPlane = config?.farPlane ?? 500;
 
-		// Delete existing if present
+		const atlasWidth = faceSize * 3;
+		const atlasHeight = faceSize * 2;
+
 		if (this._pointShadowMaps.has(lightId)) {
 			this.deletePointShadowMap(lightId);
 		}
 
-		const framebuffers: WebGLFramebuffer[] = [];
-		const colorTextures: WebGLTexture[] = [];
+		// Create atlas RGBA texture
+		const atlasTexture = gl.createTexture();
+		if (!atlasTexture) {
+			this.log(`Failed to create point shadow atlas texture for ${lightId}`, "error");
+			return false;
+		}
 
-		for (let face = 0; face < 6; face++) {
-			// Create RGBA color texture for this face
-			const colorTex = gl.createTexture();
-			if (!colorTex) {
-				this.log(`Failed to create point shadow color texture face ${face} for ${lightId}`, "error");
-				// Clean up already created
-				framebuffers.forEach(fb => gl.deleteFramebuffer(fb));
-				colorTextures.forEach(t => gl.deleteTexture(t));
-				return false;
-			}
+		gl.bindTexture(gl.TEXTURE_2D, atlasTexture);
+		gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, atlasWidth, atlasHeight, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
+		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
 
-			gl.bindTexture(gl.TEXTURE_2D, colorTex);
-			gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, size, size, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
-			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
-			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
-			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+		// Create framebuffer
+		const framebuffer = gl.createFramebuffer();
+		if (!framebuffer) {
+			this.log(`Failed to create point shadow framebuffer for ${lightId}`, "error");
+			gl.deleteTexture(atlasTexture);
+			return false;
+		}
 
-			// Create framebuffer for this face
-			const fb = gl.createFramebuffer();
-			if (!fb) {
-				this.log(`Failed to create point shadow framebuffer face ${face} for ${lightId}`, "error");
-				gl.deleteTexture(colorTex);
-				framebuffers.forEach(f => gl.deleteFramebuffer(f));
-				colorTextures.forEach(t => gl.deleteTexture(t));
-				return false;
-			}
+		gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer);
+		gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, atlasTexture, 0);
 
-			gl.bindFramebuffer(gl.FRAMEBUFFER, fb);
-			gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, colorTex, 0);
+		// Create depth renderbuffer (full atlas size)
+		const depthRenderbuffer = gl.createRenderbuffer();
+		if (!depthRenderbuffer) {
+			this.log(`Failed to create point shadow depth buffer for ${lightId}`, "error");
+			gl.deleteFramebuffer(framebuffer);
+			gl.deleteTexture(atlasTexture);
+			return false;
+		}
 
-			// Create depth renderbuffer for this face
-			const depthBuf = gl.createRenderbuffer();
-			gl.bindRenderbuffer(gl.RENDERBUFFER, depthBuf);
-			gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_COMPONENT16, size, size);
-			gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, depthBuf);
+		gl.bindRenderbuffer(gl.RENDERBUFFER, depthRenderbuffer);
+		gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_COMPONENT16, atlasWidth, atlasHeight);
+		gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, depthRenderbuffer);
 
-			const status = gl.checkFramebufferStatus(gl.FRAMEBUFFER);
-			if (status !== gl.FRAMEBUFFER_COMPLETE) {
-				this.log(`Point shadow framebuffer face ${face} incomplete: ${status}`, "error");
-				gl.deleteFramebuffer(fb);
-				gl.deleteTexture(colorTex);
-				framebuffers.forEach(f => gl.deleteFramebuffer(f));
-				colorTextures.forEach(t => gl.deleteTexture(t));
-				gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-				return false;
-			}
-
-			framebuffers.push(fb);
-			colorTextures.push(colorTex);
+		const status = gl.checkFramebufferStatus(gl.FRAMEBUFFER);
+		if (status !== gl.FRAMEBUFFER_COMPLETE) {
+			this.log(`Point shadow framebuffer incomplete: ${status}`, "error");
+			gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+			gl.deleteFramebuffer(framebuffer);
+			gl.deleteRenderbuffer(depthRenderbuffer);
+			gl.deleteTexture(atlasTexture);
+			return false;
 		}
 
 		gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 		gl.bindTexture(gl.TEXTURE_2D, null);
 
-		// Create 6 light-space matrices
 		const lightSpaceMatrices: IgeMatrix4[] = [];
 		for (let i = 0; i < 6; i++) {
 			lightSpaceMatrices.push(new IgeMatrix4());
 		}
 
 		this._pointShadowMaps.set(lightId, {
-			framebuffers,
-			colorTextures,
+			framebuffer,
+			atlasTexture,
+			depthRenderbuffer,
 			lightSpaceMatrices,
-			size,
+			faceSize,
 			bias,
 			nearPlane,
 			farPlane
 		});
 
-		this.log(`Created point shadow map for ${lightId} (6x ${size}x${size})`);
+		this.log(`Created point shadow atlas for ${lightId} (${atlasWidth}x${atlasHeight}, face=${faceSize})`);
 		return true;
 	}
 
@@ -613,12 +612,9 @@ export class IgeWebGlShadowManager extends IgeBaseClass {
 		if (!data) return;
 
 		const gl = this._gl;
-		for (const fb of data.framebuffers) {
-			gl.deleteFramebuffer(fb);
-		}
-		for (const tex of data.colorTextures) {
-			gl.deleteTexture(tex);
-		}
+		gl.deleteFramebuffer(data.framebuffer);
+		gl.deleteRenderbuffer(data.depthRenderbuffer);
+		gl.deleteTexture(data.atlasTexture);
 
 		this._pointShadowMaps.delete(lightId);
 		this.log(`Deleted point shadow map for ${lightId}`);
@@ -636,7 +632,7 @@ export class IgeWebGlShadowManager extends IgeBaseClass {
 		const far = data.farPlane;
 
 		const projMatrix = new IgeMatrix4();
-		projMatrix.perspective(Math.PI / 2, 1.0, near, far); // 90 degree FOV, 1:1 aspect
+		projMatrix.perspective(Math.PI / 2, 1.0, near, far);
 
 		for (let face = 0; face < 6; face++) {
 			const faceDir = CUBE_FACE_DIRS[face];
@@ -655,7 +651,19 @@ export class IgeWebGlShadowManager extends IgeBaseClass {
 	}
 
 	/**
-	 * Begin rendering to one face of a point light shadow map.
+	 * Get the atlas viewport offset for a given face index.
+	 * Layout: row0=[+X(0), -X(1), +Y(2)], row1=[-Y(3), +Z(4), -Z(5)]
+	 */
+	getAtlasFaceOffset(faceIndex: number, faceSize: number): { x: number; y: number } {
+		const col = faceIndex % 3;
+		const row = Math.floor(faceIndex / 3);
+		return { x: col * faceSize, y: row * faceSize };
+	}
+
+	/**
+	 * Begin rendering to one face of a point light shadow atlas.
+	 * Binds the atlas framebuffer and sets viewport to the correct face region.
+	 * On faceIndex 0, clears the entire atlas first.
 	 */
 	beginPointShadowPass(lightId: string, faceIndex: number): boolean {
 		if (!this._enabled) return false;
@@ -665,17 +673,30 @@ export class IgeWebGlShadowManager extends IgeBaseClass {
 
 		const gl = this._gl;
 
-		gl.bindFramebuffer(gl.FRAMEBUFFER, data.framebuffers[faceIndex]);
-		gl.viewport(0, 0, data.size, data.size);
+		gl.bindFramebuffer(gl.FRAMEBUFFER, data.framebuffer);
+
+		// On first face, clear the entire atlas
+		if (faceIndex === 0) {
+			gl.viewport(0, 0, data.faceSize * 3, data.faceSize * 2);
+			gl.enable(gl.SCISSOR_TEST);
+			gl.scissor(0, 0, data.faceSize * 3, data.faceSize * 2);
+			gl.clearColor(1.0, 1.0, 1.0, 1.0);
+			gl.clearDepth(1.0);
+			gl.clear(gl.DEPTH_BUFFER_BIT | gl.COLOR_BUFFER_BIT);
+			gl.disable(gl.SCISSOR_TEST);
+		}
+
+		// Set viewport to this face's region in the atlas
+		const offset = this.getAtlasFaceOffset(faceIndex, data.faceSize);
+		gl.viewport(offset.x, offset.y, data.faceSize, data.faceSize);
+
+		// Enable scissor test to prevent bleeding between faces
+		gl.enable(gl.SCISSOR_TEST);
+		gl.scissor(offset.x, offset.y, data.faceSize, data.faceSize);
 
 		gl.enable(gl.DEPTH_TEST);
 		gl.depthFunc(gl.LESS);
 		gl.depthMask(true);
-		gl.clearDepth(1.0);
-
-		// Clear both color (distance) and depth
-		gl.clearColor(1.0, 1.0, 1.0, 1.0); // Far distance = white
-		gl.clear(gl.DEPTH_BUFFER_BIT | gl.COLOR_BUFFER_BIT);
 
 		gl.enable(gl.CULL_FACE);
 		gl.cullFace(gl.FRONT);
@@ -684,9 +705,11 @@ export class IgeWebGlShadowManager extends IgeBaseClass {
 	}
 
 	/**
-	 * End a point light shadow pass (same cleanup as directional).
+	 * End a point light shadow face pass.
 	 */
 	endPointShadowPass(): void {
+		const gl = this._gl;
+		gl.disable(gl.SCISSOR_TEST);
 		this.endShadowPass();
 	}
 
@@ -700,13 +723,6 @@ export class IgeWebGlShadowManager extends IgeBaseClass {
 	}
 
 	/**
-	 * Get point shadow map data for a light.
-	 */
-	getPointShadowMapData(lightId: string): PointShadowMapData | null {
-		return this._pointShadowMaps.get(lightId) ?? null;
-	}
-
-	/**
 	 * Check if a point light has a shadow map.
 	 */
 	hasPointShadowMap(lightId: string): boolean {
@@ -715,45 +731,39 @@ export class IgeWebGlShadowManager extends IgeBaseClass {
 
 	/**
 	 * Apply point shadow uniforms to a shader program.
-	 * Binds all 6 face textures to sequential texture units.
+	 * @param program Shader program
+	 * @param shadowIndex Which point shadow slot (0 or 1)
+	 * @param lightId Light ID
+	 * @param textureUnit Texture unit to bind the atlas to
 	 */
 	applyPointShadowUniforms(
 		program: IgeWebGlProgram,
+		shadowIndex: number,
 		lightId: string,
-		baseTextureUnit: number
+		textureUnit: number
 	): boolean {
 		const data = this._pointShadowMaps.get(lightId);
-		if (!data) {
-			program.setUniform1i("u_hasPointShadow", 0);
-			return false;
-		}
+		if (!data) return false;
 
 		const gl = this._gl;
-		const faceNames = [
-			"u_ptShadowFace0", "u_ptShadowFace1", "u_ptShadowFace2",
-			"u_ptShadowFace3", "u_ptShadowFace4", "u_ptShadowFace5"
-		];
-		const matrixNames = [
-			"u_ptShadowMatrix0", "u_ptShadowMatrix1", "u_ptShadowMatrix2",
-			"u_ptShadowMatrix3", "u_ptShadowMatrix4", "u_ptShadowMatrix5"
-		];
 
-		// Bind all 6 face textures
+		// Bind atlas texture
+		gl.activeTexture(gl.TEXTURE0 + textureUnit);
+		gl.bindTexture(gl.TEXTURE_2D, data.atlasTexture);
+		program.setUniform1i(`u_pointShadowAtlas[${shadowIndex}]`, textureUnit);
+
+		// Set per-shadow uniforms
+		program.setUniform1f(`u_pointShadowFarPlane[${shadowIndex}]`, data.farPlane);
+		program.setUniform1f(`u_pointShadowBias[${shadowIndex}]`, data.bias);
+		program.setUniform1f(`u_pointShadowFaceSize[${shadowIndex}]`, data.faceSize);
+
+		// Set 6 light-space matrices
 		for (let face = 0; face < 6; face++) {
-			const unit = baseTextureUnit + face;
-			gl.activeTexture(gl.TEXTURE0 + unit);
-			gl.bindTexture(gl.TEXTURE_2D, data.colorTextures[face]);
-			program.setUniform1i(faceNames[face], unit);
+			program.setUniformMatrix4fv(
+				`u_pointShadowMatrices[${shadowIndex * 6 + face}]`,
+				data.lightSpaceMatrices[face]
+			);
 		}
-
-		// Set matrices
-		for (let face = 0; face < 6; face++) {
-			program.setUniformMatrix4fv(matrixNames[face], data.lightSpaceMatrices[face]);
-		}
-
-		program.setUniform1i("u_hasPointShadow", 1);
-		program.setUniform1f("u_pointShadowFarPlane", data.farPlane);
-		program.setUniform1f("u_pointShadowBias", data.bias);
 
 		gl.activeTexture(gl.TEXTURE0);
 		return true;
@@ -772,7 +782,7 @@ export class IgeWebGlShadowManager extends IgeBaseClass {
 			totalSize += shadowMap.size * shadowMap.size * 4;
 		}
 		for (const pointMap of this._pointShadowMaps.values()) {
-			totalSize += pointMap.size * pointMap.size * 4 * 6; // 6 faces
+			totalSize += pointMap.faceSize * 3 * pointMap.faceSize * 2 * 4; // atlas 3x2
 		}
 
 		return {

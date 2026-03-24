@@ -87,6 +87,17 @@ uniform float u_shadowNormalBias;     // Normal-based bias
 uniform float u_shadowMapSize;        // Size of shadow map for PCF
 uniform int u_usePackedDepth;         // Whether depth is packed (WebGL 1)
 
+// Point light shadow mapping uniforms
+// Each point light shadow uses a single 3x2 atlas texture (1 sampler per light)
+#define MAX_SHADOW_POINT_LIGHTS 2
+uniform int u_numShadowPointLights;
+uniform int u_pointShadowLightIndex[MAX_SHADOW_POINT_LIGHTS];   // Which point light index casts shadows
+uniform sampler2D u_pointShadowAtlas[MAX_SHADOW_POINT_LIGHTS];  // Atlas textures (1 per light)
+uniform float u_pointShadowFarPlane[MAX_SHADOW_POINT_LIGHTS];
+uniform float u_pointShadowBias[MAX_SHADOW_POINT_LIGHTS];
+uniform float u_pointShadowFaceSize[MAX_SHADOW_POINT_LIGHTS];   // Face size in pixels
+uniform mat4 u_pointShadowMatrices[12];                          // 6 matrices per light, 2 lights max
+
 // Constants
 const float PI = 3.14159265359;
 const vec3 F0_DIELECTRIC = vec3(0.04); // F0 for non-metals
@@ -221,6 +232,114 @@ float calculateShadow(vec3 normal, vec3 lightDir) {
 	return shadow;
 }
 
+// ============================================================================
+// Point Light Shadow Functions (Atlas-based)
+// ============================================================================
+
+// Get the atlas UV offset for a cube face.
+// Atlas layout 3x2: row0=[+X(0), -X(1), +Y(2)], row1=[-Y(3), +Z(4), -Z(5)]
+// Returns offset in [0,1] UV space for the atlas texture.
+vec2 getAtlasFaceUVOffset(int face) {
+	// col = face % 3, row = face / 3
+	// In UV space: offsetU = col/3, offsetV = row/2
+	if (face == 0) return vec2(0.0,       0.0);       // +X: col0, row0
+	if (face == 1) return vec2(1.0 / 3.0, 0.0);       // -X: col1, row0
+	if (face == 2) return vec2(2.0 / 3.0, 0.0);       // +Y: col2, row0
+	if (face == 3) return vec2(0.0,       0.5);        // -Y: col0, row1
+	if (face == 4) return vec2(1.0 / 3.0, 0.5);       // +Z: col1, row1
+	return            vec2(2.0 / 3.0, 0.5);            // -Z: col2, row1
+}
+
+// Determine which cube face to sample based on the direction from light to fragment.
+int getPointShadowFace(vec3 fragToLight) {
+	vec3 a = abs(fragToLight);
+	if (a.x >= a.y && a.x >= a.z) {
+		return fragToLight.x > 0.0 ? 0 : 1;
+	} else if (a.y >= a.x && a.y >= a.z) {
+		return fragToLight.y > 0.0 ? 2 : 3;
+	} else {
+		return fragToLight.z > 0.0 ? 4 : 5;
+	}
+}
+
+// Get the light-space matrix for a given shadow index and face.
+// shadowIndex 0 uses matrices [0..5], shadowIndex 1 uses [6..11].
+mat4 getPointShadowMatrix(int shadowIndex, int face) {
+	int idx = shadowIndex * 6 + face;
+	// GLSL ES requires constant index for arrays, so we use an if-chain
+	if (idx == 0)  return u_pointShadowMatrices[0];
+	if (idx == 1)  return u_pointShadowMatrices[1];
+	if (idx == 2)  return u_pointShadowMatrices[2];
+	if (idx == 3)  return u_pointShadowMatrices[3];
+	if (idx == 4)  return u_pointShadowMatrices[4];
+	if (idx == 5)  return u_pointShadowMatrices[5];
+	if (idx == 6)  return u_pointShadowMatrices[6];
+	if (idx == 7)  return u_pointShadowMatrices[7];
+	if (idx == 8)  return u_pointShadowMatrices[8];
+	if (idx == 9)  return u_pointShadowMatrices[9];
+	if (idx == 10) return u_pointShadowMatrices[10];
+	return u_pointShadowMatrices[11];
+}
+
+// Internal: compute point shadow for shadow slot 0 (constant indices only)
+float _calcPointShadow0(vec3 lightPos) {
+	vec3 fragToLight = v_worldPosition - lightPos;
+	float currentDistance = length(fragToLight) / u_pointShadowFarPlane[0];
+	if (currentDistance > 1.0) return 1.0;
+
+	int face = getPointShadowFace(fragToLight);
+	mat4 lsMatrix = getPointShadowMatrix(0, face);
+	vec4 lightSpacePos = lsMatrix * vec4(v_worldPosition, 1.0);
+	vec3 projCoords = lightSpacePos.xyz / lightSpacePos.w;
+	projCoords = projCoords * 0.5 + 0.5;
+
+	if (projCoords.x < 0.0 || projCoords.x > 1.0 ||
+	    projCoords.y < 0.0 || projCoords.y > 1.0) return 1.0;
+
+	vec2 faceOffset = getAtlasFaceUVOffset(face);
+	vec2 atlasUV = faceOffset + projCoords.xy * vec2(1.0 / 3.0, 0.5);
+	float closestDistance = texture2D(u_pointShadowAtlas[0], atlasUV).r;
+
+	return (currentDistance - u_pointShadowBias[0] > closestDistance) ? 0.0 : 1.0;
+}
+
+// Internal: compute point shadow for shadow slot 1 (constant indices only)
+float _calcPointShadow1(vec3 lightPos) {
+	vec3 fragToLight = v_worldPosition - lightPos;
+	float currentDistance = length(fragToLight) / u_pointShadowFarPlane[1];
+	if (currentDistance > 1.0) return 1.0;
+
+	int face = getPointShadowFace(fragToLight);
+	mat4 lsMatrix = getPointShadowMatrix(1, face);
+	vec4 lightSpacePos = lsMatrix * vec4(v_worldPosition, 1.0);
+	vec3 projCoords = lightSpacePos.xyz / lightSpacePos.w;
+	projCoords = projCoords * 0.5 + 0.5;
+
+	if (projCoords.x < 0.0 || projCoords.x > 1.0 ||
+	    projCoords.y < 0.0 || projCoords.y > 1.0) return 1.0;
+
+	vec2 faceOffset = getAtlasFaceUVOffset(face);
+	vec2 atlasUV = faceOffset + projCoords.xy * vec2(1.0 / 3.0, 0.5);
+	float closestDistance = texture2D(u_pointShadowAtlas[1], atlasUV).r;
+
+	return (currentDistance - u_pointShadowBias[1] > closestDistance) ? 0.0 : 1.0;
+}
+
+// Get the point shadow factor for point light at loop index i.
+// Must be called from a for-loop where i is the loop variable,
+// because GLSL ES only allows loop vars or constants as array indices.
+// We pass lightPos explicitly to avoid indexing u_pointLightPositions with a non-loop var.
+float getPointLightShadow(int i, vec3 lightPos) {
+	for (int s = 0; s < MAX_SHADOW_POINT_LIGHTS; s++) {
+		if (s >= u_numShadowPointLights) break;
+		if (u_pointShadowLightIndex[s] == i) {
+			if (s == 0) return _calcPointShadow0(lightPos);
+			else        return _calcPointShadow1(lightPos);
+		}
+	}
+	return 1.0;
+}
+
 // Debug function to visualize shadow map values
 vec3 debugShadowValues(vec3 normal, vec3 lightDir) {
 	vec3 projCoords = v_lightSpacePos.xyz / v_lightSpacePos.w;
@@ -341,7 +460,8 @@ void main() {
 			float attenuation = calculateAttenuation(distance, u_pointLightRanges[i], u_pointLightDecays[i]);
 			float intensity = u_pointLightIntensities[i] * attenuation;
 
-			finalColor += calculateSimpleDiffuse(N, L, u_pointLightColors[i], intensity, albedo);
+			float ptShadow = getPointLightShadow(i, u_pointLightPositions[i]);
+			finalColor += calculateSimpleDiffuse(N, L, u_pointLightColors[i], intensity, albedo) * ptShadow;
 		}
 
 		// Spot lights
@@ -401,7 +521,8 @@ void main() {
 			float attenuation = calculateAttenuation(distance, u_pointLightRanges[i], u_pointLightDecays[i]);
 			vec3 radiance = u_pointLightColors[i] * u_pointLightIntensities[i] * attenuation;
 
-			finalColor += calculatePBRLight(N, V, L, radiance, albedo, metallic, roughness);
+			float ptShadow = getPointLightShadow(i, u_pointLightPositions[i]);
+			finalColor += calculatePBRLight(N, V, L, radiance, albedo, metallic, roughness) * ptShadow;
 		}
 
 		// Spot lights
