@@ -205,8 +205,8 @@ export class Client extends IgeBaseClass implements IgeCanInit {
 		lightManager.addLight(this.swingingLight);
 
 		// Enable point light shadows for the swinging light
-		if (this.renderer.enablePointLightShadows(this.swingingLight, 512)) {
-			this.log("Point light shadows enabled for swinging light (6x 512x512)");
+		if (this.renderer.enablePointLightShadows(this.swingingLight, 1024)) {
+			this.log("Point light shadows enabled for swinging light (6x 1024x1024)");
 		}
 
 		// --- Single orbiting red point light ---
@@ -219,6 +219,11 @@ export class Client extends IgeBaseClass implements IgeCanInit {
 		this.orbitLight.translateTo(200, 100, 0);
 		this.orbitLight.mount(this.scene);
 		lightManager.addLight(this.orbitLight);
+
+		// Enable point light shadows for the orbit light
+		if (this.renderer.enablePointLightShadows(this.orbitLight, 1024)) {
+			this.log("Point light shadows enabled for orbit light");
+		}
 
 		// Visual bulb
 		const orbitBulbGeom = IgePrimitiveGeometry.createSphere(5, 8, 8, "orbit_bulb");
@@ -831,11 +836,11 @@ export class Client extends IgeBaseClass implements IgeCanInit {
 		}
 
 		const lights: LightDef[] = [
-			{ name: "Ambient", color: "#8888cc", light: this.ambientLight, hasIntensity: true, hasRange: false, maxIntensity: 2, maxRange: 0 },
-			{ name: "Moonlight", color: "#99aadd", light: this.moonLight, hasIntensity: true, hasRange: false, maxIntensity: 2, maxRange: 0 },
-			{ name: "Street Lamp", color: "#ffcc66", light: this.streetLampLight, hasIntensity: true, hasRange: true, maxIntensity: 5, maxRange: 600 },
-			{ name: "Swinging", color: "#eeeeff", light: this.swingingLight, hasIntensity: true, hasRange: true, maxIntensity: 5, maxRange: 600 },
-			{ name: "Red Orbit", color: "#ff4444", light: this.orbitLight, hasIntensity: true, hasRange: true, maxIntensity: 5, maxRange: 600 }
+			{ name: "Ambient", color: "#8888cc", light: this.ambientLight, hasIntensity: true, hasRange: false, maxIntensity: 10, maxRange: 0 },
+			{ name: "Moonlight", color: "#99aadd", light: this.moonLight, hasIntensity: true, hasRange: false, maxIntensity: 10, maxRange: 0 },
+			{ name: "Street Lamp", color: "#ffcc66", light: this.streetLampLight, hasIntensity: true, hasRange: true, maxIntensity: 10, maxRange: 2000 },
+			{ name: "Swinging", color: "#eeeeff", light: this.swingingLight, hasIntensity: true, hasRange: true, maxIntensity: 10, maxRange: 2000 },
+			{ name: "Red Orbit", color: "#ff4444", light: this.orbitLight, hasIntensity: true, hasRange: true, maxIntensity: 10, maxRange: 2000 }
 		];
 
 		for (const def of lights) {

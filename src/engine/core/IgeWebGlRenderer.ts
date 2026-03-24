@@ -582,7 +582,10 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 			}
 
 			const pos = pointLight._translate;
-			const range = (pointLight as any)._range as number || 500;
+
+			// Get the far plane from the shadow map data so depth pass and lookup match
+			const shadowData = this._shadowManager.getPointShadowMapData(lightId);
+			const farPlane = shadowData?.farPlane ?? ((pointLight as any)._range as number || 500);
 
 			// Render 6 cube faces
 			for (let face = 0; face < 6; face++) {
@@ -604,7 +607,7 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 					program.use();
 					program.setUniformMatrix4fv("u_lightSpaceMatrix", lightSpaceMatrix);
 					program.setUniform3f("u_pointLightPosition", pos.x, pos.y, pos.z);
-					program.setUniform1f("u_pointShadowFarPlane", range);
+					program.setUniform1f("u_pointShadowFarPlane", farPlane);
 					currentProgram = program;
 				};
 
@@ -1191,12 +1194,11 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 			return true; // Already enabled
 		}
 
-		const range = (light as any)._range as number || 500;
 		const success = this._shadowManager.createPointShadowMap(light.id(), {
 			size: shadowMapSize,
 			bias: 0.002,
 			nearPlane: 0.5,
-			farPlane: range
+			farPlane: 1000 // Large far plane so shadows extend well beyond light range
 		});
 
 		if (success) {

@@ -38,7 +38,7 @@ interface ShadowMapData {
  * All 6 cube faces are rendered into a single texture in a 3-column x 2-row grid.
  * Face layout: row0=[+X, -X, +Y], row1=[-Y, +Z, -Z]
  */
-interface PointShadowMapData {
+export interface PointShadowMapData {
 	framebuffer: WebGLFramebuffer;       // Single framebuffer
 	atlasTexture: WebGLTexture;          // Single 3x2 atlas RGBA texture
 	depthRenderbuffer: WebGLRenderbuffer; // Shared depth renderbuffer
@@ -720,6 +720,13 @@ export class IgeWebGlShadowManager extends IgeBaseClass {
 		const data = this._pointShadowMaps.get(lightId);
 		if (!data || faceIndex < 0 || faceIndex > 5) return null;
 		return data.lightSpaceMatrices[faceIndex];
+	}
+
+	/**
+	 * Get point shadow map data for a light.
+	 */
+	getPointShadowMapData(lightId: string): PointShadowMapData | null {
+		return this._pointShadowMaps.get(lightId) ?? null;
 	}
 
 	/**
