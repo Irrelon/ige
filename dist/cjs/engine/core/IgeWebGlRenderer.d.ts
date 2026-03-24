@@ -1,19 +1,19 @@
 import { IgeBaseRenderer } from "./IgeBaseRenderer.js"
-import type { IgeEngine } from "./IgeEngine.js"
+import type { IgeEngine } from "./IgeEngine.js";
 import type { IgeViewport } from "./IgeViewport.js"
-import { IgeWebGlResourceManager } from "../webgl/IgeWebGlResourceManager.js"
+import { IgeWebGlResourceManager } from "../webgl/IgeWebGlResourceManager.js";
 import { IgeWebGlShaderManager } from "../webgl/IgeWebGlShaderManager.js"
-import { IgeWebGlTextureManager } from "../webgl/IgeWebGlTextureManager.js"
+import { IgeWebGlTextureManager } from "../webgl/IgeWebGlTextureManager.js";
 import { IgeWebGlGeometryManager } from "../webgl/IgeWebGlGeometryManager.js"
-import { IgeWebGlCameraController } from "../webgl/IgeWebGlCameraController.js"
+import { IgeWebGlCameraController } from "../webgl/IgeWebGlCameraController.js";
 import { IgeWebGlRenderBatchManager } from "../webgl/IgeWebGlRenderBatchManager.js"
-import { IgeWebGlStateManager } from "../webgl/IgeWebGlStateManager.js"
+import { IgeWebGlStateManager } from "../webgl/IgeWebGlStateManager.js";
 import { IgeWebGlLightManager } from "../webgl/IgeWebGlLightManager.js"
-import { IgeWebGlShadowManager } from "../webgl/IgeWebGlShadowManager.js"
+import { IgeWebGlShadowManager } from "../webgl/IgeWebGlShadowManager.js";
 import { IgeWebGlSkeletonManager } from "../webgl/IgeWebGlSkeletonManager.js"
-import type { IgeObject } from "./IgeObject.js"
+import type { IgeObject } from "./IgeObject.js";
 import type { IgeEntity } from "./IgeEntity.js"
-import type { IgeDirectionalLight, IgePointLight } from "../webgl/IgeWebGlLight.js"
+import type { IgeDirectionalLight, IgePointLight } from "../webgl/IgeWebGlLight.js";
 /**
  * Custom WebGL renderer for IGE supporting full 3D rendering.
  * This renderer replaces the experimental three.js integration with

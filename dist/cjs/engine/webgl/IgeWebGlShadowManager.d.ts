@@ -1,7 +1,7 @@
 import { IgeBaseClass } from "../core/IgeBaseClass.js"
-import type { IgeWebGlResourceManager } from "./IgeWebGlResourceManager.js"
+import type { IgeWebGlResourceManager } from "./IgeWebGlResourceManager.js";
 import type { IgeDirectionalLight, IgePointLight } from "./IgeWebGlLight.js"
-import type { IgeWebGlProgram } from "./IgeWebGlProgram.js"
+import type { IgeWebGlProgram } from "./IgeWebGlProgram.js";
 import { IgeMatrix4 } from "../core/IgeMatrix4.js"
 /**
  * Shadow map configuration.
@@ -31,6 +31,12 @@ interface ShadowMapData {
     normalBias: number;
 }
 /**
+ * Point shadow atlas texture format options.
+ * - "rgba8": RGBA UNSIGNED_BYTE - fastest on all GPUs, 8-bit depth precision (256 levels)
+ * - "r32f": R32F float - best precision, 1/4 memory of RGBA32F, but slower on some GPUs
+ */
+export type PointShadowTextureFormat = "rgba8" | "r32f";
+/**
  * Shadow map data for a point light using a 3x2 atlas texture.
  * All 6 cube faces are rendered into a single texture in a 3-column x 2-row grid.
  * Face layout: row0=[+X, -X, +Y], row1=[-Y, +Z, -Z]
@@ -39,8 +45,6 @@ export interface PointShadowMapData {
     framebuffer: WebGLFramebuffer;
     atlasTexture: WebGLTexture;
     depthRenderbuffer: WebGLRenderbuffer;
-    blurFramebuffer: WebGLFramebuffer;
-    blurTexture: WebGLTexture;
     lightSpaceMatrices: IgeMatrix4[];
     faceSize: number;
     bias: number;
@@ -59,8 +63,8 @@ export declare class IgeWebGlShadowManager extends IgeBaseClass {
     protected _resourceManager: IgeWebGlResourceManager;
     protected _webglVersion: 1 | 2;
     protected _shadowMaps: Map<string, ShadowMapData>;
-    protected _quadBuffer: WebGLBuffer | null;
     protected _pointShadowMaps: Map<string, PointShadowMapData>;
+    protected _pointShadowFormat: PointShadowTextureFormat;
     protected _enabled: boolean;
     protected _defaultConfig: IgeShadowMapConfig;
     protected _lightViewMatrix: IgeMatrix4;
@@ -70,6 +74,14 @@ export declare class IgeWebGlShadowManager extends IgeBaseClass {
     protected _shadowNear: number;
     protected _shadowFar: number;
     constructor(gl: WebGLRenderingContext | WebGL2RenderingContext, resourceManager: IgeWebGlResourceManager, webglVersion: 1 | 2);
+    /**
+     * Gets / sets the texture format for point shadow atlases.
+     * "rgba8" = fastest, compatible with all GPUs (default)
+     * "r32f" = best precision, less memory, but slower on some GPUs (WebGL 2 only)
+     * Must be set before creating point shadow maps.
+     */
+    pointShadowFormat(): PointShadowTextureFormat;
+    pointShadowFormat(val: PointShadowTextureFormat): this;
     /**
      * Enable or disable shadow mapping.
      */
@@ -176,17 +188,6 @@ export declare class IgeWebGlShadowManager extends IgeBaseClass {
      * Get a point light shadow map's light-space matrix for a specific face.
      */
     getPointLightSpaceMatrix(lightId: string, faceIndex: number): IgeMatrix4 | null;
-    /**
-     * Lazily create the full-screen quad VBO for blur passes.
-     */
-    protected _getQuadBuffer(): WebGLBuffer | null;
-    /**
-     * Apply a two-pass separable Gaussian blur to a point shadow atlas.
-     * Blurs each face independently using scissor test to prevent cross-face bleeding.
-     * Pass 1: atlas → blurTexture (horizontal blur, per face)
-     * Pass 2: blurTexture → atlas (vertical blur, per face)
-     */
-    blurPointShadowMap(lightId: string, blurProgram: any): void;
     /**
      * Get point shadow map data for a light.
      */
