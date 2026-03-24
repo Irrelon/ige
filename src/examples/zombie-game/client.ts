@@ -532,7 +532,7 @@ export class Client extends IgeBaseClass implements IgeCanInit {
 			const camera = viewport.camera;
 			camera.projectionType("orthographic");
 			camera.orthoSize(CAMERA_ORTHO_SIZE);
-			camera.near(0.1);
+			camera.near(-1500);
 			camera.far(3000);
 
 			viewport.mount(ige.engine);
