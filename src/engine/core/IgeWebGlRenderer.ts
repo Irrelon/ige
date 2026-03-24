@@ -526,6 +526,8 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 			this._geometryManager!.bindGeometry(batch.geometry, program!);
 
 			for (const entity of batch.entities) {
+				if (entity._noShadowCast) continue;
+
 				if (entity._worldMatrix4) {
 					program!.setUniformMatrix4fv("u_worldMatrix", entity._worldMatrix4);
 				}
@@ -622,6 +624,8 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 					this._geometryManager!.bindGeometry(batch.geometry, program!);
 
 					for (const entity of batch.entities) {
+						if (entity._noShadowCast) continue;
+
 						if (entity._worldMatrix4) {
 							program!.setUniformMatrix4fv("u_worldMatrix", entity._worldMatrix4);
 						}

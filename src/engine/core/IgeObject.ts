@@ -136,6 +136,7 @@ export class IgeObject extends IgeEventingClass implements IgeCanRegisterById, I
 	_oldWorldMatrix4?: IgeMatrix4; // Previous 4x4 world matrix for change detection
 	_adjustmentMatrix?: IgeMatrix2d;
 	_hidden: boolean;
+	_noShadowCast: boolean = false; // When true, entity is excluded from shadow map rendering
 	_cache: boolean = false;
 	_cacheCtx?: IgeCanvasRenderingContext2d | null;
 	_cacheCanvas?: OffscreenCanvas | IgeDummyCanvas;

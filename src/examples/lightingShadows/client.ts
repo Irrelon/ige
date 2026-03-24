@@ -233,6 +233,7 @@ export class Client extends IgeBaseClass implements IgeCanInit {
 			emissiveIntensity: 3.0
 		};
 		this.orbitBulb.translateTo(200, 100, 0);
+		this.orbitBulb._noShadowCast = true;
 		this.orbitBulb.mount(this.scene);
 
 		this.updateLightCount();
@@ -387,6 +388,7 @@ export class Client extends IgeBaseClass implements IgeCanInit {
 			emissiveIntensity: 2.0
 		};
 		bulb.translateTo(lampX, 192, lampZ);
+		bulb._noShadowCast = true;
 		bulb.mount(this.scene);
 		this.lampPostEntities.push(bulb);
 
@@ -418,6 +420,7 @@ export class Client extends IgeBaseClass implements IgeCanInit {
 			emissiveIntensity: 2.0
 		};
 		this.swingingLightEntity.translateTo(100, 120, 50);
+		this.swingingLightEntity._noShadowCast = true;
 		this.swingingLightEntity.mount(this.scene);
 
 		// --- Scene props: crates/boxes to cast and receive shadows ---

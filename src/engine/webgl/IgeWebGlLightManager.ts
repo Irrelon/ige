@@ -122,12 +122,8 @@ export class IgeWebGlLightManager extends IgeBaseClass {
 			b += data.color.b * intensity;
 		}
 
-		// If no ambient lights, use a default minimum ambient
-		if (this._ambientLights.length === 0) {
-			r = 0.1;
-			g = 0.1;
-			b = 0.1;
-		}
+		// If no ambient lights, no ambient contribution (fully dark)
+		// Use setDefaultAmbient() to override this if desired
 
 		this._combinedAmbient = { r, g, b, intensity: 1.0 };
 	}
