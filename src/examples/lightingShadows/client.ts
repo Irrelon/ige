@@ -215,7 +215,7 @@ export class Client extends IgeBaseClass implements IgeCanInit {
 		lightManager.addLight(this.swingingLight);
 
 		// Enable point light shadows for the swinging light
-		if (this.renderer.enablePointLightShadows(this.swingingLight, 1024)) {
+		if (this.renderer.enablePointLightShadows(this.swingingLight, 512)) {
 			this.log("Point light shadows enabled for swinging light (6x 1024x1024)");
 		}
 
@@ -231,7 +231,7 @@ export class Client extends IgeBaseClass implements IgeCanInit {
 		lightManager.addLight(this.orbitLight);
 
 		// Enable point light shadows for the orbit light
-		if (this.renderer.enablePointLightShadows(this.orbitLight, 1024)) {
+		if (this.renderer.enablePointLightShadows(this.orbitLight, 512)) {
 			this.log("Point light shadows enabled for orbit light");
 		}
 
