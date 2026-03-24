@@ -662,11 +662,7 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 				this._shadowManager.endPointShadowPass();
 			}
 
-			// Apply Gaussian blur to the VSM atlas for soft shadows
-			const blurProgram = this._shaderManager.getProgram("blur");
-			if (blurProgram) {
-				this._shadowManager.blurPointShadowMap(lightId, blurProgram);
-			}
+			// No blur pass needed - using Vogel disk PCF for soft shadows
 		}
 	}
 
@@ -1202,7 +1198,7 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 
 		const success = this._shadowManager.createPointShadowMap(light.id(), {
 			size: shadowMapSize,
-			bias: 0.0005,
+			bias: 0.0002,
 			nearPlane: 0.5,
 			farPlane: 1000 // Large far plane so shadows extend well beyond light range
 		});

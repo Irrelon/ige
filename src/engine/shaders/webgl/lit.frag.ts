@@ -281,23 +281,21 @@ mat4 getPointShadowMatrix(int shadowIndex, int face) {
 	return u_pointShadowMatrices[11];
 }
 
-// VSM: Chebyshev shadow factor from depth moments (mean, mean²)
-float chebyshevShadow(float depth, float mean, float meanSq) {
-	if (depth <= mean) return 1.0;
-
-	// Variance: E(x²) - E(x)²
-	float variance = max(meanSq - mean * mean, 0.00002);
-
-	// Chebyshev's inequality
-	float d = depth - mean;
-	float pMax = variance / (variance + d * d);
-
-	// Reduce light bleeding by remapping [0.1, 1.0] → [0.0, 1.0]
-	// Lower threshold = tighter shadow contact with objects
-	return clamp((pMax - 0.1) / 0.9, 0.0, 1.0);
+// Interleaved gradient noise for per-pixel sample rotation (eliminates banding)
+float interleavedGradientNoise(vec2 fragCoord) {
+	vec3 magic = vec3(0.06711056, 0.00583715, 52.9829189);
+	return fract(magic.z * fract(dot(fragCoord, magic.xy)));
 }
 
-// Internal: VSM point shadow for shadow slot 0 (single sample, no loops)
+// Vogel disk sample: distributes N points uniformly on a unit disk
+vec2 vogelDiskSample(int sampleIndex, int totalSamples, float phi) {
+	float goldenAngle = 2.4; // ~137.5 degrees
+	float r = sqrt(float(sampleIndex) + 0.5) / sqrt(float(totalSamples));
+	float theta = float(sampleIndex) * goldenAngle + phi;
+	return vec2(r * cos(theta), r * sin(theta));
+}
+
+// Internal: PCF point shadow for shadow slot 0 using Vogel disk (5 samples)
 float _calcPointShadow0(vec3 lightPos) {
 	vec3 fragToLight = v_worldPosition - lightPos;
 	float currentDistance = length(fragToLight) / u_pointShadowFarPlane[0];
@@ -315,12 +313,27 @@ float _calcPointShadow0(vec3 lightPos) {
 	vec2 faceOffset = getAtlasFaceUVOffset(face);
 	vec2 atlasUV = faceOffset + projCoords.xy * vec2(1.0 / 3.0, 0.5);
 
-	// Single sample from blurred VSM atlas: R=mean depth, G=mean depth²
-	vec2 moments = texture2D(u_pointShadowAtlas[0], atlasUV).rg;
-	return chebyshevShadow(currentDistance, moments.x, moments.y);
+	// Texel size within the face region of the atlas
+	float texelU = (1.0 / 3.0) / u_pointShadowFaceSize[0];
+	float texelV = 0.5 / u_pointShadowFaceSize[0];
+	float bias = u_pointShadowBias[0];
+
+	// Per-pixel rotation angle from interleaved gradient noise
+	float phi = interleavedGradientNoise(gl_FragCoord.xy) * 6.2832;
+
+	// 5-sample Vogel disk PCF with ~2 texel radius
+	float shadow = 0.0;
+	float radius = 2.0;
+	for (int i = 0; i < 5; i++) {
+		vec2 offset = vogelDiskSample(i, 5, phi) * radius;
+		vec2 sampleUV = atlasUV + vec2(offset.x * texelU, offset.y * texelV);
+		float storedDepth = texture2D(u_pointShadowAtlas[0], sampleUV).r;
+		shadow += (currentDistance - bias > storedDepth) ? 0.0 : 1.0;
+	}
+	return shadow / 5.0;
 }
 
-// Internal: VSM point shadow for shadow slot 1 (single sample, no loops)
+// Internal: PCF point shadow for shadow slot 1 using Vogel disk (5 samples)
 float _calcPointShadow1(vec3 lightPos) {
 	vec3 fragToLight = v_worldPosition - lightPos;
 	float currentDistance = length(fragToLight) / u_pointShadowFarPlane[1];
@@ -338,9 +351,21 @@ float _calcPointShadow1(vec3 lightPos) {
 	vec2 faceOffset = getAtlasFaceUVOffset(face);
 	vec2 atlasUV = faceOffset + projCoords.xy * vec2(1.0 / 3.0, 0.5);
 
-	// Single sample from blurred VSM atlas: R=mean depth, G=mean depth²
-	vec2 moments = texture2D(u_pointShadowAtlas[1], atlasUV).rg;
-	return chebyshevShadow(currentDistance, moments.x, moments.y);
+	float texelU = (1.0 / 3.0) / u_pointShadowFaceSize[1];
+	float texelV = 0.5 / u_pointShadowFaceSize[1];
+	float bias = u_pointShadowBias[1];
+
+	float phi = interleavedGradientNoise(gl_FragCoord.xy) * 6.2832;
+
+	float shadow = 0.0;
+	float radius = 2.0;
+	for (int i = 0; i < 5; i++) {
+		vec2 offset = vogelDiskSample(i, 5, phi) * radius;
+		vec2 sampleUV = atlasUV + vec2(offset.x * texelU, offset.y * texelV);
+		float storedDepth = texture2D(u_pointShadowAtlas[1], sampleUV).r;
+		shadow += (currentDistance - bias > storedDepth) ? 0.0 : 1.0;
+	}
+	return shadow / 5.0;
 }
 
 // Get the point shadow factor for point light at loop index i.
