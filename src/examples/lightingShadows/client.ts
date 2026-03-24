@@ -186,6 +186,11 @@ export class Client extends IgeBaseClass implements IgeCanInit {
 		this.moonLight.mount(this.scene);
 		lightManager.addLight(this.moonLight);
 
+		// Tighten shadow frustum to scene bounds for better shadow map precision
+		if (this.renderer.shadowManager) {
+			this.renderer.shadowManager.frustumSize(250);
+		}
+
 		// Enable shadows from moonlight
 		if (this.renderer.enableShadows(this.moonLight, 2048)) {
 			this.log("Shadows enabled (2048x2048 shadow map)");

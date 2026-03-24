@@ -86,6 +86,7 @@ uniform float u_shadowBias;           // Shadow bias to prevent acne
 uniform float u_shadowNormalBias;     // Normal-based bias
 uniform float u_shadowMapSize;        // Size of shadow map for PCF
 uniform int u_usePackedDepth;         // Whether depth is packed (WebGL 1)
+uniform float u_shadowNormalOffset;  // Normal offset to prevent shadow acne on curved surfaces
 
 // Point light shadow mapping uniforms
 // Each point light shadow uses a single 3x2 atlas texture (1 sampler per light)
@@ -303,7 +304,9 @@ float _calcPointShadow0(vec3 lightPos) {
 
 	int face = getPointShadowFace(fragToLight);
 	mat4 lsMatrix = getPointShadowMatrix(0, face);
-	vec4 lightSpacePos = lsMatrix * vec4(v_worldPosition, 1.0);
+	// Normal offset: shift lookup along surface normal to prevent acne on curved surfaces
+	vec3 offsetPos = v_worldPosition + v_worldNormal * u_shadowNormalOffset;
+	vec4 lightSpacePos = lsMatrix * vec4(offsetPos, 1.0);
 	vec3 projCoords = lightSpacePos.xyz / lightSpacePos.w;
 	projCoords = projCoords * 0.5 + 0.5;
 
@@ -345,7 +348,8 @@ float _calcPointShadow1(vec3 lightPos) {
 
 	int face = getPointShadowFace(fragToLight);
 	mat4 lsMatrix = getPointShadowMatrix(1, face);
-	vec4 lightSpacePos = lsMatrix * vec4(v_worldPosition, 1.0);
+	vec3 offsetPos = v_worldPosition + v_worldNormal * u_shadowNormalOffset;
+	vec4 lightSpacePos = lsMatrix * vec4(offsetPos, 1.0);
 	vec3 projCoords = lightSpacePos.xyz / lightSpacePos.w;
 	projCoords = projCoords * 0.5 + 0.5;
 

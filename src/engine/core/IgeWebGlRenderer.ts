@@ -941,10 +941,13 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 						shaderProgram.setUniformMatrix4fv("u_lightSpaceMatrix", lightSpaceMatrix);
 					}
 					shaderProgram.setUniform1i("u_shadowDebug", this._shadowDebugMode);
+					// Normal offset: shift shadow lookup along surface normal (prevents acne without contact gaps)
+					shaderProgram.setUniform1f("u_shadowNormalOffset", 0.5);
 				} else {
 					shaderProgram.setUniform1i("u_hasShadowMap", 0);
 					shaderProgram.setUniform1i("u_shadowDebug", 0);
 					shaderProgram.setUniformMatrix4fv("u_lightSpaceMatrix", identityMatrix);
+					shaderProgram.setUniform1f("u_shadowNormalOffset", 0.0);
 				}
 
 				// Apply point light shadow uniforms
