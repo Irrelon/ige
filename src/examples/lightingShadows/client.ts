@@ -46,6 +46,10 @@ export class Client extends IgeBaseClass implements IgeCanInit {
 	swingingLight?: IgePointLight;
 	orbitLight?: IgePointLight;
 	orbitBulb?: IgeEntity;
+	greenOrbitLight?: IgePointLight;
+	greenOrbitBulb?: IgeEntity;
+	greenOrbitAngleOffset: number = 0;
+	greenOrbitPaused: boolean = false;
 	lightingEnabled: boolean = true;
 
 	// Scene objects
@@ -246,6 +250,33 @@ export class Client extends IgeBaseClass implements IgeCanInit {
 		this.orbitBulb.translateTo(200, 100, 0);
 		this.orbitBulb._noShadowCast = true;
 		this.orbitBulb.mount(this.scene);
+
+		// --- Green orbiting point light (wider, lower orbit) ---
+		this.greenOrbitLight = new IgePointLight();
+		this.greenOrbitLight.id("greenOrbitLight");
+		this.greenOrbitLight.lightColor(0.2, 1.0, 0.3);
+		this.greenOrbitLight.intensity(0.6);
+		this.greenOrbitLight.range(250);
+		this.greenOrbitLight.decay(2);
+		this.greenOrbitLight.translateTo(350, 40, 0);
+		this.greenOrbitLight.mount(this.scene);
+		lightManager.addLight(this.greenOrbitLight);
+
+		// Visual bulb
+		const greenBulbGeom = IgePrimitiveGeometry.createSphere(5, 8, 8, "green_orbit_bulb");
+		this.greenOrbitBulb = new IgeEntity();
+		this.greenOrbitBulb.id("greenOrbitBulb");
+		this.greenOrbitBulb._geometryData = { ...greenBulbGeom, id: "green_orbit_bulb_geom" };
+		this.greenOrbitBulb._materialData = {
+			color: { r: 0.2, g: 1.0, b: 0.3, a: 1 },
+			metallic: 0.0,
+			roughness: 0.1,
+			emissiveColor: { r: 0.2, g: 1.0, b: 0.3 },
+			emissiveIntensity: 3.0
+		};
+		this.greenOrbitBulb.translateTo(350, 40, 0);
+		this.greenOrbitBulb._noShadowCast = true;
+		this.greenOrbitBulb.mount(this.scene);
 
 		this.updateLightCount();
 		this.log(`Lights created: ${lightManager.getLightCount().total} total`);
@@ -672,6 +703,23 @@ export class Client extends IgeBaseClass implements IgeCanInit {
 			}
 		});
 
+		// --- Orbiting green light (wider, lower) ---
+		this.scene.addBehaviour(IgeBehaviourType.preUpdate, "animateGreenOrbitLight", () => {
+			const time = ige.engine._currentTime / 1000;
+			const angle = this.greenOrbitPaused
+				? this.greenOrbitAngleOffset
+				: time * 0.3 + this.greenOrbitAngleOffset;
+			const x = Math.cos(angle) * 350;
+			const z = Math.sin(angle) * 350;
+
+			if (this.greenOrbitLight) {
+				this.greenOrbitLight.translateTo(x, 40, z);
+			}
+			if (this.greenOrbitBulb) {
+				this.greenOrbitBulb.translateTo(x, 40, z);
+			}
+		});
+
 		// --- Slow camera orbit ---
 		this.scene.addBehaviour(IgeBehaviourType.preUpdate, "animateCamera", () => {
 			if (!this.camera) return;
@@ -867,7 +915,8 @@ export class Client extends IgeBaseClass implements IgeCanInit {
 			{ name: "Moonlight", color: "#99aadd", light: this.moonLight, hasIntensity: true, hasRange: false, maxIntensity: 10, maxRange: 0 },
 			{ name: "Street Lamp", color: "#ffcc66", light: this.streetLampLight, hasIntensity: true, hasRange: true, maxIntensity: 10, maxRange: 2000 },
 			{ name: "Swinging", color: "#eeeeff", light: this.swingingLight, hasIntensity: true, hasRange: true, maxIntensity: 10, maxRange: 2000 },
-			{ name: "Red Orbit", color: "#ff4444", light: this.orbitLight, hasIntensity: true, hasRange: true, maxIntensity: 10, maxRange: 2000 }
+			{ name: "Red Orbit", color: "#ff4444", light: this.orbitLight, hasIntensity: true, hasRange: true, maxIntensity: 10, maxRange: 2000 },
+			{ name: "Green Orbit", color: "#44ff66", light: this.greenOrbitLight, hasIntensity: true, hasRange: true, maxIntensity: 10, maxRange: 2000 }
 		];
 
 		for (const def of lights) {
@@ -1022,6 +1071,68 @@ export class Client extends IgeBaseClass implements IgeCanInit {
 		orbitGroup.appendChild(orbitLabel);
 
 		container.appendChild(orbitGroup);
+
+		// Green orbit position control
+		const greenOrbitGroup = document.createElement("div");
+		greenOrbitGroup.className = "light-group";
+
+		const greenOrbitHeader = document.createElement("div");
+		greenOrbitHeader.className = "light-header";
+		const greenOrbitName = document.createElement("span");
+		greenOrbitName.className = "light-name";
+		greenOrbitName.style.color = "#44ff66";
+		greenOrbitName.textContent = "Green Orbit Pos";
+		greenOrbitHeader.appendChild(greenOrbitName);
+
+		const greenOrbitPauseBtn = document.createElement("button");
+		greenOrbitPauseBtn.className = "toggle-btn off";
+		greenOrbitPauseBtn.textContent = "MANUAL";
+		greenOrbitPauseBtn.addEventListener("click", () => {
+			this.greenOrbitPaused = !this.greenOrbitPaused;
+			if (this.greenOrbitPaused) {
+				const time = ige.engine._currentTime / 1000;
+				this.greenOrbitAngleOffset = time * 0.3 + this.greenOrbitAngleOffset;
+				greenOrbitPauseBtn.classList.remove("off");
+				greenOrbitPauseBtn.classList.add("on");
+				greenOrbitPauseBtn.textContent = "AUTO";
+			} else {
+				const time = ige.engine._currentTime / 1000;
+				this.greenOrbitAngleOffset = this.greenOrbitAngleOffset - time * 0.3;
+				greenOrbitPauseBtn.classList.remove("on");
+				greenOrbitPauseBtn.classList.add("off");
+				greenOrbitPauseBtn.textContent = "MANUAL";
+			}
+		});
+		greenOrbitHeader.appendChild(greenOrbitPauseBtn);
+		greenOrbitGroup.appendChild(greenOrbitHeader);
+
+		const greenOrbitLabel = document.createElement("label");
+		greenOrbitLabel.textContent = "Angle     ";
+		const greenOrbitSlider = document.createElement("input");
+		greenOrbitSlider.type = "range";
+		greenOrbitSlider.min = "0";
+		greenOrbitSlider.max = String(Math.PI * 2);
+		greenOrbitSlider.step = "0.01";
+		greenOrbitSlider.value = "0";
+		const greenOrbitValue = document.createElement("span");
+		greenOrbitValue.className = "value";
+		greenOrbitValue.textContent = "0°";
+		greenOrbitSlider.addEventListener("input", () => {
+			const val = parseFloat(greenOrbitSlider.value);
+			this.greenOrbitAngleOffset = val;
+			greenOrbitValue.textContent = Math.round(val * 180 / Math.PI) + "°";
+			if (!this.greenOrbitPaused) {
+				this.greenOrbitPaused = true;
+				greenOrbitPauseBtn.classList.remove("off");
+				greenOrbitPauseBtn.classList.add("on");
+				greenOrbitPauseBtn.textContent = "AUTO";
+			}
+		});
+		greenOrbitLabel.appendChild(greenOrbitSlider);
+		greenOrbitLabel.appendChild(greenOrbitValue);
+		greenOrbitGroup.appendChild(greenOrbitLabel);
+
+		container.appendChild(greenOrbitGroup);
 
 		// Camera orbit control
 		const camGroup = document.createElement("div");
