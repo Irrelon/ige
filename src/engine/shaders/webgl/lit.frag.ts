@@ -321,12 +321,16 @@ float _calcPointShadow0(vec3 lightPos) {
 	// Per-pixel rotation angle from interleaved gradient noise
 	float phi = interleavedGradientNoise(gl_FragCoord.xy) * 6.2832;
 
+	// Face UV bounds for clamping samples (prevent cross-face bleeding)
+	vec2 faceMin = faceOffset + vec2(texelU, texelV);
+	vec2 faceMax = faceOffset + vec2(1.0 / 3.0 - texelU, 0.5 - texelV);
+
 	// 5-sample Vogel disk PCF with ~2 texel radius
 	float shadow = 0.0;
 	float radius = 2.0;
 	for (int i = 0; i < 5; i++) {
 		vec2 offset = vogelDiskSample(i, 5, phi) * radius;
-		vec2 sampleUV = atlasUV + vec2(offset.x * texelU, offset.y * texelV);
+		vec2 sampleUV = clamp(atlasUV + vec2(offset.x * texelU, offset.y * texelV), faceMin, faceMax);
 		float storedDepth = texture2D(u_pointShadowAtlas[0], sampleUV).r;
 		shadow += (currentDistance - bias > storedDepth) ? 0.0 : 1.0;
 	}
@@ -357,11 +361,14 @@ float _calcPointShadow1(vec3 lightPos) {
 
 	float phi = interleavedGradientNoise(gl_FragCoord.xy) * 6.2832;
 
+	vec2 faceMin = faceOffset + vec2(texelU, texelV);
+	vec2 faceMax = faceOffset + vec2(1.0 / 3.0 - texelU, 0.5 - texelV);
+
 	float shadow = 0.0;
 	float radius = 2.0;
 	for (int i = 0; i < 5; i++) {
 		vec2 offset = vogelDiskSample(i, 5, phi) * radius;
-		vec2 sampleUV = atlasUV + vec2(offset.x * texelU, offset.y * texelV);
+		vec2 sampleUV = clamp(atlasUV + vec2(offset.x * texelU, offset.y * texelV), faceMin, faceMax);
 		float storedDepth = texture2D(u_pointShadowAtlas[1], sampleUV).r;
 		shadow += (currentDistance - bias > storedDepth) ? 0.0 : 1.0;
 	}
