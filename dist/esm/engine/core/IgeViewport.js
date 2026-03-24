@@ -108,6 +108,20 @@ export class IgeViewport extends IgeUiEntity {
         return new IgeBounds(camTrans.x - width / 2, camTrans.y - height / 2, width, height);
     }
     /**
+     * Override updateTransform to prevent viewport's screen-space translate
+     * from leaking into the 3D transform chain. Viewport _translate is used
+     * for 2D screen positioning (gl.viewport), not 3D world transforms.
+     */
+    updateTransform() {
+        super.updateTransform();
+        // Reset the 3D world matrix to identity so scene entities
+        // don't inherit viewport screen position in their 3D transforms
+        if (this._worldMatrix4) {
+            this._worldMatrix4.identity();
+        }
+        return this;
+    }
+    /**
      * Processes the updates before the render tick is called.
      * @param tickDelta
      */

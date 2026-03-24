@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta content="text/html; charset=utf-8" http-equiv="Content-Type" />
+  <meta content="yes" name="mobile-web-app-capable" />
+  <meta content="user-scalable=no, width=device-width, initial-scale=1.0" name="viewport" />
+  <meta content="black" name="apple-mobile-web-app-status-bar-style" />
+  <meta content="https://www.isogenicengine.com" name="game-engine-origin" />
+  <meta content="IE=9" http-equiv="X-UA-Compatible" />
+  <title>Lighting &amp; Shadows - Isogenic Engine</title>
+
+  <!-- Isogenic Loader -->
+  <link href="../../css/ige.css" media="all" rel="stylesheet" type="text/css" />
+
+  <script src="./index.bundle.js" type="module"></script>
+
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      background: #0a0a1a;
+    }
+
+    #info {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      color: #fff;
+      font-family: monospace;
+      font-size: 14px;
+      background: rgba(0, 0, 0, 0.7);
+      padding: 10px;
+      border-radius: 5px;
+      z-index: 1000;
+    }
+
+    #info h2 {
+      margin: 0 0 10px 0;
+      font-size: 18px;
+      color: #f0c040;
+    }
+
+    #controls {
+      position: absolute;
+      bottom: 10px;
+      left: 10px;
+      color: #fff;
+      font-family: monospace;
+      font-size: 12px;
+      background: rgba(0, 0, 0, 0.7);
+      padding: 10px;
+      border-radius: 5px;
+      z-index: 1000;
+    }
+
+    #controls div {
+      margin-bottom: 2px;
+    }
+
+    #lightPanel {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      color: #fff;
+      font-family: monospace;
+      font-size: 12px;
+      background: rgba(0, 0, 0, 0.85);
+      padding: 12px;
+      border-radius: 5px;
+      z-index: 1000;
+      width: 280px;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+
+    #lightPanel h3 {
+      margin: 0 0 8px 0;
+      font-size: 14px;
+      color: #f0c040;
+    }
+
+    .light-group {
+      margin-bottom: 10px;
+      padding: 6px;
+      border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 4px;
+    }
+
+    .light-group .light-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 4px;
+    }
+
+    .light-group .light-name {
+      font-weight: bold;
+      font-size: 13px;
+    }
+
+    .light-group label {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin: 3px 0;
+    }
+
+    .light-group input[type="range"] {
+      width: 140px;
+      height: 12px;
+    }
+
+    .light-group .value {
+      width: 36px;
+      text-align: right;
+      font-size: 11px;
+      color: #aaa;
+    }
+
+    .toggle-btn {
+      padding: 2px 8px;
+      font-size: 11px;
+      font-family: monospace;
+      cursor: pointer;
+      border: 1px solid #888;
+      border-radius: 3px;
+      background: #333;
+      color: #fff;
+    }
+
+    .toggle-btn.on {
+      background: #2a6;
+      border-color: #3b7;
+    }
+
+    .toggle-btn.off {
+      background: #822;
+      border-color: #a33;
+    }
+  </style>
+</head>
+<body>
+<div id="info">
+  <h2>Lighting &amp; Shadows</h2>
+  <div>Status: <span id="status">Initializing...</span></div>
+  <div>FPS: <span id="fps">0</span></div>
+  <div>Lights: <span id="lightCount">0</span></div>
+  <div>Shadows: <span id="shadowStatus">Off</span></div>
+</div>
+
+<div id="controls">
+  <div>Controls:</div>
+  <div>S: Toggle shadows</div>
+  <div>D: Cycle shadow debug mode</div>
+  <div>L: Toggle all lights</div>
+  <div>1: Toggle street lamp</div>
+  <div>2: Toggle swinging light</div>
+  <div>3: Toggle moonlight</div>
+  <div>P/O: Perspective/Orthographic</div>
+  <div>Arrow Up/Down: Zoom</div>
+</div>
+
+<div id="lightPanel">
+  <h3>Light Controls</h3>
+  <div id="lightControls"></div>
+</div>
+
+<div class="igeLoading loadingFloat">
+  <div class="loadingLogo"></div>
+  <div class="loadingCircle"></div>
+  <div class="loadingCircleInner"></div>
+  <div class="loadingText" id="loadingText">Loading Lighting &amp; Shadows...</div>
+  <div id="loadingProgress">
+    <div id="loadingProgressBar"></div>
+  </div>
+</div>
+
+<div class="igeLoading loadingLink">
+  Powered By Isogenic Game Engine
+  <a href="https://www.isogenicengine.com" target="_blank">https://www.isogenicengine.com</a>
+</div>
+</body>
+</html>

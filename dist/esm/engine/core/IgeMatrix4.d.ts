@@ -132,6 +132,11 @@ export declare class IgeMatrix4 extends IgeBaseClass {
      */
     transformVector(point: IgePoint3d): IgePoint3d;
     /**
+     * Returns a new matrix that is the transpose of this matrix.
+     * In a column-major layout, transposing swaps rows and columns.
+     */
+    transpose(): IgeMatrix4;
+    /**
      * Returns a string representation of the matrix.
      */
     toString(): string;

@@ -8,6 +8,9 @@ import { shadowVertexShader } from "./shadow.vert.js"
 import { shadowFragmentShader } from "./shadow.frag.js"
 import { skinnedVertexShader } from "./skinned.vert.js"
 import { skinnedShadowVertexShader } from "./skinned_shadow.vert.js"
+import { pointShadowVertexShader } from "./point_shadow.vert.js"
+import { pointShadowFragmentShader } from "./point_shadow.frag.js"
+import { skinnedPointShadowVertexShader } from "./skinned_point_shadow.vert.js"
 /**
  * Built-in shader library for WebGL renderer.
  * Provides centralized registration and lookup of shader programs.
@@ -58,3 +61,6 @@ IgeShaderLibrary.register("skinned", skinnedVertexShader, litFragmentShader, // 
 "Skinned PBR lit shader with skeletal animation support (up to 64 bones, 4 influences per vertex)");
 IgeShaderLibrary.register("skinned_shadow", skinnedShadowVertexShader, shadowFragmentShader, // Uses same fragment shader as shadow
 "Skinned shadow depth pass shader for shadow mapping with skeletal animation");
+IgeShaderLibrary.register("point_shadow", pointShadowVertexShader, pointShadowFragmentShader, "Point light shadow depth pass shader - writes linear distance to light");
+IgeShaderLibrary.register("skinned_point_shadow", skinnedPointShadowVertexShader, pointShadowFragmentShader, // Uses same fragment shader as point_shadow
+"Skinned point light shadow depth pass shader with skeletal animation");

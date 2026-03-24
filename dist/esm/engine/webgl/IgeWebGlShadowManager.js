@@ -1,5 +1,16 @@
 import { IgeBaseClass } from "../core/IgeBaseClass.js"
 import { IgeMatrix4 } from "../core/IgeMatrix4.js"
+/** Maximum number of point lights that can cast shadows. */
+export const MAX_SHADOW_POINT_LIGHTS = 2;
+/** Cube map face directions and up vectors for lookAt. */
+const CUBE_FACE_DIRS = [
+    { dir: { x: 1, y: 0, z: 0 }, up: { x: 0, y: -1, z: 0 } }, // +X
+    { dir: { x: -1, y: 0, z: 0 }, up: { x: 0, y: -1, z: 0 } }, // -X
+    { dir: { x: 0, y: 1, z: 0 }, up: { x: 0, y: 0, z: 1 } }, // +Y
+    { dir: { x: 0, y: -1, z: 0 }, up: { x: 0, y: 0, z: -1 } }, // -Y
+    { dir: { x: 0, y: 0, z: 1 }, up: { x: 0, y: -1, z: 0 } }, // +Z
+    { dir: { x: 0, y: 0, z: -1 }, up: { x: 0, y: -1, z: 0 } } // -Z
+];
 /**
  * Default shadow map configuration.
  */
@@ -19,8 +30,10 @@ export class IgeWebGlShadowManager extends IgeBaseClass {
     _gl;
     _resourceManager;
     _webglVersion;
-    // Shadow maps for each shadow-casting light
+    // Directional shadow maps
     _shadowMaps = new Map();
+    // Point light shadow maps (cube maps)
+    _pointShadowMaps = new Map();
     // Global shadow settings
     _enabled = true;
     _defaultConfig = { ...DEFAULT_SHADOW_CONFIG };
@@ -331,18 +344,228 @@ export class IgeWebGlShadowManager extends IgeBaseClass {
     hasShadowMap(lightId) {
         return this._shadowMaps.has(lightId);
     }
+    // ========================================================================
+    // Point Light Shadow Maps (6-face cube rendering)
+    // ========================================================================
+    /**
+     * Create a point light shadow map using a 3x2 atlas texture.
+     * All 6 cube faces are rendered into a single RGBA texture.
+     * Layout: row0=[+X, -X, +Y], row1=[-Y, +Z, -Z]
+     */
+    createPointShadowMap(lightId, config) {
+        const gl = this._gl;
+        const faceSize = config?.size ?? 512;
+        const bias = config?.bias ?? 0.002;
+        const nearPlane = config?.nearPlane ?? 0.5;
+        const farPlane = config?.farPlane ?? 500;
+        const atlasWidth = faceSize * 3;
+        const atlasHeight = faceSize * 2;
+        if (this._pointShadowMaps.has(lightId)) {
+            this.deletePointShadowMap(lightId);
+        }
+        // Create atlas RGBA texture
+        const atlasTexture = gl.createTexture();
+        if (!atlasTexture) {
+            this.log(`Failed to create point shadow atlas texture for ${lightId}`, "error");
+            return false;
+        }
+        gl.bindTexture(gl.TEXTURE_2D, atlasTexture);
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, atlasWidth, atlasHeight, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+        // Create framebuffer
+        const framebuffer = gl.createFramebuffer();
+        if (!framebuffer) {
+            this.log(`Failed to create point shadow framebuffer for ${lightId}`, "error");
+            gl.deleteTexture(atlasTexture);
+            return false;
+        }
+        gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer);
+        gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, atlasTexture, 0);
+        // Create depth renderbuffer (full atlas size)
+        const depthRenderbuffer = gl.createRenderbuffer();
+        if (!depthRenderbuffer) {
+            this.log(`Failed to create point shadow depth buffer for ${lightId}`, "error");
+            gl.deleteFramebuffer(framebuffer);
+            gl.deleteTexture(atlasTexture);
+            return false;
+        }
+        gl.bindRenderbuffer(gl.RENDERBUFFER, depthRenderbuffer);
+        gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_COMPONENT16, atlasWidth, atlasHeight);
+        gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, depthRenderbuffer);
+        const status = gl.checkFramebufferStatus(gl.FRAMEBUFFER);
+        if (status !== gl.FRAMEBUFFER_COMPLETE) {
+            this.log(`Point shadow framebuffer incomplete: ${status}`, "error");
+            gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+            gl.deleteFramebuffer(framebuffer);
+            gl.deleteRenderbuffer(depthRenderbuffer);
+            gl.deleteTexture(atlasTexture);
+            return false;
+        }
+        gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+        gl.bindTexture(gl.TEXTURE_2D, null);
+        const lightSpaceMatrices = [];
+        for (let i = 0; i < 6; i++) {
+            lightSpaceMatrices.push(new IgeMatrix4());
+        }
+        this._pointShadowMaps.set(lightId, {
+            framebuffer,
+            atlasTexture,
+            depthRenderbuffer,
+            lightSpaceMatrices,
+            faceSize,
+            bias,
+            nearPlane,
+            farPlane
+        });
+        this.log(`Created point shadow atlas for ${lightId} (${atlasWidth}x${atlasHeight}, face=${faceSize})`);
+        return true;
+    }
+    /**
+     * Delete a point light shadow map.
+     */
+    deletePointShadowMap(lightId) {
+        const data = this._pointShadowMaps.get(lightId);
+        if (!data)
+            return;
+        const gl = this._gl;
+        gl.deleteFramebuffer(data.framebuffer);
+        gl.deleteRenderbuffer(data.depthRenderbuffer);
+        gl.deleteTexture(data.atlasTexture);
+        this._pointShadowMaps.delete(lightId);
+        this.log(`Deleted point shadow map for ${lightId}`);
+    }
+    /**
+     * Update the 6 light-space matrices for a point light.
+     */
+    updatePointLightSpaceMatrices(lightId, light) {
+        const data = this._pointShadowMaps.get(lightId);
+        if (!data)
+            return false;
+        const pos = light._translate;
+        const near = data.nearPlane;
+        const far = data.farPlane;
+        const projMatrix = new IgeMatrix4();
+        projMatrix.perspective(Math.PI / 2, 1.0, near, far);
+        for (let face = 0; face < 6; face++) {
+            const faceDir = CUBE_FACE_DIRS[face];
+            const viewMatrix = new IgeMatrix4();
+            viewMatrix.lookAt(pos.x, pos.y, pos.z, pos.x + faceDir.dir.x, pos.y + faceDir.dir.y, pos.z + faceDir.dir.z, faceDir.up.x, faceDir.up.y, faceDir.up.z);
+            data.lightSpaceMatrices[face].multiply(projMatrix, viewMatrix);
+        }
+        return true;
+    }
+    /**
+     * Get the atlas viewport offset for a given face index.
+     * Layout: row0=[+X(0), -X(1), +Y(2)], row1=[-Y(3), +Z(4), -Z(5)]
+     */
+    getAtlasFaceOffset(faceIndex, faceSize) {
+        const col = faceIndex % 3;
+        const row = Math.floor(faceIndex / 3);
+        return { x: col * faceSize, y: row * faceSize };
+    }
+    /**
+     * Begin rendering to one face of a point light shadow atlas.
+     * Binds the atlas framebuffer and sets viewport to the correct face region.
+     * On faceIndex 0, clears the entire atlas first.
+     */
+    beginPointShadowPass(lightId, faceIndex) {
+        if (!this._enabled)
+            return false;
+        const data = this._pointShadowMaps.get(lightId);
+        if (!data || faceIndex < 0 || faceIndex > 5)
+            return false;
+        const gl = this._gl;
+        gl.bindFramebuffer(gl.FRAMEBUFFER, data.framebuffer);
+        // On first face, clear the entire atlas
+        if (faceIndex === 0) {
+            gl.viewport(0, 0, data.faceSize * 3, data.faceSize * 2);
+            gl.enable(gl.SCISSOR_TEST);
+            gl.scissor(0, 0, data.faceSize * 3, data.faceSize * 2);
+            gl.clearColor(1.0, 1.0, 1.0, 1.0);
+            gl.clearDepth(1.0);
+            gl.clear(gl.DEPTH_BUFFER_BIT | gl.COLOR_BUFFER_BIT);
+            gl.disable(gl.SCISSOR_TEST);
+        }
+        // Set viewport to this face's region in the atlas
+        const offset = this.getAtlasFaceOffset(faceIndex, data.faceSize);
+        gl.viewport(offset.x, offset.y, data.faceSize, data.faceSize);
+        // Enable scissor test to prevent bleeding between faces
+        gl.enable(gl.SCISSOR_TEST);
+        gl.scissor(offset.x, offset.y, data.faceSize, data.faceSize);
+        gl.enable(gl.DEPTH_TEST);
+        gl.depthFunc(gl.LESS);
+        gl.depthMask(true);
+        gl.enable(gl.CULL_FACE);
+        gl.cullFace(gl.FRONT);
+        return true;
+    }
+    /**
+     * End a point light shadow face pass.
+     */
+    endPointShadowPass() {
+        const gl = this._gl;
+        gl.disable(gl.SCISSOR_TEST);
+        this.endShadowPass();
+    }
+    /**
+     * Get a point light shadow map's light-space matrix for a specific face.
+     */
+    getPointLightSpaceMatrix(lightId, faceIndex) {
+        const data = this._pointShadowMaps.get(lightId);
+        if (!data || faceIndex < 0 || faceIndex > 5)
+            return null;
+        return data.lightSpaceMatrices[faceIndex];
+    }
+    /**
+     * Check if a point light has a shadow map.
+     */
+    hasPointShadowMap(lightId) {
+        return this._pointShadowMaps.has(lightId);
+    }
+    /**
+     * Apply point shadow uniforms to a shader program.
+     * @param program Shader program
+     * @param shadowIndex Which point shadow slot (0 or 1)
+     * @param lightId Light ID
+     * @param textureUnit Texture unit to bind the atlas to
+     */
+    applyPointShadowUniforms(program, shadowIndex, lightId, textureUnit) {
+        const data = this._pointShadowMaps.get(lightId);
+        if (!data)
+            return false;
+        const gl = this._gl;
+        // Bind atlas texture
+        gl.activeTexture(gl.TEXTURE0 + textureUnit);
+        gl.bindTexture(gl.TEXTURE_2D, data.atlasTexture);
+        program.setUniform1i(`u_pointShadowAtlas[${shadowIndex}]`, textureUnit);
+        // Set per-shadow uniforms
+        program.setUniform1f(`u_pointShadowFarPlane[${shadowIndex}]`, data.farPlane);
+        program.setUniform1f(`u_pointShadowBias[${shadowIndex}]`, data.bias);
+        program.setUniform1f(`u_pointShadowFaceSize[${shadowIndex}]`, data.faceSize);
+        // Set 6 light-space matrices
+        for (let face = 0; face < 6; face++) {
+            program.setUniformMatrix4fv(`u_pointShadowMatrices[${shadowIndex * 6 + face}]`, data.lightSpaceMatrices[face]);
+        }
+        gl.activeTexture(gl.TEXTURE0);
+        return true;
+    }
     /**
      * Get statistics about shadow maps.
      */
     getStats() {
         let totalSize = 0;
         for (const shadowMap of this._shadowMaps.values()) {
-            // Depth texture: width * height * 4 bytes (RGBA for WebGL1, depth for WebGL2)
             totalSize += shadowMap.size * shadowMap.size * 4;
+        }
+        for (const pointMap of this._pointShadowMaps.values()) {
+            totalSize += pointMap.faceSize * 3 * pointMap.faceSize * 2 * 4; // atlas 3x2
         }
         return {
             enabled: this._enabled,
-            count: this._shadowMaps.size,
+            count: this._shadowMaps.size + this._pointShadowMaps.size,
             totalSize
         };
     }
@@ -352,6 +575,9 @@ export class IgeWebGlShadowManager extends IgeBaseClass {
     clearAll() {
         for (const lightId of this._shadowMaps.keys()) {
             this.deleteShadowMap(lightId);
+        }
+        for (const lightId of this._pointShadowMaps.keys()) {
+            this.deletePointShadowMap(lightId);
         }
     }
 }

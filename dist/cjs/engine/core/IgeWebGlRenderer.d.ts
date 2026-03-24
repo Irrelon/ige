@@ -13,7 +13,7 @@ import { IgeWebGlShadowManager } from "../webgl/IgeWebGlShadowManager.js";
 import { IgeWebGlSkeletonManager } from "../webgl/IgeWebGlSkeletonManager.js"
 import type { IgeObject } from "./IgeObject.js";
 import type { IgeEntity } from "./IgeEntity.js"
-import type { IgeDirectionalLight } from "../webgl/IgeWebGlLight.js";
+import type { IgeDirectionalLight, IgePointLight } from "../webgl/IgeWebGlLight.js";
 /**
  * Custom WebGL renderer for IGE supporting full 3D rendering.
  * This renderer replaces the experimental three.js integration with
@@ -51,6 +51,8 @@ export declare class IgeWebGlRenderer extends IgeBaseRenderer {
     protected _shadowCastingLight?: IgeDirectionalLight;
     protected _shadowLightId: string;
     protected _shadowDebugMode: number;
+    protected _shadowCastingPointLights: IgePointLight[];
+    protected _preserveDrawingBuffer: boolean;
     /**
      * Initialize the WebGL renderer.
      */
@@ -100,6 +102,10 @@ export declare class IgeWebGlRenderer extends IgeBaseRenderer {
         y: number;
         z: number;
     }): void;
+    /**
+     * Render point light shadow passes (6 faces per shadow-casting point light).
+     */
+    protected _renderPointLightShadowPasses(): void;
     /**
      * Traverse the scene graph and add entities to render batches.
      */
@@ -153,6 +159,17 @@ export declare class IgeWebGlRenderer extends IgeBaseRenderer {
      */
     disableShadows(): void;
     /**
+     * Enable shadow casting for a point light.
+     * Maximum of 2 shadow-casting point lights supported.
+     * @param light The point light to cast shadows
+     * @param shadowMapSize Size of each shadow map face (default: 512)
+     */
+    enablePointLightShadows(light: IgePointLight, shadowMapSize?: number): boolean;
+    /**
+     * Disable shadow casting for a specific point light.
+     */
+    disablePointLightShadows(light: IgePointLight): void;
+    /**
      * Check if shadows are enabled.
      */
     shadowsEnabled(): boolean;
@@ -169,6 +186,31 @@ export declare class IgeWebGlRenderer extends IgeBaseRenderer {
      * Toggle fullscreen mode.
      */
     toggleFullScreen: () => void;
+    /**
+     * Gets / sets whether the WebGL drawing buffer should be preserved after
+     * compositing. When true, gl.readPixels() works after a frame is rendered.
+     * Must be called before createFrontBuffer().
+     */
+    preserveDrawingBuffer(): boolean;
+    preserveDrawingBuffer(val: boolean): this;
+    /**
+     * Read the RGBA color of a single pixel at the given screen coordinates.
+     * Requires preserveDrawingBuffer to be true (set before context creation).
+     * @param x Screen X coordinate (0 = left edge)
+     * @param y Screen Y coordinate (0 = top edge, DOM convention)
+     * @returns Uint8Array [R, G, B, A] or null if context unavailable
+     */
+    readPixel(x: number, y: number): Uint8Array | null;
+    /**
+     * Read all pixels from the current framebuffer.
+     * Requires preserveDrawingBuffer to be true.
+     * Returns pixel data in WebGL native format (bottom-left origin, RGBA).
+     */
+    readAllPixels(): Uint8Array | null;
+    /**
+     * Returns the underlying WebGL rendering context, if available.
+     */
+    glContext(): WebGLRenderingContext | WebGL2RenderingContext | null | undefined;
     /**
      * Clean up and destroy the renderer.
      */

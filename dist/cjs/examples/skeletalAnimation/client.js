@@ -15,6 +15,7 @@ const IgeEntity_1 = require("../../engine/core/IgeEntity.js");
 const IgeScene2d_1 = require("../../engine/core/IgeScene2d.js");
 const IgeWebGlRenderer_1 = require("../../engine/core/IgeWebGlRenderer.js");
 const IgeViewport_1 = require("../../engine/core/IgeViewport.js");
+const IgePoint3d_1 = require("../../engine/core/IgePoint3d.js");
 const instance_1 = require("../../engine/instance.js");
 const IgeWebGlLight_1 = require("../../engine/webgl/IgeWebGlLight.js");
 const IgeGltfLoader_1 = require("../../engine/webgl/IgeGltfLoader.js");
@@ -107,6 +108,7 @@ class Client extends IgeBaseClass_1.IgeBaseClass {
         this.camera.near(0.1);
         this.camera.far(1000);
         this.camera.translateTo(0, 100, 300);
+        this.camera._lookAt = new IgePoint3d_1.IgePoint3d(0, 0, 0);
         // Mount viewport
         this.viewport.mount(instance_1.ige.engine);
         this.log("Scene created");
@@ -311,6 +313,12 @@ class Client extends IgeBaseClass_1.IgeBaseClass {
         // CesiumMan is about 1.8m (180 units) tall, scale up to be visible
         this.animatedEntity.translateTo(0, -100, 0); // Lower to center in view
         this.animatedEntity.scaleTo(100, 100, 100); // Scale up for visibility
+        // CesiumMan mesh data is in Z-up space (Blender convention).
+        // The GLTF node transform that converts to Y-up is not yet applied
+        // by the loader, so we rotate manually:
+        //   -90° around X to stand upright (Z-up → Y-up)
+        //   180° around Y to face toward +Z (toward viewer)
+        this.animatedEntity.rotateTo(-Math.PI / 2, Math.PI, 0);
         // Mount to scene
         this.animatedEntity.mount(this.scene);
         this.log("Animated entity created and mounted");
@@ -335,7 +343,7 @@ class Client extends IgeBaseClass_1.IgeBaseClass {
     }
     setupKeyboardControls() {
         window.addEventListener("keydown", (event) => {
-            var _a;
+            var _a, _b;
             if (!this.animatedEntity)
                 return;
             const animComponent = this.animatedEntity.components.skeletalAnimation;
@@ -357,9 +365,16 @@ class Client extends IgeBaseClass_1.IgeBaseClass {
                     }
                     break;
                 case " ":
-                    // Stop animation
-                    animComponent.stop();
-                    this.updateAnimationDisplay("Stopped");
+                    // Toggle animation play/stop
+                    if (animComponent.playing()) {
+                        animComponent.stop();
+                        this.updateAnimationDisplay("Stopped");
+                    }
+                    else if (((_b = this.animatedModel) === null || _b === void 0 ? void 0 : _b.animations) && this.animatedModel.animations.length > 0) {
+                        const clip = this.animatedModel.animations[0];
+                        animComponent.play(clip.id, { crossFadeDuration: 0 });
+                        this.updateAnimationDisplay(clip.name || clip.id);
+                    }
                     break;
                 case "p":
                     // Perspective mode

@@ -55,6 +55,12 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
     _shadowLightId = "mainDirectionalLight";
     // Shadow debug mode (0 = off, 1-4 = different visualizations)
     _shadowDebugMode = 0;
+    // Point lights that cast shadows
+    _shadowCastingPointLights = [];
+    // When true, the WebGL drawing buffer is preserved after compositing,
+    // allowing gl.readPixels() to work after a frame is rendered.
+    // Must be set before createFrontBuffer() is called.
+    _preserveDrawingBuffer = false;
     /**
      * Initialize the WebGL renderer.
      */
@@ -122,7 +128,7 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
             antialias: true,
             depth: true,
             stencil: false,
-            preserveDrawingBuffer: false,
+            preserveDrawingBuffer: this._preserveDrawingBuffer,
             premultipliedAlpha: true,
             powerPreference: "high-performance"
         };
@@ -304,7 +310,7 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
         if (!gl || !this._renderBatchManager || !this._cameraController || !this._stateManager) {
             return;
         }
-        // Get viewport dimensions in CSS pixels and convert to device pixels
+        // Get viewport dimensions in CSS pixels and convert to device pixels.
         const dpr = this._devicePixelRatio;
         const vpX = Math.floor((viewport._translate?.x || 0) * dpr);
         const vpY = Math.floor((viewport._translate?.y || 0) * dpr);
@@ -340,6 +346,14 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
             // state manager's cached state out of sync with actual GL state
             this._stateManager.reset();
             // Restore depth function to LEQUAL (shadow pass uses LESS)
+            gl.depthFunc(gl.LEQUAL);
+        }
+        // ============================================================
+        // POINT LIGHT SHADOW PASS: Render 6 faces per point light
+        // ============================================================
+        if (this._shadowCastingPointLights.length > 0 && this._shadowManager) {
+            this._renderPointLightShadowPasses();
+            this._stateManager.reset();
             gl.depthFunc(gl.LEQUAL);
         }
         // ============================================================
@@ -381,31 +395,140 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
         if (!this._shadowManager.beginShadowPass(this._shadowLightId)) {
             return;
         }
-        // Get shadow shader
+        // Get shadow shaders (regular and skinned)
         const shadowProgram = this._shaderManager.getProgram("shadow");
+        const skinnedShadowProgram = this._shaderManager.getProgram("skinned_shadow");
         if (!shadowProgram) {
             this._shadowManager.endShadowPass();
             return;
         }
-        // Use shadow shader
-        shadowProgram.use();
-        // Set light space matrix
-        shadowProgram.setUniformMatrix4fv("u_lightSpaceMatrix", lightSpaceMatrix);
+        // Setup a shadow program with the light space matrix
+        let currentShadowProgram = null;
+        const setupShadowProgram = (program) => {
+            program.use();
+            program.setUniformMatrix4fv("u_lightSpaceMatrix", lightSpaceMatrix);
+            currentShadowProgram = program;
+        };
+        setupShadowProgram(shadowProgram);
         // Render all opaque models to shadow map
         const renderBatchShadow = (batch) => {
-            this._geometryManager.bindGeometry(batch.geometry, shadowProgram);
+            const isSkinned = batch.geometry.isSkinned && skinnedShadowProgram;
+            const program = isSkinned ? skinnedShadowProgram : shadowProgram;
+            if (program !== currentShadowProgram) {
+                setupShadowProgram(program);
+                if (isSkinned) {
+                    program.setUniform1i("u_useSkinning", 0);
+                }
+            }
+            this._geometryManager.bindGeometry(batch.geometry, program);
             for (const entity of batch.entities) {
                 if (entity._worldMatrix4) {
-                    shadowProgram.setUniformMatrix4fv("u_worldMatrix", entity._worldMatrix4.matrix);
+                    program.setUniformMatrix4fv("u_worldMatrix", entity._worldMatrix4);
+                }
+                // Handle skeletal animation for skinned shadow
+                if (isSkinned && entity._skeleton && this._skeletonManager) {
+                    this._skeletonManager.updateSkeletonMatrices(entity._skeleton);
+                    program.setUniform1i("u_useSkinning", 1);
+                    const skinMatrices = entity._skeleton.skinMatrices;
+                    const boneCount = entity._skeleton.data.boneCount;
+                    const location = gl.getUniformLocation(program.program, "u_boneMatrices[0]");
+                    if (location) {
+                        gl.uniformMatrix4fv(location, false, skinMatrices.subarray(0, boneCount * 16));
+                    }
+                }
+                else if (isSkinned) {
+                    program.setUniform1i("u_useSkinning", 0);
                 }
                 this._geometryManager.drawGeometry(batch.geometry);
             }
-            this._geometryManager.unbindGeometry(batch.geometry, shadowProgram);
+            this._geometryManager.unbindGeometry(batch.geometry, program);
         };
         // Only render opaque models to shadow map (shadows from opaque geometry only)
         this._renderBatchManager.renderOpaqueModels(shadowProgram, renderBatchShadow);
         // End shadow pass (restores default framebuffer)
         this._shadowManager.endShadowPass();
+    }
+    /**
+     * Render point light shadow passes (6 faces per shadow-casting point light).
+     */
+    _renderPointLightShadowPasses() {
+        if (!this._shadowManager || !this._shaderManager || !this._geometryManager || !this._renderBatchManager) {
+            return;
+        }
+        const gl = this._canvasContext;
+        const pointShadowProgram = this._shaderManager.getProgram("point_shadow");
+        const skinnedPointShadowProgram = this._shaderManager.getProgram("skinned_point_shadow");
+        if (!pointShadowProgram)
+            return;
+        for (const pointLight of this._shadowCastingPointLights) {
+            const lightId = pointLight.id();
+            // Update the 6 light-space matrices for this light's current position
+            if (!this._shadowManager.updatePointLightSpaceMatrices(lightId, pointLight)) {
+                continue;
+            }
+            const pos = pointLight._translate;
+            const range = pointLight._range || 500;
+            // Render 6 cube faces
+            for (let face = 0; face < 6; face++) {
+                if (!this._shadowManager.beginPointShadowPass(lightId, face)) {
+                    continue;
+                }
+                const lightSpaceMatrix = this._shadowManager.getPointLightSpaceMatrix(lightId, face);
+                if (!lightSpaceMatrix) {
+                    this._shadowManager.endPointShadowPass();
+                    continue;
+                }
+                // Track current program to minimize switches
+                let currentProgram = null;
+                // Setup shared uniforms on a program
+                const setupProgram = (program) => {
+                    program.use();
+                    program.setUniformMatrix4fv("u_lightSpaceMatrix", lightSpaceMatrix);
+                    program.setUniform3f("u_pointLightPosition", pos.x, pos.y, pos.z);
+                    program.setUniform1f("u_pointShadowFarPlane", range);
+                    currentProgram = program;
+                };
+                // Render all opaque models
+                const renderBatch = (batch) => {
+                    const isSkinned = batch.geometry.isSkinned && skinnedPointShadowProgram;
+                    const program = isSkinned ? skinnedPointShadowProgram : pointShadowProgram;
+                    // Switch shader if needed
+                    if (program !== currentProgram) {
+                        setupProgram(program);
+                        if (isSkinned) {
+                            program.setUniform1i("u_useSkinning", 0);
+                        }
+                    }
+                    this._geometryManager.bindGeometry(batch.geometry, program);
+                    for (const entity of batch.entities) {
+                        if (entity._worldMatrix4) {
+                            program.setUniformMatrix4fv("u_worldMatrix", entity._worldMatrix4);
+                        }
+                        // Handle skeletal animation
+                        if (isSkinned && entity._skeleton && this._skeletonManager) {
+                            this._skeletonManager.updateSkeletonMatrices(entity._skeleton);
+                            program.setUniform1i("u_useSkinning", 1);
+                            const skinMatrices = entity._skeleton.skinMatrices;
+                            const boneCount = entity._skeleton.data.boneCount;
+                            const location = gl.getUniformLocation(program.program, "u_boneMatrices[0]");
+                            if (location) {
+                                gl.uniformMatrix4fv(location, false, skinMatrices.subarray(0, boneCount * 16));
+                            }
+                        }
+                        else if (isSkinned) {
+                            program.setUniform1i("u_useSkinning", 0);
+                        }
+                        this._geometryManager.drawGeometry(batch.geometry);
+                    }
+                    this._geometryManager.unbindGeometry(batch.geometry, program);
+                };
+                // Use pointShadowProgram as the default for renderOpaqueModels
+                // (it needs a program reference but renderBatch handles program selection)
+                setupProgram(pointShadowProgram);
+                this._renderBatchManager.renderOpaqueModels(pointShadowProgram, renderBatch);
+                this._shadowManager.endPointShadowPass();
+            }
+        }
     }
     /**
      * Traverse the scene graph and add entities to render batches.
@@ -629,6 +752,21 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
                     shaderProgram.setUniform1i("u_shadowDebug", 0);
                     shaderProgram.setUniformMatrix4fv("u_lightSpaceMatrix", identityMatrix);
                 }
+                // Apply point light shadow uniforms
+                if (this._shadowCastingPointLights.length > 0 && this._shadowManager && this._lightManager) {
+                    const count = Math.min(this._shadowCastingPointLights.length, 2);
+                    shaderProgram.setUniform1i("u_numShadowPointLights", count);
+                    for (let i = 0; i < count; i++) {
+                        const light = this._shadowCastingPointLights[i];
+                        const texUnit = 2 + i;
+                        this._shadowManager.applyPointShadowUniforms(shaderProgram, i, light.id(), texUnit);
+                        const pointLightIndex = this._lightManager._pointLights.indexOf(light);
+                        shaderProgram.setUniform1i(`u_pointShadowLightIndex[${i}]`, pointLightIndex);
+                    }
+                }
+                else {
+                    shaderProgram.setUniform1i("u_numShadowPointLights", 0);
+                }
                 // Default to simple lighting mode (non-PBR)
                 shaderProgram.setUniform1i("u_usePBR", 0);
                 shaderProgram.setUniform1i("u_hasNormalMap", 0);
@@ -681,8 +819,9 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
                 if (entity._worldMatrix4) {
                     shaderProgram.setUniformMatrix4fv("u_worldMatrix", entity._worldMatrix4);
                     // Calculate normal matrix (inverse transpose of world matrix)
-                    const normalMatrix = entity._worldMatrix4.getInverse();
-                    if (normalMatrix) {
+                    const inverseMatrix = entity._worldMatrix4.getInverse();
+                    if (inverseMatrix) {
+                        const normalMatrix = inverseMatrix.transpose();
                         shaderProgram.setUniformMatrix4fv("u_normalMatrix", normalMatrix);
                     }
                 }
@@ -707,6 +846,12 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
                 else if (isSkinned) {
                     // Skinned geometry but no skeleton - disable skinning
                     shaderProgram.setUniform1i("u_useSkinning", 0);
+                }
+                // Reset per-entity material state to prevent leaking from previous entity
+                if (useLitShader || isSkinned) {
+                    shaderProgram.setUniform1f("u_emissiveIntensity", 0);
+                    shaderProgram.setUniform1f("u_metallic", 0);
+                    shaderProgram.setUniform1f("u_roughness", 0.5);
                 }
                 // Apply material if entity has one and using lit-style shader
                 if ((useLitShader || isSkinned) && entity._materialData) {
@@ -809,6 +954,52 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
         this.log("Shadows disabled");
     }
     /**
+     * Enable shadow casting for a point light.
+     * Maximum of 2 shadow-casting point lights supported.
+     * @param light The point light to cast shadows
+     * @param shadowMapSize Size of each shadow map face (default: 512)
+     */
+    enablePointLightShadows(light, shadowMapSize = 512) {
+        if (!this._shadowManager) {
+            this.log("Shadow manager not initialized", "error");
+            return false;
+        }
+        if (this._shadowCastingPointLights.length >= 2) {
+            this.log("Maximum of 2 shadow-casting point lights reached", "warning");
+            return false;
+        }
+        if (this._shadowCastingPointLights.includes(light)) {
+            return true; // Already enabled
+        }
+        const range = light._range || 500;
+        const success = this._shadowManager.createPointShadowMap(light.id(), {
+            size: shadowMapSize,
+            bias: 0.002,
+            nearPlane: 0.5,
+            farPlane: range
+        });
+        if (success) {
+            this._shadowCastingPointLights.push(light);
+            light.castShadow(true);
+            this.log(`Point light shadows enabled for ${light.id()} (6x ${shadowMapSize}x${shadowMapSize})`);
+        }
+        return success;
+    }
+    /**
+     * Disable shadow casting for a specific point light.
+     */
+    disablePointLightShadows(light) {
+        if (!this._shadowManager)
+            return;
+        const index = this._shadowCastingPointLights.indexOf(light);
+        if (index === -1)
+            return;
+        this._shadowManager.deletePointShadowMap(light.id());
+        light.castShadow(false);
+        this._shadowCastingPointLights.splice(index, 1);
+        this.log(`Point light shadows disabled for ${light.id()}`);
+    }
+    /**
      * Check if shadows are enabled.
      */
     shadowsEnabled() {
@@ -844,6 +1035,51 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
             document.exitFullscreen();
         }
     };
+    preserveDrawingBuffer(val) {
+        if (val === undefined) {
+            return this._preserveDrawingBuffer;
+        }
+        this._preserveDrawingBuffer = val;
+        return this;
+    }
+    /**
+     * Read the RGBA color of a single pixel at the given screen coordinates.
+     * Requires preserveDrawingBuffer to be true (set before context creation).
+     * @param x Screen X coordinate (0 = left edge)
+     * @param y Screen Y coordinate (0 = top edge, DOM convention)
+     * @returns Uint8Array [R, G, B, A] or null if context unavailable
+     */
+    readPixel(x, y) {
+        const gl = this._canvasContext;
+        if (!gl || !this._canvasElement)
+            return null;
+        const pixel = new Uint8Array(4);
+        // Convert from DOM top-left origin to WebGL bottom-left origin
+        const glY = this._canvasElement.height - Math.round(y) - 1;
+        gl.readPixels(Math.round(x), glY, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, pixel);
+        return pixel;
+    }
+    /**
+     * Read all pixels from the current framebuffer.
+     * Requires preserveDrawingBuffer to be true.
+     * Returns pixel data in WebGL native format (bottom-left origin, RGBA).
+     */
+    readAllPixels() {
+        const gl = this._canvasContext;
+        if (!gl || !this._canvasElement)
+            return null;
+        const w = this._canvasElement.width;
+        const h = this._canvasElement.height;
+        const pixels = new Uint8Array(w * h * 4);
+        gl.readPixels(0, 0, w, h, gl.RGBA, gl.UNSIGNED_BYTE, pixels);
+        return pixels;
+    }
+    /**
+     * Returns the underlying WebGL rendering context, if available.
+     */
+    glContext() {
+        return this._canvasContext;
+    }
     /**
      * Clean up and destroy the renderer.
      */
