@@ -801,8 +801,9 @@ export class IgeWebGlShadowManager extends IgeBaseClass {
 
 	/**
 	 * Apply a two-pass separable Gaussian blur to a point shadow atlas.
-	 * Pass 1: atlas → blurTexture (horizontal blur)
-	 * Pass 2: blurTexture → atlas (vertical blur)
+	 * Blurs each face independently using scissor test to prevent cross-face bleeding.
+	 * Pass 1: atlas → blurTexture (horizontal blur, per face)
+	 * Pass 2: blurTexture → atlas (vertical blur, per face)
 	 */
 	blurPointShadowMap(lightId: string, blurProgram: any): void {
 		const data = this._pointShadowMaps.get(lightId);
@@ -815,46 +816,50 @@ export class IgeWebGlShadowManager extends IgeBaseClass {
 		const atlasWidth = data.faceSize * 3;
 		const atlasHeight = data.faceSize * 2;
 
-		// Disable depth test for full-screen quad rendering
 		gl.disable(gl.DEPTH_TEST);
 		gl.disable(gl.CULL_FACE);
-		gl.disable(gl.SCISSOR_TEST);
+		gl.enable(gl.SCISSOR_TEST);
 
 		blurProgram.use();
 
-		// Bind quad buffer to a_position attribute
 		const posLoc = gl.getAttribLocation(blurProgram.program, "a_position");
 		gl.bindBuffer(gl.ARRAY_BUFFER, quadBuffer);
 		gl.enableVertexAttribArray(posLoc);
 		gl.vertexAttribPointer(posLoc, 2, gl.FLOAT, false, 0, 0);
 
-		// Pass 1: Horizontal blur - atlas → blurTexture
-		gl.bindFramebuffer(gl.FRAMEBUFFER, data.blurFramebuffer);
-		gl.viewport(0, 0, atlasWidth, atlasHeight);
+		// Blur each face separately to prevent seam bleeding
+		for (let face = 0; face < 6; face++) {
+			const offset = this.getAtlasFaceOffset(face, data.faceSize);
 
-		gl.activeTexture(gl.TEXTURE0);
-		gl.bindTexture(gl.TEXTURE_2D, data.atlasTexture);
-		blurProgram.setUniform1i("u_texture", 0);
-		blurProgram.setUniform2f("u_direction", 1.0 / atlasWidth, 0.0);
+			// Pass 1: Horizontal blur - atlas → blurTexture (for this face)
+			gl.bindFramebuffer(gl.FRAMEBUFFER, data.blurFramebuffer);
+			gl.viewport(0, 0, atlasWidth, atlasHeight);
+			gl.scissor(offset.x, offset.y, data.faceSize, data.faceSize);
 
-		gl.drawArrays(gl.TRIANGLES, 0, 6);
+			gl.activeTexture(gl.TEXTURE0);
+			gl.bindTexture(gl.TEXTURE_2D, data.atlasTexture);
+			blurProgram.setUniform1i("u_texture", 0);
+			blurProgram.setUniform2f("u_direction", 1.0 / atlasWidth, 0.0);
 
-		// Pass 2: Vertical blur - blurTexture → atlas
-		gl.bindFramebuffer(gl.FRAMEBUFFER, data.framebuffer);
-		// Detach depth renderbuffer temporarily so we don't get depth test interference
-		gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, null);
-		gl.viewport(0, 0, atlasWidth, atlasHeight);
+			gl.drawArrays(gl.TRIANGLES, 0, 6);
 
-		gl.bindTexture(gl.TEXTURE_2D, data.blurTexture);
-		blurProgram.setUniform1i("u_texture", 0);
-		blurProgram.setUniform2f("u_direction", 0.0, 1.0 / atlasHeight);
+			// Pass 2: Vertical blur - blurTexture → atlas (for this face)
+			gl.bindFramebuffer(gl.FRAMEBUFFER, data.framebuffer);
+			gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, null);
+			gl.viewport(0, 0, atlasWidth, atlasHeight);
+			gl.scissor(offset.x, offset.y, data.faceSize, data.faceSize);
 
-		gl.drawArrays(gl.TRIANGLES, 0, 6);
+			gl.bindTexture(gl.TEXTURE_2D, data.blurTexture);
+			blurProgram.setUniform1i("u_texture", 0);
+			blurProgram.setUniform2f("u_direction", 0.0, 1.0 / atlasHeight);
+
+			gl.drawArrays(gl.TRIANGLES, 0, 6);
+		}
 
 		// Reattach depth renderbuffer
 		gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, data.depthRenderbuffer);
 
-		// Cleanup
+		gl.disable(gl.SCISSOR_TEST);
 		gl.disableVertexAttribArray(posLoc);
 		gl.bindBuffer(gl.ARRAY_BUFFER, null);
 		gl.bindFramebuffer(gl.FRAMEBUFFER, null);

@@ -627,7 +627,7 @@ export class Client extends IgeBaseClass implements IgeCanInit {
 
 		this.scene.addBehaviour(IgeBehaviourType.preUpdate, "animateSwingingLight", () => {
 			// Pendulum physics: angle = maxAngle * cos(speed * time)
-			const time = Date.now() / 1000;
+			const time = ige.engine._currentTime / 1000;
 			const maxAngle = Math.PI / 5; // ~36 degree swing
 			this.swingAngle = maxAngle * Math.cos(this.swingSpeed * time);
 
@@ -651,7 +651,7 @@ export class Client extends IgeBaseClass implements IgeCanInit {
 
 		// --- Orbiting red light ---
 		this.scene.addBehaviour(IgeBehaviourType.preUpdate, "animateOrbitLight", () => {
-			const time = Date.now() / 1000;
+			const time = ige.engine._currentTime / 1000;
 			const angle = time * 0.5;
 			const x = Math.cos(angle) * 200;
 			const z = Math.sin(angle) * 200;
@@ -679,6 +679,26 @@ export class Client extends IgeBaseClass implements IgeCanInit {
 	}
 
 	setupKeyboardControls () {
+		// Pause/resume button
+		const pauseBtn = document.getElementById("pauseBtn");
+		let paused = false;
+		if (pauseBtn) {
+			pauseBtn.addEventListener("click", () => {
+				paused = !paused;
+				if (paused) {
+					ige.engine.stop();
+					pauseBtn.textContent = "Resume";
+					pauseBtn.classList.remove("on");
+					pauseBtn.classList.add("off");
+				} else {
+					ige.engine.start();
+					pauseBtn.textContent = "Pause";
+					pauseBtn.classList.remove("off");
+					pauseBtn.classList.add("on");
+				}
+			});
+		}
+
 		window.addEventListener("keydown", (event) => {
 			switch (event.key.toLowerCase()) {
 				case "s":

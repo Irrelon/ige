@@ -1202,7 +1202,7 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 
 		const success = this._shadowManager.createPointShadowMap(light.id(), {
 			size: shadowMapSize,
-			bias: 0.002,
+			bias: 0.0005,
 			nearPlane: 0.5,
 			farPlane: 1000 // Large far plane so shadows extend well beyond light range
 		});

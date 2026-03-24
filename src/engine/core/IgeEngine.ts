@@ -1259,6 +1259,11 @@ export class IgeEngine extends IgeEntity implements IgeIsReadyPromise {
 					this.log("Starting engine...");
 					this._state = IgeEngineState.started;
 
+					// Reset timing state so the first frame after resume gets zero delta
+					// (prevents time jump after stop/start)
+					this.lastTick = 0;
+					this._timeScaleLastTimestamp = 0;
+
 					// Check if we have a DOM, that there is an igeLoading element
 					// and if so, remove it from the DOM now
 					if (isClient && !isWorker) {

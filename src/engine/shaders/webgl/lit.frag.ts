@@ -292,8 +292,9 @@ float chebyshevShadow(float depth, float mean, float meanSq) {
 	float d = depth - mean;
 	float pMax = variance / (variance + d * d);
 
-	// Reduce light bleeding by remapping [0.3, 1.0] → [0.0, 1.0]
-	return clamp((pMax - 0.3) / 0.7, 0.0, 1.0);
+	// Reduce light bleeding by remapping [0.1, 1.0] → [0.0, 1.0]
+	// Lower threshold = tighter shadow contact with objects
+	return clamp((pMax - 0.1) / 0.9, 0.0, 1.0);
 }
 
 // Internal: VSM point shadow for shadow slot 0 (single sample, no loops)
