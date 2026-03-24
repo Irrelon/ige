@@ -831,6 +831,12 @@ export class IgeWebGlShadowManager extends IgeBaseClass {
 		for (let face = 0; face < 6; face++) {
 			const offset = this.getAtlasFaceOffset(face, data.faceSize);
 
+			// Calculate UV bounds for this face (used to clamp blur samples)
+			const minU = offset.x / atlasWidth;
+			const minV = offset.y / atlasHeight;
+			const maxU = (offset.x + data.faceSize) / atlasWidth;
+			const maxV = (offset.y + data.faceSize) / atlasHeight;
+
 			// Pass 1: Horizontal blur - atlas → blurTexture (for this face)
 			gl.bindFramebuffer(gl.FRAMEBUFFER, data.blurFramebuffer);
 			gl.viewport(0, 0, atlasWidth, atlasHeight);
@@ -840,6 +846,7 @@ export class IgeWebGlShadowManager extends IgeBaseClass {
 			gl.bindTexture(gl.TEXTURE_2D, data.atlasTexture);
 			blurProgram.setUniform1i("u_texture", 0);
 			blurProgram.setUniform2f("u_direction", 1.0 / atlasWidth, 0.0);
+			blurProgram.setUniform4f("u_faceUVBounds", minU, minV, maxU, maxV);
 
 			gl.drawArrays(gl.TRIANGLES, 0, 6);
 
@@ -852,6 +859,7 @@ export class IgeWebGlShadowManager extends IgeBaseClass {
 			gl.bindTexture(gl.TEXTURE_2D, data.blurTexture);
 			blurProgram.setUniform1i("u_texture", 0);
 			blurProgram.setUniform2f("u_direction", 0.0, 1.0 / atlasHeight);
+			blurProgram.setUniform4f("u_faceUVBounds", minU, minV, maxU, maxV);
 
 			gl.drawArrays(gl.TRIANGLES, 0, 6);
 		}
