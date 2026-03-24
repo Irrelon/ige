@@ -1196,11 +1196,12 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 			return true; // Already enabled
 		}
 
+		const range = (light as any)._range as number || 500;
 		const success = this._shadowManager.createPointShadowMap(light.id(), {
 			size: shadowMapSize,
-			bias: 0.0,
+			bias: 0.005,
 			nearPlane: 0.5,
-			farPlane: 1000 // Large far plane so shadows extend well beyond light range
+			farPlane: 1000
 		});
 
 		if (success) {
