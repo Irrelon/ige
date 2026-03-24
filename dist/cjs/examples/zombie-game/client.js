@@ -443,7 +443,7 @@ class Client extends IgeBaseClass_1.IgeBaseClass {
             const camera = viewport.camera;
             camera.projectionType("orthographic");
             camera.orthoSize(CAMERA_ORTHO_SIZE);
-            camera.near(0.1);
+            camera.near(-1500);
             camera.far(3000);
             viewport.mount(instance_1.ige.engine);
             this.viewports.push(viewport);

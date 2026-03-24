@@ -1,7 +1,7 @@
 import { IgeAsset } from "./IgeAsset.js"
-import { IgeDependencies } from "./IgeDependencies.js";
+import { IgeDependencies } from "./IgeDependencies.js"
 import type { IgeEntity } from "./IgeEntity.js"
-import { IgeTextureRenderMode } from "../../enums/index.js";
+import { IgeTextureRenderMode } from "../../enums/index.js"
 import type { IgeCanvas } from "../../types/IgeCanvas.js"
 import type { IgeCanvasRenderingContext2d } from "../../types/IgeCanvasRenderingContext2d.js"
 import type { IgeImage } from "../../types/IgeImage.js"

@@ -1,17 +1,17 @@
 import { IgeBounds } from "./IgeBounds.js"
-import { IgeDummyCanvas } from "./IgeDummyCanvas.js";
+import { IgeDummyCanvas } from "./IgeDummyCanvas.js"
 import { IgeEventingClass } from "./IgeEventingClass.js"
-import { IgeMatrix2d } from "./IgeMatrix2d.js";
+import { IgeMatrix2d } from "./IgeMatrix2d.js"
 import { IgeMatrix4 } from "./IgeMatrix4.js"
-import { IgePoint2d } from "./IgePoint2d.js";
+import { IgePoint2d } from "./IgePoint2d.js"
 import { IgePoint3d } from "./IgePoint3d.js"
-import { IgePoly2d } from "./IgePoly2d.js";
-import { IgeIsometricDepthSortMode, IgeMountMode, IgeStreamMode } from "../../enums/index.js";
+import { IgePoly2d } from "./IgePoly2d.js"
+import { IgeIsometricDepthSortMode, IgeMountMode, IgeStreamMode } from "../../enums/index.js"
 import type { IgeComponent } from "./IgeComponent.js"
-import type { IgeTexture } from "./IgeTexture.js";
+import type { IgeTexture } from "./IgeTexture.js"
 import type { IgeTileMap2d } from "./IgeTileMap2d.js"
-import type { IgeViewport } from "./IgeViewport.js";
-import type { IgeBehaviourType } from "../../enums/index.js";
+import type { IgeViewport } from "./IgeViewport.js"
+import type { IgeBehaviourType } from "../../enums/index.js"
 import type { IgeBehaviourStore } from "../../types/IgeBehaviourStore.js"
 import type { IgeCanAcceptComponents } from "../../types/IgeCanAcceptComponents.js"
 import type { IgeCanRegisterByCategory } from "../../types/IgeCanRegisterByCategory.js"
@@ -25,7 +25,7 @@ import type { IgeInputEventHandler } from "../../types/IgeInputEventHandler.js"
 import type { IgeMaterialData } from "../../types/IgeMaterialData.js"
 import type { IgeMeshData3d } from "../../types/IgeMeshData3d.js"
 import type { IgeGltfModel } from "../webgl/IgeGltfLoader.js"
-import type { IgeSkeleton, IgeSkeletonData } from "../../types/IgeSkeletonData.js";
+import type { IgeSkeleton, IgeSkeletonData } from "../../types/IgeSkeletonData.js"
 import type { IgeAnimationClipData } from "../../types/IgeAnimationClipData.js"
 import type { IgePoint } from "../../types/IgePoint.js"
 import type { IgeSmartTexture } from "../../types/IgeSmartTexture.js"

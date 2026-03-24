@@ -1,17 +1,17 @@
 import { spriteVertexShader } from "./sprite.vert.js"
-import { spriteFragmentShader } from "./sprite.frag.js";
+import { spriteFragmentShader } from "./sprite.frag.js"
 import { modelVertexShader } from "./model.vert.js"
-import { modelFragmentShader } from "./model.frag.js";
+import { modelFragmentShader } from "./model.frag.js"
 import { litVertexShader } from "./lit.vert.js"
-import { litFragmentShader } from "./lit.frag.js";
+import { litFragmentShader } from "./lit.frag.js"
 import { shadowVertexShader } from "./shadow.vert.js"
-import { shadowFragmentShader } from "./shadow.frag.js";
+import { shadowFragmentShader } from "./shadow.frag.js"
 import { skinnedVertexShader } from "./skinned.vert.js"
-import { skinnedShadowVertexShader } from "./skinned_shadow.vert.js";
+import { skinnedShadowVertexShader } from "./skinned_shadow.vert.js"
 import { pointShadowVertexShader } from "./point_shadow.vert.js"
-import { pointShadowFragmentShader } from "./point_shadow.frag.js";
+import { pointShadowFragmentShader } from "./point_shadow.frag.js"
 import { skinnedPointShadowVertexShader } from "./skinned_point_shadow.vert.js"
-import { blurVertexShader } from "./blur.vert.js";
+import { blurVertexShader } from "./blur.vert.js"
 import { blurFragmentShader } from "./blur.frag.js"
 /**
  * Built-in shader library for WebGL renderer.

@@ -1,5 +1,5 @@
 import { IgeBaseClass } from "../core/IgeBaseClass.js"
-import { IgeLightType } from "./IgeWebGlLight.js";
+import { IgeLightType } from "./IgeWebGlLight.js"
 /**
  * Maximum number of each light type supported by the shader.
  */

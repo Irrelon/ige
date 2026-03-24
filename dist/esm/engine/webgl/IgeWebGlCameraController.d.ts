@@ -1,9 +1,9 @@
 import { IgeBaseClass } from "../core/IgeBaseClass.js"
-import { IgeMatrix4 } from "../core/IgeMatrix4.js";
+import { IgeMatrix4 } from "../core/IgeMatrix4.js"
 import { IgePoint3d } from "../core/IgePoint3d.js"
-import type { IgeCamera } from "../core/IgeCamera.js";
+import type { IgeCamera } from "../core/IgeCamera.js"
 import type { IgeViewport } from "../core/IgeViewport.js"
-import { IgeFrustum } from "./IgeFrustum.js";
+import { IgeFrustum } from "./IgeFrustum.js"
 /**
  * Camera matrices for rendering.
  */

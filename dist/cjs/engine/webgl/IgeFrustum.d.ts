@@ -1,5 +1,5 @@
 import { IgeBaseClass } from "../core/IgeBaseClass.js"
-import type { IgeMatrix4 } from "../core/IgeMatrix4.js";
+import type { IgeMatrix4 } from "../core/IgeMatrix4.js"
 import type { IgePoint3d } from "../core/IgePoint3d.js"
 /**
  * Represents a plane in 3D space (ax + by + cz + d = 0).
