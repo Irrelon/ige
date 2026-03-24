@@ -1,16 +1,18 @@
 import { spriteVertexShader } from "./sprite.vert.js"
-import { spriteFragmentShader } from "./sprite.frag.js"
+import { spriteFragmentShader } from "./sprite.frag.js";
 import { modelVertexShader } from "./model.vert.js"
-import { modelFragmentShader } from "./model.frag.js"
+import { modelFragmentShader } from "./model.frag.js";
 import { litVertexShader } from "./lit.vert.js"
-import { litFragmentShader } from "./lit.frag.js"
+import { litFragmentShader } from "./lit.frag.js";
 import { shadowVertexShader } from "./shadow.vert.js"
-import { shadowFragmentShader } from "./shadow.frag.js"
+import { shadowFragmentShader } from "./shadow.frag.js";
 import { skinnedVertexShader } from "./skinned.vert.js"
-import { skinnedShadowVertexShader } from "./skinned_shadow.vert.js"
+import { skinnedShadowVertexShader } from "./skinned_shadow.vert.js";
 import { pointShadowVertexShader } from "./point_shadow.vert.js"
-import { pointShadowFragmentShader } from "./point_shadow.frag.js"
+import { pointShadowFragmentShader } from "./point_shadow.frag.js";
 import { skinnedPointShadowVertexShader } from "./skinned_point_shadow.vert.js"
+import { blurVertexShader } from "./blur.vert.js";
+import { blurFragmentShader } from "./blur.frag.js"
 /**
  * Built-in shader library for WebGL renderer.
  * Provides centralized registration and lookup of shader programs.
@@ -64,3 +66,4 @@ IgeShaderLibrary.register("skinned_shadow", skinnedShadowVertexShader, shadowFra
 IgeShaderLibrary.register("point_shadow", pointShadowVertexShader, pointShadowFragmentShader, "Point light shadow depth pass shader - writes linear distance to light");
 IgeShaderLibrary.register("skinned_point_shadow", skinnedPointShadowVertexShader, pointShadowFragmentShader, // Uses same fragment shader as point_shadow
 "Skinned point light shadow depth pass shader with skeletal animation");
+IgeShaderLibrary.register("blur", blurVertexShader, blurFragmentShader, "Separable Gaussian blur for VSM shadow map softening");

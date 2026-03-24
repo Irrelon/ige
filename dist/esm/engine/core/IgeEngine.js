@@ -1,10 +1,10 @@
 import { IgeEntity } from "./IgeEntity.js"
-import { IgePoint2d } from "./IgePoint2d.js"
+import { IgePoint2d } from "./IgePoint2d.js";
 import { IgePoint3d } from "./IgePoint3d.js"
-import { IgeViewport } from "./IgeViewport.js"
+import { IgeViewport } from "./IgeViewport.js";
 import { ige } from "../instance.js"
-import { isClient, isServer, isWorker } from "../utils/clientServer.js"
-import { IgeBehaviourType, IgeEngineState } from "../../enums/index.js"
+import { isClient, isServer, isWorker } from "../utils/clientServer.js";
+import { IgeBehaviourType, IgeEngineState } from "../../enums/index.js";
 export class IgeEngine extends IgeEntity {
     classId = "IgeEngine";
     client;
@@ -1017,6 +1017,10 @@ export class IgeEngine extends IgeEntity {
                     // Start the engine
                     this.log("Starting engine...");
                     this._state = IgeEngineState.started;
+                    // Reset timing state so the first frame after resume gets zero delta
+                    // (prevents time jump after stop/start)
+                    this.lastTick = 0;
+                    this._timeScaleLastTimestamp = 0;
                     // Check if we have a DOM, that there is an igeLoading element
                     // and if so, remove it from the DOM now
                     if (isClient && !isWorker) {

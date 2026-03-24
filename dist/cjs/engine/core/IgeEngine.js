@@ -1159,6 +1159,10 @@ class IgeEngine extends IgeEntity_1.IgeEntity {
                     // Start the engine
                     this.log("Starting engine...");
                     this._state = enums_1.IgeEngineState.started;
+                    // Reset timing state so the first frame after resume gets zero delta
+                    // (prevents time jump after stop/start)
+                    this.lastTick = 0;
+                    this._timeScaleLastTimestamp = 0;
                     // Check if we have a DOM, that there is an igeLoading element
                     // and if so, remove it from the DOM now
                     if (clientServer_1.isClient && !clientServer_1.isWorker) {

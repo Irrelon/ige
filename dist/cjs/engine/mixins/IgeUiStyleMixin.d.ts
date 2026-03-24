@@ -1,5 +1,5 @@
 import type { IgeObject } from "../core/IgeObject.js"
-import type { IgeTexture } from "../core/IgeTexture.js"
+import type { IgeTexture } from "../core/IgeTexture.js";
 import type { IgeMixin } from "../../types/IgeMixin.js"
 import type { IgeRepeatType } from "../../types/IgeRepeatType.js"
 export declare const WithUiStyleMixin: <BaseClassType extends IgeMixin<IgeObject>>(Base: BaseClassType) => {
@@ -50,7 +50,7 @@ export declare const WithUiStyleMixin: <BaseClassType extends IgeMixin<IgeObject
          * @param {CSSColor, CanvasGradient, CanvasPattern=} color
          * @return {*} Returns this when setting the value or the current value if none is specified.
          */
-        color(color: string | CanvasGradient | CanvasPattern): string | CanvasGradient | CanvasPattern | any;
+        color(color: string | CanvasGradient | CanvasPattern): string | CanvasPattern | CanvasGradient | any;
         /**
          * Sets the current background texture and the repeatType
          * to determine in which axis the image should be repeated.
@@ -204,6 +204,7 @@ export declare const WithUiStyleMixin: <BaseClassType extends IgeMixin<IgeObject
         _oldWorldMatrix4?: import("../core/IgeMatrix4").IgeMatrix4;
         _adjustmentMatrix?: import("../..").IgeMatrix2d;
         _hidden: boolean;
+        _noShadowCast: boolean;
         _cache: boolean;
         _cacheCtx?: import("../..").IgeCanvasRenderingContext2d | null;
         _cacheCanvas?: OffscreenCanvas | import("../..").IgeDummyCanvas;

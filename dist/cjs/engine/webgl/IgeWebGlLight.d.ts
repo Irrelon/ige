@@ -1,5 +1,5 @@
 import { IgeEntity } from "../core/IgeEntity.js"
-import type { IgePoint3d } from "../core/IgePoint3d.js"
+import type { IgePoint3d } from "../core/IgePoint3d.js";
 /**
  * Light types supported by the WebGL renderer.
  */

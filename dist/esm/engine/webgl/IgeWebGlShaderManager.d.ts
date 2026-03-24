@@ -1,5 +1,5 @@
 import { IgeBaseClass } from "../core/IgeBaseClass.js"
-import type { IgeWebGlResourceManager } from "./IgeWebGlResourceManager.js"
+import type { IgeWebGlResourceManager } from "./IgeWebGlResourceManager.js";
 import { IgeWebGlProgram } from "./IgeWebGlProgram.js"
 /**
  * Manages shader compilation, linking, and caching for WebGL renderer.

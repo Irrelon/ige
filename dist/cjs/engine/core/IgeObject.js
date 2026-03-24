@@ -61,6 +61,7 @@ class IgeObject extends IgeEventingClass_1.IgeEventingClass {
         this._pointerStateDown = false;
         this._pointerStateOver = false;
         this._pointerAlwaysInside = false;
+        this._noShadowCast = false; // When true, entity is excluded from shadow map rendering
         this._cache = false;
         this._cacheDirty = false;
         this._cacheSmoothing = false;

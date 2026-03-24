@@ -30,6 +30,10 @@ export declare class Client extends IgeBaseClass implements IgeCanInit {
     swingingLight?: IgePointLight;
     orbitLight?: IgePointLight;
     orbitBulb?: IgeEntity;
+    greenOrbitLight?: IgePointLight;
+    greenOrbitBulb?: IgeEntity;
+    greenOrbitAngleOffset: number;
+    greenOrbitPaused: boolean;
     lightingEnabled: boolean;
     groundEntity?: IgeEntity;
     lampPostEntities: IgeEntity[];
@@ -40,6 +44,12 @@ export declare class Client extends IgeBaseClass implements IgeCanInit {
     sceneEntities: IgeEntity[];
     swingAngle: number;
     swingSpeed: number;
+    orbitAngleOffset: number;
+    orbitPaused: boolean;
+    cameraAngleOffset: number;
+    cameraPaused: boolean;
+    cameraOrbitRadius: number;
+    cameraOrbitHeight: number;
     constructor();
     init(): Promise<void>;
     setupScene(): void;
@@ -58,6 +68,7 @@ export declare class Client extends IgeBaseClass implements IgeCanInit {
     cycleShadowDebugMode(): void;
     toggleLight(light: IgePointLight | IgeSpotLight | IgeDirectionalLight | undefined, name: string): void;
     toggleAllLights(): void;
+    buildLightGUI(): void;
     updateLightCount(): void;
     updateShadowStatus(status: string): void;
     updateStatus(status: string): void;

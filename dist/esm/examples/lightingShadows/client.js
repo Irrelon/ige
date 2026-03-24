@@ -35,6 +35,10 @@ export class Client extends IgeBaseClass {
     swingingLight;
     orbitLight;
     orbitBulb;
+    greenOrbitLight;
+    greenOrbitBulb;
+    greenOrbitAngleOffset = 0;
+    greenOrbitPaused = false;
     lightingEnabled = true;
     // Scene objects
     groundEntity;
@@ -47,6 +51,12 @@ export class Client extends IgeBaseClass {
     // Animation state
     swingAngle = 0;
     swingSpeed = 1.5;
+    orbitAngleOffset = 0;
+    orbitPaused = false;
+    cameraAngleOffset = 0.5;
+    cameraPaused = false;
+    cameraOrbitRadius = 500;
+    cameraOrbitHeight = 250;
     constructor() {
         super();
         void this.init();
@@ -78,6 +88,8 @@ export class Client extends IgeBaseClass {
             this.setupAnimations();
             // Setup keyboard controls
             this.setupKeyboardControls();
+            // Build light control GUI
+            this.buildLightGUI();
             // Hide loading screen
             this.hideLoadingScreen();
             this.updateStatus("Ready");
@@ -163,7 +175,7 @@ export class Client extends IgeBaseClass {
         lightManager.addLight(this.swingingLight);
         // Enable point light shadows for the swinging light
         if (this.renderer.enablePointLightShadows(this.swingingLight, 512)) {
-            this.log("Point light shadows enabled for swinging light (6x 512x512)");
+            this.log("Point light shadows enabled for swinging light (6x 1024x1024)");
         }
         // --- Single orbiting red point light ---
         this.orbitLight = new IgePointLight();
@@ -175,6 +187,10 @@ export class Client extends IgeBaseClass {
         this.orbitLight.translateTo(200, 100, 0);
         this.orbitLight.mount(this.scene);
         lightManager.addLight(this.orbitLight);
+        // Enable point light shadows for the orbit light
+        if (this.renderer.enablePointLightShadows(this.orbitLight, 512)) {
+            this.log("Point light shadows enabled for orbit light");
+        }
         // Visual bulb
         const orbitBulbGeom = IgePrimitiveGeometry.createSphere(5, 8, 8, "orbit_bulb");
         this.orbitBulb = new IgeEntity();
@@ -188,7 +204,33 @@ export class Client extends IgeBaseClass {
             emissiveIntensity: 3.0
         };
         this.orbitBulb.translateTo(200, 100, 0);
+        this.orbitBulb._noShadowCast = true;
         this.orbitBulb.mount(this.scene);
+        // --- Green orbiting point light (wider, lower orbit) ---
+        this.greenOrbitLight = new IgePointLight();
+        this.greenOrbitLight.id("greenOrbitLight");
+        this.greenOrbitLight.lightColor(0.2, 1.0, 0.3);
+        this.greenOrbitLight.intensity(0.6);
+        this.greenOrbitLight.range(250);
+        this.greenOrbitLight.decay(2);
+        this.greenOrbitLight.translateTo(350, 40, 0);
+        this.greenOrbitLight.mount(this.scene);
+        lightManager.addLight(this.greenOrbitLight);
+        // Visual bulb
+        const greenBulbGeom = IgePrimitiveGeometry.createSphere(5, 8, 8, "green_orbit_bulb");
+        this.greenOrbitBulb = new IgeEntity();
+        this.greenOrbitBulb.id("greenOrbitBulb");
+        this.greenOrbitBulb._geometryData = { ...greenBulbGeom, id: "green_orbit_bulb_geom" };
+        this.greenOrbitBulb._materialData = {
+            color: { r: 0.2, g: 1.0, b: 0.3, a: 1 },
+            metallic: 0.0,
+            roughness: 0.1,
+            emissiveColor: { r: 0.2, g: 1.0, b: 0.3 },
+            emissiveIntensity: 3.0
+        };
+        this.greenOrbitBulb.translateTo(350, 40, 0);
+        this.greenOrbitBulb._noShadowCast = true;
+        this.greenOrbitBulb.mount(this.scene);
         this.updateLightCount();
         this.log(`Lights created: ${lightManager.getLightCount().total} total`);
     }
@@ -318,6 +360,7 @@ export class Client extends IgeBaseClass {
             emissiveIntensity: 2.0
         };
         bulb.translateTo(lampX, 192, lampZ);
+        bulb._noShadowCast = true;
         bulb.mount(this.scene);
         this.lampPostEntities.push(bulb);
         // --- Swinging light fixture ---
@@ -347,6 +390,7 @@ export class Client extends IgeBaseClass {
             emissiveIntensity: 2.0
         };
         this.swingingLightEntity.translateTo(100, 120, 50);
+        this.swingingLightEntity._noShadowCast = true;
         this.swingingLightEntity.mount(this.scene);
         // --- Scene props: crates/boxes to cast and receive shadows ---
         const crateGeom = IgePrimitiveGeometry.createCube(40, "crate");
@@ -515,7 +559,7 @@ export class Client extends IgeBaseClass {
         const cordLength = 80; // Length of the cord
         this.scene.addBehaviour(IgeBehaviourType.preUpdate, "animateSwingingLight", () => {
             // Pendulum physics: angle = maxAngle * cos(speed * time)
-            const time = Date.now() / 1000;
+            const time = ige.engine._currentTime / 1000;
             const maxAngle = Math.PI / 5; // ~36 degree swing
             this.swingAngle = maxAngle * Math.cos(this.swingSpeed * time);
             // Calculate pendulum position
@@ -535,8 +579,10 @@ export class Client extends IgeBaseClass {
         });
         // --- Orbiting red light ---
         this.scene.addBehaviour(IgeBehaviourType.preUpdate, "animateOrbitLight", () => {
-            const time = Date.now() / 1000;
-            const angle = time * 0.5;
+            const time = ige.engine._currentTime / 1000;
+            const angle = this.orbitPaused
+                ? this.orbitAngleOffset
+                : time * 0.5 + this.orbitAngleOffset;
             const x = Math.cos(angle) * 200;
             const z = Math.sin(angle) * 200;
             if (this.orbitLight) {
@@ -546,20 +592,55 @@ export class Client extends IgeBaseClass {
                 this.orbitBulb.translateTo(x, 100, z);
             }
         });
+        // --- Orbiting green light (wider, lower) ---
+        this.scene.addBehaviour(IgeBehaviourType.preUpdate, "animateGreenOrbitLight", () => {
+            const time = ige.engine._currentTime / 1000;
+            const angle = this.greenOrbitPaused
+                ? this.greenOrbitAngleOffset
+                : time * 0.3 + this.greenOrbitAngleOffset;
+            const x = Math.cos(angle) * 350;
+            const z = Math.sin(angle) * 350;
+            if (this.greenOrbitLight) {
+                this.greenOrbitLight.translateTo(x, 40, z);
+            }
+            if (this.greenOrbitBulb) {
+                this.greenOrbitBulb.translateTo(x, 40, z);
+            }
+        });
         // --- Slow camera orbit ---
-        let cameraAngle = 0.5; // Start slightly rotated
-        const orbitRadius = 500;
-        const orbitHeight = 250;
         this.scene.addBehaviour(IgeBehaviourType.preUpdate, "animateCamera", () => {
             if (!this.camera)
                 return;
-            cameraAngle += 0.001;
-            const cx = Math.sin(cameraAngle) * orbitRadius;
-            const cz = Math.cos(cameraAngle) * orbitRadius;
-            this.camera.translateTo(cx, orbitHeight, cz);
+            const time = ige.engine._currentTime / 1000;
+            const angle = this.cameraPaused
+                ? this.cameraAngleOffset
+                : time * 0.1 + this.cameraAngleOffset;
+            const cx = Math.sin(angle) * this.cameraOrbitRadius;
+            const cz = Math.cos(angle) * this.cameraOrbitRadius;
+            this.camera.translateTo(cx, this.cameraOrbitHeight, cz);
         });
     }
     setupKeyboardControls() {
+        // Pause/resume button
+        const pauseBtn = document.getElementById("pauseBtn");
+        let paused = false;
+        if (pauseBtn) {
+            pauseBtn.addEventListener("click", () => {
+                paused = !paused;
+                if (paused) {
+                    ige.engine.stop();
+                    pauseBtn.textContent = "Resume";
+                    pauseBtn.classList.remove("on");
+                    pauseBtn.classList.add("off");
+                }
+                else {
+                    ige.engine.start();
+                    pauseBtn.textContent = "Pause";
+                    pauseBtn.classList.remove("off");
+                    pauseBtn.classList.add("on");
+                }
+            });
+        }
         window.addEventListener("keydown", (event) => {
             switch (event.key.toLowerCase()) {
                 case "s":
@@ -689,6 +770,321 @@ export class Client extends IgeBaseClass {
             this.log("All lights OFF");
         }
         this.updateLightCount();
+    }
+    buildLightGUI() {
+        const container = document.getElementById("lightControls");
+        if (!container || !this.renderer)
+            return;
+        const lightManager = this.renderer.lightManager;
+        if (!lightManager)
+            return;
+        const lights = [
+            { name: "Ambient", color: "#8888cc", light: this.ambientLight, hasIntensity: true, hasRange: false, maxIntensity: 10, maxRange: 0 },
+            { name: "Moonlight", color: "#99aadd", light: this.moonLight, hasIntensity: true, hasRange: false, maxIntensity: 10, maxRange: 0 },
+            { name: "Street Lamp", color: "#ffcc66", light: this.streetLampLight, hasIntensity: true, hasRange: true, maxIntensity: 10, maxRange: 2000 },
+            { name: "Swinging", color: "#eeeeff", light: this.swingingLight, hasIntensity: true, hasRange: true, maxIntensity: 10, maxRange: 2000 },
+            { name: "Red Orbit", color: "#ff4444", light: this.orbitLight, hasIntensity: true, hasRange: true, maxIntensity: 10, maxRange: 2000 },
+            { name: "Green Orbit", color: "#44ff66", light: this.greenOrbitLight, hasIntensity: true, hasRange: true, maxIntensity: 10, maxRange: 2000 }
+        ];
+        for (const def of lights) {
+            if (!def.light)
+                continue;
+            const group = document.createElement("div");
+            group.className = "light-group";
+            // Header with name and toggle
+            const header = document.createElement("div");
+            header.className = "light-header";
+            const nameSpan = document.createElement("span");
+            nameSpan.className = "light-name";
+            nameSpan.style.color = def.color;
+            nameSpan.textContent = def.name;
+            header.appendChild(nameSpan);
+            const toggleBtn = document.createElement("button");
+            toggleBtn.className = "toggle-btn on";
+            toggleBtn.textContent = "ON";
+            toggleBtn.addEventListener("click", () => {
+                const isOn = toggleBtn.classList.contains("on");
+                if (isOn) {
+                    lightManager.removeLight(def.light);
+                    toggleBtn.classList.remove("on");
+                    toggleBtn.classList.add("off");
+                    toggleBtn.textContent = "OFF";
+                }
+                else {
+                    lightManager.addLight(def.light);
+                    toggleBtn.classList.remove("off");
+                    toggleBtn.classList.add("on");
+                    toggleBtn.textContent = "ON";
+                }
+                this.updateLightCount();
+            });
+            header.appendChild(toggleBtn);
+            group.appendChild(header);
+            // Intensity slider
+            if (def.hasIntensity) {
+                const currentIntensity = def.light.intensity();
+                const label = document.createElement("label");
+                label.textContent = "Intensity ";
+                const slider = document.createElement("input");
+                slider.type = "range";
+                slider.min = "0";
+                slider.max = String(def.maxIntensity);
+                slider.step = "0.05";
+                slider.value = String(currentIntensity);
+                const valueSpan = document.createElement("span");
+                valueSpan.className = "value";
+                valueSpan.textContent = currentIntensity.toFixed(2);
+                slider.addEventListener("input", () => {
+                    const val = parseFloat(slider.value);
+                    def.light.intensity(val);
+                    valueSpan.textContent = val.toFixed(2);
+                });
+                label.appendChild(slider);
+                label.appendChild(valueSpan);
+                group.appendChild(label);
+            }
+            // Range slider
+            if (def.hasRange) {
+                const currentRange = (def.light.range ? def.light.range() : 0);
+                const label = document.createElement("label");
+                label.textContent = "Range     ";
+                const slider = document.createElement("input");
+                slider.type = "range";
+                slider.min = "0";
+                slider.max = String(def.maxRange);
+                slider.step = "5";
+                slider.value = String(currentRange);
+                const valueSpan = document.createElement("span");
+                valueSpan.className = "value";
+                valueSpan.textContent = String(Math.round(currentRange));
+                slider.addEventListener("input", () => {
+                    const val = parseFloat(slider.value);
+                    if (def.light.range)
+                        def.light.range(val);
+                    valueSpan.textContent = String(Math.round(val));
+                });
+                label.appendChild(slider);
+                label.appendChild(valueSpan);
+                group.appendChild(label);
+            }
+            container.appendChild(group);
+        }
+        // Orbit position control
+        const orbitGroup = document.createElement("div");
+        orbitGroup.className = "light-group";
+        const orbitHeader = document.createElement("div");
+        orbitHeader.className = "light-header";
+        const orbitName = document.createElement("span");
+        orbitName.className = "light-name";
+        orbitName.style.color = "#ff8844";
+        orbitName.textContent = "Orbit Position";
+        orbitHeader.appendChild(orbitName);
+        const orbitPauseBtn = document.createElement("button");
+        orbitPauseBtn.className = "toggle-btn off";
+        orbitPauseBtn.textContent = "MANUAL";
+        orbitPauseBtn.addEventListener("click", () => {
+            this.orbitPaused = !this.orbitPaused;
+            if (this.orbitPaused) {
+                // Capture current auto angle as the manual starting point
+                const time = ige.engine._currentTime / 1000;
+                this.orbitAngleOffset = time * 0.5 + this.orbitAngleOffset;
+                orbitPauseBtn.classList.remove("off");
+                orbitPauseBtn.classList.add("on");
+                orbitPauseBtn.textContent = "AUTO";
+            }
+            else {
+                // Resume auto: adjust offset so position is continuous
+                const time = ige.engine._currentTime / 1000;
+                this.orbitAngleOffset = this.orbitAngleOffset - time * 0.5;
+                orbitPauseBtn.classList.remove("on");
+                orbitPauseBtn.classList.add("off");
+                orbitPauseBtn.textContent = "MANUAL";
+            }
+        });
+        orbitHeader.appendChild(orbitPauseBtn);
+        orbitGroup.appendChild(orbitHeader);
+        const orbitLabel = document.createElement("label");
+        orbitLabel.textContent = "Angle     ";
+        const orbitSlider = document.createElement("input");
+        orbitSlider.type = "range";
+        orbitSlider.min = "0";
+        orbitSlider.max = String(Math.PI * 2);
+        orbitSlider.step = "0.01";
+        orbitSlider.value = "0";
+        const orbitValue = document.createElement("span");
+        orbitValue.className = "value";
+        orbitValue.textContent = "0°";
+        orbitSlider.addEventListener("input", () => {
+            const val = parseFloat(orbitSlider.value);
+            this.orbitAngleOffset = val;
+            orbitValue.textContent = Math.round(val * 180 / Math.PI) + "°";
+            // Auto-switch to manual mode when dragging
+            if (!this.orbitPaused) {
+                this.orbitPaused = true;
+                orbitPauseBtn.classList.remove("off");
+                orbitPauseBtn.classList.add("on");
+                orbitPauseBtn.textContent = "AUTO";
+            }
+        });
+        orbitLabel.appendChild(orbitSlider);
+        orbitLabel.appendChild(orbitValue);
+        orbitGroup.appendChild(orbitLabel);
+        container.appendChild(orbitGroup);
+        // Green orbit position control
+        const greenOrbitGroup = document.createElement("div");
+        greenOrbitGroup.className = "light-group";
+        const greenOrbitHeader = document.createElement("div");
+        greenOrbitHeader.className = "light-header";
+        const greenOrbitName = document.createElement("span");
+        greenOrbitName.className = "light-name";
+        greenOrbitName.style.color = "#44ff66";
+        greenOrbitName.textContent = "Green Orbit Pos";
+        greenOrbitHeader.appendChild(greenOrbitName);
+        const greenOrbitPauseBtn = document.createElement("button");
+        greenOrbitPauseBtn.className = "toggle-btn off";
+        greenOrbitPauseBtn.textContent = "MANUAL";
+        greenOrbitPauseBtn.addEventListener("click", () => {
+            this.greenOrbitPaused = !this.greenOrbitPaused;
+            if (this.greenOrbitPaused) {
+                const time = ige.engine._currentTime / 1000;
+                this.greenOrbitAngleOffset = time * 0.3 + this.greenOrbitAngleOffset;
+                greenOrbitPauseBtn.classList.remove("off");
+                greenOrbitPauseBtn.classList.add("on");
+                greenOrbitPauseBtn.textContent = "AUTO";
+            }
+            else {
+                const time = ige.engine._currentTime / 1000;
+                this.greenOrbitAngleOffset = this.greenOrbitAngleOffset - time * 0.3;
+                greenOrbitPauseBtn.classList.remove("on");
+                greenOrbitPauseBtn.classList.add("off");
+                greenOrbitPauseBtn.textContent = "MANUAL";
+            }
+        });
+        greenOrbitHeader.appendChild(greenOrbitPauseBtn);
+        greenOrbitGroup.appendChild(greenOrbitHeader);
+        const greenOrbitLabel = document.createElement("label");
+        greenOrbitLabel.textContent = "Angle     ";
+        const greenOrbitSlider = document.createElement("input");
+        greenOrbitSlider.type = "range";
+        greenOrbitSlider.min = "0";
+        greenOrbitSlider.max = String(Math.PI * 2);
+        greenOrbitSlider.step = "0.01";
+        greenOrbitSlider.value = "0";
+        const greenOrbitValue = document.createElement("span");
+        greenOrbitValue.className = "value";
+        greenOrbitValue.textContent = "0°";
+        greenOrbitSlider.addEventListener("input", () => {
+            const val = parseFloat(greenOrbitSlider.value);
+            this.greenOrbitAngleOffset = val;
+            greenOrbitValue.textContent = Math.round(val * 180 / Math.PI) + "°";
+            if (!this.greenOrbitPaused) {
+                this.greenOrbitPaused = true;
+                greenOrbitPauseBtn.classList.remove("off");
+                greenOrbitPauseBtn.classList.add("on");
+                greenOrbitPauseBtn.textContent = "AUTO";
+            }
+        });
+        greenOrbitLabel.appendChild(greenOrbitSlider);
+        greenOrbitLabel.appendChild(greenOrbitValue);
+        greenOrbitGroup.appendChild(greenOrbitLabel);
+        container.appendChild(greenOrbitGroup);
+        // Camera orbit control
+        const camGroup = document.createElement("div");
+        camGroup.className = "light-group";
+        const camHeader = document.createElement("div");
+        camHeader.className = "light-header";
+        const camName = document.createElement("span");
+        camName.className = "light-name";
+        camName.style.color = "#88ccff";
+        camName.textContent = "Camera";
+        camHeader.appendChild(camName);
+        const camPauseBtn = document.createElement("button");
+        camPauseBtn.className = "toggle-btn off";
+        camPauseBtn.textContent = "MANUAL";
+        camPauseBtn.addEventListener("click", () => {
+            this.cameraPaused = !this.cameraPaused;
+            if (this.cameraPaused) {
+                const time = ige.engine._currentTime / 1000;
+                this.cameraAngleOffset = time * 0.1 + this.cameraAngleOffset;
+                camPauseBtn.classList.remove("off");
+                camPauseBtn.classList.add("on");
+                camPauseBtn.textContent = "AUTO";
+            }
+            else {
+                const time = ige.engine._currentTime / 1000;
+                this.cameraAngleOffset = this.cameraAngleOffset - time * 0.1;
+                camPauseBtn.classList.remove("on");
+                camPauseBtn.classList.add("off");
+                camPauseBtn.textContent = "MANUAL";
+            }
+        });
+        camHeader.appendChild(camPauseBtn);
+        camGroup.appendChild(camHeader);
+        // Angle slider
+        const camAngleLabel = document.createElement("label");
+        camAngleLabel.textContent = "Angle     ";
+        const camAngleSlider = document.createElement("input");
+        camAngleSlider.type = "range";
+        camAngleSlider.min = "0";
+        camAngleSlider.max = String(Math.PI * 2);
+        camAngleSlider.step = "0.01";
+        camAngleSlider.value = String(this.cameraAngleOffset);
+        const camAngleValue = document.createElement("span");
+        camAngleValue.className = "value";
+        camAngleValue.textContent = Math.round(this.cameraAngleOffset * 180 / Math.PI) + "°";
+        camAngleSlider.addEventListener("input", () => {
+            const val = parseFloat(camAngleSlider.value);
+            this.cameraAngleOffset = val;
+            camAngleValue.textContent = Math.round(val * 180 / Math.PI) + "°";
+            if (!this.cameraPaused) {
+                this.cameraPaused = true;
+                camPauseBtn.classList.remove("off");
+                camPauseBtn.classList.add("on");
+                camPauseBtn.textContent = "AUTO";
+            }
+        });
+        camAngleLabel.appendChild(camAngleSlider);
+        camAngleLabel.appendChild(camAngleValue);
+        camGroup.appendChild(camAngleLabel);
+        // Height slider
+        const camHeightLabel = document.createElement("label");
+        camHeightLabel.textContent = "Height    ";
+        const camHeightSlider = document.createElement("input");
+        camHeightSlider.type = "range";
+        camHeightSlider.min = "10";
+        camHeightSlider.max = "600";
+        camHeightSlider.step = "5";
+        camHeightSlider.value = String(this.cameraOrbitHeight);
+        const camHeightValue = document.createElement("span");
+        camHeightValue.className = "value";
+        camHeightValue.textContent = String(this.cameraOrbitHeight);
+        camHeightSlider.addEventListener("input", () => {
+            this.cameraOrbitHeight = parseFloat(camHeightSlider.value);
+            camHeightValue.textContent = String(Math.round(this.cameraOrbitHeight));
+        });
+        camHeightLabel.appendChild(camHeightSlider);
+        camHeightLabel.appendChild(camHeightValue);
+        camGroup.appendChild(camHeightLabel);
+        // Distance slider
+        const camDistLabel = document.createElement("label");
+        camDistLabel.textContent = "Distance  ";
+        const camDistSlider = document.createElement("input");
+        camDistSlider.type = "range";
+        camDistSlider.min = "100";
+        camDistSlider.max = "1500";
+        camDistSlider.step = "10";
+        camDistSlider.value = String(this.cameraOrbitRadius);
+        const camDistValue = document.createElement("span");
+        camDistValue.className = "value";
+        camDistValue.textContent = String(this.cameraOrbitRadius);
+        camDistSlider.addEventListener("input", () => {
+            this.cameraOrbitRadius = parseFloat(camDistSlider.value);
+            camDistValue.textContent = String(Math.round(this.cameraOrbitRadius));
+        });
+        camDistLabel.appendChild(camDistSlider);
+        camDistLabel.appendChild(camDistValue);
+        camGroup.appendChild(camDistLabel);
+        container.appendChild(camGroup);
     }
     updateLightCount() {
         if (!this.renderer)

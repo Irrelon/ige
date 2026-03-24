@@ -1,5 +1,5 @@
 import { IgeComponent } from "../core/IgeComponent.js"
-import type { IgeEntity } from "../core/IgeEntity.js"
+import type { IgeEntity } from "../core/IgeEntity.js";
 import type { IgeAnimationClipData, IgeAnimationState, IgeAnimationPlayOptions, IgeAnimationSampler } from "../../types/IgeAnimationClipData.js"
 import type { IgeSkeleton } from "../../types/IgeSkeletonData.js"
 /**

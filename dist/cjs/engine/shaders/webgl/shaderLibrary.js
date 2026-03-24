@@ -14,6 +14,8 @@ const skinned_shadow_vert_1 = require("./skinned_shadow.vert.js");
 const point_shadow_vert_1 = require("./point_shadow.vert.js");
 const point_shadow_frag_1 = require("./point_shadow.frag.js");
 const skinned_point_shadow_vert_1 = require("./skinned_point_shadow.vert.js");
+const blur_vert_1 = require("./blur.vert.js");
+const blur_frag_1 = require("./blur.frag.js");
 /**
  * Built-in shader library for WebGL renderer.
  * Provides centralized registration and lookup of shader programs.
@@ -68,3 +70,4 @@ IgeShaderLibrary.register("skinned_shadow", skinned_shadow_vert_1.skinnedShadowV
 IgeShaderLibrary.register("point_shadow", point_shadow_vert_1.pointShadowVertexShader, point_shadow_frag_1.pointShadowFragmentShader, "Point light shadow depth pass shader - writes linear distance to light");
 IgeShaderLibrary.register("skinned_point_shadow", skinned_point_shadow_vert_1.skinnedPointShadowVertexShader, point_shadow_frag_1.pointShadowFragmentShader, // Uses same fragment shader as point_shadow
 "Skinned point light shadow depth pass shader with skeletal animation");
+IgeShaderLibrary.register("blur", blur_vert_1.blurVertexShader, blur_frag_1.blurFragmentShader, "Separable Gaussian blur for VSM shadow map softening");

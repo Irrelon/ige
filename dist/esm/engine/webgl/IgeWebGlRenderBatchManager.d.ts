@@ -1,7 +1,7 @@
 import { IgeBaseClass } from "../core/IgeBaseClass.js"
-import type { IgeEntity } from "../core/IgeEntity.js"
+import type { IgeEntity } from "../core/IgeEntity.js";
 import type { IgeTexture } from "../core/IgeTexture.js"
-import type { IgeWebGlProgram } from "./IgeWebGlProgram.js"
+import type { IgeWebGlProgram } from "./IgeWebGlProgram.js";
 import type { IgeWebGlGeometry } from "./IgeWebGlGeometry.js"
 /**
  * Render batch for sprites (2D entities).

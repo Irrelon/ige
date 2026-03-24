@@ -444,6 +444,8 @@ class IgeWebGlRenderer extends IgeBaseRenderer_1.IgeBaseRenderer {
             }
             this._geometryManager.bindGeometry(batch.geometry, program);
             for (const entity of batch.entities) {
+                if (entity._noShadowCast)
+                    continue;
                 if (entity._worldMatrix4) {
                     program.setUniformMatrix4fv("u_worldMatrix", entity._worldMatrix4);
                 }
@@ -474,6 +476,7 @@ class IgeWebGlRenderer extends IgeBaseRenderer_1.IgeBaseRenderer {
      * Render point light shadow passes (6 faces per shadow-casting point light).
      */
     _renderPointLightShadowPasses() {
+        var _a;
         if (!this._shadowManager || !this._shaderManager || !this._geometryManager || !this._renderBatchManager) {
             return;
         }
@@ -489,7 +492,9 @@ class IgeWebGlRenderer extends IgeBaseRenderer_1.IgeBaseRenderer {
                 continue;
             }
             const pos = pointLight._translate;
-            const range = pointLight._range || 500;
+            // Get the far plane from the shadow map data so depth pass and lookup match
+            const shadowData = this._shadowManager.getPointShadowMapData(lightId);
+            const farPlane = (_a = shadowData === null || shadowData === void 0 ? void 0 : shadowData.farPlane) !== null && _a !== void 0 ? _a : (pointLight._range || 500);
             // Render 6 cube faces
             for (let face = 0; face < 6; face++) {
                 if (!this._shadowManager.beginPointShadowPass(lightId, face)) {
@@ -507,7 +512,7 @@ class IgeWebGlRenderer extends IgeBaseRenderer_1.IgeBaseRenderer {
                     program.use();
                     program.setUniformMatrix4fv("u_lightSpaceMatrix", lightSpaceMatrix);
                     program.setUniform3f("u_pointLightPosition", pos.x, pos.y, pos.z);
-                    program.setUniform1f("u_pointShadowFarPlane", range);
+                    program.setUniform1f("u_pointShadowFarPlane", farPlane);
                     currentProgram = program;
                 };
                 // Render all opaque models
@@ -523,6 +528,8 @@ class IgeWebGlRenderer extends IgeBaseRenderer_1.IgeBaseRenderer {
                     }
                     this._geometryManager.bindGeometry(batch.geometry, program);
                     for (const entity of batch.entities) {
+                        if (entity._noShadowCast)
+                            continue;
                         if (entity._worldMatrix4) {
                             program.setUniformMatrix4fv("u_worldMatrix", entity._worldMatrix4);
                         }
@@ -550,6 +557,7 @@ class IgeWebGlRenderer extends IgeBaseRenderer_1.IgeBaseRenderer {
                 this._renderBatchManager.renderOpaqueModels(pointShadowProgram, renderBatch);
                 this._shadowManager.endPointShadowPass();
             }
+            // No blur pass needed - using Vogel disk PCF for soft shadows
         }
     }
     /**
@@ -995,12 +1003,11 @@ class IgeWebGlRenderer extends IgeBaseRenderer_1.IgeBaseRenderer {
         if (this._shadowCastingPointLights.includes(light)) {
             return true; // Already enabled
         }
-        const range = light._range || 500;
         const success = this._shadowManager.createPointShadowMap(light.id(), {
             size: shadowMapSize,
-            bias: 0.002,
+            bias: 0.0,
             nearPlane: 0.5,
-            farPlane: range
+            farPlane: 1000 // Large far plane so shadows extend well beyond light range
         });
         if (success) {
             this._shadowCastingPointLights.push(light);

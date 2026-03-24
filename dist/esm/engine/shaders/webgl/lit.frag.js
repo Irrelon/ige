@@ -281,7 +281,21 @@ mat4 getPointShadowMatrix(int shadowIndex, int face) {
 	return u_pointShadowMatrices[11];
 }
 
-// Internal: compute point shadow for shadow slot 0 (constant indices only)
+// Interleaved gradient noise for per-pixel sample rotation (eliminates banding)
+float interleavedGradientNoise(vec2 fragCoord) {
+	vec3 magic = vec3(0.06711056, 0.00583715, 52.9829189);
+	return fract(magic.z * fract(dot(fragCoord, magic.xy)));
+}
+
+// Vogel disk sample: distributes N points uniformly on a unit disk
+vec2 vogelDiskSample(int sampleIndex, int totalSamples, float phi) {
+	float goldenAngle = 2.4; // ~137.5 degrees
+	float r = sqrt(float(sampleIndex) + 0.5) / sqrt(float(totalSamples));
+	float theta = float(sampleIndex) * goldenAngle + phi;
+	return vec2(r * cos(theta), r * sin(theta));
+}
+
+// Internal: PCF point shadow for shadow slot 0 using Vogel disk (5 samples)
 float _calcPointShadow0(vec3 lightPos) {
 	vec3 fragToLight = v_worldPosition - lightPos;
 	float currentDistance = length(fragToLight) / u_pointShadowFarPlane[0];
@@ -298,12 +312,32 @@ float _calcPointShadow0(vec3 lightPos) {
 
 	vec2 faceOffset = getAtlasFaceUVOffset(face);
 	vec2 atlasUV = faceOffset + projCoords.xy * vec2(1.0 / 3.0, 0.5);
-	float closestDistance = texture2D(u_pointShadowAtlas[0], atlasUV).r;
 
-	return (currentDistance - u_pointShadowBias[0] > closestDistance) ? 0.0 : 1.0;
+	// Texel size within the face region of the atlas
+	float texelU = (1.0 / 3.0) / u_pointShadowFaceSize[0];
+	float texelV = 0.5 / u_pointShadowFaceSize[0];
+	float bias = u_pointShadowBias[0];
+
+	// Per-pixel rotation angle from interleaved gradient noise
+	float phi = interleavedGradientNoise(gl_FragCoord.xy) * 6.2832;
+
+	// Face UV bounds for clamping samples (prevent cross-face bleeding)
+	vec2 faceMin = faceOffset + vec2(texelU, texelV);
+	vec2 faceMax = faceOffset + vec2(1.0 / 3.0 - texelU, 0.5 - texelV);
+
+	// 5-sample Vogel disk PCF with ~2 texel radius
+	float shadow = 0.0;
+	float radius = 2.0;
+	for (int i = 0; i < 5; i++) {
+		vec2 offset = vogelDiskSample(i, 5, phi) * radius;
+		vec2 sampleUV = clamp(atlasUV + vec2(offset.x * texelU, offset.y * texelV), faceMin, faceMax);
+		float storedDepth = texture2D(u_pointShadowAtlas[0], sampleUV).r;
+		shadow += (currentDistance - bias > storedDepth) ? 0.0 : 1.0;
+	}
+	return shadow / 5.0;
 }
 
-// Internal: compute point shadow for shadow slot 1 (constant indices only)
+// Internal: PCF point shadow for shadow slot 1 using Vogel disk (5 samples)
 float _calcPointShadow1(vec3 lightPos) {
 	vec3 fragToLight = v_worldPosition - lightPos;
 	float currentDistance = length(fragToLight) / u_pointShadowFarPlane[1];
@@ -320,9 +354,25 @@ float _calcPointShadow1(vec3 lightPos) {
 
 	vec2 faceOffset = getAtlasFaceUVOffset(face);
 	vec2 atlasUV = faceOffset + projCoords.xy * vec2(1.0 / 3.0, 0.5);
-	float closestDistance = texture2D(u_pointShadowAtlas[1], atlasUV).r;
 
-	return (currentDistance - u_pointShadowBias[1] > closestDistance) ? 0.0 : 1.0;
+	float texelU = (1.0 / 3.0) / u_pointShadowFaceSize[1];
+	float texelV = 0.5 / u_pointShadowFaceSize[1];
+	float bias = u_pointShadowBias[1];
+
+	float phi = interleavedGradientNoise(gl_FragCoord.xy) * 6.2832;
+
+	vec2 faceMin = faceOffset + vec2(texelU, texelV);
+	vec2 faceMax = faceOffset + vec2(1.0 / 3.0 - texelU, 0.5 - texelV);
+
+	float shadow = 0.0;
+	float radius = 2.0;
+	for (int i = 0; i < 5; i++) {
+		vec2 offset = vogelDiskSample(i, 5, phi) * radius;
+		vec2 sampleUV = clamp(atlasUV + vec2(offset.x * texelU, offset.y * texelV), faceMin, faceMax);
+		float storedDepth = texture2D(u_pointShadowAtlas[1], sampleUV).r;
+		shadow += (currentDistance - bias > storedDepth) ? 0.0 : 1.0;
+	}
+	return shadow / 5.0;
 }
 
 // Get the point shadow factor for point light at loop index i.

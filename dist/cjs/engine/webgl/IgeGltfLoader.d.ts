@@ -1,7 +1,7 @@
 import { IgeBaseClass } from "../core/IgeBaseClass.js"
-import { IgeEntity } from "../core/IgeEntity.js"
+import { IgeEntity } from "../core/IgeEntity.js";
 import { IgeWebGlMaterial } from "./IgeWebGlMaterial.js"
-import type { IgeGeometryData3d } from "../../types/IgeGeometryData3d.js"
+import type { IgeGeometryData3d } from "../../types/IgeGeometryData3d.js";
 import type { IgeSkeletonData } from "../../types/IgeSkeletonData.js"
 import type { IgeAnimationClipData } from "../../types/IgeAnimationClipData.js"
 /**
