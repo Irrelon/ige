@@ -308,8 +308,7 @@ float _calcPointShadow0(vec3 lightPos) {
 	int face = getPointShadowFace(fragToLight);
 	mat4 lsMatrix = getPointShadowMatrix(0, face);
 	// Normal offset: shift lookup along surface normal to prevent acne on curved surfaces
-	vec3 offsetPos = v_worldPosition + v_worldNormal * u_shadowNormalOffset;
-	vec4 lightSpacePos = lsMatrix * vec4(offsetPos, 1.0);
+	vec4 lightSpacePos = lsMatrix * vec4(v_worldPosition, 1.0);
 	vec3 projCoords = lightSpacePos.xyz / lightSpacePos.w;
 	projCoords = projCoords * 0.5 + 0.5;
 
@@ -351,8 +350,7 @@ float _calcPointShadow1(vec3 lightPos) {
 
 	int face = getPointShadowFace(fragToLight);
 	mat4 lsMatrix = getPointShadowMatrix(1, face);
-	vec3 offsetPos = v_worldPosition + v_worldNormal * u_shadowNormalOffset;
-	vec4 lightSpacePos = lsMatrix * vec4(offsetPos, 1.0);
+	vec4 lightSpacePos = lsMatrix * vec4(v_worldPosition, 1.0);
 	vec3 projCoords = lightSpacePos.xyz / lightSpacePos.w;
 	projCoords = projCoords * 0.5 + 0.5;
 

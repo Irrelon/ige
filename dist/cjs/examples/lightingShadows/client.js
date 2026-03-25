@@ -140,7 +140,7 @@ class Client extends IgeBaseClass_1.IgeBaseClass {
         this.moonLight.lightColor(0.6, 0.65, 0.9); // Cool blue-white moonlight
         this.moonLight.intensity(0.4);
         this.moonLight.direction(-0.3, -0.8, -0.4);
-        this.moonLight.shadowBias(0.0);
+        this.moonLight.shadowBias(0.001);
         this.moonLight.mount(this.scene);
         lightManager.addLight(this.moonLight);
         // Tighten shadow frustum to scene bounds for better shadow map precision

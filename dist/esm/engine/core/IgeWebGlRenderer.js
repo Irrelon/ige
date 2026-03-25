@@ -1,19 +1,19 @@
 import { IgeBaseRenderer } from "./IgeBaseRenderer.js"
-import { IgePoint2d } from "./IgePoint2d.js"
+import { IgePoint2d } from "./IgePoint2d.js";
 import { ige } from "../instance.js"
-import { isClient, isServer } from "../utils/clientServer.js"
+import { isClient, isServer } from "../utils/clientServer.js";
 import { IgeWebGlResourceManager } from "../webgl/IgeWebGlResourceManager.js"
-import { IgeWebGlShaderManager } from "../webgl/IgeWebGlShaderManager.js"
+import { IgeWebGlShaderManager } from "../webgl/IgeWebGlShaderManager.js";
 import { IgeWebGlTextureManager } from "../webgl/IgeWebGlTextureManager.js"
-import { IgeWebGlGeometryManager } from "../webgl/IgeWebGlGeometryManager.js"
+import { IgeWebGlGeometryManager } from "../webgl/IgeWebGlGeometryManager.js";
 import { IgeWebGlCameraController } from "../webgl/IgeWebGlCameraController.js"
-import { IgeWebGlRenderBatchManager } from "../webgl/IgeWebGlRenderBatchManager.js"
+import { IgeWebGlRenderBatchManager } from "../webgl/IgeWebGlRenderBatchManager.js";
 import { IgeWebGlStateManager } from "../webgl/IgeWebGlStateManager.js"
-import { IgeWebGlLightManager } from "../webgl/IgeWebGlLightManager.js"
+import { IgeWebGlLightManager } from "../webgl/IgeWebGlLightManager.js";
 import { IgeWebGlShadowManager } from "../webgl/IgeWebGlShadowManager.js"
-import { IgeWebGlSkeletonManager } from "../webgl/IgeWebGlSkeletonManager.js"
+import { IgeWebGlSkeletonManager } from "../webgl/IgeWebGlSkeletonManager.js";
 import { IgeShaderLibrary } from "../shaders/webgl/shaderLibrary.js"
-import { IgePoint3d } from "./IgePoint3d.js"
+import { IgePoint3d } from "./IgePoint3d.js";
 /**
  * Custom WebGL renderer for IGE supporting full 3D rendering.
  * This renderer replaces the experimental three.js integration with
@@ -754,7 +754,7 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
                     }
                     shaderProgram.setUniform1i("u_shadowDebug", this._shadowDebugMode);
                     // Normal offset: shift shadow lookup along surface normal (prevents acne without contact gaps)
-                    shaderProgram.setUniform1f("u_shadowNormalOffset", 0.5);
+                    shaderProgram.setUniform1f("u_shadowNormalOffset", 0.0);
                 }
                 else {
                     shaderProgram.setUniform1i("u_hasShadowMap", 0);

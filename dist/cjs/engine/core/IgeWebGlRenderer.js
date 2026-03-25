@@ -778,7 +778,7 @@ class IgeWebGlRenderer extends IgeBaseRenderer_1.IgeBaseRenderer {
                     }
                     shaderProgram.setUniform1i("u_shadowDebug", this._shadowDebugMode);
                     // Normal offset: shift shadow lookup along surface normal (prevents acne without contact gaps)
-                    shaderProgram.setUniform1f("u_shadowNormalOffset", 0.5);
+                    shaderProgram.setUniform1f("u_shadowNormalOffset", 0.0);
                 }
                 else {
                     shaderProgram.setUniform1i("u_hasShadowMap", 0);

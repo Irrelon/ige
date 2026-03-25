@@ -57,10 +57,7 @@ void main() {
 	v_TBN = mat3(T, B, N);
 
 	// Calculate position in light space for shadow mapping
-	// Apply normal offset: shift the lookup position along the surface normal
-	// to prevent shadow acne on curved surfaces without creating contact gaps
-	vec3 shadowPos = worldPos.xyz + v_worldNormal * u_shadowNormalOffset;
-	v_lightSpacePos = u_lightSpaceMatrix * vec4(shadowPos, 1.0);
+	v_lightSpacePos = u_lightSpaceMatrix * worldPos;
 
 	// Transform to clip space
 	gl_Position = u_projectionMatrix * u_viewMatrix * worldPos;

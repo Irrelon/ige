@@ -5,7 +5,7 @@ import { IgeWebGlRenderer } from "../../engine/core/IgeWebGlRenderer.js"
 import { IgeViewport } from "../../engine/core/IgeViewport.js"
 import { IgePoint3d } from "../../engine/core/IgePoint3d.js"
 import { ige } from "../../engine/instance.js"
-import { IgeBehaviourType } from "../../enums/index.js"
+import { IgeBehaviourType } from "../../enums/index.js";
 import { IgeAmbientLight, IgeDirectionalLight, IgePointLight, IgeSpotLight } from "../../engine/webgl/IgeWebGlLight.js"
 import { IgePrimitiveGeometry } from "../../engine/webgl/IgePrimitiveGeometry.js"
 import { igeGltfLoader } from "../../engine/webgl/IgeGltfLoader.js"
@@ -144,7 +144,7 @@ export class Client extends IgeBaseClass {
         this.moonLight.lightColor(0.6, 0.65, 0.9); // Cool blue-white moonlight
         this.moonLight.intensity(0.4);
         this.moonLight.direction(-0.3, -0.8, -0.4);
-        this.moonLight.shadowBias(0.0);
+        this.moonLight.shadowBias(0.001);
         this.moonLight.mount(this.scene);
         lightManager.addLight(this.moonLight);
         // Tighten shadow frustum to scene bounds for better shadow map precision
