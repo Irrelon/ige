@@ -214,15 +214,15 @@ export class IgeWebGlShadowManager extends IgeBaseClass {
 			}
 
 			gl.bindTexture(gl.TEXTURE_2D, depthTexture);
-			gl.texImage2D(
+			(gl as WebGL2RenderingContext).texImage2D(
 				gl.TEXTURE_2D,
 				0,
-				(gl as WebGL2RenderingContext).DEPTH_COMPONENT24,
+				(gl as WebGL2RenderingContext).DEPTH_COMPONENT32F,
 				cfg.size,
 				cfg.size,
 				0,
 				gl.DEPTH_COMPONENT,
-				gl.UNSIGNED_INT,
+				gl.FLOAT,
 				null
 			);
 

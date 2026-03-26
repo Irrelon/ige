@@ -1,5 +1,5 @@
 import { IgeBaseClass } from "../core/IgeBaseClass.js"
-import { IgeMatrix4 } from "../core/IgeMatrix4.js"
+import { IgeMatrix4 } from "../core/IgeMatrix4.js";
 /** Maximum number of point lights that can cast shadows. */
 export const MAX_SHADOW_POINT_LIGHTS = 2;
 /** Cube map face directions and up vectors for lookAt. */
@@ -120,7 +120,7 @@ export class IgeWebGlShadowManager extends IgeBaseClass {
                 return false;
             }
             gl.bindTexture(gl.TEXTURE_2D, depthTexture);
-            gl.texImage2D(gl.TEXTURE_2D, 0, gl.DEPTH_COMPONENT24, cfg.size, cfg.size, 0, gl.DEPTH_COMPONENT, gl.UNSIGNED_INT, null);
+            gl.texImage2D(gl.TEXTURE_2D, 0, gl.DEPTH_COMPONENT32F, cfg.size, cfg.size, 0, gl.DEPTH_COMPONENT, gl.FLOAT, null);
             // Set texture parameters for shadow sampling
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
