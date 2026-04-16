@@ -160,7 +160,7 @@ class Client extends IgeBaseClass_1.IgeBaseClass {
         this.streetLampLight.direction(0, -1, 0); // Pointing straight down
         this.streetLampLight.angleDegrees(40);
         this.streetLampLight.penumbra(0.4);
-        this.streetLampLight.range(400);
+        this.streetLampLight.range(965);
         this.streetLampLight.decay(2);
         // Position at the top of the lamp post
         this.streetLampLight.translateTo(-150, 200, -50);
@@ -171,7 +171,7 @@ class Client extends IgeBaseClass_1.IgeBaseClass {
         this.swingingLight.id("swingingLight");
         this.swingingLight.lightColor(0.9, 0.95, 1.0); // Cool white
         this.swingingLight.intensity(1.2);
-        this.swingingLight.range(250);
+        this.swingingLight.range(1550);
         this.swingingLight.decay(2);
         // Start position (will be animated)
         this.swingingLight.translateTo(100, 120, 50);
@@ -186,7 +186,7 @@ class Client extends IgeBaseClass_1.IgeBaseClass {
         this.orbitLight.id("orbitLight");
         this.orbitLight.lightColor(1.0, 0.2, 0.2);
         this.orbitLight.intensity(0.6);
-        this.orbitLight.range(200);
+        this.orbitLight.range(700);
         this.orbitLight.decay(2);
         this.orbitLight.translateTo(200, 100, 0);
         this.orbitLight.mount(this.scene);
@@ -215,7 +215,7 @@ class Client extends IgeBaseClass_1.IgeBaseClass {
         this.greenOrbitLight.id("greenOrbitLight");
         this.greenOrbitLight.lightColor(0.2, 1.0, 0.3);
         this.greenOrbitLight.intensity(0.6);
-        this.greenOrbitLight.range(250);
+        this.greenOrbitLight.range(700);
         this.greenOrbitLight.decay(2);
         this.greenOrbitLight.translateTo(350, 40, 0);
         this.greenOrbitLight.mount(this.scene);
@@ -457,8 +457,8 @@ class Client extends IgeBaseClass_1.IgeBaseClass {
             if (!this.scene || !this.renderer)
                 return;
             try {
-                const modelPath = "../../assets/models/CesiumMan.glb";
-                this.animatedModel = yield IgeGltfLoader_1.igeGltfLoader.load(modelPath, "cesiumMan");
+                const modelPath = "../../assets/models/bounty-hunter.glb";
+                this.animatedModel = yield IgeGltfLoader_1.igeGltfLoader.load(modelPath, "bountyHunter");
                 this.log(`Model loaded: ${this.animatedModel.name}`);
                 // Preload textures from materials
                 yield this.preloadTextures();
@@ -492,18 +492,13 @@ class Client extends IgeBaseClass_1.IgeBaseClass {
         var _a, _b;
         if (!this.scene || !this.renderer || !this.animatedModel)
             return;
-        const skeletonManager = this.renderer.skeletonManager;
-        if (!skeletonManager)
-            return;
         this.animatedEntity = new IgeEntity_1.IgeEntity();
-        this.animatedEntity.id("cesiumMan");
-        // Get skinned mesh
-        const mesh = this.animatedModel.meshes.find(m => m.primitives.some(p => p.geometry.boneWeights && p.geometry.boneIndices));
-        if (mesh) {
-            const primitive = mesh.primitives.find(p => p.geometry.boneWeights && p.geometry.boneIndices);
-            if (primitive) {
-                this.animatedEntity._geometryData = Object.assign(Object.assign({}, primitive.geometry), { id: "cesiumMan_geometry" });
-            }
+        this.animatedEntity.id("bountyHunter");
+        // Get the first mesh primitive
+        const mesh = this.animatedModel.meshes[0];
+        if (mesh && mesh.primitives.length > 0) {
+            const primitive = mesh.primitives[0];
+            this.animatedEntity._geometryData = Object.assign(Object.assign({}, primitive.geometry), { id: "bountyHunter_geometry" });
         }
         // Material
         const gltfMaterial = this.animatedModel.materials[0];
@@ -522,38 +517,36 @@ class Client extends IgeBaseClass_1.IgeBaseClass {
                 roughness: 0.5
             };
         }
-        // Skeleton
-        if (this.animatedModel.skins && this.animatedModel.skins.length > 0) {
+        // Skeleton & animation (if model has them)
+        const skeletonManager = this.renderer.skeletonManager;
+        if (skeletonManager && this.animatedModel.skins && this.animatedModel.skins.length > 0) {
             const skin = this.animatedModel.skins[0];
             skeletonManager.registerSkeletonData(skin.skeleton);
-            const skeletonInstance = skeletonManager.createSkeletonInstance(skin.skeleton.id, "cesiumMan_skeleton");
+            const skeletonInstance = skeletonManager.createSkeletonInstance(skin.skeleton.id, "bountyHunter_skeleton");
             if (skeletonInstance) {
                 this.animatedEntity._skeleton = skeletonInstance;
             }
-        }
-        // Animation component
-        this.animatedEntity.addComponent("skeletalAnimation", IgeSkeletalAnimationComponent_1.IgeSkeletalAnimationComponent);
-        const animComponent = this.animatedEntity.components.skeletalAnimation;
-        if (this.animatedEntity._skeleton) {
-            animComponent.setSkeleton(this.animatedEntity._skeleton);
-        }
-        // Register and play animations
-        if (this.animatedModel.animations && this.animatedModel.animations.length > 0) {
-            for (const clip of this.animatedModel.animations) {
-                animComponent.define(clip.id, clip);
-                this.animationNames.push(clip.name || clip.id);
+            this.animatedEntity.addComponent("skeletalAnimation", IgeSkeletalAnimationComponent_1.IgeSkeletalAnimationComponent);
+            const animComponent = this.animatedEntity.components.skeletalAnimation;
+            if (this.animatedEntity._skeleton) {
+                animComponent.setSkeleton(this.animatedEntity._skeleton);
             }
-            // Auto-play first animation
-            const firstClip = this.animatedModel.animations[0];
-            animComponent.play(firstClip.id, { crossFadeDuration: 0 });
+            if (this.animatedModel.animations && this.animatedModel.animations.length > 0) {
+                for (const clip of this.animatedModel.animations) {
+                    animComponent.define(clip.id, clip);
+                    this.animationNames.push(clip.name || clip.id);
+                }
+                const firstClip = this.animatedModel.animations[0];
+                animComponent.play(firstClip.id, { crossFadeDuration: 0 });
+            }
         }
-        // Position the character in the centre of the scene, on the ground
-        // CesiumMan is Z-up, about 1.8 units tall; scale to ~180 world units
+        // Position the model in the centre of the scene, on the ground
+        // Bounty hunter is ~1.14 units tall; scale to ~150 world units
         this.animatedEntity.translateTo(0, 0, 0);
-        this.animatedEntity.scaleTo(100, 100, 100);
-        this.animatedEntity.rotateTo(-Math.PI / 2, Math.PI, 0);
+        this.animatedEntity.scaleTo(130, 130, 130);
+        this.animatedEntity.rotateTo(0, Math.PI, 0);
         this.animatedEntity.mount(this.scene);
-        this.log("Animated character placed in scene");
+        this.log("Bounty hunter model placed in scene");
     }
     setupAnimations() {
         if (!this.scene)

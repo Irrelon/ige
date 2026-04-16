@@ -1,5 +1,5 @@
 import { IgeBaseClass } from "../core/IgeBaseClass.js"
-import { IgeMatrix4 } from "../core/IgeMatrix4.js";
+import { IgeMatrix4 } from "../core/IgeMatrix4.js"
 /** Maximum number of point lights that can cast shadows. */
 export const MAX_SHADOW_POINT_LIGHTS = 2;
 /** Cube map face directions and up vectors for lookAt. */
