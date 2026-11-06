@@ -30,6 +30,7 @@ import {
 	type IgeWebGlRenderItem
 } from "@/engine/webgl/IgeWebGlInstancing";
 import type { IgeGeometryData3d } from "@/types/IgeGeometryData3d";
+import type { IgeModelPart } from "@/engine/webgl/IgeModelParts";
 import type { IgeMaterialData } from "@/types/IgeMaterialData";
 import type { IgeSkeleton } from "@/types/IgeSkeletonData";
 import { MAX_BONES } from "@/types/IgeSkeletonData";
@@ -107,6 +108,19 @@ function parseHexColor (color: string): [number, number, number] {
 	return rgb;
 }
 
+/**
+ * out = a * b for column-major 4x4 matrices (out must not alias a or b).
+ */
+function multiplyMat4Into (out: Float32Array, a: Float32Array, b: Float32Array): void {
+	for (let col = 0; col < 4; col++) {
+		const b0 = b[col * 4], b1 = b[col * 4 + 1], b2 = b[col * 4 + 2], b3 = b[col * 4 + 3];
+		out[col * 4] = a[0] * b0 + a[4] * b1 + a[8] * b2 + a[12] * b3;
+		out[col * 4 + 1] = a[1] * b0 + a[5] * b1 + a[9] * b2 + a[13] * b3;
+		out[col * 4 + 2] = a[2] * b0 + a[6] * b1 + a[10] * b2 + a[14] * b3;
+		out[col * 4 + 3] = a[3] * b0 + a[7] * b1 + a[11] * b2 + a[15] * b3;
+	}
+}
+
 function sortItemsBackToFront (a: IgeWebGlRenderItem, b: IgeWebGlRenderItem): number {
 	return b.sortKey - a.sortKey;
 }
@@ -178,6 +192,7 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 	protected _transparentItems: IgeWebGlRenderItem[] = [];
 	protected _opaqueSprites: IgeEntity[] = [];
 	protected _transparentSprites: IgeEntity[] = [];
+	protected _pendingBlobTextures: Set<string> = new Set();
 	protected _lightFrustum: IgeFrustum = new IgeFrustum();
 	protected _lightFrustumMatrix: IgeMatrix4 = new IgeMatrix4();
 
@@ -654,8 +669,11 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 		const entity = obj as IgeEntity;
 		const geometryData = entity._geometryData;
 
-		if (geometryData && geometryData.vertices) {
-			const item = this._addModelItem(entity, geometryData, entity._materialData);
+		const parts = entity._modelParts;
+		if (parts && parts.length > 0) {
+			this._addModelParts(entity, parts, data);
+		} else if (geometryData && geometryData.vertices) {
+			const item = this._addModelItem(entity, geometryData, entity._materialData, null, entity._worldMatrix4?.matrix);
 			if (item) data.models.push(item);
 		} else if (entity._texture) {
 			data.sprites.push(entity);
@@ -670,14 +688,63 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 	}
 
 	/**
+	 * Add one render item per part of an entity's model. Parts with their
+	 * own node transform get a world matrix of entity world * part matrix,
+	 * kept in a per-entity buffer; the rest share the entity's matrix. The
+	 * entity's own _materialData (if any) overrides the parts' materials.
+	 */
+	protected _addModelParts(entity: IgeEntity, parts: IgeModelPart[], data: IgeWebGlSceneFrameData): void {
+		const world = entity._worldMatrix4?.matrix;
+		if (!world) return;
+
+		let matrices = entity._modelPartMatrices;
+		if (!matrices || matrices.length !== parts.length) {
+			matrices = entity._modelPartMatrices = parts.map((part) => (part.matrix ? new Float32Array(16) : world));
+		}
+
+		for (let i = 0; i < parts.length; i++) {
+			const part = parts[i];
+			let partWorld = world;
+			if (part.matrix) {
+				partWorld = matrices[i];
+				multiplyMat4Into(partWorld, world, part.matrix);
+			}
+
+			const item = this._addModelItem(entity, part.geometryData, part.materialData, entity._materialData, partWorld);
+			if (item) data.models.push(item);
+		}
+	}
+
+	/**
+	 * Start uploading a model texture image (once); it is used as soon as
+	 * the upload completes.
+	 */
+	protected _requestBlobTexture(textureId: string, blob: Blob): void {
+		if (!this._textureManager || this._pendingBlobTextures.has(textureId)) return;
+
+		this._pendingBlobTextures.add(textureId);
+		this._textureManager.createTextureFromBlob(textureId, blob).then((texture) => {
+			if (!texture) {
+				this.log(`Failed to create model texture "${textureId}"`, "warning");
+			}
+		});
+	}
+
+	/**
 	 * Create (or reuse) a pooled render item for one mesh of an entity.
+	 * @param materialData The mesh's material.
+	 * @param overrideData Optional per-entity material values that replace
+	 * the mesh material's (used for model parts).
+	 * @param worldMatrix World matrix to draw with (defaults to the entity's).
 	 */
 	protected _addModelItem(
 		entity: IgeEntity,
 		geometryData: IgeGeometryData3d,
-		materialData: IgeMaterialData | null
+		materialData: IgeMaterialData | null,
+		overrideData: IgeMaterialData | null = null,
+		worldMatrix: Float32Array | undefined = entity._worldMatrix4?.matrix
 	): IgeWebGlRenderItem | undefined {
-		if (!this._geometryManager || !entity._worldMatrix4) {
+		if (!this._geometryManager || !worldMatrix) {
 			return;
 		}
 
@@ -706,7 +773,7 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 				boneRow: -1,
 				transparent: false,
 				castShadow: true,
-				worldMatrix: entity._worldMatrix4.matrix,
+				worldMatrix,
 				cx: 0, cy: 0, cz: 0, radius: -1,
 				sortKey: 0,
 				batchKey: "",
@@ -719,7 +786,7 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 		item.entity = entity;
 		item.geometry = geometry;
 		item.materialData = materialData;
-		item.worldMatrix = entity._worldMatrix4.matrix;
+		item.worldMatrix = worldMatrix;
 
 		// Resolve material values
 		const mat = item.material;
@@ -734,31 +801,10 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 		item.texture = entity._texture;
 
 		if (materialData) {
-			const color = materialData.color;
-			if (color) {
-				if (typeof color === "object") {
-					mat.r = color.r;
-					mat.g = color.g;
-					mat.b = color.b;
-					mat.a = color.a ?? 1;
-				} else {
-					const rgb = parseHexColor(color);
-					mat.r = rgb[0];
-					mat.g = rgb[1];
-					mat.b = rgb[2];
-				}
-			}
-			if (materialData.metallic !== undefined) mat.metallic = materialData.metallic;
-			if (materialData.roughness !== undefined) mat.roughness = materialData.roughness;
-			if (materialData.emissiveColor) {
-				mat.emissiveR = materialData.emissiveColor.r;
-				mat.emissiveG = materialData.emissiveColor.g;
-				mat.emissiveB = materialData.emissiveColor.b;
-				mat.emissiveIntensity = materialData.emissiveIntensity ?? 1;
-			}
-			if (materialData.textureId && this._textureManager?.getBlobTexture(materialData.textureId)) {
-				item.blobTextureId = materialData.textureId;
-			}
+			this._applyMaterialData(item, materialData);
+		}
+		if (overrideData) {
+			this._applyMaterialData(item, overrideData);
 		}
 
 		if (item.blobTextureId) {
@@ -769,7 +815,7 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 			item.textureKey = "";
 		}
 
-		item.transparent = mat.opacity < 1 || mat.a < 1 || !!materialData?.transparent ||
+		item.transparent = mat.opacity < 1 || mat.a < 1 || !!materialData?.transparent || !!overrideData?.transparent ||
 			!!(item.texture && (item.texture as any)._hasAlpha);
 		item.castShadow = !entity._noShadowCast && !item.transparent;
 
@@ -812,6 +858,45 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 		item.depthKey = geometry.id + skinned;
 
 		return item;
+	}
+
+	/**
+	 * Copy the values present in a material onto a render item's resolved
+	 * material (fields that are absent are left unchanged).
+	 */
+	protected _applyMaterialData(item: IgeWebGlRenderItem, materialData: IgeMaterialData): void {
+		const mat = item.material;
+		const color = materialData.color;
+		if (color) {
+			if (typeof color === "object") {
+				mat.r = color.r;
+				mat.g = color.g;
+				mat.b = color.b;
+				mat.a = color.a ?? 1;
+			} else {
+				const rgb = parseHexColor(color);
+				mat.r = rgb[0];
+				mat.g = rgb[1];
+				mat.b = rgb[2];
+			}
+		}
+		if (materialData.metallic !== undefined) mat.metallic = materialData.metallic;
+		if (materialData.roughness !== undefined) mat.roughness = materialData.roughness;
+		if (materialData.emissiveColor) {
+			mat.emissiveR = materialData.emissiveColor.r;
+			mat.emissiveG = materialData.emissiveColor.g;
+			mat.emissiveB = materialData.emissiveColor.b;
+			mat.emissiveIntensity = materialData.emissiveIntensity ?? 1;
+		}
+
+		const textureId = materialData.textureId;
+		if (textureId && this._textureManager) {
+			if (this._textureManager.getBlobTexture(textureId)) {
+				item.blobTextureId = textureId;
+			} else if (materialData.textureBlob) {
+				this._requestBlobTexture(textureId, materialData.textureBlob);
+			}
+		}
 	}
 
 	/**

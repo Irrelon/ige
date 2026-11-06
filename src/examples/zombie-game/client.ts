@@ -14,7 +14,6 @@ import {
 	IgePointLight
 } from "@/engine/webgl/IgeWebGlLight";
 import { igeGltfLoader, type IgeGltfModel } from "@/engine/webgl/IgeGltfLoader";
-import { IgeSkeletalAnimationComponent } from "@/engine/components/IgeSkeletalAnimationComponent";
 
 // @ts-ignore
 window.ige = ige;
@@ -368,22 +367,6 @@ export class Client extends IgeBaseClass implements IgeCanInit {
 			this.log(`  Meshes: ${this.playerModel.meshes.length}`);
 			this.log(`  Skins: ${this.playerModel.skins?.length || 0}`);
 			this.log(`  Animations: ${this.playerModel.animations?.length || 0}`);
-
-			// Preload textures from model materials
-			if (this.renderer) {
-				const textureManager = (this.renderer as any)._textureManager;
-				if (textureManager) {
-					for (let i = 0; i < this.playerModel.materials.length; i++) {
-						const material = this.playerModel.materials[i] as any;
-						const textureData = material._baseColorTextureData;
-						if (textureData) {
-							const textureId = `player_mat_${i}_baseColor`;
-							await textureManager.createTextureFromBlob(textureId, textureData);
-							material._baseColorTextureId = textureId;
-						}
-					}
-				}
-			}
 		} catch (error) {
 			this.log(`Failed to load player model: ${error}`, "error");
 			this.log("Place CesiumMan.glb in assets/models/ to see animated players");
@@ -391,87 +374,27 @@ export class Client extends IgeBaseClass implements IgeCanInit {
 	}
 
 	createPlayers () {
-		if (!this.scene || !this.renderer || !this.playerModel) return;
+		if (!this.scene || !this.playerModel) return;
 
-		const skeletonManager = this.renderer.skeletonManager;
-		if (!skeletonManager) return;
-
-		// Find the skinned mesh in the model
-		const skinnedMesh = this.playerModel.meshes.find(m =>
-			m.primitives.some(p => p.geometry.boneWeights && p.geometry.boneIndices)
-		);
-
-		const skinnedPrimitive = skinnedMesh?.primitives.find(
-			p => p.geometry.boneWeights && p.geometry.boneIndices
-		);
-
-		// Register skeleton data once
-		const skin = this.playerModel.skins?.[0];
-		if (skin) {
-			skeletonManager.registerSkeletonData(skin.skeleton);
-		}
-
-		const baseTextureId = (this.playerModel.materials[0] as any)?._baseColorTextureId;
+		const firstClip = this.playerModel.animations?.[0]?.name;
 
 		for (let i = 0; i < 4; i++) {
 			const config = PLAYER_CONFIGS[i];
-			const entity = new IgeEntity();
-			entity.id(`player_${i}`);
 
-			// Set geometry from skinned mesh
-			if (skinnedPrimitive) {
-				entity._geometryData = {
-					...skinnedPrimitive.geometry,
-					id: `player_${i}_geometry`
-				};
-			}
+			// model() sets up meshes, textures, skeleton and animation clips.
+			// The entity's own material data tints this player's copy only.
+			const entity = new IgeEntity()
+				.id(`player_${i}`)
+				.model(this.playerModel, { animation: firstClip });
 
-			// Set color-tinted material
 			entity._materialData = {
-				color: { r: config.color.r, g: config.color.g, b: config.color.b, a: 1 },
-				metallic: 0.0,
-				roughness: 0.5,
-				textureId: baseTextureId
+				color: { r: config.color.r, g: config.color.g, b: config.color.b, a: 1 }
 			};
 
-			// Create skeleton instance for this player
-			if (skin) {
-				const skeletonInstance = skeletonManager.createSkeletonInstance(
-					skin.skeleton.id,
-					`player_${i}_skeleton`
-				);
-
-				if (skeletonInstance) {
-					entity._skeleton = skeletonInstance;
-				}
-			}
-
-			// Add skeletal animation component
-			entity.addComponent("skeletalAnimation", IgeSkeletalAnimationComponent);
-			const animComp = entity.components.skeletalAnimation as IgeSkeletalAnimationComponent;
-
-			if (entity._skeleton) {
-				animComp.setSkeleton(entity._skeleton);
-			}
-
-			// Register and play animations
-			if (this.playerModel.animations && this.playerModel.animations.length > 0) {
-				for (const clip of this.playerModel.animations) {
-					animComp.define(clip.id, clip);
-				}
-
-				// Auto-play first animation (walking for CesiumMan)
-				animComp.play(this.playerModel.animations[0].id, { crossFadeDuration: 0 });
-			}
-
-			// Position and scale
-			// CesiumMan is approximately 1.8 units tall, scale up for visibility
+			// CesiumMan is approximately 1.8 units tall, scale up for visibility.
+			// glTF models face +Z, which is toward the isometric cameras.
 			entity.translateTo(config.startPos.x, config.startPos.y, config.startPos.z);
 			entity.scaleTo(100, 100, 100);
-			// CesiumMan mesh data is in Z-up space; rotate to stand upright in Y-up world.
-			// -90° X to stand upright, 180° Y to face toward +Z (toward viewer).
-			entity.rotateTo(-Math.PI / 2, Math.PI, 0);
-
 			entity.mount(this.scene);
 			this.playerEntities.push(entity);
 
@@ -640,11 +563,9 @@ export class Client extends IgeBaseClass implements IgeCanInit {
 					player._translate.z + dz
 				);
 
-				// Rotate player to face movement direction.
-				// After -π/2 X rotation the model's forward is -Z at Y=0.
-				// Compensate with +π/2 for the engine's rotation order.
-				const angle = Math.atan2(-dx, -dz) + Math.PI / 2;
-				player.rotateTo(-Math.PI / 2, angle, 0);
+				// Face the movement direction. The model faces +Z; a Y rotation
+				// of angle turns +Z toward (sin(angle), cos(angle)).
+				player.rotateTo(0, Math.atan2(dx, dz), 0);
 			}
 		});
 	}

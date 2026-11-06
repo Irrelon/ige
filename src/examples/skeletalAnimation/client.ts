@@ -183,9 +183,6 @@ export class Client extends IgeBaseClass implements IgeCanInit {
 			this.log(`  Images: ${this.animatedModel.images?.length || 0}`);
 			this.log(`  Textures: ${this.animatedModel.textures?.length || 0}`);
 
-			// Preload textures from materials
-			await this.preloadTextures();
-
 			// Check if model has skeleton and animations
 			if (!this.animatedModel.skins || this.animatedModel.skins.length === 0) {
 				this.log("Warning: Model has no skeleton (skin) data!", "warning");
@@ -218,168 +215,33 @@ export class Client extends IgeBaseClass implements IgeCanInit {
 		}
 	}
 
-	async preloadTextures () {
-		if (!this.renderer || !this.animatedModel) return;
-
-		const textureManager = (this.renderer as any)._textureManager;
-		if (!textureManager) {
-			this.log("Texture manager not available", "warning");
-			return;
-		}
-
-		// Load textures from materials
-		for (let i = 0; i < this.animatedModel.materials.length; i++) {
-			const material = this.animatedModel.materials[i] as any;
-			const textureData = material._baseColorTextureData;
-
-			if (textureData) {
-				const textureId = `material_${i}_baseColor`;
-				this.log(`Loading texture for material ${i}...`);
-				await textureManager.createTextureFromBlob(textureId, textureData);
-				// Store the texture ID on the material for later reference
-				material._baseColorTextureId = textureId;
-			}
-		}
-
-		this.log("Texture preloading complete");
-	}
-
 	createAnimatedEntity () {
-		if (!this.scene || !this.renderer || !this.animatedModel) return;
+		if (!this.scene || !this.animatedModel) return;
 
-		const skeletonManager = this.renderer.skeletonManager;
-		if (!skeletonManager) {
-			this.log("Skeleton manager not available", "error");
-			return;
+		const skin = this.animatedModel.skins?.[0];
+		const boneCountEl = document.getElementById("boneCount");
+		if (boneCountEl && skin) {
+			boneCountEl.textContent = skin.skeleton.boneCount.toString();
 		}
 
-		// Create entity
-		this.animatedEntity = new IgeEntity();
-		this.animatedEntity.id("cesiumMan");
+		this.animationNames = (this.animatedModel.animations || []).map((clip) => clip.name || clip.id);
 
-		// Get first mesh with skinning
-		const mesh = this.animatedModel.meshes.find(m =>
-			m.primitives.some(p => p.geometry.boneWeights && p.geometry.boneIndices)
-		);
+		// model() builds every mesh with its materials and textures, places
+		// them using the model's node hierarchy (CesiumMan is authored Z-up
+		// and its root node converts it to Y-up), and gives the entity its own
+		// skeleton plus a skeletalAnimation component with every clip defined.
+		this.animatedEntity = new IgeEntity()
+			.id("cesiumMan")
+			.model(this.animatedModel, { animation: this.animationNames[0] })
+			// CesiumMan is about 1.8 units tall, scale up to be visible
+			.translateTo(0, -100, 0)
+			.scaleTo(100, 100, 100)
+			// No rotation needed: glTF models face +Z (toward the viewer)
+			.mount(this.scene);
 
-		if (!mesh) {
-			this.log("No skinned mesh found in model", "warning");
-			// Fallback to first mesh
-			if (this.animatedModel.meshes.length > 0) {
-				const firstMesh = this.animatedModel.meshes[0];
-				if (firstMesh.primitives.length > 0) {
-					this.animatedEntity._geometryData = {
-						...firstMesh.primitives[0].geometry,
-						id: "animatedCharacter_geometry"
-					};
-				}
-			}
-		} else {
-			// Use skinned mesh
-			const primitive = mesh.primitives.find(p =>
-				p.geometry.boneWeights && p.geometry.boneIndices
-			);
-
-			if (primitive) {
-				this.animatedEntity._geometryData = {
-					...primitive.geometry,
-					id: "animatedCharacter_geometry"
-				};
-				const vertexCount = (primitive.geometry.vertices?.length || 0) / 3;
-				this.log(`Using skinned mesh with ${vertexCount} vertices`);
-				this.log(`  Has boneWeights: ${!!primitive.geometry.boneWeights}`);
-				this.log(`  Has boneIndices: ${!!primitive.geometry.boneIndices}`);
-				this.log(`  Has normals: ${!!primitive.geometry.normals}`);
-				this.log(`  Has uvs: ${!!primitive.geometry.uvs}`);
-				this.log(`  Has indices: ${!!primitive.geometry.indices}`);
-				this.log(`  SkeletonId: ${primitive.geometry.skeletonId}`);
-			}
+		if (this.animationNames.length > 0) {
+			this.updateAnimationDisplay(this.animationNames[0]);
 		}
-
-		// Set material - use the GLTF material if available
-		const gltfMaterial = this.animatedModel.materials[0] as any;
-		if (gltfMaterial && gltfMaterial._baseColorTextureId) {
-			// Use GLTF material with texture reference
-			this.animatedEntity._materialData = {
-				color: gltfMaterial._color || { r: 1, g: 1, b: 1, a: 1 },
-				metallic: gltfMaterial._metallic ?? 0.0,
-				roughness: gltfMaterial._roughness ?? 0.5,
-				textureId: gltfMaterial._baseColorTextureId
-			};
-			this.log(`Using GLTF material with texture: ${gltfMaterial._baseColorTextureId}`);
-		} else {
-			// Fallback to default material
-			this.animatedEntity._materialData = {
-				color: { r: 0.9, g: 0.8, b: 0.7, a: 1 },
-				metallic: 0.0,
-				roughness: 0.5
-			};
-			this.log("Using default material (no texture)");
-		}
-
-		// Register skeleton data if available
-		if (this.animatedModel.skins && this.animatedModel.skins.length > 0) {
-			const skin = this.animatedModel.skins[0];
-			skeletonManager.registerSkeletonData(skin.skeleton);
-			this.log(`Registered skeleton: ${skin.skeleton.name} with ${skin.skeleton.boneCount} bones`);
-
-			// Update bone count display
-			const boneCountEl = document.getElementById("boneCount");
-			if (boneCountEl) {
-				boneCountEl.textContent = skin.skeleton.boneCount.toString();
-			}
-
-			// Create skeleton instance for this entity
-			const skeletonInstance = skeletonManager.createSkeletonInstance(
-				skin.skeleton.id,
-				"animatedCharacter_skeleton"
-			);
-
-			if (skeletonInstance) {
-				this.animatedEntity._skeleton = skeletonInstance;
-				this.log("Created skeleton instance for entity");
-			}
-		}
-
-		// Add skeletal animation component
-		this.animatedEntity.addComponent("skeletalAnimation", IgeSkeletalAnimationComponent);
-		const animComponent = this.animatedEntity.components.skeletalAnimation as IgeSkeletalAnimationComponent;
-
-		// Set skeleton reference for animation component
-		if (this.animatedEntity._skeleton) {
-			animComponent.setSkeleton(this.animatedEntity._skeleton);
-		}
-
-		// Register animation clips
-		if (this.animatedModel.animations && this.animatedModel.animations.length > 0) {
-			for (const clip of this.animatedModel.animations) {
-				animComponent.define(clip.id, clip);
-				this.animationNames.push(clip.name || clip.id);
-				this.log(`Registered animation: ${clip.name} (duration: ${clip.duration.toFixed(2)}s)`);
-			}
-
-			// Auto-play first animation
-			if (this.animationNames.length > 0) {
-				const firstAnimId = this.animatedModel.animations[0].id;
-				animComponent.play(firstAnimId, { crossFadeDuration: 0 });
-				this.updateAnimationDisplay(this.animationNames[0]);
-			}
-		}
-
-		// Position and scale entity
-		// CesiumMan is about 1.8m (180 units) tall, scale up to be visible
-		this.animatedEntity.translateTo(0, -100, 0); // Lower to center in view
-		this.animatedEntity.scaleTo(100, 100, 100); // Scale up for visibility
-
-		// CesiumMan mesh data is in Z-up space (Blender convention).
-		// The GLTF node transform that converts to Y-up is not yet applied
-		// by the loader, so we rotate manually:
-		//   -90° around X to stand upright (Z-up → Y-up)
-		//   180° around Y to face toward +Z (toward viewer)
-		this.animatedEntity.rotateTo(-Math.PI / 2, Math.PI, 0);
-
-		// Mount to scene
-		this.animatedEntity.mount(this.scene);
 
 		this.log("Animated entity created and mounted");
 	}

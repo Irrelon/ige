@@ -29,6 +29,19 @@ import type { IgeSmartTexture } from "@/types/IgeSmartTexture";
 import type { IgeTimeStreamPacket, IgeTimeStreamParsedTransformData } from "@/types/IgeTimeStream";
 import type { IgeTriggerPolygonFunctionName } from "@/types/IgeTriggerPolygonFunctionName";
 import type { IgeGltfModel } from "@/engine/webgl/IgeGltfLoader";
+import { createSkeletonInstance, getModelParts } from "@/engine/webgl/IgeModelParts";
+import { IgeSkeletalAnimationComponent } from "@/engine/components/IgeSkeletalAnimationComponent";
+import type { IgeAnimationPlayOptions } from "@/types/IgeAnimationClipData";
+
+/**
+ * Options for IgeEntity.model().
+ */
+export interface IgeModelOptions {
+	/** Name of an animation clip to start playing (skinned models). */
+	animation?: string;
+	/** Whether the model casts shadows (default true). */
+	castShadow?: boolean;
+}
 
 export interface IgeEntityTransformAccessor {
 	x: (val?: number) => number | IgeEntity;
@@ -975,31 +988,101 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 	}
 
 	/**
-	 * Gets / sets the 3D model for this entity. When a model is set,
-	 * the entity will render using the model's geometry and materials
-	 * instead of a 2D texture.
+	 * Gets / sets the 3D model for this entity. The entity renders every
+	 * mesh of the model with its own materials and textures, placed by the
+	 * model's node hierarchy (so models exported Z-up or with a root
+	 * rotation stand the right way up without manual correction).
+	 *
+	 * Skinned models also get their own skeleton and an
+	 * IgeSkeletalAnimationComponent ("skeletalAnimation") with every clip
+	 * in the file defined by name, ready for playAnimation().
+	 *
+	 * Many entities can share one loaded model: geometry, textures and
+	 * cached animation poses are shared, and the WebGL renderer draws
+	 * them with GPU instancing.
+	 *
+	 * Setting _materialData on the entity afterwards overrides the model's
+	 * material values (colour, metallic, roughness, emissive) for that
+	 * entity only, e.g. for a per-instance tint or a hit flash.
 	 * @param {IgeGltfModel=} model The loaded GLTF model.
+	 * @param {IgeModelOptions=} options Optional starting animation and shadow setting.
 	 * @example #Set the entity model
 	 *     const model = await igeGltfLoader.load('path/to/model.glb');
 	 *     entity.model(model);
+	 * @example #Spawn an animated character
+	 *     const zombie = new IgeEntity()
+	 *         .model(zombieModel, { animation: "Walk" })
+	 *         .translateTo(100, 0, 50)
+	 *         .mount(scene);
 	 * @return {*} "this" when arguments are passed to allow method
 	 * chaining or the current value if no arguments are specified.
 	 */
-	model (model: IgeGltfModel): this;
+	model (model: IgeGltfModel, options?: IgeModelOptions): this;
 	model (): IgeGltfModel | undefined;
-	model (model?: IgeGltfModel) {
-		if (model !== undefined) {
-			this._model = model;
-
-			// Set geometry from the first mesh's first primitive
-			if (model.meshes.length > 0 && model.meshes[0].primitives.length > 0) {
-				this._geometryData = model.meshes[0].primitives[0].geometry;
-			}
-
-			return this;
+	model (model?: IgeGltfModel, options: IgeModelOptions = {}) {
+		if (model === undefined) {
+			return this._model;
 		}
 
-		return this._model;
+		this._model = model;
+		const parts = getModelParts(model);
+		this._modelParts = parts;
+		this._modelPartMatrices = undefined;
+
+		// Backwards compatibility: expose the first primitive as the geometry
+		if (parts.length > 0) {
+			this._geometryData = parts[0].geometryData;
+		}
+
+		if (options.castShadow !== undefined) {
+			this._noShadowCast = !options.castShadow;
+		}
+
+		// Skinned models: give this entity its own skeleton and animations
+		const skin = model.skins?.[0];
+		if (skin && parts.some((part) => part.skinned)) {
+			this._skeletonData = skin.skeleton;
+			this._skeleton = createSkeletonInstance(skin.skeleton);
+
+			let anim = this.components.skeletalAnimation as IgeSkeletalAnimationComponent | undefined;
+			if (!anim) {
+				this.addComponent("skeletalAnimation", IgeSkeletalAnimationComponent);
+				anim = this.components.skeletalAnimation as IgeSkeletalAnimationComponent;
+			}
+
+			anim.setSkeleton(this._skeleton);
+			if (model.animations?.length) {
+				anim.defineClips(model.animations);
+			}
+
+			if (options.animation) {
+				anim.play(options.animation, { crossFadeDuration: 0 });
+			}
+		} else {
+			this._skeleton = undefined;
+			this._skeletonData = undefined;
+		}
+
+		return this;
+	}
+
+	/**
+	 * Returns the skeletal animation component added by model() for
+	 * skinned models, or undefined.
+	 */
+	skeletalAnimation (): IgeSkeletalAnimationComponent | undefined {
+		return this.components.skeletalAnimation as IgeSkeletalAnimationComponent | undefined;
+	}
+
+	/**
+	 * Play a skeletal animation clip by name (as named in the model file).
+	 * Cross-fades from the current clip over 0.2 seconds by default.
+	 * @example #Switch to an attack animation
+	 *     zombie.playAnimation("Attack", { loop: false, crossFadeDuration: 0.1 });
+	 */
+	playAnimation (name: string, options?: IgeAnimationPlayOptions): this {
+		this.skeletalAnimation()?.play(name, options);
+		return this;
 	}
 
 	/**

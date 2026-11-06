@@ -153,6 +153,16 @@ export class IgeWebGlSkeletonManager extends IgeBaseClass {
 				skeleton.localMatrices,
 				localOffset
 			);
+		} else if (bone.parentTransform) {
+			// Root bone under non-joint ancestors: world = ancestors * local
+			this._multiplyMat4(
+				skeleton.worldMatrices,
+				worldOffset,
+				bone.parentTransform,
+				0,
+				skeleton.localMatrices,
+				localOffset
+			);
 		} else {
 			// Root bone: worldMatrix = localMatrix
 			for (let i = 0; i < 16; i++) {

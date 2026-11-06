@@ -14,6 +14,14 @@ export interface IgeBone {
 	localBindTransform: Float32Array;
 	/** Inverse bind matrix from GLTF skin (4x4 matrix as 16 floats) */
 	inverseBindMatrix: Float32Array;
+	/**
+	 * Root bones only: the combined transform of the bone's non-joint
+	 * ancestor nodes (e.g. an "Armature" node converting Z-up to Y-up).
+	 * glTF joint matrices use each joint's full global transform, so this
+	 * is applied before the root bone's local transform. Omitted when the
+	 * bone has no ancestors or they are all identity.
+	 */
+	parentTransform?: Float32Array;
 }
 
 /**

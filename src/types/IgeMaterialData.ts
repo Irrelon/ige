@@ -36,4 +36,10 @@ export interface IgeMaterialData extends IgeAbstractData3d {
 	// Texture references
 	/** ID of the base color/diffuse texture (loaded via TextureManager) */
 	textureId?: string;
+	/**
+	 * Encoded image for the base colour texture (e.g. from a GLB). When set
+	 * with textureId, the WebGL renderer uploads it on first use and draws
+	 * with plain white until the upload finishes.
+	 */
+	textureBlob?: Blob;
 }
