@@ -9,7 +9,7 @@ import type {
 	IgeAnimationSampler,
 	IgeAnimationInterpolation
 } from "@/types/IgeAnimationClipData";
-import type { IgeSkeleton } from "@/types/IgeSkeletonData";
+import type { IgeSkeleton, IgeSkeletonData } from "@/types/IgeSkeletonData";
 
 /**
  * Skeletal animation component for GPU-based bone animation.
@@ -26,7 +26,108 @@ import type { IgeSkeleton } from "@/types/IgeSkeletonData";
  * // Play with cross-fade
  * entity.skeletalAnimation.play("walk", { crossFadeDuration: 0.2 });
  */
+/**
+ * Bone matrices for one quantised frame of a clip on one skeleton.
+ */
+interface IgePoseCacheEntry {
+	world: Float32Array;
+	skin: Float32Array;
+}
+
+/** clip -> skeleton data id -> frame index -> pose. Shared by all instances. */
+const poseCache: WeakMap<IgeAnimationClipData, Map<string, IgePoseCacheEntry[]>> = new WeakMap();
+
+/**
+ * A skeleton's rest (bind) pose decomposed into per-bone TRS components,
+ * used for properties a clip doesn't animate.
+ */
+interface IgeRestPose {
+	translations: Float32Array;
+	rotations: Float32Array;
+	scales: Float32Array;
+}
+
+const restPoseCache: WeakMap<IgeSkeletonData, IgeRestPose> = new WeakMap();
+
+/**
+ * Decompose each bone's local bind matrix into translation, rotation
+ * (quaternion) and scale. Computed once per skeleton data.
+ */
+function getRestPose (data: IgeSkeletonData): IgeRestPose {
+	let rest = restPoseCache.get(data);
+	if (rest) return rest;
+
+	const n = data.boneCount;
+	rest = {
+		translations: new Float32Array(n * 3),
+		rotations: new Float32Array(n * 4),
+		scales: new Float32Array(n * 3)
+	};
+
+	for (let i = 0; i < n; i++) {
+		const m = data.bones[i].localBindTransform;
+		const sx = Math.hypot(m[0], m[1], m[2]) || 1;
+		const sy = Math.hypot(m[4], m[5], m[6]) || 1;
+		const sz = Math.hypot(m[8], m[9], m[10]) || 1;
+
+		rest.translations[i * 3] = m[12];
+		rest.translations[i * 3 + 1] = m[13];
+		rest.translations[i * 3 + 2] = m[14];
+		rest.scales[i * 3] = sx;
+		rest.scales[i * 3 + 1] = sy;
+		rest.scales[i * 3 + 2] = sz;
+
+		// Rotation matrix (scale removed) -> quaternion
+		const m00 = m[0] / sx, m01 = m[4] / sy, m02 = m[8] / sz;
+		const m10 = m[1] / sx, m11 = m[5] / sy, m12 = m[9] / sz;
+		const m20 = m[2] / sx, m21 = m[6] / sy, m22 = m[10] / sz;
+		const trace = m00 + m11 + m22;
+		let qx: number, qy: number, qz: number, qw: number;
+
+		if (trace > 0) {
+			const s = 0.5 / Math.sqrt(trace + 1);
+			qw = 0.25 / s;
+			qx = (m21 - m12) * s;
+			qy = (m02 - m20) * s;
+			qz = (m10 - m01) * s;
+		} else if (m00 > m11 && m00 > m22) {
+			const s = 2 * Math.sqrt(1 + m00 - m11 - m22);
+			qw = (m21 - m12) / s;
+			qx = 0.25 * s;
+			qy = (m01 + m10) / s;
+			qz = (m02 + m20) / s;
+		} else if (m11 > m22) {
+			const s = 2 * Math.sqrt(1 + m11 - m00 - m22);
+			qw = (m02 - m20) / s;
+			qx = (m01 + m10) / s;
+			qy = 0.25 * s;
+			qz = (m12 + m21) / s;
+		} else {
+			const s = 2 * Math.sqrt(1 + m22 - m00 - m11);
+			qw = (m10 - m01) / s;
+			qx = (m02 + m20) / s;
+			qy = (m12 + m21) / s;
+			qz = 0.25 * s;
+		}
+
+		rest.rotations[i * 4] = qx;
+		rest.rotations[i * 4 + 1] = qy;
+		rest.rotations[i * 4 + 2] = qz;
+		rest.rotations[i * 4 + 3] = qw;
+	}
+
+	restPoseCache.set(data, rest);
+	return rest;
+}
+
 export class IgeSkeletalAnimationComponent extends IgeComponent<IgeEntity> {
+	/**
+	 * Samples per second used by the shared pose cache (see poseCache()).
+	 * Entities playing the same clip on the same skeleton share one set of
+	 * bone matrices per quantised frame. 0 disables caching globally.
+	 */
+	static poseCacheRate: number = 30;
+
 	classId = "IgeSkeletalAnimationComponent";
 	componentId = "skeletalAnimation";
 
@@ -38,6 +139,12 @@ export class IgeSkeletalAnimationComponent extends IgeComponent<IgeEntity> {
 
 	// Reference to entity's skeleton instance
 	protected _skeleton?: IgeSkeleton;
+
+	// Skip pose sampling while the entity is not being drawn
+	protected _cullOffscreen: boolean = true;
+
+	// Use the shared pose cache for single full-weight clips
+	protected _poseCache: boolean = true;
 
 	// Temporary arrays for interpolation
 	private _tempVec3A: Float32Array = new Float32Array(3);
@@ -214,7 +321,68 @@ export class IgeSkeletalAnimationComponent extends IgeComponent<IgeEntity> {
 	}
 
 	/**
+	 * Gets / sets whether pose sampling is skipped while the entity is off
+	 * screen (default true). When the WebGL renderer did not draw the entity
+	 * in any viewport or shadow pass last frame, clip time, fades and
+	 * completion events still advance, but the expensive keyframe sampling
+	 * and bone updates are skipped. The pose catches up the next time the
+	 * entity is drawn. Disable it for entities whose bone poses are read by
+	 * game logic (e.g. attachment points) even when unseen.
+	 */
+	cullOffscreen(): boolean;
+	cullOffscreen(val: boolean): this;
+	cullOffscreen(val?: boolean): boolean | this {
+		if (val === undefined) {
+			return this._cullOffscreen;
+		}
+		this._cullOffscreen = val;
+		return this;
+	}
+
+	/**
+	 * Gets / sets whether this entity may use the shared pose cache (default
+	 * true). Cached poses are quantised to
+	 * IgeSkeletalAnimationComponent.poseCacheRate samples per second, which
+	 * is ideal for crowds; disable it for a hero character that should
+	 * animate at full frame rate.
+	 */
+	poseCache(): boolean;
+	poseCache(val: boolean): this;
+	poseCache(val?: boolean): boolean | this {
+		if (val === undefined) {
+			return this._poseCache;
+		}
+		this._poseCache = val;
+		return this;
+	}
+
+	/**
+	 * Whether the entity's pose needs sampling this frame.
+	 */
+	protected _isPoseVisible(entity: IgeEntity): boolean {
+		if (!this._cullOffscreen || entity._lastRenderedFrame < 0) {
+			return true;
+		}
+
+		const renderer = ige.engine.renderer() as { frameId?: () => number } | undefined;
+		if (!renderer || typeof renderer.frameId !== "function") {
+			return true;
+		}
+
+		// The renderer hasn't drawn this frame yet, so frameId() is the
+		// previous frame: sample if the entity was drawn in it.
+		return renderer.frameId() - entity._lastRenderedFrame <= 1;
+	}
+
+	/**
 	 * Update animation playback.
+	 *
+	 * Clip time, fades and completion events always advance. The pose is
+	 * then produced in one of two ways:
+	 * - a single clip at full weight (the common case for crowds) copies
+	 *   bone matrices from a cache shared by every entity playing that clip
+	 *   on the same skeleton, keyed by time quantised to poseCacheRate;
+	 * - anything else (cross-fades, blends) samples and blends every clip.
 	 */
 	protected _update = (entity: IgeEntity, tickDelta: number): void => {
 		if (!this._skeleton || this._activeStates.length === 0) {
@@ -222,32 +390,15 @@ export class IgeSkeletalAnimationComponent extends IgeComponent<IgeEntity> {
 		}
 
 		const deltaSeconds = tickDelta / 1000;
+		const samplePose = this._isPoseVisible(entity);
 
-		// Reset bone accumulators
-		const boneCount = this._skeleton.data.boneCount;
-		for (let i = 0; i < boneCount; i++) {
-			this._boneTranslations[i][0] = 0;
-			this._boneTranslations[i][1] = 0;
-			this._boneTranslations[i][2] = 0;
-			this._boneRotations[i][0] = 0;
-			this._boneRotations[i][1] = 0;
-			this._boneRotations[i][2] = 0;
-			this._boneRotations[i][3] = 0;
-			this._boneScales[i][0] = 0;
-			this._boneScales[i][1] = 0;
-			this._boneScales[i][2] = 0;
-			this._boneTranslationWeights[i] = 0;
-			this._boneRotationWeights[i] = 0;
-			this._boneScaleWeights[i] = 0;
-		}
-
-		// Calculate total weight for normalization
+		// Advance every active state
 		let totalWeight = 0;
+		const states = this._activeStates;
 
-		// Process each active animation state
-		const statesToRemove: IgeAnimationState[] = [];
+		for (let i = 0; i < states.length; i++) {
+			const state = states[i];
 
-		for (const state of this._activeStates) {
 			// Update fade
 			if (state.fadeInDuration > 0 && state.weight < 1) {
 				state.fadeTime += deltaSeconds;
@@ -262,7 +413,7 @@ export class IgeSkeletalAnimationComponent extends IgeComponent<IgeEntity> {
 				state.fadeTime += deltaSeconds;
 				state.weight = Math.max(0, 1 - state.fadeTime / state.fadeOutDuration);
 				if (state.weight <= 0) {
-					statesToRemove.push(state);
+					state.playing = false;
 					continue;
 				}
 			}
@@ -273,35 +424,133 @@ export class IgeSkeletalAnimationComponent extends IgeComponent<IgeEntity> {
 			// Handle looping
 			if (state.time >= state.clip.duration) {
 				if (state.loop) {
-					state.time = state.time % state.clip.duration;
+					state.time = state.clip.duration > 0 ? state.time % state.clip.duration : 0;
 					this.emit("loopComplete", state.clip.id);
 				} else {
 					state.time = state.clip.duration;
 					state.playing = false;
-					statesToRemove.push(state);
 					this.emit("complete", state.clip.id);
 					continue;
 				}
 			}
 
-			// Sample animation and accumulate transforms
 			totalWeight += state.weight;
-			this._sampleAnimation(state.clip, state.time, state.weight);
 		}
 
 		// Remove completed/faded-out animations
-		for (const state of statesToRemove) {
-			const index = this._activeStates.indexOf(state);
-			if (index !== -1) {
-				this._activeStates.splice(index, 1);
+		for (let i = states.length - 1; i >= 0; i--) {
+			if (!states[i].playing) {
+				states.splice(i, 1);
 			}
 		}
 
-		// Apply blended transforms to skeleton
-		if (totalWeight > 0) {
-			this._applyBlendedTransforms(totalWeight);
+		if (!samplePose || totalWeight <= 0 || states.length === 0) {
+			return;
 		}
+
+		// Fast path: one clip at full weight -> shared pose cache
+		if (states.length === 1 && states[0].weight >= 1 && this._poseCache && this._applyCachedPose(states[0])) {
+			return;
+		}
+
+		this._sampleBlendedPose(totalWeight);
 	};
+
+	/**
+	 * Sample every active state at its own time, blend and write the result
+	 * into the skeleton's local matrices.
+	 */
+	protected _sampleBlendedPose(totalWeight: number): void {
+		const skeleton = this._skeleton!;
+
+		// Reset bone accumulators
+		const boneCount = skeleton.data.boneCount;
+		for (let i = 0; i < boneCount; i++) {
+			const t = this._boneTranslations[i];
+			const r = this._boneRotations[i];
+			const sc = this._boneScales[i];
+			t[0] = 0; t[1] = 0; t[2] = 0;
+			r[0] = 0; r[1] = 0; r[2] = 0; r[3] = 0;
+			sc[0] = 0; sc[1] = 0; sc[2] = 0;
+			this._boneTranslationWeights[i] = 0;
+			this._boneRotationWeights[i] = 0;
+			this._boneScaleWeights[i] = 0;
+		}
+
+		const states = this._activeStates;
+		for (let i = 0; i < states.length; i++) {
+			const state = states[i];
+			if (state.weight > 0) {
+				this._sampleAnimation(state.clip, state.time, state.weight);
+			}
+		}
+
+		this._applyBlendedTransforms(totalWeight);
+	}
+
+	/**
+	 * Copy the pose for a single full-weight clip from the shared cache,
+	 * filling the cache entry on first use. Returns false when the cache
+	 * can't be used (no skeleton manager available, caching disabled).
+	 */
+	protected _applyCachedPose(state: IgeAnimationState): boolean {
+		const rate = IgeSkeletalAnimationComponent.poseCacheRate;
+		const skeleton = this._skeleton!;
+		if (rate <= 0) return false;
+
+		const skeletonManager = (ige.engine.renderer() as any)?.skeletonManager as
+			{ updateSkeletonMatrices: (skeleton: IgeSkeleton) => void } | undefined;
+		if (!skeletonManager) return false;
+
+		let bySkeleton = poseCache.get(state.clip);
+		if (!bySkeleton) {
+			bySkeleton = new Map();
+			poseCache.set(state.clip, bySkeleton);
+		}
+
+		const skeletonId = skeleton.data.id;
+		let frames = bySkeleton.get(skeletonId);
+		if (!frames) {
+			frames = [];
+			bySkeleton.set(skeletonId, frames);
+		}
+
+		const frame = Math.floor(state.time * rate);
+		let entry = frames[frame];
+
+		if (!entry) {
+			// Sample the clip at the quantised time so the entry is exact for
+			// every entity that lands on this frame.
+			const sampleTime = Math.min(frame / rate, state.clip.duration);
+			const boneCount = skeleton.data.boneCount;
+			for (let i = 0; i < boneCount; i++) {
+				const t = this._boneTranslations[i];
+				const r = this._boneRotations[i];
+				const sc = this._boneScales[i];
+				t[0] = 0; t[1] = 0; t[2] = 0;
+				r[0] = 0; r[1] = 0; r[2] = 0; r[3] = 0;
+				sc[0] = 0; sc[1] = 0; sc[2] = 0;
+				this._boneTranslationWeights[i] = 0;
+				this._boneRotationWeights[i] = 0;
+				this._boneScaleWeights[i] = 0;
+			}
+			this._sampleAnimation(state.clip, sampleTime, 1);
+			this._applyBlendedTransforms(1);
+			skeletonManager.updateSkeletonMatrices(skeleton);
+
+			entry = {
+				world: skeleton.worldMatrices.slice(),
+				skin: skeleton.skinMatrices.slice()
+			};
+			frames[frame] = entry;
+			return true;
+		}
+
+		skeleton.worldMatrices.set(entry.world);
+		skeleton.skinMatrices.set(entry.skin);
+		skeleton.dirty = false;
+		return true;
+	}
 
 	/**
 	 * Sample an animation clip at a specific time and accumulate transforms.
@@ -332,15 +581,20 @@ export class IgeSkeletalAnimationComponent extends IgeComponent<IgeEntity> {
 					this._boneTranslationWeights[boneIndex] += weight;
 					break;
 
-				case "rotation":
-					// For rotation blending, we accumulate quaternions
-					// This is a simplified approach; proper SLERP blending is more complex
-					this._boneRotations[boneIndex][0] += value[0] * weight;
-					this._boneRotations[boneIndex][1] += value[1] * weight;
-					this._boneRotations[boneIndex][2] += value[2] * weight;
-					this._boneRotations[boneIndex][3] += value[3] * weight;
+				case "rotation": {
+					// Weighted quaternion sum (normalised later). q and -q are the
+					// same rotation, so flip contributions into the accumulator's
+					// hemisphere or blends can take the long way round.
+					const acc = this._boneRotations[boneIndex];
+					const dot = acc[0] * value[0] + acc[1] * value[1] + acc[2] * value[2] + acc[3] * value[3];
+					const w = dot < 0 ? -weight : weight;
+					acc[0] += value[0] * w;
+					acc[1] += value[1] * w;
+					acc[2] += value[2] * w;
+					acc[3] += value[3] * w;
 					this._boneRotationWeights[boneIndex] += weight;
 					break;
+				}
 
 				case "scale":
 					this._boneScales[boneIndex][0] += value[0] * weight;
@@ -393,15 +647,20 @@ export class IgeSkeletalAnimationComponent extends IgeComponent<IgeEntity> {
 			}
 		}
 
-		// Find keyframe indices for interpolation
-		let keyIndex = 0;
-		for (let i = 0; i < input.length - 1; i++) {
-			if (time < input[i + 1]) {
-				keyIndex = i;
-				break;
+		// Find keyframe indices for interpolation: the last key whose time is
+		// <= time. Binary search keeps this cheap for long clips sampled by
+		// many characters every frame (input[0] < time < input[last] here).
+		let lo = 0;
+		let hi = input.length - 1;
+		while (hi - lo > 1) {
+			const mid = (lo + hi) >> 1;
+			if (input[mid] <= time) {
+				lo = mid;
+			} else {
+				hi = mid;
 			}
-			keyIndex = i;
 		}
+		const keyIndex = lo;
 
 		const nextKeyIndex = Math.min(keyIndex + 1, input.length - 1);
 
@@ -574,72 +833,79 @@ export class IgeSkeletalAnimationComponent extends IgeComponent<IgeEntity> {
 		}
 
 		const boneCount = this._skeleton.data.boneCount;
+		const rest = getRestPose(this._skeleton.data);
 
 		for (let i = 0; i < boneCount; i++) {
 			const translationWeight = this._boneTranslationWeights[i];
 			const rotationWeight = this._boneRotationWeights[i];
 			const scaleWeight = this._boneScaleWeights[i];
 
-			// Skip if no animation data for this bone
-			if (translationWeight === 0 && rotationWeight === 0 && scaleWeight === 0) {
-				continue;
-			}
+			// Any weight a property didn't receive from the clips (a clip with
+			// no channel for it, or part of a cross-fade) is filled from the
+			// bone's rest pose rather than from zero. Bones no active clip
+			// animates therefore return to rest instead of keeping a stale pose
+			// from a previous clip (and cached poses stay deterministic).
+			const r3 = i * 3;
+			const r4 = i * 4;
 
-			// Normalize translation
+			// Translation
 			const translation = this._boneTranslations[i];
-			if (translationWeight > 0) {
-				const invWeight = 1 / translationWeight;
-				translation[0] *= invWeight;
-				translation[1] *= invWeight;
-				translation[2] *= invWeight;
+			const missingT = totalWeight - translationWeight;
+			if (missingT > 0) {
+				translation[0] += rest.translations[r3] * missingT;
+				translation[1] += rest.translations[r3 + 1] * missingT;
+				translation[2] += rest.translations[r3 + 2] * missingT;
 			}
+			const invT = 1 / Math.max(totalWeight, translationWeight);
+			translation[0] *= invT;
+			translation[1] *= invT;
+			translation[2] *= invT;
 
-			// Normalize rotation (quaternion)
+			// Rotation (normalised weighted quaternion sum)
 			const rotation = this._boneRotations[i];
-			if (rotationWeight > 0) {
-				const len = Math.sqrt(
-					rotation[0] * rotation[0] +
-					rotation[1] * rotation[1] +
-					rotation[2] * rotation[2] +
-					rotation[3] * rotation[3]
-				);
-				if (len > 0) {
-					const invLen = 1 / len;
-					rotation[0] *= invLen;
-					rotation[1] *= invLen;
-					rotation[2] *= invLen;
-					rotation[3] *= invLen;
-				} else {
-					// Identity quaternion
-					rotation[0] = 0;
-					rotation[1] = 0;
-					rotation[2] = 0;
-					rotation[3] = 1;
-				}
+			const missingR = totalWeight - rotationWeight;
+			if (missingR > 0) {
+				const rx = rest.rotations[r4], ry = rest.rotations[r4 + 1], rz = rest.rotations[r4 + 2], rw = rest.rotations[r4 + 3];
+				const dot = rotation[0] * rx + rotation[1] * ry + rotation[2] * rz + rotation[3] * rw;
+				const w = dot < 0 ? -missingR : missingR;
+				rotation[0] += rx * w;
+				rotation[1] += ry * w;
+				rotation[2] += rz * w;
+				rotation[3] += rw * w;
+			}
+			const len = Math.sqrt(
+				rotation[0] * rotation[0] +
+				rotation[1] * rotation[1] +
+				rotation[2] * rotation[2] +
+				rotation[3] * rotation[3]
+			);
+			if (len > 0) {
+				const invLen = 1 / len;
+				rotation[0] *= invLen;
+				rotation[1] *= invLen;
+				rotation[2] *= invLen;
+				rotation[3] *= invLen;
 			} else {
-				// No rotation data - use identity
-				rotation[0] = 0;
-				rotation[1] = 0;
-				rotation[2] = 0;
-				rotation[3] = 1;
+				rotation[0] = rest.rotations[r4];
+				rotation[1] = rest.rotations[r4 + 1];
+				rotation[2] = rest.rotations[r4 + 2];
+				rotation[3] = rest.rotations[r4 + 3];
 			}
 
-			// Normalize scale
+			// Scale
 			const scale = this._boneScales[i];
-			if (scaleWeight > 0) {
-				const invWeight = 1 / scaleWeight;
-				scale[0] *= invWeight;
-				scale[1] *= invWeight;
-				scale[2] *= invWeight;
-			} else {
-				// No scale data - use identity
-				scale[0] = 1;
-				scale[1] = 1;
-				scale[2] = 1;
+			const missingS = totalWeight - scaleWeight;
+			if (missingS > 0) {
+				scale[0] += rest.scales[r3] * missingS;
+				scale[1] += rest.scales[r3 + 1] * missingS;
+				scale[2] += rest.scales[r3 + 2] * missingS;
 			}
+			const invS = 1 / Math.max(totalWeight, scaleWeight);
+			scale[0] *= invS;
+			scale[1] *= invS;
+			scale[2] *= invS;
 
-			// Apply to skeleton via the skeleton manager
-			// The skeleton manager will compute the final matrices
+			// Apply to skeleton; the skeleton manager computes the final matrices
 			this._applyBoneTransform(i, translation, rotation, scale);
 		}
 

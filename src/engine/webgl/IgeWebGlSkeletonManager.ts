@@ -108,7 +108,7 @@ export class IgeWebGlSkeletonManager extends IgeBaseClass {
 
 		// Compute world matrices by traversing hierarchy from roots
 		for (const rootIndex of data.rootBoneIndices) {
-			this._computeWorldMatrixRecursive(skeleton, rootIndex, null);
+			this._computeWorldMatrixRecursive(skeleton, rootIndex, -1);
 		}
 
 		// Compute skin matrices: skinMatrix = worldMatrix * inverseBindMatrix
@@ -136,19 +136,20 @@ export class IgeWebGlSkeletonManager extends IgeBaseClass {
 	private _computeWorldMatrixRecursive(
 		skeleton: IgeSkeleton,
 		boneIndex: number,
-		parentWorldMatrix: Float32Array | null
+		parentWorldOffset: number
 	): void {
 		const bone = skeleton.data.bones[boneIndex];
 		const localOffset = boneIndex * 16;
 		const worldOffset = boneIndex * 16;
 
-		if (parentWorldMatrix) {
-			// worldMatrix = parentWorld * localMatrix
+		if (parentWorldOffset >= 0) {
+			// worldMatrix = parentWorld * localMatrix (parent is read from the
+			// same array by offset, so no per-bone views are allocated)
 			this._multiplyMat4(
 				skeleton.worldMatrices,
 				worldOffset,
-				parentWorldMatrix,
-				0,
+				skeleton.worldMatrices,
+				parentWorldOffset,
 				skeleton.localMatrices,
 				localOffset
 			);
@@ -160,12 +161,9 @@ export class IgeWebGlSkeletonManager extends IgeBaseClass {
 		}
 
 		// Process children
-		for (const childIndex of bone.childIndices) {
-			this._computeWorldMatrixRecursive(
-				skeleton,
-				childIndex,
-				new Float32Array(skeleton.worldMatrices.buffer, worldOffset * 4, 16)
-			);
+		const children = bone.childIndices;
+		for (let i = 0; i < children.length; i++) {
+			this._computeWorldMatrixRecursive(skeleton, children[i], worldOffset);
 		}
 	}
 
