@@ -32,6 +32,9 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 	protected _webglVersion: 1 | 2 = 2;
 	protected _contextLost: boolean = false;
 
+	// Background clear colour (defaults to opaque black to preserve prior behaviour).
+	protected _clearColor = { r: 0, g: 0, b: 0, a: 1 };
+
 	// WebGL capabilities and extensions
 	protected _capabilities = {
 		maxTextureSize: 0,
@@ -339,6 +342,18 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 	};
 
 	/**
+	 * Set the background clear colour used for the canvas and each viewport.
+	 * Components are 0..1. Defaults to opaque black.
+	 *
+	 * Each viewport's area is cleared to this colour (including alpha) before
+	 * it is drawn, so split-screen viewports all share the same background.
+	 */
+	setClearColor(r: number, g: number, b: number, a: number = 1): this {
+		this._clearColor = { r, g, b, a };
+		return this;
+	}
+
+	/**
 	 * Main scene graph rendering method.
 	 * Called once per frame by the engine.
 	 */
@@ -347,8 +362,9 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 		if (!gl || this._contextLost) return false;
 
 		// Clear the entire canvas
+		const cc = this._clearColor;
 		gl.viewport(0, 0, this._canvasElement!.width, this._canvasElement!.height);
-		gl.clearColor(0.0, 0.0, 0.0, 1.0);
+		gl.clearColor(cc.r, cc.g, cc.b, cc.a);
 		gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
 		// Enable depth testing for 3D rendering
@@ -448,8 +464,8 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 			this._stateManager.setScissorBox(vpX, vpY, vpWidth, vpHeight);
 		}
 
-		// Clear viewport area
-		gl.clearColor(0.0, 0.0, 0.0, 0.0);
+		// Clear viewport area to the configured background colour.
+		gl.clearColor(this._clearColor.r, this._clearColor.g, this._clearColor.b, this._clearColor.a);
 		gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
 		// Render opaque objects first (front to back for early Z rejection)
