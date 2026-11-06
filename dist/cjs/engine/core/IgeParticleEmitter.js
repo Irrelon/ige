@@ -382,9 +382,16 @@ class IgeParticleEmitter extends IgeUiEntity_1.IgeUiEntity {
     /**
      * Creates and maintains the particles that this emitter is
      * responsible for spawning and controlling.
-     * @param ctx
+     * @param tickDelta
      */
-    tick(ctx) {
+    update(tickDelta) {
+        // Update our own transform/children first so the emitter's world matrix
+        // is current before we use it to position newly spawned particles.
+        super.update(tickDelta);
+        // NOTE: particle spawning runs here in update() rather than the old
+        // tick(ctx) render pass. The modern engine no longer calls entity.tick()
+        // (rendering is handled by the active renderer's renderSceneGraph), so
+        // spawning from tick() never executed under the WebGL renderer.
         this._currentDelta += instance_1.ige.engine._tickDelta;
         if (!this._particle)
             return;
@@ -574,7 +581,6 @@ class IgeParticleEmitter extends IgeUiEntity_1.IgeUiEntity {
                 }
             }
         }
-        super.tick(ctx);
     }
     /**
      * Returns an array of the current particle entities that this

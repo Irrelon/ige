@@ -37,6 +37,8 @@ class IgeWebGlRenderer extends IgeBaseRenderer_1.IgeBaseRenderer {
         this.classId = "IgeWebGlRenderer";
         this._webglVersion = 2;
         this._contextLost = false;
+        // Background clear colour (defaults to opaque black to preserve prior behaviour).
+        this._clearColor = { r: 0, g: 0, b: 0, a: 1 };
         // WebGL capabilities and extensions
         this._capabilities = {
             maxTextureSize: 0,
@@ -298,6 +300,17 @@ class IgeWebGlRenderer extends IgeBaseRenderer_1.IgeBaseRenderer {
         this.log(`  Supports Depth Texture: ${this._capabilities.supportsDepthTexture}`);
     }
     /**
+     * Set the background clear colour used for the canvas and each viewport.
+     * Components are 0..1. Defaults to opaque black.
+     *
+     * Each viewport's area is cleared to this colour (including alpha) before
+     * it is drawn, so split-screen viewports all share the same background.
+     */
+    setClearColor(r, g, b, a = 1) {
+        this._clearColor = { r, g, b, a };
+        return this;
+    }
+    /**
      * Main scene graph rendering method.
      * Called once per frame by the engine.
      */
@@ -306,8 +319,9 @@ class IgeWebGlRenderer extends IgeBaseRenderer_1.IgeBaseRenderer {
         if (!gl || this._contextLost)
             return false;
         // Clear the entire canvas
+        const cc = this._clearColor;
         gl.viewport(0, 0, this._canvasElement.width, this._canvasElement.height);
-        gl.clearColor(0.0, 0.0, 0.0, 1.0);
+        gl.clearColor(cc.r, cc.g, cc.b, cc.a);
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
         // Enable depth testing for 3D rendering
         gl.enable(gl.DEPTH_TEST);
@@ -388,8 +402,8 @@ class IgeWebGlRenderer extends IgeBaseRenderer_1.IgeBaseRenderer {
             this._stateManager.setScissorTest(true);
             this._stateManager.setScissorBox(vpX, vpY, vpWidth, vpHeight);
         }
-        // Clear viewport area
-        gl.clearColor(0.0, 0.0, 0.0, 0.0);
+        // Clear viewport area to the configured background colour.
+        gl.clearColor(this._clearColor.r, this._clearColor.g, this._clearColor.b, this._clearColor.a);
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
         // Render opaque objects first (front to back for early Z rejection)
         this._renderOpaqueBatches(matrices, viewport);

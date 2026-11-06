@@ -5,7 +5,7 @@ import { IgeWebGlRenderer } from "../../engine/core/IgeWebGlRenderer.js"
 import { IgeViewport } from "../../engine/core/IgeViewport.js"
 import { IgePoint3d } from "../../engine/core/IgePoint3d.js"
 import { ige } from "../../engine/instance.js"
-import { IgeBehaviourType } from "../../enums/index.js";
+import { IgeBehaviourType } from "../../enums/index.js"
 import { IgeAmbientLight, IgeDirectionalLight, IgePointLight, IgeSpotLight } from "../../engine/webgl/IgeWebGlLight.js"
 import { IgePrimitiveGeometry } from "../../engine/webgl/IgePrimitiveGeometry.js"
 import { igeGltfLoader } from "../../engine/webgl/IgeGltfLoader.js"

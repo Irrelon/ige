@@ -1,8 +1,7 @@
 import type { IgeObject } from "./IgeObject.js"
-import type { IgeParticle } from "./IgeParticle.js"
+import type { IgeParticle } from "./IgeParticle.js";
 import type { IgePoint3d } from "./IgePoint3d.js"
-import { IgeUiEntity } from "./IgeUiEntity.js"
-import type { IgeCanvasRenderingContext2d } from "../../types/IgeCanvasRenderingContext2d.js"
+import { IgeUiEntity } from "./IgeUiEntity.js";
 export interface IgeParticleVectorBaseMinMax {
     base: IgePoint3d;
     min: IgePoint3d;
@@ -158,9 +157,9 @@ export declare class IgeParticleEmitter extends IgeUiEntity {
     /**
      * Creates and maintains the particles that this emitter is
      * responsible for spawning and controlling.
-     * @param ctx
+     * @param tickDelta
      */
-    tick(ctx: IgeCanvasRenderingContext2d): void;
+    update(tickDelta: number): void;
     /**
      * Returns an array of the current particle entities that this
      * emitter has spawned.

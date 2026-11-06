@@ -1,19 +1,19 @@
 import { IgeBaseRenderer } from "./IgeBaseRenderer.js"
-import type { IgeEngine } from "./IgeEngine.js"
+import type { IgeEngine } from "./IgeEngine.js";
 import type { IgeViewport } from "./IgeViewport.js"
-import { IgeWebGlResourceManager } from "../webgl/IgeWebGlResourceManager.js"
+import { IgeWebGlResourceManager } from "../webgl/IgeWebGlResourceManager.js";
 import { IgeWebGlShaderManager } from "../webgl/IgeWebGlShaderManager.js"
-import { IgeWebGlTextureManager } from "../webgl/IgeWebGlTextureManager.js"
+import { IgeWebGlTextureManager } from "../webgl/IgeWebGlTextureManager.js";
 import { IgeWebGlGeometryManager } from "../webgl/IgeWebGlGeometryManager.js"
-import { IgeWebGlCameraController } from "../webgl/IgeWebGlCameraController.js"
+import { IgeWebGlCameraController } from "../webgl/IgeWebGlCameraController.js";
 import { IgeWebGlRenderBatchManager } from "../webgl/IgeWebGlRenderBatchManager.js"
-import { IgeWebGlStateManager } from "../webgl/IgeWebGlStateManager.js"
+import { IgeWebGlStateManager } from "../webgl/IgeWebGlStateManager.js";
 import { IgeWebGlLightManager } from "../webgl/IgeWebGlLightManager.js"
-import { IgeWebGlShadowManager } from "../webgl/IgeWebGlShadowManager.js"
+import { IgeWebGlShadowManager } from "../webgl/IgeWebGlShadowManager.js";
 import { IgeWebGlSkeletonManager } from "../webgl/IgeWebGlSkeletonManager.js"
-import type { IgeObject } from "./IgeObject.js"
+import type { IgeObject } from "./IgeObject.js";
 import type { IgeEntity } from "./IgeEntity.js"
-import type { IgeDirectionalLight, IgePointLight } from "../webgl/IgeWebGlLight.js"
+import type { IgeDirectionalLight, IgePointLight } from "../webgl/IgeWebGlLight.js";
 /**
  * Custom WebGL renderer for IGE supporting full 3D rendering.
  * This renderer replaces the experimental three.js integration with
@@ -24,6 +24,12 @@ export declare class IgeWebGlRenderer extends IgeBaseRenderer {
     protected _canvasContext?: WebGLRenderingContext | WebGL2RenderingContext | null;
     protected _webglVersion: 1 | 2;
     protected _contextLost: boolean;
+    protected _clearColor: {
+        r: number;
+        g: number;
+        b: number;
+        a: number;
+    };
     protected _capabilities: {
         maxTextureSize: number;
         maxVertexAttribs: number;
@@ -85,6 +91,14 @@ export declare class IgeWebGlRenderer extends IgeBaseRenderer {
      * Handle WebGL context restoration.
      */
     protected _handleContextRestored: () => void;
+    /**
+     * Set the background clear colour used for the canvas and each viewport.
+     * Components are 0..1. Defaults to opaque black.
+     *
+     * Each viewport's area is cleared to this colour (including alpha) before
+     * it is drawn, so split-screen viewports all share the same background.
+     */
+    setClearColor(r: number, g: number, b: number, a?: number): this;
     /**
      * Main scene graph rendering method.
      * Called once per frame by the engine.

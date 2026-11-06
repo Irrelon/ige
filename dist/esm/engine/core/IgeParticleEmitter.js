@@ -1,7 +1,7 @@
 import { IgeTween } from "./IgeTween.js"
-import { IgeUiEntity } from "./IgeUiEntity.js"
+import { IgeUiEntity } from "./IgeUiEntity.js";
 import { ige } from "../instance.js"
-import { registerClass } from "../utils/igeClassStore.js"
+import { registerClass } from "../utils/igeClassStore.js";
 import { degreesToRadians } from "../utils/maths.js"
 /**
  * Creates a new particle emitter.
@@ -385,9 +385,16 @@ export class IgeParticleEmitter extends IgeUiEntity {
     /**
      * Creates and maintains the particles that this emitter is
      * responsible for spawning and controlling.
-     * @param ctx
+     * @param tickDelta
      */
-    tick(ctx) {
+    update(tickDelta) {
+        // Update our own transform/children first so the emitter's world matrix
+        // is current before we use it to position newly spawned particles.
+        super.update(tickDelta);
+        // NOTE: particle spawning runs here in update() rather than the old
+        // tick(ctx) render pass. The modern engine no longer calls entity.tick()
+        // (rendering is handled by the active renderer's renderSceneGraph), so
+        // spawning from tick() never executed under the WebGL renderer.
         this._currentDelta += ige.engine._tickDelta;
         if (!this._particle)
             return;
@@ -577,7 +584,6 @@ export class IgeParticleEmitter extends IgeUiEntity {
                 }
             }
         }
-        super.tick(ctx);
     }
     /**
      * Returns an array of the current particle entities that this
