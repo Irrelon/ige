@@ -6,132 +6,137 @@ import { IgeViewport } from "@/engine/core/IgeViewport";
 import { IgePoint3d } from "@/engine/core/IgePoint3d";
 import { ige } from "@/engine/instance";
 import type { IgeCanInit } from "@/types/IgeCanInit";
-import type { IgeGeometryData3d } from "@/types/IgeGeometryData3d";
 import { IgeBehaviourType } from "@/enums";
-import {
-	IgeAmbientLight,
-	IgeDirectionalLight,
-	IgePointLight
-} from "@/engine/webgl/IgeWebGlLight";
+import { IgeAmbientLight, IgeDirectionalLight, IgePointLight } from "@/engine/webgl/IgeWebGlLight";
 import { igeGltfLoader, type IgeGltfModel } from "@/engine/webgl/IgeGltfLoader";
+import { IgeParticleSystem3d } from "@/engine/webgl/IgeParticleSystem3d";
+import { IgeGamePadAxis, IgeGamePadButton, IgeGamePadComponent } from "@/engine/components/IgeGamePadComponent";
+import { createHospitalLobby, resolveLevelCollision, ARENA, type IgeLevelObstacle } from "./level";
 
 // @ts-ignore
 window.ige = ige;
 
+/**
+ * Zombie Game - 4 player split-screen zombie ARPG prototype.
+ *
+ * Demonstrates the WebGL renderer features a split-screen action game needs:
+ * - Four viewports, each with an isometric camera following its player
+ * - A horde of animated, GPU-instanced skinned characters from one GLB
+ *   (IgeEntity.model(), shared pose cache, off-screen animation culling)
+ * - Per-instance material overrides (zombie tint, red hit flash)
+ * - Moonlight shadows centred on each viewport, distance fog, player lanterns
+ * - IgeParticleSystem3d blood and slash effects
+ * - Floating damage numbers placed with renderer.worldToScreen()
+ * - Gamepad input for 4 players (IgeGamePadComponent) with keyboard fallback
+ *
+ * URL options: ?zombies=200 to change the horde size.
+ */
+
 // Player configuration
 const PLAYER_CONFIGS = [
-	{ color: { r: 0.3, g: 0.5, b: 1.0 }, name: "Blue", startPos: { x: -150, y: 0, z: 100 } },
-	{ color: { r: 0.3, g: 1.0, b: 0.5 }, name: "Green", startPos: { x: 150, y: 0, z: 100 } },
-	{ color: { r: 1.0, g: 0.3, b: 0.3 }, name: "Red", startPos: { x: -150, y: 0, z: 300 } },
-	{ color: { r: 1.0, g: 1.0, b: 0.3 }, name: "Yellow", startPos: { x: 150, y: 0, z: 300 } }
+	{ color: { r: 0.3, g: 0.5, b: 1.0 }, name: "Blue", startPos: { x: -150, z: 100 } },
+	{ color: { r: 0.3, g: 1.0, b: 0.5 }, name: "Green", startPos: { x: 150, z: 100 } },
+	{ color: { r: 1.0, g: 0.3, b: 0.3 }, name: "Red", startPos: { x: -150, z: 300 } },
+	{ color: { r: 1.0, g: 1.0, b: 0.3 }, name: "Yellow", startPos: { x: 150, z: 300 } }
+];
+
+/** Keyboard fallback: move keys (up, left, down, right) and attack key per player. */
+const KEYBOARD_MAPS = [
+	{ up: "KeyW", left: "KeyA", down: "KeyS", right: "KeyD", attack: "Space" },
+	{ up: "ArrowUp", left: "ArrowLeft", down: "ArrowDown", right: "ArrowRight", attack: "Enter" },
+	{ up: "KeyI", left: "KeyJ", down: "KeyK", right: "KeyL", attack: "KeyU" },
+	{ up: "Numpad8", left: "Numpad4", down: "Numpad5", right: "Numpad6", attack: "Numpad0" }
 ];
 
 // Camera configuration
 const CAMERA_DISTANCE = 500;
 const CAMERA_ORTHO_SIZE = 700;
-const PLAYER_SPEED = 3;
 
-/**
- * Creates box geometry with arbitrary width, height, and depth.
- * Similar to IgePrimitiveGeometry.createCube but allows non-uniform dimensions.
- */
-function createBoxGeometry (w: number, h: number, d: number, id: string): IgeGeometryData3d {
-	const hw = w / 2, hh = h / 2, hd = d / 2;
+// Gameplay tuning (world units and seconds)
+const PLAYER_SPEED = 260;
+const PLAYER_RADIUS = 28;
+const PLAYER_MAX_HEALTH = 100;
+const PLAYER_RESPAWN_TIME = 3;
+const ATTACK_COOLDOWN = 0.35;
+const ATTACK_RANGE = 150;
+const ATTACK_ARC = Math.cos((70 * Math.PI) / 180);
+const ATTACK_DAMAGE: [number, number] = [30, 55];
+const ZOMBIE_RADIUS = 26;
+const ZOMBIE_SPEED: [number, number] = [55, 95];
+const ZOMBIE_HEALTH = 100;
+const ZOMBIE_DAMAGE = 8;
+const ZOMBIE_ATTACK_RANGE = 70;
+const ZOMBIE_ATTACK_COOLDOWN = 1.1;
+const ZOMBIE_RESPAWN_TIME = 2.5;
+const HIT_FLASH_TIME = 0.15;
+const RESPAWN_INVULNERABLE_TIME = 2;
+const IDLE_AUTO_FIGHT_TIME = 2;
+const CHARACTER_SCALE = 100;
+const ZOMBIE_TINT = { r: 0.45, g: 0.62, b: 0.38, a: 1 };
 
-	// prettier-ignore
-	const vertices = new Float32Array([
-		// Front face (z = +hd)
-		-hw, -hh,  hd,   hw, -hh,  hd,   hw,  hh,  hd,  -hw,  hh,  hd,
-		// Back face (z = -hd)
-		 hw, -hh, -hd,  -hw, -hh, -hd,  -hw,  hh, -hd,   hw,  hh, -hd,
-		// Top face (y = +hh)
-		-hw,  hh,  hd,   hw,  hh,  hd,   hw,  hh, -hd,  -hw,  hh, -hd,
-		// Bottom face (y = -hh)
-		-hw, -hh, -hd,   hw, -hh, -hd,   hw, -hh,  hd,  -hw, -hh,  hd,
-		// Right face (x = +hw)
-		 hw, -hh,  hd,   hw, -hh, -hd,   hw,  hh, -hd,   hw,  hh,  hd,
-		// Left face (x = -hw)
-		-hw, -hh, -hd,  -hw, -hh,  hd,  -hw,  hh,  hd,  -hw,  hh, -hd,
-	]);
-
-	// prettier-ignore
-	const normals = new Float32Array([
-		// Front
-		0, 0, 1,  0, 0, 1,  0, 0, 1,  0, 0, 1,
-		// Back
-		0, 0, -1,  0, 0, -1,  0, 0, -1,  0, 0, -1,
-		// Top
-		0, 1, 0,  0, 1, 0,  0, 1, 0,  0, 1, 0,
-		// Bottom
-		0, -1, 0,  0, -1, 0,  0, -1, 0,  0, -1, 0,
-		// Right
-		1, 0, 0,  1, 0, 0,  1, 0, 0,  1, 0, 0,
-		// Left
-		-1, 0, 0,  -1, 0, 0,  -1, 0, 0,  -1, 0, 0,
-	]);
-
-	// prettier-ignore
-	const uvs = new Float32Array([
-		0, 0,  1, 0,  1, 1,  0, 1,
-		0, 0,  1, 0,  1, 1,  0, 1,
-		0, 0,  1, 0,  1, 1,  0, 1,
-		0, 0,  1, 0,  1, 1,  0, 1,
-		0, 0,  1, 0,  1, 1,  0, 1,
-		0, 0,  1, 0,  1, 1,  0, 1,
-	]);
-
-	// prettier-ignore
-	const indices = new Uint16Array([
-		 0,  1,  2,   0,  2,  3,
-		 4,  5,  6,   4,  6,  7,
-		 8,  9, 10,   8, 10, 11,
-		12, 13, 14,  12, 14, 15,
-		16, 17, 18,  16, 18, 19,
-		20, 21, 22,  20, 22, 23,
-	]);
-
-	return {
-		id,
-		type: "primitive",
-		vertices,
-		normals,
-		uvs,
-		indices,
-		boundingBox: {
-			min: [-hw, -hh, -hd],
-			max: [hw, hh, hd]
-		},
-		boundingSphere: {
-			center: [0, 0, 0],
-			radius: Math.sqrt(hw * hw + hh * hh + hd * hd)
-		}
-	};
+interface PlayerState {
+	index: number;
+	entity: IgeEntity;
+	lantern: IgePointLight;
+	health: number;
+	kills: number;
+	attackCooldown: number;
+	hitFlash: number;
+	respawnTimer: number;
+	invulnerable: number;
+	idleTime: number;
+	facingX: number;
+	facingZ: number;
 }
 
-/**
- * Zombie Game - 4 Player Split Screen Example
- *
- * Demonstrates:
- * - 4-player split screen with independent isometric cameras
- * - Hospital lobby built from primitive geometry
- * - Skeletal animated player models (CesiumMan.glb placeholder)
- * - WASD keyboard controls for Player 1
- * - Per-viewport camera tracking
- */
+interface ZombieState {
+	entity: IgeEntity;
+	health: number;
+	speed: number;
+	attackCooldown: number;
+	hitFlash: number;
+	knockbackX: number;
+	knockbackZ: number;
+	respawnTimer: number;
+	alive: boolean;
+}
+
+interface DamageNumber {
+	el: HTMLDivElement;
+	viewportIndex: number;
+	x: number;
+	y: number;
+	z: number;
+	age: number;
+}
+
 export class Client extends IgeBaseClass implements IgeCanInit {
 	classId = "Client";
 
 	renderer?: IgeWebGlRenderer;
 	scene?: IgeScene2d;
+	gamePad?: IgeGamePadComponent;
 
 	viewports: IgeViewport[] = [];
-	playerEntities: IgeEntity[] = [];
-	playerModel?: IgeGltfModel;
+	players: PlayerState[] = [];
+	zombies: ZombieState[] = [];
+	characterModel?: IgeGltfModel;
+	obstacles: IgeLevelObstacle[] = [];
+
+	bloodFx?: IgeParticleSystem3d;
+	slashFx?: IgeParticleSystem3d;
+	damageNumbers: DamageNumber[] = [];
+	fxLayer?: HTMLDivElement;
 
 	keysDown: Record<string, boolean> = {};
+	keysPressed: Record<string, boolean> = {};
+	totalKills = 0;
 
 	// Isometric camera offset (computed once)
 	cameraOffset = { x: 0, y: 0, z: 0 };
+
+	// Spatial hash for zombie separation
+	grid: Map<number, ZombieState[]> = new Map();
 
 	constructor () {
 		super();
@@ -142,276 +147,615 @@ export class Client extends IgeBaseClass implements IgeCanInit {
 		try {
 			this.updateStatus("Creating renderer...");
 
-			// Create WebGL renderer
 			this.renderer = new IgeWebGlRenderer();
+			// Four views on a high-DPI screen is a lot of pixels; 1.5x keeps
+			// the image sharp while staying comfortably inside the GPU budget
+			this.renderer.maxPixelRatio(1.5);
 			ige.engine.renderer(this.renderer);
 			await this.renderer.setup();
 			this.renderer.createFrontBuffer(true);
 
-			// Start the engine
+			// Night-time atmosphere: dark clear colour that the fog fades into
+			this.renderer.setClearColor(0.02, 0.025, 0.04, 1);
+			this.renderer.fog({ mode: "linear", color: { r: 0.02, g: 0.025, b: 0.04 }, near: 700, far: 1500 });
+
+			ige.engine.addComponent("gamePad", IgeGamePadComponent);
+			this.gamePad = ige.engine.components.gamePad as IgeGamePadComponent;
+
 			this.updateStatus("Starting engine...");
 			await ige.engine.start();
 
-			// Create shared scene
-			this.setupScene();
+			this.scene = new IgeScene2d();
+			this.scene.id("mainScene");
 
-			// Setup lighting
 			this.updateStatus("Setting up lights...");
 			this.setupLights();
 
-			// Build hospital lobby
 			this.updateStatus("Building hospital lobby...");
-			this.createHospitalLobby();
+			this.obstacles = createHospitalLobby(this.scene);
 
-			// Load player model
-			this.updateStatus("Loading player models...");
-			await this.loadPlayerModel();
+			this.updateStatus("Loading character model...");
+			this.characterModel = await igeGltfLoader.load("../../assets/models/CesiumMan.glb", "characterModel");
 
-			// Create 4 player entities
-			this.updateStatus("Creating players...");
+			this.updateStatus("Spawning players and zombies...");
+			this.createEffects();
 			this.createPlayers();
+			this.createZombies(this.zombieCountFromUrl());
 
-			// Setup 4-way split screen viewports
-			this.updateStatus("Setting up split screen...");
 			this.setupSplitScreenViewports();
-
-			// Compute isometric camera offset
 			this.computeCameraOffset();
-
-			// Set initial camera positions immediately (so first frame isn't blank)
 			this.updateCameraPositions();
-
-			// Setup camera tracking behavior
-			this.setupCameraTracking();
-
-			// Setup keyboard input
 			this.setupInput();
+			this.createFxLayer();
 
-			// Setup player movement behavior
-			this.setupPlayerMovement();
+			// One behaviour drives the whole simulation; cameras follow after it
+			this.scene.addBehaviour(IgeBehaviourType.preUpdate, "zombieGame", (_entity: IgeEntity, tickDelta: number) => {
+				this.tick(Math.min(tickDelta / 1000, 0.1));
+			});
 
-			// Handle window resize
 			window.addEventListener("resize", () => this.updateViewportLayout());
 
-			// Hide loading and show game
 			this.hideLoadingScreen();
 			this.updateStatus("Playing");
-			this.updatePlayerCount(this.playerEntities.length);
+			this.updatePlayerCount(this.players.length);
+			setInterval(() => this.updateStats(), 250);
 
-			// Stats update
-			setInterval(() => this.updateStats(), 100);
-
-			this.log("Zombie Game initialized - 4 player split screen active");
+			this.log(`Zombie Game initialized - ${this.zombies.length} zombies, 4 player split screen`);
 		} catch (error) {
 			this.log(`Error initializing: ${error}`, "error");
 			this.updateStatus(`Error: ${error}`);
 		}
 	}
 
-	setupScene () {
-		this.scene = new IgeScene2d();
-		this.scene.id("mainScene");
+	zombieCountFromUrl (): number {
+		const value = Number(new URLSearchParams(window.location.search).get("zombies"));
+		return Number.isFinite(value) && value > 0 ? Math.min(1000, Math.floor(value)) : 120;
 	}
 
 	setupLights () {
 		if (!this.scene || !this.renderer) return;
-
 		const lightManager = this.renderer.lightManager;
 		if (!lightManager) return;
 
-		// Ambient light - cool fluorescent hospital feel
 		const ambient = new IgeAmbientLight();
 		ambient.id("ambientLight");
-		ambient.lightColor(0.5, 0.5, 0.55);
-		ambient.intensity(0.7);
+		ambient.lightColor(0.35, 0.4, 0.55);
+		ambient.intensity(0.45);
 		ambient.mount(this.scene);
 		lightManager.addLight(ambient);
 
-		// Main directional light (overhead hospital lighting)
-		const directional = new IgeDirectionalLight();
-		directional.id("directionalLight");
-		directional.lightColor(1.0, 0.98, 0.95);
-		directional.intensity(1.0);
-		directional.direction(-0.2, -1.0, -0.3);
-		directional.mount(this.scene);
-		lightManager.addLight(directional);
+		// Cold moonlight casting shadows. The shadow map follows each
+		// viewport's camera target, so all four players get shadows wherever
+		// they are in the level.
+		const moon = new IgeDirectionalLight();
+		moon.id("moonLight");
+		moon.lightColor(0.6, 0.7, 1.0);
+		moon.intensity(0.75);
+		moon.direction(-0.45, -1.0, -0.35);
+		moon.mount(this.scene);
+		lightManager.addLight(moon);
 
-		// Point light in center of lobby
-		const point = new IgePointLight();
-		point.id("pointLight");
-		point.lightColor(0.8, 0.9, 1.0);
-		point.intensity(1.2);
-		point.range(800);
-		point.decay(2);
-		point.translateTo(0, 250, 0);
-		point.mount(this.scene);
-		lightManager.addLight(point);
-	}
-
-	/**
-	 * Creates a box entity with the given dimensions, position, and color,
-	 * then mounts it to the scene.
-	 */
-	private createBox (
-		id: string,
-		w: number, h: number, d: number,
-		x: number, y: number, z: number,
-		color: { r: number; g: number; b: number },
-		metallic = 0.0,
-		roughness = 0.8
-	): IgeEntity {
-		const entity = new IgeEntity();
-		entity.id(id);
-		entity._geometryData = createBoxGeometry(w, h, d, `${id}_geo`);
-		entity._materialData = {
-			color: { r: color.r, g: color.g, b: color.b, a: 1 },
-			metallic,
-			roughness
-		};
-		entity.translateTo(x, y, z);
-		entity.mount(this.scene!);
-		return entity;
-	}
-
-	/**
-	 * Build the hospital lobby from primitive box geometry.
-	 *
-	 * Layout (top-down, Y is up):
-	 * - Large floor on XZ plane
-	 * - Walls around perimeter (with entrance gap in front wall)
-	 * - Reception desk at the back
-	 * - Pillars for structure
-	 * - Benches along side walls
-	 */
-	createHospitalLobby () {
-		const floorColor = { r: 0.85, g: 0.85, b: 0.82 };
-		const wallColor = { r: 0.92, g: 0.90, b: 0.85 };
-		const pillarColor = { r: 0.75, g: 0.75, b: 0.75 };
-		const deskColor = { r: 0.36, g: 0.23, b: 0.12 };
-		const benchColor = { r: 0.29, g: 0.47, b: 0.55 };
-		const doorFrameColor = { r: 0.5, g: 0.5, b: 0.48 };
-
-		// Floor (XZ plane, thin in Y)
-		this.createBox("floor", 2000, 4, 1500, 0, -2, 0, floorColor, 0.0, 0.9);
-
-		// Walls
-		// Back wall (full width)
-		this.createBox("wallBack", 2000, 300, 20, 0, 150, -750, wallColor);
-		// Left wall (full depth)
-		this.createBox("wallLeft", 20, 300, 1500, -1000, 150, 0, wallColor);
-		// Right wall (full depth)
-		this.createBox("wallRight", 20, 300, 1500, 1000, 150, 0, wallColor);
-		// Front wall - left section
-		this.createBox("wallFrontL", 700, 300, 20, -650, 150, 750, wallColor);
-		// Front wall - right section
-		this.createBox("wallFrontR", 700, 300, 20, 650, 150, 750, wallColor);
-		// Front wall - above entrance
-		this.createBox("wallFrontTop", 600, 100, 20, 0, 250, 750, wallColor);
-
-		// Entrance door frames
-		this.createBox("doorFrameL", 20, 200, 20, -300, 100, 750, doorFrameColor, 0.2, 0.5);
-		this.createBox("doorFrameR", 20, 200, 20, 300, 100, 750, doorFrameColor, 0.2, 0.5);
-
-		// Reception desk (at the back of the lobby)
-		this.createBox("receptionDesk", 500, 100, 80, 0, 50, -500, deskColor, 0.1, 0.6);
-		// Desk top surface (slightly lighter)
-		this.createBox("receptionTop", 500, 6, 80, 0, 103, -500,
-			{ r: 0.45, g: 0.32, b: 0.20 }, 0.1, 0.5);
-
-		// Pillars (4 structural columns)
-		const pillarPositions = [
-			[-400, -300],
-			[-400, 300],
-			[400, -300],
-			[400, 300]
-		];
-		for (let i = 0; i < pillarPositions.length; i++) {
-			this.createBox(`pillar_${i}`, 50, 300, 50,
-				pillarPositions[i][0], 150, pillarPositions[i][1],
-				pillarColor, 0.1, 0.7);
+		const shadowManager = this.renderer.shadowManager;
+		if (shadowManager) {
+			shadowManager.frustumSize(900);
+			shadowManager.shadowPlanes(1, 3000);
 		}
-
-		// Benches along left wall
-		this.createBox("benchL1", 200, 50, 50, -850, 25, -200, benchColor, 0.0, 0.7);
-		this.createBox("benchL2", 200, 50, 50, -850, 25, 100, benchColor, 0.0, 0.7);
-		this.createBox("benchL3", 200, 50, 50, -850, 25, 400, benchColor, 0.0, 0.7);
-
-		// Benches along right wall
-		this.createBox("benchR1", 200, 50, 50, 850, 25, -200, benchColor, 0.0, 0.7);
-		this.createBox("benchR2", 200, 50, 50, 850, 25, 100, benchColor, 0.0, 0.7);
-		this.createBox("benchR3", 200, 50, 50, 850, 25, 400, benchColor, 0.0, 0.7);
-
-		// Some tables / gurneys in the lobby
-		this.createBox("table1", 120, 80, 60, -300, 40, -100,
-			{ r: 0.7, g: 0.7, b: 0.72 }, 0.3, 0.5);
-		this.createBox("table2", 120, 80, 60, 350, 40, 0,
-			{ r: 0.7, g: 0.7, b: 0.72 }, 0.3, 0.5);
-
-		// Vending machine against back wall
-		this.createBox("vendingMachine", 80, 180, 60, -600, 90, -700,
-			{ r: 0.2, g: 0.3, b: 0.6 }, 0.4, 0.4);
-
-		// Trash can near entrance
-		this.createBox("trashCan", 40, 60, 40, 200, 30, 600,
-			{ r: 0.35, g: 0.35, b: 0.35 }, 0.3, 0.6);
-
-		this.log("Hospital lobby created");
+		this.renderer.enableShadows(moon, 2048);
 	}
 
-	async loadPlayerModel () {
-		try {
-			const modelPath = "../../assets/models/CesiumMan.glb";
-			this.playerModel = await igeGltfLoader.load(modelPath, "playerModel");
+	createEffects () {
+		if (!this.scene) return;
 
-			this.log(`Player model loaded: ${this.playerModel.name}`);
-			this.log(`  Meshes: ${this.playerModel.meshes.length}`);
-			this.log(`  Skins: ${this.playerModel.skins?.length || 0}`);
-			this.log(`  Animations: ${this.playerModel.animations?.length || 0}`);
-		} catch (error) {
-			this.log(`Failed to load player model: ${error}`, "error");
-			this.log("Place CesiumMan.glb in assets/models/ to see animated players");
-		}
+		// Dark blood that sprays out and falls to the floor
+		this.bloodFx = new IgeParticleSystem3d({
+			maxParticles: 1500,
+			blending: "normal",
+			lifetime: [0.45, 0.9],
+			speed: [120, 320],
+			spread: Math.PI / 2.5,
+			gravity: { x: 0, y: -900, z: 0 },
+			drag: 0.6,
+			size: [14, 6],
+			startColor: { r: 0.55, g: 0.02, b: 0.02, a: 1 },
+			endColor: { r: 0.25, g: 0, b: 0, a: 0 }
+		});
+		this.bloodFx.id("bloodFx").mount(this.scene);
+
+		// Bright additive sparks for weapon swings
+		this.slashFx = new IgeParticleSystem3d({
+			maxParticles: 600,
+			blending: "additive",
+			lifetime: [0.15, 0.3],
+			speed: [200, 450],
+			spread: Math.PI / 5,
+			gravity: { x: 0, y: 0, z: 0 },
+			drag: 2,
+			size: [22, 4],
+			startColor: { r: 1, g: 0.9, b: 0.6, a: 0.9 },
+			endColor: { r: 1, g: 0.4, b: 0.1, a: 0 }
+		});
+		this.slashFx.id("slashFx").mount(this.scene);
 	}
 
 	createPlayers () {
-		if (!this.scene || !this.playerModel) return;
+		if (!this.scene || !this.characterModel || !this.renderer?.lightManager) return;
+		const walkClip = this.characterModel.animations?.[0]?.name;
 
-		const firstClip = this.playerModel.animations?.[0]?.name;
-
-		for (let i = 0; i < 4; i++) {
+		for (let i = 0; i < PLAYER_CONFIGS.length; i++) {
 			const config = PLAYER_CONFIGS[i];
 
 			// model() sets up meshes, textures, skeleton and animation clips.
-			// The entity's own material data tints this player's copy only.
 			const entity = new IgeEntity()
 				.id(`player_${i}`)
-				.model(this.playerModel, { animation: firstClip });
+				.model(this.characterModel, { animation: walkClip })
+				.translateTo(config.startPos.x, 0, config.startPos.z)
+				.scaleTo(CHARACTER_SCALE, CHARACTER_SCALE, CHARACTER_SCALE)
+				.mount(this.scene);
 
-			entity._materialData = {
-				color: { r: config.color.r, g: config.color.g, b: config.color.b, a: 1 }
+			// Heroes animate at full frame rate rather than from the crowd cache
+			entity.skeletalAnimation()?.poseCache(false);
+
+			// Each player carries a lantern so they can see in the dark
+			const lantern = new IgePointLight();
+			lantern.id(`lantern_${i}`);
+			lantern.lightColor(1.0, 0.8, 0.55);
+			lantern.intensity(1.6);
+			lantern.range(420);
+			lantern.decay(2);
+			lantern.mount(this.scene);
+			this.renderer.lightManager.addLight(lantern);
+
+			const player: PlayerState = {
+				index: i,
+				entity,
+				lantern,
+				health: PLAYER_MAX_HEALTH,
+				kills: 0,
+				attackCooldown: 0,
+				hitFlash: 0,
+				respawnTimer: 0,
+				invulnerable: 0,
+				idleTime: 0,
+				facingX: 0,
+				facingZ: 1
 			};
-
-			// CesiumMan is approximately 1.8 units tall, scale up for visibility.
-			// glTF models face +Z, which is toward the isometric cameras.
-			entity.translateTo(config.startPos.x, config.startPos.y, config.startPos.z);
-			entity.scaleTo(100, 100, 100);
-			entity.mount(this.scene);
-			this.playerEntities.push(entity);
-
-			this.log(`Player ${i + 1} (${config.name}) created at (${config.startPos.x}, ${config.startPos.y}, ${config.startPos.z})`);
+			this.applyPlayerMaterial(player);
+			this.players.push(player);
 		}
 	}
+
+	createZombies (count: number) {
+		if (!this.scene || !this.characterModel) return;
+		const walkClip = this.characterModel.animations?.[0]?.name;
+
+		for (let i = 0; i < count; i++) {
+			const entity = new IgeEntity()
+				.id(`zombie_${i}`)
+				.model(this.characterModel, { animation: walkClip })
+				.scaleTo(CHARACTER_SCALE, CHARACTER_SCALE, CHARACTER_SCALE)
+				.mount(this.scene);
+
+			// Per-instance tint over the shared model material
+			entity._materialData = { color: ZOMBIE_TINT };
+
+			const zombie: ZombieState = {
+				entity,
+				health: ZOMBIE_HEALTH,
+				speed: lerp(ZOMBIE_SPEED[0], ZOMBIE_SPEED[1], Math.random()),
+				attackCooldown: Math.random() * ZOMBIE_ATTACK_COOLDOWN,
+				hitFlash: 0,
+				knockbackX: 0,
+				knockbackZ: 0,
+				respawnTimer: 0,
+				alive: true
+			};
+
+			// Desynchronise the walk cycles; slower zombies shamble slower
+			const state = (entity.skeletalAnimation() as any)?._activeStates?.[0];
+			if (state) {
+				state.time = Math.random() * state.clip.duration;
+				state.speed = zombie.speed / 80;
+			}
+
+			this.placeZombieAwayFromPlayers(zombie);
+			this.zombies.push(zombie);
+		}
+	}
+
+	placeZombieAwayFromPlayers (zombie: ZombieState) {
+		for (let attempt = 0; attempt < 30; attempt++) {
+			const x = lerp(ARENA.minX + 60, ARENA.maxX - 60, Math.random());
+			const z = lerp(ARENA.minZ + 60, ARENA.maxZ - 60, Math.random());
+			const tooClose = this.players.some((p) => {
+				const dx = p.entity._translate.x - x, dz = p.entity._translate.z - z;
+				return dx * dx + dz * dz < 450 * 450;
+			});
+			if (!tooClose || attempt === 29) {
+				const pos = resolveLevelCollision(x, z, ZOMBIE_RADIUS, this.obstacles);
+				zombie.entity.translateTo(pos.x, 0, pos.z);
+				return;
+			}
+		}
+	}
+
+	// ------------------------------------------------------------------
+	// Simulation
+	// ------------------------------------------------------------------
+
+	tick (dt: number) {
+		for (const player of this.players) this.updatePlayer(player, dt);
+		this.rebuildGrid();
+		for (const zombie of this.zombies) this.updateZombie(zombie, dt);
+		this.updateCameraPositions();
+		this.updateDamageNumbers(dt);
+		this.updatePlayerHud();
+		this.keysPressed = {};
+	}
+
+	readPlayerInput (index: number): { moveX: number; moveZ: number; attack: boolean } {
+		let moveX = 0, moveZ = 0, attack = false;
+
+		// Gamepad: left stick moves, A / X / right trigger attacks
+		const pad = this.gamePad;
+		if (pad?.states[index]?.connected) {
+			moveX = pad.axis(index, IgeGamePadAxis.leftX);
+			moveZ = pad.axis(index, IgeGamePadAxis.leftY);
+			attack = pad.justPressed(index, IgeGamePadButton.a) ||
+				pad.justPressed(index, IgeGamePadButton.x) ||
+				pad.justPressed(index, IgeGamePadButton.rightTrigger);
+		}
+
+		// Keyboard fallback
+		const keys = KEYBOARD_MAPS[index];
+		if (this.keysDown[keys.left]) moveX -= 1;
+		if (this.keysDown[keys.right]) moveX += 1;
+		if (this.keysDown[keys.up]) moveZ -= 1;
+		if (this.keysDown[keys.down]) moveZ += 1;
+		if (this.keysPressed[keys.attack]) attack = true;
+
+		// The isometric camera looks along (-1, -1) on the ground, so rotate
+		// stick/key input by 45 degrees to make "up" move away from the camera
+		const s = Math.SQRT1_2;
+		const worldX = (moveX + moveZ) * s;
+		const worldZ = (moveZ - moveX) * s;
+		const len = Math.hypot(worldX, worldZ);
+		if (len > 1) return { moveX: worldX / len, moveZ: worldZ / len, attack };
+		return { moveX: worldX, moveZ: worldZ, attack };
+	}
+
+	updatePlayer (player: PlayerState, dt: number) {
+		const entity = player.entity;
+		player.attackCooldown = Math.max(0, player.attackCooldown - dt);
+		player.invulnerable = Math.max(0, player.invulnerable - dt);
+
+		if (player.hitFlash > 0) {
+			player.hitFlash -= dt;
+			if (player.hitFlash <= 0) this.applyPlayerMaterial(player);
+		}
+
+		// Dead players wait, then respawn at their start position
+		if (player.health <= 0) {
+			player.respawnTimer -= dt;
+			if (player.respawnTimer <= 0) {
+				const start = PLAYER_CONFIGS[player.index].startPos;
+				player.health = PLAYER_MAX_HEALTH;
+				player.invulnerable = RESPAWN_INVULNERABLE_TIME;
+				entity.translateTo(start.x, 0, start.z).show();
+				player.lantern.intensity(1.6);
+				this.shoveZombiesAway(start.x, start.z, 320);
+			}
+			return;
+		}
+
+		const input = this.readPlayerInput(player.index);
+		const len = Math.hypot(input.moveX, input.moveZ);
+		const anim = entity.skeletalAnimation();
+
+		// Players nobody is controlling stand their ground and fight back,
+		// so every view stays lively when fewer than four people are playing
+		player.idleTime = len > 0.05 || input.attack ? 0 : player.idleTime + dt;
+		if (player.idleTime > IDLE_AUTO_FIGHT_TIME) {
+			const target = this.nearestZombie(entity._translate.x, entity._translate.z, ATTACK_RANGE * 0.9);
+			if (target) {
+				const dx = target.entity._translate.x - entity._translate.x;
+				const dz = target.entity._translate.z - entity._translate.z;
+				const d = Math.hypot(dx, dz) || 1;
+				player.facingX = dx / d;
+				player.facingZ = dz / d;
+				entity.rotateTo(0, Math.atan2(player.facingX, player.facingZ), 0);
+				input.attack = true;
+			}
+		}
+
+		if (len > 0.05) {
+			const pos = resolveLevelCollision(
+				entity._translate.x + input.moveX * PLAYER_SPEED * dt,
+				entity._translate.z + input.moveZ * PLAYER_SPEED * dt,
+				PLAYER_RADIUS,
+				this.obstacles
+			);
+			entity.translateTo(pos.x, 0, pos.z);
+
+			player.facingX = input.moveX / len;
+			player.facingZ = input.moveZ / len;
+			// glTF models face +Z; a Y rotation of a turns +Z toward (sin a, cos a)
+			entity.rotateTo(0, Math.atan2(player.facingX, player.facingZ), 0);
+			anim?.setSpeed(1.4 * Math.min(1, len));
+		} else {
+			anim?.setSpeed(0);
+		}
+
+		// Lantern floats above the player's shoulder
+		player.lantern.translateTo(entity._translate.x, 180, entity._translate.z);
+
+		if (input.attack && player.attackCooldown <= 0) {
+			player.attackCooldown = ATTACK_COOLDOWN;
+			this.playerAttack(player);
+		}
+	}
+
+	playerAttack (player: PlayerState) {
+		const px = player.entity._translate.x;
+		const pz = player.entity._translate.z;
+
+		// Swing sparks in front of the player
+		this.slashFx?.burst(18, { x: px + player.facingX * 60, y: 110, z: pz + player.facingZ * 60 }, {
+			x: player.facingX,
+			y: 0.2,
+			z: player.facingZ
+		});
+
+		for (const zombie of this.zombies) {
+			if (!zombie.alive) continue;
+			const dx = zombie.entity._translate.x - px;
+			const dz = zombie.entity._translate.z - pz;
+			const dist = Math.hypot(dx, dz);
+			if (dist > ATTACK_RANGE || dist < 1) continue;
+			if ((dx * player.facingX + dz * player.facingZ) / dist < ATTACK_ARC) continue;
+
+			const damage = Math.round(lerp(ATTACK_DAMAGE[0], ATTACK_DAMAGE[1], Math.random()));
+			zombie.health -= damage;
+			zombie.hitFlash = HIT_FLASH_TIME;
+			zombie.knockbackX = (dx / dist) * 420;
+			zombie.knockbackZ = (dz / dist) * 420;
+			this.applyZombieMaterial(zombie);
+
+			const hitPoint = { x: zombie.entity._translate.x, y: 110, z: zombie.entity._translate.z };
+			this.bloodFx?.burst(24, hitPoint, { x: dx / dist, y: 0.6, z: dz / dist });
+			this.spawnDamageNumber(player.index, hitPoint.x, 190, hitPoint.z, damage);
+
+			if (zombie.health <= 0) {
+				this.killZombie(zombie);
+				player.kills++;
+				this.totalKills++;
+			}
+		}
+	}
+
+	nearestZombie (x: number, z: number, maxDist: number): ZombieState | undefined {
+		let best: ZombieState | undefined;
+		let bestDistSq = maxDist * maxDist;
+		for (const zombie of this.zombies) {
+			if (!zombie.alive) continue;
+			const dx = zombie.entity._translate.x - x, dz = zombie.entity._translate.z - z;
+			const d = dx * dx + dz * dz;
+			if (d < bestDistSq) {
+				bestDistSq = d;
+				best = zombie;
+			}
+		}
+		return best;
+	}
+
+	shoveZombiesAway (x: number, z: number, radius: number) {
+		for (const zombie of this.zombies) {
+			if (!zombie.alive) continue;
+			const dx = zombie.entity._translate.x - x, dz = zombie.entity._translate.z - z;
+			const d = Math.hypot(dx, dz);
+			if (d < radius && d > 1) {
+				zombie.knockbackX = (dx / d) * 900;
+				zombie.knockbackZ = (dz / d) * 900;
+			}
+		}
+	}
+
+	killZombie (zombie: ZombieState) {
+		zombie.alive = false;
+		zombie.respawnTimer = ZOMBIE_RESPAWN_TIME;
+		const t = zombie.entity._translate;
+		this.bloodFx?.burst(70, { x: t.x, y: 80, z: t.z }, { x: 0, y: 1, z: 0 });
+		zombie.entity.hide();
+	}
+
+	rebuildGrid () {
+		this.grid.clear();
+		for (const zombie of this.zombies) {
+			if (!zombie.alive) continue;
+			const key = gridKey(zombie.entity._translate.x, zombie.entity._translate.z);
+			let cell = this.grid.get(key);
+			if (!cell) {
+				cell = [];
+				this.grid.set(key, cell);
+			}
+			cell.push(zombie);
+		}
+	}
+
+	updateZombie (zombie: ZombieState, dt: number) {
+		const entity = zombie.entity;
+
+		if (!zombie.alive) {
+			zombie.respawnTimer -= dt;
+			if (zombie.respawnTimer <= 0) {
+				zombie.alive = true;
+				zombie.health = ZOMBIE_HEALTH;
+				zombie.hitFlash = 0;
+				zombie.knockbackX = zombie.knockbackZ = 0;
+				this.applyZombieMaterial(zombie);
+				this.placeZombieAwayFromPlayers(zombie);
+				entity.show();
+			}
+			return;
+		}
+
+		if (zombie.hitFlash > 0) {
+			zombie.hitFlash -= dt;
+			if (zombie.hitFlash <= 0) this.applyZombieMaterial(zombie);
+		}
+		zombie.attackCooldown = Math.max(0, zombie.attackCooldown - dt);
+
+		// Shamble toward the nearest living player
+		const zx = entity._translate.x, zz = entity._translate.z;
+		let target: PlayerState | undefined;
+		let bestDistSq = Infinity;
+		for (const player of this.players) {
+			if (player.health <= 0) continue;
+			const dx = player.entity._translate.x - zx, dz = player.entity._translate.z - zz;
+			const d = dx * dx + dz * dz;
+			if (d < bestDistSq) {
+				bestDistSq = d;
+				target = player;
+			}
+		}
+
+		let vx = 0, vz = 0;
+		if (target) {
+			const dx = target.entity._translate.x - zx, dz = target.entity._translate.z - zz;
+			const dist = Math.sqrt(bestDistSq);
+
+			if (dist > ZOMBIE_ATTACK_RANGE * 0.8) {
+				vx = (dx / dist) * zombie.speed;
+				vz = (dz / dist) * zombie.speed;
+			}
+
+			if (dist < ZOMBIE_ATTACK_RANGE && zombie.attackCooldown <= 0) {
+				zombie.attackCooldown = ZOMBIE_ATTACK_COOLDOWN;
+				this.damagePlayer(target, ZOMBIE_DAMAGE);
+			}
+
+			if (dist > 1) {
+				entity.rotateTo(0, Math.atan2(dx, dz), 0);
+			}
+		}
+
+		// Separation from nearby zombies so the horde spreads out
+		const cx = Math.floor(zx / GRID_CELL), cz = Math.floor(zz / GRID_CELL);
+		const minDist = ZOMBIE_RADIUS * 2;
+		for (let gx = cx - 1; gx <= cx + 1; gx++) {
+			for (let gz = cz - 1; gz <= cz + 1; gz++) {
+				const cell = this.grid.get(gridKeyFromCell(gx, gz));
+				if (!cell) continue;
+				for (const other of cell) {
+					if (other === zombie) continue;
+					const dx = zx - other.entity._translate.x, dz = zz - other.entity._translate.z;
+					const d2 = dx * dx + dz * dz;
+					if (d2 > 0.01 && d2 < minDist * minDist) {
+						const d = Math.sqrt(d2);
+						const push = ((minDist - d) / minDist) * 160;
+						vx += (dx / d) * push;
+						vz += (dz / d) * push;
+					}
+				}
+			}
+		}
+
+		// Knockback decays quickly
+		vx += zombie.knockbackX;
+		vz += zombie.knockbackZ;
+		const decay = Math.max(0, 1 - dt * 8);
+		zombie.knockbackX *= decay;
+		zombie.knockbackZ *= decay;
+
+		const pos = resolveLevelCollision(zx + vx * dt, zz + vz * dt, ZOMBIE_RADIUS, this.obstacles);
+		entity.translateTo(pos.x, 0, pos.z);
+	}
+
+	damagePlayer (player: PlayerState, damage: number) {
+		if (player.health <= 0 || player.invulnerable > 0) return;
+		player.health = Math.max(0, player.health - damage);
+		player.hitFlash = HIT_FLASH_TIME;
+		this.applyPlayerMaterial(player);
+
+		const t = player.entity._translate;
+		this.bloodFx?.burst(10, { x: t.x, y: 120, z: t.z });
+
+		if (player.health <= 0) {
+			player.respawnTimer = PLAYER_RESPAWN_TIME;
+			player.entity.hide();
+			player.lantern.intensity(0);
+			this.bloodFx?.burst(80, { x: t.x, y: 90, z: t.z }, { x: 0, y: 1, z: 0 });
+		}
+	}
+
+	/** Player tint, or a red hit flash via the emissive override. */
+	applyPlayerMaterial (player: PlayerState) {
+		const c = PLAYER_CONFIGS[player.index].color;
+		player.entity._materialData = player.hitFlash > 0
+			? { color: { r: c.r, g: c.g, b: c.b, a: 1 }, emissiveColor: { r: 1, g: 0.1, b: 0.1 }, emissiveIntensity: 0.9 }
+			: { color: { r: c.r, g: c.g, b: c.b, a: 1 } };
+	}
+
+	applyZombieMaterial (zombie: ZombieState) {
+		zombie.entity._materialData = zombie.hitFlash > 0
+			? { color: ZOMBIE_TINT, emissiveColor: { r: 1, g: 0.15, b: 0.1 }, emissiveIntensity: 1.2 }
+			: { color: ZOMBIE_TINT };
+	}
+
+	// ------------------------------------------------------------------
+	// Floating damage numbers (DOM, positioned with worldToScreen)
+	// ------------------------------------------------------------------
+
+	createFxLayer () {
+		const layer = document.createElement("div");
+		layer.style.cssText = "position:absolute;left:0;top:0;width:100%;height:100%;pointer-events:none;z-index:40;overflow:hidden;";
+		document.body.appendChild(layer);
+		this.fxLayer = layer;
+	}
+
+	spawnDamageNumber (viewportIndex: number, x: number, y: number, z: number, damage: number) {
+		if (!this.fxLayer) return;
+		const el = document.createElement("div");
+		el.textContent = String(damage);
+		el.style.cssText = "position:absolute;left:0;top:0;font:bold 20px monospace;color:#ffd84d;" +
+			"text-shadow:0 0 3px #000,0 0 6px #000;will-change:transform,opacity;";
+		this.fxLayer.appendChild(el);
+		this.damageNumbers.push({ el, viewportIndex, x: x + (Math.random() - 0.5) * 30, y, z, age: 0 });
+	}
+
+	updateDamageNumbers (dt: number) {
+		const renderer = this.renderer;
+		if (!renderer) return;
+
+		for (let i = this.damageNumbers.length - 1; i >= 0; i--) {
+			const n = this.damageNumbers[i];
+			n.age += dt;
+			n.y += 90 * dt;
+
+			if (n.age > 0.9) {
+				n.el.remove();
+				this.damageNumbers.splice(i, 1);
+				continue;
+			}
+
+			// Only shown in the view of the player who dealt the damage
+			const viewport = this.viewports[n.viewportIndex];
+			const p = viewport && renderer.worldToScreen(viewport, n.x, n.y, n.z);
+			if (!p || !p.visible) {
+				n.el.style.opacity = "0";
+				continue;
+			}
+			n.el.style.opacity = String(1 - n.age / 0.9);
+			n.el.style.transform = `translate(${p.x.toFixed(1)}px, ${p.y.toFixed(1)}px) translate(-50%, -50%)`;
+		}
+	}
+
+	// ------------------------------------------------------------------
+	// Viewports and cameras
+	// ------------------------------------------------------------------
 
 	/**
 	 * Create 4 viewports arranged in a 2x2 grid.
 	 * All viewports share the same scene but each has its own camera.
-	 *
-	 * Layout:
-	 * +------+------+
-	 * |  P1  |  P2  |  (top row)
-	 * +------+------+
-	 * |  P3  |  P4  |  (bottom row)
-	 * +------+------+
 	 *
 	 * WebGL viewport coordinates use (0,0) at bottom-left, so:
 	 * - P1 (top-left):     x=0,       y=halfH
@@ -422,36 +766,12 @@ export class Client extends IgeBaseClass implements IgeCanInit {
 	setupSplitScreenViewports () {
 		if (!this.scene) return;
 
-		const canvasW = ige.engine._bounds2d.x;
-		const canvasH = ige.engine._bounds2d.y;
-		const halfW = Math.floor(canvasW / 2);
-		const halfH = Math.floor(canvasH / 2);
-
-		// Viewport positions (in WebGL screen coords, origin at bottom-left)
-		const vpConfigs = [
-			{ x: 0, y: halfH },      // P1: top-left
-			{ x: halfW, y: halfH },   // P2: top-right
-			{ x: 0, y: 0 },          // P3: bottom-left
-			{ x: halfW, y: 0 }       // P4: bottom-right
-		];
-
 		for (let i = 0; i < 4; i++) {
 			const viewport = new IgeViewport();
 			viewport.id(`viewport_${i}`);
 			viewport.autoSize(false);
-
-			// Set viewport size to quarter of canvas
-			viewport._bounds2d.x = halfW;
-			viewport._bounds2d.y = halfH;
-
-			// Set viewport position (bottom-left corner in WebGL coords)
-			viewport._translate.x = vpConfigs[i].x;
-			viewport._translate.y = vpConfigs[i].y;
-
-			// Point at our shared scene
 			viewport.scene(this.scene);
 
-			// Configure isometric camera
 			const camera = viewport.camera;
 			camera.projectionType("orthographic");
 			camera.orthoSize(CAMERA_ORTHO_SIZE);
@@ -462,124 +782,13 @@ export class Client extends IgeBaseClass implements IgeCanInit {
 			this.viewports.push(viewport);
 		}
 
-		this.log(`Created ${this.viewports.length} split-screen viewports`);
+		this.updateViewportLayout();
 	}
 
-	/**
-	 * Pre-compute the isometric camera offset vector.
-	 * This offset is added to each player's position to get
-	 * the camera position for that viewport.
-	 */
-	computeCameraOffset () {
-		const isoAngle = Math.atan(1 / Math.sqrt(2)); // ~35.264 degrees
-		const angle45 = Math.PI / 4;
-		const dist = CAMERA_DISTANCE;
-		const horizontalDist = dist * Math.cos(isoAngle);
-
-		this.cameraOffset = {
-			x: horizontalDist * Math.sin(angle45),
-			y: dist * Math.sin(isoAngle),
-			z: horizontalDist * Math.cos(angle45)
-		};
-	}
-
-	/**
-	 * Position each viewport's camera at its player's isometric offset.
-	 */
-	updateCameraPositions () {
-		const ox = this.cameraOffset.x;
-		const oy = this.cameraOffset.y;
-		const oz = this.cameraOffset.z;
-
-		for (let i = 0; i < 4; i++) {
-			const player = this.playerEntities[i];
-			const viewport = this.viewports[i];
-			if (!player || !viewport) continue;
-
-			const camera = viewport.camera;
-			const px = player._translate.x;
-			const py = player._translate.y;
-			const pz = player._translate.z;
-
-			camera._translate.x = px + ox;
-			camera._translate.y = py + oy;
-			camera._translate.z = pz + oz;
-
-			camera._lookAt = new IgePoint3d(px, py, pz);
-		}
-	}
-
-	/**
-	 * Each frame, update each viewport's camera to follow its
-	 * assigned player from an isometric angle.
-	 */
-	setupCameraTracking () {
-		if (!this.scene) return;
-
-		this.scene.addBehaviour(IgeBehaviourType.preUpdate, "cameraTracking", () => {
-			this.updateCameraPositions();
-		});
-	}
-
-	setupInput () {
-		window.addEventListener("keydown", (e) => {
-			this.keysDown[e.key.toLowerCase()] = true;
-		});
-
-		window.addEventListener("keyup", (e) => {
-			this.keysDown[e.key.toLowerCase()] = false;
-		});
-	}
-
-	/**
-	 * Player 1 movement via WASD keys.
-	 * W=-Z, S=+Z, A=-X, D=+X. Rotates to face movement direction.
-	 */
-	setupPlayerMovement () {
-		if (!this.scene) return;
-
-		this.scene.addBehaviour(IgeBehaviourType.preUpdate, "playerMovement", () => {
-			if (this.playerEntities.length === 0) return;
-
-			const player = this.playerEntities[0];
-			let dx = 0, dz = 0;
-
-			if (this.keysDown["w"]) dz -= PLAYER_SPEED;
-			if (this.keysDown["s"]) dz += PLAYER_SPEED;
-			if (this.keysDown["a"]) dx -= PLAYER_SPEED;
-			if (this.keysDown["d"]) dx += PLAYER_SPEED;
-
-			if (dx !== 0 || dz !== 0) {
-				// Normalize diagonal movement
-				if (dx !== 0 && dz !== 0) {
-					const len = Math.sqrt(dx * dx + dz * dz);
-					dx = (dx / len) * PLAYER_SPEED;
-					dz = (dz / len) * PLAYER_SPEED;
-				}
-
-				player.translateTo(
-					player._translate.x + dx,
-					player._translate.y,
-					player._translate.z + dz
-				);
-
-				// Face the movement direction. The model faces +Z; a Y rotation
-				// of angle turns +Z toward (sin(angle), cos(angle)).
-				player.rotateTo(0, Math.atan2(dx, dz), 0);
-			}
-		});
-	}
-
-	/**
-	 * Update viewport positions and sizes when the window is resized.
-	 */
 	updateViewportLayout () {
-		const canvasW = ige.engine._bounds2d.x;
-		const canvasH = ige.engine._bounds2d.y;
-		const halfW = Math.floor(canvasW / 2);
-		const halfH = Math.floor(canvasH / 2);
-
-		const vpConfigs = [
+		const halfW = Math.floor(ige.engine._bounds2d.x / 2);
+		const halfH = Math.floor(ige.engine._bounds2d.y / 2);
+		const positions = [
 			{ x: 0, y: halfH },
 			{ x: halfW, y: halfH },
 			{ x: 0, y: 0 },
@@ -590,12 +799,76 @@ export class Client extends IgeBaseClass implements IgeCanInit {
 			const vp = this.viewports[i];
 			vp._bounds2d.x = halfW;
 			vp._bounds2d.y = halfH;
-			vp._translate.x = vpConfigs[i].x;
-			vp._translate.y = vpConfigs[i].y;
+			vp._translate.x = positions[i].x;
+			vp._translate.y = positions[i].y;
 		}
 	}
 
-	// --- UI Helpers ---
+	/** Pre-compute the isometric camera offset from a player. */
+	computeCameraOffset () {
+		const isoAngle = Math.atan(1 / Math.sqrt(2)); // ~35.264 degrees
+		const angle45 = Math.PI / 4;
+		const horizontalDist = CAMERA_DISTANCE * Math.cos(isoAngle);
+
+		this.cameraOffset = {
+			x: horizontalDist * Math.sin(angle45),
+			y: CAMERA_DISTANCE * Math.sin(isoAngle),
+			z: horizontalDist * Math.cos(angle45)
+		};
+	}
+
+	/** Position each viewport's camera at its player's isometric offset. */
+	updateCameraPositions () {
+		const { x: ox, y: oy, z: oz } = this.cameraOffset;
+
+		for (let i = 0; i < this.viewports.length; i++) {
+			const player = this.players[i];
+			const viewport = this.viewports[i];
+			if (!player || !viewport) continue;
+
+			const camera = viewport.camera;
+			const p = player.entity._translate;
+			camera._translate.x = p.x + ox;
+			camera._translate.y = oy;
+			camera._translate.z = p.z + oz;
+
+			if (!camera._lookAt) {
+				camera._lookAt = new IgePoint3d(p.x, 0, p.z);
+			} else {
+				camera._lookAt.x = p.x;
+				camera._lookAt.y = 0;
+				camera._lookAt.z = p.z;
+			}
+		}
+	}
+
+	// ------------------------------------------------------------------
+	// Input and UI
+	// ------------------------------------------------------------------
+
+	setupInput () {
+		window.addEventListener("keydown", (e) => {
+			if (!this.keysDown[e.code]) this.keysPressed[e.code] = true;
+			this.keysDown[e.code] = true;
+			if (e.code === "Space" || e.code.startsWith("Arrow")) e.preventDefault();
+		});
+
+		window.addEventListener("keyup", (e) => {
+			this.keysDown[e.code] = false;
+		});
+	}
+
+	updatePlayerHud () {
+		for (const player of this.players) {
+			const el = document.getElementById(`label-p${player.index + 1}`);
+			if (!el) continue;
+			const config = PLAYER_CONFIGS[player.index];
+			const text = player.health > 0
+				? `P${player.index + 1} ${config.name} | HP ${player.health} | Kills ${player.kills}`
+				: `P${player.index + 1} ${config.name} | DOWN - respawning`;
+			if (el.textContent !== text) el.textContent = text;
+		}
+	}
 
 	updateStatus (status: string) {
 		const el = document.getElementById("status");
@@ -610,11 +883,32 @@ export class Client extends IgeBaseClass implements IgeCanInit {
 	updateStats () {
 		const fpsEl = document.getElementById("fps");
 		if (fpsEl) fpsEl.textContent = Math.round(ige.engine._fps).toString();
+
+		const zombiesEl = document.getElementById("zombieCount");
+		if (zombiesEl) zombiesEl.textContent = `${this.zombies.filter((z) => z.alive).length} (${this.totalKills} killed)`;
+
+		const drawEl = document.getElementById("drawCalls");
+		const stats = this.renderer?.stats();
+		if (drawEl && stats) drawEl.textContent = `${stats.drawCalls + stats.instancedDrawCalls} (${stats.instances} instanced)`;
 	}
 
 	hideLoadingScreen () {
-		document.querySelectorAll(".igeLoading").forEach(el => {
+		document.querySelectorAll(".igeLoading").forEach((el) => {
 			(el as HTMLElement).style.display = "none";
 		});
 	}
+}
+
+const GRID_CELL = 120;
+
+function gridKeyFromCell (cx: number, cz: number): number {
+	return (cx + 1000) * 4096 + (cz + 1000);
+}
+
+function gridKey (x: number, z: number): number {
+	return gridKeyFromCell(Math.floor(x / GRID_CELL), Math.floor(z / GRID_CELL));
+}
+
+function lerp (a: number, b: number, t: number): number {
+	return a + (b - a) * t;
 }
