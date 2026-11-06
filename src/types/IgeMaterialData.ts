@@ -21,6 +21,12 @@ export interface IgeMaterialData extends IgeAbstractData3d {
 	/** Material color - can be a CSS string or RGBA object */
 	color?: string | IgeMaterialColor;
 	transparent?: boolean;
+	/**
+	 * How the object's colour combines with what is behind it. "additive"
+	 * brightens (fire, sparks, magic, muzzle flashes) and is always drawn in
+	 * the transparent pass. Defaults to normal alpha blending.
+	 */
+	blending?: "normal" | "additive";
 	side?: number;
 
 	// PBR properties

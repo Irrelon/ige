@@ -218,14 +218,6 @@ float calculateShadow(vec3 normal, vec3 lightDir) {
 	// Current fragment depth
 	float currentDepth = projCoords.z;
 
-	// Sample center depth for debug
-	float centerDepth;
-	if (u_usePackedDepth == 1) {
-		centerDepth = unpackDepth(texture2D(u_shadowMap, projCoords.xy));
-	} else {
-		centerDepth = texture2D(u_shadowMap, projCoords.xy).r;
-	}
-
 	// PCF sampling for soft shadows
 	float shadow = 0.0;
 	float texelSize = 1.0 / u_shadowMapSize;
@@ -528,6 +520,8 @@ void main() {
 
 			vec3 lightVec = u_pointLightPositions[i] - v_worldPosition;
 			float distance = length(lightVec);
+			// Attenuation is zero beyond the light's range: skip the rest
+			if (distance >= u_pointLightRanges[i]) continue;
 			vec3 L = normalize(lightVec);
 
 			float attenuation = calculateAttenuation(distance, u_pointLightRanges[i], u_pointLightDecays[i]);
@@ -543,6 +537,7 @@ void main() {
 
 			vec3 lightVec = u_spotLightPositions[i] - v_worldPosition;
 			float distance = length(lightVec);
+			if (distance >= u_spotLightRanges[i]) continue;
 			vec3 L = normalize(lightVec);
 
 			// Spotlight cone attenuation
@@ -589,6 +584,8 @@ void main() {
 
 			vec3 lightVec = u_pointLightPositions[i] - v_worldPosition;
 			float distance = length(lightVec);
+			// Attenuation is zero beyond the light's range: skip the rest
+			if (distance >= u_pointLightRanges[i]) continue;
 			vec3 L = normalize(lightVec);
 
 			float attenuation = calculateAttenuation(distance, u_pointLightRanges[i], u_pointLightDecays[i]);
@@ -604,6 +601,7 @@ void main() {
 
 			vec3 lightVec = u_spotLightPositions[i] - v_worldPosition;
 			float distance = length(lightVec);
+			if (distance >= u_spotLightRanges[i]) continue;
 			vec3 L = normalize(lightVec);
 
 			// Spotlight cone attenuation

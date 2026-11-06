@@ -31,6 +31,7 @@ import {
 } from "@/engine/webgl/IgeWebGlInstancing";
 import type { IgeGeometryData3d } from "@/types/IgeGeometryData3d";
 import type { IgeModelPart } from "@/engine/webgl/IgeModelParts";
+import type { IgeParticleSystem3d } from "@/engine/webgl/IgeParticleSystem3d";
 import type { IgeMaterialData } from "@/types/IgeMaterialData";
 import type { IgeSkeleton } from "@/types/IgeSkeletonData";
 import { MAX_BONES } from "@/types/IgeSkeletonData";
@@ -87,7 +88,11 @@ interface IgeWebGlSceneFrameData {
 	frameId: number;
 	models: IgeWebGlRenderItem[];
 	sprites: IgeEntity[];
+	particles: IgeParticleSystem3d[];
 }
+
+/** Floats per particle in IgeParticleSystem3d.renderData(). */
+const PARTICLE_FLOATS = 8;
 
 const hexColorCache: Map<string, [number, number, number]> = new Map();
 
@@ -119,6 +124,14 @@ function multiplyMat4Into (out: Float32Array, a: Float32Array, b: Float32Array):
 		out[col * 4 + 2] = a[2] * b0 + a[6] * b1 + a[10] * b2 + a[14] * b3;
 		out[col * 4 + 3] = a[3] * b0 + a[7] * b1 + a[11] * b2 + a[15] * b3;
 	}
+}
+
+function sortItemsFrontToBack (a: IgeWebGlRenderItem, b: IgeWebGlRenderItem): number {
+	return a.sortKey - b.sortKey;
+}
+
+function sortBatchesFrontToBack (a: IgeWebGlItemBatch, b: IgeWebGlItemBatch): number {
+	return a.items[0].sortKey - b.items[0].sortKey;
 }
 
 function sortItemsBackToFront (a: IgeWebGlRenderItem, b: IgeWebGlRenderItem): number {
@@ -192,7 +205,12 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 	protected _transparentItems: IgeWebGlRenderItem[] = [];
 	protected _opaqueSprites: IgeEntity[] = [];
 	protected _transparentSprites: IgeEntity[] = [];
+	protected _maxPixelRatio: number = Infinity;
+	protected _shadowShareThreshold: number = 0.35;
+	protected _sharedShadowFrame: number = -1;
 	protected _pendingBlobTextures: Set<string> = new Set();
+	protected _particleBuffers: Map<IgeParticleSystem3d, { buffer: WebGLBuffer | null; version: number; lastFrame: number }> = new Map();
+	protected _defaultParticleTexture: WebGLTexture | null = null;
 	protected _lightFrustum: IgeFrustum = new IgeFrustum();
 	protected _lightFrustumMatrix: IgeMatrix4 = new IgeMatrix4();
 
@@ -349,7 +367,7 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 
 		// Set up device pixel ratio
 		if (this._pixelRatioScaling) {
-			this._devicePixelRatio = window.devicePixelRatio || 1;
+			this._devicePixelRatio = Math.min(window.devicePixelRatio || 1, this._maxPixelRatio);
 		} else {
 			this._devicePixelRatio = 1;
 		}
@@ -546,6 +564,244 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 	}
 
 	/**
+	 * Gets / sets the highest device pixel ratio the canvas renders at.
+	 * High-DPI screens can make split-screen fill-rate bound (four
+	 * viewports at 2x is 6.5 million pixels per frame on a 1728x935
+	 * window); capping at e.g. 1.5 trades a little sharpness for speed.
+	 * Defaults to no cap.
+	 */
+	maxPixelRatio(): number;
+	maxPixelRatio(val: number): this;
+	maxPixelRatio(val?: number): number | this {
+		if (val === undefined) {
+			return this._maxPixelRatio;
+		}
+
+		this._maxPixelRatio = Math.max(0.25, val);
+		if (this._pixelRatioScaling && typeof window !== "undefined") {
+			this._devicePixelRatio = Math.min(window.devicePixelRatio || 1, this._maxPixelRatio);
+			this._resizeEvent();
+		}
+		return this;
+	}
+
+	/**
+	 * Project a world-space point into a viewport. Returns CSS pixel
+	 * coordinates relative to the canvas's top-left corner, e.g. to place
+	 * a DOM health bar or damage number over an entity.
+	 * `visible` is false when the point is behind the camera or outside
+	 * the viewport. Returns null if the viewport has no camera.
+	 * @example #Position a health bar above a zombie in player 2's view
+	 *     const p = renderer.worldToScreen(viewport2, zombie._translate.x, 200, zombie._translate.z);
+	 *     if (p && p.visible) { bar.style.transform = `translate(${p.x}px, ${p.y}px)`; }
+	 */
+	worldToScreen(
+		viewport: IgeViewport,
+		x: number,
+		y: number,
+		z: number
+	): { x: number; y: number; depth: number; visible: boolean } | null {
+		if (!this._cameraController || !viewport.camera) return null;
+
+		const m = this._cameraController.updateCamera(viewport.camera, viewport).viewProjection.matrix;
+		const cx = m[0] * x + m[4] * y + m[8] * z + m[12];
+		const cy = m[1] * x + m[5] * y + m[9] * z + m[13];
+		const cz = m[2] * x + m[6] * y + m[10] * z + m[14];
+		const cw = m[3] * x + m[7] * y + m[11] * z + m[15];
+
+		if (cw <= 0) {
+			return { x: 0, y: 0, depth: 0, visible: false };
+		}
+
+		const nx = cx / cw, ny = cy / cw, nz = cz / cw;
+		const vx = viewport._translate?.x || 0;
+		const vyBottom = viewport._translate?.y || 0;
+		const vw = viewport._bounds2d.x;
+		const vh = viewport._bounds2d.y;
+
+		// Viewport y is measured from the canvas bottom (WebGL convention)
+		const screenX = vx + (nx * 0.5 + 0.5) * vw;
+		const screenY = this._bounds2d.y - (vyBottom + (ny * 0.5 + 0.5) * vh);
+
+		return {
+			x: screenX,
+			y: screenY,
+			depth: nz,
+			visible: nx >= -1 && nx <= 1 && ny >= -1 && ny <= 1 && nz >= -1 && nz <= 1
+		};
+	}
+
+	/**
+	 * Build a world-space ray through a screen point (CSS pixels from the
+	 * canvas's top-left) in a viewport, for mouse picking and aiming.
+	 * Returns null if the viewport has no camera.
+	 */
+	screenToWorldRay(
+		viewport: IgeViewport,
+		screenX: number,
+		screenY: number
+	): { origin: { x: number; y: number; z: number }; direction: { x: number; y: number; z: number } } | null {
+		if (!this._cameraController || !viewport.camera) return null;
+
+		const inverse = this._cameraController.updateCamera(viewport.camera, viewport).viewProjection.getInverse();
+		if (!inverse) return null;
+
+		const vx = viewport._translate?.x || 0;
+		const vyBottom = viewport._translate?.y || 0;
+		const vw = viewport._bounds2d.x;
+		const vh = viewport._bounds2d.y;
+		const nx = ((screenX - vx) / vw) * 2 - 1;
+		const ny = ((this._bounds2d.y - screenY - vyBottom) / vh) * 2 - 1;
+
+		const unproject = (nz: number) => {
+			const m = inverse.matrix;
+			const x = m[0] * nx + m[4] * ny + m[8] * nz + m[12];
+			const y = m[1] * nx + m[5] * ny + m[9] * nz + m[13];
+			const z = m[2] * nx + m[6] * ny + m[10] * nz + m[14];
+			const w = m[3] * nx + m[7] * ny + m[11] * nz + m[15];
+			return { x: x / w, y: y / w, z: z / w };
+		};
+
+		const near = unproject(-1);
+		const far = unproject(1);
+		let dx = far.x - near.x, dy = far.y - near.y, dz = far.z - near.z;
+		const len = Math.sqrt(dx * dx + dy * dy + dz * dz) || 1;
+		dx /= len;
+		dy /= len;
+		dz /= len;
+
+		return { origin: near, direction: { x: dx, y: dy, z: dz } };
+	}
+
+	/**
+	 * Where a screen point (CSS pixels from the canvas's top-left) hits the
+	 * horizontal plane y = groundY in a viewport, e.g. for click-to-move or
+	 * mouse aiming. Returns null if the ray doesn't hit the plane.
+	 */
+	screenToGround(
+		viewport: IgeViewport,
+		screenX: number,
+		screenY: number,
+		groundY: number = 0
+	): { x: number; y: number; z: number } | null {
+		const ray = this.screenToWorldRay(viewport, screenX, screenY);
+		if (!ray || Math.abs(ray.direction.y) < 1e-6) return null;
+
+		const t = (groundY - ray.origin.y) / ray.direction.y;
+		if (t < 0) return null;
+
+		return {
+			x: ray.origin.x + ray.direction.x * t,
+			y: groundY,
+			z: ray.origin.z + ray.direction.z * t
+		};
+	}
+
+	/**
+	 * The viewport under a screen point (CSS pixels from the canvas's
+	 * top-left), e.g. to route mouse input in split screen. The topmost
+	 * (last mounted) viewport wins when viewports overlap.
+	 */
+	viewportAt(screenX: number, screenY: number): IgeViewport | undefined {
+		const viewports = ige.engine._children as IgeViewport[];
+		for (let i = viewports.length - 1; i >= 0; i--) {
+			const viewport = viewports[i];
+			if (!viewport || !viewport._bounds2d || !(viewport as any).camera) continue;
+			const vx = viewport._translate?.x || 0;
+			const vyBottom = viewport._translate?.y || 0;
+			const top = this._bounds2d.y - vyBottom - viewport._bounds2d.y;
+			if (
+				screenX >= vx && screenX < vx + viewport._bounds2d.x &&
+				screenY >= top && screenY < top + viewport._bounds2d.y
+			) {
+				return viewport;
+			}
+		}
+		return undefined;
+	}
+
+	/**
+	 * Gets / sets when split-screen viewports share one directional shadow
+	 * map instead of rendering one each. If every viewport's camera target
+	 * fits within this fraction of the shadow frustum size (see
+	 * shadowManager.frustumSize()), a single map, enlarged to cover them
+	 * all, is rendered once per frame. Co-op players usually stay close, so
+	 * this often turns four shadow passes into one. 0 disables sharing.
+	 * Defaults to 0.35.
+	 */
+	shadowSharing(): number;
+	shadowSharing(threshold: number): this;
+	shadowSharing(threshold?: number): number | this {
+		if (threshold === undefined) {
+			return this._shadowShareThreshold;
+		}
+		this._shadowShareThreshold = Math.max(0, threshold);
+		return this;
+	}
+
+	/**
+	 * If all viewports share a scene and their camera targets are close
+	 * together, render one directional shadow map covering them all.
+	 * Returns true when the shared map was rendered for this frame.
+	 */
+	protected _renderSharedShadowMap(viewports: IgeViewport[]): boolean {
+		if (
+			this._shadowShareThreshold <= 0 ||
+			viewports.length < 2 ||
+			!this.shadowsEnabled() ||
+			!this._shadowManager ||
+			!this._shadowCastingLight
+		) {
+			return false;
+		}
+
+		const scene = viewports[0]._scene;
+		let minX = Infinity, minY = Infinity, minZ = Infinity;
+		let maxX = -Infinity, maxY = -Infinity, maxZ = -Infinity;
+
+		for (let i = 0; i < viewports.length; i++) {
+			const viewport = viewports[i];
+			if (viewport._scene !== scene || !viewport.camera) return false;
+			const target = (viewport.camera as any)._lookAt as { x: number; y: number; z: number } | undefined;
+			const x = target ? target.x : 0, y = target ? target.y : 0, z = target ? target.z : 0;
+			if (x < minX) minX = x;
+			if (y < minY) minY = y;
+			if (z < minZ) minZ = z;
+			if (x > maxX) maxX = x;
+			if (y > maxY) maxY = y;
+			if (z > maxZ) maxZ = z;
+		}
+
+		const data = scene && this._sceneData.get(scene);
+		if (!data) return false;
+
+		const size = this._shadowManager.frustumSize() as number;
+		const dx = maxX - minX, dy = maxY - minY, dz = maxZ - minZ;
+		const extent = Math.sqrt(dx * dx + dy * dy + dz * dz) / 2;
+		if (extent > size * this._shadowShareThreshold) {
+			return false;
+		}
+
+		// Enlarge the frustum just enough to cover every viewport's area
+		this._shadowManager.frustumSize(size + extent);
+		const lightSpaceMatrix = this._shadowManager.updateLightSpaceMatrix(
+			this._shadowLightId,
+			this._shadowCastingLight,
+			undefined,
+			{ x: (minX + maxX) / 2, y: (minY + maxY) / 2, z: (minZ + maxZ) / 2 }
+		);
+		this._shadowManager.frustumSize(size);
+
+		if (!lightSpaceMatrix) return false;
+
+		this._renderDirectionalShadowPass(data, lightSpaceMatrix);
+		this._stateManager?.reset();
+		this._canvasContext?.depthFunc(this._canvasContext.LEQUAL);
+		this._sharedShadowFrame = this._frameId;
+		return true;
+	}
+
+	/**
 	 * Id of the most recently rendered frame. Compare with an object's
 	 * _lastRenderedFrame to tell whether it was drawn last frame.
 	 */
@@ -615,7 +871,7 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 
 			let data = this._sceneData.get(scene);
 			if (!data) {
-				data = { frameId: -1, models: [], sprites: [] };
+				data = { frameId: -1, models: [], sprites: [], particles: [] };
 				this._sceneData.set(scene, data);
 			}
 
@@ -623,7 +879,11 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 				data.frameId = this._frameId;
 				data.models.length = 0;
 				data.sprites.length = 0;
+				data.particles.length = 0;
 				this._collectRenderables(scene, data);
+				for (let p = 0; p < data.particles.length; p++) {
+					this._uploadParticleSystem(data.particles[p]);
+				}
 				stats.items += data.models.length + data.sprites.length;
 			}
 		}
@@ -640,6 +900,9 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 			this._stateManager.reset();
 			gl.depthFunc(gl.LEQUAL);
 		}
+
+		// Close-together split-screen views can share one shadow map
+		this._renderSharedShadowMap(viewports);
 
 		for (let i = 0; i < viewports.length; i++) {
 			this._renderViewport(viewports[i]);
@@ -670,7 +933,9 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 		const geometryData = entity._geometryData;
 
 		const parts = entity._modelParts;
-		if (parts && parts.length > 0) {
+		if ((obj as unknown as IgeParticleSystem3d)._isParticleSystem3d) {
+			data.particles.push(obj as unknown as IgeParticleSystem3d);
+		} else if (parts && parts.length > 0) {
 			this._addModelParts(entity, parts, data);
 		} else if (geometryData && geometryData.vertices) {
 			const item = this._addModelItem(entity, geometryData, entity._materialData, null, entity._worldMatrix4?.matrix);
@@ -948,17 +1213,33 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 
 			item.entity._lastRenderedFrame = frameId;
 
+			const dx = item.cx - camX, dy = item.cy - camY, dz = item.cz - camZ;
+			const distSq = dx * dx + dy * dy + dz * dz;
+
 			if (item.transparent) {
-				const dx = item.cx - camX, dy = item.cy - camY, dz = item.cz - camZ;
-				item.sortKey = dx * dx + dy * dy + dz * dz;
+				item.sortKey = distSq;
 				transparent.push(item);
 			} else {
+				// Front-to-back key: distance to the far side of the bounds, so
+				// big surfaces like floors sort behind the things standing on them
+				item.sortKey = Math.sqrt(distSq) + Math.max(item.radius, 0);
 				batcher.add(item, item.batchKey);
 			}
 		}
 
+		// Draw opaque geometry front to back (batches, and instances within
+		// each batch) so the depth test rejects hidden pixels before the
+		// expensive lighting runs. Dense crowds overlap heavily, so this
+		// removes a lot of overdraw.
+		const opaqueBatches = batcher.batches;
+		for (let b = 0; b < opaqueBatches.length; b++) {
+			const items = opaqueBatches[b].items;
+			if (items.length > 1) items.sort(sortItemsFrontToBack);
+		}
+		if (opaqueBatches.length > 1) opaqueBatches.sort(sortBatchesFrontToBack);
+
 		this._stats.visibleItems += transparent.length;
-		for (const batch of batcher.batches) this._stats.visibleItems += batch.items.length;
+		for (const batch of opaqueBatches) this._stats.visibleItems += batch.items.length;
 
 		const opaqueSprites = this._opaqueSprites;
 		const transparentSprites = this._transparentSprites;
@@ -973,7 +1254,15 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 				Math.max(Math.abs(sprite._scale.x), Math.abs(sprite._scale.y), 1e-6);
 			if (!frustum.containsSphereXYZ(m[12], m[13], m[14], radius)) continue;
 
-			if (sprite._opacity < 1 || (sprite._texture as any)?._hasAlpha) {
+			const spriteMaterial = sprite._materialData;
+			const spriteColor = spriteMaterial?.color;
+			if (
+				sprite._opacity < 1 ||
+				(sprite._texture as any)?._hasAlpha ||
+				spriteMaterial?.blending === "additive" ||
+				spriteMaterial?.transparent ||
+				(typeof spriteColor === "object" && (spriteColor.a ?? 1) < 1)
+			) {
 				const dx = m[12] - camX, dy = m[13] - camY, dz = m[14] - camZ;
 				(sprite as any)._webglSortKey = dx * dx + dy * dy + dz * dz;
 				transparentSprites.push(sprite);
@@ -985,7 +1274,7 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 		// ------------------------------------------------------------
 		// Directional shadow map, centred on this viewport's view target
 		// ------------------------------------------------------------
-		if (this.shadowsEnabled() && this._shadowManager && this._shadowCastingLight) {
+		if (this.shadowsEnabled() && this._shadowManager && this._shadowCastingLight && this._sharedShadowFrame !== this._frameId) {
 			const target = (camera as any)._lookAt as { x: number; y: number; z: number } | undefined;
 			const center = target ? { x: target.x, y: target.y, z: target.z } : { x: 0, y: 0, z: 0 };
 			const lightSpaceMatrix = this._shadowManager.updateLightSpaceMatrix(
@@ -1043,6 +1332,8 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 			transparent.sort(sortItemsBackToFront);
 			this._renderTransparentItems(transparent, matrices);
 		}
+
+		this._renderParticleSystems(data.particles, matrices);
 
 		this._stateManager.setDepthWrite(true);
 		this._stateManager.setScissorTest(false);
@@ -1441,6 +1732,172 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 	}
 
 	/**
+	 * Upload a particle system's packed render data to its own GPU buffer
+	 * (once per frame, only when it changed). Buffers of systems that
+	 * haven't been seen for a while are deleted.
+	 */
+	protected _uploadParticleSystem(system: IgeParticleSystem3d): void {
+		const gl = this._canvasContext;
+		if (!gl || !this._instanceBuffer) return;
+
+		let entry = this._particleBuffers.get(system);
+		if (!entry) {
+			entry = { buffer: gl.createBuffer(), version: -1, lastFrame: 0 };
+			this._particleBuffers.set(system, entry);
+		}
+		entry.lastFrame = this._frameId;
+
+		const { data, count } = system.renderData();
+		if (count > 0 && entry.version !== system._renderVersion) {
+			gl.bindBuffer(gl.ARRAY_BUFFER, entry.buffer);
+			gl.bufferData(gl.ARRAY_BUFFER, data.subarray(0, count * PARTICLE_FLOATS), gl.STREAM_DRAW);
+			entry.version = system._renderVersion;
+		}
+
+		// Periodically free buffers belonging to systems no longer rendered
+		if ((this._frameId & 127) === 0) {
+			this._particleBuffers.forEach((value, key) => {
+				if (this._frameId - value.lastFrame > 120) {
+					if (value.buffer) gl.deleteBuffer(value.buffer);
+					this._particleBuffers.delete(key);
+				}
+			});
+		}
+	}
+
+	/**
+	 * A soft round white dot, used by particle systems without a texture.
+	 */
+	protected _getDefaultParticleTexture(): WebGLTexture | null {
+		if (this._defaultParticleTexture || !this._canvasContext) {
+			return this._defaultParticleTexture;
+		}
+
+		const size = 64;
+		const canvas = document.createElement("canvas");
+		canvas.width = size;
+		canvas.height = size;
+		const ctx = canvas.getContext("2d");
+		if (!ctx) return null;
+
+		const gradient = ctx.createRadialGradient(size / 2, size / 2, 0, size / 2, size / 2, size / 2);
+		gradient.addColorStop(0, "rgba(255,255,255,1)");
+		gradient.addColorStop(0.4, "rgba(255,255,255,0.8)");
+		gradient.addColorStop(1, "rgba(255,255,255,0)");
+		ctx.fillStyle = gradient;
+		ctx.fillRect(0, 0, size, size);
+
+		const gl = this._canvasContext;
+		const texture = gl.createTexture();
+		gl.bindTexture(gl.TEXTURE_2D, texture);
+		gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, 0);
+		gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, 0);
+		gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, canvas);
+		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+		this._stateManager?.invalidateTextureBindings();
+
+		this._defaultParticleTexture = texture;
+		return texture;
+	}
+
+	/**
+	 * Draw particle systems as camera-facing quads: one instanced call per
+	 * system (WebGL 2) or one call per particle (WebGL 1). Drawn after the
+	 * transparent pass with depth testing but no depth writes.
+	 */
+	protected _renderParticleSystems(systems: IgeParticleSystem3d[], matrices: IgeCameraMatrices): void {
+		if (systems.length === 0 || !this._shaderManager || !this._geometryManager || !this._stateManager || !this._textureManager) {
+			return;
+		}
+
+		const gl = this._canvasContext!;
+		const instanced = !!this._instanceBuffer;
+		const program = this._shaderManager.getProgram(instanced ? "particle_instanced" : "particle");
+		const quad = this._geometryManager.getSharedQuadGeometry();
+		if (!program || !quad) return;
+
+		let programReady = false;
+		let additive: boolean | undefined;
+
+		for (let s = 0; s < systems.length; s++) {
+			const system = systems[s];
+			const { data, count } = system.renderData();
+			if (count === 0) continue;
+
+			const c = system._boundsCenter;
+			if (!matrices.frustum.containsSphereXYZ(c.x, c.y, c.z, system._boundsRadius)) continue;
+			system._lastRenderedFrame = this._frameId;
+
+			if (!programReady) {
+				program.use();
+				program.setUniformMatrix4fv("u_viewMatrix", matrices.view);
+				program.setUniformMatrix4fv("u_projectionMatrix", matrices.projection);
+				program.setUniform1i("u_texture", 0);
+				this._geometryManager.bindGeometry(quad, program);
+				this._stateManager.setDepthTest(true);
+				this._stateManager.setDepthWrite(false);
+				this._stateManager.setBlend(true);
+				programReady = true;
+			}
+
+			const wantAdditive = system._options.blending !== "normal";
+			if (wantAdditive !== additive) {
+				this._stateManager.setBlendFunc(gl.SRC_ALPHA, wantAdditive ? gl.ONE : gl.ONE_MINUS_SRC_ALPHA);
+				additive = wantAdditive;
+			}
+
+			const texture = system._options.texture
+				? this._textureManager.getTextureForIgeTexture(system._options.texture)
+				: this._getDefaultParticleTexture();
+			this._stateManager.invalidateTextureBindings();
+			this._stateManager.bindTexture(texture || this._textureManager.getDefaultWhiteTexture(), 0);
+
+			if (instanced) {
+				const entry = this._particleBuffers.get(system);
+				if (!entry || !entry.buffer) continue;
+
+				const gl2 = gl as WebGL2RenderingContext;
+				const particleLoc = program.getAttributeLocation("a_particle");
+				const colorLoc = program.getAttributeLocation("a_particleColor");
+				gl2.bindBuffer(gl2.ARRAY_BUFFER, entry.buffer);
+				gl2.enableVertexAttribArray(particleLoc);
+				gl2.vertexAttribPointer(particleLoc, 4, gl2.FLOAT, false, PARTICLE_FLOATS * 4, 0);
+				gl2.vertexAttribDivisor(particleLoc, 1);
+				gl2.enableVertexAttribArray(colorLoc);
+				gl2.vertexAttribPointer(colorLoc, 4, gl2.FLOAT, false, PARTICLE_FLOATS * 4, 16);
+				gl2.vertexAttribDivisor(colorLoc, 1);
+
+				const indexType = quad.indexData instanceof Uint32Array ? gl2.UNSIGNED_INT : gl2.UNSIGNED_SHORT;
+				gl2.drawElementsInstanced(quad.drawMode, quad.indexCount, indexType, 0, count);
+
+				gl2.vertexAttribDivisor(particleLoc, 0);
+				gl2.vertexAttribDivisor(colorLoc, 0);
+				gl2.disableVertexAttribArray(particleLoc);
+				gl2.disableVertexAttribArray(colorLoc);
+				this._stats.instancedDrawCalls++;
+				this._stats.instances += count;
+			} else {
+				for (let i = 0; i < count; i++) {
+					const o = i * PARTICLE_FLOATS;
+					program.setUniform4f("u_particle", data[o], data[o + 1], data[o + 2], data[o + 3]);
+					program.setUniform4f("u_particleColor", data[o + 4], data[o + 5], data[o + 6], data[o + 7]);
+					this._geometryManager.drawGeometry(quad);
+					this._stats.drawCalls++;
+				}
+			}
+		}
+
+		if (programReady) {
+			this._geometryManager.unbindGeometry(quad, program);
+			this._stateManager.setBlendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+			this._stateManager.setDepthWrite(true);
+		}
+	}
+
+	/**
 	 * Render 2D sprites (textured quads, billboarded to face the camera).
 	 */
 	protected _renderSprites(sprites: IgeEntity[], matrices: IgeCameraMatrices): void {
@@ -1462,11 +1919,14 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 
 		this._geometryManager.bindGeometry(quadGeometry, spriteProgram);
 
+		const gl = this._canvasContext!;
 		let boundTexture: IgeTexture | undefined;
+		let additive = false;
 
 		for (let i = 0; i < sprites.length; i++) {
 			const entity = sprites[i];
 			const texture = entity._texture!;
+			const material = entity._materialData;
 
 			if (texture !== boundTexture) {
 				const webglTexture = this._textureManager.getTextureForIgeTexture(texture);
@@ -1477,15 +1937,51 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 				boundTexture = texture;
 			}
 
+			// Additive sprites brighten what's behind them (fire, sparks, magic)
+			const wantAdditive = material?.blending === "additive";
+			if (wantAdditive !== additive) {
+				this._stateManager.setBlendFunc(gl.SRC_ALPHA, wantAdditive ? gl.ONE : gl.ONE_MINUS_SRC_ALPHA);
+				additive = wantAdditive;
+			}
+
+			// Sprite sheet cell (cells are 1-based [x, y, width, height] in pixels)
+			const cells = (texture as any)._cells as number[][] | undefined;
+			const cell = cells && entity._cell ? cells[entity._cell] : undefined;
+			const texW = (texture as any)._sizeX as number;
+			const texH = (texture as any)._sizeY as number;
+			if (cell && texW > 0 && texH > 0) {
+				spriteProgram.setUniform4f("u_uvBounds",
+					cell[0] / texW,
+					cell[1] / texH,
+					(cell[0] + cell[2]) / texW,
+					(cell[1] + cell[3]) / texH
+				);
+			} else {
+				spriteProgram.setUniform4f("u_uvBounds", 0, 0, 1, 1);
+			}
+
+			// Tint from the entity's material colour
+			const color = material?.color;
+			if (color && typeof color === "object") {
+				spriteProgram.setUniform4f("u_tint", color.r, color.g, color.b, color.a ?? 1);
+			} else if (typeof color === "string") {
+				const rgb = parseHexColor(color);
+				spriteProgram.setUniform4f("u_tint", rgb[0], rgb[1], rgb[2], 1);
+			} else {
+				spriteProgram.setUniform4f("u_tint", 1, 1, 1, 1);
+			}
+
 			spriteProgram.setUniformMatrix4fv("u_worldMatrix", entity._worldMatrix4!);
 			spriteProgram.setUniform2f("u_scale", entity._bounds2d.x, entity._bounds2d.y);
-			spriteProgram.setUniform4f("u_uvBounds", 0, 0, 1, 1); // Full texture for now
-			spriteProgram.setUniform4f("u_tint", 1, 1, 1, 1); // White tint
 			spriteProgram.setUniform1f("u_opacity", entity._opacity);
-			spriteProgram.setUniform1i("u_billboardMode", 1); // Full billboarding for 2D sprites
+			spriteProgram.setUniform1i("u_billboardMode", entity._billboardMode);
 
 			this._geometryManager.drawGeometry(quadGeometry);
 			this._stats.drawCalls++;
+		}
+
+		if (additive) {
+			this._stateManager.setBlendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
 		}
 
 		this._geometryManager.unbindGeometry(quadGeometry, spriteProgram);
@@ -1711,6 +2207,11 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 		}
 
 		// Clean up managers
+		this._particleBuffers.forEach((entry) => {
+			if (entry.buffer) this._canvasContext?.deleteBuffer(entry.buffer);
+		});
+		this._particleBuffers.clear();
+		if (this._defaultParticleTexture) this._canvasContext?.deleteTexture(this._defaultParticleTexture);
 		this._instanceBuffer?.destroy();
 		this._bonePalette?.destroy();
 		this._geometryManager?.cleanup();

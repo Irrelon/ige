@@ -183,6 +183,12 @@ export class IgeObject extends IgeEventingClass implements IgeCanRegisterById, I
 	_model?: IgeGltfModel;
 	_skeleton?: IgeSkeleton; // Runtime skeleton instance for skeletal animation
 	_skeletonData?: IgeSkeletonData; // Static skeleton data reference
+	/**
+	 * How a textured 2D sprite faces the camera in the WebGL renderer:
+	 * 0 = not billboarded (uses its own rotation), 1 = always faces the
+	 * camera (default), 2 = rotates around the world Y axis only.
+	 */
+	_billboardMode: number = 1;
 	/** Render parts from a model assigned with IgeEntity.model() (shared, read-only). */
 	_modelParts?: IgeModelPart[];
 	/** Per-part world matrices maintained by the WebGL renderer. */

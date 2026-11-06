@@ -1067,6 +1067,23 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 	}
 
 	/**
+	 * Gets / sets how a textured sprite faces the camera in the WebGL
+	 * renderer: "full" always faces the camera (default), "y" turns around
+	 * the world Y axis only (good for characters and trees standing on the
+	 * ground), "none" uses the entity's own rotation (decals, floor tiles).
+	 */
+	billboard (mode: "full" | "y" | "none"): this;
+	billboard (): "full" | "y" | "none";
+	billboard (mode?: "full" | "y" | "none") {
+		if (mode === undefined) {
+			return this._billboardMode === 2 ? "y" : this._billboardMode === 0 ? "none" : "full";
+		}
+
+		this._billboardMode = mode === "y" ? 2 : mode === "none" ? 0 : 1;
+		return this;
+	}
+
+	/**
 	 * Returns the skeletal animation component added by model() for
 	 * skinned models, or undefined.
 	 */

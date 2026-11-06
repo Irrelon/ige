@@ -13,6 +13,8 @@ import { pointShadowFragmentShader } from "@/engine/shaders/webgl/point_shadow.f
 import { skinnedPointShadowVertexShader } from "@/engine/shaders/webgl/skinned_point_shadow.vert";
 import { blurVertexShader } from "@/engine/shaders/webgl/blur.vert";
 import { blurFragmentShader } from "@/engine/shaders/webgl/blur.frag";
+import { particleVertexShader } from "@/engine/shaders/webgl/particle.vert";
+import { particleFragmentShader } from "@/engine/shaders/webgl/particle.frag";
 
 /**
  * Shader source definition.
@@ -134,6 +136,13 @@ IgeShaderLibrary.register(
 	"Separable Gaussian blur for VSM shadow map softening"
 );
 
+IgeShaderLibrary.register(
+	"particle",
+	particleVertexShader,
+	particleFragmentShader,
+	"Camera-facing particle quads for IgeParticleSystem3d"
+);
+
 // Instanced variants of the lit and shadow shaders. These read per-object
 // data (world matrix, material values and, for skinned meshes, the bone
 // palette row) from per-instance attributes so a batch of identical meshes
@@ -144,7 +153,8 @@ const INSTANCED_SHADER_IDS = [
 	"shadow",
 	"skinned_shadow",
 	"point_shadow",
-	"skinned_point_shadow"
+	"skinned_point_shadow",
+	"particle"
 ];
 
 for (const id of INSTANCED_SHADER_IDS) {
