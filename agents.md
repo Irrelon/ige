@@ -76,7 +76,7 @@ The engine has extensive 3D infrastructure:
     -   **Shader Management** (`IgeWebGlShaderManager`) - shader compilation and caching with a shader library
     -   **Texture Management** (`IgeWebGlTextureManager`) - texture creation and management
     -   **Geometry Management** (`IgeWebGlGeometryManager`) - geometry creation and caching
-    -   **Render Batch Management** (`IgeWebGlRenderBatchManager`) - batching optimization
+    -   **Batching & GPU Instancing** (`IgeWebGlInstancing`) - per-frame render items, batching by geometry/texture, instanced draws (WebGL 2) including skinned meshes via a bone palette texture
     -   **Camera Controller** (`IgeWebGlCameraController`) - camera controls with preset support
     -   **Lighting** (`IgeWebGlLightManager`, `IgeWebGlLight`) - directional and point lights
     -   **Shadow Mapping** (`IgeWebGlShadowManager`) - shadow support
@@ -86,7 +86,29 @@ The engine has extensive 3D infrastructure:
     -   **Frustum Culling** (`IgeFrustum`) - performance optimization
     -   **Primitive Geometry** (`IgePrimitiveGeometry`) - built-in shapes
     -   **State Management** (`IgeWebGlStateManager`) - WebGL state tracking
--   Used in multiple working examples: coordTest2d, coordTest3d, coordTestIso, skeletalAnimation, webGlRenderer, zombie-game
+    -   **Model Parts** (`IgeModelParts`) - turns a loaded GLTF model into render parts (all primitives, node transforms, materials, textures) for `IgeEntity.model()`
+    -   **3D Particles** (`IgeParticleSystem3d`) - typed-array particle effects drawn as one instanced billboard batch
+-   Frame pipeline: renderables are collected once per frame (transforms, skin matrices, world-space bounds); each viewport then culls, renders its directional shadow map (centred on its camera target, or shared when split-screen views are close) and draws opaque batches front to back, then transparent items and particles. Point light shadows render once per frame.
+-   Split-screen helpers: `worldToScreen()`, `screenToWorldRay()`, `screenToGround()`, `viewportAt()`, `maxPixelRatio()`, `fog()`, `stats()`
+-   Used in multiple working examples: coordTest2d, coordTest3d, coordTestIso, lightingShadows, skeletalAnimation, webGlRenderer, zombie-game (4-player split-screen zombie ARPG prototype)
+
+#### Working with models
+
+```typescript
+const model = await igeGltfLoader.load("../../assets/models/CesiumMan.glb", "character");
+
+const zombie = new IgeEntity()
+	.model(model, { animation: "Walk" }) // meshes, textures, skeleton, clips
+	.translateTo(100, 0, 50)
+	.scaleTo(100, 100, 100)
+	.mount(scene);
+
+zombie._materialData = { color: { r: 0.4, g: 0.6, b: 0.35, a: 1 } }; // per-entity override
+zombie.playAnimation("Attack", { loop: false, crossFadeDuration: 0.1 });
+```
+
+-   Entities sharing a model are GPU-instanced automatically and share cached animation poses (`IgeSkeletalAnimationComponent.poseCacheRate`); use `skeletalAnimation().poseCache(false)` for hero characters that should animate at full frame rate.
+-   glTF node transforms are applied (models face +Z and stand upright without manual rotation).
 
 #### **IgeThreeJsRenderer** (`src/engine/core/IgeThreeJsRenderer.ts`) - EXPERIMENTAL
 
@@ -112,7 +134,6 @@ The engine has extensive 3D infrastructure:
 | `IgeWebGlGeometryManager.ts` | Geometry creation and caching |
 | `IgeWebGlGeometry.ts` | Individual geometry class |
 | `IgeWebGlCameraController.ts` | Camera controls and projection |
-| `IgeWebGlRenderBatchManager.ts` | Batching optimization |
 | `IgeWebGlStateManager.ts` | WebGL state tracking |
 | `IgeWebGlLightManager.ts` | Light management |
 | `IgeWebGlLight.ts` | Individual light class |
@@ -123,6 +144,9 @@ The engine has extensive 3D infrastructure:
 | `IgeGltfLoader.ts` | GLTF/GLB model loading |
 | `IgeFrustum.ts` | Frustum culling |
 | `IgePrimitiveGeometry.ts` | Built-in primitive shapes |
+| `IgeWebGlInstancing.ts` | Render items, batcher, instance buffer, bone palette texture |
+| `IgeModelParts.ts` | GLTF model to render parts; skeleton instances |
+| `IgeParticleSystem3d.ts` | 3D particle effects entity |
 
 ## Ultimate Project Goals
 
@@ -242,10 +266,11 @@ const entity3d = new IgeEntity()
     - Light entity types
 
 2. **Performance Optimization**:
-    - Frustum culling for 3D scenes (implemented)
+    - Frustum culling for 3D scenes (implemented, world-space bounding spheres)
     - Level-of-detail (LOD) systems
-    - Instanced rendering for repeated objects
+    - Instanced rendering for repeated objects (implemented, static and skinned)
     - Render batching (implemented)
+    - Shared animation pose cache and off-screen animation culling (implemented)
 
 ### Phase 4: Developer Experience
 
