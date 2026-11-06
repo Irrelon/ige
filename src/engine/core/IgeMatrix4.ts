@@ -1,6 +1,11 @@
 import { IgeBaseClass } from "@/engine/core/IgeBaseClass";
 import type { IgePoint3d } from "@/engine/core/IgePoint3d";
 
+// Scratch storage for multiply() so it never allocates (entity transforms
+// are rebuilt every frame, so per-call allocations add up quickly).
+const scratchA = new Float32Array(16);
+const scratchB = new Float32Array(16);
+
 /**
  * Creates a new 4x4 transformation matrix for 3D operations.
  * Matrix is stored in column-major format (WebGL standard).
@@ -75,9 +80,12 @@ export class IgeMatrix4 extends IgeBaseClass {
 	 * Applies translation to this matrix.
 	 */
 	translateBy(x: number, y: number, z: number): this {
-		const m = new IgeMatrix4();
-		m.translateTo(x, y, z);
-		this.multiply(m);
+		// this = this * T(x, y, z): only the translation column changes
+		const m = this.matrix;
+		m[12] = m[0] * x + m[4] * y + m[8] * z + m[12];
+		m[13] = m[1] * x + m[5] * y + m[9] * z + m[13];
+		m[14] = m[2] * x + m[6] * y + m[10] * z + m[14];
+		m[15] = m[3] * x + m[7] * y + m[11] * z + m[15];
 		return this;
 	}
 
@@ -97,9 +105,16 @@ export class IgeMatrix4 extends IgeBaseClass {
 	 * @param angle Angle in radians
 	 */
 	rotateXBy(angle: number): this {
-		const m = new IgeMatrix4();
-		m.rotateXTo(angle);
-		this.multiply(m);
+		// this = this * Rx(angle): mixes columns 1 and 2
+		const c = Math.cos(angle);
+		const s = Math.sin(angle);
+		const m = this.matrix;
+		for (let i = 0; i < 4; i++) {
+			const a1 = m[4 + i];
+			const a2 = m[8 + i];
+			m[4 + i] = c * a1 + s * a2;
+			m[8 + i] = c * a2 - s * a1;
+		}
 		return this;
 	}
 
@@ -126,9 +141,16 @@ export class IgeMatrix4 extends IgeBaseClass {
 	 * @param angle Angle in radians
 	 */
 	rotateYBy(angle: number): this {
-		const m = new IgeMatrix4();
-		m.rotateYTo(angle);
-		this.multiply(m);
+		// this = this * Ry(angle): mixes columns 0 and 2
+		const c = Math.cos(angle);
+		const s = Math.sin(angle);
+		const m = this.matrix;
+		for (let i = 0; i < 4; i++) {
+			const a0 = m[i];
+			const a2 = m[8 + i];
+			m[i] = c * a0 - s * a2;
+			m[8 + i] = s * a0 + c * a2;
+		}
 		return this;
 	}
 
@@ -155,9 +177,16 @@ export class IgeMatrix4 extends IgeBaseClass {
 	 * @param angle Angle in radians
 	 */
 	rotateZBy(angle: number): this {
-		const m = new IgeMatrix4();
-		m.rotateZTo(angle);
-		this.multiply(m);
+		// this = this * Rz(angle): mixes columns 0 and 1
+		const c = Math.cos(angle);
+		const s = Math.sin(angle);
+		const m = this.matrix;
+		for (let i = 0; i < 4; i++) {
+			const a0 = m[i];
+			const a1 = m[4 + i];
+			m[i] = c * a0 + s * a1;
+			m[4 + i] = c * a1 - s * a0;
+		}
 		return this;
 	}
 
@@ -197,9 +226,13 @@ export class IgeMatrix4 extends IgeBaseClass {
 	 * Applies scale to this matrix.
 	 */
 	scaleBy(x: number, y: number, z: number): this {
-		const m = new IgeMatrix4();
-		m.scaleTo(x, y, z);
-		this.multiply(m);
+		// this = this * S(x, y, z): scales columns 0, 1 and 2
+		const m = this.matrix;
+		for (let i = 0; i < 4; i++) {
+			m[i] *= x;
+			m[4 + i] *= y;
+			m[8 + i] *= z;
+		}
 		return this;
 	}
 
@@ -225,17 +258,27 @@ export class IgeMatrix4 extends IgeBaseClass {
 		let a: Float32Array;
 		let b: Float32Array;
 
+		const out = this.matrix;
+
 		if (n !== undefined) {
 			// multiply(a, b) - store result in this
 			a = m.matrix;
 			b = n.matrix;
 		} else {
 			// multiply(m) - this * m
-			a = this.matrix.slice() as unknown as Float32Array; // Copy to avoid overwrite during calculation
+			a = out;
 			b = m.matrix;
 		}
 
-		const out = this.matrix;
+		// Copy any operand that aliases the output so writes don't corrupt it
+		if (a === out) {
+			scratchA.set(a);
+			a = scratchA;
+		}
+		if (b === out) {
+			scratchB.set(b);
+			b = scratchB;
+		}
 
 		const a00 = a[0], a01 = a[1], a02 = a[2], a03 = a[3];
 		const a10 = a[4], a11 = a[5], a12 = a[6], a13 = a[7];

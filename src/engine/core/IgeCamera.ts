@@ -369,6 +369,9 @@ export class IgeCamera extends IgeEntity {
 			this._worldMatrix.copy(this._localMatrix);
 		}
 
+		// Cameras always rebuild, so always tell children to re-check
+		this._transformVersion++;
+
 		return this;
 	}
 

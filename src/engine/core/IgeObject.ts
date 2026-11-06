@@ -63,6 +63,12 @@ export class IgeObject extends IgeEventingClass implements IgeCanRegisterById, I
 	_parent: IgeObject | null = null;
 	_children: IgeObject[] = [];
 	_transformChanged: boolean = false;
+	/**
+	 * Incremented whenever this object's world matrix changes. Children
+	 * compare it against the value they last saw to know whether their own
+	 * world matrix needs rebuilding.
+	 */
+	_transformVersion: number = 0;
 	_tileWidth: number = 1;
 	_tileHeight: number = 1;
 	_tileDepth: number = 1;
