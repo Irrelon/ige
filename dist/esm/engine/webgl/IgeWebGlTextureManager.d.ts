@@ -1,7 +1,7 @@
 import { IgeBaseClass } from "../core/IgeBaseClass.js"
-import type { IgeTexture } from "../core/IgeTexture.js"
+import type { IgeTexture } from "../core/IgeTexture.js";
 import type { IgeWebGlResourceManager } from "./IgeWebGlResourceManager.js"
-import type { IgeSmartTexture } from "../../types/IgeSmartTexture.js"
+import type { IgeSmartTexture } from "../../types/IgeSmartTexture.js";
 /**
  * Manages WebGL texture creation, updates, and state for the renderer.
  */

@@ -310,6 +310,8 @@ class IgeCamera extends IgeEntity_1.IgeEntity {
         else {
             this._worldMatrix.copy(this._localMatrix);
         }
+        // Cameras always rebuild, so always tell children to re-check
+        this._transformVersion++;
         return this;
     }
     /**

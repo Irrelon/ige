@@ -1,17 +1,17 @@
 import { IgeBounds } from "./IgeBounds.js"
-import { IgeDummyCanvas } from "./IgeDummyCanvas.js"
+import { IgeDummyCanvas } from "./IgeDummyCanvas.js";
 import { IgeEventingClass } from "./IgeEventingClass.js"
-import { IgeMatrix2d } from "./IgeMatrix2d.js"
+import { IgeMatrix2d } from "./IgeMatrix2d.js";
 import { IgeMatrix4 } from "./IgeMatrix4.js"
-import { IgePoint2d } from "./IgePoint2d.js"
+import { IgePoint2d } from "./IgePoint2d.js";
 import { IgePoint3d } from "./IgePoint3d.js"
-import { IgePoly2d } from "./IgePoly2d.js"
-import { IgeIsometricDepthSortMode, IgeMountMode, IgeStreamMode } from "../../enums/index.js"
+import { IgePoly2d } from "./IgePoly2d.js";
+import { IgeIsometricDepthSortMode, IgeMountMode, IgeStreamMode } from "../../enums/index.js";
 import type { IgeComponent } from "./IgeComponent.js"
-import type { IgeTexture } from "./IgeTexture.js"
+import type { IgeTexture } from "./IgeTexture.js";
 import type { IgeTileMap2d } from "./IgeTileMap2d.js"
-import type { IgeViewport } from "./IgeViewport.js"
-import type { IgeBehaviourType } from "../../enums/index.js"
+import type { IgeViewport } from "./IgeViewport.js";
+import type { IgeBehaviourType } from "../../enums/index.js";
 import type { IgeBehaviourStore } from "../../types/IgeBehaviourStore.js"
 import type { IgeCanAcceptComponents } from "../../types/IgeCanAcceptComponents.js"
 import type { IgeCanRegisterByCategory } from "../../types/IgeCanRegisterByCategory.js"
@@ -25,8 +25,9 @@ import type { IgeInputEventHandler } from "../../types/IgeInputEventHandler.js"
 import type { IgeMaterialData } from "../../types/IgeMaterialData.js"
 import type { IgeMeshData3d } from "../../types/IgeMeshData3d.js"
 import type { IgeGltfModel } from "../webgl/IgeGltfLoader.js"
-import type { IgeSkeleton, IgeSkeletonData } from "../../types/IgeSkeletonData.js"
-import type { IgeAnimationClipData } from "../../types/IgeAnimationClipData.js"
+import type { IgeSkeleton, IgeSkeletonData } from "../../types/IgeSkeletonData.js";
+import type { IgeModelPart } from "../webgl/IgeModelParts.js"
+import type { IgeAnimationClipData } from "../../types/IgeAnimationClipData.js";
 import type { IgePoint } from "../../types/IgePoint.js"
 import type { IgeSmartTexture } from "../../types/IgeSmartTexture.js"
 import type { IgeTimeStreamPacket } from "../../types/IgeTimeStream.js"
@@ -45,6 +46,18 @@ export declare class IgeObject extends IgeEventingClass implements IgeCanRegiste
     _parent: IgeObject | null;
     _children: IgeObject[];
     _transformChanged: boolean;
+    /**
+     * Incremented whenever this object's world matrix changes. Children
+     * compare it against the value they last saw to know whether their own
+     * world matrix needs rebuilding.
+     */
+    _transformVersion: number;
+    /**
+     * Renderer frame id in which this object was last drawn in any viewport
+     * or shadow pass (-1 = never). Set by IgeWebGlRenderer; used to skip
+     * work such as skeletal animation sampling for off-screen objects.
+     */
+    _lastRenderedFrame: number;
     _tileWidth: number;
     _tileHeight: number;
     _tileDepth: number;
@@ -155,6 +168,16 @@ export declare class IgeObject extends IgeEventingClass implements IgeCanRegiste
     _model?: IgeGltfModel;
     _skeleton?: IgeSkeleton;
     _skeletonData?: IgeSkeletonData;
+    /**
+     * How a textured 2D sprite faces the camera in the WebGL renderer:
+     * 0 = not billboarded (uses its own rotation), 1 = always faces the
+     * camera (default), 2 = rotates around the world Y axis only.
+     */
+    _billboardMode: number;
+    /** Render parts from a model assigned with IgeEntity.model() (shared, read-only). */
+    _modelParts?: IgeModelPart[];
+    /** Per-part world matrices maintained by the WebGL renderer. */
+    _modelPartMatrices?: Float32Array[];
     _animationClips?: Map<string, IgeAnimationClipData>;
     _deathCallBack?: (...args: any[]) => void;
     components: Record<string, IgeComponent<IgeObject>>;

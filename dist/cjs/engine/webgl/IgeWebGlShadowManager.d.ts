@@ -1,7 +1,7 @@
 import { IgeBaseClass } from "../core/IgeBaseClass.js"
-import type { IgeWebGlResourceManager } from "./IgeWebGlResourceManager.js"
+import type { IgeWebGlResourceManager } from "./IgeWebGlResourceManager.js";
 import type { IgeDirectionalLight, IgePointLight } from "./IgeWebGlLight.js"
-import type { IgeWebGlProgram } from "./IgeWebGlProgram.js"
+import type { IgeWebGlProgram } from "./IgeWebGlProgram.js";
 import { IgeMatrix4 } from "../core/IgeMatrix4.js"
 /**
  * Shadow map configuration.

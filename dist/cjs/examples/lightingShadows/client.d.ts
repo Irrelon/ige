@@ -60,7 +60,6 @@ export declare class Client extends IgeBaseClass implements IgeCanInit {
     createCylinderGeometry(radiusTop: number, radiusBottom: number, height: number, segments: number, id: string): IgeGeometryData3d;
     createSceneGeometry(): void;
     loadAnimatedModel(): Promise<void>;
-    preloadTextures(): Promise<void>;
     createAnimatedEntity(): void;
     setupAnimations(): void;
     setupKeyboardControls(): void;

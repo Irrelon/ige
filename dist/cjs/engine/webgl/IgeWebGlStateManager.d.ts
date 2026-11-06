@@ -105,6 +105,13 @@ export declare class IgeWebGlStateManager extends IgeBaseClass {
      */
     setScissorBox(x: number, y: number, width: number, height: number): void;
     /**
+     * Forget cached texture bindings. Other managers bind textures with raw
+     * GL calls (uploads, shadow maps), which leaves this cache describing
+     * bindings that no longer exist. After this, the next bindTexture()
+     * always reaches GL, and the active unit is re-selected too.
+     */
+    invalidateTextureBindings(): void;
+    /**
      * Reset all state tracking (force re-bind everything).
      * This invalidates ALL cached state so subsequent state manager calls
      * will actually make GL calls instead of being skipped.

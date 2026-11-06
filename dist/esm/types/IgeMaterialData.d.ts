@@ -19,6 +19,12 @@ export interface IgeMaterialData extends IgeAbstractData3d {
     /** Material color - can be a CSS string or RGBA object */
     color?: string | IgeMaterialColor;
     transparent?: boolean;
+    /**
+     * How the object's colour combines with what is behind it. "additive"
+     * brightens (fire, sparks, magic, muzzle flashes) and is always drawn in
+     * the transparent pass. Defaults to normal alpha blending.
+     */
+    blending?: "normal" | "additive";
     side?: number;
     /** Metallic factor (0 = dielectric, 1 = metal) */
     metallic?: number;
@@ -34,4 +40,10 @@ export interface IgeMaterialData extends IgeAbstractData3d {
     emissiveIntensity?: number;
     /** ID of the base color/diffuse texture (loaded via TextureManager) */
     textureId?: string;
+    /**
+     * Encoded image for the base colour texture (e.g. from a GLB). When set
+     * with textureId, the WebGL renderer uploads it on first use and draws
+     * with plain white until the upload finishes.
+     */
+    textureBlob?: Blob;
 }

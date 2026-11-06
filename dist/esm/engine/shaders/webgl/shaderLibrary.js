@@ -1,18 +1,20 @@
 import { spriteVertexShader } from "./sprite.vert.js"
-import { spriteFragmentShader } from "./sprite.frag.js"
+import { spriteFragmentShader } from "./sprite.frag.js";
 import { modelVertexShader } from "./model.vert.js"
-import { modelFragmentShader } from "./model.frag.js"
+import { modelFragmentShader } from "./model.frag.js";
 import { litVertexShader } from "./lit.vert.js"
-import { litFragmentShader } from "./lit.frag.js"
+import { litFragmentShader } from "./lit.frag.js";
 import { shadowVertexShader } from "./shadow.vert.js"
-import { shadowFragmentShader } from "./shadow.frag.js"
+import { shadowFragmentShader } from "./shadow.frag.js";
 import { skinnedVertexShader } from "./skinned.vert.js"
-import { skinnedShadowVertexShader } from "./skinned_shadow.vert.js"
+import { skinnedShadowVertexShader } from "./skinned_shadow.vert.js";
 import { pointShadowVertexShader } from "./point_shadow.vert.js"
-import { pointShadowFragmentShader } from "./point_shadow.frag.js"
+import { pointShadowFragmentShader } from "./point_shadow.frag.js";
 import { skinnedPointShadowVertexShader } from "./skinned_point_shadow.vert.js"
-import { blurVertexShader } from "./blur.vert.js"
+import { blurVertexShader } from "./blur.vert.js";
 import { blurFragmentShader } from "./blur.frag.js"
+import { particleVertexShader } from "./particle.vert.js";
+import { particleFragmentShader } from "./particle.frag.js"
 /**
  * Built-in shader library for WebGL renderer.
  * Provides centralized registration and lookup of shader programs.
@@ -67,3 +69,23 @@ IgeShaderLibrary.register("point_shadow", pointShadowVertexShader, pointShadowFr
 IgeShaderLibrary.register("skinned_point_shadow", skinnedPointShadowVertexShader, pointShadowFragmentShader, // Uses same fragment shader as point_shadow
 "Skinned point light shadow depth pass shader with skeletal animation");
 IgeShaderLibrary.register("blur", blurVertexShader, blurFragmentShader, "Separable Gaussian blur for VSM shadow map softening");
+IgeShaderLibrary.register("particle", particleVertexShader, particleFragmentShader, "Camera-facing particle quads for IgeParticleSystem3d");
+// Instanced variants of the lit and shadow shaders. These read per-object
+// data (world matrix, material values and, for skinned meshes, the bone
+// palette row) from per-instance attributes so a batch of identical meshes
+// renders with a single draw call. Requires instanced arrays (WebGL 2).
+const INSTANCED_SHADER_IDS = [
+    "lit",
+    "skinned",
+    "shadow",
+    "skinned_shadow",
+    "point_shadow",
+    "skinned_point_shadow",
+    "particle"
+];
+for (const id of INSTANCED_SHADER_IDS) {
+    const source = IgeShaderLibrary.get(id);
+    if (!source)
+        continue;
+    IgeShaderLibrary.register(`${id}_instanced`, `#define USE_INSTANCING\n${source.vertex}`, `#define USE_INSTANCING\n${source.fragment}`, `${source.description ?? id} (instanced)`);
+}

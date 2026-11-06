@@ -84,8 +84,8 @@ export declare class b2GearJoint extends b2Joint {
     GetAnchorB<T extends XY>(out: T): T;
     GetReactionForce<T extends XY>(inv_dt: number, out: T): T;
     GetReactionTorque(inv_dt: number): number;
-    GetJoint1(): b2PrismaticJoint | b2RevoluteJoint;
-    GetJoint2(): b2PrismaticJoint | b2RevoluteJoint;
+    GetJoint1(): b2RevoluteJoint | b2PrismaticJoint;
+    GetJoint2(): b2RevoluteJoint | b2PrismaticJoint;
     GetRatio(): number;
     SetRatio(ratio: number): void;
     Dump(log: (format: string, ...args: any[]) => void): void;

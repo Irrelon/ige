@@ -7,13 +7,68 @@ import { IgeWebGlShaderManager } from "../webgl/IgeWebGlShaderManager.js";
 import { IgeWebGlTextureManager } from "../webgl/IgeWebGlTextureManager.js"
 import { IgeWebGlGeometryManager } from "../webgl/IgeWebGlGeometryManager.js";
 import { IgeWebGlCameraController } from "../webgl/IgeWebGlCameraController.js"
-import { IgeWebGlRenderBatchManager } from "../webgl/IgeWebGlRenderBatchManager.js";
-import { IgeWebGlStateManager } from "../webgl/IgeWebGlStateManager.js"
-import { IgeWebGlLightManager } from "../webgl/IgeWebGlLightManager.js";
-import { IgeWebGlShadowManager } from "../webgl/IgeWebGlShadowManager.js"
-import { IgeWebGlSkeletonManager } from "../webgl/IgeWebGlSkeletonManager.js";
-import { IgeShaderLibrary } from "../shaders/webgl/shaderLibrary.js"
-import { IgePoint3d } from "./IgePoint3d.js";
+import { IgeWebGlStateManager } from "../webgl/IgeWebGlStateManager.js";
+import { IgeWebGlLightManager } from "../webgl/IgeWebGlLightManager.js"
+import { IgeWebGlShadowManager } from "../webgl/IgeWebGlShadowManager.js";
+import { IgeWebGlSkeletonManager } from "../webgl/IgeWebGlSkeletonManager.js"
+import { IgeShaderLibrary } from "../shaders/webgl/shaderLibrary.js";
+import { IgeMatrix4 } from "./IgeMatrix4.js"
+import { IgeFrustum } from "../webgl/IgeFrustum.js";
+import { IgeWebGlBonePalette, IgeWebGlInstanceBuffer, IgeWebGlItemBatcher } from "../webgl/IgeWebGlInstancing.js"
+import { MAX_BONES } from "../../types/IgeSkeletonData.js";
+/** Texture unit layout used by the lit shaders. */
+const SHADOW_TEXTURE_UNIT = 1;
+const POINT_SHADOW_TEXTURE_UNIT = 2; // 2 and 3
+const BONE_TEXTURE_UNIT = 4;
+const IDENTITY_MATRIX = new Float32Array([
+    1, 0, 0, 0,
+    0, 1, 0, 0,
+    0, 0, 1, 0,
+    0, 0, 0, 1
+]);
+/** Floats per particle in IgeParticleSystem3d.renderData(). */
+const PARTICLE_FLOATS = 8;
+const hexColorCache = new Map();
+/**
+ * Parse a "#rrggbb" colour into 0..1 components (cached).
+ */
+function parseHexColor(color) {
+    let rgb = hexColorCache.get(color);
+    if (!rgb) {
+        const hex = color.replace("#", "");
+        rgb = [
+            parseInt(hex.substring(0, 2), 16) / 255,
+            parseInt(hex.substring(2, 4), 16) / 255,
+            parseInt(hex.substring(4, 6), 16) / 255
+        ];
+        hexColorCache.set(color, rgb);
+    }
+    return rgb;
+}
+/**
+ * out = a * b for column-major 4x4 matrices (out must not alias a or b).
+ */
+function multiplyMat4Into(out, a, b) {
+    for (let col = 0; col < 4; col++) {
+        const b0 = b[col * 4], b1 = b[col * 4 + 1], b2 = b[col * 4 + 2], b3 = b[col * 4 + 3];
+        out[col * 4] = a[0] * b0 + a[4] * b1 + a[8] * b2 + a[12] * b3;
+        out[col * 4 + 1] = a[1] * b0 + a[5] * b1 + a[9] * b2 + a[13] * b3;
+        out[col * 4 + 2] = a[2] * b0 + a[6] * b1 + a[10] * b2 + a[14] * b3;
+        out[col * 4 + 3] = a[3] * b0 + a[7] * b1 + a[11] * b2 + a[15] * b3;
+    }
+}
+function sortItemsFrontToBack(a, b) {
+    return a.sortKey - b.sortKey;
+}
+function sortBatchesFrontToBack(a, b) {
+    return a.items[0].sortKey - b.items[0].sortKey;
+}
+function sortItemsBackToFront(a, b) {
+    return b.sortKey - a.sortKey;
+}
+function sortSpritesBackToFront(a, b) {
+    return b._webglSortKey - a._webglSortKey;
+}
 /**
  * Custom WebGL renderer for IGE supporting full 3D rendering.
  * This renderer replaces the experimental three.js integration with
@@ -46,7 +101,6 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
     _shaderManager;
     _textureManager;
     _geometryManager;
-    _renderBatchManager;
     _cameraController;
     _stateManager;
     _lightManager;
@@ -59,6 +113,46 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
     _shadowDebugMode = 0;
     // Point lights that cast shadows
     _shadowCastingPointLights = [];
+    // Frame-level render state (reused every frame to avoid allocations)
+    _frameId = 0;
+    _itemPool = [];
+    _itemCount = 0;
+    _sceneData = new WeakMap();
+    _skeletonRows = new Map();
+    _mainBatcher = new IgeWebGlItemBatcher();
+    _depthBatcher = new IgeWebGlItemBatcher();
+    _transparentItems = [];
+    _opaqueSprites = [];
+    _transparentSprites = [];
+    _maxPixelRatio = Infinity;
+    _shadowShareThreshold = 0.35;
+    _sharedShadowFrame = -1;
+    _pendingBlobTextures = new Set();
+    _particleBuffers = new Map();
+    _defaultParticleTexture = null;
+    _lightFrustum = new IgeFrustum();
+    _lightFrustumMatrix = new IgeMatrix4();
+    // GPU instancing (WebGL 2 only)
+    _instancingEnabled = true;
+    _minInstanceCount = 2;
+    _instanceBuffer;
+    _bonePalette;
+    _fog = {
+        mode: "none",
+        color: { r: 0, g: 0, b: 0 },
+        near: 500,
+        far: 2000,
+        density: 0.001
+    };
+    _stats = {
+        drawCalls: 0,
+        instancedDrawCalls: 0,
+        instances: 0,
+        shadowDrawCalls: 0,
+        items: 0,
+        visibleItems: 0,
+        viewports: 0
+    };
     // When true, the WebGL drawing buffer is preserved after compositing,
     // allowing gl.readPixels() to work after a frame is rendered.
     // Must be set before createFrontBuffer() is called.
@@ -83,12 +177,17 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
         this._shaderManager = new IgeWebGlShaderManager(this._canvasContext, this._resourceManager);
         this._textureManager = new IgeWebGlTextureManager(this._canvasContext, this._resourceManager);
         this._geometryManager = new IgeWebGlGeometryManager(this._canvasContext, this._resourceManager);
-        this._renderBatchManager = new IgeWebGlRenderBatchManager(this._canvasContext);
         this._cameraController = new IgeWebGlCameraController();
         this._stateManager = new IgeWebGlStateManager(this._canvasContext);
         this._lightManager = new IgeWebGlLightManager();
         this._shadowManager = new IgeWebGlShadowManager(this._canvasContext, this._resourceManager, this._webglVersion);
         this._skeletonManager = new IgeWebGlSkeletonManager();
+        // Instanced rendering needs WebGL 2 (instanced arrays + float textures)
+        if (this._webglVersion === 2) {
+            const gl2 = this._canvasContext;
+            this._instanceBuffer = new IgeWebGlInstanceBuffer(gl2);
+            this._bonePalette = new IgeWebGlBonePalette(gl2);
+        }
         // Compile built-in shaders
         this._compileBuiltInShaders();
         this.isReady(true);
@@ -158,7 +257,7 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
         this._canvasContext = gl;
         // Set up device pixel ratio
         if (this._pixelRatioScaling) {
-            this._devicePixelRatio = window.devicePixelRatio || 1;
+            this._devicePixelRatio = Math.min(window.devicePixelRatio || 1, this._maxPixelRatio);
         }
         else {
             this._devicePixelRatio = 1;
@@ -289,18 +388,249 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
         this._clearColor = { r, g, b, a };
         return this;
     }
+    fog(settings) {
+        if (settings === undefined) {
+            return { ...this._fog, color: { ...this._fog.color } };
+        }
+        this._fog = {
+            ...this._fog,
+            ...settings,
+            color: { ...this._fog.color, ...(settings.color || {}) }
+        };
+        return this;
+    }
+    instancing(val) {
+        if (val === undefined) {
+            return this._instancingEnabled && !!this._instanceBuffer;
+        }
+        this._instancingEnabled = val;
+        return this;
+    }
+    maxPixelRatio(val) {
+        if (val === undefined) {
+            return this._maxPixelRatio;
+        }
+        this._maxPixelRatio = Math.max(0.25, val);
+        if (this._pixelRatioScaling && typeof window !== "undefined") {
+            this._devicePixelRatio = Math.min(window.devicePixelRatio || 1, this._maxPixelRatio);
+            this._resizeEvent();
+        }
+        return this;
+    }
+    /**
+     * Project a world-space point into a viewport. Returns CSS pixel
+     * coordinates relative to the canvas's top-left corner, e.g. to place
+     * a DOM health bar or damage number over an entity.
+     * `visible` is false when the point is behind the camera or outside
+     * the viewport. Returns null if the viewport has no camera.
+     * @example #Position a health bar above a zombie in player 2's view
+     *     const p = renderer.worldToScreen(viewport2, zombie._translate.x, 200, zombie._translate.z);
+     *     if (p && p.visible) { bar.style.transform = `translate(${p.x}px, ${p.y}px)`; }
+     */
+    worldToScreen(viewport, x, y, z) {
+        if (!this._cameraController || !viewport.camera)
+            return null;
+        const m = this._cameraController.updateCamera(viewport.camera, viewport).viewProjection.matrix;
+        const cx = m[0] * x + m[4] * y + m[8] * z + m[12];
+        const cy = m[1] * x + m[5] * y + m[9] * z + m[13];
+        const cz = m[2] * x + m[6] * y + m[10] * z + m[14];
+        const cw = m[3] * x + m[7] * y + m[11] * z + m[15];
+        if (cw <= 0) {
+            return { x: 0, y: 0, depth: 0, visible: false };
+        }
+        const nx = cx / cw, ny = cy / cw, nz = cz / cw;
+        const vx = viewport._translate?.x || 0;
+        const vyBottom = viewport._translate?.y || 0;
+        const vw = viewport._bounds2d.x;
+        const vh = viewport._bounds2d.y;
+        // Viewport y is measured from the canvas bottom (WebGL convention)
+        const screenX = vx + (nx * 0.5 + 0.5) * vw;
+        const screenY = this._bounds2d.y - (vyBottom + (ny * 0.5 + 0.5) * vh);
+        return {
+            x: screenX,
+            y: screenY,
+            depth: nz,
+            visible: nx >= -1 && nx <= 1 && ny >= -1 && ny <= 1 && nz >= -1 && nz <= 1
+        };
+    }
+    /**
+     * Build a world-space ray through a screen point (CSS pixels from the
+     * canvas's top-left) in a viewport, for mouse picking and aiming.
+     * Returns null if the viewport has no camera.
+     */
+    screenToWorldRay(viewport, screenX, screenY) {
+        if (!this._cameraController || !viewport.camera)
+            return null;
+        const inverse = this._cameraController.updateCamera(viewport.camera, viewport).viewProjection.getInverse();
+        if (!inverse)
+            return null;
+        const vx = viewport._translate?.x || 0;
+        const vyBottom = viewport._translate?.y || 0;
+        const vw = viewport._bounds2d.x;
+        const vh = viewport._bounds2d.y;
+        const nx = ((screenX - vx) / vw) * 2 - 1;
+        const ny = ((this._bounds2d.y - screenY - vyBottom) / vh) * 2 - 1;
+        const unproject = (nz) => {
+            const m = inverse.matrix;
+            const x = m[0] * nx + m[4] * ny + m[8] * nz + m[12];
+            const y = m[1] * nx + m[5] * ny + m[9] * nz + m[13];
+            const z = m[2] * nx + m[6] * ny + m[10] * nz + m[14];
+            const w = m[3] * nx + m[7] * ny + m[11] * nz + m[15];
+            return { x: x / w, y: y / w, z: z / w };
+        };
+        const near = unproject(-1);
+        const far = unproject(1);
+        let dx = far.x - near.x, dy = far.y - near.y, dz = far.z - near.z;
+        const len = Math.sqrt(dx * dx + dy * dy + dz * dz) || 1;
+        dx /= len;
+        dy /= len;
+        dz /= len;
+        return { origin: near, direction: { x: dx, y: dy, z: dz } };
+    }
+    /**
+     * Where a screen point (CSS pixels from the canvas's top-left) hits the
+     * horizontal plane y = groundY in a viewport, e.g. for click-to-move or
+     * mouse aiming. Returns null if the ray doesn't hit the plane.
+     */
+    screenToGround(viewport, screenX, screenY, groundY = 0) {
+        const ray = this.screenToWorldRay(viewport, screenX, screenY);
+        if (!ray || Math.abs(ray.direction.y) < 1e-6)
+            return null;
+        const t = (groundY - ray.origin.y) / ray.direction.y;
+        if (t < 0)
+            return null;
+        return {
+            x: ray.origin.x + ray.direction.x * t,
+            y: groundY,
+            z: ray.origin.z + ray.direction.z * t
+        };
+    }
+    /**
+     * The viewport under a screen point (CSS pixels from the canvas's
+     * top-left), e.g. to route mouse input in split screen. The topmost
+     * (last mounted) viewport wins when viewports overlap.
+     */
+    viewportAt(screenX, screenY) {
+        const viewports = ige.engine._children;
+        for (let i = viewports.length - 1; i >= 0; i--) {
+            const viewport = viewports[i];
+            if (!viewport || !viewport._bounds2d || !viewport.camera)
+                continue;
+            const vx = viewport._translate?.x || 0;
+            const vyBottom = viewport._translate?.y || 0;
+            const top = this._bounds2d.y - vyBottom - viewport._bounds2d.y;
+            if (screenX >= vx && screenX < vx + viewport._bounds2d.x &&
+                screenY >= top && screenY < top + viewport._bounds2d.y) {
+                return viewport;
+            }
+        }
+        return undefined;
+    }
+    shadowSharing(threshold) {
+        if (threshold === undefined) {
+            return this._shadowShareThreshold;
+        }
+        this._shadowShareThreshold = Math.max(0, threshold);
+        return this;
+    }
+    /**
+     * If all viewports share a scene and their camera targets are close
+     * together, render one directional shadow map covering them all.
+     * Returns true when the shared map was rendered for this frame.
+     */
+    _renderSharedShadowMap(viewports) {
+        if (this._shadowShareThreshold <= 0 ||
+            viewports.length < 2 ||
+            !this.shadowsEnabled() ||
+            !this._shadowManager ||
+            !this._shadowCastingLight) {
+            return false;
+        }
+        const scene = viewports[0]._scene;
+        let minX = Infinity, minY = Infinity, minZ = Infinity;
+        let maxX = -Infinity, maxY = -Infinity, maxZ = -Infinity;
+        for (let i = 0; i < viewports.length; i++) {
+            const viewport = viewports[i];
+            if (viewport._scene !== scene || !viewport.camera)
+                return false;
+            const target = viewport.camera._lookAt;
+            const x = target ? target.x : 0, y = target ? target.y : 0, z = target ? target.z : 0;
+            if (x < minX)
+                minX = x;
+            if (y < minY)
+                minY = y;
+            if (z < minZ)
+                minZ = z;
+            if (x > maxX)
+                maxX = x;
+            if (y > maxY)
+                maxY = y;
+            if (z > maxZ)
+                maxZ = z;
+        }
+        const data = scene && this._sceneData.get(scene);
+        if (!data)
+            return false;
+        const size = this._shadowManager.frustumSize();
+        const dx = maxX - minX, dy = maxY - minY, dz = maxZ - minZ;
+        const extent = Math.sqrt(dx * dx + dy * dy + dz * dz) / 2;
+        if (extent > size * this._shadowShareThreshold) {
+            return false;
+        }
+        // Enlarge the frustum just enough to cover every viewport's area
+        this._shadowManager.frustumSize(size + extent);
+        const lightSpaceMatrix = this._shadowManager.updateLightSpaceMatrix(this._shadowLightId, this._shadowCastingLight, undefined, { x: (minX + maxX) / 2, y: (minY + maxY) / 2, z: (minZ + maxZ) / 2 });
+        this._shadowManager.frustumSize(size);
+        if (!lightSpaceMatrix)
+            return false;
+        this._renderDirectionalShadowPass(data, lightSpaceMatrix);
+        this._stateManager?.reset();
+        this._canvasContext?.depthFunc(this._canvasContext.LEQUAL);
+        this._sharedShadowFrame = this._frameId;
+        return true;
+    }
+    /**
+     * Id of the most recently rendered frame. Compare with an object's
+     * _lastRenderedFrame to tell whether it was drawn last frame.
+     */
+    frameId() {
+        return this._frameId;
+    }
+    /**
+     * Per-frame rendering statistics for the most recent frame.
+     */
+    stats() {
+        return { ...this._stats };
+    }
     /**
      * Main scene graph rendering method.
      * Called once per frame by the engine.
+     *
+     * Work that does not depend on the camera (transforms, skeleton
+     * matrices, the bone palette and point light shadow maps) is done once
+     * per frame here; each viewport then only culls, renders its directional
+     * shadow map and draws its view.
      */
     renderSceneGraph(engine, viewports) {
         const gl = this._canvasContext;
-        if (!gl || this._contextLost)
+        if (!gl || this._contextLost || !this._stateManager)
             return false;
+        this._frameId++;
+        const stats = this._stats;
+        stats.drawCalls = 0;
+        stats.instancedDrawCalls = 0;
+        stats.instances = 0;
+        stats.shadowDrawCalls = 0;
+        stats.items = 0;
+        stats.visibleItems = 0;
+        stats.viewports = viewports ? viewports.length : 0;
         // Clear the entire canvas
         const cc = this._clearColor;
+        this._stateManager.reset();
+        this._stateManager.setScissorTest(false);
         gl.viewport(0, 0, this._canvasElement.width, this._canvasElement.height);
         gl.clearColor(cc.r, cc.g, cc.b, cc.a);
+        gl.depthMask(true);
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
         // Enable depth testing for 3D rendering
         gl.enable(gl.DEPTH_TEST);
@@ -308,20 +638,299 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
         // Enable blending for transparency
         gl.enable(gl.BLEND);
         gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
-        // Render each viewport
-        if (viewports && viewports.length > 0) {
-            for (let i = 0; i < viewports.length; i++) {
-                this._renderViewport(viewports[i]);
+        if (!viewports || viewports.length === 0) {
+            return true;
+        }
+        // Collect renderables once per scene (viewports usually share one)
+        this._itemCount = 0;
+        this._skeletonRows.clear();
+        this._bonePalette?.begin();
+        for (let i = 0; i < viewports.length; i++) {
+            const scene = viewports[i]._scene;
+            if (!scene)
+                continue;
+            let data = this._sceneData.get(scene);
+            if (!data) {
+                data = { frameId: -1, models: [], sprites: [], particles: [] };
+                this._sceneData.set(scene, data);
+            }
+            if (data.frameId !== this._frameId) {
+                data.frameId = this._frameId;
+                data.models.length = 0;
+                data.sprites.length = 0;
+                data.particles.length = 0;
+                this._collectRenderables(scene, data);
+                for (let p = 0; p < data.particles.length; p++) {
+                    this._uploadParticleSystem(data.particles[p]);
+                }
+                stats.items += data.models.length + data.sprites.length;
             }
         }
+        // Upload the bone palette once; every viewport and shadow pass reads it
+        if (this._bonePalette && this._skeletonRows.size > 0) {
+            this._bonePalette.upload(BONE_TEXTURE_UNIT);
+            this._stateManager.invalidateTextureBindings();
+        }
+        // Point light shadow maps don't depend on the camera: render them once
+        if (this._shadowCastingPointLights.length > 0 && this._shadowManager) {
+            this._renderPointLightShadowPasses();
+            this._stateManager.reset();
+            gl.depthFunc(gl.LEQUAL);
+        }
+        // Close-together split-screen views can share one shadow map
+        this._renderSharedShadowMap(viewports);
+        for (let i = 0; i < viewports.length; i++) {
+            this._renderViewport(viewports[i]);
+        }
         return true;
+    }
+    /**
+     * Walk a scene graph once, refreshing transforms and turning every
+     * renderable entity into pooled render items with world-space bounds.
+     */
+    _collectRenderables(obj, data, isSceneRoot = true) {
+        if (obj._hidden) {
+            return;
+        }
+        // Ensure matrices are current. The scene root itself is skipped: the
+        // engine's update pass has already positioned it, and viewports each
+        // re-parent a shared scene to themselves, so updating it here would
+        // flip its parent mid-frame and invalidate every child's cached
+        // transform. updateTransform() is a cheap no-op for unchanged entities.
+        if (!isSceneRoot && typeof obj.updateTransform === "function") {
+            obj.updateTransform();
+        }
+        const entity = obj;
+        const geometryData = entity._geometryData;
+        const parts = entity._modelParts;
+        if (obj._isParticleSystem3d) {
+            data.particles.push(obj);
+        }
+        else if (parts && parts.length > 0) {
+            this._addModelParts(entity, parts, data);
+        }
+        else if (geometryData && geometryData.vertices) {
+            const item = this._addModelItem(entity, geometryData, entity._materialData, null, entity._worldMatrix4?.matrix);
+            if (item)
+                data.models.push(item);
+        }
+        else if (entity._texture) {
+            data.sprites.push(entity);
+        }
+        const children = obj._children;
+        if (children) {
+            for (let i = 0; i < children.length; i++) {
+                this._collectRenderables(children[i], data, false);
+            }
+        }
+    }
+    /**
+     * Add one render item per part of an entity's model. Parts with their
+     * own node transform get a world matrix of entity world * part matrix,
+     * kept in a per-entity buffer; the rest share the entity's matrix. The
+     * entity's own _materialData (if any) overrides the parts' materials.
+     */
+    _addModelParts(entity, parts, data) {
+        const world = entity._worldMatrix4?.matrix;
+        if (!world)
+            return;
+        let matrices = entity._modelPartMatrices;
+        if (!matrices || matrices.length !== parts.length) {
+            matrices = entity._modelPartMatrices = parts.map((part) => (part.matrix ? new Float32Array(16) : world));
+        }
+        for (let i = 0; i < parts.length; i++) {
+            const part = parts[i];
+            let partWorld = world;
+            if (part.matrix) {
+                partWorld = matrices[i];
+                multiplyMat4Into(partWorld, world, part.matrix);
+            }
+            const item = this._addModelItem(entity, part.geometryData, part.materialData, entity._materialData, partWorld);
+            if (item)
+                data.models.push(item);
+        }
+    }
+    /**
+     * Start uploading a model texture image (once); it is used as soon as
+     * the upload completes.
+     */
+    _requestBlobTexture(textureId, blob) {
+        if (!this._textureManager || this._pendingBlobTextures.has(textureId))
+            return;
+        this._pendingBlobTextures.add(textureId);
+        this._textureManager.createTextureFromBlob(textureId, blob).then((texture) => {
+            if (!texture) {
+                this.log(`Failed to create model texture "${textureId}"`, "warning");
+            }
+        });
+    }
+    /**
+     * Create (or reuse) a pooled render item for one mesh of an entity.
+     * @param materialData The mesh's material.
+     * @param overrideData Optional per-entity material values that replace
+     * the mesh material's (used for model parts).
+     * @param worldMatrix World matrix to draw with (defaults to the entity's).
+     */
+    _addModelItem(entity, geometryData, materialData, overrideData = null, worldMatrix = entity._worldMatrix4?.matrix) {
+        if (!this._geometryManager || !worldMatrix) {
+            return;
+        }
+        const geometryId = geometryData.id || "unknown";
+        let geometry = this._geometryManager.getGeometry(geometryId);
+        if (!geometry) {
+            geometry = this._geometryManager.createGeometryFromData(geometryId, geometryData) || undefined;
+            if (!geometry)
+                return;
+            // Geometry creation binds buffers with raw GL calls
+            this._stateManager?.reset();
+        }
+        let item = this._itemPool[this._itemCount];
+        if (!item) {
+            item = {
+                entity,
+                geometry,
+                materialData: null,
+                material: {
+                    r: 1, g: 1, b: 1, a: 1,
+                    metallic: 0, roughness: 0.5,
+                    emissiveR: 0, emissiveG: 0, emissiveB: 0, emissiveIntensity: 0,
+                    opacity: 1
+                },
+                textureKey: "",
+                boneRow: -1,
+                transparent: false,
+                castShadow: true,
+                worldMatrix,
+                cx: 0, cy: 0, cz: 0, radius: -1,
+                sortKey: 0,
+                batchKey: "",
+                depthKey: ""
+            };
+            this._itemPool[this._itemCount] = item;
+        }
+        this._itemCount++;
+        item.entity = entity;
+        item.geometry = geometry;
+        item.materialData = materialData;
+        item.worldMatrix = worldMatrix;
+        // Resolve material values
+        const mat = item.material;
+        mat.r = 1;
+        mat.g = 1;
+        mat.b = 1;
+        mat.a = 1;
+        mat.metallic = 0;
+        mat.roughness = 0.5;
+        mat.emissiveR = 0;
+        mat.emissiveG = 0;
+        mat.emissiveB = 0;
+        mat.emissiveIntensity = 0;
+        mat.opacity = entity._opacity;
+        item.blobTextureId = undefined;
+        item.texture = entity._texture;
+        if (materialData) {
+            this._applyMaterialData(item, materialData);
+        }
+        if (overrideData) {
+            this._applyMaterialData(item, overrideData);
+        }
+        if (item.blobTextureId) {
+            item.textureKey = item.blobTextureId;
+        }
+        else if (item.texture) {
+            item.textureKey = item.texture._id || item.texture.id();
+        }
+        else {
+            item.textureKey = "";
+        }
+        item.transparent = mat.opacity < 1 || mat.a < 1 || !!materialData?.transparent || !!overrideData?.transparent ||
+            !!(item.texture && item.texture._hasAlpha);
+        item.castShadow = !entity._noShadowCast && !item.transparent;
+        // Skeleton: compute skin matrices once per frame (dirty-guarded) and
+        // give each skeleton a bone palette row for instanced draws.
+        item.skeleton = geometry.isSkinned ? entity._skeleton : undefined;
+        item.boneRow = -1;
+        if (item.skeleton) {
+            this._skeletonManager?.updateSkeletonMatrices(item.skeleton);
+            if (this._bonePalette) {
+                let row = this._skeletonRows.get(item.skeleton);
+                if (row === undefined) {
+                    row = this._bonePalette.addSkeleton(item.skeleton);
+                    this._skeletonRows.set(item.skeleton, row);
+                }
+                item.boneRow = row;
+            }
+        }
+        // World-space bounding sphere
+        const m = item.worldMatrix;
+        if (geometry.boundsRadius >= 0) {
+            const lx = geometry.boundsCenterX, ly = geometry.boundsCenterY, lz = geometry.boundsCenterZ;
+            item.cx = m[0] * lx + m[4] * ly + m[8] * lz + m[12];
+            item.cy = m[1] * lx + m[5] * ly + m[9] * lz + m[13];
+            item.cz = m[2] * lx + m[6] * ly + m[10] * lz + m[14];
+            const sx = m[0] * m[0] + m[1] * m[1] + m[2] * m[2];
+            const sy = m[4] * m[4] + m[5] * m[5] + m[6] * m[6];
+            const sz = m[8] * m[8] + m[9] * m[9] + m[10] * m[10];
+            item.radius = geometry.boundsRadius * Math.sqrt(Math.max(sx, sy, sz));
+        }
+        else {
+            item.cx = m[12];
+            item.cy = m[13];
+            item.cz = m[14];
+            item.radius = -1;
+        }
+        const skinned = item.skeleton ? "|s" : "";
+        item.batchKey = geometry.id + "|" + item.textureKey + skinned;
+        item.depthKey = geometry.id + skinned;
+        return item;
+    }
+    /**
+     * Copy the values present in a material onto a render item's resolved
+     * material (fields that are absent are left unchanged).
+     */
+    _applyMaterialData(item, materialData) {
+        const mat = item.material;
+        const color = materialData.color;
+        if (color) {
+            if (typeof color === "object") {
+                mat.r = color.r;
+                mat.g = color.g;
+                mat.b = color.b;
+                mat.a = color.a ?? 1;
+            }
+            else {
+                const rgb = parseHexColor(color);
+                mat.r = rgb[0];
+                mat.g = rgb[1];
+                mat.b = rgb[2];
+            }
+        }
+        if (materialData.metallic !== undefined)
+            mat.metallic = materialData.metallic;
+        if (materialData.roughness !== undefined)
+            mat.roughness = materialData.roughness;
+        if (materialData.emissiveColor) {
+            mat.emissiveR = materialData.emissiveColor.r;
+            mat.emissiveG = materialData.emissiveColor.g;
+            mat.emissiveB = materialData.emissiveColor.b;
+            mat.emissiveIntensity = materialData.emissiveIntensity ?? 1;
+        }
+        const textureId = materialData.textureId;
+        if (textureId && this._textureManager) {
+            if (this._textureManager.getBlobTexture(textureId)) {
+                item.blobTextureId = textureId;
+            }
+            else if (materialData.textureBlob) {
+                this._requestBlobTexture(textureId, materialData.textureBlob);
+            }
+        }
     }
     /**
      * Render a single viewport.
      */
     _renderViewport(viewport) {
         const gl = this._canvasContext;
-        if (!gl || !this._renderBatchManager || !this._cameraController || !this._stateManager) {
+        if (!gl || !this._cameraController || !this._stateManager) {
             return;
         }
         // Get viewport dimensions in CSS pixels and convert to device pixels.
@@ -330,152 +939,289 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
         const vpY = Math.floor((viewport._translate?.y || 0) * dpr);
         const vpWidth = Math.floor(viewport._bounds2d.x * dpr);
         const vpHeight = Math.floor(viewport._bounds2d.y * dpr);
-        // Get camera and update matrices
         const camera = viewport.camera;
-        if (!camera) {
+        const scene = viewport._scene;
+        if (!camera || !scene) {
             return;
         }
+        const data = this._sceneData.get(scene);
+        if (!data)
+            return;
         const matrices = this._cameraController.updateCamera(camera, viewport);
-        // Start new frame for batch manager
-        this._renderBatchManager.startFrame();
-        // Traverse scene graph and build render batches
-        const scene = viewport._scene;
-        if (scene) {
-            this._traverseSceneGraph(scene, camera, matrices.frustum);
+        const frustum = matrices.frustum;
+        const camX = camera._translate.x;
+        const camY = camera._translate.y;
+        const camZ = camera._translate.z;
+        // ------------------------------------------------------------
+        // Cull against the camera frustum and batch what remains
+        // ------------------------------------------------------------
+        const batcher = this._mainBatcher;
+        const transparent = this._transparentItems;
+        batcher.begin();
+        transparent.length = 0;
+        const frameId = this._frameId;
+        const models = data.models;
+        for (let i = 0; i < models.length; i++) {
+            const item = models[i];
+            if (item.radius >= 0 && !frustum.containsSphereXYZ(item.cx, item.cy, item.cz, item.radius)) {
+                continue;
+            }
+            item.entity._lastRenderedFrame = frameId;
+            const dx = item.cx - camX, dy = item.cy - camY, dz = item.cz - camZ;
+            const distSq = dx * dx + dy * dy + dz * dz;
+            if (item.transparent) {
+                item.sortKey = distSq;
+                transparent.push(item);
+            }
+            else {
+                // Front-to-back key: distance to the far side of the bounds, so
+                // big surfaces like floors sort behind the things standing on them
+                item.sortKey = Math.sqrt(distSq) + Math.max(item.radius, 0);
+                batcher.add(item, item.batchKey);
+            }
         }
-        // Prepare batches (sort transparent objects)
-        const cameraPos = {
-            x: camera._translate.x,
-            y: camera._translate.y,
-            z: camera._translate.z
-        };
-        this._renderBatchManager.prepareForRendering(cameraPos);
-        // ============================================================
-        // SHADOW PASS: Render scene from light's perspective
-        // ============================================================
-        if (this.shadowsEnabled() && this._shadowManager && this._shadowCastingLight) {
-            this._renderShadowPass(matrices, cameraPos);
-            // Reset state manager after shadow pass - the shadow pass changes GL state
-            // directly (framebuffer, viewport, depth func, cull face) which puts the
-            // state manager's cached state out of sync with actual GL state
-            this._stateManager.reset();
-            // Restore depth function to LEQUAL (shadow pass uses LESS)
-            gl.depthFunc(gl.LEQUAL);
+        // Draw opaque geometry front to back (batches, and instances within
+        // each batch) so the depth test rejects hidden pixels before the
+        // expensive lighting runs. Dense crowds overlap heavily, so this
+        // removes a lot of overdraw.
+        const opaqueBatches = batcher.batches;
+        for (let b = 0; b < opaqueBatches.length; b++) {
+            const items = opaqueBatches[b].items;
+            if (items.length > 1)
+                items.sort(sortItemsFrontToBack);
         }
-        // ============================================================
-        // POINT LIGHT SHADOW PASS: Render 6 faces per point light
-        // ============================================================
-        if (this._shadowCastingPointLights.length > 0 && this._shadowManager) {
-            this._renderPointLightShadowPasses();
-            this._stateManager.reset();
-            gl.depthFunc(gl.LEQUAL);
+        if (opaqueBatches.length > 1)
+            opaqueBatches.sort(sortBatchesFrontToBack);
+        this._stats.visibleItems += transparent.length;
+        for (const batch of opaqueBatches)
+            this._stats.visibleItems += batch.items.length;
+        const opaqueSprites = this._opaqueSprites;
+        const transparentSprites = this._transparentSprites;
+        opaqueSprites.length = 0;
+        transparentSprites.length = 0;
+        const sprites = data.sprites;
+        for (let i = 0; i < sprites.length; i++) {
+            const sprite = sprites[i];
+            const m = sprite._worldMatrix4?.matrix;
+            if (!m)
+                continue;
+            const radius = Math.max(sprite._bounds2d.x, sprite._bounds2d.y) * 0.75 *
+                Math.max(Math.abs(sprite._scale.x), Math.abs(sprite._scale.y), 1e-6);
+            if (!frustum.containsSphereXYZ(m[12], m[13], m[14], radius))
+                continue;
+            const spriteMaterial = sprite._materialData;
+            const spriteColor = spriteMaterial?.color;
+            if (sprite._opacity < 1 ||
+                sprite._texture?._hasAlpha ||
+                spriteMaterial?.blending === "additive" ||
+                spriteMaterial?.transparent ||
+                (typeof spriteColor === "object" && (spriteColor.a ?? 1) < 1)) {
+                const dx = m[12] - camX, dy = m[13] - camY, dz = m[14] - camZ;
+                sprite._webglSortKey = dx * dx + dy * dy + dz * dz;
+                transparentSprites.push(sprite);
+            }
+            else {
+                opaqueSprites.push(sprite);
+            }
         }
-        // ============================================================
-        // MAIN RENDER PASS
-        // ============================================================
-        // Set viewport (using device pixels)
+        // ------------------------------------------------------------
+        // Directional shadow map, centred on this viewport's view target
+        // ------------------------------------------------------------
+        if (this.shadowsEnabled() && this._shadowManager && this._shadowCastingLight && this._sharedShadowFrame !== this._frameId) {
+            const target = camera._lookAt;
+            const center = target ? { x: target.x, y: target.y, z: target.z } : { x: 0, y: 0, z: 0 };
+            const lightSpaceMatrix = this._shadowManager.updateLightSpaceMatrix(this._shadowLightId, this._shadowCastingLight, { x: camX, y: camY, z: camZ }, center);
+            if (lightSpaceMatrix) {
+                this._renderDirectionalShadowPass(data, lightSpaceMatrix);
+                this._stateManager.reset();
+                gl.depthFunc(gl.LEQUAL);
+            }
+        }
+        // ------------------------------------------------------------
+        // Main pass
+        // ------------------------------------------------------------
         this._stateManager.setViewport(vpX, vpY, vpWidth, vpHeight);
-        // Enable scissor test for viewport clipping
-        if (viewport._clipping) {
-            this._stateManager.setScissorTest(true);
-            this._stateManager.setScissorBox(vpX, vpY, vpWidth, vpHeight);
-        }
-        // Clear viewport area to the configured background colour.
-        gl.clearColor(this._clearColor.r, this._clearColor.g, this._clearColor.b, this._clearColor.a);
+        // Always scissor the clear so split-screen viewports don't wipe each
+        // other; drawing itself is already confined by gl.viewport.
+        this._stateManager.setScissorTest(true);
+        this._stateManager.setScissorBox(vpX, vpY, vpWidth, vpHeight);
+        const cc = this._clearColor;
+        gl.clearColor(cc.r, cc.g, cc.b, cc.a);
+        this._stateManager.setDepthWrite(true);
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-        // Render opaque objects first (front to back for early Z rejection)
-        this._renderOpaqueBatches(matrices, viewport);
-        // Render transparent objects (back to front for correct blending)
-        this._renderTransparentBatches(matrices, viewport);
-        // Disable scissor test
-        if (viewport._clipping) {
+        if (!viewport._clipping) {
             this._stateManager.setScissorTest(false);
+        }
+        // Opaque pass
+        this._stateManager.setDepthTest(true);
+        this._stateManager.setDepthWrite(true);
+        this._stateManager.setDepthFunc(gl.LEQUAL);
+        this._stateManager.setBlend(true);
+        this._stateManager.setBlendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+        this._renderSprites(opaqueSprites, matrices);
+        this._renderModelBatches(batcher.batches, matrices);
+        // Transparent pass (back to front, no depth writes)
+        this._stateManager.setDepthWrite(false);
+        if (transparentSprites.length > 1) {
+            transparentSprites.sort(sortSpritesBackToFront);
+        }
+        this._renderSprites(transparentSprites, matrices);
+        if (transparent.length > 0) {
+            transparent.sort(sortItemsBackToFront);
+            this._renderTransparentItems(transparent, matrices);
+        }
+        this._renderParticleSystems(data.particles, matrices);
+        this._stateManager.setDepthWrite(true);
+        this._stateManager.setScissorTest(false);
+    }
+    /**
+     * Pick the program for a model batch.
+     */
+    _selectProgram(skinned, instanced, baseId, skinnedId) {
+        const id = skinned ? skinnedId : baseId;
+        return this._shaderManager?.getProgram(instanced ? `${id}_instanced` : id);
+    }
+    /**
+     * Whether a batch should be drawn with a single instanced call.
+     */
+    _shouldInstance(batch) {
+        if (!this._instancingEnabled || !this._instanceBuffer)
+            return false;
+        if (batch.items.length < this._minInstanceCount)
+            return false;
+        if (batch.skinned && !this._bonePalette)
+            return false;
+        return true;
+    }
+    /**
+     * Draw a batch with one instanced call (geometry must already be bound).
+     */
+    _drawInstanced(batch, program) {
+        const gl = this._canvasContext;
+        const geometry = batch.geometry;
+        const count = batch.items.length;
+        this._instanceBuffer.upload(batch.items, 0, count);
+        this._instanceBuffer.bind(program);
+        if (geometry.indexBuffer && geometry.indexCount > 0) {
+            // The instance buffer rebinds ARRAY_BUFFER only, the index buffer stays bound
+            const indexType = geometry.indexData instanceof Uint32Array ? gl.UNSIGNED_INT : gl.UNSIGNED_SHORT;
+            gl.drawElementsInstanced(geometry.drawMode, geometry.indexCount, indexType, 0, count);
+        }
+        else if (geometry.vertexCount > 0) {
+            gl.drawArraysInstanced(geometry.drawMode, 0, geometry.vertexCount, count);
+        }
+        this._instanceBuffer.unbind();
+        this._stats.instancedDrawCalls++;
+        this._stats.instances += count;
+    }
+    /**
+     * Point an instanced skinned program at the bone palette texture.
+     */
+    _bindBonePalette(program) {
+        if (!this._bonePalette)
+            return;
+        program.setUniform1i("u_boneTexture", BONE_TEXTURE_UNIT);
+        program.setUniform2f("u_boneTextureSize", this._bonePalette.width, Math.max(1, this._bonePalette.height));
+        program.setUniform1i("u_useSkinning", 1);
+    }
+    /**
+     * Upload one item's bone matrices to a non-instanced skinned program.
+     */
+    _uploadBoneUniforms(program, item) {
+        const skeleton = item.skeleton;
+        if (!skeleton) {
+            program.setUniform1i("u_useSkinning", 0);
+            return;
+        }
+        program.setUniform1i("u_useSkinning", 1);
+        const location = program.getUniformLocation("u_boneMatrices[0]");
+        if (location) {
+            const boneCount = Math.min(skeleton.data.boneCount, MAX_BONES);
+            this._canvasContext.uniformMatrix4fv(location, false, skeleton.skinMatrices.subarray(0, boneCount * 16));
         }
     }
     /**
-     * Render shadow pass - renders scene from light's perspective to shadow map.
+     * Draw depth-only batches (shadow passes). `setup` applies the pass's
+     * shared uniforms whenever the active program changes.
      */
-    _renderShadowPass(matrices, cameraPos) {
-        if (!this._shadowManager || !this._shadowCastingLight || !this._shaderManager || !this._geometryManager || !this._renderBatchManager) {
+    _drawDepthBatches(batches, baseId, skinnedId, setup) {
+        if (!this._geometryManager)
             return;
-        }
-        const gl = this._canvasContext;
-        // Update light space matrix
-        const lightSpaceMatrix = this._shadowManager.updateLightSpaceMatrix(this._shadowLightId, this._shadowCastingLight, cameraPos);
-        if (!lightSpaceMatrix) {
-            return;
-        }
-        // Begin shadow pass (binds framebuffer, sets viewport, clears depth)
-        if (!this._shadowManager.beginShadowPass(this._shadowLightId)) {
-            return;
-        }
-        // Get shadow shaders (regular and skinned)
-        const shadowProgram = this._shaderManager.getProgram("shadow");
-        const skinnedShadowProgram = this._shaderManager.getProgram("skinned_shadow");
-        if (!shadowProgram) {
-            this._shadowManager.endShadowPass();
-            return;
-        }
-        // Setup a shadow program with the light space matrix
-        let currentShadowProgram = null;
-        const setupShadowProgram = (program) => {
-            program.use();
-            program.setUniformMatrix4fv("u_lightSpaceMatrix", lightSpaceMatrix);
-            currentShadowProgram = program;
-        };
-        setupShadowProgram(shadowProgram);
-        // Render all opaque models to shadow map
-        const renderBatchShadow = (batch) => {
-            const isSkinned = batch.geometry.isSkinned && skinnedShadowProgram;
-            const program = isSkinned ? skinnedShadowProgram : shadowProgram;
-            if (program !== currentShadowProgram) {
-                setupShadowProgram(program);
-                if (isSkinned) {
-                    program.setUniform1i("u_useSkinning", 0);
+        let current;
+        for (let b = 0; b < batches.length; b++) {
+            const batch = batches[b];
+            const instanced = this._shouldInstance(batch);
+            const program = this._selectProgram(batch.skinned, instanced, baseId, skinnedId);
+            if (!program)
+                continue;
+            if (program !== current) {
+                program.use();
+                setup(program);
+                current = program;
+                if (batch.skinned && instanced) {
+                    this._bindBonePalette(program);
                 }
             }
             this._geometryManager.bindGeometry(batch.geometry, program);
-            for (const entity of batch.entities) {
-                if (entity._noShadowCast)
-                    continue;
-                if (entity._worldMatrix4) {
-                    program.setUniformMatrix4fv("u_worldMatrix", entity._worldMatrix4);
-                }
-                // Handle skeletal animation for skinned shadow
-                if (isSkinned && entity._skeleton && this._skeletonManager) {
-                    this._skeletonManager.updateSkeletonMatrices(entity._skeleton);
-                    program.setUniform1i("u_useSkinning", 1);
-                    const skinMatrices = entity._skeleton.skinMatrices;
-                    const boneCount = entity._skeleton.data.boneCount;
-                    const location = gl.getUniformLocation(program.program, "u_boneMatrices[0]");
-                    if (location) {
-                        gl.uniformMatrix4fv(location, false, skinMatrices.subarray(0, boneCount * 16));
+            if (instanced) {
+                this._drawInstanced(batch, program);
+                this._stats.shadowDrawCalls++;
+            }
+            else {
+                for (let i = 0; i < batch.items.length; i++) {
+                    const item = batch.items[i];
+                    program.setUniformMatrix4fv("u_worldMatrix", item.worldMatrix);
+                    if (batch.skinned) {
+                        this._uploadBoneUniforms(program, item);
                     }
+                    this._geometryManager.drawGeometry(batch.geometry);
+                    this._stats.shadowDrawCalls++;
                 }
-                else if (isSkinned) {
-                    program.setUniform1i("u_useSkinning", 0);
-                }
-                this._geometryManager.drawGeometry(batch.geometry);
             }
             this._geometryManager.unbindGeometry(batch.geometry, program);
-        };
-        // Only render opaque models to shadow map (shadows from opaque geometry only)
-        this._renderBatchManager.renderOpaqueModels(shadowProgram, renderBatchShadow);
-        // End shadow pass (restores default framebuffer)
+        }
+    }
+    /**
+     * Render the directional light's shadow map for one viewport. Casters
+     * are culled against the light's own frustum (not the camera's), so
+     * objects just off-screen still cast shadows into view.
+     */
+    _renderDirectionalShadowPass(data, lightSpaceMatrix) {
+        if (!this._shadowManager)
+            return;
+        this._lightFrustumMatrix.matrix.set(lightSpaceMatrix);
+        this._lightFrustum.extractFromMatrix(this._lightFrustumMatrix);
+        const batcher = this._depthBatcher;
+        batcher.begin();
+        const models = data.models;
+        for (let i = 0; i < models.length; i++) {
+            const item = models[i];
+            if (!item.castShadow)
+                continue;
+            if (item.radius >= 0 && !this._lightFrustum.containsSphereXYZ(item.cx, item.cy, item.cz, item.radius)) {
+                continue;
+            }
+            item.entity._lastRenderedFrame = this._frameId;
+            batcher.add(item, item.depthKey);
+        }
+        if (!this._shadowManager.beginShadowPass(this._shadowLightId)) {
+            return;
+        }
+        this._drawDepthBatches(batcher.batches, "shadow", "skinned_shadow", (program) => {
+            program.setUniformMatrix4fv("u_lightSpaceMatrix", lightSpaceMatrix);
+        });
         this._shadowManager.endShadowPass();
     }
     /**
-     * Render point light shadow passes (6 faces per shadow-casting point light).
+     * Render point light shadow atlases (6 faces per shadow-casting light).
+     * Runs once per frame; casters are every shadow-casting item in range of
+     * the light across all scenes being rendered.
      */
     _renderPointLightShadowPasses() {
-        if (!this._shadowManager || !this._shaderManager || !this._geometryManager || !this._renderBatchManager) {
+        if (!this._shadowManager) {
             return;
         }
-        const gl = this._canvasContext;
-        const pointShadowProgram = this._shaderManager.getProgram("point_shadow");
-        const skinnedPointShadowProgram = this._shaderManager.getProgram("skinned_point_shadow");
-        if (!pointShadowProgram)
-            return;
+        const batcher = this._depthBatcher;
         for (const pointLight of this._shadowCastingPointLights) {
             const lightId = pointLight.id();
             // Update the 6 light-space matrices for this light's current position
@@ -486,7 +1232,21 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
             // Get the far plane from the shadow map data so depth pass and lookup match
             const shadowData = this._shadowManager.getPointShadowMapData(lightId);
             const farPlane = shadowData?.farPlane ?? (pointLight._range || 500);
-            // Render 6 cube faces
+            // Gather casters within the light's shadow range
+            batcher.begin();
+            for (let i = 0; i < this._itemCount; i++) {
+                const item = this._itemPool[i];
+                if (!item.castShadow)
+                    continue;
+                if (item.radius >= 0) {
+                    const dx = item.cx - pos.x, dy = item.cy - pos.y, dz = item.cz - pos.z;
+                    const reach = farPlane + item.radius;
+                    if (dx * dx + dy * dy + dz * dz > reach * reach)
+                        continue;
+                }
+                item.entity._lastRenderedFrame = this._frameId;
+                batcher.add(item, item.depthKey);
+            }
             for (let face = 0; face < 6; face++) {
                 if (!this._shadowManager.beginPointShadowPass(lightId, face)) {
                     continue;
@@ -496,432 +1256,388 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
                     this._shadowManager.endPointShadowPass();
                     continue;
                 }
-                // Track current program to minimize switches
-                let currentProgram = null;
-                // Setup shared uniforms on a program
-                const setupProgram = (program) => {
-                    program.use();
+                this._drawDepthBatches(batcher.batches, "point_shadow", "skinned_point_shadow", (program) => {
                     program.setUniformMatrix4fv("u_lightSpaceMatrix", lightSpaceMatrix);
                     program.setUniform3f("u_pointLightPosition", pos.x, pos.y, pos.z);
                     program.setUniform1f("u_pointShadowFarPlane", farPlane);
-                    currentProgram = program;
-                };
-                // Render all opaque models
-                const renderBatch = (batch) => {
-                    const isSkinned = batch.geometry.isSkinned && skinnedPointShadowProgram;
-                    const program = isSkinned ? skinnedPointShadowProgram : pointShadowProgram;
-                    // Switch shader if needed
-                    if (program !== currentProgram) {
-                        setupProgram(program);
-                        if (isSkinned) {
-                            program.setUniform1i("u_useSkinning", 0);
-                        }
-                    }
-                    this._geometryManager.bindGeometry(batch.geometry, program);
-                    for (const entity of batch.entities) {
-                        if (entity._noShadowCast)
-                            continue;
-                        if (entity._worldMatrix4) {
-                            program.setUniformMatrix4fv("u_worldMatrix", entity._worldMatrix4);
-                        }
-                        // Handle skeletal animation
-                        if (isSkinned && entity._skeleton && this._skeletonManager) {
-                            this._skeletonManager.updateSkeletonMatrices(entity._skeleton);
-                            program.setUniform1i("u_useSkinning", 1);
-                            const skinMatrices = entity._skeleton.skinMatrices;
-                            const boneCount = entity._skeleton.data.boneCount;
-                            const location = gl.getUniformLocation(program.program, "u_boneMatrices[0]");
-                            if (location) {
-                                gl.uniformMatrix4fv(location, false, skinMatrices.subarray(0, boneCount * 16));
-                            }
-                        }
-                        else if (isSkinned) {
-                            program.setUniform1i("u_useSkinning", 0);
-                        }
-                        this._geometryManager.drawGeometry(batch.geometry);
-                    }
-                    this._geometryManager.unbindGeometry(batch.geometry, program);
-                };
-                // Use pointShadowProgram as the default for renderOpaqueModels
-                // (it needs a program reference but renderBatch handles program selection)
-                setupProgram(pointShadowProgram);
-                this._renderBatchManager.renderOpaqueModels(pointShadowProgram, renderBatch);
+                });
                 this._shadowManager.endPointShadowPass();
             }
-            // No blur pass needed - using Vogel disk PCF for soft shadows
         }
     }
     /**
-     * Traverse the scene graph and add entities to render batches.
+     * Set the per-viewport uniforms a lit program needs (camera, lights,
+     * shadows, fog). Called whenever the active program changes.
      */
-    _traverseSceneGraph(entity, camera, frustum) {
-        if (!entity || !this._renderBatchManager) {
-            return;
+    _setupLitProgram(program, matrices) {
+        program.setUniformMatrix4fv("u_viewMatrix", matrices.view);
+        program.setUniformMatrix4fv("u_projectionMatrix", matrices.projection);
+        program.setUniform3f("u_cameraPosition", matrices.cameraPosition.x, matrices.cameraPosition.y, matrices.cameraPosition.z);
+        this._lightManager?.applyLightUniforms(program);
+        if (this.shadowsEnabled() && this._shadowManager) {
+            this._shadowManager.applyShadowUniforms(program, this._shadowLightId, SHADOW_TEXTURE_UNIT);
+            program.setUniform1i("u_shadowDebug", this._shadowDebugMode);
         }
-        // Update entity transform to ensure matrices are current
-        if ('updateTransform' in entity && typeof entity.updateTransform === 'function') {
-            entity.updateTransform();
+        else {
+            program.setUniform1i("u_hasShadowMap", 0);
+            program.setUniform1i("u_shadowDebug", 0);
+            program.setUniformMatrix4fv("u_lightSpaceMatrix", IDENTITY_MATRIX);
         }
-        // Check if entity is visible
-        if (entity._hidden || !entity._inView) {
-            return;
-        }
-        // Frustum culling (if entity has bounds)
-        if (entity._bounds3d && entity._bounds3d.x > 0) {
-            // Calculate bounding sphere center and radius
-            const center = new IgePoint3d(entity._translate.x, entity._translate.y, entity._translate.z);
-            const radius = Math.max(entity._bounds3d.x, entity._bounds3d.y, entity._bounds3d.z) / 2;
-            if (!frustum.containsSphere(center, radius)) {
-                entity._inView = false;
-                return; // Skip this entity and its children
+        program.setUniform1f("u_shadowNormalOffset", 0.0);
+        if (this._shadowCastingPointLights.length > 0 && this._shadowManager && this._lightManager) {
+            const count = Math.min(this._shadowCastingPointLights.length, 2);
+            program.setUniform1i("u_numShadowPointLights", count);
+            for (let i = 0; i < count; i++) {
+                const light = this._shadowCastingPointLights[i];
+                this._shadowManager.applyPointShadowUniforms(program, i, light.id(), POINT_SHADOW_TEXTURE_UNIT + i);
+                const pointLightIndex = this._lightManager._pointLights.indexOf(light);
+                program.setUniform1i(`u_pointShadowLightIndex[${i}]`, pointLightIndex);
             }
         }
-        entity._inView = true;
-        // Add renderable entities to batches
-        if (this._isRenderableEntity(entity)) {
-            this._addEntityToBatch(entity);
+        else {
+            program.setUniform1i("u_numShadowPointLights", 0);
         }
-        // Recursively traverse children
-        if (entity._children && entity._children.length > 0) {
-            for (let i = 0; i < entity._children.length; i++) {
-                this._traverseSceneGraph(entity._children[i], camera, frustum);
-            }
+        // The shadow manager binds its textures with raw GL calls
+        this._stateManager?.invalidateTextureBindings();
+        // Default to simple lighting mode (non-PBR)
+        program.setUniform1i("u_usePBR", 0);
+        program.setUniform1i("u_hasNormalMap", 0);
+        program.setUniform1i("u_baseColorTexture", 0);
+        const fog = this._fog;
+        const fogMode = fog.mode === "linear" ? 1 : fog.mode === "exp2" ? 2 : 0;
+        program.setUniform1i("u_fogMode", fogMode);
+        if (fogMode) {
+            program.setUniform3f("u_fogColor", fog.color.r, fog.color.g, fog.color.b);
+            program.setUniform1f("u_fogNear", fog.near);
+            program.setUniform1f("u_fogFar", fog.far);
+            program.setUniform1f("u_fogDensity", fog.density);
         }
     }
     /**
-     * Check if an entity is renderable (has texture or geometry with actual vertex data).
+     * Bind the base colour texture for a batch or item to unit 0.
      */
-    _isRenderableEntity(entity) {
-        const hasTexture = !!entity._texture;
-        const hasGeometryWithData = !!entity._geometryData?.vertices;
-        return hasTexture || hasGeometryWithData;
+    _bindBaseTexture(blobTextureId, texture) {
+        const textureManager = this._textureManager;
+        let webGlTexture;
+        if (blobTextureId) {
+            webGlTexture = textureManager.getBlobTexture(blobTextureId);
+        }
+        else if (texture) {
+            webGlTexture = textureManager.getTextureForIgeTexture(texture);
+            // Lazily created textures are uploaded with raw GL binds
+            this._stateManager.invalidateTextureBindings();
+        }
+        this._stateManager.bindTexture(webGlTexture || textureManager.getDefaultWhiteTexture(), 0);
     }
     /**
-     * Add an entity to the appropriate render batch.
+     * Set one item's per-draw uniforms on a non-instanced lit program.
      */
-    _addEntityToBatch(entity) {
-        if (!this._renderBatchManager || !this._geometryManager) {
+    _applyItemUniforms(program, item) {
+        const mat = item.material;
+        program.setUniformMatrix4fv("u_worldMatrix", item.worldMatrix);
+        program.setUniform4f("u_baseColor", mat.r, mat.g, mat.b, mat.a);
+        program.setUniform1f("u_opacity", mat.opacity);
+        program.setUniform1f("u_metallic", mat.metallic);
+        program.setUniform1f("u_roughness", mat.roughness);
+        program.setUniform3f("u_emissiveColor", mat.emissiveR, mat.emissiveG, mat.emissiveB);
+        program.setUniform1f("u_emissiveIntensity", mat.emissiveIntensity);
+    }
+    /**
+     * Render opaque model batches with the lit shaders, instancing where
+     * possible. Supports skinned meshes with skeletal animation.
+     */
+    _renderModelBatches(batches, matrices) {
+        if (!this._geometryManager || !this._textureManager || !this._stateManager) {
             return;
         }
-        // Determine if entity is transparent
-        const isTransparent = entity._opacity < 1.0 || (entity._texture && entity._texture._hasAlpha);
-        // Check if entity has a texture (2D sprite)
-        if (entity._texture) {
-            this._renderBatchManager.addSprite(entity, entity._texture, isTransparent);
-            return;
-        }
-        // Check if entity has 3D geometry
-        if (entity._geometryData) {
-            const geometryId = entity._geometryData.id || "unknown";
-            let geometry = this._geometryManager.getGeometry(geometryId);
-            // Create geometry if it doesn't exist
-            if (!geometry) {
-                geometry = this._geometryManager.createGeometryFromData(geometryId, entity._geometryData) || undefined;
+        let current;
+        for (let b = 0; b < batches.length; b++) {
+            const batch = batches[b];
+            const instanced = this._shouldInstance(batch);
+            const program = this._selectProgram(batch.skinned, instanced, "lit", "skinned");
+            if (!program)
+                continue;
+            if (program !== current) {
+                program.use();
+                this._setupLitProgram(program, matrices);
+                current = program;
             }
-            if (geometry) {
-                const texture = entity._texture;
-                const textureId = texture ? texture.id() : undefined;
-                this._renderBatchManager.addModel(entity, geometry, textureId, isTransparent);
+            this._geometryManager.bindGeometry(batch.geometry, program);
+            this._bindBaseTexture(batch.blobTextureId, batch.texture);
+            if (instanced) {
+                if (batch.skinned) {
+                    this._bindBonePalette(program);
+                }
+                this._drawInstanced(batch, program);
             }
+            else {
+                for (let i = 0; i < batch.items.length; i++) {
+                    const item = batch.items[i];
+                    this._applyItemUniforms(program, item);
+                    if (batch.skinned) {
+                        this._uploadBoneUniforms(program, item);
+                    }
+                    this._geometryManager.drawGeometry(batch.geometry);
+                    this._stats.drawCalls++;
+                }
+            }
+            this._geometryManager.unbindGeometry(batch.geometry, program);
         }
     }
     /**
-     * Render all opaque batches.
+     * Render transparent model items one at a time in back-to-front order.
      */
-    _renderOpaqueBatches(matrices, viewport) {
-        if (!this._renderBatchManager || !this._shaderManager || !this._geometryManager || !this._textureManager || !this._stateManager) {
+    _renderTransparentItems(items, matrices) {
+        if (!this._geometryManager || !this._textureManager || !this._stateManager) {
+            return;
+        }
+        let current;
+        for (let i = 0; i < items.length; i++) {
+            const item = items[i];
+            const skinned = !!item.skeleton;
+            const program = this._selectProgram(skinned, false, "lit", "skinned");
+            if (!program)
+                continue;
+            if (program !== current) {
+                program.use();
+                this._setupLitProgram(program, matrices);
+                current = program;
+            }
+            this._geometryManager.bindGeometry(item.geometry, program);
+            this._bindBaseTexture(item.blobTextureId, item.texture);
+            this._applyItemUniforms(program, item);
+            if (skinned) {
+                this._uploadBoneUniforms(program, item);
+            }
+            this._geometryManager.drawGeometry(item.geometry);
+            this._geometryManager.unbindGeometry(item.geometry, program);
+            this._stats.drawCalls++;
+        }
+    }
+    /**
+     * Upload a particle system's packed render data to its own GPU buffer
+     * (once per frame, only when it changed). Buffers of systems that
+     * haven't been seen for a while are deleted.
+     */
+    _uploadParticleSystem(system) {
+        const gl = this._canvasContext;
+        if (!gl || !this._instanceBuffer)
+            return;
+        let entry = this._particleBuffers.get(system);
+        if (!entry) {
+            entry = { buffer: gl.createBuffer(), version: -1, lastFrame: 0 };
+            this._particleBuffers.set(system, entry);
+        }
+        entry.lastFrame = this._frameId;
+        const { data, count } = system.renderData();
+        if (count > 0 && entry.version !== system._renderVersion) {
+            gl.bindBuffer(gl.ARRAY_BUFFER, entry.buffer);
+            gl.bufferData(gl.ARRAY_BUFFER, data.subarray(0, count * PARTICLE_FLOATS), gl.STREAM_DRAW);
+            entry.version = system._renderVersion;
+        }
+        // Periodically free buffers belonging to systems no longer rendered
+        if ((this._frameId & 127) === 0) {
+            this._particleBuffers.forEach((value, key) => {
+                if (this._frameId - value.lastFrame > 120) {
+                    if (value.buffer)
+                        gl.deleteBuffer(value.buffer);
+                    this._particleBuffers.delete(key);
+                }
+            });
+        }
+    }
+    /**
+     * A soft round white dot, used by particle systems without a texture.
+     */
+    _getDefaultParticleTexture() {
+        if (this._defaultParticleTexture || !this._canvasContext) {
+            return this._defaultParticleTexture;
+        }
+        const size = 64;
+        const canvas = document.createElement("canvas");
+        canvas.width = size;
+        canvas.height = size;
+        const ctx = canvas.getContext("2d");
+        if (!ctx)
+            return null;
+        const gradient = ctx.createRadialGradient(size / 2, size / 2, 0, size / 2, size / 2, size / 2);
+        gradient.addColorStop(0, "rgba(255,255,255,1)");
+        gradient.addColorStop(0.4, "rgba(255,255,255,0.8)");
+        gradient.addColorStop(1, "rgba(255,255,255,0)");
+        ctx.fillStyle = gradient;
+        ctx.fillRect(0, 0, size, size);
+        const gl = this._canvasContext;
+        const texture = gl.createTexture();
+        gl.bindTexture(gl.TEXTURE_2D, texture);
+        gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, 0);
+        gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, 0);
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, canvas);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+        this._stateManager?.invalidateTextureBindings();
+        this._defaultParticleTexture = texture;
+        return texture;
+    }
+    /**
+     * Draw particle systems as camera-facing quads: one instanced call per
+     * system (WebGL 2) or one call per particle (WebGL 1). Drawn after the
+     * transparent pass with depth testing but no depth writes.
+     */
+    _renderParticleSystems(systems, matrices) {
+        if (systems.length === 0 || !this._shaderManager || !this._geometryManager || !this._stateManager || !this._textureManager) {
             return;
         }
         const gl = this._canvasContext;
-        // Enable depth test and depth write for opaque objects
-        this._stateManager.setDepthTest(true);
-        this._stateManager.setDepthWrite(true);
-        this._stateManager.setDepthFunc(gl.LEQUAL);
-        // Enable blending
-        this._stateManager.setBlend(true);
-        this._stateManager.setBlendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
-        // Render opaque sprites
-        this._renderSpriteBatches(matrices, false);
-        // Render opaque models
-        this._renderModelBatches(matrices, false);
+        const instanced = !!this._instanceBuffer;
+        const program = this._shaderManager.getProgram(instanced ? "particle_instanced" : "particle");
+        const quad = this._geometryManager.getSharedQuadGeometry();
+        if (!program || !quad)
+            return;
+        let programReady = false;
+        let additive;
+        for (let s = 0; s < systems.length; s++) {
+            const system = systems[s];
+            const { data, count } = system.renderData();
+            if (count === 0)
+                continue;
+            const c = system._boundsCenter;
+            if (!matrices.frustum.containsSphereXYZ(c.x, c.y, c.z, system._boundsRadius))
+                continue;
+            system._lastRenderedFrame = this._frameId;
+            if (!programReady) {
+                program.use();
+                program.setUniformMatrix4fv("u_viewMatrix", matrices.view);
+                program.setUniformMatrix4fv("u_projectionMatrix", matrices.projection);
+                program.setUniform1i("u_texture", 0);
+                this._geometryManager.bindGeometry(quad, program);
+                this._stateManager.setDepthTest(true);
+                this._stateManager.setDepthWrite(false);
+                this._stateManager.setBlend(true);
+                programReady = true;
+            }
+            const wantAdditive = system._options.blending !== "normal";
+            if (wantAdditive !== additive) {
+                this._stateManager.setBlendFunc(gl.SRC_ALPHA, wantAdditive ? gl.ONE : gl.ONE_MINUS_SRC_ALPHA);
+                additive = wantAdditive;
+            }
+            const texture = system._options.texture
+                ? this._textureManager.getTextureForIgeTexture(system._options.texture)
+                : this._getDefaultParticleTexture();
+            this._stateManager.invalidateTextureBindings();
+            this._stateManager.bindTexture(texture || this._textureManager.getDefaultWhiteTexture(), 0);
+            if (instanced) {
+                const entry = this._particleBuffers.get(system);
+                if (!entry || !entry.buffer)
+                    continue;
+                const gl2 = gl;
+                const particleLoc = program.getAttributeLocation("a_particle");
+                const colorLoc = program.getAttributeLocation("a_particleColor");
+                gl2.bindBuffer(gl2.ARRAY_BUFFER, entry.buffer);
+                gl2.enableVertexAttribArray(particleLoc);
+                gl2.vertexAttribPointer(particleLoc, 4, gl2.FLOAT, false, PARTICLE_FLOATS * 4, 0);
+                gl2.vertexAttribDivisor(particleLoc, 1);
+                gl2.enableVertexAttribArray(colorLoc);
+                gl2.vertexAttribPointer(colorLoc, 4, gl2.FLOAT, false, PARTICLE_FLOATS * 4, 16);
+                gl2.vertexAttribDivisor(colorLoc, 1);
+                const indexType = quad.indexData instanceof Uint32Array ? gl2.UNSIGNED_INT : gl2.UNSIGNED_SHORT;
+                gl2.drawElementsInstanced(quad.drawMode, quad.indexCount, indexType, 0, count);
+                gl2.vertexAttribDivisor(particleLoc, 0);
+                gl2.vertexAttribDivisor(colorLoc, 0);
+                gl2.disableVertexAttribArray(particleLoc);
+                gl2.disableVertexAttribArray(colorLoc);
+                this._stats.instancedDrawCalls++;
+                this._stats.instances += count;
+            }
+            else {
+                for (let i = 0; i < count; i++) {
+                    const o = i * PARTICLE_FLOATS;
+                    program.setUniform4f("u_particle", data[o], data[o + 1], data[o + 2], data[o + 3]);
+                    program.setUniform4f("u_particleColor", data[o + 4], data[o + 5], data[o + 6], data[o + 7]);
+                    this._geometryManager.drawGeometry(quad);
+                    this._stats.drawCalls++;
+                }
+            }
+        }
+        if (programReady) {
+            this._geometryManager.unbindGeometry(quad, program);
+            this._stateManager.setBlendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+            this._stateManager.setDepthWrite(true);
+        }
     }
     /**
-     * Render all transparent batches.
+     * Render 2D sprites (textured quads, billboarded to face the camera).
      */
-    _renderTransparentBatches(matrices, viewport) {
-        if (!this._renderBatchManager || !this._shaderManager || !this._stateManager) {
+    _renderSprites(sprites, matrices) {
+        if (sprites.length === 0 || !this._shaderManager || !this._geometryManager || !this._textureManager || !this._stateManager) {
             return;
         }
-        const gl = this._canvasContext;
-        // Disable depth write but keep depth test for transparent objects
-        this._stateManager.setDepthTest(true);
-        this._stateManager.setDepthWrite(false);
-        // Render transparent sprites
-        this._renderSpriteBatches(matrices, true);
-        // Render transparent models
-        this._renderModelBatches(matrices, true);
-        // Re-enable depth write
-        this._stateManager.setDepthWrite(true);
-    }
-    /**
-     * Render sprite batches.
-     */
-    _renderSpriteBatches(matrices, transparent) {
-        if (!this._renderBatchManager || !this._shaderManager || !this._geometryManager || !this._textureManager || !this._stateManager) {
-            return;
-        }
-        const gl = this._canvasContext;
         const spriteProgram = this._shaderManager.getProgram("sprite");
         const quadGeometry = this._geometryManager.getSharedQuadGeometry();
         if (!spriteProgram || !quadGeometry) {
             return;
         }
-        // Use sprite shader
         spriteProgram.use();
-        // Set view and projection matrices (same for all sprites)
         spriteProgram.setUniformMatrix4fv("u_viewMatrix", matrices.view);
         spriteProgram.setUniformMatrix4fv("u_projectionMatrix", matrices.projection);
-        // Bind quad geometry
+        spriteProgram.setUniform1i("u_texture", 0);
         this._geometryManager.bindGeometry(quadGeometry, spriteProgram);
-        // Render function for each batch
-        const renderBatch = (batch) => {
-            // Bind texture
-            const webglTexture = this._textureManager.getTextureForIgeTexture(batch.texture);
-            if (webglTexture) {
-                this._stateManager.bindTexture(webglTexture, 0);
-                spriteProgram.setUniform1i("u_texture", 0);
-            }
-            // Render each entity in the batch
-            for (const entity of batch.entities) {
-                // Set entity-specific uniforms
-                if (entity._worldMatrix4) {
-                    spriteProgram.setUniformMatrix4fv("u_worldMatrix", entity._worldMatrix4);
-                }
-                spriteProgram.setUniform2f("u_scale", entity._bounds2d.x, entity._bounds2d.y);
-                spriteProgram.setUniform4f("u_uvBounds", 0, 0, 1, 1); // Full texture for now
-                spriteProgram.setUniform4f("u_tint", 1, 1, 1, 1); // White tint
-                spriteProgram.setUniform1f("u_opacity", entity._opacity);
-                spriteProgram.setUniform1i("u_billboardMode", 1); // Full billboarding for 2D sprites
-                // Draw quad
-                this._geometryManager.drawGeometry(quadGeometry);
-            }
-        };
-        // Render appropriate batches
-        if (transparent) {
-            this._renderBatchManager.renderTransparentSprites(spriteProgram, quadGeometry, renderBatch);
-        }
-        else {
-            this._renderBatchManager.renderOpaqueSprites(spriteProgram, quadGeometry, renderBatch);
-        }
-        // Unbind geometry
-        this._geometryManager.unbindGeometry(quadGeometry, spriteProgram);
-    }
-    /**
-     * Render model batches using lit shader with full lighting support.
-     * Falls back to simple model shader if lit shader is not available.
-     * Supports skinned meshes with skeletal animation.
-     */
-    _renderModelBatches(matrices, transparent) {
-        if (!this._renderBatchManager || !this._shaderManager || !this._geometryManager || !this._textureManager || !this._stateManager) {
-            return;
-        }
         const gl = this._canvasContext;
-        // Get both regular and skinned shaders
-        const litProgram = this._shaderManager.getProgram("lit");
-        const skinnedProgram = this._shaderManager.getProgram("skinned");
-        const modelProgram = this._shaderManager.getProgram("model");
-        // Determine which shaders are available
-        const useLitShader = litProgram !== undefined;
-        const useSkinnedShader = skinnedProgram !== undefined;
-        // Select default non-skinned shader
-        let defaultShaderProgram = litProgram || modelProgram;
-        if (!defaultShaderProgram) {
-            return;
-        }
-        // Identity matrix for when skinning is disabled
-        const identityMatrix = new Float32Array([
-            1, 0, 0, 0,
-            0, 1, 0, 0,
-            0, 0, 1, 0,
-            0, 0, 0, 1
-        ]);
-        // Helper to set up common uniforms for a shader
-        const setupShaderUniforms = (shaderProgram, useLit) => {
-            // Set view and projection matrices
-            shaderProgram.setUniformMatrix4fv("u_viewMatrix", matrices.view);
-            shaderProgram.setUniformMatrix4fv("u_projectionMatrix", matrices.projection);
-            if (useLit) {
-                // Set camera position for specular calculations
-                if (matrices.cameraPosition) {
-                    shaderProgram.setUniform3f("u_cameraPosition", matrices.cameraPosition.x, matrices.cameraPosition.y, matrices.cameraPosition.z);
+        let boundTexture;
+        let additive = false;
+        for (let i = 0; i < sprites.length; i++) {
+            const entity = sprites[i];
+            const texture = entity._texture;
+            const material = entity._materialData;
+            if (texture !== boundTexture) {
+                const webglTexture = this._textureManager.getTextureForIgeTexture(texture);
+                this._stateManager.invalidateTextureBindings();
+                if (webglTexture) {
+                    this._stateManager.bindTexture(webglTexture, 0);
                 }
-                // Apply light uniforms
-                if (this._lightManager) {
-                    this._lightManager.applyLightUniforms(shaderProgram);
-                }
-                // Apply shadow uniforms if shadows are enabled
-                if (this.shadowsEnabled() && this._shadowManager) {
-                    this._shadowManager.applyShadowUniforms(shaderProgram, this._shadowLightId, 1);
-                    const lightSpaceMatrix = this._shadowManager.getLightSpaceMatrix(this._shadowLightId);
-                    if (lightSpaceMatrix) {
-                        shaderProgram.setUniformMatrix4fv("u_lightSpaceMatrix", lightSpaceMatrix);
-                    }
-                    shaderProgram.setUniform1i("u_shadowDebug", this._shadowDebugMode);
-                    // Normal offset: shift shadow lookup along surface normal (prevents acne without contact gaps)
-                    shaderProgram.setUniform1f("u_shadowNormalOffset", 0.0);
-                }
-                else {
-                    shaderProgram.setUniform1i("u_hasShadowMap", 0);
-                    shaderProgram.setUniform1i("u_shadowDebug", 0);
-                    shaderProgram.setUniformMatrix4fv("u_lightSpaceMatrix", identityMatrix);
-                    shaderProgram.setUniform1f("u_shadowNormalOffset", 0.0);
-                }
-                // Apply point light shadow uniforms
-                if (this._shadowCastingPointLights.length > 0 && this._shadowManager && this._lightManager) {
-                    const count = Math.min(this._shadowCastingPointLights.length, 2);
-                    shaderProgram.setUniform1i("u_numShadowPointLights", count);
-                    for (let i = 0; i < count; i++) {
-                        const light = this._shadowCastingPointLights[i];
-                        const texUnit = 2 + i;
-                        this._shadowManager.applyPointShadowUniforms(shaderProgram, i, light.id(), texUnit);
-                        const pointLightIndex = this._lightManager._pointLights.indexOf(light);
-                        shaderProgram.setUniform1i(`u_pointShadowLightIndex[${i}]`, pointLightIndex);
-                    }
-                }
-                else {
-                    shaderProgram.setUniform1i("u_numShadowPointLights", 0);
-                }
-                // Default to simple lighting mode (non-PBR)
-                shaderProgram.setUniform1i("u_usePBR", 0);
-                shaderProgram.setUniform1i("u_hasNormalMap", 0);
-                shaderProgram.setUniform1f("u_emissiveIntensity", 0);
+                boundTexture = texture;
+            }
+            // Additive sprites brighten what's behind them (fire, sparks, magic)
+            const wantAdditive = material?.blending === "additive";
+            if (wantAdditive !== additive) {
+                this._stateManager.setBlendFunc(gl.SRC_ALPHA, wantAdditive ? gl.ONE : gl.ONE_MINUS_SRC_ALPHA);
+                additive = wantAdditive;
+            }
+            // Sprite sheet cell (cells are 1-based [x, y, width, height] in pixels)
+            const cells = texture._cells;
+            const cell = cells && entity._cell ? cells[entity._cell] : undefined;
+            const texW = texture._sizeX;
+            const texH = texture._sizeY;
+            if (cell && texW > 0 && texH > 0) {
+                spriteProgram.setUniform4f("u_uvBounds", cell[0] / texW, cell[1] / texH, (cell[0] + cell[2]) / texW, (cell[1] + cell[3]) / texH);
             }
             else {
-                // Fallback: simple ambient light for model shader
-                shaderProgram.setUniform3f("u_ambientLight", 0.3, 0.3, 0.3);
+                spriteProgram.setUniform4f("u_uvBounds", 0, 0, 1, 1);
             }
-            // Set default base color
-            shaderProgram.setUniform4f("u_baseColor", 1, 1, 1, 1);
-        };
-        // Track current shader to minimize state changes
-        let currentProgram = null;
-        // Render function for each batch
-        const renderBatch = (batch) => {
-            // Check if this batch has skinned geometry
-            const isSkinned = batch.geometry.isSkinned && useSkinnedShader;
-            // Select appropriate shader
-            const shaderProgram = isSkinned ? skinnedProgram : defaultShaderProgram;
-            // Switch shader if needed
-            if (shaderProgram !== currentProgram) {
-                shaderProgram.use();
-                setupShaderUniforms(shaderProgram, useLitShader || isSkinned);
-                currentProgram = shaderProgram;
-                // For skinned shader, disable skinning by default (will enable per-entity)
-                if (isSkinned) {
-                    shaderProgram.setUniform1i("u_useSkinning", 0);
-                }
+            // Tint from the entity's material colour
+            const color = material?.color;
+            if (color && typeof color === "object") {
+                spriteProgram.setUniform4f("u_tint", color.r, color.g, color.b, color.a ?? 1);
             }
-            // Bind geometry
-            this._geometryManager.bindGeometry(batch.geometry, shaderProgram);
-            // Bind texture if available, otherwise use default white texture
-            if (batch.textureId && batch.texture) {
-                const webGlTexture = this._textureManager.getTextureForIgeTexture(batch.texture);
-                if (webGlTexture) {
-                    this._stateManager.bindTexture(webGlTexture, 0);
-                }
-                else {
-                    this._stateManager.bindTexture(this._textureManager.getDefaultWhiteTexture(), 0);
-                }
+            else if (typeof color === "string") {
+                const rgb = parseHexColor(color);
+                spriteProgram.setUniform4f("u_tint", rgb[0], rgb[1], rgb[2], 1);
             }
             else {
-                this._stateManager.bindTexture(this._textureManager.getDefaultWhiteTexture(), 0);
+                spriteProgram.setUniform4f("u_tint", 1, 1, 1, 1);
             }
-            shaderProgram.setUniform1i("u_baseColorTexture", 0);
-            // Render each entity in the batch
-            for (const entity of batch.entities) {
-                // Set entity-specific uniforms
-                if (entity._worldMatrix4) {
-                    shaderProgram.setUniformMatrix4fv("u_worldMatrix", entity._worldMatrix4);
-                    // Calculate normal matrix (inverse transpose of world matrix)
-                    const inverseMatrix = entity._worldMatrix4.getInverse();
-                    if (inverseMatrix) {
-                        const normalMatrix = inverseMatrix.transpose();
-                        shaderProgram.setUniformMatrix4fv("u_normalMatrix", normalMatrix);
-                    }
-                }
-                shaderProgram.setUniform1f("u_opacity", entity._opacity);
-                // Handle skeletal animation for skinned meshes
-                if (isSkinned && entity._skeleton && this._skeletonManager) {
-                    // Update skeleton matrices
-                    this._skeletonManager.updateSkeletonMatrices(entity._skeleton);
-                    // Enable skinning and upload bone matrices
-                    shaderProgram.setUniform1i("u_useSkinning", 1);
-                    // Upload bone matrices array
-                    const skinMatrices = entity._skeleton.skinMatrices;
-                    const boneCount = entity._skeleton.data.boneCount;
-                    // Set each bone matrix as a uniform
-                    // Note: WebGL 1 doesn't support uniform arrays directly in all cases,
-                    // so we set the entire array at once
-                    const location = gl.getUniformLocation(shaderProgram.program, "u_boneMatrices[0]");
-                    if (location) {
-                        gl.uniformMatrix4fv(location, false, skinMatrices.subarray(0, boneCount * 16));
-                    }
-                }
-                else if (isSkinned) {
-                    // Skinned geometry but no skeleton - disable skinning
-                    shaderProgram.setUniform1i("u_useSkinning", 0);
-                }
-                // Reset per-entity material state to prevent leaking from previous entity
-                if (useLitShader || isSkinned) {
-                    shaderProgram.setUniform1f("u_emissiveIntensity", 0);
-                    shaderProgram.setUniform1f("u_metallic", 0);
-                    shaderProgram.setUniform1f("u_roughness", 0.5);
-                }
-                // Apply material if entity has one and using lit-style shader
-                if ((useLitShader || isSkinned) && entity._materialData) {
-                    const mat = entity._materialData;
-                    if (mat.color) {
-                        if (typeof mat.color === "object") {
-                            shaderProgram.setUniform4f("u_baseColor", mat.color.r, mat.color.g, mat.color.b, mat.color.a ?? 1);
-                        }
-                        else if (typeof mat.color === "string") {
-                            const hex = mat.color.replace("#", "");
-                            const r = parseInt(hex.substring(0, 2), 16) / 255;
-                            const g = parseInt(hex.substring(2, 4), 16) / 255;
-                            const b = parseInt(hex.substring(4, 6), 16) / 255;
-                            shaderProgram.setUniform4f("u_baseColor", r, g, b, 1);
-                        }
-                    }
-                    if (mat.metallic !== undefined || mat.roughness !== undefined) {
-                        shaderProgram.setUniform1f("u_metallic", mat.metallic ?? 0);
-                        shaderProgram.setUniform1f("u_roughness", mat.roughness ?? 0.5);
-                    }
-                    if (mat.emissiveColor) {
-                        shaderProgram.setUniform3f("u_emissiveColor", mat.emissiveColor.r, mat.emissiveColor.g, mat.emissiveColor.b);
-                        shaderProgram.setUniform1f("u_emissiveIntensity", mat.emissiveIntensity ?? 1);
-                    }
-                    // Bind entity material texture if available (e.g., from GLTF)
-                    if (mat.textureId && this._textureManager) {
-                        const blobTexture = this._textureManager.getBlobTexture(mat.textureId);
-                        if (blobTexture) {
-                            // Force rebind to ensure texture is applied even if state manager thinks it's cached
-                            this._stateManager.bindTexture(blobTexture, 0, true);
-                        }
-                    }
-                }
-                // Draw geometry
-                this._geometryManager.drawGeometry(batch.geometry);
-            }
-            // Unbind geometry
-            this._geometryManager.unbindGeometry(batch.geometry, shaderProgram);
-        };
-        // Render appropriate batches
-        if (transparent) {
-            this._renderBatchManager.renderTransparentModels(defaultShaderProgram, renderBatch);
+            spriteProgram.setUniformMatrix4fv("u_worldMatrix", entity._worldMatrix4);
+            spriteProgram.setUniform2f("u_scale", entity._bounds2d.x, entity._bounds2d.y);
+            spriteProgram.setUniform1f("u_opacity", entity._opacity);
+            spriteProgram.setUniform1i("u_billboardMode", entity._billboardMode);
+            this._geometryManager.drawGeometry(quadGeometry);
+            this._stats.drawCalls++;
         }
-        else {
-            this._renderBatchManager.renderOpaqueModels(defaultShaderProgram, renderBatch);
+        if (additive) {
+            this._stateManager.setBlendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
         }
+        this._geometryManager.unbindGeometry(quadGeometry, spriteProgram);
     }
     /**
      * Get the light manager for adding/removing scene lights.
@@ -1114,6 +1830,15 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
             this._canvasElement.removeEventListener("webglcontextrestored", this._handleContextRestored);
         }
         // Clean up managers
+        this._particleBuffers.forEach((entry) => {
+            if (entry.buffer)
+                this._canvasContext?.deleteBuffer(entry.buffer);
+        });
+        this._particleBuffers.clear();
+        if (this._defaultParticleTexture)
+            this._canvasContext?.deleteTexture(this._defaultParticleTexture);
+        this._instanceBuffer?.destroy();
+        this._bonePalette?.destroy();
         this._geometryManager?.cleanup();
         this._shaderManager?.deleteAllPrograms();
         this._textureManager?.clearState();

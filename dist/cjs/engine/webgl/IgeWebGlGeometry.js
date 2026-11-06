@@ -17,6 +17,12 @@ class IgeWebGlGeometry extends IgeBaseClass_1.IgeBaseClass {
         this.attributes = [];
         // Skinning information
         this.isSkinned = false; // Whether this geometry has bone weights/indices
+        // Local-space bounding sphere used for frustum and shadow culling.
+        // A radius of -1 means unknown (the item is never culled).
+        this.boundsCenterX = 0;
+        this.boundsCenterY = 0;
+        this.boundsCenterZ = 0;
+        this.boundsRadius = -1;
         this.id = id;
         this.drawMode = drawMode;
     }

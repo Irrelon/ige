@@ -1,17 +1,19 @@
 import { IgeBounds } from "./IgeBounds.js"
-import { IgeDummyCanvas } from "./IgeDummyCanvas.js"
+import { IgeDummyCanvas } from "./IgeDummyCanvas.js";
 import { IgeMatrix2d } from "./IgeMatrix2d.js"
-import { IgeMatrix4 } from "./IgeMatrix4.js"
+import { IgeMatrix4 } from "./IgeMatrix4.js";
 import { IgeObject } from "./IgeObject.js"
-import { IgePoint2d } from "./IgePoint2d.js"
+import { IgePoint2d } from "./IgePoint2d.js";
 import { IgePoint3d } from "./IgePoint3d.js"
-import { IgePoly2d } from "./IgePoly2d.js"
+import { IgePoly2d } from "./IgePoly2d.js";
 import { ige } from "../instance.js"
-import { isClient, isServer } from "../utils/clientServer.js"
+import { isClient, isServer } from "../utils/clientServer.js";
 import { registerClass } from "../utils/igeClassStore.js"
-import { degreesToRadians } from "../utils/maths.js"
+import { degreesToRadians } from "../utils/maths.js";
 import { traceSet } from "../utils/trace.js"
-import { IgeBehaviourType, IgeEntityRenderMode, IgeIsometricDepthSortMode, IgeMountMode, IgeStreamMode } from "../../enums/index.js"
+import { IgeBehaviourType, IgeEntityRenderMode, IgeIsometricDepthSortMode, IgeMountMode, IgeStreamMode } from "../../enums/index.js";
+import { createSkeletonInstance, getModelParts } from "../webgl/IgeModelParts.js"
+import { IgeSkeletalAnimationComponent } from "../components/IgeSkeletalAnimationComponent.js";
 /**
  * Creates an entity and handles the entity's life cycle and
  * all related entity actions / methods.
@@ -69,11 +71,96 @@ export class IgeEntity extends IgeObject {
         return eval(this.stringify(options));
     }
     /**
+     * Inputs used by the last updateTransform() rebuild (see
+     * _transformInputsUnchanged()).
+     */
+    _tfInputs;
+    _tfParent;
+    _tfParentVersion = -1;
+    _tfWebGl = false;
+    /**
+     * Returns true when nothing that feeds this entity's transform has
+     * changed since the last rebuild, so updateTransform() can skip it.
+     * Checks local transform values, origin and bounds, the parent and its
+     * transform version, the active renderer type, and that the stored
+     * matrices haven't been modified externally since they were computed.
+     */
+    _transformInputsUnchanged(webGl) {
+        const c = this._tfInputs;
+        if (!c)
+            return false;
+        const parent = this._parent;
+        if (parent !== this._tfParent)
+            return false;
+        if (parent && parent._transformVersion !== this._tfParentVersion)
+            return false;
+        if (webGl !== this._tfWebGl || (webGl && !this._worldMatrix4))
+            return false;
+        const t = this._translate, r = this._rotate, sc = this._scale, o = this._origin;
+        const b2 = this._bounds2d, b3 = this._bounds3d;
+        if (c[0] !== t.x || c[1] !== t.y || c[2] !== t.z ||
+            c[3] !== r.x || c[4] !== r.y || c[5] !== r.z ||
+            c[6] !== sc.x || c[7] !== sc.y || c[8] !== sc.z ||
+            c[9] !== o.x || c[10] !== o.y || c[11] !== o.z ||
+            c[12] !== b2.x || c[13] !== b2.y ||
+            c[14] !== b3.x || c[15] !== b3.y || c[16] !== b3.z ||
+            c[17] !== this._renderMode ||
+            c[18] !== (parent ? parent._bounds3d.z : 0)) {
+            return false;
+        }
+        if (!this._worldMatrix.compare(this._oldWorldMatrix))
+            return false;
+        if (webGl && !this._worldMatrix4.compare(this._oldWorldMatrix4))
+            return false;
+        return true;
+    }
+    /**
+     * Record the inputs used for the rebuild that just happened.
+     */
+    _recordTransformInputs(webGl) {
+        const c = this._tfInputs || (this._tfInputs = new Float64Array(19));
+        const parent = this._parent;
+        const t = this._translate, r = this._rotate, sc = this._scale, o = this._origin;
+        const b2 = this._bounds2d, b3 = this._bounds3d;
+        c[0] = t.x;
+        c[1] = t.y;
+        c[2] = t.z;
+        c[3] = r.x;
+        c[4] = r.y;
+        c[5] = r.z;
+        c[6] = sc.x;
+        c[7] = sc.y;
+        c[8] = sc.z;
+        c[9] = o.x;
+        c[10] = o.y;
+        c[11] = o.z;
+        c[12] = b2.x;
+        c[13] = b2.y;
+        c[14] = b3.x;
+        c[15] = b3.y;
+        c[16] = b3.z;
+        c[17] = this._renderMode;
+        c[18] = parent ? parent._bounds3d.z : 0;
+        this._tfParent = parent;
+        this._tfParentVersion = parent ? parent._transformVersion : -1;
+        this._tfWebGl = webGl;
+    }
+    /**
      * Checks the current transform values against the previous ones. If
      * any value is different, the appropriate method is called which will
      * update the transformation matrix accordingly.
+     *
+     * The rebuild is skipped entirely when none of the inputs (local
+     * transform, origin, bounds, parent transform) have changed since the
+     * last call, which makes static scenery and repeat calls in the same
+     * frame almost free.
      */
     updateTransform() {
+        const webGl = ige.engine.renderer()?.classId === "IgeWebGlRenderer";
+        if (this._transformInputsUnchanged(webGl)) {
+            this._transformChanged = false;
+            return this;
+        }
         this._localMatrix.identity();
         if (this._renderMode === IgeEntityRenderMode.flat) {
             // 2d translation
@@ -108,6 +195,7 @@ export class IgeEntity extends IgeObject {
         if (!this._worldMatrix.compare(this._oldWorldMatrix)) {
             this._oldWorldMatrix.copy(this._worldMatrix);
             this._transformChanged = true;
+            this._transformVersion++;
             this._aabbDirty = true;
             this._bounds3dPolygonDirty = true;
             this.cacheDirty(true);
@@ -116,7 +204,7 @@ export class IgeEntity extends IgeObject {
             this._transformChanged = false;
         }
         // Compute 4x4 matrices for 3D rendering when using WebGL renderer
-        if (ige.engine.renderer()?.classId === "IgeWebGlRenderer") {
+        if (webGl) {
             // Initialize 4x4 matrices if not already created
             if (!this._localMatrix4) {
                 this._localMatrix4 = new IgeMatrix4();
@@ -152,6 +240,7 @@ export class IgeEntity extends IgeObject {
             // Check if the 4x4 world matrix has changed
             if (!this._worldMatrix4.compare(this._oldWorldMatrix4)) {
                 this._oldWorldMatrix4.copy(this._worldMatrix4);
+                this._transformVersion++;
             }
         }
         // Check if the geometry has changed and if so, update the aabb dirty
@@ -165,6 +254,7 @@ export class IgeEntity extends IgeObject {
             // Record the new geometry to the oldGeometry data
             this._oldBounds3d.copy(this._bounds3d);
         }
+        this._recordTransformInputs(webGl);
         return this;
     }
     /**
@@ -574,16 +664,68 @@ export class IgeEntity extends IgeObject {
         }
         return this._texture;
     }
-    model(model) {
-        if (model !== undefined) {
-            this._model = model;
-            // Set geometry from the first mesh's first primitive
-            if (model.meshes.length > 0 && model.meshes[0].primitives.length > 0) {
-                this._geometryData = model.meshes[0].primitives[0].geometry;
-            }
-            return this;
+    model(model, options = {}) {
+        if (model === undefined) {
+            return this._model;
         }
-        return this._model;
+        this._model = model;
+        const parts = getModelParts(model);
+        this._modelParts = parts;
+        this._modelPartMatrices = undefined;
+        // Backwards compatibility: expose the first primitive as the geometry
+        if (parts.length > 0) {
+            this._geometryData = parts[0].geometryData;
+        }
+        if (options.castShadow !== undefined) {
+            this._noShadowCast = !options.castShadow;
+        }
+        // Skinned models: give this entity its own skeleton and animations
+        const skin = model.skins?.[0];
+        if (skin && parts.some((part) => part.skinned)) {
+            this._skeletonData = skin.skeleton;
+            this._skeleton = createSkeletonInstance(skin.skeleton);
+            let anim = this.components.skeletalAnimation;
+            if (!anim) {
+                this.addComponent("skeletalAnimation", IgeSkeletalAnimationComponent);
+                anim = this.components.skeletalAnimation;
+            }
+            anim.setSkeleton(this._skeleton);
+            if (model.animations?.length) {
+                anim.defineClips(model.animations);
+            }
+            if (options.animation) {
+                anim.play(options.animation, { crossFadeDuration: 0 });
+            }
+        }
+        else {
+            this._skeleton = undefined;
+            this._skeletonData = undefined;
+        }
+        return this;
+    }
+    billboard(mode) {
+        if (mode === undefined) {
+            return this._billboardMode === 2 ? "y" : this._billboardMode === 0 ? "none" : "full";
+        }
+        this._billboardMode = mode === "y" ? 2 : mode === "none" ? 0 : 1;
+        return this;
+    }
+    /**
+     * Returns the skeletal animation component added by model() for
+     * skinned models, or undefined.
+     */
+    skeletalAnimation() {
+        return this.components.skeletalAnimation;
+    }
+    /**
+     * Play a skeletal animation clip by name (as named in the model file).
+     * Cross-fades from the current clip over 0.2 seconds by default.
+     * @example #Switch to an attack animation
+     *     zombie.playAnimation("Attack", { loop: false, crossFadeDuration: 0.1 });
+     */
+    playAnimation(name, options) {
+        this.skeletalAnimation()?.play(name, options);
+        return this;
     }
     cell(val) {
         if (val !== undefined && val > 0) {
@@ -2337,7 +2479,11 @@ export class IgeEntity extends IgeObject {
                 // Update the aabb
                 this.aabb();
             }
-            this._oldTranslate = this._translate.clone();
+            // Copy in place rather than cloning: this runs for every entity every frame
+            const oldTranslate = this._oldTranslate;
+            oldTranslate.x = this._translate.x;
+            oldTranslate.y = this._translate.y;
+            oldTranslate.z = this._translate.z;
             // Update this object's current frame alternator value
             // which allows us to determine if we are still on the
             // same frame

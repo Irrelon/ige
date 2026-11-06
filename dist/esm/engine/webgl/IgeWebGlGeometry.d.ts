@@ -27,6 +27,10 @@ export declare class IgeWebGlGeometry extends IgeBaseClass {
     indexData?: Uint16Array | Uint32Array;
     isSkinned: boolean;
     skeletonId?: string;
+    boundsCenterX: number;
+    boundsCenterY: number;
+    boundsCenterZ: number;
+    boundsRadius: number;
     constructor(id: string, drawMode: number);
     /**
      * Add a vertex attribute descriptor.

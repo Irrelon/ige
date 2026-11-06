@@ -1,5 +1,5 @@
 import { IgeBaseClass } from "../core/IgeBaseClass.js"
-import { IgeMatrix4 } from "../core/IgeMatrix4.js"
+import { IgeMatrix4 } from "../core/IgeMatrix4.js";
 /** Maximum number of point lights that can cast shadows. */
 export const MAX_SHADOW_POINT_LIGHTS = 2;
 /** Cube map face directions and up vectors for lookAt. */
@@ -52,6 +52,12 @@ export class IgeWebGlShadowManager extends IgeBaseClass {
         this._gl = gl;
         this._resourceManager = resourceManager;
         this._webglVersion = webglVersion;
+        // Prefer R32F point shadow atlases: 8-bit depth bands visibly on curved
+        // surfaces at zero bias. Rendering to float targets needs the
+        // EXT_color_buffer_float extension, so fall back to RGBA8 without it.
+        if (webglVersion === 2 && gl.getExtension("EXT_color_buffer_float")) {
+            this._pointShadowFormat = "r32f";
+        }
         this.log(`Shadow manager initialized (WebGL ${webglVersion})`);
     }
     pointShadowFormat(val) {
@@ -243,6 +249,20 @@ export class IgeWebGlShadowManager extends IgeBaseClass {
         );
         // Combine into light space matrix
         this._lightSpaceMatrix.multiply(this._lightProjectionMatrix, this._lightViewMatrix);
+        // Snap the projection to whole shadow-map texels. The shadow frustum
+        // follows the camera target, and without snapping every sub-texel
+        // move re-rasterises shadow edges differently, making them shimmer.
+        const ls = this._lightSpaceMatrix.matrix;
+        const halfSize = shadowMap.size / 2;
+        const originX = ls[12] * halfSize;
+        const originY = ls[13] * halfSize;
+        const offsetX = (Math.round(originX) - originX) / halfSize;
+        const offsetY = (Math.round(originY) - originY) / halfSize;
+        if (offsetX !== 0 || offsetY !== 0) {
+            this._lightProjectionMatrix.matrix[12] += offsetX;
+            this._lightProjectionMatrix.matrix[13] += offsetY;
+            this._lightSpaceMatrix.multiply(this._lightProjectionMatrix, this._lightViewMatrix);
+        }
         // Copy to shadow map data
         shadowMap.lightSpaceMatrix.set(this._lightSpaceMatrix.matrix);
         return shadowMap.lightSpaceMatrix;

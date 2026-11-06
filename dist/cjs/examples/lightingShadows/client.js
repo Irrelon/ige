@@ -21,7 +21,6 @@ const enums_1 = require("../../enums/index.js");
 const IgeWebGlLight_1 = require("../../engine/webgl/IgeWebGlLight.js");
 const IgePrimitiveGeometry_1 = require("../../engine/webgl/IgePrimitiveGeometry.js");
 const IgeGltfLoader_1 = require("../../engine/webgl/IgeGltfLoader.js");
-const IgeSkeletalAnimationComponent_1 = require("../../engine/components/IgeSkeletalAnimationComponent.js");
 // @ts-ignore
 window.ige = instance_1.ige;
 /**
@@ -460,8 +459,6 @@ class Client extends IgeBaseClass_1.IgeBaseClass {
                 const modelPath = "../../assets/models/bounty-hunter.glb";
                 this.animatedModel = yield IgeGltfLoader_1.igeGltfLoader.load(modelPath, "bountyHunter");
                 this.log(`Model loaded: ${this.animatedModel.name}`);
-                // Preload textures from materials
-                yield this.preloadTextures();
                 this.createAnimatedEntity();
             }
             catch (error) {
@@ -470,82 +467,23 @@ class Client extends IgeBaseClass_1.IgeBaseClass {
             }
         });
     }
-    preloadTextures() {
-        return __awaiter(this, void 0, void 0, function* () {
-            if (!this.renderer || !this.animatedModel)
-                return;
-            const textureManager = this.renderer._textureManager;
-            if (!textureManager)
-                return;
-            for (let i = 0; i < this.animatedModel.materials.length; i++) {
-                const material = this.animatedModel.materials[i];
-                const textureData = material._baseColorTextureData;
-                if (textureData) {
-                    const textureId = `material_${i}_baseColor`;
-                    yield textureManager.createTextureFromBlob(textureId, textureData);
-                    material._baseColorTextureId = textureId;
-                }
-            }
-        });
-    }
     createAnimatedEntity() {
-        var _a, _b;
-        if (!this.scene || !this.renderer || !this.animatedModel)
+        if (!this.scene || !this.animatedModel)
             return;
-        this.animatedEntity = new IgeEntity_1.IgeEntity();
-        this.animatedEntity.id("bountyHunter");
-        // Get the first mesh primitive
-        const mesh = this.animatedModel.meshes[0];
-        if (mesh && mesh.primitives.length > 0) {
-            const primitive = mesh.primitives[0];
-            this.animatedEntity._geometryData = Object.assign(Object.assign({}, primitive.geometry), { id: "bountyHunter_geometry" });
-        }
-        // Material
-        const gltfMaterial = this.animatedModel.materials[0];
-        if (gltfMaterial && gltfMaterial._baseColorTextureId) {
-            this.animatedEntity._materialData = {
-                color: gltfMaterial._color || { r: 1, g: 1, b: 1, a: 1 },
-                metallic: (_a = gltfMaterial._metallic) !== null && _a !== void 0 ? _a : 0.0,
-                roughness: (_b = gltfMaterial._roughness) !== null && _b !== void 0 ? _b : 0.5,
-                textureId: gltfMaterial._baseColorTextureId
-            };
-        }
-        else {
-            this.animatedEntity._materialData = {
-                color: { r: 0.9, g: 0.8, b: 0.7, a: 1 },
-                metallic: 0.0,
-                roughness: 0.5
-            };
-        }
-        // Skeleton & animation (if model has them)
-        const skeletonManager = this.renderer.skeletonManager;
-        if (skeletonManager && this.animatedModel.skins && this.animatedModel.skins.length > 0) {
-            const skin = this.animatedModel.skins[0];
-            skeletonManager.registerSkeletonData(skin.skeleton);
-            const skeletonInstance = skeletonManager.createSkeletonInstance(skin.skeleton.id, "bountyHunter_skeleton");
-            if (skeletonInstance) {
-                this.animatedEntity._skeleton = skeletonInstance;
-            }
-            this.animatedEntity.addComponent("skeletalAnimation", IgeSkeletalAnimationComponent_1.IgeSkeletalAnimationComponent);
-            const animComponent = this.animatedEntity.components.skeletalAnimation;
-            if (this.animatedEntity._skeleton) {
-                animComponent.setSkeleton(this.animatedEntity._skeleton);
-            }
-            if (this.animatedModel.animations && this.animatedModel.animations.length > 0) {
-                for (const clip of this.animatedModel.animations) {
-                    animComponent.define(clip.id, clip);
-                    this.animationNames.push(clip.name || clip.id);
-                }
-                const firstClip = this.animatedModel.animations[0];
-                animComponent.play(firstClip.id, { crossFadeDuration: 0 });
-            }
-        }
-        // Position the model in the centre of the scene, on the ground
-        // Bounty hunter is ~1.14 units tall; scale to ~150 world units
-        this.animatedEntity.translateTo(0, 0, 0);
-        this.animatedEntity.scaleTo(130, 130, 130);
-        this.animatedEntity.rotateTo(0, Math.PI, 0);
-        this.animatedEntity.mount(this.scene);
+        this.animationNames = (this.animatedModel.animations || []).map((clip) => clip.name || clip.id);
+        // model() renders every mesh with its own materials and textures and
+        // applies the file's node transforms, so the bounty hunter stands
+        // upright without manual rotation. Skinned models also get a
+        // skeleton and animation component automatically.
+        this.animatedEntity = new IgeEntity_1.IgeEntity()
+            .id("bountyHunter")
+            .model(this.animatedModel, { animation: this.animationNames[0] })
+            // Position the model in the centre of the scene, on the ground.
+            // Bounty hunter is ~1.14 units tall; scale to ~150 world units
+            .translateTo(0, 0, 0)
+            .scaleTo(130, 130, 130)
+            .rotateTo(0, Math.PI, 0)
+            .mount(this.scene);
         this.log("Bounty hunter model placed in scene");
     }
     setupAnimations() {

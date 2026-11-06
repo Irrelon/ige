@@ -109,7 +109,7 @@ IgeWebGlRenderer
 ├── IgeWebGlShaderManager (shader compilation)
 ├── IgeWebGlTextureManager (texture management)
 ├── IgeWebGlGeometryManager (VBO/IBO management)
-├── IgeWebGlRenderBatchManager (batching)
+├── IgeWebGlInstancing (batching + GPU instancing)
 ├── IgeWebGlCameraController (camera matrices + frustum)
 └── IgeWebGlStateManager (state tracking)
 ```

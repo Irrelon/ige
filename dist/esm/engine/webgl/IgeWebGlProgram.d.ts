@@ -1,14 +1,36 @@
 import { IgeBaseClass } from "../core/IgeBaseClass.js"
-import type { IgeMatrix4 } from "../core/IgeMatrix4.js"
+import type { IgeMatrix4 } from "../core/IgeMatrix4.js";
+/**
+ * Cached state for a single uniform: its location plus the last value
+ * uploaded through this wrapper. Uniform values belong to the program
+ * object in WebGL, so the cache stays valid across useProgram() calls and
+ * only needs clearing when the program is relinked.
+ */
+interface IgeUniformRecord {
+    location: WebGLUniformLocation | null;
+    hasValue: boolean;
+    a: number;
+    b: number;
+    c: number;
+    d: number;
+    matrix?: Float32Array;
+}
 /**
  * Wrapper class for WebGL shader programs.
  * Provides convenient methods for setting uniforms and caching uniform locations.
+ *
+ * Scalar, vector and mat4 setters also cache the last value written and
+ * skip the GL call when it is unchanged. Each GL call costs a round trip
+ * through the browser's GPU command buffer, so with many entities across
+ * several viewports this removes thousands of redundant calls per frame.
+ * Array setters (e.g. bone palettes) are never cached.
  */
 export declare class IgeWebGlProgram extends IgeBaseClass {
     classId: string;
     protected _gl: WebGLRenderingContext | WebGL2RenderingContext;
     protected _program: WebGLProgram;
     protected _uniformLocations: Map<string, WebGLUniformLocation | null>;
+    protected _uniforms: Map<string, IgeUniformRecord>;
     protected _attributeLocations: Map<string, number>;
     constructor(gl: WebGLRenderingContext | WebGL2RenderingContext, program: WebGLProgram);
     /**
@@ -27,6 +49,10 @@ export declare class IgeWebGlProgram extends IgeBaseClass {
      * Get attribute location with caching.
      */
     getAttributeLocation(name: string): number;
+    /**
+     * Get (creating on first use) the cached record for a uniform.
+     */
+    protected _uniform(name: string): IgeUniformRecord;
     /**
      * Set a float uniform.
      */
@@ -105,3 +131,4 @@ export declare class IgeWebGlProgram extends IgeBaseClass {
      */
     clearCache(): this;
 }
+export {};

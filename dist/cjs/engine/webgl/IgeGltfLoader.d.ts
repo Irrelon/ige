@@ -1,7 +1,7 @@
 import { IgeBaseClass } from "../core/IgeBaseClass.js"
-import { IgeEntity } from "../core/IgeEntity.js"
+import { IgeEntity } from "../core/IgeEntity.js";
 import { IgeWebGlMaterial } from "./IgeWebGlMaterial.js"
-import type { IgeGeometryData3d } from "../../types/IgeGeometryData3d.js"
+import type { IgeGeometryData3d } from "../../types/IgeGeometryData3d.js";
 import type { IgeSkeletonData } from "../../types/IgeSkeletonData.js"
 import type { IgeAnimationClipData } from "../../types/IgeAnimationClipData.js"
 /**
@@ -150,6 +150,12 @@ export declare class IgeGltfLoader extends IgeBaseClass {
      * Parse GLTF skins (skeletons).
      */
     protected _parseSkins(gltf: any, buffers: ArrayBuffer[], nodes: IgeGltfNode[]): IgeGltfSkin[];
+    /**
+     * Combined global transform of a node's ancestors (excluding the node),
+     * stopping at the first ancestor that is itself a joint. Returns
+     * undefined when there are no ancestors or the result is identity.
+     */
+    protected _getAncestorTransform(gltf: any, parentNodeOf: Map<number, number>, nodeIndex: number, jointNodes: Map<number, number>): Float32Array | undefined;
     /**
      * Get local transform matrix from a GLTF node.
      */

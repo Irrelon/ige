@@ -212,10 +212,70 @@ class IgeWebGlGeometryManager extends IgeBaseClass_1.IgeBaseClass {
             geometry.skeletonId = data.skeletonId;
             this.log(`Geometry "${geometryId}" is skinned with skeleton "${data.skeletonId}"`);
         }
+        this._computeBounds(geometry, data, vertexCount);
         // Cache geometry
         this._geometries.set(geometryId, geometry);
         this.log(`Created geometry "${geometryId}" with ${vertexCount} vertices${isSkinned ? " (skinned)" : ""}`);
         return geometry;
+    }
+    /**
+     * Compute the local-space bounding sphere for a geometry. Uses the data's
+     * own bounding sphere/box when provided, otherwise derives one from the
+     * vertex positions (box centre + furthest vertex). Skinned meshes are
+     * measured in bind pose, so their radius is padded to cover animation.
+     */
+    _computeBounds(geometry, data, vertexCount) {
+        let cx = 0, cy = 0, cz = 0, radius = -1;
+        if (data.boundingSphere) {
+            cx = data.boundingSphere.center[0];
+            cy = data.boundingSphere.center[1];
+            cz = data.boundingSphere.center[2];
+            radius = data.boundingSphere.radius;
+        }
+        else if (data.vertices && vertexCount > 0) {
+            const v = data.vertices;
+            let minX = Infinity, minY = Infinity, minZ = Infinity;
+            let maxX = -Infinity, maxY = -Infinity, maxZ = -Infinity;
+            if (data.boundingBox) {
+                [minX, minY, minZ] = data.boundingBox.min;
+                [maxX, maxY, maxZ] = data.boundingBox.max;
+            }
+            else {
+                for (let i = 0; i < vertexCount; i++) {
+                    const x = v[i * 3], y = v[i * 3 + 1], z = v[i * 3 + 2];
+                    if (x < minX)
+                        minX = x;
+                    if (y < minY)
+                        minY = y;
+                    if (z < minZ)
+                        minZ = z;
+                    if (x > maxX)
+                        maxX = x;
+                    if (y > maxY)
+                        maxY = y;
+                    if (z > maxZ)
+                        maxZ = z;
+                }
+            }
+            cx = (minX + maxX) / 2;
+            cy = (minY + maxY) / 2;
+            cz = (minZ + maxZ) / 2;
+            let maxDistSq = 0;
+            for (let i = 0; i < vertexCount; i++) {
+                const dx = v[i * 3] - cx, dy = v[i * 3 + 1] - cy, dz = v[i * 3 + 2] - cz;
+                const d = dx * dx + dy * dy + dz * dz;
+                if (d > maxDistSq)
+                    maxDistSq = d;
+            }
+            radius = Math.sqrt(maxDistSq);
+        }
+        if (radius >= 0 && geometry.isSkinned) {
+            radius *= 1.5;
+        }
+        geometry.boundsCenterX = cx;
+        geometry.boundsCenterY = cy;
+        geometry.boundsCenterZ = cz;
+        geometry.boundsRadius = radius;
     }
     /**
      * Get a cached geometry by id.

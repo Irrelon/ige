@@ -1,18 +1,18 @@
 import { ige } from "../instance.js"
-import { IgeBounds } from "./IgeBounds.js"
+import { IgeBounds } from "./IgeBounds.js";
 import { IgeDummyCanvas } from "./IgeDummyCanvas.js"
-import { IgeEventingClass } from "./IgeEventingClass.js"
+import { IgeEventingClass } from "./IgeEventingClass.js";
 import { IgeMatrix2d } from "./IgeMatrix2d.js"
-import { IgePoint2d } from "./IgePoint2d.js"
+import { IgePoint2d } from "./IgePoint2d.js";
 import { IgePoint3d } from "./IgePoint3d.js"
-import { IgePoly2d } from "./IgePoly2d.js"
+import { IgePoly2d } from "./IgePoly2d.js";
 import { arrPull } from "../utils/arrays.js"
-import { newIdHex } from "../utils/ids.js"
+import { newIdHex } from "../utils/ids.js";
 import { toIso } from "../utils/maths.js"
-import { synthesize } from "../utils/synthesize.js"
+import { synthesize } from "../utils/synthesize.js";
 import { IgeQuadGeometry } from "../geometry/IgeQuadGeometry.js"
-import { isClient, isServer } from "../utils/clientServer.js"
-import { IGE_NETWORK_STREAM_CREATE, IGE_NETWORK_STREAM_DESTROY, IgeIsometricDepthSortMode, IgeMountMode, IgeStreamMode } from "../../enums/index.js"
+import { isClient, isServer } from "../utils/clientServer.js";
+import { IGE_NETWORK_STREAM_CREATE, IGE_NETWORK_STREAM_DESTROY, IgeIsometricDepthSortMode, IgeMountMode, IgeStreamMode } from "../../enums/index.js";
 export class IgeObject extends IgeEventingClass {
     classId = "IgeObject";
     _id;
@@ -27,6 +27,18 @@ export class IgeObject extends IgeEventingClass {
     _parent = null;
     _children = [];
     _transformChanged = false;
+    /**
+     * Incremented whenever this object's world matrix changes. Children
+     * compare it against the value they last saw to know whether their own
+     * world matrix needs rebuilding.
+     */
+    _transformVersion = 0;
+    /**
+     * Renderer frame id in which this object was last drawn in any viewport
+     * or shadow pass (-1 = never). Set by IgeWebGlRenderer; used to skip
+     * work such as skeletal animation sampling for off-screen objects.
+     */
+    _lastRenderedFrame = -1;
     _tileWidth = 1;
     _tileHeight = 1;
     _tileDepth = 1;
@@ -134,6 +146,16 @@ export class IgeObject extends IgeEventingClass {
     _model;
     _skeleton; // Runtime skeleton instance for skeletal animation
     _skeletonData; // Static skeleton data reference
+    /**
+     * How a textured 2D sprite faces the camera in the WebGL renderer:
+     * 0 = not billboarded (uses its own rotation), 1 = always faces the
+     * camera (default), 2 = rotates around the world Y axis only.
+     */
+    _billboardMode = 1;
+    /** Render parts from a model assigned with IgeEntity.model() (shared, read-only). */
+    _modelParts;
+    /** Per-part world matrices maintained by the WebGL renderer. */
+    _modelPartMatrices;
     _animationClips; // Available animation clips
     _deathCallBack; // TODO: Rename this to _deathCallback (lower case B)
     components = {};

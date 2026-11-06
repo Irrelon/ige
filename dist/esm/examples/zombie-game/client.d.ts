@@ -4,62 +4,98 @@ import { IgeScene2d } from "../../engine/core/IgeScene2d.js"
 import { IgeWebGlRenderer } from "../../engine/core/IgeWebGlRenderer.js"
 import { IgeViewport } from "../../engine/core/IgeViewport.js"
 import type { IgeCanInit } from "../../types/IgeCanInit.js"
+import { IgePointLight } from "../../engine/webgl/IgeWebGlLight.js"
 import { type IgeGltfModel } from "../../engine/webgl/IgeGltfLoader.js"
-/**
- * Zombie Game - 4 Player Split Screen Example
- *
- * Demonstrates:
- * - 4-player split screen with independent isometric cameras
- * - Hospital lobby built from primitive geometry
- * - Skeletal animated player models (CesiumMan.glb placeholder)
- * - WASD keyboard controls for Player 1
- * - Per-viewport camera tracking
- */
+import { IgeParticleSystem3d } from "../../engine/webgl/IgeParticleSystem3d.js"
+import { IgeGamePadComponent } from "../../engine/components/IgeGamePadComponent.js"
+import { type IgeLevelObstacle } from "./level.js"
+interface PlayerState {
+    index: number;
+    entity: IgeEntity;
+    lantern: IgePointLight;
+    health: number;
+    kills: number;
+    attackCooldown: number;
+    hitFlash: number;
+    respawnTimer: number;
+    invulnerable: number;
+    idleTime: number;
+    facingX: number;
+    facingZ: number;
+}
+interface ZombieState {
+    entity: IgeEntity;
+    health: number;
+    speed: number;
+    attackCooldown: number;
+    hitFlash: number;
+    knockbackX: number;
+    knockbackZ: number;
+    respawnTimer: number;
+    alive: boolean;
+}
+interface DamageNumber {
+    el: HTMLDivElement;
+    viewportIndex: number;
+    x: number;
+    y: number;
+    z: number;
+    age: number;
+}
 export declare class Client extends IgeBaseClass implements IgeCanInit {
     classId: string;
     renderer?: IgeWebGlRenderer;
     scene?: IgeScene2d;
+    gamePad?: IgeGamePadComponent;
     viewports: IgeViewport[];
-    playerEntities: IgeEntity[];
-    playerModel?: IgeGltfModel;
+    players: PlayerState[];
+    zombies: ZombieState[];
+    characterModel?: IgeGltfModel;
+    obstacles: IgeLevelObstacle[];
+    bloodFx?: IgeParticleSystem3d;
+    slashFx?: IgeParticleSystem3d;
+    damageNumbers: DamageNumber[];
+    fxLayer?: HTMLDivElement;
     keysDown: Record<string, boolean>;
+    keysPressed: Record<string, boolean>;
+    totalKills: number;
     cameraOffset: {
         x: number;
         y: number;
         z: number;
     };
+    grid: Map<number, ZombieState[]>;
     constructor();
     init(): Promise<void>;
-    setupScene(): void;
+    zombieCountFromUrl(): number;
     setupLights(): void;
-    /**
-     * Creates a box entity with the given dimensions, position, and color,
-     * then mounts it to the scene.
-     */
-    private createBox;
-    /**
-     * Build the hospital lobby from primitive box geometry.
-     *
-     * Layout (top-down, Y is up):
-     * - Large floor on XZ plane
-     * - Walls around perimeter (with entrance gap in front wall)
-     * - Reception desk at the back
-     * - Pillars for structure
-     * - Benches along side walls
-     */
-    createHospitalLobby(): void;
-    loadPlayerModel(): Promise<void>;
+    createEffects(): void;
     createPlayers(): void;
+    createZombies(count: number): void;
+    placeZombieAwayFromPlayers(zombie: ZombieState): void;
+    tick(dt: number): void;
+    readPlayerInput(index: number): {
+        moveX: number;
+        moveZ: number;
+        attack: boolean;
+    };
+    updatePlayer(player: PlayerState, dt: number): void;
+    playerAttack(player: PlayerState): void;
+    nearestZombie(x: number, z: number, maxDist: number): ZombieState | undefined;
+    shoveZombiesAway(x: number, z: number, radius: number): void;
+    killZombie(zombie: ZombieState): void;
+    rebuildGrid(): void;
+    updateZombie(zombie: ZombieState, dt: number): void;
+    damagePlayer(player: PlayerState, damage: number): void;
+    /** Player tint, or a red hit flash via the emissive override. */
+    applyPlayerMaterial(player: PlayerState): void;
+    applyZombieMaterial(zombie: ZombieState): void;
+    createFxLayer(): void;
+    spawnDamageNumber(viewportIndex: number, x: number, y: number, z: number, damage: number): void;
+    updateDamageNumbers(dt: number): void;
     /**
      * Create 4 viewports arranged in a 2x2 grid.
      * All viewports share the same scene but each has its own camera.
-     *
-     * Layout:
-     * +------+------+
-     * |  P1  |  P2  |  (top row)
-     * +------+------+
-     * |  P3  |  P4  |  (bottom row)
-     * +------+------+
      *
      * WebGL viewport coordinates use (0,0) at bottom-left, so:
      * - P1 (top-left):     x=0,       y=halfH
@@ -68,33 +104,16 @@ export declare class Client extends IgeBaseClass implements IgeCanInit {
      * - P4 (bottom-right): x=halfW,   y=0
      */
     setupSplitScreenViewports(): void;
-    /**
-     * Pre-compute the isometric camera offset vector.
-     * This offset is added to each player's position to get
-     * the camera position for that viewport.
-     */
-    computeCameraOffset(): void;
-    /**
-     * Position each viewport's camera at its player's isometric offset.
-     */
-    updateCameraPositions(): void;
-    /**
-     * Each frame, update each viewport's camera to follow its
-     * assigned player from an isometric angle.
-     */
-    setupCameraTracking(): void;
-    setupInput(): void;
-    /**
-     * Player 1 movement via WASD keys.
-     * W=-Z, S=+Z, A=-X, D=+X. Rotates to face movement direction.
-     */
-    setupPlayerMovement(): void;
-    /**
-     * Update viewport positions and sizes when the window is resized.
-     */
     updateViewportLayout(): void;
+    /** Pre-compute the isometric camera offset from a player. */
+    computeCameraOffset(): void;
+    /** Position each viewport's camera at its player's isometric offset. */
+    updateCameraPositions(): void;
+    setupInput(): void;
+    updatePlayerHud(): void;
     updateStatus(status: string): void;
     updatePlayerCount(count: number): void;
     updateStats(): void;
     hideLoadingScreen(): void;
 }
+export {};

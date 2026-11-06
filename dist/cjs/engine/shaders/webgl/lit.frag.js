@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.litFragmentShader = void 0;
+const chunks_1 = require("./chunks.js");
 /**
  * PBR Lit fragment shader.
  * Supports both simple 2D textures and full PBR material workflow.
@@ -51,6 +52,25 @@ uniform int u_hasNormalMap;               // Whether normal map is used
 uniform sampler2D u_emissiveTexture;      // Emissive texture
 uniform vec3 u_emissiveColor;             // Emissive color
 uniform float u_emissiveIntensity;        // Emissive intensity
+${chunks_1.instanceMaterialVaryingsChunk}
+#ifdef USE_INSTANCING
+// Instanced draws carry material values per instance, so redirect the
+// material uniforms to the instance varyings for the rest of the shader.
+#define u_baseColor v_instanceColor
+#define u_metallic v_instanceMaterial.x
+#define u_roughness v_instanceMaterial.y
+#define u_opacity v_instanceMaterial.z
+#define u_emissiveColor v_instanceEmissive.rgb
+#define u_emissiveIntensity v_instanceEmissive.a
+#endif
+
+// Distance fog (0 = off, 1 = linear between near/far, 2 = exponential squared)
+uniform int u_fogMode;
+uniform vec3 u_fogColor;
+uniform float u_fogNear;
+uniform float u_fogFar;
+uniform float u_fogDensity;
+uniform vec3 u_cameraPosition;
 uniform sampler2D u_aoTexture;            // Ambient occlusion texture
 uniform float u_ambientOcclusion;         // AO value
 
@@ -199,14 +219,6 @@ float calculateShadow(vec3 normal, vec3 lightDir) {
 
 	// Current fragment depth
 	float currentDepth = projCoords.z;
-
-	// Sample center depth for debug
-	float centerDepth;
-	if (u_usePackedDepth == 1) {
-		centerDepth = unpackDepth(texture2D(u_shadowMap, projCoords.xy));
-	} else {
-		centerDepth = texture2D(u_shadowMap, projCoords.xy).r;
-	}
 
 	// PCF sampling for soft shadows
 	float shadow = 0.0;
@@ -510,6 +522,8 @@ void main() {
 
 			vec3 lightVec = u_pointLightPositions[i] - v_worldPosition;
 			float distance = length(lightVec);
+			// Attenuation is zero beyond the light's range: skip the rest
+			if (distance >= u_pointLightRanges[i]) continue;
 			vec3 L = normalize(lightVec);
 
 			float attenuation = calculateAttenuation(distance, u_pointLightRanges[i], u_pointLightDecays[i]);
@@ -525,6 +539,7 @@ void main() {
 
 			vec3 lightVec = u_spotLightPositions[i] - v_worldPosition;
 			float distance = length(lightVec);
+			if (distance >= u_spotLightRanges[i]) continue;
 			vec3 L = normalize(lightVec);
 
 			// Spotlight cone attenuation
@@ -571,6 +586,8 @@ void main() {
 
 			vec3 lightVec = u_pointLightPositions[i] - v_worldPosition;
 			float distance = length(lightVec);
+			// Attenuation is zero beyond the light's range: skip the rest
+			if (distance >= u_pointLightRanges[i]) continue;
 			vec3 L = normalize(lightVec);
 
 			float attenuation = calculateAttenuation(distance, u_pointLightRanges[i], u_pointLightDecays[i]);
@@ -586,6 +603,7 @@ void main() {
 
 			vec3 lightVec = u_spotLightPositions[i] - v_worldPosition;
 			float distance = length(lightVec);
+			if (distance >= u_spotLightRanges[i]) continue;
 			vec3 L = normalize(lightVec);
 
 			// Spotlight cone attenuation
@@ -603,6 +621,19 @@ void main() {
 	// Add emissive
 	vec3 emissive = u_emissiveColor * u_emissiveIntensity * texture2D(u_emissiveTexture, v_uv).rgb;
 	finalColor += emissive;
+
+	// Apply distance fog
+	if (u_fogMode > 0) {
+		float fogDistance = length(v_worldPosition - u_cameraPosition);
+		float fogAmount;
+		if (u_fogMode == 1) {
+			fogAmount = clamp((fogDistance - u_fogNear) / max(u_fogFar - u_fogNear, 0.0001), 0.0, 1.0);
+		} else {
+			float fd = u_fogDensity * fogDistance;
+			fogAmount = 1.0 - exp(-fd * fd);
+		}
+		finalColor = mix(finalColor, u_fogColor, fogAmount);
+	}
 
 	// Apply opacity
 	float finalAlpha = albedoColor.a * u_opacity;

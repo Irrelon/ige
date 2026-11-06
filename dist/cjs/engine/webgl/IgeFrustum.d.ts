@@ -1,5 +1,5 @@
 import { IgeBaseClass } from "../core/IgeBaseClass.js"
-import type { IgeMatrix4 } from "../core/IgeMatrix4.js"
+import type { IgeMatrix4 } from "../core/IgeMatrix4.js";
 import type { IgePoint3d } from "../core/IgePoint3d.js"
 /**
  * Represents a plane in 3D space (ax + by + cz + d = 0).
@@ -42,6 +42,11 @@ export declare class IgeFrustum extends IgeBaseClass {
      * Returns false only if the sphere is completely outside.
      */
     containsSphere(center: IgePoint3d, radius: number): boolean;
+    /**
+     * Allocation-free variant of containsSphere() for hot render loops.
+     * Returns false only if the sphere is completely outside.
+     */
+    containsSphereXYZ(x: number, y: number, z: number, radius: number): boolean;
     /**
      * Test if an axis-aligned bounding box is inside or intersects the frustum.
      * Returns false only if the box is completely outside.

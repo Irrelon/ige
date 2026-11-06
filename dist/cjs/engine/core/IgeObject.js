@@ -31,6 +31,18 @@ class IgeObject extends IgeEventingClass_1.IgeEventingClass {
         this._parent = null;
         this._children = [];
         this._transformChanged = false;
+        /**
+         * Incremented whenever this object's world matrix changes. Children
+         * compare it against the value they last saw to know whether their own
+         * world matrix needs rebuilding.
+         */
+        this._transformVersion = 0;
+        /**
+         * Renderer frame id in which this object was last drawn in any viewport
+         * or shadow pass (-1 = never). Set by IgeWebGlRenderer; used to skip
+         * work such as skeletal animation sampling for off-screen objects.
+         */
+        this._lastRenderedFrame = -1;
         this._tileWidth = 1;
         this._tileHeight = 1;
         this._tileDepth = 1;
@@ -75,6 +87,12 @@ class IgeObject extends IgeEventingClass_1.IgeEventingClass {
         this._geometryData = IgeQuadGeometry_1.IgeQuadGeometry; // Default to a basic quad (square)
         this._materialData = null;
         this._meshData = null;
+        /**
+         * How a textured 2D sprite faces the camera in the WebGL renderer:
+         * 0 = not billboarded (uses its own rotation), 1 = always faces the
+         * camera (default), 2 = rotates around the world Y axis only.
+         */
+        this._billboardMode = 1;
         this.components = {};
         this._sortChildren = (compareFn) => {
             return this._children.sort(compareFn);

@@ -1,5 +1,5 @@
 import type { IgeObject } from "../core/IgeObject.js"
-import type { IgeTexture } from "../core/IgeTexture.js"
+import type { IgeTexture } from "../core/IgeTexture.js";
 import type { IgeMixin } from "../../types/IgeMixin.js"
 import type { IgeRepeatType } from "../../types/IgeRepeatType.js"
 export declare const WithUiStyleMixin: <BaseClassType extends IgeMixin<IgeObject>>(Base: BaseClassType) => {
@@ -50,7 +50,7 @@ export declare const WithUiStyleMixin: <BaseClassType extends IgeMixin<IgeObject
          * @param {CSSColor, CanvasGradient, CanvasPattern=} color
          * @return {*} Returns this when setting the value or the current value if none is specified.
          */
-        color(color: string | CanvasGradient | CanvasPattern): string | CanvasPattern | CanvasGradient | any;
+        color(color: string | CanvasGradient | CanvasPattern): string | CanvasGradient | CanvasPattern | any;
         /**
          * Sets the current background texture and the repeatType
          * to determine in which axis the image should be repeated.
@@ -129,6 +129,8 @@ export declare const WithUiStyleMixin: <BaseClassType extends IgeMixin<IgeObject
         _parent: IgeObject | null;
         _children: IgeObject[];
         _transformChanged: boolean;
+        _transformVersion: number;
+        _lastRenderedFrame: number;
         _tileWidth: number;
         _tileHeight: number;
         _tileDepth: number;
@@ -238,6 +240,9 @@ export declare const WithUiStyleMixin: <BaseClassType extends IgeMixin<IgeObject
         _model?: import("../webgl/IgeGltfLoader").IgeGltfModel;
         _skeleton?: import("../../types/IgeSkeletonData").IgeSkeleton;
         _skeletonData?: import("../../types/IgeSkeletonData").IgeSkeletonData;
+        _billboardMode: number;
+        _modelParts?: import("../webgl/IgeModelParts").IgeModelPart[];
+        _modelPartMatrices?: Float32Array[];
         _animationClips?: Map<string, import("../../types/IgeAnimationClipData").IgeAnimationClipData>;
         _deathCallBack?: ((...args: any[]) => void) | undefined;
         components: Record<string, import("../..").IgeComponent<IgeObject>>;

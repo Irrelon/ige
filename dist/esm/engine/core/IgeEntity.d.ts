@@ -1,10 +1,10 @@
 import { IgeBounds } from "./IgeBounds.js"
-import { IgeObject } from "./IgeObject.js"
+import { IgeObject } from "./IgeObject.js";
 import { IgePoint2d } from "./IgePoint2d.js"
-import { IgePoint3d } from "./IgePoint3d.js"
+import { IgePoint3d } from "./IgePoint3d.js";
 import type { IgeTexture } from "./IgeTexture.js"
-import type { IgeViewport } from "./IgeViewport.js"
-import { IgeEntityRenderMode } from "../../enums/index.js"
+import type { IgeViewport } from "./IgeViewport.js";
+import { IgeEntityRenderMode } from "../../enums/index.js";
 import type { IgeCanRegisterByCategory } from "../../types/IgeCanRegisterByCategory.js"
 import type { IgeCanRegisterById } from "../../types/IgeCanRegisterById.js"
 import type { IgeCanvasRenderingContext2d } from "../../types/IgeCanvasRenderingContext2d.js"
@@ -15,6 +15,17 @@ import type { IgeShapeFunctionality } from "../../types/IgeShapeFunctionality.js
 import type { IgeSmartTexture } from "../../types/IgeSmartTexture.js"
 import type { IgeTriggerPolygonFunctionName } from "../../types/IgeTriggerPolygonFunctionName.js"
 import type { IgeGltfModel } from "../webgl/IgeGltfLoader.js"
+import { IgeSkeletalAnimationComponent } from "../components/IgeSkeletalAnimationComponent.js";
+import type { IgeAnimationPlayOptions } from "../../types/IgeAnimationClipData.js"
+/**
+ * Options for IgeEntity.model().
+ */
+export interface IgeModelOptions {
+    /** Name of an animation clip to start playing (skinned models). */
+    animation?: string;
+    /** Whether the model casts shadows (default true). */
+    castShadow?: boolean;
+}
 export interface IgeEntityTransformAccessor {
     x: (val?: number) => number | IgeEntity;
     y: (val?: number) => number | IgeEntity;
@@ -49,9 +60,34 @@ export declare class IgeEntity extends IgeObject implements IgeCanRegisterById, 
      */
     clone(options?: Record<string, boolean>): any;
     /**
+     * Inputs used by the last updateTransform() rebuild (see
+     * _transformInputsUnchanged()).
+     */
+    _tfInputs?: Float64Array;
+    _tfParent?: IgeObject | null;
+    _tfParentVersion: number;
+    _tfWebGl: boolean;
+    /**
+     * Returns true when nothing that feeds this entity's transform has
+     * changed since the last rebuild, so updateTransform() can skip it.
+     * Checks local transform values, origin and bounds, the parent and its
+     * transform version, the active renderer type, and that the stored
+     * matrices haven't been modified externally since they were computed.
+     */
+    _transformInputsUnchanged(webGl: boolean): boolean;
+    /**
+     * Record the inputs used for the rebuild that just happened.
+     */
+    _recordTransformInputs(webGl: boolean): void;
+    /**
      * Checks the current transform values against the previous ones. If
      * any value is different, the appropriate method is called which will
      * update the transformation matrix accordingly.
+     *
+     * The rebuild is skipped entirely when none of the inputs (local
+     * transform, origin, bounds, parent transform) have changed since the
+     * last call, which makes static scenery and repeat calls in the same
+     * frame almost free.
      */
     updateTransform(): this;
     /**
@@ -344,18 +380,57 @@ export declare class IgeEntity extends IgeObject implements IgeCanRegisterById, 
     texture(texture: IgeTexture): this;
     texture(): IgeTexture | undefined;
     /**
-     * Gets / sets the 3D model for this entity. When a model is set,
-     * the entity will render using the model's geometry and materials
-     * instead of a 2D texture.
+     * Gets / sets the 3D model for this entity. The entity renders every
+     * mesh of the model with its own materials and textures, placed by the
+     * model's node hierarchy (so models exported Z-up or with a root
+     * rotation stand the right way up without manual correction).
+     *
+     * Skinned models also get their own skeleton and an
+     * IgeSkeletalAnimationComponent ("skeletalAnimation") with every clip
+     * in the file defined by name, ready for playAnimation().
+     *
+     * Many entities can share one loaded model: geometry, textures and
+     * cached animation poses are shared, and the WebGL renderer draws
+     * them with GPU instancing.
+     *
+     * Setting _materialData on the entity afterwards overrides the model's
+     * material values (colour, metallic, roughness, emissive) for that
+     * entity only, e.g. for a per-instance tint or a hit flash.
      * @param {IgeGltfModel=} model The loaded GLTF model.
+     * @param {IgeModelOptions=} options Optional starting animation and shadow setting.
      * @example #Set the entity model
      *     const model = await igeGltfLoader.load('path/to/model.glb');
      *     entity.model(model);
+     * @example #Spawn an animated character
+     *     const zombie = new IgeEntity()
+     *         .model(zombieModel, { animation: "Walk" })
+     *         .translateTo(100, 0, 50)
+     *         .mount(scene);
      * @return {*} "this" when arguments are passed to allow method
      * chaining or the current value if no arguments are specified.
      */
-    model(model: IgeGltfModel): this;
+    model(model: IgeGltfModel, options?: IgeModelOptions): this;
     model(): IgeGltfModel | undefined;
+    /**
+     * Gets / sets how a textured sprite faces the camera in the WebGL
+     * renderer: "full" always faces the camera (default), "y" turns around
+     * the world Y axis only (good for characters and trees standing on the
+     * ground), "none" uses the entity's own rotation (decals, floor tiles).
+     */
+    billboard(mode: "full" | "y" | "none"): this;
+    billboard(): "full" | "y" | "none";
+    /**
+     * Returns the skeletal animation component added by model() for
+     * skinned models, or undefined.
+     */
+    skeletalAnimation(): IgeSkeletalAnimationComponent | undefined;
+    /**
+     * Play a skeletal animation clip by name (as named in the model file).
+     * Cross-fades from the current clip over 0.2 seconds by default.
+     * @example #Switch to an attack animation
+     *     zombie.playAnimation("Attack", { loop: false, crossFadeDuration: 0.1 });
+     */
+    playAnimation(name: string, options?: IgeAnimationPlayOptions): this;
     /**
      * Gets / sets the current texture cell used when rendering the game
      * object's texture. If the texture is not cell-based, this value is

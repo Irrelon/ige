@@ -1,4 +1,5 @@
 "use strict";
+var _a;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.IgeShaderLibrary = void 0;
 const sprite_vert_1 = require("./sprite.vert.js");
@@ -16,6 +17,8 @@ const point_shadow_frag_1 = require("./point_shadow.frag.js");
 const skinned_point_shadow_vert_1 = require("./skinned_point_shadow.vert.js");
 const blur_vert_1 = require("./blur.vert.js");
 const blur_frag_1 = require("./blur.frag.js");
+const particle_vert_1 = require("./particle.vert.js");
+const particle_frag_1 = require("./particle.frag.js");
 /**
  * Built-in shader library for WebGL renderer.
  * Provides centralized registration and lookup of shader programs.
@@ -71,3 +74,23 @@ IgeShaderLibrary.register("point_shadow", point_shadow_vert_1.pointShadowVertexS
 IgeShaderLibrary.register("skinned_point_shadow", skinned_point_shadow_vert_1.skinnedPointShadowVertexShader, point_shadow_frag_1.pointShadowFragmentShader, // Uses same fragment shader as point_shadow
 "Skinned point light shadow depth pass shader with skeletal animation");
 IgeShaderLibrary.register("blur", blur_vert_1.blurVertexShader, blur_frag_1.blurFragmentShader, "Separable Gaussian blur for VSM shadow map softening");
+IgeShaderLibrary.register("particle", particle_vert_1.particleVertexShader, particle_frag_1.particleFragmentShader, "Camera-facing particle quads for IgeParticleSystem3d");
+// Instanced variants of the lit and shadow shaders. These read per-object
+// data (world matrix, material values and, for skinned meshes, the bone
+// palette row) from per-instance attributes so a batch of identical meshes
+// renders with a single draw call. Requires instanced arrays (WebGL 2).
+const INSTANCED_SHADER_IDS = [
+    "lit",
+    "skinned",
+    "shadow",
+    "skinned_shadow",
+    "point_shadow",
+    "skinned_point_shadow",
+    "particle"
+];
+for (const id of INSTANCED_SHADER_IDS) {
+    const source = IgeShaderLibrary.get(id);
+    if (!source)
+        continue;
+    IgeShaderLibrary.register(`${id}_instanced`, `#define USE_INSTANCING\n${source.vertex}`, `#define USE_INSTANCING\n${source.fragment}`, `${(_a = source.description) !== null && _a !== void 0 ? _a : id} (instanced)`);
+}

@@ -1,6 +1,7 @@
 import { IgeBaseClass } from "../core/IgeBaseClass.js"
-import { IgeEntity } from "../core/IgeEntity.js"
-import { IgeWebGlMaterial, IgeWebGlPBRMaterial } from "./IgeWebGlMaterial.js"
+import { IgeEntity } from "../core/IgeEntity.js";
+import { multiplyMat4 } from "./IgeModelParts.js"
+import { IgeWebGlMaterial, IgeWebGlPBRMaterial } from "./IgeWebGlMaterial.js";
 /**
  * GLTF Accessor component types.
  */
@@ -25,6 +26,7 @@ const GLTF_TYPE_SIZES = {
     MAT3: 9,
     MAT4: 16
 };
+const IDENTITY_MAT4 = new Float32Array([1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]);
 // IgeGltfAnimation is now IgeAnimationClipData from types
 /**
  * GLTF/GLB model loader for WebGL renderer.
@@ -606,21 +608,30 @@ export class IgeGltfLoader extends IgeBaseClass {
             for (let i = 0; i < jointNodeIndices.length; i++) {
                 nodeIndexToBoneIndex.set(jointNodeIndices[i], i);
             }
+            // Map each node to its parent node
+            const parentNodeOf = new Map();
+            for (let i = 0; i < gltf.nodes.length; i++) {
+                const children = gltf.nodes[i].children;
+                if (children) {
+                    for (const child of children)
+                        parentNodeOf.set(child, i);
+                }
+            }
             // Build bones array
             for (let boneIndex = 0; boneIndex < boneCount; boneIndex++) {
                 const nodeIndex = jointNodeIndices[boneIndex];
                 const nodeDef = gltf.nodes[nodeIndex];
                 // Find parent bone index
                 let parentIndex = -1;
-                for (let i = 0; i < gltf.nodes.length; i++) {
-                    const potentialParent = gltf.nodes[i];
-                    if (potentialParent.children && potentialParent.children.includes(nodeIndex)) {
-                        if (nodeIndexToBoneIndex.has(i)) {
-                            parentIndex = nodeIndexToBoneIndex.get(i);
-                        }
-                        break;
-                    }
+                const parentNode = parentNodeOf.get(nodeIndex);
+                if (parentNode !== undefined && nodeIndexToBoneIndex.has(parentNode)) {
+                    parentIndex = nodeIndexToBoneIndex.get(parentNode);
                 }
+                // Root bones inherit the transforms of their non-joint ancestors
+                // (glTF joint matrices use each joint's full global transform)
+                const parentTransform = parentIndex === -1
+                    ? this._getAncestorTransform(gltf, parentNodeOf, nodeIndex, nodeIndexToBoneIndex)
+                    : undefined;
                 // Find child bone indices
                 const childIndices = [];
                 if (nodeDef.children) {
@@ -635,14 +646,18 @@ export class IgeGltfLoader extends IgeBaseClass {
                 // Get inverse bind matrix for this bone
                 const inverseBindMatrix = new Float32Array(16);
                 inverseBindMatrix.set(inverseBindMatrices.subarray(boneIndex * 16, boneIndex * 16 + 16));
-                bones.push({
+                const bone = {
                     name: nodeDef.name || `bone_${boneIndex}`,
                     index: boneIndex,
                     parentIndex,
                     childIndices,
                     localBindTransform,
                     inverseBindMatrix
-                });
+                };
+                if (parentTransform) {
+                    bone.parentTransform = parentTransform;
+                }
+                bones.push(bone);
             }
             // Find root bone indices
             const rootBoneIndices = bones
@@ -662,6 +677,34 @@ export class IgeGltfLoader extends IgeBaseClass {
             });
         }
         return skins;
+    }
+    /**
+     * Combined global transform of a node's ancestors (excluding the node),
+     * stopping at the first ancestor that is itself a joint. Returns
+     * undefined when there are no ancestors or the result is identity.
+     */
+    _getAncestorTransform(gltf, parentNodeOf, nodeIndex, jointNodes) {
+        const chain = [];
+        let current = parentNodeOf.get(nodeIndex);
+        while (current !== undefined && !jointNodes.has(current)) {
+            chain.push(current);
+            current = parentNodeOf.get(current);
+        }
+        if (chain.length === 0)
+            return undefined;
+        // Multiply from the outermost ancestor inwards: root * ... * parent
+        let result;
+        for (let i = chain.length - 1; i >= 0; i--) {
+            const local = this._getNodeLocalTransform(gltf.nodes[chain[i]]);
+            result = result ? multiplyMat4(result, local) : local;
+        }
+        if (!result)
+            return undefined;
+        for (let i = 0; i < 16; i++) {
+            if (Math.abs(result[i] - IDENTITY_MAT4[i]) > 1e-7)
+                return result;
+        }
+        return undefined;
     }
     /**
      * Get local transform matrix from a GLTF node.

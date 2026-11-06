@@ -87,7 +87,7 @@ class IgeWebGlSkeletonManager extends IgeBaseClass_1.IgeBaseClass {
         const data = skeleton.data;
         // Compute world matrices by traversing hierarchy from roots
         for (const rootIndex of data.rootBoneIndices) {
-            this._computeWorldMatrixRecursive(skeleton, rootIndex, null);
+            this._computeWorldMatrixRecursive(skeleton, rootIndex, -1);
         }
         // Compute skin matrices: skinMatrix = worldMatrix * inverseBindMatrix
         for (let i = 0; i < data.boneCount; i++) {
@@ -101,13 +101,18 @@ class IgeWebGlSkeletonManager extends IgeBaseClass_1.IgeBaseClass {
     /**
      * Recursively compute world matrix for a bone and its children.
      */
-    _computeWorldMatrixRecursive(skeleton, boneIndex, parentWorldMatrix) {
+    _computeWorldMatrixRecursive(skeleton, boneIndex, parentWorldOffset) {
         const bone = skeleton.data.bones[boneIndex];
         const localOffset = boneIndex * 16;
         const worldOffset = boneIndex * 16;
-        if (parentWorldMatrix) {
-            // worldMatrix = parentWorld * localMatrix
-            this._multiplyMat4(skeleton.worldMatrices, worldOffset, parentWorldMatrix, 0, skeleton.localMatrices, localOffset);
+        if (parentWorldOffset >= 0) {
+            // worldMatrix = parentWorld * localMatrix (parent is read from the
+            // same array by offset, so no per-bone views are allocated)
+            this._multiplyMat4(skeleton.worldMatrices, worldOffset, skeleton.worldMatrices, parentWorldOffset, skeleton.localMatrices, localOffset);
+        }
+        else if (bone.parentTransform) {
+            // Root bone under non-joint ancestors: world = ancestors * local
+            this._multiplyMat4(skeleton.worldMatrices, worldOffset, bone.parentTransform, 0, skeleton.localMatrices, localOffset);
         }
         else {
             // Root bone: worldMatrix = localMatrix
@@ -116,8 +121,9 @@ class IgeWebGlSkeletonManager extends IgeBaseClass_1.IgeBaseClass {
             }
         }
         // Process children
-        for (const childIndex of bone.childIndices) {
-            this._computeWorldMatrixRecursive(skeleton, childIndex, new Float32Array(skeleton.worldMatrices.buffer, worldOffset * 4, 16));
+        const children = bone.childIndices;
+        for (let i = 0; i < children.length; i++) {
+            this._computeWorldMatrixRecursive(skeleton, children[i], worldOffset);
         }
     }
     /**

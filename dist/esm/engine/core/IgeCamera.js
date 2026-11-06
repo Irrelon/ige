@@ -1,7 +1,7 @@
 import { IgeEntity } from "./IgeEntity.js"
-import { IgeTween } from "./IgeTween.js"
+import { IgeTween } from "./IgeTween.js";
 import { registerClass } from "../utils/igeClassStore.js"
-import { IgeBehaviourType } from "../../enums/index.js"
+import { IgeBehaviourType } from "../../enums/index.js";
 /**
  * Creates a new camera that will be attached to a viewport.
  */
@@ -316,6 +316,8 @@ export class IgeCamera extends IgeEntity {
         else {
             this._worldMatrix.copy(this._localMatrix);
         }
+        // Cameras always rebuild, so always tell children to re-check
+        this._transformVersion++;
         return this;
     }
     /**

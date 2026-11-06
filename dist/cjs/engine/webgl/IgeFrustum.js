@@ -107,6 +107,20 @@ class IgeFrustum extends IgeBaseClass_1.IgeBaseClass {
         return true; // Sphere is inside or intersecting
     }
     /**
+     * Allocation-free variant of containsSphere() for hot render loops.
+     * Returns false only if the sphere is completely outside.
+     */
+    containsSphereXYZ(x, y, z, radius) {
+        const planes = this.planes;
+        for (let i = 0; i < 6; i++) {
+            const p = planes[i];
+            if (p.a * x + p.b * y + p.c * z + p.d < -radius) {
+                return false;
+            }
+        }
+        return true;
+    }
+    /**
      * Test if an axis-aligned bounding box is inside or intersects the frustum.
      * Returns false only if the box is completely outside.
      */

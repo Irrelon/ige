@@ -1,5 +1,5 @@
 import { IgeBaseClass } from "./IgeBaseClass.js"
-import type { IgePoint3d } from "./IgePoint3d.js"
+import type { IgePoint3d } from "./IgePoint3d.js";
 /**
  * Creates a new 4x4 transformation matrix for 3D operations.
  * Matrix is stored in column-major format (WebGL standard).

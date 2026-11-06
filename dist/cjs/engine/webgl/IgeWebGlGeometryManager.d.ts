@@ -1,7 +1,7 @@
 import { IgeBaseClass } from "../core/IgeBaseClass.js"
-import type { IgeWebGlResourceManager } from "./IgeWebGlResourceManager.js"
+import type { IgeWebGlResourceManager } from "./IgeWebGlResourceManager.js";
 import { IgeWebGlGeometry } from "./IgeWebGlGeometry.js"
-import type { IgeGeometryData3d } from "../../types/IgeGeometryData3d.js"
+import type { IgeGeometryData3d } from "../../types/IgeGeometryData3d.js";
 /**
  * Manages geometry (VBO/IBO) creation and caching for WebGL renderer.
  */
@@ -25,6 +25,13 @@ export declare class IgeWebGlGeometryManager extends IgeBaseClass {
      * Create geometry from IgeGeometryData3d.
      */
     createGeometryFromData(geometryId: string, data: IgeGeometryData3d): IgeWebGlGeometry | null | undefined;
+    /**
+     * Compute the local-space bounding sphere for a geometry. Uses the data's
+     * own bounding sphere/box when provided, otherwise derives one from the
+     * vertex positions (box centre + furthest vertex). Skinned meshes are
+     * measured in bind pose, so their radius is padded to cover animation.
+     */
+    protected _computeBounds(geometry: IgeWebGlGeometry, data: IgeGeometryData3d, vertexCount: number): void;
     /**
      * Get a cached geometry by id.
      */

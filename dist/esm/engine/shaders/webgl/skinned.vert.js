@@ -1,36 +1,31 @@
+import { forwardInstanceMaterialChunk, instanceMaterialVaryingsChunk, skinningChunk, worldMatrixChunk } from "./chunks.js"
 /**
  * Skinned PBR Lit vertex shader.
  * Extends the lit shader with GPU-based skeletal animation support.
  * Supports up to 4 bone influences per vertex and 64 bones per skeleton.
+ * Compiled with and without USE_INSTANCING (see chunks.ts); the instanced
+ * variant reads each instance's bone palette from a float texture.
  */
 export const skinnedVertexShader = `
 precision highp float;
-
-// Maximum number of bones supported
-#define MAX_BONES 64
 
 // Vertex attributes
 attribute vec3 a_position;     // Vertex position
 attribute vec3 a_normal;       // Vertex normal
 attribute vec2 a_uv;           // Texture coordinates
 attribute vec4 a_tangent;      // Tangent for normal mapping (xyz = tangent, w = handedness)
-attribute vec4 a_boneWeights;  // Bone weights (4 influences per vertex)
-attribute vec4 a_boneIndices;  // Bone indices (4 influences per vertex)
+
+${worldMatrixChunk}
+${skinningChunk}
 
 // Uniforms
-uniform mat4 u_worldMatrix;      // Entity world transform matrix
 uniform mat4 u_viewMatrix;       // Camera view matrix
 uniform mat4 u_projectionMatrix; // Camera projection matrix
-uniform mat4 u_normalMatrix;     // Normal transformation matrix (inverse transpose of world)
 uniform vec3 u_cameraPosition;   // Camera world position
 
 // Shadow mapping uniforms
 uniform mat4 u_lightSpaceMatrix; // Light view * projection matrix for shadow mapping
 uniform float u_shadowNormalOffset; // Normal offset to prevent shadow acne
-
-// Skinning uniforms
-uniform mat4 u_boneMatrices[MAX_BONES]; // Bone transformation matrices
-uniform int u_useSkinning;              // Whether to apply skinning (1 = yes, 0 = no)
 
 // Varyings passed to fragment shader
 varying vec3 v_worldPosition;    // Position in world space
@@ -39,27 +34,7 @@ varying vec2 v_uv;               // Texture coordinates
 varying vec3 v_viewDirection;    // Direction from surface to camera
 varying mat3 v_TBN;              // Tangent-Bitangent-Normal matrix for normal mapping
 varying vec4 v_lightSpacePos;    // Position in light space for shadow mapping
-
-/**
- * Compute the skin matrix by blending 4 bone matrices.
- * Each vertex is influenced by up to 4 bones with associated weights.
- */
-mat4 getSkinMatrix() {
-	// Get bone indices as integers
-	int idx0 = int(a_boneIndices.x);
-	int idx1 = int(a_boneIndices.y);
-	int idx2 = int(a_boneIndices.z);
-	int idx3 = int(a_boneIndices.w);
-
-	// Blend bone matrices by weights
-	mat4 skinMatrix =
-		a_boneWeights.x * u_boneMatrices[idx0] +
-		a_boneWeights.y * u_boneMatrices[idx1] +
-		a_boneWeights.z * u_boneMatrices[idx2] +
-		a_boneWeights.w * u_boneMatrices[idx3];
-
-	return skinMatrix;
-}
+${instanceMaterialVaryingsChunk}
 
 void main() {
 	vec3 skinnedPosition = a_position;
@@ -81,12 +56,15 @@ void main() {
 		skinnedTangent = normalize(skinMatrix3 * a_tangent.xyz);
 	}
 
+	mat4 worldMatrix = getWorldMatrix();
+	mat3 normalMatrix = getNormalMatrix(worldMatrix);
+
 	// Transform position to world space
-	vec4 worldPos = u_worldMatrix * vec4(skinnedPosition, 1.0);
+	vec4 worldPos = worldMatrix * vec4(skinnedPosition, 1.0);
 	v_worldPosition = worldPos.xyz;
 
 	// Transform normal to world space and normalize
-	v_worldNormal = normalize((u_normalMatrix * vec4(skinnedNormal, 0.0)).xyz);
+	v_worldNormal = normalize(normalMatrix * skinnedNormal);
 
 	// Calculate view direction (from surface to camera)
 	v_viewDirection = normalize(u_cameraPosition - worldPos.xyz);
@@ -95,7 +73,7 @@ void main() {
 	v_uv = a_uv;
 
 	// Calculate TBN matrix for normal mapping
-	vec3 T = normalize((u_normalMatrix * vec4(skinnedTangent, 0.0)).xyz);
+	vec3 T = normalize(normalMatrix * skinnedTangent);
 	vec3 N = v_worldNormal;
 	// Re-orthogonalize T with respect to N
 	T = normalize(T - dot(T, N) * N);
@@ -106,7 +84,7 @@ void main() {
 	// Calculate position in light space for shadow mapping
 	vec3 shadowPos = worldPos.xyz + v_worldNormal * u_shadowNormalOffset;
 	v_lightSpacePos = u_lightSpaceMatrix * vec4(shadowPos, 1.0);
-
+${forwardInstanceMaterialChunk}
 	// Transform to clip space
 	gl_Position = u_projectionMatrix * u_viewMatrix * worldPos;
 }
