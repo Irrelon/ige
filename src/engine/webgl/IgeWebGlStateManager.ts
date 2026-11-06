@@ -312,6 +312,17 @@ export class IgeWebGlStateManager extends IgeBaseClass {
 	}
 
 	/**
+	 * Forget cached texture bindings. Other managers bind textures with raw
+	 * GL calls (uploads, shadow maps), which leaves this cache describing
+	 * bindings that no longer exist. After this, the next bindTexture()
+	 * always reaches GL, and the active unit is re-selected too.
+	 */
+	invalidateTextureBindings(): void {
+		this._boundTextures.fill(null);
+		this._activeTextureUnit = -1;
+	}
+
+	/**
 	 * Reset all state tracking (force re-bind everything).
 	 * This invalidates ALL cached state so subsequent state manager calls
 	 * will actually make GL calls instead of being skipped.
@@ -324,7 +335,7 @@ export class IgeWebGlStateManager extends IgeBaseClass {
 		this._boundVAO = null;
 		this._boundFramebuffer = null;
 		this._boundTextures.fill(null);
-		this._activeTextureUnit = 0;
+		this._activeTextureUnit = -1;
 
 		// Reset viewport tracking (use impossible values to force re-set)
 		this._viewport = { x: -1, y: -1, width: -1, height: -1 };

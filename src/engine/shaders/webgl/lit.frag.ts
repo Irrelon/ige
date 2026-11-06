@@ -1,3 +1,5 @@
+import { instanceMaterialVaryingsChunk } from "@/engine/shaders/webgl/chunks";
+
 /**
  * PBR Lit fragment shader.
  * Supports both simple 2D textures and full PBR material workflow.
@@ -48,6 +50,25 @@ uniform int u_hasNormalMap;               // Whether normal map is used
 uniform sampler2D u_emissiveTexture;      // Emissive texture
 uniform vec3 u_emissiveColor;             // Emissive color
 uniform float u_emissiveIntensity;        // Emissive intensity
+${instanceMaterialVaryingsChunk}
+#ifdef USE_INSTANCING
+// Instanced draws carry material values per instance, so redirect the
+// material uniforms to the instance varyings for the rest of the shader.
+#define u_baseColor v_instanceColor
+#define u_metallic v_instanceMaterial.x
+#define u_roughness v_instanceMaterial.y
+#define u_opacity v_instanceMaterial.z
+#define u_emissiveColor v_instanceEmissive.rgb
+#define u_emissiveIntensity v_instanceEmissive.a
+#endif
+
+// Distance fog (0 = off, 1 = linear between near/far, 2 = exponential squared)
+uniform int u_fogMode;
+uniform vec3 u_fogColor;
+uniform float u_fogNear;
+uniform float u_fogFar;
+uniform float u_fogDensity;
+uniform vec3 u_cameraPosition;
 uniform sampler2D u_aoTexture;            // Ambient occlusion texture
 uniform float u_ambientOcclusion;         // AO value
 
@@ -600,6 +621,19 @@ void main() {
 	// Add emissive
 	vec3 emissive = u_emissiveColor * u_emissiveIntensity * texture2D(u_emissiveTexture, v_uv).rgb;
 	finalColor += emissive;
+
+	// Apply distance fog
+	if (u_fogMode > 0) {
+		float fogDistance = length(v_worldPosition - u_cameraPosition);
+		float fogAmount;
+		if (u_fogMode == 1) {
+			fogAmount = clamp((fogDistance - u_fogNear) / max(u_fogFar - u_fogNear, 0.0001), 0.0, 1.0);
+		} else {
+			float fd = u_fogDensity * fogDistance;
+			fogAmount = 1.0 - exp(-fd * fd);
+		}
+		finalColor = mix(finalColor, u_fogColor, fogAmount);
+	}
 
 	// Apply opacity
 	float finalAlpha = albedoColor.a * u_opacity;

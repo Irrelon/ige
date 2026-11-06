@@ -124,6 +124,13 @@ export class IgeWebGlShadowManager extends IgeBaseClass {
 		this._resourceManager = resourceManager;
 		this._webglVersion = webglVersion;
 
+		// Prefer R32F point shadow atlases: 8-bit depth bands visibly on curved
+		// surfaces at zero bias. Rendering to float targets needs the
+		// EXT_color_buffer_float extension, so fall back to RGBA8 without it.
+		if (webglVersion === 2 && (gl as WebGL2RenderingContext).getExtension("EXT_color_buffer_float")) {
+			this._pointShadowFormat = "r32f";
+		}
+
 		this.log(`Shadow manager initialized (WebGL ${webglVersion})`);
 	}
 
@@ -396,6 +403,24 @@ export class IgeWebGlShadowManager extends IgeBaseClass {
 			this._lightProjectionMatrix,
 			this._lightViewMatrix
 		);
+
+		// Snap the projection to whole shadow-map texels. The shadow frustum
+		// follows the camera target, and without snapping every sub-texel
+		// move re-rasterises shadow edges differently, making them shimmer.
+		const ls = this._lightSpaceMatrix.matrix;
+		const halfSize = shadowMap.size / 2;
+		const originX = ls[12] * halfSize;
+		const originY = ls[13] * halfSize;
+		const offsetX = (Math.round(originX) - originX) / halfSize;
+		const offsetY = (Math.round(originY) - originY) / halfSize;
+		if (offsetX !== 0 || offsetY !== 0) {
+			this._lightProjectionMatrix.matrix[12] += offsetX;
+			this._lightProjectionMatrix.matrix[13] += offsetY;
+			this._lightSpaceMatrix.multiply(
+				this._lightProjectionMatrix,
+				this._lightViewMatrix
+			);
+		}
 
 		// Copy to shadow map data
 		shadowMap.lightSpaceMatrix.set(this._lightSpaceMatrix.matrix);

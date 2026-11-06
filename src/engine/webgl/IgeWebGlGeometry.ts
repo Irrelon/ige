@@ -33,6 +33,13 @@ export class IgeWebGlGeometry extends IgeBaseClass {
 	isSkinned: boolean = false; // Whether this geometry has bone weights/indices
 	skeletonId?: string; // Reference to skeleton data ID
 
+	// Local-space bounding sphere used for frustum and shadow culling.
+	// A radius of -1 means unknown (the item is never culled).
+	boundsCenterX: number = 0;
+	boundsCenterY: number = 0;
+	boundsCenterZ: number = 0;
+	boundsRadius: number = -1;
+
 	constructor(id: string, drawMode: number) {
 		super();
 		this.id = id;

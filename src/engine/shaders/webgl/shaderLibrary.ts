@@ -133,3 +133,28 @@ IgeShaderLibrary.register(
 	blurFragmentShader,
 	"Separable Gaussian blur for VSM shadow map softening"
 );
+
+// Instanced variants of the lit and shadow shaders. These read per-object
+// data (world matrix, material values and, for skinned meshes, the bone
+// palette row) from per-instance attributes so a batch of identical meshes
+// renders with a single draw call. Requires instanced arrays (WebGL 2).
+const INSTANCED_SHADER_IDS = [
+	"lit",
+	"skinned",
+	"shadow",
+	"skinned_shadow",
+	"point_shadow",
+	"skinned_point_shadow"
+];
+
+for (const id of INSTANCED_SHADER_IDS) {
+	const source = IgeShaderLibrary.get(id);
+	if (!source) continue;
+
+	IgeShaderLibrary.register(
+		`${id}_instanced`,
+		`#define USE_INSTANCING\n${source.vertex}`,
+		`#define USE_INSTANCING\n${source.fragment}`,
+		`${source.description ?? id} (instanced)`
+	);
+}

@@ -69,6 +69,12 @@ export class IgeObject extends IgeEventingClass implements IgeCanRegisterById, I
 	 * world matrix needs rebuilding.
 	 */
 	_transformVersion: number = 0;
+	/**
+	 * Renderer frame id in which this object was last drawn in any viewport
+	 * or shadow pass (-1 = never). Set by IgeWebGlRenderer; used to skip
+	 * work such as skeletal animation sampling for off-screen objects.
+	 */
+	_lastRenderedFrame: number = -1;
 	_tileWidth: number = 1;
 	_tileHeight: number = 1;
 	_tileDepth: number = 1;

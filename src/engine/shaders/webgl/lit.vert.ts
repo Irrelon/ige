@@ -1,8 +1,15 @@
+import {
+	forwardInstanceMaterialChunk,
+	instanceMaterialVaryingsChunk,
+	worldMatrixChunk
+} from "@/engine/shaders/webgl/chunks";
+
 /**
  * PBR Lit vertex shader.
  * Supports positions, normals, UVs, and tangents for normal mapping.
  * Passes world-space data to fragment shader for lighting calculations.
  * Supports shadow mapping for directional lights.
+ * Compiled with and without USE_INSTANCING (see chunks.ts).
  */
 export const litVertexShader = `
 precision highp float;
@@ -13,11 +20,11 @@ attribute vec3 a_normal;    // Vertex normal
 attribute vec2 a_uv;        // Texture coordinates
 attribute vec4 a_tangent;   // Tangent for normal mapping (xyz = tangent, w = handedness)
 
+${worldMatrixChunk}
+
 // Uniforms
-uniform mat4 u_worldMatrix;      // Entity world transform matrix
 uniform mat4 u_viewMatrix;       // Camera view matrix
 uniform mat4 u_projectionMatrix; // Camera projection matrix
-uniform mat4 u_normalMatrix;     // Normal transformation matrix (inverse transpose of world)
 uniform vec3 u_cameraPosition;   // Camera world position
 
 // Shadow mapping uniforms
@@ -31,14 +38,18 @@ varying vec2 v_uv;               // Texture coordinates
 varying vec3 v_viewDirection;    // Direction from surface to camera
 varying mat3 v_TBN;              // Tangent-Bitangent-Normal matrix for normal mapping
 varying vec4 v_lightSpacePos;    // Position in light space for shadow mapping
+${instanceMaterialVaryingsChunk}
 
 void main() {
+	mat4 worldMatrix = getWorldMatrix();
+	mat3 normalMatrix = getNormalMatrix(worldMatrix);
+
 	// Transform position to world space
-	vec4 worldPos = u_worldMatrix * vec4(a_position, 1.0);
+	vec4 worldPos = worldMatrix * vec4(a_position, 1.0);
 	v_worldPosition = worldPos.xyz;
 
 	// Transform normal to world space and normalize
-	v_worldNormal = normalize((u_normalMatrix * vec4(a_normal, 0.0)).xyz);
+	v_worldNormal = normalize(normalMatrix * a_normal);
 
 	// Calculate view direction (from surface to camera)
 	v_viewDirection = normalize(u_cameraPosition - worldPos.xyz);
@@ -48,7 +59,7 @@ void main() {
 
 	// Calculate TBN matrix for normal mapping if tangent is available
 	// If no tangent provided, use a fallback
-	vec3 T = normalize((u_normalMatrix * vec4(a_tangent.xyz, 0.0)).xyz);
+	vec3 T = normalize(normalMatrix * a_tangent.xyz);
 	vec3 N = v_worldNormal;
 	// Re-orthogonalize T with respect to N
 	T = normalize(T - dot(T, N) * N);
@@ -57,8 +68,9 @@ void main() {
 	v_TBN = mat3(T, B, N);
 
 	// Calculate position in light space for shadow mapping
-	v_lightSpacePos = u_lightSpaceMatrix * worldPos;
-
+	vec3 shadowPos = worldPos.xyz + v_worldNormal * u_shadowNormalOffset;
+	v_lightSpacePos = u_lightSpaceMatrix * vec4(shadowPos, 1.0);
+${forwardInstanceMaterialChunk}
 	// Transform to clip space
 	gl_Position = u_projectionMatrix * u_viewMatrix * worldPos;
 }
