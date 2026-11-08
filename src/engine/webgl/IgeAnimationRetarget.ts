@@ -76,6 +76,22 @@ export function normaliseBoneName (name: string): string {
 	return name.replace(/^.*[:|]/, "").replace(/^mixamorig\d*_?/i, "").toLowerCase();
 }
 
+/**
+ * Find a bone by name: an exact match first, then ignoring case and
+ * prefixes such as "mixamorig:" (so "RightHand" finds "mixamorig:RightHand").
+ * Returns -1 when the skeleton has no such bone.
+ */
+export function findBoneIndex (skeleton: IgeSkeletonData, name: string): number {
+	for (const bone of skeleton.bones) {
+		if (bone.name === name) return bone.index;
+	}
+	const wanted = normaliseBoneName(name);
+	for (const bone of skeleton.bones) {
+		if (normaliseBoneName(bone.name) === wanted) return bone.index;
+	}
+	return -1;
+}
+
 class IgeRetargeter {
 	protected _source: IgeGltfModel;
 	protected _target: IgeSkeletonData;

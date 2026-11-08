@@ -30,7 +30,8 @@ import type { IgeTimeStreamPacket, IgeTimeStreamParsedTransformData } from "@/ty
 import type { IgeTriggerPolygonFunctionName } from "@/types/IgeTriggerPolygonFunctionName";
 import type { IgeGltfModel } from "@/engine/webgl/IgeGltfLoader";
 import type { IgeRetargetOptions } from "@/engine/webgl/IgeAnimationRetarget";
-import { retargetClips } from "@/engine/webgl/IgeAnimationRetarget";
+import { findBoneIndex, retargetClips } from "@/engine/webgl/IgeAnimationRetarget";
+import type { IgeSkeletonData } from "@/types/IgeSkeletonData";
 import type { IgeAnimationClipData } from "@/types/IgeAnimationClipData";
 import type { IgeModelLod, IgeModelLodLevel } from "@/engine/webgl/IgeModelParts";
 import { createSkeletonInstance, getModelLod, getModelParts } from "@/engine/webgl/IgeModelParts";
@@ -143,6 +144,12 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 	_tfParentVersion: number = -1;
 	_tfWebGl: boolean = false;
 
+	/** Name of the parent skeleton bone this entity follows (see attachToBone()). */
+	_attachBone?: string;
+	_attachBoneIndex: number = -1;
+	_attachBoneSkeleton?: IgeSkeletonData;
+	_attachBoneMatrix?: IgeMatrix4;
+
 	/**
 	 * Returns true when nothing that feeds this entity's transform has
 	 * changed since the last rebuild, so updateTransform() can skip it.
@@ -153,6 +160,9 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 	_transformInputsUnchanged (webGl: boolean): boolean {
 		const c = this._tfInputs;
 		if (!c) return false;
+
+		// A bone moves every frame without the parent's transform changing
+		if (this._attachBone !== undefined) return false;
 
 		const parent = this._parent;
 		if (parent !== this._tfParent) return false;
@@ -310,8 +320,11 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 			}
 
 			// Compute world matrix by multiplying with parent's world matrix
+			// (and the parent's bone, when attached to one)
 			if (this._parent && this._parent._worldMatrix4) {
 				this._worldMatrix4!.copy(this._parent._worldMatrix4);
+				const bone = this._attachBone !== undefined ? this._attachedBoneMatrix() : undefined;
+				if (bone) this._worldMatrix4!.multiply(bone);
 				this._worldMatrix4!.multiply(this._localMatrix4);
 			} else {
 				this._worldMatrix4!.copy(this._localMatrix4);
@@ -1176,6 +1189,101 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 	playAnimation (name: string, options?: IgeAnimationPlayOptions): this {
 		this.skeletalAnimation()?.play(name, options);
 		return this;
+	}
+
+	/**
+	 * Gets / sets the bone of the parent entity's skeleton that this entity
+	 * follows, e.g. to put a weapon in a character's hand. Mount the entity
+	 * to the animated character first; its own translate, rotate and scale
+	 * then position it relative to the bone (in the character's model
+	 * units, since it also inherits the character's scale).
+	 *
+	 * Names match exactly, or ignoring case and prefixes like "mixamorig:".
+	 * The entity follows the pose the character was last animated to, so
+	 * it stays put while the character is off screen and its animation is
+	 * culled (see IgeSkeletalAnimationComponent.cullOffscreen()). Pass null
+	 * to follow the character's origin again.
+	 * @example #Give a character a sword
+	 *     const sword = new IgeEntity()
+	 *         .model(swordModel)
+	 *         .mount(hero)
+	 *         .attachToBone("RightHand")
+	 *         .rotateTo(Math.PI / 2, 0, 0);
+	 */
+	attachToBone (boneName: string | null): this;
+	attachToBone (): string | undefined;
+	attachToBone (boneName?: string | null) {
+		if (boneName === undefined) {
+			return this._attachBone;
+		}
+
+		this._attachBone = boneName === null ? undefined : boneName;
+		this._attachBoneSkeleton = undefined;
+		this._attachBoneIndex = -1;
+		this._tfInputs = undefined; // rebuild the transform on the next update
+		return this;
+	}
+
+	/**
+	 * Get the world position of one of this entity's skeleton bones, e.g.
+	 * to spawn an effect at a hand. Returns undefined when the entity has
+	 * no skeleton or no bone with that name (matched as in attachToBone()).
+	 * @param out Optional point to write into instead of allocating one.
+	 */
+	bonePosition (boneName: string, out?: IgePoint3d): IgePoint3d | undefined {
+		const skeleton = this._skeleton;
+		const world = this._worldMatrix4;
+		if (!skeleton || !world) return;
+
+		const index = findBoneIndex(skeleton.data, boneName);
+		if (index < 0) return;
+		this._updateSkeletonMatrices();
+
+		const b = skeleton.worldMatrices;
+		const x = b[index * 16 + 12], y = b[index * 16 + 13], z = b[index * 16 + 14];
+		const m = world.matrix;
+		const point = out || new IgePoint3d();
+		point.x = m[0] * x + m[4] * y + m[8] * z + m[12];
+		point.y = m[1] * x + m[5] * y + m[9] * z + m[13];
+		point.z = m[2] * x + m[6] * y + m[10] * z + m[14];
+		return point;
+	}
+
+	/**
+	 * Bring the skeleton's bone matrices up to date with its pose (they
+	 * are otherwise computed when the renderer collects the frame).
+	 */
+	_updateSkeletonMatrices () {
+		const skeleton = this._skeleton;
+		if (!skeleton || !skeleton.dirty) return;
+		const manager = (ige.engine.renderer() as { skeletonManager?: { updateSkeletonMatrices: (s: typeof skeleton) => void } } | undefined)?.skeletonManager;
+		manager?.updateSkeletonMatrices(skeleton);
+	}
+
+	/**
+	 * The model-space matrix of the parent's bone this entity follows, or
+	 * undefined if the parent has no skeleton or no such bone.
+	 */
+	_attachedBoneMatrix (): IgeMatrix4 | undefined {
+		const parent = this._parent as IgeEntity | null;
+		const skeleton = parent?._skeleton;
+		if (!skeleton || this._attachBone === undefined) return;
+
+		if (this._attachBoneSkeleton !== skeleton.data) {
+			this._attachBoneSkeleton = skeleton.data;
+			this._attachBoneIndex = findBoneIndex(skeleton.data, this._attachBone);
+			if (this._attachBoneIndex < 0) {
+				this.log(`attachToBone(): the parent's skeleton has no bone "${this._attachBone}"`, "warning");
+			}
+		}
+
+		const index = this._attachBoneIndex;
+		if (index < 0) return;
+
+		parent!._updateSkeletonMatrices();
+		const matrix = this._attachBoneMatrix || (this._attachBoneMatrix = new IgeMatrix4());
+		matrix.matrix.set(skeleton.worldMatrices.subarray(index * 16, index * 16 + 16));
+		return matrix;
 	}
 
 	/**
