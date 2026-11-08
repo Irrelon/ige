@@ -88,6 +88,7 @@ The engine has extensive 3D infrastructure:
     -   **State Management** (`IgeWebGlStateManager`) - WebGL state tracking
     -   **Model Parts** (`IgeModelParts`) - turns a loaded GLTF model into render parts (all primitives, node transforms, materials, textures) for `IgeEntity.model()`
     -   **3D Particles** (`IgeParticleSystem3d`) - typed-array particle effects drawn as one instanced billboard batch
+    -   **Animation Retargeting** (`IgeAnimationRetarget`) - plays clips from separate animation files on a model's skeleton, matched by bone name
     -   **Mesh Simplifier** (`IgeMeshSimplifier`) - quadric edge-collapse simplification that keeps UVs, normals and skin weights; generates level-of-detail meshes
 -   Frame pipeline: renderables are collected once per frame (transforms, skin matrices, world-space bounds); each viewport then culls, renders its directional shadow map (centred on its camera target, or shared when split-screen views are close) and draws opaque batches front to back, then transparent items and particles. Point light shadows render once per frame.
 -   Level of detail: each pass (viewport, directional shadow, point shadow) picks an entity's LOD level from its projected size, so split-screen views choose independently.
@@ -117,6 +118,7 @@ zombie.playAnimation("Attack", { loop: false, crossFadeDuration: 0.1 });
 
 -   Entities sharing a model are GPU-instanced automatically and share cached animation poses (`IgeSkeletalAnimationComponent.poseCacheRate`); use `skeletalAnimation().poseCache(false)` for hero characters that should animate at full frame rate.
 -   glTF node transforms are applied (models face +Z and stand upright without manual rotation).
+-   Animations in separate files: `model(model, { animations: { Attack: attackFile } })` (record: first clip of each file under the key) or `animations: [libraryFile]` (every clip under its own name). Clips are retargeted by bone name (`IgeAnimationRetarget`); identical rigs share keyframes, other rigs are converted rest-relative.
 -   LOD levels are generated once per model and shared; `{ screenSize, model }` uses an authored lower-detail model instead (same parts and skeleton). `renderer.stats().lodItems` and `.triangles` help tune thresholds.
 
 #### **IgeThreeJsRenderer** (`src/engine/core/IgeThreeJsRenderer.ts`) - EXPERIMENTAL
@@ -157,6 +159,7 @@ zombie.playAnimation("Attack", { loop: false, crossFadeDuration: 0.1 });
 | `IgeModelParts.ts` | GLTF model to render parts; skeleton instances |
 | `IgeParticleSystem3d.ts` | 3D particle effects entity |
 | `IgeMeshSimplifier.ts` | Mesh simplification for level-of-detail geometry |
+| `IgeAnimationRetarget.ts` | Retarget animation clips from other files onto a skeleton by bone name |
 
 ## Ultimate Project Goals
 
