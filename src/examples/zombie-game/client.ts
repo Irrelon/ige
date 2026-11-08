@@ -8,7 +8,8 @@ import { ige } from "@/engine/instance";
 import type { IgeCanInit } from "@/types/IgeCanInit";
 import { IgeBehaviourType } from "@/enums";
 import { IgeAmbientLight, IgeDirectionalLight, IgePointLight } from "@/engine/webgl/IgeWebGlLight";
-import { igeGltfLoader, type IgeGltfModel } from "@/engine/webgl/IgeGltfLoader";
+import type { IgeGltfModel } from "@/engine/webgl/IgeGltfLoader";
+import { igeLoadAssets } from "@/engine/core/igeLoadAssets";
 import { IgeParticleSystem3d } from "@/engine/webgl/IgeParticleSystem3d";
 import { IgeDecalSystem3d } from "@/engine/webgl/IgeDecalSystem3d";
 import { IgePhysics3d, type IgePhysicsBody3d, type IgePhysicsImpact } from "@/engine/physics/IgePhysics3d";
@@ -266,7 +267,11 @@ export class Client extends IgeBaseClass implements IgeCanInit {
 			}
 
 			this.updateStatus("Loading character model...");
-			this.characterModel = await igeGltfLoader.load("../../assets/models/CesiumMan.glb", "characterModel");
+			const assets = await igeLoadAssets(
+				{ models: { characterModel: "../../assets/models/CesiumMan.glb" } },
+				{ onProgress: (done, total) => this.updateStatus(`Loading assets ${done}/${total}...`) }
+			);
+			this.characterModel = assets.models.characterModel;
 
 			this.updateStatus("Spawning players and zombies...");
 			this.createEffects();

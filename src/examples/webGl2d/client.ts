@@ -5,6 +5,7 @@ import { IgeFontEntity } from "@/engine/core/IgeFontEntity";
 import { IgeFontSheet } from "@/engine/core/IgeFontSheet";
 import { IgeScene2d } from "@/engine/core/IgeScene2d";
 import { IgeTexture } from "@/engine/core/IgeTexture";
+import { igeLoadAssets } from "@/engine/core/igeLoadAssets";
 import { IgeViewport } from "@/engine/core/IgeViewport";
 import { IgeWebGlRenderer } from "@/engine/core/IgeWebGlRenderer";
 import { ige } from "@/engine/instance";
@@ -36,6 +37,8 @@ window.ige = ige;
  *   data and a bitmap font sheet), texture filters (applied at load, applied
  *   later, and an animated pre-filter) and a composite-cached group.
  * - ?canvas=1: the same scene on IgeCanvas2dRenderer, for comparison.
+ * - ?auto=1: no renderer or camera preset set by the game; ige.engine.start()
+ *   picks WebGL where the browser supports it, with the screen2d camera.
  */
 
 /** A star whose colour and point count come from the entity's data. */
@@ -97,32 +100,40 @@ export class Client extends IgeBaseClass implements IgeCanInit {
 
 	async init () {
 		const params = new URLSearchParams(window.location.search);
-		const webGl = params.get("canvas") !== "1";
-		const renderer = webGl ? new IgeWebGlRenderer() : new IgeCanvas2dRenderer();
-		ige.engine.renderer(renderer);
-		renderer.createFrontBuffer(true);
-		await renderer.setup();
-		if (renderer instanceof IgeWebGlRenderer) renderer.setClearColor(0.08, 0.09, 0.12, 1);
+		// ?auto=1: assign no renderer and set no camera preset; ige.engine.start()
+		// picks WebGL where available (else Canvas 2D) with the screen2d camera
+		const auto = params.get("auto") === "1";
+		if (!auto) {
+			const chosen = params.get("canvas") === "1" ? new IgeCanvas2dRenderer() : new IgeWebGlRenderer();
+			ige.engine.renderer(chosen);
+			chosen.createFrontBuffer(true);
+			await chosen.setup();
+		}
 
+		// Image textures through the asset loader (one call, one progress
+		// callback); smart textures and the font sheet are created directly
 		const fairyUrl = "../../assets/textures/sprites/fairy.png";
-		const fairy = new IgeTexture("fairy", fairyUrl);
+		const { textures } = await igeLoadAssets({
+			textures: { fairy: fairyUrl, fairyGrey: fairyUrl, fairyLater: fairyUrl, fairyPulse: fairyUrl }
+		});
+		const { fairy, fairyGrey, fairyLater, fairyPulse } = textures;
 		const star = new IgeTexture("star", starTexture);
 		const bar = new IgeTexture("bar", barTexture);
 		const label = new IgeTexture("label", labelTexture);
-		const fairyGrey = new IgeTexture("fairyGrey", fairyUrl);
-		const fairyLater = new IgeTexture("fairyLater", fairyUrl);
-		const fairyPulse = new IgeTexture("fairyPulse", fairyUrl);
 		const fontSheet = new IgeFontSheet("verdana", "../../assets/textures/fonts/verdana_12pt.png");
 		await ige.textures.whenLoaded();
 
 		await ige.engine.start();
+		const renderer = ige.engine.renderer()!;
+		const webGl = renderer instanceof IgeWebGlRenderer;
+		if (renderer instanceof IgeWebGlRenderer) renderer.setClearColor(0.08, 0.09, 0.12, 1);
 
 		const scene = new IgeScene2d().id("scene");
 		const split = params.get("split") === "1";
 		const views: IgeViewport[] = [];
 		// Canvas 2D style view: (0, 0) is the centre of the screen, y down
 		const view2d = (viewport: IgeViewport) => {
-			if (webGl) viewport.camera.preset("screen2d");
+			if (webGl && !auto) viewport.camera.preset("screen2d");
 			return viewport;
 		};
 
