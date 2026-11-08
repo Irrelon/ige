@@ -45,6 +45,7 @@ plan prioritises what the target games need.
 | Camera | Perspective and orthographic projection, up vector and look direction, `lookAtPoint()`, presets (`isometric`, `isometric45`, `topDown`, `sideScroller`, `screen2d`) |
 | 2D | `screen2d` camera (Canvas 2D style: y down, one unit per pixel, zoom by camera scale), smart textures drawn per entity (redrawn every frame, or when dirty with `cache(true)`), flat 2D sprites with full 2D transforms, split screen |
 | Debugging | `debugDraw({ bounds, shadowFrustum })` (bounds coloured by LOD level), `debugLine()` |
+| Input | Entity pointer events in every viewport (`pointerHitTest()`: mesh boxes, skinned joint boxes, sprite quads) |
 
 ### Measured
 
@@ -70,12 +71,13 @@ On the development machine (Apple silicon, Chrome):
   two-player split screen.
 - Hex Realms runs on the current engine; back-face culling, shadow caching and render on demand were tried on it from
   the console (tiles style).
+- Pointer events with a real mouse in the 2D split-screen example; mesh and skinned-character picking in the zombie
+  demo's views.
 
 ### Not verified
 
 - Gamepad input has only been tested with simulated keyboard input.
-- Pointer events on entities (mouse over and click picking), composite caching, canvas filters and `IgeFontEntity` text
-  on the WebGL renderer.
+- Composite caching, canvas filters and `IgeFontEntity` text on the WebGL renderer.
 
 ## Next steps
 
@@ -96,8 +98,8 @@ On the development machine (Apple silicon, Chrome):
 
 ### Engine work remaining
 
-- Pointer events on entities with the WebGL renderer (picking against sprites and meshes per viewport).
 - Decals on walls and uneven terrain (they currently lie flat at a given height).
+- Exact (per-triangle) picking, if box picking proves too coarse for a game.
 - Revisit animation update rates only if profiling shows a need.
 
 ## Engine gaps from Hex Realms

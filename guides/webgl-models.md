@@ -121,6 +121,9 @@ const hand = hero.bonePosition("RightHand"); // world position, e.g. to spawn an
 - `renderer.worldToScreen(viewport, x, y, z)` projects a point; `screenToGround()`, `screenToHeightfield()` and
   `screenToWorldRay()` turn a screen point into the world (flat ground, uneven terrain, or a ray);
   `viewportAt(x, y)` finds the view under a point.
+- Entity pointer events (`pointerOver`, `pointerDown`, `pointerUp`...) work in every view: meshes are hit by their
+  bounding box, skinned characters by a box around their animated joints. `renderer.pointerHitTest(entity, x, y)` is
+  the same test for your own code.
 
 ## Performance switches
 

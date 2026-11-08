@@ -26,6 +26,8 @@ position is the centre of the view, so `camera.translateTo(x, y, 0)` and camera 
 - Entity transforms: `translate`, `rotate` (z is the 2D rotation, clockwise on screen as in Canvas 2D), `scale`,
   `width`/`height`, origin and mounting (children move with their parents).
 - Image textures and sprite sheet cells (`cell()`), `opacity()`, `hide()`/`show()`.
+- Pointer events (`pointerOver`, `pointerOut`, `pointerDown`, `pointerUp`...), tested against the sprite's quad in the
+  view under the pointer, including in split screen.
 - Smart textures. Each entity gets its own canvas, drawn by the texture's `render(ctx, entity)` in the same space as
   Canvas 2D (origin at the entity's centre, entity pixels). As in Canvas 2D they redraw every frame; give entities
   whose drawing doesn't change `cache(true)`, and call `cacheDirty(true)` when it does change. Drawing a smart texture
@@ -39,8 +41,8 @@ position is the centre of the view, so `camera.translateTo(x, y, 0)` and camera 
   them itself. The WebGL renderer treats every entity as 3D with y up, so iso scenes don't map across automatically
   yet. Keep `IgeCanvas2dRenderer` for them, or move them to a 3D layout (ground on x/z) with the `isometric` camera
   preset.
-- **Not verified on WebGL yet:** pointer events on entities (mouse over and click picking), composite caching
-  (`compositeCache()`), canvas filters, and `IgeFontEntity` text. Smart textures can draw text (see the example).
+- **Not verified on WebGL yet:** composite caching (`compositeCache()`), canvas filters, and `IgeFontEntity` text.
+  Smart textures can draw text (see the example).
 - Sprites in a `screen2d` view are drawn flat with their 2D transform. In 3D views they are billboards that face the
   camera (`entity.billboard("full" | "y" | "none")`).
 
