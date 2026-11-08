@@ -125,6 +125,18 @@ const SHADOW_RECENTER_STEP = 0.125;
 
 let nextRenderUid = 1;
 
+/** Floats per debug line vertex: x, y, z, r, g, b, a. */
+const DEBUG_LINE_FLOATS = 7;
+
+/** Bounding sphere colours by level of detail (debugDraw({ bounds: true })). */
+const DEBUG_LOD_COLORS: [number, number, number][] = [
+	[0.25, 1, 0.3], // full detail
+	[1, 0.85, 0.1],
+	[1, 0.5, 0.1],
+	[1, 0.15, 0.15]
+];
+const DEBUG_NO_LOD_COLOR: [number, number, number] = [0.4, 0.65, 1];
+
 const hexColorCache: Map<string, [number, number, number]> = new Map();
 
 /**
@@ -298,6 +310,12 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 
 	// Context version to ask for first (see preferredWebGlVersion())
 	protected _preferredWebGlVersion: 1 | 2 = 2;
+
+	// Debug drawing (see debugDraw() and debugLine())
+	protected _debugOptions = { bounds: false, shadowFrustum: false };
+	protected _debugLineData: Float32Array = new Float32Array(DEBUG_LINE_FLOATS * 2048);
+	protected _debugLineVertices: number = 0;
+	protected _debugLineBuffer: WebGLBuffer | null = null;
 
 	/**
 	 * Initialize the WebGL renderer.
@@ -704,6 +722,162 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 			y: Math.round(y / step) * step,
 			z: Math.round(z / step) * step
 		};
+	}
+
+	/**
+	 * Gets / sets debug drawing, drawn on top of each viewport:
+	 * - bounds: every visible mesh's bounding sphere (the one used for
+	 *   culling), coloured by the level of detail picked in that view:
+	 *   green full detail, then yellow, orange and red for lower levels;
+	 *   blue for meshes without LOD levels;
+	 * - shadowFrustum: the box the directional shadow map covers.
+	 * @example #Check LOD switching and shadow coverage
+	 *     renderer.debugDraw({ bounds: true, shadowFrustum: true });
+	 */
+	debugDraw(): { bounds: boolean; shadowFrustum: boolean };
+	debugDraw(options: Partial<{ bounds: boolean; shadowFrustum: boolean }>): this;
+	debugDraw(options?: Partial<{ bounds: boolean; shadowFrustum: boolean }>) {
+		if (options === undefined) {
+			return { ...this._debugOptions };
+		}
+		this._debugOptions = { ...this._debugOptions, ...options };
+		return this;
+	}
+
+	/**
+	 * Draw a world-space line in every viewport on the next rendered frame,
+	 * e.g. an AI path, an attack range or a ray. Call it each frame the line
+	 * should stay visible.
+	 * @param color RGBA, 0-1 (default yellow).
+	 */
+	debugLine(
+		x1: number, y1: number, z1: number,
+		x2: number, y2: number, z2: number,
+		color: { r: number; g: number; b: number; a?: number } = { r: 1, g: 0.9, b: 0.2, a: 1 }
+	): this {
+		this._pushDebugLine(x1, y1, z1, x2, y2, z2, color.r, color.g, color.b, color.a ?? 1);
+		return this;
+	}
+
+	protected _pushDebugLine(
+		x1: number, y1: number, z1: number,
+		x2: number, y2: number, z2: number,
+		r: number, g: number, b: number, a: number
+	): void {
+		const needed = (this._debugLineVertices + 2) * DEBUG_LINE_FLOATS;
+		if (needed > this._debugLineData.length) {
+			const grown = new Float32Array(Math.max(needed, this._debugLineData.length * 2));
+			grown.set(this._debugLineData);
+			this._debugLineData = grown;
+		}
+		const d = this._debugLineData;
+		let o = this._debugLineVertices * DEBUG_LINE_FLOATS;
+		d[o++] = x1; d[o++] = y1; d[o++] = z1; d[o++] = r; d[o++] = g; d[o++] = b; d[o++] = a;
+		d[o++] = x2; d[o++] = y2; d[o++] = z2; d[o++] = r; d[o++] = g; d[o++] = b; d[o++] = a;
+		this._debugLineVertices += 2;
+	}
+
+	/** Three great circles approximating a sphere. */
+	protected _pushDebugSphere(cx: number, cy: number, cz: number, radius: number, color: [number, number, number]): void {
+		const segments = 16;
+		const [r, g, b] = color;
+		for (let k = 0; k < segments; k++) {
+			const a0 = (k / segments) * Math.PI * 2, a1 = ((k + 1) / segments) * Math.PI * 2;
+			const c0 = Math.cos(a0) * radius, s0 = Math.sin(a0) * radius;
+			const c1 = Math.cos(a1) * radius, s1 = Math.sin(a1) * radius;
+			this._pushDebugLine(cx + c0, cy + s0, cz, cx + c1, cy + s1, cz, r, g, b, 1);
+			this._pushDebugLine(cx + c0, cy, cz + s0, cx + c1, cy, cz + s1, r, g, b, 1);
+			this._pushDebugLine(cx, cy + c0, cz + s0, cx, cy + c1, cz + s1, r, g, b, 1);
+		}
+	}
+
+	/**
+	 * Draw this viewport's debug lines: lines queued with debugLine() plus,
+	 * when enabled, bounds and the shadow frustum (generated per viewport
+	 * and dropped again afterwards).
+	 */
+	protected _renderDebugLines(matrices: IgeCameraMatrices): void {
+		const debug = this._debugOptions;
+		const queued = this._debugLineVertices;
+		if (queued === 0 && !debug.bounds && !debug.shadowFrustum) return;
+
+		const gl = this._canvasContext;
+		const program = this._shaderManager?.getProgram("debug_line");
+		if (!gl || !program || !this._stateManager) return;
+
+		if (debug.bounds) {
+			const pushItem = (item: IgeWebGlRenderItem) => {
+				if (item.radius < 0) return;
+				const color = item.lodSizes ? DEBUG_LOD_COLORS[Math.min(item.lodLevel, DEBUG_LOD_COLORS.length - 1)] : DEBUG_NO_LOD_COLOR;
+				this._pushDebugSphere(item.cx, item.cy, item.cz, item.radius, color);
+			};
+			for (const batch of this._mainBatcher.batches) {
+				for (let i = 0; i < batch.items.length; i++) pushItem(batch.items[i]);
+			}
+			for (let i = 0; i < this._transparentItems.length; i++) pushItem(this._transparentItems[i]);
+		}
+
+		if (debug.shadowFrustum && this._shadowManager && this.shadowsEnabled()) {
+			const lightSpace = this._shadowManager.getLightSpaceMatrix(this._shadowLightId);
+			if (lightSpace) {
+				this._lightFrustumMatrix.matrix.set(lightSpace);
+				const inverse = this._lightFrustumMatrix.getInverse();
+				if (inverse) {
+					const m = inverse.matrix;
+					const corners: number[][] = [];
+					for (let i = 0; i < 8; i++) {
+						const x = i & 1 ? 1 : -1, y = i & 2 ? 1 : -1, z = i & 4 ? 1 : -1;
+						const w = m[3] * x + m[7] * y + m[11] * z + m[15];
+						corners.push([
+							(m[0] * x + m[4] * y + m[8] * z + m[12]) / w,
+							(m[1] * x + m[5] * y + m[9] * z + m[13]) / w,
+							(m[2] * x + m[6] * y + m[10] * z + m[14]) / w
+						]);
+					}
+					const edges = [[0, 1], [2, 3], [4, 5], [6, 7], [0, 2], [1, 3], [4, 6], [5, 7], [0, 4], [1, 5], [2, 6], [3, 7]];
+					for (const [a, b] of edges) {
+						const p = corners[a], q = corners[b];
+						this._pushDebugLine(p[0], p[1], p[2], q[0], q[1], q[2], 1, 0.4, 1, 1);
+					}
+				}
+			}
+		}
+
+		const vertices = this._debugLineVertices;
+		if (vertices > 0) {
+			if (!this._debugLineBuffer) this._debugLineBuffer = gl.createBuffer();
+			const stride = DEBUG_LINE_FLOATS * 4;
+			const position = program.getAttributeLocation("a_position");
+			const color = program.getAttributeLocation("a_color");
+
+			program.use();
+			program.setUniformMatrix4fv("u_viewMatrix", matrices.view);
+			program.setUniformMatrix4fv("u_projectionMatrix", matrices.projection);
+
+			// Raw buffer binding: tell the state manager its cache is stale
+			this._stateManager.reset();
+			gl.bindBuffer(gl.ARRAY_BUFFER, this._debugLineBuffer);
+			gl.bufferData(gl.ARRAY_BUFFER, this._debugLineData.subarray(0, vertices * DEBUG_LINE_FLOATS), gl.STREAM_DRAW);
+			gl.enableVertexAttribArray(position);
+			gl.vertexAttribPointer(position, 3, gl.FLOAT, false, stride, 0);
+			gl.enableVertexAttribArray(color);
+			gl.vertexAttribPointer(color, 4, gl.FLOAT, false, stride, 12);
+
+			this._stateManager.setDepthTest(true);
+			this._stateManager.setDepthWrite(false);
+			this._stateManager.setBlend(true);
+			this._stateManager.setBlendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+			gl.drawArrays(gl.LINES, 0, vertices);
+
+			gl.disableVertexAttribArray(position);
+			gl.disableVertexAttribArray(color);
+			gl.bindBuffer(gl.ARRAY_BUFFER, null);
+			this._stateManager.reset();
+			this._stateManager.setDepthWrite(true);
+		}
+
+		// Keep only the queued lines for the next viewport
+		this._debugLineVertices = queued;
 	}
 
 	/**
@@ -1129,6 +1303,9 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 			this._renderViewport(viewports[i]);
 		}
 
+		// Lines queued with debugLine() last one rendered frame
+		this._debugLineVertices = 0;
+
 		return true;
 	}
 
@@ -1290,6 +1467,7 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 				depthKey: "",
 				lodSizes: null,
 				lodRadius: 0,
+				lodLevel: 0,
 				lodGeometries: [],
 				lodBatchKeys: [],
 				lodDepthKeys: [],
@@ -1550,6 +1728,7 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 
 			let geometry = item.geometry;
 			let batchKey = item.batchKey;
+			item.lodLevel = 0;
 			if (item.lodSizes) {
 				let scale = pixelsPerUnit;
 				if (perspective) {
@@ -1557,6 +1736,7 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 					scale /= Math.max(depth, 1e-3);
 				}
 				const level = this._lodLevel(item, scale);
+				item.lodLevel = level;
 				if (level > 0) {
 					geometry = item.lodGeometries[level];
 					batchKey = item.lodBatchKeys[level];
@@ -1687,6 +1867,8 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 		}
 
 		this._renderParticleSystems(data.particles, matrices);
+
+		this._renderDebugLines(matrices);
 
 		this._stateManager.setDepthWrite(true);
 		this._stateManager.setScissorTest(false);

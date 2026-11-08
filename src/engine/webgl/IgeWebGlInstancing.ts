@@ -77,6 +77,8 @@ export interface IgeWebGlRenderItem {
 	lodDepthKeys: string[];
 	/** Geometry chosen for the current viewport (transparent items). */
 	drawGeometry: IgeWebGlGeometry;
+	/** Level of detail chosen for the current viewport (0 = full). */
+	lodLevel: number;
 }
 
 /**

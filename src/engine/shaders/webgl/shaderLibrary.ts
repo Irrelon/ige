@@ -17,6 +17,8 @@ import { particleVertexShader } from "@/engine/shaders/webgl/particle.vert";
 import { particleFragmentShader } from "@/engine/shaders/webgl/particle.frag";
 import { decalVertexShader } from "@/engine/shaders/webgl/decal.vert";
 import { decalFragmentShader } from "@/engine/shaders/webgl/decal.frag";
+import { debugLineVertexShader } from "@/engine/shaders/webgl/debug_line.vert";
+import { debugLineFragmentShader } from "@/engine/shaders/webgl/debug_line.frag";
 
 /**
  * Shader source definition.
@@ -150,6 +152,13 @@ IgeShaderLibrary.register(
 	decalVertexShader,
 	decalFragmentShader,
 	"Ground-aligned decal quads for IgeDecalSystem3d"
+);
+
+IgeShaderLibrary.register(
+	"debug_line",
+	debugLineVertexShader,
+	debugLineFragmentShader,
+	"Coloured world-space lines for debug drawing"
 );
 
 // Instanced variants of the lit and shadow shaders. These read per-object
