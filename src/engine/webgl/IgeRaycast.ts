@@ -1,6 +1,10 @@
 import type { IgeEntity } from "@/engine/core/IgeEntity";
 import type { IgeGeometryData3d } from "@/types/IgeGeometryData3d";
 import type { IgeSkeleton } from "@/types/IgeSkeletonData";
+import { bvhRaycast, getTriangleBvh, triangleCountOf } from "@/engine/webgl/IgeTriangleBvh";
+
+/** Meshes with more triangles than this are raycast through a cached BVH. */
+export const BVH_MIN_TRIANGLES = 512;
 
 type Vec3 = { x: number; y: number; z: number };
 
@@ -263,7 +267,10 @@ export function raycastEntities (
 
 		// An affine transform keeps the ray parameter, so t is the world distance
 		if (!rayHitsBox(box, ox, oy, oz, dx, dy, dz, maxDistance)) return;
-		const hit = intersectTriangles(vertices, geometry.indices, ox, oy, oz, dx, dy, dz, maxDistance);
+		// Large static meshes (terrain) go through a cached BVH; posed skinned vertices change every frame
+		const hit = vertices === geometry.vertices && triangleCountOf(geometry) > BVH_MIN_TRIANGLES
+			? bvhRaycast(getTriangleBvh(geometry), vertices, geometry.indices, ox, oy, oz, dx, dy, dz, maxDistance)
+			: intersectTriangles(vertices, geometry.indices, ox, oy, oz, dx, dy, dz, maxDistance);
 		if (!hit) return;
 
 		// World normal from the hit triangle's world corners
