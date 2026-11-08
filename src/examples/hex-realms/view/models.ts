@@ -111,10 +111,12 @@ function encodeGlb (json: any, bin: Uint8Array, extra: Uint8Array[], views: numb
 }
 
 /**
- * How strongly a pixel belongs to a magenta team-colour area (0 to 1):
- * hue around 300 degrees (285-315 fully), well saturated, not too dark.
- * The generator shades the magenta (folds, shadows), so it isn't one flat
- * colour.
+ * How strongly a pixel belongs to a magenta team-colour area (0 to 1): hue
+ * 305-335 degrees (fading out over 8 degrees either side) and saturation
+ * above about 0.6. The finished textures drift magenta towards a dark
+ * fuchsia (most of it near 320 degrees, RGB about 141, 14, 92) and shade it;
+ * darker maroon edges past 340 degrees blend into leather and wood, so they
+ * are left alone. Leather, skin and wood sit at 15-35 degrees, well clear.
  */
 function magenta (r: number, g: number, b: number): number {
 	const max = Math.max(r, g, b), min = Math.min(r, g, b);
@@ -125,8 +127,8 @@ function magenta (r: number, g: number, b: number): number {
 	else if (max === g) hue = (2 + (b - r) / (max - min)) * 60;
 	else hue = (4 + (r - g) / (max - min)) * 60;
 	if (hue < 0) hue += 360;
-	const hueWeight = Math.max(0, Math.min(1, 1 - (Math.abs(hue - 300) - 15) / 20));
-	const satWeight = Math.max(0, Math.min(1, (sat - 0.35) / 0.25));
+	const hueWeight = Math.max(0, Math.min(1, 1 - (Math.abs(hue - 320) - 15) / 8));
+	const satWeight = Math.max(0, Math.min(1, (sat - 0.5) / 0.12));
 	return hueWeight * satWeight;
 }
 
@@ -266,7 +268,8 @@ export class ModelLibrary {
 				const weight = magenta(r, g, b);
 				if (weight <= 0) continue;
 				if (weight > 0.5) count++;
-				const shade = Math.max(r, b) / 255;
+				// Keep the texel's shading, relative to the finished magenta's typical brightness (about 0.5)
+				const shade = Math.min(1.25, Math.max(r, g, b) / 255 / 0.55);
 				d[i] = r + (tr * shade - r) * weight;
 				d[i + 1] = g + (tg * shade - g) * weight;
 				d[i + 2] = b + (tb * shade - b) * weight;

@@ -679,6 +679,15 @@ describe("diplomacy II", () => {
 		expect(grievance(sim, 1, 0)).toBe(4);
 	});
 
+	test("online seat changes are game commands, allowed out of turn", () => {
+		const sim = blank(3, [sim2(2, 2), sim2(20, 2), sim2(12, 13)], { humans: [0] });
+		expect(sim.current).toBe(0);
+		expect(sim.apply(2, { type: "seat", player: 2, human: true }).ok).toBe(true);
+		expect(sim.isHuman(2)).toBe(true);
+		expect(sim.apply(2, { type: "seat", player: 2, human: false }).ok).toBe(true);
+		expect(sim.isHuman(2)).toBe(false);
+	});
+
 	test("AI leaders get a fixed agenda; old saves load with the new state filled in", () => {
 		const sim = blank(3, [sim2(2, 2), sim2(20, 2), sim2(12, 13)]);
 		expect(sim.player(0).agenda).toBeNull();

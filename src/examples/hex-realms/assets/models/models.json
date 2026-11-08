@@ -1,0 +1,25 @@
+{
+	"warrior": {
+		"file": "warrior.glb",
+		"min": [
+			-0.2912,
+			-0.4419,
+			-0.155
+		],
+		"max": [
+			0.305,
+			0.4364,
+			0.2269
+		],
+		"triangles": 5884,
+		"animations": [
+			"death",
+			"hit",
+			"idle",
+			"attack",
+			"walk"
+		],
+		"skinned": true,
+		"bytes": 1322200
+	}
+}
