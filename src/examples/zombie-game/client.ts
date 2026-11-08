@@ -172,6 +172,10 @@ export class Client extends IgeBaseClass implements IgeCanInit {
 			this.updateStatus("Creating renderer...");
 
 			this.renderer = new IgeWebGlRenderer();
+			// ?webgl=1 runs the WebGL 1 fallback path
+			if (new URLSearchParams(window.location.search).get("webgl") === "1") {
+				this.renderer.preferredWebGlVersion(1);
+			}
 			// Four views on a high-DPI screen is a lot of pixels; 1.5x keeps
 			// the image sharp while staying comfortably inside the GPU budget
 			this.renderer.maxPixelRatio(1.5);
