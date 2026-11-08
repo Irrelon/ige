@@ -37,6 +37,8 @@ import type { IgeModelPart } from "@/engine/webgl/IgeModelParts";
 import type { IgeParticleSystem3d } from "@/engine/webgl/IgeParticleSystem3d";
 import type { IgeDecalSystem3d } from "@/engine/webgl/IgeDecalSystem3d";
 import { DECAL_INSTANCE_FLOATS, DECAL_MESH_VERTEX_FLOATS } from "@/engine/webgl/IgeDecalSystem3d";
+import type { IgeRaycastHit, IgeRaycastOptions } from "@/engine/webgl/IgeRaycast";
+import { raycastEntities } from "@/engine/webgl/IgeRaycast";
 import { takeGeneratedLods } from "@/engine/webgl/IgeModelParts";
 import type { IgeHeightfieldRayOptions } from "@/engine/webgl/IgeHeightfieldRay";
 import { intersectHeightfield } from "@/engine/webgl/IgeHeightfieldRay";
@@ -1193,11 +1195,56 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 	}
 
 	/**
+	 * The nearest mesh triangle under a screen point (CSS pixels from the
+	 * canvas's top-left) in a viewport: which entity was clicked, and
+	 * exactly where (point, surface normal, distance). Tests the given
+	 * entities and their children, or the viewport's whole scene; skinned
+	 * characters are tested in their current pose. Sprites aren't tested.
+	 * @example #Click to attack a zombie or move to a point on the terrain
+	 *     const hit = renderer.raycast(viewport, event.clientX, event.clientY);
+	 *     if (hit?.entity.data("zombie")) attack(hit.entity);
+	 *     else if (hit) moveTo(hit.point);
+	 */
+	raycast(
+		viewport: IgeViewport,
+		screenX: number,
+		screenY: number,
+		targets?: IgeEntity | IgeEntity[],
+		options?: IgeRaycastOptions
+	): IgeRaycastHit | null {
+		const ray = this.screenToWorldRay(viewport, screenX, screenY);
+		const scene = targets ?? ((viewport as any)._scene as IgeEntity | undefined);
+		if (!ray || !scene) return null;
+		return raycastEntities(ray, scene, options)[0] ?? null;
+	}
+
+	/**
+	 * Gets / sets how entity pointer events (pointerOver, pointerDown...)
+	 * test meshes: "box" (default) against their bounding box, which is
+	 * cheap but also catches the empty space around a shape; "triangles"
+	 * against the actual triangles (skinned characters in their current
+	 * pose), after the box test passes. Sprites are always tested by their
+	 * quad.
+	 */
+	pointerPicking(): "box" | "triangles";
+	pointerPicking(mode: "box" | "triangles"): this;
+	pointerPicking(mode?: "box" | "triangles"): "box" | "triangles" | this {
+		if (mode === undefined) {
+			return this._pointerPicking;
+		}
+		this._pointerPicking = mode;
+		return this;
+	}
+
+	protected _pointerPicking: "box" | "triangles" = "box";
+
+	/**
 	 * Whether a screen point (CSS pixels from the canvas's top-left) is over
 	 * an entity in the viewport under it. IGE's pointer events (pointerOver,
 	 * pointerDown, pointerUp...) use this when the WebGL renderer is active.
-	 * Meshes are hit by their bounding box; sprites exactly by their quad in
-	 * flat views (screen2d, or billboard("none")), or by their on-screen
+	 * Meshes are hit by their bounding box, or by their triangles with
+	 * pointerPicking("triangles"); sprites exactly by their quad in flat
+	 * views (screen2d, or billboard("none")), or by their on-screen
 	 * rectangle when billboarded.
 	 */
 	pointerHitTest(entity: IgeEntity, screenX: number, screenY: number): boolean {
@@ -1292,6 +1339,10 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 			tMin = Math.max(tMin, t1);
 			tMax = Math.min(tMax, t2);
 			if (tMin > tMax) return false;
+		}
+
+		if (this._pointerPicking === "triangles") {
+			return raycastEntities(ray, entity, { children: false }).length > 0;
 		}
 		return true;
 	}
