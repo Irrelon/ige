@@ -316,7 +316,8 @@ export class IgeEngine extends IgeEntity implements IgeIsReadyPromise {
 
 		if (pixelRatioScaling) {
 			// Scale the canvas context to account for the device pixel ratio
-			ctx.scale(this._devicePixelRatio, this._devicePixelRatio);
+			const ratio = this._canvasPixelRatio();
+			ctx.scale(ratio, ratio);
 		}
 
 		return {
@@ -330,12 +331,23 @@ export class IgeEngine extends IgeEntity implements IgeIsReadyPromise {
 		ctx: IgeCanvasRenderingContext2d,
 		newWidth: number,
 		newHeight: number
-	) {
-		canvas.width = newWidth * this._devicePixelRatio;
-		canvas.height = newHeight * this._devicePixelRatio;
+	): number {
+		const ratio = this._canvasPixelRatio();
+		canvas.width = Math.max(1, Math.ceil(newWidth * ratio));
+		canvas.height = Math.max(1, Math.ceil(newHeight * ratio));
 
 		// Scale the canvas context to account for the change
-		ctx.scale(this._devicePixelRatio, this._devicePixelRatio);
+		ctx.scale(ratio, ratio);
+		return ratio;
+	}
+
+	/**
+	 * The pixel ratio for off-screen canvases (entity caches): the
+	 * renderer's, so cached entities are as sharp as everything else on
+	 * high-DPI screens.
+	 */
+	_canvasPixelRatio (): number {
+		return this._renderer ? this._renderer.devicePixelRatio() : this._devicePixelRatio;
 	}
 
 	/**

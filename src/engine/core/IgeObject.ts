@@ -158,6 +158,8 @@ export class IgeObject extends IgeEventingClass implements IgeCanRegisterById, I
 	_cache: boolean = false;
 	_cacheCtx?: IgeCanvasRenderingContext2d | null;
 	_cacheCanvas?: OffscreenCanvas | IgeDummyCanvas;
+	/** Canvas pixels per entity unit the cache was last drawn at. */
+	_cachePixelRatio: number = 1;
 	_cacheDirty: boolean = false;
 	_cacheSmoothing: boolean = false;
 	_aabbDirty: boolean = false;

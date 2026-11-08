@@ -1946,10 +1946,19 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 
 		// Check for cached version
 		if (this._cache || this._compositeCache) {
+			// A simple cache holds the entity drawn at its own centre: place
+			// it (and the children drawn after it) with the entity's
+			// transform on the main context, not inside the cache canvas,
+			// where any translation would draw outside the canvas
+			const simpleCache = this._cache && !this._compositeCache;
+			if (simpleCache && !dontTransform) {
+				this._transformContext(ctx);
+			}
+
 			// Caching is enabled
 			if (this._cacheDirty) {
 				// The cache is dirty, redraw it
-				this._refreshCache(dontTransform);
+				this._refreshCache(simpleCache || dontTransform);
 			}
 
 			// Now render the cached image data to the main canvas
@@ -2043,7 +2052,7 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 			this._compositeAabbCache = aabbC;
 
 			if (aabbC.width > 0 && aabbC.height > 0) {
-				ige.engine._setInternalCanvasSize(_canvas, _ctx, aabbC.width, aabbC.height);
+				this._cachePixelRatio = ige.engine._setInternalCanvasSize(_canvas, _ctx, aabbC.width, aabbC.height);
 				/*_canvas.width = Math.ceil(aabbC.width);
 				_canvas.height = Math.ceil(aabbC.height);*/
 			} else {
@@ -2051,6 +2060,7 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 				// cause the browser to freak out
 				_canvas.width = 2;
 				_canvas.height = 2;
+				this._cachePixelRatio = 1;
 			}
 
 			// Translate to the center of the canvas
@@ -2063,7 +2073,7 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 			this.emit("compositeReady");
 		} else {
 			if (this._bounds2d.x > 0 && this._bounds2d.y > 0) {
-				ige.engine._setInternalCanvasSize(_canvas, _ctx, this._bounds2d.x, this._bounds2d.y);
+				this._cachePixelRatio = ige.engine._setInternalCanvasSize(_canvas, _ctx, this._bounds2d.x, this._bounds2d.y);
 				/*_canvas.width = this._bounds2d.x;
 				_canvas.height = this._bounds2d.y;*/
 			} else {
@@ -2071,6 +2081,7 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 				// cause the browser to freak out
 				_canvas.width = 1;
 				_canvas.height = 1;
+				this._cachePixelRatio = 1;
 			}
 
 			// Translate to the center of the canvas
@@ -2204,15 +2215,17 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 			}
 		}
 
-		// We have a clean cached version so output that. We use the destination width and height
-		// here because the cache canvas might not be the destination size and should be scaled
-		// as it is rendered (usually because of device pixel ratio related stuff)
-		ctx.drawImage(this._cacheCanvas, -this._bounds2d.x2, -this._bounds2d.y2);
-		//, this._bounds2d.x, this._bounds2d.y);
+		// We have a clean cached version so output that. The cache canvas
+		// holds cachePixelRatio canvas pixels per entity unit (the device
+		// pixel ratio), so draw it back at its size in entity units
+		const ratio = this._cachePixelRatio || 1;
+		const width = this._cacheCanvas.width / ratio;
+		const height = this._cacheCanvas.height / ratio;
+		ctx.drawImage(this._cacheCanvas, -this._bounds2d.x2, -this._bounds2d.y2, width, height);
 
 		if (ige.engine._currentViewport._drawCompositeBounds) {
 			ctx.fillStyle = "rgba(0, 255, 0, 0.5)";
-			ctx.fillRect(-this._bounds2d.x2, -this._bounds2d.y2, this._cacheCanvas.width, this._cacheCanvas.height);
+			ctx.fillRect(-this._bounds2d.x2, -this._bounds2d.y2, width, height);
 			ctx.fillStyle = "#ffffff";
 			ctx.fillText("Composite Cache", -this._bounds2d.x2, -this._bounds2d.y2 - 15);
 			ctx.fillText(this.id(), -this._bounds2d.x2, -this._bounds2d.y2 - 5);
