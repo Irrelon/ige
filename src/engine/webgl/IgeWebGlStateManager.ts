@@ -19,13 +19,13 @@ export class IgeWebGlStateManager extends IgeBaseClass {
 	protected _activeTextureUnit: number = 0;
 
 	// State tracking
-	protected _depthTestEnabled: boolean = true;
-	protected _depthWriteEnabled: boolean = true;
+	protected _depthTestEnabled: boolean | null = true;
+	protected _depthWriteEnabled: boolean | null = true;
 	protected _depthFunc: number;
-	protected _blendEnabled: boolean = true;
+	protected _blendEnabled: boolean | null = true;
 	protected _blendSrc: number;
 	protected _blendDst: number;
-	protected _cullFaceEnabled: boolean = false;
+	protected _cullFaceEnabled: boolean | null = false;
 	protected _cullFace: number;
 	protected _frontFace: number;
 
@@ -38,7 +38,7 @@ export class IgeWebGlStateManager extends IgeBaseClass {
 	};
 
 	// Scissor test tracking
-	protected _scissorTestEnabled: boolean = false;
+	protected _scissorTestEnabled: boolean | null = false;
 	protected _scissorBox: { x: number; y: number; width: number; height: number } = {
 		x: 0,
 		y: 0,
@@ -340,22 +340,24 @@ export class IgeWebGlStateManager extends IgeBaseClass {
 		// Reset viewport tracking (use impossible values to force re-set)
 		this._viewport = { x: -1, y: -1, width: -1, height: -1 };
 
-		// Reset scissor tracking
-		this._scissorTestEnabled = false;
+		// Reset scissor tracking. Enable flags become unknown (null), not
+		// false: after raw GL calls the real state isn't known, and a
+		// cached false would make a later disable call a no-op.
+		this._scissorTestEnabled = null;
 		this._scissorBox = { x: -1, y: -1, width: -1, height: -1 };
 
 		// Reset depth state tracking (use impossible values)
-		this._depthTestEnabled = false;
-		this._depthWriteEnabled = false;
+		this._depthTestEnabled = null;
+		this._depthWriteEnabled = null;
 		this._depthFunc = -1;
 
 		// Reset blend state tracking
-		this._blendEnabled = false;
+		this._blendEnabled = null;
 		this._blendSrc = -1;
 		this._blendDst = -1;
 
 		// Reset cull face tracking
-		this._cullFaceEnabled = false;
+		this._cullFaceEnabled = null;
 		this._cullFace = -1;
 		this._frontFace = -1;
 	}
