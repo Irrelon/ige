@@ -1,7 +1,7 @@
 import { IgeAsset } from "./IgeAsset.js"
-import { IgeDependencies } from "./IgeDependencies.js";
+import { IgeDependencies } from "./IgeDependencies.js"
 import type { IgeEntity } from "./IgeEntity.js"
-import { IgeTextureRenderMode } from "../../enums/index.js";
+import { IgeTextureRenderMode } from "../../enums/index.js"
 import type { IgeCanvas } from "../../types/IgeCanvas.js"
 import type { IgeCanvasRenderingContext2d } from "../../types/IgeCanvasRenderingContext2d.js"
 import type { IgeImage } from "../../types/IgeImage.js"
@@ -20,6 +20,18 @@ export declare class IgeTexture extends IgeAsset {
     _renderMode: IgeTextureRenderMode;
     _smoothing: boolean;
     _filterImageDrawn: boolean;
+    /**
+     * Bumped whenever the texture's image changes after loading (filters,
+     * resizing, restoreOriginal()) so GPU renderers know to upload it again.
+     */
+    _imageVersion: number;
+    /**
+     * True for textures whose render() draws each entity differently, such
+     * as bitmap font sheets drawing an entity's text. GPU renderers draw
+     * these into a per-entity canvas (like smart textures) instead of
+     * showing the image itself.
+     */
+    _rendersPerEntity: boolean;
     _destroyed: boolean;
     _url?: string;
     _preFilters: IgeSmartFilter[];
@@ -130,6 +142,17 @@ export declare class IgeTexture extends IgeAsset {
      * or resized the image and now want to revert to the original.
      */
     restoreOriginal(): void;
+    /**
+     * Records that the texture's image has changed so GPU renderers upload
+     * it again, and asks render-on-demand for a new frame.
+     */
+    _imageChanged(): void;
+    /**
+     * Redraws the texture canvas from the original image through the
+     * texture's pre-filters (see preFilter()). The Canvas 2D renderer does
+     * this every time the texture is drawn; GPU renderers once per frame.
+     */
+    _runPreFilters(): void;
     smoothing(val: boolean): this;
     smoothing(): boolean;
     /**

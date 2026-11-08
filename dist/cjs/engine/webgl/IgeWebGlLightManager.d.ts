@@ -1,5 +1,5 @@
 import { IgeBaseClass } from "../core/IgeBaseClass.js"
-import { IgeWebGlLight, IgeAmbientLight, IgeDirectionalLight, IgePointLight, IgeSpotLight } from "./IgeWebGlLight.js";
+import { IgeWebGlLight, IgeAmbientLight, IgeDirectionalLight, IgePointLight, IgeSpotLight } from "./IgeWebGlLight.js"
 import type { IgeWebGlProgram } from "./IgeWebGlProgram.js"
 /**
  * Manages lights for WebGL rendering.

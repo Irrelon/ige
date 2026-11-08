@@ -271,10 +271,14 @@ export class IgeFontEntity extends IgeUiEntity {
         }
         return -1;
     }
-    tick(ctx) {
-        // Check for an auto-progress update
+    /**
+     * Refreshes text bound with bindData() once per frame. This runs in
+     * update() rather than tick() so it works with every renderer (the
+     * WebGL renderer draws entities without calling tick()).
+     */
+    update(tickDelta) {
         if (this._bindDataObject && this._bindDataProperty) {
-            if (!this._bindDataObject._alive) {
+            if (this._bindDataObject._alive === false) {
                 // The object we have bind data from has been
                 // destroyed so release our reference to it!
                 delete this._bindDataObject;
@@ -283,7 +287,7 @@ export class IgeFontEntity extends IgeUiEntity {
                 this.text(this._bindDataPreText + this._bindDataObject[this._bindDataProperty] + this._bindDataPostText);
             }
         }
-        super.tick(ctx);
+        super.update(tickDelta);
     }
     /**
      * Returns a string containing a code fragment that when

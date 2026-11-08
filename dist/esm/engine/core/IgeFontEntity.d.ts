@@ -1,6 +1,5 @@
 import { IgeUiEntity } from "./IgeUiEntity.js"
-import { IgeFontAlignX, IgeFontAlignY } from "../../enums/index.js";
-import type { IgeCanvasRenderingContext2d } from "../../types/IgeCanvasRenderingContext2d.js"
+import { IgeFontAlignX, IgeFontAlignY } from "../../enums/index.js"
 /**
  * Creates a new font entity. A font entity will use a font sheet
  * (IgeFontSheet) or native font and render text.
@@ -110,7 +109,7 @@ export declare class IgeFontEntity extends IgeUiEntity {
      * @return {*} "this" when arguments are passed to allow method
      * chaining or the current value if no arguments are specified.
      */
-    colorOverlay(val?: string | CanvasGradient | CanvasPattern): string | CanvasGradient | CanvasPattern | this | undefined;
+    colorOverlay(val?: string | CanvasGradient | CanvasPattern): string | CanvasPattern | CanvasGradient | this | undefined;
     /**
      * A proxy for colorOverlay().
      */
@@ -170,7 +169,12 @@ export declare class IgeFontEntity extends IgeUiEntity {
      * @returns {number} The width of the text in pixels.
      */
     measureTextWidth(text?: string): number;
-    tick(ctx: IgeCanvasRenderingContext2d): void;
+    /**
+     * Refreshes text bound with bindData() once per frame. This runs in
+     * update() rather than tick() so it works with every renderer (the
+     * WebGL renderer draws entities without calling tick()).
+     */
+    update(tickDelta: number): void;
     /**
      * Returns a string containing a code fragment that when
      * evaluated will reproduce this object's properties via

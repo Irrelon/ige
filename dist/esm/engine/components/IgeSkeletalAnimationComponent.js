@@ -1,7 +1,7 @@
 import { IgeComponent } from "../core/IgeComponent.js"
-import { markSceneChanged } from "../utils/sceneChange.js";
+import { markSceneChanged } from "../utils/sceneChange.js"
 import { ige } from "../instance.js"
-import { IgeBehaviourType } from "../../enums/index.js";
+import { IgeBehaviourType } from "../../enums/index.js"
 /** clip -> skeleton data id -> frame index -> pose. Shared by all instances. */
 const poseCache = new WeakMap();
 const restPoseCache = new WeakMap();

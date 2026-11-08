@@ -7,6 +7,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.IgeFontSheet = void 0;
 const IgeTexture_1 = require("./IgeTexture.js");
 const instance_1 = require("../instance.js");
+const enums_1 = require("../../enums/index.js");
 /**
  * Creates a new font sheet. A font sheet is an image that contains
  * letters and numbers rendered to specifications. It allows you to
@@ -17,6 +18,8 @@ class IgeFontSheet extends IgeTexture_1.IgeTexture {
     constructor(id, urlOrObject) {
         super(id, urlOrObject);
         this.classId = "IgeFontSheet";
+        // Draws each entity's text, so GPU renderers can't draw the sheet itself
+        this._rendersPerEntity = true;
         this._lineHeightModifier = 0;
         // Set the _noDimensions flag which tells any entity
         // that assigns this texture that the texture has anI
@@ -141,20 +144,18 @@ class IgeFontSheet extends IgeTexture_1.IgeTexture {
                 lineArr.push(text);
             }
             const totalHeight = lineHeight * lineArr.length;
-            // TODO: Y-based alignment doesn't work at the moment. Fix it!
-            // Handle text alignment y
+            // Handle text alignment y (multiLineMiddle, the default, centres
+            // the block of lines like middle)
+            const blockHeight = totalHeight + entity._textLineSpacing * (lineArr.length - 1);
             switch (entity._textAlignY) {
-                case 0: // Align top
-                    renderStartY =
-                        -((lineHeight * lineArr.length) / 2) - entity._textLineSpacing * ((lineArr.length - 1) / 2); //0;
+                case enums_1.IgeFontAlignY.top:
+                    renderStartY = -entity._bounds2d.y2;
                     break;
-                case 1: // Align middle
-                    renderStartY =
-                        -((lineHeight * lineArr.length) / 2) - entity._textLineSpacing * ((lineArr.length - 1) / 2);
+                case enums_1.IgeFontAlignY.bottom:
+                    renderStartY = entity._bounds2d.y2 - blockHeight;
                     break;
-                case 2: // Align bottom
-                    renderStartY =
-                        -((lineHeight * lineArr.length) / 2) - entity._textLineSpacing * ((lineArr.length - 1) / 2); //-((lineHeight) * (lineArr.length)) - (entity._textLineSpacing * (lineArr.length - 1));
+                default: // middle, multiLineMiddle
+                    renderStartY = -blockHeight / 2;
                     break;
             }
             // Calculate the total text width of each line

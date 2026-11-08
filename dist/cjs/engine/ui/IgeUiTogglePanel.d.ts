@@ -1,5 +1,5 @@
 import type { IgeTexture } from "../core/IgeTexture.js"
-import { IgeUiElement } from "../core/IgeUiElement.js";
+import { IgeUiElement } from "../core/IgeUiElement.js"
 export declare class IgeUiTogglePanel extends IgeUiElement {
     classId: string;
     private _toggleState;

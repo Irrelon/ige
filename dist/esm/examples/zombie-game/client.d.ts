@@ -59,6 +59,7 @@ export declare class Client extends IgeBaseClass implements IgeCanInit {
     zombies: ZombieState[];
     characterModel?: IgeGltfModel;
     obstacles: IgeLevelObstacle[];
+    level?: IgeEntity;
     bloodFx?: IgeParticleSystem3d;
     bloodStains?: IgeDecalSystem3d;
     slashFx?: IgeParticleSystem3d;
@@ -105,6 +106,12 @@ export declare class Client extends IgeBaseClass implements IgeCanInit {
     playerAttack(player: PlayerState): void;
     nearestZombie(x: number, z: number, maxDist: number): ZombieState | undefined;
     shoveZombiesAway(x: number, z: number, radius: number): void;
+    /**
+     * Splash blood onto the wall, pillar or furniture behind a hit, if one
+     * is close: a short ray along the hit direction finds the surface and
+     * a projected decal wraps over it.
+     */
+    splashBehind(x: number, z: number, dirX: number, dirZ: number): void;
     killZombie(zombie: ZombieState): void;
     rebuildGrid(): void;
     updateZombie(zombie: ZombieState, dt: number): void;

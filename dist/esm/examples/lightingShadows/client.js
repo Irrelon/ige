@@ -5,7 +5,7 @@ import { IgeWebGlRenderer } from "../../engine/core/IgeWebGlRenderer.js"
 import { IgeViewport } from "../../engine/core/IgeViewport.js"
 import { IgePoint3d } from "../../engine/core/IgePoint3d.js"
 import { ige } from "../../engine/instance.js"
-import { IgeBehaviourType } from "../../enums/index.js";
+import { IgeBehaviourType } from "../../enums/index.js"
 import { IgeAmbientLight, IgeDirectionalLight, IgePointLight, IgeSpotLight } from "../../engine/webgl/IgeWebGlLight.js"
 import { IgePrimitiveGeometry } from "../../engine/webgl/IgePrimitiveGeometry.js"
 import { igeGltfLoader } from "../../engine/webgl/IgeGltfLoader.js"
@@ -207,13 +207,13 @@ export class Client extends IgeBaseClass {
         this.orbitBulb = new IgeEntity();
         this.orbitBulb.id("orbitBulb");
         this.orbitBulb._geometryData = { ...orbitBulbGeom, id: "orbit_bulb_geom" };
-        this.orbitBulb._materialData = {
+        this.orbitBulb.material({
             color: { r: 1.0, g: 0.2, b: 0.2, a: 1 },
             metallic: 0.0,
             roughness: 0.1,
             emissiveColor: { r: 1.0, g: 0.2, b: 0.2 },
             emissiveIntensity: 3.0
-        };
+        });
         this.orbitBulb.translateTo(200, 100, 0);
         this.orbitBulb._noShadowCast = true;
         this.orbitBulb.mount(this.scene);
@@ -232,13 +232,13 @@ export class Client extends IgeBaseClass {
         this.greenOrbitBulb = new IgeEntity();
         this.greenOrbitBulb.id("greenOrbitBulb");
         this.greenOrbitBulb._geometryData = { ...greenBulbGeom, id: "green_orbit_bulb_geom" };
-        this.greenOrbitBulb._materialData = {
+        this.greenOrbitBulb.material({
             color: { r: 0.2, g: 1.0, b: 0.3, a: 1 },
             metallic: 0.0,
             roughness: 0.1,
             emissiveColor: { r: 0.2, g: 1.0, b: 0.3 },
             emissiveIntensity: 3.0
-        };
+        });
         this.greenOrbitBulb.translateTo(350, 40, 0);
         this.greenOrbitBulb._noShadowCast = true;
         this.greenOrbitBulb.mount(this.scene);
@@ -320,11 +320,11 @@ export class Client extends IgeBaseClass {
         this.groundEntity = new IgeEntity();
         this.groundEntity.id("ground");
         this.groundEntity._geometryData = { ...groundGeom, id: "ground_geom" };
-        this.groundEntity._materialData = {
+        this.groundEntity.material({
             color: { r: 0.15, g: 0.15, b: 0.18, a: 1 },
             metallic: 0.0,
             roughness: 0.9
-        };
+        });
         // Rotate plane to be horizontal (it's created in XY, we need XZ)
         this.groundEntity.rotateTo(-Math.PI / 2, 0, 0);
         this.groundEntity.translateTo(0, 0, 0);
@@ -337,11 +337,11 @@ export class Client extends IgeBaseClass {
         const pole = new IgeEntity();
         pole.id("lampPole");
         pole._geometryData = { ...poleGeom, id: "lamp_pole_geom" };
-        pole._materialData = {
+        pole.material({
             color: { r: 0.25, g: 0.25, b: 0.28, a: 1 },
             metallic: 0.7,
             roughness: 0.3
-        };
+        });
         pole.translateTo(lampX, 95, lampZ);
         pole.mount(this.scene);
         this.lampPostEntities.push(pole);
@@ -350,11 +350,11 @@ export class Client extends IgeBaseClass {
         const head = new IgeEntity();
         head.id("lampHead");
         head._geometryData = { ...headGeom, id: "lamp_head_geom" };
-        head._materialData = {
+        head.material({
             color: { r: 0.3, g: 0.3, b: 0.33, a: 1 },
             metallic: 0.6,
             roughness: 0.3
-        };
+        });
         head.translateTo(lampX, 197, lampZ);
         head.mount(this.scene);
         this.lampPostEntities.push(head);
@@ -363,13 +363,13 @@ export class Client extends IgeBaseClass {
         const bulb = new IgeEntity();
         bulb.id("lampBulb");
         bulb._geometryData = { ...bulbGeom, id: "lamp_bulb_geom" };
-        bulb._materialData = {
+        bulb.material({
             color: { r: 1.0, g: 0.9, b: 0.5, a: 1 },
             metallic: 0.0,
             roughness: 0.1,
             emissiveColor: { r: 1.0, g: 0.85, b: 0.5 },
             emissiveIntensity: 2.0
-        };
+        });
         bulb.translateTo(lampX, 192, lampZ);
         bulb._noShadowCast = true;
         bulb.mount(this.scene);
@@ -380,11 +380,11 @@ export class Client extends IgeBaseClass {
         const mount = new IgeEntity();
         mount.id("swingMount");
         mount._geometryData = { ...mountGeom, id: "swing_mount_geom" };
-        mount._materialData = {
+        mount.material({
             color: { r: 0.3, g: 0.3, b: 0.3, a: 1 },
             metallic: 0.5,
             roughness: 0.4
-        };
+        });
         mount.translateTo(100, 200, 50);
         mount.mount(this.scene);
         this.sceneEntities.push(mount);
@@ -393,13 +393,13 @@ export class Client extends IgeBaseClass {
         this.swingingLightEntity = new IgeEntity();
         this.swingingLightEntity.id("swingBulb");
         this.swingingLightEntity._geometryData = { ...swingBulbGeom, id: "swing_bulb_geom" };
-        this.swingingLightEntity._materialData = {
+        this.swingingLightEntity.material({
             color: { r: 0.9, g: 0.95, b: 1.0, a: 1 },
             metallic: 0.0,
             roughness: 0.1,
             emissiveColor: { r: 0.9, g: 0.95, b: 1.0 },
             emissiveIntensity: 2.0
-        };
+        });
         this.swingingLightEntity.translateTo(100, 120, 50);
         this.swingingLightEntity._noShadowCast = true;
         this.swingingLightEntity.mount(this.scene);
@@ -419,11 +419,11 @@ export class Client extends IgeBaseClass {
             const crate = new IgeEntity();
             crate.id(`crate_${i}`);
             crate._geometryData = { ...crateGeom, id: `crate_geom_${i}` };
-            crate._materialData = {
+            crate.material({
                 color: { ...crateColors[i], a: 1 },
                 metallic: 0.0,
                 roughness: 0.8
-            };
+            });
             crate.translateTo(pos.x, 20, pos.z);
             // Slight rotation for visual interest
             crate.rotateTo(0, (i * 0.4) + 0.2, 0);
@@ -435,11 +435,11 @@ export class Client extends IgeBaseClass {
         const stackCrate = new IgeEntity();
         stackCrate.id("stackCrate");
         stackCrate._geometryData = { ...smallCrateGeom, id: "stack_crate_geom" };
-        stackCrate._materialData = {
+        stackCrate.material({
             color: { r: 0.5, g: 0.35, b: 0.2, a: 1 },
             metallic: 0.0,
             roughness: 0.85
-        };
+        });
         stackCrate.translateTo(-60, 52, 80);
         stackCrate.rotateTo(0, 0.6, 0);
         stackCrate.mount(this.scene);
@@ -449,11 +449,11 @@ export class Client extends IgeBaseClass {
         const sphere = new IgeEntity();
         sphere.id("metalSphere");
         sphere._geometryData = { ...sphereGeom, id: "metal_sphere_geom" };
-        sphere._materialData = {
+        sphere.material({
             color: { r: 0.8, g: 0.8, b: 0.85, a: 1 },
             metallic: 0.9,
             roughness: 0.1
-        };
+        });
         sphere.translateTo(-80, 20, -60);
         sphere.mount(this.scene);
         this.sceneEntities.push(sphere);

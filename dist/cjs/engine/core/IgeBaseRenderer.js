@@ -88,6 +88,14 @@ class IgeBaseRenderer extends IgeEventingClass_1.IgeEventingClass {
     _renderSceneGraph(engine, viewports) {
         return false;
     }
+    /**
+     * The ratio of canvas pixels to CSS pixels the renderer draws at
+     * (e.g. 2 on a "retina" display). Off-screen canvases such as entity
+     * caches use it so they stay as sharp as the main canvas.
+     */
+    devicePixelRatio() {
+        return this._devicePixelRatio;
+    }
     _updateDevicePixelRatio() {
         if (instance_1.ige.engine._pixelRatioScaling) {
             // Support high-definition devices and "retina" displays by adjusting

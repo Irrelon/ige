@@ -80,6 +80,8 @@ class IgeObject extends IgeEventingClass_1.IgeEventingClass {
         this._pointerAlwaysInside = false;
         this._noShadowCast = false; // When true, entity is excluded from shadow map rendering
         this._cache = false;
+        /** Canvas pixels per entity unit the cache was last drawn at. */
+        this._cachePixelRatio = 1;
         this._cacheDirty = false;
         this._cacheSmoothing = false;
         this._aabbDirty = false;
@@ -942,6 +944,9 @@ class IgeObject extends IgeEventingClass_1.IgeEventingClass {
             return this._cacheDirty;
         }
         this._cacheDirty = val;
+        // A smart texture or cached canvas will redraw (render-on-demand)
+        if (val && !this._hidden)
+            (0, sceneChange_1.markSceneChanged)();
         // Check if the entity is a child of a composite or composite
         // entity chain and propagate the dirty cache up the chain
         if (val && this._compositeParent && this._parent && "cacheDirty" in this._parent) {

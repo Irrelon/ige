@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.ARENA = void 0;
+exports.WALL_FACES = exports.ARENA = void 0;
 exports.createBoxGeometry = createBoxGeometry;
 exports.createHospitalLobby = createHospitalLobby;
 exports.resolveLevelCollision = resolveLevelCollision;
@@ -82,17 +82,19 @@ function createBoxGeometry(w, h, d, id) {
  */
 function createHospitalLobby(scene) {
     const obstacles = [];
+    // Every level mesh hangs off one root, e.g. as the target for wall decals
+    const root = new IgeEntity_1.IgeEntity().id("level").mount(scene);
     const box = (id, w, h, d, x, y, z, color, solid = false, metallic = 0.0, roughness = 0.8) => {
         const entity = new IgeEntity_1.IgeEntity();
         entity.id(id);
         entity._geometryData = createBoxGeometry(w, h, d, `${id}_geo`);
-        entity._materialData = {
+        entity.material({
             color: { r: color.r, g: color.g, b: color.b, a: 1 },
             metallic,
             roughness
-        };
+        });
         entity.translateTo(x, y, z);
-        entity.mount(scene);
+        entity.mount(root);
         if (solid) {
             obstacles.push({ minX: x - w / 2, maxX: x + w / 2, minZ: z - d / 2, maxZ: z + d / 2 });
         }
@@ -135,8 +137,10 @@ function createHospitalLobby(scene) {
     // Vending machine against the back wall and a bin by the entrance
     box("vendingMachine", 80, 180, 60, -600, 90, -700, { r: 0.2, g: 0.3, b: 0.6 }, true, 0.4, 0.4);
     box("trashCan", 40, 60, 40, 200, 30, 600, { r: 0.35, g: 0.35, b: 0.35 }, true, 0.3, 0.6);
-    return obstacles;
+    return { obstacles, root };
 }
+/** Inner faces of the lobby walls. */
+exports.WALL_FACES = { minX: -990, maxX: 990, minZ: -740, maxZ: 740 };
 /**
  * Push a circle (radius r at x, z) out of any obstacle footprints and keep
  * it inside the arena. Returns the corrected position.

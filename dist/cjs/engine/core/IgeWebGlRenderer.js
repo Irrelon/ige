@@ -30,6 +30,7 @@ const IgeMatrix4_1 = require("./IgeMatrix4.js");
 const IgeFrustum_1 = require("../webgl/IgeFrustum.js");
 const IgeWebGlInstancing_1 = require("../webgl/IgeWebGlInstancing.js");
 const IgeDecalSystem3d_1 = require("../webgl/IgeDecalSystem3d.js");
+const IgeRaycast_1 = require("../webgl/IgeRaycast.js");
 const IgeModelParts_1 = require("../webgl/IgeModelParts.js");
 const IgeHeightfieldRay_1 = require("../webgl/IgeHeightfieldRay.js");
 const IgeSkeletonData_1 = require("../../types/IgeSkeletonData.js");
@@ -261,6 +262,7 @@ class IgeWebGlRenderer extends IgeBaseRenderer_1.IgeBaseRenderer {
         this._sharedShadowFrame = -1;
         this._pendingBlobTextures = new Set();
         this._particleBuffers = new Map();
+        this._decalMeshBuffers = new Map();
         this._defaultParticleTexture = null;
         this._defaultDecalTexture = null;
         this._lightFrustum = new IgeFrustum_1.IgeFrustum();
@@ -351,6 +353,7 @@ class IgeWebGlRenderer extends IgeBaseRenderer_1.IgeBaseRenderer {
             // Recreate all GPU resources
             // this._recreateResources();
         };
+        this._pointerPicking = "box";
         /**
          * Toggle fullscreen mode.
          */
@@ -950,11 +953,38 @@ class IgeWebGlRenderer extends IgeBaseRenderer_1.IgeBaseRenderer {
         return undefined;
     }
     /**
+     * The nearest mesh triangle under a screen point (CSS pixels from the
+     * canvas's top-left) in a viewport: which entity was clicked, and
+     * exactly where (point, surface normal, distance). Tests the given
+     * entities and their children, or the viewport's whole scene; skinned
+     * characters are tested in their current pose. Sprites aren't tested.
+     * @example #Click to attack a zombie or move to a point on the terrain
+     *     const hit = renderer.raycast(viewport, event.clientX, event.clientY);
+     *     if (hit?.entity.data("zombie")) attack(hit.entity);
+     *     else if (hit) moveTo(hit.point);
+     */
+    raycast(viewport, screenX, screenY, targets, options) {
+        var _a;
+        const ray = this.screenToWorldRay(viewport, screenX, screenY);
+        const scene = targets !== null && targets !== void 0 ? targets : viewport._scene;
+        if (!ray || !scene)
+            return null;
+        return (_a = (0, IgeRaycast_1.raycastEntities)(ray, scene, options)[0]) !== null && _a !== void 0 ? _a : null;
+    }
+    pointerPicking(mode) {
+        if (mode === undefined) {
+            return this._pointerPicking;
+        }
+        this._pointerPicking = mode;
+        return this;
+    }
+    /**
      * Whether a screen point (CSS pixels from the canvas's top-left) is over
      * an entity in the viewport under it. IGE's pointer events (pointerOver,
      * pointerDown, pointerUp...) use this when the WebGL renderer is active.
-     * Meshes are hit by their bounding box; sprites exactly by their quad in
-     * flat views (screen2d, or billboard("none")), or by their on-screen
+     * Meshes are hit by their bounding box, or by their triangles with
+     * pointerPicking("triangles"); sprites exactly by their quad in flat
+     * views (screen2d, or billboard("none")), or by their on-screen
      * rectangle when billboarded.
      */
     pointerHitTest(entity, screenX, screenY) {
@@ -1060,6 +1090,9 @@ class IgeWebGlRenderer extends IgeBaseRenderer_1.IgeBaseRenderer {
             if (tMin > tMax)
                 return false;
         }
+        if (this._pointerPicking === "triangles") {
+            return (0, IgeRaycast_1.raycastEntities)(ray, entity, { children: false }).length > 0;
+        }
         return true;
     }
     shadowSharing(threshold) {
@@ -1154,6 +1187,8 @@ class IgeWebGlRenderer extends IgeBaseRenderer_1.IgeBaseRenderer {
         if (!gl || this._contextLost || !this._stateManager)
             return false;
         this._frameId++;
+        if (this._textureManager)
+            this._textureManager.frameId = this._frameId;
         const stats = this._stats;
         stats.drawCalls = 0;
         stats.instancedDrawCalls = 0;
@@ -2484,6 +2519,107 @@ class IgeWebGlRenderer extends IgeBaseRenderer_1.IgeBaseRenderer {
             this._stateManager.setBlendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
             this._stateManager.setDepthWrite(true);
         }
+        this._renderProjectedDecals(systems, matrices);
+    }
+    /**
+     * Draw projected decals (IgeDecalSystem3d.project()): each system's
+     * decal triangles are one world-space vertex buffer and one draw call.
+     */
+    _renderProjectedDecals(systems, matrices) {
+        const gl = this._canvasContext;
+        const program = this._shaderManager.getProgram("decal_mesh");
+        if (!program)
+            return;
+        let programReady = false;
+        const stride = IgeDecalSystem3d_1.DECAL_MESH_VERTEX_FLOATS * 4;
+        const locations = [
+            program.getAttributeLocation("a_position"),
+            program.getAttributeLocation("a_uv"),
+            program.getAttributeLocation("a_color")
+        ];
+        const sizes = [3, 2, 4];
+        const offsets = [0, 12, 20];
+        for (let s = 0; s < systems.length; s++) {
+            const system = systems[s];
+            const { data, vertexCount } = system.meshRenderData();
+            if (vertexCount === 0)
+                continue;
+            const c = system._meshBoundsCenter;
+            if (!matrices.frustum.containsSphereXYZ(c.x, c.y, c.z, system._meshBoundsRadius))
+                continue;
+            let entry = this._decalMeshBuffers.get(system);
+            if (!entry) {
+                entry = { buffer: gl.createBuffer(), version: -1, lastFrame: 0 };
+                this._decalMeshBuffers.set(system, entry);
+            }
+            entry.lastFrame = this._frameId;
+            if (!programReady) {
+                program.use();
+                program.setUniformMatrix4fv("u_viewMatrix", matrices.view);
+                program.setUniformMatrix4fv("u_projectionMatrix", matrices.projection);
+                program.setUniform1i("u_texture", 0);
+                const cam = matrices.cameraPosition;
+                program.setUniform3f("u_cameraPosition", cam.x, cam.y, cam.z);
+                const fog = this._fog;
+                program.setUniform1i("u_fogMode", fog.mode === "linear" ? 1 : fog.mode === "exp2" ? 2 : 0);
+                program.setUniform1f("u_fogNear", fog.near);
+                program.setUniform1f("u_fogFar", fog.far);
+                program.setUniform1f("u_fogDensity", fog.density);
+                this._stateManager.setDepthTest(true);
+                this._stateManager.setDepthWrite(false);
+                this._stateManager.setBlend(true);
+                gl.enable(gl.POLYGON_OFFSET_FILL);
+                gl.polygonOffset(-1, -4);
+                programReady = true;
+            }
+            // Raw buffer binding (the geometry manager doesn't own this buffer)
+            gl.bindBuffer(gl.ARRAY_BUFFER, entry.buffer);
+            if (entry.version !== system._meshRenderVersion) {
+                gl.bufferData(gl.ARRAY_BUFFER, data.subarray(0, vertexCount * IgeDecalSystem3d_1.DECAL_MESH_VERTEX_FLOATS), gl.DYNAMIC_DRAW);
+                entry.version = system._meshRenderVersion;
+            }
+            for (let a = 0; a < locations.length; a++) {
+                if (locations[a] < 0)
+                    continue;
+                gl.enableVertexAttribArray(locations[a]);
+                gl.vertexAttribPointer(locations[a], sizes[a], gl.FLOAT, false, stride, offsets[a]);
+            }
+            const multiply = system._options.blending !== "normal";
+            program.setUniform1i("u_multiply", multiply ? 1 : 0);
+            if (multiply) {
+                this._stateManager.setBlendFunc(gl.DST_COLOR, gl.ZERO);
+            }
+            else {
+                this._stateManager.setBlendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+            }
+            const texture = system._options.texture
+                ? this._textureManager.getTextureForIgeTexture(system._options.texture)
+                : this._getDefaultDecalTexture();
+            this._stateManager.invalidateTextureBindings();
+            this._stateManager.bindTexture(texture || this._textureManager.getDefaultWhiteTexture(), 0);
+            gl.drawArrays(gl.TRIANGLES, 0, vertexCount);
+            this._stats.drawCalls++;
+            for (const location of locations) {
+                if (location >= 0)
+                    gl.disableVertexAttribArray(location);
+            }
+        }
+        if (programReady) {
+            gl.bindBuffer(gl.ARRAY_BUFFER, null);
+            gl.disable(gl.POLYGON_OFFSET_FILL);
+            this._stateManager.setBlendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+            this._stateManager.setDepthWrite(true);
+        }
+        // Free buffers of systems no longer drawn
+        if ((this._frameId & 127) === 0) {
+            this._decalMeshBuffers.forEach((value, key) => {
+                if (this._frameId - value.lastFrame > 120) {
+                    if (value.buffer)
+                        gl.deleteBuffer(value.buffer);
+                    this._decalMeshBuffers.delete(key);
+                }
+            });
+        }
     }
     /**
      * Draw particle systems as camera-facing quads: one instanced call per
@@ -2596,8 +2732,10 @@ class IgeWebGlRenderer extends IgeBaseRenderer_1.IgeBaseRenderer {
             const entity = sprites[i];
             const texture = entity._texture;
             const material = entity._materialData;
-            if (texture._renderMode === enums_1.IgeTextureRenderMode.smartTexture) {
-                // Smart textures are drawn per entity (they read its data and size)
+            // Smart textures and bitmap font sheets are drawn per entity (they
+            // read its data, text and size)
+            const perEntity = texture._renderMode === enums_1.IgeTextureRenderMode.smartTexture || texture._rendersPerEntity;
+            if (perEntity) {
                 const webglTexture = this._textureManager.getSmartTexture(texture, entity, this._devicePixelRatio, this._frameId);
                 this._stateManager.invalidateTextureBindings();
                 this._stateManager.bindTexture(webglTexture || this._textureManager.getDefaultWhiteTexture(), 0);
@@ -2622,7 +2760,7 @@ class IgeWebGlRenderer extends IgeBaseRenderer_1.IgeBaseRenderer {
             const cell = cells && entity._cell ? cells[entity._cell] : undefined;
             const texW = texture._sizeX;
             const texH = texture._sizeY;
-            if (cell && texW > 0 && texH > 0) {
+            if (!perEntity && cell && texW > 0 && texH > 0) {
                 spriteProgram.setUniform4f("u_uvBounds", cell[0] / texW, cell[1] / texH, (cell[0] + cell[2]) / texW, (cell[1] + cell[3]) / texH);
             }
             else {

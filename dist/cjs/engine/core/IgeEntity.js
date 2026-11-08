@@ -758,6 +758,8 @@ class IgeEntity extends IgeObject_1.IgeObject {
             const ratio = px / this._bounds2d.x;
             this.height(this._bounds2d.y * ratio);
         }
+        if (px !== this._bounds2d.x)
+            this._renderChanged();
         this._bounds2d.x = px;
         this._bounds2d.x2 = px / 2;
         return this;
@@ -774,6 +776,8 @@ class IgeEntity extends IgeObject_1.IgeObject {
             const ratio = px / this._bounds2d.y;
             this.width(this._bounds2d.x * ratio);
         }
+        if (px !== this._bounds2d.y)
+            this._renderChanged();
         this._bounds2d.y = px;
         this._bounds2d.y2 = px / 2;
         return this;
@@ -781,6 +785,7 @@ class IgeEntity extends IgeObject_1.IgeObject {
     bounds2d(x, y) {
         if (x !== undefined && y !== undefined && typeof x === "number") {
             this._bounds2d = new IgePoint2d_1.IgePoint2d(x, y);
+            this._renderChanged();
             return this;
         }
         // TODO: Is this exception still something we use?
@@ -788,6 +793,7 @@ class IgeEntity extends IgeObject_1.IgeObject {
             const bounds = x;
             // x is considered an IgePoint2d instance
             this._bounds2d = new IgePoint2d_1.IgePoint2d(bounds.x, bounds.y);
+            this._renderChanged();
         }
         return this._bounds2d;
     }
@@ -817,6 +823,8 @@ class IgeEntity extends IgeObject_1.IgeObject {
     }
     opacity(val) {
         if (val !== undefined) {
+            if (val !== this._opacity)
+                this._renderChanged();
             this._opacity = val;
             return this;
         }
@@ -831,10 +839,29 @@ class IgeEntity extends IgeObject_1.IgeObject {
     }
     texture(texture) {
         if (texture !== undefined) {
+            if (texture !== this._texture)
+                this._renderChanged();
             this._texture = texture;
             return this;
         }
         return this._texture;
+    }
+    material(data) {
+        if (data === undefined) {
+            return this._materialData;
+        }
+        this._materialData = data;
+        this._renderChanged();
+        return this;
+    }
+    /**
+     * Tells render-on-demand (ige.engine.renderOnDemand()) that this entity
+     * now looks different. Changes to hidden entities don't count; showing
+     * the entity draws a frame anyway.
+     */
+    _renderChanged() {
+        if (!this._hidden)
+            (0, sceneChange_1.markSceneChanged)();
     }
     model(model, options = {}) {
         var _a, _b, _c;
@@ -894,6 +921,7 @@ class IgeEntity extends IgeObject_1.IgeObject {
             this._skeleton = undefined;
             this._skeletonData = undefined;
         }
+        this._renderChanged();
         return this;
     }
     lod(levels) {
@@ -912,6 +940,7 @@ class IgeEntity extends IgeObject_1.IgeObject {
         else {
             this._modelLod = undefined;
         }
+        this._renderChanged();
         return this;
     }
     billboard(mode) {
@@ -919,6 +948,7 @@ class IgeEntity extends IgeObject_1.IgeObject {
             return this._billboardMode === 2 ? "y" : this._billboardMode === 0 ? "none" : "full";
         }
         this._billboardMode = mode === "y" ? 2 : mode === "none" ? 0 : 1;
+        this._renderChanged();
         return this;
     }
     /**
@@ -1011,6 +1041,8 @@ class IgeEntity extends IgeObject_1.IgeObject {
     }
     cell(val) {
         if (val !== undefined && val > 0) {
+            if (val !== this._cell)
+                this._renderChanged();
             this._cell = val;
             return this;
         }
@@ -1420,10 +1452,18 @@ class IgeEntity extends IgeObject_1.IgeObject {
         this._processBehaviours(enums_1.IgeBehaviourType.preTick, ctx);
         // Check for cached version
         if (this._cache || this._compositeCache) {
+            // A simple cache holds the entity drawn at its own centre: place
+            // it (and the children drawn after it) with the entity's
+            // transform on the main context, not inside the cache canvas,
+            // where any translation would draw outside the canvas
+            const simpleCache = this._cache && !this._compositeCache;
+            if (simpleCache && !dontTransform) {
+                this._transformContext(ctx);
+            }
             // Caching is enabled
             if (this._cacheDirty) {
                 // The cache is dirty, redraw it
-                this._refreshCache(dontTransform);
+                this._refreshCache(simpleCache || dontTransform);
             }
             // Now render the cached image data to the main canvas
             this._renderCache(ctx);
@@ -1506,7 +1546,7 @@ class IgeEntity extends IgeObject_1.IgeObject {
             const aabbC = this.compositeAabb();
             this._compositeAabbCache = aabbC;
             if (aabbC.width > 0 && aabbC.height > 0) {
-                instance_1.ige.engine._setInternalCanvasSize(_canvas, _ctx, aabbC.width, aabbC.height);
+                this._cachePixelRatio = instance_1.ige.engine._setInternalCanvasSize(_canvas, _ctx, aabbC.width, aabbC.height);
                 /*_canvas.width = Math.ceil(aabbC.width);
                 _canvas.height = Math.ceil(aabbC.height);*/
             }
@@ -1515,6 +1555,7 @@ class IgeEntity extends IgeObject_1.IgeObject {
                 // cause the browser to freak out
                 _canvas.width = 2;
                 _canvas.height = 2;
+                this._cachePixelRatio = 1;
             }
             // Translate to the center of the canvas
             _ctx.translate(-aabbC.x, -aabbC.y);
@@ -1526,7 +1567,7 @@ class IgeEntity extends IgeObject_1.IgeObject {
         }
         else {
             if (this._bounds2d.x > 0 && this._bounds2d.y > 0) {
-                instance_1.ige.engine._setInternalCanvasSize(_canvas, _ctx, this._bounds2d.x, this._bounds2d.y);
+                this._cachePixelRatio = instance_1.ige.engine._setInternalCanvasSize(_canvas, _ctx, this._bounds2d.x, this._bounds2d.y);
                 /*_canvas.width = this._bounds2d.x;
                 _canvas.height = this._bounds2d.y;*/
             }
@@ -1535,6 +1576,7 @@ class IgeEntity extends IgeObject_1.IgeObject {
                 // cause the browser to freak out
                 _canvas.width = 1;
                 _canvas.height = 1;
+                this._cachePixelRatio = 1;
             }
             // Translate to the center of the canvas
             _ctx.translate(this._bounds2d.x2, this._bounds2d.y2);
@@ -1645,14 +1687,16 @@ class IgeEntity extends IgeObject_1.IgeObject {
                 this.rotateTo(-cam._rotate.x, -cam._rotate.y, -cam._rotate.z);*/
             }
         }
-        // We have a clean cached version so output that. We use the destination width and height
-        // here because the cache canvas might not be the destination size and should be scaled
-        // as it is rendered (usually because of device pixel ratio related stuff)
-        ctx.drawImage(this._cacheCanvas, -this._bounds2d.x2, -this._bounds2d.y2);
-        //, this._bounds2d.x, this._bounds2d.y);
+        // We have a clean cached version so output that. The cache canvas
+        // holds cachePixelRatio canvas pixels per entity unit (the device
+        // pixel ratio), so draw it back at its size in entity units
+        const ratio = this._cachePixelRatio || 1;
+        const width = this._cacheCanvas.width / ratio;
+        const height = this._cacheCanvas.height / ratio;
+        ctx.drawImage(this._cacheCanvas, -this._bounds2d.x2, -this._bounds2d.y2, width, height);
         if (instance_1.ige.engine._currentViewport._drawCompositeBounds) {
             ctx.fillStyle = "rgba(0, 255, 0, 0.5)";
-            ctx.fillRect(-this._bounds2d.x2, -this._bounds2d.y2, this._cacheCanvas.width, this._cacheCanvas.height);
+            ctx.fillRect(-this._bounds2d.x2, -this._bounds2d.y2, width, height);
             ctx.fillStyle = "#ffffff";
             ctx.fillText("Composite Cache", -this._bounds2d.x2, -this._bounds2d.y2 - 15);
             ctx.fillText(this.id(), -this._bounds2d.x2, -this._bounds2d.y2 - 5);

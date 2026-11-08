@@ -1,11 +1,11 @@
 import { IgeBounds } from "./IgeBounds.js"
-import { IgeMatrix4 } from "./IgeMatrix4.js";
+import { IgeMatrix4 } from "./IgeMatrix4.js"
 import { IgeObject } from "./IgeObject.js"
-import { IgePoint2d } from "./IgePoint2d.js";
+import { IgePoint2d } from "./IgePoint2d.js"
 import { IgePoint3d } from "./IgePoint3d.js"
-import type { IgeTexture } from "./IgeTexture.js";
+import type { IgeTexture } from "./IgeTexture.js"
 import type { IgeViewport } from "./IgeViewport.js"
-import { IgeEntityRenderMode } from "../../enums/index.js";
+import { IgeEntityRenderMode } from "../../enums/index.js"
 import type { IgeCanRegisterByCategory } from "../../types/IgeCanRegisterByCategory.js"
 import type { IgeCanRegisterById } from "../../types/IgeCanRegisterById.js"
 import type { IgeCanvasRenderingContext2d } from "../../types/IgeCanvasRenderingContext2d.js"
@@ -16,10 +16,11 @@ import type { IgeShapeFunctionality } from "../../types/IgeShapeFunctionality.js
 import type { IgeSmartTexture } from "../../types/IgeSmartTexture.js"
 import type { IgeTriggerPolygonFunctionName } from "../../types/IgeTriggerPolygonFunctionName.js"
 import type { IgeGltfModel } from "../webgl/IgeGltfLoader.js"
-import type { IgeRetargetOptions } from "../webgl/IgeAnimationRetarget.js";
+import type { IgeRetargetOptions } from "../webgl/IgeAnimationRetarget.js"
 import type { IgeSkeletonData } from "../../types/IgeSkeletonData.js"
+import type { IgeMaterialData } from "../../types/IgeMaterialData.js"
 import type { IgeModelLod, IgeModelLodLevel } from "../webgl/IgeModelParts.js"
-import { IgeSkeletalAnimationComponent } from "../components/IgeSkeletalAnimationComponent.js";
+import { IgeSkeletalAnimationComponent } from "../components/IgeSkeletalAnimationComponent.js"
 import type { IgeAnimationPlayOptions } from "../../types/IgeAnimationClipData.js"
 /**
  * Options for IgeEntity.model().
@@ -401,6 +402,36 @@ export declare class IgeEntity extends IgeObject implements IgeCanRegisterById, 
     texture(texture: IgeTexture): this;
     texture(): IgeTexture | undefined;
     /**
+     * Gets / sets the material values the WebGL renderer draws this entity
+     * with: colour, opacity, metallic, roughness, emissive, blending and
+     * double-sidedness. On a model they override the model's own material
+     * values for this entity only (a per-instance tint, a hit flash); other
+     * entities sharing the model keep theirs. Pass null to go back to the
+     * model's or texture's own look.
+     *
+     * One material object can be shared by many entities. The renderer
+     * reads it every frame, so changing a shared object's values changes
+     * every entity using it; with ige.engine.renderOnDemand(true), call
+     * material() again (or ige.engine.manualRender()) after changing an
+     * object in place so a new frame is drawn.
+     * @example #Tint an entity
+     *     zombie.material({ color: { r: 0.4, g: 0.6, b: 0.35, a: 1 } });
+     * @example #Flash white when hit, then restore
+     *     zombie.material({ color: "#ffffff", emissiveColor: { r: 1, g: 1, b: 1 }, emissiveIntensity: 0.8 });
+     *     setTimeout(() => zombie.material(null), 80);
+     * @example #Highlight with a shared material
+     *     const highlight = { color: "#ffd84a", emissiveColor: { r: 1, g: 0.8, b: 0.2 }, emissiveIntensity: 0.4 };
+     *     tile.material(highlight);
+     */
+    material(data: IgeMaterialData | null): this;
+    material(): IgeMaterialData | null;
+    /**
+     * Tells render-on-demand (ige.engine.renderOnDemand()) that this entity
+     * now looks different. Changes to hidden entities don't count; showing
+     * the entity draws a frame anyway.
+     */
+    _renderChanged(): void;
+    /**
      * Gets / sets the 3D model for this entity. The entity renders every
      * mesh of the model with its own materials and textures, placed by the
      * model's node hierarchy (so models exported Z-up or with a root
@@ -415,7 +446,7 @@ export declare class IgeEntity extends IgeObject implements IgeCanRegisterById, 
      * cached animation poses are shared, and the WebGL renderer draws
      * them with GPU instancing.
      *
-     * Setting _materialData on the entity afterwards overrides the model's
+     * Calling material() on the entity afterwards overrides the model's
      * material values (colour, metallic, roughness, emissive) for that
      * entity only, e.g. for a per-instance tint or a hit flash.
      * @param {IgeGltfModel=} model The loaded GLTF model.

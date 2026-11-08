@@ -203,13 +203,13 @@ class Client extends IgeBaseClass_1.IgeBaseClass {
         this.orbitBulb = new IgeEntity_1.IgeEntity();
         this.orbitBulb.id("orbitBulb");
         this.orbitBulb._geometryData = Object.assign(Object.assign({}, orbitBulbGeom), { id: "orbit_bulb_geom" });
-        this.orbitBulb._materialData = {
+        this.orbitBulb.material({
             color: { r: 1.0, g: 0.2, b: 0.2, a: 1 },
             metallic: 0.0,
             roughness: 0.1,
             emissiveColor: { r: 1.0, g: 0.2, b: 0.2 },
             emissiveIntensity: 3.0
-        };
+        });
         this.orbitBulb.translateTo(200, 100, 0);
         this.orbitBulb._noShadowCast = true;
         this.orbitBulb.mount(this.scene);
@@ -228,13 +228,13 @@ class Client extends IgeBaseClass_1.IgeBaseClass {
         this.greenOrbitBulb = new IgeEntity_1.IgeEntity();
         this.greenOrbitBulb.id("greenOrbitBulb");
         this.greenOrbitBulb._geometryData = Object.assign(Object.assign({}, greenBulbGeom), { id: "green_orbit_bulb_geom" });
-        this.greenOrbitBulb._materialData = {
+        this.greenOrbitBulb.material({
             color: { r: 0.2, g: 1.0, b: 0.3, a: 1 },
             metallic: 0.0,
             roughness: 0.1,
             emissiveColor: { r: 0.2, g: 1.0, b: 0.3 },
             emissiveIntensity: 3.0
-        };
+        });
         this.greenOrbitBulb.translateTo(350, 40, 0);
         this.greenOrbitBulb._noShadowCast = true;
         this.greenOrbitBulb.mount(this.scene);
@@ -316,11 +316,11 @@ class Client extends IgeBaseClass_1.IgeBaseClass {
         this.groundEntity = new IgeEntity_1.IgeEntity();
         this.groundEntity.id("ground");
         this.groundEntity._geometryData = Object.assign(Object.assign({}, groundGeom), { id: "ground_geom" });
-        this.groundEntity._materialData = {
+        this.groundEntity.material({
             color: { r: 0.15, g: 0.15, b: 0.18, a: 1 },
             metallic: 0.0,
             roughness: 0.9
-        };
+        });
         // Rotate plane to be horizontal (it's created in XY, we need XZ)
         this.groundEntity.rotateTo(-Math.PI / 2, 0, 0);
         this.groundEntity.translateTo(0, 0, 0);
@@ -333,11 +333,11 @@ class Client extends IgeBaseClass_1.IgeBaseClass {
         const pole = new IgeEntity_1.IgeEntity();
         pole.id("lampPole");
         pole._geometryData = Object.assign(Object.assign({}, poleGeom), { id: "lamp_pole_geom" });
-        pole._materialData = {
+        pole.material({
             color: { r: 0.25, g: 0.25, b: 0.28, a: 1 },
             metallic: 0.7,
             roughness: 0.3
-        };
+        });
         pole.translateTo(lampX, 95, lampZ);
         pole.mount(this.scene);
         this.lampPostEntities.push(pole);
@@ -346,11 +346,11 @@ class Client extends IgeBaseClass_1.IgeBaseClass {
         const head = new IgeEntity_1.IgeEntity();
         head.id("lampHead");
         head._geometryData = Object.assign(Object.assign({}, headGeom), { id: "lamp_head_geom" });
-        head._materialData = {
+        head.material({
             color: { r: 0.3, g: 0.3, b: 0.33, a: 1 },
             metallic: 0.6,
             roughness: 0.3
-        };
+        });
         head.translateTo(lampX, 197, lampZ);
         head.mount(this.scene);
         this.lampPostEntities.push(head);
@@ -359,13 +359,13 @@ class Client extends IgeBaseClass_1.IgeBaseClass {
         const bulb = new IgeEntity_1.IgeEntity();
         bulb.id("lampBulb");
         bulb._geometryData = Object.assign(Object.assign({}, bulbGeom), { id: "lamp_bulb_geom" });
-        bulb._materialData = {
+        bulb.material({
             color: { r: 1.0, g: 0.9, b: 0.5, a: 1 },
             metallic: 0.0,
             roughness: 0.1,
             emissiveColor: { r: 1.0, g: 0.85, b: 0.5 },
             emissiveIntensity: 2.0
-        };
+        });
         bulb.translateTo(lampX, 192, lampZ);
         bulb._noShadowCast = true;
         bulb.mount(this.scene);
@@ -376,11 +376,11 @@ class Client extends IgeBaseClass_1.IgeBaseClass {
         const mount = new IgeEntity_1.IgeEntity();
         mount.id("swingMount");
         mount._geometryData = Object.assign(Object.assign({}, mountGeom), { id: "swing_mount_geom" });
-        mount._materialData = {
+        mount.material({
             color: { r: 0.3, g: 0.3, b: 0.3, a: 1 },
             metallic: 0.5,
             roughness: 0.4
-        };
+        });
         mount.translateTo(100, 200, 50);
         mount.mount(this.scene);
         this.sceneEntities.push(mount);
@@ -389,13 +389,13 @@ class Client extends IgeBaseClass_1.IgeBaseClass {
         this.swingingLightEntity = new IgeEntity_1.IgeEntity();
         this.swingingLightEntity.id("swingBulb");
         this.swingingLightEntity._geometryData = Object.assign(Object.assign({}, swingBulbGeom), { id: "swing_bulb_geom" });
-        this.swingingLightEntity._materialData = {
+        this.swingingLightEntity.material({
             color: { r: 0.9, g: 0.95, b: 1.0, a: 1 },
             metallic: 0.0,
             roughness: 0.1,
             emissiveColor: { r: 0.9, g: 0.95, b: 1.0 },
             emissiveIntensity: 2.0
-        };
+        });
         this.swingingLightEntity.translateTo(100, 120, 50);
         this.swingingLightEntity._noShadowCast = true;
         this.swingingLightEntity.mount(this.scene);
@@ -415,11 +415,11 @@ class Client extends IgeBaseClass_1.IgeBaseClass {
             const crate = new IgeEntity_1.IgeEntity();
             crate.id(`crate_${i}`);
             crate._geometryData = Object.assign(Object.assign({}, crateGeom), { id: `crate_geom_${i}` });
-            crate._materialData = {
+            crate.material({
                 color: Object.assign(Object.assign({}, crateColors[i]), { a: 1 }),
                 metallic: 0.0,
                 roughness: 0.8
-            };
+            });
             crate.translateTo(pos.x, 20, pos.z);
             // Slight rotation for visual interest
             crate.rotateTo(0, (i * 0.4) + 0.2, 0);
@@ -431,11 +431,11 @@ class Client extends IgeBaseClass_1.IgeBaseClass {
         const stackCrate = new IgeEntity_1.IgeEntity();
         stackCrate.id("stackCrate");
         stackCrate._geometryData = Object.assign(Object.assign({}, smallCrateGeom), { id: "stack_crate_geom" });
-        stackCrate._materialData = {
+        stackCrate.material({
             color: { r: 0.5, g: 0.35, b: 0.2, a: 1 },
             metallic: 0.0,
             roughness: 0.85
-        };
+        });
         stackCrate.translateTo(-60, 52, 80);
         stackCrate.rotateTo(0, 0.6, 0);
         stackCrate.mount(this.scene);
@@ -445,11 +445,11 @@ class Client extends IgeBaseClass_1.IgeBaseClass {
         const sphere = new IgeEntity_1.IgeEntity();
         sphere.id("metalSphere");
         sphere._geometryData = Object.assign(Object.assign({}, sphereGeom), { id: "metal_sphere_geom" });
-        sphere._materialData = {
+        sphere.material({
             color: { r: 0.8, g: 0.8, b: 0.85, a: 1 },
             metallic: 0.9,
             roughness: 0.1
-        };
+        });
         sphere.translateTo(-80, 20, -60);
         sphere.mount(this.scene);
         this.sceneEntities.push(sphere);

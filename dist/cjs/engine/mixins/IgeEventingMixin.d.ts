@@ -1,5 +1,5 @@
 import type { IgeBaseClass } from "../core/IgeBaseClass.js"
-import type { IgeMixin } from "../../types/IgeMixin.js";
+import type { IgeMixin } from "../../types/IgeMixin.js"
 export interface IgeEventListenerObject {
     type: "single";
     callback: (...args: any) => boolean | void;

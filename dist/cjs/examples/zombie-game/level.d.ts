@@ -1,3 +1,4 @@
+import { IgeEntity } from "../../engine/core/IgeEntity.js"
 import type { IgeScene2d } from "../../engine/core/IgeScene2d.js"
 import type { IgeGeometryData3d } from "../../types/IgeGeometryData3d.js"
 /** Axis-aligned footprint of a solid level object on the XZ plane. */
@@ -27,7 +28,17 @@ export declare function createBoxGeometry(w: number, h: number, d: number, id: s
  * with an entrance gap at the front, a reception desk at the back, pillars,
  * benches along the side walls and a few tables.
  */
-export declare function createHospitalLobby(scene: IgeScene2d): IgeLevelObstacle[];
+export declare function createHospitalLobby(scene: IgeScene2d): {
+    obstacles: IgeLevelObstacle[];
+    root: IgeEntity;
+};
+/** Inner faces of the lobby walls. */
+export declare const WALL_FACES: {
+    minX: number;
+    maxX: number;
+    minZ: number;
+    maxZ: number;
+};
 /**
  * Push a circle (radius r at x, z) out of any obstacle footprints and keep
  * it inside the arena. Returns the corrected position.

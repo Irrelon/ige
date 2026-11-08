@@ -1,11 +1,11 @@
 import { igeSceneChange } from "../utils/sceneChange.js"
-import { IgeEntity } from "./IgeEntity.js";
+import { IgeEntity } from "./IgeEntity.js"
 import { IgePoint2d } from "./IgePoint2d.js"
-import { IgePoint3d } from "./IgePoint3d.js";
+import { IgePoint3d } from "./IgePoint3d.js"
 import { IgeViewport } from "./IgeViewport.js"
-import { ige } from "../instance.js";
+import { ige } from "../instance.js"
 import { isClient, isServer, isWorker } from "../utils/clientServer.js"
-import { IgeBehaviourType, IgeEngineState } from "../../enums/index.js";
+import { IgeBehaviourType, IgeEngineState } from "../../enums/index.js"
 export class IgeEngine extends IgeEntity {
     classId = "IgeEngine";
     client;
@@ -247,7 +247,8 @@ export class IgeEngine extends IgeEntity {
         const pixelRatioScaling = options.pixelRatioScaling !== undefined ? options.pixelRatioScaling : this._pixelRatioScaling;
         if (pixelRatioScaling) {
             // Scale the canvas context to account for the device pixel ratio
-            ctx.scale(this._devicePixelRatio, this._devicePixelRatio);
+            const ratio = this._canvasPixelRatio();
+            ctx.scale(ratio, ratio);
         }
         return {
             canvas,
@@ -255,10 +256,20 @@ export class IgeEngine extends IgeEntity {
         };
     }
     _setInternalCanvasSize(canvas, ctx, newWidth, newHeight) {
-        canvas.width = newWidth * this._devicePixelRatio;
-        canvas.height = newHeight * this._devicePixelRatio;
+        const ratio = this._canvasPixelRatio();
+        canvas.width = Math.max(1, Math.ceil(newWidth * ratio));
+        canvas.height = Math.max(1, Math.ceil(newHeight * ratio));
         // Scale the canvas context to account for the change
-        ctx.scale(this._devicePixelRatio, this._devicePixelRatio);
+        ctx.scale(ratio, ratio);
+        return ratio;
+    }
+    /**
+     * The pixel ratio for off-screen canvases (entity caches): the
+     * renderer's, so cached entities are as sharp as everything else on
+     * high-DPI screens.
+     */
+    _canvasPixelRatio() {
+        return this._renderer ? this._renderer.devicePixelRatio() : this._devicePixelRatio;
     }
     /**
      * Handles the screen resize event.

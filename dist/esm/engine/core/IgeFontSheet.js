@@ -4,6 +4,7 @@
  * */
 import { IgeTexture } from "./IgeTexture.js"
 import { ige } from "../instance.js"
+import { IgeFontAlignY } from "../../enums/index.js"
 /**
  * Creates a new font sheet. A font sheet is an image that contains
  * letters and numbers rendered to specifications. It allows you to
@@ -12,6 +13,8 @@ import { ige } from "../instance.js"
  */
 export class IgeFontSheet extends IgeTexture {
     classId = "IgeFontSheet";
+    // Draws each entity's text, so GPU renderers can't draw the sheet itself
+    _rendersPerEntity = true;
     _sheetImage;
     _lineHeightModifier = 0;
     _fontData;
@@ -144,20 +147,18 @@ export class IgeFontSheet extends IgeTexture {
                 lineArr.push(text);
             }
             const totalHeight = lineHeight * lineArr.length;
-            // TODO: Y-based alignment doesn't work at the moment. Fix it!
-            // Handle text alignment y
+            // Handle text alignment y (multiLineMiddle, the default, centres
+            // the block of lines like middle)
+            const blockHeight = totalHeight + entity._textLineSpacing * (lineArr.length - 1);
             switch (entity._textAlignY) {
-                case 0: // Align top
-                    renderStartY =
-                        -((lineHeight * lineArr.length) / 2) - entity._textLineSpacing * ((lineArr.length - 1) / 2); //0;
+                case IgeFontAlignY.top:
+                    renderStartY = -entity._bounds2d.y2;
                     break;
-                case 1: // Align middle
-                    renderStartY =
-                        -((lineHeight * lineArr.length) / 2) - entity._textLineSpacing * ((lineArr.length - 1) / 2);
+                case IgeFontAlignY.bottom:
+                    renderStartY = entity._bounds2d.y2 - blockHeight;
                     break;
-                case 2: // Align bottom
-                    renderStartY =
-                        -((lineHeight * lineArr.length) / 2) - entity._textLineSpacing * ((lineArr.length - 1) / 2); //-((lineHeight) * (lineArr.length)) - (entity._textLineSpacing * (lineArr.length - 1));
+                default: // middle, multiLineMiddle
+                    renderStartY = -blockHeight / 2;
                     break;
             }
             // Calculate the total text width of each line

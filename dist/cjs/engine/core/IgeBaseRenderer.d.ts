@@ -1,7 +1,7 @@
 import type { IgeEngine } from "./IgeEngine.js"
-import { IgeEventingClass } from "./IgeEventingClass.js";
+import { IgeEventingClass } from "./IgeEventingClass.js"
 import { IgePoint2d } from "./IgePoint2d.js"
-import type { IgeViewport } from "./IgeViewport.js";
+import type { IgeViewport } from "./IgeViewport.js"
 import type { IgeAbstractData3d } from "../../types/IgeAbstractData3d.js"
 export declare class IgeBaseRenderer extends IgeEventingClass {
     classId: string;
@@ -36,6 +36,12 @@ export declare class IgeBaseRenderer extends IgeEventingClass {
      */
     toggleFullScreen: () => void;
     _renderSceneGraph(engine: IgeEngine, viewports: IgeViewport[]): boolean;
+    /**
+     * The ratio of canvas pixels to CSS pixels the renderer draws at
+     * (e.g. 2 on a "retina" display). Off-screen canvases such as entity
+     * caches use it so they stay as sharp as the main canvas.
+     */
+    devicePixelRatio(): number;
     _updateDevicePixelRatio(): void;
     /**
      * Gets data for the specific renderer being used. The data is stored

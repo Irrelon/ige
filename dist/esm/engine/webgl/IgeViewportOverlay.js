@@ -1,4 +1,4 @@
-import { IgeBehaviourType } from "../../enums/index.js";
+import { IgeBehaviourType } from "../../enums/index.js"
 import { ige } from "../instance.js"
 let nextOverlayId = 1;
 /**

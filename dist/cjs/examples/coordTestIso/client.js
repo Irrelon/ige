@@ -92,11 +92,11 @@ class Client extends IgeBaseClass_1.IgeBaseClass {
                 const entity = new IgeEntity_1.IgeEntity();
                 entity.id(`iso_${config.name}`);
                 entity._geometryData = Object.assign(Object.assign({}, cubeGeometry), { id: `geom_iso_${config.name}` });
-                entity._materialData = {
+                entity.material({
                     color: { r: config.color.r, g: config.color.g, b: config.color.b, a: 1 },
                     metallic: 0,
                     roughness: 1
-                };
+                });
                 entity.translateTo(config.worldPos.x, config.worldPos.y, config.worldPos.z);
                 entity.mount(scene);
             }

@@ -1,5 +1,5 @@
 import { IgeEventingClass } from "./IgeEventingClass.js"
-import type { IgeInterval } from "./IgeInterval.js";
+import type { IgeInterval } from "./IgeInterval.js"
 import type { IgeEntityBehaviourMethod } from "../../types/IgeEntityBehaviour.js"
 import type { IgeIsReadyPromise } from "../../types/IgeIsReadyPromise.js"
 export declare class IgeTimeController extends IgeEventingClass implements IgeIsReadyPromise {

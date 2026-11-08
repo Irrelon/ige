@@ -1,5 +1,5 @@
 import type { IgeFontEntity } from "./IgeFontEntity.js"
-import { IgeTexture } from "./IgeTexture.js";
+import { IgeTexture } from "./IgeTexture.js"
 import type { IgeCanvasRenderingContext2d } from "../../types/IgeCanvasRenderingContext2d.js"
 import type { IgeSmartTexture } from "../../types/IgeSmartTexture.js"
 /**
@@ -10,6 +10,7 @@ import type { IgeSmartTexture } from "../../types/IgeSmartTexture.js"
  */
 export declare class IgeFontSheet extends IgeTexture {
     classId: string;
+    _rendersPerEntity: boolean;
     _sheetImage?: ImageBitmap | OffscreenCanvas;
     _lineHeightModifier: number;
     _fontData: any;

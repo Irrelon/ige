@@ -1,19 +1,19 @@
 import { ige } from "../instance.js"
-import { markSceneChanged } from "../utils/sceneChange.js";
+import { markSceneChanged } from "../utils/sceneChange.js"
 import { IgeBounds } from "./IgeBounds.js"
-import { IgeDummyCanvas } from "./IgeDummyCanvas.js";
+import { IgeDummyCanvas } from "./IgeDummyCanvas.js"
 import { IgeEventingClass } from "./IgeEventingClass.js"
-import { IgeMatrix2d } from "./IgeMatrix2d.js";
+import { IgeMatrix2d } from "./IgeMatrix2d.js"
 import { IgePoint2d } from "./IgePoint2d.js"
-import { IgePoint3d } from "./IgePoint3d.js";
+import { IgePoint3d } from "./IgePoint3d.js"
 import { IgePoly2d } from "./IgePoly2d.js"
-import { arrPull } from "../utils/arrays.js";
+import { arrPull } from "../utils/arrays.js"
 import { newIdHex } from "../utils/ids.js"
-import { toIso } from "../utils/maths.js";
+import { toIso } from "../utils/maths.js"
 import { synthesize } from "../utils/synthesize.js"
-import { IgeQuadGeometry } from "../geometry/IgeQuadGeometry.js";
+import { IgeQuadGeometry } from "../geometry/IgeQuadGeometry.js"
 import { isClient, isServer } from "../utils/clientServer.js"
-import { IGE_NETWORK_STREAM_CREATE, IGE_NETWORK_STREAM_DESTROY, IgeIsometricDepthSortMode, IgeMountMode, IgeStreamMode } from "../../enums/index.js";
+import { IGE_NETWORK_STREAM_CREATE, IGE_NETWORK_STREAM_DESTROY, IgeIsometricDepthSortMode, IgeMountMode, IgeStreamMode } from "../../enums/index.js"
 export class IgeObject extends IgeEventingClass {
     classId = "IgeObject";
     _id;
@@ -121,6 +121,8 @@ export class IgeObject extends IgeEventingClass {
     _cache = false;
     _cacheCtx;
     _cacheCanvas;
+    /** Canvas pixels per entity unit the cache was last drawn at. */
+    _cachePixelRatio = 1;
     _cacheDirty = false;
     _cacheSmoothing = false;
     _aabbDirty = false;
@@ -1011,6 +1013,9 @@ export class IgeObject extends IgeEventingClass {
             return this._cacheDirty;
         }
         this._cacheDirty = val;
+        // A smart texture or cached canvas will redraw (render-on-demand)
+        if (val && !this._hidden)
+            markSceneChanged();
         // Check if the entity is a child of a composite or composite
         // entity chain and propagate the dirty cache up the chain
         if (val && this._compositeParent && this._parent && "cacheDirty" in this._parent) {

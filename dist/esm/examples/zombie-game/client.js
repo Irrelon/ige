@@ -5,14 +5,14 @@ import { IgeWebGlRenderer } from "../../engine/core/IgeWebGlRenderer.js"
 import { IgeViewport } from "../../engine/core/IgeViewport.js"
 import { IgePoint3d } from "../../engine/core/IgePoint3d.js"
 import { ige } from "../../engine/instance.js"
-import { IgeBehaviourType } from "../../enums/index.js";
+import { IgeBehaviourType } from "../../enums/index.js"
 import { IgeAmbientLight, IgeDirectionalLight, IgePointLight } from "../../engine/webgl/IgeWebGlLight.js"
 import { igeGltfLoader } from "../../engine/webgl/IgeGltfLoader.js"
 import { IgeParticleSystem3d } from "../../engine/webgl/IgeParticleSystem3d.js"
 import { IgeDecalSystem3d } from "../../engine/webgl/IgeDecalSystem3d.js"
 import { IgeViewportOverlay } from "../../engine/webgl/IgeViewportOverlay.js"
 import { IgeGamePadAxis, IgeGamePadButton, IgeGamePadComponent } from "../../engine/components/IgeGamePadComponent.js"
-import { createBoxGeometry, createHospitalLobby, resolveLevelCollision, ARENA } from "./level.js"
+import { createBoxGeometry, createHospitalLobby, resolveLevelCollision, ARENA, WALL_FACES } from "./level.js"
 // @ts-ignore
 window.ige = ige;
 /**
@@ -30,7 +30,8 @@ window.ige = ige;
  *
  * - Generated level-of-detail meshes for the horde (IgeEntity.lod())
  * - Swords that follow each player's hand bone (IgeEntity.attachToBone())
- * - Blood stains on the floor (IgeDecalSystem3d)
+ * - Blood stains on the floor, and splashes projected onto the walls and
+ *   furniture behind a hit (IgeDecalSystem3d add() and project())
  * - Name tags, zombie health bars and damage numbers kept inside each
  *   player's view (IgeViewportOverlay)
  *
@@ -96,6 +97,7 @@ export class Client extends IgeBaseClass {
     zombies = [];
     characterModel;
     obstacles = [];
+    level;
     bloodFx;
     bloodStains;
     slashFx;
@@ -141,7 +143,9 @@ export class Client extends IgeBaseClass {
             this.updateStatus("Setting up lights...");
             this.setupLights();
             this.updateStatus("Building hospital lobby...");
-            this.obstacles = createHospitalLobby(this.scene);
+            const lobby = createHospitalLobby(this.scene);
+            this.obstacles = lobby.obstacles;
+            this.level = lobby.root;
             this.updateStatus("Loading character model...");
             this.characterModel = await igeGltfLoader.load("../../assets/models/CesiumMan.glb", "characterModel");
             this.updateStatus("Spawning players and zombies...");
@@ -224,7 +228,7 @@ export class Client extends IgeBaseClass {
         this.bloodFx.id("bloodFx").mount(this.scene);
         // Stains left on the floor. Multiply blending darkens the floor, so
         // stains are only visible where the floor itself is lit.
-        this.bloodStains = new IgeDecalSystem3d({ maxDecals: 400, lifetime: 40, fadeTime: 6 });
+        this.bloodStains = new IgeDecalSystem3d({ maxDecals: 400, lifetime: 40, fadeTime: 6, maxProjected: 120 });
         this.bloodStains.id("bloodStains").mount(this.scene);
         // Bright additive sparks for weapon swings
         this.slashFx = new IgeParticleSystem3d({
@@ -296,7 +300,7 @@ export class Client extends IgeBaseClass {
                 .scaleTo(CHARACTER_SCALE, CHARACTER_SCALE, CHARACTER_SCALE)
                 .mount(this.scene);
             // Per-instance tint over the shared model material
-            entity._materialData = { color: ZOMBIE_TINT };
+            entity.material({ color: ZOMBIE_TINT });
             const zombie = {
                 entity,
                 health: ZOMBIE_HEALTH,
@@ -340,7 +344,7 @@ export class Client extends IgeBaseClass {
         const part = (geometry, y, color, metallic, roughness) => {
             const entity = new IgeEntity().translateTo(0, y, 0).mount(sword);
             entity._geometryData = geometry;
-            entity._materialData = { color: { ...color, a: 1 }, metallic, roughness };
+            entity.material({ color: { ...color, a: 1 }, metallic, roughness });
             return entity;
         };
         part(parts.blade, 0.28, { r: 0.78, g: 0.8, b: 0.84 }, 0.9, 0.25);
@@ -504,6 +508,7 @@ export class Client extends IgeBaseClass {
                 size: 30 + Math.random() * 25,
                 opacity: 0.6 + Math.random() * 0.3
             });
+            this.splashBehind(hitPoint.x, hitPoint.z, dx / dist, dz / dist);
             this.spawnDamageNumber(player.index, hitPoint.x, 190, hitPoint.z, damage);
             if (zombie.health <= 0) {
                 this.killZombie(zombie);
@@ -538,6 +543,67 @@ export class Client extends IgeBaseClass {
                 zombie.knockbackZ = (dz / d) * 900;
             }
         }
+    }
+    /**
+     * Splash blood onto the wall, pillar or furniture behind a hit, if one
+     * is close: a short ray along the hit direction finds the surface and
+     * a projected decal wraps over it.
+     */
+    splashBehind(x, z, dirX, dirZ) {
+        if (!this.bloodStains || !this.level)
+            return;
+        let best = 160; // furthest a splash reaches
+        let normalX = 0, normalZ = 0;
+        const testBox = (minX, maxX, minZ, maxZ) => {
+            let enter = 0, exit = best, nx = 0, nz = 0;
+            for (const [origin, dir, min, max, axis] of [[x, dirX, minX, maxX, 0], [z, dirZ, minZ, maxZ, 1]]) {
+                if (Math.abs(dir) < 1e-6) {
+                    if (origin < min || origin > max)
+                        return;
+                    continue;
+                }
+                const tMin = (min - origin) / dir, tMax = (max - origin) / dir;
+                const near = Math.min(tMin, tMax), far = Math.max(tMin, tMax);
+                if (near > enter) {
+                    enter = near;
+                    nx = axis === 0 ? -Math.sign(dir) : 0;
+                    nz = axis === 1 ? -Math.sign(dir) : 0;
+                }
+                exit = Math.min(exit, far);
+            }
+            if (enter > 0 && enter <= exit && enter < best) {
+                best = enter;
+                normalX = nx;
+                normalZ = nz;
+            }
+        };
+        for (const o of this.obstacles)
+            testBox(o.minX, o.maxX, o.minZ, o.maxZ);
+        // The lobby walls, from inside
+        const w = WALL_FACES;
+        if (dirX > 0 && (w.maxX - x) / dirX < best) {
+            best = (w.maxX - x) / dirX;
+            normalX = -1;
+            normalZ = 0;
+        }
+        if (dirX < 0 && (w.minX - x) / dirX < best) {
+            best = (w.minX - x) / dirX;
+            normalX = 1;
+            normalZ = 0;
+        }
+        if (dirZ > 0 && (w.maxZ - z) / dirZ < best) {
+            best = (w.maxZ - z) / dirZ;
+            normalX = 0;
+            normalZ = -1;
+        }
+        if (dirZ < 0 && (w.minZ - z) / dirZ < best) {
+            best = (w.minZ - z) / dirZ;
+            normalX = 0;
+            normalZ = 1;
+        }
+        if (normalX === 0 && normalZ === 0)
+            return;
+        this.bloodStains.project({ x: x + dirX * best, y: 30 + Math.random() * 90, z: z + dirZ * best }, { x: normalX, y: 0, z: normalZ }, this.level, { size: 50 + Math.random() * 40, depth: 30, opacity: 0.7 + Math.random() * 0.25 });
     }
     killZombie(zombie) {
         zombie.alive = false;
@@ -664,14 +730,14 @@ export class Client extends IgeBaseClass {
     /** Player tint, or a red hit flash via the emissive override. */
     applyPlayerMaterial(player) {
         const c = PLAYER_CONFIGS[player.index].color;
-        player.entity._materialData = player.hitFlash > 0
+        player.entity.material(player.hitFlash > 0
             ? { color: { r: c.r, g: c.g, b: c.b, a: 1 }, emissiveColor: { r: 1, g: 0.1, b: 0.1 }, emissiveIntensity: 0.9 }
-            : { color: { r: c.r, g: c.g, b: c.b, a: 1 } };
+            : { color: { r: c.r, g: c.g, b: c.b, a: 1 } });
     }
     applyZombieMaterial(zombie) {
-        zombie.entity._materialData = zombie.hitFlash > 0
+        zombie.entity.material(zombie.hitFlash > 0
             ? { color: ZOMBIE_TINT, emissiveColor: { r: 1, g: 0.15, b: 0.1 }, emissiveIntensity: 1.2 }
-            : { color: ZOMBIE_TINT };
+            : { color: ZOMBIE_TINT });
     }
     // ------------------------------------------------------------------
     // HUD over the 3D views: name tags, health bars and damage numbers.

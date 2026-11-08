@@ -232,11 +232,11 @@ export class Client extends IgeBaseClass {
                 id: `cube_geometry_${i}`
             };
             // Set material data with color for lighting
-            cube._materialData = {
+            cube.material({
                 color: { r: cubeColors[i].r, g: cubeColors[i].g, b: cubeColors[i].b, a: 1 },
                 metallic: 0.1,
                 roughness: 0.6
-            };
+            });
             // Position the cube in the scene (below the sprites)
             cube.translateTo(startX + i * spacing, -150, 0);
             cube.mount(this.scene);
@@ -274,11 +274,11 @@ export class Client extends IgeBaseClass {
                         id: `duck_geometry_${i}`
                     };
                     // Apply bright yellow material for visibility
-                    duck._materialData = {
+                    duck.material({
                         color: { r: 1.0, g: 0.9, b: 0.0, a: 1 }, // Bright yellow
                         metallic: 0.0,
                         roughness: 0.3
-                    };
+                    });
                 }
                 // Position ducks in a row above the scene
                 // Duck model from Khronos is large (~200 units), scale down significantly

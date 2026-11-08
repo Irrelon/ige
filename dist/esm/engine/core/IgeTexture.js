@@ -1,11 +1,11 @@
 import { IgeAsset } from "./IgeAsset.js"
-import { markSceneChanged } from "../utils/sceneChange.js";
+import { markSceneChanged } from "../utils/sceneChange.js"
 import { newCanvas } from "./IgeCanvas.js"
-import { IgeDependencies } from "./IgeDependencies.js";
+import { IgeDependencies } from "./IgeDependencies.js"
 import { ige } from "../instance.js"
-import { arrPull } from "../utils/arrays.js";
+import { arrPull } from "../utils/arrays.js"
 import { isClient, isServer } from "../utils/clientServer.js"
-import { IgeTextureRenderMode } from "../../enums/index.js";
+import { IgeTextureRenderMode } from "../../enums/index.js"
 /**
  * Creates a new texture.
  */
@@ -18,6 +18,18 @@ export class IgeTexture extends IgeAsset {
     _renderMode = IgeTextureRenderMode.none;
     _smoothing = false;
     _filterImageDrawn = false;
+    /**
+     * Bumped whenever the texture's image changes after loading (filters,
+     * resizing, restoreOriginal()) so GPU renderers know to upload it again.
+     */
+    _imageVersion = 0;
+    /**
+     * True for textures whose render() draws each entity differently, such
+     * as bitmap font sheets drawing an entity's text. GPU renderers draw
+     * these into a per-entity canvas (like smart textures) instead of
+     * showing the image itself.
+     */
+    _rendersPerEntity = false;
     _destroyed = false;
     _url;
     _preFilters = [];
@@ -297,6 +309,7 @@ export class IgeTexture extends IgeAsset {
         }
         // Swap the current image for this new canvas
         this.image = this._textureCanvas;
+        this._imageChanged();
     }
     /**
      * Resizes the original texture image to a new size based on percentage.
@@ -339,6 +352,7 @@ export class IgeTexture extends IgeAsset {
         }
         // Swap the current image for this new canvas
         this.image = this._textureCanvas;
+        this._imageChanged();
     }
     /**
      * Sets the texture image back to the original image that the
@@ -350,6 +364,42 @@ export class IgeTexture extends IgeAsset {
         delete this._textureCtx;
         delete this._textureCanvas;
         this.removeFilters();
+        this._imageChanged();
+    }
+    /**
+     * Records that the texture's image has changed so GPU renderers upload
+     * it again, and asks render-on-demand for a new frame.
+     */
+    _imageChanged() {
+        this._imageVersion++;
+        markSceneChanged();
+    }
+    /**
+     * Redraws the texture canvas from the original image through the
+     * texture's pre-filters (see preFilter()). The Canvas 2D renderer does
+     * this every time the texture is drawn; GPU renderers once per frame.
+     */
+    _runPreFilters() {
+        if (!this._preFilters.length || !this._textureCanvas || !this._textureCtx || !this._originalImage)
+            return;
+        // Call the drawing of the original image
+        this._textureCtx.clearRect(0, 0, this._textureCanvas.width, this._textureCanvas.height);
+        this._textureCtx.drawImage(this._originalImage, 0, 0);
+        // Call the applyFilter and preFilter methods one by one
+        this._postFilters.forEach((method, index) => {
+            if (!this._textureCanvas || !this._textureCtx || !this._originalImage)
+                return;
+            this._textureCtx.save();
+            method(this._textureCanvas, this._textureCtx, this._originalImage, this, this._postFiltersData[index]);
+            this._textureCtx.restore();
+        });
+        this._preFilters.forEach((method, index) => {
+            if (!this._textureCanvas || !this._textureCtx || !this._originalImage)
+                return;
+            this._textureCtx.save();
+            method(this._textureCanvas, this._textureCtx, this._originalImage, this, this._preFiltersData[index]);
+            this._textureCtx.restore();
+        });
     }
     smoothing(val) {
         if (val !== undefined) {
@@ -383,26 +433,7 @@ export class IgeTexture extends IgeAsset {
             if (!cell) {
                 throw new Error(`Cannot render texture using cell ${entity._cell} because the cell does not exist in the assigned texture!`);
             }
-            if (this._preFilters.length > 0 && this._textureCanvas && this._textureCtx) {
-                // Call the drawing of the original image
-                this._textureCtx.clearRect(0, 0, this._textureCanvas.width, this._textureCanvas.height);
-                this._textureCtx.drawImage(this._originalImage, 0, 0);
-                // Call the applyFilter and preFilter methods one by one
-                this._postFilters.forEach((method, index) => {
-                    if (!this._textureCanvas || !this._textureCtx || !this._originalImage)
-                        return;
-                    this._textureCtx.save();
-                    method(this._textureCanvas, this._textureCtx, this._originalImage, this, this._postFiltersData[index]);
-                    this._textureCtx.restore();
-                });
-                this._preFilters.forEach((method, index) => {
-                    if (!this._textureCanvas || !this._textureCtx || !this._originalImage)
-                        return;
-                    this._textureCtx.save();
-                    method(this._textureCanvas, this._textureCtx, this._originalImage, this, this._preFiltersData[index]);
-                    this._textureCtx.restore();
-                });
-            }
+            this._runPreFilters();
             ctx.drawImage(this.image, cell[0], // texture x
             cell[1], // texture y
             cell[2], // texture width
@@ -518,6 +549,7 @@ export class IgeTexture extends IgeAsset {
         // Save filter in active preFilter list
         this._preFilters[this._preFilters.length] = method;
         this._preFiltersData[this._preFiltersData.length] = !data ? {} : data;
+        this._imageChanged();
         return this;
     }
     /**
@@ -565,6 +597,7 @@ export class IgeTexture extends IgeAsset {
         this._textureCtx.save();
         method(this._textureCanvas, this._textureCtx, this._originalImage, this, data);
         this._textureCtx.restore();
+        this._imageChanged();
         // Save filter in active applyFilter list
         // Commented because this makes no sense. Wouldn't we add a filter
         // rather than calling applyFilter() if we wanted this to be more

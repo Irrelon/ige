@@ -1,30 +1,31 @@
 import { IgeBaseRenderer } from "./IgeBaseRenderer.js"
-import type { IgeEngine } from "./IgeEngine.js";
+import type { IgeEngine } from "./IgeEngine.js"
 import type { IgeViewport } from "./IgeViewport.js"
-import { IgeWebGlResourceManager } from "../webgl/IgeWebGlResourceManager.js";
+import { IgeWebGlResourceManager } from "../webgl/IgeWebGlResourceManager.js"
 import { IgeWebGlShaderManager } from "../webgl/IgeWebGlShaderManager.js"
-import { IgeWebGlTextureManager } from "../webgl/IgeWebGlTextureManager.js";
+import { IgeWebGlTextureManager } from "../webgl/IgeWebGlTextureManager.js"
 import { IgeWebGlGeometryManager } from "../webgl/IgeWebGlGeometryManager.js"
-import { IgeWebGlCameraController } from "../webgl/IgeWebGlCameraController.js";
+import { IgeWebGlCameraController } from "../webgl/IgeWebGlCameraController.js"
 import { IgeWebGlStateManager } from "../webgl/IgeWebGlStateManager.js"
-import { IgeWebGlLightManager } from "../webgl/IgeWebGlLightManager.js";
+import { IgeWebGlLightManager } from "../webgl/IgeWebGlLightManager.js"
 import { IgeWebGlShadowManager } from "../webgl/IgeWebGlShadowManager.js"
-import { IgeWebGlSkeletonManager } from "../webgl/IgeWebGlSkeletonManager.js";
+import { IgeWebGlSkeletonManager } from "../webgl/IgeWebGlSkeletonManager.js"
 import type { IgeObject } from "./IgeObject.js"
-import type { IgeEntity } from "./IgeEntity.js";
+import type { IgeEntity } from "./IgeEntity.js"
 import type { IgeDirectionalLight, IgePointLight } from "../webgl/IgeWebGlLight.js"
-import type { IgeCameraMatrices } from "../webgl/IgeWebGlCameraController.js";
+import type { IgeCameraMatrices } from "../webgl/IgeWebGlCameraController.js"
 import type { IgeWebGlProgram } from "../webgl/IgeWebGlProgram.js"
-import type { IgeWebGlGeometry } from "../webgl/IgeWebGlGeometry.js";
+import type { IgeWebGlGeometry } from "../webgl/IgeWebGlGeometry.js"
 import type { IgeTexture } from "./IgeTexture.js"
-import { IgeMatrix4 } from "./IgeMatrix4.js";
+import { IgeMatrix4 } from "./IgeMatrix4.js"
 import { IgeFrustum } from "../webgl/IgeFrustum.js"
-import { IgeWebGlBonePalette, IgeWebGlInstanceBuffer, IgeWebGlItemBatcher, type IgeWebGlItemBatch, type IgeWebGlRenderItem } from "../webgl/IgeWebGlInstancing.js";
+import { IgeWebGlBonePalette, IgeWebGlInstanceBuffer, IgeWebGlItemBatcher, type IgeWebGlItemBatch, type IgeWebGlRenderItem } from "../webgl/IgeWebGlInstancing.js"
 import type { IgeGeometryData3d } from "../../types/IgeGeometryData3d.js"
 import type { IgeModelPart } from "../webgl/IgeModelParts.js"
-import type { IgeParticleSystem3d } from "../webgl/IgeParticleSystem3d.js";
+import type { IgeParticleSystem3d } from "../webgl/IgeParticleSystem3d.js"
 import type { IgeDecalSystem3d } from "../webgl/IgeDecalSystem3d.js"
-import type { IgeHeightfieldRayOptions } from "../webgl/IgeHeightfieldRay.js";
+import type { IgeRaycastHit, IgeRaycastOptions } from "../webgl/IgeRaycast.js"
+import type { IgeHeightfieldRayOptions } from "../webgl/IgeHeightfieldRay.js"
 import type { IgeMaterialData } from "../../types/IgeMaterialData.js"
 import type { IgeSkeleton } from "../../types/IgeSkeletonData.js"
 /**
@@ -144,6 +145,11 @@ export declare class IgeWebGlRenderer extends IgeBaseRenderer {
     protected _sharedShadowFrame: number;
     protected _pendingBlobTextures: Set<string>;
     protected _particleBuffers: Map<IgeWebGlInstanceSource, {
+        buffer: WebGLBuffer | null;
+        version: number;
+        lastFrame: number;
+    }>;
+    protected _decalMeshBuffers: Map<IgeDecalSystem3d, {
         buffer: WebGLBuffer | null;
         version: number;
         lastFrame: number;
@@ -419,11 +425,35 @@ export declare class IgeWebGlRenderer extends IgeBaseRenderer {
      */
     viewportAt(screenX: number, screenY: number): IgeViewport | undefined;
     /**
+     * The nearest mesh triangle under a screen point (CSS pixels from the
+     * canvas's top-left) in a viewport: which entity was clicked, and
+     * exactly where (point, surface normal, distance). Tests the given
+     * entities and their children, or the viewport's whole scene; skinned
+     * characters are tested in their current pose. Sprites aren't tested.
+     * @example #Click to attack a zombie or move to a point on the terrain
+     *     const hit = renderer.raycast(viewport, event.clientX, event.clientY);
+     *     if (hit?.entity.data("zombie")) attack(hit.entity);
+     *     else if (hit) moveTo(hit.point);
+     */
+    raycast(viewport: IgeViewport, screenX: number, screenY: number, targets?: IgeEntity | IgeEntity[], options?: IgeRaycastOptions): IgeRaycastHit | null;
+    /**
+     * Gets / sets how entity pointer events (pointerOver, pointerDown...)
+     * test meshes: "box" (default) against their bounding box, which is
+     * cheap but also catches the empty space around a shape; "triangles"
+     * against the actual triangles (skinned characters in their current
+     * pose), after the box test passes. Sprites are always tested by their
+     * quad.
+     */
+    pointerPicking(): "box" | "triangles";
+    pointerPicking(mode: "box" | "triangles"): this;
+    protected _pointerPicking: "box" | "triangles";
+    /**
      * Whether a screen point (CSS pixels from the canvas's top-left) is over
      * an entity in the viewport under it. IGE's pointer events (pointerOver,
      * pointerDown, pointerUp...) use this when the WebGL renderer is active.
-     * Meshes are hit by their bounding box; sprites exactly by their quad in
-     * flat views (screen2d, or billboard("none")), or by their on-screen
+     * Meshes are hit by their bounding box, or by their triangles with
+     * pointerPicking("triangles"); sprites exactly by their quad in flat
+     * views (screen2d, or billboard("none")), or by their on-screen
      * rectangle when billboarded.
      */
     pointerHitTest(entity: IgeEntity, screenX: number, screenY: number): boolean;
@@ -594,6 +624,11 @@ export declare class IgeWebGlRenderer extends IgeBaseRenderer {
      * so they never fight with the ground they lie on.
      */
     protected _renderDecalSystems(systems: IgeDecalSystem3d[], matrices: IgeCameraMatrices): void;
+    /**
+     * Draw projected decals (IgeDecalSystem3d.project()): each system's
+     * decal triangles are one world-space vertex buffer and one draw call.
+     */
+    protected _renderProjectedDecals(systems: IgeDecalSystem3d[], matrices: IgeCameraMatrices): void;
     /**
      * Draw particle systems as camera-facing quads: one instanced call per
      * system (WebGL 2) or one call per particle (WebGL 1). Drawn after the

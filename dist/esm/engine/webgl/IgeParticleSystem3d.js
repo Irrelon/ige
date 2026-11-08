@@ -1,5 +1,5 @@
 import { IgeEntity } from "../core/IgeEntity.js"
-import { markSceneChanged } from "../utils/sceneChange.js";
+import { markSceneChanged } from "../utils/sceneChange.js"
 const DEFAULT_OPTIONS = {
     maxParticles: 512,
     blending: "additive",

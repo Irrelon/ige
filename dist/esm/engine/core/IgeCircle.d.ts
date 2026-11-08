@@ -1,5 +1,5 @@
 import type { IgePoint2d } from "./IgePoint2d.js"
-import type { IgePoint3d } from "./IgePoint3d.js";
+import type { IgePoint3d } from "./IgePoint3d.js"
 import type { IgeCanvasRenderingContext2d } from "../../types/IgeCanvasRenderingContext2d.js"
 import type { IgeShapeFunctionality } from "../../types/IgeShapeFunctionality.js"
 /**

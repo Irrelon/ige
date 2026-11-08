@@ -1,14 +1,14 @@
 import type { IgeBaseClass } from "./IgeBaseClass.js"
-import type { IgeBaseRenderer } from "./IgeBaseRenderer.js";
+import type { IgeBaseRenderer } from "./IgeBaseRenderer.js"
 import type { IgeCamera } from "./IgeCamera.js"
-import type { IgeComponent } from "./IgeComponent.js";
+import type { IgeComponent } from "./IgeComponent.js"
 import type { IgeDummyCanvas } from "./IgeDummyCanvas.js"
-import { IgeEntity } from "./IgeEntity.js";
+import { IgeEntity } from "./IgeEntity.js"
 import type { IgeObject } from "./IgeObject.js"
-import { IgePoint3d } from "./IgePoint3d.js";
+import { IgePoint3d } from "./IgePoint3d.js"
 import type { IgeSceneGraph } from "./IgeSceneGraph.js"
-import { IgeViewport } from "./IgeViewport.js";
-import { IgeEngineState } from "../../enums/index.js";
+import { IgeViewport } from "./IgeViewport.js"
+import { IgeEngineState } from "../../enums/index.js"
 import type { IgeAnyFunction } from "../../types/IgeAnyFunction.js"
 import type { IgeCanvasRenderingContext2d } from "../../types/IgeCanvasRenderingContext2d.js"
 import type { IgeStatBreakdown } from "../../types/IgeStatBreakdown.js"
@@ -120,7 +120,13 @@ export declare class IgeEngine extends IgeEntity implements IgeIsReadyPromise {
         canvas: OffscreenCanvas;
         ctx: OffscreenCanvasRenderingContext2D;
     };
-    _setInternalCanvasSize(canvas: OffscreenCanvas | IgeDummyCanvas, ctx: IgeCanvasRenderingContext2d, newWidth: number, newHeight: number): void;
+    _setInternalCanvasSize(canvas: OffscreenCanvas | IgeDummyCanvas, ctx: IgeCanvasRenderingContext2d, newWidth: number, newHeight: number): number;
+    /**
+     * The pixel ratio for off-screen canvases (entity caches): the
+     * renderer's, so cached entities are as sharp as everything else on
+     * high-DPI screens.
+     */
+    _canvasPixelRatio(): number;
     /**
      * Handles the screen resize event.
      * @param event
@@ -209,14 +215,16 @@ export declare class IgeEngine extends IgeEntity implements IgeIsReadyPromise {
      * time, but the engine notices most changes itself: entity transforms
      * (including tweens and velocity), showing, hiding and unmounting
      * entities, camera and viewport changes, playing animations, live
-     * particles, fading decals, finished texture loads and canvas resizes.
-     * Call manualRender() after changes it can't see, such as assigning a
-     * new _materialData or texture.
+     * particles, fading decals, finished texture loads, canvas resizes, and
+     * entity setters that change how something looks (material(),
+     * texture(), cell(), opacity(), width()/height(), lod(), model(),
+     * cacheDirty(true)). Call manualRender() after changes it can't see:
+     * editing a material object in place, assigning fields such as
+     * _materialData or _geometryData directly, or drawing into a texture.
      * @example #Draw only when something changes
      *     ige.engine.renderOnDemand(true);
-     *     // later, after recolouring a tile:
-     *     tile._materialData = highlight;
-     *     ige.engine.manualRender();
+     *     // later, recolouring a tile draws one new frame:
+     *     tile.material(highlight);
      */
     renderOnDemand(): boolean;
     renderOnDemand(val: boolean): this;

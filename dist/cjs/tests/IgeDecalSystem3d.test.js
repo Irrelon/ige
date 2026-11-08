@@ -1,6 +1,33 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const IgeDecalSystem3d_1 = require("../engine/webgl/IgeDecalSystem3d.js");
+const IgeEntity_1 = require("../engine/core/IgeEntity.js");
+const instance_1 = require("../engine/instance.js");
+// updateTransform() builds the 3D world matrices projected decals use
+// when the engine's renderer is the WebGL one
+beforeAll(() => {
+    Object.defineProperty(instance_1.ige, "engine", {
+        value: { renderer: () => ({ classId: "IgeWebGlRenderer" }) },
+        configurable: true,
+        writable: true
+    });
+});
+/** A 200 x 200 floor entity at y = 0 with a child wall at z = -50 facing +Z. */
+function room() {
+    const floor = new IgeEntity_1.IgeEntity();
+    floor._geometryData = {
+        id: "floor",
+        vertices: new Float32Array([-100, 0, 100, 100, 0, 100, 100, 0, -100, -100, 0, -100]),
+        indices: new Uint16Array([0, 1, 2, 0, 2, 3])
+    };
+    const wall = new IgeEntity_1.IgeEntity().mount(floor);
+    wall._geometryData = {
+        id: "wall",
+        vertices: new Float32Array([-100, 0, -50, 100, 0, -50, 100, 100, -50, -100, 100, -50]),
+        indices: new Uint16Array([0, 1, 2, 0, 2, 3])
+    };
+    return floor;
+}
 describe("IgeDecalSystem3d", () => {
     it("replaces the oldest decal when full and keeps render data oldest first", () => {
         const decals = new IgeDecalSystem3d_1.IgeDecalSystem3d({ maxDecals: 3, lift: 0 });
@@ -50,5 +77,36 @@ describe("IgeDecalSystem3d", () => {
         expect(new IgeDecalSystem3d_1.IgeDecalSystem3d().atlasGrid()).toBe(2);
         expect(new IgeDecalSystem3d_1.IgeDecalSystem3d({ texture: {} }).atlasGrid()).toBe(1);
         expect(new IgeDecalSystem3d_1.IgeDecalSystem3d({ texture: {}, atlasGrid: 4 }).atlasGrid()).toBe(4);
+    });
+    it("projects decals onto target entities and their children, fading and expiring them", () => {
+        const target = room();
+        const decals = new IgeDecalSystem3d_1.IgeDecalSystem3d({ lifetime: 1, fadeTime: 1, maxProjected: 2 });
+        // Onto the child wall, and onto the floor
+        decals.project({ x: 0, y: 50, z: -50 }, { x: 0, y: 0, z: 1 }, target, { size: 30, opacity: 0.8, cell: 3 });
+        decals.project({ x: 0, y: 0, z: 0 }, { x: 0, y: 1, z: 0 }, target, { size: 30, opacity: 0.8 });
+        // Pointing away from every surface: nothing is added
+        decals.project({ x: 0, y: 50, z: -50 }, { x: 0, y: 0, z: -1 }, target);
+        expect(decals.projectedCount()).toBe(2);
+        decals._age(0);
+        const { data, vertexCount } = decals.meshRenderData();
+        expect(vertexCount).toBeGreaterThan(0);
+        // Wall decal first: on the wall plane, in atlas cell 3 (bottom right of 2 x 2)
+        expect(data[2]).toBeCloseTo(-49.5, 4);
+        expect(data[3]).toBeGreaterThanOrEqual(0.5 - 1e-5);
+        expect(data[4]).toBeGreaterThanOrEqual(0.5 - 1e-5);
+        expect(data[8]).toBeCloseTo(0.8, 5);
+        decals._age(1.5); // half faded
+        expect(decals.meshRenderData().data[8]).toBeCloseTo(0.4, 4);
+        decals._age(1);
+        expect(decals.projectedCount()).toBe(0);
+        expect(decals.meshRenderData().vertexCount).toBe(0);
+        // The oldest projected decal is replaced when full
+        for (let i = 0; i < 3; i++)
+            decals.project({ x: i * 10, y: 0, z: 0 }, { x: 0, y: 1, z: 0 }, target, { size: 5, rotation: 0 });
+        expect(decals.projectedCount()).toBe(2);
+        decals._age(0);
+        const first = decals.meshRenderData().data;
+        expect(Math.abs(first[0] - 10)).toBeLessThanOrEqual(2.5 + 1e-4);
+        expect(IgeDecalSystem3d_1.DECAL_MESH_VERTEX_FLOATS).toBe(9);
     });
 });
