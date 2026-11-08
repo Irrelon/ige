@@ -32,17 +32,24 @@ position is the centre of the view, so `camera.translateTo(x, y, 0)` and camera 
   Canvas 2D (origin at the entity's centre, entity pixels). As in Canvas 2D they redraw every frame; give entities
   whose drawing doesn't change `cache(true)`, and call `cacheDirty(true)` when it does change. Drawing a smart texture
   means uploading its canvas to the GPU, so caching matters more here than in Canvas 2D.
+- `IgeFontEntity` text: native fonts, bitmap font sheets (`IgeFontSheet`) and `bindData()`.
+- Texture filters: `applyFilter()` (also after the texture was first drawn), `preFilter()` (re-run every frame, as
+  Canvas 2D does) and `resize()`.
+- `compositeCache(true)` groups draw correctly; the WebGL renderer draws their children directly, so the cache brings
+  no speed-up there.
 
 ## Differences
 
 - **Draw order.** Entities at the same z are drawn in scene graph order (later mounted on top). Canvas 2D's
   `depth()` sorting is not applied; use z (smaller z is nearer this camera) or mount order.
 - **Isometric render mode.** `IgeEntityRenderMode.iso` games place the ground on x/y with z up, and Canvas 2D projects
-  them itself. The WebGL renderer treats every entity as 3D with y up, so iso scenes don't map across automatically
-  yet. Keep `IgeCanvas2dRenderer` for them, or move them to a 3D layout (ground on x/z) with the `isometric` camera
-  preset.
-- **Not verified on WebGL yet:** composite caching (`compositeCache()`), canvas filters, and `IgeFontEntity` text.
-  Smart textures can draw text (see the example).
+  them itself. The WebGL renderer treats every entity as 3D with y up and won't map iso scenes across: move them to a
+  3D layout (ground on x/z) with the `isometric` camera preset, or keep `IgeCanvas2dRenderer` for them.
+- **Tick behaviours.** The WebGL renderer draws entities without calling their `tick()`, so `preTick`/`postTick`
+  behaviours on entities (which receive a Canvas 2D context) don't run; put game logic in `preUpdate`/`postUpdate`
+  behaviours or `update()`.
+- `src/examples/webGl2d/index.html?canvas=1` runs the example on `IgeCanvas2dRenderer` for a side-by-side
+  comparison.
 - Sprites in a `screen2d` view are drawn flat with their 2D transform. In 3D views they are billboards that face the
   camera (`entity.billboard("full" | "y" | "none")`).
 

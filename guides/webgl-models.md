@@ -32,8 +32,16 @@ const zombie = new IgeEntity()
 `model()` sets up every mesh, material, texture, node transform, skeleton and animation clip in the file.
 Models face +Z and stand upright as authored; don't add corrective rotations.
 
-Assigning `_materialData` on the entity overrides the model's material values for that entity only, e.g. a tint or
-a hit flash: `zombie._materialData = { color: { r: 0.4, g: 0.6, b: 0.35, a: 1 } }`.
+`material()` overrides the model's material values for that entity only, e.g. a tint or a hit flash, and
+`material(null)` restores them:
+
+```typescript
+zombie.material({ color: { r: 0.4, g: 0.6, b: 0.35, a: 1 } });
+zombie.material({ color: "#ffffff", emissiveColor: { r: 1, g: 0.1, b: 0.1 }, emissiveIntensity: 0.9 });
+```
+
+Material objects can be shared between entities. With render on demand, call `material()` again after changing a
+shared object in place.
 
 ## Animation
 
@@ -110,8 +118,14 @@ const hand = hero.bonePosition("RightHand"); // world position, e.g. to spawn an
 
 - `IgeParticleSystem3d`: sparks, blood, smoke and magic, one instanced draw per system. Call `burst()` for one-off
   effects.
-- `IgeDecalSystem3d`: marks on the floor (blood, scorch marks, footprints). By default they darken the floor, so
-  they pick up its lighting. `decals.add(x, z, { size, color, opacity })`.
+- `IgeDecalSystem3d`: marks on surfaces (blood, scorch marks, footprints). By default they darken what they lie on,
+  so they pick up its lighting.
+  - `decals.add(x, z, { y, size, color, opacity })` lays one flat on a floor: the cheapest kind, thousands per system.
+  - `decals.project(position, normal, targets, { size, depth, maxAngle })` wraps one over the surfaces of `targets`
+    and their children (walls, pillars, steps, uneven terrain), e.g. blood behind a hit:
+    `blood.project(wallPoint, wallNormal, levelRoot, { size: 70 })`. `normal` points out of the surface; `maxAngle`
+    (default 75 degrees) keeps a floor splat off the sides of steps, or wraps corners at about 100. Animated
+    characters don't receive projected decals. Mount level geometry under one root entity to target it all at once.
 
 ## HUD, picking and split screen
 
@@ -121,9 +135,13 @@ const hand = hero.bonePosition("RightHand"); // world position, e.g. to spawn an
 - `renderer.worldToScreen(viewport, x, y, z)` projects a point; `screenToGround()`, `screenToHeightfield()` and
   `screenToWorldRay()` turn a screen point into the world (flat ground, uneven terrain, or a ray);
   `viewportAt(x, y)` finds the view under a point.
+- `renderer.raycast(viewport, x, y)` returns the nearest mesh hit under a screen point (entity, point, normal,
+  distance), tested against triangles, with skinned characters in their current pose: click to attack, click to move
+  on terrain. `raycastEntities(ray, targets)` does the same for any world ray (line of sight, projectiles), about
+  0.2 ms against the whole zombie demo scene.
 - Entity pointer events (`pointerOver`, `pointerDown`, `pointerUp`...) work in every view: meshes are hit by their
-  bounding box, skinned characters by a box around their animated joints. `renderer.pointerHitTest(entity, x, y)` is
-  the same test for your own code.
+  bounding box, skinned characters by a box around their animated joints, or by their triangles with
+  `renderer.pointerPicking("triangles")`. `renderer.pointerHitTest(entity, x, y)` is the same test for your own code.
 
 ## Performance switches
 
@@ -133,7 +151,7 @@ const hand = hero.bonePosition("RightHand"); // world position, e.g. to spawn an
 | `renderer.backFaceCulling(true)` | Skip triangles facing away (about a fifth less GPU time in the zombie demo) |
 | `renderer.shadowCaching(true)` | Redraw static shadow casters only when they or the shadow frustum change |
 | `renderer.shadowSharing(threshold)` | Split-screen views close together share one shadow map |
-| `ige.engine.renderOnDemand(true)` | Draw only when something visible changed (strategy games, menus); call `ige.engine.manualRender()` after material changes |
+| `ige.engine.renderOnDemand(true)` | Draw only when something visible changed (strategy games, menus); setters such as `material()`, `texture()` and `opacity()` count as changes, edits to objects in place need `ige.engine.manualRender()` |
 | `renderer.debugDraw({ bounds, shadowFrustum })`, `debugLine()` | See culling, LOD levels and shadow coverage |
 | `renderer.stats()` | Draw calls, instances, triangles, LOD use and shadow cache rebuilds per frame |
 
