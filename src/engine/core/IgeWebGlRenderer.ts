@@ -296,6 +296,9 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 	// Must be set before createFrontBuffer() is called.
 	protected _preserveDrawingBuffer: boolean = false;
 
+	// Context version to ask for first (see preferredWebGlVersion())
+	protected _preferredWebGlVersion: 1 | 2 = 2;
+
 	/**
 	 * Initialize the WebGL renderer.
 	 */
@@ -394,8 +397,10 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 			powerPreference: "high-performance"
 		};
 
-		// Try WebGL2 first
-		gl = this._canvasElement.getContext("webgl2", contextAttributes) as WebGL2RenderingContext | null;
+		// Try WebGL2 first (unless WebGL 1 was asked for, e.g. for testing)
+		gl = this._preferredWebGlVersion === 2
+			? this._canvasElement.getContext("webgl2", contextAttributes) as WebGL2RenderingContext | null
+			: null;
 
 		if (gl) {
 			this._webglVersion = 2;
@@ -498,6 +503,12 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 
 			const vaoExt = gl.getExtension("OES_vertex_array_object");
 			this._capabilities.supportsVertexArrayObjects = !!vaoExt;
+		}
+
+		// 32-bit indices (meshes over 65535 vertices) are core in WebGL 2
+		// but an extension in WebGL 1 that must be switched on before use
+		if (this._webglVersion === 1 && !gl.getExtension("OES_element_index_uint")) {
+			this.log("OES_element_index_uint is unavailable: meshes with more than 65535 vertices can't be drawn", "warning");
 		}
 
 		// Check for depth texture support
@@ -2795,6 +2806,21 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 			document.exitFullscreen();
 		}
 	};
+
+	/**
+	 * Gets / sets the WebGL version to ask for (default 2, falling back to
+	 * 1 when unavailable). Set it to 1 before createFrontBuffer() to run the
+	 * WebGL 1 path on a WebGL 2 machine, e.g. to test the fallback.
+	 */
+	preferredWebGlVersion(): 1 | 2;
+	preferredWebGlVersion(val: 1 | 2): this;
+	preferredWebGlVersion(val?: 1 | 2): 1 | 2 | this {
+		if (val === undefined) {
+			return this._preferredWebGlVersion;
+		}
+		this._preferredWebGlVersion = val;
+		return this;
+	}
 
 	/**
 	 * Gets / sets whether the WebGL drawing buffer should be preserved after

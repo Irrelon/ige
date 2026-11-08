@@ -569,6 +569,10 @@ export class IgeWebGlShadowManager extends IgeBaseClass {
 		// Set viewport to shadow map size
 		gl.viewport(0, 0, size, size);
 
+		// Depth written as colour (WebGL 1 packs it into RGBA) must not be
+		// blended with what is already there
+		gl.disable(gl.BLEND);
+
 		// Enable depth testing and writing BEFORE clearing
 		gl.enable(gl.DEPTH_TEST);
 		gl.depthFunc(gl.LESS);
@@ -864,6 +868,9 @@ export class IgeWebGlShadowManager extends IgeBaseClass {
 		const gl = this._gl;
 
 		gl.bindFramebuffer(gl.FRAMEBUFFER, data.framebuffer);
+
+		// Packed or float depth written as colour must not be blended
+		gl.disable(gl.BLEND);
 
 		// On first face, clear the entire atlas
 		if (faceIndex === 0) {
