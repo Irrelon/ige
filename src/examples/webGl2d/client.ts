@@ -21,7 +21,9 @@ window.ige = ige;
  *   camera position is the centre of the view (as in Canvas 2D);
  * - smart textures (drawn with the Canvas 2D API from each entity's own
  *   data), redrawn every frame unless the entity is cached;
- * - image sprites, 2D rotation (rotate.z), scale and nested transforms.
+ * - image sprites, 2D rotation (rotate.z), scale and nested transforms;
+ * - ?split=1: two side-by-side views of the same scene, as in a 2D
+ *   split-screen game, one panned and one zoomed with the camera's scale.
  */
 
 /** A star whose colour and point count come from the entity's data. */
@@ -97,10 +99,37 @@ export class Client extends IgeBaseClass implements IgeCanInit {
 		await ige.engine.start();
 
 		const scene = new IgeScene2d().id("scene");
-		const viewport = new IgeViewport().id("viewport").autoSize(true).scene(scene).mount(ige.engine);
+		const split = new URLSearchParams(window.location.search).get("split") === "1";
+		const views: IgeViewport[] = [];
 
-		// Canvas 2D style view: (0, 0) is the centre of the screen, y down
-		viewport.camera.preset("screen2d");
+		if (!split) {
+			const viewport = new IgeViewport().id("viewport").autoSize(true).scene(scene).mount(ige.engine);
+			// Canvas 2D style view: (0, 0) is the centre of the screen, y down
+			viewport.camera.preset("screen2d");
+			views.push(viewport);
+		} else {
+			// Two views side by side (WebGL viewport y is measured from the bottom)
+			for (let i = 0; i < 2; i++) {
+				const viewport = new IgeViewport().id(`viewport_${i}`).autoSize(false).scene(scene).mount(ige.engine);
+				viewport.camera.preset("screen2d");
+				views.push(viewport);
+			}
+			views[0].camera.translateTo(0, -120, 0); // left: panned up to the sprites
+			views[1].camera.scaleTo(1.6, 1.6, 1.6); // right: zoomed in on the stars
+			views[1].camera.translateTo(0, 40, 0);
+
+			const layout = () => {
+				const halfW = Math.floor(ige.engine._bounds2d.x / 2);
+				views.forEach((viewport, i) => {
+					viewport._bounds2d.x = halfW - 2;
+					viewport._bounds2d.y = ige.engine._bounds2d.y;
+					viewport._translate.x = i * (halfW + 2);
+					viewport._translate.y = 0;
+				});
+			};
+			layout();
+			window.addEventListener("resize", layout);
+		}
 
 		// A row of labelled image sprites along the top (y is negative = up)
 		for (let i = 0; i < 5; i++) {
@@ -164,7 +193,7 @@ export class Client extends IgeBaseClass implements IgeCanInit {
 			for (const orbiter of orbiters) orbiter.rotateBy(0, 0, dt * 2);
 			sun.scaleTo(1 + Math.sin(time * 2) * 0.08, 1 + Math.sin(time * 2) * 0.08, 1);
 			bars.forEach((b, i) => b.data("value", (Math.sin(time * (0.6 + i * 0.3)) + 1) / 2));
-			if (stats) stats.textContent = `fps ${ige.engine._fps} | draws ${renderer.stats().drawCalls}`;
+			if (stats) stats.textContent = `fps ${ige.engine._fps} | views ${views.length} | draws ${renderer.stats().drawCalls}`;
 		});
 	}
 }
