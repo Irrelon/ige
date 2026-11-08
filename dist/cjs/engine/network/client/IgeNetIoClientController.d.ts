@@ -1,5 +1,5 @@
 import { IgeNetIoClient } from "./IgeNetIoClient.js"
-import { IgeNetIoBaseController } from "../IgeNetIoBaseController.js";
+import { IgeNetIoBaseController } from "../IgeNetIoBaseController.js"
 import { IgeNetworkConnectionState } from "../../../enums/IgeNetworkConnectionState.js"
 import type { IgeIsReadyPromise } from "../../../types/IgeIsReadyPromise.js"
 import type { IgeNetworkClientSideMessageHandler, IgeNetworkClientSideResponseHandler, IgeNetworkEncodedMessageData, IgeNetworkMessageData, IgeNetworkMessageStructure, IgeNetworkRequestMessageStructure, IgeNetworkTimeSyncRequestFromServer, IgeNetworkTimeSyncResponseFromClient } from "../../../types/IgeNetworkMessage.js"

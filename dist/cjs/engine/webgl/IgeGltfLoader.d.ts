@@ -1,7 +1,7 @@
 import { IgeBaseClass } from "../core/IgeBaseClass.js"
-import { IgeEntity } from "../core/IgeEntity.js";
+import { IgeEntity } from "../core/IgeEntity.js"
 import { IgeWebGlMaterial } from "./IgeWebGlMaterial.js"
-import type { IgeGeometryData3d } from "../../types/IgeGeometryData3d.js";
+import type { IgeGeometryData3d } from "../../types/IgeGeometryData3d.js"
 import type { IgeSkeletonData } from "../../types/IgeSkeletonData.js"
 import type { IgeAnimationClipData } from "../../types/IgeAnimationClipData.js"
 /**
@@ -88,10 +88,14 @@ export interface IgeGltfPrimitive {
 export declare class IgeGltfLoader extends IgeBaseClass {
     classId: string;
     protected _modelCache: Map<string, IgeGltfModel>;
+    protected _pending: Map<string, Promise<IgeGltfModel>>;
     /**
-     * Load a GLTF or GLB model from URL.
+     * Load a GLTF or GLB model from URL. Models are cached by id (the URL
+     * when no id is given); asking again for one that is loading waits for
+     * the same load. Rejects if the file is missing or can't be parsed.
      */
     load(url: string, modelId?: string): Promise<IgeGltfModel>;
+    protected _load(url: string, id: string): Promise<IgeGltfModel>;
     /**
      * Parse GLB binary format.
      */

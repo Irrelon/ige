@@ -404,7 +404,8 @@ export declare class IgeEngine extends IgeEntity implements IgeIsReadyPromise {
     /**
      * Starts the engine or rejects the promise with an error.
      */
-    start(): Promise<unknown>;
+    start(): Promise<boolean>;
+    _startEngine(): Promise<boolean>;
     /**
      * Stops the engine.
      * @return {boolean}

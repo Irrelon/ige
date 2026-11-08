@@ -27,6 +27,40 @@ class IgeAsset extends IgeEventingClass_1.IgeEventingClass {
             this.on("loaded", listener);
         });
     }
+    /**
+     * A promise that resolves when the asset has either loaded or failed
+     * to load, with the error in the second case. Unlike whenLoaded() it
+     * never waits forever on a missing file.
+     */
+    whenSettled() {
+        return new Promise((resolve) => {
+            if (this._loaded)
+                return resolve({ asset: this });
+            if (this._loadError)
+                return resolve({ asset: this, error: this._loadError });
+            const onLoaded = () => {
+                done();
+                resolve({ asset: this });
+            };
+            const onError = (error) => {
+                done();
+                resolve({ asset: this, error });
+            };
+            const done = () => {
+                this.off("loaded", onLoaded);
+                this.off("error", onError);
+            };
+            this.on("loaded", onLoaded);
+            this.on("error", onError);
+        });
+    }
+    /** Record a failed load and emit "error". */
+    _assetFailed(error) {
+        setTimeout(() => {
+            this._loadError = error;
+            this.emit("error", error);
+        }, 5);
+    }
     _assetLoaded() {
         // Set a timeout here so that when this event is emitted,
         // the code creating the asset is given a chance to

@@ -1,14 +1,14 @@
 import type { IgeBaseClass } from "./IgeBaseClass.js"
-import type { IgeBaseRenderer } from "./IgeBaseRenderer.js";
+import type { IgeBaseRenderer } from "./IgeBaseRenderer.js"
 import type { IgeCamera } from "./IgeCamera.js"
-import type { IgeComponent } from "./IgeComponent.js";
+import type { IgeComponent } from "./IgeComponent.js"
 import type { IgeDummyCanvas } from "./IgeDummyCanvas.js"
-import { IgeEntity } from "./IgeEntity.js";
+import { IgeEntity } from "./IgeEntity.js"
 import type { IgeObject } from "./IgeObject.js"
-import { IgePoint3d } from "./IgePoint3d.js";
+import { IgePoint3d } from "./IgePoint3d.js"
 import type { IgeSceneGraph } from "./IgeSceneGraph.js"
-import { IgeViewport } from "./IgeViewport.js";
-import { IgeEngineState } from "../../enums/index.js";
+import { IgeViewport } from "./IgeViewport.js"
+import { IgeEngineState } from "../../enums/index.js"
 import type { IgeAnyFunction } from "../../types/IgeAnyFunction.js"
 import type { IgeCanvasRenderingContext2d } from "../../types/IgeCanvasRenderingContext2d.js"
 import type { IgeStatBreakdown } from "../../types/IgeStatBreakdown.js"
@@ -404,7 +404,8 @@ export declare class IgeEngine extends IgeEntity implements IgeIsReadyPromise {
     /**
      * Starts the engine or rejects the promise with an error.
      */
-    start(): Promise<unknown>;
+    start(): Promise<boolean>;
+    _startEngine(): Promise<boolean>;
     /**
      * Stops the engine.
      * @return {boolean}

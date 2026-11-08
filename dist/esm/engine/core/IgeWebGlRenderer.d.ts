@@ -560,6 +560,11 @@ export declare class IgeWebGlRenderer extends IgeBaseRenderer {
     /**
      * Render a single viewport.
      */
+    /**
+     * Give a viewport's camera the default preset (see defaultCameraPreset())
+     * if the game hasn't set one up.
+     */
+    protected _applyDefaultCameraPreset(viewport: IgeViewport): void;
     protected _renderViewport(viewport: IgeViewport): void;
     /**
      * Pick the program for a model batch.

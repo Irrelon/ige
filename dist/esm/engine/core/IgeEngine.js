@@ -1,11 +1,11 @@
 import { igeSceneChange } from "../utils/sceneChange.js"
-import { IgeEntity } from "./IgeEntity.js"
+import { IgeEntity } from "./IgeEntity.js";
 import { IgePoint2d } from "./IgePoint2d.js"
-import { IgePoint3d } from "./IgePoint3d.js"
+import { IgePoint3d } from "./IgePoint3d.js";
 import { IgeViewport } from "./IgeViewport.js"
-import { ige } from "../instance.js"
+import { ige } from "../instance.js";
 import { isClient, isServer, isWorker } from "../utils/clientServer.js"
-import { IgeBehaviourType, IgeEngineState } from "../../enums/index.js"
+import { IgeBehaviourType, IgeEngineState } from "../../enums/index.js";
 export class IgeEngine extends IgeEntity {
     classId = "IgeEngine";
     client;
@@ -1059,6 +1059,18 @@ export class IgeEngine extends IgeEntity {
      * Starts the engine or rejects the promise with an error.
      */
     start() {
+        // No renderer assigned: use WebGL where the browser supports it, else
+        // Canvas 2D (see igeCreateRenderer())
+        if (isClient && !isWorker && !this._renderer) {
+            return import("./igeCreateRenderer.js").then(({ igeCreateRenderer }) => {
+                if (!this._renderer)
+                    this.renderer(igeCreateRenderer({ mode: "2d" }));
+                return this._startEngine();
+            });
+        }
+        return this._startEngine();
+    }
+    _startEngine() {
         return new Promise((resolve, reject) => {
             // Check if the state is anything other than zero (stopped)
             if (this._state === IgeEngineState.started) {

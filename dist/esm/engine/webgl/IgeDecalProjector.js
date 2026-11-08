@@ -1,5 +1,5 @@
 import { BVH_MIN_TRIANGLES, invertMat4 } from "./IgeRaycast.js"
-import { bvhQueryBox, getTriangleBvh, triangleCountOf } from "./IgeTriangleBvh.js";
+import { bvhQueryBox, getTriangleBvh, triangleCountOf } from "./IgeTriangleBvh.js"
 /** Floats per vertex in projectDecal()'s output: x, y, z, u, v. */
 export const PROJECTED_DECAL_VERTEX_FLOATS = 5;
 // Outcodes for the decal box planes

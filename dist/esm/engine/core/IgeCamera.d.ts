@@ -40,7 +40,7 @@ export declare class IgeCamera extends IgeEntity {
      * @param {IgeBounds=} rect
      * @return {*}
      */
-    limit(rect?: IgeBounds): IgeViewport | IgeBounds | undefined;
+    limit(rect?: IgeBounds): IgeBounds | IgeViewport | undefined;
     /**
      * Pan (tween) the camera to the new specified point in
      * the specified time.
@@ -69,7 +69,7 @@ export declare class IgeCamera extends IgeEntity {
      * it will not use floating point values.
      * @return {*}
      */
-    trackTranslate<EntityType extends IgeEntity = IgeEntity>(entity: EntityType, smoothing?: number, rounding?: boolean): IgeViewport | IgeEntity | undefined;
+    trackTranslate<EntityType extends IgeEntity = IgeEntity>(entity: EntityType, smoothing?: number, rounding?: boolean): IgeEntity | IgeViewport | undefined;
     /**
      * Gets / sets the `translate` tracking smoothing value.
      * @param {number=} val
@@ -101,7 +101,7 @@ export declare class IgeCamera extends IgeEntity {
      * tracking will be.
      * @return {*}
      */
-    trackRotate(entity?: IgeEntity, smoothing?: number): IgeViewport | IgeEntity | undefined;
+    trackRotate(entity?: IgeEntity, smoothing?: number): IgeEntity | IgeViewport | undefined;
     /**
      * Gets / sets the `rotate` tracking smoothing value.
      * @param {number=} val
@@ -186,7 +186,7 @@ export declare class IgeCamera extends IgeEntity {
      * @param {IgePoint3d=} point The point to look at.
      * @return {*}
      */
-    lookAtPoint(point?: IgePoint3d): this | IgePoint3d | undefined;
+    lookAtPoint(point?: IgePoint3d): IgePoint3d | this | undefined;
     /**
      * Applies a camera preset configuration.
      * Available presets:

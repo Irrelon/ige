@@ -1,7 +1,7 @@
 import { IgeEventingClass } from "./IgeEventingClass.js"
-import { IgePoint2d } from "./IgePoint2d.js"
+import { IgePoint2d } from "./IgePoint2d.js";
 import { ige } from "../instance.js"
-import { isServer } from "../utils/clientServer.js"
+import { isServer } from "../utils/clientServer.js";
 export class IgeBaseRenderer extends IgeEventingClass {
     classId = "IgeBaseRenderer";
     _canvasElement;
@@ -81,6 +81,13 @@ export class IgeBaseRenderer extends IgeEventingClass {
     devicePixelRatio() {
         return this._devicePixelRatio;
     }
+    defaultCameraPreset(preset) {
+        if (arguments.length === 0)
+            return this._defaultCameraPreset;
+        this._defaultCameraPreset = preset;
+        return this;
+    }
+    _defaultCameraPreset;
     _updateDevicePixelRatio() {
         if (ige.engine._pixelRatioScaling) {
             // Support high-definition devices and "retina" displays by adjusting

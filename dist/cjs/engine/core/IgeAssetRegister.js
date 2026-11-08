@@ -27,7 +27,8 @@ class IgeAssetRegister extends IgeEventingClass_1.IgeEventingClass {
         if (item._loaded)
             return;
         this._assetsLoading++;
-        item.whenLoaded().then(() => {
+        // A failed asset counts as finished, so nothing waits for it forever
+        item.whenSettled().then(() => {
             this._assetsLoading--;
         });
     }
@@ -48,9 +49,13 @@ class IgeAssetRegister extends IgeEventingClass_1.IgeEventingClass {
     removeList(list) {
         list.forEach((tmpAsset) => tmpAsset.destroy());
     }
+    /**
+     * Resolves when every registered asset has loaded or failed (failures
+     * are logged by the asset and don't block).
+     */
     whenLoaded() {
         const promiseArr = Object.values(this._assetById).map((tmpAsset) => {
-            return tmpAsset.whenLoaded();
+            return tmpAsset.whenSettled().then(({ asset }) => asset);
         });
         return Promise.all(promiseArr);
     }

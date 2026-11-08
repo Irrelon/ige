@@ -96,6 +96,12 @@ class IgeBaseRenderer extends IgeEventingClass_1.IgeEventingClass {
     devicePixelRatio() {
         return this._devicePixelRatio;
     }
+    defaultCameraPreset(preset) {
+        if (arguments.length === 0)
+            return this._defaultCameraPreset;
+        this._defaultCameraPreset = preset;
+        return this;
+    }
     _updateDevicePixelRatio() {
         if (instance_1.ige.engine._pixelRatioScaling) {
             // Support high-definition devices and "retina" displays by adjusting

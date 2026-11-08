@@ -1,5 +1,5 @@
 import { IgeComponent } from "../core/IgeComponent.js"
-import type { IgeEntity } from "../core/IgeEntity.js";
+import type { IgeEntity } from "../core/IgeEntity.js"
 import { IgePoint3d } from "../core/IgePoint3d.js"
 export declare class IgeVelocityComponent extends IgeComponent<IgeEntity> {
     classId: string;

@@ -1,8 +1,8 @@
 import type JoltApi from "jolt-physics";
 import type { IgeEntity } from "../core/IgeEntity.js"
-import type { IgeGeometryData3d } from "../../types/IgeGeometryData3d.js";
+import type { IgeGeometryData3d } from "../../types/IgeGeometryData3d.js"
 import { IgeEventingClass } from "../core/IgeEventingClass.js"
-import { IgeRagdoll3d, type IgeRagdollOptions } from "./IgeRagdoll3d.js";
+import { IgeRagdoll3d, type IgeRagdollOptions } from "./IgeRagdoll3d.js"
 import { IgePhysicsCharacter3d, type IgePhysicsCharacterOptions } from "./IgePhysicsCharacter3d.js"
 type Jolt = typeof JoltApi;
 type Vec3 = {

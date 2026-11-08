@@ -1,5 +1,5 @@
 import type { IgeAsset } from "./IgeAsset.js"
-import { IgeEventingClass } from "./IgeEventingClass.js";
+import { IgeEventingClass } from "./IgeEventingClass.js"
 export declare class IgeAssetRegister<AssetType extends IgeAsset> extends IgeEventingClass {
     classId: string;
     _assetById: Record<string, AssetType>;
@@ -12,5 +12,9 @@ export declare class IgeAssetRegister<AssetType extends IgeAsset> extends IgeEve
     addGroup(group: Record<string, AssetType>): void;
     removeGroup(group: Record<string, AssetType>): void;
     removeList(list: AssetType[]): void;
+    /**
+     * Resolves when every registered asset has loaded or failed (failures
+     * are logged by the asset and don't block).
+     */
     whenLoaded(): Promise<Awaited<AssetType>[]>;
 }

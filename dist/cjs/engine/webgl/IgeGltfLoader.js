@@ -50,17 +50,29 @@ class IgeGltfLoader extends IgeBaseClass_1.IgeBaseClass {
         this.classId = "IgeGltfLoader";
         // Cache loaded models
         this._modelCache = new Map();
+        // Loads in progress, so the same model requested twice is fetched once
+        this._pending = new Map();
     }
     /**
-     * Load a GLTF or GLB model from URL.
+     * Load a GLTF or GLB model from URL. Models are cached by id (the URL
+     * when no id is given); asking again for one that is loading waits for
+     * the same load. Rejects if the file is missing or can't be parsed.
      */
     load(url, modelId) {
+        const id = modelId || url;
+        // Check cache
+        const cached = this._modelCache.get(id);
+        if (cached)
+            return Promise.resolve(cached);
+        let pending = this._pending.get(id);
+        if (!pending) {
+            pending = this._load(url, id).finally(() => this._pending.delete(id));
+            this._pending.set(id, pending);
+        }
+        return pending;
+    }
+    _load(url, id) {
         return __awaiter(this, void 0, void 0, function* () {
-            const id = modelId || url;
-            // Check cache
-            if (this._modelCache.has(id)) {
-                return this._modelCache.get(id);
-            }
             this.log(`Loading GLTF model: ${url}`);
             // Determine if GLB or GLTF
             const isGlb = url.toLowerCase().endsWith(".glb");
@@ -69,6 +81,8 @@ class IgeGltfLoader extends IgeBaseClass_1.IgeBaseClass {
             if (isGlb) {
                 // Load GLB binary format
                 const response = yield fetch(url);
+                if (!response.ok)
+                    throw new Error(`HTTP ${response.status} loading ${url}`);
                 const buffer = yield response.arrayBuffer();
                 const result = this._parseGlb(buffer);
                 gltfData = result.json;
@@ -77,6 +91,8 @@ class IgeGltfLoader extends IgeBaseClass_1.IgeBaseClass {
             else {
                 // Load GLTF JSON format
                 const response = yield fetch(url);
+                if (!response.ok)
+                    throw new Error(`HTTP ${response.status} loading ${url}`);
                 gltfData = yield response.json();
             }
             // Get base URL for relative paths

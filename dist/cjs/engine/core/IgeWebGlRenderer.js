@@ -923,6 +923,7 @@ class IgeWebGlRenderer extends IgeBaseRenderer_1.IgeBaseRenderer {
     cameraMatrices(viewport) {
         if (!this._cameraController || !viewport.camera)
             return null;
+        this._applyDefaultCameraPreset(viewport);
         return this._cameraController.updateCamera(viewport.camera, viewport);
     }
     /**
@@ -934,6 +935,7 @@ class IgeWebGlRenderer extends IgeBaseRenderer_1.IgeBaseRenderer {
         var _a, _b;
         if (!this._cameraController || !viewport.camera)
             return null;
+        this._applyDefaultCameraPreset(viewport);
         const inverse = this._cameraController.updateCamera(viewport.camera, viewport).viewProjection.getInverse();
         if (!inverse)
             return null;
@@ -1694,8 +1696,20 @@ class IgeWebGlRenderer extends IgeBaseRenderer_1.IgeBaseRenderer {
     /**
      * Render a single viewport.
      */
+    /**
+     * Give a viewport's camera the default preset (see defaultCameraPreset())
+     * if the game hasn't set one up.
+     */
+    _applyDefaultCameraPreset(viewport) {
+        const preset = this._defaultCameraPreset;
+        const camera = viewport.camera;
+        if (preset && camera && camera._preset === undefined && !camera._lookAt) {
+            camera.preset(preset);
+        }
+    }
     _renderViewport(viewport) {
         var _a, _b, _c, _d, _e;
+        this._applyDefaultCameraPreset(viewport);
         const gl = this._canvasContext;
         if (!gl || !this._cameraController || !this._stateManager) {
             return;

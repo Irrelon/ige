@@ -1,11 +1,11 @@
 import { IgeAsset } from "./IgeAsset.js"
-import { markSceneChanged } from "../utils/sceneChange.js"
+import { markSceneChanged } from "../utils/sceneChange.js";
 import { newCanvas } from "./IgeCanvas.js"
-import { IgeDependencies } from "./IgeDependencies.js"
+import { IgeDependencies } from "./IgeDependencies.js";
 import { ige } from "../instance.js"
-import { arrPull } from "../utils/arrays.js"
+import { arrPull } from "../utils/arrays.js";
 import { isClient, isServer } from "../utils/clientServer.js"
-import { IgeTextureRenderMode } from "../../enums/index.js"
+import { IgeTextureRenderMode } from "../../enums/index.js";
 /**
  * Creates a new texture.
  */
@@ -114,7 +114,11 @@ export class IgeTexture extends IgeAsset {
         }
         if (!ige.textures._textureImageStore[imageUrl]) {
             fetch(imageUrl)
-                .then((resp) => resp.blob())
+                .then((resp) => {
+                if (!resp.ok)
+                    throw new Error(`HTTP ${resp.status} loading ${imageUrl}`);
+                return resp.blob();
+            })
                 .then((blob) => createImageBitmap(blob))
                 .then((image) => {
                 ige.textures._textureImageStore[imageUrl] = this.image = this._originalImage = image;
@@ -144,6 +148,11 @@ export class IgeTexture extends IgeAsset {
                 }
                 // Mark texture as loaded
                 this._assetLoaded();
+            })
+                .catch((err) => {
+                const error = err instanceof Error ? err : new Error(String(err));
+                this.log(`Texture image (${imageUrl}) failed to load: ${error.message}`, "error");
+                this._assetFailed(error);
             });
         }
         else {

@@ -1,6 +1,6 @@
 import type JoltApi from "jolt-physics";
 import type { IgeEntity } from "../core/IgeEntity.js"
-import type { IgePhysics3d, IgePhysicsBody3d } from "./IgePhysics3d.js";
+import type { IgePhysics3d, IgePhysicsBody3d } from "./IgePhysics3d.js"
 export interface IgePhysicsCharacterOptions {
     /** Capsule radius (IGE units). */
     radius: number;

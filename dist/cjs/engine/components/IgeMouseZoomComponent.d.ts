@@ -1,7 +1,7 @@
 import { IgeComponent } from "../core/IgeComponent.js"
-import { IgePoint2d } from "../core/IgePoint2d.js";
+import { IgePoint2d } from "../core/IgePoint2d.js"
 import { IgePoint3d } from "../core/IgePoint3d.js"
-import type { IgeBounds } from "../core/IgeBounds.js";
+import type { IgeBounds } from "../core/IgeBounds.js"
 import type { IgeViewport } from "../core/IgeViewport.js"
 /**
  * When added to a viewport, automatically adds mouse zooming

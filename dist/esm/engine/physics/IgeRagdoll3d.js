@@ -1,5 +1,5 @@
 import { invertMat4 } from "../webgl/IgeRaycast.js"
-import { findBoneIndex } from "../webgl/IgeAnimationRetarget.js";
+import { findBoneIndex } from "../webgl/IgeAnimationRetarget.js"
 /** a * b for column-major 4x4 matrices, into out (which may not alias a or b). */
 function multiply(out, a, b) {
     for (let col = 0; col < 4; col++) {

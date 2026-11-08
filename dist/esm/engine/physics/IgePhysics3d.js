@@ -1,8 +1,8 @@
 import { IgeEventingClass } from "../core/IgeEventingClass.js"
-import { ige } from "../instance.js";
-import { IgeBehaviourType } from "../../enums/index.js";
+import { ige } from "../instance.js"
+import { IgeBehaviourType } from "../../enums/index.js"
 import { invertMat4 } from "../webgl/IgeRaycast.js"
-import { IgeRagdoll3d } from "./IgeRagdoll3d.js";
+import { IgeRagdoll3d } from "./IgeRagdoll3d.js"
 import { IgePhysicsCharacter3d } from "./IgePhysicsCharacter3d.js"
 const DEFAULTS = {
     unitsPerMetre: 100,

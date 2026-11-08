@@ -1,11 +1,11 @@
 import { IgeBounds } from "./IgeBounds.js"
-import { IgeMatrix4 } from "./IgeMatrix4.js";
+import { IgeMatrix4 } from "./IgeMatrix4.js"
 import { IgeObject } from "./IgeObject.js"
-import { IgePoint2d } from "./IgePoint2d.js";
+import { IgePoint2d } from "./IgePoint2d.js"
 import { IgePoint3d } from "./IgePoint3d.js"
-import type { IgeTexture } from "./IgeTexture.js";
+import type { IgeTexture } from "./IgeTexture.js"
 import type { IgeViewport } from "./IgeViewport.js"
-import { IgeEntityRenderMode } from "../../enums/index.js";
+import { IgeEntityRenderMode } from "../../enums/index.js"
 import type { IgeCanRegisterByCategory } from "../../types/IgeCanRegisterByCategory.js"
 import type { IgeCanRegisterById } from "../../types/IgeCanRegisterById.js"
 import type { IgeCanvasRenderingContext2d } from "../../types/IgeCanvasRenderingContext2d.js"
@@ -16,12 +16,12 @@ import type { IgeShapeFunctionality } from "../../types/IgeShapeFunctionality.js
 import type { IgeSmartTexture } from "../../types/IgeSmartTexture.js"
 import type { IgeTriggerPolygonFunctionName } from "../../types/IgeTriggerPolygonFunctionName.js"
 import type { IgeGltfModel } from "../webgl/IgeGltfLoader.js"
-import type { IgeRetargetOptions } from "../webgl/IgeAnimationRetarget.js";
+import type { IgeRetargetOptions } from "../webgl/IgeAnimationRetarget.js"
 import type { IgeSkeletonData } from "../../types/IgeSkeletonData.js"
 import type { IgeMaterialData } from "../../types/IgeMaterialData.js"
 import type { IgeGeometryData3d } from "../../types/IgeGeometryData3d.js"
 import type { IgeModelLod, IgeModelLodLevel } from "../webgl/IgeModelParts.js"
-import { IgeSkeletalAnimationComponent } from "../components/IgeSkeletalAnimationComponent.js";
+import { IgeSkeletalAnimationComponent } from "../components/IgeSkeletalAnimationComponent.js"
 import type { IgeAnimationPlayOptions } from "../../types/IgeAnimationClipData.js"
 /**
  * Options for IgeEntity.model().

@@ -1,5 +1,5 @@
 import { IgeBaseClass } from "./IgeBaseClass.js"
-import type { IgeTweenEasingFunctions } from "../utils/easing.js";
+import type { IgeTweenEasingFunctions } from "../utils/easing.js"
 import { IgeTweenRepeatMode } from "../../enums/IgeTweenRepeatMode.js"
 export interface IgeTweenStep {
     props: Record<string, number>;

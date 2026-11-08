@@ -19,7 +19,7 @@ const IgePoint3d_1 = require("../../engine/core/IgePoint3d.js");
 const instance_1 = require("../../engine/instance.js");
 const enums_1 = require("../../enums/index.js");
 const IgeWebGlLight_1 = require("../../engine/webgl/IgeWebGlLight.js");
-const IgeGltfLoader_1 = require("../../engine/webgl/IgeGltfLoader.js");
+const igeLoadAssets_1 = require("../../engine/core/igeLoadAssets.js");
 const IgeParticleSystem3d_1 = require("../../engine/webgl/IgeParticleSystem3d.js");
 const IgeDecalSystem3d_1 = require("../../engine/webgl/IgeDecalSystem3d.js");
 const IgePhysics3d_1 = require("../../engine/physics/IgePhysics3d.js");
@@ -191,7 +191,8 @@ class Client extends IgeBaseClass_1.IgeBaseClass {
                     this.createHealingPad();
                 }
                 this.updateStatus("Loading character model...");
-                this.characterModel = yield IgeGltfLoader_1.igeGltfLoader.load("../../assets/models/CesiumMan.glb", "characterModel");
+                const assets = yield (0, igeLoadAssets_1.igeLoadAssets)({ models: { characterModel: "../../assets/models/CesiumMan.glb" } }, { onProgress: (done, total) => this.updateStatus(`Loading assets ${done}/${total}...`) });
+                this.characterModel = assets.models.characterModel;
                 this.updateStatus("Spawning players and zombies...");
                 this.createEffects();
                 this.createPlayers();

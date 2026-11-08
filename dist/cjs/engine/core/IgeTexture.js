@@ -162,7 +162,11 @@ class IgeTexture extends IgeAsset_1.IgeAsset {
         }
         if (!instance_1.ige.textures._textureImageStore[imageUrl]) {
             fetch(imageUrl)
-                .then((resp) => resp.blob())
+                .then((resp) => {
+                if (!resp.ok)
+                    throw new Error(`HTTP ${resp.status} loading ${imageUrl}`);
+                return resp.blob();
+            })
                 .then((blob) => createImageBitmap(blob))
                 .then((image) => {
                 instance_1.ige.textures._textureImageStore[imageUrl] = this.image = this._originalImage = image;
@@ -192,6 +196,11 @@ class IgeTexture extends IgeAsset_1.IgeAsset {
                 }
                 // Mark texture as loaded
                 this._assetLoaded();
+            })
+                .catch((err) => {
+                const error = err instanceof Error ? err : new Error(String(err));
+                this.log(`Texture image (${imageUrl}) failed to load: ${error.message}`, "error");
+                this._assetFailed(error);
             });
         }
         else {

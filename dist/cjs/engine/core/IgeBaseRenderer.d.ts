@@ -1,7 +1,7 @@
 import type { IgeEngine } from "./IgeEngine.js"
-import { IgeEventingClass } from "./IgeEventingClass.js";
+import { IgeEventingClass } from "./IgeEventingClass.js"
 import { IgePoint2d } from "./IgePoint2d.js"
-import type { IgeViewport } from "./IgeViewport.js";
+import type { IgeViewport } from "./IgeViewport.js"
 import type { IgeAbstractData3d } from "../../types/IgeAbstractData3d.js"
 export declare class IgeBaseRenderer extends IgeEventingClass {
     classId: string;
@@ -42,6 +42,15 @@ export declare class IgeBaseRenderer extends IgeEventingClass {
      * caches use it so they stay as sharp as the main canvas.
      */
     devicePixelRatio(): number;
+    /**
+     * Gets / sets a camera preset (e.g. "screen2d") the renderer gives
+     * viewport cameras that haven't been set up (no preset or lookAt) when
+     * it first draws them. igeCreateRenderer({ mode: "2d" }) uses it so 2D
+     * scenes look the same on WebGL as on Canvas 2D.
+     */
+    defaultCameraPreset(): string | undefined;
+    defaultCameraPreset(preset: string | undefined): this;
+    _defaultCameraPreset?: string;
     _updateDevicePixelRatio(): void;
     /**
      * Gets data for the specific renderer being used. The data is stored

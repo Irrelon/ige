@@ -1,7 +1,7 @@
 import { IgeBaseClass } from "./IgeBaseClass.js"
-import type { IgeEntity } from "./IgeEntity.js";
+import type { IgeEntity } from "./IgeEntity.js"
 import type { IgeObject } from "./IgeObject.js"
-import { IgePoint3d } from "./IgePoint3d.js";
+import { IgePoint3d } from "./IgePoint3d.js"
 import type { IgeCanvasRenderingContext2d } from "../../types/IgeCanvasRenderingContext2d.js"
 import type { IgePoint } from "../../types/IgePoint.js"
 /**
