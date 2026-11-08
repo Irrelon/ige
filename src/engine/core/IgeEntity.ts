@@ -34,6 +34,7 @@ import type { IgeRetargetOptions } from "@/engine/webgl/IgeAnimationRetarget";
 import { findBoneIndex, retargetClips } from "@/engine/webgl/IgeAnimationRetarget";
 import type { IgeSkeletonData } from "@/types/IgeSkeletonData";
 import type { IgeAnimationClipData } from "@/types/IgeAnimationClipData";
+import type { IgeMaterialData } from "@/types/IgeMaterialData";
 import type { IgeModelLod, IgeModelLodLevel } from "@/engine/webgl/IgeModelParts";
 import { createSkeletonInstance, getGeometryLod, getModelLod, getModelParts } from "@/engine/webgl/IgeModelParts";
 import { IgeSkeletalAnimationComponent } from "@/engine/components/IgeSkeletalAnimationComponent";
@@ -823,6 +824,7 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 			this.height(this._bounds2d.y * ratio);
 		}
 
+		if (px !== this._bounds2d.x) this._renderChanged();
 		this._bounds2d.x = px;
 		this._bounds2d.x2 = px / 2;
 		return this;
@@ -850,6 +852,7 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 			this.width(this._bounds2d.x * ratio);
 		}
 
+		if (px !== this._bounds2d.y) this._renderChanged();
 		this._bounds2d.y = px;
 		this._bounds2d.y2 = px / 2;
 		return this;
@@ -870,6 +873,7 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 	bounds2d (x?: number | IgePoint2d, y?: number) {
 		if (x !== undefined && y !== undefined && typeof x === "number") {
 			this._bounds2d = new IgePoint2d(x, y);
+			this._renderChanged();
 			return this;
 		}
 
@@ -878,6 +882,7 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 			const bounds = x as IgePoint2d;
 			// x is considered an IgePoint2d instance
 			this._bounds2d = new IgePoint2d(bounds.x, bounds.y);
+			this._renderChanged();
 		}
 
 		return this._bounds2d;
@@ -973,6 +978,7 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 	opacity (): number;
 	opacity (val?: number) {
 		if (val !== undefined) {
+			if (val !== this._opacity) this._renderChanged();
 			this._opacity = val;
 			return this;
 		}
@@ -1014,11 +1020,55 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 	texture (): IgeTexture | undefined;
 	texture (texture?: IgeTexture) {
 		if (texture !== undefined) {
+			if (texture !== this._texture) this._renderChanged();
 			this._texture = texture;
 			return this;
 		}
 
 		return this._texture;
+	}
+
+	/**
+	 * Gets / sets the material values the WebGL renderer draws this entity
+	 * with: colour, opacity, metallic, roughness, emissive, blending and
+	 * double-sidedness. On a model they override the model's own material
+	 * values for this entity only (a per-instance tint, a hit flash); other
+	 * entities sharing the model keep theirs. Pass null to go back to the
+	 * model's or texture's own look.
+	 *
+	 * One material object can be shared by many entities. The renderer
+	 * reads it every frame, so changing a shared object's values changes
+	 * every entity using it; with ige.engine.renderOnDemand(true), call
+	 * material() again (or ige.engine.manualRender()) after changing an
+	 * object in place so a new frame is drawn.
+	 * @example #Tint an entity
+	 *     zombie.material({ color: { r: 0.4, g: 0.6, b: 0.35, a: 1 } });
+	 * @example #Flash white when hit, then restore
+	 *     zombie.material({ color: "#ffffff", emissiveColor: { r: 1, g: 1, b: 1 }, emissiveIntensity: 0.8 });
+	 *     setTimeout(() => zombie.material(null), 80);
+	 * @example #Highlight with a shared material
+	 *     const highlight = { color: "#ffd84a", emissiveColor: { r: 1, g: 0.8, b: 0.2 }, emissiveIntensity: 0.4 };
+	 *     tile.material(highlight);
+	 */
+	material (data: IgeMaterialData | null): this;
+	material (): IgeMaterialData | null;
+	material (data?: IgeMaterialData | null) {
+		if (data === undefined) {
+			return this._materialData;
+		}
+
+		this._materialData = data;
+		this._renderChanged();
+		return this;
+	}
+
+	/**
+	 * Tells render-on-demand (ige.engine.renderOnDemand()) that this entity
+	 * now looks different. Changes to hidden entities don't count; showing
+	 * the entity draws a frame anyway.
+	 */
+	_renderChanged () {
+		if (!this._hidden) markSceneChanged();
 	}
 
 	/**
@@ -1036,7 +1086,7 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 	 * cached animation poses are shared, and the WebGL renderer draws
 	 * them with GPU instancing.
 	 *
-	 * Setting _materialData on the entity afterwards overrides the model's
+	 * Calling material() on the entity afterwards overrides the model's
 	 * material values (colour, metallic, roughness, emissive) for that
 	 * entity only, e.g. for a per-instance tint or a hit flash.
 	 * @param {IgeGltfModel=} model The loaded GLTF model.
@@ -1122,6 +1172,7 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 			this._skeletonData = undefined;
 		}
 
+		this._renderChanged();
 		return this;
 	}
 
@@ -1173,6 +1224,7 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 		} else {
 			this._modelLod = undefined;
 		}
+		this._renderChanged();
 		return this;
 	}
 
@@ -1190,6 +1242,7 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 		}
 
 		this._billboardMode = mode === "y" ? 2 : mode === "none" ? 0 : 1;
+		this._renderChanged();
 		return this;
 	}
 
@@ -1323,6 +1376,7 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 	cell (): number;
 	cell (val?: number) {
 		if (val !== undefined && val > 0) {
+			if (val !== this._cell) this._renderChanged();
 			this._cell = val;
 			return this;
 		}

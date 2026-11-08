@@ -101,11 +101,11 @@ export class Client extends IgeBaseClass implements IgeCanInit {
 			const entity = new IgeEntity();
 			entity.id(`iso_${config.name}`);
 			entity._geometryData = { ...cubeGeometry, id: `geom_iso_${config.name}` };
-			entity._materialData = {
+			entity.material({
 				color: { r: config.color.r, g: config.color.g, b: config.color.b, a: 1 },
 				metallic: 0,
 				roughness: 1
-			};
+			});
 			entity.translateTo(config.worldPos.x, config.worldPos.y, config.worldPos.z);
 			entity.mount(scene);
 		}

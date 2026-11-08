@@ -109,11 +109,11 @@ export function createHospitalLobby (scene: IgeScene2d): IgeLevelObstacle[] {
 		const entity = new IgeEntity();
 		entity.id(id);
 		entity._geometryData = createBoxGeometry(w, h, d, `${id}_geo`);
-		entity._materialData = {
+		entity.material({
 			color: { r: color.r, g: color.g, b: color.b, a: 1 },
 			metallic,
 			roughness
-		};
+		});
 		entity.translateTo(x, y, z);
 		entity.mount(scene);
 

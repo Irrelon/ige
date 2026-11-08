@@ -379,7 +379,7 @@ export class Client extends IgeBaseClass implements IgeCanInit {
 				.mount(this.scene);
 
 			// Per-instance tint over the shared model material
-			entity._materialData = { color: ZOMBIE_TINT };
+			entity.material({ color: ZOMBIE_TINT });
 
 			const zombie: ZombieState = {
 				entity,
@@ -430,7 +430,7 @@ export class Client extends IgeBaseClass implements IgeCanInit {
 		const part = (geometry: IgeGeometryData3d, y: number, color: { r: number; g: number; b: number }, metallic: number, roughness: number) => {
 			const entity = new IgeEntity().translateTo(0, y, 0).mount(sword);
 			entity._geometryData = geometry;
-			entity._materialData = { color: { ...color, a: 1 }, metallic, roughness };
+			entity.material({ color: { ...color, a: 1 }, metallic, roughness });
 			return entity;
 		};
 
@@ -779,15 +779,15 @@ export class Client extends IgeBaseClass implements IgeCanInit {
 	/** Player tint, or a red hit flash via the emissive override. */
 	applyPlayerMaterial (player: PlayerState) {
 		const c = PLAYER_CONFIGS[player.index].color;
-		player.entity._materialData = player.hitFlash > 0
+		player.entity.material(player.hitFlash > 0
 			? { color: { r: c.r, g: c.g, b: c.b, a: 1 }, emissiveColor: { r: 1, g: 0.1, b: 0.1 }, emissiveIntensity: 0.9 }
-			: { color: { r: c.r, g: c.g, b: c.b, a: 1 } };
+			: { color: { r: c.r, g: c.g, b: c.b, a: 1 } });
 	}
 
 	applyZombieMaterial (zombie: ZombieState) {
-		zombie.entity._materialData = zombie.hitFlash > 0
+		zombie.entity.material(zombie.hitFlash > 0
 			? { color: ZOMBIE_TINT, emissiveColor: { r: 1, g: 0.15, b: 0.1 }, emissiveIntensity: 1.2 }
-			: { color: ZOMBIE_TINT };
+			: { color: ZOMBIE_TINT });
 	}
 
 	// ------------------------------------------------------------------

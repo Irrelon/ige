@@ -41,6 +41,29 @@ describe("scene change reporting (render on demand)", () => {
 		expect(changes(() => entity.translateTo(5, 5, 0).updateTransform())).toBe(0);
 	});
 
+	it("reports material and appearance changes, but not repeated values", () => {
+		const entity = new IgeEntity();
+		const tint = { color: { r: 1, g: 0, b: 0, a: 1 } };
+		expect(changes(() => entity.material(tint))).toBe(1);
+		expect(entity.material()).toBe(tint);
+		expect(changes(() => entity.material(null))).toBe(1);
+		expect(entity.material()).toBeNull();
+
+		expect(changes(() => entity.opacity(0.5))).toBe(1);
+		expect(changes(() => entity.opacity(0.5))).toBe(0);
+		expect(changes(() => entity.cell(2))).toBe(1);
+		expect(changes(() => entity.cell(2))).toBe(0);
+		expect(changes(() => entity.width(64))).toBe(1);
+		expect(changes(() => entity.width(64))).toBe(0);
+		expect(changes(() => entity.cacheDirty(true))).toBe(1);
+	});
+
+	it("doesn't report appearance changes of hidden entities", () => {
+		const entity = new IgeEntity().hide();
+		expect(changes(() => entity.material({ color: "#ff0000" }))).toBe(0);
+		expect(changes(() => entity.opacity(0.25))).toBe(0);
+	});
+
 	it("reports particles only while some are alive", () => {
 		const system = new IgeParticleSystem3d({ rate: 0, lifetime: [0.1, 0.1] });
 		expect(changes(() => system._simulate(0.016))).toBe(0);

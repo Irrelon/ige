@@ -1595,6 +1595,8 @@ export class IgeObject extends IgeEventingClass implements IgeCanRegisterById, I
 		}
 
 		this._cacheDirty = val;
+		// A smart texture or cached canvas will redraw (render-on-demand)
+		if (val && !this._hidden) markSceneChanged();
 
 		// Check if the entity is a child of a composite or composite
 		// entity chain and propagate the dirty cache up the chain

@@ -562,14 +562,16 @@ export class IgeEngine extends IgeEntity implements IgeIsReadyPromise {
 	 * time, but the engine notices most changes itself: entity transforms
 	 * (including tweens and velocity), showing, hiding and unmounting
 	 * entities, camera and viewport changes, playing animations, live
-	 * particles, fading decals, finished texture loads and canvas resizes.
-	 * Call manualRender() after changes it can't see, such as assigning a
-	 * new _materialData or texture.
+	 * particles, fading decals, finished texture loads, canvas resizes, and
+	 * entity setters that change how something looks (material(),
+	 * texture(), cell(), opacity(), width()/height(), lod(), model(),
+	 * cacheDirty(true)). Call manualRender() after changes it can't see:
+	 * editing a material object in place, assigning fields such as
+	 * _materialData or _geometryData directly, or drawing into a texture.
 	 * @example #Draw only when something changes
 	 *     ige.engine.renderOnDemand(true);
-	 *     // later, after recolouring a tile:
-	 *     tile._materialData = highlight;
-	 *     ige.engine.manualRender();
+	 *     // later, recolouring a tile draws one new frame:
+	 *     tile.material(highlight);
 	 */
 	renderOnDemand (): boolean;
 	renderOnDemand (val: boolean): this;
