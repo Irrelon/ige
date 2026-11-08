@@ -481,7 +481,8 @@ export class IgeCamera extends IgeEntity {
 	/**
 	 * Gets / sets the camera orthographic view size (height). 0 makes the
 	 * view exactly as tall as the viewport in pixels, so one world unit is
-	 * one pixel (as in the Canvas 2D renderer).
+	 * one pixel (as in the Canvas 2D renderer), zoomed by the camera's
+	 * scale (scaleTo(2, 2, 2) shows things twice as big).
 	 * @param {number=} size Orthographic view height.
 	 * @return {*}
 	 */

@@ -198,6 +198,7 @@ export class IgeWebGlTextureManager extends IgeBaseClass {
 		width: number;
 		height: number;
 		lastUsedFrame: number;
+		drawnFrame: number;
 	}> = new Map();
 
 	/**
@@ -207,9 +208,10 @@ export class IgeWebGlTextureManager extends IgeBaseClass {
 	 * gets its own canvas, drawn the way the Canvas 2D renderer draws it:
 	 * centred, in entity units, scaled by pixelRatio for sharpness.
 	 *
-	 * Like the Canvas 2D renderer it redraws every frame, unless the entity
-	 * has cache(true): then it redraws only when the entity's cache is
-	 * marked dirty (entity.cacheDirty(true)) or its size changes.
+	 * Like the Canvas 2D renderer it redraws every frame (once, however many
+	 * viewports show the entity), unless the entity has cache(true): then it
+	 * redraws only when the entity's cache is marked dirty
+	 * (entity.cacheDirty(true)) or its size changes.
 	 */
 	getSmartTexture(igeTexture: IgeTexture, entity: any, pixelRatio: number, frameId: number): WebGLTexture | null {
 		const script = igeTexture.script;
@@ -226,14 +228,16 @@ export class IgeWebGlTextureManager extends IgeBaseClass {
 			entry = undefined;
 		}
 
-		let redraw = !entry || entry.width !== width || entry.height !== height || !entity._cache || entity._cacheDirty;
+		// Split-screen views drawing the same entity share one redraw per frame
+		let redraw = !entry || entry.width !== width || entry.height !== height ||
+			((!entity._cache || entity._cacheDirty) && entry.drawnFrame !== frameId);
 
 		if (!entry) {
 			const canvas = document.createElement("canvas");
 			const ctx = canvas.getContext("2d");
 			const texture = gl.createTexture();
 			if (!ctx || !texture) return null;
-			entry = { igeTexture, canvas, ctx, texture, width: 0, height: 0, lastUsedFrame: frameId };
+			entry = { igeTexture, canvas, ctx, texture, width: 0, height: 0, lastUsedFrame: frameId, drawnFrame: -1 };
 			this._entitySmartTextures.set(entity, entry);
 			redraw = true;
 		}
@@ -265,6 +269,7 @@ export class IgeWebGlTextureManager extends IgeBaseClass {
 			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
 			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
 			if (entity._cache) entity._cacheDirty = false;
+			entry.drawnFrame = frameId;
 		}
 
 		entry.lastUsedFrame = frameId;

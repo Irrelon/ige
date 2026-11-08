@@ -127,9 +127,11 @@ export class IgeWebGlCameraController extends IgeBaseClass {
 			projectionMatrix.perspective(fovRadians, aspect, near, far);
 		} else {
 			// Orthographic projection
-			// 0 = as tall as the viewport, one unit per pixel
+			// 0 = as tall as the viewport, one unit per pixel, zoomed by the
+			// camera's scale as in Canvas 2D (scale 2 shows things twice as big)
 			const requestedSize = (camera as any)._orthoSize;
-			const orthoSize = requestedSize === 0 ? height : requestedSize || 10;
+			const zoom = Math.abs(camera._scale?.x || 1) || 1;
+			const orthoSize = requestedSize === 0 ? height / zoom : requestedSize || 10;
 			const near = (camera as any)._near ?? 0.1;
 			const far = (camera as any)._far ?? 1000;
 
