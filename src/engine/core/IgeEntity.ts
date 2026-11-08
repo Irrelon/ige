@@ -1930,12 +1930,22 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 	}
 
 	_processTriggerHitTests (mp?: IgePoint3d) {
-		if (!ige.engine._currentViewport) {
-			return false;
-		}
-
 		if (this._pointerAlwaysInside) {
 			return true;
+		}
+
+		// Renderers with their own picking (the WebGL renderer: 3D views,
+		// split screen) test against what they actually draw
+		const renderer = ige.engine.renderer() as { pointerHitTest?: (entity: IgeEntity, x: number, y: number) => boolean } | undefined;
+		if (renderer?.pointerHitTest) {
+			// ige._pointerPos is relative to the canvas centre
+			const screenX = ige._pointerPos.x + ige.engine._bounds2d.x2 + ige.engine._translate.x;
+			const screenY = ige._pointerPos.y + ige.engine._bounds2d.y2 + ige.engine._translate.y;
+			return renderer.pointerHitTest(this, screenX, screenY);
+		}
+
+		if (!ige.engine._currentViewport) {
+			return false;
 		}
 
 		if (!mp) {

@@ -126,6 +126,90 @@ const SHADOW_RECENTER_STEP = 0.125;
 
 let nextRenderUid = 1;
 
+type IgeLocalBox = { minX: number; minY: number; minZ: number; maxX: number; maxY: number; maxZ: number };
+
+/** Local-space bounding boxes for pointer picking (cached per geometry and model). */
+const geometryBoxCache: WeakMap<IgeGeometryData3d, IgeLocalBox> = new WeakMap();
+const partsBoxCache: WeakMap<object, IgeLocalBox> = new WeakMap();
+
+function geometryBox (data: IgeGeometryData3d): IgeLocalBox | null {
+	let box = geometryBoxCache.get(data);
+	if (box) return box;
+	if (data.boundingBox) {
+		const [minX, minY, minZ] = data.boundingBox.min;
+		const [maxX, maxY, maxZ] = data.boundingBox.max;
+		box = { minX, minY, minZ, maxX, maxY, maxZ };
+	} else {
+		const v = data.vertices;
+		if (!v || v.length < 3) return null;
+		box = { minX: Infinity, minY: Infinity, minZ: Infinity, maxX: -Infinity, maxY: -Infinity, maxZ: -Infinity };
+		for (let i = 0; i < v.length; i += 3) {
+			if (v[i] < box.minX) box.minX = v[i];
+			if (v[i + 1] < box.minY) box.minY = v[i + 1];
+			if (v[i + 2] < box.minZ) box.minZ = v[i + 2];
+			if (v[i] > box.maxX) box.maxX = v[i];
+			if (v[i + 1] > box.maxY) box.maxY = v[i + 1];
+			if (v[i + 2] > box.maxZ) box.maxZ = v[i + 2];
+		}
+	}
+	geometryBoxCache.set(data, box);
+	return box;
+}
+
+/**
+ * Union of a model's non-skinned part boxes in model space (part node
+ * transforms applied). Skinned parts are left out: their vertices are in
+ * bind space, not model space (see skeletonBox()).
+ */
+function partsBox (parts: IgeModelPart[]): IgeLocalBox | null {
+	let box = partsBoxCache.get(parts);
+	if (box) return box;
+	box = { minX: Infinity, minY: Infinity, minZ: Infinity, maxX: -Infinity, maxY: -Infinity, maxZ: -Infinity };
+	for (const part of parts) {
+		if (part.skinned) continue;
+		const b = geometryBox(part.geometryData);
+		if (!b) continue;
+		const m = part.matrix;
+		for (let c = 0; c < 8; c++) {
+			const x = c & 1 ? b.maxX : b.minX, y = c & 2 ? b.maxY : b.minY, z = c & 4 ? b.maxZ : b.minZ;
+			const wx = m ? m[0] * x + m[4] * y + m[8] * z + m[12] : x;
+			const wy = m ? m[1] * x + m[5] * y + m[9] * z + m[13] : y;
+			const wz = m ? m[2] * x + m[6] * y + m[10] * z + m[14] : z;
+			if (wx < box.minX) box.minX = wx;
+			if (wy < box.minY) box.minY = wy;
+			if (wz < box.minZ) box.minZ = wz;
+			if (wx > box.maxX) box.maxX = wx;
+			if (wy > box.maxY) box.maxY = wy;
+			if (wz > box.maxZ) box.maxZ = wz;
+		}
+	}
+	if (box.minX > box.maxX) box = { minX: 0, minY: 0, minZ: 0, maxX: 0, maxY: 0, maxZ: 0 };
+	partsBoxCache.set(parts, box);
+	return box;
+}
+
+/**
+ * Model-space box around a skeleton's joints in their current pose,
+ * padded by a tenth of its size to cover the body around the bones.
+ */
+function skeletonBox (worldMatrices: Float32Array, boneCount: number): IgeLocalBox | null {
+	if (!boneCount) return null;
+	const box = { minX: Infinity, minY: Infinity, minZ: Infinity, maxX: -Infinity, maxY: -Infinity, maxZ: -Infinity };
+	for (let b = 0; b < boneCount; b++) {
+		const x = worldMatrices[b * 16 + 12], y = worldMatrices[b * 16 + 13], z = worldMatrices[b * 16 + 14];
+		if (x < box.minX) box.minX = x;
+		if (y < box.minY) box.minY = y;
+		if (z < box.minZ) box.minZ = z;
+		if (x > box.maxX) box.maxX = x;
+		if (y > box.maxY) box.maxY = y;
+		if (z > box.maxZ) box.maxZ = z;
+	}
+	const pad = Math.max(box.maxX - box.minX, box.maxY - box.minY, box.maxZ - box.minZ) * 0.1;
+	box.minX -= pad; box.minY -= pad; box.minZ -= pad;
+	box.maxX += pad; box.maxY += pad; box.maxZ += pad;
+	return box;
+}
+
 /** Floats per debug line vertex: x, y, z, r, g, b, a. */
 const DEBUG_LINE_FLOATS = 7;
 
@@ -1108,6 +1192,110 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 	}
 
 	/**
+	 * Whether a screen point (CSS pixels from the canvas's top-left) is over
+	 * an entity in the viewport under it. IGE's pointer events (pointerOver,
+	 * pointerDown, pointerUp...) use this when the WebGL renderer is active.
+	 * Meshes are hit by their bounding box; sprites exactly by their quad in
+	 * flat views (screen2d, or billboard("none")), or by their on-screen
+	 * rectangle when billboarded.
+	 */
+	pointerHitTest(entity: IgeEntity, screenX: number, screenY: number): boolean {
+		const viewport = this.viewportAt(screenX, screenY);
+		const world = entity._worldMatrix4;
+		if (!viewport || !world || entity._hidden) return false;
+		const ray = this.screenToWorldRay(viewport, screenX, screenY);
+		if (!ray) return false;
+
+		const camera = viewport.camera;
+		const isSprite = !entity._modelParts && !entity._geometryData?.vertices && !!entity._texture;
+		const flat2d = !!(camera._up && camera._up.y < 0);
+
+		if (isSprite && !flat2d && entity._billboardMode !== 0) {
+			// Billboard: compare against its rectangle on screen
+			const matrices = this.cameraMatrices(viewport);
+			if (!matrices) return false;
+			const m = world.matrix;
+			const centre = this.worldToScreen(viewport, m[12], m[13], m[14]);
+			if (!centre || !centre.visible) return false;
+			// Screen pixels per world unit at the entity's distance
+			const p = matrices.projection.matrix;
+			let pixelsPerUnit = p[5] * viewport._bounds2d.y * 0.5;
+			if (p[11] !== 0) {
+				const v = matrices.view.matrix;
+				const depth = -(v[2] * m[12] + v[6] * m[13] + v[10] * m[14] + v[14]);
+				pixelsPerUnit /= Math.max(depth, 1e-3);
+			}
+			const halfW = entity._bounds2d.x * Math.hypot(m[0], m[1], m[2]) * pixelsPerUnit * 0.5;
+			const halfH = entity._bounds2d.y * Math.hypot(m[4], m[5], m[6]) * pixelsPerUnit * 0.5;
+			return Math.abs(screenX - centre.x) <= halfW && Math.abs(screenY - centre.y) <= halfH;
+		}
+
+		// Bring the ray into the entity's local space
+		const inverse = world.getInverse();
+		if (!inverse) return false;
+		const n = inverse.matrix;
+		const o = ray.origin, d = ray.direction;
+		const ox = n[0] * o.x + n[4] * o.y + n[8] * o.z + n[12];
+		const oy = n[1] * o.x + n[5] * o.y + n[9] * o.z + n[13];
+		const oz = n[2] * o.x + n[6] * o.y + n[10] * o.z + n[14];
+		const dx = n[0] * d.x + n[4] * d.y + n[8] * d.z;
+		const dy = n[1] * d.x + n[5] * d.y + n[9] * d.z;
+		const dz = n[2] * d.x + n[6] * d.y + n[10] * d.z;
+
+		if (isSprite) {
+			// Flat sprite: the quad lies on the local z = 0 plane
+			if (Math.abs(dz) < 1e-9) return false;
+			const t = -oz / dz;
+			if (t < 0) return false;
+			const x = ox + dx * t, y = oy + dy * t;
+			return Math.abs(x) <= entity._bounds2d.x / 2 && Math.abs(y) <= entity._bounds2d.y / 2;
+		}
+
+		let box: IgeLocalBox | null = null;
+		if (entity._modelParts) {
+			box = partsBox(entity._modelParts);
+			// Skinned meshes: the box around the animated joints
+			const skeleton = entity._skeleton;
+			if (skeleton && entity._modelParts.some((part) => part.skinned)) {
+				entity._updateSkeletonMatrices();
+				const bones = skeletonBox(skeleton.worldMatrices, skeleton.data.boneCount);
+				if (bones) {
+					const staticBox = box;
+					box = { ...bones };
+					if (staticBox && staticBox.maxX > staticBox.minX) {
+						box.minX = Math.min(box.minX, staticBox.minX); box.minY = Math.min(box.minY, staticBox.minY);
+						box.minZ = Math.min(box.minZ, staticBox.minZ); box.maxX = Math.max(box.maxX, staticBox.maxX);
+						box.maxY = Math.max(box.maxY, staticBox.maxY); box.maxZ = Math.max(box.maxZ, staticBox.maxZ);
+					}
+				}
+			}
+		} else if (entity._geometryData) {
+			box = geometryBox(entity._geometryData);
+		}
+		if (!box) return false;
+
+		// Ray against the box (slab method)
+		let tMin = 0, tMax = Infinity;
+		const slabs: [number, number, number, number][] = [
+			[ox, dx, box.minX, box.maxX],
+			[oy, dy, box.minY, box.maxY],
+			[oz, dz, box.minZ, box.maxZ]
+		];
+		for (const [origin, direction, min, max] of slabs) {
+			if (Math.abs(direction) < 1e-12) {
+				if (origin < min || origin > max) return false;
+				continue;
+			}
+			let t1 = (min - origin) / direction, t2 = (max - origin) / direction;
+			if (t1 > t2) [t1, t2] = [t2, t1];
+			tMin = Math.max(tMin, t1);
+			tMax = Math.min(tMax, t2);
+			if (tMin > tMax) return false;
+		}
+		return true;
+	}
+
+	/**
 	 * Gets / sets when split-screen viewports share one directional shadow
 	 * map instead of rendering one each. If every viewport's camera target
 	 * fits within this fraction of the shadow frustum size (see
@@ -1545,6 +1733,33 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 			const scale = Math.sqrt(Math.max(sx, sy, sz));
 			item.radius = geometry.boundsRadius * scale;
 			item.lodRadius = geometry.meshRadius * scale;
+
+			// Skinned vertices are in bind space (often Z-up), not model
+			// space, so their raw bounds can sit well away from the posed
+			// character. Centre the sphere on the animated joints instead,
+			// padded to cover the body around them.
+			const skeleton = item.skeleton;
+			if (skeleton && skeleton.data.boneCount > 0) {
+				const w = skeleton.worldMatrices;
+				let minX = Infinity, minY = Infinity, minZ = Infinity;
+				let maxX = -Infinity, maxY = -Infinity, maxZ = -Infinity;
+				for (let b = 0, n = skeleton.data.boneCount; b < n; b++) {
+					const x = w[b * 16 + 12], y = w[b * 16 + 13], z = w[b * 16 + 14];
+					if (x < minX) minX = x;
+					if (y < minY) minY = y;
+					if (z < minZ) minZ = z;
+					if (x > maxX) maxX = x;
+					if (y > maxY) maxY = y;
+					if (z > maxZ) maxZ = z;
+				}
+				const lx = (minX + maxX) / 2, ly = (minY + maxY) / 2, lz = (minZ + maxZ) / 2;
+				const extent = Math.max(maxX - minX, maxY - minY, maxZ - minZ);
+				const halfDiagonal = Math.hypot(maxX - minX, maxY - minY, maxZ - minZ) / 2;
+				item.cx = m[0] * lx + m[4] * ly + m[8] * lz + m[12];
+				item.cy = m[1] * lx + m[5] * ly + m[9] * lz + m[13];
+				item.cz = m[2] * lx + m[6] * ly + m[10] * lz + m[14];
+				item.radius = (halfDiagonal + extent * 0.25) * scale;
+			}
 		} else {
 			item.cx = m[12];
 			item.cy = m[13];
