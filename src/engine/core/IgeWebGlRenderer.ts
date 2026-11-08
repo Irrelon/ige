@@ -823,6 +823,16 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 	}
 
 	/**
+	 * The view, projection and combined matrices (and frustum) a viewport's
+	 * camera renders with, for projecting many points without repeating
+	 * the camera setup (see IgeViewportOverlay). Null without a camera.
+	 */
+	cameraMatrices(viewport: IgeViewport): IgeCameraMatrices | null {
+		if (!this._cameraController || !viewport.camera) return null;
+		return this._cameraController.updateCamera(viewport.camera, viewport);
+	}
+
+	/**
 	 * Build a world-space ray through a screen point (CSS pixels from the
 	 * canvas's top-left) in a viewport, for mouse picking and aiming.
 	 * Returns null if the viewport has no camera.
