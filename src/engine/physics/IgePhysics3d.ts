@@ -60,6 +60,13 @@ export interface IgePhysics3dOptions {
 	/** Most steps run in one update to catch up after a slow frame (default 4). */
 	maxSubSteps: number;
 	/**
+	 * Draw dynamic bodies' entities between the last two steps, by how far
+	 * the clock is into the next step (default true), so motion is smooth
+	 * when the display refreshes faster or slower than the step rate (e.g.
+	 * 120 Hz screens). Entities then lag the simulation by under one step.
+	 */
+	interpolate: boolean;
+	/**
 	 * Use Jolt's multithreaded build: "auto" (default) when the page is
 	 * cross-origin isolated (served with COOP/COEP headers, needed for
 	 * SharedArrayBuffer), true to require it, false never.
@@ -92,6 +99,7 @@ const DEFAULTS: IgePhysics3dOptions = {
 	gravity: -9.81,
 	fixedTimeStep: 1 / 60,
 	maxSubSteps: 4,
+	interpolate: true,
 	threads: "auto",
 	maxBodies: 10240,
 	maxBodyPairs: 65536,
@@ -113,6 +121,11 @@ export class IgePhysicsBody3d {
 	_offset: Vec3;
 	_enabled: boolean = true;
 	_destroyed: boolean = false;
+	/** Body position and rotation at the last two steps (IGE units): x, y, z, qx, qy, qz, qw. */
+	_previous = new Float64Array([0, 0, 0, 0, 0, 0, 1]);
+	_current = new Float64Array([0, 0, 0, 0, 0, 0, 1]);
+	/** Whether _previous and _current differ (the entity still needs placing). */
+	_moving: boolean = true;
 
 	constructor (physics: IgePhysics3d, entity: IgeEntity, options: IgePhysicsBodyOptions, body: JoltApi.Body) {
 		this._physics = physics;
@@ -122,6 +135,19 @@ export class IgePhysicsBody3d {
 		this._body = body;
 		this._id = body.GetID();
 		this._offset = options.offset ? { ...options.offset } : { x: 0, y: 0, z: 0 };
+		this._capture(true);
+	}
+
+	/** Record the body's transform as the latest step's (and the previous one's too when resetting). */
+	_capture (reset: boolean = false): void {
+		const u = this._physics._options.unitsPerMetre;
+		const p = this._body.GetPosition(), r = this._body.GetRotation();
+		const previous = this._previous, current = this._current;
+		if (!reset) previous.set(current);
+		current[0] = p.GetX() * u; current[1] = p.GetY() * u; current[2] = p.GetZ() * u;
+		current[3] = r.GetX(); current[4] = r.GetY(); current[5] = r.GetZ(); current[6] = r.GetW();
+		if (reset) previous.set(current);
+		this._moving = true;
 	}
 
 	/** Linear velocity in IGE units per second. */
@@ -186,6 +212,7 @@ export class IgePhysicsBody3d {
 		physics._vec.Set(0, 0, 0);
 		if (this.type !== "static") physics._bodies.SetLinearVelocity(this._id, physics._vec);
 		this.entity.translateTo(x, y, z);
+		this._capture(true);
 		return this;
 	}
 
@@ -198,6 +225,7 @@ export class IgePhysicsBody3d {
 		this._enabled = val;
 		if (val) {
 			this._physics._bodies.AddBody(this._id, this._physics._jolt.EActivation_Activate);
+			this._capture(true);
 		} else {
 			this._physics._bodies.RemoveBody(this._id);
 		}
@@ -606,13 +634,17 @@ export class IgePhysics3d extends IgeEventingClass {
 		while (this._accumulator >= step) {
 			this._moveKinematicBodies(step);
 			this._interface.Step(step, 1);
+			this._captureBodies();
 			this._accumulator -= step;
 			steps++;
 		}
 		this._stepsLastUpdate = steps;
+
+		// Place entities between the last two steps (every frame, steps or not)
+		this._syncEntities(this._options.interpolate ? this._accumulator / step : 1);
+
 		if (steps > 0) {
 			this._stepMs = performance.now() - started;
-			this._syncEntities();
 			for (const ragdoll of this._ragdolls) {
 				if (!ragdoll.asleep()) ragdoll.sync();
 			}
@@ -821,19 +853,41 @@ export class IgePhysics3d extends IgeEventingClass {
 	}
 
 	/** Move each awake dynamic body's entity to the body. */
-	_syncEntities (): void {
-		const u = this._options.unitsPerMetre;
+	/** Record every awake dynamic body's transform after a step. */
+	_captureBodies (): void {
 		for (const body of this._list) {
-			if (body.type !== "dynamic" || !body._enabled || !body._body.IsActive()) continue;
+			if (body.type !== "dynamic" || !body._enabled) continue;
+			if (body._body.IsActive()) {
+				body._capture();
+			} else if (body._moving) {
+				// Fell asleep: settle on the last step's transform
+				body._previous.set(body._current);
+			}
+		}
+	}
 
-			const p = body._body.GetPosition();
-			let x = p.GetX() * u, y = p.GetY() * u, z = p.GetZ() * u;
+	/**
+	 * Move each dynamic body's entity to its transform, alpha of the way
+	 * from the previous step's to the latest (1 = the latest).
+	 */
+	_syncEntities (alpha: number): void {
+		for (const body of this._list) {
+			if (body.type !== "dynamic" || !body._enabled || !body._moving) continue;
+
+			const a = body._previous, b = body._current;
+			let x = a[0] + (b[0] - a[0]) * alpha;
+			let y = a[1] + (b[1] - a[1]) * alpha;
+			let z = a[2] + (b[2] - a[2]) * alpha;
 			const entity = body.entity;
 
 			let q: Quat | null = null;
 			if (!body.options.lockRotation) {
-				const r = body._body.GetRotation();
-				q = { x: r.GetX(), y: r.GetY(), z: r.GetZ(), w: r.GetW() };
+				// Normalised lerp, along the shorter arc
+				const sign = a[3] * b[3] + a[4] * b[4] + a[5] * b[5] + a[6] * b[6] < 0 ? -1 : 1;
+				const qx = a[3] + (b[3] * sign - a[3]) * alpha, qy = a[4] + (b[4] * sign - a[4]) * alpha;
+				const qz = a[5] + (b[5] * sign - a[5]) * alpha, qw = a[6] + (b[6] * sign - a[6]) * alpha;
+				const len = Math.hypot(qx, qy, qz, qw) || 1;
+				q = { x: qx / len, y: qy / len, z: qz / len, w: qw / len };
 			}
 			const o = body._worldOffset(q || { x: 0, y: 0, z: 0, w: 1 });
 			x -= o.x; y -= o.y; z -= o.z;
@@ -856,6 +910,12 @@ export class IgePhysics3d extends IgeEventingClass {
 
 			entity.translateTo(x, y, z);
 			if (q) entity.quaternion(q);
+
+			// Asleep with both steps the same: placed for good until it moves again
+			if (!body._body.IsActive() && a[0] === b[0] && a[1] === b[1] && a[2] === b[2] &&
+				a[3] === b[3] && a[4] === b[4] && a[5] === b[5] && a[6] === b[6]) {
+				body._moving = false;
+			}
 		}
 	}
 }

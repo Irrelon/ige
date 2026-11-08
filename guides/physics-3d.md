@@ -19,6 +19,9 @@ const physics = await IgePhysics3d.create({ unitsPerMetre: 100 });
 physics.start(); // steps every engine frame, after entity updates, at a fixed 1/60 s
 ```
 
+Steps run at a fixed rate (`fixedTimeStep`), and entities are drawn between the last two steps (`interpolate`,
+default true), so motion stays smooth on 120 Hz screens or when frames are uneven.
+
 Jolt (about 0.9 MB gzipped) is loaded when the world is created, so games without physics don't download it.
 
 **Units.** Shapes, positions and velocities are in IGE units; the simulation runs in metres, because physics engines'
@@ -153,5 +156,5 @@ silicon Mac in Chrome:
 - Character controller: players are dynamic capsules. Jolt's `CharacterVirtual` (stairs, slopes, standing on moving
   platforms) would suit player characters better.
 - Heightfield shapes (lighter than a mesh for grid terrain) and compound shapes.
-- Contact (impact) events between bodies, collision layers beyond static/moving, and interpolation between steps
-  (the render shows the latest step).
+- Contact (impact) events between bodies, and collision layers beyond static/moving.
+- Ragdolls pose the skeleton from the latest step (not interpolated).
