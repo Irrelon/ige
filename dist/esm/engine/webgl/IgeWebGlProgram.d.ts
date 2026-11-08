@@ -1,5 +1,5 @@
 import { IgeBaseClass } from "../core/IgeBaseClass.js"
-import type { IgeMatrix4 } from "../core/IgeMatrix4.js"
+import type { IgeMatrix4 } from "../core/IgeMatrix4.js";
 /**
  * Cached state for a single uniform: its location plus the last value
  * uploaded through this wrapper. Uniform values belong to the program

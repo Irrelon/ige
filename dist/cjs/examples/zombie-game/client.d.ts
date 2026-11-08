@@ -8,6 +8,8 @@ import { IgePointLight } from "../../engine/webgl/IgeWebGlLight.js"
 import { type IgeGltfModel } from "../../engine/webgl/IgeGltfLoader.js"
 import { IgeParticleSystem3d } from "../../engine/webgl/IgeParticleSystem3d.js"
 import { IgeDecalSystem3d } from "../../engine/webgl/IgeDecalSystem3d.js"
+import { IgePhysics3d, type IgePhysicsBody3d } from "../../engine/physics/IgePhysics3d.js"
+import type { IgeRagdoll3d } from "../../engine/physics/IgeRagdoll3d.js"
 import { IgeViewportOverlay, type IgeOverlayMarker } from "../../engine/webgl/IgeViewportOverlay.js"
 import { IgeGamePadComponent } from "../../engine/components/IgeGamePadComponent.js"
 import { type IgeLevelObstacle } from "./level.js"
@@ -25,6 +27,8 @@ interface PlayerState {
     idleTime: number;
     facingX: number;
     facingZ: number;
+    /** Physics capsule (with ?physics=1). */
+    body?: IgePhysicsBody3d;
 }
 interface ZombieState {
     entity: IgeEntity;
@@ -38,6 +42,10 @@ interface ZombieState {
     alive: boolean;
     /** Shown once the zombie has been hurt. */
     healthBar?: IgeOverlayMarker;
+    /** Physics capsule (with ?physics=1). */
+    body?: IgePhysicsBody3d;
+    /** While dead, with physics: the body falls as a ragdoll. */
+    ragdoll?: IgeRagdoll3d;
 }
 interface DamageNumber {
     el: HTMLDivElement;
@@ -60,6 +68,9 @@ export declare class Client extends IgeBaseClass implements IgeCanInit {
     characterModel?: IgeGltfModel;
     obstacles: IgeLevelObstacle[];
     level?: IgeEntity;
+    /** Jolt physics (?physics=1): character capsules, the level, and crates to knock about. */
+    physics?: IgePhysics3d;
+    crates: IgePhysicsBody3d[];
     bloodFx?: IgeParticleSystem3d;
     bloodStains?: IgeDecalSystem3d;
     slashFx?: IgeParticleSystem3d;
@@ -76,6 +87,11 @@ export declare class Client extends IgeBaseClass implements IgeCanInit {
     grid: Map<number, ZombieState[]>;
     constructor();
     init(): Promise<void>;
+    physicsFromUrl(): boolean;
+    /** An upright capsule for a character, its bottom at the entity's feet. */
+    addCharacterBody(entity: IgeEntity, radius: number, density: number): IgePhysicsBody3d | undefined;
+    /** Wooden crates around the lobby, and a stack by the desk, for characters and swords to knock about. */
+    createCrates(): void;
     lodFromUrl(): boolean;
     zombieCountFromUrl(): number;
     setupLights(): void;
@@ -112,7 +128,8 @@ export declare class Client extends IgeBaseClass implements IgeCanInit {
      * a projected decal wraps over it.
      */
     splashBehind(x: number, z: number, dirX: number, dirZ: number): void;
-    killZombie(zombie: ZombieState): void;
+    /** @param dirX, dirZ Direction of the killing blow (for the ragdoll). */
+    killZombie(zombie: ZombieState, dirX?: number, dirZ?: number): void;
     rebuildGrid(): void;
     updateZombie(zombie: ZombieState, dt: number): void;
     damagePlayer(player: PlayerState, damage: number): void;

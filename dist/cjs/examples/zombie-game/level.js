@@ -72,16 +72,9 @@ function createBoxGeometry(w, h, d, id) {
         }
     };
 }
-/**
- * Builds the hospital lobby from box geometry and returns the footprints of
- * the solid furniture so characters can be kept out of it.
- *
- * Layout (top-down, Y is up): floor on the XZ plane, walls around the edge
- * with an entrance gap at the front, a reception desk at the back, pillars,
- * benches along the side walls and a few tables.
- */
 function createHospitalLobby(scene) {
     const obstacles = [];
+    const boxes = [];
     // Every level mesh hangs off one root, e.g. as the target for wall decals
     const root = new IgeEntity_1.IgeEntity().id("level").mount(scene);
     const box = (id, w, h, d, x, y, z, color, solid = false, metallic = 0.0, roughness = 0.8) => {
@@ -95,6 +88,7 @@ function createHospitalLobby(scene) {
         });
         entity.translateTo(x, y, z);
         entity.mount(root);
+        boxes.push({ entity, w, h, d });
         if (solid) {
             obstacles.push({ minX: x - w / 2, maxX: x + w / 2, minZ: z - d / 2, maxZ: z + d / 2 });
         }
@@ -137,7 +131,7 @@ function createHospitalLobby(scene) {
     // Vending machine against the back wall and a bin by the entrance
     box("vendingMachine", 80, 180, 60, -600, 90, -700, { r: 0.2, g: 0.3, b: 0.6 }, true, 0.4, 0.4);
     box("trashCan", 40, 60, 40, 200, 30, 600, { r: 0.35, g: 0.35, b: 0.35 }, true, 0.3, 0.6);
-    return { obstacles, root };
+    return { obstacles, root, boxes };
 }
 /** Inner faces of the lobby walls. */
 exports.WALL_FACES = { minX: -990, maxX: 990, minZ: -740, maxZ: 740 };

@@ -22,6 +22,7 @@ const IgeWebGlLight_1 = require("../../engine/webgl/IgeWebGlLight.js");
 const IgeGltfLoader_1 = require("../../engine/webgl/IgeGltfLoader.js");
 const IgeParticleSystem3d_1 = require("../../engine/webgl/IgeParticleSystem3d.js");
 const IgeDecalSystem3d_1 = require("../../engine/webgl/IgeDecalSystem3d.js");
+const IgePhysics3d_1 = require("../../engine/physics/IgePhysics3d.js");
 const IgeViewportOverlay_1 = require("../../engine/webgl/IgeViewportOverlay.js");
 const IgeGamePadComponent_1 = require("../../engine/components/IgeGamePadComponent.js");
 const level_1 = require("./level");
@@ -98,7 +99,27 @@ const HIT_FLASH_TIME = 0.15;
 const RESPAWN_INVULNERABLE_TIME = 2;
 const IDLE_AUTO_FIGHT_TIME = 2;
 const CHARACTER_SCALE = 100;
+const CHARACTER_HEIGHT = 130; // physics capsule height (world units)
+/**
+ * Ragdoll parts for CesiumMan (world units): spine, chest, head, upper and
+ * lower arms and legs. Hands, feet and the neck ride along with the part
+ * above them.
+ */
+const RAGDOLL_PARTS = [
+    { bone: "Skeleton_torso_joint_1", to: "torso_joint_3", radius: 10 },
+    { bone: "torso_joint_3", to: "Skeleton_neck_joint_2", radius: 9 },
+    { bone: "Skeleton_neck_joint_2", length: 14, radius: 8 },
+    { bone: "Skeleton_arm_joint_L__4_", to: "Skeleton_arm_joint_L__3_", radius: 4 },
+    { bone: "Skeleton_arm_joint_L__3_", to: "Skeleton_arm_joint_L__2_", radius: 3.5 },
+    { bone: "Skeleton_arm_joint_R", to: "Skeleton_arm_joint_R__2_", radius: 4 },
+    { bone: "Skeleton_arm_joint_R__2_", to: "Skeleton_arm_joint_R__3_", radius: 3.5 },
+    { bone: "leg_joint_L_1", to: "leg_joint_L_2", radius: 5 },
+    { bone: "leg_joint_L_2", to: "leg_joint_L_3", radius: 4 },
+    { bone: "leg_joint_R_1", to: "leg_joint_R_2", radius: 5 },
+    { bone: "leg_joint_R_2", to: "leg_joint_R_3", radius: 4 }
+];
 const ZOMBIE_TINT = { r: 0.45, g: 0.62, b: 0.38, a: 1 };
+const ZOMBIE_DEAD_TINT = { r: 0.3, g: 0.36, b: 0.27, a: 1 };
 class Client extends IgeBaseClass_1.IgeBaseClass {
     constructor() {
         super();
@@ -107,6 +128,7 @@ class Client extends IgeBaseClass_1.IgeBaseClass {
         this.players = [];
         this.zombies = [];
         this.obstacles = [];
+        this.crates = [];
         this.damageNumbers = [];
         this.keysDown = {};
         this.keysPressed = {};
@@ -150,6 +172,17 @@ class Client extends IgeBaseClass_1.IgeBaseClass {
                 const lobby = (0, level_1.createHospitalLobby)(this.scene);
                 this.obstacles = lobby.obstacles;
                 this.level = lobby.root;
+                if (this.physicsFromUrl()) {
+                    this.updateStatus("Loading physics...");
+                    this.physics = yield IgePhysics3d_1.IgePhysics3d.create({ unitsPerMetre: 100 });
+                    for (const box of lobby.boxes) {
+                        this.physics.addBody(box.entity, {
+                            type: "static",
+                            shape: { type: "box", halfExtents: { x: box.w / 2, y: box.h / 2, z: box.d / 2 } }
+                        });
+                    }
+                    this.createCrates();
+                }
                 this.updateStatus("Loading character model...");
                 this.characterModel = yield IgeGltfLoader_1.igeGltfLoader.load("../../assets/models/CesiumMan.glb", "characterModel");
                 this.updateStatus("Spawning players and zombies...");
@@ -159,6 +192,11 @@ class Client extends IgeBaseClass_1.IgeBaseClass {
                 this.setupSplitScreenViewports();
                 this.computeCameraOffset();
                 this.updateCameraPositions();
+                if (this.physics) {
+                    // Cameras follow the characters where the step left them
+                    this.physics.on("afterStep", () => this.updateCameraPositions());
+                    this.physics.start();
+                }
                 this.setupInput();
                 this.createOverlay();
                 // One behaviour drives the whole simulation; cameras follow after it
@@ -177,6 +215,51 @@ class Client extends IgeBaseClass_1.IgeBaseClass {
                 this.updateStatus(`Error: ${error}`);
             }
         });
+    }
+    physicsFromUrl() {
+        return new URLSearchParams(window.location.search).get("physics") === "1";
+    }
+    /** An upright capsule for a character, its bottom at the entity's feet. */
+    addCharacterBody(entity, radius, density) {
+        if (!this.physics)
+            return;
+        const halfHeight = CHARACTER_HEIGHT / 2 - radius;
+        return this.physics.addBody(entity, {
+            shape: { type: "capsule", radius, halfHeight },
+            offset: { x: 0, y: CHARACTER_HEIGHT / 2, z: 0 },
+            lockRotation: true,
+            friction: 0, // slide along walls and each other
+            linearDamping: 0,
+            density
+        });
+    }
+    /** Wooden crates around the lobby, and a stack by the desk, for characters and swords to knock about. */
+    createCrates() {
+        if (!this.scene || !this.physics)
+            return;
+        const spots = [
+            [-650, -350, 30], [-600, 120, 26], [-180, -380, 32], [180, -330, 28], [620, -380, 30],
+            [640, 150, 26], [-120, 420, 28], [460, 480, 30], [-480, 520, 26], [80, -150, 24]
+        ].map(([x, z, half]) => ({ x, z, half, y: half + 1, turn: Math.random() * Math.PI }));
+        // A pyramid of crates beside the reception desk
+        for (let row = 0; row < 3; row++) {
+            for (let i = 0; i < 3 - row; i++) {
+                spots.push({ x: 330 + i * 62 + row * 31, z: -560, half: 30, y: 31 + row * 61, turn: 0 });
+            }
+        }
+        for (const { x, y, z, half, turn } of spots) {
+            const crate = new IgeEntity_1.IgeEntity()
+                .translateTo(x, y, z)
+                .rotateTo(0, turn, 0)
+                .mount(this.scene);
+            crate._geometryData = (0, level_1.createBoxGeometry)(half * 2, half * 2, half * 2, `crate_${half}`);
+            crate.material({ color: { r: 0.55, g: 0.38, b: 0.2, a: 1 }, roughness: 0.85 });
+            this.crates.push(this.physics.addBody(crate, {
+                shape: { type: "box", halfExtents: { x: half, y: half, z: half } },
+                density: 250,
+                friction: 0.6
+            }));
+        }
     }
     lodFromUrl() {
         return new URLSearchParams(window.location.search).get("lod") !== "0";
@@ -266,6 +349,7 @@ class Client extends IgeBaseClass_1.IgeBaseClass {
                 .mount(this.scene);
             // Heroes animate at full frame rate rather than from the crowd cache
             (_d = entity.skeletalAnimation()) === null || _d === void 0 ? void 0 : _d.poseCache(false);
+            const body = this.addCharacterBody(entity, PLAYER_RADIUS, 3000);
             this.createSword(entity);
             // Each player carries a lantern so they can see in the dark
             const lantern = new IgeWebGlLight_1.IgePointLight();
@@ -288,7 +372,8 @@ class Client extends IgeBaseClass_1.IgeBaseClass {
                 invulnerable: 0,
                 idleTime: 0,
                 facingX: 0,
-                facingZ: 1
+                facingZ: 1,
+                body
             };
             this.applyPlayerMaterial(player);
             this.players.push(player);
@@ -317,7 +402,8 @@ class Client extends IgeBaseClass_1.IgeBaseClass {
                 knockbackX: 0,
                 knockbackZ: 0,
                 respawnTimer: 0,
-                alive: true
+                alive: true,
+                body: this.addCharacterBody(entity, ZOMBIE_RADIUS, 1000)
             };
             // Desynchronise the walk cycles; slower zombies shamble slower
             const state = (_d = (_c = entity.skeletalAnimation()) === null || _c === void 0 ? void 0 : _c._activeStates) === null || _d === void 0 ? void 0 : _d[0];
@@ -358,6 +444,7 @@ class Client extends IgeBaseClass_1.IgeBaseClass {
         part(parts.grip, -0.04, { r: 0.22, g: 0.14, b: 0.08 }, 0.0, 0.8);
     }
     placeZombieAwayFromPlayers(zombie) {
+        var _a;
         for (let attempt = 0; attempt < 30; attempt++) {
             const x = lerp(level_1.ARENA.minX + 60, level_1.ARENA.maxX - 60, Math.random());
             const z = lerp(level_1.ARENA.minZ + 60, level_1.ARENA.maxZ - 60, Math.random());
@@ -368,6 +455,7 @@ class Client extends IgeBaseClass_1.IgeBaseClass {
             if (!tooClose || attempt === 29) {
                 const pos = (0, level_1.resolveLevelCollision)(x, z, ZOMBIE_RADIUS, this.obstacles);
                 zombie.entity.translateTo(pos.x, 0, pos.z);
+                (_a = zombie.body) === null || _a === void 0 ? void 0 : _a.enabled(true).teleport(pos.x, 0, pos.z);
                 return;
             }
         }
@@ -421,6 +509,7 @@ class Client extends IgeBaseClass_1.IgeBaseClass {
         return { moveX: worldX, moveZ: worldZ, attack };
     }
     updatePlayer(player, dt) {
+        var _a, _b;
         const entity = player.entity;
         player.attackCooldown = Math.max(0, player.attackCooldown - dt);
         player.invulnerable = Math.max(0, player.invulnerable - dt);
@@ -437,6 +526,7 @@ class Client extends IgeBaseClass_1.IgeBaseClass {
                 player.health = PLAYER_MAX_HEALTH;
                 player.invulnerable = RESPAWN_INVULNERABLE_TIME;
                 entity.translateTo(start.x, 0, start.z).show();
+                (_a = player.body) === null || _a === void 0 ? void 0 : _a.enabled(true).teleport(start.x, 0, start.z);
                 player.lantern.intensity(1.6);
                 this.shoveZombiesAway(start.x, start.z, 320);
             }
@@ -461,8 +551,14 @@ class Client extends IgeBaseClass_1.IgeBaseClass {
             }
         }
         if (len > 0.05) {
-            const pos = (0, level_1.resolveLevelCollision)(entity._translate.x + input.moveX * PLAYER_SPEED * dt, entity._translate.z + input.moveZ * PLAYER_SPEED * dt, PLAYER_RADIUS, this.obstacles);
-            entity.translateTo(pos.x, 0, pos.z);
+            if (player.body) {
+                // Physics moves the capsule and keeps it out of walls and zombies
+                player.body.setVelocityXZ(input.moveX * PLAYER_SPEED, input.moveZ * PLAYER_SPEED);
+            }
+            else {
+                const pos = (0, level_1.resolveLevelCollision)(entity._translate.x + input.moveX * PLAYER_SPEED * dt, entity._translate.z + input.moveZ * PLAYER_SPEED * dt, PLAYER_RADIUS, this.obstacles);
+                entity.translateTo(pos.x, 0, pos.z);
+            }
             player.facingX = input.moveX / len;
             player.facingZ = input.moveZ / len;
             // glTF models face +Z; a Y rotation of a turns +Z toward (sin a, cos a)
@@ -470,6 +566,7 @@ class Client extends IgeBaseClass_1.IgeBaseClass {
             anim === null || anim === void 0 ? void 0 : anim.setSpeed(1.4 * Math.min(1, len));
         }
         else {
+            (_b = player.body) === null || _b === void 0 ? void 0 : _b.setVelocityXZ(0, 0);
             anim === null || anim === void 0 ? void 0 : anim.setSpeed(0);
         }
         // Lantern floats above the player's shoulder
@@ -483,6 +580,17 @@ class Client extends IgeBaseClass_1.IgeBaseClass {
         var _a, _b, _c;
         const px = player.entity._translate.x;
         const pz = player.entity._translate.z;
+        // Swords knock crates flying
+        for (const crate of this.crates) {
+            const dx = crate.entity._translate.x - px, dz = crate.entity._translate.z - pz;
+            const dist = Math.hypot(dx, dz);
+            if (dist > ATTACK_RANGE * 1.2 || dist < 1)
+                continue;
+            if ((dx * player.facingX + dz * player.facingZ) / dist < ATTACK_ARC)
+                continue;
+            const push = crate.mass() * 420; // kg * units per second
+            crate.applyImpulse((dx / dist) * push, push * 0.45, (dz / dist) * push);
+        }
         // Swing sparks in front of the player
         // The slash starts at the sword hand
         const hand = player.entity.bonePosition(HAND_BONE);
@@ -519,7 +627,7 @@ class Client extends IgeBaseClass_1.IgeBaseClass {
             this.splashBehind(hitPoint.x, hitPoint.z, dx / dist, dz / dist);
             this.spawnDamageNumber(player.index, hitPoint.x, 190, hitPoint.z, damage);
             if (zombie.health <= 0) {
-                this.killZombie(zombie);
+                this.killZombie(zombie, dx / dist, dz / dist);
                 player.kills++;
                 this.totalKills++;
             }
@@ -613,7 +721,8 @@ class Client extends IgeBaseClass_1.IgeBaseClass {
             return;
         this.bloodStains.project({ x: x + dirX * best, y: 30 + Math.random() * 90, z: z + dirZ * best }, { x: normalX, y: 0, z: normalZ }, this.level, { size: 50 + Math.random() * 40, depth: 30, opacity: 0.7 + Math.random() * 0.25 });
     }
-    killZombie(zombie) {
+    /** @param dirX, dirZ Direction of the killing blow (for the ragdoll). */
+    killZombie(zombie, dirX = 0, dirZ = 0) {
         var _a, _b, _c;
         zombie.alive = false;
         (_a = zombie.healthBar) === null || _a === void 0 ? void 0 : _a.remove();
@@ -622,6 +731,18 @@ class Client extends IgeBaseClass_1.IgeBaseClass {
         const t = zombie.entity._translate;
         (_b = this.bloodFx) === null || _b === void 0 ? void 0 : _b.burst(70, { x: t.x, y: 80, z: t.z }, { x: 0, y: 1, z: 0 });
         (_c = this.bloodStains) === null || _c === void 0 ? void 0 : _c.add(t.x, t.z, { size: 80 + Math.random() * 40, color: { r: 0.3, g: 0.01, b: 0.01 } });
+        if (this.physics && zombie.body) {
+            // The capsule gives way to a ragdoll thrown along the blow
+            zombie.body.enabled(false);
+            zombie.hitFlash = 0;
+            zombie.entity.material({ color: ZOMBIE_DEAD_TINT });
+            zombie.ragdoll = this.physics.createRagdoll(zombie.entity, {
+                parts: RAGDOLL_PARTS,
+                velocity: { x: dirX * 380, y: 160, z: dirZ * 380 }
+            });
+            zombie.respawnTimer = ZOMBIE_RESPAWN_TIME * 2;
+            return;
+        }
         zombie.entity.hide();
     }
     rebuildGrid() {
@@ -639,10 +760,19 @@ class Client extends IgeBaseClass_1.IgeBaseClass {
         }
     }
     updateZombie(zombie, dt) {
+        var _a, _b, _c, _d;
         const entity = zombie.entity;
         if (!zombie.alive) {
             zombie.respawnTimer -= dt;
             if (zombie.respawnTimer <= 0) {
+                if (zombie.ragdoll) {
+                    // Back on its feet: walking again, driven by animation
+                    zombie.ragdoll.destroy();
+                    zombie.ragdoll = undefined;
+                    const walkClip = (_c = (_b = (_a = this.characterModel) === null || _a === void 0 ? void 0 : _a.animations) === null || _b === void 0 ? void 0 : _b[0]) === null || _c === void 0 ? void 0 : _c.name;
+                    if (walkClip)
+                        (_d = entity.skeletalAnimation()) === null || _d === void 0 ? void 0 : _d.play(walkClip, { crossFadeDuration: 0 }).setSpeed(zombie.speed / 80);
+                }
                 zombie.alive = true;
                 zombie.health = ZOMBIE_HEALTH;
                 zombie.hitFlash = 0;
@@ -689,6 +819,16 @@ class Client extends IgeBaseClass_1.IgeBaseClass {
                 entity.rotateTo(0, Math.atan2(dx, dz), 0);
             }
         }
+        // With physics the capsules push each other apart and stop at walls
+        if (zombie.body) {
+            vx += zombie.knockbackX;
+            vz += zombie.knockbackZ;
+            const decay = Math.max(0, 1 - dt * 8);
+            zombie.knockbackX *= decay;
+            zombie.knockbackZ *= decay;
+            zombie.body.setVelocityXZ(vx, vz);
+            return;
+        }
         // Separation from nearby zombies so the horde spreads out
         const cx = Math.floor(zx / GRID_CELL), cz = Math.floor(zz / GRID_CELL);
         const minDist = ZOMBIE_RADIUS * 2;
@@ -721,7 +861,7 @@ class Client extends IgeBaseClass_1.IgeBaseClass {
         entity.translateTo(pos.x, 0, pos.z);
     }
     damagePlayer(player, damage) {
-        var _a, _b, _c;
+        var _a, _b, _c, _d;
         if (player.health <= 0 || player.invulnerable > 0)
             return;
         player.health = Math.max(0, player.health - damage);
@@ -732,9 +872,10 @@ class Client extends IgeBaseClass_1.IgeBaseClass {
         if (player.health <= 0) {
             player.respawnTimer = PLAYER_RESPAWN_TIME;
             player.entity.hide();
+            (_b = player.body) === null || _b === void 0 ? void 0 : _b.enabled(false);
             player.lantern.intensity(0);
-            (_b = this.bloodFx) === null || _b === void 0 ? void 0 : _b.burst(80, { x: t.x, y: 90, z: t.z }, { x: 0, y: 1, z: 0 });
-            (_c = this.bloodStains) === null || _c === void 0 ? void 0 : _c.add(t.x, t.z, { size: 110 });
+            (_c = this.bloodFx) === null || _c === void 0 ? void 0 : _c.burst(80, { x: t.x, y: 90, z: t.z }, { x: 0, y: 1, z: 0 });
+            (_d = this.bloodStains) === null || _d === void 0 ? void 0 : _d.add(t.x, t.z, { size: 110 });
         }
     }
     /** Player tint, or a red hit flash via the emissive override. */
@@ -942,7 +1083,7 @@ class Client extends IgeBaseClass_1.IgeBaseClass {
             el.textContent = count.toString();
     }
     updateStats() {
-        var _a;
+        var _a, _b;
         const fpsEl = document.getElementById("fps");
         if (fpsEl)
             fpsEl.textContent = Math.round(instance_1.ige.engine._fps).toString();
@@ -956,6 +1097,13 @@ class Client extends IgeBaseClass_1.IgeBaseClass {
         const trianglesEl = document.getElementById("triangles");
         if (trianglesEl && stats)
             trianglesEl.textContent = `${(stats.triangles / 1000).toFixed(0)}k (${stats.lodItems} LOD)`;
+        const physicsEl = document.getElementById("physics");
+        if (physicsEl) {
+            const p = (_b = this.physics) === null || _b === void 0 ? void 0 : _b.stats();
+            physicsEl.textContent = p
+                ? `${p.stepMs.toFixed(2)} ms, ${p.activeBodies}/${p.bodies} bodies awake, ${p.ragdolls} ragdolls${p.threaded ? ", threaded" : ""}`
+                : "off (?physics=1)";
+        }
     }
     hideLoadingScreen() {
         document.querySelectorAll(".igeLoading").forEach((el) => {

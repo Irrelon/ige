@@ -1,5 +1,5 @@
 import type { IgeEntity } from "../core/IgeEntity.js"
-import type { IgeGeometryData3d } from "../../types/IgeGeometryData3d.js"
+import type { IgeGeometryData3d } from "../../types/IgeGeometryData3d.js";
 import type { IgeSkeleton } from "../../types/IgeSkeletonData.js"
 type Vec3 = {
     x: number;

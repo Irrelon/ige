@@ -1,11 +1,11 @@
 import { IgeBounds } from "./IgeBounds.js"
-import { IgeMatrix4 } from "./IgeMatrix4.js"
+import { IgeMatrix4 } from "./IgeMatrix4.js";
 import { IgeObject } from "./IgeObject.js"
-import { IgePoint2d } from "./IgePoint2d.js"
+import { IgePoint2d } from "./IgePoint2d.js";
 import { IgePoint3d } from "./IgePoint3d.js"
-import type { IgeTexture } from "./IgeTexture.js"
+import type { IgeTexture } from "./IgeTexture.js";
 import type { IgeViewport } from "./IgeViewport.js"
-import { IgeEntityRenderMode } from "../../enums/index.js"
+import { IgeEntityRenderMode } from "../../enums/index.js";
 import type { IgeCanRegisterByCategory } from "../../types/IgeCanRegisterByCategory.js"
 import type { IgeCanRegisterById } from "../../types/IgeCanRegisterById.js"
 import type { IgeCanvasRenderingContext2d } from "../../types/IgeCanvasRenderingContext2d.js"
@@ -16,11 +16,11 @@ import type { IgeShapeFunctionality } from "../../types/IgeShapeFunctionality.js
 import type { IgeSmartTexture } from "../../types/IgeSmartTexture.js"
 import type { IgeTriggerPolygonFunctionName } from "../../types/IgeTriggerPolygonFunctionName.js"
 import type { IgeGltfModel } from "../webgl/IgeGltfLoader.js"
-import type { IgeRetargetOptions } from "../webgl/IgeAnimationRetarget.js"
+import type { IgeRetargetOptions } from "../webgl/IgeAnimationRetarget.js";
 import type { IgeSkeletonData } from "../../types/IgeSkeletonData.js"
 import type { IgeMaterialData } from "../../types/IgeMaterialData.js"
 import type { IgeModelLod, IgeModelLodLevel } from "../webgl/IgeModelParts.js"
-import { IgeSkeletalAnimationComponent } from "../components/IgeSkeletalAnimationComponent.js"
+import { IgeSkeletalAnimationComponent } from "../components/IgeSkeletalAnimationComponent.js";
 import type { IgeAnimationPlayOptions } from "../../types/IgeAnimationClipData.js"
 /**
  * Options for IgeEntity.model().
@@ -81,6 +81,13 @@ export declare class IgeEntity extends IgeObject implements IgeCanRegisterById, 
      * _transformInputsUnchanged()).
      */
     _tfInputs?: Float64Array;
+    /** 3D rotation that replaces the Euler angles when set (see quaternion()). */
+    _quaternion: {
+        x: number;
+        y: number;
+        z: number;
+        w: number;
+    } | null;
     _tfParent?: IgeObject | null;
     _tfParentVersion: number;
     _tfWebGl: boolean;
@@ -425,6 +432,26 @@ export declare class IgeEntity extends IgeObject implements IgeCanRegisterById, 
      */
     material(data: IgeMaterialData | null): this;
     material(): IgeMaterialData | null;
+    /**
+     * Gets / sets a 3D rotation as a unit quaternion. While set it replaces
+     * the Euler angles of rotate() in the WebGL renderer's 3D transform,
+     * which suits full 3D rotations such as physics bodies tumbling (no
+     * gimbal lock). Pass null to go back to rotate().
+     * @example #Face along a physics body's rotation
+     *     entity.quaternion({ x: 0, y: 0.7071, z: 0, w: 0.7071 });
+     */
+    quaternion(q: {
+        x: number;
+        y: number;
+        z: number;
+        w: number;
+    } | null): this;
+    quaternion(): {
+        x: number;
+        y: number;
+        z: number;
+        w: number;
+    } | null;
     /**
      * Tells render-on-demand (ige.engine.renderOnDemand()) that this entity
      * now looks different. Changes to hidden entities don't count; showing

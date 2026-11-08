@@ -1,5 +1,5 @@
 import { IgeEntity } from "../core/IgeEntity.js"
-import type { IgeTexture } from "../core/IgeTexture.js"
+import type { IgeTexture } from "../core/IgeTexture.js";
 export interface IgeParticleVec3 {
     x: number;
     y: number;

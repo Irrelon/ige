@@ -1,20 +1,20 @@
 import { markSceneChanged } from "../utils/sceneChange.js"
-import { IgeBounds } from "./IgeBounds.js"
+import { IgeBounds } from "./IgeBounds.js";
 import { IgeDummyCanvas } from "./IgeDummyCanvas.js"
-import { IgeMatrix2d } from "./IgeMatrix2d.js"
+import { IgeMatrix2d } from "./IgeMatrix2d.js";
 import { IgeMatrix4 } from "./IgeMatrix4.js"
-import { IgeObject } from "./IgeObject.js"
+import { IgeObject } from "./IgeObject.js";
 import { IgePoint2d } from "./IgePoint2d.js"
-import { IgePoint3d } from "./IgePoint3d.js"
+import { IgePoint3d } from "./IgePoint3d.js";
 import { IgePoly2d } from "./IgePoly2d.js"
-import { ige } from "../instance.js"
+import { ige } from "../instance.js";
 import { isClient, isServer } from "../utils/clientServer.js"
-import { registerClass } from "../utils/igeClassStore.js"
+import { registerClass } from "../utils/igeClassStore.js";
 import { degreesToRadians } from "../utils/maths.js"
-import { traceSet } from "../utils/trace.js"
-import { IgeBehaviourType, IgeEntityRenderMode, IgeIsometricDepthSortMode, IgeMountMode, IgeStreamMode } from "../../enums/index.js"
+import { traceSet } from "../utils/trace.js";
+import { IgeBehaviourType, IgeEntityRenderMode, IgeIsometricDepthSortMode, IgeMountMode, IgeStreamMode } from "../../enums/index.js";
 import { findBoneIndex, retargetClips } from "../webgl/IgeAnimationRetarget.js"
-import { createSkeletonInstance, getGeometryLod, getModelLod, getModelParts } from "../webgl/IgeModelParts.js"
+import { createSkeletonInstance, getGeometryLod, getModelLod, getModelParts } from "../webgl/IgeModelParts.js";
 import { IgeSkeletalAnimationComponent } from "../components/IgeSkeletalAnimationComponent.js"
 /**
  * Creates an entity and handles the entity's life cycle and
@@ -77,6 +77,8 @@ export class IgeEntity extends IgeObject {
      * _transformInputsUnchanged()).
      */
     _tfInputs;
+    /** 3D rotation that replaces the Euler angles when set (see quaternion()). */
+    _quaternion = null;
     _tfParent;
     _tfParentVersion = -1;
     _tfWebGl = false;
@@ -108,7 +110,9 @@ export class IgeEntity extends IgeObject {
             return false;
         const t = this._translate, r = this._rotate, sc = this._scale, o = this._origin;
         const b2 = this._bounds2d, b3 = this._bounds3d;
-        if (c[0] !== t.x || c[1] !== t.y || c[2] !== t.z ||
+        const q = this._quaternion;
+        if (c[19] !== (q ? q.x : 0) || c[20] !== (q ? q.y : 0) || c[21] !== (q ? q.z : 0) || c[22] !== (q ? q.w : 2) ||
+            c[0] !== t.x || c[1] !== t.y || c[2] !== t.z ||
             c[3] !== r.x || c[4] !== r.y || c[5] !== r.z ||
             c[6] !== sc.x || c[7] !== sc.y || c[8] !== sc.z ||
             c[9] !== o.x || c[10] !== o.y || c[11] !== o.z ||
@@ -128,9 +132,15 @@ export class IgeEntity extends IgeObject {
      * Record the inputs used for the rebuild that just happened.
      */
     _recordTransformInputs(webGl) {
-        const c = this._tfInputs || (this._tfInputs = new Float64Array(19));
+        const c = this._tfInputs || (this._tfInputs = new Float64Array(23));
         const parent = this._parent;
         const t = this._translate, r = this._rotate, sc = this._scale, o = this._origin;
+        const q = this._quaternion;
+        // w = 2 (never a unit quaternion's) stands for "no quaternion"
+        c[19] = q ? q.x : 0;
+        c[20] = q ? q.y : 0;
+        c[21] = q ? q.z : 0;
+        c[22] = q ? q.w : 2;
         const b2 = this._bounds2d, b3 = this._bounds3d;
         c[0] = t.x;
         c[1] = t.y;
@@ -227,14 +237,20 @@ export class IgeEntity extends IgeObject {
             this._localMatrix4.identity();
             // Apply translation
             this._localMatrix4.translateBy(this._translate.x, this._translate.y, this._translate.z);
-            // Apply rotation (ZYX order - standard for game engines)
-            // Note: IGE uses radians
-            if (this._rotate.z !== 0)
-                this._localMatrix4.rotateZBy(this._rotate.z);
-            if (this._rotate.y !== 0)
-                this._localMatrix4.rotateYBy(this._rotate.y);
-            if (this._rotate.x !== 0)
-                this._localMatrix4.rotateXBy(this._rotate.x);
+            // Apply rotation: a quaternion (see quaternion()) when set, else
+            // Euler angles in ZYX order (radians)
+            const q = this._quaternion;
+            if (q) {
+                this._localMatrix4.rotateByQuaternion(q.x, q.y, q.z, q.w);
+            }
+            else {
+                if (this._rotate.z !== 0)
+                    this._localMatrix4.rotateZBy(this._rotate.z);
+                if (this._rotate.y !== 0)
+                    this._localMatrix4.rotateYBy(this._rotate.y);
+                if (this._rotate.x !== 0)
+                    this._localMatrix4.rotateXBy(this._rotate.x);
+            }
             // Apply scale
             this._localMatrix4.scaleBy(this._scale.x, this._scale.y, this._scale.z);
             // Apply origin offset (move pivot point)
@@ -702,6 +718,22 @@ export class IgeEntity extends IgeObject {
         }
         this._materialData = data;
         this._renderChanged();
+        return this;
+    }
+    quaternion(q) {
+        if (q === undefined) {
+            return this._quaternion;
+        }
+        if (q) {
+            const current = this._quaternion || (this._quaternion = { x: 0, y: 0, z: 0, w: 1 });
+            current.x = q.x;
+            current.y = q.y;
+            current.z = q.z;
+            current.w = q.w;
+        }
+        else {
+            this._quaternion = null;
+        }
         return this;
     }
     /**

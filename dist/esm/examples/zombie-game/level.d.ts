@@ -28,9 +28,17 @@ export declare function createBoxGeometry(w: number, h: number, d: number, id: s
  * with an entrance gap at the front, a reception desk at the back, pillars,
  * benches along the side walls and a few tables.
  */
+/** One box of the level, with its size (for physics bodies). */
+export interface IgeLevelBox {
+    entity: IgeEntity;
+    w: number;
+    h: number;
+    d: number;
+}
 export declare function createHospitalLobby(scene: IgeScene2d): {
     obstacles: IgeLevelObstacle[];
     root: IgeEntity;
+    boxes: IgeLevelBox[];
 };
 /** Inner faces of the lobby walls. */
 export declare const WALL_FACES: {

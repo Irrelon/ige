@@ -1,5 +1,5 @@
 import { IgeBaseClass } from "./IgeBaseClass.js"
-import type { IgePoint3d } from "./IgePoint3d.js"
+import type { IgePoint3d } from "./IgePoint3d.js";
 /**
  * Creates a new 4x4 transformation matrix for 3D operations.
  * Matrix is stored in column-major format (WebGL standard).
@@ -55,6 +55,10 @@ export declare class IgeMatrix4 extends IgeBaseClass {
      * Applies rotation around Z axis to this matrix.
      * @param angle Angle in radians
      */
+    /**
+     * this = this * R(q): rotate by a unit quaternion (x, y, z, w).
+     */
+    rotateByQuaternion(x: number, y: number, z: number, w: number): this;
     rotateZBy(angle: number): this;
     /**
      * Sets this matrix as a rotation matrix around Z axis.
