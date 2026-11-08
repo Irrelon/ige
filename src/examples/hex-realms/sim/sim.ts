@@ -552,7 +552,7 @@ export class Sim {
 	 */
 	apply (player: number, command: Command): CommandResult {
 		if (this.state.winner) return fail("The game is over");
-		if (player !== this.state.current && command.type !== "respond") return fail("It is not your turn");
+		if (player !== this.state.current && command.type !== "respond" && command.type !== "seat") return fail("It is not your turn");
 		const p = this.state.players[player];
 		if (!p || !p.alive) return fail("Unknown or eliminated player");
 
@@ -580,6 +580,7 @@ export class Sim {
 			case "denounce": result = diplomacy.denounceCommand(this, player, command.target); break;
 			case "sanction": result = diplomacy.sanctionCommand(this, player, command.target); break;
 			case "ambition": result = ambitions.ambitionCommand(this, player, command.ambition); break;
+			case "seat": result = this.seatCommand(command.player, command.human); break;
 			case "endTurn": result = this.endTurn(player); break;
 			default: result = fail("Unknown command");
 		}
@@ -591,6 +592,14 @@ export class Sim {
 			this.onApplied?.(player, command);
 		}
 		return result;
+	}
+
+	/** Online: a person takes a civ's seat, or leaves it to the AI. */
+	protected seatCommand (player: number, human: boolean): CommandResult {
+		const p = this.state.players[player];
+		if (!p) return fail("Unknown civ");
+		p.human = !!human;
+		return ok();
 	}
 
 	protected disbandCommand (player: number, unitId: number): CommandResult {

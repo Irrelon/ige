@@ -3,25 +3,24 @@ import fs from "fs";
 import http from "http";
 import path from "path";
 import websocket from "websocket";
-import { type ChatLine, type ClientMessage, DEFAULT_PORT, type RoomInfo, type ServerMessage, SOCKET_PATH, TURN_TIMERS } from "../net/protocol";
+import { IgeRoomServer, type IgeRoomServerTransport, type IgeSavedRoom, type IgeServerRoom } from "@/engine/network/rooms/IgeRoomServer";
+import type { IgeRoomClientMessage, IgeRoomServerMessage } from "@/engine/network/rooms/igeRoomProtocol";
+import { DEFAULT_PORT, type OnlineCommand, type RoomOptions, SOCKET_PATH, type TimerCommand, type TimerInfo, TURN_TIMERS } from "../net/protocol";
 import { runAiTurn } from "../sim/ai";
 import { Sim } from "../sim/sim";
-import type { Command, GameOptions } from "../sim/types";
+import type { Command } from "../sim/types";
 
 /**
- * The Hex Realms game server.
+ * The Hex Realms game server, on the engine's game rooms (IgeRoomServer,
+ * see guides/online-rooms.md) over a plain WebSocket.
  *
- * Each game lives in a room with a short code. The server holds the
- * authoritative simulation and runs the AI civs; every accepted command,
- * and every change of who sits in a seat, goes out to all connected
- * players with a sequence number, and each client applies the same stream
- * to its own copy of the deterministic simulation. Turns are sequential, so
- * people can leave and come back (by code, or automatically with the seat
- * token their browser keeps); a seat stays theirs while they're away and
- * the game waits for them, unless the host has set a turn timer, in which
- * case the AI plays a turn whose time runs out. Players can chat, and can
- * leave a game for good (the AI takes their civ until they come back).
- * Rooms are saved to disk after every change.
+ * Each game is a room with a short code and one seat per civ. The room
+ * holds the authoritative simulation: every command, from a person or the
+ * AI, is checked and applied here and then sent to everyone in order; each
+ * client applies the same stream to its own copy. Seats are kept across
+ * reconnects (seat tokens); a civ nobody holds is played by the AI. Turns
+ * wait for absent players unless a turn timer runs out, in which case the
+ * AI plays that turn. Rooms are saved to disk after every change.
  *
  * It also serves the built client, so one port does everything:
  *
@@ -31,51 +30,7 @@ import type { Command, GameOptions } from "../sim/types";
  * then open http://localhost:8650/ (it redirects to the game).
  */
 
-interface Seat {
-	player: number;
-	name: string;
-	token: string;
-	/** Left the game: the AI plays this civ until the player comes back. */
-	left?: boolean;
-}
-
-interface Room {
-	code: string;
-	sim: Sim;
-	seq: number;
-	seats: Seat[];
-	clients: Set<Client>;
-	saveTimer?: ReturnType<typeof setTimeout>;
-	chat: ChatLine[];
-	/** The civ whose player hosts (sets the turn timer). */
-	host: number;
-	turnSeconds: number;
-	/** Civs with their own turn timer (overrides turnSeconds). */
-	seatSeconds: Record<number, number>;
-	deadline: number;
-	turnTimer?: ReturnType<typeof setTimeout>;
-	/** "turn:player" the running clock is for. */
-	timerFor?: string;
-}
-
-interface Client {
-	conn: websocket.connection;
-	room?: Room;
-	player: number;
-}
-
-interface SavedRoom {
-	code: string;
-	seq: number;
-	seats: Seat[];
-	snapshot: string;
-	chat?: ChatLine[];
-	turnSeconds?: number;
-	seatSeconds?: Record<number, number>;
-}
-
-/** Chat lines kept per game. */
-const CHAT_HISTORY = 100;
+type Room = IgeServerRoom<Sim, OnlineCommand>;
 
 // ------------------------------------------------------------------
 // Configuration
@@ -92,330 +47,296 @@ const DATA_DIR = path.resolve(arg("data", "hex-realms-games"));
 const GAME_PAGE = "/examples/hex-realms/index.html";
 /** Largest map an online game may use (bigger snapshots are slow to send). */
 const MAX_TILES = 128 * 80;
-
-const rooms = new Map<string, Room>();
+/** Marks the seat of a destroyed civ so nobody joins as it. */
+const GONE = "eliminated";
 
 function log (...parts: unknown[]): void {
 	console.log(new Date().toISOString(), ...parts);
 }
 
 // ------------------------------------------------------------------
+// Transport: room messages as JSON over the websocket package
+// ------------------------------------------------------------------
+
+const connections = new Map<string, websocket.connection>();
+let deliver: ((clientId: string, message: IgeRoomClientMessage) => void) | undefined;
+let dropped: ((clientId: string) => void) | undefined;
+
+const transport: IgeRoomServerTransport = {
+	send: (clientId, message: IgeRoomServerMessage) => {
+		const conn = connections.get(clientId);
+		if (conn?.connected) conn.sendUTF(JSON.stringify(message));
+	},
+	listen: (onMessage, onDisconnect) => {
+		deliver = onMessage;
+		dropped = onDisconnect;
+	}
+};
+
+// ------------------------------------------------------------------
 // Rooms
 // ------------------------------------------------------------------
 
-/** Five letters without easily confused ones, e.g. "KTRWM". */
-function newCode (): string {
-	const letters = "ABCDEFGHJKLMNPQRSTUVWXYZ";
-	for (;;) {
-		let code = "";
-		for (let i = 0; i < 5; i++) code += letters[crypto.randomInt(letters.length)];
-		if (!rooms.has(code) && !fs.existsSync(roomFile(code))) return code;
+/** True while the server itself applies a command (seat changes, the AI, timers). */
+let trusted = false;
+
+function validateOptions (o: RoomOptions | undefined): string | void {
+	const game = o?.game;
+	if (!game || typeof game !== "object") return "Missing game options";
+	if (!(game.width >= 16 && game.height >= 12) || game.width * game.height > MAX_TILES) return "That map size isn't available online";
+	if (!(game.players >= 2 && game.players <= 12)) return "Online games need 2 to 12 civs";
+}
+
+const rooms = new IgeRoomServer<Sim, OnlineCommand, RoomOptions>(transport, {
+	seats: (o) => o.game.players,
+	createState: (o) => {
+		const sim = Sim.create({ ...o.game, humans: [0] });
+		sim.drainEvents();
+		return sim;
+	},
+	validateOptions,
+	applyCommand: (room, seat, command) => applyCommand(room, seat, command),
+	snapshot: (room) => room.state.serialize(),
+	onChange: (room) => {
+		scheduleSave(room);
+		scheduleUpkeep(room);
+	}
+});
+
+function timers (room: Room): TimerInfo {
+	const info = room.info as TimerInfo | null;
+	if (info && typeof info === "object" && "turnSeconds" in info) return info;
+	const fresh: TimerInfo = { turnSeconds: (room.options as RoomOptions | undefined)?.turnSeconds ?? 0, seatSeconds: {}, deadline: 0 };
+	room.info = fresh;
+	return fresh;
+}
+
+/** Apply a command from the server (a seat change, the AI, a timer running out), broadcast like a player's. */
+function serverApply (room: Room, seat: number, command: OnlineCommand): boolean {
+	trusted = true;
+	try {
+		return !room.apply(seat, command);
+	} finally {
+		trusted = false;
 	}
 }
+
+function applyCommand (room: Room, seat: number, command: OnlineCommand): string | void {
+	if (!command || typeof command !== "object" || typeof command.type !== "string") return "Bad command";
+	if (command.type === "timer") return setTimer(room, seat, command);
+	if (command.type === "seat" && !trusted) return "Only the server changes seats";
+	const sim = room.state;
+	let result;
+	try {
+		result = sim.apply(seat, command as Command);
+	} catch (error) {
+		log(`Command failed in ${room.code}:`, command, error);
+		return "The server couldn't apply that";
+	}
+	sim.drainEvents();
+	if (!result.ok) return result.error ?? "Can't do that";
+}
+
+// ------------------------------------------------------------------
+// Seats, the AI and turn timers
+// ------------------------------------------------------------------
+
+const upkeepQueued = new Set<Room>();
+const aiRunning = new Set<Room>();
+
+/**
+ * Soon (once the message being handled has gone out to everyone): sync
+ * seats with the game, play AI turns, arm the turn clock.
+ */
+function scheduleUpkeep (room: Room): void {
+	if (upkeepQueued.has(room) || aiRunning.has(room)) return;
+	upkeepQueued.add(room);
+	setImmediate(() => {
+		upkeepQueued.delete(room);
+		if (rooms.room(room.code) !== room) return;
+		syncSeats(room);
+		runAis(room);
+		armTimer(room);
+	});
+}
+
+/** A seat held by a person makes its civ human; one nobody holds is the AI's. */
+function syncSeats (room: Room): void {
+	const sim = room.state;
+	for (const p of sim.state.players) {
+		const seat = room.seats[p.index];
+		if (!seat) continue;
+		if (!p.alive) {
+			if (seat.token !== GONE) {
+				seat.token = GONE;
+				seat.name = "";
+			}
+			continue;
+		}
+		const held = !!seat.token && seat.token !== GONE;
+		if (held === p.human) continue;
+		serverApply(room, p.index, { type: "seat", player: p.index, human: held });
+		room.say(held ? `${seat.name} plays ${p.name}.` : `${p.name} is now played by the AI.`);
+		log(`${room.code}: ${p.name} is now ${held ? `played by ${seat.name}` : "the AI's"}`);
+	}
+}
+
+/** Play AI turns until a person is to move (or the game ends). */
+function runAis (room: Room): void {
+	if (aiRunning.has(room)) return;
+	aiRunning.add(room);
+	try {
+		const sim = room.state;
+		let guard = sim.playerCount * (sim.options.turnLimit + 2) * 2;
+		while (!sim.state.winner && !sim.isHuman(sim.current) && guard-- > 0) {
+			const p = sim.current;
+			runAiTurn(sim, p, (command) => serverApply(room, p, command));
+			if (sim.current === p && !sim.state.winner) serverApply(room, p, { type: "endTurn" });
+		}
+	} finally {
+		aiRunning.delete(room);
+	}
+}
+
+const clocks = new Map<Room, { key: string; timer: ReturnType<typeof setTimeout> }>();
+
+function secondsFor (room: Room, player: number): number {
+	const t = timers(room);
+	return t.seatSeconds[player] ?? t.turnSeconds;
+}
+
+/** Start the clock for a person's turn when their timer is set (a running clock for this turn keeps going unless `restart`). */
+function armTimer (room: Room, restart = false): void {
+	const sim = room.state;
+	const t = timers(room);
+	const key = `${sim.state.turn}:${sim.current}`;
+	const seconds = secondsFor(room, sim.current);
+	const wanted = seconds > 0 && !sim.state.winner && sim.isHuman(sim.current);
+	const running = clocks.get(room);
+	if (wanted && running && running.key === key && !restart) return;
+	if (running) clearTimeout(running.timer);
+	clocks.delete(room);
+	let deadline = 0;
+	if (wanted) {
+		const player = sim.current, turn = sim.state.turn;
+		deadline = Date.now() + seconds * 1000;
+		clocks.set(room, { key, timer: setTimeout(() => timeUp(room, player, turn), seconds * 1000) });
+	}
+	if (deadline !== t.deadline || restart) room.setInfo({ ...t, deadline });
+}
+
+/** A person's time ran out: the AI plays the rest of their turn. */
+function timeUp (room: Room, player: number, turn: number): void {
+	clocks.delete(room);
+	const sim = room.state;
+	if (sim.current !== player || sim.state.turn !== turn || sim.state.winner) return;
+	const name = room.seats[player]?.name || sim.player(player).name;
+	log(`Time ran out for ${name} in ${room.code}`);
+	room.say(`Time ran out for ${name}: the AI played their turn.`);
+	runAiTurn(sim, player, (command) => serverApply(room, player, command));
+	if (sim.current === player && !sim.state.winner) serverApply(room, player, { type: "endTurn" });
+	scheduleUpkeep(room);
+}
+
+/** The timer command: the host sets the game's timer and anyone's; players their own. */
+function setTimer (room: Room, seat: number, command: TimerCommand): string | void {
+	const t = timers(room);
+	const seconds = Number(command.seconds);
+	const civ = command.player === undefined ? undefined : Number(command.player);
+	const who = room.seats[seat]?.name || "The host";
+	const minutes = (s: number) => `${s / 60} minute${s === 60 ? "" : "s"}`;
+	const seatSeconds = { ...t.seatSeconds };
+	let turnSeconds = t.turnSeconds;
+	if (civ === undefined) {
+		if (seat !== room.host) return "Only the host sets the game's turn timer";
+		if (!TURN_TIMERS.includes(seconds)) return "Unknown timer";
+		turnSeconds = seconds;
+		room.say(seconds ? `${who} set the game's turn timer to ${minutes(seconds)}: when a turn's time runs out, the AI plays it.` : `${who} turned the game's turn timer off.`);
+	} else {
+		if (!room.state.state.players[civ]) return "Unknown civ";
+		if (seat !== room.host && seat !== civ) return "Only the host can set another player's timer";
+		if (seconds !== -1 && !TURN_TIMERS.includes(seconds)) return "Unknown timer";
+		if (seconds === -1) delete seatSeconds[civ];
+		else seatSeconds[civ] = seconds;
+		const target = room.seats[civ]?.name || room.state.player(civ).name;
+		const whose = seat === civ ? `${who} set their own turn timer` : `${who} set ${target}'s turn timer`;
+		room.say(seconds === -1 ? `${whose} back to the game's.` : seconds ? `${whose} to ${minutes(seconds)}.` : `${whose} to no limit.`);
+	}
+	room.setInfo({ ...t, turnSeconds, seatSeconds });
+	// Restart the running clock only if the change applies to whoever is playing now
+	const now = room.state.current;
+	const restart = civ === undefined ? seatSeconds[now] === undefined : civ === now;
+	setImmediate(() => armTimer(room, restart));
+}
+
+// ------------------------------------------------------------------
+// Saving
+// ------------------------------------------------------------------
+
+const saveTimers = new Map<Room, ReturnType<typeof setTimeout>>();
 
 function roomFile (code: string): string {
 	return path.join(DATA_DIR, `${code.replace(/[^A-Z]/g, "")}.json`);
 }
 
-function openRoom (code: string, sim: Sim, seq: number, seats: Seat[], chat: ChatLine[] = [], turnSeconds = 0, seatSeconds: Record<number, number> = {}): Room {
-	const room: Room = { code, sim, seq, seats, clients: new Set(), chat, host: 0, turnSeconds, seatSeconds, deadline: 0 };
-	// Every successful command, human or AI, is broadcast in order
-	sim.onApplied = (player, command) => {
-		room.seq++;
-		broadcast(room, { t: "applied", seq: room.seq, player, command });
-		scheduleSave(room);
-	};
-	rooms.set(code, room);
-	return room;
-}
-
-function loadRoom (code: string): Room | undefined {
-	const existing = rooms.get(code);
-	if (existing) return existing;
-	const file = roomFile(code);
-	if (!fs.existsSync(file)) return undefined;
-	try {
-		const saved = JSON.parse(fs.readFileSync(file, "utf8")) as SavedRoom;
-		log(`Loaded game ${code} (turn ${JSON.parse(saved.snapshot).state?.turn ?? "?"})`);
-		const room = openRoom(saved.code, Sim.load(saved.snapshot), saved.seq, saved.seats, saved.chat ?? [], saved.turnSeconds ?? 0, saved.seatSeconds ?? {});
-		armTimer(room);
-		return room;
-	} catch (error) {
-		log(`Couldn't load game ${code}:`, error);
-		return undefined;
-	}
-}
-
 function saveRoom (room: Room): void {
-	clearTimeout(room.saveTimer);
-	room.saveTimer = undefined;
-	const saved: SavedRoom = { code: room.code, seq: room.seq, seats: room.seats, snapshot: room.sim.serialize(), chat: room.chat, turnSeconds: room.turnSeconds, seatSeconds: room.seatSeconds };
+	clearTimeout(saveTimers.get(room));
+	saveTimers.delete(room);
 	fs.mkdirSync(DATA_DIR, { recursive: true });
 	const file = roomFile(room.code);
-	fs.writeFileSync(`${file}.tmp`, JSON.stringify(saved));
+	fs.writeFileSync(`${file}.tmp`, JSON.stringify(rooms.save(room)));
 	fs.renameSync(`${file}.tmp`, file);
 }
 
 function scheduleSave (room: Room): void {
-	if (!room.saveTimer) room.saveTimer = setTimeout(() => saveRoom(room), 1000);
+	if (!saveTimers.has(room)) saveTimers.set(room, setTimeout(() => saveRoom(room), 1000));
 }
 
-function names (room: Room): string[] {
-	return room.sim.state.players.map((p) => room.seats.find((s) => s.player === p.index)?.name ?? (p.human ? "Player" : "AI"));
+/** Games saved by the server before it used the engine's rooms. */
+interface OldSave {
+	code: string;
+	seq: number;
+	seats: { player: number; name: string; token: string; left?: boolean }[];
+	snapshot: string;
+	chat?: { from: number; name: string; text: string; time: number }[];
+	turnSeconds?: number;
+	seatSeconds?: Record<number, number>;
 }
 
-function send (client: Client, msg: ServerMessage): void {
-	if (client.conn.connected) client.conn.sendUTF(JSON.stringify(msg));
+function upgradeSave (data: IgeSavedRoom | OldSave): IgeSavedRoom {
+	if ("host" in data) return data;
+	const state = JSON.parse(data.snapshot).state;
+	const seats = state.players.map((_: unknown, i: number) => {
+		const s = data.seats.find((x) => x.player === i && !x.left);
+		return { seat: i, name: s?.name ?? "", token: s?.token };
+	});
+	const info: TimerInfo = { turnSeconds: data.turnSeconds ?? 0, seatSeconds: data.seatSeconds ?? {}, deadline: 0 };
+	const options: RoomOptions = { game: state.options, turnSeconds: data.turnSeconds ?? 0 };
+	return {
+		code: data.code,
+		seq: data.seq,
+		seats,
+		host: 0,
+		snapshot: data.snapshot,
+		info,
+		chat: (data.chat ?? []).map((l) => ({ seat: l.from, name: l.name, text: l.text, time: l.time })),
+		options
+	};
 }
 
-function broadcast (room: Room, msg: ServerMessage): void {
-	const text = JSON.stringify(msg);
-	for (const c of room.clients) if (c.conn.connected) c.conn.sendUTF(text);
-}
-
-/** Seats, presence and the timer, for every client. */
-function roomInfo (room: Room): RoomInfo {
-	const sim = room.sim;
-	const online = sim.state.players.map((p) => [...room.clients].some((c) => c.player === p.index && c.conn.connected));
-	const people = sim.state.players.map((p) => (p.human ? room.seats.find((s) => s.player === p.index && !s.left)?.name ?? "" : ""));
-	const seatSeconds = sim.state.players.map((p) => room.seatSeconds[p.index] ?? null);
-	return { names: people, online, host: room.host, turnSeconds: room.turnSeconds, seatSeconds, deadline: room.deadline };
-}
-
-function broadcastRoom (room: Room): void {
-	broadcast(room, { t: "room", room: roomInfo(room) });
-}
-
-/** A chat line, from a player or (from -1) the server. */
-function say (room: Room, from: number, name: string, text: string): void {
-	const line: ChatLine = { from, name, text, time: Date.now() };
-	room.chat.push(line);
-	if (room.chat.length > CHAT_HISTORY) room.chat.splice(0, room.chat.length - CHAT_HISTORY);
-	broadcast(room, { t: "chat", line });
-	scheduleSave(room);
-}
-
-/** Seconds a civ's player has for a turn: its own timer, or the game's default. */
-function secondsFor (room: Room, player: number): number {
-	return room.seatSeconds[player] ?? room.turnSeconds;
-}
-
-/**
- * Start the clock for a person's turn when their timer is set (a clock
- * already running for this turn keeps going unless `restart`).
- */
-function armTimer (room: Room, restart = false): void {
-	const sim = room.sim;
-	const key = `${sim.state.turn}:${sim.current}`;
-	const seconds = secondsFor(room, sim.current);
-	const wanted = seconds > 0 && !sim.state.winner && sim.isHuman(sim.current);
-	if (wanted && room.turnTimer && room.timerFor === key && !restart) {
-		broadcastRoom(room);
-		return;
-	}
-	clearTimeout(room.turnTimer);
-	room.turnTimer = undefined;
-	room.timerFor = undefined;
-	room.deadline = 0;
-	if (wanted) {
-		const player = sim.current, turn = sim.state.turn;
-		room.deadline = Date.now() + seconds * 1000;
-		room.timerFor = key;
-		room.turnTimer = setTimeout(() => timeUp(room, player, turn), seconds * 1000);
-	}
-	broadcastRoom(room);
-}
-
-/** A person's time ran out: the AI plays the rest of their turn. */
-function timeUp (room: Room, player: number, turn: number): void {
-	const sim = room.sim;
-	if (sim.current !== player || sim.state.turn !== turn || sim.state.winner) return;
-	const name = room.seats.find((s) => s.player === player && !s.left)?.name ?? sim.player(player).name;
-	log(`Time ran out for ${name} in ${room.code}`);
-	say(room, -1, "", `Time ran out for ${name}: the AI played their turn.`);
-	runAiTurn(sim, player);
-	if (sim.current === player && !sim.state.winner) sim.apply(player, { type: "endTurn" });
-	sim.drainEvents();
-	runAis(room);
-	armTimer(room);
-}
-
-function setSeat (room: Room, player: number, human: boolean, name: string): void {
-	room.sim.state.players[player].human = human;
-	room.seq++;
-	broadcast(room, { t: "seat", seq: room.seq, player, human, name });
-	scheduleSave(room);
-}
-
-function welcome (client: Client, room: Room, seat: Seat): void {
-	client.room = room;
-	client.player = seat.player;
-	room.clients.add(client);
-	send(client, { t: "welcome", code: room.code, player: seat.player, token: seat.token, snapshot: room.sim.serialize(), seq: room.seq, names: names(room), room: roomInfo(room), chat: room.chat });
-	broadcastRoom(room);
-}
-
-/** Play AI turns until a person is to move (or the game ends). */
-function runAis (room: Room): void {
-	const sim = room.sim;
-	let guard = sim.playerCount * (sim.options.turnLimit + 2) * 2;
-	while (!sim.state.winner && !sim.isHuman(sim.current) && guard-- > 0) {
-		const p = sim.current;
-		runAiTurn(sim, p);
-		if (sim.current === p && !sim.state.winner) sim.apply(p, { type: "endTurn" });
-		sim.drainEvents();
-	}
-	sim.drainEvents();
-}
-
-// ------------------------------------------------------------------
-// Messages
-// ------------------------------------------------------------------
-
-function validOptions (o: GameOptions | undefined): string | null {
-	if (!o || typeof o !== "object") return "Missing game options";
-	if (!(o.width >= 16 && o.height >= 12) || o.width * o.height > MAX_TILES) return "That map size isn't available online";
-	if (!(o.players >= 2 && o.players <= 12)) return "Online games need 2 to 12 civs";
-	return null;
-}
-
-function cleanName (name: unknown): string {
-	return String(name ?? "Player").replace(/[<>&"]/g, "").trim().slice(0, 24) || "Player";
-}
-
-function onMessage (client: Client, msg: ClientMessage): void {
-	switch (msg.t) {
-		case "host": {
-			const problem = validOptions(msg.options);
-			if (problem) return send(client, { t: "error", error: problem });
-			const options: GameOptions = { ...msg.options, humans: [0] };
-			const sim = Sim.create(options);
-			sim.drainEvents();
-			const code = newCode();
-			const seat: Seat = { player: 0, name: cleanName(msg.name), token: crypto.randomUUID() };
-			const turnSeconds = TURN_TIMERS.includes(Number(msg.turnSeconds)) ? Number(msg.turnSeconds) : 0;
-			const room = openRoom(code, sim, 0, [seat], [], turnSeconds);
-			log(`${seat.name} hosted ${code}: ${options.width}x${options.height}, ${options.players} civs, seed ${options.seedText || options.seed}`);
-			welcome(client, room, seat);
-			runAis(room);
-			armTimer(room);
-			saveRoom(room);
-			return;
+/** Bring back every saved game (they keep their codes and seats). */
+function restoreRooms (): void {
+	if (!fs.existsSync(DATA_DIR)) return;
+	for (const name of fs.readdirSync(DATA_DIR)) {
+		if (!name.endsWith(".json")) continue;
+		try {
+			const saved = upgradeSave(JSON.parse(fs.readFileSync(path.join(DATA_DIR, name), "utf8")));
+			const room = rooms.restore(saved, (snapshot) => Sim.load(snapshot as string));
+			log(`Restored game ${room.code} (turn ${room.state.state.turn})`);
+			scheduleUpkeep(room);
+		} catch (error) {
+			log(`Couldn't restore ${name}:`, error);
 		}
-		case "join": {
-			const code = String(msg.code ?? "").toUpperCase();
-			const room = loadRoom(code);
-			if (!room) return send(client, { t: "error", error: `There is no game ${code}` });
-			const name = cleanName(msg.name);
-			// Returning to your seat with the token your browser kept
-			let seat = msg.token ? room.seats.find((s) => s.token === msg.token) : undefined;
-			if (seat && seat.left) {
-				// Back after leaving: reclaim the civ if the AI still has it
-				const civ = room.sim.state.players[seat.player];
-				if (civ.alive && !civ.human) {
-					seat.left = false;
-					setSeat(room, seat.player, true, seat.name);
-					say(room, -1, "", `${seat.name} is back as ${civ.name}.`);
-				} else {
-					room.seats = room.seats.filter((s) => s !== seat);
-					seat = undefined;
-				}
-			}
-			if (seat) {
-				log(`${seat.name} rejoined ${code}`);
-				welcome(client, room, seat);
-				armTimer(room);
-				return;
-			}
-			// Otherwise take over a living AI civ
-			const free = room.sim.state.players.find((p) => p.alive && !p.human);
-			if (!free) return send(client, { t: "error", error: `Game ${code} has no free seats` });
-			seat = { player: free.index, name, token: crypto.randomUUID() };
-			room.seats.push(seat);
-			setSeat(room, free.index, true, name);
-			log(`${name} joined ${code} as ${free.name}`);
-			welcome(client, room, seat);
-			say(room, -1, "", `${name} joined as ${free.name}.`);
-			armTimer(room);
-			return;
-		}
-		case "command": {
-			const room = client.room;
-			if (!room) return send(client, { t: "error", error: "Join a game first" });
-			const command = msg.command as Command;
-			if (!command || typeof command !== "object" || typeof command.type !== "string") return send(client, { t: "error", error: "Bad command" });
-			let result;
-			try {
-				result = room.sim.apply(client.player, command);
-			} catch (error) {
-				log(`Command failed in ${room.code}:`, command, error);
-				result = { ok: false, error: "The server couldn't apply that" };
-			}
-			room.sim.drainEvents();
-			if (!result.ok) return send(client, { t: "error", error: result.error ?? "Can't do that" });
-			if (command.type === "endTurn") {
-				runAis(room);
-				armTimer(room);
-			}
-			return;
-		}
-		case "chat": {
-			const room = client.room;
-			if (!room) return send(client, { t: "error", error: "Join a game first" });
-			const text = String(msg.text ?? "").replace(/[\u0000-\u001f<>]/g, "").trim().slice(0, 300);
-			if (!text) return;
-			const seat = room.seats.find((s) => s.player === client.player && !s.left);
-			say(room, client.player, seat?.name ?? "Player", text);
-			return;
-		}
-		case "timer": {
-			const room = client.room;
-			if (!room) return send(client, { t: "error", error: "Join a game first" });
-			const seconds = Number(msg.seconds);
-			const civ = msg.player === undefined ? undefined : Number(msg.player);
-			const who = room.seats.find((s) => s.player === client.player && !s.left)?.name ?? "The host";
-			const minutes = (s: number) => `${s / 60} minute${s === 60 ? "" : "s"}`;
-			if (civ === undefined) {
-				// The game's default, for every civ without its own
-				if (client.player !== room.host) return send(client, { t: "error", error: "Only the host sets the game's turn timer" });
-				if (!TURN_TIMERS.includes(seconds)) return send(client, { t: "error", error: "Unknown timer" });
-				room.turnSeconds = seconds;
-				say(room, -1, "", seconds ? `${who} set the game's turn timer to ${minutes(seconds)}: when a turn's time runs out, the AI plays it.` : `${who} turned the game's turn timer off.`);
-			} else {
-				// One civ's own timer: the host may set anyone's, players their own
-				if (!room.sim.state.players[civ]) return send(client, { t: "error", error: "Unknown civ" });
-				if (client.player !== room.host && client.player !== civ) return send(client, { t: "error", error: "Only the host can set another player's timer" });
-				if (seconds !== -1 && !TURN_TIMERS.includes(seconds)) return send(client, { t: "error", error: "Unknown timer" });
-				if (seconds === -1) delete room.seatSeconds[civ];
-				else room.seatSeconds[civ] = seconds;
-				const target = room.seats.find((s) => s.player === civ && !s.left)?.name ?? room.sim.player(civ).name;
-				const whose = client.player === civ ? `${who} set their own turn timer` : `${who} set ${target}'s turn timer`;
-				say(room, -1, "", seconds === -1 ? `${whose} back to the game's.` : seconds ? `${whose} to ${minutes(seconds)}.` : `${whose} to no limit.`);
-			}
-			// Restart the running clock only if the change applies to whoever is playing now
-			const now = room.sim.current;
-			armTimer(room, civ === undefined ? room.seatSeconds[now] === undefined : civ === now);
-			scheduleSave(room);
-			return;
-		}
-		case "leave": {
-			const room = client.room;
-			if (!room) return;
-			const seat = room.seats.find((s) => s.player === client.player && !s.left);
-			if (seat) {
-				seat.left = true;
-				setSeat(room, seat.player, false, seat.name);
-				say(room, -1, "", `${seat.name} left: the AI plays ${room.sim.player(seat.player).name} until they come back.`);
-				log(`${seat.name} left ${room.code}`);
-			}
-			room.clients.delete(client);
-			client.room = undefined;
-			runAis(room);
-			armTimer(room);
-			return;
-		}
-		default:
-			send(client, { t: "error", error: "Unknown message" });
 	}
 }
 
@@ -470,35 +391,33 @@ socketServer.on("request", (request) => {
 		return;
 	}
 	const conn = request.accept(null, request.origin);
-	const client: Client = { conn, player: -1 };
+	const id = crypto.randomUUID();
+	connections.set(id, conn);
 	conn.on("message", (message) => {
 		if (message.type !== "utf8") return;
-		let msg: ClientMessage;
+		let msg: IgeRoomClientMessage;
 		try {
-			msg = JSON.parse(message.utf8Data) as ClientMessage;
+			msg = JSON.parse(message.utf8Data) as IgeRoomClientMessage;
 		} catch {
-			return send(client, { t: "error", error: "Bad message" });
+			transport.send(id, { t: "error", error: "Bad message" });
+			return;
 		}
-		onMessage(client, msg);
+		deliver?.(id, msg);
 	});
 	conn.on("close", () => {
-		const room = client.room;
-		if (!room) return;
-		room.clients.delete(client);
-		broadcastRoom(room);
+		connections.delete(id);
+		dropped?.(id);
 	});
 });
 
+restoreRooms();
 httpServer.listen(PORT, () => {
 	log(`Hex Realms server on http://localhost:${PORT}${GAME_PAGE}`);
 	log(`Serving ${STATIC_ROOT}; games are saved in ${DATA_DIR}`);
 });
 
 function shutdown (): void {
-	for (const room of rooms.values()) {
-		clearTimeout(room.turnTimer);
-		if (room.saveTimer) saveRoom(room);
-	}
+	for (const room of [...saveTimers.keys()]) saveRoom(room);
 	process.exit(0);
 }
 process.on("SIGINT", shutdown);

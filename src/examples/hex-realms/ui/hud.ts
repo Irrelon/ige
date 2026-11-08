@@ -59,6 +59,8 @@ export interface HudHost {
 	setLineOfSight (on: boolean): void;
 	setReducedMotion (on: boolean): void;
 	setShowStats (on: boolean): void;
+	setModels (on: boolean): void;
+	models?: { enabled: boolean; models: Map<string, unknown>; infos: Record<string, unknown> };
 	inviteLink (): string | null;
 	room?: RoomInfo;
 	chat: ChatLine[];
@@ -265,6 +267,7 @@ export class Hud {
 			case "tips": if (data.on === "1") resetTips(); else setTipsEnabled(false); this.openModal("menu"); this.refreshTip(); break;
 			case "motion": h.setReducedMotion(data.on === "1"); this.openModal("menu"); break;
 			case "stats": h.setShowStats(data.on === "1"); this.openModal("menu"); break;
+			case "models": h.setModels(data.on === "1"); this.openModal("menu"); break;
 			case "tip-ok": if (this.tipId) markTipSeen(this.tipId); this.refreshTip(); break;
 			case "tip-off": setTipsEnabled(false); this.refreshTip(); break;
 			case "copy-invite": {
@@ -894,6 +897,7 @@ export class Hud {
 				<div>${toggle("tips", tipsEnabled(), "Advisor tips")}</div>
 				<div>${toggle("motion", h.reducedMotion, "Reduced motion (skip animations)")}</div>
 				<div>${toggle("stats", h.showStats, "Performance stats")}</div>
+				<div>${toggle("models", !!h.models?.enabled, `3D models <span class="dim small">(${h.models?.models.size ?? 0} of ${Object.keys(h.models?.infos ?? {}).length} loaded; off shows simple shapes)</span>`)}</div>
 			</div>`;
 	}
 

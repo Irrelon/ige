@@ -272,10 +272,11 @@ hex-realms/
   command stream reproduces any game exactly. Replays and online play both rely on this.
 - **Testing**: the sim is headless, so jest can cover production chains, routing and congestion, combat outcomes and
   long AI-vs-AI soak games.
-- **Online**: one Node process hosts many games (rooms with five-letter codes). The server applies every command to
-  the authoritative sim, broadcasts it with a sequence number, and runs AI turns; clients apply the same stream.
-  Joining takes over an AI seat; a per-game seat token lets people rejoin their own seat. Rooms are saved to disk
-  after every change. One server per game (the "Server-Based Instancing and Routing" idea in `ige/notes.md`) remains
+- **Online**: one Node process hosts many games on the engine's game rooms (`IgeRoomServer` / `IgeRoomClient`, rooms
+  with five-letter codes, one seat per civ). The server applies every command to the authoritative sim, broadcasts it
+  with a sequence number, and runs AI turns through the same room so they are broadcast too; clients apply the same
+  stream. Joining takes a seat the AI was playing; seat tokens let people rejoin their own seat. Seat changes reach
+  the game as server-only `seat` commands. Rooms are saved to disk after every change. One server per game (the "Server-Based Instancing and Routing" idea in `ige/notes.md`) remains
   an option for scale.
 - **Where the game lives** (**Decided**): in `ige/src/examples/hex-realms`. The engine is changing daily and this
   builds it from source, so every engine improvement is picked up immediately. The server is bundled from the same

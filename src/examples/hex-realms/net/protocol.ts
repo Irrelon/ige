@@ -1,15 +1,46 @@
 import type { Command, GameOptions } from "../sim/types";
 
 /**
- * Online play: one server-held game per code. The server runs the
- * authoritative simulation and the AI; every accepted command (human or
- * AI) and every seat change is broadcast with a sequence number, and each
- * client applies the same stream to its own copy of the deterministic
- * simulation. Turns are sequential, so players can come and go between
- * turns (asynchronous play); the server saves every game to disk. Chat,
- * presence and the optional turn timer travel outside the game stream.
+ * Online play runs on the engine's game rooms (IgeRoomServer and
+ * IgeRoomClient): join codes, seats players keep across reconnects (seat
+ * tokens), presence, chat and an ordered command stream. The server holds
+ * the authoritative simulation and runs the AI; every accepted command,
+ * human or AI, goes to everyone with a sequence number and each client
+ * applies the same stream to its own copy of the deterministic simulation.
+ * What's specific to Hex Realms is here: the room options, the turn timer
+ * command and the room information that carries the timers.
  */
 
+/** Options for a new room: the game, and the host's turn timer. */
+export interface RoomOptions {
+	game: GameOptions;
+	turnSeconds?: number;
+}
+
+/**
+ * Set the game's default turn timer (host only), or one civ's own timer (the
+ * host, or that civ's player); -1 clears a civ's own. It travels in the
+ * command stream but isn't a game command: clients skip it.
+ */
+export interface TimerCommand {
+	type: "timer";
+	seconds: number;
+	player?: number;
+}
+
+export type OnlineCommand = Command | TimerCommand;
+
+/** The room information (IgeServerRoom.setInfo): turn timers and the running clock. */
+export interface TimerInfo {
+	/** Default seconds for a person's turn before the AI plays it (0: no limit). */
+	turnSeconds: number;
+	/** Civs with their own timer, by player index. */
+	seatSeconds: Record<number, number>;
+	/** When the current turn's time runs out (ms since 1970), or 0. */
+	deadline: number;
+}
+
+/** A chat line as the HUD shows it (from -1 is the server). */
 export interface ChatLine {
 	from: number;
 	name: string;
@@ -17,40 +48,21 @@ export interface ChatLine {
 	time: number;
 }
 
-/** Who sits where, who is connected, and the turn timer (not part of the game state). */
+/** Seats, presence and timers, as the HUD shows them. */
 export interface RoomInfo {
-	/** Player names per civ ("" for AI seats). */
+	/** Player names per civ ("" for AI civs). */
 	names: string[];
 	/** Civs whose player is connected now. */
 	online: boolean[];
-	/** The civ that hosts the game (sets the turn timer). */
+	/** The civ that hosts the game (sets the game's turn timer). */
 	host: number;
-	/** The game's default seconds for a person's turn before the AI plays it (0: no limit). */
 	turnSeconds: number;
-	/** Per civ: its own timer, overriding the default (null: uses the default). */
+	/** Per civ: its own timer (null: uses the game's). */
 	seatSeconds: (number | null)[];
-	/** When the current turn's time runs out (ms since 1970), or 0. */
 	deadline: number;
 }
 
-export type ClientMessage =
-	| { t: "host"; options: GameOptions; name: string; turnSeconds?: number }
-	| { t: "join"; code: string; name: string; token?: string }
-	| { t: "command"; command: Command }
-	| { t: "chat"; text: string }
-	/** Set the game's default turn timer (host), or one civ's own (the host, or that civ's player); -1 clears a civ's own. */
-	| { t: "timer"; seconds: number; player?: number }
-	| { t: "leave" };
-
-export type ServerMessage =
-	| { t: "welcome"; code: string; player: number; token: string; snapshot: string; seq: number; names: string[]; room: RoomInfo; chat: ChatLine[] }
-	| { t: "applied"; seq: number; player: number; command: Command }
-	| { t: "seat"; seq: number; player: number; human: boolean; name: string }
-	| { t: "room"; room: RoomInfo }
-	| { t: "chat"; line: ChatLine }
-	| { t: "error"; error: string };
-
-/** Turn timer choices offered to the host. */
+/** Turn timer choices. */
 export const TURN_TIMERS = [0, 60, 120, 300, 600];
 
 export const SOCKET_PATH = "/hexrealms";

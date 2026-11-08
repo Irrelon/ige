@@ -1,4 +1,6 @@
-import { type ClientMessage, DEFAULT_PORT, type ServerMessage, SOCKET_PATH } from "./protocol";
+import type { IgeRoomClientTransport } from "@/engine/network/rooms/IgeRoomClient";
+import type { IgeRoomServerMessage } from "@/engine/network/rooms/igeRoomProtocol";
+import { DEFAULT_PORT, SOCKET_PATH } from "./protocol";
 
 /** Where the Hex Realms server is: ?server=..., the page's own host when served by it, or localhost. */
 export function serverUrl (): string {
@@ -35,59 +37,32 @@ export function serverAvailable (url = serverUrl(), timeoutMs = 700): Promise<bo
 	});
 }
 
-/** A WebSocket connection to the game server. */
-export class NetClient {
-	ws?: WebSocket;
-	onMessage?: (msg: ServerMessage) => void;
-	onClose?: () => void;
-
-	connect (url = serverUrl()): Promise<void> {
-		return new Promise((resolve, reject) => {
-			const ws = new WebSocket(url);
-			this.ws = ws;
-			ws.onopen = () => resolve();
-			ws.onerror = () => reject(new Error(`Can't reach the game server at ${url}`));
-			ws.onclose = () => this.onClose?.();
-			ws.onmessage = (e) => {
-				try {
-					this.onMessage?.(JSON.parse(String(e.data)) as ServerMessage);
-				} catch (err) {
-					console.error("Bad server message", err);
-				}
-			};
-		});
-	}
-
-	send (msg: ClientMessage): void {
-		this.ws?.send(JSON.stringify(msg));
-	}
-
-	close (): void {
-		this.ws?.close();
-	}
-}
-
 /**
- * Seat tokens are kept per game and player name, so rejoining puts you back
- * in your own seat, while someone else joining from the same browser (another
- * tab, another name) gets a seat of their own.
+ * The engine's room messages over a plain WebSocket (JSON text frames), so
+ * the game server can serve the client and the rooms on one port.
  */
-function seatKey (code: string, name: string): string {
-	return `hexRealms.seat.${code}.${name.trim().toLowerCase()}`;
-}
-
-export function seatToken (code: string, name: string): string | undefined {
-	try {
-		return localStorage.getItem(seatKey(code, name)) ?? undefined;
-	} catch {
-		return undefined;
-	}
-}
-
-export function saveSeatToken (code: string, name: string, token: string): void {
-	try {
-		localStorage.setItem(seatKey(code, name), token);
-	} catch {
-		// Without storage, rejoining takes a free seat instead of your own
-	}
+export function connectRoomTransport (url = serverUrl()): Promise<IgeRoomClientTransport> {
+	return new Promise((resolve, reject) => {
+		const ws = new WebSocket(url);
+		let onMessage: ((message: IgeRoomServerMessage) => void) | undefined;
+		let onDisconnect: (() => void) | undefined;
+		ws.onmessage = (e) => {
+			try {
+				onMessage?.(JSON.parse(String(e.data)) as IgeRoomServerMessage);
+			} catch (err) {
+				console.error("Bad server message", err);
+			}
+		};
+		ws.onclose = () => onDisconnect?.();
+		ws.onerror = () => reject(new Error(`Can't reach the game server at ${url}`));
+		ws.onopen = () => resolve({
+			send: (message) => {
+				if (ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify(message));
+			},
+			listen: (message, disconnect) => {
+				onMessage = message;
+				onDisconnect = disconnect;
+			}
+		});
+	});
 }

@@ -272,6 +272,8 @@ export type Command =
 	| { type: "denounce"; target: number }
 	| { type: "sanction"; target: number }
 	| { type: "ambition"; ambition: AmbitionId }
+	/** Online: a person took (human) or gave up a civ's seat. Only the server issues it. */
+	| { type: "seat"; player: number; human: boolean }
 	| { type: "endTurn" };
 
 export interface CommandResult {

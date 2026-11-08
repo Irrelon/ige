@@ -23,8 +23,13 @@ import { type CityState, type Command, type DealKind, PEACE, type ProposalState,
  * new ones. It only acts on what its own fog of war lets it see.
  */
 
-export function runAiTurn (sim: Sim, player: number): void {
-	const ai = new AiTurn(sim, player);
+/**
+ * Play a turn for an AI civ (without ending it). Commands go through
+ * `apply` when given (an online room applies and broadcasts them), straight
+ * to the simulation otherwise.
+ */
+export function runAiTurn (sim: Sim, player: number, apply?: (command: Command) => boolean): void {
+	const ai = new AiTurn(sim, player, apply);
 	ai.run();
 }
 
@@ -64,14 +69,17 @@ class AiTurn {
 	/** Income after upkeep and administration, at the start of the turn. */
 	net = 0;
 
-	constructor (sim: Sim, p: number) {
+	apply?: (command: Command) => boolean;
+
+	constructor (sim: Sim, p: number, apply?: (command: Command) => boolean) {
 		this.sim = sim;
 		this.p = p;
+		this.apply = apply;
 		this.rand = mulberry32((sim.state.options.seed ^ Math.imul(sim.state.turn + 1, 0x9e3779b1) ^ Math.imul(p + 1, 0x85ebca6b)) >>> 0);
 	}
 
 	do (command: Command): boolean {
-		return this.sim.apply(this.p, command).ok;
+		return this.apply ? this.apply(command) : this.sim.apply(this.p, command).ok;
 	}
 
 	get stars (): number {

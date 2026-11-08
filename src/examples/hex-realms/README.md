@@ -26,12 +26,13 @@ node dist/hex-realms-server/server.cjs            # --port 8650 --static dist/es
 ```
 
 When the setup screen finds a server (the page's own host on port 8650, or `?server=ws://host:port/hexrealms`) it
-offers **Host online game** and **Join**. Games are saved to disk after every change and survive server restarts;
-players rejoin their own seat automatically (a token kept per game and name). In game, players can chat (the Chat
-button) and set turn timers (when a player's time runs out, the AI plays that turn): the host sets the game's timer
-when hosting or from the menu, and each player can have their own, set by the host or by themselves. Anyone can
-leave the game: the AI plays their civ until they come back with the invite link. Without a timer, turns wait for
-absent players.
+offers **Host online game** and **Join**. Online play runs on the engine's game rooms (`IgeRoomServer` and
+`IgeRoomClient`, see `ige/guides/online-rooms.md`) over a plain WebSocket. Games are saved to disk after every change
+and survive server restarts; players rejoin their own seat automatically (a seat token kept per game and name). In
+game, players can chat (the Chat button) and set turn timers (when a player's time runs out, the AI plays that turn):
+the host sets the game's timer when hosting or from the menu, and each player can have their own, set by the host or
+by themselves. **Leave game** gives a seat up for good: the AI plays that civ from then on, and joining again takes a
+free seat. Without a timer, turns wait for absent players.
 
 Tests (headless simulation: rules, economy, upkeep, wonders, ambitions, combat, diplomacy and deals, victories,
 determinism, save/load and old-save upgrades, command replay and an AI soak game):
@@ -110,7 +111,7 @@ The setup screen sets everything; the same options work as URL parameters (`?qui
 | `sim/` | The game, as pure TypeScript with no IGE: state, commands and events (`types.ts`), rules data (`rules.ts`), turn flow and save/load (`sim.ts`), movement, combat, cities, the road economy (`economy.ts`, `network.ts`), income and upkeep (`treasury.ts`), wonders and monuments (`wonders.ts`, with every wonder and legacy effect in `effects.ts`), ambitions, diplomacy, victory and the AI. Deterministic and seeded: the same commands always give the same game. Older saves are upgraded on load (`Sim.migrate`) |
 | `view/` | IGE: `TerrainView` (chunked terrain in either style, fog, LOD) and `WorldView` (units, cities, buildings, roads, deposits, cargo, borders, overlays), which plays simulation events back as animations |
 | `ui/` | DOM HUD (panels, modals, combat preview, toasts, economy lens), the diplomacy screen and deal editor, the wonders and ambition screens, setup screen, advisor tips and synthesised sound |
-| `net/`, `server/` | Online play: the protocol, the browser client, and the Node server that runs the authoritative sim and the AI |
+| `net/`, `server/` | Online play on the engine's game rooms: the room options, timer command and a WebSocket transport (`net/`), and the Node server that runs the authoritative sim, the AI and turn timers (`server/`) |
 | `client.ts` | Ties it together: game start (setup, save, replay, online), input and picking, selection, turns, render on demand |
 
 Map and terrain modules: `mapGen.ts` (seeded continents, mountain ranges, climate, forests, deposits, start
@@ -166,9 +167,11 @@ its own chunk LOD (built lazily, survives frequent fog rebuilds).
    its own invalidation, because its views assign `_geometryData` directly (chunk LOD swaps, fog rebuilds), which
    render-on-demand can't see, and it throttles idle animation (settlers bob on every third frame). It would still
    need its manual render calls, so switching gains nothing here.
-10. **Network transport.** The server here uses the `websocket` package directly with a small JSON protocol
-    (rooms, seats, sequenced command broadcast) rather than `IgeNetIoServer`; whether the engine's networking should
-    grow those pieces is an open question.
+10. ~~Network transport.~~ Done: the engine's `IgeRoomServer` / `IgeRoomClient` now provide rooms, seats, presence,
+    chat, room info and the sequenced command stream, and this game uses them. It runs them over its own WebSocket
+    transport rather than IgeNetIo so one port serves both the game files and the rooms (IgeNetIo's HTTP server
+    answers every request with a 404). Seat changes are game commands too (`seat`, issued only by the server), so
+    every client agrees which civs the AI plays.
 
 ## Known follow-ups
 

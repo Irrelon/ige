@@ -10,8 +10,11 @@ import type { IgeCanInit } from "@/types/IgeCanInit";
 import type { FogMode } from "./fog";
 import { HexLayout } from "./hex";
 import { Minimap } from "./minimap";
-import { NetClient, saveSeatToken, seatToken, serverAvailable } from "./net/netClient";
-import type { ChatLine, RoomInfo, ServerMessage } from "./net/protocol";
+import { IgeRoomClient, type IgeRoomCommandEvent } from "@/engine/network/rooms/IgeRoomClient";
+import type { IgeRoomChatLine } from "@/engine/network/rooms/igeRoomProtocol";
+import { connectRoomTransport, serverAvailable } from "./net/netClient";
+import type { ChatLine, OnlineCommand, RoomInfo, RoomOptions, TimerInfo } from "./net/protocol";
+import { ModelLibrary } from "./view/models";
 import { runAiTurn } from "./sim/ai";
 import { attackTargets } from "./sim/combat";
 import { pathTo, type Reach, reachable } from "./sim/movement";
@@ -20,6 +23,7 @@ import { Sim } from "./sim/sim";
 import type { Command, GameOptions, SimEvent } from "./sim/types";
 import { StrategyCamera } from "./strategyCamera";
 import type { TerrainStyle } from "./surface";
+import { esc } from "./ui/html";
 import { Hud, type HudHost } from "./ui/hud";
 import { play } from "./ui/sfx";
 import { MAP_PRESETS, optionsFromUrl, type SetupResult, showSetup } from "./ui/setup";
@@ -119,9 +123,11 @@ export class Client extends IgeBaseClass implements IgeCanInit, HudHost {
 	busy = false;
 	replaying = false;
 	online = false;
-	net?: NetClient;
+	rooms?: IgeRoomClient<OnlineCommand>;
+	/** The game's 3D models (shared by every game started in this page). */
+	models?: ModelLibrary;
+	modelsStarted = false;
 	netCode = "";
-	netSeq = 0;
 	/** Online: seats, presence and the turn timer. */
 	room?: RoomInfo;
 	chat: ChatLine[] = [];
@@ -291,6 +297,16 @@ export class Client extends IgeBaseClass implements IgeCanInit, HudHost {
 			onDamage: (tile, amount) => this.hud.floatDamage(tile, amount),
 			invalidate: () => this.invalidate()
 		});
+		// 3D models load in the background (units and cities first) and swap in as they arrive
+		this.models ??= new ModelLibrary();
+		this.world.models = this.models;
+		this.models.onLoaded = (id) => this.world?.modelLoaded(id);
+		if (!this.modelsStarted) {
+			this.modelsStarted = true;
+			void this.models.start(["warrior", "archer", "swordsman", "settler", "rider", "catapult", "boat", "village", "town", "city", "construction"]);
+		} else {
+			for (const id of this.models.models.keys()) this.world.modelLoaded(id);
+		}
 		this.world.build();
 
 		this.minimap = new Minimap(document.getElementById("minimap") as HTMLCanvasElement, sim.map, this.layout, 260, 190);
@@ -358,103 +374,112 @@ export class Client extends IgeBaseClass implements IgeCanInit, HudHost {
 
 	async startOnline (setup: Extract<SetupResult, { action: "host" | "join" }>): Promise<void> {
 		this.status("Connecting to the game server...");
-		const net = new NetClient();
+		let transport;
 		try {
-			await net.connect();
+			transport = await connectRoomTransport();
 		} catch (error) {
-			this.status(String(error));
+			this.status(String(error instanceof Error ? error.message : error));
 			return;
 		}
-		this.net = net;
+		// The engine's game rooms: seats, presence, chat and the ordered command stream
+		const rooms = new IgeRoomClient<OnlineCommand>(transport);
+		this.rooms = rooms;
 		this.online = true;
 		const style = setup.style;
-		const pending: ServerMessage[] = [];
 		let started = false;
+		const pending: IgeRoomCommandEvent<OnlineCommand>[] = [];
+		const line = (l: IgeRoomChatLine): ChatLine => ({ from: l.seat, name: l.name, text: l.text, time: l.time });
 
-		net.onMessage = async (msg) => {
-			if (msg.t === "welcome") {
-				this.netCode = msg.code;
-				this.netSeq = msg.seq;
-				this.room = msg.room;
-				this.chat = msg.chat ?? [];
-				saveSeatToken(msg.code, setup.name, msg.token);
-				const url = new URL(window.location.href);
-				url.search = `?join=${msg.code}&name=${encodeURIComponent(setup.name)}&style=${style}`;
-				window.history.replaceState(null, "", url.toString());
-				const sim = Sim.load(msg.snapshot);
-				this.recording = undefined;
-				await this.startWorld(sim, style, msg.player);
-				started = true;
-				this.hud.toast(`Online game <b>${msg.code}</b>: you are ${sim.player(msg.player).name}. Share the invite link from the menu.`, "good", 8);
-				for (const m of pending.splice(0)) this.onServerMessage(m);
-				return;
-			}
-			if (!started) {
-				if (msg.t === "error") this.status(msg.error);
-				pending.push(msg);
+		rooms.on("command", (e: IgeRoomCommandEvent<OnlineCommand>) => {
+			if (started) this.onRoomCommand(e);
+			else pending.push(e);
+		});
+		// Fell out of step (a missed command): start again from the server's state
+		rooms.on("snapshot", () => window.location.reload());
+		rooms.on("seats", () => this.refreshRoom());
+		rooms.on("info", () => this.refreshRoom());
+		rooms.on("chat", (l: IgeRoomChatLine) => {
+			const entry = line(l);
+			this.chat.push(entry);
+			if (this.chat.length > 100) this.chat.shift();
+			this.hud?.chatLine(entry);
+		});
+		rooms.on("error", (message: string) => {
+			if (!started) return;
+			this.hud.toast(esc(message), "bad");
+			play("error");
+		});
+		rooms.on("left", () => this.hud?.toast("You left the game: the AI plays your civ now.", "info", 8));
+		rooms.on("disconnected", () => this.hud?.toast("Disconnected from the game server", "bad", 10));
+
+		let welcome;
+		try {
+			if (setup.action === "host") {
+				setup.options.humans = [0];
+				const options: RoomOptions = { game: setup.options, turnSeconds: setup.turnSeconds };
+				welcome = await rooms.create(setup.name, options);
 			} else {
-				this.onServerMessage(msg);
+				welcome = await rooms.join(setup.code, setup.name);
 			}
-		};
-		net.onClose = () => this.hud?.toast("Disconnected from the game server", "bad", 10);
-
-		if (setup.action === "host") {
-			setup.options.humans = [0];
-			net.send({ t: "host", options: setup.options, name: setup.name, turnSeconds: setup.turnSeconds });
-		} else {
-			net.send({ t: "join", code: setup.code, name: setup.name, token: seatToken(setup.code, setup.name) });
+		} catch (error) {
+			this.status(String(error instanceof Error ? error.message : error));
+			return;
 		}
+		this.netCode = welcome.code;
+		this.chat = welcome.chat.map(line);
+		const url = new URL(window.location.href);
+		url.search = `?join=${welcome.code}&name=${encodeURIComponent(setup.name)}&style=${style}`;
+		window.history.replaceState(null, "", url.toString());
+		const sim = Sim.load(welcome.snapshot as string);
+		this.recording = undefined;
+		await this.startWorld(sim, style, welcome.seat);
+		started = true;
+		this.refreshRoom();
+		this.hud.toast(`Online game <b>${welcome.code}</b>: you are ${sim.player(welcome.seat).name}. Share the invite link from the menu.`, "good", 8);
+		for (const e of pending.splice(0)) this.onRoomCommand(e);
 	}
 
-	/** Apply the server's ordered stream of commands and seat changes to our copy of the game. */
-	onServerMessage (msg: ServerMessage): void {
-		if (msg.t === "error") {
-			this.hud.toast(msg.error, "bad");
-			play("error");
-			return;
-		}
-		if (msg.t === "welcome") return;
-		if (msg.t === "room") {
-			this.room = msg.room;
-			this.hud.refresh();
-			return;
-		}
-		if (msg.t === "chat") {
-			this.chat.push(msg.line);
-			if (this.chat.length > 100) this.chat.shift();
-			this.hud.chatLine(msg.line);
-			return;
-		}
-		if (msg.seq <= this.netSeq) return;
-		this.netSeq = msg.seq;
-		if (msg.t === "seat") {
-			// (The server's chat line announces it)
-			this.sim.state.players[msg.player].human = msg.human;
-		} else {
-			const result = this.sim.apply(msg.player, msg.command);
-			if (!result.ok) console.warn("Server command failed locally", msg, result.error);
-		}
+	/** Apply a command from the room's ordered stream to our copy of the game. */
+	onRoomCommand ({ seat, command }: IgeRoomCommandEvent<OnlineCommand>): void {
+		if (command.type === "timer") return; // a room setting, not a game command
+		const result = this.sim.apply(seat, command);
+		if (!result.ok) console.warn("Server command failed locally", seat, command, result.error);
 		this.ingest(this.sim.drainEvents());
-		if (msg.t === "applied" && msg.command.type === "endTurn" && this.sim.current === this.player) {
+		if (command.type === "endTurn" && this.sim.current === this.player) {
 			play("turn");
 			this.nextUnit();
 		}
 	}
 
+	/** Seats, presence and timers, as the HUD shows them. */
+	refreshRoom (): void {
+		const rooms = this.rooms;
+		if (!rooms) return;
+		const info = (rooms.info ?? {}) as Partial<TimerInfo>;
+		this.room = {
+			names: rooms.seats.map((s) => (s.taken ? s.name : "")),
+			online: rooms.seats.map((s) => s.connected),
+			host: rooms.seats.find((s) => s.host)?.seat ?? 0,
+			turnSeconds: info.turnSeconds ?? 0,
+			seatSeconds: rooms.seats.map((s) => info.seatSeconds?.[s.seat] ?? null),
+			deadline: info.deadline ?? 0
+		};
+		this.hud?.refresh();
+	}
+
 	sendChat (text: string): void {
-		if (this.online && text.trim()) this.net?.send({ t: "chat", text });
+		if (this.online && text.trim()) this.rooms?.say(text);
 	}
 
 	/** The game's default turn timer, or (with a civ) that civ's own; -1 clears a civ's own. */
 	setTurnTimer (seconds: number, player?: number): void {
-		if (this.online) this.net?.send({ t: "timer", seconds, ...(player === undefined ? {} : { player }) });
+		if (this.online) this.rooms?.send({ type: "timer", seconds, ...(player === undefined ? {} : { player }) });
 	}
 
-	/** Leave an online game for good: the AI plays our civ until we rejoin. */
+	/** Leave an online game for good: the AI plays our civ from now on. */
 	leaveGame (): void {
 		if (!this.online) return;
-		this.net?.send({ t: "leave" });
-		this.hud.toast("You left the game: the AI plays your civ. Rejoin from the same browser with the invite link.", "info", 10);
+		this.rooms?.leave();
 	}
 
 	/** The person playing a civ online ("" for AI civs or offline). */
@@ -481,7 +506,7 @@ export class Client extends IgeBaseClass implements IgeCanInit, HudHost {
 	command (cmd: Command): boolean {
 		if (!this.ready || this.replaying) return false;
 		if (this.online) {
-			this.net?.send({ t: "command", command: cmd });
+			this.rooms?.send(cmd);
 			return true;
 		}
 		const result = this.sim.apply(this.player, cmd);
@@ -714,6 +739,14 @@ export class Client extends IgeBaseClass implements IgeCanInit, HudHost {
 		storageSet("hexRealms.motion", on ? "reduced" : "full");
 	}
 
+	/** Turn the 3D models on or off (primitives otherwise). */
+	setModels (on: boolean): void {
+		if (!this.models) return;
+		this.models.setEnabled(on);
+		this.world?.rebuildModels();
+		this.invalidate();
+	}
+
 	setShowStats (on: boolean): void {
 		this.showStats = on;
 		storageSet("hexRealms.stats", on ? "on" : "off");
@@ -845,6 +878,8 @@ export class Client extends IgeBaseClass implements IgeCanInit, HudHost {
 			Math.abs(cam.yaw - last.yaw) > 1e-5 || Math.abs(cam.distance - last.distance) > 0.01;
 		let render = this.renderDirty || cameraMoved || moving || this.terrain.changed;
 		if (!render && this.sim.state.units.some((u) => u.type === "settler")) render = ++this.idleFrame % 3 === 0;
+		// A selected character breathes: a frame every other tick is plenty
+		if (!render && this.world.idleAnimating) render = ++this.idleFrame % 2 === 0;
 		if (!render) return;
 		ige.engine.manualRender();
 		this.renders++;
