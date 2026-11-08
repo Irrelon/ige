@@ -15,6 +15,14 @@ export interface IgePhysicsCharacterOptions {
 	maxSlopeAngle?: number;
 	/** Tallest step it walks up (IGE units, default 0.3 metres). */
 	stepHeight?: number;
+	/** Collision layer (default "moving"). */
+	layer?: string;
+	/**
+	 * Whether other bodies can push the character (default true): a horde
+	 * walking into a player shoves them. false keeps it where its own
+	 * movement puts it (it still can't walk through them).
+	 */
+	pushable?: boolean;
 }
 
 /**
@@ -38,6 +46,10 @@ export class IgePhysicsCharacter3d {
 	_moveZ: number = 0;
 	_jump: number = 0;
 	_enabled: boolean = true;
+	/** Query filters for the character's layer. */
+	_bpFilter?: JoltApi.BroadPhaseLayerFilter;
+	_objectFilter?: JoltApi.ObjectLayerFilter;
+	_listener?: JoltApi.CharacterContactListenerJS;
 	_destroyed: boolean = false;
 	_previous = new Float64Array(3);
 	_current = new Float64Array(3);
@@ -138,7 +150,7 @@ export class IgePhysicsCharacter3d {
 		physics._vec.Set(this._moveX / u, vy, this._moveZ / u);
 		character.SetLinearVelocity(physics._vec);
 		physics._vec.Set(0, gravity, 0);
-		character.ExtendedUpdate(dt, physics._vec, this._settings, physics._bpFilter, physics._objectFilter,
+		character.ExtendedUpdate(dt, physics._vec, this._settings, this._bpFilter || physics._bpFilter, this._objectFilter || physics._objectFilter,
 			physics._bodyFilter, physics._shapeFilter, physics._interface.GetTempAllocator());
 		this._capture();
 	}

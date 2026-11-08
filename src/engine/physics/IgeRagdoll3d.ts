@@ -37,6 +37,8 @@ export interface IgeRagdollOptions {
 	density?: number;
 	/** Default 0.6. */
 	friction?: number;
+	/** Collision layer for the parts (default "moving"), e.g. a corpses layer the living walk through. */
+	layer?: string;
 }
 
 interface PartState {
@@ -188,6 +190,7 @@ export class IgeRagdoll3d {
 		this._model = new Float32Array(skeleton.data.boneCount * 16);
 
 		// Parts don't collide with each other (capsules overlap at the joints)
+		const layer = options.layer ? physics._layerIndex(options.layer) : physics._defaultLayer(false);
 		const filter = new jolt.GroupFilterTable(Math.max(1, parts.length));
 		for (let i = 0; i < parts.length; i++) {
 			for (let j = i + 1; j < parts.length; j++) filter.DisableCollision(i, j);
@@ -234,7 +237,7 @@ export class IgeRagdoll3d {
 			const shape = new jolt.CapsuleShape(halfHeight / u, radius / u, undefined);
 			physics._rvec.Set(centre.x / u, centre.y / u, centre.z / u);
 			physics._quat.Set(q.x, q.y, q.z, q.w);
-			const settings = new jolt.BodyCreationSettings(shape, physics._rvec, physics._quat, jolt.EMotionType_Dynamic, 1 /* moving layer */);
+			const settings = new jolt.BodyCreationSettings(shape, physics._rvec, physics._quat, jolt.EMotionType_Dynamic, layer);
 			settings.mFriction = options.friction ?? 0.6;
 			settings.mLinearDamping = 0.1;
 			settings.mAngularDamping = 0.3;
