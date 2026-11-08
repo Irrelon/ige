@@ -1,7 +1,7 @@
 import { IgeBaseClass } from "../core/IgeBaseClass.js"
-import type { IgeWebGlResourceManager } from "./IgeWebGlResourceManager.js"
+import type { IgeWebGlResourceManager } from "./IgeWebGlResourceManager.js";
 import { IgeWebGlGeometry } from "./IgeWebGlGeometry.js"
-import type { IgeGeometryData3d } from "../../types/IgeGeometryData3d.js"
+import type { IgeGeometryData3d } from "../../types/IgeGeometryData3d.js";
 /**
  * Manages geometry (VBO/IBO) creation and caching for WebGL renderer.
  */

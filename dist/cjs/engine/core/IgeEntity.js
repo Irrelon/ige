@@ -333,7 +333,7 @@ class IgeEntity extends IgeObject_1.IgeObject {
         this._localMatrix.identity();
         if (this._renderMode === enums_1.IgeEntityRenderMode.flat) {
             // 2d translation
-            this._localMatrix.multiply(this._localMatrix._newTranslate(this._translate.x, this._translate.y));
+            this._localMatrix.translateBy(this._translate.x, this._translate.y);
         }
         if (this._renderMode === enums_1.IgeEntityRenderMode.iso) {
             // iso translation
@@ -343,7 +343,7 @@ class IgeEntity extends IgeObject_1.IgeObject {
                 // parent is the center of the base of the parent
                 isoPoint.y += this._parent._bounds3d.z / 1.6;
             }
-            this._localMatrix.multiply(this._localMatrix._newTranslate(isoPoint.x, isoPoint.y));
+            this._localMatrix.translateBy(isoPoint.x, isoPoint.y);
         }
         this._localMatrix.rotateBy(this._rotate.z);
         this._localMatrix.scaleBy(this._scale.x, this._scale.y);
@@ -884,6 +884,15 @@ class IgeEntity extends IgeObject_1.IgeObject {
         else {
             this._quaternion = null;
         }
+        return this;
+    }
+    geometry(data) {
+        if (data === undefined) {
+            return this._geometryData;
+        }
+        if (data !== this._geometryData)
+            this._renderChanged();
+        this._geometryData = data;
         return this;
     }
     /**

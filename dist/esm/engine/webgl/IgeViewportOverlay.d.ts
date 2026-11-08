@@ -1,5 +1,5 @@
 import type { IgeEntity } from "../core/IgeEntity.js"
-import type { IgeViewport } from "../core/IgeViewport.js"
+import type { IgeViewport } from "../core/IgeViewport.js";
 import type { IgeWebGlRenderer } from "../core/IgeWebGlRenderer.js"
 type Vec3 = {
     x: number;

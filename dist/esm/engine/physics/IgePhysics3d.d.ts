@@ -43,10 +43,44 @@ export type IgePhysicsShape = {
  | {
     type: "convex";
     geometry: IgeGeometryData3d;
+}
+/**
+ * Several shapes as one body (a table from a top and legs, an L-shaped
+ * wall). Child positions and rotations are relative to the body. Mesh
+ * and heightfield children make the body static-only.
+ */
+ | {
+    type: "compound";
+    children: {
+        shape: IgePhysicsShape;
+        position?: Vec3;
+        rotation?: Quat;
+    }[];
+}
+/**
+ * Grid terrain: `size` x `size` heights (IGE units, rows along x, then
+ * along z) `spacing` units apart, starting at the entity's origin and
+ * running along +x and +z. Lighter than a mesh for regular terrain.
+ * Static only.
+ */
+ | {
+    type: "heightfield";
+    heights: ArrayLike<number>;
+    size: number;
+    spacing: number;
 };
 export interface IgePhysicsBodyOptions {
     /** "dynamic" (default) is moved by the simulation, "static" never moves, "kinematic" follows its entity. */
     type?: "dynamic" | "static" | "kinematic";
+    /** Collision layer (see IgePhysics3dOptions.layers); default "static" for static bodies, else "moving". */
+    layer?: string;
+    /**
+     * Emit "impact" events on the body when its velocity changes by more
+     * than this (IGE units per second) in one step, i.e. it hit something:
+     * sounds, damage from a falling crate. true uses 100 (1 m/s at 100
+     * units per metre).
+     */
+    impacts?: boolean | number;
     shape: IgePhysicsShape;
     /** Where the shape's centre sits relative to the entity's origin (IGE units), e.g. half a character's height. */
     offset?: Vec3;
@@ -94,6 +128,32 @@ export interface IgePhysics3dOptions {
     maxBodyPairs: number;
     /** Keep at about 20000 or less: Jolt sizes a per-step buffer from this. */
     maxContactConstraints: number;
+    /**
+     * Collision layers. Static layers hold bodies that never move (they
+     * don't collide with each other, and Jolt indexes them apart); every
+     * other pair of layers collides unless listed in `ignore`. Default:
+     * "static" and "moving".
+     * @example #Corpses that the living walk through
+     *     layers: [{ name: "static", static: true }, { name: "moving" }, { name: "corpses" }],
+     *     ignore: [["moving", "corpses"]]
+     */
+    layers: {
+        name: string;
+        static?: boolean;
+    }[];
+    /** Pairs of layers that don't collide. */
+    ignore: [string, string][];
+}
+/** What an "impact" event reports. */
+export interface IgePhysicsImpact {
+    /** How much the body's velocity changed in the step (IGE units per second). */
+    speed: number;
+    /** Bodies touching it after the step. */
+    others: IgePhysicsBody3d[];
+}
+export interface IgePhysicsRaycastOptions {
+    /** Hit what this layer collides with (default "moving": everything but layers it ignores). */
+    layer?: string;
 }
 export interface IgePhysicsRaycastHit {
     body: IgePhysicsBody3d;
@@ -110,7 +170,8 @@ export interface IgePhysicsRaycastHit {
  * velocities and impulses are in IGE units; the entity follows the body
  * after every simulation step (dynamic bodies) or leads it (kinematic).
  */
-export declare class IgePhysicsBody3d {
+export declare class IgePhysicsBody3d extends IgeEventingClass {
+    classId: string;
     readonly entity: IgeEntity;
     readonly type: "dynamic" | "static" | "kinematic";
     readonly options: IgePhysicsBodyOptions;
@@ -120,11 +181,17 @@ export declare class IgePhysicsBody3d {
     _offset: Vec3;
     _enabled: boolean;
     _destroyed: boolean;
+    /** True for trigger sensors (see addSensor()). */
+    _sensor: boolean;
     /** Body position and rotation at the last two steps (IGE units): x, y, z, qx, qy, qz, qw. */
     _previous: Float64Array;
     _current: Float64Array;
     /** Whether _previous and _current differ (the entity still needs placing). */
     _moving: boolean;
+    /** Impact threshold in metres per second (0: no impact events). */
+    _impactThreshold: number;
+    /** Velocity before the current step (metres per second). */
+    _impactVelocity: Float64Array;
     constructor(physics: IgePhysics3d, entity: IgeEntity, options: IgePhysicsBodyOptions, body: JoltApi.Body);
     /** Record the body's transform as the latest step's (and the previous one's too when resetting). */
     _capture(reset?: boolean): void;
@@ -153,6 +220,8 @@ export declare class IgePhysicsBody3d {
 }
 export interface IgePhysicsSensorOptions {
     shape: IgePhysicsShape;
+    /** Report what this layer collides with (default "moving"). */
+    layer?: string;
     /** Where the shape's centre sits relative to the entity's origin (IGE units). */
     offset?: Vec3;
     /** Also report static bodies (walls, floors) that overlap (default false). */
@@ -225,6 +294,14 @@ export declare class IgePhysics3d extends IgeEventingClass {
     _threaded: boolean;
     _list: IgePhysicsBody3d[];
     _ragdolls: IgeRagdoll3d[];
+    _ragdollBodies: Map<IgeRagdoll3d, IgePhysicsBody3d[]>;
+    _layers: Map<string, number>;
+    _layerFilters: Map<number, {
+        bp: JoltApi.DefaultBroadPhaseLayerFilter;
+        object: JoltApi.DefaultObjectLayerFilter;
+    }>;
+    _impactBodies: IgePhysicsBody3d[];
+    _impactCollector?: JoltApi.CollideShapeAllHitCollisionCollector;
     _sensors: IgePhysicsSensor3d[];
     _characters: IgePhysicsCharacter3d[];
     _characterCollision?: JoltApi.CharacterVsCharacterCollisionSimple;
@@ -255,6 +332,15 @@ export declare class IgePhysics3d extends IgeEventingClass {
      */
     static create(options?: Partial<IgePhysics3dOptions>): Promise<IgePhysics3d>;
     constructor(jolt: Jolt, options: IgePhysics3dOptions, threaded: boolean);
+    /** Index of a collision layer by name. */
+    _layerIndex(name: string): number;
+    /** The layer bodies go on by default: "static" / "moving" if they exist, else the first static / non-static layer. */
+    _defaultLayer(isStatic: boolean): number;
+    /** Query filters that test what a layer collides with (cached per layer). */
+    _filtersFor(layer: number): {
+        bp: JoltApi.DefaultBroadPhaseLayerFilter;
+        object: JoltApi.DefaultObjectLayerFilter;
+    };
     /** Whether Jolt's multithreaded build is running. */
     threaded(): boolean;
     /** IGE units per metre. */
@@ -327,7 +413,7 @@ export declare class IgePhysics3d extends IgeEventingClass {
      * The nearest body a ray hits (IGE units; direction needn't be unit
      * length). Static and moving bodies are both tested.
      */
-    raycast(origin: Vec3, direction: Vec3, maxDistance: number): IgePhysicsRaycastHit | null;
+    raycast(origin: Vec3, direction: Vec3, maxDistance: number, options?: IgePhysicsRaycastOptions): IgePhysicsRaycastHit | null;
     /** Free every body and the world. */
     destroy(): void;
     /**
@@ -339,6 +425,18 @@ export declare class IgePhysics3d extends IgeEventingClass {
         shape: JoltApi.Shape;
         cleanup?: () => void;
     };
+    _createCompoundShape(shape: Extract<IgePhysicsShape, {
+        type: "compound";
+    }>, scale: Vec3): {
+        shape: JoltApi.Shape;
+        cleanup: () => void;
+    };
+    _createHeightfieldShape(shape: Extract<IgePhysicsShape, {
+        type: "heightfield";
+    }>): {
+        shape: JoltApi.Shape;
+        cleanup: () => void;
+    };
     _createMeshShape(geometry: IgeGeometryData3d, scale: Vec3): {
         shape: JoltApi.Shape;
         cleanup: () => void;
@@ -348,6 +446,13 @@ export declare class IgePhysics3d extends IgeEventingClass {
         cleanup: () => void;
     };
     _moveKinematicBodies(dt: number): void;
+    /** Remember the velocity of bodies that report impacts, before a step. */
+    _recordImpactVelocities(): void;
+    /**
+     * After a step: a body whose velocity changed by more than gravity
+     * explains hit something. Emit "impact" with the bodies touching it.
+     */
+    _checkImpacts(dt: number): void;
     /** Find what overlaps each sensor and emit "enter" / "exit" for the changes. */
     _updateSensors(): void;
     /** Move each awake dynamic body's entity to the body. */

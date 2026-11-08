@@ -3,12 +3,18 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.PROJECTED_DECAL_VERTEX_FLOATS = void 0;
 exports.decalAxes = decalAxes;
 exports.projectDecal = projectDecal;
+const IgeRaycast_1 = require("./IgeRaycast.js");
+const IgeTriangleBvh_1 = require("./IgeTriangleBvh.js");
 /** Floats per vertex in projectDecal()'s output: x, y, z, u, v. */
 exports.PROJECTED_DECAL_VERTEX_FLOATS = 5;
 // Outcodes for the decal box planes
 const U_MIN = 1, U_MAX = 2, V_MIN = 4, V_MAX = 8, W_MIN = 16, W_MAX = 32;
-// Reused per-vertex scratch: world x, y, z, decal u, v, w, outcode
+// Reused per-vertex scratch: world x, y, z, decal u, v, w, outcode; and
+// which mesh pass last filled each vertex
 let scratch = new Float32Array(7 * 1024);
+let stamps = new Uint32Array(1024);
+let stamp = 0;
+const localInverse = new Float32Array(16);
 const boundsCache = new WeakMap();
 function geometryBounds(geometry) {
     let bounds = boundsCache.get(geometry);
@@ -103,12 +109,51 @@ function projectDecal(meshes, projection) {
         const scale = Math.sqrt(Math.max(m[0] * m[0] + m[1] * m[1] + m[2] * m[2], m[4] * m[4] + m[5] * m[5] + m[6] * m[6], m[8] * m[8] + m[9] * m[9] + m[10] * m[10]));
         if (Math.hypot(gx - c.x, gy - c.y, gz - c.z) > gb.r * scale + reach)
             continue;
-        // Transform every vertex into world and decal space once
+        const indices = geometry.indices;
         const vertexCount = Math.floor(verts.length / 3);
+        const triangleCount = (0, IgeTriangleBvh_1.triangleCountOf)(geometry);
+        // Large meshes (terrain): only the triangles near the decal, from a cached BVH
+        let candidates = null;
+        if (triangleCount > IgeRaycast_1.BVH_MIN_TRIANGLES && (0, IgeRaycast_1.invertMat4)(m, localInverse)) {
+            const li = localInverse;
+            let minX = Infinity, minY = Infinity, minZ = Infinity, maxX = -Infinity, maxY = -Infinity, maxZ = -Infinity;
+            for (let corner = 0; corner < 8; corner++) {
+                const su = (corner & 1 ? 0.5 : -0.5) * size, sv = (corner & 2 ? 0.5 : -0.5) * size, sw = corner & 4 ? halfDepth : -halfDepth;
+                const wx = c.x + t.x * su + b.x * sv + n.x * sw;
+                const wy = c.y + t.y * su + b.y * sv + n.y * sw;
+                const wz = c.z + t.z * su + b.z * sv + n.z * sw;
+                const lx = li[0] * wx + li[4] * wy + li[8] * wz + li[12];
+                const ly = li[1] * wx + li[5] * wy + li[9] * wz + li[13];
+                const lz = li[2] * wx + li[6] * wy + li[10] * wz + li[14];
+                if (lx < minX)
+                    minX = lx;
+                if (ly < minY)
+                    minY = ly;
+                if (lz < minZ)
+                    minZ = lz;
+                if (lx > maxX)
+                    maxX = lx;
+                if (ly > maxY)
+                    maxY = ly;
+                if (lz > maxZ)
+                    maxZ = lz;
+            }
+            const found = [];
+            (0, IgeTriangleBvh_1.bvhQueryBox)((0, IgeTriangleBvh_1.getTriangleBvh)(geometry), minX, minY, minZ, maxX, maxY, maxZ, (tri) => found.push(tri));
+            candidates = found;
+        }
+        // World and decal space for each vertex, computed once per mesh (only
+        // for the candidates' vertices when there are candidates)
         if (scratch.length < vertexCount * 7)
             scratch = new Float32Array(vertexCount * 7 * 2);
+        if (stamps.length < vertexCount)
+            stamps = new Uint32Array(vertexCount * 2);
+        stamp++;
         const s = scratch;
-        for (let i = 0; i < vertexCount; i++) {
+        const transformVertex = (i) => {
+            if (stamps[i] === stamp)
+                return;
+            stamps[i] = stamp;
             const lx = verts[i * 3], ly = verts[i * 3 + 1], lz = verts[i * 3 + 2];
             const x = m[0] * lx + m[4] * ly + m[8] * lz + m[12];
             const y = m[1] * lx + m[5] * ly + m[9] * lz + m[13];
@@ -126,13 +171,16 @@ function projectDecal(meshes, projection) {
             s[o + 5] = w;
             s[o + 6] = (u < 0 ? U_MIN : 0) | (u > 1 ? U_MAX : 0) | (v < 0 ? V_MIN : 0) | (v > 1 ? V_MAX : 0) |
                 (w < -halfDepth ? W_MIN : 0) | (w > halfDepth ? W_MAX : 0);
-        }
-        const indices = geometry.indices;
-        const triangleCount = indices ? Math.floor(indices.length / 3) : Math.floor(vertexCount / 3);
-        for (let tri = 0; tri < triangleCount; tri++) {
+        };
+        const count = candidates ? candidates.length : triangleCount;
+        for (let k = 0; k < count; k++) {
+            const tri = candidates ? candidates[k] : k;
             const i0 = indices ? indices[tri * 3] : tri * 3;
             const i1 = indices ? indices[tri * 3 + 1] : tri * 3 + 1;
             const i2 = indices ? indices[tri * 3 + 2] : tri * 3 + 2;
+            transformVertex(i0);
+            transformVertex(i1);
+            transformVertex(i2);
             const a = i0 * 7, bb = i1 * 7, cc = i2 * 7;
             // All three corners outside the same face of the box
             if (s[a + 6] & s[bb + 6] & s[cc + 6])

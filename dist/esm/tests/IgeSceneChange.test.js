@@ -50,6 +50,14 @@ describe("scene change reporting (render on demand)", () => {
         expect(changes(() => entity.width(64))).toBe(0);
         expect(changes(() => entity.cacheDirty(true))).toBe(1);
     });
+    it("reports mesh swaps made with geometry()", () => {
+        const entity = new IgeEntity();
+        const mesh = { id: "chunkNear", vertices: new Float32Array(9) };
+        expect(changes(() => entity.geometry(mesh))).toBe(1);
+        expect(entity.geometry()).toBe(mesh);
+        expect(changes(() => entity.geometry(mesh))).toBe(0);
+        expect(changes(() => entity.geometry({ id: "chunkFar", vertices: new Float32Array(9) }))).toBe(1);
+    });
     it("doesn't report appearance changes of hidden entities", () => {
         const entity = new IgeEntity().hide();
         expect(changes(() => entity.material({ color: "#ff0000" }))).toBe(0);

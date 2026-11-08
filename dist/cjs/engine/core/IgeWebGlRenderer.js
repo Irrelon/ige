@@ -12,6 +12,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.IgeWebGlRenderer = void 0;
 const IgeBaseRenderer_1 = require("./IgeBaseRenderer.js");
 const enums_1 = require("../../enums/index.js");
+const IgeDummyContext_1 = require("./IgeDummyContext.js");
 const sceneChange_1 = require("../utils/sceneChange.js");
 const IgePoint2d_1 = require("./IgePoint2d.js");
 const instance_1 = require("../instance.js");
@@ -263,6 +264,8 @@ class IgeWebGlRenderer extends IgeBaseRenderer_1.IgeBaseRenderer {
         this._pendingBlobTextures = new Set();
         this._particleBuffers = new Map();
         this._decalMeshBuffers = new Map();
+        /** Passed to entity preTick behaviours, which expect a Canvas 2D context. */
+        this._tickContext = new IgeDummyContext_1.IgeDummyContext();
         this._defaultParticleTexture = null;
         this._defaultDecalTexture = null;
         this._lightFrustum = new IgeFrustum_1.IgeFrustum();
@@ -609,6 +612,51 @@ class IgeWebGlRenderer extends IgeBaseRenderer_1.IgeBaseRenderer {
             this._geometryManager.deleteGeometry(lod.id);
         }
         return this;
+    }
+    /**
+     * Free a geometry's arrays (vertices, normals, uvs, colours, indices,
+     * skin data) once it is on the GPU, so the GPU copy is the only one:
+     * for large meshes the game never reads again, such as terrain chunks.
+     * Uploads it first if it hasn't been drawn yet, and keeps its bounding
+     * box for culling and pointer events.
+     *
+     * Nothing can rebuild the mesh afterwards: generate LOD levels first
+     * (call lod() before this), releaseGeometry() frees it for good, and
+     * triangle picking, raycasts, projected decals and physics mesh shapes
+     * skip it. Returns false if the geometry couldn't be uploaded.
+     * @example #Keep only the GPU copy of a terrain chunk
+     *     chunk.geometry(chunkMesh);
+     *     renderer.discardGeometryArrays(chunkMesh);
+     */
+    discardGeometryArrays(geometryData) {
+        if (geometryData.gpuOnly)
+            return true;
+        if (!this._getGeometry(geometryData))
+            return false;
+        const vertices = geometryData.vertices;
+        if (!geometryData.boundingBox && vertices && vertices.length >= 3) {
+            const min = [Infinity, Infinity, Infinity];
+            const max = [-Infinity, -Infinity, -Infinity];
+            for (let i = 0; i + 2 < vertices.length; i += 3) {
+                for (let k = 0; k < 3; k++) {
+                    if (vertices[i + k] < min[k])
+                        min[k] = vertices[i + k];
+                    if (vertices[i + k] > max[k])
+                        max[k] = vertices[i + k];
+                }
+            }
+            geometryData.boundingBox = { min, max };
+        }
+        delete geometryData.vertices;
+        delete geometryData.normals;
+        delete geometryData.uvs;
+        delete geometryData.tangents;
+        delete geometryData.colors;
+        delete geometryData.indices;
+        delete geometryData.boneWeights;
+        delete geometryData.boneIndices;
+        geometryData.gpuOnly = true;
+        return true;
     }
     /**
      * Free the GPU copy of a texture (an IgeTexture, or the id of a model
@@ -988,7 +1036,7 @@ class IgeWebGlRenderer extends IgeBaseRenderer_1.IgeBaseRenderer {
      * rectangle when billboarded.
      */
     pointerHitTest(entity, screenX, screenY) {
-        var _a;
+        var _a, _b;
         const viewport = this.viewportAt(screenX, screenY);
         const world = entity._worldMatrix4;
         if (!viewport || !world || entity._hidden)
@@ -997,7 +1045,7 @@ class IgeWebGlRenderer extends IgeBaseRenderer_1.IgeBaseRenderer {
         if (!ray)
             return false;
         const camera = viewport.camera;
-        const isSprite = !entity._modelParts && !((_a = entity._geometryData) === null || _a === void 0 ? void 0 : _a.vertices) && !!entity._texture;
+        const isSprite = !entity._modelParts && !((_a = entity._geometryData) === null || _a === void 0 ? void 0 : _a.vertices) && !((_b = entity._geometryData) === null || _b === void 0 ? void 0 : _b.gpuOnly) && !!entity._texture;
         const flat2d = !!(camera._up && camera._up.y < 0);
         if (isSprite && !flat2d && entity._billboardMode !== 0) {
             // Billboard: compare against its rectangle on screen
@@ -1273,7 +1321,7 @@ class IgeWebGlRenderer extends IgeBaseRenderer_1.IgeBaseRenderer {
      * renderable entity into pooled render items with world-space bounds.
      */
     _collectRenderables(obj, data, isSceneRoot = true) {
-        var _a;
+        var _a, _b;
         if (obj._hidden) {
             return;
         }
@@ -1287,6 +1335,13 @@ class IgeWebGlRenderer extends IgeBaseRenderer_1.IgeBaseRenderer {
         }
         const entity = obj;
         const geometryData = entity._geometryData;
+        // Entity preTick behaviours: the Canvas 2D renderer runs them as it
+        // draws each entity; here they run once per frame, with a 2D context
+        // whose drawing calls do nothing, so logic in them still works
+        const behaviours = obj._behaviours;
+        if (behaviours && ((_a = behaviours[enums_1.IgeBehaviourType.preTick]) === null || _a === void 0 ? void 0 : _a.length)) {
+            obj._processBehaviours(enums_1.IgeBehaviourType.preTick, this._tickContext);
+        }
         const parts = entity._modelParts;
         if (obj._isParticleSystem3d) {
             data.particles.push(obj);
@@ -1297,11 +1352,11 @@ class IgeWebGlRenderer extends IgeBaseRenderer_1.IgeBaseRenderer {
         else if (parts && parts.length > 0) {
             this._addModelParts(entity, parts, data);
         }
-        else if (geometryData && geometryData.vertices) {
+        else if (geometryData && (geometryData.vertices || geometryData.gpuOnly)) {
             // Plain geometry LOD applies only to the geometry it was made for
             const lod = entity._modelLod;
             const useLod = !!lod && lod.source === geometryData;
-            const item = this._addModelItem(entity, geometryData, entity._materialData, null, (_a = entity._worldMatrix4) === null || _a === void 0 ? void 0 : _a.matrix, useLod ? lod.partGeometries[0] : null, useLod ? lod.screenSizes : null);
+            const item = this._addModelItem(entity, geometryData, entity._materialData, null, (_b = entity._worldMatrix4) === null || _b === void 0 ? void 0 : _b.matrix, useLod ? lod.partGeometries[0] : null, useLod ? lod.screenSizes : null);
             if (item)
                 data.models.push(item);
         }
@@ -1561,6 +1616,10 @@ class IgeWebGlRenderer extends IgeBaseRenderer_1.IgeBaseRenderer {
             return;
         const geometryId = geometryData.id || "unknown";
         let geometry = this._geometryManager.getGeometry(geometryId);
+        if (!geometry && geometryData.gpuOnly) {
+            // Arrays discarded and the GPU copy released: nothing left to draw
+            return;
+        }
         if (!geometry) {
             geometry = this._geometryManager.createGeometryFromData(geometryId, geometryData) || undefined;
             if (!geometry)

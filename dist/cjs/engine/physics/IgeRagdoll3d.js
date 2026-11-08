@@ -149,6 +149,7 @@ class IgeRagdoll3d {
         this._frozenLocal = new Float32Array(skeleton.localMatrices);
         this._model = new Float32Array(skeleton.data.boneCount * 16);
         // Parts don't collide with each other (capsules overlap at the joints)
+        const layer = options.layer ? physics._layerIndex(options.layer) : physics._defaultLayer(false);
         const filter = new jolt.GroupFilterTable(Math.max(1, parts.length));
         for (let i = 0; i < parts.length; i++) {
             for (let j = i + 1; j < parts.length; j++)
@@ -198,7 +199,7 @@ class IgeRagdoll3d {
             const shape = new jolt.CapsuleShape(halfHeight / u, radius / u, undefined);
             physics._rvec.Set(centre.x / u, centre.y / u, centre.z / u);
             physics._quat.Set(q.x, q.y, q.z, q.w);
-            const settings = new jolt.BodyCreationSettings(shape, physics._rvec, physics._quat, jolt.EMotionType_Dynamic, 1 /* moving layer */);
+            const settings = new jolt.BodyCreationSettings(shape, physics._rvec, physics._quat, jolt.EMotionType_Dynamic, layer);
             settings.mFriction = (_c = options.friction) !== null && _c !== void 0 ? _c : 0.6;
             settings.mLinearDamping = 0.1;
             settings.mAngularDamping = 0.3;

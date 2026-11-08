@@ -110,7 +110,7 @@ class IgePhysicsCharacter3d {
         physics._vec.Set(this._moveX / u, vy, this._moveZ / u);
         character.SetLinearVelocity(physics._vec);
         physics._vec.Set(0, gravity, 0);
-        character.ExtendedUpdate(dt, physics._vec, this._settings, physics._bpFilter, physics._objectFilter, physics._bodyFilter, physics._shapeFilter, physics._interface.GetTempAllocator());
+        character.ExtendedUpdate(dt, physics._vec, this._settings, this._bpFilter || physics._bpFilter, this._objectFilter || physics._objectFilter, physics._bodyFilter, physics._shapeFilter, physics._interface.GetTempAllocator());
         this._capture();
     }
     /** Place the entity between the last two steps (alpha 0-1). */

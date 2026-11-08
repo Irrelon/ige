@@ -1,7 +1,7 @@
 import type { IgeEngine } from "./IgeEngine.js"
-import { IgeEventingClass } from "./IgeEventingClass.js"
+import { IgeEventingClass } from "./IgeEventingClass.js";
 import { IgePoint2d } from "./IgePoint2d.js"
-import type { IgeViewport } from "./IgeViewport.js"
+import type { IgeViewport } from "./IgeViewport.js";
 import type { IgeAbstractData3d } from "../../types/IgeAbstractData3d.js"
 export declare class IgeBaseRenderer extends IgeEventingClass {
     classId: string;

@@ -1,11 +1,11 @@
 import { IgeBounds } from "./IgeBounds.js"
-import { IgeMatrix4 } from "./IgeMatrix4.js"
+import { IgeMatrix4 } from "./IgeMatrix4.js";
 import { IgeObject } from "./IgeObject.js"
-import { IgePoint2d } from "./IgePoint2d.js"
+import { IgePoint2d } from "./IgePoint2d.js";
 import { IgePoint3d } from "./IgePoint3d.js"
-import type { IgeTexture } from "./IgeTexture.js"
+import type { IgeTexture } from "./IgeTexture.js";
 import type { IgeViewport } from "./IgeViewport.js"
-import { IgeEntityRenderMode } from "../../enums/index.js"
+import { IgeEntityRenderMode } from "../../enums/index.js";
 import type { IgeCanRegisterByCategory } from "../../types/IgeCanRegisterByCategory.js"
 import type { IgeCanRegisterById } from "../../types/IgeCanRegisterById.js"
 import type { IgeCanvasRenderingContext2d } from "../../types/IgeCanvasRenderingContext2d.js"
@@ -16,11 +16,12 @@ import type { IgeShapeFunctionality } from "../../types/IgeShapeFunctionality.js
 import type { IgeSmartTexture } from "../../types/IgeSmartTexture.js"
 import type { IgeTriggerPolygonFunctionName } from "../../types/IgeTriggerPolygonFunctionName.js"
 import type { IgeGltfModel } from "../webgl/IgeGltfLoader.js"
-import type { IgeRetargetOptions } from "../webgl/IgeAnimationRetarget.js"
+import type { IgeRetargetOptions } from "../webgl/IgeAnimationRetarget.js";
 import type { IgeSkeletonData } from "../../types/IgeSkeletonData.js"
 import type { IgeMaterialData } from "../../types/IgeMaterialData.js"
+import type { IgeGeometryData3d } from "../../types/IgeGeometryData3d.js"
 import type { IgeModelLod, IgeModelLodLevel } from "../webgl/IgeModelParts.js"
-import { IgeSkeletalAnimationComponent } from "../components/IgeSkeletalAnimationComponent.js"
+import { IgeSkeletalAnimationComponent } from "../components/IgeSkeletalAnimationComponent.js";
 import type { IgeAnimationPlayOptions } from "../../types/IgeAnimationClipData.js"
 /**
  * Options for IgeEntity.model().
@@ -452,6 +453,18 @@ export declare class IgeEntity extends IgeObject implements IgeCanRegisterById, 
         z: number;
         w: number;
     } | null;
+    /**
+     * Gets / sets the mesh the WebGL renderer draws for this entity (its
+     * _geometryData), e.g. a terrain chunk or a procedurally built shape.
+     * Unlike assigning _geometryData, setting it here tells
+     * render-on-demand to draw a new frame. The renderer uploads a geometry
+     * once per id, so give a rebuilt mesh a new id (and release the old one
+     * with renderer.releaseGeometry()).
+     * @example #Swap a chunk to its low-detail mesh
+     *     chunk.geometry(farMesh);
+     */
+    geometry(data: IgeGeometryData3d | null): this;
+    geometry(): IgeGeometryData3d | null;
     /**
      * Tells render-on-demand (ige.engine.renderOnDemand()) that this entity
      * now looks different. Changes to hidden entities don't count; showing

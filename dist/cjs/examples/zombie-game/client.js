@@ -175,7 +175,12 @@ class Client extends IgeBaseClass_1.IgeBaseClass {
                 this.level = lobby.root;
                 if (this.physicsFromUrl()) {
                     this.updateStatus("Loading physics...");
-                    this.physics = yield IgePhysics3d_1.IgePhysics3d.create({ unitsPerMetre: 100 });
+                    this.physics = yield IgePhysics3d_1.IgePhysics3d.create({
+                        unitsPerMetre: 100,
+                        // The living walk through corpses; corpses still land on the floor, crates and each other
+                        layers: [{ name: "static", static: true }, { name: "moving" }, { name: "characters" }, { name: "corpses" }],
+                        ignore: [["characters", "corpses"]]
+                    });
                     for (const box of lobby.boxes) {
                         this.physics.addBody(box.entity, {
                             type: "static",
@@ -232,7 +237,8 @@ class Client extends IgeBaseClass_1.IgeBaseClass {
             lockRotation: true,
             friction: 0, // slide along walls and each other
             linearDamping: 0,
-            density
+            density,
+            layer: "characters"
         });
     }
     /** Wooden crates around the lobby, and a stack by the desk, for characters and swords to knock about. */
@@ -256,11 +262,18 @@ class Client extends IgeBaseClass_1.IgeBaseClass {
                 .mount(this.scene);
             crate._geometryData = (0, level_1.createBoxGeometry)(half * 2, half * 2, half * 2, `crate_${half}`);
             crate.material({ color: { r: 0.55, g: 0.38, b: 0.2, a: 1 }, roughness: 0.85 });
-            this.crates.push(this.physics.addBody(crate, {
+            const body = this.physics.addBody(crate, {
                 shape: { type: "box", halfExtents: { x: half, y: half, z: half } },
                 density: 250,
-                friction: 0.6
-            }));
+                friction: 0.6,
+                impacts: 220 // hard knocks throw up splinters
+            });
+            body.on("impact", (impact) => {
+                var _a;
+                const t = crate._translate;
+                (_a = this.slashFx) === null || _a === void 0 ? void 0 : _a.burst(Math.min(14, Math.round(impact.speed / 40)), { x: t.x, y: t.y, z: t.z }, { x: 0, y: 1, z: 0 });
+            });
+            this.crates.push(body);
         }
     }
     /**
@@ -383,7 +396,9 @@ class Client extends IgeBaseClass_1.IgeBaseClass {
                 radius: PLAYER_RADIUS,
                 height: CHARACTER_HEIGHT,
                 mass: 90,
-                maxStrength: 900
+                maxStrength: 900,
+                layer: "characters",
+                pushable: false // the horde blocks players rather than shoving them about
             });
             this.createSword(entity);
             // Each player carries a lantern so they can see in the dark
@@ -777,6 +792,7 @@ class Client extends IgeBaseClass_1.IgeBaseClass {
             zombie.entity.material({ color: ZOMBIE_DEAD_TINT });
             zombie.ragdoll = this.physics.createRagdoll(zombie.entity, {
                 parts: RAGDOLL_PARTS,
+                layer: "corpses",
                 velocity: { x: dirX * 380, y: 160, z: dirZ * 380 }
             });
             zombie.respawnTimer = ZOMBIE_RESPAWN_TIME * 2;

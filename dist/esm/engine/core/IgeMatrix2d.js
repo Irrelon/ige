@@ -1,5 +1,5 @@
 import { IgeBaseClass } from "./IgeBaseClass.js"
-import { IgePoint3d } from "./IgePoint3d.js"
+import { IgePoint3d } from "./IgePoint3d.js";
 import { radiansToDegrees } from "../utils/maths.js"
 /**
  * Creates a new transformation matrix.
@@ -55,14 +55,24 @@ export class IgeMatrix2d extends IgeBaseClass {
         return m;
     }
     rotateBy(angle) {
-        const m = new IgeMatrix2d();
-        m.translateBy(this._rotateOrigin.x, this._rotateOrigin.y);
-        m.rotateTo(angle);
-        m.translateBy(-this._rotateOrigin.x, -this._rotateOrigin.y);
+        // this = this * T(origin) * R(angle) * T(-origin), in place (no
+        // temporary matrices: this runs for every moving entity every frame)
+        const ox = this._rotateOrigin.x, oy = this._rotateOrigin.y;
+        if (ox !== 0 || oy !== 0)
+            this.translateBy(ox, oy);
+        const c = Math.cos(angle);
+        const s = Math.sin(angle);
+        const tm = this.matrix;
+        for (let row = 0; row < 9; row += 3) {
+            const a = tm[row], b = tm[row + 1];
+            tm[row] = a * c + b * s;
+            tm[row + 1] = b * c - a * s;
+        }
+        if (ox !== 0 || oy !== 0)
+            this.translateBy(-ox, -oy);
         /* DEXCLUDE */
-        this._sanityCheck(m.matrix);
+        this._sanityCheck(tm);
         /* DEXCLUDE */
-        this.multiply(m);
         return this;
     }
     rotateTo(angle) {
@@ -113,13 +123,17 @@ export class IgeMatrix2d extends IgeBaseClass {
         return m;
     }
     scaleBy(x, y) {
-        const m = new IgeMatrix2d();
-        m.matrix[0] = x;
-        m.matrix[4] = y;
+        // this = this * S(x, y), in place
+        const tm = this.matrix;
+        tm[0] *= x;
+        tm[3] *= x;
+        tm[6] *= x;
+        tm[1] *= y;
+        tm[4] *= y;
+        tm[7] *= y;
         /* DEXCLUDE */
-        this._sanityCheck(m.matrix);
+        this._sanityCheck(tm);
         /* DEXCLUDE */
-        this.multiply(m);
         return this;
     }
     scaleTo(x, y) {
@@ -148,13 +162,14 @@ export class IgeMatrix2d extends IgeBaseClass {
         return m;
     }
     translateBy(x, y) {
-        const m = new IgeMatrix2d();
-        m.matrix[2] = x;
-        m.matrix[5] = y;
+        // this = this * T(x, y), in place: only the translation column changes
+        const tm = this.matrix;
+        tm[2] = tm[0] * x + tm[1] * y + tm[2];
+        tm[5] = tm[3] * x + tm[4] * y + tm[5];
+        tm[8] = tm[6] * x + tm[7] * y + tm[8];
         /* DEXCLUDE */
-        this._sanityCheck(m.matrix);
+        this._sanityCheck(tm);
         /* DEXCLUDE */
-        this.multiply(m);
         return this;
     }
     /**

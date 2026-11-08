@@ -1,7 +1,7 @@
 import type { IgeEntity } from "../core/IgeEntity.js"
-import type { IgeTexture } from "../core/IgeTexture.js"
+import type { IgeTexture } from "../core/IgeTexture.js";
 import type { IgeWebGlGeometry } from "./IgeWebGlGeometry.js"
-import type { IgeWebGlProgram } from "./IgeWebGlProgram.js"
+import type { IgeWebGlProgram } from "./IgeWebGlProgram.js";
 import type { IgeMaterialData } from "../../types/IgeMaterialData.js"
 import type { IgeSkeleton } from "../../types/IgeSkeletonData.js"
 /**

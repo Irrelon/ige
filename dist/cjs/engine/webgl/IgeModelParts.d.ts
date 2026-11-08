@@ -1,5 +1,5 @@
 import type { IgeGltfModel } from "./IgeGltfLoader.js"
-import type { IgeGeometryData3d } from "../../types/IgeGeometryData3d.js"
+import type { IgeGeometryData3d } from "../../types/IgeGeometryData3d.js";
 import type { IgeMaterialData } from "../../types/IgeMaterialData.js"
 import type { IgeSkeleton, IgeSkeletonData } from "../../types/IgeSkeletonData.js"
 /**

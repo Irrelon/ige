@@ -1,32 +1,33 @@
 import { IgeBaseRenderer } from "./IgeBaseRenderer.js"
+import { IgeDummyContext } from "./IgeDummyContext.js";
 import type { IgeEngine } from "./IgeEngine.js"
-import type { IgeViewport } from "./IgeViewport.js"
+import type { IgeViewport } from "./IgeViewport.js";
 import { IgeWebGlResourceManager } from "../webgl/IgeWebGlResourceManager.js"
-import { IgeWebGlShaderManager } from "../webgl/IgeWebGlShaderManager.js"
+import { IgeWebGlShaderManager } from "../webgl/IgeWebGlShaderManager.js";
 import { IgeWebGlTextureManager } from "../webgl/IgeWebGlTextureManager.js"
-import { IgeWebGlGeometryManager } from "../webgl/IgeWebGlGeometryManager.js"
+import { IgeWebGlGeometryManager } from "../webgl/IgeWebGlGeometryManager.js";
 import { IgeWebGlCameraController } from "../webgl/IgeWebGlCameraController.js"
-import { IgeWebGlStateManager } from "../webgl/IgeWebGlStateManager.js"
+import { IgeWebGlStateManager } from "../webgl/IgeWebGlStateManager.js";
 import { IgeWebGlLightManager } from "../webgl/IgeWebGlLightManager.js"
-import { IgeWebGlShadowManager } from "../webgl/IgeWebGlShadowManager.js"
+import { IgeWebGlShadowManager } from "../webgl/IgeWebGlShadowManager.js";
 import { IgeWebGlSkeletonManager } from "../webgl/IgeWebGlSkeletonManager.js"
-import type { IgeObject } from "./IgeObject.js"
+import type { IgeObject } from "./IgeObject.js";
 import type { IgeEntity } from "./IgeEntity.js"
-import type { IgeDirectionalLight, IgePointLight } from "../webgl/IgeWebGlLight.js"
+import type { IgeDirectionalLight, IgePointLight } from "../webgl/IgeWebGlLight.js";
 import type { IgeCameraMatrices } from "../webgl/IgeWebGlCameraController.js"
-import type { IgeWebGlProgram } from "../webgl/IgeWebGlProgram.js"
+import type { IgeWebGlProgram } from "../webgl/IgeWebGlProgram.js";
 import type { IgeWebGlGeometry } from "../webgl/IgeWebGlGeometry.js"
-import type { IgeTexture } from "./IgeTexture.js"
+import type { IgeTexture } from "./IgeTexture.js";
 import { IgeMatrix4 } from "./IgeMatrix4.js"
-import { IgeFrustum } from "../webgl/IgeFrustum.js"
+import { IgeFrustum } from "../webgl/IgeFrustum.js";
 import { IgeWebGlBonePalette, IgeWebGlInstanceBuffer, IgeWebGlItemBatcher, type IgeWebGlItemBatch, type IgeWebGlRenderItem } from "../webgl/IgeWebGlInstancing.js"
-import type { IgeGeometryData3d } from "../../types/IgeGeometryData3d.js"
+import type { IgeGeometryData3d } from "../../types/IgeGeometryData3d.js";
 import type { IgeModelPart } from "../webgl/IgeModelParts.js"
-import type { IgeParticleSystem3d } from "../webgl/IgeParticleSystem3d.js"
+import type { IgeParticleSystem3d } from "../webgl/IgeParticleSystem3d.js";
 import type { IgeDecalSystem3d } from "../webgl/IgeDecalSystem3d.js"
-import type { IgeRaycastHit, IgeRaycastOptions } from "../webgl/IgeRaycast.js"
+import type { IgeRaycastHit, IgeRaycastOptions } from "../webgl/IgeRaycast.js";
 import type { IgeHeightfieldRayOptions } from "../webgl/IgeHeightfieldRay.js"
-import type { IgeMaterialData } from "../../types/IgeMaterialData.js"
+import type { IgeMaterialData } from "../../types/IgeMaterialData.js";
 import type { IgeSkeleton } from "../../types/IgeSkeletonData.js"
 /**
  * Distance fog settings for IgeWebGlRenderer.fog().
@@ -154,6 +155,8 @@ export declare class IgeWebGlRenderer extends IgeBaseRenderer {
         version: number;
         lastFrame: number;
     }>;
+    /** Passed to entity preTick behaviours, which expect a Canvas 2D context. */
+    protected _tickContext: IgeDummyContext;
     protected _defaultParticleTexture: WebGLTexture | null;
     protected _defaultDecalTexture: WebGLTexture | null;
     protected _lightFrustum: IgeFrustum;
@@ -249,6 +252,22 @@ export declare class IgeWebGlRenderer extends IgeBaseRenderer {
      * frame, so releasing too early costs time but doesn't break anything.
      */
     releaseGeometry(geometry: IgeGeometryData3d | string): this;
+    /**
+     * Free a geometry's arrays (vertices, normals, uvs, colours, indices,
+     * skin data) once it is on the GPU, so the GPU copy is the only one:
+     * for large meshes the game never reads again, such as terrain chunks.
+     * Uploads it first if it hasn't been drawn yet, and keeps its bounding
+     * box for culling and pointer events.
+     *
+     * Nothing can rebuild the mesh afterwards: generate LOD levels first
+     * (call lod() before this), releaseGeometry() frees it for good, and
+     * triangle picking, raycasts, projected decals and physics mesh shapes
+     * skip it. Returns false if the geometry couldn't be uploaded.
+     * @example #Keep only the GPU copy of a terrain chunk
+     *     chunk.geometry(chunkMesh);
+     *     renderer.discardGeometryArrays(chunkMesh);
+     */
+    discardGeometryArrays(geometryData: IgeGeometryData3d): boolean;
     /**
      * Free the GPU copy of a texture (an IgeTexture, or the id of a model
      * texture). IgeTexture.destroy() does this automatically. A texture

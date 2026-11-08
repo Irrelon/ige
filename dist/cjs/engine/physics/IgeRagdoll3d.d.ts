@@ -35,6 +35,8 @@ export interface IgeRagdollOptions {
     density?: number;
     /** Default 0.6. */
     friction?: number;
+    /** Collision layer for the parts (default "moving"), e.g. a corpses layer the living walk through. */
+    layer?: string;
 }
 interface PartState {
     boneIndex: number;

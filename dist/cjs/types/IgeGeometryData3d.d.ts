@@ -20,6 +20,11 @@ export interface IgeGeometryData3d extends IgeAbstractData3d {
     boneIndices?: Uint8Array;
     skinIndex?: number;
     skeletonId?: string;
+    /**
+     * Set by IgeWebGlRenderer.discardGeometryArrays(): the vertex arrays
+     * were freed after upload and the renderer draws its GPU copy.
+     */
+    gpuOnly?: boolean;
     boundingBox?: {
         min: [number, number, number];
         max: [number, number, number];

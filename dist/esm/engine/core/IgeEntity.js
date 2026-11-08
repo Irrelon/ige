@@ -1,20 +1,20 @@
 import { markSceneChanged } from "../utils/sceneChange.js"
-import { IgeBounds } from "./IgeBounds.js"
+import { IgeBounds } from "./IgeBounds.js";
 import { IgeDummyCanvas } from "./IgeDummyCanvas.js"
-import { IgeMatrix2d } from "./IgeMatrix2d.js"
+import { IgeMatrix2d } from "./IgeMatrix2d.js";
 import { IgeMatrix4 } from "./IgeMatrix4.js"
-import { IgeObject } from "./IgeObject.js"
+import { IgeObject } from "./IgeObject.js";
 import { IgePoint2d } from "./IgePoint2d.js"
-import { IgePoint3d } from "./IgePoint3d.js"
+import { IgePoint3d } from "./IgePoint3d.js";
 import { IgePoly2d } from "./IgePoly2d.js"
-import { ige } from "../instance.js"
+import { ige } from "../instance.js";
 import { isClient, isServer } from "../utils/clientServer.js"
-import { registerClass } from "../utils/igeClassStore.js"
+import { registerClass } from "../utils/igeClassStore.js";
 import { degreesToRadians } from "../utils/maths.js"
-import { traceSet } from "../utils/trace.js"
-import { IgeBehaviourType, IgeEntityRenderMode, IgeIsometricDepthSortMode, IgeMountMode, IgeStreamMode } from "../../enums/index.js"
+import { traceSet } from "../utils/trace.js";
+import { IgeBehaviourType, IgeEntityRenderMode, IgeIsometricDepthSortMode, IgeMountMode, IgeStreamMode } from "../../enums/index.js";
 import { findBoneIndex, retargetClips } from "../webgl/IgeAnimationRetarget.js"
-import { createSkeletonInstance, getGeometryLod, getModelLod, getModelParts } from "../webgl/IgeModelParts.js"
+import { createSkeletonInstance, getGeometryLod, getModelLod, getModelParts } from "../webgl/IgeModelParts.js";
 import { IgeSkeletalAnimationComponent } from "../components/IgeSkeletalAnimationComponent.js"
 /**
  * Creates an entity and handles the entity's life cycle and
@@ -184,7 +184,7 @@ export class IgeEntity extends IgeObject {
         this._localMatrix.identity();
         if (this._renderMode === IgeEntityRenderMode.flat) {
             // 2d translation
-            this._localMatrix.multiply(this._localMatrix._newTranslate(this._translate.x, this._translate.y));
+            this._localMatrix.translateBy(this._translate.x, this._translate.y);
         }
         if (this._renderMode === IgeEntityRenderMode.iso) {
             // iso translation
@@ -194,7 +194,7 @@ export class IgeEntity extends IgeObject {
                 // parent is the center of the base of the parent
                 isoPoint.y += this._parent._bounds3d.z / 1.6;
             }
-            this._localMatrix.multiply(this._localMatrix._newTranslate(isoPoint.x, isoPoint.y));
+            this._localMatrix.translateBy(isoPoint.x, isoPoint.y);
         }
         this._localMatrix.rotateBy(this._rotate.z);
         this._localMatrix.scaleBy(this._scale.x, this._scale.y);
@@ -734,6 +734,15 @@ export class IgeEntity extends IgeObject {
         else {
             this._quaternion = null;
         }
+        return this;
+    }
+    geometry(data) {
+        if (data === undefined) {
+            return this._geometryData;
+        }
+        if (data !== this._geometryData)
+            this._renderChanged();
+        this._geometryData = data;
         return this;
     }
     /**

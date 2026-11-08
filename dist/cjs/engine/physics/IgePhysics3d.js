@@ -42,9 +42,6 @@ const enums_1 = require("../../enums/index.js");
 const IgeRaycast_1 = require("../webgl/IgeRaycast.js");
 const IgeRagdoll3d_1 = require("./IgeRagdoll3d.js");
 const IgePhysicsCharacter3d_1 = require("./IgePhysicsCharacter3d.js");
-const LAYER_STATIC = 0;
-const LAYER_MOVING = 1;
-const NUM_LAYERS = 2;
 const DEFAULTS = {
     unitsPerMetre: 100,
     gravity: -9.81,
@@ -54,22 +51,32 @@ const DEFAULTS = {
     threads: "auto",
     maxBodies: 10240,
     maxBodyPairs: 65536,
-    maxContactConstraints: 20000
+    maxContactConstraints: 20000,
+    layers: [{ name: "static", static: true }, { name: "moving" }],
+    ignore: []
 };
 /**
  * A rigid body in an IgePhysics3d world, attached to one entity. Positions,
  * velocities and impulses are in IGE units; the entity follows the body
  * after every simulation step (dynamic bodies) or leads it (kinematic).
  */
-class IgePhysicsBody3d {
+class IgePhysicsBody3d extends IgeEventingClass_1.IgeEventingClass {
     constructor(physics, entity, options, body) {
+        super();
+        this.classId = "IgePhysicsBody3d";
         this._enabled = true;
         this._destroyed = false;
+        /** True for trigger sensors (see addSensor()). */
+        this._sensor = false;
         /** Body position and rotation at the last two steps (IGE units): x, y, z, qx, qy, qz, qw. */
         this._previous = new Float64Array([0, 0, 0, 0, 0, 0, 1]);
         this._current = new Float64Array([0, 0, 0, 0, 0, 0, 1]);
         /** Whether _previous and _current differ (the entity still needs placing). */
         this._moving = true;
+        /** Impact threshold in metres per second (0: no impact events). */
+        this._impactThreshold = 0;
+        /** Velocity before the current step (metres per second). */
+        this._impactVelocity = new Float64Array(3);
         this._physics = physics;
         this.entity = entity;
         this.type = options.type || "dynamic";
@@ -77,6 +84,9 @@ class IgePhysicsBody3d {
         this._body = body;
         this._id = body.GetID();
         this._offset = options.offset ? Object.assign({}, options.offset) : { x: 0, y: 0, z: 0 };
+        if (options.impacts) {
+            this._impactThreshold = (options.impacts === true ? 100 : options.impacts) / physics._options.unitsPerMetre;
+        }
         this._capture(true);
     }
     /** Record the body's transform as the latest step's (and the previous one's too when resetting). */
@@ -224,6 +234,14 @@ class IgePhysicsSensor3d extends IgeEventingClass_1.IgeEventingClass {
     }
 }
 exports.IgePhysicsSensor3d = IgePhysicsSensor3d;
+/** Whether a shape can only be used by static or kinematic bodies. */
+function staticOnlyShape(shape) {
+    if (shape.type === "mesh" || shape.type === "heightfield")
+        return true;
+    if (shape.type === "compound")
+        return shape.children.some((child) => staticOnlyShape(child.shape));
+    return false;
+}
 /** v rotated by the unit quaternion (x, y, z, w). */
 function rotateVector(v, x, y, z, w) {
     // t = 2 * cross(q.xyz, v); v' = v + w * t + cross(q.xyz, t)
@@ -336,6 +354,10 @@ class IgePhysics3d extends IgeEventingClass_1.IgeEventingClass {
         this.classId = "IgePhysics3d";
         this._list = [];
         this._ragdolls = [];
+        this._ragdollBodies = new Map();
+        this._layers = new Map();
+        this._layerFilters = new Map();
+        this._impactBodies = [];
         this._sensors = [];
         this._characters = [];
         this._byBodyId = new Map();
@@ -356,18 +378,30 @@ class IgePhysics3d extends IgeEventingClass_1.IgeEventingClass {
             const cores = (typeof navigator !== "undefined" && navigator.hardwareConcurrency) || 4;
             settings.mMaxWorkerThreads = Math.max(1, Math.min(8, cores - 1));
         }
-        // Static bodies don't collide with each other; moving ones collide with everything
-        const pairs = new jolt.ObjectLayerPairFilterTable(NUM_LAYERS);
-        pairs.EnableCollision(LAYER_STATIC, LAYER_MOVING);
-        pairs.EnableCollision(LAYER_MOVING, LAYER_MOVING);
+        // Collision layers: static layers don't collide with each other, every
+        // other pair does unless ignored. Jolt indexes static and moving
+        // bodies in separate broad phase layers.
+        const layers = options.layers;
+        if (!layers.length)
+            throw new Error("IgePhysics3d: at least one collision layer is needed");
+        layers.forEach((layer, index) => this._layers.set(layer.name, index));
+        const pairs = new jolt.ObjectLayerPairFilterTable(layers.length);
+        for (let a = 0; a < layers.length; a++) {
+            for (let b = a; b < layers.length; b++) {
+                if (layers[a].static && layers[b].static)
+                    continue;
+                const ignored = options.ignore.some(([x, y]) => (x === layers[a].name && y === layers[b].name) || (x === layers[b].name && y === layers[a].name));
+                if (!ignored)
+                    pairs.EnableCollision(a, b);
+            }
+        }
         const bpStatic = new jolt.BroadPhaseLayer(0);
         const bpMoving = new jolt.BroadPhaseLayer(1);
-        const bpInterface = new jolt.BroadPhaseLayerInterfaceTable(NUM_LAYERS, 2);
-        bpInterface.MapObjectToBroadPhaseLayer(LAYER_STATIC, bpStatic);
-        bpInterface.MapObjectToBroadPhaseLayer(LAYER_MOVING, bpMoving);
+        const bpInterface = new jolt.BroadPhaseLayerInterfaceTable(layers.length, 2);
+        layers.forEach((layer, index) => bpInterface.MapObjectToBroadPhaseLayer(index, layer.static ? bpStatic : bpMoving));
         settings.mObjectLayerPairFilter = pairs;
         settings.mBroadPhaseLayerInterface = bpInterface;
-        settings.mObjectVsBroadPhaseLayerFilter = new jolt.ObjectVsBroadPhaseLayerFilterTable(bpInterface, 2, pairs, NUM_LAYERS);
+        settings.mObjectVsBroadPhaseLayerFilter = new jolt.ObjectVsBroadPhaseLayerFilterTable(bpInterface, 2, pairs, layers.length);
         this._interface = new jolt.JoltInterface(settings);
         jolt.destroy(settings);
         jolt.destroy(bpStatic);
@@ -382,10 +416,39 @@ class IgePhysics3d extends IgeEventingClass_1.IgeEventingClass {
         this._ray = new jolt.RRayCast();
         this._raySettings = new jolt.RayCastSettings();
         this._rayCollector = new jolt.CastRayClosestHitCollisionCollector();
-        this._bpFilter = new jolt.DefaultBroadPhaseLayerFilter(this._interface.GetObjectVsBroadPhaseLayerFilter(), LAYER_MOVING);
-        this._objectFilter = new jolt.DefaultObjectLayerFilter(this._interface.GetObjectLayerPairFilter(), LAYER_MOVING);
+        const moving = this._defaultLayer(false);
+        const filters = this._filtersFor(moving);
+        this._bpFilter = filters.bp;
+        this._objectFilter = filters.object;
         this._bodyFilter = new jolt.BodyFilter();
         this._shapeFilter = new jolt.ShapeFilter();
+    }
+    /** Index of a collision layer by name. */
+    _layerIndex(name) {
+        const index = this._layers.get(name);
+        if (index === undefined)
+            throw new Error(`IgePhysics3d: no collision layer "${name}" (see the layers option)`);
+        return index;
+    }
+    /** The layer bodies go on by default: "static" / "moving" if they exist, else the first static / non-static layer. */
+    _defaultLayer(isStatic) {
+        const named = this._layers.get(isStatic ? "static" : "moving");
+        if (named !== undefined)
+            return named;
+        const index = this._options.layers.findIndex((layer) => !!layer.static === isStatic);
+        return index >= 0 ? index : 0;
+    }
+    /** Query filters that test what a layer collides with (cached per layer). */
+    _filtersFor(layer) {
+        let filters = this._layerFilters.get(layer);
+        if (!filters) {
+            filters = {
+                bp: new this._jolt.DefaultBroadPhaseLayerFilter(this._interface.GetObjectVsBroadPhaseLayerFilter(), layer),
+                object: new this._jolt.DefaultObjectLayerFilter(this._interface.GetObjectLayerPairFilter(), layer)
+            };
+            this._layerFilters.set(layer, filters);
+        }
+        return filters;
     }
     /** Whether Jolt's multithreaded build is running. */
     threaded() {
@@ -427,9 +490,10 @@ class IgePhysics3d extends IgeEventingClass_1.IgeEventingClass {
         const jolt = this._jolt;
         const type = options.type || "dynamic";
         const u = this._options.unitsPerMetre;
-        if (options.shape.type === "mesh" && type === "dynamic") {
-            throw new Error("IgePhysics3d: mesh shapes can't be dynamic; use a convex shape, or a static or kinematic body");
+        if (type === "dynamic" && staticOnlyShape(options.shape)) {
+            throw new Error("IgePhysics3d: mesh and heightfield shapes can't be dynamic; use convex or compound shapes, or a static or kinematic body");
         }
+        const layer = options.layer ? this._layerIndex(options.layer) : this._defaultLayer(type === "static");
         // Start at the entity's world transform
         entity.updateTransform();
         const world = (_a = entity._worldMatrix4) === null || _a === void 0 ? void 0 : _a.matrix;
@@ -443,7 +507,7 @@ class IgePhysics3d extends IgeEventingClass_1.IgeEventingClass {
         this._rvec.Set((position.x + offset.x) / u, (position.y + offset.y) / u, (position.z + offset.z) / u);
         this._quat.Set(rotation.x, rotation.y, rotation.z, rotation.w);
         const motion = type === "static" ? jolt.EMotionType_Static : type === "kinematic" ? jolt.EMotionType_Kinematic : jolt.EMotionType_Dynamic;
-        const settings = new jolt.BodyCreationSettings(shape, this._rvec, this._quat, motion, type === "static" ? LAYER_STATIC : LAYER_MOVING);
+        const settings = new jolt.BodyCreationSettings(shape, this._rvec, this._quat, motion, layer);
         settings.mFriction = (_b = options.friction) !== null && _b !== void 0 ? _b : 0.5;
         settings.mRestitution = (_c = options.restitution) !== null && _c !== void 0 ? _c : 0;
         settings.mLinearDamping = (_d = options.linearDamping) !== null && _d !== void 0 ? _d : 0.05;
@@ -463,6 +527,8 @@ class IgePhysics3d extends IgeEventingClass_1.IgeEventingClass {
             this.optimize();
         const wrapper = new IgePhysicsBody3d(this, entity, options, body);
         this._list.push(wrapper);
+        if (wrapper._impactThreshold > 0)
+            this._impactBodies.push(wrapper);
         this._byBodyId.set(wrapper._id.GetIndexAndSequenceNumber(), wrapper);
         entity._physicsBody3d = wrapper;
         return wrapper;
@@ -478,6 +544,9 @@ class IgePhysics3d extends IgeEventingClass_1.IgeEventingClass {
         const index = this._list.indexOf(body);
         if (index >= 0)
             this._list.splice(index, 1);
+        const impactIndex = this._impactBodies.indexOf(body);
+        if (impactIndex >= 0)
+            this._impactBodies.splice(impactIndex, 1);
         this._byBodyId.delete(body._id.GetIndexAndSequenceNumber());
         if (body.entity._physicsBody3d === body)
             body.entity._physicsBody3d = undefined;
@@ -493,6 +562,13 @@ class IgePhysics3d extends IgeEventingClass_1.IgeEventingClass {
     createRagdoll(entity, options = {}) {
         const ragdoll = new IgeRagdoll3d_1.IgeRagdoll3d(this, entity, options);
         this._ragdolls.push(ragdoll);
+        // Register the parts so raycasts, sensors and impacts report the entity
+        const wrappers = ragdoll._parts.map((part) => {
+            const wrapper = new IgePhysicsBody3d(this, entity, { type: "dynamic", shape: { type: "sphere", radius: 1 } }, part.body);
+            this._byBodyId.set(wrapper._id.GetIndexAndSequenceNumber(), wrapper);
+            return wrapper;
+        });
+        this._ragdollBodies.set(ragdoll, wrappers);
         return ragdoll;
     }
     /** Remove a ragdoll's bodies and joints. */
@@ -500,6 +576,11 @@ class IgePhysics3d extends IgeEventingClass_1.IgeEventingClass {
         const index = this._ragdolls.indexOf(ragdoll);
         if (index >= 0)
             this._ragdolls.splice(index, 1);
+        for (const wrapper of this._ragdollBodies.get(ragdoll) || []) {
+            this._byBodyId.delete(wrapper._id.GetIndexAndSequenceNumber());
+            wrapper._destroyed = true;
+        }
+        this._ragdollBodies.delete(ragdoll);
         ragdoll._free();
     }
     /**
@@ -507,8 +588,9 @@ class IgePhysics3d extends IgeEventingClass_1.IgeEventingClass {
      * entering and leaving it (see IgePhysicsSensor3d).
      */
     addSensor(entity, options) {
-        const body = this.addBody(entity, { type: "kinematic", shape: options.shape, offset: options.offset });
+        const body = this.addBody(entity, { type: "kinematic", shape: options.shape, offset: options.offset, layer: options.layer });
         this._bodies.SetIsSensor(body._id, true);
+        body._sensor = true;
         const sensor = new IgePhysicsSensor3d(body, !!options.includeStatic);
         this._sensors.push(sensor);
         return sensor;
@@ -548,7 +630,7 @@ class IgePhysics3d extends IgeEventingClass_1.IgeEventingClass {
         settings.mMaxSlopeAngle = (((_c = options.maxSlopeAngle) !== null && _c !== void 0 ? _c : 50) * Math.PI) / 180;
         settings.mShape = shape;
         settings.mInnerBodyShape = shape;
-        settings.mInnerBodyLayer = LAYER_MOVING;
+        settings.mInnerBodyLayer = options.layer ? this._layerIndex(options.layer) : this._defaultLayer(false);
         settings.mCharacterPadding = 0.02;
         settings.mPenetrationRecoverySpeed = 1;
         settings.mPredictiveContactDistance = 0.1;
@@ -583,6 +665,32 @@ class IgePhysics3d extends IgeEventingClass_1.IgeEventingClass {
         this._byBodyId.set(body._id.GetIndexAndSequenceNumber(), body);
         entity._physicsBody3d = body;
         const wrapper = new IgePhysicsCharacter3d_1.IgePhysicsCharacter3d(this, entity, character, update, body);
+        if (options.layer) {
+            const filters = this._filtersFor(this._layerIndex(options.layer));
+            wrapper._bpFilter = filters.bp;
+            wrapper._objectFilter = filters.object;
+        }
+        if (options.pushable === false) {
+            // Contacts can't push the character (the listener runs during its
+            // update, on the main thread)
+            const listener = new jolt.CharacterContactListenerJS();
+            const noPush = (_character, _body, _subShape, _position, _normal, ioSettings) => {
+                jolt.wrapPointer(ioSettings, jolt.CharacterContactSettings).mCanPushCharacter = false;
+            };
+            listener.OnAdjustBodyVelocity = () => { };
+            listener.OnContactValidate = () => true;
+            listener.OnCharacterContactValidate = () => true;
+            listener.OnContactAdded = noPush;
+            listener.OnContactPersisted = noPush;
+            listener.OnContactRemoved = () => { };
+            listener.OnCharacterContactAdded = noPush;
+            listener.OnCharacterContactPersisted = noPush;
+            listener.OnCharacterContactRemoved = () => { };
+            listener.OnContactSolve = () => { };
+            listener.OnCharacterContactSolve = () => { };
+            character.SetListener(listener);
+            wrapper._listener = listener;
+        }
         this._characters.push(wrapper);
         return wrapper;
     }
@@ -606,6 +714,8 @@ class IgePhysics3d extends IgeEventingClass_1.IgeEventingClass {
         (_a = this._characterCollision) === null || _a === void 0 ? void 0 : _a.Remove(character._character);
         this._jolt.destroy(character._character);
         this._jolt.destroy(character._settings);
+        if (character._listener)
+            this._jolt.destroy(character._listener);
     }
     /** The body attached to an entity by addBody(), if any. */
     bodyOf(entity) {
@@ -624,8 +734,12 @@ class IgePhysics3d extends IgeEventingClass_1.IgeEventingClass {
             for (const character of this._characters)
                 character._update(step);
             this._moveKinematicBodies(step);
+            if (this._impactBodies.length)
+                this._recordImpactVelocities();
             this._interface.Step(step, 1);
             this._captureBodies();
+            if (this._impactBodies.length)
+                this._checkImpacts(step);
             this._accumulator -= step;
             steps++;
         }
@@ -664,7 +778,7 @@ class IgePhysics3d extends IgeEventingClass_1.IgeEventingClass {
      * The nearest body a ray hits (IGE units; direction needn't be unit
      * length). Static and moving bodies are both tested.
      */
-    raycast(origin, direction, maxDistance) {
+    raycast(origin, direction, maxDistance, options = {}) {
         const u = this._options.unitsPerMetre;
         const len = Math.hypot(direction.x, direction.y, direction.z) || 1;
         const dx = direction.x / len, dy = direction.y / len, dz = direction.z / len;
@@ -673,7 +787,8 @@ class IgePhysics3d extends IgeEventingClass_1.IgeEventingClass {
         this._vec.Set((dx * maxDistance) / u, (dy * maxDistance) / u, (dz * maxDistance) / u);
         this._ray.mDirection = this._vec;
         this._rayCollector.Reset();
-        this._system.GetNarrowPhaseQuery().CastRay(this._ray, this._raySettings, this._rayCollector, this._bpFilter, this._objectFilter, this._bodyFilter, this._shapeFilter);
+        const filters = options.layer ? this._filtersFor(this._layerIndex(options.layer)) : { bp: this._bpFilter, object: this._objectFilter };
+        this._system.GetNarrowPhaseQuery().CastRay(this._ray, this._raySettings, this._rayCollector, filters.bp, filters.object, this._bodyFilter, this._shapeFilter);
         if (!this._rayCollector.HadHit())
             return null;
         const hit = this._rayCollector.mHit;
@@ -707,9 +822,16 @@ class IgePhysics3d extends IgeEventingClass_1.IgeEventingClass {
         for (const body of [...this._list])
             this.removeBody(body);
         for (const value of [this._vec, this._rvec, this._quat, this._identity, this._ray, this._raySettings, this._rayCollector,
-            this._bpFilter, this._objectFilter, this._bodyFilter, this._shapeFilter]) {
+            this._bodyFilter, this._shapeFilter]) {
             jolt.destroy(value);
         }
+        for (const filters of this._layerFilters.values()) {
+            jolt.destroy(filters.bp);
+            jolt.destroy(filters.object);
+        }
+        this._layerFilters.clear();
+        if (this._impactCollector)
+            jolt.destroy(this._impactCollector);
         jolt.destroy(this._interface);
     }
     /**
@@ -735,7 +857,81 @@ class IgePhysics3d extends IgeEventingClass_1.IgeEventingClass {
                 return this._createMeshShape(shape.geometry, scale);
             case "convex":
                 return this._createConvexShape(shape.geometry, scale);
+            case "compound":
+                return this._createCompoundShape(shape, scale);
+            case "heightfield":
+                return this._createHeightfieldShape(shape);
         }
+    }
+    _createCompoundShape(shape, scale) {
+        const jolt = this._jolt;
+        const u = this._options.unitsPerMetre;
+        if (!shape.children.length)
+            throw new Error("IgePhysics3d: a compound shape needs at least one child");
+        const settings = new jolt.StaticCompoundShapeSettings();
+        const cleanups = [];
+        const position = new jolt.Vec3(0, 0, 0);
+        const rotation = new jolt.Quat(0, 0, 0, 1);
+        for (const child of shape.children) {
+            const built = this._createShape(child.shape, scale);
+            if (built.cleanup)
+                cleanups.push(built.cleanup);
+            const p = child.position || { x: 0, y: 0, z: 0 };
+            const r = child.rotation || { x: 0, y: 0, z: 0, w: 1 };
+            position.Set(p.x / u, p.y / u, p.z / u);
+            rotation.Set(r.x, r.y, r.z, r.w);
+            settings.AddShapeShape(position, rotation, built.shape, 0);
+        }
+        jolt.destroy(position);
+        jolt.destroy(rotation);
+        const result = settings.Create();
+        const cleanup = () => {
+            jolt.destroy(settings);
+            for (const fn of cleanups)
+                fn();
+        };
+        if (result.HasError()) {
+            const message = result.GetError().c_str();
+            cleanup();
+            throw new Error(`IgePhysics3d: compound shape failed: ${message}`);
+        }
+        return { shape: result.Get(), cleanup };
+    }
+    _createHeightfieldShape(shape) {
+        const jolt = this._jolt;
+        const u = this._options.unitsPerMetre;
+        const size = Math.floor(shape.size);
+        if (size < 2 || shape.heights.length < size * size) {
+            throw new Error(`IgePhysics3d: a heightfield of size ${size} needs ${size * size} heights`);
+        }
+        // Jolt needs an even sample count: pad an odd grid with a column and
+        // row of holes (no collision)
+        const count = size % 2 === 0 ? size : size + 1;
+        const NO_COLLISION = 3.4028234663852886e38;
+        const settings = new jolt.HeightFieldShapeSettings();
+        settings.mSampleCount = count;
+        settings.mBlockSize = 2;
+        this._vec.Set(0, 0, 0);
+        settings.mOffset = this._vec;
+        this._vec.Set(shape.spacing / u, 1, shape.spacing / u);
+        settings.mScale = this._vec;
+        const samples = settings.mHeightSamples;
+        samples.resize(count * count);
+        const heap = jolt.HEAPF32;
+        const start = jolt.getPointer(samples.data()) >> 2;
+        for (let z = 0; z < count; z++) {
+            for (let x = 0; x < count; x++) {
+                heap[start + z * count + x] = x < size && z < size ? shape.heights[z * size + x] / u : NO_COLLISION;
+            }
+        }
+        const result = settings.Create();
+        const cleanup = () => jolt.destroy(settings);
+        if (result.HasError()) {
+            const message = result.GetError().c_str();
+            cleanup();
+            throw new Error(`IgePhysics3d: heightfield shape failed: ${message}`);
+        }
+        return { shape: result.Get(), cleanup };
     }
     _createMeshShape(geometry, scale) {
         const jolt = this._jolt;
@@ -818,6 +1014,58 @@ class IgePhysics3d extends IgeEventingClass_1.IgeEventingClass {
             this._bodies.MoveKinematic(body._id, this._rvec, this._quat, dt);
         }
     }
+    /** Remember the velocity of bodies that report impacts, before a step. */
+    _recordImpactVelocities() {
+        for (const body of this._impactBodies) {
+            if (!body._enabled || body.type !== "dynamic")
+                continue;
+            const v = body._body.GetLinearVelocity();
+            body._impactVelocity[0] = v.GetX();
+            body._impactVelocity[1] = v.GetY();
+            body._impactVelocity[2] = v.GetZ();
+        }
+    }
+    /**
+     * After a step: a body whose velocity changed by more than gravity
+     * explains hit something. Emit "impact" with the bodies touching it.
+     */
+    _checkImpacts(dt) {
+        const jolt = this._jolt;
+        const u = this._options.unitsPerMetre;
+        const gravity = this._options.gravity;
+        for (const body of this._impactBodies) {
+            if (!body._enabled || body.type !== "dynamic" || !body._body.IsActive())
+                continue;
+            const before = body._impactVelocity;
+            const v = body._body.GetLinearVelocity();
+            const gravityFactor = body._body.GetMotionProperties().GetGravityFactor();
+            const dx = v.GetX() - before[0];
+            const dy = v.GetY() - (before[1] + gravity * gravityFactor * dt);
+            const dz = v.GetZ() - before[2];
+            const change = Math.hypot(dx, dy, dz);
+            if (change < body._impactThreshold)
+                continue;
+            // What it is touching now
+            const collector = this._impactCollector || (this._impactCollector = new jolt.CollideShapeAllHitCollisionCollector());
+            const settings = this._sensorSettings || (this._sensorSettings = new jolt.CollideShapeSettings());
+            const unitScale = this._unitScale || (this._unitScale = new jolt.Vec3(1, 1, 1));
+            settings.mMaxSeparationDistance = 0.02;
+            collector.Reset();
+            const filters = this._filtersFor(body._body.GetObjectLayer());
+            this._rvec.Set(0, 0, 0);
+            this._system.GetNarrowPhaseQuery().CollideShape(body._body.GetShape(), unitScale, body._body.GetCenterOfMassTransform(), settings, this._rvec, collector, filters.bp, filters.object, this._bodyFilter, this._shapeFilter);
+            settings.mMaxSeparationDistance = 0;
+            const others = [];
+            const hits = collector.mHits;
+            for (let i = 0, n = hits.size(); i < n; i++) {
+                const other = this._byBodyId.get(hits.at(i).mBodyID2.GetIndexAndSequenceNumber());
+                if (other && other !== body && !other._sensor && !others.includes(other))
+                    others.push(other);
+            }
+            const impact = { speed: change * u, others };
+            body.emit("impact", impact);
+        }
+    }
     /** Find what overlaps each sensor and emit "enter" / "exit" for the changes. */
     _updateSensors() {
         const jolt = this._jolt;
@@ -831,7 +1079,8 @@ class IgePhysics3d extends IgeEventingClass_1.IgeEventingClass {
             if (!own._enabled)
                 continue;
             collector.Reset();
-            query.CollideShape(own._body.GetShape(), unitScale, own._body.GetCenterOfMassTransform(), settings, this._rvec, collector, this._bpFilter, this._objectFilter, this._bodyFilter, this._shapeFilter);
+            const filters = this._filtersFor(own._body.GetObjectLayer());
+            query.CollideShape(own._body.GetShape(), unitScale, own._body.GetCenterOfMassTransform(), settings, this._rvec, collector, filters.bp, filters.object, this._bodyFilter, this._shapeFilter);
             const now = new Set();
             const hits = collector.mHits;
             for (let i = 0, n = hits.size(); i < n; i++) {

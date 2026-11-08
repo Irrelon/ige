@@ -14,6 +14,14 @@ export interface IgePhysicsCharacterOptions {
     maxSlopeAngle?: number;
     /** Tallest step it walks up (IGE units, default 0.3 metres). */
     stepHeight?: number;
+    /** Collision layer (default "moving"). */
+    layer?: string;
+    /**
+     * Whether other bodies can push the character (default true): a horde
+     * walking into a player shoves them. false keeps it where its own
+     * movement puts it (it still can't walk through them).
+     */
+    pushable?: boolean;
 }
 /**
  * A player character moved by Jolt's CharacterVirtual: a capsule that
@@ -36,6 +44,10 @@ export declare class IgePhysicsCharacter3d {
     _moveZ: number;
     _jump: number;
     _enabled: boolean;
+    /** Query filters for the character's layer. */
+    _bpFilter?: JoltApi.BroadPhaseLayerFilter;
+    _objectFilter?: JoltApi.ObjectLayerFilter;
+    _listener?: JoltApi.CharacterContactListenerJS;
     _destroyed: boolean;
     _previous: Float64Array;
     _current: Float64Array;

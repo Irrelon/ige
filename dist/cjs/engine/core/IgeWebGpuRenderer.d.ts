@@ -1,7 +1,7 @@
 import { IgeBaseRenderer } from "./IgeBaseRenderer.js"
-import type { IgeEngine } from "./IgeEngine.js"
+import type { IgeEngine } from "./IgeEngine.js";
 import type { IgeObject } from "./IgeObject.js"
-import type { IgeViewport } from "./IgeViewport.js"
+import type { IgeViewport } from "./IgeViewport.js";
 import type { IgeCanvasRenderingContext3d } from "../../types/IgeCanvasRenderingContext3d.js"
 export declare class IgeWebGpuRenderer extends IgeBaseRenderer {
     classId: string;

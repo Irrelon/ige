@@ -1,26 +1,27 @@
 import { IgeBaseRenderer } from "./IgeBaseRenderer.js"
-import { IgeTextureRenderMode } from "../../enums/index.js"
-import { markSceneChanged } from "../utils/sceneChange.js"
+import { IgeBehaviourType, IgeTextureRenderMode } from "../../enums/index.js";
+import { IgeDummyContext } from "./IgeDummyContext.js"
+import { markSceneChanged } from "../utils/sceneChange.js";
 import { IgePoint2d } from "./IgePoint2d.js"
-import { ige } from "../instance.js"
+import { ige } from "../instance.js";
 import { isClient, isServer } from "../utils/clientServer.js"
-import { IgeWebGlResourceManager } from "../webgl/IgeWebGlResourceManager.js"
+import { IgeWebGlResourceManager } from "../webgl/IgeWebGlResourceManager.js";
 import { IgeWebGlShaderManager } from "../webgl/IgeWebGlShaderManager.js"
-import { IgeWebGlTextureManager } from "../webgl/IgeWebGlTextureManager.js"
+import { IgeWebGlTextureManager } from "../webgl/IgeWebGlTextureManager.js";
 import { IgeWebGlGeometryManager } from "../webgl/IgeWebGlGeometryManager.js"
-import { IgeWebGlCameraController } from "../webgl/IgeWebGlCameraController.js"
+import { IgeWebGlCameraController } from "../webgl/IgeWebGlCameraController.js";
 import { IgeWebGlStateManager } from "../webgl/IgeWebGlStateManager.js"
-import { IgeWebGlLightManager } from "../webgl/IgeWebGlLightManager.js"
+import { IgeWebGlLightManager } from "../webgl/IgeWebGlLightManager.js";
 import { IgeWebGlShadowManager } from "../webgl/IgeWebGlShadowManager.js"
-import { IgeWebGlSkeletonManager } from "../webgl/IgeWebGlSkeletonManager.js"
+import { IgeWebGlSkeletonManager } from "../webgl/IgeWebGlSkeletonManager.js";
 import { IgeShaderLibrary } from "../shaders/webgl/shaderLibrary.js"
-import { IgeMatrix4 } from "./IgeMatrix4.js"
+import { IgeMatrix4 } from "./IgeMatrix4.js";
 import { IgeFrustum } from "../webgl/IgeFrustum.js"
-import { IgeWebGlBonePalette, IgeWebGlInstanceBuffer, IgeWebGlItemBatcher } from "../webgl/IgeWebGlInstancing.js"
+import { IgeWebGlBonePalette, IgeWebGlInstanceBuffer, IgeWebGlItemBatcher } from "../webgl/IgeWebGlInstancing.js";
 import { DECAL_INSTANCE_FLOATS, DECAL_MESH_VERTEX_FLOATS } from "../webgl/IgeDecalSystem3d.js"
-import { raycastEntities } from "../webgl/IgeRaycast.js"
+import { raycastEntities } from "../webgl/IgeRaycast.js";
 import { takeGeneratedLods } from "../webgl/IgeModelParts.js"
-import { intersectHeightfield } from "../webgl/IgeHeightfieldRay.js"
+import { intersectHeightfield } from "../webgl/IgeHeightfieldRay.js";
 import { MAX_BONES } from "../../types/IgeSkeletonData.js"
 /** Texture unit layout used by the lit shaders. */
 const SHADOW_TEXTURE_UNIT = 1;
@@ -262,6 +263,8 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
     _pendingBlobTextures = new Set();
     _particleBuffers = new Map();
     _decalMeshBuffers = new Map();
+    /** Passed to entity preTick behaviours, which expect a Canvas 2D context. */
+    _tickContext = new IgeDummyContext();
     _defaultParticleTexture = null;
     _defaultDecalTexture = null;
     _lightFrustum = new IgeFrustum();
@@ -592,6 +595,51 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
             this._geometryManager.deleteGeometry(lod.id);
         }
         return this;
+    }
+    /**
+     * Free a geometry's arrays (vertices, normals, uvs, colours, indices,
+     * skin data) once it is on the GPU, so the GPU copy is the only one:
+     * for large meshes the game never reads again, such as terrain chunks.
+     * Uploads it first if it hasn't been drawn yet, and keeps its bounding
+     * box for culling and pointer events.
+     *
+     * Nothing can rebuild the mesh afterwards: generate LOD levels first
+     * (call lod() before this), releaseGeometry() frees it for good, and
+     * triangle picking, raycasts, projected decals and physics mesh shapes
+     * skip it. Returns false if the geometry couldn't be uploaded.
+     * @example #Keep only the GPU copy of a terrain chunk
+     *     chunk.geometry(chunkMesh);
+     *     renderer.discardGeometryArrays(chunkMesh);
+     */
+    discardGeometryArrays(geometryData) {
+        if (geometryData.gpuOnly)
+            return true;
+        if (!this._getGeometry(geometryData))
+            return false;
+        const vertices = geometryData.vertices;
+        if (!geometryData.boundingBox && vertices && vertices.length >= 3) {
+            const min = [Infinity, Infinity, Infinity];
+            const max = [-Infinity, -Infinity, -Infinity];
+            for (let i = 0; i + 2 < vertices.length; i += 3) {
+                for (let k = 0; k < 3; k++) {
+                    if (vertices[i + k] < min[k])
+                        min[k] = vertices[i + k];
+                    if (vertices[i + k] > max[k])
+                        max[k] = vertices[i + k];
+                }
+            }
+            geometryData.boundingBox = { min, max };
+        }
+        delete geometryData.vertices;
+        delete geometryData.normals;
+        delete geometryData.uvs;
+        delete geometryData.tangents;
+        delete geometryData.colors;
+        delete geometryData.indices;
+        delete geometryData.boneWeights;
+        delete geometryData.boneIndices;
+        geometryData.gpuOnly = true;
+        return true;
     }
     /**
      * Free the GPU copy of a texture (an IgeTexture, or the id of a model
@@ -974,7 +1022,7 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
         if (!ray)
             return false;
         const camera = viewport.camera;
-        const isSprite = !entity._modelParts && !entity._geometryData?.vertices && !!entity._texture;
+        const isSprite = !entity._modelParts && !entity._geometryData?.vertices && !entity._geometryData?.gpuOnly && !!entity._texture;
         const flat2d = !!(camera._up && camera._up.y < 0);
         if (isSprite && !flat2d && entity._billboardMode !== 0) {
             // Billboard: compare against its rectangle on screen
@@ -1261,6 +1309,13 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
         }
         const entity = obj;
         const geometryData = entity._geometryData;
+        // Entity preTick behaviours: the Canvas 2D renderer runs them as it
+        // draws each entity; here they run once per frame, with a 2D context
+        // whose drawing calls do nothing, so logic in them still works
+        const behaviours = obj._behaviours;
+        if (behaviours && behaviours[IgeBehaviourType.preTick]?.length) {
+            obj._processBehaviours(IgeBehaviourType.preTick, this._tickContext);
+        }
         const parts = entity._modelParts;
         if (obj._isParticleSystem3d) {
             data.particles.push(obj);
@@ -1271,7 +1326,7 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
         else if (parts && parts.length > 0) {
             this._addModelParts(entity, parts, data);
         }
-        else if (geometryData && geometryData.vertices) {
+        else if (geometryData && (geometryData.vertices || geometryData.gpuOnly)) {
             // Plain geometry LOD applies only to the geometry it was made for
             const lod = entity._modelLod;
             const useLod = !!lod && lod.source === geometryData;
@@ -1528,6 +1583,10 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
             return;
         const geometryId = geometryData.id || "unknown";
         let geometry = this._geometryManager.getGeometry(geometryId);
+        if (!geometry && geometryData.gpuOnly) {
+            // Arrays discarded and the GPU copy released: nothing left to draw
+            return;
+        }
         if (!geometry) {
             geometry = this._geometryManager.createGeometryFromData(geometryId, geometryData) || undefined;
             if (!geometry)

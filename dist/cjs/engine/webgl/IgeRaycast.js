@@ -1,9 +1,13 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.BVH_MIN_TRIANGLES = void 0;
 exports.intersectTriangles = intersectTriangles;
 exports.invertMat4 = invertMat4;
 exports.skinnedPositions = skinnedPositions;
 exports.raycastEntities = raycastEntities;
+const IgeTriangleBvh_1 = require("./IgeTriangleBvh.js");
+/** Meshes with more triangles than this are raycast through a cached BVH. */
+exports.BVH_MIN_TRIANGLES = 512;
 const boxCache = new WeakMap();
 function verticesBox(vertices) {
     const box = { minX: Infinity, minY: Infinity, minZ: Infinity, maxX: -Infinity, maxY: -Infinity, maxZ: -Infinity };
@@ -226,7 +230,10 @@ function raycastEntities(ray, targets, options = {}) {
         // An affine transform keeps the ray parameter, so t is the world distance
         if (!rayHitsBox(box, ox, oy, oz, dx, dy, dz, maxDistance))
             return;
-        const hit = intersectTriangles(vertices, geometry.indices, ox, oy, oz, dx, dy, dz, maxDistance);
+        // Large static meshes (terrain) go through a cached BVH; posed skinned vertices change every frame
+        const hit = vertices === geometry.vertices && (0, IgeTriangleBvh_1.triangleCountOf)(geometry) > exports.BVH_MIN_TRIANGLES
+            ? (0, IgeTriangleBvh_1.bvhRaycast)((0, IgeTriangleBvh_1.getTriangleBvh)(geometry), vertices, geometry.indices, ox, oy, oz, dx, dy, dz, maxDistance)
+            : intersectTriangles(vertices, geometry.indices, ox, oy, oz, dx, dy, dz, maxDistance);
         if (!hit)
             return;
         // World normal from the hit triangle's world corners

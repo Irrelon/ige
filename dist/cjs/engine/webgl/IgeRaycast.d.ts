@@ -1,6 +1,8 @@
 import type { IgeEntity } from "../core/IgeEntity.js"
-import type { IgeGeometryData3d } from "../../types/IgeGeometryData3d.js"
+import type { IgeGeometryData3d } from "../../types/IgeGeometryData3d.js";
 import type { IgeSkeleton } from "../../types/IgeSkeletonData.js"
+/** Meshes with more triangles than this are raycast through a cached BVH. */
+export declare const BVH_MIN_TRIANGLES = 512;
 type Vec3 = {
     x: number;
     y: number;
