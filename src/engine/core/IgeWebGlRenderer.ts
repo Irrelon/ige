@@ -244,6 +244,11 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 	protected _defaultParticleTexture: WebGLTexture | null = null;
 	protected _defaultDecalTexture: WebGLTexture | null = null;
 	protected _lightFrustum: IgeFrustum = new IgeFrustum();
+	// Point light shadow casters in range of the current light, with the
+	// LOD key and geometry chosen for it (reused across lights and frames)
+	protected _pointCasterItems: IgeWebGlRenderItem[] = [];
+	protected _pointCasterKeys: string[] = [];
+	protected _pointCasterGeometries: IgeWebGlGeometry[] = [];
 	protected _lightFrustumMatrix: IgeMatrix4 = new IgeMatrix4();
 
 	// GPU instancing (WebGL 2 only)
@@ -1938,7 +1943,13 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 			// has a 90 degree field of view, so an item at distance d covers
 			// (faceSize / 2) / d texels per world unit.
 			const halfFace = (shadowData?.faceSize ?? 512) * 0.5;
-			batcher.begin();
+			const casters = this._pointCasterItems;
+			const casterKeys = this._pointCasterKeys;
+			const casterGeometries = this._pointCasterGeometries;
+			casters.length = 0;
+			casterKeys.length = 0;
+			casterGeometries.length = 0;
+
 			for (let i = 0; i < this._itemCount; i++) {
 				const item = this._itemPool[i];
 				if (!item.castShadow) continue;
@@ -1951,15 +1962,19 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 					distance = Math.sqrt(distSq);
 				}
 				item.entity._lastRenderedFrame = this._frameId;
+				casters.push(item);
 				if (item.lodSizes && distance > 0) {
 					const level = this._lodLevel(item, halfFace / distance);
-					batcher.add(item, item.lodDepthKeys[level], item.lodGeometries[level]);
+					casterKeys.push(item.lodDepthKeys[level]);
+					casterGeometries.push(item.lodGeometries[level]);
 				} else {
-					batcher.add(item, item.depthKey);
+					casterKeys.push(item.depthKey);
+					casterGeometries.push(item.geometry);
 				}
 			}
 
 			for (let face = 0; face < 6; face++) {
+				// Begin even when nothing falls in this face: it clears it
 				if (!this._shadowManager.beginPointShadowPass(lightId, face)) {
 					continue;
 				}
@@ -1968,6 +1983,17 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 				if (!lightSpaceMatrix) {
 					this._shadowManager.endPointShadowPass();
 					continue;
+				}
+
+				// Only the casters inside this face's 90 degree frustum
+				this._lightFrustum.extractFromMatrix(lightSpaceMatrix);
+				batcher.begin();
+				for (let c = 0; c < casters.length; c++) {
+					const item = casters[c];
+					if (item.radius >= 0 && !this._lightFrustum.containsSphereXYZ(item.cx, item.cy, item.cz, item.radius)) {
+						continue;
+					}
+					batcher.add(item, casterKeys[c], casterGeometries[c]);
 				}
 
 				this._drawDepthBatches(batcher.batches, "point_shadow", "skinned_point_shadow", (program) => {
