@@ -64,7 +64,10 @@ body.setVelocityXZ(moveX * 260, moveZ * 260); // each frame, from input or AI; g
 - A body starts at its entity's world position and rotation. After every step, dynamic bodies move their entity
   (position, and rotation through `entity.quaternion()` unless `lockRotation`); kinematic bodies (`type:
   "kinematic"`) follow their entity instead, e.g. moving platforms or doors.
-- Shapes: `box` (half extents), `sphere` (radius), `capsule` (radius and half the straight part, upright).
+- Shapes: `box` (half extents), `sphere` (radius), `capsule` (radius and half the straight part, upright), and from
+  a geometry (scaled by the entity's scale): `mesh` (its triangles: level geometry and terrain, static or kinematic
+  only) and `convex` (the hull of its vertices: props of any shape, dynamic too):
+  `physics.addBody(terrain, { type: "static", shape: { type: "mesh", geometry: terrain._geometryData } })`.
 - Options: `restitution` (bounciness), `linearDamping`, `angularDamping`, `gravityFactor`, `ccd` (continuous
   collision for small fast bodies so they don't pass through walls).
 - `body.enabled(false)` takes a body out of the simulation (e.g. while a character is dead), `teleport(x, y, z)`
@@ -133,7 +136,6 @@ silicon Mac in Chrome:
 
 - Character controller: players are dynamic capsules. Jolt's `CharacterVirtual` (stairs, slopes, standing on moving
   platforms) would suit player characters better.
-- Mesh and heightfield shapes for terrain (e.g. Hex Realms); the level must be built from boxes, spheres and capsules
-  for now.
+- Heightfield shapes (lighter than a mesh for grid terrain) and compound shapes.
 - Contact events and trigger volumes, collision layers beyond static/moving, and interpolation between steps (the
   render shows the latest step).

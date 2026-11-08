@@ -1,5 +1,6 @@
 import type JoltApi from "jolt-physics";
 import type { IgeEntity } from "@/engine/core/IgeEntity";
+import type { IgeGeometryData3d } from "@/types/IgeGeometryData3d";
 import { IgeEventingClass } from "@/engine/core/IgeEventingClass";
 import { ige } from "@/engine/instance";
 import { IgeBehaviourType } from "@/enums";
@@ -15,7 +16,15 @@ export type IgePhysicsShape =
 	| { type: "box"; halfExtents: Vec3 }
 	| { type: "sphere"; radius: number }
 	/** Upright (along Y); halfHeight is half the straight part between the two caps. */
-	| { type: "capsule"; radius: number; halfHeight: number };
+	| { type: "capsule"; radius: number; halfHeight: number }
+	/**
+	 * The triangles of a geometry (e.g. the entity's own _geometryData),
+	 * scaled by the entity's scale: level geometry and terrain. Static and
+	 * kinematic bodies only.
+	 */
+	| { type: "mesh"; geometry: IgeGeometryData3d }
+	/** The convex hull of a geometry's vertices, scaled by the entity's scale: props of any shape, dynamic too. */
+	| { type: "convex"; geometry: IgeGeometryData3d };
 
 export interface IgePhysicsBodyOptions {
 	/** "dynamic" (default) is moved by the simulation, "static" never moves, "kinematic" follows its entity. */
@@ -431,11 +440,17 @@ export class IgePhysics3d extends IgeEventingClass {
 		const jolt = this._jolt;
 		const type = options.type || "dynamic";
 		const u = this._options.unitsPerMetre;
-		const shape = this._createShape(options.shape);
+		if (options.shape.type === "mesh" && type === "dynamic") {
+			throw new Error("IgePhysics3d: mesh shapes can't be dynamic; use a convex shape, or a static or kinematic body");
+		}
 
 		// Start at the entity's world transform
 		entity.updateTransform();
 		const world = entity._worldMatrix4?.matrix;
+		const scale = world
+			? { x: Math.hypot(world[0], world[1], world[2]), y: Math.hypot(world[4], world[5], world[6]), z: Math.hypot(world[8], world[9], world[10]) }
+			: { x: 1, y: 1, z: 1 };
+		const { shape, cleanup } = this._createShape(options.shape, scale);
 		const position = world ? { x: world[12], y: world[13], z: world[14] } : { ...entity._translate };
 		const rotation = options.lockRotation ? { x: 0, y: 0, z: 0, w: 1 } : world ? matrixToQuaternion(world) : { x: 0, y: 0, z: 0, w: 1 };
 		const offset = options.offset ? rotateVector(options.offset, rotation.x, rotation.y, rotation.z, rotation.w) : { x: 0, y: 0, z: 0 };
@@ -456,6 +471,7 @@ export class IgePhysics3d extends IgeEventingClass {
 
 		const body = this._bodies.CreateBody(settings);
 		jolt.destroy(settings);
+		cleanup?.();
 		this._bodies.AddBody(body.GetID(), type === "static" ? jolt.EActivation_DontActivate : jolt.EActivation_Activate);
 
 		// Many new bodies at once (a level loading): rebuild the broad phase
@@ -587,7 +603,12 @@ export class IgePhysics3d extends IgeEventingClass {
 		jolt.destroy(this._interface);
 	}
 
-	_createShape (shape: IgePhysicsShape): JoltApi.Shape {
+	/**
+	 * Build a Jolt shape. Shapes made from settings (mesh, convex) belong to
+	 * the settings until a body takes a reference, so cleanup() frees the
+	 * settings after the body is created.
+	 */
+	_createShape (shape: IgePhysicsShape, scale: Vec3): { shape: JoltApi.Shape; cleanup?: () => void } {
 		const jolt = this._jolt;
 		const u = this._options.unitsPerMetre;
 		switch (shape.type) {
@@ -595,13 +616,81 @@ export class IgePhysics3d extends IgeEventingClass {
 				const hx = shape.halfExtents.x / u, hy = shape.halfExtents.y / u, hz = shape.halfExtents.z / u;
 				this._vec.Set(hx, hy, hz);
 				// Jolt rounds box corners by the convex radius; keep it within the smallest half extent
-				return new jolt.BoxShape(this._vec, Math.min(0.05, hx * 0.5, hy * 0.5, hz * 0.5), undefined);
+				return { shape: new jolt.BoxShape(this._vec, Math.min(0.05, hx * 0.5, hy * 0.5, hz * 0.5), undefined) };
 			}
 			case "sphere":
-				return new jolt.SphereShape(shape.radius / u, undefined);
+				return { shape: new jolt.SphereShape(shape.radius / u, undefined) };
 			case "capsule":
-				return new jolt.CapsuleShape(shape.halfHeight / u, shape.radius / u, undefined);
+				return { shape: new jolt.CapsuleShape(shape.halfHeight / u, shape.radius / u, undefined) };
+			case "mesh":
+				return this._createMeshShape(shape.geometry, scale);
+			case "convex":
+				return this._createConvexShape(shape.geometry, scale);
 		}
+	}
+
+	_createMeshShape (geometry: IgeGeometryData3d, scale: Vec3): { shape: JoltApi.Shape; cleanup: () => void } {
+		const jolt = this._jolt;
+		const u = this._options.unitsPerMetre;
+		const source = geometry.vertices;
+		if (!source || source.length < 9) throw new Error(`IgePhysics3d: geometry "${geometry.id}" has no vertices`);
+		const vertexCount = Math.floor(source.length / 3);
+		const indices = geometry.indices;
+		const triangleCount = indices ? Math.floor(indices.length / 3) : Math.floor(vertexCount / 3);
+
+		// Fill both lists in place (no wrapper per vertex)
+		const vertices = new jolt.VertexList();
+		vertices.resize(vertexCount);
+		for (let i = 0; i < vertexCount; i++) {
+			const v = vertices.at(i);
+			v.x = (source[i * 3] * scale.x) / u;
+			v.y = (source[i * 3 + 1] * scale.y) / u;
+			v.z = (source[i * 3 + 2] * scale.z) / u;
+		}
+		const triangles = new jolt.IndexedTriangleList();
+		triangles.resize(triangleCount);
+		for (let t = 0; t < triangleCount; t++) {
+			const triangle = triangles.at(t);
+			triangle.set_mIdx(0, indices ? indices[t * 3] : t * 3);
+			triangle.set_mIdx(1, indices ? indices[t * 3 + 1] : t * 3 + 1);
+			triangle.set_mIdx(2, indices ? indices[t * 3 + 2] : t * 3 + 2);
+			triangle.mMaterialIndex = 0;
+		}
+		const materials = new jolt.PhysicsMaterialList();
+		const settings = new jolt.MeshShapeSettings(vertices, triangles, materials);
+		const result = settings.Create();
+		const cleanup = () => {
+			jolt.destroy(settings);
+			jolt.destroy(vertices);
+			jolt.destroy(triangles);
+			jolt.destroy(materials);
+		};
+		if (result.HasError()) {
+			const message = result.GetError().c_str();
+			cleanup();
+			throw new Error(`IgePhysics3d: mesh shape from "${geometry.id}" failed: ${message}`);
+		}
+		return { shape: result.Get(), cleanup };
+	}
+
+	_createConvexShape (geometry: IgeGeometryData3d, scale: Vec3): { shape: JoltApi.Shape; cleanup: () => void } {
+		const jolt = this._jolt;
+		const u = this._options.unitsPerMetre;
+		const source = geometry.vertices;
+		if (!source || source.length < 12) throw new Error(`IgePhysics3d: geometry "${geometry.id}" needs at least 4 vertices for a convex shape`);
+		const settings = new jolt.ConvexHullShapeSettings();
+		for (let i = 0; i + 2 < source.length; i += 3) {
+			this._vec.Set((source[i] * scale.x) / u, (source[i + 1] * scale.y) / u, (source[i + 2] * scale.z) / u);
+			settings.mPoints.push_back(this._vec);
+		}
+		const result = settings.Create();
+		const cleanup = () => jolt.destroy(settings);
+		if (result.HasError()) {
+			const message = result.GetError().c_str();
+			cleanup();
+			throw new Error(`IgePhysics3d: convex shape from "${geometry.id}" failed: ${message}`);
+		}
+		return { shape: result.Get(), cleanup };
 	}
 
 	_moveKinematicBodies (dt: number): void {
