@@ -760,6 +760,50 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 	}
 
 	/**
+	 * Free a geometry's arrays (vertices, normals, uvs, colours, indices,
+	 * skin data) once it is on the GPU, so the GPU copy is the only one:
+	 * for large meshes the game never reads again, such as terrain chunks.
+	 * Uploads it first if it hasn't been drawn yet, and keeps its bounding
+	 * box for culling and pointer events.
+	 *
+	 * Nothing can rebuild the mesh afterwards: generate LOD levels first
+	 * (call lod() before this), releaseGeometry() frees it for good, and
+	 * triangle picking, raycasts, projected decals and physics mesh shapes
+	 * skip it. Returns false if the geometry couldn't be uploaded.
+	 * @example #Keep only the GPU copy of a terrain chunk
+	 *     chunk.geometry(chunkMesh);
+	 *     renderer.discardGeometryArrays(chunkMesh);
+	 */
+	discardGeometryArrays(geometryData: IgeGeometryData3d): boolean {
+		if (geometryData.gpuOnly) return true;
+		if (!this._getGeometry(geometryData)) return false;
+
+		const vertices = geometryData.vertices;
+		if (!geometryData.boundingBox && vertices && vertices.length >= 3) {
+			const min: [number, number, number] = [Infinity, Infinity, Infinity];
+			const max: [number, number, number] = [-Infinity, -Infinity, -Infinity];
+			for (let i = 0; i + 2 < vertices.length; i += 3) {
+				for (let k = 0; k < 3; k++) {
+					if (vertices[i + k] < min[k]) min[k] = vertices[i + k];
+					if (vertices[i + k] > max[k]) max[k] = vertices[i + k];
+				}
+			}
+			geometryData.boundingBox = { min, max };
+		}
+
+		delete geometryData.vertices;
+		delete geometryData.normals;
+		delete geometryData.uvs;
+		delete geometryData.tangents;
+		delete geometryData.colors;
+		delete geometryData.indices;
+		delete geometryData.boneWeights;
+		delete geometryData.boneIndices;
+		geometryData.gpuOnly = true;
+		return true;
+	}
+
+	/**
 	 * Free the GPU copy of a texture (an IgeTexture, or the id of a model
 	 * texture). IgeTexture.destroy() does this automatically. A texture
 	 * that is still used is uploaded again when next drawn.
@@ -1258,7 +1302,7 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 		if (!ray) return false;
 
 		const camera = viewport.camera;
-		const isSprite = !entity._modelParts && !entity._geometryData?.vertices && !!entity._texture;
+		const isSprite = !entity._modelParts && !entity._geometryData?.vertices && !entity._geometryData?.gpuOnly && !!entity._texture;
 		const flat2d = !!(camera._up && camera._up.y < 0);
 
 		if (isSprite && !flat2d && entity._billboardMode !== 0) {
@@ -1590,7 +1634,7 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 			data.decals.push(obj as unknown as IgeDecalSystem3d);
 		} else if (parts && parts.length > 0) {
 			this._addModelParts(entity, parts, data);
-		} else if (geometryData && geometryData.vertices) {
+		} else if (geometryData && (geometryData.vertices || geometryData.gpuOnly)) {
 			// Plain geometry LOD applies only to the geometry it was made for
 			const lod = entity._modelLod;
 			const useLod = !!lod && lod.source === geometryData;
@@ -1876,6 +1920,10 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 
 		const geometryId = geometryData.id || "unknown";
 		let geometry = this._geometryManager.getGeometry(geometryId);
+		if (!geometry && geometryData.gpuOnly) {
+			// Arrays discarded and the GPU copy released: nothing left to draw
+			return;
+		}
 		if (!geometry) {
 			geometry = this._geometryManager.createGeometryFromData(geometryId, geometryData) || undefined;
 			if (!geometry) return;

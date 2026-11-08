@@ -26,6 +26,12 @@ export interface IgeGeometryData3d extends IgeAbstractData3d {
 	skinIndex?: number; // Reference to GLTF skin index
 	skeletonId?: string; // Reference to skeleton data ID
 
+	/**
+	 * Set by IgeWebGlRenderer.discardGeometryArrays(): the vertex arrays
+	 * were freed after upload and the renderer draws its GPU copy.
+	 */
+	gpuOnly?: boolean;
+
 	// Bounding information
 	boundingBox?: {
 		min: [number, number, number];

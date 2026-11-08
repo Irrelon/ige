@@ -35,6 +35,7 @@ import { findBoneIndex, retargetClips } from "@/engine/webgl/IgeAnimationRetarge
 import type { IgeSkeletonData } from "@/types/IgeSkeletonData";
 import type { IgeAnimationClipData } from "@/types/IgeAnimationClipData";
 import type { IgeMaterialData } from "@/types/IgeMaterialData";
+import type { IgeGeometryData3d } from "@/types/IgeGeometryData3d";
 import type { IgeModelLod, IgeModelLodLevel } from "@/engine/webgl/IgeModelParts";
 import { createSkeletonInstance, getGeometryLod, getModelLod, getModelParts } from "@/engine/webgl/IgeModelParts";
 import { IgeSkeletalAnimationComponent } from "@/engine/components/IgeSkeletalAnimationComponent";
@@ -1095,6 +1096,28 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 		} else {
 			this._quaternion = null;
 		}
+		return this;
+	}
+
+	/**
+	 * Gets / sets the mesh the WebGL renderer draws for this entity (its
+	 * _geometryData), e.g. a terrain chunk or a procedurally built shape.
+	 * Unlike assigning _geometryData, setting it here tells
+	 * render-on-demand to draw a new frame. The renderer uploads a geometry
+	 * once per id, so give a rebuilt mesh a new id (and release the old one
+	 * with renderer.releaseGeometry()).
+	 * @example #Swap a chunk to its low-detail mesh
+	 *     chunk.geometry(farMesh);
+	 */
+	geometry (data: IgeGeometryData3d | null): this;
+	geometry (): IgeGeometryData3d | null;
+	geometry (data?: IgeGeometryData3d | null) {
+		if (data === undefined) {
+			return this._geometryData;
+		}
+
+		if (data !== this._geometryData) this._renderChanged();
+		this._geometryData = data;
 		return this;
 	}
 
