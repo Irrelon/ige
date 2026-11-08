@@ -29,8 +29,19 @@ window.ige = ige;
  * - Floating damage numbers placed with renderer.worldToScreen()
  * - Gamepad input for 4 players (IgeGamePadComponent) with keyboard fallback
  *
- * URL options: ?zombies=200 to change the horde size.
+ * - Generated level-of-detail meshes for the horde (IgeEntity.lod())
+ *
+ * URL options: ?zombies=200 to change the horde size, ?lod=0 to draw every
+ * zombie at full detail.
  */
+
+// Zombies switch to generated lower-detail meshes while small on screen.
+// Sizes are bounding-sphere diameters in device pixels; players always draw
+// at full detail.
+const ZOMBIE_LOD = [
+	{ screenSize: 220, ratio: 0.5 },
+	{ screenSize: 120, ratio: 0.25 }
+];
 
 // Player configuration
 const PLAYER_CONFIGS = [
@@ -207,6 +218,10 @@ export class Client extends IgeBaseClass implements IgeCanInit {
 		}
 	}
 
+	lodFromUrl (): boolean {
+		return new URLSearchParams(window.location.search).get("lod") !== "0";
+	}
+
 	zombieCountFromUrl (): number {
 		const value = Number(new URLSearchParams(window.location.search).get("zombies"));
 		return Number.isFinite(value) && value > 0 ? Math.min(1000, Math.floor(value)) : 120;
@@ -327,11 +342,12 @@ export class Client extends IgeBaseClass implements IgeCanInit {
 	createZombies (count: number) {
 		if (!this.scene || !this.characterModel) return;
 		const walkClip = this.characterModel.animations?.[0]?.name;
+		const lod = this.lodFromUrl() ? ZOMBIE_LOD : undefined;
 
 		for (let i = 0; i < count; i++) {
 			const entity = new IgeEntity()
 				.id(`zombie_${i}`)
-				.model(this.characterModel, { animation: walkClip })
+				.model(this.characterModel, { animation: walkClip, lod })
 				.scaleTo(CHARACTER_SCALE, CHARACTER_SCALE, CHARACTER_SCALE)
 				.mount(this.scene);
 
@@ -890,6 +906,9 @@ export class Client extends IgeBaseClass implements IgeCanInit {
 		const drawEl = document.getElementById("drawCalls");
 		const stats = this.renderer?.stats();
 		if (drawEl && stats) drawEl.textContent = `${stats.drawCalls + stats.instancedDrawCalls} (${stats.instances} instanced)`;
+
+		const trianglesEl = document.getElementById("triangles");
+		if (trianglesEl && stats) trianglesEl.textContent = `${(stats.triangles / 1000).toFixed(0)}k (${stats.lodItems} LOD)`;
 	}
 
 	hideLoadingScreen () {
