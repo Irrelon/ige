@@ -5,12 +5,13 @@ import { IgeWebGlRenderer } from "../../engine/core/IgeWebGlRenderer.js"
 import { IgeViewport } from "../../engine/core/IgeViewport.js"
 import { IgePoint3d } from "../../engine/core/IgePoint3d.js"
 import { ige } from "../../engine/instance.js"
-import { IgeBehaviourType } from "../../enums/index.js"
+import { IgeBehaviourType } from "../../enums/index.js";
 import { IgeAmbientLight, IgeDirectionalLight, IgePointLight } from "../../engine/webgl/IgeWebGlLight.js"
 import { igeGltfLoader } from "../../engine/webgl/IgeGltfLoader.js"
 import { IgeParticleSystem3d } from "../../engine/webgl/IgeParticleSystem3d.js"
+import { IgeDecalSystem3d } from "../../engine/webgl/IgeDecalSystem3d.js"
 import { IgeGamePadAxis, IgeGamePadButton, IgeGamePadComponent } from "../../engine/components/IgeGamePadComponent.js"
-import { createHospitalLobby, resolveLevelCollision, ARENA } from "./level.js"
+import { createBoxGeometry, createHospitalLobby, resolveLevelCollision, ARENA } from "./level.js"
 // @ts-ignore
 window.ige = ige;
 /**
@@ -27,6 +28,8 @@ window.ige = ige;
  * - Gamepad input for 4 players (IgeGamePadComponent) with keyboard fallback
  *
  * - Generated level-of-detail meshes for the horde (IgeEntity.lod())
+ * - Swords that follow each player's hand bone (IgeEntity.attachToBone())
+ * - Blood stains on the floor (IgeDecalSystem3d)
  *
  * URL options: ?zombies=200 to change the horde size, ?lod=0 to draw every
  * zombie at full detail.
@@ -38,6 +41,10 @@ const ZOMBIE_LOD = [
     { screenSize: 220, ratio: 0.5 },
     { screenSize: 120, ratio: 0.25 }
 ];
+// The character model's right wrist bone. Its local -Z runs along the
+// forearm and +Y points forward while the arm hangs down, so a blade along
+// +Y reads as a sword held out in front.
+const HAND_BONE = "Skeleton_arm_joint_R__3_";
 // Player configuration
 const PLAYER_CONFIGS = [
     { color: { r: 0.3, g: 0.5, b: 1.0 }, name: "Blue", startPos: { x: -150, z: 100 } },
@@ -87,6 +94,7 @@ export class Client extends IgeBaseClass {
     characterModel;
     obstacles = [];
     bloodFx;
+    bloodStains;
     slashFx;
     damageNumbers = [];
     fxLayer;
@@ -108,6 +116,9 @@ export class Client extends IgeBaseClass {
             // Four views on a high-DPI screen is a lot of pixels; 1.5x keeps
             // the image sharp while staying comfortably inside the GPU budget
             this.renderer.maxPixelRatio(1.5);
+            // Every mesh here is closed, so skip the triangles facing away
+            // from the camera (about a fifth less GPU time)
+            this.renderer.backFaceCulling(true);
             ige.engine.renderer(this.renderer);
             await this.renderer.setup();
             this.renderer.createFrontBuffer(true);
@@ -204,6 +215,10 @@ export class Client extends IgeBaseClass {
             endColor: { r: 0.25, g: 0, b: 0, a: 0 }
         });
         this.bloodFx.id("bloodFx").mount(this.scene);
+        // Stains left on the floor. Multiply blending darkens the floor, so
+        // stains are only visible where the floor itself is lit.
+        this.bloodStains = new IgeDecalSystem3d({ maxDecals: 400, lifetime: 40, fadeTime: 6 });
+        this.bloodStains.id("bloodStains").mount(this.scene);
         // Bright additive sparks for weapon swings
         this.slashFx = new IgeParticleSystem3d({
             maxParticles: 600,
@@ -234,6 +249,7 @@ export class Client extends IgeBaseClass {
                 .mount(this.scene);
             // Heroes animate at full frame rate rather than from the crowd cache
             entity.skeletalAnimation()?.poseCache(false);
+            this.createSword(entity);
             // Each player carries a lantern so they can see in the dark
             const lantern = new IgePointLight();
             lantern.id(`lantern_${i}`);
@@ -294,6 +310,35 @@ export class Client extends IgeBaseClass {
             this.placeZombieAwayFromPlayers(zombie);
             this.zombies.push(zombie);
         }
+    }
+    swordParts;
+    /**
+     * Put a sword in a character's right hand. The sword root follows the
+     * hand bone; its parts are ordinary children of it. Sizes are in the
+     * character's model units (it is about 1.2 units tall), because the
+     * sword inherits the character's scale. Every player shares the same
+     * geometry, so the four swords draw as instanced batches.
+     */
+    createSword(owner) {
+        const parts = this.swordParts || (this.swordParts = {
+            blade: createBoxGeometry(0.045, 0.5, 0.012, "swordBlade"),
+            guard: createBoxGeometry(0.14, 0.022, 0.035, "swordGuard"),
+            grip: createBoxGeometry(0.026, 0.12, 0.026, "swordGrip")
+        });
+        const sword = new IgeEntity()
+            .id(`${owner.id()}_sword`)
+            .mount(owner)
+            .attachToBone(HAND_BONE)
+            .translateTo(0, 0, -0.06); // from the wrist into the fist
+        const part = (geometry, y, color, metallic, roughness) => {
+            const entity = new IgeEntity().translateTo(0, y, 0).mount(sword);
+            entity._geometryData = geometry;
+            entity._materialData = { color: { ...color, a: 1 }, metallic, roughness };
+            return entity;
+        };
+        part(parts.blade, 0.28, { r: 0.78, g: 0.8, b: 0.84 }, 0.9, 0.25);
+        part(parts.guard, 0.025, { r: 0.35, g: 0.28, b: 0.15 }, 0.6, 0.4);
+        part(parts.grip, -0.04, { r: 0.22, g: 0.14, b: 0.08 }, 0.0, 0.8);
     }
     placeZombieAwayFromPlayers(zombie) {
         for (let attempt = 0; attempt < 30; attempt++) {
@@ -420,7 +465,10 @@ export class Client extends IgeBaseClass {
         const px = player.entity._translate.x;
         const pz = player.entity._translate.z;
         // Swing sparks in front of the player
-        this.slashFx?.burst(18, { x: px + player.facingX * 60, y: 110, z: pz + player.facingZ * 60 }, {
+        // The slash starts at the sword hand
+        const hand = player.entity.bonePosition(HAND_BONE);
+        const slashY = hand ? hand.y + 10 : 110;
+        this.slashFx?.burst(18, { x: px + player.facingX * 60, y: slashY, z: pz + player.facingZ * 60 }, {
             x: player.facingX,
             y: 0.2,
             z: player.facingZ
@@ -443,6 +491,10 @@ export class Client extends IgeBaseClass {
             this.applyZombieMaterial(zombie);
             const hitPoint = { x: zombie.entity._translate.x, y: 110, z: zombie.entity._translate.z };
             this.bloodFx?.burst(24, hitPoint, { x: dx / dist, y: 0.6, z: dz / dist });
+            this.bloodStains?.add(hitPoint.x + (dx / dist) * 25, hitPoint.z + (dz / dist) * 25, {
+                size: 30 + Math.random() * 25,
+                opacity: 0.6 + Math.random() * 0.3
+            });
             this.spawnDamageNumber(player.index, hitPoint.x, 190, hitPoint.z, damage);
             if (zombie.health <= 0) {
                 this.killZombie(zombie);
@@ -483,6 +535,7 @@ export class Client extends IgeBaseClass {
         zombie.respawnTimer = ZOMBIE_RESPAWN_TIME;
         const t = zombie.entity._translate;
         this.bloodFx?.burst(70, { x: t.x, y: 80, z: t.z }, { x: 0, y: 1, z: 0 });
+        this.bloodStains?.add(t.x, t.z, { size: 80 + Math.random() * 40, color: { r: 0.3, g: 0.01, b: 0.01 } });
         zombie.entity.hide();
     }
     rebuildGrid() {
@@ -594,6 +647,7 @@ export class Client extends IgeBaseClass {
             player.entity.hide();
             player.lantern.intensity(0);
             this.bloodFx?.burst(80, { x: t.x, y: 90, z: t.z }, { x: 0, y: 1, z: 0 });
+            this.bloodStains?.add(t.x, t.z, { size: 110 });
         }
     }
     /** Player tint, or a red hit flash via the emissive override. */

@@ -2,6 +2,8 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getModelParts = getModelParts;
 exports.getModelLod = getModelLod;
+exports.getGeometryLod = getGeometryLod;
+exports.takeGeneratedLods = takeGeneratedLods;
 exports.createSkeletonInstance = createSkeletonInstance;
 exports.multiplyMat4 = multiplyMat4;
 const IgeMeshSimplifier_1 = require("./IgeMeshSimplifier.js");
@@ -97,6 +99,40 @@ function getModelLod(model, levels) {
     }
     return lod.screenSizes.length ? lod : undefined;
 }
+/**
+ * Build level-of-detail geometry for a single plain geometry (an entity
+ * drawn from _geometryData). Levels use `ratio` (generated, cached per
+ * geometry) or `geometry` (authored).
+ */
+function getGeometryLod(geometry, levels) {
+    const sorted = [...levels].sort((a, b) => b.screenSize - a.screenSize);
+    const lod = { screenSizes: [], partGeometries: [[]], source: geometry };
+    for (const level of sorted) {
+        let lower;
+        if (level.geometry) {
+            lower = level.geometry;
+        }
+        else if (level.ratio !== undefined && level.ratio < 1) {
+            lower = getSimplifiedGeometry(geometry, Math.max(0, level.ratio), level.maxError);
+        }
+        if (!lower)
+            continue;
+        lod.screenSizes.push(level.screenSize);
+        lod.partGeometries[0].push(lower);
+    }
+    return lod.screenSizes.length ? lod : undefined;
+}
+/**
+ * Forget the generated LOD meshes of a geometry and return them, so their
+ * GPU buffers can be released along with it.
+ */
+function takeGeneratedLods(geometry) {
+    const byKey = lodGeometryCache.get(geometry);
+    if (!byKey)
+        return [];
+    lodGeometryCache.delete(geometry);
+    return [...byKey.values()];
+}
 function getSimplifiedGeometry(geometry, ratio, maxError) {
     let byKey = lodGeometryCache.get(geometry);
     if (!byKey) {
@@ -137,7 +173,7 @@ function createSkeletonInstance(data) {
  * Convert a loader material into plain material data the renderer reads.
  */
 function toMaterialData(model, mat, index) {
-    var _a, _b, _c, _d, _e, _f;
+    var _a, _b, _c, _d, _e, _f, _g;
     const m = mat;
     const color = (_a = m.color) === null || _a === void 0 ? void 0 : _a.call(m);
     const emissive = (_b = m.emissiveColor) === null || _b === void 0 ? void 0 : _b.call(m);
@@ -146,11 +182,12 @@ function toMaterialData(model, mat, index) {
         color: color ? { r: color.r, g: color.g, b: color.b, a: color.a } : { r: 1, g: 1, b: 1, a: 1 },
         metallic: typeof m.metallic === "function" ? m.metallic() : 0,
         roughness: typeof m.roughness === "function" ? m.roughness() : 0.5,
-        transparent: ((_d = m.blendMode) === null || _d === void 0 ? void 0 : _d.call(m)) === "transparent"
+        transparent: ((_d = m.blendMode) === null || _d === void 0 ? void 0 : _d.call(m)) === "transparent",
+        doubleSided: ((_e = m.cullMode) === null || _e === void 0 ? void 0 : _e.call(m)) === "none"
     };
     if (emissive && (emissive.r > 0 || emissive.g > 0 || emissive.b > 0)) {
         data.emissiveColor = { r: emissive.r, g: emissive.g, b: emissive.b };
-        data.emissiveIntensity = (_f = (_e = m.emissiveIntensity) === null || _e === void 0 ? void 0 : _e.call(m)) !== null && _f !== void 0 ? _f : 1;
+        data.emissiveIntensity = (_g = (_f = m.emissiveIntensity) === null || _f === void 0 ? void 0 : _f.call(m)) !== null && _g !== void 0 ? _g : 1;
     }
     if (blob) {
         data.textureId = `${model.id}_material${index}_baseColor`;

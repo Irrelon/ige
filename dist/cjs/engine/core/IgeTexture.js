@@ -748,6 +748,7 @@ class IgeTexture extends IgeAsset_1.IgeAsset {
      * Destroys the item.
      */
     destroy() {
+        var _a, _b, _c;
         delete this._eventListeners;
         // Remove us from the image store reference array
         if (this.image && this.image._igeTextures) {
@@ -757,6 +758,9 @@ class IgeTexture extends IgeAsset_1.IgeAsset {
         const id = this.id();
         if (id) {
             instance_1.ige.textures.remove(id);
+            // Free its GPU copy, if a renderer made one
+            const renderer = (_b = (_a = instance_1.ige.engine) === null || _a === void 0 ? void 0 : _a.renderer) === null || _b === void 0 ? void 0 : _b.call(_a);
+            (_c = renderer === null || renderer === void 0 ? void 0 : renderer.releaseTexture) === null || _c === void 0 ? void 0 : _c.call(renderer, id);
         }
         delete this.image;
         delete this.script;

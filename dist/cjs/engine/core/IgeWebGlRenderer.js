@@ -27,6 +27,9 @@ const shaderLibrary_1 = require("../shaders/webgl/shaderLibrary.js");
 const IgeMatrix4_1 = require("./IgeMatrix4.js");
 const IgeFrustum_1 = require("../webgl/IgeFrustum.js");
 const IgeWebGlInstancing_1 = require("../webgl/IgeWebGlInstancing.js");
+const IgeDecalSystem3d_1 = require("../webgl/IgeDecalSystem3d.js");
+const IgeModelParts_1 = require("../webgl/IgeModelParts.js");
+const IgeHeightfieldRay_1 = require("../webgl/IgeHeightfieldRay.js");
 const IgeSkeletonData_1 = require("../../types/IgeSkeletonData.js");
 /** Texture unit layout used by the lit shaders. */
 const SHADOW_TEXTURE_UNIT = 1;
@@ -131,6 +134,7 @@ class IgeWebGlRenderer extends IgeBaseRenderer_1.IgeBaseRenderer {
         this._pendingBlobTextures = new Set();
         this._particleBuffers = new Map();
         this._defaultParticleTexture = null;
+        this._defaultDecalTexture = null;
         this._lightFrustum = new IgeFrustum_1.IgeFrustum();
         this._lightFrustumMatrix = new IgeMatrix4_1.IgeMatrix4();
         // GPU instancing (WebGL 2 only)
@@ -156,6 +160,8 @@ class IgeWebGlRenderer extends IgeBaseRenderer_1.IgeBaseRenderer {
         };
         // Multiplies every on-screen size used to pick a level of detail
         this._lodBias = 1;
+        // Cull back faces of opaque meshes (off by default, see backFaceCulling())
+        this._backFaceCulling = false;
         // When true, the WebGL drawing buffer is preserved after compositing,
         // allowing gl.readPixels() to work after a frame is rendered.
         // Must be set before createFrontBuffer() is called.
@@ -426,6 +432,63 @@ class IgeWebGlRenderer extends IgeBaseRenderer_1.IgeBaseRenderer {
         this._instancingEnabled = val;
         return this;
     }
+    /**
+     * Free the GPU buffers of a geometry, e.g. a terrain chunk that was
+     * rebuilt or a level that was unloaded, along with any LOD meshes
+     * generated from it. Pass the geometry data or its id. If an entity
+     * still draws the geometry it is simply uploaded again on its next
+     * frame, so releasing too early costs time but doesn't break anything.
+     */
+    releaseGeometry(geometry) {
+        if (!this._geometryManager)
+            return this;
+        if (typeof geometry === "string") {
+            this._geometryManager.deleteGeometry(geometry);
+            return this;
+        }
+        this._geometryManager.deleteGeometry(geometry.id);
+        for (const lod of (0, IgeModelParts_1.takeGeneratedLods)(geometry)) {
+            this._geometryManager.deleteGeometry(lod.id);
+        }
+        return this;
+    }
+    /**
+     * Free the GPU copy of a texture (an IgeTexture, or the id of a model
+     * texture). IgeTexture.destroy() does this automatically. A texture
+     * that is still used is uploaded again when next drawn.
+     */
+    releaseTexture(texture) {
+        const id = typeof texture === "string" ? texture : texture.id();
+        if (!id || !this._textureManager)
+            return this;
+        this._textureManager.deleteTexture(id);
+        this._pendingBlobTextures.delete(id);
+        return this;
+    }
+    backFaceCulling(val) {
+        if (val === undefined) {
+            return this._backFaceCulling;
+        }
+        this._backFaceCulling = val;
+        return this;
+    }
+    /**
+     * Find where a screen point's ray first meets a heightfield, for
+     * picking on uneven terrain (screenToGround() only meets a flat plane).
+     * The ray is sampled every `step` world units (horizontally) through
+     * the height band [minHeight, maxHeight], then the hit is refined by
+     * bisection, so `step` only needs to be small enough not to jump over
+     * narrow peaks. Returns null if the ray misses the band or the ground.
+     * @param heightAt Ground height at a world X/Z position.
+     * @example #Pick a hex tile on hilly terrain
+     *     const hit = renderer.screenToHeightfield(viewport, x, y, (wx, wz) => terrain.heightAt(wx, wz), {
+     *         minHeight: 0, maxHeight: 120, step: 4
+     *     });
+     */
+    screenToHeightfield(viewport, screenX, screenY, heightAt, options) {
+        const ray = this.screenToWorldRay(viewport, screenX, screenY);
+        return ray ? (0, IgeHeightfieldRay_1.intersectHeightfield)(ray, heightAt, options) : null;
+    }
     lodBias(val) {
         if (val === undefined) {
             return this._lodBias;
@@ -685,7 +748,7 @@ class IgeWebGlRenderer extends IgeBaseRenderer_1.IgeBaseRenderer {
                 continue;
             let data = this._sceneData.get(scene);
             if (!data) {
-                data = { frameId: -1, models: [], sprites: [], particles: [] };
+                data = { frameId: -1, models: [], sprites: [], particles: [], decals: [] };
                 this._sceneData.set(scene, data);
             }
             if (data.frameId !== this._frameId) {
@@ -693,9 +756,13 @@ class IgeWebGlRenderer extends IgeBaseRenderer_1.IgeBaseRenderer {
                 data.models.length = 0;
                 data.sprites.length = 0;
                 data.particles.length = 0;
+                data.decals.length = 0;
                 this._collectRenderables(scene, data);
                 for (let p = 0; p < data.particles.length; p++) {
-                    this._uploadParticleSystem(data.particles[p]);
+                    this._uploadInstanceData(data.particles[p], PARTICLE_FLOATS);
+                }
+                for (let d = 0; d < data.decals.length; d++) {
+                    this._uploadInstanceData(data.decals[d], IgeDecalSystem3d_1.DECAL_INSTANCE_FLOATS);
                 }
                 stats.items += data.models.length + data.sprites.length;
             }
@@ -741,11 +808,17 @@ class IgeWebGlRenderer extends IgeBaseRenderer_1.IgeBaseRenderer {
         if (obj._isParticleSystem3d) {
             data.particles.push(obj);
         }
+        else if (obj._isDecalSystem3d) {
+            data.decals.push(obj);
+        }
         else if (parts && parts.length > 0) {
             this._addModelParts(entity, parts, data);
         }
         else if (geometryData && geometryData.vertices) {
-            const item = this._addModelItem(entity, geometryData, entity._materialData, null, (_a = entity._worldMatrix4) === null || _a === void 0 ? void 0 : _a.matrix);
+            // Plain geometry LOD applies only to the geometry it was made for
+            const lod = entity._modelLod;
+            const useLod = !!lod && lod.source === geometryData;
+            const item = this._addModelItem(entity, geometryData, entity._materialData, null, (_a = entity._worldMatrix4) === null || _a === void 0 ? void 0 : _a.matrix, useLod ? lod.partGeometries[0] : null, useLod ? lod.screenSizes : null);
             if (item)
                 data.models.push(item);
         }
@@ -770,7 +843,8 @@ class IgeWebGlRenderer extends IgeBaseRenderer_1.IgeBaseRenderer {
         const world = (_a = entity._worldMatrix4) === null || _a === void 0 ? void 0 : _a.matrix;
         if (!world)
             return;
-        const lod = entity._modelLod && entity._modelLod.partGeometries.length === parts.length ? entity._modelLod : undefined;
+        const modelLod = entity._modelLod;
+        const lod = modelLod && !modelLod.source && modelLod.partGeometries.length === parts.length ? modelLod : undefined;
         let matrices = entity._modelPartMatrices;
         if (!matrices || matrices.length !== parts.length) {
             matrices = entity._modelPartMatrices = parts.map((part) => (part.matrix ? new Float32Array(16) : world));
@@ -811,7 +885,7 @@ class IgeWebGlRenderer extends IgeBaseRenderer_1.IgeBaseRenderer {
      * @param lodSizes Screen sizes below which each lower level is used.
      */
     _addModelItem(entity, geometryData, materialData, overrideData, worldMatrix, lodGeometryData, lodSizes) {
-        var _a, _b;
+        var _a, _b, _c;
         if (overrideData === void 0) { overrideData = null; }
         if (worldMatrix === void 0) { worldMatrix = (_a = entity._worldMatrix4) === null || _a === void 0 ? void 0 : _a.matrix; }
         if (lodGeometryData === void 0) { lodGeometryData = null; }
@@ -837,6 +911,7 @@ class IgeWebGlRenderer extends IgeBaseRenderer_1.IgeBaseRenderer {
                 textureKey: "",
                 boneRow: -1,
                 transparent: false,
+                doubleSided: false,
                 castShadow: true,
                 worldMatrix,
                 cx: 0, cy: 0, cz: 0, radius: -1,
@@ -890,13 +965,14 @@ class IgeWebGlRenderer extends IgeBaseRenderer_1.IgeBaseRenderer {
         }
         item.transparent = mat.opacity < 1 || mat.a < 1 || !!(materialData === null || materialData === void 0 ? void 0 : materialData.transparent) || !!(overrideData === null || overrideData === void 0 ? void 0 : overrideData.transparent) ||
             !!(item.texture && item.texture._hasAlpha);
+        item.doubleSided = !!((_b = overrideData === null || overrideData === void 0 ? void 0 : overrideData.doubleSided) !== null && _b !== void 0 ? _b : materialData === null || materialData === void 0 ? void 0 : materialData.doubleSided);
         item.castShadow = !entity._noShadowCast && !item.transparent;
         // Skeleton: compute skin matrices once per frame (dirty-guarded) and
         // give each skeleton a bone palette row for instanced draws.
         item.skeleton = geometry.isSkinned ? entity._skeleton : undefined;
         item.boneRow = -1;
         if (item.skeleton) {
-            (_b = this._skeletonManager) === null || _b === void 0 ? void 0 : _b.updateSkeletonMatrices(item.skeleton);
+            (_c = this._skeletonManager) === null || _c === void 0 ? void 0 : _c.updateSkeletonMatrices(item.skeleton);
             if (this._bonePalette) {
                 let row = this._skeletonRows.get(item.skeleton);
                 if (row === undefined) {
@@ -928,7 +1004,9 @@ class IgeWebGlRenderer extends IgeBaseRenderer_1.IgeBaseRenderer {
             item.lodRadius = -1;
         }
         const skinned = item.skeleton ? "|s" : "";
-        item.batchKey = geometry.id + "|" + item.textureKey + skinned;
+        // Double-sided items batch separately so culling can be set per batch
+        const sided = item.doubleSided ? "|d" : "";
+        item.batchKey = geometry.id + "|" + item.textureKey + skinned + sided;
         item.depthKey = geometry.id + skinned;
         // Level-of-detail geometry (index 0 is the full mesh)
         item.lodSizes = null;
@@ -947,7 +1025,7 @@ class IgeWebGlRenderer extends IgeBaseRenderer_1.IgeBaseRenderer {
                 if (!lodGeometry)
                     break;
                 geometries.push(lodGeometry);
-                batchKeys.push(lodGeometry.id + "|" + item.textureKey + skinned);
+                batchKeys.push(lodGeometry.id + "|" + item.textureKey + skinned + sided);
                 depthKeys.push(lodGeometry.id + skinned);
             }
             // LOD needs a size to measure
@@ -1197,6 +1275,9 @@ class IgeWebGlRenderer extends IgeBaseRenderer_1.IgeBaseRenderer {
         this._stateManager.setBlendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
         this._renderSprites(opaqueSprites, matrices);
         this._renderModelBatches(batcher.batches, matrices);
+        // Ground decals go on top of the opaque ground, under everything
+        // transparent
+        this._renderDecalSystems(data.decals, matrices);
         // Transparent pass (back to front, no depth writes)
         this._stateManager.setDepthWrite(false);
         if (transparentSprites.length > 1) {
@@ -1242,8 +1323,7 @@ class IgeWebGlRenderer extends IgeBaseRenderer_1.IgeBaseRenderer {
         this._instanceBuffer.bind(program);
         if (geometry.indexBuffer && geometry.indexCount > 0) {
             // The instance buffer rebinds ARRAY_BUFFER only, the index buffer stays bound
-            const indexType = geometry.indexData instanceof Uint32Array ? gl.UNSIGNED_INT : gl.UNSIGNED_SHORT;
-            gl.drawElementsInstanced(geometry.drawMode, geometry.indexCount, indexType, 0, count);
+            gl.drawElementsInstanced(geometry.drawMode, geometry.indexCount, geometry.indexType, 0, count);
         }
         else if (geometry.vertexCount > 0) {
             gl.drawArraysInstanced(geometry.drawMode, 0, geometry.vertexCount, count);
@@ -1528,6 +1608,12 @@ class IgeWebGlRenderer extends IgeBaseRenderer_1.IgeBaseRenderer {
             }
             this._geometryManager.bindGeometry(batch.geometry, program);
             this._bindBaseTexture(batch.blobTextureId, batch.texture);
+            program.setUniform1i("u_hasVertexColors", batch.geometry.hasVertexColors ? 1 : 0);
+            if (this._backFaceCulling) {
+                // Shadow passes cull front faces with raw GL calls
+                this._stateManager.setCullFaceMode(this._canvasContext.BACK);
+                this._stateManager.setCullFace(!batch.items[0].doubleSided);
+            }
             if (instanced) {
                 if (batch.skinned) {
                     this._bindBonePalette(program);
@@ -1548,6 +1634,8 @@ class IgeWebGlRenderer extends IgeBaseRenderer_1.IgeBaseRenderer {
             }
             this._geometryManager.unbindGeometry(batch.geometry, program);
         }
+        // Everything drawn after opaque meshes is double-sided
+        this._stateManager.setCullFace(false);
     }
     /**
      * Render transparent model items one at a time in back-to-front order.
@@ -1571,6 +1659,7 @@ class IgeWebGlRenderer extends IgeBaseRenderer_1.IgeBaseRenderer {
             const geometry = item.drawGeometry;
             this._geometryManager.bindGeometry(geometry, program);
             this._bindBaseTexture(item.blobTextureId, item.texture);
+            program.setUniform1i("u_hasVertexColors", geometry.hasVertexColors ? 1 : 0);
             this._applyItemUniforms(program, item);
             if (skinned) {
                 this._uploadBoneUniforms(program, item);
@@ -1582,11 +1671,11 @@ class IgeWebGlRenderer extends IgeBaseRenderer_1.IgeBaseRenderer {
         }
     }
     /**
-     * Upload a particle system's packed render data to its own GPU buffer
-     * (once per frame, only when it changed). Buffers of systems that
-     * haven't been seen for a while are deleted.
+     * Upload a particle or decal system's packed render data to its own
+     * GPU buffer (once per frame, only when it changed). Buffers of systems
+     * that haven't been seen for a while are deleted.
      */
-    _uploadParticleSystem(system) {
+    _uploadInstanceData(system, floatsPerInstance) {
         const gl = this._canvasContext;
         if (!gl || !this._instanceBuffer)
             return;
@@ -1599,7 +1688,7 @@ class IgeWebGlRenderer extends IgeBaseRenderer_1.IgeBaseRenderer {
         const { data, count } = system.renderData();
         if (count > 0 && entry.version !== system._renderVersion) {
             gl.bindBuffer(gl.ARRAY_BUFFER, entry.buffer);
-            gl.bufferData(gl.ARRAY_BUFFER, data.subarray(0, count * PARTICLE_FLOATS), gl.STREAM_DRAW);
+            gl.bufferData(gl.ARRAY_BUFFER, data.subarray(0, count * floatsPerInstance), gl.STREAM_DRAW);
             entry.version = system._renderVersion;
         }
         // Periodically free buffers belonging to systems no longer rendered
@@ -1647,6 +1736,181 @@ class IgeWebGlRenderer extends IgeBaseRenderer_1.IgeBaseRenderer {
         (_a = this._stateManager) === null || _a === void 0 ? void 0 : _a.invalidateTextureBindings();
         this._defaultParticleTexture = texture;
         return texture;
+    }
+    /**
+     * The built-in decal texture: a 2x2 atlas of white splats (alpha is the
+     * shape) for IgeDecalSystem3d without a texture of its own. Generated
+     * from a fixed seed so every run looks the same.
+     */
+    _getDefaultDecalTexture() {
+        var _a;
+        if (this._defaultDecalTexture || !this._canvasContext) {
+            return this._defaultDecalTexture;
+        }
+        const cell = 128;
+        const canvas = document.createElement("canvas");
+        canvas.width = cell * 2;
+        canvas.height = cell * 2;
+        const ctx = canvas.getContext("2d");
+        if (!ctx)
+            return null;
+        let seed = 1337;
+        const random = () => {
+            seed = (seed * 16807) % 2147483647;
+            return seed / 2147483647;
+        };
+        const blob = (x, y, radius, alpha) => {
+            const gradient = ctx.createRadialGradient(x, y, 0, x, y, radius);
+            gradient.addColorStop(0, `rgba(255,255,255,${alpha})`);
+            gradient.addColorStop(0.85, `rgba(255,255,255,${alpha * 0.8})`);
+            gradient.addColorStop(1, "rgba(255,255,255,0)");
+            ctx.fillStyle = gradient;
+            ctx.beginPath();
+            ctx.arc(x, y, radius, 0, Math.PI * 2);
+            ctx.fill();
+        };
+        for (let c = 0; c < 4; c++) {
+            const cx = (c % 2) * cell + cell / 2;
+            const cy = Math.floor(c / 2) * cell + cell / 2;
+            const maxReach = cell / 2 - 6; // keep clear of neighbouring cells
+            // Main pool: overlapping lobes around the centre
+            const lobes = 5 + Math.floor(random() * 4);
+            for (let i = 0; i < lobes; i++) {
+                const angle = random() * Math.PI * 2;
+                const distance = random() * 14;
+                blob(cx + Math.cos(angle) * distance, cy + Math.sin(angle) * distance, 16 + random() * 14, 0.95);
+            }
+            // Splashes thrown outwards, getting smaller with distance
+            const drops = 8 + Math.floor(random() * 10);
+            for (let i = 0; i < drops; i++) {
+                const angle = random() * Math.PI * 2;
+                const distance = 26 + random() * (maxReach - 34);
+                const radius = Math.max(1.5, 7 - distance / 9) * (0.6 + random() * 0.6);
+                blob(cx + Math.cos(angle) * distance, cy + Math.sin(angle) * distance, radius, 0.9);
+            }
+        }
+        const gl = this._canvasContext;
+        const texture = gl.createTexture();
+        gl.bindTexture(gl.TEXTURE_2D, texture);
+        gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, 0);
+        gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, 0);
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, canvas);
+        gl.generateMipmap(gl.TEXTURE_2D);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+        (_a = this._stateManager) === null || _a === void 0 ? void 0 : _a.invalidateTextureBindings();
+        this._defaultDecalTexture = texture;
+        return texture;
+    }
+    /**
+     * Draw decal systems as quads lying on the ground: one instanced call
+     * per system (WebGL 2) or one call per decal (WebGL 1). Drawn after the
+     * opaque pass with depth testing, no depth writes and a polygon offset
+     * so they never fight with the ground they lie on.
+     */
+    _renderDecalSystems(systems, matrices) {
+        if (systems.length === 0 || !this._shaderManager || !this._geometryManager || !this._stateManager || !this._textureManager) {
+            return;
+        }
+        const gl = this._canvasContext;
+        const instanced = !!this._instanceBuffer;
+        const program = this._shaderManager.getProgram(instanced ? "decal_instanced" : "decal");
+        const quad = this._geometryManager.getSharedQuadGeometry();
+        if (!program || !quad)
+            return;
+        let programReady = false;
+        const stride = IgeDecalSystem3d_1.DECAL_INSTANCE_FLOATS * 4;
+        for (let s = 0; s < systems.length; s++) {
+            const system = systems[s];
+            const { data, count } = system.renderData();
+            if (count === 0)
+                continue;
+            const c = system._boundsCenter;
+            if (!matrices.frustum.containsSphereXYZ(c.x, c.y, c.z, system._boundsRadius))
+                continue;
+            system._lastRenderedFrame = this._frameId;
+            if (!programReady) {
+                program.use();
+                program.setUniformMatrix4fv("u_viewMatrix", matrices.view);
+                program.setUniformMatrix4fv("u_projectionMatrix", matrices.projection);
+                program.setUniform1i("u_texture", 0);
+                const cam = matrices.cameraPosition;
+                program.setUniform3f("u_cameraPosition", cam.x, cam.y, cam.z);
+                const fog = this._fog;
+                const fogMode = fog.mode === "linear" ? 1 : fog.mode === "exp2" ? 2 : 0;
+                program.setUniform1i("u_fogMode", fogMode);
+                program.setUniform1f("u_fogNear", fog.near);
+                program.setUniform1f("u_fogFar", fog.far);
+                program.setUniform1f("u_fogDensity", fog.density);
+                this._geometryManager.bindGeometry(quad, program);
+                this._stateManager.setDepthTest(true);
+                this._stateManager.setDepthWrite(false);
+                this._stateManager.setBlend(true);
+                gl.enable(gl.POLYGON_OFFSET_FILL);
+                gl.polygonOffset(-1, -4);
+                programReady = true;
+            }
+            const multiply = system._options.blending !== "normal";
+            program.setUniform1i("u_multiply", multiply ? 1 : 0);
+            if (multiply) {
+                this._stateManager.setBlendFunc(gl.DST_COLOR, gl.ZERO);
+            }
+            else {
+                this._stateManager.setBlendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+            }
+            program.setUniform1f("u_atlasGrid", system.atlasGrid());
+            const texture = system._options.texture
+                ? this._textureManager.getTextureForIgeTexture(system._options.texture)
+                : this._getDefaultDecalTexture();
+            this._stateManager.invalidateTextureBindings();
+            this._stateManager.bindTexture(texture || this._textureManager.getDefaultWhiteTexture(), 0);
+            if (instanced) {
+                const entry = this._particleBuffers.get(system);
+                if (!entry || !entry.buffer)
+                    continue;
+                const gl2 = gl;
+                const locations = [
+                    program.getAttributeLocation("a_decal"),
+                    program.getAttributeLocation("a_decalColor"),
+                    program.getAttributeLocation("a_decalShape")
+                ];
+                gl2.bindBuffer(gl2.ARRAY_BUFFER, entry.buffer);
+                for (let a = 0; a < locations.length; a++) {
+                    if (locations[a] < 0)
+                        continue;
+                    gl2.enableVertexAttribArray(locations[a]);
+                    gl2.vertexAttribPointer(locations[a], 4, gl2.FLOAT, false, stride, a * 16);
+                    gl2.vertexAttribDivisor(locations[a], 1);
+                }
+                gl2.drawElementsInstanced(quad.drawMode, quad.indexCount, quad.indexType, 0, count);
+                for (const location of locations) {
+                    if (location < 0)
+                        continue;
+                    gl2.vertexAttribDivisor(location, 0);
+                    gl2.disableVertexAttribArray(location);
+                }
+                this._stats.instancedDrawCalls++;
+                this._stats.instances += count;
+            }
+            else {
+                for (let i = 0; i < count; i++) {
+                    const o = i * IgeDecalSystem3d_1.DECAL_INSTANCE_FLOATS;
+                    program.setUniform4f("u_decal", data[o], data[o + 1], data[o + 2], data[o + 3]);
+                    program.setUniform4f("u_decalColor", data[o + 4], data[o + 5], data[o + 6], data[o + 7]);
+                    program.setUniform4f("u_decalShape", data[o + 8], data[o + 9], 0, 0);
+                    this._geometryManager.drawGeometry(quad);
+                    this._stats.drawCalls++;
+                }
+            }
+        }
+        if (programReady) {
+            gl.disable(gl.POLYGON_OFFSET_FILL);
+            this._geometryManager.unbindGeometry(quad, program);
+            this._stateManager.setBlendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+            this._stateManager.setDepthWrite(true);
+        }
     }
     /**
      * Draw particle systems as camera-facing quads: one instanced call per
@@ -1709,8 +1973,7 @@ class IgeWebGlRenderer extends IgeBaseRenderer_1.IgeBaseRenderer {
                 gl2.enableVertexAttribArray(colorLoc);
                 gl2.vertexAttribPointer(colorLoc, 4, gl2.FLOAT, false, PARTICLE_FLOATS * 4, 16);
                 gl2.vertexAttribDivisor(colorLoc, 1);
-                const indexType = quad.indexData instanceof Uint32Array ? gl2.UNSIGNED_INT : gl2.UNSIGNED_SHORT;
-                gl2.drawElementsInstanced(quad.drawMode, quad.indexCount, indexType, 0, count);
+                gl2.drawElementsInstanced(quad.drawMode, quad.indexCount, quad.indexType, 0, count);
                 gl2.vertexAttribDivisor(particleLoc, 0);
                 gl2.vertexAttribDivisor(colorLoc, 0);
                 gl2.disableVertexAttribArray(particleLoc);

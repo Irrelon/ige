@@ -51,6 +51,11 @@ export interface IgeModelLodLevel {
      * parts must use the same skeleton.
      */
     model?: IgeGltfModel;
+    /**
+     * For entities drawn from _geometryData (no model): an authored
+     * lower-detail geometry, e.g. a simpler version of a terrain chunk.
+     */
+    geometry?: IgeGeometryData3d;
 }
 /**
  * Levels of detail prepared for rendering.
@@ -60,6 +65,11 @@ export interface IgeModelLod {
     screenSizes: number[];
     /** For each model part, its geometry at each lower level (parallel to screenSizes). */
     partGeometries: IgeGeometryData3d[][];
+    /**
+     * For plain-geometry LOD: the geometry the levels belong to. The
+     * renderer ignores the levels once the entity's _geometryData changes.
+     */
+    source?: IgeGeometryData3d;
 }
 /**
  * Build the level-of-detail geometry for a model. Generated levels are
@@ -67,6 +77,17 @@ export interface IgeModelLod {
  * shares the same simplified meshes (and GPU buffers).
  */
 export declare function getModelLod(model: IgeGltfModel, levels: IgeModelLodLevel[]): IgeModelLod | undefined;
+/**
+ * Build level-of-detail geometry for a single plain geometry (an entity
+ * drawn from _geometryData). Levels use `ratio` (generated, cached per
+ * geometry) or `geometry` (authored).
+ */
+export declare function getGeometryLod(geometry: IgeGeometryData3d, levels: IgeModelLodLevel[]): IgeModelLod | undefined;
+/**
+ * Forget the generated LOD meshes of a geometry and return them, so their
+ * GPU buffers can be released along with it.
+ */
+export declare function takeGeneratedLods(geometry: IgeGeometryData3d): IgeGeometryData3d[];
 /**
  * Create a runtime skeleton (pose buffers) for skeleton data. Entities each
  * need their own instance; the static data is shared.

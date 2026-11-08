@@ -31,7 +31,7 @@ export declare class IgeMousePanComponent extends IgeComponent<IgeViewport> {
      * @param {IgeBounds=} rect
      * @return {*}
      */
-    limit(rect?: IgeBounds): IgeBounds | IgeViewport | undefined;
+    limit(rect?: IgeBounds): IgeViewport | IgeBounds | undefined;
     /**
      * Gets / sets the enabled flag. If set to true, pan
      * operations will be processed. If false, no panning will

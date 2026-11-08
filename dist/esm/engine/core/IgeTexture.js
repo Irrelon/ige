@@ -1,10 +1,10 @@
 import { IgeAsset } from "./IgeAsset.js"
-import { newCanvas } from "./IgeCanvas.js"
+import { newCanvas } from "./IgeCanvas.js";
 import { IgeDependencies } from "./IgeDependencies.js"
-import { ige } from "../instance.js"
+import { ige } from "../instance.js";
 import { arrPull } from "../utils/arrays.js"
-import { isClient, isServer } from "../utils/clientServer.js"
-import { IgeTextureRenderMode } from "../../enums/index.js"
+import { isClient, isServer } from "../utils/clientServer.js";
+import { IgeTextureRenderMode } from "../../enums/index.js";
 /**
  * Creates a new texture.
  */
@@ -738,6 +738,9 @@ export class IgeTexture extends IgeAsset {
         const id = this.id();
         if (id) {
             ige.textures.remove(id);
+            // Free its GPU copy, if a renderer made one
+            const renderer = ige.engine?.renderer?.();
+            renderer?.releaseTexture?.(id);
         }
         delete this.image;
         delete this.script;

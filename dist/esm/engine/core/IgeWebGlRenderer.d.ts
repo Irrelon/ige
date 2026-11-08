@@ -23,6 +23,8 @@ import { IgeWebGlBonePalette, IgeWebGlInstanceBuffer, IgeWebGlItemBatcher, type 
 import type { IgeGeometryData3d } from "../../types/IgeGeometryData3d.js"
 import type { IgeModelPart } from "../webgl/IgeModelParts.js"
 import type { IgeParticleSystem3d } from "../webgl/IgeParticleSystem3d.js";
+import type { IgeDecalSystem3d } from "../webgl/IgeDecalSystem3d.js"
+import type { IgeHeightfieldRayOptions } from "../webgl/IgeHeightfieldRay.js";
 import type { IgeMaterialData } from "../../types/IgeMaterialData.js"
 import type { IgeSkeleton } from "../../types/IgeSkeletonData.js"
 /**
@@ -72,6 +74,15 @@ interface IgeWebGlSceneFrameData {
     models: IgeWebGlRenderItem[];
     sprites: IgeEntity[];
     particles: IgeParticleSystem3d[];
+    decals: IgeDecalSystem3d[];
+}
+/** Anything that supplies packed per-instance data (particles, decals). */
+interface IgeWebGlInstanceSource {
+    renderData(): {
+        data: Float32Array;
+        count: number;
+    };
+    _renderVersion: number;
 }
 /**
  * Custom WebGL renderer for IGE supporting full 3D rendering.
@@ -130,12 +141,13 @@ export declare class IgeWebGlRenderer extends IgeBaseRenderer {
     protected _shadowShareThreshold: number;
     protected _sharedShadowFrame: number;
     protected _pendingBlobTextures: Set<string>;
-    protected _particleBuffers: Map<IgeParticleSystem3d, {
+    protected _particleBuffers: Map<IgeWebGlInstanceSource, {
         buffer: WebGLBuffer | null;
         version: number;
         lastFrame: number;
     }>;
     protected _defaultParticleTexture: WebGLTexture | null;
+    protected _defaultDecalTexture: WebGLTexture | null;
     protected _lightFrustum: IgeFrustum;
     protected _lightFrustumMatrix: IgeMatrix4;
     protected _instancingEnabled: boolean;
@@ -145,6 +157,7 @@ export declare class IgeWebGlRenderer extends IgeBaseRenderer {
     protected _fog: IgeWebGlFogSettings;
     protected _stats: IgeWebGlRenderStats;
     protected _lodBias: number;
+    protected _backFaceCulling: boolean;
     protected _preserveDrawingBuffer: boolean;
     /**
      * Initialize the WebGL renderer.
@@ -204,6 +217,49 @@ export declare class IgeWebGlRenderer extends IgeBaseRenderer {
      */
     instancing(): boolean;
     instancing(val: boolean): this;
+    /**
+     * Free the GPU buffers of a geometry, e.g. a terrain chunk that was
+     * rebuilt or a level that was unloaded, along with any LOD meshes
+     * generated from it. Pass the geometry data or its id. If an entity
+     * still draws the geometry it is simply uploaded again on its next
+     * frame, so releasing too early costs time but doesn't break anything.
+     */
+    releaseGeometry(geometry: IgeGeometryData3d | string): this;
+    /**
+     * Free the GPU copy of a texture (an IgeTexture, or the id of a model
+     * texture). IgeTexture.destroy() does this automatically. A texture
+     * that is still used is uploaded again when next drawn.
+     */
+    releaseTexture(texture: IgeTexture | string): this;
+    /**
+     * Gets / sets whether back faces of opaque meshes are culled in the
+     * main pass (default false). Culling skips triangles facing away from
+     * the camera, roughly halving the fragments shaded for closed meshes
+     * such as terrain and characters. Meshes must be wound counter-
+     * clockwise (glTF and IgePrimitiveGeometry are); materials with
+     * doubleSided: true are never culled. Entities with a negative scale
+     * (mirrored) turn inside out when culling is on.
+     */
+    backFaceCulling(): boolean;
+    backFaceCulling(val: boolean): this;
+    /**
+     * Find where a screen point's ray first meets a heightfield, for
+     * picking on uneven terrain (screenToGround() only meets a flat plane).
+     * The ray is sampled every `step` world units (horizontally) through
+     * the height band [minHeight, maxHeight], then the hit is refined by
+     * bisection, so `step` only needs to be small enough not to jump over
+     * narrow peaks. Returns null if the ray misses the band or the ground.
+     * @param heightAt Ground height at a world X/Z position.
+     * @example #Pick a hex tile on hilly terrain
+     *     const hit = renderer.screenToHeightfield(viewport, x, y, (wx, wz) => terrain.heightAt(wx, wz), {
+     *         minHeight: 0, maxHeight: 120, step: 4
+     *     });
+     */
+    screenToHeightfield(viewport: IgeViewport, screenX: number, screenY: number, heightAt: (x: number, z: number) => number, options: IgeHeightfieldRayOptions): {
+        x: number;
+        y: number;
+        z: number;
+    } | null;
     /**
      * Gets / sets the level-of-detail bias. On-screen sizes are multiplied
      * by it before an entity's LOD level is picked (see IgeEntity.lod()):
@@ -415,15 +471,28 @@ export declare class IgeWebGlRenderer extends IgeBaseRenderer {
      */
     protected _renderTransparentItems(items: IgeWebGlRenderItem[], matrices: IgeCameraMatrices): void;
     /**
-     * Upload a particle system's packed render data to its own GPU buffer
-     * (once per frame, only when it changed). Buffers of systems that
-     * haven't been seen for a while are deleted.
+     * Upload a particle or decal system's packed render data to its own
+     * GPU buffer (once per frame, only when it changed). Buffers of systems
+     * that haven't been seen for a while are deleted.
      */
-    protected _uploadParticleSystem(system: IgeParticleSystem3d): void;
+    protected _uploadInstanceData(system: IgeWebGlInstanceSource, floatsPerInstance: number): void;
     /**
      * A soft round white dot, used by particle systems without a texture.
      */
     protected _getDefaultParticleTexture(): WebGLTexture | null;
+    /**
+     * The built-in decal texture: a 2x2 atlas of white splats (alpha is the
+     * shape) for IgeDecalSystem3d without a texture of its own. Generated
+     * from a fixed seed so every run looks the same.
+     */
+    protected _getDefaultDecalTexture(): WebGLTexture | null;
+    /**
+     * Draw decal systems as quads lying on the ground: one instanced call
+     * per system (WebGL 2) or one call per decal (WebGL 1). Drawn after the
+     * opaque pass with depth testing, no depth writes and a polygon offset
+     * so they never fight with the ground they lie on.
+     */
+    protected _renderDecalSystems(systems: IgeDecalSystem3d[], matrices: IgeCameraMatrices): void;
     /**
      * Draw particle systems as camera-facing quads: one instanced call per
      * system (WebGL 2) or one call per particle (WebGL 1). Drawn after the

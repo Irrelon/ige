@@ -1,0 +1,8 @@
+/**
+ * Decal vertex shader (IgeDecalSystem3d).
+ * Lays the shared quad flat on the ground (XZ plane) at each decal's
+ * position, size and rotation, and picks its cell of the texture atlas.
+ * The instanced variant (USE_INSTANCING) reads each decal from per-instance
+ * attributes; the fallback reads one decal from uniforms per draw call.
+ */
+export declare const decalVertexShader = "\nprecision highp float;\n\nattribute vec2 a_position; // Quad corner (-0.5 to 0.5)\nattribute vec2 a_uv;\n\n#ifdef USE_INSTANCING\nattribute vec4 a_decal;      // xyz = world position, w = size\nattribute vec4 a_decalColor; // rgba (a includes the fade)\nattribute vec4 a_decalShape; // x = rotation (radians), y = atlas cell\n#define DECAL a_decal\n#define DECAL_COLOR a_decalColor\n#define DECAL_SHAPE a_decalShape\n#else\nuniform vec4 u_decal;\nuniform vec4 u_decalColor;\nuniform vec4 u_decalShape;\n#define DECAL u_decal\n#define DECAL_COLOR u_decalColor\n#define DECAL_SHAPE u_decalShape\n#endif\n\nuniform mat4 u_viewMatrix;\nuniform mat4 u_projectionMatrix;\nuniform float u_atlasGrid; // Cells per side of the texture atlas\n\nvarying vec2 v_uv;\nvarying vec4 v_color;\nvarying vec3 v_worldPosition;\n\nvoid main() {\n\tfloat c = cos(DECAL_SHAPE.x);\n\tfloat s = sin(DECAL_SHAPE.x);\n\tvec2 corner = a_position * DECAL.w;\n\tvec2 offset = vec2(c * corner.x - s * corner.y, s * corner.x + c * corner.y);\n\tvec3 worldPos = vec3(DECAL.x + offset.x, DECAL.y, DECAL.z + offset.y);\n\n\tfloat cell = DECAL_SHAPE.y;\n\tvec2 cellXY = vec2(mod(cell, u_atlasGrid), floor(cell / u_atlasGrid));\n\tv_uv = (a_uv + cellXY) / u_atlasGrid;\n\tv_color = DECAL_COLOR;\n\tv_worldPosition = worldPos;\n\tgl_Position = u_projectionMatrix * u_viewMatrix * vec4(worldPos, 1.0);\n}\n";

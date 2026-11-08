@@ -2,6 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.retargetClips = retargetClips;
 exports.normaliseBoneName = normaliseBoneName;
+exports.findBoneIndex = findBoneIndex;
 const cache = new WeakMap();
 /**
  * Make the animation clips of one file play on another model's skeleton.
@@ -44,6 +45,23 @@ function retargetClips(source, target, options = {}) {
  */
 function normaliseBoneName(name) {
     return name.replace(/^.*[:|]/, "").replace(/^mixamorig\d*_?/i, "").toLowerCase();
+}
+/**
+ * Find a bone by name: an exact match first, then ignoring case and
+ * prefixes such as "mixamorig:" (so "RightHand" finds "mixamorig:RightHand").
+ * Returns -1 when the skeleton has no such bone.
+ */
+function findBoneIndex(skeleton, name) {
+    for (const bone of skeleton.bones) {
+        if (bone.name === name)
+            return bone.index;
+    }
+    const wanted = normaliseBoneName(name);
+    for (const bone of skeleton.bones) {
+        if (normaliseBoneName(bone.name) === wanted)
+            return bone.index;
+    }
+    return -1;
 }
 class IgeRetargeter {
     constructor(source, target, options) {

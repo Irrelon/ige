@@ -15,6 +15,10 @@ class IgeWebGlGeometry extends IgeBaseClass_1.IgeBaseClass {
         this.vertexCount = 0;
         this.indexCount = 0;
         this.attributes = [];
+        /** GL index type for drawElements (UNSIGNED_SHORT or UNSIGNED_INT). */
+        this.indexType = 0x1403;
+        /** Whether the vertex buffer has an a_color attribute. */
+        this.hasVertexColors = false;
         // Skinning information
         this.isSkinned = false; // Whether this geometry has bone weights/indices
         // Local-space bounding sphere used for frustum and shadow culling.
@@ -45,18 +49,19 @@ class IgeWebGlGeometry extends IgeBaseClass_1.IgeBaseClass {
         return this;
     }
     /**
-     * Set vertex data.
+     * Record the vertex count of the uploaded vertex buffer. The data
+     * itself isn't kept: once on the GPU the CPU copy is only memory.
      */
     setVertexData(data, count) {
-        this.vertexData = data;
         this.vertexCount = count !== null && count !== void 0 ? count : data.length;
         return this;
     }
     /**
-     * Set index data.
+     * Record the index count and type of the uploaded index buffer (the
+     * data itself isn't kept).
      */
     setIndexData(data, count) {
-        this.indexData = data;
+        this.indexType = data instanceof Uint32Array ? 0x1405 : 0x1403;
         this.indexCount = count !== null && count !== void 0 ? count : data.length;
         return this;
     }

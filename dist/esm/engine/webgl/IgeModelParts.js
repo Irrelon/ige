@@ -89,6 +89,40 @@ export function getModelLod(model, levels) {
     }
     return lod.screenSizes.length ? lod : undefined;
 }
+/**
+ * Build level-of-detail geometry for a single plain geometry (an entity
+ * drawn from _geometryData). Levels use `ratio` (generated, cached per
+ * geometry) or `geometry` (authored).
+ */
+export function getGeometryLod(geometry, levels) {
+    const sorted = [...levels].sort((a, b) => b.screenSize - a.screenSize);
+    const lod = { screenSizes: [], partGeometries: [[]], source: geometry };
+    for (const level of sorted) {
+        let lower;
+        if (level.geometry) {
+            lower = level.geometry;
+        }
+        else if (level.ratio !== undefined && level.ratio < 1) {
+            lower = getSimplifiedGeometry(geometry, Math.max(0, level.ratio), level.maxError);
+        }
+        if (!lower)
+            continue;
+        lod.screenSizes.push(level.screenSize);
+        lod.partGeometries[0].push(lower);
+    }
+    return lod.screenSizes.length ? lod : undefined;
+}
+/**
+ * Forget the generated LOD meshes of a geometry and return them, so their
+ * GPU buffers can be released along with it.
+ */
+export function takeGeneratedLods(geometry) {
+    const byKey = lodGeometryCache.get(geometry);
+    if (!byKey)
+        return [];
+    lodGeometryCache.delete(geometry);
+    return [...byKey.values()];
+}
 function getSimplifiedGeometry(geometry, ratio, maxError) {
     let byKey = lodGeometryCache.get(geometry);
     if (!byKey) {
@@ -137,7 +171,8 @@ function toMaterialData(model, mat, index) {
         color: color ? { r: color.r, g: color.g, b: color.b, a: color.a } : { r: 1, g: 1, b: 1, a: 1 },
         metallic: typeof m.metallic === "function" ? m.metallic() : 0,
         roughness: typeof m.roughness === "function" ? m.roughness() : 0.5,
-        transparent: m.blendMode?.() === "transparent"
+        transparent: m.blendMode?.() === "transparent",
+        doubleSided: m.cullMode?.() === "none"
     };
     if (emissive && (emissive.r > 0 || emissive.g > 0 || emissive.b > 0)) {
         data.emissiveColor = { r: emissive.r, g: emissive.g, b: emissive.b };

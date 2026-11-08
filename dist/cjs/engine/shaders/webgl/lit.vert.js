@@ -33,10 +33,15 @@ uniform float u_shadowNormalOffset; // Normal offset to prevent shadow acne on c
 varying vec3 v_worldPosition;    // Position in world space
 varying vec3 v_worldNormal;      // Normal in world space
 varying vec2 v_uv;               // Texture coordinates
-varying vec3 v_viewDirection;    // Direction from surface to camera
+varying vec4 v_vertexColor;      // Vertex colour (white when the geometry has none)
 varying mat3 v_TBN;              // Tangent-Bitangent-Normal matrix for normal mapping
 varying vec4 v_lightSpacePos;    // Position in light space for shadow mapping
 ${chunks_1.instanceMaterialVaryingsChunk}
+
+// Optional per-vertex colour, multiplied into the base colour. Read only
+// when u_hasVertexColors is 1: without the attribute it reads as black.
+attribute vec4 a_color;
+uniform int u_hasVertexColors;
 
 void main() {
 	mat4 worldMatrix = getWorldMatrix();
@@ -49,8 +54,7 @@ void main() {
 	// Transform normal to world space and normalize
 	v_worldNormal = normalize(normalMatrix * a_normal);
 
-	// Calculate view direction (from surface to camera)
-	v_viewDirection = normalize(u_cameraPosition - worldPos.xyz);
+	v_vertexColor = u_hasVertexColors == 1 ? a_color : vec4(1.0);
 
 	// Pass through UV coordinates
 	v_uv = a_uv;

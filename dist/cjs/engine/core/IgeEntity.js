@@ -35,6 +35,7 @@ class IgeEntity extends IgeObject_1.IgeObject {
         };
         this._tfParentVersion = -1;
         this._tfWebGl = false;
+        this._attachBoneIndex = -1;
         /**
          * Gets / sets the shape / polygon that the mouse events
          * are triggered against. There are two options, 'aabb' and
@@ -242,6 +243,9 @@ class IgeEntity extends IgeObject_1.IgeObject {
         const c = this._tfInputs;
         if (!c)
             return false;
+        // A bone moves every frame without the parent's transform changing
+        if (this._attachBone !== undefined)
+            return false;
         const parent = this._parent;
         if (parent !== this._tfParent)
             return false;
@@ -384,8 +388,12 @@ class IgeEntity extends IgeObject_1.IgeObject {
                 this._localMatrix4.translateBy(this._bounds2d.x * (0.5 - this._origin.x), this._bounds2d.y * (0.5 - this._origin.y), (this._bounds3d.z || 0) * (0.5 - this._origin.z));
             }
             // Compute world matrix by multiplying with parent's world matrix
+            // (and the parent's bone, when attached to one)
             if (this._parent && this._parent._worldMatrix4) {
                 this._worldMatrix4.copy(this._parent._worldMatrix4);
+                const bone = this._attachBone !== undefined ? this._attachedBoneMatrix() : undefined;
+                if (bone)
+                    this._worldMatrix4.multiply(bone);
                 this._worldMatrix4.multiply(this._localMatrix4);
             }
             else {
@@ -883,7 +891,18 @@ class IgeEntity extends IgeObject_1.IgeObject {
         if (levels === undefined) {
             return this._modelLod;
         }
-        this._modelLod = levels && levels.length && this._model ? (0, IgeModelParts_1.getModelLod)(this._model, levels) : undefined;
+        if (!levels || !levels.length) {
+            this._modelLod = undefined;
+        }
+        else if (this._model) {
+            this._modelLod = (0, IgeModelParts_1.getModelLod)(this._model, levels);
+        }
+        else if (this._geometryData) {
+            this._modelLod = (0, IgeModelParts_1.getGeometryLod)(this._geometryData, levels);
+        }
+        else {
+            this._modelLod = undefined;
+        }
         return this;
     }
     billboard(mode) {
@@ -910,6 +929,76 @@ class IgeEntity extends IgeObject_1.IgeObject {
         var _a;
         (_a = this.skeletalAnimation()) === null || _a === void 0 ? void 0 : _a.play(name, options);
         return this;
+    }
+    attachToBone(boneName) {
+        if (boneName === undefined) {
+            return this._attachBone;
+        }
+        this._attachBone = boneName === null ? undefined : boneName;
+        this._attachBoneSkeleton = undefined;
+        this._attachBoneIndex = -1;
+        this._tfInputs = undefined; // rebuild the transform on the next update
+        return this;
+    }
+    /**
+     * Get the world position of one of this entity's skeleton bones, e.g.
+     * to spawn an effect at a hand. Returns undefined when the entity has
+     * no skeleton or no bone with that name (matched as in attachToBone()).
+     * @param out Optional point to write into instead of allocating one.
+     */
+    bonePosition(boneName, out) {
+        const skeleton = this._skeleton;
+        const world = this._worldMatrix4;
+        if (!skeleton || !world)
+            return;
+        const index = (0, IgeAnimationRetarget_1.findBoneIndex)(skeleton.data, boneName);
+        if (index < 0)
+            return;
+        this._updateSkeletonMatrices();
+        const b = skeleton.worldMatrices;
+        const x = b[index * 16 + 12], y = b[index * 16 + 13], z = b[index * 16 + 14];
+        const m = world.matrix;
+        const point = out || new IgePoint3d_1.IgePoint3d();
+        point.x = m[0] * x + m[4] * y + m[8] * z + m[12];
+        point.y = m[1] * x + m[5] * y + m[9] * z + m[13];
+        point.z = m[2] * x + m[6] * y + m[10] * z + m[14];
+        return point;
+    }
+    /**
+     * Bring the skeleton's bone matrices up to date with its pose (they
+     * are otherwise computed when the renderer collects the frame).
+     */
+    _updateSkeletonMatrices() {
+        var _a;
+        const skeleton = this._skeleton;
+        if (!skeleton || !skeleton.dirty)
+            return;
+        const manager = (_a = instance_1.ige.engine.renderer()) === null || _a === void 0 ? void 0 : _a.skeletonManager;
+        manager === null || manager === void 0 ? void 0 : manager.updateSkeletonMatrices(skeleton);
+    }
+    /**
+     * The model-space matrix of the parent's bone this entity follows, or
+     * undefined if the parent has no skeleton or no such bone.
+     */
+    _attachedBoneMatrix() {
+        const parent = this._parent;
+        const skeleton = parent === null || parent === void 0 ? void 0 : parent._skeleton;
+        if (!skeleton || this._attachBone === undefined)
+            return;
+        if (this._attachBoneSkeleton !== skeleton.data) {
+            this._attachBoneSkeleton = skeleton.data;
+            this._attachBoneIndex = (0, IgeAnimationRetarget_1.findBoneIndex)(skeleton.data, this._attachBone);
+            if (this._attachBoneIndex < 0) {
+                this.log(`attachToBone(): the parent's skeleton has no bone "${this._attachBone}"`, "warning");
+            }
+        }
+        const index = this._attachBoneIndex;
+        if (index < 0)
+            return;
+        parent._updateSkeletonMatrices();
+        const matrix = this._attachBoneMatrix || (this._attachBoneMatrix = new IgeMatrix4_1.IgeMatrix4());
+        matrix.matrix.set(skeleton.worldMatrices.subarray(index * 16, index * 16 + 16));
+        return matrix;
     }
     cell(val) {
         if (val !== undefined && val > 0) {

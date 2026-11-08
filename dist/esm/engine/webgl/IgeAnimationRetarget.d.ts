@@ -48,3 +48,9 @@ export declare function retargetClips(source: IgeGltfModel, target: IgeSkeletonD
  * "mixamorig:" or "Armature|" and ignore case.
  */
 export declare function normaliseBoneName(name: string): string;
+/**
+ * Find a bone by name: an exact match first, then ignoring case and
+ * prefixes such as "mixamorig:" (so "RightHand" finds "mixamorig:RightHand").
+ * Returns -1 when the skeleton has no such bone.
+ */
+export declare function findBoneIndex(skeleton: IgeSkeletonData, name: string): number;

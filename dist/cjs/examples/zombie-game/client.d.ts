@@ -7,8 +7,10 @@ import type { IgeCanInit } from "../../types/IgeCanInit.js"
 import { IgePointLight } from "../../engine/webgl/IgeWebGlLight.js"
 import { type IgeGltfModel } from "../../engine/webgl/IgeGltfLoader.js"
 import { IgeParticleSystem3d } from "../../engine/webgl/IgeParticleSystem3d.js"
+import { IgeDecalSystem3d } from "../../engine/webgl/IgeDecalSystem3d.js"
 import { IgeGamePadComponent } from "../../engine/components/IgeGamePadComponent.js"
 import { type IgeLevelObstacle } from "./level.js"
+import type { IgeGeometryData3d } from "../../types/IgeGeometryData3d.js"
 interface PlayerState {
     index: number;
     entity: IgeEntity;
@@ -53,6 +55,7 @@ export declare class Client extends IgeBaseClass implements IgeCanInit {
     characterModel?: IgeGltfModel;
     obstacles: IgeLevelObstacle[];
     bloodFx?: IgeParticleSystem3d;
+    bloodStains?: IgeDecalSystem3d;
     slashFx?: IgeParticleSystem3d;
     damageNumbers: DamageNumber[];
     fxLayer?: HTMLDivElement;
@@ -73,6 +76,19 @@ export declare class Client extends IgeBaseClass implements IgeCanInit {
     createEffects(): void;
     createPlayers(): void;
     createZombies(count: number): void;
+    swordParts?: {
+        blade: IgeGeometryData3d;
+        guard: IgeGeometryData3d;
+        grip: IgeGeometryData3d;
+    };
+    /**
+     * Put a sword in a character's right hand. The sword root follows the
+     * hand bone; its parts are ordinary children of it. Sizes are in the
+     * character's model units (it is about 1.2 units tall), because the
+     * sword inherits the character's scale. Every player shares the same
+     * geometry, so the four swords draw as instanced batches.
+     */
+    createSword(owner: IgeEntity): void;
     placeZombieAwayFromPlayers(zombie: ZombieState): void;
     tick(dt: number): void;
     readPlayerInput(index: number): {

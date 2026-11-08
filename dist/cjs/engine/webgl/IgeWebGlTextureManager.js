@@ -344,6 +344,7 @@ class IgeWebGlTextureManager extends IgeBaseClass_1.IgeBaseClass {
     deleteTexture(textureId) {
         this._resourceManager.deleteTexture(textureId);
         this._igeTextureMap.delete(textureId);
+        this._blobTextureCache.delete(textureId);
         // Clean up smart texture canvas if exists
         const canvas = this._smartTextureCanvases.get(textureId);
         if (canvas) {

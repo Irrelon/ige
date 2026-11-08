@@ -1,9 +1,10 @@
 import { IgeBounds } from "./IgeBounds.js"
-import { IgeObject } from "./IgeObject.js";
-import { IgePoint2d } from "./IgePoint2d.js"
-import { IgePoint3d } from "./IgePoint3d.js";
-import type { IgeTexture } from "./IgeTexture.js"
-import type { IgeViewport } from "./IgeViewport.js";
+import { IgeMatrix4 } from "./IgeMatrix4.js";
+import { IgeObject } from "./IgeObject.js"
+import { IgePoint2d } from "./IgePoint2d.js";
+import { IgePoint3d } from "./IgePoint3d.js"
+import type { IgeTexture } from "./IgeTexture.js";
+import type { IgeViewport } from "./IgeViewport.js"
 import { IgeEntityRenderMode } from "../../enums/index.js";
 import type { IgeCanRegisterByCategory } from "../../types/IgeCanRegisterByCategory.js"
 import type { IgeCanRegisterById } from "../../types/IgeCanRegisterById.js"
@@ -16,6 +17,7 @@ import type { IgeSmartTexture } from "../../types/IgeSmartTexture.js"
 import type { IgeTriggerPolygonFunctionName } from "../../types/IgeTriggerPolygonFunctionName.js"
 import type { IgeGltfModel } from "../webgl/IgeGltfLoader.js"
 import type { IgeRetargetOptions } from "../webgl/IgeAnimationRetarget.js";
+import type { IgeSkeletonData } from "../../types/IgeSkeletonData.js"
 import type { IgeModelLod, IgeModelLodLevel } from "../webgl/IgeModelParts.js"
 import { IgeSkeletalAnimationComponent } from "../components/IgeSkeletalAnimationComponent.js";
 import type { IgeAnimationPlayOptions } from "../../types/IgeAnimationClipData.js"
@@ -81,6 +83,11 @@ export declare class IgeEntity extends IgeObject implements IgeCanRegisterById, 
     _tfParent?: IgeObject | null;
     _tfParentVersion: number;
     _tfWebGl: boolean;
+    /** Name of the parent skeleton bone this entity follows (see attachToBone()). */
+    _attachBone?: string;
+    _attachBoneIndex: number;
+    _attachBoneSkeleton?: IgeSkeletonData;
+    _attachBoneMatrix?: IgeMatrix4;
     /**
      * Returns true when nothing that feeds this entity's transform has
      * changed since the last rebuild, so updateTransform() can skip it.
@@ -446,6 +453,14 @@ export declare class IgeEntity extends IgeObject implements IgeCanRegisterById, 
      * stats().lodItems counts how many visible meshes used a lower level.
      * Generated meshes are shared by every entity using the same model.
      * Pass null to remove the levels.
+     *
+     * Entities drawn from _geometryData instead of a model work too: levels
+     * are generated from that geometry, or given as `geometry`. They belong
+     * to the geometry assigned when lod() was called and are ignored if
+     * _geometryData is replaced later.
+     * @example #A terrain chunk with a hand-made simpler version
+     *     chunk._geometryData = fullMesh;
+     *     chunk.lod([{ screenSize: 300, geometry: liteMesh }]);
      * @example #Two generated levels for a crowd character
      *     zombie.model(zombieModel, {
      *         animation: "Walk",
@@ -477,6 +492,44 @@ export declare class IgeEntity extends IgeObject implements IgeCanRegisterById, 
      *     zombie.playAnimation("Attack", { loop: false, crossFadeDuration: 0.1 });
      */
     playAnimation(name: string, options?: IgeAnimationPlayOptions): this;
+    /**
+     * Gets / sets the bone of the parent entity's skeleton that this entity
+     * follows, e.g. to put a weapon in a character's hand. Mount the entity
+     * to the animated character first; its own translate, rotate and scale
+     * then position it relative to the bone (in the character's model
+     * units, since it also inherits the character's scale).
+     *
+     * Names match exactly, or ignoring case and prefixes like "mixamorig:".
+     * The entity follows the pose the character was last animated to, so
+     * it stays put while the character is off screen and its animation is
+     * culled (see IgeSkeletalAnimationComponent.cullOffscreen()). Pass null
+     * to follow the character's origin again.
+     * @example #Give a character a sword
+     *     const sword = new IgeEntity()
+     *         .model(swordModel)
+     *         .mount(hero)
+     *         .attachToBone("RightHand")
+     *         .rotateTo(Math.PI / 2, 0, 0);
+     */
+    attachToBone(boneName: string | null): this;
+    attachToBone(): string | undefined;
+    /**
+     * Get the world position of one of this entity's skeleton bones, e.g.
+     * to spawn an effect at a hand. Returns undefined when the entity has
+     * no skeleton or no bone with that name (matched as in attachToBone()).
+     * @param out Optional point to write into instead of allocating one.
+     */
+    bonePosition(boneName: string, out?: IgePoint3d): IgePoint3d | undefined;
+    /**
+     * Bring the skeleton's bone matrices up to date with its pose (they
+     * are otherwise computed when the renderer collects the frame).
+     */
+    _updateSkeletonMatrices(): void;
+    /**
+     * The model-space matrix of the parent's bone this entity follows, or
+     * undefined if the parent has no skeleton or no such bone.
+     */
+    _attachedBoneMatrix(): IgeMatrix4 | undefined;
     /**
      * Gets / sets the current texture cell used when rendering the game
      * object's texture. If the texture is not cell-based, this value is

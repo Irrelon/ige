@@ -23,8 +23,10 @@ export declare class IgeWebGlGeometry extends IgeBaseClass {
     indexCount: number;
     attributes: IgeWebGlVertexAttribute[];
     drawMode: number;
-    vertexData?: Float32Array;
-    indexData?: Uint16Array | Uint32Array;
+    /** GL index type for drawElements (UNSIGNED_SHORT or UNSIGNED_INT). */
+    indexType: number;
+    /** Whether the vertex buffer has an a_color attribute. */
+    hasVertexColors: boolean;
     isSkinned: boolean;
     skeletonId?: string;
     boundsCenterX: number;
@@ -38,11 +40,13 @@ export declare class IgeWebGlGeometry extends IgeBaseClass {
      */
     addAttribute(name: string, size: number, type: number, normalized?: boolean, stride?: number, offset?: number): this;
     /**
-     * Set vertex data.
+     * Record the vertex count of the uploaded vertex buffer. The data
+     * itself isn't kept: once on the GPU the CPU copy is only memory.
      */
     setVertexData(data: Float32Array, count?: number): this;
     /**
-     * Set index data.
+     * Record the index count and type of the uploaded index buffer (the
+     * data itself isn't kept).
      */
     setIndexData(data: Uint16Array | Uint32Array, count?: number): this;
 }

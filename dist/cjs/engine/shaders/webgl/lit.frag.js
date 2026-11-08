@@ -33,7 +33,7 @@ precision highp float;
 varying vec3 v_worldPosition;
 varying vec3 v_worldNormal;
 varying vec2 v_uv;
-varying vec3 v_viewDirection;
+varying vec4 v_vertexColor;
 varying mat3 v_TBN;
 varying vec4 v_lightSpacePos;
 
@@ -486,7 +486,7 @@ void main() {
 	vec4 texColor = texture2D(u_baseColorTexture, v_uv);
 
 	// Apply base color tint
-	vec4 albedoColor = texColor * u_baseColor;
+	vec4 albedoColor = texColor * u_baseColor * v_vertexColor;
 	vec3 albedo = albedoColor.rgb;
 
 	// Get normal (optionally from normal map)
@@ -497,7 +497,9 @@ void main() {
 	}
 
 	// View direction
-	vec3 V = normalize(v_viewDirection);
+	// View direction per fragment (more accurate than interpolating it, and
+	// saves a varying for the vertex colour)
+	vec3 V = normalize(u_cameraPosition - v_worldPosition);
 
 	// Initialize final color
 	vec3 finalColor = vec3(0.0);
