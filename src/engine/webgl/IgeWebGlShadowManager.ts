@@ -34,6 +34,27 @@ interface ShadowMapData {
 }
 
 /**
+ * Cached depth of a directional light's static shadow casters (WebGL 2).
+ * The renderer redraws it only when the static casters or the light's
+ * matrix change, and copies it into the light's shadow map each frame
+ * before drawing the moving casters on top.
+ */
+export interface IgeShadowCacheData {
+	framebuffer: WebGLFramebuffer;
+	depthTexture: WebGLTexture;
+	size: number;
+	/** Light space matrix the cache was rendered with. */
+	matrix: Float32Array;
+	/** Checksums of the static caster set the cache holds. */
+	signatureA: number;
+	signatureB: number;
+	count: number;
+	valid: boolean;
+	/** The shadow map currently holds exactly the cached depth (no moving casters drawn). */
+	mapHoldsCache: boolean;
+}
+
+/**
  * Point shadow atlas texture format options.
  * - "rgba8": RGBA UNSIGNED_BYTE - fastest on all GPUs, 8-bit depth precision (256 levels)
  * - "r32f": R32F float - best precision, 1/4 memory of RGBA32F, but slower on some GPUs
@@ -96,6 +117,9 @@ export class IgeWebGlShadowManager extends IgeBaseClass {
 
 	// Point light shadow maps
 	protected _pointShadowMaps: Map<string, PointShadowMapData> = new Map();
+
+	// Static caster caches for directional lights (WebGL 2 only)
+	protected _shadowCaches: Map<string, IgeShadowCacheData> = new Map();
 
 	// Point shadow atlas texture format (configurable for performance vs precision)
 	protected _pointShadowFormat: PointShadowTextureFormat = "rgba8";
@@ -194,10 +218,11 @@ export class IgeWebGlShadowManager extends IgeBaseClass {
 		const gl = this._gl;
 		const cfg = { ...this._defaultConfig, ...config };
 
-		// Delete existing shadow map if present
+		// Delete existing shadow map (and its static cache) if present
 		if (this._shadowMaps.has(lightId)) {
 			this.deleteShadowMap(lightId);
 		}
+		this.deleteShadowCache(lightId);
 
 		// Create framebuffer
 		const framebuffer = gl.createFramebuffer();
@@ -341,7 +366,97 @@ export class IgeWebGlShadowManager extends IgeBaseClass {
 		}
 
 		this._shadowMaps.delete(lightId);
+		this.deleteShadowCache(lightId);
 		this.log(`Deleted shadow map for ${lightId}`);
+	}
+
+	/**
+	 * Get (creating on first use) the static caster cache for a directional
+	 * light's shadow map. Returns null on WebGL 1, where depth can't be
+	 * copied between framebuffers.
+	 */
+	getShadowCache(lightId: string): IgeShadowCacheData | null {
+		if (this._webglVersion !== 2) return null;
+		const shadowMap = this._shadowMaps.get(lightId);
+		if (!shadowMap) return null;
+
+		const existing = this._shadowCaches.get(lightId);
+		if (existing && existing.size === shadowMap.size) return existing;
+		if (existing) this.deleteShadowCache(lightId);
+
+		const gl = this._gl as WebGL2RenderingContext;
+		const framebuffer = gl.createFramebuffer();
+		const depthTexture = gl.createTexture();
+		if (!framebuffer || !depthTexture) return null;
+
+		gl.bindTexture(gl.TEXTURE_2D, depthTexture);
+		gl.texImage2D(gl.TEXTURE_2D, 0, gl.DEPTH_COMPONENT32F, shadowMap.size, shadowMap.size, 0, gl.DEPTH_COMPONENT, gl.FLOAT, null);
+		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+		gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer);
+		gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.TEXTURE_2D, depthTexture, 0);
+		gl.drawBuffers([gl.NONE]);
+		gl.readBuffer(gl.NONE);
+		const complete = gl.checkFramebufferStatus(gl.FRAMEBUFFER) === gl.FRAMEBUFFER_COMPLETE;
+		gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+		gl.bindTexture(gl.TEXTURE_2D, null);
+
+		if (!complete) {
+			gl.deleteFramebuffer(framebuffer);
+			gl.deleteTexture(depthTexture);
+			return null;
+		}
+
+		const cache: IgeShadowCacheData = {
+			framebuffer,
+			depthTexture,
+			size: shadowMap.size,
+			matrix: new Float32Array(16),
+			signatureA: 0,
+			signatureB: 0,
+			count: -1,
+			valid: false,
+			mapHoldsCache: false
+		};
+		this._shadowCaches.set(lightId, cache);
+		return cache;
+	}
+
+	/** Delete a directional light's static caster cache. */
+	deleteShadowCache(lightId: string): void {
+		const cache = this._shadowCaches.get(lightId);
+		if (!cache) return;
+		this._gl.deleteFramebuffer(cache.framebuffer);
+		this._gl.deleteTexture(cache.depthTexture);
+		this._shadowCaches.delete(lightId);
+	}
+
+	/**
+	 * Begin rendering static casters into a light's cache (cleared first).
+	 * Finish with endShadowPass().
+	 */
+	beginShadowCachePass(lightId: string): boolean {
+		const cache = this._shadowCaches.get(lightId);
+		if (!this._enabled || !cache) return false;
+		return this._beginDepthPass(cache.framebuffer, cache.size, true);
+	}
+
+	/**
+	 * Copy a light's cached static depth into its shadow map.
+	 */
+	copyShadowCache(lightId: string): boolean {
+		const cache = this._shadowCaches.get(lightId);
+		const shadowMap = this._shadowMaps.get(lightId);
+		if (!cache || !shadowMap || this._webglVersion !== 2) return false;
+
+		const gl = this._gl as WebGL2RenderingContext;
+		gl.disable(gl.SCISSOR_TEST); // the scissor box would clip the copy
+		gl.bindFramebuffer(gl.READ_FRAMEBUFFER, cache.framebuffer);
+		gl.bindFramebuffer(gl.DRAW_FRAMEBUFFER, shadowMap.framebuffer);
+		gl.blitFramebuffer(0, 0, cache.size, cache.size, 0, 0, shadowMap.size, shadowMap.size, gl.DEPTH_BUFFER_BIT, gl.NEAREST);
+		gl.bindFramebuffer(gl.READ_FRAMEBUFFER, null);
+		gl.bindFramebuffer(gl.DRAW_FRAMEBUFFER, null);
+		return true;
 	}
 
 	/**
@@ -432,19 +547,27 @@ export class IgeWebGlShadowManager extends IgeBaseClass {
 	 * Begin shadow pass rendering.
 	 * Binds the shadow framebuffer and sets up viewport.
 	 */
-	beginShadowPass(lightId: string): boolean {
+	beginShadowPass(lightId: string, clear: boolean = true): boolean {
 		if (!this._enabled) return false;
 
 		const shadowMap = this._shadowMaps.get(lightId);
 		if (!shadowMap) return false;
 
+		return this._beginDepthPass(shadowMap.framebuffer, shadowMap.size, clear);
+	}
+
+	/**
+	 * Bind a depth framebuffer for a directional shadow pass, optionally
+	 * clearing it to the far plane, with front-face culling.
+	 */
+	protected _beginDepthPass(framebuffer: WebGLFramebuffer, size: number, clear: boolean): boolean {
 		const gl = this._gl;
 
 		// Bind shadow framebuffer
-		gl.bindFramebuffer(gl.FRAMEBUFFER, shadowMap.framebuffer);
+		gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer);
 
 		// Set viewport to shadow map size
-		gl.viewport(0, 0, shadowMap.size, shadowMap.size);
+		gl.viewport(0, 0, size, size);
 
 		// Enable depth testing and writing BEFORE clearing
 		gl.enable(gl.DEPTH_TEST);
@@ -455,7 +578,9 @@ export class IgeWebGlShadowManager extends IgeBaseClass {
 		gl.clearDepth(1.0);
 
 		// Clear depth buffer (and color for WebGL 1)
-		if (this._webglVersion === 1) {
+		if (!clear) {
+			// Keep the copied static depth
+		} else if (this._webglVersion === 1) {
 			gl.clearColor(1.0, 1.0, 1.0, 1.0); // White = far depth when packed
 			gl.clear(gl.DEPTH_BUFFER_BIT | gl.COLOR_BUFFER_BIT);
 		} else {

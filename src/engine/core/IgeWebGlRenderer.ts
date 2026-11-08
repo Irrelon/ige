@@ -88,6 +88,8 @@ export interface IgeWebGlRenderStats {
 	lodItems: number;
 	/** Model triangles submitted by every pass (main, transparent and shadow). */
 	triangles: number;
+	/** Times the cached static shadow casters were redrawn (see shadowCaching()). */
+	shadowCacheRebuilds: number;
 	viewports: number;
 }
 
@@ -110,6 +112,17 @@ interface IgeWebGlInstanceSource {
 
 /** Floats per particle in IgeParticleSystem3d.renderData(). */
 const PARTICLE_FLOATS = 8;
+
+/**
+ * Frames an entity's transform must stay unchanged before it is treated as
+ * a static shadow caster (see shadowCaching()).
+ */
+const SHADOW_STATIC_FRAMES = 30;
+
+/** Fraction of the shadow frustum's half-size the cached frustum re-centres by. */
+const SHADOW_RECENTER_STEP = 0.125;
+
+let nextRenderUid = 1;
 
 const hexColorCache: Map<string, [number, number, number]> = new Map();
 
@@ -255,6 +268,7 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 		visibleItems: 0,
 		lodItems: 0,
 		triangles: 0,
+		shadowCacheRebuilds: 0,
 		viewports: 0
 	};
 
@@ -263,6 +277,13 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 
 	// Cull back faces of opaque meshes (off by default, see backFaceCulling())
 	protected _backFaceCulling: boolean = false;
+
+	// Cached static shadow casters (off by default, see shadowCaching())
+	protected _shadowCaching: boolean = false;
+	protected _staticDepthBatcher: IgeWebGlItemBatcher = new IgeWebGlItemBatcher();
+	protected _shadowMapHoldsCache: boolean = false;
+	protected _directionalPassesThisFrame: number = 0;
+	protected _directionalPassesLastFrame: number = 0;
 
 	// When true, the WebGL drawing buffer is preserved after compositing,
 	// allowing gl.readPixels() to work after a frame is rendered.
@@ -625,6 +646,49 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 	}
 
 	/**
+	 * Gets / sets whether static shadow casters are cached (default false,
+	 * WebGL 2 only). Meshes that aren't skinned and haven't moved for 30
+	 * rendered frames (new meshes count as unmoved) are drawn into a cached
+	 * depth map, which is redrawn only when
+	 * one of them moves, appears or disappears, or the shadow frustum
+	 * moves. Each frame copies the cache into the shadow map and draws only
+	 * the moving casters (characters, projectiles) on top, so large static
+	 * scenes such as terrain stop costing shadow draw calls.
+	 *
+	 * To keep the frustum still while the camera pans, it re-centres in
+	 * steps of 1/8 of shadowManager.frustumSize() instead of following the
+	 * camera exactly, so the area covered may lag the view by that much;
+	 * allow for it in the frustum size. Caching pauses on frames where
+	 * split-screen views each render their own shadow map (it helps when
+	 * there is one view or the views share a map).
+	 */
+	shadowCaching(): boolean;
+	shadowCaching(val: boolean): this;
+	shadowCaching(val?: boolean): boolean | this {
+		if (val === undefined) {
+			return this._shadowCaching;
+		}
+		this._shadowCaching = val;
+		this._shadowMapHoldsCache = false;
+		return this;
+	}
+
+	/**
+	 * Where the directional shadow frustum should be centred for a view
+	 * target: the target itself, or with shadow caching on, the target
+	 * snapped to a coarse grid so small camera moves don't move the frustum.
+	 */
+	protected _shadowCenter(x: number, y: number, z: number): { x: number; y: number; z: number } {
+		if (!this._shadowCaching || !this._shadowManager) return { x, y, z };
+		const step = Math.max((this._shadowManager.frustumSize() as number) * SHADOW_RECENTER_STEP, 1e-6);
+		return {
+			x: Math.round(x / step) * step,
+			y: Math.round(y / step) * step,
+			z: Math.round(z / step) * step
+		};
+	}
+
+	/**
 	 * Gets / sets whether back faces of opaque meshes are culled in the
 	 * main pass (default false). Culling skips triangles facing away from
 	 * the camera, roughly halving the fragments shaded for closed meshes
@@ -908,7 +972,7 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 			this._shadowLightId,
 			this._shadowCastingLight,
 			undefined,
-			{ x: (minX + maxX) / 2, y: (minY + maxY) / 2, z: (minZ + maxZ) / 2 }
+			this._shadowCenter((minX + maxX) / 2, (minY + maxY) / 2, (minZ + maxZ) / 2)
 		);
 		this._shadowManager.frustumSize(size);
 
@@ -959,6 +1023,9 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 		stats.visibleItems = 0;
 		stats.lodItems = 0;
 		stats.triangles = 0;
+		stats.shadowCacheRebuilds = 0;
+		this._directionalPassesLastFrame = this._directionalPassesThisFrame;
+		this._directionalPassesThisFrame = 0;
 		stats.viewports = viewports ? viewports.length : 0;
 
 		// Clear the entire canvas
@@ -1529,7 +1596,7 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 		// ------------------------------------------------------------
 		if (this.shadowsEnabled() && this._shadowManager && this._shadowCastingLight && this._sharedShadowFrame !== this._frameId) {
 			const target = (camera as any)._lookAt as { x: number; y: number; z: number } | undefined;
-			const center = target ? { x: target.x, y: target.y, z: target.z } : { x: 0, y: 0, z: 0 };
+			const center = target ? this._shadowCenter(target.x, target.y, target.z) : { x: 0, y: 0, z: 0 };
 			const lightSpaceMatrix = this._shadowManager.updateLightSpaceMatrix(
 				this._shadowLightId,
 				this._shadowCastingLight,
@@ -1729,6 +1796,8 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 	 */
 	protected _renderDirectionalShadowPass(data: IgeWebGlSceneFrameData, lightSpaceMatrix: Float32Array): void {
 		if (!this._shadowManager) return;
+		const shadowManager = this._shadowManager;
+		const lightId = this._shadowLightId;
 
 		this._lightFrustumMatrix.matrix.set(lightSpaceMatrix);
 		this._lightFrustum.extractFromMatrix(this._lightFrustumMatrix);
@@ -1736,10 +1805,21 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 		// Shadow map texels per world unit (orthographic light projection)
 		const m = lightSpaceMatrix;
 		const texelsPerUnit = Math.sqrt(m[0] * m[0] + m[4] * m[4] + m[8] * m[8]) *
-			this._shadowManager.getShadowMapSize(this._shadowLightId) * 0.5;
+			shadowManager.getShadowMapSize(lightId) * 0.5;
+
+		// Cache static casters when this is the frame's only directional pass
+		this._directionalPassesThisFrame++;
+		const cache = this._shadowCaching && this._directionalPassesLastFrame <= 1
+			? shadowManager.getShadowCache(lightId)
+			: null;
 
 		const batcher = this._depthBatcher;
+		const staticBatcher = this._staticDepthBatcher;
 		batcher.begin();
+		staticBatcher.begin();
+		const frameId = this._frameId;
+		let signatureA = 0, signatureB = 0, staticCount = 0, movingCount = 0;
+
 		const models = data.models;
 		for (let i = 0; i < models.length; i++) {
 			const item = models[i];
@@ -1747,24 +1827,82 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 			if (item.radius >= 0 && !this._lightFrustum.containsSphereXYZ(item.cx, item.cy, item.cz, item.radius)) {
 				continue;
 			}
-			item.entity._lastRenderedFrame = this._frameId;
+			const entity = item.entity;
+			entity._lastRenderedFrame = frameId;
+
+			let key = item.depthKey;
+			let geometry = item.geometry;
 			if (item.lodSizes) {
 				const level = this._lodLevel(item, texelsPerUnit);
-				batcher.add(item, item.lodDepthKeys[level], item.lodGeometries[level]);
-			} else {
-				batcher.add(item, item.depthKey);
+				key = item.lodDepthKeys[level];
+				geometry = item.lodGeometries[level];
 			}
+
+			if (cache) {
+				// New casters start out static (one extra rebuild if they turn
+				// out to move); casters that moved wait until they settle
+				if (entity._transformVersion !== entity._shadowSeenVersion) {
+					entity._shadowStableSince = entity._shadowSeenVersion === -1 ? -SHADOW_STATIC_FRAMES : frameId;
+					entity._shadowSeenVersion = entity._transformVersion;
+				}
+				if (!item.skeleton && frameId - entity._shadowStableSince >= SHADOW_STATIC_FRAMES) {
+					if (!entity._renderUid) entity._renderUid = nextRenderUid++;
+					// Order-independent checksum of (entity, mesh, transform)
+					let h = Math.imul(entity._renderUid, 0x9e3779b1) ^ Math.imul(geometry.uid, 0x85ebca6b) ^ Math.imul(entity._transformVersion + 1, 0xc2b2ae35);
+					h = Math.imul(h ^ (h >>> 15), 0x2c1b3c6d);
+					signatureA = (signatureA + h) | 0;
+					signatureB ^= Math.imul(h ^ (h >>> 13), 0x297a2d39);
+					staticCount++;
+					staticBatcher.add(item, key, geometry);
+					continue;
+				}
+				movingCount++;
+			}
+
+			batcher.add(item, key, geometry);
 		}
 
-		if (!this._shadowManager.beginShadowPass(this._shadowLightId)) {
+		const setup = (program: IgeWebGlProgram) => {
+			program.setUniformMatrix4fv("u_lightSpaceMatrix", lightSpaceMatrix);
+		};
+
+		if (!cache) {
+			if (!shadowManager.beginShadowPass(lightId)) return;
+			this._drawDepthBatches(batcher.batches, "shadow", "skinned_shadow", setup);
+			shadowManager.endShadowPass();
+			this._shadowMapHoldsCache = false;
 			return;
 		}
 
-		this._drawDepthBatches(batcher.batches, "shadow", "skinned_shadow", (program) => {
-			program.setUniformMatrix4fv("u_lightSpaceMatrix", lightSpaceMatrix);
-		});
+		// Redraw the cache only when the static casters or the frustum changed
+		let sameMatrix = cache.valid;
+		for (let k = 0; sameMatrix && k < 16; k++) sameMatrix = cache.matrix[k] === m[k];
+		const cacheCurrent = sameMatrix && cache.count === staticCount &&
+			cache.signatureA === signatureA && cache.signatureB === signatureB;
 
-		this._shadowManager.endShadowPass();
+		if (!cacheCurrent) {
+			if (shadowManager.beginShadowCachePass(lightId)) {
+				this._drawDepthBatches(staticBatcher.batches, "shadow", "skinned_shadow", setup);
+				shadowManager.endShadowPass();
+			}
+			cache.matrix.set(m);
+			cache.count = staticCount;
+			cache.signatureA = signatureA;
+			cache.signatureB = signatureB;
+			cache.valid = true;
+			this._shadowMapHoldsCache = false;
+			this._stats.shadowCacheRebuilds++;
+		}
+
+		// Nothing moving and the map already holds the cache: reuse it as is
+		if (movingCount === 0 && this._shadowMapHoldsCache) return;
+
+		shadowManager.copyShadowCache(lightId);
+		if (movingCount > 0 && shadowManager.beginShadowPass(lightId, false)) {
+			this._drawDepthBatches(batcher.batches, "shadow", "skinned_shadow", setup);
+			shadowManager.endShadowPass();
+		}
+		this._shadowMapHoldsCache = movingCount === 0;
 	}
 
 	/**
