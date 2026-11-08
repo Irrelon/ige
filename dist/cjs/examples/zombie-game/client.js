@@ -38,8 +38,18 @@ window.ige = instance_1.ige;
  * - Floating damage numbers placed with renderer.worldToScreen()
  * - Gamepad input for 4 players (IgeGamePadComponent) with keyboard fallback
  *
- * URL options: ?zombies=200 to change the horde size.
+ * - Generated level-of-detail meshes for the horde (IgeEntity.lod())
+ *
+ * URL options: ?zombies=200 to change the horde size, ?lod=0 to draw every
+ * zombie at full detail.
  */
+// Zombies switch to generated lower-detail meshes while small on screen.
+// Sizes are bounding-sphere diameters in device pixels; players always draw
+// at full detail.
+const ZOMBIE_LOD = [
+    { screenSize: 220, ratio: 0.5 },
+    { screenSize: 120, ratio: 0.25 }
+];
 // Player configuration
 const PLAYER_CONFIGS = [
     { color: { r: 0.3, g: 0.5, b: 1.0 }, name: "Blue", startPos: { x: -150, z: 100 } },
@@ -147,6 +157,9 @@ class Client extends IgeBaseClass_1.IgeBaseClass {
                 this.updateStatus(`Error: ${error}`);
             }
         });
+    }
+    lodFromUrl() {
+        return new URLSearchParams(window.location.search).get("lod") !== "0";
     }
     zombieCountFromUrl() {
         const value = Number(new URLSearchParams(window.location.search).get("zombies"));
@@ -261,10 +274,11 @@ class Client extends IgeBaseClass_1.IgeBaseClass {
         if (!this.scene || !this.characterModel)
             return;
         const walkClip = (_b = (_a = this.characterModel.animations) === null || _a === void 0 ? void 0 : _a[0]) === null || _b === void 0 ? void 0 : _b.name;
+        const lod = this.lodFromUrl() ? ZOMBIE_LOD : undefined;
         for (let i = 0; i < count; i++) {
             const entity = new IgeEntity_1.IgeEntity()
                 .id(`zombie_${i}`)
-                .model(this.characterModel, { animation: walkClip })
+                .model(this.characterModel, { animation: walkClip, lod })
                 .scaleTo(CHARACTER_SCALE, CHARACTER_SCALE, CHARACTER_SCALE)
                 .mount(this.scene);
             // Per-instance tint over the shared model material
@@ -782,6 +796,9 @@ class Client extends IgeBaseClass_1.IgeBaseClass {
         const stats = (_a = this.renderer) === null || _a === void 0 ? void 0 : _a.stats();
         if (drawEl && stats)
             drawEl.textContent = `${stats.drawCalls + stats.instancedDrawCalls} (${stats.instances} instanced)`;
+        const trianglesEl = document.getElementById("triangles");
+        if (trianglesEl && stats)
+            trianglesEl.textContent = `${(stats.triangles / 1000).toFixed(0)}k (${stats.lodItems} LOD)`;
     }
     hideLoadingScreen() {
         document.querySelectorAll(".igeLoading").forEach((el) => {

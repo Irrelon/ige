@@ -270,6 +270,7 @@ export class IgeWebGlGeometryManager extends IgeBaseClass {
             }
             radius = Math.sqrt(maxDistSq);
         }
+        geometry.meshRadius = radius;
         if (radius >= 0 && geometry.isSkinned) {
             radius *= 1.5;
         }

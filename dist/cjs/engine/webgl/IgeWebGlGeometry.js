@@ -23,6 +23,10 @@ class IgeWebGlGeometry extends IgeBaseClass_1.IgeBaseClass {
         this.boundsCenterY = 0;
         this.boundsCenterZ = 0;
         this.boundsRadius = -1;
+        // Radius of the mesh as authored. boundsRadius is padded for skinned
+        // meshes so animated poses stay inside it; level-of-detail selection
+        // uses this one, which roughly matches the model's visible size.
+        this.meshRadius = -1;
         this.id = id;
         this.drawMode = drawMode;
     }

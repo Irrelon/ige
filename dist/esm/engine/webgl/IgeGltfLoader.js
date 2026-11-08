@@ -1,7 +1,7 @@
 import { IgeBaseClass } from "../core/IgeBaseClass.js"
-import { IgeEntity } from "../core/IgeEntity.js";
+import { IgeEntity } from "../core/IgeEntity.js"
 import { multiplyMat4 } from "./IgeModelParts.js"
-import { IgeWebGlMaterial, IgeWebGlPBRMaterial } from "./IgeWebGlMaterial.js";
+import { IgeWebGlMaterial, IgeWebGlPBRMaterial } from "./IgeWebGlMaterial.js"
 /**
  * GLTF Accessor component types.
  */

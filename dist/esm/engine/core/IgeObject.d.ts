@@ -26,7 +26,7 @@ import type { IgeMaterialData } from "../../types/IgeMaterialData.js"
 import type { IgeMeshData3d } from "../../types/IgeMeshData3d.js"
 import type { IgeGltfModel } from "../webgl/IgeGltfLoader.js"
 import type { IgeSkeleton, IgeSkeletonData } from "../../types/IgeSkeletonData.js";
-import type { IgeModelPart } from "../webgl/IgeModelParts.js"
+import type { IgeModelLod, IgeModelPart } from "../webgl/IgeModelParts.js"
 import type { IgeAnimationClipData } from "../../types/IgeAnimationClipData.js";
 import type { IgePoint } from "../../types/IgePoint.js"
 import type { IgeSmartTexture } from "../../types/IgeSmartTexture.js"
@@ -178,6 +178,8 @@ export declare class IgeObject extends IgeEventingClass implements IgeCanRegiste
     _modelParts?: IgeModelPart[];
     /** Per-part world matrices maintained by the WebGL renderer. */
     _modelPartMatrices?: Float32Array[];
+    /** Lower-detail versions of _modelParts, see IgeEntity.lod(). */
+    _modelLod?: IgeModelLod;
     _animationClips?: Map<string, IgeAnimationClipData>;
     _deathCallBack?: (...args: any[]) => void;
     components: Record<string, IgeComponent<IgeObject>>;

@@ -31,6 +31,7 @@ export declare class IgeWebGlGeometry extends IgeBaseClass {
     boundsCenterY: number;
     boundsCenterZ: number;
     boundsRadius: number;
+    meshRadius: number;
     constructor(id: string, drawMode: number);
     /**
      * Add a vertex attribute descriptor.

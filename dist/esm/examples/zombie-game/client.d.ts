@@ -67,6 +67,7 @@ export declare class Client extends IgeBaseClass implements IgeCanInit {
     grid: Map<number, ZombieState[]>;
     constructor();
     init(): Promise<void>;
+    lodFromUrl(): boolean;
     zombieCountFromUrl(): number;
     setupLights(): void;
     createEffects(): void;

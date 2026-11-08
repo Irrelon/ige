@@ -1,5 +1,5 @@
 import { IgeBaseClass } from "../core/IgeBaseClass.js"
-import { MAX_BONES } from "../../types/IgeSkeletonData.js";
+import { MAX_BONES } from "../../types/IgeSkeletonData.js"
 /**
  * Manages skeleton instances for skeletal animation.
  * Handles bone hierarchy traversal and matrix computation.

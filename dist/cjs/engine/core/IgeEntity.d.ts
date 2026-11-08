@@ -15,8 +15,9 @@ import type { IgeShapeFunctionality } from "../../types/IgeShapeFunctionality.js
 import type { IgeSmartTexture } from "../../types/IgeSmartTexture.js"
 import type { IgeTriggerPolygonFunctionName } from "../../types/IgeTriggerPolygonFunctionName.js"
 import type { IgeGltfModel } from "../webgl/IgeGltfLoader.js"
-import { IgeSkeletalAnimationComponent } from "../components/IgeSkeletalAnimationComponent.js";
-import type { IgeAnimationPlayOptions } from "../../types/IgeAnimationClipData.js"
+import type { IgeModelLod, IgeModelLodLevel } from "../webgl/IgeModelParts.js";
+import { IgeSkeletalAnimationComponent } from "../components/IgeSkeletalAnimationComponent.js"
+import type { IgeAnimationPlayOptions } from "../../types/IgeAnimationClipData.js";
 /**
  * Options for IgeEntity.model().
  */
@@ -25,6 +26,8 @@ export interface IgeModelOptions {
     animation?: string;
     /** Whether the model casts shadows (default true). */
     castShadow?: boolean;
+    /** Levels of detail to switch to while the model is small on screen (see IgeEntity.lod()). */
+    lod?: IgeModelLodLevel[];
 }
 export interface IgeEntityTransformAccessor {
     x: (val?: number) => number | IgeEntity;
@@ -411,6 +414,32 @@ export declare class IgeEntity extends IgeObject implements IgeCanRegisterById, 
      */
     model(model: IgeGltfModel, options?: IgeModelOptions): this;
     model(): IgeGltfModel | undefined;
+    /**
+     * Gets / sets the levels of detail for this entity's model. While the
+     * model is small on screen the WebGL renderer draws a lower-detail
+     * version of it instead; each viewport (and shadow map) picks its own
+     * level, so a split-screen player close to a horde can see full detail
+     * while another sees it from afar. Levels are either generated from the
+     * model (ratio: the fraction of triangles to keep) or separately
+     * authored models with the same parts and skeleton.
+     *
+     * screenSize is the model's on-screen size (the projected diameter of
+     * its bounding sphere, about the height of a standing character) in
+     * device pixels below which the level is used. The renderer's
+     * stats().lodItems counts how many visible meshes used a lower level.
+     * Generated meshes are shared by every entity using the same model.
+     * Pass null to remove the levels.
+     * @example #Two generated levels for a crowd character
+     *     zombie.model(zombieModel, {
+     *         animation: "Walk",
+     *         lod: [
+     *             { screenSize: 200, ratio: 0.5 },
+     *             { screenSize: 100, ratio: 0.2 }
+     *         ]
+     *     });
+     */
+    lod(levels: IgeModelLodLevel[] | null): this;
+    lod(): IgeModelLod | undefined;
     /**
      * Gets / sets how a textured sprite faces the camera in the WebGL
      * renderer: "full" always faces the camera (default), "y" turns around

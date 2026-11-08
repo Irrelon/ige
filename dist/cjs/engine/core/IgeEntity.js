@@ -819,7 +819,7 @@ class IgeEntity extends IgeObject_1.IgeObject {
         return this._texture;
     }
     model(model, options = {}) {
-        var _a, _b;
+        var _a, _b, _c;
         if (model === undefined) {
             return this._model;
         }
@@ -827,6 +827,7 @@ class IgeEntity extends IgeObject_1.IgeObject {
         const parts = (0, IgeModelParts_1.getModelParts)(model);
         this._modelParts = parts;
         this._modelPartMatrices = undefined;
+        this._modelLod = ((_a = options.lod) === null || _a === void 0 ? void 0 : _a.length) ? (0, IgeModelParts_1.getModelLod)(model, options.lod) : undefined;
         // Backwards compatibility: expose the first primitive as the geometry
         if (parts.length > 0) {
             this._geometryData = parts[0].geometryData;
@@ -835,7 +836,7 @@ class IgeEntity extends IgeObject_1.IgeObject {
             this._noShadowCast = !options.castShadow;
         }
         // Skinned models: give this entity its own skeleton and animations
-        const skin = (_a = model.skins) === null || _a === void 0 ? void 0 : _a[0];
+        const skin = (_b = model.skins) === null || _b === void 0 ? void 0 : _b[0];
         if (skin && parts.some((part) => part.skinned)) {
             this._skeletonData = skin.skeleton;
             this._skeleton = (0, IgeModelParts_1.createSkeletonInstance)(skin.skeleton);
@@ -845,7 +846,7 @@ class IgeEntity extends IgeObject_1.IgeObject {
                 anim = this.components.skeletalAnimation;
             }
             anim.setSkeleton(this._skeleton);
-            if ((_b = model.animations) === null || _b === void 0 ? void 0 : _b.length) {
+            if ((_c = model.animations) === null || _c === void 0 ? void 0 : _c.length) {
                 anim.defineClips(model.animations);
             }
             if (options.animation) {
@@ -856,6 +857,13 @@ class IgeEntity extends IgeObject_1.IgeObject {
             this._skeleton = undefined;
             this._skeletonData = undefined;
         }
+        return this;
+    }
+    lod(levels) {
+        if (levels === undefined) {
+            return this._modelLod;
+        }
+        this._modelLod = levels && levels.length && this._model ? (0, IgeModelParts_1.getModelLod)(this._model, levels) : undefined;
         return this;
     }
     billboard(mode) {

@@ -240,6 +240,7 @@ export declare const WithUiPositionMixin: <BaseClassType extends IgeMixin<IgeObj
         _billboardMode: number;
         _modelParts?: import("../webgl/IgeModelParts").IgeModelPart[];
         _modelPartMatrices?: Float32Array[];
+        _modelLod?: import("../webgl/IgeModelParts").IgeModelLod;
         _animationClips?: Map<string, import("../../types/IgeAnimationClipData").IgeAnimationClipData>;
         _deathCallBack?: ((...args: any[]) => void) | undefined;
         components: Record<string, import("../..").IgeComponent<IgeObject>>;

@@ -12,7 +12,7 @@ import { registerClass } from "../utils/igeClassStore.js"
 import { degreesToRadians } from "../utils/maths.js";
 import { traceSet } from "../utils/trace.js"
 import { IgeBehaviourType, IgeEntityRenderMode, IgeIsometricDepthSortMode, IgeMountMode, IgeStreamMode } from "../../enums/index.js";
-import { createSkeletonInstance, getModelParts } from "../webgl/IgeModelParts.js"
+import { createSkeletonInstance, getModelLod, getModelParts } from "../webgl/IgeModelParts.js"
 import { IgeSkeletalAnimationComponent } from "../components/IgeSkeletalAnimationComponent.js";
 /**
  * Creates an entity and handles the entity's life cycle and
@@ -672,6 +672,7 @@ export class IgeEntity extends IgeObject {
         const parts = getModelParts(model);
         this._modelParts = parts;
         this._modelPartMatrices = undefined;
+        this._modelLod = options.lod?.length ? getModelLod(model, options.lod) : undefined;
         // Backwards compatibility: expose the first primitive as the geometry
         if (parts.length > 0) {
             this._geometryData = parts[0].geometryData;
@@ -701,6 +702,13 @@ export class IgeEntity extends IgeObject {
             this._skeleton = undefined;
             this._skeletonData = undefined;
         }
+        return this;
+    }
+    lod(levels) {
+        if (levels === undefined) {
+            return this._modelLod;
+        }
+        this._modelLod = levels && levels.length && this._model ? getModelLod(this._model, levels) : undefined;
         return this;
     }
     billboard(mode) {

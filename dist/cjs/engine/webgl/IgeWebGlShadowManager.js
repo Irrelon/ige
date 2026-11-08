@@ -363,6 +363,14 @@ class IgeWebGlShadowManager extends IgeBaseClass_1.IgeBaseClass {
         return (_a = shadowMap === null || shadowMap === void 0 ? void 0 : shadowMap.lightSpaceMatrix) !== null && _a !== void 0 ? _a : null;
     }
     /**
+     * Get the resolution (width and height in texels) of a light's shadow
+     * map, or 0 if it has none.
+     */
+    getShadowMapSize(lightId) {
+        var _a, _b;
+        return (_b = (_a = this._shadowMaps.get(lightId)) === null || _a === void 0 ? void 0 : _a.size) !== null && _b !== void 0 ? _b : 0;
+    }
+    /**
      * Get shadow map texture for a light.
      */
     getShadowMapTexture(lightId) {

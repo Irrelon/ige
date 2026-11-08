@@ -156,6 +156,8 @@ export class IgeObject extends IgeEventingClass {
     _modelParts;
     /** Per-part world matrices maintained by the WebGL renderer. */
     _modelPartMatrices;
+    /** Lower-detail versions of _modelParts, see IgeEntity.lod(). */
+    _modelLod;
     _animationClips; // Available animation clips
     _deathCallBack; // TODO: Rename this to _deathCallback (lower case B)
     components = {};

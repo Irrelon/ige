@@ -140,6 +140,11 @@ export declare class IgeWebGlShadowManager extends IgeBaseClass {
      */
     getLightSpaceMatrix(lightId: string): Float32Array | null;
     /**
+     * Get the resolution (width and height in texels) of a light's shadow
+     * map, or 0 if it has none.
+     */
+    getShadowMapSize(lightId: string): number;
+    /**
      * Get shadow map texture for a light.
      */
     getShadowMapTexture(lightId: string): WebGLTexture | null;

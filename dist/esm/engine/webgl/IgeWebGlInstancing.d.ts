@@ -56,6 +56,22 @@ export interface IgeWebGlRenderItem {
     batchKey: string;
     /** Shadow pass batch key: geometry (+ skinned flag); textures don't matter. */
     depthKey: string;
+    /**
+     * Level-of-detail thresholds (device pixels, descending) when the item
+     * has lower-detail geometry, else null. Level i + 1 is drawn below
+     * lodSizes[i]; each pass picks its own level.
+     */
+    lodSizes: number[] | null;
+    /** World-space radius of the full mesh as authored, for LOD selection. */
+    lodRadius: number;
+    /** Geometry per level (index 0 is `geometry`). */
+    lodGeometries: IgeWebGlGeometry[];
+    /** batchKey per level. */
+    lodBatchKeys: string[];
+    /** depthKey per level. */
+    lodDepthKeys: string[];
+    /** Geometry chosen for the current viewport (transparent items). */
+    drawGeometry: IgeWebGlGeometry;
 }
 /**
  * A group of render items that can share one geometry binding and,
@@ -81,7 +97,12 @@ export declare class IgeWebGlItemBatcher {
     /** Batches that received at least one item since the last begin(). */
     get batches(): IgeWebGlItemBatch[];
     begin(): void;
-    add(item: IgeWebGlRenderItem, key: string): void;
+    /**
+     * Add an item to the batch for `key`. `geometry` is the mesh to draw it
+     * with (a level-of-detail version of item.geometry, for example); it
+     * must be the same for every item sharing a key.
+     */
+    add(item: IgeWebGlRenderItem, key: string, geometry?: IgeWebGlGeometry): void;
     /** Drop all cached batch objects (e.g. after a context loss). */
     clear(): void;
 }

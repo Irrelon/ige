@@ -1,8 +1,10 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getModelParts = getModelParts;
+exports.getModelLod = getModelLod;
 exports.createSkeletonInstance = createSkeletonInstance;
 exports.multiplyMat4 = multiplyMat4;
+const IgeMeshSimplifier_1 = require("./IgeMeshSimplifier.js");
 const partsCache = new WeakMap();
 /**
  * Get the render parts for a loaded GLTF model (cached per model).
@@ -59,6 +61,59 @@ function getModelParts(model) {
     }
     partsCache.set(model, parts);
     return parts;
+}
+const lodGeometryCache = new WeakMap();
+/**
+ * Build the level-of-detail geometry for a model. Generated levels are
+ * cached per mesh, so every entity using the same model and settings
+ * shares the same simplified meshes (and GPU buffers).
+ */
+function getModelLod(model, levels) {
+    const parts = getModelParts(model);
+    if (!parts.length || !levels.length)
+        return undefined;
+    const sorted = [...levels].sort((a, b) => b.screenSize - a.screenSize);
+    const lod = { screenSizes: [], partGeometries: parts.map(() => []) };
+    for (const level of sorted) {
+        let geometries;
+        if (level.model) {
+            const lodParts = getModelParts(level.model);
+            if (lodParts.length !== parts.length) {
+                console.warn(`IgeModelLod: LOD model "${level.model.id}" has ${lodParts.length} parts, ` +
+                    `expected ${parts.length}; level ignored`);
+                continue;
+            }
+            geometries = lodParts.map((part) => part.geometryData);
+        }
+        else if (level.ratio !== undefined && level.ratio < 1) {
+            const ratio = Math.max(0, level.ratio);
+            geometries = parts.map((part) => getSimplifiedGeometry(part.geometryData, ratio, level.maxError));
+        }
+        if (!geometries)
+            continue;
+        lod.screenSizes.push(level.screenSize);
+        for (let i = 0; i < parts.length; i++)
+            lod.partGeometries[i].push(geometries[i]);
+    }
+    return lod.screenSizes.length ? lod : undefined;
+}
+function getSimplifiedGeometry(geometry, ratio, maxError) {
+    let byKey = lodGeometryCache.get(geometry);
+    if (!byKey) {
+        byKey = new Map();
+        lodGeometryCache.set(geometry, byKey);
+    }
+    const key = `${ratio}|${maxError !== null && maxError !== void 0 ? maxError : ""}`;
+    let simplified = byKey.get(key);
+    if (!simplified) {
+        simplified = (0, IgeMeshSimplifier_1.simplifyGeometry)(geometry, {
+            ratio,
+            maxError,
+            id: `${geometry.id}_lod${ratio}${maxError !== undefined ? `_e${maxError}` : ""}`
+        });
+        byKey.set(key, simplified);
+    }
+    return simplified;
 }
 /**
  * Create a runtime skeleton (pose buffers) for skeleton data. Entities each

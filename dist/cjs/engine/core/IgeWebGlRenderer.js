@@ -150,8 +150,12 @@ class IgeWebGlRenderer extends IgeBaseRenderer_1.IgeBaseRenderer {
             shadowDrawCalls: 0,
             items: 0,
             visibleItems: 0,
+            lodItems: 0,
+            triangles: 0,
             viewports: 0
         };
+        // Multiplies every on-screen size used to pick a level of detail
+        this._lodBias = 1;
         // When true, the WebGL drawing buffer is preserved after compositing,
         // allowing gl.readPixels() to work after a frame is rendered.
         // Must be set before createFrontBuffer() is called.
@@ -422,6 +426,13 @@ class IgeWebGlRenderer extends IgeBaseRenderer_1.IgeBaseRenderer {
         this._instancingEnabled = val;
         return this;
     }
+    lodBias(val) {
+        if (val === undefined) {
+            return this._lodBias;
+        }
+        this._lodBias = Math.max(0, val);
+        return this;
+    }
     maxPixelRatio(val) {
         if (val === undefined) {
             return this._maxPixelRatio;
@@ -644,6 +655,8 @@ class IgeWebGlRenderer extends IgeBaseRenderer_1.IgeBaseRenderer {
         stats.shadowDrawCalls = 0;
         stats.items = 0;
         stats.visibleItems = 0;
+        stats.lodItems = 0;
+        stats.triangles = 0;
         stats.viewports = viewports ? viewports.length : 0;
         // Clear the entire canvas
         const cc = this._clearColor;
@@ -757,6 +770,7 @@ class IgeWebGlRenderer extends IgeBaseRenderer_1.IgeBaseRenderer {
         const world = (_a = entity._worldMatrix4) === null || _a === void 0 ? void 0 : _a.matrix;
         if (!world)
             return;
+        const lod = entity._modelLod && entity._modelLod.partGeometries.length === parts.length ? entity._modelLod : undefined;
         let matrices = entity._modelPartMatrices;
         if (!matrices || matrices.length !== parts.length) {
             matrices = entity._modelPartMatrices = parts.map((part) => (part.matrix ? new Float32Array(16) : world));
@@ -768,7 +782,7 @@ class IgeWebGlRenderer extends IgeBaseRenderer_1.IgeBaseRenderer {
                 partWorld = matrices[i];
                 multiplyMat4Into(partWorld, world, part.matrix);
             }
-            const item = this._addModelItem(entity, part.geometryData, part.materialData, entity._materialData, partWorld);
+            const item = this._addModelItem(entity, part.geometryData, part.materialData, entity._materialData, partWorld, lod ? lod.partGeometries[i] : null, lod ? lod.screenSizes : null);
             if (item)
                 data.models.push(item);
         }
@@ -793,23 +807,21 @@ class IgeWebGlRenderer extends IgeBaseRenderer_1.IgeBaseRenderer {
      * @param overrideData Optional per-entity material values that replace
      * the mesh material's (used for model parts).
      * @param worldMatrix World matrix to draw with (defaults to the entity's).
+     * @param lodGeometryData Lower-detail versions of the mesh, if any.
+     * @param lodSizes Screen sizes below which each lower level is used.
      */
-    _addModelItem(entity, geometryData, materialData, overrideData, worldMatrix) {
-        var _a, _b, _c;
+    _addModelItem(entity, geometryData, materialData, overrideData, worldMatrix, lodGeometryData, lodSizes) {
+        var _a, _b;
         if (overrideData === void 0) { overrideData = null; }
         if (worldMatrix === void 0) { worldMatrix = (_a = entity._worldMatrix4) === null || _a === void 0 ? void 0 : _a.matrix; }
-        if (!this._geometryManager || !worldMatrix) {
+        if (lodGeometryData === void 0) { lodGeometryData = null; }
+        if (lodSizes === void 0) { lodSizes = null; }
+        if (!worldMatrix) {
             return;
         }
-        const geometryId = geometryData.id || "unknown";
-        let geometry = this._geometryManager.getGeometry(geometryId);
-        if (!geometry) {
-            geometry = this._geometryManager.createGeometryFromData(geometryId, geometryData) || undefined;
-            if (!geometry)
-                return;
-            // Geometry creation binds buffers with raw GL calls
-            (_b = this._stateManager) === null || _b === void 0 ? void 0 : _b.reset();
-        }
+        const geometry = this._getGeometry(geometryData);
+        if (!geometry)
+            return;
         let item = this._itemPool[this._itemCount];
         if (!item) {
             item = {
@@ -830,13 +842,20 @@ class IgeWebGlRenderer extends IgeBaseRenderer_1.IgeBaseRenderer {
                 cx: 0, cy: 0, cz: 0, radius: -1,
                 sortKey: 0,
                 batchKey: "",
-                depthKey: ""
+                depthKey: "",
+                lodSizes: null,
+                lodRadius: 0,
+                lodGeometries: [],
+                lodBatchKeys: [],
+                lodDepthKeys: [],
+                drawGeometry: geometry
             };
             this._itemPool[this._itemCount] = item;
         }
         this._itemCount++;
         item.entity = entity;
         item.geometry = geometry;
+        item.drawGeometry = geometry;
         item.materialData = materialData;
         item.worldMatrix = worldMatrix;
         // Resolve material values
@@ -877,7 +896,7 @@ class IgeWebGlRenderer extends IgeBaseRenderer_1.IgeBaseRenderer {
         item.skeleton = geometry.isSkinned ? entity._skeleton : undefined;
         item.boneRow = -1;
         if (item.skeleton) {
-            (_c = this._skeletonManager) === null || _c === void 0 ? void 0 : _c.updateSkeletonMatrices(item.skeleton);
+            (_b = this._skeletonManager) === null || _b === void 0 ? void 0 : _b.updateSkeletonMatrices(item.skeleton);
             if (this._bonePalette) {
                 let row = this._skeletonRows.get(item.skeleton);
                 if (row === undefined) {
@@ -897,18 +916,84 @@ class IgeWebGlRenderer extends IgeBaseRenderer_1.IgeBaseRenderer {
             const sx = m[0] * m[0] + m[1] * m[1] + m[2] * m[2];
             const sy = m[4] * m[4] + m[5] * m[5] + m[6] * m[6];
             const sz = m[8] * m[8] + m[9] * m[9] + m[10] * m[10];
-            item.radius = geometry.boundsRadius * Math.sqrt(Math.max(sx, sy, sz));
+            const scale = Math.sqrt(Math.max(sx, sy, sz));
+            item.radius = geometry.boundsRadius * scale;
+            item.lodRadius = geometry.meshRadius * scale;
         }
         else {
             item.cx = m[12];
             item.cy = m[13];
             item.cz = m[14];
             item.radius = -1;
+            item.lodRadius = -1;
         }
         const skinned = item.skeleton ? "|s" : "";
         item.batchKey = geometry.id + "|" + item.textureKey + skinned;
         item.depthKey = geometry.id + skinned;
+        // Level-of-detail geometry (index 0 is the full mesh)
+        item.lodSizes = null;
+        if (lodGeometryData && lodSizes && lodGeometryData.length > 0) {
+            const geometries = item.lodGeometries;
+            const batchKeys = item.lodBatchKeys;
+            const depthKeys = item.lodDepthKeys;
+            geometries.length = 0;
+            batchKeys.length = 0;
+            depthKeys.length = 0;
+            geometries.push(geometry);
+            batchKeys.push(item.batchKey);
+            depthKeys.push(item.depthKey);
+            for (let i = 0; i < lodGeometryData.length; i++) {
+                const lodGeometry = this._getGeometry(lodGeometryData[i]);
+                if (!lodGeometry)
+                    break;
+                geometries.push(lodGeometry);
+                batchKeys.push(lodGeometry.id + "|" + item.textureKey + skinned);
+                depthKeys.push(lodGeometry.id + skinned);
+            }
+            // LOD needs a size to measure
+            if (geometries.length > 1 && item.lodRadius > 0) {
+                item.lodSizes = lodSizes;
+            }
+        }
         return item;
+    }
+    /**
+     * Get the GPU geometry for geometry data, uploading it on first use.
+     */
+    _getGeometry(geometryData) {
+        var _a;
+        if (!this._geometryManager)
+            return;
+        const geometryId = geometryData.id || "unknown";
+        let geometry = this._geometryManager.getGeometry(geometryId);
+        if (!geometry) {
+            geometry = this._geometryManager.createGeometryFromData(geometryId, geometryData) || undefined;
+            if (!geometry)
+                return;
+            // Geometry creation binds buffers with raw GL calls
+            (_a = this._stateManager) === null || _a === void 0 ? void 0 : _a.reset();
+        }
+        return geometry;
+    }
+    /**
+     * Pick an item's level of detail for a pass that draws it at
+     * `pixelsPerUnit` (device pixels or shadow map texels per world unit).
+     */
+    _lodLevel(item, pixelsPerUnit) {
+        const sizes = item.lodSizes;
+        const size = item.lodRadius * 2 * pixelsPerUnit * this._lodBias;
+        const max = item.lodGeometries.length - 1;
+        let level = 0;
+        while (level < max && size < sizes[level])
+            level++;
+        return level;
+    }
+    /**
+     * Add a draw's triangle count to the frame stats.
+     */
+    _countTriangles(geometry, instances) {
+        const vertices = geometry.indexCount > 0 ? geometry.indexCount : geometry.vertexCount;
+        this._stats.triangles += Math.floor(vertices / 3) * instances;
     }
     /**
      * Copy the values present in a material onto a render item's resolved
@@ -980,6 +1065,14 @@ class IgeWebGlRenderer extends IgeBaseRenderer_1.IgeBaseRenderer {
         const camX = camera._translate.x;
         const camY = camera._translate.y;
         const camZ = camera._translate.z;
+        // Device pixels per world unit, for picking levels of detail. An
+        // orthographic view has one scale everywhere; a perspective view
+        // divides it by each item's view depth.
+        const proj = matrices.projection.matrix;
+        const view = matrices.view.matrix;
+        const viewScale = Math.sqrt(view[1] * view[1] + view[5] * view[5] + view[9] * view[9]);
+        const pixelsPerUnit = proj[5] * viewScale * vpHeight * 0.5;
+        const perspective = proj[11] !== 0;
         // ------------------------------------------------------------
         // Cull against the camera frustum and batch what remains
         // ------------------------------------------------------------
@@ -997,6 +1090,22 @@ class IgeWebGlRenderer extends IgeBaseRenderer_1.IgeBaseRenderer {
             item.entity._lastRenderedFrame = frameId;
             const dx = item.cx - camX, dy = item.cy - camY, dz = item.cz - camZ;
             const distSq = dx * dx + dy * dy + dz * dz;
+            let geometry = item.geometry;
+            let batchKey = item.batchKey;
+            if (item.lodSizes) {
+                let scale = pixelsPerUnit;
+                if (perspective) {
+                    const depth = -(view[2] * item.cx + view[6] * item.cy + view[10] * item.cz + view[14]);
+                    scale /= Math.max(depth, 1e-3);
+                }
+                const level = this._lodLevel(item, scale);
+                if (level > 0) {
+                    geometry = item.lodGeometries[level];
+                    batchKey = item.lodBatchKeys[level];
+                    this._stats.lodItems++;
+                }
+            }
+            item.drawGeometry = geometry;
             if (item.transparent) {
                 item.sortKey = distSq;
                 transparent.push(item);
@@ -1005,7 +1114,7 @@ class IgeWebGlRenderer extends IgeBaseRenderer_1.IgeBaseRenderer {
                 // Front-to-back key: distance to the far side of the bounds, so
                 // big surfaces like floors sort behind the things standing on them
                 item.sortKey = Math.sqrt(distSq) + Math.max(item.radius, 0);
-                batcher.add(item, item.batchKey);
+                batcher.add(item, batchKey, geometry);
             }
         }
         // Draw opaque geometry front to back (batches, and instances within
@@ -1142,6 +1251,7 @@ class IgeWebGlRenderer extends IgeBaseRenderer_1.IgeBaseRenderer {
         this._instanceBuffer.unbind();
         this._stats.instancedDrawCalls++;
         this._stats.instances += count;
+        this._countTriangles(geometry, count);
     }
     /**
      * Point an instanced skinned program at the bone palette texture.
@@ -1205,6 +1315,7 @@ class IgeWebGlRenderer extends IgeBaseRenderer_1.IgeBaseRenderer {
                     }
                     this._geometryManager.drawGeometry(batch.geometry);
                     this._stats.shadowDrawCalls++;
+                    this._countTriangles(batch.geometry, 1);
                 }
             }
             this._geometryManager.unbindGeometry(batch.geometry, program);
@@ -1220,6 +1331,10 @@ class IgeWebGlRenderer extends IgeBaseRenderer_1.IgeBaseRenderer {
             return;
         this._lightFrustumMatrix.matrix.set(lightSpaceMatrix);
         this._lightFrustum.extractFromMatrix(this._lightFrustumMatrix);
+        // Shadow map texels per world unit (orthographic light projection)
+        const m = lightSpaceMatrix;
+        const texelsPerUnit = Math.sqrt(m[0] * m[0] + m[4] * m[4] + m[8] * m[8]) *
+            this._shadowManager.getShadowMapSize(this._shadowLightId) * 0.5;
         const batcher = this._depthBatcher;
         batcher.begin();
         const models = data.models;
@@ -1231,7 +1346,13 @@ class IgeWebGlRenderer extends IgeBaseRenderer_1.IgeBaseRenderer {
                 continue;
             }
             item.entity._lastRenderedFrame = this._frameId;
-            batcher.add(item, item.depthKey);
+            if (item.lodSizes) {
+                const level = this._lodLevel(item, texelsPerUnit);
+                batcher.add(item, item.lodDepthKeys[level], item.lodGeometries[level]);
+            }
+            else {
+                batcher.add(item, item.depthKey);
+            }
         }
         if (!this._shadowManager.beginShadowPass(this._shadowLightId)) {
             return;
@@ -1247,7 +1368,7 @@ class IgeWebGlRenderer extends IgeBaseRenderer_1.IgeBaseRenderer {
      * the light across all scenes being rendered.
      */
     _renderPointLightShadowPasses() {
-        var _a;
+        var _a, _b;
         if (!this._shadowManager) {
             return;
         }
@@ -1262,20 +1383,32 @@ class IgeWebGlRenderer extends IgeBaseRenderer_1.IgeBaseRenderer {
             // Get the far plane from the shadow map data so depth pass and lookup match
             const shadowData = this._shadowManager.getPointShadowMapData(lightId);
             const farPlane = (_a = shadowData === null || shadowData === void 0 ? void 0 : shadowData.farPlane) !== null && _a !== void 0 ? _a : (pointLight._range || 500);
-            // Gather casters within the light's shadow range
+            // Gather casters within the light's shadow range. Each cube face
+            // has a 90 degree field of view, so an item at distance d covers
+            // (faceSize / 2) / d texels per world unit.
+            const halfFace = ((_b = shadowData === null || shadowData === void 0 ? void 0 : shadowData.faceSize) !== null && _b !== void 0 ? _b : 512) * 0.5;
             batcher.begin();
             for (let i = 0; i < this._itemCount; i++) {
                 const item = this._itemPool[i];
                 if (!item.castShadow)
                     continue;
+                let distance = 0;
                 if (item.radius >= 0) {
                     const dx = item.cx - pos.x, dy = item.cy - pos.y, dz = item.cz - pos.z;
                     const reach = farPlane + item.radius;
-                    if (dx * dx + dy * dy + dz * dz > reach * reach)
+                    const distSq = dx * dx + dy * dy + dz * dz;
+                    if (distSq > reach * reach)
                         continue;
+                    distance = Math.sqrt(distSq);
                 }
                 item.entity._lastRenderedFrame = this._frameId;
-                batcher.add(item, item.depthKey);
+                if (item.lodSizes && distance > 0) {
+                    const level = this._lodLevel(item, halfFace / distance);
+                    batcher.add(item, item.lodDepthKeys[level], item.lodGeometries[level]);
+                }
+                else {
+                    batcher.add(item, item.depthKey);
+                }
             }
             for (let face = 0; face < 6; face++) {
                 if (!this._shadowManager.beginPointShadowPass(lightId, face)) {
@@ -1410,6 +1543,7 @@ class IgeWebGlRenderer extends IgeBaseRenderer_1.IgeBaseRenderer {
                     }
                     this._geometryManager.drawGeometry(batch.geometry);
                     this._stats.drawCalls++;
+                    this._countTriangles(batch.geometry, 1);
                 }
             }
             this._geometryManager.unbindGeometry(batch.geometry, program);
@@ -1434,15 +1568,17 @@ class IgeWebGlRenderer extends IgeBaseRenderer_1.IgeBaseRenderer {
                 this._setupLitProgram(program, matrices);
                 current = program;
             }
-            this._geometryManager.bindGeometry(item.geometry, program);
+            const geometry = item.drawGeometry;
+            this._geometryManager.bindGeometry(geometry, program);
             this._bindBaseTexture(item.blobTextureId, item.texture);
             this._applyItemUniforms(program, item);
             if (skinned) {
                 this._uploadBoneUniforms(program, item);
             }
-            this._geometryManager.drawGeometry(item.geometry);
-            this._geometryManager.unbindGeometry(item.geometry, program);
+            this._geometryManager.drawGeometry(geometry);
+            this._geometryManager.unbindGeometry(geometry, program);
             this._stats.drawCalls++;
+            this._countTriangles(geometry, 1);
         }
     }
     /**

@@ -27,6 +27,47 @@ export interface IgeModelPart {
  */
 export declare function getModelParts(model: IgeGltfModel): IgeModelPart[];
 /**
+ * One level of detail for a model, used while the model is small on screen.
+ * Give either a ratio (the level is generated from the model with
+ * simplifyGeometry) or a separately authored model.
+ */
+export interface IgeModelLodLevel {
+    /**
+     * Use this level (or a lower one) when the model's on-screen size, the
+     * projected diameter of its bounding sphere in device pixels (about
+     * the height of a standing character), is below this value.
+     */
+    screenSize: number;
+    /** Fraction of the model's triangles to keep (0-1). */
+    ratio?: number;
+    /**
+     * Error limit for a generated level, as a fraction of the mesh size
+     * (see IgeSimplifyOptions.maxError).
+     */
+    maxError?: number;
+    /**
+     * An authored lower-detail model instead of a generated one. It must
+     * have the same parts in the same order as the full model, and skinned
+     * parts must use the same skeleton.
+     */
+    model?: IgeGltfModel;
+}
+/**
+ * Levels of detail prepared for rendering.
+ */
+export interface IgeModelLod {
+    /** Thresholds in descending order: level i + 1 is used below screenSizes[i]. */
+    screenSizes: number[];
+    /** For each model part, its geometry at each lower level (parallel to screenSizes). */
+    partGeometries: IgeGeometryData3d[][];
+}
+/**
+ * Build the level-of-detail geometry for a model. Generated levels are
+ * cached per mesh, so every entity using the same model and settings
+ * shares the same simplified meshes (and GPU buffers).
+ */
+export declare function getModelLod(model: IgeGltfModel, levels: IgeModelLodLevel[]): IgeModelLod | undefined;
+/**
  * Create a runtime skeleton (pose buffers) for skeleton data. Entities each
  * need their own instance; the static data is shared.
  */

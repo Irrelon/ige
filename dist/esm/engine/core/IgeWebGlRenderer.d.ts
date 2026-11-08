@@ -15,11 +15,12 @@ import type { IgeEntity } from "./IgeEntity.js";
 import type { IgeDirectionalLight, IgePointLight } from "../webgl/IgeWebGlLight.js"
 import type { IgeCameraMatrices } from "../webgl/IgeWebGlCameraController.js";
 import type { IgeWebGlProgram } from "../webgl/IgeWebGlProgram.js"
-import type { IgeTexture } from "./IgeTexture.js";
-import { IgeMatrix4 } from "./IgeMatrix4.js"
-import { IgeFrustum } from "../webgl/IgeFrustum.js";
-import { IgeWebGlBonePalette, IgeWebGlInstanceBuffer, IgeWebGlItemBatcher, type IgeWebGlItemBatch, type IgeWebGlRenderItem } from "../webgl/IgeWebGlInstancing.js"
-import type { IgeGeometryData3d } from "../../types/IgeGeometryData3d.js";
+import type { IgeWebGlGeometry } from "../webgl/IgeWebGlGeometry.js";
+import type { IgeTexture } from "./IgeTexture.js"
+import { IgeMatrix4 } from "./IgeMatrix4.js";
+import { IgeFrustum } from "../webgl/IgeFrustum.js"
+import { IgeWebGlBonePalette, IgeWebGlInstanceBuffer, IgeWebGlItemBatcher, type IgeWebGlItemBatch, type IgeWebGlRenderItem } from "../webgl/IgeWebGlInstancing.js";
+import type { IgeGeometryData3d } from "../../types/IgeGeometryData3d.js"
 import type { IgeModelPart } from "../webgl/IgeModelParts.js"
 import type { IgeParticleSystem3d } from "../webgl/IgeParticleSystem3d.js";
 import type { IgeMaterialData } from "../../types/IgeMaterialData.js"
@@ -57,6 +58,10 @@ export interface IgeWebGlRenderStats {
     items: number;
     /** Items that survived camera culling, summed over viewports. */
     visibleItems: number;
+    /** Visible items drawn at a lower level of detail, summed over viewports. */
+    lodItems: number;
+    /** Model triangles submitted by every pass (main, transparent and shadow). */
+    triangles: number;
     viewports: number;
 }
 /**
@@ -139,6 +144,7 @@ export declare class IgeWebGlRenderer extends IgeBaseRenderer {
     protected _bonePalette?: IgeWebGlBonePalette;
     protected _fog: IgeWebGlFogSettings;
     protected _stats: IgeWebGlRenderStats;
+    protected _lodBias: number;
     protected _preserveDrawingBuffer: boolean;
     /**
      * Initialize the WebGL renderer.
@@ -198,6 +204,14 @@ export declare class IgeWebGlRenderer extends IgeBaseRenderer {
      */
     instancing(): boolean;
     instancing(val: boolean): this;
+    /**
+     * Gets / sets the level-of-detail bias. On-screen sizes are multiplied
+     * by it before an entity's LOD level is picked (see IgeEntity.lod()):
+     * above 1 keeps full detail longer, below 1 switches to lower detail
+     * sooner. Useful as a graphics quality setting. Defaults to 1.
+     */
+    lodBias(): number;
+    lodBias(val: number): this;
     /**
      * Gets / sets the highest device pixel ratio the canvas renders at.
      * High-DPI screens can make split-screen fill-rate bound (four
@@ -315,8 +329,23 @@ export declare class IgeWebGlRenderer extends IgeBaseRenderer {
      * @param overrideData Optional per-entity material values that replace
      * the mesh material's (used for model parts).
      * @param worldMatrix World matrix to draw with (defaults to the entity's).
+     * @param lodGeometryData Lower-detail versions of the mesh, if any.
+     * @param lodSizes Screen sizes below which each lower level is used.
      */
-    protected _addModelItem(entity: IgeEntity, geometryData: IgeGeometryData3d, materialData: IgeMaterialData | null, overrideData?: IgeMaterialData | null, worldMatrix?: Float32Array | undefined): IgeWebGlRenderItem | undefined;
+    protected _addModelItem(entity: IgeEntity, geometryData: IgeGeometryData3d, materialData: IgeMaterialData | null, overrideData?: IgeMaterialData | null, worldMatrix?: Float32Array | undefined, lodGeometryData?: IgeGeometryData3d[] | null, lodSizes?: number[] | null): IgeWebGlRenderItem | undefined;
+    /**
+     * Get the GPU geometry for geometry data, uploading it on first use.
+     */
+    protected _getGeometry(geometryData: IgeGeometryData3d): IgeWebGlGeometry | undefined;
+    /**
+     * Pick an item's level of detail for a pass that draws it at
+     * `pixelsPerUnit` (device pixels or shadow map texels per world unit).
+     */
+    protected _lodLevel(item: IgeWebGlRenderItem, pixelsPerUnit: number): number;
+    /**
+     * Add a draw's triangle count to the frame stats.
+     */
+    protected _countTriangles(geometry: IgeWebGlGeometry, instances: number): void;
     /**
      * Copy the values present in a material onto a render item's resolved
      * material (fields that are absent are left unchanged).

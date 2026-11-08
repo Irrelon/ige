@@ -17,15 +17,20 @@ export class IgeWebGlItemBatcher {
         }
         this._active.length = 0;
     }
-    add(item, key) {
+    /**
+     * Add an item to the batch for `key`. `geometry` is the mesh to draw it
+     * with (a level-of-detail version of item.geometry, for example); it
+     * must be the same for every item sharing a key.
+     */
+    add(item, key, geometry = item.geometry) {
         let batch = this._batchMap.get(key);
         if (!batch) {
             batch = {
                 key,
-                geometry: item.geometry,
+                geometry,
                 blobTextureId: item.blobTextureId,
                 texture: item.texture,
-                skinned: item.geometry.isSkinned && !!item.skeleton,
+                skinned: geometry.isSkinned && !!item.skeleton,
                 items: []
             };
             this._batchMap.set(key, batch);
@@ -33,10 +38,10 @@ export class IgeWebGlItemBatcher {
         if (batch.items.length === 0) {
             // Refresh the shared state in case the batch object was reused for
             // a different geometry instance with the same key.
-            batch.geometry = item.geometry;
+            batch.geometry = geometry;
             batch.blobTextureId = item.blobTextureId;
             batch.texture = item.texture;
-            batch.skinned = item.geometry.isSkinned && !!item.skeleton;
+            batch.skinned = geometry.isSkinned && !!item.skeleton;
             this._active.push(batch);
         }
         batch.items.push(item);
