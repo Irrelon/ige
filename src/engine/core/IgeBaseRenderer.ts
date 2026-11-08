@@ -105,6 +105,22 @@ export class IgeBaseRenderer extends IgeEventingClass {
 		return this._devicePixelRatio;
 	}
 
+	/**
+	 * Gets / sets a camera preset (e.g. "screen2d") the renderer gives
+	 * viewport cameras that haven't been set up (no preset or lookAt) when
+	 * it first draws them. igeCreateRenderer({ mode: "2d" }) uses it so 2D
+	 * scenes look the same on WebGL as on Canvas 2D.
+	 */
+	defaultCameraPreset (): string | undefined;
+	defaultCameraPreset (preset: string | undefined): this;
+	defaultCameraPreset (preset?: string) {
+		if (arguments.length === 0) return this._defaultCameraPreset;
+		this._defaultCameraPreset = preset;
+		return this;
+	}
+
+	_defaultCameraPreset?: string;
+
 	_updateDevicePixelRatio () {
 		if (ige.engine._pixelRatioScaling) {
 			// Support high-definition devices and "retina" displays by adjusting

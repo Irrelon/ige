@@ -1324,6 +1324,18 @@ export class IgeEngine extends IgeEntity implements IgeIsReadyPromise {
 	 * Starts the engine or rejects the promise with an error.
 	 */
 	start () {
+		// No renderer assigned: use WebGL where the browser supports it, else
+		// Canvas 2D (see igeCreateRenderer())
+		if (isClient && !isWorker && !this._renderer) {
+			return import("@/engine/core/igeCreateRenderer").then(({ igeCreateRenderer }) => {
+				if (!this._renderer) this.renderer(igeCreateRenderer({ mode: "2d" }));
+				return this._startEngine();
+			});
+		}
+		return this._startEngine();
+	}
+
+	_startEngine (): Promise<boolean> {
 
 		return new Promise((resolve, reject) => {
 			// Check if the state is anything other than zero (stopped)
