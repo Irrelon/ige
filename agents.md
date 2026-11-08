@@ -88,15 +88,16 @@ The engine has extensive 3D infrastructure:
     -   **State Management** (`IgeWebGlStateManager`) - WebGL state tracking
     -   **Model Parts** (`IgeModelParts`) - turns a loaded GLTF model into render parts (all primitives, node transforms, materials, textures) for `IgeEntity.model()`
     -   **3D Particles** (`IgeParticleSystem3d`) - typed-array particle effects drawn as one instanced billboard batch
-    -   **Ground Decals** (`IgeDecalSystem3d`) - blood/scorch marks as instanced quads on the floor, multiply-blended so they take the floor's lighting
+    -   **Decals** (`IgeDecalSystem3d`, `IgeDecalProjector`) - blood/scorch marks: instanced flat quads on floors (`add()`), or projected onto walls, steps and uneven terrain by clipping the target meshes' triangles (`project()`); multiply-blended so they take the surface's lighting
+    -   **Raycasting** (`IgeRaycast`) - exact ray/triangle tests against entities' meshes, skinned characters in their current pose (`renderer.raycast()`, `raycastEntities()`, `pointerPicking("triangles")`)
     -   **Animation Retargeting** (`IgeAnimationRetarget`) - plays clips from separate animation files on a model's skeleton, matched by bone name
     -   **Mesh Simplifier** (`IgeMeshSimplifier`) - quadric edge-collapse simplification that keeps UVs, normals and skin weights; generates level-of-detail meshes
 -   Frame pipeline: renderables are collected once per frame (transforms, skin matrices, world-space bounds); each viewport then culls, renders its directional shadow map (centred on its camera target, or shared when split-screen views are close) and draws opaque batches front to back, then transparent items and particles. Point light shadows render once per frame.
 -   Level of detail: each pass (viewport, directional shadow, point shadow) picks an entity's LOD level from its projected size, so split-screen views choose independently.
--   Split-screen and picking helpers: `worldToScreen()`, `screenToWorldRay()`, `screenToGround()`, `screenToHeightfield()`, `viewportAt()`, `maxPixelRatio()`, `lodBias()`, `fog()`, `stats()`
+-   Split-screen and picking helpers: `worldToScreen()`, `screenToWorldRay()`, `screenToGround()`, `screenToHeightfield()`, `raycast()`, `viewportAt()`, `maxPixelRatio()`, `lodBias()`, `fog()`, `stats()`
 -   Resources and quality: `releaseGeometry()`, `releaseTexture()` (dynamic content must free what it replaces), `backFaceCulling()` (opt-in; meshes must be wound CCW, `doubleSided` materials are exempt), `shadowCaching()` (static shadow casters cached), `ige.engine.renderOnDemand()` (frames only when something visible changed; `manualRender()` after material/texture changes). Geometry `colors` are used as vertex colours.
 -   HUD and debugging: `IgeViewportOverlay` (DOM elements over entities, clipped per viewport), `debugDraw({ bounds, shadowFrustum })`, `debugLine()`, `preferredWebGlVersion(1)` to test the WebGL 1 path.
--   2D: camera preset `screen2d` (y down, one unit per pixel, zoom by camera scale) draws sprites flat with their 2D transforms; smart textures render per entity. See `guides/2d-on-webgl.md`.
+-   2D: camera preset `screen2d` (y down, one unit per pixel, zoom by camera scale) draws sprites flat with their 2D transforms; smart textures and bitmap font sheets render per entity; texture filters re-upload when they change. Isometric games move to a 3D layout to use WebGL. Entity `tick()` isn't called by the WebGL renderer (use update behaviours). See `guides/2d-on-webgl.md`.
 -   Guides: `guides/webgl-models.md`, `guides/2d-on-webgl.md`.
 -   Used in multiple working examples: coordTest2d, coordTest3d, coordTestIso, lightingShadows, skeletalAnimation, webGlRenderer, zombie-game (4-player split-screen zombie ARPG prototype), webGl2d (Canvas 2D style scene on WebGL, `?split=1` for two views), hex-realms (large hex-map strategy prototype, in progress)
 
@@ -117,7 +118,7 @@ const zombie = new IgeEntity()
 	.scaleTo(100, 100, 100)
 	.mount(scene);
 
-zombie._materialData = { color: { r: 0.4, g: 0.6, b: 0.35, a: 1 } }; // per-entity override
+zombie.material({ color: { r: 0.4, g: 0.6, b: 0.35, a: 1 } }); // per-entity override (null restores)
 zombie.playAnimation("Attack", { loop: false, crossFadeDuration: 0.1 });
 ```
 
@@ -166,7 +167,9 @@ zombie.playAnimation("Attack", { loop: false, crossFadeDuration: 0.1 });
 | `IgeParticleSystem3d.ts` | 3D particle effects entity |
 | `IgeMeshSimplifier.ts` | Mesh simplification for level-of-detail geometry |
 | `IgeAnimationRetarget.ts` | Retarget animation clips from other files onto a skeleton by bone name |
-| `IgeDecalSystem3d.ts` | Ground decals entity |
+| `IgeDecalSystem3d.ts` | Decals entity (flat floor decals and projected decals) |
+| `IgeDecalProjector.ts` | Clips mesh triangles to a decal box for projected decals |
+| `IgeRaycast.ts` | Ray/triangle tests against entities' meshes (including skinned, posed on the CPU) |
 | `IgeHeightfieldRay.ts` | Ray/heightfield intersection behind `screenToHeightfield()` |
 | `IgeViewportOverlay.ts` | DOM HUD elements over the 3D views, clipped per viewport |
 
