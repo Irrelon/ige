@@ -1,9 +1,10 @@
 import { IgeAsset } from "./IgeAsset.js"
-import { newCanvas } from "./IgeCanvas.js";
-import { IgeDependencies } from "./IgeDependencies.js"
-import { ige } from "../instance.js";
-import { arrPull } from "../utils/arrays.js"
-import { isClient, isServer } from "../utils/clientServer.js";
+import { markSceneChanged } from "../utils/sceneChange.js";
+import { newCanvas } from "./IgeCanvas.js"
+import { IgeDependencies } from "./IgeDependencies.js";
+import { ige } from "../instance.js"
+import { arrPull } from "../utils/arrays.js";
+import { isClient, isServer } from "../utils/clientServer.js"
 import { IgeTextureRenderMode } from "../../enums/index.js";
 /**
  * Creates a new texture.
@@ -205,6 +206,7 @@ export class IgeTexture extends IgeAsset {
             scriptObj.init.apply(scriptObj, [this]);
         }
         this._loaded = true;
+        markSceneChanged();
         this.emit("loaded");
     }
     /**

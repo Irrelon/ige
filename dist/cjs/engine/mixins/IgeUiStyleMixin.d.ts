@@ -131,6 +131,9 @@ export declare const WithUiStyleMixin: <BaseClassType extends IgeMixin<IgeObject
         _transformChanged: boolean;
         _transformVersion: number;
         _lastRenderedFrame: number;
+        _renderUid: number;
+        _shadowSeenVersion: number;
+        _shadowStableSince: number;
         _tileWidth: number;
         _tileHeight: number;
         _tileDepth: number;

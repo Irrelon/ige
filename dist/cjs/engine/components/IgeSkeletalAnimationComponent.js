@@ -2,6 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.IgeSkeletalAnimationComponent = void 0;
 const IgeComponent_1 = require("../core/IgeComponent.js");
+const sceneChange_1 = require("../utils/sceneChange.js");
 const instance_1 = require("../instance.js");
 const enums_1 = require("../../enums/index.js");
 /** clip -> skeleton data id -> frame index -> pose. Shared by all instances. */
@@ -165,6 +166,8 @@ class IgeSkeletalAnimationComponent extends IgeComponent_1.IgeComponent {
             if (!samplePose || totalWeight <= 0 || states.length === 0) {
                 return;
             }
+            // A new pose is about to be applied: render on demand needs a frame
+            (0, sceneChange_1.markSceneChanged)();
             // Fast path: one clip at full weight -> shared pose cache
             if (states.length === 1 && states[0].weight >= 1 && this._poseCache && this._applyCachedPose(states[0])) {
                 return;

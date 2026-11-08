@@ -5,7 +5,10 @@ import { IgeBaseClass } from "../core/IgeBaseClass.js"
  */
 export class IgeWebGlGeometry extends IgeBaseClass {
     classId = "IgeWebGlGeometry";
+    static _nextUid = 1;
     id;
+    /** Unique number per GPU geometry (cheap identity for checksums). */
+    uid = IgeWebGlGeometry._nextUid++;
     vertexBuffer = null;
     indexBuffer = null;
     vertexCount = 0;

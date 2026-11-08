@@ -1,7 +1,7 @@
 import { IgeBaseClass } from "../core/IgeBaseClass.js"
-import { IgeMatrix4 } from "../core/IgeMatrix4.js"
+import { IgeMatrix4 } from "../core/IgeMatrix4.js";
 import { IgePoint3d } from "../core/IgePoint3d.js"
-import { IgeFrustum } from "./IgeFrustum.js"
+import { IgeFrustum } from "./IgeFrustum.js";
 /**
  * Manages camera matrices and frustum culling for WebGL renderer.
  */
@@ -47,10 +47,17 @@ export class IgeWebGlCameraController extends IgeBaseClass {
     _calculateViewMatrix(camera, viewMatrix) {
         // Get camera world position
         const cameraPos = new IgePoint3d(camera._translate.x, camera._translate.y, camera._translate.z);
-        const up = new IgePoint3d(0, 1, 0);
+        const cameraUp = camera._up;
+        const up = cameraUp ? new IgePoint3d(cameraUp.x, cameraUp.y, cameraUp.z) : new IgePoint3d(0, 1, 0);
         // Check if camera has a specific look-at target
         const cameraTarget = camera._lookAt;
-        if (cameraTarget) {
+        const lookDirection = camera._lookDirection;
+        if (!cameraTarget && lookDirection) {
+            // Look in a fixed direction from wherever the camera is (2D panning)
+            const target = new IgePoint3d(cameraPos.x + lookDirection.x, cameraPos.y + lookDirection.y, cameraPos.z + lookDirection.z);
+            viewMatrix.lookAt(cameraPos, target, up);
+        }
+        else if (cameraTarget) {
             // Use the camera's explicit target
             const target = new IgePoint3d(cameraTarget.x, cameraTarget.y, cameraTarget.z);
             viewMatrix.lookAt(cameraPos, target, up);
@@ -83,9 +90,13 @@ export class IgeWebGlCameraController extends IgeBaseClass {
         }
         else {
             // Orthographic projection
-            const orthoSize = camera._orthoSize || 10; // Height of view
-            const near = camera._near || 0.1;
-            const far = camera._far || 1000;
+            // 0 = as tall as the viewport, one unit per pixel, zoomed by the
+            // camera's scale as in Canvas 2D (scale 2 shows things twice as big)
+            const requestedSize = camera._orthoSize;
+            const zoom = Math.abs(camera._scale?.x || 1) || 1;
+            const orthoSize = requestedSize === 0 ? height / zoom : requestedSize || 10;
+            const near = camera._near ?? 0.1;
+            const far = camera._far ?? 1000;
             // Calculate orthographic bounds
             const halfHeight = orthoSize / 2;
             const halfWidth = halfHeight * aspect;

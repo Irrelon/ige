@@ -21,6 +21,8 @@ const particle_vert_1 = require("./particle.vert.js");
 const particle_frag_1 = require("./particle.frag.js");
 const decal_vert_1 = require("./decal.vert.js");
 const decal_frag_1 = require("./decal.frag.js");
+const debug_line_vert_1 = require("./debug_line.vert.js");
+const debug_line_frag_1 = require("./debug_line.frag.js");
 /**
  * Built-in shader library for WebGL renderer.
  * Provides centralized registration and lookup of shader programs.
@@ -78,6 +80,7 @@ IgeShaderLibrary.register("skinned_point_shadow", skinned_point_shadow_vert_1.sk
 IgeShaderLibrary.register("blur", blur_vert_1.blurVertexShader, blur_frag_1.blurFragmentShader, "Separable Gaussian blur for VSM shadow map softening");
 IgeShaderLibrary.register("particle", particle_vert_1.particleVertexShader, particle_frag_1.particleFragmentShader, "Camera-facing particle quads for IgeParticleSystem3d");
 IgeShaderLibrary.register("decal", decal_vert_1.decalVertexShader, decal_frag_1.decalFragmentShader, "Ground-aligned decal quads for IgeDecalSystem3d");
+IgeShaderLibrary.register("debug_line", debug_line_vert_1.debugLineVertexShader, debug_line_frag_1.debugLineFragmentShader, "Coloured world-space lines for debug drawing");
 // Instanced variants of the lit and shadow shaders. These read per-object
 // data (world matrix, material values and, for skinned meshes, the bone
 // palette row) from per-instance attributes so a batch of identical meshes

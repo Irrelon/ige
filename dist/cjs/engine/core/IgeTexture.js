@@ -25,6 +25,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.IgeTexture = void 0;
 const IgeAsset_1 = require("./IgeAsset.js");
+const sceneChange_1 = require("../utils/sceneChange.js");
 const IgeCanvas_1 = require("./IgeCanvas.js");
 const IgeDependencies_1 = require("./IgeDependencies.js");
 const instance_1 = require("../instance.js");
@@ -224,6 +225,7 @@ class IgeTexture extends IgeAsset_1.IgeAsset {
             scriptObj.init.apply(scriptObj, [this]);
         }
         this._loaded = true;
+        (0, sceneChange_1.markSceneChanged)();
         this.emit("loaded");
     }
     /**

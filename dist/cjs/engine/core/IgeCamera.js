@@ -17,7 +17,7 @@ class IgeCamera extends IgeEntity_1.IgeEntity {
         this._fov = 60; // Field of view in degrees (for perspective)
         this._near = 0.1; // Near clipping plane
         this._far = 1000; // Far clipping plane
-        this._orthoSize = 10; // Height of orthographic view
+        this._orthoSize = 10; // Height of orthographic view (0 = the viewport height in pixels)
         this._trackRotateTarget = undefined;
         this._trackTranslateTarget = undefined;
         this._trackRotateSmoothing = undefined;
@@ -405,7 +405,10 @@ class IgeCamera extends IgeEntity_1.IgeEntity {
         return this._far;
     }
     /**
-     * Gets / sets the camera orthographic view size (height).
+     * Gets / sets the camera orthographic view size (height). 0 makes the
+     * view exactly as tall as the viewport in pixels, so one world unit is
+     * one pixel (as in the Canvas 2D renderer), zoomed by the camera's
+     * scale (scaleTo(2, 2, 2) shows things twice as big).
      * @param {number=} size Orthographic view height.
      * @return {*}
      */
@@ -434,6 +437,7 @@ class IgeCamera extends IgeEntity_1.IgeEntity {
      * Available presets:
      * - "isometric": Classic isometric view (35.264° pitch, orthographic)
      * - "isometric45": Isometric rotated 45° around Y
+     * - "screen2d": Canvas 2D style 2D (x right, y down, 1 unit = 1 pixel) for running 2D games on the WebGL renderer
      * - "topDown": Top-down orthographic view
      * - "sideScroller": Side view for 2D platformers
      *
@@ -475,6 +479,19 @@ class IgeCamera extends IgeEntity_1.IgeEntity {
                     this._translate.x = 0;
                     this._translate.y = distance;
                     this._translate.z = 0.001; // Slight offset to avoid gimbal lock
+                    break;
+                case "screen2d":
+                    // Canvas 2D style: x right, y down, one unit per pixel,
+                    // looking along +Z so the camera pans with translateTo(x, y).
+                    // The wide near/far range keeps everything visible whatever
+                    // the camera's z.
+                    this._projectionType = "orthographic";
+                    this._lookAt = undefined;
+                    this._lookDirection = { x: 0, y: 0, z: 1 };
+                    this._up = { x: 0, y: -1, z: 0 };
+                    this._orthoSize = 0;
+                    this._near = -100000;
+                    this._far = 100000;
                     break;
                 case "sideScroller":
                     // Side view (classic 2D platformer perspective)

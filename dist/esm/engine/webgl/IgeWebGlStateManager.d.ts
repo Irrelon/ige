@@ -13,13 +13,13 @@ export declare class IgeWebGlStateManager extends IgeBaseClass {
     protected _boundFramebuffer: WebGLFramebuffer | null;
     protected _boundTextures: (WebGLTexture | null)[];
     protected _activeTextureUnit: number;
-    protected _depthTestEnabled: boolean;
-    protected _depthWriteEnabled: boolean;
+    protected _depthTestEnabled: boolean | null;
+    protected _depthWriteEnabled: boolean | null;
     protected _depthFunc: number;
-    protected _blendEnabled: boolean;
+    protected _blendEnabled: boolean | null;
     protected _blendSrc: number;
     protected _blendDst: number;
-    protected _cullFaceEnabled: boolean;
+    protected _cullFaceEnabled: boolean | null;
     protected _cullFace: number;
     protected _frontFace: number;
     protected _viewport: {
@@ -28,7 +28,7 @@ export declare class IgeWebGlStateManager extends IgeBaseClass {
         width: number;
         height: number;
     };
-    protected _scissorTestEnabled: boolean;
+    protected _scissorTestEnabled: boolean | null;
     protected _scissorBox: {
         x: number;
         y: number;
@@ -126,8 +126,8 @@ export declare class IgeWebGlStateManager extends IgeBaseClass {
         boundIBO: boolean;
         boundVAO: boolean;
         boundTextures: number;
-        depthTestEnabled: boolean;
-        blendEnabled: boolean;
-        cullFaceEnabled: boolean;
+        depthTestEnabled: boolean | null;
+        blendEnabled: boolean | null;
+        cullFaceEnabled: boolean | null;
     };
 }

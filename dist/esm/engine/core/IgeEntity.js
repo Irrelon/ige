@@ -1,16 +1,17 @@
-import { IgeBounds } from "./IgeBounds.js"
-import { IgeDummyCanvas } from "./IgeDummyCanvas.js";
-import { IgeMatrix2d } from "./IgeMatrix2d.js"
-import { IgeMatrix4 } from "./IgeMatrix4.js";
-import { IgeObject } from "./IgeObject.js"
-import { IgePoint2d } from "./IgePoint2d.js";
-import { IgePoint3d } from "./IgePoint3d.js"
-import { IgePoly2d } from "./IgePoly2d.js";
-import { ige } from "../instance.js"
-import { isClient, isServer } from "../utils/clientServer.js";
-import { registerClass } from "../utils/igeClassStore.js"
-import { degreesToRadians } from "../utils/maths.js";
-import { traceSet } from "../utils/trace.js"
+import { markSceneChanged } from "../utils/sceneChange.js"
+import { IgeBounds } from "./IgeBounds.js";
+import { IgeDummyCanvas } from "./IgeDummyCanvas.js"
+import { IgeMatrix2d } from "./IgeMatrix2d.js";
+import { IgeMatrix4 } from "./IgeMatrix4.js"
+import { IgeObject } from "./IgeObject.js";
+import { IgePoint2d } from "./IgePoint2d.js"
+import { IgePoint3d } from "./IgePoint3d.js";
+import { IgePoly2d } from "./IgePoly2d.js"
+import { ige } from "../instance.js";
+import { isClient, isServer } from "../utils/clientServer.js"
+import { registerClass } from "../utils/igeClassStore.js";
+import { degreesToRadians } from "../utils/maths.js"
+import { traceSet } from "../utils/trace.js";
 import { IgeBehaviourType, IgeEntityRenderMode, IgeIsometricDepthSortMode, IgeMountMode, IgeStreamMode } from "../../enums/index.js";
 import { findBoneIndex, retargetClips } from "../webgl/IgeAnimationRetarget.js"
 import { createSkeletonInstance, getGeometryLod, getModelLod, getModelParts } from "../webgl/IgeModelParts.js";
@@ -205,6 +206,8 @@ export class IgeEntity extends IgeObject {
             this._oldWorldMatrix.copy(this._worldMatrix);
             this._transformChanged = true;
             this._transformVersion++;
+            if (!this._hidden)
+                markSceneChanged();
             this._aabbDirty = true;
             this._bounds3dPolygonDirty = true;
             this.cacheDirty(true);
@@ -254,6 +257,8 @@ export class IgeEntity extends IgeObject {
             if (!this._worldMatrix4.compare(this._oldWorldMatrix4)) {
                 this._oldWorldMatrix4.copy(this._worldMatrix4);
                 this._transformVersion++;
+                if (!this._hidden)
+                    markSceneChanged();
             }
         }
         // Check if the geometry has changed and if so, update the aabb dirty
@@ -278,6 +283,8 @@ export class IgeEntity extends IgeObject {
      * method chaining.
      */
     show() {
+        if (this._hidden)
+            markSceneChanged();
         this._hidden = false;
         return this;
     }
@@ -289,6 +296,8 @@ export class IgeEntity extends IgeObject {
      * method chaining.
      */
     hide() {
+        if (!this._hidden)
+            markSceneChanged();
         this._hidden = true;
         return this;
     }
@@ -1292,11 +1301,20 @@ export class IgeEntity extends IgeObject {
         }
     }
     _processTriggerHitTests(mp) {
-        if (!ige.engine._currentViewport) {
-            return false;
-        }
         if (this._pointerAlwaysInside) {
             return true;
+        }
+        // Renderers with their own picking (the WebGL renderer: 3D views,
+        // split screen) test against what they actually draw
+        const renderer = ige.engine.renderer();
+        if (renderer?.pointerHitTest) {
+            // ige._pointerPos is relative to the canvas centre
+            const screenX = ige._pointerPos.x + ige.engine._bounds2d.x2 + ige.engine._translate.x;
+            const screenY = ige._pointerPos.y + ige.engine._bounds2d.y2 + ige.engine._translate.y;
+            return renderer.pointerHitTest(this, screenX, screenY);
+        }
+        if (!ige.engine._currentViewport) {
+            return false;
         }
         if (!mp) {
             mp = this.mousePosWorld();

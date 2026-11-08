@@ -1,4 +1,5 @@
 import { IgeEntity } from "../core/IgeEntity.js"
+import { markSceneChanged } from "../utils/sceneChange.js";
 /** Floats per decal in renderData(): x, y, z, size, r, g, b, a, rotation, cell, 0, 0. */
 export const DECAL_INSTANCE_FLOATS = 12;
 const DEFAULT_OPTIONS = {
@@ -199,5 +200,6 @@ export class IgeDecalSystem3d extends IgeEntity {
             this._boundsRadius = 0;
         }
         this._renderVersion++;
+        markSceneChanged();
     }
 }

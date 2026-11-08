@@ -2,6 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.IgeParticleSystem3d = exports.PARTICLE_INSTANCE_FLOATS = void 0;
 const IgeEntity_1 = require("../core/IgeEntity.js");
+const sceneChange_1 = require("../utils/sceneChange.js");
 const DEFAULT_OPTIONS = {
     maxParticles: 512,
     blending: "additive",
@@ -96,6 +97,7 @@ class IgeParticleSystem3d extends IgeEntity_1.IgeEntity {
     clear() {
         this._liveCount = 0;
         this._renderVersion++;
+        (0, sceneChange_1.markSceneChanged)();
         return this;
     }
     /**
@@ -167,6 +169,7 @@ class IgeParticleSystem3d extends IgeEntity_1.IgeEntity {
     }
     _simulate(dt) {
         const o = this._options;
+        const wasLive = this._liveCount > 0;
         // Continuous emission
         if (this._emitting && o.rate > 0 && dt > 0) {
             this._emitAccumulator += o.rate * dt;
@@ -209,7 +212,11 @@ class IgeParticleSystem3d extends IgeEntity_1.IgeEntity {
             pos[p3 + 2] += vel[p3 + 2] * dt;
             i++;
         }
-        this._buildRenderData();
+        // An idle system has nothing new to draw (and shouldn't keep
+        // render-on-demand drawing frames)
+        if (this._liveCount > 0 || wasLive) {
+            this._buildRenderData();
+        }
     }
     _buildRenderData() {
         const o = this._options;
@@ -262,6 +269,7 @@ class IgeParticleSystem3d extends IgeEntity_1.IgeEntity {
             this._boundsRadius = 0;
         }
         this._renderVersion++;
+        (0, sceneChange_1.markSceneChanged)();
     }
 }
 exports.IgeParticleSystem3d = IgeParticleSystem3d;

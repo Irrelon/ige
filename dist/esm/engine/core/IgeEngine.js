@@ -1,10 +1,11 @@
-import { IgeEntity } from "./IgeEntity.js"
+import { igeSceneChange } from "../utils/sceneChange.js"
+import { IgeEntity } from "./IgeEntity.js";
 import { IgePoint2d } from "./IgePoint2d.js"
-import { IgePoint3d } from "./IgePoint3d.js"
+import { IgePoint3d } from "./IgePoint3d.js";
 import { IgeViewport } from "./IgeViewport.js"
-import { ige } from "../instance.js"
+import { ige } from "../instance.js";
 import { isClient, isServer, isWorker } from "../utils/clientServer.js"
-import { IgeBehaviourType, IgeEngineState } from "../../enums/index.js"
+import { IgeBehaviourType, IgeEngineState } from "../../enums/index.js";
 export class IgeEngine extends IgeEntity {
     classId = "IgeEngine";
     client;
@@ -15,6 +16,10 @@ export class IgeEngine extends IgeEntity {
     _pause = false;
     _useManualRender = false;
     _manualRenderQueued = false;
+    _renderOnDemand = false;
+    _renderedSceneChange = -1;
+    _viewState = [];
+    _viewStateScratch = [];
     _useManualTicks = false;
     _manualFrameAlternator = false;
     _pixelRatioScaling;
@@ -444,6 +449,49 @@ export class IgeEngine extends IgeEntity {
             return this;
         }
         return this._useManualRender;
+    }
+    renderOnDemand(val) {
+        if (val === undefined) {
+            return this._renderOnDemand;
+        }
+        this._renderOnDemand = val;
+        this._renderedSceneChange = -1;
+        return this;
+    }
+    /**
+     * Whether render-on-demand needs a new frame: something reported a
+     * change since the last frame, or a viewport or its camera moved.
+     */
+    _sceneChangedSinceRender() {
+        if (igeSceneChange.count !== this._renderedSceneChange)
+            return true;
+        const state = this._captureViewState(this._viewStateScratch);
+        const previous = this._viewState;
+        if (state.length !== previous.length)
+            return true;
+        for (let i = 0; i < state.length; i++) {
+            if (state[i] !== previous[i])
+                return true;
+        }
+        return false;
+    }
+    /**
+     * Every value that positions a view: viewport placement and size and
+     * the camera's transform, look-at target and projection.
+     */
+    _captureViewState(out) {
+        out.length = 0;
+        const children = this._children;
+        for (let i = 0; i < children.length; i++) {
+            const viewport = children[i];
+            const camera = viewport?.camera;
+            if (!camera)
+                continue;
+            out.push(viewport._translate.x, viewport._translate.y, viewport._bounds2d.x, viewport._bounds2d.y, camera._translate.x, camera._translate.y, camera._translate.z, camera._rotate.x, camera._rotate.y, camera._rotate.z, camera._scale.x, camera._scale.y, camera._scale.z, 
+            // (no NaN placeholders: NaN never equals itself)
+            camera._lookAt ? 1 : 0, camera._lookAt ? camera._lookAt.x : 0, camera._lookAt ? camera._lookAt.y : 0, camera._lookAt ? camera._lookAt.z : 0, camera._projectionType === "orthographic" ? 1 : 0, camera._fov ?? 0, camera._orthoSize ?? 0, camera._near ?? 0, camera._far ?? 0);
+        }
+        return out;
     }
     /**
      * Manually render a frame on demand. This is used in conjunction
@@ -1143,15 +1191,19 @@ export class IgeEngine extends IgeEntity {
                 this._processBehaviours(IgeBehaviourType.preTick, this._tickDelta);
                 // Check if we should only render after manualRender() has been called
                 // or if we just render each frame automatically
-                if (this._useManualRender) {
-                    // We are only rendering when manualRender() is called, check if
-                    // a manual render has been queued by calling manualRender()
-                    if (this._manualRenderQueued) {
-                        // A manual render was queued, so we can render a frame now
+                if (this._useManualRender || this._renderOnDemand) {
+                    // We are only rendering when manualRender() is called (or,
+                    // with render-on-demand, when something visible changed)
+                    if (this._manualRenderQueued || (this._renderOnDemand && this._sceneChangedSinceRender())) {
                         this.statStart("engineStep", "renderSceneGraph");
                         this.renderSceneGraph();
                         this._manualRenderQueued = false;
                         this.statEnd("engineStep", "renderSceneGraph");
+                        // Changes made while rendering (e.g. transforms refreshed by
+                        // the renderer) are part of this frame
+                        this._renderedSceneChange = igeSceneChange.count;
+                        const settled = this._captureViewState(this._viewState);
+                        this._viewState = settled;
                     }
                 }
                 else {

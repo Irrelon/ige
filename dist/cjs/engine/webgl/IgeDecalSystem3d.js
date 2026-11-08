@@ -2,6 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.IgeDecalSystem3d = exports.DECAL_INSTANCE_FLOATS = void 0;
 const IgeEntity_1 = require("../core/IgeEntity.js");
+const sceneChange_1 = require("../utils/sceneChange.js");
 /** Floats per decal in renderData(): x, y, z, size, r, g, b, a, rotation, cell, 0, 0. */
 exports.DECAL_INSTANCE_FLOATS = 12;
 const DEFAULT_OPTIONS = {
@@ -199,6 +200,7 @@ class IgeDecalSystem3d extends IgeEntity_1.IgeEntity {
             this._boundsRadius = 0;
         }
         this._renderVersion++;
+        (0, sceneChange_1.markSceneChanged)();
     }
 }
 exports.IgeDecalSystem3d = IgeDecalSystem3d;

@@ -64,6 +64,8 @@ export interface IgeWebGlRenderStats {
     lodItems: number;
     /** Model triangles submitted by every pass (main, transparent and shadow). */
     triangles: number;
+    /** Times the cached static shadow casters were redrawn (see shadowCaching()). */
+    shadowCacheRebuilds: number;
     viewports: number;
 }
 /**
@@ -149,6 +151,9 @@ export declare class IgeWebGlRenderer extends IgeBaseRenderer {
     protected _defaultParticleTexture: WebGLTexture | null;
     protected _defaultDecalTexture: WebGLTexture | null;
     protected _lightFrustum: IgeFrustum;
+    protected _pointCasterItems: IgeWebGlRenderItem[];
+    protected _pointCasterKeys: string[];
+    protected _pointCasterGeometries: IgeWebGlGeometry[];
     protected _lightFrustumMatrix: IgeMatrix4;
     protected _instancingEnabled: boolean;
     protected _minInstanceCount: number;
@@ -158,7 +163,20 @@ export declare class IgeWebGlRenderer extends IgeBaseRenderer {
     protected _stats: IgeWebGlRenderStats;
     protected _lodBias: number;
     protected _backFaceCulling: boolean;
+    protected _shadowCaching: boolean;
+    protected _staticDepthBatcher: IgeWebGlItemBatcher;
+    protected _shadowMapHoldsCache: boolean;
+    protected _directionalPassesThisFrame: number;
+    protected _directionalPassesLastFrame: number;
     protected _preserveDrawingBuffer: boolean;
+    protected _preferredWebGlVersion: 1 | 2;
+    protected _debugOptions: {
+        bounds: boolean;
+        shadowFrustum: boolean;
+    };
+    protected _debugLineData: Float32Array;
+    protected _debugLineVertices: number;
+    protected _debugLineBuffer: WebGLBuffer | null;
     /**
      * Initialize the WebGL renderer.
      */
@@ -232,6 +250,74 @@ export declare class IgeWebGlRenderer extends IgeBaseRenderer {
      */
     releaseTexture(texture: IgeTexture | string): this;
     /**
+     * Gets / sets whether static shadow casters are cached (default false,
+     * WebGL 2 only). Meshes that aren't skinned and haven't moved for 30
+     * rendered frames (new meshes count as unmoved) are drawn into a cached
+     * depth map, which is redrawn only when
+     * one of them moves, appears or disappears, or the shadow frustum
+     * moves. Each frame copies the cache into the shadow map and draws only
+     * the moving casters (characters, projectiles) on top, so large static
+     * scenes such as terrain stop costing shadow draw calls.
+     *
+     * To keep the frustum still while the camera pans, it re-centres in
+     * steps of 1/8 of shadowManager.frustumSize() instead of following the
+     * camera exactly, so the area covered may lag the view by that much;
+     * allow for it in the frustum size. Caching pauses on frames where
+     * split-screen views each render their own shadow map (it helps when
+     * there is one view or the views share a map).
+     */
+    shadowCaching(): boolean;
+    shadowCaching(val: boolean): this;
+    /**
+     * Where the directional shadow frustum should be centred for a view
+     * target: the target itself, or with shadow caching on, the target
+     * snapped to a coarse grid so small camera moves don't move the frustum.
+     */
+    protected _shadowCenter(x: number, y: number, z: number): {
+        x: number;
+        y: number;
+        z: number;
+    };
+    /**
+     * Gets / sets debug drawing, drawn on top of each viewport:
+     * - bounds: every visible mesh's bounding sphere (the one used for
+     *   culling), coloured by the level of detail picked in that view:
+     *   green full detail, then yellow, orange and red for lower levels;
+     *   blue for meshes without LOD levels;
+     * - shadowFrustum: the box the directional shadow map covers.
+     * @example #Check LOD switching and shadow coverage
+     *     renderer.debugDraw({ bounds: true, shadowFrustum: true });
+     */
+    debugDraw(): {
+        bounds: boolean;
+        shadowFrustum: boolean;
+    };
+    debugDraw(options: Partial<{
+        bounds: boolean;
+        shadowFrustum: boolean;
+    }>): this;
+    /**
+     * Draw a world-space line in every viewport on the next rendered frame,
+     * e.g. an AI path, an attack range or a ray. Call it each frame the line
+     * should stay visible.
+     * @param color RGBA, 0-1 (default yellow).
+     */
+    debugLine(x1: number, y1: number, z1: number, x2: number, y2: number, z2: number, color?: {
+        r: number;
+        g: number;
+        b: number;
+        a?: number;
+    }): this;
+    protected _pushDebugLine(x1: number, y1: number, z1: number, x2: number, y2: number, z2: number, r: number, g: number, b: number, a: number): void;
+    /** Three great circles approximating a sphere. */
+    protected _pushDebugSphere(cx: number, cy: number, cz: number, radius: number, color: [number, number, number]): void;
+    /**
+     * Draw this viewport's debug lines: lines queued with debugLine() plus,
+     * when enabled, bounds and the shadow frustum (generated per viewport
+     * and dropped again afterwards).
+     */
+    protected _renderDebugLines(matrices: IgeCameraMatrices): void;
+    /**
      * Gets / sets whether back faces of opaque meshes are culled in the
      * main pass (default false). Culling skips triangles facing away from
      * the camera, roughly halving the fragments shaded for closed meshes
@@ -294,6 +380,12 @@ export declare class IgeWebGlRenderer extends IgeBaseRenderer {
         visible: boolean;
     } | null;
     /**
+     * The view, projection and combined matrices (and frustum) a viewport's
+     * camera renders with, for projecting many points without repeating
+     * the camera setup (see IgeViewportOverlay). Null without a camera.
+     */
+    cameraMatrices(viewport: IgeViewport): IgeCameraMatrices | null;
+    /**
      * Build a world-space ray through a screen point (CSS pixels from the
      * canvas's top-left) in a viewport, for mouse picking and aiming.
      * Returns null if the viewport has no camera.
@@ -326,6 +418,15 @@ export declare class IgeWebGlRenderer extends IgeBaseRenderer {
      * (last mounted) viewport wins when viewports overlap.
      */
     viewportAt(screenX: number, screenY: number): IgeViewport | undefined;
+    /**
+     * Whether a screen point (CSS pixels from the canvas's top-left) is over
+     * an entity in the viewport under it. IGE's pointer events (pointerOver,
+     * pointerDown, pointerUp...) use this when the WebGL renderer is active.
+     * Meshes are hit by their bounding box; sprites exactly by their quad in
+     * flat views (screen2d, or billboard("none")), or by their on-screen
+     * rectangle when billboarded.
+     */
+    pointerHitTest(entity: IgeEntity, screenX: number, screenY: number): boolean;
     /**
      * Gets / sets when split-screen viewports share one directional shadow
      * map instead of rendering one each. If every viewport's camera target
@@ -502,7 +603,7 @@ export declare class IgeWebGlRenderer extends IgeBaseRenderer {
     /**
      * Render 2D sprites (textured quads, billboarded to face the camera).
      */
-    protected _renderSprites(sprites: IgeEntity[], matrices: IgeCameraMatrices): void;
+    protected _renderSprites(sprites: IgeEntity[], matrices: IgeCameraMatrices, flat2d?: boolean): void;
     /**
      * Get the light manager for adding/removing scene lights.
      */
@@ -553,6 +654,13 @@ export declare class IgeWebGlRenderer extends IgeBaseRenderer {
      * Toggle fullscreen mode.
      */
     toggleFullScreen: () => void;
+    /**
+     * Gets / sets the WebGL version to ask for (default 2, falling back to
+     * 1 when unavailable). Set it to 1 before createFrontBuffer() to run the
+     * WebGL 1 path on a WebGL 2 machine, e.g. to test the fallback.
+     */
+    preferredWebGlVersion(): 1 | 2;
+    preferredWebGlVersion(val: 1 | 2): this;
     /**
      * Gets / sets whether the WebGL drawing buffer should be preserved after
      * compositing. When true, gl.readPixels() works after a frame is rendered.

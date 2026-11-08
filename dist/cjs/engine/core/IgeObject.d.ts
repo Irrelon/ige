@@ -58,6 +58,10 @@ export declare class IgeObject extends IgeEventingClass implements IgeCanRegiste
      * work such as skeletal animation sampling for off-screen objects.
      */
     _lastRenderedFrame: number;
+    /** Renderer bookkeeping for cached static shadows (see IgeWebGlRenderer.shadowCaching()). */
+    _renderUid: number;
+    _shadowSeenVersion: number;
+    _shadowStableSince: number;
     _tileWidth: number;
     _tileHeight: number;
     _tileDepth: number;

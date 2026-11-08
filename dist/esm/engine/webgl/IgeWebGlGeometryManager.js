@@ -1,5 +1,5 @@
 import { IgeBaseClass } from "../core/IgeBaseClass.js"
-import { IgeWebGlGeometry } from "./IgeWebGlGeometry.js";
+import { IgeWebGlGeometry } from "./IgeWebGlGeometry.js"
 /**
  * Manages geometry (VBO/IBO) creation and caching for WebGL renderer.
  */

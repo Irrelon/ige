@@ -17,6 +17,8 @@ import { particleVertexShader } from "./particle.vert.js";
 import { particleFragmentShader } from "./particle.frag.js"
 import { decalVertexShader } from "./decal.vert.js";
 import { decalFragmentShader } from "./decal.frag.js"
+import { debugLineVertexShader } from "./debug_line.vert.js";
+import { debugLineFragmentShader } from "./debug_line.frag.js"
 /**
  * Built-in shader library for WebGL renderer.
  * Provides centralized registration and lookup of shader programs.
@@ -73,6 +75,7 @@ IgeShaderLibrary.register("skinned_point_shadow", skinnedPointShadowVertexShader
 IgeShaderLibrary.register("blur", blurVertexShader, blurFragmentShader, "Separable Gaussian blur for VSM shadow map softening");
 IgeShaderLibrary.register("particle", particleVertexShader, particleFragmentShader, "Camera-facing particle quads for IgeParticleSystem3d");
 IgeShaderLibrary.register("decal", decalVertexShader, decalFragmentShader, "Ground-aligned decal quads for IgeDecalSystem3d");
+IgeShaderLibrary.register("debug_line", debugLineVertexShader, debugLineFragmentShader, "Coloured world-space lines for debug drawing");
 // Instanced variants of the lit and shadow shaders. These read per-object
 // data (world matrix, material values and, for skinned meshes, the bone
 // palette row) from per-instance attributes so a batch of identical meshes

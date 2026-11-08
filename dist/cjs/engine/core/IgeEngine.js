@@ -10,6 +10,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.IgeEngine = void 0;
+const sceneChange_1 = require("../utils/sceneChange.js");
 const IgeEntity_1 = require("./IgeEntity.js");
 const IgePoint2d_1 = require("./IgePoint2d.js");
 const IgePoint3d_1 = require("./IgePoint3d.js");
@@ -26,6 +27,10 @@ class IgeEngine extends IgeEntity_1.IgeEntity {
         this._pause = false;
         this._useManualRender = false;
         this._manualRenderQueued = false;
+        this._renderOnDemand = false;
+        this._renderedSceneChange = -1;
+        this._viewState = [];
+        this._viewStateScratch = [];
         this._useManualTicks = false;
         this._manualFrameAlternator = false;
         this._state = enums_1.IgeEngineState.stopped;
@@ -207,15 +212,19 @@ class IgeEngine extends IgeEntity_1.IgeEntity {
                     this._processBehaviours(enums_1.IgeBehaviourType.preTick, this._tickDelta);
                     // Check if we should only render after manualRender() has been called
                     // or if we just render each frame automatically
-                    if (this._useManualRender) {
-                        // We are only rendering when manualRender() is called, check if
-                        // a manual render has been queued by calling manualRender()
-                        if (this._manualRenderQueued) {
-                            // A manual render was queued, so we can render a frame now
+                    if (this._useManualRender || this._renderOnDemand) {
+                        // We are only rendering when manualRender() is called (or,
+                        // with render-on-demand, when something visible changed)
+                        if (this._manualRenderQueued || (this._renderOnDemand && this._sceneChangedSinceRender())) {
                             this.statStart("engineStep", "renderSceneGraph");
                             this.renderSceneGraph();
                             this._manualRenderQueued = false;
                             this.statEnd("engineStep", "renderSceneGraph");
+                            // Changes made while rendering (e.g. transforms refreshed by
+                            // the renderer) are part of this frame
+                            this._renderedSceneChange = sceneChange_1.igeSceneChange.count;
+                            const settled = this._captureViewState(this._viewState);
+                            this._viewState = settled;
                         }
                     }
                     else {
@@ -589,6 +598,50 @@ class IgeEngine extends IgeEntity_1.IgeEntity {
             return this;
         }
         return this._useManualRender;
+    }
+    renderOnDemand(val) {
+        if (val === undefined) {
+            return this._renderOnDemand;
+        }
+        this._renderOnDemand = val;
+        this._renderedSceneChange = -1;
+        return this;
+    }
+    /**
+     * Whether render-on-demand needs a new frame: something reported a
+     * change since the last frame, or a viewport or its camera moved.
+     */
+    _sceneChangedSinceRender() {
+        if (sceneChange_1.igeSceneChange.count !== this._renderedSceneChange)
+            return true;
+        const state = this._captureViewState(this._viewStateScratch);
+        const previous = this._viewState;
+        if (state.length !== previous.length)
+            return true;
+        for (let i = 0; i < state.length; i++) {
+            if (state[i] !== previous[i])
+                return true;
+        }
+        return false;
+    }
+    /**
+     * Every value that positions a view: viewport placement and size and
+     * the camera's transform, look-at target and projection.
+     */
+    _captureViewState(out) {
+        var _a, _b, _c, _d;
+        out.length = 0;
+        const children = this._children;
+        for (let i = 0; i < children.length; i++) {
+            const viewport = children[i];
+            const camera = viewport === null || viewport === void 0 ? void 0 : viewport.camera;
+            if (!camera)
+                continue;
+            out.push(viewport._translate.x, viewport._translate.y, viewport._bounds2d.x, viewport._bounds2d.y, camera._translate.x, camera._translate.y, camera._translate.z, camera._rotate.x, camera._rotate.y, camera._rotate.z, camera._scale.x, camera._scale.y, camera._scale.z, 
+            // (no NaN placeholders: NaN never equals itself)
+            camera._lookAt ? 1 : 0, camera._lookAt ? camera._lookAt.x : 0, camera._lookAt ? camera._lookAt.y : 0, camera._lookAt ? camera._lookAt.z : 0, camera._projectionType === "orthographic" ? 1 : 0, (_a = camera._fov) !== null && _a !== void 0 ? _a : 0, (_b = camera._orthoSize) !== null && _b !== void 0 ? _b : 0, (_c = camera._near) !== null && _c !== void 0 ? _c : 0, (_d = camera._far) !== null && _d !== void 0 ? _d : 0);
+        }
+        return out;
     }
     /**
      * Manually render a frame on demand. This is used in conjunction

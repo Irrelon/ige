@@ -8,6 +8,7 @@ import { IgePointLight } from "../../engine/webgl/IgeWebGlLight.js"
 import { type IgeGltfModel } from "../../engine/webgl/IgeGltfLoader.js"
 import { IgeParticleSystem3d } from "../../engine/webgl/IgeParticleSystem3d.js"
 import { IgeDecalSystem3d } from "../../engine/webgl/IgeDecalSystem3d.js"
+import { IgeViewportOverlay, type IgeOverlayMarker } from "../../engine/webgl/IgeViewportOverlay.js"
 import { IgeGamePadComponent } from "../../engine/components/IgeGamePadComponent.js"
 import { type IgeLevelObstacle } from "./level.js"
 import type { IgeGeometryData3d } from "../../types/IgeGeometryData3d.js"
@@ -35,13 +36,17 @@ interface ZombieState {
     knockbackZ: number;
     respawnTimer: number;
     alive: boolean;
+    /** Shown once the zombie has been hurt. */
+    healthBar?: IgeOverlayMarker;
 }
 interface DamageNumber {
     el: HTMLDivElement;
-    viewportIndex: number;
-    x: number;
-    y: number;
-    z: number;
+    marker: IgeOverlayMarker;
+    position: {
+        x: number;
+        y: number;
+        z: number;
+    };
     age: number;
 }
 export declare class Client extends IgeBaseClass implements IgeCanInit {
@@ -58,7 +63,7 @@ export declare class Client extends IgeBaseClass implements IgeCanInit {
     bloodStains?: IgeDecalSystem3d;
     slashFx?: IgeParticleSystem3d;
     damageNumbers: DamageNumber[];
-    fxLayer?: HTMLDivElement;
+    overlay?: IgeViewportOverlay;
     keysDown: Record<string, boolean>;
     keysPressed: Record<string, boolean>;
     totalKills: number;
@@ -107,7 +112,9 @@ export declare class Client extends IgeBaseClass implements IgeCanInit {
     /** Player tint, or a red hit flash via the emissive override. */
     applyPlayerMaterial(player: PlayerState): void;
     applyZombieMaterial(zombie: ZombieState): void;
-    createFxLayer(): void;
+    createOverlay(): void;
+    /** A health bar over a hurt zombie, in every view. */
+    addHealthBar(zombie: ZombieState): IgeOverlayMarker | undefined;
     spawnDamageNumber(viewportIndex: number, x: number, y: number, z: number, damage: number): void;
     updateDamageNumbers(dt: number): void;
     /**

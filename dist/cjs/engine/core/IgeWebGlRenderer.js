@@ -11,6 +11,8 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.IgeWebGlRenderer = void 0;
 const IgeBaseRenderer_1 = require("./IgeBaseRenderer.js");
+const enums_1 = require("../../enums/index.js");
+const sceneChange_1 = require("../utils/sceneChange.js");
 const IgePoint2d_1 = require("./IgePoint2d.js");
 const instance_1 = require("../instance.js");
 const clientServer_1 = require("../utils/clientServer.js");
@@ -43,6 +45,132 @@ const IDENTITY_MATRIX = new Float32Array([
 ]);
 /** Floats per particle in IgeParticleSystem3d.renderData(). */
 const PARTICLE_FLOATS = 8;
+/**
+ * Frames an entity's transform must stay unchanged before it is treated as
+ * a static shadow caster (see shadowCaching()).
+ */
+const SHADOW_STATIC_FRAMES = 30;
+/** Fraction of the shadow frustum's half-size the cached frustum re-centres by. */
+const SHADOW_RECENTER_STEP = 0.125;
+let nextRenderUid = 1;
+/** Local-space bounding boxes for pointer picking (cached per geometry and model). */
+const geometryBoxCache = new WeakMap();
+const partsBoxCache = new WeakMap();
+function geometryBox(data) {
+    let box = geometryBoxCache.get(data);
+    if (box)
+        return box;
+    if (data.boundingBox) {
+        const [minX, minY, minZ] = data.boundingBox.min;
+        const [maxX, maxY, maxZ] = data.boundingBox.max;
+        box = { minX, minY, minZ, maxX, maxY, maxZ };
+    }
+    else {
+        const v = data.vertices;
+        if (!v || v.length < 3)
+            return null;
+        box = { minX: Infinity, minY: Infinity, minZ: Infinity, maxX: -Infinity, maxY: -Infinity, maxZ: -Infinity };
+        for (let i = 0; i < v.length; i += 3) {
+            if (v[i] < box.minX)
+                box.minX = v[i];
+            if (v[i + 1] < box.minY)
+                box.minY = v[i + 1];
+            if (v[i + 2] < box.minZ)
+                box.minZ = v[i + 2];
+            if (v[i] > box.maxX)
+                box.maxX = v[i];
+            if (v[i + 1] > box.maxY)
+                box.maxY = v[i + 1];
+            if (v[i + 2] > box.maxZ)
+                box.maxZ = v[i + 2];
+        }
+    }
+    geometryBoxCache.set(data, box);
+    return box;
+}
+/**
+ * Union of a model's non-skinned part boxes in model space (part node
+ * transforms applied). Skinned parts are left out: their vertices are in
+ * bind space, not model space (see skeletonBox()).
+ */
+function partsBox(parts) {
+    let box = partsBoxCache.get(parts);
+    if (box)
+        return box;
+    box = { minX: Infinity, minY: Infinity, minZ: Infinity, maxX: -Infinity, maxY: -Infinity, maxZ: -Infinity };
+    for (const part of parts) {
+        if (part.skinned)
+            continue;
+        const b = geometryBox(part.geometryData);
+        if (!b)
+            continue;
+        const m = part.matrix;
+        for (let c = 0; c < 8; c++) {
+            const x = c & 1 ? b.maxX : b.minX, y = c & 2 ? b.maxY : b.minY, z = c & 4 ? b.maxZ : b.minZ;
+            const wx = m ? m[0] * x + m[4] * y + m[8] * z + m[12] : x;
+            const wy = m ? m[1] * x + m[5] * y + m[9] * z + m[13] : y;
+            const wz = m ? m[2] * x + m[6] * y + m[10] * z + m[14] : z;
+            if (wx < box.minX)
+                box.minX = wx;
+            if (wy < box.minY)
+                box.minY = wy;
+            if (wz < box.minZ)
+                box.minZ = wz;
+            if (wx > box.maxX)
+                box.maxX = wx;
+            if (wy > box.maxY)
+                box.maxY = wy;
+            if (wz > box.maxZ)
+                box.maxZ = wz;
+        }
+    }
+    if (box.minX > box.maxX)
+        box = { minX: 0, minY: 0, minZ: 0, maxX: 0, maxY: 0, maxZ: 0 };
+    partsBoxCache.set(parts, box);
+    return box;
+}
+/**
+ * Model-space box around a skeleton's joints in their current pose,
+ * padded by a tenth of its size to cover the body around the bones.
+ */
+function skeletonBox(worldMatrices, boneCount) {
+    if (!boneCount)
+        return null;
+    const box = { minX: Infinity, minY: Infinity, minZ: Infinity, maxX: -Infinity, maxY: -Infinity, maxZ: -Infinity };
+    for (let b = 0; b < boneCount; b++) {
+        const x = worldMatrices[b * 16 + 12], y = worldMatrices[b * 16 + 13], z = worldMatrices[b * 16 + 14];
+        if (x < box.minX)
+            box.minX = x;
+        if (y < box.minY)
+            box.minY = y;
+        if (z < box.minZ)
+            box.minZ = z;
+        if (x > box.maxX)
+            box.maxX = x;
+        if (y > box.maxY)
+            box.maxY = y;
+        if (z > box.maxZ)
+            box.maxZ = z;
+    }
+    const pad = Math.max(box.maxX - box.minX, box.maxY - box.minY, box.maxZ - box.minZ) * 0.1;
+    box.minX -= pad;
+    box.minY -= pad;
+    box.minZ -= pad;
+    box.maxX += pad;
+    box.maxY += pad;
+    box.maxZ += pad;
+    return box;
+}
+/** Floats per debug line vertex: x, y, z, r, g, b, a. */
+const DEBUG_LINE_FLOATS = 7;
+/** Bounding sphere colours by level of detail (debugDraw({ bounds: true })). */
+const DEBUG_LOD_COLORS = [
+    [0.25, 1, 0.3], // full detail
+    [1, 0.85, 0.1],
+    [1, 0.5, 0.1],
+    [1, 0.15, 0.15]
+];
+const DEBUG_NO_LOD_COLOR = [0.4, 0.65, 1];
 const hexColorCache = new Map();
 /**
  * Parse a "#rrggbb" colour into 0..1 components (cached).
@@ -136,6 +264,11 @@ class IgeWebGlRenderer extends IgeBaseRenderer_1.IgeBaseRenderer {
         this._defaultParticleTexture = null;
         this._defaultDecalTexture = null;
         this._lightFrustum = new IgeFrustum_1.IgeFrustum();
+        // Point light shadow casters in range of the current light, with the
+        // LOD key and geometry chosen for it (reused across lights and frames)
+        this._pointCasterItems = [];
+        this._pointCasterKeys = [];
+        this._pointCasterGeometries = [];
         this._lightFrustumMatrix = new IgeMatrix4_1.IgeMatrix4();
         // GPU instancing (WebGL 2 only)
         this._instancingEnabled = true;
@@ -156,22 +289,37 @@ class IgeWebGlRenderer extends IgeBaseRenderer_1.IgeBaseRenderer {
             visibleItems: 0,
             lodItems: 0,
             triangles: 0,
+            shadowCacheRebuilds: 0,
             viewports: 0
         };
         // Multiplies every on-screen size used to pick a level of detail
         this._lodBias = 1;
         // Cull back faces of opaque meshes (off by default, see backFaceCulling())
         this._backFaceCulling = false;
+        // Cached static shadow casters (off by default, see shadowCaching())
+        this._shadowCaching = false;
+        this._staticDepthBatcher = new IgeWebGlInstancing_1.IgeWebGlItemBatcher();
+        this._shadowMapHoldsCache = false;
+        this._directionalPassesThisFrame = 0;
+        this._directionalPassesLastFrame = 0;
         // When true, the WebGL drawing buffer is preserved after compositing,
         // allowing gl.readPixels() to work after a frame is rendered.
         // Must be set before createFrontBuffer() is called.
         this._preserveDrawingBuffer = false;
+        // Context version to ask for first (see preferredWebGlVersion())
+        this._preferredWebGlVersion = 2;
+        // Debug drawing (see debugDraw() and debugLine())
+        this._debugOptions = { bounds: false, shadowFrustum: false };
+        this._debugLineData = new Float32Array(DEBUG_LINE_FLOATS * 2048);
+        this._debugLineVertices = 0;
+        this._debugLineBuffer = null;
         /**
          * Handle canvas resize events.
          */
         this._resizeEvent = (event) => {
             if (!this._canvasElement || !this._autoSize)
                 return;
+            (0, sceneChange_1.markSceneChanged)();
             // Get the window dimensions
             let newWidth = window.innerWidth;
             let newHeight = window.innerHeight;
@@ -300,8 +448,10 @@ class IgeWebGlRenderer extends IgeBaseRenderer_1.IgeBaseRenderer {
             premultipliedAlpha: true,
             powerPreference: "high-performance"
         };
-        // Try WebGL2 first
-        gl = this._canvasElement.getContext("webgl2", contextAttributes);
+        // Try WebGL2 first (unless WebGL 1 was asked for, e.g. for testing)
+        gl = this._preferredWebGlVersion === 2
+            ? this._canvasElement.getContext("webgl2", contextAttributes)
+            : null;
         if (gl) {
             this._webglVersion = 2;
             this.log("Using WebGL 2.0");
@@ -389,6 +539,11 @@ class IgeWebGlRenderer extends IgeBaseRenderer_1.IgeBaseRenderer {
             const vaoExt = gl.getExtension("OES_vertex_array_object");
             this._capabilities.supportsVertexArrayObjects = !!vaoExt;
         }
+        // 32-bit indices (meshes over 65535 vertices) are core in WebGL 2
+        // but an extension in WebGL 1 that must be switched on before use
+        if (this._webglVersion === 1 && !gl.getExtension("OES_element_index_uint")) {
+            this.log("OES_element_index_uint is unavailable: meshes with more than 65535 vertices can't be drawn", "warning");
+        }
         // Check for depth texture support
         if (this._webglVersion === 2) {
             this._capabilities.supportsDepthTexture = true;
@@ -464,6 +619,171 @@ class IgeWebGlRenderer extends IgeBaseRenderer_1.IgeBaseRenderer {
         this._textureManager.deleteTexture(id);
         this._pendingBlobTextures.delete(id);
         return this;
+    }
+    shadowCaching(val) {
+        if (val === undefined) {
+            return this._shadowCaching;
+        }
+        this._shadowCaching = val;
+        this._shadowMapHoldsCache = false;
+        return this;
+    }
+    /**
+     * Where the directional shadow frustum should be centred for a view
+     * target: the target itself, or with shadow caching on, the target
+     * snapped to a coarse grid so small camera moves don't move the frustum.
+     */
+    _shadowCenter(x, y, z) {
+        if (!this._shadowCaching || !this._shadowManager)
+            return { x, y, z };
+        const step = Math.max(this._shadowManager.frustumSize() * SHADOW_RECENTER_STEP, 1e-6);
+        return {
+            x: Math.round(x / step) * step,
+            y: Math.round(y / step) * step,
+            z: Math.round(z / step) * step
+        };
+    }
+    debugDraw(options) {
+        if (options === undefined) {
+            return Object.assign({}, this._debugOptions);
+        }
+        this._debugOptions = Object.assign(Object.assign({}, this._debugOptions), options);
+        return this;
+    }
+    /**
+     * Draw a world-space line in every viewport on the next rendered frame,
+     * e.g. an AI path, an attack range or a ray. Call it each frame the line
+     * should stay visible.
+     * @param color RGBA, 0-1 (default yellow).
+     */
+    debugLine(x1, y1, z1, x2, y2, z2, color = { r: 1, g: 0.9, b: 0.2, a: 1 }) {
+        var _a;
+        this._pushDebugLine(x1, y1, z1, x2, y2, z2, color.r, color.g, color.b, (_a = color.a) !== null && _a !== void 0 ? _a : 1);
+        return this;
+    }
+    _pushDebugLine(x1, y1, z1, x2, y2, z2, r, g, b, a) {
+        const needed = (this._debugLineVertices + 2) * DEBUG_LINE_FLOATS;
+        if (needed > this._debugLineData.length) {
+            const grown = new Float32Array(Math.max(needed, this._debugLineData.length * 2));
+            grown.set(this._debugLineData);
+            this._debugLineData = grown;
+        }
+        const d = this._debugLineData;
+        let o = this._debugLineVertices * DEBUG_LINE_FLOATS;
+        d[o++] = x1;
+        d[o++] = y1;
+        d[o++] = z1;
+        d[o++] = r;
+        d[o++] = g;
+        d[o++] = b;
+        d[o++] = a;
+        d[o++] = x2;
+        d[o++] = y2;
+        d[o++] = z2;
+        d[o++] = r;
+        d[o++] = g;
+        d[o++] = b;
+        d[o++] = a;
+        this._debugLineVertices += 2;
+    }
+    /** Three great circles approximating a sphere. */
+    _pushDebugSphere(cx, cy, cz, radius, color) {
+        const segments = 16;
+        const [r, g, b] = color;
+        for (let k = 0; k < segments; k++) {
+            const a0 = (k / segments) * Math.PI * 2, a1 = ((k + 1) / segments) * Math.PI * 2;
+            const c0 = Math.cos(a0) * radius, s0 = Math.sin(a0) * radius;
+            const c1 = Math.cos(a1) * radius, s1 = Math.sin(a1) * radius;
+            this._pushDebugLine(cx + c0, cy + s0, cz, cx + c1, cy + s1, cz, r, g, b, 1);
+            this._pushDebugLine(cx + c0, cy, cz + s0, cx + c1, cy, cz + s1, r, g, b, 1);
+            this._pushDebugLine(cx, cy + c0, cz + s0, cx, cy + c1, cz + s1, r, g, b, 1);
+        }
+    }
+    /**
+     * Draw this viewport's debug lines: lines queued with debugLine() plus,
+     * when enabled, bounds and the shadow frustum (generated per viewport
+     * and dropped again afterwards).
+     */
+    _renderDebugLines(matrices) {
+        var _a;
+        const debug = this._debugOptions;
+        const queued = this._debugLineVertices;
+        if (queued === 0 && !debug.bounds && !debug.shadowFrustum)
+            return;
+        const gl = this._canvasContext;
+        const program = (_a = this._shaderManager) === null || _a === void 0 ? void 0 : _a.getProgram("debug_line");
+        if (!gl || !program || !this._stateManager)
+            return;
+        if (debug.bounds) {
+            const pushItem = (item) => {
+                if (item.radius < 0)
+                    return;
+                const color = item.lodSizes ? DEBUG_LOD_COLORS[Math.min(item.lodLevel, DEBUG_LOD_COLORS.length - 1)] : DEBUG_NO_LOD_COLOR;
+                this._pushDebugSphere(item.cx, item.cy, item.cz, item.radius, color);
+            };
+            for (const batch of this._mainBatcher.batches) {
+                for (let i = 0; i < batch.items.length; i++)
+                    pushItem(batch.items[i]);
+            }
+            for (let i = 0; i < this._transparentItems.length; i++)
+                pushItem(this._transparentItems[i]);
+        }
+        if (debug.shadowFrustum && this._shadowManager && this.shadowsEnabled()) {
+            const lightSpace = this._shadowManager.getLightSpaceMatrix(this._shadowLightId);
+            if (lightSpace) {
+                this._lightFrustumMatrix.matrix.set(lightSpace);
+                const inverse = this._lightFrustumMatrix.getInverse();
+                if (inverse) {
+                    const m = inverse.matrix;
+                    const corners = [];
+                    for (let i = 0; i < 8; i++) {
+                        const x = i & 1 ? 1 : -1, y = i & 2 ? 1 : -1, z = i & 4 ? 1 : -1;
+                        const w = m[3] * x + m[7] * y + m[11] * z + m[15];
+                        corners.push([
+                            (m[0] * x + m[4] * y + m[8] * z + m[12]) / w,
+                            (m[1] * x + m[5] * y + m[9] * z + m[13]) / w,
+                            (m[2] * x + m[6] * y + m[10] * z + m[14]) / w
+                        ]);
+                    }
+                    const edges = [[0, 1], [2, 3], [4, 5], [6, 7], [0, 2], [1, 3], [4, 6], [5, 7], [0, 4], [1, 5], [2, 6], [3, 7]];
+                    for (const [a, b] of edges) {
+                        const p = corners[a], q = corners[b];
+                        this._pushDebugLine(p[0], p[1], p[2], q[0], q[1], q[2], 1, 0.4, 1, 1);
+                    }
+                }
+            }
+        }
+        const vertices = this._debugLineVertices;
+        if (vertices > 0) {
+            if (!this._debugLineBuffer)
+                this._debugLineBuffer = gl.createBuffer();
+            const stride = DEBUG_LINE_FLOATS * 4;
+            const position = program.getAttributeLocation("a_position");
+            const color = program.getAttributeLocation("a_color");
+            program.use();
+            program.setUniformMatrix4fv("u_viewMatrix", matrices.view);
+            program.setUniformMatrix4fv("u_projectionMatrix", matrices.projection);
+            // Raw buffer binding: tell the state manager its cache is stale
+            this._stateManager.reset();
+            gl.bindBuffer(gl.ARRAY_BUFFER, this._debugLineBuffer);
+            gl.bufferData(gl.ARRAY_BUFFER, this._debugLineData.subarray(0, vertices * DEBUG_LINE_FLOATS), gl.STREAM_DRAW);
+            gl.enableVertexAttribArray(position);
+            gl.vertexAttribPointer(position, 3, gl.FLOAT, false, stride, 0);
+            gl.enableVertexAttribArray(color);
+            gl.vertexAttribPointer(color, 4, gl.FLOAT, false, stride, 12);
+            this._stateManager.setDepthTest(true);
+            this._stateManager.setDepthWrite(false);
+            this._stateManager.setBlend(true);
+            this._stateManager.setBlendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+            gl.drawArrays(gl.LINES, 0, vertices);
+            gl.disableVertexAttribArray(position);
+            gl.disableVertexAttribArray(color);
+            gl.bindBuffer(gl.ARRAY_BUFFER, null);
+            this._stateManager.reset();
+            this._stateManager.setDepthWrite(true);
+        }
+        // Keep only the queued lines for the next viewport
+        this._debugLineVertices = queued;
     }
     backFaceCulling(val) {
         if (val === undefined) {
@@ -545,6 +865,16 @@ class IgeWebGlRenderer extends IgeBaseRenderer_1.IgeBaseRenderer {
         };
     }
     /**
+     * The view, projection and combined matrices (and frustum) a viewport's
+     * camera renders with, for projecting many points without repeating
+     * the camera setup (see IgeViewportOverlay). Null without a camera.
+     */
+    cameraMatrices(viewport) {
+        if (!this._cameraController || !viewport.camera)
+            return null;
+        return this._cameraController.updateCamera(viewport.camera, viewport);
+    }
+    /**
      * Build a world-space ray through a screen point (CSS pixels from the
      * canvas's top-left) in a viewport, for mouse picking and aiming.
      * Returns null if the viewport has no camera.
@@ -619,6 +949,119 @@ class IgeWebGlRenderer extends IgeBaseRenderer_1.IgeBaseRenderer {
         }
         return undefined;
     }
+    /**
+     * Whether a screen point (CSS pixels from the canvas's top-left) is over
+     * an entity in the viewport under it. IGE's pointer events (pointerOver,
+     * pointerDown, pointerUp...) use this when the WebGL renderer is active.
+     * Meshes are hit by their bounding box; sprites exactly by their quad in
+     * flat views (screen2d, or billboard("none")), or by their on-screen
+     * rectangle when billboarded.
+     */
+    pointerHitTest(entity, screenX, screenY) {
+        var _a;
+        const viewport = this.viewportAt(screenX, screenY);
+        const world = entity._worldMatrix4;
+        if (!viewport || !world || entity._hidden)
+            return false;
+        const ray = this.screenToWorldRay(viewport, screenX, screenY);
+        if (!ray)
+            return false;
+        const camera = viewport.camera;
+        const isSprite = !entity._modelParts && !((_a = entity._geometryData) === null || _a === void 0 ? void 0 : _a.vertices) && !!entity._texture;
+        const flat2d = !!(camera._up && camera._up.y < 0);
+        if (isSprite && !flat2d && entity._billboardMode !== 0) {
+            // Billboard: compare against its rectangle on screen
+            const matrices = this.cameraMatrices(viewport);
+            if (!matrices)
+                return false;
+            const m = world.matrix;
+            const centre = this.worldToScreen(viewport, m[12], m[13], m[14]);
+            if (!centre || !centre.visible)
+                return false;
+            // Screen pixels per world unit at the entity's distance
+            const p = matrices.projection.matrix;
+            let pixelsPerUnit = p[5] * viewport._bounds2d.y * 0.5;
+            if (p[11] !== 0) {
+                const v = matrices.view.matrix;
+                const depth = -(v[2] * m[12] + v[6] * m[13] + v[10] * m[14] + v[14]);
+                pixelsPerUnit /= Math.max(depth, 1e-3);
+            }
+            const halfW = entity._bounds2d.x * Math.hypot(m[0], m[1], m[2]) * pixelsPerUnit * 0.5;
+            const halfH = entity._bounds2d.y * Math.hypot(m[4], m[5], m[6]) * pixelsPerUnit * 0.5;
+            return Math.abs(screenX - centre.x) <= halfW && Math.abs(screenY - centre.y) <= halfH;
+        }
+        // Bring the ray into the entity's local space
+        const inverse = world.getInverse();
+        if (!inverse)
+            return false;
+        const n = inverse.matrix;
+        const o = ray.origin, d = ray.direction;
+        const ox = n[0] * o.x + n[4] * o.y + n[8] * o.z + n[12];
+        const oy = n[1] * o.x + n[5] * o.y + n[9] * o.z + n[13];
+        const oz = n[2] * o.x + n[6] * o.y + n[10] * o.z + n[14];
+        const dx = n[0] * d.x + n[4] * d.y + n[8] * d.z;
+        const dy = n[1] * d.x + n[5] * d.y + n[9] * d.z;
+        const dz = n[2] * d.x + n[6] * d.y + n[10] * d.z;
+        if (isSprite) {
+            // Flat sprite: the quad lies on the local z = 0 plane
+            if (Math.abs(dz) < 1e-9)
+                return false;
+            const t = -oz / dz;
+            if (t < 0)
+                return false;
+            const x = ox + dx * t, y = oy + dy * t;
+            return Math.abs(x) <= entity._bounds2d.x / 2 && Math.abs(y) <= entity._bounds2d.y / 2;
+        }
+        let box = null;
+        if (entity._modelParts) {
+            box = partsBox(entity._modelParts);
+            // Skinned meshes: the box around the animated joints
+            const skeleton = entity._skeleton;
+            if (skeleton && entity._modelParts.some((part) => part.skinned)) {
+                entity._updateSkeletonMatrices();
+                const bones = skeletonBox(skeleton.worldMatrices, skeleton.data.boneCount);
+                if (bones) {
+                    const staticBox = box;
+                    box = Object.assign({}, bones);
+                    if (staticBox && staticBox.maxX > staticBox.minX) {
+                        box.minX = Math.min(box.minX, staticBox.minX);
+                        box.minY = Math.min(box.minY, staticBox.minY);
+                        box.minZ = Math.min(box.minZ, staticBox.minZ);
+                        box.maxX = Math.max(box.maxX, staticBox.maxX);
+                        box.maxY = Math.max(box.maxY, staticBox.maxY);
+                        box.maxZ = Math.max(box.maxZ, staticBox.maxZ);
+                    }
+                }
+            }
+        }
+        else if (entity._geometryData) {
+            box = geometryBox(entity._geometryData);
+        }
+        if (!box)
+            return false;
+        // Ray against the box (slab method)
+        let tMin = 0, tMax = Infinity;
+        const slabs = [
+            [ox, dx, box.minX, box.maxX],
+            [oy, dy, box.minY, box.maxY],
+            [oz, dz, box.minZ, box.maxZ]
+        ];
+        for (const [origin, direction, min, max] of slabs) {
+            if (Math.abs(direction) < 1e-12) {
+                if (origin < min || origin > max)
+                    return false;
+                continue;
+            }
+            let t1 = (min - origin) / direction, t2 = (max - origin) / direction;
+            if (t1 > t2)
+                [t1, t2] = [t2, t1];
+            tMin = Math.max(tMin, t1);
+            tMax = Math.min(tMax, t2);
+            if (tMin > tMax)
+                return false;
+        }
+        return true;
+    }
     shadowSharing(threshold) {
         if (threshold === undefined) {
             return this._shadowShareThreshold;
@@ -673,7 +1116,7 @@ class IgeWebGlRenderer extends IgeBaseRenderer_1.IgeBaseRenderer {
         }
         // Enlarge the frustum just enough to cover every viewport's area
         this._shadowManager.frustumSize(size + extent);
-        const lightSpaceMatrix = this._shadowManager.updateLightSpaceMatrix(this._shadowLightId, this._shadowCastingLight, undefined, { x: (minX + maxX) / 2, y: (minY + maxY) / 2, z: (minZ + maxZ) / 2 });
+        const lightSpaceMatrix = this._shadowManager.updateLightSpaceMatrix(this._shadowLightId, this._shadowCastingLight, undefined, this._shadowCenter((minX + maxX) / 2, (minY + maxY) / 2, (minZ + maxZ) / 2));
         this._shadowManager.frustumSize(size);
         if (!lightSpaceMatrix)
             return false;
@@ -720,6 +1163,9 @@ class IgeWebGlRenderer extends IgeBaseRenderer_1.IgeBaseRenderer {
         stats.visibleItems = 0;
         stats.lodItems = 0;
         stats.triangles = 0;
+        stats.shadowCacheRebuilds = 0;
+        this._directionalPassesLastFrame = this._directionalPassesThisFrame;
+        this._directionalPassesThisFrame = 0;
         stats.viewports = viewports ? viewports.length : 0;
         // Clear the entire canvas
         const cc = this._clearColor;
@@ -783,6 +1229,8 @@ class IgeWebGlRenderer extends IgeBaseRenderer_1.IgeBaseRenderer {
         for (let i = 0; i < viewports.length; i++) {
             this._renderViewport(viewports[i]);
         }
+        // Lines queued with debugLine() last one rendered frame
+        this._debugLineVertices = 0;
         return true;
     }
     /**
@@ -873,6 +1321,7 @@ class IgeWebGlRenderer extends IgeBaseRenderer_1.IgeBaseRenderer {
             if (!texture) {
                 this.log(`Failed to create model texture "${textureId}"`, "warning");
             }
+            (0, sceneChange_1.markSceneChanged)();
         });
     }
     /**
@@ -920,6 +1369,7 @@ class IgeWebGlRenderer extends IgeBaseRenderer_1.IgeBaseRenderer {
                 depthKey: "",
                 lodSizes: null,
                 lodRadius: 0,
+                lodLevel: 0,
                 lodGeometries: [],
                 lodBatchKeys: [],
                 lodDepthKeys: [],
@@ -995,6 +1445,38 @@ class IgeWebGlRenderer extends IgeBaseRenderer_1.IgeBaseRenderer {
             const scale = Math.sqrt(Math.max(sx, sy, sz));
             item.radius = geometry.boundsRadius * scale;
             item.lodRadius = geometry.meshRadius * scale;
+            // Skinned vertices are in bind space (often Z-up), not model
+            // space, so their raw bounds can sit well away from the posed
+            // character. Centre the sphere on the animated joints instead,
+            // padded to cover the body around them.
+            const skeleton = item.skeleton;
+            if (skeleton && skeleton.data.boneCount > 0) {
+                const w = skeleton.worldMatrices;
+                let minX = Infinity, minY = Infinity, minZ = Infinity;
+                let maxX = -Infinity, maxY = -Infinity, maxZ = -Infinity;
+                for (let b = 0, n = skeleton.data.boneCount; b < n; b++) {
+                    const x = w[b * 16 + 12], y = w[b * 16 + 13], z = w[b * 16 + 14];
+                    if (x < minX)
+                        minX = x;
+                    if (y < minY)
+                        minY = y;
+                    if (z < minZ)
+                        minZ = z;
+                    if (x > maxX)
+                        maxX = x;
+                    if (y > maxY)
+                        maxY = y;
+                    if (z > maxZ)
+                        maxZ = z;
+                }
+                const lx = (minX + maxX) / 2, ly = (minY + maxY) / 2, lz = (minZ + maxZ) / 2;
+                const extent = Math.max(maxX - minX, maxY - minY, maxZ - minZ);
+                const halfDiagonal = Math.hypot(maxX - minX, maxY - minY, maxZ - minZ) / 2;
+                item.cx = m[0] * lx + m[4] * ly + m[8] * lz + m[12];
+                item.cy = m[1] * lx + m[5] * ly + m[9] * lz + m[13];
+                item.cz = m[2] * lx + m[6] * ly + m[10] * lz + m[14];
+                item.radius = (halfDiagonal + extent * 0.25) * scale;
+            }
         }
         else {
             item.cx = m[12];
@@ -1170,6 +1652,7 @@ class IgeWebGlRenderer extends IgeBaseRenderer_1.IgeBaseRenderer {
             const distSq = dx * dx + dy * dy + dz * dz;
             let geometry = item.geometry;
             let batchKey = item.batchKey;
+            item.lodLevel = 0;
             if (item.lodSizes) {
                 let scale = pixelsPerUnit;
                 if (perspective) {
@@ -1177,6 +1660,7 @@ class IgeWebGlRenderer extends IgeBaseRenderer_1.IgeBaseRenderer {
                     scale /= Math.max(depth, 1e-3);
                 }
                 const level = this._lodLevel(item, scale);
+                item.lodLevel = level;
                 if (level > 0) {
                     geometry = item.lodGeometries[level];
                     batchKey = item.lodBatchKeys[level];
@@ -1244,7 +1728,7 @@ class IgeWebGlRenderer extends IgeBaseRenderer_1.IgeBaseRenderer {
         // ------------------------------------------------------------
         if (this.shadowsEnabled() && this._shadowManager && this._shadowCastingLight && this._sharedShadowFrame !== this._frameId) {
             const target = camera._lookAt;
-            const center = target ? { x: target.x, y: target.y, z: target.z } : { x: 0, y: 0, z: 0 };
+            const center = target ? this._shadowCenter(target.x, target.y, target.z) : { x: 0, y: 0, z: 0 };
             const lightSpaceMatrix = this._shadowManager.updateLightSpaceMatrix(this._shadowLightId, this._shadowCastingLight, { x: camX, y: camY, z: camZ }, center);
             if (lightSpaceMatrix) {
                 this._renderDirectionalShadowPass(data, lightSpaceMatrix);
@@ -1273,7 +1757,10 @@ class IgeWebGlRenderer extends IgeBaseRenderer_1.IgeBaseRenderer {
         this._stateManager.setDepthFunc(gl.LEQUAL);
         this._stateManager.setBlend(true);
         this._stateManager.setBlendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
-        this._renderSprites(opaqueSprites, matrices);
+        // A y-down 2D camera (preset "screen2d") draws sprites flat with
+        // their full 2D transform, as the Canvas 2D renderer does
+        const flat2d = !!(camera._up && camera._up.y < 0);
+        this._renderSprites(opaqueSprites, matrices, flat2d);
         this._renderModelBatches(batcher.batches, matrices);
         // Ground decals go on top of the opaque ground, under everything
         // transparent
@@ -1283,12 +1770,13 @@ class IgeWebGlRenderer extends IgeBaseRenderer_1.IgeBaseRenderer {
         if (transparentSprites.length > 1) {
             transparentSprites.sort(sortSpritesBackToFront);
         }
-        this._renderSprites(transparentSprites, matrices);
+        this._renderSprites(transparentSprites, matrices, flat2d);
         if (transparent.length > 0) {
             transparent.sort(sortItemsBackToFront);
             this._renderTransparentItems(transparent, matrices);
         }
         this._renderParticleSystems(data.particles, matrices);
+        this._renderDebugLines(matrices);
         this._stateManager.setDepthWrite(true);
         this._stateManager.setScissorTest(false);
     }
@@ -1409,14 +1897,25 @@ class IgeWebGlRenderer extends IgeBaseRenderer_1.IgeBaseRenderer {
     _renderDirectionalShadowPass(data, lightSpaceMatrix) {
         if (!this._shadowManager)
             return;
+        const shadowManager = this._shadowManager;
+        const lightId = this._shadowLightId;
         this._lightFrustumMatrix.matrix.set(lightSpaceMatrix);
         this._lightFrustum.extractFromMatrix(this._lightFrustumMatrix);
         // Shadow map texels per world unit (orthographic light projection)
         const m = lightSpaceMatrix;
         const texelsPerUnit = Math.sqrt(m[0] * m[0] + m[4] * m[4] + m[8] * m[8]) *
-            this._shadowManager.getShadowMapSize(this._shadowLightId) * 0.5;
+            shadowManager.getShadowMapSize(lightId) * 0.5;
+        // Cache static casters when this is the frame's only directional pass
+        this._directionalPassesThisFrame++;
+        const cache = this._shadowCaching && this._directionalPassesLastFrame <= 1
+            ? shadowManager.getShadowCache(lightId)
+            : null;
         const batcher = this._depthBatcher;
+        const staticBatcher = this._staticDepthBatcher;
         batcher.begin();
+        staticBatcher.begin();
+        const frameId = this._frameId;
+        let signatureA = 0, signatureB = 0, staticCount = 0, movingCount = 0;
         const models = data.models;
         for (let i = 0; i < models.length; i++) {
             const item = models[i];
@@ -1425,22 +1924,77 @@ class IgeWebGlRenderer extends IgeBaseRenderer_1.IgeBaseRenderer {
             if (item.radius >= 0 && !this._lightFrustum.containsSphereXYZ(item.cx, item.cy, item.cz, item.radius)) {
                 continue;
             }
-            item.entity._lastRenderedFrame = this._frameId;
+            const entity = item.entity;
+            entity._lastRenderedFrame = frameId;
+            let key = item.depthKey;
+            let geometry = item.geometry;
             if (item.lodSizes) {
                 const level = this._lodLevel(item, texelsPerUnit);
-                batcher.add(item, item.lodDepthKeys[level], item.lodGeometries[level]);
+                key = item.lodDepthKeys[level];
+                geometry = item.lodGeometries[level];
             }
-            else {
-                batcher.add(item, item.depthKey);
+            if (cache) {
+                // New casters start out static (one extra rebuild if they turn
+                // out to move); casters that moved wait until they settle
+                if (entity._transformVersion !== entity._shadowSeenVersion) {
+                    entity._shadowStableSince = entity._shadowSeenVersion === -1 ? -SHADOW_STATIC_FRAMES : frameId;
+                    entity._shadowSeenVersion = entity._transformVersion;
+                }
+                if (!item.skeleton && frameId - entity._shadowStableSince >= SHADOW_STATIC_FRAMES) {
+                    if (!entity._renderUid)
+                        entity._renderUid = nextRenderUid++;
+                    // Order-independent checksum of (entity, mesh, transform)
+                    let h = Math.imul(entity._renderUid, 0x9e3779b1) ^ Math.imul(geometry.uid, 0x85ebca6b) ^ Math.imul(entity._transformVersion + 1, 0xc2b2ae35);
+                    h = Math.imul(h ^ (h >>> 15), 0x2c1b3c6d);
+                    signatureA = (signatureA + h) | 0;
+                    signatureB ^= Math.imul(h ^ (h >>> 13), 0x297a2d39);
+                    staticCount++;
+                    staticBatcher.add(item, key, geometry);
+                    continue;
+                }
+                movingCount++;
             }
+            batcher.add(item, key, geometry);
         }
-        if (!this._shadowManager.beginShadowPass(this._shadowLightId)) {
+        const setup = (program) => {
+            program.setUniformMatrix4fv("u_lightSpaceMatrix", lightSpaceMatrix);
+        };
+        if (!cache) {
+            if (!shadowManager.beginShadowPass(lightId))
+                return;
+            this._drawDepthBatches(batcher.batches, "shadow", "skinned_shadow", setup);
+            shadowManager.endShadowPass();
+            this._shadowMapHoldsCache = false;
             return;
         }
-        this._drawDepthBatches(batcher.batches, "shadow", "skinned_shadow", (program) => {
-            program.setUniformMatrix4fv("u_lightSpaceMatrix", lightSpaceMatrix);
-        });
-        this._shadowManager.endShadowPass();
+        // Redraw the cache only when the static casters or the frustum changed
+        let sameMatrix = cache.valid;
+        for (let k = 0; sameMatrix && k < 16; k++)
+            sameMatrix = cache.matrix[k] === m[k];
+        const cacheCurrent = sameMatrix && cache.count === staticCount &&
+            cache.signatureA === signatureA && cache.signatureB === signatureB;
+        if (!cacheCurrent) {
+            if (shadowManager.beginShadowCachePass(lightId)) {
+                this._drawDepthBatches(staticBatcher.batches, "shadow", "skinned_shadow", setup);
+                shadowManager.endShadowPass();
+            }
+            cache.matrix.set(m);
+            cache.count = staticCount;
+            cache.signatureA = signatureA;
+            cache.signatureB = signatureB;
+            cache.valid = true;
+            this._shadowMapHoldsCache = false;
+            this._stats.shadowCacheRebuilds++;
+        }
+        // Nothing moving and the map already holds the cache: reuse it as is
+        if (movingCount === 0 && this._shadowMapHoldsCache)
+            return;
+        shadowManager.copyShadowCache(lightId);
+        if (movingCount > 0 && shadowManager.beginShadowPass(lightId, false)) {
+            this._drawDepthBatches(batcher.batches, "shadow", "skinned_shadow", setup);
+            shadowManager.endShadowPass();
+        }
+        this._shadowMapHoldsCache = movingCount === 0;
     }
     /**
      * Render point light shadow atlases (6 faces per shadow-casting light).
@@ -1467,7 +2021,12 @@ class IgeWebGlRenderer extends IgeBaseRenderer_1.IgeBaseRenderer {
             // has a 90 degree field of view, so an item at distance d covers
             // (faceSize / 2) / d texels per world unit.
             const halfFace = ((_b = shadowData === null || shadowData === void 0 ? void 0 : shadowData.faceSize) !== null && _b !== void 0 ? _b : 512) * 0.5;
-            batcher.begin();
+            const casters = this._pointCasterItems;
+            const casterKeys = this._pointCasterKeys;
+            const casterGeometries = this._pointCasterGeometries;
+            casters.length = 0;
+            casterKeys.length = 0;
+            casterGeometries.length = 0;
             for (let i = 0; i < this._itemCount; i++) {
                 const item = this._itemPool[i];
                 if (!item.castShadow)
@@ -1482,15 +2041,19 @@ class IgeWebGlRenderer extends IgeBaseRenderer_1.IgeBaseRenderer {
                     distance = Math.sqrt(distSq);
                 }
                 item.entity._lastRenderedFrame = this._frameId;
+                casters.push(item);
                 if (item.lodSizes && distance > 0) {
                     const level = this._lodLevel(item, halfFace / distance);
-                    batcher.add(item, item.lodDepthKeys[level], item.lodGeometries[level]);
+                    casterKeys.push(item.lodDepthKeys[level]);
+                    casterGeometries.push(item.lodGeometries[level]);
                 }
                 else {
-                    batcher.add(item, item.depthKey);
+                    casterKeys.push(item.depthKey);
+                    casterGeometries.push(item.geometry);
                 }
             }
             for (let face = 0; face < 6; face++) {
+                // Begin even when nothing falls in this face: it clears it
                 if (!this._shadowManager.beginPointShadowPass(lightId, face)) {
                     continue;
                 }
@@ -1498,6 +2061,16 @@ class IgeWebGlRenderer extends IgeBaseRenderer_1.IgeBaseRenderer {
                 if (!lightSpaceMatrix) {
                     this._shadowManager.endPointShadowPass();
                     continue;
+                }
+                // Only the casters inside this face's 90 degree frustum
+                this._lightFrustum.extractFromMatrix(lightSpaceMatrix);
+                batcher.begin();
+                for (let c = 0; c < casters.length; c++) {
+                    const item = casters[c];
+                    if (item.radius >= 0 && !this._lightFrustum.containsSphereXYZ(item.cx, item.cy, item.cz, item.radius)) {
+                        continue;
+                    }
+                    batcher.add(item, casterKeys[c], casterGeometries[c]);
                 }
                 this._drawDepthBatches(batcher.batches, "point_shadow", "skinned_point_shadow", (program) => {
                     program.setUniformMatrix4fv("u_lightSpaceMatrix", lightSpaceMatrix);
@@ -2000,7 +2573,7 @@ class IgeWebGlRenderer extends IgeBaseRenderer_1.IgeBaseRenderer {
     /**
      * Render 2D sprites (textured quads, billboarded to face the camera).
      */
-    _renderSprites(sprites, matrices) {
+    _renderSprites(sprites, matrices, flat2d = false) {
         var _a;
         if (sprites.length === 0 || !this._shaderManager || !this._geometryManager || !this._textureManager || !this._stateManager) {
             return;
@@ -2014,6 +2587,7 @@ class IgeWebGlRenderer extends IgeBaseRenderer_1.IgeBaseRenderer {
         spriteProgram.setUniformMatrix4fv("u_viewMatrix", matrices.view);
         spriteProgram.setUniformMatrix4fv("u_projectionMatrix", matrices.projection);
         spriteProgram.setUniform1i("u_texture", 0);
+        spriteProgram.setUniform1f("u_flipY", flat2d ? -1 : 1);
         this._geometryManager.bindGeometry(quadGeometry, spriteProgram);
         const gl = this._canvasContext;
         let boundTexture;
@@ -2022,7 +2596,14 @@ class IgeWebGlRenderer extends IgeBaseRenderer_1.IgeBaseRenderer {
             const entity = sprites[i];
             const texture = entity._texture;
             const material = entity._materialData;
-            if (texture !== boundTexture) {
+            if (texture._renderMode === enums_1.IgeTextureRenderMode.smartTexture) {
+                // Smart textures are drawn per entity (they read its data and size)
+                const webglTexture = this._textureManager.getSmartTexture(texture, entity, this._devicePixelRatio, this._frameId);
+                this._stateManager.invalidateTextureBindings();
+                this._stateManager.bindTexture(webglTexture || this._textureManager.getDefaultWhiteTexture(), 0);
+                boundTexture = undefined;
+            }
+            else if (texture !== boundTexture) {
                 const webglTexture = this._textureManager.getTextureForIgeTexture(texture);
                 this._stateManager.invalidateTextureBindings();
                 if (webglTexture) {
@@ -2062,7 +2643,7 @@ class IgeWebGlRenderer extends IgeBaseRenderer_1.IgeBaseRenderer {
             spriteProgram.setUniformMatrix4fv("u_worldMatrix", entity._worldMatrix4);
             spriteProgram.setUniform2f("u_scale", entity._bounds2d.x, entity._bounds2d.y);
             spriteProgram.setUniform1f("u_opacity", entity._opacity);
-            spriteProgram.setUniform1i("u_billboardMode", entity._billboardMode);
+            spriteProgram.setUniform1i("u_billboardMode", flat2d ? 0 : entity._billboardMode);
             this._geometryManager.drawGeometry(quadGeometry);
             this._stats.drawCalls++;
         }
@@ -2192,6 +2773,13 @@ class IgeWebGlRenderer extends IgeBaseRenderer_1.IgeBaseRenderer {
             return this;
         }
         return this._shadowDebugMode;
+    }
+    preferredWebGlVersion(val) {
+        if (val === undefined) {
+            return this._preferredWebGlVersion;
+        }
+        this._preferredWebGlVersion = val;
+        return this;
     }
     preserveDrawingBuffer(val) {
         if (val === undefined) {

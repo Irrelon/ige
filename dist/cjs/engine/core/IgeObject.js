@@ -2,6 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.IgeObject = void 0;
 const instance_1 = require("../instance.js");
+const sceneChange_1 = require("../utils/sceneChange.js");
 const IgeBounds_1 = require("./IgeBounds.js");
 const IgeDummyCanvas_1 = require("./IgeDummyCanvas.js");
 const IgeEventingClass_1 = require("./IgeEventingClass.js");
@@ -43,6 +44,10 @@ class IgeObject extends IgeEventingClass_1.IgeEventingClass {
          * work such as skeletal animation sampling for off-screen objects.
          */
         this._lastRenderedFrame = -1;
+        /** Renderer bookkeeping for cached static shadows (see IgeWebGlRenderer.shadowCaching()). */
+        this._renderUid = 0;
+        this._shadowSeenVersion = -1;
+        this._shadowStableSince = 0;
         this._tileWidth = 1;
         this._tileHeight = 1;
         this._tileDepth = 1;
@@ -542,6 +547,7 @@ class IgeObject extends IgeEventingClass_1.IgeEventingClass {
         if (!this._parent) {
             return this;
         }
+        (0, sceneChange_1.markSceneChanged)();
         const childArr = this._parent._children, index = childArr.indexOf(this), oldParent = this._parent;
         if (index <= -1) {
             // Cannot find this in the parent._children array

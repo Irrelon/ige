@@ -19,6 +19,7 @@ uniform mat4 u_projectionMatrix; // Camera projection matrix
 uniform vec2 u_scale;            // Entity size (width, height)
 uniform vec4 u_uvBounds;         // Texture region (minU, minV, maxU, maxV), e.g. a sprite sheet cell
 uniform int u_billboardMode;     // 0=none, 1=full, 2=y-axis
+uniform float u_flipY;           // -1 in a y-down 2D world (image top at local -y), else 1
 
 // Varyings
 varying vec2 v_uv;
@@ -28,7 +29,7 @@ void main() {
 	v_uv = mix(u_uvBounds.xy, u_uvBounds.zw, a_uv);
 
 	// Calculate vertex position
-	vec3 position = vec3(a_position * u_scale, 0.0);
+	vec3 position = vec3(a_position.x * u_scale.x, a_position.y * u_scale.y * u_flipY, 0.0);
 
 	if (u_billboardMode == 0) {
 		// No billboarding: standard 3D transform

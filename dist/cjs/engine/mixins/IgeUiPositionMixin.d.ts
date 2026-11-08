@@ -127,6 +127,9 @@ export declare const WithUiPositionMixin: <BaseClassType extends IgeMixin<IgeObj
         _transformChanged: boolean;
         _transformVersion: number;
         _lastRenderedFrame: number;
+        _renderUid: number;
+        _shadowSeenVersion: number;
+        _shadowStableSince: number;
         _tileWidth: number;
         _tileHeight: number;
         _tileDepth: number;

@@ -31,6 +31,26 @@ interface ShadowMapData {
     normalBias: number;
 }
 /**
+ * Cached depth of a directional light's static shadow casters (WebGL 2).
+ * The renderer redraws it only when the static casters or the light's
+ * matrix change, and copies it into the light's shadow map each frame
+ * before drawing the moving casters on top.
+ */
+export interface IgeShadowCacheData {
+    framebuffer: WebGLFramebuffer;
+    depthTexture: WebGLTexture;
+    size: number;
+    /** Light space matrix the cache was rendered with. */
+    matrix: Float32Array;
+    /** Checksums of the static caster set the cache holds. */
+    signatureA: number;
+    signatureB: number;
+    count: number;
+    valid: boolean;
+    /** The shadow map currently holds exactly the cached depth (no moving casters drawn). */
+    mapHoldsCache: boolean;
+}
+/**
  * Point shadow atlas texture format options.
  * - "rgba8": RGBA UNSIGNED_BYTE - fastest on all GPUs, 8-bit depth precision (256 levels)
  * - "r32f": R32F float - best precision, 1/4 memory of RGBA32F, but slower on some GPUs
@@ -64,6 +84,7 @@ export declare class IgeWebGlShadowManager extends IgeBaseClass {
     protected _webglVersion: 1 | 2;
     protected _shadowMaps: Map<string, ShadowMapData>;
     protected _pointShadowMaps: Map<string, PointShadowMapData>;
+    protected _shadowCaches: Map<string, IgeShadowCacheData>;
     protected _pointShadowFormat: PointShadowTextureFormat;
     protected _enabled: boolean;
     protected _defaultConfig: IgeShadowMapConfig;
@@ -106,6 +127,23 @@ export declare class IgeWebGlShadowManager extends IgeBaseClass {
      */
     deleteShadowMap(lightId: string): void;
     /**
+     * Get (creating on first use) the static caster cache for a directional
+     * light's shadow map. Returns null on WebGL 1, where depth can't be
+     * copied between framebuffers.
+     */
+    getShadowCache(lightId: string): IgeShadowCacheData | null;
+    /** Delete a directional light's static caster cache. */
+    deleteShadowCache(lightId: string): void;
+    /**
+     * Begin rendering static casters into a light's cache (cleared first).
+     * Finish with endShadowPass().
+     */
+    beginShadowCachePass(lightId: string): boolean;
+    /**
+     * Copy a light's cached static depth into its shadow map.
+     */
+    copyShadowCache(lightId: string): boolean;
+    /**
      * Update the light space matrix for a directional light.
      * @param lightId The light identifier
      * @param light The directional light
@@ -125,7 +163,12 @@ export declare class IgeWebGlShadowManager extends IgeBaseClass {
      * Begin shadow pass rendering.
      * Binds the shadow framebuffer and sets up viewport.
      */
-    beginShadowPass(lightId: string): boolean;
+    beginShadowPass(lightId: string, clear?: boolean): boolean;
+    /**
+     * Bind a depth framebuffer for a directional shadow pass, optionally
+     * clearing it to the far plane, with front-face culling.
+     */
+    protected _beginDepthPass(framebuffer: WebGLFramebuffer, size: number, clear: boolean): boolean;
     /**
      * End shadow pass rendering.
      * Restores default framebuffer and GL state.

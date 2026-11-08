@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.IgeEntity = void 0;
+const sceneChange_1 = require("../utils/sceneChange.js");
 const IgeBounds_1 = require("./IgeBounds.js");
 const IgeDummyCanvas_1 = require("./IgeDummyCanvas.js");
 const IgeMatrix2d_1 = require("./IgeMatrix2d.js");
@@ -354,6 +355,8 @@ class IgeEntity extends IgeObject_1.IgeObject {
             this._oldWorldMatrix.copy(this._worldMatrix);
             this._transformChanged = true;
             this._transformVersion++;
+            if (!this._hidden)
+                (0, sceneChange_1.markSceneChanged)();
             this._aabbDirty = true;
             this._bounds3dPolygonDirty = true;
             this.cacheDirty(true);
@@ -403,6 +406,8 @@ class IgeEntity extends IgeObject_1.IgeObject {
             if (!this._worldMatrix4.compare(this._oldWorldMatrix4)) {
                 this._oldWorldMatrix4.copy(this._worldMatrix4);
                 this._transformVersion++;
+                if (!this._hidden)
+                    (0, sceneChange_1.markSceneChanged)();
             }
         }
         // Check if the geometry has changed and if so, update the aabb dirty
@@ -427,6 +432,8 @@ class IgeEntity extends IgeObject_1.IgeObject {
      * method chaining.
      */
     show() {
+        if (this._hidden)
+            (0, sceneChange_1.markSceneChanged)();
         this._hidden = false;
         return this;
     }
@@ -438,6 +445,8 @@ class IgeEntity extends IgeObject_1.IgeObject {
      * method chaining.
      */
     hide() {
+        if (!this._hidden)
+            (0, sceneChange_1.markSceneChanged)();
         this._hidden = true;
         return this;
     }
@@ -1446,11 +1455,20 @@ class IgeEntity extends IgeObject_1.IgeObject {
         }
     }
     _processTriggerHitTests(mp) {
-        if (!instance_1.ige.engine._currentViewport) {
-            return false;
-        }
         if (this._pointerAlwaysInside) {
             return true;
+        }
+        // Renderers with their own picking (the WebGL renderer: 3D views,
+        // split screen) test against what they actually draw
+        const renderer = instance_1.ige.engine.renderer();
+        if (renderer === null || renderer === void 0 ? void 0 : renderer.pointerHitTest) {
+            // ige._pointerPos is relative to the canvas centre
+            const screenX = instance_1.ige._pointerPos.x + instance_1.ige.engine._bounds2d.x2 + instance_1.ige.engine._translate.x;
+            const screenY = instance_1.ige._pointerPos.y + instance_1.ige.engine._bounds2d.y2 + instance_1.ige.engine._translate.y;
+            return renderer.pointerHitTest(this, screenX, screenY);
+        }
+        if (!instance_1.ige.engine._currentViewport) {
+            return false;
         }
         if (!mp) {
             mp = this.mousePosWorld();

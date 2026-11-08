@@ -61,6 +61,10 @@ class Client extends IgeBaseClass_1.IgeBaseClass {
                 this.updateStatus("Creating WebGL renderer...");
                 // Create WebGL renderer
                 this.renderer = new IgeWebGlRenderer_1.IgeWebGlRenderer();
+                // ?webgl=1 runs the WebGL 1 fallback path
+                if (new URLSearchParams(window.location.search).get("webgl") === "1") {
+                    this.renderer.preferredWebGlVersion(1);
+                }
                 instance_1.ige.engine.renderer(this.renderer);
                 yield this.renderer.setup();
                 this.renderer.createFrontBuffer(true);
@@ -475,9 +479,15 @@ class Client extends IgeBaseClass_1.IgeBaseClass {
         // applies the file's node transforms, so the bounty hunter stands
         // upright without manual rotation. Skinned models also get a
         // skeleton and animation component automatically.
+        // ?lod=1 adds generated lower-detail meshes. The shadow maps see the
+        // 500k-triangle model at a few hundred texels, so they pick a lower
+        // level even while the camera view keeps full detail.
+        const lod = new URLSearchParams(window.location.search).get("lod") === "1"
+            ? [{ screenSize: 500, ratio: 0.3 }, { screenSize: 200, ratio: 0.1 }]
+            : undefined;
         this.animatedEntity = new IgeEntity_1.IgeEntity()
             .id("bountyHunter")
-            .model(this.animatedModel, { animation: this.animationNames[0] })
+            .model(this.animatedModel, { animation: this.animationNames[0], lod })
             // Position the model in the centre of the scene, on the ground.
             // Bounty hunter is ~1.14 units tall; scale to ~150 world units
             .translateTo(0, 0, 0)

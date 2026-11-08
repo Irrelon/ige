@@ -27,6 +27,8 @@ class IgeWebGlTextureManager extends IgeBaseClass_1.IgeBaseClass {
         this._smartTextureCanvases = new Map();
         // Default 1x1 white texture for entities without textures
         this._defaultWhiteTexture = null;
+        // Per-entity canvases for smart textures (see getSmartTexture())
+        this._entitySmartTextures = new Map();
         // Cache for blob-based textures (keyed by material ID)
         this._blobTextureCache = new Map();
         this._blobTexturePromises = new Map();
@@ -149,6 +151,85 @@ class IgeWebGlTextureManager extends IgeBaseClass_1.IgeBaseClass {
             this._igeTextureMap.set(textureId, webglTexture);
         }
         return webglTexture;
+    }
+    /**
+     * Get the GPU texture of a smart texture (an IgeTexture drawn by a
+     * script with the Canvas 2D API) as drawn for one entity. Smart textures
+     * usually draw from the entity's own data and size, so every entity
+     * gets its own canvas, drawn the way the Canvas 2D renderer draws it:
+     * centred, in entity units, scaled by pixelRatio for sharpness.
+     *
+     * Like the Canvas 2D renderer it redraws every frame (once, however many
+     * viewports show the entity), unless the entity has cache(true): then it
+     * redraws only when the entity's cache is marked dirty
+     * (entity.cacheDirty(true)) or its size changes.
+     */
+    getSmartTexture(igeTexture, entity, pixelRatio, frameId) {
+        var _a, _b, _c, _d;
+        const script = igeTexture.script;
+        if (!script || typeof script.render !== "function")
+            return null;
+        const gl = this._gl;
+        const scale = Math.max(pixelRatio, 0.25);
+        const width = Math.max(1, Math.min(2048, Math.ceil((((_a = entity._bounds2d) === null || _a === void 0 ? void 0 : _a.x) || 1) * scale)));
+        const height = Math.max(1, Math.min(2048, Math.ceil((((_b = entity._bounds2d) === null || _b === void 0 ? void 0 : _b.y) || 1) * scale)));
+        let entry = this._entitySmartTextures.get(entity);
+        if (entry && entry.igeTexture !== igeTexture) {
+            gl.deleteTexture(entry.texture);
+            entry = undefined;
+        }
+        // Split-screen views drawing the same entity share one redraw per frame
+        let redraw = !entry || entry.width !== width || entry.height !== height ||
+            ((!entity._cache || entity._cacheDirty) && entry.drawnFrame !== frameId);
+        if (!entry) {
+            const canvas = document.createElement("canvas");
+            const ctx = canvas.getContext("2d");
+            const texture = gl.createTexture();
+            if (!ctx || !texture)
+                return null;
+            entry = { igeTexture, canvas, ctx, texture, width: 0, height: 0, lastUsedFrame: frameId, drawnFrame: -1 };
+            this._entitySmartTextures.set(entity, entry);
+            redraw = true;
+        }
+        if (redraw) {
+            const { canvas, ctx } = entry;
+            if (canvas.width !== width || canvas.height !== height) {
+                canvas.width = width;
+                canvas.height = height;
+            }
+            entry.width = width;
+            entry.height = height;
+            // Same space as the Canvas 2D renderer: origin at the entity's
+            // centre, one unit per entity pixel
+            ctx.setTransform(1, 0, 0, 1, 0, 0);
+            ctx.clearRect(0, 0, width, height);
+            ctx.setTransform(width / (((_c = entity._bounds2d) === null || _c === void 0 ? void 0 : _c.x) || 1), 0, 0, height / (((_d = entity._bounds2d) === null || _d === void 0 ? void 0 : _d.y) || 1), width / 2, height / 2);
+            ctx.save();
+            script.render(ctx, entity, igeTexture);
+            ctx.restore();
+            gl.bindTexture(gl.TEXTURE_2D, entry.texture);
+            gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, 0);
+            gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, 0);
+            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, canvas);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+            if (entity._cache)
+                entity._cacheDirty = false;
+            entry.drawnFrame = frameId;
+        }
+        entry.lastUsedFrame = frameId;
+        // Free canvases of entities that stopped drawing (destroyed, hidden)
+        if ((frameId & 127) === 0) {
+            for (const [key, value] of this._entitySmartTextures) {
+                if (frameId - value.lastUsedFrame > 240) {
+                    gl.deleteTexture(value.texture);
+                    this._entitySmartTextures.delete(key);
+                }
+            }
+        }
+        return entry.texture;
     }
     /**
      * Create a WebGL texture from a Blob (e.g., from GLTF embedded image).

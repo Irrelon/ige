@@ -39,6 +39,29 @@ export declare class IgeWebGlTextureManager extends IgeBaseClass {
      * Create a WebGL texture from an IGE texture.
      */
     createTextureFromIgeTexture(igeTexture: IgeTexture): WebGLTexture | null;
+    protected _entitySmartTextures: Map<object, {
+        igeTexture: IgeTexture;
+        canvas: HTMLCanvasElement;
+        ctx: CanvasRenderingContext2D;
+        texture: WebGLTexture;
+        width: number;
+        height: number;
+        lastUsedFrame: number;
+        drawnFrame: number;
+    }>;
+    /**
+     * Get the GPU texture of a smart texture (an IgeTexture drawn by a
+     * script with the Canvas 2D API) as drawn for one entity. Smart textures
+     * usually draw from the entity's own data and size, so every entity
+     * gets its own canvas, drawn the way the Canvas 2D renderer draws it:
+     * centred, in entity units, scaled by pixelRatio for sharpness.
+     *
+     * Like the Canvas 2D renderer it redraws every frame (once, however many
+     * viewports show the entity), unless the entity has cache(true): then it
+     * redraws only when the entity's cache is marked dirty
+     * (entity.cacheDirty(true)) or its size changes.
+     */
+    getSmartTexture(igeTexture: IgeTexture, entity: any, pixelRatio: number, frameId: number): WebGLTexture | null;
     protected _blobTextureCache: Map<string, WebGLTexture>;
     protected _blobTexturePromises: Map<string, Promise<WebGLTexture | null>>;
     /**

@@ -26,6 +26,10 @@ export declare class IgeEngine extends IgeEntity implements IgeIsReadyPromise {
     _pause: boolean;
     _useManualRender: boolean;
     _manualRenderQueued: boolean;
+    _renderOnDemand: boolean;
+    _renderedSceneChange: number;
+    _viewState: number[];
+    _viewStateScratch: number[];
     _useManualTicks: boolean;
     _manualFrameAlternator: boolean;
     _pixelRatioScaling: boolean;
@@ -199,6 +203,33 @@ export declare class IgeEngine extends IgeEntity implements IgeIsReadyPromise {
      * @return {*}
      */
     useManualRender(val?: boolean): boolean | this;
+    /**
+     * Gets / sets render-on-demand. Like useManualRender(true), frames are
+     * only drawn when something changed, so an idle scene costs no GPU
+     * time, but the engine notices most changes itself: entity transforms
+     * (including tweens and velocity), showing, hiding and unmounting
+     * entities, camera and viewport changes, playing animations, live
+     * particles, fading decals, finished texture loads and canvas resizes.
+     * Call manualRender() after changes it can't see, such as assigning a
+     * new _materialData or texture.
+     * @example #Draw only when something changes
+     *     ige.engine.renderOnDemand(true);
+     *     // later, after recolouring a tile:
+     *     tile._materialData = highlight;
+     *     ige.engine.manualRender();
+     */
+    renderOnDemand(): boolean;
+    renderOnDemand(val: boolean): this;
+    /**
+     * Whether render-on-demand needs a new frame: something reported a
+     * change since the last frame, or a viewport or its camera moved.
+     */
+    _sceneChangedSinceRender(): boolean;
+    /**
+     * Every value that positions a view: viewport placement and size and
+     * the camera's transform, look-at target and projection.
+     */
+    _captureViewState(out: number[]): number[];
     /**
      * Manually render a frame on demand. This is used in conjunction
      * with the ige.useManualRender(true) call which will cause the

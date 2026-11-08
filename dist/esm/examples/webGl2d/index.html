@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8" />
+	<title>2D on WebGL - Isogenic Engine</title>
+	<script src="./index.bundle.js" type="module"></script>
+	<style>
+		body {
+			margin: 0;
+			padding: 0;
+			background: #111;
+			color: #ccc;
+			font-family: monospace;
+			overflow: hidden;
+		}
+		#info {
+			position: absolute;
+			top: 8px;
+			left: 8px;
+			background: rgba(0, 0, 0, 0.7);
+			padding: 8px 12px;
+			border-radius: 4px;
+			z-index: 200;
+			line-height: 1.5;
+		}
+	</style>
+</head>
+<body>
+	<div id="info">
+		<b>2D on the WebGL renderer</b><br />
+		Canvas 2D style scene: y-down pixel coordinates (camera preset "screen2d"),<br />
+		smart textures, image sprites, 2D rotation and nested transforms.<br />
+		<span id="stats"></span>
+	</div>
+</body>
+</html>

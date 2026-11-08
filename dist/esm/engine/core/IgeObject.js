@@ -1,18 +1,19 @@
 import { ige } from "../instance.js"
+import { markSceneChanged } from "../utils/sceneChange.js";
 import { IgeBounds } from "./IgeBounds.js"
-import { IgeDummyCanvas } from "./IgeDummyCanvas.js"
+import { IgeDummyCanvas } from "./IgeDummyCanvas.js";
 import { IgeEventingClass } from "./IgeEventingClass.js"
-import { IgeMatrix2d } from "./IgeMatrix2d.js"
+import { IgeMatrix2d } from "./IgeMatrix2d.js";
 import { IgePoint2d } from "./IgePoint2d.js"
-import { IgePoint3d } from "./IgePoint3d.js"
+import { IgePoint3d } from "./IgePoint3d.js";
 import { IgePoly2d } from "./IgePoly2d.js"
-import { arrPull } from "../utils/arrays.js"
+import { arrPull } from "../utils/arrays.js";
 import { newIdHex } from "../utils/ids.js"
-import { toIso } from "../utils/maths.js"
+import { toIso } from "../utils/maths.js";
 import { synthesize } from "../utils/synthesize.js"
-import { IgeQuadGeometry } from "../geometry/IgeQuadGeometry.js"
+import { IgeQuadGeometry } from "../geometry/IgeQuadGeometry.js";
 import { isClient, isServer } from "../utils/clientServer.js"
-import { IGE_NETWORK_STREAM_CREATE, IGE_NETWORK_STREAM_DESTROY, IgeIsometricDepthSortMode, IgeMountMode, IgeStreamMode } from "../../enums/index.js"
+import { IGE_NETWORK_STREAM_CREATE, IGE_NETWORK_STREAM_DESTROY, IgeIsometricDepthSortMode, IgeMountMode, IgeStreamMode } from "../../enums/index.js";
 export class IgeObject extends IgeEventingClass {
     classId = "IgeObject";
     _id;
@@ -39,6 +40,10 @@ export class IgeObject extends IgeEventingClass {
      * work such as skeletal animation sampling for off-screen objects.
      */
     _lastRenderedFrame = -1;
+    /** Renderer bookkeeping for cached static shadows (see IgeWebGlRenderer.shadowCaching()). */
+    _renderUid = 0;
+    _shadowSeenVersion = -1;
+    _shadowStableSince = 0;
     _tileWidth = 1;
     _tileHeight = 1;
     _tileDepth = 1;
@@ -611,6 +616,7 @@ export class IgeObject extends IgeEventingClass {
         if (!this._parent) {
             return this;
         }
+        markSceneChanged();
         const childArr = this._parent._children, index = childArr.indexOf(this), oldParent = this._parent;
         if (index <= -1) {
             // Cannot find this in the parent._children array

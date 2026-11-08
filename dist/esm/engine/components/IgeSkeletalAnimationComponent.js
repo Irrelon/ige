@@ -1,6 +1,7 @@
 import { IgeComponent } from "../core/IgeComponent.js"
+import { markSceneChanged } from "../utils/sceneChange.js";
 import { ige } from "../instance.js"
-import { IgeBehaviourType } from "../../enums/index.js"
+import { IgeBehaviourType } from "../../enums/index.js";
 /** clip -> skeleton data id -> frame index -> pose. Shared by all instances. */
 const poseCache = new WeakMap();
 const restPoseCache = new WeakMap();
@@ -357,6 +358,8 @@ export class IgeSkeletalAnimationComponent extends IgeComponent {
         if (!samplePose || totalWeight <= 0 || states.length === 0) {
             return;
         }
+        // A new pose is about to be applied: render on demand needs a frame
+        markSceneChanged();
         // Fast path: one clip at full weight -> shared pose cache
         if (states.length === 1 && states[0].weight >= 1 && this._poseCache && this._applyCachedPose(states[0])) {
             return;

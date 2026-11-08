@@ -22,6 +22,16 @@ export declare class IgeCamera extends IgeEntity {
     _far: number;
     _orthoSize: number;
     _lookAt?: IgePoint3d;
+    _lookDirection?: {
+        x: number;
+        y: number;
+        z: number;
+    };
+    _up?: {
+        x: number;
+        y: number;
+        z: number;
+    };
     _preset?: string;
     constructor(viewport: IgeViewport);
     /**
@@ -30,7 +40,7 @@ export declare class IgeCamera extends IgeEntity {
      * @param {IgeBounds=} rect
      * @return {*}
      */
-    limit(rect?: IgeBounds): IgeViewport | IgeBounds | undefined;
+    limit(rect?: IgeBounds): IgeBounds | IgeViewport | undefined;
     /**
      * Pan (tween) the camera to the new specified point in
      * the specified time.
@@ -162,7 +172,10 @@ export declare class IgeCamera extends IgeEntity {
      */
     far(distance?: number): number | this;
     /**
-     * Gets / sets the camera orthographic view size (height).
+     * Gets / sets the camera orthographic view size (height). 0 makes the
+     * view exactly as tall as the viewport in pixels, so one world unit is
+     * one pixel (as in the Canvas 2D renderer), zoomed by the camera's
+     * scale (scaleTo(2, 2, 2) shows things twice as big).
      * @param {number=} size Orthographic view height.
      * @return {*}
      */
@@ -179,6 +192,7 @@ export declare class IgeCamera extends IgeEntity {
      * Available presets:
      * - "isometric": Classic isometric view (35.264° pitch, orthographic)
      * - "isometric45": Isometric rotated 45° around Y
+     * - "screen2d": Canvas 2D style 2D (x right, y down, 1 unit = 1 pixel) for running 2D games on the WebGL renderer
      * - "topDown": Top-down orthographic view
      * - "sideScroller": Side view for 2D platformers
      *

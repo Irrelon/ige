@@ -10,6 +10,8 @@ class IgeWebGlGeometry extends IgeBaseClass_1.IgeBaseClass {
     constructor(id, drawMode) {
         super();
         this.classId = "IgeWebGlGeometry";
+        /** Unique number per GPU geometry (cheap identity for checksums). */
+        this.uid = IgeWebGlGeometry._nextUid++;
         this.vertexBuffer = null;
         this.indexBuffer = null;
         this.vertexCount = 0;
@@ -67,3 +69,4 @@ class IgeWebGlGeometry extends IgeBaseClass_1.IgeBaseClass {
     }
 }
 exports.IgeWebGlGeometry = IgeWebGlGeometry;
+IgeWebGlGeometry._nextUid = 1;

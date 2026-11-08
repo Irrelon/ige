@@ -1,7 +1,7 @@
 import { IgeEntity } from "./IgeEntity.js"
-import { IgeTween } from "./IgeTween.js"
+import { IgeTween } from "./IgeTween.js";
 import { registerClass } from "../utils/igeClassStore.js"
-import { IgeBehaviourType } from "../../enums/index.js"
+import { IgeBehaviourType } from "../../enums/index.js";
 /**
  * Creates a new camera that will be attached to a viewport.
  */
@@ -19,8 +19,10 @@ export class IgeCamera extends IgeEntity {
     _fov = 60; // Field of view in degrees (for perspective)
     _near = 0.1; // Near clipping plane
     _far = 1000; // Far clipping plane
-    _orthoSize = 10; // Height of orthographic view
+    _orthoSize = 10; // Height of orthographic view (0 = the viewport height in pixels)
     _lookAt; // 3D point the camera looks at
+    _lookDirection; // Or a direction to look in (follows the camera when it pans)
+    _up; // Screen-up direction in world space (default +Y)
     _preset; // Current camera preset name
     constructor(viewport) {
         super();
@@ -411,7 +413,10 @@ export class IgeCamera extends IgeEntity {
         return this._far;
     }
     /**
-     * Gets / sets the camera orthographic view size (height).
+     * Gets / sets the camera orthographic view size (height). 0 makes the
+     * view exactly as tall as the viewport in pixels, so one world unit is
+     * one pixel (as in the Canvas 2D renderer), zoomed by the camera's
+     * scale (scaleTo(2, 2, 2) shows things twice as big).
      * @param {number=} size Orthographic view height.
      * @return {*}
      */
@@ -440,6 +445,7 @@ export class IgeCamera extends IgeEntity {
      * Available presets:
      * - "isometric": Classic isometric view (35.264° pitch, orthographic)
      * - "isometric45": Isometric rotated 45° around Y
+     * - "screen2d": Canvas 2D style 2D (x right, y down, 1 unit = 1 pixel) for running 2D games on the WebGL renderer
      * - "topDown": Top-down orthographic view
      * - "sideScroller": Side view for 2D platformers
      *
@@ -481,6 +487,19 @@ export class IgeCamera extends IgeEntity {
                     this._translate.x = 0;
                     this._translate.y = distance;
                     this._translate.z = 0.001; // Slight offset to avoid gimbal lock
+                    break;
+                case "screen2d":
+                    // Canvas 2D style: x right, y down, one unit per pixel,
+                    // looking along +Z so the camera pans with translateTo(x, y).
+                    // The wide near/far range keeps everything visible whatever
+                    // the camera's z.
+                    this._projectionType = "orthographic";
+                    this._lookAt = undefined;
+                    this._lookDirection = { x: 0, y: 0, z: 1 };
+                    this._up = { x: 0, y: -1, z: 0 };
+                    this._orthoSize = 0;
+                    this._near = -100000;
+                    this._far = 100000;
                     break;
                 case "sideScroller":
                     // Side view (classic 2D platformer perspective)

@@ -16,7 +16,10 @@ export interface IgeWebGlVertexAttribute {
  */
 export declare class IgeWebGlGeometry extends IgeBaseClass {
     classId: string;
+    static _nextUid: number;
     id: string;
+    /** Unique number per GPU geometry (cheap identity for checksums). */
+    uid: number;
     vertexBuffer: WebGLBuffer | null;
     indexBuffer: WebGLBuffer | null;
     vertexCount: number;
