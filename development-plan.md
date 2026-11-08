@@ -1,382 +1,106 @@
-# IGE 3D Renderer Migration - Development Plan
+# IGE 3D Renderer - Development Plan
 
-## Executive Summary
+## Summary
 
-This document outlines the strategic plan to migrate Isogenic Game Engine (IGE) from its current Canvas 2D rendering
-system to a unified Three.js-based 3D renderer that seamlessly supports both 2D sprites and 3D models, maintaining IGE's
-signature ease of use while enabling modern 3D game development.
+The goal is unchanged from the original plan: one renderer that draws 2D sprites and 3D models with the same entity API,
+keeping IGE simple to use. The route has changed. Instead of building on Three.js, IGE now has its own WebGL renderer,
+`IgeWebGlRenderer`, which is the primary 3D path. `IgeThreeJsRenderer` remains as an incomplete experiment and is not
+being developed.
 
-## Current State Analysis
+The current driver for renderer work is a **split-screen zombie ARPG** (up to four local players, large hordes). The
+`src/examples/zombie-game` example is a playable prototype of that game and doubles as the renderer's integration test
+and performance benchmark.
 
-### What We Have ✅
+## Why a custom WebGL renderer
 
-1. **Solid 3D Foundation**:
-    - All entities already support 3D positioning via `IgePoint3d` (`_translate`, `_bounds3d`)
-    - 3D transformation matrices and world position calculations
-    - Depth sorting algorithms for isometric rendering which will probably no longer be required since 3d rendering
-      would allow us to use the z-buffer
-      hopefully even when rendering 2d sprites that only "appear" 3d
-    - Geometry, material, and mesh data properties in `IgeObject`
-
-2. **Working Three.js Prototype**:
-    - `IgeThreeJsRenderer` class with basic functionality - this can be thrown away if we want to do a different, more
-      performant integration and this existing work is deemed insufficient or inadequate
-    - 2D sprite rendering as textured 3D planes
-    - Working example with 150 entities animating in 3D space
-    - Pixel scaling normalization between IGE and Three.js coordinate systems
-
-3. **Mature Entity System**:
-    - Robust scene graph with parent/child relationships
-    - Entity lifecycle management
-    - Texture and asset loading systems
-    - Tween animation support
-
-4. **Client/Server Architecture**:
-    - Robust multiplayer functionality and a server-led game system
-    - Clients provide actions, server provides updates to clients
-    - Synchronised simulation where the server is canonical
-
-### What Needs Work 🔧
+- IGE's scene graph, viewports and transforms map directly onto the renderer; nothing has to be mirrored into a second
+  scene graph.
+- The frame pipeline can be shaped for IGE's needs, e.g. collecting the scene once and drawing it into several
+  split-screen viewports.
+- No large runtime dependency and a smaller bundle.
+- Full control over shaders, batching and instancing.
 
-1. **Renderer Integration**:
-    - Three.js renderer is experimental, needs to become primary and properly integrated,
-      supporting all the existing 2d functionality and extending to support 3d functionality as well
-    - Canvas 2D renderer needs to become an optional renderer rather than the primary one
-    - Scene graph integration needs completion
-    - Camera system needs 3D enhancement
+The cost is that features Three.js provides for free (loaders, materials, post-processing) have to be built, so the
+plan below prioritises what the target game needs.
 
-2. **API Gaps**:
-    - Methods for dealing with 3D content in a way that unifies the
-      developer experience for 2D and 3D
-    - Material system not unified between 2D/3D
-    - Asset pipeline only handles 2D textures
-    - Camera lacks perspective/orthographic modes and most functionality assumes a 2d view
-
-3. **Developer Experience**:
-    - Existing 2d projects should work with minimal changes
-    - Documentation focused on 2D workflows
-    - Examples primarily 2D-based but include 3d examples too
+## Where things stand (November 2026)
 
-## Strategic Approach
+### Done
 
-### Philosophy: Unity/Unreal Pattern
+| Area | What exists |
+|------|-------------|
+| Core | WebGL 2 with a WebGL 1 fallback, shader library with instanced variants, state and uniform caching |
+| Frame pipeline | Scene collected once per frame; each viewport culls, renders its own directional shadow map (or shares one when split-screen views are close), then draws opaque batches front to back, transparent items back to front, then particles. Point light shadows render once per frame |
+| Split screen | Per-viewport cameras and shadow maps, `worldToScreen()`, `screenToWorldRay()`, `screenToGround()`, `viewportAt()`, `maxPixelRatio()` |
+| Models | GLTF/GLB loader; `IgeEntity.model()` sets up every mesh, material, texture, node transform, skeleton and animation clip; per-entity material overrides via `_materialData` |
+| Animation | Skeletal animation with cross-fades and blending, `playAnimation()`, a shared pose cache for crowds, off-screen animation culling |
+| Performance | GPU instancing for static and skinned meshes (bone palette texture), world-space frustum culling, cached entity transforms, level of detail (`IgeEntity.lod()`, generated by `IgeMeshSimplifier` or authored), `stats()` |
+| Lighting | Ambient, directional, point (up to 8) and spot (up to 4) lights; shadowed directional light and up to 2 shadowed point lights; linear/exp2 fog |
+| Effects | `IgeParticleSystem3d` (one instanced draw per system), sprite sheet cells, tint, additive blending and billboard modes |
+| Camera | Perspective and orthographic projection, `lookAtPoint()`, presets (`isometric`, `isometric45`, ...) |
 
-Following the successful pattern of modern game engines:
+### Measured
 
-- **Single unified 3D renderer** handles all content
-- **2D sprites rendered as textured 3D planes** in 3D space
-- **Same API works for both 2D and 3D content**
-- **Progressive enhancement** - 2D workflows work unchanged or with minor changes
+On the development machine (Apple silicon, Chrome), the zombie example with four viewports, shadows, lanterns and
+particles:
 
-### Why Three.js?
+- 120 zombies run at about 66 fps at a 1.5 pixel ratio.
+- With 200 zombies, the frame went from about 43 ms to about 15 ms after the instancing, culling and transform work.
+- LOD (zombies at 50% / 25% of their triangles when small on screen) cuts submitted triangles from about 4.1 million
+  to 1.9 million per frame, and GPU time by roughly a quarter.
+- Animation now costs about 0.75 ms per frame for 150 zombies, so lowering the update rate of distant characters is
+  not worth doing yet.
 
-**Benefits**:
+### Not verified
 
-- Mature 3D model loading (GLTF/GLB, OBJ, FBX)
-- Comprehensive material and lighting systems
-- Built-in shader support and customization
-- Active community and extensive documentation
-- Regular updates and performance improvements
-- Allows IGE to focus on game development experience
+- The WebGL 1 fallback has not been exercised since the instancing and pipeline changes (instancing is disabled there).
+- Gamepad input has only been tested with simulated keyboard input.
+- Existing 2D games have not been run through `IgeWebGlRenderer`. Smart textures (canvas-drawn textures) are only
+  partly supported by `IgeWebGlTextureManager`.
 
-**Alternative**: Custom WebGL renderer
+## Next steps
 
-## Development Phases
+Ordered by what the zombie ARPG needs.
 
-### Phase 1: Foundation Migration
+### 1. Game assets
 
-**Objective**: Replace Canvas 2D renderer with Three.js as the primary renderer
+- Zombie and player models with walk, run, attack, hit and death clips. These will be generated with an online service.
+- Likely engine gap: many generators and libraries ship animations as separate files. Loading clips from one GLB and
+  applying them to another model with matching bone names (simple retargeting) would make those assets usable.
+- Generated meshes are often dense; `lod` levels on `model()` handle that at runtime.
 
-#### Core Renderer Completion
+### 2. Gameplay-facing renderer features
 
-- **Implement ThreeJS as the rendering engine**
-    - Implement proper viewport and scene management
-    - Add complete scene graph traversal
-    - Implement 2D sprite rendering as textured planes
-    - Add automatic billboarding support for sprite-like behavior
+- Attachment points: query a bone's world matrix to put a weapon in a hand (needs `cullOffscreen(false)` on that
+  entity).
+- Ground decals for blood and scorch marks.
+- Per-viewport HUD helpers (health bars and markers) built on `worldToScreen()`.
 
-- **Camera System Enhancement**
-    - Add perspective and orthographic camera modes
-    - Implement 2D camera mode (orthographic, locked Z-axis)
-    - Create isometric camera presets
-    - Maintain API compatibility with existing `IgeCamera` usage
+### 3. Performance
 
-#### Entity System Unification
+- Cull point-light shadow casters per cube face; today every caster in range is drawn into all six faces.
+- Use LOD in shadow-heavy scenes (the lighting example submits about 7 million triangles per frame for one
+  500k-triangle model).
+- Revisit animation update rates only if profiling shows a need.
 
-- **Unified Content Support**
-    - Are the IgeObject geometryData, materialData and meshData a good way to go or should we use
-        a model() getter setter?
-    - Enhance `.texture()` method to work seamlessly with 3D content or maybe switch to something like materialData()?
-    - Implement automatic geometry generation for 2D sprites (we already assign a quad)
-    - Create unified material system for both content types
+### 4. Compatibility
 
-- **Asset Pipeline Enhancement**
-    - Extend `IgeTexture` for 3D material support
-      - One of the complexities is how to continue supporting 2d "smart textures" where 
-            the developer can create 2d textures on a 2d canvas that the engine can use
-            just like an image. Is this still possible with a 3d sprite and threejs?
-    - Implement GLTF/GLB model loading system or add helpers to utilise threejs methods under the hood?
-    - Create unified asset management for textures and models
-    - Add material configuration and management
+- Run the WebGL 1 path and fix what breaks.
+- Run existing 2D/isometric projects through the WebGL renderer and close the gaps (smart textures, render modes).
 
-#### Integration & Testing
+### 5. Physics
 
-- **Scene Graph Integration**
-    - Complete Three.js scene synchronization with IGE scene graph
-    - Implement proper entity mounting/unmounting in 3D space
-    - Add transformation synchronization between IGE and Three.js objects
-    - Test depth sorting in 3D space
+- Jolt physics integration is in progress on the `es6-typescript-3d-jolt-physics` branch (not merged; last commit
+  "Physics, not really working").
 
-- **Backward Compatibility**
-    - Ensure all existing 2D examples work unchanged or with minor changes
-    - Test isometric rendering in 3D space
-    - Verify texture and animation systems
-    - Performance benchmarking vs Canvas 2D
+### 6. Developer experience
 
-### Phase 2: API Enhancement (3-4 weeks)
+- Debug visualisation (bounds, LOD levels, shadow frusta).
+- Guides for the model workflow and for moving a 2D project to the WebGL renderer.
 
-**Objective**: Provide unified, intuitive API for both 2D and 3D content
-
-#### Week 1-2: Material System
-
-- **PBR Material Support**
-
-    - Implement Physically Based Rendering materials
-    - Add texture mapping (diffuse, normal, specular, roughness)
-    - Create material editor/configuration system
-    - Support both simple color materials and complex PBR materials
-
-- **Lighting System**
-    - Basic ambient, directional, and point lights
-    - Light entity types that integrate with IGE scene graph
-    - Shadow mapping support
-    - Optional lighting for maintaining 2D compatibility
-
-#### Week 3-4: Advanced Features
-
-- **3D Model Support**
-
-    - Complete GLTF/GLB loader integration
-    - Add support for animated models
-    - Implement model material override system
-    - Add model bounds calculation for collision
-
-- **Performance Optimization**
-    - Implement frustum culling for 3D scenes
-    - Add object pooling for frequently created/destroyed entities
-    - Optimize 2D sprite rendering in 3D space
-    - Level-of-detail (LOD) system for models
-
-### Phase 3: Developer Experience (2-3 weeks)
-
-**Objective**: Excellent developer experience and smooth migration path
-
-#### Week 1-2: Documentation & Examples
-
-- **Updated Documentation**
-
-    - 3D development guides and tutorials
-    - Migration guides from 2D to 3D workflows
-    - Best practices documentation
-    - API reference updates
-
-- **Example Projects**
-    - Mixed 2D/3D game example
-    - Pure 3D game example
-    - 2D game running in 3D space example
-    - Model loading and animation example
-
-#### Week 2-3: Migration Tools
-
-- **Migration Support**
-    - Canvas 2D to Three.js migration guide
-    - Automated migration scripts where possible
-    - Compatibility testing tools
-    - Performance comparison tools
-
-### Phase 4: Advanced Features (4-5 weeks)
-
-**Objective**: Advanced 3D features for modern game development
-
-#### Weeks 1-2: Physics Integration
-
-- **3D Physics Support**
-    - Integrate Cannon.js or similar for 3D physics
-    - Maintain existing 2D physics workflows
-    - Unified physics API for both 2D and 3D
-    - Physics debugging visualization
-
-#### Weeks 3-4: Advanced Rendering
-
-- **Post-Processing Effects**
-    - Built-in post-processing pipeline
-    - Common effects (bloom, SSAO, tone mapping)
-    - Custom shader support
-    - Effect entity types
-
-#### Week 5: Tooling
-
-- **Development Tools**
-    - 3D scene inspector/debugger
-    - Asset preview tools
-    - Performance profiler for 3D
-    - Live camera controls for development
-
-## Technical Implementation Details
-
-### API Design
-
-```typescript
-// 2D sprite in 3D space (current workflow continues to work)
-const sprite = new IgeEntity()
-	.texture(myTexture) // 2D texture on 3D plane
-	.translateTo(100, 50, 25) // 3D positioning
-	.rotateTo(0, 0, Math.PI / 4) // 3D rotation
-	.mount(scene);
-
-// 3D model (new capability)
-const model = new IgeEntity()
-	.model(my3dModel) // 3D model instead of texture
-	.material(pbrMaterial) // Optional material override
-	.translateTo(100, 50, 25) // Same positioning API
-	.mount(scene); // Same mounting API
-
-// Mixed content (sprites and models together)
-const ui = new IgeEntity()
-	.texture(buttonTexture) // 2D UI in 3D space
-	.billboarding(true) // Always face camera
-	.translateTo(0, 0, 10) // Float above 3D content
-	.mount(hudScene);
-```
-
-### Camera System
-
-```typescript
-// 2D camera mode (for existing workflows)
-const camera2d = new IgeCamera()
-	.mode("orthographic")
-	.lockAxis("z") // Prevent Z movement
-	.translateTo(0, 0, 100);
-
-// 3D camera mode
-const camera3d = new IgeCamera().mode("perspective").fov(75).translateTo(0, 0, 100).lookAt(playerEntity);
-
-// Isometric camera (enhanced for 3D)
-const cameraIso = new IgeCamera()
-	.preset("isometric") // Predefined isometric angle
-	.mode("orthographic")
-	.followEntity(playerEntity);
-```
-
-### Asset Loading
-
-```typescript
-// Unified asset loading
-await ige.assets.load([
-	{ id: "playerSprite", url: "player.png", type: "texture" },
-	{ id: "enemyModel", url: "enemy.gltf", type: "model" },
-	{ id: "skybox", url: "sky.hdr", type: "hdri" }
-]);
-
-// Usage
-const player = new IgeEntity().texture(ige.assets.get("playerSprite")).mount(scene);
-
-const enemy = new IgeEntity().model(ige.assets.get("enemyModel")).mount(scene);
-```
-
-## Migration Strategy
-
-### For Existing IGE Projects
-
-1. **Phase 1: Automatic Migration**
-    - Existing 2D projects work unchanged or with minor changes
-    - Canvas 2D renderer becomes optional but 3D renderer is default
-
-2. **Phase 2: Enhanced Features**
-    - Gradual adoption of 3D features
-    - Optional lighting and materials - good defaults should exist for existing 2d projects
-    - Enhanced camera controls
-
-3. **Phase 3: Full 3D**
-    - Add 3D models to existing scenes
-    - Leverage 3D physics and effects
-    - Modern 3D game development capabilities
-
-### Breaking Changes (Minimal)
-
-- **Minor in Phase 1** - Existing APIs continue to work with maybe slight changes
-- **Optional in Phase 2** - New features are easy to adopt into existing games
-- **Configuration in Phase 3** - Advanced features may require setup
-
-## Risk Mitigation
-
-### Performance Concerns
-
-- **Mitigation**: Extensive benchmarking, optimization passes
-- **Fallback**: Canvas 2D renderer remains available but doesn't support 3d functionality
-
-### Three.js Dependency
-
-- **Mitigation**: Three.js is peer dependency, well-maintained, large community
-- **Alternative**: Custom WebGL renderer (significantly more work)
-- **Action**: Ensure that renderer integration is abstracted so that different renderers can be added in the future
-
-### API Complexity
-
-- **Mitigation**: Maintain simple defaults, progressive enhancement
-- **Testing**: Extensive testing with existing codebase
-
-### Learning Curve
-
-- **Mitigation**: Comprehensive documentation, migration guides, examples
-- **Support**: Active community support during transition
-
-## Success Metrics
-
-### Technical Metrics
-
--   [ ] All existing 2D examples work unchanged or with minor changes
--   [ ] Performance parity or better vs Canvas 2D for 2D content
--   [ ] 3D models render correctly with proper materials and lighting
--   [ ] Memory usage remains reasonable for both 2D and 3D content
--   [ ] Frame rate targets: 60fps for typical 2D games, 30fps+ for 3D games
-
-### Developer Experience Metrics
-
--   [ ] Migration from Canvas 2D takes < 1 hour for simple projects
--   [ ] New 3D features accessible within first hour of learning
--   [ ] API consistency - same patterns work for 2D and 3D
--   [ ] Documentation completeness and clarity
--   [ ] Community adoption and feedback
-
-### Feature Completeness
-
--   [ ] 2D sprites work seamlessly in 3D space
--   [ ] 3D models load and render correctly
--   [ ] Mixed 2D/3D scenes render properly
--   [ ] Camera system supports all required modes
--   [ ] Asset pipeline handles both 2D and 3D content
--   [ ] Performance is suitable for real games
-
-## Next Steps
-
-1. **Immediate (Week 1)**:
-
-    - Complete `IgeThreeJsRenderer` viewport management
-    - Implement proper scene graph synchronization
-    - Add 2D sprite rendering as textured planes
-
-2. **Short Term (Weeks 2-4)**:
-
-    - Camera system enhancement for 3D support
-    - Unified entity API with `.model()` method
-    - Basic material system for both 2D and 3D
-
-3. **Medium Term (Weeks 5-8)**:
-    - Asset pipeline enhancement for 3D models
-    - Backward compatibility testing
-    - Performance optimization
-
-The development plan prioritizes maintaining IGE's core philosophy of simplicity while leveraging Three.js to provide
-modern 3D capabilities. By following this phased approach, we can deliver a unified renderer that makes 3D game
-development as intuitive as IGE's current 2D workflow.
+## Open questions
+
+- Should materials get a public API (e.g. `entity.material({...})`) instead of assigning `_materialData`?
+- Unified asset loading (textures and models through one loader) is still only an idea.
+- How far should 2D back-compatibility go: should `IgeCanvas2dRenderer` remain the default for 2D projects, or should
+  the WebGL renderer replace it?

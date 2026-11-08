@@ -88,8 +88,10 @@ The engine has extensive 3D infrastructure:
     -   **State Management** (`IgeWebGlStateManager`) - WebGL state tracking
     -   **Model Parts** (`IgeModelParts`) - turns a loaded GLTF model into render parts (all primitives, node transforms, materials, textures) for `IgeEntity.model()`
     -   **3D Particles** (`IgeParticleSystem3d`) - typed-array particle effects drawn as one instanced billboard batch
+    -   **Mesh Simplifier** (`IgeMeshSimplifier`) - quadric edge-collapse simplification that keeps UVs, normals and skin weights; generates level-of-detail meshes
 -   Frame pipeline: renderables are collected once per frame (transforms, skin matrices, world-space bounds); each viewport then culls, renders its directional shadow map (centred on its camera target, or shared when split-screen views are close) and draws opaque batches front to back, then transparent items and particles. Point light shadows render once per frame.
--   Split-screen helpers: `worldToScreen()`, `screenToWorldRay()`, `screenToGround()`, `viewportAt()`, `maxPixelRatio()`, `fog()`, `stats()`
+-   Level of detail: each pass (viewport, directional shadow, point shadow) picks an entity's LOD level from its projected size, so split-screen views choose independently.
+-   Split-screen helpers: `worldToScreen()`, `screenToWorldRay()`, `screenToGround()`, `viewportAt()`, `maxPixelRatio()`, `lodBias()`, `fog()`, `stats()`
 -   Used in multiple working examples: coordTest2d, coordTest3d, coordTestIso, lightingShadows, skeletalAnimation, webGlRenderer, zombie-game (4-player split-screen zombie ARPG prototype)
 
 #### Working with models
@@ -98,7 +100,13 @@ The engine has extensive 3D infrastructure:
 const model = await igeGltfLoader.load("../../assets/models/CesiumMan.glb", "character");
 
 const zombie = new IgeEntity()
-	.model(model, { animation: "Walk" }) // meshes, textures, skeleton, clips
+	.model(model, {
+		animation: "Walk", // meshes, textures, skeleton, clips
+		lod: [
+			{ screenSize: 220, ratio: 0.5 }, // under 220 device px: half the triangles
+			{ screenSize: 120, ratio: 0.25 }
+		]
+	})
 	.translateTo(100, 0, 50)
 	.scaleTo(100, 100, 100)
 	.mount(scene);
@@ -109,6 +117,7 @@ zombie.playAnimation("Attack", { loop: false, crossFadeDuration: 0.1 });
 
 -   Entities sharing a model are GPU-instanced automatically and share cached animation poses (`IgeSkeletalAnimationComponent.poseCacheRate`); use `skeletalAnimation().poseCache(false)` for hero characters that should animate at full frame rate.
 -   glTF node transforms are applied (models face +Z and stand upright without manual rotation).
+-   LOD levels are generated once per model and shared; `{ screenSize, model }` uses an authored lower-detail model instead (same parts and skeleton). `renderer.stats().lodItems` and `.triangles` help tune thresholds.
 
 #### **IgeThreeJsRenderer** (`src/engine/core/IgeThreeJsRenderer.ts`) - EXPERIMENTAL
 
@@ -147,6 +156,7 @@ zombie.playAnimation("Attack", { loop: false, crossFadeDuration: 0.1 });
 | `IgeWebGlInstancing.ts` | Render items, batcher, instance buffer, bone palette texture |
 | `IgeModelParts.ts` | GLTF model to render parts; skeleton instances |
 | `IgeParticleSystem3d.ts` | 3D particle effects entity |
+| `IgeMeshSimplifier.ts` | Mesh simplification for level-of-detail geometry |
 
 ## Ultimate Project Goals
 
@@ -221,6 +231,8 @@ const entity3d = new IgeEntity()
 
 ## Development Priorities
 
+See `development-plan.md` for the current status, measurements and the prioritised next steps (driven by the split-screen zombie ARPG).
+
 ### Phase 1: Unified Renderer Foundation (Largely Complete)
 
 1. **IgeWebGlRenderer as Primary Renderer** (Done):
@@ -267,7 +279,7 @@ const entity3d = new IgeEntity()
 
 2. **Performance Optimization**:
     - Frustum culling for 3D scenes (implemented, world-space bounding spheres)
-    - Level-of-detail (LOD) systems
+    - Level-of-detail (LOD) system (implemented: generated or authored levels, chosen per viewport and shadow pass)
     - Instanced rendering for repeated objects (implemented, static and skinned)
     - Render batching (implemented)
     - Shared animation pose cache and off-screen animation culling (implemented)
