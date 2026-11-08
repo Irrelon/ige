@@ -139,17 +139,30 @@ export class IgeGltfLoader extends IgeBaseClass {
 
 	// Cache loaded models
 	protected _modelCache: Map<string, IgeGltfModel> = new Map();
+	// Loads in progress, so the same model requested twice is fetched once
+	protected _pending: Map<string, Promise<IgeGltfModel>> = new Map();
 
 	/**
-	 * Load a GLTF or GLB model from URL.
+	 * Load a GLTF or GLB model from URL. Models are cached by id (the URL
+	 * when no id is given); asking again for one that is loading waits for
+	 * the same load. Rejects if the file is missing or can't be parsed.
 	 */
-	async load(url: string, modelId?: string): Promise<IgeGltfModel> {
+	load(url: string, modelId?: string): Promise<IgeGltfModel> {
 		const id = modelId || url;
 
 		// Check cache
-		if (this._modelCache.has(id)) {
-			return this._modelCache.get(id)!;
+		const cached = this._modelCache.get(id);
+		if (cached) return Promise.resolve(cached);
+
+		let pending = this._pending.get(id);
+		if (!pending) {
+			pending = this._load(url, id).finally(() => this._pending.delete(id));
+			this._pending.set(id, pending);
 		}
+		return pending;
+	}
+
+	protected async _load(url: string, id: string): Promise<IgeGltfModel> {
 
 		this.log(`Loading GLTF model: ${url}`);
 
@@ -162,6 +175,7 @@ export class IgeGltfLoader extends IgeBaseClass {
 		if (isGlb) {
 			// Load GLB binary format
 			const response = await fetch(url);
+			if (!response.ok) throw new Error(`HTTP ${response.status} loading ${url}`);
 			const buffer = await response.arrayBuffer();
 			const result = this._parseGlb(buffer);
 			gltfData = result.json;
@@ -169,6 +183,7 @@ export class IgeGltfLoader extends IgeBaseClass {
 		} else {
 			// Load GLTF JSON format
 			const response = await fetch(url);
+			if (!response.ok) throw new Error(`HTTP ${response.status} loading ${url}`);
 			gltfData = await response.json();
 		}
 
