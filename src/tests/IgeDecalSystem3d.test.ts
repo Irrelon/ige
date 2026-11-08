@@ -113,7 +113,7 @@ describe("IgeDecalSystem3d", () => {
 		expect(decals.meshRenderData().vertexCount).toBe(0);
 
 		// The oldest projected decal is replaced when full
-		for (let i = 0; i < 3; i++) decals.project({ x: i * 10, y: 0, z: 0 }, { x: 0, y: 1, z: 0 }, target, { size: 5 });
+		for (let i = 0; i < 3; i++) decals.project({ x: i * 10, y: 0, z: 0 }, { x: 0, y: 1, z: 0 }, target, { size: 5, rotation: 0 });
 		expect(decals.projectedCount()).toBe(2);
 		decals._age(0);
 		const first = decals.meshRenderData().data;
