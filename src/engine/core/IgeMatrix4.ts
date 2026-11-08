@@ -176,6 +176,26 @@ export class IgeMatrix4 extends IgeBaseClass {
 	 * Applies rotation around Z axis to this matrix.
 	 * @param angle Angle in radians
 	 */
+	/**
+	 * this = this * R(q): rotate by a unit quaternion (x, y, z, w).
+	 */
+	rotateByQuaternion(x: number, y: number, z: number, w: number): this {
+		const xx = x * x, yy = y * y, zz = z * z;
+		const xy = x * y, xz = x * z, yz = y * z;
+		const wx = w * x, wy = w * y, wz = w * z;
+		const r00 = 1 - 2 * (yy + zz), r10 = 2 * (xy + wz), r20 = 2 * (xz - wy);
+		const r01 = 2 * (xy - wz), r11 = 1 - 2 * (xx + zz), r21 = 2 * (yz + wx);
+		const r02 = 2 * (xz + wy), r12 = 2 * (yz - wx), r22 = 1 - 2 * (xx + yy);
+		const m = this.matrix;
+		for (let i = 0; i < 4; i++) {
+			const a0 = m[i], a1 = m[4 + i], a2 = m[8 + i];
+			m[i] = a0 * r00 + a1 * r10 + a2 * r20;
+			m[4 + i] = a0 * r01 + a1 * r11 + a2 * r21;
+			m[8 + i] = a0 * r02 + a1 * r12 + a2 * r22;
+		}
+		return this;
+	}
+
 	rotateZBy(angle: number): this {
 		// this = this * Rz(angle): mixes columns 0 and 1
 		const c = Math.cos(angle);

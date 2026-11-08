@@ -142,6 +142,8 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 	 * _transformInputsUnchanged()).
 	 */
 	_tfInputs?: Float64Array;
+	/** 3D rotation that replaces the Euler angles when set (see quaternion()). */
+	_quaternion: { x: number; y: number; z: number; w: number } | null = null;
 	_tfParent?: IgeObject | null;
 	_tfParentVersion: number = -1;
 	_tfWebGl: boolean = false;
@@ -173,7 +175,9 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 
 		const t = this._translate, r = this._rotate, sc = this._scale, o = this._origin;
 		const b2 = this._bounds2d, b3 = this._bounds3d;
+		const q = this._quaternion;
 		if (
+			c[19] !== (q ? q.x : 0) || c[20] !== (q ? q.y : 0) || c[21] !== (q ? q.z : 0) || c[22] !== (q ? q.w : 2) ||
 			c[0] !== t.x || c[1] !== t.y || c[2] !== t.z ||
 			c[3] !== r.x || c[4] !== r.y || c[5] !== r.z ||
 			c[6] !== sc.x || c[7] !== sc.y || c[8] !== sc.z ||
@@ -196,9 +200,12 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 	 * Record the inputs used for the rebuild that just happened.
 	 */
 	_recordTransformInputs (webGl: boolean) {
-		const c = this._tfInputs || (this._tfInputs = new Float64Array(19));
+		const c = this._tfInputs || (this._tfInputs = new Float64Array(23));
 		const parent = this._parent;
 		const t = this._translate, r = this._rotate, sc = this._scale, o = this._origin;
+		const q = this._quaternion;
+		// w = 2 (never a unit quaternion's) stands for "no quaternion"
+		c[19] = q ? q.x : 0; c[20] = q ? q.y : 0; c[21] = q ? q.z : 0; c[22] = q ? q.w : 2;
 		const b2 = this._bounds2d, b3 = this._bounds3d;
 		c[0] = t.x; c[1] = t.y; c[2] = t.z;
 		c[3] = r.x; c[4] = r.y; c[5] = r.z;
@@ -304,11 +311,16 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 			// Apply translation
 			this._localMatrix4.translateBy(this._translate.x, this._translate.y, this._translate.z);
 
-			// Apply rotation (ZYX order - standard for game engines)
-			// Note: IGE uses radians
-			if (this._rotate.z !== 0) this._localMatrix4.rotateZBy(this._rotate.z);
-			if (this._rotate.y !== 0) this._localMatrix4.rotateYBy(this._rotate.y);
-			if (this._rotate.x !== 0) this._localMatrix4.rotateXBy(this._rotate.x);
+			// Apply rotation: a quaternion (see quaternion()) when set, else
+			// Euler angles in ZYX order (radians)
+			const q = this._quaternion;
+			if (q) {
+				this._localMatrix4.rotateByQuaternion(q.x, q.y, q.z, q.w);
+			} else {
+				if (this._rotate.z !== 0) this._localMatrix4.rotateZBy(this._rotate.z);
+				if (this._rotate.y !== 0) this._localMatrix4.rotateYBy(this._rotate.y);
+				if (this._rotate.x !== 0) this._localMatrix4.rotateXBy(this._rotate.x);
+			}
 
 			// Apply scale
 			this._localMatrix4.scaleBy(this._scale.x, this._scale.y, this._scale.z);
@@ -1059,6 +1071,30 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 
 		this._materialData = data;
 		this._renderChanged();
+		return this;
+	}
+
+	/**
+	 * Gets / sets a 3D rotation as a unit quaternion. While set it replaces
+	 * the Euler angles of rotate() in the WebGL renderer's 3D transform,
+	 * which suits full 3D rotations such as physics bodies tumbling (no
+	 * gimbal lock). Pass null to go back to rotate().
+	 * @example #Face along a physics body's rotation
+	 *     entity.quaternion({ x: 0, y: 0.7071, z: 0, w: 0.7071 });
+	 */
+	quaternion (q: { x: number; y: number; z: number; w: number } | null): this;
+	quaternion (): { x: number; y: number; z: number; w: number } | null;
+	quaternion (q?: { x: number; y: number; z: number; w: number } | null) {
+		if (q === undefined) {
+			return this._quaternion;
+		}
+
+		if (q) {
+			const current = this._quaternion || (this._quaternion = { x: 0, y: 0, z: 0, w: 1 });
+			current.x = q.x; current.y = q.y; current.z = q.z; current.w = q.w;
+		} else {
+			this._quaternion = null;
+		}
 		return this;
 	}
 
