@@ -5,6 +5,18 @@ viewport's camera the `screen2d` preset. `src/examples/webGl2d` is a working exa
 
 ## The changes
 
+The simplest way: let the engine choose. `igeCreateRenderer({ mode: "2d" })` returns the WebGL renderer when the browser
+supports WebGL (else Canvas 2D) and gives viewport cameras the `screen2d` preset, and `ige.engine.start()` does the same
+when the game assigns no renderer at all:
+
+```typescript
+ige.engine.renderer(igeCreateRenderer({ mode: "2d" })); // or assign nothing
+await ige.engine.start();
+const viewport = new IgeViewport().autoSize(true).scene(scene).mount(ige.engine); // screen2d on WebGL
+```
+
+Or choose WebGL explicitly:
+
 ```typescript
 // Before: const renderer = new IgeCanvas2dRenderer();
 const renderer = new IgeWebGlRenderer();
@@ -15,6 +27,8 @@ await renderer.setup();
 const viewport = new IgeViewport().autoSize(true).scene(scene).mount(ige.engine);
 viewport.camera.preset("screen2d");
 ```
+
+Isometric games get `IgeCanvas2dRenderer` from `igeCreateRenderer({ mode: "iso" })` (see Differences).
 
 `screen2d` reproduces the Canvas 2D view: x to the right, y down, one world unit per pixel, and the camera's
 position is the centre of the view, so `camera.translateTo(x, y, 0)` and camera tracking pan as before, and
@@ -50,7 +64,7 @@ position is the centre of the view, so `camera.translateTo(x, y, 0)` and camera 
   drawing calls do nothing, so logic in them works but drawing in them doesn't show. Code overriding `tick()` itself
   doesn't run; put game logic in `update()` or update behaviours.
 - `src/examples/webGl2d/index.html?canvas=1` runs the example on `IgeCanvas2dRenderer` for a side-by-side
-  comparison.
+  comparison, and `?auto=1` leaves the renderer and camera to the engine.
 - Sprites in a `screen2d` view are drawn flat with their 2D transform. In 3D views they are billboards that face the
   camera (`entity.billboard("full" | "y" | "none")`).
 

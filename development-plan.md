@@ -13,8 +13,9 @@ and performance benchmark. `src/examples/hex-realms` (a large hex-map strategy p
 test bed; its README lists the engine gaps found while building it (see "Engine gaps from Hex Realms" below).
 
 Guides: [`guides/webgl-models.md`](guides/webgl-models.md) (3D models and characters),
-[`guides/physics-3d.md`](guides/physics-3d.md) (Jolt physics: bodies, characters, ragdolls) and
-[`guides/2d-on-webgl.md`](guides/2d-on-webgl.md) (moving a 2D project to the WebGL renderer).
+[`guides/physics-3d.md`](guides/physics-3d.md) (Jolt physics: bodies, characters, ragdolls),
+[`guides/2d-on-webgl.md`](guides/2d-on-webgl.md) (moving a 2D project to the WebGL renderer) and
+[`guides/online-rooms.md`](guides/online-rooms.md) (online games with rooms, seats and ordered commands).
 
 ## Why a custom WebGL renderer
 
@@ -44,9 +45,11 @@ plan prioritises what the target games need.
 | Lighting | Ambient, directional, point (up to 8) and spot (up to 4) lights; shadowed directional light and up to 2 shadowed point lights; linear/exp2 fog |
 | Effects | `IgeParticleSystem3d`, `IgeDecalSystem3d` (flat floor decals with `add()`, decals projected onto walls, steps and uneven terrain with `project()`; multiply-blended so they take the surface's lighting), sprite sheet cells, tint, additive blending and billboard modes |
 | Camera | Perspective and orthographic projection, up vector and look direction, `lookAtPoint()`, presets (`isometric`, `isometric45`, `topDown`, `sideScroller`, `screen2d`) |
-| 2D | `screen2d` camera (Canvas 2D style: y down, one unit per pixel, zoom by camera scale), smart textures drawn per entity (redrawn every frame, or when dirty with `cache(true)`), flat 2D sprites with full 2D transforms, entity `preTick` behaviours (run once per frame), `IgeFontEntity` text (native fonts, bitmap font sheets, `bindData()`), texture filters (including filters applied later and animated pre-filters), split screen |
+| 2D | WebGL when available (`igeCreateRenderer()`, or no renderer assigned), `screen2d` camera (Canvas 2D style: y down, one unit per pixel, zoom by camera scale), smart textures drawn per entity (redrawn every frame, or when dirty with `cache(true)`), flat 2D sprites with full 2D transforms, entity `preTick` behaviours (run once per frame), `IgeFontEntity` text (native fonts, bitmap font sheets, `bindData()`), texture filters (including filters applied later and animated pre-filters), split screen |
 | Debugging | `debugDraw({ bounds, shadowFrustum })` (bounds coloured by LOD level), `debugLine()` |
 | Physics | `IgePhysics3d` on Jolt (loaded on demand, multithreaded when the page is cross-origin isolated): static, dynamic and kinematic boxes, spheres, capsules, triangle meshes, heightfields, convex hulls and compound shapes on entities, named collision layers, trigger volumes (`addSensor()`, enter and exit events), impact events, player characters (`addCharacter()`, Jolt's CharacterVirtual: steps, slopes, pushing, optionally unpushable), interpolation between fixed steps, character capsules, impulses, raycasts; `createRagdoll()` from a skinned entity's skeleton; `entity.quaternion()` for full 3D rotations. The zombie demo runs on it with `?physics=1` |
+| Loading | `igeLoadAssets()`: textures, cell sheets, models, animation files and JSON in one call with progress; missing files report errors instead of hanging |
+| Networking | Rooms on IgeNetIo (`IgeRoomServer`, `IgeRoomClient`): join codes, seats kept across reconnects, presence, chat, room info, an ordered command stream with snapshots and resync, save and restore |
 | Input and picking | Entity pointer events in every viewport (`pointerHitTest()`: mesh boxes, skinned joint boxes, sprite quads; exact triangles with `pointerPicking("triangles")`), `raycast()` for the nearest mesh hit under a screen point, `raycastEntities()` for game rays (line of sight, projectiles); skinned characters are tested in their current pose; large meshes go through a cached triangle BVH (also used by decal projection) |
 
 ### Measured
@@ -98,6 +101,10 @@ On the development machine (Apple silicon, Chrome):
 - Physics layers (the living walk through corpses), compound and heightfield shapes, impact events, unpushable
   players, `discardGeometryArrays()` (still drawn and pickable) and `preTick` behaviours under WebGL, all in the
   browser.
+- Rooms end to end over real IgeNetIo sockets in Node: create and join, commands in the same order for both clients,
+  a rejected command reaching only its sender, presence on disconnect.
+- The automatic renderer (`webGl2d?auto=1`: WebGL with the screen2d camera) and `igeLoadAssets()` in the 2D example and
+  zombie demo; a missing texture reports HTTP 404 and no longer blocks `ige.textures.whenLoaded()`.
 
 ### Not verified
 
@@ -120,6 +127,11 @@ On the development machine (Apple silicon, Chrome):
   won't map iso-mode x/y/z automatically; iso games that stay on x/y keep `IgeCanvas2dRenderer`.
 - **Materials** have a public API: `entity.material({...})` (`_materialData` still works).
 - **Physics runs on Jolt**, behind IGE's own `IgePhysics3d` interface (benchmark and spike below).
+- **WebGL when available** for 2D (2026-11-09): `igeCreateRenderer()` picks WebGL where the browser supports it (else
+  Canvas 2D; isometric games always Canvas 2D), and `ige.engine.start()` does so when no renderer is assigned.
+- **Networking gets rooms** (2026-11-09): `IgeRoomServer` / `IgeRoomClient` (codes, seats, ordered command stream);
+  see `guides/online-rooms.md`. Hex Realms can move to them when its author chooses.
+- **One asset loader** (2026-11-09): `igeLoadAssets()` for textures, models, animation files and JSON.
 
 ### Engine work remaining
 
@@ -188,11 +200,8 @@ Status of the notes in `src/examples/hex-realms/README.md`:
 | 7 | Picking only against a flat plane | Done: `renderer.screenToHeightfield(viewport, x, y, heightAt, { minHeight, maxHeight, step })` |
 | 8 | Every geometry creation logged | Done: no longer logged |
 | 9 | No automatic render-on-demand | Done: `ige.engine.renderOnDemand(true)`, which notices `material()`, `texture()`, `geometry()` and other setters. Hex Realms assigns `_geometryData` directly for chunk swaps; `entity.geometry(mesh)` makes those visible to it |
-| 10 | Network transport | Open question (see below) |
+| 10 | Network transport | Done in the engine: `IgeRoomServer` / `IgeRoomClient` provide rooms, seats and the sequenced command stream over IgeNetIo (or any transport); Hex Realms can move to them when its author chooses |
 
 ## Open questions
 
-- Networking: Hex Realms runs its own small protocol over the `websocket` package (rooms, seats, sequenced command
-  broadcast) rather than `IgeNetIoServer`. Should the engine's networking grow those pieces?
-- Unified asset loading (textures and models through one loader) is still only an idea.
-- Should `IgeCanvas2dRenderer` remain the default for 2D projects, or should the WebGL renderer replace it?
+None at the moment (networking, asset loading and the default renderer were decided and built on 2026-11-09).

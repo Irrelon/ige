@@ -20,7 +20,11 @@ it on a WebGL 2 machine. WebGL 1 has no instancing, so every mesh is a separate 
 ## Load and place a model
 
 ```typescript
-const model = await igeGltfLoader.load("../../assets/models/CesiumMan.glb", "character");
+const { models } = await igeLoadAssets(
+	{ models: { character: "../../assets/models/CesiumMan.glb" } },
+	{ onProgress: (done, total) => showLoading(done / total) }
+);
+const model = models.character; // or: await igeGltfLoader.load(url, "character")
 
 const zombie = new IgeEntity()
 	.model(model, { animation: "Walk" })
@@ -31,6 +35,10 @@ const zombie = new IgeEntity()
 
 `model()` sets up every mesh, material, texture, node transform, skeleton and animation clip in the file.
 Models face +Z and stand upright as authored; don't add corrective rotations.
+
+`igeLoadAssets({ textures, models, data })` loads a game's or level's images (`{ url, cells: [4, 4] }` for sprite
+sheets), glTF models and animation files, and JSON in one call with one progress callback. It reuses anything already
+loaded under the same id, and rejects listing every file that failed once all have settled.
 
 `material()` overrides the model's material values for that entity only, e.g. a tint or a hit flash, and
 `material(null)` restores them:

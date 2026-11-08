@@ -98,8 +98,11 @@ The engine has extensive 3D infrastructure:
 -   Split-screen and picking helpers: `worldToScreen()`, `screenToWorldRay()`, `screenToGround()`, `screenToHeightfield()`, `raycast()`, `viewportAt()`, `maxPixelRatio()`, `lodBias()`, `fog()`, `stats()`
 -   Resources and quality: `releaseGeometry()`, `releaseTexture()` (dynamic content must free what it replaces), `backFaceCulling()` (opt-in; meshes must be wound CCW, `doubleSided` materials are exempt), `shadowCaching()` (static shadow casters cached), `ige.engine.renderOnDemand()` (frames only when something visible changed; `manualRender()` after material/texture changes). Geometry `colors` are used as vertex colours.
 -   HUD and debugging: `IgeViewportOverlay` (DOM elements over entities, clipped per viewport), `debugDraw({ bounds, shadowFrustum })`, `debugLine()`, `preferredWebGlVersion(1)` to test the WebGL 1 path.
+-   Renderer choice: `igeCreateRenderer({ mode: "2d" | "iso" | "3d" })` picks WebGL where available (else Canvas 2D; iso always Canvas 2D); `ige.engine.start()` uses it when no renderer is assigned.
+-   Loading: `igeLoadAssets({ textures, models, data }, { onProgress })` loads images, glTF models/animation files and JSON in one call.
+-   Online play: `IgeRoomServer` / `IgeRoomClient` (`src/engine/network/rooms/`) add rooms, seats and an ordered command stream to IGE networking; see `guides/online-rooms.md`.
 -   2D: camera preset `screen2d` (y down, one unit per pixel, zoom by camera scale) draws sprites flat with their 2D transforms; smart textures and bitmap font sheets render per entity; texture filters re-upload when they change. Isometric games move to a 3D layout to use WebGL. Entity `tick()` isn't called by the WebGL renderer (use update behaviours). See `guides/2d-on-webgl.md`.
--   Guides: `guides/webgl-models.md`, `guides/physics-3d.md`, `guides/2d-on-webgl.md`.
+-   Guides: `guides/webgl-models.md`, `guides/physics-3d.md`, `guides/2d-on-webgl.md`, `guides/online-rooms.md`.
 -   Entities can carry a quaternion rotation (`entity.quaternion()`) that replaces the Euler `rotate()` in 3D transforms.
 -   `entity.geometry(mesh)` swaps an entity's mesh (render on demand notices); `renderer.discardGeometryArrays(mesh)` keeps only the GPU copy of a big mesh.
 -   Entity `preTick` behaviours run under WebGL once per frame with a dummy 2D context; entity `tick()` itself isn't called.
