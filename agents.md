@@ -89,7 +89,7 @@ The engine has extensive 3D infrastructure:
     -   **Model Parts** (`IgeModelParts`) - turns a loaded GLTF model into render parts (all primitives, node transforms, materials, textures) for `IgeEntity.model()`
     -   **3D Particles** (`IgeParticleSystem3d`) - typed-array particle effects drawn as one instanced billboard batch
     -   **Decals** (`IgeDecalSystem3d`, `IgeDecalProjector`) - blood/scorch marks: instanced flat quads on floors (`add()`), or projected onto walls, steps and uneven terrain by clipping the target meshes' triangles (`project()`); multiply-blended so they take the surface's lighting
-    -   **3D Physics** (`src/engine/physics/IgePhysics3d`, `IgeRagdoll3d`, `IgePhysicsCharacter3d`) - Jolt Physics (WASM, optional peer dependency `jolt-physics`, loaded on demand, threaded when cross-origin isolated): rigid bodies on entities in IGE units (simulated in metres) with box, sphere, capsule, mesh and convex shapes, player characters (CharacterVirtual), trigger sensors, raycasts, ragdolls driving a skeleton, interpolation between fixed steps. See `guides/physics-3d.md`
+    -   **3D Physics** (`src/engine/physics/IgePhysics3d`, `IgeRagdoll3d`, `IgePhysicsCharacter3d`) - Jolt Physics (WASM, optional peer dependency `jolt-physics`, loaded on demand, threaded when cross-origin isolated): rigid bodies on entities in IGE units (simulated in metres) with box, sphere, capsule, mesh, heightfield, convex and compound shapes, named collision layers, impact events, player characters (CharacterVirtual, optionally unpushable), trigger sensors, raycasts, ragdolls driving a skeleton, interpolation between fixed steps. See `guides/physics-3d.md`
     -   **Raycasting** (`IgeRaycast`) - exact ray/triangle tests against entities' meshes, skinned characters in their current pose (`renderer.raycast()`, `raycastEntities()`, `pointerPicking("triangles")`)
     -   **Animation Retargeting** (`IgeAnimationRetarget`) - plays clips from separate animation files on a model's skeleton, matched by bone name
     -   **Mesh Simplifier** (`IgeMeshSimplifier`) - quadric edge-collapse simplification that keeps UVs, normals and skin weights; generates level-of-detail meshes
@@ -101,6 +101,8 @@ The engine has extensive 3D infrastructure:
 -   2D: camera preset `screen2d` (y down, one unit per pixel, zoom by camera scale) draws sprites flat with their 2D transforms; smart textures and bitmap font sheets render per entity; texture filters re-upload when they change. Isometric games move to a 3D layout to use WebGL. Entity `tick()` isn't called by the WebGL renderer (use update behaviours). See `guides/2d-on-webgl.md`.
 -   Guides: `guides/webgl-models.md`, `guides/physics-3d.md`, `guides/2d-on-webgl.md`.
 -   Entities can carry a quaternion rotation (`entity.quaternion()`) that replaces the Euler `rotate()` in 3D transforms.
+-   `entity.geometry(mesh)` swaps an entity's mesh (render on demand notices); `renderer.discardGeometryArrays(mesh)` keeps only the GPU copy of a big mesh.
+-   Entity `preTick` behaviours run under WebGL once per frame with a dummy 2D context; entity `tick()` itself isn't called.
 -   Used in multiple working examples: coordTest2d, coordTest3d, coordTestIso, lightingShadows, skeletalAnimation, webGlRenderer, zombie-game (4-player split-screen zombie ARPG prototype), webGl2d (Canvas 2D style scene on WebGL, `?split=1` for two views), hex-realms (large hex-map strategy prototype, in progress)
 
 #### Working with models
@@ -172,6 +174,7 @@ zombie.playAnimation("Attack", { loop: false, crossFadeDuration: 0.1 });
 | `IgeDecalSystem3d.ts` | Decals entity (flat floor decals and projected decals) |
 | `IgeDecalProjector.ts` | Clips mesh triangles to a decal box for projected decals |
 | `IgeRaycast.ts` | Ray/triangle tests against entities' meshes (including skinned, posed on the CPU) |
+| `IgeTriangleBvh.ts` | Cached triangle BVH for raycasts and decal projection on large meshes |
 | `IgeHeightfieldRay.ts` | Ray/heightfield intersection behind `screenToHeightfield()` |
 | `IgeViewportOverlay.ts` | DOM HUD elements over the 3D views, clipped per viewport |
 

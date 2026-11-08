@@ -164,3 +164,11 @@ Characters, debris and ragdolls with Jolt physics: see [`physics-3d.md`](physics
 Geometry and textures stay on the GPU until released. Content that is replaced at run time (rebuilt terrain chunks,
 unloaded levels) should call `renderer.releaseGeometry(geometryData)` (also frees LOD meshes generated from it)
 and `renderer.releaseTexture(texture)` or `texture.destroy()`.
+
+- `entity.geometry(mesh)` swaps the mesh an entity draws and tells render on demand (assigning `_geometryData`
+  doesn't). Give a rebuilt mesh a new `id`; the renderer uploads once per id.
+- `renderer.discardGeometryArrays(mesh)` frees a mesh's CPU arrays once it is uploaded, so only the GPU copy remains:
+  for big meshes the game never reads again. Its bounding box is kept for culling and pointer events; generate LODs
+  first, and expect triangle picking, raycasts, decals and physics mesh shapes to skip it.
+- Raycasts and projected decals use a triangle BVH for meshes over 512 triangles, built on first use (about half a
+  second for 320,000 triangles). `getTriangleBvh(mesh)` from `IgeTriangleBvh` builds it ahead, e.g. while loading.

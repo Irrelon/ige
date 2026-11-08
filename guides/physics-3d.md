@@ -78,7 +78,8 @@ origin, it walks up steps (`stepHeight`, default 0.3 m) and slopes (`maxSlopeAng
 the floor going down them, pushes dynamic bodies with at most `maxStrength` newtons, and characters collide with
 each other. Other bodies collide with it through an inner body, `hero.body`, which raycasts and sensors report.
 Characters are updated before each world step, on the main thread, and interpolated like bodies. A crowd pushing
-into a character moves it (as a horde would); `teleport()` and `enabled()` work as for bodies.
+into a character moves it (as a horde would) unless it has `pushable: false`, which keeps it where its own movement
+puts it; `teleport()` and `enabled()` work as for bodies.
 
 - A body starts at its entity's world position and rotation. After every step, dynamic bodies move their entity
   (position, and rotation through `entity.quaternion()` unless `lockRotation`); kinematic bodies (`type:
@@ -87,13 +88,35 @@ into a character moves it (as a horde would); `teleport()` and `enabled()` work 
   a geometry (scaled by the entity's scale): `mesh` (its triangles: level geometry and terrain, static or kinematic
   only) and `convex` (the hull of its vertices: props of any shape, dynamic too):
   `physics.addBody(terrain, { type: "static", shape: { type: "mesh", geometry: terrain._geometryData } })`.
+- More shapes: `compound` (several child shapes with positions and rotations as one body, e.g. a table from a top and
+  legs) and `heightfield` (grid terrain: `heights`, `size` samples per side, `spacing`; static only, starting at the
+  entity's origin along +x and +z).
 - Options: `restitution` (bounciness), `linearDamping`, `angularDamping`, `gravityFactor`, `ccd` (continuous
-  collision for small fast bodies so they don't pass through walls).
+  collision for small fast bodies so they don't pass through walls), `layer` (see below) and `impacts`.
+- `impacts: 220` (or `true` for 100) makes the body emit `"impact"` when a step changes its velocity by more than
+  that (IGE units per second), with the speed change and the bodies touching it: sounds, splinters, damage from a
+  falling crate. `body.on("impact", ({ speed, others }) => ...)`.
 - `body.enabled(false)` takes a body out of the simulation (e.g. while a character is dead), `teleport(x, y, z)`
   moves it (respawns), `destroy()` frees it. `physics.bodyOf(entity)` finds an entity's body.
 - Entities with dynamic bodies should be mounted to the scene, or to a parent that doesn't move.
 - After adding many bodies at once (loading a level), the world rebuilds its spatial index automatically; call
   `physics.optimize()` yourself after other bulk changes.
+
+## Collision layers
+
+```typescript
+const physics = await IgePhysics3d.create({
+	layers: [{ name: "static", static: true }, { name: "moving" }, { name: "characters" }, { name: "corpses" }],
+	ignore: [["characters", "corpses"]] // the living walk through corpses
+});
+physics.addBody(zombie, { /* ... */ layer: "characters" });
+physics.createRagdoll(deadZombie, { layer: "corpses" });
+physics.raycast(from, dir, 1000, { layer: "characters" }); // what a character would hit
+```
+
+Static layers hold bodies that never move and don't collide with each other; every other pair of layers collides
+unless listed in `ignore`. Bodies default to "static" or "moving"; bodies, sensors, characters, ragdolls and raycasts
+all take a `layer`.
 
 ## Ragdolls
 
@@ -167,9 +190,10 @@ silicon Mac in Chrome:
 
 `physics.stats()` reports bodies, awake bodies, ragdolls and the last step's time.
 
-## Not there yet
+Ragdoll parts are registered with the world, so raycasts, sensors and impacts report the ragdoll's entity.
 
-- Contact listeners for characters (e.g. stopping zombies from shoving players).
-- Heightfield shapes (lighter than a mesh for grid terrain) and compound shapes.
-- Contact (impact) events between bodies, and collision layers beyond static/moving.
+## Limits
+
 - Ragdolls pose the skeleton from the latest step (not interpolated).
+- Impact events find the bodies touching after the step; a glancing hit on something that has already bounced away
+  reports no `others`.

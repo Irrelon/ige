@@ -45,9 +45,10 @@ position is the centre of the view, so `camera.translateTo(x, y, 0)` and camera 
 - **Isometric render mode.** `IgeEntityRenderMode.iso` games place the ground on x/y with z up, and Canvas 2D projects
   them itself. The WebGL renderer treats every entity as 3D with y up and won't map iso scenes across: move them to a
   3D layout (ground on x/z) with the `isometric` camera preset, or keep `IgeCanvas2dRenderer` for them.
-- **Tick behaviours.** The WebGL renderer draws entities without calling their `tick()`, so `preTick`/`postTick`
-  behaviours on entities (which receive a Canvas 2D context) don't run; put game logic in `preUpdate`/`postUpdate`
-  behaviours or `update()`.
+- **Tick behaviours.** The WebGL renderer draws entities without calling their `tick()`. Entity `preTick` behaviours
+  still run, once per frame (Canvas 2D runs them once per viewport that draws the entity), with a 2D context whose
+  drawing calls do nothing, so logic in them works but drawing in them doesn't show. Code overriding `tick()` itself
+  doesn't run; put game logic in `update()` or update behaviours.
 - `src/examples/webGl2d/index.html?canvas=1` runs the example on `IgeCanvas2dRenderer` for a side-by-side
   comparison.
 - Sprites in a `screen2d` view are drawn flat with their 2D transform. In 3D views they are billboards that face the
