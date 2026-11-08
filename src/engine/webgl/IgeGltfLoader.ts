@@ -1059,15 +1059,21 @@ export class IgeGltfLoader extends IgeBaseClass {
 					}
 				}
 
-				// Skip channels that don't target skeleton bones
-				if (targetBoneIndex === -1) {
+				// Morph target weights aren't supported
+				if (targetPath === "weights") {
 					continue;
 				}
 
+				// Channels on nodes that aren't joints of a skin in this file
+				// (animation-only files have no skin) keep targetBoneIndex -1:
+				// playback skips them, but retargetClips() can map them onto
+				// another model's skeleton by node name.
 				channels.push({
 					samplerIndex: channelDef.sampler,
 					targetBoneIndex,
-					targetPath
+					targetPath,
+					targetNode: targetNodeIndex,
+					targetName: gltf.nodes?.[targetNodeIndex]?.name
 				});
 			}
 

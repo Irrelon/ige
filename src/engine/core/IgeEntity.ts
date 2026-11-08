@@ -29,6 +29,9 @@ import type { IgeSmartTexture } from "@/types/IgeSmartTexture";
 import type { IgeTimeStreamPacket, IgeTimeStreamParsedTransformData } from "@/types/IgeTimeStream";
 import type { IgeTriggerPolygonFunctionName } from "@/types/IgeTriggerPolygonFunctionName";
 import type { IgeGltfModel } from "@/engine/webgl/IgeGltfLoader";
+import type { IgeRetargetOptions } from "@/engine/webgl/IgeAnimationRetarget";
+import { retargetClips } from "@/engine/webgl/IgeAnimationRetarget";
+import type { IgeAnimationClipData } from "@/types/IgeAnimationClipData";
 import type { IgeModelLod, IgeModelLodLevel } from "@/engine/webgl/IgeModelParts";
 import { createSkeletonInstance, getModelLod, getModelParts } from "@/engine/webgl/IgeModelParts";
 import { IgeSkeletalAnimationComponent } from "@/engine/components/IgeSkeletalAnimationComponent";
@@ -44,6 +47,16 @@ export interface IgeModelOptions {
 	castShadow?: boolean;
 	/** Levels of detail to switch to while the model is small on screen (see IgeEntity.lod()). */
 	lod?: IgeModelLodLevel[];
+	/**
+	 * Animations from other files, retargeted onto this model's skeleton
+	 * by bone name (see retargetClips()). An array adds every clip in each
+	 * file under its own name; a record adds the first clip of each file
+	 * under the key, which helps when every file names its clip the same
+	 * (e.g. "mixamo.com").
+	 */
+	animations?: IgeGltfModel[] | Record<string, IgeGltfModel>;
+	/** Options for retargeting `animations` (bone name map, root motion). */
+	retarget?: IgeRetargetOptions;
 }
 
 export interface IgeEntityTransformAccessor {
@@ -998,7 +1011,8 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 	 *
 	 * Skinned models also get their own skeleton and an
 	 * IgeSkeletalAnimationComponent ("skeletalAnimation") with every clip
-	 * in the file defined by name, ready for playAnimation().
+	 * in the file defined by name, ready for playAnimation(). Clips that
+	 * ship in separate files can be added with the `animations` option.
 	 *
 	 * Many entities can share one loaded model: geometry, textures and
 	 * cached animation poses are shared, and the WebGL renderer draws
@@ -1017,6 +1031,11 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 	 *         .model(zombieModel, { animation: "Walk" })
 	 *         .translateTo(100, 0, 50)
 	 *         .mount(scene);
+	 * @example #Add animations that come in their own files
+	 *     zombie.model(zombieModel, {
+	 *         animation: "Walk",
+	 *         animations: { Walk: walkFile, Attack: attackFile, Die: deathFile }
+	 *     });
 	 * @return {*} "this" when arguments are passed to allow method
 	 * chaining or the current value if no arguments are specified.
 	 */
@@ -1057,6 +1076,24 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 			anim.setSkeleton(this._skeleton);
 			if (model.animations?.length) {
 				anim.defineClips(model.animations);
+			}
+
+			const sources = options.animations;
+			if (Array.isArray(sources)) {
+				for (const source of sources) {
+					anim.defineClips(retargetClips(source, skin.skeleton, options.retarget));
+				}
+			} else if (sources) {
+				const named: Record<string, IgeAnimationClipData> = {};
+				for (const [name, source] of Object.entries(sources)) {
+					const clip = retargetClips(source, skin.skeleton, options.retarget)[0];
+					if (clip) {
+						named[name] = clip;
+					} else {
+						this.log(`model(): no animation in "${source.id}" matches this skeleton (animation "${name}")`, "warning");
+					}
+				}
+				anim.defineClips(named);
 			}
 
 			if (options.animation) {
