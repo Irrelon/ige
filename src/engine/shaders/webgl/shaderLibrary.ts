@@ -15,6 +15,8 @@ import { blurVertexShader } from "@/engine/shaders/webgl/blur.vert";
 import { blurFragmentShader } from "@/engine/shaders/webgl/blur.frag";
 import { particleVertexShader } from "@/engine/shaders/webgl/particle.vert";
 import { particleFragmentShader } from "@/engine/shaders/webgl/particle.frag";
+import { decalVertexShader } from "@/engine/shaders/webgl/decal.vert";
+import { decalFragmentShader } from "@/engine/shaders/webgl/decal.frag";
 
 /**
  * Shader source definition.
@@ -143,6 +145,13 @@ IgeShaderLibrary.register(
 	"Camera-facing particle quads for IgeParticleSystem3d"
 );
 
+IgeShaderLibrary.register(
+	"decal",
+	decalVertexShader,
+	decalFragmentShader,
+	"Ground-aligned decal quads for IgeDecalSystem3d"
+);
+
 // Instanced variants of the lit and shadow shaders. These read per-object
 // data (world matrix, material values and, for skinned meshes, the bone
 // palette row) from per-instance attributes so a batch of identical meshes
@@ -154,7 +163,8 @@ const INSTANCED_SHADER_IDS = [
 	"skinned_shadow",
 	"point_shadow",
 	"skinned_point_shadow",
-	"particle"
+	"particle",
+	"decal"
 ];
 
 for (const id of INSTANCED_SHADER_IDS) {

@@ -33,6 +33,8 @@ import {
 import type { IgeGeometryData3d } from "@/types/IgeGeometryData3d";
 import type { IgeModelPart } from "@/engine/webgl/IgeModelParts";
 import type { IgeParticleSystem3d } from "@/engine/webgl/IgeParticleSystem3d";
+import type { IgeDecalSystem3d } from "@/engine/webgl/IgeDecalSystem3d";
+import { DECAL_INSTANCE_FLOATS } from "@/engine/webgl/IgeDecalSystem3d";
 import type { IgeMaterialData } from "@/types/IgeMaterialData";
 import type { IgeSkeleton } from "@/types/IgeSkeletonData";
 import { MAX_BONES } from "@/types/IgeSkeletonData";
@@ -94,6 +96,13 @@ interface IgeWebGlSceneFrameData {
 	models: IgeWebGlRenderItem[];
 	sprites: IgeEntity[];
 	particles: IgeParticleSystem3d[];
+	decals: IgeDecalSystem3d[];
+}
+
+/** Anything that supplies packed per-instance data (particles, decals). */
+interface IgeWebGlInstanceSource {
+	renderData (): { data: Float32Array; count: number };
+	_renderVersion: number;
 }
 
 /** Floats per particle in IgeParticleSystem3d.renderData(). */
@@ -214,8 +223,9 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 	protected _shadowShareThreshold: number = 0.35;
 	protected _sharedShadowFrame: number = -1;
 	protected _pendingBlobTextures: Set<string> = new Set();
-	protected _particleBuffers: Map<IgeParticleSystem3d, { buffer: WebGLBuffer | null; version: number; lastFrame: number }> = new Map();
+	protected _particleBuffers: Map<IgeWebGlInstanceSource, { buffer: WebGLBuffer | null; version: number; lastFrame: number }> = new Map();
 	protected _defaultParticleTexture: WebGLTexture | null = null;
+	protected _defaultDecalTexture: WebGLTexture | null = null;
 	protected _lightFrustum: IgeFrustum = new IgeFrustum();
 	protected _lightFrustumMatrix: IgeMatrix4 = new IgeMatrix4();
 
@@ -899,7 +909,7 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 
 			let data = this._sceneData.get(scene);
 			if (!data) {
-				data = { frameId: -1, models: [], sprites: [], particles: [] };
+				data = { frameId: -1, models: [], sprites: [], particles: [], decals: [] };
 				this._sceneData.set(scene, data);
 			}
 
@@ -908,9 +918,13 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 				data.models.length = 0;
 				data.sprites.length = 0;
 				data.particles.length = 0;
+				data.decals.length = 0;
 				this._collectRenderables(scene, data);
 				for (let p = 0; p < data.particles.length; p++) {
-					this._uploadParticleSystem(data.particles[p]);
+					this._uploadInstanceData(data.particles[p], PARTICLE_FLOATS);
+				}
+				for (let d = 0; d < data.decals.length; d++) {
+					this._uploadInstanceData(data.decals[d], DECAL_INSTANCE_FLOATS);
 				}
 				stats.items += data.models.length + data.sprites.length;
 			}
@@ -963,6 +977,8 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 		const parts = entity._modelParts;
 		if ((obj as unknown as IgeParticleSystem3d)._isParticleSystem3d) {
 			data.particles.push(obj as unknown as IgeParticleSystem3d);
+		} else if ((obj as unknown as IgeDecalSystem3d)._isDecalSystem3d) {
+			data.decals.push(obj as unknown as IgeDecalSystem3d);
 		} else if (parts && parts.length > 0) {
 			this._addModelParts(entity, parts, data);
 		} else if (geometryData && geometryData.vertices) {
@@ -1457,6 +1473,10 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 		this._renderSprites(opaqueSprites, matrices);
 		this._renderModelBatches(batcher.batches, matrices);
 
+		// Ground decals go on top of the opaque ground, under everything
+		// transparent
+		this._renderDecalSystems(data.decals, matrices);
+
 		// Transparent pass (back to front, no depth writes)
 		this._stateManager.setDepthWrite(false);
 
@@ -1895,11 +1915,11 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 	}
 
 	/**
-	 * Upload a particle system's packed render data to its own GPU buffer
-	 * (once per frame, only when it changed). Buffers of systems that
-	 * haven't been seen for a while are deleted.
+	 * Upload a particle or decal system's packed render data to its own
+	 * GPU buffer (once per frame, only when it changed). Buffers of systems
+	 * that haven't been seen for a while are deleted.
 	 */
-	protected _uploadParticleSystem(system: IgeParticleSystem3d): void {
+	protected _uploadInstanceData(system: IgeWebGlInstanceSource, floatsPerInstance: number): void {
 		const gl = this._canvasContext;
 		if (!gl || !this._instanceBuffer) return;
 
@@ -1913,7 +1933,7 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 		const { data, count } = system.renderData();
 		if (count > 0 && entry.version !== system._renderVersion) {
 			gl.bindBuffer(gl.ARRAY_BUFFER, entry.buffer);
-			gl.bufferData(gl.ARRAY_BUFFER, data.subarray(0, count * PARTICLE_FLOATS), gl.STREAM_DRAW);
+			gl.bufferData(gl.ARRAY_BUFFER, data.subarray(0, count * floatsPerInstance), gl.STREAM_DRAW);
 			entry.version = system._renderVersion;
 		}
 
@@ -1964,6 +1984,195 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 
 		this._defaultParticleTexture = texture;
 		return texture;
+	}
+
+	/**
+	 * The built-in decal texture: a 2x2 atlas of white splats (alpha is the
+	 * shape) for IgeDecalSystem3d without a texture of its own. Generated
+	 * from a fixed seed so every run looks the same.
+	 */
+	protected _getDefaultDecalTexture(): WebGLTexture | null {
+		if (this._defaultDecalTexture || !this._canvasContext) {
+			return this._defaultDecalTexture;
+		}
+
+		const cell = 128;
+		const canvas = document.createElement("canvas");
+		canvas.width = cell * 2;
+		canvas.height = cell * 2;
+		const ctx = canvas.getContext("2d");
+		if (!ctx) return null;
+
+		let seed = 1337;
+		const random = () => {
+			seed = (seed * 16807) % 2147483647;
+			return seed / 2147483647;
+		};
+
+		const blob = (x: number, y: number, radius: number, alpha: number) => {
+			const gradient = ctx.createRadialGradient(x, y, 0, x, y, radius);
+			gradient.addColorStop(0, `rgba(255,255,255,${alpha})`);
+			gradient.addColorStop(0.85, `rgba(255,255,255,${alpha * 0.8})`);
+			gradient.addColorStop(1, "rgba(255,255,255,0)");
+			ctx.fillStyle = gradient;
+			ctx.beginPath();
+			ctx.arc(x, y, radius, 0, Math.PI * 2);
+			ctx.fill();
+		};
+
+		for (let c = 0; c < 4; c++) {
+			const cx = (c % 2) * cell + cell / 2;
+			const cy = Math.floor(c / 2) * cell + cell / 2;
+			const maxReach = cell / 2 - 6; // keep clear of neighbouring cells
+
+			// Main pool: overlapping lobes around the centre
+			const lobes = 5 + Math.floor(random() * 4);
+			for (let i = 0; i < lobes; i++) {
+				const angle = random() * Math.PI * 2;
+				const distance = random() * 14;
+				blob(cx + Math.cos(angle) * distance, cy + Math.sin(angle) * distance, 16 + random() * 14, 0.95);
+			}
+
+			// Splashes thrown outwards, getting smaller with distance
+			const drops = 8 + Math.floor(random() * 10);
+			for (let i = 0; i < drops; i++) {
+				const angle = random() * Math.PI * 2;
+				const distance = 26 + random() * (maxReach - 34);
+				const radius = Math.max(1.5, 7 - distance / 9) * (0.6 + random() * 0.6);
+				blob(cx + Math.cos(angle) * distance, cy + Math.sin(angle) * distance, radius, 0.9);
+			}
+		}
+
+		const gl = this._canvasContext;
+		const texture = gl.createTexture();
+		gl.bindTexture(gl.TEXTURE_2D, texture);
+		gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, 0);
+		gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, 0);
+		gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, canvas);
+		gl.generateMipmap(gl.TEXTURE_2D);
+		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
+		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+		this._stateManager?.invalidateTextureBindings();
+
+		this._defaultDecalTexture = texture;
+		return texture;
+	}
+
+	/**
+	 * Draw decal systems as quads lying on the ground: one instanced call
+	 * per system (WebGL 2) or one call per decal (WebGL 1). Drawn after the
+	 * opaque pass with depth testing, no depth writes and a polygon offset
+	 * so they never fight with the ground they lie on.
+	 */
+	protected _renderDecalSystems(systems: IgeDecalSystem3d[], matrices: IgeCameraMatrices): void {
+		if (systems.length === 0 || !this._shaderManager || !this._geometryManager || !this._stateManager || !this._textureManager) {
+			return;
+		}
+
+		const gl = this._canvasContext!;
+		const instanced = !!this._instanceBuffer;
+		const program = this._shaderManager.getProgram(instanced ? "decal_instanced" : "decal");
+		const quad = this._geometryManager.getSharedQuadGeometry();
+		if (!program || !quad) return;
+
+		let programReady = false;
+		const stride = DECAL_INSTANCE_FLOATS * 4;
+
+		for (let s = 0; s < systems.length; s++) {
+			const system = systems[s];
+			const { data, count } = system.renderData();
+			if (count === 0) continue;
+
+			const c = system._boundsCenter;
+			if (!matrices.frustum.containsSphereXYZ(c.x, c.y, c.z, system._boundsRadius)) continue;
+			system._lastRenderedFrame = this._frameId;
+
+			if (!programReady) {
+				program.use();
+				program.setUniformMatrix4fv("u_viewMatrix", matrices.view);
+				program.setUniformMatrix4fv("u_projectionMatrix", matrices.projection);
+				program.setUniform1i("u_texture", 0);
+				const cam = matrices.cameraPosition;
+				program.setUniform3f("u_cameraPosition", cam.x, cam.y, cam.z);
+				const fog = this._fog;
+				const fogMode = fog.mode === "linear" ? 1 : fog.mode === "exp2" ? 2 : 0;
+				program.setUniform1i("u_fogMode", fogMode);
+				program.setUniform1f("u_fogNear", fog.near);
+				program.setUniform1f("u_fogFar", fog.far);
+				program.setUniform1f("u_fogDensity", fog.density);
+
+				this._geometryManager.bindGeometry(quad, program);
+				this._stateManager.setDepthTest(true);
+				this._stateManager.setDepthWrite(false);
+				this._stateManager.setBlend(true);
+				gl.enable(gl.POLYGON_OFFSET_FILL);
+				gl.polygonOffset(-1, -4);
+				programReady = true;
+			}
+
+			const multiply = system._options.blending !== "normal";
+			program.setUniform1i("u_multiply", multiply ? 1 : 0);
+			if (multiply) {
+				this._stateManager.setBlendFunc(gl.DST_COLOR, gl.ZERO);
+			} else {
+				this._stateManager.setBlendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+			}
+			program.setUniform1f("u_atlasGrid", system.atlasGrid());
+
+			const texture = system._options.texture
+				? this._textureManager.getTextureForIgeTexture(system._options.texture)
+				: this._getDefaultDecalTexture();
+			this._stateManager.invalidateTextureBindings();
+			this._stateManager.bindTexture(texture || this._textureManager.getDefaultWhiteTexture(), 0);
+
+			if (instanced) {
+				const entry = this._particleBuffers.get(system);
+				if (!entry || !entry.buffer) continue;
+
+				const gl2 = gl as WebGL2RenderingContext;
+				const locations = [
+					program.getAttributeLocation("a_decal"),
+					program.getAttributeLocation("a_decalColor"),
+					program.getAttributeLocation("a_decalShape")
+				];
+				gl2.bindBuffer(gl2.ARRAY_BUFFER, entry.buffer);
+				for (let a = 0; a < locations.length; a++) {
+					if (locations[a] < 0) continue;
+					gl2.enableVertexAttribArray(locations[a]);
+					gl2.vertexAttribPointer(locations[a], 4, gl2.FLOAT, false, stride, a * 16);
+					gl2.vertexAttribDivisor(locations[a], 1);
+				}
+
+				const indexType = quad.indexData instanceof Uint32Array ? gl2.UNSIGNED_INT : gl2.UNSIGNED_SHORT;
+				gl2.drawElementsInstanced(quad.drawMode, quad.indexCount, indexType, 0, count);
+
+				for (const location of locations) {
+					if (location < 0) continue;
+					gl2.vertexAttribDivisor(location, 0);
+					gl2.disableVertexAttribArray(location);
+				}
+				this._stats.instancedDrawCalls++;
+				this._stats.instances += count;
+			} else {
+				for (let i = 0; i < count; i++) {
+					const o = i * DECAL_INSTANCE_FLOATS;
+					program.setUniform4f("u_decal", data[o], data[o + 1], data[o + 2], data[o + 3]);
+					program.setUniform4f("u_decalColor", data[o + 4], data[o + 5], data[o + 6], data[o + 7]);
+					program.setUniform4f("u_decalShape", data[o + 8], data[o + 9], 0, 0);
+					this._geometryManager.drawGeometry(quad);
+					this._stats.drawCalls++;
+				}
+			}
+		}
+
+		if (programReady) {
+			gl.disable(gl.POLYGON_OFFSET_FILL);
+			this._geometryManager.unbindGeometry(quad, program);
+			this._stateManager.setBlendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+			this._stateManager.setDepthWrite(true);
+		}
 	}
 
 	/**
