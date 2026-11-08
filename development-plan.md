@@ -94,8 +94,8 @@ On the development machine (Apple silicon, Chrome):
   meshes get `lod` levels, and weapons attach with `attachToBone()`. When the assets arrive, check that the rig and
   clips load and play, and whether an A-pose model needs clips authored for a T-pose rig (posture differences aren't
   corrected).
-- **Physics.** Choose an engine (see "Physics engine options" below); the recommendation is Jolt behind an
-  IGE-owned interface, proven with a time-boxed spike in the zombie demo, with Rapier as the fallback.
+- **Physics.** Choose an engine for a spike in the zombie demo (see "Physics engine options" below, now with
+  benchmark results).
 - **Gamepads.** Test with real controllers.
 
 ### Decided
@@ -131,6 +131,19 @@ also used in Horizon Forbidden West and Death Stranding 2.
 
 Newer options to revisit later: Box3D (from Box2D's author, v0.1, no official JS binding) and crashcat (pure TS,
 modelled on Jolt, pre-1.0).
+
+Benchmarked in Chrome on 2026-11-08 (`benchmarks/physics`, results in its README): milliseconds per step, mean.
+
+| Scene | Jolt | Jolt, threaded | Rapier | Rapier SIMD | PhysX |
+|---|---|---|---|---|---|
+| 500 zombie capsules | 2.63 | 0.94 | 1.68 | 0.94 | 0.88 |
+| 1000 falling boxes | 5.08 | 1.75 | 2.26 | 1.56 | 2.04 |
+| 100 ragdolls (11 bodies each) | 4.76 | 0.99 | 3.87 | 2.20 | 1.17 |
+| 2000 raycasts | 2.54 | 1.78 | 1.67 | 1.69 | 2.51 |
+
+PhysX is the fastest single-threaded engine and Rapier SIMD close behind; single-threaded Jolt is the slowest, but
+threaded Jolt (which needs cross-origin isolation) is the fastest on ragdolls and level with the best elsewhere. All of
+them handle the zombie game's load in a fraction of a frame, so features, API and maintenance should decide.
 
 For the zombie game: simulate in metres and scale to IGE units when copying transforms; give the four players a
 character controller and the horde cheap kinematic or rigid-body capsules; wrap every Emscripten object in IGE classes

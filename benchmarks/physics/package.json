@@ -1,0 +1,18 @@
+{
+  "name": "ige-physics-benchmark",
+  "private": true,
+  "description": "Compares Jolt, Rapier and PhysX on zombie-ARPG-like scenes in the browser",
+  "type": "module",
+  "scripts": {
+    "dev": "vite --port 5195 --strictPort"
+  },
+  "dependencies": {
+    "@dimforge/rapier3d-compat": "0.21.0",
+    "@dimforge/rapier3d-simd-compat": "0.21.0",
+    "jolt-physics": "1.1.1",
+    "physx-js-webidl": "2.9.1"
+  },
+  "devDependencies": {
+    "vite": "6.3.5"
+  }
+}

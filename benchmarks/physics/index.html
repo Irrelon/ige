@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8" />
+	<title>Physics engine benchmark</title>
+	<style>
+		body { font-family: system-ui, sans-serif; margin: 16px; background: #111; color: #ddd; }
+		table { border-collapse: collapse; margin-top: 12px; font-variant-numeric: tabular-nums; }
+		th, td { border: 1px solid #333; padding: 4px 8px; text-align: right; }
+		th:first-child, td:first-child { text-align: left; }
+		iframe { display: none; }
+		#status { color: #9cf; }
+	</style>
+</head>
+<body>
+	<h1>Physics engine benchmark</h1>
+	<p>Same scenes, 1/60 s steps, metres, each engine's default solver settings. Each run happens in a fresh iframe;
+		engines alternate across rounds. <code>?rounds=2&amp;engines=jolt,rapier&amp;scenes=horde</code></p>
+	<button id="start">Run</button> <span id="status"></span>
+	<div id="results"></div>
+	<script type="module" src="./src/main.js"></script>
+</body>
+</html>
