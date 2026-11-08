@@ -25,6 +25,9 @@ export class IgeWebGlTextureManager extends IgeBaseClass {
 	// Default 1x1 white texture for entities without textures
 	protected _defaultWhiteTexture: WebGLTexture | null = null;
 
+	// WebGL 2 can mipmap textures of any size
+	protected _webGl2: boolean;
+
 	constructor(
 		gl: WebGLRenderingContext | WebGL2RenderingContext,
 		resourceManager: IgeWebGlResourceManager
@@ -32,6 +35,7 @@ export class IgeWebGlTextureManager extends IgeBaseClass {
 		super();
 		this._gl = gl;
 		this._resourceManager = resourceManager;
+		this._webGl2 = typeof WebGL2RenderingContext !== "undefined" && gl instanceof WebGL2RenderingContext;
 
 		// Create the default white texture
 		this._createDefaultWhiteTexture();
@@ -92,7 +96,8 @@ export class IgeWebGlTextureManager extends IgeBaseClass {
 	): WebGLTexture | null {
 		const gl = this._gl;
 
-		// Create texture
+		// Create texture (replacing an earlier upload of the same id)
+		this._resourceManager.deleteTexture(textureId);
 		const texture = this._resourceManager.createTexture(textureId);
 		if (!texture) {
 			return null;
@@ -130,7 +135,7 @@ export class IgeWebGlTextureManager extends IgeBaseClass {
 			const isPowerOf2 = (value: number) => (value & (value - 1)) === 0;
 			const width = (image as any).width || 0;
 			const height = (image as any).height || 0;
-			if (width > 0 && height > 0 && isPowerOf2(width) && isPowerOf2(height)) {
+			if (width > 0 && height > 0 && (this._webGl2 || (isPowerOf2(width) && isPowerOf2(height)))) {
 				gl.generateMipmap(gl.TEXTURE_2D);
 			} else if (width > 0 && height > 0) {
 				this.log(
@@ -168,14 +173,18 @@ export class IgeWebGlTextureManager extends IgeBaseClass {
 		const isPowerOf2 = (value: number) => (value & (value - 1)) === 0;
 		const width = (image as any).width || 0;
 		const height = (image as any).height || 0;
-		const canUseMipmaps = width > 0 && height > 0 && isPowerOf2(width) && isPowerOf2(height);
+		const powerOf2 = width > 0 && height > 0 && isPowerOf2(width) && isPowerOf2(height);
+		// WebGL 2 mipmaps any size, so sprites drawn smaller than their image
+		// (most of them on high-DPI screens) don't shimmer or alias
+		const canUseMipmaps = powerOf2 || (this._webGl2 && width > 0 && height > 0);
 
 		// Create WebGL texture from image
-		// Use LINEAR filtering for non-power-of-2 textures since mipmaps won't work
+		// Use LINEAR filtering when mipmaps aren't available (non-power-of-2
+		// textures on WebGL 1)
 		// flipY: false - UV coordinates handle the flip instead
 		const webglTexture = this.createTextureFromImage(textureId, image, {
-			wrapS: canUseMipmaps ? this._gl.REPEAT : this._gl.CLAMP_TO_EDGE,
-			wrapT: canUseMipmaps ? this._gl.REPEAT : this._gl.CLAMP_TO_EDGE,
+			wrapS: powerOf2 ? this._gl.REPEAT : this._gl.CLAMP_TO_EDGE,
+			wrapT: powerOf2 ? this._gl.REPEAT : this._gl.CLAMP_TO_EDGE,
 			minFilter: canUseMipmaps ? this._gl.LINEAR_MIPMAP_LINEAR : this._gl.LINEAR,
 			magFilter: this._gl.LINEAR,
 			generateMipmaps: canUseMipmaps,
@@ -215,7 +224,9 @@ export class IgeWebGlTextureManager extends IgeBaseClass {
 	 */
 	getSmartTexture(igeTexture: IgeTexture, entity: any, pixelRatio: number, frameId: number): WebGLTexture | null {
 		const script = igeTexture.script;
-		if (!script || typeof script.render !== "function") return null;
+		const scripted = !!script && typeof script.render === "function";
+		// Textures such as bitmap font sheets draw each entity themselves
+		if (!scripted && !igeTexture._rendersPerEntity) return null;
 
 		const gl = this._gl;
 		const scale = Math.max(pixelRatio, 0.25);
@@ -257,7 +268,11 @@ export class IgeWebGlTextureManager extends IgeBaseClass {
 			ctx.clearRect(0, 0, width, height);
 			ctx.setTransform(width / (entity._bounds2d?.x || 1), 0, 0, height / (entity._bounds2d?.y || 1), width / 2, height / 2);
 			ctx.save();
-			script.render(ctx as any, entity, igeTexture);
+			if (scripted) {
+				script!.render(ctx as any, entity, igeTexture);
+			} else {
+				igeTexture.render(ctx as any, entity);
+			}
 			ctx.restore();
 
 			gl.bindTexture(gl.TEXTURE_2D, entry.texture);
@@ -521,14 +536,31 @@ export class IgeWebGlTextureManager extends IgeBaseClass {
 			return null;
 		}
 
-		// Return existing texture if already created
-		if (this._igeTextureMap.has(textureId)) {
+		// Pre-filters redraw the texture's canvas whenever it is drawn (e.g.
+		// animated effects); here that happens once per frame
+		if (igeTexture._preFilters.length && this._preFilteredFrame.get(textureId) !== this.frameId) {
+			this._preFilteredFrame.set(textureId, this.frameId);
+			igeTexture._runPreFilters();
+			igeTexture._imageVersion++;
+		}
+
+		// Return the uploaded texture unless the image changed since
+		// (filters, resizing)
+		const version = igeTexture._imageVersion;
+		if (this._igeTextureMap.has(textureId) && this._igeTextureVersions.get(textureId) === version) {
 			return this._igeTextureMap.get(textureId) || null;
 		}
 
-		// Create new texture
-		return this.createTextureFromIgeTexture(igeTexture);
+		this._igeTextureMap.delete(textureId);
+		const texture = this.createTextureFromIgeTexture(igeTexture);
+		this._igeTextureVersions.set(textureId, version);
+		return texture;
 	}
+
+	/** The renderer's frame number (pre-filters run once per frame). */
+	frameId: number = 0;
+	protected _igeTextureVersions: Map<string, number> = new Map();
+	protected _preFilteredFrame: Map<string, number> = new Map();
 
 	/**
 	 * Delete a texture.
@@ -536,6 +568,8 @@ export class IgeWebGlTextureManager extends IgeBaseClass {
 	deleteTexture(textureId: string): void {
 		this._resourceManager.deleteTexture(textureId);
 		this._igeTextureMap.delete(textureId);
+		this._igeTextureVersions.delete(textureId);
+		this._preFilteredFrame.delete(textureId);
 		this._blobTextureCache.delete(textureId);
 
 		// Clean up smart texture canvas if exists

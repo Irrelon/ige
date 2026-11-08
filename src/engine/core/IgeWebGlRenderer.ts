@@ -1405,6 +1405,7 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 		if (!gl || this._contextLost || !this._stateManager) return false;
 
 		this._frameId++;
+		if (this._textureManager) this._textureManager.frameId = this._frameId;
 		const stats = this._stats;
 		stats.drawCalls = 0;
 		stats.instancedDrawCalls = 0;
@@ -2997,8 +2998,10 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 			const texture = entity._texture!;
 			const material = entity._materialData;
 
-			if (texture._renderMode === IgeTextureRenderMode.smartTexture) {
-				// Smart textures are drawn per entity (they read its data and size)
+			// Smart textures and bitmap font sheets are drawn per entity (they
+			// read its data, text and size)
+			const perEntity = texture._renderMode === IgeTextureRenderMode.smartTexture || texture._rendersPerEntity;
+			if (perEntity) {
 				const webglTexture = this._textureManager.getSmartTexture(texture, entity, this._devicePixelRatio, this._frameId);
 				this._stateManager.invalidateTextureBindings();
 				this._stateManager.bindTexture(webglTexture || this._textureManager.getDefaultWhiteTexture(), 0);
@@ -3024,7 +3027,7 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 			const cell = cells && entity._cell ? cells[entity._cell] : undefined;
 			const texW = (texture as any)._sizeX as number;
 			const texH = (texture as any)._sizeY as number;
-			if (cell && texW > 0 && texH > 0) {
+			if (!perEntity && cell && texW > 0 && texH > 0) {
 				spriteProgram.setUniform4f("u_uvBounds",
 					cell[0] / texW,
 					cell[1] / texH,
