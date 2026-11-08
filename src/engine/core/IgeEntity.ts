@@ -243,7 +243,7 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 
 		if (this._renderMode === IgeEntityRenderMode.flat) {
 			// 2d translation
-			this._localMatrix.multiply(this._localMatrix._newTranslate(this._translate.x, this._translate.y));
+			this._localMatrix.translateBy(this._translate.x, this._translate.y);
 		}
 
 		if (this._renderMode === IgeEntityRenderMode.iso) {
@@ -260,7 +260,7 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 				isoPoint.y += this._parent._bounds3d.z / 1.6;
 			}
 
-			this._localMatrix.multiply(this._localMatrix._newTranslate(isoPoint.x, isoPoint.y));
+			this._localMatrix.translateBy(isoPoint.x, isoPoint.y);
 		}
 
 		this._localMatrix.rotateBy(this._rotate.z);
