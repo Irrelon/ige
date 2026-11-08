@@ -1,5 +1,6 @@
 import { IgeBaseRenderer } from "@/engine/core/IgeBaseRenderer";
-import { IgeTextureRenderMode } from "@/enums";
+import { IgeBehaviourType, IgeTextureRenderMode } from "@/enums";
+import { IgeDummyContext } from "@/engine/core/IgeDummyContext";
 import { markSceneChanged } from "@/engine/utils/sceneChange";
 import type { IgeEngine } from "@/engine/core/IgeEngine";
 import { IgePoint2d } from "@/engine/core/IgePoint2d";
@@ -341,6 +342,8 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 	protected _pendingBlobTextures: Set<string> = new Set();
 	protected _particleBuffers: Map<IgeWebGlInstanceSource, { buffer: WebGLBuffer | null; version: number; lastFrame: number }> = new Map();
 	protected _decalMeshBuffers: Map<IgeDecalSystem3d, { buffer: WebGLBuffer | null; version: number; lastFrame: number }> = new Map();
+	/** Passed to entity preTick behaviours, which expect a Canvas 2D context. */
+	protected _tickContext = new IgeDummyContext();
 	protected _defaultParticleTexture: WebGLTexture | null = null;
 	protected _defaultDecalTexture: WebGLTexture | null = null;
 	protected _lightFrustum: IgeFrustum = new IgeFrustum();
@@ -1571,6 +1574,14 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 
 		const entity = obj as IgeEntity;
 		const geometryData = entity._geometryData;
+
+		// Entity preTick behaviours: the Canvas 2D renderer runs them as it
+		// draws each entity; here they run once per frame, with a 2D context
+		// whose drawing calls do nothing, so logic in them still works
+		const behaviours = (obj as any)._behaviours;
+		if (behaviours && behaviours[IgeBehaviourType.preTick]?.length) {
+			obj._processBehaviours(IgeBehaviourType.preTick, this._tickContext);
+		}
 
 		const parts = entity._modelParts;
 		if ((obj as unknown as IgeParticleSystem3d)._isParticleSystem3d) {
