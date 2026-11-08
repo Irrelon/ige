@@ -221,6 +221,53 @@ export class IgePhysicsBody3d {
 	}
 }
 
+export interface IgePhysicsSensorOptions {
+	shape: IgePhysicsShape;
+	/** Where the shape's centre sits relative to the entity's origin (IGE units). */
+	offset?: Vec3;
+	/** Also report static bodies (walls, floors) that overlap (default false). */
+	includeStatic?: boolean;
+}
+
+/**
+ * A trigger volume: a shape that follows its entity, doesn't collide, and
+ * reports bodies entering and leaving it ("enter" and "exit" events with
+ * the IgePhysicsBody3d) after every simulation step, e.g. pickups, damage
+ * zones, doors and checkpoints. Overlaps are found by querying the world
+ * on the main thread, so events work with Jolt's threaded build too.
+ * @example #A healing zone
+ *     const zone = physics.addSensor(pad, { shape: { type: "sphere", radius: 120 } });
+ *     zone.on("enter", (body) => body.entity.data("healing", true));
+ *     zone.on("exit", (body) => body.entity.data("healing", false));
+ */
+export class IgePhysicsSensor3d extends IgeEventingClass {
+	classId = "IgePhysicsSensor3d";
+	readonly body: IgePhysicsBody3d;
+	readonly includeStatic: boolean;
+	_overlapping: Set<IgePhysicsBody3d> = new Set();
+
+	constructor (body: IgePhysicsBody3d, includeStatic: boolean) {
+		super();
+		this.body = body;
+		this.includeStatic = includeStatic;
+	}
+
+	/** The entity the sensor follows. */
+	get entity (): IgeEntity {
+		return this.body.entity;
+	}
+
+	/** Bodies inside the sensor after the last step. */
+	overlapping (): IgePhysicsBody3d[] {
+		return [...this._overlapping];
+	}
+
+	/** Remove the sensor. */
+	destroy (): void {
+		this.body._physics.removeSensor(this);
+	}
+}
+
 /** v rotated by the unit quaternion (x, y, z, w). */
 export function rotateVector (v: Vec3, x: number, y: number, z: number, w: number): Vec3 {
 	// t = 2 * cross(q.xyz, v); v' = v + w * t + cross(q.xyz, t)
@@ -301,6 +348,10 @@ export class IgePhysics3d extends IgeEventingClass {
 	_threaded: boolean;
 	_list: IgePhysicsBody3d[] = [];
 	_ragdolls: IgeRagdoll3d[] = [];
+	_sensors: IgePhysicsSensor3d[] = [];
+	_sensorCollector?: JoltApi.CollideShapeAllHitCollisionCollector;
+	_sensorSettings?: JoltApi.CollideShapeSettings;
+	_unitScale?: JoltApi.Vec3;
 	_byBodyId: Map<number, IgePhysicsBody3d> = new Map();
 	_accumulator: number = 0;
 	_behaviourId: string;
@@ -517,6 +568,26 @@ export class IgePhysics3d extends IgeEventingClass {
 		ragdoll._free();
 	}
 
+	/**
+	 * Add a trigger volume that follows an entity and reports bodies
+	 * entering and leaving it (see IgePhysicsSensor3d).
+	 */
+	addSensor (entity: IgeEntity, options: IgePhysicsSensorOptions): IgePhysicsSensor3d {
+		const body = this.addBody(entity, { type: "kinematic", shape: options.shape, offset: options.offset });
+		this._bodies.SetIsSensor(body._id, true);
+		const sensor = new IgePhysicsSensor3d(body, !!options.includeStatic);
+		this._sensors.push(sensor);
+		return sensor;
+	}
+
+	/** Remove a sensor (bodies inside it get no "exit" event). */
+	removeSensor (sensor: IgePhysicsSensor3d): void {
+		const index = this._sensors.indexOf(sensor);
+		if (index >= 0) this._sensors.splice(index, 1);
+		this.removeBody(sensor.body);
+		sensor._overlapping.clear();
+	}
+
 	/** The body attached to an entity by addBody(), if any. */
 	bodyOf (entity: IgeEntity): IgePhysicsBody3d | undefined {
 		return (entity as any)._physicsBody3d;
@@ -545,6 +616,7 @@ export class IgePhysics3d extends IgeEventingClass {
 			for (const ragdoll of this._ragdolls) {
 				if (!ragdoll.asleep()) ragdoll.sync();
 			}
+			if (this._sensors.length) this._updateSensors();
 			this.emit("afterStep", steps);
 		}
 	}
@@ -593,9 +665,13 @@ export class IgePhysics3d extends IgeEventingClass {
 	/** Free every body and the world. */
 	destroy (): void {
 		this.stop();
-		for (const ragdoll of [...this._ragdolls]) this.removeRagdoll(ragdoll);
-		for (const body of [...this._list]) this.removeBody(body);
 		const jolt = this._jolt;
+		for (const ragdoll of [...this._ragdolls]) this.removeRagdoll(ragdoll);
+		for (const sensor of [...this._sensors]) this.removeSensor(sensor);
+		if (this._sensorCollector) jolt.destroy(this._sensorCollector);
+		if (this._sensorSettings) jolt.destroy(this._sensorSettings);
+		if (this._unitScale) jolt.destroy(this._unitScale);
+		for (const body of [...this._list]) this.removeBody(body);
 		for (const value of [this._vec, this._rvec, this._quat, this._identity, this._ray, this._raySettings, this._rayCollector,
 			this._bpFilter, this._objectFilter, this._bodyFilter, this._shapeFilter]) {
 			jolt.destroy(value);
@@ -706,6 +782,41 @@ export class IgePhysics3d extends IgeEventingClass {
 			this._rvec.Set((m[12] + o.x) / u, (m[13] + o.y) / u, (m[14] + o.z) / u);
 			this._quat.Set(q.x, q.y, q.z, q.w);
 			this._bodies.MoveKinematic(body._id, this._rvec, this._quat, dt);
+		}
+	}
+
+	/** Find what overlaps each sensor and emit "enter" / "exit" for the changes. */
+	_updateSensors (): void {
+		const jolt = this._jolt;
+		const collector = this._sensorCollector || (this._sensorCollector = new jolt.CollideShapeAllHitCollisionCollector());
+		const settings = this._sensorSettings || (this._sensorSettings = new jolt.CollideShapeSettings());
+		const unitScale = this._unitScale || (this._unitScale = new jolt.Vec3(1, 1, 1));
+		const query = this._system.GetNarrowPhaseQuery();
+		this._rvec.Set(0, 0, 0);
+
+		for (const sensor of this._sensors) {
+			const own = sensor.body;
+			if (!own._enabled) continue;
+			collector.Reset();
+			query.CollideShape(own._body.GetShape(), unitScale, own._body.GetCenterOfMassTransform(), settings, this._rvec,
+				collector, this._bpFilter, this._objectFilter, this._bodyFilter, this._shapeFilter);
+
+			const now = new Set<IgePhysicsBody3d>();
+			const hits = collector.mHits;
+			for (let i = 0, n = hits.size(); i < n; i++) {
+				const other = this._byBodyId.get(hits.at(i).mBodyID2.GetIndexAndSequenceNumber());
+				if (!other || other === own || !other._enabled) continue;
+				if (other.type === "static" && !sensor.includeStatic) continue;
+				now.add(other);
+			}
+
+			for (const other of now) {
+				if (!sensor._overlapping.has(other)) sensor.emit("enter", other);
+			}
+			for (const other of sensor._overlapping) {
+				if (!now.has(other)) sensor.emit("exit", other);
+			}
+			sensor._overlapping = now;
 		}
 	}
 

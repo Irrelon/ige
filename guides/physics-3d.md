@@ -109,6 +109,22 @@ Bones without a part (hands, feet, the neck) ride along with the part above them
 `autoRagdollParts(entity)` picks one per bone that has children, following the spine; hand-picked parts look better
 (a head, sensible radii). The zombie demo's `RAGDOLL_PARTS` is a worked example for CesiumMan.
 
+## Trigger volumes
+
+```typescript
+const zone = physics.addSensor(pad, {
+	shape: { type: "box", halfExtents: { x: 90, y: 60, z: 60 } },
+	offset: { x: 0, y: 60, z: 0 }
+});
+zone.on("enter", (body) => { /* body.entity stepped in */ });
+zone.on("exit", (body) => { /* ...and out */ });
+zone.overlapping(); // bodies inside now
+```
+
+A sensor follows its entity, doesn't collide with anything, and after every step reports the bodies that entered or
+left it (static bodies only with `includeStatic: true`). The overlap query runs on the main thread, so events work
+with the threaded build too. The zombie demo's healing pad is one.
+
 ## Queries
 
 ```typescript
@@ -137,5 +153,5 @@ silicon Mac in Chrome:
 - Character controller: players are dynamic capsules. Jolt's `CharacterVirtual` (stairs, slopes, standing on moving
   platforms) would suit player characters better.
 - Heightfield shapes (lighter than a mesh for grid terrain) and compound shapes.
-- Contact events and trigger volumes, collision layers beyond static/moving, and interpolation between steps (the
-  render shows the latest step).
+- Contact (impact) events between bodies, collision layers beyond static/moving, and interpolation between steps
+  (the render shows the latest step).

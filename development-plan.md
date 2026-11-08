@@ -46,7 +46,7 @@ plan prioritises what the target games need.
 | Camera | Perspective and orthographic projection, up vector and look direction, `lookAtPoint()`, presets (`isometric`, `isometric45`, `topDown`, `sideScroller`, `screen2d`) |
 | 2D | `screen2d` camera (Canvas 2D style: y down, one unit per pixel, zoom by camera scale), smart textures drawn per entity (redrawn every frame, or when dirty with `cache(true)`), flat 2D sprites with full 2D transforms, `IgeFontEntity` text (native fonts, bitmap font sheets, `bindData()`), texture filters (including filters applied later and animated pre-filters), split screen |
 | Debugging | `debugDraw({ bounds, shadowFrustum })` (bounds coloured by LOD level), `debugLine()` |
-| Physics | `IgePhysics3d` on Jolt (loaded on demand, multithreaded when the page is cross-origin isolated): static, dynamic and kinematic boxes, spheres, capsules, triangle meshes (static) and convex hulls on entities, character capsules, impulses, raycasts; `createRagdoll()` from a skinned entity's skeleton; `entity.quaternion()` for full 3D rotations. The zombie demo runs on it with `?physics=1` |
+| Physics | `IgePhysics3d` on Jolt (loaded on demand, multithreaded when the page is cross-origin isolated): static, dynamic and kinematic boxes, spheres, capsules, triangle meshes (static) and convex hulls on entities, trigger volumes (`addSensor()`, enter and exit events), character capsules, impulses, raycasts; `createRagdoll()` from a skinned entity's skeleton; `entity.quaternion()` for full 3D rotations. The zombie demo runs on it with `?physics=1` |
 | Input and picking | Entity pointer events in every viewport (`pointerHitTest()`: mesh boxes, skinned joint boxes, sprite quads; exact triangles with `pointerPicking("triangles")`), `raycast()` for the nearest mesh hit under a screen point, `raycastEntities()` for game rays (line of sight, projectiles); skinned characters are tested in their current pose |
 
 ### Measured
@@ -111,7 +111,7 @@ On the development machine (Apple silicon, Chrome):
 ### Engine work remaining
 
 - Physics, after the Jolt spike: Jolt's `CharacterVirtual` for player characters (stairs, slopes, platforms),
-  heightfield and compound shapes, contact events and triggers, more collision layers, and interpolation between
+  heightfield and compound shapes, contact (impact) events, more collision layers, and interpolation between
   steps.
 - Entity `preTick`/`postTick` behaviours receive a Canvas 2D context and don't run under the WebGL renderer; logic
   belongs in `preUpdate`/`postUpdate`. Decide whether WebGL should run them (without a context) if a game needs it.

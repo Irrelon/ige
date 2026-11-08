@@ -82,6 +82,7 @@ const CAMERA_ORTHO_SIZE = 700;
 const PLAYER_SPEED = 260;
 const PLAYER_RADIUS = 28;
 const PLAYER_MAX_HEALTH = 100;
+const HEAL_RATE = 15; // health per second on the healing pad
 const PLAYER_RESPAWN_TIME = 3;
 const ATTACK_COOLDOWN = 0.35;
 const ATTACK_RANGE = 150;
@@ -136,6 +137,8 @@ interface PlayerState {
 	facingZ: number;
 	/** Physics capsule (with ?physics=1). */
 	body?: IgePhysicsBody3d;
+	/** Standing on the healing pad (a physics sensor). */
+	healing?: boolean;
 }
 
 interface ZombieState {
@@ -251,6 +254,7 @@ export class Client extends IgeBaseClass implements IgeCanInit {
 					});
 				}
 				this.createCrates();
+				this.createHealingPad();
 			}
 
 			this.updateStatus("Loading character model...");
@@ -337,6 +341,32 @@ export class Client extends IgeBaseClass implements IgeCanInit {
 				friction: 0.6
 			}));
 		}
+	}
+
+	/**
+	 * A glowing pad by the reception desk that heals players standing on
+	 * it: a physics sensor reports players stepping on and off.
+	 */
+	createHealingPad () {
+		if (!this.scene || !this.physics) return;
+		const pad = new IgeEntity().id("healingPad").translateTo(0, 1, -380).mount(this.scene);
+		pad._geometryData = createBoxGeometry(180, 2, 120, "healingPad");
+		pad.material({ color: { r: 0.1, g: 0.35, b: 0.15, a: 1 }, emissiveColor: { r: 0.2, g: 1, b: 0.4 }, emissiveIntensity: 0.6 });
+		pad._noShadowCast = true;
+
+		const zone = this.physics.addSensor(pad, {
+			shape: { type: "box", halfExtents: { x: 90, y: 60, z: 60 } },
+			offset: { x: 0, y: 60, z: 0 }
+		});
+		const playerOf = (body: IgePhysicsBody3d) => this.players.find((p) => p.body === body);
+		zone.on("enter", (body: IgePhysicsBody3d) => {
+			const player = playerOf(body);
+			if (player) player.healing = true;
+		});
+		zone.on("exit", (body: IgePhysicsBody3d) => {
+			const player = playerOf(body);
+			if (player) player.healing = false;
+		});
 	}
 
 	lodFromUrl (): boolean {
@@ -628,6 +658,10 @@ export class Client extends IgeBaseClass implements IgeCanInit {
 				this.shoveZombiesAway(start.x, start.z, 320);
 			}
 			return;
+		}
+
+		if (player.healing && player.health < PLAYER_MAX_HEALTH) {
+			player.health = Math.min(PLAYER_MAX_HEALTH, player.health + HEAL_RATE * dt);
 		}
 
 		const input = this.readPlayerInput(player.index);
