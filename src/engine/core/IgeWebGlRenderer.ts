@@ -1,4 +1,5 @@
 import { IgeBaseRenderer } from "@/engine/core/IgeBaseRenderer";
+import { markSceneChanged } from "@/engine/utils/sceneChange";
 import type { IgeEngine } from "@/engine/core/IgeEngine";
 import { IgePoint2d } from "@/engine/core/IgePoint2d";
 import type { IgeViewport } from "@/engine/core/IgeViewport";
@@ -519,6 +520,7 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 	 */
 	_resizeEvent = (event?: Event): void => {
 		if (!this._canvasElement || !this._autoSize) return;
+		markSceneChanged();
 
 		// Get the window dimensions
 		let newWidth = window.innerWidth;
@@ -1209,6 +1211,7 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 			if (!texture) {
 				this.log(`Failed to create model texture "${textureId}"`, "warning");
 			}
+			markSceneChanged();
 		});
 	}
 

@@ -1,4 +1,5 @@
 import { IgeAsset } from "@/engine/core/IgeAsset";
+import { markSceneChanged } from "@/engine/utils/sceneChange";
 import { newCanvas } from "@/engine/core/IgeCanvas";
 import { IgeDependencies } from "@/engine/core/IgeDependencies";
 import type { IgeEntity } from "@/engine/core/IgeEntity";
@@ -265,6 +266,7 @@ export class IgeTexture extends IgeAsset {
 		}
 
 		this._loaded = true;
+		markSceneChanged();
 		this.emit("loaded");
 	}
 

@@ -1,4 +1,5 @@
 import { ige } from "@/engine/instance";
+import { markSceneChanged } from "@/engine/utils/sceneChange";
 import { IgeBounds } from "@/engine/core/IgeBounds";
 import { IgeDummyCanvas } from "@/engine/core/IgeDummyCanvas";
 import { IgeEventingClass } from "@/engine/core/IgeEventingClass";
@@ -895,6 +896,7 @@ export class IgeObject extends IgeEventingClass implements IgeCanRegisterById, I
 		if (!this._parent) {
 			return this;
 		}
+		markSceneChanged();
 
 		const childArr = this._parent._children,
 			index = childArr.indexOf(this),

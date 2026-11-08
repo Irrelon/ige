@@ -1,4 +1,5 @@
 import { IgeEntity } from "@/engine/core/IgeEntity";
+import { markSceneChanged } from "@/engine/utils/sceneChange";
 import type { IgeTexture } from "@/engine/core/IgeTexture";
 
 export interface IgeParticleVec3 {
@@ -187,6 +188,7 @@ export class IgeParticleSystem3d extends IgeEntity {
 	clear (): this {
 		this._liveCount = 0;
 		this._renderVersion++;
+		markSceneChanged();
 		return this;
 	}
 
@@ -266,6 +268,7 @@ export class IgeParticleSystem3d extends IgeEntity {
 
 	_simulate (dt: number) {
 		const o = this._options;
+		const wasLive = this._liveCount > 0;
 
 		// Continuous emission
 		if (this._emitting && o.rate > 0 && dt > 0) {
@@ -313,7 +316,11 @@ export class IgeParticleSystem3d extends IgeEntity {
 			i++;
 		}
 
-		this._buildRenderData();
+		// An idle system has nothing new to draw (and shouldn't keep
+		// render-on-demand drawing frames)
+		if (this._liveCount > 0 || wasLive) {
+			this._buildRenderData();
+		}
 	}
 
 	_buildRenderData () {
@@ -365,6 +372,7 @@ export class IgeParticleSystem3d extends IgeEntity {
 		}
 
 		this._renderVersion++;
+		markSceneChanged();
 	}
 }
 

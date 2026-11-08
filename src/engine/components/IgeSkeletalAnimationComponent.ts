@@ -1,4 +1,5 @@
 import { IgeComponent } from "@/engine/core/IgeComponent";
+import { markSceneChanged } from "@/engine/utils/sceneChange";
 import type { IgeEntity } from "@/engine/core/IgeEntity";
 import { ige } from "@/engine/instance";
 import { IgeBehaviourType } from "@/enums";
@@ -469,6 +470,9 @@ export class IgeSkeletalAnimationComponent extends IgeComponent<IgeEntity> {
 		if (!samplePose || totalWeight <= 0 || states.length === 0) {
 			return;
 		}
+
+		// A new pose is about to be applied: render on demand needs a frame
+		markSceneChanged();
 
 		// Fast path: one clip at full weight -> shared pose cache
 		if (states.length === 1 && states[0].weight >= 1 && this._poseCache && this._applyCachedPose(states[0])) {

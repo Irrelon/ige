@@ -1,4 +1,5 @@
 import type { IgeBaseClass } from "@/engine/core/IgeBaseClass";
+import { igeSceneChange } from "@/engine/utils/sceneChange";
 import type { IgeBaseRenderer } from "@/engine/core/IgeBaseRenderer";
 import type { IgeCamera } from "@/engine/core/IgeCamera";
 import type { IgeComponent } from "@/engine/core/IgeComponent";
@@ -30,6 +31,10 @@ export class IgeEngine extends IgeEntity implements IgeIsReadyPromise {
 	_pause: boolean = false;
 	_useManualRender: boolean = false;
 	_manualRenderQueued: boolean = false;
+	_renderOnDemand: boolean = false;
+	_renderedSceneChange: number = -1;
+	_viewState: number[] = [];
+	_viewStateScratch: number[] = [];
 	_useManualTicks: boolean = false;
 	_manualFrameAlternator: boolean = false;
 	_pixelRatioScaling: boolean;
@@ -549,6 +554,74 @@ export class IgeEngine extends IgeEntity implements IgeIsReadyPromise {
 		}
 
 		return this._useManualRender;
+	}
+
+	/**
+	 * Gets / sets render-on-demand. Like useManualRender(true), frames are
+	 * only drawn when something changed, so an idle scene costs no GPU
+	 * time, but the engine notices most changes itself: entity transforms
+	 * (including tweens and velocity), showing, hiding and unmounting
+	 * entities, camera and viewport changes, playing animations, live
+	 * particles, fading decals, finished texture loads and canvas resizes.
+	 * Call manualRender() after changes it can't see, such as assigning a
+	 * new _materialData or texture.
+	 * @example #Draw only when something changes
+	 *     ige.engine.renderOnDemand(true);
+	 *     // later, after recolouring a tile:
+	 *     tile._materialData = highlight;
+	 *     ige.engine.manualRender();
+	 */
+	renderOnDemand (): boolean;
+	renderOnDemand (val: boolean): this;
+	renderOnDemand (val?: boolean) {
+		if (val === undefined) {
+			return this._renderOnDemand;
+		}
+		this._renderOnDemand = val;
+		this._renderedSceneChange = -1;
+		return this;
+	}
+
+	/**
+	 * Whether render-on-demand needs a new frame: something reported a
+	 * change since the last frame, or a viewport or its camera moved.
+	 */
+	_sceneChangedSinceRender (): boolean {
+		if (igeSceneChange.count !== this._renderedSceneChange) return true;
+
+		const state = this._captureViewState(this._viewStateScratch);
+		const previous = this._viewState;
+		if (state.length !== previous.length) return true;
+		for (let i = 0; i < state.length; i++) {
+			if (state[i] !== previous[i]) return true;
+		}
+		return false;
+	}
+
+	/**
+	 * Every value that positions a view: viewport placement and size and
+	 * the camera's transform, look-at target and projection.
+	 */
+	_captureViewState (out: number[]): number[] {
+		out.length = 0;
+		const children = this._children;
+		for (let i = 0; i < children.length; i++) {
+			const viewport = children[i] as any;
+			const camera = viewport?.camera;
+			if (!camera) continue;
+			out.push(
+				viewport._translate.x, viewport._translate.y, viewport._bounds2d.x, viewport._bounds2d.y,
+				camera._translate.x, camera._translate.y, camera._translate.z,
+				camera._rotate.x, camera._rotate.y, camera._rotate.z,
+				camera._scale.x, camera._scale.y, camera._scale.z,
+				// (no NaN placeholders: NaN never equals itself)
+				camera._lookAt ? 1 : 0,
+				camera._lookAt ? camera._lookAt.x : 0, camera._lookAt ? camera._lookAt.y : 0, camera._lookAt ? camera._lookAt.z : 0,
+				camera._projectionType === "orthographic" ? 1 : 0,
+				camera._fov ?? 0, camera._orthoSize ?? 0, camera._near ?? 0, camera._far ?? 0
+			);
+		}
+		return out;
 	}
 
 	/**
@@ -1414,15 +1487,20 @@ export class IgeEngine extends IgeEntity implements IgeIsReadyPromise {
 
 				// Check if we should only render after manualRender() has been called
 				// or if we just render each frame automatically
-				if (this._useManualRender) {
-					// We are only rendering when manualRender() is called, check if
-					// a manual render has been queued by calling manualRender()
-					if (this._manualRenderQueued) {
-						// A manual render was queued, so we can render a frame now
+				if (this._useManualRender || this._renderOnDemand) {
+					// We are only rendering when manualRender() is called (or,
+					// with render-on-demand, when something visible changed)
+					if (this._manualRenderQueued || (this._renderOnDemand && this._sceneChangedSinceRender())) {
 						this.statStart("engineStep", "renderSceneGraph");
 						this.renderSceneGraph();
 						this._manualRenderQueued = false;
 						this.statEnd("engineStep", "renderSceneGraph");
+
+						// Changes made while rendering (e.g. transforms refreshed by
+						// the renderer) are part of this frame
+						this._renderedSceneChange = igeSceneChange.count;
+						const settled = this._captureViewState(this._viewState);
+						this._viewState = settled;
 					}
 				} else {
 					// We are not in manual render mode so render the scenegraph

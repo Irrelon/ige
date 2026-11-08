@@ -1,4 +1,5 @@
 import type { IgeInputComponent } from "@/engine/components/IgeInputComponent";
+import { markSceneChanged } from "@/engine/utils/sceneChange";
 import { IgeBounds } from "@/engine/core/IgeBounds";
 import { IgeDummyCanvas } from "@/engine/core/IgeDummyCanvas";
 import { IgeMatrix2d } from "@/engine/core/IgeMatrix2d";
@@ -278,6 +279,7 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 			this._oldWorldMatrix.copy(this._worldMatrix);
 			this._transformChanged = true;
 			this._transformVersion++;
+			if (!this._hidden) markSceneChanged();
 			this._aabbDirty = true;
 			this._bounds3dPolygonDirty = true;
 
@@ -334,6 +336,7 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 			if (!this._worldMatrix4!.compare(this._oldWorldMatrix4!)) {
 				this._oldWorldMatrix4!.copy(this._worldMatrix4!);
 				this._transformVersion++;
+				if (!this._hidden) markSceneChanged();
 			}
 		}
 
@@ -365,6 +368,7 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 	 * method chaining.
 	 */
 	show () {
+		if (this._hidden) markSceneChanged();
 		this._hidden = false;
 		return this;
 	}
@@ -377,6 +381,7 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 	 * method chaining.
 	 */
 	hide () {
+		if (!this._hidden) markSceneChanged();
 		this._hidden = true;
 		return this;
 	}

@@ -1,4 +1,5 @@
 import { IgeEntity } from "@/engine/core/IgeEntity";
+import { markSceneChanged } from "@/engine/utils/sceneChange";
 import type { IgeTexture } from "@/engine/core/IgeTexture";
 
 /** Floats per decal in renderData(): x, y, z, size, r, g, b, a, rotation, cell, 0, 0. */
@@ -268,5 +269,6 @@ export class IgeDecalSystem3d extends IgeEntity {
 		}
 
 		this._renderVersion++;
+		markSceneChanged();
 	}
 }
