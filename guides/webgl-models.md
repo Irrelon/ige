@@ -155,6 +155,10 @@ const hand = hero.bonePosition("RightHand"); // world position, e.g. to spawn an
 | `renderer.debugDraw({ bounds, shadowFrustum })`, `debugLine()` | See culling, LOD levels and shadow coverage |
 | `renderer.stats()` | Draw calls, instances, triangles, LOD use and shadow cache rebuilds per frame |
 
+## Physics
+
+Characters, debris and ragdolls with Jolt physics: see [`physics-3d.md`](physics-3d.md).
+
 ## Freeing resources
 
 Geometry and textures stay on the GPU until released. Content that is replaced at run time (rebuilt terrain chunks,

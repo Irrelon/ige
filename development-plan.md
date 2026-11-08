@@ -12,7 +12,8 @@ The current driver for renderer work is a **split-screen zombie ARPG** (up to fo
 and performance benchmark. `src/examples/hex-realms` (a large hex-map strategy prototype, in progress) is a second
 test bed; its README lists the engine gaps found while building it (see "Engine gaps from Hex Realms" below).
 
-Guides: [`guides/webgl-models.md`](guides/webgl-models.md) (3D models and characters) and
+Guides: [`guides/webgl-models.md`](guides/webgl-models.md) (3D models and characters),
+[`guides/physics-3d.md`](guides/physics-3d.md) (Jolt physics: bodies, characters, ragdolls) and
 [`guides/2d-on-webgl.md`](guides/2d-on-webgl.md) (moving a 2D project to the WebGL renderer).
 
 ## Why a custom WebGL renderer
@@ -45,6 +46,7 @@ plan prioritises what the target games need.
 | Camera | Perspective and orthographic projection, up vector and look direction, `lookAtPoint()`, presets (`isometric`, `isometric45`, `topDown`, `sideScroller`, `screen2d`) |
 | 2D | `screen2d` camera (Canvas 2D style: y down, one unit per pixel, zoom by camera scale), smart textures drawn per entity (redrawn every frame, or when dirty with `cache(true)`), flat 2D sprites with full 2D transforms, `IgeFontEntity` text (native fonts, bitmap font sheets, `bindData()`), texture filters (including filters applied later and animated pre-filters), split screen |
 | Debugging | `debugDraw({ bounds, shadowFrustum })` (bounds coloured by LOD level), `debugLine()` |
+| Physics | `IgePhysics3d` on Jolt (loaded on demand, multithreaded when the page is cross-origin isolated): static, dynamic and kinematic boxes, spheres and capsules on entities, character capsules, impulses, raycasts; `createRagdoll()` from a skinned entity's skeleton; `entity.quaternion()` for full 3D rotations. The zombie demo runs on it with `?physics=1` |
 | Input and picking | Entity pointer events in every viewport (`pointerHitTest()`: mesh boxes, skinned joint boxes, sprite quads; exact triangles with `pointerPicking("triangles")`), `raycast()` for the nearest mesh hit under a screen point, `raycastEntities()` for game rays (line of sight, projectiles); skinned characters are tested in their current pose |
 
 ### Measured
@@ -80,6 +82,9 @@ On the development machine (Apple silicon, Chrome):
   their parent's origin vanished, caches were blurry on high-DPI screens, and bitmap fonts were cut in half.
 - Projected decals on the zombie demo's walls, pillars and furniture (WebGL 2 and 1), including wrapping a pillar's
   corner, and floor decals that stay off the pillar's sides.
+- Jolt physics in the zombie demo, single-threaded and threaded (webpack build, cross-origin isolated page):
+  characters, crates and ragdolls; after 15 seconds of play no ragdoll had fallen through the floor or flown off.
+  Physics raycasts (points, normals, misses) and kinematic bodies checked from the console.
 
 ### Not verified
 
@@ -94,8 +99,6 @@ On the development machine (Apple silicon, Chrome):
   meshes get `lod` levels, and weapons attach with `attachToBone()`. When the assets arrive, check that the rig and
   clips load and play, and whether an A-pose model needs clips authored for a T-pose rig (posture differences aren't
   corrected).
-- **Physics.** Choose an engine for a spike in the zombie demo (see "Physics engine options" below, now with
-  benchmark results).
 - **Gamepads.** Test with real controllers.
 
 ### Decided
@@ -103,10 +106,13 @@ On the development machine (Apple silicon, Chrome):
 - **Isometric 2D games move to a 3D layout** (ground on x/z, `isometric` camera preset) to run on WebGL. The engine
   won't map iso-mode x/y/z automatically; iso games that stay on x/y keep `IgeCanvas2dRenderer`.
 - **Materials** have a public API: `entity.material({...})` (`_materialData` still works).
+- **Physics runs on Jolt**, behind IGE's own `IgePhysics3d` interface (benchmark and spike below).
 
 ### Engine work remaining
 
-- Physics, once an engine is chosen.
+- Physics, after the Jolt spike: Jolt's `CharacterVirtual` for player characters (stairs, slopes, platforms), mesh
+  and heightfield shapes for terrain (Hex Realms), contact events and triggers, more collision layers, and
+  interpolation between steps.
 - Entity `preTick`/`postTick` behaviours receive a Canvas 2D context and don't run under the WebGL renderer; logic
   belongs in `preUpdate`/`postUpdate`. Decide whether WebGL should run them (without a context) if a game needs it.
 - A spatial index (BVH) for raycasts and decal projection against very large meshes, if a game needs it; both scan
@@ -128,6 +134,10 @@ also used in Horizon Forbidden West and Death Stranding 2.
 | PhysX (`physx-js-webidl`) | BSD-3 | Emscripten WebIDL, one maintainer | 2.9.1 (Oct 2026) | No | Largest wasm (about 1.1 MB brotli); fastest single-threaded in one benchmark |
 | Havok (`@babylonjs/havok`) | MIT binary, closed source | Emscripten, C-style API | 1.3.14 (Jul 2026) | No | Ruled out: not open source |
 | ammo.js (Bullet), cannon-es | zlib, MIT | | No release since 2022 | No | Ruled out: unmaintained |
+
+**Chosen: Jolt** (2026-11-08). The spike in the zombie demo (`?physics=1`, 120 zombies, about 25 ragdolls, 15
+crates, around 450 bodies, four views) costs a 3.1 ms step single-threaded and 0.84 ms threaded; frames stay at the
+no-physics 16-17 ms when threaded. See `guides/physics-3d.md`.
 
 Newer options to revisit later: Box3D (from Box2D's author, v0.1, no official JS binding) and crashcat (pure TS,
 modelled on Jolt, pre-1.0).

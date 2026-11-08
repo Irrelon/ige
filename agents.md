@@ -89,6 +89,7 @@ The engine has extensive 3D infrastructure:
     -   **Model Parts** (`IgeModelParts`) - turns a loaded GLTF model into render parts (all primitives, node transforms, materials, textures) for `IgeEntity.model()`
     -   **3D Particles** (`IgeParticleSystem3d`) - typed-array particle effects drawn as one instanced billboard batch
     -   **Decals** (`IgeDecalSystem3d`, `IgeDecalProjector`) - blood/scorch marks: instanced flat quads on floors (`add()`), or projected onto walls, steps and uneven terrain by clipping the target meshes' triangles (`project()`); multiply-blended so they take the surface's lighting
+    -   **3D Physics** (`src/engine/physics/IgePhysics3d`, `IgeRagdoll3d`) - Jolt Physics (WASM, optional peer dependency `jolt-physics`, loaded on demand, threaded when cross-origin isolated): rigid bodies on entities in IGE units (simulated in metres), character capsules, raycasts, ragdolls driving a skeleton. See `guides/physics-3d.md`
     -   **Raycasting** (`IgeRaycast`) - exact ray/triangle tests against entities' meshes, skinned characters in their current pose (`renderer.raycast()`, `raycastEntities()`, `pointerPicking("triangles")`)
     -   **Animation Retargeting** (`IgeAnimationRetarget`) - plays clips from separate animation files on a model's skeleton, matched by bone name
     -   **Mesh Simplifier** (`IgeMeshSimplifier`) - quadric edge-collapse simplification that keeps UVs, normals and skin weights; generates level-of-detail meshes
@@ -98,7 +99,8 @@ The engine has extensive 3D infrastructure:
 -   Resources and quality: `releaseGeometry()`, `releaseTexture()` (dynamic content must free what it replaces), `backFaceCulling()` (opt-in; meshes must be wound CCW, `doubleSided` materials are exempt), `shadowCaching()` (static shadow casters cached), `ige.engine.renderOnDemand()` (frames only when something visible changed; `manualRender()` after material/texture changes). Geometry `colors` are used as vertex colours.
 -   HUD and debugging: `IgeViewportOverlay` (DOM elements over entities, clipped per viewport), `debugDraw({ bounds, shadowFrustum })`, `debugLine()`, `preferredWebGlVersion(1)` to test the WebGL 1 path.
 -   2D: camera preset `screen2d` (y down, one unit per pixel, zoom by camera scale) draws sprites flat with their 2D transforms; smart textures and bitmap font sheets render per entity; texture filters re-upload when they change. Isometric games move to a 3D layout to use WebGL. Entity `tick()` isn't called by the WebGL renderer (use update behaviours). See `guides/2d-on-webgl.md`.
--   Guides: `guides/webgl-models.md`, `guides/2d-on-webgl.md`.
+-   Guides: `guides/webgl-models.md`, `guides/physics-3d.md`, `guides/2d-on-webgl.md`.
+-   Entities can carry a quaternion rotation (`entity.quaternion()`) that replaces the Euler `rotate()` in 3D transforms.
 -   Used in multiple working examples: coordTest2d, coordTest3d, coordTestIso, lightingShadows, skeletalAnimation, webGlRenderer, zombie-game (4-player split-screen zombie ARPG prototype), webGl2d (Canvas 2D style scene on WebGL, `?split=1` for two views), hex-realms (large hex-map strategy prototype, in progress)
 
 #### Working with models
