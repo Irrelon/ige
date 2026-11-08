@@ -191,7 +191,7 @@ function sendGoods (sim: Sim, from: number, to: number, goods: Goods | undefined
 	const both = new Uint8Array(sim.map.count);
 	for (let t = 0; t < both.length; t++) both[t] = Math.max(mine[t], theirs[t]);
 	const s = search(sim);
-	const order = [...s.run(sim, both, dest.tile, 200)];
+	const order = [...s.run(sim, both, dest.tile)];
 	const storeAt = (t: number): Goods | null => {
 		const city = sim.cityOn(t);
 		if (city && city.owner === from) return city.store;

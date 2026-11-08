@@ -421,8 +421,8 @@ export const STARTING_STARS = 6;
 
 /** Road tiles a carrier moves per turn. */
 export const CARRIER_SPEED = 4;
-/** Sea lanes between a civ's ports are at most this many water tiles long. */
-export const SEA_LANE_LENGTH = 40;
+/** Ships are quicker than carts: a sea tile uses this much of a carrier's moves. */
+export const SEA_STEP = 0.25;
 
 /** Cargo that can enter one road tile per turn. */
 export const ROAD_CAPACITY = 2;

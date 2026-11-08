@@ -25,8 +25,10 @@ export interface RoomInfo {
 	online: boolean[];
 	/** The civ that hosts the game (sets the turn timer). */
 	host: number;
-	/** Seconds a person has for a turn before the AI plays it (0: no limit). */
+	/** The game's default seconds for a person's turn before the AI plays it (0: no limit). */
 	turnSeconds: number;
+	/** Per civ: its own timer, overriding the default (null: uses the default). */
+	seatSeconds: (number | null)[];
 	/** When the current turn's time runs out (ms since 1970), or 0. */
 	deadline: number;
 }
@@ -36,7 +38,8 @@ export type ClientMessage =
 	| { t: "join"; code: string; name: string; token?: string }
 	| { t: "command"; command: Command }
 	| { t: "chat"; text: string }
-	| { t: "timer"; seconds: number }
+	/** Set the game's default turn timer (host), or one civ's own (the host, or that civ's player); -1 clears a civ's own. */
+	| { t: "timer"; seconds: number; player?: number }
 	| { t: "leave" };
 
 export type ServerMessage =

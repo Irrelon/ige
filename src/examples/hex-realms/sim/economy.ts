@@ -5,7 +5,7 @@ import { wonderCompleted, wonderProblem } from "./wonders";
 import { fail, ok } from "./result";
 import {
 	BUFFER_SIZE, type BuildingId, BUILDINGS, BUY_PRICE, CARRIER_SPEED, Deposit, DEPOSIT_GOOD, type Good, GOOD_INFO, type Goods,
-	isFood, ROAD_CAPACITY, ROAD_COST, RUSH_PRICE, TECHS
+	isFood, ROAD_CAPACITY, ROAD_COST, RUSH_PRICE, SEA_STEP, TECHS
 } from "./rules";
 import type { Sim } from "./sim";
 import { availableGoods, networkNodes, search, takeGoods } from "./network";
@@ -539,21 +539,22 @@ export function economyPhase (sim: Sim, player: number, lines: string[]): void {
 			if (!net[next] || blocked(next)) {
 				// The road was cut or blocked: look for another way
 				const dest = cargo.path[cargo.path.length - 1];
-				s.run(sim, net, cargo.path[cargo.at], 80, blocked);
+				s.run(sim, net, cargo.path[cargo.at], Infinity, blocked);
 				const detour = s.pathTo(dest);
 				if (detour.length < 2) break;
 				cargo.path = detour;
 				cargo.at = 0;
 				continue;
 			}
-			// Roads take only so many loads a turn; the sea doesn't jam
-			if (!sim.map.isWater(next)) {
+			// Roads take only so many loads a turn; the sea doesn't jam, and ships are quick
+			const afloat = sim.map.isWater(next);
+			if (!afloat) {
 				const used = usage.get(next) ?? 0;
 				if (used >= capacity) break;
 				usage.set(next, used + 1);
 			}
 			cargo.at++;
-			steps--;
+			steps -= afloat ? SEA_STEP : 1;
 			moved.push(next);
 		}
 		const done = cargo.at >= cargo.path.length - 1;

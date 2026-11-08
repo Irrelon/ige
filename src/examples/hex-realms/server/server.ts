@@ -50,6 +50,8 @@ interface Room {
 	/** The civ whose player hosts (sets the turn timer). */
 	host: number;
 	turnSeconds: number;
+	/** Civs with their own turn timer (overrides turnSeconds). */
+	seatSeconds: Record<number, number>;
 	deadline: number;
 	turnTimer?: ReturnType<typeof setTimeout>;
 	/** "turn:player" the running clock is for. */
@@ -69,6 +71,7 @@ interface SavedRoom {
 	snapshot: string;
 	chat?: ChatLine[];
 	turnSeconds?: number;
+	seatSeconds?: Record<number, number>;
 }
 
 /** Chat lines kept per game. */
@@ -114,8 +117,8 @@ function roomFile (code: string): string {
 	return path.join(DATA_DIR, `${code.replace(/[^A-Z]/g, "")}.json`);
 }
 
-function openRoom (code: string, sim: Sim, seq: number, seats: Seat[], chat: ChatLine[] = [], turnSeconds = 0): Room {
-	const room: Room = { code, sim, seq, seats, clients: new Set(), chat, host: 0, turnSeconds, deadline: 0 };
+function openRoom (code: string, sim: Sim, seq: number, seats: Seat[], chat: ChatLine[] = [], turnSeconds = 0, seatSeconds: Record<number, number> = {}): Room {
+	const room: Room = { code, sim, seq, seats, clients: new Set(), chat, host: 0, turnSeconds, seatSeconds, deadline: 0 };
 	// Every successful command, human or AI, is broadcast in order
 	sim.onApplied = (player, command) => {
 		room.seq++;
@@ -134,7 +137,7 @@ function loadRoom (code: string): Room | undefined {
 	try {
 		const saved = JSON.parse(fs.readFileSync(file, "utf8")) as SavedRoom;
 		log(`Loaded game ${code} (turn ${JSON.parse(saved.snapshot).state?.turn ?? "?"})`);
-		const room = openRoom(saved.code, Sim.load(saved.snapshot), saved.seq, saved.seats, saved.chat ?? [], saved.turnSeconds ?? 0);
+		const room = openRoom(saved.code, Sim.load(saved.snapshot), saved.seq, saved.seats, saved.chat ?? [], saved.turnSeconds ?? 0, saved.seatSeconds ?? {});
 		armTimer(room);
 		return room;
 	} catch (error) {
@@ -146,7 +149,7 @@ function loadRoom (code: string): Room | undefined {
 function saveRoom (room: Room): void {
 	clearTimeout(room.saveTimer);
 	room.saveTimer = undefined;
-	const saved: SavedRoom = { code: room.code, seq: room.seq, seats: room.seats, snapshot: room.sim.serialize(), chat: room.chat, turnSeconds: room.turnSeconds };
+	const saved: SavedRoom = { code: room.code, seq: room.seq, seats: room.seats, snapshot: room.sim.serialize(), chat: room.chat, turnSeconds: room.turnSeconds, seatSeconds: room.seatSeconds };
 	fs.mkdirSync(DATA_DIR, { recursive: true });
 	const file = roomFile(room.code);
 	fs.writeFileSync(`${file}.tmp`, JSON.stringify(saved));
@@ -175,7 +178,8 @@ function roomInfo (room: Room): RoomInfo {
 	const sim = room.sim;
 	const online = sim.state.players.map((p) => [...room.clients].some((c) => c.player === p.index && c.conn.connected));
 	const people = sim.state.players.map((p) => (p.human ? room.seats.find((s) => s.player === p.index && !s.left)?.name ?? "" : ""));
-	return { names: people, online, host: room.host, turnSeconds: room.turnSeconds, deadline: room.deadline };
+	const seatSeconds = sim.state.players.map((p) => room.seatSeconds[p.index] ?? null);
+	return { names: people, online, host: room.host, turnSeconds: room.turnSeconds, seatSeconds, deadline: room.deadline };
 }
 
 function broadcastRoom (room: Room): void {
@@ -191,14 +195,20 @@ function say (room: Room, from: number, name: string, text: string): void {
 	scheduleSave(room);
 }
 
+/** Seconds a civ's player has for a turn: its own timer, or the game's default. */
+function secondsFor (room: Room, player: number): number {
+	return room.seatSeconds[player] ?? room.turnSeconds;
+}
+
 /**
- * Start the clock for a person's turn when the host has set a turn timer (a
- * clock already running for this turn keeps going unless `restart`).
+ * Start the clock for a person's turn when their timer is set (a clock
+ * already running for this turn keeps going unless `restart`).
  */
 function armTimer (room: Room, restart = false): void {
 	const sim = room.sim;
 	const key = `${sim.state.turn}:${sim.current}`;
-	const wanted = room.turnSeconds > 0 && !sim.state.winner && sim.isHuman(sim.current);
+	const seconds = secondsFor(room, sim.current);
+	const wanted = seconds > 0 && !sim.state.winner && sim.isHuman(sim.current);
 	if (wanted && room.turnTimer && room.timerFor === key && !restart) {
 		broadcastRoom(room);
 		return;
@@ -209,9 +219,9 @@ function armTimer (room: Room, restart = false): void {
 	room.deadline = 0;
 	if (wanted) {
 		const player = sim.current, turn = sim.state.turn;
-		room.deadline = Date.now() + room.turnSeconds * 1000;
+		room.deadline = Date.now() + seconds * 1000;
 		room.timerFor = key;
-		room.turnTimer = setTimeout(() => timeUp(room, player, turn), room.turnSeconds * 1000);
+		room.turnTimer = setTimeout(() => timeUp(room, player, turn), seconds * 1000);
 	}
 	broadcastRoom(room);
 }
@@ -361,13 +371,30 @@ function onMessage (client: Client, msg: ClientMessage): void {
 		case "timer": {
 			const room = client.room;
 			if (!room) return send(client, { t: "error", error: "Join a game first" });
-			if (client.player !== room.host) return send(client, { t: "error", error: "Only the host sets the turn timer" });
 			const seconds = Number(msg.seconds);
-			if (!TURN_TIMERS.includes(seconds)) return send(client, { t: "error", error: "Unknown timer" });
-			room.turnSeconds = seconds;
-			const seat = room.seats.find((s) => s.player === client.player && !s.left);
-			armTimer(room, true);
-			say(room, -1, "", seconds ? `${seat?.name ?? "The host"} set a turn timer of ${seconds / 60} minute${seconds === 60 ? "" : "s"}: when it runs out, the AI plays the turn.` : `${seat?.name ?? "The host"} turned the turn timer off.`);
+			const civ = msg.player === undefined ? undefined : Number(msg.player);
+			const who = room.seats.find((s) => s.player === client.player && !s.left)?.name ?? "The host";
+			const minutes = (s: number) => `${s / 60} minute${s === 60 ? "" : "s"}`;
+			if (civ === undefined) {
+				// The game's default, for every civ without its own
+				if (client.player !== room.host) return send(client, { t: "error", error: "Only the host sets the game's turn timer" });
+				if (!TURN_TIMERS.includes(seconds)) return send(client, { t: "error", error: "Unknown timer" });
+				room.turnSeconds = seconds;
+				say(room, -1, "", seconds ? `${who} set the game's turn timer to ${minutes(seconds)}: when a turn's time runs out, the AI plays it.` : `${who} turned the game's turn timer off.`);
+			} else {
+				// One civ's own timer: the host may set anyone's, players their own
+				if (!room.sim.state.players[civ]) return send(client, { t: "error", error: "Unknown civ" });
+				if (client.player !== room.host && client.player !== civ) return send(client, { t: "error", error: "Only the host can set another player's timer" });
+				if (seconds !== -1 && !TURN_TIMERS.includes(seconds)) return send(client, { t: "error", error: "Unknown timer" });
+				if (seconds === -1) delete room.seatSeconds[civ];
+				else room.seatSeconds[civ] = seconds;
+				const target = room.seats.find((s) => s.player === civ && !s.left)?.name ?? room.sim.player(civ).name;
+				const whose = client.player === civ ? `${who} set their own turn timer` : `${who} set ${target}'s turn timer`;
+				say(room, -1, "", seconds === -1 ? `${whose} back to the game's.` : seconds ? `${whose} to ${minutes(seconds)}.` : `${whose} to no limit.`);
+			}
+			// Restart the running clock only if the change applies to whoever is playing now
+			const now = room.sim.current;
+			armTimer(room, civ === undefined ? room.seatSeconds[now] === undefined : civ === now);
 			scheduleSave(room);
 			return;
 		}

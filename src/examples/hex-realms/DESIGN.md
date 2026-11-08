@@ -404,8 +404,9 @@ Peacemakers (+3 council votes, other civs warm to you) and Patrons (+2 stars a t
   for sale can't be bought, and coins can't be bought at all. The AI buys what its stalled construction sites lack
   once it has 50 stars to spare. This is the main remaining star sink for rich civs.
 - **Ports** (Sailing; on the coast; planks and stone): a civ's ports are joined by sea lanes, the shortest water route
-  between each pair (up to 40 tiles, deep ocean needs Navigation), which become part of its network. Carriers load
-  and unload only at ports, and the sea never jams (road capacity applies on land only). A port still being built is
+  between each pair on the same water, however long (deep ocean needs Navigation), which become part of its
+  network. Carriers load and unload only at ports; ships cover four sea tiles for each road tile a cart walks, and the
+  sea never jams (road capacity applies on land only). A port still being built is
   already linked, so its own materials can sail over. The AI builds ports to join cities on other landmasses.
 - **Traded goods travel as cargo**: where the two civs' networks meet, barter, trade-route and tribute goods leave the
   giver's nearest store and are carried along both civs' roads to the receiver's capital (both players see the
@@ -414,8 +415,12 @@ Peacemakers (+3 council votes, other civs warm to you) and Patrons (+2 stars a t
   peace to other AIs only when it would be accepted, and to people at most every 6 turns, which ends the old
   proposal spam.
 - **Online**: chat (kept with the game, 100 lines), presence (who is connected), player names on the diplomacy
-  screen, an optional turn timer set by the host (when it runs out, the AI plays that turn), and leaving a game (the
-  AI plays the civ until the player rejoins with their seat token).
+  screen, turn timers (when a player's time runs out, the AI plays that turn: the host sets the game's timer, and each
+  player can have their own, set by the host or by that player), and leaving a game (the AI plays the civ until the
+  player rejoins with their seat token).
+- **Quick unit actions** (Polytopia-style): round buttons float above the selected unit for what it can do where it
+  stands: crossed swords to capture the city, a house to found one, a flame to pillage; greyed, with the reason, when
+  not possible yet.
 - **Natural terrain**: chunks where nothing is explored are flat parchment. The parchment pattern repeats every chunk,
   so interior unexplored chunks share one texture: the colossal map builds in 0.23 s instead of 6.3 s.
 - **Engine**: static shadow caching is on (shadow draw calls while panning drop from about 14 to 2 a frame).

@@ -28,9 +28,10 @@ node dist/hex-realms-server/server.cjs            # --port 8650 --static dist/es
 When the setup screen finds a server (the page's own host on port 8650, or `?server=ws://host:port/hexrealms`) it
 offers **Host online game** and **Join**. Games are saved to disk after every change and survive server restarts;
 players rejoin their own seat automatically (a token kept per game and name). In game, players can chat (the Chat
-button), the host can set a turn timer when hosting or from the menu (when it runs out, the AI plays that turn), and
-anyone can leave the game: the AI plays their civ until they come back with the invite link. Without a timer, turns
-wait for absent players.
+button) and set turn timers (when a player's time runs out, the AI plays that turn): the host sets the game's timer
+when hosting or from the menu, and each player can have their own, set by the host or by themselves. Anyone can
+leave the game: the AI plays their civ until they come back with the invite link. Without a timer, turns wait for
+absent players.
 
 Tests (headless simulation: rules, economy, upkeep, wonders, ambitions, combat, diplomacy and deals, victories,
 determinism, save/load and old-save upgrades, command replay and an AI soak game):
@@ -51,8 +52,8 @@ From the browser console, `ige.client.autoplay(20)` lets the AI play your seat f
   sites that carriers supply by road (logs for extractors and sawmills, planks and stone for workshops). **Rush**
   finishes a site for stars. Roads cost 1 star a tile and can reach out from your roads across neutral land.
 - **Carry**: carriers move goods 4 road tiles per turn and each road tile takes 2 loads per turn, so busy routes jam.
-  Ports (Sailing) join coastal cities into one network: carriers sail sea lanes between your ports (deep ocean needs
-  Navigation). A market also sells you goods at twice its price; they wait at the market until carriers take them
+  Ports (Sailing) join coastal cities into one network: carriers sail sea lanes between your ports, however far
+  apart, four tiles for each road tile (deep ocean needs Navigation). A market also sells you goods at twice its price; they wait at the market until carriers take them
   where they're needed.
   The Economy screen (B) sets which demand gets scarce goods first, and the **Lens** (V) shows each building's state
   and each city's store on the map.
@@ -79,7 +80,8 @@ From the browser console, `ige.client.autoplay(20)` lets the AI play your seat f
   council elections in a row, with backing from at least half the other civs). Each can be switched off in setup.
 
 Controls: WASD / arrows / left-drag pan, wheel or Z/X zoom, Q/E or right-drag rotate (pinch and twist on touch).
-Click a unit, then a highlighted tile to move or a red ring to attack. Space next unit, Enter end turn, Esc deselect,
+Click a unit, then a highlighted tile to move or a red ring to attack. Buttons float above a selected unit for what
+it can do where it stands, as in Polytopia: crossed swords capture the city, a house founds one, a flame pillages. Space next unit, Enter end turn, Esc deselect,
 C centre, T terrain style, R research, G diplomacy, J ambition, M wonders, B economy, V economy lens, L cities,
 F found city, O menu, H help.
 Click the minimap to jump.
@@ -172,6 +174,4 @@ its own chunk LOD (built lazily, survives frequent fog rebuilds).
 
 - Balance: upkeep, administration, dearer research and market buying keep treasuries to tens of stars through turn
   60 and a few hundred by turn 90 in AI games; a runaway conqueror still holds about a thousand by turn 90.
-- Sea lanes are at most 40 water tiles between two ports; longer crossings need a port in between.
-- Online: chat is plain text with no moderation beyond length and markup stripping; the turn timer is per game, not
-  per player.
+- Online: chat is plain text with no moderation beyond length and markup stripping.

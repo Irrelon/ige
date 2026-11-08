@@ -1,5 +1,5 @@
 import { Terrain } from "../terrain";
-import { type Good, type Goods, SEA_LANE_LENGTH } from "./rules";
+import type { Good, Goods } from "./rules";
 import type { Sim } from "./sim";
 
 /**
@@ -40,9 +40,9 @@ const laneCache = new WeakMap<Sim, Map<number, { key: string; tiles: number[] }>
 
 /**
  * Water tiles on the shortest sea route between each pair of a civ's ports
- * (up to SEA_LANE_LENGTH tiles). A port still being built is linked too, so
- * ships can bring its own materials. Cached until the civ's ports or
- * seafaring change.
+ * on the same navigable water, however far apart. A port still being built
+ * is linked too, so ships can bring its own materials. Cached until the
+ * civ's ports or seafaring change.
  */
 export function seaLanes (sim: Sim, player: number): number[] {
 	const ports = sim.state.buildings.filter((b) => b.owner === player && b.type === "port").map((b) => b.tile).sort((a, b) => a - b);
@@ -65,14 +65,19 @@ export function seaLanes (sim: Sim, player: number): number[] {
 				queue.push(n);
 			}
 		}
-		for (let q = 0; q < queue.length; q++) {
+		// Search the whole sea (stopping once every other port's shore is reached)
+		const shores = new Set<number>();
+		for (let j = i + 1; j < ports.length; j++) for (const n of sim.neighbors(ports[j])) if (navigable(sim, player, n)) shores.add(n);
+		let found = 0;
+		for (const n of queue) if (shores.has(n)) found++;
+		for (let q = 0; q < queue.length && found < shores.size; q++) {
 			const t = queue[q];
-			if ((depth.get(t) as number) >= SEA_LANE_LENGTH) continue;
 			for (const n of sim.neighbors(t)) {
 				if (prev.has(n) || !navigable(sim, player, n)) continue;
 				prev.set(n, t);
 				depth.set(n, (depth.get(t) as number) + 1);
 				queue.push(n);
+				if (shores.has(n)) found++;
 			}
 		}
 		for (let j = i + 1; j < ports.length; j++) {
@@ -100,7 +105,7 @@ export class NetworkSearch {
 		this.stamp = new Uint32Array(count);
 	}
 
-	run (sim: Sim, nodes: Uint8Array, start: number, maxSteps = 80, blocked?: (t: number) => boolean): number[] {
+	run (sim: Sim, nodes: Uint8Array, start: number, maxSteps = Infinity, blocked?: (t: number) => boolean): number[] {
 		this.gen++;
 		const order = this.order;
 		order.length = 0;

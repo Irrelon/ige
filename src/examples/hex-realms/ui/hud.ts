@@ -63,7 +63,7 @@ export interface HudHost {
 	room?: RoomInfo;
 	chat: ChatLine[];
 	sendChat (text: string): void;
-	setTurnTimer (seconds: number): void;
+	setTurnTimer (seconds: number, player?: number): void;
 	leaveGame (): void;
 	playerName (p: number): string;
 }
@@ -72,6 +72,17 @@ export interface HudHost {
 function lensStore (store: Goods): string {
 	const items = (Object.entries(store) as [Good, number][]).filter(([, n]) => n > 0).sort((a, b) => b[1] - a[1]).slice(0, 5);
 	return items.length ? `<div class="lens-store">${items.map(([g, n]) => goodChip(g, n)).join("")}</div>` : "";
+}
+
+/** Icons for the quick actions above a unit (24 x 24, drawn with the button's colour). */
+const ICONS = {
+	capture: `<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M4 4L14 14M11 16.5L16.5 11M14 14L19 19M20 4L10 14M7.5 11L13 16.5M10 14L5 19"/></svg>`,
+	found: `<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11L12 4L21 11M5.5 9.5V20H18.5V9.5M10 20V14.5H14V20"/></svg>`,
+	pillage: `<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3C13 6.5 18 8.5 18 14A6 6 0 0 1 6 14C6 10.5 8.5 9.5 8.5 6.5C10 8 11 9.5 11.5 11.5C12.5 9 12.5 6 12 3Z"/></svg>`
+};
+
+function quickButton (action: keyof typeof ICONS, title: string, disabled: boolean): string {
+	return `<button data-action="${action}" class="${disabled ? "" : "ready"}" aria-label="${esc(title)}" title="${esc(title)}" ${disabled ? "disabled" : ""}>${ICONS[action]}</button>`;
 }
 
 export class Hud {
@@ -239,7 +250,7 @@ export class Hud {
 			case "close-modal": this.closeModal(); break;
 			case "lens": this.toggleLens(); break;
 			case "chat": this.toggleChat(); break;
-			case "timer": h.setTurnTimer(num("seconds")); break;
+			case "timer": h.setTurnTimer(num("seconds"), data.player === undefined ? undefined : num("player")); break;
 			case "leave": h.leaveGame(); this.closeModal(); break;
 			case "endturn": h.endTurn(); break;
 			case "nextunit": h.nextUnit(); break;
@@ -663,7 +674,54 @@ export class Hud {
 		this.damage.push({ el, tile, age: 0 });
 	}
 
+	/**
+	 * Quick actions floating above the selected unit, as in Polytopia: the
+	 * crossed swords capture the city it stands on, the house founds a city,
+	 * the flame pillages. Shown greyed (with the reason) when not possible yet.
+	 */
+	unitActions (): void {
+		const el = document.getElementById("unitActions");
+		if (!el) return;
+		const h = this.host, sim = this.sim;
+		const u = h.selectedUnit !== null ? sim.unit(h.selectedUnit) : undefined;
+		const pos = u ? h.world.unitPosition(u.id) : null;
+		const hide = () => {
+			if (!el.classList.contains("hidden")) el.classList.add("hidden");
+		};
+		if (!u || !pos || !pos.shown || u.owner !== this.me || h.replaying || h.busy || sim.current !== this.me || sim.state.winner) return hide();
+		const buttons: string[] = [];
+		const city = sim.cityOn(u.tile);
+		if (city && city.owner !== this.me) {
+			const problem = captureProblem(sim, this.me, u.id);
+			buttons.push(quickButton("capture", problem ?? `Capture ${city.name}`, !!problem));
+		}
+		if (UNIT_TYPES[u.type].founder && sim.options.allowFounding) {
+			const problem = foundProblem(sim, this.me, u.tile);
+			buttons.push(quickButton("found", problem ?? "Found a city here", !!problem));
+		}
+		const road = sim.roads[u.tile];
+		const building = sim.buildingOn(u.tile);
+		const enemyBuilding = !!building && building.owner !== this.me && sim.atWar(this.me, building.owner);
+		const enemyRoad = road >= 0 && road !== this.me && sim.atWar(this.me, road);
+		if (enemyBuilding || enemyRoad) {
+			const tired = u.attacked || u.moves <= 0;
+			buttons.push(quickButton("pillage", tired ? "No moves left to pillage" : `Pillage the ${enemyBuilding ? BUILDINGS[building!.type].name.toLowerCase() : "road"}`, tired));
+		}
+		if (!buttons.length) return hide();
+		// Above the unit, or above the city banner when it stands in a city (the banner's bottom
+		// is drawn at the city height + 62 and it is about 24 px tall)
+		const p = city
+			? h.renderer.worldToScreen(h.viewport, h.world.tileX(city.tile), h.terrain.surface.tileHeight(city.tile) + 62, h.world.tileZ(city.tile))
+			: h.renderer.worldToScreen(h.viewport, pos.x, pos.y + 60, pos.z);
+		if (!p || !p.visible) return hide();
+		const html = buttons.join("");
+		if (el.innerHTML !== html) el.innerHTML = html;
+		el.style.transform = `translate(${p.x.toFixed(0)}px, ${(p.y - (city ? 30 : 0)).toFixed(0)}px) translate(-50%, -100%)`;
+		el.classList.remove("hidden");
+	}
+
 	frame (dt: number): void {
+		this.unitActions();
 		const sim = this.sim, h = this.host, world = h.world;
 		const renderer = h.renderer, viewport = h.viewport;
 		const used = new Set<string>();
@@ -830,8 +888,7 @@ export class Hud {
 				${invite ? `<button data-action="copy-invite">Copy invite link</button>` : ""}
 				${h.online ? `<button class="ghost" data-action="leave" title="The AI plays your civ until you rejoin with the invite link">Leave game</button>` : ""}
 			</div>
-			${h.online && h.room ? `<h4>Online</h4><div class="opts"><div>Turn timer: ${TURN_TIMERS.map((t) => `<button class="mini ${h.room?.turnSeconds === t ? "on" : ""}" data-action="timer" data-seconds="${t}" ${h.room?.host === this.me ? "" : "disabled title=\"Only the host sets the timer\""}>${t ? `${t / 60} min` : "Off"}</button>`).join(" ")} <span class="dim small">When a person's time runs out, the AI plays their turn.</span></div>
-				<div class="small">${sim.state.players.filter((p) => p.alive).map((p) => `<span class="swatch" style="background:${p.color}"></span>${esc(h.room?.names[p.index] || "AI")} ${h.room?.online[p.index] ? `<span class="good">online</span>` : h.room?.names[p.index] ? `<span class="dim">away</span>` : ""}`).join(" &middot; ")}</div></div>` : ""}
+			${h.online && h.room ? `<h4>Online</h4>${this.timerMenu()}` : ""}
 			<h4>Game options</h4>
 			<div class="opts">
 				<div>Fog of war: ${(["civ", "polytopia", "off"] as FogMode[]).map((m) => `<button class="mini ${o.fog === m ? "on" : ""}" data-action="fog" data-mode="${m}" ${local ? "" : "disabled"}>${m === "civ" ? "Civilization" : m === "polytopia" ? "Polytopia" : "Off"}</button>`).join(" ")}</div>
@@ -847,6 +904,29 @@ export class Hud {
 			</div>`;
 	}
 
+	/** Online: the game's turn timer and each player's own (the host sets any; players their own). */
+	timerMenu (): string {
+		const h = this.host, sim = this.sim, room = h.room as RoomInfo;
+		const host = room.host === this.me;
+		const label = (t: number) => (t ? `${t / 60} min` : "Off");
+		const game = TURN_TIMERS.map((t) => `<button class="mini ${room.turnSeconds === t ? "on" : ""}" data-action="timer" data-seconds="${t}" ${host ? "" : "disabled title=\"Only the host sets the game's timer\""}>${label(t)}</button>`).join(" ");
+		const rows = sim.state.players.filter((p) => p.alive && p.human).map((p) => {
+			const own = room.seatSeconds[p.index];
+			const allowed = host || p.index === this.me;
+			const buttons = [-1, ...TURN_TIMERS].map((t) => {
+				const on = t === -1 ? own === null || own === undefined : own === t;
+				return `<button class="mini ${on ? "on" : ""}" data-action="timer" data-seconds="${t}" data-player="${p.index}" ${allowed ? "" : "disabled title=\"Only the host or this player can change it\""}>${t === -1 ? "Game's" : label(t)}</button>`;
+			}).join(" ");
+			const presence = room.online[p.index] ? `<span class="good">online</span>` : `<span class="dim">away</span>`;
+			return `<tr><td><span class="swatch" style="background:${p.color}"></span>${esc(room.names[p.index] || "Player")}${p.index === this.me ? " (you)" : ""} ${presence}</td><td>${buttons}</td></tr>`;
+		}).join("");
+		const ai = sim.state.players.filter((p) => p.alive && !p.human).map((p) => `<span class="swatch" style="background:${p.color}"></span>${esc(p.name.split(" (")[0])}`).join(" ");
+		return `<div class="opts"><div>Game turn timer: ${game}</div>
+			<p class="dim small">When a player's time runs out, the AI plays their turn. Each player can also have their own timer: the host can set anyone's, and you can set yours (for example a short one while you step away).</p>
+			<table class="timers">${rows}</table>
+			${ai ? `<div class="small dim">Played by the AI: ${ai}</div>` : ""}</div>`;
+	}
+
 	helpModal (): string {
 		return `<h3>How to play</h3><div class="help">
 			<p><b>Goal</b>: win by Domination (last civ standing), Score (highest after the turn limit), Prosperity (finish the Grand Exchange), Alliance (everyone left is allied) or Diplomacy (win two World Council elections).</p>
@@ -857,6 +937,7 @@ export class Hud {
 			<p><b>Grow</b>: deliver food (fish, game, bread) to cities. Each level adds a building slot and a reward.</p>
 			<p><b>Build</b>: click your land to place buildings. Woodcutters are ready at once; other sites wait for logs, planks or stone carried by road, and Rush finishes them for stars. Goods move along roads, ${4} tiles per turn, 2 loads per road tile per turn. Ports (Sailing) let carriers sail between your coastal cities, and a market also sells you goods at twice its price.</p>
 			<p><b>Diplomacy</b> (G): treaties, cultural exchanges, research agreements, trades of goods and stars (once, or every turn as a route; where your roads meet theirs the goods travel as carts), demands, denouncing and sanctions. Wars wear both sides down, making peace easier the longer they last. Wars without enough grievances are surprise wars that everyone resents; peace brings a 10-turn truce.</p>
+			<p><b>Quick actions</b>: buttons float above a selected unit for what it can do where it stands: crossed swords capture a city, a house founds one, a flame pillages.</p>
 			<p><b>Fight</b>: declare war in Diplomacy first. Select a unit to see red attack rings; hover one to preview the damage. Ranged units need line of sight. Units stop when they move next to an enemy.</p>
 			<p><b>Keys</b>: WASD/arrows pan, wheel or Z/X zoom, Q/E rotate, Space next unit, Enter end turn, Esc deselect, C centre, T terrain style, R research, G diplomacy, J ambition, M wonders, B economy, V economy lens, L cities, F found city, O menu, H help.</p></div>`;
 	}

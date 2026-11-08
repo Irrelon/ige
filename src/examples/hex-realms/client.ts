@@ -445,8 +445,9 @@ export class Client extends IgeBaseClass implements IgeCanInit, HudHost {
 		if (this.online && text.trim()) this.net?.send({ t: "chat", text });
 	}
 
-	setTurnTimer (seconds: number): void {
-		if (this.online) this.net?.send({ t: "timer", seconds });
+	/** The game's default turn timer, or (with a civ) that civ's own; -1 clears a civ's own. */
+	setTurnTimer (seconds: number, player?: number): void {
+		if (this.online) this.net?.send({ t: "timer", seconds, ...(player === undefined ? {} : { player }) });
 	}
 
 	/** Leave an online game for good: the AI plays our civ until we rejoin. */

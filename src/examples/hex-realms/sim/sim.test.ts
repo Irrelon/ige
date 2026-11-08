@@ -513,6 +513,47 @@ describe("markets and ports", () => {
 	});
 });
 
+describe("long sea crossings", () => {
+	test("sea lanes have no length limit, and ships sail four tiles for each road tile", () => {
+		// A 96-wide map: land at both ends, an 80-tile sea between
+		const width = 96, height = 12;
+		const map = new HexMap(width, height, 7);
+		map.terrain.fill(Terrain.Grassland);
+		map.relief.fill(Relief.Flat);
+		map.shade.fill(1);
+		map.landmass.fill(0);
+		map.landmassSizes = [map.count];
+		for (let r = 0; r < height; r++) {
+			for (let c = 8; c < 88; c++) {
+				map.terrain[r * width + c] = Terrain.Ocean;
+				map.relief[r * width + c] = Relief.Water;
+			}
+		}
+		const at = (c: number, r: number) => r * width + c;
+		const sim = Sim.create(defaultOptions({ width, height, players: 2, humans: [0, 1], fog: "off" }), { map, starts: [at(5, 5), at(92, 9)], villages: false });
+		sim.drainEvents();
+		sim.player(0).techs.push("sailing", "trade");
+		const capital = sim.citiesOf(0)[0];
+		const far = createCity(sim, 0, at(89, 5), false);
+		capital.level = 4;
+		far.level = 4;
+		capital.store = { planks: 12, stone: 6 };
+		far.store = {};
+		sim.player(0).stars = 200;
+		sim.roads[at(6, 5)] = 0;
+		expect(sim.apply(0, { type: "build", tile: at(7, 5), building: "port" }).ok).toBe(true);
+		expect(sim.apply(0, { type: "build", tile: at(88, 5), building: "port" }).ok).toBe(true);
+		const lanes = networkNodes(sim, 0).reduce((n, v) => n + (v === SEA ? 1 : 0), 0);
+		expect(lanes).toBeGreaterThanOrEqual(80);
+		// 80 sea tiles at 16 a turn: the far port is built from the capital's planks within a few turns
+		for (let i = 0; i < 10 && !sim.buildingOn(at(88, 5))!.built; i++) nextTurn(sim);
+		expect(sim.buildingOn(at(88, 5))!.built).toBe(true);
+		expect(sim.apply(0, { type: "build", tile: at(90, 5), building: "warehouse" }).ok).toBe(true);
+		for (let i = 0; i < 10 && !sim.buildingOn(at(90, 5))!.built; i++) nextTurn(sim);
+		expect(sim.buildingOn(at(90, 5))!.built).toBe(true);
+	});
+});
+
 describe("ambitions", () => {
 	test("milestones pay double to the first civ to reach them; all four earn the legacy", () => {
 		const sim = blank(2, [sim2(4, 4), sim2(20, 12)], { humans: [0, 1] });
