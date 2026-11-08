@@ -82,6 +82,7 @@
 		"esprima": "^4.0.1",
 		"glob": "^10.3.10",
 		"jest": "^29.7.0",
+		"jolt-physics": "1.1.1",
 		"madge": "^6.1.0",
 		"minimatch": "^7.4.2",
 		"mongodb": "6.3.0",
@@ -102,7 +103,13 @@
 		"yargs": "^17.7.2"
 	},
 	"peerDependencies": {
-		"three": "^0.162.0"
+		"three": "^0.162.0",
+		"jolt-physics": "^1.1.1"
+	},
+	"peerDependenciesMeta": {
+		"jolt-physics": {
+			"optional": true
+		}
 	},
 	"sideEfects": false
 }

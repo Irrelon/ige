@@ -4,6 +4,7 @@ const fs = require("fs");
 const TsconfigPathsPlugin = require("tsconfig-paths-webpack-plugin");
 const CircularDependencyPlugin = require("circular-dependency-plugin");
 const BundleAnalyzerPlugin = require("webpack-bundle-analyzer").BundleAnalyzerPlugin;
+const { NormalModuleReplacementPlugin } = require("webpack");
 
 const plugins = [new CircularDependencyPlugin({
 	// exclude detection of files based on a RegExp
@@ -17,6 +18,10 @@ const plugins = [new CircularDependencyPlugin({
 	allowAsyncCycles: true,
 	// set the current working directory for displaying module paths
 	cwd: process.cwd()
+}), new NormalModuleReplacementPlugin(/^node:/, (resource) => {
+	// Jolt's multithreaded build imports Node built-ins (only used when it
+	// runs under Node); strip the scheme so the fallbacks below apply
+	resource.request = resource.request.replace(/^node:/, "");
 }), new BundleAnalyzerPlugin({
 	openAnalyzer: false,
 	analyzerMode: "static"
@@ -92,7 +97,7 @@ const configArr = projects.map(project => ({
 	},
 	resolve: {
 		extensions: [".tsx", ".ts", ".js"],
-		fallback: { http: false },
+		fallback: { http: false, module: false, worker_threads: false },
 		plugins: [new TsconfigPathsPlugin()]
 	},
 	output: {
