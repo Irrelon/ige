@@ -36,7 +36,7 @@ import type { IgeGeometryData3d } from "@/types/IgeGeometryData3d";
 import type { IgeModelPart } from "@/engine/webgl/IgeModelParts";
 import type { IgeParticleSystem3d } from "@/engine/webgl/IgeParticleSystem3d";
 import type { IgeDecalSystem3d } from "@/engine/webgl/IgeDecalSystem3d";
-import { DECAL_INSTANCE_FLOATS } from "@/engine/webgl/IgeDecalSystem3d";
+import { DECAL_INSTANCE_FLOATS, DECAL_MESH_VERTEX_FLOATS } from "@/engine/webgl/IgeDecalSystem3d";
 import { takeGeneratedLods } from "@/engine/webgl/IgeModelParts";
 import type { IgeHeightfieldRayOptions } from "@/engine/webgl/IgeHeightfieldRay";
 import { intersectHeightfield } from "@/engine/webgl/IgeHeightfieldRay";
@@ -338,6 +338,7 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 	protected _sharedShadowFrame: number = -1;
 	protected _pendingBlobTextures: Set<string> = new Set();
 	protected _particleBuffers: Map<IgeWebGlInstanceSource, { buffer: WebGLBuffer | null; version: number; lastFrame: number }> = new Map();
+	protected _decalMeshBuffers: Map<IgeDecalSystem3d, { buffer: WebGLBuffer | null; version: number; lastFrame: number }> = new Map();
 	protected _defaultParticleTexture: WebGLTexture | null = null;
 	protected _defaultDecalTexture: WebGLTexture | null = null;
 	protected _lightFrustum: IgeFrustum = new IgeFrustum();
@@ -2870,6 +2871,115 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 			this._geometryManager.unbindGeometry(quad, program);
 			this._stateManager.setBlendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
 			this._stateManager.setDepthWrite(true);
+		}
+
+		this._renderProjectedDecals(systems, matrices);
+	}
+
+	/**
+	 * Draw projected decals (IgeDecalSystem3d.project()): each system's
+	 * decal triangles are one world-space vertex buffer and one draw call.
+	 */
+	protected _renderProjectedDecals(systems: IgeDecalSystem3d[], matrices: IgeCameraMatrices): void {
+		const gl = this._canvasContext!;
+		const program = this._shaderManager!.getProgram("decal_mesh");
+		if (!program) return;
+
+		let programReady = false;
+		const stride = DECAL_MESH_VERTEX_FLOATS * 4;
+		const locations = [
+			program.getAttributeLocation("a_position"),
+			program.getAttributeLocation("a_uv"),
+			program.getAttributeLocation("a_color")
+		];
+		const sizes = [3, 2, 4];
+		const offsets = [0, 12, 20];
+
+		for (let s = 0; s < systems.length; s++) {
+			const system = systems[s];
+			const { data, vertexCount } = system.meshRenderData();
+			if (vertexCount === 0) continue;
+
+			const c = system._meshBoundsCenter;
+			if (!matrices.frustum.containsSphereXYZ(c.x, c.y, c.z, system._meshBoundsRadius)) continue;
+
+			let entry = this._decalMeshBuffers.get(system);
+			if (!entry) {
+				entry = { buffer: gl.createBuffer(), version: -1, lastFrame: 0 };
+				this._decalMeshBuffers.set(system, entry);
+			}
+			entry.lastFrame = this._frameId;
+
+			if (!programReady) {
+				program.use();
+				program.setUniformMatrix4fv("u_viewMatrix", matrices.view);
+				program.setUniformMatrix4fv("u_projectionMatrix", matrices.projection);
+				program.setUniform1i("u_texture", 0);
+				const cam = matrices.cameraPosition;
+				program.setUniform3f("u_cameraPosition", cam.x, cam.y, cam.z);
+				const fog = this._fog;
+				program.setUniform1i("u_fogMode", fog.mode === "linear" ? 1 : fog.mode === "exp2" ? 2 : 0);
+				program.setUniform1f("u_fogNear", fog.near);
+				program.setUniform1f("u_fogFar", fog.far);
+				program.setUniform1f("u_fogDensity", fog.density);
+
+				this._stateManager!.setDepthTest(true);
+				this._stateManager!.setDepthWrite(false);
+				this._stateManager!.setBlend(true);
+				gl.enable(gl.POLYGON_OFFSET_FILL);
+				gl.polygonOffset(-1, -4);
+				programReady = true;
+			}
+
+			// Raw buffer binding (the geometry manager doesn't own this buffer)
+			gl.bindBuffer(gl.ARRAY_BUFFER, entry.buffer);
+			if (entry.version !== system._meshRenderVersion) {
+				gl.bufferData(gl.ARRAY_BUFFER, data.subarray(0, vertexCount * DECAL_MESH_VERTEX_FLOATS), gl.DYNAMIC_DRAW);
+				entry.version = system._meshRenderVersion;
+			}
+			for (let a = 0; a < locations.length; a++) {
+				if (locations[a] < 0) continue;
+				gl.enableVertexAttribArray(locations[a]);
+				gl.vertexAttribPointer(locations[a], sizes[a], gl.FLOAT, false, stride, offsets[a]);
+			}
+
+			const multiply = system._options.blending !== "normal";
+			program.setUniform1i("u_multiply", multiply ? 1 : 0);
+			if (multiply) {
+				this._stateManager!.setBlendFunc(gl.DST_COLOR, gl.ZERO);
+			} else {
+				this._stateManager!.setBlendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+			}
+
+			const texture = system._options.texture
+				? this._textureManager!.getTextureForIgeTexture(system._options.texture)
+				: this._getDefaultDecalTexture();
+			this._stateManager!.invalidateTextureBindings();
+			this._stateManager!.bindTexture(texture || this._textureManager!.getDefaultWhiteTexture(), 0);
+
+			gl.drawArrays(gl.TRIANGLES, 0, vertexCount);
+			this._stats.drawCalls++;
+
+			for (const location of locations) {
+				if (location >= 0) gl.disableVertexAttribArray(location);
+			}
+		}
+
+		if (programReady) {
+			gl.bindBuffer(gl.ARRAY_BUFFER, null);
+			gl.disable(gl.POLYGON_OFFSET_FILL);
+			this._stateManager!.setBlendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+			this._stateManager!.setDepthWrite(true);
+		}
+
+		// Free buffers of systems no longer drawn
+		if ((this._frameId & 127) === 0) {
+			this._decalMeshBuffers.forEach((value, key) => {
+				if (this._frameId - value.lastFrame > 120) {
+					if (value.buffer) gl.deleteBuffer(value.buffer);
+					this._decalMeshBuffers.delete(key);
+				}
+			});
 		}
 	}
 

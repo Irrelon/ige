@@ -17,6 +17,7 @@ import { particleVertexShader } from "@/engine/shaders/webgl/particle.vert";
 import { particleFragmentShader } from "@/engine/shaders/webgl/particle.frag";
 import { decalVertexShader } from "@/engine/shaders/webgl/decal.vert";
 import { decalFragmentShader } from "@/engine/shaders/webgl/decal.frag";
+import { decalMeshVertexShader } from "@/engine/shaders/webgl/decal_mesh.vert";
 import { debugLineVertexShader } from "@/engine/shaders/webgl/debug_line.vert";
 import { debugLineFragmentShader } from "@/engine/shaders/webgl/debug_line.frag";
 
@@ -152,6 +153,13 @@ IgeShaderLibrary.register(
 	decalVertexShader,
 	decalFragmentShader,
 	"Ground-aligned decal quads for IgeDecalSystem3d"
+);
+
+IgeShaderLibrary.register(
+	"decal_mesh",
+	decalMeshVertexShader,
+	decalFragmentShader,
+	"Projected decal triangles (world space) for IgeDecalSystem3d.project()"
 );
 
 IgeShaderLibrary.register(

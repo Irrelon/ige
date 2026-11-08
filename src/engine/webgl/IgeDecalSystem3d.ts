@@ -1,9 +1,14 @@
 import { IgeEntity } from "@/engine/core/IgeEntity";
 import { markSceneChanged } from "@/engine/utils/sceneChange";
 import type { IgeTexture } from "@/engine/core/IgeTexture";
+import type { IgeDecalTargetMesh } from "@/engine/webgl/IgeDecalProjector";
+import { PROJECTED_DECAL_VERTEX_FLOATS, projectDecal } from "@/engine/webgl/IgeDecalProjector";
 
 /** Floats per decal in renderData(): x, y, z, size, r, g, b, a, rotation, cell, 0, 0. */
 export const DECAL_INSTANCE_FLOATS = 12;
+
+/** Floats per vertex in meshRenderData(): x, y, z, u, v, r, g, b, a. */
+export const DECAL_MESH_VERTEX_FLOATS = 9;
 
 export interface IgeDecalSystem3dOptions {
 	/** Most decals alive at once; adding more replaces the oldest (default 256). */
@@ -29,6 +34,12 @@ export interface IgeDecalSystem3dOptions {
 	atlasGrid?: number;
 	/** Height above the position given to add() (default 0.5), against z-fighting with the ground. */
 	lift: number;
+	/**
+	 * Most projected decals (project()) alive at once; adding more
+	 * replaces the oldest (default 64). Each is its own small mesh, so they
+	 * cost more than flat decals.
+	 */
+	maxProjected: number;
 }
 
 export interface IgeDecalOptions {
@@ -46,13 +57,90 @@ export interface IgeDecalOptions {
 	cell?: number;
 }
 
+export interface IgeProjectedDecalOptions {
+	/** Width and height in world units (default 40). */
+	size?: number;
+	/** How far in front of and behind the position surfaces are covered (default half the size). */
+	depth?: number;
+	/** Rotation around the normal in radians (default random). */
+	rotation?: number;
+	/** Colour (default dark red). */
+	color?: { r: number; g: number; b: number };
+	/** Opacity 0-1 (default 0.9). */
+	opacity?: number;
+	/** Atlas cell to use (default random). */
+	cell?: number;
+	/**
+	 * Surfaces turned more than this many degrees from the normal are left
+	 * out (default 75), e.g. the sides of a step under a floor splat. Use
+	 * about 100 to wrap over edges.
+	 */
+	maxAngle?: number;
+}
+
+interface IgeProjectedDecal {
+	vertices: Float32Array; // x, y, z, u, v per vertex
+	r: number;
+	g: number;
+	b: number;
+	opacity: number;
+	age: number;
+}
+
 const DEFAULT_OPTIONS: IgeDecalSystem3dOptions = {
 	maxDecals: 256,
 	lifetime: 30,
 	fadeTime: 4,
 	blending: "multiply",
-	lift: 0.5
+	lift: 0.5,
+	maxProjected: 64
 };
+
+/** a * b for column-major 4x4 matrices. */
+function multiplyMat4 (a: ArrayLike<number>, b: ArrayLike<number>): Float32Array {
+	const out = new Float32Array(16);
+	for (let col = 0; col < 4; col++) {
+		for (let row = 0; row < 4; row++) {
+			out[col * 4 + row] = a[row] * b[col * 4] + a[4 + row] * b[col * 4 + 1] +
+				a[8 + row] * b[col * 4 + 2] + a[12 + row] * b[col * 4 + 3];
+		}
+	}
+	return out;
+}
+
+/**
+ * The meshes of some entities and their descendants that a projected decal
+ * can land on: plain geometry and the static parts of models. Hidden
+ * entities and animated (skinned) parts are left out.
+ */
+export function collectDecalTargets (targets: IgeEntity | IgeEntity[]): IgeDecalTargetMesh[] {
+	const meshes: IgeDecalTargetMesh[] = [];
+	const visit = (entity: IgeEntity) => {
+		if (entity._hidden) return;
+		if (typeof entity.updateTransform === "function") entity.updateTransform();
+
+		const world = entity._worldMatrix4?.matrix;
+		if (world) {
+			const parts = entity._modelParts;
+			if (parts && parts.length > 0) {
+				for (const part of parts) {
+					if (part.skinned || !part.geometryData?.vertices) continue;
+					meshes.push({ geometry: part.geometryData, matrix: part.matrix ? multiplyMat4(world, part.matrix) : world });
+				}
+			} else if (entity._geometryData?.vertices) {
+				meshes.push({ geometry: entity._geometryData, matrix: world });
+			}
+		}
+
+		const children = entity._children;
+		if (children) {
+			for (const child of children) visit(child as IgeEntity);
+		}
+	};
+
+	for (const target of Array.isArray(targets) ? targets : [targets]) visit(target);
+	return meshes;
+}
 
 const DEFAULT_COLOR = { r: 0.45, g: 0.02, b: 0.02 };
 
@@ -62,13 +150,18 @@ const DEFAULT_COLOR = { r: 0.45, g: 0.02, b: 0.02 };
  * system is drawn with one instanced draw call per viewport, after opaque
  * geometry, so characters standing on a decal hide it correctly.
  *
- * Decals sit flat at the height given to add(), so they suit flat floors;
- * they are not projected onto walls or uneven terrain. Old decals fade
- * out after their lifetime, and when the system is full the oldest is
- * replaced.
+ * add() lays a decal flat at a given height: the cheapest kind, for flat
+ * floors. project() wraps one over the surfaces of chosen entities (walls,
+ * slopes, steps, uneven terrain) by clipping their triangles to the
+ * decal; each projected decal is a small mesh, drawn with its system's
+ * other projected decals in one call. Old decals fade out after their
+ * lifetime, and when the system is full the oldest is replaced.
  * @example #Leave blood where a zombie dies
  *     const blood = new IgeDecalSystem3d({ maxDecals: 300 }).mount(scene);
  *     blood.add(zombie._translate.x, zombie._translate.z, { size: 90 });
+ * @example #Splash a wall (normal points out of the wall) or uneven ground
+ *     blood.project({ x: 400, y: 60, z: -200 }, { x: 0, y: 0, z: 1 }, wall, { size: 70 });
+ *     blood.project(hitPoint, { x: 0, y: 1, z: 0 }, terrain, { size: 90 });
  */
 export class IgeDecalSystem3d extends IgeEntity {
 	classId = "IgeDecalSystem3d";
@@ -93,6 +186,16 @@ export class IgeDecalSystem3d extends IgeEntity {
 	/** World-space bounding sphere of the decals (for culling). */
 	_boundsCenter = { x: 0, y: 0, z: 0 };
 	_boundsRadius: number = 0;
+
+	// Projected decals, oldest first, and their packed vertices
+	_projected: IgeProjectedDecal[] = [];
+	_meshRenderData: Float32Array = new Float32Array(0);
+	_meshVertexCount: number = 0;
+	/** Incremented whenever _meshRenderData changes (renderer upload check). */
+	_meshRenderVersion: number = 0;
+	_meshDirty: boolean = false;
+	_meshBoundsCenter = { x: 0, y: 0, z: 0 };
+	_meshBoundsRadius: number = 0;
 
 	constructor (options: Partial<IgeDecalSystem3dOptions> = {}) {
 		super();
@@ -149,17 +252,76 @@ export class IgeDecalSystem3d extends IgeEntity {
 		return this;
 	}
 
+	/**
+	 * Project a decal onto the surfaces of some entities and their
+	 * children: walls, slopes, steps, uneven terrain, props. Surfaces
+	 * facing the normal within the decal's box (size across, depth along
+	 * the normal) receive it; animated characters don't.
+	 * @param position World position of the decal's centre, on or near the surface.
+	 * @param normal Direction the decal faces: out of the surface (e.g. a
+	 * wall's normal, or the reverse of a shot's direction).
+	 * @param targets Entities whose meshes receive the decal.
+	 */
+	project (
+		position: { x: number; y: number; z: number },
+		normal: { x: number; y: number; z: number },
+		targets: IgeEntity | IgeEntity[],
+		options: IgeProjectedDecalOptions = {}
+	): this {
+		const size = options.size ?? 40;
+		const vertices = projectDecal(collectDecalTargets(targets), {
+			position,
+			normal,
+			size,
+			depth: options.depth ?? size / 2,
+			rotation: options.rotation ?? Math.random() * Math.PI * 2,
+			maxAngle: ((options.maxAngle ?? 75) * Math.PI) / 180,
+			lift: this._options.lift
+		});
+		if (vertices.length === 0) return this;
+
+		// Map decal UVs into the atlas cell
+		const grid = this.atlasGrid();
+		const cell = options.cell ?? Math.floor(Math.random() * grid * grid);
+		const cellX = cell % grid, cellY = Math.floor(cell / grid);
+		for (let i = 0; i < vertices.length; i += PROJECTED_DECAL_VERTEX_FLOATS) {
+			vertices[i + 3] = (vertices[i + 3] + cellX) / grid;
+			vertices[i + 4] = (vertices[i + 4] + cellY) / grid;
+		}
+
+		const color = options.color || DEFAULT_COLOR;
+		this._projected.push({ vertices, r: color.r, g: color.g, b: color.b, opacity: options.opacity ?? 0.9, age: 0 });
+		while (this._projected.length > Math.max(1, this._options.maxProjected)) this._projected.shift();
+		this._meshDirty = true;
+		return this;
+	}
+
 	/** Remove every decal. */
 	clear (): this {
 		this._head = 0;
 		this._count = 0;
 		this._dirty = true;
+		this._projected.length = 0;
+		this._meshDirty = true;
 		return this;
 	}
 
-	/** Number of decals alive. */
+	/** Number of flat decals alive. */
 	decalCount (): number {
 		return this._count;
+	}
+
+	/** Number of projected decals alive. */
+	projectedCount (): number {
+		return this._projected.length;
+	}
+
+	/**
+	 * Returns the packed projected decal triangles: DECAL_MESH_VERTEX_FLOATS
+	 * floats per vertex (x, y, z, u, v, r, g, b, a), three per triangle.
+	 */
+	meshRenderData (): { data: Float32Array; vertexCount: number } {
+		return { data: this._meshRenderData, vertexCount: this._meshVertexCount };
 	}
 
 	/**
@@ -218,6 +380,76 @@ export class IgeDecalSystem3d extends IgeEntity {
 			this._rebuildRenderData();
 			this._dirty = false;
 		}
+
+		// Projected decals (pushed in order, so the oldest are first)
+		const projected = this._projected;
+		let meshFading = false;
+		for (const decal of projected) {
+			decal.age += dt;
+			if (decal.age > lifetime) meshFading = true;
+		}
+		while (projected.length > 0 && projected[0].age >= end) {
+			projected.shift();
+			this._meshDirty = true;
+		}
+		if (this._meshDirty || meshFading) {
+			this._rebuildMeshRenderData();
+			this._meshDirty = false;
+		}
+	}
+
+	_rebuildMeshRenderData (): void {
+		const { lifetime, fadeTime } = this._options;
+		let vertexCount = 0;
+		for (const decal of this._projected) vertexCount += decal.vertices.length / PROJECTED_DECAL_VERTEX_FLOATS;
+
+		const needed = vertexCount * DECAL_MESH_VERTEX_FLOATS;
+		if (this._meshRenderData.length < needed) {
+			this._meshRenderData = new Float32Array(Math.max(needed, this._meshRenderData.length * 2));
+		}
+
+		const out = this._meshRenderData;
+		let minX = Infinity, minY = Infinity, minZ = Infinity;
+		let maxX = -Infinity, maxY = -Infinity, maxZ = -Infinity;
+		let o = 0;
+		for (const decal of this._projected) {
+			const fade = decal.age > lifetime ? Math.max(0, 1 - (decal.age - lifetime) / Math.max(fadeTime, 1e-6)) : 1;
+			const alpha = decal.opacity * fade;
+			const v = decal.vertices;
+			for (let i = 0; i < v.length; i += PROJECTED_DECAL_VERTEX_FLOATS) {
+				const x = v[i], y = v[i + 1], z = v[i + 2];
+				out[o] = x;
+				out[o + 1] = y;
+				out[o + 2] = z;
+				out[o + 3] = v[i + 3];
+				out[o + 4] = v[i + 4];
+				out[o + 5] = decal.r;
+				out[o + 6] = decal.g;
+				out[o + 7] = decal.b;
+				out[o + 8] = alpha;
+				o += DECAL_MESH_VERTEX_FLOATS;
+				if (x < minX) minX = x;
+				if (y < minY) minY = y;
+				if (z < minZ) minZ = z;
+				if (x > maxX) maxX = x;
+				if (y > maxY) maxY = y;
+				if (z > maxZ) maxZ = z;
+			}
+		}
+
+		this._meshVertexCount = vertexCount;
+		if (vertexCount > 0) {
+			const c = this._meshBoundsCenter;
+			c.x = (minX + maxX) / 2;
+			c.y = (minY + maxY) / 2;
+			c.z = (minZ + maxZ) / 2;
+			this._meshBoundsRadius = Math.hypot(maxX - c.x, maxY - c.y, maxZ - c.z);
+		} else {
+			this._meshBoundsRadius = 0;
+		}
+
+		this._meshRenderVersion++;
+		markSceneChanged();
 	}
 
 	_rebuildRenderData (): void {
