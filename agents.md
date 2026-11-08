@@ -94,8 +94,11 @@ The engine has extensive 3D infrastructure:
 -   Frame pipeline: renderables are collected once per frame (transforms, skin matrices, world-space bounds); each viewport then culls, renders its directional shadow map (centred on its camera target, or shared when split-screen views are close) and draws opaque batches front to back, then transparent items and particles. Point light shadows render once per frame.
 -   Level of detail: each pass (viewport, directional shadow, point shadow) picks an entity's LOD level from its projected size, so split-screen views choose independently.
 -   Split-screen and picking helpers: `worldToScreen()`, `screenToWorldRay()`, `screenToGround()`, `screenToHeightfield()`, `viewportAt()`, `maxPixelRatio()`, `lodBias()`, `fog()`, `stats()`
--   Resources and quality: `releaseGeometry()`, `releaseTexture()` (dynamic content must free what it replaces), `backFaceCulling()` (opt-in; meshes must be wound CCW, `doubleSided` materials are exempt). Geometry `colors` are used as vertex colours.
--   Used in multiple working examples: coordTest2d, coordTest3d, coordTestIso, lightingShadows, skeletalAnimation, webGlRenderer, zombie-game (4-player split-screen zombie ARPG prototype), hex-realms (large hex-map strategy prototype, in progress)
+-   Resources and quality: `releaseGeometry()`, `releaseTexture()` (dynamic content must free what it replaces), `backFaceCulling()` (opt-in; meshes must be wound CCW, `doubleSided` materials are exempt), `shadowCaching()` (static shadow casters cached), `ige.engine.renderOnDemand()` (frames only when something visible changed; `manualRender()` after material/texture changes). Geometry `colors` are used as vertex colours.
+-   HUD and debugging: `IgeViewportOverlay` (DOM elements over entities, clipped per viewport), `debugDraw({ bounds, shadowFrustum })`, `debugLine()`, `preferredWebGlVersion(1)` to test the WebGL 1 path.
+-   2D: camera preset `screen2d` (y down, one unit per pixel, zoom by camera scale) draws sprites flat with their 2D transforms; smart textures render per entity. See `guides/2d-on-webgl.md`.
+-   Guides: `guides/webgl-models.md`, `guides/2d-on-webgl.md`.
+-   Used in multiple working examples: coordTest2d, coordTest3d, coordTestIso, lightingShadows, skeletalAnimation, webGlRenderer, zombie-game (4-player split-screen zombie ARPG prototype), webGl2d (Canvas 2D style scene on WebGL, `?split=1` for two views), hex-realms (large hex-map strategy prototype, in progress)
 
 #### Working with models
 
@@ -165,6 +168,7 @@ zombie.playAnimation("Attack", { loop: false, crossFadeDuration: 0.1 });
 | `IgeAnimationRetarget.ts` | Retarget animation clips from other files onto a skeleton by bone name |
 | `IgeDecalSystem3d.ts` | Ground decals entity |
 | `IgeHeightfieldRay.ts` | Ray/heightfield intersection behind `screenToHeightfield()` |
+| `IgeViewportOverlay.ts` | DOM HUD elements over the 3D views, clipped per viewport |
 
 ## Ultimate Project Goals
 
