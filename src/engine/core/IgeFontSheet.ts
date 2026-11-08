@@ -6,6 +6,7 @@
 import type { IgeFontEntity } from "@/engine/core/IgeFontEntity";
 import { IgeTexture } from "@/engine/core/IgeTexture";
 import { ige } from "@/engine/instance";
+import { IgeFontAlignY } from "@/enums";
 import type { IgeCanvasRenderingContext2d } from "@/types/IgeCanvasRenderingContext2d";
 import type { IgeSmartTexture } from "@/types/IgeSmartTexture";
 
@@ -17,6 +18,8 @@ import type { IgeSmartTexture } from "@/types/IgeSmartTexture";
  */
 export class IgeFontSheet extends IgeTexture {
 	classId = "IgeFontSheet";
+	// Draws each entity's text, so GPU renderers can't draw the sheet itself
+	_rendersPerEntity = true;
 	_sheetImage?: ImageBitmap | OffscreenCanvas;
 	_lineHeightModifier: number = 0;
 	_fontData: any;
@@ -206,22 +209,20 @@ export class IgeFontSheet extends IgeTexture {
 
 			const totalHeight = lineHeight * lineArr.length;
 
-			// TODO: Y-based alignment doesn't work at the moment. Fix it!
-			// Handle text alignment y
+			// Handle text alignment y (multiLineMiddle, the default, centres
+			// the block of lines like middle)
+			const blockHeight = totalHeight + entity._textLineSpacing * (lineArr.length - 1);
 			switch (entity._textAlignY) {
-				case 0: // Align top
-					renderStartY =
-						-((lineHeight * lineArr.length) / 2) - entity._textLineSpacing * ((lineArr.length - 1) / 2); //0;
+				case IgeFontAlignY.top:
+					renderStartY = -entity._bounds2d.y2;
 					break;
 
-				case 1: // Align middle
-					renderStartY =
-						-((lineHeight * lineArr.length) / 2) - entity._textLineSpacing * ((lineArr.length - 1) / 2);
+				case IgeFontAlignY.bottom:
+					renderStartY = entity._bounds2d.y2 - blockHeight;
 					break;
 
-				case 2: // Align bottom
-					renderStartY =
-						-((lineHeight * lineArr.length) / 2) - entity._textLineSpacing * ((lineArr.length - 1) / 2); //-((lineHeight) * (lineArr.length)) - (entity._textLineSpacing * (lineArr.length - 1));
+				default: // middle, multiLineMiddle
+					renderStartY = -blockHeight / 2;
 					break;
 			}
 

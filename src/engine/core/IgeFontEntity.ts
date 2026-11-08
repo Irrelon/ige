@@ -4,7 +4,6 @@ import { IgeUiEntity } from "@/engine/core/IgeUiEntity";
 import { IgeFontSmartTexture } from "@/engine/textures/IgeFontSmartTexture";
 import { registerClass } from "@/engine/utils/igeClassStore";
 import { IgeFontAlignX, IgeFontAlignY, IgeTextureRenderMode } from "@/enums";
-import type { IgeCanvasRenderingContext2d } from "@/types/IgeCanvasRenderingContext2d";
 
 /**
  * Creates a new font entity. A font entity will use a font sheet
@@ -417,10 +416,14 @@ export class IgeFontEntity extends IgeUiEntity {
 		return -1;
 	}
 
-	tick (ctx: IgeCanvasRenderingContext2d) {
-		// Check for an auto-progress update
+	/**
+	 * Refreshes text bound with bindData() once per frame. This runs in
+	 * update() rather than tick() so it works with every renderer (the
+	 * WebGL renderer draws entities without calling tick()).
+	 */
+	update (tickDelta: number) {
 		if (this._bindDataObject && this._bindDataProperty) {
-			if (!this._bindDataObject._alive) {
+			if (this._bindDataObject._alive === false) {
 				// The object we have bind data from has been
 				// destroyed so release our reference to it!
 				delete this._bindDataObject;
@@ -431,7 +434,7 @@ export class IgeFontEntity extends IgeUiEntity {
 			}
 		}
 
-		super.tick(ctx);
+		super.update(tickDelta);
 	}
 
 	/**
