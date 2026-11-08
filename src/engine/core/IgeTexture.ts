@@ -966,6 +966,10 @@ export class IgeTexture extends IgeAsset {
 		const id = this.id();
 		if (id) {
 			ige.textures.remove(id);
+
+			// Free its GPU copy, if a renderer made one
+			const renderer = ige.engine?.renderer?.() as { releaseTexture?: (texture: string) => void } | undefined;
+			renderer?.releaseTexture?.(id);
 		}
 
 		delete this.image;

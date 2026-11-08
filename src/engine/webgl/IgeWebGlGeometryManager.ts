@@ -122,7 +122,8 @@ export class IgeWebGlGeometryManager extends IgeBaseClass {
 		const vertexCount = data.vertices.length / 3; // Assuming vec3 positions
 		const hasNormals = !!data.normals;
 		const hasUVs = !!data.uvs;
-		const hasColors = !!data.colors;
+		const colorSize = data.colors && vertexCount > 0 ? Math.round(data.colors.length / vertexCount) : 0;
+		const hasColors = colorSize === 3 || colorSize === 4;
 		const hasBoneWeights = !!data.boneWeights;
 		const hasBoneIndices = !!data.boneIndices;
 		const isSkinned = hasBoneWeights && hasBoneIndices;
@@ -162,10 +163,13 @@ export class IgeWebGlGeometryManager extends IgeBaseClass {
 
 			// Color
 			if (hasColors && data.colors) {
-				interleavedData[offset++] = data.colors[i * 4];
-				interleavedData[offset++] = data.colors[i * 4 + 1];
-				interleavedData[offset++] = data.colors[i * 4 + 2];
-				interleavedData[offset++] = data.colors[i * 4 + 3];
+				// RGB or RGBA per vertex
+				const c = data.colors;
+				const o = i * colorSize;
+				interleavedData[offset++] = c[o];
+				interleavedData[offset++] = c[o + 1];
+				interleavedData[offset++] = c[o + 2];
+				interleavedData[offset++] = colorSize === 4 ? c[o + 3] : 1;
 			}
 
 			// Bone weights (4 floats per vertex from WEIGHTS_0)
@@ -231,6 +235,7 @@ export class IgeWebGlGeometryManager extends IgeBaseClass {
 		// Color attribute
 		if (hasColors) {
 			geometry.addAttribute("a_color", 4, gl.FLOAT, false, stride, attrOffset);
+			geometry.hasVertexColors = true;
 			attrOffset += 4 * 4;
 		}
 
@@ -252,15 +257,13 @@ export class IgeWebGlGeometryManager extends IgeBaseClass {
 		if (isSkinned) {
 			geometry.isSkinned = true;
 			geometry.skeletonId = data.skeletonId;
-			this.log(`Geometry "${geometryId}" is skinned with skeleton "${data.skeletonId}"`);
 		}
 
 		this._computeBounds(geometry, data, vertexCount);
 
-		// Cache geometry
+		// Cache geometry. Not logged: dynamic content (e.g. terrain chunks)
+		// creates many geometries.
 		this._geometries.set(geometryId, geometry);
-
-		this.log(`Created geometry "${geometryId}" with ${vertexCount} vertices${isSkinned ? " (skinned)" : ""}`);
 		return geometry;
 	}
 
@@ -415,8 +418,7 @@ export class IgeWebGlGeometryManager extends IgeBaseClass {
 
 		if (geometry.indexBuffer && geometry.indexCount > 0) {
 			// Draw indexed
-			const indexType = geometry.indexData instanceof Uint32Array ? gl.UNSIGNED_INT : gl.UNSIGNED_SHORT;
-			gl.drawElements(geometry.drawMode, geometry.indexCount, indexType, 0);
+			gl.drawElements(geometry.drawMode, geometry.indexCount, geometry.indexType, 0);
 		} else if (geometry.vertexCount > 0) {
 			// Draw non-indexed
 			gl.drawArrays(geometry.drawMode, 0, geometry.vertexCount);

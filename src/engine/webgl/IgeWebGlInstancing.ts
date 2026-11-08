@@ -45,6 +45,8 @@ export interface IgeWebGlRenderItem {
 	/** Row in the bone palette texture (instanced skinned draws), -1 if none. */
 	boneRow: number;
 	transparent: boolean;
+	/** Never back-face culled (material doubleSided). */
+	doubleSided: boolean;
 	castShadow: boolean;
 	/** Column-major world matrix (entity._worldMatrix4.matrix). */
 	worldMatrix: Float32Array;

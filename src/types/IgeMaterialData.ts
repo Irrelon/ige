@@ -28,6 +28,12 @@ export interface IgeMaterialData extends IgeAbstractData3d {
 	 */
 	blending?: "normal" | "additive";
 	side?: number;
+	/**
+	 * Draw both sides of every triangle even when the renderer culls back
+	 * faces (see IgeWebGlRenderer.backFaceCulling()), e.g. for leaves,
+	 * cloth or single-sided planes. Set from glTF's doubleSided flag.
+	 */
+	doubleSided?: boolean;
 
 	// PBR properties
 	/** Metallic factor (0 = dielectric, 1 = metal) */

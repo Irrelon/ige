@@ -34,7 +34,7 @@ import { findBoneIndex, retargetClips } from "@/engine/webgl/IgeAnimationRetarge
 import type { IgeSkeletonData } from "@/types/IgeSkeletonData";
 import type { IgeAnimationClipData } from "@/types/IgeAnimationClipData";
 import type { IgeModelLod, IgeModelLodLevel } from "@/engine/webgl/IgeModelParts";
-import { createSkeletonInstance, getModelLod, getModelParts } from "@/engine/webgl/IgeModelParts";
+import { createSkeletonInstance, getGeometryLod, getModelLod, getModelParts } from "@/engine/webgl/IgeModelParts";
 import { IgeSkeletalAnimationComponent } from "@/engine/components/IgeSkeletalAnimationComponent";
 import type { IgeAnimationPlayOptions } from "@/types/IgeAnimationClipData";
 
@@ -1135,6 +1135,14 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 	 * stats().lodItems counts how many visible meshes used a lower level.
 	 * Generated meshes are shared by every entity using the same model.
 	 * Pass null to remove the levels.
+	 *
+	 * Entities drawn from _geometryData instead of a model work too: levels
+	 * are generated from that geometry, or given as `geometry`. They belong
+	 * to the geometry assigned when lod() was called and are ignored if
+	 * _geometryData is replaced later.
+	 * @example #A terrain chunk with a hand-made simpler version
+	 *     chunk._geometryData = fullMesh;
+	 *     chunk.lod([{ screenSize: 300, geometry: liteMesh }]);
 	 * @example #Two generated levels for a crowd character
 	 *     zombie.model(zombieModel, {
 	 *         animation: "Walk",
@@ -1151,7 +1159,15 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 			return this._modelLod;
 		}
 
-		this._modelLod = levels && levels.length && this._model ? getModelLod(this._model, levels) : undefined;
+		if (!levels || !levels.length) {
+			this._modelLod = undefined;
+		} else if (this._model) {
+			this._modelLod = getModelLod(this._model, levels);
+		} else if (this._geometryData) {
+			this._modelLod = getGeometryLod(this._geometryData, levels);
+		} else {
+			this._modelLod = undefined;
+		}
 		return this;
 	}
 

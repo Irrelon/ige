@@ -35,6 +35,9 @@ import type { IgeModelPart } from "@/engine/webgl/IgeModelParts";
 import type { IgeParticleSystem3d } from "@/engine/webgl/IgeParticleSystem3d";
 import type { IgeDecalSystem3d } from "@/engine/webgl/IgeDecalSystem3d";
 import { DECAL_INSTANCE_FLOATS } from "@/engine/webgl/IgeDecalSystem3d";
+import { takeGeneratedLods } from "@/engine/webgl/IgeModelParts";
+import type { IgeHeightfieldRayOptions } from "@/engine/webgl/IgeHeightfieldRay";
+import { intersectHeightfield } from "@/engine/webgl/IgeHeightfieldRay";
 import type { IgeMaterialData } from "@/types/IgeMaterialData";
 import type { IgeSkeleton } from "@/types/IgeSkeletonData";
 import { MAX_BONES } from "@/types/IgeSkeletonData";
@@ -257,6 +260,9 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 
 	// Multiplies every on-screen size used to pick a level of detail
 	protected _lodBias: number = 1;
+
+	// Cull back faces of opaque meshes (off by default, see backFaceCulling())
+	protected _backFaceCulling: boolean = false;
 
 	// When true, the WebGL drawing buffer is preserved after compositing,
 	// allowing gl.readPixels() to work after a frame is rendered.
@@ -581,6 +587,84 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 		}
 		this._instancingEnabled = val;
 		return this;
+	}
+
+	/**
+	 * Free the GPU buffers of a geometry, e.g. a terrain chunk that was
+	 * rebuilt or a level that was unloaded, along with any LOD meshes
+	 * generated from it. Pass the geometry data or its id. If an entity
+	 * still draws the geometry it is simply uploaded again on its next
+	 * frame, so releasing too early costs time but doesn't break anything.
+	 */
+	releaseGeometry(geometry: IgeGeometryData3d | string): this {
+		if (!this._geometryManager) return this;
+
+		if (typeof geometry === "string") {
+			this._geometryManager.deleteGeometry(geometry);
+			return this;
+		}
+
+		this._geometryManager.deleteGeometry(geometry.id);
+		for (const lod of takeGeneratedLods(geometry)) {
+			this._geometryManager.deleteGeometry(lod.id);
+		}
+		return this;
+	}
+
+	/**
+	 * Free the GPU copy of a texture (an IgeTexture, or the id of a model
+	 * texture). IgeTexture.destroy() does this automatically. A texture
+	 * that is still used is uploaded again when next drawn.
+	 */
+	releaseTexture(texture: IgeTexture | string): this {
+		const id = typeof texture === "string" ? texture : texture.id();
+		if (!id || !this._textureManager) return this;
+		this._textureManager.deleteTexture(id);
+		this._pendingBlobTextures.delete(id);
+		return this;
+	}
+
+	/**
+	 * Gets / sets whether back faces of opaque meshes are culled in the
+	 * main pass (default false). Culling skips triangles facing away from
+	 * the camera, roughly halving the fragments shaded for closed meshes
+	 * such as terrain and characters. Meshes must be wound counter-
+	 * clockwise (glTF and IgePrimitiveGeometry are); materials with
+	 * doubleSided: true are never culled. Entities with a negative scale
+	 * (mirrored) turn inside out when culling is on.
+	 */
+	backFaceCulling(): boolean;
+	backFaceCulling(val: boolean): this;
+	backFaceCulling(val?: boolean): boolean | this {
+		if (val === undefined) {
+			return this._backFaceCulling;
+		}
+		this._backFaceCulling = val;
+		return this;
+	}
+
+	/**
+	 * Find where a screen point's ray first meets a heightfield, for
+	 * picking on uneven terrain (screenToGround() only meets a flat plane).
+	 * The ray is sampled every `step` world units (horizontally) through
+	 * the height band [minHeight, maxHeight], then the hit is refined by
+	 * bisection, so `step` only needs to be small enough not to jump over
+	 * narrow peaks. Returns null if the ray misses the band or the ground.
+	 * @param heightAt Ground height at a world X/Z position.
+	 * @example #Pick a hex tile on hilly terrain
+	 *     const hit = renderer.screenToHeightfield(viewport, x, y, (wx, wz) => terrain.heightAt(wx, wz), {
+	 *         minHeight: 0, maxHeight: 120, step: 4
+	 *     });
+	 */
+	screenToHeightfield(
+		viewport: IgeViewport,
+		screenX: number,
+		screenY: number,
+		heightAt: (x: number, z: number) => number,
+		options: IgeHeightfieldRayOptions
+	): { x: number; y: number; z: number } | null {
+		const ray = this.screenToWorldRay(viewport, screenX, screenY);
+		return ray ? intersectHeightfield(ray, heightAt, options) : null;
 	}
 
 	/**
@@ -982,7 +1066,18 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 		} else if (parts && parts.length > 0) {
 			this._addModelParts(entity, parts, data);
 		} else if (geometryData && geometryData.vertices) {
-			const item = this._addModelItem(entity, geometryData, entity._materialData, null, entity._worldMatrix4?.matrix);
+			// Plain geometry LOD applies only to the geometry it was made for
+			const lod = entity._modelLod;
+			const useLod = !!lod && lod.source === geometryData;
+			const item = this._addModelItem(
+				entity,
+				geometryData,
+				entity._materialData,
+				null,
+				entity._worldMatrix4?.matrix,
+				useLod ? lod!.partGeometries[0] : null,
+				useLod ? lod!.screenSizes : null
+			);
 			if (item) data.models.push(item);
 		} else if (entity._texture) {
 			data.sprites.push(entity);
@@ -1006,7 +1101,8 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 		const world = entity._worldMatrix4?.matrix;
 		if (!world) return;
 
-		const lod = entity._modelLod && entity._modelLod.partGeometries.length === parts.length ? entity._modelLod : undefined;
+		const modelLod = entity._modelLod;
+		const lod = modelLod && !modelLod.source && modelLod.partGeometries.length === parts.length ? modelLod : undefined;
 
 		let matrices = entity._modelPartMatrices;
 		if (!matrices || matrices.length !== parts.length) {
@@ -1089,6 +1185,7 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 				textureKey: "",
 				boneRow: -1,
 				transparent: false,
+				doubleSided: false,
 				castShadow: true,
 				worldMatrix,
 				cx: 0, cy: 0, cz: 0, radius: -1,
@@ -1141,6 +1238,7 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 
 		item.transparent = mat.opacity < 1 || mat.a < 1 || !!materialData?.transparent || !!overrideData?.transparent ||
 			!!(item.texture && (item.texture as any)._hasAlpha);
+		item.doubleSided = !!(overrideData?.doubleSided ?? materialData?.doubleSided);
 		item.castShadow = !entity._noShadowCast && !item.transparent;
 
 		// Skeleton: compute skin matrices once per frame (dirty-guarded) and
@@ -1181,7 +1279,9 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 		}
 
 		const skinned = item.skeleton ? "|s" : "";
-		item.batchKey = geometry.id + "|" + item.textureKey + skinned;
+		// Double-sided items batch separately so culling can be set per batch
+		const sided = item.doubleSided ? "|d" : "";
+		item.batchKey = geometry.id + "|" + item.textureKey + skinned + sided;
 		item.depthKey = geometry.id + skinned;
 
 		// Level-of-detail geometry (index 0 is the full mesh)
@@ -1201,7 +1301,7 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 				const lodGeometry = this._getGeometry(lodGeometryData[i]);
 				if (!lodGeometry) break;
 				geometries.push(lodGeometry);
-				batchKeys.push(lodGeometry.id + "|" + item.textureKey + skinned);
+				batchKeys.push(lodGeometry.id + "|" + item.textureKey + skinned + sided);
 				depthKeys.push(lodGeometry.id + skinned);
 			}
 
@@ -1532,8 +1632,7 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 
 		if (geometry.indexBuffer && geometry.indexCount > 0) {
 			// The instance buffer rebinds ARRAY_BUFFER only, the index buffer stays bound
-			const indexType = geometry.indexData instanceof Uint32Array ? gl.UNSIGNED_INT : gl.UNSIGNED_SHORT;
-			gl.drawElementsInstanced(geometry.drawMode, geometry.indexCount, indexType, 0, count);
+			gl.drawElementsInstanced(geometry.drawMode, geometry.indexCount, geometry.indexType, 0, count);
 		} else if (geometry.vertexCount > 0) {
 			gl.drawArraysInstanced(geometry.drawMode, 0, geometry.vertexCount, count);
 		}
@@ -1855,6 +1954,12 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 
 			this._geometryManager.bindGeometry(batch.geometry, program);
 			this._bindBaseTexture(batch.blobTextureId, batch.texture);
+			program.setUniform1i("u_hasVertexColors", batch.geometry.hasVertexColors ? 1 : 0);
+			if (this._backFaceCulling) {
+				// Shadow passes cull front faces with raw GL calls
+				this._stateManager.setCullFaceMode(this._canvasContext!.BACK);
+				this._stateManager.setCullFace(!batch.items[0].doubleSided);
+			}
 
 			if (instanced) {
 				if (batch.skinned) {
@@ -1876,6 +1981,9 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 
 			this._geometryManager.unbindGeometry(batch.geometry, program);
 		}
+
+		// Everything drawn after opaque meshes is double-sided
+		this._stateManager.setCullFace(false);
 	}
 
 	/**
@@ -1903,6 +2011,7 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 			const geometry = item.drawGeometry;
 			this._geometryManager.bindGeometry(geometry, program);
 			this._bindBaseTexture(item.blobTextureId, item.texture);
+			program.setUniform1i("u_hasVertexColors", geometry.hasVertexColors ? 1 : 0);
 			this._applyItemUniforms(program, item);
 			if (skinned) {
 				this._uploadBoneUniforms(program, item);
@@ -2145,8 +2254,7 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 					gl2.vertexAttribDivisor(locations[a], 1);
 				}
 
-				const indexType = quad.indexData instanceof Uint32Array ? gl2.UNSIGNED_INT : gl2.UNSIGNED_SHORT;
-				gl2.drawElementsInstanced(quad.drawMode, quad.indexCount, indexType, 0, count);
+				gl2.drawElementsInstanced(quad.drawMode, quad.indexCount, quad.indexType, 0, count);
 
 				for (const location of locations) {
 					if (location < 0) continue;
@@ -2242,8 +2350,7 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 				gl2.vertexAttribPointer(colorLoc, 4, gl2.FLOAT, false, PARTICLE_FLOATS * 4, 16);
 				gl2.vertexAttribDivisor(colorLoc, 1);
 
-				const indexType = quad.indexData instanceof Uint32Array ? gl2.UNSIGNED_INT : gl2.UNSIGNED_SHORT;
-				gl2.drawElementsInstanced(quad.drawMode, quad.indexCount, indexType, 0, count);
+				gl2.drawElementsInstanced(quad.drawMode, quad.indexCount, quad.indexType, 0, count);
 
 				gl2.vertexAttribDivisor(particleLoc, 0);
 				gl2.vertexAttribDivisor(colorLoc, 0);

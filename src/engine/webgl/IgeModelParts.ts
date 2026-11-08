@@ -106,6 +106,11 @@ export interface IgeModelLodLevel {
 	 * parts must use the same skeleton.
 	 */
 	model?: IgeGltfModel;
+	/**
+	 * For entities drawn from _geometryData (no model): an authored
+	 * lower-detail geometry, e.g. a simpler version of a terrain chunk.
+	 */
+	geometry?: IgeGeometryData3d;
 }
 
 /**
@@ -116,6 +121,11 @@ export interface IgeModelLod {
 	screenSizes: number[];
 	/** For each model part, its geometry at each lower level (parallel to screenSizes). */
 	partGeometries: IgeGeometryData3d[][];
+	/**
+	 * For plain-geometry LOD: the geometry the levels belong to. The
+	 * renderer ignores the levels once the entity's _geometryData changes.
+	 */
+	source?: IgeGeometryData3d;
 }
 
 const lodGeometryCache: WeakMap<IgeGeometryData3d, Map<string, IgeGeometryData3d>> = new WeakMap();
@@ -156,6 +166,41 @@ export function getModelLod (model: IgeGltfModel, levels: IgeModelLodLevel[]): I
 	}
 
 	return lod.screenSizes.length ? lod : undefined;
+}
+
+/**
+ * Build level-of-detail geometry for a single plain geometry (an entity
+ * drawn from _geometryData). Levels use `ratio` (generated, cached per
+ * geometry) or `geometry` (authored).
+ */
+export function getGeometryLod (geometry: IgeGeometryData3d, levels: IgeModelLodLevel[]): IgeModelLod | undefined {
+	const sorted = [...levels].sort((a, b) => b.screenSize - a.screenSize);
+	const lod: IgeModelLod = { screenSizes: [], partGeometries: [[]], source: geometry };
+
+	for (const level of sorted) {
+		let lower: IgeGeometryData3d | undefined;
+		if (level.geometry) {
+			lower = level.geometry;
+		} else if (level.ratio !== undefined && level.ratio < 1) {
+			lower = getSimplifiedGeometry(geometry, Math.max(0, level.ratio), level.maxError);
+		}
+		if (!lower) continue;
+		lod.screenSizes.push(level.screenSize);
+		lod.partGeometries[0].push(lower);
+	}
+
+	return lod.screenSizes.length ? lod : undefined;
+}
+
+/**
+ * Forget the generated LOD meshes of a geometry and return them, so their
+ * GPU buffers can be released along with it.
+ */
+export function takeGeneratedLods (geometry: IgeGeometryData3d): IgeGeometryData3d[] {
+	const byKey = lodGeometryCache.get(geometry);
+	if (!byKey) return [];
+	lodGeometryCache.delete(geometry);
+	return [...byKey.values()];
 }
 
 function getSimplifiedGeometry (geometry: IgeGeometryData3d, ratio: number, maxError: number | undefined): IgeGeometryData3d {
@@ -212,7 +257,8 @@ function toMaterialData (model: IgeGltfModel, mat: IgeWebGlMaterial, index: numb
 		color: color ? { r: color.r, g: color.g, b: color.b, a: color.a } : { r: 1, g: 1, b: 1, a: 1 },
 		metallic: typeof m.metallic === "function" ? m.metallic() : 0,
 		roughness: typeof m.roughness === "function" ? m.roughness() : 0.5,
-		transparent: m.blendMode?.() === "transparent"
+		transparent: m.blendMode?.() === "transparent",
+		doubleSided: m.cullMode?.() === "none"
 	};
 
 	if (emissive && (emissive.r > 0 || emissive.g > 0 || emissive.b > 0)) {
