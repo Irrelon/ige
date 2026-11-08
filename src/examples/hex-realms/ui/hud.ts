@@ -81,8 +81,8 @@ const ICONS = {
 	pillage: `<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3C13 6.5 18 8.5 18 14A6 6 0 0 1 6 14C6 10.5 8.5 9.5 8.5 6.5C10 8 11 9.5 11.5 11.5C12.5 9 12.5 6 12 3Z"/></svg>`
 };
 
-function quickButton (action: keyof typeof ICONS, title: string, disabled: boolean): string {
-	return `<button data-action="${action}" class="${disabled ? "" : "ready"}" aria-label="${esc(title)}" title="${esc(title)}" ${disabled ? "disabled" : ""}>${ICONS[action]}</button>`;
+function quickButton (action: keyof typeof ICONS, title: string): string {
+	return `<button data-action="${action}" aria-label="${esc(title)}" title="${esc(title)}">${ICONS[action]}</button>`;
 }
 
 export class Hud {
@@ -677,7 +677,7 @@ export class Hud {
 	/**
 	 * Quick actions floating above the selected unit, as in Polytopia: the
 	 * crossed swords capture the city it stands on, the house founds a city,
-	 * the flame pillages. Shown greyed (with the reason) when not possible yet.
+	 * the flame pillages. Only actions the unit can take right now are shown.
 	 */
 	unitActions (): void {
 		const el = document.getElementById("unitActions");
@@ -691,21 +691,14 @@ export class Hud {
 		if (!u || !pos || !pos.shown || u.owner !== this.me || h.replaying || h.busy || sim.current !== this.me || sim.state.winner) return hide();
 		const buttons: string[] = [];
 		const city = sim.cityOn(u.tile);
-		if (city && city.owner !== this.me) {
-			const problem = captureProblem(sim, this.me, u.id);
-			buttons.push(quickButton("capture", problem ?? `Capture ${city.name}`, !!problem));
-		}
-		if (UNIT_TYPES[u.type].founder && sim.options.allowFounding) {
-			const problem = foundProblem(sim, this.me, u.tile);
-			buttons.push(quickButton("found", problem ?? "Found a city here", !!problem));
-		}
+		if (city && city.owner !== this.me && !captureProblem(sim, this.me, u.id)) buttons.push(quickButton("capture", `Capture ${city.name}`));
+		if (UNIT_TYPES[u.type].founder && !foundProblem(sim, this.me, u.tile) && (u.moves > 0 || !u.acted)) buttons.push(quickButton("found", "Found a city here"));
 		const road = sim.roads[u.tile];
 		const building = sim.buildingOn(u.tile);
 		const enemyBuilding = !!building && building.owner !== this.me && sim.atWar(this.me, building.owner);
 		const enemyRoad = road >= 0 && road !== this.me && sim.atWar(this.me, road);
-		if (enemyBuilding || enemyRoad) {
-			const tired = u.attacked || u.moves <= 0;
-			buttons.push(quickButton("pillage", tired ? "No moves left to pillage" : `Pillage the ${enemyBuilding ? BUILDINGS[building!.type].name.toLowerCase() : "road"}`, tired));
+		if ((enemyBuilding || enemyRoad) && !u.attacked && u.moves > 0) {
+			buttons.push(quickButton("pillage", `Pillage the ${enemyBuilding ? BUILDINGS[building!.type].name.toLowerCase() : "road"}`));
 		}
 		if (!buttons.length) return hide();
 		// Above the unit, or above the city banner when it stands in a city (the banner's bottom
@@ -937,7 +930,7 @@ export class Hud {
 			<p><b>Grow</b>: deliver food (fish, game, bread) to cities. Each level adds a building slot and a reward.</p>
 			<p><b>Build</b>: click your land to place buildings. Woodcutters are ready at once; other sites wait for logs, planks or stone carried by road, and Rush finishes them for stars. Goods move along roads, ${4} tiles per turn, 2 loads per road tile per turn. Ports (Sailing) let carriers sail between your coastal cities, and a market also sells you goods at twice its price.</p>
 			<p><b>Diplomacy</b> (G): treaties, cultural exchanges, research agreements, trades of goods and stars (once, or every turn as a route; where your roads meet theirs the goods travel as carts), demands, denouncing and sanctions. Wars wear both sides down, making peace easier the longer they last. Wars without enough grievances are surprise wars that everyone resents; peace brings a 10-turn truce.</p>
-			<p><b>Quick actions</b>: buttons float above a selected unit for what it can do where it stands: crossed swords capture a city, a house founds one, a flame pillages.</p>
+			<p><b>Quick actions</b>: buttons float above a selected unit when it can do something where it stands: crossed swords capture a city, a house founds one, a flame pillages.</p>
 			<p><b>Fight</b>: declare war in Diplomacy first. Select a unit to see red attack rings; hover one to preview the damage. Ranged units need line of sight. Units stop when they move next to an enemy.</p>
 			<p><b>Keys</b>: WASD/arrows pan, wheel or Z/X zoom, Q/E rotate, Space next unit, Enter end turn, Esc deselect, C centre, T terrain style, R research, G diplomacy, J ambition, M wonders, B economy, V economy lens, L cities, F found city, O menu, H help.</p></div>`;
 	}

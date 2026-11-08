@@ -419,8 +419,8 @@ Peacemakers (+3 council votes, other civs warm to you) and Patrons (+2 stars a t
   player can have their own, set by the host or by that player), and leaving a game (the AI plays the civ until the
   player rejoins with their seat token).
 - **Quick unit actions** (Polytopia-style): round buttons float above the selected unit for what it can do where it
-  stands: crossed swords to capture the city, a house to found one, a flame to pillage; greyed, with the reason, when
-  not possible yet.
+  stands right now: crossed swords to capture the city, a house to found one, a flame to pillage. Actions it can't
+  take aren't shown.
 - **Natural terrain**: chunks where nothing is explored are flat parchment. The parchment pattern repeats every chunk,
   so interior unexplored chunks share one texture: the colossal map builds in 0.23 s instead of 6.3 s.
 - **Engine**: static shadow caching is on (shadow draw calls while panning drop from about 14 to 2 a frame).

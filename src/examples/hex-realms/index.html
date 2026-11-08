@@ -127,10 +127,8 @@
 		.ambition button { align-self: flex-start; }
 		#topbar button small { display: inline; }
 		#unitActions { position: absolute; left: 0; top: 0; z-index: 45; display: flex; gap: 8px; will-change: transform; }
-		#unitActions button { width: 40px; height: 40px; padding: 0; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: rgba(14, 22, 34, 0.92); border: 2px solid rgba(255, 255, 255, 0.35); color: var(--dim); box-shadow: 0 3px 10px rgba(0, 0, 0, 0.45); }
-		#unitActions button.ready { border-color: var(--gold); color: var(--gold); }
-		#unitActions button.ready:hover { background: #2d4463; transform: scale(1.08); }
-		#unitActions button:disabled { opacity: 0.75; }
+		#unitActions button { width: 40px; height: 40px; padding: 0; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: rgba(14, 22, 34, 0.92); border: 2px solid var(--gold); color: var(--gold); box-shadow: 0 3px 10px rgba(0, 0, 0, 0.45); }
+		#unitActions button:hover { background: #2d4463; transform: scale(1.08); }
 		.timers td { border: none; padding: 3px 6px 3px 0; font-size: 12px; }
 		#chat { right: 8px; bottom: 150px; width: 300px; max-width: calc(100vw - 16px); padding: 6px 8px; display: flex; flex-direction: column; gap: 6px; z-index: 110; }
 		#chat .log { max-height: 220px; overflow-y: auto; font-size: 12px; display: flex; flex-direction: column; gap: 3px; user-select: text; }
