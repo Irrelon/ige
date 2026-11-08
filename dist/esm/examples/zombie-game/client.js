@@ -71,6 +71,7 @@ const CAMERA_ORTHO_SIZE = 700;
 const PLAYER_SPEED = 260;
 const PLAYER_RADIUS = 28;
 const PLAYER_MAX_HEALTH = 100;
+const HEAL_RATE = 15; // health per second on the healing pad
 const PLAYER_RESPAWN_TIME = 3;
 const ATTACK_COOLDOWN = 0.35;
 const ATTACK_RANGE = 150;
@@ -180,6 +181,7 @@ export class Client extends IgeBaseClass {
                     });
                 }
                 this.createCrates();
+                this.createHealingPad();
             }
             this.updateStatus("Loading character model...");
             this.characterModel = await igeGltfLoader.load("../../assets/models/CesiumMan.glb", "characterModel");
@@ -257,6 +259,33 @@ export class Client extends IgeBaseClass {
                 friction: 0.6
             }));
         }
+    }
+    /**
+     * A glowing pad by the reception desk that heals players standing on
+     * it: a physics sensor reports players stepping on and off.
+     */
+    createHealingPad() {
+        if (!this.scene || !this.physics)
+            return;
+        const pad = new IgeEntity().id("healingPad").translateTo(0, 1, -380).mount(this.scene);
+        pad._geometryData = createBoxGeometry(180, 2, 120, "healingPad");
+        pad.material({ color: { r: 0.1, g: 0.35, b: 0.15, a: 1 }, emissiveColor: { r: 0.2, g: 1, b: 0.4 }, emissiveIntensity: 0.6 });
+        pad._noShadowCast = true;
+        const zone = this.physics.addSensor(pad, {
+            shape: { type: "box", halfExtents: { x: 90, y: 60, z: 60 } },
+            offset: { x: 0, y: 60, z: 0 }
+        });
+        const playerOf = (body) => this.players.find((p) => p.body === body);
+        zone.on("enter", (body) => {
+            const player = playerOf(body);
+            if (player)
+                player.healing = true;
+        });
+        zone.on("exit", (body) => {
+            const player = playerOf(body);
+            if (player)
+                player.healing = false;
+        });
     }
     lodFromUrl() {
         return new URLSearchParams(window.location.search).get("lod") !== "0";
@@ -345,7 +374,13 @@ export class Client extends IgeBaseClass {
                 .mount(this.scene);
             // Heroes animate at full frame rate rather than from the crowd cache
             entity.skeletalAnimation()?.poseCache(false);
-            const body = this.addCharacterBody(entity, PLAYER_RADIUS, 3000);
+            // Players walk with a character controller: up steps, pushing crates and zombies aside
+            const character = this.physics?.addCharacter(entity, {
+                radius: PLAYER_RADIUS,
+                height: CHARACTER_HEIGHT,
+                mass: 90,
+                maxStrength: 900
+            });
             this.createSword(entity);
             // Each player carries a lantern so they can see in the dark
             const lantern = new IgePointLight();
@@ -369,7 +404,8 @@ export class Client extends IgeBaseClass {
                 idleTime: 0,
                 facingX: 0,
                 facingZ: 1,
-                body
+                character,
+                body: character?.body
             };
             this.applyPlayerMaterial(player);
             this.players.push(player);
@@ -519,11 +555,14 @@ export class Client extends IgeBaseClass {
                 player.health = PLAYER_MAX_HEALTH;
                 player.invulnerable = RESPAWN_INVULNERABLE_TIME;
                 entity.translateTo(start.x, 0, start.z).show();
-                player.body?.enabled(true).teleport(start.x, 0, start.z);
+                player.character?.enabled(true).teleport(start.x, 0, start.z);
                 player.lantern.intensity(1.6);
                 this.shoveZombiesAway(start.x, start.z, 320);
             }
             return;
+        }
+        if (player.healing && player.health < PLAYER_MAX_HEALTH) {
+            player.health = Math.min(PLAYER_MAX_HEALTH, player.health + HEAL_RATE * dt);
         }
         const input = this.readPlayerInput(player.index);
         const len = Math.hypot(input.moveX, input.moveZ);
@@ -544,9 +583,9 @@ export class Client extends IgeBaseClass {
             }
         }
         if (len > 0.05) {
-            if (player.body) {
-                // Physics moves the capsule and keeps it out of walls and zombies
-                player.body.setVelocityXZ(input.moveX * PLAYER_SPEED, input.moveZ * PLAYER_SPEED);
+            if (player.character) {
+                // The character controller walks it, keeping it out of walls and zombies
+                player.character.move(input.moveX * PLAYER_SPEED, input.moveZ * PLAYER_SPEED);
             }
             else {
                 const pos = resolveLevelCollision(entity._translate.x + input.moveX * PLAYER_SPEED * dt, entity._translate.z + input.moveZ * PLAYER_SPEED * dt, PLAYER_RADIUS, this.obstacles);
@@ -559,7 +598,7 @@ export class Client extends IgeBaseClass {
             anim?.setSpeed(1.4 * Math.min(1, len));
         }
         else {
-            player.body?.setVelocityXZ(0, 0);
+            player.character?.move(0, 0);
             anim?.setSpeed(0);
         }
         // Lantern floats above the player's shoulder
@@ -861,7 +900,7 @@ export class Client extends IgeBaseClass {
         if (player.health <= 0) {
             player.respawnTimer = PLAYER_RESPAWN_TIME;
             player.entity.hide();
-            player.body?.enabled(false);
+            player.character?.enabled(false);
             player.lantern.intensity(0);
             this.bloodFx?.burst(80, { x: t.x, y: 90, z: t.z }, { x: 0, y: 1, z: 0 });
             this.bloodStains?.add(t.x, t.z, { size: 110 });

@@ -1,7 +1,9 @@
 import type JoltApi from "jolt-physics";
 import type { IgeEntity } from "../core/IgeEntity.js"
-import { IgeEventingClass } from "../core/IgeEventingClass.js";
-import { IgeRagdoll3d, type IgeRagdollOptions } from "./IgeRagdoll3d.js"
+import type { IgeGeometryData3d } from "../../types/IgeGeometryData3d.js";
+import { IgeEventingClass } from "../core/IgeEventingClass.js"
+import { IgeRagdoll3d, type IgeRagdollOptions } from "./IgeRagdoll3d.js";
+import { IgePhysicsCharacter3d, type IgePhysicsCharacterOptions } from "./IgePhysicsCharacter3d.js"
 type Jolt = typeof JoltApi;
 type Vec3 = {
     x: number;
@@ -27,6 +29,20 @@ export type IgePhysicsShape = {
     type: "capsule";
     radius: number;
     halfHeight: number;
+}
+/**
+ * The triangles of a geometry (e.g. the entity's own _geometryData),
+ * scaled by the entity's scale: level geometry and terrain. Static and
+ * kinematic bodies only.
+ */
+ | {
+    type: "mesh";
+    geometry: IgeGeometryData3d;
+}
+/** The convex hull of a geometry's vertices, scaled by the entity's scale: props of any shape, dynamic too. */
+ | {
+    type: "convex";
+    geometry: IgeGeometryData3d;
 };
 export interface IgePhysicsBodyOptions {
     /** "dynamic" (default) is moved by the simulation, "static" never moves, "kinematic" follows its entity. */
@@ -60,6 +76,13 @@ export interface IgePhysics3dOptions {
     fixedTimeStep: number;
     /** Most steps run in one update to catch up after a slow frame (default 4). */
     maxSubSteps: number;
+    /**
+     * Draw dynamic bodies' entities between the last two steps, by how far
+     * the clock is into the next step (default true), so motion is smooth
+     * when the display refreshes faster or slower than the step rate (e.g.
+     * 120 Hz screens). Entities then lag the simulation by under one step.
+     */
+    interpolate: boolean;
     /**
      * Use Jolt's multithreaded build: "auto" (default) when the page is
      * cross-origin isolated (served with COOP/COEP headers, needed for
@@ -97,7 +120,14 @@ export declare class IgePhysicsBody3d {
     _offset: Vec3;
     _enabled: boolean;
     _destroyed: boolean;
+    /** Body position and rotation at the last two steps (IGE units): x, y, z, qx, qy, qz, qw. */
+    _previous: Float64Array;
+    _current: Float64Array;
+    /** Whether _previous and _current differ (the entity still needs placing). */
+    _moving: boolean;
     constructor(physics: IgePhysics3d, entity: IgeEntity, options: IgePhysicsBodyOptions, body: JoltApi.Body);
+    /** Record the body's transform as the latest step's (and the previous one's too when resetting). */
+    _capture(reset?: boolean): void;
     /** Linear velocity in IGE units per second. */
     velocity(): Vec3;
     /** Set the linear velocity in IGE units per second (wakes the body). */
@@ -120,6 +150,37 @@ export declare class IgePhysicsBody3d {
     destroy(): void;
     /** The shape offset rotated by a body rotation (IGE units). */
     _worldOffset(q: JoltApi.Quat | Quat): Vec3;
+}
+export interface IgePhysicsSensorOptions {
+    shape: IgePhysicsShape;
+    /** Where the shape's centre sits relative to the entity's origin (IGE units). */
+    offset?: Vec3;
+    /** Also report static bodies (walls, floors) that overlap (default false). */
+    includeStatic?: boolean;
+}
+/**
+ * A trigger volume: a shape that follows its entity, doesn't collide, and
+ * reports bodies entering and leaving it ("enter" and "exit" events with
+ * the IgePhysicsBody3d) after every simulation step, e.g. pickups, damage
+ * zones, doors and checkpoints. Overlaps are found by querying the world
+ * on the main thread, so events work with Jolt's threaded build too.
+ * @example #A healing zone
+ *     const zone = physics.addSensor(pad, { shape: { type: "sphere", radius: 120 } });
+ *     zone.on("enter", (body) => body.entity.data("healing", true));
+ *     zone.on("exit", (body) => body.entity.data("healing", false));
+ */
+export declare class IgePhysicsSensor3d extends IgeEventingClass {
+    classId: string;
+    readonly body: IgePhysicsBody3d;
+    readonly includeStatic: boolean;
+    _overlapping: Set<IgePhysicsBody3d>;
+    constructor(body: IgePhysicsBody3d, includeStatic: boolean);
+    /** The entity the sensor follows. */
+    get entity(): IgeEntity;
+    /** Bodies inside the sensor after the last step. */
+    overlapping(): IgePhysicsBody3d[];
+    /** Remove the sensor. */
+    destroy(): void;
 }
 /** v rotated by the unit quaternion (x, y, z, w). */
 export declare function rotateVector(v: Vec3, x: number, y: number, z: number, w: number): Vec3;
@@ -164,6 +225,12 @@ export declare class IgePhysics3d extends IgeEventingClass {
     _threaded: boolean;
     _list: IgePhysicsBody3d[];
     _ragdolls: IgeRagdoll3d[];
+    _sensors: IgePhysicsSensor3d[];
+    _characters: IgePhysicsCharacter3d[];
+    _characterCollision?: JoltApi.CharacterVsCharacterCollisionSimple;
+    _sensorCollector?: JoltApi.CollideShapeAllHitCollisionCollector;
+    _sensorSettings?: JoltApi.CollideShapeSettings;
+    _unitScale?: JoltApi.Vec3;
     _byBodyId: Map<number, IgePhysicsBody3d>;
     _accumulator: number;
     _behaviourId: string;
@@ -220,6 +287,26 @@ export declare class IgePhysics3d extends IgeEventingClass {
     createRagdoll(entity: IgeEntity, options?: IgeRagdollOptions): IgeRagdoll3d;
     /** Remove a ragdoll's bodies and joints. */
     removeRagdoll(ragdoll: IgeRagdoll3d): void;
+    /**
+     * Add a trigger volume that follows an entity and reports bodies
+     * entering and leaving it (see IgePhysicsSensor3d).
+     */
+    addSensor(entity: IgeEntity, options: IgePhysicsSensorOptions): IgePhysicsSensor3d;
+    /** Remove a sensor (bodies inside it get no "exit" event). */
+    removeSensor(sensor: IgePhysicsSensor3d): void;
+    /**
+     * Add a player character (Jolt's CharacterVirtual) to an entity: a
+     * capsule with its feet at the entity's origin that walks where it's
+     * told with move(), up stairs and slopes, and pushes other bodies with
+     * a limited strength (see IgePhysicsCharacter3d).
+     * @example #A player
+     *     const hero = physics.addCharacter(entity, { radius: 28, height: 130 });
+     *     // each frame, from input:
+     *     hero.move(moveX * 260, moveZ * 260);
+     */
+    addCharacter(entity: IgeEntity, options: IgePhysicsCharacterOptions): IgePhysicsCharacter3d;
+    /** Remove a character and free it. */
+    removeCharacter(character: IgePhysicsCharacter3d): void;
     /** The body attached to an entity by addBody(), if any. */
     bodyOf(entity: IgeEntity): IgePhysicsBody3d | undefined;
     /**
@@ -243,10 +330,34 @@ export declare class IgePhysics3d extends IgeEventingClass {
     raycast(origin: Vec3, direction: Vec3, maxDistance: number): IgePhysicsRaycastHit | null;
     /** Free every body and the world. */
     destroy(): void;
-    _createShape(shape: IgePhysicsShape): JoltApi.Shape;
+    /**
+     * Build a Jolt shape. Shapes made from settings (mesh, convex) belong to
+     * the settings until a body takes a reference, so cleanup() frees the
+     * settings after the body is created.
+     */
+    _createShape(shape: IgePhysicsShape, scale: Vec3): {
+        shape: JoltApi.Shape;
+        cleanup?: () => void;
+    };
+    _createMeshShape(geometry: IgeGeometryData3d, scale: Vec3): {
+        shape: JoltApi.Shape;
+        cleanup: () => void;
+    };
+    _createConvexShape(geometry: IgeGeometryData3d, scale: Vec3): {
+        shape: JoltApi.Shape;
+        cleanup: () => void;
+    };
     _moveKinematicBodies(dt: number): void;
+    /** Find what overlaps each sensor and emit "enter" / "exit" for the changes. */
+    _updateSensors(): void;
     /** Move each awake dynamic body's entity to the body. */
-    _syncEntities(): void;
+    /** Record every awake dynamic body's transform after a step. */
+    _captureBodies(): void;
+    /**
+     * Move each dynamic body's entity to its transform, alpha of the way
+     * from the previous step's to the latest (1 = the latest).
+     */
+    _syncEntities(alpha: number): void;
 }
 /** a * b for quaternions. */
 export declare function multiplyQuat(a: Quat, b: Quat): Quat;

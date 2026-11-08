@@ -1,5 +1,5 @@
 import { IgePoint3d } from "./IgePoint3d.js"
-import type { IgeCompassDirection } from "../../types/IgeCompassDirection.js";
+import type { IgeCompassDirection } from "../../types/IgeCompassDirection.js"
 /**
  * Creates a new path node for use with the IgePathFinder class.
  */

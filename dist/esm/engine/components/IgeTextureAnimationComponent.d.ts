@@ -1,5 +1,5 @@
 import { IgeComponent } from "../core/IgeComponent.js"
-import type { IgeEntity } from "../core/IgeEntity.js";
+import type { IgeEntity } from "../core/IgeEntity.js"
 import type { IgeCanvasRenderingContext2d } from "../../types/IgeCanvasRenderingContext2d.js"
 import type { IgeTextureAnimation } from "../../types/IgeTextureAnimation.js"
 export interface IgeAnimationStartOptions {

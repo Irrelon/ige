@@ -1,5 +1,5 @@
 import { IgeBaseClass } from "../core/IgeBaseClass.js"
-import type { IgeSkeleton, IgeSkeletonData } from "../../types/IgeSkeletonData.js";
+import type { IgeSkeleton, IgeSkeletonData } from "../../types/IgeSkeletonData.js"
 /**
  * Manages skeleton instances for skeletal animation.
  * Handles bone hierarchy traversal and matrix computation.

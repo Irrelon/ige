@@ -10,6 +10,7 @@ import { IgeParticleSystem3d } from "../../engine/webgl/IgeParticleSystem3d.js"
 import { IgeDecalSystem3d } from "../../engine/webgl/IgeDecalSystem3d.js"
 import { IgePhysics3d, type IgePhysicsBody3d } from "../../engine/physics/IgePhysics3d.js"
 import type { IgeRagdoll3d } from "../../engine/physics/IgeRagdoll3d.js"
+import type { IgePhysicsCharacter3d } from "../../engine/physics/IgePhysicsCharacter3d.js"
 import { IgeViewportOverlay, type IgeOverlayMarker } from "../../engine/webgl/IgeViewportOverlay.js"
 import { IgeGamePadComponent } from "../../engine/components/IgeGamePadComponent.js"
 import { type IgeLevelObstacle } from "./level.js"
@@ -27,8 +28,12 @@ interface PlayerState {
     idleTime: number;
     facingX: number;
     facingZ: number;
-    /** Physics capsule (with ?physics=1). */
+    /** Physics character controller (with ?physics=1). */
+    character?: IgePhysicsCharacter3d;
+    /** The character's body, as sensors and raycasts report it. */
     body?: IgePhysicsBody3d;
+    /** Standing on the healing pad (a physics sensor). */
+    healing?: boolean;
 }
 interface ZombieState {
     entity: IgeEntity;
@@ -92,6 +97,11 @@ export declare class Client extends IgeBaseClass implements IgeCanInit {
     addCharacterBody(entity: IgeEntity, radius: number, density: number): IgePhysicsBody3d | undefined;
     /** Wooden crates around the lobby, and a stack by the desk, for characters and swords to knock about. */
     createCrates(): void;
+    /**
+     * A glowing pad by the reception desk that heals players standing on
+     * it: a physics sensor reports players stepping on and off.
+     */
+    createHealingPad(): void;
     lodFromUrl(): boolean;
     zombieCountFromUrl(): number;
     setupLights(): void;

@@ -1,5 +1,5 @@
 import { IgeEntityBox2d } from "./IgeEntityBox2d.js"
-import { b2Contact } from "./lib/dynamics/b2_contact.js";
+import { b2Contact } from "./lib/dynamics/b2_contact.js"
 export declare function igeBox2dContactEntityA(contact: b2Contact): any;
 export declare function igeBox2dContactEntityB(contact: b2Contact): any;
 export declare function igeBox2dContactEitherId(contact: b2Contact, id1: string, id2: string): boolean;

@@ -1,5 +1,5 @@
-import { RGBA, XY } from "./lib/index.js";
-import { b2Draw, b2DrawFlags } from "./lib/common/b2_draw.js";
+import { RGBA, XY } from "./lib/index.js"
+import { b2Draw, b2DrawFlags } from "./lib/common/b2_draw.js"
 import { b2Transform } from "./lib/common/b2_math.js"
 export declare class igeBox2dDebugDraw implements b2Draw {
     m_drawFlags: b2DrawFlags;

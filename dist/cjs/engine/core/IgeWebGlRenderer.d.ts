@@ -1,32 +1,32 @@
 import { IgeBaseRenderer } from "./IgeBaseRenderer.js"
-import type { IgeEngine } from "./IgeEngine.js";
+import type { IgeEngine } from "./IgeEngine.js"
 import type { IgeViewport } from "./IgeViewport.js"
-import { IgeWebGlResourceManager } from "../webgl/IgeWebGlResourceManager.js";
+import { IgeWebGlResourceManager } from "../webgl/IgeWebGlResourceManager.js"
 import { IgeWebGlShaderManager } from "../webgl/IgeWebGlShaderManager.js"
-import { IgeWebGlTextureManager } from "../webgl/IgeWebGlTextureManager.js";
+import { IgeWebGlTextureManager } from "../webgl/IgeWebGlTextureManager.js"
 import { IgeWebGlGeometryManager } from "../webgl/IgeWebGlGeometryManager.js"
-import { IgeWebGlCameraController } from "../webgl/IgeWebGlCameraController.js";
+import { IgeWebGlCameraController } from "../webgl/IgeWebGlCameraController.js"
 import { IgeWebGlStateManager } from "../webgl/IgeWebGlStateManager.js"
-import { IgeWebGlLightManager } from "../webgl/IgeWebGlLightManager.js";
+import { IgeWebGlLightManager } from "../webgl/IgeWebGlLightManager.js"
 import { IgeWebGlShadowManager } from "../webgl/IgeWebGlShadowManager.js"
-import { IgeWebGlSkeletonManager } from "../webgl/IgeWebGlSkeletonManager.js";
+import { IgeWebGlSkeletonManager } from "../webgl/IgeWebGlSkeletonManager.js"
 import type { IgeObject } from "./IgeObject.js"
-import type { IgeEntity } from "./IgeEntity.js";
+import type { IgeEntity } from "./IgeEntity.js"
 import type { IgeDirectionalLight, IgePointLight } from "../webgl/IgeWebGlLight.js"
-import type { IgeCameraMatrices } from "../webgl/IgeWebGlCameraController.js";
+import type { IgeCameraMatrices } from "../webgl/IgeWebGlCameraController.js"
 import type { IgeWebGlProgram } from "../webgl/IgeWebGlProgram.js"
-import type { IgeWebGlGeometry } from "../webgl/IgeWebGlGeometry.js";
+import type { IgeWebGlGeometry } from "../webgl/IgeWebGlGeometry.js"
 import type { IgeTexture } from "./IgeTexture.js"
-import { IgeMatrix4 } from "./IgeMatrix4.js";
+import { IgeMatrix4 } from "./IgeMatrix4.js"
 import { IgeFrustum } from "../webgl/IgeFrustum.js"
-import { IgeWebGlBonePalette, IgeWebGlInstanceBuffer, IgeWebGlItemBatcher, type IgeWebGlItemBatch, type IgeWebGlRenderItem } from "../webgl/IgeWebGlInstancing.js";
+import { IgeWebGlBonePalette, IgeWebGlInstanceBuffer, IgeWebGlItemBatcher, type IgeWebGlItemBatch, type IgeWebGlRenderItem } from "../webgl/IgeWebGlInstancing.js"
 import type { IgeGeometryData3d } from "../../types/IgeGeometryData3d.js"
 import type { IgeModelPart } from "../webgl/IgeModelParts.js"
-import type { IgeParticleSystem3d } from "../webgl/IgeParticleSystem3d.js";
+import type { IgeParticleSystem3d } from "../webgl/IgeParticleSystem3d.js"
 import type { IgeDecalSystem3d } from "../webgl/IgeDecalSystem3d.js"
-import type { IgeRaycastHit, IgeRaycastOptions } from "../webgl/IgeRaycast.js";
+import type { IgeRaycastHit, IgeRaycastOptions } from "../webgl/IgeRaycast.js"
 import type { IgeHeightfieldRayOptions } from "../webgl/IgeHeightfieldRay.js"
-import type { IgeMaterialData } from "../../types/IgeMaterialData.js";
+import type { IgeMaterialData } from "../../types/IgeMaterialData.js"
 import type { IgeSkeleton } from "../../types/IgeSkeletonData.js"
 /**
  * Distance fog settings for IgeWebGlRenderer.fog().

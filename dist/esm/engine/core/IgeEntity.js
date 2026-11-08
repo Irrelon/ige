@@ -1,20 +1,20 @@
 import { markSceneChanged } from "../utils/sceneChange.js"
-import { IgeBounds } from "./IgeBounds.js";
+import { IgeBounds } from "./IgeBounds.js"
 import { IgeDummyCanvas } from "./IgeDummyCanvas.js"
-import { IgeMatrix2d } from "./IgeMatrix2d.js";
+import { IgeMatrix2d } from "./IgeMatrix2d.js"
 import { IgeMatrix4 } from "./IgeMatrix4.js"
-import { IgeObject } from "./IgeObject.js";
+import { IgeObject } from "./IgeObject.js"
 import { IgePoint2d } from "./IgePoint2d.js"
-import { IgePoint3d } from "./IgePoint3d.js";
+import { IgePoint3d } from "./IgePoint3d.js"
 import { IgePoly2d } from "./IgePoly2d.js"
-import { ige } from "../instance.js";
+import { ige } from "../instance.js"
 import { isClient, isServer } from "../utils/clientServer.js"
-import { registerClass } from "../utils/igeClassStore.js";
+import { registerClass } from "../utils/igeClassStore.js"
 import { degreesToRadians } from "../utils/maths.js"
-import { traceSet } from "../utils/trace.js";
-import { IgeBehaviourType, IgeEntityRenderMode, IgeIsometricDepthSortMode, IgeMountMode, IgeStreamMode } from "../../enums/index.js";
+import { traceSet } from "../utils/trace.js"
+import { IgeBehaviourType, IgeEntityRenderMode, IgeIsometricDepthSortMode, IgeMountMode, IgeStreamMode } from "../../enums/index.js"
 import { findBoneIndex, retargetClips } from "../webgl/IgeAnimationRetarget.js"
-import { createSkeletonInstance, getGeometryLod, getModelLod, getModelParts } from "../webgl/IgeModelParts.js";
+import { createSkeletonInstance, getGeometryLod, getModelLod, getModelParts } from "../webgl/IgeModelParts.js"
 import { IgeSkeletalAnimationComponent } from "../components/IgeSkeletalAnimationComponent.js"
 /**
  * Creates an entity and handles the entity's life cycle and

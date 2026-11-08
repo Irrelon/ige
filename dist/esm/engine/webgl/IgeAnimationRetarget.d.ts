@@ -1,5 +1,5 @@
 import type { IgeGltfModel } from "./IgeGltfLoader.js"
-import type { IgeAnimationClipData } from "../../types/IgeAnimationClipData.js";
+import type { IgeAnimationClipData } from "../../types/IgeAnimationClipData.js"
 import type { IgeSkeletonData } from "../../types/IgeSkeletonData.js"
 export interface IgeRetargetOptions {
     /**

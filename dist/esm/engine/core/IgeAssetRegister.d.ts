@@ -1,5 +1,5 @@
 import type { IgeAsset } from "./IgeAsset.js"
-import { IgeEventingClass } from "./IgeEventingClass.js";
+import { IgeEventingClass } from "./IgeEventingClass.js"
 export declare class IgeAssetRegister<AssetType extends IgeAsset> extends IgeEventingClass {
     classId: string;
     _assetById: Record<string, AssetType>;

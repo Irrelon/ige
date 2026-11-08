@@ -1,5 +1,5 @@
 import { IgeEventingClass } from "./IgeEventingClass.js"
-import type { IgeCanId } from "../../types/IgeCanId.js";
+import type { IgeCanId } from "../../types/IgeCanId.js"
 import type { IgeGenericPathFinderNode } from "../../types/IgeGenericPathFinderNode.js"
 import type { IgePathFinderFunctionality } from "../../types/IgePathFinderFunctionality.js"
 /**

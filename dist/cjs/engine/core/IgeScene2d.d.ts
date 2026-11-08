@@ -1,5 +1,5 @@
 import { IgeEntity } from "./IgeEntity.js"
-import type { IgeCanvasRenderingContext2d } from "../../types/IgeCanvasRenderingContext2d.js";
+import type { IgeCanvasRenderingContext2d } from "../../types/IgeCanvasRenderingContext2d.js"
 /**
  * Creates a new 2d scene.
  */

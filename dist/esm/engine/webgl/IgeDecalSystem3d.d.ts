@@ -1,5 +1,5 @@
 import { IgeEntity } from "../core/IgeEntity.js"
-import type { IgeTexture } from "../core/IgeTexture.js";
+import type { IgeTexture } from "../core/IgeTexture.js"
 import type { IgeDecalTargetMesh } from "./IgeDecalProjector.js"
 /** Floats per decal in renderData(): x, y, z, size, r, g, b, a, rotation, cell, 0, 0. */
 export declare const DECAL_INSTANCE_FLOATS = 12;

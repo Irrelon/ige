@@ -1,7 +1,7 @@
 import { IgeBounds } from "./IgeBounds.js"
-import { IgePoint2d } from "./IgePoint2d.js";
+import { IgePoint2d } from "./IgePoint2d.js"
 import type { IgePoint3d } from "./IgePoint3d.js"
-import type { IgeCanvasRenderingContext2d } from "../../types/IgeCanvasRenderingContext2d.js";
+import type { IgeCanvasRenderingContext2d } from "../../types/IgeCanvasRenderingContext2d.js"
 import type { IgeShapeFunctionality } from "../../types/IgeShapeFunctionality.js"
 /**
  * Creates a new 2d polygon made up of IgePoint2d instances.

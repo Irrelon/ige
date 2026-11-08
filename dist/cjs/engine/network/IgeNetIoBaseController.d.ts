@@ -1,5 +1,5 @@
 import { IgeEventingClass } from "../core/IgeEventingClass.js"
-import type { IgeNetIoSocket } from "./server/IgeNetIoSocket.js";
+import type { IgeNetIoSocket } from "./server/IgeNetIoSocket.js"
 export declare class IgeNetIoBaseController extends IgeEventingClass {
     classId: string;
     _networkCommandsIndex: string[];

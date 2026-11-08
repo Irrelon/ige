@@ -1,7 +1,7 @@
 import type { IgePoint3d } from "../core/IgePoint3d.js"
-import { IgeUiElement } from "../core/IgeUiElement.js";
+import { IgeUiElement } from "../core/IgeUiElement.js"
 import { IgeUiButton } from "./IgeUiButton.js"
-import { IgeUiLabel } from "./IgeUiLabel.js";
+import { IgeUiLabel } from "./IgeUiLabel.js"
 export declare class IgeUiWindow extends IgeUiElement {
     classId: string;
     _draggable: boolean;

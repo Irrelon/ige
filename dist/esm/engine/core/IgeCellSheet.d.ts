@@ -1,5 +1,5 @@
 import { IgeTexture } from "./IgeTexture.js"
-import type { IgeImage } from "../../types/IgeImage.js";
+import type { IgeImage } from "../../types/IgeImage.js"
 import type { IgeSmartTexture } from "../../types/IgeSmartTexture.js"
 /**
  * Creates a new cell sheet. Cell sheets are textures that are

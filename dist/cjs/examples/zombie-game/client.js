@@ -83,6 +83,7 @@ const CAMERA_ORTHO_SIZE = 700;
 const PLAYER_SPEED = 260;
 const PLAYER_RADIUS = 28;
 const PLAYER_MAX_HEALTH = 100;
+const HEAL_RATE = 15; // health per second on the healing pad
 const PLAYER_RESPAWN_TIME = 3;
 const ATTACK_COOLDOWN = 0.35;
 const ATTACK_RANGE = 150;
@@ -182,6 +183,7 @@ class Client extends IgeBaseClass_1.IgeBaseClass {
                         });
                     }
                     this.createCrates();
+                    this.createHealingPad();
                 }
                 this.updateStatus("Loading character model...");
                 this.characterModel = yield IgeGltfLoader_1.igeGltfLoader.load("../../assets/models/CesiumMan.glb", "characterModel");
@@ -261,6 +263,33 @@ class Client extends IgeBaseClass_1.IgeBaseClass {
             }));
         }
     }
+    /**
+     * A glowing pad by the reception desk that heals players standing on
+     * it: a physics sensor reports players stepping on and off.
+     */
+    createHealingPad() {
+        if (!this.scene || !this.physics)
+            return;
+        const pad = new IgeEntity_1.IgeEntity().id("healingPad").translateTo(0, 1, -380).mount(this.scene);
+        pad._geometryData = (0, level_1.createBoxGeometry)(180, 2, 120, "healingPad");
+        pad.material({ color: { r: 0.1, g: 0.35, b: 0.15, a: 1 }, emissiveColor: { r: 0.2, g: 1, b: 0.4 }, emissiveIntensity: 0.6 });
+        pad._noShadowCast = true;
+        const zone = this.physics.addSensor(pad, {
+            shape: { type: "box", halfExtents: { x: 90, y: 60, z: 60 } },
+            offset: { x: 0, y: 60, z: 0 }
+        });
+        const playerOf = (body) => this.players.find((p) => p.body === body);
+        zone.on("enter", (body) => {
+            const player = playerOf(body);
+            if (player)
+                player.healing = true;
+        });
+        zone.on("exit", (body) => {
+            const player = playerOf(body);
+            if (player)
+                player.healing = false;
+        });
+    }
     lodFromUrl() {
         return new URLSearchParams(window.location.search).get("lod") !== "0";
     }
@@ -334,7 +363,7 @@ class Client extends IgeBaseClass_1.IgeBaseClass {
         this.slashFx.id("slashFx").mount(this.scene);
     }
     createPlayers() {
-        var _a, _b, _c, _d;
+        var _a, _b, _c, _d, _e;
         if (!this.scene || !this.characterModel || !((_a = this.renderer) === null || _a === void 0 ? void 0 : _a.lightManager))
             return;
         const walkClip = (_c = (_b = this.characterModel.animations) === null || _b === void 0 ? void 0 : _b[0]) === null || _c === void 0 ? void 0 : _c.name;
@@ -349,7 +378,13 @@ class Client extends IgeBaseClass_1.IgeBaseClass {
                 .mount(this.scene);
             // Heroes animate at full frame rate rather than from the crowd cache
             (_d = entity.skeletalAnimation()) === null || _d === void 0 ? void 0 : _d.poseCache(false);
-            const body = this.addCharacterBody(entity, PLAYER_RADIUS, 3000);
+            // Players walk with a character controller: up steps, pushing crates and zombies aside
+            const character = (_e = this.physics) === null || _e === void 0 ? void 0 : _e.addCharacter(entity, {
+                radius: PLAYER_RADIUS,
+                height: CHARACTER_HEIGHT,
+                mass: 90,
+                maxStrength: 900
+            });
             this.createSword(entity);
             // Each player carries a lantern so they can see in the dark
             const lantern = new IgeWebGlLight_1.IgePointLight();
@@ -373,7 +408,8 @@ class Client extends IgeBaseClass_1.IgeBaseClass {
                 idleTime: 0,
                 facingX: 0,
                 facingZ: 1,
-                body
+                character,
+                body: character === null || character === void 0 ? void 0 : character.body
             };
             this.applyPlayerMaterial(player);
             this.players.push(player);
@@ -526,11 +562,14 @@ class Client extends IgeBaseClass_1.IgeBaseClass {
                 player.health = PLAYER_MAX_HEALTH;
                 player.invulnerable = RESPAWN_INVULNERABLE_TIME;
                 entity.translateTo(start.x, 0, start.z).show();
-                (_a = player.body) === null || _a === void 0 ? void 0 : _a.enabled(true).teleport(start.x, 0, start.z);
+                (_a = player.character) === null || _a === void 0 ? void 0 : _a.enabled(true).teleport(start.x, 0, start.z);
                 player.lantern.intensity(1.6);
                 this.shoveZombiesAway(start.x, start.z, 320);
             }
             return;
+        }
+        if (player.healing && player.health < PLAYER_MAX_HEALTH) {
+            player.health = Math.min(PLAYER_MAX_HEALTH, player.health + HEAL_RATE * dt);
         }
         const input = this.readPlayerInput(player.index);
         const len = Math.hypot(input.moveX, input.moveZ);
@@ -551,9 +590,9 @@ class Client extends IgeBaseClass_1.IgeBaseClass {
             }
         }
         if (len > 0.05) {
-            if (player.body) {
-                // Physics moves the capsule and keeps it out of walls and zombies
-                player.body.setVelocityXZ(input.moveX * PLAYER_SPEED, input.moveZ * PLAYER_SPEED);
+            if (player.character) {
+                // The character controller walks it, keeping it out of walls and zombies
+                player.character.move(input.moveX * PLAYER_SPEED, input.moveZ * PLAYER_SPEED);
             }
             else {
                 const pos = (0, level_1.resolveLevelCollision)(entity._translate.x + input.moveX * PLAYER_SPEED * dt, entity._translate.z + input.moveZ * PLAYER_SPEED * dt, PLAYER_RADIUS, this.obstacles);
@@ -566,7 +605,7 @@ class Client extends IgeBaseClass_1.IgeBaseClass {
             anim === null || anim === void 0 ? void 0 : anim.setSpeed(1.4 * Math.min(1, len));
         }
         else {
-            (_b = player.body) === null || _b === void 0 ? void 0 : _b.setVelocityXZ(0, 0);
+            (_b = player.character) === null || _b === void 0 ? void 0 : _b.move(0, 0);
             anim === null || anim === void 0 ? void 0 : anim.setSpeed(0);
         }
         // Lantern floats above the player's shoulder
@@ -872,7 +911,7 @@ class Client extends IgeBaseClass_1.IgeBaseClass {
         if (player.health <= 0) {
             player.respawnTimer = PLAYER_RESPAWN_TIME;
             player.entity.hide();
-            (_b = player.body) === null || _b === void 0 ? void 0 : _b.enabled(false);
+            (_b = player.character) === null || _b === void 0 ? void 0 : _b.enabled(false);
             player.lantern.intensity(0);
             (_c = this.bloodFx) === null || _c === void 0 ? void 0 : _c.burst(80, { x: t.x, y: 90, z: t.z }, { x: 0, y: 1, z: 0 });
             (_d = this.bloodStains) === null || _d === void 0 ? void 0 : _d.add(t.x, t.z, { size: 110 });

@@ -1,7 +1,7 @@
 import { IgeInputControlMap } from "./IgeInputControlMap.js"
-import { IgeEventingClass } from "../core/IgeEventingClass.js";
+import { IgeEventingClass } from "../core/IgeEventingClass.js"
 import type { IgeViewport } from "../core/IgeViewport.js"
-import { IgeEventReturnFlag, IgeInputDevice } from "../../enums/index.js";
+import { IgeEventReturnFlag, IgeInputDevice } from "../../enums/index.js"
 import type { IgeInputEventControl } from "../../types/IgeInputEventControl.js"
 import type { IgeIsReadyPromise } from "../../types/IgeIsReadyPromise.js"
 export declare class IgeInputComponent extends IgeEventingClass implements IgeIsReadyPromise {
