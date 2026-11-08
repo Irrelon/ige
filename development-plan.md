@@ -121,6 +121,12 @@ On the development machine (Apple silicon, Chrome):
   corrected).
 - **Gamepads.** Test with real controllers (simulated ones pass).
 
+### Planned, waiting
+
+- **Move Hex Realms onto the engine rooms** (`IgeRoomServer` / `IgeRoomClient`), keeping its game rules, AI, turn
+  timers and chat. Agreed on 2026-11-09, but not to start yet: another session is working on Hex Realms. Start when
+  the user says that work is done.
+
 ### Decided
 
 - **Isometric 2D games move to a 3D layout** (ground on x/z, `isometric` camera preset) to run on WebGL. The engine
