@@ -6,6 +6,7 @@ import { ige } from "@/engine/instance";
 import { IgeBehaviourType } from "@/enums";
 import { invertMat4 } from "@/engine/webgl/IgeRaycast";
 import { IgeRagdoll3d, type IgeRagdollOptions } from "@/engine/physics/IgeRagdoll3d";
+import { IgePhysicsCharacter3d, type IgePhysicsCharacterOptions } from "@/engine/physics/IgePhysicsCharacter3d";
 
 type Jolt = typeof JoltApi;
 type Vec3 = { x: number; y: number; z: number };
@@ -377,6 +378,8 @@ export class IgePhysics3d extends IgeEventingClass {
 	_list: IgePhysicsBody3d[] = [];
 	_ragdolls: IgeRagdoll3d[] = [];
 	_sensors: IgePhysicsSensor3d[] = [];
+	_characters: IgePhysicsCharacter3d[] = [];
+	_characterCollision?: JoltApi.CharacterVsCharacterCollisionSimple;
 	_sensorCollector?: JoltApi.CollideShapeAllHitCollisionCollector;
 	_sensorSettings?: JoltApi.CollideShapeSettings;
 	_unitScale?: JoltApi.Vec3;
@@ -616,6 +619,95 @@ export class IgePhysics3d extends IgeEventingClass {
 		sensor._overlapping.clear();
 	}
 
+	/**
+	 * Add a player character (Jolt's CharacterVirtual) to an entity: a
+	 * capsule with its feet at the entity's origin that walks where it's
+	 * told with move(), up stairs and slopes, and pushes other bodies with
+	 * a limited strength (see IgePhysicsCharacter3d).
+	 * @example #A player
+	 *     const hero = physics.addCharacter(entity, { radius: 28, height: 130 });
+	 *     // each frame, from input:
+	 *     hero.move(moveX * 260, moveZ * 260);
+	 */
+	addCharacter (entity: IgeEntity, options: IgePhysicsCharacterOptions): IgePhysicsCharacter3d {
+		const jolt = this._jolt;
+		const u = this._options.unitsPerMetre;
+		const radius = options.radius / u, height = options.height / u;
+		const halfHeight = Math.max(0.01, height / 2 - radius);
+
+		// Capsule with its bottom at the character's position (the feet)
+		const capsule = new jolt.CapsuleShapeSettings(halfHeight, radius, undefined);
+		this._vec.Set(0, height / 2, 0);
+		const shapeSettings = new jolt.RotatedTranslatedShapeSettings(this._vec, this._identity, capsule);
+		const shape = shapeSettings.Create().Get();
+
+		const settings = new jolt.CharacterVirtualSettings();
+		settings.mMass = options.mass ?? 80;
+		settings.mMaxStrength = options.maxStrength ?? 500;
+		settings.mMaxSlopeAngle = ((options.maxSlopeAngle ?? 50) * Math.PI) / 180;
+		settings.mShape = shape;
+		settings.mInnerBodyShape = shape;
+		settings.mInnerBodyLayer = LAYER_MOVING;
+		settings.mCharacterPadding = 0.02;
+		settings.mPenetrationRecoverySpeed = 1;
+		settings.mPredictiveContactDistance = 0.1;
+		this._vec.Set(0, 1, 0);
+		settings.mUp = this._vec;
+		// Contacts below the lower cap's centre hold the character up
+		const plane = new jolt.Plane(this._vec, -radius);
+		settings.mSupportingVolume = plane;
+		jolt.destroy(plane);
+
+		entity.updateTransform();
+		const world = entity._worldMatrix4?.matrix;
+		const position = world ? { x: world[12], y: world[13], z: world[14] } : { ...entity._translate };
+		this._rvec.Set(position.x / u, position.y / u, position.z / u);
+		const character = new jolt.CharacterVirtual(settings, this._rvec, this._identity, this._system);
+		jolt.destroy(settings);
+		jolt.destroy(shapeSettings);
+
+		const update = new jolt.ExtendedUpdateSettings();
+		this._vec.Set(0, (options.stepHeight ?? 0.3 * u) / u, 0);
+		update.mWalkStairsStepUp = this._vec;
+
+		// Characters collide with each other
+		if (!this._characterCollision) this._characterCollision = new jolt.CharacterVsCharacterCollisionSimple();
+		this._characterCollision.Add(character);
+		character.SetCharacterVsCharacterCollision(this._characterCollision);
+
+		// The inner body is what other bodies, raycasts and sensors meet
+		const innerId = character.GetInnerBodyID();
+		const inner = this._system.GetBodyLockInterfaceNoLock().TryGetBody(innerId);
+		const body = new IgePhysicsBody3d(this, entity, {
+			type: "kinematic",
+			shape: { type: "capsule", radius: options.radius, halfHeight: halfHeight * u }
+		}, inner);
+		this._byBodyId.set(body._id.GetIndexAndSequenceNumber(), body);
+		(entity as any)._physicsBody3d = body;
+
+		const wrapper = new IgePhysicsCharacter3d(this, entity, character, update, body);
+		this._characters.push(wrapper);
+		return wrapper;
+	}
+
+	/** Remove a character and free it. */
+	removeCharacter (character: IgePhysicsCharacter3d): void {
+		if (character._destroyed) return;
+		character._destroyed = true;
+		const index = this._characters.indexOf(character);
+		if (index >= 0) this._characters.splice(index, 1);
+		this._byBodyId.delete(character.body._id.GetIndexAndSequenceNumber());
+		if ((character.entity as any)._physicsBody3d === character.body) (character.entity as any)._physicsBody3d = undefined;
+		character.body._destroyed = true;
+		if (!character.body._enabled) {
+			// The character's destructor removes its inner body from the world
+			this._bodies.AddBody(character.body._id, this._jolt.EActivation_DontActivate);
+		}
+		this._characterCollision?.Remove(character._character);
+		this._jolt.destroy(character._character);
+		this._jolt.destroy(character._settings);
+	}
+
 	/** The body attached to an entity by addBody(), if any. */
 	bodyOf (entity: IgeEntity): IgePhysicsBody3d | undefined {
 		return (entity as any)._physicsBody3d;
@@ -632,6 +724,7 @@ export class IgePhysics3d extends IgeEventingClass {
 		let steps = 0;
 		const started = performance.now();
 		while (this._accumulator >= step) {
+			for (const character of this._characters) character._update(step);
 			this._moveKinematicBodies(step);
 			this._interface.Step(step, 1);
 			this._captureBodies();
@@ -641,7 +734,9 @@ export class IgePhysics3d extends IgeEventingClass {
 		this._stepsLastUpdate = steps;
 
 		// Place entities between the last two steps (every frame, steps or not)
-		this._syncEntities(this._options.interpolate ? this._accumulator / step : 1);
+		const alpha = this._options.interpolate ? this._accumulator / step : 1;
+		this._syncEntities(alpha);
+		for (const character of this._characters) character._sync(alpha);
 
 		if (steps > 0) {
 			this._stepMs = performance.now() - started;
@@ -700,6 +795,8 @@ export class IgePhysics3d extends IgeEventingClass {
 		const jolt = this._jolt;
 		for (const ragdoll of [...this._ragdolls]) this.removeRagdoll(ragdoll);
 		for (const sensor of [...this._sensors]) this.removeSensor(sensor);
+		for (const character of [...this._characters]) this.removeCharacter(character);
+		if (this._characterCollision) jolt.destroy(this._characterCollision);
 		if (this._sensorCollector) jolt.destroy(this._sensorCollector);
 		if (this._sensorSettings) jolt.destroy(this._sensorSettings);
 		if (this._unitScale) jolt.destroy(this._unitScale);

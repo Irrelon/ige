@@ -54,15 +54,31 @@ const crate = physics.addBody(crateEntity, {
 });
 crate.applyImpulse(400 * crate.mass(), 200 * crate.mass(), 0); // kg * units per second
 
-// Characters: upright capsules moved by velocity
-const body = physics.addBody(hero, {
-	shape: { type: "capsule", radius: 28, halfHeight: 37 }, // 130 units tall in total
+// Crowds (zombies): upright dynamic capsules moved by velocity
+const body = physics.addBody(zombie, {
+	shape: { type: "capsule", radius: 26, halfHeight: 39 }, // 130 units tall in total
 	offset: { x: 0, y: 65, z: 0 }, // capsule centre above the entity's feet
 	lockRotation: true, // never tips over; the entity keeps its own facing
-	friction: 0 // slide along walls and other characters
+	friction: 0 // slide along walls and each other
 });
-body.setVelocityXZ(moveX * 260, moveZ * 260); // each frame, from input or AI; gravity keeps working
+body.setVelocityXZ(moveX * 80, moveZ * 80); // each frame, from AI; gravity keeps working
 ```
+
+## Player characters
+
+```typescript
+const hero = physics.addCharacter(player, { radius: 28, height: 130, mass: 90, maxStrength: 900 });
+hero.move(moveX * 260, moveZ * 260); // each frame, from input; move(0, 0) to stop
+hero.jump(450); // upward speed, if on the ground
+hero.onGround();
+```
+
+`addCharacter()` uses Jolt's `CharacterVirtual`, the controller for player characters: its feet are at the entity's
+origin, it walks up steps (`stepHeight`, default 0.3 m) and slopes (`maxSlopeAngle`, default 50 degrees), sticks to
+the floor going down them, pushes dynamic bodies with at most `maxStrength` newtons, and characters collide with
+each other. Other bodies collide with it through an inner body, `hero.body`, which raycasts and sensors report.
+Characters are updated before each world step, on the main thread, and interpolated like bodies. A crowd pushing
+into a character moves it (as a horde would); `teleport()` and `enabled()` work as for bodies.
 
 - A body starts at its entity's world position and rotation. After every step, dynamic bodies move their entity
   (position, and rotation through `entity.quaternion()` unless `lockRotation`); kinematic bodies (`type:
@@ -153,8 +169,7 @@ silicon Mac in Chrome:
 
 ## Not there yet
 
-- Character controller: players are dynamic capsules. Jolt's `CharacterVirtual` (stairs, slopes, standing on moving
-  platforms) would suit player characters better.
+- Contact listeners for characters (e.g. stopping zombies from shoving players).
 - Heightfield shapes (lighter than a mesh for grid terrain) and compound shapes.
 - Contact (impact) events between bodies, and collision layers beyond static/moving.
 - Ragdolls pose the skeleton from the latest step (not interpolated).

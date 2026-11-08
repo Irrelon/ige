@@ -13,6 +13,7 @@ import { IgeParticleSystem3d } from "@/engine/webgl/IgeParticleSystem3d";
 import { IgeDecalSystem3d } from "@/engine/webgl/IgeDecalSystem3d";
 import { IgePhysics3d, type IgePhysicsBody3d } from "@/engine/physics/IgePhysics3d";
 import type { IgeRagdoll3d, IgeRagdollPart } from "@/engine/physics/IgeRagdoll3d";
+import type { IgePhysicsCharacter3d } from "@/engine/physics/IgePhysicsCharacter3d";
 import { IgeViewportOverlay, type IgeOverlayMarker } from "@/engine/webgl/IgeViewportOverlay";
 import { IgeGamePadAxis, IgeGamePadButton, IgeGamePadComponent } from "@/engine/components/IgeGamePadComponent";
 import { createBoxGeometry, createHospitalLobby, resolveLevelCollision, ARENA, WALL_FACES, type IgeLevelObstacle } from "./level";
@@ -135,7 +136,9 @@ interface PlayerState {
 	idleTime: number;
 	facingX: number;
 	facingZ: number;
-	/** Physics capsule (with ?physics=1). */
+	/** Physics character controller (with ?physics=1). */
+	character?: IgePhysicsCharacter3d;
+	/** The character's body, as sensors and raycasts report it. */
 	body?: IgePhysicsBody3d;
 	/** Standing on the healing pad (a physics sensor). */
 	healing?: boolean;
@@ -465,7 +468,13 @@ export class Client extends IgeBaseClass implements IgeCanInit {
 
 			// Heroes animate at full frame rate rather than from the crowd cache
 			entity.skeletalAnimation()?.poseCache(false);
-			const body = this.addCharacterBody(entity, PLAYER_RADIUS, 3000);
+			// Players walk with a character controller: up steps, pushing crates and zombies aside
+			const character = this.physics?.addCharacter(entity, {
+				radius: PLAYER_RADIUS,
+				height: CHARACTER_HEIGHT,
+				mass: 90,
+				maxStrength: 900
+			});
 
 			this.createSword(entity);
 
@@ -492,7 +501,8 @@ export class Client extends IgeBaseClass implements IgeCanInit {
 				idleTime: 0,
 				facingX: 0,
 				facingZ: 1,
-				body
+				character,
+				body: character?.body
 			};
 			this.applyPlayerMaterial(player);
 			this.players.push(player);
@@ -653,7 +663,7 @@ export class Client extends IgeBaseClass implements IgeCanInit {
 				player.health = PLAYER_MAX_HEALTH;
 				player.invulnerable = RESPAWN_INVULNERABLE_TIME;
 				entity.translateTo(start.x, 0, start.z).show();
-				player.body?.enabled(true).teleport(start.x, 0, start.z);
+				player.character?.enabled(true).teleport(start.x, 0, start.z);
 				player.lantern.intensity(1.6);
 				this.shoveZombiesAway(start.x, start.z, 320);
 			}
@@ -685,9 +695,9 @@ export class Client extends IgeBaseClass implements IgeCanInit {
 		}
 
 		if (len > 0.05) {
-			if (player.body) {
-				// Physics moves the capsule and keeps it out of walls and zombies
-				player.body.setVelocityXZ(input.moveX * PLAYER_SPEED, input.moveZ * PLAYER_SPEED);
+			if (player.character) {
+				// The character controller walks it, keeping it out of walls and zombies
+				player.character.move(input.moveX * PLAYER_SPEED, input.moveZ * PLAYER_SPEED);
 			} else {
 				const pos = resolveLevelCollision(
 					entity._translate.x + input.moveX * PLAYER_SPEED * dt,
@@ -704,7 +714,7 @@ export class Client extends IgeBaseClass implements IgeCanInit {
 			entity.rotateTo(0, Math.atan2(player.facingX, player.facingZ), 0);
 			anim?.setSpeed(1.4 * Math.min(1, len));
 		} else {
-			player.body?.setVelocityXZ(0, 0);
+			player.character?.move(0, 0);
 			anim?.setSpeed(0);
 		}
 
@@ -1009,7 +1019,7 @@ export class Client extends IgeBaseClass implements IgeCanInit {
 		if (player.health <= 0) {
 			player.respawnTimer = PLAYER_RESPAWN_TIME;
 			player.entity.hide();
-			player.body?.enabled(false);
+			player.character?.enabled(false);
 			player.lantern.intensity(0);
 			this.bloodFx?.burst(80, { x: t.x, y: 90, z: t.z }, { x: 0, y: 1, z: 0 });
 			this.bloodStains?.add(t.x, t.z, { size: 110 });
