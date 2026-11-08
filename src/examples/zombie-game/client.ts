@@ -11,6 +11,7 @@ import { IgeAmbientLight, IgeDirectionalLight, IgePointLight } from "@/engine/we
 import { igeGltfLoader, type IgeGltfModel } from "@/engine/webgl/IgeGltfLoader";
 import { IgeParticleSystem3d } from "@/engine/webgl/IgeParticleSystem3d";
 import { IgeDecalSystem3d } from "@/engine/webgl/IgeDecalSystem3d";
+import { IgeViewportOverlay, type IgeOverlayMarker } from "@/engine/webgl/IgeViewportOverlay";
 import { IgeGamePadAxis, IgeGamePadButton, IgeGamePadComponent } from "@/engine/components/IgeGamePadComponent";
 import { createBoxGeometry, createHospitalLobby, resolveLevelCollision, ARENA, type IgeLevelObstacle } from "./level";
 import type { IgeGeometryData3d } from "@/types/IgeGeometryData3d";
@@ -34,6 +35,8 @@ window.ige = ige;
  * - Generated level-of-detail meshes for the horde (IgeEntity.lod())
  * - Swords that follow each player's hand bone (IgeEntity.attachToBone())
  * - Blood stains on the floor (IgeDecalSystem3d)
+ * - Name tags, zombie health bars and damage numbers kept inside each
+ *   player's view (IgeViewportOverlay)
  *
  * URL options: ?zombies=200 to change the horde size, ?lod=0 to draw every
  * zombie at full detail.
@@ -119,14 +122,14 @@ interface ZombieState {
 	knockbackZ: number;
 	respawnTimer: number;
 	alive: boolean;
+	/** Shown once the zombie has been hurt. */
+	healthBar?: IgeOverlayMarker;
 }
 
 interface DamageNumber {
 	el: HTMLDivElement;
-	viewportIndex: number;
-	x: number;
-	y: number;
-	z: number;
+	marker: IgeOverlayMarker;
+	position: { x: number; y: number; z: number };
 	age: number;
 }
 
@@ -147,7 +150,7 @@ export class Client extends IgeBaseClass implements IgeCanInit {
 	bloodStains?: IgeDecalSystem3d;
 	slashFx?: IgeParticleSystem3d;
 	damageNumbers: DamageNumber[] = [];
-	fxLayer?: HTMLDivElement;
+	overlay?: IgeViewportOverlay;
 
 	keysDown: Record<string, boolean> = {};
 	keysPressed: Record<string, boolean> = {};
@@ -210,7 +213,7 @@ export class Client extends IgeBaseClass implements IgeCanInit {
 			this.computeCameraOffset();
 			this.updateCameraPositions();
 			this.setupInput();
-			this.createFxLayer();
+			this.createOverlay();
 
 			// One behaviour drives the whole simulation; cameras follow after it
 			this.scene.addBehaviour(IgeBehaviourType.preUpdate, "zombieGame", (_entity: IgeEntity, tickDelta: number) => {
@@ -588,6 +591,7 @@ export class Client extends IgeBaseClass implements IgeCanInit {
 
 			const damage = Math.round(lerp(ATTACK_DAMAGE[0], ATTACK_DAMAGE[1], Math.random()));
 			zombie.health -= damage;
+			if (!zombie.healthBar && zombie.health > 0) zombie.healthBar = this.addHealthBar(zombie);
 			zombie.hitFlash = HIT_FLASH_TIME;
 			zombie.knockbackX = (dx / dist) * 420;
 			zombie.knockbackZ = (dz / dist) * 420;
@@ -638,6 +642,8 @@ export class Client extends IgeBaseClass implements IgeCanInit {
 
 	killZombie (zombie: ZombieState) {
 		zombie.alive = false;
+		zombie.healthBar?.remove();
+		zombie.healthBar = undefined;
 		zombie.respawnTimer = ZOMBIE_RESPAWN_TIME;
 		const t = zombie.entity._translate;
 		this.bloodFx?.burst(70, { x: t.x, y: 80, z: t.z }, { x: 0, y: 1, z: 0 });
@@ -781,50 +787,78 @@ export class Client extends IgeBaseClass implements IgeCanInit {
 	}
 
 	// ------------------------------------------------------------------
-	// Floating damage numbers (DOM, positioned with worldToScreen)
+	// HUD over the 3D views: name tags, health bars and damage numbers.
+	// IgeViewportOverlay clips each view's markers to that view.
 	// ------------------------------------------------------------------
 
-	createFxLayer () {
-		const layer = document.createElement("div");
-		layer.style.cssText = "position:absolute;left:0;top:0;width:100%;height:100%;pointer-events:none;z-index:40;overflow:hidden;";
-		document.body.appendChild(layer);
-		this.fxLayer = layer;
+	createOverlay () {
+		if (!this.renderer) return;
+		const overlay = (this.overlay = new IgeViewportOverlay(this.renderer));
+
+		// A name tag over every player, in every view
+		for (const player of this.players) {
+			const config = PLAYER_CONFIGS[player.index];
+			const c = config.color;
+			overlay.add({
+				entity: player.entity,
+				offset: { x: 0, y: 175, z: 0 },
+				create: () => {
+					const tag = document.createElement("div");
+					tag.textContent = `P${player.index + 1}`;
+					tag.style.cssText = `font:bold 11px monospace;padding:1px 4px;border-radius:3px;color:#fff;` +
+						`background:rgba(${Math.round(c.r * 200)},${Math.round(c.g * 200)},${Math.round(c.b * 200)},0.75);`;
+					return tag;
+				}
+			});
+		}
+	}
+
+	/** A health bar over a hurt zombie, in every view. */
+	addHealthBar (zombie: ZombieState): IgeOverlayMarker | undefined {
+		return this.overlay?.add({
+			entity: zombie.entity,
+			offset: { x: 0, y: 150, z: 0 },
+			create: () => {
+				const bar = document.createElement("div");
+				bar.style.cssText = "width:30px;height:4px;background:rgba(0,0,0,0.65);border:1px solid rgba(0,0,0,0.8);";
+				const fill = document.createElement("div");
+				fill.style.cssText = "height:100%;background:#d23b2b;";
+				bar.appendChild(fill);
+				return bar;
+			},
+			update: (bar) => {
+				const width = `${Math.round((Math.max(0, zombie.health) / ZOMBIE_HEALTH) * 100)}%`;
+				const fill = bar.firstChild as HTMLElement;
+				if (fill.style.width !== width) fill.style.width = width;
+			}
+		});
 	}
 
 	spawnDamageNumber (viewportIndex: number, x: number, y: number, z: number, damage: number) {
-		if (!this.fxLayer) return;
+		const viewport = this.viewports[viewportIndex];
+		if (!this.overlay || !viewport) return;
 		const el = document.createElement("div");
 		el.textContent = String(damage);
-		el.style.cssText = "position:absolute;left:0;top:0;font:bold 20px monospace;color:#ffd84d;" +
-			"text-shadow:0 0 3px #000,0 0 6px #000;will-change:transform,opacity;";
-		this.fxLayer.appendChild(el);
-		this.damageNumbers.push({ el, viewportIndex, x: x + (Math.random() - 0.5) * 30, y, z, age: 0 });
+		el.style.cssText = "font:bold 20px monospace;color:#ffd84d;text-shadow:0 0 3px #000,0 0 6px #000;";
+
+		// Only shown in the view of the player who dealt the damage
+		const position = { x: x + (Math.random() - 0.5) * 30, y, z };
+		const marker = this.overlay.add({ position, viewports: [viewport], create: () => el });
+		this.damageNumbers.push({ el, marker, position, age: 0 });
 	}
 
 	updateDamageNumbers (dt: number) {
-		const renderer = this.renderer;
-		if (!renderer) return;
-
 		for (let i = this.damageNumbers.length - 1; i >= 0; i--) {
 			const n = this.damageNumbers[i];
 			n.age += dt;
-			n.y += 90 * dt;
+			n.position.y += 90 * dt; // the overlay reads the moved position
 
 			if (n.age > 0.9) {
-				n.el.remove();
+				n.marker.remove();
 				this.damageNumbers.splice(i, 1);
 				continue;
 			}
-
-			// Only shown in the view of the player who dealt the damage
-			const viewport = this.viewports[n.viewportIndex];
-			const p = viewport && renderer.worldToScreen(viewport, n.x, n.y, n.z);
-			if (!p || !p.visible) {
-				n.el.style.opacity = "0";
-				continue;
-			}
 			n.el.style.opacity = String(1 - n.age / 0.9);
-			n.el.style.transform = `translate(${p.x.toFixed(1)}px, ${p.y.toFixed(1)}px) translate(-50%, -50%)`;
 		}
 	}
 
