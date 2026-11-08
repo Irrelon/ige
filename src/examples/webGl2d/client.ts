@@ -22,6 +22,8 @@ window.ige = ige;
  * - smart textures (drawn with the Canvas 2D API from each entity's own
  *   data), redrawn every frame unless the entity is cached;
  * - image sprites, 2D rotation (rotate.z), scale and nested transforms;
+ * - pointer events (pointerOver / pointerOut / pointerUp) on the orbiting
+ *   stars: hover to highlight, click to add a point;
  * - ?split=1: two side-by-side views of the same scene, as in a 2D
  *   split-screen game, one panned and one zoomed with the camera's scale.
  */
@@ -162,14 +164,20 @@ export class Client extends IgeBaseClass implements IgeCanInit {
 		const orbiters: IgeEntity[] = [];
 		for (let i = 0; i < colours.length; i++) {
 			const angle = (i / colours.length) * Math.PI * 2;
-			orbiters.push(new IgeEntity()
+			const orbiter = new IgeEntity()
 				.texture(star)
 				.data("points", 5)
 				.data("fill", colours[i])
 				.width(50)
 				.height(50)
 				.translateTo(Math.cos(angle) * 170, Math.sin(angle) * 170, 0)
-				.mount(system));
+				.mount(system);
+
+			// Pointer events work as with the Canvas 2D renderer
+			orbiter.pointerOver(() => orbiter.data("fill", "#ffffff"));
+			orbiter.pointerOut(() => orbiter.data("fill", colours[i]));
+			orbiter.pointerUp(() => orbiter.data("points", Math.min(12, orbiter.data("points") + 1)));
+			orbiters.push(orbiter);
 		}
 
 		// Health bars whose value changes every frame (smart textures redraw)
