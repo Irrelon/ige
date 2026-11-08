@@ -1,4 +1,5 @@
 import { IgeBaseRenderer } from "@/engine/core/IgeBaseRenderer";
+import { IgeTextureRenderMode } from "@/enums";
 import { markSceneChanged } from "@/engine/utils/sceneChange";
 import type { IgeEngine } from "@/engine/core/IgeEngine";
 import { IgePoint2d } from "@/engine/core/IgePoint2d";
@@ -1846,7 +1847,10 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 		this._stateManager.setBlend(true);
 		this._stateManager.setBlendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
 
-		this._renderSprites(opaqueSprites, matrices);
+		// A y-down 2D camera (preset "screen2d") draws sprites flat with
+		// their full 2D transform, as the Canvas 2D renderer does
+		const flat2d = !!(camera._up && camera._up.y < 0);
+		this._renderSprites(opaqueSprites, matrices, flat2d);
 		this._renderModelBatches(batcher.batches, matrices);
 
 		// Ground decals go on top of the opaque ground, under everything
@@ -1859,7 +1863,7 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 		if (transparentSprites.length > 1) {
 			transparentSprites.sort(sortSpritesBackToFront);
 		}
-		this._renderSprites(transparentSprites, matrices);
+		this._renderSprites(transparentSprites, matrices, flat2d);
 
 		if (transparent.length > 0) {
 			transparent.sort(sortItemsBackToFront);
@@ -2749,7 +2753,7 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 	/**
 	 * Render 2D sprites (textured quads, billboarded to face the camera).
 	 */
-	protected _renderSprites(sprites: IgeEntity[], matrices: IgeCameraMatrices): void {
+	protected _renderSprites(sprites: IgeEntity[], matrices: IgeCameraMatrices, flat2d: boolean = false): void {
 		if (sprites.length === 0 || !this._shaderManager || !this._geometryManager || !this._textureManager || !this._stateManager) {
 			return;
 		}
@@ -2765,6 +2769,7 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 		spriteProgram.setUniformMatrix4fv("u_viewMatrix", matrices.view);
 		spriteProgram.setUniformMatrix4fv("u_projectionMatrix", matrices.projection);
 		spriteProgram.setUniform1i("u_texture", 0);
+		spriteProgram.setUniform1f("u_flipY", flat2d ? -1 : 1);
 
 		this._geometryManager.bindGeometry(quadGeometry, spriteProgram);
 
@@ -2777,7 +2782,13 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 			const texture = entity._texture!;
 			const material = entity._materialData;
 
-			if (texture !== boundTexture) {
+			if (texture._renderMode === IgeTextureRenderMode.smartTexture) {
+				// Smart textures are drawn per entity (they read its data and size)
+				const webglTexture = this._textureManager.getSmartTexture(texture, entity, this._devicePixelRatio, this._frameId);
+				this._stateManager.invalidateTextureBindings();
+				this._stateManager.bindTexture(webglTexture || this._textureManager.getDefaultWhiteTexture(), 0);
+				boundTexture = undefined;
+			} else if (texture !== boundTexture) {
 				const webglTexture = this._textureManager.getTextureForIgeTexture(texture);
 				this._stateManager.invalidateTextureBindings();
 				if (webglTexture) {
@@ -2823,7 +2834,7 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 			spriteProgram.setUniformMatrix4fv("u_worldMatrix", entity._worldMatrix4!);
 			spriteProgram.setUniform2f("u_scale", entity._bounds2d.x, entity._bounds2d.y);
 			spriteProgram.setUniform1f("u_opacity", entity._opacity);
-			spriteProgram.setUniform1i("u_billboardMode", entity._billboardMode);
+			spriteProgram.setUniform1i("u_billboardMode", flat2d ? 0 : entity._billboardMode);
 
 			this._geometryManager.drawGeometry(quadGeometry);
 			this._stats.drawCalls++;

@@ -76,12 +76,18 @@ export class IgeWebGlCameraController extends IgeBaseClass {
 			camera._translate.z
 		);
 
-		const up = new IgePoint3d(0, 1, 0);
+		const cameraUp = (camera as any)._up as { x: number; y: number; z: number } | undefined;
+		const up = cameraUp ? new IgePoint3d(cameraUp.x, cameraUp.y, cameraUp.z) : new IgePoint3d(0, 1, 0);
 
 		// Check if camera has a specific look-at target
 		const cameraTarget = (camera as any)._lookAt;
+		const lookDirection = (camera as any)._lookDirection as { x: number; y: number; z: number } | undefined;
 
-		if (cameraTarget) {
+		if (!cameraTarget && lookDirection) {
+			// Look in a fixed direction from wherever the camera is (2D panning)
+			const target = new IgePoint3d(cameraPos.x + lookDirection.x, cameraPos.y + lookDirection.y, cameraPos.z + lookDirection.z);
+			viewMatrix.lookAt(cameraPos, target, up);
+		} else if (cameraTarget) {
 			// Use the camera's explicit target
 			const target = new IgePoint3d(cameraTarget.x, cameraTarget.y, cameraTarget.z);
 			viewMatrix.lookAt(cameraPos, target, up);
@@ -121,9 +127,11 @@ export class IgeWebGlCameraController extends IgeBaseClass {
 			projectionMatrix.perspective(fovRadians, aspect, near, far);
 		} else {
 			// Orthographic projection
-			const orthoSize = (camera as any)._orthoSize || 10; // Height of view
-			const near = (camera as any)._near || 0.1;
-			const far = (camera as any)._far || 1000;
+			// 0 = as tall as the viewport, one unit per pixel
+			const requestedSize = (camera as any)._orthoSize;
+			const orthoSize = requestedSize === 0 ? height : requestedSize || 10;
+			const near = (camera as any)._near ?? 0.1;
+			const far = (camera as any)._far ?? 1000;
 
 			// Calculate orthographic bounds
 			const halfHeight = orthoSize / 2;
