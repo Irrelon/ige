@@ -1,4 +1,5 @@
 import type { IgeGltfModel, IgeGltfNode } from "@/engine/webgl/IgeGltfLoader";
+import { simplifyGeometry } from "@/engine/webgl/IgeMeshSimplifier";
 import type { IgeWebGlMaterial } from "@/engine/webgl/IgeWebGlMaterial";
 import type { IgeGeometryData3d } from "@/types/IgeGeometryData3d";
 import type { IgeMaterialData } from "@/types/IgeMaterialData";
@@ -78,6 +79,103 @@ export function getModelParts (model: IgeGltfModel): IgeModelPart[] {
 
 	partsCache.set(model, parts);
 	return parts;
+}
+
+/**
+ * One level of detail for a model, used while the model is small on screen.
+ * Give either a ratio (the level is generated from the model with
+ * simplifyGeometry) or a separately authored model.
+ */
+export interface IgeModelLodLevel {
+	/**
+	 * Use this level (or a lower one) when the model's on-screen size, the
+	 * projected diameter of its bounding sphere in device pixels (about
+	 * the height of a standing character), is below this value.
+	 */
+	screenSize: number;
+	/** Fraction of the model's triangles to keep (0-1). */
+	ratio?: number;
+	/**
+	 * Error limit for a generated level, as a fraction of the mesh size
+	 * (see IgeSimplifyOptions.maxError).
+	 */
+	maxError?: number;
+	/**
+	 * An authored lower-detail model instead of a generated one. It must
+	 * have the same parts in the same order as the full model, and skinned
+	 * parts must use the same skeleton.
+	 */
+	model?: IgeGltfModel;
+}
+
+/**
+ * Levels of detail prepared for rendering.
+ */
+export interface IgeModelLod {
+	/** Thresholds in descending order: level i + 1 is used below screenSizes[i]. */
+	screenSizes: number[];
+	/** For each model part, its geometry at each lower level (parallel to screenSizes). */
+	partGeometries: IgeGeometryData3d[][];
+}
+
+const lodGeometryCache: WeakMap<IgeGeometryData3d, Map<string, IgeGeometryData3d>> = new WeakMap();
+
+/**
+ * Build the level-of-detail geometry for a model. Generated levels are
+ * cached per mesh, so every entity using the same model and settings
+ * shares the same simplified meshes (and GPU buffers).
+ */
+export function getModelLod (model: IgeGltfModel, levels: IgeModelLodLevel[]): IgeModelLod | undefined {
+	const parts = getModelParts(model);
+	if (!parts.length || !levels.length) return undefined;
+
+	const sorted = [...levels].sort((a, b) => b.screenSize - a.screenSize);
+	const lod: IgeModelLod = { screenSizes: [], partGeometries: parts.map(() => []) };
+
+	for (const level of sorted) {
+		let geometries: IgeGeometryData3d[] | undefined;
+
+		if (level.model) {
+			const lodParts = getModelParts(level.model);
+			if (lodParts.length !== parts.length) {
+				console.warn(
+					`IgeModelLod: LOD model "${level.model.id}" has ${lodParts.length} parts, ` +
+					`expected ${parts.length}; level ignored`
+				);
+				continue;
+			}
+			geometries = lodParts.map((part) => part.geometryData);
+		} else if (level.ratio !== undefined && level.ratio < 1) {
+			const ratio = Math.max(0, level.ratio);
+			geometries = parts.map((part) => getSimplifiedGeometry(part.geometryData, ratio, level.maxError));
+		}
+
+		if (!geometries) continue;
+		lod.screenSizes.push(level.screenSize);
+		for (let i = 0; i < parts.length; i++) lod.partGeometries[i].push(geometries[i]);
+	}
+
+	return lod.screenSizes.length ? lod : undefined;
+}
+
+function getSimplifiedGeometry (geometry: IgeGeometryData3d, ratio: number, maxError: number | undefined): IgeGeometryData3d {
+	let byKey = lodGeometryCache.get(geometry);
+	if (!byKey) {
+		byKey = new Map();
+		lodGeometryCache.set(geometry, byKey);
+	}
+
+	const key = `${ratio}|${maxError ?? ""}`;
+	let simplified = byKey.get(key);
+	if (!simplified) {
+		simplified = simplifyGeometry(geometry, {
+			ratio,
+			maxError,
+			id: `${geometry.id}_lod${ratio}${maxError !== undefined ? `_e${maxError}` : ""}`
+		});
+		byKey.set(key, simplified);
+	}
+	return simplified;
 }
 
 /**

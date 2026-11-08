@@ -59,6 +59,22 @@ export interface IgeWebGlRenderItem {
 	batchKey: string;
 	/** Shadow pass batch key: geometry (+ skinned flag); textures don't matter. */
 	depthKey: string;
+	/**
+	 * Level-of-detail thresholds (device pixels, descending) when the item
+	 * has lower-detail geometry, else null. Level i + 1 is drawn below
+	 * lodSizes[i]; each pass picks its own level.
+	 */
+	lodSizes: number[] | null;
+	/** World-space radius of the full mesh as authored, for LOD selection. */
+	lodRadius: number;
+	/** Geometry per level (index 0 is `geometry`). */
+	lodGeometries: IgeWebGlGeometry[];
+	/** batchKey per level. */
+	lodBatchKeys: string[];
+	/** depthKey per level. */
+	lodDepthKeys: string[];
+	/** Geometry chosen for the current viewport (transparent items). */
+	drawGeometry: IgeWebGlGeometry;
 }
 
 /**
@@ -96,15 +112,20 @@ export class IgeWebGlItemBatcher {
 		this._active.length = 0;
 	}
 
-	add (item: IgeWebGlRenderItem, key: string): void {
+	/**
+	 * Add an item to the batch for `key`. `geometry` is the mesh to draw it
+	 * with (a level-of-detail version of item.geometry, for example); it
+	 * must be the same for every item sharing a key.
+	 */
+	add (item: IgeWebGlRenderItem, key: string, geometry: IgeWebGlGeometry = item.geometry): void {
 		let batch = this._batchMap.get(key);
 		if (!batch) {
 			batch = {
 				key,
-				geometry: item.geometry,
+				geometry,
 				blobTextureId: item.blobTextureId,
 				texture: item.texture,
-				skinned: item.geometry.isSkinned && !!item.skeleton,
+				skinned: geometry.isSkinned && !!item.skeleton,
 				items: []
 			};
 			this._batchMap.set(key, batch);
@@ -113,10 +134,10 @@ export class IgeWebGlItemBatcher {
 		if (batch.items.length === 0) {
 			// Refresh the shared state in case the batch object was reused for
 			// a different geometry instance with the same key.
-			batch.geometry = item.geometry;
+			batch.geometry = geometry;
 			batch.blobTextureId = item.blobTextureId;
 			batch.texture = item.texture;
-			batch.skinned = item.geometry.isSkinned && !!item.skeleton;
+			batch.skinned = geometry.isSkinned && !!item.skeleton;
 			this._active.push(batch);
 		}
 

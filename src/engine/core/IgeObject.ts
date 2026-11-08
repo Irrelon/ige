@@ -42,7 +42,7 @@ import type { IgeMaterialData } from "@/types/IgeMaterialData";
 import type { IgeMeshData3d } from "@/types/IgeMeshData3d";
 import type { IgeGltfModel } from "@/engine/webgl/IgeGltfLoader";
 import type { IgeSkeleton, IgeSkeletonData } from "@/types/IgeSkeletonData";
-import type { IgeModelPart } from "@/engine/webgl/IgeModelParts";
+import type { IgeModelLod, IgeModelPart } from "@/engine/webgl/IgeModelParts";
 import type { IgeAnimationClipData } from "@/types/IgeAnimationClipData";
 import type { IgeStreamCreateMessageData } from "@/types/IgeNetworkStream";
 import type { IgePoint } from "@/types/IgePoint";
@@ -193,6 +193,8 @@ export class IgeObject extends IgeEventingClass implements IgeCanRegisterById, I
 	_modelParts?: IgeModelPart[];
 	/** Per-part world matrices maintained by the WebGL renderer. */
 	_modelPartMatrices?: Float32Array[];
+	/** Lower-detail versions of _modelParts, see IgeEntity.lod(). */
+	_modelLod?: IgeModelLod;
 	_animationClips?: Map<string, IgeAnimationClipData>; // Available animation clips
 	_deathCallBack?: (...args: any[]) => void; // TODO: Rename this to _deathCallback (lower case B)
 	components: Record<string, IgeComponent<IgeObject>> = {};

@@ -19,6 +19,7 @@ import type { IgeEntity } from "@/engine/core/IgeEntity";
 import type { IgeDirectionalLight, IgePointLight } from "@/engine/webgl/IgeWebGlLight";
 import type { IgeCameraMatrices } from "@/engine/webgl/IgeWebGlCameraController";
 import type { IgeWebGlProgram } from "@/engine/webgl/IgeWebGlProgram";
+import type { IgeWebGlGeometry } from "@/engine/webgl/IgeWebGlGeometry";
 import type { IgeTexture } from "@/engine/core/IgeTexture";
 import { IgeMatrix4 } from "@/engine/core/IgeMatrix4";
 import { IgeFrustum } from "@/engine/webgl/IgeFrustum";
@@ -78,6 +79,10 @@ export interface IgeWebGlRenderStats {
 	items: number;
 	/** Items that survived camera culling, summed over viewports. */
 	visibleItems: number;
+	/** Visible items drawn at a lower level of detail, summed over viewports. */
+	lodItems: number;
+	/** Model triangles submitted by every pass (main, transparent and shadow). */
+	triangles: number;
 	viewports: number;
 }
 
@@ -235,8 +240,13 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 		shadowDrawCalls: 0,
 		items: 0,
 		visibleItems: 0,
+		lodItems: 0,
+		triangles: 0,
 		viewports: 0
 	};
+
+	// Multiplies every on-screen size used to pick a level of detail
+	protected _lodBias: number = 1;
 
 	// When true, the WebGL drawing buffer is preserved after compositing,
 	// allowing gl.readPixels() to work after a frame is rendered.
@@ -564,6 +574,22 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 	}
 
 	/**
+	 * Gets / sets the level-of-detail bias. On-screen sizes are multiplied
+	 * by it before an entity's LOD level is picked (see IgeEntity.lod()):
+	 * above 1 keeps full detail longer, below 1 switches to lower detail
+	 * sooner. Useful as a graphics quality setting. Defaults to 1.
+	 */
+	lodBias(): number;
+	lodBias(val: number): this;
+	lodBias(val?: number): number | this {
+		if (val === undefined) {
+			return this._lodBias;
+		}
+		this._lodBias = Math.max(0, val);
+		return this;
+	}
+
+	/**
 	 * Gets / sets the highest device pixel ratio the canvas renders at.
 	 * High-DPI screens can make split-screen fill-rate bound (four
 	 * viewports at 2x is 6.5 million pixels per frame on a 1728x935
@@ -837,6 +863,8 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 		stats.shadowDrawCalls = 0;
 		stats.items = 0;
 		stats.visibleItems = 0;
+		stats.lodItems = 0;
+		stats.triangles = 0;
 		stats.viewports = viewports ? viewports.length : 0;
 
 		// Clear the entire canvas
@@ -962,6 +990,8 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 		const world = entity._worldMatrix4?.matrix;
 		if (!world) return;
 
+		const lod = entity._modelLod && entity._modelLod.partGeometries.length === parts.length ? entity._modelLod : undefined;
+
 		let matrices = entity._modelPartMatrices;
 		if (!matrices || matrices.length !== parts.length) {
 			matrices = entity._modelPartMatrices = parts.map((part) => (part.matrix ? new Float32Array(16) : world));
@@ -975,7 +1005,15 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 				multiplyMat4Into(partWorld, world, part.matrix);
 			}
 
-			const item = this._addModelItem(entity, part.geometryData, part.materialData, entity._materialData, partWorld);
+			const item = this._addModelItem(
+				entity,
+				part.geometryData,
+				part.materialData,
+				entity._materialData,
+				partWorld,
+				lod ? lod.partGeometries[i] : null,
+				lod ? lod.screenSizes : null
+			);
 			if (item) data.models.push(item);
 		}
 	}
@@ -1001,26 +1039,24 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 	 * @param overrideData Optional per-entity material values that replace
 	 * the mesh material's (used for model parts).
 	 * @param worldMatrix World matrix to draw with (defaults to the entity's).
+	 * @param lodGeometryData Lower-detail versions of the mesh, if any.
+	 * @param lodSizes Screen sizes below which each lower level is used.
 	 */
 	protected _addModelItem(
 		entity: IgeEntity,
 		geometryData: IgeGeometryData3d,
 		materialData: IgeMaterialData | null,
 		overrideData: IgeMaterialData | null = null,
-		worldMatrix: Float32Array | undefined = entity._worldMatrix4?.matrix
+		worldMatrix: Float32Array | undefined = entity._worldMatrix4?.matrix,
+		lodGeometryData: IgeGeometryData3d[] | null = null,
+		lodSizes: number[] | null = null
 	): IgeWebGlRenderItem | undefined {
-		if (!this._geometryManager || !worldMatrix) {
+		if (!worldMatrix) {
 			return;
 		}
 
-		const geometryId = geometryData.id || "unknown";
-		let geometry = this._geometryManager.getGeometry(geometryId);
-		if (!geometry) {
-			geometry = this._geometryManager.createGeometryFromData(geometryId, geometryData) || undefined;
-			if (!geometry) return;
-			// Geometry creation binds buffers with raw GL calls
-			this._stateManager?.reset();
-		}
+		const geometry = this._getGeometry(geometryData);
+		if (!geometry) return;
 
 		let item = this._itemPool[this._itemCount];
 		if (!item) {
@@ -1042,7 +1078,13 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 				cx: 0, cy: 0, cz: 0, radius: -1,
 				sortKey: 0,
 				batchKey: "",
-				depthKey: ""
+				depthKey: "",
+				lodSizes: null,
+				lodRadius: 0,
+				lodGeometries: [],
+				lodBatchKeys: [],
+				lodDepthKeys: [],
+				drawGeometry: geometry
 			} as IgeWebGlRenderItem;
 			this._itemPool[this._itemCount] = item;
 		}
@@ -1050,6 +1092,7 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 
 		item.entity = entity;
 		item.geometry = geometry;
+		item.drawGeometry = geometry;
 		item.materialData = materialData;
 		item.worldMatrix = worldMatrix;
 
@@ -1110,19 +1153,87 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 			const sx = m[0] * m[0] + m[1] * m[1] + m[2] * m[2];
 			const sy = m[4] * m[4] + m[5] * m[5] + m[6] * m[6];
 			const sz = m[8] * m[8] + m[9] * m[9] + m[10] * m[10];
-			item.radius = geometry.boundsRadius * Math.sqrt(Math.max(sx, sy, sz));
+			const scale = Math.sqrt(Math.max(sx, sy, sz));
+			item.radius = geometry.boundsRadius * scale;
+			item.lodRadius = geometry.meshRadius * scale;
 		} else {
 			item.cx = m[12];
 			item.cy = m[13];
 			item.cz = m[14];
 			item.radius = -1;
+			item.lodRadius = -1;
 		}
 
 		const skinned = item.skeleton ? "|s" : "";
 		item.batchKey = geometry.id + "|" + item.textureKey + skinned;
 		item.depthKey = geometry.id + skinned;
 
+		// Level-of-detail geometry (index 0 is the full mesh)
+		item.lodSizes = null;
+		if (lodGeometryData && lodSizes && lodGeometryData.length > 0) {
+			const geometries = item.lodGeometries;
+			const batchKeys = item.lodBatchKeys;
+			const depthKeys = item.lodDepthKeys;
+			geometries.length = 0;
+			batchKeys.length = 0;
+			depthKeys.length = 0;
+			geometries.push(geometry);
+			batchKeys.push(item.batchKey);
+			depthKeys.push(item.depthKey);
+
+			for (let i = 0; i < lodGeometryData.length; i++) {
+				const lodGeometry = this._getGeometry(lodGeometryData[i]);
+				if (!lodGeometry) break;
+				geometries.push(lodGeometry);
+				batchKeys.push(lodGeometry.id + "|" + item.textureKey + skinned);
+				depthKeys.push(lodGeometry.id + skinned);
+			}
+
+			// LOD needs a size to measure
+			if (geometries.length > 1 && item.lodRadius > 0) {
+				item.lodSizes = lodSizes;
+			}
+		}
+
 		return item;
+	}
+
+	/**
+	 * Get the GPU geometry for geometry data, uploading it on first use.
+	 */
+	protected _getGeometry(geometryData: IgeGeometryData3d): IgeWebGlGeometry | undefined {
+		if (!this._geometryManager) return;
+
+		const geometryId = geometryData.id || "unknown";
+		let geometry = this._geometryManager.getGeometry(geometryId);
+		if (!geometry) {
+			geometry = this._geometryManager.createGeometryFromData(geometryId, geometryData) || undefined;
+			if (!geometry) return;
+			// Geometry creation binds buffers with raw GL calls
+			this._stateManager?.reset();
+		}
+		return geometry;
+	}
+
+	/**
+	 * Pick an item's level of detail for a pass that draws it at
+	 * `pixelsPerUnit` (device pixels or shadow map texels per world unit).
+	 */
+	protected _lodLevel(item: IgeWebGlRenderItem, pixelsPerUnit: number): number {
+		const sizes = item.lodSizes!;
+		const size = item.lodRadius * 2 * pixelsPerUnit * this._lodBias;
+		const max = item.lodGeometries.length - 1;
+		let level = 0;
+		while (level < max && size < sizes[level]) level++;
+		return level;
+	}
+
+	/**
+	 * Add a draw's triangle count to the frame stats.
+	 */
+	protected _countTriangles(geometry: IgeWebGlGeometry, instances: number): void {
+		const vertices = geometry.indexCount > 0 ? geometry.indexCount : geometry.vertexCount;
+		this._stats.triangles += Math.floor(vertices / 3) * instances;
 	}
 
 	/**
@@ -1195,6 +1306,15 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 		const camY = camera._translate.y;
 		const camZ = camera._translate.z;
 
+		// Device pixels per world unit, for picking levels of detail. An
+		// orthographic view has one scale everywhere; a perspective view
+		// divides it by each item's view depth.
+		const proj = matrices.projection.matrix;
+		const view = matrices.view.matrix;
+		const viewScale = Math.sqrt(view[1] * view[1] + view[5] * view[5] + view[9] * view[9]);
+		const pixelsPerUnit = proj[5] * viewScale * vpHeight * 0.5;
+		const perspective = proj[11] !== 0;
+
 		// ------------------------------------------------------------
 		// Cull against the camera frustum and batch what remains
 		// ------------------------------------------------------------
@@ -1216,6 +1336,23 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 			const dx = item.cx - camX, dy = item.cy - camY, dz = item.cz - camZ;
 			const distSq = dx * dx + dy * dy + dz * dz;
 
+			let geometry = item.geometry;
+			let batchKey = item.batchKey;
+			if (item.lodSizes) {
+				let scale = pixelsPerUnit;
+				if (perspective) {
+					const depth = -(view[2] * item.cx + view[6] * item.cy + view[10] * item.cz + view[14]);
+					scale /= Math.max(depth, 1e-3);
+				}
+				const level = this._lodLevel(item, scale);
+				if (level > 0) {
+					geometry = item.lodGeometries[level];
+					batchKey = item.lodBatchKeys[level];
+					this._stats.lodItems++;
+				}
+			}
+			item.drawGeometry = geometry;
+
 			if (item.transparent) {
 				item.sortKey = distSq;
 				transparent.push(item);
@@ -1223,7 +1360,7 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 				// Front-to-back key: distance to the far side of the bounds, so
 				// big surfaces like floors sort behind the things standing on them
 				item.sortKey = Math.sqrt(distSq) + Math.max(item.radius, 0);
-				batcher.add(item, item.batchKey);
+				batcher.add(item, batchKey, geometry);
 			}
 		}
 
@@ -1384,6 +1521,7 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 		this._instanceBuffer!.unbind();
 		this._stats.instancedDrawCalls++;
 		this._stats.instances += count;
+		this._countTriangles(geometry, count);
 	}
 
 	/**
@@ -1457,6 +1595,7 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 					}
 					this._geometryManager.drawGeometry(batch.geometry);
 					this._stats.shadowDrawCalls++;
+					this._countTriangles(batch.geometry, 1);
 				}
 			}
 
@@ -1475,6 +1614,11 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 		this._lightFrustumMatrix.matrix.set(lightSpaceMatrix);
 		this._lightFrustum.extractFromMatrix(this._lightFrustumMatrix);
 
+		// Shadow map texels per world unit (orthographic light projection)
+		const m = lightSpaceMatrix;
+		const texelsPerUnit = Math.sqrt(m[0] * m[0] + m[4] * m[4] + m[8] * m[8]) *
+			this._shadowManager.getShadowMapSize(this._shadowLightId) * 0.5;
+
 		const batcher = this._depthBatcher;
 		batcher.begin();
 		const models = data.models;
@@ -1485,7 +1629,12 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 				continue;
 			}
 			item.entity._lastRenderedFrame = this._frameId;
-			batcher.add(item, item.depthKey);
+			if (item.lodSizes) {
+				const level = this._lodLevel(item, texelsPerUnit);
+				batcher.add(item, item.lodDepthKeys[level], item.lodGeometries[level]);
+			} else {
+				batcher.add(item, item.depthKey);
+			}
 		}
 
 		if (!this._shadowManager.beginShadowPass(this._shadowLightId)) {
@@ -1525,18 +1674,29 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 			const shadowData = this._shadowManager.getPointShadowMapData(lightId);
 			const farPlane = shadowData?.farPlane ?? ((pointLight as any)._range as number || 500);
 
-			// Gather casters within the light's shadow range
+			// Gather casters within the light's shadow range. Each cube face
+			// has a 90 degree field of view, so an item at distance d covers
+			// (faceSize / 2) / d texels per world unit.
+			const halfFace = (shadowData?.faceSize ?? 512) * 0.5;
 			batcher.begin();
 			for (let i = 0; i < this._itemCount; i++) {
 				const item = this._itemPool[i];
 				if (!item.castShadow) continue;
+				let distance = 0;
 				if (item.radius >= 0) {
 					const dx = item.cx - pos.x, dy = item.cy - pos.y, dz = item.cz - pos.z;
 					const reach = farPlane + item.radius;
-					if (dx * dx + dy * dy + dz * dz > reach * reach) continue;
+					const distSq = dx * dx + dy * dy + dz * dz;
+					if (distSq > reach * reach) continue;
+					distance = Math.sqrt(distSq);
 				}
 				item.entity._lastRenderedFrame = this._frameId;
-				batcher.add(item, item.depthKey);
+				if (item.lodSizes && distance > 0) {
+					const level = this._lodLevel(item, halfFace / distance);
+					batcher.add(item, item.lodDepthKeys[level], item.lodGeometries[level]);
+				} else {
+					batcher.add(item, item.depthKey);
+				}
 			}
 
 			for (let face = 0; face < 6; face++) {
@@ -1690,6 +1850,7 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 					}
 					this._geometryManager.drawGeometry(batch.geometry);
 					this._stats.drawCalls++;
+					this._countTriangles(batch.geometry, 1);
 				}
 			}
 
@@ -1719,15 +1880,17 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 				current = program;
 			}
 
-			this._geometryManager.bindGeometry(item.geometry, program);
+			const geometry = item.drawGeometry;
+			this._geometryManager.bindGeometry(geometry, program);
 			this._bindBaseTexture(item.blobTextureId, item.texture);
 			this._applyItemUniforms(program, item);
 			if (skinned) {
 				this._uploadBoneUniforms(program, item);
 			}
-			this._geometryManager.drawGeometry(item.geometry);
-			this._geometryManager.unbindGeometry(item.geometry, program);
+			this._geometryManager.drawGeometry(geometry);
+			this._geometryManager.unbindGeometry(geometry, program);
 			this._stats.drawCalls++;
+			this._countTriangles(geometry, 1);
 		}
 	}
 

@@ -29,7 +29,8 @@ import type { IgeSmartTexture } from "@/types/IgeSmartTexture";
 import type { IgeTimeStreamPacket, IgeTimeStreamParsedTransformData } from "@/types/IgeTimeStream";
 import type { IgeTriggerPolygonFunctionName } from "@/types/IgeTriggerPolygonFunctionName";
 import type { IgeGltfModel } from "@/engine/webgl/IgeGltfLoader";
-import { createSkeletonInstance, getModelParts } from "@/engine/webgl/IgeModelParts";
+import type { IgeModelLod, IgeModelLodLevel } from "@/engine/webgl/IgeModelParts";
+import { createSkeletonInstance, getModelLod, getModelParts } from "@/engine/webgl/IgeModelParts";
 import { IgeSkeletalAnimationComponent } from "@/engine/components/IgeSkeletalAnimationComponent";
 import type { IgeAnimationPlayOptions } from "@/types/IgeAnimationClipData";
 
@@ -41,6 +42,8 @@ export interface IgeModelOptions {
 	animation?: string;
 	/** Whether the model casts shadows (default true). */
 	castShadow?: boolean;
+	/** Levels of detail to switch to while the model is small on screen (see IgeEntity.lod()). */
+	lod?: IgeModelLodLevel[];
 }
 
 export interface IgeEntityTransformAccessor {
@@ -1028,6 +1031,7 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 		const parts = getModelParts(model);
 		this._modelParts = parts;
 		this._modelPartMatrices = undefined;
+		this._modelLod = options.lod?.length ? getModelLod(model, options.lod) : undefined;
 
 		// Backwards compatibility: expose the first primitive as the geometry
 		if (parts.length > 0) {
@@ -1063,6 +1067,41 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 			this._skeletonData = undefined;
 		}
 
+		return this;
+	}
+
+	/**
+	 * Gets / sets the levels of detail for this entity's model. While the
+	 * model is small on screen the WebGL renderer draws a lower-detail
+	 * version of it instead; each viewport (and shadow map) picks its own
+	 * level, so a split-screen player close to a horde can see full detail
+	 * while another sees it from afar. Levels are either generated from the
+	 * model (ratio: the fraction of triangles to keep) or separately
+	 * authored models with the same parts and skeleton.
+	 *
+	 * screenSize is the model's on-screen size (the projected diameter of
+	 * its bounding sphere, about the height of a standing character) in
+	 * device pixels below which the level is used. The renderer's
+	 * stats().lodItems counts how many visible meshes used a lower level.
+	 * Generated meshes are shared by every entity using the same model.
+	 * Pass null to remove the levels.
+	 * @example #Two generated levels for a crowd character
+	 *     zombie.model(zombieModel, {
+	 *         animation: "Walk",
+	 *         lod: [
+	 *             { screenSize: 200, ratio: 0.5 },
+	 *             { screenSize: 100, ratio: 0.2 }
+	 *         ]
+	 *     });
+	 */
+	lod (levels: IgeModelLodLevel[] | null): this;
+	lod (): IgeModelLod | undefined;
+	lod (levels?: IgeModelLodLevel[] | null) {
+		if (levels === undefined) {
+			return this._modelLod;
+		}
+
+		this._modelLod = levels && levels.length && this._model ? getModelLod(this._model, levels) : undefined;
 		return this;
 	}
 
