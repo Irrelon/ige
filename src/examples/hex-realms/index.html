@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta content="text/html; charset=utf-8" http-equiv="Content-Type" />
+	<meta content="width=device-width, initial-scale=1.0, user-scalable=no" name="viewport" />
+	<meta content="https://www.isogenicengine.com" name="game-engine-origin" />
+	<title>Hex Realms - Isogenic Engine</title>
+	<link href="../../css/ige.css" media="all" rel="stylesheet" type="text/css" />
+	<script src="./index.bundle.js" type="module"></script>
+	<style>
+		:root {
+			--bg: rgba(10, 16, 26, 0.86);
+			--line: rgba(255, 255, 255, 0.12);
+			--text: #e6edf5;
+			--dim: #93a4b8;
+			--accent: #2f6fd6;
+			--good: #7ee08a;
+			--bad: #ff7a7a;
+			--warn: #ffcc66;
+			--gold: #ffd76a;
+		}
+		body { margin: 0; overflow: hidden; background: #0e1724; font-family: system-ui, -apple-system, "Segoe UI", sans-serif; color: var(--text); user-select: none; }
+		.panel { position: absolute; background: var(--bg); border: 1px solid var(--line); border-radius: 8px; z-index: 100; font-size: 13px; box-shadow: 0 4px 18px rgba(0, 0, 0, 0.35); }
+		.hidden { display: none !important; }
+		.dim { color: var(--dim); }
+		.small { font-size: 11px; }
+		.good { color: var(--good); }
+		.bad { color: var(--bad); }
+		.warn { color: var(--warn); }
+		.stars { color: var(--gold); font-weight: 600; }
+		.swatch { display: inline-block; width: 11px; height: 11px; border-radius: 3px; margin-right: 6px; vertical-align: -1px; border: 1px solid rgba(255, 255, 255, 0.5); }
+		.badge { display: inline-block; background: #e5484d; color: #fff; border-radius: 9px; padding: 0 6px; font-size: 11px; margin-left: 4px; }
+		.good-chip, .good { display: inline-block; }
+		.chip { display: inline-block; color: var(--text); background: color-mix(in srgb, var(--c) 35%, transparent); border: 1px solid var(--c); border-radius: 5px; padding: 0 5px; margin: 1px 2px 1px 0; font-size: 11px; }
+		a { color: #9fd3ff; }
+
+		button, select, input { font: inherit; color: var(--text); background: #23344b; border: 1px solid rgba(255, 255, 255, 0.18); border-radius: 6px; padding: 5px 10px; }
+		button { cursor: pointer; }
+		button small { display: block; color: var(--dim); font-size: 10px; }
+		button:hover:not(:disabled), select:hover { background: #2d4463; }
+		button:disabled { opacity: 0.42; cursor: default; }
+		button:focus-visible, select:focus-visible, input:focus-visible, a:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+		button.primary { background: var(--accent); border-color: #5b93ee; font-weight: 600; }
+		button.primary:hover:not(:disabled) { background: #3a7ce6; }
+		button.danger { background: #6b2328; border-color: #b0434b; }
+		button.ghost { background: transparent; }
+		button.mini { padding: 1px 7px; font-size: 11px; }
+		button.mini.on { background: var(--accent); }
+		button.big { font-size: 16px; padding: 10px 22px; }
+
+		#topbar { top: 8px; left: 8px; right: 8px; display: flex; align-items: center; gap: 10px; padding: 6px 10px; flex-wrap: wrap; }
+		#topbar .title { font-weight: 700; letter-spacing: 1px; color: var(--gold); }
+		#topbar .spacer { flex: 1; }
+
+		#infoPanel { left: 8px; bottom: 8px; width: 380px; max-width: calc(100vw - 16px); max-height: 55vh; overflow-y: auto; padding: 8px 10px; }
+		#panel section { padding: 6px 0; border-bottom: 1px solid var(--line); }
+		#panel section:last-of-type { border-bottom: none; }
+		#panel .title { font-size: 15px; font-weight: 600; margin-bottom: 2px; }
+		#panel .title.small { font-size: 13px; }
+		#panel .sub { font-weight: 600; }
+		#panel .hover { color: var(--dim); padding-top: 4px; font-size: 12px; }
+		#panel .actions { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 6px; align-items: center; }
+		#panel .actions button { padding: 4px 8px; }
+		#panel .reward { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 6px; align-items: center; }
+		#panel .store { margin-top: 3px; }
+		.bar { position: relative; height: 14px; background: rgba(255, 255, 255, 0.08); border-radius: 7px; overflow: hidden; margin: 4px 0; }
+		.bar span { position: absolute; left: 0; top: 0; bottom: 0; background: linear-gradient(90deg, #3f9a4f, #7ee08a); }
+		.bar em { position: relative; font-size: 10px; font-style: normal; padding-left: 8px; }
+
+		#minimapPanel { right: 8px; bottom: 8px; padding: 5px; line-height: 0; }
+		#minimap { cursor: pointer; border-radius: 4px; touch-action: none; }
+		#stats { right: 8px; top: 58px; padding: 6px 10px; font-family: ui-monospace, Menlo, monospace; font-size: 11px; line-height: 1.5; pointer-events: none; }
+		#stats b { color: #9fd3ff; font-weight: normal; }
+
+		#toasts { position: absolute; top: 58px; left: 50%; transform: translateX(-50%); z-index: 160; display: flex; flex-direction: column; gap: 6px; align-items: center; pointer-events: none; }
+		.toast { background: var(--bg); border: 1px solid var(--line); border-left: 4px solid #5b93ee; border-radius: 6px; padding: 7px 12px; font-size: 13px; max-width: 460px; box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4); transition: opacity 0.5s; }
+		.toast.good { border-left-color: var(--good); }
+		.toast.bad { border-left-color: var(--bad); }
+		.toast.fade { opacity: 0; }
+
+		#tips { left: 50%; bottom: 8px; transform: translateX(-50%); width: 420px; max-width: calc(100vw - 16px); padding: 10px 12px; border-color: rgba(255, 215, 106, 0.5); z-index: 120; }
+		#tips .tip-title { color: var(--gold); font-weight: 700; margin-bottom: 4px; }
+		#tips .actions { display: flex; gap: 6px; margin-top: 8px; }
+
+		#modal { position: absolute; inset: 0; background: rgba(0, 0, 0, 0.45); z-index: 200; display: flex; align-items: center; justify-content: center; }
+		.modal-box { position: relative; background: #121c2b; border: 1px solid var(--line); border-radius: 10px; padding: 16px 20px; max-width: min(1000px, calc(100vw - 24px)); max-height: calc(100vh - 40px); overflow: auto; box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5); }
+		.modal-box h3 { margin: 0 0 10px; }
+		.modal-box h4 { margin: 12px 0 6px; color: var(--dim); font-weight: 600; }
+		.modal-box .close { position: absolute; top: 8px; right: 10px; background: transparent; border: none; font-size: 22px; }
+		.modal-box table { border-collapse: collapse; width: 100%; }
+		.modal-box td { padding: 4px 6px; border-bottom: 1px solid var(--line); vertical-align: top; }
+		.modal-box .cols { display: grid; grid-template-columns: 1fr 1.2fr; gap: 20px; }
+		.modal-box .menu-actions { display: flex; flex-wrap: wrap; gap: 8px; margin: 8px 0; }
+		.modal-box .opts > div { margin: 6px 0; }
+		.techs { display: grid; grid-template-columns: repeat(4, minmax(170px, 1fr)); gap: 12px; }
+		.tier { display: flex; flex-direction: column; gap: 6px; }
+		.tech { text-align: left; }
+		.tech b { display: block; }
+		.tech.done { background: #1e4a2c; border-color: #3f9a4f; opacity: 1; }
+		.tech.ready { border-color: var(--gold); }
+		.diplo .actions { display: flex; flex-wrap: wrap; gap: 4px; }
+		.diplo .actions button { padding: 3px 7px; font-size: 12px; }
+		.diplo tr.dead { opacity: 0.5; }
+		.incoming .proposal { margin: 4px 0; display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+		.incoming { padding: 6px 8px; margin-bottom: 8px; border: 1px solid rgba(255, 215, 106, 0.35); border-radius: 6px; }
+		.diplo2 { display: grid; grid-template-columns: 220px 1fr; gap: 14px; min-width: min(860px, calc(100vw - 64px)); }
+		.diplo2 .civs { display: flex; flex-direction: column; gap: 4px; }
+		.diplo2 .civ { text-align: left; }
+		.diplo2 .civ.on { border-color: var(--gold); background: #2d4463; }
+		.diplo2 .civ-detail > div { margin: 3px 0; }
+		.diplo2 h5 { margin: 10px 0 4px; color: var(--dim); font-size: 12px; }
+		.diplo2 .actions { display: flex; flex-wrap: wrap; gap: 5px; align-items: center; }
+		.diplo2 .actions button { padding: 3px 8px; font-size: 12px; text-align: left; }
+		.factors { margin: 2px 0 4px; padding-left: 18px; font-size: 11px; columns: 2; }
+		.deal { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+		.deal .starline { display: flex; gap: 6px; align-items: center; margin: 4px 0; }
+		.deal-goods { display: grid; grid-template-columns: repeat(2, 1fr); gap: 3px 8px; }
+		.deal-goods label { display: flex; align-items: center; gap: 4px; justify-content: space-between; }
+		.deal input[type=number] { width: 4.2em; padding: 2px 4px; }
+		label.check { display: flex; gap: 6px; align-items: center; margin: 6px 0; font-size: 12px; }
+		#dealHint { margin-left: 8px; font-size: 12px; }
+		.wonder-table td { font-size: 12px; }
+		.ambition-grid { display: grid; grid-template-columns: repeat(3, minmax(220px, 1fr)); gap: 10px; }
+		.ambition { border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; display: flex; flex-direction: column; gap: 4px; }
+		.ambition.on { border-color: var(--gold); background: rgba(255, 215, 106, 0.06); }
+		.ambition ol { margin: 4px 0; padding-left: 18px; font-size: 12px; }
+		.ambition button { align-self: flex-start; }
+		#topbar button small { display: inline; }
+		#chat { right: 8px; bottom: 150px; width: 300px; max-width: calc(100vw - 16px); padding: 6px 8px; display: flex; flex-direction: column; gap: 6px; z-index: 110; }
+		#chat .log { max-height: 220px; overflow-y: auto; font-size: 12px; display: flex; flex-direction: column; gap: 3px; user-select: text; }
+		#chat .line.sys { color: var(--dim); font-style: italic; }
+		#chat input { width: 100%; box-sizing: border-box; }
+		.help p { max-width: 640px; line-height: 1.5; }
+
+		#labels { position: absolute; inset: 0; pointer-events: none; overflow: hidden; z-index: 40; }
+		.city-label, .hp, .damage, .lens-label { position: absolute; left: 0; top: 0; white-space: nowrap; will-change: transform; }
+		.lens-label span { display: inline-block; padding: 1px 6px; font-size: 11px; background: rgba(10, 16, 26, 0.82); border-left: 3px solid; border-radius: 4px; }
+		.lens-label span.ok { border-color: #4ade80; }
+		.lens-label span.wait { border-color: #60a5fa; }
+		.lens-label span.idle { border-color: #f59e0b; color: #fde68a; }
+		.lens-store { margin-top: 2px; text-align: center; }
+		.lens-store .chip { font-size: 10px; }
+		#topbar button.on { background: #2563eb; border-color: #3b82f6; color: #fff; }
+		.city-label span { display: inline-block; padding: 1px 8px; font-size: 12px; font-weight: 600; background: rgba(10, 16, 26, 0.8); border: 2px solid; border-radius: 10px; }
+		.hp span { display: inline-block; min-width: 14px; text-align: center; padding: 0 4px; font-size: 10px; font-weight: 700; background: rgba(10, 16, 26, 0.85); border: 2px solid; border-radius: 6px; }
+		.damage { font: 700 18px system-ui, sans-serif; color: #ffd84d; text-shadow: 0 0 3px #000, 0 0 6px #000; }
+
+		#setup { position: absolute; inset: 0; z-index: 300; display: flex; align-items: center; justify-content: center; background: radial-gradient(circle at 50% 30%, #1d3557, #0b1220); overflow: auto; }
+		.setup-box { background: rgba(10, 16, 26, 0.92); border: 1px solid var(--line); border-radius: 12px; padding: 22px 26px; width: 760px; max-width: calc(100vw - 24px); }
+		.setup-box h1 { margin: 0; color: var(--gold); letter-spacing: 3px; }
+		.setup-box .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px 16px; margin-top: 12px; }
+		.setup-box label { display: flex; flex-direction: column; gap: 4px; font-size: 12px; color: var(--dim); }
+		.setup-box label.check { flex-direction: row; align-items: center; gap: 6px; color: var(--text); font-size: 13px; }
+		.setup-box .checks { display: flex; flex-wrap: wrap; gap: 6px 18px; margin-top: 10px; }
+		.setup-box .setup-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; align-items: center; }
+
+		@media (max-width: 760px) {
+			#infoPanel { width: auto; right: 8px; bottom: 150px; max-height: 38vh; }
+			#minimapPanel { transform: scale(0.7); transform-origin: bottom right; }
+			.techs { grid-template-columns: repeat(2, 1fr); }
+			.diplo2, .deal, .ambition-grid { grid-template-columns: 1fr; min-width: 0; }
+			.setup-box .grid, .modal-box .cols { grid-template-columns: 1fr; }
+		}
+		@media (prefers-reduced-motion: reduce) { .toast { transition: none; } }
+	</style>
+</head>
+<body>
+	<div id="labels" aria-hidden="true"></div>
+
+	<nav id="topbar" class="panel" aria-label="Game controls">
+		<span class="title">HEX REALMS</span>
+		<span id="civ"></span>
+		<span id="starsBox" title="Stars: spend them on research, buildings, roads and units"></span>
+		<span id="turnBox"></span>
+		<button data-action="modal" data-modal="tech" title="Research (R)">Research</button>
+		<button id="btnCities" data-action="modal" data-modal="cities" title="Your cities (L)">Cities</button>
+		<button data-action="modal" data-modal="economy" title="Economy (B)">Economy</button>
+		<button id="btnLens" data-action="lens" title="Economy lens: building states and city stores on the map (V)">Lens</button>
+		<button id="btnDiplo" data-action="modal" data-modal="diplomacy" title="Diplomacy (G)">Diplomacy</button>
+		<button id="btnAmbition" data-action="modal" data-modal="ambitions" title="Ambition: your goal and the race board (J)">Ambition</button>
+		<button id="btnWonders" data-action="modal" data-modal="wonders" title="Wonders and monuments (M)">Wonders</button>
+		<button id="btnChat" class="hidden" data-action="chat" title="Chat with the other players">Chat</button>
+		<span class="spacer"></span>
+		<button id="styleToggle" data-action="style" title="Switch terrain look (T)">Terrain</button>
+		<button data-action="modal" data-modal="menu" title="Menu (O)">Menu</button>
+		<button data-action="nextunit" title="Next unit (Space)">Next Unit</button>
+		<button id="endTurn" class="primary" data-action="endturn" title="End your turn (Enter)">End Turn</button>
+	</nav>
+
+	<div id="stats" class="panel hidden">
+		<div>FPS <b id="fps">0</b></div>
+		<div>Map <b id="mapInfo">-</b></div>
+		<div>Terrain <b id="chunkInfo">-</b></div>
+		<div>Draws <b id="drawCalls">-</b></div>
+		<div>Build <b id="timings">-</b></div>
+	</div>
+
+	<div id="toasts" role="status" aria-live="polite"></div>
+
+	<aside id="infoPanel" class="panel" aria-label="Selection">
+		<div id="panel"></div>
+	</aside>
+
+	<div id="tips" class="panel hidden" role="note"></div>
+
+	<div id="minimapPanel" class="panel">
+		<canvas id="minimap" aria-label="Minimap: click to move the camera"></canvas>
+	</div>
+
+	<div id="chat" class="panel hidden" aria-label="Chat"><div class="log" role="log" aria-live="polite"></div><input id="chatInput" maxlength="300" placeholder="Say something, then Enter" autocomplete="off"></div>
+	<div id="modal" class="hidden" role="dialog" aria-modal="true"></div>
+	<div id="setup" class="hidden"></div>
+
+	<div class="igeLoading loadingFloat">
+		<div class="loadingLogo"></div>
+		<div class="loadingCircle"></div>
+		<div class="loadingCircleInner"></div>
+		<div class="loadingText" id="loadingText">Loading Hex Realms...</div>
+		<div id="loadingProgress"><div id="loadingProgressBar"></div></div>
+	</div>
+	<div class="igeLoading loadingLink">Powered By Isogenic Game Engine</div>
+</body>
+</html>

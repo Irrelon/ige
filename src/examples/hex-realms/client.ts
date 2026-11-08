@@ -1,0 +1,1133 @@
+import { IgeBaseClass } from "@/engine/core/IgeBaseClass";
+import { IgeEntity } from "@/engine/core/IgeEntity";
+import { IgeScene2d } from "@/engine/core/IgeScene2d";
+import { IgeViewport } from "@/engine/core/IgeViewport";
+import { IgeWebGlRenderer } from "@/engine/core/IgeWebGlRenderer";
+import { ige } from "@/engine/instance";
+import { IgeAmbientLight, IgeDirectionalLight } from "@/engine/webgl/IgeWebGlLight";
+import { IgeBehaviourType } from "@/enums";
+import type { IgeCanInit } from "@/types/IgeCanInit";
+import type { FogMode } from "./fog";
+import { HexLayout } from "./hex";
+import { Minimap } from "./minimap";
+import { NetClient, saveSeatToken, seatToken, serverAvailable } from "./net/netClient";
+import type { ChatLine, RoomInfo, ServerMessage } from "./net/protocol";
+import { runAiTurn } from "./sim/ai";
+import { attackTargets } from "./sim/combat";
+import { pathTo, type Reach, reachable } from "./sim/movement";
+import { UNIT_TYPES } from "./sim/rules";
+import { Sim } from "./sim/sim";
+import type { Command, GameOptions, SimEvent } from "./sim/types";
+import { StrategyCamera } from "./strategyCamera";
+import type { TerrainStyle } from "./surface";
+import { Hud, type HudHost } from "./ui/hud";
+import { play } from "./ui/sfx";
+import { MAP_PRESETS, optionsFromUrl, type SetupResult, showSetup } from "./ui/setup";
+import { TerrainView } from "./view/terrainView";
+import { WorldView } from "./view/worldView";
+
+// @ts-ignore
+window.ige = ige;
+
+/**
+ * Hex Realms: a hex strategy game (Polytopia pacing, some Civilization
+ * depth, a Settlers-style economy) on the IGE WebGL renderer.
+ *
+ * This controller wires the pieces together:
+ * - sim/   the deterministic rules (commands in, events out), run locally
+ *          or mirrored from the online server
+ * - view/  terrain chunks and everything standing on the map, animated
+ *          from simulation events
+ * - ui/    the DOM interface, setup screen, tips and sounds
+ * - net/   the online client (server/ holds the Node game server)
+ *
+ * URL options: see ui/setup.ts (optionsFromUrl); ?quick=1 skips the setup
+ * screen; ?join=CODE joins an online game; ?chunk=16, ?shadows=0, ?shadowcache=0.
+ */
+
+const HEX_SIZE = 50;
+const CLEAR_COLOR = { r: 0.055, g: 0.09, b: 0.14 };
+const PICK_BOTTOM = -16;
+const SAVE_KEY = "hexRealms.save";
+const REPLAY_KEY = "hexRealms.replay";
+const NEXT_KEY = "hexRealms.next";
+
+interface LogEntry {
+	p: number;
+	cmd?: Command;
+	option?: { fog?: FogMode; los?: boolean };
+}
+
+interface Recording {
+	options: GameOptions;
+	style: TerrainStyle;
+	player: number;
+	log: LogEntry[];
+}
+
+function sleep (ms: number): Promise<void> {
+	return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+function nextFrame (): Promise<void> {
+	return new Promise((resolve) => requestAnimationFrame(() => resolve()));
+}
+
+function storageGet (key: string): string | null {
+	try {
+		return localStorage.getItem(key);
+	} catch {
+		return null;
+	}
+}
+
+function storageSet (key: string, value: string): boolean {
+	try {
+		localStorage.setItem(key, value);
+		return true;
+	} catch {
+		return false;
+	}
+}
+
+export class Client extends IgeBaseClass implements IgeCanInit, HudHost {
+	classId = "Client";
+
+	renderer!: IgeWebGlRenderer;
+	scene!: IgeScene2d;
+	viewport!: IgeViewport;
+	terrainLayer!: IgeEntity;
+	overlayLayer!: IgeEntity;
+	unitLayer!: IgeEntity;
+	sun!: IgeDirectionalLight;
+
+	sim!: Sim;
+	terrain!: TerrainView;
+	world!: WorldView;
+	hud!: Hud;
+	minimap?: Minimap;
+	cam = new StrategyCamera();
+	layout = new HexLayout(HEX_SIZE);
+
+	player = 0;
+	selectedUnit: number | null = null;
+	selectedTile = -1;
+	hoverTile = -1;
+	reach?: Reach;
+	targets: number[] = [];
+
+	busy = false;
+	replaying = false;
+	online = false;
+	net?: NetClient;
+	netCode = "";
+	netSeq = 0;
+	/** Online: seats, presence and the turn timer. */
+	room?: RoomInfo;
+	chat: ChatLine[] = [];
+	ready = false;
+	reducedMotion = storageGet("hexRealms.motion") === "reduced";
+	showStats = storageGet("hexRealms.stats") === "on";
+
+	recording?: Recording;
+	keys: Record<string, boolean> = {};
+	pointer = { x: 0, y: 0, moved: false, down: false, button: 0, startX: 0, startY: 0, dragging: false, grabX: 0, grabZ: 0 };
+	touches = new Map<number, { x: number; y: number }>();
+	pinch = { distance: 0, angle: 0 };
+	time = 0;
+	lastMinimap = 0;
+	minimapTerrainDirty = true;
+	minimapTerritoryDirty = true;
+	renderDirty = true;
+	lastCam = { x: NaN, z: NaN, yaw: NaN, distance: NaN };
+	idleFrame = 0;
+	renders = 0;
+	rendersPerSecond = 0;
+	timings = { generate: 0, mesh: 0 };
+
+	constructor () {
+		super();
+		void this.init();
+	}
+
+	// ------------------------------------------------------------------
+	// Start-up
+	// ------------------------------------------------------------------
+
+	async init () {
+		try {
+			this.status("Creating renderer...");
+			this.renderer = new IgeWebGlRenderer();
+			this.renderer.maxPixelRatio(2);
+			ige.engine.renderer(this.renderer);
+			await this.renderer.setup();
+			this.renderer.createFrontBuffer(true);
+			this.renderer.setClearColor(CLEAR_COLOR.r, CLEAR_COLOR.g, CLEAR_COLOR.b, 1);
+			this.renderer.backFaceCulling(true);
+			await ige.engine.start();
+
+			this.scene = new IgeScene2d();
+			this.scene.id("mainScene");
+			this.terrainLayer = new IgeEntity().id("terrainLayer").mount(this.scene);
+			this.overlayLayer = new IgeEntity().id("overlayLayer").mount(this.scene);
+			this.unitLayer = new IgeEntity().id("unitLayer").mount(this.scene);
+			this.setupLights();
+			this.setupViewport();
+			this.hud = new Hud(this);
+			this.setupInput();
+
+			this.scene.addBehaviour(IgeBehaviourType.preUpdate, "hexRealms", (_e: IgeEntity, tickDelta: number) => {
+				this.tick(Math.min(tickDelta / 1000, 0.1));
+			});
+			setInterval(() => {
+				this.rendersPerSecond = this.renders;
+				this.renders = 0;
+				this.updateStats();
+			}, 1000);
+
+			await this.chooseGame();
+		} catch (error) {
+			console.error(error);
+			this.status(`Error: ${error}`);
+		}
+	}
+
+	/** Decide what to start: a pending load/replay, a quick start, an online join, or the setup screen. */
+	async chooseGame (): Promise<void> {
+		const q = new URLSearchParams(window.location.search);
+		const next = sessionStorage.getItem(NEXT_KEY);
+		sessionStorage.removeItem(NEXT_KEY);
+
+		if (next === "load" && this.hasSave()) return this.startFromSave();
+		if (next === "replay" && this.hasReplay()) return this.startReplay();
+		if (q.get("join")) return this.startOnline({ action: "join", code: String(q.get("join")).toUpperCase(), name: q.get("name") ?? "Player", style: optionsFromUrl().style });
+		if (q.get("quick") === "1") {
+			const { options, style } = optionsFromUrl();
+			return this.startLocal(options, style);
+		}
+
+		hideLoading();
+		const online = await serverAvailable();
+		const result = await showSetup(this.hasSave(), online);
+		showLoading();
+		await this.applySetup(result);
+	}
+
+	async applySetup (result: SetupResult): Promise<void> {
+		if (result.action === "load") return this.startFromSave();
+		if (result.action === "host" || result.action === "join") return this.startOnline(result);
+		return this.startLocal(result.options, result.style);
+	}
+
+	/** New game from the menu: the setup screen, then a clean page load into the chosen game. */
+	async newGame (): Promise<void> {
+		this.hud.closeModal();
+		const online = await serverAvailable();
+		const result = await showSetup(this.hasSave(), online);
+		if (result.action === "load") {
+			sessionStorage.setItem(NEXT_KEY, "load");
+			window.location.search = "";
+			return;
+		}
+		if (result.action === "join") {
+			window.location.search = `?join=${encodeURIComponent(result.code)}&name=${encodeURIComponent(result.name)}&style=${result.style}`;
+			return;
+		}
+		if (result.action === "host") {
+			window.location.search = `?host=1&${urlForOptions(result.options, result.style).slice(1)}&name=${encodeURIComponent(result.name)}`;
+			return;
+		}
+		window.location.search = urlForOptions(result.options, result.style);
+	}
+
+	async startLocal (options: GameOptions, style: TerrainStyle): Promise<void> {
+		if (new URLSearchParams(window.location.search).get("host") === "1") {
+			const q = new URLSearchParams(window.location.search);
+			return this.startOnline({ action: "host", options, style, name: q.get("name") ?? "Player", turnSeconds: Number(q.get("timer")) || 0 });
+		}
+		this.status(`Generating ${options.width} x ${options.height} map...`);
+		await nextFrame();
+		const t = performance.now();
+		const sim = Sim.create(options);
+		this.timings.generate = performance.now() - t;
+		this.recording = { options: structuredClone(options), style, player: options.humans[0] ?? 0, log: [] };
+		await this.startWorld(sim, style, options.humans[0] ?? 0);
+		this.saveReplay();
+		if (!sim.isHuman(sim.current)) void this.runAiTurns();
+	}
+
+	async startFromSave (): Promise<void> {
+		const raw = storageGet(SAVE_KEY);
+		if (!raw) return this.startLocal(optionsFromUrl().options, "tiles");
+		const save = JSON.parse(raw) as { sim: string; style: TerrainStyle; recording: Recording };
+		this.status("Loading saved game...");
+		await nextFrame();
+		const sim = Sim.load(save.sim);
+		this.recording = save.recording;
+		await this.startWorld(sim, save.style, save.recording.player);
+		this.hud.toast("Game loaded", "good");
+		if (!sim.isHuman(sim.current)) void this.runAiTurns();
+	}
+
+	/** Build the views for a game and start playing it. */
+	async startWorld (sim: Sim, style: TerrainStyle, player: number): Promise<void> {
+		this.sim = sim;
+		this.player = player;
+		sim.onApplied = (p, cmd) => this.recording?.log.push({ p, cmd: structuredClone(cmd) });
+
+		this.terrain = new TerrainView({
+			sim, layout: this.layout, renderer: this.renderer, viewport: this.viewport, layer: this.terrainLayer,
+			style, chunkSize: Number(new URLSearchParams(window.location.search).get("chunk")) || 16, player
+		});
+		this.setupCamera();
+		const t = performance.now();
+		await this.terrain.build(async (done, total) => {
+			this.status(`Building terrain: ${done} / ${total} chunks`, done / total);
+			await nextFrame();
+		});
+		this.timings.mesh = performance.now() - t;
+
+		this.world = new WorldView(sim, this.layout, this.terrain, this.renderer, this.unitLayer, this.overlayLayer, player, {
+			onDamage: (tile, amount) => this.hud.floatDamage(tile, amount),
+			invalidate: () => this.invalidate()
+		});
+		this.world.build();
+
+		this.minimap = new Minimap(document.getElementById("minimap") as HTMLCanvasElement, sim.map, this.layout, 260, 190);
+		this.minimapTerrainDirty = this.minimapTerritoryDirty = true;
+
+		ige.engine.useManualRender(true);
+		this.ready = true;
+		hideLoading();
+		sim.drainEvents();
+		this.hud.refresh();
+		this.updateLighting();
+		if (sim.current === player) this.nextUnit();
+	}
+
+	setupLights () {
+		const lightManager = this.renderer.lightManager;
+		if (!lightManager) return;
+		const ambient = new IgeAmbientLight();
+		ambient.id("ambient");
+		ambient.lightColor(0.78, 0.84, 1.0);
+		ambient.intensity(0.55);
+		ambient.mount(this.scene);
+		lightManager.addLight(ambient);
+		this.sun = new IgeDirectionalLight();
+		this.sun.id("sun");
+		this.sun.lightColor(1.0, 0.95, 0.85);
+		this.sun.intensity(0.62);
+		this.sun.direction(-0.55, -1.0, -0.4);
+		this.sun.mount(this.scene);
+		lightManager.addLight(this.sun);
+		if (new URLSearchParams(window.location.search).get("shadows") !== "0") {
+			this.renderer.shadowManager?.shadowPlanes(1, 9000);
+			this.renderer.enableShadows(this.sun, 4096);
+			// Terrain, cities and buildings never move: draw them into the shadow map once,
+			// and only redraw units on top each frame (?shadowcache=0 turns it off)
+			if (new URLSearchParams(window.location.search).get("shadowcache") !== "0") this.renderer.shadowCaching(true);
+		}
+	}
+
+	setupViewport () {
+		this.viewport = new IgeViewport();
+		this.viewport.id("mainViewport");
+		this.viewport.autoSize(true);
+		this.viewport.scene(this.scene);
+		this.viewport.camera.projectionType("perspective");
+		this.viewport.camera.fov(40);
+		this.viewport.mount(ige.engine);
+	}
+
+	setupCamera () {
+		const map = this.sim.map;
+		const worldW = this.layout.colSpacing * map.width;
+		const worldH = this.layout.rowSpacing * map.height;
+		this.cam.bounds = { minX: 0, maxX: worldW, minZ: 0, maxZ: worldH };
+		this.cam.maxDistance = Math.max(4000, Math.max(worldW, worldH * 1.6) * 0.95);
+		const home = this.sim.citiesOf(this.player)[0];
+		if (home) this.cam.jumpTo(this.tileX(home.tile), this.tileZ(home.tile), 1200);
+		else this.cam.jumpTo(worldW / 2, worldH / 2, 3000);
+		this.cam.apply(this.viewport.camera);
+	}
+
+	// ------------------------------------------------------------------
+	// Online
+	// ------------------------------------------------------------------
+
+	async startOnline (setup: Extract<SetupResult, { action: "host" | "join" }>): Promise<void> {
+		this.status("Connecting to the game server...");
+		const net = new NetClient();
+		try {
+			await net.connect();
+		} catch (error) {
+			this.status(String(error));
+			return;
+		}
+		this.net = net;
+		this.online = true;
+		const style = setup.style;
+		const pending: ServerMessage[] = [];
+		let started = false;
+
+		net.onMessage = async (msg) => {
+			if (msg.t === "welcome") {
+				this.netCode = msg.code;
+				this.netSeq = msg.seq;
+				this.room = msg.room;
+				this.chat = msg.chat ?? [];
+				saveSeatToken(msg.code, setup.name, msg.token);
+				const url = new URL(window.location.href);
+				url.search = `?join=${msg.code}&name=${encodeURIComponent(setup.name)}&style=${style}`;
+				window.history.replaceState(null, "", url.toString());
+				const sim = Sim.load(msg.snapshot);
+				this.recording = undefined;
+				await this.startWorld(sim, style, msg.player);
+				started = true;
+				this.hud.toast(`Online game <b>${msg.code}</b>: you are ${sim.player(msg.player).name}. Share the invite link from the menu.`, "good", 8);
+				for (const m of pending.splice(0)) this.onServerMessage(m);
+				return;
+			}
+			if (!started) {
+				if (msg.t === "error") this.status(msg.error);
+				pending.push(msg);
+			} else {
+				this.onServerMessage(msg);
+			}
+		};
+		net.onClose = () => this.hud?.toast("Disconnected from the game server", "bad", 10);
+
+		if (setup.action === "host") {
+			setup.options.humans = [0];
+			net.send({ t: "host", options: setup.options, name: setup.name, turnSeconds: setup.turnSeconds });
+		} else {
+			net.send({ t: "join", code: setup.code, name: setup.name, token: seatToken(setup.code, setup.name) });
+		}
+	}
+
+	/** Apply the server's ordered stream of commands and seat changes to our copy of the game. */
+	onServerMessage (msg: ServerMessage): void {
+		if (msg.t === "error") {
+			this.hud.toast(msg.error, "bad");
+			play("error");
+			return;
+		}
+		if (msg.t === "welcome") return;
+		if (msg.t === "room") {
+			this.room = msg.room;
+			this.hud.refresh();
+			return;
+		}
+		if (msg.t === "chat") {
+			this.chat.push(msg.line);
+			if (this.chat.length > 100) this.chat.shift();
+			this.hud.chatLine(msg.line);
+			return;
+		}
+		if (msg.seq <= this.netSeq) return;
+		this.netSeq = msg.seq;
+		if (msg.t === "seat") {
+			// (The server's chat line announces it)
+			this.sim.state.players[msg.player].human = msg.human;
+		} else {
+			const result = this.sim.apply(msg.player, msg.command);
+			if (!result.ok) console.warn("Server command failed locally", msg, result.error);
+		}
+		this.ingest(this.sim.drainEvents());
+		if (msg.t === "applied" && msg.command.type === "endTurn" && this.sim.current === this.player) {
+			play("turn");
+			this.nextUnit();
+		}
+	}
+
+	sendChat (text: string): void {
+		if (this.online && text.trim()) this.net?.send({ t: "chat", text });
+	}
+
+	setTurnTimer (seconds: number): void {
+		if (this.online) this.net?.send({ t: "timer", seconds });
+	}
+
+	/** Leave an online game for good: the AI plays our civ until we rejoin. */
+	leaveGame (): void {
+		if (!this.online) return;
+		this.net?.send({ t: "leave" });
+		this.hud.toast("You left the game: the AI plays your civ. Rejoin from the same browser with the invite link.", "info", 10);
+	}
+
+	/** The person playing a civ online ("" for AI civs or offline). */
+	playerName (p: number): string {
+		return this.online ? this.room?.names[p] ?? "" : "";
+	}
+
+	inviteLink (): string | null {
+		if (!this.online || !this.netCode) return null;
+		const url = new URL(window.location.href);
+		url.search = `?join=${this.netCode}`;
+		return url.toString();
+	}
+
+	// ------------------------------------------------------------------
+	// Commands and turns
+	// ------------------------------------------------------------------
+
+	get myTurn (): boolean {
+		return this.ready && this.sim.current === this.player && !this.sim.state.winner && !this.busy && !this.replaying;
+	}
+
+	/** Issue a command as the local player. Online, it goes to the server and is applied when echoed. */
+	command (cmd: Command): boolean {
+		if (!this.ready || this.replaying) return false;
+		if (this.online) {
+			this.net?.send({ t: "command", command: cmd });
+			return true;
+		}
+		const result = this.sim.apply(this.player, cmd);
+		if (!result.ok) {
+			this.hud.toast(result.error ?? "Can't do that", "bad", 3);
+			play("error");
+			return false;
+		}
+		this.ingest(this.sim.drainEvents());
+		if (cmd.type === "move") play("move");
+		if (cmd.type === "build" || cmd.type === "road") play("build");
+		return true;
+	}
+
+	/** Hand simulation events to the views and HUD. */
+	ingest (events: SimEvent[]): void {
+		if (!events.length) return;
+		this.world.ingest(events);
+		this.hud.notify(events);
+		for (const e of events) {
+			if (e.type === "fog" && e.player === this.player) this.minimapTerrainDirty = this.minimapTerritoryDirty = true;
+			if (e.type === "territory" || e.type === "cityCaptured" || e.type === "eliminated") this.minimapTerritoryDirty = true;
+			if (e.type === "featureCleared") this.minimapTerrainDirty = true;
+			if (e.type === "unitRemoved" && e.unit === this.selectedUnit) this.selectedUnit = null;
+			if (e.type === "gameOver") this.saveReplay();
+		}
+		this.refreshSelection();
+		this.hud.refresh();
+		this.invalidate();
+	}
+
+	endTurn (): void {
+		if (!this.myTurn) return;
+		this.deselect();
+		this.command({ type: "endTurn" });
+		if (this.online) return;
+		this.saveReplay();
+		void this.runAiTurns();
+	}
+
+	/** Play the AI civs' turns one after another, letting their visible moves animate. */
+	async runAiTurns (): Promise<void> {
+		const sim = this.sim;
+		this.busy = true;
+		this.hud.refresh();
+		while (!sim.state.winner && !sim.isHuman(sim.current)) {
+			const p = sim.current;
+			runAiTurn(sim, p);
+			this.ingest(sim.drainEvents());
+			await this.waitForAnimations(1600);
+			sim.apply(p, { type: "endTurn" });
+			this.ingest(sim.drainEvents());
+			await nextFrame();
+		}
+		this.busy = false;
+		this.saveReplay();
+		this.hud.refresh();
+		if (sim.current === this.player) this.nextUnit();
+	}
+
+	/**
+	 * Let the AI play your seat for a number of rounds (handy for testing and
+	 * for watching a game unfold). From the console: ige.client.autoplay(20).
+	 * Online, the AI plans the turn on a private copy of the game and the
+	 * commands go to the server like any others; other seats are left to
+	 * their own players.
+	 */
+	async autoplay (rounds = 10, fast = false): Promise<void> {
+		const sim = this.sim;
+		const end = sim.state.turn + rounds;
+		while (sim.state.turn < end && !sim.state.winner && !this.replaying) {
+			if (!this.myTurn) {
+				await sleep(20); // (timers, not frames: hidden tabs don't get frames)
+				continue;
+			}
+			const turn = sim.state.turn;
+			if (this.online) {
+				const plan = Sim.load(sim.serialize());
+				const commands: Command[] = [];
+				plan.onApplied = (_player, command) => commands.push(command);
+				runAiTurn(plan, this.player);
+				for (const command of commands) this.command(command);
+				this.command({ type: "endTurn" });
+				while (sim.current === this.player && sim.state.turn === turn && !sim.state.winner && this.online) await sleep(20);
+				continue;
+			}
+			runAiTurn(sim, this.player);
+			this.ingest(sim.drainEvents());
+			if (!fast) await this.waitForAnimations(1600);
+			this.endTurn();
+			await nextFrame();
+		}
+	}
+
+	async waitForAnimations (maxMs: number): Promise<void> {
+		if (this.reducedMotion) return;
+		const start = performance.now();
+		await nextFrame();
+		while (this.world.animating && performance.now() - start < maxMs) await nextFrame();
+	}
+
+	// ------------------------------------------------------------------
+	// Selection
+	// ------------------------------------------------------------------
+
+	selectUnit (id: number | null): void {
+		this.selectedUnit = id;
+		this.selectedTile = -1;
+		this.world.setSelected(id);
+		if (id !== null) play("select");
+		this.refreshSelection();
+		this.hud.refresh();
+		this.invalidate();
+	}
+
+	selectTile (tile: number): void {
+		this.selectedUnit = null;
+		this.selectedTile = tile;
+		this.world.setSelected(null);
+		this.refreshSelection();
+		this.hud.refresh();
+		this.invalidate();
+	}
+
+	deselect (): void {
+		this.selectedUnit = null;
+		this.selectedTile = -1;
+		this.world.setSelected(null);
+		this.refreshSelection();
+		this.hud.refresh();
+	}
+
+	/** Movement range and attack targets of the selected unit. */
+	refreshSelection (): void {
+		if (!this.world) return;
+		const unit = this.selectedUnit !== null ? this.sim.unit(this.selectedUnit) : undefined;
+		if (!unit) this.selectedUnit = null;
+		const mine = !!unit && unit.owner === this.player && this.myTurn;
+		this.reach = mine && unit!.moves > 0 && !unit!.attacked ? reachable(this.sim, unit!) : undefined;
+		this.targets = mine ? attackTargets(this.sim, unit!) : [];
+		this.world.showReach(this.reach?.tiles ?? [], this.pathPreview());
+		this.world.showTargets(this.targets);
+		this.world.setSelectedTile(unit ? unit.tile : this.selectedTile);
+	}
+
+	pathPreview (): number[] {
+		const unit = this.selectedUnit !== null ? this.sim.unit(this.selectedUnit) : undefined;
+		if (!unit || !this.reach || !this.reach.tiles.includes(this.hoverTile)) return [];
+		return pathTo(unit, this.reach, this.hoverTile);
+	}
+
+	clickTile (tile: number): void {
+		if (tile < 0 || !this.ready) return;
+		const unit = this.selectedUnit !== null ? this.sim.unit(this.selectedUnit) : undefined;
+		if (unit && unit.owner === this.player && this.myTurn) {
+			if (this.targets.includes(tile)) {
+				this.command({ type: "attack", unit: unit.id, target: tile });
+				return;
+			}
+			if (this.reach?.tiles.includes(tile)) {
+				this.command({ type: "move", unit: unit.id, to: tile });
+				return;
+			}
+		}
+		const other = this.sim.unitOn(tile);
+		const visible = other && (other.owner === this.player || this.terrain.fogView[tile] === 2);
+		if (other && visible && other.id !== this.selectedUnit) {
+			this.selectUnit(other.id);
+			return;
+		}
+		this.selectTile(tile);
+	}
+
+	/** Select the next own unit that can still act, and glide to it. */
+	nextUnit (): void {
+		if (!this.ready) return;
+		const ready = this.sim.unitsOf(this.player).filter((u) => (u.moves > 0 && !u.attacked) || (UNIT_TYPES[u.type].founder && !u.acted));
+		if (!ready.length) {
+			this.deselect();
+			return;
+		}
+		const index = ready.findIndex((u) => u.id === this.selectedUnit);
+		const next = ready[(index + 1) % ready.length];
+		this.selectUnit(next.id);
+		this.cam.glideTo(this.tileX(next.tile), this.tileZ(next.tile));
+	}
+
+	centreOn (tile: number): void {
+		this.cam.glideTo(this.tileX(tile), this.tileZ(tile));
+	}
+
+	// ------------------------------------------------------------------
+	// Options, saving, replays
+	// ------------------------------------------------------------------
+
+	toggleStyle (): void {
+		const style: TerrainStyle = this.terrain.style === "tiles" ? "natural" : "tiles";
+		if (!this.terrain.setStyle(style)) return;
+		this.world.reseatAll();
+		this.minimapTerrainDirty = true;
+		const url = new URL(window.location.href);
+		url.searchParams.set("style", style);
+		window.history.replaceState(null, "", url.toString());
+		this.refreshSelection();
+		this.invalidate();
+	}
+
+	setFogMode (mode: FogMode): void {
+		if (this.online) return;
+		this.sim.options.fog = mode;
+		this.recording?.log.push({ p: -1, option: { fog: mode } });
+		this.world.fogChanged(this.terrain.refreshFogView());
+		this.minimapTerrainDirty = this.minimapTerritoryDirty = true;
+		this.refreshSelection();
+		this.invalidate();
+	}
+
+	setLineOfSight (on: boolean): void {
+		if (this.online) return;
+		this.sim.options.lineOfSight = on;
+		this.sim.fog.los = on;
+		this.recording?.log.push({ p: -1, option: { los: on } });
+		this.sim.markAllFog();
+		this.sim.updateFog();
+		this.ingest(this.sim.drainEvents());
+	}
+
+	setReducedMotion (on: boolean): void {
+		this.reducedMotion = on;
+		storageSet("hexRealms.motion", on ? "reduced" : "full");
+	}
+
+	setShowStats (on: boolean): void {
+		this.showStats = on;
+		storageSet("hexRealms.stats", on ? "on" : "off");
+		document.getElementById("stats")?.classList.toggle("hidden", !on);
+	}
+
+	hasSave (): boolean {
+		return !!storageGet(SAVE_KEY);
+	}
+
+	hasReplay (): boolean {
+		return !!storageGet(REPLAY_KEY) && !this.online;
+	}
+
+	save (): void {
+		if (this.online || !this.recording) return;
+		const ok = storageSet(SAVE_KEY, JSON.stringify({ sim: this.sim.serialize(), style: this.terrain.style, recording: this.recording }));
+		this.hud.toast(ok ? "Game saved" : "Couldn't save: browser storage is full or blocked", ok ? "good" : "bad");
+		this.hud.closeModal();
+	}
+
+	load (): void {
+		sessionStorage.setItem(NEXT_KEY, "load");
+		window.location.reload();
+	}
+
+	saveReplay (): void {
+		if (this.recording && !this.replaying) storageSet(REPLAY_KEY, JSON.stringify(this.recording));
+	}
+
+	replay (): void {
+		this.saveReplay();
+		sessionStorage.setItem(NEXT_KEY, "replay");
+		window.location.reload();
+	}
+
+	/** Re-run a recorded game from its options and command log. */
+	async startReplay (): Promise<void> {
+		const rec = JSON.parse(storageGet(REPLAY_KEY) as string) as Recording;
+		const sim = Sim.create(rec.options);
+		this.replaying = true;
+		await this.startWorld(sim, rec.style, rec.player);
+		this.hud.toast("Replaying the last game. Start a new game from the menu at any time.", "info", 6);
+		for (const entry of rec.log) {
+			if (entry.option) {
+				if (entry.option.fog) {
+					sim.options.fog = entry.option.fog;
+					this.world.fogChanged(this.terrain.refreshFogView());
+				}
+				if (entry.option.los !== undefined) {
+					sim.options.lineOfSight = sim.fog.los = entry.option.los;
+					sim.markAllFog();
+					sim.updateFog();
+				}
+			} else if (entry.cmd) {
+				sim.apply(entry.p, entry.cmd);
+			}
+			this.ingest(sim.drainEvents());
+			if (entry.cmd?.type === "endTurn" || entry.cmd?.type === "attack" || entry.cmd?.type === "move") await this.waitForAnimations(1200);
+			else await nextFrame();
+		}
+		this.replaying = false;
+		this.hud.toast("Replay finished", "good");
+		this.hud.refresh();
+	}
+
+	// ------------------------------------------------------------------
+	// Per frame
+	// ------------------------------------------------------------------
+
+	tick (dt: number): void {
+		this.time += dt;
+		if (!this.ready) return;
+		const camera = this.viewport.camera;
+
+		const k = this.keys;
+		const pan = 0.9 * dt;
+		let px = 0, py = 0;
+		if (k.KeyA || k.ArrowLeft) px -= pan;
+		if (k.KeyD || k.ArrowRight) px += pan;
+		if (k.KeyW || k.ArrowUp) py += pan;
+		if (k.KeyS || k.ArrowDown) py -= pan;
+		if (px || py) this.cam.panScreen(px, py);
+		if (k.KeyQ) this.cam.rotate(-1.6 * dt);
+		if (k.KeyE) this.cam.rotate(1.6 * dt);
+		if (k.KeyZ || k.Equal || k.NumpadAdd) this.cam.zoom(Math.exp(-1.8 * dt));
+		if (k.KeyX || k.Minus || k.NumpadSubtract) this.cam.zoom(Math.exp(1.8 * dt));
+		this.cam.update(dt, camera);
+
+		this.terrain.update();
+		const moving = this.world.update(this.reducedMotion ? 10 : dt, this.time);
+		this.updateLighting();
+
+		if (this.pointer.moved) {
+			this.pointer.moved = false;
+			this.updateHover(this.pickTile(this.pointer.x, this.pointer.y));
+		}
+		if (this.selectedUnit !== null) {
+			const v = this.world.units.get(this.selectedUnit);
+			if (v) this.world.setSelectedTile(v.tile);
+		}
+
+		this.hud.frame(dt);
+
+		if (this.time - this.lastMinimap > 0.15 && this.minimap) {
+			this.lastMinimap = this.time;
+			if (this.minimapTerrainDirty) {
+				this.minimapTerrainDirty = false;
+				this.minimap.renderTerrain(this.terrain.fogView, this.terrain.unexploredLook());
+			}
+			if (this.minimapTerritoryDirty) {
+				this.minimapTerritoryDirty = false;
+				this.minimap.renderTerritory(this.sim, this.terrain.fogView);
+			}
+			this.minimap.draw(this.sim, this.player, (id) => this.world.unitPosition(id), this.viewFootprint(), this.terrain.fogView);
+		}
+
+		this.queueRender(moving);
+	}
+
+	invalidate (): void {
+		this.renderDirty = true;
+	}
+
+	/** Draw a frame only when something changed (render on demand). */
+	queueRender (moving: boolean): void {
+		const cam = this.cam, last = this.lastCam;
+		const cameraMoved = Number.isNaN(last.x) || Math.abs(cam.x - last.x) > 0.01 || Math.abs(cam.z - last.z) > 0.01 ||
+			Math.abs(cam.yaw - last.yaw) > 1e-5 || Math.abs(cam.distance - last.distance) > 0.01;
+		let render = this.renderDirty || cameraMoved || moving || this.terrain.changed;
+		if (!render && this.sim.state.units.some((u) => u.type === "settler")) render = ++this.idleFrame % 3 === 0;
+		if (!render) return;
+		ige.engine.manualRender();
+		this.renders++;
+		this.renderDirty = false;
+		this.terrain.changed = false;
+		last.x = cam.x;
+		last.z = cam.z;
+		last.yaw = cam.yaw;
+		last.distance = cam.distance;
+	}
+
+	updateLighting (): void {
+		const d = this.cam.distance;
+		this.renderer.shadowManager?.frustumSize(Math.min(3200, Math.max(450, d * 0.8)));
+		this.renderer.fog({ mode: "linear", color: CLEAR_COLOR, near: d * 1.6, far: d * 3.6 });
+	}
+
+	updateHover (tile: number): void {
+		if (tile === this.hoverTile) return;
+		this.hoverTile = tile;
+		const kind = this.targets.includes(tile) ? "attack" : this.reach?.tiles.includes(tile) ? "move" : "normal";
+		this.world.setHover(tile, kind);
+		if (this.reach) this.world.showReach(this.reach.tiles, this.pathPreview());
+		this.hud.refreshPanel();
+		this.invalidate();
+	}
+
+	updateStats (): void {
+		if (!this.ready) return;
+		const s = this.renderer.stats();
+		const map = this.sim.map;
+		setText("fps", `${Math.round(ige.engine._fps)} (${this.rendersPerSecond} rendered)`);
+		setText("mapInfo", `${map.width} x ${map.height} (${map.count.toLocaleString()} tiles)`);
+		setText("chunkInfo", `${this.terrain.chunks.length} chunks, ${(this.terrain.triangles / 1e6).toFixed(2)}M tris, ${this.terrain.liteChunks} lite${this.terrain.queue.length ? `, ${this.terrain.queue.length} rebuilding` : ""}`);
+		setText("drawCalls", `${s.drawCalls + s.instancedDrawCalls} (${s.instances} instanced, ${s.shadowDrawCalls} shadow${this.renderer.shadowCaching() ? `, cache rebuilt ${s.shadowCacheRebuilds}` : ""})`);
+		setText("timings", `gen ${this.timings.generate.toFixed(0)} ms, mesh ${this.timings.mesh.toFixed(0)} ms`);
+	}
+
+	// ------------------------------------------------------------------
+	// Input
+	// ------------------------------------------------------------------
+
+	tileX (tile: number): number {
+		return this.layout.centerX(this.sim.map.col(tile), this.sim.map.row(tile));
+	}
+
+	tileZ (tile: number): number {
+		return this.layout.centerZ(this.sim.map.row(tile));
+	}
+
+	tileAt (x: number, z: number): number {
+		const o = this.layout.worldToOffset(x, z, { col: 0, row: 0 });
+		return this.sim.map.inBounds(o.col, o.row) ? this.sim.map.index(o.col, o.row) : -1;
+	}
+
+	pickTile (sx: number, sy: number): number {
+		if (!this.ready) return -1;
+		const surface = this.terrain.surface;
+		const hit = this.renderer.screenToHeightfield(this.viewport, sx, sy, (x, z) => surface.pickHeight(x, z), {
+			minHeight: PICK_BOTTOM, maxHeight: surface.pickTop, step: HEX_SIZE * 0.15
+		});
+		return hit ? this.tileAt(hit.x, hit.z) : -1;
+	}
+
+	groundAt (sx: number, sy: number): { x: number; z: number } | null {
+		return this.renderer.screenToGround(this.viewport, sx, sy, this.cam.groundY);
+	}
+
+	viewFootprint (): { x: number; z: number }[] | null {
+		const w = this.viewport._bounds2d.x, h = this.viewport._bounds2d.y;
+		const out: { x: number; z: number }[] = [];
+		for (const [sx, sy] of [[0, 0], [w, 0], [w, h], [0, h]]) {
+			let g = this.renderer.screenToGround(this.viewport, sx, Math.max(sy, h * 0.02), this.cam.groundY);
+			if (!g) {
+				const ray = this.renderer.screenToWorldRay(this.viewport, sx, sy);
+				if (!ray) return null;
+				const far = this.cam.distance * 3;
+				g = { x: ray.origin.x + ray.direction.x * far, y: 0, z: ray.origin.z + ray.direction.z * far };
+			}
+			out.push({ x: g.x, z: g.z });
+		}
+		return out;
+	}
+
+	setupInput (): void {
+		const canvas = this.renderer.canvasElement() as HTMLCanvasElement;
+		const p = this.pointer;
+		const local = (e: { clientX: number; clientY: number }) => {
+			const rect = canvas.getBoundingClientRect();
+			return { x: e.clientX - rect.left, y: e.clientY - rect.top };
+		};
+		for (const type of ["pointermove", "pointerdown", "pointerup", "wheel", "keydown", "keyup"]) {
+			window.addEventListener(type, () => this.invalidate(), { capture: true, passive: true });
+		}
+		canvas.addEventListener("contextmenu", (e) => e.preventDefault());
+		canvas.style.touchAction = "none";
+
+		canvas.addEventListener("pointerdown", (e) => {
+			const at = local(e);
+			this.touches.set(e.pointerId, at);
+			if (this.touches.size === 2) {
+				// Two fingers: pinch to zoom, twist to rotate
+				const [a, b] = [...this.touches.values()];
+				this.pinch.distance = Math.hypot(a.x - b.x, a.y - b.y);
+				this.pinch.angle = Math.atan2(b.y - a.y, b.x - a.x);
+				p.dragging = true;
+				return;
+			}
+			p.down = true;
+			p.dragging = false;
+			p.button = e.button;
+			p.startX = at.x;
+			p.startY = at.y;
+			const ground = this.groundAt(at.x, at.y);
+			if (ground) {
+				p.grabX = ground.x;
+				p.grabZ = ground.z;
+			}
+			canvas.setPointerCapture(e.pointerId);
+		});
+
+		canvas.addEventListener("pointermove", (e) => {
+			const at = local(e);
+			if (this.touches.has(e.pointerId)) this.touches.set(e.pointerId, at);
+			if (this.touches.size === 2) {
+				const [a, b] = [...this.touches.values()];
+				const distance = Math.hypot(a.x - b.x, a.y - b.y);
+				const angle = Math.atan2(b.y - a.y, b.x - a.x);
+				if (this.pinch.distance > 0 && distance > 0) this.cam.zoom(this.pinch.distance / distance);
+				this.cam.rotate(-(angle - this.pinch.angle));
+				this.pinch.distance = distance;
+				this.pinch.angle = angle;
+				return;
+			}
+			const dx = at.x - p.x;
+			p.x = at.x;
+			p.y = at.y;
+			p.moved = true;
+			if (!p.down) return;
+			if (!p.dragging && Math.hypot(at.x - p.startX, at.y - p.startY) > 6) p.dragging = true;
+			if (!p.dragging) return;
+			if (p.button === 2) {
+				this.cam.rotate(-dx * 0.006);
+			} else {
+				const ground = this.groundAt(at.x, at.y);
+				if (ground) {
+					this.cam.shift(p.grabX - ground.x, p.grabZ - ground.z);
+					this.cam.apply(this.viewport.camera);
+				}
+			}
+		});
+
+		const release = (e: PointerEvent) => {
+			const at = local(e);
+			const wasTwo = this.touches.size === 2;
+			this.touches.delete(e.pointerId);
+			if (wasTwo) {
+				p.down = false;
+				return;
+			}
+			if (p.down && !p.dragging) {
+				if (p.button === 0) this.clickTile(this.pickTile(at.x, at.y));
+				else if (p.button === 2) this.deselect();
+			}
+			p.down = false;
+			p.dragging = false;
+			if (canvas.hasPointerCapture(e.pointerId)) canvas.releasePointerCapture(e.pointerId);
+		};
+		canvas.addEventListener("pointerup", release);
+		canvas.addEventListener("pointercancel", release);
+		canvas.addEventListener("pointerleave", () => this.updateHover(-1));
+		canvas.addEventListener("wheel", (e) => {
+			e.preventDefault();
+			const at = local(e);
+			const ground = this.groundAt(at.x, at.y);
+			this.cam.zoom(Math.exp(e.deltaY * 0.0015), ground?.x, ground?.z);
+		}, { passive: false });
+
+		window.addEventListener("keydown", (e) => {
+			const tag = (e.target as HTMLElement)?.tagName;
+			if (tag === "INPUT" || tag === "SELECT" || tag === "TEXTAREA" || !this.ready) return;
+			this.keys[e.code] = true;
+			const modal = (name: string) => (this.hud.modal === name ? this.hud.closeModal() : this.hud.openModal(name));
+			switch (e.code) {
+				case "Enter": this.endTurn(); break;
+				case "Space": this.nextUnit(); e.preventDefault(); break;
+				case "Escape": if (this.hud.modal) this.hud.closeModal(); else this.deselect(); break;
+				case "KeyC": {
+					const u = this.selectedUnit !== null ? this.sim.unit(this.selectedUnit) : undefined;
+					const t = u ? u.tile : this.selectedTile >= 0 ? this.selectedTile : this.sim.citiesOf(this.player)[0]?.tile ?? -1;
+					if (t >= 0) this.centreOn(t);
+					break;
+				}
+				case "KeyT": this.toggleStyle(); break;
+				case "KeyR": modal("tech"); break;
+				case "KeyG": modal("diplomacy"); break;
+				case "KeyJ": modal("ambitions"); break;
+				case "KeyM": modal("wonders"); break;
+				case "KeyB": modal("economy"); break;
+				case "KeyL": modal("cities"); break;
+				case "KeyV": this.hud.toggleLens(); break;
+				case "KeyO": modal("menu"); break;
+				case "KeyH": modal("help"); break;
+				case "KeyF": {
+					const u = this.selectedUnit !== null ? this.sim.unit(this.selectedUnit) : undefined;
+					if (u && UNIT_TYPES[u.type].founder) this.command({ type: "found", unit: u.id });
+					break;
+				}
+			}
+			if (e.code.startsWith("Arrow")) e.preventDefault();
+		});
+		window.addEventListener("keyup", (e) => {
+			this.keys[e.code] = false;
+		});
+		window.addEventListener("blur", () => {
+			this.keys = {};
+		});
+		window.addEventListener("resize", () => this.invalidate());
+
+		const mini = document.getElementById("minimap") as HTMLCanvasElement;
+		let miniDown = false;
+		const miniMove = (e: PointerEvent) => {
+			if (!this.minimap) return;
+			const rect = mini.getBoundingClientRect();
+			const w = this.minimap.minimapToWorld(e.clientX - rect.left, e.clientY - rect.top);
+			this.cam.glideTo(w.x, w.z);
+		};
+		mini.addEventListener("pointerdown", (e) => {
+			miniDown = true;
+			mini.setPointerCapture(e.pointerId);
+			miniMove(e);
+		});
+		mini.addEventListener("pointermove", (e) => {
+			if (miniDown) miniMove(e);
+		});
+		mini.addEventListener("pointerup", (e) => {
+			miniDown = false;
+			mini.releasePointerCapture(e.pointerId);
+		});
+
+		document.getElementById("stats")?.classList.toggle("hidden", !this.showStats);
+	}
+
+	status (text: string, progress?: number): void {
+		setText("loadingText", text);
+		if (progress !== undefined) {
+			const bar = document.getElementById("loadingProgressBar");
+			if (bar) bar.style.width = `${Math.round(progress * 100)}%`;
+		}
+	}
+}
+
+/** The URL that starts a game with these options (used for "New game"). */
+function urlForOptions (o: GameOptions, style: TerrainStyle): string {
+	const size = Object.entries(MAP_PRESETS).find(([, p]) => p.width === o.width && p.height === o.height)?.[0];
+	const q = new URLSearchParams();
+	q.set("quick", "1");
+	if (size) q.set("size", size);
+	else {
+		q.set("w", String(o.width));
+		q.set("h", String(o.height));
+	}
+	q.set("players", String(o.players));
+	q.set("seed", o.seedText);
+	q.set("difficulty", o.difficulty);
+	q.set("fog", o.fog);
+	q.set("los", o.lineOfSight ? "1" : "0");
+	q.set("founding", o.allowFounding ? "1" : "0");
+	q.set("turns", String(o.turnLimit));
+	q.set("v", Object.entries(o.victories).filter(([, v]) => v).map(([k]) => k).join(","));
+	q.set("style", style);
+	if (o.civs?.[0]) q.set("civ", o.civs[0]);
+	return `?${q.toString()}`;
+}
+
+function setText (id: string, html: string): void {
+	const el = document.getElementById(id);
+	if (el && el.innerHTML !== html) el.innerHTML = html;
+}
+
+function hideLoading (): void {
+	document.querySelectorAll(".igeLoading").forEach((el) => ((el as HTMLElement).style.display = "none"));
+}
+
+function showLoading (): void {
+	document.querySelectorAll(".igeLoading").forEach((el) => ((el as HTMLElement).style.display = ""));
+}
