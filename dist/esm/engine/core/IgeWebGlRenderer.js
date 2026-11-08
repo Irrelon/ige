@@ -1,21 +1,21 @@
 import { IgeBaseRenderer } from "./IgeBaseRenderer.js"
-import { IgePoint2d } from "./IgePoint2d.js";
+import { IgePoint2d } from "./IgePoint2d.js"
 import { ige } from "../instance.js"
-import { isClient, isServer } from "../utils/clientServer.js";
+import { isClient, isServer } from "../utils/clientServer.js"
 import { IgeWebGlResourceManager } from "../webgl/IgeWebGlResourceManager.js"
-import { IgeWebGlShaderManager } from "../webgl/IgeWebGlShaderManager.js";
+import { IgeWebGlShaderManager } from "../webgl/IgeWebGlShaderManager.js"
 import { IgeWebGlTextureManager } from "../webgl/IgeWebGlTextureManager.js"
-import { IgeWebGlGeometryManager } from "../webgl/IgeWebGlGeometryManager.js";
+import { IgeWebGlGeometryManager } from "../webgl/IgeWebGlGeometryManager.js"
 import { IgeWebGlCameraController } from "../webgl/IgeWebGlCameraController.js"
-import { IgeWebGlStateManager } from "../webgl/IgeWebGlStateManager.js";
+import { IgeWebGlStateManager } from "../webgl/IgeWebGlStateManager.js"
 import { IgeWebGlLightManager } from "../webgl/IgeWebGlLightManager.js"
-import { IgeWebGlShadowManager } from "../webgl/IgeWebGlShadowManager.js";
+import { IgeWebGlShadowManager } from "../webgl/IgeWebGlShadowManager.js"
 import { IgeWebGlSkeletonManager } from "../webgl/IgeWebGlSkeletonManager.js"
-import { IgeShaderLibrary } from "../shaders/webgl/shaderLibrary.js";
+import { IgeShaderLibrary } from "../shaders/webgl/shaderLibrary.js"
 import { IgeMatrix4 } from "./IgeMatrix4.js"
-import { IgeFrustum } from "../webgl/IgeFrustum.js";
+import { IgeFrustum } from "../webgl/IgeFrustum.js"
 import { IgeWebGlBonePalette, IgeWebGlInstanceBuffer, IgeWebGlItemBatcher } from "../webgl/IgeWebGlInstancing.js"
-import { MAX_BONES } from "../../types/IgeSkeletonData.js";
+import { MAX_BONES } from "../../types/IgeSkeletonData.js"
 /** Texture unit layout used by the lit shaders. */
 const SHADOW_TEXTURE_UNIT = 1;
 const POINT_SHADOW_TEXTURE_UNIT = 2; // 2 and 3

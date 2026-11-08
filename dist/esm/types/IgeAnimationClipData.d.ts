@@ -33,8 +33,16 @@ export interface IgeAnimationSampler {
 export interface IgeAnimationChannel {
     /** Index into the animation's samplers array */
     samplerIndex: number;
-    /** Target bone index in the skeleton */
+    /**
+     * Target bone index in the skeleton, or -1 when the animated node is not
+     * a joint of the file's skin (e.g. an animation-only file). Such channels
+     * are ignored during playback but can be retargeted by name.
+     */
     targetBoneIndex: number;
+    /** Index of the animated node in the source file. */
+    targetNode?: number;
+    /** Name of the animated node, used to retarget the clip to other skeletons. */
+    targetName?: string;
     /** Which transform property to animate */
     targetPath: IgeAnimationTargetPath;
 }

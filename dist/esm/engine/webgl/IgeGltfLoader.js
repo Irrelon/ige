@@ -1,7 +1,7 @@
 import { IgeBaseClass } from "../core/IgeBaseClass.js"
-import { IgeEntity } from "../core/IgeEntity.js"
+import { IgeEntity } from "../core/IgeEntity.js";
 import { multiplyMat4 } from "./IgeModelParts.js"
-import { IgeWebGlMaterial, IgeWebGlPBRMaterial } from "./IgeWebGlMaterial.js"
+import { IgeWebGlMaterial, IgeWebGlPBRMaterial } from "./IgeWebGlMaterial.js";
 /**
  * GLTF Accessor component types.
  */
@@ -798,14 +798,20 @@ export class IgeGltfLoader extends IgeBaseClass {
                         break;
                     }
                 }
-                // Skip channels that don't target skeleton bones
-                if (targetBoneIndex === -1) {
+                // Morph target weights aren't supported
+                if (targetPath === "weights") {
                     continue;
                 }
+                // Channels on nodes that aren't joints of a skin in this file
+                // (animation-only files have no skin) keep targetBoneIndex -1:
+                // playback skips them, but retargetClips() can map them onto
+                // another model's skeleton by node name.
                 channels.push({
                     samplerIndex: channelDef.sampler,
                     targetBoneIndex,
-                    targetPath
+                    targetPath,
+                    targetNode: targetNodeIndex,
+                    targetName: gltf.nodes?.[targetNodeIndex]?.name
                 });
             }
             // Calculate duration from sampler inputs

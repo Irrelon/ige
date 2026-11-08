@@ -1,6 +1,6 @@
 import { IgeComponent } from "../core/IgeComponent.js"
-import { ige } from "../instance.js"
-import { IgeBehaviourType } from "../../enums/index.js"
+import { ige } from "../instance.js";
+import { IgeBehaviourType } from "../../enums/index.js";
 /** clip -> skeleton data id -> frame index -> pose. Shared by all instances. */
 const poseCache = new WeakMap();
 const restPoseCache = new WeakMap();
@@ -144,10 +144,17 @@ export class IgeSkeletalAnimationComponent extends IgeComponent {
      * Check if an animation is defined.
      */
     /**
-     * Define several clips at once, registering each under its name and
-     * its id. Used by IgeEntity.model(); doesn't log per clip.
+     * Define several clips at once. An array registers each clip under its
+     * name and its id; a record registers each clip under its key. Used by
+     * IgeEntity.model(); doesn't log per clip.
      */
     defineClips(clips) {
+        if (!Array.isArray(clips)) {
+            for (const [name, clip] of Object.entries(clips)) {
+                this._clips.set(name, clip);
+            }
+            return this;
+        }
         for (const clip of clips) {
             this._clips.set(clip.name, clip);
             if (clip.id !== clip.name) {

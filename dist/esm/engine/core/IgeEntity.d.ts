@@ -15,9 +15,10 @@ import type { IgeShapeFunctionality } from "../../types/IgeShapeFunctionality.js
 import type { IgeSmartTexture } from "../../types/IgeSmartTexture.js"
 import type { IgeTriggerPolygonFunctionName } from "../../types/IgeTriggerPolygonFunctionName.js"
 import type { IgeGltfModel } from "../webgl/IgeGltfLoader.js"
-import type { IgeModelLod, IgeModelLodLevel } from "../webgl/IgeModelParts.js";
-import { IgeSkeletalAnimationComponent } from "../components/IgeSkeletalAnimationComponent.js"
-import type { IgeAnimationPlayOptions } from "../../types/IgeAnimationClipData.js";
+import type { IgeRetargetOptions } from "../webgl/IgeAnimationRetarget.js";
+import type { IgeModelLod, IgeModelLodLevel } from "../webgl/IgeModelParts.js"
+import { IgeSkeletalAnimationComponent } from "../components/IgeSkeletalAnimationComponent.js";
+import type { IgeAnimationPlayOptions } from "../../types/IgeAnimationClipData.js"
 /**
  * Options for IgeEntity.model().
  */
@@ -28,6 +29,16 @@ export interface IgeModelOptions {
     castShadow?: boolean;
     /** Levels of detail to switch to while the model is small on screen (see IgeEntity.lod()). */
     lod?: IgeModelLodLevel[];
+    /**
+     * Animations from other files, retargeted onto this model's skeleton
+     * by bone name (see retargetClips()). An array adds every clip in each
+     * file under its own name; a record adds the first clip of each file
+     * under the key, which helps when every file names its clip the same
+     * (e.g. "mixamo.com").
+     */
+    animations?: IgeGltfModel[] | Record<string, IgeGltfModel>;
+    /** Options for retargeting `animations` (bone name map, root motion). */
+    retarget?: IgeRetargetOptions;
 }
 export interface IgeEntityTransformAccessor {
     x: (val?: number) => number | IgeEntity;
@@ -390,7 +401,8 @@ export declare class IgeEntity extends IgeObject implements IgeCanRegisterById, 
      *
      * Skinned models also get their own skeleton and an
      * IgeSkeletalAnimationComponent ("skeletalAnimation") with every clip
-     * in the file defined by name, ready for playAnimation().
+     * in the file defined by name, ready for playAnimation(). Clips that
+     * ship in separate files can be added with the `animations` option.
      *
      * Many entities can share one loaded model: geometry, textures and
      * cached animation poses are shared, and the WebGL renderer draws
@@ -409,6 +421,11 @@ export declare class IgeEntity extends IgeObject implements IgeCanRegisterById, 
      *         .model(zombieModel, { animation: "Walk" })
      *         .translateTo(100, 0, 50)
      *         .mount(scene);
+     * @example #Add animations that come in their own files
+     *     zombie.model(zombieModel, {
+     *         animation: "Walk",
+     *         animations: { Walk: walkFile, Attack: attackFile, Die: deathFile }
+     *     });
      * @return {*} "this" when arguments are passed to allow method
      * chaining or the current value if no arguments are specified.
      */

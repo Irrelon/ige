@@ -40,10 +40,11 @@ export declare class IgeSkeletalAnimationComponent extends IgeComponent<IgeEntit
      * Check if an animation is defined.
      */
     /**
-     * Define several clips at once, registering each under its name and
-     * its id. Used by IgeEntity.model(); doesn't log per clip.
+     * Define several clips at once. An array registers each clip under its
+     * name and its id; a record registers each clip under its key. Used by
+     * IgeEntity.model(); doesn't log per clip.
      */
-    defineClips(clips: IgeAnimationClipData[]): this;
+    defineClips(clips: IgeAnimationClipData[] | Record<string, IgeAnimationClipData>): this;
     defined(id: string): boolean;
     /**
      * Get an animation clip by ID.

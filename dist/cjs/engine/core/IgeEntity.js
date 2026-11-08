@@ -15,6 +15,7 @@ const igeClassStore_1 = require("../utils/igeClassStore.js");
 const maths_1 = require("../utils/maths.js");
 const trace_1 = require("../utils/trace.js");
 const enums_1 = require("../../enums/index.js");
+const IgeAnimationRetarget_1 = require("../webgl/IgeAnimationRetarget.js");
 const IgeModelParts_1 = require("../webgl/IgeModelParts.js");
 const IgeSkeletalAnimationComponent_1 = require("../components/IgeSkeletalAnimationComponent.js");
 /**
@@ -848,6 +849,25 @@ class IgeEntity extends IgeObject_1.IgeObject {
             anim.setSkeleton(this._skeleton);
             if ((_c = model.animations) === null || _c === void 0 ? void 0 : _c.length) {
                 anim.defineClips(model.animations);
+            }
+            const sources = options.animations;
+            if (Array.isArray(sources)) {
+                for (const source of sources) {
+                    anim.defineClips((0, IgeAnimationRetarget_1.retargetClips)(source, skin.skeleton, options.retarget));
+                }
+            }
+            else if (sources) {
+                const named = {};
+                for (const [name, source] of Object.entries(sources)) {
+                    const clip = (0, IgeAnimationRetarget_1.retargetClips)(source, skin.skeleton, options.retarget)[0];
+                    if (clip) {
+                        named[name] = clip;
+                    }
+                    else {
+                        this.log(`model(): no animation in "${source.id}" matches this skeleton (animation "${name}")`, "warning");
+                    }
+                }
+                anim.defineClips(named);
             }
             if (options.animation) {
                 anim.play(options.animation, { crossFadeDuration: 0 });

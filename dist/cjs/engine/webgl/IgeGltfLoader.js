@@ -779,6 +779,7 @@ class IgeGltfLoader extends IgeBaseClass_1.IgeBaseClass {
      * Parse GLTF animations.
      */
     _parseAnimations(gltf, buffers, skins) {
+        var _a, _b;
         const animations = [];
         if (!gltf.animations)
             return animations;
@@ -821,14 +822,20 @@ class IgeGltfLoader extends IgeBaseClass_1.IgeBaseClass {
                         break;
                     }
                 }
-                // Skip channels that don't target skeleton bones
-                if (targetBoneIndex === -1) {
+                // Morph target weights aren't supported
+                if (targetPath === "weights") {
                     continue;
                 }
+                // Channels on nodes that aren't joints of a skin in this file
+                // (animation-only files have no skin) keep targetBoneIndex -1:
+                // playback skips them, but retargetClips() can map them onto
+                // another model's skeleton by node name.
                 channels.push({
                     samplerIndex: channelDef.sampler,
                     targetBoneIndex,
-                    targetPath
+                    targetPath,
+                    targetNode: targetNodeIndex,
+                    targetName: (_b = (_a = gltf.nodes) === null || _a === void 0 ? void 0 : _a[targetNodeIndex]) === null || _b === void 0 ? void 0 : _b.name
                 });
             }
             // Calculate duration from sampler inputs

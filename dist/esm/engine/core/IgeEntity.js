@@ -12,8 +12,9 @@ import { registerClass } from "../utils/igeClassStore.js"
 import { degreesToRadians } from "../utils/maths.js";
 import { traceSet } from "../utils/trace.js"
 import { IgeBehaviourType, IgeEntityRenderMode, IgeIsometricDepthSortMode, IgeMountMode, IgeStreamMode } from "../../enums/index.js";
-import { createSkeletonInstance, getModelLod, getModelParts } from "../webgl/IgeModelParts.js"
-import { IgeSkeletalAnimationComponent } from "../components/IgeSkeletalAnimationComponent.js";
+import { retargetClips } from "../webgl/IgeAnimationRetarget.js"
+import { createSkeletonInstance, getModelLod, getModelParts } from "../webgl/IgeModelParts.js";
+import { IgeSkeletalAnimationComponent } from "../components/IgeSkeletalAnimationComponent.js"
 /**
  * Creates an entity and handles the entity's life cycle and
  * all related entity actions / methods.
@@ -693,6 +694,25 @@ export class IgeEntity extends IgeObject {
             anim.setSkeleton(this._skeleton);
             if (model.animations?.length) {
                 anim.defineClips(model.animations);
+            }
+            const sources = options.animations;
+            if (Array.isArray(sources)) {
+                for (const source of sources) {
+                    anim.defineClips(retargetClips(source, skin.skeleton, options.retarget));
+                }
+            }
+            else if (sources) {
+                const named = {};
+                for (const [name, source] of Object.entries(sources)) {
+                    const clip = retargetClips(source, skin.skeleton, options.retarget)[0];
+                    if (clip) {
+                        named[name] = clip;
+                    }
+                    else {
+                        this.log(`model(): no animation in "${source.id}" matches this skeleton (animation "${name}")`, "warning");
+                    }
+                }
+                anim.defineClips(named);
             }
             if (options.animation) {
                 anim.play(options.animation, { crossFadeDuration: 0 });
