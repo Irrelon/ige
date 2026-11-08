@@ -1,10 +1,16 @@
 import { IgeBaseClass } from "@/engine/core/IgeBaseClass";
+import { IgeCanvas2dRenderer } from "@/engine/core/IgeCanvas2dRenderer";
 import { IgeEntity } from "@/engine/core/IgeEntity";
+import { IgeFontEntity } from "@/engine/core/IgeFontEntity";
+import { IgeFontSheet } from "@/engine/core/IgeFontSheet";
 import { IgeScene2d } from "@/engine/core/IgeScene2d";
 import { IgeTexture } from "@/engine/core/IgeTexture";
 import { IgeViewport } from "@/engine/core/IgeViewport";
 import { IgeWebGlRenderer } from "@/engine/core/IgeWebGlRenderer";
 import { ige } from "@/engine/instance";
+import { igeFilterBrighten } from "@/engine/filters/igeFilterBrighten";
+import { igeFilterGreyScale } from "@/engine/filters/igeFilterGreyScale";
+import { igeFilterInvert } from "@/engine/filters/igeFilterInvert";
 import { IgeBehaviourType } from "@/enums";
 import type { IgeCanInit } from "@/types/IgeCanInit";
 import type { IgeCanvasRenderingContext2d } from "@/types/IgeCanvasRenderingContext2d";
@@ -26,6 +32,10 @@ window.ige = ige;
  *   stars: hover to highlight, click to add a point;
  * - ?split=1: two side-by-side views of the same scene, as in a 2D
  *   split-screen game, one panned and one zoomed with the camera's scale.
+ * - Canvas 2D features on the right: IgeFontEntity text (native font, bound
+ *   data and a bitmap font sheet), texture filters (applied at load, applied
+ *   later, and an animated pre-filter) and a composite-cached group.
+ * - ?canvas=1: the same scene on IgeCanvas2dRenderer, for comparison.
  */
 
 /** A star whose colour and point count come from the entity's data. */
@@ -86,35 +96,42 @@ export class Client extends IgeBaseClass implements IgeCanInit {
 	}
 
 	async init () {
-		const renderer = new IgeWebGlRenderer();
+		const params = new URLSearchParams(window.location.search);
+		const webGl = params.get("canvas") !== "1";
+		const renderer = webGl ? new IgeWebGlRenderer() : new IgeCanvas2dRenderer();
 		ige.engine.renderer(renderer);
 		renderer.createFrontBuffer(true);
 		await renderer.setup();
-		renderer.setClearColor(0.08, 0.09, 0.12, 1);
+		if (renderer instanceof IgeWebGlRenderer) renderer.setClearColor(0.08, 0.09, 0.12, 1);
 
-		const fairy = new IgeTexture("fairy", "../../assets/textures/sprites/fairy.png");
+		const fairyUrl = "../../assets/textures/sprites/fairy.png";
+		const fairy = new IgeTexture("fairy", fairyUrl);
 		const star = new IgeTexture("star", starTexture);
 		const bar = new IgeTexture("bar", barTexture);
 		const label = new IgeTexture("label", labelTexture);
+		const fairyGrey = new IgeTexture("fairyGrey", fairyUrl);
+		const fairyLater = new IgeTexture("fairyLater", fairyUrl);
+		const fairyPulse = new IgeTexture("fairyPulse", fairyUrl);
+		const fontSheet = new IgeFontSheet("verdana", "../../assets/textures/fonts/verdana_12pt.png");
 		await ige.textures.whenLoaded();
 
 		await ige.engine.start();
 
 		const scene = new IgeScene2d().id("scene");
-		const split = new URLSearchParams(window.location.search).get("split") === "1";
+		const split = params.get("split") === "1";
 		const views: IgeViewport[] = [];
+		// Canvas 2D style view: (0, 0) is the centre of the screen, y down
+		const view2d = (viewport: IgeViewport) => {
+			if (webGl) viewport.camera.preset("screen2d");
+			return viewport;
+		};
 
 		if (!split) {
-			const viewport = new IgeViewport().id("viewport").autoSize(true).scene(scene).mount(ige.engine);
-			// Canvas 2D style view: (0, 0) is the centre of the screen, y down
-			viewport.camera.preset("screen2d");
-			views.push(viewport);
+			views.push(view2d(new IgeViewport().id("viewport").autoSize(true).scene(scene).mount(ige.engine)));
 		} else {
 			// Two views side by side (WebGL viewport y is measured from the bottom)
 			for (let i = 0; i < 2; i++) {
-				const viewport = new IgeViewport().id(`viewport_${i}`).autoSize(false).scene(scene).mount(ige.engine);
-				viewport.camera.preset("screen2d");
-				views.push(viewport);
+				views.push(view2d(new IgeViewport().id(`viewport_${i}`).autoSize(false).scene(scene).mount(ige.engine)));
 			}
 			views[0].camera.translateTo(0, -120, 0); // left: panned up to the sprites
 			views[1].camera.scaleTo(1.6, 1.6, 1.6); // right: zoomed in on the stars
@@ -191,8 +208,47 @@ export class Client extends IgeBaseClass implements IgeCanInit {
 				.mount(scene));
 		}
 
+		// ------------------------------------------------------------
+		// Canvas 2D features (right-hand column)
+		const column = 640;
+		new IgeEntity().texture(label).data("text", "Canvas 2D features").width(260).height(28)
+			.translateTo(column, -280, 0).cache(true).mount(scene);
+
+		// Text: a native font, text bound to data, and a bitmap font sheet
+		new IgeFontEntity().nativeFont("bold 22px Verdana").color("#ffffff").text("IgeFontEntity text")
+			.width(280).height(32).translateTo(column, -235, 0).mount(scene);
+		const score = { value: 0 };
+		new IgeFontEntity().nativeFont("18px Verdana").color("#9dff6f").bindData(score, "value", "Bound score: ")
+			.width(280).height(28).translateTo(column, -200, 0).mount(scene);
+		new IgeFontEntity().texture(fontSheet).text("Bitmap font sheet")
+			.width(280).height(40).translateTo(column, -160, 0).mount(scene);
+
+		// Filters: applied at load, applied after the texture was first
+		// drawn, and a pre-filter that redraws the texture every frame
+		fairyGrey.applyFilter(igeFilterGreyScale, {});
+		fairyPulse.preFilter(igeFilterBrighten, { value: 0 });
+		const filtered = [fairyGrey, fairyLater, fairyPulse];
+		filtered.forEach((texture, i) => {
+			new IgeEntity().texture(texture).width(70).height(70)
+				.translateTo(column - 90 + i * 90, -90, 0).mount(scene);
+		});
+		new IgeEntity().texture(label).data("text", "grey | invert at 2s | pulse").width(300).height(24)
+			.translateTo(column, -40, 0).cache(true).mount(scene);
+		setTimeout(() => fairyLater.applyFilter(igeFilterInvert, {}), 2000);
+
+		// A composite-cached group: Canvas 2D draws its children once into
+		// one canvas; the WebGL renderer draws them as they are
+		const group = new IgeEntity().width(300).height(110).translateTo(column, 50, 0).compositeCache(true).mount(scene);
+		for (let i = 0; i < 4; i++) {
+			new IgeEntity().texture(fairy).width(56).height(56)
+				.translateTo(-105 + i * 70, -15, 0).rotateTo(0, 0, (i - 1.5) * 0.3).mount(group);
+		}
+		new IgeEntity().texture(label).data("text", "compositeCache group").width(260).height(24)
+			.translateTo(0, 35, 0).mount(group);
+
 		const stats = document.getElementById("stats");
 		let time = 0;
+		setInterval(() => { score.value += 10; }, 500);
 		ige.engine.addBehaviour(IgeBehaviourType.preUpdate, "animate2d", (_engine: unknown, tickDelta: number) => {
 			const dt = (tickDelta || 16) / 1000;
 			time += dt;
@@ -201,7 +257,9 @@ export class Client extends IgeBaseClass implements IgeCanInit {
 			for (const orbiter of orbiters) orbiter.rotateBy(0, 0, dt * 2);
 			sun.scaleTo(1 + Math.sin(time * 2) * 0.08, 1 + Math.sin(time * 2) * 0.08, 1);
 			bars.forEach((b, i) => b.data("value", (Math.sin(time * (0.6 + i * 0.3)) + 1) / 2));
-			if (stats) stats.textContent = `fps ${ige.engine._fps} | views ${views.length} | draws ${renderer.stats().drawCalls}`;
+			fairyPulse.data("igeFilterBrighten.value", Math.round(Math.sin(time * 3) * 90));
+			const draws = renderer instanceof IgeWebGlRenderer ? ` | draws ${renderer.stats().drawCalls}` : "";
+			if (stats) stats.textContent = `${webGl ? "WebGL" : "Canvas 2D"} | fps ${ige.engine._fps} | views ${views.length}${draws}`;
 		});
 	}
 }
