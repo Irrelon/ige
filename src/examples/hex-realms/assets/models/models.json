@@ -536,6 +536,23 @@
 		"bytes": 377868,
 		"floor": -0.4093
 	},
+	"peaceGarden": {
+		"file": "peaceGarden.glb",
+		"min": [
+			-0.4577,
+			-0.3428,
+			-0.4338
+		],
+		"max": [
+			0.4465,
+			0.3404,
+			0.4536
+		],
+		"triangles": 4612,
+		"animations": [],
+		"skinned": false,
+		"bytes": 467256
+	},
 	"port": {
 		"file": "port.glb",
 		"min": [
