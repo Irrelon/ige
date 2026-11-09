@@ -139,13 +139,13 @@ export class Client extends IgeBaseClass implements IgeCanInit, HudHost {
 	keys: Record<string, boolean> = {};
 	pointer = { x: 0, y: 0, moved: false, down: false, button: 0, startX: 0, startY: 0, dragging: false, grabX: 0, grabZ: 0 };
 	touches = new Map<number, { x: number; y: number }>();
-	pinch = { distance: 0, angle: 0 };
+	pinch = { distance: 0, angle: 0, midY: 0 };
 	time = 0;
 	lastMinimap = 0;
 	minimapTerrainDirty = true;
 	minimapTerritoryDirty = true;
 	renderDirty = true;
-	lastCam = { x: NaN, z: NaN, yaw: NaN, distance: NaN };
+	lastCam = { x: NaN, z: NaN, yaw: NaN, distance: NaN, tilt: NaN };
 	idleFrame = 0;
 	renders = 0;
 	rendersPerSecond = 0;
@@ -837,6 +837,8 @@ export class Client extends IgeBaseClass implements IgeCanInit, HudHost {
 		if (px || py) this.cam.panScreen(px, py);
 		if (k.KeyQ) this.cam.rotate(-1.6 * dt);
 		if (k.KeyE) this.cam.rotate(1.6 * dt);
+		if (k.PageUp) this.cam.pitchBy(-0.5 * dt);
+		if (k.PageDown) this.cam.pitchBy(0.5 * dt);
 		if (k.KeyZ || k.Equal || k.NumpadAdd) this.cam.zoom(Math.exp(-1.8 * dt));
 		if (k.KeyX || k.Minus || k.NumpadSubtract) this.cam.zoom(Math.exp(1.8 * dt));
 		this.cam.update(dt, camera);
@@ -880,7 +882,7 @@ export class Client extends IgeBaseClass implements IgeCanInit, HudHost {
 	queueRender (moving: boolean): void {
 		const cam = this.cam, last = this.lastCam;
 		const cameraMoved = Number.isNaN(last.x) || Math.abs(cam.x - last.x) > 0.01 || Math.abs(cam.z - last.z) > 0.01 ||
-			Math.abs(cam.yaw - last.yaw) > 1e-5 || Math.abs(cam.distance - last.distance) > 0.01;
+			Math.abs(cam.yaw - last.yaw) > 1e-5 || Math.abs(cam.distance - last.distance) > 0.01 || Math.abs(cam.tilt - last.tilt) > 1e-5;
 		let render = this.renderDirty || cameraMoved || moving || this.terrain.changed;
 		if (!render && this.sim.state.units.some((u) => u.type === "settler")) render = ++this.idleFrame % 3 === 0;
 		// A selected character breathes: a frame every other tick is plenty
@@ -894,6 +896,7 @@ export class Client extends IgeBaseClass implements IgeCanInit, HudHost {
 		last.z = cam.z;
 		last.yaw = cam.yaw;
 		last.distance = cam.distance;
+		last.tilt = cam.tilt;
 	}
 
 	updateLighting (): void {
@@ -990,6 +993,7 @@ export class Client extends IgeBaseClass implements IgeCanInit, HudHost {
 				const [a, b] = [...this.touches.values()];
 				this.pinch.distance = Math.hypot(a.x - b.x, a.y - b.y);
 				this.pinch.angle = Math.atan2(b.y - a.y, b.x - a.x);
+				this.pinch.midY = (a.y + b.y) / 2;
 				p.dragging = true;
 				return;
 			}
@@ -1015,11 +1019,15 @@ export class Client extends IgeBaseClass implements IgeCanInit, HudHost {
 				const angle = Math.atan2(b.y - a.y, b.x - a.x);
 				if (this.pinch.distance > 0 && distance > 0) this.cam.zoom(this.pinch.distance / distance);
 				this.cam.rotate(-(angle - this.pinch.angle));
+				// Both fingers sliding up or down tilts the view
+				const midY = (a.y + b.y) / 2;
+				this.cam.pitchBy((midY - this.pinch.midY) * 0.004);
 				this.pinch.distance = distance;
 				this.pinch.angle = angle;
+				this.pinch.midY = midY;
 				return;
 			}
-			const dx = at.x - p.x;
+			const dx = at.x - p.x, dy = at.y - p.y;
 			p.x = at.x;
 			p.y = at.y;
 			p.moved = true;
@@ -1027,7 +1035,9 @@ export class Client extends IgeBaseClass implements IgeCanInit, HudHost {
 			if (!p.dragging && Math.hypot(at.x - p.startX, at.y - p.startY) > 6) p.dragging = true;
 			if (!p.dragging) return;
 			if (p.button === 2) {
+				// Right-drag: sideways rotates, up and down tilts
 				this.cam.rotate(-dx * 0.006);
+				this.cam.pitchBy(dy * 0.004);
 			} else {
 				const ground = this.groundAt(at.x, at.y);
 				if (ground) {

@@ -13,6 +13,8 @@ export interface CameraBounds {
  *
  * Distance controls zoom; the pitch steepens as you zoom out (close up you
  * see toward the horizon, zoomed out you look down at the map like a board).
+ * The player can tilt a little either side of that (`tilt`), which is kept
+ * as an offset so it carries over as they zoom.
  * Movement is smoothed toward target values; grab-panning writes both the
  * current and target values so the ground stays pinned under the cursor.
  */
@@ -21,25 +23,31 @@ export class StrategyCamera {
 	z = 0;
 	yaw = 0;
 	distance = 1400;
+	/** The player's tilt, added to the zoom's pitch (radians; positive looks more steeply down). */
+	tilt = 0;
 
 	targetX = 0;
 	targetZ = 0;
 	targetYaw = 0;
 	targetDistance = 1400;
+	targetTilt = 0;
 
 	minDistance = 260;
 	maxDistance = 12000;
 	minPitch = (42 * Math.PI) / 180;
 	maxPitch = (72 * Math.PI) / 180;
+	/** How far the player may tilt either way from the zoom's pitch. */
+	maxTilt = (15 * Math.PI) / 180;
 	bounds?: CameraBounds;
 
 	/** Ground height the camera orbits around. */
 	groundY = 6;
 
-	/** Current camera pitch (radians above the horizon). */
+	/** Current camera pitch (radians above the horizon): the zoom's pitch plus the player's tilt. */
 	get pitch (): number {
 		const t = Math.log(this.distance / this.minDistance) / Math.log(this.maxDistance / this.minDistance);
-		return this.minPitch + (this.maxPitch - this.minPitch) * Math.min(1, Math.max(0, t));
+		const zoomed = this.minPitch + (this.maxPitch - this.minPitch) * Math.min(1, Math.max(0, t));
+		return Math.min((85 * Math.PI) / 180, Math.max((25 * Math.PI) / 180, zoomed + this.tilt));
 	}
 
 	/** Screen-up direction on the ground plane for the current yaw. */
@@ -106,12 +114,18 @@ export class StrategyCamera {
 		this.targetYaw += radians;
 	}
 
+	/** Tilt the view (positive looks more steeply down), within `maxTilt` of the zoom's pitch. */
+	pitchBy (radians: number): void {
+		this.targetTilt = Math.min(this.maxTilt, Math.max(-this.maxTilt, this.targetTilt + radians));
+	}
+
 	/** Advance smoothing and write the result into an engine camera. */
 	update (dt: number, camera: IgeCamera): void {
 		const k = 1 - Math.exp(-dt * 10);
 		this.x += (this.targetX - this.x) * k;
 		this.z += (this.targetZ - this.z) * k;
 		this.yaw += (this.targetYaw - this.yaw) * k;
+		this.tilt += (this.targetTilt - this.tilt) * k;
 		// Zoom eases in log space so it feels the same at every distance
 		const logD = Math.log(this.distance);
 		this.distance = Math.exp(logD + (Math.log(this.targetDistance) - logD) * k);

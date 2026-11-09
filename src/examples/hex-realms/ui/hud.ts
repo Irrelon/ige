@@ -1164,7 +1164,7 @@ export class Hud {
 			<p><b>Diplomacy</b> (G): treaties, cultural exchanges, research agreements, trades of goods and stars (once, or every turn as a route; where your roads meet theirs the goods travel as carts), demands, denouncing and sanctions. Wars wear both sides down, making peace easier the longer they last. Wars without enough grievances are surprise wars that everyone resents; peace brings a 10-turn truce.</p>
 			<p><b>Quick actions</b>: buttons float above a selected unit when it can do something where it stands: crossed swords capture a city, a house founds one, a flame pillages.</p>
 			<p><b>Fight</b>: declare war in Diplomacy first. Select a unit to see red attack rings; hover one to preview the damage. Ranged units need line of sight. Units stop when they move next to an enemy.</p>
-			<p><b>Keys</b>: WASD/arrows pan, wheel or Z/X zoom, Q/E rotate, Space next unit, Enter end turn, Esc deselect, C centre, T terrain style, R research, G diplomacy, J ambition, M wonders, B economy, V economy lens, L cities, F found city, O menu, H help.</p></div>`;
+			<p><b>Keys</b>: WASD/arrows pan, wheel or Z/X zoom, Q/E rotate, Page Up/Page Down tilt (or right-drag: sideways rotates, up and down tilts), Space next unit, Enter end turn, Esc deselect, C centre, T terrain style, R research, G diplomacy, J ambition, M wonders, B economy, V economy lens, L cities, F found city, O menu, H help.</p></div>`;
 	}
 
 	gameOverModal (): string {
