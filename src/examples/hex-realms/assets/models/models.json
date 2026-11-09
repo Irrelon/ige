@@ -358,6 +358,23 @@
 		"skinned": true,
 		"bytes": 1350000
 	},
+	"toolsmith": {
+		"file": "toolsmith.glb",
+		"min": [
+			-0.3792,
+			-0.4113,
+			-0.4887
+		],
+		"max": [
+			0.3937,
+			0.44,
+			0.3055
+		],
+		"triangles": 3860,
+		"animations": [],
+		"skinned": false,
+		"bytes": 423068
+	},
 	"town": {
 		"file": "town.glb",
 		"min": [
