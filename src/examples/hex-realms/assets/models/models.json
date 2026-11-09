@@ -57,6 +57,23 @@
 		"skinned": false,
 		"bytes": 775984
 	},
+	"city": {
+		"file": "city.glb",
+		"min": [
+			-0.4608,
+			-0.393,
+			-0.4907
+		],
+		"max": [
+			0.4676,
+			0.4232,
+			0.3008
+		],
+		"triangles": 8072,
+		"animations": [],
+		"skinned": false,
+		"bytes": 750600
+	},
 	"rider": {
 		"file": "rider.glb",
 		"min": [
