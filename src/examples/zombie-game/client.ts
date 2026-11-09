@@ -32,6 +32,7 @@ import {
 	ZOMBIE_KINDS
 } from "./characters";
 import type { IgeGltfModel } from "@/engine/webgl/IgeGltfLoader";
+import { createPropModel, fitProp, LOBBY_PROPS, type PropInfo } from "./props";
 
 // @ts-ignore
 window.ige = ige;
@@ -208,6 +209,8 @@ export class Client extends IgeBaseClass implements IgeCanInit {
 	playerRigs: CharacterRig[] = [];
 	/** Generated weapons from assets/props.json, by id. */
 	weapons: Map<string, { info: WeaponInfo; model: IgeGltfModel }> = new Map();
+	/** Generated props (crates, barrels, the car wreck...) from assets/props.json, by id. */
+	props: Map<string, IgeGltfModel> = new Map();
 	obstacles: IgeLevelObstacle[] = [];
 	level?: IgeEntity;
 	/** Jolt physics (?physics=1): character capsules, the level, and crates to knock about. */
@@ -276,6 +279,9 @@ export class Client extends IgeBaseClass implements IgeCanInit {
 			this.obstacles = lobby.obstacles;
 			this.level = lobby.root;
 
+			this.updateStatus("Loading characters and props...");
+			await this.loadCharacters();
+
 			if (this.physicsFromUrl()) {
 				this.updateStatus("Loading physics...");
 				this.physics = await IgePhysics3d.create({
@@ -293,9 +299,8 @@ export class Client extends IgeBaseClass implements IgeCanInit {
 				this.createCrates();
 				this.createHealingPad();
 			}
+			this.createDressing();
 
-			this.updateStatus("Loading characters...");
-			await this.loadCharacters();
 
 			this.updateStatus("Spawning players and zombies...");
 			this.createEffects();
@@ -346,10 +351,13 @@ export class Client extends IgeBaseClass implements IgeCanInit {
 		let zombieKinds: CharacterKind[] = ZOMBIE_KINDS;
 		let playerKinds: CharacterKind[] = PLAYER_KINDS;
 		let weaponList: WeaponInfo[] = [];
+		let propList: PropInfo[] = [];
 		if (new URLSearchParams(window.location.search).get("standin") !== "1") {
 			const listed = await igeLoadAssets({ data: { characters: "./assets/characters.json", props: "./assets/props.json" } }, { failOnError: false });
 			const list = (listed.data.characters as CharacterListEntry[] | undefined) || [];
-			weaponList = ((listed.data.props as WeaponInfo[] | undefined) || []).filter((p) => p.role === "weapon" && PLAYER_WEAPONS.includes(p.id));
+			const props = (listed.data.props as (PropInfo | WeaponInfo)[] | undefined) || [];
+			weaponList = props.filter((p): p is WeaponInfo => p.role === "weapon" && PLAYER_WEAPONS.includes(p.id));
+			propList = props.filter((p) => p.role === "prop");
 			const kinds = (role: string) => list.filter((c) => c.role === role)
 				.map((c) => ({ ...generatedKind(c.id, `./assets/models/${c.file}`, c.height, c.walkSpeed, c.runSpeed), yaw: c.yaw }));
 			if (kinds("zombie").length) zombieKinds = kinds("zombie");
@@ -361,7 +369,8 @@ export class Client extends IgeBaseClass implements IgeCanInit {
 			{
 				models: Object.fromEntries([
 					...all.map((kind) => [kind.id, kind.file]),
-					...weaponList.map((weapon) => [weapon.id, `./assets/models/${weapon.file}`])
+					...weaponList.map((weapon) => [weapon.id, `./assets/models/${weapon.file}`]),
+					...propList.map((prop) => [prop.id, `./assets/models/${prop.file}`])
 				])
 			},
 			{ onProgress: (done, total) => this.updateStatus(`Loading characters ${done}/${total}...`), failOnError: false }
@@ -377,6 +386,9 @@ export class Client extends IgeBaseClass implements IgeCanInit {
 		}
 		for (const info of weaponList) {
 			if (assets.models[info.id]) this.weapons.set(info.id, { info, model: assets.models[info.id] });
+		}
+		for (const info of propList) {
+			if (assets.models[info.id]) this.props.set(info.id, assets.models[info.id]);
 		}
 		this.zombieRigs = rigs(zombieKinds, ZOMBIE_KINDS);
 		this.playerRigs = rigs(playerKinds, PLAYER_KINDS);
@@ -453,8 +465,15 @@ export class Client extends IgeBaseClass implements IgeCanInit {
 				.translateTo(x, y, z)
 				.rotateTo(0, turn, 0)
 				.mount(this.scene);
-			crate._geometryData = createBoxGeometry(half * 2, half * 2, half * 2, `crate_${half}`);
-			crate.material({ color: { r: 0.55, g: 0.38, b: 0.2, a: 1 }, roughness: 0.85 });
+			const crateModel = this.props.get("prop_crate");
+			if (crateModel) {
+				// The generated crate, fitted to the box the physics simulates (its base at the box's bottom)
+				const fit = fitProp(crateModel, half * 2);
+				createPropModel(crateModel, fit, crate).translateTo(fit.offset.x, fit.offset.y - half, fit.offset.z);
+			} else {
+				crate._geometryData = createBoxGeometry(half * 2, half * 2, half * 2, `crate_${half}`);
+				crate.material({ color: { r: 0.55, g: 0.38, b: 0.2, a: 1 }, roughness: 0.85 });
+			}
 			const body = this.physics.addBody(crate, {
 				shape: { type: "box", halfExtents: { x: half, y: half, z: half } },
 				density: 250,
@@ -473,6 +492,46 @@ export class Client extends IgeBaseClass implements IgeCanInit {
 	 * A glowing pad by the reception desk that heals players standing on
 	 * it: a physics sensor reports players stepping on and off.
 	 */
+	/**
+	 * Generated props around the lobby (see LOBBY_PROPS), when their models
+	 * exist: solid ones block characters (a static box from their bounds, or
+	 * a level obstacle without physics); loose ones (barrels, cones) get
+	 * knocked about like the crates.
+	 */
+	createDressing () {
+		if (!this.scene) return;
+		for (const [i, place] of LOBBY_PROPS.entries()) {
+			const model = this.props.get(place.id);
+			if (!model) continue;
+			const fit = fitProp(model, place.height);
+			const turn = place.turn ?? Math.random() * Math.PI * 2;
+			const root = new IgeEntity()
+				.id(`${place.id}_${i}`)
+				.translateTo(place.x, place.loose && this.physics ? 1 : 0, place.z)
+				.rotateTo(0, turn, 0)
+				.mount(this.scene);
+			createPropModel(model, fit, root);
+			if (place.decor) continue;
+
+			const shape = { type: "box" as const, halfExtents: { x: fit.half.x, y: fit.half.y, z: fit.half.z } };
+			if (this.physics) {
+				const body = this.physics.addBody(root, {
+					type: place.loose ? "dynamic" : "static",
+					shape,
+					offset: { x: 0, y: fit.half.y, z: 0 },
+					density: 300,
+					friction: 0.6
+				});
+				if (place.loose) this.crates.push(body);
+				continue;
+			}
+			// Without physics: an obstacle covering the turned footprint
+			const c = Math.abs(Math.cos(turn)), s = Math.abs(Math.sin(turn));
+			const hx = fit.half.x * c + fit.half.z * s, hz = fit.half.x * s + fit.half.z * c;
+			this.obstacles.push({ minX: place.x - hx, maxX: place.x + hx, minZ: place.z - hz, maxZ: place.z + hz });
+		}
+	}
+
 	createHealingPad () {
 		if (!this.scene || !this.physics) return;
 		const pad = new IgeEntity().id("healingPad").translateTo(0, 1, -380).mount(this.scene);
