@@ -32,8 +32,8 @@ const UNIT_ICONS: Record<UnitTypeId, string> = {
 	warrior: "&#x1FA93;", archer: "&#x1F3F9;", swordsman: "&#x2694;&#xFE0F;", settler: "&#x26FA;", rider: "&#x1F40E;", catapult: "&#x2604;&#xFE0F;"
 };
 
-/** How high above a unit's feet its badge floats (world units; the models are up to about 54 tall). */
-const BADGE_HEIGHT = 62;
+/** How high above a unit's feet its badge floats (world units): just over the head of its model. */
+const BADGE_HEIGHT: Record<UnitTypeId, number> = { warrior: 54, archer: 54, swordsman: 58, settler: 52, rider: 62, catapult: 48 };
 
 export interface HudHost {
 	sim: Sim;
@@ -720,7 +720,7 @@ export class Hud {
 		// is drawn at the city height + 62 and it is about 24 px tall)
 		const p = city
 			? h.renderer.worldToScreen(h.viewport, h.world.tileX(city.tile), h.terrain.surface.tileHeight(city.tile) + 62, h.world.tileZ(city.tile))
-			: h.renderer.worldToScreen(h.viewport, pos.x, pos.y + BADGE_HEIGHT, pos.z);
+			: h.renderer.worldToScreen(h.viewport, pos.x, pos.y + BADGE_HEIGHT[u.type], pos.z);
 		if (!p || !p.visible) return hide();
 		const html = buttons.join("");
 		if (el.innerHTML !== html) el.innerHTML = html;
@@ -778,7 +778,7 @@ export class Hud {
 				const color = sim.player(u.owner).color;
 				const bar = hurt ? `<em><s style="width:${Math.round((100 * u.hp) / u.maxHp)}%"></s></em>` : "";
 				const html = `<span style="--c:${color}">${u.veteran ? "<u>&#9733;</u>" : ""}<i>${UNIT_ICONS[u.type]}</i>${hurt ? `<b>${u.hp}</b>` : ""}</span>${bar}`;
-				label(`unit${u.id}`, "ub", html, pos.x, pos.y + BADGE_HEIGHT, pos.z);
+				label(`unit${u.id}`, "ub", html, pos.x, pos.y + BADGE_HEIGHT[u.type], pos.z);
 			}
 		}
 		for (const [key, el] of this.labels) {

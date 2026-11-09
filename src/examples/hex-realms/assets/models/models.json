@@ -707,26 +707,25 @@
 	"warrior": {
 		"file": "warrior.glb",
 		"min": [
-			-0.2912,
-			-0.4419,
-			-0.155
+			-0.2628,
+			-0.4381,
+			-0.1237
 		],
 		"max": [
-			0.305,
-			0.4364,
-			0.2269
+			0.2773,
+			0.4254,
+			0.2509
 		],
-		"triangles": 5884,
+		"triangles": 5224,
 		"animations": [
-			"idle",
-			"walk",
-			"attack",
+			"death",
 			"hit",
-			"death"
+			"idle",
+			"attack",
+			"walk"
 		],
 		"skinned": true,
-		"bytes": 1226168,
-		"team": "warrior_team.png"
+		"bytes": 931940
 	},
 	"woodcutter": {
 		"file": "woodcutter.glb",
