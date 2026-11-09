@@ -159,6 +159,23 @@
 		"skinned": false,
 		"bytes": 529780
 	},
+	"mill": {
+		"file": "mill.glb",
+		"min": [
+			-0.2252,
+			-0.4359,
+			-0.2784
+		],
+		"max": [
+			0.2296,
+			0.4104,
+			0.2843
+		],
+		"triangles": 3486,
+		"animations": [],
+		"skinned": false,
+		"bytes": 382796
+	},
 	"mine": {
 		"file": "mine.glb",
 		"min": [
