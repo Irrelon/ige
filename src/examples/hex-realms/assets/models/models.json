@@ -261,6 +261,23 @@
 		"skinned": false,
 		"bytes": 563060
 	},
+	"imperialRoad": {
+		"file": "imperialRoad.glb",
+		"min": [
+			-0.3999,
+			-0.1992,
+			-0.4574
+		],
+		"max": [
+			0.4029,
+			0.3955,
+			0.4684
+		],
+		"triangles": 8898,
+		"animations": [],
+		"skinned": false,
+		"bytes": 661476
+	},
 	"market": {
 		"file": "market.glb",
 		"min": [
