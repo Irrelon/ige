@@ -25,6 +25,8 @@ export interface ModelInfo {
 	bytes: number;
 	/** Turn the model this much (radians) so its front faces +Z. */
 	yaw?: number;
+	/** Skinned models: the lowest point in the idle pose (model space), which stands on the ground. */
+	floor?: number;
 }
 
 export interface ModelFit {
@@ -160,7 +162,7 @@ export class ModelLibrary {
 		const yaw = info.yaw ?? 0;
 		const cx = -(info.min[0] + info.max[0]) / 2 * s, cz = -(info.min[2] + info.max[2]) / 2 * s;
 		e.scaleTo(s, s, s);
-		e.translateTo(cx * Math.cos(yaw) + cz * Math.sin(yaw), -info.min[1] * s, -cx * Math.sin(yaw) + cz * Math.cos(yaw));
+		e.translateTo(cx * Math.cos(yaw) + cz * Math.sin(yaw), -(info.floor ?? info.min[1]) * s, -cx * Math.sin(yaw) + cz * Math.cos(yaw));
 		if (yaw) e.rotateTo(0, yaw, 0);
 		if (fit.animation && info.animations.includes(fit.animation)) {
 			(e.components.skeletalAnimation as any)?.play(fit.animation, { crossFadeDuration: 0, speed: fit.speed ?? 1 });

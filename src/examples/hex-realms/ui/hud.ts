@@ -428,11 +428,13 @@ export class Hud {
 		const view = this.host.terrain.fogView[tile];
 		const coords = `<span class="dim small">(${sim.map.col(tile)}, ${sim.map.row(tile)})</span>`;
 		if (view === UNEXPLORED) return `<section><div class="sub">Unexplored ${coords}</div></section>`;
-		const out = [`<div class="sub">${describeTile(sim, tile)}${view === FOGGED ? ` <span class="dim">(out of sight)</span>` : ""} ${coords}</div>`];
-		const owner = sim.map.owner[tile];
-		if (owner >= 0) out.push(`<div class="dim small">${esc(sim.player(owner).name)} territory${sim.roads[tile] >= 0 ? " &middot; road" : ""}</div>`);
+		const out: string[] = [];
+		// What stands here comes first: a building, wonder or monument (cities have their own panel above)
 		const b = sim.buildingOn(tile);
 		if (b) out.push(this.buildingPanel(b.id));
+		out.push(`<div class="sub">${describeTile(sim, tile)}${view === FOGGED ? ` <span class="dim">(out of sight)</span>` : ""} ${coords}</div>`);
+		const owner = sim.map.owner[tile];
+		if (owner >= 0) out.push(`<div class="dim small">${esc(sim.player(owner).name)} territory${sim.roads[tile] >= 0 ? " &middot; road" : ""}</div>`);
 		if (!compact && owner === this.me && !b && sim.cityAt[tile] < 0) {
 			const options = buildOptions(sim, this.me, tile);
 			if (options.length) {
@@ -470,7 +472,7 @@ export class Hud {
 		const info = BUILDINGS[b.type];
 		const mine = b.owner === this.me;
 		const kind = info.wonder === "world" ? "World wonder: " : info.wonder === "monument" ? "Monument: " : "";
-		const out = [`<div class="title small">${info.name} <span class="dim">${b.built ? (b.status ? esc(b.status) : info.wonder ? "standing" : "working") : "under construction"}${mine ? "" : ` &middot; ${esc(sim.player(b.owner).name)}`}</span></div>`];
+		const out = [`<div class="title">${info.name} <span class="dim">${b.built ? (b.status ? esc(b.status) : info.wonder ? "standing" : "working") : "under construction"}${mine ? "" : ` &middot; ${esc(sim.player(b.owner).name)}`}</span></div>`];
 		if (info.wonder) out.push(`<div class="small">${kind}${esc(info.description)}</div>`);
 		if (!mine) return out.join("");
 		if (!b.built) {

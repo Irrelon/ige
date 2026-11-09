@@ -190,7 +190,7 @@ def read_accessor(model, index):
     g = model.g
     acc = g["accessors"][index]
     view = g["bufferViews"][acc["bufferView"]]
-    comps = {"SCALAR": 1, "VEC2": 2, "VEC3": 3, "VEC4": 4}[acc["type"]]
+    comps = {"SCALAR": 1, "VEC2": 2, "VEC3": 3, "VEC4": 4, "MAT4": 16}[acc["type"]]
     dtype = {5121: np.uint8, 5123: np.uint16, 5125: np.uint32, 5126: np.float32}[acc["componentType"]]
     item = np.dtype(dtype).itemsize
     stride = view.get("byteStride", item * comps)
@@ -470,6 +470,74 @@ def smooth_normals(model, passes, max_angle=60.0):
                     other["attributes"]["NORMAL"] = new
 
 
+def pose_floor(model, clip="idle"):
+    """
+    The lowest point of a skinned model posed in the first frame of `clip`
+    (model space), or None. The game stands units on this rather than on
+    their bind pose: the idle pose bends the knees and drops the hips, so
+    bounds taken from the bind pose left the feet sunk into the ground.
+    """
+    import numpy as np
+    g = model.g
+    if not g.get("skins"):
+        return None
+    anim = next((a for a in g.get("animations", []) if a.get("name") == clip), None)
+    first = {}
+    if anim:
+        for ch in anim["channels"]:
+            values = read_accessor(model, anim["samplers"][ch["sampler"]]["output"])
+            first[(ch["target"]["node"], ch["target"]["path"])] = values[0].astype(np.float64)
+    parents = {c: i for i, n in enumerate(g["nodes"]) for c in n.get("children", [])}
+
+    def local(i):
+        n = g["nodes"][i]
+        if "matrix" in n and not any(k[0] == i for k in first):
+            return np.array(n["matrix"], dtype=np.float64).reshape(4, 4).T
+        t = first.get((i, "translation"), np.array(n.get("translation", [0, 0, 0]), dtype=np.float64))
+        x, y, z, w = first.get((i, "rotation"), np.array(n.get("rotation", [0, 0, 0, 1]), dtype=np.float64))
+        sc = first.get((i, "scale"), np.array(n.get("scale", [1, 1, 1]), dtype=np.float64))
+        r = np.array([[1 - 2 * (y * y + z * z), 2 * (x * y - z * w), 2 * (x * z + y * w)],
+                      [2 * (x * y + z * w), 1 - 2 * (x * x + z * z), 2 * (y * z - x * w)],
+                      [2 * (x * z - y * w), 2 * (y * z + x * w), 1 - 2 * (x * x + y * y)]])
+        m = np.eye(4)
+        m[:3, :3] = r * sc
+        m[:3, 3] = t
+        return m
+
+    cache = {}
+
+    def world(i):
+        if i not in cache:
+            cache[i] = (world(parents[i]) if i in parents else np.eye(4)) @ local(i)
+        return cache[i]
+
+    lowest = None
+    for ni, node in enumerate(g["nodes"]):
+        if "mesh" not in node or "skin" not in node:
+            continue
+        skin = g["skins"][node["skin"]]
+        inv = read_accessor(model, skin["inverseBindMatrices"]).astype(np.float64).reshape(-1, 4, 4).transpose(0, 2, 1)
+        mats = np.stack([world(j) @ inv[k] for k, j in enumerate(skin["joints"])])
+        for prim in g["meshes"][node["mesh"]]["primitives"]:
+            a = prim["attributes"]
+            if "JOINTS_0" not in a or "WEIGHTS_0" not in a:
+                continue
+            pos = read_accessor(model, a["POSITION"]).astype(np.float64)
+            jo = read_accessor(model, a["JOINTS_0"]).astype(np.int64)
+            we = read_accessor(model, a["WEIGHTS_0"]).astype(np.float64)
+            wacc = g["accessors"][a["WEIGHTS_0"]]
+            if wacc["componentType"] != 5126:
+                we /= 255.0 if wacc["componentType"] == 5121 else 65535.0
+            hom = np.concatenate([pos, np.ones((len(pos), 1))], 1)
+            ys = np.zeros(len(pos))
+            for k in range(4):
+                m = mats[jo[:, k]]
+                ys += we[:, k] * np.einsum("nj,nj->n", m[:, 1, :], hom)
+            low = float(ys.min())
+            lowest = low if lowest is None else min(lowest, low)
+    return lowest
+
+
 def in_place(model, clip="walk"):
     """
     Take the forward drift out of a clip. AssetFurnace's walk carries the
@@ -667,71 +735,86 @@ def support(points):
     return area / foot
 
 
-def level(model, max_tilt=40.0):
+def ground_level(x, y, z, quantile=0.2):
     """
-    Stand a prop level. AssetFurnace builds each model from a picture taken
-    from above at three-quarters, and the mesh comes out pitched by roughly
-    that camera's angle (8-32 degrees forward for this game's buildings), so
-    one side of its base floats while the other sinks. Fit a plane through
-    the lowest points of the base (the lowest point of each cell of a 6 x 6
-    grid over the footprint, within the bottom quarter of the model) and put
-    the scene under a node whose rotation turns that plane flat. Returns the
-    tilt removed, in degrees.
+    Where a prop's base is: over a 16 x 16 grid on its footprint, the lowest
+    point in each cell, and the given quantile of those. Generated meshes
+    often have a stray lump hanging below the base (the farm had one); with
+    the very lowest point as the ground the model rested on the lump and
+    floated. Lumps below this level sink into the ground instead.
     """
-    points = prop_points(model)
-    if not points:
-        return 0.0
-    if support(points) >= 0.12:
-        return 0.0  # already standing on a broad base (or its feet): fitting the lowest quarter would tip it
-    ys = [p[1] for p in points]
-    y0, y1 = min(ys), max(ys)
-    xs, zs = [p[0] for p in points], [p[2] for p in points]
-    x0, x1, z0, z1 = min(xs), max(xs), min(zs), max(zs)
-    n = 6
-    cells = {}
-    for x, y, z in points:
-        if y > y0 + 0.25 * (y1 - y0):
-            continue
-        key = (min(n - 1, int((x - x0) / (x1 - x0 + 1e-9) * n)), min(n - 1, int((z - z0) / (z1 - z0 + 1e-9) * n)))
-        if key not in cells or y < cells[key][1]:
-            cells[key] = (x, y, z)
-    lows = list(cells.values())
-    if len(lows) < 4:
-        return 0.0
-    # Least squares: y = a x + c z + d
-    sxx = sum(p[0] * p[0] for p in lows); sxz = sum(p[0] * p[2] for p in lows); szz = sum(p[2] * p[2] for p in lows)
-    sx = sum(p[0] for p in lows); sz = sum(p[2] for p in lows); m = len(lows)
-    sxy = sum(p[0] * p[1] for p in lows); szy = sum(p[2] * p[1] for p in lows); sy = sum(p[1] for p in lows)
-    A = [[sxx, sxz, sx], [sxz, szz, sz], [sx, sz, m]]
-    B = [sxy, szy, sy]
+    import numpy as np
+    gx = np.clip(((x - x.min()) / (np.ptp(x) + 1e-12) * 16).astype(int), 0, 15)
+    gz = np.clip(((z - z.min()) / (np.ptp(z) + 1e-12) * 16).astype(int), 0, 15)
+    cell = gx * 16 + gz
+    lows = np.full(256, np.inf)
+    np.minimum.at(lows, cell, y)
+    lows = lows[np.isfinite(lows)]
+    return float(np.quantile(lows, quantile))
 
-    def det(M):
-        return (M[0][0] * (M[1][1] * M[2][2] - M[1][2] * M[2][1]) - M[0][1] * (M[1][0] * M[2][2] - M[1][2] * M[2][0])
-                + M[0][2] * (M[1][0] * M[2][1] - M[1][1] * M[2][0]))
 
-    D = det(A)
-    if abs(D) < 1e-12:
+def _contact(points, rx, rz):
+    """How much of the footprint touches the ground when the model is turned rx about X, then rz about Z:
+    the share of a 16 x 16 grid over the footprint whose cells hold a point within 2% of the height of the
+    lowest point."""
+    import numpy as np
+    cx, sx, cz, sz = math.cos(rx), math.sin(rx), math.cos(rz), math.sin(rz)
+    x, y, z = points[:, 0], points[:, 1], points[:, 2]
+    y1, z1 = y * cx - z * sx, y * sx + z * cx            # about X
+    x2, y2 = x * cz - y1 * sz, x * sz + y1 * cz          # about Z
+    h = y2.max() - y2.min()
+    if h <= 0:
         return 0.0
-    solution = []
-    for i in range(3):
-        M = [row[:] for row in A]
-        for r in range(3):
-            M[r][i] = B[r]
-        solution.append(det(M) / D)
-    a, c = solution[0], solution[1]
-    # The base's up direction, and the rotation taking it to +Y
-    nx, ny, nz = -a, 1.0, -c
-    length = math.sqrt(nx * nx + ny * ny + nz * nz)
-    nx, ny, nz = nx / length, ny / length, nz / length
-    tilt = math.degrees(math.acos(max(-1.0, min(1.0, ny))))
-    if tilt < 2 or tilt > max_tilt:
-        if tilt > max_tilt:
-            print(f"  base tilt {tilt:.1f} degrees looks wrong; left as it is", file=sys.stderr)
+    floor = ground_level(x2, y2, z1)
+
+    def cells(mask):
+        gx = np.clip(((x2 - x2.min()) / (np.ptp(x2) + 1e-12) * 16).astype(int), 0, 15)
+        gz = np.clip(((z1 - z1.min()) / (np.ptp(z1) + 1e-12) * 16).astype(int), 0, 15)
+        return len(set(zip(gx[mask].tolist(), gz[mask].tolist())))
+    return cells(np.abs(y2 - floor) < 0.02 * h) / max(1, cells(np.ones(len(y2), bool)))
+
+
+def level(model, max_tilt=35.0):
+    """
+    Stand a prop flat on the ground. AssetFurnace builds each model from a
+    picture taken from above at three-quarters, and the mesh comes out
+    pitched by roughly that camera's angle (up to 30 degrees), so one side
+    of its base floats while the other sinks. The turn kept is the one that
+    puts the most of its footprint on the ground (searched over +-max_tilt
+    degrees about X and Z, coarse to fine): a slab lies flat, a horse stands
+    on its hooves, a model that already stands level is left alone. The
+    scene goes under a node with that rotation. Returns the tilt removed, in
+    degrees (0 when under a degree).
+    """
+    import numpy as np
+    pts = np.array(prop_points(model), dtype=np.float64)
+    if len(pts) < 10:
         return 0.0
-    ax, az = -nz, nx  # n x up: turning about it takes n onto +Y
-    axis_len = math.hypot(ax, az)
-    half = math.radians(tilt) / 2
-    q = [ax / axis_len * math.sin(half), 0.0, az / axis_len * math.sin(half), math.cos(half)]
+    if len(pts) > 6000:
+        pts = pts[np.random.default_rng(0).choice(len(pts), 6000, replace=False)]
+    best = (_contact(pts, 0.0, 0.0), 0.0, 0.0)
+    for step, span in ((5.0, max_tilt), (1.0, 5.0), (0.25, 1.0)):
+        cx_, cz_ = best[1], best[2]
+        for ax in np.arange(-span, span + 1e-9, step):
+            for az in np.arange(-span, span + 1e-9, step):
+                rx, rz = cx_ + math.radians(ax), cz_ + math.radians(az)
+                if abs(rx) > math.radians(max_tilt) or abs(rz) > math.radians(max_tilt):
+                    continue
+                score = _contact(pts, rx, rz)
+                # Prefer the smaller turn when two are about as good
+                if score > best[0] + 1e-6 or (abs(score - best[0]) <= 1e-6 and abs(rx) + abs(rz) < abs(best[1]) + abs(best[2])):
+                    best = (score, rx, rz)
+    _, rx, rz = best
+    tilt = math.degrees(math.acos(max(-1.0, min(1.0, math.cos(rx) * math.cos(rz)))))
+    if tilt < 1.0:
+        return 0.0
+    # q = qz * qx (turn about X first, then Z), matching _contact
+    qx = (math.sin(rx / 2), 0.0, 0.0, math.cos(rx / 2))
+    qz = (0.0, 0.0, math.sin(rz / 2), math.cos(rz / 2))
+    q = (qz[3] * qx[0] + qz[0] * qx[3] + qz[1] * qx[2] - qz[2] * qx[1],
+         qz[3] * qx[1] - qz[0] * qx[2] + qz[1] * qx[3] + qz[2] * qx[0],
+         qz[3] * qx[2] + qz[0] * qx[1] - qz[1] * qx[0] + qz[2] * qx[3],
+         qz[3] * qx[3] - qz[0] * qx[0] - qz[1] * qx[1] - qz[2] * qx[2])
     g = model.g
     g["nodes"].append({"name": "level", "rotation": [round(v, 6) for v in q], "children": list(scene_roots(g))})
     if g.get("scenes"):
@@ -820,10 +903,23 @@ def main():
     if in_place(model, "walk"):
         print("  walk made in place (hips keep their rest x and z)", file=sys.stderr)
     remove_unused(model)
-    tilt = level(model) if args.level and not model.g.get("skins") else 0.0
+    # Props already standing on a broad base or on their feet, hooves or wheels are left as they are;
+    # the rest are turned flat (level()) and stood on their base rather than on stray lumps below it
+    standing = True
+    tilt = 0.0
+    if args.level and not model.g.get("skins"):
+        standing = support(prop_points(model)) >= 0.12
+        if not standing:
+            tilt = level(model)
     if tilt:
         print(f"  levelled: base was tilted {tilt:.1f} degrees", file=sys.stderr)
     lo, hi, triangles = bounds_and_triangles(model)
+    floor = pose_floor(model, "idle")
+    if floor is None and args.level and not standing:
+        import numpy as np
+        pts = np.array(prop_points(model), dtype=np.float64)
+        if len(pts):
+            floor = ground_level(pts[:, 0], pts[:, 1], pts[:, 2])
 
     os.makedirs(args.out, exist_ok=True)
     out = os.path.join(args.out, f"{args.id}.glb")
@@ -843,7 +939,8 @@ def main():
         "skinned": bool(model.g.get("skins")),
         "bytes": os.path.getsize(out),
         **({"yaw": round(yaw, 4)} if yaw else {}),
-        **({"team": mask_file} if team else {})
+        **({"team": mask_file} if team else {}),
+        **({"floor": round(floor, 4)} if floor is not None else {})
     }
     tmp = index_path + ".tmp"
     with open(tmp, "w") as f:
