@@ -774,47 +774,71 @@ def _contact(points, rx, rz):
     return cells(np.abs(y2 - floor) < 0.02 * h) / max(1, cells(np.ones(len(y2), bool)))
 
 
-def level(model, max_tilt=35.0):
+def prop_triangles(model):
+    """Every triangle of a model's unskinned meshes (n x 3 x 3), with node transforms applied."""
+    import numpy as np
+    g = model.g
+    out = []
+
+    def visit(index, parent):
+        node = g["nodes"][index]
+        world = mat_mul(parent, node_matrix(node))
+        if "mesh" in node and "skin" not in node:
+            m = np.array(world, dtype=np.float64).reshape(4, 4).T
+            for prim in g["meshes"][node["mesh"]]["primitives"]:
+                pos = read_accessor(model, prim["attributes"]["POSITION"]).astype(np.float64)
+                pos = (np.c_[pos, np.ones(len(pos))] @ m.T)[:, :3]
+                idx = read_accessor(model, prim["indices"]).ravel().astype(np.int64) if "indices" in prim else np.arange(len(pos))
+                out.append(pos[idx.reshape(-1, 3)])
+        for child in node.get("children", []):
+            visit(child, world)
+
+    for root in scene_roots(g):
+        visit(root, [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1])
+    return np.concatenate(out) if out else np.zeros((0, 3, 3))
+
+
+def level(model, max_pitch=35.0, max_roll=6.0):
     """
-    Stand a prop flat on the ground. AssetFurnace builds each model from a
+    Stand a prop upright on its base. AssetFurnace builds each model from a
     picture taken from above at three-quarters, and the mesh comes out
-    pitched by roughly that camera's angle (up to 30 degrees), so one side
-    of its base floats while the other sinks. The turn kept is the one that
-    puts the most of its footprint on the ground (searched over +-max_tilt
-    degrees about X and Z, coarse to fine): a slab lies flat, a horse stands
-    on its hooves, a model that already stands level is left alone. The
-    scene goes under a node with that rotation. Returns the tilt removed, in
-    degrees (0 when under a degree).
+    pitched forward by about that camera's angle (8-31 degrees for this
+    game's buildings), almost purely about the X axis. A building's base is
+    a flat underside, so its downward-facing triangles mostly share one
+    direction: the area-weighted peak of their normals (searched up to
+    max_pitch about X and max_roll about Z, where the pitch can be) is the
+    base, and the model is turned so that it faces straight down. Returns
+    the tilt removed, in degrees (0 when under 1.5: already upright).
     """
     import numpy as np
-    pts = np.array(prop_points(model), dtype=np.float64)
-    if len(pts) < 10:
+    t = prop_triangles(model)
+    if not len(t):
         return 0.0
-    if len(pts) > 6000:
-        pts = pts[np.random.default_rng(0).choice(len(pts), 6000, replace=False)]
-    best = (_contact(pts, 0.0, 0.0), 0.0, 0.0)
-    for step, span in ((5.0, max_tilt), (1.0, 5.0), (0.25, 1.0)):
-        cx_, cz_ = best[1], best[2]
-        for ax in np.arange(-span, span + 1e-9, step):
-            for az in np.arange(-span, span + 1e-9, step):
-                rx, rz = cx_ + math.radians(ax), cz_ + math.radians(az)
-                if abs(rx) > math.radians(max_tilt) or abs(rz) > math.radians(max_tilt):
-                    continue
-                score = _contact(pts, rx, rz)
-                # Prefer the smaller turn when two are about as good
-                if score > best[0] + 1e-6 or (abs(score - best[0]) <= 1e-6 and abs(rx) + abs(rz) < abs(best[1]) + abs(best[2])):
-                    best = (score, rx, rz)
-    _, rx, rz = best
-    tilt = math.degrees(math.acos(max(-1.0, min(1.0, math.cos(rx) * math.cos(rz)))))
-    if tilt < 1.0:
+    n = np.cross(t[:, 1] - t[:, 0], t[:, 2] - t[:, 0])
+    area = np.linalg.norm(n, axis=1) / 2
+    u = n / np.maximum(2 * area[:, None], 1e-20)
+    down = u[:, 1] < -0.5
+    u, area = u[down], area[down]
+    pitch = np.degrees(np.arctan2(u[:, 2], -u[:, 1]))
+    roll = np.degrees(np.arctan2(u[:, 0], -u[:, 1]))
+    keep = (np.abs(pitch) <= max_pitch) & (np.abs(roll) <= max_roll)
+    if not keep.any():
         return 0.0
-    # q = qz * qx (turn about X first, then Z), matching _contact
-    qx = (math.sin(rx / 2), 0.0, 0.0, math.cos(rx / 2))
-    qz = (0.0, 0.0, math.sin(rz / 2), math.cos(rz / 2))
-    q = (qz[3] * qx[0] + qz[0] * qx[3] + qz[1] * qx[2] - qz[2] * qx[1],
-         qz[3] * qx[1] - qz[0] * qx[2] + qz[1] * qx[3] + qz[2] * qx[0],
-         qz[3] * qx[2] + qz[0] * qx[1] - qz[1] * qx[0] + qz[2] * qx[3],
-         qz[3] * qx[3] - qz[0] * qx[0] - qz[1] * qx[1] - qz[2] * qx[2])
+    hist, pe, re = np.histogram2d(pitch[keep], roll[keep], bins=[np.arange(-max_pitch, max_pitch + 1, 1.0), np.arange(-max_roll, max_roll + 1, 1.0)], weights=area[keep])
+    smooth = sum(np.roll(np.roll(hist, dy, 0), dx, 1) for dy in (-1, 0, 1) for dx in (-1, 0, 1))
+    i, j = np.unravel_index(smooth.argmax(), smooth.shape)
+    p0, r0 = (pe[i] + pe[i + 1]) / 2, (re[j] + re[j + 1]) / 2
+    near = keep & (np.abs(pitch - p0) < 3) & (np.abs(roll - r0) < 3)
+    base = (u[near] * area[near, None]).sum(0)
+    base /= np.linalg.norm(base)
+    tilt = math.degrees(math.acos(max(-1.0, min(1.0, -base[1]))))
+    if tilt < 1.5:
+        return 0.0
+    # The rotation taking the base direction onto -Y: about base x (-Y)
+    axis = np.cross(base, [0.0, -1.0, 0.0])
+    axis /= np.linalg.norm(axis)
+    half = math.radians(tilt) / 2
+    q = [float(axis[0] * math.sin(half)), float(axis[1] * math.sin(half)), float(axis[2] * math.sin(half)), math.cos(half)]
     g = model.g
     g["nodes"].append({"name": "level", "rotation": [round(v, 6) for v in q], "children": list(scene_roots(g))})
     if g.get("scenes"):
@@ -903,23 +927,31 @@ def main():
     if in_place(model, "walk"):
         print("  walk made in place (hips keep their rest x and z)", file=sys.stderr)
     remove_unused(model)
-    # Props already standing on a broad base or on their feet, hooves or wheels are left as they are;
-    # the rest are turned flat (level()) and stood on their base rather than on stray lumps below it
-    standing = True
-    tilt = 0.0
-    if args.level and not model.g.get("skins"):
-        standing = support(prop_points(model)) >= 0.12
-        if not standing:
-            tilt = level(model)
+    tilt = level(model) if args.level and not model.g.get("skins") else 0.0
     if tilt:
         print(f"  levelled: base was tilted {tilt:.1f} degrees", file=sys.stderr)
     lo, hi, triangles = bounds_and_triangles(model)
     floor = pose_floor(model, "idle")
-    if floor is None and args.level and not standing:
+    if floor is None and args.level:
+        # Stand a prop on its base, not on a stray lump below it, when it has a broad base
         import numpy as np
         pts = np.array(prop_points(model), dtype=np.float64)
         if len(pts):
-            floor = ground_level(pts[:, 0], pts[:, 1], pts[:, 2])
+            x, y, z = pts[:, 0], pts[:, 1], pts[:, 2]
+            level_y = ground_level(x, y, z)
+            h = np.ptp(y)
+            # Only a broad base counts (most of the footprint at that level): feet, hooves and stilts
+            # stand on their lowest point
+            gx = np.clip(((x - x.min()) / (np.ptp(x) + 1e-12) * 16).astype(int), 0, 15)
+            gz = np.clip(((z - z.min()) / (np.ptp(z) + 1e-12) * 16).astype(int), 0, 15)
+            lows = np.full(256, np.inf)
+            np.minimum.at(lows, gx * 16 + gz, y)
+            lows = lows[np.isfinite(lows)]
+            broad = np.mean(np.abs(lows - level_y) < 0.03 * h) >= 0.35
+            if broad and level_y - y.min() > 0.01 * h:
+                print(f"  stands on its base, {(level_y - y.min()) / h * 100:.0f}% of its height above its lowest point", file=sys.stderr)
+            if broad:
+                floor = level_y
 
     os.makedirs(args.out, exist_ok=True)
     out = os.path.join(args.out, f"{args.id}.glb")

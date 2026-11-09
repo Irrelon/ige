@@ -169,10 +169,11 @@ carries the hips forward and snaps back), re-encodes textures at 512 px (JPEG, o
 - `--smooth-normals N` rebuilds the vertex normals from the surface. The engine lights models by vertex normals and
   AssetFurnace's are noisy (4% point away from their own triangle), which showed as dark blotches facing away from
   the sun; each normal becomes the average of the triangles around it that face the same way (within 60 degrees, so
-  a cloak's front and back don't mix), then N rounds of averaging with agreeing neighbours. Props take `--level`: AssetFurnace builds each model from a picture taken from above at
-three-quarters, and the mesh comes out pitched by roughly that camera's angle (8-32 degrees for these buildings), so
-the importer fits a plane through the lowest points of the base and turns the model until it is flat. (Not the boat:
-a curved hull has no flat base, and it was already upright.) `--yaw` turns a model whose front doesn't face +Z. A model's id is its unit type, building id, `village`/`town`/`city`, `construction` or
+  a cloak's front and back don't mix), then N rounds of averaging with agreeing neighbours. Props take `--level`: AssetFurnace builds each model from a picture taken from above at three-quarters, and the
+mesh comes out pitched forward by about that camera's angle (8-31 degrees here, almost purely about the X axis). A
+building's base is a flat underside, so the importer finds the dominant direction of its downward-facing triangles
+and turns the model until that faces straight down, then stands it on its base (rather than on stray lumps below a
+broad base). Characters stand on the lowest point of their idle pose. `--yaw` turns a model whose front doesn't face +Z. A model's id is its unit type, building id, `village`/`town`/`city`, `construction` or
 `boat`.
 
 If a character's own clips come out wrong (AssetFurnace's retargeter sometimes leaves a rig's arms stuck out
