@@ -110,16 +110,24 @@ On the development machine (Apple silicon, Chrome):
 
 - Gamepads with real controllers (the input path is verified with simulated ones).
 
+### Known issues
+
+- Generated level-of-detail meshes of a dense generated model (AssetFurnace's cute zombie, about 10k triangles, a
+  double-sided material and three shells) draw with blotchy, scrambled shading at the lower levels. The simplified
+  geometry's positions, normals, UVs and joints check out against the original vertex for vertex, and shadows, the
+  texture cache and geometry ids were ruled out, so the fault is somewhere in drawing the simplified mesh. The
+  Toony Tiny models don't need LOD (a few hundred triangles each).
+
 ## Next steps
 
 ### Needs your input
 
-- **Game assets.** Being generated with AssetFurnace on the M5 Mac (requested 2026-11-09, queued behind any Hex
-  Realms requests and taking turns with them): three zombies, four survivors, five weapons and ten props, delivered
-  to a LAN folder of their own. The engine and the demo are ready for them, verified with Hex Realms' generated
-  characters standing in: `src/examples/zombie-game/tools/import_model.py` merges each character's move files into
-  one GLB and records it in `assets/characters.json`, which the demo loads in place of CesiumMan (`?standin=1` keeps
-  the stand-in). Still to do as files arrive: import them, then give weapons and props their grips and placements.
+- **The zombie game moved out** (2026-11-09) to its own private repo, `Irrelon/zombie-game` (next to this one,
+  using the engine's source like racing-game), because it now uses licensed Toony Tiny art. Its design and milestones
+  are in that repo's `DESIGN.md`. `src/examples/zombie-game` stays here as the engine's public split-screen,
+  instancing and physics test bed (CesiumMan stand-in). The game's engine needs (real-time online co-op with mixed
+  local and remote players, twin-stick input, upper/lower body animation blending, many small lights, positional
+  audio, navigation) are listed there and will come back here as engine work.
 - **Gamepads.** Test with real controllers (simulated ones pass).
 
 ### Planned, waiting
