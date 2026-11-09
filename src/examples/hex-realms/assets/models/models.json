@@ -108,6 +108,23 @@
 		"skinned": false,
 		"bytes": 593476
 	},
+	"fishery": {
+		"file": "fishery.glb",
+		"min": [
+			-0.3877,
+			-0.4182,
+			-0.4924
+		],
+		"max": [
+			0.4007,
+			0.4655,
+			0.364
+		],
+		"triangles": 3780,
+		"animations": [],
+		"skinned": false,
+		"bytes": 426816
+	},
 	"mine": {
 		"file": "mine.glb",
 		"min": [

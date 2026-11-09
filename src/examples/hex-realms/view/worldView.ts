@@ -719,9 +719,9 @@ export class WorldView {
 			block(ORB, R * 0.82, R * 0.04, R * 0.82, x, y + R * 0.01, z, owner);
 			const holder = new IgeEntity();
 			holder.id(this.uid(`building_${b.id}`));
-			// Ports face the water; other buildings turn by tile so rows don't look stamped
+			// Ports and fisheries face the water; other buildings turn by tile so rows don't look stamped
 			const water = this.sim.neighbors(b.tile).find((n) => this.sim.map.isWater(n));
-			const yaw = b.type === "port" && water !== undefined
+			const yaw = (b.type === "port" || b.type === "fishery") && water !== undefined
 				? Math.atan2(this.tileX(water) - x, this.tileZ(water) - z)
 				: ((b.tile * 7) % 6) * (Math.PI / 3);
 			holder.translateTo(x, y, z).rotateTo(0, yaw, 0).mount(this.unitLayer);
