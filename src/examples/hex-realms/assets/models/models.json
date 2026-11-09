@@ -120,6 +120,23 @@
 		"skinned": true,
 		"bytes": 1350000
 	},
+	"town": {
+		"file": "town.glb",
+		"min": [
+			-0.454,
+			-0.3824,
+			-0.4912
+		],
+		"max": [
+			0.4603,
+			0.4206,
+			0.3337
+		],
+		"triangles": 7486,
+		"animations": [],
+		"skinned": false,
+		"bytes": 682384
+	},
 	"village": {
 		"file": "village.glb",
 		"min": [
