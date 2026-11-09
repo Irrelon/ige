@@ -41,6 +41,24 @@
 		"bytes": 364368,
 		"floor": -0.2065
 	},
+	"artisansColumn": {
+		"file": "artisansColumn.glb",
+		"min": [
+			-0.1161,
+			-0.4355,
+			-0.1253
+		],
+		"max": [
+			0.1188,
+			0.4441,
+			0.1203
+		],
+		"triangles": 4794,
+		"animations": [],
+		"skinned": false,
+		"bytes": 388536,
+		"floor": -0.432
+	},
 	"bakery": {
 		"file": "bakery.glb",
 		"min": [
