@@ -210,5 +210,22 @@
 		],
 		"skinned": true,
 		"bytes": 1322200
+	},
+	"woodcutter": {
+		"file": "woodcutter.glb",
+		"min": [
+			-0.372,
+			-0.4038,
+			-0.4875
+		],
+		"max": [
+			0.3709,
+			0.4656,
+			0.3342
+		],
+		"triangles": 3926,
+		"animations": [],
+		"skinned": false,
+		"bytes": 449888
 	}
 }

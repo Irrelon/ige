@@ -711,7 +711,7 @@ export class WorldView {
 		const kind = info.wonder;
 		const prop = this.models?.create(b.built ? b.type : "construction", {
 			footprint: R * (kind === "world" ? 1.25 : kind === "monument" ? 0.85 : 0.95),
-			height: R * (kind === "world" ? 1.7 : 1.15),
+			height: R * (kind === "world" ? 1.7 : kind === "monument" ? 1.15 : 1),
 			lod: PROP_LOD
 		});
 		if (prop) {
