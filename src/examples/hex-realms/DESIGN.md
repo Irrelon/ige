@@ -40,7 +40,7 @@ games and open to change. Where the built rule differs from the first draft, the
 | Wonders | Unique world wonders raced between civs, plus personal monuments earned by feats (see 15.2) |
 | Diplomacy | Star-priced actions, goods trading, demands and grievances (see 15.4) |
 | Turn order | Sequential: each civ takes its turn in order |
-| Art | Primitives (cubes, orbs, pyramids and combinations) for now; models later via `IgeEntity.model()` |
+| Art | 3D models made for the game (AssetFurnace), via `IgeEntity.model()`; rigged, animated units with team-coloured areas; primitives as the fallback (see 17) |
 
 ## 3. The turn
 
@@ -159,7 +159,7 @@ Resource deposits are placed by map generation and shown on tiles (placeholder i
 - **Ranged** units attack at range 2 and need line of sight (the fog LOS rules); there is no retaliation at range.
 - **Zone of control**: a unit that moves next to an enemy must stop.
 - **Capturing** an enemy city takes it over, along with its buildings and roads.
-- **Roster v1** (placeholder shapes built from primitives):
+- **Roster v1** (shapes are the primitive fallback; each unit also has a model, see 17):
 
 | Unit | Shape | Needs | Role |
 |------|-------|-------|------|
@@ -324,7 +324,7 @@ build them.
 
 Resolved: expansion (villages plus an "Allow founding cities" option), construction (supplied by road, rush with
 stars), workforce (city level caps buildings), project home (examples for now), combat (deterministic), victory
-(Domination, Score, Prosperity, Alliance/diplomatic), turn order (sequential), art (primitives for now).
+(Domination, Score, Prosperity, Alliance/diplomatic), turn order (sequential), art (primitives first, then models: see 17).
 
 ## 15. Second round: stars, wonders, ambitions and diplomacy (M9-M12)
 
@@ -425,3 +425,25 @@ Peacemakers (+3 council votes, other civs warm to you) and Patrons (+2 stars a t
 - **Natural terrain**: chunks where nothing is explored are flat parchment. The parchment pattern repeats every chunk,
   so interior unexplored chunks share one texture: the colossal map builds in 0.23 s instead of 6.3 s.
 - **Engine**: static shadow caching is on (shadow draw calls while panning drop from about 14 to 2 a frame).
+- **Online on the engine's rooms**: the server and client now use `IgeRoomServer` / `IgeRoomClient` (rooms, seats,
+  presence, chat, room info, the sequenced command stream, saves) over the game's own WebSocket transport. Seat
+  changes are game commands, so every client agrees which civs the AI plays.
+
+## 17. Models
+
+Every unit, city level, building, wonder and monument has a 3D model, made for this game with AssetFurnace (text to
+3D, then auto-rigging and motion retargeting for characters) and imported with `tools/import_model.py`.
+
+- **Characters** (warrior, archer, swordsman, settler): rigged, with idle, walk, attack, hit and death clips merged
+  into one file. Moving units walk, attackers play their attack, survivors play hit, and the killed play death before
+  they are removed. Clips play faster than recorded to match the game's quick moves.
+- **Props** (rider, catapult, boat, the three city levels, construction site, buildings, wonders, monuments): no
+  rig. Props get generated levels of detail.
+- **Team colours**: the prompts for unit models ask for bright magenta areas. At load time the colour texture's
+  magenta pixels (hue about 305-335 degrees, saturated) are repainted in each player's colour, keeping their shading,
+  and each team's copy is loaded as its own model, so a type looks the same for everyone except its team colour.
+  Cities and buildings carry owner banners and discs instead.
+- **Fallback**: models load in the background after the map (units first) and swap in as they arrive. Until then,
+  or with the 3D models toggle off, everything is drawn with the primitives.
+- Textures are 512 px (base colour lossless for units, so the magenta stays exact); maps the engine doesn't read
+  (metallic/roughness as WebP, occlusion) are dropped.

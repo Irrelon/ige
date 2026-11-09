@@ -6,7 +6,8 @@ import type { IgeModelLodLevel } from "@/engine/webgl/IgeModelParts";
  * The game's 3D models: GLBs made with AssetFurnace and imported by
  * tools/import_model.py, listed in assets/models/models.json with their
  * bounds and animation clips. They load in the background while the game
- * runs on its primitive placeholders; each one swaps in as it arrives.
+ * runs on its primitive placeholders; each one swaps in as it arrives
+ * (units and cities up front, everything else when first needed).
  * Units are rigged characters with idle, walk, attack, hit and death clips;
  * cities, buildings, wonders and monuments are static props.
  *
@@ -144,6 +145,10 @@ export class ModelLibrary {
 	/** Team-painted models by "id|colour": the model, or null when the model has no team areas. */
 	protected _teams = new Map<string, IgeGltfModel | null>();
 	protected _painting = new Set<string>();
+	protected _queue: string[] = [];
+	protected _queued = new Set<string>();
+	protected _waiting = new Set<string>();
+	protected _active = 0;
 
 	constructor (base = "./assets/models/") {
 		this.base = base;
@@ -166,8 +171,12 @@ export class ModelLibrary {
 		}
 	}
 
-	/** Read the manifest and load every model, a few at a time, in the order given (most wanted first). */
-	async start (priority: string[] = []): Promise<void> {
+	/**
+	 * Read the manifest and load the models given, a few at a time, most
+	 * wanted first. Any other model (a building, wonder or monument) loads the
+	 * first time something asks for it, so models nobody builds never load.
+	 */
+	async start (eager: string[] = []): Promise<void> {
 		try {
 			const response = await fetch(`${this.base}models.json`, { cache: "no-cache" });
 			if (!response.ok) return;
@@ -175,20 +184,36 @@ export class ModelLibrary {
 		} catch {
 			return;
 		}
-		const ids = Object.keys(this.infos).sort((a, b) => rank(priority, a) - rank(priority, b));
-		const queue = [...ids];
-		const worker = async () => {
-			for (let id = queue.shift(); id; id = queue.shift()) {
-				try {
-					const model = await igeGltfLoader.load(`${this.base}${this.infos[id].file}`, `hexRealms_model_${id}`);
-					this.models.set(id, model);
-					this.onLoaded?.(id);
-				} catch (error) {
-					console.warn(`Couldn't load model ${id}`, error);
-				}
+		for (const id of eager) this.request(id);
+		for (const id of this._waiting) this.request(id);
+		this._waiting.clear();
+	}
+
+	/** Load a model in the background if it exists and isn't loaded; onLoaded(id) fires when it is. */
+	request (id: string): void {
+		if (this.models.has(id) || this._queued.has(id)) return;
+		if (!this.infos[id]) {
+			// Asked for before the manifest arrived
+			if (!Object.keys(this.infos).length) this._waiting.add(id);
+			return;
+		}
+		this._queued.add(id);
+		this._queue.push(id);
+		while (this._active < 3 && this._queue.length) void this.work();
+	}
+
+	protected async work (): Promise<void> {
+		this._active++;
+		for (let id = this._queue.shift(); id; id = this._queue.shift()) {
+			try {
+				const model = await igeGltfLoader.load(`${this.base}${this.infos[id].file}`, `hexRealms_model_${id}`);
+				this.models.set(id, model);
+				this.onLoaded?.(id);
+			} catch (error) {
+				console.warn(`Couldn't load model ${id}`, error);
 			}
-		};
-		await Promise.all([worker(), worker(), worker()]);
+		}
+		this._active--;
 	}
 
 	has (id: string): boolean {
@@ -299,7 +324,11 @@ export class ModelLibrary {
 	 * are off.
 	 */
 	create (id: string, fit: ModelFit, team?: string): (IgeEntity & { teamTint?: Rgba }) | null {
-		if (!this.has(id)) return null;
+		if (!this.enabled) return null;
+		if (!this.models.has(id)) {
+			this.request(id);
+			return null;
+		}
 		let model = this.models.get(id) as IgeGltfModel;
 		let tint: Rgba | undefined;
 		if (team) {
@@ -329,9 +358,4 @@ export class ModelLibrary {
 		}
 		return e;
 	}
-}
-
-function rank (priority: string[], id: string): number {
-	const i = priority.indexOf(id);
-	return i < 0 ? priority.length : i;
 }

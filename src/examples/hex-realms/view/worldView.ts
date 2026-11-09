@@ -1213,7 +1213,9 @@ export class WorldView {
 					const a = this.anchor(v.tile), b = this.anchor(v.queue[0]);
 					const t = v.stepT;
 					const fy = this.groundAt(a.x, a.z), ty = this.groundAt(b.x, b.z);
-					v.root.translateTo(a.x + (b.x - a.x) * t, fy + (ty - fy) * t + Math.sin(t * Math.PI) * 14, a.z + (b.z - a.z) * t);
+					// Blocks hop from tile to tile; a model with a walk clip walks, a prop rocks along
+					const hop = !v.model ? 14 : v.clip === "walk" ? 0 : 3;
+					v.root.translateTo(a.x + (b.x - a.x) * t, fy + (ty - fy) * t + Math.abs(Math.sin(t * Math.PI * (v.model ? 2 : 1))) * hop, a.z + (b.z - a.z) * t);
 					v.root.rotateTo(0, Math.atan2(b.x - a.x, b.z - a.z), 0);
 				}
 			} else if (v.lunge) {

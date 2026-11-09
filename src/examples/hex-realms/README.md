@@ -1,9 +1,10 @@
 # Hex Realms
 
 A turn-based hex strategy game on `IgeWebGlRenderer`: Polytopia pacing, some Civilization depth, and a Settlers
-II-style economy where goods are made in production chains and carried along roads. Units, cities and buildings are
-placeholder primitives (cube = warrior, pyramid = archer, orb = settler). The full design and its status are in
-[DESIGN.md](DESIGN.md).
+II-style economy where goods are made in production chains and carried along roads. Units, cities, buildings,
+wonders and monuments are 3D models (see [Models](#models)); until a model has loaded, or with models turned off,
+they are drawn as primitives (cube = warrior, pyramid = archer, orb = settler). The full design and its status are
+in [DESIGN.md](DESIGN.md).
 
 Play against AI civs in the browser, or online with friends through the bundled server (the AI fills the empty
 seats).
@@ -109,9 +110,10 @@ The setup screen sets everything; the same options work as URL parameters (`?qui
 | Folder | Role |
 |--------|------|
 | `sim/` | The game, as pure TypeScript with no IGE: state, commands and events (`types.ts`), rules data (`rules.ts`), turn flow and save/load (`sim.ts`), movement, combat, cities, the road economy (`economy.ts`, `network.ts`), income and upkeep (`treasury.ts`), wonders and monuments (`wonders.ts`, with every wonder and legacy effect in `effects.ts`), ambitions, diplomacy, victory and the AI. Deterministic and seeded: the same commands always give the same game. Older saves are upgraded on load (`Sim.migrate`) |
-| `view/` | IGE: `TerrainView` (chunked terrain in either style, fog, LOD) and `WorldView` (units, cities, buildings, roads, deposits, cargo, borders, overlays), which plays simulation events back as animations |
+| `view/` | IGE: `TerrainView` (chunked terrain in either style, fog, LOD), `WorldView` (units, cities, buildings, roads, deposits, cargo, borders, overlays), which plays simulation events back as animations, and `ModelLibrary` (`models.ts`: model loading, sizing and team colours) |
 | `ui/` | DOM HUD (panels, modals, combat preview, toasts, economy lens), the diplomacy screen and deal editor, the wonders and ambition screens, setup screen, advisor tips and synthesised sound |
 | `net/`, `server/` | Online play on the engine's game rooms: the room options, timer command and a WebSocket transport (`net/`), and the Node server that runs the authoritative sim, the AI and turn timers (`server/`) |
+| `tools/`, `assets/models/` | The model import tool and the game's models |
 | `client.ts` | Ties it together: game start (setup, save, replay, online), input and picking, selection, turns, render on demand |
 
 Map and terrain modules: `mapGen.ts` (seeded continents, mountain ranges, climate, forests, deposits, start
@@ -125,6 +127,38 @@ Every action, by a person or the AI, is a command applied by `Sim.apply()`. That
 - **Online**: the server applies commands and broadcasts them with sequence numbers; clients apply the same stream to
   their own copy. The AI uses its own seeded random numbers, never the game's, so replaying commands reproduces AI
   games exactly (covered by a test).
+
+## Models
+
+The models in `assets/models/` were made for this game with AssetFurnace (text to 3D, auto-rigging and motion
+retargeting) and are listed, with their bounds, triangle counts and clips, in `assets/models/models.json`.
+`view/models.ts` loads them in the background after the map appears (units first) and the views swap them in as
+they arrive. The **3D models** toggle in the menu (or `?models=0`) falls back to the primitives.
+
+- **Units** (warrior, archer, swordsman, settler) are rigged characters with `idle`, `walk`, `attack`, `hit` and
+  `death` clips. They walk while moving, play `attack` when they strike, `hit` when struck and survive, and `death`
+  before a killed unit is removed. Idle characters hold still until selected, so an idle map costs no GPU time.
+  Riders, catapults and boats are unrigged props.
+- **Team colours**: unit models are textured with bright magenta areas (cloaks, banners, trim). For each player
+  the library repaints those pixels of the colour texture in the player's colour, keeping their shading, and loads
+  the result as its own model, so every warrior looks the same and only its team colour differs. A coloured disc
+  under each unit, and an owner banner or base on cities and buildings, add to it.
+- **Cities** use the village, town or city model for their level; unfinished buildings show the construction site.
+  Buildings, wonders and monuments are static props; ports turn to face the water.
+- Props get engine-generated levels of detail (`PROP_LOD`); copies of a model are GPU-instanced.
+
+To add or replace a model, run `tools/import_model.py`:
+
+```sh
+python3 tools/import_model.py --id archer --out assets/models --lossless-base \
+    --model archer_rigged.glb --move idle=archer_idle.glb --move walk=archer_walk.glb \
+    --move attack=archer_attack.glb --move hit=archer_hit_react.glb --move death=archer_death.glb
+```
+
+It merges each move file's animation into the rigged model by node name, re-encodes textures at 512 px (JPEG, or
+PNG for the base colour with `--lossless-base` so the magenta stays exact), drops maps the engine doesn't use and
+updates `models.json`. A model's id is its unit type, building id, `village`/`town`/`city`, `construction` or
+`boat`.
 
 ## How the map stays fast
 
