@@ -82,7 +82,7 @@ From the browser console, `ige.client.autoplay(20)` lets the AI play your seat f
   council elections in a row, with backing from at least half the other civs). Each can be switched off in setup.
 
 Controls: WASD / arrows / left-drag pan, wheel or Z/X zoom, Q/E or right-drag sideways to rotate, Page Up / Page Down or
-right-drag up and down to tilt a little (pinch, twist and a two-finger slide on touch).
+right-drag up and down to tilt (up to 25 degrees either way) (pinch, twist and a two-finger slide on touch).
 Click a unit, then a highlighted tile to move or a red ring to attack. Buttons float above a selected unit when it can
 do something where it stands, as in Polytopia: crossed swords capture the city, a house founds one, a flame pillages. Space next unit, Enter end turn, Esc deselect,
 C centre, T terrain style, R research, G diplomacy, J ambition, M wonders, B economy, V economy lens, L cities,

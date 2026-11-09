@@ -37,7 +37,7 @@ export class StrategyCamera {
 	minPitch = (42 * Math.PI) / 180;
 	maxPitch = (72 * Math.PI) / 180;
 	/** How far the player may tilt either way from the zoom's pitch. */
-	maxTilt = (15 * Math.PI) / 180;
+	maxTilt = (25 * Math.PI) / 180;
 	bounds?: CameraBounds;
 
 	/** Ground height the camera orbits around. */
@@ -47,7 +47,7 @@ export class StrategyCamera {
 	get pitch (): number {
 		const t = Math.log(this.distance / this.minDistance) / Math.log(this.maxDistance / this.minDistance);
 		const zoomed = this.minPitch + (this.maxPitch - this.minPitch) * Math.min(1, Math.max(0, t));
-		return Math.min((85 * Math.PI) / 180, Math.max((25 * Math.PI) / 180, zoomed + this.tilt));
+		return Math.min((85 * Math.PI) / 180, Math.max((20 * Math.PI) / 180, zoomed + this.tilt));
 	}
 
 	/** Screen-up direction on the ground plane for the current yaw. */
