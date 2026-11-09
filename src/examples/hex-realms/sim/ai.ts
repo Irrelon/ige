@@ -249,7 +249,10 @@ class AiTurn {
 		const p = sim.player(this.p);
 		const order: TechId[] = [...CIVS[p.civ].research];
 		if (sim.options.victories.prosperity) order.push("engineering");
-		if (sim.options.victories.diplomatic) order.push("diplomacy");
+		if (sim.options.victories.diplomatic) order.push("statecraft");
+		// Diplomacy (deals with other civs) right after Trade
+		const tradeAt = order.indexOf("trade");
+		if (!order.includes("diplomacy")) order.splice(tradeAt >= 0 ? tradeAt + 1 : order.length, 0, "diplomacy");
 		if (this.atWarWithAnyone()) order.unshift("archery", "smithing");
 		// Without hunting or fishing no city grows: that comes first
 		if (!p.techs.includes("hunting") && !p.techs.includes("fishing")) order.unshift(this.nearDeposit(Deposit.Fish) ? "fishing" : "hunting");

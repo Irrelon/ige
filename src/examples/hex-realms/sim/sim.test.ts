@@ -32,6 +32,8 @@ function blank (players: number, starts: number[], overrides: Partial<GameOption
 function meetAll (sim: Sim): void {
 	const n = sim.playerCount;
 	for (let a = 0; a < n; a++) for (let b = 0; b < n; b++) sim.state.diplomacy.met[a * n + b] = 1;
+	// Deals other than peace need the Diplomacy tech
+	for (const p of sim.state.players) if (!p.techs.includes("diplomacy")) p.techs.push("diplomacy");
 }
 
 function give (sim: Sim, p: number, ...techs: TechId[]): void {
@@ -585,6 +587,21 @@ describe("ambitions", () => {
 });
 
 describe("diplomacy II", () => {
+	test("deals need the Diplomacy tech on both sides; war and peace don't", () => {
+		const sim = blank(2, [sim2(2, 2), sim2(20, 12)], { humans: [0, 1] });
+		const n = sim.playerCount;
+		for (let a = 0; a < n; a++) for (let b = 0; b < n; b++) sim.state.diplomacy.met[a * n + b] = 1;
+		expect(sim.apply(0, { type: "propose", to: 1, kind: "openBorders" }).ok).toBe(false);
+		expect(sim.apply(0, { type: "denounce", target: 1 }).ok).toBe(false);
+		expect(sim.apply(0, { type: "declareWar", target: 1 }).ok).toBe(true);
+		expect(sim.apply(0, { type: "propose", to: 1, kind: "peace" }).ok).toBe(true);
+		give(sim, 0, "diplomacy");
+		sim.apply(1, { type: "respond", proposal: sim.state.diplomacy.proposals[0].id, accept: true });
+		expect(sim.apply(0, { type: "propose", to: 1, kind: "openBorders" }).error).toBe("They haven't researched Diplomacy");
+		give(sim, 1, "diplomacy");
+		expect(sim.apply(0, { type: "propose", to: 1, kind: "openBorders" }).ok).toBe(true);
+	});
+
 	test("a surprise war angers everyone; a war with grievances behind it doesn't", () => {
 		const sim = blank(3, [sim2(2, 2), sim2(20, 2), sim2(12, 13)], { humans: [0, 1, 2] });
 		meetAll(sim);

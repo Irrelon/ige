@@ -269,6 +269,11 @@ export function proposalProblem (sim: Sim, from: number, to: number, kind: DealK
 	const d = sim.state.diplomacy;
 	const me = sim.player(from);
 	const atWar = relation === WAR ? "You are at war" : null;
+	// Before Diplomacy only war and peace: every other deal needs the tech on both sides
+	if (kind !== "peace") {
+		if (!sim.hasTech(from, "diplomacy")) return "Needs Diplomacy";
+		if (!sim.hasTech(to, "diplomacy")) return "They haven't researched Diplomacy";
+	}
 	switch (kind) {
 		case "peace": return relation === WAR ? null : "You are not at war";
 		case "alliance": return relation === PEACE ? null : relation === ALLIANCE ? "Already allied" : "Make peace first";
@@ -492,6 +497,7 @@ export function actionProblem (sim: Sim, from: number, to: number, kind: "denoun
 	const target = sim.state.players[to];
 	if (!target || !target.alive || to === from) return "Unknown civ";
 	if (!sim.hasMet(from, to)) return "You haven't met them";
+	if (!sim.hasTech(from, "diplomacy")) return "Needs Diplomacy";
 	const me = sim.player(from);
 	if (kind === "denounce") {
 		const last = sim.state.diplomacy.denounced[ix(sim, from, to)];
@@ -809,7 +815,7 @@ function freeTech (sim: Sim, player: number): void {
 	if (!tech) return;
 	p.techs.push(tech);
 	sim.emit({ type: "tech", player, tech });
-	if (tech === "diplomacy") formCouncil(sim);
+	if (tech === "statecraft") formCouncil(sim);
 }
 
 /** Taking a village next to another civ's cities sours relations with them. */

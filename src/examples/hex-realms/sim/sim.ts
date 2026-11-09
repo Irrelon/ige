@@ -95,7 +95,7 @@ export class Sim {
 		const map = setup.map ?? generateMap({ width: options.width, height: options.height, seed: options.seed });
 		const n = options.players;
 		const state: GameState = {
-			version: 1,
+			version: 2,
 			options,
 			turn: 1,
 			current: 0,
@@ -621,7 +621,7 @@ export class Sim {
 		p.techs.push(tech);
 		this.emit({ type: "stars", player, amount: -cost, reason: TECHS[tech].name });
 		this.emit({ type: "tech", player, tech });
-		if (tech === "diplomacy") diplomacy.formCouncil(this);
+		if (tech === "statecraft") diplomacy.formCouncil(this);
 		return ok();
 	}
 
@@ -746,6 +746,16 @@ export class Sim {
 
 	/** Fill in state added since a save was made. */
 	static migrate (state: GameState): void {
+		// Version 2: the World Council tech became Statecraft, and a new tier-2 Diplomacy tech opens the
+		// diplomacy screen; civs that had the old Diplomacy get both. Older civs keep their diplomacy as it was.
+		if ((state.version ?? 1) < 2) {
+			for (const p of state.players) {
+				const techs = p.techs as string[];
+				if (techs.includes("diplomacy")) techs.push("statecraft");
+				else techs.push("diplomacy");
+			}
+			state.version = 2;
+		}
 		const n = state.players.length;
 		const d = state.diplomacy;
 		const zeros = () => new Array(n * n).fill(0);

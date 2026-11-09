@@ -173,15 +173,21 @@ Resource deposits are placed by map generation and shown on tiles (placeholder i
 
 ## 7. Technology (Proposal)
 
-A compact Polytopia-style tree of 23 techs in four tiers, bought with stars; the cost rises with the tier and the
+A compact Polytopia-style tree of 24 techs in four tiers, bought with stars; the cost rises with the tier and the
 number of cities. Every prerequisite is one tier back, so the research screen draws each as a line to the next column.
 
 | Tier | Techs (needs; unlocks) |
 |------|------------------------|
 | 1 | Forestry (woodcutter), Mining (quarry, mine), Construction (warehouse), Farming (farm), Hunting (hunter's lodge), Fishing (fishery), Riding (pasture, rider) |
 | 2 | Sawmills (Forestry; sawmill), Smelting (Mining; smelter), Masonry (Mining, Construction; walls, Great Wall), Milling (Farming; mill), Sailing (Fishing, Forestry; port, embarking), Trade (Riding; market, trade agreements), Archery (Forestry; archer) |
-| 3 | Carpentry (Sawmills, Smelting; toolsmith), Smithing (Smelting; armoury, swordsman), Baking (Milling; bakery), Navigation (Sailing; deep ocean), Coinage (Trade, Smelting; mint), Logistics (Trade; pack animals) |
-| 4 | Siege (Smithing, Carpentry; catapult), Diplomacy (Coinage; World Council), Engineering (Carpentry, Coinage; Grand Exchange) |
+| 3 | Carpentry (Sawmills, Smelting; toolsmith), Smithing (Smelting; armoury, swordsman), Baking (Milling; bakery), Navigation (Sailing; deep ocean), Coinage (Trade, Smelting; mint), Logistics (Trade; pack animals), Diplomacy (Trade; treaties and deals) |
+| 4 | Siege (Smithing, Carpentry; catapult), Statecraft (Coinage; World Council, Council Hall), Engineering (Carpentry, Coinage; Grand Exchange) |
+
+Diplomacy gates the diplomacy screen: before it a civ can only declare war and make peace (so wars can always
+end); alliances, open borders, pacts, exchanges, research agreements, barter, gifts, demands, denouncing and sanctions
+need it, on both sides for deals. The AI researches it right after Trade. Older saves are upgraded: a civ that had the
+old tier-4 Diplomacy (the World Council) gets Statecraft and Diplomacy, any other civ gets Diplomacy, so diplomacy
+already under way carries on.
 
 The AI researches any missing prerequisites of the tech it wants first. A civ's starting tech is granted whatever it
 needs (River Folk start with Trade without Riding).

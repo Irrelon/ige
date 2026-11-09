@@ -33,7 +33,8 @@ const TECH_ABILITIES: Partial<Record<TechId, { icon: string; name: string; text:
 	navigation: [{ icon: "&#x1F30A;", name: "Deep ocean", text: "Units and ships can cross deep ocean, so sea lanes can reach other continents." }],
 	trade: [{ icon: "&#x1F91D;", name: "Trade agreements", text: "Barter goods and stars with other civs, and set up trade routes that deliver every turn." }],
 	logistics: [{ icon: "&#x1F434;", name: "Pack animals", text: "Carriers move further each turn and every road carries twice as much." }],
-	diplomacy: [{ icon: "&#x1F3DB;&#xFE0F;", name: "World Council", text: "The World Council meets and votes: winning its vote is a Diplomatic victory." }],
+	diplomacy: [{ icon: "&#x1F91D;", name: "Treaties and deals", text: "Opens the diplomacy screen's deals: alliances, open borders, defensive pacts, cultural exchanges, research agreements, barter, gifts, demands, denouncing and sanctions. Before it you can only declare war and make peace." }],
+	statecraft: [{ icon: "&#x1F3DB;&#xFE0F;", name: "World Council", text: "The World Council forms and votes every few turns: win two elections in a row for a Diplomatic victory." }],
 	engineering: [{ icon: "&#x1F4B0;", name: "Prosperity victory", text: "Lets you build the Grand Exchange: finishing it wins a Prosperity victory." }]
 };
 

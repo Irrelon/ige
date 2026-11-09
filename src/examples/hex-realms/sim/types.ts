@@ -228,7 +228,7 @@ export interface Winner {
 }
 
 export interface GameState {
-	version: 1;
+	version: number;
 	options: GameOptions;
 	turn: number;
 	current: number;

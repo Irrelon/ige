@@ -159,9 +159,12 @@ export class DiplomacyScreen {
 		const council = d.council;
 		const councilText = !sim.options.victories.diplomatic ? "Diplomatic victory is off." : council.formed
 			? `The World Council votes on turn ${council.nextVote}. ${council.lastWinner >= 0 ? `Last leader: ${esc(sim.player(council.lastWinner).name)} (${council.streak} in a row; 2 wins the game).` : "No leader yet."} You bring ${votesOf(sim, me)} votes.`
-			: "The World Council forms when any civ researches Diplomacy. Win two elections in a row for a diplomatic victory.";
+			: "The World Council forms when any civ researches Statecraft. Win two elections in a row for a diplomatic victory.";
+		// Before Diplomacy only war and peace are open; the rest of the screen says what the tech brings
+		const locked = sim.hasTech(me, "diplomacy") ? "" : `<div class="tech-note">Until you research <a href="#" class="tech-link" data-action="show-tech" data-tech="diplomacy" data-for="Treaties and deals">Diplomacy</a> you can only declare war and make peace. It opens alliances, open borders, pacts, exchanges, research agreements, barter, gifts, demands, denouncing and sanctions.</div>`;
 
 		return `<h3>Diplomacy <span class="dim">${stars(sim.player(me).stars)}</span></h3>
+			${locked}
 			${incoming ? `<div class="incoming">${incoming}</div>` : ""}
 			<div class="diplo2"><div class="civs">${list || `<span class="dim">No other civs.</span>`}</div>
 			<div class="civ-detail">${this.civ >= 0 ? this.detail(sim, me, this.civ) : `<p class="dim">You haven't met anyone yet. Explore to find other civilisations.</p>`}</div></div>

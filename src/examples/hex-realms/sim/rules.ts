@@ -173,7 +173,7 @@ export const BUILDINGS: Record<BuildingId, BuildingType> = {
 		imperialRoad: ["Imperial Road", "logistics", 20, { stone: 12, planks: 4, horses: 4 }, "Carriers move 2 tiles further and roads carry 1 more load."],
 		hallOfHeroes: ["Hall of Heroes", "smithing", 20, { stone: 8, planks: 4, weapons: 4 }, "Units you train start as veterans."],
 		observatory: ["Great Observatory", "navigation", 20, { stone: 8, planks: 6, tools: 2 }, "+1 sight for your units and cities."],
-		councilHall: ["Council Hall", "diplomacy", 25, { stone: 8, planks: 8, coins: 4 }, "+3 World Council votes; other civs warm to you."],
+		councilHall: ["Council Hall", "statecraft", 25, { stone: 8, planks: 8, coins: 4 }, "+3 World Council votes; other civs warm to you."],
 		grandExchange: ["Grand Exchange", "engineering", 25, { planks: 10, stone: 10, tools: 6, coins: 8 }, "A wonder of trade. Completing it wins a Prosperity victory."]
 	}),
 	...monuments({
@@ -294,8 +294,8 @@ export const VETERAN_KILLS = 3;
 export type TechId =
 	| "forestry" | "mining" | "construction" | "farming" | "hunting" | "fishing" | "riding"
 	| "sawmills" | "smelting" | "masonry" | "milling" | "sailing" | "trade" | "archery"
-	| "carpentry" | "smithing" | "baking" | "navigation" | "coinage" | "logistics"
-	| "siege" | "diplomacy" | "engineering";
+	| "carpentry" | "smithing" | "baking" | "navigation" | "coinage" | "logistics" | "diplomacy"
+	| "siege" | "statecraft" | "engineering";
 
 export interface Tech {
 	id: TechId;
@@ -327,8 +327,9 @@ export const TECHS: Record<TechId, Tech> = {
 	navigation: { id: "navigation", name: "Navigation", tier: 3, requires: ["sailing"], branch: "Sea", unlocks: "Units and ships can cross deep ocean" },
 	coinage: { id: "coinage", name: "Coinage", tier: 3, requires: ["trade", "smelting"], branch: "Society", unlocks: "Mint" },
 	logistics: { id: "logistics", name: "Logistics", tier: 3, requires: ["trade"], branch: "Society", unlocks: "Pack animals: carriers move further and roads carry twice as much" },
+	diplomacy: { id: "diplomacy", name: "Diplomacy", tier: 3, requires: ["trade"], branch: "Society", unlocks: "Alliances, open borders, pacts, exchanges, research agreements, barter, gifts, demands, denouncing and sanctions" },
 	siege: { id: "siege", name: "Siege", tier: 4, requires: ["smithing", "carpentry"], branch: "War", unlocks: "Catapult" },
-	diplomacy: { id: "diplomacy", name: "Diplomacy", tier: 4, requires: ["coinage"], branch: "Society", unlocks: "The World Council (diplomatic victory)" },
+	statecraft: { id: "statecraft", name: "Statecraft", tier: 4, requires: ["coinage"], branch: "Society", unlocks: "The World Council (diplomatic victory)" },
 	engineering: { id: "engineering", name: "Engineering", tier: 4, requires: ["carpentry", "coinage"], branch: "Industry", unlocks: "Grand Exchange (prosperity victory)" }
 };
 
@@ -356,11 +357,11 @@ export interface Civ {
 }
 
 export const CIVS: Record<CivId, Civ> = {
-	highlanders: { id: "highlanders", name: "Highlanders", startTech: "mining", perk: "Mines produce double", research: ["forestry", "sawmills", "smelting", "archery", "masonry", "smithing", "hunting", "trade", "carpentry", "coinage", "siege", "farming", "milling", "baking", "engineering", "diplomacy"] },
-	riverfolk: { id: "riverfolk", name: "River Folk", startTech: "trade", perk: "Carriers move 2 extra tiles per turn", research: ["forestry", "sawmills", "fishing", "farming", "milling", "mining", "coinage", "baking", "logistics", "smelting", "diplomacy", "carpentry", "engineering", "archery", "smithing"] },
+	highlanders: { id: "highlanders", name: "Highlanders", startTech: "mining", perk: "Mines produce double", research: ["forestry", "sawmills", "smelting", "archery", "masonry", "smithing", "hunting", "trade", "carpentry", "coinage", "siege", "farming", "milling", "baking", "engineering", "statecraft"] },
+	riverfolk: { id: "riverfolk", name: "River Folk", startTech: "trade", perk: "Carriers move 2 extra tiles per turn", research: ["forestry", "sawmills", "fishing", "farming", "milling", "mining", "coinage", "baking", "logistics", "smelting", "statecraft", "carpentry", "engineering", "archery", "smithing"] },
 	woodlanders: { id: "woodlanders", name: "Woodlanders", startTech: "forestry", perk: "Sawmills produce double", research: ["sawmills", "hunting", "mining", "archery", "farming", "smelting", "carpentry", "trade", "milling", "baking", "masonry", "smithing", "coinage", "engineering"] },
 	horselords: { id: "horselords", name: "Horse Lords", startTech: "riding", perk: "Riders cost 1 star less and need no horse", research: ["forestry", "sawmills", "hunting", "archery", "mining", "smelting", "trade", "logistics", "smithing", "farming", "masonry", "carpentry", "siege", "coinage"] },
-	coastfolk: { id: "coastfolk", name: "Coastfolk", startTech: "fishing", perk: "Fish feeds cities twice as much", research: ["forestry", "sawmills", "sailing", "trade", "mining", "coinage", "navigation", "archery", "farming", "milling", "baking", "smelting", "diplomacy", "carpentry"] },
+	coastfolk: { id: "coastfolk", name: "Coastfolk", startTech: "fishing", perk: "Fish feeds cities twice as much", research: ["forestry", "sawmills", "sailing", "trade", "mining", "coinage", "navigation", "archery", "farming", "milling", "baking", "smelting", "statecraft", "carpentry"] },
 	plainsfolk: { id: "plainsfolk", name: "Plainsfolk", startTech: "farming", perk: "Farms produce double", research: ["forestry", "sawmills", "milling", "baking", "hunting", "archery", "mining", "trade", "smelting", "masonry", "smithing", "coinage", "carpentry", "engineering"] }
 };
 
