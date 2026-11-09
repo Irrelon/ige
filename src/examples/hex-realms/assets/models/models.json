@@ -120,6 +120,23 @@
 		"skinned": true,
 		"bytes": 1350000
 	},
+	"village": {
+		"file": "village.glb",
+		"min": [
+			-0.454,
+			-0.2402,
+			-0.4912
+		],
+		"max": [
+			0.455,
+			0.2809,
+			0.2816
+		],
+		"triangles": 5286,
+		"animations": [],
+		"skinned": false,
+		"bytes": 471612
+	},
 	"warrior": {
 		"file": "warrior.glb",
 		"min": [

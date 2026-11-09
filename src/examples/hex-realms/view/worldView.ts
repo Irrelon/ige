@@ -618,10 +618,12 @@ export class WorldView {
 			entities.push(e);
 		};
 
-		// A model by size (village, town, city) with the owner's banner, when loaded
-		const big = city.level >= 4;
-		const cityModel = this.models?.create(neutral ? "village" : big ? "city" : "town", {
-			footprint: R * (neutral ? 1.05 : big ? 1.55 : 1.3), height: R * (big ? 1.5 : 1.2), lod: PROP_LOD
+		// A model by size with the owner's banner, when loaded: a village (neutral, or levels 1-2), a town (3-4), a city (5+)
+		const size = neutral || city.level <= 2 ? "village" : city.level <= 4 ? "town" : "city";
+		const cityModel = this.models?.create(size, {
+			footprint: R * (size === "village" ? 1.1 : size === "town" ? 1.35 : 1.55),
+			height: R * (size === "village" ? 0.9 : size === "town" ? 1.2 : 1.5),
+			lod: PROP_LOD
 		});
 		if (cityModel) {
 			const holder = new IgeEntity();
