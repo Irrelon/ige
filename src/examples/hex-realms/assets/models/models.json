@@ -393,6 +393,24 @@
 		"bytes": 486428,
 		"floor": -0.1195
 	},
+	"marketCross": {
+		"file": "marketCross.glb",
+		"min": [
+			-0.277,
+			-0.404,
+			-0.3408
+		],
+		"max": [
+			0.2768,
+			0.4249,
+			0.2128
+		],
+		"triangles": 4994,
+		"animations": [],
+		"skinned": false,
+		"bytes": 343968,
+		"floor": -0.4022
+	},
 	"mill": {
 		"file": "mill.glb",
 		"min": [
