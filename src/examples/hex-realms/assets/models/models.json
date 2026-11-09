@@ -210,6 +210,23 @@
 		"skinned": false,
 		"bytes": 740020
 	},
+	"hangingGardens": {
+		"file": "hangingGardens.glb",
+		"min": [
+			-0.4494,
+			-0.2888,
+			-0.4322
+		],
+		"max": [
+			0.4484,
+			0.4273,
+			0.4595
+		],
+		"triangles": 9534,
+		"animations": [],
+		"skinned": false,
+		"bytes": 882492
+	},
 	"hunter": {
 		"file": "hunter.glb",
 		"min": [
