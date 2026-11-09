@@ -79,21 +79,20 @@
 	"boat": {
 		"file": "boat.glb",
 		"min": [
-			-0.3451,
-			-0.4391,
-			-0.2291
+			-0.3436,
+			-0.4368,
+			-0.2563
 		],
 		"max": [
-			0.3801,
-			0.4363,
-			0.1614
+			0.4051,
+			0.4355,
+			0.2164
 		],
-		"triangles": 3898,
+		"triangles": 3990,
 		"animations": [],
 		"skinned": false,
-		"bytes": 493256,
-		"yaw": 1.5708,
-		"team": "boat_team.png"
+		"bytes": 366360,
+		"yaw": -2.1118
 	},
 	"catapult": {
 		"file": "catapult.glb",
