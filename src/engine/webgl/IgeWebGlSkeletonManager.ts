@@ -111,6 +111,9 @@ export class IgeWebGlSkeletonManager extends IgeBaseClass {
 			this._computeWorldMatrixRecursive(skeleton, rootIndex, -1);
 		}
 
+		// Extra rotations on top of the pose (ancestors first): each turns a bone's subtree about its joint
+		if (skeleton.boneRotations?.length) this._applyBoneRotations(skeleton);
+
 		// Compute skin matrices: skinMatrix = worldMatrix * inverseBindMatrix
 		for (let i = 0; i < data.boneCount; i++) {
 			const bone = data.bones[i];
@@ -128,6 +131,54 @@ export class IgeWebGlSkeletonManager extends IgeBaseClass {
 		}
 
 		skeleton.dirty = false;
+	}
+
+	/**
+	 * Turn each rotated bone's subtree about the bone's joint (model space),
+	 * outermost bones first so an inner bone turns from where the outer one
+	 * left it.
+	 */
+	private _applyBoneRotations(skeleton: IgeSkeleton): void {
+		const data = skeleton.data;
+		const world = skeleton.worldMatrices;
+		const depth = (i: number) => {
+			let d = 0;
+			for (let b = data.bones[i]; b && b.parentIndex >= 0; b = data.bones[b.parentIndex]) d++;
+			return d;
+		};
+		const rotations = [...skeleton.boneRotations!].sort((a, b) => depth(a.bone) - depth(b.bone));
+		const m = new Float32Array(16);
+		for (const { bone, q } of rotations) {
+			if (bone < 0 || bone >= data.boneCount) continue;
+			const [x, y, z, w] = q;
+			// M = T(p) * R * T(-p), p = the bone's joint
+			const px = world[bone * 16 + 12], py = world[bone * 16 + 13], pz = world[bone * 16 + 14];
+			const xx = x * x, yy = y * y, zz = z * z, xy = x * y, xz = x * z, yz = y * z, wx = w * x, wy = w * y, wz = w * z;
+			m[0] = 1 - 2 * (yy + zz); m[1] = 2 * (xy + wz); m[2] = 2 * (xz - wy); m[3] = 0;
+			m[4] = 2 * (xy - wz); m[5] = 1 - 2 * (xx + zz); m[6] = 2 * (yz + wx); m[7] = 0;
+			m[8] = 2 * (xz + wy); m[9] = 2 * (yz - wx); m[10] = 1 - 2 * (xx + yy); m[11] = 0;
+			m[12] = px - (m[0] * px + m[4] * py + m[8] * pz);
+			m[13] = py - (m[1] * px + m[5] * py + m[9] * pz);
+			m[14] = pz - (m[2] * px + m[6] * py + m[10] * pz);
+			m[15] = 1;
+			const stack = [bone];
+			while (stack.length) {
+				const i = stack.pop()!;
+				const o = i * 16;
+				const a0 = world[o], a1 = world[o + 1], a2 = world[o + 2], a3 = world[o + 3];
+				const a4 = world[o + 4], a5 = world[o + 5], a6 = world[o + 6], a7 = world[o + 7];
+				const a8 = world[o + 8], a9 = world[o + 9], a10 = world[o + 10], a11 = world[o + 11];
+				const a12 = world[o + 12], a13 = world[o + 13], a14 = world[o + 14], a15 = world[o + 15];
+				for (let col = 0; col < 4; col++) {
+					const c0 = [a0, a4, a8, a12][col], c1 = [a1, a5, a9, a13][col], c2 = [a2, a6, a10, a14][col], c3 = [a3, a7, a11, a15][col];
+					world[o + col * 4] = m[0] * c0 + m[4] * c1 + m[8] * c2 + m[12] * c3;
+					world[o + col * 4 + 1] = m[1] * c0 + m[5] * c1 + m[9] * c2 + m[13] * c3;
+					world[o + col * 4 + 2] = m[2] * c0 + m[6] * c1 + m[10] * c2 + m[14] * c3;
+					world[o + col * 4 + 3] = c3;
+				}
+				for (const child of data.bones[i].childIndices) stack.push(child);
+			}
+		}
 	}
 
 	/**

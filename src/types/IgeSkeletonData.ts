@@ -49,6 +49,13 @@ export interface IgeSkeleton {
 	data: IgeSkeletonData;
 
 	/**
+	 * Extra rotations applied after the animated pose: each turns a bone and
+	 * everything below it about the bone's joint, in model space (see
+	 * IgeSkeletalAnimationComponent.rotateBone()).
+	 */
+	boneRotations?: { bone: number; q: [number, number, number, number] }[];
+
+	/**
 	 * Local space matrices for each bone (current pose).
 	 * Flat array: boneCount * 16 floats
 	 */

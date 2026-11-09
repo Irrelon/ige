@@ -11,6 +11,7 @@ import type {
 	IgeAnimationInterpolation
 } from "@/types/IgeAnimationClipData";
 import type { IgeSkeleton, IgeSkeletonData } from "@/types/IgeSkeletonData";
+import { findBoneIndex } from "@/engine/webgl/IgeAnimationRetarget";
 
 /**
  * Skeletal animation component for GPU-based bone animation.
@@ -363,6 +364,37 @@ export class IgeSkeletalAnimationComponent extends IgeComponent<IgeEntity> {
 	}
 
 	/**
+	 * Turn a bone, and everything below it, about its joint on top of the
+	 * animation (model space; null removes it). Twin-stick characters use it
+	 * to aim one way while walking another: turn the hips toward the
+	 * movement and the spine back toward the aim, so the legs walk where the
+	 * stick points and the upper body faces the target. Entities with bone
+	 * rotations are posed individually (not from the shared pose cache).
+	 * @example #Legs follow the movement, upper body the aim
+	 *     const twist = moveAngle - aimAngle;
+	 *     anim.rotateBone("Bip001 Pelvis", { x: 0, y: Math.sin(twist / 2), z: 0, w: Math.cos(twist / 2) });
+	 *     anim.rotateBone("Bip001 Spine", { x: 0, y: Math.sin(-twist / 2), z: 0, w: Math.cos(-twist / 2) });
+	 */
+	rotateBone(name: string, rotation: { x: number; y: number; z: number; w: number } | null): this {
+		const skeleton = this._skeleton;
+		if (!skeleton) return this;
+		const index = findBoneIndex(skeleton.data, name);
+		if (index < 0) return this;
+		const list = (skeleton.boneRotations ??= []);
+		const at = list.findIndex((r) => r.bone === index);
+		if (rotation) {
+			const q: [number, number, number, number] = [rotation.x, rotation.y, rotation.z, rotation.w];
+			if (at >= 0) list[at].q = q;
+			else list.push({ bone: index, q });
+		} else if (at >= 0) {
+			list.splice(at, 1);
+		}
+		skeleton.dirty = true;
+		markSceneChanged();
+		return this;
+	}
+
+	/**
 	 * Gets / sets whether this entity may use the shared pose cache (default
 	 * true). Cached poses are quantised to
 	 * IgeSkeletalAnimationComponent.poseCacheRate samples per second, which
@@ -444,7 +476,20 @@ export class IgeSkeletalAnimationComponent extends IgeComponent<IgeEntity> {
 			// Update animation time
 			state.time += deltaSeconds * state.speed;
 
-			// Handle looping
+			// Handle looping (both ways: a negative speed plays the clip backwards)
+			if (state.time < 0) {
+				if (state.loop) {
+					const d = state.clip.duration;
+					state.time = d > 0 ? d + (state.time % d) : 0;
+					if (state.time >= d) state.time = 0;
+					this.emit("loopComplete", state.clip.id);
+				} else {
+					state.time = 0;
+					state.playing = false;
+					this.emit("complete", state.clip.id);
+					continue;
+				}
+			}
 			if (state.time >= state.clip.duration) {
 				if (state.loop) {
 					state.time = state.clip.duration > 0 ? state.time % state.clip.duration : 0;
@@ -474,8 +519,8 @@ export class IgeSkeletalAnimationComponent extends IgeComponent<IgeEntity> {
 		// A new pose is about to be applied: render on demand needs a frame
 		markSceneChanged();
 
-		// Fast path: one clip at full weight -> shared pose cache
-		if (states.length === 1 && states[0].weight >= 1 && this._poseCache && this._applyCachedPose(states[0])) {
+		// Fast path: one clip at full weight -> shared pose cache (not with extra bone rotations: they're per entity)
+		if (states.length === 1 && states[0].weight >= 1 && this._poseCache && !this._skeleton.boneRotations?.length && this._applyCachedPose(states[0])) {
 			return;
 		}
 
