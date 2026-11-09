@@ -596,6 +596,23 @@
 		"skinned": false,
 		"bytes": 682460
 	},
+	"victoryArch": {
+		"file": "victoryArch.glb",
+		"min": [
+			-0.4165,
+			-0.4212,
+			-0.244
+		],
+		"max": [
+			0.401,
+			0.4261,
+			0.2309
+		],
+		"triangles": 4538,
+		"animations": [],
+		"skinned": false,
+		"bytes": 466792
+	},
 	"village": {
 		"file": "village.glb",
 		"min": [
