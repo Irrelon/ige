@@ -22,6 +22,23 @@
 		"skinned": true,
 		"bytes": 1341368
 	},
+	"rider": {
+		"file": "rider.glb",
+		"min": [
+			-0.2749,
+			-0.4065,
+			-0.226
+		],
+		"max": [
+			0.3304,
+			0.338,
+			0.3406
+		],
+		"triangles": 5664,
+		"animations": [],
+		"skinned": false,
+		"bytes": 845728
+	},
 	"swordsman": {
 		"file": "swordsman.glb",
 		"min": [
