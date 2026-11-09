@@ -193,6 +193,23 @@
 		"skinned": false,
 		"bytes": 845728
 	},
+	"sawmill": {
+		"file": "sawmill.glb",
+		"min": [
+			-0.4254,
+			-0.4,
+			-0.492
+		],
+		"max": [
+			0.4505,
+			0.4295,
+			0.3912
+		],
+		"triangles": 3967,
+		"animations": [],
+		"skinned": false,
+		"bytes": 597248
+	},
 	"settler": {
 		"file": "settler.glb",
 		"min": [
