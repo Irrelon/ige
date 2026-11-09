@@ -1,10 +1,10 @@
 import {
-	actionProblem, agreementCost, aiAccepts, attitude, attitudeFactors, civStock, cleanGoods, closeBordersProblem, type DealTerms, grievance, hasPact, justified,
+	actionProblem, agreementCost, aiAccepts, attitude, attitudeFactors, civStock, cleanGoods, type DealTerms, endTreatyProblem, grievance, hasPact, justified,
 	proposalProblem, strandedUnits, truceUntil, votesOf, warProblem
 } from "../sim/diplomacy";
 import {
 	AGENDAS, AMBITIONS, CASUS_BELLI, CIVS, DENOUNCE_COST, EXCHANGE_COST, EXCHANGE_TURNS, GOODS, type Good, type Goods,
-	RESEARCH_TURNS, ROUTE_TURNS, SANCTION_COST, SANCTION_TURNS, TRUCE_TURNS, UNIT_TYPES
+	END_TRUCE_TURNS, type EndableTreaty, RESEARCH_TURNS, ROUTE_TURNS, SANCTION_COST, SANCTION_TURNS, TRUCE_TURNS, UNIT_TYPES
 } from "../sim/rules";
 import type { Sim } from "../sim/sim";
 import { ALLIANCE, type Command, type DealKind, type ProposalState, type TreatyState, WAR } from "../sim/types";
@@ -114,8 +114,8 @@ const moodPill = (sim: Sim, o: number, me: number) => {
 export class DiplomacyScreen {
 	civ = -1;
 	tab: DiplomacyTab = "agreements";
-	/** The civ whose borders the player has asked to close, awaiting confirmation (-1 for none). */
-	confirmClose = -1;
+	/** An agreement the player has asked to end, awaiting confirmation. */
+	confirmEnd: { civ: number; kind: EndableTreaty } | null = null;
 	draft: DealDraft = emptyDraft();
 
 	/** Read a deal editor field. */
@@ -134,7 +134,7 @@ export class DiplomacyScreen {
 
 	setTab (tab: string): void {
 		if (TABS.some(([t]) => t === tab)) this.tab = tab as DiplomacyTab;
-		this.confirmClose = -1;
+		this.confirmEnd = null;
 	}
 
 	dealTerms (): DealTerms {
@@ -294,18 +294,17 @@ export class DiplomacyScreen {
 		switch (this.tab) {
 			case "agreements":
 				body = !theyCan ? notYet : [
-					row("Alliance", "Shared vision; you defend each other in war.", deal("alliance")),
-					row("Defensive pact", "Each joins in if the other is attacked.", deal("pact")),
-					sim.state.diplomacy.openBorders[me * sim.playerCount + o]
-						? (this.confirmClose === o ? this.closeWarning(sim, me, o) : row("Open borders", "Open now. You can close them at any time.", control("close-borders-ask", "Close", { player: o }, closeBordersProblem(sim, me, o))))
-						: row("Open borders", "Your units may cross each other's land.", deal("openBorders")),
-					row("Trade agreement", "Both earn stars each turn.", deal("trade")),
+					this.agreement(sim, me, o, "alliance", "Alliance", "Shared vision; you defend each other in war.", deal("alliance")),
+					this.agreement(sim, me, o, "pact", "Defensive pact", "Each joins in if the other is attacked.", deal("pact")),
+					this.agreement(sim, me, o, "openBorders", "Open borders", "Your units may cross each other's land.", deal("openBorders")),
+					this.agreement(sim, me, o, "trade", "Trade agreement", "Both earn stars each turn.", deal("trade")),
 					row(`Cultural exchange ${stars(EXCHANGE_COST)}`, `You pay; both gain a star a turn for ${EXCHANGE_TURNS} turns.`, deal("exchange")),
 					row(`Research agreement ${stars(agreementCost(sim, me))}`, `Each pays; both get a free technology in ${RESEARCH_TURNS} turns.`, deal("research"))
 				].join("");
 				break;
 			case "trade":
-				body = !theyCan ? notYet : row(`Gift ${stars(5)}`, "Warms their mood towards you.", deal("gift", "Give", { stars: 5 })) + this.editor(sim, me, o);
+				body = !theyCan ? notYet : this.agreement(sim, me, o, "route", "Trade routes", "", "")
+					+ row(`Gift ${stars(5)}`, "Warms their mood towards you.", deal("gift", "Give", { stars: 5 })) + this.editor(sim, me, o);
 				break;
 			case "pressure": {
 				const t10 = proposalProblem(sim, me, o, "tribute", { getStars: 10 }), t25 = proposalProblem(sim, me, o, "tribute", { getStars: 25 });
@@ -330,20 +329,44 @@ export class DiplomacyScreen {
 		return tabs + `<div class="dp-rows">${body}</div>`;
 	}
 
-	/** What closing borders would do, with buttons to go ahead or keep them open. */
-	closeWarning (sim: Sim, me: number, o: number): string {
-		const lost = strandedUnits(sim, me, o);
-		const names = lost.map((u) => UNIT_TYPES[u.type].name);
-		const loss = lost.length
-			? `<li class="bad"><b>Your ${lost.length === 1 ? "unit" : `${lost.length} units`} in their land will be destroyed:</b> ${esc(names.join(", "))}.</li>`
-			: `<li>None of your units are in their land, so you lose nothing.</li>`;
+	/**
+	 * An agreement's row: when it's in force, what it does and a button to end
+	 * it (which asks first); otherwise, what it would do and how to propose it
+	 * (`offer`; "" shows nothing, as for trade routes, made in the trade table).
+	 */
+	agreement (sim: Sim, me: number, o: number, kind: EndableTreaty, title: string, desc: string, offer: string): string {
+		if (endTreatyProblem(sim, me, o, kind)) return offer ? row(title, desc, offer) : "";
+		if (this.confirmEnd?.civ === o && this.confirmEnd.kind === kind) return this.endWarning(sim, me, o, kind);
+		const routes = sim.state.diplomacy.treaties.filter((t) => t.kind === "route" && ((t.a === me && t.b === o) || (t.a === o && t.b === me))).length;
+		const now = kind === "route" ? `${routes} running, delivering goods every turn.` : kind === "openBorders" ? "Open now." : "In force now.";
+		return row(title, `${now} You can end ${kind === "route" ? "them" : "it"} at any time.`, actionButton("end-ask", kind === "openBorders" ? "Close" : "End", { player: o, kind }));
+	}
+
+	/** What ending an agreement would do, with buttons to go ahead or keep it. */
+	endWarning (sim: Sim, me: number, o: number, kind: EndableTreaty): string {
+		const name = esc(sim.player(o).name);
+		const lost = strandedUnits(sim, me, o, kind);
+		const units = (k: number) => (k === 1 ? "1 unit" : `${k} units`);
+		const lines: string[] = [];
+		if (kind === "alliance") lines.push("You'll be at peace: no more shared vision, and neither of you defends the other.");
+		if (kind === "pact") lines.push("Neither of you will join the other's defensive wars any more.");
+		if (kind === "trade") lines.push("Both of you stop earning stars from it.");
+		if (kind === "route") lines.push("Deliveries stop both ways; goods already on the road still arrive.");
+		if (lost.length) {
+			lines.push(`<li class="bad"><b>Your ${units(lost.length)} in their land will be destroyed:</b> ${esc(lost.map((u) => UNIT_TYPES[u.type].name).join(", "))}.`);
+		} else if (kind === "openBorders" || (kind === "alliance" && !sim.state.diplomacy.openBorders[me * sim.playerCount + o])) {
+			lines.push("None of your units are in their land, so you lose nothing.");
+		}
+		if (kind === "openBorders" || (kind === "alliance" && !sim.state.diplomacy.openBorders[me * sim.playerCount + o])) {
+			lines.push("Their units already in your land stay and can move around it, but no more can enter unless they declare war.");
+		}
+		if (kind === "alliance" || kind === "pact") lines.push(`Neither side can declare war for ${END_TRUCE_TURNS} turns.`);
+		lines.push(kind === "alliance" ? "They will resent it, and it gives them a grievance against you." : kind === "pact" ? "They will take it badly." : "They will take it as a snub.");
+		const what = { openBorders: ["Close borders with", "Close borders", "Keep them open"], trade: ["End the trade agreement with", "End agreement", "Keep it"], route: ["End all trade routes with", "End routes", "Keep them"], pact: ["End the defensive pact with", "End pact", "Keep it"], alliance: ["End the alliance with", "End alliance", "Keep it"] }[kind];
 		return `<div class="dp-confirm">
-				<b>Close borders with ${esc(sim.player(o).name)}?</b>
-				<ul>${loss}
-					<li>Their units already in your land stay and can move around it, but no more can enter unless they declare war.</li>
-					<li>They will take it as a snub.</li>
-				</ul>
-				<div class="dp-row-ctl">${actionButton("close-borders", lost.length ? `Close borders and lose ${lost.length === 1 ? "1 unit" : `${lost.length} units`}` : "Close borders", { player: o }, null, "danger")}${actionButton("close-borders-cancel", "Keep them open")}</div>
+				<b>${what[0]} ${name}?</b>
+				<ul>${lines.map((l) => (l.startsWith("<li") ? l : `<li>${l}`) + "</li>").join("")}</ul>
+				<div class="dp-row-ctl">${actionButton("end-treaty", lost.length ? `${what[1]} and lose ${units(lost.length)}` : what[1], { player: o, kind }, null, "danger")}${actionButton("end-cancel", what[2])}</div>
 			</div>`;
 	}
 

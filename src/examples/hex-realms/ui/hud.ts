@@ -6,7 +6,7 @@ import { attackProblem, preview } from "../sim/combat";
 import { buildingStars, buildOptions, buyCost, buyProblem, carrierSpeed, roadCapacity, roadProblem, rushCost, rushProblem, storedGoods, wonderOptions } from "../sim/economy";
 import { researchCost } from "../sim/effects";
 import {
-	AMBITIONS, type BuildingId, BUILDINGS, DEPOSIT_NAMES, type Deposit, GOOD_INFO, GOODS, type Good, type Goods, growthNeeded, levelRewards, REWARDS, ROAD_COST,
+	AMBITIONS, type BuildingId, BUILDINGS, DEPOSIT_NAMES, type Deposit, type EndableTreaty, END_TRUCE_TURNS, GOOD_INFO, GOODS, type Good, type Goods, growthNeeded, levelRewards, REWARDS, ROAD_COST,
 	type TechId, TECH_IDS, TECHS, UNIT_TYPE_IDS, type UnitTypeId, UNIT_TYPES, WONDER_IDS
 } from "../sim/rules";
 import type { Sim } from "../sim/sim";
@@ -263,11 +263,11 @@ export class Hud {
 				break;
 			}
 			case "war": run({ type: "declareWar", target: num("player") }); this.openModal("diplomacy"); break;
-			case "close-borders-ask": this.diplo.confirmClose = num("player"); this.openModal("diplomacy"); break;
-			case "close-borders-cancel": this.diplo.confirmClose = -1; this.openModal("diplomacy"); break;
-			case "close-borders": this.diplo.confirmClose = -1; run({ type: "closeBorders", target: num("player") }); this.openModal("diplomacy"); break;
+			case "end-ask": this.diplo.confirmEnd = { civ: num("player"), kind: data.kind as EndableTreaty }; this.openModal("diplomacy"); break;
+			case "end-cancel": this.diplo.confirmEnd = null; this.openModal("diplomacy"); break;
+			case "end-treaty": this.diplo.confirmEnd = null; run({ type: "endTreaty", target: num("player"), kind: data.kind as EndableTreaty }); this.openModal("diplomacy"); break;
 			case "propose": run({ type: "propose", to: num("player"), kind: data.kind as DealKind, stars: data.stars ? num("stars") : 0 }); this.openModal("diplomacy"); break;
-			case "diplo-civ": this.diplo.civ = num("player"); this.diplo.confirmClose = -1; this.diplo.resetDraft(); this.openModal("diplomacy"); break;
+			case "diplo-civ": this.diplo.civ = num("player"); this.diplo.confirmEnd = null; this.diplo.resetDraft(); this.openModal("diplomacy"); break;
 			case "diplo-tab": this.diplo.setTab(data.tab ?? ""); this.openModal("diplomacy"); break;
 			case "propose-deal":
 			case "demand-tribute":
@@ -682,13 +682,20 @@ export class Hud {
 					break;
 				}
 				case "diplomacyAction":
+					if (e.to === me) this.toast(`${name(e.from)} ${e.kind === "denounce" ? "<b>denounced</b> you" : "imposed <b>sanctions</b> on you: your income drops for 10 turns"}`, "bad", 6);
+					break;
+				case "treatyEnded":
 					if (e.to === me) {
-						const what = e.kind === "denounce" ? "<b>denounced</b> you"
-							: e.kind === "sanction" ? "imposed <b>sanctions</b> on you: your income drops for 10 turns"
-								: `<b>closed their borders</b> to you: your units already in their land may stay, but no more can enter`;
+						const what = {
+							openBorders: "<b>closed their borders</b> to you: your units already in their land may stay, but no more can enter",
+							trade: "ended your <b>trade agreement</b>",
+							route: "stopped your <b>trade routes</b>",
+							pact: `ended your <b>defensive pact</b> (a ${END_TRUCE_TURNS}-turn truce follows)`,
+							alliance: `ended your <b>alliance</b>: you're at peace (a ${END_TRUCE_TURNS}-turn truce follows)`
+						}[e.kind];
 						this.toast(`${name(e.from)} ${what}`, "bad", 6);
 					}
-					if (e.from === me && e.kind === "closeBorders" && e.lost) this.toast(`Borders closed: <b>${e.lost} of your units</b> in their land ${e.lost === 1 ? "was" : "were"} lost`, "bad", 6);
+					if (e.from === me && e.lost) this.toast(`<b>${e.lost} of your units</b> in their land ${e.lost === 1 ? "was" : "were"} lost`, "bad", 6);
 					break;
 				case "wonder": {
 					const info = BUILDINGS[e.building];
@@ -1110,7 +1117,7 @@ export class Hud {
 			<div class="opts">
 				<div>Fog of war: ${(["civ", "polytopia", "off"] as FogMode[]).map((m) => `<button class="mini ${o.fog === m ? "on" : ""}" data-action="fog" data-mode="${m}" ${local ? "" : "disabled"}>${m === "civ" ? "Civilization" : m === "polytopia" ? "Polytopia" : "Off"}</button>`).join(" ")}</div>
 				<div>${local ? toggle("los", o.lineOfSight, "Line of sight") : `Line of sight: ${o.lineOfSight ? "on" : "off"}`}</div>
-				<div class="dim small">Founding cities: ${o.allowFounding ? "allowed" : "off"} &middot; Victories: ${Object.entries(o.victories).filter(([, v]) => v).map(([k]) => k).join(", ")} &middot; Difficulty: ${o.difficulty} &middot; Map ${o.width} x ${o.height}, seed "${esc(o.seedText)}"</div>
+				<div class="dim small">Founding cities: ${o.allowFounding ? "allowed" : "off"} &middot; Tribe starting techs: ${o.tribeTechs === false ? "off" : "on"} &middot; Victories: ${Object.entries(o.victories).filter(([, v]) => v).map(([k]) => k).join(", ")} &middot; Difficulty: ${o.difficulty} &middot; Map ${o.width} x ${o.height}, seed "${esc(o.seedText)}"</div>
 			</div>
 			<h4>Settings</h4>
 			<div class="opts">

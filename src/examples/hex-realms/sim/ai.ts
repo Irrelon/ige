@@ -1,14 +1,14 @@
 import { ambitionProblem, measure, target as milestoneTarget } from "./ambitions";
 import { attackTargets, preview } from "./combat";
 import { captureProblem, foundProblem, slotCap, slotsUsed, trainProblem, unitCost } from "./cities";
-import { actionProblem, agreementCost, aiAccepts, attitude, closeBordersProblem, type DealTerms, justified, proposalProblem, strandedUnits, strength, warProblem, weariness } from "./diplomacy";
+import { actionProblem, agreementCost, aiAccepts, attitude, type DealTerms, endTreatyProblem, justified, proposalProblem, strandedUnits, strength, warProblem, weariness } from "./diplomacy";
 import { buildingStars, buildProblem, buyCost, networkNodes, rushCost, rushProblem, storedGoods } from "./economy";
 import { researchCost } from "./effects";
 import { search } from "./network";
 import { mulberry32 } from "../noise";
 import { reachable, type Reach } from "./movement";
 import {
-	type AgendaId, AMBITION_IDS, type AmbitionId, AMBITIONS, type BuildingId, BUILDINGS, type CivId, CIVS, Deposit, EXCHANGE_COST, type Good, GOOD_INFO, levelRewards,
+	type AgendaId, AMBITION_IDS, type AmbitionId, AMBITIONS, type BuildingId, BUILDINGS, type CivId, CIVS, Deposit, type EndableTreaty, EXCHANGE_COST, type Good, GOOD_INFO, levelRewards,
 	MONUMENT_IDS, ROAD_COST, TECH_IDS, type TechId, TECHS, UNIT_TYPES, type UnitTypeId, type WonderId
 } from "./rules";
 import type { Sim } from "./sim";
@@ -36,6 +36,8 @@ export function runAiTurn (sim: Sim, player: number, apply?: (command: Command) 
 /** Food buildings, in order of preference: growth unlocks building slots. (Farms
  * make grain, which only feeds a city once milled and baked into bread.) */
 const FOOD_BUILDINGS: BuildingId[] = ["hunter", "fishery"];
+/** Agreements an AI ends with a civ once its mood falls this low, most binding first. */
+const AI_ENDS: [EndableTreaty, number][] = [["alliance", 0], ["pact", -2], ["openBorders", -4], ["trade", -4], ["route", -4]];
 
 /** Ambitions each civ leans towards, and the one each leader's agenda suggests. */
 const CIV_AMBITIONS: Record<CivId, AmbitionId[]> = {
@@ -186,9 +188,10 @@ class AiTurn {
 				continue;
 			}
 
-			// Shut out a civ we've come to dislike
-			if (feel <= -4 && this.rand() < 0.15 && !closeBordersProblem(sim, this.p, o) && !strandedUnits(sim, this.p, o).length) {
-				this.do({ type: "closeBorders", target: o });
+			// Drop agreements with a civ we've come to dislike (never at the cost of our own units)
+			const ending = AI_ENDS.find(([kind, below]) => feel <= below && !endTreatyProblem(sim, this.p, o, kind) && !strandedUnits(sim, this.p, o, kind).length);
+			if (ending && this.rand() < 0.15) {
+				this.do({ type: "endTreaty", target: o, kind: ending[0] });
 				continue;
 			}
 

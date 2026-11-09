@@ -556,8 +556,15 @@ export const DENOUNCE_COST = 5;
 /** Sanctions cut the target's star income by a share for some turns. */
 export const SANCTION_COST = 15;
 export const SANCTION_TURNS = 10;
-/** How much closing open borders early sours the other civ's mood (a snub: no grievance, no stars). */
-export const CLOSE_BORDERS_MOOD = 2;
+/** Agreements either side may end before they would (open borders, trade agreements and pacts otherwise last until a war; routes run their turns). */
+export type EndableTreaty = "openBorders" | "trade" | "route" | "pact" | "alliance";
+/** How much ending each early sours the other civ's mood. Only ending an alliance gives a grievance. */
+export const END_TREATY_MOOD: Record<EndableTreaty, number> = { openBorders: 2, trade: 2, route: 2, pact: 3, alliance: 4 };
+export const END_ALLIANCE_GRIEVANCE = 2;
+/** Ending a pact or an alliance starts a truce this long, so neither can be dropped just before an attack. */
+export const END_TRUCE_TURNS = 5;
+/** An AI backs another civ in World Council elections when allied or at least this fond of it (and it brings more votes). */
+export const COUNCIL_BACKING_MOOD = 5;
 export const SANCTION_SHARE = 0.15;
 /** Trade routes run this many turns. */
 export const ROUTE_TURNS = 10;

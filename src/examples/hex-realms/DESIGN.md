@@ -198,12 +198,16 @@ Four to six civs, each with a starting tech, a start-terrain bias and one perk (
 
 | Civ | Starts with | Perk |
 |-----|-------------|------|
-| Highlanders | Mining | Mines produce +1 |
-| River folk | Roads | Carriers move +1 tile per turn |
+| Highlanders | Mining | Mines produce double |
+| River Folk | Trade | Carriers move 2 extra tiles per turn |
 | Woodlanders | Forestry | Sawmills produce double |
-| Horse lords | Riding | Riders cost less |
-| Coastfolk | Fishing | Fisheries give +1 growth |
+| Horse Lords | Riding | Riders cost 1 star less and need no horse |
+| Coastfolk | Fishing | Fish feeds cities twice as much |
 | Plainsfolk | Farming | Farms produce double |
+
+Each starting tech is a different tier-1 tech, as in Polytopia, giving each tribe a nudge in its own direction. The
+"Tribe starting techs" game option (on by default) can switch this off, so every civ starts with no research at all;
+perks are unchanged either way. The setup screen's civ list shows each tribe's starting tech and perk.
 
 ## 9. Victory and game setup
 
@@ -404,13 +408,25 @@ Peacemakers (+3 council votes, other civs warm to you) and Patrons (+2 stars a t
   during which neither side can declare war.
 - Costs: cultural exchange 12 stars (proposer), research agreement 10 + 2 per city (each side), denouncing 5,
   sanctions 15 (the target loses 15% of its income for 10 turns). Grievances fade by 0.15 a round; 4 justify a war.
-- **Closing borders**: open borders last until a war, but either side can close them early from the diplomacy
-  screen, after a warning that lists what it will cost. As when breaking a treaty in Polytopia, the closer's own
-  units in the other civ's land are destroyed. The other civ's units already in the closer's land stay and may go on
-  moving within it, but once out they can't come back, and no more may enter without declaring war. (This applies to
-  any closed territory: a unit may always move between tiles of the territory it's standing in.) Closing costs no
-  stars and gives no grievance, but the other civ's mood drops by 2. An AI closes its borders to a civ it has come
-  to dislike (mood -4 or worse), but never when it would lose units doing so.
+- **Ending agreements early**: open borders, trade agreements and pacts last until a war, and alliances until one side
+  leaves; trade routes run their turns. Either side can end any of them early from the diplomacy screen, after a
+  warning that says what it will cost. It costs no stars, but the other civ minds:
+
+  | Ending | What happens | Their mood | Also |
+  |--------|--------------|-----------|------|
+  | Open borders | Each side's land closes to the other | -2 | |
+  | Trade agreement | Both stop earning its stars | -2 | |
+  | Trade routes | Deliveries stop; goods on the road still arrive | -2 | |
+  | Defensive pact | Neither joins the other's defensive wars | -3 | 5-turn truce |
+  | Alliance | Back to peace; shared vision ends | -4 | 5-turn truce; a grievance of 2 |
+
+  The truces stop a civ dropping a pact or an alliance just before attacking to dodge the betrayal penalty. Where
+  ending an agreement closes the other civ's land to the ender's units (open borders, or an alliance without open
+  borders), those units are destroyed, as when breaking a treaty in Polytopia. The other civ's units already in the
+  ender's land stay and may go on moving within it, but once out they can't come back, and no more may enter without
+  a war (a unit may always move between tiles of the territory it's standing in). An AI ends agreements with a civ it
+  has come to dislike (an alliance below mood 0, a pact below -2, the rest below -4), but never when it would lose
+  units doing so.
 - **AI agendas**: every AI leader has a visible agenda (Expansionist, Merchant, Militarist, Builder, Peacemaker,
   Scholar) that shapes its attitudes; the diplomacy screen shows why each civ feels the way it does.
 

@@ -723,6 +723,62 @@ describe("diplomacy II", () => {
 		expect(sim.apply(0, { type: "closeBorders", target: 1 }).ok).toBe(false);
 	});
 
+	test("ending an alliance: peace, a truce, a grievance, and your units in their land are lost unless borders are open", () => {
+		const sim = blank(2, [sim2(4, 4), sim2(20, 12)], { humans: [0, 1] });
+		meetAll(sim);
+		clearUnits(sim);
+		const d = sim.state.diplomacy;
+		d.relation[1] = d.relation[2] = ALLIANCE;
+		const inside = sim.neighbors(sim.citiesOf(1)[0].tile).find((t) => sim.map.owner[t] === 1) as number;
+		const mine = sim.createUnit("warrior", 0, inside, true);
+		const mood = attitude(sim, 1, 0);
+		expect(sim.apply(0, { type: "endTreaty", target: 1, kind: "pact" }).ok).toBe(false);
+		expect(sim.apply(0, { type: "endTreaty", target: 1, kind: "alliance" }).ok).toBe(true);
+		expect(sim.relation(0, 1)).toBe(PEACE);
+		expect(sim.unit(mine.id)).toBeUndefined();
+		expect(attitude(sim, 1, 0)).toBe(mood - 4);
+		expect(grievance(sim, 1, 0)).toBe(2);
+		// No dropping an ally just before attacking them, and no revenge either
+		expect(warProblem(sim, 0, 1)).toMatch(/Truce/);
+		expect(warProblem(sim, 1, 0)).toMatch(/Truce/);
+
+		// With open borders as well, ending the alliance costs no units
+		const again = blank(2, [sim2(4, 4), sim2(20, 12)], { humans: [0, 1] });
+		meetAll(again);
+		clearUnits(again);
+		const d2 = again.state.diplomacy;
+		d2.relation[1] = d2.relation[2] = ALLIANCE;
+		d2.openBorders[1] = d2.openBorders[2] = 1;
+		const safe = again.createUnit("warrior", 0, inside, true);
+		expect(again.apply(0, { type: "endTreaty", target: 1, kind: "alliance" }).ok).toBe(true);
+		expect(again.unit(safe.id)?.tile).toBe(inside);
+	});
+
+	test("ending a pact, a trade agreement or trade routes sours their mood; a pact also starts a truce", () => {
+		const sim = blank(2, [sim2(4, 4), sim2(20, 12)], { humans: [0, 1] });
+		meetAll(sim);
+		const d = sim.state.diplomacy;
+		d.pact[1] = d.pact[2] = 1;
+		d.trade[1] = d.trade[2] = 1;
+		d.treaties.push({ kind: "route", a: 1, b: 0, until: sim.state.turn + 6, give: { logs: 1 }, get: {}, stars: 0, getStars: 0 });
+		const mood = attitude(sim, 1, 0);
+		for (const kind of ["pact", "trade", "route"] as const) {
+			expect(sim.apply(0, { type: "endTreaty", target: 1, kind }).ok).toBe(true);
+			expect(sim.apply(0, { type: "endTreaty", target: 1, kind }).ok).toBe(false);
+		}
+		expect([d.pact[1], d.trade[1], d.treaties.some((t) => t.kind === "route")]).toEqual([0, 0, false]);
+		expect(attitude(sim, 1, 0)).toBe(mood - 7);
+		expect(grievance(sim, 1, 0)).toBe(0);
+		expect(warProblem(sim, 0, 1)).toMatch(/Truce/);
+	});
+
+	test("each tribe starts with its own tech, unless tribe starting techs are off", () => {
+		const on = blank(2, [sim2(4, 4), sim2(20, 12)], { civs: ["highlanders", "coastfolk"] });
+		expect(on.state.players.map((p) => p.techs)).toEqual([["mining"], ["fishing"]]);
+		const off = blank(2, [sim2(4, 4), sim2(20, 12)], { civs: ["highlanders", "coastfolk"], tribeTechs: false });
+		expect(off.state.players.map((p) => p.techs)).toEqual([[], []]);
+	});
+
 	test("online seat changes are game commands, allowed out of turn", () => {
 		const sim = blank(3, [sim2(2, 2), sim2(20, 2), sim2(12, 13)], { humans: [0] });
 		expect(sim.current).toBe(0);

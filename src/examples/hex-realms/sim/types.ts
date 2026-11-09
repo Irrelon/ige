@@ -1,5 +1,5 @@
 import type { FogMode } from "../fog";
-import type { AgendaId, AmbitionId, BuildingId, CivId, Good, Goods, RewardId, TechId, UnitTypeId } from "./rules";
+import type { AgendaId, AmbitionId, BuildingId, CivId, EndableTreaty, Good, Goods, RewardId, TechId, UnitTypeId } from "./rules";
 
 /**
  * Plain, serialisable game state plus the commands that change it and the
@@ -25,6 +25,11 @@ export interface GameOptions {
 	lineOfSight: boolean;
 	/** "Allow founding cities": settlers exist and can found cities. */
 	allowFounding: boolean;
+	/**
+	 * "Tribe starting techs": each civ starts with its own technology, as in
+	 * Polytopia. Off, every civ starts with none. (Missing in older saves: on.)
+	 */
+	tribeTechs?: boolean;
 	victories: Record<VictoryType, boolean>;
 	/** Score victory is decided after this many turns. */
 	turnLimit: number;
@@ -271,7 +276,9 @@ export type Command =
 	| { type: "respond"; proposal: number; accept: boolean }
 	| { type: "denounce"; target: number }
 	| { type: "sanction"; target: number }
-	/** End open borders with a civ (both ways): your units in its land are lost; its units in yours may stay. */
+	/** End an agreement with a civ early (see diplomacy.endTreatyCommand). */
+	| { type: "endTreaty"; target: number; kind: EndableTreaty }
+	/** Older name for ending open borders, still read from older command streams. */
 	| { type: "closeBorders"; target: number }
 	| { type: "ambition"; ambition: AmbitionId }
 	/** Online: a person took (human) or gave up a civ's seat. Only the server issues it. */
@@ -316,7 +323,8 @@ export type SimEvent =
 	| { type: "wonder"; player: number; building: BuildingId; city: number; lost: number[] }
 	| { type: "feat"; player: number; building: BuildingId }
 	| { type: "milestone"; player: number; ambition: AmbitionId; index: number; first: boolean; legacy: boolean }
-	| { type: "diplomacyAction"; kind: "denounce" | "sanction" | "closeBorders"; from: number; to: number; lost?: number }
+	| { type: "diplomacyAction"; kind: "denounce" | "sanction"; from: number; to: number }
+	| { type: "treatyEnded"; kind: EndableTreaty; from: number; to: number; lost: number }
 	| { type: "eliminated"; player: number }
 	| { type: "report"; player: number; lines: string[] }
 	| { type: "gameOver"; winner: Winner };

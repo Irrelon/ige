@@ -1,6 +1,6 @@
 import type { FogMode } from "../fog";
 import { hashString } from "../noise";
-import { CIV_IDS, CIVS, type CivId } from "../sim/rules";
+import { CIV_IDS, CIVS, type CivId, TECHS } from "../sim/rules";
 import { defaultOptions } from "../sim/sim";
 import type { Difficulty, GameOptions, VictoryType } from "../sim/types";
 import type { TerrainStyle } from "../surface";
@@ -59,6 +59,7 @@ export function optionsFromUrl (): { options: GameOptions; style: TerrainStyle; 
 		fog: fog === "polytopia" || fog === "off" ? fog : "civ",
 		lineOfSight: q.get("los") !== "0",
 		allowFounding: q.get("founding") !== "0",
+		tribeTechs: q.get("tribetech") !== "0",
 		difficulty: (["easy", "normal", "hard"].includes(q.get("difficulty") ?? "") ? q.get("difficulty") : "normal") as Difficulty,
 		turnLimit: int("turns", 60, 10, 500)
 	});
@@ -76,7 +77,7 @@ export function showSetup (hasSave: boolean, onlineAvailable: boolean): Promise<
 	const { options: start, style, size } = optionsFromUrl();
 	const el = document.getElementById("setup") as HTMLDivElement;
 	const sizeOptions = Object.entries(MAP_PRESETS).map(([k, p]) => `<option value="${k}" ${k === size ? "selected" : ""}>${p.label}</option>`).join("");
-	const civOptions = `<option value="">Random</option>` + CIV_IDS.map((c) => `<option value="${c}" ${start.civs?.[0] === c ? "selected" : ""}>${CIVS[c].name}: ${CIVS[c].perk}</option>`).join("");
+	const civOptions = `<option value="">Random</option>` + CIV_IDS.map((c) => `<option value="${c}" ${start.civs?.[0] === c ? "selected" : ""}>${CIVS[c].name}: starts with ${TECHS[CIVS[c].startTech].name}; ${CIVS[c].perk}</option>`).join("");
 	const victories = (Object.keys(VICTORY_LABELS) as VictoryType[]).map((v) => `<label class="check"><input type="checkbox" name="v_${v}" checked> ${VICTORY_LABELS[v]}</label>`).join("");
 
 	el.innerHTML = `<div class="setup-box">
@@ -100,6 +101,7 @@ export function showSetup (hasSave: boolean, onlineAvailable: boolean): Promise<
 			<div class="checks">
 				<label class="check"><input type="checkbox" name="los" ${start.lineOfSight ? "checked" : ""}> Line of sight (hills see further; mountains and forests block)</label>
 				<label class="check"><input type="checkbox" name="founding" ${start.allowFounding ? "checked" : ""}> Allow founding cities (settlers)</label>
+				<label class="check"><input type="checkbox" name="tribetech" ${start.tribeTechs !== false ? "checked" : ""}> Tribe starting techs (each civ begins with its own technology; off: every civ starts with none)</label>
 			</div>
 			<h4>Victory conditions</h4>
 			<div class="checks">${victories}</div>
@@ -138,6 +140,7 @@ export function showSetup (hasSave: boolean, onlineAvailable: boolean): Promise<
 			fog: String(f.get("fog")) as FogMode,
 			lineOfSight: f.get("los") === "on",
 			allowFounding: f.get("founding") === "on",
+			tribeTechs: f.get("tribetech") === "on",
 			difficulty: String(f.get("difficulty")) as Difficulty,
 			turnLimit: Number(f.get("turns")) || 60,
 			victories: wins

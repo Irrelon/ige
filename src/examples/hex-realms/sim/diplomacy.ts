@@ -2,7 +2,7 @@ import { hasLegacy, hasWonder, voteBonus, wondersOf } from "./effects";
 import { networkNodes, search } from "./network";
 import { fail, ok } from "./result";
 import {
-	AGENDA_IDS, type AgendaId, CASUS_BELLI, CLOSE_BORDERS_MOOD, DENOUNCE_COST, EXCHANGE_COST, EXCHANGE_TURNS, type Good, GOOD_INFO, GOODS, type Goods,
+	AGENDA_IDS, type AgendaId, CASUS_BELLI, COUNCIL_BACKING_MOOD, DENOUNCE_COST, END_ALLIANCE_GRIEVANCE, END_TREATY_MOOD, END_TRUCE_TURNS, type EndableTreaty, EXCHANGE_COST, EXCHANGE_TURNS, type Good, GOOD_INFO, GOODS, type Goods,
 	researchAgreementCost, RESEARCH_TURNS, ROUTE_TURNS, SANCTION_COST, SANCTION_SHARE, SANCTION_TURNS, type TechId, TECH_IDS, TECHS,
 	TRUCE_TURNS, UNIT_TYPES
 } from "./rules";
@@ -532,37 +532,65 @@ export function denounceCommand (sim: Sim, from: number, to: number): CommandRes
 	return ok();
 }
 
-/** Why `from` can't close its borders to `to`, or null. */
-export function closeBordersProblem (sim: Sim, from: number, to: number): string | null {
+/** Why `from` can't end this agreement with `to` early, or null. */
+export function endTreatyProblem (sim: Sim, from: number, to: number, kind: EndableTreaty): string | null {
 	const target = sim.state.players[to];
 	if (!target || !target.alive || to === from) return "Unknown civ";
-	return sim.state.diplomacy.openBorders[ix(sim, from, to)] ? null : "Borders aren't open";
+	const d = sim.state.diplomacy;
+	switch (kind) {
+		case "openBorders": return d.openBorders[ix(sim, from, to)] ? null : "Borders aren't open";
+		case "trade": return d.trade[ix(sim, from, to)] ? null : "No trade agreement";
+		case "route": return treatyBetween(sim, "route", from, to) ? null : "No trade routes";
+		case "pact": return hasPact(sim, from, to) ? null : "No defensive pact";
+		case "alliance": return sim.relation(from, to) === ALLIANCE ? null : "Not allied";
+	}
 }
 
 /**
- * End open borders early (they otherwise last until a war). It's within a
- * civ's rights, so it costs nothing and gives no grounds for war, but the
- * other civ takes it as a snub. As when breaking a treaty in Polytopia, the
- * closer's own units in the other's land are lost; the other civ's units
- * already in the closer's land stay and may go on moving about inside it,
- * but no more may come in without a war.
+ * End an agreement early. It's within a civ's rights, so it costs nothing,
+ * but the other civ resents it: a snub for open borders, trade agreements
+ * and trade routes, worse for a pact, and an alliance also leaves a
+ * grievance. Ending a pact or an alliance starts a short truce, so neither
+ * can be dropped just before an attack to dodge the betrayal penalty.
+ * Where the other civ's land closes to the ender's units (open borders, or
+ * an alliance without them), those units are lost, as when breaking a
+ * treaty in Polytopia; the other civ's units already in the ender's land
+ * stay and may go on moving about inside it, but no more may come in.
  */
-export function closeBordersCommand (sim: Sim, from: number, to: number): CommandResult {
-	const problem = closeBordersProblem(sim, from, to);
+export function endTreatyCommand (sim: Sim, from: number, to: number, kind: EndableTreaty): CommandResult {
+	const problem = endTreatyProblem(sim, from, to, kind);
 	if (problem) return fail(problem);
 	const d = sim.state.diplomacy;
-	const lost = strandedUnits(sim, from, to);
-	d.openBorders[ix(sim, from, to)] = d.openBorders[ix(sim, to, from)] = 0;
-	adjustAttitude(sim, to, from, -CLOSE_BORDERS_MOOD);
+	const lost = strandedUnits(sim, from, to, kind);
+	const both = (array: number[], value: number) => {
+		array[ix(sim, from, to)] = value;
+		array[ix(sim, to, from)] = value;
+	};
+	const truce = () => both(d.truce, Math.max(d.truce[ix(sim, from, to)], sim.state.turn + END_TRUCE_TURNS));
+	switch (kind) {
+		case "openBorders": both(d.openBorders, 0); break;
+		case "trade": both(d.trade, 0); break;
+		case "route": d.treaties = d.treaties.filter((t) => !(t.kind === "route" && ((t.a === from && t.b === to) || (t.a === to && t.b === from)))); break;
+		case "pact": both(d.pact, 0); truce(); break;
+		case "alliance":
+			setRelation(sim, from, to, PEACE);
+			truce();
+			addGrievance(sim, to, from, END_ALLIANCE_GRIEVANCE);
+			break;
+	}
+	adjustAttitude(sim, to, from, -END_TREATY_MOOD[kind]);
 	for (const unit of lost) sim.removeUnit(unit, "killed");
-	sim.emit({ type: "diplomacyAction", kind: "closeBorders", from, to, lost: lost.length });
+	sim.emit({ type: "treatyEnded", kind, from, to, lost: lost.length });
 	sim.emit({ type: "relation", a: from, b: to, relation: sim.relation(from, to) });
 	return ok();
 }
 
-/** `from`'s units in `to`'s land: the ones lost if `from` closed its borders to `to`. */
-export function strandedUnits (sim: Sim, from: number, to: number): UnitState[] {
-	if (sim.atWar(from, to) || sim.allied(from, to)) return [];
+/** `from`'s units in `to`'s land that would be lost if `from` ended this agreement (only open borders and alliances let units in). */
+export function strandedUnits (sim: Sim, from: number, to: number, kind: EndableTreaty = "openBorders"): UnitState[] {
+	if (kind !== "openBorders" && kind !== "alliance") return [];
+	if (sim.atWar(from, to)) return [];
+	// Still let in by the other agreement?
+	if (kind === "openBorders" ? sim.allied(from, to) : sim.state.diplomacy.openBorders[ix(sim, from, to)]) return [];
 	return sim.unitsOf(from).filter((u) => sim.map.owner[u.tile] === to);
 }
 
@@ -903,7 +931,7 @@ export function councilVote (sim: Sim): void {
 			let best = own[p];
 			for (let c = 0; c < n; c++) {
 				if (c === p || !sim.state.players[c].alive) continue;
-				const friend = sim.allied(p, c) || attitude(sim, p, c) >= 5;
+				const friend = sim.allied(p, c) || attitude(sim, p, c) >= COUNCIL_BACKING_MOOD;
 				if (friend && own[c] > best) {
 					best = own[c];
 					choice = c;

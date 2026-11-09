@@ -1153,6 +1153,7 @@ function urlForOptions (o: GameOptions, style: TerrainStyle): string {
 	q.set("fog", o.fog);
 	q.set("los", o.lineOfSight ? "1" : "0");
 	q.set("founding", o.allowFounding ? "1" : "0");
+	q.set("tribetech", o.tribeTechs === false ? "0" : "1");
 	q.set("turns", String(o.turnLimit));
 	q.set("v", Object.entries(o.victories).filter(([, v]) => v).map(([k]) => k).join(","));
 	q.set("style", style);
