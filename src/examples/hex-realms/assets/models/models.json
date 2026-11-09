@@ -227,6 +227,23 @@
 		"skinned": false,
 		"bytes": 740020
 	},
+	"hallOfHeroes": {
+		"file": "hallOfHeroes.glb",
+		"min": [
+			-0.4006,
+			-0.357,
+			-0.4894
+		],
+		"max": [
+			0.4125,
+			0.3718,
+			0.2757
+		],
+		"triangles": 9540,
+		"animations": [],
+		"skinned": false,
+		"bytes": 692800
+	},
 	"hangingGardens": {
 		"file": "hangingGardens.glb",
 		"min": [
