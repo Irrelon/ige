@@ -1,5 +1,9 @@
 import type { IgeGeometryData3d } from "@/types/IgeGeometryData3d";
 
+/** Counts default ids so two shapes made in the same millisecond don't share a cached GPU mesh. */
+let _primitiveIdCounter = 0;
+const primitiveId = (prefix: string) => `${prefix}_${++_primitiveIdCounter}_${Date.now().toString(36)}`;
+
 /**
  * Utility class for generating primitive 3D geometries.
  */
@@ -102,7 +106,7 @@ export class IgePrimitiveGeometry {
 		]);
 
 		return {
-			id: id || `cube_${Date.now()}`,
+			id: id || primitiveId("cube"),
 			type: "primitive",
 			vertices,
 			normals,
@@ -181,7 +185,7 @@ export class IgePrimitiveGeometry {
 		}
 
 		return {
-			id: id || `sphere_${Date.now()}`,
+			id: id || primitiveId("sphere"),
 			type: "primitive",
 			vertices: new Float32Array(vertices),
 			normals: new Float32Array(normals),
@@ -239,7 +243,7 @@ export class IgePrimitiveGeometry {
 		]);
 
 		return {
-			id: id || `plane_${Date.now()}`,
+			id: id || primitiveId("plane"),
 			type: "primitive",
 			vertices,
 			normals,

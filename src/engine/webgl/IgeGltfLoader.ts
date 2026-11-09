@@ -17,6 +17,20 @@ import type {
 } from "@/types/IgeAnimationClipData";
 
 /**
+ * Counts ids handed out by this loader. Geometry is cached on the GPU by
+ * its id, so every primitive needs its own: a timestamp alone repeats when
+ * several files finish loading in the same millisecond, and the second
+ * model would then be drawn with the first one's mesh.
+ */
+let _gltfIdCounter = 0;
+
+/** A unique id for a loaded primitive, skeleton or clip. */
+function gltfUniqueId (prefix: string): string {
+	_gltfIdCounter++;
+	return `${prefix}_${_gltfIdCounter}_${Date.now().toString(36)}`;
+}
+
+/**
  * GLTF Accessor component types.
  */
 enum GltfComponentType {
@@ -585,7 +599,7 @@ export class IgeGltfLoader extends IgeBaseClass {
 		skins?: IgeGltfSkin[]
 	): IgeGeometryData3d {
 		const geometry: IgeGeometryData3d = {
-			id: `gltf_primitive_${Date.now()}_${primitiveIndex}`,
+			id: gltfUniqueId(`gltf_primitive_${primitiveIndex}`),
 			type: "gltf"
 		};
 
@@ -925,7 +939,7 @@ export class IgeGltfLoader extends IgeBaseClass {
 				.map(bone => bone.index);
 
 			const skeleton: IgeSkeletonData = {
-				id: `skeleton_${skinIndex}_${Date.now()}`,
+				id: gltfUniqueId(`skeleton_${skinIndex}`),
 				name: skinDef.name || `skeleton_${skinIndex}`,
 				bones,
 				rootBoneIndices,
@@ -1118,7 +1132,7 @@ export class IgeGltfLoader extends IgeBaseClass {
 			}
 
 			animations.push({
-				id: `animation_${animIndex}_${Date.now()}`,
+				id: gltfUniqueId(`animation_${animIndex}`),
 				name: animDef.name || `animation_${animIndex}`,
 				duration,
 				samplers,

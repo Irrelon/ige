@@ -49,3 +49,31 @@ describe("IgeGltfLoader accessors", () => {
 		expect(Array.from(loader.read(gltf, 2, [buffer.buffer]))).toEqual([255, 128, 0, 255]);
 	});
 });
+
+/** Exposes the primitive parser. */
+class PrimitiveLoader extends IgeGltfLoader {
+	primitive (gltf: any, primitive: any, buffers: ArrayBuffer[], index: number) {
+		return this._parsePrimitive(gltf, primitive, buffers, index);
+	}
+}
+
+describe("IgeGltfLoader ids", () => {
+	it("gives every primitive its own id, even from files parsed in the same millisecond", () => {
+		// One triangle; two "files" with the same primitive index, parsed back to back
+		const positions = new Float32Array([0, 0, 0, 1, 0, 0, 0, 1, 0]);
+		const gltf = {
+			bufferViews: [{ buffer: 0, byteOffset: 0, byteLength: positions.byteLength }],
+			accessors: [{ bufferView: 0, componentType: 5126, count: 3, type: "VEC3" }]
+		};
+		const loader = new PrimitiveLoader();
+		const realNow = Date.now;
+		Date.now = () => 1000; // the same millisecond for both
+		try {
+			const a = loader.primitive(gltf, { attributes: { POSITION: 0 } }, [positions.buffer], 0);
+			const b = new PrimitiveLoader().primitive(gltf, { attributes: { POSITION: 0 } }, [positions.buffer], 0);
+			expect(a.id).not.toEqual(b.id);
+		} finally {
+			Date.now = realNow;
+		}
+	});
+});
