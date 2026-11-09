@@ -42,6 +42,7 @@ import type { IgeRaycastHit, IgeRaycastOptions } from "@/engine/webgl/IgeRaycast
 import { raycastEntities } from "@/engine/webgl/IgeRaycast";
 import { takeGeneratedLods } from "@/engine/webgl/IgeModelParts";
 import type { IgeHeightfieldRayOptions } from "@/engine/webgl/IgeHeightfieldRay";
+import { IGE_POST_PROCESS_DEFAULTS, IgeWebGlPostProcess, type IgePostProcessSettings } from "@/engine/webgl/IgeWebGlPostProcess";
 import { intersectHeightfield } from "@/engine/webgl/IgeHeightfieldRay";
 import type { IgeMaterialData } from "@/types/IgeMaterialData";
 import type { IgeSkeleton } from "@/types/IgeSkeletonData";
@@ -363,6 +364,9 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 	protected _instanceBuffer?: IgeWebGlInstanceBuffer;
 	protected _bonePalette?: IgeWebGlBonePalette;
 
+	/** Full-screen post-processing (WebGL 2), created when first enabled. */
+	protected _postProcess: IgeWebGlPostProcess | null = null;
+	protected _postSettings: IgePostProcessSettings = { ...IGE_POST_PROCESS_DEFAULTS };
 	protected _fog: IgeWebGlFogSettings = {
 		mode: "none",
 		color: { r: 0, g: 0, b: 0 },
@@ -677,6 +681,7 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 	protected _handleContextLost = (event: Event): void => {
 		event.preventDefault();
 		this._contextLost = true;
+		this._postProcess?.contextLost();
 		this.log("WebGL context lost!", "warning");
 	};
 
@@ -724,6 +729,36 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 			color: { ...this._fog.color, ...(settings.color || {}) }
 		};
 		return this;
+	}
+
+	/**
+	 * Gets / sets full-screen post-processing: bloom, exposure and tone
+	 * mapping, contrast, saturation, colour temperature and a vignette. The
+	 * frame is drawn offscreen (multisampled, with depth and stencil) and
+	 * composited to the canvas once all viewports have drawn. WebGL 2 only;
+	 * off by default. See IgeWebGlPostProcess for every setting.
+	 * @example #A warm, slightly filmic look with a soft glow
+	 *     renderer.postProcess({ enabled: true, toneMapping: "aces", exposure: 1.3, bloom: 0.4, vignette: 0.3, temperature: 0.2 });
+	 * @example #Turn it off
+	 *     renderer.postProcess({ enabled: false });
+	 */
+	postProcess(): IgePostProcessSettings;
+	postProcess(settings: Partial<IgePostProcessSettings>): this;
+	postProcess(settings?: Partial<IgePostProcessSettings>): IgePostProcessSettings | this {
+		if (settings === undefined) return { ...this._postSettings };
+		this._postSettings = { ...this._postSettings, ...settings };
+		if (this._postProcess) this._postProcess.settings = this._postSettings;
+		return this;
+	}
+
+	/** The post-processor for this frame, created on first use (null on WebGL 1 or when off). */
+	protected _postProcessor(): IgeWebGlPostProcess | null {
+		if (!this._postSettings.enabled || this._webglVersion !== 2 || !this._canvasContext) return null;
+		if (!this._postProcess) {
+			this._postProcess = new IgeWebGlPostProcess(this._canvasContext as WebGL2RenderingContext, this._postSettings);
+		}
+		this._postProcess.settings = this._postSettings;
+		return this._postProcess;
 	}
 
 	/**
@@ -1525,10 +1560,12 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 		this._directionalPassesThisFrame = 0;
 		stats.viewports = viewports ? viewports.length : 0;
 
-		// Clear the entire canvas
+		// Clear the entire canvas (or the offscreen target, when post-processing)
 		const cc = this._clearColor;
 		this._stateManager.reset();
 		this._stateManager.setScissorTest(false);
+		const post = this._postProcessor();
+		const postActive = !!post && post.begin(this._canvasElement!.width, this._canvasElement!.height);
 		gl.viewport(0, 0, this._canvasElement!.width, this._canvasElement!.height);
 		gl.clearColor(cc.r, cc.g, cc.b, cc.a);
 		gl.depthMask(true);
@@ -1543,6 +1580,10 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 		gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
 
 		if (!viewports || viewports.length === 0) {
+			if (postActive) {
+				post!.end();
+				this._stateManager.reset();
+			}
 			return true;
 		}
 
@@ -1596,6 +1637,12 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 
 		for (let i = 0; i < viewports.length; i++) {
 			this._renderViewport(viewports[i]);
+		}
+
+		// Post-processing: bloom, tone mapping and grading onto the canvas
+		if (postActive) {
+			post!.end();
+			this._stateManager.reset();
 		}
 
 		// Lines queued with debugLine() last one rendered frame
@@ -2187,6 +2234,8 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 		// ------------------------------------------------------------
 		// Main pass
 		// ------------------------------------------------------------
+		// (Shadow passes leave the canvas bound: draw into the post-processing target if there is one)
+		this._postProcess?.bindTarget();
 		this._stateManager.setViewport(vpX, vpY, vpWidth, vpHeight);
 
 		// Always scissor the clear so split-screen viewports don't wipe each
@@ -3629,6 +3678,8 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 		if (this._defaultParticleTexture) this._canvasContext?.deleteTexture(this._defaultParticleTexture);
 		this._instanceBuffer?.destroy();
 		this._bonePalette?.destroy();
+		this._postProcess?.dispose();
+		this._postProcess = null;
 		this._geometryManager?.cleanup();
 		this._shaderManager?.deleteAllPrograms();
 		this._textureManager?.clearState();

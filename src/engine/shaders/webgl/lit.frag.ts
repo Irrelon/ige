@@ -72,8 +72,9 @@ uniform vec3 u_cameraPosition;
 uniform sampler2D u_aoTexture;            // Ambient occlusion texture
 uniform float u_ambientOcclusion;         // AO value
 
-// Ambient light
+// Ambient light (hemisphere: u_ambientLightColor from above, u_ambientGroundColor from below)
 uniform vec3 u_ambientLightColor;
+uniform vec3 u_ambientGroundColor;
 uniform float u_ambientLightIntensity;
 
 // Directional light
@@ -502,13 +503,16 @@ void main() {
 	// Initialize final color
 	vec3 finalColor = vec3(0.0);
 
+	// Hemisphere ambient: the sky colour from above, the ground colour from below
+	vec3 ambientLight = mix(u_ambientGroundColor, u_ambientLightColor, clamp(N.y * 0.5 + 0.5, 0.0, 1.0)) * u_ambientLightIntensity;
+
 	if (u_usePBR == 0) {
 		// ================================================================
 		// SIMPLE LIGHTING MODE (for 2D textures and smart textures)
 		// ================================================================
 
 		// Ambient light
-		finalColor += u_ambientLightColor * u_ambientLightIntensity * albedo;
+		finalColor += ambientLight * albedo;
 
 		// Directional light with shadows
 		if (u_hasDirectionalLight == 1) {
@@ -570,7 +574,7 @@ void main() {
 		vec3 F0 = mix(F0_DIELECTRIC, albedo, metallic);
 		vec3 kS = fresnelSchlick(max(dot(N, V), 0.0), F0);
 		vec3 kD = (1.0 - kS) * (1.0 - metallic);
-		vec3 ambient = (kD * albedo + kS * 0.1) * u_ambientLightColor * u_ambientLightIntensity * ao;
+		vec3 ambient = (kD * albedo + kS * 0.1) * ambientLight * ao;
 		finalColor += ambient;
 
 		// Directional light with shadows

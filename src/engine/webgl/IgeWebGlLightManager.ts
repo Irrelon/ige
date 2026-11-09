@@ -43,6 +43,9 @@ export class IgeWebGlLightManager extends IgeBaseClass {
 		intensity: 1.0
 	};
 
+	// Combined ground colour for hemisphere ambient light (same as the sky when no light sets one)
+	protected _combinedGround: { r: number; g: number; b: number } = { r: 0.1, g: 0.1, b: 0.1 };
+
 	/**
 	 * Add a light to be tracked.
 	 */
@@ -110,6 +113,7 @@ export class IgeWebGlLightManager extends IgeBaseClass {
 	 */
 	protected _updateCombinedAmbient(): void {
 		let r = 0, g = 0, b = 0;
+		let gr = 0, gg = 0, gb = 0;
 
 		for (const light of this._ambientLights) {
 			const data = light.getLightData();
@@ -117,12 +121,18 @@ export class IgeWebGlLightManager extends IgeBaseClass {
 			r += data.color.r * intensity;
 			g += data.color.g * intensity;
 			b += data.color.b * intensity;
+			// Hemisphere lights add their ground colour below; flat ones light both halves alike
+			const ground = (light as IgeAmbientLight).groundColor?.() ?? data.color;
+			gr += ground.r * intensity;
+			gg += ground.g * intensity;
+			gb += ground.b * intensity;
 		}
 
 		// If no ambient lights, no ambient contribution (fully dark)
 		// Use setDefaultAmbient() to override this if desired
 
 		this._combinedAmbient = { r, g, b, intensity: 1.0 };
+		this._combinedGround = { r: gr, g: gg, b: gb };
 	}
 
 	/**
@@ -131,6 +141,7 @@ export class IgeWebGlLightManager extends IgeBaseClass {
 	setDefaultAmbient(r: number, g: number, b: number): void {
 		if (this._ambientLights.length === 0) {
 			this._combinedAmbient = { r, g, b, intensity: 1.0 };
+			this._combinedGround = { r, g, b };
 		}
 	}
 
@@ -189,6 +200,7 @@ export class IgeWebGlLightManager extends IgeBaseClass {
 			this._combinedAmbient.b
 		);
 		program.setUniform1f("u_ambientLightIntensity", this._combinedAmbient.intensity);
+		program.setUniform3f("u_ambientGroundColor", this._combinedGround.r, this._combinedGround.g, this._combinedGround.b);
 
 		// Directional light (use first one if available)
 		if (this._directionalLights.length > 0) {
@@ -266,6 +278,14 @@ export class IgeWebGlLightManager extends IgeBaseClass {
 			this._directionalLights.length > 0 ||
 			this._pointLights.length > 0 ||
 			this._spotLights.length > 0;
+	}
+
+	/**
+	 * Recombine the ambient lights after changing their colour, intensity
+	 * or ground colour (they are combined when added).
+	 */
+	refresh(): void {
+		this._updateCombinedAmbient();
 	}
 
 	/**

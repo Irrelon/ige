@@ -131,10 +131,31 @@ export class IgeWebGlLight extends IgeEntity {
 export class IgeAmbientLight extends IgeWebGlLight {
 	classId = "IgeAmbientLight";
 
+	/** Hemisphere lighting: the colour that lights downward-facing surfaces (null = same as the sky). */
+	protected _groundColor: { r: number; g: number; b: number } | null = null;
+
 	constructor() {
 		super();
 		this._lightType = IgeLightType.Ambient;
 		this._intensity = 0.2; // Default low intensity for ambient
+	}
+
+	/**
+	 * Gets / sets a ground colour for hemisphere lighting: surfaces facing up
+	 * get the light's colour (the sky), surfaces facing down this colour, and
+	 * everything between a blend by its normal. Pass null to go back to flat
+	 * ambient light. Changing it needs `lightManager.refresh()` (or re-adding
+	 * the light).
+	 *
+	 * @example #Cool sky above, warm bounce light from the ground
+	 *     ambient.lightColor(0.75, 0.82, 1).groundColor(0.45, 0.38, 0.3);
+	 */
+	groundColor(): { r: number; g: number; b: number } | null;
+	groundColor(r: number | null, g?: number, b?: number): this;
+	groundColor(r?: number | null, g?: number, b?: number): { r: number; g: number; b: number } | null | this {
+		if (r === undefined) return this._groundColor;
+		this._groundColor = r === null ? null : { r, g: g ?? r, b: b ?? r };
+		return this;
 	}
 }
 
