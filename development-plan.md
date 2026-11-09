@@ -114,11 +114,12 @@ On the development machine (Apple silicon, Chrome):
 
 ### Needs your input
 
-- **Game assets.** Zombie and player models with walk, run, attack, hit and death clips, to be generated with an
-  online service. The engine side is ready: clips in separate files load through `model(..., { animations })`, dense
-  meshes get `lod` levels, and weapons attach with `attachToBone()`. When the assets arrive, check that the rig and
-  clips load and play, and whether an A-pose model needs clips authored for a T-pose rig (posture differences aren't
-  corrected).
+- **Game assets.** Being generated with AssetFurnace on the M5 Mac (requested 2026-11-09, queued behind any Hex
+  Realms requests and taking turns with them): three zombies, four survivors, five weapons and ten props, delivered
+  to a LAN folder of their own. The engine and the demo are ready for them, verified with Hex Realms' generated
+  characters standing in: `src/examples/zombie-game/tools/import_model.py` merges each character's move files into
+  one GLB and records it in `assets/characters.json`, which the demo loads in place of CesiumMan (`?standin=1` keeps
+  the stand-in). Still to do as files arrive: import them, then give weapons and props their grips and placements.
 - **Gamepads.** Test with real controllers (simulated ones pass).
 
 ### Planned, waiting
@@ -142,6 +143,12 @@ On the development machine (Apple silicon, Chrome):
 ### Engine work remaining
 
 None outstanding; everything above is done. Completed on 2026-11-09:
+
+- Generated, auto-rigged characters: `humanoidBones()` finds a rig's hips, spine, head, arms, hands and legs from its
+  shape; ragdolls default to humanoid parts from it; `modelBounds()` sizes models; `model(..., { inPlace })` plays
+  travelling walk and run cycles on the spot; `attachAt()` places a held item in model space (rest or current pose);
+  `EXT_texture_webp` textures load. The zombie demo's characters are data (`characters.ts`) and sit under a root
+  entity that the game moves, so any model works.
 
 - Physics: heightfield and compound shapes, impact events, character contact rules (`pushable: false`) and named
   collision layers.

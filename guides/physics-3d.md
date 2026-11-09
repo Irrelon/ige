@@ -124,8 +124,7 @@ all take a `layer`.
 // When a character dies: its capsule gives way to a ragdoll thrown along the blow
 body.enabled(false);
 const ragdoll = physics.createRagdoll(zombie, {
-	parts: RAGDOLL_PARTS,
-	velocity: { x: dirX * 380, y: 160, z: dirZ * 380 }
+	velocity: { x: dirX * 380, y: 160, z: dirZ * 380 } // parts: found from the rig, see below
 });
 
 // When it gets up again
@@ -135,7 +134,8 @@ zombie.skeletalAnimation()?.play("Walk");
 
 A ragdoll is a capsule body per part along the skeleton, starting from the current pose, joined with swing-twist
 joints (`swingLimit`, `twistLimit` in degrees). After every step it poses the skeleton, so the skinned mesh falls and
-tumbles; the entity's animation is stopped while the ragdoll lasts. Parts name the bones they run between:
+tumbles; the entity's animation is stopped while the ragdoll lasts. Parts name the bones they run between, when you
+choose them yourself:
 
 ```typescript
 const RAGDOLL_PARTS = [
@@ -147,9 +147,11 @@ const RAGDOLL_PARTS = [
 ];
 ```
 
-Bones without a part (hands, feet, the neck) ride along with the part above them. Without `parts`,
-`autoRagdollParts(entity)` picks one per bone that has children, following the spine; hand-picked parts look better
-(a head, sensible radii). The zombie demo's `RAGDOLL_PARTS` is a worked example for CesiumMan.
+Bones without a part (hands, feet, the neck) ride along with the part above them. Without `parts`, humanoids get
+`humanoidRagdollParts(entity)`: two torso parts, the head, and the upper and lower arms and legs, found from the
+rig's shape (`humanoidBones()`, so auto-rigged models with numbered bones work), with radii in proportion to the
+character's height. Other rigs fall back to `autoRagdollParts(entity)`, one part per bone that has children,
+following the spine. Pass `parts` to choose them by hand.
 
 ## Trigger volumes
 

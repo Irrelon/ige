@@ -92,6 +92,8 @@ The engine has extensive 3D infrastructure:
     -   **3D Physics** (`src/engine/physics/IgePhysics3d`, `IgeRagdoll3d`, `IgePhysicsCharacter3d`) - Jolt Physics (WASM, optional peer dependency `jolt-physics`, loaded on demand, threaded when cross-origin isolated): rigid bodies on entities in IGE units (simulated in metres) with box, sphere, capsule, mesh, heightfield, convex and compound shapes, named collision layers, impact events, player characters (CharacterVirtual, optionally unpushable), trigger sensors, raycasts, ragdolls driving a skeleton, interpolation between fixed steps. See `guides/physics-3d.md`
     -   **Raycasting** (`IgeRaycast`) - exact ray/triangle tests against entities' meshes, skinned characters in their current pose (`renderer.raycast()`, `raycastEntities()`, `pointerPicking("triangles")`)
     -   **Animation Retargeting** (`IgeAnimationRetarget`) - plays clips from separate animation files on a model's skeleton, matched by bone name
+    -   **In-place clips** (`IgeAnimationInPlace`) - `model(m, { inPlace: ["walk", "run"] })` takes the forward drift out of travelling cycles
+    -   **Humanoid bones** (`IgeHumanoidBones`) - `humanoidBones(skeleton)` finds hips, spine, head, arms, hands and legs from a rig's shape (auto-rigged models with numbered bones), used by `humanoidRagdollParts()` (the ragdoll default) and for `attachToBone()`; `modelBounds(model)` sizes generated models; `entity.attachAt(matrix, { pose })` places an attached item in model space
     -   **Mesh Simplifier** (`IgeMeshSimplifier`) - quadric edge-collapse simplification that keeps UVs, normals and skin weights; generates level-of-detail meshes
 -   Frame pipeline: renderables are collected once per frame (transforms, skin matrices, world-space bounds); each viewport then culls, renders its directional shadow map (centred on its camera target, or shared when split-screen views are close) and draws opaque batches front to back, then transparent items and particles. Point light shadows render once per frame.
 -   Level of detail: each pass (viewport, directional shadow, point shadow) picks an entity's LOD level from its projected size, so split-screen views choose independently.
@@ -177,6 +179,8 @@ zombie.playAnimation("Attack", { loop: false, crossFadeDuration: 0.1 });
 | `IgeDecalSystem3d.ts` | Decals entity (flat floor decals and projected decals) |
 | `IgeDecalProjector.ts` | Clips mesh triangles to a decal box for projected decals |
 | `IgeRaycast.ts` | Ray/triangle tests against entities' meshes (including skinned, posed on the CPU) |
+| `IgeHumanoidBones.ts` | Finds a humanoid rig's main bones from its shape (generated, auto-rigged characters) |
+| `IgeAnimationInPlace.ts` | Takes the horizontal root motion out of a clip (walk and run cycles on the spot) |
 | `IgeTriangleBvh.ts` | Cached triangle BVH for raycasts and decal projection on large meshes |
 | `IgeHeightfieldRay.ts` | Ray/heightfield intersection behind `screenToHeightfield()` |
 | `IgeViewportOverlay.ts` | DOM HUD elements over the 3D views, clipped per viewport |

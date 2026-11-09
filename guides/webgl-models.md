@@ -62,6 +62,9 @@ zombie.skeletalAnimation()?.on("complete", (clip) => { /* back to walking */ });
   (30 per second). Give hero characters full-rate animation with `entity.skeletalAnimation().poseCache(false)`.
 - Characters that aren't drawn in any view skip pose sampling. Turn this off with `cullOffscreen(false)` when game
   logic reads bone positions while the character is off screen.
+- Walk and run cycles that travel forward (the hips move ahead and snap back when the clip loops) play on the spot
+  with `model(model, { inPlace: ["walk", "run"] })` (or `true` for every clip): the root bone keeps its bob and sway
+  and loses its drift, for games that move characters themselves. `clipInPlace(clip, skeleton)` does it by hand.
 
 ### Animations in separate files
 
@@ -121,6 +124,43 @@ const sword = new IgeEntity()
 
 const hand = hero.bonePosition("RightHand"); // world position, e.g. to spawn an effect
 ```
+
+An offset relative to the bone depends on the rig's bone axes. To place an item by where it should be in the
+character's own model space instead (the fist, and the way the blade points), pass a model-space matrix to
+`attachAt()`; the bone-relative translate, rotation and scale are worked out. `{ pose: "current" }` uses the pose
+the character is animated to now (an idle, say) rather than its rest pose, which suits rigs that rest in a T- or
+A-pose:
+
+```typescript
+sword.mount(hero).attachToBone(bones.right.hand).attachAt(gripMatrix, { pose: "current" });
+```
+
+## Generated and auto-rigged characters
+
+Text- or image-to-3D generators (AssetFurnace, Meshy, Tripo) give each character its own rig, often with numbered
+bones (`bone_0`, `bone_1`, ...) and a varying bone count. The engine works with them by shape rather than by name:
+
+- `humanoidBones(skeleton)` finds the hips, spine, chest, neck, head, shoulders, upper and lower arms, hands, thighs,
+  shins and feet from the rest pose (the head is the highest end bone, the feet the two lowest, the arms the chains
+  that reach furthest from the spine), with left and right as the character's own and its facing from its toes.
+  Use it for `attachToBone()`, `bonePosition()` and ragdolls (see the physics guide).
+- `modelBounds(model)` gives the model-space bounds of a model's rest pose, to scale it to a height and stand it
+  on the ground (generated models are often centred on their middle):
+
+```typescript
+const { min, max } = modelBounds(model);
+const scale = 180 / (max.y - min.y);
+const body = new IgeEntity().model(model, { inPlace: ["walk", "run"] })
+	.scaleTo(scale, scale, scale)
+	.translateTo(0, -min.y * scale, 0) // feet on the floor
+	.mount(character);                 // the game moves, turns and collides the parent
+const bones = humanoidBones(model.skins![0].skeleton)!;
+```
+
+- Textures stored as WebP (`EXT_texture_webp`, as Blender's exporter writes them) load like any other image.
+- Merge per-move files into one model before shipping it, so the mesh and textures aren't downloaded once per
+  move; the zombie demo's `tools/import_model.py` does this for AssetFurnace output (and shrinks the textures, and
+  measures the walk and run speeds from their root motion).
 
 ## Effects
 
