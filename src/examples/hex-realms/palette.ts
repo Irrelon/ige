@@ -42,13 +42,14 @@ const BASE_COLORS = {
 };
 
 /**
- * How explored-but-unseen ("fogged") areas look: mostly desaturated and
- * darker, with a slight warm tint so they sit well next to the parchment.
+ * How explored-but-unseen ("fogged") areas look: half desaturated and
+ * darker, with a cool dusk tint.
  */
 export function fogColor (c: ArrayLike<number>): [number, number, number] {
 	const grey = c[0] * 0.3 + c[1] * 0.59 + c[2] * 0.11;
-	const fade = (v: number, tint: number) => Math.min(255, (grey * 0.6 + v * 0.4) * 0.7 + tint);
-	return [fade(c[0], 22), fade(c[1], 18), fade(c[2], 10)];
+	// Half the colour kept, dimmed, with a cool dusk tint: still readable as land, sea and forest
+	const fade = (v: number, tint: number) => Math.min(255, (grey * 0.5 + v * 0.5) * 0.64 + tint);
+	return [fade(c[0], 6), fade(c[1], 11), fade(c[2], 22)];
 }
 
 function mix (a: number[], b: number[], t: number): number[] {

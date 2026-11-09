@@ -350,8 +350,8 @@ export class WorldView {
 		this.player = player;
 		this.hooks = hooks;
 		const R = layout.size;
-		this.hoverRing = this.overlay(createHexRing("hexRealms_hoverRing", R * 0.97, R * 0.86), { r: 1, g: 1, b: 1 }, 0.55);
-		this.selectRing = this.overlay(createHexRing("hexRealms_selectRing", R * 0.98, R * 0.78), { r: 1, g: 0.85, b: 0.2 }, 0.8);
+		this.hoverRing = this.overlay(createHexRing("hexRealms_hoverRing", R * 0.95, R * 0.89), { r: 1, g: 1, b: 1 }, 0.55);
+		this.selectRing = this.overlay(createHexRing("hexRealms_selectRing", R * 0.96, R * 0.86), { r: 1, g: 0.82, b: 0.3 }, 0.9);
 	}
 
 	get surface () {
@@ -1029,22 +1029,24 @@ export class WorldView {
 	showReach (tiles: number[], path: number[] = []): void {
 		const onPath = new Set(path);
 		while (this.markers.length < tiles.length) {
-			this.markers.push(this.overlay(createHexDisc("hexRealms_marker", this.layout.size * 0.3), { r: 0.85, g: 0.95, b: 1 }, 0.35));
+			this.markers.push(this.overlay(createDisc("hexRealms_marker", this.layout.size * 0.13, 20), { r: 0.92, g: 0.96, b: 1 }, 0.45));
 		}
 		this.markers.forEach((m, i) => {
 			if (i >= tiles.length) {
 				m.hide();
 				return;
 			}
-			const c = onPath.has(tiles[i]) ? { r: 0.4, g: 1, b: 0.45 } : { r: 0.85, g: 0.95, b: 1 };
-			m._materialData = material(c, c, onPath.has(tiles[i]) ? 0.6 : 0.35);
+			const c = onPath.has(tiles[i]) ? { r: 1, g: 0.86, b: 0.35 } : { r: 0.92, g: 0.96, b: 1 };
+			m._materialData = material(c, c, onPath.has(tiles[i]) ? 0.75 : 0.45);
+			const k = onPath.has(tiles[i]) ? 1.35 : 1;
+			m.scaleTo(k, 1, k);
 			this.placeOverlay(m, tiles[i], 1.2);
 		});
 	}
 
 	showTargets (tiles: number[]): void {
 		while (this.targets.length < tiles.length) {
-			this.targets.push(this.overlay(createHexRing("hexRealms_target", this.layout.size * 0.9, this.layout.size * 0.7), { r: 1, g: 0.25, b: 0.2 }, 0.8));
+			this.targets.push(this.overlay(createRing("hexRealms_target", this.layout.size * 0.5, this.layout.size * 0.4, 32), { r: 1, g: 0.28, b: 0.22 }, 0.9));
 		}
 		this.targets.forEach((m, i) => {
 			if (i < tiles.length) this.placeOverlay(m, tiles[i], 2.2);

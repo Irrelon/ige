@@ -9,9 +9,16 @@ export class MeshBuilder {
 	positions = new Float32Array(3 * 8192);
 	normals = new Float32Array(3 * 8192);
 	uvs = new Float32Array(2 * 8192);
+	/** Vertex colours (r, g, b, a); multiplied with the texture colour by the lit shader. */
+	colors = new Float32Array(4 * 8192);
 	indices = new Uint32Array(3 * 8192);
 	vertexCount = 0;
 	indexCount = 0;
+	/** The colour given to vertices added from now on (see tint()). */
+	protected _r = 1;
+	protected _g = 1;
+	protected _b = 1;
+	protected _tinted = false;
 
 	protected _minX = Infinity;
 	protected _minY = Infinity;
@@ -23,13 +30,38 @@ export class MeshBuilder {
 	reset (): void {
 		this.vertexCount = 0;
 		this.indexCount = 0;
+		this._r = this._g = this._b = 1;
+		this._tinted = false;
 		this._minX = this._minY = this._minZ = Infinity;
 		this._maxX = this._maxY = this._maxZ = -Infinity;
+	}
+
+	/** Colour for the vertices that follow (1, 1, 1 = untinted). */
+	tint (r: number, g = r, b = r): this {
+		this._r = r;
+		this._g = g;
+		this._b = b;
+		if (r !== 1 || g !== 1 || b !== 1) this._tinted = true;
+		return this;
+	}
+
+	/** Recolour vertex `i` (after it was added). */
+	setColor (i: number, r: number, g = r, b = r): void {
+		const c = i * 4;
+		this.colors[c] = r;
+		this.colors[c + 1] = g;
+		this.colors[c + 2] = b;
+		if (r !== 1 || g !== 1 || b !== 1) this._tinted = true;
 	}
 
 	vertex (x: number, y: number, z: number, nx: number, ny: number, nz: number, u: number, v: number): number {
 		const n = this.vertexCount;
 		if (n * 3 + 3 > this.positions.length) this._growVertices();
+		const c = n * 4;
+		this.colors[c] = this._r;
+		this.colors[c + 1] = this._g;
+		this.colors[c + 2] = this._b;
+		this.colors[c + 3] = 1;
 
 		const p = n * 3;
 		this.positions[p] = x;
@@ -122,6 +154,7 @@ export class MeshBuilder {
 			vertices: this.positions.slice(0, vc * 3),
 			normals: this.normals.slice(0, vc * 3),
 			uvs: this.uvs.slice(0, vc * 2),
+			...(this._tinted ? { colors: this.colors.slice(0, vc * 4) } : {}),
 			indices,
 			boundingBox: {
 				min: [this._minX, this._minY, this._minZ],
@@ -154,5 +187,6 @@ export class MeshBuilder {
 		this.positions = grow(this.positions);
 		this.normals = grow(this.normals);
 		this.uvs = grow(this.uvs);
+		this.colors = grow(this.colors);
 	}
 }

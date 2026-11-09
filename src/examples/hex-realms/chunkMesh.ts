@@ -95,7 +95,7 @@ const FEATURE_MIX: Partial<Record<Feature, "Forest" | "Jungle" | "Pine">> = {
 function addBevelledTop (
 	b: MeshBuilder, cx: number, cz: number, R: number,
 	top: number, rim: number, inner: number, u: number, uRim: number, v: number
-): void {
+): { inner: number; outer: number } {
 	// The rim slopes outward; tilt its normals to match so it catches light
 	const slope = (top - rim) / (R * (1 - inner));
 	const nLen = Math.sqrt(1 + slope * slope);
@@ -121,7 +121,18 @@ function addBevelledTop (
 		const j = (i + 1) % 6;
 		b.quadFacing(i0 + i, o0 + i, o0 + j, i0 + j, EDGE_X[i] * slope, 1, EDGE_Z[i] * slope);
 	}
+	return { inner: i0, outer: o0 };
 }
+
+/** A small per-tile shift in hue (warmer or cooler), so no two tiles are quite the same colour. */
+function tileTint (map: HexMap, t: number): [number, number, number] {
+	const h = Math.imul(t + 7, 2246822519) ^ map.seed;
+	const a = ((h >>> 8) & 255) / 255 - 0.5;
+	const c = ((h >>> 16) & 255) / 255 - 0.5;
+	return [1 + a * 0.06, 1 + c * 0.04, 1 - a * 0.06];
+}
+
+const isLand = (map: HexMap, n: number) => n >= 0 && !TERRAIN_INFO[map.terrain[n] as Terrain].water;
 
 /**
  * Unexplored: a flat cloud layer with no tile outline, so neighbouring cloud
@@ -239,10 +250,11 @@ function addLiteTile (
 function addWalls (
 	map: HexMap, layout: HexLayout, b: MeshBuilder, t: number,
 	cx: number, cz: number, rim: number, shade: number, wall: PaletteKey,
-	view: Uint8Array | undefined, fogged: boolean
+	view: Uint8Array | undefined, fogged: boolean, lip?: PaletteKey
 ): void {
 	const R = layout.size;
 	const wallV = paletteV(wall, fogged);
+	const lipV = lip ? paletteV(lip, fogged) : 0;
 	for (let i = 0; i < 6; i++) {
 		const n = map.neighbor(t, i);
 		const bottom = n < 0 ? FLOOR_HEIGHT : shownRim(map, view, n);
@@ -255,10 +267,24 @@ function addWalls (
 		// Darker toward the bottom, which reads as depth
 		const uHigh = paletteU(shade * 0.85);
 		const uLow = paletteU(shade * (n < 0 ? 0.45 : 0.6));
-		const a0 = b.vertex(ax, rim, az, ex, 0, ez, uHigh, wallV);
-		const b0 = b.vertex(bx, rim, bz, ex, 0, ez, uHigh, wallV);
+		let from = rim;
+		if (lip) {
+			// The turf's edge: a band of the top colour before the earth shows
+			const band = Math.min(3.2, (rim - bottom) * 0.3);
+			const a0 = b.vertex(ax, rim, az, ex, 0, ez, paletteU(shade * 0.82), lipV);
+			const b0 = b.vertex(bx, rim, bz, ex, 0, ez, paletteU(shade * 0.82), lipV);
+			const b1 = b.vertex(bx, rim - band, bz, ex, 0, ez, paletteU(shade * 0.68), lipV);
+			const a1 = b.vertex(ax, rim - band, az, ex, 0, ez, paletteU(shade * 0.68), lipV);
+			b.quadFacing(a0, b0, b1, a1, ex, 0, ez);
+			from = rim - band;
+		}
+		const a0 = b.vertex(ax, from, az, ex, 0, ez, uHigh, wallV);
+		const b0 = b.vertex(bx, from, bz, ex, 0, ez, uHigh, wallV);
+		// Contact shadow where the wall meets lower ground
+		b.tint(0.82);
 		const b1 = b.vertex(bx, bottom, bz, ex, 0, ez, uLow, wallV);
 		const a1 = b.vertex(ax, bottom, az, ex, 0, ez, uLow, wallV);
+		b.tint(1);
 		b.quadFacing(a0, b0, b1, a1, ex, 0, ez);
 	}
 }
@@ -278,11 +304,25 @@ function addTile (map: HexMap, layout: HexLayout, b: MeshBuilder, t: number, col
 	const shade = map.shade[t];
 	const topKey: PaletteKey = relief === Relief.Mountain ? "rock" : info.top;
 
-	addBevelledTop(
+	const [tr, tg, tb] = tileTint(map, t);
+	b.tint(tr, tg, tb);
+	const verts = addBevelledTop(
 		b, cx, cz, R, top, rim, water ? WATER_INNER : LAND_INNER,
 		paletteU(shade), paletteU(shade * (water ? WATER_RIM_SHADE : LAND_RIM_SHADE)), paletteV(topKey, fogged)
 	);
-	addWalls(map, layout, b, t, cx, cz, rim, shade, info.wall, view, fogged);
+	b.tint(1);
+	if (water && terrain !== Terrain.Ice) {
+		// Shallows and surf: water lightens toward land, and the rim along a shore is foam
+		for (let k = 0; k < 6; k++) {
+			const shoreA = isLand(map, map.neighbor(t, (k + 5) % 6)), shoreB = isLand(map, map.neighbor(t, k));
+			if (!shoreA && !shoreB) continue;
+			const both = shoreA && shoreB;
+			const s = terrain === Terrain.Ocean ? 1 : 0.6;
+			b.setColor(verts.inner + k, tr * (1 + 0.55 * s), tg * (1 + 0.38 * s), tb * (1 + 0.16 * s));
+			b.setColor(verts.outer + k, tr * (both ? 2.7 : 2.3), tg * (both ? 1.95 : 1.75), tb * (both ? 1.5 : 1.4));
+		}
+	}
+	addWalls(map, layout, b, t, cx, cz, rim, shade, info.wall, view, fogged, water ? undefined : topKey);
 
 	if (water) return;
 
@@ -292,6 +332,63 @@ function addTile (map: HexMap, layout: HexLayout, b: MeshBuilder, t: number, col
 		if (relief === Relief.Mountain) addMountain(b, cx, top, cz, R, rand, terrain, fogged);
 		else if (relief === Relief.Hills) addHillMounds(b, cx, top, cz, R, rand, topKey, shade, fogged);
 		if (feature !== Feature.None && relief !== Relief.Mountain) addTrees(b, cx, top, cz, R, rand, feature, fogged);
+	}
+	if (relief !== Relief.Mountain && feature === Feature.None) addGroundDetail(map, b, t, cx, top, cz, R, terrain, fogged);
+}
+
+/**
+ * Small things on open ground: grass tufts and the odd flower on grassland
+ * and plains, pebbles on desert and tundra. They sit toward the tile's
+ * corners, clear of the centre (units, cities, buildings) and of the edge
+ * midpoints (where roads run).
+ */
+function addGroundDetail (map: HexMap, b: MeshBuilder, t: number, cx: number, top: number, cz: number, R: number, terrain: Terrain, fogged: boolean): void {
+	const rand = mulberry32(Math.imul(t + 11, 2654435761) ^ (map.seed * 3));
+	const grassy = terrain === Terrain.Grassland || terrain === Terrain.Plains;
+	const stony = terrain === Terrain.Desert || terrain === Terrain.Tundra;
+	if (!grassy && !stony) return;
+	const count = grassy ? 3 + Math.floor(rand() * 2) : 2 + Math.floor(rand() * 2);
+	const first = Math.floor(rand() * 6);
+	for (let k = 0; k < count; k++) {
+		const corner = (first + k * 2 + (rand() < 0.3 ? 1 : 0)) % 6;
+		const dist = R * (0.56 + rand() * 0.14);
+		const x = cx + CORNER_X[corner] * dist + (rand() - 0.5) * R * 0.08;
+		const z = cz + CORNER_Z[corner] * dist + (rand() - 0.5) * R * 0.08;
+		if (grassy) {
+			const key: PaletteKey = terrain === Terrain.Grassland ? "grassland" : "plains";
+			addTuft(b, x, top, z, R * (0.12 + rand() * 0.05), rand, paletteU(1.08 + rand() * 0.16), paletteV(key, fogged));
+			if (terrain === Terrain.Grassland && rand() < 0.35) {
+				// A flower: a tiny bright cone on a blade
+				const petals = [[1.3, 1.25, 0.55], [1.35, 1.3, 1.3], [1.5, 0.75, 0.7], [1.15, 0.95, 1.4]][Math.floor(rand() * 4)];
+				b.tint(petals[0], petals[1], petals[2]);
+				const fx = x + (rand() - 0.5) * R * 0.12, fz = z + (rand() - 0.5) * R * 0.12;
+				addCone(b, fx, top + R * 0.07, fz, R * 0.04, R * 0.05, 5, rand() * Math.PI, paletteU(1.3), paletteV("snow", fogged));
+				b.tint(1);
+			}
+		} else {
+			const key: PaletteKey = terrain === Terrain.Desert ? "sand" : "rock";
+			addCone(b, x, top - 0.5, z, R * (0.05 + rand() * 0.04), R * (0.04 + rand() * 0.04), 4, rand() * Math.PI, paletteU(0.9 + rand() * 0.2), paletteV(key, fogged));
+		}
+	}
+}
+
+/** A grass tuft: a few thin blades leaning outward. */
+function addTuft (b: MeshBuilder, x: number, y: number, z: number, h: number, rand: () => number, u: number, v: number): void {
+	const blades = 5;
+	const base = h * 0.16;
+	for (let k = 0; k < blades; k++) {
+		const a = (k / blades) * Math.PI * 2 + rand() * 0.8;
+		const lean = h * (0.25 + rand() * 0.35);
+		const ox = Math.cos(a), oz = Math.sin(a);
+		// Two base points across the blade, the tip leaning out
+		const px = -oz * base, pz = ox * base;
+		b.flatTri(
+			x - px, y, z - pz,
+			x + px, y, z + pz,
+			x + ox * lean, y + h * (0.8 + rand() * 0.4), z + oz * lean,
+			x - ox * h, y + h * 0.3, z - oz * h,
+			u, v
+		);
 	}
 }
 

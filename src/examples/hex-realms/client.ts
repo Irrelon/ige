@@ -443,8 +443,10 @@ export class Client extends IgeBaseClass implements IgeCanInit, HudHost {
 		if (!lightManager) return;
 		const ambient = new IgeAmbientLight();
 		ambient.id("ambient");
-		ambient.lightColor(0.78, 0.84, 1.0);
-		ambient.intensity(0.55);
+		// Hemisphere light: cool sky from above, warm bounce from the ground below
+		ambient.lightColor(0.8, 0.87, 1.0);
+		ambient.groundColor(0.52, 0.45, 0.36);
+		ambient.intensity(0.58);
 		ambient.mount(this.scene);
 		lightManager.addLight(ambient);
 		this.sun = new IgeDirectionalLight();
@@ -454,6 +456,7 @@ export class Client extends IgeBaseClass implements IgeCanInit, HudHost {
 		this.sun.direction(-0.55, -1.0, -0.4);
 		this.sun.mount(this.scene);
 		lightManager.addLight(this.sun);
+		this.applyGraphics();
 		if (new URLSearchParams(window.location.search).get("shadows") !== "0") {
 			this.renderer.shadowManager?.shadowPlanes(1, 9000);
 			// The bias is a fraction of the light's depth range (here 9000, so the whole map fits
@@ -466,6 +469,26 @@ export class Client extends IgeBaseClass implements IgeCanInit, HudHost {
 			// and only redraw units on top each frame (?shadowcache=0 turns it off)
 			if (new URLSearchParams(window.location.search).get("shadowcache") !== "0") this.renderer.shadowCaching(true);
 		}
+	}
+
+	/** Post-processing: a gentle filmic grade, soft bloom and a vignette (?post=0 turns it off). */
+	applyGraphics (): void {
+		const off = new URLSearchParams(window.location.search).get("post") === "0";
+		// The lighting is already display-ready, so no tone mapping: just a grade, a glow on the brightest whites and a vignette
+		this.renderer.postProcess({
+			enabled: !off,
+			toneMapping: "none",
+			exposure: 1,
+			contrast: 1.08,
+			saturation: 1.12,
+			temperature: 0.06,
+			vignette: 0.32,
+			vignetteSoftness: 0.6,
+			bloom: 0.22,
+			bloomThreshold: 0.97,
+			bloomKnee: 0.15,
+			bloomRadius: 1.2
+		});
 	}
 
 	setupViewport () {
