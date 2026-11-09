@@ -160,9 +160,15 @@ function scheduleUpkeep (room: Room): void {
 	});
 }
 
-/** A seat held by a person makes its civ human; one nobody holds is the AI's. */
+/**
+ * A seat held by a person makes its civ human; one nobody holds is the AI's.
+ * Only a change that went through is announced: an announcement is a room
+ * change, which schedules this again, so announcing a refused change looped
+ * forever (a finished game refuses every command, seat changes included).
+ */
 function syncSeats (room: Room): void {
 	const sim = room.state;
+	if (sim.state.winner) return; // a finished game's seats no longer matter
 	for (const p of sim.state.players) {
 		const seat = room.seats[p.index];
 		if (!seat) continue;
@@ -175,7 +181,10 @@ function syncSeats (room: Room): void {
 		}
 		const held = !!seat.token && seat.token !== GONE;
 		if (held === p.human) continue;
-		serverApply(room, p.index, { type: "seat", player: p.index, human: held });
+		if (!serverApply(room, p.index, { type: "seat", player: p.index, human: held })) {
+			log(`${room.code}: couldn't change who plays ${p.name}`);
+			continue;
+		}
 		room.say(held ? `${seat.name} plays ${p.name}.` : `${p.name} is now played by the AI.`);
 		log(`${room.code}: ${p.name} is now ${held ? `played by ${seat.name}` : "the AI's"}`);
 	}
