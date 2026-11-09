@@ -58,3 +58,27 @@ client.on("event", (data) => effects.play(data));
   blend with `"none"`.
 - Inputs are sent unreliably with the last few frames repeated (`inputRedundancy`), so lost packets cost nothing.
 - `rtt` and `serverTick()` give the round-trip time and the authority's clock.
+
+## Transports
+
+- `igeNetLoopback({ latency, jitter, loss })`: the authority and its machines in one page (offline and local
+  split-screen play), or tests with a simulated network.
+- `igeNetSyncServerTransport(network)` / `igeNetSyncClientTransport(network)`: over IGE's own IgeNetIo WebSockets,
+  for a dedicated Node server:
+
+```typescript
+// Server (Node)
+ige.init();
+const network = ige.network as IgeNetIoServerController;
+await network.start(8660);
+const host = new IgeNetSyncHost(igeNetSyncServerTransport(network), { ... });
+network.acceptConnections(true);
+host.start();
+
+// Browser
+await (ige.network as IgeNetIoClientController).start("ws://my-server:8660");
+const client = new IgeNetSyncClient(igeNetSyncClientTransport(ige.network));
+```
+
+- Coming next: WebRTC data channels, so a player's browser can host (with a small signalling service).
+
