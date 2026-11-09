@@ -176,6 +176,23 @@
 		"skinned": false,
 		"bytes": 489584
 	},
+	"port": {
+		"file": "port.glb",
+		"min": [
+			-0.4531,
+			-0.4022,
+			-0.4852
+		],
+		"max": [
+			0.4712,
+			0.4541,
+			0.3874
+		],
+		"triangles": 4986,
+		"animations": [],
+		"skinned": false,
+		"bytes": 580832
+	},
 	"quarry": {
 		"file": "quarry.glb",
 		"min": [
