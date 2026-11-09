@@ -103,8 +103,9 @@ The engine has extensive 3D infrastructure:
 -   Renderer choice: `igeCreateRenderer({ mode: "2d" | "iso" | "3d" })` picks WebGL where available (else Canvas 2D; iso always Canvas 2D); `ige.engine.start()` uses it when no renderer is assigned.
 -   Loading: `igeLoadAssets({ textures, models, data }, { onProgress })` loads images, glTF models/animation files and JSON in one call.
 -   Online play: `IgeRoomServer` / `IgeRoomClient` (`src/engine/network/rooms/`) add rooms, seats and an ordered command stream to IGE networking; see `guides/online-rooms.md`.
+-   Real-time multiplayer: `IgeNetSyncHost` / `IgeNetSyncClient` (`src/engine/network/sync/`): an authority (browser host, offline in the same page, or a Node server) steps the game at a fixed rate from every machine's local players' inputs and sends delta snapshots; machines predict their own players and interpolate the rest. Transport-agnostic (`igeNetLoopback()` for one page and tests); see `guides/realtime-sync.md`.
 -   2D: camera preset `screen2d` (y down, one unit per pixel, zoom by camera scale) draws sprites flat with their 2D transforms; smart textures and bitmap font sheets render per entity; texture filters re-upload when they change. Isometric games move to a 3D layout to use WebGL. Entity `tick()` isn't called by the WebGL renderer (use update behaviours). See `guides/2d-on-webgl.md`.
--   Guides: `guides/webgl-models.md`, `guides/physics-3d.md`, `guides/2d-on-webgl.md`, `guides/online-rooms.md`.
+-   Guides: `guides/webgl-models.md`, `guides/physics-3d.md`, `guides/2d-on-webgl.md`, `guides/online-rooms.md`, `guides/realtime-sync.md`.
 -   Entities can carry a quaternion rotation (`entity.quaternion()`) that replaces the Euler `rotate()` in 3D transforms.
 -   `entity.geometry(mesh)` swaps an entity's mesh (render on demand notices); `renderer.discardGeometryArrays(mesh)` keeps only the GPU copy of a big mesh.
 -   Entity `preTick` behaviours run under WebGL once per frame with a dummy 2D context; entity `tick()` itself isn't called.

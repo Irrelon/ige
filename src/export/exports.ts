@@ -165,6 +165,10 @@ export * from "../engine/network/client/IgeNetIoClientController";
 export * from "../engine/network/rooms/igeRoomProtocol";
 export * from "../engine/network/rooms/IgeRoomServer";
 export * from "../engine/network/rooms/IgeRoomClient";
+export * from "../engine/network/sync/igeNetSyncProtocol";
+export * from "../engine/network/sync/IgeNetTransport";
+export * from "../engine/network/sync/IgeNetSyncHost";
+export * from "../engine/network/sync/IgeNetSyncClient";
 export * from "../engine/network/chat/IgeChatServer";
 
 export * from "../engine/network/chat/IgeChatClient";
