@@ -13,7 +13,7 @@ with each move's clip named after the game action it plays:
 
 Props and weapons:
 
-    python3 -I tools/import_model.py --id prop_crate --role prop --height 60 --model in/prop_crate.glb
+    python3 -I tools/import_model.py --id prop_crate --role prop --height 60 --level --model in/prop_crate.glb
 
 Run from src/examples/zombie-game. What it does:
 - Merges each --move file's first clip into the model under the move's
@@ -22,6 +22,8 @@ Run from src/examples/zombie-game. What it does:
   else), shrunk to --size pixels and stored as JPEG (PNG when the material
   uses alpha). WebP images (EXT_texture_webp) become plain images.
 - Drops whatever is no longer used (images, accessors, buffer views).
+- With --level (props), turns the model so its flat base faces down:
+  generated props come out pitched by the angle of their picture.
 - Writes assets/models/<id>.glb and records it in assets/characters.json
   (zombies, players: height, and the walk and run clips' ground speeds,
   measured from their root motion, so feet match movement) or
@@ -343,6 +345,106 @@ def remove_unused(model):
             i["bufferView"] = view_map[i["bufferView"]]
 
 
+def mesh_triangles(model):
+    """Every triangle of the unskinned meshes (n x 3 x 3), placed by their nodes."""
+    g = model.g
+    worlds, _ = node_matrices(g)
+    out = []
+    for i, node in enumerate(g.get("nodes", [])):
+        if "mesh" not in node or "skin" in node:
+            continue
+        for prim in g["meshes"][node["mesh"]]["primitives"]:
+            pos = model.read(prim["attributes"]["POSITION"])
+            pos = (worlds[i] @ np.c_[pos, np.ones(len(pos))].T).T[:, :3]
+            idx = model.read(prim["indices"]).ravel().astype(np.int64) if "indices" in prim else np.arange(len(pos))
+            out.append(pos[idx[:len(idx) // 3 * 3].reshape(-1, 3)])
+    return np.concatenate(out) if out else np.zeros((0, 3, 3))
+
+
+def level(model, max_pitch=35.0, max_roll=10.0):
+    """
+    Stand a prop on its base. Generated props come out pitched by the angle
+    of the picture they were made from (mostly about X). Their undersides
+    are mostly flat, so the downward-facing triangles share one direction:
+    the area-weighted peak of those normals is the base, and a new root node
+    turns the model so it faces straight down. Returns the tilt removed in
+    degrees (0 when under 1.5, already level).
+    """
+    t = mesh_triangles(model)
+    if not len(t):
+        return 0.0
+    n = np.cross(t[:, 1] - t[:, 0], t[:, 2] - t[:, 0])
+    area = np.linalg.norm(n, axis=1) / 2
+    u = n / np.maximum(2 * area[:, None], 1e-20)
+    down = u[:, 1] < -0.5
+    u, area = u[down], area[down]
+    pitch = np.degrees(np.arctan2(u[:, 2], -u[:, 1]))
+    roll = np.degrees(np.arctan2(u[:, 0], -u[:, 1]))
+    keep = (np.abs(pitch) <= max_pitch) & (np.abs(roll) <= max_roll)
+    if not keep.any():
+        return 0.0
+    hist, pe, re = np.histogram2d(pitch[keep], roll[keep], weights=area[keep],
+                                  bins=[np.arange(-max_pitch, max_pitch + 1), np.arange(-max_roll, max_roll + 1)])
+    smooth = sum(np.roll(np.roll(hist, a, 0), b, 1) for a in (-1, 0, 1) for b in (-1, 0, 1))
+    i, j = np.unravel_index(smooth.argmax(), smooth.shape)
+    p0, r0 = (pe[i] + pe[i + 1]) / 2, (re[j] + re[j + 1]) / 2
+    near = keep & (np.abs(pitch - p0) < 3) & (np.abs(roll - r0) < 3)
+    base = (u[near] * area[near, None]).sum(0)
+    base /= np.linalg.norm(base)
+    tilt = math.degrees(math.acos(max(-1.0, min(1.0, -base[1]))))
+    if tilt < 1.5:
+        return 0.0
+    axis = np.cross(base, [0.0, -1.0, 0.0])
+    axis /= np.linalg.norm(axis)
+    half = math.radians(tilt) / 2
+    g = model.g
+    scene = g.get("scene", 0)
+    roots = g["scenes"][scene]["nodes"] if g.get("scenes") else [i for i in range(len(g["nodes"]))
+                                                                 if not any(i in n.get("children", []) for n in g["nodes"])]
+    g["nodes"].append({"name": "level", "children": list(roots),
+                       "rotation": [float(axis[0] * math.sin(half)), float(axis[1] * math.sin(half)), float(axis[2] * math.sin(half)), math.cos(half)]})
+    if g.get("scenes"):
+        g["scenes"][scene]["nodes"] = [len(g["nodes"]) - 1]
+    else:
+        g["scenes"], g["scene"] = [{"nodes": [len(g["nodes"]) - 1]}], 0
+    return tilt
+
+
+def weapon_grip(model):
+    """
+    Where a weapon is held: its long axis (the main direction of its
+    surface), the handle at the thinner end, and the grip a little way in
+    from that end. Returns (grip point, unit axis from the grip toward the
+    tip, unit "edge" axis: the weapon's second-longest direction, e.g. a
+    blade's edge or an axe head), all in model space.
+    """
+    t = mesh_triangles(model)
+    pts = t.reshape(-1, 3)
+    centre = pts.mean(axis=0)
+    _, _, vt = np.linalg.svd(pts - centre, full_matrices=False)
+    axis, edge = vt[0], vt[1]
+    along = (pts - centre) @ axis
+    lo, hi = along.min(), along.max()
+    length = hi - lo
+
+    def thickness(mask):
+        if not mask.any():
+            return np.inf
+        side = pts[mask] - centre
+        side = side - np.outer(side @ axis, axis)
+        return float(np.percentile(np.linalg.norm(side, axis=1), 90))
+
+    end = 0.2 * length
+    if thickness(along > hi - end) < thickness(along < lo + end):
+        axis = -axis  # the handle is at the high end: point the axis away from it
+        along = -along
+        lo, hi = -hi, -lo
+    # The grip: the middle of the slice 12% of the way in from the handle end
+    slice_mask = np.abs(along - (lo + 0.12 * length)) < 0.06 * length
+    grip = pts[slice_mask].mean(axis=0) if slice_mask.any() else centre + axis * (lo + 0.12 * length)
+    return grip, axis / np.linalg.norm(axis), edge / np.linalg.norm(edge), float(length)
+
+
 def bounds_and_triangles(model):
     """Model-space bounds of every mesh in its rest placement, and the triangle count."""
     g = model.g
@@ -376,6 +478,9 @@ def main():
     ap.add_argument("--move", action="append", default=[], help="action=path: a move GLB whose clip plays that action")
     ap.add_argument("--height", type=float, required=True, help="height in the game, in world units")
     ap.add_argument("--yaw", type=float, help="degrees to turn the model so it faces +Z")
+    ap.add_argument("--level", action="store_true", help="props: turn the model so its base is flat (see level())")
+    ap.add_argument("--grip", help="weapons: x,y,z of the grip in model units, instead of finding it (see weapon_grip())")
+    ap.add_argument("--axis", help="weapons: x,y,z direction from the grip to the tip, with --grip")
     ap.add_argument("--size", type=int, default=1024, help="largest texture side in pixels")
     ap.add_argument("--assets", default="assets", help="the game's assets folder")
     args = ap.parse_args()
@@ -390,6 +495,10 @@ def main():
             clips.append(name)
     base_colour_only(model, args.size)
     remove_unused(model)
+    if args.level and not model.g.get("skins"):
+        tilt = level(model)
+        if tilt:
+            print(f"  levelled: the base was tilted {tilt:.1f} degrees", file=sys.stderr)
 
     lo, hi, triangles = bounds_and_triangles(model)
     model_height = float(hi[1] - lo[1]) or 1.0
@@ -417,6 +526,19 @@ def main():
     else:
         entry["min"] = [round(float(v), 4) for v in lo]
         entry["max"] = [round(float(v), 4) for v in hi]
+    if args.role == "weapon":
+        grip, axis, edge, length = weapon_grip(model)
+        if args.grip:
+            grip = np.array([float(v) for v in args.grip.split(",")])
+        if args.axis:
+            axis = np.array([float(v) for v in args.axis.split(",")])
+            axis /= np.linalg.norm(axis)
+            edge = edge - axis * (edge @ axis)
+            edge /= np.linalg.norm(edge)
+        entry["grip"] = [round(float(v), 4) for v in grip]
+        entry["axis"] = [round(float(v), 4) for v in axis]
+        entry["edge"] = [round(float(v), 4) for v in edge]
+        entry["length"] = round(length, 4)
     if args.yaw is not None:
         entry["yaw"] = args.yaw
     entry["triangles"] = triangles

@@ -27,8 +27,11 @@ import {
 	PLAYER_KINDS,
 	prepareCharacter,
 	rightFistMatrix,
+	weaponMatrix,
+	type WeaponInfo,
 	ZOMBIE_KINDS
 } from "./characters";
+import type { IgeGltfModel } from "@/engine/webgl/IgeGltfLoader";
 
 // @ts-ignore
 window.ige = ige;
@@ -105,11 +108,19 @@ const ZOMBIE_RESPAWN_TIME = 2.5;
 const HIT_FLASH_TIME = 0.15;
 const RESPAWN_INVULNERABLE_TIME = 2;
 const IDLE_AUTO_FIGHT_TIME = 2;
-const CHARACTER_HEIGHT = 130; // physics capsule height (world units)
+const CHARACTER_HEIGHT = 130; // stand-in height (world units); generated characters have their own
+
+/** A character's standing height in world units: physics capsules, hit effects and HUD markers follow it. */
+function heightOf (rig: CharacterRig): number {
+	return rig.kind.height ?? CHARACTER_HEIGHT;
+}
 /** Corpses darken: multiplied over a stand-in's tint, or over a generated model's own colours. */
 const DEAD_SHADE = 0.6;
 /** CesiumMan's rest height between its lowest and highest joints: swords are sized for it. */
 const SWORD_RIG_HEIGHT = 1.1688;
+/** Generated melee weapons the players carry, in player order (cycled), and their length against the holder's height. */
+const PLAYER_WEAPONS = ["weapon_bat", "weapon_machete", "weapon_axe"];
+const WEAPON_LENGTH = 0.55;
 
 interface PlayerState {
 	index: number;
@@ -195,6 +206,8 @@ export class Client extends IgeBaseClass implements IgeCanInit {
 	zombies: ZombieState[] = [];
 	zombieRigs: CharacterRig[] = [];
 	playerRigs: CharacterRig[] = [];
+	/** Generated weapons from assets/props.json, by id. */
+	weapons: Map<string, { info: WeaponInfo; model: IgeGltfModel }> = new Map();
 	obstacles: IgeLevelObstacle[] = [];
 	level?: IgeEntity;
 	/** Jolt physics (?physics=1): character capsules, the level, and crates to knock about. */
@@ -332,9 +345,11 @@ export class Client extends IgeBaseClass implements IgeCanInit {
 	async loadCharacters () {
 		let zombieKinds: CharacterKind[] = ZOMBIE_KINDS;
 		let playerKinds: CharacterKind[] = PLAYER_KINDS;
+		let weaponList: WeaponInfo[] = [];
 		if (new URLSearchParams(window.location.search).get("standin") !== "1") {
-			const listed = await igeLoadAssets({ data: { characters: "./assets/characters.json" } }, { failOnError: false });
+			const listed = await igeLoadAssets({ data: { characters: "./assets/characters.json", props: "./assets/props.json" } }, { failOnError: false });
 			const list = (listed.data.characters as CharacterListEntry[] | undefined) || [];
+			weaponList = ((listed.data.props as WeaponInfo[] | undefined) || []).filter((p) => p.role === "weapon" && PLAYER_WEAPONS.includes(p.id));
 			const kinds = (role: string) => list.filter((c) => c.role === role)
 				.map((c) => ({ ...generatedKind(c.id, `./assets/models/${c.file}`, c.height, c.walkSpeed, c.runSpeed), yaw: c.yaw }));
 			if (kinds("zombie").length) zombieKinds = kinds("zombie");
@@ -343,7 +358,12 @@ export class Client extends IgeBaseClass implements IgeCanInit {
 
 		const all = [...new Set([...zombieKinds, ...playerKinds])];
 		const assets = await igeLoadAssets(
-			{ models: Object.fromEntries(all.map((kind) => [kind.id, kind.file])) },
+			{
+				models: Object.fromEntries([
+					...all.map((kind) => [kind.id, kind.file]),
+					...weaponList.map((weapon) => [weapon.id, `./assets/models/${weapon.file}`])
+				])
+			},
 			{ onProgress: (done, total) => this.updateStatus(`Loading characters ${done}/${total}...`), failOnError: false }
 		);
 		const rigs = (kinds: CharacterKind[], fallback: CharacterKind[]): CharacterRig[] => {
@@ -354,6 +374,9 @@ export class Client extends IgeBaseClass implements IgeCanInit {
 		if (assets.failures.length && !assets.models[ZOMBIE_KINDS[0].id]) {
 			// A generated model failed: make sure the stand-in is there to fall back on
 			Object.assign(assets.models, (await igeLoadAssets({ models: { [ZOMBIE_KINDS[0].id]: ZOMBIE_KINDS[0].file } })).models);
+		}
+		for (const info of weaponList) {
+			if (assets.models[info.id]) this.weapons.set(info.id, { info, model: assets.models[info.id] });
 		}
 		this.zombieRigs = rigs(zombieKinds, ZOMBIE_KINDS);
 		this.playerRigs = rigs(playerKinds, PLAYER_KINDS);
@@ -397,12 +420,12 @@ export class Client extends IgeBaseClass implements IgeCanInit {
 	}
 
 	/** An upright capsule for a character, its bottom at the entity's feet. */
-	addCharacterBody (entity: IgeEntity, radius: number, density: number): IgePhysicsBody3d | undefined {
+	addCharacterBody (entity: IgeEntity, radius: number, density: number, height: number): IgePhysicsBody3d | undefined {
 		if (!this.physics) return;
-		const halfHeight = CHARACTER_HEIGHT / 2 - radius;
+		const halfHeight = Math.max(1, height / 2 - radius);
 		return this.physics.addBody(entity, {
 			shape: { type: "capsule", radius, halfHeight },
-			offset: { x: 0, y: CHARACTER_HEIGHT / 2, z: 0 },
+			offset: { x: 0, y: height / 2, z: 0 },
 			lockRotation: true,
 			friction: 0, // slide along walls and each other
 			linearDamping: 0,
@@ -571,7 +594,7 @@ export class Client extends IgeBaseClass implements IgeCanInit {
 			// Players walk with a character controller: up steps, pushing crates and zombies aside
 			const character = this.physics?.addCharacter(entity, {
 				radius: PLAYER_RADIUS,
-				height: CHARACTER_HEIGHT,
+				height: heightOf(rig),
 				mass: 90,
 				maxStrength: 900,
 				layer: "characters",
@@ -635,7 +658,7 @@ export class Client extends IgeBaseClass implements IgeCanInit {
 				knockbackZ: 0,
 				respawnTimer: 0,
 				alive: true,
-				body: this.addCharacterBody(entity, ZOMBIE_RADIUS, 1000)
+				body: this.addCharacterBody(entity, ZOMBIE_RADIUS, 1000, heightOf(rig))
 			};
 
 			// Per-instance tint over the shared model material (stand-ins)
@@ -662,6 +685,25 @@ export class Client extends IgeBaseClass implements IgeCanInit {
 	 * character. Every player shares the same geometry, so the four swords
 	 * draw as instanced batches.
 	 */
+	createWeapon (player: PlayerState) {
+		const owner = player.model, rig = player.rig;
+		const hand = rig.bones?.right.hand;
+		const available = PLAYER_WEAPONS.filter((id) => this.weapons.has(id));
+		const weapon = available.length ? this.weapons.get(available[player.index % available.length]) : undefined;
+		const grip = hand && weapon ? weaponMatrix(rig, owner, weapon.info, heightOf(rig) * WEAPON_LENGTH) : undefined;
+		if (hand && weapon && grip) {
+			// A generated weapon: held by the grip the import step found
+			new IgeEntity()
+				.id(`${owner.id()}_weapon`)
+				.model(weapon.model)
+				.mount(owner)
+				.attachToBone(hand)
+				.attachAt(grip, { pose: "current" });
+			return;
+		}
+		this.createSword(owner, rig);
+	}
+
 	createSword (owner: IgeEntity, rig: CharacterRig) {
 		const hand = rig.bones?.right.hand;
 		const grip = hand ? rightFistMatrix(rig, owner, rig.bones!.height / SWORD_RIG_HEIGHT) : undefined;
@@ -713,7 +755,7 @@ export class Client extends IgeBaseClass implements IgeCanInit {
 
 	tick (dt: number) {
 		// Swords go in hand once the characters have been animated (see createSword())
-		if (++this.ticks === 3) for (const player of this.players) this.createSword(player.model, player.rig);
+		if (++this.ticks === 3) for (const player of this.players) this.createWeapon(player);
 		for (const player of this.players) this.updatePlayer(player, dt);
 		this.rebuildGrid();
 		for (const zombie of this.zombies) this.updateZombie(zombie, dt);
@@ -881,14 +923,15 @@ export class Client extends IgeBaseClass implements IgeCanInit {
 			this.applyZombieMaterial(zombie);
 			if (zombie.health > 0) this.playAction(zombie, "hit", 1.5);
 
-			const hitPoint = { x: zombie.entity._translate.x, y: 110, z: zombie.entity._translate.z };
+			const height = heightOf(zombie.rig);
+			const hitPoint = { x: zombie.entity._translate.x, y: height * 0.65, z: zombie.entity._translate.z };
 			this.bloodFx?.burst(24, hitPoint, { x: dx / dist, y: 0.6, z: dz / dist });
 			this.bloodStains?.add(hitPoint.x + (dx / dist) * 25, hitPoint.z + (dz / dist) * 25, {
 				size: 30 + Math.random() * 25,
 				opacity: 0.6 + Math.random() * 0.3
 			});
 			this.splashBehind(hitPoint.x, hitPoint.z, dx / dist, dz / dist);
-			this.spawnDamageNumber(player.index, hitPoint.x, 190, hitPoint.z, damage);
+			this.spawnDamageNumber(player.index, hitPoint.x, height + 50, hitPoint.z, damage);
 
 			if (zombie.health <= 0) {
 				this.killZombie(zombie, dx / dist, dz / dist);
@@ -982,7 +1025,7 @@ export class Client extends IgeBaseClass implements IgeCanInit {
 		zombie.healthBar = undefined;
 		zombie.respawnTimer = ZOMBIE_RESPAWN_TIME;
 		const t = zombie.entity._translate;
-		this.bloodFx?.burst(70, { x: t.x, y: 80, z: t.z }, { x: 0, y: 1, z: 0 });
+		this.bloodFx?.burst(70, { x: t.x, y: heightOf(zombie.rig) * 0.5, z: t.z }, { x: 0, y: 1, z: 0 });
 		this.bloodStains?.add(t.x, t.z, { size: 80 + Math.random() * 40, color: { r: 0.3, g: 0.01, b: 0.01 } });
 
 		if (this.physics && zombie.body) {
@@ -1139,14 +1182,14 @@ export class Client extends IgeBaseClass implements IgeCanInit {
 		this.applyPlayerMaterial(player);
 
 		const t = player.entity._translate;
-		this.bloodFx?.burst(10, { x: t.x, y: 120, z: t.z });
+		this.bloodFx?.burst(10, { x: t.x, y: heightOf(player.rig) * 0.7, z: t.z });
 
 		if (player.health <= 0) {
 			player.respawnTimer = PLAYER_RESPAWN_TIME;
 			player.entity.hide();
 			player.character?.enabled(false);
 			player.lantern.intensity(0);
-			this.bloodFx?.burst(80, { x: t.x, y: 90, z: t.z }, { x: 0, y: 1, z: 0 });
+			this.bloodFx?.burst(80, { x: t.x, y: heightOf(player.rig) * 0.55, z: t.z }, { x: 0, y: 1, z: 0 });
 			this.bloodStains?.add(t.x, t.z, { size: 110 });
 		}
 	}
@@ -1183,7 +1226,7 @@ export class Client extends IgeBaseClass implements IgeCanInit {
 			const c = config.color;
 			overlay.add({
 				entity: player.entity,
-				offset: { x: 0, y: 175, z: 0 },
+				offset: { x: 0, y: heightOf(player.rig) + 45, z: 0 },
 				create: () => {
 					const tag = document.createElement("div");
 					tag.textContent = `P${player.index + 1}`;
@@ -1199,7 +1242,7 @@ export class Client extends IgeBaseClass implements IgeCanInit {
 	addHealthBar (zombie: ZombieState): IgeOverlayMarker | undefined {
 		return this.overlay?.add({
 			entity: zombie.entity,
-			offset: { x: 0, y: 150, z: 0 },
+			offset: { x: 0, y: heightOf(zombie.rig) + 20, z: 0 },
 			create: () => {
 				const bar = document.createElement("div");
 				bar.style.cssText = "width:30px;height:4px;background:rgba(0,0,0,0.65);border:1px solid rgba(0,0,0,0.8);";

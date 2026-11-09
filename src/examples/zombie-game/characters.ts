@@ -156,3 +156,47 @@ function normalise (v: V3): V3 | undefined {
 	const len = Math.hypot(v[0], v[1], v[2]);
 	return len > 1e-6 ? [v[0] / len, v[1] / len, v[2] / len] : undefined;
 }
+
+/** A generated weapon, as the import step records it in assets/props.json (model space). */
+export interface WeaponInfo {
+	id: string;
+	file: string;
+	role: "weapon";
+	/** Where the hand holds it. */
+	grip: [number, number, number];
+	/** Unit direction from the grip toward the tip. */
+	axis: [number, number, number];
+	/** Unit direction across it (a blade's width, an axe head). */
+	edge: [number, number, number];
+	/** Length along the axis. */
+	length: number;
+}
+
+/**
+ * Model-space transform (in the character's model) for a generated weapon
+ * held in the right fist: grip in the fist, tip pointing out of it the way
+ * rightFistMatrix() points, its edge along the forearm, `length` world
+ * units long. For IgeEntity.attachAt(matrix, { pose: "current" }).
+ */
+export function weaponMatrix (rig: CharacterRig, model: IgeEntity, weapon: WeaponInfo, length: number): Float32Array | undefined {
+	const fist = rightFistMatrix(rig, model, 1);
+	if (!fist) return;
+	const s = length / rig.scale / Math.max(1e-6, weapon.length);
+	const axis = weapon.axis, edge = weapon.edge;
+	const third = cross(edge, axis);
+	// R maps the weapon's (edge, axis, third) onto the fist's (X, Y, Z); the weapon's linear part is fist * s * R
+	const R = [edge, axis, third]; // rows
+	const L = new Array(9).fill(0); // column-major 3x3
+	for (let col = 0; col < 3; col++) {
+		for (let row = 0; row < 3; row++) {
+			let v = 0;
+			for (let k = 0; k < 3; k++) v += fist[k * 4 + row] * R[k][col];
+			L[col * 3 + row] = v * s;
+		}
+	}
+	const g = weapon.grip;
+	const tx = fist[12] - (L[0] * g[0] + L[3] * g[1] + L[6] * g[2]);
+	const ty = fist[13] - (L[1] * g[0] + L[4] * g[1] + L[7] * g[2]);
+	const tz = fist[14] - (L[2] * g[0] + L[5] * g[1] + L[8] * g[2]);
+	return new Float32Array([L[0], L[1], L[2], 0, L[3], L[4], L[5], 0, L[6], L[7], L[8], 0, tx, ty, tz, 1]);
+}
