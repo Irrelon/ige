@@ -1,4 +1,4 @@
-import { HexMap } from "../mapGen";
+import { chooseStartPositions, generateMap, HexMap } from "../mapGen";
 import { Feature, Relief, Terrain } from "../terrain";
 import { runAiTurn } from "./ai";
 import { preview } from "./combat";
@@ -9,7 +9,7 @@ import { createCity } from "./cities";
 import { networkNodes, SEA } from "./network";
 import { attitude, councilVote, grievance, hasPact, pickAgenda, warProblem } from "./diplomacy";
 import { researchCost } from "./effects";
-import { administration, BUILDINGS, CARRIER_SPEED, levelIncome, ROAD_CAPACITY, type TechId, TECH_IDS, techCost } from "./rules";
+import { administration, BUILDINGS, CARRIER_SPEED, foodGoodsOf, foodValueOf, levelIncome, ROAD_CAPACITY, type TechId, TECH_IDS, techCost } from "./rules";
 import { income, upkeep } from "./treasury";
 import { defaultOptions, Sim } from "./sim";
 import { ALLIANCE, type Command, type GameOptions, PEACE, type UnitState, WAR } from "./types";
@@ -770,6 +770,20 @@ describe("diplomacy II", () => {
 		expect(attitude(sim, 1, 0)).toBe(mood - 7);
 		expect(grievance(sim, 1, 0)).toBe(0);
 		expect(warProblem(sim, 0, 1)).toMatch(/Truce/);
+	});
+
+	test("tribe food perks: Coastfolk fish feeds 1.25, Plainsfolk eat grain; start spots are shuffled in new games", () => {
+		expect([foodValueOf("coastfolk", "fish"), foodValueOf("highlanders", "fish"), foodValueOf("plainsfolk", "grain"), foodValueOf("coastfolk", "grain")]).toEqual([1.25, 1, 0.25, 0]);
+		expect(foodGoodsOf("plainsfolk")).toContain("grain");
+		expect(foodGoodsOf("woodlanders")).not.toContain("grain");
+		const map = generateMap({ width: 48, height: 32, seed: 4242 });
+		const best = chooseStartPositions(map, 4);
+		const old = Sim.create(defaultOptions({ seed: 4242, humans: [], shuffleStarts: undefined }));
+		const fresh = Sim.create(defaultOptions({ seed: 4242, humans: [] }));
+		const capital = (sim: Sim, p: number) => sim.citiesOf(p).find((c) => c.capital)?.tile;
+		// Games from before the shuffle keep their starts (so their replays still play back)
+		expect(old.state.players.map((q) => capital(old, q.index))).toEqual(best);
+		expect([...fresh.state.players.map((q) => capital(fresh, q.index))].sort()).toEqual([...best].sort());
 	});
 
 	test("each tribe starts with its own tech, unless tribe starting techs are off", () => {

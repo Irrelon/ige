@@ -43,6 +43,18 @@ export function isFood (good: Good): boolean {
 	return (FOOD_VALUE[good] ?? 0) > 0;
 }
 
+/** The goods a civ's cities eat, best first: bread, fish and game, and grain for the Plainsfolk. */
+export function foodGoodsOf (civ: CivId): Good[] {
+	return civ === "plainsfolk" ? ["bread", "fish", "game", "grain"] : ["bread", "fish", "game"];
+}
+
+/** Growth a good gives one of this civ's cities (0 when it isn't food to them), with the tribes' food perks. */
+export function foodValueOf (civ: CivId, good: Good): number {
+	if (good === "grain") return civ === "plainsfolk" ? 0.25 : 0;
+	const value = FOOD_VALUE[good] ?? 0;
+	return good === "fish" && civ === "coastfolk" ? value * 1.25 : value;
+}
+
 // ------------------------------------------------------------------
 // Map deposits
 // ------------------------------------------------------------------
@@ -361,8 +373,8 @@ export const CIVS: Record<CivId, Civ> = {
 	riverfolk: { id: "riverfolk", name: "River Folk", startTech: "trade", perk: "Carriers move 2 extra tiles per turn", research: ["forestry", "sawmills", "fishing", "farming", "milling", "mining", "coinage", "baking", "logistics", "smelting", "statecraft", "carpentry", "engineering", "archery", "smithing"] },
 	woodlanders: { id: "woodlanders", name: "Woodlanders", startTech: "forestry", perk: "Sawmills produce double", research: ["sawmills", "hunting", "mining", "archery", "farming", "smelting", "carpentry", "trade", "milling", "baking", "masonry", "smithing", "coinage", "engineering"] },
 	horselords: { id: "horselords", name: "Horse Lords", startTech: "riding", perk: "Riders cost 1 star less and need no horse", research: ["forestry", "sawmills", "hunting", "archery", "mining", "smelting", "trade", "logistics", "smithing", "farming", "masonry", "carpentry", "siege", "coinage"] },
-	coastfolk: { id: "coastfolk", name: "Coastfolk", startTech: "fishing", perk: "Fish feeds cities twice as much", research: ["forestry", "sawmills", "sailing", "trade", "mining", "coinage", "navigation", "archery", "farming", "milling", "baking", "smelting", "statecraft", "carpentry"] },
-	plainsfolk: { id: "plainsfolk", name: "Plainsfolk", startTech: "farming", perk: "Farms produce double", research: ["forestry", "sawmills", "milling", "baking", "hunting", "archery", "mining", "trade", "smelting", "masonry", "smithing", "coinage", "carpentry", "engineering"] }
+	coastfolk: { id: "coastfolk", name: "Coastfolk", startTech: "fishing", perk: "Fish feeds cities a quarter more", research: ["forestry", "sawmills", "sailing", "trade", "mining", "coinage", "navigation", "archery", "farming", "milling", "baking", "smelting", "statecraft", "carpentry"] },
+	plainsfolk: { id: "plainsfolk", name: "Plainsfolk", startTech: "farming", perk: "Farms produce double, and grain feeds their cities (a quarter as well as fish)", research: ["forestry", "sawmills", "milling", "baking", "hunting", "archery", "mining", "trade", "smelting", "masonry", "smithing", "coinage", "carpentry", "engineering"] }
 };
 
 export const CIV_IDS = Object.keys(CIVS) as CivId[];

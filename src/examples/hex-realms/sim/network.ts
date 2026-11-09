@@ -1,5 +1,5 @@
 import { Terrain } from "../terrain";
-import type { Good, Goods } from "./rules";
+import { foodGoodsOf, type Good, type Goods } from "./rules";
 import type { Sim } from "./sim";
 
 /**
@@ -186,7 +186,7 @@ export function takeGoods (sim: Sim, player: number, tile: number, goods: Record
 	const stores = reachableStores(sim, player, nodes, tile);
 	for (const [good, amount] of Object.entries(goods)) {
 		let left = amount;
-		const kinds: Good[] = good === "food" ? ["bread", "fish", "game"] : [good as Good];
+		const kinds: Good[] = good === "food" ? foodGoodsOf(sim.player(player).civ) : [good as Good];
 		for (const store of stores) {
 			for (const k of kinds) {
 				while (left > 0 && (store[k] ?? 0) > 0) {

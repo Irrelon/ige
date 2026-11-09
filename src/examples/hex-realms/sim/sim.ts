@@ -39,6 +39,7 @@ export function defaultOptions (overrides: Partial<GameOptions> = {}): GameOptio
 		lineOfSight: true,
 		allowFounding: true,
 		tribeTechs: true,
+		shuffleStarts: true,
 		victories: { domination: true, score: true, prosperity: true, alliance: true, diplomatic: true },
 		turnLimit: 60,
 		difficulty: "normal",
@@ -134,7 +135,13 @@ export class Sim {
 			[civPool[i], civPool[j]] = [civPool[j], civPool[i]];
 		}
 
-		const starts = setup.starts ?? chooseStartPositions(map, n);
+		const starts = [...(setup.starts ?? chooseStartPositions(map, n))];
+		if (!setup.starts && options.shuffleStarts) {
+			for (let i = starts.length - 1; i > 0; i--) {
+				const j = Math.floor(sim.rand() * (i + 1));
+				[starts[i], starts[j]] = [starts[j], starts[i]];
+			}
+		}
 		for (let p = 0; p < n; p++) {
 			const civ: CivId = options.civs?.[p] ?? civPool[(p - (options.civs?.length ?? 0) + civPool.length * 4) % civPool.length];
 			const [colorName, css] = PLAYER_COLORS[p % PLAYER_COLORS.length];

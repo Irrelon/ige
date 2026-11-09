@@ -4,8 +4,8 @@ import { marketFactor, roadBonus } from "./effects";
 import { wonderCompleted, wonderProblem } from "./wonders";
 import { fail, ok } from "./result";
 import {
-	BUFFER_SIZE, type BuildingId, BUILDINGS, BUY_PRICE, CARRIER_SPEED, Deposit, DEPOSIT_GOOD, type Good, GOOD_INFO, type Goods,
-	isFood, ROAD_CAPACITY, ROAD_COST, RUSH_PRICE, SEA_STEP, TECHS
+	BUFFER_SIZE, type BuildingId, BUILDINGS, BUY_PRICE, CARRIER_SPEED, Deposit, DEPOSIT_GOOD, foodGoodsOf, foodValueOf, type Good, GOOD_INFO, type Goods,
+	ROAD_CAPACITY, ROAD_COST, RUSH_PRICE, SEA_STEP, TECHS
 } from "./rules";
 import type { Sim } from "./sim";
 import { availableGoods, networkNodes, search, takeGoods } from "./network";
@@ -408,7 +408,7 @@ export function economyPhase (sim: Sim, player: number, lines: string[]): void {
 	const incoming = new Map<string, number>();
 	for (const c of sim.state.cargo) {
 		if (c.owner !== player) continue;
-		const key = `${c.destKind}:${c.dest}:${isFood(c.good) && c.purpose === "food" ? "food" : c.good}`;
+		const key = `${c.destKind}:${c.dest}:${c.purpose === "food" && foodValueOf(p.civ, c.good) > 0 ? "food" : c.good}`;
 		incoming.set(key, (incoming.get(key) ?? 0) + 1);
 	}
 	const inFlight = (destKind: string, dest: number, good: string) => incoming.get(`${destKind}:${dest}:${good}`) ?? 0;
@@ -436,7 +436,7 @@ export function economyPhase (sim: Sim, player: number, lines: string[]): void {
 	let ate = 0;
 	for (const city of sim.citiesOf(player)) {
 		// Food already in the city's own store is eaten straight away
-		for (const g of ["bread", "fish", "game"] as Good[]) {
+		for (const g of foodGoodsOf(p.civ)) {
 			while ((city.store[g] ?? 0) > 0) {
 				city.store[g]! -= 1;
 				if (!city.store[g]) delete city.store[g];
@@ -488,7 +488,7 @@ export function economyPhase (sim: Sim, player: number, lines: string[]): void {
 					}
 					const city = sim.cityOn(t);
 					if (city && city.owner === player) {
-						dest = { kind: "city", id: city.id, tile: t, purpose: isFood(g) ? "food" : "store" };
+						dest = { kind: "city", id: city.id, tile: t, purpose: foodValueOf(p.civ, g) > 0 ? "food" : "store" };
 						break;
 					}
 				}
@@ -585,7 +585,7 @@ export function economyPhase (sim: Sim, player: number, lines: string[]): void {
 		if (cargo.destKind === "city") {
 			const city = sim.city(cargo.dest);
 			if (!city || city.owner !== player) continue;
-			if (cargo.purpose === "food" && isFood(cargo.good)) {
+			if (cargo.purpose === "food" && foodValue(sim, player, cargo.good) > 0) {
 				addGrowth(sim, city, foodValue(sim, player, cargo.good));
 				ate++;
 			} else {
@@ -639,7 +639,7 @@ function hasNeighbourNode (sim: Sim, nodes: Uint8Array, tile: number): boolean {
 
 /** Take one unit of a good (or any food) from a source tile, returning what was taken. */
 function takeFromSource (sim: Sim, player: number, tile: number, good: Good | "food"): Good | null {
-	const kinds: Good[] = good === "food" ? ["bread", "fish", "game"] : [good];
+	const kinds: Good[] = good === "food" ? foodGoodsOf(sim.player(player).civ) : [good];
 	const b = sim.buildingOn(tile);
 	if (b && b.owner === player) {
 		for (const k of kinds) {

@@ -202,12 +202,20 @@ Four to six civs, each with a starting tech, a start-terrain bias and one perk (
 | River Folk | Trade | Carriers move 2 extra tiles per turn |
 | Woodlanders | Forestry | Sawmills produce double |
 | Horse Lords | Riding | Riders cost 1 star less and need no horse |
-| Coastfolk | Fishing | Fish feeds cities twice as much |
-| Plainsfolk | Farming | Farms produce double |
+| Coastfolk | Fishing | Fish feeds cities a quarter more (1.25 growth) |
+| Plainsfolk | Farming | Farms produce double, and grain feeds their cities (0.25 growth, a quarter of fish) |
 
 Each starting tech is a different tier-1 tech, as in Polytopia, giving each tribe a nudge in its own direction. The
 "Tribe starting techs" game option (on by default) can switch this off, so every civ starts with no research at all;
 perks are unchanged either way. The setup screen's civ list shows each tribe's starting tech and perk.
+
+Balance (2026-11-09, all-AI 4-civ games of 60 turns): Coastfolk's perk was "fish feeds twice as much" and they won
+54% of games, while Plainsfolk (double farms, but grain only feeds once milled and baked) won 6%. Fish now gives 1.25
+growth to Coastfolk, and Plainsfolk cities eat grain at 0.25 a unit (a double-output farm then feeds about half as
+well as a fishery), which brought them to about 37% and 38% across 85 games each, with the other four tribes at
+14-23%. Turning the Coastfolk perk off entirely didn't change their results: their edge is starting with a food tech.
+Start spots were also handed out best first, so the first seat won 44% of games; they are now shuffled between the
+civs (the `shuffleStarts` option, on for new games), which evened wins by seat to 5 / 9 / 11 / 11 of 36.
 
 ## 9. Victory and game setup
 

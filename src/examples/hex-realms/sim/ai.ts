@@ -406,9 +406,11 @@ class AiTurn {
 		const stock = this.localStock(city.tile);
 		const mine = sim.buildingsOf(this.p);
 		const here = mine.filter((b) => b.city === city.id);
-		const food = here.filter((b) => FOOD_BUILDINGS.includes(b.type)).length;
+		// Plainsfolk eat grain, so their farms feed cities too
+		const feeders: BuildingId[] = sim.player(this.p).civ === "plainsfolk" ? [...FOOD_BUILDINGS, "farm"] : FOOD_BUILDINGS;
+		const food = here.filter((b) => feeders.includes(b.type)).length;
 		if (food < (city.level >= 3 ? 2 : 1)) {
-			for (const type of FOOD_BUILDINGS) {
+			for (const type of feeders) {
 				if (sim.hasTech(this.p, BUILDINGS[type].tech) && this.placeType(city, type, stock)) return;
 			}
 		}

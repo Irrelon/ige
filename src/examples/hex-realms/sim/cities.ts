@@ -3,7 +3,7 @@ import { cityConquered, villageTaken } from "./diplomacy";
 import { trainsVeterans } from "./effects";
 import { availableGoods, takeGoods } from "./network";
 import { fail, ok } from "./result";
-import { BUILDINGS, buildingSlots, FOOD_VALUE, type Good, growthNeeded, levelRewards, NEW_CITY_STORE, type RewardId, UNIT_TYPES, type UnitTypeId } from "./rules";
+import { BUILDINGS, buildingSlots, foodGoodsOf, foodValueOf, type Good, growthNeeded, levelRewards, NEW_CITY_STORE, type RewardId, UNIT_TYPES, type UnitTypeId } from "./rules";
 import type { Sim } from "./sim";
 import type { CityState, CommandResult } from "./types";
 
@@ -155,8 +155,7 @@ export function addGrowth (sim: Sim, city: CityState, points: number): void {
 
 /** Growth from delivering a food good to a city of this player. */
 export function foodValue (sim: Sim, player: number, good: Good): number {
-	const value = FOOD_VALUE[good] ?? 0;
-	return good === "fish" && sim.player(player).civ === "coastfolk" ? value * 2 : value;
+	return foodValueOf(sim.player(player).civ, good);
 }
 
 export function rewardCommand (sim: Sim, player: number, cityId: number, reward: RewardId): CommandResult {
@@ -223,7 +222,7 @@ export function trainProblem (sim: Sim, player: number, cityId: number, type: Un
 	if (sim.player(player).stars < cost.stars) return `Needs ${cost.stars} stars`;
 	const have = availableGoods(sim, player, city.tile);
 	for (const [good, amount] of Object.entries(cost.goods)) {
-		const available = good === "food" ? (have.fish ?? 0) + (have.game ?? 0) + (have.bread ?? 0) : have[good as Good] ?? 0;
+		const available = good === "food" ? foodGoodsOf(sim.player(player).civ).reduce((n, g) => n + (have[g] ?? 0), 0) : have[good as Good] ?? 0;
 		if (available < amount) return `Needs ${amount} ${good} in connected stores`;
 	}
 	return null;

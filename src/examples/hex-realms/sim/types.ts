@@ -30,6 +30,12 @@ export interface GameOptions {
 	 * Polytopia. Off, every civ starts with none. (Missing in older saves: on.)
 	 */
 	tribeTechs?: boolean;
+	/**
+	 * Shuffle the start spots between the civs. They are chosen best first, so
+	 * without this the first seat (the host, or you against the AI) always got
+	 * the best one. Missing in games from before it, which keep their starts.
+	 */
+	shuffleStarts?: boolean;
 	victories: Record<VictoryType, boolean>;
 	/** Score victory is decided after this many turns. */
 	turnLimit: number;
