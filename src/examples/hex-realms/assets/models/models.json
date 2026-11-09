@@ -91,6 +91,23 @@
 		"skinned": false,
 		"bytes": 418404
 	},
+	"quarry": {
+		"file": "quarry.glb",
+		"min": [
+			-0.448,
+			-0.3094,
+			-0.4886
+		],
+		"max": [
+			0.452,
+			0.3733,
+			0.375
+		],
+		"triangles": 3230,
+		"animations": [],
+		"skinned": false,
+		"bytes": 343120
+	},
 	"rider": {
 		"file": "rider.glb",
 		"min": [
