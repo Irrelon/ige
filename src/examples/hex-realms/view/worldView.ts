@@ -103,13 +103,24 @@ interface UnitView {
 	tile: number;
 	queue: number[];
 	stepT: number;
-	lunge: { to: number; t: number } | null;
+	lunge: { to: number; t: number; ranged?: boolean } | null;
 	flash: number;
 	pop: number;
 	removeAt: number;
 	phase: number;
 	selected: boolean;
 	shown: boolean;
+}
+
+/** An arrow or a catapult stone in flight. */
+interface ShotView {
+	entity: IgeEntity;
+	from: { x: number; y: number; z: number };
+	to: { x: number; y: number; z: number };
+	/** Progress, 0 to 1 (negative while waiting for the attack clip to loose it). */
+	t: number;
+	time: number;
+	arc: number;
 }
 
 interface CargoView {
@@ -299,6 +310,7 @@ export class WorldView {
 	cities = new Map<number, IgeEntity[]>();
 	buildings = new Map<number, IgeEntity[]>();
 	cargo: CargoView[] = [];
+	shots: ShotView[] = [];
 	cargoPool: IgeEntity[] = [];
 	roads?: IgeEntity;
 	deposits?: IgeEntity;
@@ -1065,8 +1077,9 @@ export class WorldView {
 					const a = this.units.get(e.attacker);
 					const d = this.units.get(e.defender);
 					if (a) {
-						a.lunge = { to: e.to, t: 0 };
+						a.lunge = { to: e.to, t: 0, ranged: e.ranged };
 						this.playClip(a, "attack", ATTACK_SPEED, true);
+						if (e.ranged) this.addShot(a.type === "catapult", e.from, e.to);
 					}
 					if (d) {
 						d.flash = 0.4;
@@ -1146,6 +1159,29 @@ export class WorldView {
 		return (v.queue.length - v.stepT) * STEP_TIME;
 	}
 
+	/** An arrow (or a catapult's stone) flying from one tile to another. */
+	protected addShot (stone: boolean, from: number, to: number): void {
+		const entity = new IgeEntity();
+		entity.id(this.uid("shot"));
+		entity._geometryData = stone ? ORB : CUBE;
+		entity._materialData = material(stone ? { r: 0.45, g: 0.43, b: 0.4 } : { r: 0.3, g: 0.2, b: 0.12 });
+		entity._noShadowCast = true;
+		const fx = this.tileX(from), fz = this.tileZ(from), tx = this.tileX(to), tz = this.tileZ(to);
+		if (stone) entity.scaleTo(10, 10, 10);
+		else entity.scaleTo(1.6, 1.6, 18).rotateTo(0, Math.atan2(tx - fx, tz - fz), 0);
+		entity.hide();
+		entity.mount(this.unitLayer);
+		const dist = Math.hypot(tx - fx, tz - fz);
+		this.shots.push({
+			entity,
+			from: { x: fx, y: this.groundAt(fx, fz) + 30, z: fz },
+			to: { x: tx, y: this.groundAt(tx, tz) + 18, z: tz },
+			t: -0.5,
+			time: stone ? 0.6 : 0.4,
+			arc: dist * (stone ? 0.45 : 0.18)
+		});
+	}
+
 	protected addCargo (good: Good, path: number[]): void {
 		if (path.length < 2) return;
 		let entity = this.cargoPool.pop();
@@ -1168,7 +1204,7 @@ export class WorldView {
 	// ------------------------------------------------------------------
 
 	get animating (): boolean {
-		if (this.cargo.length) return true;
+		if (this.cargo.length || this.shots.length) return true;
 		for (const v of this.units.values()) {
 			if (v.queue.length || v.lunge || v.flash > 0 || v.pop < 1 || v.removeAt >= 0) return true;
 			if (v.clipUntil !== undefined && v.clipUntil > this.time) return true;
@@ -1223,7 +1259,8 @@ export class WorldView {
 				v.lunge.t += dt / LUNGE_TIME;
 				const a = this.anchor(v.tile);
 				const tx = this.tileX(v.lunge.to), tz = this.tileZ(v.lunge.to);
-				const k = Math.sin(Math.min(1, v.lunge.t) * Math.PI) * 0.4;
+				// Melee units lunge at their target; ranged ones lean in and loose a shot
+				const k = Math.sin(Math.min(1, v.lunge.t) * Math.PI) * (v.lunge.ranged ? 0.06 : 0.4);
 				v.root.translateTo(a.x + (tx - a.x) * k, this.groundAt(a.x, a.z) + k * 10, a.z + (tz - a.z) * k);
 				v.root.rotateTo(0, Math.atan2(tx - a.x, tz - a.z), 0);
 				if (v.lunge.t >= 1) {
@@ -1235,6 +1272,25 @@ export class WorldView {
 			}
 			this.settleClip(v, time);
 			if (v.clipUntil !== undefined && v.clipUntil > time) moving = true;
+		}
+
+		for (let i = this.shots.length - 1; i >= 0; i--) {
+			const s = this.shots[i];
+			moving = true;
+			s.t += dt / s.time;
+			if (s.t >= 1) {
+				s.entity.destroy();
+				this.shots.splice(i, 1);
+				continue;
+			}
+			if (s.t < 0) continue;
+			const k = s.t;
+			s.entity.show();
+			s.entity.translateTo(
+				s.from.x + (s.to.x - s.from.x) * k,
+				s.from.y + (s.to.y - s.from.y) * k + Math.sin(k * Math.PI) * s.arc,
+				s.from.z + (s.to.z - s.from.z) * k
+			);
 		}
 
 		for (let i = this.cargo.length - 1; i >= 0; i--) {
