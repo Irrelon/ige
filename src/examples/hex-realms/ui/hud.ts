@@ -19,7 +19,7 @@ import { FEATURE_NAMES, type Relief, RELIEF_NAMES, type Terrain, TERRAIN_INFO } 
 import type { TerrainView } from "../view/terrainView";
 import type { WorldView } from "../view/worldView";
 import { dealName, DiplomacyScreen } from "./diplomacyScreen";
-import { esc, goodChip, goodsInline, goodsList, setHtml, stars } from "./html";
+import { esc, goodChip, goodsInline, goodsList, setHtml, stars, updateHtml } from "./html";
 import { play } from "./sfx";
 import { markTipSeen, nextTip, resetTips, setTipsEnabled, tipsEnabled } from "./tips";
 import { setSoundEnabled, soundEnabled } from "./sfx";
@@ -788,8 +788,7 @@ export class Hud {
 			? h.renderer.worldToScreen(h.viewport, h.world.tileX(city.tile), h.terrain.surface.tileHeight(city.tile) + 62, h.world.tileZ(city.tile))
 			: h.renderer.worldToScreen(h.viewport, pos.x, pos.y + BADGE_HEIGHT[u.type], pos.z);
 		if (!p || !p.visible) return hide();
-		const html = buttons.join("");
-		if (el.innerHTML !== html) el.innerHTML = html;
+		updateHtml(el, buttons.join(""));
 		// (above the unit's badge, or above the city banner)
 		el.style.transform = `translate(${p.x.toFixed(0)}px, ${(p.y - (city ? 30 : 24)).toFixed(0)}px) translate(-50%, -100%)`;
 		el.classList.remove("hidden");
@@ -811,7 +810,7 @@ export class Hud {
 				document.getElementById("labels")?.appendChild(el);
 				this.labels.set(key, el);
 			}
-			if (el.innerHTML !== html) el.innerHTML = html;
+			updateHtml(el, html);
 			el.style.transform = `translate(${p.x.toFixed(0)}px, ${p.y.toFixed(0)}px) translate(-50%, -100%)`;
 			used.add(key);
 		};

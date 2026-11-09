@@ -34,7 +34,24 @@ export function actionButton (action: string, label: string, data: Record<string
 	return `<button class="${cls}" data-action="${action}" ${attrs} ${problem ? "disabled" : ""} ${tip ? `title="${esc(tip)}"` : ""}>${label}</button>`;
 }
 
+/** The markup last written to each element by updateHtml. */
+const written = new WeakMap<Element, string>();
+
+/**
+ * Set an element's HTML only when it changed. Compares with what was last
+ * written, not with innerHTML: the browser rewrites markup it reads back
+ * (entities such as &#9733; come back as the character, SVG tags are closed),
+ * so that comparison never matched and the element was rebuilt every frame.
+ * A rebuilt button under the pointer can't be clicked (the press and release
+ * land on different elements).
+ */
+export function updateHtml (el: Element, html: string): void {
+	if (written.get(el) === html) return;
+	written.set(el, html);
+	el.innerHTML = html;
+}
+
 export function setHtml (id: string, html: string): void {
 	const el = document.getElementById(id);
-	if (el && el.innerHTML !== html) el.innerHTML = html;
+	if (el) updateHtml(el, html);
 }

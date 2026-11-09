@@ -23,7 +23,7 @@ import { Sim } from "./sim/sim";
 import type { Command, GameOptions, SimEvent } from "./sim/types";
 import { StrategyCamera } from "./strategyCamera";
 import type { TerrainStyle } from "./surface";
-import { esc } from "./ui/html";
+import { esc, setHtml } from "./ui/html";
 import { Hud, type HudHost } from "./ui/hud";
 import { play } from "./ui/sfx";
 import { MAP_PRESETS, optionsFromUrl, type SetupResult, showSetup } from "./ui/setup";
@@ -1172,8 +1172,7 @@ function urlForOptions (o: GameOptions, style: TerrainStyle): string {
 }
 
 function setText (id: string, html: string): void {
-	const el = document.getElementById(id);
-	if (el && el.innerHTML !== html) el.innerHTML = html;
+	setHtml(id, html);
 }
 
 function hideLoading (): void {
