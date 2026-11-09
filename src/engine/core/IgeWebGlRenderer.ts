@@ -503,7 +503,8 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 			alpha: true,
 			antialias: true,
 			depth: true,
-			stencil: false,
+			// Silhouettes through walls mask out the entity's own pixels in the stencil
+			stencil: true,
 			preserveDrawingBuffer: this._preserveDrawingBuffer,
 			premultipliedAlpha: true,
 			powerPreference: "high-performance"
@@ -2727,9 +2728,11 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 
 	/**
 	 * Draw items again as flat coloured silhouettes where they are hidden:
-	 * the depth test passes only behind what's already drawn (GREATER), so
-	 * only the parts behind walls show. Lighting is cancelled by drawing
-	 * with a black base colour and the silhouette colour as emission.
+	 * the depth test passes only behind what's already drawn (GREATER), and
+	 * a stencil mask of the items' own visible pixels keeps a character's
+	 * far side from showing through its near side, so only the parts behind
+	 * walls (and other things) show. Lighting is cancelled by drawing with a
+	 * black base colour and the silhouette colour as emission.
 	 */
 	protected _renderOccluded(items: IgeWebGlRenderItem[], matrices: IgeCameraMatrices): void {
 		const gl = this._canvasContext;
@@ -2742,6 +2745,27 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 		const n = items.length * 9;
 		if (!this._occludedSaved || this._occludedSaved.length < n) this._occludedSaved = new Float32Array(n * 2);
 		const saved = this._occludedSaved;
+
+		// 1. Mark in the stencil where these items are the front-most surface (drawn invisibly, depth
+		//    "less or equal" with a little bias), so their own far side isn't outlined through their near side
+		gl.enable(gl.STENCIL_TEST);
+		gl.stencilMask(0xff);
+		gl.clearStencil(0);
+		gl.clear(gl.STENCIL_BUFFER_BIT);
+		gl.stencilFunc(gl.ALWAYS, 1, 0xff);
+		gl.stencilOp(gl.KEEP, gl.KEEP, gl.REPLACE);
+		gl.colorMask(false, false, false, false);
+		gl.enable(gl.POLYGON_OFFSET_FILL);
+		gl.polygonOffset(-1, -4);
+		this._stateManager.setDepthFunc(gl.LEQUAL);
+		this._renderTransparentItems(items, matrices);
+		gl.disable(gl.POLYGON_OFFSET_FILL);
+		gl.colorMask(true, true, true, true);
+
+		// 2. The silhouettes: only behind something else (depth GREATER) and not over the items themselves
+		gl.stencilFunc(gl.NOTEQUAL, 1, 0xff);
+		gl.stencilOp(gl.KEEP, gl.KEEP, gl.KEEP);
+		this._stateManager.setDepthFunc(gl.GREATER);
 		for (let i = 0; i < items.length; i++) {
 			const mat = items[i].material, c = items[i].occluded!, o = i * 9;
 			saved[o] = mat.r; saved[o + 1] = mat.g; saved[o + 2] = mat.b; saved[o + 3] = mat.a; saved[o + 4] = mat.opacity;
@@ -2755,6 +2779,7 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 			mat.emissiveIntensity = 1;
 		}
 		this._renderTransparentItems(items, matrices);
+		gl.disable(gl.STENCIL_TEST);
 		// Put them back for the next view (the same items draw in every split-screen view)
 		for (let i = 0; i < items.length; i++) {
 			const mat = items[i].material, o = i * 9;
