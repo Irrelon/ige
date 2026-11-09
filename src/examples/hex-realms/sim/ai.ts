@@ -1,7 +1,7 @@
 import { ambitionProblem, measure, target as milestoneTarget } from "./ambitions";
 import { attackTargets, preview } from "./combat";
 import { captureProblem, foundProblem, slotCap, slotsUsed, trainProblem, unitCost } from "./cities";
-import { actionProblem, agreementCost, aiAccepts, attitude, type DealTerms, justified, proposalProblem, strength, warProblem, weariness } from "./diplomacy";
+import { actionProblem, agreementCost, aiAccepts, attitude, closeBordersProblem, type DealTerms, justified, proposalProblem, strength, warProblem, weariness } from "./diplomacy";
 import { buildingStars, buildProblem, buyCost, networkNodes, rushCost, rushProblem, storedGoods } from "./economy";
 import { researchCost } from "./effects";
 import { search } from "./network";
@@ -183,6 +183,12 @@ class AiTurn {
 			const odds = aggression * (fair ? 3 : 1) * (conqueror ? 2 : 1);
 			if (relation === PEACE && neighbour && (grudge || opportunity) && this.rand() < odds && sim.state.turn > 8 && !warProblem(sim, this.p, o)) {
 				this.do({ type: "declareWar", target: o });
+				continue;
+			}
+
+			// Shut out a civ we've come to dislike
+			if (feel <= -4 && this.rand() < 0.15 && !closeBordersProblem(sim, this.p, o)) {
+				this.do({ type: "closeBorders", target: o });
 				continue;
 			}
 

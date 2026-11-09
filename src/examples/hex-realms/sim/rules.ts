@@ -556,6 +556,8 @@ export const DENOUNCE_COST = 5;
 /** Sanctions cut the target's star income by a share for some turns. */
 export const SANCTION_COST = 15;
 export const SANCTION_TURNS = 10;
+/** How much closing open borders early sours the other civ's mood (a snub: no grievance, no stars). */
+export const CLOSE_BORDERS_MOOD = 2;
 export const SANCTION_SHARE = 0.15;
 /** Trade routes run this many turns. */
 export const ROUTE_TURNS = 10;

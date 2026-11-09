@@ -1,5 +1,5 @@
 import {
-	actionProblem, agreementCost, aiAccepts, attitude, attitudeFactors, civStock, cleanGoods, type DealTerms, grievance, hasPact, justified,
+	actionProblem, agreementCost, aiAccepts, attitude, attitudeFactors, civStock, cleanGoods, closeBordersProblem, type DealTerms, grievance, hasPact, justified,
 	proposalProblem, truceUntil, votesOf, warProblem
 } from "../sim/diplomacy";
 import {
@@ -293,7 +293,9 @@ export class DiplomacyScreen {
 				body = !theyCan ? notYet : [
 					row("Alliance", "Shared vision; you defend each other in war.", deal("alliance")),
 					row("Defensive pact", "Each joins in if the other is attacked.", deal("pact")),
-					row("Open borders", "Your units may cross each other's land.", deal("openBorders")),
+					sim.state.diplomacy.openBorders[me * sim.playerCount + o]
+						? row("Open borders", "Open now. Closing them sends each side's units home, and they'll take it as a snub.", control("close-borders", "Close", { player: o }, closeBordersProblem(sim, me, o)))
+						: row("Open borders", "Your units may cross each other's land.", deal("openBorders")),
 					row("Trade agreement", "Both earn stars each turn.", deal("trade")),
 					row(`Cultural exchange ${stars(EXCHANGE_COST)}`, `You pay; both gain a star a turn for ${EXCHANGE_TURNS} turns.`, deal("exchange")),
 					row(`Research agreement ${stars(agreementCost(sim, me))}`, `Each pays; both get a free technology in ${RESEARCH_TURNS} turns.`, deal("research"))

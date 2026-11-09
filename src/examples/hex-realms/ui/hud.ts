@@ -263,6 +263,7 @@ export class Hud {
 				break;
 			}
 			case "war": run({ type: "declareWar", target: num("player") }); this.openModal("diplomacy"); break;
+			case "close-borders": run({ type: "closeBorders", target: num("player") }); this.openModal("diplomacy"); break;
 			case "propose": run({ type: "propose", to: num("player"), kind: data.kind as DealKind, stars: data.stars ? num("stars") : 0 }); this.openModal("diplomacy"); break;
 			case "diplo-civ": this.diplo.civ = num("player"); this.diplo.resetDraft(); this.openModal("diplomacy"); break;
 			case "diplo-tab": this.diplo.setTab(data.tab ?? ""); this.openModal("diplomacy"); break;
@@ -679,7 +680,12 @@ export class Hud {
 					break;
 				}
 				case "diplomacyAction":
-					if (e.to === me) this.toast(`${name(e.from)} ${e.kind === "denounce" ? "<b>denounced</b> you" : "imposed <b>sanctions</b> on you: your income drops for 10 turns"}`, "bad", 6);
+					if (e.to === me) {
+						const what = e.kind === "denounce" ? "<b>denounced</b> you"
+							: e.kind === "sanction" ? "imposed <b>sanctions</b> on you: your income drops for 10 turns"
+								: "<b>closed their borders</b> to you: your units in their land walk home";
+						this.toast(`${name(e.from)} ${what}`, "bad", 6);
+					}
 					break;
 				case "wonder": {
 					const info = BUILDINGS[e.building];

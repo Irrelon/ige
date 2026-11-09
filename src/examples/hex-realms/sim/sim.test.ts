@@ -696,6 +696,29 @@ describe("diplomacy II", () => {
 		expect(grievance(sim, 1, 0)).toBe(4);
 	});
 
+	test("either side can close open borders early: a snub, and each side's units walk home", () => {
+		const sim = blank(2, [sim2(4, 4), sim2(20, 12)], { humans: [0, 1] });
+		meetAll(sim);
+		clearUnits(sim);
+		const d = sim.state.diplomacy;
+		expect(sim.apply(0, { type: "closeBorders", target: 1 }).ok).toBe(false);
+		d.openBorders[1] = d.openBorders[2] = 1;
+		const capital = sim.citiesOf(1)[0].tile;
+		const inside = sim.neighbors(capital).find((t) => sim.map.owner[t] === 1) as number;
+		const guest = sim.createUnit("warrior", 0, inside, true);
+		sim.drainEvents();
+		const mood = attitude(sim, 1, 0);
+		// Closing them sends the closer's own units home too
+		expect(sim.apply(0, { type: "closeBorders", target: 1 }).ok).toBe(true);
+		expect([d.openBorders[1], d.openBorders[2]]).toEqual([0, 0]);
+		expect(attitude(sim, 1, 0)).toBe(mood - 2);
+		expect(grievance(sim, 1, 0)).toBe(0);
+		expect(sim.map.owner[guest.tile]).not.toBe(1);
+		const walk = sim.drainEvents().find((e) => e.type === "unitMoved");
+		expect(walk && walk.type === "unitMoved" && walk.path[0]).toBe(inside);
+		expect(sim.apply(0, { type: "closeBorders", target: 1 }).ok).toBe(false);
+	});
+
 	test("online seat changes are game commands, allowed out of turn", () => {
 		const sim = blank(3, [sim2(2, 2), sim2(20, 2), sim2(12, 13)], { humans: [0] });
 		expect(sim.current).toBe(0);

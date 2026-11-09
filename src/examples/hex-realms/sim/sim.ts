@@ -579,6 +579,7 @@ export class Sim {
 			case "respond": result = diplomacy.respondCommand(this, player, command.proposal, command.accept); break;
 			case "denounce": result = diplomacy.denounceCommand(this, player, command.target); break;
 			case "sanction": result = diplomacy.sanctionCommand(this, player, command.target); break;
+			case "closeBorders": result = diplomacy.closeBordersCommand(this, player, command.target); break;
 			case "ambition": result = ambitions.ambitionCommand(this, player, command.ambition); break;
 			case "seat": result = this.seatCommand(command.player, command.human); break;
 			case "endTurn": result = this.endTurn(player); break;

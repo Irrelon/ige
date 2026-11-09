@@ -404,6 +404,10 @@ Peacemakers (+3 council votes, other civs warm to you) and Patrons (+2 stars a t
   during which neither side can declare war.
 - Costs: cultural exchange 12 stars (proposer), research agreement 10 + 2 per city (each side), denouncing 5,
   sanctions 15 (the target loses 15% of its income for 10 turns). Grievances fade by 0.15 a round; 4 justify a war.
+- **Closing borders**: open borders last until a war, but either side can close them early from the diplomacy
+  screen. It's within its rights, so it costs nothing and gives no grievance, but the other civ's mood drops by 2.
+  Units left in the other's land walk home to the nearest tile they may stand on. An AI closes its borders to a civ
+  it has come to dislike (mood -4 or worse).
 - **AI agendas**: every AI leader has a visible agenda (Expansionist, Merchant, Militarist, Builder, Peacemaker,
   Scholar) that shapes its attitudes; the diplomacy screen shows why each civ feels the way it does.
 

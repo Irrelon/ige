@@ -1,8 +1,9 @@
 import { hasLegacy, hasWonder, voteBonus, wondersOf } from "./effects";
+import { canEnter } from "./movement";
 import { networkNodes, search } from "./network";
 import { fail, ok } from "./result";
 import {
-	AGENDA_IDS, type AgendaId, CASUS_BELLI, DENOUNCE_COST, EXCHANGE_COST, EXCHANGE_TURNS, type Good, GOOD_INFO, GOODS, type Goods,
+	AGENDA_IDS, type AgendaId, CASUS_BELLI, CLOSE_BORDERS_MOOD, DENOUNCE_COST, EXCHANGE_COST, EXCHANGE_TURNS, type Good, GOOD_INFO, GOODS, type Goods,
 	researchAgreementCost, RESEARCH_TURNS, ROUTE_TURNS, SANCTION_COST, SANCTION_SHARE, SANCTION_TURNS, type TechId, TECH_IDS, TECHS,
 	TRUCE_TURNS, UNIT_TYPES
 } from "./rules";
@@ -530,6 +531,60 @@ export function denounceCommand (sim: Sim, from: number, to: number): CommandRes
 	d.treaties = d.treaties.filter((t) => !((t.kind === "exchange" || t.kind === "research") && ((t.a === from && t.b === to) || (t.a === to && t.b === from))));
 	sim.emit({ type: "diplomacyAction", kind: "denounce", from, to });
 	return ok();
+}
+
+/** Why `from` can't close its borders to `to`, or null. */
+export function closeBordersProblem (sim: Sim, from: number, to: number): string | null {
+	const target = sim.state.players[to];
+	if (!target || !target.alive || to === from) return "Unknown civ";
+	return sim.state.diplomacy.openBorders[ix(sim, from, to)] ? null : "Borders aren't open";
+}
+
+/**
+ * End open borders early (they otherwise last until a war). It's within a
+ * civ's rights, so it costs nothing and gives no grounds for war, but the
+ * other civ takes it as a snub. Each side's units left in the other's land
+ * walk home to the nearest tile they may stand on.
+ */
+export function closeBordersCommand (sim: Sim, from: number, to: number): CommandResult {
+	const problem = closeBordersProblem(sim, from, to);
+	if (problem) return fail(problem);
+	const d = sim.state.diplomacy;
+	d.openBorders[ix(sim, from, to)] = d.openBorders[ix(sim, to, from)] = 0;
+	adjustAttitude(sim, to, from, -CLOSE_BORDERS_MOOD);
+	sendHome(sim, to, from);
+	sendHome(sim, from, to);
+	sim.emit({ type: "diplomacyAction", kind: "closeBorders", from, to });
+	sim.emit({ type: "relation", a: from, b: to, relation: sim.relation(from, to) });
+	return ok();
+}
+
+/** Move `guest`'s units that may no longer stand in `host`'s land to the nearest tile they may, walking there. */
+function sendHome (sim: Sim, guest: number, host: number): void {
+	const map = sim.map;
+	for (const unit of sim.unitsOf(guest)) {
+		if (map.owner[unit.tile] !== host || canEnter(sim, unit, unit.tile)) continue;
+		// Breadth first over the map, so the nearest free tile wins (ties by neighbour order, so it's deterministic)
+		const prev = new Map<number, number>([[unit.tile, -1]]);
+		const queue = [unit.tile];
+		let found = -1;
+		for (let i = 0; i < queue.length && found < 0 && i < 2000; i++) {
+			for (const n of sim.neighbors(queue[i])) {
+				if (prev.has(n)) continue;
+				prev.set(n, queue[i]);
+				if (sim.unitAt[n] < 0 && canEnter(sim, unit, n)) {
+					found = n;
+					break;
+				}
+				queue.push(n);
+			}
+		}
+		if (found < 0) continue;
+		const path: number[] = [];
+		for (let t = found; t >= 0; t = prev.get(t) as number) path.unshift(t);
+		sim.relocateUnit(unit, found);
+		sim.emit({ type: "unitMoved", unit: unit.id, path });
+	}
 }
 
 /** Sanction a civ: its star income drops for a while and trade with you stops. */
