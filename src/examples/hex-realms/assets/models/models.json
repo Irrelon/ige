@@ -307,6 +307,23 @@
 		"skinned": false,
 		"bytes": 471612
 	},
+	"warehouse": {
+		"file": "warehouse.glb",
+		"min": [
+			-0.4455,
+			-0.3804,
+			-0.3849
+		],
+		"max": [
+			0.4613,
+			0.4495,
+			0.4435
+		],
+		"triangles": 3949,
+		"animations": [],
+		"skinned": false,
+		"bytes": 573972
+	},
 	"warrior": {
 		"file": "warrior.glb",
 		"min": [
