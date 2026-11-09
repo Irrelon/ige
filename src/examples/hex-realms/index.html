@@ -101,19 +101,39 @@
 		.tech-links path.done { stroke: rgba(74, 170, 96, 0.75); }
 		.tech-links path.path { stroke: var(--gold); stroke-width: 2.6; }
 		.tech-links path.hot { stroke: #fff; stroke-width: 2.6; }
-		.techs .tech:disabled { opacity: 1; }
-		.tech.locked, .tech.poor { background: #182435; color: #7f8ea3; }
-		.tech.locked small, .tech.poor small { color: #66758a; }
+		.tier .tech.locked, .tier .tech.poor { background: #182435; color: #7f8ea3; }
+		.tier .tech.done { cursor: default; }
+		.tier .tech.locked small, .tier .tech.poor small { color: #66758a; }
 		.tier { display: flex; flex-direction: column; gap: 6px; }
-		.tech { text-align: left; }
-		.tech b { display: block; }
-		.tech.done { background: #1e4a2c; border-color: #3f9a4f; opacity: 1; }
-		.tech.ready { border-color: var(--gold); }
-		.tech.focus { opacity: 1; border: 2px solid var(--gold); box-shadow: 0 0 0 3px rgba(255, 215, 106, 0.35), 0 0 16px rgba(255, 215, 106, 0.45); animation: tech-pulse 1.4s ease-in-out 3; }
-		.tech.path { opacity: 1; border: 2px dashed #7cb7ff; }
+		.tier .tech { position: relative; text-align: left; padding: 6px 10px; border: 1px solid rgba(255, 255, 255, 0.18); border-radius: 6px; background: #23344b; cursor: pointer; }
+		.tier .tech:hover { background: #2d4463; }
+		.tier .tech small { display: block; color: var(--dim); font-size: 10px; }
+		.tier .tech .buy { position: absolute; top: 5px; right: 6px; padding: 1px 6px; font-size: 10px; font-weight: 700; background: #2b6a3a; border-color: #4ade80; color: #eafff0; }
+		.tier .tech .buy.chain { background: #6a5a1f; border-color: var(--gold); color: #fff6d8; }
+		.tier .tech .buy:hover:not(:disabled) { filter: brightness(1.2); }
+		.tier .tech .buy:disabled { opacity: 0.55; background: #2a3445; border-color: rgba(255, 255, 255, 0.2); color: var(--dim); }
+		.tech-note .bad { color: #ff8a80; }
+		.tech-detail { position: sticky; bottom: -16px; margin: 12px -20px -16px; padding: 10px 20px 14px; background: #0f1826; border-top: 1px solid var(--line); z-index: 2; }
+		.tech-detail.empty { padding: 10px 20px; }
+		.tech-detail h4 { margin: 0 0 8px; color: var(--gold); }
+		.unlock-row { display: flex; gap: 14px; align-items: flex-start; }
+		.unlocks { display: flex; gap: 8px; flex-wrap: wrap; }
+		.unlock { display: flex; flex-direction: column; align-items: center; width: 86px; padding: 4px; background: #16202e; border-color: rgba(255, 255, 255, 0.14); }
+		.unlock.on { border-color: var(--gold); box-shadow: 0 0 0 2px rgba(255, 215, 106, 0.3); }
+		.unlock img { width: 72px; height: 72px; border-radius: 4px; }
+		.unlock .icon { display: flex; align-items: center; justify-content: center; width: 72px; height: 72px; font-size: 34px; }
+		.unlock span { font-size: 11px; font-weight: 600; text-align: center; line-height: 1.2; }
+		.unlock small { font-size: 9px; text-transform: uppercase; letter-spacing: 0.5px; }
+		.unlock-info { flex: 1; min-width: 220px; font-size: 13px; line-height: 1.45; }
+		.unlock-info .unit-stats { margin: 4px 0; font-weight: 600; }
+		.tier .tech b { display: block; }
+		.tier .tech.done { background: #1e4a2c; border-color: #3f9a4f; opacity: 1; }
+		.tier .tech.ready { border-color: var(--gold); }
+		.tier .tech.focus { opacity: 1; border: 2px solid var(--gold); box-shadow: 0 0 0 3px rgba(255, 215, 106, 0.35), 0 0 16px rgba(255, 215, 106, 0.45); animation: tech-pulse 1.4s ease-in-out 3; }
+		.tier .tech.path { opacity: 1; border: 2px dashed #7cb7ff; }
 		@keyframes tech-pulse { 50% { box-shadow: 0 0 0 6px rgba(255, 215, 106, 0.15), 0 0 24px rgba(255, 215, 106, 0.6); } }
 		.tech-note b { display: inline; }
-		.tech small.need { color: var(--gold); font-weight: 700; }
+		.tier .tech small.need { color: var(--gold); font-weight: 700; }
 		.tech-note { margin: -4px 0 10px; padding: 6px 10px; background: rgba(255, 215, 106, 0.1); border-left: 3px solid var(--gold); border-radius: 4px; }
 		.locked-option { display: inline-block; padding: 4px 8px; border: 1px dashed rgba(255, 255, 255, 0.22); border-radius: 6px; color: var(--dim); }
 		.locked-option small { display: block; font-size: 10px; }

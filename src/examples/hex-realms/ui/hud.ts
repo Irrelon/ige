@@ -6,7 +6,7 @@ import { attackProblem, preview } from "../sim/combat";
 import { buildingStars, buildOptions, buyCost, buyProblem, carrierSpeed, roadCapacity, roadProblem, rushCost, rushProblem, storedGoods, wonderOptions } from "../sim/economy";
 import { researchCost } from "../sim/effects";
 import {
-	AMBITIONS, BUILDINGS, DEPOSIT_NAMES, type Deposit, GOOD_INFO, GOODS, type Good, type Goods, growthNeeded, levelRewards, REWARDS, ROAD_COST,
+	AMBITIONS, type BuildingId, BUILDINGS, DEPOSIT_NAMES, type Deposit, GOOD_INFO, GOODS, type Good, type Goods, growthNeeded, levelRewards, REWARDS, ROAD_COST,
 	type TechId, TECH_IDS, TECHS, UNIT_TYPE_IDS, type UnitTypeId, UNIT_TYPES, WONDER_IDS
 } from "../sim/rules";
 import type { Sim } from "../sim/sim";
@@ -27,6 +27,23 @@ import { ambitionsModal, wondersModal } from "./wondersScreen";
 import { type ChatLine, type RoomInfo, TURN_TIMERS } from "../net/protocol";
 
 /** What the HUD needs from the game controller. */
+/** What a tech allows beyond its buildings, units and wonders (shown when it's selected in the research screen). */
+const TECH_ABILITIES: Partial<Record<TechId, { icon: string; name: string; text: string }[]>> = {
+	sailing: [{ icon: "&#x26F5;", name: "Embarking", text: "Units can move onto coastal water, where they sail in boats. Ports join your cities across the water with sea lanes." }],
+	navigation: [{ icon: "&#x1F30A;", name: "Deep ocean", text: "Units and ships can cross deep ocean, so sea lanes can reach other continents." }],
+	trade: [{ icon: "&#x1F91D;", name: "Trade agreements", text: "Barter goods and stars with other civs, and set up trade routes that deliver every turn." }],
+	logistics: [{ icon: "&#x1F434;", name: "Pack animals", text: "Carriers move further each turn and every road carries twice as much." }],
+	diplomacy: [{ icon: "&#x1F3DB;&#xFE0F;", name: "World Council", text: "The World Council meets and votes: winning its vote is a Diplomatic victory." }],
+	engineering: [{ icon: "&#x1F4B0;", name: "Prosperity victory", text: "Lets you build the Grand Exchange: finishing it wins a Prosperity victory." }]
+};
+
+/** Where a building can go, for the research screen's descriptions. */
+const SITE_TEXT: Record<string, string> = {
+	forest: "in a forest", forestGame: "in a forest with game", quarry: "on hills or beside a mountain", mine: "on hills with ore, coal or gold",
+	farmland: "on open flat grassland or plains", coastFish: "on the coast beside fish", coast: "on the coast", pasture: "on a horse herd",
+	land: "on open land in your territory", city: "in a city"
+};
+
 /** Icons on unit badges. */
 const UNIT_ICONS: Record<UnitTypeId, string> = {
 	warrior: "&#x1FA93;", archer: "&#x1F3F9;", swordsman: "&#x2694;&#xFE0F;", settler: "&#x26FA;", rider: "&#x1F40E;", catapult: "&#x2604;&#xFE0F;"
@@ -113,6 +130,8 @@ export class Hud {
 	techFocus: { tech: TechId; for: string } | null = null;
 	/** Techs still needed before the focused one. */
 	techPath = new Set<TechId>();
+	/** The unlock whose details show under the tech tree. */
+	unlockChoice: string | null = null;
 
 	constructor (host: HudHost) {
 		this.host = host;
@@ -224,6 +243,24 @@ export class Hud {
 			case "road": run({ type: "road", tile: data.tile ? num("tile") : tile }); break;
 			case "research": run({ type: "research", tech: data.tech as TechId }); this.openModal("tech"); break;
 			case "show-tech": this.techFocus = { tech: data.tech as TechId, for: data.for ?? "" }; this.openModal("tech"); break;
+			case "select-tech": {
+				const t = data.tech as TechId;
+				// Clicking the selected tech again clears the selection
+				this.techFocus = this.techFocus?.tech === t && !this.techFocus.for ? null : { tech: t, for: "" };
+				this.unlockChoice = null;
+				this.openModal("tech");
+				break;
+			}
+			case "unlock-info": this.unlockChoice = data.id ?? null; this.openModal("tech"); break;
+			case "research-chain": {
+				const chain = this.techChain(data.tech as TechId);
+				for (const t of chain) {
+					if (!h.command({ type: "research", tech: t })) break;
+				}
+				this.refresh();
+				this.openModal("tech");
+				break;
+			}
 			case "war": run({ type: "declareWar", target: num("player") }); this.openModal("diplomacy"); break;
 			case "propose": run({ type: "propose", to: num("player"), kind: data.kind as DealKind, stars: data.stars ? num("stars") : 0 }); this.openModal("diplomacy"); break;
 			case "diplo-civ": this.diplo.civ = num("player"); this.diplo.resetDraft(); this.openModal("diplomacy"); break;
@@ -899,22 +936,32 @@ export class Hud {
 		box.onmouseleave = () => box.querySelectorAll(".tech-links path.hot").forEach((el) => el.classList.remove("hot"));
 	}
 
+	/**
+	 * The techs to research to get `tech`, in order: its missing prerequisites
+	 * (lowest tier first, each before anything that needs it), then the tech.
+	 */
+	techChain (tech: TechId): TechId[] {
+		const p = this.sim.player(this.me);
+		const out: TechId[] = [];
+		const visit = (t: TechId): void => {
+			if (p.techs.includes(t) || out.includes(t)) return;
+			for (const r of [...TECHS[t].requires].sort((a, b) => TECHS[a].tier - TECHS[b].tier)) visit(r);
+			out.push(t);
+		};
+		visit(tech);
+		return out;
+	}
+
 	techModal (): string {
 		const sim = this.sim, p = sim.player(this.me);
 		const cities = sim.citiesOf(this.me).length;
-		// A tech asked for (from a locked building): it and the techs still needed before it are highlighted
+		// The selected tech (clicked, or asked for from a locked building): it and the techs still needed
+		// before it are highlighted
 		const focus = this.techFocus?.tech;
-		const path = new Set<TechId>();
-		const walk = (t: TechId) => {
-			for (const r of TECHS[t].requires) {
-				if (!p.techs.includes(r) && !path.has(r)) {
-					path.add(r);
-					walk(r);
-				}
-			}
-		};
-		if (focus) walk(focus);
+		const chain = focus ? this.techChain(focus) : [];
+		const path = new Set<TechId>(chain.filter((t) => t !== focus));
 		this.techPath = path;
+		const chainCost = (ts: TechId[]) => ts.reduce((n, t) => n + researchCost(sim, this.me, t), 0);
 		const tiers = [1, 2, 3, 4].map((tier) => {
 			const cards = TECH_IDS.filter((t) => TECHS[t].tier === tier).map((t) => {
 				const tech = TECHS[t];
@@ -926,19 +973,86 @@ export class Hud {
 				const req = tech.requires.length ? `<small>Needs ${tech.requires.map((r) => TECHS[r].name).join(", ")}</small>` : "";
 				const mark = t === focus ? " focus" : path.has(t) ? " path" : "";
 				const need = t === focus && this.techFocus?.for ? `<small class="need">Needed for ${esc(this.techFocus.for)}</small>` : path.has(t) ? `<small class="need">Research first</small>` : "";
-				return `<button class="tech ${state}${mark}" data-action="research" data-tech="${t}" ${state === "ready" ? "" : "disabled"}><b>${tech.name}</b><small>${tech.unlocks}${wonders.length ? `; wonder: ${wonders.join(", ")}` : ""}</small>${have ? "<small>Researched</small>" : `<small>&#9733;${cost}</small>`}${have ? "" : req}${need}</button>`;
+				// Buying: this tech alone, or it with every prerequisite still missing, for their total
+				let buy = "";
+				if (!have) {
+					const steps = this.techChain(t);
+					const total = chainCost(steps);
+					const short = total - p.stars;
+					const label = steps.length > 1 ? `Buy all ${steps.length} &middot; &#9733;${total}` : `Buy &#9733;${total}`;
+					const title = steps.length > 1
+						? `Research ${steps.map((s2) => TECHS[s2].name).join(", then ")}: ${total} stars in total`
+						: `Research ${tech.name} for ${total} stars`;
+					buy = `<button class="buy${steps.length > 1 ? " chain" : ""}" data-action="research-chain" data-tech="${t}" ${short > 0 ? `disabled title="${esc(`${title}. You need ${short} more.`)}"` : `title="${esc(title)}"`}>${label}</button>`;
+				}
+				return `<div class="tech ${state}${mark}" data-action="select-tech" data-tech="${t}" role="button" tabindex="0" aria-pressed="${t === focus}"><b>${tech.name}</b>${buy}<small>${tech.unlocks}${wonders.length ? `; wonder: ${wonders.join(", ")}` : ""}</small>${have ? "<small>Researched</small>" : `<small>&#9733;${cost}</small>`}${have ? "" : req}${need}</div>`;
 			});
 			return `<div class="tier"><h4>Tier ${tier}</h4>${cards.join("")}</div>`;
 		});
-		let note = "";
+		let note = `<div class="tech-note dim">Click a tech to see what it needs; <b>Buy</b> researches it, with any techs it still needs first.</div>`;
 		if (focus) {
 			const name = TECHS[focus].name;
 			const what = this.techFocus?.for ? `${esc(this.techFocus.for)} needs ` : "";
-			note = p.techs.includes(focus)
-				? `<div class="tech-note">${what}<b>${name}</b>: researched.</div>`
-				: `<div class="tech-note">${what}<b>${name}</b>${path.size ? `, which needs ${[...path].map((t) => `<b>${TECHS[t].name}</b>`).join(" and ")} first` : ""}.</div>`;
+			if (p.techs.includes(focus)) {
+				note = `<div class="tech-note">${what}<b>${name}</b>: researched.</div>`;
+			} else {
+				const total = chainCost(chain);
+				const steps = chain.map((t) => `<b>${TECHS[t].name}</b> &#9733;${researchCost(sim, this.me, t)}`).join(" &rarr; ");
+				const afford = p.stars >= total
+					? `you have &#9733;${p.stars}, leaving &#9733;${p.stars - total}`
+					: `you have &#9733;${p.stars}: <span class="bad">&#9733;${total - p.stars} short</span>`;
+				note = `<div class="tech-note">${what ? `${what}<b>${name}</b>. ` : ""}${chain.length > 1 ? "Research " : ""}${steps}${chain.length > 1 ? ` = <b>&#9733;${total}</b> in total` : ""} (${afford}).</div>`;
+			}
 		}
-		return `<h3>Research <span class="dim">${stars(p.stars)} available &middot; costs rise with your ${cities} cities</span></h3>${note}<div class="techs">${tiers.join("")}</div>`;
+		return `<h3>Research <span class="dim">${stars(p.stars)} available &middot; costs rise with your ${cities} cities</span></h3>${note}<div class="techs">${tiers.join("")}</div>${this.techDetail(focus)}`;
+	}
+
+	/** Everything a tech unlocks: its buildings, units, wonders and other abilities. */
+	techUnlocks (tech: TechId): { kind: "building" | "unit" | "wonder" | "ability"; id: string; name: string; thumb?: string; icon?: string; text: string }[] {
+		const out: ReturnType<Hud["techUnlocks"]> = [];
+		const thumbs = this.host.models?.infos ?? {};
+		const thumb = (id: string) => (id in thumbs ? `./assets/models/thumbs/${id}.jpg` : undefined);
+		for (const b of Object.values(BUILDINGS)) {
+			if (b.tech !== tech || b.wonder === "monument") continue;
+			out.push({ kind: b.wonder ? "wonder" : "building", id: b.id, name: b.name, thumb: thumb(b.id), icon: b.id === "walls" ? "&#x1F9F1;" : undefined, text: b.description });
+		}
+		for (const u of Object.values(UNIT_TYPES)) {
+			if (u.tech === tech) out.push({ kind: "unit", id: u.id, name: u.name, thumb: thumb(u.id), text: u.description });
+		}
+		for (const a of TECH_ABILITIES[tech] ?? []) out.push({ kind: "ability", id: a.name, name: a.name, icon: a.icon, text: a.text });
+		return out;
+	}
+
+	/** The full description of one thing a tech unlocks. */
+	unlockDetail (u: ReturnType<Hud["techUnlocks"]>[number]): string {
+		const sim = this.sim;
+		if (u.kind === "unit") {
+			const t = UNIT_TYPES[u.id as UnitTypeId];
+			const cost = unitCost(sim, this.me, t.id);
+			const goods = Object.entries(cost.goods).map(([g, n]) => `${n} ${g}`).join(", ");
+			return `<b>${t.name}</b> <span class="dim">unit</span><div>${esc(t.description)}</div><div class="unit-stats">Health ${t.hp} &middot; Attack ${t.attack} &middot; Defence ${t.defence} &middot; Moves ${t.moves} &middot; Range ${t.range}</div><div class="dim">Train in a city for &#9733;${cost.stars}${goods ? ` + ${goods}` : ""}; upkeep ${t.upkeep} a turn beyond your free units.</div>`;
+		}
+		if (u.kind === "ability") return `<b>${u.name}</b> <span class="dim">ability</span><div>${u.text}</div>`;
+		const b = BUILDINGS[u.id as BuildingId];
+		const ins = Object.keys(b.inputs).length ? goodsInline(b.inputs) : "";
+		const outs = Object.keys(b.outputs).length ? goodsInline(b.outputs) : b.id === "mine" ? "ore, coal or gold (whatever is in the hills)" : "";
+		const makes = outs ? `<div>Makes ${outs} a turn${ins ? ` from ${ins}` : ""}.</div>` : "";
+		const cost = `&#9733;${u.kind === "wonder" ? buildingStars(sim, this.me, b.id) : b.stars}${Object.keys(b.materials).length ? ` + ${goodsInline(b.materials)} delivered by road` : ""}`;
+		const kind = u.kind === "wonder" ? "world wonder: one in the world, raced for, never rushed" : `building${b.slot ? ", uses a city building slot" : ""}`;
+		return `<b>${b.name}</b> <span class="dim">${kind}</span><div>${esc(b.description)}</div>${makes}<div class="dim">Build ${SITE_TEXT[b.site] ?? ""} for ${cost}.</div>`;
+	}
+
+	/** The panel under the tech tree: what the selected tech unlocks, and the chosen item's details. */
+	techDetail (tech: TechId | undefined): string {
+		if (!tech) return `<div class="tech-detail empty dim">Select a tech to see what it unlocks.</div>`;
+		const unlocks = this.techUnlocks(tech);
+		if (!unlocks.length) return `<div class="tech-detail empty dim">${TECHS[tech].name}: ${esc(TECHS[tech].unlocks)}</div>`;
+		const chosen = unlocks.find((u) => u.id === this.unlockChoice) ?? unlocks[0];
+		const items = unlocks.map((u) => {
+			const pic = u.thumb ? `<img src="${u.thumb}" alt="" loading="lazy">` : `<span class="icon">${u.icon ?? "&#x2726;"}</span>`;
+			return `<button class="unlock${u === chosen ? " on" : ""}" data-action="unlock-info" data-id="${u.id}" title="${esc(`${u.name}: ${u.text.replace(/&[^;]+;/g, "")}`)}">${pic}<span>${u.name}</span><small>${u.kind === "wonder" ? "wonder" : u.kind}</small></button>`;
+		}).join("");
+		return `<div class="tech-detail"><h4>${TECHS[tech].name} unlocks</h4><div class="unlock-row"><div class="unlocks">${items}</div><div class="unlock-info">${this.unlockDetail(chosen)}</div></div></div>`;
 	}
 
 	economyModal (): string {
