@@ -91,6 +91,23 @@
 		"skinned": false,
 		"bytes": 418404
 	},
+	"farm": {
+		"file": "farm.glb",
+		"min": [
+			-0.4489,
+			-0.3489,
+			-0.4964
+		],
+		"max": [
+			0.4711,
+			0.3782,
+			0.4315
+		],
+		"triangles": 3987,
+		"animations": [],
+		"skinned": false,
+		"bytes": 593476
+	},
 	"mine": {
 		"file": "mine.glb",
 		"min": [
