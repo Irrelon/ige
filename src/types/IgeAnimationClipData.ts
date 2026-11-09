@@ -100,6 +100,12 @@ export interface IgeAnimationPlayOptions {
 	speed?: number;
 	/** Whether to loop (default: true) */
 	loop?: boolean;
+	/**
+	 * Seconds into the clip to start from (default: its start, or its end
+	 * when the speed is negative, so a clip played backwards plays through).
+	 * With a speed of 0 the clip holds that frame, e.g. its last pose.
+	 */
+	startTime?: number;
 	/** Callback when animation completes (non-looping only) */
 	onComplete?: (animId: string) => void;
 	/** Callback when animation loops */

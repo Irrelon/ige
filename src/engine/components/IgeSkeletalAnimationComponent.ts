@@ -271,9 +271,10 @@ export class IgeSkeletalAnimationComponent extends IgeComponent<IgeEntity> {
 		}
 
 		// Create new animation state
+		const start = options?.startTime ?? (speed < 0 ? clip.duration : 0);
 		const state: IgeAnimationState = {
 			clip,
-			time: 0,
+			time: Math.max(0, Math.min(clip.duration, start)),
 			weight: crossFadeDuration > 0 ? 0 : 1,
 			speed,
 			loop,
@@ -484,10 +485,10 @@ export class IgeSkeletalAnimationComponent extends IgeComponent<IgeEntity> {
 					if (state.time >= d) state.time = 0;
 					this.emit("loopComplete", state.clip.id);
 				} else {
+					// Finished (backwards): its first frame is posed once more below, then it's removed
 					state.time = 0;
 					state.playing = false;
 					this.emit("complete", state.clip.id);
-					continue;
 				}
 			}
 			if (state.time >= state.clip.duration) {
@@ -495,36 +496,32 @@ export class IgeSkeletalAnimationComponent extends IgeComponent<IgeEntity> {
 					state.time = state.clip.duration > 0 ? state.time % state.clip.duration : 0;
 					this.emit("loopComplete", state.clip.id);
 				} else {
+					// Finished: its last frame is posed once more below (the skeleton then holds it), then it's removed
 					state.time = state.clip.duration;
 					state.playing = false;
 					this.emit("complete", state.clip.id);
-					continue;
 				}
 			}
 
 			totalWeight += state.weight;
 		}
 
-		// Remove completed/faded-out animations
+		if (samplePose && totalWeight > 0 && states.length > 0) {
+			// A new pose is about to be applied: render on demand needs a frame
+			markSceneChanged();
+
+			// Fast path: one clip at full weight -> shared pose cache (not with extra bone rotations: they're per entity)
+			if (!(states.length === 1 && states[0].weight >= 1 && this._poseCache && !this._skeleton.boneRotations?.length && this._applyCachedPose(states[0]))) {
+				this._sampleBlendedPose(totalWeight);
+			}
+		}
+
+		// Remove completed/faded-out animations (a finished clip's final frame was just posed: the skeleton keeps it)
 		for (let i = states.length - 1; i >= 0; i--) {
 			if (!states[i].playing) {
 				states.splice(i, 1);
 			}
 		}
-
-		if (!samplePose || totalWeight <= 0 || states.length === 0) {
-			return;
-		}
-
-		// A new pose is about to be applied: render on demand needs a frame
-		markSceneChanged();
-
-		// Fast path: one clip at full weight -> shared pose cache (not with extra bone rotations: they're per entity)
-		if (states.length === 1 && states[0].weight >= 1 && this._poseCache && !this._skeleton.boneRotations?.length && this._applyCachedPose(states[0])) {
-			return;
-		}
-
-		this._sampleBlendedPose(totalWeight);
 	};
 
 	/**
