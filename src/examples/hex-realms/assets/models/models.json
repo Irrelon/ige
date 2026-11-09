@@ -227,6 +227,23 @@
 		"skinned": false,
 		"bytes": 489584
 	},
+	"mint": {
+		"file": "mint.glb",
+		"min": [
+			-0.3805,
+			-0.4025,
+			-0.487
+		],
+		"max": [
+			0.3845,
+			0.46,
+			0.2819
+		],
+		"triangles": 3846,
+		"animations": [],
+		"skinned": false,
+		"bytes": 469940
+	},
 	"pasture": {
 		"file": "pasture.glb",
 		"min": [
