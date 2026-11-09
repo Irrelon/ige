@@ -125,6 +125,23 @@
 		"skinned": false,
 		"bytes": 426816
 	},
+	"hunter": {
+		"file": "hunter.glb",
+		"min": [
+			-0.4487,
+			-0.3773,
+			-0.4951
+		],
+		"max": [
+			0.4805,
+			0.4117,
+			0.4104
+		],
+		"triangles": 3960,
+		"animations": [],
+		"skinned": false,
+		"bytes": 562984
+	},
 	"mine": {
 		"file": "mine.glb",
 		"min": [
