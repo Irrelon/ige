@@ -123,8 +123,10 @@ export function collectDecalTargets (targets: IgeEntity | IgeEntity[]): IgeDecal
 		if (world) {
 			const parts = entity._modelParts;
 			if (parts && parts.length > 0) {
-				for (const part of parts) {
-					if (part.skinned || !part.geometryData?.vertices) continue;
+				const shown = entity._modelPartsShown;
+				for (let p = 0; p < parts.length; p++) {
+					const part = parts[p];
+					if ((shown && !shown[p]) || part.skinned || !part.geometryData?.vertices) continue;
 					meshes.push({ geometry: part.geometryData, matrix: part.matrix ? multiplyMat4(world, part.matrix) : world });
 				}
 			} else if (entity._geometryData?.vertices) {

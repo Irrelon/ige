@@ -64,6 +64,12 @@ export interface IgeModelOptions {
 	/** Options for retargeting `animations` (bone name map, root motion). */
 	retarget?: IgeRetargetOptions;
 	/**
+	 * Only draw these parts of the model, by node name (or a test of the
+	 * name): for customizable characters that hold every head, outfit and
+	 * weapon in one file. See IgeEntity.modelParts().
+	 */
+	parts?: string[] | ((name: string) => boolean);
+	/**
 	 * Clips to play on the spot (see clipInPlace()): their horizontal root
 	 * motion is taken out, for games that move characters themselves (a
 	 * walk or run cycle that travels forward). `true` for every clip, or
@@ -1185,6 +1191,8 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 		this._model = model;
 		const parts = getModelParts(model);
 		this._modelParts = parts;
+		this._modelPartsShown = undefined;
+		if (options.parts) this.modelParts(options.parts);
 		this._modelPartMatrices = undefined;
 		this._modelLod = options.lod?.length ? getModelLod(model, options.lod) : undefined;
 
@@ -1243,6 +1251,39 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 			this._skeletonData = undefined;
 		}
 
+		this._renderChanged();
+		return this;
+	}
+
+	/**
+	 * Gets / sets which parts of this entity's model are drawn, by node
+	 * name: customizable characters (one file with every head, outfit, hat
+	 * and weapon on one skeleton) show one combination per entity, and can
+	 * change it later (gear changing a character's look). Pass a list of
+	 * names, a test of the name, or null to draw every part. Entities
+	 * showing the same part still draw it as one instanced batch.
+	 * @example #A zombie doctor from a customizable model
+	 *     zombie.model(zombies, { parts: ["Body_17_doctor", "Z_head_03"] });
+	 *     zombie.modelParts((name) => name === "Body_17_doctor" || name.startsWith("Z_head_19"));
+	 */
+	modelParts (filter: string[] | ((name: string) => boolean) | null): this;
+	modelParts (): string[];
+	modelParts (filter?: string[] | ((name: string) => boolean) | null) {
+		const parts = this._modelParts || [];
+		if (filter === undefined) {
+			return parts.filter((part, i) => !this._modelPartsShown || this._modelPartsShown[i]).map((part) => part.name ?? "");
+		}
+		if (filter === null) {
+			this._modelPartsShown = undefined;
+		} else {
+			const test = Array.isArray(filter) ? (name: string) => filter.includes(name) : filter;
+			this._modelPartsShown = parts.map((part) => !!part.name && test(part.name));
+			if (Array.isArray(filter)) {
+				for (const name of filter) {
+					if (!parts.some((part) => part.name === name)) this.log(`modelParts(): the model has no part "${name}"`, "warning");
+				}
+			}
+		}
 		this._renderChanged();
 		return this;
 	}

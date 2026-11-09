@@ -308,7 +308,10 @@ export function raycastEntities (
 		if (world && (!options.filter || options.filter(entity))) {
 			const parts = entity._modelParts;
 			if (parts && parts.length > 0) {
-				for (const part of parts) {
+				const shown = entity._modelPartsShown;
+				for (let p = 0; p < parts.length; p++) {
+					if (shown && !shown[p]) continue;
+					const part = parts[p];
 					const geometry = part.geometryData;
 					if (!geometry?.vertices) continue;
 					if (part.skinned) {

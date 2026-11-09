@@ -11,6 +11,8 @@ import type { IgeSkeleton, IgeSkeletonData } from "@/types/IgeSkeletonData";
  * the same model, so they must be treated as read-only.
  */
 export interface IgeModelPart {
+	/** The glTF node's name (or its mesh's), e.g. "Body_17_doctor": what IgeEntity.model() parts match. */
+	name?: string;
 	geometryData: IgeGeometryData3d;
 	materialData: IgeMaterialData;
 	/**
@@ -38,12 +40,13 @@ export function getModelParts (model: IgeGltfModel): IgeModelPart[] {
 	parts = [];
 	const materials = model.materials.map((mat, index) => toMaterialData(model, mat, index));
 
-	const addMesh = (meshIndex: number, matrix: Float32Array | undefined, skinned: boolean) => {
+	const addMesh = (meshIndex: number, matrix: Float32Array | undefined, skinned: boolean, name?: string) => {
 		const mesh = model.meshes[meshIndex];
 		if (!mesh) return;
 		for (const primitive of mesh.primitives) {
 			const isSkinned = skinned && !!(primitive.geometry.boneWeights && primitive.geometry.boneIndices);
 			parts!.push({
+				name: name ?? (mesh as { name?: string }).name,
 				geometryData: primitive.geometry,
 				materialData: materials[primitive.materialIndex ?? 0] || { color: { r: 1, g: 1, b: 1, a: 1 } },
 				matrix: isSkinned ? undefined : matrix,
@@ -63,7 +66,7 @@ export function getModelParts (model: IgeGltfModel): IgeModelPart[] {
 			const world = parentMatrix ? (local ? multiplyMat4(parentMatrix, local) : parentMatrix) : local;
 
 			if (node.mesh !== undefined) {
-				addMesh(node.mesh, world && !isIdentity(world) ? world : undefined, node.skin !== undefined);
+				addMesh(node.mesh, world && !isIdentity(world) ? world : undefined, node.skin !== undefined, node.name);
 			}
 
 			if (node.children) {

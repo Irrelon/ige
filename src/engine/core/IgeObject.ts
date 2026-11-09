@@ -198,6 +198,8 @@ export class IgeObject extends IgeEventingClass implements IgeCanRegisterById, I
 	_billboardMode: number = 1;
 	/** Render parts from a model assigned with IgeEntity.model() (shared, read-only). */
 	_modelParts?: IgeModelPart[];
+	/** Which of _modelParts are drawn (undefined: all), see IgeEntity.modelParts(). */
+	_modelPartsShown?: boolean[];
 	/** Per-part world matrices maintained by the WebGL renderer. */
 	_modelPartMatrices?: Float32Array[];
 	/** Lower-detail versions of _modelParts, see IgeEntity.lod(). */

@@ -1680,7 +1680,9 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 			matrices = entity._modelPartMatrices = parts.map((part) => (part.matrix ? new Float32Array(16) : world));
 		}
 
+		const shown = entity._modelPartsShown;
 		for (let i = 0; i < parts.length; i++) {
+			if (shown && !shown[i]) continue;
 			const part = parts[i];
 			let partWorld = world;
 			if (part.matrix) {
