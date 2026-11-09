@@ -109,6 +109,9 @@ const ICONS = {
 	pillage: `<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3C13 6.5 18 8.5 18 14A6 6 0 0 1 6 14C6 10.5 8.5 9.5 8.5 6.5C10 8 11 9.5 11.5 11.5C12.5 9 12.5 6 12 3Z"/></svg>`
 };
 
+/** How many notices the log keeps. */
+const LOG_LIMIT = 400;
+
 function quickButton (action: keyof typeof ICONS, title: string): string {
 	return `<button data-action="${action}" aria-label="${esc(title)}" title="${esc(title)}">${ICONS[action]}</button>`;
 }
@@ -116,6 +119,8 @@ function quickButton (action: keyof typeof ICONS, title: string): string {
 export class Hud {
 	host: HudHost;
 	modal: string | null = null;
+	/** Every notice shown this session (the Log screen), oldest first. */
+	logEntries: { turn: number; html: string; kind: "info" | "good" | "bad"; seen?: boolean }[] = [];
 	tipId: string | null = null;
 	damage: { el: HTMLDivElement; tile: number; age: number }[] = [];
 	labels = new Map<string, HTMLDivElement>();
@@ -596,6 +601,12 @@ export class Hud {
 	// ------------------------------------------------------------------
 
 	toast (html: string, kind: "info" | "good" | "bad" = "info", seconds = 4): void {
+		this.logEntries.push({ turn: this.sim.state.turn, html, kind });
+		if (this.logEntries.length > LOG_LIMIT) {
+			this.logEntries.splice(0, this.logEntries.length - LOG_LIMIT);
+		}
+		if (this.modal === "log") this.renderModal();
+		this.refreshLogButton();
 		const box = document.getElementById("toasts");
 		if (!box) return;
 		const el = document.createElement("div");
@@ -605,6 +616,31 @@ export class Hud {
 		setTimeout(() => el.classList.add("fade"), seconds * 1000);
 		setTimeout(() => el.remove(), seconds * 1000 + 600);
 		while (box.children.length > 6) box.firstElementChild?.remove();
+	}
+
+	/** The Log button's badge: important notices (good or bad) not yet seen in the log. */
+	refreshLogButton (): void {
+		const unseen = this.logEntries.filter((e) => !e.seen && e.kind !== "info").length;
+		setHtml("btnLog", `Log${unseen ? ` <span class="badge">${unseen > 9 ? "9+" : unseen}</span>` : ""}`);
+	}
+
+	/** Every notice this session, newest first, grouped by turn. Opening it marks them seen. */
+	logModal (): string {
+		const groups: string[] = [];
+		let turn = -1;
+		for (let i = this.logEntries.length - 1; i >= 0; i--) {
+			const e = this.logEntries[i];
+			if (e.turn !== turn) {
+				turn = e.turn;
+				groups.push(`<h4>Turn ${turn}</h4>`);
+			}
+			// (a turn report starts with its own "Turn N" line, which the group heading already says)
+			groups.push(`<div class="log-entry ${e.kind}">${e.html.replace(/^<b>Turn \d+<\/b><br>/, "")}</div>`);
+			e.seen = true;
+		}
+		this.refreshLogButton();
+		return `<h3>Log</h3>
+			<div class="log-list">${groups.join("") || `<p class="dim">Nothing yet. Every notice that pops up during the game is kept here.</p>`}</div>`;
 	}
 
 	/** Turn events into toasts and sounds for the local player. */
@@ -902,6 +938,7 @@ export class Hud {
 			case "cities": body = this.citiesModal(); break;
 			case "menu": body = this.menuModal(); break;
 			case "help": body = this.helpModal(); break;
+			case "log": body = this.logModal(); break;
 			case "gameover": body = this.gameOverModal(); break;
 		}
 		el.innerHTML = `<div class="modal-box ${this.modal}"><button class="close" data-action="close-modal" aria-label="Close">&times;</button>${body}</div>`;
@@ -1163,7 +1200,7 @@ export class Hud {
 			<p><b>Diplomacy</b> (G): treaties, cultural exchanges, research agreements, trades of goods and stars (once, or every turn as a route; where your roads meet theirs the goods travel as carts), demands, denouncing and sanctions. Wars wear both sides down, making peace easier the longer they last. Wars without enough grievances are surprise wars that everyone resents; peace brings a 10-turn truce.</p>
 			<p><b>Quick actions</b>: buttons float above a selected unit when it can do something where it stands: crossed swords capture a city, a house founds one, a flame pillages.</p>
 			<p><b>Fight</b>: declare war in Diplomacy first. Select a unit to see red attack rings; hover one to preview the damage. Ranged units need line of sight. Units stop when they move next to an enemy.</p>
-			<p><b>Keys</b>: WASD/arrows pan, wheel or Z/X zoom, Q/E rotate, Page Up/Page Down tilt (or right-drag: sideways rotates, up and down tilts), Space next unit, Enter end turn, Esc deselect, C centre, T terrain style, R research, G diplomacy, J ambition, M wonders, B economy, V economy lens, L cities, F found city, O menu, H help.</p></div>`;
+			<p><b>Keys</b>: N log of notices, WASD/arrows pan, wheel or Z/X zoom, Q/E rotate, Page Up/Page Down tilt (or right-drag: sideways rotates, up and down tilts), Space next unit, Enter end turn, Esc deselect, C centre, T terrain style, R research, G diplomacy, J ambition, M wonders, B economy, V economy lens, L cities, F found city, O menu, H help.</p></div>`;
 	}
 
 	gameOverModal (): string {

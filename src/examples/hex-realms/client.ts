@@ -1117,6 +1117,7 @@ export class Client extends IgeBaseClass implements IgeCanInit, HudHost {
 				case "KeyV": this.hud.toggleLens(); break;
 				case "KeyO": modal("menu"); break;
 				case "KeyH": modal("help"); break;
+				case "KeyN": modal("log"); break;
 				case "KeyF": {
 					const u = this.selectedUnit !== null ? this.sim.unit(this.selectedUnit) : undefined;
 					if (u && UNIT_TYPES[u.type].founder) this.command({ type: "found", unit: u.id });

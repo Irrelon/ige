@@ -77,6 +77,13 @@
 		.toast.good { border-left-color: var(--good); }
 		.toast.bad { border-left-color: var(--bad); }
 		.toast.fade { opacity: 0; }
+		.modal-box.log { width: min(560px, calc(100vw - 24px)); }
+		.log-list { display: flex; flex-direction: column; gap: 4px; max-height: 62vh; overflow-y: auto; padding-right: 4px; user-select: text; }
+		.log-list h4 { margin: 10px 0 2px; }
+		.log-list h4:first-child { margin-top: 0; }
+		.log-entry { border-left: 4px solid #5b93ee; padding: 4px 10px; font-size: 13px; background: rgba(255, 255, 255, 0.03); border-radius: 4px; }
+		.log-entry.good { border-left-color: var(--good); }
+		.log-entry.bad { border-left-color: var(--bad); }
 
 		#tips { left: 50%; bottom: 8px; transform: translateX(-50%); width: 420px; max-width: calc(100vw - 16px); padding: 10px 12px; border-color: rgba(255, 215, 106, 0.5); z-index: 120; }
 		#tips .tip-title { color: var(--gold); font-weight: 700; margin-bottom: 4px; }
@@ -274,6 +281,7 @@
 		<button id="btnDiplo" data-action="modal" data-modal="diplomacy" title="Diplomacy (G)">Diplomacy</button>
 		<button id="btnAmbition" data-action="modal" data-modal="ambitions" title="Ambition: your goal and the race board (J)">Ambition</button>
 		<button id="btnWonders" data-action="modal" data-modal="wonders" title="Wonders and monuments (M)">Wonders</button>
+		<button id="btnLog" data-action="modal" data-modal="log" title="Log: every notice this session (N)">Log</button>
 		<button id="btnChat" class="hidden" data-action="chat" title="Chat with the other players">Chat</button>
 		<span class="spacer"></span>
 		<button id="styleToggle" data-action="style" title="Switch terrain look (T)">Terrain</button>
