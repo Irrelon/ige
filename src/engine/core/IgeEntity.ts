@@ -1289,6 +1289,24 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 	}
 
 	/**
+	 * Gets / sets a silhouette colour for this entity and its children where
+	 * something stands in front of them: a character walking behind a wall
+	 * still shows as a coloured outline (WebGL renderer). Pass null to turn
+	 * it off. Use it for the few things players must never lose (their own
+	 * characters, objectives): each is drawn twice.
+	 * @example #See your player through walls
+	 *     player.occludedColor({ r: 0.3, g: 0.6, b: 1, a: 0.55 });
+	 */
+	occludedColor (color: { r: number; g: number; b: number; a?: number } | null): this;
+	occludedColor (): { r: number; g: number; b: number; a: number } | null;
+	occludedColor (color?: { r: number; g: number; b: number; a?: number } | null) {
+		if (color === undefined) return this._occludedColor ?? null;
+		this._occludedColor = color ? { r: color.r, g: color.g, b: color.b, a: color.a ?? 0.5 } : null;
+		this._renderChanged();
+		return this;
+	}
+
+	/**
 	 * Gets / sets the levels of detail for this entity's model. While the
 	 * model is small on screen the WebGL renderer draws a lower-detail
 	 * version of it instead; each viewport (and shadow map) picks its own

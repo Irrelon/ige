@@ -334,6 +334,9 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 	protected _mainBatcher: IgeWebGlItemBatcher = new IgeWebGlItemBatcher();
 	protected _depthBatcher: IgeWebGlItemBatcher = new IgeWebGlItemBatcher();
 	protected _transparentItems: IgeWebGlRenderItem[] = [];
+	/** This view's items with a silhouette colour (see IgeEntity.occludedColor()). */
+	protected _occludedItems: IgeWebGlRenderItem[] = [];
+	protected _occludedSaved?: Float32Array;
 	protected _opaqueSprites: IgeEntity[] = [];
 	protected _transparentSprites: IgeEntity[] = [];
 	protected _maxPixelRatio: number = Infinity;
@@ -1811,6 +1814,9 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 			item.textureKey = "";
 		}
 
+		let occluded: IgeObject | null = entity;
+		while (occluded && occluded._occludedColor === undefined) occluded = occluded._parent;
+		item.occluded = occluded?._occludedColor ?? null;
 		item.transparent = mat.opacity < 1 || mat.a < 1 || !!materialData?.transparent || !!overrideData?.transparent ||
 			!!(item.texture && (item.texture as any)._hasAlpha);
 		item.doubleSided = !!(overrideData?.doubleSided ?? materialData?.doubleSided);
@@ -2064,6 +2070,8 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 		// ------------------------------------------------------------
 		const batcher = this._mainBatcher;
 		const transparent = this._transparentItems;
+		const occludedItems = this._occludedItems;
+		occludedItems.length = 0;
 		batcher.begin();
 		transparent.length = 0;
 
@@ -2098,6 +2106,7 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 				}
 			}
 			item.drawGeometry = geometry;
+			if (item.occluded) occludedItems.push(item);
 
 			if (item.transparent) {
 				item.sortKey = distSq;
@@ -2224,6 +2233,9 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 		}
 
 		this._renderParticleSystems(data.particles, matrices);
+
+		// Silhouettes of marked entities where something stands in front of them
+		if (occludedItems.length > 0) this._renderOccluded(occludedItems, matrices);
 
 		this._renderDebugLines(matrices);
 
@@ -2711,6 +2723,45 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 
 		// Everything drawn after opaque meshes is double-sided
 		this._stateManager.setCullFace(false);
+	}
+
+	/**
+	 * Draw items again as flat coloured silhouettes where they are hidden:
+	 * the depth test passes only behind what's already drawn (GREATER), so
+	 * only the parts behind walls show. Lighting is cancelled by drawing
+	 * with a black base colour and the silhouette colour as emission.
+	 */
+	protected _renderOccluded(items: IgeWebGlRenderItem[], matrices: IgeCameraMatrices): void {
+		const gl = this._canvasContext;
+		if (!gl || !this._stateManager) return;
+		this._stateManager.setDepthWrite(false);
+		this._stateManager.setDepthFunc(gl.GREATER);
+		this._stateManager.setBlend(true);
+		this._stateManager.setBlendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+		// Each item's own material values, kept to put back afterwards (9 numbers per item)
+		const n = items.length * 9;
+		if (!this._occludedSaved || this._occludedSaved.length < n) this._occludedSaved = new Float32Array(n * 2);
+		const saved = this._occludedSaved;
+		for (let i = 0; i < items.length; i++) {
+			const mat = items[i].material, c = items[i].occluded!, o = i * 9;
+			saved[o] = mat.r; saved[o + 1] = mat.g; saved[o + 2] = mat.b; saved[o + 3] = mat.a; saved[o + 4] = mat.opacity;
+			saved[o + 5] = mat.emissiveR; saved[o + 6] = mat.emissiveG; saved[o + 7] = mat.emissiveB; saved[o + 8] = mat.emissiveIntensity;
+			mat.r = mat.g = mat.b = 0;
+			mat.a = c.a;
+			mat.opacity = 1;
+			mat.emissiveR = c.r;
+			mat.emissiveG = c.g;
+			mat.emissiveB = c.b;
+			mat.emissiveIntensity = 1;
+		}
+		this._renderTransparentItems(items, matrices);
+		// Put them back for the next view (the same items draw in every split-screen view)
+		for (let i = 0; i < items.length; i++) {
+			const mat = items[i].material, o = i * 9;
+			mat.r = saved[o]; mat.g = saved[o + 1]; mat.b = saved[o + 2]; mat.a = saved[o + 3]; mat.opacity = saved[o + 4];
+			mat.emissiveR = saved[o + 5]; mat.emissiveG = saved[o + 6]; mat.emissiveB = saved[o + 7]; mat.emissiveIntensity = saved[o + 8];
+		}
+		this._stateManager.setDepthFunc(gl.LEQUAL);
 	}
 
 	/**

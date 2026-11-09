@@ -200,6 +200,8 @@ export class IgeObject extends IgeEventingClass implements IgeCanRegisterById, I
 	_modelParts?: IgeModelPart[];
 	/** Which of _modelParts are drawn (undefined: all), see IgeEntity.modelParts(). */
 	_modelPartsShown?: boolean[];
+	/** Silhouette colour drawn where this object is hidden behind something (see IgeEntity.occludedColor()). */
+	_occludedColor?: { r: number; g: number; b: number; a: number } | null;
 	/** Per-part world matrices maintained by the WebGL renderer. */
 	_modelPartMatrices?: Float32Array[];
 	/** Lower-detail versions of _modelParts, see IgeEntity.lod(). */
