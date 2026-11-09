@@ -26,6 +26,8 @@ import type { TerrainStyle } from "./surface";
 import { esc, setHtml } from "./ui/html";
 import { Hud, type HudHost } from "./ui/hud";
 import { play } from "./ui/sfx";
+import { type SaveData, type SaveKind, type SaveMeta, SaveStore } from "./saves";
+import { downloadText } from "./ui/savesScreen";
 import { MAP_PRESETS, optionsFromUrl, type SetupResult, showSetup } from "./ui/setup";
 import { TerrainView } from "./view/terrainView";
 import { WorldView } from "./view/worldView";
@@ -52,7 +54,6 @@ window.ige = ige;
 const HEX_SIZE = 50;
 const CLEAR_COLOR = { r: 0.055, g: 0.09, b: 0.14 };
 const PICK_BOTTOM = -16;
-const SAVE_KEY = "hexRealms.save";
 const REPLAY_KEY = "hexRealms.replay";
 const NEXT_KEY = "hexRealms.next";
 
@@ -126,6 +127,9 @@ export class Client extends IgeBaseClass implements IgeCanInit, HudHost {
 	replaying = false;
 	online = false;
 	rooms?: IgeRoomClient<OnlineCommand>;
+	/** Saved games (IndexedDB) and the latest list of them (null while reading). */
+	saveStore = new SaveStore();
+	saves: SaveMeta[] | null = null;
 	/** The game's 3D models (shared by every game started in this page). */
 	models?: ModelLibrary;
 	modelsStarted = false;
@@ -206,7 +210,7 @@ export class Client extends IgeBaseClass implements IgeCanInit, HudHost {
 		const next = sessionStorage.getItem(NEXT_KEY);
 		sessionStorage.removeItem(NEXT_KEY);
 
-		if (next === "load" && this.hasSave()) return this.startFromSave();
+		if (next?.startsWith("load")) return this.startFromSave(next.slice(5) || undefined);
 		if (next === "replay" && this.hasReplay()) return this.startReplay();
 		if (q.get("join")) return this.startOnline({ action: "join", code: String(q.get("join")).toUpperCase(), name: q.get("name") ?? "Player", style: optionsFromUrl().style });
 		if (q.get("quick") === "1") {
@@ -214,15 +218,20 @@ export class Client extends IgeBaseClass implements IgeCanInit, HudHost {
 			return this.startLocal(options, style);
 		}
 
+		await this.setupScreen();
+	}
+
+	/** The setup screen, then whatever it chose. */
+	async setupScreen (): Promise<void> {
 		hideLoading();
-		const online = await serverAvailable();
-		const result = await showSetup(this.hasSave(), online);
+		const [online] = await Promise.all([serverAvailable(), this.refreshSaves()]);
+		const result = await showSetup(this.saves ?? [], online, this.saveStore);
 		showLoading();
 		await this.applySetup(result);
 	}
 
 	async applySetup (result: SetupResult): Promise<void> {
-		if (result.action === "load") return this.startFromSave();
+		if (result.action === "load") return this.startFromSave(result.id);
 		if (result.action === "host" || result.action === "join") return this.startOnline(result);
 		return this.startLocal(result.options, result.style);
 	}
@@ -230,10 +239,10 @@ export class Client extends IgeBaseClass implements IgeCanInit, HudHost {
 	/** New game from the menu: the setup screen, then a clean page load into the chosen game. */
 	async newGame (): Promise<void> {
 		this.hud.closeModal();
-		const online = await serverAvailable();
-		const result = await showSetup(this.hasSave(), online);
+		const [online] = await Promise.all([serverAvailable(), this.refreshSaves()]);
+		const result = await showSetup(this.saves ?? [], online, this.saveStore);
 		if (result.action === "load") {
-			sessionStorage.setItem(NEXT_KEY, "load");
+			sessionStorage.setItem(NEXT_KEY, `load:${result.id ?? ""}`);
 			window.location.search = "";
 			return;
 		}
@@ -264,16 +273,29 @@ export class Client extends IgeBaseClass implements IgeCanInit, HudHost {
 		if (!sim.isHuman(sim.current)) void this.runAiTurns();
 	}
 
-	async startFromSave (): Promise<void> {
-		const raw = storageGet(SAVE_KEY);
-		if (!raw) return this.startLocal(optionsFromUrl().options, "tiles");
-		const save = JSON.parse(raw) as { sim: string; style: TerrainStyle; recording: Recording };
+	/** Start a saved game: the one with this id, or the newest. Back to the setup screen if it can't be read. */
+	async startFromSave (id?: string): Promise<void> {
 		this.status("Loading saved game...");
+		let save: { meta: SaveMeta; data: SaveData } | null = null;
+		let sim: Sim | null = null;
+		try {
+			if (!id) id = (await this.saveStore.list())[0]?.id;
+			save = id ? await this.saveStore.read(id) : null;
+			if (save) sim = Sim.load(save.data.sim);
+		} catch (error) {
+			console.error(error);
+		}
+		if (!save || !sim) {
+			await this.setupScreen();
+			this.hud?.toast("That saved game couldn't be read", "bad", 6);
+			return;
+		}
 		await nextFrame();
-		const sim = Sim.load(save.sim);
-		this.recording = save.recording;
-		await this.startWorld(sim, save.style, save.recording.player);
-		this.hud.toast("Game loaded", "good");
+		this.recording = save.data.recording as Recording;
+		await this.startWorld(sim, save.data.style as TerrainStyle, this.recording.player);
+		if (Array.isArray(save.data.log)) this.hud.restoreLog(save.data.log as Hud["logEntries"]);
+		this.hud.toast(`Loaded "${esc(save.meta.name)}"`, "good");
+		this.saveReplay();
 		if (!sim.isHuman(sim.current)) void this.runAiTurns();
 	}
 
@@ -693,7 +715,8 @@ export class Client extends IgeBaseClass implements IgeCanInit, HudHost {
 	 * the last one (so the view stays where you left it), or else the first
 	 * unit that can act.
 	 */
-	startTurn (): void {
+	startTurn (autosave = true): void {
+		if (autosave && !this.online && !this.replaying && !this.sim.state.winner) void this.saveGame("auto", `Autosave, turn ${this.sim.state.turn}`);
 		const keep = this.resumeUnit !== null ? this.sim.unit(this.resumeUnit) : undefined;
 		this.resumeUnit = null;
 		if (keep && keep.owner === this.player) {
@@ -777,24 +800,97 @@ export class Client extends IgeBaseClass implements IgeCanInit, HudHost {
 		document.getElementById("stats")?.classList.toggle("hidden", !on);
 	}
 
-	hasSave (): boolean {
-		return !!storageGet(SAVE_KEY);
+	/** Re-read the save list (and redraw the save screen if it is open). */
+	async refreshSaves (): Promise<void> {
+		try {
+			this.saves = await this.saveStore.list();
+		} catch (error) {
+			console.warn("Couldn't read saved games", error);
+			this.saves = [];
+		}
+		if (this.hud?.modal === "saves") this.hud.renderModal();
+	}
+
+	get canSave (): boolean {
+		return !this.online && !this.replaying && !!this.recording;
+	}
+
+	/**
+	 * Write the game as it is now: a new named save, over an existing one
+	 * (`id`), the quicksave slot, or the next autosave slot.
+	 */
+	async saveGame (kind: SaveKind, name: string, id?: string): Promise<boolean> {
+		if (!this.canSave || !this.recording || !this.saveStore.available) return false;
+		const sim = this.sim, me = sim.player(this.player), o = sim.options;
+		const data: SaveData = { id: "", sim: sim.serialize(), style: this.terrain.style, recording: this.recording, log: this.hud.logEntries };
+		let size = data.sim.length;
+		try {
+			size += JSON.stringify(this.recording).length;
+		} catch {
+			// Only used for the size shown in the list
+		}
+		try {
+			const slot = id ?? (kind === "quick" ? "quick" : kind === "auto" ? await this.saveStore.autosaveId() : `save-${Date.now().toString(36)}`);
+			const meta: SaveMeta = {
+				id: slot, name: name.trim() || "Saved game", kind, savedAt: Date.now(), turn: sim.state.turn, turnLimit: o.turnLimit,
+				civ: me.name, color: me.color, players: sim.playerCount, width: o.width, height: o.height, size,
+				thumb: this.minimap?.thumbnail()
+			};
+			await this.saveStore.write(meta, data);
+		} catch (error) {
+			console.error(error);
+			if (kind !== "auto") this.hud.toast("Couldn't save: the browser's storage is full or blocked", "bad", 6);
+			return false;
+		}
+		void this.refreshSaves();
+		return true;
+	}
+
+	async quickSave (): Promise<void> {
+		if (!this.canSave) {
+			this.hud.toast(this.online ? "Online games save on the server automatically" : "Nothing to save right now", "info", 3);
+			return;
+		}
+		if (await this.saveGame("quick", `Quicksave, turn ${this.sim.state.turn}`)) this.hud.toast("Quicksaved", "good", 2);
+	}
+
+	/** Reload the page into a saved game (a clean start for the views). */
+	loadGame (id: string): void {
+		sessionStorage.setItem(NEXT_KEY, `load:${id}`);
+		window.location.search = "";
+	}
+
+	async deleteSave (id: string): Promise<void> {
+		try {
+			await this.saveStore.remove(id);
+		} catch (error) {
+			console.error(error);
+			this.hud.toast("Couldn't delete that save", "bad");
+		}
+		await this.refreshSaves();
+	}
+
+	async exportSave (id: string): Promise<void> {
+		const file = await this.saveStore.exportFile(id).catch(() => null);
+		if (!file) {
+			this.hud.toast("Couldn't export that save", "bad");
+			return;
+		}
+		downloadText(file.name, file.text);
+	}
+
+	async importSave (file: File): Promise<void> {
+		try {
+			const meta = await this.saveStore.importFile(await file.text());
+			this.hud.toast(`Imported "${esc(meta.name)}"`, "good");
+		} catch (error) {
+			this.hud.toast(error instanceof Error ? esc(error.message) : "Couldn't import that file", "bad", 5);
+		}
+		await this.refreshSaves();
 	}
 
 	hasReplay (): boolean {
 		return !!storageGet(REPLAY_KEY) && !this.online;
-	}
-
-	save (): void {
-		if (this.online || !this.recording) return;
-		const ok = storageSet(SAVE_KEY, JSON.stringify({ sim: this.sim.serialize(), style: this.terrain.style, recording: this.recording }));
-		this.hud.toast(ok ? "Game saved" : "Couldn't save: browser storage is full or blocked", ok ? "good" : "bad");
-		this.hud.closeModal();
-	}
-
-	load (): void {
-		sessionStorage.setItem(NEXT_KEY, "load");
-		window.location.reload();
 	}
 
 	saveReplay (): void {
@@ -1095,6 +1191,13 @@ export class Client extends IgeBaseClass implements IgeCanInit, HudHost {
 		window.addEventListener("keydown", (e) => {
 			const tag = (e.target as HTMLElement)?.tagName;
 			if (tag === "INPUT" || tag === "SELECT" || tag === "TEXTAREA" || !this.ready) return;
+			if ((e.ctrlKey || e.metaKey) && e.code === "KeyS") {
+				// Not recorded as held: with Cmd down, macOS never sends the key's keyup
+				e.preventDefault();
+				void this.quickSave();
+				return;
+			}
+			if (e.ctrlKey || e.metaKey) return;
 			this.keys[e.code] = true;
 			const modal = (name: string) => (this.hud.modal === name ? this.hud.closeModal() : this.hud.openModal(name));
 			switch (e.code) {

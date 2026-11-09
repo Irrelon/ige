@@ -20,6 +20,8 @@ export class Minimap {
 	protected _layout: HexLayout;
 	protected _worldW: number;
 	protected _worldH: number;
+	/** Columns and rows that have anything explored (for framing thumbnails). */
+	protected _known: { c0: number; c1: number; r0: number; r1: number } | null = null;
 
 	constructor (canvas: HTMLCanvasElement, map: HexMap, layout: HexLayout, maxWidth: number, maxHeight: number) {
 		this.canvas = canvas;
@@ -57,6 +59,7 @@ export class Minimap {
 	 */
 	renderTerrain (view?: Uint8Array, unexplored: "cloud" | "parchment" = "cloud"): void {
 		const map = this._map;
+		let c0 = map.width, c1 = -1, r0 = map.height, r1 = -1;
 		const ctx = this._terrain.getContext("2d") as CanvasRenderingContext2D;
 		const image = ctx.createImageData(this._terrain.width, this._terrain.height);
 		const [pr, pg, pb] = PALETTE_COLORS[unexplored];
@@ -69,6 +72,11 @@ export class Minimap {
 				this._fillTile(image, t, pr * m, pg * m, pb * m, 255);
 				continue;
 			}
+			const col = map.col(t), row = map.row(t);
+			c0 = Math.min(c0, col);
+			c1 = Math.max(c1, col);
+			r0 = Math.min(r0, row);
+			r1 = Math.max(r1, row);
 			const relief = map.relief[t] as Relief;
 			const feature = map.feature[t] as Feature;
 			let key: PaletteKey = TERRAIN_INFO[map.terrain[t] as Terrain].top;
@@ -82,6 +90,48 @@ export class Minimap {
 			this._fillTile(image, t, r, g, b, 255);
 		}
 		ctx.putImageData(image, 0, 0);
+		this._known = c1 < 0 ? null : { c0, c1, r0, r1 };
+	}
+
+	/**
+	 * A small picture of the map as the player knows it (terrain and
+	 * borders) for the save list, framed on the explored part.
+	 */
+	thumbnail (width = 176, height = 112): string {
+		const c = document.createElement("canvas");
+		c.width = width;
+		c.height = height;
+		const ctx = c.getContext("2d");
+		if (!ctx) return "";
+		// Source rectangle in the 2-pixels-per-tile terrain image, padded and widened to the thumbnail's shape
+		const src = this._terrain;
+		const k = this._known ?? { c0: 0, c1: this._map.width - 1, r0: 0, r1: this._map.height - 1 };
+		let x0 = k.c0 * 2 - 3, x1 = k.c1 * 2 + 5, y0 = k.r0 * 2 - 3, y1 = k.r1 * 2 + 5;
+		const aspect = width / height;
+		// Tiles are wider than tall in the image (2 x 2 pixels per hex, rows overlap), so correct for the world shape
+		const pixelAspect = (this._worldW / src.width) / (this._worldH / src.height);
+		let w = x1 - x0, h = y1 - y0;
+		if ((w * pixelAspect) / h < aspect) {
+			const grow = (h * aspect) / pixelAspect - w;
+			x0 -= grow / 2;
+			w += grow;
+		} else {
+			const grow = (w * pixelAspect) / aspect - h;
+			y0 -= grow / 2;
+			h += grow;
+		}
+		x1 = x0 + w;
+		y1 = y0 + h;
+		ctx.fillStyle = "#0b1220";
+		ctx.fillRect(0, 0, width, height);
+		ctx.imageSmoothingEnabled = false;
+		ctx.drawImage(src, x0, y0, x1 - x0, y1 - y0, 0, 0, width, height);
+		ctx.drawImage(this._territory, x0, y0, x1 - x0, y1 - y0, 0, 0, width, height);
+		try {
+			return c.toDataURL("image/jpeg", 0.82);
+		} catch {
+			return "";
+		}
 	}
 
 	renderTerritory (sim: Sim, view?: Uint8Array): void {

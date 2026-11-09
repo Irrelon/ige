@@ -5,6 +5,9 @@ import { defaultOptions } from "../sim/sim";
 import type { Difficulty, GameOptions, VictoryType } from "../sim/types";
 import type { TerrainStyle } from "../surface";
 import { TURN_TIMERS } from "../net/protocol";
+import type { SaveMeta, SaveStore } from "../saves";
+import { esc } from "./html";
+import { downloadText, ICON_UPLOAD, saveList } from "./savesScreen";
 
 /**
  * The game setup screen: map size, civilisations, difficulty, fog of war,
@@ -25,7 +28,7 @@ export const MAP_PRESETS: Record<string, { label: string; width: number; height:
 
 export type SetupResult =
 	| { action: "new"; options: GameOptions; style: TerrainStyle }
-	| { action: "load" }
+	| { action: "load"; id?: string }
 	| { action: "host"; options: GameOptions; style: TerrainStyle; name: string; turnSeconds: number }
 	| { action: "join"; code: string; name: string; style: TerrainStyle };
 
@@ -73,7 +76,7 @@ export function optionsFromUrl (): { options: GameOptions; style: TerrainStyle; 
 	return { options, style, size };
 }
 
-export function showSetup (hasSave: boolean, onlineAvailable: boolean): Promise<SetupResult> {
+export function showSetup (saves: SaveMeta[], onlineAvailable: boolean, store?: SaveStore): Promise<SetupResult> {
 	const { options: start, style, size } = optionsFromUrl();
 	const el = document.getElementById("setup") as HTMLDivElement;
 	const sizeOptions = Object.entries(MAP_PRESETS).map(([k, p]) => `<option value="${k}" ${k === size ? "selected" : ""}>${p.label}</option>`).join("");
@@ -107,7 +110,15 @@ export function showSetup (hasSave: boolean, onlineAvailable: boolean): Promise<
 			<div class="checks">${victories}</div>
 			<div class="setup-actions">
 				<button type="submit" class="primary big">Start game</button>
-				${hasSave ? `<button type="button" id="setupLoad">Continue saved game</button>` : ""}
+				${saves.length ? `<button type="button" class="big" data-action="save-load" data-id="${saves[0].id}" title="${esc(saves[0].name)}">Continue <small>${esc(saves[0].civ)} &middot; turn ${saves[0].turn}</small></button>` : ""}
+				${store?.available ? `<button type="button" id="setupLoadList">Load game${saves.length ? ` (${saves.length})` : ""}</button>` : ""}
+			</div>
+			<div id="setupSaves" class="hidden">
+				<div class="save-head"><h4>Saved games</h4>
+					<button type="button" class="ghost" data-action="save-import">${ICON_UPLOAD} Import file</button>
+					<input id="setupImport" type="file" accept=".json,application/json" class="hidden">
+				</div>
+				<div id="setupSaveList"></div>
 			</div>
 			${onlineAvailable ? `<h4>Online</h4>
 			<div class="setup-actions">
@@ -162,7 +173,44 @@ export function showSetup (hasSave: boolean, onlineAvailable: boolean): Promise<
 			e.preventDefault();
 			done({ action: "new", ...read() });
 		});
-		el.querySelector("#setupLoad")?.addEventListener("click", () => done({ action: "load" }));
+		// Saved games: Continue, and the list (load, export, delete, import)
+		let list = saves;
+		let confirm: string | null = null;
+		const drawList = () => {
+			const box = el.querySelector("#setupSaveList");
+			if (box) box.innerHTML = saveList(list, { canSave: false, confirmDelete: confirm });
+		};
+		drawList();
+		el.querySelector("#setupLoadList")?.addEventListener("click", () => {
+			el.querySelector("#setupSaves")?.classList.toggle("hidden");
+		});
+		const reread = async () => {
+			list = store ? await store.list().catch(() => list) : list;
+			drawList();
+		};
+		el.addEventListener("click", (e) => {
+			const btn = (e.target as HTMLElement).closest("[data-action]") as HTMLElement | null;
+			if (!btn || !store) return;
+			const id = btn.dataset.id ?? "";
+			switch (btn.dataset.action) {
+				case "save-load": done({ action: "load", id }); break;
+				case "save-delete-ask": confirm = id; drawList(); break;
+				case "save-delete-cancel": confirm = null; drawList(); break;
+				case "save-delete": confirm = null; void store.remove(id).then(reread); break;
+				case "save-export": void store.exportFile(id).then((f) => f && downloadText(f.name, f.text)); break;
+				case "save-import": (el.querySelector("#setupImport") as HTMLInputElement | null)?.click(); break;
+			}
+		});
+		el.querySelector("#setupImport")?.addEventListener("change", (e) => {
+			const input = e.target as HTMLInputElement;
+			const file = input.files?.[0];
+			input.value = "";
+			if (file && store) void file.text().then((text) => store.importFile(text)).then(reread).catch((error) => alertInList(error));
+		});
+		const alertInList = (error: unknown) => {
+			const box = el.querySelector("#setupSaveList");
+			box?.insertAdjacentHTML("afterbegin", `<p class="bad small">${esc(error instanceof Error ? error.message : "Couldn't import that file")}</p>`);
+		};
 		el.querySelector("#setupHost")?.addEventListener("click", () => {
 			const f = new FormData(form);
 			const name = String(f.get("name") || "Player");

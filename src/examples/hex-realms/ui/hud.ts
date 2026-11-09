@@ -24,6 +24,8 @@ import { play } from "./sfx";
 import { markTipSeen, nextTip, resetTips, setTipsEnabled, tipsEnabled } from "./tips";
 import { setSoundEnabled, soundEnabled } from "./sfx";
 import { ambitionsModal, wondersModal } from "./wondersScreen";
+import type { SaveKind, SaveMeta, SaveStore } from "../saves";
+import { savesModal } from "./savesScreen";
 import { type ChatLine, type RoomInfo, TURN_TIMERS } from "../net/protocol";
 
 /** What the HUD needs from the game controller. */
@@ -75,11 +77,17 @@ export interface HudHost {
 	endTurn (): void;
 	nextUnit (): void;
 	toggleStyle (): void;
-	save (): void;
-	load (): void;
+	saves: SaveMeta[] | null;
+	saveStore: SaveStore;
+	canSave: boolean;
+	saveGame (kind: SaveKind, name: string, id?: string): Promise<boolean>;
+	loadGame (id: string): void;
+	deleteSave (id: string): Promise<void>;
+	exportSave (id: string): Promise<void>;
+	importSave (file: File): Promise<void>;
+	refreshSaves (): Promise<void>;
 	newGame (): void;
 	replay (): void;
-	hasSave (): boolean;
 	hasReplay (): boolean;
 	setFogMode (mode: FogMode): void;
 	setLineOfSight (on: boolean): void;
@@ -122,6 +130,8 @@ export class Hud {
 	/** Every notice shown this session (the Log screen), oldest first. */
 	logEntries: { turn: number; html: string; kind: "info" | "good" | "bad"; seen?: boolean }[] = [];
 	tipId: string | null = null;
+	/** The save whose Delete is waiting for a second click. */
+	saveConfirm: string | null = null;
 	damage: { el: HTMLDivElement; tile: number; age: number }[] = [];
 	labels = new Map<string, HTMLDivElement>();
 	/** Economy lens: building states and city stores drawn on the map. */
@@ -151,6 +161,12 @@ export class Hud {
 		// The deal editor's fields
 		const edit = (e: Event) => {
 			const el = e.target as HTMLInputElement;
+			if (el?.id === "saveImport") {
+				const file = el.files?.[0];
+				if (e.type === "change" && file) void this.host.importSave(file);
+				el.value = "";
+				return;
+			}
 			if (el?.dataset?.buy) {
 				this.buyGood = el.value as Good;
 				if (e.type === "change") this.refreshPanel();
@@ -317,8 +333,23 @@ export class Hud {
 			case "endturn": h.endTurn(); break;
 			case "nextunit": h.nextUnit(); break;
 			case "style": h.toggleStyle(); this.refresh(); break;
-			case "save": h.save(); break;
-			case "load": h.load(); break;
+			case "save-new": {
+				const typed = (document.getElementById("saveName") as HTMLInputElement | null)?.value ?? "";
+				void h.saveGame("manual", typed || this.defaultSaveName()).then((ok) => ok && this.toast("Game saved", "good", 2));
+				break;
+			}
+			case "save-over": {
+				const old = h.saves?.find((m) => m.id === data.id);
+				const label = old?.kind === "manual" ? old.name : this.defaultSaveName();
+				void h.saveGame("manual", label, data.id).then((ok) => ok && this.toast("Game saved", "good", 2));
+				break;
+			}
+			case "save-load": h.loadGame(String(data.id)); break;
+			case "save-export": void h.exportSave(String(data.id)); break;
+			case "save-delete-ask": this.saveConfirm = String(data.id); this.renderModal(); break;
+			case "save-delete-cancel": this.saveConfirm = null; this.renderModal(); break;
+			case "save-delete": this.saveConfirm = null; void h.deleteSave(String(data.id)); break;
+			case "save-import": (document.getElementById("saveImport") as HTMLInputElement | null)?.click(); break;
 			case "newgame": h.newGame(); break;
 			case "replay": this.closeModal(); h.replay(); break;
 			case "fog": h.setFogMode(data.mode as FogMode); this.openModal("menu"); break;
@@ -347,7 +378,8 @@ export class Hud {
 		this.refreshTopBar();
 		this.refreshPanel();
 		this.refreshTip();
-		if (this.modal && this.modal !== "gameover") this.renderModal();
+		// (The save screen isn't redrawn by game events: it would lose what you're typing)
+		if (this.modal && this.modal !== "gameover" && this.modal !== "saves") this.renderModal();
 	}
 
 	refreshTopBar (): void {
@@ -916,7 +948,23 @@ export class Hud {
 
 	openModal (kind: string): void {
 		this.modal = kind;
+		if (kind === "saves") {
+			this.saveConfirm = null;
+			void this.host.refreshSaves();
+		}
 		this.renderModal();
+		if (kind === "saves") (document.getElementById("saveName") as HTMLInputElement | null)?.select();
+	}
+
+	/** "Highlanders (Azure), turn 26". */
+	defaultSaveName (): string {
+		return `${this.sim.player(this.me).name}, turn ${this.sim.state.turn}`;
+	}
+
+	/** The notice log from a saved game. */
+	restoreLog (entries: Hud["logEntries"]): void {
+		this.logEntries = entries.slice(-LOG_LIMIT).map((e) => ({ ...e, seen: true }));
+		this.refreshLogButton();
 	}
 
 	closeModal (): void {
@@ -939,6 +987,7 @@ export class Hud {
 			case "menu": body = this.menuModal(); break;
 			case "help": body = this.helpModal(); break;
 			case "log": body = this.logModal(); break;
+			case "saves": body = savesModal({ saves: this.host.saves, local: this.host.canSave, defaultName: this.defaultSaveName(), confirmDelete: this.saveConfirm, storage: this.host.saveStore.available }); break;
 			case "gameover": body = this.gameOverModal(); break;
 		}
 		el.innerHTML = `<div class="modal-box ${this.modal}"><button class="close" data-action="close-modal" aria-label="Close">&times;</button>${body}</div>`;
@@ -1141,7 +1190,7 @@ export class Hud {
 		const invite = h.inviteLink();
 		return `<h3>Menu</h3>
 			<div class="menu-actions">
-				${local ? `<button data-action="save">Save game</button><button data-action="load" ${h.hasSave() ? "" : "disabled"}>Load game</button>` : ""}
+				<button class="primary" data-action="modal" data-modal="saves">Save and load</button>
 				<button data-action="newgame">New game</button>
 				<button data-action="replay" ${h.hasReplay() ? "" : "disabled"}>Watch replay</button>
 				<button data-action="modal" data-modal="help">Help</button>
@@ -1200,7 +1249,7 @@ export class Hud {
 			<p><b>Diplomacy</b> (G): treaties, cultural exchanges, research agreements, trades of goods and stars (once, or every turn as a route; where your roads meet theirs the goods travel as carts), demands, denouncing and sanctions. Wars wear both sides down, making peace easier the longer they last. Wars without enough grievances are surprise wars that everyone resents; peace brings a 10-turn truce.</p>
 			<p><b>Quick actions</b>: buttons float above a selected unit when it can do something where it stands: crossed swords capture a city, a house founds one, a flame pillages.</p>
 			<p><b>Fight</b>: declare war in Diplomacy first. Select a unit to see red attack rings; hover one to preview the damage. Ranged units need line of sight. Units stop when they move next to an enemy.</p>
-			<p><b>Keys</b>: N log of notices, WASD/arrows pan, wheel or Z/X zoom, Q/E rotate, Page Up/Page Down tilt (or right-drag: sideways rotates, up and down tilts), Space next unit, Enter end turn, Esc deselect, C centre, T terrain style, R research, G diplomacy, J ambition, M wonders, B economy, V economy lens, L cities, F found city, O menu, H help.</p></div>`;
+			<p><b>Keys</b>: Ctrl/Cmd+S quicksave, N log of notices, WASD/arrows pan, wheel or Z/X zoom, Q/E rotate, Page Up/Page Down tilt (or right-drag: sideways rotates, up and down tilts), Space next unit, Enter end turn, Esc deselect, C centre, T terrain style, R research, G diplomacy, J ambition, M wonders, B economy, V economy lens, L cities, F found city, O menu, H help.</p></div>`;
 	}
 
 	gameOverModal (): string {
