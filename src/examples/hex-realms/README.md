@@ -141,7 +141,9 @@ they arrive. The **3D models** toggle in the menu (or `?models=0`) falls back to
   Riders, catapults and boats are unrigged props.
 - **Team colours**: unit models are textured with bright magenta areas (cloaks, banners, trim). For each player
   the library repaints those pixels of the colour texture in the player's colour, keeping their shading, and loads
-  the result as its own model, so every warrior looks the same and only its team colour differs. A coloured disc
+  the result as its own model, so every warrior looks the same and only its team colour differs. Like a chroma key:
+  the clearly magenta pixels seed each area, which then grows into its own shaded folds and highlights (dark crimson,
+  dull violet) and fills specks, and the lilac cast the magenta leaves on neighbouring metal is turned grey. A coloured disc
   under each unit, and an owner banner or base on cities and buildings, add to it.
 - **Cities** use the village, town or city model for their level; unfinished buildings show the construction site.
   Buildings, wonders and monuments are static props; ports turn to face the water.

@@ -123,14 +123,115 @@ function magenta (r: number, g: number, b: number): number {
 	const max = Math.max(r, g, b), min = Math.min(r, g, b);
 	if (max < 40 || max - min < 30) return 0;
 	const sat = (max - min) / max;
+	const hue = hueOf(r, g, b);
+	const hueWeight = Math.max(0, Math.min(1, 1 - (Math.abs(hue - 320) - 15) / 8));
+	const satWeight = Math.max(0, Math.min(1, (sat - 0.5) / 0.12));
+	return hueWeight * satWeight;
+}
+
+function hueOf (r: number, g: number, b: number): number {
+	const max = Math.max(r, g, b), min = Math.min(r, g, b);
+	if (max === min) return 0;
 	let hue: number;
 	if (max === r) hue = ((g - b) / (max - min)) * 60;
 	else if (max === g) hue = (2 + (b - r) / (max - min)) * 60;
 	else hue = (4 + (r - g) / (max - min)) * 60;
-	if (hue < 0) hue += 360;
-	const hueWeight = Math.max(0, Math.min(1, 1 - (Math.abs(hue - 320) - 15) / 8));
-	const satWeight = Math.max(0, Math.min(1, (sat - 0.5) / 0.12));
-	return hueWeight * satWeight;
+	return hue < 0 ? hue + 360 : hue;
+}
+
+/**
+ * Could this pixel be a shaded or highlighted part of a team area? Folds
+ * come out dark crimson (hue 330-360, value down to 0.1) and highlights
+ * a duller violet (hue 285-315, saturation down to 0.35), outside what
+ * magenta() accepts on its own. Leather, wood and skin (hue 10-40) stay out.
+ */
+function nearMagenta (r: number, g: number, b: number): boolean {
+	const max = Math.max(r, g, b), min = Math.min(r, g, b);
+	if (max < 10 || (max - min) / max < 0.18) return false;
+	const hue = hueOf(r, g, b);
+	return hue >= 270 || hue <= 8;
+}
+
+/**
+ * Spill suppression, as for a chroma key: the textures bake a pale lilac
+ * cast from the magenta onto neighbouring metal and cloth (vambraces,
+ * mail): lilac around hue 260-275 on steel that is otherwise blue-grey
+ * (hue 200-240). Pixels outside the team areas that are a weak violet
+ * (hue 250-350, saturation under 0.4) are turned grey, fully below 0.25
+ * and from hue 262 up.
+ */
+function despill (d: Uint8ClampedArray, mask: Float32Array): void {
+	for (let p = 0, i = 0; i < d.length; p++, i += 4) {
+		if (mask[p] > 0) continue;
+		const r = d[i], g = d[i + 1], b = d[i + 2];
+		const max = Math.max(r, g, b), min = Math.min(r, g, b);
+		if (max < 20 || max === min) continue;
+		const sat = (max - min) / max;
+		if (sat >= 0.4) continue;
+		const hue = hueOf(r, g, b);
+		if (hue < 250 || hue > 350) continue;
+		const k = Math.min(1, (0.4 - sat) / 0.15) * Math.min(1, (hue - 250) / 12);
+		const grey = 0.299 * r + 0.587 * g + 0.114 * b;
+		d[i] = r + (grey - r) * k;
+		d[i + 1] = g + (grey - g) * k;
+		d[i + 2] = b + (grey - b) * k;
+	}
+}
+
+/** How far (pixels) a team area grows into its own shading. */
+const TEAM_GROW = 8;
+
+/**
+ * The team-colour weight of every pixel: magenta() picks out the clearly
+ * magenta pixels, then the area grows (up to TEAM_GROW pixels) into
+ * neighbouring pixels that could be its folds and highlights, and finally
+ * fills specks mostly surrounded by it (bake noise). Without this, team
+ * areas kept small dark patches of the original magenta and looked mottled.
+ */
+function teamMask (d: Uint8ClampedArray, w: number, h: number): { weight: Float32Array; count: number } {
+	const n = w * h;
+	const weight = new Float32Array(n);
+	const dist = new Uint8Array(n).fill(255);
+	const queue = new Int32Array(n);
+	let head = 0, tail = 0, count = 0;
+	for (let p = 0; p < n; p++) {
+		weight[p] = magenta(d[p * 4], d[p * 4 + 1], d[p * 4 + 2]);
+		if (weight[p] > 0.5) {
+			count++;
+			dist[p] = 0;
+			queue[tail++] = p;
+		}
+	}
+	while (head < tail) {
+		const p = queue[head++];
+		if (dist[p] >= TEAM_GROW) continue;
+		const x = p % w, y = (p - x) / w;
+		for (let dy = -1; dy <= 1; dy++) {
+			for (let dx = -1; dx <= 1; dx++) {
+				const xx = x + dx, yy = y + dy;
+				if (xx < 0 || yy < 0 || xx >= w || yy >= h) continue;
+				const q = yy * w + xx;
+				if (dist[q] !== 255 || !nearMagenta(d[q * 4], d[q * 4 + 1], d[q * 4 + 2])) continue;
+				dist[q] = dist[p] + 1;
+				weight[q] = 1;
+				queue[tail++] = q;
+			}
+		}
+	}
+	for (let pass = 0; pass < 2; pass++) {
+		const fill: number[] = [];
+		for (let y = 1; y < h - 1; y++) {
+			for (let x = 1; x < w - 1; x++) {
+				const p = y * w + x;
+				if (weight[p] > 0.5) continue;
+				let around = 0;
+				for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) if ((dx || dy) && weight[p + dy * w + dx] > 0.5) around++;
+				if (around >= 5) fill.push(p);
+			}
+		}
+		for (const p of fill) weight[p] = 1;
+	}
+	return { weight, count };
 }
 
 export class ModelLibrary {
@@ -287,19 +388,19 @@ export class ModelLibrary {
 			ctx.drawImage(bitmap, 0, 0);
 			const pixels = ctx.getImageData(0, 0, canvas.width, canvas.height);
 			const d = pixels.data;
-			let count = 0;
-			for (let i = 0; i < d.length; i += 4) {
-				const r = d[i], g = d[i + 1], b = d[i + 2];
-				const weight = magenta(r, g, b);
+			const { weight: mask, count } = teamMask(d, canvas.width, canvas.height);
+			if (count < (d.length / 4) * 0.002) continue;
+			for (let p = 0, i = 0; i < d.length; p++, i += 4) {
+				const weight = mask[p];
 				if (weight <= 0) continue;
-				if (weight > 0.5) count++;
+				const r = d[i], g = d[i + 1], b = d[i + 2];
 				// Keep the texel's shading, relative to the finished magenta's typical brightness (about 0.5)
 				const shade = Math.min(1.25, Math.max(r, g, b) / 255 / 0.55);
 				d[i] = r + (tr * shade - r) * weight;
 				d[i + 1] = g + (tg * shade - g) * weight;
 				d[i + 2] = b + (tb * shade - b) * weight;
 			}
-			if (count < (d.length / 4) * 0.002) continue;
+			despill(d, mask);
 			ctx.putImageData(pixels, 0, 0);
 			const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, "image/png"));
 			if (blob) painted.push({ image: index, bytes: new Uint8Array(await blob.arrayBuffer()) });
