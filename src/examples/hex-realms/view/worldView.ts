@@ -50,6 +50,8 @@ const UNIT_MODEL_FIT: Record<UnitTypeId, { height?: number; footprint?: number }
 	warrior: { height: 46 }, archer: { height: 46 }, swordsman: { height: 50 }, settler: { height: 44 },
 	rider: { height: 54, footprint: 50 }, catapult: { height: 40, footprint: 46 }
 };
+/** Buildings whose models read small at the usual size (long and low ones) are drawn this much bigger. */
+const MODEL_GROW: Partial<Record<BuildingId, number>> = { market: 1.3 };
 /** The boat model's size, and where a unit stands on it: its deck height, and how far forward of the mast. */
 const BOAT_FIT = { footprint: 62 };
 const BOAT_DECK = 7;
@@ -709,9 +711,10 @@ export class WorldView {
 
 		// A model when one is loaded: the building, wonder or monument, or a construction site
 		const kind = info.wonder;
+		const grow = b.built ? MODEL_GROW[b.type] ?? 1 : 1;
 		const prop = this.models?.create(b.built ? b.type : "construction", {
-			footprint: R * (kind === "world" ? 1.25 : kind === "monument" ? 0.85 : 0.95),
-			height: R * (kind === "world" ? 1.7 : kind === "monument" ? 1.15 : 1),
+			footprint: R * grow * (kind === "world" ? 1.25 : kind === "monument" ? 0.85 : 0.95),
+			height: R * grow * (kind === "world" ? 1.7 : kind === "monument" ? 1.15 : 1),
 			lod: PROP_LOD
 		});
 		if (prop) {

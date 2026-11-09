@@ -142,6 +142,23 @@
 		"skinned": false,
 		"bytes": 562984
 	},
+	"market": {
+		"file": "market.glb",
+		"min": [
+			-0.4356,
+			-0.1657,
+			-0.2535
+		],
+		"max": [
+			0.4449,
+			0.1808,
+			0.1404
+		],
+		"triangles": 4876,
+		"animations": [],
+		"skinned": false,
+		"bytes": 529780
+	},
 	"mine": {
 		"file": "mine.glb",
 		"min": [
