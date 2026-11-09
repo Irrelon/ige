@@ -31,6 +31,9 @@ enum GltfComponentType {
 /**
  * GLTF Accessor types and their component counts.
  */
+/** Largest value of each integer component type, for normalized accessors. */
+const NORMALIZED_MAX = { 5120: 127, 5121: 255, 5122: 32767, 5123: 65535 } as const;
+
 const GLTF_TYPE_SIZES: Record<string, number> = {
 	SCALAR: 1,
 	VEC2: 2,
@@ -640,6 +643,17 @@ export class IgeGltfLoader extends IgeBaseClass {
 	 * Note: We copy data to new arrays to avoid byte alignment issues.
 	 */
 	protected _getAccessorData(gltf: any, accessorIndex: number, buffers: ArrayBuffer[]): Float32Array {
+		const data = this._readAccessorData(gltf, accessorIndex, buffers);
+		const accessor = gltf.accessors[accessorIndex];
+		// Normalized integers (e.g. vertex colours as bytes, 255 = 1.0) are read as 0-1 (or -1-1 when signed)
+		if (accessor.normalized && accessor.componentType !== GltfComponentType.FLOAT) {
+			const max = NORMALIZED_MAX[accessor.componentType as keyof typeof NORMALIZED_MAX];
+			if (max) for (let i = 0; i < data.length; i++) data[i] = Math.max(data[i] / max, -1);
+		}
+		return data;
+	}
+
+	protected _readAccessorData(gltf: any, accessorIndex: number, buffers: ArrayBuffer[]): Float32Array {
 		const accessor = gltf.accessors[accessorIndex];
 		const bufferView = gltf.bufferViews[accessor.bufferView];
 		const buffer = buffers[bufferView.buffer];
