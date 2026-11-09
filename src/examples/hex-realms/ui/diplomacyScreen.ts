@@ -1,22 +1,29 @@
 import {
-	actionProblem, agreementCost, aiAccepts, attitude, attitudeFactors, cleanGoods, type DealTerms, grievance, hasPact, justified,
+	actionProblem, agreementCost, aiAccepts, attitude, attitudeFactors, civStock, cleanGoods, type DealTerms, grievance, hasPact, justified,
 	proposalProblem, truceUntil, votesOf, warProblem
 } from "../sim/diplomacy";
 import {
 	AGENDAS, AMBITIONS, CASUS_BELLI, CIVS, DENOUNCE_COST, EXCHANGE_COST, EXCHANGE_TURNS, GOODS, type Good, type Goods,
 	RESEARCH_TURNS, ROUTE_TURNS, SANCTION_COST, SANCTION_TURNS, TRUCE_TURNS
 } from "../sim/rules";
-import { civStock } from "../sim/diplomacy";
 import type { Sim } from "../sim/sim";
 import { ALLIANCE, type Command, type DealKind, type ProposalState, type TreatyState, WAR } from "../sim/types";
 import { actionButton, esc, goodChip, goodsInline, stars, swatch } from "./html";
 
 /**
- * The diplomacy screen: a list of known civs and, for the one selected, its
- * relations, mood (and why), agenda, grievances and treaties, with every
- * action that can be taken towards it, and a deal editor for trading goods
- * and stars.
+ * The diplomacy screen. On the left, the civs you know; on the right, the one
+ * selected: a short header (relation, mood, treaties), a few facts about it,
+ * and what you can do, one option per row, split into three tabs so only a
+ * handful of choices show at once:
+ * - Agreements: alliance, pact, open borders, trade, exchange, research
+ * - Trade: a gift, and a two-column table of stars and goods to swap
+ * - Pressure: demands, denouncing, sanctions and war
+ * At war, or before you have Diplomacy, there are no tabs: just peace or war.
  */
+
+export type DiplomacyTab = "agreements" | "trade" | "pressure";
+
+const TABS: [DiplomacyTab, string][] = [["agreements", "Agreements"], ["trade", "Trade"], ["pressure", "Pressure"]];
 
 interface DealDraft {
 	give: Goods;
@@ -57,22 +64,56 @@ export function describeProposal (sim: Sim, pr: ProposalState): string {
 	}
 }
 
-function treatyLine (sim: Sim, me: number, t: TreatyState): string {
-	const left = `${t.until - sim.state.turn} turns left`;
+/** A small coloured label. */
+const pill = (text: string, cls = "", title = "") => `<span class="pill ${cls}"${title ? ` title="${esc(title)}"` : ""}>${text}</span>`;
+
+function relationPill (rel: number, long = false): string {
+	if (rel === WAR) return pill(long ? "At war" : "War", "war");
+	if (rel === ALLIANCE) return pill(long ? "Allied" : "Ally", "ally");
+	return pill(long ? "At peace" : "Peace", "peace");
+}
+
+/** A running treaty as a label, its terms in the tooltip. */
+function treatyPill (sim: Sim, me: number, t: TreatyState): string {
+	const left = t.until - sim.state.turn;
+	const turns = `${left} turn${left === 1 ? "" : "s"} left`;
 	switch (t.kind) {
-		case "exchange": return `Cultural exchange (${left})`;
-		case "research": return `Research agreement (${left})`;
-		case "sanction": return t.a === me ? `<span class="warn">Your sanctions on them</span> (${left})` : `<span class="bad">Their sanctions on you</span> (${left})`;
+		case "exchange": return pill("Cultural exchange", "", turns);
+		case "research": return pill("Research agreement", "", turns);
+		case "sanction": return t.a === me ? pill("Your sanctions", "warn", turns) : pill("Their sanctions", "war", turns);
 		case "route": {
 			const mine = t.a === me;
 			const [a, b] = terms(t.give, t.stars ?? 0, t.get, t.getStars ?? 0);
-			return `Trade route: ${mine ? "you send" : "they send"} ${a}, ${mine ? "they send" : "you send"} ${b} each turn (${left})`;
+			const plain = (s: string) => s.replace(/&#9733;/g, "★");
+			return pill("Trade route", "", `${mine ? "You send" : "They send"} ${plain(a)}; ${mine ? "they send" : "you send"} ${plain(b)} each turn (${turns})`);
 		}
 	}
 }
 
+/** One option: what it is on the left, its button (or why it can't be done) on the right. */
+function row (title: string, desc: string, ctl: string): string {
+	return `<div class="dp-row"><div class="dp-row-text"><b>${title}</b>${desc ? `<small>${desc}</small>` : ""}</div><div class="dp-row-ctl">${ctl}</div></div>`;
+}
+
+/** A button, or the reason it can't be pressed. */
+function control (action: string, label: string, data: Record<string, string | number>, problem: string | null, cls = ""): string {
+	return problem ? `<span class="dp-why">${esc(problem)}</span>` : actionButton(action, label, data, null, cls);
+}
+
+function mood (sim: Sim, o: number, me: number): string {
+	if (sim.player(o).human) return "Human";
+	const feel = attitude(sim, o, me);
+	return feel >= 5 ? "Friendly" : feel >= 1 ? "Cordial" : feel > -3 ? "Neutral" : feel > -6 ? "Wary" : "Hostile";
+}
+
+const moodPill = (sim: Sim, o: number, me: number) => {
+	const m = mood(sim, o, me);
+	return pill(m, `mood-${m.toLowerCase()}`, `Mood ${attitude(sim, o, me).toFixed(1)}; it drifts each turn`);
+};
+
 export class DiplomacyScreen {
 	civ = -1;
+	tab: DiplomacyTab = "agreements";
 	draft: DealDraft = emptyDraft();
 
 	/** Read a deal editor field. */
@@ -87,6 +128,10 @@ export class DiplomacyScreen {
 			if (n > 0) this.draft[side][good] = n;
 			else delete this.draft[side][good];
 		}
+	}
+
+	setTab (tab: string): void {
+		if (TABS.some(([t]) => t === tab)) this.tab = tab as DiplomacyTab;
 	}
 
 	dealTerms (): DealTerms {
@@ -138,37 +183,37 @@ export class DiplomacyScreen {
 		if (playerName) this.playerName = playerName;
 		const d = sim.state.diplomacy;
 		const others = sim.state.players.filter((q) => q.index !== me);
-		if (this.civ < 0 || this.civ === me || !sim.state.players[this.civ]?.alive || !sim.hasMet(me, this.civ)) {
-			this.civ = others.find((q) => q.alive && sim.hasMet(me, q.index))?.index ?? -1;
-		}
+		const known = others.filter((q) => q.alive && sim.hasMet(me, q.index));
+		if (!known.some((q) => q.index === this.civ)) this.civ = known[0]?.index ?? -1;
+
 		const incoming = d.proposals.filter((pr) => pr.to === me).map((pr) =>
-			`<div class="proposal"><span>${describeProposal(sim, pr)}</span> <button class="primary" data-action="respond" data-proposal="${pr.id}" data-accept="1">Accept</button><button data-action="respond" data-proposal="${pr.id}" data-accept="0">Decline</button></div>`
+			`<div class="dp-offer"><span>${describeProposal(sim, pr)}</span><span class="dp-row-ctl"><button class="primary" data-action="respond" data-proposal="${pr.id}" data-accept="1">Accept</button><button data-action="respond" data-proposal="${pr.id}" data-accept="0">Decline</button></span></div>`
 		).join("");
 
-		const list = others.map((q) => {
+		const list = known.map((q) => {
 			const o = q.index;
-			if (!q.alive) return `<button class="civ dead" disabled>${swatch(q.color)}${esc(q.name)}<small>Destroyed</small></button>`;
-			if (!sim.hasMet(me, o)) return `<button class="civ" disabled>${swatch(q.color)}<span class="dim">Unknown civilisation</span><small>Not met yet</small></button>`;
-			const rel = sim.relation(me, o);
-			const tag = rel === WAR ? `<span class="bad">War</span>` : rel === ALLIANCE ? `<span class="good">Alliance</span>` : "Peace";
-			const pending = d.proposals.some((pr) => pr.to === me && pr.from === o) ? ` <span class="badge">!</span>` : "";
+			const pending = d.proposals.some((pr) => pr.to === me && pr.from === o) ? `<span class="badge" title="Waiting for your answer">!</span>` : "";
 			const person = this.playerName(o);
-			return `<button class="civ ${o === this.civ ? "on" : ""}" data-action="diplo-civ" data-player="${o}">${swatch(q.color)}${esc(q.name)}${person ? ` <b>${esc(person)}</b>` : ""}${pending}<small>${tag} &middot; ${mood(sim, o, me)}</small></button>`;
+			const sub = q.human ? `<span class="dim">${person ? esc(person) : "Human"}</span>` : `<span class="mood-${mood(sim, o, me).toLowerCase()}">${mood(sim, o, me)}</span>`;
+			return `<button class="dp-civ ${o === this.civ ? "on" : ""}" data-action="diplo-civ" data-player="${o}">
+				<span class="dp-civ-name">${swatch(q.color)}${esc(q.name)}${pending}</span>
+				<span class="dp-civ-sub">${relationPill(sim.relation(me, o))} ${sub}</span></button>`;
 		}).join("");
+		const unmet = others.filter((q) => q.alive && !sim.hasMet(me, q.index)).length;
+		const gone = others.filter((q) => !q.alive).map((q) => `<div class="dp-civ-note gone">${swatch(q.color)}${esc(q.name)} &middot; destroyed</div>`).join("");
 
 		const council = d.council;
-		const councilText = !sim.options.victories.diplomatic ? "Diplomatic victory is off." : council.formed
-			? `The World Council votes on turn ${council.nextVote}. ${council.lastWinner >= 0 ? `Last leader: ${esc(sim.player(council.lastWinner).name)} (${council.streak} in a row; 2 wins the game).` : "No leader yet."} You bring ${votesOf(sim, me)} votes.`
-			: "The World Council forms when any civ researches Statecraft. Win two elections in a row for a diplomatic victory.";
-		// Before Diplomacy only war and peace are open; the rest of the screen says what the tech brings
-		const locked = sim.hasTech(me, "diplomacy") ? "" : `<div class="tech-note">Until you research <a href="#" class="tech-link" data-action="show-tech" data-tech="diplomacy" data-for="Treaties and deals">Diplomacy</a> you can only declare war and make peace. It opens alliances, open borders, pacts, exchanges, research agreements, barter, gifts, demands, denouncing and sanctions.</div>`;
+		const councilText = !sim.options.victories.diplomatic ? "" : council.formed
+			? `World Council: next vote on turn ${council.nextVote}${council.lastWinner >= 0 ? `; ${esc(sim.player(council.lastWinner).name)} won the last ${council.streak > 1 ? `${council.streak} in a row` : "one"} (two in a row wins)` : ""}. You have ${votesOf(sim, me)} votes.`
+			: "The World Council forms when any civ researches Statecraft. Win two of its elections in a row for a diplomatic victory.";
 
 		return `<h3>Diplomacy <span class="dim">${stars(sim.player(me).stars)}</span></h3>
-			${locked}
-			${incoming ? `<div class="incoming">${incoming}</div>` : ""}
-			<div class="diplo2"><div class="civs">${list || `<span class="dim">No other civs.</span>`}</div>
-			<div class="civ-detail">${this.civ >= 0 ? this.detail(sim, me, this.civ) : `<p class="dim">You haven't met anyone yet. Explore to find other civilisations.</p>`}</div></div>
-			<p class="dim small">${councilText}</p>`;
+			${incoming ? `<div class="dp-inbox"><div class="dp-label">Waiting for your answer</div>${incoming}</div>` : ""}
+			<div class="dp">
+				<nav class="dp-civs">${list}${unmet ? `<div class="dp-civ-note">${unmet} civ${unmet === 1 ? "" : "s"} not met yet</div>` : ""}${gone}</nav>
+				<section class="dp-main">${this.civ >= 0 ? this.detail(sim, me, this.civ) : `<p class="dim">You haven't met anyone yet. Explore to find other civilisations.</p>`}</section>
+			</div>
+			${councilText ? `<p class="dp-foot">${councilText}</p>` : ""}`;
 	}
 
 	detail (sim: Sim, me: number, o: number): string {
@@ -176,91 +221,126 @@ export class DiplomacyScreen {
 		const d = sim.state.diplomacy;
 		const n = sim.playerCount;
 		const rel = sim.relation(me, o);
-		const out: string[] = [];
 		const person = this.playerName(o);
-		out.push(`<div class="title">${swatch(q.color)}${esc(q.name)}${person ? ` &middot; ${esc(person)}` : ""} <span class="dim small">${esc(CIVS[q.civ].perk)}</span></div>`);
 
-		// Standing
-		const truce = truceUntil(sim, me, o);
-		const treaties = [
-			d.openBorders[me * n + o] ? "Open borders" : "",
-			d.trade[me * n + o] ? "Trade agreement" : "",
-			hasPact(sim, me, o) ? "Defensive pact" : "",
-			...d.treaties.filter((t) => (t.a === me && t.b === o) || (t.a === o && t.b === me)).map((t) => treatyLine(sim, me, t))
-		].filter(Boolean);
+		// Header: name, then relation, mood and what's in force between you
 		const since = d.warSince?.[me * n + o] ?? 0;
-		const relName = rel === WAR ? `<b class="bad">At war</b> <span class="dim small">since turn ${since}${sim.state.turn - since >= 12 ? ", both sides are tiring of it" : ""}</span>` : rel === ALLIANCE ? `<b class="good">Allied</b>` : "At peace";
-		out.push(`<div>${relName}${truce ? ` &middot; truce until turn ${truce}` : ""}${treaties.length ? ` &middot; ${treaties.join(" &middot; ")}` : ""}</div>`);
-		if (q.human) {
-			out.push(`<div class="dim small">${person ? `${esc(person)} plays this civ.` : "A person plays this civ."}</div>`);
-		} else {
-			const feel = attitude(sim, o, me);
-			const factors = attitudeFactors(sim, o, me).map((f) => `<li class="${f.delta > 0 ? "good" : "bad"}">${f.delta > 0 ? "+" : ""}${f.delta.toFixed(2)} ${esc(f.label)}</li>`).join("");
-			out.push(`<div>Mood: <b>${mood(sim, o, me)}</b> <span class="dim small">(${feel.toFixed(1)}; changes each turn)</span></div>`);
-			if (factors) out.push(`<ul class="factors">${factors}</ul>`);
-			if (q.agenda) out.push(`<div>Agenda: <b>${AGENDAS[q.agenda].name}</b> <span class="dim small">${AGENDAS[q.agenda].description}</span></div>`);
+		const truce = truceUntil(sim, me, o);
+		const tags = [
+			rel === WAR ? pill("At war", "war", `Since turn ${since}`) : relationPill(rel, true),
+			q.human ? "" : moodPill(sim, o, me),
+			truce ? pill(`Truce to turn ${truce}`) : "",
+			d.openBorders[me * n + o] ? pill("Open borders") : "",
+			d.trade[me * n + o] ? pill("Trade agreement") : "",
+			hasPact(sim, me, o) ? pill("Defensive pact") : "",
+			...d.treaties.filter((t) => (t.a === me && t.b === o) || (t.a === o && t.b === me)).map((t) => treatyPill(sim, me, t))
+		].filter(Boolean).join("");
+		const head = `<div class="dp-head"><div class="dp-title">${swatch(q.color)}${esc(q.name)}${person ? ` <span class="dim">${esc(person)}</span>` : ""}</div><div class="dp-tags">${tags}</div></div>`;
+
+		return head + this.facts(sim, me, o) + this.options(sim, me, o);
+	}
+
+	/** A few facts about a civ, one per line: perk, why it feels as it does, agenda, ambition, grievances, votes. */
+	facts (sim: Sim, me: number, o: number): string {
+		const q = sim.player(o);
+		const d = sim.state.diplomacy;
+		const facts: [string, string][] = [["Perk", esc(CIVS[q.civ].perk)]];
+		if (!q.human) {
+			const factors = attitudeFactors(sim, o, me).sort((a, b) => Math.abs(b.delta) - Math.abs(a.delta));
+			const names = (good: boolean) => factors.filter((f) => (f.delta > 0) === good).slice(0, 3).map((f) => esc(f.label.toLowerCase())).join(", ");
+			const likes = names(true), dislikes = names(false);
+			const why = [likes ? `<span class="good">Likes</span> ${likes}` : "", dislikes ? `<span class="bad">Dislikes</span> ${dislikes}` : ""].filter(Boolean).join(" &middot; ");
+			const all = factors.map((f) => `${f.delta > 0 ? "+" : ""}${f.delta.toFixed(2)} ${f.label}`).join("\n");
+			facts.push(["Mood", `<span title="${esc(all || "No strong feelings")}">${why || `<span class="dim">No strong feelings either way</span>`}</span>`]);
+			if (q.agenda) facts.push(["Agenda", `${AGENDAS[q.agenda].name} <span class="dim">${AGENDAS[q.agenda].description}</span>`]);
 		}
-		if (q.ambition) out.push(`<div>Ambition: <b>${AMBITIONS[q.ambition].name}</b> <span class="dim small">${q.milestones.length}/4 milestones${q.legacy ? ", legacy earned" : ""}</span></div>`);
+		if (q.ambition) facts.push(["Ambition", `${AMBITIONS[q.ambition].name} <span class="dim">${q.milestones.length}/4${q.legacy ? ", legacy earned" : ""}</span>`]);
 		const theirs = grievance(sim, o, me), mine = grievance(sim, me, o);
 		if (theirs > 0.05 || mine > 0.05) {
-			out.push(`<div>Grievances: they hold <b>${theirs.toFixed(1)}</b> against you; you hold <b>${mine.toFixed(1)}</b> against them${justified(sim, me, o) ? ` <span class="good">(enough for a justified war)</span>` : ""}</div>`);
+			facts.push(["Grievances", `Theirs ${theirs.toFixed(1)} &middot; yours ${mine.toFixed(1)}${justified(sim, me, o) ? ` <span class="good">enough for a justified war</span>` : ""}`]);
 		}
-		out.push(`<div class="dim small">${votesOf(sim, o)} World Council votes</div>`);
-
-		// Actions
-		const deal = (kind: DealKind, label: string, extra: DealTerms = {}) => {
-			const problem = proposalProblem(sim, me, o, kind, extra);
-			return actionButton("propose", label, { player: o, kind, ...(extra.stars ? { stars: extra.stars } : {}) }, problem);
-		};
-		const treatyButtons = rel === WAR
-			? deal("peace", `Propose peace <small>then a ${TRUCE_TURNS}-turn truce</small>`)
-			: [deal("alliance", "Alliance <small>shared vision, defend each other</small>"), deal("pact", "Defensive pact <small>defend each other</small>"), deal("openBorders", "Open borders"), deal("trade", "Trade agreement <small>stars each turn</small>")].join("");
-		out.push(`<h5>Treaties</h5><div class="actions">${treatyButtons}</div>`);
-		if (rel !== WAR) {
-			out.push(`<h5>Actions</h5><div class="actions">
-				${deal("exchange", `Cultural exchange <small>&#9733;${EXCHANGE_COST}: +1&#9733;/turn each, ${EXCHANGE_TURNS} turns</small>`)}
-				${deal("research", `Research agreement <small>&#9733;${agreementCost(sim, me)} each: free tech in ${RESEARCH_TURNS} turns</small>`)}
-				${deal("gift", "Gift &#9733;5", { stars: 5 })}
-				${actionButton("denounce", `Denounce <small>&#9733;${DENOUNCE_COST}: they and their friends resent it</small>`, { player: o }, actionProblem(sim, me, o, "denounce"), "")}
-				${actionButton("sanction", `Sanctions <small>&#9733;${SANCTION_COST}: their income -15% for ${SANCTION_TURNS} turns</small>`, { player: o }, actionProblem(sim, me, o, "sanction"), "")}
-			</div>`);
-			const cities = sim.citiesOf(o).filter((c) => !proposalProblem(sim, me, o, "city", { city: c.id }));
-			if (this.draft.city >= 0 && !cities.some((c) => c.id === this.draft.city)) this.draft.city = -1;
-			if (this.draft.city < 0 && cities[0]) this.draft.city = cities[0].id;
-			out.push(`<h5>Demands <span class="dim small">(refusing gives you grounds for war; either way they resent it)</span></h5><div class="actions">
-				${actionButton("demand-tribute", "Demand &#9733;10", { player: o, stars: 10 }, proposalProblem(sim, me, o, "tribute", { getStars: 10 }))}
-				${actionButton("demand-tribute", "Demand &#9733;25", { player: o, stars: 25 }, proposalProblem(sim, me, o, "tribute", { getStars: 25 }))}
-				${cities.length ? `<select data-deal="city">${cities.map((c) => `<option value="${c.id}" ${c.id === this.draft.city ? "selected" : ""}>${esc(c.name)} (level ${c.level})</option>`).join("")}</select>${actionButton("demand-city", "Demand city", { player: o })}` : `<span class="dim small">No city of theirs near yours to demand.</span>`}
-			</div>`);
-			out.push(this.editor(sim, me, o));
-		}
-		const war = warProblem(sim, me, o);
-		if (rel !== WAR) {
-			const fair = justified(sim, me, o);
-			const label = fair ? "Declare war <small>justified: your grievances back it</small>" : `Declare war <small>a surprise war: everyone will resent it (grounds need ${CASUS_BELLI} grievances)</small>`;
-			out.push(`<h5>War</h5><div class="actions">${actionButton("war", label, { player: o }, war, "danger")}</div>`);
-		}
-		return out.join("");
+		if (sim.options.victories.diplomatic && d.council.formed) facts.push(["Council", `${votesOf(sim, o)} votes`]);
+		return `<dl class="dp-facts">${facts.map(([k, v]) => `<dt>${k}</dt><dd>${v}</dd>`).join("")}</dl>`;
 	}
 
+	/** What you can do towards a civ. */
+	options (sim: Sim, me: number, o: number): string {
+		const q = sim.player(o);
+		const rel = sim.relation(me, o);
+		const deal = (kind: DealKind, label = "Propose", extra: DealTerms = {}) =>
+			control("propose", label, { player: o, kind, ...(extra.stars ? { stars: extra.stars } : {}) }, proposalProblem(sim, me, o, kind, extra));
+
+		if (rel === WAR) {
+			const since = sim.state.diplomacy.warSince?.[me * sim.playerCount + o] ?? 0;
+			const tired = sim.state.turn - since >= 12 ? " Both sides are tiring of this war." : "";
+			return `<div class="dp-rows">${row("Peace", `Ends the war, then a ${TRUCE_TURNS}-turn truce.${tired}`, deal("peace", "Propose peace"))}</div>`;
+		}
+
+		const fair = justified(sim, me, o);
+		const war = row("Declare war", fair ? "Justified: your grievances back it." : `A surprise war: every civ will resent it. It's justified once you hold ${CASUS_BELLI} grievances.`,
+			control("war", "Declare war", { player: o }, warProblem(sim, me, o), "danger"));
+		if (!sim.hasTech(me, "diplomacy")) {
+			return `<div class="dp-note">Research <a href="#" class="tech-link" data-action="show-tech" data-tech="diplomacy" data-for="Treaties and deals">Diplomacy</a> to make agreements, trade and demands. Until then you can only declare war or make peace.</div>
+				<div class="dp-rows">${war}</div>`;
+		}
+
+		const tabs = `<div class="dp-tabs">${TABS.map(([t, label]) => `<button class="${t === this.tab ? "on" : ""}" data-action="diplo-tab" data-tab="${t}">${label}</button>`).join("")}</div>`;
+		const notYet = `<div class="dp-note">${esc(q.name)} hasn't researched Diplomacy yet, so they can't make agreements or trade. You can still pressure them.</div>`;
+		const theyCan = sim.hasTech(o, "diplomacy");
+		let body = "";
+		switch (this.tab) {
+			case "agreements":
+				body = !theyCan ? notYet : [
+					row("Alliance", "Shared vision; you defend each other in war.", deal("alliance")),
+					row("Defensive pact", "Each joins in if the other is attacked.", deal("pact")),
+					row("Open borders", "Your units may cross each other's land.", deal("openBorders")),
+					row("Trade agreement", "Both earn stars each turn.", deal("trade")),
+					row(`Cultural exchange ${stars(EXCHANGE_COST)}`, `You pay; both gain a star a turn for ${EXCHANGE_TURNS} turns.`, deal("exchange")),
+					row(`Research agreement ${stars(agreementCost(sim, me))}`, `Each pays; both get a free technology in ${RESEARCH_TURNS} turns.`, deal("research"))
+				].join("");
+				break;
+			case "trade":
+				body = !theyCan ? notYet : row(`Gift ${stars(5)}`, "Warms their mood towards you.", deal("gift", "Give", { stars: 5 })) + this.editor(sim, me, o);
+				break;
+			case "pressure": {
+				const t10 = proposalProblem(sim, me, o, "tribute", { getStars: 10 }), t25 = proposalProblem(sim, me, o, "tribute", { getStars: 25 });
+				const tribute = t10 && t10 === t25 ? control("", "", {}, t10)
+					: control("demand-tribute", `Demand ${stars(10)}`, { player: o, stars: 10 }, t10) + control("demand-tribute", `Demand ${stars(25)}`, { player: o, stars: 25 }, t25);
+				const cities = sim.citiesOf(o).filter((c) => !proposalProblem(sim, me, o, "city", { city: c.id }));
+				if (this.draft.city >= 0 && !cities.some((c) => c.id === this.draft.city)) this.draft.city = -1;
+				if (this.draft.city < 0 && cities[0]) this.draft.city = cities[0].id;
+				const cityProblem = theyCan ? (cities.length ? null : "None of their cities are near yours") : "They haven't researched Diplomacy";
+				const city = cityProblem ? control("", "", {}, cityProblem)
+					: `<select data-deal="city">${cities.map((c) => `<option value="${c.id}" ${c.id === this.draft.city ? "selected" : ""}>${esc(c.name)}</option>`).join("")}</select>${actionButton("demand-city", "Demand", { player: o })}`;
+				body = [
+					row("Demand tribute", "If they refuse you gain grounds for war. Either way they resent it.", tribute),
+					row("Demand a city", "One of theirs near your own. Never a capital.", city),
+					row(`Denounce ${stars(DENOUNCE_COST)}`, "They and their friends resent you.", control("denounce", "Denounce", { player: o }, actionProblem(sim, me, o, "denounce"))),
+					row(`Sanctions ${stars(SANCTION_COST)}`, `Their income falls 15% for ${SANCTION_TURNS} turns.`, control("sanction", "Impose", { player: o }, actionProblem(sim, me, o, "sanction"))),
+					war
+				].join("");
+				break;
+			}
+		}
+		return tabs + `<div class="dp-rows">${body}</div>`;
+	}
+
+	/** The trade table: stars and each good either side holds, what you give on the left and what you get on the right. */
 	editor (sim: Sim, me: number, o: number): string {
-		const mine = civStock(sim, me);
-		const input = (field: string, value: number, max?: number) => `<input type="number" min="0" ${max !== undefined ? `max="${max}"` : ""} step="1" data-deal="${field}" value="${value || ""}" placeholder="0">`;
-		const giveGoods = GOODS.filter((g) => (mine[g] ?? 0) > 0).map((g) => `<label>${goodChip(g)}<span class="dim small">/${mine[g]}</span>${input(`give:${g}`, this.draft.give[g] ?? 0, mine[g])}</label>`).join("");
-		const getGoods = GOODS.map((g) => `<label>${goodChip(g)}${input(`get:${g}`, this.draft.get[g] ?? 0)}</label>`).join("");
-		return `<h5>Trade goods and stars <span class="dim small">(goods leave your stores and arrive at their capital)</span></h5>
-			<div class="deal">
-				<div><b>You give</b><label class="starline">Stars ${input("stars", this.draft.stars, Math.floor(sim.player(me).stars))}</label><div class="deal-goods">${giveGoods || `<span class="dim small">Your stores are empty.</span>`}</div></div>
-				<div><b>You ask for</b><label class="starline">Stars ${input("getStars", this.draft.getStars)}</label><div class="deal-goods">${getGoods}</div></div>
-			</div>
-			<label class="check"><input type="checkbox" data-deal="route" ${this.draft.route ? "checked" : ""}> Every turn for ${ROUTE_TURNS} turns (a trade route: your road networks must touch)</label>
-			<div class="actions"><button class="primary" data-action="propose-deal" data-player="${o}">Propose trade</button><span id="dealHint">${this.hint(sim, me)}</span></div>`;
+		const mine = civStock(sim, me), theirs = civStock(sim, o);
+		const cell = (field: string, value: number, max: number) => max > 0
+			? `<input type="number" min="0" max="${max}" step="1" data-deal="${field}" value="${value || ""}" placeholder="0"><span class="dim small">of ${max}</span>`
+			: `<span class="dim">&ndash;</span>`;
+		const goods = GOODS.filter((g) => (mine[g] ?? 0) > 0 || (theirs[g] ?? 0) > 0);
+		const rows = [
+			`<tr><th><span class="stars">&#9733;</span> Stars</th><td>${cell("stars", this.draft.stars, Math.floor(sim.player(me).stars))}</td><td>${cell("getStars", this.draft.getStars, Math.floor(sim.player(o).stars))}</td></tr>`,
+			...goods.map((g) => `<tr><th>${goodChip(g)}</th><td>${cell(`give:${g}`, this.draft.give[g] ?? 0, mine[g] ?? 0)}</td><td>${cell(`get:${g}`, this.draft.get[g] ?? 0, theirs[g] ?? 0)}</td></tr>`)
+		].join("");
+		return `<div class="dp-trade">
+				<div class="dp-row-text"><b>Swap stars and goods</b><small>Goods leave your stores and arrive at their capital.</small></div>
+				<table><thead><tr><th></th><th>You give</th><th>You get</th></tr></thead><tbody>${rows}</tbody></table>
+				<label class="check"><input type="checkbox" data-deal="route" ${this.draft.route ? "checked" : ""}> Repeat every turn for ${ROUTE_TURNS} turns <span class="dim">(your road networks must touch)</span></label>
+				<div class="dp-propose"><button class="primary" data-action="propose-deal" data-player="${o}">Propose trade</button><span id="dealHint">${this.hint(sim, me)}</span></div>
+			</div>`;
 	}
 }
-
-function mood (sim: Sim, o: number, me: number): string {
-	if (sim.player(o).human) return "Human";
-	const feel = attitude(sim, o, me);
-	return feel >= 5 ? "Friendly" : feel >= 1 ? "Cordial" : feel > -3 ? "Neutral" : feel > -6 ? "Wary" : "Hostile";
-}
-

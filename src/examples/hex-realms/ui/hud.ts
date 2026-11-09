@@ -265,6 +265,7 @@ export class Hud {
 			case "war": run({ type: "declareWar", target: num("player") }); this.openModal("diplomacy"); break;
 			case "propose": run({ type: "propose", to: num("player"), kind: data.kind as DealKind, stars: data.stars ? num("stars") : 0 }); this.openModal("diplomacy"); break;
 			case "diplo-civ": this.diplo.civ = num("player"); this.diplo.resetDraft(); this.openModal("diplomacy"); break;
+			case "diplo-tab": this.diplo.setTab(data.tab ?? ""); this.openModal("diplomacy"); break;
 			case "propose-deal":
 			case "demand-tribute":
 			case "demand-city":
