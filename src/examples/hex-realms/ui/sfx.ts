@@ -4,30 +4,18 @@
  * gesture, as browsers require.
  */
 
+import { audioContext, getSfxVolume, setSfxVolume, sfxOut } from "./audio";
+
 export type Sound = "select" | "move" | "attack" | "hit" | "build" | "level" | "turn" | "error" | "capture" | "tech" | "victory";
 
 let ctx: AudioContext | null = null;
-let enabled = readSetting();
-
-function readSetting (): boolean {
-	try {
-		return localStorage.getItem("hexRealms.sound") !== "off";
-	} catch {
-		return true;
-	}
-}
 
 export function soundEnabled (): boolean {
-	return enabled;
+	return getSfxVolume() > 0;
 }
 
 export function setSoundEnabled (on: boolean): void {
-	enabled = on;
-	try {
-		localStorage.setItem("hexRealms.sound", on ? "on" : "off");
-	} catch {
-		// Storage unavailable: the setting lasts for this session
-	}
+	setSfxVolume(on ? Math.max(0.5, getSfxVolume()) : 0);
 }
 
 function tone (freq: number, start: number, duration: number, type: OscillatorType, volume: number, slideTo?: number): void {
@@ -40,19 +28,16 @@ function tone (freq: number, start: number, duration: number, type: OscillatorTy
 	gain.gain.setValueAtTime(0.0001, ctx.currentTime + start);
 	gain.gain.exponentialRampToValueAtTime(volume, ctx.currentTime + start + 0.01);
 	gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + start + duration);
-	osc.connect(gain).connect(ctx.destination);
+	osc.connect(gain).connect(sfxOut() ?? ctx.destination);
 	osc.start(ctx.currentTime + start);
 	osc.stop(ctx.currentTime + start + duration + 0.02);
 }
 
 export function play (sound: Sound): void {
-	if (!enabled) return;
-	try {
-		ctx ??= new AudioContext();
-		if (ctx.state === "suspended") void ctx.resume();
-	} catch {
-		return;
-	}
+	if (!soundEnabled()) return;
+	ctx = audioContext();
+	if (!ctx) return;
+	if (ctx.state === "suspended") void ctx.resume();
 	switch (sound) {
 		case "select": tone(660, 0, 0.06, "sine", 0.05); break;
 		case "move": tone(330, 0, 0.08, "triangle", 0.05, 440); break;

@@ -19,7 +19,8 @@ import { runAiTurn } from "./sim/ai";
 import { attackTargets } from "./sim/combat";
 import { pathTo, type Reach, reachable } from "./sim/movement";
 import { UNIT_TYPES } from "./sim/rules";
-import { Sim } from "./sim/sim";
+import { defaultOptions, Sim } from "./sim/sim";
+import { hashString } from "./noise";
 import type { Command, GameOptions, SimEvent } from "./sim/types";
 import { StrategyCamera } from "./strategyCamera";
 import type { TerrainStyle } from "./surface";
@@ -28,6 +29,7 @@ import { Hud, type HudHost } from "./ui/hud";
 import { play } from "./ui/sfx";
 import { type SaveData, type SaveKind, type SaveMeta, SaveStore } from "./saves";
 import { downloadText } from "./ui/savesScreen";
+import { onMusicProgress, playTitleMusic, prepareTitleMusic, startGameMusic, stopTitleMusic } from "./ui/music";
 import { MAP_PRESETS, optionsFromUrl, type SetupResult, showSetup } from "./ui/setup";
 import { TerrainView } from "./view/terrainView";
 import { WorldView } from "./view/worldView";
@@ -125,6 +127,8 @@ export class Client extends IgeBaseClass implements IgeCanInit, HudHost {
 
 	busy = false;
 	replaying = false;
+	/** A small all-AI world turning slowly behind the title screen. */
+	showcase = false;
 	online = false;
 	rooms?: IgeRoomClient<OnlineCommand>;
 	/** Saved games (IndexedDB) and the latest list of them (null while reading). */
@@ -223,27 +227,96 @@ export class Client extends IgeBaseClass implements IgeCanInit, HudHost {
 
 	/** The setup screen, then whatever it chose. */
 	async setupScreen (): Promise<void> {
+		prepareTitleMusic();
+		const live = this.showcase || await this.startShowcase();
 		hideLoading();
 		const [online] = await Promise.all([serverAvailable(), this.refreshSaves()]);
-		const result = await showSetup(this.saves ?? [], online, this.saveStore);
+		// The title theme renders in a worker: show its progress in the menu's footer
+		const unwatch = onMusicProgress((p, label) => {
+			if (label !== "title") return;
+			const el = document.getElementById("musicStatus");
+			if (!el) return;
+			el.innerHTML = p < 1 ? `&#9835; Tuning the orchestra <i><s style="width:${Math.round(p * 100)}%"></s></i>` : "&#9835; Orchestra ready";
+			el.classList.toggle("done", p >= 1);
+		});
+		const result = await showSetup(this.saves ?? [], online, this.saveStore, { onBegin: () => this.titleMusic(), live });
+		unwatch();
 		showLoading();
+		// The showcase world can't be taken down in place: start the chosen game on a fresh page
+		if (live) return this.goTo(result);
 		await this.applySetup(result);
 	}
 
-	async applySetup (result: SetupResult): Promise<void> {
-		if (result.action === "load") return this.startFromSave(result.id);
-		if (result.action === "host" || result.action === "join") return this.startOnline(result);
-		return this.startLocal(result.options, result.style);
+	/**
+	 * The title screen's backdrop: a small world that four AI civs have
+	 * played for a while (cities, roads, farms, armies), fog off, with the
+	 * camera slowly circling it. ?backdrop=0 turns it off.
+	 */
+	async startShowcase (): Promise<boolean> {
+		if (new URLSearchParams(window.location.search).get("backdrop") === "0") return false;
+		try {
+			this.status("Raising the world...");
+			await nextFrame();
+			const seedText = `title-${Math.floor(Math.random() * 1e6)}`;
+			const options = defaultOptions({ width: 30, height: 20, players: 4, humans: [], seed: hashString(seedText), seedText, fog: "off", turnLimit: 999 });
+			for (const v of Object.keys(options.victories) as (keyof typeof options.victories)[]) options.victories[v] = false;
+			const t0 = performance.now();
+			const sim = Sim.create(options);
+			const until = performance.now() + 1500;
+			for (let i = 0; i < 4 * 18 && performance.now() < until; i++) {
+				const p = sim.current;
+				runAiTurn(sim, p);
+				sim.apply(p, { type: "endTurn" });
+			}
+			sim.drainEvents();
+			const t1 = performance.now();
+			this.sim = sim;
+			this.player = 0;
+			this.terrain = new TerrainView({ sim, layout: this.layout, renderer: this.renderer, viewport: this.viewport, layer: this.terrainLayer, style: "tiles", chunkSize: 16, player: 0 });
+			const map = sim.map;
+			const worldW = this.layout.colSpacing * map.width, worldH = this.layout.rowSpacing * map.height;
+			this.cam.bounds = { minX: 0, maxX: worldW, minZ: 0, maxZ: worldH };
+			this.cam.maxDistance = Math.max(4000, Math.max(worldW, worldH * 1.6) * 0.95);
+			// Frame the busiest part of the world: the middle of its cities
+			const cities = sim.state.cities.filter((c) => c.owner >= 0);
+			const cx = cities.length ? cities.reduce((a, c) => a + this.tileX(c.tile), 0) / cities.length : worldW / 2;
+			const cz = cities.length ? cities.reduce((a, c) => a + this.tileZ(c.tile), 0) / cities.length : worldH / 2;
+			this.cam.jumpTo(cx, cz, 1200);
+			// A lower, cinematic angle, with the far side fading into the night
+			this.cam.tilt = this.cam.targetTilt = -this.cam.maxTilt;
+			this.cam.apply(this.viewport.camera);
+			const night = { r: 0.1, g: 0.15, b: 0.22 };
+			this.renderer.fog({ mode: "linear", color: night, near: 1500, far: 4200 });
+			this.renderer.setClearColor(night.r, night.g, night.b, 1);
+			await this.terrain.build(async () => nextFrame());
+			this.world = new WorldView(sim, this.layout, this.terrain, this.renderer, this.unitLayer, this.overlayLayer, 0, {
+				onDamage: () => undefined,
+				invalidate: () => this.invalidate()
+			});
+			this.models ??= new ModelLibrary();
+			this.world.models = this.models;
+			this.models.onLoaded = (id) => this.world?.modelLoaded(id);
+			this.modelsStarted = true;
+			void this.models.start(["village", "town", "city", "warrior", "archer", "swordsman", "rider", "settler", "construction", "boat", "catapult"]);
+			this.world.build();
+			console.info(`[title] world: sim ${(t1 - t0).toFixed(0)} ms (turn ${sim.state.turn}), views ${(performance.now() - t1).toFixed(0)} ms`);
+			ige.engine.useManualRender(true);
+			this.showcase = true;
+			this.updateLighting();
+			this.invalidate();
+			return true;
+		} catch (error) {
+			console.warn("No title backdrop", error);
+			return false;
+		}
 	}
 
-	/** New game from the menu: the setup screen, then a clean page load into the chosen game. */
-	async newGame (): Promise<void> {
-		this.hud.closeModal();
-		const [online] = await Promise.all([serverAvailable(), this.refreshSaves()]);
-		const result = await showSetup(this.saves ?? [], online, this.saveStore);
+	/** Start what the setup screen chose on a fresh page (from the menu, or over the title backdrop). */
+	goTo (result: SetupResult): void {
+		if (result.action === "cancel") return;
 		if (result.action === "load") {
 			sessionStorage.setItem(NEXT_KEY, `load:${result.id ?? ""}`);
-			window.location.search = "";
+			window.location.assign(window.location.pathname);
 			return;
 		}
 		if (result.action === "join") {
@@ -255,6 +328,21 @@ export class Client extends IgeBaseClass implements IgeCanInit, HudHost {
 			return;
 		}
 		window.location.search = urlForOptions(result.options, result.style);
+	}
+
+	async applySetup (result: SetupResult): Promise<void> {
+		if (result.action === "cancel") return this.setupScreen();
+		if (result.action === "load") return this.startFromSave(result.id);
+		if (result.action === "host" || result.action === "join") return this.startOnline(result);
+		return this.startLocal(result.options, result.style);
+	}
+
+	/** New game from the menu: the setup screen, then a clean page load into the chosen game. */
+	async newGame (): Promise<void> {
+		this.hud.closeModal();
+		const [online] = await Promise.all([serverAvailable(), this.refreshSaves()]);
+		const result = await showSetup(this.saves ?? [], online, this.saveStore, { skipSplash: true, pane: "new", inGame: true });
+		this.goTo(result);
 	}
 
 	async startLocal (options: GameOptions, style: TerrainStyle): Promise<void> {
@@ -338,6 +426,11 @@ export class Client extends IgeBaseClass implements IgeCanInit, HudHost {
 
 		ige.engine.useManualRender(true);
 		this.ready = true;
+		for (const id of ["topbar", "infoPanel", "minimapPanel", "turnPanel"]) document.getElementById(id)?.classList.remove("hidden");
+		const mini = document.getElementById("minimapPanel");
+		if (mini) document.documentElement.style.setProperty("--mini-h", `${mini.offsetHeight}px`);
+		if (!this.replaying) startGameMusic();
+		else stopTitleMusic();
 		hideLoading();
 		sim.drainEvents();
 		this.hud.refresh();
@@ -800,6 +893,15 @@ export class Client extends IgeBaseClass implements IgeCanInit, HudHost {
 		document.getElementById("stats")?.classList.toggle("hidden", !on);
 	}
 
+	/** The title theme (starts when the splash is dismissed). */
+	titleMusic (): void {
+		try {
+			playTitleMusic();
+		} catch (error) {
+			console.warn("Title music unavailable", error);
+		}
+	}
+
 	/** Re-read the save list (and redraw the save screen if it is open). */
 	async refreshSaves (): Promise<void> {
 		try {
@@ -939,6 +1041,15 @@ export class Client extends IgeBaseClass implements IgeCanInit, HudHost {
 
 	tick (dt: number): void {
 		this.time += dt;
+		if (this.showcase) {
+			this.cam.rotate(0.045 * dt);
+			this.cam.update(dt, this.viewport.camera);
+			this.terrain.update();
+			this.world.update(dt, this.time);
+			this.updateLighting();
+			this.queueRender(true);
+			return;
+		}
 		if (!this.ready) return;
 		const camera = this.viewport.camera;
 

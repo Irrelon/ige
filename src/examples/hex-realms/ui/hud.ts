@@ -26,6 +26,7 @@ import { setSoundEnabled, soundEnabled } from "./sfx";
 import { ambitionsModal, wondersModal } from "./wondersScreen";
 import type { SaveKind, SaveMeta, SaveStore } from "../saves";
 import { savesModal } from "./savesScreen";
+import { emblem, icon } from "./icons";
 import { type ChatLine, type RoomInfo, TURN_TIMERS } from "../net/protocol";
 
 /** What the HUD needs from the game controller. */
@@ -386,8 +387,9 @@ export class Hud {
 		const sim = this.sim, p = sim.player(this.me);
 		const inc = income(sim, this.me);
 		const current = sim.player(sim.current);
-		setHtml("civ", `<span class="swatch" style="background:${p.color}"></span>${esc(p.name)}`);
-		setHtml("starsBox", `${stars(p.stars)} <span class="${inc.net < 0 ? "bad" : "dim"}">${inc.net >= 0 ? "+" : ""}${inc.net}/turn</span>`);
+		const [tribe, banner] = p.name.split(" (");
+		setHtml("civ", `<span class="crest" style="--c:${p.color}">${emblem(p.civ, 20)}</span><span class="civ-text">${esc(tribe)}<small>${esc((banner ?? "").replace(")", ""))} banner</small></span>`);
+		setHtml("starsBox", `<span class="stars">${icon("star", 16)}${Math.floor(p.stars)}</span> <span class="${inc.net < 0 ? "bad" : "dim"}">${inc.net >= 0 ? "+" : ""}${inc.net}</span>`);
 		const box = document.getElementById("starsBox");
 		if (box) {
 			const units = sim.unitsOf(this.me).length;
@@ -406,28 +408,46 @@ export class Hud {
 		const deadline = this.host.online ? this.host.room?.deadline ?? 0 : 0;
 		const left = Math.max(0, Math.ceil((deadline - Date.now()) / 1000));
 		const clock = deadline ? ` <span class="${left <= 15 ? "bad" : "dim"}" title="When the time runs out, the AI plays this turn">&#9201;${Math.floor(left / 60)}:${String(left % 60).padStart(2, "0")}</span>` : "";
-		setHtml("turnBox", `Turn <b>${sim.state.turn}</b>${limit}${clock}`);
+		setHtml("turnBox", `${icon("hourglass", 15)}<span>Turn <b>${sim.state.turn}</b><span class="dim">${limit}</span></span>${clock}`);
 		const chat = document.getElementById("btnChat");
 		if (chat) {
 			chat.classList.toggle("hidden", !this.host.online);
 			chat.classList.toggle("on", this.chatOpen);
-			setHtml("btnChat", `Chat${this.unread ? ` <span class="badge">${this.unread}</span>` : ""}`);
+			setHtml("btnChat", `${icon("chat")}<span class="lbl">Chat</span>${this.unread ? `<span class="badge">${this.unread}</span>` : ""}`);
 		}
 		const end = document.getElementById("endTurn") as HTMLButtonElement | null;
 		if (end) {
 			const myTurn = sim.current === this.me && !this.host.busy && !this.host.replaying && !sim.state.winner;
 			end.disabled = !myTurn;
 			const who = this.host.playerName(sim.current) || current.name.split(" (")[0];
-			end.textContent = this.host.replaying ? "Replaying..." : sim.state.winner ? "Game over" : myTurn ? "End Turn" : `${who} is playing...`;
+			setHtml("endTurn", this.host.replaying ? "Replaying..." : sim.state.winner ? "Game over" : myTurn ? "End Turn" : `${esc(who)} is playing...`);
+			const ready = myTurn ? this.readyUnits() : 0;
+			end.classList.toggle("waiting", ready > 0);
+			const next = document.getElementById("btnNext") as HTMLButtonElement | null;
+			if (next) {
+				next.disabled = !myTurn || ready === 0;
+				setHtml("btnNext", `<span style="display:flex;align-items:center;gap:8px">${icon("next", 16)}Next unit</span><b class="${ready ? "" : "dim"}">${ready ? `${ready} ready` : "all done"}</b>`);
+			}
 		}
 		const pending = sim.state.diplomacy.proposals.filter((pr) => pr.to === this.me).length;
-		setHtml("btnDiplo", `Diplomacy${pending ? ` <span class="badge">${pending}</span>` : ""}`);
+		const nav = (id: string, ico: string, label: string, badge = "") => setHtml(id, `${icon(ico)}<span class="lbl">${label}</span>${badge}`);
+		const badge = (n: number | string) => (n ? `<span class="badge">${n}</span>` : "");
+		nav("btnTech", "research", "Research");
+		nav("btnEconomy", "economy", "Economy");
+		nav("btnLens", "lens", "Lens");
+		nav("btnDiplo", "diplomacy", "Diplomacy", badge(pending));
 		const rewards = sim.citiesOf(this.me).filter((c) => c.pendingRewards > 0).length;
-		setHtml("btnCities", `Cities${rewards ? ` <span class="badge">${rewards}</span>` : ""}`);
-		setHtml("btnAmbition", p.ambition ? `${AMBITIONS[p.ambition].name} <small class="dim">${p.milestones.length}/4</small>` : `Ambition <span class="badge">!</span>`);
+		nav("btnCities", "cities", "Cities", badge(rewards));
+		nav("btnAmbition", "ambition", p.ambition ? `Ambition <small>${p.milestones.length}/4</small>` : "Ambition", p.ambition ? "" : badge("!"));
+		const amb = document.getElementById("btnAmbition");
+		if (amb) amb.title = p.ambition ? `Ambition: ${AMBITIONS[p.ambition].name}, ${p.milestones.length} of 4 milestones (J)` : "Choose an ambition (J)";
 		const earned = p.feats.filter((m) => !sim.state.buildings.some((b) => b.type === m && b.owner === this.me)).length;
-		setHtml("btnWonders", `Wonders${earned ? ` <span class="badge">${earned}</span>` : ""}`);
-		setHtml("styleToggle", `Terrain: ${this.host.terrain.style === "tiles" ? "Tiles" : "Natural"}`);
+		nav("btnWonders", "wonders", "Wonders", badge(earned));
+		setHtml("styleToggle", icon(this.host.terrain.style === "tiles" ? "terrain" : "map"));
+		const style = document.getElementById("styleToggle");
+		if (style) style.title = `Terrain look: ${this.host.terrain.style === "tiles" ? "Tiles" : "Natural"} (T to switch)`;
+		setHtml("btnSave", icon("save"));
+		setHtml("btnMenu", icon("menu"));
 	}
 
 	refreshPanel (): void {
@@ -453,12 +473,16 @@ export class Hud {
 		const info = UNIT_TYPES[u.type];
 		const owner = sim.player(u.owner);
 		const mine = u.owner === this.me;
-		// The placeholder's shape is named only while the unit is drawn as one
-		const models = this.host.models;
-		const shape = models?.enabled && models.models.has(u.type) ? "" : info.shape;
 		const whose = mine ? "" : esc(owner.name);
-		const out = [`<div class="title"><span class="swatch" style="background:${owner.color}"></span>${info.name}${u.veteran ? " &#9733;" : ""} <span class="dim">${[shape, whose].filter(Boolean).join(" &middot; ")}</span></div>`];
-		out.push(`<div>Health <b>${u.hp}/${u.maxHp}</b> &middot; Attack ${info.attack} &middot; Defence ${info.defence} &middot; Range ${info.range}${mine ? ` &middot; Moves ${u.moves}/${info.moves}` : ""}</div>`);
+		const out = [`<div class="title"><span class="swatch" style="background:${owner.color}"></span>${info.name}${u.veteran ? ` <span class="stars" title="Veteran">${icon("star", 14)}</span>` : ""} <span class="dim">${whose}</span></div>`];
+		const stat = (cls: string, ico: string, value: string, title: string) => `<span class="stat ${cls}" title="${title}">${icon(ico, 14)}${value}</span>`;
+		out.push(`<div class="statline">${[
+			stat("hp", "heart", `${u.hp}<small>/${u.maxHp}</small>`, "Health"),
+			stat("atk", "sword", String(info.attack), "Attack"),
+			stat("def", "shield", String(info.defence), "Defence"),
+			stat("rng", "range", String(info.range), "Range"),
+			mine ? stat("mov", "moves", `${u.moves}<small>/${info.moves}</small>`, "Moves left this turn") : ""
+		].join("")}</div>`);
 		if (!mine) return `<section>${out.join("")}</section>`;
 		const buttons: string[] = [];
 		const capture = captureProblem(sim, this.me, id);
@@ -632,8 +656,8 @@ export class Hud {
 	// Notifications
 	// ------------------------------------------------------------------
 
-	toast (html: string, kind: "info" | "good" | "bad" = "info", seconds = 4): void {
-		this.logEntries.push({ turn: this.sim.state.turn, html, kind });
+	toast (html: string, kind: "info" | "good" | "bad" = "info", seconds = 4, logHtml = html): void {
+		this.logEntries.push({ turn: this.sim.state.turn, html: logHtml, kind });
 		if (this.logEntries.length > LOG_LIMIT) {
 			this.logEntries.splice(0, this.logEntries.length - LOG_LIMIT);
 		}
@@ -643,17 +667,17 @@ export class Hud {
 		if (!box) return;
 		const el = document.createElement("div");
 		el.className = `toast ${kind}`;
-		el.innerHTML = html;
+		el.innerHTML = `<span class="ti">${icon(kind === "good" ? "check" : kind === "bad" ? "warning" : "info", 14)}</span><div class="tb">${html}</div>`;
 		box.appendChild(el);
 		setTimeout(() => el.classList.add("fade"), seconds * 1000);
 		setTimeout(() => el.remove(), seconds * 1000 + 600);
-		while (box.children.length > 6) box.firstElementChild?.remove();
+		while (box.children.length > 4) box.firstElementChild?.remove();
 	}
 
 	/** The Log button's badge: important notices (good or bad) not yet seen in the log. */
 	refreshLogButton (): void {
 		const unseen = this.logEntries.filter((e) => !e.seen && e.kind !== "info").length;
-		setHtml("btnLog", `Log${unseen ? ` <span class="badge">${unseen > 9 ? "9+" : unseen}</span>` : ""}`);
+		setHtml("btnLog", `${icon("log")}<span class="lbl">Log</span>${unseen ? `<span class="badge">${unseen > 9 ? "9+" : unseen}</span>` : ""}`);
 	}
 
 	/** Every notice this session, newest first, grouped by turn. Opening it marks them seen. */
@@ -683,7 +707,13 @@ export class Hud {
 			switch (e.type) {
 				case "report":
 					if (e.player === me && e.lines.length) {
-						this.toast(`<b>Turn ${sim.state.turn}</b><br>${e.lines.map(esc).join("<br>")}`, "info", 7);
+						// The toast keeps to what's notable; the log keeps the whole report
+						const routine = /^(Produced|Carriers delivered|Cities ate|Income:)/;
+						const notable = e.lines.filter((l) => !routine.test(l));
+						const earned = e.lines.find((l) => l.startsWith("Income:"));
+						const full = `<b>Turn ${sim.state.turn}</b><br>${e.lines.map(esc).join("<br>")}`;
+						const short = `<b>Turn ${sim.state.turn}</b>${earned ? ` <span class="dim">${esc(earned.replace("Income: ", ""))}</span>` : ""}${notable.length ? `<br>${notable.map(esc).join("<br>")}` : ""}`;
+						this.toast(short, "info", notable.length ? 6 : 3.5, full);
 						play("turn");
 					}
 					break;
@@ -889,8 +919,10 @@ export class Hud {
 			const owner = c.owner >= 0 ? sim.player(c.owner) : null;
 			// With the lens on, your cities also show what their stores hold
 			const store = this.lens && c.owner === this.me ? lensStore(c.store) : "";
-			const html = `<span style="border-color:${owner?.color ?? "#888"}">${c.capital ? "&#9733; " : ""}${esc(c.name)} <b>${c.level}</b>${c.owner === this.me && c.pendingRewards ? " &#10022;" : ""}</span>${store}`;
-			label(`city${c.id}`, "city-label", html, x, h.terrain.surface.tileHeight(c.tile) + 62, z);
+			const mineCity = c.owner === this.me;
+			const grow = mineCity ? `<i class="grow"><s style="width:${Math.min(100, Math.round((c.growth / growthNeeded(c.level)) * 100))}%"></s></i>` : "";
+			const html = `<span style="--c:${owner?.color ?? "#777"}">${c.capital ? `<i class="cap">${icon("crown", 13)}</i>` : ""}${esc(c.name)}<b>${c.level}</b>${mineCity && c.pendingRewards ? `<i class="rw" title="Level-up reward waiting">${icon("star", 12)}</i>` : ""}</span>${grow}${store}`;
+			label(`city${c.id}`, owner ? "city-label" : "city-label neutral", html, x, h.terrain.surface.tileHeight(c.tile) + 62, z);
 		}
 		if (this.lens && near) {
 			for (const b of sim.buildingsOf(this.me)) {
@@ -954,6 +986,11 @@ export class Hud {
 		}
 		this.renderModal();
 		if (kind === "saves") (document.getElementById("saveName") as HTMLInputElement | null)?.select();
+	}
+
+	/** Your units that can still move, attack or found a city this turn. */
+	readyUnits (): number {
+		return this.sim.unitsOf(this.me).filter((u) => (u.moves > 0 && !u.attacked) || (UNIT_TYPES[u.type].founder && !u.acted)).length;
 	}
 
 	/** "Highlanders (Azure), turn 26". */

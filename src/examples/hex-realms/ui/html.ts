@@ -1,4 +1,5 @@
 import { GOOD_INFO, type Good, type Goods } from "../sim/rules";
+import { icon } from "./icons";
 
 /** Small HTML helpers shared by the HUD screens. */
 
@@ -20,7 +21,7 @@ export function goodsInline (goods: Goods): string {
 }
 
 export function stars (n: number): string {
-	return `<span class="stars">&#9733;${Math.floor(n)}</span>`;
+	return `<span class="stars">${icon("star", 13)}${Math.floor(n)}</span>`;
 }
 
 export function swatch (color: string): string {
