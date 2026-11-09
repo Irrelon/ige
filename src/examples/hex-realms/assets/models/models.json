@@ -176,6 +176,23 @@
 		"skinned": false,
 		"bytes": 911224
 	},
+	"greatWall": {
+		"file": "greatWall.glb",
+		"min": [
+			-0.4633,
+			-0.2299,
+			-0.2787
+		],
+		"max": [
+			0.4687,
+			0.2688,
+			0.1285
+		],
+		"triangles": 9464,
+		"animations": [],
+		"skinned": false,
+		"bytes": 739944
+	},
 	"hunter": {
 		"file": "hunter.glb",
 		"min": [
