@@ -425,7 +425,9 @@ export class IgeGltfLoader extends IgeBaseClass {
 		for (const texDef of gltf.textures) {
 			const texture: IgeGltfTexture = {
 				name: texDef.name,
-				imageIndex: texDef.source
+				// EXT_texture_webp: browsers decode WebP, so its image is used (exporters such as
+				// Blender's may give no plain `source` at all for a WebP texture)
+				imageIndex: texDef.extensions?.EXT_texture_webp?.source ?? texDef.source
 			};
 
 			// Parse sampler if present

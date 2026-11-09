@@ -7,6 +7,9 @@ import { IgeBehaviourType } from "@/enums";
 import { invertMat4 } from "@/engine/webgl/IgeRaycast";
 import { IgeRagdoll3d, type IgeRagdollOptions } from "@/engine/physics/IgeRagdoll3d";
 import { IgePhysicsCharacter3d, type IgePhysicsCharacterOptions } from "@/engine/physics/IgePhysicsCharacter3d";
+import { matrixToQuaternion } from "@/engine/webgl/IgeModelParts";
+
+export { matrixToQuaternion };
 
 type Jolt = typeof JoltApi;
 type Vec3 = { x: number; y: number; z: number };
@@ -377,32 +380,6 @@ export function rotateVector (v: Vec3, x: number, y: number, z: number, w: numbe
 	};
 }
 
-/** The rotation of a column-major matrix's upper 3x3 (scale removed) as a unit quaternion. */
-export function matrixToQuaternion (m: ArrayLike<number>): Quat {
-	const sx = Math.hypot(m[0], m[1], m[2]) || 1;
-	const sy = Math.hypot(m[4], m[5], m[6]) || 1;
-	const sz = Math.hypot(m[8], m[9], m[10]) || 1;
-	const r00 = m[0] / sx, r10 = m[1] / sx, r20 = m[2] / sx;
-	const r01 = m[4] / sy, r11 = m[5] / sy, r21 = m[6] / sy;
-	const r02 = m[8] / sz, r12 = m[9] / sz, r22 = m[10] / sz;
-	const trace = r00 + r11 + r22;
-	let x: number, y: number, z: number, w: number;
-	if (trace > 0) {
-		const s = Math.sqrt(trace + 1) * 2;
-		w = 0.25 * s; x = (r21 - r12) / s; y = (r02 - r20) / s; z = (r10 - r01) / s;
-	} else if (r00 > r11 && r00 > r22) {
-		const s = Math.sqrt(1 + r00 - r11 - r22) * 2;
-		w = (r21 - r12) / s; x = 0.25 * s; y = (r01 + r10) / s; z = (r02 + r20) / s;
-	} else if (r11 > r22) {
-		const s = Math.sqrt(1 + r11 - r00 - r22) * 2;
-		w = (r02 - r20) / s; x = (r01 + r10) / s; y = 0.25 * s; z = (r12 + r21) / s;
-	} else {
-		const s = Math.sqrt(1 + r22 - r00 - r11) * 2;
-		w = (r10 - r01) / s; x = (r02 + r20) / s; y = (r12 + r21) / s; z = 0.25 * s;
-	}
-	const len = Math.hypot(x, y, z, w) || 1;
-	return { x: x / len, y: y / len, z: z / len, w: w / len };
-}
 
 /**
  * 3D rigid-body physics for IGE entities, running Jolt Physics

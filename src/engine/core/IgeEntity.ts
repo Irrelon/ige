@@ -32,12 +32,14 @@ import type { IgeTriggerPolygonFunctionName } from "@/types/IgeTriggerPolygonFun
 import type { IgeGltfModel } from "@/engine/webgl/IgeGltfLoader";
 import type { IgeRetargetOptions } from "@/engine/webgl/IgeAnimationRetarget";
 import { findBoneIndex, retargetClips } from "@/engine/webgl/IgeAnimationRetarget";
+import { clipInPlace } from "@/engine/webgl/IgeAnimationInPlace";
 import type { IgeSkeletonData } from "@/types/IgeSkeletonData";
 import type { IgeAnimationClipData } from "@/types/IgeAnimationClipData";
 import type { IgeMaterialData } from "@/types/IgeMaterialData";
 import type { IgeGeometryData3d } from "@/types/IgeGeometryData3d";
 import type { IgeModelLod, IgeModelLodLevel } from "@/engine/webgl/IgeModelParts";
-import { createSkeletonInstance, getGeometryLod, getModelLod, getModelParts } from "@/engine/webgl/IgeModelParts";
+import { createSkeletonInstance, getGeometryLod, getModelLod, getModelParts, matrixToQuaternion, multiplyMat4, restBoneMatrices } from "@/engine/webgl/IgeModelParts";
+import { invertMat4 } from "@/engine/webgl/IgeRaycast";
 import { IgeSkeletalAnimationComponent } from "@/engine/components/IgeSkeletalAnimationComponent";
 import type { IgeAnimationPlayOptions } from "@/types/IgeAnimationClipData";
 
@@ -61,6 +63,13 @@ export interface IgeModelOptions {
 	animations?: IgeGltfModel[] | Record<string, IgeGltfModel>;
 	/** Options for retargeting `animations` (bone name map, root motion). */
 	retarget?: IgeRetargetOptions;
+	/**
+	 * Clips to play on the spot (see clipInPlace()): their horizontal root
+	 * motion is taken out, for games that move characters themselves (a
+	 * walk or run cycle that travels forward). `true` for every clip, or
+	 * the clip names (the keys, for a record of `animations`).
+	 */
+	inPlace?: boolean | string[];
 }
 
 export interface IgeEntityTransformAccessor {
@@ -1201,21 +1210,24 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 			}
 
 			anim.setSkeleton(this._skeleton);
+			const inPlace = options.inPlace;
+			const place = (clip: IgeAnimationClipData, name: string = clip.name) =>
+				inPlace === true || (Array.isArray(inPlace) && inPlace.includes(name)) ? clipInPlace(clip, skin.skeleton) : clip;
 			if (model.animations?.length) {
-				anim.defineClips(model.animations);
+				anim.defineClips(inPlace ? model.animations.map((clip) => place(clip)) : model.animations);
 			}
 
 			const sources = options.animations;
 			if (Array.isArray(sources)) {
 				for (const source of sources) {
-					anim.defineClips(retargetClips(source, skin.skeleton, options.retarget));
+					anim.defineClips(retargetClips(source, skin.skeleton, options.retarget).map((clip) => place(clip)));
 				}
 			} else if (sources) {
 				const named: Record<string, IgeAnimationClipData> = {};
 				for (const [name, source] of Object.entries(sources)) {
 					const clip = retargetClips(source, skin.skeleton, options.retarget)[0];
 					if (clip) {
-						named[name] = clip;
+						named[name] = place(clip, name);
 					} else {
 						this.log(`model(): no animation in "${source.id}" matches this skeleton (animation "${name}")`, "warning");
 					}
@@ -1354,6 +1366,49 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 		this._attachBoneSkeleton = undefined;
 		this._attachBoneIndex = -1;
 		this._tfInputs = undefined; // rebuild the transform on the next update
+		return this;
+	}
+
+	/**
+	 * Places an entity attached to a bone (see attachToBone()) by where it
+	 * should be in the parent character's own model space, rather than
+	 * relative to the bone. Bones' axes differ from rig to rig (and are
+	 * arbitrary on auto-rigged models), so this is the easy way to put an
+	 * item in a hand: say where the fist is and which way the item points,
+	 * and the translate, rotation (a quaternion) and scale relative to the
+	 * bone are worked out. Mount it and call attachToBone() first.
+	 *
+	 * The placement is for one pose of the character: its rest pose (the
+	 * default), or with `pose: "current"` the pose it is animated to now,
+	 * which suits rigs whose rest pose holds the arms out (a T- or A-pose).
+	 * The item then follows the hand through every other pose.
+	 * @param modelMatrix Column-major 4x4 transform in the parent's model
+	 * space (scale included, e.g. to size the item to the character).
+	 * @example #A sword in the right fist, placed while the character stands idle
+	 *     const bones = humanoidBones(model.skins[0].skeleton);
+	 *     sword.mount(hero).attachToBone(bones.right.hand).attachAt(gripMatrix, { pose: "current" });
+	 */
+	attachAt (modelMatrix: ArrayLike<number>, options: { pose?: "rest" | "current" } = {}): this {
+		const parent = this._parent as IgeEntity | null;
+		const skeleton = parent?._skeleton?.data ?? parent?._skeletonData;
+		const index = skeleton && this._attachBone !== undefined ? findBoneIndex(skeleton, this._attachBone) : -1;
+		let bone: ArrayLike<number> | undefined;
+		if (index >= 0 && options.pose === "current" && parent?._skeleton) {
+			parent._updateSkeletonMatrices();
+			bone = parent._skeleton.worldMatrices.subarray(index * 16, index * 16 + 16);
+		} else if (index >= 0) {
+			bone = restBoneMatrices(skeleton!)[index];
+		}
+		const inverse = bone && invertMat4(bone);
+		if (!inverse) {
+			this.log("attachAt(): mount this entity to a character and call attachToBone() with one of its bones first", "warning");
+			return this;
+		}
+		const local = multiplyMat4(inverse as Float32Array, Float32Array.from(modelMatrix));
+		const q = matrixToQuaternion(local);
+		this.translateTo(local[12], local[13], local[14]);
+		this.scaleTo(Math.hypot(local[0], local[1], local[2]), Math.hypot(local[4], local[5], local[6]), Math.hypot(local[8], local[9], local[10]));
+		this.quaternion(q);
 		return this;
 	}
 

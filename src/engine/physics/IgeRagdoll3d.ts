@@ -3,6 +3,7 @@ import type { IgeEntity } from "@/engine/core/IgeEntity";
 import type { IgePhysics3d } from "@/engine/physics/IgePhysics3d";
 import { invertMat4 } from "@/engine/webgl/IgeRaycast";
 import { findBoneIndex } from "@/engine/webgl/IgeAnimationRetarget";
+import { humanoidBones } from "@/engine/webgl/IgeHumanoidBones";
 import type { IgeSkeleton } from "@/types/IgeSkeletonData";
 
 type Vec3 = { x: number; y: number; z: number };
@@ -22,9 +23,9 @@ export interface IgeRagdollPart {
 export interface IgeRagdollOptions {
 	/**
 	 * The parts to simulate. Bones without a part move rigidly with the
-	 * nearest part above them. Default: one part per bone with children
-	 * whose segment is at least 8% of the skeleton's height (see
-	 * autoRagdollParts()).
+	 * nearest part above them. Default: humanoidRagdollParts() for a
+	 * humanoid rig, otherwise one part per bone with children whose
+	 * segment is at least 8% of the skeleton's height (autoRagdollParts()).
 	 */
 	parts?: IgeRagdollPart[];
 	/** Starting velocity of every part (IGE units per second), e.g. along the killing blow. */
@@ -105,6 +106,48 @@ function jointPositions (entity: IgeEntity, skeleton: IgeSkeleton): Vec3[] {
 }
 
 /**
+ * Ragdoll parts for a humanoid rig, found from its shape (see
+ * humanoidBones(), so numbered auto-rigged bones work): lower and upper
+ * torso, head, upper and lower arms and legs, with capsule radii in
+ * proportion to the character's height. Falls back to autoRagdollParts()
+ * when the rig isn't a humanoid.
+ * @example #Ragdoll a generated character when it dies
+ *     physics.createRagdoll(zombie, { parts: humanoidRagdollParts(zombie), layer: "corpses" });
+ */
+export function humanoidRagdollParts (entity: IgeEntity): IgeRagdollPart[] {
+	const skeleton = entity._skeleton;
+	const bones = skeleton && humanoidBones(skeleton.data);
+	if (!skeleton || !bones || !entity._worldMatrix4) return autoRagdollParts(entity);
+	entity._updateSkeletonMatrices();
+	const joints = jointPositions(entity, skeleton);
+	let minY = Infinity, maxY = -Infinity;
+	for (const j of joints) {
+		minY = Math.min(minY, j.y);
+		maxY = Math.max(maxY, j.y);
+	}
+	const h = maxY - minY;
+
+	// Two torso parts: hips to mid-spine, mid-spine to the neck (or head)
+	const spine = bones.spine;
+	const middle = spine.length > 1 ? spine[Math.floor((spine.length - 1) / 2)] : undefined;
+	const top = bones.neck ?? bones.head;
+	const parts: IgeRagdollPart[] = middle
+		? [{ bone: bones.hips, to: middle, radius: h * 0.075 }, { bone: middle, to: top, radius: h * 0.075 }]
+		: [{ bone: bones.hips, to: top, radius: h * 0.075 }];
+	if (bones.headEnd) parts.push({ bone: bones.head, to: bones.headEnd, radius: h * 0.06 });
+	else parts.push({ bone: bones.head, length: h * 0.12, radius: h * 0.06 });
+	for (const side of [bones.left, bones.right]) {
+		parts.push(
+			{ bone: side.upperArm, to: side.forearm, radius: h * 0.03 },
+			{ bone: side.forearm, to: side.hand, radius: h * 0.027 },
+			{ bone: side.thigh, to: side.shin, radius: h * 0.04 },
+			{ bone: side.shin, to: side.foot, radius: h * 0.032 }
+		);
+	}
+	return parts;
+}
+
+/**
  * Ragdoll parts for a skeleton when none are given: one capsule per bone
  * with children, ending at the child that continues the bone's direction
  * (the spine rather than an arm), skipping segments shorter than 8% of
@@ -181,7 +224,7 @@ export class IgeRagdoll3d {
 		const u = physics.unitsPerMetre();
 		const bones = skeleton.data.bones;
 		const joints = jointPositions(entity, skeleton);
-		const parts = options.parts?.length ? options.parts : autoRagdollParts(entity);
+		const parts = options.parts?.length ? options.parts : humanoidRagdollParts(entity);
 		const entityWorld = entity._worldMatrix4!.matrix;
 
 		this._order = hierarchyOrder(skeleton);

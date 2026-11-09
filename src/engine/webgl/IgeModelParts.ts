@@ -81,6 +81,94 @@ export function getModelParts (model: IgeGltfModel): IgeModelPart[] {
 	return parts;
 }
 
+const restCache: WeakMap<IgeSkeletonData, Float32Array[]> = new WeakMap();
+
+/**
+ * Model-space rest matrices of every bone (each bone's local bind
+ * transform under its parents, and any armature node above the roots),
+ * cached per skeleton.
+ */
+export function restBoneMatrices (skeleton: IgeSkeletonData): Float32Array[] {
+	let matrices = restCache.get(skeleton);
+	if (matrices) return matrices;
+	const out: Float32Array[] = new Array(skeleton.bones.length);
+	const world = (index: number): Float32Array => {
+		if (out[index]) return out[index];
+		const bone = skeleton.bones[index];
+		let m: Float32Array;
+		if (bone.parentIndex >= 0) m = multiplyMat4(world(bone.parentIndex), bone.localBindTransform);
+		else m = bone.parentTransform ? multiplyMat4(bone.parentTransform, bone.localBindTransform) : new Float32Array(bone.localBindTransform);
+		out[index] = m;
+		return m;
+	};
+	for (let i = 0; i < skeleton.bones.length; i++) world(i);
+	matrices = out;
+	restCache.set(skeleton, matrices);
+	return matrices;
+}
+
+const boundsCache: WeakMap<IgeGltfModel, IgeModelBounds> = new WeakMap();
+
+/** A model's axis-aligned bounds in model space. */
+export interface IgeModelBounds {
+	min: { x: number; y: number; z: number };
+	max: { x: number; y: number; z: number };
+}
+
+/**
+ * The model-space bounds of every part of a model in its rest pose (each
+ * part placed by its node's transform), cached per model. Useful to fit a
+ * model to a size: scale = wanted height / (max.y - min.y), and lift it by
+ * -min.y * scale to stand it on the ground.
+ * @example #Make a generated character 180 units tall, feet on the floor
+ *     const { min, max } = modelBounds(model);
+ *     const scale = 180 / (max.y - min.y);
+ *     character.model(model).scaleTo(scale, scale, scale);
+ *     body.translateTo(0, -min.y * scale, 0); // or offset a child entity
+ */
+export function modelBounds (model: IgeGltfModel): IgeModelBounds {
+	let bounds = boundsCache.get(model);
+	if (bounds) return bounds;
+	const min = { x: Infinity, y: Infinity, z: Infinity };
+	const max = { x: -Infinity, y: -Infinity, z: -Infinity };
+	// Skinned vertices are in bind space: their rest placement is a root bone's rest world matrix
+	// times its inverse bind matrix (e.g. a Z-up mesh under an armature turning it upright)
+	let skinMatrix: Float32Array | undefined;
+	const skeleton = model.skins?.[0]?.skeleton;
+	if (skeleton?.bones.length) {
+		const root = skeleton.rootBoneIndices[0] ?? 0;
+		const m = multiplyMat4(restBoneMatrices(skeleton)[root], skeleton.bones[root].inverseBindMatrix);
+		skinMatrix = isIdentity(m) ? undefined : m;
+	}
+	for (const part of getModelParts(model)) {
+		const v = part.geometryData.vertices;
+		if (!v) continue;
+		const m = part.skinned ? skinMatrix : part.matrix;
+		for (let i = 0; i + 2 < v.length; i += 3) {
+			let x = v[i], y = v[i + 1], z = v[i + 2];
+			if (m) {
+				const tx = m[0] * x + m[4] * y + m[8] * z + m[12];
+				const ty = m[1] * x + m[5] * y + m[9] * z + m[13];
+				z = m[2] * x + m[6] * y + m[10] * z + m[14];
+				x = tx;
+				y = ty;
+			}
+			if (x < min.x) min.x = x;
+			if (y < min.y) min.y = y;
+			if (z < min.z) min.z = z;
+			if (x > max.x) max.x = x;
+			if (y > max.y) max.y = y;
+			if (z > max.z) max.z = z;
+		}
+	}
+	if (min.x > max.x) {
+		min.x = min.y = min.z = max.x = max.y = max.z = 0;
+	}
+	bounds = { min, max };
+	boundsCache.set(model, bounds);
+	return bounds;
+}
+
 /**
  * One level of detail for a model, used while the model is small on screen.
  * Give either a ratio (the level is generated from the model with
@@ -322,4 +410,31 @@ function isIdentity (m: Float32Array): boolean {
 		if (Math.abs(m[i] - expected) > 1e-7) return false;
 	}
 	return true;
+}
+
+/** The rotation of a column-major matrix's upper 3x3 (scale removed) as a unit quaternion. */
+export function matrixToQuaternion (m: ArrayLike<number>): { x: number; y: number; z: number; w: number } {
+	const sx = Math.hypot(m[0], m[1], m[2]) || 1;
+	const sy = Math.hypot(m[4], m[5], m[6]) || 1;
+	const sz = Math.hypot(m[8], m[9], m[10]) || 1;
+	const r00 = m[0] / sx, r10 = m[1] / sx, r20 = m[2] / sx;
+	const r01 = m[4] / sy, r11 = m[5] / sy, r21 = m[6] / sy;
+	const r02 = m[8] / sz, r12 = m[9] / sz, r22 = m[10] / sz;
+	const trace = r00 + r11 + r22;
+	let x: number, y: number, z: number, w: number;
+	if (trace > 0) {
+		const s = Math.sqrt(trace + 1) * 2;
+		w = 0.25 * s; x = (r21 - r12) / s; y = (r02 - r20) / s; z = (r10 - r01) / s;
+	} else if (r00 > r11 && r00 > r22) {
+		const s = Math.sqrt(1 + r00 - r11 - r22) * 2;
+		w = (r21 - r12) / s; x = 0.25 * s; y = (r01 + r10) / s; z = (r02 + r20) / s;
+	} else if (r11 > r22) {
+		const s = Math.sqrt(1 + r11 - r00 - r22) * 2;
+		w = (r02 - r20) / s; x = (r01 + r10) / s; y = 0.25 * s; z = (r12 + r21) / s;
+	} else {
+		const s = Math.sqrt(1 + r22 - r00 - r11) * 2;
+		w = (r10 - r01) / s; x = (r02 + r20) / s; y = (r12 + r21) / s; z = 0.25 * s;
+	}
+	const len = Math.hypot(x, y, z, w) || 1;
+	return { x: x / len, y: y / len, z: z / len, w: w / len };
 }
