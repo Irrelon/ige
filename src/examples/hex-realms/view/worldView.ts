@@ -50,6 +50,10 @@ const UNIT_MODEL_FIT: Record<UnitTypeId, { height?: number; footprint?: number }
 	warrior: { height: 46 }, archer: { height: 46 }, swordsman: { height: 50 }, settler: { height: 44 },
 	rider: { height: 54, footprint: 50 }, catapult: { height: 40, footprint: 46 }
 };
+/** The boat model's size, and where a unit stands on it: its deck height, and how far forward of the mast. */
+const BOAT_FIT = { footprint: 62 };
+const BOAT_DECK = 7;
+const BOAT_BOW = 12;
 const WHITE = { r: 1, g: 1, b: 1, a: 1 };
 const STONE: Rgb = { r: 0.86, g: 0.82, b: 0.74 };
 const ROOF: Rgb = { r: 0.72, g: 0.36, b: 0.24 };
@@ -434,7 +438,7 @@ export class WorldView {
 			base = this.part(root, UNIT_BASE, unit.owner);
 		}
 		const parts = model ? [] : UNIT_PARTS[unit.type].map((part) => this.part(root, part, unit.owner));
-		const boatModel = this.models?.create("boat", { footprint: 52, height: 30 }, team) ?? null;
+		const boatModel = this.models?.create("boat", BOAT_FIT, team) ?? null;
 		if (boatModel) boatModel.mount(root);
 		const boat = boatModel ?? this.part(root, BOAT, unit.owner);
 		const view: UnitView = {
@@ -546,7 +550,9 @@ export class WorldView {
 		if (water) view.boat.show();
 		else view.boat.hide();
 		// Afloat, a character stands on its boat's deck
-		if (view.body) view.body.translateTo(0, water ? 10 : 0, 0);
+		// (in the bow, ahead of the mast and sail, when the boat is a model)
+		const modelBoat = !!this.models?.has("boat");
+		if (view.body) view.body.translateTo(0, water ? (modelBoat ? BOAT_DECK : 10) : 0, water && modelBoat ? BOAT_BOW : 0);
 		if (view.base) {
 			if (water) view.base.hide();
 			else view.base.show();

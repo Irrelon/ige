@@ -22,6 +22,24 @@
 		"skinned": true,
 		"bytes": 1341368
 	},
+	"boat": {
+		"file": "boat.glb",
+		"min": [
+			-0.3451,
+			-0.4391,
+			-0.2291
+		],
+		"max": [
+			0.3801,
+			0.4363,
+			0.1614
+		],
+		"triangles": 3898,
+		"animations": [],
+		"skinned": false,
+		"bytes": 548648,
+		"yaw": 1.5708
+	},
 	"catapult": {
 		"file": "catapult.glb",
 		"min": [

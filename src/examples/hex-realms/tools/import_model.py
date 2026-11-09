@@ -15,7 +15,8 @@ What it does to the model:
   its bones by node name, and named after the move (idle, walk, attack, ...).
 - Unused images, textures and buffer views are removed.
 - assets/models/models.json records each model's bounds (so the game can fit
-  it to a tile), triangle count and clip names.
+  it to a tile), triangle count and clip names, and with --yaw the turn that
+  makes its front face +Z (the game's forward).
 
 Only the Python standard library and Pillow are needed.
 """
@@ -349,6 +350,7 @@ def main():
     ap.add_argument("--out", required=True, help="assets/models folder")
     ap.add_argument("--size", type=int, default=512, help="largest texture side in pixels")
     ap.add_argument("--lossless-base", action="store_true", help="keep the base colour map as PNG (units: team-colour areas)")
+    ap.add_argument("--yaw", type=float, help="degrees to turn the model so its front faces +Z (kept from the last import if not given)")
     args = ap.parse_args()
 
     model = Model(args.model)
@@ -370,6 +372,7 @@ def main():
 
     index_path = os.path.join(args.out, "models.json")
     index = json.load(open(index_path)) if os.path.exists(index_path) else {}
+    yaw = math.radians(args.yaw) if args.yaw is not None else index.get(args.id, {}).get("yaw")
     index[args.id] = {
         "file": f"{args.id}.glb",
         "min": [round(v, 4) for v in lo],
@@ -377,7 +380,8 @@ def main():
         "triangles": triangles,
         "animations": clips,
         "skinned": bool(model.g.get("skins")),
-        "bytes": os.path.getsize(out)
+        "bytes": os.path.getsize(out),
+        **({"yaw": round(yaw, 4)} if yaw else {})
     }
     tmp = index_path + ".tmp"
     with open(tmp, "w") as f:
