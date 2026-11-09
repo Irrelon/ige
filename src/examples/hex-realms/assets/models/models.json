@@ -56,6 +56,29 @@
 		"skinned": false,
 		"bytes": 845728
 	},
+	"settler": {
+		"file": "settler.glb",
+		"min": [
+			-0.2374,
+			-0.446,
+			-0.3467
+		],
+		"max": [
+			0.2603,
+			0.4365,
+			0.487
+		],
+		"triangles": 5882,
+		"animations": [
+			"idle",
+			"walk",
+			"attack",
+			"hit",
+			"death"
+		],
+		"skinned": true,
+		"bytes": 1093500
+	},
 	"swordsman": {
 		"file": "swordsman.glb",
 		"min": [

@@ -160,6 +160,11 @@ PNG for the base colour with `--lossless-base` so the magenta stays exact), drop
 updates `models.json`. A model's id is its unit type, building id, `village`/`town`/`city`, `construction` or
 `boat`.
 
+If a character's own clips come out wrong (AssetFurnace's retargeter sometimes leaves a rig's arms stuck out
+sideways, as it did for every settler), `tools/transfer_clips.py` copies another character's clips onto its rig:
+bones are paired by the skeleton's shape rather than by name, and each bone's rotation from its rest pose carries
+over. The settler uses the archer's clips this way.
+
 ## How the map stays fast
 
 Tiles-style chunks bake 16 x 16 tiles into one mesh, with a `lite` version (flat tops, tinted forests) when tiles are
