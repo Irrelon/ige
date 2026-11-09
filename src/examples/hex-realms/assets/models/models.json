@@ -574,16 +574,16 @@
 	"settler": {
 		"file": "settler.glb",
 		"min": [
-			-0.2374,
-			-0.446,
-			-0.3467
+			-0.249,
+			-0.4412,
+			-0.2265
 		],
 		"max": [
-			0.2603,
-			0.4365,
-			0.487
+			0.2522,
+			0.4409,
+			0.2209
 		],
-		"triangles": 5882,
+		"triangles": 5992,
 		"animations": [
 			"idle",
 			"walk",
@@ -592,8 +592,8 @@
 			"death"
 		],
 		"skinned": true,
-		"bytes": 1042748,
-		"team": "settler_team.png"
+		"bytes": 893476,
+		"floor": -0.4432
 	},
 	"smelter": {
 		"file": "smelter.glb",
