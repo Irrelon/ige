@@ -173,3 +173,8 @@ npm-debug.log
 node_modules
 tsconfig.tsbuildinfo
 .ai
+
+#################
+## Licensed third-party art (paid asset packs): never commit to this public repo
+#################
+**/assets/licensed/
