@@ -176,6 +176,23 @@
 		"skinned": false,
 		"bytes": 489584
 	},
+	"pasture": {
+		"file": "pasture.glb",
+		"min": [
+			-0.4508,
+			-0.2438,
+			-0.4826
+		],
+		"max": [
+			0.4507,
+			0.3183,
+			0.4126
+		],
+		"triangles": 3716,
+		"animations": [],
+		"skinned": false,
+		"bytes": 365296
+	},
 	"port": {
 		"file": "port.glb",
 		"min": [
