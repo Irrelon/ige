@@ -1,7 +1,7 @@
 import { ambitionProblem, measure, target as milestoneTarget } from "./ambitions";
 import { attackTargets, preview } from "./combat";
 import { captureProblem, foundProblem, slotCap, slotsUsed, trainProblem, unitCost } from "./cities";
-import { actionProblem, agreementCost, aiAccepts, attitude, closeBordersProblem, type DealTerms, justified, proposalProblem, strength, warProblem, weariness } from "./diplomacy";
+import { actionProblem, agreementCost, aiAccepts, attitude, closeBordersProblem, type DealTerms, justified, proposalProblem, strandedUnits, strength, warProblem, weariness } from "./diplomacy";
 import { buildingStars, buildProblem, buyCost, networkNodes, rushCost, rushProblem, storedGoods } from "./economy";
 import { researchCost } from "./effects";
 import { search } from "./network";
@@ -187,7 +187,7 @@ class AiTurn {
 			}
 
 			// Shut out a civ we've come to dislike
-			if (feel <= -4 && this.rand() < 0.15 && !closeBordersProblem(sim, this.p, o)) {
+			if (feel <= -4 && this.rand() < 0.15 && !closeBordersProblem(sim, this.p, o) && !strandedUnits(sim, this.p, o).length) {
 				this.do({ type: "closeBorders", target: o });
 				continue;
 			}

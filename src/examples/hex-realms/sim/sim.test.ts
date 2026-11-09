@@ -3,7 +3,7 @@ import { Feature, Relief, Terrain } from "../terrain";
 import { runAiTurn } from "./ai";
 import { preview } from "./combat";
 import { economyPhase, rushCost, total } from "./economy";
-import { reachable } from "./movement";
+import { canEnter, reachable } from "./movement";
 import { ambitionProblem, ambitionScore, checkAmbition } from "./ambitions";
 import { createCity } from "./cities";
 import { networkNodes, SEA } from "./network";
@@ -696,26 +696,30 @@ describe("diplomacy II", () => {
 		expect(grievance(sim, 1, 0)).toBe(4);
 	});
 
-	test("either side can close open borders early: a snub, and each side's units walk home", () => {
+	test("closing borders loses your units in their land; theirs in yours may stay and roam, but no more may enter", () => {
 		const sim = blank(2, [sim2(4, 4), sim2(20, 12)], { humans: [0, 1] });
 		meetAll(sim);
 		clearUnits(sim);
 		const d = sim.state.diplomacy;
 		expect(sim.apply(0, { type: "closeBorders", target: 1 }).ok).toBe(false);
 		d.openBorders[1] = d.openBorders[2] = 1;
-		const capital = sim.citiesOf(1)[0].tile;
-		const inside = sim.neighbors(capital).find((t) => sim.map.owner[t] === 1) as number;
-		const guest = sim.createUnit("warrior", 0, inside, true);
-		sim.drainEvents();
+		const ownedBy = (p: number) => sim.neighbors(sim.citiesOf(p)[0].tile).filter((t) => sim.map.owner[t] === p);
+		const mine = sim.createUnit("warrior", 0, ownedBy(1)[0], true);
+		const [inside, next] = ownedBy(0);
+		const guest = sim.createUnit("warrior", 1, inside, true);
 		const mood = attitude(sim, 1, 0);
-		// Closing them sends the closer's own units home too
 		expect(sim.apply(0, { type: "closeBorders", target: 1 }).ok).toBe(true);
 		expect([d.openBorders[1], d.openBorders[2]]).toEqual([0, 0]);
 		expect(attitude(sim, 1, 0)).toBe(mood - 2);
 		expect(grievance(sim, 1, 0)).toBe(0);
-		expect(sim.map.owner[guest.tile]).not.toBe(1);
-		const walk = sim.drainEvents().find((e) => e.type === "unitMoved");
-		expect(walk && walk.type === "unitMoved" && walk.path[0]).toBe(inside);
+		expect(sim.unit(mine.id)).toBeUndefined();
+		expect(sim.unit(guest.id)?.tile).toBe(inside);
+		// Their unit inside may move within my land, but once out it can't come back
+		expect(canEnter(sim, guest, next)).toBe(true);
+		const border = [...Array(sim.map.count).keys()].find((t) => sim.map.owner[t] === 0 && sim.neighbors(t).some((n) => sim.map.owner[n] < 0)) as number;
+		const outside = sim.neighbors(border).find((n) => sim.map.owner[n] < 0) as number;
+		expect(canEnter(sim, guest, border, outside)).toBe(false);
+		expect(canEnter(sim, guest, outside)).toBe(true);
 		expect(sim.apply(0, { type: "closeBorders", target: 1 }).ok).toBe(false);
 	});
 

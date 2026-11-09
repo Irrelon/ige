@@ -1,10 +1,10 @@
 import {
 	actionProblem, agreementCost, aiAccepts, attitude, attitudeFactors, civStock, cleanGoods, closeBordersProblem, type DealTerms, grievance, hasPact, justified,
-	proposalProblem, truceUntil, votesOf, warProblem
+	proposalProblem, strandedUnits, truceUntil, votesOf, warProblem
 } from "../sim/diplomacy";
 import {
 	AGENDAS, AMBITIONS, CASUS_BELLI, CIVS, DENOUNCE_COST, EXCHANGE_COST, EXCHANGE_TURNS, GOODS, type Good, type Goods,
-	RESEARCH_TURNS, ROUTE_TURNS, SANCTION_COST, SANCTION_TURNS, TRUCE_TURNS
+	RESEARCH_TURNS, ROUTE_TURNS, SANCTION_COST, SANCTION_TURNS, TRUCE_TURNS, UNIT_TYPES
 } from "../sim/rules";
 import type { Sim } from "../sim/sim";
 import { ALLIANCE, type Command, type DealKind, type ProposalState, type TreatyState, WAR } from "../sim/types";
@@ -114,6 +114,8 @@ const moodPill = (sim: Sim, o: number, me: number) => {
 export class DiplomacyScreen {
 	civ = -1;
 	tab: DiplomacyTab = "agreements";
+	/** The civ whose borders the player has asked to close, awaiting confirmation (-1 for none). */
+	confirmClose = -1;
 	draft: DealDraft = emptyDraft();
 
 	/** Read a deal editor field. */
@@ -132,6 +134,7 @@ export class DiplomacyScreen {
 
 	setTab (tab: string): void {
 		if (TABS.some(([t]) => t === tab)) this.tab = tab as DiplomacyTab;
+		this.confirmClose = -1;
 	}
 
 	dealTerms (): DealTerms {
@@ -294,7 +297,7 @@ export class DiplomacyScreen {
 					row("Alliance", "Shared vision; you defend each other in war.", deal("alliance")),
 					row("Defensive pact", "Each joins in if the other is attacked.", deal("pact")),
 					sim.state.diplomacy.openBorders[me * sim.playerCount + o]
-						? row("Open borders", "Open now. Closing them sends each side's units home, and they'll take it as a snub.", control("close-borders", "Close", { player: o }, closeBordersProblem(sim, me, o)))
+						? (this.confirmClose === o ? this.closeWarning(sim, me, o) : row("Open borders", "Open now. You can close them at any time.", control("close-borders-ask", "Close", { player: o }, closeBordersProblem(sim, me, o))))
 						: row("Open borders", "Your units may cross each other's land.", deal("openBorders")),
 					row("Trade agreement", "Both earn stars each turn.", deal("trade")),
 					row(`Cultural exchange ${stars(EXCHANGE_COST)}`, `You pay; both gain a star a turn for ${EXCHANGE_TURNS} turns.`, deal("exchange")),
@@ -325,6 +328,23 @@ export class DiplomacyScreen {
 			}
 		}
 		return tabs + `<div class="dp-rows">${body}</div>`;
+	}
+
+	/** What closing borders would do, with buttons to go ahead or keep them open. */
+	closeWarning (sim: Sim, me: number, o: number): string {
+		const lost = strandedUnits(sim, me, o);
+		const names = lost.map((u) => UNIT_TYPES[u.type].name);
+		const loss = lost.length
+			? `<li class="bad"><b>Your ${lost.length === 1 ? "unit" : `${lost.length} units`} in their land will be destroyed:</b> ${esc(names.join(", "))}.</li>`
+			: `<li>None of your units are in their land, so you lose nothing.</li>`;
+		return `<div class="dp-confirm">
+				<b>Close borders with ${esc(sim.player(o).name)}?</b>
+				<ul>${loss}
+					<li>Their units already in your land stay and can move around it, but no more can enter unless they declare war.</li>
+					<li>They will take it as a snub.</li>
+				</ul>
+				<div class="dp-row-ctl">${actionButton("close-borders", lost.length ? `Close borders and lose ${lost.length === 1 ? "1 unit" : `${lost.length} units`}` : "Close borders", { player: o }, null, "danger")}${actionButton("close-borders-cancel", "Keep them open")}</div>
+			</div>`;
 	}
 
 	/** The trade table: stars and each good either side holds, what you give on the left and what you get on the right. */

@@ -13,7 +13,9 @@ import type { CommandResult, UnitState } from "./types";
  * - Units can't share tiles. They may pass through friendly (own or allied)
  *   units but not other units, and must stop when entering a tile next to an
  *   enemy they can see (zone of control).
- * - At peace, a civ's territory is closed unless it has granted open borders.
+ * - At peace, a civ's territory is closed unless it has granted open borders
+ *   (or they are allies). Units already inside when it closes may go on
+ *   moving within it, but once they step out they can't come back in.
  * - Players can only plan moves through tiles they have explored.
  */
 
@@ -23,8 +25,11 @@ export interface Reach {
 	cost: Map<number, number>;
 }
 
-/** Whether a unit may ever stand on a tile (ignoring move points and other units). */
-export function canEnter (sim: Sim, unit: UnitState, tile: number): boolean {
+/**
+ * Whether a unit may step onto a tile, coming from `from` (by default where
+ * it stands), ignoring move points and other units.
+ */
+export function canEnter (sim: Sim, unit: UnitState, tile: number, from = unit.tile): boolean {
 	const map = sim.map;
 	if (!sim.knows(unit.owner, tile)) return false;
 	if (map.relief[tile] === Relief.Mountain) return false;
@@ -34,12 +39,15 @@ export function canEnter (sim: Sim, unit: UnitState, tile: number): boolean {
 		if (!sim.hasTech(unit.owner, terrain === Terrain.DeepOcean ? "navigation" : "sailing")) return false;
 	}
 	const owner = map.owner[tile];
-	if (owner >= 0 && owner !== unit.owner && !sim.atWar(unit.owner, owner) && !sim.allied(unit.owner, owner) && !hasOpenBorders(sim, unit.owner, owner)) {
-		return false;
-	}
+	if (owner >= 0 && owner !== unit.owner && !mayCross(sim, unit.owner, owner) && map.owner[from] !== owner) return false;
 	const city = sim.cityOn(tile);
 	if (city && city.owner >= 0 && city.owner !== unit.owner && !sim.atWar(unit.owner, city.owner)) return false;
 	return true;
+}
+
+/** May a's units enter b's territory (war, alliance or open borders)? */
+export function mayCross (sim: Sim, a: number, b: number): boolean {
+	return sim.atWar(a, b) || sim.allied(a, b) || hasOpenBorders(sim, a, b);
 }
 
 export function hasOpenBorders (sim: Sim, a: number, b: number): boolean {
@@ -90,7 +98,7 @@ export function reachable (sim: Sim, unit: UnitState): Reach {
 
 		for (let d = 0; d < 6; d++) {
 			const n = sim.map.neighbor(t, d);
-			if (n < 0 || !canEnter(sim, unit, n)) continue;
+			if (n < 0 || !canEnter(sim, unit, n, t)) continue;
 			const blocker = sim.unitAt[n] >= 0 ? sim.unit(sim.unitAt[n]) : undefined;
 			if (blocker && blocker.owner !== unit.owner && !sim.allied(unit.owner, blocker.owner)) continue;
 			const step = stepCost(sim, t, n);

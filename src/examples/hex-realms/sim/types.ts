@@ -271,7 +271,7 @@ export type Command =
 	| { type: "respond"; proposal: number; accept: boolean }
 	| { type: "denounce"; target: number }
 	| { type: "sanction"; target: number }
-	/** End open borders with a civ (both ways); its units in your land, and yours in its, are sent home. */
+	/** End open borders with a civ (both ways): your units in its land are lost; its units in yours may stay. */
 	| { type: "closeBorders"; target: number }
 	| { type: "ambition"; ambition: AmbitionId }
 	/** Online: a person took (human) or gave up a civ's seat. Only the server issues it. */
@@ -316,7 +316,7 @@ export type SimEvent =
 	| { type: "wonder"; player: number; building: BuildingId; city: number; lost: number[] }
 	| { type: "feat"; player: number; building: BuildingId }
 	| { type: "milestone"; player: number; ambition: AmbitionId; index: number; first: boolean; legacy: boolean }
-	| { type: "diplomacyAction"; kind: "denounce" | "sanction" | "closeBorders"; from: number; to: number }
+	| { type: "diplomacyAction"; kind: "denounce" | "sanction" | "closeBorders"; from: number; to: number; lost?: number }
 	| { type: "eliminated"; player: number }
 	| { type: "report"; player: number; lines: string[] }
 	| { type: "gameOver"; winner: Winner };
