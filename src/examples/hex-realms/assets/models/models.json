@@ -91,6 +91,23 @@
 		"skinned": false,
 		"bytes": 418404
 	},
+	"mine": {
+		"file": "mine.glb",
+		"min": [
+			-0.4578,
+			-0.3166,
+			-0.4878
+		],
+		"max": [
+			0.4616,
+			0.3768,
+			0.3308
+		],
+		"triangles": 3804,
+		"animations": [],
+		"skinned": false,
+		"bytes": 489584
+	},
 	"quarry": {
 		"file": "quarry.glb",
 		"min": [
