@@ -482,6 +482,24 @@
 		"bytes": 330808,
 		"floor": -0.0887
 	},
+	"pathfinderCairn": {
+		"file": "pathfinderCairn.glb",
+		"min": [
+			-0.2145,
+			-0.4119,
+			-0.2505
+		],
+		"max": [
+			0.2178,
+			0.4322,
+			0.201
+		],
+		"triangles": 4696,
+		"animations": [],
+		"skinned": false,
+		"bytes": 377868,
+		"floor": -0.4093
+	},
 	"port": {
 		"file": "port.glb",
 		"min": [
