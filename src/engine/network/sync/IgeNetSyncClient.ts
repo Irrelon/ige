@@ -25,6 +25,14 @@ export interface IgeNetSyncClientOptions {
 	now?: () => number;
 	/** Ping interval in ms (default 1000; 0 turns pinging off). */
 	pingInterval?: number;
+	/**
+	 * After joining, give up on the authority when nothing has been heard
+	 * from it for this long, in ms (default 10000; 0 waits forever): the
+	 * connection is closed and "disconnected" fires. Catches hosts that
+	 * vanish without closing (a frozen tab, a dropped network). Checked
+	 * with each ping, so it needs pinging on.
+	 */
+	timeout?: number;
 }
 
 /** A full snapshot as the client rebuilt it. */
@@ -68,6 +76,8 @@ export class IgeNetSyncClient<Input = unknown> extends IgeEventingClass {
 	rtt: number = 0;
 	info: unknown;
 	_connection: IgeNetConnection;
+	/** When the authority was last heard from (ms, this machine's clock). */
+	_lastHeard = 0;
 	_options: IgeNetSyncClientOptions;
 	_now: () => number;
 	_seq: number = 0;
@@ -206,7 +216,14 @@ export class IgeNetSyncClient<Input = unknown> extends IgeEventingClass {
 	_startPing (): void {
 		const interval = this._options.pingInterval ?? 1000;
 		if (interval <= 0 || this._pingTimer) return;
-		const ping = () => this._send({ t: "ping", time: this._now() }, false);
+		const ping = () => {
+			const timeout = this._options.timeout ?? 10000;
+			if (timeout > 0 && this._now() - this._lastHeard > timeout) {
+				this._connection.close();
+				return;
+			}
+			this._send({ t: "ping", time: this._now() }, false);
+		};
 		ping();
 		this._pingTimer = setInterval(ping, interval);
 	}
@@ -225,6 +242,7 @@ export class IgeNetSyncClient<Input = unknown> extends IgeEventingClass {
 
 	_onMessage (message: IgeNetServerMessage): void {
 		if (!message || typeof message !== "object") return;
+		this._lastHeard = this._now();
 		switch (message.t) {
 			case "welcome": {
 				this.machine = message.machine;

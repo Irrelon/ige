@@ -88,8 +88,13 @@ export class IgeNetWebSocketServer {
 		};
 	}
 
-	/** Relay browser-hosted games on this path (see igeNetRelayHost() and igeNetRelayJoin()). */
-	relay (path = "/relay"): this {
+	/**
+	 * Relay browser-hosted games on this path (see igeNetRelayHost() and
+	 * igeNetRelayJoin()). `log` hears about games starting and ending and
+	 * machines joining and leaving.
+	 */
+	relay (path = "/relay", options: { log?: (message: string) => void } = {}): this {
+		const log = options.log ?? (() => {});
 		this._routes.set(path, (socket) => {
 			let hosting: string | undefined;
 			let joined: { code: string; id: string } | undefined;
@@ -110,6 +115,7 @@ export class IgeNetWebSocketServer {
 					this._games.set(code, { host: socket, machines: new Map() });
 					hosting = code;
 					send(socket, { t: "hosted", code });
+					log(`game ${code} hosted`);
 				} else if (message.t === "join" && !hosting && !joined) {
 					const game = this._games.get(String(message.code ?? "").toUpperCase());
 					if (!game) {
@@ -121,6 +127,7 @@ export class IgeNetWebSocketServer {
 					joined = { code: String(message.code).toUpperCase(), id };
 					send(socket, { t: "joined" });
 					send(game.host, { t: "open", id });
+					log(`machine ${id} joined game ${joined.code}`);
 				} else if (message.t === "m" && joined) {
 					const game = this._games.get(joined.code);
 					if (game) send(game.host, { t: "m", id: joined.id, d: message.d });
@@ -138,10 +145,12 @@ export class IgeNetWebSocketServer {
 					// The host left: the game is over for everyone in it
 					const game = this._games.get(hosting);
 					this._games.delete(hosting);
+					log(`game ${hosting} ended (its host left)`);
 					for (const machine of game?.machines.values() ?? []) machine.close();
 				} else if (joined) {
 					const game = this._games.get(joined.code);
 					if (game?.machines.delete(joined.id)) send(game.host, { t: "close", id: joined.id });
+					log(`machine ${joined.id} left game ${joined.code}`);
 				}
 			});
 		});

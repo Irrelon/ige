@@ -41,6 +41,31 @@ const settle = async (times = 3) => {
 };
 
 describe("IgeNetSyncHost / IgeNetSyncClient", () => {
+	it("gives up on an authority that goes silent without closing", async () => {
+		const net = igeNetLoopback();
+		const { host } = game(net);
+		// Everything the authority says after the welcome gets lost (a frozen host, a dead network)
+		const connection = net.connect();
+		let silent = false;
+		const quiet = {
+			...connection,
+			onMessage: (fn: (m: unknown) => void) => connection.onMessage((m) => { if (!silent) fn(m); })
+		};
+		let clock = 0;
+		const client = new IgeNetSyncClient<Input>(quiet, { pingInterval: 10, timeout: 500, now: () => clock });
+		let gone = false;
+		client.on("disconnected", () => { gone = true; });
+		await client.join([{ name: "Ann" }]);
+		silent = true;
+		clock += 400;
+		await new Promise((resolve) => setTimeout(resolve, 40));
+		expect(gone).toBe(false);
+		clock += 200;
+		await new Promise((resolve) => setTimeout(resolve, 40));
+		expect(gone).toBe(true);
+		host.destroy();
+	});
+
 	it("joins machines with their local players and refuses when told to", async () => {
 		const net = igeNetLoopback();
 		const { host, dots } = game(net, "Mallory");

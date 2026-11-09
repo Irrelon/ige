@@ -112,7 +112,12 @@ describe("Sync over WebSockets", () => {
 		expect(Object.values(dots).map((d) => d.name).sort()).toEqual(["Dee", "Host"]);
 
 		await expect(igeNetRelayJoin(`${base}/relay`, "ZZZZZ", { WebSocket: WebSocketClass })).rejects.toThrow("No game with that code");
-		host.destroy();
+
+		// The host leaving ends the game for the machines in it
+		let gone = false;
+		others.on("disconnected", () => { gone = true; });
 		hosting.close();
+		await until(() => gone);
+		host.destroy();
 	});
 });
