@@ -13,6 +13,8 @@ What it does to the model:
   glTF loader doesn't read.
 - Animations: each --move file's clips are merged into the model, matched to
   its bones by node name, and named after the move (idle, walk, attack, ...).
+- Props with --level are turned so their base is flat (AssetFurnace's come
+  out pitched by the angle of the picture they were made from).
 - Unused images, textures and buffer views are removed.
 - assets/models/models.json records each model's bounds (so the game can fit
   it to a tile), triangle count and clip names, and with --yaw the turn that
@@ -305,7 +307,122 @@ def node_matrix(n):
     return r
 
 
-def bounds_and_triangles(g):
+def vertices(model, node_index, matrix):
+    """A mesh node's vertex positions, transformed by matrix."""
+    g = model.g
+    out = []
+    for prim in g["meshes"][g["nodes"][node_index]["mesh"]]["primitives"]:
+        acc = g["accessors"][prim["attributes"]["POSITION"]]
+        view = g["bufferViews"][acc["bufferView"]]
+        blob = model.blobs[acc["bufferView"]]
+        stride = view.get("byteStride", 12)
+        off = acc.get("byteOffset", 0)
+        m = matrix
+        for k in range(acc["count"]):
+            x, y, z = struct.unpack_from("<3f", blob, off + k * stride)
+            out.append((m[0] * x + m[4] * y + m[8] * z + m[12],
+                        m[1] * x + m[5] * y + m[9] * z + m[13],
+                        m[2] * x + m[6] * y + m[10] * z + m[14]))
+    return out
+
+
+def scene_roots(g):
+    return g["scenes"][g.get("scene", 0)]["nodes"] if g.get("scenes") else list(range(len(g.get("nodes", []))))
+
+
+def prop_points(model):
+    """Every vertex of a model's unskinned meshes, with node transforms applied."""
+    g = model.g
+    points = []
+
+    def visit(index, parent):
+        node = g["nodes"][index]
+        world = mat_mul(parent, node_matrix(node))
+        if "mesh" in node and "skin" not in node:
+            points.extend(vertices(model, index, world))
+        for child in node.get("children", []):
+            visit(child, world)
+
+    for root in scene_roots(g):
+        visit(root, [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1])
+    return points
+
+
+def level(model, max_tilt=40.0):
+    """
+    Stand a prop level. AssetFurnace builds each model from a picture taken
+    from above at three-quarters, and the mesh comes out pitched by roughly
+    that camera's angle (8-32 degrees forward for this game's buildings), so
+    one side of its base floats while the other sinks. Fit a plane through
+    the lowest points of the base (the lowest point of each cell of a 6 x 6
+    grid over the footprint, within the bottom quarter of the model) and put
+    the scene under a node whose rotation turns that plane flat. Returns the
+    tilt removed, in degrees.
+    """
+    points = prop_points(model)
+    if not points:
+        return 0.0
+    ys = [p[1] for p in points]
+    y0, y1 = min(ys), max(ys)
+    xs, zs = [p[0] for p in points], [p[2] for p in points]
+    x0, x1, z0, z1 = min(xs), max(xs), min(zs), max(zs)
+    n = 6
+    cells = {}
+    for x, y, z in points:
+        if y > y0 + 0.25 * (y1 - y0):
+            continue
+        key = (min(n - 1, int((x - x0) / (x1 - x0 + 1e-9) * n)), min(n - 1, int((z - z0) / (z1 - z0 + 1e-9) * n)))
+        if key not in cells or y < cells[key][1]:
+            cells[key] = (x, y, z)
+    lows = list(cells.values())
+    if len(lows) < 4:
+        return 0.0
+    # Least squares: y = a x + c z + d
+    sxx = sum(p[0] * p[0] for p in lows); sxz = sum(p[0] * p[2] for p in lows); szz = sum(p[2] * p[2] for p in lows)
+    sx = sum(p[0] for p in lows); sz = sum(p[2] for p in lows); m = len(lows)
+    sxy = sum(p[0] * p[1] for p in lows); szy = sum(p[2] * p[1] for p in lows); sy = sum(p[1] for p in lows)
+    A = [[sxx, sxz, sx], [sxz, szz, sz], [sx, sz, m]]
+    B = [sxy, szy, sy]
+
+    def det(M):
+        return (M[0][0] * (M[1][1] * M[2][2] - M[1][2] * M[2][1]) - M[0][1] * (M[1][0] * M[2][2] - M[1][2] * M[2][0])
+                + M[0][2] * (M[1][0] * M[2][1] - M[1][1] * M[2][0]))
+
+    D = det(A)
+    if abs(D) < 1e-12:
+        return 0.0
+    solution = []
+    for i in range(3):
+        M = [row[:] for row in A]
+        for r in range(3):
+            M[r][i] = B[r]
+        solution.append(det(M) / D)
+    a, c = solution[0], solution[1]
+    # The base's up direction, and the rotation taking it to +Y
+    nx, ny, nz = -a, 1.0, -c
+    length = math.sqrt(nx * nx + ny * ny + nz * nz)
+    nx, ny, nz = nx / length, ny / length, nz / length
+    tilt = math.degrees(math.acos(max(-1.0, min(1.0, ny))))
+    if tilt < 2 or tilt > max_tilt:
+        if tilt > max_tilt:
+            print(f"  base tilt {tilt:.1f} degrees looks wrong; left as it is", file=sys.stderr)
+        return 0.0
+    ax, az = -nz, nx  # n x up: turning about it takes n onto +Y
+    axis_len = math.hypot(ax, az)
+    half = math.radians(tilt) / 2
+    q = [ax / axis_len * math.sin(half), 0.0, az / axis_len * math.sin(half), math.cos(half)]
+    g = model.g
+    g["nodes"].append({"name": "level", "rotation": [round(v, 6) for v in q], "children": list(scene_roots(g))})
+    if g.get("scenes"):
+        g["scenes"][g.get("scene", 0)]["nodes"] = [len(g["nodes"]) - 1]
+    else:
+        g["scenes"], g["scene"] = [{"nodes": [len(g["nodes"]) - 1]}], 0
+    return tilt
+
+
+def bounds_and_triangles(model):
+    """Bounds (exact for props, from the accessors' boxes for skinned meshes) and triangle count."""
+    g = model.g
     lo, hi = [math.inf] * 3, [-math.inf] * 3
     triangles = 0
     scene = g.get("scenes", [{}])[g.get("scene", 0)] if g.get("scenes") else {"nodes": list(range(len(g.get("nodes", []))))}
@@ -314,9 +431,17 @@ def bounds_and_triangles(g):
         nonlocal triangles
         node = g["nodes"][index]
         world = mat_mul(parent, node_matrix(node))
-        if "mesh" in node:
+        if "mesh" in node and "skin" not in node:
+            for prim in g["meshes"][node["mesh"]]["primitives"]:
+                count = g["accessors"][prim["indices"]]["count"] if "indices" in prim else g["accessors"][prim["attributes"]["POSITION"]]["count"]
+                triangles += count // 3
+            for p in vertices(model, index, world):
+                for i in range(3):
+                    lo[i] = min(lo[i], p[i])
+                    hi[i] = max(hi[i], p[i])
+        elif "mesh" in node:
             # Skinned meshes are drawn in skeleton space: ignore the mesh node's own transform
-            m = [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1] if "skin" in node else world
+            m = [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]
             for prim in g["meshes"][node["mesh"]]["primitives"]:
                 pos = g["accessors"][prim["attributes"]["POSITION"]]
                 count = g["accessors"][prim["indices"]]["count"] if "indices" in prim else pos["count"]
@@ -350,6 +475,7 @@ def main():
     ap.add_argument("--out", required=True, help="assets/models folder")
     ap.add_argument("--size", type=int, default=512, help="largest texture side in pixels")
     ap.add_argument("--lossless-base", action="store_true", help="keep the base colour map as PNG (units: team-colour areas)")
+    ap.add_argument("--level", action="store_true", help="props: turn the model so its base is flat (see level())")
     ap.add_argument("--yaw", type=float, help="degrees to turn the model so its front faces +Z (kept from the last import if not given)")
     args = ap.parse_args()
 
@@ -362,7 +488,10 @@ def main():
         moves.append((name, path))
     clips += merge_moves(model, moves)
     remove_unused(model)
-    lo, hi, triangles = bounds_and_triangles(model.g)
+    tilt = level(model) if args.level and not model.g.get("skins") else 0.0
+    if tilt:
+        print(f"  levelled: base was tilted {tilt:.1f} degrees", file=sys.stderr)
+    lo, hi, triangles = bounds_and_triangles(model)
 
     os.makedirs(args.out, exist_ok=True)
     out = os.path.join(args.out, f"{args.id}.glb")

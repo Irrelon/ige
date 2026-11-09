@@ -157,7 +157,10 @@ python3 tools/import_model.py --id archer --out assets/models --lossless-base \
 
 It merges each move file's animation into the rigged model by node name, re-encodes textures at 512 px (JPEG, or
 PNG for the base colour with `--lossless-base` so the magenta stays exact), drops maps the engine doesn't use and
-updates `models.json`. A model's id is its unit type, building id, `village`/`town`/`city`, `construction` or
+updates `models.json`. Props take `--level`: AssetFurnace builds each model from a picture taken from above at
+three-quarters, and the mesh comes out pitched by roughly that camera's angle (8-32 degrees for these buildings), so
+the importer fits a plane through the lowest points of the base and turns the model until it is flat. (Not the boat:
+a curved hull has no flat base, and it was already upright.) `--yaw` turns a model whose front doesn't face +Z. A model's id is its unit type, building id, `village`/`town`/`city`, `construction` or
 `boat`.
 
 If a character's own clips come out wrong (AssetFurnace's retargeter sometimes leaves a rig's arms stuck out

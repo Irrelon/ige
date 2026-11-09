@@ -447,3 +447,5 @@ Every unit, city level, building, wonder and monument has a 3D model, made for t
   or with the 3D models toggle off, everything is drawn with the primitives.
 - Textures are 512 px (base colour lossless for units, so the magenta stays exact); maps the engine doesn't read
   (metallic/roughness as WebP, occlusion) are dropped.
+- Props are levelled on import: the generated meshes come out pitched by the angle of the picture they were made
+  from (8-32 degrees), so the importer fits a plane to each base and turns it flat.
