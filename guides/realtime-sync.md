@@ -80,5 +80,33 @@ await (ige.network as IgeNetIoClientController).start("ws://my-server:8660");
 const client = new IgeNetSyncClient(igeNetSyncClientTransport(ige.network));
 ```
 
-- Coming next: WebRTC data channels, so a player's browser can host (with a small signalling service).
+- Plain WebSockets (JSON messages), with the server side on an HTTP server of your own
+  (`IgeNetWebSocketServer`, Node). One path can run an authority on the server (a dedicated server), another can
+  relay games hosted in players' browsers: the host gets a short join code, and machines joining with it have their
+  messages passed to the host and back, so nobody needs an open port.
+
+```typescript
+// Server (Node): a dedicated game on /sync, and a relay for browser-hosted games on /relay
+const server = http.createServer();
+const sockets = new IgeNetWebSocketServer(server);
+const host = new IgeNetSyncHost(sockets.listen("/sync"), { ... });
+sockets.relay("/relay");
+server.listen(8670);
+host.start();
+
+// Browser: join the dedicated game
+const client = new IgeNetSyncClient(await igeNetWebSocketConnect("ws://my-server:8670/sync"));
+
+// Browser: host a game here (own players over a loopback, others through the relay)
+const hosting = await igeNetRelayHost("ws://my-server:8670/relay");
+const local = igeNetLoopback();
+const host = new IgeNetSyncHost(igeNetMergeListeners(local.listener, hosting.listener), { ... });
+const me = new IgeNetSyncClient(local.connect());
+showJoinCode(hosting.code);
+
+// Browser: join a friend's game by its code
+const client = new IgeNetSyncClient(await igeNetRelayJoin("ws://my-server:8670/relay", "KX7QD"));
+```
+
+- Coming next: WebRTC data channels, so browsers connect directly (the relay then only introduces them).
 
