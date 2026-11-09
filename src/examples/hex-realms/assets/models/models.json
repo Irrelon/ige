@@ -616,26 +616,26 @@
 	"swordsman": {
 		"file": "swordsman.glb",
 		"min": [
-			-0.316,
-			-0.4516,
-			-0.2119
+			-0.3162,
+			-0.4527,
+			-0.2494
 		],
 		"max": [
-			0.3592,
-			0.4528,
-			0.2829
+			0.3829,
+			0.4579,
+			0.2676
 		],
-		"triangles": 5774,
+		"triangles": 5772,
 		"animations": [
-			"idle",
-			"walk",
-			"attack",
+			"death",
 			"hit",
-			"death"
+			"idle",
+			"attack",
+			"walk"
 		],
 		"skinned": true,
-		"bytes": 1191408,
-		"team": "swordsman_team.png"
+		"bytes": 799448,
+		"floor": -0.4625
 	},
 	"toolsmith": {
 		"file": "toolsmith.glb",
