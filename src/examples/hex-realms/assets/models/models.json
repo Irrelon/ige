@@ -80,20 +80,19 @@
 	"catapult": {
 		"file": "catapult.glb",
 		"min": [
-			-0.3846,
-			-0.3937,
-			-0.4208
+			-0.4098,
+			-0.3448,
+			-0.4368
 		],
 		"max": [
-			0.3516,
-			0.4408,
-			0.2725
+			0.4055,
+			0.4204,
+			0.3873
 		],
-		"triangles": 4824,
+		"triangles": 4678,
 		"animations": [],
 		"skinned": false,
-		"bytes": 730732,
-		"team": "catapult_team.png"
+		"bytes": 421416
 	},
 	"city": {
 		"file": "city.glb",
