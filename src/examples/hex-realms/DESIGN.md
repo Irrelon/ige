@@ -439,11 +439,10 @@ Every unit, city level, building, wonder and monument has a 3D model, made for t
   they are removed. Clips play faster than recorded to match the game's quick moves.
 - **Props** (rider, catapult, boat, the three city levels, construction site, buildings, wonders, monuments): no
   rig. Props get generated levels of detail.
-- **Team colours**: the prompts for unit models ask for bright magenta areas. At import they become a team-colour
-  mask (a greyscale PNG beside the model) and the areas themselves turn neutral grey; the game multiplies the grey by
-  each player's colour, for one copy of the model per team, so a type looks the same for everyone except its team
-  colour. (Matching the magenta at load time left patches: the generated textures shade and smear it.) Cities and
-  buildings carry owner banners and discs instead.
+- **Allegiance**: units keep their own (natural) colours; whose a unit is shows in a ring and disc in the owner's
+  colour under it and a Civilization-style badge above it (owner's colour, unit icon, health, veteran star).
+  Recolouring magenta areas of the textures was tried first and dropped: the generated textures shade and smear the
+  magenta into neighbouring parts, so no mask, at load or at import, kept team colour off the chainmail beside it.
 - **Lighting**: the generated meshes' vertex normals are noisy, so units' normals are rebuilt from the surface at
   import (averaging only triangles that face the same way).
 - **Fallback**: models load in the background after the map (units first) and swap in as they arrive. Until then,

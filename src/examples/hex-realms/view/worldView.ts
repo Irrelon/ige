@@ -8,7 +8,7 @@ import { MeshBuilder } from "../meshBuilder";
 import { type BuildingId, BUILDINGS, Deposit, type Good, GOOD_INFO, type UnitTypeId } from "../sim/rules";
 import type { Sim } from "../sim/sim";
 import type { BuildingState, CityState, SimEvent, UnitState } from "../sim/types";
-import { buildBorderGeometry, createHexDisc, createHexRing, CUBE, ORB, PYRAMID } from "../shapes";
+import { buildBorderGeometry, createDisc, createHexDisc, createHexRing, createRing, CUBE, ORB, PYRAMID } from "../shapes";
 import type { ModelLibrary } from "./models";
 import type { TerrainView } from "./terrainView";
 
@@ -43,8 +43,13 @@ const UNIT_PARTS: Record<UnitTypeId, Part[]> = {
 };
 
 const BOAT: Part = { geometry: CUBE, size: [44, 8, 24], y: 2, tint: "wood" };
-/** Player-coloured disc under a modelled unit, so you can tell whose it is. */
-const UNIT_BASE: Part = { geometry: ORB, size: [30, 3, 30], y: 1, tint: "player" };
+/**
+ * Under a modelled unit, so you can tell whose it is at a glance: a ring in
+ * its owner's colour round a darker disc of the same colour (the models
+ * themselves keep their own colours).
+ */
+const UNIT_BASE: Part = { geometry: createRing("hexRealms_unitBaseRing", 1, 0.76), size: [19, 1, 19], y: 1.2, tint: "player" };
+const UNIT_BASE_FILL: Part = { geometry: createDisc("hexRealms_unitBaseFill", 0.78), size: [19, 1, 19], y: 0.9, tint: "dark" };
 /** Model sizes (world units): characters by height, props by footprint. */
 const UNIT_MODEL_FIT: Record<UnitTypeId, { height?: number; footprint?: number }> = {
 	warrior: { height: 46 }, archer: { height: 46 }, swordsman: { height: 50 }, settler: { height: 44 },
@@ -89,8 +94,9 @@ const CARGO_TILES_PER_SECOND = 6;
 interface UnitView {
 	/** The unit's 3D model (a rigged character or a prop), when loaded. */
 	model?: IgeEntity | null;
-	/** Player-coloured disc under a modelled unit. */
+	/** Player-coloured ring and disc under a modelled unit. */
 	base?: IgeEntity;
+	baseFill?: IgeEntity;
 	/** The clip playing, and until when a one-shot clip runs. */
 	clip?: string;
 	clipUntil?: number;
@@ -426,30 +432,32 @@ export class WorldView {
 		const root = new IgeEntity();
 		root.id(this.uid(`unit_${unit.id}`));
 		root.mount(this.unitLayer);
-		// A 3D model when one is loaded (characters stand in their idle pose), primitives otherwise
-		// Painted in the owner's colour (team-colour areas), every unit of a type alike
-		const team = unit.owner >= 0 ? this.sim.player(unit.owner).color : undefined;
-		const model = this.models?.create(unit.type, { ...UNIT_MODEL_FIT[unit.type], animation: "idle", speed: 0 }, team) ?? null;
+		// A 3D model when one is loaded (characters stand in their idle pose), primitives otherwise;
+		// whose it is shows in its base and its badge (the HUD), not in the model
+		const model = this.models?.create(unit.type, { ...UNIT_MODEL_FIT[unit.type], animation: "idle", speed: 0 }) ?? null;
 		let body: IgeEntity | undefined;
 		let base: IgeEntity | undefined;
+		let baseFill: IgeEntity | undefined;
 		if (model) {
 			body = new IgeEntity();
 			body.id(this.uid("body"));
 			body.mount(root);
 			model.mount(body);
 			base = this.part(root, UNIT_BASE, unit.owner);
-			// A ground marker: casting a shadow, it darkened (and dithered) the ground under the unit
+			baseFill = this.part(root, UNIT_BASE_FILL, unit.owner);
+			// Ground markers: casting shadows, they darkened (and dithered) the ground under the unit
 			base._noShadowCast = true;
+			baseFill._noShadowCast = true;
 		}
 		const parts = model ? [] : UNIT_PARTS[unit.type].map((part) => this.part(root, part, unit.owner));
-		const boatModel = this.models?.create("boat", BOAT_FIT, team) ?? null;
+		const boatModel = this.models?.create("boat", BOAT_FIT) ?? null;
 		if (boatModel) boatModel.mount(root);
 		const boat = boatModel ?? this.part(root, BOAT, unit.owner);
 		const view: UnitView = {
 			id: unit.id, type: unit.type, owner: unit.owner, root, parts, boat,
 			tile: unit.tile, queue: [], stepT: 0, lunge: null, flash: 0,
 			pop: pop ? 0 : 1, removeAt: -1, phase: (unit.id * 1.7) % (Math.PI * 2), selected: false, shown: true,
-			model, base, body, clip: model ? "idle" : undefined
+			model, base, baseFill, body, clip: model ? "idle" : undefined
 		};
 		this.units.set(unit.id, view);
 		this.placeUnit(view);
@@ -535,7 +543,7 @@ export class WorldView {
 	/** Recolour a unit: owner colour, selection glow, hit flash. */
 	refreshUnit (view: UnitView): void {
 		const flash = view.flash > 0;
-		for (const e of [...view.parts, view.boat, ...(view.base ? [view.base] : [])]) {
+		for (const e of [...view.parts, view.boat, ...(view.base ? [view.base] : []), ...(view.baseFill ? [view.baseFill] : [])]) {
 			const tint = (e as unknown as { _partTint?: Part["tint"] })._partTint;
 			if (tint === undefined) continue; // a model keeps its own materials
 			const c = this.tintColor(view.owner, tint);
@@ -544,11 +552,9 @@ export class WorldView {
 				: view.selected ? material(c, { r: 1, g: 0.95, b: 0.6 }, 0.35) : material(c);
 		}
 		if (view.model) {
-			const tint = (view.model as IgeEntity & { teamTint?: typeof WHITE }).teamTint;
-			const color = tint ?? WHITE;
 			view.model.material(flash
-				? { color, emissiveColor: { r: 1, g: 0.15, b: 0.1 }, emissiveIntensity: 0.9 }
-				: view.selected ? { color, emissiveColor: { r: 1, g: 0.95, b: 0.6 }, emissiveIntensity: 0.18 } : tint ? { color } : null);
+				? { color: WHITE, emissiveColor: { r: 1, g: 0.15, b: 0.1 }, emissiveIntensity: 0.9 }
+				: view.selected ? { color: WHITE, emissiveColor: { r: 1, g: 0.95, b: 0.6 }, emissiveIntensity: 0.18 } : null);
 		}
 		const water = this.sim.map.isWater(view.tile);
 		if (water) view.boat.show();
@@ -557,9 +563,10 @@ export class WorldView {
 		// (in the bow, ahead of the mast and sail, when the boat is a model)
 		const modelBoat = !!this.models?.has("boat");
 		if (view.body) view.body.translateTo(0, water ? (modelBoat ? BOAT_DECK : 10) : 0, water && modelBoat ? BOAT_BOW : 0);
-		if (view.base) {
-			if (water) view.base.hide();
-			else view.base.show();
+		for (const e of [view.base, view.baseFill]) {
+			if (!e) continue;
+			if (water) e.hide();
+			else e.show();
 		}
 	}
 

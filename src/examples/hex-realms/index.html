@@ -137,7 +137,7 @@
 		.help p { max-width: 640px; line-height: 1.5; }
 
 		#labels { position: absolute; inset: 0; pointer-events: none; overflow: hidden; z-index: 40; }
-		.city-label, .hp, .damage, .lens-label { position: absolute; left: 0; top: 0; white-space: nowrap; will-change: transform; }
+		.city-label, .ub, .damage, .lens-label { position: absolute; left: 0; top: 0; white-space: nowrap; will-change: transform; }
 		.lens-label span { display: inline-block; padding: 1px 6px; font-size: 11px; background: rgba(10, 16, 26, 0.82); border-left: 3px solid; border-radius: 4px; }
 		.lens-label span.ok { border-color: #4ade80; }
 		.lens-label span.wait { border-color: #60a5fa; }
@@ -146,7 +146,14 @@
 		.lens-store .chip { font-size: 10px; }
 		#topbar button.on { background: #2563eb; border-color: #3b82f6; color: #fff; }
 		.city-label span { display: inline-block; padding: 1px 8px; font-size: 12px; font-weight: 600; background: rgba(10, 16, 26, 0.8); border: 2px solid; border-radius: 10px; }
-		.hp span { display: inline-block; min-width: 14px; text-align: center; padding: 0 4px; font-size: 10px; font-weight: 700; background: rgba(10, 16, 26, 0.85); border: 2px solid; border-radius: 6px; }
+		/* Unit badges: a shield in the owner's colour with the unit's icon, health when hurt, a star for veterans */
+		.ub { display: flex; flex-direction: column; align-items: center; }
+		.ub span { display: inline-flex; align-items: center; gap: 1px; height: 21px; padding: 0 5px; font-size: 12px; font-weight: 800; color: #fff; text-shadow: 0 1px 1px rgba(0, 0, 0, 0.7); background: var(--c); border: 1.5px solid rgba(255, 255, 255, 0.92); border-radius: 5px 5px 10px 10px; box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.55), 0 2px 3px rgba(0, 0, 0, 0.35); }
+		.ub i { font-style: normal; font-size: 13px; line-height: 1; }
+		.ub b { margin-left: 2px; font-size: 11px; }
+		.ub u { text-decoration: none; color: #fde047; font-size: 10px; margin-right: 1px; }
+		.ub em { display: block; width: 26px; height: 3px; margin-top: 2px; background: rgba(0, 0, 0, 0.6); border-radius: 2px; overflow: hidden; }
+		.ub em s { display: block; height: 100%; background: #4ade80; text-decoration: none; }
 		.damage { font: 700 18px system-ui, sans-serif; color: #ffd84d; text-shadow: 0 0 3px #000, 0 0 6px #000; }
 
 		#setup { position: absolute; inset: 0; z-index: 300; display: flex; align-items: center; justify-content: center; background: radial-gradient(circle at 50% 30%, #1d3557, #0b1220); overflow: auto; }

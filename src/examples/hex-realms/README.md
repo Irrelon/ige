@@ -139,12 +139,10 @@ they arrive. The **3D models** toggle in the menu (or `?models=0`) falls back to
   `death` clips. They walk while moving, play `attack` when they strike, `hit` when struck and survive, and `death`
   before a killed unit is removed. Idle characters hold still until selected, so an idle map costs no GPU time.
   Riders, catapults and boats are unrigged props.
-- **Team colours**, as strategy games usually do them: each unit model has a team-colour mask
-  (`assets/models/<id>_team.png`, white = team colour) and its team areas are neutral grey in its colour texture. For
-  each player the library makes a copy of the model with the masked texels set to grey x the player's colour, so
-  every warrior looks the same and only its team colour differs. The masks are made once, at import, from the bright
-  magenta areas the models were generated with (see below); they can be checked or touched up in any image editor.
-  A coloured disc under each unit, and an owner banner or base on cities and buildings, add to it.
+- **Whose a unit is** shows around the model, not in it: a ring and disc in the owner's colour under each unit,
+  and a badge above it (a shield in the owner's colour with an icon for the unit's type, its health and a bar when
+  hurt, and a star for veterans), as in Civilization. Recolouring parts of the generated textures was tried and
+  dropped: the bake shades and smears the colour into neighbouring parts (a swordsman's chainmail came out tinted).
 - **Cities** use the village, town or city model for their level; unfinished buildings show the construction site.
   Buildings, wonders and monuments are static props; ports turn to face the water.
 - Props get engine-generated levels of detail (`PROP_LOD`); copies of a model are GPU-instanced.

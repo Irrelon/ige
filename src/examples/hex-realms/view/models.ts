@@ -11,14 +11,8 @@ import type { IgeModelLodLevel } from "@/engine/webgl/IgeModelParts";
  * Units are rigged characters with idle, walk, attack, hit and death clips;
  * cities, buildings, wonders and monuments are static props.
  *
- * Team colours, as strategy games usually do them: each unit model comes
- * with a team-colour mask (<id>_team.png, white = team colour) and its team
- * areas are neutral grey in its colour texture; both are made once by
- * tools/import_model.py --team-mask from the magenta areas the model was
- * generated with. For every player colour in play, a copy of the model is
- * made with the masked texels set to grey x team colour, so every unit of a
- * type looks the same but each team's are easy to tell apart. A model
- * without a mask gets a light tint in the team colour instead.
+ * Whose a unit is shows in its base and its badge (see WorldView and the
+ * HUD), not in the model: the models keep their own colours.
  */
 
 export interface ModelInfo {
@@ -31,8 +25,6 @@ export interface ModelInfo {
 	bytes: number;
 	/** Turn the model this much (radians) so its front faces +Z. */
 	yaw?: number;
-	/** Its team-colour mask (a greyscale PNG beside it, white = team colour). */
-	team?: string;
 }
 
 export interface ModelFit {
@@ -49,87 +41,6 @@ export interface ModelFit {
 
 const STORAGE_KEY = "hexRealms.models";
 
-type Rgba = { r: number; g: number; b: number; a: number };
-
-function hexRgb (hex: string): [number, number, number] {
-	const n = parseInt(hex.slice(1), 16);
-	return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
-}
-
-/** A light team tint for models without team-colour areas. */
-export function teamTint (hex: string): Rgba {
-	const [r, g, b] = hexRgb(hex);
-	const mix = (v: number) => 0.55 + (v / 255) * 0.45;
-	return { r: mix(r), g: mix(g), b: mix(b), a: 1 };
-}
-
-/** The JSON and binary chunks of a GLB. */
-function readGlb (buffer: ArrayBuffer): { json: any; bin: Uint8Array } {
-	const view = new DataView(buffer);
-	let off = 12;
-	let json: any = null;
-	let bin = new Uint8Array(0);
-	while (off < buffer.byteLength) {
-		const length = view.getUint32(off, true);
-		const kind = view.getUint32(off + 4, true);
-		const chunk = new Uint8Array(buffer, off + 8, length);
-		if (kind === 0x4e4f534a) json = JSON.parse(new TextDecoder().decode(chunk));
-		else if (kind === 0x004e4942) bin = chunk;
-		off += 8 + length;
-	}
-	return { json, bin };
-}
-
-/** Append blobs to a GLB's binary chunk as new buffer views; returns their indices. */
-function appendViews (json: any, binLength: number, extra: Uint8Array[]): number[] {
-	let size = (binLength + 3) & ~3;
-	return extra.map((blob) => {
-		json.bufferViews.push({ buffer: 0, byteOffset: size, byteLength: blob.length });
-		size = (size + blob.length + 3) & ~3;
-		return json.bufferViews.length - 1;
-	});
-}
-
-/** Encode a GLB: the document, its binary chunk and the blobs appendViews() placed after it. */
-function encodeGlb (json: any, bin: Uint8Array, extra: Uint8Array[], views: number[]): ArrayBuffer {
-	const pad = (n: number) => (n + 3) & ~3;
-	const last = views.length ? json.bufferViews[views[views.length - 1]] : null;
-	const size = pad(last ? last.byteOffset + last.byteLength : bin.length);
-	json.buffers = [{ byteLength: size }];
-	const text = new TextEncoder().encode(JSON.stringify(json));
-	const textSize = pad(text.length);
-	const out = new Uint8Array(12 + 8 + textSize + 8 + size);
-	const dv = new DataView(out.buffer);
-	dv.setUint32(0, 0x46546c67, true);
-	dv.setUint32(4, 2, true);
-	dv.setUint32(8, out.length, true);
-	dv.setUint32(12, textSize, true);
-	dv.setUint32(16, 0x4e4f534a, true);
-	out.set(text, 20);
-	out.fill(0x20, 20 + text.length, 20 + textSize);
-	const binStart = 20 + textSize;
-	dv.setUint32(binStart, size, true);
-	dv.setUint32(binStart + 4, 0x004e4942, true);
-	out.set(bin, binStart + 8);
-	extra.forEach((blob, i) => out.set(blob, binStart + 8 + json.bufferViews[views[i]].byteOffset));
-	return out.buffer;
-}
-
-/** The grey of team areas is stored with this much headroom (see team_texture() in tools/import_model.py). */
-const TEAM_LIFT = 1.08;
-
-/** An image's pixels (RGBA). */
-async function imagePixels (blob: Blob): Promise<{ data: Uint8ClampedArray; width: number; height: number; ctx: CanvasRenderingContext2D; image: ImageData }> {
-	const bitmap = await createImageBitmap(blob);
-	const canvas = document.createElement("canvas");
-	canvas.width = bitmap.width;
-	canvas.height = bitmap.height;
-	const ctx = canvas.getContext("2d") as CanvasRenderingContext2D;
-	ctx.drawImage(bitmap, 0, 0);
-	const image = ctx.getImageData(0, 0, canvas.width, canvas.height);
-	return { data: image.data, width: canvas.width, height: canvas.height, ctx, image };
-}
-
 export class ModelLibrary {
 	base: string;
 	infos: Record<string, ModelInfo> = {};
@@ -138,10 +49,6 @@ export class ModelLibrary {
 	/** Called each time a model finishes loading. */
 	onLoaded?: (id: string) => void;
 	protected _uid = 0;
-	protected _raw = new Map<string, Promise<ArrayBuffer>>();
-	/** Team-painted models by "id|colour": the model, or null when the model has no team areas. */
-	protected _teams = new Map<string, IgeGltfModel | null>();
-	protected _painting = new Set<string>();
 	protected _queue: string[] = [];
 	protected _queued = new Set<string>();
 	protected _waiting = new Set<string>();
@@ -231,114 +138,25 @@ export class ModelLibrary {
 	}
 
 	/**
-	 * The model painted in a team colour: the model once made, null when it
-	 * has no team areas, undefined while it is being made (onLoaded(id) fires
-	 * when it's ready).
-	 */
-	teamModel (id: string, color: string): IgeGltfModel | null | undefined {
-		const key = `${id}|${color}`;
-		if (this._teams.has(key)) return this._teams.get(key);
-		if (!this._painting.has(key) && this.models.has(id)) {
-			this._painting.add(key);
-			this.paint(id, color).catch((error) => {
-				console.warn(`Couldn't paint ${id} in ${color}`, error);
-				return null;
-			}).then((model) => {
-				this._teams.set(key, model);
-				this._painting.delete(key);
-				this.onLoaded?.(id);
-			});
-		}
-		return undefined;
-	}
-
-	protected raw (id: string): Promise<ArrayBuffer> {
-		let pending = this._raw.get(id);
-		if (!pending) {
-			pending = fetch(`${this.base}${this.infos[id].file}`).then((r) => r.arrayBuffer());
-			this._raw.set(id, pending);
-		}
-		return pending;
-	}
-
-	/** The model with its masked team areas (neutral grey) multiplied by a team colour, as a new model. */
-	protected async paint (id: string, color: string): Promise<IgeGltfModel | null> {
-		const info = this.infos[id];
-		if (!info?.team) return null;
-		const [{ json, bin }, mask] = await Promise.all([
-			this.raw(id).then(readGlb),
-			fetch(`${this.base}${info.team}`).then((r) => r.blob()).then(imagePixels)
-		]);
-		const source = (() => {
-			for (const m of json.materials ?? []) {
-				const t = m.pbrMetallicRoughness?.baseColorTexture?.index;
-				if (t !== undefined && json.textures?.[t]?.source !== undefined) return json.textures[t].source as number;
-			}
-			return undefined;
-		})();
-		if (source === undefined) return null;
-		const image = json.images[source];
-		const view = json.bufferViews[image.bufferView];
-		const bytes = bin.subarray(view.byteOffset ?? 0, (view.byteOffset ?? 0) + view.byteLength);
-		const tex = await imagePixels(new Blob([bytes], { type: image.mimeType ?? "image/png" }));
-		if (tex.width !== mask.width || tex.height !== mask.height) {
-			console.warn(`Team mask for ${id} doesn't match its texture`);
-			return null;
-		}
-		const [tr, tg, tb] = hexRgb(color);
-		const d = tex.data, m = mask.data;
-		for (let i = 0; i < d.length; i += 4) {
-			const k = m[i] / 255;
-			if (k <= 0) continue;
-			const grey = (d[i] / 255) * TEAM_LIFT;
-			d[i] += (tr * grey - d[i]) * k;
-			d[i + 1] += (tg * grey - d[i + 1]) * k;
-			d[i + 2] += (tb * grey - d[i + 2]) * k;
-		}
-		tex.ctx.putImageData(tex.image, 0, 0);
-		const blob = await new Promise<Blob | null>((resolve) => tex.ctx.canvas.toBlob(resolve, "image/png"));
-		if (!blob) return null;
-		const painted = new Uint8Array(await blob.arrayBuffer());
-		const views = appendViews(json, bin.length, [painted]);
-		image.bufferView = views[0];
-		image.mimeType = "image/png";
-		const url = URL.createObjectURL(new Blob([encodeGlb(json, bin, [painted], views)], { type: "model/gltf-binary" }));
-		return igeGltfLoader.load(`${url}#${id}.glb`, `hexRealms_model_${id}_${color}`);
-	}
-
-	/**
 	 * An entity showing a model, scaled to fit, standing on y = 0 and centred
-	 * on x and z (mount it on something placed at the tile). With a team
-	 * colour, the team-painted copy (or the plain model with a team tint,
-	 * kept in `teamTint` on the entity, until the copy is ready or if the
-	 * model has no team areas). Null when the model isn't loaded or models
-	 * are off.
+	 * on x and z (mount it on something placed at the tile). Null when the
+	 * model isn't loaded or models are off.
 	 */
-	create (id: string, fit: ModelFit, team?: string): (IgeEntity & { teamTint?: Rgba }) | null {
+	create (id: string, fit: ModelFit): IgeEntity | null {
 		if (!this.enabled) return null;
 		if (!this.models.has(id)) {
 			this.request(id);
 			return null;
 		}
-		let model = this.models.get(id) as IgeGltfModel;
-		let tint: Rgba | undefined;
-		if (team) {
-			const painted = this.teamModel(id, team);
-			if (painted) model = painted;
-			else tint = teamTint(team);
-		}
+		const model = this.models.get(id) as IgeGltfModel;
 		const info = this.infos[id];
 		const h = Math.max(1e-6, info.max[1] - info.min[1]);
 		const w = Math.max(1e-6, info.max[0] - info.min[0], info.max[2] - info.min[2]);
 		let s = fit.height !== undefined ? fit.height / h : (fit.footprint ?? 1) / w;
 		if (fit.height !== undefined && fit.footprint !== undefined) s = Math.min(fit.height / h, fit.footprint / w);
-		const e = new IgeEntity() as IgeEntity & { teamTint?: Rgba };
+		const e = new IgeEntity();
 		e.id(`hexRealms_${id}_${++this._uid}`);
 		e.model(model, { lod: fit.lod });
-		if (tint) {
-			e.teamTint = tint;
-			e.material({ color: tint });
-		}
 		const yaw = info.yaw ?? 0;
 		const cx = -(info.min[0] + info.max[0]) / 2 * s, cz = -(info.min[2] + info.max[2]) / 2 * s;
 		e.scaleTo(s, s, s);

@@ -7,7 +7,7 @@ import { buildingStars, buildOptions, buyCost, buyProblem, carrierSpeed, roadCap
 import { researchCost } from "../sim/effects";
 import {
 	AMBITIONS, BUILDINGS, DEPOSIT_NAMES, type Deposit, GOOD_INFO, GOODS, type Good, type Goods, growthNeeded, levelRewards, REWARDS, ROAD_COST,
-	type TechId, TECH_IDS, TECHS, UNIT_TYPE_IDS, UNIT_TYPES, WONDER_IDS
+	type TechId, TECH_IDS, TECHS, UNIT_TYPE_IDS, type UnitTypeId, UNIT_TYPES, WONDER_IDS
 } from "../sim/rules";
 import type { Sim } from "../sim/sim";
 import { cityIncome, freeUnits, income, upkeepFactor } from "../sim/treasury";
@@ -27,6 +27,14 @@ import { ambitionsModal, wondersModal } from "./wondersScreen";
 import { type ChatLine, type RoomInfo, TURN_TIMERS } from "../net/protocol";
 
 /** What the HUD needs from the game controller. */
+/** Icons on unit badges. */
+const UNIT_ICONS: Record<UnitTypeId, string> = {
+	warrior: "&#x1FA93;", archer: "&#x1F3F9;", swordsman: "&#x2694;&#xFE0F;", settler: "&#x26FA;", rider: "&#x1F40E;", catapult: "&#x2604;&#xFE0F;"
+};
+
+/** How high above a unit's feet its badge floats (world units; the models are up to about 54 tall). */
+const BADGE_HEIGHT = 62;
+
 export interface HudHost {
 	sim: Sim;
 	player: number;
@@ -712,11 +720,12 @@ export class Hud {
 		// is drawn at the city height + 62 and it is about 24 px tall)
 		const p = city
 			? h.renderer.worldToScreen(h.viewport, h.world.tileX(city.tile), h.terrain.surface.tileHeight(city.tile) + 62, h.world.tileZ(city.tile))
-			: h.renderer.worldToScreen(h.viewport, pos.x, pos.y + 60, pos.z);
+			: h.renderer.worldToScreen(h.viewport, pos.x, pos.y + BADGE_HEIGHT, pos.z);
 		if (!p || !p.visible) return hide();
 		const html = buttons.join("");
 		if (el.innerHTML !== html) el.innerHTML = html;
-		el.style.transform = `translate(${p.x.toFixed(0)}px, ${(p.y - (city ? 30 : 0)).toFixed(0)}px) translate(-50%, -100%)`;
+		// (above the unit's badge, or above the city banner)
+		el.style.transform = `translate(${p.x.toFixed(0)}px, ${(p.y - (city ? 30 : 24)).toFixed(0)}px) translate(-50%, -100%)`;
 		el.classList.remove("hidden");
 	}
 
@@ -760,13 +769,16 @@ export class Hud {
 			}
 		}
 		if (near) {
+			// Every unit's badge, as in Civilization: a shield in its owner's colour with an icon for its
+			// type, its health when hurt (and a bar) and a star when it's a veteran
 			for (const u of sim.state.units) {
 				const pos = world.unitPosition(u.id);
 				if (!pos || !pos.shown) continue;
 				const hurt = u.hp < u.maxHp;
-				if (!hurt && !u.veteran && u.owner === this.me) continue;
 				const color = sim.player(u.owner).color;
-				label(`unit${u.id}`, "hp", `<span style="border-color:${color}">${u.veteran ? "&#9733;" : ""}${u.hp}</span>`, pos.x, pos.y + 44, pos.z);
+				const bar = hurt ? `<em><s style="width:${Math.round((100 * u.hp) / u.maxHp)}%"></s></em>` : "";
+				const html = `<span style="--c:${color}">${u.veteran ? "<u>&#9733;</u>" : ""}<i>${UNIT_ICONS[u.type]}</i>${hurt ? `<b>${u.hp}</b>` : ""}</span>${bar}`;
+				label(`unit${u.id}`, "ub", html, pos.x, pos.y + BADGE_HEIGHT, pos.z);
 			}
 		}
 		for (const [key, el] of this.labels) {

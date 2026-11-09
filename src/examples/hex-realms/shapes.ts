@@ -47,6 +47,35 @@ export function createHexRing (id: string, outer: number, inner: number): IgeGeo
 	return b.toGeometry(id);
 }
 
+/** Flat round ring between two radii on y = 0, facing up (a unit's base). */
+export function createRing (id: string, outer: number, inner: number, segments = 32): IgeGeometryData3d {
+	const b = new MeshBuilder();
+	for (let i = 0; i < segments; i++) {
+		const a = (i / segments) * Math.PI * 2;
+		b.vertex(Math.cos(a) * outer, 0, Math.sin(a) * outer, 0, 1, 0, 0, 0);
+	}
+	for (let i = 0; i < segments; i++) {
+		const a = (i / segments) * Math.PI * 2;
+		b.vertex(Math.cos(a) * inner, 0, Math.sin(a) * inner, 0, 1, 0, 0, 0);
+	}
+	for (let i = 0; i < segments; i++) {
+		const j = (i + 1) % segments;
+		b.quadFacing(i, j, segments + j, segments + i, 0, 1, 0);
+	}
+	return b.toGeometry(id);
+}
+
+/** Flat round disc on y = 0, facing up. */
+export function createDisc (id: string, radius: number, segments = 32): IgeGeometryData3d {
+	const b = new MeshBuilder();
+	for (let i = 0; i < segments; i++) {
+		const a = (i / segments) * Math.PI * 2;
+		b.vertex(Math.cos(a) * radius, 0, Math.sin(a) * radius, 0, 1, 0, 0, 0);
+	}
+	for (let i = 1; i < segments - 1; i++) b.triFacing(0, i, i + 1, 0, 1, 0);
+	return b.toGeometry(id);
+}
+
 /** Flat hexagon on y = 0 (for movement range markers). */
 export function createHexDisc (id: string, radius: number): IgeGeometryData3d {
 	const b = new MeshBuilder();
