@@ -38,7 +38,7 @@
 		"triangles": 3816,
 		"animations": [],
 		"skinned": false,
-		"bytes": 414972
+		"bytes": 364364
 	},
 	"bakery": {
 		"file": "bakery.glb",
@@ -55,7 +55,7 @@
 		"triangles": 3944,
 		"animations": [],
 		"skinned": false,
-		"bytes": 462528
+		"bytes": 419548
 	},
 	"boat": {
 		"file": "boat.glb",
@@ -109,7 +109,7 @@
 		"triangles": 8072,
 		"animations": [],
 		"skinned": false,
-		"bytes": 750676
+		"bytes": 741684
 	},
 	"colossus": {
 		"file": "colossus.glb",
@@ -126,7 +126,7 @@
 		"triangles": 9490,
 		"animations": [],
 		"skinned": false,
-		"bytes": 736020
+		"bytes": 749064
 	},
 	"construction": {
 		"file": "construction.glb",
@@ -143,7 +143,7 @@
 		"triangles": 2824,
 		"animations": [],
 		"skinned": false,
-		"bytes": 418480
+		"bytes": 347356
 	},
 	"councilHall": {
 		"file": "councilHall.glb",
@@ -160,7 +160,7 @@
 		"triangles": 9922,
 		"animations": [],
 		"skinned": false,
-		"bytes": 777340
+		"bytes": 810708
 	},
 	"farm": {
 		"file": "farm.glb",
@@ -177,7 +177,7 @@
 		"triangles": 3987,
 		"animations": [],
 		"skinned": false,
-		"bytes": 593556
+		"bytes": 548660
 	},
 	"fishery": {
 		"file": "fishery.glb",
@@ -194,7 +194,24 @@
 		"triangles": 3780,
 		"animations": [],
 		"skinned": false,
-		"bytes": 426892
+		"bytes": 378748
+	},
+	"gildedVault": {
+		"file": "gildedVault.glb",
+		"min": [
+			-0.4328,
+			-0.3913,
+			-0.4621
+		],
+		"max": [
+			0.4275,
+			0.3754,
+			0.4876
+		],
+		"triangles": 4778,
+		"animations": [],
+		"skinned": false,
+		"bytes": 455728
 	},
 	"grandBazaar": {
 		"file": "grandBazaar.glb",
@@ -211,7 +228,7 @@
 		"triangles": 9608,
 		"animations": [],
 		"skinned": false,
-		"bytes": 931452
+		"bytes": 956244
 	},
 	"grandExchange": {
 		"file": "grandExchange.glb",
@@ -228,7 +245,7 @@
 		"triangles": 9666,
 		"animations": [],
 		"skinned": false,
-		"bytes": 691044
+		"bytes": 710404
 	},
 	"grandFountain": {
 		"file": "grandFountain.glb",
@@ -262,7 +279,7 @@
 		"triangles": 9985,
 		"animations": [],
 		"skinned": false,
-		"bytes": 911304
+		"bytes": 952252
 	},
 	"greatWall": {
 		"file": "greatWall.glb",
@@ -279,7 +296,7 @@
 		"triangles": 9464,
 		"animations": [],
 		"skinned": false,
-		"bytes": 740020
+		"bytes": 744484
 	},
 	"hallOfHeroes": {
 		"file": "hallOfHeroes.glb",
@@ -296,7 +313,7 @@
 		"triangles": 9540,
 		"animations": [],
 		"skinned": false,
-		"bytes": 692800
+		"bytes": 715812
 	},
 	"hangingGardens": {
 		"file": "hangingGardens.glb",
@@ -313,7 +330,7 @@
 		"triangles": 9534,
 		"animations": [],
 		"skinned": false,
-		"bytes": 882492
+		"bytes": 907188
 	},
 	"hunter": {
 		"file": "hunter.glb",
@@ -330,7 +347,7 @@
 		"triangles": 3960,
 		"animations": [],
 		"skinned": false,
-		"bytes": 562984
+		"bytes": 524600
 	},
 	"imperialRoad": {
 		"file": "imperialRoad.glb",
@@ -347,7 +364,7 @@
 		"triangles": 8898,
 		"animations": [],
 		"skinned": false,
-		"bytes": 661476
+		"bytes": 671044
 	},
 	"market": {
 		"file": "market.glb",
@@ -364,7 +381,7 @@
 		"triangles": 4876,
 		"animations": [],
 		"skinned": false,
-		"bytes": 529856
+		"bytes": 486428
 	},
 	"mill": {
 		"file": "mill.glb",
@@ -381,7 +398,7 @@
 		"triangles": 3486,
 		"animations": [],
 		"skinned": false,
-		"bytes": 382872
+		"bytes": 326164
 	},
 	"mine": {
 		"file": "mine.glb",
@@ -398,7 +415,7 @@
 		"triangles": 3804,
 		"animations": [],
 		"skinned": false,
-		"bytes": 489660
+		"bytes": 435968
 	},
 	"mint": {
 		"file": "mint.glb",
@@ -415,7 +432,7 @@
 		"triangles": 3846,
 		"animations": [],
 		"skinned": false,
-		"bytes": 470016
+		"bytes": 423496
 	},
 	"observatory": {
 		"file": "observatory.glb",
@@ -432,7 +449,7 @@
 		"triangles": 9568,
 		"animations": [],
 		"skinned": false,
-		"bytes": 682036
+		"bytes": 697124
 	},
 	"pasture": {
 		"file": "pasture.glb",
@@ -449,7 +466,7 @@
 		"triangles": 3716,
 		"animations": [],
 		"skinned": false,
-		"bytes": 365372
+		"bytes": 330808
 	},
 	"port": {
 		"file": "port.glb",
@@ -466,7 +483,7 @@
 		"triangles": 4986,
 		"animations": [],
 		"skinned": false,
-		"bytes": 580908
+		"bytes": 551740
 	},
 	"quarry": {
 		"file": "quarry.glb",
@@ -483,7 +500,7 @@
 		"triangles": 3230,
 		"animations": [],
 		"skinned": false,
-		"bytes": 343196
+		"bytes": 296664
 	},
 	"rider": {
 		"file": "rider.glb",
@@ -535,7 +552,7 @@
 		"triangles": 3967,
 		"animations": [],
 		"skinned": false,
-		"bytes": 597328
+		"bytes": 549448
 	},
 	"settler": {
 		"file": "settler.glb",
@@ -576,7 +593,7 @@
 		"triangles": 3838,
 		"animations": [],
 		"skinned": false,
-		"bytes": 413476
+		"bytes": 366184
 	},
 	"swordsman": {
 		"file": "swordsman.glb",
@@ -617,7 +634,7 @@
 		"triangles": 3860,
 		"animations": [],
 		"skinned": false,
-		"bytes": 423148
+		"bytes": 377580
 	},
 	"town": {
 		"file": "town.glb",
@@ -634,7 +651,7 @@
 		"triangles": 7486,
 		"animations": [],
 		"skinned": false,
-		"bytes": 682460
+		"bytes": 679444
 	},
 	"victoryArch": {
 		"file": "victoryArch.glb",
@@ -651,7 +668,7 @@
 		"triangles": 4538,
 		"animations": [],
 		"skinned": false,
-		"bytes": 466792
+		"bytes": 435320
 	},
 	"village": {
 		"file": "village.glb",
@@ -668,7 +685,7 @@
 		"triangles": 5286,
 		"animations": [],
 		"skinned": false,
-		"bytes": 471688
+		"bytes": 450680
 	},
 	"warehouse": {
 		"file": "warehouse.glb",
@@ -685,7 +702,7 @@
 		"triangles": 3949,
 		"animations": [],
 		"skinned": false,
-		"bytes": 574048
+		"bytes": 526672
 	},
 	"warrior": {
 		"file": "warrior.glb",
@@ -726,6 +743,6 @@
 		"triangles": 3926,
 		"animations": [],
 		"skinned": false,
-		"bytes": 449964
+		"bytes": 404500
 	}
 }
