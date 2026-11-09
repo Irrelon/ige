@@ -210,6 +210,23 @@
 		"skinned": false,
 		"bytes": 931452
 	},
+	"grandExchange": {
+		"file": "grandExchange.glb",
+		"min": [
+			-0.4153,
+			-0.2589,
+			-0.4379
+		],
+		"max": [
+			0.4481,
+			0.3721,
+			0.42
+		],
+		"triangles": 9666,
+		"animations": [],
+		"skinned": false,
+		"bytes": 691044
+	},
 	"greatLibrary": {
 		"file": "greatLibrary.glb",
 		"min": [
