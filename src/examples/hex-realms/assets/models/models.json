@@ -284,6 +284,23 @@
 		"skinned": true,
 		"bytes": 1093500
 	},
+	"smelter": {
+		"file": "smelter.glb",
+		"min": [
+			-0.3276,
+			-0.4331,
+			-0.4917
+		],
+		"max": [
+			0.3347,
+			0.4366,
+			0.1912
+		],
+		"triangles": 3838,
+		"animations": [],
+		"skinned": false,
+		"bytes": 413404
+	},
 	"swordsman": {
 		"file": "swordsman.glb",
 		"min": [
