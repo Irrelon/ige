@@ -108,6 +108,23 @@
 		"skinned": false,
 		"bytes": 750676
 	},
+	"colossus": {
+		"file": "colossus.glb",
+		"min": [
+			-0.2311,
+			-0.4157,
+			-0.258
+		],
+		"max": [
+			0.2532,
+			0.4316,
+			0.2219
+		],
+		"triangles": 9490,
+		"animations": [],
+		"skinned": false,
+		"bytes": 736100
+	},
 	"construction": {
 		"file": "construction.glb",
 		"min": [
