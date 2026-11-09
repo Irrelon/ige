@@ -17,12 +17,14 @@ What it does to the model:
   is taken out (only their bob is kept).
 - Props with --level are turned so their base is flat (AssetFurnace's come
   out pitched by the angle of the picture they were made from).
+- Units with --team-mask get a team-colour mask (<id>_team.png beside the
+  model) and their team areas turned grey; see team_texture().
 - Unused images, textures and buffer views are removed.
 - assets/models/models.json records each model's bounds (so the game can fit
   it to a tile), triangle count and clip names, and with --yaw the turn that
   makes its front face +Z (the game's forward).
 
-Only the Python standard library and Pillow are needed.
+Pillow is needed, and numpy for --team-mask.
 """
 
 import argparse
@@ -137,6 +139,8 @@ def process_textures(model, size, lossless_base=False):
             pbr["metallicFactor"] = 0.0
             pbr["roughnessFactor"] = 0.85
         m.pop("occlusionTexture", None)
+        # The engine lights glTF models by their vertex normals and doesn't read normal maps
+        m.pop("normalTexture", None)
 
     alpha = any(m.get("alphaMode", "OPAQUE") != "OPAQUE" for m in g.get("materials", []))
     roles = texture_roles(g)
@@ -174,6 +178,173 @@ def process_textures(model, size, lossless_base=False):
         image["mimeType"] = mime
         image.pop("uri", None)
         done[source] = True
+
+
+# ------------------------------------------------------------------
+# Team colours
+# ------------------------------------------------------------------
+
+def read_accessor(model, index):
+    """An accessor's values as a numpy array (rows of components)."""
+    import numpy as np
+    g = model.g
+    acc = g["accessors"][index]
+    view = g["bufferViews"][acc["bufferView"]]
+    comps = {"SCALAR": 1, "VEC2": 2, "VEC3": 3, "VEC4": 4}[acc["type"]]
+    dtype = {5121: np.uint8, 5123: np.uint16, 5125: np.uint32, 5126: np.float32}[acc["componentType"]]
+    item = np.dtype(dtype).itemsize
+    stride = view.get("byteStride", item * comps)
+    blob = model.blobs[acc["bufferView"]]
+    off = acc.get("byteOffset", 0)
+    rows = np.ndarray((acc["count"], comps), dtype=dtype, buffer=blob, offset=off, strides=(stride, item))
+    return rows.copy()
+
+
+def _shift(m, dy, dx):
+    import numpy as np
+    out = np.zeros_like(m)
+    h, w = m.shape[:2]
+    out[max(0, dy):h + min(0, dy), max(0, dx):w + min(0, dx)] = m[max(0, -dy):h - max(0, dy), max(0, -dx):w - max(0, dx)]
+    return out
+
+
+def _dilate(m, r):
+    import numpy as np
+    out = m.copy()
+    for d in range(1, r + 1):
+        out = out | _shift(m, 0, d) | _shift(m, 0, -d)
+    rows = out.copy()
+    for d in range(1, r + 1):
+        out = out | _shift(rows, d, 0) | _shift(rows, -d, 0)
+    return out
+
+
+def team_texture(model, mask_path):
+    """
+    Build a unit's team-colour mask once, at import, and turn its team
+    areas neutral grey. AssetFurnace's textures have no exact magenta: the
+    bake shades it (folds go dark crimson, highlights pale violet), drifts
+    and smears it, so the mask is found carefully here instead of guessed
+    at every load:
+
+    - seeds: clearly magenta texels (hue 305-335, saturation over 0.6);
+    - growth: up to 8 texels into neighbours that could be their folds and
+      highlights (hue 270-8, saturation over 0.18), and any clearly violet
+      texel anywhere (hue 280-345, saturation over 0.3);
+    - a closing (holes up to about 6 texels filled) and speck filling;
+    - per triangle, through the UV map: a triangle whose texels are at
+      least 30% team colour becomes team colour throughout, so team areas
+      follow the mesh (a tabard, a cloak) instead of the bake's smears.
+
+    Team texels become grey with a trace of their shading (the game
+    multiplies the grey by the team colour, as strategy games do with a
+    team-colour mask). Outside them, the lilac cast the magenta leaves on
+    steel is turned grey, and texels no triangle uses are filled from their
+    neighbours (edge padding), so smaller mip levels don't average dark
+    gaps into the seams. The mask is saved as a greyscale PNG (white =
+    team colour) beside the model, where it can be checked or touched up.
+    Returns True when the model has team areas.
+    """
+    import numpy as np
+    g = model.g
+    roles = texture_roles(g)
+    base_tex = next((i for i, r in roles.items() if "base" in r), None)
+    if base_tex is None:
+        return False
+    image = g["images"][g["textures"][base_tex]["source"]]
+    a = np.asarray(Image.open(io.BytesIO(model.blobs[image["bufferView"]])).convert("RGB")).astype(np.float32)
+    h, w = a.shape[:2]
+    r, gr, b = a[..., 0], a[..., 1], a[..., 2]
+    mx, mn = a.max(-1), a.min(-1)
+    delta = mx - mn
+    safe = np.maximum(delta, 1e-6)
+    sat = np.where(mx > 0, delta / np.maximum(mx, 1e-6), 0)
+    hue = np.where(mx == r, (gr - b) / safe * 60, np.where(mx == gr, (2 + (b - r) / safe) * 60, (4 + (r - gr) / safe) * 60))
+    hue = np.where(delta > 0, (hue + 360) % 360, 0)
+
+    strong = (mx >= 40) & (delta >= 30) & \
+        (np.clip(1 - (np.abs(hue - 320) - 15) / 8, 0, 1) * np.clip((sat - 0.5) / 0.12, 0, 1) > 0.5)
+    if strong.sum() < 0.002 * w * h:
+        return False
+    near = (mx >= 10) & (sat >= 0.18) & ((hue >= 270) | (hue <= 8))
+    team = strong.copy()
+    for _ in range(8):
+        team |= _dilate(team, 1) & near
+    team |= (mx >= 25) & (sat >= 0.3) & (hue >= 280) & (hue <= 345)
+    team |= ~_dilate(~_dilate(team, 3), 3)
+    for _ in range(2):
+        around = sum(_shift(team, dy, dx).astype(np.int8) for dy in (-1, 0, 1) for dx in (-1, 0, 1) if dy or dx)
+        team |= around >= 5
+
+    # Per triangle, through the UV map
+    paint = np.zeros((h, w), bool)
+    used = np.zeros((h, w), bool)
+    for mesh in g.get("meshes", []):
+        for prim in mesh.get("primitives", []):
+            mat = g.get("materials", [])[prim["material"]] if "material" in prim else None
+            ref = (mat or {}).get("pbrMetallicRoughness", {}).get("baseColorTexture")
+            if not ref or ref["index"] != base_tex:
+                continue
+            uv = read_accessor(model, prim["attributes"][f"TEXCOORD_{ref.get('texCoord', 0)}"]).astype(np.float64)
+            uv[:, 0] *= w
+            uv[:, 1] *= h
+            idx = read_accessor(model, prim["indices"]).ravel() if "indices" in prim else np.arange(len(uv))
+            for t in range(0, len(idx) - 2, 3):
+                (ax, ay), (bx, by), (cx, cy) = uv[idx[t]], uv[idx[t + 1]], uv[idx[t + 2]]
+                area = (bx - ax) * (cy - ay) - (by - ay) * (cx - ax)
+                if abs(area) < 1e-9:
+                    continue
+                x0, x1 = max(0, int(min(ax, bx, cx))), min(w - 1, int(max(ax, bx, cx)) + 1)
+                y0, y1 = max(0, int(min(ay, by, cy))), min(h - 1, int(max(ay, by, cy)) + 1)
+                ys, xs = np.mgrid[y0:y1 + 1, x0:x1 + 1]
+                px, py = xs + 0.5, ys + 0.5
+                e0 = ((bx - ax) * (py - ay) - (by - ay) * (px - ax)) / area
+                e1 = ((cx - bx) * (py - by) - (cy - by) * (px - bx)) / area
+                e2 = ((ax - cx) * (py - cy) - (ay - cy) * (px - cx)) / area
+                inside = (e0 >= -0.02) & (e1 >= -0.02) & (e2 >= -0.02)
+                if not inside.any():
+                    continue
+                cy_, cx_ = ys[inside], xs[inside]
+                used[cy_, cx_] = True
+                if team[cy_, cx_].mean() >= 0.3:
+                    paint[cy_, cx_] = True
+    if used.any():
+        team |= _dilate(paint, 1)
+        used = _dilate(used, 1)
+
+    # Team texels to grey, keeping a trace of their shading (headroom: the game multiplies by TEAM_LIFT)
+    shade = np.clip(0.8 + 0.2 * (mx / 255 / 0.55), 0.72, 1.08)
+    grey = np.clip(255 * shade / 1.08, 0, 255)
+    a[team] = grey[team][:, None]
+    # Spill: weak violet outside the team areas turns grey
+    k = np.clip((0.4 - sat) / 0.15, 0, 1) * np.clip((hue - 250) / 12, 0, 1)
+    k = np.where(~team & (mx >= 20) & (delta > 0) & (sat < 0.4) & (hue >= 250) & (hue <= 350), k, 0)
+    lum = 0.299 * a[..., 0] + 0.587 * a[..., 1] + 0.114 * a[..., 2]
+    a += (lum[..., None] - a) * k[..., None]
+    # Edge padding
+    if used.any():
+        done = used.copy()
+        for _ in range(8):
+            total = np.zeros_like(a)
+            count = np.zeros((h, w), np.float32)
+            for dy in (-1, 0, 1):
+                for dx in (-1, 0, 1):
+                    if dy or dx:
+                        sd = _shift(done, dy, dx)
+                        total += _shift(a, dy, dx) * sd[..., None]
+                        count += sd
+            fill = ~done & (count > 0)
+            if not fill.any():
+                break
+            a[fill] = total[fill] / count[fill][:, None]
+            done |= fill
+
+    buf = io.BytesIO()
+    Image.fromarray(np.clip(a + 0.5, 0, 255).astype(np.uint8), "RGB").save(buf, "PNG", optimize=True)
+    image["bufferView"] = model.add_view(buf.getvalue())
+    image["mimeType"] = "image/png"
+    Image.fromarray((team * 255).astype(np.uint8), "L").save(mask_path, optimize=True)
+    return True
 
 
 # ------------------------------------------------------------------
@@ -222,67 +393,80 @@ def merge_moves(model, moves):
     return added
 
 
-def smooth_normals(model, passes):
+def smooth_normals(model, passes, max_angle=60.0):
     """
-    Smooth the vertex normals: the generated meshes are slightly bumpy, and
-    the engine lights models by their vertex normals (it doesn't read glTF
-    normal maps), so side-on to the sun the bumps showed as dark scribbles
-    across cloth and plate. Vertices are welded by position, then each
-    normal is averaged with its neighbours' `passes` times: the shape keeps
-    its broad shading, the noise goes.
+    Rebuild the vertex normals from the surface. The engine lights models by
+    their vertex normals (it doesn't read glTF normal maps), and AssetFurnace's
+    are noisy: across a triangle they differ by about 28 degrees on average and
+    4% point away from their own triangle, which showed as dark strokes and
+    blotches on the side facing away from the sun. Each vertex's normal becomes
+    the area-weighted average of the triangles around its position that face
+    within `max_angle` of its own triangles (like a modelling tool's auto
+    smooth), so a cloak's front and back, which share positions, don't mix.
+    Then `passes` rounds of averaging with neighbours that agree within the
+    same angle soften what's left of the bumps.
     """
+    import numpy as np
     g = model.g
+    limit = math.cos(math.radians(max_angle))
     done = set()
     for mesh in g.get("meshes", []):
         for prim in mesh.get("primitives", []):
             if "NORMAL" not in prim["attributes"] or "indices" not in prim:
                 continue
-            key = (prim["attributes"]["POSITION"], prim["attributes"]["NORMAL"], prim["indices"])
+            key = (prim["attributes"]["POSITION"], prim["indices"])
             if key in done:
                 continue
             done.add(key)
-
-            def read(acc_index, comps):
-                acc = g["accessors"][acc_index]
-                blob = model.blobs[acc["bufferView"]]
-                view = g["bufferViews"][acc["bufferView"]]
-                fmt = {5126: "f", 5125: "I", 5123: "H", 5121: "B"}[acc["componentType"]]
-                size = struct.calcsize(fmt)
-                stride = view.get("byteStride", size * comps)
-                off = acc.get("byteOffset", 0)
-                return [struct.unpack_from(f"<{comps}{fmt}", blob, off + k * stride) for k in range(acc["count"])]
-
-            pos = read(prim["attributes"]["POSITION"], 3)
-            nor = read(prim["attributes"]["NORMAL"], 3)
-            idx = [i[0] for i in read(prim["indices"], 1)]
-            group, groups = [], {}
-            for p in pos:
-                k = (round(p[0], 5), round(p[1], 5), round(p[2], 5))
-                group.append(groups.setdefault(k, len(groups)))
-            count = len(groups)
-            n = [[0.0, 0.0, 0.0] for _ in range(count)]
-            for v, gi in enumerate(group):
-                for c in range(3):
-                    n[gi][c] += nor[v][c]
-            adj = [set() for _ in range(count)]
-            for t in range(0, len(idx) - 2, 3):
-                a, b, c = group[idx[t]], group[idx[t + 1]], group[idx[t + 2]]
-                adj[a].update((b, c)); adj[b].update((a, c)); adj[c].update((a, b))
-            for _ in range(passes):
-                nxt = []
-                for gi in range(count):
-                    x, y, z = n[gi]
-                    for h in adj[gi]:
-                        x += n[h][0]; y += n[h][1]; z += n[h][2]
-                    length = math.sqrt(x * x + y * y + z * z) or 1.0
-                    nxt.append([x / length, y / length, z / length])
-                n = nxt
-            flat = [c for gi in group for c in n[gi]]
+            pos = read_accessor(model, prim["attributes"]["POSITION"]).astype(np.float64)
+            tri = read_accessor(model, prim["indices"]).ravel().astype(np.int64).reshape(-1, 3)
+            fn = np.cross(pos[tri[:, 1]] - pos[tri[:, 0]], pos[tri[:, 2]] - pos[tri[:, 0]])  # length = 2 x area
+            fu = fn / np.maximum(np.linalg.norm(fn, axis=1, keepdims=True), 1e-20)
+            # Each vertex's own direction: the triangles that use it
+            own = np.zeros_like(pos)
+            for k in range(3):
+                np.add.at(own, tri[:, k], fn)
+            own /= np.maximum(np.linalg.norm(own, axis=1, keepdims=True), 1e-20)
+            # Triangles around each position (vertices welded by position)
+            _, group = np.unique(np.round(pos, 5), axis=0, return_inverse=True)
+            group = group.ravel()
+            faces_at = [[] for _ in range(group.max() + 1)]
+            for f, (a, b, c) in enumerate(tri):
+                for v in (a, b, c):
+                    faces_at[group[v]].append(f)
+            faces_at = [np.unique(np.array(fs, dtype=np.int64)) for fs in faces_at]
+            normals = np.zeros_like(pos)
+            for v in range(len(pos)):
+                fs = faces_at[group[v]]
+                agree = fs[fu[fs] @ own[v] > limit]
+                n = fn[agree].sum(0) if len(agree) else own[v]
+                normals[v] = n / max(np.linalg.norm(n), 1e-20)
+            # Soften: average with neighbours (sharing a triangle, by position) that agree
+            if passes:
+                neighbours = [set() for _ in range(group.max() + 1)]
+                for a, b, c in tri:
+                    ga, gb, gc = group[a], group[b], group[c]
+                    neighbours[ga].update((gb, gc)); neighbours[gb].update((ga, gc)); neighbours[gc].update((ga, gb))
+                members = [[] for _ in range(group.max() + 1)]
+                for v in range(len(pos)):
+                    members[group[v]].append(v)
+                for _ in range(passes):
+                    nxt = normals.copy()
+                    for v in range(len(pos)):
+                        acc = normals[v].copy()
+                        for gq in neighbours[group[v]]:
+                            for u in members[gq]:
+                                if normals[u] @ normals[v] > limit:
+                                    acc += normals[u]
+                        nxt[v] = acc / max(np.linalg.norm(acc), 1e-20)
+                    normals = nxt
+            flat = normals.astype(np.float32).ravel().tolist()
             view = model.add_view(struct.pack(f"<{len(flat)}f", *flat))
-            g["accessors"].append({"bufferView": view, "componentType": 5126, "count": len(group), "type": "VEC3"})
+            g["accessors"].append({"bufferView": view, "componentType": 5126, "count": len(pos), "type": "VEC3"})
             new = len(g["accessors"]) - 1
+            old = prim["attributes"]["NORMAL"]
             for other in mesh.get("primitives", []):
-                if other["attributes"].get("NORMAL") == prim["attributes"]["NORMAL"]:
+                if other["attributes"].get("NORMAL") == old:
                     other["attributes"]["NORMAL"] = new
 
 
@@ -612,6 +796,7 @@ def main():
     ap.add_argument("--out", required=True, help="assets/models folder")
     ap.add_argument("--size", type=int, default=512, help="largest texture side in pixels")
     ap.add_argument("--lossless-base", action="store_true", help="keep the base colour map as PNG (units: team-colour areas)")
+    ap.add_argument("--team-mask", action="store_true", help="units: build the team-colour mask (<id>_team.png) and turn the team areas grey (see team_texture())")
     ap.add_argument("--smooth-normals", type=int, default=0, metavar="PASSES", help="smooth the vertex normals this many passes (see smooth_normals())")
     ap.add_argument("--level", action="store_true", help="props: turn the model so its base is flat (see level())")
     ap.add_argument("--yaw", type=float, help="degrees to turn the model so its front faces +Z (kept from the last import if not given)")
@@ -627,6 +812,11 @@ def main():
     clips += merge_moves(model, moves)
     if args.smooth_normals:
         smooth_normals(model, args.smooth_normals)
+    mask_file = f"{args.id}_team.png"
+    os.makedirs(args.out, exist_ok=True)
+    team = args.team_mask and team_texture(model, os.path.join(args.out, mask_file))
+    if args.team_mask and not team:
+        print("  no team-colour areas found", file=sys.stderr)
     if in_place(model, "walk"):
         print("  walk made in place (hips keep their rest x and z)", file=sys.stderr)
     remove_unused(model)
@@ -652,7 +842,8 @@ def main():
         "animations": clips,
         "skinned": bool(model.g.get("skins")),
         "bytes": os.path.getsize(out),
-        **({"yaw": round(yaw, 4)} if yaw else {})
+        **({"yaw": round(yaw, 4)} if yaw else {}),
+        **({"team": mask_file} if team else {})
     }
     tmp = index_path + ".tmp"
     with open(tmp, "w") as f:

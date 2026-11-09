@@ -439,10 +439,13 @@ Every unit, city level, building, wonder and monument has a 3D model, made for t
   they are removed. Clips play faster than recorded to match the game's quick moves.
 - **Props** (rider, catapult, boat, the three city levels, construction site, buildings, wonders, monuments): no
   rig. Props get generated levels of detail.
-- **Team colours**: the prompts for unit models ask for bright magenta areas. At load time the colour texture's
-  magenta pixels (hue about 305-335 degrees, saturated) are repainted in each player's colour, keeping their shading,
-  and each team's copy is loaded as its own model, so a type looks the same for everyone except its team colour.
-  Cities and buildings carry owner banners and discs instead.
+- **Team colours**: the prompts for unit models ask for bright magenta areas. At import they become a team-colour
+  mask (a greyscale PNG beside the model) and the areas themselves turn neutral grey; the game multiplies the grey by
+  each player's colour, for one copy of the model per team, so a type looks the same for everyone except its team
+  colour. (Matching the magenta at load time left patches: the generated textures shade and smear it.) Cities and
+  buildings carry owner banners and discs instead.
+- **Lighting**: the generated meshes' vertex normals are noisy, so units' normals are rebuilt from the surface at
+  import (averaging only triangles that face the same way).
 - **Fallback**: models load in the background after the map (units first) and swap in as they arrive. Until then,
   or with the 3D models toggle off, everything is drawn with the primitives.
 - Textures are 512 px (base colour lossless for units, so the magenta stays exact); maps the engine doesn't read

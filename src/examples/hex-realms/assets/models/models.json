@@ -20,7 +20,8 @@
 			"death"
 		],
 		"skinned": true,
-		"bytes": 1342948
+		"bytes": 1216560,
+		"team": "archer_team.png"
 	},
 	"armoury": {
 		"file": "armoury.glb",
@@ -71,8 +72,9 @@
 		"triangles": 3898,
 		"animations": [],
 		"skinned": false,
-		"bytes": 548648,
-		"yaw": 1.5708
+		"bytes": 493256,
+		"yaw": 1.5708,
+		"team": "boat_team.png"
 	},
 	"catapult": {
 		"file": "catapult.glb",
@@ -89,7 +91,8 @@
 		"triangles": 4824,
 		"animations": [],
 		"skinned": false,
-		"bytes": 776060
+		"bytes": 730732,
+		"team": "catapult_team.png"
 	},
 	"city": {
 		"file": "city.glb",
@@ -480,7 +483,8 @@
 		"triangles": 5664,
 		"animations": [],
 		"skinned": false,
-		"bytes": 845728
+		"bytes": 750960,
+		"team": "rider_team.png"
 	},
 	"sawmill": {
 		"file": "sawmill.glb",
@@ -520,7 +524,8 @@
 			"death"
 		],
 		"skinned": true,
-		"bytes": 1177260
+		"bytes": 1042748,
+		"team": "settler_team.png"
 	},
 	"smelter": {
 		"file": "smelter.glb",
@@ -560,7 +565,8 @@
 			"death"
 		],
 		"skinned": true,
-		"bytes": 1351580
+		"bytes": 1191408,
+		"team": "swordsman_team.png"
 	},
 	"toolsmith": {
 		"file": "toolsmith.glb",
@@ -668,7 +674,8 @@
 			"death"
 		],
 		"skinned": true,
-		"bytes": 1323808
+		"bytes": 1226168,
+		"team": "warrior_team.png"
 	},
 	"woodcutter": {
 		"file": "woodcutter.glb",

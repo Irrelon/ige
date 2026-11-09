@@ -11,12 +11,14 @@ import type { IgeModelLodLevel } from "@/engine/webgl/IgeModelParts";
  * Units are rigged characters with idle, walk, attack, hit and death clips;
  * cities, buildings, wonders and monuments are static props.
  *
- * Team colours: each unit model has its team-colour areas (a tabard, a
- * cloak, a sail) painted pure magenta. For every player colour in play, a
- * copy of the model is made with those areas repainted in that colour
- * (keeping their shading), so every unit of a type looks the same but each
- * team's are easy to tell apart. A model without magenta areas gets a light
- * tint in the team colour instead.
+ * Team colours, as strategy games usually do them: each unit model comes
+ * with a team-colour mask (<id>_team.png, white = team colour) and its team
+ * areas are neutral grey in its colour texture; both are made once by
+ * tools/import_model.py --team-mask from the magenta areas the model was
+ * generated with. For every player colour in play, a copy of the model is
+ * made with the masked texels set to grey x team colour, so every unit of a
+ * type looks the same but each team's are easy to tell apart. A model
+ * without a mask gets a light tint in the team colour instead.
  */
 
 export interface ModelInfo {
@@ -29,6 +31,8 @@ export interface ModelInfo {
 	bytes: number;
 	/** Turn the model this much (radians) so its front faces +Z. */
 	yaw?: number;
+	/** Its team-colour mask (a greyscale PNG beside it, white = team colour). */
+	team?: string;
 }
 
 export interface ModelFit {
@@ -111,292 +115,19 @@ function encodeGlb (json: any, bin: Uint8Array, extra: Uint8Array[], views: numb
 	return out.buffer;
 }
 
-/**
- * How strongly a pixel belongs to a magenta team-colour area (0 to 1): hue
- * 305-335 degrees (fading out over 8 degrees either side) and saturation
- * above about 0.6. The finished textures drift magenta towards a dark
- * fuchsia (most of it near 320 degrees, RGB about 141, 14, 92) and shade it;
- * darker maroon edges past 340 degrees blend into leather and wood, so they
- * are left alone. Leather, skin and wood sit at 15-35 degrees, well clear.
- */
-function magenta (r: number, g: number, b: number): number {
-	const max = Math.max(r, g, b), min = Math.min(r, g, b);
-	if (max < 40 || max - min < 30) return 0;
-	const sat = (max - min) / max;
-	const hue = hueOf(r, g, b);
-	const hueWeight = Math.max(0, Math.min(1, 1 - (Math.abs(hue - 320) - 15) / 8));
-	const satWeight = Math.max(0, Math.min(1, (sat - 0.5) / 0.12));
-	return hueWeight * satWeight;
-}
+/** The grey of team areas is stored with this much headroom (see team_texture() in tools/import_model.py). */
+const TEAM_LIFT = 1.08;
 
-function hueOf (r: number, g: number, b: number): number {
-	const max = Math.max(r, g, b), min = Math.min(r, g, b);
-	if (max === min) return 0;
-	let hue: number;
-	if (max === r) hue = ((g - b) / (max - min)) * 60;
-	else if (max === g) hue = (2 + (b - r) / (max - min)) * 60;
-	else hue = (4 + (r - g) / (max - min)) * 60;
-	return hue < 0 ? hue + 360 : hue;
-}
-
-/**
- * Could this pixel be a shaded or highlighted part of a team area? Folds
- * come out dark crimson (hue 330-360, value down to 0.1) and highlights
- * a duller violet (hue 285-315, saturation down to 0.35), outside what
- * magenta() accepts on its own. Leather, wood and skin (hue 10-40) stay out.
- */
-function nearMagenta (r: number, g: number, b: number): boolean {
-	const max = Math.max(r, g, b), min = Math.min(r, g, b);
-	if (max < 10 || (max - min) / max < 0.18) return false;
-	const hue = hueOf(r, g, b);
-	return hue >= 270 || hue <= 8;
-}
-
-/**
- * Spill suppression, as for a chroma key: the textures bake a pale lilac
- * cast from the magenta onto neighbouring metal and cloth (vambraces,
- * mail): lilac around hue 260-275 on steel that is otherwise blue-grey
- * (hue 200-240). Pixels outside the team areas that are a weak violet
- * (hue 250-350, saturation under 0.4) are turned grey, fully below 0.25
- * and from hue 262 up.
- */
-function despill (d: Uint8ClampedArray, mask: Float32Array): void {
-	for (let p = 0, i = 0; i < d.length; p++, i += 4) {
-		if (mask[p] > 0) continue;
-		const r = d[i], g = d[i + 1], b = d[i + 2];
-		const max = Math.max(r, g, b), min = Math.min(r, g, b);
-		if (max < 20 || max === min) continue;
-		const sat = (max - min) / max;
-		if (sat >= 0.4) continue;
-		const hue = hueOf(r, g, b);
-		if (hue < 250 || hue > 350) continue;
-		const k = Math.min(1, (0.4 - sat) / 0.15) * Math.min(1, (hue - 250) / 12);
-		const grey = 0.299 * r + 0.587 * g + 0.114 * b;
-		d[i] = r + (grey - r) * k;
-		d[i + 1] = g + (grey - g) * k;
-		d[i + 2] = b + (grey - b) * k;
-	}
-}
-
-/** Max filter over a square of radius r (separable): grows a binary mask by r pixels. */
-function dilate (m: Uint8Array, w: number, h: number, r: number): Uint8Array {
-	const tmp = new Uint8Array(m.length), out = new Uint8Array(m.length);
-	for (let y = 0; y < h; y++) {
-		for (let x = 0; x < w; x++) {
-			let v = 0;
-			for (let k = Math.max(0, x - r); k <= Math.min(w - 1, x + r) && !v; k++) v = m[y * w + k];
-			tmp[y * w + x] = v;
-		}
-	}
-	for (let x = 0; x < w; x++) {
-		for (let y = 0; y < h; y++) {
-			let v = 0;
-			for (let k = Math.max(0, y - r); k <= Math.min(h - 1, y + r) && !v; k++) v = tmp[k * w + x];
-			out[y * w + x] = v;
-		}
-	}
-	return out;
-}
-
-/** Min filter over a square of radius r: shrinks a binary mask by r pixels. */
-function erode (m: Uint8Array, w: number, h: number, r: number): Uint8Array {
-	const inv = new Uint8Array(m.length);
-	for (let i = 0; i < m.length; i++) inv[i] = m[i] ? 0 : 1;
-	const grown = dilate(inv, w, h, r);
-	for (let i = 0; i < m.length; i++) inv[i] = grown[i] ? 0 : 1;
-	return inv;
-}
-
-/** An accessor's values as a flat array (floats, or integer indices). */
-function accessorData (json: any, bin: Uint8Array, index: number): ArrayLike<number> & { length: number } {
-	const a = json.accessors[index];
-	const view = json.bufferViews[a.bufferView];
-	const size = ({ SCALAR: 1, VEC2: 2, VEC3: 3, VEC4: 4 } as Record<string, number>)[a.type] ?? 1;
-	const kinds: Record<number, { bytes: number; read: (dv: DataView, o: number) => number }> = {
-		5121: { bytes: 1, read: (dv, o) => dv.getUint8(o) },
-		5123: { bytes: 2, read: (dv, o) => dv.getUint16(o, true) },
-		5125: { bytes: 4, read: (dv, o) => dv.getUint32(o, true) },
-		5126: { bytes: 4, read: (dv, o) => dv.getFloat32(o, true) }
-	};
-	const kind = kinds[a.componentType];
-	const stride = view.byteStride ?? kind.bytes * size;
-	const base = (view.byteOffset ?? 0) + (a.byteOffset ?? 0);
-	const dv = new DataView(bin.buffer, bin.byteOffset, bin.byteLength);
-	const out = new Float64Array(a.count * size);
-	for (let i = 0; i < a.count; i++) {
-		for (let c = 0; c < size; c++) out[i * size + c] = kind.read(dv, base + i * stride + c * kind.bytes);
-	}
-	return out;
-}
-
-/**
- * Decide team areas per triangle, not per pixel: the bakes smear other
- * colours (straps, a backpack's shadow) into the magenta and magenta into
- * their neighbours, so a pixel mask alone leaves patches. Every triangle
- * that uses this texture looks at the texels it covers: if at least
- * TEAM_VOTE of them are team colour, all of them become team colour (plus
- * a texel around it, against seams); otherwise they are left as they are.
- * Team areas then follow the mesh, like a cloak or a tabard should.
- */
-function voteByTriangle (json: any, bin: Uint8Array, imageIndex: number, mask: Float32Array, w: number, h: number): Uint8Array {
-	const paint = new Uint8Array(w * h);
-	const used = new Uint8Array(w * h);
-	for (const mesh of json.meshes ?? []) {
-		for (const prim of mesh.primitives ?? []) {
-			const mat = json.materials?.[prim.material];
-			const tex = mat?.pbrMetallicRoughness?.baseColorTexture;
-			if (!tex || json.textures?.[tex.index]?.source !== imageIndex) continue;
-			const uvAccessor = prim.attributes?.[`TEXCOORD_${tex.texCoord ?? 0}`];
-			if (uvAccessor === undefined) continue;
-			const uv = accessorData(json, bin, uvAccessor);
-			const indices = prim.indices !== undefined ? accessorData(json, bin, prim.indices) : Array.from({ length: uv.length / 2 }, (_, i) => i);
-			for (let t = 0; t + 2 < indices.length; t += 3) {
-				const ax = uv[indices[t] * 2] * w, ay = uv[indices[t] * 2 + 1] * h;
-				const bx = uv[indices[t + 1] * 2] * w, by = uv[indices[t + 1] * 2 + 1] * h;
-				const cx = uv[indices[t + 2] * 2] * w, cy = uv[indices[t + 2] * 2 + 1] * h;
-				const area = (bx - ax) * (cy - ay) - (by - ay) * (cx - ax);
-				if (Math.abs(area) < 1e-6) continue;
-				const x0 = Math.max(0, Math.floor(Math.min(ax, bx, cx))), x1 = Math.min(w - 1, Math.ceil(Math.max(ax, bx, cx)));
-				const y0 = Math.max(0, Math.floor(Math.min(ay, by, cy))), y1 = Math.min(h - 1, Math.ceil(Math.max(ay, by, cy)));
-				const covered: number[] = [];
-				let team = 0;
-				for (let y = y0; y <= y1; y++) {
-					for (let x = x0; x <= x1; x++) {
-						const px = x + 0.5, py = y + 0.5;
-						const e0 = ((bx - ax) * (py - ay) - (by - ay) * (px - ax)) / area;
-						const e1 = ((cx - bx) * (py - by) - (cy - by) * (px - bx)) / area;
-						const e2 = ((ax - cx) * (py - cy) - (ay - cy) * (px - cx)) / area;
-						if (e0 < -0.02 || e1 < -0.02 || e2 < -0.02) continue;
-						const p = y * w + x;
-						covered.push(p);
-						used[p] = 1;
-						if (mask[p] > 0.5) team++;
-					}
-				}
-				if (!covered.length || team < covered.length * TEAM_VOTE) continue;
-				for (const p of covered) paint[p] = 1;
-			}
-		}
-	}
-	const grown = dilate(paint, w, h, 1);
-	for (let p = 0; p < w * h; p++) if (grown[p]) mask[p] = 1;
-	return dilate(used, w, h, 1);
-}
-
-/**
- * Edge padding: fill the texels no triangle uses with the colour of the
- * nearest used ones, ring by ring (up to `rings` texels out). The atlases
- * pack many small pieces with dark gaps between them, and the GPU's
- * smaller mip levels averaged those gaps into every seam, so team areas
- * looked scribbled with dark lines from a distance.
- */
-function padAtlas (d: Uint8ClampedArray, used: Uint8Array, w: number, h: number, rings: number): void {
-	const done = used.slice();
-	for (let ring = 0; ring < rings; ring++) {
-		const add: number[] = [];
-		for (let y = 0; y < h; y++) {
-			for (let x = 0; x < w; x++) {
-				const p = y * w + x;
-				if (done[p]) continue;
-				let r = 0, g = 0, b = 0, k = 0;
-				for (let dy = -1; dy <= 1; dy++) {
-					for (let dx = -1; dx <= 1; dx++) {
-						const xx = x + dx, yy = y + dy;
-						if (xx < 0 || yy < 0 || xx >= w || yy >= h) continue;
-						const q = yy * w + xx;
-						if (!done[q]) continue;
-						r += d[q * 4]; g += d[q * 4 + 1]; b += d[q * 4 + 2]; k++;
-					}
-				}
-				if (!k) continue;
-				d[p * 4] = r / k; d[p * 4 + 1] = g / k; d[p * 4 + 2] = b / k;
-				add.push(p);
-			}
-		}
-		if (!add.length) break;
-		for (const p of add) done[p] = 1;
-	}
-}
-
-/** Share of a triangle's texels that must be team colour for all of them to be. */
-const TEAM_VOTE = 0.3;
-
-/** Holes in a team area up to about twice this (pixels) across are filled. */
-const TEAM_CLOSE = 3;
-
-/** How far (pixels) a team area grows into its own shading. */
-const TEAM_GROW = 8;
-
-/**
- * The team-colour weight of every pixel: magenta() picks out the clearly
- * magenta pixels, then the area grows (up to TEAM_GROW pixels) into
- * neighbouring pixels that could be its folds and highlights, any clearly
- * violet-to-magenta pixel elsewhere joins (magenta is kept for team areas),
- * and finally specks mostly surrounded by team colour are filled (bake
- * noise). Without this, team areas kept small dark patches of the original
- * magenta and looked mottled.
- */
-function teamMask (d: Uint8ClampedArray, w: number, h: number): { weight: Float32Array; count: number } {
-	const n = w * h;
-	const weight = new Float32Array(n);
-	const dist = new Uint8Array(n).fill(255);
-	const queue = new Int32Array(n);
-	let head = 0, tail = 0, count = 0;
-	for (let p = 0; p < n; p++) {
-		weight[p] = magenta(d[p * 4], d[p * 4 + 1], d[p * 4 + 2]);
-		if (weight[p] > 0.5) {
-			count++;
-			dist[p] = 0;
-			queue[tail++] = p;
-		}
-	}
-	while (head < tail) {
-		const p = queue[head++];
-		if (dist[p] >= TEAM_GROW) continue;
-		const x = p % w, y = (p - x) / w;
-		for (let dy = -1; dy <= 1; dy++) {
-			for (let dx = -1; dx <= 1; dx++) {
-				const xx = x + dx, yy = y + dy;
-				if (xx < 0 || yy < 0 || xx >= w || yy >= h) continue;
-				const q = yy * w + xx;
-				if (dist[q] !== 255 || !nearMagenta(d[q * 4], d[q * 4 + 1], d[q * 4 + 2])) continue;
-				dist[q] = dist[p] + 1;
-				weight[q] = 1;
-				queue[tail++] = q;
-			}
-		}
-	}
-	// Magenta is kept for team areas in these models, so any clearly violet-to-magenta pixel is one,
-	// however far from the rest (patches of shaded magenta the growth didn't reach)
-	for (let p = 0; p < n; p++) {
-		if (weight[p] > 0.5) continue;
-		const r = d[p * 4], g = d[p * 4 + 1], b = d[p * 4 + 2];
-		const max = Math.max(r, g, b), min = Math.min(r, g, b);
-		if (max < 25 || (max - min) / max < 0.3) continue;
-		const hue = hueOf(r, g, b);
-		if (hue >= 280 && hue <= 345) weight[p] = 1;
-	}
-	// Close the mask: fill holes and gaps up to about 2 x TEAM_CLOSE pixels across inside team areas,
-	// whatever their colour (bake noise drifts magenta toward salmon or maroon), without moving their
-	// outer edges
-	const inside = new Uint8Array(n);
-	for (let p = 0; p < n; p++) inside[p] = weight[p] > 0.5 ? 1 : 0;
-	const closed = erode(dilate(inside, w, h, TEAM_CLOSE), w, h, TEAM_CLOSE);
-	for (let p = 0; p < n; p++) if (closed[p] && weight[p] <= 0.5) weight[p] = 1;
-	for (let pass = 0; pass < 2; pass++) {
-		const fill: number[] = [];
-		for (let y = 1; y < h - 1; y++) {
-			for (let x = 1; x < w - 1; x++) {
-				const p = y * w + x;
-				if (weight[p] > 0.5) continue;
-				let around = 0;
-				for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) if ((dx || dy) && weight[p + dy * w + dx] > 0.5) around++;
-				if (around >= 5) fill.push(p);
-			}
-		}
-		for (const p of fill) weight[p] = 1;
-	}
-	return { weight, count };
+/** An image's pixels (RGBA). */
+async function imagePixels (blob: Blob): Promise<{ data: Uint8ClampedArray; width: number; height: number; ctx: CanvasRenderingContext2D; image: ImageData }> {
+	const bitmap = await createImageBitmap(blob);
+	const canvas = document.createElement("canvas");
+	canvas.width = bitmap.width;
+	canvas.height = bitmap.height;
+	const ctx = canvas.getContext("2d") as CanvasRenderingContext2D;
+	ctx.drawImage(bitmap, 0, 0);
+	const image = ctx.getImageData(0, 0, canvas.width, canvas.height);
+	return { data: image.data, width: canvas.width, height: canvas.height, ctx, image };
 }
 
 export class ModelLibrary {
@@ -530,58 +261,48 @@ export class ModelLibrary {
 		return pending;
 	}
 
-	/** Repaint the magenta areas of a model's base colour textures in a team colour, as a new model. */
+	/** The model with its masked team areas (neutral grey) multiplied by a team colour, as a new model. */
 	protected async paint (id: string, color: string): Promise<IgeGltfModel | null> {
-		const { json, bin } = readGlb(await this.raw(id));
-		const sources = new Set<number>();
-		for (const m of json.materials ?? []) {
-			const t = m.pbrMetallicRoughness?.baseColorTexture?.index;
-			const source = t !== undefined ? json.textures?.[t]?.source : undefined;
-			if (source !== undefined) sources.add(source);
+		const info = this.infos[id];
+		if (!info?.team) return null;
+		const [{ json, bin }, mask] = await Promise.all([
+			this.raw(id).then(readGlb),
+			fetch(`${this.base}${info.team}`).then((r) => r.blob()).then(imagePixels)
+		]);
+		const source = (() => {
+			for (const m of json.materials ?? []) {
+				const t = m.pbrMetallicRoughness?.baseColorTexture?.index;
+				if (t !== undefined && json.textures?.[t]?.source !== undefined) return json.textures[t].source as number;
+			}
+			return undefined;
+		})();
+		if (source === undefined) return null;
+		const image = json.images[source];
+		const view = json.bufferViews[image.bufferView];
+		const bytes = bin.subarray(view.byteOffset ?? 0, (view.byteOffset ?? 0) + view.byteLength);
+		const tex = await imagePixels(new Blob([bytes], { type: image.mimeType ?? "image/png" }));
+		if (tex.width !== mask.width || tex.height !== mask.height) {
+			console.warn(`Team mask for ${id} doesn't match its texture`);
+			return null;
 		}
 		const [tr, tg, tb] = hexRgb(color);
-		const painted: { image: number; bytes: Uint8Array }[] = [];
-		for (const index of sources) {
-			const image = json.images[index];
-			const view = json.bufferViews[image.bufferView];
-			const bytes = bin.subarray(view.byteOffset ?? 0, (view.byteOffset ?? 0) + view.byteLength);
-			const bitmap = await createImageBitmap(new Blob([bytes], { type: image.mimeType ?? "image/png" }));
-			const canvas = document.createElement("canvas");
-			canvas.width = bitmap.width;
-			canvas.height = bitmap.height;
-			const ctx = canvas.getContext("2d") as CanvasRenderingContext2D;
-			ctx.drawImage(bitmap, 0, 0);
-			const pixels = ctx.getImageData(0, 0, canvas.width, canvas.height);
-			const d = pixels.data;
-			const { weight: mask, count } = teamMask(d, canvas.width, canvas.height);
-			if (count < (d.length / 4) * 0.002) continue;
-			const used = voteByTriangle(json, bin, index, mask, canvas.width, canvas.height);
-			for (let p = 0, i = 0; i < d.length; p++, i += 4) {
-				const weight = mask[p];
-				if (weight <= 0) continue;
-				const r = d[i], g = d[i + 1], b = d[i + 2];
-				// Keep a trace of the texel's shading, relative to the finished magenta's typical brightness
-				// (about 0.55): copied at full strength, the bake's noise showed as dark patches and
-				// scribbles in the team colour (the engine's lighting shades the model anyway)
-				const shade = Math.max(0.72, Math.min(1.08, 0.8 + 0.2 * (Math.max(r, g, b) / 255 / 0.55)));
-				d[i] = r + (tr * shade - r) * weight;
-				d[i + 1] = g + (tg * shade - g) * weight;
-				d[i + 2] = b + (tb * shade - b) * weight;
-			}
-			despill(d, mask);
-			if (used.some((v) => v)) padAtlas(d, used, canvas.width, canvas.height, 8);
-			ctx.putImageData(pixels, 0, 0);
-			const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, "image/png"));
-			if (blob) painted.push({ image: index, bytes: new Uint8Array(await blob.arrayBuffer()) });
+		const d = tex.data, m = mask.data;
+		for (let i = 0; i < d.length; i += 4) {
+			const k = m[i] / 255;
+			if (k <= 0) continue;
+			const grey = (d[i] / 255) * TEAM_LIFT;
+			d[i] += (tr * grey - d[i]) * k;
+			d[i + 1] += (tg * grey - d[i + 1]) * k;
+			d[i + 2] += (tb * grey - d[i + 2]) * k;
 		}
-		if (!painted.length) return null;
-		const blobs = painted.map((p) => p.bytes);
-		const views = appendViews(json, bin.length, blobs);
-		painted.forEach((p, i) => {
-			json.images[p.image].bufferView = views[i];
-			json.images[p.image].mimeType = "image/png";
-		});
-		const url = URL.createObjectURL(new Blob([encodeGlb(json, bin, blobs, views)], { type: "model/gltf-binary" }));
+		tex.ctx.putImageData(tex.image, 0, 0);
+		const blob = await new Promise<Blob | null>((resolve) => tex.ctx.canvas.toBlob(resolve, "image/png"));
+		if (!blob) return null;
+		const painted = new Uint8Array(await blob.arrayBuffer());
+		const views = appendViews(json, bin.length, [painted]);
+		image.bufferView = views[0];
+		image.mimeType = "image/png";
+		const url = URL.createObjectURL(new Blob([encodeGlb(json, bin, [painted], views)], { type: "model/gltf-binary" }));
 		return igeGltfLoader.load(`${url}#${id}.glb`, `hexRealms_model_${id}_${color}`);
 	}
 

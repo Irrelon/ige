@@ -139,12 +139,12 @@ they arrive. The **3D models** toggle in the menu (or `?models=0`) falls back to
   `death` clips. They walk while moving, play `attack` when they strike, `hit` when struck and survive, and `death`
   before a killed unit is removed. Idle characters hold still until selected, so an idle map costs no GPU time.
   Riders, catapults and boats are unrigged props.
-- **Team colours**: unit models are textured with bright magenta areas (cloaks, banners, trim). For each player
-  the library repaints those pixels of the colour texture in the player's colour, keeping their shading, and loads
-  the result as its own model, so every warrior looks the same and only its team colour differs. Like a chroma key:
-  the clearly magenta pixels seed each area, which then grows into its own shaded folds and highlights (dark crimson,
-  dull violet) and fills specks, and the lilac cast the magenta leaves on neighbouring metal is turned grey. A coloured disc
-  under each unit, and an owner banner or base on cities and buildings, add to it.
+- **Team colours**, as strategy games usually do them: each unit model has a team-colour mask
+  (`assets/models/<id>_team.png`, white = team colour) and its team areas are neutral grey in its colour texture. For
+  each player the library makes a copy of the model with the masked texels set to grey x the player's colour, so
+  every warrior looks the same and only its team colour differs. The masks are made once, at import, from the bright
+  magenta areas the models were generated with (see below); they can be checked or touched up in any image editor.
+  A coloured disc under each unit, and an owner banner or base on cities and buildings, add to it.
 - **Cities** use the village, town or city model for their level; unfinished buildings show the construction site.
   Buildings, wonders and monuments are static props; ports turn to face the water.
 - Props get engine-generated levels of detail (`PROP_LOD`); copies of a model are GPU-instanced.
@@ -157,9 +157,21 @@ python3 tools/import_model.py --id archer --out assets/models --lossless-base \
     --move attack=archer_attack.glb --move hit=archer_hit_react.glb --move death=archer_death.glb
 ```
 
-It merges each move file's animation into the rigged model by node name, re-encodes textures at 512 px (JPEG, or
-PNG for the base colour with `--lossless-base` so the magenta stays exact), drops maps the engine doesn't use and
-updates `models.json`. Props take `--level`: AssetFurnace builds each model from a picture taken from above at
+It merges each move file's animation into the rigged model by node name (making the walk in place: AssetFurnace's
+carries the hips forward and snaps back), re-encodes textures at 512 px (JPEG, or PNG for the base colour with
+`--lossless-base`), drops maps the engine doesn't use (metallic/roughness, occlusion, normal maps) and updates
+`models.json`. Units take two more options:
+
+- `--team-mask` builds the team-colour mask. AssetFurnace's textures have no exact magenta (the bake shades it dark
+  crimson in folds and pale violet in highlights, and smears other colours into it), so the mask starts from the
+  clearly magenta texels, grows into their folds and highlights, fills holes, and is then decided per triangle through
+  the UV map: a triangle that is mostly team colour becomes team colour throughout, so team areas follow the mesh.
+  Team texels turn grey (keeping a trace of their shading), the lilac cast left on neighbouring steel turns grey, and
+  texels no triangle uses are filled from their neighbours so smaller mip levels don't darken the seams.
+- `--smooth-normals N` rebuilds the vertex normals from the surface. The engine lights models by vertex normals and
+  AssetFurnace's are noisy (4% point away from their own triangle), which showed as dark blotches facing away from
+  the sun; each normal becomes the average of the triangles around it that face the same way (within 60 degrees, so
+  a cloak's front and back don't mix), then N rounds of averaging with agreeing neighbours. Props take `--level`: AssetFurnace builds each model from a picture taken from above at
 three-quarters, and the mesh comes out pitched by roughly that camera's angle (8-32 degrees for these buildings), so
 the importer fits a plane through the lowest points of the base and turns the model until it is flat. (Not the boat:
 a curved hull has no flat base, and it was already upright.) `--yaw` turns a model whose front doesn't face +Z. A model's id is its unit type, building id, `village`/`town`/`city`, `construction` or
