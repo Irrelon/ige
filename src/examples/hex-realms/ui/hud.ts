@@ -361,7 +361,11 @@ export class Hud {
 		const info = UNIT_TYPES[u.type];
 		const owner = sim.player(u.owner);
 		const mine = u.owner === this.me;
-		const out = [`<div class="title"><span class="swatch" style="background:${owner.color}"></span>${info.name}${u.veteran ? " &#9733;" : ""} <span class="dim">${info.shape}${mine ? "" : ` &middot; ${esc(owner.name)}`}</span></div>`];
+		// The placeholder's shape is named only while the unit is drawn as one
+		const models = this.host.models;
+		const shape = models?.enabled && models.models.has(u.type) ? "" : info.shape;
+		const whose = mine ? "" : esc(owner.name);
+		const out = [`<div class="title"><span class="swatch" style="background:${owner.color}"></span>${info.name}${u.veteran ? " &#9733;" : ""} <span class="dim">${[shape, whose].filter(Boolean).join(" &middot; ")}</span></div>`];
 		out.push(`<div>Health <b>${u.hp}/${u.maxHp}</b> &middot; Attack ${info.attack} &middot; Defence ${info.defence} &middot; Range ${info.range}${mine ? ` &middot; Moves ${u.moves}/${info.moves}` : ""}</div>`);
 		if (!mine) return `<section>${out.join("")}</section>`;
 		const buttons: string[] = [];
@@ -897,7 +901,7 @@ export class Hud {
 				<div>${toggle("tips", tipsEnabled(), "Advisor tips")}</div>
 				<div>${toggle("motion", h.reducedMotion, "Reduced motion (skip animations)")}</div>
 				<div>${toggle("stats", h.showStats, "Performance stats")}</div>
-				<div>${toggle("models", !!h.models?.enabled, `3D models <span class="dim small">(${h.models?.models.size ?? 0} of ${Object.keys(h.models?.infos ?? {}).length} loaded; off shows simple shapes)</span>`)}</div>
+				<div>${toggle("models", !!h.models?.enabled, `3D models <span class="dim small">(${h.models?.models.size ?? 0} loaded, the rest load when needed; off shows simple shapes)</span>`)}</div>
 			</div>`;
 	}
 

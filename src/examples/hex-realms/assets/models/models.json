@@ -1,4 +1,27 @@
 {
+	"swordsman": {
+		"file": "swordsman.glb",
+		"min": [
+			-0.316,
+			-0.4516,
+			-0.2119
+		],
+		"max": [
+			0.3592,
+			0.4528,
+			0.2829
+		],
+		"triangles": 5774,
+		"animations": [
+			"death",
+			"hit",
+			"idle",
+			"attack",
+			"walk"
+		],
+		"skinned": true,
+		"bytes": 1350000
+	},
 	"warrior": {
 		"file": "warrior.glb",
 		"min": [
