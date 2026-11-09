@@ -13,14 +13,14 @@
 		],
 		"triangles": 5944,
 		"animations": [
-			"death",
-			"hit",
 			"idle",
+			"walk",
 			"attack",
-			"walk"
+			"hit",
+			"death"
 		],
 		"skinned": true,
-		"bytes": 1341368
+		"bytes": 1342948
 	},
 	"armoury": {
 		"file": "armoury.glb",
@@ -111,19 +111,19 @@
 	"colossus": {
 		"file": "colossus.glb",
 		"min": [
-			-0.2311,
-			-0.4157,
-			-0.258
+			-0.235,
+			-0.4252,
+			-0.2819
 		],
 		"max": [
-			0.2532,
-			0.4316,
-			0.2219
+			0.2577,
+			0.4227,
+			0.2027
 		],
 		"triangles": 9490,
 		"animations": [],
 		"skinned": false,
-		"bytes": 736100
+		"bytes": 736020
 	},
 	"construction": {
 		"file": "construction.glb",
@@ -298,19 +298,19 @@
 	"hunter": {
 		"file": "hunter.glb",
 		"min": [
-			-0.4483,
-			-0.3845,
-			-0.4954
+			-0.4487,
+			-0.3773,
+			-0.4951
 		],
 		"max": [
-			0.4806,
-			0.4202,
-			0.4213
+			0.4805,
+			0.4117,
+			0.4104
 		],
 		"triangles": 3960,
 		"animations": [],
 		"skinned": false,
-		"bytes": 563060
+		"bytes": 562984
 	},
 	"imperialRoad": {
 		"file": "imperialRoad.glb",
@@ -468,19 +468,19 @@
 	"rider": {
 		"file": "rider.glb",
 		"min": [
-			-0.2931,
-			-0.3872,
-			-0.1788
+			-0.2749,
+			-0.4065,
+			-0.226
 		],
 		"max": [
-			0.3723,
-			0.3396,
-			0.4032
+			0.3304,
+			0.338,
+			0.3406
 		],
 		"triangles": 5664,
 		"animations": [],
 		"skinned": false,
-		"bytes": 845804
+		"bytes": 845728
 	},
 	"sawmill": {
 		"file": "sawmill.glb",
@@ -520,7 +520,7 @@
 			"death"
 		],
 		"skinned": true,
-		"bytes": 1093500
+		"bytes": 1177260
 	},
 	"smelter": {
 		"file": "smelter.glb",
@@ -553,14 +553,14 @@
 		],
 		"triangles": 5774,
 		"animations": [
-			"death",
-			"hit",
 			"idle",
+			"walk",
 			"attack",
-			"walk"
+			"hit",
+			"death"
 		],
 		"skinned": true,
-		"bytes": 1350000
+		"bytes": 1351580
 	},
 	"toolsmith": {
 		"file": "toolsmith.glb",
@@ -661,14 +661,14 @@
 		],
 		"triangles": 5884,
 		"animations": [
-			"death",
-			"hit",
 			"idle",
+			"walk",
 			"attack",
-			"walk"
+			"hit",
+			"death"
 		],
 		"skinned": true,
-		"bytes": 1322200
+		"bytes": 1323808
 	},
 	"woodcutter": {
 		"file": "woodcutter.glb",

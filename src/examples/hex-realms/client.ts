@@ -339,6 +339,11 @@ export class Client extends IgeBaseClass implements IgeCanInit, HudHost {
 		lightManager.addLight(this.sun);
 		if (new URLSearchParams(window.location.search).get("shadows") !== "0") {
 			this.renderer.shadowManager?.shadowPlanes(1, 9000);
+			// The bias is a fraction of the light's depth range (here 9000, so the whole map fits
+			// when zoomed out): the default 0.005 is 45 units, which lifted every shadow off its
+			// caster by about a unit's height. 0.0003 is under 3 units, still above the shadow
+			// map's texel size (0.2-1.6 units), so surfaces don't shadow themselves.
+			this.sun.shadowBias(0.0003);
 			this.renderer.enableShadows(this.sun, 4096);
 			// Terrain, cities and buildings never move: draw them into the shadow map once,
 			// and only redraw units on top each frame (?shadowcache=0 turns it off)

@@ -178,15 +178,163 @@ function despill (d: Uint8ClampedArray, mask: Float32Array): void {
 	}
 }
 
+/** Max filter over a square of radius r (separable): grows a binary mask by r pixels. */
+function dilate (m: Uint8Array, w: number, h: number, r: number): Uint8Array {
+	const tmp = new Uint8Array(m.length), out = new Uint8Array(m.length);
+	for (let y = 0; y < h; y++) {
+		for (let x = 0; x < w; x++) {
+			let v = 0;
+			for (let k = Math.max(0, x - r); k <= Math.min(w - 1, x + r) && !v; k++) v = m[y * w + k];
+			tmp[y * w + x] = v;
+		}
+	}
+	for (let x = 0; x < w; x++) {
+		for (let y = 0; y < h; y++) {
+			let v = 0;
+			for (let k = Math.max(0, y - r); k <= Math.min(h - 1, y + r) && !v; k++) v = tmp[k * w + x];
+			out[y * w + x] = v;
+		}
+	}
+	return out;
+}
+
+/** Min filter over a square of radius r: shrinks a binary mask by r pixels. */
+function erode (m: Uint8Array, w: number, h: number, r: number): Uint8Array {
+	const inv = new Uint8Array(m.length);
+	for (let i = 0; i < m.length; i++) inv[i] = m[i] ? 0 : 1;
+	const grown = dilate(inv, w, h, r);
+	for (let i = 0; i < m.length; i++) inv[i] = grown[i] ? 0 : 1;
+	return inv;
+}
+
+/** An accessor's values as a flat array (floats, or integer indices). */
+function accessorData (json: any, bin: Uint8Array, index: number): ArrayLike<number> & { length: number } {
+	const a = json.accessors[index];
+	const view = json.bufferViews[a.bufferView];
+	const size = ({ SCALAR: 1, VEC2: 2, VEC3: 3, VEC4: 4 } as Record<string, number>)[a.type] ?? 1;
+	const kinds: Record<number, { bytes: number; read: (dv: DataView, o: number) => number }> = {
+		5121: { bytes: 1, read: (dv, o) => dv.getUint8(o) },
+		5123: { bytes: 2, read: (dv, o) => dv.getUint16(o, true) },
+		5125: { bytes: 4, read: (dv, o) => dv.getUint32(o, true) },
+		5126: { bytes: 4, read: (dv, o) => dv.getFloat32(o, true) }
+	};
+	const kind = kinds[a.componentType];
+	const stride = view.byteStride ?? kind.bytes * size;
+	const base = (view.byteOffset ?? 0) + (a.byteOffset ?? 0);
+	const dv = new DataView(bin.buffer, bin.byteOffset, bin.byteLength);
+	const out = new Float64Array(a.count * size);
+	for (let i = 0; i < a.count; i++) {
+		for (let c = 0; c < size; c++) out[i * size + c] = kind.read(dv, base + i * stride + c * kind.bytes);
+	}
+	return out;
+}
+
+/**
+ * Decide team areas per triangle, not per pixel: the bakes smear other
+ * colours (straps, a backpack's shadow) into the magenta and magenta into
+ * their neighbours, so a pixel mask alone leaves patches. Every triangle
+ * that uses this texture looks at the texels it covers: if at least
+ * TEAM_VOTE of them are team colour, all of them become team colour (plus
+ * a texel around it, against seams); otherwise they are left as they are.
+ * Team areas then follow the mesh, like a cloak or a tabard should.
+ */
+function voteByTriangle (json: any, bin: Uint8Array, imageIndex: number, mask: Float32Array, w: number, h: number): Uint8Array {
+	const paint = new Uint8Array(w * h);
+	const used = new Uint8Array(w * h);
+	for (const mesh of json.meshes ?? []) {
+		for (const prim of mesh.primitives ?? []) {
+			const mat = json.materials?.[prim.material];
+			const tex = mat?.pbrMetallicRoughness?.baseColorTexture;
+			if (!tex || json.textures?.[tex.index]?.source !== imageIndex) continue;
+			const uvAccessor = prim.attributes?.[`TEXCOORD_${tex.texCoord ?? 0}`];
+			if (uvAccessor === undefined) continue;
+			const uv = accessorData(json, bin, uvAccessor);
+			const indices = prim.indices !== undefined ? accessorData(json, bin, prim.indices) : Array.from({ length: uv.length / 2 }, (_, i) => i);
+			for (let t = 0; t + 2 < indices.length; t += 3) {
+				const ax = uv[indices[t] * 2] * w, ay = uv[indices[t] * 2 + 1] * h;
+				const bx = uv[indices[t + 1] * 2] * w, by = uv[indices[t + 1] * 2 + 1] * h;
+				const cx = uv[indices[t + 2] * 2] * w, cy = uv[indices[t + 2] * 2 + 1] * h;
+				const area = (bx - ax) * (cy - ay) - (by - ay) * (cx - ax);
+				if (Math.abs(area) < 1e-6) continue;
+				const x0 = Math.max(0, Math.floor(Math.min(ax, bx, cx))), x1 = Math.min(w - 1, Math.ceil(Math.max(ax, bx, cx)));
+				const y0 = Math.max(0, Math.floor(Math.min(ay, by, cy))), y1 = Math.min(h - 1, Math.ceil(Math.max(ay, by, cy)));
+				const covered: number[] = [];
+				let team = 0;
+				for (let y = y0; y <= y1; y++) {
+					for (let x = x0; x <= x1; x++) {
+						const px = x + 0.5, py = y + 0.5;
+						const e0 = ((bx - ax) * (py - ay) - (by - ay) * (px - ax)) / area;
+						const e1 = ((cx - bx) * (py - by) - (cy - by) * (px - bx)) / area;
+						const e2 = ((ax - cx) * (py - cy) - (ay - cy) * (px - cx)) / area;
+						if (e0 < -0.02 || e1 < -0.02 || e2 < -0.02) continue;
+						const p = y * w + x;
+						covered.push(p);
+						used[p] = 1;
+						if (mask[p] > 0.5) team++;
+					}
+				}
+				if (!covered.length || team < covered.length * TEAM_VOTE) continue;
+				for (const p of covered) paint[p] = 1;
+			}
+		}
+	}
+	const grown = dilate(paint, w, h, 1);
+	for (let p = 0; p < w * h; p++) if (grown[p]) mask[p] = 1;
+	return dilate(used, w, h, 1);
+}
+
+/**
+ * Edge padding: fill the texels no triangle uses with the colour of the
+ * nearest used ones, ring by ring (up to `rings` texels out). The atlases
+ * pack many small pieces with dark gaps between them, and the GPU's
+ * smaller mip levels averaged those gaps into every seam, so team areas
+ * looked scribbled with dark lines from a distance.
+ */
+function padAtlas (d: Uint8ClampedArray, used: Uint8Array, w: number, h: number, rings: number): void {
+	const done = used.slice();
+	for (let ring = 0; ring < rings; ring++) {
+		const add: number[] = [];
+		for (let y = 0; y < h; y++) {
+			for (let x = 0; x < w; x++) {
+				const p = y * w + x;
+				if (done[p]) continue;
+				let r = 0, g = 0, b = 0, k = 0;
+				for (let dy = -1; dy <= 1; dy++) {
+					for (let dx = -1; dx <= 1; dx++) {
+						const xx = x + dx, yy = y + dy;
+						if (xx < 0 || yy < 0 || xx >= w || yy >= h) continue;
+						const q = yy * w + xx;
+						if (!done[q]) continue;
+						r += d[q * 4]; g += d[q * 4 + 1]; b += d[q * 4 + 2]; k++;
+					}
+				}
+				if (!k) continue;
+				d[p * 4] = r / k; d[p * 4 + 1] = g / k; d[p * 4 + 2] = b / k;
+				add.push(p);
+			}
+		}
+		if (!add.length) break;
+		for (const p of add) done[p] = 1;
+	}
+}
+
+/** Share of a triangle's texels that must be team colour for all of them to be. */
+const TEAM_VOTE = 0.3;
+
+/** Holes in a team area up to about twice this (pixels) across are filled. */
+const TEAM_CLOSE = 3;
+
 /** How far (pixels) a team area grows into its own shading. */
 const TEAM_GROW = 8;
 
 /**
  * The team-colour weight of every pixel: magenta() picks out the clearly
  * magenta pixels, then the area grows (up to TEAM_GROW pixels) into
- * neighbouring pixels that could be its folds and highlights, and finally
- * fills specks mostly surrounded by it (bake noise). Without this, team
- * areas kept small dark patches of the original magenta and looked mottled.
+ * neighbouring pixels that could be its folds and highlights, any clearly
+ * violet-to-magenta pixel elsewhere joins (magenta is kept for team areas),
+ * and finally specks mostly surrounded by team colour are filled (bake
+ * noise). Without this, team areas kept small dark patches of the original
+ * magenta and looked mottled.
  */
 function teamMask (d: Uint8ClampedArray, w: number, h: number): { weight: Float32Array; count: number } {
 	const n = w * h;
@@ -218,6 +366,23 @@ function teamMask (d: Uint8ClampedArray, w: number, h: number): { weight: Float3
 			}
 		}
 	}
+	// Magenta is kept for team areas in these models, so any clearly violet-to-magenta pixel is one,
+	// however far from the rest (patches of shaded magenta the growth didn't reach)
+	for (let p = 0; p < n; p++) {
+		if (weight[p] > 0.5) continue;
+		const r = d[p * 4], g = d[p * 4 + 1], b = d[p * 4 + 2];
+		const max = Math.max(r, g, b), min = Math.min(r, g, b);
+		if (max < 25 || (max - min) / max < 0.3) continue;
+		const hue = hueOf(r, g, b);
+		if (hue >= 280 && hue <= 345) weight[p] = 1;
+	}
+	// Close the mask: fill holes and gaps up to about 2 x TEAM_CLOSE pixels across inside team areas,
+	// whatever their colour (bake noise drifts magenta toward salmon or maroon), without moving their
+	// outer edges
+	const inside = new Uint8Array(n);
+	for (let p = 0; p < n; p++) inside[p] = weight[p] > 0.5 ? 1 : 0;
+	const closed = erode(dilate(inside, w, h, TEAM_CLOSE), w, h, TEAM_CLOSE);
+	for (let p = 0; p < n; p++) if (closed[p] && weight[p] <= 0.5) weight[p] = 1;
 	for (let pass = 0; pass < 2; pass++) {
 		const fill: number[] = [];
 		for (let y = 1; y < h - 1; y++) {
@@ -390,17 +555,21 @@ export class ModelLibrary {
 			const d = pixels.data;
 			const { weight: mask, count } = teamMask(d, canvas.width, canvas.height);
 			if (count < (d.length / 4) * 0.002) continue;
+			const used = voteByTriangle(json, bin, index, mask, canvas.width, canvas.height);
 			for (let p = 0, i = 0; i < d.length; p++, i += 4) {
 				const weight = mask[p];
 				if (weight <= 0) continue;
 				const r = d[i], g = d[i + 1], b = d[i + 2];
-				// Keep the texel's shading, relative to the finished magenta's typical brightness (about 0.5)
-				const shade = Math.min(1.25, Math.max(r, g, b) / 255 / 0.55);
+				// Keep a trace of the texel's shading, relative to the finished magenta's typical brightness
+				// (about 0.55): copied at full strength, the bake's noise showed as dark patches and
+				// scribbles in the team colour (the engine's lighting shades the model anyway)
+				const shade = Math.max(0.72, Math.min(1.08, 0.8 + 0.2 * (Math.max(r, g, b) / 255 / 0.55)));
 				d[i] = r + (tr * shade - r) * weight;
 				d[i + 1] = g + (tg * shade - g) * weight;
 				d[i + 2] = b + (tb * shade - b) * weight;
 			}
 			despill(d, mask);
+			if (used.some((v) => v)) padAtlas(d, used, canvas.width, canvas.height, 8);
 			ctx.putImageData(pixels, 0, 0);
 			const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, "image/png"));
 			if (blob) painted.push({ image: index, bytes: new Uint8Array(await blob.arrayBuffer()) });

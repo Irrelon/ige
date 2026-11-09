@@ -13,6 +13,8 @@ What it does to the model:
   glTF loader doesn't read.
 - Animations: each --move file's clips are merged into the model, matched to
   its bones by node name, and named after the move (idle, walk, attack, ...).
+  The walk is made in place: the game moves units, so the hips' forward drift
+  is taken out (only their bob is kept).
 - Props with --level are turned so their base is flat (AssetFurnace's come
   out pitched by the angle of the picture they were made from).
 - Unused images, textures and buffer views are removed.
@@ -220,6 +222,106 @@ def merge_moves(model, moves):
     return added
 
 
+def smooth_normals(model, passes):
+    """
+    Smooth the vertex normals: the generated meshes are slightly bumpy, and
+    the engine lights models by their vertex normals (it doesn't read glTF
+    normal maps), so side-on to the sun the bumps showed as dark scribbles
+    across cloth and plate. Vertices are welded by position, then each
+    normal is averaged with its neighbours' `passes` times: the shape keeps
+    its broad shading, the noise goes.
+    """
+    g = model.g
+    done = set()
+    for mesh in g.get("meshes", []):
+        for prim in mesh.get("primitives", []):
+            if "NORMAL" not in prim["attributes"] or "indices" not in prim:
+                continue
+            key = (prim["attributes"]["POSITION"], prim["attributes"]["NORMAL"], prim["indices"])
+            if key in done:
+                continue
+            done.add(key)
+
+            def read(acc_index, comps):
+                acc = g["accessors"][acc_index]
+                blob = model.blobs[acc["bufferView"]]
+                view = g["bufferViews"][acc["bufferView"]]
+                fmt = {5126: "f", 5125: "I", 5123: "H", 5121: "B"}[acc["componentType"]]
+                size = struct.calcsize(fmt)
+                stride = view.get("byteStride", size * comps)
+                off = acc.get("byteOffset", 0)
+                return [struct.unpack_from(f"<{comps}{fmt}", blob, off + k * stride) for k in range(acc["count"])]
+
+            pos = read(prim["attributes"]["POSITION"], 3)
+            nor = read(prim["attributes"]["NORMAL"], 3)
+            idx = [i[0] for i in read(prim["indices"], 1)]
+            group, groups = [], {}
+            for p in pos:
+                k = (round(p[0], 5), round(p[1], 5), round(p[2], 5))
+                group.append(groups.setdefault(k, len(groups)))
+            count = len(groups)
+            n = [[0.0, 0.0, 0.0] for _ in range(count)]
+            for v, gi in enumerate(group):
+                for c in range(3):
+                    n[gi][c] += nor[v][c]
+            adj = [set() for _ in range(count)]
+            for t in range(0, len(idx) - 2, 3):
+                a, b, c = group[idx[t]], group[idx[t + 1]], group[idx[t + 2]]
+                adj[a].update((b, c)); adj[b].update((a, c)); adj[c].update((a, b))
+            for _ in range(passes):
+                nxt = []
+                for gi in range(count):
+                    x, y, z = n[gi]
+                    for h in adj[gi]:
+                        x += n[h][0]; y += n[h][1]; z += n[h][2]
+                    length = math.sqrt(x * x + y * y + z * z) or 1.0
+                    nxt.append([x / length, y / length, z / length])
+                n = nxt
+            flat = [c for gi in group for c in n[gi]]
+            view = model.add_view(struct.pack(f"<{len(flat)}f", *flat))
+            g["accessors"].append({"bufferView": view, "componentType": 5126, "count": len(group), "type": "VEC3"})
+            new = len(g["accessors"]) - 1
+            for other in mesh.get("primitives", []):
+                if other["attributes"].get("NORMAL") == prim["attributes"]["NORMAL"]:
+                    other["attributes"]["NORMAL"] = new
+
+
+def in_place(model, clip="walk"):
+    """
+    Take the forward drift out of a clip. AssetFurnace's walk carries the
+    hips forward about 2.4 model units a cycle (more than a tile at game
+    size) and snaps back when it loops; the game moves units itself, so the
+    hips keep their rest x and z and only their bob (y) is kept.
+    """
+    g = model.g
+    joints = set(g["skins"][0]["joints"]) if g.get("skins") else set()
+    parent = {c: i for i, n in enumerate(g["nodes"]) for c in n.get("children", [])}
+    roots = [j for j in joints if parent.get(j) not in joints]
+    if not roots:
+        return False
+    root = roots[0]
+    rest = g["nodes"][root].get("translation", [0, 0, 0])
+    changed = False
+    for anim in g.get("animations", []):
+        if anim.get("name") != clip:
+            continue
+        for ch in anim["channels"]:
+            if ch["target"].get("node") != root or ch["target"]["path"] != "translation":
+                continue
+            sampler = anim["samplers"][ch["sampler"]]
+            acc = g["accessors"][sampler["output"]]
+            blob = model.blobs[acc["bufferView"]]
+            off = acc.get("byteOffset", 0)
+            values = [struct.unpack_from("<3f", blob, off + k * 12) for k in range(acc["count"])]
+            flat = [c for v in values for c in (rest[0], v[1], rest[2])]
+            view = model.add_view(struct.pack(f"<{len(flat)}f", *flat))
+            new = {"bufferView": view, "componentType": 5126, "count": acc["count"], "type": "VEC3"}
+            g["accessors"].append(new)
+            sampler["output"] = len(g["accessors"]) - 1
+            changed = True
+    return changed
+
+
 # ------------------------------------------------------------------
 # Clean-up and bounds
 # ------------------------------------------------------------------
@@ -348,6 +450,39 @@ def prop_points(model):
     return points
 
 
+def support(points):
+    """
+    How much of the footprint a model stands on: the area of the convex hull
+    of its lowest points (within 2% of its height) over the area of its
+    footprint. A pitched building touches the ground along one edge (under
+    0.08); one already standing level rests on a broad base or on several
+    feet or hooves (0.15 and up).
+    """
+    ys = [p[1] for p in points]
+    y0, y1 = min(ys), max(ys)
+    low = sorted({(round(p[0], 3), round(p[2], 3)) for p in points if p[1] < y0 + 0.02 * (y1 - y0)})
+    xs, zs = [p[0] for p in points], [p[2] for p in points]
+    foot = (max(xs) - min(xs)) * (max(zs) - min(zs))
+    if len(low) < 3 or foot <= 0:
+        return 0.0
+
+    def cross(o, a, b):
+        return (a[0] - o[0]) * (b[1] - o[1]) - (a[1] - o[1]) * (b[0] - o[0])
+
+    lower, upper = [], []
+    for p in low:
+        while len(lower) >= 2 and cross(lower[-2], lower[-1], p) <= 0:
+            lower.pop()
+        lower.append(p)
+    for p in reversed(low):
+        while len(upper) >= 2 and cross(upper[-2], upper[-1], p) <= 0:
+            upper.pop()
+        upper.append(p)
+    hull = lower[:-1] + upper[:-1]
+    area = abs(sum(hull[i][0] * hull[(i + 1) % len(hull)][1] - hull[(i + 1) % len(hull)][0] * hull[i][1] for i in range(len(hull)))) / 2
+    return area / foot
+
+
 def level(model, max_tilt=40.0):
     """
     Stand a prop level. AssetFurnace builds each model from a picture taken
@@ -362,6 +497,8 @@ def level(model, max_tilt=40.0):
     points = prop_points(model)
     if not points:
         return 0.0
+    if support(points) >= 0.12:
+        return 0.0  # already standing on a broad base (or its feet): fitting the lowest quarter would tip it
     ys = [p[1] for p in points]
     y0, y1 = min(ys), max(ys)
     xs, zs = [p[0] for p in points], [p[2] for p in points]
@@ -475,6 +612,7 @@ def main():
     ap.add_argument("--out", required=True, help="assets/models folder")
     ap.add_argument("--size", type=int, default=512, help="largest texture side in pixels")
     ap.add_argument("--lossless-base", action="store_true", help="keep the base colour map as PNG (units: team-colour areas)")
+    ap.add_argument("--smooth-normals", type=int, default=0, metavar="PASSES", help="smooth the vertex normals this many passes (see smooth_normals())")
     ap.add_argument("--level", action="store_true", help="props: turn the model so its base is flat (see level())")
     ap.add_argument("--yaw", type=float, help="degrees to turn the model so its front faces +Z (kept from the last import if not given)")
     args = ap.parse_args()
@@ -487,6 +625,10 @@ def main():
         name, _, path = spec.partition("=")
         moves.append((name, path))
     clips += merge_moves(model, moves)
+    if args.smooth_normals:
+        smooth_normals(model, args.smooth_normals)
+    if in_place(model, "walk"):
+        print("  walk made in place (hips keep their rest x and z)", file=sys.stderr)
     remove_unused(model)
     tilt = level(model) if args.level and not model.g.get("skins") else 0.0
     if tilt:

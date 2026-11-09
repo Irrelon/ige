@@ -438,6 +438,8 @@ export class WorldView {
 			body.mount(root);
 			model.mount(body);
 			base = this.part(root, UNIT_BASE, unit.owner);
+			// A ground marker: casting a shadow, it darkened (and dithered) the ground under the unit
+			base._noShadowCast = true;
 		}
 		const parts = model ? [] : UNIT_PARTS[unit.type].map((part) => this.part(root, part, unit.owner));
 		const boatModel = this.models?.create("boat", BOAT_FIT, team) ?? null;
@@ -720,6 +722,7 @@ export class WorldView {
 		if (prop) {
 			// The owner's colour as a disc around its foot
 			block(ORB, R * 0.82, R * 0.04, R * 0.82, x, y + R * 0.01, z, owner);
+			entities[entities.length - 1]._noShadowCast = true; // a ground marker, not a caster
 			const holder = new IgeEntity();
 			holder.id(this.uid(`building_${b.id}`));
 			// Ports and fisheries face the water; other buildings turn by tile so rows don't look stamped
