@@ -230,6 +230,23 @@
 		"skinned": false,
 		"bytes": 691044
 	},
+	"grandFountain": {
+		"file": "grandFountain.glb",
+		"min": [
+			-0.3512,
+			-0.3401,
+			-0.3497
+		],
+		"max": [
+			0.3534,
+			0.4503,
+			0.3583
+		],
+		"triangles": 5000,
+		"animations": [],
+		"skinned": false,
+		"bytes": 517164
+	},
 	"greatLibrary": {
 		"file": "greatLibrary.glb",
 		"min": [
@@ -485,6 +502,23 @@
 		"skinned": false,
 		"bytes": 750960,
 		"team": "rider_team.png"
+	},
+	"sageTower": {
+		"file": "sageTower.glb",
+		"min": [
+			-0.149,
+			-0.4322,
+			-0.2416
+		],
+		"max": [
+			0.153,
+			0.4394,
+			0.1452
+		],
+		"triangles": 4972,
+		"animations": [],
+		"skinned": false,
+		"bytes": 443668
 	},
 	"sawmill": {
 		"file": "sawmill.glb",
