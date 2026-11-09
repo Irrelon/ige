@@ -115,6 +115,8 @@ export class Client extends IgeBaseClass implements IgeCanInit, HudHost {
 
 	player = 0;
 	selectedUnit: number | null = null;
+	/** The unit selected when you ended your turn: your next turn picks up with it. */
+	resumeUnit: number | null = null;
 	selectedTile = -1;
 	hoverTile = -1;
 	reach?: Reach;
@@ -452,7 +454,7 @@ export class Client extends IgeBaseClass implements IgeCanInit, HudHost {
 		this.ingest(this.sim.drainEvents());
 		if (command.type === "endTurn" && this.sim.current === this.player) {
 			play("turn");
-			this.nextUnit();
+			this.startTurn();
 		}
 	}
 
@@ -545,6 +547,7 @@ export class Client extends IgeBaseClass implements IgeCanInit, HudHost {
 
 	endTurn (): void {
 		if (!this.myTurn) return;
+		this.resumeUnit = this.selectedUnit;
 		this.deselect();
 		this.command({ type: "endTurn" });
 		if (this.online) return;
@@ -569,7 +572,7 @@ export class Client extends IgeBaseClass implements IgeCanInit, HudHost {
 		this.busy = false;
 		this.saveReplay();
 		this.hud.refresh();
-		if (sim.current === this.player) this.nextUnit();
+		if (sim.current === this.player) this.startTurn();
 	}
 
 	/**
@@ -683,6 +686,22 @@ export class Client extends IgeBaseClass implements IgeCanInit, HudHost {
 			return;
 		}
 		this.selectTile(tile);
+	}
+
+	/**
+	 * Your turn begins: carry on with the unit you had selected when you ended
+	 * the last one (so the view stays where you left it), or else the first
+	 * unit that can act.
+	 */
+	startTurn (): void {
+		const keep = this.resumeUnit !== null ? this.sim.unit(this.resumeUnit) : undefined;
+		this.resumeUnit = null;
+		if (keep && keep.owner === this.player) {
+			this.selectUnit(keep.id);
+			this.centreOn(keep.tile);
+			return;
+		}
+		this.nextUnit();
 	}
 
 	/** Select the next own unit that can still act, and glide to it. */
