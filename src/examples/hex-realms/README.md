@@ -131,55 +131,61 @@ Every action, by a person or the AI, is a command applied by `Sim.apply()`. That
 ## Models
 
 The models in `assets/models/` were made for this game with AssetFurnace (text to 3D, auto-rigging and motion
-retargeting) and are listed, with their bounds, triangle counts and clips, in `assets/models/models.json`.
-`view/models.ts` loads them in the background after the map appears (units first) and the views swap them in as
-they arrive. The **3D models** toggle in the menu (or `?models=0`) falls back to the primitives.
+retargeting) and are listed, with their bounds, triangle counts and clips, in `assets/models/models.json`;
+`assets/models/thumbs/` holds a thumbnail of each, used in the research screen. `view/models.ts` loads them in the
+background after the map appears (units and cities up front, the rest the first time they are needed) and the views
+swap them in as they arrive. The **3D models** toggle in the menu (or `?models=0`) falls back to the primitives.
 
 - **Units** (warrior, archer, swordsman, settler) are rigged characters with `idle`, `walk`, `attack`, `hit` and
-  `death` clips. They walk while moving, play `attack` when they strike, `hit` when struck and survive, and `death`
-  before a killed unit is removed. Idle characters hold still until selected, so an idle map costs no GPU time.
-  Riders, catapults and boats are unrigged props.
-- **Whose a unit is** shows around the model, not in it: a ring and disc in the owner's colour under each unit,
-  and a badge above it (a shield in the owner's colour with an icon for the unit's type, its health and a bar when
-  hurt, and a star for veterans), as in Civilization. Recolouring parts of the generated textures was tried and
-  dropped: the bake shades and smears the colour into neighbouring parts (a swordsman's chainmail came out tinted).
-- **Cities** use the village, town or city model for their level; unfinished buildings show the construction site.
-  Buildings, wonders and monuments are static props; ports turn to face the water.
-- Props get engine-generated levels of detail (`PROP_LOD`); copies of a model are GPU-instanced.
+  `death` clips. They walk while moving (in place: the game moves them), play `attack` when they strike, `hit`
+  when struck and survive, and `death` before a killed unit is removed. Archers loose an arrow and catapults a
+  stone. Idle characters hold still until selected, so an idle map costs no GPU time. Riders, catapults and boats
+  are unrigged props; units at sea stand in the bow of a boat.
+- **Whose a unit is** shows around the model, not in it: a ring and disc in the owner's colour under each unit, and
+  a badge above it (a shield in the owner's colour with an icon for the unit's type, its health and a bar when hurt,
+  and a star for veterans), as in Civilization. The models are in natural colours. (Recolouring magenta areas of the
+  generated textures was tried and dropped: the bake shades and smears the colour into neighbouring parts, so a
+  swordsman's chainmail came out tinted.)
+- **Cities** use the village (levels 1-2), town (3-4) or city (5+) model; unfinished buildings show the
+  construction site. Buildings, wonders and monuments are static props; ports and fisheries face the water. Some
+  long or thin ones are drawn larger (`MODEL_GROW`).
+- Props get engine-generated levels of detail (`PROP_LOD`); copies of a model are GPU-instanced. Ground markers
+  (unit and building discs) don't cast shadows, and the sun's shadow bias is small enough that shadows start at
+  their caster's feet.
 
 To add or replace a model, run `tools/import_model.py`:
 
 ```sh
-python3 tools/import_model.py --id archer --out assets/models --lossless-base \
+python3 tools/import_model.py --id archer --out assets/models --smooth-normals 2 \
     --model archer_rigged.glb --move idle=archer_idle.glb --move walk=archer_walk.glb \
     --move attack=archer_attack.glb --move hit=archer_hit_react.glb --move death=archer_death.glb
+python3 tools/import_model.py --id farm --out assets/models --level --smooth-normals 2 --model farm.glb
 ```
 
-It merges each move file's animation into the rigged model by node name (making the walk in place: AssetFurnace's
-carries the hips forward and snaps back), re-encodes textures at 512 px (JPEG, or PNG for the base colour with
-`--lossless-base`), drops maps the engine doesn't use (metallic/roughness, occlusion, normal maps) and updates
-`models.json`. Units take two more options:
+It merges each move file's animation into the rigged model by node name, makes the walk in place (AssetFurnace's
+carries the hips forward and snaps back), re-encodes textures at 512 px, drops maps the engine doesn't use
+(metallic/roughness, occlusion, normal maps) and updates `models.json`. Options:
 
-- `--team-mask` builds the team-colour mask. AssetFurnace's textures have no exact magenta (the bake shades it dark
-  crimson in folds and pale violet in highlights, and smears other colours into it), so the mask starts from the
-  clearly magenta texels, grows into their folds and highlights, fills holes, and is then decided per triangle through
-  the UV map: a triangle that is mostly team colour becomes team colour throughout, so team areas follow the mesh.
-  Team texels turn grey (keeping a trace of their shading), the lilac cast left on neighbouring steel turns grey, and
-  texels no triangle uses are filled from their neighbours so smaller mip levels don't darken the seams.
 - `--smooth-normals N` rebuilds the vertex normals from the surface. The engine lights models by vertex normals and
-  AssetFurnace's are noisy (4% point away from their own triangle), which showed as dark blotches facing away from
-  the sun; each normal becomes the average of the triangles around it that face the same way (within 60 degrees, so
-  a cloak's front and back don't mix), then N rounds of averaging with agreeing neighbours. Props take `--level`: AssetFurnace builds each model from a picture taken from above at three-quarters, and the
-mesh comes out pitched forward by about that camera's angle (8-31 degrees here, almost purely about the X axis). A
-building's base is a flat underside, so the importer finds the dominant direction of its downward-facing triangles
-and turns the model until that faces straight down, then stands it on its base (rather than on stray lumps below a
-broad base). Characters stand on the lowest point of their idle pose. `--yaw` turns a model whose front doesn't face +Z. A model's id is its unit type, building id, `village`/`town`/`city`, `construction` or
-`boat`.
+  AssetFurnace's are noisy (4-13% point away from their own triangle), which showed as dark blotches facing away
+  from the sun; each normal becomes the average of the triangles around it that face the same way (within 60
+  degrees, so a cloak's front and back don't mix), then N rounds of averaging with agreeing neighbours.
+- `--level` (props) stands a model upright. AssetFurnace builds each model from a picture taken from above at
+  three-quarters, and the mesh comes out pitched forward by about that camera's angle (8-31 degrees, almost purely
+  about the X axis). A building's base is a flat underside, so the importer finds the dominant direction of its
+  downward-facing triangles, turns the model until that faces straight down, and stands it on its base rather than
+  on stray lumps below a broad base. (Not the boat: a curved hull has no flat base.)
+- `--yaw DEGREES` turns a model whose front doesn't face +Z (kept from the last import).
+- Characters stand on the lowest point of their idle pose (its knees bend, so the bind pose's feet sank into the
+  ground); `models.json` records it as `floor`.
+- `--team-mask` (no longer used) neutralised a model's magenta areas to grey and saved a mask of them.
 
-If a character's own clips come out wrong (AssetFurnace's retargeter sometimes leaves a rig's arms stuck out
-sideways, as it did for every settler), `tools/transfer_clips.py` copies another character's clips onto its rig:
-bones are paired by the skeleton's shape rather than by name, and each bone's rotation from its rest pose carries
-over. The settler uses the archer's clips this way.
+A model's id is its unit type, building id, `village`/`town`/`city`, `construction` or `boat`.
+
+When a character's own clips come out wrong (AssetFurnace's retargeter sometimes leaves a rig's arms raised),
+`tools/transfer_clips.py` copies another character's clips onto its rig: bones are paired by the skeleton's shape
+rather than by name, and each bone's rotation from its rest pose carries over. The warrior uses the first
+swordsman's clips this way, and the archer and settler the first archer's.
 
 ## How the map stays fast
 

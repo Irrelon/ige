@@ -438,19 +438,35 @@ Every unit, city level, building, wonder and monument has a 3D model, made for t
 3D, then auto-rigging and motion retargeting for characters) and imported with `tools/import_model.py`.
 
 - **Characters** (warrior, archer, swordsman, settler): rigged, with idle, walk, attack, hit and death clips merged
-  into one file. Moving units walk, attackers play their attack, survivors play hit, and the killed play death before
-  they are removed. Clips play faster than recorded to match the game's quick moves.
+  into one file. Moving units walk (in place), attackers play their attack, survivors play hit, and the killed play
+  death before they are removed. Clips play faster than recorded to match the game's quick moves. Where the
+  generated clips held the arms wrongly, another character's clips are transferred onto the rig.
 - **Props** (rider, catapult, boat, the three city levels, construction site, buildings, wonders, monuments): no
-  rig. Props get generated levels of detail.
+  rig; generated levels of detail. Ranged attacks fire a visible arrow or stone.
 - **Allegiance**: units keep their own (natural) colours; whose a unit is shows in a ring and disc in the owner's
   colour under it and a Civilization-style badge above it (owner's colour, unit icon, health, veteran star).
   Recolouring magenta areas of the textures was tried first and dropped: the generated textures shade and smear the
   magenta into neighbouring parts, so no mask, at load or at import, kept team colour off the chainmail beside it.
-- **Lighting**: the generated meshes' vertex normals are noisy, so units' normals are rebuilt from the surface at
-  import (averaging only triangles that face the same way).
-- **Fallback**: models load in the background after the map (units first) and swap in as they arrive. Until then,
-  or with the 3D models toggle off, everything is drawn with the primitives.
-- Textures are 512 px (base colour lossless for units, so the magenta stays exact); maps the engine doesn't read
-  (metallic/roughness as WebP, occlusion) are dropped.
-- Props are levelled on import: the generated meshes come out pitched by the angle of the picture they were made
-  from (8-32 degrees), so the importer fits a plane to each base and turns it flat.
+- **Upright and grounded**: the generated props come out pitched by the angle of the picture they were made from;
+  the importer turns each one so its flat underside faces down and stands it on its base. Characters stand on the
+  lowest point of their idle pose.
+- **Lighting**: the generated meshes' vertex normals are noisy, so every model's normals are rebuilt from the
+  surface at import (averaging only triangles that face the same way).
+- **Fallback**: models load in the background (units and cities first, others when first needed) and swap in as
+  they arrive. Until then, or with the 3D models toggle off, everything is drawn with the primitives.
+- Textures are 512 px; maps the engine doesn't read (metallic/roughness, occlusion, normal maps) are dropped.
+- **Research screen**: a thumbnail of each model (`assets/models/thumbs/`) shows what a tech unlocks.
+
+## 18. Research screen (built after the models)
+
+- Prerequisite lines run from each tech to the techs that need it (every prerequisite is one tier back): green
+  between researched techs, gold from a researched tech to one it opens, dim otherwise; hovering a tech highlights
+  its lines.
+- Clicking a tech selects it (it doesn't buy it): it and the techs it still needs are highlighted, and a line spells
+  out the order and the total cost. Each unresearched tech has its own buy button: "Buy ★12", or "Buy all 3 · ★36"
+  to research it with every missing prerequisite in order (disabled, with the shortfall, when you can't afford it).
+- A panel along the bottom shows what the selected tech unlocks: buildings, units and wonders with thumbnails of
+  their models, and abilities (embarking, trade agreements...). Hovering an item describes it; clicking it shows the
+  details (what it does and makes, where it goes, its cost, or a unit's stats).
+- A building that is locked behind a tech shows "Needs <tech>" as a link in the tile panel, which opens the
+  research screen with that tech selected.
