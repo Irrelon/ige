@@ -176,6 +176,23 @@
 		"skinned": false,
 		"bytes": 426892
 	},
+	"grandBazaar": {
+		"file": "grandBazaar.glb",
+		"min": [
+			-0.3759,
+			-0.3355,
+			-0.4147
+		],
+		"max": [
+			0.3849,
+			0.4368,
+			0.3417
+		],
+		"triangles": 9608,
+		"animations": [],
+		"skinned": false,
+		"bytes": 931452
+	},
 	"greatLibrary": {
 		"file": "greatLibrary.glb",
 		"min": [
