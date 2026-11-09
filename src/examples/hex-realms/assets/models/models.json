@@ -159,6 +159,23 @@
 		"skinned": false,
 		"bytes": 426816
 	},
+	"greatLibrary": {
+		"file": "greatLibrary.glb",
+		"min": [
+			-0.4391,
+			-0.3925,
+			-0.4988
+		],
+		"max": [
+			0.4393,
+			0.4378,
+			0.4626
+		],
+		"triangles": 9985,
+		"animations": [],
+		"skinned": false,
+		"bytes": 911224
+	},
 	"hunter": {
 		"file": "hunter.glb",
 		"min": [
