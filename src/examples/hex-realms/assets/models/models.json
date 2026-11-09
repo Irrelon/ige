@@ -1,4 +1,27 @@
 {
+	"archer": {
+		"file": "archer.glb",
+		"min": [
+			-0.2469,
+			-0.4469,
+			-0.1363
+		],
+		"max": [
+			0.2487,
+			0.4341,
+			0.1711
+		],
+		"triangles": 5944,
+		"animations": [
+			"death",
+			"hit",
+			"idle",
+			"attack",
+			"walk"
+		],
+		"skinned": true,
+		"bytes": 1341368
+	},
 	"swordsman": {
 		"file": "swordsman.glb",
 		"min": [
