@@ -32,7 +32,10 @@ const projectsPath = path.resolve(basePath, "src/examples");
 
 // Get a list of all sub-folders (projects) in the main folder
 const projects = fs.readdirSync(projectsPath).filter(item => fs.statSync(path.join(projectsPath, item)).isDirectory());
+// Each config is named after its example, so one can be built alone:
+// npx webpack --config ./config/webpack.config.cjs --config-name zombie-game
 const configArr = projects.map(project => ({
+	name: project,
 	mode: "development",
 	target: "web",
 	// Entry point: dynamically set based on project folder

@@ -8,17 +8,27 @@ import { ige } from "@/engine/instance";
 import type { IgeCanInit } from "@/types/IgeCanInit";
 import { IgeBehaviourType } from "@/enums";
 import { IgeAmbientLight, IgeDirectionalLight, IgePointLight } from "@/engine/webgl/IgeWebGlLight";
-import type { IgeGltfModel } from "@/engine/webgl/IgeGltfLoader";
 import { igeLoadAssets } from "@/engine/core/igeLoadAssets";
 import { IgeParticleSystem3d } from "@/engine/webgl/IgeParticleSystem3d";
 import { IgeDecalSystem3d } from "@/engine/webgl/IgeDecalSystem3d";
 import { IgePhysics3d, type IgePhysicsBody3d, type IgePhysicsImpact } from "@/engine/physics/IgePhysics3d";
-import type { IgeRagdoll3d, IgeRagdollPart } from "@/engine/physics/IgeRagdoll3d";
+import type { IgeRagdoll3d } from "@/engine/physics/IgeRagdoll3d";
 import type { IgePhysicsCharacter3d } from "@/engine/physics/IgePhysicsCharacter3d";
 import { IgeViewportOverlay, type IgeOverlayMarker } from "@/engine/webgl/IgeViewportOverlay";
 import { IgeGamePadAxis, IgeGamePadButton, IgeGamePadComponent } from "@/engine/components/IgeGamePadComponent";
 import { createBoxGeometry, createHospitalLobby, resolveLevelCollision, ARENA, WALL_FACES, type IgeLevelObstacle } from "./level";
 import type { IgeGeometryData3d } from "@/types/IgeGeometryData3d";
+import {
+	type CharacterAction,
+	type CharacterKind,
+	type CharacterRig,
+	createCharacterModel,
+	generatedKind,
+	PLAYER_KINDS,
+	prepareCharacter,
+	rightFistMatrix,
+	ZOMBIE_KINDS
+} from "./characters";
 
 // @ts-ignore
 window.ige = ige;
@@ -54,11 +64,6 @@ const ZOMBIE_LOD = [
 	{ screenSize: 220, ratio: 0.5 },
 	{ screenSize: 120, ratio: 0.25 }
 ];
-
-// The character model's right wrist bone. Its local -Z runs along the
-// forearm and +Y points forward while the arm hangs down, so a blade along
-// +Y reads as a sword held out in front.
-const HAND_BONE = "Skeleton_arm_joint_R__3_";
 
 // Player configuration
 const PLAYER_CONFIGS = [
@@ -100,33 +105,22 @@ const ZOMBIE_RESPAWN_TIME = 2.5;
 const HIT_FLASH_TIME = 0.15;
 const RESPAWN_INVULNERABLE_TIME = 2;
 const IDLE_AUTO_FIGHT_TIME = 2;
-const CHARACTER_SCALE = 100;
 const CHARACTER_HEIGHT = 130; // physics capsule height (world units)
-
-/**
- * Ragdoll parts for CesiumMan (world units): spine, chest, head, upper and
- * lower arms and legs. Hands, feet and the neck ride along with the part
- * above them.
- */
-const RAGDOLL_PARTS: IgeRagdollPart[] = [
-	{ bone: "Skeleton_torso_joint_1", to: "torso_joint_3", radius: 10 },
-	{ bone: "torso_joint_3", to: "Skeleton_neck_joint_2", radius: 9 },
-	{ bone: "Skeleton_neck_joint_2", length: 14, radius: 8 },
-	{ bone: "Skeleton_arm_joint_L__4_", to: "Skeleton_arm_joint_L__3_", radius: 4 },
-	{ bone: "Skeleton_arm_joint_L__3_", to: "Skeleton_arm_joint_L__2_", radius: 3.5 },
-	{ bone: "Skeleton_arm_joint_R", to: "Skeleton_arm_joint_R__2_", radius: 4 },
-	{ bone: "Skeleton_arm_joint_R__2_", to: "Skeleton_arm_joint_R__3_", radius: 3.5 },
-	{ bone: "leg_joint_L_1", to: "leg_joint_L_2", radius: 5 },
-	{ bone: "leg_joint_L_2", to: "leg_joint_L_3", radius: 4 },
-	{ bone: "leg_joint_R_1", to: "leg_joint_R_2", radius: 5 },
-	{ bone: "leg_joint_R_2", to: "leg_joint_R_3", radius: 4 }
-];
-const ZOMBIE_TINT = { r: 0.45, g: 0.62, b: 0.38, a: 1 };
-const ZOMBIE_DEAD_TINT = { r: 0.3, g: 0.36, b: 0.27, a: 1 };
+/** Corpses darken: multiplied over a stand-in's tint, or over a generated model's own colours. */
+const DEAD_SHADE = 0.6;
+/** CesiumMan's rest height between its lowest and highest joints: swords are sized for it. */
+const SWORD_RIG_HEIGHT = 1.1688;
 
 interface PlayerState {
 	index: number;
+	/** Moved, turned and given a physics body by the game. */
 	entity: IgeEntity;
+	/** The animated model, a child of entity (see createCharacterModel()). */
+	model: IgeEntity;
+	rig: CharacterRig;
+	/** The locomotion or one-off action playing, and how long a one-off has left. */
+	action?: CharacterAction;
+	actionTime: number;
 	lantern: IgePointLight;
 	health: number;
 	kills: number;
@@ -147,6 +141,10 @@ interface PlayerState {
 
 interface ZombieState {
 	entity: IgeEntity;
+	model: IgeEntity;
+	rig: CharacterRig;
+	action?: CharacterAction;
+	actionTime: number;
 	health: number;
 	speed: number;
 	attackCooldown: number;
@@ -161,6 +159,21 @@ interface ZombieState {
 	body?: IgePhysicsBody3d;
 	/** While dead, with physics: the body falls as a ragdoll. */
 	ragdoll?: IgeRagdoll3d;
+}
+
+/** A generated character in assets/characters.json (written by the import step). */
+interface CharacterListEntry {
+	id: string;
+	/** Under assets/models/. */
+	file: string;
+	role: "zombie" | "player";
+	/** Standing height in world units. */
+	height: number;
+	/** Ground speed of the walk (and run) clips at normal speed, world units per second. */
+	walkSpeed: number;
+	runSpeed?: number;
+	/** Degrees to turn the model to face +Z. */
+	yaw?: number;
 }
 
 interface DamageNumber {
@@ -180,7 +193,8 @@ export class Client extends IgeBaseClass implements IgeCanInit {
 	viewports: IgeViewport[] = [];
 	players: PlayerState[] = [];
 	zombies: ZombieState[] = [];
-	characterModel?: IgeGltfModel;
+	zombieRigs: CharacterRig[] = [];
+	playerRigs: CharacterRig[] = [];
 	obstacles: IgeLevelObstacle[] = [];
 	level?: IgeEntity;
 	/** Jolt physics (?physics=1): character capsules, the level, and crates to knock about. */
@@ -194,6 +208,7 @@ export class Client extends IgeBaseClass implements IgeCanInit {
 	overlay?: IgeViewportOverlay;
 
 	keysDown: Record<string, boolean> = {};
+	ticks = 0;
 	keysPressed: Record<string, boolean> = {};
 	totalKills = 0;
 
@@ -266,12 +281,8 @@ export class Client extends IgeBaseClass implements IgeCanInit {
 				this.createHealingPad();
 			}
 
-			this.updateStatus("Loading character model...");
-			const assets = await igeLoadAssets(
-				{ models: { characterModel: "../../assets/models/CesiumMan.glb" } },
-				{ onProgress: (done, total) => this.updateStatus(`Loading assets ${done}/${total}...`) }
-			);
-			this.characterModel = assets.models.characterModel;
+			this.updateStatus("Loading characters...");
+			await this.loadCharacters();
 
 			this.updateStatus("Spawning players and zombies...");
 			this.createEffects();
@@ -311,6 +322,78 @@ export class Client extends IgeBaseClass implements IgeCanInit {
 
 	physicsFromUrl (): boolean {
 		return new URLSearchParams(window.location.search).get("physics") === "1";
+	}
+
+	/**
+	 * Load the characters: the generated ones listed in assets/characters.json
+	 * when there are any (zombies and survivors), otherwise the CesiumMan
+	 * stand-in. ?standin=1 uses the stand-in regardless.
+	 */
+	async loadCharacters () {
+		let zombieKinds: CharacterKind[] = ZOMBIE_KINDS;
+		let playerKinds: CharacterKind[] = PLAYER_KINDS;
+		if (new URLSearchParams(window.location.search).get("standin") !== "1") {
+			const listed = await igeLoadAssets({ data: { characters: "./assets/characters.json" } }, { failOnError: false });
+			const list = (listed.data.characters as CharacterListEntry[] | undefined) || [];
+			const kinds = (role: string) => list.filter((c) => c.role === role)
+				.map((c) => ({ ...generatedKind(c.id, `./assets/models/${c.file}`, c.height, c.walkSpeed, c.runSpeed), yaw: c.yaw }));
+			if (kinds("zombie").length) zombieKinds = kinds("zombie");
+			if (kinds("player").length) playerKinds = kinds("player");
+		}
+
+		const all = [...new Set([...zombieKinds, ...playerKinds])];
+		const assets = await igeLoadAssets(
+			{ models: Object.fromEntries(all.map((kind) => [kind.id, kind.file])) },
+			{ onProgress: (done, total) => this.updateStatus(`Loading characters ${done}/${total}...`), failOnError: false }
+		);
+		const rigs = (kinds: CharacterKind[], fallback: CharacterKind[]): CharacterRig[] => {
+			const loaded = kinds.filter((kind) => assets.models[kind.id]).map((kind) => prepareCharacter(kind, assets.models[kind.id]));
+			return loaded.length || kinds === fallback ? loaded : rigs(fallback, fallback);
+		};
+		for (const failure of assets.failures) this.log(`Couldn't load ${failure.url}: ${failure.error}`, "warning");
+		if (assets.failures.length && !assets.models[ZOMBIE_KINDS[0].id]) {
+			// A generated model failed: make sure the stand-in is there to fall back on
+			Object.assign(assets.models, (await igeLoadAssets({ models: { [ZOMBIE_KINDS[0].id]: ZOMBIE_KINDS[0].file } })).models);
+		}
+		this.zombieRigs = rigs(zombieKinds, ZOMBIE_KINDS);
+		this.playerRigs = rigs(playerKinds, PLAYER_KINDS);
+	}
+
+	/**
+	 * Play a character's clip for an action, when its model has one:
+	 * locomotion (idle, walk, run) loops and only restarts when it changes;
+	 * attack, hit and death play once (actionTime counts down their length).
+	 * Returns false when the model has no clip for it.
+	 */
+	playAction (who: PlayerState | ZombieState, action: CharacterAction, speed = 1): boolean {
+		const clip = who.rig.clips[action];
+		const anim = who.model.skeletalAnimation();
+		if (!clip || !anim) return false;
+		const once = action === "attack" || action === "hit" || action === "death";
+		if (who.action !== action || once) {
+			anim.play(clip, { loop: !once, crossFadeDuration: once ? 0.08 : 0.2, speed });
+			who.action = action;
+			who.actionTime = once ? (anim.getClip(clip)?.duration ?? 0.5) / Math.max(0.1, speed) : 0;
+		} else {
+			anim.setSpeed(speed);
+		}
+		return true;
+	}
+
+	/** Walk, run or stand, unless a one-off action is still playing. */
+	playLocomotion (who: PlayerState | ZombieState, groundSpeed: number, dt: number) {
+		if (who.actionTime > 0) {
+			who.actionTime -= dt;
+			if (who.actionTime > 0) return;
+		}
+		const kind = who.rig.kind;
+		if (groundSpeed < 5) {
+			if (!this.playAction(who, "idle")) this.playAction(who, "walk", 0);
+			return;
+		}
+		const run = who.rig.clips.run && kind.runSpeed && groundSpeed > (kind.walkSpeed + kind.runSpeed) / 2;
+		if (run) this.playAction(who, "run", groundSpeed / kind.runSpeed!);
+		else this.playAction(who, "walk", groundSpeed / kind.walkSpeed);
 	}
 
 	/** An upright capsule for a character, its bottom at the entity's feet. */
@@ -469,22 +552,22 @@ export class Client extends IgeBaseClass implements IgeCanInit {
 	}
 
 	createPlayers () {
-		if (!this.scene || !this.characterModel || !this.renderer?.lightManager) return;
-		const walkClip = this.characterModel.animations?.[0]?.name;
+		if (!this.scene || !this.playerRigs.length || !this.renderer?.lightManager) return;
 
 		for (let i = 0; i < PLAYER_CONFIGS.length; i++) {
 			const config = PLAYER_CONFIGS[i];
+			const rig = this.playerRigs[i % this.playerRigs.length];
 
-			// model() sets up meshes, textures, skeleton and animation clips.
+			// The root is what moves; the model under it sets up meshes, textures,
+			// skeleton and animation clips, sized and standing on the floor
 			const entity = new IgeEntity()
 				.id(`player_${i}`)
-				.model(this.characterModel, { animation: walkClip })
 				.translateTo(config.startPos.x, 0, config.startPos.z)
-				.scaleTo(CHARACTER_SCALE, CHARACTER_SCALE, CHARACTER_SCALE)
 				.mount(this.scene);
+			const model = createCharacterModel(rig, entity).id(`player_${i}_model`);
 
 			// Heroes animate at full frame rate rather than from the crowd cache
-			entity.skeletalAnimation()?.poseCache(false);
+			model.skeletalAnimation()?.poseCache(false);
 			// Players walk with a character controller: up steps, pushing crates and zombies aside
 			const character = this.physics?.addCharacter(entity, {
 				radius: PLAYER_RADIUS,
@@ -495,7 +578,6 @@ export class Client extends IgeBaseClass implements IgeCanInit {
 				pushable: false // the horde blocks players rather than shoving them about
 			});
 
-			this.createSword(entity);
 
 			// Each player carries a lantern so they can see in the dark
 			const lantern = new IgePointLight();
@@ -510,6 +592,9 @@ export class Client extends IgeBaseClass implements IgeCanInit {
 			const player: PlayerState = {
 				index: i,
 				entity,
+				model,
+				rig,
+				actionTime: 0,
 				lantern,
 				health: PLAYER_MAX_HEALTH,
 				kills: 0,
@@ -529,22 +614,19 @@ export class Client extends IgeBaseClass implements IgeCanInit {
 	}
 
 	createZombies (count: number) {
-		if (!this.scene || !this.characterModel) return;
-		const walkClip = this.characterModel.animations?.[0]?.name;
+		if (!this.scene || !this.zombieRigs.length) return;
 		const lod = this.lodFromUrl() ? ZOMBIE_LOD : undefined;
 
 		for (let i = 0; i < count; i++) {
-			const entity = new IgeEntity()
-				.id(`zombie_${i}`)
-				.model(this.characterModel, { animation: walkClip, lod })
-				.scaleTo(CHARACTER_SCALE, CHARACTER_SCALE, CHARACTER_SCALE)
-				.mount(this.scene);
-
-			// Per-instance tint over the shared model material
-			entity.material({ color: ZOMBIE_TINT });
+			const rig = this.zombieRigs[i % this.zombieRigs.length];
+			const entity = new IgeEntity().id(`zombie_${i}`).mount(this.scene);
+			const model = createCharacterModel(rig, entity, { lod }).id(`zombie_${i}_model`);
 
 			const zombie: ZombieState = {
 				entity,
+				model,
+				rig,
+				actionTime: 0,
 				health: ZOMBIE_HEALTH,
 				speed: lerp(ZOMBIE_SPEED[0], ZOMBIE_SPEED[1], Math.random()),
 				attackCooldown: Math.random() * ZOMBIE_ATTACK_COOLDOWN,
@@ -556,12 +638,13 @@ export class Client extends IgeBaseClass implements IgeCanInit {
 				body: this.addCharacterBody(entity, ZOMBIE_RADIUS, 1000)
 			};
 
+			// Per-instance tint over the shared model material (stand-ins)
+			this.applyZombieMaterial(zombie);
+
 			// Desynchronise the walk cycles; slower zombies shamble slower
-			const state = (entity.skeletalAnimation() as any)?._activeStates?.[0];
-			if (state) {
-				state.time = Math.random() * state.clip.duration;
-				state.speed = zombie.speed / 80;
-			}
+			this.playAction(zombie, "walk", zombie.speed / rig.kind.walkSpeed);
+			const state = (model.skeletalAnimation() as any)?._activeStates?.at(-1);
+			if (state) state.time = Math.random() * state.clip.duration;
 
 			this.placeZombieAwayFromPlayers(zombie);
 			this.zombies.push(zombie);
@@ -571,13 +654,18 @@ export class Client extends IgeBaseClass implements IgeCanInit {
 	swordParts?: { blade: IgeGeometryData3d; guard: IgeGeometryData3d; grip: IgeGeometryData3d };
 
 	/**
-	 * Put a sword in a character's right hand. The sword root follows the
-	 * hand bone; its parts are ordinary children of it. Sizes are in the
-	 * character's model units (it is about 1.2 units tall), because the
-	 * sword inherits the character's scale. Every player shares the same
-	 * geometry, so the four swords draw as instanced batches.
+	 * Put a sword in a character's right fist, pointing the way it faces.
+	 * The sword root follows the hand bone (found from the rig's shape, so
+	 * any humanoid works) and placed against the pose the character is
+	 * animated to now (called once it has been animated); its parts are
+	 * ordinary children of it, sized for CesiumMan and scaled to the
+	 * character. Every player shares the same geometry, so the four swords
+	 * draw as instanced batches.
 	 */
-	createSword (owner: IgeEntity) {
+	createSword (owner: IgeEntity, rig: CharacterRig) {
+		const hand = rig.bones?.right.hand;
+		const grip = hand ? rightFistMatrix(rig, owner, rig.bones!.height / SWORD_RIG_HEIGHT) : undefined;
+		if (!hand || !grip) return;
 		const parts = this.swordParts || (this.swordParts = {
 			blade: createBoxGeometry(0.045, 0.5, 0.012, "swordBlade"),
 			guard: createBoxGeometry(0.14, 0.022, 0.035, "swordGuard"),
@@ -587,8 +675,8 @@ export class Client extends IgeBaseClass implements IgeCanInit {
 		const sword = new IgeEntity()
 			.id(`${owner.id()}_sword`)
 			.mount(owner)
-			.attachToBone(HAND_BONE)
-			.translateTo(0, 0, -0.06); // from the wrist into the fist
+			.attachToBone(hand)
+			.attachAt(grip, { pose: "current" });
 
 		const part = (geometry: IgeGeometryData3d, y: number, color: { r: number; g: number; b: number }, metallic: number, roughness: number) => {
 			const entity = new IgeEntity().translateTo(0, y, 0).mount(sword);
@@ -624,6 +712,8 @@ export class Client extends IgeBaseClass implements IgeCanInit {
 	// ------------------------------------------------------------------
 
 	tick (dt: number) {
+		// Swords go in hand once the characters have been animated (see createSword())
+		if (++this.ticks === 3) for (const player of this.players) this.createSword(player.model, player.rig);
 		for (const player of this.players) this.updatePlayer(player, dt);
 		this.rebuildGrid();
 		for (const zombie of this.zombies) this.updateZombie(zombie, dt);
@@ -695,7 +785,6 @@ export class Client extends IgeBaseClass implements IgeCanInit {
 
 		const input = this.readPlayerInput(player.index);
 		const len = Math.hypot(input.moveX, input.moveZ);
-		const anim = entity.skeletalAnimation();
 
 		// Players nobody is controlling stand their ground and fight back,
 		// so every view stays lively when fewer than four people are playing
@@ -731,10 +820,13 @@ export class Client extends IgeBaseClass implements IgeCanInit {
 			player.facingZ = input.moveZ / len;
 			// glTF models face +Z; a Y rotation of a turns +Z toward (sin a, cos a)
 			entity.rotateTo(0, Math.atan2(player.facingX, player.facingZ), 0);
-			anim?.setSpeed(1.4 * Math.min(1, len));
+			// Stand-ins without a run clip stride a little faster than their walk
+			const kind = player.rig.kind;
+			const stride = player.rig.clips.run ? PLAYER_SPEED : kind.walkSpeed * 1.4;
+			this.playLocomotion(player, stride * Math.min(1, len), dt);
 		} else {
 			player.character?.move(0, 0);
-			anim?.setSpeed(0);
+			this.playLocomotion(player, 0, dt);
 		}
 
 		// Lantern floats above the player's shoulder
@@ -747,6 +839,7 @@ export class Client extends IgeBaseClass implements IgeCanInit {
 	}
 
 	playerAttack (player: PlayerState) {
+		this.playAction(player, "attack", 1.3);
 		const px = player.entity._translate.x;
 		const pz = player.entity._translate.z;
 
@@ -762,7 +855,8 @@ export class Client extends IgeBaseClass implements IgeCanInit {
 
 		// Swing sparks in front of the player
 		// The slash starts at the sword hand
-		const hand = player.entity.bonePosition(HAND_BONE);
+		const handBone = player.rig.bones?.right.hand;
+		const hand = handBone ? player.model.bonePosition(handBone) : undefined;
 		const slashY = hand ? hand.y + 10 : 110;
 		this.slashFx?.burst(18, { x: px + player.facingX * 60, y: slashY, z: pz + player.facingZ * 60 }, {
 			x: player.facingX,
@@ -785,6 +879,7 @@ export class Client extends IgeBaseClass implements IgeCanInit {
 			zombie.knockbackX = (dx / dist) * 420;
 			zombie.knockbackZ = (dz / dist) * 420;
 			this.applyZombieMaterial(zombie);
+			if (zombie.health > 0) this.playAction(zombie, "hit", 1.5);
 
 			const hitPoint = { x: zombie.entity._translate.x, y: 110, z: zombie.entity._translate.z };
 			this.bloodFx?.burst(24, hitPoint, { x: dx / dist, y: 0.6, z: dz / dist });
@@ -894,13 +989,18 @@ export class Client extends IgeBaseClass implements IgeCanInit {
 			// The capsule gives way to a ragdoll thrown along the blow
 			zombie.body.enabled(false);
 			zombie.hitFlash = 0;
-			zombie.entity.material({ color: ZOMBIE_DEAD_TINT });
-			zombie.ragdoll = this.physics.createRagdoll(zombie.entity, {
-				parts: RAGDOLL_PARTS,
+			this.applyZombieMaterial(zombie, true);
+			// Parts default to humanoidRagdollParts(): torso, head, arms and legs found from the rig
+			zombie.ragdoll = this.physics.createRagdoll(zombie.model, {
 				layer: "corpses",
 				velocity: { x: dirX * 380, y: 160, z: dirZ * 380 }
 			});
 			zombie.respawnTimer = ZOMBIE_RESPAWN_TIME * 2;
+			return;
+		}
+		if (this.playAction(zombie, "death")) {
+			// Without physics: play the death clip, then lie there until respawning
+			this.applyZombieMaterial(zombie, true);
 			return;
 		}
 		zombie.entity.hide();
@@ -927,12 +1027,13 @@ export class Client extends IgeBaseClass implements IgeCanInit {
 			zombie.respawnTimer -= dt;
 			if (zombie.respawnTimer <= 0) {
 				if (zombie.ragdoll) {
-					// Back on its feet: walking again, driven by animation
 					zombie.ragdoll.destroy();
 					zombie.ragdoll = undefined;
-					const walkClip = this.characterModel?.animations?.[0]?.name;
-					if (walkClip) entity.skeletalAnimation()?.play(walkClip, { crossFadeDuration: 0 }).setSpeed(zombie.speed / 80);
 				}
+				// Back on its feet: walking again, driven by animation
+				zombie.action = undefined;
+				zombie.actionTime = 0;
+				this.playAction(zombie, "walk", zombie.speed / zombie.rig.kind.walkSpeed);
 				zombie.alive = true;
 				zombie.health = ZOMBIE_HEALTH;
 				zombie.hitFlash = 0;
@@ -976,6 +1077,7 @@ export class Client extends IgeBaseClass implements IgeCanInit {
 
 			if (dist < ZOMBIE_ATTACK_RANGE && zombie.attackCooldown <= 0) {
 				zombie.attackCooldown = ZOMBIE_ATTACK_COOLDOWN;
+				this.playAction(zombie, "attack");
 				this.damagePlayer(target, ZOMBIE_DAMAGE);
 			}
 
@@ -983,6 +1085,9 @@ export class Client extends IgeBaseClass implements IgeCanInit {
 				entity.rotateTo(0, Math.atan2(dx, dz), 0);
 			}
 		}
+
+		// Zombies shuffle on even while they claw (between one-off attack and hit clips)
+		this.playLocomotion(zombie, zombie.speed, dt);
 
 		// With physics the capsules push each other apart and stop at walls
 		if (zombie.body) {
@@ -1046,18 +1151,21 @@ export class Client extends IgeBaseClass implements IgeCanInit {
 		}
 	}
 
-	/** Player tint, or a red hit flash via the emissive override. */
+	/** Player colour on stand-ins (generated survivors keep their own), and a red hit flash via the emissive override. */
 	applyPlayerMaterial (player: PlayerState) {
 		const c = PLAYER_CONFIGS[player.index].color;
-		player.entity.material(player.hitFlash > 0
-			? { color: { r: c.r, g: c.g, b: c.b, a: 1 }, emissiveColor: { r: 1, g: 0.1, b: 0.1 }, emissiveIntensity: 0.9 }
-			: { color: { r: c.r, g: c.g, b: c.b, a: 1 } });
+		const color = player.rig.kind.playerTint ? { color: { r: c.r, g: c.g, b: c.b, a: 1 } } : {};
+		const flash = player.hitFlash > 0 ? { emissiveColor: { r: 1, g: 0.1, b: 0.1 }, emissiveIntensity: 0.9 } : undefined;
+		player.model.material(flash || player.rig.kind.playerTint ? { ...color, ...flash } : null);
 	}
 
-	applyZombieMaterial (zombie: ZombieState) {
-		zombie.entity.material(zombie.hitFlash > 0
-			? { color: ZOMBIE_TINT, emissiveColor: { r: 1, g: 0.15, b: 0.1 }, emissiveIntensity: 1.2 }
-			: { color: ZOMBIE_TINT });
+	/** The kind's tint (stand-ins), darker when dead, or a red hit flash. */
+	applyZombieMaterial (zombie: ZombieState, dead = false) {
+		const tint = zombie.rig.kind.tint;
+		const shade = dead ? DEAD_SHADE : 1;
+		const color = tint ? { r: tint.r * shade, g: tint.g * shade, b: tint.b * shade, a: 1 } : dead ? { r: shade, g: shade, b: shade, a: 1 } : undefined;
+		const flash = zombie.hitFlash > 0 ? { emissiveColor: { r: 1, g: 0.15, b: 0.1 }, emissiveIntensity: 1.2 } : undefined;
+		zombie.model.material(color || flash ? { ...(color ? { color } : {}), ...flash } : null);
 	}
 
 	// ------------------------------------------------------------------
