@@ -74,6 +74,23 @@
 		"skinned": false,
 		"bytes": 750600
 	},
+	"construction": {
+		"file": "construction.glb",
+		"min": [
+			-0.4566,
+			-0.3705,
+			-0.4819
+		],
+		"max": [
+			0.4591,
+			0.4395,
+			0.4224
+		],
+		"triangles": 2824,
+		"animations": [],
+		"skinned": false,
+		"bytes": 418404
+	},
 	"rider": {
 		"file": "rider.glb",
 		"min": [
