@@ -98,6 +98,16 @@
 		.tech b { display: block; }
 		.tech.done { background: #1e4a2c; border-color: #3f9a4f; opacity: 1; }
 		.tech.ready { border-color: var(--gold); }
+		.tech.focus { opacity: 1; border: 2px solid var(--gold); box-shadow: 0 0 0 3px rgba(255, 215, 106, 0.35), 0 0 16px rgba(255, 215, 106, 0.45); animation: tech-pulse 1.4s ease-in-out 3; }
+		.tech.path { opacity: 1; border: 2px dashed #7cb7ff; }
+		@keyframes tech-pulse { 50% { box-shadow: 0 0 0 6px rgba(255, 215, 106, 0.15), 0 0 24px rgba(255, 215, 106, 0.6); } }
+		.tech-note b { display: inline; }
+		.tech small.need { color: var(--gold); font-weight: 700; }
+		.tech-note { margin: -4px 0 10px; padding: 6px 10px; background: rgba(255, 215, 106, 0.1); border-left: 3px solid var(--gold); border-radius: 4px; }
+		.locked-option { display: inline-block; padding: 4px 8px; border: 1px dashed rgba(255, 255, 255, 0.22); border-radius: 6px; color: var(--dim); }
+		.locked-option small { display: block; font-size: 10px; }
+		a.tech-link { color: #7cb7ff; text-decoration: underline; cursor: pointer; }
+		a.tech-link:hover { color: var(--gold); }
 		.diplo .actions { display: flex; flex-wrap: wrap; gap: 4px; }
 		.diplo .actions button { padding: 3px 7px; font-size: 12px; }
 		.diplo tr.dead { opacity: 0.5; }

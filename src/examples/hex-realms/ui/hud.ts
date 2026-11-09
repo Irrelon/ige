@@ -109,6 +109,8 @@ export class Hud {
 	/** Online chat panel. */
 	chatOpen = false;
 	unread = 0;
+	/** The tech the research screen was opened to show (from a locked building), and what needs it. */
+	techFocus: { tech: TechId; for: string } | null = null;
 
 	constructor (host: HudHost) {
 		this.host = host;
@@ -219,6 +221,7 @@ export class Hud {
 			case "demolish": run({ type: "demolish", building: num("building") }); break;
 			case "road": run({ type: "road", tile: data.tile ? num("tile") : tile }); break;
 			case "research": run({ type: "research", tech: data.tech as TechId }); this.openModal("tech"); break;
+			case "show-tech": this.techFocus = { tech: data.tech as TechId, for: data.for ?? "" }; this.openModal("tech"); break;
 			case "war": run({ type: "declareWar", target: num("player") }); this.openModal("diplomacy"); break;
 			case "propose": run({ type: "propose", to: num("player"), kind: data.kind as DealKind, stars: data.stars ? num("stars") : 0 }); this.openModal("diplomacy"); break;
 			case "diplo-civ": this.diplo.civ = num("player"); this.diplo.resetDraft(); this.openModal("diplomacy"); break;
@@ -441,6 +444,10 @@ export class Hud {
 				out.push(`<div class="actions build">${options.map(({ type, problem }) => {
 					const info = BUILDINGS[type];
 					const cost = `&#9733;${info.stars}${Object.keys(info.materials).length ? ` + ${goodsInline(info.materials)}` : ""}`;
+					// Locked behind a technology: the reason links to it in the research screen
+					if (info.tech && !sim.hasTech(this.me, info.tech)) {
+						return `<span class="locked-option" title="${esc(info.description)}">${info.name} <small><a href="#" class="tech-link" data-action="show-tech" data-tech="${info.tech}" data-for="${esc(info.name)}" title="Show ${esc(TECHS[info.tech].name)} in the research screen">Needs ${esc(TECHS[info.tech].name)}</a></small></span>`;
+					}
 					return `<button data-action="build" data-building="${type}" title="${esc(problem ? `${problem}. ${info.description}` : info.description)}" ${problem ? "disabled" : ""}>${info.name} <small>${problem ? esc(problem) : cost}</small></button>`;
 				}).join("")}</div>`);
 			}
@@ -822,6 +829,7 @@ export class Hud {
 
 	closeModal (): void {
 		this.modal = null;
+		this.techFocus = null;
 		document.getElementById("modal")?.classList.add("hidden");
 	}
 
@@ -842,11 +850,24 @@ export class Hud {
 		}
 		el.innerHTML = `<div class="modal-box ${this.modal}"><button class="close" data-action="close-modal" aria-label="Close">&times;</button>${body}</div>`;
 		el.classList.remove("hidden");
+		if (this.modal === "tech" && this.techFocus) el.querySelector(".tech.focus")?.scrollIntoView({ block: "center" });
 	}
 
 	techModal (): string {
 		const sim = this.sim, p = sim.player(this.me);
 		const cities = sim.citiesOf(this.me).length;
+		// A tech asked for (from a locked building): it and the techs still needed before it are highlighted
+		const focus = this.techFocus?.tech;
+		const path = new Set<TechId>();
+		const walk = (t: TechId) => {
+			for (const r of TECHS[t].requires) {
+				if (!p.techs.includes(r) && !path.has(r)) {
+					path.add(r);
+					walk(r);
+				}
+			}
+		};
+		if (focus) walk(focus);
 		const tiers = [1, 2, 3, 4].map((tier) => {
 			const cards = TECH_IDS.filter((t) => TECHS[t].tier === tier).map((t) => {
 				const tech = TECHS[t];
@@ -856,11 +877,21 @@ export class Hud {
 				const wonders = WONDER_IDS.filter((w) => BUILDINGS[w].tech === t).map((w) => BUILDINGS[w].name);
 				const state = have ? "done" : ready ? (p.stars >= cost ? "ready" : "poor") : "locked";
 				const req = tech.requires.length ? `<small>Needs ${tech.requires.map((r) => TECHS[r].name).join(", ")}</small>` : "";
-				return `<button class="tech ${state}" data-action="research" data-tech="${t}" ${state === "ready" ? "" : "disabled"}><b>${tech.name}</b><small>${tech.unlocks}${wonders.length ? `; wonder: ${wonders.join(", ")}` : ""}</small>${have ? "<small>Researched</small>" : `<small>&#9733;${cost}</small>`}${have ? "" : req}</button>`;
+				const mark = t === focus ? " focus" : path.has(t) ? " path" : "";
+				const need = t === focus && this.techFocus?.for ? `<small class="need">Needed for ${esc(this.techFocus.for)}</small>` : path.has(t) ? `<small class="need">Research first</small>` : "";
+				return `<button class="tech ${state}${mark}" data-action="research" data-tech="${t}" ${state === "ready" ? "" : "disabled"}><b>${tech.name}</b><small>${tech.unlocks}${wonders.length ? `; wonder: ${wonders.join(", ")}` : ""}</small>${have ? "<small>Researched</small>" : `<small>&#9733;${cost}</small>`}${have ? "" : req}${need}</button>`;
 			});
 			return `<div class="tier"><h4>Tier ${tier}</h4>${cards.join("")}</div>`;
 		});
-		return `<h3>Research <span class="dim">${stars(p.stars)} available &middot; costs rise with your ${cities} cities</span></h3><div class="techs">${tiers.join("")}</div>`;
+		let note = "";
+		if (focus) {
+			const name = TECHS[focus].name;
+			const what = this.techFocus?.for ? `${esc(this.techFocus.for)} needs ` : "";
+			note = p.techs.includes(focus)
+				? `<div class="tech-note">${what}<b>${name}</b>: researched.</div>`
+				: `<div class="tech-note">${what}<b>${name}</b>${path.size ? `, which needs ${[...path].map((t) => `<b>${TECHS[t].name}</b>`).join(" and ")} first` : ""}.</div>`;
+		}
+		return `<h3>Research <span class="dim">${stars(p.stars)} available &middot; costs rise with your ${cities} cities</span></h3>${note}<div class="techs">${tiers.join("")}</div>`;
 	}
 
 	economyModal (): string {
