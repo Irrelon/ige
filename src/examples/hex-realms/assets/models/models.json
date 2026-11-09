@@ -363,6 +363,23 @@
 		"skinned": false,
 		"bytes": 470016
 	},
+	"observatory": {
+		"file": "observatory.glb",
+		"min": [
+			-0.2638,
+			-0.4572,
+			-0.3494
+		],
+		"max": [
+			0.2138,
+			0.45,
+			0.2149
+		],
+		"triangles": 9568,
+		"animations": [],
+		"skinned": false,
+		"bytes": 682036
+	},
 	"pasture": {
 		"file": "pasture.glb",
 		"min": [
