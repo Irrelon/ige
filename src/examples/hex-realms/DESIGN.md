@@ -178,9 +178,9 @@ number of cities. Every prerequisite is one tier back, so the research screen dr
 
 | Tier | Techs (needs; unlocks) |
 |------|------------------------|
-| 1 | Forestry (woodcutter), Mining (quarry, mine), Construction (warehouse), Farming (farm), Hunting (hunter's lodge), Fishing (fishery), Riding (pasture, rider) |
-| 2 | Sawmills (Forestry; sawmill), Smelting (Mining; smelter), Masonry (Mining, Construction; walls, Great Wall), Milling (Farming; mill), Sailing (Fishing, Forestry; port, embarking), Trade (Riding; market, trade agreements), Archery (Forestry; archer) |
-| 3 | Carpentry (Sawmills, Smelting; toolsmith), Smithing (Smelting; armoury, swordsman), Baking (Milling; bakery), Navigation (Sailing; deep ocean), Coinage (Trade, Smelting; mint), Logistics (Trade; pack animals), Diplomacy (Trade; treaties and deals) |
+| 1 | Forestry (woodcutter), Mining (quarry, mine), Construction (warehouse), Farming (farm), Hunting (hunter's lodge), Fishing (fishery), Riding (pasture, rider), Trade (market, trade agreements) |
+| 2 | Sawmills (Forestry; sawmill), Smelting (Mining; smelter), Masonry (Mining, Construction; walls, Great Wall), Milling (Farming; mill), Sailing (Fishing, Forestry; port, embarking), Archery (Forestry; archer), Logistics (Riding, Trade; pack animals), Diplomacy (Trade; treaties and deals) |
+| 3 | Carpentry (Sawmills, Smelting; toolsmith), Smithing (Smelting; armoury, swordsman), Baking (Milling; bakery), Navigation (Sailing; deep ocean), Coinage (Smelting, Diplomacy; mint) |
 | 4 | Siege (Smithing, Carpentry; catapult), Statecraft (Coinage; World Council, Council Hall), Engineering (Carpentry, Coinage; Grand Exchange) |
 
 Diplomacy gates the diplomacy screen: before it a civ can only declare war and make peace (so wars can always
