@@ -2041,6 +2041,15 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 		const camY = camera._translate.y;
 		const camZ = camera._translate.z;
 
+		// Lights for this view: those that reach what it shows, nearest first
+		if (this._lightManager) {
+			const target = (camera as any)._lookAt as { x: number; y: number; z: number } | undefined;
+			const focus = target ?? camera._translate;
+			const aspect = vpHeight > 0 ? vpWidth / vpHeight : 1;
+			const half = camera.projectionType?.() === "orthographic" ? (camera.orthoSize() as number) : 800;
+			this._lightManager.focus(focus.x, focus.y, focus.z, half * Math.hypot(1, aspect));
+		}
+
 		// Device pixels per world unit, for picking levels of detail. An
 		// orthographic view has one scale everywhere; a perspective view
 		// divides it by each item's view depth.
@@ -2589,7 +2598,7 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 			for (let i = 0; i < count; i++) {
 				const light = this._shadowCastingPointLights[i];
 				this._shadowManager.applyPointShadowUniforms(program, i, light.id(), POINT_SHADOW_TEXTURE_UNIT + i);
-				const pointLightIndex = (this._lightManager as any)._pointLights.indexOf(light);
+				const pointLightIndex = this._lightManager!.activePointLights().indexOf(light);
 				program.setUniform1i(`u_pointShadowLightIndex[${i}]`, pointLightIndex);
 			}
 		} else {

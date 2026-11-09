@@ -10,14 +10,17 @@ import {
 import type { IgeWebGlProgram } from "@/engine/webgl/IgeWebGlProgram";
 
 /**
- * Maximum number of each light type supported by the shader.
+ * Most point and spot lights the shader takes at once. Any number can be
+ * added: each view draws with the ones that matter most to it (see focus()).
  */
 const MAX_POINT_LIGHTS = 8;
 const MAX_SPOT_LIGHTS = 4;
 
 /**
  * Manages lights for WebGL rendering.
- * Tracks all active lights and provides methods to update shader uniforms.
+ * Tracks every light; before each view draws, focus() picks the point and
+ * spot lights that reach that view (nearest first, up to the shader's
+ * limits), so a level can have a light in every room and corridor.
  */
 export class IgeWebGlLightManager extends IgeBaseClass {
 	classId = "IgeWebGlLightManager";
@@ -27,6 +30,10 @@ export class IgeWebGlLightManager extends IgeBaseClass {
 	protected _directionalLights: IgeDirectionalLight[] = [];
 	protected _pointLights: IgePointLight[] = [];
 	protected _spotLights: IgeSpotLight[] = [];
+	/** The point and spot lights the current view draws with (see focus()). */
+	protected _activePoint: IgePointLight[] = [];
+	protected _activeSpot: IgeSpotLight[] = [];
+	protected _focused: boolean = false;
 
 	// Combined ambient color
 	protected _combinedAmbient: { r: number; g: number; b: number; intensity: number } = {
@@ -55,20 +62,10 @@ export class IgeWebGlLightManager extends IgeBaseClass {
 				}
 				break;
 			case IgeLightType.Point:
-				if (this._pointLights.length < MAX_POINT_LIGHTS &&
-					!this._pointLights.includes(light as IgePointLight)) {
-					this._pointLights.push(light as IgePointLight);
-				} else if (this._pointLights.length >= MAX_POINT_LIGHTS) {
-					this.log(`Maximum point lights (${MAX_POINT_LIGHTS}) reached`, "warning");
-				}
+				if (!this._pointLights.includes(light as IgePointLight)) this._pointLights.push(light as IgePointLight);
 				break;
 			case IgeLightType.Spot:
-				if (this._spotLights.length < MAX_SPOT_LIGHTS &&
-					!this._spotLights.includes(light as IgeSpotLight)) {
-					this._spotLights.push(light as IgeSpotLight);
-				} else if (this._spotLights.length >= MAX_SPOT_LIGHTS) {
-					this.log(`Maximum spot lights (${MAX_SPOT_LIGHTS}) reached`, "warning");
-				}
+				if (!this._spotLights.includes(light as IgeSpotLight)) this._spotLights.push(light as IgeSpotLight);
 				break;
 		}
 	}
@@ -138,6 +135,49 @@ export class IgeWebGlLightManager extends IgeBaseClass {
 	}
 
 	/**
+	 * Choose the point and spot lights for a view centred on (x, y, z) that
+	 * shows things within `radius` of it: lights whose range reaches that
+	 * area, nearest first, up to the shader's limits (8 point, 4 spot).
+	 * The renderer calls this before drawing each view.
+	 */
+	focus(x: number, y: number, z: number, radius: number): void {
+		this._focused = true;
+		this._activePoint = this._nearest(this._pointLights, x, y, z, radius, MAX_POINT_LIGHTS);
+		this._activeSpot = this._nearest(this._spotLights, x, y, z, radius, MAX_SPOT_LIGHTS);
+	}
+
+	/** The point lights the current view draws with. */
+	activePointLights(): IgePointLight[] {
+		return this._focused ? this._activePoint : this._pointLights.slice(0, MAX_POINT_LIGHTS);
+	}
+
+	/** The spot lights the current view draws with. */
+	activeSpotLights(): IgeSpotLight[] {
+		return this._focused ? this._activeSpot : this._spotLights.slice(0, MAX_SPOT_LIGHTS);
+	}
+
+	protected _nearest<T extends IgePointLight | IgeSpotLight>(lights: T[], x: number, y: number, z: number, radius: number, max: number): T[] {
+		if (lights.length <= max) return lights.filter((light) => this._reaches(light, x, y, z, radius) >= 0);
+		const scored: { light: T; score: number }[] = [];
+		for (const light of lights) {
+			const score = this._reaches(light, x, y, z, radius);
+			if (score >= 0) scored.push({ light, score });
+		}
+		scored.sort((a, b) => a.score - b.score);
+		return scored.slice(0, max).map((s) => s.light);
+	}
+
+	/** Distance from the light to the view's centre if its range reaches the view, else -1. Zero intensity lights don't count. */
+	protected _reaches(light: IgePointLight | IgeSpotLight, x: number, y: number, z: number, radius: number): number {
+		const data = light.getLightData();
+		if (data.intensity <= 0) return -1;
+		const p = data.position;
+		const d = Math.hypot(p.x - x, p.y - y, p.z - z);
+		const range = (data as any).range || 100;
+		return d <= range + radius ? d : -1;
+	}
+
+	/**
 	 * Apply all light uniforms to a shader program.
 	 */
 	applyLightUniforms(program: IgeWebGlProgram): void {
@@ -166,9 +206,10 @@ export class IgeWebGlLightManager extends IgeBaseClass {
 		}
 
 		// Point lights
-		program.setUniform1i("u_numPointLights", this._pointLights.length);
-		for (let i = 0; i < this._pointLights.length; i++) {
-			const light = this._pointLights[i];
+		const points = this.activePointLights();
+		program.setUniform1i("u_numPointLights", points.length);
+		for (let i = 0; i < points.length; i++) {
+			const light = points[i];
 			const data = light.getLightData();
 
 			program.setUniform3f(`u_pointLightPositions[${i}]`, data.position.x, data.position.y, data.position.z);
@@ -179,9 +220,10 @@ export class IgeWebGlLightManager extends IgeBaseClass {
 		}
 
 		// Spot lights
-		program.setUniform1i("u_numSpotLights", this._spotLights.length);
-		for (let i = 0; i < this._spotLights.length; i++) {
-			const light = this._spotLights[i];
+		const spots = this.activeSpotLights();
+		program.setUniform1i("u_numSpotLights", spots.length);
+		for (let i = 0; i < spots.length; i++) {
+			const light = spots[i];
 			const data = light.getLightData();
 
 			program.setUniform3f(`u_spotLightPositions[${i}]`, data.position.x, data.position.y, data.position.z);
@@ -234,6 +276,8 @@ export class IgeWebGlLightManager extends IgeBaseClass {
 		this._directionalLights = [];
 		this._pointLights = [];
 		this._spotLights = [];
+		this._activePoint = [];
+		this._activeSpot = [];
 		this._updateCombinedAmbient();
 	}
 }
