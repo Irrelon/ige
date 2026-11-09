@@ -160,7 +160,7 @@ export const BUILDINGS: Record<BuildingId, BuildingType> = {
 	toolsmith: { id: "toolsmith", name: "Toolsmith", tech: "carpentry", site: "land", inputs: { iron: 1, planks: 1 }, outputs: { tools: 1 }, stars: 4, materials: { planks: 2, stone: 2 }, slot: true, icon: "T", description: "Makes tools from iron and planks." },
 	armoury: { id: "armoury", name: "Armoury", tech: "smithing", site: "land", inputs: { iron: 1, coal: 1 }, outputs: { weapons: 1 }, stars: 4, materials: { planks: 2, stone: 2, tools: 1 }, slot: true, icon: "A", description: "Forges weapons for swordsmen." },
 	bakery: { id: "bakery", name: "Bakery", tech: "baking", site: "land", inputs: { flour: 1 }, outputs: { bread: 1 }, stars: 3, materials: { planks: 2, stone: 1 }, slot: true, icon: "B", description: "Bakes bread, the best food for growing cities." },
-	warehouse: { id: "warehouse", name: "Warehouse", tech: "trade", site: "land", inputs: {}, outputs: {}, stars: 3, materials: { planks: 2, stone: 2 }, slot: true, icon: "W", description: "Stores goods near where they are made and used." },
+	warehouse: { id: "warehouse", name: "Warehouse", tech: "construction", site: "land", inputs: {}, outputs: {}, stars: 3, materials: { planks: 2, stone: 2 }, slot: true, icon: "W", description: "Stores goods near where they are made and used." },
 	market: { id: "market", name: "Market", tech: "trade", site: "land", inputs: {}, outputs: {}, stars: 4, materials: { planks: 3, stone: 2 }, slot: true, icon: "$", description: "Sells goods you mark for sale for stars." },
 	port: { id: "port", name: "Port", tech: "sailing", site: "coast", inputs: {}, outputs: {}, stars: 4, materials: { planks: 3, stone: 1 }, slot: true, icon: "P", description: "Ships goods by sea: carriers sail between your ports, so cities across the water share one network." },
 	walls: { id: "walls", name: "City Walls", tech: "masonry", site: "city", inputs: {}, outputs: {}, stars: 4, materials: { stone: 4 }, slot: false, icon: "#", description: "Quadruples the defence of units in the city." },
@@ -292,8 +292,8 @@ export const VETERAN_KILLS = 3;
 // ------------------------------------------------------------------
 
 export type TechId =
-	| "forestry" | "mining" | "farming" | "hunting" | "fishing" | "archery" | "riding"
-	| "sawmills" | "smelting" | "milling" | "sailing" | "trade" | "masonry"
+	| "forestry" | "mining" | "construction" | "farming" | "hunting" | "fishing" | "riding"
+	| "sawmills" | "smelting" | "masonry" | "milling" | "sailing" | "trade" | "archery"
 	| "carpentry" | "smithing" | "baking" | "navigation" | "coinage" | "logistics"
 	| "siege" | "diplomacy" | "engineering";
 
@@ -309,25 +309,26 @@ export interface Tech {
 export const TECHS: Record<TechId, Tech> = {
 	forestry: { id: "forestry", name: "Forestry", tier: 1, requires: [], branch: "Industry", unlocks: "Woodcutter" },
 	mining: { id: "mining", name: "Mining", tier: 1, requires: [], branch: "Industry", unlocks: "Quarry, Mine" },
+	construction: { id: "construction", name: "Construction", tier: 1, requires: [], branch: "Industry", unlocks: "Warehouse" },
 	farming: { id: "farming", name: "Farming", tier: 1, requires: [], branch: "Food", unlocks: "Farm" },
 	hunting: { id: "hunting", name: "Hunting", tier: 1, requires: [], branch: "Food", unlocks: "Hunter's Lodge" },
 	fishing: { id: "fishing", name: "Fishing", tier: 1, requires: [], branch: "Sea", unlocks: "Fishery" },
-	archery: { id: "archery", name: "Archery", tier: 1, requires: [], branch: "War", unlocks: "Archer" },
 	riding: { id: "riding", name: "Riding", tier: 1, requires: [], branch: "Food", unlocks: "Pasture, Rider" },
 	sawmills: { id: "sawmills", name: "Sawmills", tier: 2, requires: ["forestry"], branch: "Industry", unlocks: "Sawmill" },
 	smelting: { id: "smelting", name: "Smelting", tier: 2, requires: ["mining"], branch: "Industry", unlocks: "Smelter" },
+	masonry: { id: "masonry", name: "Masonry", tier: 2, requires: ["mining", "construction"], branch: "War", unlocks: "City Walls" },
 	milling: { id: "milling", name: "Milling", tier: 2, requires: ["farming"], branch: "Food", unlocks: "Mill" },
-	sailing: { id: "sailing", name: "Sailing", tier: 2, requires: ["fishing"], branch: "Sea", unlocks: "Port; units can embark onto coastal water" },
-	trade: { id: "trade", name: "Trade", tier: 2, requires: [], branch: "Society", unlocks: "Warehouse, Market, trade agreements" },
-	masonry: { id: "masonry", name: "Masonry", tier: 2, requires: ["mining"], branch: "War", unlocks: "City Walls" },
+	sailing: { id: "sailing", name: "Sailing", tier: 2, requires: ["fishing", "forestry"], branch: "Sea", unlocks: "Port; units can embark onto coastal water" },
+	trade: { id: "trade", name: "Trade", tier: 2, requires: ["riding"], branch: "Society", unlocks: "Market, trade agreements" },
+	archery: { id: "archery", name: "Archery", tier: 2, requires: ["forestry"], branch: "War", unlocks: "Archer" },
 	carpentry: { id: "carpentry", name: "Carpentry", tier: 3, requires: ["sawmills", "smelting"], branch: "Industry", unlocks: "Toolsmith" },
 	smithing: { id: "smithing", name: "Smithing", tier: 3, requires: ["smelting"], branch: "War", unlocks: "Armoury, Swordsman" },
 	baking: { id: "baking", name: "Baking", tier: 3, requires: ["milling"], branch: "Food", unlocks: "Bakery" },
 	navigation: { id: "navigation", name: "Navigation", tier: 3, requires: ["sailing"], branch: "Sea", unlocks: "Units and ships can cross deep ocean" },
-	coinage: { id: "coinage", name: "Coinage", tier: 3, requires: ["trade", "mining"], branch: "Society", unlocks: "Mint" },
-	logistics: { id: "logistics", name: "Logistics", tier: 3, requires: ["trade", "riding"], branch: "Society", unlocks: "Pack animals: carriers move further and roads carry twice as much" },
+	coinage: { id: "coinage", name: "Coinage", tier: 3, requires: ["trade", "smelting"], branch: "Society", unlocks: "Mint" },
+	logistics: { id: "logistics", name: "Logistics", tier: 3, requires: ["trade"], branch: "Society", unlocks: "Pack animals: carriers move further and roads carry twice as much" },
 	siege: { id: "siege", name: "Siege", tier: 4, requires: ["smithing", "carpentry"], branch: "War", unlocks: "Catapult" },
-	diplomacy: { id: "diplomacy", name: "Diplomacy", tier: 4, requires: ["trade", "coinage"], branch: "Society", unlocks: "The World Council (diplomatic victory)" },
+	diplomacy: { id: "diplomacy", name: "Diplomacy", tier: 4, requires: ["coinage"], branch: "Society", unlocks: "The World Council (diplomatic victory)" },
 	engineering: { id: "engineering", name: "Engineering", tier: 4, requires: ["carpentry", "coinage"], branch: "Industry", unlocks: "Grand Exchange (prosperity victory)" }
 };
 

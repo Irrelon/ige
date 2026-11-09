@@ -521,20 +521,19 @@
 	"rider": {
 		"file": "rider.glb",
 		"min": [
-			-0.2758,
-			-0.4045,
-			-0.2226
+			-0.2721,
+			-0.4106,
+			-0.2647
 		],
 		"max": [
-			0.3325,
-			0.3403,
-			0.3391
+			0.3315,
+			0.4289,
+			0.3173
 		],
-		"triangles": 5664,
+		"triangles": 5988,
 		"animations": [],
 		"skinned": false,
-		"bytes": 751036,
-		"team": "rider_team.png"
+		"bytes": 557732
 	},
 	"sageTower": {
 		"file": "sageTower.glb",

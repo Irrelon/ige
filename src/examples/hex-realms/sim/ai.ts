@@ -255,7 +255,15 @@ class AiTurn {
 		if (!p.techs.includes("hunting") && !p.techs.includes("fishing")) order.unshift(this.nearDeposit(Deposit.Fish) ? "fishing" : "hunting");
 		// Then everything else, cheapest first
 		order.push(...TECH_IDS.filter((t) => !order.includes(t)).sort((a, b) => TECHS[a].tier - TECHS[b].tier));
-		for (const tech of order) {
+		// Each wanted tech's missing prerequisites come just before it (lowest tier first)
+		const planned: TechId[] = [];
+		const plan = (t: TechId): void => {
+			if (planned.includes(t) || p.techs.includes(t)) return;
+			for (const r of [...TECHS[t].requires].sort((a, b) => TECHS[a].tier - TECHS[b].tier)) plan(r);
+			planned.push(t);
+		};
+		for (const t of order) plan(t);
+		for (const tech of planned) {
 			if (p.techs.includes(tech)) continue;
 			if (!TECHS[tech].requires.every((r) => p.techs.includes(r))) continue;
 			const cost = researchCost(sim, this.p, tech);

@@ -173,15 +173,18 @@ Resource deposits are placed by map generation and shown on tiles (placeholder i
 
 ## 7. Technology (Proposal)
 
-A compact Polytopia-style tree of about 20 techs bought with stars; the cost rises with the number of cities.
+A compact Polytopia-style tree of 23 techs in four tiers, bought with stars; the cost rises with the tier and the
+number of cities. Every prerequisite is one tier back, so the research screen draws each as a line to the next column.
 
-| Branch | Techs (unlocks) |
-|--------|-----------------|
-| Industry | Forestry (woodcutter) → Sawmills → Carpentry (toolsmith); Mining (quarry, mine) → Smelting (smelter) → Smithing (armoury) |
-| Food | Farming (farm) → Milling (mill) → Baking (bakery); Hunting (hunter) → Riding (pasture, rider) |
-| Sea | Fishing (fishery) → Sailing (boat, port) → Navigation |
-| Society | Roads → Trade (market, warehouse) → Coinage (mint) → Logistics (pack animals, faster carriers) |
-| War | Archery → Masonry (walls) → Siege (catapult); Smithing also unlocks swordsmen |
+| Tier | Techs (needs; unlocks) |
+|------|------------------------|
+| 1 | Forestry (woodcutter), Mining (quarry, mine), Construction (warehouse), Farming (farm), Hunting (hunter's lodge), Fishing (fishery), Riding (pasture, rider) |
+| 2 | Sawmills (Forestry; sawmill), Smelting (Mining; smelter), Masonry (Mining, Construction; walls, Great Wall), Milling (Farming; mill), Sailing (Fishing, Forestry; port, embarking), Trade (Riding; market, trade agreements), Archery (Forestry; archer) |
+| 3 | Carpentry (Sawmills, Smelting; toolsmith), Smithing (Smelting; armoury, swordsman), Baking (Milling; bakery), Navigation (Sailing; deep ocean), Coinage (Trade, Smelting; mint), Logistics (Trade; pack animals) |
+| 4 | Siege (Smithing, Carpentry; catapult), Diplomacy (Coinage; World Council), Engineering (Carpentry, Coinage; Grand Exchange) |
+
+The AI researches any missing prerequisites of the tech it wants first. A civ's starting tech is granted whatever it
+needs (River Folk start with Trade without Riding).
 
 ## 8. Civilisations (Proposal)
 

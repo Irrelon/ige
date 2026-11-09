@@ -92,7 +92,18 @@
 		.modal-box .cols { display: grid; grid-template-columns: 1fr 1.2fr; gap: 20px; }
 		.modal-box .menu-actions { display: flex; flex-wrap: wrap; gap: 8px; margin: 8px 0; }
 		.modal-box .opts > div { margin: 6px 0; }
-		.techs { display: grid; grid-template-columns: repeat(4, minmax(170px, 1fr)); gap: 12px; }
+		.techs { position: relative; display: grid; grid-template-columns: repeat(4, minmax(170px, 1fr)); gap: 12px 44px; }
+		.tier { position: relative; z-index: 1; }
+		.tech-links { position: absolute; left: 0; top: 0; z-index: 0; pointer-events: none; overflow: visible; }
+		.tech-links path { fill: none; stroke-width: 1.6; transition: stroke 0.15s, stroke-width 0.15s; }
+		.tech-links path.locked { stroke: rgba(150, 170, 200, 0.28); }
+		.tech-links path.open { stroke: rgba(255, 215, 106, 0.7); }
+		.tech-links path.done { stroke: rgba(74, 170, 96, 0.75); }
+		.tech-links path.path { stroke: var(--gold); stroke-width: 2.6; }
+		.tech-links path.hot { stroke: #fff; stroke-width: 2.6; }
+		.techs .tech:disabled { opacity: 1; }
+		.tech.locked, .tech.poor { background: #182435; color: #7f8ea3; }
+		.tech.locked small, .tech.poor small { color: #66758a; }
 		.tier { display: flex; flex-direction: column; gap: 6px; }
 		.tech { text-align: left; }
 		.tech b { display: block; }

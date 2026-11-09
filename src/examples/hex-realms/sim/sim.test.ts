@@ -504,7 +504,7 @@ describe("markets and ports", () => {
 		const nodes = networkNodes(sim, 0);
 		expect([sim2(8, 4), sim2(9, 4), sim2(8, 3), sim2(9, 3), sim2(8, 5), sim2(9, 5)].some((t) => nodes[t] === SEA)).toBe(true);
 		// A site in the far city is supplied from the capital's store, by sea
-		give(sim, 0, "trade");
+		give(sim, 0, "construction");
 		expect(sim.apply(0, { type: "build", tile: sim2(12, 4), building: "warehouse" }).ok).toBe(true);
 		capital.store.planks = 4;
 		capital.store.stone = 4;
@@ -532,7 +532,7 @@ describe("long sea crossings", () => {
 		const at = (c: number, r: number) => r * width + c;
 		const sim = Sim.create(defaultOptions({ width, height, players: 2, humans: [0, 1], fog: "off" }), { map, starts: [at(5, 5), at(92, 9)], villages: false });
 		sim.drainEvents();
-		sim.player(0).techs.push("sailing", "trade");
+		sim.player(0).techs.push("sailing", "trade", "construction");
 		const capital = sim.citiesOf(0)[0];
 		const far = createCity(sim, 0, at(89, 5), false);
 		capital.level = 4;

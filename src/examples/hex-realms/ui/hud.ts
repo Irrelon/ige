@@ -111,6 +111,8 @@ export class Hud {
 	unread = 0;
 	/** The tech the research screen was opened to show (from a locked building), and what needs it. */
 	techFocus: { tech: TechId; for: string } | null = null;
+	/** Techs still needed before the focused one. */
+	techPath = new Set<TechId>();
 
 	constructor (host: HudHost) {
 		this.host = host;
@@ -850,7 +852,51 @@ export class Hud {
 		}
 		el.innerHTML = `<div class="modal-box ${this.modal}"><button class="close" data-action="close-modal" aria-label="Close">&times;</button>${body}</div>`;
 		el.classList.remove("hidden");
-		if (this.modal === "tech" && this.techFocus) el.querySelector(".tech.focus")?.scrollIntoView({ block: "center" });
+		if (this.modal === "tech") {
+			this.drawTechLinks(el);
+			if (this.techFocus) el.querySelector(".tech.focus")?.scrollIntoView({ block: "center" });
+		}
+	}
+
+	/**
+	 * Lines from each tech to the techs that need it, drawn behind the cards:
+	 * green between researched techs, bright from a researched tech to one it
+	 * opens, dim between techs not yet in reach, gold along the path to a tech
+	 * asked for. Hovering a card highlights its lines.
+	 */
+	drawTechLinks (root: HTMLElement): void {
+		const box = root.querySelector(".techs") as HTMLElement | null;
+		if (!box) return;
+		const p = this.sim.player(this.me);
+		const focus = this.techFocus?.tech;
+		const onPath = (t: TechId) => t === focus || this.techPath.has(t);
+		const base = box.getBoundingClientRect();
+		const rect = (t: TechId) => box.querySelector(`.tech[data-tech="${t}"]`)?.getBoundingClientRect();
+		const lines: string[] = [];
+		for (const t of TECH_IDS) {
+			const to = rect(t);
+			if (!to) continue;
+			for (const r of TECHS[t].requires) {
+				const from = rect(r);
+				if (!from) continue;
+				const x1 = from.right - base.left, y1 = from.top + from.height / 2 - base.top;
+				const x2 = to.left - base.left - 4, y2 = to.top + to.height / 2 - base.top;
+				const dx = Math.max(18, (x2 - x1) * 0.5);
+				const have = p.techs.includes(r);
+				const cls = onPath(t) && onPath(r) ? "path" : have && p.techs.includes(t) ? "done" : have ? "open" : "locked";
+				lines.push(`<path class="${cls}" data-from="${r}" data-to="${t}" d="M${x1.toFixed(1)} ${y1.toFixed(1)} C${(x1 + dx).toFixed(1)} ${y1.toFixed(1)} ${(x2 - dx).toFixed(1)} ${y2.toFixed(1)} ${x2.toFixed(1)} ${y2.toFixed(1)}" marker-end="url(#techArrow)"/>`);
+			}
+		}
+		box.insertAdjacentHTML("afterbegin", `<svg class="tech-links" width="${box.scrollWidth}" height="${box.scrollHeight}" aria-hidden="true"><defs><marker id="techArrow" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0 L8 4 L0 8 z" fill="context-stroke"/></marker></defs>${lines.join("")}</svg>`);
+		box.onmouseover = (e) => {
+			const card = (e.target as HTMLElement).closest(".tech") as HTMLElement | null;
+			const t = card?.dataset.tech;
+			box.querySelectorAll(".tech-links path[data-from]").forEach((el) => {
+				const path = el as SVGPathElement;
+				path.classList.toggle("hot", !!t && (path.dataset.from === t || path.dataset.to === t));
+			});
+		};
+		box.onmouseleave = () => box.querySelectorAll(".tech-links path.hot").forEach((el) => el.classList.remove("hot"));
 	}
 
 	techModal (): string {
@@ -868,6 +914,7 @@ export class Hud {
 			}
 		};
 		if (focus) walk(focus);
+		this.techPath = path;
 		const tiers = [1, 2, 3, 4].map((tier) => {
 			const cards = TECH_IDS.filter((t) => TECHS[t].tier === tier).map((t) => {
 				const tech = TECHS[t];
