@@ -30,7 +30,11 @@ export interface IgeNetSyncClientOptions {
 	 * from it for this long, in ms (default 10000; 0 waits forever): the
 	 * connection is closed and "disconnected" fires. Catches hosts that
 	 * vanish without closing (a frozen tab, a dropped network). Checked
-	 * with each ping, so it needs pinging on.
+	 * with each ping, so it needs pinging on, and only once a few pings in
+	 * a row have gone unanswered: a page whose own timers were asleep (a
+	 * background tab's timers slowed to once a minute) hears every ping it
+	 * does send answered, so its own silence isn't taken for the
+	 * authority's.
 	 */
 	timeout?: number;
 }
@@ -42,6 +46,9 @@ export interface IgeNetSnapshot {
 	ack: number;
 	entities: IgeNetEntities;
 }
+
+/** How many pings in a row must go unanswered (as well as the timeout passing) before the authority is given up on. */
+const UNANSWERED_PINGS = 3;
 
 /**
  * A machine in a real-time game run by an IgeNetSyncHost. It joins with
@@ -78,6 +85,8 @@ export class IgeNetSyncClient<Input = unknown> extends IgeEventingClass {
 	_connection: IgeNetConnection;
 	/** When the authority was last heard from (ms, this machine's clock). */
 	_lastHeard = 0;
+	/** Pings sent since the authority was last heard from. */
+	_unanswered = 0;
 	_options: IgeNetSyncClientOptions;
 	_now: () => number;
 	_seq: number = 0;
@@ -218,10 +227,11 @@ export class IgeNetSyncClient<Input = unknown> extends IgeEventingClass {
 		if (interval <= 0 || this._pingTimer) return;
 		const ping = () => {
 			const timeout = this._options.timeout ?? 10000;
-			if (timeout > 0 && this._now() - this._lastHeard > timeout) {
+			if (timeout > 0 && this._unanswered >= UNANSWERED_PINGS && this._now() - this._lastHeard > timeout) {
 				this._connection.close();
 				return;
 			}
+			this._unanswered++;
 			this._send({ t: "ping", time: this._now() }, false);
 		};
 		ping();
@@ -243,6 +253,7 @@ export class IgeNetSyncClient<Input = unknown> extends IgeEventingClass {
 	_onMessage (message: IgeNetServerMessage): void {
 		if (!message || typeof message !== "object") return;
 		this._lastHeard = this._now();
+		this._unanswered = 0;
 		switch (message.t) {
 			case "welcome": {
 				this.machine = message.machine;

@@ -66,6 +66,26 @@ describe("IgeNetSyncHost / IgeNetSyncClient", () => {
 		host.destroy();
 	});
 
+	it("doesn't give up on the authority when its own timers were asleep (a background tab)", async () => {
+		// The authority in the same page (offline play): it answers every ping, but the page's timers stopped for
+		// a minute, so the first ping after waking finds the last answer a minute old
+		const net = igeNetLoopback();
+		const { host, left } = game(net);
+		let clock = 0;
+		const client = new IgeNetSyncClient<Input>(net.connect(), { pingInterval: 10, timeout: 500, now: () => clock });
+		let gone = false;
+		client.on("disconnected", () => { gone = true; });
+		await client.join([{ name: "Ann" }]);
+		await new Promise((resolve) => setTimeout(resolve, 30));
+		clock += 60000;
+		await new Promise((resolve) => setTimeout(resolve, 40));
+		expect(gone).toBe(false);
+		expect(left).toEqual([]);
+		expect(host._machines.size).toBe(1);
+		client.destroy();
+		host.destroy();
+	});
+
 	it("joins machines with their local players and refuses when told to", async () => {
 		const net = igeNetLoopback();
 		const { host, dots } = game(net, "Mallory");
