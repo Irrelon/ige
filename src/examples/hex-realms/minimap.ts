@@ -184,6 +184,17 @@ export class Minimap {
 			ctx.fillRect(p.x - dot * 1.1, p.y - dot * 1.1, dot * 2.2, dot * 2.2);
 		}
 
+		// Raider camps you know of: a red cross on black
+		for (const camp of sim.state.camps ?? []) {
+			if (fogView && fogView[camp.tile] === UNEXPLORED) continue;
+			const p = this.worldToMinimap(layout.centerX(map.col(camp.tile), map.row(camp.tile)), layout.centerZ(map.row(camp.tile)));
+			ctx.fillStyle = "#120806";
+			ctx.fillRect(p.x - dot * 1.3, p.y - dot * 1.3, dot * 2.6, dot * 2.6);
+			ctx.fillStyle = "#e5484d";
+			ctx.fillRect(p.x - dot * 1, p.y - dot * 0.3, dot * 2, dot * 0.6);
+			ctx.fillRect(p.x - dot * 0.3, p.y - dot * 1, dot * 0.6, dot * 2);
+		}
+
 		for (const unit of sim.state.units) {
 			if (fogView && unit.owner !== me && fogView[unit.tile] !== VISIBLE) continue;
 			const pos = unitPos(unit.id);
