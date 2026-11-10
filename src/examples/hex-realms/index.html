@@ -751,6 +751,9 @@
 		.vol { display: grid; grid-template-columns: 150px 1fr 44px; align-items: center; gap: 12px; padding: 6px 0; }
 		.vol span { font-weight: 600; }
 		.vol output { color: var(--dim); text-align: right; font-variant-numeric: tabular-nums; }
+		.track-row { display: grid; grid-template-columns: 150px 34px 1fr 34px; align-items: center; gap: 8px; padding: 2px 0 6px; }
+		.track-row .track-name { text-align: center; color: #fff4d6; font-family: var(--display); letter-spacing: 0.03em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+		.track-row .icon-btn { width: 34px; height: 30px; min-height: 0; padding: 0; display: inline-flex; align-items: center; justify-content: center; }
 		.credits p { color: var(--dim); line-height: 1.6; margin: 0 0 10px; }
 		@media (max-width: 900px) {
 			.title-ui { grid-template-columns: 1fr; grid-template-rows: auto 1fr; overflow-y: auto; }

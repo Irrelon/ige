@@ -33,6 +33,7 @@ import type { SaveKind, SaveMeta, SaveStore } from "../saves";
 import { savesModal } from "./savesScreen";
 import { emblem, icon } from "./icons";
 import { getMusicVolume, getSfxVolume, setMusicVolume, setSfxVolume } from "./audio";
+import { currentTrack, onTrackChange, skipTrack } from "./music";
 import { contactModal } from "./contact";
 import { chartHover, historyChart, historyModal, shownCivs } from "./historyScreen";
 import type { HistoryMetric } from "../sim/history";
@@ -194,6 +195,9 @@ export class Hud {
 
 	constructor (host: HudHost) {
 		this.host = host;
+		onTrackChange(() => {
+			if (this.modal === "menu") this.renderModal();
+		});
 		document.addEventListener("click", (e) => {
 			const el = (e.target as HTMLElement).closest("[data-action]") as HTMLElement | null;
 			if (el && !(el as HTMLButtonElement).disabled) {
@@ -415,6 +419,11 @@ export class Hud {
 			case "explore": run({ type: "explore", unit: h.selectedUnit as number }); break;
 			case "promote": run({ type: "promote", unit: h.selectedUnit as number }); break;
 			case "heal": run({ type: "heal", unit: h.selectedUnit as number }); break;
+			case "music-prev":
+			case "music-next":
+				skipTrack(name === "music-next" ? 1 : -1);
+				if (this.modal === "menu") this.renderModal();
+				break;
 			case "upgrade": run({ type: "upgrade", unit: h.selectedUnit as number }); break;
 			case "rename-city": this.renaming = num("city"); this.refreshPanel(); (document.getElementById("cityName") as HTMLInputElement | null)?.select(); break;
 			case "rename-cancel": this.renaming = -1; this.refreshPanel(); break;
@@ -1636,6 +1645,11 @@ export class Hud {
 			<h4>Settings</h4>
 			<div class="opts">
 				<label class="vol"><span>${icon("music", 16)} Music</span><input type="range" min="0" max="100" value="${Math.round(getMusicVolume() * 100)}" data-vol="music"><output>${Math.round(getMusicVolume() * 100)}%</output></label>
+				<div class="track-row"><span class="dim">Now playing</span>
+					<button class="ghost icon-btn" data-action="music-prev" title="Previous track" aria-label="Previous track"><svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M6 5h2v14H6zM20 5v14l-11-7z"/></svg></button>
+					<b class="track-name">${esc(currentTrack() ?? "Starting soon…")}</b>
+					<button class="ghost icon-btn" data-action="music-next" title="Next track" aria-label="Next track"><svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M16 5h2v14h-2zM4 5v14l11-7z"/></svg></button>
+				</div>
 				<label class="vol"><span>${icon("sound", 16)} Sound effects</span><input type="range" min="0" max="100" value="${Math.round(getSfxVolume() * 100)}" data-vol="sfx"><output>${Math.round(getSfxVolume() * 100)}%</output></label>
 				<div>${toggle("sound", soundEnabled(), "Sound")}</div>
 				<div>${toggle("tips", tipsEnabled(), "Advisor tips")}</div>

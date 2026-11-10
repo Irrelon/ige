@@ -446,9 +446,45 @@ function trackPiece (i: number): Piece {
 	return piece;
 }
 
-/** The track now playing, for a "now playing" notice. */
+/** The track now playing (or last played, in the gap between tracks); null before the music starts. */
 export function currentTrack (): string | null {
-	return gamePlaying ? TRACKS[(trackIndex + TRACKS.length - 1) % TRACKS.length].name : null;
+	if (!gameStarted || !trackPieces.size) return null;
+	return TRACKS[(trackIndex + TRACKS.length - 1) % TRACKS.length].name;
+}
+
+/** Play the track `trackIndex` points at, then move it on; the next starts a few seconds after this one ends. */
+function playNext (): void {
+	const ctx = audioContext();
+	if (!ctx || !gameStarted) return;
+	if (ctx.state !== "running") {
+		gameTimer = setTimeout(playNext, 1000);
+		return;
+	}
+	const track = TRACKS[trackIndex];
+	gamePlaying = play(trackPiece(trackIndex), 3, track.level);
+	trackIndex = (trackIndex + 1) % TRACKS.length;
+	// Render the next one in the background while this one plays
+	trackPiece(trackIndex);
+	for (const fn of trackListeners) fn(track.name);
+	const check = () => {
+		if (!gameStarted || !gamePlaying) return;
+		const left = remaining(gamePlaying);
+		if (left > 0) {
+			gameTimer = setTimeout(check, Math.min(5000, Math.max(250, left * 1000)));
+			return;
+		}
+		gamePlaying = null;
+		gameTimer = setTimeout(playNext, 4000);
+	};
+	gameTimer = setTimeout(check, 1000);
+}
+
+const trackListeners = new Set<(name: string) => void>();
+
+/** Hear when a track starts (for showing its name). */
+export function onTrackChange (fn: (name: string) => void): () => void {
+	trackListeners.add(fn);
+	return () => trackListeners.delete(fn);
 }
 
 /**
@@ -460,31 +496,19 @@ export function startGameMusic (): void {
 	if (gameStarted || typeof Worker === "undefined") return;
 	gameStarted = true;
 	stopTitleMusic(2);
-	const next = () => {
-		const ctx = audioContext();
-		if (!ctx || !gameStarted) return;
-		if (ctx.state !== "running") {
-			gameTimer = setTimeout(next, 1000);
-			return;
-		}
-		const track = TRACKS[trackIndex];
-		gamePlaying = play(trackPiece(trackIndex), 3, track.level);
-		trackIndex = (trackIndex + 1) % TRACKS.length;
-		// Render the next one in the background while this one plays
-		trackPiece(trackIndex);
-		const check = () => {
-			if (!gameStarted || !gamePlaying) return;
-			const left = remaining(gamePlaying);
-			if (left > 0) {
-				gameTimer = setTimeout(check, Math.min(5000, Math.max(250, left * 1000)));
-				return;
-			}
-			gamePlaying = null;
-			gameTimer = setTimeout(next, 4000);
-		};
-		gameTimer = setTimeout(check, 1000);
-	};
-	gameTimer = setTimeout(next, 2500);
+	gameTimer = setTimeout(playNext, 2500);
+}
+
+/** Skip to the next track (1) or back to the one before (-1), fading out the one playing. */
+export function skipTrack (dir: 1 | -1): void {
+	if (!gameStarted) return;
+	const n = TRACKS.length;
+	const current = (trackIndex - 1 + n) % n;
+	trackIndex = dir > 0 ? (current + 1) % n : (current - 1 + n) % n;
+	if (gameTimer) clearTimeout(gameTimer);
+	stop(gamePlaying, 0.8);
+	gamePlaying = null;
+	playNext();
 }
 
 export function stopGameMusic (): void {
