@@ -35,7 +35,7 @@ const WATER_RIM_SHADE = 0.92;
  * also where cloud banks drop to explored neighbours) with puffs rising to
  * about CLOUD_TOP.
  */
-export const CLOUD_BASE = 9;
+export const CLOUD_BASE = 15;
 export const CLOUD_TOP = CLOUD_BASE + 24;
 
 /**

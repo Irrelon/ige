@@ -40,9 +40,9 @@ export interface TerrainInfo {
 }
 
 export const TERRAIN_INFO: Record<Terrain, TerrainInfo> = {
-	[Terrain.DeepOcean]: { name: "Deep Ocean", top: "deepOcean", wall: "seabed", water: true, waterHeight: -14, settleable: false },
-	[Terrain.Ocean]: { name: "Coast", top: "ocean", wall: "seabed", water: true, waterHeight: -8, settleable: false },
-	[Terrain.Ice]: { name: "Pack Ice", top: "ice", wall: "iceWall", water: true, waterHeight: -3, settleable: false },
+	[Terrain.DeepOcean]: { name: "Deep Ocean", top: "deepOcean", wall: "seabed", water: true, waterHeight: 0, settleable: false },
+	[Terrain.Ocean]: { name: "Coast", top: "ocean", wall: "seabed", water: true, waterHeight: 3, settleable: false },
+	[Terrain.Ice]: { name: "Pack Ice", top: "ice", wall: "iceWall", water: true, waterHeight: 3.8, settleable: false },
 	[Terrain.Grassland]: { name: "Grassland", top: "grassland", wall: "dirt", water: false, waterHeight: 0, settleable: true },
 	[Terrain.Plains]: { name: "Plains", top: "plains", wall: "dirt", water: false, waterHeight: 0, settleable: true },
 	[Terrain.Desert]: { name: "Desert", top: "desert", wall: "sand", water: false, waterHeight: 0, settleable: true },
@@ -64,16 +64,22 @@ export const FEATURE_NAMES: Record<Feature, string> = {
 	[Feature.Pine]: "Pine Forest"
 };
 
-/** Top heights of land tiles by relief (world units, Y up). */
+/**
+ * Top heights of land tiles by relief (world units, Y up). Five gentle
+ * levels, a small step apart rather than tall terraces: deep ocean, shore
+ * water (see TERRAIN_INFO's waterHeight), ordinary land, hills, mountains.
+ * Hills and mountains mostly show through what stands on them (mounds and
+ * peaks).
+ */
 export const LAND_HEIGHT: Record<Relief, number> = {
 	[Relief.Water]: 0,
 	[Relief.Flat]: 6,
-	[Relief.Hills]: 18,
-	[Relief.Mountain]: 30
+	[Relief.Hills]: 9,
+	[Relief.Mountain]: 12
 };
 
 /** Bottom of the map slab; map-edge walls drop to here. */
-export const FLOOR_HEIGHT = -40;
+export const FLOOR_HEIGHT = -18;
 
 /** How far each tile's bevelled rim drops below its top. */
 export const LAND_BEVEL = 2.5;
