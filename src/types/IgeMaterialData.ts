@@ -49,6 +49,13 @@ export interface IgeMaterialData extends IgeAbstractData3d {
 	/** ID of the base color/diffuse texture (loaded via TextureManager) */
 	textureId?: string;
 	/**
+	 * Texture coordinate offset added after uvScale (uv * uvScale + uvOffset).
+	 * Changing it each frame scrolls the texture: flowing water, moving clouds.
+	 */
+	uvOffset?: { u: number; v: number };
+	/** Texture coordinate scale (repeats the texture across the surface). */
+	uvScale?: { u: number; v: number };
+	/**
 	 * Encoded image for the base colour texture (e.g. from a GLB). When set
 	 * with textureId, the WebGL renderer uploads it on first use and draws
 	 * with plain white until the upload finishes.

@@ -1805,7 +1805,8 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 					r: 1, g: 1, b: 1, a: 1,
 					metallic: 0, roughness: 0.5,
 					emissiveR: 0, emissiveG: 0, emissiveB: 0, emissiveIntensity: 0,
-					opacity: 1
+					opacity: 1,
+					uvScaleU: 1, uvScaleV: 1, uvOffsetU: 0, uvOffsetV: 0
 				},
 				textureKey: "",
 				boneRow: -1,
@@ -1843,6 +1844,7 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 		mat.emissiveR = 0; mat.emissiveG = 0; mat.emissiveB = 0;
 		mat.emissiveIntensity = 0;
 		mat.opacity = entity._opacity;
+		mat.uvScaleU = 1; mat.uvScaleV = 1; mat.uvOffsetU = 0; mat.uvOffsetV = 0;
 
 		item.blobTextureId = undefined;
 		item.texture = entity._texture;
@@ -1937,7 +1939,11 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 		const skinned = item.skeleton ? "|s" : "";
 		// Double-sided items batch separately so culling can be set per batch
 		const sided = item.doubleSided ? "|d" : "";
-		item.batchKey = geometry.id + "|" + item.textureKey + skinned + sided;
+		// A texture transform is a uniform, so items that differ only by it can't share an instanced draw
+		const um = item.material;
+		const uv = um.uvScaleU !== 1 || um.uvScaleV !== 1 || um.uvOffsetU !== 0 || um.uvOffsetV !== 0
+			? `|uv${um.uvScaleU},${um.uvScaleV},${um.uvOffsetU},${um.uvOffsetV}` : "";
+		item.batchKey = geometry.id + "|" + item.textureKey + skinned + sided + uv;
 		item.depthKey = geometry.id + skinned;
 
 		// Level-of-detail geometry (index 0 is the full mesh)
@@ -2039,6 +2045,15 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 			mat.emissiveG = materialData.emissiveColor.g;
 			mat.emissiveB = materialData.emissiveColor.b;
 			mat.emissiveIntensity = materialData.emissiveIntensity ?? 1;
+		}
+
+		if (materialData.uvScale) {
+			mat.uvScaleU = materialData.uvScale.u;
+			mat.uvScaleV = materialData.uvScale.v;
+		}
+		if (materialData.uvOffset) {
+			mat.uvOffsetU = materialData.uvOffset.u;
+			mat.uvOffsetV = materialData.uvOffset.v;
 		}
 
 		const textureId = materialData.textureId;
@@ -2326,6 +2341,9 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 
 		this._instanceBuffer!.upload(batch.items, 0, count);
 		this._instanceBuffer!.bind(program);
+		// Items in an instanced batch share their texture transform (it's part of the batch key)
+		const m = batch.items[0].material;
+		program.setUniform4f("u_uvTransform", m.uvScaleU, m.uvScaleV, m.uvOffsetU, m.uvOffsetV);
 
 		if (geometry.indexBuffer && geometry.indexCount > 0) {
 			// The instance buffer rebinds ARRAY_BUFFER only, the index buffer stays bound
@@ -2716,6 +2734,7 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 		program.setUniform1f("u_roughness", mat.roughness);
 		program.setUniform3f("u_emissiveColor", mat.emissiveR, mat.emissiveG, mat.emissiveB);
 		program.setUniform1f("u_emissiveIntensity", mat.emissiveIntensity);
+		program.setUniform4f("u_uvTransform", mat.uvScaleU, mat.uvScaleV, mat.uvOffsetU, mat.uvOffsetV);
 	}
 
 	/**

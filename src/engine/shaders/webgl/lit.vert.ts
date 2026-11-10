@@ -18,6 +18,7 @@ precision highp float;
 attribute vec3 a_position;  // Vertex position
 attribute vec3 a_normal;    // Vertex normal
 attribute vec2 a_uv;        // Texture coordinates
+uniform vec4 u_uvTransform;  // Texture coordinate scale (xy) and offset (zw)
 attribute vec4 a_tangent;   // Tangent for normal mapping (xyz = tangent, w = handedness)
 
 ${worldMatrixChunk}
@@ -59,7 +60,8 @@ void main() {
 	v_vertexColor = u_hasVertexColors == 1 ? a_color : vec4(1.0);
 
 	// Pass through UV coordinates
-	v_uv = a_uv;
+	// Texture transform (scale, then offset); unset (all zero) means none
+	v_uv = (u_uvTransform.x == 0.0 && u_uvTransform.y == 0.0) ? a_uv : a_uv * u_uvTransform.xy + u_uvTransform.zw;
 
 	// Calculate TBN matrix for normal mapping if tangent is available
 	// If no tangent provided, use a fallback

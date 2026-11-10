@@ -22,6 +22,11 @@ export interface IgeWebGlResolvedMaterial {
 	emissiveB: number;
 	emissiveIntensity: number;
 	opacity: number;
+	/** Texture coordinate transform: uv * scale + offset (scroll a texture by changing the offset). */
+	uvScaleU: number;
+	uvScaleV: number;
+	uvOffsetU: number;
+	uvOffsetV: number;
 }
 
 /**
