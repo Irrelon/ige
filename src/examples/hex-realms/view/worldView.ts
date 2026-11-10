@@ -95,10 +95,14 @@ const UNIT_MODEL_FIT = Object.fromEntries(UNIT_TYPE_IDS.map((t) => [t, BASE_MODE
 const BUILDING_MODEL_OF: Partial<Record<BuildingId, string>> = { steelworks: "smelter", powderMill: "toolsmith", factory: "armoury", electronicsWorks: "mint" };
 /** Buildings whose models read small at the usual size (long and low ones) are drawn this much bigger. */
 const MODEL_GROW: Partial<Record<BuildingId, number>> = { market: 1.3, mill: 1.35, greatWall: 1.4 };
-/** The boat model's size, and where a unit stands on it: its deck height, and how far forward of the mast. */
+/**
+ * The boat model's size, and where a unit stands on it: its deck height, and how far forward of the
+ * middle. The boat's sail runs along its centreline nearly bow to stern, so the unit stands right
+ * up in the bow, ahead of the sail's foot.
+ */
 const BOAT_FIT = { footprint: 62 };
-const BOAT_DECK = 7;
-const BOAT_BOW = 12;
+const BOAT_DECK = 9;
+const BOAT_BOW = 22;
 const WHITE = { r: 1, g: 1, b: 1, a: 1 };
 const STONE: Rgb = { r: 0.86, g: 0.82, b: 0.74 };
 const ROOF: Rgb = { r: 0.72, g: 0.36, b: 0.24 };

@@ -95,20 +95,19 @@
 	"boat": {
 		"file": "boat.glb",
 		"min": [
-			-0.3436,
-			-0.4368,
-			-0.2563
+			-0.1468,
+			-0.4973,
+			-0.5005
 		],
 		"max": [
-			0.4051,
-			0.4355,
-			0.2164
+			0.1467,
+			0.4978,
+			0.5007
 		],
-		"triangles": 3990,
+		"triangles": 20000,
 		"animations": [],
 		"skinned": false,
-		"bytes": 366360,
-		"yaw": -2.1118
+		"bytes": 1480752
 	},
 	"cannon": {
 		"file": "cannon.glb",
