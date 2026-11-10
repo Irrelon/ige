@@ -1080,7 +1080,11 @@ export class Hud {
 			// With the lens on, your cities also show what their stores hold
 			const store = this.lens && c.owner === this.me ? lensStore(c.store) : "";
 			const mineCity = c.owner === this.me;
-			const grow = mineCity ? `<i class="grow"><s style="width:${Math.min(100, Math.round((c.growth / growthNeeded(c.level)) * 100))}%"></s></i>` : "";
+			// Population: a pip per point, as in Polytopia (a bar when there are too many to read)
+			const need = growthNeeded(c.level);
+			const grow = !mineCity ? ""
+				: need <= 12 ? `<i class="pips">${Array.from({ length: need }, (_, k) => `<u class="${k < c.growth ? "on" : ""}"></u>`).join("")}</i>`
+					: `<i class="grow"><s style="width:${Math.min(100, Math.round((c.growth / need) * 100))}%"></s></i>`;
 			const html = `<span style="--c:${owner?.color ?? "#777"}">${c.capital ? `<i class="cap">${icon("crown", 13)}</i>` : ""}${esc(c.name)}<b>${c.level}</b>${mineCity && c.pendingRewards ? `<i class="rw" title="Level-up reward waiting">${icon("star", 12)}</i>` : ""}</span>${grow}${store}`;
 			label(`city${c.id}`, owner ? "city-label" : "city-label neutral", html, x, h.terrain.surface.tileHeight(c.tile) + 62, z);
 		}
