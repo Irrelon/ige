@@ -857,6 +857,28 @@
 		"bytes": 1337988,
 		"floor": -0.4504
 	},
+	"workerFarmer": {
+		"file": "workerFarmer.glb",
+		"min": [
+			-0.2779,
+			-0.4434,
+			-0.4995
+		],
+		"max": [
+			0.3072,
+			0.4396,
+			0.3098
+		],
+		"triangles": 18224,
+		"animations": [
+			"idle",
+			"walk",
+			"work"
+		],
+		"skinned": true,
+		"bytes": 1460968,
+		"floor": -0.443
+	},
 	"workerFisher": {
 		"file": "workerFisher.glb",
 		"min": [
