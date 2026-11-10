@@ -38,6 +38,8 @@ export function runAiTurn (sim: Sim, player: number, apply?: (command: Command) 
 /** Food buildings, in order of preference: growth unlocks building slots. (Farms
  * make grain, which only feeds a city once milled and baked into bread.) */
 const FOOD_BUILDINGS: BuildingId[] = ["hunter", "fishery"];
+/** Late industries: their materials (iron, steel, machinery) are scarce, so the AI may start them before it has them. */
+const LATE_INDUSTRY: BuildingId[] = ["steelworks", "factory", "electronicsWorks", "powderMill"];
 /** Agreements an AI ends with a civ once its mood falls this low, most binding first. */
 const AI_ENDS: [EndableTreaty, number][] = [["alliance", 0], ["pact", -2], ["openBorders", -4], ["trade", -4], ["route", -4]];
 
@@ -487,15 +489,15 @@ class AiTurn {
 			["mine", 2 + Math.floor(c / 4)],
 			["smelter", smelts ? 1 + Math.floor(c / 8) : 0],
 			["toolsmith", smelts ? 1 : 0],
+			// Later industries, once known, come before the extras: modern units need their goods
+			["steelworks", smelts ? 1 + Math.floor(c / 6) : 0],
+			["factory", count("steelworks") && count("toolsmith") ? 1 + Math.floor(c / 8) : 0],
+			["electronicsWorks", count("factory") && mined(Deposit.Gold) ? 1 : 0],
+			["powderMill", mined(Deposit.Ore) && mined(Deposit.Coal) ? 1 : 0],
 			["armoury", smelts ? 1 : 0],
 			["mint", mined(Deposit.Gold) && mined(Deposit.Coal) ? 1 : 0],
 			["pasture", sim.player(this.p).civ === "horselords" ? 0 : 1],
 			["warehouse", Math.floor(c / 6)],
-			// Later industries, once known
-			["steelworks", smelts ? 1 + Math.floor(c / 10) : 0],
-			["powderMill", mined(Deposit.Ore) && mined(Deposit.Coal) ? 1 : 0],
-			["factory", count("steelworks") && count("toolsmith") ? 1 : 0],
-			["electronicsWorks", count("factory") && mined(Deposit.Gold) ? 1 : 0],
 			["hunter", 99],
 			["fishery", 99]
 		];
@@ -504,7 +506,9 @@ class AiTurn {
 	/** Place a building near a city; with a stock, only if its materials are on hand. */
 	placeType (city: CityState, type: BuildingId, stock?: Partial<Record<Good, number>>): boolean {
 		const sim = this.sim;
-		if (stock && !this.canSupply(type, stock)) return false;
+		// Industry sites go down on credit when the treasury can rush or buy what they lack
+		const credit = LATE_INDUSTRY.includes(type) && this.spare >= 40;
+		if (stock && !credit && !this.canSupply(type, stock)) return false;
 		// Mines prefer deposits the civ doesn't dig yet (ore and coal make iron; gold and coal, coins)
 		const minedAlready = new Set(sim.buildingsOf(this.p).filter((b) => b.type === "mine").map((b) => sim.map.deposit[b.tile]));
 		const fresh = (t: number) => (type === "mine" && minedAlready.has(sim.map.deposit[t]) ? 1 : 0);
