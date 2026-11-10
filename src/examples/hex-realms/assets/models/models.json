@@ -410,6 +410,24 @@
 		"bytes": 907188,
 		"floor": -0.2857
 	},
+	"hoverTank": {
+		"file": "hoverTank.glb",
+		"min": [
+			-0.3772,
+			-0.2914,
+			-0.5193
+		],
+		"max": [
+			0.4943,
+			0.317,
+			0.4265
+		],
+		"triangles": 4980,
+		"animations": [],
+		"skinned": false,
+		"bytes": 542556,
+		"yaw": 1.3614
+	},
 	"hunter": {
 		"file": "hunter.glb",
 		"min": [
