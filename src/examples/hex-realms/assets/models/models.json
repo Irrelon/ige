@@ -392,6 +392,24 @@
 		"bytes": 671044,
 		"floor": -0.1959
 	},
+	"knight": {
+		"file": "knight.glb",
+		"min": [
+			-0.2618,
+			-0.4221,
+			-0.1995
+		],
+		"max": [
+			0.311,
+			0.4351,
+			0.3036
+		],
+		"triangles": 5992,
+		"animations": [],
+		"skinned": false,
+		"bytes": 679492,
+		"yaw": 1.3614
+	},
 	"market": {
 		"file": "market.glb",
 		"min": [
