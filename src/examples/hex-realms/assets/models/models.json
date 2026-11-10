@@ -130,37 +130,37 @@
 	"catapult": {
 		"file": "catapult.glb",
 		"min": [
-			-0.4098,
-			-0.3448,
-			-0.4368
+			-0.4993,
+			-0.4892,
+			-0.3334
 		],
 		"max": [
-			0.4055,
-			0.4204,
-			0.3873
+			0.5002,
+			0.4909,
+			0.3343
 		],
-		"triangles": 4678,
+		"triangles": 19997,
 		"animations": [],
 		"skinned": false,
-		"bytes": 421416
+		"bytes": 1645924,
+		"yaw": -1.5708
 	},
 	"cavalry": {
 		"file": "cavalry.glb",
 		"min": [
-			-0.2545,
-			-0.4228,
-			-0.2549
+			-0.2035,
+			-0.5009,
+			-0.4526
 		],
 		"max": [
-			0.3044,
-			0.4911,
-			0.3134
+			0.2035,
+			0.4979,
+			0.453
 		],
-		"triangles": 5994,
+		"triangles": 19999,
 		"animations": [],
 		"skinned": false,
-		"bytes": 568088,
-		"yaw": 1.3614
+		"bytes": 1625944
 	},
 	"city": {
 		"file": "city.glb",
