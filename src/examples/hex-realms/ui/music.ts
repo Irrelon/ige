@@ -241,6 +241,8 @@ interface Piece {
 	chunks: { at: number; buffer: Promise<AudioBuffer> }[];
 	/** 0-1 over the whole piece. */
 	progress: number;
+	/** Set when nothing will play it: chunks not yet started are skipped. */
+	cancelled?: boolean;
 }
 
 const progressListeners = new Set<(p: number, label: string) => void>();
@@ -275,10 +277,10 @@ function renderPiece (label: string, built: { score: Score; cuts: number[]; leng
 	for (const g of groups.filter((x) => x.events.length)) {
 		const events = g.events.map((e) => ({ ...e, t: e.t - g.at }));
 		const len = g.end - g.at + 3.5;
-		const buffer = chain.then(() => renderChunk(events, len, reverb, (p) => {
+		const buffer = chain.then(() => (piece.cancelled ? Promise.reject(new Error("Cancelled")) : renderChunk(events, len, reverb, (p) => {
 			piece.progress = (done + p * g.events.length) / total;
 			report();
-		})).then(({ left, right }) => {
+		}))).then(({ left, right }) => {
 			done += g.events.length;
 			piece.progress = done / total;
 			report();
@@ -329,31 +331,45 @@ function musicIn (): AudioNode | null {
 	return limiter;
 }
 
-interface Playing { gain: GainNode; sources: AudioBufferSourceNode[]; endsAt: number; stopped: boolean }
+interface Playing {
+	gain: GainNode;
+	sources: AudioBufferSourceNode[];
+	/** Audio-clock times of the piece's beginning and end (Infinity until its first chunk is ready). */
+	startsAt: number;
+	endsAt: number;
+	/** Seconds into the piece that playback began. */
+	from: number;
+	stopped: boolean;
+}
 
-/** Play a piece from now: each chunk is scheduled at its place on the audio clock as it arrives. */
-function play (piece: Piece, fadeIn = 0, level = 1): Playing | null {
+/**
+ * Play a piece from now, `from` seconds in: each chunk is scheduled at its
+ * place on the audio clock as it arrives, and one already under way starts
+ * part-way through.
+ */
+function play (piece: Piece, fadeIn = 0, level = 1, from = 0): Playing | null {
 	const ctx = audioContext();
 	const input = musicIn();
-	const first = piece.chunks[0];
+	const first = [...piece.chunks].reverse().find((c) => c.at <= from) ?? piece.chunks[0];
 	if (!ctx || !input || !first) return null;
 	const gain = ctx.createGain();
 	gain.gain.value = 0;
 	gain.connect(input);
-	const playing: Playing = { gain, sources: [], endsAt: Infinity, stopped: false };
+	const playing: Playing = { gain, sources: [], startsAt: Infinity, endsAt: Infinity, from, stopped: false };
 	void first.buffer.then(() => {
 		if (playing.stopped) return;
 		const t0 = ctx.currentTime + 0.08;
 		gain.gain.setValueAtTime(fadeIn ? 0 : MIX_GAIN * level, t0);
 		if (fadeIn) gain.gain.linearRampToValueAtTime(MIX_GAIN * level, t0 + fadeIn);
-		playing.endsAt = t0 + piece.length;
+		playing.startsAt = t0 - from;
+		playing.endsAt = playing.startsAt + piece.length;
 		for (const chunk of piece.chunks) {
 			void chunk.buffer.then((buf) => {
-				if (playing.stopped) return;
+				if (playing.stopped || chunk.at + buf.duration <= from) return;
 				const src = ctx.createBufferSource();
 				src.buffer = buf;
 				src.connect(gain);
-				const when = t0 + chunk.at;
+				const when = playing.startsAt + chunk.at;
 				// A chunk that arrives late joins in step rather than starting from its beginning
 				const late = ctx.currentTime + 0.02 - when;
 				if (late > 0) src.start(ctx.currentTime + 0.02, late);
@@ -434,8 +450,11 @@ let gameStarted = false;
 let gamePlaying: Playing | null = null;
 let gameTimer: ReturnType<typeof setTimeout> | null = null;
 const trackPieces = new Map<number, Piece>();
-/** The track playing (or next to play): they go round in order. */
-let trackIndex = 0;
+/** The track playing (or last played, or next up while paused); -1 before the first. */
+let current = -1;
+let paused = false;
+/** Where to pick up after a pause: the track and how far into it (seconds). */
+let resumeAt = { index: 0, from: 0 };
 
 function trackPiece (i: number): Piece {
 	let piece = trackPieces.get(i);
@@ -446,35 +465,63 @@ function trackPiece (i: number): Piece {
 	return piece;
 }
 
-/** The track now playing (or last played, in the gap between tracks); null before the music starts. */
-export function currentTrack (): string | null {
-	if (!gameStarted || !trackPieces.size) return null;
-	return TRACKS[(trackIndex + TRACKS.length - 1) % TRACKS.length].name;
+/** Hold rendered audio only for these tracks (a few minutes of audio is tens of megabytes). */
+function keepPieces (keep: number[]): void {
+	for (const [i, piece] of trackPieces) {
+		if (keep.includes(i)) continue;
+		piece.cancelled = true;
+		trackPieces.delete(i);
+	}
 }
 
-/** Play the track `trackIndex` points at, then move it on; the next starts a few seconds after this one ends. */
-function playNext (): void {
+function clearGameTimer (): void {
+	if (gameTimer) clearTimeout(gameTimer);
+	gameTimer = null;
+}
+
+/** The track now playing (or last played, in the gap between tracks); null before the music starts. */
+export function currentTrack (): string | null {
+	return gameStarted && current >= 0 ? TRACKS[current].name : null;
+}
+
+/** Its place in TRACKS (-1 before the music starts). */
+export function currentTrackIndex (): number {
+	return gameStarted ? current : -1;
+}
+
+export function isMusicPaused (): boolean {
+	return paused;
+}
+
+/** Play track `i` from `from` seconds in; the next follows a few seconds after it ends. */
+function playTrack (i: number, from = 0): void {
 	const ctx = audioContext();
-	if (!ctx || !gameStarted) return;
+	if (!ctx || !gameStarted || paused) return;
 	if (ctx.state !== "running") {
-		gameTimer = setTimeout(playNext, 1000);
+		gameTimer = setTimeout(() => playTrack(i, from), 1000);
 		return;
 	}
-	const track = TRACKS[trackIndex];
-	gamePlaying = play(trackPiece(trackIndex), 3, track.level);
-	trackIndex = (trackIndex + 1) % TRACKS.length;
-	// Render the next one in the background while this one plays
-	trackPiece(trackIndex);
-	for (const fn of trackListeners) fn(track.name);
+	const n = TRACKS.length;
+	const next = (i + 1) % n;
+	current = i;
+	keepPieces([i, next]);
+	const piece = trackPiece(i);
+	const playing = play(piece, from ? 1.2 : 3, TRACKS[i].level, from);
+	gamePlaying = playing;
+	// Render the next one once this one is done, so the two don't share the worker
+	void Promise.allSettled(piece.chunks.map((c) => c.buffer)).then(() => {
+		if (gameStarted && current === i && !piece.cancelled) trackPiece(next);
+	});
+	for (const fn of trackListeners) fn(TRACKS[i].name);
 	const check = () => {
-		if (!gameStarted || !gamePlaying) return;
-		const left = remaining(gamePlaying);
+		if (!gameStarted || paused || !playing || gamePlaying !== playing) return;
+		const left = remaining(playing);
 		if (left > 0) {
 			gameTimer = setTimeout(check, Math.min(5000, Math.max(250, left * 1000)));
 			return;
 		}
 		gamePlaying = null;
-		gameTimer = setTimeout(playNext, 4000);
+		gameTimer = setTimeout(() => playTrack(next), 4000);
 	};
 	gameTimer = setTimeout(check, 1000);
 }
@@ -488,32 +535,70 @@ export function onTrackChange (fn: (name: string) => void): () => void {
 }
 
 /**
- * In-game music: the eight pieces in tracks.ts, one after another in order
- * and round again, a few seconds apart. Waits for audio to be unlocked by a
+ * In-game music: the pieces in tracks.ts, one after another in order and
+ * round again, a few seconds apart. Waits for audio to be unlocked by a
  * click or key press.
  */
 export function startGameMusic (): void {
 	if (gameStarted || typeof Worker === "undefined") return;
 	gameStarted = true;
+	paused = false;
 	stopTitleMusic(2);
-	gameTimer = setTimeout(playNext, 2500);
+	gameTimer = setTimeout(() => playTrack(current < 0 ? 0 : (current + 1) % TRACKS.length), 2500);
+}
+
+/** Jump straight to a track (playing it even if the music was paused). */
+export function playTrackNow (i: number): void {
+	if (!gameStarted || i < 0 || i >= TRACKS.length) return;
+	paused = false;
+	clearGameTimer();
+	stop(gamePlaying, 0.8);
+	gamePlaying = null;
+	playTrack(i);
 }
 
 /** Skip to the next track (1) or back to the one before (-1), fading out the one playing. */
 export function skipTrack (dir: 1 | -1): void {
-	if (!gameStarted) return;
 	const n = TRACKS.length;
-	const current = (trackIndex - 1 + n) % n;
-	trackIndex = dir > 0 ? (current + 1) % n : (current - 1 + n) % n;
-	if (gameTimer) clearTimeout(gameTimer);
-	stop(gamePlaying, 0.8);
+	playTrackNow(current < 0 ? (dir > 0 ? 0 : n - 1) : (current + dir + n) % n);
+}
+
+/** Pause the in-game music, remembering where it was; resuming carries on from there. */
+export function pauseGameMusic (): void {
+	if (!gameStarted || paused) return;
+	paused = true;
+	clearGameTimer();
+	const n = TRACKS.length;
+	const p = gamePlaying;
+	if (p && current >= 0) {
+		const into = Number.isFinite(p.startsAt) ? p.gain.context.currentTime - p.startsAt : p.from;
+		const length = trackPieces.get(current)?.length ?? 0;
+		// Too near the end to be worth picking up: go on to the next
+		resumeAt = into < length - 8 ? { index: current, from: Math.max(0, into - 0.5) } : { index: (current + 1) % n, from: 0 };
+	} else {
+		// Between tracks, or before the first
+		resumeAt = { index: current < 0 ? 0 : (current + 1) % n, from: 0 };
+	}
+	current = resumeAt.index;
+	stop(p, 0.6);
 	gamePlaying = null;
-	playNext();
+}
+
+export function resumeGameMusic (): void {
+	if (!gameStarted || !paused) return;
+	paused = false;
+	playTrack(resumeAt.index, resumeAt.from);
+}
+
+export function toggleMusicPause (): void {
+	if (paused) resumeGameMusic();
+	else pauseGameMusic();
 }
 
 export function stopGameMusic (): void {
 	gameStarted = false;
-	if (gameTimer) clearTimeout(gameTimer);
+	paused = false;
+	clearGameTimer();
 	stop(gamePlaying, 1.5);
 	gamePlaying = null;
 }

@@ -36,6 +36,8 @@ interface Section {
 
 export interface Track {
 	name: string;
+	/** What it is played on, for the menu's track list. */
+	about: string;
 	mood: "orchestral" | "exciting" | "wistful" | "pastoral";
 	bpm: number;
 	reverb: number;
@@ -229,7 +231,7 @@ export function trackScore (track: Track): { score: Score; cuts: number[]; lengt
 export const TRACKS: Track[] = [
 	{
 		// Orchestral: a warm F major theme for strings and horns, building to the full orchestra
-		name: "Dawn over the Realm", mood: "orchestral", bpm: 72, reverb: 0.34, level: 0.88,
+		name: "Dawn over the Realm", about: "Strings, horns and harp", mood: "orchestral", bpm: 72, reverb: 0.34, level: 0.88,
 		sections: [
 			{ chords: "F Bb", texture: ["softpad", "arp"], dyn: 0.3 },
 			{
@@ -253,7 +255,7 @@ export const TRACKS: Track[] = [
 	},
 	{
 		// Wistful: a lone flute over harp in D minor, the strings joining as it goes
-		name: "The Long Road", mood: "wistful", bpm: 62, reverb: 0.4, level: 2.03,
+		name: "The Long Road", about: "Flute, harp and cello", mood: "wistful", bpm: 62, reverb: 0.4, level: 2.03,
 		sections: [
 			{ chords: "Dm Dm", texture: ["harp"], dyn: 0.25 },
 			{
@@ -277,7 +279,7 @@ export const TRACKS: Track[] = [
 	},
 	{
 		// Exciting: C minor, a driving string ostinato and war drums under the horns
-		name: "Banners Rising", mood: "exciting", bpm: 104, reverb: 0.28, level: 0.7,
+		name: "Banners Rising", about: "Horns, brass and war drums", mood: "exciting", bpm: 104, reverb: 0.28, level: 0.7,
 		sections: [
 			{ chords: "Cm Cm", texture: ["ostinato", "drums"], dyn: 0.5 },
 			{
@@ -301,7 +303,7 @@ export const TRACKS: Track[] = [
 	},
 	{
 		// Pastoral: a G major dance for flute over plucked strings and harp
-		name: "Harvest Fields", mood: "pastoral", bpm: 96, reverb: 0.3, level: 1.95,
+		name: "Harvest Fields", about: "Flute and plucked strings", mood: "pastoral", bpm: 96, reverb: 0.3, level: 1.95,
 		sections: [
 			{ chords: "G D", texture: ["pizz"], dyn: 0.35 },
 			{
@@ -321,7 +323,7 @@ export const TRACKS: Track[] = [
 	},
 	{
 		// Wistful and noble: an A minor melody for the cellos, a choir behind
-		name: "Old Kingdoms", mood: "wistful", bpm: 60, reverb: 0.42, level: 1.21,
+		name: "Old Kingdoms", about: "Cello, choir and harp", mood: "wistful", bpm: 60, reverb: 0.42, level: 1.21,
 		sections: [
 			{ chords: "Am F", texture: ["choir", "softpad"], dyn: 0.3 },
 			{
@@ -341,7 +343,7 @@ export const TRACKS: Track[] = [
 	},
 	{
 		// Orchestral: a broad, sweeping E-flat theme for strings, then the whole orchestra
-		name: "Across the Sea", mood: "orchestral", bpm: 80, reverb: 0.36, level: 0.84,
+		name: "Across the Sea", about: "Strings, horns and choir", mood: "orchestral", bpm: 80, reverb: 0.36, level: 0.84,
 		sections: [
 			{ chords: "Eb Ab", texture: ["pad", "arp"], dyn: 0.35, roll: true },
 			{
@@ -361,7 +363,7 @@ export const TRACKS: Track[] = [
 	},
 	{
 		// Exciting: an E minor march, staccato strings and timpani under the horns
-		name: "March of Iron", mood: "exciting", bpm: 96, reverb: 0.28, level: 0.7,
+		name: "March of Iron", about: "Brass and marching strings", mood: "exciting", bpm: 96, reverb: 0.28, level: 0.7,
 		sections: [
 			{ chords: "Em Em", texture: ["march"], dyn: 0.45 },
 			{
@@ -385,7 +387,7 @@ export const TRACKS: Track[] = [
 	},
 	{
 		// Wistful: a B-flat lullaby for celesta and harp, the flute taking it up
-		name: "Embers", mood: "wistful", bpm: 64, reverb: 0.42, level: 2.03,
+		name: "Embers", about: "Celesta, flute and harp", mood: "wistful", bpm: 64, reverb: 0.42, level: 2.03,
 		sections: [
 			{ chords: "Bb Gm", texture: ["harp", "softpad"], dyn: 0.25 },
 			{

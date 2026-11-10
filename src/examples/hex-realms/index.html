@@ -751,9 +751,21 @@
 		.vol { display: grid; grid-template-columns: 150px 1fr 44px; align-items: center; gap: 12px; padding: 6px 0; }
 		.vol span { font-weight: 600; }
 		.vol output { color: var(--dim); text-align: right; font-variant-numeric: tabular-nums; }
-		.track-row { display: grid; grid-template-columns: 150px 34px 1fr 34px; align-items: center; gap: 8px; padding: 2px 0 6px; }
-		.track-row .track-name { text-align: center; color: #fff4d6; font-family: var(--display); letter-spacing: 0.03em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+		.modal-box .opts > .track-row { display: grid; margin: 0; grid-template-columns: 150px minmax(0, 1fr) auto; align-items: center; gap: 8px; padding: 2px 0 6px; }
+		.track-row .track-pick { display: flex; align-items: center; justify-content: space-between; gap: 6px; min-width: 0; padding: 4px 8px; min-height: 30px; color: var(--dim); border: 1px solid var(--line-2); background: rgba(0, 0, 0, 0.18); text-align: left; }
+		.track-row .track-pick:hover { border-color: var(--line-3); }
+		.track-row .track-pick.paused .track-name { opacity: 0.6; }
+		.track-row .track-name { color: #fff4d6; font-family: var(--display); letter-spacing: 0.03em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+		.track-row .transport { display: inline-flex; gap: 2px; }
 		.track-row .icon-btn { width: 34px; height: 30px; min-height: 0; padding: 0; display: inline-flex; align-items: center; justify-content: center; }
+		.modal-box .opts > .track-list { display: grid; gap: 2px; margin: 0 0 8px 158px; padding: 4px; border: 1px solid var(--line-2); border-radius: var(--r-sm); background: rgba(0, 0, 0, 0.22); max-height: 300px; overflow-y: auto; }
+		.track-list .track-item { display: grid; width: 100%; justify-content: stretch; grid-template-columns: 24px minmax(0, 1fr) auto; align-items: center; gap: 8px; min-height: 30px; padding: 4px 8px; text-align: left; background: transparent; box-shadow: none; border-color: transparent; color: var(--text); }
+		.track-list .track-item:hover { background: var(--line); }
+		.track-list .track-item.on { background: var(--gold-glow); }
+		.track-list .track-item.on .track-title { color: var(--gold-hi); }
+		.track-list .track-num { color: var(--dim); font-variant-numeric: tabular-nums; display: inline-flex; justify-content: center; }
+		.track-list .track-title { font-family: var(--display); letter-spacing: 0.03em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+		@media (max-width: 600px) { .modal-box .opts > .track-row { grid-template-columns: minmax(0, 1fr) auto; } .track-row > .dim { display: none; } .modal-box .opts > .track-list { margin-left: 0; } }
 		.credits p { color: var(--dim); line-height: 1.6; margin: 0 0 10px; }
 		@media (max-width: 900px) {
 			.title-ui { grid-template-columns: 1fr; grid-template-rows: auto 1fr; overflow-y: auto; }

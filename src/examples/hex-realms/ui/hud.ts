@@ -33,7 +33,8 @@ import type { SaveKind, SaveMeta, SaveStore } from "../saves";
 import { savesModal } from "./savesScreen";
 import { emblem, icon } from "./icons";
 import { getMusicVolume, getSfxVolume, setMusicVolume, setSfxVolume } from "./audio";
-import { currentTrack, onTrackChange, skipTrack } from "./music";
+import { currentTrack, currentTrackIndex, isMusicPaused, onTrackChange, playTrackNow, skipTrack, toggleMusicPause } from "./music";
+import { TRACKS } from "./tracks";
 import { contactModal } from "./contact";
 import { chartHover, historyChart, historyModal, shownCivs } from "./historyScreen";
 import type { HistoryMetric } from "../sim/history";
@@ -192,6 +193,8 @@ export class Hud {
 	techPath = new Set<TechId>();
 	/** The unlock whose details show under the tech tree. */
 	unlockChoice: string | null = null;
+	/** The menu's list of music tracks is open. */
+	trackListOpen = false;
 
 	constructor (host: HudHost) {
 		this.host = host;
@@ -422,6 +425,19 @@ export class Hud {
 			case "music-prev":
 			case "music-next":
 				skipTrack(name === "music-next" ? 1 : -1);
+				if (this.modal === "menu") this.renderModal();
+				break;
+			case "music-pause":
+				toggleMusicPause();
+				if (this.modal === "menu") this.renderModal();
+				break;
+			case "music-list":
+				this.trackListOpen = !this.trackListOpen;
+				if (this.modal === "menu") this.renderModal();
+				break;
+			case "music-track":
+				playTrackNow(num("track"));
+				this.trackListOpen = false;
 				if (this.modal === "menu") this.renderModal();
 				break;
 			case "upgrade": run({ type: "upgrade", unit: h.selectedUnit as number }); break;
@@ -1236,6 +1252,7 @@ export class Hud {
 	}
 
 	openModal (kind: string): void {
+		if (kind === "menu" && this.modal !== "menu") this.trackListOpen = false;
 		this.modal = kind;
 		if (kind === "saves") {
 			this.saveConfirm = null;
@@ -1645,11 +1662,7 @@ export class Hud {
 			<h4>Settings</h4>
 			<div class="opts">
 				<label class="vol"><span>${icon("music", 16)} Music</span><input type="range" min="0" max="100" value="${Math.round(getMusicVolume() * 100)}" data-vol="music"><output>${Math.round(getMusicVolume() * 100)}%</output></label>
-				<div class="track-row"><span class="dim">Now playing</span>
-					<button class="ghost icon-btn" data-action="music-prev" title="Previous track" aria-label="Previous track"><svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M6 5h2v14H6zM20 5v14l-11-7z"/></svg></button>
-					<b class="track-name">${esc(currentTrack() ?? "Starting soon…")}</b>
-					<button class="ghost icon-btn" data-action="music-next" title="Next track" aria-label="Next track"><svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M16 5h2v14h-2zM4 5v14l11-7z"/></svg></button>
-				</div>
+				${this.musicRow()}
 				<label class="vol"><span>${icon("sound", 16)} Sound effects</span><input type="range" min="0" max="100" value="${Math.round(getSfxVolume() * 100)}" data-vol="sfx"><output>${Math.round(getSfxVolume() * 100)}%</output></label>
 				<div>${toggle("sound", soundEnabled(), "Sound")}</div>
 				<div>${toggle("tips", tipsEnabled(), "Advisor tips")}</div>
@@ -1657,6 +1670,28 @@ export class Hud {
 				<div>${toggle("stats", h.showStats, "Performance stats")}</div>
 				<div>${toggle("models", !!h.models?.enabled, `3D models <span class="dim small">(${h.models?.models.size ?? 0} loaded, the rest load when needed; off shows simple shapes)</span>`)}</div>
 			</div>`;
+	}
+
+	/** The menu's music controls: the track (click for the list), previous, pause or play, next. */
+	musicRow (): string {
+		const paused = isMusicPaused();
+		const svg = (path: string) => `<svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="${path}"/></svg>`;
+		const playing = currentTrackIndex();
+		const list = this.trackListOpen
+			? `<div class="track-list" role="listbox" aria-label="Tracks">${TRACKS.map((t, i) => `<button class="track-item ${i === playing ? "on" : ""}" role="option" aria-selected="${i === playing}" data-action="music-track" data-track="${i}">
+				<span class="track-num">${i === playing ? svg(paused ? "M7 5h3v14H7zM14 5h3v14h-3z" : "M8 5v14l11-7z") : i + 1}</span>
+				<span class="track-title">${esc(t.name)}</span>
+				<span class="dim small">${esc(t.about)}</span>
+			</button>`).join("")}</div>`
+			: "";
+		return `<div class="track-row"><span class="dim">${paused ? "Paused" : "Now playing"}</span>
+			<button class="ghost track-pick ${paused ? "paused" : ""}" data-action="music-list" title="Choose a track" aria-expanded="${this.trackListOpen}"><b class="track-name">${esc(currentTrack() ?? "Starting soon…")}</b>${svg(this.trackListOpen ? "M7 15l5-5 5 5z" : "M7 10l5 5 5-5z")}</button>
+			<span class="transport">
+				<button class="ghost icon-btn" data-action="music-prev" title="Previous track" aria-label="Previous track">${svg("M6 5h2v14H6zM20 5v14l-11-7z")}</button>
+				<button class="ghost icon-btn" data-action="music-pause" title="${paused ? "Play" : "Pause"} music" aria-label="${paused ? "Play" : "Pause"} music">${svg(paused ? "M8 5v14l11-7z" : "M7 5h3v14H7zM14 5h3v14h-3z")}</button>
+				<button class="ghost icon-btn" data-action="music-next" title="Next track" aria-label="Next track">${svg("M16 5h2v14h-2zM4 5v14l11-7z")}</button>
+			</span>
+		</div>${list}`;
 	}
 
 	/** Online: the game's turn timer and each player's own (the host sets any; players their own). */
