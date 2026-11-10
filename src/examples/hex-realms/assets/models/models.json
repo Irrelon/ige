@@ -835,5 +835,47 @@
 		"skinned": false,
 		"bytes": 404500,
 		"floor": -0.3238
+	},
+	"workerCarrier": {
+		"file": "workerCarrier.glb",
+		"min": [
+			-0.2723,
+			-0.453,
+			-0.2038
+		],
+		"max": [
+			0.2743,
+			0.4379,
+			0.1878
+		],
+		"triangles": 19906,
+		"animations": [
+			"idle",
+			"walk"
+		],
+		"skinned": true,
+		"bytes": 1337988,
+		"floor": -0.4504
+	},
+	"workerMiner": {
+		"file": "workerMiner.glb",
+		"min": [
+			-0.2486,
+			-0.4528,
+			-0.4904
+		],
+		"max": [
+			0.2839,
+			0.4384,
+			0.4362
+		],
+		"triangles": 19308,
+		"animations": [
+			"idle",
+			"walk"
+		],
+		"skinned": true,
+		"bytes": 1358228,
+		"floor": -0.4455
 	}
 }

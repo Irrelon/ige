@@ -9,6 +9,7 @@ import { BUILDINGS, type BuildingId, GOOD_INFO, type Good } from "../sim/rules";
 import type { Sim } from "../sim/sim";
 import type { BuildingState } from "../sim/types";
 import type { TerrainSurface } from "../surface";
+import type { ModelLibrary } from "./models";
 
 /**
  * The map's everyday life, in the spirit of The Settlers: little workers
@@ -48,8 +49,20 @@ function joint (parent: IgeEntity, x: number, y: number, z: number): IgeEntity {
 
 type Tool = "pickaxe" | "axe" | "hammer" | "hoe" | "rod" | "spear" | null;
 
+/** What a worker's body can do: a generated character, or the procedural figure until one loads. */
+interface Body {
+	root: IgeEntity;
+	place (x: number, y: number, z: number, yaw: number): void;
+	walk (phase: number, carrying?: boolean): void;
+	stand (): void;
+	/** Working: `k` runs 0-1 through one stroke. */
+	strike (k: number): void;
+	showLoad (on: boolean): void;
+	destroy (): void;
+}
+
 /** A little worker: legs and arms on joints so they can walk and swing. Faces +Z. */
-class Figure {
+class Figure implements Body {
 	root: IgeEntity;
 	body: IgeEntity;
 	armL: IgeEntity;
@@ -144,6 +157,63 @@ class Figure {
 		this.body.rotateTo(up < 0.3 && k > 0.6 ? 0.28 : 0.08 - 0.1 * up, 0, 0);
 	}
 
+	showLoad (on: boolean): void {
+		if (on) this.load.show();
+		else this.load.hide();
+	}
+
+	destroy (): void {
+		this.root.destroy();
+	}
+}
+
+/** Generated worker characters, each with idle and walk clips (and "work" for some jobs). */
+const WORKER_HEIGHT = 25;
+const WORKER_LOD = [{ screenSize: 160, ratio: 0.35 }, { screenSize: 70, ratio: 0.14 }];
+/** Their walk clip's playback speed, matched to how fast they move. */
+const WORKER_WALK_SPEED = 1.15;
+
+/** A worker shown by a skinned model, switching between its clips. */
+class ModelBody implements Body {
+	root: IgeEntity;
+	model: IgeEntity;
+	clip = "";
+	work: boolean;
+
+	constructor (layer: IgeEntity, model: IgeEntity, hasWork: boolean) {
+		this.root = new IgeEntity().mount(layer);
+		this.model = model;
+		this.model.mount(this.root);
+		this.work = hasWork;
+		this.play("idle");
+	}
+
+	protected play (clip: string, speed = 1): void {
+		if (clip === this.clip) return;
+		this.clip = clip;
+		(this.model.components.skeletalAnimation as { play?: (name: string, options: object) => void } | undefined)?.play?.(clip, { crossFadeDuration: 0.15, speed });
+	}
+
+	place (x: number, y: number, z: number, yaw: number): void {
+		this.root.translateTo(x, y, z).rotateTo(0, yaw, 0);
+	}
+
+	walk (): void {
+		this.play("walk", WORKER_WALK_SPEED);
+	}
+
+	stand (): void {
+		this.play("idle");
+	}
+
+	strike (): void {
+		this.play(this.work ? "work" : "idle");
+	}
+
+	showLoad (): void {
+		// The carrier model always has its sack on
+	}
+
 	destroy (): void {
 		this.root.destroy();
 	}
@@ -160,7 +230,7 @@ interface Actor {
 
 /** A worker walking a route back and forth (to the city loaded, home empty). */
 class Carrier implements Actor {
-	fig: Figure;
+	fig: Body;
 	pts: { x: number; y: number; z: number }[];
 	lens: number[];
 	total: number;
@@ -169,9 +239,13 @@ class Carrier implements Actor {
 	x: number;
 	z: number;
 
-	constructor (layer: IgeEntity, pts: { x: number; y: number; z: number }[], good: Good | null, tunic: Rgb, seed: number) {
-		this.fig = new Figure(layer, tunic, null, seed % 3 === 0);
-		if (good) this.fig.load._materialData = mat(hexRgb(GOOD_INFO[good].color));
+	constructor (layer: IgeEntity, pts: { x: number; y: number; z: number }[], good: Good | null, tunic: Rgb, seed: number, model: IgeEntity | null) {
+		if (model) this.fig = new ModelBody(layer, model, false);
+		else {
+			const fig = new Figure(layer, tunic, null, seed % 3 === 0);
+			if (good) fig.load._materialData = mat(hexRgb(GOOD_INFO[good].color));
+			this.fig = fig;
+		}
 		this.pts = pts;
 		this.lens = [0];
 		for (let i = 1; i < pts.length; i++) this.lens.push(this.lens[i - 1] + Math.hypot(pts[i].x - pts[i - 1].x, pts[i].z - pts[i - 1].z));
@@ -196,8 +270,7 @@ class Carrier implements Actor {
 		const y = a.y + (b.y - a.y) * k;
 		const dir = out ? Math.atan2(b.x - a.x, b.z - a.z) : Math.atan2(a.x - b.x, a.z - b.z);
 		this.fig.place(this.x, y, this.z, dir);
-		if (out) this.fig.load.show();
-		else this.fig.load.hide();
+		this.fig.showLoad(out);
 		this.fig.walk(t * 9 + this.offset * 6, out);
 	}
 
@@ -236,9 +309,30 @@ const WORK: Partial<Record<BuildingId, Work>> = {
 	market: "porter"
 };
 
+/** The generated character for each job, once it exists. */
+const WORKER_MODEL: Partial<Record<Work, string>> = {
+	porter: "workerCarrier",
+	miner: "workerMiner",
+	stonecutter: "workerMiner",
+	woodcutter: "workerWoodcutter",
+	smith: "workerSmith",
+	farmer: "workerFarmer",
+	fisher: "workerFisher"
+};
+/** Jobs that are all tool work: their model is used only once it has a "work" clip. */
+const STRIKING = new Set<Work>(["miner", "stonecutter", "woodcutter", "smith"]);
+
+/** The model a job's worker should use now, or null for the procedural figure. */
+function workerModel (models: ModelLibrary | undefined, work: Work): string | null {
+	const id = WORKER_MODEL[work];
+	if (!id || !models?.info(id)) return null;
+	if (STRIKING.has(work) && !models.hasClip(id, "work")) return null;
+	return id;
+}
+
 /** A worker busy beside a building. */
 class Worker implements Actor {
-	fig: Figure;
+	fig: Body;
 	work: Work;
 	x: number;
 	z: number;
@@ -252,9 +346,9 @@ class Worker implements Actor {
 	blade: IgeEntity | null = null;
 	offset: number;
 
-	constructor (layer: IgeEntity, work: Work, spot: { x: number; y: number; z: number; yaw: number }, target: { x: number; y: number; z: number }, tunic: Rgb, seed: number) {
+	constructor (layer: IgeEntity, work: Work, spot: { x: number; y: number; z: number; yaw: number }, target: { x: number; y: number; z: number }, tunic: Rgb, seed: number, model: IgeEntity | null, hasWork: boolean) {
 		const tool: Tool = work === "miner" ? "pickaxe" : work === "woodcutter" ? "axe" : work === "stonecutter" || work === "smith" ? "hammer" : work === "farmer" ? "hoe" : work === "fisher" ? "rod" : work === "hunter" ? "spear" : null;
-		this.fig = new Figure(layer, tunic, tool, work === "farmer" || work === "fisher");
+		this.fig = model ? new ModelBody(layer, model, hasWork) : new Figure(layer, tunic, tool, work === "farmer" || work === "fisher");
 		this.work = work;
 		this.x = spot.x;
 		this.y = spot.y;
@@ -312,10 +406,12 @@ class Worker implements Actor {
 				f.place(this.x, this.y, this.z, this.yaw);
 				f.stand();
 				// Pushing the log through the saw
-				const push = Math.sin(time * 4) * 0.35;
-				f.armL.rotateTo(-1.1 + push, 0, 0);
-				f.armR.rotateTo(-1.1 + push, 0, 0);
-				f.body.rotateTo(0.12 + push * 0.2, 0, 0);
+				if (f instanceof Figure) {
+					const push = Math.sin(time * 4) * 0.35;
+					f.armL.rotateTo(-1.1 + push, 0, 0);
+					f.armR.rotateTo(-1.1 + push, 0, 0);
+					f.body.rotateTo(0.12 + push * 0.2, 0, 0);
+				}
 				this.blade?.rotateTo(time * 12, 0, 0);
 				break;
 			}
@@ -343,18 +439,19 @@ class Worker implements Actor {
 			const [x, y, z] = lerp(c / walk);
 			f.place(x, y, z, out);
 			f.walk(time * 9, this.work === "porter");
-			if (this.work === "porter") f.load.show();
+			if (this.work === "porter") f.showLoad(true);
 		} else if (c < walk + stay) {
 			f.place(this.tx, this.ty, this.tz, out);
 			f.stand();
 			const k = c - walk;
 			if (this.work === "fisher") {
 				// Cast, then wait with the rod held out
-				f.armR.rotateTo(k < 0.5 ? -2.2 + k * 2 : -0.9 + Math.sin(time * 2) * 0.05, 0, 0);
+				if (f instanceof Figure) f.armR.rotateTo(k < 0.5 ? -2.2 + k * 2 : -0.9 + Math.sin(time * 2) * 0.05, 0, 0);
+				else f.strike(k);
 			} else if (this.work === "farmer") {
 				f.strike((k / 1.3) % 1);
 			} else if (this.work === "porter") {
-				f.load.hide();
+				f.showLoad(false);
 			}
 		} else if (c < walk * 2 + stay) {
 			const [x, y, z] = lerp(1 - (c - walk - stay) / walk);
@@ -363,7 +460,7 @@ class Worker implements Actor {
 		} else {
 			f.place(this.x, this.y, this.z, out);
 			f.stand();
-			f.armR.rotateTo(0, 0, 0);
+			if (f instanceof Figure) f.armR.rotateTo(0, 0, 0);
 		}
 	}
 
@@ -398,6 +495,8 @@ function tunicFor (color: string, seed: number): Rgb {
 export class LifeView {
 	layer: IgeEntity;
 	actors: Actor[] = [];
+	/** Generated worker characters (loaded on first use; the view rebuilds when one arrives). */
+	models?: ModelLibrary;
 	dirty = true;
 	protected _lastBuild = -10;
 	protected _shown = true;
@@ -409,6 +508,18 @@ export class LifeView {
 	clear (): void {
 		for (const a of this.actors) a.destroy();
 		this.actors = [];
+	}
+
+	/** A job's character model, if loaded (asking for it otherwise). */
+	protected modelFor (work: Work): IgeEntity | null {
+		const id = workerModel(this.models, work);
+		if (!id || !this.models) return null;
+		return this.models.create(id, { height: WORKER_HEIGHT, animation: "idle", lod: WORKER_LOD });
+	}
+
+	/** Is this model one of the workers'? (When it loads, the view rebuilds.) */
+	static uses (id: string): boolean {
+		return Object.values(WORKER_MODEL).includes(id);
 	}
 
 	/** Rebuild who is where (after roads, buildings or the fog changed). */
@@ -429,7 +540,8 @@ export class LifeView {
 			if (!spot) continue;
 			const work = WORK[b.type] as Work;
 			const target = work === "fisher" ? this.shoreFor(sim, layout, b, ground) : this.awayFrom(spot, R, ground, b.id);
-			this.actors.push(new Worker(this.layer, work, spot, target ?? spot, tunicFor(sim.player(b.owner).color, b.id), b.id));
+			const id = workerModel(this.models, work);
+			this.actors.push(new Worker(this.layer, work, spot, target ?? spot, tunicFor(sim.player(b.owner).color, b.id), b.id, this.modelFor(work), !!id && !!this.models?.hasClip(id, "work")));
 		}
 
 		// Carriers on the roads: from each producing building to its nearest city
@@ -455,7 +567,7 @@ export class LifeView {
 					return { x, y: ground(x, z) + 0.5, z };
 				});
 				const good = outputs[0] ?? null;
-				this.actors.push(new Carrier(this.layer, pts, good, tunicFor(sim.player(owner).color, b.id + 7), b.id));
+				this.actors.push(new Carrier(this.layer, pts, good, tunicFor(sim.player(owner).color, b.id + 7), b.id, this.modelFor("porter")));
 				carriers++;
 			}
 		}

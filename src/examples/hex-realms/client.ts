@@ -303,7 +303,10 @@ export class Client extends IgeBaseClass implements IgeCanInit, HudHost {
 			});
 			this.models ??= new ModelLibrary();
 			this.world.models = this.models;
-			this.models.onLoaded = (id) => this.world?.modelLoaded(id);
+			this.models.onLoaded = (id) => {
+				this.world?.modelLoaded(id);
+				if (this.life && LifeView.uses(id)) this.life.dirty = true;
+			};
 			this.modelsStarted = true;
 			void this.models.start(["village", "town", "city", "warrior", "archer", "swordsman", "rider", "settler", "construction", "boat", "catapult"]);
 			this.world.build();
@@ -424,7 +427,10 @@ export class Client extends IgeBaseClass implements IgeCanInit, HudHost {
 		// 3D models load in the background (units and cities first) and swap in as they arrive
 		this.models ??= new ModelLibrary();
 		this.world.models = this.models;
-		this.models.onLoaded = (id) => this.world?.modelLoaded(id);
+		this.models.onLoaded = (id) => {
+			this.world?.modelLoaded(id);
+			if (this.life && LifeView.uses(id)) this.life.dirty = true;
+		};
 		if (!this.modelsStarted) {
 			this.modelsStarted = true;
 			void this.models.start(["warrior", "archer", "swordsman", "settler", "rider", "catapult", "boat", "village", "town", "city", "construction"]);
@@ -1202,6 +1208,7 @@ export class Client extends IgeBaseClass implements IgeCanInit, HudHost {
 		if (!this.world) return false;
 		this.life ??= new LifeView(this.overlayLayer);
 		const life = this.life;
+		life.models ??= this.models;
 		const focus = { x: this.cam.x, z: this.cam.z };
 		if (this.reducedMotion) {
 			if (life.actors.length) life.clear();
