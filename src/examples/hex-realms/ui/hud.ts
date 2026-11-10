@@ -1498,20 +1498,38 @@ export class Hud {
 	}
 
 	helpModal (): string {
+		const o = this.sim.options;
+		const kbd = (k: string) => `<kbd>${k}</kbd>`;
+		const card = (ico: string, title: string, key: string, body: string) => `<div class="help-card"><div class="hc-head">${icon(ico, 16)}<b>${title}</b>${key ? kbd(key) : ""}</div><p>${body}</p></div>`;
+		const section = (title: string, cards: string[]) => `<h4>${title}</h4><div class="help-grid">${cards.join("")}</div>`;
 		return `<h3>How to play</h3><div class="help">
-			<p><b>Goal</b>: win by Domination (last civ standing), Score (highest after the turn limit), Prosperity (finish the Grand Exchange), Alliance (everyone left is allied) or Diplomacy (win two World Council elections).</p>
-			<p><b>Ambition</b> (J): pick a goal to race for. Each milestone pays stars and score, double if you are the first civ to reach it; all four earn a permanent legacy.</p>
-			<p><b>Stars</b>: cities earn them each turn. Units beyond your free allowance (3, plus 1 per city) cost upkeep every turn (doubled once you know 12 techs), and cities beyond your tenth cost administration. Hover your stars for the breakdown.</p>
-			<p><b>Wonders</b> (M): a world wonder exists once, so civs race to finish it; monuments are earned by feats and raise their city a level.</p>
-			<p><b>Expand</b>: capture grey villages with any unit (start a turn on one, press Capture)${this.sim.options.allowFounding ? ", or found cities with settlers" : ""}. Cities earn stars every turn.</p>
-			<p><b>Grow</b>: ${this.sim.options.buildGrowth ? "as in Polytopia, every building finished in a city's land adds population (shown as +N on the build buttons). Workshops add more for each neighbour that feeds them: a sawmill for each woodcutter beside it, a mill for each farm, a smelter two for each mine, a market for each workshop. Fish and game can be harvested for stars to grow a city at once. Food delivered by road (fish, game, bread) adds growth too." : "deliver food (fish, game, bread) to cities."} Each level adds a building slot and a reward.</p>
-			<p><b>Build</b>: click your land to place buildings. Woodcutters are ready at once; other sites wait for logs, planks or stone carried by road, and Rush finishes them for stars. Anything joined to a city by road reaches it the same turn. Ports (Sailing) let goods sail between your coastal cities, and a market also sells you goods at twice its price.</p>
-			<p><b>Diplomacy</b> (G): treaties, cultural exchanges, research agreements, trades of goods and stars (once, or every turn as a route; where your roads meet theirs the goods travel as carts), demands, denouncing and sanctions. Wars wear both sides down, making peace easier the longer they last. Wars without enough grievances are surprise wars that everyone resents; peace brings a 10-turn truce.</p>
-			<p><b>Quick actions</b>: buttons float above a selected unit when it can do something where it stands: crossed swords capture a city, a house founds one, a flame pillages.</p>
-			<p><b>Meeting civs</b>: a civ you have just met is unaligned: there's no treaty, so units of both sides may wander through each other's land, but nobody fights. The first attack starts a war. Make peace in Diplomacy to close your borders to their soldiers.</p>
-			${this.sim.options.raiders ? `<p><b>Raiders</b>: outlaw camps spring up on unclaimed land out of sight. Their raiders attack units and burn buildings and roads near the camp, but never take cities. Walk a unit into a camp to scatter it for a bounty of stars.</p>` : ""}
-			<p><b>Fight</b>: attack an unaligned civ's unit, or declare war in Diplomacy. Select a unit to see red attack rings; hover one to preview the damage. Ranged units need line of sight. Units stop when they move next to an enemy.</p>
-			<p><b>Orders</b>: click a far tile to march a unit there over several turns (its route shows as gold dots). Sleep (K) leaves a unit be until an enemy comes near; Fortify (I) digs it in for +50% defence; Upgrade (U) turns a warrior into a swordsman inside your borders once you have Smithing. Click a city's name to rename it.</p><p><b>Keys</b>: Ctrl/Cmd+S quicksave, N log of notices, Y rankings, WASD/arrows pan, wheel or Z/X zoom, Q/E rotate, Page Up/Page Down tilt (or right-drag: sideways rotates, up and down tilts), Space next unit, Enter end turn, Esc deselect, C centre, T terrain style, R research, G diplomacy, J ambition, M wonders, B economy, V economy lens, L cities, F found city, O menu, H help.</p></div>`;
+			${section("Winning", [
+		card("trophy", "Goal", "", "Win by Domination (last civ standing), Score (highest after the turn limit), Prosperity (finish the Grand Exchange), Alliance (everyone left is allied) or Diplomacy (win two World Council elections)."),
+		card("ambition", "Ambition", "J", "Pick a goal to race for. Each milestone pays stars and score, double if you are the first civ to reach it; all four earn a permanent legacy."),
+		card("wonders", "Wonders", "M", "A world wonder exists once, so civs race to finish it; monuments are earned by feats and raise their city a level.")
+	])}
+			${section("Cities and economy", [
+		card("capture", "Expand", "", `Capture grey villages with any unit (start a turn on one, press Capture)${o.allowFounding ? ", or found cities with settlers" : ""}. Cities earn stars every turn.`),
+		card("grow", "Grow", "", o.buildGrowth
+			? "As in Polytopia, every building finished in a city's land adds population (shown as +N on the build buttons). Workshops add more for each neighbour that feeds them: a sawmill for each woodcutter beside it, a mill for each farm, a smelter two for each mine, a market for each workshop. Harvest fish and game for stars to grow a city at once. Food delivered by road adds growth too. Each level adds a building slot and a reward."
+			: "Deliver food (fish, game, bread) to cities. Each level adds a building slot and a reward."),
+		card("hammer", "Build", "", "Click your land to place buildings. Woodcutters are ready at once; other sites wait for logs, planks or stone carried by road, and Rush finishes them for stars. Anything joined to a city by road reaches it the same turn. Ports (Sailing) join coastal cities; a market also sells you goods at twice its price."),
+		card("star", "Stars", "", "Units beyond your free allowance (3, plus 1 per city) cost upkeep every turn (doubled once you know 12 techs), and cities beyond your tenth cost administration. Hover your stars for the breakdown.")
+	])}
+			${section("Neighbours and war", [
+		card("diplomacy", "Meeting civs", "", "A civ you have just met is unaligned: there's no treaty, so units of both sides may wander through each other's land, but nobody fights. The first attack starts a war. Make peace to close your borders to their soldiers."),
+		card("diplomacy", "Diplomacy", "G", "Treaties, cultural exchanges, research agreements, trades of goods and stars (once, or every turn as a route), demands, denouncing and sanctions. Wars without enough grievances are surprise wars everyone resents; long wars make peace easier; peace brings a 10-turn truce."),
+		card("sword", "Fight", "", "Attack an unaligned civ's unit, or declare war in Diplomacy. Select a unit to see red attack rings; hover one to preview the damage. Ranged units need line of sight. Units stop next to an enemy; defenders across a river get +25%."),
+		...(o.raiders ? [card("camp", "Raiders", "", "Outlaw camps spring up on unclaimed land out of sight. Their raiders attack units and burn buildings and roads near the camp, but never take cities. Walk a unit into a camp to scatter it for a bounty of stars.")] : [])
+	])}
+			${section("Units", [
+		card("capture", "Quick actions", "", "Buttons float above a selected unit when it can do something where it stands: crossed swords capture a city, a house founds one, a flame pillages."),
+		card("route", "Orders", "", `Click a far tile to march a unit there over several turns (gold dots show the route). ${kbd("K")} sleep until an enemy comes near, ${kbd("I")} fortify for +50% defence, ${kbd("U")} upgrade inside your borders (warrior to swordsman with Smithing, and on through the eras). Click a city's name to rename it.`)
+	])}
+			<h4>Keys</h4><div class="help-keys">
+				${[["Space", "Next unit"], ["Enter", "End turn"], ["Esc", "Deselect"], ["Ctrl/Cmd S", "Quicksave"], ["WASD", "Pan"], ["Z / X", "Zoom"], ["Q / E", "Rotate"], ["PgUp / PgDn", "Tilt"], ["C", "Centre"], ["T", "Terrain style"], ["R", "Research"], ["G", "Diplomacy"], ["J", "Ambition"], ["M", "Wonders"], ["B", "Economy"], ["V", "Economy lens"], ["L", "Cities"], ["Y", "Rankings"], ["N", "Log"], ["F", "Found city"], ["O", "Menu"], ["H", "Help"]]
+		.map(([k, what]) => `<span>${kbd(k)} ${what}</span>`).join("")}
+			</div></div>`;
 	}
 
 	gameOverModal (): string {

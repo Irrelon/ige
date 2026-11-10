@@ -327,7 +327,17 @@
 		.modal-box .menu-actions { display: flex; flex-wrap: wrap; gap: 8px; margin: 4px 0 8px; }
 		.modal-box .opts > div { margin: 8px 0; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
 		.modal-box p { line-height: 1.55; }
-		.help p { max-width: 660px; line-height: 1.6; }
+		.help p { line-height: 1.55; }
+		.modal-box.help { width: min(940px, calc(100vw - 24px)); }
+		.help h4:first-child { margin-top: 2px; }
+		.help-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(270px, 1fr)); gap: 8px; }
+		.help-card { padding: 10px 12px; border-radius: 12px; background: rgba(255, 255, 255, 0.035); border: 1px solid var(--line); }
+		.help-card .hc-head { display: flex; align-items: center; gap: 7px; color: var(--gold); }
+		.help-card .hc-head b { color: #fff4d6; font-size: 13.5px; }
+		.help-card .hc-head kbd { margin-left: auto; }
+		.help-card p { margin: 5px 0 0; color: var(--dim); font-size: 12.5px; }
+		.help kbd { display: inline-block; min-width: 18px; padding: 0 6px; border-radius: 5px; border: 1px solid var(--line-2); border-bottom-width: 2px; background: rgba(255, 255, 255, 0.06); color: #fff; font: 700 11px/18px var(--font); text-align: center; }
+		.help-keys { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 6px 12px; font-size: 12.5px; color: var(--dim); }
 
 		/* Research */
 		.modal-box.tech { width: min(1040px, calc(100vw - 24px)); }
