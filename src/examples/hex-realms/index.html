@@ -509,6 +509,19 @@
 		.contact-note { margin: 12px 0 0; color: var(--dim); font-size: 12.5px; line-height: 1.5; }
 		.contact-actions { display: flex; justify-content: center; gap: 8px; margin-top: 20px; }
 
+		/* City level-up rewards */
+		.modal-box.levelup { width: min(520px, calc(100vw - 24px)); padding: 0; overflow: hidden; border-color: rgba(240, 195, 90, 0.5); }
+		.levelup-card { position: relative; padding: 28px 26px 22px; text-align: center; background: radial-gradient(ellipse 90% 60% at 50% 0%, rgba(240, 195, 90, 0.22), transparent 70%); }
+		.lu-level { display: inline-flex; align-items: center; justify-content: center; width: 74px; height: 74px; border-radius: 50%; background: radial-gradient(circle at 35% 30%, #ffe7a3, #c9922e 70%); box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.55), 0 10px 30px rgba(0, 0, 0, 0.5), 0 0 40px rgba(240, 195, 90, 0.5); animation: crestin 0.6s var(--ease); }
+		.lu-level span { font-family: var(--display); font-size: 34px; font-weight: 900; color: #3a2506; text-shadow: 0 1px 0 rgba(255, 255, 255, 0.4); }
+		.levelup-card h2 { margin: 4px 0 2px; font-family: var(--display); font-size: 28px; font-weight: 900; letter-spacing: 0.06em; color: #fff; }
+		.reward-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 20px; }
+		.reward-card { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 18px 12px 16px; min-height: 0; white-space: normal; border-radius: 14px; border: 1px solid rgba(240, 195, 90, 0.4); background: linear-gradient(180deg, rgba(240, 195, 90, 0.12), rgba(240, 195, 90, 0.03)); transition: transform 0.15s var(--ease), border-color 0.15s, box-shadow 0.15s; }
+		.reward-card:hover { transform: translateY(-2px); border-color: var(--gold); box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4), 0 0 18px rgba(240, 195, 90, 0.25); }
+		.reward-card .rc-icon { display: inline-flex; color: var(--gold); }
+		.reward-card b { font-size: 15px; color: #fff4d6; }
+		.reward-card small { color: var(--dim); font-size: 12px; line-height: 1.4; }
+
 		/* Save and load */
 		.modal-box.saves { width: min(700px, calc(100vw - 24px)); }
 		.save-new { display: flex; gap: 8px; margin: 2px 0 8px; }

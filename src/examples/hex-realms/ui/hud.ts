@@ -154,6 +154,9 @@ export class Hud {
 	contacts: number[] = [];
 	/** The civ on the first-contact card being shown. */
 	contactCiv = -1;
+	/** Cities of yours that levelled up, waiting to show their reward card (Polytopia-style). */
+	levelUps: number[] = [];
+	levelCity = -1;
 	/** The save whose Delete is waiting for a second click. */
 	saveConfirm: string | null = null;
 	damage: { el: HTMLDivElement; tile: number; age: number; life?: number }[] = [];
@@ -371,6 +374,10 @@ export class Hud {
 			case "modal": this.openModal(data.modal as string); break;
 			case "close-modal": this.closeModal(); break;
 			case "contact-ok": this.closeModal(); break;
+			case "levelup-reward":
+				run({ type: "reward", city: num("city"), reward: data.reward as never });
+				this.closeModal();
+				break;
 			case "history-metric": this.historyMetric = data.metric as HistoryMetric; this.renderModal(); break;
 			case "sleep": run({ type: "sleep", unit: h.selectedUnit as number }); break;
 			case "fortify": run({ type: "fortify", unit: h.selectedUnit as number }); break;
@@ -839,8 +846,12 @@ export class Hud {
 				case "cityLevel": {
 					const c = sim.city(e.city);
 					if (c?.owner === me) {
-						this.toast(`<b>${esc(c.name)}</b> reached level ${e.level}: choose a reward`, "good");
 						play("level");
+						if (this.host.replaying || this.host.online && sim.current !== me) this.toast(`<b>${esc(c.name)}</b> reached level ${e.level}: choose a reward`, "good");
+						else {
+							this.levelUps.push(c.id);
+							this.nextContact();
+						}
 					}
 					break;
 				}
@@ -1128,11 +1139,39 @@ export class Hud {
 		if (kind === "saves") (document.getElementById("saveName") as HTMLInputElement | null)?.select();
 	}
 
-	/** Show the next first-contact card, unless another screen is open. */
+	/** Show the next first-contact card, then any level-up reward cards, unless another screen is open. */
 	nextContact (): void {
-		if (this.modal || !this.contacts.length) return;
-		this.contactCiv = this.contacts.shift() as number;
-		this.openModal("contact");
+		if (this.modal) return;
+		if (this.contacts.length) {
+			this.contactCiv = this.contacts.shift() as number;
+			this.openModal("contact");
+			return;
+		}
+		while (this.levelUps.length) {
+			const c = this.sim.city(this.levelUps.shift() as number);
+			if (!c || c.owner !== this.me || c.pendingRewards <= 0) continue;
+			this.levelCity = c.id;
+			this.openModal("levelup");
+			return;
+		}
+	}
+
+	/** A city grew a level: the two rewards on offer, as big cards (Polytopia-style). */
+	levelUpModal (): string {
+		const c = this.sim.city(this.levelCity);
+		if (!c) return "";
+		const REWARD_ICON: Record<string, string> = { income: "coin", income2: "coin", warrior: "sword", swordsman: "shield", borders: "map", walls: "fortify", store: "hammer" };
+		const cards = levelRewards(c.level).map((r) => `<button class="reward-card" data-action="levelup-reward" data-city="${c.id}" data-reward="${r}">
+			<span class="rc-icon">${icon(REWARD_ICON[r] ?? "star", 30)}</span><b>${REWARDS[r].name}</b><small>${REWARDS[r].description}</small></button>`).join("");
+		const color = this.sim.player(this.me).color;
+		return `<div class="levelup-card" style="--c:${color}">
+			<div class="lu-level"><span>${c.level}</span></div>
+			<div class="contact-kicker">City grew</div>
+			<h2>${esc(c.name)}</h2>
+			<div class="contact-banner">reached level ${c.level}: one more building slot${c.level % 2 ? "" : " and more star income"}. Choose a reward.</div>
+			<div class="reward-cards">${cards}</div>
+			<div class="contact-actions"><button class="ghost" data-action="contact-ok">Decide later (city panel)</button></div>
+		</div>`;
 	}
 
 	/** Your units that can still move, attack or found a city this turn. */
@@ -1155,8 +1194,8 @@ export class Hud {
 		this.modal = null;
 		this.techFocus = null;
 		document.getElementById("modal")?.classList.add("hidden");
-		// Anyone else we met while that was open says hello now
-		if (this.contacts.length) setTimeout(() => this.nextContact(), 250);
+		// Anyone else we met while that was open says hello now (then cities that grew)
+		if (this.contacts.length || this.levelUps.length) setTimeout(() => this.nextContact(), 250);
 	}
 
 	renderModal (): void {
@@ -1174,6 +1213,7 @@ export class Hud {
 			case "help": body = this.helpModal(); break;
 			case "log": body = this.logModal(); break;
 			case "history": body = historyModal(this.sim, this.me, this.historyMetric, !!this.sim.state.winner || this.sim.options.fog === "off", (p) => this.host.playerName(p) || this.sim.player(p).name); break;
+			case "levelup": body = this.levelUpModal(); break;
 			case "contact": body = contactModal(this.sim, this.contactCiv, this.me, this.host.playerName(this.contactCiv) || this.sim.player(this.contactCiv).name); break;
 			case "saves": body = savesModal({ saves: this.host.saves, local: this.host.canSave, defaultName: this.defaultSaveName(), confirmDelete: this.saveConfirm, storage: this.host.saveStore.available }); break;
 			case "gameover": body = this.gameOverModal(); break;
