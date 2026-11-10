@@ -813,6 +813,25 @@
 		"bytes": 799448,
 		"floor": -0.4625
 	},
+	"tank": {
+		"file": "tank.glb",
+		"min": [
+			-0.4312,
+			-0.2276,
+			-0.4882
+		],
+		"max": [
+			0.4811,
+			0.2994,
+			0.4365
+		],
+		"triangles": 4973,
+		"animations": [],
+		"skinned": false,
+		"bytes": 589096,
+		"yaw": 1.3614,
+		"floor": -0.2205
+	},
 	"toolsmith": {
 		"file": "toolsmith.glb",
 		"min": [
