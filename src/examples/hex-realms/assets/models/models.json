@@ -464,6 +464,30 @@
 		"bytes": 671044,
 		"floor": -0.1959
 	},
+	"infantry": {
+		"file": "infantry.glb",
+		"min": [
+			-0.233,
+			-0.437,
+			-0.121
+		],
+		"max": [
+			0.2362,
+			0.4378,
+			0.1231
+		],
+		"triangles": 5768,
+		"animations": [
+			"death",
+			"hit",
+			"idle",
+			"attack",
+			"walk"
+		],
+		"skinned": true,
+		"bytes": 947264,
+		"floor": -0.4485
+	},
 	"knight": {
 		"file": "knight.glb",
 		"min": [
