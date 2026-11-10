@@ -483,7 +483,7 @@ export class Hud {
 				inc.admin ? `Administration -${inc.admin} (cities beyond the 10th)` : ""
 			].filter(Boolean).join("\n");
 		}
-		const limit = sim.options.victories.score ? ` / ${sim.options.turnLimit}` : "";
+		const limit = sim.options.victories.score && sim.options.turnLimit > 0 ? ` / ${sim.options.turnLimit}` : "";
 		const deadline = this.host.online ? this.host.room?.deadline ?? 0 : 0;
 		const left = Math.max(0, Math.ceil((deadline - Date.now()) / 1000));
 		const clock = deadline ? ` <span class="${left <= 15 ? "bad" : "dim"}" title="When the time runs out, the AI plays this turn">&#9201;${Math.floor(left / 60)}:${String(left % 60).padStart(2, "0")}</span>` : "";

@@ -114,7 +114,7 @@ The setup screen sets everything; the same options work as URL parameters (`?qui
 |-----------|--------|
 | `size` | `tiny` 32x20, `small` 40x26, `medium` 48x32 (default), `large` 64x40, `huge` 96x60, and the sandbox sizes `giant` 128x80, `epic` 256x160, `colossal` 512x320; or `w=` and `h=` |
 | `players`, `civ`, `difficulty` | 2-12 civs; your civ (`highlanders`, `riverfolk`, `woodlanders`, `horselords`, `coastfolk`, `plainsfolk`); `easy`, `normal`, `hard` |
-| `seed`, `turns` | Map seed text; turn limit for the Score victory (default 60) |
+| `seed`, `turns` | Map seed text; turn limit for the Score victory (default 60; `0` or `off` for no limit) |
 | `fog` | `civ` (default): explored tiles out of sight dim and show last-known terrain. `polytopia`: explored tiles stay visible. `off`: everything revealed |
 | `los` | `1` (default): hills see further; mountains, forests and jungle block the view. `0`: plain sight radius |
 | `founding` | `1` (default) or `0`: allow settlers to found cities |

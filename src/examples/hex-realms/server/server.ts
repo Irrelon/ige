@@ -196,7 +196,7 @@ function runAis (room: Room): void {
 	aiRunning.add(room);
 	try {
 		const sim = room.state;
-		let guard = sim.playerCount * (sim.options.turnLimit + 2) * 2;
+		let guard = sim.playerCount * ((sim.options.turnLimit || 500) + 2) * 2;
 		while (!sim.state.winner && !sim.isHuman(sim.current) && guard-- > 0) {
 			const p = sim.current;
 			runAiTurn(sim, p, (command) => serverApply(room, p, command));

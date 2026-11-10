@@ -961,6 +961,19 @@ describe("raider camps", () => {
 	});
 });
 
+describe("turn limit", () => {
+	test("with the turn limit off, the Score victory never ends the game; with one it does", () => {
+		const scoreOnly = { domination: false, score: true, prosperity: false, alliance: false, diplomatic: false };
+		const endless = blank(2, [sim2(3, 3), sim2(20, 12)], { humans: [0, 1], turnLimit: 0, victories: scoreOnly });
+		for (let k = 0; k < 80; k++) nextTurn(endless);
+		expect(endless.state.turn).toBeGreaterThan(80);
+		expect(endless.state.winner).toBeNull();
+		const limited = blank(2, [sim2(3, 3), sim2(20, 12)], { humans: [0, 1], turnLimit: 5, victories: scoreOnly });
+		for (let k = 0; k < 8 && !limited.state.winner; k++) nextTurn(limited);
+		expect(limited.state.winner?.type).toBe("score");
+	});
+});
+
 describe("city site advice", () => {
 	test("a site with food, forests and ore rates above bare land, and crowded or rival sites rate lower", () => {
 		const sim = blank(2, [sim2(3, 3), sim2(20, 12)], { humans: [0, 1] });

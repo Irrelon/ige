@@ -47,6 +47,7 @@ export interface GameOptions {
 	rivers?: boolean;
 	victories: Record<VictoryType, boolean>;
 	/** Score victory is decided after this many turns. */
+	/** Rounds before the Score victory is decided; 0 for no limit. */
 	turnLimit: number;
 	difficulty: Difficulty;
 }

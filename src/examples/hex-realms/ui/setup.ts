@@ -107,7 +107,7 @@ export function optionsFromUrl (): { options: GameOptions; style: TerrainStyle; 
 		raiders: q.get("raiders") !== "0",
 		buildGrowth: q.get("growth") !== "food",
 		difficulty: (["easy", "normal", "hard"].includes(q.get("difficulty") ?? "") ? q.get("difficulty") : "normal") as Difficulty,
-		turnLimit: int("turns", 60, 10, 500)
+		turnLimit: q.get("turns") === "0" || q.get("turns") === "off" ? 0 : int("turns", 60, 10, 500)
 	});
 	if (civ && CIV_IDS.includes(civ)) options.civs = [civ];
 	const v = q.get("v");
@@ -183,8 +183,8 @@ function newGamePane (start: GameOptions, style: TerrainStyle, size: string): st
 				</div>
 				<div>
 					<div class="field-label">Turn limit</div>
-					<div class="seg">${[30, 60, 90, 120].map((t) => radio("turns", String(t), t === start.turnLimit, String(t))).join("")}</div>
-					<div class="field-note">The highest score wins when it runs out (Score victory).</div>
+					<div class="seg">${[30, 60, 90, 120, 200, 0].map((t) => radio("turns", String(t), t === start.turnLimit, t ? String(t) : "Off")).join("")}</div>
+					<div class="field-note">The highest score wins when it runs out (Score victory). Off: play on until someone wins another way.</div>
 				</div>
 			</div>
 			<div class="field-group field-row">
@@ -385,7 +385,7 @@ export function showSetup (saves: SaveMeta[], onlineAvailable: boolean, store?: 
 			raiders: f.get("raiders") === "on",
 			buildGrowth: f.get("growth") === "on",
 			difficulty: String(f.get("difficulty") || "normal") as Difficulty,
-			turnLimit: Number(f.get("turns")) || 60,
+			turnLimit: f.get("turns") === "0" ? 0 : Number(f.get("turns")) || 60,
 			victories: wins
 		});
 		if (civ) {

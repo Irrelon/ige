@@ -70,7 +70,8 @@ export function checkVictory (sim: Sim): void {
 export function roundCheck (sim: Sim): void {
 	checkVictory(sim);
 	if (sim.state.winner) return;
-	if (sim.options.victories.score && sim.state.turn > sim.options.turnLimit) {
+	// A turn limit of 0 is off: the game goes on until some other victory
+	if (sim.options.victories.score && sim.options.turnLimit > 0 && sim.state.turn > sim.options.turnLimit) {
 		const alive = sim.state.players.filter((p) => p.alive).map((p) => p.index);
 		const scores = alive.map((p) => score(sim, p));
 		const best = Math.max(...scores);
