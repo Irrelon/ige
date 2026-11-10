@@ -48,18 +48,22 @@ From the browser console, `ige.client.autoplay(20)` lets the AI play your seat f
 
 - **Expand**: move a unit onto a grey village and press **Capture** at the start of your next turn. With "Allow
   founding cities" on, settlers found new cities (F).
-- **Grow**: deliver food (fish, game, or bread from grain → flour → bread) to cities. Each level adds a building slot,
-  star income and a reward choice.
+- **Grow** (Polytopia-style): every building finished in a city's land adds population once (the build buttons show
+  +N). Workshops add more for each neighbour that feeds them: a sawmill for each woodcutter beside it, a mill for each
+  farm, a smelter two for each mine, a market for each workshop. Fish and game can be harvested for 2 stars to grow a
+  city at once (the resource is used up). Food delivered by road adds growth too. Each level adds a building slot,
+  star income and a reward choice. Growing cities spread hamlets onto the tiles around them.
 - **Build**: click a tile in your territory. Woodcutters are ready at once; other buildings start as construction
   sites that carriers supply by road (logs for extractors and sawmills, planks and stone for workshops). **Rush**
   finishes a site for stars. Roads cost 1 star a tile and can reach out from your roads across neutral land.
-- **Carry**: carriers move goods 4 road tiles per turn and each road tile takes 2 loads per turn, so busy routes jam.
-  Ports (Sailing) join coastal cities into one network: carriers sail sea lanes between your ports, however far
-  apart, four tiles for each road tile (deep ocean needs Navigation). A market also sells you goods at twice its price; they wait at the market until carriers take them
-  where they're needed.
+- **Carry**: once a road joins a building or resource to a city, the goods arrive the same turn. Little workers walk
+  the roads with them all the time, and miners, woodcutters, sawyers, fishers, farmers and smiths work beside their
+  buildings, so the map looks alive while you think. Ports (Sailing) join coastal cities into one network over sea
+  lanes (deep ocean needs Navigation). A market also sells you goods at twice its price.
   The Economy screen (B) sets which demand gets scarce goods first, and the **Lens** (V) shows each building's state
   and each city's store on the map.
-- **Research** (R): costs rise with the number of cities.
+- **Research** (R): costs rise with the number of cities. The tech tree runs through ten tiers and five eras, from
+  warriors and woodcutters to steelworks, factories, electronics, tanks, railguns and exo-troopers.
 - **Stars**: cities earn them every turn. Units beyond a free allowance (3, plus 1 per city) cost upkeep every turn,
   doubled once you know 12 techs, and cities beyond your tenth cost administration. Hover your stars in the top bar
   for the breakdown.
@@ -69,7 +73,18 @@ From the browser console, `ige.client.autoplay(20)` lets the AI play your seat f
 - **Wonders** (M): ten world wonders, one of each in the world: the first civ to finish one keeps it and rivals' sites
   are cancelled. Eight monuments are earned by feats (10 battles won, a level-6 city, 100 stars banked...) and raise
   their city a level.
-- **Fight**: declare war in Diplomacy (G). Select a unit to see attack rings; hovering one previews the damage both
+- **Meet**: a civ you have just met is unaligned: no treaty, so units of both sides may cross each other's land, but
+  nobody fights until someone strikes first. That first attack means war. Make peace in Diplomacy to close your
+  borders to their soldiers. Each AI leader greets you on first contact in keeping with their personality and how
+  your strength compares.
+- **Raiders**: outlaw camps appear on unclaimed land out of sight. Their raiders attack units and burn buildings and
+  roads near the camp, but never take cities. Walk a unit into a camp to scatter it for a bounty.
+- **Rivers** run along tile edges: crossing one costs an extra move (roads bridge them), defenders on the far bank
+  get +25%, and riverside farms grow an extra grain.
+- **Orders**: click a far tile to march a unit there over several turns. Sleep (K), Fortify (I, +50% defence) and
+  Upgrade (U, inside your borders, for stars: warrior to swordsman to musketeer and on). Click a city's name to
+  rename it.
+- **Fight**: attack an unaligned civ's unit, or declare war in Diplomacy (G). Select a unit to see attack rings; hovering one previews the damage both
   ways (combat is deterministic). Ranged units need line of sight; units stop next to enemies (zone of control).
 - **Negotiate** (G): peace (then a 10-turn truce), alliances (shared vision, called into defensive wars), defensive
   pacts, open borders, trade agreements, cultural exchanges, research agreements, gifts, and a deal editor that
@@ -78,6 +93,8 @@ From the browser console, `ige.client.autoplay(20)` lets the AI play your seat f
   Each AI leader has a visible agenda, and the screen lists why it feels the way it does. Grievances (surprise wars,
   captured cities, refused demands...) justify wars; a war without them angers everyone. Researching Diplomacy forms
   the World Council. Long wars wear both sides down, so peace gets easier the longer one lasts.
+- **Save** (Ctrl/Cmd+S or the menu): several save slots, an autosave every turn, and export or import of saves as
+  files. **Rankings** (Y) chart every civ's score, stars, cities, military and techs turn by turn.
 - **Win** by Domination, Score (after the turn limit), Prosperity (the Grand Exchange), Alliance or Diplomatic (two
   council elections in a row, with backing from at least half the other civs). Each can be switched off in setup.
 
@@ -236,6 +253,10 @@ its own chunk LOD (built lazily, survives frequent fog rebuilds).
     every client agrees which civs the AI plays.
 
 ## Known follow-ups
+
+- The AI rarely builds the late industries (steelworks, factories, electronics), so in AI games most modern units
+  come from upgrades rather than new training.
+- Windmill sails don't turn yet: the mill model has them baked in, and separate body and sail models are on the way.
 
 - Balance: upkeep, administration, dearer research and market buying keep treasuries to tens of stars through turn
   60 and a few hundred by turn 90 in AI games; a runaway conqueror still holds about a thousand by turn 90.

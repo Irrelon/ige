@@ -507,3 +507,42 @@ Every unit, city level, building, wonder and monument has a 3D model, made for t
   details (what it does and makes, where it goes, its cost, or a unit's stats).
 - A building that is locked behind a tech shows "Needs <tech>" as a link in the tile panel, which opens the
   research screen with that tech selected.
+
+## 19. The overnight round: polish, eras, a living map
+
+New rules are behind options that new games switch on and older saves and replays keep off (`tribeTechs`,
+`shuffleStarts`, `rivers`, `neutralStart`, `buildGrowth`, `raiders`), so every recorded game still replays exactly.
+
+- **Saves**: an IndexedDB store with named slots, an autosave each turn, a quicksave, and export and import as files;
+  old local-storage saves are imported on first run.
+- **Title and menu**: a Civilization-style splash with a slowly orbiting showcase world, and a main menu (new game,
+  continue, load, online, options). Orchestral title music and five calm in-game pieces are synthesised in a Web
+  Worker (pure JS, about 2 s for everything, with a progress bar) and play on separate music and effects buses.
+- **Look**: engine post-processing (multisampled offscreen frame, bloom, colour grading, vignette), hemisphere
+  ambient light, all land at one height with domed hills and peaked mountains, two water depths, surf and flowing
+  rivers (scrolling UVs), softer rutted roads that run into cities and buildings, and cities that sprawl hamlets
+  onto neighbouring tiles as they grow (for show only).
+- **Rivers** (`rivers`): generated from the seed along tile edges, from hills toward the sea. Crossing costs one
+  extra move unless a road bridges it; defending across one gives +25%; riverside farms +1 grain; River Folk move
+  along them freely and earn a star per riverside city.
+- **Economy**: delivery along roads is instant (no carrier speed or road capacity). The workers on the map are
+  decoration: carriers walk producing buildings' goods to the nearest city, and each building has its own work loop.
+  Generated characters (carrier, miner; more coming) replace the procedural figures as their models load.
+- **Growth** (`buildGrowth`): see the README. Population numbers live in `rules.ts` (`BUILDING_POP`, `POP_BOOST`,
+  `HARVEST`), the rules in `sim/growth.ts`. Cities level about 15% faster than with food alone.
+- **Eras**: techs run to tier 10 across Ancient, Classical, Medieval, Industrial, Modern and Future eras, with four new
+  goods (steel, gunpowder, machinery, electronics), their buildings, and seventeen new units that keep the old ones'
+  look until they get models. Upgrade chains turn old units into their successors.
+- **Orders**: sleep, fortify, multi-turn go-to (A* over known tiles, walking on at the start of each turn, stopping
+  next to enemies), upgrade, and renaming cities.
+- **AI personalities**: each leader's agenda sets aggression, how agreeable it is, and how much it researches, trades
+  and builds. Scholars out-research militarists two to one; militarists field the largest armies and start the
+  wars; peacemakers and scholars rarely start any.
+- **First contact** (`neutralStart`): civs meet unaligned (no treaty, open land, no fighting). The first attack is
+  war, without the surprise-war penalty; peace from unaligned needs no truce; other deals wait for peace. The AI
+  never strikes an unaligned unit by accident, only by deciding on war. A greeting card shows the leader's words,
+  personality and mood.
+- **Raiders** (`raiders`): see `sim/raiders.ts`. Raider units belong to owner -1, a stand-in civ at war with all;
+  `Sim.player(-1)` gives their name and colour, and the sim's player accessors treat negative owners safely.
+- **History**: every civ's standing is recorded once a round and charted in the Rankings screen.
+
