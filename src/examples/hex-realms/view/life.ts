@@ -462,7 +462,8 @@ class Worker implements Actor {
 			if (this.work === "fisher") {
 				// Cast, then wait with the rod held out
 				if (f instanceof Figure) f.armR.rotateTo(k < 0.5 ? -2.2 + k * 2 : -0.9 + Math.sin(time * 2) * 0.05, 0, 0);
-				else f.strike(k);
+				// A generated fisher casts once, then waits
+				else if (k < 1.6) f.strike(k);
 			} else if (this.work === "farmer") {
 				f.strike((k / 1.3) % 1);
 			} else if (this.work === "porter") {

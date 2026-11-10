@@ -857,6 +857,28 @@
 		"bytes": 1337988,
 		"floor": -0.4504
 	},
+	"workerFisher": {
+		"file": "workerFisher.glb",
+		"min": [
+			-0.3095,
+			-0.4296,
+			-0.2764
+		],
+		"max": [
+			0.3433,
+			0.4925,
+			0.1966
+		],
+		"triangles": 19994,
+		"animations": [
+			"idle",
+			"walk",
+			"work"
+		],
+		"skinned": true,
+		"bytes": 1865752,
+		"floor": -0.4344
+	},
 	"workerMiner": {
 		"file": "workerMiner.glb",
 		"min": [
