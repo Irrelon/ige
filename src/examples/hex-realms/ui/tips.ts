@@ -1,6 +1,7 @@
 import type { Sim } from "../sim/sim";
 import { BUILDINGS, WONDER_IDS } from "../sim/rules";
 import { upkeep } from "../sim/treasury";
+import { harvestProblem } from "../sim/growth";
 
 /**
  * The advisor: short contextual tips that teach the game as it is played.
@@ -9,7 +10,8 @@ import { upkeep } from "../sim/treasury";
 
 interface Tip {
 	id: string;
-	text: string;
+	/** The tip, or a function of the game (when it depends on the game's rules). */
+	text: string | ((sim: Sim) => string);
 	when: (sim: Sim, player: number) => boolean;
 }
 
@@ -21,7 +23,9 @@ const TIPS: Tip[] = [
 	},
 	{
 		id: "capital",
-		text: "Click your capital to see its store, growth and the units it can train. Cities grow when <b>food</b> (fish, game or bread) is delivered, and each level adds a building slot and a reward.",
+		text: (sim) => sim.options.buildGrowth
+			? "Click your capital to see its store, growth and the units it can train. As in Polytopia, cities <b>grow</b> from what you build in their land: each building adds population (the +N on the build buttons), and harvesting fish or game adds one at once. Each level adds a building slot and a reward."
+			: "Click your capital to see its store, growth and the units it can train. Cities grow when <b>food</b> (fish, game or bread) is delivered, and each level adds a building slot and a reward.",
 		when: (sim) => sim.state.turn >= 2
 	},
 	{
@@ -66,7 +70,7 @@ const TIPS: Tip[] = [
 	},
 	{
 		id: "levelup",
-		text: "A city levelled up! Choose its reward in the city panel.",
+		text: "A city levelled up! Pick one of its two rewards; if you put it off, the choice waits in the city panel.",
 		when: (sim, p) => sim.citiesOf(p).some((c) => c.pendingRewards > 0)
 	},
 	{
@@ -76,8 +80,20 @@ const TIPS: Tip[] = [
 	},
 	{
 		id: "met",
-		text: "You've met another civilisation. Open <b>Diplomacy</b> (G) to see their mood and agenda, make treaties, or trade goods and stars. Everyone starts at peace: a war without grievances behind it is a surprise war that every civ resents.",
+		text: (sim) => sim.options.neutralStart
+			? "You've met another civilisation. You are <b>unaligned</b>: units of both sides may cross each other's land, but nobody fights until someone strikes first, and the first attack means war. Open <b>Diplomacy</b> (G) to make peace, see their mood and agenda, and later trade."
+			: "You've met another civilisation. Open <b>Diplomacy</b> (G) to see their mood and agenda, make treaties, or trade goods and stars. Everyone starts at peace: a war without grievances behind it is a surprise war that every civ resents.",
 		when: (sim, p) => sim.state.players.some((q) => q.index !== p && sim.hasMet(p, q.index))
+	},
+	{
+		id: "harvest",
+		text: "There are fish or game in your land. Click the tile and <b>harvest</b> them for 2 stars: the city grows at once, but the resource is used up (no fishery or hunter's lodge there later).",
+		when: (sim, p) => !!sim.options.buildGrowth && sim.state.turn >= 3 && sim.citiesOf(p).some((c) => sim.tilesWithin(c.tile, 2).some((t) => sim.tileCity[t] === c.id && !harvestProblem(sim, p, t)))
+	},
+	{
+		id: "raiders",
+		text: "<b>Raiders</b> have made camp nearby. They attack units and burn buildings and roads around their camp, but never take cities. Walk a unit into the camp to scatter it for a bounty of stars.",
+		when: (sim, p) => sim.state.camps.some((c) => sim.knows(p, c.tile))
 	},
 	{
 		id: "war",
@@ -118,7 +134,7 @@ export function setTipsEnabled (on: boolean): void {
 export function nextTip (sim: Sim, player: number): { id: string; text: string } | null {
 	if (disabled) return null;
 	for (const tip of TIPS) {
-		if (!seen.has(tip.id) && tip.when(sim, player)) return tip;
+		if (!seen.has(tip.id) && tip.when(sim, player)) return { id: tip.id, text: typeof tip.text === "string" ? tip.text : tip.text(sim) };
 	}
 	return null;
 }
