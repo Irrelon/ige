@@ -1141,11 +1141,24 @@ export class Hud {
 				const hurt = u.hp < u.maxHp;
 				const color = sim.player(u.owner).color;
 				const bar = hurt ? `<em><s style="width:${Math.round((100 * u.hp) / u.maxHp)}%"></s></em>` : "";
-				const order = u.owner === this.me ? (u.order === "sleep" ? `<q title="Asleep">z</q>` : u.order === "fortify" ? `<q title="Fortified">&#9960;</q>` : u.goto !== undefined ? `<q title="Marching">&#10140;</q>` : "") : u.order === "fortify" ? `<q title="Fortified">&#9960;</q>` : "";
+				const order = u.owner === this.me ? (u.order === "sleep" ? `<q title="Asleep">z</q>` : u.order === "fortify" ? `<q title="Fortified">&#9960;</q>` : u.order === "explore" ? `<q title="Exploring">&#10022;</q>` : u.goto !== undefined ? `<q title="Marching">&#10140;</q>` : "") : u.order === "fortify" ? `<q title="Fortified">&#9960;</q>` : "";
 				const html = `<span style="--c:${color}">${u.veteran ? "<u>&#9733;</u>" : ""}<i>${UNIT_ICONS[u.type]}</i>${hurt ? `<b>${u.hp}</b>` : ""}${order}</span>${bar}`;
 				label(`unit${u.id}`, "ub", html, pos.x, pos.y + BADGE_HEIGHT[u.type], pos.z);
 			}
 		}
+		// The attack forecast over both units' heads (as in Polytopia) while the pointer is on a target
+		const sel = h.selectedUnit !== null ? sim.unit(h.selectedUnit) : undefined;
+		const aim = h.hoverTile;
+		const foe = aim >= 0 ? sim.unitOn(aim) : undefined;
+		if (sel && foe && sel.owner === this.me && foe.owner !== this.me && h.terrain.fogView[aim] === 2 && !attackProblem(sim, sel, aim)) {
+			const r = preview(sim, sel, foe);
+			const fp = world.unitPosition(foe.id), sp = world.unitPosition(sel.id);
+			const pill = (dies: boolean, loss: number, hp: number) => dies ? `<span class="dies" title="Killed">&#10006; dies</span>`
+				: loss ? `<span title="Health after the fight"><b>&minus;${loss}</b><i>&rarr;</i>${hp}</span>` : `<span class="safe" title="Unharmed">unharmed</span>`;
+			if (fp) label("forecast-def", "forecast", pill(r.kills, r.damage, foe.hp - r.damage), fp.x, fp.y + BADGE_HEIGHT[foe.type], fp.z);
+			if (sp) label("forecast-att", "forecast mine", pill(r.dies, r.retaliation, sel.hp - r.retaliation), sp.x, sp.y + BADGE_HEIGHT[sel.type], sp.z);
+		}
+
 		for (const [key, el] of this.labels) {
 			if (!used.has(key)) {
 				el.remove();

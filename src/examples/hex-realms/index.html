@@ -609,6 +609,13 @@
 		.lens-store .chip { font-size: 10px; line-height: 16px; background: rgba(10, 16, 26, 0.85); }
 		/* Unit badges: a shield in the owner's colour with the unit's icon, health when hurt, a star for veterans */
 		.ub { display: flex; flex-direction: column; align-items: center; }
+		/* Attack forecast over the units' heads */
+		.forecast { position: absolute; left: 0; top: 0; z-index: 6; pointer-events: none; white-space: nowrap; will-change: transform; }
+		.forecast span { display: inline-flex; align-items: center; gap: 4px; margin-bottom: 34px; padding: 2px 9px; border-radius: 999px; font: 800 14px/20px var(--font); color: #fff; background: rgba(150, 28, 28, 0.92); border: 1.5px solid #ff8a80; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5); animation: fadein 0.12s ease; }
+		.forecast span i { font-style: normal; opacity: 0.75; font-weight: 600; }
+		.forecast.mine span { background: rgba(120, 72, 18, 0.92); border-color: #ffc66d; }
+		.forecast span.safe { background: rgba(28, 110, 60, 0.92); border-color: #7ee2a0; font-size: 12px; }
+		.forecast span.dies { background: rgba(30, 10, 10, 0.95); border-color: #ff5c5c; color: #ffb3b3; }
 		.ub span { display: inline-flex; align-items: center; gap: 1px; height: 21px; padding: 0 5px; font-size: 12px; font-weight: 800; color: #fff; text-shadow: 0 1px 1px rgba(0, 0, 0, 0.7); background: linear-gradient(180deg, color-mix(in srgb, var(--c) 85%, #fff 15%), color-mix(in srgb, var(--c) 80%, #000 20%)); border: 1.5px solid rgba(255, 255, 255, 0.92); border-radius: 5px 5px 10px 10px; box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.55), 0 3px 6px rgba(0, 0, 0, 0.4); }
 		.ub i { font-style: normal; font-size: 13px; line-height: 1; }
 		.ub b { margin-left: 2px; font-size: 11px; }
