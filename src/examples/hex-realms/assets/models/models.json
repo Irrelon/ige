@@ -446,6 +446,41 @@
 		"bytes": 326164,
 		"floor": -0.3977
 	},
+	"millBody": {
+		"file": "millBody.glb",
+		"min": [
+			-0.2306,
+			-0.4324,
+			-0.3658
+		],
+		"max": [
+			0.23,
+			0.4335,
+			0.1823
+		],
+		"triangles": 3934,
+		"animations": [],
+		"skinned": false,
+		"bytes": 356664,
+		"floor": -0.3875
+	},
+	"millSails": {
+		"file": "millSails.glb",
+		"min": [
+			-0.4412,
+			-0.4198,
+			-0.4958
+		],
+		"max": [
+			0.4445,
+			0.4153,
+			0.4593
+		],
+		"triangles": 3790,
+		"animations": [],
+		"skinned": false,
+		"bytes": 374520
+	},
 	"mine": {
 		"file": "mine.glb",
 		"min": [

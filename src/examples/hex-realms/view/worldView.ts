@@ -131,7 +131,7 @@ const PROP_LOD = [{ screenSize: 110, ratio: 0.35 }, { screenSize: 40, ratio: 0.1
  * cross on a hub at the front of the cap (in tile radii from the foot of the
  * mill, in the body's own frame: +z is its front). Sizes are in tile radii too.
  */
-const WINDMILL = { body: "millBody", sails: "millSails", bodyHeight: 1.2, sailSpan: 0.95, hub: { x: 0, y: 0.92, z: 0.2 }, turn: 0.9 };
+const WINDMILL = { body: "millBody", sails: "millSails", bodyHeight: 1.2, sailSpan: 0.82, hub: { x: 0, y: 0.8, z: 0.27 }, depth: 0.3, turn: 0.9 };
 const CARGO_TILES_PER_SECOND = 6;
 
 interface UnitView {
@@ -966,7 +966,8 @@ export class WorldView {
 		if (!models?.info(WINDMILL.body) || !models.info(WINDMILL.sails)) return false;
 		const R = this.layout.size;
 		const body = models.create(WINDMILL.body, { height: R * WINDMILL.bodyHeight, footprint: R * 0.95, lod: PROP_LOD });
-		const sails = models.create(WINDMILL.sails, { footprint: R * WINDMILL.sailSpan, lod: PROP_LOD });
+		// Sized by the blades' height (the axle rod through the hub would set the footprint)
+		const sails = models.create(WINDMILL.sails, { height: R * WINDMILL.sailSpan, lod: PROP_LOD });
 		if (!body || !sails) {
 			body?.destroy();
 			sails?.destroy();
@@ -986,9 +987,10 @@ export class WorldView {
 		const hub = new IgeEntity();
 		hub.id(this.uid(`building_${b.id}_hub`));
 		hub.translateTo(R * WINDMILL.hub.x, R * WINDMILL.hub.y, R * WINDMILL.hub.z).mount(holder);
+		// Flattened front to back: the sail model's axle rod is about as long as the sails are wide
 		const spinner = new IgeEntity();
 		spinner.id(this.uid(`building_${b.id}_sails`));
-		spinner.mount(hub);
+		spinner.scaleTo(1, 1, WINDMILL.depth).mount(hub);
 		// The sails model stands on y = 0 from create(); lift it so it turns about its middle
 		const info = models.info(WINDMILL.sails);
 		const lift = info ? (sails._translate.y + ((info.min[1] + info.max[1]) / 2) * sails._scale.y) : 0;
