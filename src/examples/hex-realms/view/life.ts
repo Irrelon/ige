@@ -207,7 +207,7 @@ class ModelBody implements Body {
 	}
 
 	strike (): void {
-		this.play(this.work ? "work" : "idle");
+		this.play(this.work ? "work" : "idle", this.work ? 1.5 : 1);
 	}
 
 	showLoad (): void {

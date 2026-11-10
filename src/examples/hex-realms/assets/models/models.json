@@ -872,10 +872,11 @@
 		"triangles": 19308,
 		"animations": [
 			"idle",
-			"walk"
+			"walk",
+			"work"
 		],
 		"skinned": true,
-		"bytes": 1358228,
+		"bytes": 1424572,
 		"floor": -0.4455
 	}
 }
