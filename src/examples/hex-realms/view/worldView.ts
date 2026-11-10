@@ -889,11 +889,17 @@ export class WorldView {
 			entities[entities.length - 1]._noShadowCast = true; // a ground marker, not a caster
 			const holder = new IgeEntity();
 			holder.id(this.uid(`building_${b.id}`));
-			// Ports and fisheries face the water; other buildings turn by tile so rows don't look stamped
+			// Ports and fisheries face the water (a port out on the water faces away from the shore);
+			// other buildings turn by tile so rows don't look stamped
 			const water = this.sim.neighbors(b.tile).find((n) => this.sim.map.isWater(n));
-			const yaw = (b.type === "port" || b.type === "fishery") && water !== undefined
-				? Math.atan2(this.tileX(water) - x, this.tileZ(water) - z)
-				: ((b.tile * 7) % 6) * (Math.PI / 3);
+			const land = this.sim.neighbors(b.tile).filter((n) => !this.sim.map.isWater(n));
+			let yaw = ((b.tile * 7) % 6) * (Math.PI / 3);
+			if (b.type === "port" && this.sim.map.isWater(b.tile) && land.length) {
+				const lx = land.reduce((n, t) => n + this.tileX(t), 0) / land.length, lz = land.reduce((n, t) => n + this.tileZ(t), 0) / land.length;
+				yaw = Math.atan2(x - lx, z - lz);
+			} else if ((b.type === "port" || b.type === "fishery") && water !== undefined) {
+				yaw = Math.atan2(this.tileX(water) - x, this.tileZ(water) - z);
+			}
 			holder.translateTo(x, y, z).rotateTo(0, yaw, 0).mount(this.unitLayer);
 			prop.mount(holder);
 			entities.push(holder);

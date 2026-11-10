@@ -351,6 +351,44 @@ export function runOrders (sim: Sim, player: number, lines: string[]): void {
 }
 
 // ------------------------------------------------------------------
+// Healing
+// ------------------------------------------------------------------
+
+/**
+ * Health a unit told to heal regains at once, inside its owner's borders
+ * and outside them. Healing takes its whole turn; resting (doing nothing)
+ * gives 4 and 2 at the start of the next turn instead.
+ */
+export const HEAL_HOME = 6;
+export const HEAL_AWAY = 4;
+
+export function healAmount (sim: Sim, unit: UnitState): number {
+	return Math.min(unit.maxHp - unit.hp, sim.map.owner[unit.tile] === unit.owner ? HEAL_HOME : HEAL_AWAY);
+}
+
+export function healProblem (sim: Sim, player: number, unitId: number): string | null {
+	const unit = own(sim, player, unitId);
+	if (typeof unit === "string") return unit;
+	if (unit.hp >= unit.maxHp) return "Not hurt";
+	if (unit.acted || unit.attacked) return "It has already acted this turn";
+	return null;
+}
+
+export function healCommand (sim: Sim, player: number, unitId: number): CommandResult {
+	const problem = healProblem(sim, player, unitId);
+	if (problem) return fail(problem);
+	const unit = sim.unit(unitId) as UnitState;
+	const amount = healAmount(sim, unit);
+	unit.hp += amount;
+	unit.moves = 0;
+	unit.acted = true;
+	clearOrders(unit);
+	sim.emit({ type: "unitHealed", unit: unit.id, amount });
+	sim.emit({ type: "unitChanged", unit: unit.id });
+	return ok();
+}
+
+// ------------------------------------------------------------------
 // Promotion
 // ------------------------------------------------------------------
 

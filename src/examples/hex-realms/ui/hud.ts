@@ -36,7 +36,7 @@ import { getMusicVolume, getSfxVolume, setMusicVolume, setSfxVolume } from "./au
 import { contactModal } from "./contact";
 import { chartHover, historyChart, historyModal, shownCivs } from "./historyScreen";
 import type { HistoryMetric } from "../sim/history";
-import { exploreProblem, fortifyProblem, hasOrders, isReady, promoteProblem, sleepProblem, upgradeCost, upgradeProblem, UPGRADES } from "../sim/orders";
+import { exploreProblem, fortifyProblem, hasOrders, healAmount, healProblem, isReady, promoteProblem, sleepProblem, upgradeCost, upgradeProblem, UPGRADES } from "../sim/orders";
 import { renameProblem } from "../sim/cities";
 import { type ChatLine, type RoomInfo, TURN_TIMERS } from "../net/protocol";
 
@@ -136,7 +136,8 @@ const ICONS = {
 	found: `<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11L12 4L21 11M5.5 9.5V20H18.5V9.5M10 20V14.5H14V20"/></svg>`,
 	pillage: `<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3C13 6.5 18 8.5 18 14A6 6 0 0 1 6 14C6 10.5 8.5 9.5 8.5 6.5C10 8 11 9.5 11.5 11.5C12.5 9 12.5 6 12 3Z"/></svg>`,
 	wake: `<svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><rect x="6.5" y="6.5" width="11" height="11" rx="2"/></svg>`,
-	promote: `<svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" stroke="none" aria-hidden="true"><path d="M12 2.8l2.7 5.9 6.4.7-4.8 4.3 1.4 6.3L12 16.8 6.3 20l1.4-6.3-4.8-4.3 6.4-.7z"/></svg>`
+	promote: `<svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" stroke="none" aria-hidden="true"><path d="M12 2.8l2.7 5.9 6.4.7-4.8 4.3 1.4 6.3L12 16.8 6.3 20l1.4-6.3-4.8-4.3 6.4-.7z"/></svg>`,
+	heal: `<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20s-7.5-4.5-7.5-10A4.3 4.3 0 0112 7.2 4.3 4.3 0 0119.5 10c0 5.5-7.5 10-7.5 10z"/><path d="M12 10.5v5M9.5 13h5"/></svg>`
 };
 
 /** What calling off a unit's standing order is called. */
@@ -413,6 +414,7 @@ export class Hud {
 			case "wake": run({ type: "wake", unit: h.selectedUnit as number }); break;
 			case "explore": run({ type: "explore", unit: h.selectedUnit as number }); break;
 			case "promote": run({ type: "promote", unit: h.selectedUnit as number }); break;
+			case "heal": run({ type: "heal", unit: h.selectedUnit as number }); break;
 			case "upgrade": run({ type: "upgrade", unit: h.selectedUnit as number }); break;
 			case "rename-city": this.renaming = num("city"); this.refreshPanel(); (document.getElementById("cityName") as HTMLInputElement | null)?.select(); break;
 			case "rename-cancel": this.renaming = -1; this.refreshPanel(); break;
@@ -593,6 +595,7 @@ export class Hud {
 		const enemyRoad = sim.roads[u.tile] >= 0 && sim.roads[u.tile] !== this.me;
 		const enemyBuilding = sim.buildingOn(u.tile);
 		if (enemyRoad || (enemyBuilding && enemyBuilding.owner !== this.me)) buttons.push(btn("pillage", "Pillage", null));
+		if (u.hp < u.maxHp) buttons.push(btn("heal", `${icon("heart", 14)} Heal <small>+${healAmount(sim, u)}, ends its turn</small>`, healProblem(sim, this.me, id)));
 		if (!promoteProblem(sim, this.me, id)) buttons.push(btn("promote", `${icon("star", 14)} Promote <small>+5 health, healed</small>`, null, "primary"));
 		if (hasOrders(u)) buttons.push(btn("wake", stopLabel(u), null));
 		else {
@@ -929,6 +932,14 @@ export class Hud {
 					}
 					break;
 				}
+				case "unitHealed": {
+					const u = sim.unit(e.unit);
+					if (u?.owner === me && !this.host.replaying) {
+						this.floatGain(u.tile, `+${e.amount} ${icon("heart", 14)}`);
+						play("level");
+					}
+					break;
+				}
 				case "unitPromoted": {
 					const u = sim.unit(e.unit);
 					if (u?.owner === me) {
@@ -1092,6 +1103,7 @@ export class Hud {
 		const next = UPGRADES[u.type];
 		if (next && !upgradeProblem(sim, this.me, u.id)) buttons.push(quickButton("upgrade", `Upgrade to ${UNIT_TYPES[next].name} for ${upgradeCost(u)} stars (U)`));
 		if (!promoteProblem(sim, this.me, u.id)) buttons.push(quickButton("promote", "Promote to veteran: +5 health and fully healed"));
+		if (!healProblem(sim, this.me, u.id)) buttons.push(quickButton("heal", `Heal +${healAmount(sim, u)} (uses its turn)`));
 		// A standing order (marching, exploring, asleep, dug in) can be called off from here too
 		if (hasOrders(u)) buttons.push(quickButton("wake", stopLabel(u)));
 		if (!buttons.length) return hide();

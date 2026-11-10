@@ -40,8 +40,18 @@ function isWooded (sim: Sim, tile: number): boolean {
 	return sim.map.feature[tile] !== Feature.None && sim.map.relief[tile] !== Relief.Mountain;
 }
 
+/** Is this a harbour: shallow water beside the city whose land it is? (Ports, in waterPorts games.) */
+function harbourOk (sim: Sim, tile: number): string | null {
+	const map = sim.map;
+	if (map.terrain[tile] !== Terrain.Ocean) return "Ports go on shallow water beside a city";
+	const city = sim.city(sim.tileCity[tile]);
+	if (!city || !sim.neighbors(tile).includes(city.tile)) return "Ports go on shallow water beside a city";
+	return null;
+}
+
 function siteOk (sim: Sim, type: BuildingId, tile: number): string | null {
 	const map = sim.map;
+	if (type === "port" && sim.options.waterPorts) return harbourOk(sim, tile);
 	const relief = map.relief[tile] as Relief;
 	const terrain = map.terrain[tile] as Terrain;
 	switch (BUILDINGS[type].site) {
@@ -75,7 +85,9 @@ export function buildProblem (sim: Sim, player: number, tile: number, type: Buil
 		if (city.walls) return "The city already has walls";
 	} else {
 		if (sim.cityAt[tile] >= 0) return "Can't build on a city tile";
-		if (!sim.isPassableLand(tile)) return "Must be on land";
+		// Ports sit on the water (waterPorts games); everything else on land
+		const harbour = type === "port" && sim.options.waterPorts;
+		if (!harbour && !sim.isPassableLand(tile)) return "Must be on land";
 	}
 	const site = siteOk(sim, type, tile);
 	if (site) return site;
@@ -98,6 +110,8 @@ export function buildOptions (sim: Sim, player: number, tile: number): { type: B
 	for (const type of Object.keys(BUILDINGS) as BuildingId[]) {
 		const info = BUILDINGS[type];
 		if (info.wonder) continue;
+		// On the water only a port can go (and only where ports stand on water)
+		if (sim.map.isWater(tile) && !(type === "port" && sim.options.waterPorts)) continue;
 		const resource = info.site !== "land" && info.site !== "city";
 		if (!resource && !sim.hasTech(player, info.tech)) continue;
 		if (resource && siteOk(sim, type, tile) !== null) continue;

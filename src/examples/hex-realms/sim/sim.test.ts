@@ -2,7 +2,7 @@ import { chooseStartPositions, generateMap, HexMap } from "../mapGen";
 import { Feature, Relief, Terrain } from "../terrain";
 import { runAiTurn } from "./ai";
 import { preview } from "./combat";
-import { economyPhase, rushCost, total } from "./economy";
+import { buildOptions, economyPhase, rushCost, total } from "./economy";
 import { canEnter, reachable } from "./movement";
 import { ambitionProblem, ambitionScore, checkAmbition } from "./ambitions";
 import { createCity } from "./cities";
@@ -31,7 +31,7 @@ function blank (players: number, starts: number[], overrides: Partial<GameOption
 	map.shade.fill(1);
 	map.landmass.fill(0);
 	map.landmassSizes = [map.count];
-	const options = defaultOptions({ width, height, players, humans: [0], fog: "off", allowFounding: true, neutralStart: false, buildGrowth: false, raiders: false, connections: false, ...overrides });
+	const options = defaultOptions({ width, height, players, humans: [0], fog: "off", allowFounding: true, neutralStart: false, buildGrowth: false, raiders: false, connections: false, waterPorts: false, ...overrides });
 	const sim = Sim.create(options, { map, starts, villages: false });
 	sim.drainEvents();
 	return sim;
@@ -540,7 +540,7 @@ describe("long sea crossings", () => {
 			}
 		}
 		const at = (c: number, r: number) => r * width + c;
-		const sim = Sim.create(defaultOptions({ width, height, players: 2, humans: [0, 1], fog: "off" }), { map, starts: [at(5, 5), at(92, 9)], villages: false });
+		const sim = Sim.create(defaultOptions({ width, height, players: 2, humans: [0, 1], fog: "off", waterPorts: false, connections: false }), { map, starts: [at(5, 5), at(92, 9)], villages: false });
 		sim.drainEvents();
 		sim.player(0).techs.push("sailing", "trade", "construction");
 		const capital = sim.citiesOf(0)[0];
@@ -939,6 +939,29 @@ describe("connections", () => {
 	});
 });
 
+describe("ports on the water", () => {
+	test("ports go on shallow water beside a city (waterPorts), and on the shore in older games", () => {
+		const sim = blank(2, [sim2(4, 4), sim2(20, 12)], { waterPorts: true, humans: [0, 1] });
+		give(sim, 0, "sailing");
+		sim.player(0).stars = 50;
+		const city = sim.citiesOf(0)[0];
+		const sea = sim.neighbors(city.tile)[0];
+		const shore = sim.neighbors(city.tile)[1];
+		sim.map.terrain[sea] = Terrain.Ocean;
+		sim.map.relief[sea] = Relief.Water;
+		expect(buildOptions(sim, 0, sea).map((o) => o.type)).toEqual(["port"]);
+		expect(buildOptions(sim, 0, shore).some((o) => o.type === "port")).toBe(false);
+		expect(sim.apply(0, { type: "build", tile: sea, building: "port" }).ok).toBe(true);
+		const old = blank(2, [sim2(4, 4), sim2(20, 12)], { waterPorts: false, humans: [0, 1] });
+		give(old, 0, "sailing");
+		const oc = old.citiesOf(0)[0];
+		const osea = old.neighbors(oc.tile)[0];
+		old.map.terrain[osea] = Terrain.Ocean;
+		old.map.relief[osea] = Relief.Water;
+		expect(buildOptions(old, 0, osea).length).toBe(0);
+	});
+});
+
 describe("raider camps", () => {
 	test("camps send out raiders that attack civ units, never enter cities, and scatter for a bounty", () => {
 		const sim = blank(2, [sim2(4, 4), sim2(20, 12)], { raiders: true, humans: [0, 1] });
@@ -1145,6 +1168,26 @@ describe("unit orders, upgrades and renaming", () => {
 		unitAt(old, 1, 61).hp = 1;
 		old.apply(0, { type: "attack", unit: b.id, target: 61 });
 		expect(old.unit(b.id)?.veteran).toBe(true);
+	});
+
+	test("a hurt unit can heal: more than resting gives, at once, using its turn", () => {
+		const sim = blank(2, [sim0Start(), 200]);
+		clearUnits(sim);
+		const home = sim.neighbors(sim0Start())[0];
+		const a = unitAt(sim, 0, home);
+		a.hp = 3;
+		a.acted = false; // (new units count as having acted this turn)
+		expect(sim.apply(0, { type: "heal", unit: a.id }).ok).toBe(true);
+		expect(sim.unit(a.id)?.hp).toBe(9);
+		expect(sim.unit(a.id)?.moves).toBe(0);
+		expect(sim.apply(0, { type: "heal", unit: a.id }).ok).toBe(false);
+		// Not after moving, and not when unhurt
+		const b = unitAt(sim, 0, sim2(12, 8));
+		b.acted = false;
+		expect(sim.apply(0, { type: "heal", unit: b.id }).ok).toBe(false);
+		b.hp = 5;
+		expect(sim.apply(0, { type: "move", unit: b.id, to: sim2(13, 8) }).ok).toBe(true);
+		expect(sim.apply(0, { type: "heal", unit: b.id }).ok).toBe(false);
 	});
 
 	test("warriors upgrade to swordsmen with Smithing, inside your borders, for stars", () => {

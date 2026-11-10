@@ -47,6 +47,8 @@ export interface GameOptions {
 	promotions?: boolean;
 	/** Roads cost 3 stars, and a city first joined to its capital gives both +1 population (Polytopia-style; new games). */
 	connections?: boolean;
+	/** Ports stand on shallow water beside a city, as in Polytopia (new games; older ones build them on the shore). */
+	waterPorts?: boolean;
 	/** Rivers along tile edges (new games; absent in older ones, which stay as they were). */
 	rivers?: boolean;
 	victories: Record<VictoryType, boolean>;
@@ -336,6 +338,7 @@ export type Command =
 	| { type: "wake"; unit: number }
 	| { type: "explore"; unit: number }
 	| { type: "promote"; unit: number }
+	| { type: "heal"; unit: number }
 	| { type: "goto"; unit: number; to: number }
 	| { type: "upgrade"; unit: number }
 	| { type: "renameCity"; city: number; name: string }
@@ -368,6 +371,7 @@ export type SimEvent =
 	| { type: "population"; city: number; points: number; tile: number; reason: string }
 	| { type: "harvested"; tile: number; deposit: number; city: number }
 	| { type: "unitPromoted"; unit: number }
+	| { type: "unitHealed"; unit: number; amount: number }
 	| { type: "cityConnected"; city: number; capital: number }
 	| { type: "campFounded"; camp: number; tile: number }
 	/** A camp was scattered (by `player`'s unit, for a bounty), or -1 if it just went. */
