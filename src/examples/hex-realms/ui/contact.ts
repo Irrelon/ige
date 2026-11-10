@@ -53,9 +53,18 @@ function standing (sim: Sim, them: number, me: number): Standing {
 	return ratio > 1.4 ? "stronger" : ratio < 0.7 ? "weaker" : "even";
 }
 
+/** What a leader says when they already dislike you (grievances, or you are at war), by how you compare. */
+const HOSTILE: Record<Standing, string> = {
+	stronger: "We have heard what your people have done. Tread carefully near our borders.",
+	even: "Your name has reached us before you, and not kindly. We will remember it.",
+	weaker: "You are strong, and we know what you have done. We will not forget."
+};
+
 export function greeting (sim: Sim, them: number, me: number): string {
 	const agenda = sim.player(them).agenda;
 	if (!agenda) return "Greetings, neighbour.";
+	// Whatever their nature, a leader who already loathes you says so
+	if (attitude(sim, them, me) <= -6) return HOSTILE[standing(sim, them, me)];
 	return GREETINGS[agenda][standing(sim, them, me)];
 }
 
