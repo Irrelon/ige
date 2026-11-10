@@ -240,9 +240,93 @@ export function gotoCommand (sim: Sim, player: number, unitId: number, target: n
 	return ok();
 }
 
+// ------------------------------------------------------------------
+// Explore
+// ------------------------------------------------------------------
+
+/** How far an exploring unit looks for the edge of the known world. */
+export const EXPLORE_RANGE = 14;
+
 /**
- * Start of a civ's turn: sleeping units with an enemy close by wake up, and
- * units with a go-to order walk on.
+ * Where an exploring unit should head: the nearest tile it can reach whose
+ * neighbours include unexplored ones, favouring those that border the most
+ * (so it opens up the fog fastest). -1 when nothing is left within range.
+ */
+export function exploreTarget (sim: Sim, unit: UnitState): number {
+	let best = -1, bestScore = Infinity;
+	for (const t of sim.tilesWithin(unit.tile, EXPLORE_RANGE)) {
+		if (t === unit.tile || !sim.knows(unit.owner, t) || sim.unitAt[t] >= 0 || sim.map.isWater(t) !== sim.map.isWater(unit.tile)) continue;
+		let unknown = 0;
+		for (const n of sim.neighbors(t)) if (!sim.knows(unit.owner, n)) unknown++;
+		if (!unknown) continue;
+		const score = sim.distance(unit.tile, t) - unknown * 0.6;
+		if (score < bestScore) {
+			bestScore = score;
+			best = t;
+		}
+	}
+	// The nearest is no use if it can't be reached; try a few more in order
+	if (best >= 0 && !planRoute(sim, unit, best).length) {
+		const candidates = sim.tilesWithin(unit.tile, EXPLORE_RANGE)
+			.filter((t) => t !== unit.tile && sim.knows(unit.owner, t) && sim.unitAt[t] < 0 && sim.neighbors(t).some((n) => !sim.knows(unit.owner, n)))
+			.sort((a, b) => sim.distance(unit.tile, a) - sim.distance(unit.tile, b) || a - b)
+			.slice(0, 8);
+		best = candidates.find((t) => planRoute(sim, unit, t).length > 0) ?? -1;
+	}
+	return best;
+}
+
+/** Walk an exploring unit on toward the fog. False when the order has ended. */
+function exploreStep (sim: Sim, unit: UnitState): boolean {
+	if (enemyAdjacent(sim, unit.owner, unit.tile)) {
+		clearOrders(unit);
+		sim.emit({ type: "orderEnded", unit: unit.id, reason: "enemy" });
+		return false;
+	}
+	const target = exploreTarget(sim, unit);
+	if (target < 0) {
+		clearOrders(unit);
+		sim.emit({ type: "orderEnded", unit: unit.id, reason: "explored" });
+		return false;
+	}
+	unit.goto = target;
+	advance(sim, unit);
+	const live = sim.unit(unit.id);
+	if (!live) return false;
+	// It explores on next turn from wherever it got to, unless it stopped beside an enemy
+	live.goto = undefined;
+	if (enemyAdjacent(sim, live.owner, live.tile)) {
+		clearOrders(live);
+		return false;
+	}
+	sim.emit({ type: "unitChanged", unit: live.id });
+	return true;
+}
+
+export function exploreProblem (sim: Sim, player: number, unitId: number): string | null {
+	const unit = own(sim, player, unitId);
+	if (typeof unit === "string") return unit;
+	if (unit.order === "explore") return "Already exploring";
+	if (UNIT_TYPES[unit.type].founder) return "Settlers don't explore";
+	if (exploreTarget(sim, unit) < 0) return "Nothing left to explore nearby";
+	return null;
+}
+
+export function exploreCommand (sim: Sim, player: number, unitId: number): CommandResult {
+	const problem = exploreProblem(sim, player, unitId);
+	if (problem) return fail(problem);
+	const unit = sim.unit(unitId) as UnitState;
+	unit.order = "explore";
+	unit.goto = undefined;
+	// Set off straight away with whatever moves are left
+	if (unit.moves > 0 && !unit.attacked) exploreStep(sim, unit);
+	else sim.emit({ type: "unitChanged", unit: unit.id });
+	return ok();
+}
+
+/**
+ * Start of a civ's turn: sleeping units with an enemy close by wake up,
+ * units with a go-to order walk on, and explorers head for the fog.
  */
 export function runOrders (sim: Sim, player: number, lines: string[]): void {
 	let woke = 0;
@@ -260,7 +344,9 @@ export function runOrders (sim: Sim, player: number, lines: string[]): void {
 	}
 	if (woke) lines.push(`${woke === 1 ? "A sleeping unit" : `${woke} sleeping units`} woke: enemies nearby`);
 	for (const u of [...sim.unitsOf(player)]) {
-		if (u.goto !== undefined && sim.unit(u.id)) advance(sim, u);
+		if (!sim.unit(u.id)) continue;
+		if (u.order === "explore") exploreStep(sim, u);
+		else if (u.goto !== undefined) advance(sim, u);
 	}
 }
 

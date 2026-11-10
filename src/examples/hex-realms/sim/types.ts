@@ -107,7 +107,7 @@ export interface UnitState {
 	kills: number;
 	veteran: boolean;
 	/** Standing order: asleep until an enemy comes near, or fortified (dug in for defence). */
-	order?: "sleep" | "fortify";
+	order?: "sleep" | "fortify" | "explore";
 	/** A far tile the unit walks to over several turns. */
 	goto?: number;
 	/** Raiders: the camp that sent the unit out. */
@@ -328,6 +328,7 @@ export type Command =
 	| { type: "sleep"; unit: number }
 	| { type: "fortify"; unit: number }
 	| { type: "wake"; unit: number }
+	| { type: "explore"; unit: number }
 	| { type: "goto"; unit: number; to: number }
 	| { type: "upgrade"; unit: number }
 	| { type: "renameCity"; city: number; name: string }
@@ -351,7 +352,7 @@ export type SimEvent =
 	| { type: "unitChanged"; unit: number }
 	| { type: "attack"; attacker: number; defender: number; from: number; to: number; damage: number; retaliation: number; killed: boolean; ranged: boolean }
 	| { type: "cityChanged"; city: number }
-	| { type: "orderEnded"; unit: number; reason: "arrived" | "blocked" | "enemy" }
+	| { type: "orderEnded"; unit: number; reason: "arrived" | "blocked" | "enemy" | "explored" }
 	| { type: "unitUpgraded"; unit: number; from: UnitTypeId; to: UnitTypeId }
 	| { type: "cityCaptured"; city: number; from: number; to: number }
 	| { type: "cityFounded"; city: number }

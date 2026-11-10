@@ -1062,6 +1062,31 @@ describe("unit orders, upgrades and renaming", () => {
 		expect(sim.unit(a.id)!.goto).toBeUndefined();
 	});
 
+	test("exploring units head for the fog each turn until nothing unexplored is in reach", () => {
+		const sim = blank(2, [sim0Start(), sim2(20, 12)], { fog: "civ", humans: [0, 1] });
+		clearUnits(sim);
+		const scout = unitAt(sim, 0, sim0Start() + 1);
+		const known = () => [...Array(sim.map.count).keys()].filter((t) => sim.knows(0, t)).length;
+		const before = known();
+		expect(sim.apply(0, { type: "explore", unit: scout.id }).ok).toBe(true);
+		expect(sim.unit(scout.id)?.order).toBe("explore");
+		for (let k = 0; k < 6; k++) nextTurn(sim);
+		expect(known()).toBeGreaterThan(before + 20);
+		// Still exploring, and skipped by Next Unit
+		expect(sim.unit(scout.id)?.order).toBe("explore");
+		// A direct order replaces it
+		const live = sim.unit(scout.id)!;
+		live.moves = 2; // (it spent this turn's moves exploring)
+		const step = sim.neighbors(live.tile).find((t) => canEnter(sim, live, t) && sim.unitAt[t] < 0) as number;
+		expect(sim.apply(0, { type: "move", unit: scout.id, to: step }).ok).toBe(true);
+		expect(sim.unit(scout.id)?.order).toBeUndefined();
+		// With everything known, there's nothing to explore
+		const open = blank(2, [sim0Start(), sim2(20, 12)], { fog: "off", humans: [0, 1] });
+		clearUnits(open);
+		const s2 = unitAt(open, 0, sim0Start() + 1);
+		expect(open.apply(0, { type: "explore", unit: s2.id }).ok).toBe(false);
+	});
+
 	test("warriors upgrade to swordsmen with Smithing, inside your borders, for stars", () => {
 		const sim = blank(2, [sim0Start(), 14 * 24 + 21]);
 		clearUnits(sim);
