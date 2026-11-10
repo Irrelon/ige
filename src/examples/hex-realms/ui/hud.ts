@@ -1678,7 +1678,7 @@ export class Hud {
 		const svg = (path: string) => `<svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="${path}"/></svg>`;
 		const playing = currentTrackIndex();
 		const list = this.trackListOpen
-			? `<div class="track-list" role="listbox" aria-label="Tracks">${TRACKS.map((t, i) => `<button class="track-item ${i === playing ? "on" : ""}" role="option" aria-selected="${i === playing}" data-action="music-track" data-track="${i}">
+			? `<div class="track-list" role="listbox" aria-label="Tracks">${TRACKS.map((t, i) => `<button class="track-item ${i === playing ? "on" : ""}" role="option" aria-selected="${i === playing}" data-action="music-track" data-track="${i}" title="${esc(t.name)}: ${esc(t.about)}">
 				<span class="track-num">${i === playing ? svg(paused ? "M7 5h3v14H7zM14 5h3v14h-3z" : "M8 5v14l11-7z") : i + 1}</span>
 				<span class="track-title">${esc(t.name)}</span>
 				<span class="dim small">${esc(t.about)}</span>

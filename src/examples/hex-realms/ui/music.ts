@@ -6,8 +6,10 @@ import { trackScore, TRACKS } from "./tracks";
 /**
  * The game's music: composed here as lists of notes for a small synthesised
  * orchestra (strings, brass, horns, choir, timpani, taiko, cymbals, harp,
- * flute, celesta), rendered in a Web Worker (musicSynth.ts) and played
- * through the music volume bus.
+ * flute, celesta) and more besides (piano, lute, oud, hammered dulcimer,
+ * koto, tin whistle, shakuhachi, duduk, shawm, fiddle, marimba, kalimba,
+ * pipe organ, bells, hand drums), rendered in a Web Worker (musicSynth.ts)
+ * and played through the music volume bus.
  *
  * A piece is rendered in chunks of a few bars, each chunk holding the notes
  * that start inside it (with their full tails), and the chunks are summed
@@ -17,8 +19,9 @@ import { trackScore, TRACKS } from "./tracks";
  * - The title theme is a composed piece in D minor: a hushed opening (low
  *   strings, choir, harp), the horn theme over a driving string ostinato and
  *   drums, the full orchestra restating it, and a bright D major close.
- * - In-game music is eight composed pieces (tracks.ts), orchestral,
- *   exciting, wistful and pastoral, played one after another in order.
+ * - In-game music is seventeen composed pieces (tracks.ts): eight for the
+ *   orchestra and nine with their own instruments (piano, folk band, oud and
+ *   duduk, koto, organ, marimba, dulcimer), played one after another in order.
  */
 
 const SR = 32000;

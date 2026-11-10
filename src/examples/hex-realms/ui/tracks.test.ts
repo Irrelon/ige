@@ -36,8 +36,9 @@ function render (score: Score, length: number, reverb: number, wav?: { path: str
 }
 
 describe("in-game music", () => {
-	test("eight tracks; every bar of every tune is four beats and every chord is known", () => {
-		expect(TRACKS.length).toBe(8);
+	test("seventeen tracks; every bar of every tune is four beats and every chord is known", () => {
+		expect(TRACKS.length).toBe(17);
+		expect(new Set(TRACKS.map((t) => t.name)).size).toBe(17);
 		for (const t of TRACKS) {
 			for (const sec of t.sections) {
 				const bars = sec.chords.trim().split(/\s+/).length;
@@ -61,8 +62,9 @@ describe("in-game music", () => {
 		for (const t of TRACKS as Track[]) {
 			const built = trackScore(t);
 			const dir = process.env.MUSIC_WAV;
+			const started = Date.now();
 			const r = render(built.score, built.length, t.reverb, dir ? { path: `${dir}/${TRACKS.indexOf(t) + 1} ${t.name}.wav`, gain: t.level * 0.85 } : undefined);
-			rows.push(`${t.name}: ${r.seconds.toFixed(0)} s, ${built.score.events.length} notes, rms ${r.rms.toFixed(4)}, peak ${r.peak.toFixed(3)}, level for 0.55 x title: ${(0.55 * ref.rms / r.rms).toFixed(2)}`);
+			rows.push(`${t.name}: ${r.seconds.toFixed(0)} s, ${built.score.events.length} notes, rms ${r.rms.toFixed(4)}, peak ${r.peak.toFixed(3)}, level for 0.55 x title: ${(0.55 * ref.rms / r.rms).toFixed(2)}, rendered in ${((Date.now() - started) / 1000).toFixed(1)} s`);
 		}
 		console.log(rows.join("\n"));
 	}, 600000);

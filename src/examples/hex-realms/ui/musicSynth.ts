@@ -16,7 +16,9 @@
 /** One note for the synthesiser. Times are seconds from the start of the chunk. */
 export interface SynthEvent {
 	/** Instrument. */
-	i: "str" | "brass" | "horn" | "choirA" | "choirO" | "timp" | "taiko" | "crash" | "swell" | "harp" | "flute" | "cel" | "sub";
+	i: "str" | "brass" | "horn" | "choirA" | "choirO" | "timp" | "taiko" | "crash" | "swell" | "harp" | "flute" | "cel" | "sub"
+		| "piano" | "lute" | "oud" | "dulc" | "koto" | "whistle" | "reed" | "fiddle" | "marimba" | "kalimba" | "organ" | "bell"
+		| "frame" | "darb" | "shaker" | "tamb" | "block";
 	t: number;
 	d: number;
 	/** MIDI note. */
@@ -27,13 +29,20 @@ export interface SynthEvent {
 	p: number;
 	/** Reverb send 0-1. */
 	w: number;
-	/** Strings: attack, release, voices, brightness, vibrato depth (cents), level. */
+	/**
+	 * Strings: attack, release, voices, brightness, vibrato depth (cents), level.
+	 * Also: brightness (reed: 0 a duduk, 1 a shawm), breath (whistle: 0 a tin
+	 * whistle, 1 a shakuhachi), openness (frame drum), attack and release
+	 * (reed, fiddle, for drones).
+	 */
 	a?: number;
 	r?: number;
 	n?: number;
 	b?: number;
 	vib?: number;
 	l?: number;
+	/** Koto: bend up this many semitones part-way through the note. */
+	bd?: number;
 }
 
 export interface SynthRequest {
@@ -235,8 +244,33 @@ export function synthWorkerMain (): void {
 			return d;
 		};
 
+		/**
+		 * Add a decaying sine (amp, falling to 1/1000 over t60 seconds; Infinity
+		 * holds it) by recurrence: two multiplies a sample, no table lookups.
+		 */
+		const addDamped = (buf: Float32Array, n: number, fr: number, amp: number, t60: number, phase = 0) => {
+			if (fr <= 0 || fr > sr * 0.45 || !amp) return;
+			const w = (2 * Math.PI * fr) / sr;
+			const r = Math.pow(0.001, 1 / (t60 * sr));
+			const k1 = 2 * r * Math.cos(w), k2 = r * r;
+			let s0 = amp * Math.sin(phase), s1 = amp * r * Math.sin(w + phase);
+			for (let i = 0; i < n; i++) {
+				buf[i] += s0;
+				const s2 = k1 * s1 - k2 * s0;
+				s0 = s1;
+				s1 = s2;
+			}
+		};
+
 		const sines = (buf: Float32Array, n: number, partials: [number, number, number][], f: number, drop = 0, dropLen = 0.09) => {
+			if (!drop) {
+				// Steady pitches: by recurrence, with the same 40-sample onset ramp (buf is fresh)
+				for (const [mult, amp, decay] of partials) addDamped(buf, n, f * mult, amp, decay);
+				for (let i = 0; i < Math.min(40, n); i++) buf[i] *= i / 40;
+				return;
+			}
 			for (const [mult, amp, decay] of partials) {
+				if (f * mult > sr * 0.45) continue;
 				let ph = 0;
 				const k = Math.pow(0.001, 1 / Math.max(1, decay * sr));
 				let g = amp;
@@ -248,6 +282,86 @@ export function synthWorkerMain (): void {
 					buf[i] += sin01(ph) * g * atk;
 					g *= k;
 				}
+			}
+		};
+
+		const ksCache: Record<string, Float32Array> = {};
+		const bodyCache: Record<string, Float32Array> = {};
+		/**
+		 * A plucked or struck string (Karplus-Strong, with an all-pass in the
+		 * loop for exact tuning). `t60` is how long the fundamental rings;
+		 * `stretch` 0.5 is the usual two-point average (the dullest), smaller
+		 * keeps more of the upper partials; `bright` is the pluck's edge and
+		 * `pos` where along the string it is plucked.
+		 */
+		const ksString = (m: number, t60: number, stretch: number, bright: number, pos: number, seconds: number) => {
+			const key = `${m}|${t60}|${stretch}|${bright}|${pos}|${seconds}`;
+			const hit = ksCache[key];
+			if (hit) return hit;
+			const f = hz(m);
+			const loop = sr / f;
+			const N = Math.max(2, Math.floor(loop - stretch - 0.1));
+			const delta = loop - stretch - N;
+			const C = (1 - delta) / (1 + delta);
+			const keep = Math.pow(0.001, 1 / (t60 * f));
+			const exc = new Float32Array(N);
+			let lp = 0;
+			const a = 0.12 + 0.85 * bright;
+			for (let i = 0; i < N; i++) {
+				lp += a * (rand() * 2 - 1 - lp);
+				exc[i] = lp;
+			}
+			// The pluck point: a comb on the excitation
+			const P = Math.max(1, Math.round(pos * N));
+			const line = new Float32Array(N);
+			let mean = 0;
+			for (let i = 0; i < N; i++) {
+				line[i] = exc[i] - 0.9 * exc[(i - P + N) % N];
+				mean += line[i] / N;
+			}
+			let peak = 1e-6;
+			for (let i = 0; i < N; i++) {
+				line[i] -= mean;
+				peak = Math.max(peak, Math.abs(line[i]));
+			}
+			for (let i = 0; i < N; i++) line[i] /= peak;
+			const n = Math.floor(sr * seconds);
+			const out = new Float32Array(n);
+			let idx = 0, prev = 0, apX = 0, apY = 0;
+			for (let i = 0; i < n; i++) {
+				const x = line[idx];
+				out[i] = x;
+				const avg = ((1 - stretch) * x + stretch * prev) * keep;
+				prev = x;
+				const y = C * avg + apX - C * apY;
+				apX = avg;
+				apY = y;
+				line[idx] = y;
+				if (++idx >= N) idx = 0;
+			}
+			const fade = Math.min(n, Math.floor(sr * 0.25));
+			for (let i = 0; i < fade; i++) out[n - 1 - i] *= i / fade;
+			ksCache[key] = out;
+			return out;
+		};
+
+		/** Sum a band-passed copy of `src` per formant (or body resonance) into `buf`. */
+		const resonate = (buf: Float32Array, src: Float32Array, n: number, bands: number[][]) => {
+			for (const [ff, q, g] of bands) {
+				const bq = new Biquad();
+				bq.set("bp", ff, q, sr);
+				for (let i = 0; i < n; i++) buf[i] += bq.run(src[i]) * g;
+			}
+		};
+
+		/** A drum's body: a sine falling to its pitch, dying away. */
+		const drumBody = (buf: Float32Array, n: number, f: number, fall: number, decay: number, peak: number) => {
+			let ph = 0, g = peak;
+			const k = Math.pow(0.001, 1 / Math.max(1, decay * sr));
+			for (let i = 0; i < n; i++) {
+				ph += (f * (1 + fall * Math.exp(-i / (0.025 * sr)))) / sr;
+				buf[i] += sin01(ph) * g * (i < 30 ? i / 30 : 1);
+				g *= k;
 			}
 		};
 
@@ -369,6 +483,230 @@ export function synthWorkerMain (): void {
 					sines(buf, n, [[1, 0.12, 1.4], [4.01, 0.03, 0.35], [2, 0.025, 0.7]], f);
 					for (let i = 0; i < n; i++) buf[i] *= e.v;
 					mixNote(buf, n, start, e.p, 0.6);
+					break;
+				}
+				case "piano": {
+					// Additive: stretched (inharmonic) partials, each with a fast and a slow decay, the
+					// lowest in pairs a cent apart (the beating of a piano's unison strings)
+					const v = e.v;
+					const t60 = Math.min(14, Math.max(1.6, 9 * Math.pow(2, -(e.m - 48) / 15)));
+					const ring = Math.min(Math.max(0.08, e.d), t60 * 0.8);
+					const rel = 0.22 + Math.max(0, 60 - e.m) * 0.005;
+					const n = Math.floor((ring + rel * 1.2) * sr);
+					const buf = buffer(n);
+					const inharm = 0.00012 * Math.pow(2, (e.m - 40) / 14);
+					const tilt = 1.75 - 0.85 * v;
+					const K = Math.max(1, Math.min(12, Math.floor(7500 / f)));
+					for (let k = 1; k <= K; k++) {
+						const fk = f * k * Math.sqrt(1 + inharm * k * k);
+						if (fk > sr * 0.45) break;
+						const amp = Math.pow(k, -tilt);
+						const fast = t60 / (3.5 * (1 + 0.35 * (k - 1))), slow = t60 / (1 + 0.3 * (k - 1));
+						const ph = rand() * 6.283;
+						if (k <= 4) {
+							const f2 = fk * (1 + (0.5 + rand() * 0.7) / 1731), ph2 = rand() * 6.283;
+							addDamped(buf, n, fk, amp * 0.31, fast, ph);
+							addDamped(buf, n, fk, amp * 0.19, slow, ph);
+							addDamped(buf, n, f2, amp * 0.31, fast, ph2);
+							addDamped(buf, n, f2, amp * 0.19, slow, ph2);
+						} else {
+							addDamped(buf, n, fk, amp * 0.62, fast, ph);
+							addDamped(buf, n, fk, amp * 0.38, slow, ph);
+						}
+					}
+					// The hammer's attack, and the damper falling when the key is let go
+					const att = Math.floor(0.002 * sr), off = Math.floor(ring * sr), relK = Math.pow(0.001, 1 / (rel * sr));
+					const level = 0.2 * (0.3 + 0.7 * v);
+					let g = level;
+					for (let i = 0; i < n; i++) {
+						buf[i] *= i < att ? (level * i) / att : g;
+						if (i >= off) g *= relK;
+					}
+					mixNote(buf, n, start, e.p, e.w);
+					noiseBurst(e.t, 0.018, "lp", 900 + 2600 * v, 0.7, 0.012 * v, e.p, e.w);
+					break;
+				}
+				case "lute":
+				case "oud": {
+					// The string plus two of the body's resonances, made once per pitch and edge (strums repeat them)
+					const oud = e.i === "oud";
+					const edge = Math.round((e.b ?? 0.6) * (0.55 + 0.45 * e.v) * 10) / 10;
+					const key = `${e.i}|${e.m}|${edge}`;
+					let body = bodyCache[key];
+					if (!body) {
+						const str = ksString(e.m, oud ? 2.4 : 1.8, oud ? 0.5 : 0.4, edge, oud ? 0.13 : 0.2, oud ? 2.4 : 2);
+						body = new Float32Array(str.length);
+						resonate(body, str, str.length, oud ? [[170, 1.3, 1.3], [850, 1.5, 0.5]] : [[250, 1.4, 1.1], [1250, 1.6, 0.55]]);
+						for (let i = 0; i < str.length; i++) body[i] = (body[i] + str[i] * 0.55) * (oud ? 0.54 : 0.48);
+						filterBuf(body, str.length, "lp", oud ? 2800 : 4200, 0.7);
+						bodyCache[key] = body;
+					}
+					const n = body.length;
+					const buf = buffer(n);
+					for (let i = 0; i < n; i++) buf[i] = body[i] * e.v;
+					mixNote(buf, n, start, e.p, e.w);
+					noiseBurst(e.t, 0.01, "bp", oud ? 1800 : 2600, 1.2, 0.04 * e.v, e.p, e.w);
+					break;
+				}
+				case "dulc": {
+					// A course of two strings a few cents apart, struck with a hammer
+					const a = ksString(e.m - 0.03, 3, 0.28, 0.95, 0.11, 3), b = ksString(e.m + 0.03, 3, 0.28, 0.95, 0.14, 3);
+					const n = a.length;
+					const buf = buffer(n);
+					for (let i = 0; i < n; i++) buf[i] = (a[i] + b[i]) * 0.38 * e.v;
+					filterBuf(buf, n, "lp", 6500, 0.7);
+					mixNote(buf, n, start, e.p, e.w);
+					noiseBurst(e.t, 0.008, "bp", 3200, 1, 0.05 * e.v, e.p, e.w);
+					break;
+				}
+				case "koto": {
+					// Additive pluck near the bridge, so the pitch can be pressed up (oshide) as it rings
+					const n = Math.floor((Math.max(0, e.d) + 2.2) * sr);
+					const buf = buffer(n);
+					const t60 = Math.max(1.2, 3.2 * Math.pow(2, -(e.m - 60) / 24));
+					const bendAt = Math.min(0.35, Math.max(0.12, e.d * 0.35)) * sr, bendLen = 0.13 * sr, bend = e.bd ?? 0;
+					const incs = new Float32Array(bend ? n : 0);
+					if (bend) for (let i = 0; i < n; i++) incs[i] = (f * (bend && i > bendAt ? Math.pow(2, (bend / 12) * Math.min(1, (i - bendAt) / bendLen)) : 1)) / sr;
+					for (let k = 1; k <= 10; k++) {
+						if (f * k * Math.pow(2, Math.max(0, bend) / 12) > sr * 0.45) break;
+						const amp = Math.abs(Math.sin(k * Math.PI * 0.18)) / k;
+						const decay = t60 / (1 + 0.55 * (k - 1));
+						if (!bend) {
+							addDamped(buf, n, f * k, amp, decay, rand() * 6.283);
+							continue;
+						}
+						const kk = Math.pow(0.001, 1 / (decay * sr));
+						let g = amp, ph = rand();
+						for (let i = 0; i < n; i++) {
+							buf[i] += sin01(ph) * g;
+							ph += incs[i] * k;
+							g *= kk;
+						}
+					}
+					for (let i = 0; i < Math.min(40, n); i++) buf[i] *= i / 40;
+					for (let i = 0; i < n; i++) buf[i] *= 0.21 * e.v;
+					mixNote(buf, n, start, e.p, e.w);
+					noiseBurst(e.t, 0.006, "bp", 3000, 1, 0.05 * e.v, e.p, e.w);
+					break;
+				}
+				case "whistle": {
+					const breath = e.b ?? 0.25;
+					const n = Math.floor((e.d + 0.25) * sr);
+					const buf = buffer(n);
+					const air = new Float32Array(n);
+					noiseInto(air, n, 1);
+					filterBuf(air, n, "bp", Math.min(9000, f * 1.6), 1.1);
+					const vib = e.vib ?? (e.d > 0.45 ? (breath > 0.5 ? 18 : 8) : 0);
+					// The shakuhachi leans up into long notes from below
+					const scoop = breath > 0.5 && e.d > 0.6 ? -70 : 0, scoopLen = 0.18 * sr;
+					let ph = rand(), lfo = rand();
+					for (let i = 0; i < n; i++) {
+						lfo += 5.2 / sr;
+						let cents = vib * Math.min(1, i / (0.4 * sr)) * sin01(lfo);
+						if (scoop && i < scoopLen) cents += scoop * (1 - i / scoopLen);
+						ph += (f * (1 + cents * 0.000578)) / sr;
+						buf[i] = sin01(ph) + sin01(ph * 2) * 0.12 + sin01(ph * 3) * 0.05 + air[i] * (0.1 + 0.55 * breath);
+					}
+					applyEnv(buf, n, breath > 0.5 ? 0.08 : 0.025, e.d, 0.12, (breath > 0.5 ? 0.11 : 0.1) * e.v);
+					mixNote(buf, n, start, e.p, e.w);
+					noiseBurst(e.t, 0.03, "bp", Math.min(9000, f * 3), 1.5, 0.04 * e.v, e.p, e.w);
+					break;
+				}
+				case "reed":
+				case "fiddle": {
+					// A saw through formants: a duduk or a shawm (brightness), or a fiddle's body
+					const fiddle = e.i === "fiddle";
+					const bright = e.b ?? 0.3;
+					const rel = e.r ?? (fiddle ? 0.22 : 0.15);
+					const n = Math.floor((e.d + rel * 1.3) * sr);
+					const src = new Float32Array(n);
+					const vib = e.vib ?? (fiddle ? 12 : bright > 0.5 ? 8 : 14);
+					saws(src, n, f, 1, 0, vib, fiddle ? 5.6 : 5.2, (fiddle ? 0.25 : 0.35) * sr, fiddle ? -15 : bright > 0.5 ? -20 : -45, 0.09 * sr);
+					const buf = buffer(n);
+					const bands = fiddle ? [[420, 2, 1], [1500, 2.2, 0.7], [3000, 3, 0.45]] : bright > 0.5 ? [[1100, 2.2, 1], [2700, 3, 0.65], [4300, 4, 0.3]] : [[520, 2.2, 1], [1250, 3, 0.45], [2600, 4, 0.12]];
+					resonate(buf, src, n, bands);
+					for (let i = 0; i < n; i++) buf[i] += src[i] * (fiddle ? 0.12 : 0.06);
+					filterBuf(buf, n, "lp", fiddle ? Math.min(7000, f * 6 + 1800) : bright > 0.5 ? 6500 : 3000, 0.7);
+					applyEnv(buf, n, e.a ?? (fiddle ? 0.06 : bright > 0.5 ? 0.03 : 0.07), e.d, rel, (e.l ?? (fiddle ? 0.11 : 0.26)) * e.v);
+					mixNote(buf, n, start, e.p, e.w);
+					break;
+				}
+				case "marimba":
+				case "kalimba": {
+					const kal = e.i === "kalimba";
+					const t60 = kal ? Math.max(0.5, 1.4 * Math.pow(2, -(e.m - 60) / 24)) : Math.max(0.35, 1.6 * Math.pow(2, -(e.m - 48) / 18));
+					const n = Math.floor((t60 + 0.1) * sr);
+					const buf = buffer(n);
+					sines(buf, n, kal ? [[1, 0.5, t60], [6.2, 0.07 * (0.5 + e.v), 0.12], [3.0, 0.03, t60 * 0.3]] : [[1, 0.5, t60], [3.93, 0.1 * (0.5 + e.v), t60 * 0.18], [9.2, 0.025 * e.v, t60 * 0.06]], f);
+					for (let i = 0; i < n; i++) buf[i] *= (kal ? 0.4 : 0.62) * e.v;
+					mixNote(buf, n, start, e.p, e.w);
+					noiseBurst(e.t, 0.007, "bp", kal ? 3500 : 2200, 1, 0.04 * e.v, e.p, e.w);
+					break;
+				}
+				case "organ": {
+					// Pipe ranks: 16', 8' (with a celeste a shade sharp), 4', 2 2/3', 2'
+					const n = Math.floor((e.d + 0.4) * sr);
+					const buf = buffer(n);
+					const ranks: [number, number][] = [[0.5, 0.3], [1, 1], [1.0017, 0.35], [2, 0.5], [3, 0.16], [4, 0.22]];
+					for (const [mult, amp0] of ranks) {
+						const fr = f * mult;
+						addDamped(buf, n, fr, amp0 * (mult > 1 ? Math.min(1, Math.sqrt(1500 / fr)) : 1), Infinity, rand() * 6.283);
+					}
+					applyEnv(buf, n, e.a ?? 0.07, e.d, 0.3, (e.l ?? 0.035) * e.v);
+					mixNote(buf, n, start, e.p, e.w);
+					noiseBurst(e.t, 0.05, "bp", Math.min(7000, f * 4), 2, 0.025 * e.v, e.p, e.w);
+					break;
+				}
+				case "bell": {
+					// A cast bell's partials: hum, prime, minor third (tierce), fifth, nominal and above
+					const n = Math.floor(5.5 * sr);
+					const buf = buffer(n);
+					sines(buf, n, [[0.5, 0.35, 5.5], [1, 0.5, 4], [1.19, 0.28, 3], [1.5, 0.18, 2.5], [2, 0.42, 2.6], [2.52, 0.14, 1.6], [3.01, 0.1, 1.2], [4.16, 0.07, 0.8], [5.43, 0.04, 0.5]], f);
+					for (let i = 0; i < n; i++) buf[i] *= 0.12 * e.v;
+					mixNote(buf, n, start, e.p, e.w);
+					noiseBurst(e.t, 0.01, "bp", 3000, 1, 0.05 * e.v, e.p, e.w);
+					break;
+				}
+				case "frame": {
+					// A frame drum or bodhrán: open and booming, or muted by the hand
+					const open = e.b ?? 0.5;
+					const n = Math.floor(0.8 * sr);
+					const buf = buffer(n);
+					drumBody(buf, n, f, 0.5, 0.12 + 0.5 * open, 0.55 * e.v);
+					mixNote(buf, n, start, e.p, e.w);
+					noiseBurst(e.t, 0.035, "lp", 1600, 0.6, 0.2 * e.v, e.p, e.w);
+					break;
+				}
+				case "darb":
+					if (e.m < 60) {
+						// Doum: the deep stroke in the middle of the head
+						const n = Math.floor(0.6 * sr);
+						const buf = buffer(n);
+						drumBody(buf, n, 92, 0.35, 0.38, 0.6 * e.v);
+						mixNote(buf, n, start, e.p, e.w);
+						noiseBurst(e.t, 0.02, "lp", 900, 0.6, 0.12 * e.v, e.p, e.w);
+					} else {
+						// Tek (and the softer ka): a crack at the rim
+						noiseBurst(e.t, 0.03, "bp", e.m >= 70 ? 3800 : 2600, 1.4, 0.5 * e.v, e.p, e.w);
+						const n = Math.floor(0.08 * sr);
+						const buf = buffer(n);
+						drumBody(buf, n, e.m >= 70 ? 760 : 560, 0.2, 0.05, 0.18 * e.v);
+						mixNote(buf, n, start, e.p, e.w);
+					}
+					break;
+				case "shaker":
+					noiseBurst(e.t, 0.06, "hp", 6000, 0.7, 0.22 * e.v, e.p, e.w, 0.012);
+					break;
+				case "tamb":
+					noiseBurst(e.t, 0.05, "hp", 6000, 0.7, 0.18 * e.v, e.p, e.w, 0.004);
+					noiseBurst(e.t, 0.2, "bp", 8000, 4, 0.5 * e.v, e.p, e.w, 0.003);
+					break;
+				case "block": {
+					const n = Math.floor(0.12 * sr);
+					const buf = buffer(n);
+					sines(buf, n, [[1, 0.5, 0.07], [2.7, 0.2, 0.035]], f);
+					for (let i = 0; i < n; i++) buf[i] *= 0.4 * e.v;
+					mixNote(buf, n, start, e.p, e.w);
 					break;
 				}
 				case "sub": {

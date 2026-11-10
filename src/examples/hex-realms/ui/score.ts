@@ -93,11 +93,89 @@ export class Score {
 	sub (t: number, d: number, m: number, v: number): void {
 		this.events.push({ i: "sub", t, d, m, v, p: 0, w: 0.15 });
 	}
+
+	/** A piano note held `d` seconds (the damper falls then; the note may have died away sooner). */
+	piano (t: number, d: number, m: number, v: number, pan = 0, wet = 0.4): void {
+		this.events.push({ i: "piano", t, d, m, v, p: pan, w: wet });
+	}
+
+	lute (t: number, m: number, v: number, pan = -0.2, wet = 0.35, bright = 0.6): void {
+		this.events.push({ i: "lute", t, d: 0, m, v, p: pan, w: wet, b: bright });
+	}
+
+	oud (t: number, m: number, v: number, pan = -0.15, wet = 0.4): void {
+		this.events.push({ i: "oud", t, d: 0, m, v, p: pan, w: wet, b: 0.5 });
+	}
+
+	dulcimer (t: number, m: number, v: number, pan = 0.2, wet = 0.45): void {
+		this.events.push({ i: "dulc", t, d: 0, m, v, p: pan, w: wet });
+	}
+
+	/** A koto note; `bend` presses it up that many semitones as it rings. */
+	koto (t: number, d: number, m: number, v: number, bend = 0, pan = -0.2, wet = 0.5): void {
+		this.events.push({ i: "koto", t, d, m, v, p: pan, w: wet, bd: bend || undefined });
+	}
+
+	/** A tin whistle (breath 0) or, breathier and lower, a shakuhachi (breath ~0.9). */
+	whistle (t: number, d: number, m: number, v: number, breath = 0.25, pan = 0.2, wet = 0.45): void {
+		this.events.push({ i: "whistle", t, d, m, v, p: pan, w: wet, b: breath });
+	}
+
+	/** A double reed: a mellow duduk (bright 0) to a piercing shawm (bright 1); slow attack and release for drones. */
+	reed (t: number, d: number, m: number, v: number, o: { bright?: number; pan?: number; wet?: number; vibrato?: number; attack?: number; release?: number; level?: number } = {}): void {
+		this.events.push({ i: "reed", t, d, m, v, p: o.pan ?? 0.15, w: o.wet ?? 0.45, b: o.bright, vib: o.vibrato, a: o.attack, r: o.release, l: o.level });
+	}
+
+	fiddle (t: number, d: number, m: number, v: number, o: { pan?: number; wet?: number; vibrato?: number; attack?: number; release?: number; level?: number } = {}): void {
+		this.events.push({ i: "fiddle", t, d, m, v, p: o.pan ?? -0.15, w: o.wet ?? 0.4, vib: o.vibrato, a: o.attack, r: o.release, l: o.level });
+	}
+
+	marimba (t: number, m: number, v: number, pan = 0.15, wet = 0.35): void {
+		this.events.push({ i: "marimba", t, d: 0, m, v, p: pan, w: wet });
+	}
+
+	kalimba (t: number, m: number, v: number, pan = 0.35, wet = 0.4): void {
+		this.events.push({ i: "kalimba", t, d: 0, m, v, p: pan, w: wet });
+	}
+
+	organ (t: number, d: number, m: number, v: number, pan = 0, wet = 0.7, level?: number): void {
+		this.events.push({ i: "organ", t, d, m, v, p: pan, w: wet, l: level });
+	}
+
+	bell (t: number, m: number, v: number, pan = 0.25, wet = 0.6): void {
+		this.events.push({ i: "bell", t, d: 0, m, v, p: pan, w: wet });
+	}
+
+	/** A frame drum or bodhrán at pitch `m` (around 38-50); `open` 0 muted by the hand, 1 ringing. */
+	frame (t: number, m: number, v: number, open = 0.5, pan = -0.1, wet = 0.3): void {
+		this.events.push({ i: "frame", t, d: 0, m, v, p: pan, w: wet, b: open });
+	}
+
+	/** A darbuka stroke: the deep doum, the cracking tek, the softer ka. */
+	darbuka (t: number, stroke: "doum" | "tek" | "ka", v: number, pan = -0.1, wet = 0.3): void {
+		this.events.push({ i: "darb", t, d: 0, m: stroke === "doum" ? 40 : stroke === "tek" ? 72 : 64, v, p: pan, w: wet });
+	}
+
+	shaker (t: number, v: number, pan = 0.4): void {
+		this.events.push({ i: "shaker", t, d: 0, m: 0, v, p: pan, w: 0.25 });
+	}
+
+	tambourine (t: number, v: number, pan = 0.35): void {
+		this.events.push({ i: "tamb", t, d: 0, m: 0, v, p: pan, w: 0.3 });
+	}
+
+	woodblock (t: number, m: number, v: number, pan = -0.35): void {
+		this.events.push({ i: "block", t, d: 0, m, v, p: pan, w: 0.3 });
+	}
 }
 
 /** When a note starts sounding, and roughly when it has died away. */
 export function span (e: SynthEvent): [number, number] {
 	if (e.i === "swell") return [e.t - e.d, e.t + 0.1];
-	const tails: Partial<Record<SynthEvent["i"], number>> = { timp: 2.3, taiko: 1.2, crash: 3.4, harp: 2.6, cel: 2, choirA: 1.2, choirO: 1.2 };
+	const tails: Partial<Record<SynthEvent["i"], number>> = {
+		timp: 2.3, taiko: 1.2, crash: 3.4, harp: 2.6, cel: 2, choirA: 1.2, choirO: 1.2,
+		piano: 0.6, lute: 2, oud: 2.4, dulc: 3, koto: 2.2, whistle: 0.25, marimba: 1.7, kalimba: 1.5, organ: 0.4, bell: 5.5,
+		frame: 0.8, darb: 0.6, shaker: 0.1, tamb: 0.3, block: 0.12
+	};
 	return [e.t, e.t + e.d + (tails[e.i] ?? (e.r ?? 0.8) * 1.1 + 0.5)];
 }
