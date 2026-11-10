@@ -236,6 +236,30 @@
 		"bytes": 810712,
 		"floor": -0.2805
 	},
+	"defender": {
+		"file": "defender.glb",
+		"min": [
+			-0.3299,
+			-0.5008,
+			-0.238
+		],
+		"max": [
+			0.3322,
+			0.4998,
+			0.2374
+		],
+		"triangles": 19981,
+		"animations": [
+			"death",
+			"hit",
+			"idle",
+			"attack",
+			"walk"
+		],
+		"skinned": true,
+		"bytes": 2201996,
+		"floor": -0.5206
+	},
 	"exoTrooper": {
 		"file": "exoTrooper.glb",
 		"min": [
