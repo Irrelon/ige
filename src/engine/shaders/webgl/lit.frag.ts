@@ -577,7 +577,10 @@ void main() {
 		vec3 F0 = mix(F0_DIELECTRIC, albedo, metallic);
 		vec3 kS = fresnelSchlick(max(dot(N, V), 0.0), F0);
 		vec3 kD = (1.0 - kS) * (1.0 - metallic);
-		vec3 ambient = (kD * albedo + kS * 0.1) * ambientLight * ao;
+		// No environment map: metals reflect the ambient light tinted by their own colour (smoother, more of it),
+		// so a metal surface in shade reads as metal rather than black
+		vec3 envSpecular = F0 * (1.0 - roughness * 0.6) * (0.55 + 0.45 * metallic);
+		vec3 ambient = (kD * albedo + envSpecular) * ambientLight * ao;
 		finalColor += ambient;
 
 		// Directional light with shadows
