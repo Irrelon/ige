@@ -57,7 +57,8 @@ From the browser console, `ige.client.autoplay(20)` lets the AI play your seat f
   sites that carriers supply by road (logs for extractors and sawmills, planks and stone for workshops). **Rush**
   finishes a site for stars. Roads cost 1 star a tile and can reach out from your roads across neutral land.
 - **Carry**: once a road joins a building or resource to a city, the goods arrive the same turn. Little workers walk
-  the roads with them all the time, and miners, woodcutters, sawyers, fishers, farmers and smiths work beside their
+  the roads with them all the time (roads cost 3 stars a tile, and as in Polytopia, a city first joined to your capital
+  gives both cities +1 population), and miners, woodcutters, sawyers, fishers, farmers and smiths work beside their
   buildings, so the map looks alive while you think. Ports (Sailing) join coastal cities into one network over sea
   lanes (deep ocean needs Navigation). A market also sells you goods at twice its price.
   The Economy screen (B) sets which demand gets scarce goods first, and the **Lens** (V) shows each building's state

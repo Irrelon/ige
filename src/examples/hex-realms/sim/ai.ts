@@ -3,7 +3,7 @@ import { promoteProblem, upgradeCost, upgradeProblem } from "./orders";
 import { attackTargets, preview } from "./combat";
 import { captureProblem, foundProblem, slotCap, slotsUsed, trainProblem, unitCost } from "./cities";
 import { actionProblem, agreementCost, aiAccepts, attitude, type DealTerms, endTreatyProblem, justified, proposalProblem, strandedUnits, strength, warProblem, weariness } from "./diplomacy";
-import { buildingStars, buildProblem, buyCost, networkNodes, rushCost, rushProblem, storedGoods } from "./economy";
+import { buildingStars, buildProblem, buyCost, networkNodes, roadCost, rushCost, rushProblem, storedGoods } from "./economy";
 import { researchCost } from "./effects";
 import { harvestProblem } from "./growth";
 import { search } from "./network";
@@ -11,7 +11,7 @@ import { mulberry32 } from "../noise";
 import { reachable, type Reach } from "./movement";
 import {
 	type AgendaId, AMBITION_IDS, type AmbitionId, AMBITIONS, type BuildingId, BUILDINGS, type CivId, CIVS, Deposit, type EndableTreaty, EXCHANGE_COST, type Good, GOOD_INFO, levelRewards,
-	HARVEST, MONUMENT_IDS, type Personality, personalityOf, ROAD_COST, TECH_IDS, type TechId, TECHS, UNIT_TYPES, type UnitTypeId, type WonderId
+	HARVEST, MONUMENT_IDS, type Personality, personalityOf, TECH_IDS, type TechId, TECHS, UNIT_TYPES, type UnitTypeId, type WonderId
 } from "./rules";
 import type { Sim } from "./sim";
 import { freeUnits, income, upkeep } from "./treasury";
@@ -364,7 +364,7 @@ class AiTurn {
 		this.rushStalled();
 		// Connect anything left without a road
 		for (const b of sim.buildingsOf(this.p)) {
-			if (this.stars < ROAD_COST) break;
+			if (this.stars < roadCost(sim)) break;
 			if (!this.connected(b.tile)) this.connect(b.tile);
 		}
 		// Sell surplus once a market stands
@@ -578,7 +578,7 @@ class AiTurn {
 		}
 		if (reached < 0) return;
 		for (let t = prev.get(reached) as number; t !== from && t >= 0; t = prev.get(t) as number) {
-			if (this.stars < ROAD_COST) return;
+			if (this.stars < roadCost(sim)) return;
 			if (sim.roads[t] !== this.p && sim.buildingAt[t] < 0) this.do({ type: "road", tile: t });
 		}
 	}

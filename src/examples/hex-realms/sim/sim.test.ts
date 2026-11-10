@@ -31,7 +31,7 @@ function blank (players: number, starts: number[], overrides: Partial<GameOption
 	map.shade.fill(1);
 	map.landmass.fill(0);
 	map.landmassSizes = [map.count];
-	const options = defaultOptions({ width, height, players, humans: [0], fog: "off", allowFounding: true, neutralStart: false, buildGrowth: false, raiders: false, ...overrides });
+	const options = defaultOptions({ width, height, players, humans: [0], fog: "off", allowFounding: true, neutralStart: false, buildGrowth: false, raiders: false, connections: false, ...overrides });
 	const sim = Sim.create(options, { map, starts, villages: false });
 	sim.drainEvents();
 	return sim;
@@ -909,6 +909,33 @@ describe("Polytopia-style growth", () => {
 		// Older games (and replays) keep food-only growth
 		const old = blank(2, [sim2(4, 4), sim2(20, 12)], { buildGrowth: false });
 		expect(buildingPop(old, 0, sim.map.neighbor(old.citiesOf(0)[0].tile, 0), "woodcutter")).toBe(0);
+	});
+});
+
+describe("connections", () => {
+	test("roads cost 3; a city first joined to the capital gives both +1 population, once", () => {
+		const sim = blank(2, [sim2(3, 3), sim2(20, 12)], { connections: true, humans: [0, 1] });
+		const capital = sim.citiesOf(0)[0];
+		capital.level = 5;
+		const town = createCity(sim, 0, sim2(8, 3), false);
+		town.level = 5;
+		sim.player(0).stars = 100;
+		const grown = () => [capital.growth, town.growth];
+		const before = grown();
+		// A road along the row between them (the cities' own tiles count as network)
+		const path = [4, 5, 6, 7].map((c) => sim2(c, 3));
+		for (const t of path.slice(0, -1)) {
+			expect(sim.apply(0, { type: "road", tile: t }).ok).toBe(true);
+			expect(town.linked).toBeFalsy();
+		}
+		const stars = sim.player(0).stars;
+		expect(sim.apply(0, { type: "road", tile: path[path.length - 1] }).ok).toBe(true);
+		expect(sim.player(0).stars).toBe(stars - 3);
+		expect(town.linked).toBe(true);
+		expect(grown()).toEqual([before[0] + 1, before[1] + 1]);
+		// Only once
+		nextTurn(sim);
+		expect(grown()).toEqual([before[0] + 1, before[1] + 1]);
 	});
 });
 

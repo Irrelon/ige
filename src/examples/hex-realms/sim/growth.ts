@@ -1,4 +1,5 @@
 import { addGrowth } from "./cities";
+import { linkedToCapital } from "./network";
 import { fail, ok } from "./result";
 import { BUILDING_POP, type BuildingId, BUILDINGS, Deposit, HARVEST, POP_BOOST, TECHS } from "./rules";
 import type { Sim } from "./sim";
@@ -75,6 +76,33 @@ export function buildingGrowth (sim: Sim, building: BuildingState): void {
 	for (const g of buildingGains(sim, building.owner, building.tile, building.type)) {
 		sim.emit({ type: "population", city: g.city.id, points: g.points, tile: g.tile, reason: g.reason });
 		addGrowth(sim, g.city, g.points);
+	}
+}
+
+// ------------------------------------------------------------------
+// Connections (the connections option)
+// ------------------------------------------------------------------
+
+/**
+ * As in Polytopia, the first time a city is joined to its owner's capital
+ * (by road, or by sea between ports) both it and the capital gain one
+ * population. Checked after anything that can join them up.
+ */
+export function connectionGrowth (sim: Sim, player: number): void {
+	if (!sim.options.connections || player < 0) return;
+	const capital = sim.citiesOf(player).find((c) => c.capital);
+	if (!capital) return;
+	const fresh = sim.citiesOf(player).filter((c) => !c.capital && !c.linked);
+	if (!fresh.length) return;
+	const linked = linkedToCapital(sim, player);
+	for (const city of fresh) {
+		if (!linked.has(city.id)) continue;
+		city.linked = true;
+		sim.emit({ type: "population", city: city.id, points: 1, tile: city.tile, reason: `Joined to ${capital.name}` });
+		addGrowth(sim, city, 1);
+		sim.emit({ type: "population", city: capital.id, points: 1, tile: capital.tile, reason: `Joined to ${city.name}` });
+		addGrowth(sim, capital, 1);
+		sim.emit({ type: "cityConnected", city: city.id, capital: capital.id });
 	}
 }
 

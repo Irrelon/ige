@@ -45,6 +45,8 @@ export interface GameOptions {
 	raiders?: boolean;
 	/** Units with three kills are promoted by their player (Polytopia-style) rather than at once (new games). */
 	promotions?: boolean;
+	/** Roads cost 3 stars, and a city first joined to its capital gives both +1 population (Polytopia-style; new games). */
+	connections?: boolean;
 	/** Rivers along tile edges (new games; absent in older ones, which stay as they were). */
 	rivers?: boolean;
 	victories: Record<VictoryType, boolean>;
@@ -141,6 +143,8 @@ export interface CityState {
 	pendingRewards: number;
 	radius: number;
 	store: Goods;
+	/** Has had its bonus for being joined to its owner's capital (connections games). */
+	linked?: boolean;
 }
 
 export interface BuildingState {
@@ -364,6 +368,7 @@ export type SimEvent =
 	| { type: "population"; city: number; points: number; tile: number; reason: string }
 	| { type: "harvested"; tile: number; deposit: number; city: number }
 	| { type: "unitPromoted"; unit: number }
+	| { type: "cityConnected"; city: number; capital: number }
 	| { type: "campFounded"; camp: number; tile: number }
 	/** A camp was scattered (by `player`'s unit, for a bounty), or -1 if it just went. */
 	| { type: "campCleared"; camp: number; tile: number; player: number; stars: number }

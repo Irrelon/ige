@@ -50,6 +50,7 @@ export function defaultOptions (overrides: Partial<GameOptions> = {}): GameOptio
 		buildGrowth: true,
 		raiders: true,
 		promotions: true,
+		connections: true,
 		victories: { domination: true, score: true, prosperity: true, alliance: true, diplomatic: true },
 		turnLimit: 60,
 		difficulty: "normal",
@@ -642,6 +643,8 @@ export class Sim {
 		}
 
 		if (result.ok) {
+			// Roads, ports, captures and new cities can join a city to its capital
+			if (command.type === "road" || command.type === "build" || command.type === "rush" || command.type === "capture" || command.type === "found") growth.connectionGrowth(this, player);
 			this.updateFog();
 			ambitions.checkAmbition(this, player);
 			victory.checkVictory(this);
@@ -722,6 +725,7 @@ export class Sim {
 		this.emit({ type: "turnStart", player, turn: this.state.turn });
 
 		if (this.state.turn > 1) economy.economyPhase(this, player, lines);
+		growth.connectionGrowth(this, player);
 		if (hasWonder(this, player, "hangingGardens")) {
 			for (const c of this.citiesOf(player)) cities.addGrowth(this, c, 1);
 		}

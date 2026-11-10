@@ -3,7 +3,7 @@ import type { IgeWebGlRenderer } from "@/engine/core/IgeWebGlRenderer";
 import { FOGGED, type FogMode, UNEXPLORED } from "../fog";
 import { captureProblem, foundProblem, slotCap, slotsUsed, trainProblem, unitCost } from "../sim/cities";
 import { attackProblem, preview } from "../sim/combat";
-import { buildingStars, buildOptions, buyCost, buyProblem, roadProblem, rushCost, rushProblem, storedGoods, wonderOptions } from "../sim/economy";
+import { buildingStars, buildOptions, buyCost, buyProblem, roadCost, roadProblem, rushCost, rushProblem, storedGoods, wonderOptions } from "../sim/economy";
 import { researchCost } from "../sim/effects";
 import { buildingPop, harvestProblem } from "../sim/growth";
 import { campAt, campBounty } from "../sim/raiders";
@@ -11,7 +11,7 @@ import { rateSite, type SiteReport } from "../sim/sites";
 import { termCard, type TermKey, termLink } from "./glossary";
 import { riverside } from "../rivers";
 import {
-	AMBITIONS, type BuildingId, BUILDINGS, DEPOSIT_GOOD, DEPOSIT_NAMES, Deposit, type EndableTreaty, END_TRUCE_TURNS, GOOD_INFO, GOODS, type Good, type Goods, growthNeeded, HARVEST, levelRewards, REWARDS, ROAD_COST,
+	AMBITIONS, type BuildingId, BUILDINGS, DEPOSIT_GOOD, DEPOSIT_NAMES, Deposit, type EndableTreaty, END_TRUCE_TURNS, GOOD_INFO, GOODS, type Good, type Goods, growthNeeded, HARVEST, levelRewards, REWARDS,
 	eraOfTier, type TechId, TECH_IDS, TECHS, UNIT_LOOK, UNIT_TYPE_IDS, type UnitTypeId, UNIT_TYPES, VETERAN_KILLS, WONDER_IDS
 } from "../sim/rules";
 import type { Sim } from "../sim/sim";
@@ -702,7 +702,7 @@ export class Hud {
 		}
 		if (!compact && sim.roads[tile] < 0 && sim.cityAt[tile] < 0) {
 			const problem = roadProblem(sim, this.me, tile);
-			if (problem === null || /star/.test(problem)) out.push(`<div class="actions">${btn("road", `Build road <small>&#9733;${ROAD_COST}</small>`, problem)}</div>`);
+			if (problem === null || /star/.test(problem)) out.push(`<div class="actions">${btn("road", `Build road <small>&#9733;${roadCost(sim)}</small>`, problem)}</div>`);
 		}
 		return `<section>${out.join("")}</section>`;
 	}
@@ -921,6 +921,14 @@ export class Hud {
 						this.toast(`Peace with ${name(e.a === me ? e.b : e.a)}`, "good");
 					}
 					break;
+				case "cityConnected": {
+					const c = sim.city(e.city), cap = sim.city(e.capital);
+					if (c?.owner === me && cap) {
+						this.toast(`<b>${esc(c.name)}</b> is joined to <b>${esc(cap.name)}</b>: +1 population to both`, "good", 4);
+						play("level");
+					}
+					break;
+				}
 				case "unitPromoted": {
 					const u = sim.unit(e.unit);
 					if (u?.owner === me) {
@@ -1663,7 +1671,7 @@ export class Hud {
 		card("grow", "Grow", "", o.buildGrowth
 			? "As in Polytopia, every building finished in a city's land adds population (shown as +N on the build buttons). Workshops add more for each neighbour that feeds them: a sawmill for each woodcutter beside it, a mill for each farm, a smelter two for each mine, a market for each workshop. Harvest fish and game for stars to grow a city at once. Food delivered by road adds growth too. Each level adds a building slot and a reward."
 			: "Deliver food (fish, game, bread) to cities. Each level adds a building slot and a reward."),
-		card("hammer", "Build", "", "Click your land to place buildings. Woodcutters are ready at once; other sites wait for logs, planks or stone carried by road, and Rush finishes them for stars. Anything joined to a city by road reaches it the same turn. Ports (Sailing) join coastal cities; a market also sells you goods at twice its price."),
+		card("hammer", "Build", "", `Click your land to place buildings. Woodcutters are ready at once; other sites wait for logs, planks or stone carried by road, and Rush finishes them for stars. Anything joined to a city by road reaches it the same turn.${o.connections ? " Roads cost 3 stars a tile, and as in Polytopia, the first time a city is joined to your capital (by road or between ports) both gain 1 population." : ""} Ports (Sailing) join coastal cities; a market also sells you goods at twice its price.`),
 		card("star", "Stars", "", "Units beyond your free allowance (3, plus 1 per city) cost upkeep every turn (doubled once you know 12 techs), and cities beyond your tenth cost administration. Hover your stars for the breakdown.")
 	])}
 			${section("Neighbours and war", [

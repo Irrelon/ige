@@ -257,6 +257,11 @@ function completeBuilding (sim: Sim, building: BuildingState): void {
 // Roads
 // ------------------------------------------------------------------
 
+/** Stars for a tile of road: 3 as in Polytopia (connections games), 1 in older ones. */
+export function roadCost (sim: Sim): number {
+	return sim.options.connections ? 3 : ROAD_COST;
+}
+
 export function roadProblem (sim: Sim, player: number, tile: number): string | null {
 	if (!sim.isPassableLand(tile)) return "Roads need passable land";
 	if (sim.roads[tile] >= 0) return "There is already a road";
@@ -264,14 +269,14 @@ export function roadProblem (sim: Sim, player: number, tile: number): string | n
 	const owner = sim.map.owner[tile];
 	if (owner >= 0 && owner !== player) return "Inside another civ's territory";
 	if (owner !== player && !sim.neighbors(tile).some((n) => sim.map.owner[n] === player || sim.roads[n] === player)) return "Must be in or next to your territory or roads";
-	if (sim.player(player).stars < ROAD_COST) return `Needs ${ROAD_COST} star`;
+	if (sim.player(player).stars < roadCost(sim)) return `Needs ${roadCost(sim)} star${roadCost(sim) === 1 ? "" : "s"}`;
 	return null;
 }
 
 export function roadCommand (sim: Sim, player: number, tile: number): CommandResult {
 	const problem = roadProblem(sim, player, tile);
 	if (problem) return fail(problem);
-	sim.player(player).stars -= ROAD_COST;
+	sim.player(player).stars -= roadCost(sim);
 	sim.roads[tile] = player;
 	sim.emit({ type: "road", tile, owner: player });
 	return ok();

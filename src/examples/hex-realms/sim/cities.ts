@@ -107,6 +107,8 @@ export function transferCity (sim: Sim, city: CityState, to: number): void {
 	const from = city.owner;
 	city.owner = to;
 	city.pendingRewards = 0;
+	// Its new owner can earn the bonus for joining it to their capital
+	city.linked = false;
 	if (from >= 0) {
 		city.level = Math.max(1, city.level - 1);
 		city.growth = 0;
