@@ -17,7 +17,7 @@ import * as treasury from "./treasury";
 import * as wonders from "./wonders";
 import {
 	ALLIANCE, type BuildingState, type CargoState, type CityState, type Command, type CommandResult, type GameOptions,
-	type GameState, PEACE, type PlayerState, type SimEvent, type UnitState, WAR
+	type GameState, NEUTRAL, PEACE, type PlayerState, type SimEvent, type UnitState, WAR
 } from "./types";
 import { fail, ok } from "./result";
 import * as victory from "./victory";
@@ -44,6 +44,7 @@ export function defaultOptions (overrides: Partial<GameOptions> = {}): GameOptio
 		tribeTechs: true,
 		shuffleStarts: true,
 		rivers: true,
+		neutralStart: true,
 		victories: { domination: true, score: true, prosperity: true, alliance: true, diplomatic: true },
 		turnLimit: 60,
 		difficulty: "normal",
@@ -115,7 +116,7 @@ export class Sim {
 			cargo: [],
 			diplomacy: {
 				met: new Array(n * n).fill(0),
-				relation: new Array(n * n).fill(PEACE),
+				relation: new Array(n * n).fill(options.neutralStart ? NEUTRAL : PEACE),
 				openBorders: new Array(n * n).fill(0),
 				trade: new Array(n * n).fill(0),
 				attitude: new Array(n * n).fill(0),

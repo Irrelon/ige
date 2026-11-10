@@ -11,7 +11,7 @@ import {
 } from "../sim/rules";
 import type { Sim } from "../sim/sim";
 import { cityIncome, freeUnits, income, upkeepFactor } from "../sim/treasury";
-import { ALLIANCE, type Command, type DealKind, type SimEvent, WAR } from "../sim/types";
+import { ALLIANCE, type Command, type DealKind, NEUTRAL, PEACE, type SimEvent, WAR } from "../sim/types";
 import { ambitionScore } from "../sim/ambitions";
 import { score } from "../sim/victory";
 import { wondersOf } from "../sim/effects";
@@ -699,7 +699,8 @@ export class Hud {
 			const problem = attackProblem(sim, unit, t);
 			if (!problem) {
 				const r = preview(sim, unit, target);
-				return `Attack ${UNIT_TYPES[target.type].name}: deal <b>${r.damage}</b>${r.kills ? " (kills)" : ""}, take <b>${r.retaliation}</b>${r.dies ? " (your unit dies)" : ""}`;
+				const starts = sim.relation(this.me, target.owner) === NEUTRAL ? ` <span class="bad">Starts a war with ${esc(sim.player(target.owner).name)}</span>` : "";
+				return `Attack ${UNIT_TYPES[target.type].name}: deal <b>${r.damage}</b>${r.kills ? " (kills)" : ""}, take <b>${r.retaliation}</b>${r.dies ? " (your unit dies)" : ""}${starts}`;
 			}
 			return `${UNIT_TYPES[target.type].name} (${esc(sim.player(target.owner).name)}): ${problem}`;
 		}
@@ -832,6 +833,8 @@ export class Hud {
 						this.toast(`War with ${name(e.a === me ? e.b : e.a)}!`, "bad", 6);
 					} else if ((e.a === me || e.b === me) && e.relation === ALLIANCE) {
 						this.toast(`Alliance with ${name(e.a === me ? e.b : e.a)}`, "good");
+					} else if ((e.a === me || e.b === me) && e.relation === PEACE) {
+						this.toast(`Peace with ${name(e.a === me ? e.b : e.a)}`, "good");
 					}
 					break;
 				case "unitUpgraded": {
@@ -1405,7 +1408,8 @@ export class Hud {
 			<p><b>Build</b>: click your land to place buildings. Woodcutters are ready at once; other sites wait for logs, planks or stone carried by road, and Rush finishes them for stars. Anything joined to a city by road reaches it the same turn. Ports (Sailing) let goods sail between your coastal cities, and a market also sells you goods at twice its price.</p>
 			<p><b>Diplomacy</b> (G): treaties, cultural exchanges, research agreements, trades of goods and stars (once, or every turn as a route; where your roads meet theirs the goods travel as carts), demands, denouncing and sanctions. Wars wear both sides down, making peace easier the longer they last. Wars without enough grievances are surprise wars that everyone resents; peace brings a 10-turn truce.</p>
 			<p><b>Quick actions</b>: buttons float above a selected unit when it can do something where it stands: crossed swords capture a city, a house founds one, a flame pillages.</p>
-			<p><b>Fight</b>: declare war in Diplomacy first. Select a unit to see red attack rings; hover one to preview the damage. Ranged units need line of sight. Units stop when they move next to an enemy.</p>
+			<p><b>Meeting civs</b>: a civ you have just met is unaligned: there's no treaty, so units of both sides may wander through each other's land, but nobody fights. The first attack starts a war. Make peace in Diplomacy to close your borders to their soldiers.</p>
+			<p><b>Fight</b>: attack an unaligned civ's unit, or declare war in Diplomacy. Select a unit to see red attack rings; hover one to preview the damage. Ranged units need line of sight. Units stop when they move next to an enemy.</p>
 			<p><b>Orders</b>: click a far tile to march a unit there over several turns (its route shows as gold dots). Sleep (K) leaves a unit be until an enemy comes near; Fortify (I) digs it in for +50% defence; Upgrade (U) turns a warrior into a swordsman inside your borders once you have Smithing. Click a city's name to rename it.</p><p><b>Keys</b>: Ctrl/Cmd+S quicksave, N log of notices, Y rankings, WASD/arrows pan, wheel or Z/X zoom, Q/E rotate, Page Up/Page Down tilt (or right-drag: sideways rotates, up and down tilts), Space next unit, Enter end turn, Esc deselect, C centre, T terrain style, R research, G diplomacy, J ambition, M wonders, B economy, V economy lens, L cities, F found city, O menu, H help.</p></div>`;
 	}
 

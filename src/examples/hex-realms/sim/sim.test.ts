@@ -12,7 +12,7 @@ import { researchCost } from "./effects";
 import { administration, BUILDINGS, foodGoodsOf, foodValueOf, levelIncome, type TechId, TECH_IDS, techCost } from "./rules";
 import { income, upkeep } from "./treasury";
 import { defaultOptions, Sim } from "./sim";
-import { ALLIANCE, type Command, type GameOptions, PEACE, type UnitState, WAR } from "./types";
+import { ALLIANCE, type Command, type GameOptions, NEUTRAL, PEACE, type UnitState, WAR } from "./types";
 
 /** A start tile near the left of the blank map. */
 function sim0Start (): number {
@@ -28,7 +28,7 @@ function blank (players: number, starts: number[], overrides: Partial<GameOption
 	map.shade.fill(1);
 	map.landmass.fill(0);
 	map.landmassSizes = [map.count];
-	const options = defaultOptions({ width, height, players, humans: [0], fog: "off", allowFounding: true, ...overrides });
+	const options = defaultOptions({ width, height, players, humans: [0], fog: "off", allowFounding: true, neutralStart: false, ...overrides });
 	const sim = Sim.create(options, { map, starts, villages: false });
 	sim.drainEvents();
 	return sim;
@@ -726,6 +726,34 @@ describe("diplomacy II", () => {
 		expect(canEnter(sim, guest, border, outside)).toBe(false);
 		expect(canEnter(sim, guest, outside)).toBe(true);
 		expect(sim.apply(0, { type: "closeBorders", target: 1 }).ok).toBe(false);
+	});
+
+	test("newly met civs are unaligned: units cross each other's land freely, and the first attack starts a war", () => {
+		const sim = blank(2, [sim2(4, 4), sim2(20, 12)], { humans: [0, 1], neutralStart: true });
+		meetAll(sim);
+		clearUnits(sim);
+		expect(sim.relation(0, 1)).toBe(NEUTRAL);
+		// No deals but peace until there is a peace
+		expect(sim.apply(0, { type: "propose", to: 1, kind: "trade" }).ok).toBe(false);
+		const ownedBy = (p: number) => sim.neighbors(sim.citiesOf(p)[0].tile).filter((t) => sim.map.owner[t] === p);
+		const theirLand = ownedBy(1);
+		const guest = sim.createUnit("warrior", 0, theirLand[0], true);
+		expect(canEnter(sim, guest, theirLand[1], theirLand[0])).toBe(true);
+		// ...but not into their city
+		expect(canEnter(sim, guest, sim.citiesOf(1)[0].tile, theirLand[0])).toBe(false);
+		const host = sim.createUnit("warrior", 1, sim.neighbors(guest.tile).find((t) => t !== theirLand[1] && !sim.cityOn(t)) as number, true);
+		const others = sim.state.players.map((q) => attitude(sim, q.index, 0));
+		expect(sim.apply(0, { type: "attack", unit: guest.id, target: host.tile }).ok).toBe(true);
+		expect(sim.relation(0, 1)).toBe(WAR);
+		expect(attitude(sim, 1, 0)).toBeLessThan(others[1]);
+		// Peace from unaligned brings no truce
+		const fresh = blank(2, [sim2(4, 4), sim2(20, 12)], { humans: [0, 1], neutralStart: true });
+		meetAll(fresh);
+		expect(fresh.apply(0, { type: "propose", to: 1, kind: "peace" }).ok).toBe(true);
+		const pr = fresh.state.diplomacy.proposals[0];
+		expect(fresh.apply(1, { type: "respond", proposal: pr.id, accept: true }).ok).toBe(true);
+		expect(fresh.relation(0, 1)).toBe(PEACE);
+		expect(warProblem(fresh, 0, 1)).toBeNull();
 	});
 
 	test("ending an alliance: peace, a truce, a grievance, and your units in their land are lost unless borders are open", () => {

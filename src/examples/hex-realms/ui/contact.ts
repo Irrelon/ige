@@ -1,6 +1,7 @@
 import { attitude, strength } from "../sim/diplomacy";
 import { type AgendaId, AGENDAS, CIVS, personalityOf } from "../sim/rules";
 import type { Sim } from "../sim/sim";
+import { NEUTRAL } from "../sim/types";
 import { esc } from "./html";
 import { emblem } from "./icons";
 
@@ -85,6 +86,7 @@ export function contactModal (sim: Sim, them: number, me: number, name: string):
 			<span class="pill">${sizeLine}</span>
 		</div>
 		${agenda ? `<p class="contact-note">${esc(pers.temper)} ${esc(AGENDAS[agenda].description)}</p>` : ""}
+		${sim.relation(me, them) === NEUTRAL ? `<p class="contact-note">You are <b>unaligned</b>: no treaty yet, so units of both sides may cross each other's land. Nobody fights unless someone strikes first, and that first blow means war.</p>` : ""}
 		<div class="contact-actions">
 			<button class="primary" data-action="contact-diplo" data-player="${them}">Open diplomacy</button>
 			<button data-action="contact-ok">Continue</button>

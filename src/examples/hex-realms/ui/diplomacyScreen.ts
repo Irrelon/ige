@@ -7,7 +7,7 @@ import {
 	END_TRUCE_TURNS, type EndableTreaty, RESEARCH_TURNS, ROUTE_TURNS, SANCTION_COST, SANCTION_TURNS, TRUCE_TURNS, UNIT_TYPES
 } from "../sim/rules";
 import type { Sim } from "../sim/sim";
-import { ALLIANCE, type Command, type DealKind, type ProposalState, type TreatyState, WAR } from "../sim/types";
+import { ALLIANCE, type Command, type DealKind, NEUTRAL, type ProposalState, type TreatyState, WAR } from "../sim/types";
 import { actionButton, esc, goodChip, goodsInline, stars, swatch } from "./html";
 
 /**
@@ -70,6 +70,7 @@ const pill = (text: string, cls = "", title = "") => `<span class="pill ${cls}"$
 function relationPill (rel: number, long = false): string {
 	if (rel === WAR) return pill(long ? "At war" : "War", "war");
 	if (rel === ALLIANCE) return pill(long ? "Allied" : "Ally", "ally");
+	if (rel === NEUTRAL) return pill("Unaligned", "neutral", "Newly met: no treaty yet. Units may cross each other's land; the first attack starts a war.");
 	return pill(long ? "At peace" : "Peace", "peace");
 }
 
@@ -277,6 +278,11 @@ export class DiplomacyScreen {
 			const since = sim.state.diplomacy.warSince?.[me * sim.playerCount + o] ?? 0;
 			const tired = sim.state.turn - since >= 12 ? " Both sides are tiring of this war." : "";
 			return `<div class="dp-rows">${row("Peace", `Ends the war, then a ${TRUCE_TURNS}-turn truce.${tired}`, deal("peace", "Propose peace"))}</div>`;
+		}
+
+		if (rel === NEUTRAL) {
+			return `<div class="dp-note">You have only just met ${esc(q.name)}. There is no treaty between you: your units may cross each other's land, and the first blow struck starts a war.</div>
+				<div class="dp-rows">${row("Make peace", "A formal peace: borders close to soldiers, and deals become possible.", deal("peace", "Propose peace"))}${row("Declare war", "Nobody minds much: you never made peace.", control("war", "Declare war", { player: o }, warProblem(sim, me, o), "danger"))}</div>`;
 		}
 
 		const fair = justified(sim, me, o);

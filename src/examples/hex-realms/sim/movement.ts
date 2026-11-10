@@ -1,4 +1,5 @@
 import { Feature, Relief, Terrain } from "../terrain";
+import { NEUTRAL } from "./types";
 import { riverBetween } from "../rivers";
 import { fail, ok } from "./result";
 import type { Sim } from "./sim";
@@ -48,7 +49,7 @@ export function canEnter (sim: Sim, unit: UnitState, tile: number, from = unit.t
 
 /** May a's units enter b's territory (war, alliance or open borders)? */
 export function mayCross (sim: Sim, a: number, b: number): boolean {
-	return sim.atWar(a, b) || sim.allied(a, b) || hasOpenBorders(sim, a, b);
+	return sim.atWar(a, b) || sim.allied(a, b) || hasOpenBorders(sim, a, b) || sim.relation(a, b) === NEUTRAL;
 }
 
 export function hasOpenBorders (sim: Sim, a: number, b: number): boolean {

@@ -641,6 +641,43 @@ export class WorldView {
 	// Cities
 	// ------------------------------------------------------------------
 
+	/**
+	 * As a city grows it spreads over the land around it (for show only):
+	 * from level 3, a hamlet on a free neighbouring tile for each level, up
+	 * to six; smaller copies of the village or town model, turned at random.
+	 * Free means explored land with no city, building, mountain or water;
+	 * the city's own territory first.
+	 */
+	protected buildSprawl (city: CityState, entities: IgeEntity[], rand: () => number): void {
+		const count = Math.min(6, Math.max(0, city.level - 2));
+		if (!count || !this.models) return;
+		const R = this.layout.size;
+		const sim = this.sim;
+		const free = sim.neighbors(city.tile).filter((t) => !sim.map.isWater(t) && sim.map.relief[t] !== 3 && sim.cityAt[t] < 0 && sim.buildingAt[t] < 0 && this.terrain.fogView[t] !== UNEXPLORED);
+		free.sort((a, b) => (sim.map.owner[b] === city.owner ? 1 : 0) - (sim.map.owner[a] === city.owner ? 1 : 0) || ((a * 2654435761) >>> 0) % 97 - ((b * 2654435761) >>> 0) % 97);
+		const size = city.level >= 6 ? "town" : "village";
+		for (const t of free.slice(0, count)) {
+			const hamlet = this.models.create(size, { footprint: R * 0.78, height: R * 0.62, lod: PROP_LOD });
+			if (!hamlet) return;
+			// Off-centre toward the city, so roads through the tile stay clear
+			const tx = this.tileX(t), tz = this.tileZ(t);
+			const x = tx + (this.tileX(city.tile) - tx) * 0.2, z = tz + (this.tileZ(city.tile) - tz) * 0.2;
+			const holder = new IgeEntity();
+			holder.id(this.uid(`city_${city.id}_sprawl`));
+			holder.translateTo(x, this.groundAt(x, z), z).rotateTo(0, Math.floor(rand() * 6) * (Math.PI / 3), 0).mount(this.unitLayer);
+			hamlet.mount(holder);
+			entities.push(holder);
+		}
+	}
+
+	/** A building came or went beside a city: redraw that city's hamlets around it. */
+	protected resprawl (tile: number): void {
+		for (const n of this.sim.neighbors(tile)) {
+			const c = this.sim.cityOn(n);
+			if (c && c.level > 2) this.buildCity(c);
+		}
+	}
+
 	buildCity (city: CityState): void {
 		for (const e of this.cities.get(city.id) ?? []) e.destroy();
 		const entities: IgeEntity[] = [];
@@ -677,6 +714,7 @@ export class WorldView {
 			holder.translateTo(x, y, z).rotateTo(0, Math.floor(rand() * 6) * (Math.PI / 3), 0).mount(this.unitLayer);
 			cityModel.mount(holder);
 			entities.push(holder);
+			if (!neutral) this.buildSprawl(city, entities, rand);
 			if (!neutral) {
 				const poleH = R * (city.capital ? 1.05 : 0.8);
 				const px = x + R * 0.5, pz = z + R * 0.12;
@@ -1275,13 +1313,17 @@ export class WorldView {
 				case "buildingPlaced":
 				case "buildingCompleted": {
 					const b = sim.building(e.building);
-					if (b) this.buildBuilding(b);
+					if (b) {
+						this.buildBuilding(b);
+						if (e.type === "buildingPlaced") this.resprawl(b.tile);
+					}
 					this.roadsDirty = true;
 					this.depositsDirty = true;
 					break;
 				}
 				case "buildingRemoved":
 					this.removeBuildingView(e.building);
+					this.resprawl(e.tile);
 					this.roadsDirty = true;
 					this.depositsDirty = true;
 					break;

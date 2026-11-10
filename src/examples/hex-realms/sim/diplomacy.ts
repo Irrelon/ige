@@ -7,7 +7,7 @@ import {
 	personalityOf, TRUCE_TURNS, UNIT_TYPES
 } from "./rules";
 import type { Sim } from "./sim";
-import { ALLIANCE, type CommandResult, type DealKind, PEACE, type ProposalState, type TreatyState, type UnitState, WAR } from "./types";
+import { ALLIANCE, type CommandResult, type DealKind, NEUTRAL, PEACE, type ProposalState, type TreatyState, type UnitState, WAR } from "./types";
 import { mulberry32 } from "../noise";
 
 /**
@@ -98,9 +98,26 @@ export function warProblem (sim: Sim, player: number, target: number): string | 
 	return null;
 }
 
+/**
+ * An attack on an unaligned civ starts a war (no declaration needed, and no
+ * surprise-war penalty with anyone else: there was no peace to break).
+ */
+export function attackStartsWar (sim: Sim, attacker: number, victim: number): void {
+	if (sim.relation(attacker, victim) !== NEUTRAL) return;
+	setRelation(sim, attacker, victim, WAR);
+	sim.player(attacker).stats.warsDeclared++;
+	adjustAttitude(sim, victim, attacker, -4);
+	addGrievance(sim, victim, attacker, 2);
+}
+
 export function declareWarCommand (sim: Sim, player: number, target: number): CommandResult {
 	const problem = warProblem(sim, player, target);
 	if (problem) return fail(problem);
+	// From unaligned, war is just the first blow: no one counts it as a betrayal
+	if (sim.relation(player, target) === NEUTRAL) {
+		attackStartsWar(sim, player, target);
+		return ok();
+	}
 	const fair = justified(sim, player, target);
 	const betrayal = sim.relation(player, target) === ALLIANCE || hasPact(sim, player, target);
 	setRelation(sim, player, target, WAR);
@@ -274,8 +291,9 @@ export function proposalProblem (sim: Sim, from: number, to: number, kind: DealK
 		if (!sim.hasTech(from, "diplomacy")) return "Needs Diplomacy";
 		if (!sim.hasTech(to, "diplomacy")) return "They haven't researched Diplomacy";
 	}
+	if (relation === NEUTRAL && kind !== "peace") return "Make peace first";
 	switch (kind) {
-		case "peace": return relation === WAR ? null : "You are not at war";
+		case "peace": return relation === WAR || relation === NEUTRAL ? null : "You are already at peace";
 		case "alliance": return relation === PEACE ? null : relation === ALLIANCE ? "Already allied" : "Make peace first";
 		case "openBorders":
 			if (atWar) return atWar;
@@ -422,13 +440,16 @@ function applyDeal (sim: Sim, proposal: ProposalState): void {
 		array[ix(sim, to, from)] = value;
 	};
 	switch (proposal.kind) {
-		case "peace":
+		case "peace": {
+			// Peace between civs that only just met needs no truce: there was no war to cool off from
+			const wasWar = sim.relation(from, to) === WAR;
 			setRelation(sim, from, to, PEACE);
-			both(d.truce, turn + TRUCE_TURNS);
+			if (wasWar) both(d.truce, turn + TRUCE_TURNS);
 			// Peace settles half of the old scores
 			d.grievance[ix(sim, from, to)] /= 2;
 			d.grievance[ix(sim, to, from)] /= 2;
 			break;
+		}
 		case "alliance":
 			setRelation(sim, from, to, ALLIANCE);
 			both(d.pact, 0);

@@ -37,6 +37,8 @@ export interface GameOptions {
 	 * the best one. Missing in games from before it, which keep their starts.
 	 */
 	shuffleStarts?: boolean;
+	/** Civs start unaligned rather than at peace (new games; older ones keep peace). */
+	neutralStart?: boolean;
 	/** Rivers along tile edges (new games; absent in older ones, which stay as they were). */
 	rivers?: boolean;
 	victories: Record<VictoryType, boolean>;
@@ -207,6 +209,12 @@ export interface TreatyState {
 export const WAR = 0;
 export const PEACE = 1;
 export const ALLIANCE = 2;
+/**
+ * Unaligned (new games, as in Polytopia): civs that have met but made no
+ * peace. Their units may go anywhere, they don't fight unless one attacks,
+ * and the first attack starts a war.
+ */
+export const NEUTRAL = 3;
 
 export interface CouncilState {
 	formed: boolean;

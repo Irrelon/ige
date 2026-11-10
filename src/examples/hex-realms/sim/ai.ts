@@ -14,7 +14,7 @@ import {
 } from "./rules";
 import type { Sim } from "./sim";
 import { freeUnits, income, upkeep } from "./treasury";
-import { type CityState, type Command, type DealKind, PEACE, type ProposalState, type UnitState, WAR } from "./types";
+import { type CityState, type Command, type DealKind, NEUTRAL, PEACE, type ProposalState, type UnitState, WAR } from "./types";
 
 /**
  * A utility AI that plays through the same commands as a person, so it
@@ -193,8 +193,16 @@ class AiTurn {
 			const conqueror = sim.player(this.p).ambition === "conquest";
 			const opportunity = mine > theirs * (conqueror ? 1.4 : 2) / edge && feel < 3;
 			const odds = aggression * (fair ? 3 : 1) * (conqueror ? 2 : 1);
-			if (relation === PEACE && neighbour && (grudge || opportunity) && this.rand() < odds && sim.state.turn > 8 && !warProblem(sim, this.p, o)) {
+			const unaligned = relation === NEUTRAL;
+			if ((relation === PEACE || unaligned) && neighbour && (grudge || opportunity) && this.rand() < odds && sim.state.turn > 8 && !warProblem(sim, this.p, o)) {
 				this.do({ type: "declareWar", target: o });
+				continue;
+			}
+
+			// Newly met: friendly leaders soon offer a formal peace (other AIs only when they would agree)
+			if (unaligned) {
+				const offer: ProposalState = { id: -1, from: this.p, to: o, kind: "peace", stars: 0, turn: sim.state.turn };
+				if (feel >= 0 && this.rand() < chance * 0.6 * friendly && (q.human || aiAccepts(sim, o, offer))) this.propose(o, "peace");
 				continue;
 			}
 
@@ -671,6 +679,8 @@ class AiTurn {
 		let bestTile = -1, bestValue = 0;
 		for (const t of attackTargets(sim, live)) {
 			const target = sim.unitOn(t)!;
+			// Unaligned civs are left alone: the AI only starts a war on purpose (in diplomacy)
+			if (sim.relation(this.p, target.owner) === NEUTRAL) continue;
 			const r = preview(sim, live, target);
 			if (r.dies && !r.kills) continue;
 			const value = (r.kills ? 10 : 0) + r.damage - r.retaliation;

@@ -1,4 +1,5 @@
 import { Feature, Relief } from "../terrain";
+import { attackStartsWar } from "./diplomacy";
 import { riverBetween } from "../rivers";
 import { fortifyBonus } from "./orders";
 import { cityDefence, damageFactor } from "./effects";
@@ -6,7 +7,7 @@ import { canEnter } from "./movement";
 import { fail, ok } from "./result";
 import { UNIT_TYPES, VETERAN_KILLS } from "./rules";
 import type { Sim } from "./sim";
-import type { CommandResult, UnitState } from "./types";
+import { type CommandResult, NEUTRAL, type UnitState } from "./types";
 
 /**
  * Deterministic, Polytopia-style combat. Attack and defence are scaled by
@@ -63,7 +64,7 @@ export function attackProblem (sim: Sim, attacker: UnitState, target: number): s
 	if (attackValue(sim, attacker) <= 0) return "This unit can't attack";
 	const defender = sim.unitOn(target);
 	if (!defender || defender.owner === attacker.owner) return "No enemy there";
-	if (!sim.atWar(attacker.owner, defender.owner)) return "You are not at war with them";
+	if (!sim.atWar(attacker.owner, defender.owner) && sim.relation(attacker.owner, defender.owner) !== NEUTRAL) return "You are at peace with them";
 	if (!sim.canSee(attacker.owner, target)) return "You can't see that tile";
 	const distance = sim.distance(attacker.tile, target);
 	if (distance > UNIT_TYPES[attacker.type].range) return "Out of range";
@@ -83,6 +84,8 @@ export function attackCommand (sim: Sim, player: number, unitId: number, target:
 	const problem = attackProblem(sim, attacker, target);
 	if (problem) return fail(problem);
 	const defender = sim.unitOn(target) as UnitState;
+	// The first blow against an unaligned civ is war
+	attackStartsWar(sim, player, defender.owner);
 	const result = preview(sim, attacker, defender);
 	const from = attacker.tile;
 	const ranged = sim.distance(from, target) > 1;

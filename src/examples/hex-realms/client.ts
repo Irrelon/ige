@@ -401,6 +401,8 @@ export class Client extends IgeBaseClass implements IgeCanInit, HudHost {
 	async startWorld (sim: Sim, style: TerrainStyle, player: number): Promise<void> {
 		this.sim = sim;
 		this.player = player;
+		// Console access for testing (?debug=1)
+		if (new URLSearchParams(window.location.search).get("debug") === "1") (window as unknown as { hex: Client }).hex = this;
 		sim.onApplied = (p, cmd) => this.recording?.log.push({ p, cmd: structuredClone(cmd) });
 
 		this.terrain = new TerrainView({
