@@ -1,5 +1,7 @@
 import { audioContext, musicOut } from "./audio";
 import { type SynthEvent, synthWorkerMain } from "./musicSynth";
+import { note, rng, Score, span } from "./score";
+import { trackScore, TRACKS } from "./tracks";
 
 /**
  * The game's music: composed here as lists of notes for a small synthesised
@@ -15,110 +17,14 @@ import { type SynthEvent, synthWorkerMain } from "./musicSynth";
  * - The title theme is a composed piece in D minor: a hushed opening (low
  *   strings, choir, harp), the horn theme over a driving string ostinato and
  *   drums, the full orchestra restating it, and a bright D major close.
- * - In-game music is a set of calm generated pieces (strings, harp, flute,
- *   celesta) played one after another with quiet gaps between them.
+ * - In-game music is eight composed pieces (tracks.ts), orchestral,
+ *   exciting, wistful and pastoral, played one after another in order.
  */
 
 const SR = 32000;
 const MUSIC_DEBUG = typeof location !== "undefined" && location.search.includes("musicdebug");
 /** Output level for the rendered mix (the limiter on the bus catches peaks). */
 const MIX_GAIN = 0.85;
-
-// ------------------------------------------------------------------
-// Notes
-// ------------------------------------------------------------------
-
-const STEP: Record<string, number> = { C: 0, D: 2, E: 4, F: 5, G: 7, A: 9, B: 11 };
-
-/** "D4", "Bb3", "F#5" -> MIDI note number. */
-export function note (name: string): number {
-	const m = /^([A-G])(#|b)?(-?\d)$/.exec(name);
-	if (!m) throw new Error(`Bad note ${name}`);
-	return 12 * (Number(m[3]) + 1) + STEP[m[1]] + (m[2] === "#" ? 1 : m[2] === "b" ? -1 : 0);
-}
-
-/** Small seeded random numbers, so a piece is the same every time. */
-function rng (seed: number): () => number {
-	let s = seed >>> 0 || 1;
-	return () => {
-		s ^= s << 13;
-		s ^= s >>> 17;
-		s ^= s << 5;
-		return (s >>> 0) / 4294967296;
-	};
-}
-
-// ------------------------------------------------------------------
-// Writing notes
-// ------------------------------------------------------------------
-
-interface StringOpts { attack?: number; release?: number; pan?: number; bright?: number; voices?: number; wet?: number; vibrato?: number; level?: number }
-
-/** Collects a piece's notes. */
-class Score {
-	events: SynthEvent[] = [];
-
-	strings (t: number, d: number, m: number, v: number, o: StringOpts = {}): void {
-		this.events.push({ i: "str", t, d, m, v, p: o.pan ?? 0, w: o.wet ?? 0.45, a: o.attack, r: o.release, n: o.voices, b: o.bright, vib: o.vibrato, l: o.level });
-	}
-
-	brass (t: number, d: number, m: number, v: number, o: { pan?: number; wet?: number; horn?: boolean; level?: number } = {}): void {
-		this.events.push({ i: o.horn ? "horn" : "brass", t, d, m, v, p: o.pan ?? 0, w: o.wet ?? 0.4, l: o.level });
-	}
-
-	choir (t: number, d: number, m: number, v: number, vowel: "a" | "o" = "a", pan = 0, wet = 0.7): void {
-		this.events.push({ i: vowel === "a" ? "choirA" : "choirO", t, d, m, v, p: pan, w: wet });
-	}
-
-	timpani (t: number, m: number, v: number, wet = 0.5): void {
-		this.events.push({ i: "timp", t, d: 0, m, v, p: 0.15, w: wet });
-	}
-
-	timpaniRoll (t: number, dur: number, m: number, v0: number, v1: number, r: () => number): void {
-		const hits = Math.floor(dur / 0.075);
-		for (let i = 0; i < hits; i++) {
-			const k = i / Math.max(1, hits - 1);
-			// One drum, struck fast: the hits overlap and sustain each other rather than stacking up
-			this.timpani(t + i * 0.075 + (r() - 0.5) * 0.01, m, (v0 + (v1 - v0) * k) * (0.85 + r() * 0.15) * 0.16, 0.55);
-		}
-	}
-
-	taiko (t: number, v: number, wet = 0.35): void {
-		this.events.push({ i: "taiko", t, d: 0, m: 0, v, p: -0.05, w: wet });
-	}
-
-	crash (t: number, v: number): void {
-		this.events.push({ i: "crash", t, d: 0, m: 0, v, p: 0, w: 0.5 });
-	}
-
-	/** A cymbal swell arriving at `t`, `d` seconds long. */
-	swell (t: number, d: number, v: number): void {
-		this.events.push({ i: "swell", t, d, m: 0, v, p: 0, w: 0.6 });
-	}
-
-	harp (t: number, m: number, v: number, pan = -0.3, wet = 0.55): void {
-		this.events.push({ i: "harp", t, d: 0, m, v, p: pan, w: wet });
-	}
-
-	flute (t: number, d: number, m: number, v: number, pan = 0.25, wet = 0.5): void {
-		this.events.push({ i: "flute", t, d, m, v, p: pan, w: wet });
-	}
-
-	celesta (t: number, m: number, v: number, pan = 0.4): void {
-		this.events.push({ i: "cel", t, d: 0, m, v, p: pan, w: 0.6 });
-	}
-
-	sub (t: number, d: number, m: number, v: number): void {
-		this.events.push({ i: "sub", t, d, m, v, p: 0, w: 0.15 });
-	}
-}
-
-/** When a note starts sounding, and roughly when it has died away. */
-function span (e: SynthEvent): [number, number] {
-	if (e.i === "swell") return [e.t - e.d, e.t + 0.1];
-	const tails: Partial<Record<SynthEvent["i"], number>> = { timp: 2.3, taiko: 1.2, crash: 3.4, harp: 2.6, cel: 2, choirA: 1.2, choirO: 1.2 };
-	return [e.t, e.t + e.d + (tails[e.i] ?? (e.r ?? 0.8) * 1.1 + 0.5)];
-}
 
 // ------------------------------------------------------------------
 // The title theme
@@ -169,7 +75,7 @@ const CODA: Phrase[] = [
 const TITLE_BPM = 76;
 const TITLE_T0 = 0.4;
 
-function titleScore (): { score: Score; cuts: number[]; length: number } {
+export function titleScore (): { score: Score; cuts: number[]; length: number } {
 	const s = new Score();
 	const r = rng(7);
 	const B = 60 / TITLE_BPM;
@@ -288,77 +194,6 @@ function titleScore (): { score: Score; cuts: number[]; length: number } {
 	// Render in four-bar pieces so the opening can play while the rest renders
 	const cuts = [5, 9, 13, 17, 21].map((b) => at(b) - 0.05);
 	return { score: s, cuts, length: at(27) + 4 };
-}
-
-// ------------------------------------------------------------------
-// Calm in-game pieces
-// ------------------------------------------------------------------
-
-interface Calm { seed: number; key: number; minor: boolean; bpm: number; progression: number[] }
-
-/** Scale degrees (0-6) of each chord root; chords are triads in the key. */
-const CALM_PIECES: Calm[] = [
-	{ seed: 11, key: note("F3"), minor: false, bpm: 72, progression: [0, 5, 3, 4, 0, 5, 1, 4] },
-	{ seed: 23, key: note("D3"), minor: true, bpm: 66, progression: [0, 5, 2, 6, 0, 3, 4, 4] },
-	{ seed: 37, key: note("G3"), minor: false, bpm: 76, progression: [0, 3, 5, 4, 0, 3, 1, 4] },
-	{ seed: 51, key: note("A3"), minor: true, bpm: 70, progression: [0, 6, 5, 6, 0, 3, 6, 4] },
-	{ seed: 64, key: note("Eb3"), minor: false, bpm: 68, progression: [0, 4, 5, 3, 0, 4, 3, 4] }
-];
-
-const MAJOR = [0, 2, 4, 5, 7, 9, 11];
-const MINOR = [0, 2, 3, 5, 7, 8, 10];
-
-function calmScore (p: Calm): { score: Score; cuts: number[]; length: number } {
-	const s = new Score();
-	const B = 60 / p.bpm;
-	const r = rng(p.seed);
-	const scale = p.minor ? MINOR : MAJOR;
-	const deg = (d: number) => p.key + scale[((d % 7) + 7) % 7] + 12 * Math.floor(d / 7);
-	// Minor keys raise the leading note on the dominant chord
-	const chordNotes = (root: number) => {
-		const t = [deg(root), deg(root + 2), deg(root + 4)];
-		if (p.minor && root % 7 === 4) t[1] += 1;
-		return t;
-	};
-	const bars = [...p.progression, ...p.progression, ...p.progression];
-	const at = (bar: number, beat = 0) => 0.3 + (bar * 4 + beat) * B;
-	const rhythms: number[][] = [[2, 2], [1.5, 0.5, 2], [1, 1, 2], [3, 1], [2, 1, 1], [4], [1, 1, 1, 1], [0.5, 0.5, 1, 2]];
-	let last = deg(9);
-	bars.forEach((root, bar) => {
-		const ch = chordNotes(root);
-		const section = Math.floor(bar / p.progression.length);
-		ch.forEach((m, i) => s.strings(at(bar), 4 * B, m + 12, 0.32 + section * 0.05, { attack: 1.1, release: 1.4, pan: -0.3 + i * 0.3, voices: 2, bright: 0.55, wet: 0.6, level: 0.05 }));
-		s.strings(at(bar), 4 * B, ch[0] - 12, 0.38, { attack: 0.8, release: 1.4, pan: 0.35, voices: 2, bright: 0.5, wet: 0.5 });
-		const arp = [ch[0], ch[1], ch[2], ch[0] + 12, ch[1] + 12, ch[2], ch[1], ch[0] + 12];
-		const pattern = section === 1 ? 8 : 4;
-		for (let i = 0; i < pattern; i++) s.harp(at(bar, i * (4 / pattern)), arp[i % arp.length], 0.45 + (i === 0 ? 0.2 : 0), -0.35, 0.6);
-		if (bar < 2) return;
-		const rhythm = rhythms[Math.floor(r() * rhythms.length)];
-		let beat = 0;
-		for (const len of rhythm) {
-			// Strong beats take chord tones; others step through the scale
-			const pool = beat % 2 === 0 ? [...ch.map((m) => m + 12), ...ch.map((m) => m + 24)] : [last + (r() > 0.5 ? 1 : -1) * (r() > 0.5 ? 2 : 1)];
-			let pick = pool.reduce((best, m) => (Math.abs(m - last) < Math.abs(best - last) || (Math.abs(m - last) === Math.abs(best - last) && r() > 0.5) ? m : best), pool[0]);
-			if (beat % 2 === 0 && r() > 0.7) pick = pool[Math.floor(r() * pool.length)];
-			while (pick > p.key + 31) pick -= 12;
-			while (pick < p.key + 14) pick += 12;
-			const rel = (((pick - p.key) % 12) + 12) % 12;
-			if (!scale.includes(rel)) pick += 1;
-			if (section === 1) s.strings(at(bar, beat), len * B * 0.95, pick, 0.6, { attack: 0.18, release: 0.7, pan: -0.25, voices: 3, bright: 1, wet: 0.55, level: 0.055 });
-			else s.flute(at(bar, beat), len * B * 0.92, pick, 0.75, 0.2, 0.55);
-			last = pick;
-			beat += len;
-		}
-		if (section === 2 && bar % 2 === 0) s.celesta(at(bar, 3), ch[2] + 24, 0.55);
-	});
-	const end = bars.length;
-	chordNotes(0).forEach((m, i) => s.strings(at(end), 6 * B, m + 12, 0.35, { attack: 0.6, release: 2.5, pan: -0.3 + i * 0.3, voices: 2, bright: 0.55, wet: 0.65, level: 0.05 }));
-	s.harp(at(end), chordNotes(0)[0], 0.6);
-	s.harp(at(end, 0.5), chordNotes(0)[1] + 12, 0.5);
-	s.harp(at(end, 1), chordNotes(0)[2] + 12, 0.5);
-	const cuts: number[] = [];
-	for (let b = 4; b < end; b += 4) cuts.push(at(b) - 0.05);
-	return { score: s, cuts, length: at(end + 2) + 5 };
 }
 
 // ------------------------------------------------------------------
@@ -598,26 +433,33 @@ export function stopTitleMusic (seconds = 1.5): void {
 let gameStarted = false;
 let gamePlaying: Playing | null = null;
 let gameTimer: ReturnType<typeof setTimeout> | null = null;
-const calmPieces = new Map<number, Piece>();
+const trackPieces = new Map<number, Piece>();
+/** The track playing (or next to play): they go round in order. */
+let trackIndex = 0;
 
-function calmPiece (i: number): Piece {
-	let piece = calmPieces.get(i);
+function trackPiece (i: number): Piece {
+	let piece = trackPieces.get(i);
 	if (!piece) {
-		piece = renderPiece(`calm${i}`, calmScore(CALM_PIECES[i]), 0.36);
-		calmPieces.set(i, piece);
+		piece = renderPiece(TRACKS[i].name, trackScore(TRACKS[i]), TRACKS[i].reverb);
+		trackPieces.set(i, piece);
 	}
 	return piece;
 }
 
+/** The track now playing, for a "now playing" notice. */
+export function currentTrack (): string | null {
+	return gamePlaying ? TRACKS[(trackIndex + TRACKS.length - 1) % TRACKS.length].name : null;
+}
+
 /**
- * In-game music: calm pieces in turn, with a quiet gap between them (as in
- * Civilization). Waits for audio to be unlocked by a click or key press.
+ * In-game music: the eight pieces in tracks.ts, one after another in order
+ * and round again, a few seconds apart. Waits for audio to be unlocked by a
+ * click or key press.
  */
 export function startGameMusic (): void {
 	if (gameStarted || typeof Worker === "undefined") return;
 	gameStarted = true;
 	stopTitleMusic(2);
-	let index = Math.floor(Math.random() * CALM_PIECES.length);
 	const next = () => {
 		const ctx = audioContext();
 		if (!ctx || !gameStarted) return;
@@ -625,12 +467,11 @@ export function startGameMusic (): void {
 			gameTimer = setTimeout(next, 1000);
 			return;
 		}
-		const piece = calmPiece(index);
-		index = (index + 1) % CALM_PIECES.length;
-		// The calm pieces are sparse: lift them to a comfortable background level
-		gamePlaying = play(piece, 3, 2.2);
-		// Render the next piece in the background while this one plays
-		calmPiece(index);
+		const track = TRACKS[trackIndex];
+		gamePlaying = play(trackPiece(trackIndex), 3, track.level);
+		trackIndex = (trackIndex + 1) % TRACKS.length;
+		// Render the next one in the background while this one plays
+		trackPiece(trackIndex);
 		const check = () => {
 			if (!gameStarted || !gamePlaying) return;
 			const left = remaining(gamePlaying);
@@ -639,7 +480,7 @@ export function startGameMusic (): void {
 				return;
 			}
 			gamePlaying = null;
-			gameTimer = setTimeout(next, 15000 + Math.random() * 25000);
+			gameTimer = setTimeout(next, 4000);
 		};
 		gameTimer = setTimeout(check, 1000);
 	};

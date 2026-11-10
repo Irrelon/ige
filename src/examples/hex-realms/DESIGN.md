@@ -516,8 +516,11 @@ New rules are behind options that new games switch on and older saves and replay
 - **Saves**: an IndexedDB store with named slots, an autosave each turn, a quicksave, and export and import as files;
   old local-storage saves are imported on first run.
 - **Title and menu**: a Civilization-style splash with a slowly orbiting showcase world, and a main menu (new game,
-  continue, load, online, options). Orchestral title music and five calm in-game pieces are synthesised in a Web
-  Worker (pure JS, about 2 s for everything, with a progress bar) and play on separate music and effects buses.
+  continue, load, online, options). Orchestral title music and eight composed in-game pieces (`ui/tracks.ts`:
+  two orchestral, two exciting, three wistful, one pastoral, played one after another in order) are synthesised in a
+  Web Worker (pure JS, a few seconds a piece, each rendered while the one before plays) and play on separate music and
+  effects buses. `tracks.test.ts` checks every bar adds up and, with MUSIC_LEVELS=1, renders them offline to set
+  their levels.
 - **Look**: engine post-processing (multisampled offscreen frame, bloom, colour grading, vignette), hemisphere
   ambient light, all land at one height with domed hills and peaked mountains, two water depths, surf and flowing
   rivers (scrolling UVs), softer rutted roads that run into cities and buildings, and cities that sprawl hamlets
