@@ -527,7 +527,8 @@ New rules are behind options that new games switch on and older saves and replay
   along them freely and earn a star per riverside city.
 - **Economy**: delivery along roads is instant (no carrier speed or road capacity). The workers on the map are
   decoration: carriers walk producing buildings' goods to the nearest city, and each building has its own work loop.
-  Generated characters (carrier, miner; more coming) replace the procedural figures as their models load.
+  Generated characters (carrier, miner, woodcutter, fisher, farmer, smith; sawyers borrow the woodcutter) replace
+  the procedural figures as their models load; only hunters are still procedural.
 - **Growth** (`buildGrowth`): see the README. Population numbers live in `rules.ts` (`BUILDING_POP`, `POP_BOOST`,
   `HARVEST`), the rules in `sim/growth.ts`. Cities level about 15% faster than with food alone.
 - **Eras**: techs run to tier 10 across Ancient, Classical, Medieval, Industrial, Modern and Future eras, with four new
