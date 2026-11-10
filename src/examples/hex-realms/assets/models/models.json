@@ -236,6 +236,30 @@
 		"bytes": 810712,
 		"floor": -0.2805
 	},
+	"exoTrooper": {
+		"file": "exoTrooper.glb",
+		"min": [
+			-0.2735,
+			-0.4372,
+			-0.1514
+		],
+		"max": [
+			0.2681,
+			0.4394,
+			0.13
+		],
+		"triangles": 5580,
+		"animations": [
+			"death",
+			"hit",
+			"idle",
+			"attack",
+			"walk"
+		],
+		"skinned": true,
+		"bytes": 881516,
+		"floor": -0.4541
+	},
 	"farm": {
 		"file": "farm.glb",
 		"min": [
