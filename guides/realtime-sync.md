@@ -54,6 +54,13 @@ client.on("event", (data) => effects.play(data));
 - `predict()` replays the inputs the authority hasn't applied yet through the game's own movement rule (the same
   function the authority uses), so a player responds the moment the stick moves and agrees with the authority when
   snapshots arrive. Blend any small correction smoothly in the game.
+- Prediction moves a tick at a time, so a player drawn at it every frame steps (at 30 ticks a second on a 60 Hz
+  screen they move every other frame, and a camera following them makes the whole world judder). Pass how far the
+  frame is into the next tick, and the player is drawn between their last two ticks, at most a tick behind:
+  `client.predict(id, slot, moveRule, { between: accumulator / tickLength })`. Snap rather than blend after a
+  teleport (compare with the unblended prediction).
+- `interpolated()` returns a new map each time: put your predicted players in it, but replace their states rather
+  than changing them (they may be the client's own copies, which later snapshots are built on).
 - Numbers and numeric arrays blend linearly; mark angles with `blend: { facing: "angle" }` and fields that must not
   blend with `"none"`.
 - Inputs are sent unreliably with the last few frames repeated (`inputRedundancy`), so lost packets cost nothing.

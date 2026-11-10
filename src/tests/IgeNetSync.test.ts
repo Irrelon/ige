@@ -130,6 +130,51 @@ describe("IgeNetSyncHost / IgeNetSyncClient", () => {
 		host.destroy();
 	});
 
+	it("blends a predicted player between ticks, so one drawn every frame moves smoothly", async () => {
+		const net = igeNetLoopback();
+		const { host } = game(net);
+		const client = new IgeNetSyncClient<Input>(net.connect(), { pingInterval: 0 });
+		const { players: [id] } = await client.join([{ name: "Ann" }]);
+		const step = SPEED / 30;
+		// One tick as the game loop runs it in the same page: input, the authority's step, its snapshot
+		const tick = async () => {
+			client.sendInput([{ dx: 1 }]);
+			await settle();
+			host.update(1000 / 30);
+			await settle();
+		};
+		const drawn = (between: number) => client.predict<Dot>(id, 0, move, { between })!.x;
+		await tick();
+		drawn(0);
+		await tick();
+		const now = client.predict<Dot>(id, 0, move)!.x;
+		// Halfway into the next tick: halfway between the last two ticks' positions; all the way, at this tick's
+		expect(drawn(0.5)).toBeCloseTo(now - step / 2, 5);
+		expect(drawn(1)).toBeCloseTo(now, 5);
+		await tick();
+		expect(drawn(0)).toBeCloseTo(now, 5);
+		expect(drawn(0.25)).toBeCloseTo(now + step / 4, 5);
+		host.destroy();
+	});
+
+	it("hands out its interpolated world as the caller's own: replacing an entity in it leaves the snapshots alone", async () => {
+		const net = igeNetLoopback();
+		const { host } = game(net);
+		const client = new IgeNetSyncClient<Input>(net.connect(), { pingInterval: 0 });
+		const { players: [id] } = await client.join([{ name: "Ann" }]);
+		client.sendInput([{ dx: 1 }]);
+		await settle();
+		host.update(1000 / 30);
+		await settle();
+		// Drawing past the newest snapshot (no newer one yet): the game puts its predicted player in the world
+		const world = client.interpolated();
+		const stored = client.latest()!.entities[id];
+		world[id] = { ...world[id], x: 999 };
+		expect(client.latest()!.entities[id]).toBe(stored);
+		expect((client.latest()!.entities[id] as Dot).x).not.toBe(999);
+		host.destroy();
+	});
+
 	it("rebuilds full snapshots from deltas, including removals", async () => {
 		const net = igeNetLoopback();
 		const { host, dots } = game(net);

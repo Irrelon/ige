@@ -92,6 +92,8 @@ export class IgeNetSyncClient<Input = unknown> extends IgeEventingClass {
 	_seq: number = 0;
 	/** Input frames not yet applied by the authority. */
 	_pending: IgeNetInputFrame<Input>[] = [];
+	/** Each predicted player's state at the tick before and at the latest tick (see predict()'s `between`). */
+	_ticks: Map<string, { seq: number; previous: IgeNetEntityState; current: IgeNetEntityState }> = new Map();
 	/** Full snapshots by tick, with the local time each arrived. */
 	_snapshots: { snapshot: IgeNetSnapshot; at: number }[] = [];
 	/** Smoothed local time minus authority time (ms). */
@@ -165,6 +167,9 @@ export class IgeNetSyncClient<Input = unknown> extends IgeEventingClass {
 	 * Every entity as it was interpolationDelay ms ago, blended between the
 	 * two snapshots either side of that time (or the newest, if time has
 	 * run past it). Use it for everything except this machine's own players.
+	 * The map is the caller's (put a predicted player in it); the entity
+	 * states in it may be the client's own, so replace them rather than
+	 * changing them.
 	 */
 	interpolated (): IgeNetEntities {
 		const snaps = this._snapshots;
@@ -179,7 +184,8 @@ export class IgeNetSyncClient<Input = unknown> extends IgeEventingClass {
 				break;
 			}
 		}
-		if (renderTick < older.tick || newer === older) return older.entities;
+		// A copy: the snapshot is the base later ones are built on (and only carry what changed)
+		if (renderTick < older.tick || newer === older) return { ...older.entities };
 		const f = Math.min(1, (renderTick - older.tick) / (newer.tick - older.tick));
 		const out: IgeNetEntities = {};
 		for (const id in newer.entities) {
@@ -194,11 +200,23 @@ export class IgeNetSyncClient<Input = unknown> extends IgeEventingClass {
 	 * snapshot with every input the authority hasn't applied yet replayed
 	 * through `apply` (the game's own movement rules), so it moves the
 	 * moment the stick does. `slot` is the player's local slot.
+	 *
+	 * Prediction moves a tick at a time, so a player drawn at it every
+	 * frame steps: at 30 ticks a second on a 60 Hz screen they move every
+	 * other frame, and a camera following them makes the whole world judder.
+	 * Pass `between` (how far this frame is into the next tick, 0 to 1:
+	 * the game loop's leftover time over the tick length) to get the state
+	 * blended from the previous tick's prediction to this tick's (by the
+	 * client's `blend` rules), smooth at any frame rate, at most a tick behind.
+	 * @example #Draw the player smoothly between ticks
+	 *     // every frame, after the whole ticks (accumulator: the time left over)
+	 *     const me = client.predict(id, 0, move, { between: accumulator / tickLength });
 	 */
 	predict<State extends IgeNetEntityState> (
 		id: string,
 		slot: number,
-		apply: (state: State, input: Input, dt: number) => State
+		apply: (state: State, input: Input, dt: number) => State,
+		options: { between?: number } = {}
 	): State | undefined {
 		const latest = this.latest();
 		const base = latest?.entities[id] as State | undefined;
@@ -209,7 +227,19 @@ export class IgeNetSyncClient<Input = unknown> extends IgeEventingClass {
 			const input = frame.inputs[slot];
 			if (input !== undefined) state = apply(state, input, dt);
 		}
-		return state;
+		if (options.between === undefined) return state;
+
+		// The prediction at the last tick drawn, and at this one
+		let ticks = this._ticks.get(id);
+		if (!ticks) {
+			ticks = { seq: this._seq, previous: state, current: state };
+			this._ticks.set(id, ticks);
+		} else if (ticks.seq !== this._seq) {
+			ticks.previous = ticks.current;
+			ticks.seq = this._seq;
+		}
+		ticks.current = state;
+		return blendEntity(ticks.previous, state, Math.max(0, Math.min(1, options.between)), this._options.blend) as State;
 	}
 
 	destroy (): this {
