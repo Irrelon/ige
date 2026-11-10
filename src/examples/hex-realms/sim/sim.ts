@@ -10,6 +10,7 @@ import * as economy from "./economy";
 import { hasWonder, researchCost, sightBonus } from "./effects";
 import * as movement from "./movement";
 import * as orders from "./orders";
+import { recordHistory } from "./history";
 import { CIV_IDS, CIVS, type CivId, STARTING_STARS, STARTING_STORE, type TechId, TECHS, techCost, UNIT_TYPES, type UnitTypeId } from "./rules";
 import * as treasury from "./treasury";
 import * as wonders from "./wonders";
@@ -125,7 +126,8 @@ export class Sim {
 				council: { formed: false, nextVote: 0, lastWinner: -1, streak: 0, lastVotes: [] }
 			},
 			firsts: {},
-			winner: null
+			winner: null,
+			history: []
 		};
 		const sim = new Sim(state, map);
 
@@ -183,6 +185,7 @@ export class Sim {
 		if (setup.villages !== false) sim.placeVillages(starts);
 		for (let p = 0; p < n; p++) sim.markFog(p);
 		sim.updateFog();
+		recordHistory(sim);
 		sim.beginTurn(0);
 		return sim;
 	}
@@ -677,6 +680,7 @@ export class Sim {
 	protected endRound (): void {
 		diplomacy.roundUpdate(this);
 		victory.roundCheck(this);
+		recordHistory(this);
 	}
 
 	/**
@@ -794,6 +798,7 @@ export class Sim {
 		d.denounced ??= zeros();
 		d.treaties ??= [];
 		state.firsts ??= {};
+		state.history ??= [];
 		for (const p of state.players) {
 			p.feats ??= [];
 			p.ambition ??= null;

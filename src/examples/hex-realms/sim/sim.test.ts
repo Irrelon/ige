@@ -895,6 +895,16 @@ describe("unit orders, upgrades and renaming", () => {
 		expect(sim.player(0).stars).toBe(44);
 	});
 
+	test("history records every civ's standing once per round, and survives saving", () => {
+		const sim = Sim.create(defaultOptions({ players: 3, humans: [], seed: 5, width: 32, height: 20 }));
+		playAi(sim, 6);
+		const h = sim.state.history;
+		expect(h.map((p) => p.turn)).toEqual([1, 2, 3, 4, 5, 6, 7]);
+		expect(h[h.length - 1].cities.every((n) => n >= 1)).toBe(true);
+		expect(h[h.length - 1].score[0]).toBeGreaterThan(0);
+		expect(Sim.load(sim.serialize()).state.history).toEqual(h);
+	});
+
 	test("cities can be renamed by their owner", () => {
 		const sim = blank(2, [sim0Start(), 200]);
 		const mine = sim.citiesOf(0)[0], theirs = sim.citiesOf(1)[0];

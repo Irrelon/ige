@@ -1,4 +1,5 @@
 import type { FogMode } from "../fog";
+import type { HistoryPoint } from "./history";
 import type { AgendaId, AmbitionId, BuildingId, CivId, EndableTreaty, Good, Goods, RewardId, TechId, UnitTypeId } from "./rules";
 
 /**
@@ -258,6 +259,8 @@ export interface GameState {
 	/** Milestones already claimed by a first civ: "ambition:index" -> player. */
 	firsts: Record<string, number>;
 	winner: Winner | null;
+	/** Each civ's standing once per round (Rankings charts). */
+	history: HistoryPoint[];
 }
 
 // ------------------------------------------------------------------

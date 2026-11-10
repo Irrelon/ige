@@ -28,6 +28,8 @@ import type { SaveKind, SaveMeta, SaveStore } from "../saves";
 import { savesModal } from "./savesScreen";
 import { emblem, icon } from "./icons";
 import { contactModal } from "./contact";
+import { chartHover, historyChart, historyModal, shownCivs } from "./historyScreen";
+import type { HistoryMetric } from "../sim/history";
 import { fortifyProblem, hasOrders, isReady, sleepProblem, upgradeCost, upgradeProblem, UPGRADES } from "../sim/orders";
 import { renameProblem } from "../sim/cities";
 import { type ChatLine, type RoomInfo, TURN_TIMERS } from "../net/protocol";
@@ -137,6 +139,8 @@ export class Hud {
 	/** Every notice shown this session (the Log screen), oldest first. */
 	logEntries: { turn: number; html: string; kind: "info" | "good" | "bad"; seen?: boolean }[] = [];
 	tipId: string | null = null;
+	/** The metric the Rankings charts show. */
+	historyMetric: HistoryMetric = "score";
 	/** The city whose name is being edited (-1 = none). */
 	renaming = -1;
 	/** Civs met whose first-contact card hasn't been shown yet. */
@@ -192,6 +196,11 @@ export class Hud {
 		};
 		document.addEventListener("input", edit);
 		document.addEventListener("change", edit);
+		// Rankings charts: a crosshair and every civ's value under the pointer
+		document.addEventListener("pointermove", (e) => {
+			if ((e.target as HTMLElement)?.closest?.(".hchart")) chartHover(e);
+			else document.querySelectorAll(".hchart .htip:not(.hidden), .hchart .cross:not(.hidden)").forEach((el) => el.classList.add("hidden"));
+		});
 		// Renaming a city: Enter saves, Escape cancels
 		document.addEventListener("keydown", (e) => {
 			const el = e.target as HTMLInputElement;
@@ -354,6 +363,7 @@ export class Hud {
 			case "modal": this.openModal(data.modal as string); break;
 			case "close-modal": this.closeModal(); break;
 			case "contact-ok": this.closeModal(); break;
+			case "history-metric": this.historyMetric = data.metric as HistoryMetric; this.renderModal(); break;
 			case "sleep": run({ type: "sleep", unit: h.selectedUnit as number }); break;
 			case "fortify": run({ type: "fortify", unit: h.selectedUnit as number }); break;
 			case "wake": run({ type: "wake", unit: h.selectedUnit as number }); break;
@@ -483,6 +493,7 @@ export class Hud {
 		if (amb) amb.title = p.ambition ? `Ambition: ${AMBITIONS[p.ambition].name}, ${p.milestones.length} of 4 milestones (J)` : "Choose an ambition (J)";
 		const earned = p.feats.filter((m) => !sim.state.buildings.some((b) => b.type === m && b.owner === this.me)).length;
 		nav("btnWonders", "wonders", "Wonders", badge(earned));
+		nav("btnHistory", "graph", "Rankings");
 		setHtml("styleToggle", icon(this.host.terrain.style === "tiles" ? "terrain" : "map"));
 		const style = document.getElementById("styleToggle");
 		if (style) style.title = `Terrain look: ${this.host.terrain.style === "tiles" ? "Tiles" : "Natural"} (T to switch)`;
@@ -1115,6 +1126,7 @@ export class Hud {
 			case "menu": body = this.menuModal(); break;
 			case "help": body = this.helpModal(); break;
 			case "log": body = this.logModal(); break;
+			case "history": body = historyModal(this.sim, this.me, this.historyMetric, !!this.sim.state.winner || this.sim.options.fog === "off", (p) => this.host.playerName(p) || this.sim.player(p).name); break;
 			case "contact": body = contactModal(this.sim, this.contactCiv, this.me, this.host.playerName(this.contactCiv) || this.sim.player(this.contactCiv).name); break;
 			case "saves": body = savesModal({ saves: this.host.saves, local: this.host.canSave, defaultName: this.defaultSaveName(), confirmDelete: this.saveConfirm, storage: this.host.saveStore.available }); break;
 			case "gameover": body = this.gameOverModal(); break;
@@ -1378,7 +1390,7 @@ export class Hud {
 			<p><b>Diplomacy</b> (G): treaties, cultural exchanges, research agreements, trades of goods and stars (once, or every turn as a route; where your roads meet theirs the goods travel as carts), demands, denouncing and sanctions. Wars wear both sides down, making peace easier the longer they last. Wars without enough grievances are surprise wars that everyone resents; peace brings a 10-turn truce.</p>
 			<p><b>Quick actions</b>: buttons float above a selected unit when it can do something where it stands: crossed swords capture a city, a house founds one, a flame pillages.</p>
 			<p><b>Fight</b>: declare war in Diplomacy first. Select a unit to see red attack rings; hover one to preview the damage. Ranged units need line of sight. Units stop when they move next to an enemy.</p>
-			<p><b>Orders</b>: click a far tile to march a unit there over several turns (its route shows as gold dots). Sleep (K) leaves a unit be until an enemy comes near; Fortify (I) digs it in for +50% defence; Upgrade (U) turns a warrior into a swordsman inside your borders once you have Smithing. Click a city's name to rename it.</p><p><b>Keys</b>: Ctrl/Cmd+S quicksave, N log of notices, WASD/arrows pan, wheel or Z/X zoom, Q/E rotate, Page Up/Page Down tilt (or right-drag: sideways rotates, up and down tilts), Space next unit, Enter end turn, Esc deselect, C centre, T terrain style, R research, G diplomacy, J ambition, M wonders, B economy, V economy lens, L cities, F found city, O menu, H help.</p></div>`;
+			<p><b>Orders</b>: click a far tile to march a unit there over several turns (its route shows as gold dots). Sleep (K) leaves a unit be until an enemy comes near; Fortify (I) digs it in for +50% defence; Upgrade (U) turns a warrior into a swordsman inside your borders once you have Smithing. Click a city's name to rename it.</p><p><b>Keys</b>: Ctrl/Cmd+S quicksave, N log of notices, Y rankings, WASD/arrows pan, wheel or Z/X zoom, Q/E rotate, Page Up/Page Down tilt (or right-drag: sideways rotates, up and down tilts), Space next unit, Enter end turn, Esc deselect, C centre, T terrain style, R research, G diplomacy, J ambition, M wonders, B economy, V economy lens, L cities, F found city, O menu, H help.</p></div>`;
 	}
 
 	gameOverModal (): string {
@@ -1396,7 +1408,10 @@ export class Hud {
 			const ambition = p.ambition ? `${AMBITIONS[p.ambition].name} ${p.milestones.length}/4${p.legacy ? " &#9733;" : ""}` : "-";
 			return `<tr><td><span class="swatch" style="background:${p.color}"></span>${esc(p.name)}</td><td>${score(sim, p.index)}</td><td>${sim.citiesOf(p.index).length} cities</td><td>${p.techs.length} techs</td><td>${held.world} wonders, ${held.monuments} monuments</td><td>${ambition} <small class="dim">(${ambitionScore(sim, p.index)})</small></td><td>${p.stats.produced} goods</td><td>${p.stats.kills} kills</td></tr>`;
 		}).join("");
-		return `<h3>${title}</h3><p>${names} ${how[w.type]} on turn ${sim.state.turn}.</p><table>${rows}</table><div class="menu-actions"><button class="primary" data-action="newgame">New game</button><button data-action="replay">Watch replay</button><button data-action="close-modal">Keep looking</button></div>`;
+		const civs = shownCivs(sim, this.me, true);
+		const tabs = (["score", "cities", "land", "military", "techs"] as HistoryMetric[]).map((m) => `<button class="${m === this.historyMetric ? "on" : ""}" data-action="history-metric" data-metric="${m}">${m[0].toUpperCase()}${m.slice(1)}</button>`).join("");
+		const chart = `<h4>How the game went</h4><div class="dp-tabs htabs">${tabs}</div>${historyChart(sim, this.me, this.historyMetric, civs, (p) => this.host.playerName(p) || sim.player(p).name)}`;
+		return `<h3>${title}</h3><p>${names} ${how[w.type]} on turn ${sim.state.turn}.</p><table>${rows}</table>${chart}<div class="menu-actions"><button class="primary" data-action="newgame">New game</button><button data-action="replay">Watch replay</button><button data-action="close-modal">Keep looking</button></div>`;
 	}
 }
 
