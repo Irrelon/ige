@@ -1,4 +1,4 @@
-import { type BuildingId, BUILDINGS, type TechId, techCost, type WonderId } from "./rules";
+import { type BuildingId, BUILDINGS, type TechId, techCost, type WonderId, TECHS } from "./rules";
 import type { Sim } from "./sim";
 
 /**
@@ -40,6 +40,8 @@ export function researchCost (sim: Sim, player: number, tech: TechId): number {
 	let cost = techCost(tech, sim.citiesOf(player).length);
 	if (hasWonder(sim, player, "greatLibrary")) cost *= 0.75;
 	if (hasLegacy(sim, player, "knowledge")) cost *= 0.5;
+	// Printing, Electricity and Computing make research cheaper
+	for (const t of sim.player(player).techs) cost *= 1 - (TECHS[t].researchDiscount ?? 0);
 	return Math.max(1, Math.ceil(cost));
 }
 

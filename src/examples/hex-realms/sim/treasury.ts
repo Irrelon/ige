@@ -3,7 +3,7 @@ import { riverside } from "../rivers";
 import { linkedToCapital } from "./network";
 import { isActive } from "./economy";
 import { hasLegacy, hasWonder, wondersOf } from "./effects";
-import { administration, BUILDINGS, FREE_UNITS, FREE_UNITS_PER_CITY, levelIncome, MODERN_TECHS, UNIT_TYPES } from "./rules";
+import { administration, BUILDINGS, FREE_UNITS, FREE_UNITS_PER_CITY, levelIncome, MODERN_TECHS, UNIT_TYPES, TECHS } from "./rules";
 import type { Sim } from "./sim";
 import type { CityState } from "./types";
 
@@ -35,6 +35,8 @@ export interface Income {
 export function cityIncome (sim: Sim, city: CityState): number {
 	let stars = levelIncome(city.level) + (city.capital ? 1 : 0) + city.bonusIncome;
 	if (city.owner < 0) return stars;
+	// Later economic techs (Guilds, Banking, Railways, Computing, Fusion) pay every city
+	for (const t of sim.player(city.owner).techs) stars += TECHS[t].cityStars ?? 0;
 	// River Folk: a city beside a river earns a star more
 	if (sim.player(city.owner).civ === "riverfolk" && riverside(sim.map, city.tile)) stars += 1;
 	// Imperial Road: every city joined to the capital by road earns a star more

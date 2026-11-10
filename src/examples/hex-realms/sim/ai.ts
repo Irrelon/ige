@@ -1,4 +1,5 @@
 import { ambitionProblem, measure, target as milestoneTarget } from "./ambitions";
+import { upgradeCost, upgradeProblem } from "./orders";
 import { attackTargets, preview } from "./combat";
 import { captureProblem, foundProblem, slotCap, slotsUsed, trainProblem, unitCost } from "./cities";
 import { actionProblem, agreementCost, aiAccepts, attitude, type DealTerms, endTreatyProblem, justified, proposalProblem, strandedUnits, strength, warProblem, weariness } from "./diplomacy";
@@ -458,6 +459,11 @@ class AiTurn {
 			["mint", mined(Deposit.Gold) && mined(Deposit.Coal) ? 1 : 0],
 			["pasture", sim.player(this.p).civ === "horselords" ? 0 : 1],
 			["warehouse", Math.floor(c / 6)],
+			// Later industries, once known
+			["steelworks", smelts ? 1 + Math.floor(c / 10) : 0],
+			["powderMill", mined(Deposit.Ore) && mined(Deposit.Coal) ? 1 : 0],
+			["factory", count("steelworks") && count("toolsmith") ? 1 : 0],
+			["electronicsWorks", count("factory") && mined(Deposit.Gold) ? 1 : 0],
 			["hunter", 99],
 			["fishery", 99]
 		];
@@ -764,9 +770,21 @@ class AiTurn {
 		}
 	}
 
+	/** With stars to spare, bring an old unit up to date (one a turn, the oldest first). */
+	upgrades (): void {
+		const sim = this.sim;
+		for (const u of sim.unitsOf(this.p)) {
+			if (upgradeProblem(sim, this.p, u.id) !== null) continue;
+			if (this.spare < upgradeCost(u) + 25) return;
+			this.do({ type: "upgrade", unit: u.id });
+			return;
+		}
+	}
+
 	training (): void {
 		const sim = this.sim;
 		this.trimArmy();
+		this.upgrades();
 		const cities = sim.citiesOf(this.p);
 		const units = sim.unitsOf(this.p);
 		const war = this.atWarWithAnyone();
@@ -788,8 +806,17 @@ class AiTurn {
 			if (sim.options.allowFounding && settlers < (this.pers.expansion >= 1.5 ? 2 : 1) && cities.length < wanted && this.stars >= 7 && trainProblem(sim, this.p, city.id, "settler") === null) {
 				choice = "settler";
 			} else if (army < target) {
-				for (const type of ["swordsman", "catapult", "rider", "archer", "warrior"] as UnitTypeId[]) {
-					if (type === "catapult" && !war) continue;
+				// The newest unit of each line it can make, strongest lines first
+				const lines: UnitTypeId[][] = [
+					["exoTrooper", "mechInfantry", "infantry", "rifleman", "musketeer", "swordsman"],
+					["railgun", "rocketArtillery", "artillery", "cannon", "trebuchet", "catapult"],
+					["hoverTank", "tank", "cavalry", "knight", "rider"],
+					["laserTrooper", "machineGunner", "crossbowman", "archer"],
+					["warrior"]
+				];
+				const siege = new Set<UnitTypeId>(lines[1]);
+				for (const type of lines.flat()) {
+					if (siege.has(type) && !war) continue;
 					if (!affordable(type)) continue;
 					if (trainProblem(sim, this.p, city.id, type) === null) {
 						choice = type;

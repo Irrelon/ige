@@ -11,13 +11,14 @@
 export const GOODS = [
 	"logs", "stone", "ore", "coal", "gold", "grain", "fish", "game", "horses",
 	"planks", "iron", "flour", "coins",
-	"tools", "weapons", "bread"
+	"tools", "weapons", "bread",
+	"steel", "gunpowder", "machinery", "electronics"
 ] as const;
 
 export type Good = (typeof GOODS)[number];
 export type Goods = Partial<Record<Good, number>>;
 
-export const GOOD_INFO: Record<Good, { name: string; tier: 1 | 2 | 3; color: string; price: number }> = {
+export const GOOD_INFO: Record<Good, { name: string; tier: 1 | 2 | 3 | 4; color: string; price: number }> = {
 	logs: { name: "Logs", tier: 1, color: "#8b5a2b", price: 0.5 },
 	stone: { name: "Stone", tier: 1, color: "#9a9a9a", price: 0.5 },
 	ore: { name: "Ore", tier: 1, color: "#a0522d", price: 0.5 },
@@ -33,7 +34,11 @@ export const GOOD_INFO: Record<Good, { name: string; tier: 1 | 2 | 3; color: str
 	coins: { name: "Coins", tier: 2, color: "#f5d142", price: 3 },
 	tools: { name: "Tools", tier: 3, color: "#5b6b7a", price: 2 },
 	weapons: { name: "Weapons", tier: 3, color: "#b23a3a", price: 2 },
-	bread: { name: "Bread", tier: 3, color: "#d99a4e", price: 1.5 }
+	bread: { name: "Bread", tier: 3, color: "#d99a4e", price: 1.5 },
+	steel: { name: "Steel", tier: 3, color: "#9fb3c8", price: 2 },
+	gunpowder: { name: "Gunpowder", tier: 3, color: "#4a4038", price: 2 },
+	machinery: { name: "Machinery", tier: 4, color: "#c07a32", price: 3 },
+	electronics: { name: "Electronics", tier: 4, color: "#3fd0c9", price: 4 }
 };
 
 /** Growth points a city gains when a food good is delivered. */
@@ -115,6 +120,7 @@ export type BuildingId =
 	| "woodcutter" | "quarry" | "mine" | "farm" | "fishery" | "hunter" | "pasture"
 	| "sawmill" | "smelter" | "mill" | "mint"
 	| "toolsmith" | "armoury" | "bakery"
+	| "steelworks" | "powderMill" | "factory" | "electronicsWorks"
 	| "warehouse" | "market" | "port" | "walls"
 	| WonderId | MonumentId;
 
@@ -172,6 +178,10 @@ export const BUILDINGS: Record<BuildingId, BuildingType> = {
 	toolsmith: { id: "toolsmith", name: "Toolsmith", tech: "carpentry", site: "land", inputs: { iron: 1, planks: 1 }, outputs: { tools: 1 }, stars: 4, materials: { planks: 2, stone: 2 }, slot: true, icon: "T", description: "Makes tools from iron and planks." },
 	armoury: { id: "armoury", name: "Armoury", tech: "smithing", site: "land", inputs: { iron: 1, coal: 1 }, outputs: { weapons: 1 }, stars: 4, materials: { planks: 2, stone: 2, tools: 1 }, slot: true, icon: "A", description: "Forges weapons for swordsmen." },
 	bakery: { id: "bakery", name: "Bakery", tech: "baking", site: "land", inputs: { flour: 1 }, outputs: { bread: 1 }, stars: 3, materials: { planks: 2, stone: 1 }, slot: true, icon: "B", description: "Bakes bread, the best food for growing cities." },
+	steelworks: { id: "steelworks", name: "Steelworks", tech: "steelmaking", site: "land", inputs: { iron: 1, coal: 1 }, outputs: { steel: 1 }, stars: 6, materials: { planks: 2, stone: 4, iron: 2 }, slot: true, icon: "St", description: "Refines iron with coal into steel." },
+	powderMill: { id: "powderMill", name: "Powder Mill", tech: "gunpowder", site: "land", inputs: { coal: 1, ore: 1 }, outputs: { gunpowder: 1 }, stars: 6, materials: { planks: 3, stone: 3 }, slot: true, icon: "G", description: "Grinds coal and saltpetre ore into gunpowder." },
+	factory: { id: "factory", name: "Factory", tech: "industrialisation", site: "land", inputs: { steel: 1, tools: 1 }, outputs: { machinery: 1 }, stars: 8, materials: { steel: 3, stone: 4, planks: 2 }, slot: true, icon: "Fa", description: "Builds machinery from steel and tools." },
+	electronicsWorks: { id: "electronicsWorks", name: "Electronics Works", tech: "electricity", site: "land", inputs: { gold: 1, machinery: 1 }, outputs: { electronics: 1 }, stars: 10, materials: { steel: 3, machinery: 2, stone: 2 }, slot: true, icon: "E", description: "Makes electronics from gold and machinery." },
 	warehouse: { id: "warehouse", name: "Warehouse", tech: "construction", site: "land", inputs: {}, outputs: {}, stars: 3, materials: { planks: 2, stone: 2 }, slot: true, icon: "W", description: "Stores goods near where they are made and used." },
 	market: { id: "market", name: "Market", tech: "trade", site: "land", inputs: {}, outputs: {}, stars: 4, materials: { planks: 3, stone: 2 }, slot: true, icon: "$", description: "Sells goods you mark for sale for stars." },
 	port: { id: "port", name: "Port", tech: "sailing", site: "coast", inputs: {}, outputs: {}, stars: 4, materials: { planks: 3, stone: 1 }, slot: true, icon: "P", description: "Ships goods by sea: carriers sail between your ports, so cities across the water share one network." },
@@ -244,7 +254,11 @@ export const ROAD_COST = 1;
 // Units
 // ------------------------------------------------------------------
 
-export type UnitTypeId = "warrior" | "archer" | "rider" | "swordsman" | "catapult" | "settler";
+export type UnitTypeId = "warrior" | "archer" | "rider" | "swordsman" | "catapult" | "settler"
+	| "musketeer" | "rifleman" | "infantry" | "mechInfantry" | "exoTrooper"
+	| "crossbowman" | "machineGunner" | "laserTrooper"
+	| "knight" | "cavalry" | "tank" | "hoverTank"
+	| "trebuchet" | "cannon" | "artillery" | "rocketArtillery" | "railgun";
 
 export interface UnitType {
 	id: UnitTypeId;
@@ -272,8 +286,57 @@ export const UNIT_TYPES: Record<UnitTypeId, UnitType> = {
 	rider: { id: "rider", name: "Rider", shape: "Cube on orb", tech: "riding", hp: 10, attack: 2, defence: 1, moves: 3, range: 1, stars: 3, upkeep: 1, goods: { horses: 1 }, description: "Fast unit. Needs a horse." },
 	swordsman: { id: "swordsman", name: "Swordsman", shape: "Tall cube", tech: "smithing", hp: 15, attack: 3, defence: 3, moves: 2, range: 1, stars: 5, upkeep: 1, goods: { weapons: 1 }, description: "Strong melee unit. Needs weapons." },
 	catapult: { id: "catapult", name: "Catapult", shape: "Wide pyramid", tech: "siege", hp: 10, attack: 4, defence: 0, moves: 1, range: 3, stars: 8, upkeep: 2, goods: { planks: 1, iron: 1 }, description: "Siege engine with range 3. Needs planks and iron." },
-	settler: { id: "settler", name: "Settler", shape: "Orb", tech: null, hp: 6, attack: 0, defence: 1, moves: 2, range: 1, stars: 5, upkeep: 1, goods: { food: 2 }, founder: true, description: "Founds a new city. Needs 2 food." }
+	settler: { id: "settler", name: "Settler", shape: "Orb", tech: null, hp: 6, attack: 0, defence: 1, moves: 2, range: 1, stars: 5, upkeep: 1, goods: { food: 2 }, founder: true, description: "Founds a new city. Needs 2 food." },
+	// Melee, through the eras
+	musketeer: { id: "musketeer", name: "Musketeer", shape: "Tall cube", tech: "gunpowder", hp: 18, attack: 4, defence: 4, moves: 2, range: 1, stars: 8, upkeep: 1, goods: { weapons: 1, gunpowder: 1 }, description: "Renaissance infantry with matchlocks." },
+	rifleman: { id: "rifleman", name: "Rifleman", shape: "Tall cube", tech: "rifling", hp: 20, attack: 5, defence: 5, moves: 2, range: 1, stars: 10, upkeep: 1, goods: { weapons: 1, gunpowder: 1 }, description: "Industrial-age infantry." },
+	infantry: { id: "infantry", name: "Infantry", shape: "Tall cube", tech: "automaticWeapons", hp: 22, attack: 6, defence: 6, moves: 2, range: 1, stars: 13, upkeep: 1, goods: { gunpowder: 1, steel: 1 }, description: "Modern infantry." },
+	mechInfantry: { id: "mechInfantry", name: "Mech Infantry", shape: "Tall cube", tech: "robotics", hp: 25, attack: 7, defence: 7, moves: 3, range: 1, stars: 16, upkeep: 2, goods: { machinery: 1, steel: 1 }, description: "Armoured infantry in fighting vehicles." },
+	exoTrooper: { id: "exoTrooper", name: "Exo-Trooper", shape: "Tall cube", tech: "fusion", hp: 28, attack: 9, defence: 8, moves: 3, range: 1, stars: 20, upkeep: 2, goods: { electronics: 2 }, description: "Powered exoskeleton infantry of the future." },
+	// Ranged
+	crossbowman: { id: "crossbowman", name: "Crossbowman", shape: "Pyramid", tech: "mechanics", hp: 12, attack: 3, defence: 2, moves: 2, range: 2, stars: 5, upkeep: 1, goods: { planks: 1, iron: 1 }, description: "Medieval ranged unit; hits hard from 2 tiles." },
+	machineGunner: { id: "machineGunner", name: "Machine Gunner", shape: "Pyramid", tech: "automaticWeapons", hp: 18, attack: 5, defence: 4, moves: 2, range: 2, stars: 11, upkeep: 1, goods: { gunpowder: 1, machinery: 1 }, description: "Modern ranged support." },
+	laserTrooper: { id: "laserTrooper", name: "Laser Trooper", shape: "Pyramid", tech: "lasers", hp: 20, attack: 8, defence: 5, moves: 2, range: 3, stars: 18, upkeep: 2, goods: { electronics: 2 }, description: "Future ranged unit with range 3." },
+	// Mounted and armour
+	knight: { id: "knight", name: "Knight", shape: "Cube on orb", tech: "chivalry", hp: 16, attack: 4, defence: 3, moves: 3, range: 1, stars: 8, upkeep: 1, goods: { horses: 1, weapons: 1 }, description: "Heavily armoured medieval horseman." },
+	cavalry: { id: "cavalry", name: "Cavalry", shape: "Cube on orb", tech: "rifling", hp: 18, attack: 5, defence: 3, moves: 4, range: 1, stars: 10, upkeep: 1, goods: { horses: 1, gunpowder: 1 }, description: "Fast industrial-age horsemen." },
+	tank: { id: "tank", name: "Tank", shape: "Cube on orb", tech: "combustion", hp: 25, attack: 7, defence: 5, moves: 4, range: 1, stars: 16, upkeep: 2, goods: { machinery: 1, steel: 1 }, description: "Armoured vehicle: fast and powerful." },
+	hoverTank: { id: "hoverTank", name: "Hover Tank", shape: "Cube on orb", tech: "fusion", hp: 30, attack: 10, defence: 7, moves: 5, range: 1, stars: 24, upkeep: 2, goods: { electronics: 2, machinery: 1 }, description: "Fusion-powered armour of the future." },
+	// Siege
+	trebuchet: { id: "trebuchet", name: "Trebuchet", shape: "Wide pyramid", tech: "mechanics", hp: 12, attack: 5, defence: 0, moves: 1, range: 3, stars: 10, upkeep: 2, goods: { planks: 2, iron: 1 }, description: "Medieval siege engine with range 3." },
+	cannon: { id: "cannon", name: "Cannon", shape: "Wide pyramid", tech: "gunpowder", hp: 14, attack: 6, defence: 1, moves: 1, range: 3, stars: 12, upkeep: 2, goods: { steel: 1, gunpowder: 1 }, description: "Gunpowder siege gun." },
+	artillery: { id: "artillery", name: "Artillery", shape: "Wide pyramid", tech: "industrialisation", hp: 16, attack: 8, defence: 1, moves: 1, range: 4, stars: 15, upkeep: 2, goods: { steel: 1, gunpowder: 1 }, description: "Industrial guns with range 4." },
+	rocketArtillery: { id: "rocketArtillery", name: "Rocket Artillery", shape: "Wide pyramid", tech: "rocketry", hp: 18, attack: 9, defence: 2, moves: 2, range: 4, stars: 18, upkeep: 2, goods: { machinery: 1, electronics: 1 }, description: "Mobile rockets with range 4." },
+	railgun: { id: "railgun", name: "Railgun", shape: "Wide pyramid", tech: "railguns", hp: 20, attack: 12, defence: 2, moves: 2, range: 5, stars: 24, upkeep: 2, goods: { electronics: 2, steel: 1 }, description: "Future siege weapon with range 5." }
 };
+
+/**
+ * The original unit whose look (3D model, placeholder parts, badge height)
+ * a later unit borrows until it has its own model.
+ */
+export const UNIT_LOOK: Record<UnitTypeId, "warrior" | "archer" | "rider" | "swordsman" | "catapult" | "settler"> = {
+	warrior: "warrior", archer: "archer", rider: "rider", swordsman: "swordsman", catapult: "catapult", settler: "settler",
+	musketeer: "swordsman", rifleman: "swordsman", infantry: "swordsman", mechInfantry: "swordsman", exoTrooper: "swordsman",
+	crossbowman: "archer", machineGunner: "archer", laserTrooper: "archer",
+	knight: "rider", cavalry: "rider", tank: "rider", hoverTank: "rider",
+	trebuchet: "catapult", cannon: "catapult", artillery: "catapult", rocketArtillery: "catapult", railgun: "catapult"
+};
+
+/** Each era's name, by the tiers of its technologies. */
+export const ERAS: { name: string; tiers: number[] }[] = [
+	{ name: "Ancient", tiers: [1, 2] },
+	{ name: "Classical", tiers: [3, 4] },
+	{ name: "Medieval", tiers: [5] },
+	{ name: "Renaissance", tiers: [6] },
+	{ name: "Industrial", tiers: [7] },
+	{ name: "Modern", tiers: [8] },
+	{ name: "Information", tiers: [9] },
+	{ name: "Future", tiers: [10] }
+];
+
+export function eraOfTier (tier: number): string {
+	return ERAS.find((e) => e.tiers.includes(tier))?.name ?? "Future";
+}
 
 /**
  * Running a big empire: the first 10 cities cost nothing, the next 10 cost 1
@@ -307,7 +370,13 @@ export type TechId =
 	| "forestry" | "mining" | "construction" | "farming" | "hunting" | "fishing" | "riding"
 	| "sawmills" | "smelting" | "masonry" | "milling" | "sailing" | "trade" | "archery"
 	| "carpentry" | "smithing" | "baking" | "navigation" | "coinage" | "logistics" | "diplomacy"
-	| "siege" | "statecraft" | "engineering";
+	| "siege" | "statecraft" | "engineering"
+	| "chivalry" | "mechanics" | "steelmaking" | "guilds"
+	| "gunpowder" | "banking" | "printing"
+	| "industrialisation" | "rifling" | "railways"
+	| "electricity" | "combustion" | "automaticWeapons"
+	| "computing" | "rocketry" | "robotics"
+	| "fusion" | "lasers" | "railguns";
 
 export interface Tech {
 	id: TechId;
@@ -316,6 +385,10 @@ export interface Tech {
 	requires: TechId[];
 	branch: "Industry" | "Food" | "Sea" | "Society" | "War";
 	unlocks: string;
+	/** Stars a turn for every city once known (later economic techs). */
+	cityStars?: number;
+	/** Research costs this much less once known (a share, e.g. 0.1). */
+	researchDiscount?: number;
 }
 
 export const TECHS: Record<TechId, Tech> = {
@@ -342,7 +415,32 @@ export const TECHS: Record<TechId, Tech> = {
 	coinage: { id: "coinage", name: "Coinage", tier: 3, requires: ["smelting", "diplomacy"], branch: "Society", unlocks: "Mint" },
 	siege: { id: "siege", name: "Siege", tier: 4, requires: ["smithing", "carpentry"], branch: "War", unlocks: "Catapult" },
 	statecraft: { id: "statecraft", name: "Statecraft", tier: 4, requires: ["coinage"], branch: "Society", unlocks: "The World Council (diplomatic victory)" },
-	engineering: { id: "engineering", name: "Engineering", tier: 4, requires: ["carpentry", "coinage"], branch: "Industry", unlocks: "Grand Exchange (prosperity victory)" }
+	engineering: { id: "engineering", name: "Engineering", tier: 4, requires: ["carpentry", "coinage"], branch: "Industry", unlocks: "Grand Exchange (prosperity victory)" },
+	// Medieval
+	chivalry: { id: "chivalry", name: "Chivalry", tier: 5, requires: ["statecraft"], branch: "War", unlocks: "Knight" },
+	mechanics: { id: "mechanics", name: "Mechanics", tier: 5, requires: ["siege"], branch: "War", unlocks: "Crossbowman, Trebuchet" },
+	steelmaking: { id: "steelmaking", name: "Steelmaking", tier: 5, requires: ["engineering"], branch: "Industry", unlocks: "Steelworks (steel)" },
+	guilds: { id: "guilds", name: "Guilds", tier: 5, requires: ["statecraft"], branch: "Society", unlocks: "Craft guilds: +1 star a turn in every city", cityStars: 1 },
+	// Renaissance
+	gunpowder: { id: "gunpowder", name: "Gunpowder", tier: 6, requires: ["mechanics", "steelmaking"], branch: "War", unlocks: "Powder Mill (gunpowder), Musketeer, Cannon" },
+	banking: { id: "banking", name: "Banking", tier: 6, requires: ["guilds"], branch: "Society", unlocks: "Banks: +1 star a turn in every city", cityStars: 1 },
+	printing: { id: "printing", name: "Printing", tier: 6, requires: ["guilds"], branch: "Society", unlocks: "Printing presses: research costs 10% less", researchDiscount: 0.1 },
+	// Industrial
+	industrialisation: { id: "industrialisation", name: "Industrialisation", tier: 7, requires: ["gunpowder", "banking"], branch: "Industry", unlocks: "Factory (machinery), Artillery" },
+	rifling: { id: "rifling", name: "Rifling", tier: 7, requires: ["gunpowder"], branch: "War", unlocks: "Rifleman, Cavalry" },
+	railways: { id: "railways", name: "Railways", tier: 7, requires: ["gunpowder", "printing"], branch: "Society", unlocks: "Railways: +1 star a turn in every city", cityStars: 1 },
+	// Modern
+	electricity: { id: "electricity", name: "Electricity", tier: 8, requires: ["industrialisation"], branch: "Industry", unlocks: "Electronics Works (electronics); research costs 10% less", researchDiscount: 0.1 },
+	combustion: { id: "combustion", name: "Combustion", tier: 8, requires: ["industrialisation", "rifling"], branch: "War", unlocks: "Tank" },
+	automaticWeapons: { id: "automaticWeapons", name: "Automatic Weapons", tier: 8, requires: ["rifling"], branch: "War", unlocks: "Infantry, Machine Gunner" },
+	// Information
+	computing: { id: "computing", name: "Computing", tier: 9, requires: ["electricity"], branch: "Society", unlocks: "Computers: research costs 15% less and +1 star a turn in every city", researchDiscount: 0.15, cityStars: 1 },
+	rocketry: { id: "rocketry", name: "Rocketry", tier: 9, requires: ["combustion"], branch: "War", unlocks: "Rocket Artillery" },
+	robotics: { id: "robotics", name: "Robotics", tier: 9, requires: ["electricity", "combustion"], branch: "Industry", unlocks: "Mech Infantry" },
+	// Future
+	fusion: { id: "fusion", name: "Fusion", tier: 10, requires: ["computing", "robotics"], branch: "Industry", unlocks: "Exo-Trooper, Hover Tank; +2 stars a turn in every city", cityStars: 2 },
+	lasers: { id: "lasers", name: "Lasers", tier: 10, requires: ["computing"], branch: "War", unlocks: "Laser Trooper" },
+	railguns: { id: "railguns", name: "Railguns", tier: 10, requires: ["rocketry", "robotics"], branch: "War", unlocks: "Railgun" }
 };
 
 export const TECH_IDS = Object.keys(TECHS) as TechId[];

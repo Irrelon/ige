@@ -28,7 +28,10 @@ export const WAKE_RANGE = 2;
 
 /** What each unit type can be upgraded to. */
 export const UPGRADES: Partial<Record<UnitTypeId, UnitTypeId>> = {
-	warrior: "swordsman"
+	warrior: "swordsman", swordsman: "musketeer", musketeer: "rifleman", rifleman: "infantry", infantry: "mechInfantry", mechInfantry: "exoTrooper",
+	archer: "crossbowman", crossbowman: "machineGunner", machineGunner: "laserTrooper",
+	rider: "knight", knight: "cavalry", cavalry: "tank", tank: "hoverTank",
+	catapult: "trebuchet", trebuchet: "cannon", cannon: "artillery", artillery: "rocketArtillery", rocketArtillery: "railgun"
 };
 
 /** Has this unit a standing order (so Next Unit should leave it alone)? */

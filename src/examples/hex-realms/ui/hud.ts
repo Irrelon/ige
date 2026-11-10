@@ -7,7 +7,7 @@ import { buildingStars, buildOptions, buyCost, buyProblem, roadProblem, rushCost
 import { researchCost } from "../sim/effects";
 import {
 	AMBITIONS, type BuildingId, BUILDINGS, DEPOSIT_NAMES, type Deposit, type EndableTreaty, END_TRUCE_TURNS, GOOD_INFO, GOODS, type Good, type Goods, growthNeeded, levelRewards, REWARDS, ROAD_COST,
-	type TechId, TECH_IDS, TECHS, UNIT_TYPE_IDS, type UnitTypeId, UNIT_TYPES, WONDER_IDS
+	eraOfTier, type TechId, TECH_IDS, TECHS, UNIT_LOOK, UNIT_TYPE_IDS, type UnitTypeId, UNIT_TYPES, WONDER_IDS
 } from "../sim/rules";
 import type { Sim } from "../sim/sim";
 import { cityIncome, freeUnits, income, upkeepFactor } from "../sim/treasury";
@@ -55,11 +55,16 @@ const SITE_TEXT: Record<string, string> = {
 
 /** Icons on unit badges. */
 const UNIT_ICONS: Record<UnitTypeId, string> = {
-	warrior: "&#x1FA93;", archer: "&#x1F3F9;", swordsman: "&#x2694;&#xFE0F;", settler: "&#x26FA;", rider: "&#x1F40E;", catapult: "&#x2604;&#xFE0F;"
+	warrior: "&#x1FA93;", archer: "&#x1F3F9;", swordsman: "&#x2694;&#xFE0F;", settler: "&#x26FA;", rider: "&#x1F40E;", catapult: "&#x2604;&#xFE0F;",
+	musketeer: "&#x1F4A5;", rifleman: "&#x1F396;&#xFE0F;", infantry: "&#x1FA96;", mechInfantry: "&#x1F6E1;&#xFE0F;", exoTrooper: "&#x1F916;",
+	crossbowman: "&#x1F3AF;", machineGunner: "&#x1F525;", laserTrooper: "&#x26A1;",
+	knight: "&#x265E;", cavalry: "&#x1F3C7;", tank: "&#x2699;&#xFE0F;", hoverTank: "&#x1F6F8;",
+	trebuchet: "&#x1FAA8;", cannon: "&#x1F4A3;", artillery: "&#x1F9E8;", rocketArtillery: "&#x1F680;", railgun: "&#x1F531;"
 };
 
 /** How high above a unit's feet its badge floats (world units): just over the head of its model. */
-const BADGE_HEIGHT: Record<UnitTypeId, number> = { warrior: 54, archer: 54, swordsman: 58, settler: 52, rider: 62, catapult: 48 };
+const BASE_BADGE_HEIGHT = { warrior: 54, archer: 54, swordsman: 58, settler: 52, rider: 62, catapult: 48 };
+const BADGE_HEIGHT = Object.fromEntries(UNIT_TYPE_IDS.map((t) => [t, BASE_BADGE_HEIGHT[UNIT_LOOK[t]]])) as Record<UnitTypeId, number>;
 
 export interface HudHost {
 	sim: Sim;
@@ -1135,7 +1140,15 @@ export class Hud {
 		el.classList.remove("hidden");
 		if (this.modal === "tech") {
 			this.drawTechLinks(el);
-			if (this.techFocus) el.querySelector(".tech.focus")?.scrollIntoView({ block: "center" });
+			if (this.techFocus) el.querySelector(".tech.focus")?.scrollIntoView({ block: "center", inline: "center" });
+			else {
+				// Open on the player's frontier: the first tier with something left to research
+				const p = this.sim.player(this.me);
+				const frontier = Math.min(...TECH_IDS.filter((t) => !p.techs.includes(t)).map((t) => TECHS[t].tier), 99);
+				const col = el.querySelector(`.tier[data-tier="${Math.max(1, frontier - 1)}"]`) as HTMLElement | null;
+				const scroller = el.querySelector(".techs-scroll") as HTMLElement | null;
+				if (col && scroller && frontier > 2) scroller.scrollLeft = col.offsetLeft - 8;
+			}
 		}
 	}
 
@@ -1206,7 +1219,8 @@ export class Hud {
 		const path = new Set<TechId>(chain.filter((t) => t !== focus));
 		this.techPath = path;
 		const chainCost = (ts: TechId[]) => ts.reduce((n, t) => n + researchCost(sim, this.me, t), 0);
-		const tiers = [1, 2, 3, 4].map((tier) => {
+		const maxTier = Math.max(...TECH_IDS.map((t) => TECHS[t].tier));
+		const tiers = Array.from({ length: maxTier }, (_, k) => k + 1).map((tier) => {
 			const cards = TECH_IDS.filter((t) => TECHS[t].tier === tier).map((t) => {
 				const tech = TECHS[t];
 				const have = p.techs.includes(t);
@@ -1231,7 +1245,9 @@ export class Hud {
 				}
 				return `<div class="tech ${state}${mark}" data-action="select-tech" data-tech="${t}" role="button" tabindex="0" aria-pressed="${t === focus}"><b>${tech.name}</b>${buy}<small>${tech.unlocks}${wonders.length ? `; wonder: ${wonders.join(", ")}` : ""}</small>${have ? "<small>Researched</small>" : `<small>&#9733;${cost}</small>`}${have ? "" : req}${need}</div>`;
 			});
-			return `<div class="tier"><h4>Tier ${tier}</h4>${cards.join("")}</div>`;
+			const era = eraOfTier(tier);
+			const first = tier === 1 || eraOfTier(tier - 1) !== era;
+			return `<div class="tier" data-tier="${tier}"><h4>${first ? `<span class="era">${era}</span>` : `<span class="era cont">${era}</span>`}Tier ${tier}</h4>${cards.join("")}</div>`;
 		});
 		let note = `<div class="tech-note dim">Click a tech to see what it needs; <b>Buy</b> researches it, with any techs it still needs first.</div>`;
 		if (focus) {
@@ -1248,7 +1264,7 @@ export class Hud {
 				note = `<div class="tech-note">${what ? `${what}<b>${name}</b>. ` : ""}${chain.length > 1 ? "Research " : ""}${steps}${chain.length > 1 ? ` = <b>&#9733;${total}</b> in total` : ""} (${afford}).</div>`;
 			}
 		}
-		return `<h3>Research <span class="dim">${stars(p.stars)} available &middot; costs rise with your ${cities} cities</span></h3>${note}<div class="techs">${tiers.join("")}</div>${this.techDetail(focus)}`;
+		return `<h3>Research <span class="dim">${stars(p.stars)} available &middot; costs rise with your ${cities} cities</span></h3>${note}<div class="techs-scroll"><div class="techs" style="grid-template-columns:repeat(${maxTier}, minmax(178px, 1fr))">${tiers.join("")}</div></div>${this.techDetail(focus)}`;
 	}
 
 	/** Everything a tech unlocks: its buildings, units, wonders and other abilities. */

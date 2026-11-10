@@ -5,7 +5,7 @@ import type { IgeMaterialData } from "@/types/IgeMaterialData";
 import { UNEXPLORED, VISIBLE } from "../fog";
 import { CORNER_X, CORNER_Z, type HexLayout } from "../hex";
 import { MeshBuilder } from "../meshBuilder";
-import { type BuildingId, BUILDINGS, Deposit, type Good, GOOD_INFO, type UnitTypeId } from "../sim/rules";
+import { type BuildingId, BUILDINGS, Deposit, type Good, GOOD_INFO, UNIT_LOOK, UNIT_TYPE_IDS, type UnitTypeId } from "../sim/rules";
 import type { Sim } from "../sim/sim";
 import type { BuildingState, CityState, SimEvent, UnitState } from "../sim/types";
 import { buildBorderGeometry, createDisc, createHexRing, createRing, CUBE, ORB, PYRAMID } from "../shapes";
@@ -28,7 +28,7 @@ interface Part {
 	tint: "player" | "dark" | "wood" | "light";
 }
 
-const UNIT_PARTS: Record<UnitTypeId, Part[]> = {
+const BASE_UNIT_PARTS: Record<"warrior" | "archer" | "rider" | "swordsman" | "catapult" | "settler", Part[]> = {
 	warrior: [{ geometry: CUBE, size: [22, 22, 22], y: 11, tint: "player" }],
 	archer: [{ geometry: PYRAMID, size: [26, 34, 26], y: 0, tint: "player" }],
 	rider: [
@@ -43,6 +43,36 @@ const UNIT_PARTS: Record<UnitTypeId, Part[]> = {
 	settler: [{ geometry: ORB, size: [24, 24, 24], y: 15, tint: "player" }]
 };
 
+/** Vehicles without a model yet: simple shapes that read as what they are. */
+const VEHICLE_PARTS: Partial<Record<UnitTypeId, Part[]>> = {
+	tank: [
+		{ geometry: CUBE, size: [36, 12, 26], y: 7, tint: "dark" },
+		{ geometry: CUBE, size: [20, 10, 18], y: 17, tint: "player" },
+		{ geometry: CUBE, size: [26, 4, 4], y: 18, tint: "dark" }
+	],
+	hoverTank: [
+		{ geometry: ORB, size: [40, 10, 30], y: 10, tint: "light" },
+		{ geometry: CUBE, size: [18, 9, 16], y: 18, tint: "player" },
+		{ geometry: CUBE, size: [30, 3, 3], y: 19, tint: "light" }
+	],
+	rocketArtillery: [
+		{ geometry: CUBE, size: [34, 12, 22], y: 7, tint: "dark" },
+		{ geometry: CUBE, size: [22, 8, 16], y: 18, tint: "player" }
+	],
+	railgun: [
+		{ geometry: CUBE, size: [30, 10, 24], y: 6, tint: "dark" },
+		{ geometry: CUBE, size: [44, 5, 5], y: 15, tint: "light" },
+		{ geometry: ORB, size: [14, 14, 14], y: 14, tint: "player" }
+	]
+};
+
+const UNIT_PARTS = Object.fromEntries(UNIT_TYPE_IDS.map((t) => [t, VEHICLE_PARTS[t] ?? BASE_UNIT_PARTS[UNIT_LOOK[t]]])) as Record<UnitTypeId, Part[]>;
+
+/** Units that have no model of their own yet borrow their line's (vehicles use their parts instead). */
+function modelOf (type: UnitTypeId): string {
+	return VEHICLE_PARTS[type] ? `vehicle:${type}` : UNIT_LOOK[type];
+}
+
 const BOAT: Part = { geometry: CUBE, size: [44, 8, 24], y: 2, tint: "wood" };
 /**
  * Under a modelled unit, so you can tell whose it is at a glance: a ring in
@@ -52,10 +82,13 @@ const BOAT: Part = { geometry: CUBE, size: [44, 8, 24], y: 2, tint: "wood" };
 const UNIT_BASE: Part = { geometry: createRing("hexRealms_unitBaseRing", 1, 0.76), size: [19, 1, 19], y: 1.2, tint: "player" };
 const UNIT_BASE_FILL: Part = { geometry: createDisc("hexRealms_unitBaseFill", 0.78), size: [19, 1, 19], y: 0.9, tint: "dark" };
 /** Model sizes (world units): characters by height, props by footprint. */
-const UNIT_MODEL_FIT: Record<UnitTypeId, { height?: number; footprint?: number }> = {
+const BASE_MODEL_FIT = {
 	warrior: { height: 46 }, archer: { height: 46 }, swordsman: { height: 50 }, settler: { height: 44 },
 	rider: { height: 54, footprint: 50 }, catapult: { height: 40, footprint: 46 }
 };
+const UNIT_MODEL_FIT = Object.fromEntries(UNIT_TYPE_IDS.map((t) => [t, BASE_MODEL_FIT[UNIT_LOOK[t]]])) as Record<UnitTypeId, { height?: number; footprint?: number }>;
+/** Later industries borrow an older building's model until they have their own. */
+const BUILDING_MODEL_OF: Partial<Record<BuildingId, string>> = { steelworks: "smelter", powderMill: "toolsmith", factory: "armoury", electronicsWorks: "mint" };
 /** Buildings whose models read small at the usual size (long and low ones) are drawn this much bigger. */
 const MODEL_GROW: Partial<Record<BuildingId, number>> = { market: 1.3, mill: 1.35, greatWall: 1.4 };
 /** The boat model's size, and where a unit stands on it: its deck height, and how far forward of the mast. */
@@ -436,7 +469,7 @@ export class WorldView {
 		root.mount(this.unitLayer);
 		// A 3D model when one is loaded (characters stand in their idle pose), primitives otherwise;
 		// whose it is shows in its base and its badge (the HUD), not in the model
-		const model = this.models?.create(unit.type, { ...UNIT_MODEL_FIT[unit.type], animation: "idle", speed: 0 }) ?? null;
+		const model = this.models?.create(modelOf(unit.type), { ...UNIT_MODEL_FIT[unit.type], animation: "idle", speed: 0 }) ?? null;
 		let body: IgeEntity | undefined;
 		let base: IgeEntity | undefined;
 		let baseFill: IgeEntity | undefined;
@@ -469,14 +502,14 @@ export class WorldView {
 	/** Play a character clip (looping, or once for attack, hit and death). */
 	protected playClip (v: UnitView, clip: string, speed = 1, once = false): void {
 		const models = this.models;
-		if (!v.model || !models || !models.hasClip(v.type, clip)) return;
+		if (!v.model || !models || !models.hasClip(modelOf(v.type), clip)) return;
 		if (!once && v.clip === clip && v.clipSpeed === speed) return;
 		const anim = v.model.components.skeletalAnimation as unknown as { play: (id: string, o: object) => void } | undefined;
 		if (!anim) return;
 		anim.play(clip, { crossFadeDuration: 0.12, speed, loop: !once });
 		v.clip = clip;
 		v.clipSpeed = speed;
-		v.clipUntil = once ? this.time + models.clipDuration(v.type, clip) / Math.max(0.01, speed) : undefined;
+		v.clipUntil = once ? this.time + models.clipDuration(modelOf(v.type), clip) / Math.max(0.01, speed) : undefined;
 	}
 
 	/** The clip a character should be playing now: dying, a one-shot, walking, or idle (only the selected unit breathes). */
@@ -493,7 +526,7 @@ export class WorldView {
 
 	/** Is a selected character breathing (worth drawing a few frames a second)? */
 	get idleAnimating (): boolean {
-		for (const v of this.units.values()) if (v.selected && v.model && v.shown && this.models?.hasClip(v.type, "idle")) return true;
+		for (const v of this.units.values()) if (v.selected && v.model && v.shown && this.models?.hasClip(modelOf(v.type), "idle")) return true;
 		return false;
 	}
 
@@ -501,7 +534,7 @@ export class WorldView {
 	modelLoaded (id: string): void {
 		const sim = this.sim;
 		for (const v of [...this.units.values()]) {
-			if ((v.type === id || id === "boat") && !v.queue.length && !v.lunge && v.removeAt < 0) this.rebuildUnit(v);
+			if ((modelOf(v.type) === id || id === "boat") && !v.queue.length && !v.lunge && v.removeAt < 0) this.rebuildUnit(v);
 		}
 		if (id === "village" || id === "town" || id === "city") for (const c of sim.state.cities) this.buildCity(c);
 		for (const b of sim.state.buildings) if (b.type === id || (id === "construction" && !b.built)) this.buildBuilding(b);
@@ -723,7 +756,7 @@ export class WorldView {
 		// A model when one is loaded: the building, wonder or monument, or a construction site
 		const kind = info.wonder;
 		const grow = b.built ? MODEL_GROW[b.type] ?? 1 : 1;
-		const prop = this.models?.create(b.built ? b.type : "construction", {
+		const prop = this.models?.create(b.built ? BUILDING_MODEL_OF[b.type] ?? b.type : "construction", {
 			footprint: R * grow * (kind === "world" ? 1.25 : kind === "monument" ? 0.85 : 0.95),
 			height: R * grow * (kind === "world" ? 1.7 : kind === "monument" ? 1.15 : 1),
 			lod: PROP_LOD
@@ -1190,7 +1223,7 @@ export class WorldView {
 					if (v) {
 						v.removeAt = e.reason === "killed" ? this.time + LUNGE_TIME + this.pathTime(v) : this.time + this.pathTime(v);
 						// Characters play their death before they go
-						if (e.reason === "killed" && v.model && this.models?.hasClip(v.type, "death")) {
+						if (e.reason === "killed" && v.model && this.models?.hasClip(modelOf(v.type), "death")) {
 							v.dying = v.removeAt;
 							v.removeAt += DEATH_TIME;
 						}
