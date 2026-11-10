@@ -876,8 +876,14 @@ export class IgePhysics3d extends IgeEventingClass {
 
 		if (steps > 0) {
 			this._stepMs = performance.now() - started;
-			for (const ragdoll of this._ragdolls) {
-				if (!ragdoll.asleep()) ragdoll.sync();
+			// Pose the ragdolls; those that have settled (or lasted their restAfter) come to rest
+			for (let i = this._ragdolls.length - 1; i >= 0; i--) {
+				const ragdoll = this._ragdolls[i];
+				const asleep = ragdoll.asleep();
+				if (!asleep) ragdoll.sync();
+				if (ragdoll._restAfter === undefined) continue;
+				ragdoll._age += steps * step;
+				if (asleep || ragdoll._age >= ragdoll._restAfter) ragdoll.rest();
 			}
 			if (this._sensors.length) this._updateSensors();
 			this.emit("afterStep", steps);

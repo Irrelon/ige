@@ -40,6 +40,14 @@ export interface IgeRagdollOptions {
 	friction?: number;
 	/** Collision layer for the parts (default "moving"), e.g. a corpses layer the living walk through. */
 	layer?: string;
+	/**
+	 * Come to rest, at the latest this many seconds (of simulated time)
+	 * after the fall: the bodies and joints are removed and the skeleton
+	 * keeps its last pose, so a body that has settled costs nothing to
+	 * simulate. It rests sooner if Jolt puts every part to sleep first.
+	 * Without it the ragdoll is simulated until destroy().
+	 */
+	restAfter?: number;
 }
 
 interface PartState {
@@ -209,10 +217,17 @@ export class IgeRagdoll3d {
 	_entityInverse = new Float32Array(16);
 	_parentInverse = new Float32Array(16);
 	_destroyed: boolean = false;
+	/** Seconds of simulation before it rests (see IgeRagdollOptions.restAfter), if it does. */
+	_restAfter: number | undefined;
+	/** Seconds simulated so far. */
+	_age: number = 0;
+	/** Whether it came to rest (restAfter) rather than being destroyed. */
+	_rested: boolean = false;
 
 	constructor (physics: IgePhysics3d, entity: IgeEntity, options: IgeRagdollOptions = {}) {
 		this._physics = physics;
 		this.entity = entity;
+		this._restAfter = options.restAfter;
 		const skeleton = entity._skeleton;
 		if (!skeleton) throw new Error("IgeRagdoll3d: the entity has no skeleton (give it a skinned model)");
 
@@ -360,6 +375,24 @@ export class IgeRagdoll3d {
 	/** Whether every part has come to rest (Jolt has put them to sleep). */
 	asleep (): boolean {
 		return this._parts.every((part) => !part.body.IsActive());
+	}
+
+	/**
+	 * Whether it has come to rest (see IgeRagdollOptions.restAfter): its
+	 * bodies are gone and the skeleton holds its last pose.
+	 */
+	rested (): boolean {
+		return this._rested;
+	}
+
+	/** Come to rest now: remove the bodies and joints, keeping the pose (as restAfter does). */
+	rest (): this {
+		if (this._destroyed) return this;
+		this.sync();
+		this._rested = true;
+		this._physics.removeRagdoll(this);
+		this._physics.emit("ragdollRest", this);
+		return this;
 	}
 
 	/** Pose the skeleton from the bodies (IgePhysics3d calls this after every step). */
