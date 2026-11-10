@@ -295,6 +295,7 @@
 		@keyframes fadein { from { opacity: 0; } }
 		.modal-box { position: relative; background: var(--panel-solid); border: 1px solid rgba(240, 195, 90, 0.28); border-radius: var(--r-lg); padding: 0 22px 20px; max-width: min(1040px, calc(100vw - 24px)); max-height: calc(100vh - 40px); overflow: auto; box-sizing: border-box; box-shadow: 0 30px 80px rgba(0, 0, 0, 0.65), 0 0 0 1px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.07); animation: modalin 0.28s var(--ease); }
 		@keyframes modalin { from { opacity: 0; transform: translateY(12px) scale(0.985); } }
+		.modal-box.static, .modal-box.static .contact-crest, .modal-box.static .lu-level, .modal-box.static .tier .tech.focus { animation: none; }
 		.modal-box > h3:first-of-type { position: sticky; top: 0; z-index: 3; margin: 0 -22px 14px; padding: 16px 60px 14px 22px; font-family: var(--display); font-size: 21px; font-weight: 800; letter-spacing: 0.06em; color: #fff4d6; background: linear-gradient(180deg, #1c2a40, #142034); border-bottom: 1px solid rgba(240, 195, 90, 0.25); box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25); }
 		.modal-box > h3:first-of-type::after { content: ""; position: absolute; left: 22px; bottom: -1px; width: 64px; height: 2px; background: linear-gradient(90deg, var(--gold), transparent); }
 		.modal-box h3 { margin: 0 0 10px; font-family: var(--display); letter-spacing: 0.04em; }

@@ -155,6 +155,8 @@ export class Hud {
 	contacts: number[] = [];
 	/** The civ on the first-contact card being shown. */
 	contactCiv = -1;
+	/** Which screen is on show (so updates in place can skip the opening animation). */
+	renderedModal: string | null = null;
 	/** Cities of yours that levelled up, waiting to show their reward card (Polytopia-style). */
 	levelUps: number[] = [];
 	levelCity = -1;
@@ -1211,6 +1213,7 @@ export class Hud {
 
 	closeModal (): void {
 		this.modal = null;
+		this.renderedModal = null;
 		this.techFocus = null;
 		document.getElementById("modal")?.classList.add("hidden");
 		// Anyone else we met while that was open says hello now (then cities that grew)
@@ -1237,10 +1240,25 @@ export class Hud {
 			case "saves": body = savesModal({ saves: this.host.saves, local: this.host.canSave, defaultName: this.defaultSaveName(), confirmDelete: this.saveConfirm, storage: this.host.saveStore.available }); break;
 			case "gameover": body = this.gameOverModal(); break;
 		}
-		el.innerHTML = `<div class="modal-box ${this.modal}"><button class="close" data-action="close-modal" aria-label="Close">&times;</button>${body}</div>`;
+		// The same screen updating in place (a click inside it) keeps its scroll and doesn't replay the opening animation
+		const same = this.renderedModal === this.modal && !el.classList.contains("hidden");
+		const scrolls = same ? [...el.querySelectorAll<HTMLElement>(".modal-box, .techs-scroll, .unlocks")].map((e) => [e.scrollLeft, e.scrollTop]) : [];
+		el.innerHTML = `<div class="modal-box ${this.modal}${same ? " static" : ""}"><button class="close" data-action="close-modal" aria-label="Close">&times;</button>${body}</div>`;
 		el.classList.remove("hidden");
+		this.renderedModal = this.modal;
+		if (same) {
+			el.querySelectorAll<HTMLElement>(".modal-box, .techs-scroll, .unlocks").forEach((e, i) => {
+				if (!scrolls[i]) return;
+				// Jump straight back (the research grid scrolls smoothly otherwise)
+				e.style.scrollBehavior = "auto";
+				e.scrollLeft = scrolls[i][0];
+				e.scrollTop = scrolls[i][1];
+				e.style.scrollBehavior = "";
+			});
+		}
 		if (this.modal === "tech") {
 			this.drawTechLinks(el);
+			if (same) return;
 			if (this.techFocus) el.querySelector(".tech.focus")?.scrollIntoView({ block: "center", inline: "center" });
 			else {
 				// Open on the player's frontier: the first tier with something left to research
