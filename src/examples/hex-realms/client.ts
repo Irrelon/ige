@@ -35,6 +35,7 @@ import { MAP_PRESETS, optionsFromUrl, type SetupResult, showSetup } from "./ui/s
 import { TerrainView } from "./view/terrainView";
 import { WorldView } from "./view/worldView";
 import { WaterView } from "./view/water";
+import { LifeView } from "./view/life";
 
 // @ts-ignore
 window.ige = ige;
@@ -131,6 +132,9 @@ export class Client extends IgeBaseClass implements IgeCanInit, HudHost {
 	replaying = false;
 	/** Surf along the shores and flowing rivers. */
 	water?: WaterView;
+	/** Workers walking the roads and busy at the buildings. */
+	life?: LifeView;
+	protected _lifeBuilt = -10;
 	/** A small all-AI world turning slowly behind the title screen. */
 	showcase = false;
 	online = false;
@@ -684,6 +688,7 @@ export class Client extends IgeBaseClass implements IgeCanInit, HudHost {
 				this.minimapTerrainDirty = this.minimapTerritoryDirty = true;
 				if (this.water) this.water.dirty = true;
 			}
+			if (this.life && (e.type === "buildingCompleted" || e.type === "buildingRemoved" || e.type === "road" || e.type === "cityCaptured" || e.type === "cityFounded" || e.type === "fog")) this.life.dirty = true;
 			if (e.type === "territory" || e.type === "cityCaptured" || e.type === "eliminated") this.minimapTerritoryDirty = true;
 			if (e.type === "featureCleared") this.minimapTerrainDirty = true;
 			if (e.type === "unitRemoved" && e.unit === this.selectedUnit) this.selectedUnit = null;
@@ -1174,13 +1179,45 @@ export class Client extends IgeBaseClass implements IgeCanInit, HudHost {
 	/** Rebuild the water when the explored map changed; move it on. Returns true when a frame is due. */
 	updateWater (): boolean {
 		const w = this.water;
-		if (!w) return false;
-		if (w.dirty) {
-			w.rebuild(this.sim.map, this.layout, this.terrain.surface, this.terrain.fogView);
-			this.invalidate();
+		let due = false;
+		if (w) {
+			if (w.dirty) {
+				w.rebuild(this.sim.map, this.layout, this.terrain.surface, this.terrain.fogView);
+				this.invalidate();
+			}
+			due = !this.reducedMotion && w.update(this.time);
 		}
-		return !this.reducedMotion && w.update(this.time);
+		return this.updateLife(due) || due;
 	}
+
+	/**
+	 * The map's everyday life (workers at buildings and on roads): rebuilt at
+	 * most once a second after the economy or the view changed, and around
+	 * where the camera looks when it moves far.
+	 */
+	updateLife (frameDue: boolean): boolean {
+		if (!this.world) return false;
+		this.life ??= new LifeView(this.overlayLayer);
+		const life = this.life;
+		const focus = { x: this.cam.x, z: this.cam.z };
+		if (this.reducedMotion) {
+			if (life.actors.length) life.clear();
+			return false;
+		}
+		const moved = Math.hypot(focus.x - this._lifeFocus.x, focus.z - this._lifeFocus.z) > this.layout.size * 12;
+		if ((life.dirty || moved) && this.time - this._lifeBuilt > 1) {
+			this._lifeBuilt = this.time;
+			this._lifeFocus = focus;
+			life.rebuild(this.sim, this.layout, this.terrain.surface, this.terrain.fogView, this.player, focus);
+		}
+		// Animate in step with the water's frames (about 30 a second)
+		if (!frameDue && Math.floor(this.time * 30) === this._lifeFrame) return false;
+		this._lifeFrame = Math.floor(this.time * 30);
+		return life.update(this.time, 1 / 30, focus, this.cam.distance, this.layout.size);
+	}
+
+	protected _lifeFocus = { x: NaN, z: NaN };
+	protected _lifeFrame = -1;
 
 	invalidate (): void {
 		this.renderDirty = true;
