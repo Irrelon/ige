@@ -49,6 +49,8 @@ export interface IgeNetSnapshot {
 
 /** How many pings in a row must go unanswered (as well as the timeout passing) before the authority is given up on. */
 const UNANSWERED_PINGS = 3;
+/** How far (ms) the authority's clock may fall behind the estimate before it's taken at once rather than drifted to. */
+const RESYNC_MS = 500;
 
 /**
  * A machine in a real-time game run by an IgeNetSyncHost. It joins with
@@ -273,11 +275,30 @@ export class IgeNetSyncClient<Input = unknown> extends IgeEventingClass {
 		this._pingTimer = undefined;
 	}
 
+	/**
+	 * Start the clock again from the next snapshot. Call it when the page
+	 * comes back after being hidden (a background tab whose frames stopped):
+	 * an authority in the same page paused with it, and one elsewhere kept
+	 * going, so the old estimate is wrong either way. Drawing then picks up
+	 * from the newest snapshots instead of lurching through the gap.
+	 */
+	resync (): void {
+		this._offset = undefined;
+		this._ticks.clear();
+	}
+
 	/** Track local time minus authority time, from a tick known to be current when the message left. */
 	_syncClock (tick: number, oneWay: number): void {
 		const sample = this._now() - oneWay - (tick * 1000) / this.tickRate;
+		// The authority has fallen far behind our clock (it paused, or stalled): jump to it. Drifting
+		// there a little per snapshot would leave interpolation running ahead of every snapshot for
+		// seconds, everything stepping from one snapshot to the next.
+		if (this._offset === undefined || sample - this._offset > RESYNC_MS) {
+			this._offset = sample;
+			return;
+		}
 		// The smallest delay seen is the truest; drift slowly towards later samples
-		this._offset = this._offset === undefined ? sample : Math.min(sample, this._offset + (sample - this._offset) * 0.05);
+		this._offset = Math.min(sample, this._offset + (sample - this._offset) * 0.05);
 	}
 
 	_onMessage (message: IgeNetServerMessage): void {

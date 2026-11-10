@@ -270,6 +270,23 @@ describe("IgeNetSyncHost / IgeNetSyncClient", () => {
 			client.destroy();
 		});
 
+		it("picks up at once when the authority paused (a hidden tab running it), instead of stepping for seconds", async () => {
+			const { host, client, id } = await joined({ latency: 30 });
+			await play(host, [{ client, input: [{ dx: 1 }] }], 30);
+			// The page sleeps: no ticks for a minute while the clock runs on
+			await jest.advanceTimersByTimeAsync(60000);
+			await play(host, [{ client, input: [{ dx: 1 }] }], 6);
+			// Drawing is back to a little behind the newest snapshot, blending between snapshots
+			const latest = client.latest()!;
+			const drawnX = (client.interpolated()[id] as Dot).x;
+			const latestX = (latest.entities[id] as Dot).x;
+			expect(latestX - drawnX).toBeGreaterThan(1);
+			expect(latestX - drawnX).toBeLessThan(25);
+			expect(Math.abs(client.serverTick() - latest.tick)).toBeLessThan(4);
+			host.destroy();
+			client.destroy();
+		});
+
 		it("survives lost and reordered packets: the authority still applies the inputs", async () => {
 			// A seeded random source, so the losses are the same every run
 			let seed = 7;
