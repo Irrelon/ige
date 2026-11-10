@@ -1346,26 +1346,117 @@ export class WorldView {
 	 * A route over several turns: gold dots, brighter for the part walked
 	 * this turn (`firstTurn` tiles), dimmer beyond, and a ring at the end.
 	 */
-	showRoute (tiles: number[], firstTurn = 0): void {
+	/** The multi-turn route line (a ribbon mesh, rebuilt when the route changes). */
+	protected routeLine?: IgeEntity;
+	protected routeKey = "";
+
+	/**
+	 * A unit's route over several turns, as a line from the unit through each
+	 * tile's centre, rounded at the corners: solid gold for the part it walks
+	 * this turn, dashed and dimmer beyond, with an arrowhead at the end and a
+	 * dot where each later turn ends.
+	 */
+	showRoute (tiles: number[], firstTurn = 0, from = -1, turnEnds: number[] = []): void {
+		const key = `${from}:${firstTurn}:${tiles.join(",")}`;
+		if (key === this.routeKey) return;
+		this.routeKey = key;
 		const R = this.layout.size;
-		while (this.routeDots.length < tiles.length) {
-			this.routeDots.push(this.overlay(createDisc("hexRealms_routeDot", R * 0.09, 16), { r: 1, g: 0.85, b: 0.35 }, 0.6));
-		}
+		// Turn-end dots (the first turn's end too, unless that's the destination)
+		const ends = turnEnds.filter((i) => i >= 0 && i < tiles.length - 1);
+		while (this.routeDots.length < ends.length) this.routeDots.push(this.overlay(createDisc("hexRealms_routeDot", R * 0.09, 16), { r: 1, g: 0.85, b: 0.35 }, 0.6));
 		this.routeDots.forEach((m, i) => {
-			if (i >= tiles.length) {
+			if (i >= ends.length) {
 				m.hide();
 				return;
 			}
-			const last = i === tiles.length - 1;
-			const near = i < firstTurn;
-			const c = last ? { r: 1, g: 0.9, b: 0.45 } : near ? { r: 1, g: 0.85, b: 0.35 } : { r: 0.85, g: 0.72, b: 0.4 };
-			m._materialData = material(c, c, near || last ? 0.8 : 0.35);
-			const k = last ? 1.8 : near ? 1.1 : 0.85;
-			m.scaleTo(k, 1, k);
-			const t = tiles[i];
-			m.translateTo(this.tileX(t), Math.max(this.surface.overlayHeight(t), this.surface.tileHeight(t)) + 1.4 * (this.terrain.style === "natural" ? 1.5 : 1), this.tileZ(t));
+			const t = tiles[ends[i]];
+			const near = ends[i] < firstTurn;
+			const c = near ? { r: 1, g: 0.86, b: 0.4 } : { r: 0.86, g: 0.74, b: 0.45 };
+			m._materialData = material(c, c, near ? 0.9 : 0.5);
+			m.scaleTo(1.25, 1, 1.25);
+			m.translateTo(this.tileX(t), this.routeHeight(this.tileX(t), this.tileZ(t)) + 0.4, this.tileZ(t));
 			m.show();
 		});
+
+		const oldId = this.routeLine?._geometryData?.id;
+		if (!tiles.length || from < 0) {
+			this.routeLine?.hide();
+			if (oldId) this.renderer.releaseGeometry(oldId);
+			if (this.routeLine) this.routeLine._geometryData = null;
+			this.hooks.invalidate?.();
+			return;
+		}
+		const pts = [from, ...tiles].map((t) => ({ x: this.tileX(t), z: this.tileZ(t) }));
+		// Samples along the path: straight through tile centres, rounded with a curve at each corner
+		const samples: { x: number; z: number; near: boolean }[] = [{ ...pts[0], near: firstTurn > 0 }];
+		for (let i = 1; i < pts.length - 1; i++) {
+			const a = { x: (pts[i - 1].x + pts[i].x) / 2, z: (pts[i - 1].z + pts[i].z) / 2 };
+			const b = { x: (pts[i].x + pts[i + 1].x) / 2, z: (pts[i].z + pts[i + 1].z) / 2 };
+			for (let k = 0; k <= 6; k++) {
+				const u = k / 6;
+				const x = (1 - u) * (1 - u) * a.x + 2 * (1 - u) * u * pts[i].x + u * u * b.x;
+				const z = (1 - u) * (1 - u) * a.z + 2 * (1 - u) * u * pts[i].z + u * u * b.z;
+				// Corner i is route tile i - 1: the way in is walked this turn if that tile is, the way out if the next one is
+				samples.push({ x, z, near: u <= 0.5 ? i - 1 < firstTurn : i < firstTurn });
+			}
+		}
+		const last = pts[pts.length - 1];
+		samples.push({ ...last, near: tiles.length <= firstTurn });
+
+		const b = new MeshBuilder();
+		const w = R * 0.055;
+		const arrow = w * 3.2;
+		// Stop the ribbon short of the end, where the arrowhead starts
+		const prev = samples[samples.length - 2];
+		const dl = Math.hypot(last.x - prev.x, last.z - prev.z) || 1;
+		const dir = { x: (last.x - prev.x) / dl, z: (last.z - prev.z) / dl };
+		const tip = { x: last.x + dir.x * w * 0.6, z: last.z + dir.z * w * 0.6 };
+		samples[samples.length - 1] = { x: last.x - dir.x * arrow * 0.7, z: last.z - dir.z * arrow * 0.7, near: samples[samples.length - 1].near };
+		const NEAR = { r: 1, g: 0.84, b: 0.36 }, FAR = { r: 0.92, g: 0.82, b: 0.6 };
+		const dash = R * 0.22;
+		let run = 0;
+		let prevPair: [number, number] | null = null;
+		for (let j = 0; j < samples.length; j++) {
+			const s0 = samples[Math.max(0, j - 1)], s1 = samples[Math.min(samples.length - 1, j + 1)];
+			const tl = Math.hypot(s1.x - s0.x, s1.z - s0.z) || 1;
+			const px = -(s1.z - s0.z) / tl, pz = (s1.x - s0.x) / tl;
+			const s = samples[j];
+			if (j > 0) run += Math.hypot(s.x - samples[j - 1].x, s.z - samples[j - 1].z);
+			const c = s.near ? NEAR : FAR;
+			b.tint(c.r, c.g, c.b);
+			const y = this.routeHeight(s.x, s.z);
+			const l = b.vertex(s.x + px * w, y, s.z + pz * w, 0, 1, 0, 0, 0);
+			const r = b.vertex(s.x - px * w, y, s.z - pz * w, 0, 1, 0, 0, 0);
+			// Dashed beyond this turn
+			const gap = !s.near && Math.floor(run / dash) % 2 === 1;
+			if (prevPair && !gap) b.quadFacing(prevPair[0], prevPair[1], r, l, 0, 1, 0);
+			prevPair = [l, r];
+		}
+		// The arrowhead
+		const end = samples[samples.length - 1];
+		const c = end.near ? NEAR : FAR;
+		b.tint(c.r, c.g, c.b);
+		const ay = this.routeHeight(end.x, end.z);
+		const al = b.vertex(end.x - dir.z * w * 2.3, ay, end.z + dir.x * w * 2.3, 0, 1, 0, 0, 0);
+		const ar = b.vertex(end.x + dir.z * w * 2.3, ay, end.z - dir.x * w * 2.3, 0, 1, 0, 0, 0);
+		const at = b.vertex(tip.x, this.routeHeight(tip.x, tip.z), tip.z, 0, 1, 0, 0, 0);
+		b.triFacing(al, ar, at, 0, 1, 0);
+		if (!this.routeLine) {
+			this.routeLine = new IgeEntity();
+			this.routeLine.id(this.uid("route"));
+			this.routeLine._materialData = material({ r: 1, g: 1, b: 1 }, { r: 1, g: 0.85, b: 0.45 }, 0.35);
+			this.routeLine._noShadowCast = true;
+			this.routeLine.mount(this.overlayLayer);
+		}
+		this.routeLine._geometryData = b.toGeometry(this.uid("routeGeo"));
+		this.routeLine.show();
+		if (oldId) this.renderer.releaseGeometry(oldId);
+		this.hooks.invalidate?.();
+	}
+
+	/** Height for route overlays: just above the ground (more in the blended natural style). */
+	protected routeHeight (x: number, z: number): number {
+		return this.surface.heightAt(x, z) + (this.terrain.style === "natural" ? 3 : 1.8);
 	}
 
 	/** Ring the best city sites (gold for excellent, green for good, pale for fair). */

@@ -18,7 +18,7 @@ interface Tip {
 const TIPS: Tip[] = [
 	{
 		id: "start",
-		text: "Welcome! Click one of your units, then a highlighted tile to move. Grey villages can be captured: move a unit onto one and, at the start of your next turn, press <b>Capture</b>.",
+		text: "Welcome! <b>Left-click</b> one of your units to select it, then <b>right-click</b> a highlighted tile to move there (or a red ring to attack). Grey villages can be captured: move a unit onto one and, at the start of your next turn, press <b>Capture</b>.",
 		when: () => true
 	},
 	{

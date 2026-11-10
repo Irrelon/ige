@@ -1618,15 +1618,15 @@ export class Hud {
 			${section("Neighbours and war", [
 		card("diplomacy", "Meeting civs", "", "A civ you have just met is unaligned: there's no treaty, so units of both sides may wander through each other's land, but nobody fights. The first attack starts a war. Make peace to close your borders to their soldiers."),
 		card("diplomacy", "Diplomacy", "G", "Treaties, cultural exchanges, research agreements, trades of goods and stars (once, or every turn as a route), demands, denouncing and sanctions. Wars without enough grievances are surprise wars everyone resents; long wars make peace easier; peace brings a 10-turn truce."),
-		card("sword", "Fight", "", "Attack an unaligned civ's unit, or declare war in Diplomacy. Select a unit to see red attack rings; hover one to preview the damage. Ranged units need line of sight. Units stop next to an enemy; defenders across a river get +25%."),
+		card("sword", "Fight", "", "Attack an unaligned civ's unit, or declare war in Diplomacy. Select a unit to see red attack rings; hover one to preview the damage, and right-click it to attack. Ranged units need line of sight. Units stop next to an enemy; defenders across a river get +25%."),
 		...(o.raiders ? [card("camp", "Raiders", "", "Outlaw camps spring up on unclaimed land out of sight. Their raiders attack units and burn buildings and roads near the camp, but never take cities. Walk a unit into a camp to scatter it for a bounty of stars.")] : [])
 	])}
 			${section("Units", [
 		card("capture", "Quick actions", "", "Buttons float above a selected unit when it can do something where it stands: crossed swords capture a city, a house founds one, a flame pillages."),
-		card("route", "Orders", "", `Click a far tile to march a unit there over several turns (gold dots show the route). ${kbd("K")} sleep until an enemy comes near, ${kbd("I")} fortify for +50% defence, ${kbd("U")} upgrade inside your borders (warrior to swordsman with Smithing, and on through the eras). Click a city's name to rename it.`)
+		card("route", "Orders", "", `Right-click a far tile to march a unit there over several turns (a gold line shows the route: solid for this turn, dashed beyond, dots where each turn ends). ${kbd("K")} sleep until an enemy comes near, ${kbd("I")} fortify for +50% defence, ${kbd("U")} upgrade inside your borders (warrior to swordsman with Smithing, and on through the eras). Click a city's name to rename it.`)
 	])}
 			<h4>Keys</h4><div class="help-keys">
-				${[["Space", "Next unit"], ["Enter", "End turn"], ["Esc", "Deselect"], ["Ctrl/Cmd S", "Quicksave"], ["WASD", "Pan"], ["Z / X", "Zoom"], ["Q / E", "Rotate"], ["PgUp / PgDn", "Tilt"], ["C", "Centre"], ["T", "Terrain style"], ["R", "Research"], ["G", "Diplomacy"], ["J", "Ambition"], ["M", "Wonders"], ["B", "Economy"], ["V", "Economy lens"], ["L", "Cities"], ["Y", "Rankings"], ["N", "Log"], ["F", "Found city"], ["O", "Menu"], ["H", "Help"]]
+				${[["Left-click", "Select"], ["Right-click", "Move or attack"], ["Right-drag", "Rotate and tilt"], ["Space", "Next unit"], ["Enter", "End turn"], ["Esc", "Deselect"], ["Ctrl/Cmd S", "Quicksave"], ["WASD", "Pan"], ["Z / X", "Zoom"], ["Q / E", "Rotate"], ["PgUp / PgDn", "Tilt"], ["C", "Centre"], ["T", "Terrain style"], ["R", "Research"], ["G", "Diplomacy"], ["J", "Ambition"], ["M", "Wonders"], ["B", "Economy"], ["V", "Economy lens"], ["L", "Cities"], ["Y", "Rankings"], ["N", "Log"], ["F", "Found city"], ["O", "Menu"], ["H", "Help"]]
 		.map(([k, what]) => `<span>${kbd(k)} ${what}</span>`).join("")}
 			</div></div>`;
 	}

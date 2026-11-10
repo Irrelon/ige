@@ -17,13 +17,13 @@ import { connectRoomTransport, serverAvailable } from "./net/netClient";
 import type { ChatLine, OnlineCommand, RoomInfo, RoomOptions, TimerInfo } from "./net/protocol";
 import { ModelLibrary } from "./view/models";
 import { runAiTurn } from "./sim/ai";
-import { attackTargets } from "./sim/combat";
-import { pathTo, type Reach, reachable } from "./sim/movement";
+import { attackProblem, attackTargets } from "./sim/combat";
+import { pathTo, type Reach, reachable, stepCost } from "./sim/movement";
 import { gotoProblem, isReady, planRoute } from "./sim/orders";
 import { UNIT_TYPES } from "./sim/rules";
 import { defaultOptions, Sim } from "./sim/sim";
 import { hashString } from "./noise";
-import type { Command, GameOptions, SimEvent } from "./sim/types";
+import type { Command, GameOptions, SimEvent, UnitState } from "./sim/types";
 import { StrategyCamera } from "./strategyCamera";
 import type { TerrainStyle } from "./surface";
 import { esc, setHtml } from "./ui/html";
@@ -156,7 +156,7 @@ export class Client extends IgeBaseClass implements IgeCanInit, HudHost {
 
 	recording?: Recording;
 	keys: Record<string, boolean> = {};
-	pointer = { x: 0, y: 0, moved: false, down: false, button: 0, startX: 0, startY: 0, dragging: false, grabX: 0, grabZ: 0 };
+	pointer = { x: 0, y: 0, moved: false, down: false, button: 0, touch: false, startX: 0, startY: 0, dragging: false, grabX: 0, grabZ: 0 };
 	touches = new Map<number, { x: number; y: number }>();
 	pinch = { distance: 0, angle: 0, midY: 0 };
 	time = 0;
@@ -850,7 +850,31 @@ export class Client extends IgeBaseClass implements IgeCanInit, HudHost {
 		// The part it can walk this turn
 		let firstTurn = 0;
 		while (firstTurn < route.length && this.reach?.tiles.includes(route[firstTurn])) firstTurn++;
-		this.world.showRoute(route, firstTurn);
+		this.world.showRoute(route, firstTurn, unit.tile, this.turnEnds(unit, route, firstTurn));
+	}
+
+	/**
+	 * Where each turn of a route ends (indices into it): this turn's moves
+	 * first, then a full turn's at a time. A unit with any moves left may take
+	 * one more step, so a turn ends when it has none.
+	 */
+	turnEnds (unit: UnitState, route: number[], firstTurn: number): number[] {
+		const ends: number[] = [];
+		if (firstTurn > 0) ends.push(firstTurn - 1);
+		const full = UNIT_TYPES[unit.type].moves;
+		let left = full;
+		let from = firstTurn > 0 ? route[firstTurn - 1] : unit.tile;
+		if (firstTurn === 0 && unit.moves > 0 && !unit.attacked) left = unit.moves;
+		for (let i = firstTurn; i < route.length; i++) {
+			if (left <= 0) {
+				ends.push(i - 1);
+				left = full;
+			}
+			const cost = stepCost(this.sim, from, route[i], unit.owner);
+			left -= cost < 0 ? full : cost;
+			from = route[i];
+		}
+		return ends;
 	}
 
 	pathPreview (): number[] {
@@ -859,27 +883,49 @@ export class Client extends IgeBaseClass implements IgeCanInit, HudHost {
 		return pathTo(unit, this.reach, this.hoverTile);
 	}
 
+	/**
+	 * Mouse: left-click selects (a unit, else the tile) and right-click
+	 * orders the selected unit (attack, move, or march there over several
+	 * turns), so selecting something else never moves a unit by accident.
+	 * Touch has no right button: a tap orders the selected unit if it can,
+	 * and selects otherwise.
+	 */
 	clickTile (tile: number): void {
 		if (tile < 0 || !this.ready) return;
+		if (!this.orderUnit(tile)) this.selectAt(tile);
+	}
+
+	/** The selected unit acts on a tile. True if it was given an order. */
+	orderUnit (tile: number): boolean {
+		if (tile < 0 || !this.ready) return false;
 		const unit = this.selectedUnit !== null ? this.sim.unit(this.selectedUnit) : undefined;
-		if (unit && unit.owner === this.player && this.myTurn) {
-			if (this.targets.includes(tile)) {
-				this.command({ type: "attack", unit: unit.id, target: tile });
-				return;
-			}
-			if (this.reach?.tiles.includes(tile)) {
-				this.command({ type: "move", unit: unit.id, to: tile });
-				return;
-			}
-			// A far tile it could walk to over several turns: march there
-			const occupied = this.sim.unitOn(tile);
-			if (!occupied && tile !== unit.tile && gotoProblem(this.sim, this.player, unit.id, tile) === null) {
-				if (this.command({ type: "goto", unit: unit.id, to: tile })) {
-					this.hud.toast(`${UNIT_TYPES[unit.type].name} is marching there: it walks on at the start of each turn`, "info", 3);
-				}
-				return;
+		if (!unit || unit.owner !== this.player || !this.myTurn) return false;
+		if (this.targets.includes(tile)) return this.command({ type: "attack", unit: unit.id, target: tile });
+		if (this.reach?.tiles.includes(tile)) return this.command({ type: "move", unit: unit.id, to: tile });
+		// A far tile it could walk to over several turns: march there
+		const occupied = this.sim.unitOn(tile);
+		if (!occupied && tile !== unit.tile && gotoProblem(this.sim, this.player, unit.id, tile) === null) {
+			if (this.command({ type: "goto", unit: unit.id, to: tile })) {
+				this.hud.toast(`${UNIT_TYPES[unit.type].name} is marching there: it walks on at the start of each turn`, "info", 3);
+				return true;
 			}
 		}
+		return false;
+	}
+
+	/** Why the selected unit can't act on a tile (for a right-click that does nothing). */
+	cantOrder (unit: UnitState, tile: number): string {
+		if (tile < 0) return "Nothing there";
+		if (tile === unit.tile) return "It's already there";
+		const target = this.sim.unitOn(tile);
+		if (target && target.owner !== this.player && this.terrain.fogView[tile] === 2) return attackProblem(this.sim, unit, tile) ?? "Can't attack that";
+		if (target) return "That tile is occupied";
+		return gotoProblem(this.sim, this.player, unit.id, tile) ?? "Can't go there";
+	}
+
+	/** Select what's on a tile: a unit you can see, else the tile itself. */
+	selectAt (tile: number): void {
+		if (tile < 0 || !this.ready) return;
 		const other = this.sim.unitOn(tile);
 		const visible = other && (other.owner === this.player || this.terrain.fogView[tile] === 2);
 		if (other && visible && other.id !== this.selectedUnit) {
@@ -1361,6 +1407,7 @@ export class Client extends IgeBaseClass implements IgeCanInit, HudHost {
 			p.down = true;
 			p.dragging = false;
 			p.button = e.button;
+			p.touch = e.pointerType === "touch";
 			p.startX = at.x;
 			p.startY = at.y;
 			const ground = this.groundAt(at.x, at.y);
@@ -1417,8 +1464,16 @@ export class Client extends IgeBaseClass implements IgeCanInit, HudHost {
 				return;
 			}
 			if (p.down && !p.dragging) {
-				if (p.button === 0) this.clickTile(this.pickTile(at.x, at.y));
-				else if (p.button === 2) this.deselect();
+				const tile = this.pickTile(at.x, at.y);
+				if (p.button === 0) {
+					if (p.touch) this.clickTile(tile);
+					else this.selectAt(tile);
+				} else if (p.button === 2) {
+					// Right-click orders the selected unit; with nothing to order, it deselects
+					const unit = this.selectedUnit !== null ? this.sim.unit(this.selectedUnit) : undefined;
+					if (!unit || unit.owner !== this.player) this.deselect();
+					else if (!this.orderUnit(tile) && this.myTurn) this.hud.toast(this.cantOrder(unit, tile), "bad", 2);
+				}
 			}
 			p.down = false;
 			p.dragging = false;

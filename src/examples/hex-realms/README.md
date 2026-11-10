@@ -100,7 +100,7 @@ From the browser console, `ige.client.autoplay(20)` lets the AI play your seat f
 
 Controls: WASD / arrows / left-drag pan, wheel or Z/X zoom, Q/E or right-drag sideways to rotate, Page Up / Page Down or
 right-drag up and down to tilt (up to 25 degrees either way) (pinch, twist and a two-finger slide on touch).
-Click a unit, then a highlighted tile to move or a red ring to attack. Buttons float above a selected unit when it can
+Left-click a unit to select it, then right-click a highlighted tile to move, a red ring to attack, or a far tile to march there over several turns (a gold line shows the route; on touch, tap instead). Buttons float above a selected unit when it can
 do something where it stands, as in Polytopia: crossed swords capture the city, a house founds one, a flame pillages. Space next unit, Enter end turn, Esc deselect,
 C centre, T terrain style, R research, G diplomacy, J ambition, M wonders, B economy, V economy lens, L cities,
 F found city, O menu, H help.
