@@ -94,6 +94,24 @@
 		"bytes": 366360,
 		"yaw": -2.1118
 	},
+	"cannon": {
+		"file": "cannon.glb",
+		"min": [
+			-0.4381,
+			-0.3597,
+			-0.43
+		],
+		"max": [
+			0.4657,
+			0.3758,
+			0.4081
+		],
+		"triangles": 4622,
+		"animations": [],
+		"skinned": false,
+		"bytes": 472148,
+		"yaw": -2.3562
+	},
 	"catapult": {
 		"file": "catapult.glb",
 		"min": [
