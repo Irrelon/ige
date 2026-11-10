@@ -7,6 +7,7 @@ import { buildingStars, buildOptions, buyCost, buyProblem, roadProblem, rushCost
 import { researchCost } from "../sim/effects";
 import { buildingPop, harvestProblem } from "../sim/growth";
 import { campAt, campBounty } from "../sim/raiders";
+import { rateSite, type SiteReport } from "../sim/sites";
 import {
 	AMBITIONS, type BuildingId, BUILDINGS, DEPOSIT_NAMES, Deposit, type EndableTreaty, END_TRUCE_TURNS, GOOD_INFO, GOODS, type Good, type Goods, growthNeeded, HARVEST, levelRewards, REWARDS, ROAD_COST,
 	eraOfTier, type TechId, TECH_IDS, TECHS, UNIT_LOOK, UNIT_TYPE_IDS, type UnitTypeId, UNIT_TYPES, WONDER_IDS
@@ -589,7 +590,8 @@ export class Hud {
 		}
 		buttons.push(btn("disband", "Disband", null, "ghost"));
 		out.push(`<div class="actions">${buttons.join("")}</div>`);
-		if (info.founder && foundProblem(sim, this.me, u.tile)) out.push(`<div class="dim small">${foundProblem(sim, this.me, u.tile)}</div>`);
+		if (info.founder && mine && sim.options.allowFounding) out.push(siteAdvice(rateSite(sim, this.me, u.tile)));
+		else if (info.founder && foundProblem(sim, this.me, u.tile)) out.push(`<div class="dim small">${foundProblem(sim, this.me, u.tile)}</div>`);
 		return `<section>${out.join("")}</section>`;
 	}
 
@@ -740,6 +742,12 @@ export class Hud {
 		}
 		if (t === this.host.selectedTile || (unit && t === unit.tile)) return "";
 		if (this.host.terrain.fogView[t] === UNEXPLORED) return "Unexplored";
+		// A settler selected: how good a city would be there
+		if (unit && unit.owner === this.me && UNIT_TYPES[unit.type].founder && sim.options.allowFounding && !sim.map.isWater(t)) {
+			const r = rateSite(sim, this.me, t);
+			const site = r.problem ? `<span class="dim">No city here: ${esc(r.problem.toLowerCase())}</span>` : `City site <span class="grade grade-${r.grade.toLowerCase()}">${r.grade}</span>${r.pros[0] ? ` <span class="dim">${esc(r.pros[0])}</span>` : ""}${r.cons[0] ? ` <span class="bad">${esc(r.cons[0])}</span>` : ""}`;
+			return `${describeTile(sim, t)} &middot; ${site}`;
+		}
 		return describeTile(sim, t);
 	}
 
@@ -1652,6 +1660,15 @@ function btn (action: string, label: string, problem: string | null, cls = ""): 
 function btnData (action: string, label: string, data: Record<string, string | number>, cls = ""): string {
 	const attrs = Object.entries(data).map(([k, v]) => `data-${k}="${v}"`).join(" ");
 	return `<button class="${cls}" data-action="${action}" ${attrs}>${label}</button>`;
+}
+
+/** The settler's advice for the tile it stands on: a grade, then the best and worst of the place. */
+function siteAdvice (r: SiteReport): string {
+	if (r.problem) return `<div class="site"><div class="site-head">${icon("found", 14)} City site <span class="grade grade-poor">Not here</span></div><div class="dim small">${esc(r.problem)}. Rings mark the best sites nearby: gold excellent, green good, tan fair.</div></div>`;
+	const line = (good: boolean, text: string) => `<li class="${good ? "good" : "bad"}">${icon(good ? "check" : "warning", 12)}${esc(text)}</li>`;
+	return `<div class="site"><div class="site-head">${icon("found", 14)} City site here <span class="grade grade-${r.grade.toLowerCase()}">${r.grade}</span></div>
+		<ul>${[...r.pros.slice(0, 3).map((p) => line(true, p)), ...r.cons.slice(0, 2).map((c) => line(false, c))].join("")}</ul>
+		${r.grade === "Excellent" ? "" : `<div class="dim small">Rings mark the best sites nearby (gold excellent, green good, tan fair); hover a tile to rate it.</div>`}</div>`;
 }
 
 export function describeTile (sim: Sim, tile: number): string {

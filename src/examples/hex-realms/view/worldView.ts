@@ -383,6 +383,8 @@ export class WorldView {
 	targets: IgeEntity[] = [];
 	/** Dots along a multi-turn route (go-to orders and their preview). */
 	routeDots: IgeEntity[] = [];
+	/** Rings on the best city sites near a selected settler. */
+	siteRings: IgeEntity[] = [];
 	protected _uid = 0;
 
 	constructor (sim: Sim, layout: HexLayout, terrain: TerrainView, renderer: IgeWebGlRenderer, unitLayer: IgeEntity, overlayLayer: IgeEntity, player: number, hooks: WorldViewHooks = {}) {
@@ -1364,6 +1366,26 @@ export class WorldView {
 			m.translateTo(this.tileX(t), Math.max(this.surface.overlayHeight(t), this.surface.tileHeight(t)) + 1.4 * (this.terrain.style === "natural" ? 1.5 : 1), this.tileZ(t));
 			m.show();
 		});
+	}
+
+	/** Ring the best city sites (gold for excellent, green for good, pale for fair). */
+	showSites (sites: { tile: number; grade: string }[]): void {
+		const R = this.layout.size;
+		while (this.siteRings.length < sites.length) {
+			this.siteRings.push(this.overlay(createRing("hexRealms_siteRing", R * 0.62, R * 0.52, 36), { r: 1, g: 0.82, b: 0.3 }, 0.9));
+		}
+		const COLORS: Record<string, Rgb> = { Excellent: { r: 1, g: 0.82, b: 0.3 }, Good: { r: 0.45, g: 0.92, b: 0.55 }, Fair: { r: 0.9, g: 0.74, b: 0.46 } };
+		this.siteRings.forEach((m, i) => {
+			const site = sites[i];
+			if (!site) {
+				m.hide();
+				return;
+			}
+			const c = COLORS[site.grade] ?? COLORS.Fair;
+			m._materialData = material(c, c, site.grade === "Fair" ? 0.4 : 0.9);
+			this.placeOverlay(m, site.tile, 2);
+		});
+		this.hooks.invalidate?.();
 	}
 
 	showTargets (tiles: number[]): void {

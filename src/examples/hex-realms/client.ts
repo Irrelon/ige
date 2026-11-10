@@ -10,6 +10,7 @@ import type { IgeCanInit } from "@/types/IgeCanInit";
 import type { FogMode } from "./fog";
 import { HexLayout } from "./hex";
 import { Minimap } from "./minimap";
+import { bestSites } from "./sim/sites";
 import { IgeRoomClient, type IgeRoomCommandEvent } from "@/engine/network/rooms/IgeRoomClient";
 import type { IgeRoomChatLine } from "@/engine/network/rooms/igeRoomProtocol";
 import { connectRoomTransport, serverAvailable } from "./net/netClient";
@@ -822,6 +823,9 @@ export class Client extends IgeBaseClass implements IgeCanInit, HudHost {
 		this.world.showTargets(this.targets);
 		this.world.setSelectedTile(unit ? unit.tile : this.selectedTile);
 		this.showRoute();
+		// A settler of yours: ring the best city sites around it
+		const settler = !!unit && unit.owner === this.player && !!UNIT_TYPES[unit.type].founder && this.sim.options.allowFounding;
+		this.world.showSites(settler ? bestSites(this.sim, this.player, unit!.tile, 6, 3) : []);
 	}
 
 	/**

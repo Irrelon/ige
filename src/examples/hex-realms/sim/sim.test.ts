@@ -12,6 +12,7 @@ import { researchCost } from "./effects";
 import { administration, BUILDINGS, Deposit, foodGoodsOf, foodValueOf, growthNeeded, levelIncome, type TechId, TECH_IDS, techCost } from "./rules";
 import { buildingPop, harvestProblem } from "./growth";
 import { campBounty, raiderType } from "./raiders";
+import { bestSites, rateSite } from "./sites";
 import { income, upkeep } from "./treasury";
 import { defaultOptions, Sim } from "./sim";
 import { ALLIANCE, type Command, type GameOptions, NEUTRAL, PEACE, RAIDERS, type UnitState, WAR } from "./types";
@@ -957,6 +958,36 @@ describe("raider camps", () => {
 		expect(raiderType(sim, false)).toBe("warrior");
 		for (const p of sim.state.players) p.techs.push("smithing");
 		expect(raiderType(sim, false)).toBe("swordsman");
+	});
+});
+
+describe("city site advice", () => {
+	test("a site with food, forests and ore rates above bare land, and crowded or rival sites rate lower", () => {
+		const sim = blank(2, [sim2(3, 3), sim2(20, 12)], { humans: [0, 1] });
+		const rich = sim2(10, 6), bare = sim2(10, 11);
+		for (const t of sim.tilesWithin(bare, 2)) sim.map.terrain[t] = Terrain.Desert;
+		for (const t of sim.neighbors(rich).slice(0, 3)) sim.map.feature[t] = Feature.Forest;
+		sim.map.deposit[sim.neighbors(rich)[0]] = Deposit.Game;
+		const hill = sim.neighbors(rich)[4];
+		sim.map.relief[hill] = Relief.Hills;
+		sim.map.deposit[hill] = Deposit.Ore;
+		const good = rateSite(sim, 0, rich), poor = rateSite(sim, 0, bare);
+		expect(good.problem).toBeNull();
+		expect(good.score).toBeGreaterThan(poor.score);
+		expect(["Good", "Excellent"]).toContain(good.grade);
+		expect(poor.grade).toBe("Poor");
+		expect(good.pros.join(" ")).toMatch(/food/i);
+		expect(poor.cons.join(" ")).toMatch(/no food/i);
+		// Too close to a city: can't be founded, and said so
+		expect(rateSite(sim, 0, sim.neighbors(sim.citiesOf(0)[0].tile)[0]).problem).toBe("Too close to another city");
+		// Near a rival city: marked down
+		const nearRival = sim2(17, 12);
+		expect(rateSite(sim, 0, nearRival).cons.join(" ")).toMatch(/borders will clash/);
+		// The best nearby sites are foundable and spread out
+		const best = bestSites(sim, 0, rich, 6, 3);
+		expect(best.length).toBeGreaterThan(0);
+		expect(best[0].score).toBeGreaterThanOrEqual(best[best.length - 1].score);
+		for (const a of best) for (const b of best) if (a !== b) expect(sim.distance(a.tile, b.tile)).toBeGreaterThanOrEqual(3);
 	});
 });
 
