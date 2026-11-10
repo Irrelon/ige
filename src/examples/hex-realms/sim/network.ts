@@ -199,3 +199,17 @@ export function takeGoods (sim: Sim, player: number, tile: number, goods: Record
 	}
 }
 
+
+/** Cities of a civ joined to its capital by its roads and sea lanes (the capital included). */
+export function linkedToCapital (sim: Sim, player: number): Set<number> {
+	const out = new Set<number>();
+	const capital = sim.citiesOf(player).find((c) => c.capital);
+	if (!capital) return out;
+	const nodes = networkNodes(sim, player);
+	const reached = search(sim).run(sim, nodes, capital.tile);
+	for (const t of reached) {
+		const c = sim.cityOn(t);
+		if (c && c.owner === player) out.add(c.id);
+	}
+	return out;
+}

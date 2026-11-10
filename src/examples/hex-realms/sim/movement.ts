@@ -56,15 +56,16 @@ export function hasOpenBorders (sim: Sim, a: number, b: number): boolean {
 }
 
 /** Cost to step between adjacent tiles; -1 means the step ends the move (embark / land). */
-export function stepCost (sim: Sim, from: number, to: number): number {
+export function stepCost (sim: Sim, from: number, to: number, owner = -1): number {
 	const map = sim.map;
 	if (map.isWater(from) !== map.isWater(to)) return -1;
 	if (map.isWater(to)) return 1;
 	const roadFrom = sim.roads[from] >= 0 || sim.cityAt[from] >= 0;
 	const roadTo = sim.roads[to] >= 0 || sim.cityAt[to] >= 0;
-	// Roads on both banks make a bridge
-	if (roadFrom && roadTo) return 0.5;
-	const ford = riverBetween(map, from, to) ? 1 : 0;
+	// Roads on both banks make a bridge; pack animals (Logistics) make roads quicker still
+	if (roadFrom && roadTo) return owner >= 0 && sim.hasTech(owner, "logistics") ? 1 / 3 : 0.5;
+	// River Folk cross rivers freely
+	const ford = riverBetween(map, from, to) && (owner < 0 || sim.player(owner).civ !== "riverfolk") ? 1 : 0;
 	return (map.relief[to] === Relief.Hills || map.feature[to] !== Feature.None ? 2 : 1) + ford;
 }
 
@@ -104,7 +105,7 @@ export function reachable (sim: Sim, unit: UnitState): Reach {
 			if (n < 0 || !canEnter(sim, unit, n, t)) continue;
 			const blocker = sim.unitAt[n] >= 0 ? sim.unit(sim.unitAt[n]) : undefined;
 			if (blocker && blocker.owner !== unit.owner && !sim.allied(unit.owner, blocker.owner)) continue;
-			const step = stepCost(sim, t, n);
+			const step = stepCost(sim, t, n, unit.owner);
 			// Embarking or landing, or a step dearer than what's left, ends the move
 			const next = step < 0 ? budget : Math.min(budget, c + step);
 			const known = cost.get(n);

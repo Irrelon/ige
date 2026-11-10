@@ -1,12 +1,12 @@
 import { Feature, Relief, Terrain } from "../terrain";
 import { riverside } from "../rivers";
 import { addGrowth, foodValue, slotCap, slotsUsed } from "./cities";
-import { marketFactor, roadBonus } from "./effects";
+import { marketFactor } from "./effects";
 import { wonderCompleted, wonderProblem } from "./wonders";
 import { fail, ok } from "./result";
 import {
-	BUFFER_SIZE, type BuildingId, BUILDINGS, BUY_PRICE, CARRIER_SPEED, Deposit, DEPOSIT_GOOD, foodGoodsOf, foodValueOf, type Good, GOOD_INFO, type Goods,
-	ROAD_CAPACITY, ROAD_COST, RUSH_PRICE, SEA_STEP, TECHS
+	BUFFER_SIZE, type BuildingId, BUILDINGS, BUY_PRICE, Deposit, DEPOSIT_GOOD, foodGoodsOf, foodValueOf, type Good, GOOD_INFO, type Goods,
+	ROAD_COST, RUSH_PRICE, TECHS
 } from "./rules";
 import type { Sim } from "./sim";
 import { availableGoods, networkNodes, search, takeGoods } from "./network";
@@ -324,14 +324,6 @@ interface Request {
 	purpose: CargoPurpose;
 }
 
-export function carrierSpeed (sim: Sim, player: number): number {
-	const p = sim.player(player);
-	return CARRIER_SPEED + (p.civ === "riverfolk" ? 2 : 0) + (p.techs.includes("logistics") ? 2 : 0) + roadBonus(sim, player).speed;
-}
-
-export function roadCapacity (sim: Sim, player: number): number {
-	return ROAD_CAPACITY * (sim.player(player).techs.includes("logistics") ? 2 : 1) + roadBonus(sim, player).capacity;
-}
 
 /** Is a building working (finished and within its city's slot cap)? */
 export function isActive (sim: Sim, building: BuildingState): boolean {
@@ -390,7 +382,7 @@ export function economyPhase (sim: Sim, player: number, lines: string[]): void {
 			continue;
 		}
 		if (goods.some((g) => (b.output[g] ?? 0) >= BUFFER_SIZE)) {
-			b.status = nodes[b.tile] && hasNeighbourNode(sim, nodes, b.tile) ? "Output waiting for carriers" : "Not connected by road";
+			b.status = nodes[b.tile] && hasNeighbourNode(sim, nodes, b.tile) ? "Output waiting for a road" : "Not connected by road";
 			continue;
 		}
 		const inputs = Object.entries(info.inputs) as [Good, number][];
@@ -504,10 +496,7 @@ export function economyPhase (sim: Sim, player: number, lines: string[]): void {
 	}
 	for (const c of newCargo) sim.state.cargo.push(c);
 
-	// 4. Transport
-	const speed = carrierSpeed(sim, player);
-	const capacity = roadCapacity(sim, player);
-	const usage = new Map<number, number>();
+	// 4. Transport: anything with a road (or sea lane) to where it's going arrives this turn
 	const blocked = (t: number) => {
 		const u = sim.unitOn(t);
 		return !!u && sim.atWar(player, u.owner);
@@ -536,8 +525,7 @@ export function economyPhase (sim: Sim, player: number, lines: string[]): void {
 		}
 		const net = trade !== undefined ? tradeNodes(trade) : nodes;
 		const moved = [cargo.path[cargo.at]];
-		let steps = speed;
-		while (steps > 0 && cargo.at < cargo.path.length - 1) {
+		while (cargo.at < cargo.path.length - 1) {
 			const next = cargo.path[cargo.at + 1];
 			if (!net[next] || blocked(next)) {
 				// The road was cut or blocked: look for another way
@@ -549,15 +537,7 @@ export function economyPhase (sim: Sim, player: number, lines: string[]): void {
 				cargo.at = 0;
 				continue;
 			}
-			// Roads take only so many loads a turn; the sea doesn't jam, and ships are quick
-			const afloat = sim.map.isWater(next);
-			if (!afloat) {
-				const used = usage.get(next) ?? 0;
-				if (used >= capacity) break;
-				usage.set(next, used + 1);
-			}
 			cargo.at++;
-			steps -= afloat ? SEA_STEP : 1;
 			moved.push(next);
 		}
 		const done = cargo.at >= cargo.path.length - 1;
@@ -631,7 +611,7 @@ export function economyPhase (sim: Sim, player: number, lines: string[]): void {
 	if (ate) lines.push(`Cities ate ${ate} food`);
 	if (sold) lines.push(`Markets sold goods for ${n(sold, "star", "stars")}`);
 	if (finished.length) lines.push(`Finished: ${finished.join(", ")}`);
-	if (stuck) lines.push(`${n(stuck, "load is", "loads are")} stuck (jammed or cut roads)`);
+	if (stuck) lines.push(`${n(stuck, "load is", "loads are")} stuck (cut or blocked roads)`);
 	const idle = mine.filter((b) => b.built && b.status && b.status !== "").length;
 	if (idle) lines.push(`${n(idle, "building is", "buildings are")} idle`);
 }

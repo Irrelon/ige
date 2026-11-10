@@ -1,4 +1,6 @@
 import { diplomacyIncome, sanctionLoss } from "./diplomacy";
+import { riverside } from "../rivers";
+import { linkedToCapital } from "./network";
 import { isActive } from "./economy";
 import { hasLegacy, hasWonder, wondersOf } from "./effects";
 import { administration, BUILDINGS, FREE_UNITS, FREE_UNITS_PER_CITY, levelIncome, MODERN_TECHS, UNIT_TYPES } from "./rules";
@@ -31,7 +33,13 @@ export interface Income {
 
 /** Stars a city earns by itself. */
 export function cityIncome (sim: Sim, city: CityState): number {
-	return levelIncome(city.level) + (city.capital ? 1 : 0) + city.bonusIncome;
+	let stars = levelIncome(city.level) + (city.capital ? 1 : 0) + city.bonusIncome;
+	if (city.owner < 0) return stars;
+	// River Folk: a city beside a river earns a star more
+	if (sim.player(city.owner).civ === "riverfolk" && riverside(sim.map, city.tile)) stars += 1;
+	// Imperial Road: every city joined to the capital by road earns a star more
+	if (!city.capital && hasWonder(sim, city.owner, "imperialRoad") && linkedToCapital(sim, city.owner).has(city.id)) stars += 1;
+	return stars;
 }
 
 function coastal (sim: Sim, city: CityState): boolean {

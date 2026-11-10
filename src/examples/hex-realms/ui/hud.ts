@@ -3,7 +3,7 @@ import type { IgeWebGlRenderer } from "@/engine/core/IgeWebGlRenderer";
 import { FOGGED, type FogMode, UNEXPLORED } from "../fog";
 import { captureProblem, foundProblem, slotCap, slotsUsed, trainProblem, unitCost } from "../sim/cities";
 import { attackProblem, preview } from "../sim/combat";
-import { buildingStars, buildOptions, buyCost, buyProblem, carrierSpeed, roadCapacity, roadProblem, rushCost, rushProblem, storedGoods, wonderOptions } from "../sim/economy";
+import { buildingStars, buildOptions, buyCost, buyProblem, roadProblem, rushCost, rushProblem, storedGoods, wonderOptions } from "../sim/economy";
 import { researchCost } from "../sim/effects";
 import {
 	AMBITIONS, type BuildingId, BUILDINGS, DEPOSIT_NAMES, type Deposit, type EndableTreaty, END_TRUCE_TURNS, GOOD_INFO, GOODS, type Good, type Goods, growthNeeded, levelRewards, REWARDS, ROAD_COST,
@@ -40,7 +40,7 @@ const TECH_ABILITIES: Partial<Record<TechId, { icon: string; name: string; text:
 	sailing: [{ icon: "&#x26F5;", name: "Embarking", text: "Units can move onto coastal water, where they sail in boats. Ports join your cities across the water with sea lanes." }],
 	navigation: [{ icon: "&#x1F30A;", name: "Deep ocean", text: "Units and ships can cross deep ocean, so sea lanes can reach other continents." }],
 	trade: [{ icon: "&#x1F91D;", name: "Trade agreements", text: "Barter goods and stars with other civs, and set up trade routes that deliver every turn." }],
-	logistics: [{ icon: "&#x1F434;", name: "Pack animals", text: "Carriers move further each turn and every road carries twice as much." }],
+	logistics: [{ icon: "&#x1F434;", name: "Pack animals", text: "Units move further along roads: a third of a move per step instead of a half." }],
 	diplomacy: [{ icon: "&#x1F91D;", name: "Treaties and deals", text: "Opens the diplomacy screen's deals: alliances, open borders, defensive pacts, cultural exchanges, research agreements, barter, gifts, demands, denouncing and sanctions. Before it you can only declare war and make peace." }],
 	statecraft: [{ icon: "&#x1F3DB;&#xFE0F;", name: "World Council", text: "The World Council forms and votes every few turns: win two elections in a row for a Diplomatic victory." }],
 	engineering: [{ icon: "&#x1F4B0;", name: "Prosperity victory", text: "Lets you build the Grand Exchange: finishing it wins a Prosperity victory." }]
@@ -664,7 +664,7 @@ export class Hud {
 			const ins = Object.keys(info.inputs) as Good[];
 			if (ins.length) out.push(`<div class="small">In: ${goodsList(b.input)} &middot; needs ${ins.map((g) => GOOD_INFO[g].name).join(" + ")}</div>`);
 			const outs = Object.keys(b.output);
-			if (outs.length) out.push(`<div class="small">Waiting for carriers: ${goodsList(b.output)}</div>`);
+			if (outs.length) out.push(`<div class="small">Waiting for a road: ${goodsList(b.output)}</div>`);
 			if (b.type === "warehouse") out.push(`<div class="small">Stored: ${goodsList(b.store, "empty")}</div>`);
 			if (b.type === "market") {
 				const p = sim.player(this.me);
@@ -675,7 +675,7 @@ export class Hud {
 					const problem = buyProblem(sim, this.me, b.id, this.buyGood, count);
 					return `<button data-action="buy" data-building="${b.id}" data-count="${count}" ${problem ? `disabled title="${esc(problem)}"` : ""}>Buy ${count} <small>&#9733;${buyCost(this.buyGood, count)}</small></button>`;
 				};
-				out.push(`<div class="small dim">Buy goods here at twice the market price; carriers take them where they're needed.</div><div class="actions"><select data-buy="good" aria-label="Good to buy">${options}</select>${buy(1)}${buy(5)}</div>`);
+				out.push(`<div class="small dim">Buy goods here at twice the market price; they go by road where they're needed.</div><div class="actions"><select data-buy="good" aria-label="Good to buy">${options}</select>${buy(1)}${buy(5)}</div>`);
 			}
 			out.push(`<div class="actions">${btnData("demolish", "Demolish", { building: b.id }, "ghost")}</div>`);
 		}
@@ -1314,7 +1314,7 @@ export class Hud {
 			`<tr><td><a href="#" data-action="select-tile" data-tile="${b.tile}">${BUILDINGS[b.type].name}</a></td><td class="small">${b.built ? (b.status ? `<span class="warn">${esc(b.status)}</span>` : `<span class="good">working</span>`) : `building: needs ${goodsInline(b.needs)}`}</td><td class="small">${esc(sim.city(b.city)?.name ?? "")}</td></tr>`
 		).join("");
 		const inTransit = sim.state.cargo.filter((c) => c.owner === me).length;
-		return `<h3>Economy</h3><div class="cols"><div><h4>Stores</h4><table>${goods}</table></div><div><h4>Who gets scarce goods first</h4><ol>${order}</ol><p class="dim small">Carriers move ${carrierSpeed(sim, me)} road tiles per turn; each road tile takes ${roadCapacity(sim, me)} loads per turn. ${inTransit} loads in transit.</p><h4>Buildings <button class="mini ${this.lens ? "on" : ""}" data-action="lens">Show on map (V)</button></h4><table>${buildings || `<tr><td class="dim">None yet: click a tile in your territory.</td></tr>`}</table></div></div>`;
+		return `<h3>Economy</h3><div class="cols"><div><h4>Stores</h4><table>${goods}</table></div><div><h4>Who gets scarce goods first</h4><ol>${order}</ol><p class="dim small">Anything joined to a city by road reaches it the same turn.${inTransit ? ` ${inTransit} loads are waiting on cut or blocked roads.` : ""}</p><h4>Buildings <button class="mini ${this.lens ? "on" : ""}" data-action="lens">Show on map (V)</button></h4><table>${buildings || `<tr><td class="dim">None yet: click a tile in your territory.</td></tr>`}</table></div></div>`;
 	}
 
 	citiesModal (): string {
@@ -1386,7 +1386,7 @@ export class Hud {
 			<p><b>Wonders</b> (M): a world wonder exists once, so civs race to finish it; monuments are earned by feats and raise their city a level.</p>
 			<p><b>Expand</b>: capture grey villages with any unit (start a turn on one, press Capture)${this.sim.options.allowFounding ? ", or found cities with settlers" : ""}. Cities earn stars every turn.</p>
 			<p><b>Grow</b>: deliver food (fish, game, bread) to cities. Each level adds a building slot and a reward.</p>
-			<p><b>Build</b>: click your land to place buildings. Woodcutters are ready at once; other sites wait for logs, planks or stone carried by road, and Rush finishes them for stars. Goods move along roads, ${4} tiles per turn, 2 loads per road tile per turn. Ports (Sailing) let carriers sail between your coastal cities, and a market also sells you goods at twice its price.</p>
+			<p><b>Build</b>: click your land to place buildings. Woodcutters are ready at once; other sites wait for logs, planks or stone carried by road, and Rush finishes them for stars. Anything joined to a city by road reaches it the same turn. Ports (Sailing) let goods sail between your coastal cities, and a market also sells you goods at twice its price.</p>
 			<p><b>Diplomacy</b> (G): treaties, cultural exchanges, research agreements, trades of goods and stars (once, or every turn as a route; where your roads meet theirs the goods travel as carts), demands, denouncing and sanctions. Wars wear both sides down, making peace easier the longer they last. Wars without enough grievances are surprise wars that everyone resents; peace brings a 10-turn truce.</p>
 			<p><b>Quick actions</b>: buttons float above a selected unit when it can do something where it stands: crossed swords capture a city, a house founds one, a flame pillages.</p>
 			<p><b>Fight</b>: declare war in Diplomacy first. Select a unit to see red attack rings; hover one to preview the damage. Ranged units need line of sight. Units stop when they move next to an enemy.</p>

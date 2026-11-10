@@ -8,7 +8,7 @@ import { MeshBuilder } from "../meshBuilder";
 import { type BuildingId, BUILDINGS, Deposit, type Good, GOOD_INFO, type UnitTypeId } from "../sim/rules";
 import type { Sim } from "../sim/sim";
 import type { BuildingState, CityState, SimEvent, UnitState } from "../sim/types";
-import { buildBorderGeometry, createDisc, createHexDisc, createHexRing, createRing, CUBE, ORB, PYRAMID } from "../shapes";
+import { buildBorderGeometry, createDisc, createHexRing, createRing, CUBE, ORB, PYRAMID } from "../shapes";
 import { mulberry32 } from "../noise";
 import type { ModelLibrary } from "./models";
 import type { TerrainView } from "./terrainView";

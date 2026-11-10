@@ -9,7 +9,7 @@ import { createCity } from "./cities";
 import { networkNodes, SEA } from "./network";
 import { attitude, councilVote, grievance, hasPact, pickAgenda, warProblem } from "./diplomacy";
 import { researchCost } from "./effects";
-import { administration, BUILDINGS, CARRIER_SPEED, foodGoodsOf, foodValueOf, levelIncome, ROAD_CAPACITY, type TechId, TECH_IDS, techCost } from "./rules";
+import { administration, BUILDINGS, foodGoodsOf, foodValueOf, levelIncome, type TechId, TECH_IDS, techCost } from "./rules";
 import { income, upkeep } from "./treasury";
 import { defaultOptions, Sim } from "./sim";
 import { ALLIANCE, type Command, type GameOptions, PEACE, type UnitState, WAR } from "./types";
@@ -252,7 +252,7 @@ describe("economy", () => {
 		expect(third.error).toMatch(/no free building slot/);
 	});
 
-	test("roads limit how many loads pass per turn", () => {
+	test("anything joined to a city by road reaches it the same turn, however many loads", () => {
 		const sim = blank(2, [sim2(2, 8), sim2(22, 1)]);
 		const capital = sim.citiesOf(0)[0];
 		const path: number[] = [];
@@ -265,10 +265,10 @@ describe("economy", () => {
 		for (let i = 0; i < 6; i++) {
 			sim.state.cargo.push({ id: sim.nextId(), owner: 0, good: "logs", path: [...path], at: 0, destKind: "city", dest: capital.id, purpose: "store" });
 		}
+		const before = capital.store.logs ?? 0;
 		economyPhase(sim, 0, []);
-		const positions = sim.state.cargo.map((c) => c.at);
-		expect(positions.filter((at) => at === CARRIER_SPEED).length).toBe(ROAD_CAPACITY);
-		expect(positions.filter((at) => at === 0).length).toBe(6 - ROAD_CAPACITY);
+		expect(sim.state.cargo.length).toBe(0);
+		expect(capital.store.logs).toBe(before + 6);
 	});
 
 	test("cargo reroutes around a cut road", () => {
@@ -665,10 +665,10 @@ describe("diplomacy II", () => {
 		expect(sim.apply(1, { type: "respond", proposal: sim.state.diplomacy.proposals[0].id, accept: true }).ok).toBe(true);
 		nextTurn(sim);
 		nextTurn(sim);
-		// Each round a plank leaves civ 0's capital as cargo along both civs' roads (5 tiles, 4 a turn)
+		// Each round a plank leaves civ 0's capital along both civs' roads and arrives the same turn
 		expect(a.store.planks).toBe(3);
-		expect(b.store.planks).toBe(6);
-		expect(sim.state.cargo.filter((c) => c.receiver === 1 && c.good === "planks").length).toBe(1);
+		expect(b.store.planks).toBe(7);
+		expect(sim.state.cargo.filter((c) => c.receiver === 1 && c.good === "planks").length).toBe(0);
 	});
 
 	test("a refused demand gives grievances; research agreements pay out a technology", () => {

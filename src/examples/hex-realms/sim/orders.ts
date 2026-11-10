@@ -162,7 +162,7 @@ export function planRoute (sim: Sim, unit: UnitState, target: number, maxSteps =
 			if (n < 0 || !canEnter(sim, unit, n, t)) continue;
 			const blocker = sim.unitAt[n] >= 0 ? sim.unit(sim.unitAt[n]) : undefined;
 			if (blocker && blocker.owner !== unit.owner && !sim.allied(unit.owner, blocker.owner)) continue;
-			const step = stepCost(sim, t, n);
+			const step = stepCost(sim, t, n, unit.owner);
 			const next = c + (step < 0 ? full : step);
 			const known = cost.get(n);
 			if (known === undefined || next < known) {

@@ -59,10 +59,6 @@ export function sightBonus (sim: Sim, player: number): number {
 	return hasWonder(sim, player, "observatory") ? 1 : 0;
 }
 
-/** Extra road tiles carriers move per turn, and extra loads per road tile (Imperial Road). */
-export function roadBonus (sim: Sim, player: number): { speed: number; capacity: number } {
-	return hasWonder(sim, player, "imperialRoad") ? { speed: 2, capacity: 1 } : { speed: 0, capacity: 0 };
-}
 
 /** Market sale multiplier (Grand Bazaar). */
 export function marketFactor (sim: Sim, player: number): number {

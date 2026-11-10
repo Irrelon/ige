@@ -26,12 +26,12 @@ const TIPS: Tip[] = [
 	},
 	{
 		id: "build",
-		text: "Click a tile inside your borders to place buildings. Woodcutters are ready at once; anything else starts as a construction site, and carriers bring its logs, planks or stone by road from your stores. <b>Rush</b> finishes a site for stars.",
+		text: "Click a tile inside your borders to place buildings. Woodcutters are ready at once; anything else starts as a construction site, and its logs, planks or stone arrive by road from your stores. <b>Rush</b> finishes a site for stars.",
 		when: (sim, p) => sim.state.turn >= 3 && sim.buildingsOf(p).length === 0
 	},
 	{
 		id: "roads",
-		text: "Goods only travel along roads. Buildings next to a city or another building are connected; others need a <b>road</b> (1 star per tile). Each road tile carries 2 loads per turn, so busy routes jam.",
+		text: "Goods only travel along roads. Buildings next to a city or another building are connected; others need a <b>road</b> (1 star per tile). Once a road joins a building to a city, its goods arrive the same turn.",
 		when: (sim, p) => sim.buildingsOf(p).length > 0
 	},
 	{
@@ -61,7 +61,7 @@ const TIPS: Tip[] = [
 	},
 	{
 		id: "port",
-		text: "With Sailing you can build a <b>Port</b> on the coast. Carriers sail between your ports, so cities across the water share one road network.",
+		text: "With Sailing you can build a <b>Port</b> on the coast. Goods sail between your ports, so cities across the water share one road network.",
 		when: (sim, p) => sim.hasTech(p, "sailing") && sim.citiesOf(p).some((c) => sim.map.landmass[c.tile] !== sim.map.landmass[sim.citiesOf(p)[0].tile])
 	},
 	{
