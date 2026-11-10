@@ -9,7 +9,7 @@ import { buildingPop, harvestProblem } from "../sim/growth";
 import { campAt, campBounty } from "../sim/raiders";
 import { rateSite, type SiteReport } from "../sim/sites";
 import {
-	AMBITIONS, type BuildingId, BUILDINGS, DEPOSIT_NAMES, Deposit, type EndableTreaty, END_TRUCE_TURNS, GOOD_INFO, GOODS, type Good, type Goods, growthNeeded, HARVEST, levelRewards, REWARDS, ROAD_COST,
+	AMBITIONS, type BuildingId, BUILDINGS, DEPOSIT_GOOD, DEPOSIT_NAMES, Deposit, type EndableTreaty, END_TRUCE_TURNS, GOOD_INFO, GOODS, type Good, type Goods, growthNeeded, HARVEST, levelRewards, REWARDS, ROAD_COST,
 	eraOfTier, type TechId, TECH_IDS, TECHS, UNIT_LOOK, UNIT_TYPE_IDS, type UnitTypeId, UNIT_TYPES, WONDER_IDS
 } from "../sim/rules";
 import type { Sim } from "../sim/sim";
@@ -654,7 +654,8 @@ export class Hud {
 					}
 					const pop = buildingPop(sim, this.me, tile, type);
 					const grows = pop ? ` <span class="pop" title="Adds ${pop} population when finished">+${pop}${icon("people", 11)}</span>` : "";
-					return `<button data-action="build" data-building="${type}" title="${esc(problem ? `${problem}. ${info.description}` : info.description)}" ${problem ? "disabled" : ""}>${info.name}${grows} <small>${problem ? esc(problem) : cost}</small></button>`;
+					const produces = buildingMakes(sim, type, tile);
+					return `<button class="build-btn" data-action="build" data-building="${type}" title="${esc(problem ? `${problem}. ${info.description}` : info.description)}" ${problem ? "disabled" : ""}><span class="bb-top">${info.name}${grows}</span>${produces ? `<span class="makes">${produces}</span>` : ""}<small>${problem ? esc(problem) : cost}</small></button>`;
 				}).join("")}</div>`);
 			}
 		}
@@ -1660,6 +1661,24 @@ function btn (action: string, label: string, problem: string | null, cls = ""): 
 function btnData (action: string, label: string, data: Record<string, string | number>, cls = ""): string {
 	const attrs = Object.entries(data).map(([k, v]) => `data-${k}="${v}"`).join(" ");
 	return `<button class="${cls}" data-action="${action}" ${attrs}>${label}</button>`;
+}
+
+/**
+ * What a building would make on a tile, for its build button: a mine names
+ * the deposit it digs (ore, coal or gold), a workshop shows its inputs and
+ * output ("logs -> planks"), others their output.
+ */
+function buildingMakes (sim: Sim, type: BuildingId, tile: number): string {
+	const info = BUILDINGS[type];
+	const chips = (goods: Partial<Record<Good, number>>) => (Object.keys(goods) as Good[]).map((g) => goodChip(g)).join("");
+	if (type === "mine") {
+		const g = DEPOSIT_GOOD[sim.map.deposit[tile] as Deposit];
+		return g ? `${icon("hammer", 11)} digs ${goodChip(g)}` : "";
+	}
+	const outputs = Object.keys(info.outputs) as Good[];
+	if (!outputs.length) return "";
+	const inputs = Object.keys(info.inputs) as Good[];
+	return inputs.length ? `${chips(info.inputs)}<span class="arrow">&rarr;</span>${chips(info.outputs)}` : `makes ${chips(info.outputs)}`;
 }
 
 /** The settler's advice for the tile it stands on: a grade, then the best and worst of the place. */

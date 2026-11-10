@@ -251,6 +251,12 @@
 		#panel .hover { color: var(--dim); padding: 8px 14px 10px; font-size: 12px; border-top: 1px solid var(--line); background: rgba(0, 0, 0, 0.18); }
 		#panel .actions { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; align-items: center; }
 		#panel .actions button { padding: 5px 10px; }
+		#panel .actions.build .build-btn { flex-direction: column; align-items: flex-start; gap: 2px; padding: 5px 10px 6px; text-align: left; }
+		#panel .build-btn .bb-top { display: inline-flex; align-items: center; gap: 2px; font-weight: 700; }
+		#panel .build-btn .makes { display: inline-flex; align-items: center; flex-wrap: wrap; gap: 2px; font-size: 10.5px; font-weight: 500; color: var(--dim); }
+		#panel .build-btn .makes .chip { font-size: 10px; line-height: 16px; margin: 0; }
+		#panel .build-btn .makes .arrow { margin: 0 3px; color: var(--faint); }
+		#panel .build-btn .makes svg { width: 11px; height: 11px; margin-right: 2px; }
 		#panel .pop { display: inline-flex; align-items: center; gap: 2px; margin-left: 4px; padding: 0 5px; border-radius: 999px; font-size: 10.5px; font-weight: 800; line-height: 16px; color: #9ff0a8; background: rgba(80, 190, 110, 0.14); border: 1px solid rgba(80, 190, 110, 0.4); vertical-align: 1px; }
 		#panel .pop svg { width: 11px; height: 11px; }
 		#panel .actions.train button { flex-direction: column; align-items: flex-start; gap: 0; padding: 5px 10px; }
