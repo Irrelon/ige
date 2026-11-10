@@ -165,6 +165,15 @@
 		.pill { display: inline-flex; align-items: center; gap: 4px; padding: 0 9px; border-radius: 999px; font-size: 10.5px; font-weight: 700; line-height: 19px; white-space: nowrap; background: rgba(255, 255, 255, 0.06); border: 1px solid var(--line-2); color: var(--text); letter-spacing: 0.02em; }
 		.pill.war { background: rgba(229, 72, 77, 0.16); border-color: rgba(229, 72, 77, 0.6); color: #ffa3a6; }
 		.pill.ally { background: rgba(80, 190, 110, 0.16); border-color: rgba(80, 190, 110, 0.6); color: #9ae6b0; }
+		/* Glossary: words in the tile panel open a card */
+		a.term { color: inherit; text-decoration: underline dotted rgba(240, 195, 90, 0.7); text-underline-offset: 3px; cursor: help; }
+		a.term:hover { color: var(--gold-hi); text-decoration-style: solid; }
+		a.term-chip { text-decoration: none; cursor: pointer; }
+		.modal-box.term { width: min(520px, calc(100vw - 24px)); }
+		.glossary p { margin: 0 0 10px; color: var(--text); font-size: 13.5px; }
+		.glossary h4 { margin: 14px 0 6px; }
+		.glossary ul { margin: 0 0 6px; padding-left: 18px; line-height: 1.8; font-size: 13px; }
+		.glossary .dim { color: var(--dim); font-size: 12.5px; }
 		/* City site advice (settlers) */
 		.site { margin-top: 10px; padding: 9px 11px; border-radius: 10px; background: rgba(255, 255, 255, 0.035); border: 1px solid var(--line); }
 		.site-head { display: flex; align-items: center; gap: 6px; font-weight: 700; color: #fff4d6; }

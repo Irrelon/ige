@@ -8,6 +8,8 @@ import { researchCost } from "../sim/effects";
 import { buildingPop, harvestProblem } from "../sim/growth";
 import { campAt, campBounty } from "../sim/raiders";
 import { rateSite, type SiteReport } from "../sim/sites";
+import { termCard, type TermKey, termLink } from "./glossary";
+import { riverside } from "../rivers";
 import {
 	AMBITIONS, type BuildingId, BUILDINGS, DEPOSIT_GOOD, DEPOSIT_NAMES, Deposit, type EndableTreaty, END_TRUCE_TURNS, GOOD_INFO, GOODS, type Good, type Goods, growthNeeded, HARVEST, levelRewards, REWARDS, ROAD_COST,
 	eraOfTier, type TechId, TECH_IDS, TECHS, UNIT_LOOK, UNIT_TYPE_IDS, type UnitTypeId, UNIT_TYPES, WONDER_IDS
@@ -156,6 +158,8 @@ export class Hud {
 	contacts: number[] = [];
 	/** The civ on the first-contact card being shown. */
 	contactCiv = -1;
+	/** The glossary card on show. */
+	term: TermKey = "forest";
 	/** Which screen is on show (so updates in place can skip the opening animation). */
 	renderedModal: string | null = null;
 	/** Cities of yours that levelled up, waiting to show their reward card (Polytopia-style). */
@@ -388,6 +392,10 @@ export class Hud {
 			case "modal": this.openModal(data.modal as string); break;
 			case "close-modal": this.closeModal(); break;
 			case "contact-ok": this.closeModal(); break;
+			case "term":
+				this.term = data.term as TermKey;
+				this.openModal("term");
+				break;
 			case "levelup-reward":
 				run({ type: "reward", city: num("city"), reward: data.reward as never });
 				this.closeModal();
@@ -1297,6 +1305,11 @@ export class Hud {
 			case "log": body = this.logModal(); break;
 			case "history": body = historyModal(this.sim, this.me, this.historyMetric, !!this.sim.state.winner || this.sim.options.fog === "off", (p) => this.host.playerName(p) || this.sim.player(p).name); break;
 			case "levelup": body = this.levelUpModal(); break;
+			case "term": {
+				const card = termCard(this.sim, this.term);
+				body = `<h3>${esc(card.title)}</h3><div class="glossary">${card.html}</div>`;
+				break;
+			}
 			case "contact": body = contactModal(this.sim, this.contactCiv, this.me, this.host.playerName(this.contactCiv) || this.sim.player(this.contactCiv).name); break;
 			case "saves": body = savesModal({ saves: this.host.saves, local: this.host.canSave, defaultName: this.defaultSaveName(), confirmDelete: this.saveConfirm, storage: this.host.saveStore.available }); break;
 			case "gameover": body = this.gameOverModal(); break;
@@ -1691,15 +1704,18 @@ function siteAdvice (r: SiteReport): string {
 }
 
 export function describeTile (sim: Sim, tile: number): string {
+	// Each word opens its glossary card (what it's for once joined to a city)
 	const map = sim.map;
-	const parts = [TERRAIN_INFO[map.terrain[tile] as Terrain].name];
+	const parts = [termLink(`terrain:${map.terrain[tile] as Terrain}`, TERRAIN_INFO[map.terrain[tile] as Terrain].name)];
 	const relief = RELIEF_NAMES[map.relief[tile] as Relief];
 	const feature = FEATURE_NAMES[map.feature[tile] as keyof typeof FEATURE_NAMES];
-	if (relief) parts.push(relief);
-	if (feature) parts.push(feature);
+	if (relief) parts.push(termLink(`relief:${map.relief[tile] as Relief}`, relief));
+	if (feature) parts.push(termLink("forest", feature));
+	if (sim.options.rivers && riverside(map, tile)) parts.push(termLink("river", "River"));
 	const deposit = DEPOSIT_NAMES[map.deposit[tile] as Deposit];
-	if (deposit) parts.push(`<b>${deposit}</b>`);
-	if (campAt(sim, tile)) parts.push(`<b class="bad">Raider camp</b> <span class="dim">(walk a unit in to scatter it for &#9733;${campBounty(sim)})</span>`);
+	const good = DEPOSIT_GOOD[map.deposit[tile] as Deposit];
+	if (deposit && good) parts.push(termLink(`good:${good}`, deposit, true));
+	if (campAt(sim, tile)) parts.push(`${termLink("camp", "Raider camp", true)} <span class="dim">(walk a unit in to scatter it for &#9733;${campBounty(sim)})</span>`);
 	return parts.join(" &middot; ");
 }
 
