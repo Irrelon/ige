@@ -551,6 +551,46 @@ export const AGENDAS: Record<AgendaId, { name: string; description: string }> = 
 
 export const AGENDA_IDS = Object.keys(AGENDAS) as AgendaId[];
 
+/**
+ * How an AI leader's agenda shapes what it does, not only whom it likes.
+ * Each trait multiplies (or, for `agreeable`, adds to) the AI's usual
+ * behaviour, so 1 (0) is an ordinary leader.
+ */
+export interface Personality {
+	/** One line on how they play, for the diplomacy screen. */
+	temper: string;
+	/** Appetite for research: how soon it spends on technology and how far ahead it saves. */
+	research: number;
+	/** Size of the standing army. */
+	military: number;
+	/** Readiness to start wars and make demands. */
+	aggression: number;
+	/** Added to its mood when weighing deals: below 0 is harder to deal with. */
+	agreeable: number;
+	/** How many cities it wants to found. */
+	expansion: number;
+	/** Appetite for wonders. */
+	building: number;
+	/** Eagerness for trade agreements and routes. */
+	trade: number;
+}
+
+export const PERSONALITIES: Record<AgendaId, Personality> = {
+	expansionist: { temper: "Settles fast and pushes its borders; quick to quarrel over land.", research: 1, military: 1.15, aggression: 1.4, agreeable: -1, expansion: 1.6, building: 0.9, trade: 1 },
+	merchant: { temper: "Wants trade above all, and rarely chooses war.", research: 1, military: 0.85, aggression: 0.6, agreeable: 1, expansion: 1, building: 1, trade: 1.7 },
+	militarist: { temper: "Keeps a large army, deals grudgingly and goes to war readily.", research: 0.85, military: 1.55, aggression: 2.2, agreeable: -2, expansion: 1.1, building: 0.8, trade: 0.8 },
+	builder: { temper: "Pours its wealth into wonders and grand works.", research: 1.1, military: 0.9, aggression: 0.7, agreeable: 0, expansion: 1, building: 1.8, trade: 1.1 },
+	peacemaker: { temper: "Seeks peace and friendship; almost never starts a war.", research: 1.1, military: 0.8, aggression: 0.25, agreeable: 2, expansion: 1, building: 1, trade: 1.2 },
+	scholar: { temper: "Researches relentlessly and prizes research agreements.", research: 1.7, military: 0.8, aggression: 0.6, agreeable: 1, expansion: 1, building: 1.1, trade: 1 }
+};
+
+/** The personality an AI plays a seat with when it has no agenda (a person's civ on autoplay). */
+export const BALANCED: Personality = { temper: "", research: 1, military: 1, aggression: 1, agreeable: 0, expansion: 1, building: 1, trade: 1 };
+
+export function personalityOf (agenda: AgendaId | null | undefined): Personality {
+	return agenda ? PERSONALITIES[agenda] : BALANCED;
+}
+
 /** Turns after peace during which neither side may declare war. */
 export const TRUCE_TURNS = 10;
 /** Grievances against a civ that justify a war on it (no warmonger penalty). */

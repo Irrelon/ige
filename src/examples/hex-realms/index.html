@@ -431,6 +431,20 @@
 		.modal-box.menu { width: min(620px, calc(100vw - 24px)); }
 		.modal-box.gameover { width: min(900px, calc(100vw - 24px)); text-align: left; }
 
+		/* First contact */
+		.modal-box.contact { width: min(480px, calc(100vw - 24px)); padding: 0; overflow: hidden; border-color: color-mix(in srgb, var(--c, #f0c35a) 60%, transparent); }
+		.contact-card { position: relative; padding: 30px 28px 24px; text-align: center; background: radial-gradient(ellipse 90% 60% at 50% 0%, color-mix(in srgb, var(--c) 30%, transparent), transparent 70%); }
+		.contact-crest { display: inline-flex; align-items: center; justify-content: center; width: 78px; height: 78px; border-radius: 22px; color: #fff; background: radial-gradient(circle at 35% 30%, color-mix(in srgb, var(--c) 85%, #fff 15%), color-mix(in srgb, var(--c) 65%, #000 35%)); box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.6), 0 10px 30px rgba(0, 0, 0, 0.5), 0 0 40px color-mix(in srgb, var(--c) 50%, transparent); animation: crestin 0.6s var(--ease); }
+		.contact-crest svg { filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.5)); }
+		@keyframes crestin { from { transform: scale(0.6) rotate(-8deg); opacity: 0; } }
+		.contact-kicker { margin-top: 14px; font-size: 10.5px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.24em; color: var(--gold); }
+		.contact-card h2 { margin: 4px 0 2px; font-family: var(--display); font-size: 30px; font-weight: 900; letter-spacing: 0.06em; color: #fff; }
+		.contact-banner { color: var(--dim); font-size: 12.5px; }
+		.contact-card blockquote { margin: 18px 0 16px; padding: 14px 18px; font-family: var(--display); font-size: 17px; font-weight: 600; line-height: 1.5; color: #fff4dc; background: rgba(0, 0, 0, 0.25); border-radius: 12px; border: 1px solid var(--line); position: relative; }
+		.contact-tags { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; }
+		.contact-note { margin: 12px 0 0; color: var(--dim); font-size: 12.5px; line-height: 1.5; }
+		.contact-actions { display: flex; justify-content: center; gap: 8px; margin-top: 20px; }
+
 		/* Save and load */
 		.modal-box.saves { width: min(700px, calc(100vw - 24px)); }
 		.save-new { display: flex; gap: 8px; margin: 2px 0 8px; }

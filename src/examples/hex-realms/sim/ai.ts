@@ -9,7 +9,7 @@ import { mulberry32 } from "../noise";
 import { reachable, type Reach } from "./movement";
 import {
 	type AgendaId, AMBITION_IDS, type AmbitionId, AMBITIONS, type BuildingId, BUILDINGS, type CivId, CIVS, Deposit, type EndableTreaty, EXCHANGE_COST, type Good, GOOD_INFO, levelRewards,
-	MONUMENT_IDS, ROAD_COST, TECH_IDS, type TechId, TECHS, UNIT_TYPES, type UnitTypeId, type WonderId
+	MONUMENT_IDS, type Personality, personalityOf, ROAD_COST, TECH_IDS, type TechId, TECHS, UNIT_TYPES, type UnitTypeId, type WonderId
 } from "./rules";
 import type { Sim } from "./sim";
 import { freeUnits, income, upkeep } from "./treasury";
@@ -88,6 +88,11 @@ class AiTurn {
 		return this.sim.player(this.p).stars;
 	}
 
+	/** This leader's personality (balanced for a person's civ played by the AI). */
+	get pers (): Personality {
+		return personalityOf(this.sim.player(this.p).agenda);
+	}
+
 	run (): void {
 		this.net = income(this.sim, this.p).net;
 		this.rewards();
@@ -157,7 +162,11 @@ class AiTurn {
 	diplomacy (): void {
 		const sim = this.sim;
 		const mine = strength(sim, this.p);
-		const aggression = sim.options.difficulty === "easy" ? 0.03 : sim.options.difficulty === "hard" ? 0.12 : 0.07;
+		const pers = this.pers;
+		const aggression = (sim.options.difficulty === "easy" ? 0.03 : sim.options.difficulty === "hard" ? 0.12 : 0.07) * pers.aggression;
+		// Warlike leaders strike at a smaller advantage
+		const edge = Math.max(0.7, Math.min(1.5, pers.aggression));
+		const friendly = 1 + pers.agreeable * 0.15;
 		let bartered = false;
 		for (const q of sim.state.players) {
 			const o = q.index;
@@ -181,7 +190,7 @@ class AiTurn {
 			const fair = justified(sim, this.p, o);
 			const grudge = (feel <= -2 && mine > theirs * 1.2) || (feel <= -6 && mine > theirs * 0.9) || (fair && mine > theirs);
 			const conqueror = sim.player(this.p).ambition === "conquest";
-			const opportunity = mine > theirs * (conqueror ? 1.4 : 2) && feel < 3;
+			const opportunity = mine > theirs * (conqueror ? 1.4 : 2) / edge && feel < 3;
 			const odds = aggression * (fair ? 3 : 1) * (conqueror ? 2 : 1);
 			if (relation === PEACE && neighbour && (grudge || opportunity) && this.rand() < odds && sim.state.turn > 8 && !warProblem(sim, this.p, o)) {
 				this.do({ type: "declareWar", target: o });
@@ -196,14 +205,14 @@ class AiTurn {
 			}
 
 			// Treaties with civs we like
-			if (relation === PEACE && feel >= 5 && this.rand() < chance && this.propose(o, "alliance")) continue;
-			if (relation === PEACE && feel >= 3 && this.rand() < chance * 0.5 && this.propose(o, "pact")) continue;
-			if (feel >= 1 && this.rand() < chance && this.propose(o, "trade")) continue;
-			if (feel >= 2 && this.rand() < chance * 0.5 && this.propose(o, "openBorders")) continue;
+			if (relation === PEACE && feel >= 5 && this.rand() < chance * friendly && this.propose(o, "alliance")) continue;
+			if (relation === PEACE && feel >= 3 && this.rand() < chance * 0.5 * friendly && this.propose(o, "pact")) continue;
+			if (feel >= 1 && this.rand() < chance * pers.trade && this.propose(o, "trade")) continue;
+			if (feel >= 2 && this.rand() < chance * 0.5 * friendly && this.propose(o, "openBorders")) continue;
 
 			// Star-priced actions: spend a full treasury on friends, or against rivals
 			if (feel >= -1 && feel < 6 && this.stars >= EXCHANGE_COST + 25 && this.rand() < 0.2 && this.propose(o, "exchange")) continue;
-			if (feel >= 1 && this.spare >= agreementCost(sim, this.p) + 20 && this.rand() < 0.15 && this.propose(o, "research")) continue;
+			if (feel >= 1 && this.spare >= agreementCost(sim, this.p) + 20 && this.rand() < 0.15 * pers.research && this.propose(o, "research")) continue;
 			if (feel <= -5 && this.stars >= 20 && this.rand() < 0.12 && !actionProblem(sim, this.p, o, "denounce")) {
 				this.do({ type: "denounce", target: o });
 				continue;
@@ -214,11 +223,11 @@ class AiTurn {
 			}
 
 			// Demands on much weaker neighbours
-			if (neighbour && feel < 0 && mine > theirs * 2 && this.rand() < 0.06) {
+			if (neighbour && feel < 0 && mine > theirs * 2 / edge && this.rand() < 0.06 * pers.aggression) {
 				this.propose(o, "tribute", { getStars: Math.min(25, 8 + Math.floor(sim.state.turn / 5)) });
 				continue;
 			}
-			if (neighbour && feel <= -3 && mine > theirs * 3.5 && this.rand() < 0.03) {
+			if (neighbour && feel <= -3 && mine > theirs * 3.5 / edge && this.rand() < 0.03 * pers.aggression) {
 				const city = sim.citiesOf(o).filter((c) => !c.capital && sim.citiesOf(this.p).some((m) => sim.distance(m.tile, c.tile) <= 5))
 					.sort((a, b) => a.level - b.level || a.id - b.id)[0];
 				if (city) this.propose(o, "city", { city: city.id });
@@ -262,7 +271,8 @@ class AiTurn {
 		// Diplomacy (deals with other civs) right after Trade
 		const tradeAt = order.indexOf("trade");
 		if (!order.includes("diplomacy")) order.splice(tradeAt >= 0 ? tradeAt + 1 : order.length, 0, "diplomacy");
-		if (this.atWarWithAnyone()) order.unshift("archery", "smithing");
+		// Warlike leaders (and anyone at war) want better weapons first
+		if (this.atWarWithAnyone() || this.pers.military >= 1.4) order.unshift("archery", "smithing");
 		// Without hunting or fishing no city grows: that comes first
 		if (!p.techs.includes("hunting") && !p.techs.includes("fishing")) order.unshift(this.nearDeposit(Deposit.Fish) ? "fishing" : "hunting");
 		// Then everything else, cheapest first
@@ -279,11 +289,14 @@ class AiTurn {
 			if (p.techs.includes(tech)) continue;
 			if (!TECHS[tech].requires.every((r) => p.techs.includes(r))) continue;
 			const cost = researchCost(sim, this.p, tech);
-			if (p.stars >= cost + 2) {
+			// Scholars buy a tech as soon as they can; others keep a cushion for armies and buildings first
+			const research = this.pers.research;
+			const cushion = 2 + Math.max(0, Math.round((1.2 - research) * 20));
+			if (p.stars >= cost + cushion) {
 				this.do({ type: "research", tech });
-			} else if (cost + 2 - p.stars <= Math.max(1, this.net) * 6) {
+			} else if (cost + cushion - p.stars <= Math.max(1, this.net) * 6 * research) {
 				// Within reach: save for it
-				this.reserve = cost + 2;
+				this.reserve = cost + cushion;
 			}
 			break;
 		}
@@ -568,7 +581,7 @@ class AiTurn {
 			for (const city of small) if (this.placeType(city, m)) break;
 			break;
 		}
-		const keen = p.ambition === "wonders";
+		const keen = p.ambition === "wonders" || this.pers.building >= 1.5;
 		const racing = mine.filter((b) => !b.built && BUILDINGS[b.type].wonder === "world").length;
 		const rich = this.stars > 150;
 		if (racing >= (keen || rich ? 2 : 1) || cities.length < (keen ? 2 : 3)) return;
@@ -760,7 +773,7 @@ class AiTurn {
 		const extra = sim.options.difficulty === "hard" ? 2 : sim.options.difficulty === "easy" ? -1 : 0;
 		// A full treasury goes into a bigger army (and from there, into wars)
 		const wealth = Math.min(cities.length * 2, Math.floor(this.stars / 40));
-		const target = Math.ceil(cities.length * 1.5) + 2 + (war ? 3 : 0) + extra + wealth;
+		const target = Math.ceil((cities.length * 1.5 + 2) * this.pers.military) + (war ? 3 : 0) + extra + wealth;
 		const settlers = units.filter((u) => UNIT_TYPES[u.type].founder).length;
 
 		// Upkeep: keep a margin of income after paying for the army (less in wartime)
@@ -771,7 +784,8 @@ class AiTurn {
 			const army = sim.unitsOf(this.p).filter((u) => !UNIT_TYPES[u.type].founder).length;
 			let choice: UnitTypeId | null = null;
 			const affordable = (type: UnitTypeId) => (net - UNIT_TYPES[type].upkeep >= margin || (war && this.stars > 30)) && (war || this.spare >= unitCost(sim, this.p, type).stars);
-			if (sim.options.allowFounding && settlers === 0 && cities.length < 6 && this.stars >= 7 && trainProblem(sim, this.p, city.id, "settler") === null) {
+			const wanted = Math.round(6 * this.pers.expansion);
+			if (sim.options.allowFounding && settlers < (this.pers.expansion >= 1.5 ? 2 : 1) && cities.length < wanted && this.stars >= 7 && trainProblem(sim, this.p, city.id, "settler") === null) {
 				choice = "settler";
 			} else if (army < target) {
 				for (const type of ["swordsman", "catapult", "rider", "archer", "warrior"] as UnitTypeId[]) {

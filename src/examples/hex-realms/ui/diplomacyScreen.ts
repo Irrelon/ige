@@ -3,7 +3,7 @@ import {
 	proposalProblem, strandedUnits, truceUntil, votesOf, warProblem
 } from "../sim/diplomacy";
 import {
-	AGENDAS, AMBITIONS, CASUS_BELLI, CIVS, DENOUNCE_COST, EXCHANGE_COST, EXCHANGE_TURNS, GOODS, type Good, type Goods,
+	AGENDAS, PERSONALITIES, AMBITIONS, CASUS_BELLI, CIVS, DENOUNCE_COST, EXCHANGE_COST, EXCHANGE_TURNS, GOODS, type Good, type Goods,
 	END_TRUCE_TURNS, type EndableTreaty, RESEARCH_TURNS, ROUTE_TURNS, SANCTION_COST, SANCTION_TURNS, TRUCE_TURNS, UNIT_TYPES
 } from "../sim/rules";
 import type { Sim } from "../sim/sim";
@@ -255,7 +255,7 @@ export class DiplomacyScreen {
 			const why = [likes ? `<span class="good">Likes</span> ${likes}` : "", dislikes ? `<span class="bad">Dislikes</span> ${dislikes}` : ""].filter(Boolean).join(" &middot; ");
 			const all = factors.map((f) => `${f.delta > 0 ? "+" : ""}${f.delta.toFixed(2)} ${f.label}`).join("\n");
 			facts.push(["Mood", `<span title="${esc(all || "No strong feelings")}">${why || `<span class="dim">No strong feelings either way</span>`}</span>`]);
-			if (q.agenda) facts.push(["Agenda", `${AGENDAS[q.agenda].name} <span class="dim">${AGENDAS[q.agenda].description}</span>`]);
+			if (q.agenda) facts.push(["Personality", `${AGENDAS[q.agenda].name} <span class="dim">${PERSONALITIES[q.agenda].temper} ${AGENDAS[q.agenda].description}</span>`]);
 		}
 		if (q.ambition) facts.push(["Ambition", `${AMBITIONS[q.ambition].name} <span class="dim">${q.milestones.length}/4${q.legacy ? ", legacy earned" : ""}</span>`]);
 		const theirs = grievance(sim, o, me), mine = grievance(sim, me, o);

@@ -27,6 +27,7 @@ import { ambitionsModal, wondersModal } from "./wondersScreen";
 import type { SaveKind, SaveMeta, SaveStore } from "../saves";
 import { savesModal } from "./savesScreen";
 import { emblem, icon } from "./icons";
+import { contactModal } from "./contact";
 import { type ChatLine, type RoomInfo, TURN_TIMERS } from "../net/protocol";
 
 /** What the HUD needs from the game controller. */
@@ -131,6 +132,10 @@ export class Hud {
 	/** Every notice shown this session (the Log screen), oldest first. */
 	logEntries: { turn: number; html: string; kind: "info" | "good" | "bad"; seen?: boolean }[] = [];
 	tipId: string | null = null;
+	/** Civs met whose first-contact card hasn't been shown yet. */
+	contacts: number[] = [];
+	/** The civ on the first-contact card being shown. */
+	contactCiv = -1;
 	/** The save whose Delete is waiting for a second click. */
 	saveConfirm: string | null = null;
 	damage: { el: HTMLDivElement; tile: number; age: number }[] = [];
@@ -327,6 +332,8 @@ export class Hud {
 			case "select-tile": h.selectTile(num("tile")); h.centreOn(num("tile")); this.closeModal(); break;
 			case "modal": this.openModal(data.modal as string); break;
 			case "close-modal": this.closeModal(); break;
+			case "contact-ok": this.closeModal(); break;
+			case "contact-diplo": this.diplo.civ = num("player"); this.closeModal(); this.openModal("diplomacy"); break;
 			case "lens": this.toggleLens(); break;
 			case "chat": this.toggleChat(); break;
 			case "timer": h.setTurnTimer(num("seconds"), data.player === undefined ? undefined : num("player")); break;
@@ -761,9 +768,18 @@ export class Hud {
 						this.toast(`Alliance with ${name(e.a === me ? e.b : e.a)}`, "good");
 					}
 					break;
-				case "met":
-					if (e.a === me) this.toast(`You met ${name(e.b)}`, "info");
+				case "met": {
+					if (e.a !== me && e.b !== me) break;
+					const other = e.a === me ? e.b : e.a;
+					// AI leaders greet you (one card at a time); people just get a notice
+					if (sim.player(other).human || this.host.replaying) this.toast(`You met ${name(other)}`, "info");
+					else {
+						this.logEntries.push({ turn: sim.state.turn, html: `You met ${name(other)}`, kind: "info" });
+						this.contacts.push(other);
+						this.nextContact();
+					}
 					break;
+				}
 				case "proposal":
 					if (e.proposal.to === me) {
 						const demand = e.proposal.kind === "tribute" || e.proposal.kind === "city";
@@ -988,6 +1004,13 @@ export class Hud {
 		if (kind === "saves") (document.getElementById("saveName") as HTMLInputElement | null)?.select();
 	}
 
+	/** Show the next first-contact card, unless another screen is open. */
+	nextContact (): void {
+		if (this.modal || !this.contacts.length) return;
+		this.contactCiv = this.contacts.shift() as number;
+		this.openModal("contact");
+	}
+
 	/** Your units that can still move, attack or found a city this turn. */
 	readyUnits (): number {
 		return this.sim.unitsOf(this.me).filter((u) => (u.moves > 0 && !u.attacked) || (UNIT_TYPES[u.type].founder && !u.acted)).length;
@@ -1008,6 +1031,8 @@ export class Hud {
 		this.modal = null;
 		this.techFocus = null;
 		document.getElementById("modal")?.classList.add("hidden");
+		// Anyone else we met while that was open says hello now
+		if (this.contacts.length) setTimeout(() => this.nextContact(), 250);
 	}
 
 	renderModal (): void {
@@ -1024,6 +1049,7 @@ export class Hud {
 			case "menu": body = this.menuModal(); break;
 			case "help": body = this.helpModal(); break;
 			case "log": body = this.logModal(); break;
+			case "contact": body = contactModal(this.sim, this.contactCiv, this.me, this.host.playerName(this.contactCiv) || this.sim.player(this.contactCiv).name); break;
 			case "saves": body = savesModal({ saves: this.host.saves, local: this.host.canSave, defaultName: this.defaultSaveName(), confirmDelete: this.saveConfirm, storage: this.host.saveStore.available }); break;
 			case "gameover": body = this.gameOverModal(); break;
 		}

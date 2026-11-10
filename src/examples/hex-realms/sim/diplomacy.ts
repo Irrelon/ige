@@ -4,7 +4,7 @@ import { fail, ok } from "./result";
 import {
 	AGENDA_IDS, type AgendaId, CASUS_BELLI, COUNCIL_BACKING_MOOD, DENOUNCE_COST, END_ALLIANCE_GRIEVANCE, END_TREATY_MOOD, END_TRUCE_TURNS, type EndableTreaty, EXCHANGE_COST, EXCHANGE_TURNS, type Good, GOOD_INFO, GOODS, type Goods,
 	researchAgreementCost, RESEARCH_TURNS, ROUTE_TURNS, SANCTION_COST, SANCTION_SHARE, SANCTION_TURNS, type TechId, TECH_IDS, TECHS,
-	TRUCE_TURNS, UNIT_TYPES
+	personalityOf, TRUCE_TURNS, UNIT_TYPES
 } from "./rules";
 import type { Sim } from "./sim";
 import { ALLIANCE, type CommandResult, type DealKind, PEACE, type ProposalState, type TreatyState, type UnitState, WAR } from "./types";
@@ -662,7 +662,8 @@ export function weariness (sim: Sim, a: number, b: number): number {
 /** Whether an AI civ accepts a proposal. */
 export function aiAccepts (sim: Sim, ai: number, proposal: ProposalState): boolean {
 	const from = proposal.from;
-	const feel = attitude(sim, ai, from);
+	// Agreeable leaders meet you halfway; warlike ones need more persuading
+	const feel = attitude(sim, ai, from) + personalityOf(sim.player(ai).agenda).agreeable;
 	const grudge = grievance(sim, ai, from);
 	const ratio = strength(sim, from) / Math.max(1, strength(sim, ai));
 	switch (proposal.kind) {
