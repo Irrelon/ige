@@ -61,20 +61,19 @@
 	"artisansColumn": {
 		"file": "artisansColumn.glb",
 		"min": [
-			-0.1161,
-			-0.4355,
-			-0.1253
+			-0.1171,
+			-0.501,
+			-0.1125
 		],
 		"max": [
-			0.1188,
-			0.4441,
-			0.1203
+			0.1131,
+			0.5007,
+			0.113
 		],
-		"triangles": 4794,
+		"triangles": 20000,
 		"animations": [],
 		"skinned": false,
-		"bytes": 388536,
-		"floor": -0.432
+		"bytes": 1327988
 	},
 	"bakery": {
 		"file": "bakery.glb",
