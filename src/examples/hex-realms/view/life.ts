@@ -198,16 +198,25 @@ class ModelBody implements Body {
 		this.root.translateTo(x, y, z).rotateTo(0, yaw, 0);
 	}
 
+	// What the body is doing this frame; the last call wins, and apply() plays it (so standing
+	// then striking in one frame doesn't restart a clip every frame)
+	protected want: [string, number] = ["idle", 1];
+
 	walk (): void {
-		this.play("walk", WORKER_WALK_SPEED);
+		this.want = ["walk", WORKER_WALK_SPEED];
 	}
 
 	stand (): void {
-		this.play("idle");
+		this.want = ["idle", 1];
 	}
 
 	strike (): void {
-		this.play(this.work ? "work" : "idle", this.work ? 1.5 : 1);
+		this.want = this.work ? ["work", 1.5] : ["idle", 1];
+	}
+
+	/** Play this frame's clip (if it changed). */
+	apply (): void {
+		this.play(this.want[0], this.want[1]);
 	}
 
 	showLoad (): void {
@@ -272,6 +281,7 @@ class Carrier implements Actor {
 		this.fig.place(this.x, y, this.z, dir);
 		this.fig.showLoad(out);
 		this.fig.walk(t * 9 + this.offset * 6, out);
+		if (this.fig instanceof ModelBody) this.fig.apply();
 	}
 
 	show (on: boolean): void {
@@ -309,25 +319,28 @@ const WORK: Partial<Record<BuildingId, Work>> = {
 	market: "porter"
 };
 
-/** The generated character for each job, once it exists. */
-const WORKER_MODEL: Partial<Record<Work, string>> = {
-	porter: "workerCarrier",
-	miner: "workerMiner",
-	stonecutter: "workerMiner",
-	woodcutter: "workerWoodcutter",
-	smith: "workerSmith",
-	farmer: "workerFarmer",
-	fisher: "workerFisher"
+/** The generated characters for each job, best first (a stand-in until a job has its own). */
+const WORKER_MODEL: Partial<Record<Work, string[]>> = {
+	porter: ["workerCarrier"],
+	miner: ["workerMiner"],
+	stonecutter: ["workerMiner"],
+	woodcutter: ["workerWoodcutter"],
+	sawyer: ["workerWoodcutter"],
+	smith: ["workerSmith", "workerMiner"],
+	farmer: ["workerFarmer"],
+	fisher: ["workerFisher"]
 };
-/** Jobs that are all tool work: their model is used only once it has a "work" clip. */
-const STRIKING = new Set<Work>(["miner", "stonecutter", "woodcutter", "smith"]);
+/** Jobs that are all tool work: a model is used only once it has a "work" clip. */
+const STRIKING = new Set<Work>(["miner", "stonecutter", "woodcutter", "sawyer", "smith"]);
 
 /** The model a job's worker should use now, or null for the procedural figure. */
 function workerModel (models: ModelLibrary | undefined, work: Work): string | null {
-	const id = WORKER_MODEL[work];
-	if (!id || !models?.info(id)) return null;
-	if (STRIKING.has(work) && !models.hasClip(id, "work")) return null;
-	return id;
+	for (const id of WORKER_MODEL[work] ?? []) {
+		if (!models?.info(id)) continue;
+		if (STRIKING.has(work) && !models.hasClip(id, "work")) continue;
+		return id;
+	}
+	return null;
 }
 
 /** A worker busy beside a building. */
@@ -405,8 +418,9 @@ class Worker implements Actor {
 			case "sawyer": {
 				f.place(this.x, this.y, this.z, this.yaw);
 				f.stand();
-				// Pushing the log through the saw
-				if (f instanceof Figure) {
+				// Pushing the log through the saw (a generated sawyer works it with a swing)
+				if (!(f instanceof Figure)) f.strike(time);
+				else {
 					const push = Math.sin(time * 4) * 0.35;
 					f.armL.rotateTo(-1.1 + push, 0, 0);
 					f.armR.rotateTo(-1.1 + push, 0, 0);
@@ -422,6 +436,7 @@ class Worker implements Actor {
 				this.commute(time);
 				break;
 		}
+		if (f instanceof ModelBody) f.apply();
 	}
 
 	/** Walk out to the target, work there a while, walk back, rest. */
@@ -519,7 +534,7 @@ export class LifeView {
 
 	/** Is this model one of the workers'? (When it loads, the view rebuilds.) */
 	static uses (id: string): boolean {
-		return Object.values(WORKER_MODEL).includes(id);
+		return Object.values(WORKER_MODEL).some((ids) => ids?.includes(id));
 	}
 
 	/** Rebuild who is where (after roads, buildings or the fog changed). */
