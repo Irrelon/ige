@@ -546,4 +546,9 @@ New rules are behind options that new games switch on and older saves and replay
 - **Raiders** (`raiders`): see `sim/raiders.ts`. Raider units belong to owner -1, a stand-in civ at war with all;
   `Sim.player(-1)` gives their name and colour, and the sim's player accessors treat negative owners safely.
 - **History**: every civ's standing is recorded once a round and charted in the Rankings screen.
-
+- **Later the same day (the user's requests):** left-click selects and right-click orders; multi-turn routes drawn as
+  lines; attack forecasts over the units; Explore and Heal orders and a stop button over the unit; Polytopia-style
+  promotion at three kills (`promotions`); roads at 3 stars and +1 population to a city and its capital when first
+  joined (`connections`); ports on shallow water beside a city (`waterPorts`); a turn limit that can be off; settler
+  site advice (`sim/sites.ts`); build buttons that say what a building makes; tile words that open glossary cards
+  (`ui/glossary.ts`); drag to pan the tech tree; walk clips trimmed to one steady loop on import.

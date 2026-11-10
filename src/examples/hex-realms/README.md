@@ -82,9 +82,13 @@ From the browser console, `ige.client.autoplay(20)` lets the AI play your seat f
   roads near the camp, but never take cities. Walk a unit into a camp to scatter it for a bounty.
 - **Rivers** run along tile edges: crossing one costs an extra move (roads bridge them), defenders on the far bank
   get +25%, and riverside farms grow an extra grain.
-- **Orders**: click a far tile to march a unit there over several turns. Sleep (K), Fortify (I, +50% defence) and
-  Upgrade (U, inside your borders, for stars: warrior to swordsman to musketeer and on). Click a city's name to
-  rename it.
+- **Orders**: right-click a far tile to march a unit there over several turns (a gold line shows the route). Sleep (K),
+  Fortify (I, +50% defence), Explore (heads for the fog each turn), Heal (+6 in your borders, +4 outside, using its
+  turn) and Upgrade (U, inside your borders, for stars: warrior to swordsman to musketeer and on). Any standing order
+  can be stopped from the button over the unit's head. A unit with three kills can be promoted to veteran (+5 health,
+  healed in full). Pointing at an enemy shows the fight's outcome over both units. Click a city's name to rename it.
+- **Settlers** rate the tile they stand on as a city site, hovering rates any tile, and rings mark the best sites
+  nearby. The words describing a tile (Coal, Hills, Forest...) open a card on what they're for.
 - **Fight**: attack an unaligned civ's unit, or declare war in Diplomacy (G). Select a unit to see attack rings; hovering one previews the damage both
   ways (combat is deterministic). Ranged units need line of sight; units stop next to enemies (zone of control).
 - **Negotiate** (G): peace (then a 10-turn truce), alliances (shared vision, called into defensive wars), defensive
