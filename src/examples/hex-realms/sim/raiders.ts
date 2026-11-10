@@ -10,7 +10,8 @@ import { type CampState, RAIDERS, type UnitState } from "./types";
 /**
  * Raider camps (the raiders option, new games), like Civilization's
  * barbarians. From turn 6, every few rounds, an outlaw camp may appear on
- * unclaimed land out of every civ's sight and away from cities, up to a cap
+ * unclaimed land out of every civ's sight (with no fog, away from their
+ * units) and away from cities, up to a cap
  * set by the map's size. Each camp sends out raiders, at most two at a time:
  * a warrior or archer early on, then whatever most civs can field (the
  * upgrade chains, as far as half the living civs have the techs). Raiders
@@ -68,6 +69,8 @@ function campSite (sim: Sim, t: number): boolean {
 	if (sim.unitAt[t] >= 0 || sim.cityAt[t] >= 0 || sim.buildingAt[t] >= 0) return false;
 	if (sim.state.cities.some((c) => sim.distance(c.tile, t) < 4)) return false;
 	if (sim.state.camps.some((c) => sim.distance(c.tile, t) < 7)) return false;
+	// Out of sight; with no fog everything is in sight, so away from every civ's units instead
+	if (sim.options.fog === "off") return !sim.state.units.some((u) => u.owner >= 0 && sim.distance(u.tile, t) < 4);
 	return sim.state.players.every((p) => !p.alive || !sim.canSee(p.index, t));
 }
 

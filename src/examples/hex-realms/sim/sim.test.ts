@@ -950,6 +950,10 @@ describe("raider camps", () => {
 			expect(sim.map.owner[camp.tile]).toBe(-1);
 			expect(sim.state.cities.every((c) => sim.distance(c.tile, camp.tile) >= 4)).toBe(true);
 		}
+		// With no fog of war, camps still appear (away from everyone's units)
+		const open = blank(2, [sim2(2, 2), sim2(21, 13)], { raiders: true, humans: [0, 1] });
+		for (let k = 0; k < 14; k++) nextTurn(open);
+		expect(open.state.camps.length).toBeGreaterThan(0);
 		expect(raiderType(sim, false)).toBe("warrior");
 		for (const p of sim.state.players) p.techs.push("smithing");
 		expect(raiderType(sim, false)).toBe("swordsman");
