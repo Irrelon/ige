@@ -574,6 +574,69 @@ def in_place(model, clip="walk"):
     return changed
 
 
+def loop_clip(model, clip="walk", skip=0.3):
+    """
+    Trim a clip to one steady loop. AssetFurnace's walk starts from standing
+    and takes its first third to get going, so looped it glides for half a
+    second each time round (and every move between tiles starts in that
+    glide). Search the steady part for the two most alike poses at least a
+    quarter of the clip apart, keep just the frames between them and start
+    the clock at the first: the loop then runs at full stride and joins up
+    without a hitch. Returns the kept span in seconds, or None.
+    """
+    import numpy as np
+    g = model.g
+    anim = next((a for a in g.get("animations", []) if a.get("name") == clip), None)
+    if not anim:
+        return None
+    times = None
+    rotations = []
+    for ch in anim["channels"]:
+        smp = anim["samplers"][ch["sampler"]]
+        if smp.get("interpolation", "LINEAR") == "CUBICSPLINE":
+            return None
+        t = read_accessor(model, smp["input"]).reshape(-1)
+        if times is None or len(t) > len(times):
+            times = t
+        if ch["target"].get("path") == "rotation":
+            rotations.append(read_accessor(model, smp["output"]))
+    n = len(times)
+    rotations = [q for q in rotations if len(q) == n]
+    if n < 20 or not rotations:
+        return None
+    qs = np.stack(rotations, axis=1)  # frames x bones x 4
+
+    def distance(a, b):
+        dots = np.abs(np.sum(qs[a] * qs[b], axis=1)).clip(0, 1)
+        return float(np.sum(2 * np.arccos(dots)))
+
+    best = None
+    for a in range(int(n * skip), int(n * 0.6)):
+        for b in range(a + int(n * 0.25), n):
+            d = distance(a, b) - 0.002 * (b - a)
+            if best is None or d < best[0]:
+                best = (d, a, b)
+    _, a, b = best
+    # Every channel keyed on the same frames gets the same slice; the clock starts at frame a
+    for ch in anim["channels"]:
+        smp = anim["samplers"][ch["sampler"]]
+        t = read_accessor(model, smp["input"]).reshape(-1)
+        if len(t) != n:
+            continue
+        out = read_accessor(model, smp["output"])
+        kind = g["accessors"][smp["output"]]["type"]
+        new_t = (t[a:b + 1] - t[a]).astype(np.float32)
+        new_out = out[a:b + 1].astype(np.float32)
+        tv = model.add_view(new_t.tobytes())
+        g["accessors"].append({"bufferView": tv, "componentType": 5126, "count": len(new_t), "type": "SCALAR",
+                               "min": [float(new_t[0])], "max": [float(new_t[-1])]})
+        smp["input"] = len(g["accessors"]) - 1
+        ov = model.add_view(new_out.tobytes())
+        g["accessors"].append({"bufferView": ov, "componentType": 5126, "count": len(new_out), "type": kind})
+        smp["output"] = len(g["accessors"]) - 1
+    return float(times[a]), float(times[b])
+
+
 # ------------------------------------------------------------------
 # Clean-up and bounds
 # ------------------------------------------------------------------
@@ -926,6 +989,9 @@ def main():
         print("  no team-colour areas found", file=sys.stderr)
     if in_place(model, "walk"):
         print("  walk made in place (hips keep their rest x and z)", file=sys.stderr)
+    span = loop_clip(model, "walk")
+    if span:
+        print(f"  walk trimmed to one steady loop ({span[0]:.2f}-{span[1]:.2f} s)", file=sys.stderr)
     remove_unused(model)
     tilt = level(model) if args.level and not model.g.get("skins") else 0.0
     if tilt:
