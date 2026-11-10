@@ -2,7 +2,7 @@ import { CLOUD_BASE, CLOUD_TOP, shownTop } from "./chunkMesh";
 import { UNEXPLORED } from "./fog";
 import type { HexLayout } from "./hex";
 import type { HexMap } from "./mapGen";
-import { FLOOR_HEIGHT, LAND_HEIGHT, Relief } from "./terrain";
+import { FLOOR_HEIGHT, hillRise, HILL_RISE, LAND_HEIGHT, Relief } from "./terrain";
 
 export type TerrainStyle = "tiles" | "natural";
 
@@ -48,24 +48,39 @@ export class TileSurface implements TerrainSurface {
 		return this._map.inBounds(o.col, o.row) ? this._map.index(o.col, o.row) : -1;
 	}
 
+	/** Is this an explored hill tile (drawn as a rounded hill)? */
+	protected _hill (t: number): boolean {
+		return this._map.relief[t] === Relief.Hills && this._view[t] !== UNEXPLORED;
+	}
+
+	/** How far (x, z) is from tile t's centre. */
+	protected _dist (t: number, x: number, z: number): number {
+		const m = this._map;
+		return Math.hypot(x - this._layout.centerX(m.col(t), m.row(t)), z - this._layout.centerZ(m.row(t)));
+	}
+
 	heightAt (x: number, z: number): number {
 		const t = this._tileAt(x, z);
-		return t < 0 ? FLOOR_HEIGHT : this.tileHeight(t);
+		if (t < 0) return FLOOR_HEIGHT;
+		const flat = shownTop(this._map, this._view, t);
+		return this._hill(t) ? flat + hillRise(this._dist(t, x, z), this._layout.size) : flat;
 	}
 
 	pickHeight (x: number, z: number): number {
 		const t = this._tileAt(x, z);
 		if (t < 0) return FLOOR_HEIGHT;
 		if (this._view[t] === UNEXPLORED) return CLOUD_BASE + 14; // the middle of the puffs
-		return this._map.topHeight(t) + (this._map.relief[t] === Relief.Mountain ? 40 : 0);
+		if (this._map.relief[t] === Relief.Mountain) return this._map.topHeight(t) + 40;
+		return this.heightAt(x, z);
 	}
 
+	/** Units and cities stand on a hill's crown. */
 	tileHeight (tile: number): number {
-		return shownTop(this._map, this._view, tile);
+		return shownTop(this._map, this._view, tile) + (this._hill(tile) ? HILL_RISE : 0);
 	}
 
+	/** Rings around a tile's edge sit at land level (a hill is back down there); over clouds they float above the puffs. */
 	overlayHeight (tile: number): number {
-		// Float rings over the cloud tops rather than inside the puffs
-		return this._view[tile] === UNEXPLORED ? CLOUD_TOP : this.tileHeight(tile);
+		return this._view[tile] === UNEXPLORED ? CLOUD_TOP : shownTop(this._map, this._view, tile);
 	}
 }

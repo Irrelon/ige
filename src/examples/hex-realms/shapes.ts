@@ -108,7 +108,8 @@ export function buildBorderGeometry (
 		const row = map.row(t);
 		const cx = layout.centerX(col, row);
 		const cz = layout.centerZ(row);
-		const flatY = surface.tileHeight(t) + lift;
+		// (At land level: a hill tile is back down there at its edge)
+		const flatY = surface.overlayHeight(t) + lift;
 		const yAt = (x: number, z: number) => (natural ? surface.heightAt(x, z) + lift : flatY);
 
 		for (let i = 0; i < 6; i++) {

@@ -5,7 +5,7 @@ import type { HexMap } from "./mapGen";
 import type { MeshBuilder } from "./meshBuilder";
 import { mulberry32 } from "./noise";
 import { forestedKey, type PaletteKey, paletteU, paletteV } from "./palette";
-import { Feature, FLOOR_HEIGHT, LAND_BEVEL, Relief, Terrain, TERRAIN_INFO, WATER_BEVEL } from "./terrain";
+import { Feature, FLOOR_HEIGHT, hillRise, HILL_RISE, hillSlope, LAND_BEVEL, Relief, Terrain, TERRAIN_INFO, WATER_BEVEL } from "./terrain";
 
 /**
  * Builds the terrain mesh for one rectangular chunk of the map. Everything
@@ -306,10 +306,13 @@ function addTile (map: HexMap, layout: HexLayout, b: MeshBuilder, t: number, col
 
 	const [tr, tg, tb] = tileTint(map, t);
 	b.tint(tr, tg, tb);
-	const verts = addBevelledTop(
-		b, cx, cz, R, top, rim, water ? WATER_INNER : LAND_INNER,
-		paletteU(shade), paletteU(shade * (water ? WATER_RIM_SHADE : LAND_RIM_SHADE)), paletteV(topKey, fogged)
-	);
+	const hill = relief === Relief.Hills;
+	const verts = hill
+		? addHillTop(b, cx, cz, R, top, rim, paletteU(shade), paletteU(shade * LAND_RIM_SHADE), paletteV(topKey, fogged), [tr, tg, tb])
+		: addBevelledTop(
+			b, cx, cz, R, top, rim, water ? WATER_INNER : LAND_INNER,
+			paletteU(shade), paletteU(shade * (water ? WATER_RIM_SHADE : LAND_RIM_SHADE)), paletteV(topKey, fogged)
+		);
 	b.tint(1);
 	if (water && terrain !== Terrain.Ice) {
 		// Shallows and surf: water lightens toward land, and the rim along a shore is foam
@@ -330,10 +333,10 @@ function addTile (map: HexMap, layout: HexLayout, b: MeshBuilder, t: number, col
 	if (relief === Relief.Mountain || relief === Relief.Hills || feature !== Feature.None) {
 		const rand = mulberry32(Math.imul(t + 1, 2654435761) ^ map.seed);
 		if (relief === Relief.Mountain) addMountain(b, cx, top, cz, R, rand, terrain, fogged);
-		else if (relief === Relief.Hills) addHillMounds(b, cx, top, cz, R, rand, topKey, shade, fogged);
-		if (feature !== Feature.None && relief !== Relief.Mountain) addTrees(b, cx, top, cz, R, rand, feature, fogged);
+		else if (relief === Relief.Hills) addHillRocks(b, cx, top, cz, R, rand, fogged);
+		if (feature !== Feature.None && relief !== Relief.Mountain) addTrees(b, cx, top, cz, R, rand, feature, fogged, hill);
 	}
-	if (relief !== Relief.Mountain && feature === Feature.None) addGroundDetail(map, b, t, cx, top, cz, R, terrain, fogged);
+	if (relief === Relief.Flat && feature === Feature.None) addGroundDetail(map, b, t, cx, top, cz, R, terrain, fogged);
 }
 
 /**
@@ -449,21 +452,93 @@ function addPeak (
 	}
 }
 
-/** Two low faceted mounds near the tile edge, leaving the centre clear for units and cities. */
-function addHillMounds (
-	b: MeshBuilder, cx: number, top: number, cz: number, R: number,
-	rand: () => number, key: PaletteKey, shade: number, fogged: boolean
-): void {
-	const start = rand() * Math.PI * 2;
-	for (let m = 0; m < 2; m++) {
-		const angle = start + m * Math.PI + (rand() - 0.5) * 0.8;
-		const dist = R * 0.5;
-		addCone(
-			b,
-			cx + Math.cos(angle) * dist, top - 1, cz + Math.sin(angle) * dist,
-			R * (0.22 + rand() * 0.08), R * (0.16 + rand() * 0.08), 6,
-			rand() * Math.PI, paletteU(shade * 1.04), paletteV(key, fogged)
-		);
+/** Angles around a hexagon: its six corners and the six edge midpoints between them. */
+const HEX12_X: number[] = [], HEX12_Z: number[] = [], HEX12_REACH: number[] = [];
+for (let k = 0; k < 12; k++) {
+	const i = k >> 1;
+	if (k % 2 === 0) {
+		HEX12_X.push(CORNER_X[i]);
+		HEX12_Z.push(CORNER_Z[i]);
+		HEX12_REACH.push(1);
+	} else {
+		const j = (i + 1) % 6;
+		const mx = (CORNER_X[i] + CORNER_X[j]) / 2, mz = (CORNER_Z[i] + CORNER_Z[j]) / 2;
+		const len = Math.hypot(mx, mz);
+		HEX12_X.push(mx / len);
+		HEX12_Z.push(mz / len);
+		HEX12_REACH.push(len);
+	}
+}
+
+/**
+ * A hill tile's top: the ground swells into a rounded hill (flat crown,
+ * smooth shoulder) that is back at land level before the bevel, so it
+ * meets its neighbours exactly like a flat tile. Built as rings out from
+ * the crown along twelve directions (the six corners and six edge
+ * midpoints of the inner hexagon), with normals from the hill's profile.
+ * The hill's turf is a little drier and lighter toward the top.
+ */
+function addHillTop (
+	b: MeshBuilder, cx: number, cz: number, R: number, top: number, rim: number,
+	u: number, uRim: number, v: number, tint: [number, number, number]
+): { inner: number; outer: number } {
+	const rings = [0.12, 0.24, 0.34, 0.44, 0.54, 0.64, 0.76, 1];
+	const innerR = R * LAND_INNER;
+	const [tr, tg, tb] = tint;
+	const colour = (rise: number) => {
+		const k = rise / HILL_RISE;
+		b.tint(tr * (0.94 + 0.14 * k) * 1.03, tg * (0.94 + 0.14 * k), tb * (0.94 + 0.14 * k) * 0.9);
+	};
+	colour(HILL_RISE);
+	const apex = b.vertex(cx, top + HILL_RISE, cz, 0, 1, 0, u, v);
+	const firsts: number[] = [];
+	for (const f of rings) {
+		const first = b.vertexCount;
+		firsts.push(first);
+		for (let k = 0; k < 12; k++) {
+			// The last ring is the inner hexagon itself; earlier rings are round
+			const reach = f === 1 ? innerR * HEX12_REACH[k] : Math.min(f * innerR, innerR * HEX12_REACH[k]);
+			const dx = HEX12_X[k], dz = HEX12_Z[k];
+			const rise = hillRise(reach, R);
+			const slope = -hillSlope(reach, R);
+			const nl = Math.hypot(slope, 1);
+			colour(rise);
+			b.vertex(cx + dx * reach, top + rise, cz + dz * reach, (dx * slope) / nl, 1 / nl, (dz * slope) / nl, u, v);
+		}
+	}
+	for (let k = 0; k < 12; k++) {
+		const k1 = (k + 1) % 12;
+		b.triFacing(apex, firsts[0] + k, firsts[0] + k1, 0, 1, 0);
+		for (let r = 1; r < rings.length; r++) b.quadFacing(firsts[r - 1] + k, firsts[r] + k, firsts[r] + k1, firsts[r - 1] + k1, 0, 1, 0);
+	}
+	b.tint(tr, tg, tb);
+	// The bevelled rim, as on flat tiles
+	const edge = firsts[firsts.length - 1];
+	const slope = (top - rim) / (R * (1 - LAND_INNER));
+	const nLen = Math.sqrt(1 + slope * slope);
+	const o0 = b.vertexCount;
+	for (let i = 0; i < 6; i++) {
+		b.vertex(cx + CORNER_X[i] * R, rim, cz + CORNER_Z[i] * R, (CORNER_X[i] * slope) / nLen, 1 / nLen, (CORNER_Z[i] * slope) / nLen, uRim, v);
+	}
+	for (let i = 0; i < 6; i++) {
+		const j = (i + 1) % 6;
+		const ci = edge + i * 2, mid = edge + i * 2 + 1, cj = edge + ((i + 1) % 6) * 2;
+		const fx = EDGE_X[i] * slope, fz = EDGE_Z[i] * slope;
+		b.triFacing(ci, o0 + i, mid, fx, 1, fz);
+		b.triFacing(mid, o0 + i, o0 + j, fx, 1, fz);
+		b.triFacing(mid, o0 + j, cj, fx, 1, fz);
+	}
+	return { inner: edge, outer: o0 };
+}
+
+/** A few rocks on a hill's shoulders. */
+function addHillRocks (b: MeshBuilder, cx: number, top: number, cz: number, R: number, rand: () => number, fogged: boolean): void {
+	const count = 1 + Math.floor(rand() * 3);
+	for (let k = 0; k < count; k++) {
+		const a = rand() * Math.PI * 2;
+		const d = R * (0.4 + rand() * 0.22);
+		const x = cx + Math.cos(a) * d, z = cz + Math.sin(a) * d;
+		addCone(b, x, top + hillRise(d, R) - 0.8, z, R * (0.05 + rand() * 0.04), R * (0.05 + rand() * 0.05), 4, rand() * Math.PI, paletteU(0.9 + rand() * 0.2), paletteV("rock", fogged));
 	}
 }
 
@@ -475,7 +550,7 @@ const paletteUvFogged: ColorUv = (key, shade) => [paletteU(shade), paletteV(key,
 
 /** Three or four trees spaced around the tile centre. */
 function addTrees (
-	b: MeshBuilder, cx: number, top: number, cz: number, R: number, rand: () => number, feature: Feature, fogged: boolean
+	b: MeshBuilder, cx: number, top: number, cz: number, R: number, rand: () => number, feature: Feature, fogged: boolean, hill = false
 ): void {
 	const count = 3 + (rand() < 0.5 ? 1 : 0);
 	const start = rand() * Math.PI * 2;
@@ -484,7 +559,8 @@ function addTrees (
 	for (let k = 0; k < count; k++) {
 		const angle = start + (k / count) * Math.PI * 2 + (rand() - 0.5) * 0.6;
 		const dist = R * (0.42 + rand() * 0.14);
-		addTree(b, cx + Math.cos(angle) * dist, top - 0.5, cz + Math.sin(angle) * dist, R, 0.85 + rand() * 0.35, feature, rand, uv);
+		const y = top - 0.5 + (hill ? hillRise(dist, R) - 0.6 : 0);
+		addTree(b, cx + Math.cos(angle) * dist, y, cz + Math.sin(angle) * dist, R, 0.85 + rand() * 0.35, feature, rand, uv);
 	}
 }
 

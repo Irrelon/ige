@@ -9,6 +9,7 @@ import { type BuildingId, BUILDINGS, Deposit, type Good, GOOD_INFO, type UnitTyp
 import type { Sim } from "../sim/sim";
 import type { BuildingState, CityState, SimEvent, UnitState } from "../sim/types";
 import { buildBorderGeometry, createDisc, createHexDisc, createHexRing, createRing, CUBE, ORB, PYRAMID } from "../shapes";
+import { mulberry32 } from "../noise";
 import type { ModelLibrary } from "./models";
 import type { TerrainView } from "./terrainView";
 
@@ -66,7 +67,6 @@ const STONE: Rgb = { r: 0.86, g: 0.82, b: 0.74 };
 const ROOF: Rgb = { r: 0.72, g: 0.36, b: 0.24 };
 const NEUTRAL: Rgb = { r: 0.62, g: 0.6, b: 0.56 };
 const WOOD: Rgb = { r: 0.5, g: 0.34, b: 0.2 };
-const ROAD: Rgb = { r: 0.55, g: 0.42, b: 0.28 };
 
 /** Little piles marking resource deposits: [colour, shape] per deposit. */
 const DEPOSIT_LOOK: Record<Exclude<Deposit, Deposit.None>, { color: Rgb; shape: "rocks" | "fish" | "game" | "horses" }> = {
@@ -809,43 +809,119 @@ export class WorldView {
 	// Roads and borders
 	// ------------------------------------------------------------------
 
-	/** One mesh for every explored road: strips from each road tile toward its connected neighbours. */
+	/**
+	 * One mesh for every explored road. A road through a tile is a curve
+	 * from one edge to another through the middle (so roads bend smoothly
+	 * across tiles); junctions and dead ends meet in a round patch of
+	 * packed earth. Each road has worn green-brown verges, a lighter crown
+	 * and two wheel ruts (vertex colours), and the odd stone along its edge.
+	 */
 	rebuildRoads (): void {
 		this.roadsDirty = false;
 		const sim = this.sim;
 		const b = new MeshBuilder();
 		const R = this.layout.size;
-		const half = R * 0.08;
+		const w = R * 0.12;
 		const natural = this.terrain.style === "natural";
-		const lift = natural ? 1.6 : 0.9;
+		const lift = natural ? 1.6 : 0.7;
 		const connects = (t: number) => sim.roads[t] >= 0 || sim.cityAt[t] >= 0 || sim.buildingAt[t] >= 0;
+		// Across the road: verge, earth, rut, crown, rut, earth, verge
+		const across = [-1, -0.62, -0.3, 0, 0.3, 0.62, 1];
+		const verge: Rgb = { r: 0.42, g: 0.4, b: 0.23 }, earth: Rgb = { r: 0.66, g: 0.53, b: 0.36 };
+		const rut: Rgb = { r: 0.59, g: 0.47, b: 0.32 }, crown: Rgb = { r: 0.72, g: 0.6, b: 0.42 };
+		const shades = [verge, earth, rut, crown, rut, earth, verge];
+
+		const ribbon = (pts: { x: number; z: number }[], y: (x: number, z: number) => number): void => {
+			let prev: number[] | null = null;
+			for (let k = 0; k < pts.length; k++) {
+				const a = pts[Math.max(0, k - 1)], c = pts[Math.min(pts.length - 1, k + 1)];
+				let tx = c.x - a.x, tz = c.z - a.z;
+				const tl = Math.hypot(tx, tz) || 1;
+				tx /= tl;
+				tz /= tl;
+				const p = pts[k];
+				const row = across.map((f, i) => {
+					const x = p.x - tz * w * f, z = p.z + tx * w * f;
+					b.tint(shades[i].r, shades[i].g, shades[i].b);
+					return b.vertex(x, y(x, z), z, 0, 1, 0, 0, 0);
+				});
+				if (prev) for (let i = 0; i < across.length - 1; i++) b.quadFacing(prev[i], row[i], row[i + 1], prev[i + 1], 0, 1, 0);
+				prev = row;
+			}
+			b.tint(1);
+		};
+		/** Quadratic Bezier through a control point, sampled into points. */
+		const curve = (p0: { x: number; z: number }, p1: { x: number; z: number }, p2: { x: number; z: number }, n: number) => {
+			const out: { x: number; z: number }[] = [];
+			for (let i = 0; i <= n; i++) {
+				const t = i / n, u = 1 - t;
+				out.push({ x: u * u * p0.x + 2 * u * t * p1.x + t * t * p2.x, z: u * u * p0.z + 2 * u * t * p1.z + t * t * p2.z });
+			}
+			return out;
+		};
+		/** A round patch of packed earth (junctions, dead ends), a little above the ribbons. */
+		const patch = (x: number, z: number, radius: number, y: number) => {
+			const seg = 14;
+			b.tint(crown.r * 0.96, crown.g * 0.96, crown.b * 0.96);
+			const centre = b.vertex(x, y, z, 0, 1, 0, 0, 0);
+			b.tint(earth.r, earth.g, earth.b);
+			const ring0 = b.vertexCount;
+			for (let i = 0; i < seg; i++) {
+				const a = (i / seg) * Math.PI * 2;
+				b.vertex(x + Math.cos(a) * radius, y, z + Math.sin(a) * radius, 0, 1, 0, 0, 0);
+			}
+			b.tint(verge.r, verge.g, verge.b);
+			const ring1 = b.vertexCount;
+			for (let i = 0; i < seg; i++) {
+				const a = (i / seg) * Math.PI * 2;
+				b.vertex(x + Math.cos(a) * radius * 1.35, y - 0.02, z + Math.sin(a) * radius * 1.35, 0, 1, 0, 0, 0);
+			}
+			b.tint(1);
+			for (let i = 0; i < seg; i++) {
+				const j = (i + 1) % seg;
+				b.triFacing(centre, ring0 + i, ring0 + j, 0, 1, 0);
+				b.quadFacing(ring0 + i, ring1 + i, ring1 + j, ring0 + j, 0, 1, 0);
+			}
+		};
 
 		for (let t = 0; t < sim.map.count; t++) {
 			if (sim.roads[t] < 0 || this.terrain.fogView[t] === UNEXPLORED) continue;
 			const cx = this.tileX(t), cz = this.tileZ(t);
-			const centreY = this.surface.tileHeight(t) + lift;
-			// Junction
-			const j0 = b.vertexCount;
-			for (let i = 0; i < 6; i++) b.vertex(cx + CORNER_X[i] * half * 1.4, centreY, cz + CORNER_Z[i] * half * 1.4, 0, 1, 0, 0, 0);
-			for (let i = 1; i < 5; i++) b.triFacing(j0, j0 + i, j0 + i + 1, 0, 1, 0);
+			// Roads follow the ground (over hills, and the natural style's slopes)
+			const y = (x: number, z: number) => this.groundAt(x, z) + lift;
+			const rand = mulberry32(Math.imul(t + 5, 2654435761) ^ 0x2f6b);
+			// Where the road leaves this tile: the middle of each edge it crosses
+			const exits: { x: number; z: number }[] = [];
 			for (const n of sim.neighbors(t)) {
 				if (!connects(n)) continue;
-				const nx = this.tileX(n), nz = this.tileZ(n);
-				const dx = nx - cx, dz = nz - cz;
-				const len = Math.hypot(dx, dz);
-				const px = (-dz / len) * half, pz = (dx / len) * half;
-				const steps = natural ? 3 : 1;
-				let prevL = -1, prevR = -1;
-				for (let s = 0; s <= steps; s++) {
-					const f = (s / steps) * 0.5;
-					const x = cx + dx * f, z = cz + dz * f;
-					const y = natural ? this.groundAt(x, z) + lift : centreY;
-					const l = b.vertex(x + px, y, z + pz, 0, 1, 0, 0, 0);
-					const r = b.vertex(x - px, y, z - pz, 0, 1, 0, 0, 0);
-					if (prevL >= 0) b.quadFacing(prevL, l, r, prevR, 0, 1, 0);
-					prevL = l;
-					prevR = r;
+				exits.push({ x: (cx + this.tileX(n)) / 2, z: (cz + this.tileZ(n)) / 2 });
+			}
+			const centre = { x: cx + (rand() - 0.5) * R * 0.12, z: cz + (rand() - 0.5) * R * 0.12 };
+			if (exits.length === 2) {
+				// One smooth bend through the tile
+				ribbon(curve(exits[0], centre, exits[1], 10), y);
+			} else {
+				for (const e of exits) {
+					const mid = { x: (e.x + centre.x) / 2 + (rand() - 0.5) * R * 0.1, z: (e.z + centre.z) / 2 + (rand() - 0.5) * R * 0.1 };
+					ribbon(curve(e, mid, centre, 6), y);
 				}
+				patch(centre.x, centre.z, w * (exits.length > 2 ? 1.25 : 0.95), y(centre.x, centre.z) + 0.06);
+			}
+			// The odd stone along the verge
+			const stones = Math.floor(rand() * 3);
+			for (let k = 0; k < stones && exits.length; k++) {
+				const e = exits[Math.floor(rand() * exits.length)];
+				const f = 0.25 + rand() * 0.5;
+				const sx = centre.x + (e.x - centre.x) * f, sz = centre.z + (e.z - centre.z) * f;
+				const dx = e.x - centre.x, dz = e.z - centre.z, dl = Math.hypot(dx, dz) || 1;
+				const side = rand() < 0.5 ? -1 : 1;
+				const px = sx - (dz / dl) * w * 1.25 * side, pz = sz + (dx / dl) * w * 1.25 * side;
+				const r = R * (0.025 + rand() * 0.02);
+				b.tint(0.62, 0.6, 0.56);
+				b.flatTri(px - r, y(px, pz), pz - r * 0.5, px + r, y(px, pz), pz - r * 0.3, px, y(px, pz) + r * 1.1, pz + r * 0.2, px, y(px, pz) - 1, pz, 0, 0);
+				b.flatTri(px + r, y(px, pz), pz - r * 0.3, px + r * 0.2, y(px, pz), pz + r, px, y(px, pz) + r * 1.1, pz + r * 0.2, px, y(px, pz) - 1, pz, 0, 0);
+				b.flatTri(px + r * 0.2, y(px, pz), pz + r, px - r, y(px, pz), pz - r * 0.5, px, y(px, pz) + r * 1.1, pz + r * 0.2, px, y(px, pz) - 1, pz, 0, 0);
+				b.tint(1);
 			}
 		}
 
@@ -856,7 +932,8 @@ export class WorldView {
 			if (!this.roads) {
 				this.roads = new IgeEntity();
 				this.roads.id(this.uid("roads"));
-				this.roads._materialData = material(ROAD);
+				// Colours come from the vertices (verges, earth, ruts, crown)
+				this.roads._materialData = material({ r: 1, g: 1, b: 1 });
 				this.roads._noShadowCast = true;
 				this.roads.mount(this.overlayLayer);
 			}
@@ -1040,7 +1117,9 @@ export class WorldView {
 			m._materialData = material(c, c, onPath.has(tiles[i]) ? 0.75 : 0.45);
 			const k = onPath.has(tiles[i]) ? 1.35 : 1;
 			m.scaleTo(k, 1, k);
-			this.placeOverlay(m, tiles[i], 1.2);
+			// Centre markers sit on whatever is at the tile's middle (a hill's crown)
+			m.translateTo(this.tileX(tiles[i]), Math.max(this.surface.overlayHeight(tiles[i]), this.surface.tileHeight(tiles[i])) + 1.2 * (this.terrain.style === "natural" ? 1.5 : 1), this.tileZ(tiles[i]));
+			m.show();
 		});
 	}
 

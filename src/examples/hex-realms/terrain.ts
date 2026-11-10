@@ -65,18 +65,43 @@ export const FEATURE_NAMES: Record<Feature, string> = {
 };
 
 /**
- * Top heights of land tiles by relief (world units, Y up). Five gentle
- * levels, a small step apart rather than tall terraces: deep ocean, shore
- * water (see TERRAIN_INFO's waterHeight), ordinary land, hills, mountains.
- * Hills and mountains mostly show through what stands on them (mounds and
- * peaks).
+ * Top heights of land tiles by relief (world units, Y up). As in
+ * Polytopia, all land sits at one level, so land tiles never step up or
+ * down: hills and mountains show through what stands on them (rounded
+ * hills, rocky peaks). Water is a small step lower (TERRAIN_INFO's
+ * waterHeight: shore water, then deep ocean a little lower again).
  */
 export const LAND_HEIGHT: Record<Relief, number> = {
 	[Relief.Water]: 0,
 	[Relief.Flat]: 6,
-	[Relief.Hills]: 9,
-	[Relief.Mountain]: 12
+	[Relief.Hills]: 6,
+	[Relief.Mountain]: 6
 };
+
+/**
+ * Hill tiles (tile style) swell into a rounded hill inside the tile: a flat
+ * crown (for cities and units) and a smooth shoulder that is back at land
+ * level well before the tile's edge, so hills never leave a step between
+ * tiles. Heights in world units for a tile radius R.
+ */
+export const HILL_RISE = 14;
+export const HILL_CROWN = 0.28;
+export const HILL_FOOT = 0.72;
+
+/** How far a hill tile's ground rises at `dist` from its centre. */
+export function hillRise (dist: number, R: number): number {
+	const crown = R * HILL_CROWN, foot = R * HILL_FOOT;
+	if (dist <= crown) return HILL_RISE;
+	if (dist >= foot) return 0;
+	return HILL_RISE * 0.5 * (1 + Math.cos((Math.PI * (dist - crown)) / (foot - crown)));
+}
+
+/** Slope of the hill profile (rise per unit of distance, negative going out). */
+export function hillSlope (dist: number, R: number): number {
+	const crown = R * HILL_CROWN, foot = R * HILL_FOOT;
+	if (dist <= crown || dist >= foot) return 0;
+	return -HILL_RISE * 0.5 * (Math.PI / (foot - crown)) * Math.sin((Math.PI * (dist - crown)) / (foot - crown));
+}
 
 /** Bottom of the map slab; map-edge walls drop to here. */
 export const FLOOR_HEIGHT = -18;
