@@ -13,7 +13,8 @@ describe("blocky art pack", () => {
 			expect(m.triangles).toBeGreaterThan(0);
 			expect(m.max[1]).toBeGreaterThan(m.min[1]);
 			// Feet or ground slab at the bottom (a little below for the dirt under a lawn or a keel)
-			if (id !== "millSails") expect(m.min[1]).toBeGreaterThan(-2);
+			// (Rigged characters stand on their feet whatever they hold; the windmill's sails are centred on their hub)
+			if (!m.skinned && id !== "millSails") expect(m.min[1]).toBeGreaterThan(-2);
 			const gltf = m.gltf as { buffers: { uri: string }[]; accessors: unknown[] };
 			expect(gltf.buffers[0].uri.startsWith("data:application/octet-stream;base64,")).toBe(true);
 			if (m.skinned) {

@@ -1,4 +1,5 @@
 import { type Bone, type Clip, type Pose, Vox } from "./mesh";
+import { shade } from "./parts";
 
 /**
  * Blocky characters: cute, big-headed (the head is wider than the body),
@@ -17,15 +18,33 @@ export interface Rigged {
 // Bones
 const ROOT = 0, BODY = 1, HEAD = 2, ARM_L = 3, ARM_R = 4, LEG_L = 5, LEG_R = 6;
 
-const BONES: Bone[] = [
-	{ name: "root", parent: -1, pivot: [0, 5, 0] },
-	{ name: "body", parent: ROOT, pivot: [0, 5, 0] },
-	{ name: "head", parent: BODY, pivot: [0, 11, 0] },
-	{ name: "armL", parent: BODY, pivot: [4.5, 10.5, 0] },
-	{ name: "armR", parent: BODY, pivot: [-4.5, 10.5, 0] },
-	{ name: "legL", parent: ROOT, pivot: [1.5, 5, 0] },
-	{ name: "legR", parent: ROOT, pivot: [-1.5, 5, 0] }
-];
+type Build = "villager" | "soldier" | "slim" | "heavy";
+
+/**
+ * Body shapes. Villagers are the cutest (the head as wide as the whole body); soldiers stand taller
+ * with smaller heads so their armour and kit show; heavies are broad; archers and the like slim.
+ * `kit` scales what they hold.
+ */
+interface Frame { legH: number; legW: number; bodyW: number; bodyH: number; bodyD: number; armW: number; armL: number; head: number; kit: number }
+const FRAMES: Record<Build, Frame> = {
+	villager: { legH: 5, legW: 2.8, bodyW: 7, bodyH: 6, bodyD: 4, armW: 2, armL: 6, head: 1, kit: 1 },
+	soldier: { legH: 6, legW: 3, bodyW: 8, bodyH: 7.5, bodyD: 5, armW: 2.4, armL: 7.5, head: 0.86, kit: 1.25 },
+	slim: { legH: 6.4, legW: 2.6, bodyW: 7, bodyH: 7.4, bodyD: 4.2, armW: 2.1, armL: 7.4, head: 0.86, kit: 1.25 },
+	heavy: { legH: 6, legW: 3.5, bodyW: 9.8, bodyH: 8, bodyD: 6, armW: 3, armL: 8, head: 0.82, kit: 1.35 }
+};
+
+function bonesFor (f: Frame): Bone[] {
+	const hip = f.legH, neck = f.legH + f.bodyH, armX = f.bodyW / 2 + f.armW / 2;
+	return [
+		{ name: "root", parent: -1, pivot: [0, hip, 0] },
+		{ name: "body", parent: ROOT, pivot: [0, hip, 0] },
+		{ name: "head", parent: BODY, pivot: [0, neck, 0] },
+		{ name: "armL", parent: BODY, pivot: [armX, neck - 0.5, 0] },
+		{ name: "armR", parent: BODY, pivot: [-armX, neck - 0.5, 0] },
+		{ name: "legL", parent: ROOT, pivot: [f.legW / 2 + 0.15, hip, 0] },
+		{ name: "legR", parent: ROOT, pivot: [-(f.legW / 2 + 0.15), hip, 0] }
+	];
+}
 
 // Colours
 export const SKIN = { light: 0xf9d6bd, tan: 0xe8b48d, brown: 0xb98057, dark: 0x83573a };
@@ -38,25 +57,35 @@ type Weapon = "club" | "sword" | "spear" | "axe" | "pickaxe" | "hammer" | "hoe" 
 type Attack = "swing" | "bow" | "fire" | "thrust";
 
 export interface ChibiSpec {
+	build?: Build;
 	skin: number;
 	hair?: number;
 	hairStyle?: HairStyle;
 	shirt: number;
+	/** The arms' colour (the shirt's unless given; skin for bare arms). */
+	sleeves?: number;
 	pants: number;
 	shoes?: number;
 	belt?: number;
-	/** Drawn on the head bone (the head spans x -5..5, y 11..20, z -4.5..4.5). */
+	/** A long coat's tails over the legs. */
+	coatTails?: number;
+	/** Shoulder armour. */
+	pauldrons?: number;
+	/** War paint on the cheeks. */
+	paint?: number;
+	/** Drawn on the head (which spans x -5..5, y 11..20, z -4.5..4.5 before it is fitted to the body). */
 	hat?: (v: Vox) => void;
-	/** Drawn on the body bone (the body spans x -3.5..3.5, y 5..11, z -2..2). */
+	/** Drawn on the body (spanning x -3.5..3.5, y 5..11, z -2..2 before it is fitted). */
 	outfit?: (v: Vox) => void;
 	weapon?: Weapon;
-	offhand?: "shield" | "tower" | "bow";
+	offhand?: "shield" | "buckler" | "tower" | "bow";
 	shieldColor?: number;
-	back?: "quiver" | "pack" | "sack" | "jetpack" | "cape";
+	shieldEmblem?: number;
+	back?: "quiver" | "pack" | "sack" | "jetpack" | "cape" | "cloakQuiver";
 	backColor?: number;
 	attack?: Attack;
 	worker?: boolean;
-	/** Chunky armour: wider arms and shoulders. */
+	/** Chunky armour: a broad shoulder block. */
 	bulky?: boolean;
 	seed?: number;
 }
@@ -128,7 +157,7 @@ function weaponBoxes (v: Vox, w: Weapon, c?: number): void {
 			v.cbox(x, 2.5, z, 1.4, 4.5, 1.6, WOOD).cbox(x, 7, z, 0.9, 13, 0.9, 0x3c3c44).cbox(x, 7, z + 0.7, 1, 7, 0.5, WOOD);
 			break;
 		case "rifle":
-			v.cbox(x, 3, z, 1.4, 4, 1.8, 0x7a5232).cbox(x, 7, z, 1, 10, 1.1, 0x34363d).cbox(x, 7.5, z + 1, 0.8, 2.4, 1.1, 0x34363d);
+			v.cbox(x, 3, z, 1.4, 4, 1.8, 0x7a5232).cbox(x, 7, z, 1, 10, 1.1, 0x34363d).cbox(x, 7.5, z + 1, 0.8, 2.4, 1.1, 0x34363d).cbox(x, 17, z, 0.4, 3, 0.7, IRON);
 			break;
 		case "mg":
 			v.cbox(x, 3, z + 0.5, 2.4, 9.5, 2.8, 0x3d4047).cbox(x, 12.5, z + 0.5, 1.1, 5, 1.1, 0x2a2c31).cbox(x - 0.2, 5, z + 2.6, 1.8, 2.8, 2.2, 0x5b6068);
@@ -143,72 +172,121 @@ function weaponBoxes (v: Vox, w: Weapon, c?: number): void {
 }
 
 function chibi (spec: ChibiSpec): Rigged {
+	const f = FRAMES[spec.build ?? "villager"];
 	const v = new Vox(spec.seed ?? 7);
+	const hip = f.legH, neck = f.legH + f.bodyH, armX = f.bodyW / 2 + f.armW / 2;
 	const shoes = spec.shoes ?? 0x5a3b28;
-	const armW = spec.bulky ? 2.6 : 2;
+	const legD = Math.min(f.bodyD - 0.6, f.legW + 0.4);
 	// Legs
 	for (const [bone, s] of [[LEG_L, 1], [LEG_R, -1]] as const) {
 		v.on(bone, () => {
-			const x0 = s > 0 ? 0.25 : -3.05;
-			v.box(x0, 1.2, -1.5, 2.8, 3.8, 3, spec.pants);
-			v.box(x0 - 0.1, 0, -1.6, 3, 1.4, 3.6, shoes);
+			const x0 = s > 0 ? 0.25 : -0.25 - f.legW;
+			v.box(x0, 1.2, -legD / 2, f.legW, hip - 1.2, legD, spec.pants);
+			v.box(x0 - 0.1, 0, -legD / 2 - 0.1, f.legW + 0.2, 1.4, legD + 0.7, shoes);
 		});
 	}
-	// Body
+	// The body, its details drawn on the standard body (x -3.5..3.5, y 5..11, z -2..2) and fitted to this one
 	v.on(BODY, () => {
-		v.box(-3.5, 5, -2, 7, 6, 4, spec.shirt);
-		if (spec.belt !== undefined) v.box(-3.6, 6, -2.1, 7.2, 0.9, 4.2, spec.belt).box(-0.7, 5.9, 2.05, 1.4, 1.1, 0.2, GOLD);
-		if (spec.bulky) v.box(-5, 9, -2.4, 10, 2.4, 4.8, spec.shirt);
-		spec.outfit?.(v);
+		v.box(-f.bodyW / 2, hip, -f.bodyD / 2, f.bodyW, f.bodyH, f.bodyD, spec.shirt);
+		const d = new Vox();
+		if (spec.belt !== undefined) d.box(-3.6, 6, -2.1, 7.2, 0.9, 4.2, spec.belt).box(-0.7, 5.9, 2.05, 1.4, 1.1, 0.2, GOLD);
+		if (spec.coatTails !== undefined) d.box(-3.6, 3, -2.15, 7.2, 2.4, 1.4, spec.coatTails).box(-3.6, 3, 0.75, 1.3, 2.4, 1.4, spec.coatTails).box(2.3, 3, 0.75, 1.3, 2.4, 1.4, spec.coatTails);
+		if (spec.bulky) d.box(-5, 9, -2.4, 10, 2.4, 4.8, spec.pauldrons ?? spec.shirt);
+		spec.outfit?.(d);
+		const bc = spec.backColor;
 		switch (spec.back) {
 			case "quiver":
-				v.box(-1.6, 6, -3.6, 2.4, 6, 1.6, LEATHER).box(-1.3, 12, -3.3, 0.5, 1.4, 0.5, WHITE).box(-0.5, 12, -3.4, 0.5, 1.8, 0.5, WHITE).box(0.2, 12, -3.2, 0.5, 1.2, 0.5, WHITE);
+				d.box(-1.6, 6, -3.6, 2.4, 6, 1.6, LEATHER).box(-1.3, 12, -3.3, 0.5, 1.4, 0.5, WHITE).box(-0.5, 12, -3.4, 0.5, 1.8, 0.5, WHITE).box(0.2, 12, -3.2, 0.5, 1.2, 0.5, WHITE);
+				break;
+			case "cloakQuiver":
+				d.box(-3.8, 3.4, -2.7, 7.6, 7.8, 0.7, bc ?? 0x3f7d3c);
+				d.box(-1.4, 6.5, -4.2, 2.4, 6, 1.6, LEATHER).box(-1.1, 12.5, -3.9, 0.5, 1.6, 0.5, WHITE).box(-0.3, 12.5, -4, 0.5, 2, 0.5, 0xd94a4a).box(0.4, 12.5, -3.8, 0.5, 1.4, 0.5, WHITE);
 				break;
 			case "pack":
-				v.box(-3, 5.5, -5, 6, 5.5, 3, spec.backColor ?? 0x9a7b4f).box(-3.4, 11, -5.4, 6.8, 1.8, 2.2, 0x7d9cc4).box(-2.2, 7, -5.3, 4.4, 0.8, 0.3, LEATHER);
+				d.box(-3, 5.5, -5, 6, 5.5, 3, bc ?? 0x9a7b4f).box(-3.4, 11, -5.4, 6.8, 1.8, 2.2, 0x7d9cc4).box(-2.2, 7, -5.3, 4.4, 0.8, 0.3, LEATHER);
 				break;
 			case "sack":
-				v.box(-3, 5.5, -5.4, 6, 6.5, 3.4, spec.backColor ?? 0xe6d3a8).cbox(0, 12, -3.7, 2, 0.8, 2, 0xb99a62);
+				d.box(-3, 5.5, -5.4, 6, 6.5, 3.4, bc ?? 0xe6d3a8).cbox(0, 12, -3.7, 2, 0.8, 2, 0xb99a62);
 				break;
 			case "jetpack":
-				v.box(-3, 6, -4, 2.4, 5, 2, 0xb8c2cc).box(0.6, 6, -4, 2.4, 5, 2, 0xb8c2cc).box(-2.6, 5, -3.8, 1.6, 1, 1.6, 0xff9d3c).box(1, 5, -3.8, 1.6, 1, 1.6, 0xff9d3c);
+				d.box(-3, 6, -4, 2.4, 5, 2, bc ?? 0xb8c2cc).box(0.6, 6, -4, 2.4, 5, 2, bc ?? 0xb8c2cc).box(-2.6, 5, -3.8, 1.6, 1, 1.6, 0xff9d3c).box(1, 5, -3.8, 1.6, 1, 1.6, 0xff9d3c);
 				break;
 			case "cape":
-				v.box(-3.8, 3.5, -2.6, 7.6, 7.5, 0.6, spec.backColor ?? 0xc0392b);
+				d.box(-3.8, 3.5, -2.6, 7.6, 7.5, 0.6, bc ?? 0xc0392b);
 				break;
 		}
+		const sx = f.bodyW / 7, sy = f.bodyH / 6, sz = f.bodyD / 4;
+		v.add(d, 0, hip - 5 * sy, 0, 0, sx, sy, sz);
 	});
 	// Arms (hands are skin at the bottom)
 	for (const [bone, s] of [[ARM_L, 1], [ARM_R, -1]] as const) {
 		v.on(bone, () => {
-			const x0 = s > 0 ? 3.5 : -3.5 - armW;
-			v.box(x0, 6.5, -1, armW, 4.5, 2, spec.shirt);
-			v.box(x0 + 0.1, 5, -0.9, armW - 0.2, 1.5, 1.8, spec.skin);
+			const x0 = s > 0 ? f.bodyW / 2 : -f.bodyW / 2 - f.armW;
+			const bottom = neck - f.armL;
+			v.box(x0, bottom + 1.5, -f.armW / 2, f.armW, f.armL - 1.5, f.armW, spec.sleeves ?? spec.shirt);
+			v.box(x0 + 0.1, bottom, -f.armW / 2 + 0.1, f.armW - 0.2, 1.5, f.armW - 0.2, spec.skin);
+			if (spec.pauldrons !== undefined) v.box(x0 - 0.55, neck - 2.4, -f.armW / 2 - 0.55, f.armW + 1.1, 2.6, f.armW + 1.1, spec.pauldrons);
 		});
 	}
-	// Head
+	// The head, drawn at the standard size and fitted onto the neck
 	v.on(HEAD, () => {
-		v.box(-5, 11, -4.5, 10, 9, 9, spec.skin);
-		face(v);
-		hair(v, spec.hairStyle ?? "short", spec.hair ?? HAIR.brown);
-		spec.hat?.(v);
+		const h = new Vox();
+		h.box(-5, 11, -4.5, 10, 9, 9, spec.skin);
+		face(h);
+		if (spec.paint !== undefined) for (const x of [-4.4, 2.8]) h.box(x, 13.9, 4.5, 1.6, 0.45, 0.3, spec.paint).box(x, 12.9, 4.5, 1.6, 0.45, 0.3, spec.paint);
+		hair(h, spec.hairStyle ?? "short", spec.hair ?? HAIR.brown);
+		spec.hat?.(h);
+		v.add(h, 0, neck - 11 * f.head, 0, 0, f.head);
 	});
-	// What they carry
-	if (spec.weapon) v.on(ARM_R, () => weaponBoxes(v, spec.weapon as Weapon));
-	v.on(ARM_L, () => {
-		const sc = spec.shieldColor ?? 0xc0392b;
-		if (spec.offhand === "shield") {
-			v.box(5.5, 4, -3, 1, 7.5, 6, sc).box(6.4, 6.6, -0.8, 0.4, 2.2, 1.6, GOLD);
-			v.box(5.45, 7.3, -3.1, 1.1, 0.7, 6.2, 0xf3efe6);
-		} else if (spec.offhand === "tower") {
-			// A tall shield held squarely in front
-			v.box(-2.4, 2.2, 2.6, 8.6, 11, 1, sc).box(-2.7, 2, 2.4, 9.2, 0.6, 1.4, GOLD).box(-2.7, 12.8, 2.4, 9.2, 0.6, 1.4, GOLD);
-			v.box(0.9, 6, 3.5, 1.8, 3.4, 0.4, GOLD);
-		} else if (spec.offhand === "bow") {
-			v.box(5.4, 3, 2.4, 1.1, 13, 0.9, WOOD).box(5.4, 1.8, 1.3, 1.1, 1.4, 1.4, WOOD).box(5.4, 15.8, 1.3, 1.1, 1.4, 1.4, WOOD).box(5.8, 2.4, 1.2, 0.3, 14, 0.2, WHITE);
+	// What they carry: the weapon in the right hand, a shield or bow in the left
+	const handY = neck - f.armL + 0.5, k = f.kit;
+	if (spec.weapon) {
+		v.on(ARM_R, () => {
+			const w = new Vox();
+			weaponBoxes(w, spec.weapon as Weapon);
+			v.add(w, -(armX + f.armW / 2 + 0.4) + 5.9 * k, handY - 5.5 * k, 0, 0, k);
+		});
+	}
+	v.on(ARM_L, () => offhand(v, spec, f, armX, handY));
+	return { vox: v, bones: bonesFor(f), clips: chibiClips(spec) };
+}
+
+function offhand (v: Vox, spec: ChibiSpec, f: Frame, armX: number, handY: number): void {
+	const sc = spec.shieldColor ?? 0xc0392b, em = spec.shieldEmblem ?? GOLD, k = f.kit;
+	const front = f.armW / 2;
+	switch (spec.offhand) {
+		case "shield": {
+			// A big shield before the left arm: two crossed slabs make its rounded corners, a rim, a boss
+			const r = 3.8 * k, cx = armX - 0.6, y0 = handY - 1;
+			v.cbox(cx, y0, front + 0.9, 2 * r - 2, 2 * r, 1, sc).cbox(cx, y0 + 1, front + 0.9, 2 * r, 2 * r - 2, 1, sc);
+			v.cbox(cx, y0 + 0.4, front + 1.5, 2 * r - 2.6, 0.8, 0.4, shade(sc, 0.75)).cbox(cx, y0 + 2 * r - 1.2, front + 1.5, 2 * r - 2.6, 0.8, 0.4, shade(sc, 0.75));
+			v.cbox(cx, y0 + r - 1.3, front + 1.5, 2.6, 2.6, 0.6, em).cbox(cx, y0 + 1.2, front + 1.5, 0.9, 2 * r - 2.4, 0.3, em).cbox(cx, y0 + r - 0.45, front + 1.5, 2 * r - 2.4, 0.9, 0.3, em);
+			break;
 		}
-	});
-	return { vox: v, bones: BONES, clips: chibiClips(spec) };
+		case "buckler": {
+			const r = 2.7 * k, cx = armX - 0.3, y0 = handY - 0.6;
+			v.cbox(cx, y0, front + 0.8, 2 * r - 1.6, 2 * r, 0.9, sc).cbox(cx, y0 + 0.8, front + 0.8, 2 * r, 2 * r - 1.6, 0.9, sc);
+			v.cbox(cx, y0 + r - 1, front + 1.3, 2, 2, 0.6, em);
+			break;
+		}
+		case "tower": {
+			// A tall shield held squarely before the whole body
+			const w = f.bodyW + 3.4, cx = armX - f.bodyW / 2 - 0.6, z = f.bodyD / 2 + 0.9 - 0.3;
+			const y0 = 1.2, h = f.legH + f.bodyH + 0.6;
+			v.cbox(cx, y0, z, w, h, 1.2, sc).cbox(cx, y0 - 0.3, z - 0.2, w + 0.6, 0.8, 1.6, em).cbox(cx, y0 + h - 0.5, z - 0.2, w + 0.6, 0.8, 1.6, em);
+			v.cbox(cx, y0 + 1, z + 0.6, 1.4, h - 2, 0.4, em).cbox(cx, y0 + h * 0.58, z + 0.6, w - 2, 1.4, 0.4, em);
+			break;
+		}
+		case "bow": {
+			// A tall bow in the left hand, its tips curling forward, the string behind
+			const x = armX + f.armW / 2 + 0.4, mid = handY + 1, len = 8 * k;
+			v.box(x - 0.5, mid - len, front + 1.6, 1.1, 2 * len, 0.9, WOOD);
+			v.box(x - 0.5, mid - len - 1, front + 0.6, 1.1, 1.4, 1.4, WOOD).box(x - 0.5, mid + len - 0.4, front + 0.6, 1.1, 1.4, 1.4, WOOD);
+			v.box(x - 0.6, mid - 1, front + 1.4, 1.3, 2.4, 1.3, LEATHER);
+			v.box(x - 0.1, mid - len - 0.6, front + 0.45, 0.25, 2 * len + 1.2, 0.2, WHITE);
+			break;
+		}
+	}
 }
 
 // ------------------------------------------------------------------
@@ -231,61 +309,90 @@ function keys (t: number, ks: [number, number][]): number {
 	return ks[ks.length - 1][1];
 }
 
+type Rot = [number, number, number];
+
+/** How a fighter holds their kit at rest: weapons raised forward, shields up, bows held out, guns shouldered. */
+function stanceOf (spec: ChibiSpec): Record<string, Rot> {
+	if (spec.worker || (!spec.weapon && !spec.offhand)) return {};
+	if ((spec.build ?? "villager") === "villager") return { armR: [-0.2, 0, 0] };
+	const s: Record<string, Rot> = {};
+	switch (spec.attack ?? "swing") {
+		case "swing": s.armR = [-0.65, 0, -0.12]; break;
+		case "thrust": s.armR = [-0.3, 0, -0.05]; break;
+		case "fire": s.armR = [-0.95, 0, 0]; s.armL = [-0.75, 0, -0.45]; break;
+		case "bow": s.armL = [-1.1, 0, 0.05]; s.armR = [-0.5, 0, -0.1]; break;
+	}
+	if (spec.offhand === "shield" || spec.offhand === "buckler") s.armL = [-0.55, 0, 0.12];
+	if (spec.offhand === "tower") s.armL = [-0.1, 0, 0];
+	return s;
+}
+
+/** A pose with the stance added to it (scaled by `weight`, 1 by default). */
+function withStance (pose: Record<string, Pose>, stance: Record<string, Rot>, weight = 1): Record<string, Pose> {
+	for (const [bone, r] of Object.entries(stance)) {
+		const p = pose[bone] ?? (pose[bone] = {});
+		const rot = p.rot ?? [0, 0, 0];
+		p.rot = [rot[0] + r[0] * weight, rot[1] + r[1] * weight, rot[2] + r[2] * weight];
+	}
+	return pose;
+}
+
 function chibiClips (spec: ChibiSpec): Clip[] {
-	const holdL = spec.offhand === "tower" || spec.offhand === "bow";
+	const stance = stanceOf(spec);
+	const holdL = !!stance.armL, holdR = !!stance.armR;
 	const clips: Clip[] = [
 		{
 			name: "idle", duration: 2,
 			pose: (t) => {
 				const p = Math.sin((t / 2) * TAU);
-				return {
+				return withStance({
 					root: { pos: [0, p * 0.15, 0] },
 					head: { rot: [0, 0, Math.sin((t / 2) * TAU + 1) * 0.05] },
 					armL: { rot: [0, 0, holdL ? 0 : 0.05 + p * 0.03] },
-					armR: { rot: [0, 0, -0.05 - p * 0.03] }
-				};
+					armR: { rot: [holdR ? p * 0.03 : 0, 0, holdR ? 0 : -0.05 - p * 0.03] }
+				}, stance);
 			}
 		},
 		{
 			name: "walk", duration: 0.5,
 			pose: (t) => {
 				const a = (t / 0.5) * TAU, s = Math.sin(a);
-				return {
+				return withStance({
 					root: { pos: [0, (1 - Math.cos(2 * a)) * 0.35, 0] },
 					body: { rot: [0, 0, s * 0.05] },
 					head: { rot: [0, 0, -s * 0.04] },
 					legL: { rot: [s * 0.7, 0, 0] },
 					legR: { rot: [-s * 0.7, 0, 0] },
-					armL: { rot: [holdL ? -0.15 : -s * 0.55, 0, 0.05] },
-					armR: { rot: [s * (spec.weapon ? 0.3 : 0.55), 0, -0.05] }
-				};
+					armL: { rot: [holdL ? -s * 0.12 : -s * 0.55, 0, 0.05] },
+					armR: { rot: [holdR ? s * 0.15 : s * 0.55, 0, -0.05] }
+				}, stance);
 			}
 		},
-		{ name: "attack", duration: 0.7, pose: (t) => attackPose(spec.attack ?? "swing", t) },
+		{ name: "attack", duration: 0.7, pose: (t) => withStance(attackPose(spec.attack ?? "swing", t), stance) },
 		{
 			name: "hit", duration: 0.45,
 			pose: (t) => {
 				const k = bump(t, 0, 0.45);
-				return {
+				return withStance({
 					root: { pos: [0, 0, -1.2 * k] },
 					body: { rot: [0.35 * k, 0, 0] },
 					head: { rot: [0.25 * k, 0, 0.1 * k] },
-					armL: { rot: [-0.4 * k, 0, 0.5 * k] },
-					armR: { rot: [-0.4 * k, 0, -0.5 * k] }
-				};
+					armL: { rot: [-0.3 * k, 0, 0.4 * k] },
+					armR: { rot: [-0.3 * k, 0, -0.4 * k] }
+				}, stance);
 			}
 		},
 		{
 			name: "death", duration: 1,
 			pose: (t) => {
-				const k = keys(t, [[0, 0], [0.15, -0.15], [0.6, 1]]);
-				return {
-					root: { rot: [0, 0, 1.5 * Math.max(0, k)], pos: [0, -2.6 * Math.max(0, k), 0] },
-					head: { rot: [0, 0, 0.2 * Math.max(0, k)] },
-					armL: { rot: [0, 0, 1.2 * Math.max(0, k)] },
-					armR: { rot: [-0.5 * Math.max(0, k), 0, -0.4 * Math.max(0, k)] },
-					legL: { rot: [0, 0, 0.3 * Math.max(0, k)] }
-				};
+				const k = Math.max(0, keys(t, [[0, 0], [0.15, -0.15], [0.6, 1]]));
+				return withStance({
+					root: { rot: [0, 0, 1.5 * k], pos: [0, -2.6 * k, 0] },
+					head: { rot: [0, 0, 0.2 * k] },
+					armL: { rot: [0, 0, 1.2 * k] },
+					armR: { rot: [-0.5 * k, 0, -0.4 * k] },
+					legL: { rot: [0, 0, 0.3 * k] }
+				}, stance, 1 - k);
 			}
 		}
 	];
@@ -308,12 +415,13 @@ function chibiClips (spec: ChibiSpec): Clip[] {
 	return clips;
 }
 
+/** Each attack as a change from the stance (which the clip adds). */
 function attackPose (kind: Attack, t: number): Record<string, Pose> {
 	switch (kind) {
 		case "bow": {
-			// Bow arm up and forward, the string drawn back, loosed
-			const up = keys(t, [[0, 0], [0.2, -1.5], [0.55, -1.5], [0.7, 0]]);
-			const draw = keys(t, [[0, 0], [0.2, -1.3], [0.42, -1.4], [0.46, -0.9], [0.7, 0]]);
+			// Bow raised level, the string drawn back, loosed
+			const up = keys(t, [[0, 0], [0.2, -0.4], [0.55, -0.4], [0.7, 0]]);
+			const draw = keys(t, [[0, 0], [0.2, -0.8], [0.42, -0.9], [0.46, -0.4], [0.7, 0]]);
 			return {
 				body: { rot: [0, keys(t, [[0, 0], [0.2, 0.35], [0.55, 0.35], [0.7, 0]]), 0] },
 				armL: { rot: [up, 0, 0] },
@@ -322,17 +430,17 @@ function attackPose (kind: Attack, t: number): Record<string, Pose> {
 		}
 		case "fire": {
 			// Gun brought up level, a kick, lowered
-			const aim = keys(t, [[0, 0], [0.18, -1.5], [0.55, -1.5], [0.7, 0]]);
+			const aim = keys(t, [[0, 0], [0.18, -0.55], [0.55, -0.55], [0.7, 0]]);
 			const kick = bump(t, 0.3, 0.45);
 			return {
 				body: { rot: [-0.1 * kick, 0, 0] },
 				armR: { rot: [aim - 0.35 * kick, 0, 0] },
-				armL: { rot: [aim * 0.85 - 0.3 * kick, 0, -0.35 * Math.min(1, -aim)] },
+				armL: { rot: [aim * 0.85 - 0.3 * kick, 0, 0] },
 				root: { pos: [0, 0, -0.6 * kick] }
 			};
 		}
 		case "thrust": {
-			const reach = keys(t, [[0, 0], [0.2, -0.9], [0.32, -1.6], [0.5, -1.2], [0.7, 0]]);
+			const reach = keys(t, [[0, 0], [0.2, -0.6], [0.32, -1.3], [0.5, -0.9], [0.7, 0]]);
 			return {
 				body: { rot: [keys(t, [[0, 0], [0.32, 0.25], [0.7, 0]]), 0, 0] },
 				armR: { rot: [reach, 0, 0] },
@@ -341,12 +449,12 @@ function attackPose (kind: Attack, t: number): Record<string, Pose> {
 		}
 		default: {
 			// Wind up over the head, swing down
-			const arm = keys(t, [[0, 0], [0.25, -2.6], [0.38, -0.3], [0.7, 0]]);
+			const arm = keys(t, [[0, 0], [0.25, -2], [0.38, 0.35], [0.7, 0]]);
 			return {
 				body: { rot: [keys(t, [[0, 0], [0.25, -0.1], [0.38, 0.3], [0.7, 0]]), keys(t, [[0, 0], [0.25, 0.3], [0.38, -0.2], [0.7, 0]]), 0] },
 				head: { rot: [keys(t, [[0, 0], [0.38, 0.15], [0.7, 0]]), 0, 0] },
 				armR: { rot: [arm, 0, 0] },
-				armL: { rot: [keys(t, [[0, 0], [0.25, -0.5], [0.38, 0.2], [0.7, 0]]), 0, 0.15] }
+				armL: { rot: [keys(t, [[0, 0], [0.25, -0.3], [0.38, 0.2], [0.7, 0]]), 0, 0.1] }
 			};
 		}
 	}
@@ -397,6 +505,9 @@ const hats = {
 	souwester: (v: Vox) => {
 		v.box(-5.6, 18.4, -5.4, 11.2, 3.2, 10.6, 0xf7cf3d).box(-6.6, 18, -7.4, 13.2, 0.6, 12.4, 0xf7cf3d);
 	},
+	kettle: (c: number) => (v: Vox) => {
+		v.box(-5.5, 18, -5.1, 11, 3.4, 10.2, c).box(-7, 18, -6.6, 14, 0.7, 13.2, c).box(-4.6, 21.4, -4.2, 9.2, 0.8, 8.4, c);
+	},
 	bandana: (c: number) => (v: Vox) => {
 		v.box(-5.4, 18.3, -4.9, 10.8, 2.6, 9.8, c).cbox(0, 17.5, -5.4, 2, 2, 1, c);
 	}
@@ -424,6 +535,20 @@ const outfits = {
 	armour: (c: number) => (v: Vox) => {
 		v.box(-3.7, 6.5, -2.2, 7.4, 4.6, 4.4, c).box(-4.6, 10, -2.3, 9.2, 1.4, 4.6, c);
 	},
+	fur: (c: number) => (v: Vox) => {
+		v.box(-3.7, 8.6, -2.2, 7.4, 2.6, 4.4, c).box(-3.7, 5.2, 1.9, 2.4, 3.6, 0.3, c).box(1.3, 5.2, 1.9, 2.4, 3.6, 0.3, c);
+		v.box(-1.2, 6.4, 2.05, 2.4, 0.6, 0.2, 0x5a3b28);
+	},
+	plate: (c: number, tabard: number) => (v: Vox) => {
+		v.box(-3.7, 6.6, -2.2, 7.4, 4.6, 4.4, c).box(-1.4, 4.2, 2.1, 2.8, 6.4, 0.4, tabard).box(-0.6, 9.6, 2.4, 1.2, 1.2, 0.3, GOLD);
+	},
+	quilted: (c: number) => (v: Vox) => {
+		for (const y of [6.2, 7.8, 9.4]) v.box(-3.6, y, -2.1, 7.2, 0.4, 4.2, c);
+	},
+	ammo: (c: number) => (v: Vox) => {
+		for (let i = 0; i < 6; i++) v.box(-3.4 + i * 1.15, 5.4 + i * 0.95, 2, 1, 1, 0.5, c);
+		for (let i = 0; i < 6; i++) v.box(2.4 - i * 1.15, 5.4 + i * 0.95, 2.1, 1, 1, 0.5, shade(c, 0.9));
+	},
 	collar: (c: number) => (v: Vox) => {
 		v.box(-3.6, 10.2, -2.1, 7.2, 0.9, 4.2, c);
 	}
@@ -434,19 +559,56 @@ const outfits = {
 // ------------------------------------------------------------------
 
 export const CHARACTERS: Record<string, () => Rigged> = {
-	warrior: () => chibi({ skin: SKIN.tan, hair: HAIR.brown, hairStyle: "spiky", shirt: 0xa86b3c, pants: 0x6e4a2b, belt: 0x4a3020, hat: hats.headband(0xd94a4a), outfit: outfits.tunic(0x8c5530), weapon: "club", seed: 11 }),
-	archer: () => chibi({ skin: SKIN.light, hair: HAIR.ginger, shirt: 0x4f9a4a, pants: 0x6b4a2e, belt: 0x5b3a22, hat: hats.hood(0x3f7d3c), weapon: undefined, offhand: "bow", back: "quiver", attack: "bow", seed: 12 }),
-	swordsman: () => chibi({ skin: SKIN.light, hair: HAIR.blonde, shirt: 0xd04545, pants: 0x55433a, belt: 0x3d2b20, hat: helmetWith(IRON, 0xd04545), outfit: outfits.armour(IRON), weapon: "sword", offhand: "shield", shieldColor: 0x3a6fc0, seed: 13 }),
-	defender: () => chibi({ skin: SKIN.brown, hair: HAIR.black, shirt: 0x3b5fa8, pants: 0x3a3d48, belt: 0x2d2a28, hat: helmetWith(STEEL, 0x3b5fa8), outfit: outfits.armour(STEEL), weapon: "spear", offhand: "tower", shieldColor: 0x3b5fa8, attack: "thrust", seed: 14 }),
+	// Each fighter has its own shape, colour and a big signature piece of kit, so it reads at a glance
+	warrior: () => chibi({
+		build: "soldier", skin: SKIN.tan, hair: HAIR.brown, hairStyle: "spiky", shirt: 0x8c5530, sleeves: SKIN.tan, pants: 0x6e4a2b, belt: 0x4a3020, paint: 0xd94a4a,
+		hat: hats.headband(0xd94a4a), outfit: outfits.fur(0xe3cfa8), weapon: "club", offhand: "buckler", shieldColor: 0x9b6a3c, shieldEmblem: STEEL, seed: 11
+	}),
+	archer: () => chibi({
+		build: "slim", skin: SKIN.light, hair: HAIR.ginger, shirt: 0x6b8f3a, sleeves: 0x4f7a2e, pants: 0x6b4a2e, belt: 0x5b3a22,
+		hat: hats.hood(0x3f7d3c), back: "cloakQuiver", backColor: 0x3f7d3c, offhand: "bow", attack: "bow", seed: 12
+	}),
+	swordsman: () => chibi({
+		build: "soldier", skin: SKIN.light, hair: HAIR.blonde, shirt: 0xc93c3c, pants: 0x55433a, belt: 0x3d2b20, pauldrons: IRON,
+		hat: helmetWith(IRON, 0xd94a4a), outfit: outfits.plate(IRON, 0xc93c3c), weapon: "sword", offhand: "shield", shieldColor: 0xc93c3c, shieldEmblem: GOLD, seed: 13
+	}),
+	defender: () => chibi({
+		build: "heavy", skin: SKIN.brown, hair: HAIR.black, shirt: 0x3b5fa8, pants: 0x3a3d48, belt: 0x2d2a28, pauldrons: STEEL,
+		hat: helmetWith(STEEL, 0x3b5fa8), outfit: outfits.armour(STEEL), weapon: "spear", offhand: "tower", shieldColor: 0x3b5fa8, shieldEmblem: GOLD, attack: "thrust", seed: 14
+	}),
 	settler: () => chibi({ skin: SKIN.tan, hair: HAIR.brown, hairStyle: "bun", shirt: 0xc98f4e, pants: 0x7b5a3a, belt: 0x5a3d26, hat: hats.straw(0xd94a4a), weapon: "staff", back: "pack", seed: 15 }),
-	crossbowman: () => chibi({ skin: SKIN.light, hair: HAIR.brown, shirt: 0x6f8f3a, pants: 0x5b4a3a, belt: 0x3d2b20, hat: helmetWith(IRON), outfit: outfits.tunic(0x5d7a2e), weapon: "crossbow", back: "quiver", attack: "fire", seed: 16 }),
-	musketeer: () => chibi({ skin: SKIN.light, hair: HAIR.grey, hairStyle: "long", shirt: 0x2f5aa8, pants: 0xe9e3d3, shoes: 0x22222a, hat: hats.tricorn(0x23232b), outfit: (v) => { outfits.crossbelts(0xf3efe6)(v); outfits.buttons(GOLD)(v); }, weapon: "musket", attack: "fire", seed: 17 }),
-	rifleman: () => chibi({ skin: SKIN.tan, hair: HAIR.black, shirt: 0x5a6b4a, pants: 0x4a553c, shoes: 0x2d2a28, belt: 0x3d3326, hat: hats.shako(0x3a4a5c), outfit: outfits.buttons(GOLD), weapon: "rifle", attack: "fire", seed: 18 }),
-	machineGunner: () => chibi({ skin: SKIN.brown, hair: HAIR.black, shirt: 0x6b7350, pants: 0x585f43, shoes: 0x2d2a28, belt: 0x3d3326, hat: hats.tinhat(0x6b7350), outfit: outfits.crossbelts(0xc9a24a), weapon: "mg", attack: "fire", seed: 19 }),
-	infantry: () => chibi({ skin: SKIN.light, hair: HAIR.brown, shirt: 0x6f7a4d, pants: 0x5c653f, shoes: 0x2d2a28, belt: 0x3d3326, hat: hats.tinhat(0x56603a), outfit: outfits.collar(0x5c653f), weapon: "rifle", attack: "fire", seed: 20 }),
-	mechInfantry: () => chibi({ skin: SKIN.tan, hair: HAIR.black, shirt: 0x6b7a86, pants: 0x4d5965, shoes: 0x2a2d33, belt: 0x2a2d33, hat: hats.visor(0x7d8a96, 0xff9d3c), outfit: outfits.armour(0x8a97a3), weapon: "rifle", back: "jetpack", attack: "fire", seed: 21 }),
-	laserTrooper: () => chibi({ skin: SKIN.dark, hair: HAIR.black, shirt: 0xeef2f7, pants: 0xc9d2dc, shoes: 0x3a4250, belt: 0x4ef0ff, hat: hats.visor(0xeef2f7, 0x4ef0ff), outfit: outfits.armour(0xdde4ec), weapon: "laser", attack: "fire", seed: 22 }),
-	exoTrooper: () => chibi({ skin: SKIN.light, hair: HAIR.blonde, shirt: 0x3c4654, pants: 0x2f3742, shoes: 0x1f242b, belt: 0x4ef0ff, hat: hats.visor(0x56637a, 0x4ef0ff), outfit: outfits.armour(0x56637a), weapon: "laser", back: "jetpack", attack: "fire", bulky: true, seed: 23 }),
+	crossbowman: () => chibi({
+		build: "soldier", skin: SKIN.light, hair: HAIR.brown, shirt: 0xd9a441, sleeves: 0xb8862f, pants: 0x5b4a3a, belt: 0x3d2b20,
+		hat: hats.kettle(STEEL), outfit: outfits.quilted(0xb8862f), weapon: "crossbow", back: "quiver", attack: "fire", seed: 16
+	}),
+	musketeer: () => chibi({
+		build: "soldier", skin: SKIN.light, hair: HAIR.grey, hairStyle: "long", shirt: 0x2f5aa8, pants: 0xe9e3d3, shoes: 0x22222a, coatTails: 0x2f5aa8,
+		hat: hats.tricorn(0x23232b), outfit: (v) => { outfits.crossbelts(0xf3efe6)(v); outfits.buttons(GOLD)(v); }, weapon: "musket", attack: "fire", seed: 17
+	}),
+	rifleman: () => chibi({
+		build: "soldier", skin: SKIN.tan, hair: HAIR.black, shirt: 0x4f6b3a, pants: 0x3f4a33, shoes: 0x2d2a28, belt: 0x3d3326,
+		hat: hats.shako(0x2f3d4f), outfit: (v) => { outfits.buttons(GOLD)(v); outfits.collar(0xd94a4a)(v); }, weapon: "rifle", attack: "fire", seed: 18
+	}),
+	machineGunner: () => chibi({
+		build: "heavy", skin: SKIN.brown, hair: HAIR.black, shirt: 0x6b7350, pants: 0x585f43, shoes: 0x2d2a28, belt: 0x3d3326,
+		hat: hats.tinhat(0x6b7350), outfit: outfits.ammo(0xd9b24a), weapon: "mg", attack: "fire", seed: 19
+	}),
+	infantry: () => chibi({
+		build: "soldier", skin: SKIN.light, hair: HAIR.brown, shirt: 0x7a8456, pants: 0x5c653f, shoes: 0x2d2a28, belt: 0x3d3326,
+		hat: hats.tinhat(0x56603a), outfit: outfits.collar(0x5c653f), weapon: "rifle", back: "pack", backColor: 0x56603a, attack: "fire", seed: 20
+	}),
+	mechInfantry: () => chibi({
+		build: "heavy", skin: SKIN.tan, hair: HAIR.black, shirt: 0x6b7a86, pants: 0x4d5965, shoes: 0x2a2d33, belt: 0x2a2d33, pauldrons: 0x8a97a3,
+		hat: hats.visor(0x7d8a96, 0xff9d3c), outfit: outfits.armour(0x8a97a3), weapon: "rifle", back: "jetpack", attack: "fire", seed: 21
+	}),
+	laserTrooper: () => chibi({
+		build: "slim", skin: SKIN.dark, hair: HAIR.black, shirt: 0xeef2f7, pants: 0xc9d2dc, shoes: 0x3a4250, belt: 0x4ef0ff, pauldrons: 0xdde4ec,
+		hat: hats.visor(0xeef2f7, 0x4ef0ff), outfit: outfits.armour(0xdde4ec), weapon: "laser", attack: "fire", seed: 22
+	}),
+	exoTrooper: () => chibi({
+		build: "heavy", skin: SKIN.light, hair: HAIR.blonde, shirt: 0x3c4654, pants: 0x2f3742, shoes: 0x1f242b, belt: 0x4ef0ff, pauldrons: 0x56637a,
+		hat: hats.visor(0x56637a, 0x4ef0ff), outfit: outfits.armour(0x56637a), weapon: "laser", back: "jetpack", backColor: 0x3c4654, attack: "fire", bulky: true, seed: 23
+	}),
 	// Workers
 	workerCarrier: () => chibi({ skin: SKIN.tan, hair: HAIR.brown, shirt: 0xd9b26a, pants: 0x7b5a3a, belt: 0x5a3d26, hat: hats.bandana(0x5f8ccc), back: "sack", worker: true, seed: 31 }),
 	workerMiner: () => chibi({ skin: SKIN.light, hair: HAIR.black, shirt: 0x5a6f8a, pants: 0x4a4038, belt: 0x3a2c22, hat: hats.miner, weapon: "pickaxe", worker: true, seed: 32 }),

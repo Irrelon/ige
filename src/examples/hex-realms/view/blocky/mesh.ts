@@ -81,8 +81,11 @@ export class Vox {
 		return this;
 	}
 
-	/** Copy another set of boxes in, moved by (dx, dy, dz) and optionally mirrored or turned a quarter. */
-	add (other: Vox, dx = 0, dy = 0, dz = 0, turn: 0 | 1 | 2 | 3 = 0): this {
+	/**
+	 * Copy another set of boxes in: turned a quarter (about y) `turn` times, scaled about the origin
+	 * (sx, sy, sz), then moved by (dx, dy, dz).
+	 */
+	add (other: Vox, dx = 0, dy = 0, dz = 0, turn: 0 | 1 | 2 | 3 = 0, sx = 1, sy = sx, sz = sx): this {
 		for (const b of other.boxes) {
 			let { x, z, w, d } = b;
 			for (let k = 0; k < turn; k++) {
@@ -90,7 +93,7 @@ export class Vox {
 				const nx = z, nz = -(x + w);
 				[x, z, w, d] = [nx, nz, d, w];
 			}
-			this.boxes.push({ ...b, x: x + dx, y: b.y + dy, z: z + dz, w, d, bone: b.bone === 0 ? this.bone : b.bone });
+			this.boxes.push({ ...b, x: x * sx + dx, y: b.y * sy + dy, z: z * sz + dz, w: w * sx, h: b.h * sy, d: d * sz, bone: b.bone === 0 ? this.bone : b.bone });
 		}
 		return this;
 	}
