@@ -45,6 +45,7 @@ uniform int u_usePBR;                     // 0 = simple lighting, 1 = PBR
 uniform float u_metallic;                 // Metallic value (0-1)
 uniform float u_roughness;                // Roughness value (0-1)
 uniform sampler2D u_metallicRoughnessTexture; // Combined metallic (B) + roughness (G) texture
+uniform int u_hasMetallicRoughnessTexture;      // 0: metallic and roughness come from the material alone
 uniform sampler2D u_normalTexture;        // Normal map
 uniform int u_hasNormalMap;               // Whether normal map is used
 uniform sampler2D u_emissiveTexture;      // Emissive texture
@@ -70,6 +71,7 @@ uniform float u_fogFar;
 uniform float u_fogDensity;
 uniform vec3 u_cameraPosition;
 uniform sampler2D u_aoTexture;            // Ambient occlusion texture
+uniform int u_hasAoTexture;               // 0: no occlusion map (full ambient)
 uniform float u_ambientOcclusion;         // AO value
 
 // Ambient light (hemisphere: u_ambientLightColor from above, u_ambientGroundColor from below)
@@ -475,9 +477,10 @@ vec3 calculatePBRLight(vec3 N, vec3 V, vec3 L, vec3 radiance, vec3 albedo, float
 	// Metallic surfaces don't have diffuse reflection
 	kD *= 1.0 - metallic;
 
-	// Final contribution from this light
+	// Final contribution from this light. Scaled by PI so a rough dielectric is as bright as in the
+	// simple lighting mode (lights keep the same intensities either way); metals and highlights add on top.
 	float NdotL = max(dot(N, L), 0.0);
-	return (kD * albedo / PI + specular) * radiance * NdotL;
+	return (kD * albedo + specular * PI) * radiance * NdotL;
 }
 
 void main() {
@@ -563,12 +566,12 @@ void main() {
 		// ================================================================
 
 		// Sample PBR textures
-		vec4 mrSample = texture2D(u_metallicRoughnessTexture, v_uv);
+		vec4 mrSample = u_hasMetallicRoughnessTexture == 1 ? texture2D(u_metallicRoughnessTexture, v_uv) : vec4(1.0);
 		float metallic = u_metallic * mrSample.b;
 		float roughness = u_roughness * mrSample.g;
 		roughness = clamp(roughness, 0.04, 1.0); // Prevent divide by zero in NDF
 
-		float ao = u_ambientOcclusion * texture2D(u_aoTexture, v_uv).r;
+		float ao = u_ambientOcclusion * (u_hasAoTexture == 1 ? texture2D(u_aoTexture, v_uv).r : 1.0);
 
 		// Ambient light with PBR (simplified IBL approximation)
 		vec3 F0 = mix(F0_DIELECTRIC, albedo, metallic);

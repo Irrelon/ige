@@ -708,6 +708,25 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 	}
 
 	/**
+	 * Gets / sets physically based lighting for lit materials: metallic and
+	 * roughness then shape the light (metal sheen, glossy highlights, rough
+	 * matte surfaces). Off by default (the simple diffuse model every game
+	 * has used so far); a game opts in. Lights keep the same intensities: a
+	 * rough non-metal looks as bright either way.
+	 * @example #Turn on physically based lighting
+	 *     renderer.pbr(true);
+	 */
+	pbr(): boolean;
+	pbr(enabled: boolean): this;
+	pbr(enabled?: boolean): boolean | this {
+		if (enabled === undefined) return this._pbr;
+		this._pbr = enabled;
+		return this;
+	}
+
+	protected _pbr = false;
+
+	/**
 	 * Gets / sets distance fog applied by the lit shaders. Distance is
 	 * measured from each viewport's camera, so every split-screen view fades
 	 * relative to its own camera.
@@ -2688,8 +2707,11 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 		// The shadow manager binds its textures with raw GL calls
 		this._stateManager?.invalidateTextureBindings();
 
-		// Default to simple lighting mode (non-PBR)
-		program.setUniform1i("u_usePBR", 0);
+		// Simple lighting unless the game opted in to physically based lighting (see pbr())
+		program.setUniform1i("u_usePBR", this._pbr ? 1 : 0);
+		program.setUniform1i("u_hasMetallicRoughnessTexture", 0);
+		program.setUniform1i("u_hasAoTexture", 0);
+		program.setUniform1f("u_ambientOcclusion", 1);
 		program.setUniform1i("u_hasNormalMap", 0);
 		program.setUniform1i("u_baseColorTexture", 0);
 
