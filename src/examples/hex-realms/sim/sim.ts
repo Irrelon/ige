@@ -283,7 +283,7 @@ export class Sim {
 	/** Raiders (owner -1) as a stand-in civ: a name and colour for their units, no techs, at war with all. */
 	get raiderPlayer (): PlayerState {
 		this._raiderPlayer ??= {
-			index: RAIDERS, name: "Raiders", color: "#6b4a3a", civ: "highlanders", human: false, alive: true, stars: 0, techs: [], sell: [], priority: [],
+			index: RAIDERS, name: "Raiders", color: "#8c2318", civ: "highlanders", human: false, alive: true, stars: 0, techs: [], sell: [], priority: [],
 			stats: { kills: 0, lost: 0, produced: 0, captured: 0, delivered: 0, conquered: 0, warsDeclared: 0 },
 			feats: [], ambition: null, milestones: [], legacy: false, lastWar: 0, agenda: null
 		};

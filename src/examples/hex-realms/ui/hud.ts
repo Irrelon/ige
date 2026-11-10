@@ -541,6 +541,7 @@ export class Hud {
 		const mine = u.owner === this.me;
 		const whose = mine ? "" : esc(owner.name);
 		const out = [`<div class="title"><span class="swatch" style="background:${owner.color}"></span>${info.name}${u.veteran ? ` <span class="stars" title="Veteran">${icon("star", 14)}</span>` : ""} <span class="dim">${whose}</span></div>`];
+		if (u.owner < 0) out.push(`<div class="dim small">Outlaws from a camp nearby: they attack anything in reach. Scatter the camp to end the raids.</div>`);
 		const stat = (cls: string, ico: string, value: string, title: string) => `<span class="stat ${cls}" title="${title}">${icon(ico, 14)}${value}</span>`;
 		out.push(`<div class="statline">${[
 			stat("hp", "heart", `${u.hp}<small>/${u.maxHp}</small>`, "Health"),
