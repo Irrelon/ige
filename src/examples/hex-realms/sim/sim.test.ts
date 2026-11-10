@@ -9,7 +9,8 @@ import { createCity } from "./cities";
 import { networkNodes, SEA } from "./network";
 import { attitude, councilVote, grievance, hasPact, pickAgenda, warProblem } from "./diplomacy";
 import { researchCost } from "./effects";
-import { administration, BUILDINGS, foodGoodsOf, foodValueOf, levelIncome, type TechId, TECH_IDS, techCost } from "./rules";
+import { administration, BUILDINGS, Deposit, foodGoodsOf, foodValueOf, growthNeeded, levelIncome, type TechId, TECH_IDS, techCost } from "./rules";
+import { buildingPop, harvestProblem } from "./growth";
 import { income, upkeep } from "./treasury";
 import { defaultOptions, Sim } from "./sim";
 import { ALLIANCE, type Command, type GameOptions, NEUTRAL, PEACE, type UnitState, WAR } from "./types";
@@ -28,7 +29,7 @@ function blank (players: number, starts: number[], overrides: Partial<GameOption
 	map.shade.fill(1);
 	map.landmass.fill(0);
 	map.landmassSizes = [map.count];
-	const options = defaultOptions({ width, height, players, humans: [0], fog: "off", allowFounding: true, neutralStart: false, ...overrides });
+	const options = defaultOptions({ width, height, players, humans: [0], fog: "off", allowFounding: true, neutralStart: false, buildGrowth: false, ...overrides });
 	const sim = Sim.create(options, { map, starts, villages: false });
 	sim.drainEvents();
 	return sim;
@@ -854,6 +855,67 @@ describe("diplomacy II", () => {
 		expect(loaded.player(0).feats).toEqual([]);
 	});
 });
+
+describe("Polytopia-style growth", () => {
+	test("finished buildings grow their city; workshops add more for neighbours that feed them, now and later", () => {
+		const sim = blank(2, [sim2(4, 4), sim2(20, 12)], { buildGrowth: true });
+		give(sim, 0, "forestry", "sawmills");
+		sim.player(0).stars = 60;
+		const capital = sim.citiesOf(0)[0];
+		capital.level = 4; // room for four buildings
+		// A ring of land around a free tile two steps from the capital
+		const mill = sim.map.neighbor(sim.map.neighbor(capital.tile, 1), 1);
+		const woods = sim.neighbors(mill).filter((t) => sim.tileCity[t] === capital.id && sim.cityAt[t] < 0);
+		expect(woods.length).toBeGreaterThanOrEqual(3);
+		for (const t of woods) sim.map.feature[t] = Feature.Forest;
+		const grown = () => capital.level * 100 + capital.growth;
+		const at0 = grown();
+		expect(sim.apply(0, { type: "build", tile: woods[0], building: "woodcutter" }).ok).toBe(true);
+		expect(grown()).toBe(at0 + 1);
+		expect(sim.apply(0, { type: "build", tile: woods[1], building: "woodcutter" }).ok).toBe(true);
+		// The sawmill: 1, plus 1 for each of the two woodcutters beside it
+		expect(buildingPop(sim, 0, mill, "sawmill")).toBe(3);
+		expect(sim.apply(0, { type: "build", tile: mill, building: "sawmill" }).ok).toBe(true);
+		const sawmill = sim.buildingOn(mill)!;
+		sim.drainEvents();
+		expect(sim.apply(0, { type: "rush", building: sawmill.id }).ok).toBe(true);
+		const events = sim.drainEvents().filter((e) => e.type === "population");
+		expect(events.map((e) => e.type === "population" && e.points)).toEqual([3]);
+		// A third woodcutter beside the sawmill: 1 for itself, 1 for the sawmill
+		const before = capital.growth + growthTotal(capital.level);
+		expect(buildingPop(sim, 0, woods[2], "woodcutter")).toBe(2);
+		expect(sim.apply(0, { type: "build", tile: woods[2], building: "woodcutter" }).ok).toBe(true);
+		expect(capital.growth + growthTotal(capital.level)).toBe(before + 2);
+	});
+
+	test("fish and game can be harvested for stars: the city grows and the resource is gone", () => {
+		const sim = blank(2, [sim2(4, 4), sim2(20, 12)], { buildGrowth: true });
+		sim.player(0).stars = 10;
+		const capital = sim.citiesOf(0)[0];
+		const tile = sim.map.neighbor(capital.tile, 2);
+		sim.map.deposit[tile] = Deposit.Game;
+		const notMine = sim.map.neighbor(sim.citiesOf(1)[0].tile, 2);
+		sim.map.deposit[notMine] = Deposit.Game;
+		give(sim, 0, "hunting");
+		expect(harvestProblem(sim, 0, notMine)).toBe("Only in your own land");
+		const growth = capital.growth;
+		expect(sim.apply(0, { type: "harvest", tile }).ok).toBe(true);
+		expect(capital.growth).toBe(growth + 1);
+		expect(sim.player(0).stars).toBe(8);
+		expect(sim.map.deposit[tile]).toBe(Deposit.None);
+		expect(sim.apply(0, { type: "harvest", tile }).ok).toBe(false);
+		// Older games (and replays) keep food-only growth
+		const old = blank(2, [sim2(4, 4), sim2(20, 12)], { buildGrowth: false });
+		expect(buildingPop(old, 0, sim.map.neighbor(old.citiesOf(0)[0].tile, 0), "woodcutter")).toBe(0);
+	});
+});
+
+/** Growth points needed to reach a level from level 1. */
+function growthTotal (level: number): number {
+	let n = 0;
+	for (let l = 1; l < level; l++) n += growthNeeded(l);
+	return n;
+}
 
 describe("unit orders, upgrades and renaming", () => {
 	function unitAt (sim: Sim, owner: number, tile: number, type: UnitState["type"] = "warrior"): UnitState {

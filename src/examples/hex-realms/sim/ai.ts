@@ -5,12 +5,13 @@ import { captureProblem, foundProblem, slotCap, slotsUsed, trainProblem, unitCos
 import { actionProblem, agreementCost, aiAccepts, attitude, type DealTerms, endTreatyProblem, justified, proposalProblem, strandedUnits, strength, warProblem, weariness } from "./diplomacy";
 import { buildingStars, buildProblem, buyCost, networkNodes, rushCost, rushProblem, storedGoods } from "./economy";
 import { researchCost } from "./effects";
+import { harvestProblem } from "./growth";
 import { search } from "./network";
 import { mulberry32 } from "../noise";
 import { reachable, type Reach } from "./movement";
 import {
 	type AgendaId, AMBITION_IDS, type AmbitionId, AMBITIONS, type BuildingId, BUILDINGS, type CivId, CIVS, Deposit, type EndableTreaty, EXCHANGE_COST, type Good, GOOD_INFO, levelRewards,
-	MONUMENT_IDS, type Personality, personalityOf, ROAD_COST, TECH_IDS, type TechId, TECHS, UNIT_TYPES, type UnitTypeId, type WonderId
+	HARVEST, MONUMENT_IDS, type Personality, personalityOf, ROAD_COST, TECH_IDS, type TechId, TECHS, UNIT_TYPES, type UnitTypeId, type WonderId
 } from "./rules";
 import type { Sim } from "./sim";
 import { freeUnits, income, upkeep } from "./treasury";
@@ -101,6 +102,7 @@ class AiTurn {
 		this.diplomacy();
 		this.research();
 		this.economy();
+		this.harvest();
 		this.wonders();
 		this.units();
 		this.training();
@@ -320,6 +322,28 @@ class AiTurn {
 	/** Stars free to spend beyond the research reserve. */
 	get spare (): number {
 		return this.stars - this.reserve;
+	}
+
+	/**
+	 * Use up fish and game for growth (buildGrowth games): always where the
+	 * city has no free building slot for a lodge or fishery, otherwise now and
+	 * then. At most two a turn, from spare stars.
+	 */
+	harvest (): void {
+		const sim = this.sim;
+		if (!sim.options.buildGrowth) return;
+		let done = 0;
+		for (const city of sim.citiesOf(this.p)) {
+			const full = slotsUsed(sim, city) >= slotCap(city);
+			for (const t of sim.tilesWithin(city.tile, 3)) {
+				if (done >= 2) return;
+				if (sim.tileCity[t] !== city.id || harvestProblem(sim, this.p, t)) continue;
+				const rule = HARVEST[sim.map.deposit[t] as Deposit];
+				if (!rule || this.spare < rule.stars) continue;
+				if (!full && this.rand() > 0.3) continue;
+				if (this.do({ type: "harvest", tile: t })) done++;
+			}
+		}
 	}
 
 	// ------------------------------------------------------------------

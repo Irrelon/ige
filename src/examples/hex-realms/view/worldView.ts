@@ -1336,6 +1336,9 @@ export class WorldView {
 				case "featureCleared":
 					this.terrain.terrainChangedAt(e.tile);
 					break;
+				case "harvested":
+					this.depositsDirty = true;
+					break;
 				case "territory":
 				case "eliminated":
 					this.bordersDirty = true;

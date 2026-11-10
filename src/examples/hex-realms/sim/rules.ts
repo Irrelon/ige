@@ -235,6 +235,43 @@ export const BUILDING_IDS = Object.keys(BUILDINGS) as BuildingId[];
 export const WONDER_IDS = BUILDING_IDS.filter((b) => BUILDINGS[b].wonder === "world") as WonderId[];
 export const MONUMENT_IDS = BUILDING_IDS.filter((b) => BUILDINGS[b].wonder === "monument") as MonumentId[];
 
+/**
+ * Polytopia-style growth (the buildGrowth option). A finished building adds
+ * population to the city whose land it stands on, once: a sawmill one point,
+ * a farm two. Workshops add more for each neighbouring building that feeds
+ * them (a sawmill for each woodcutter beside it, a mill for each farm, a
+ * smelter two for each mine), and a feeder finished later beside a workshop
+ * adds that bonus to the workshop's city. Food delivered still adds growth.
+ */
+export const BUILDING_POP: Partial<Record<BuildingId, number>> = {
+	woodcutter: 1, quarry: 1, mine: 2, farm: 2, fishery: 1, hunter: 1, pasture: 1,
+	sawmill: 1, smelter: 1, mill: 1, mint: 2, toolsmith: 2, armoury: 2, bakery: 1,
+	steelworks: 3, powderMill: 3, factory: 4, electronicsWorks: 5,
+	warehouse: 1, market: 2, port: 2, walls: 1,
+	greatLibrary: 3, greatWall: 3, colossus: 3, hangingGardens: 3, grandBazaar: 3, imperialRoad: 3, hallOfHeroes: 3, observatory: 3, councilHall: 3, grandExchange: 3
+};
+
+/** Extra population a workshop earns for each finished neighbour of these kinds (its own owner's). */
+export const POP_BOOST: Partial<Record<BuildingId, { from: BuildingId[]; points: number }>> = {
+	sawmill: { from: ["woodcutter"], points: 1 },
+	mill: { from: ["farm"], points: 1 },
+	smelter: { from: ["mine"], points: 2 },
+	bakery: { from: ["mill"], points: 1 },
+	toolsmith: { from: ["smelter", "sawmill"], points: 1 },
+	armoury: { from: ["smelter"], points: 1 },
+	steelworks: { from: ["smelter", "mine"], points: 1 },
+	factory: { from: ["steelworks", "toolsmith"], points: 2 },
+	electronicsWorks: { from: ["factory", "mint"], points: 2 },
+	market: { from: ["sawmill", "mill", "smelter", "bakery", "toolsmith", "mint"], points: 1 },
+	port: { from: ["fishery"], points: 1 }
+};
+
+/** Resources a city can use up for one-off growth (buildGrowth games): fish and game, for stars. */
+export const HARVEST: Partial<Record<Deposit, { tech: TechId; stars: number; pop: number; name: string }>> = {
+	[Deposit.Fish]: { tech: "fishing", stars: 2, pop: 1, name: "Fish" },
+	[Deposit.Game]: { tech: "hunting", stars: 2, pop: 1, name: "Hunt" }
+};
+
 /** Input and output slot sizes of a production building. */
 export const BUFFER_SIZE = 2;
 

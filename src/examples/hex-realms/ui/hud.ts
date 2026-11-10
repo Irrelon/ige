@@ -5,8 +5,9 @@ import { captureProblem, foundProblem, slotCap, slotsUsed, trainProblem, unitCos
 import { attackProblem, preview } from "../sim/combat";
 import { buildingStars, buildOptions, buyCost, buyProblem, roadProblem, rushCost, rushProblem, storedGoods, wonderOptions } from "../sim/economy";
 import { researchCost } from "../sim/effects";
+import { buildingPop, harvestProblem } from "../sim/growth";
 import {
-	AMBITIONS, type BuildingId, BUILDINGS, DEPOSIT_NAMES, type Deposit, type EndableTreaty, END_TRUCE_TURNS, GOOD_INFO, GOODS, type Good, type Goods, growthNeeded, levelRewards, REWARDS, ROAD_COST,
+	AMBITIONS, type BuildingId, BUILDINGS, DEPOSIT_NAMES, Deposit, type EndableTreaty, END_TRUCE_TURNS, GOOD_INFO, GOODS, type Good, type Goods, growthNeeded, HARVEST, levelRewards, REWARDS, ROAD_COST,
 	eraOfTier, type TechId, TECH_IDS, TECHS, UNIT_LOOK, UNIT_TYPE_IDS, type UnitTypeId, UNIT_TYPES, WONDER_IDS
 } from "../sim/rules";
 import type { Sim } from "../sim/sim";
@@ -154,7 +155,7 @@ export class Hud {
 	contactCiv = -1;
 	/** The save whose Delete is waiting for a second click. */
 	saveConfirm: string | null = null;
-	damage: { el: HTMLDivElement; tile: number; age: number }[] = [];
+	damage: { el: HTMLDivElement; tile: number; age: number; life?: number }[] = [];
 	labels = new Map<string, HTMLDivElement>();
 	/** Economy lens: building states and city stores drawn on the map. */
 	lens = false;
@@ -300,6 +301,7 @@ export class Hud {
 			case "train": run({ type: "train", city: num("city"), unit: data.unit as never }); break;
 			case "reward": run({ type: "reward", city: num("city"), reward: data.reward as never }); break;
 			case "build": run({ type: "build", tile, building: data.building as never }); break;
+			case "harvest": run({ type: "harvest", tile }); break;
 			case "rush": run({ type: "rush", building: num("building") }); break;
 			case "buy": run({ type: "buy", building: num("building"), good: this.buyGood, count: num("count") }); break;
 			case "demolish": run({ type: "demolish", building: num("building") }); break;
@@ -581,7 +583,7 @@ export class Hud {
 		const out = [this.renaming === c.id
 			? `<div class="rename"><input id="cityName" maxlength="24" value="${esc(c.name)}" aria-label="City name" autocomplete="off" spellcheck="false" data-city="${c.id}"><button class="primary" data-action="rename-save" data-city="${c.id}">Save</button><button class="ghost" data-action="rename-cancel">Cancel</button>${renameProblem(sim, this.me, c.id, c.name) ? "" : ""}</div>`
 			: `<div class="title">${c.capital ? `<span class="stars">${icon("crown", 15)}</span>` : ""}${esc(c.name)} <button class="ghost icon-btn rename-btn" data-action="rename-city" data-city="${c.id}" title="Rename this city" aria-label="Rename">${icon("edit", 14)}</button> <span class="dim">level ${c.level}${c.walls ? " &middot; walls" : ""}</span></div>`];
-		out.push(`<div class="bar" title="Growth: deliver food"><span style="width:${(c.growth / need) * 100}%"></span><em>Growth ${c.growth}/${need}</em></div>`);
+		out.push(`<div class="bar" title="${sim.options.buildGrowth ? "Growth: buildings finished in its land, fish and game harvested, and food delivered by road" : "Growth: deliver food"}"><span style="width:${(c.growth / need) * 100}%"></span><em>Growth ${c.growth}/${need}</em></div>`);
 		out.push(`<div>Income ${stars(earns)}/turn &middot; Buildings ${slotsUsed(sim, c)}/${slotCap(c)} slots</div>`);
 		out.push(`<div class="store">Store: ${goodsList(c.store, "empty")}</div>`);
 		if (c.pendingRewards > 0) {
@@ -626,9 +628,19 @@ export class Hud {
 					if (info.tech && !sim.hasTech(this.me, info.tech)) {
 						return `<span class="locked-option" title="${esc(info.description)}">${info.name} <small><a href="#" class="tech-link" data-action="show-tech" data-tech="${info.tech}" data-for="${esc(info.name)}" title="Show ${esc(TECHS[info.tech].name)} in the research screen">Needs ${esc(TECHS[info.tech].name)}</a></small></span>`;
 					}
-					return `<button data-action="build" data-building="${type}" title="${esc(problem ? `${problem}. ${info.description}` : info.description)}" ${problem ? "disabled" : ""}>${info.name} <small>${problem ? esc(problem) : cost}</small></button>`;
+					const pop = buildingPop(sim, this.me, tile, type);
+					const grows = pop ? ` <span class="pop" title="Adds ${pop} population when finished">+${pop}${icon("people", 11)}</span>` : "";
+					return `<button data-action="build" data-building="${type}" title="${esc(problem ? `${problem}. ${info.description}` : info.description)}" ${problem ? "disabled" : ""}>${info.name}${grows} <small>${problem ? esc(problem) : cost}</small></button>`;
 				}).join("")}</div>`);
 			}
+		}
+		// Fish and game can be used up for growth (instead of building a fishery or lodge on them)
+		const harvest = HARVEST[sim.map.deposit[tile] as Deposit];
+		if (!compact && harvest && owner === this.me && !b && sim.options.buildGrowth) {
+			const problem = harvestProblem(sim, this.me, tile);
+			const city = sim.city(sim.tileCity[tile]);
+			out.push(`<div class="actions">${btn("harvest", `${harvest.name} <span class="pop">+${harvest.pop}${icon("people", 11)}</span> <small>${icon("star", 11)}${harvest.stars}</small>`, problem)}</div>
+				<div class="dim small">Uses the ${sim.map.deposit[tile] === Deposit.Fish ? "fish" : "game"} up: ${city ? esc(city.name) : "the city"} grows by ${harvest.pop} at once, but nothing can work it later.</div>`);
 		}
 		if (!compact && owner === this.me && !b && sim.cityAt[tile] < 0) {
 			const wonders = wonderOptions(sim, this.me, tile);
@@ -809,6 +821,11 @@ export class Hud {
 					}
 					break;
 				}
+				case "population": {
+					const c = sim.city(e.city);
+					if (c?.owner === me && !this.host.replaying) this.floatGain(e.tile, `+${e.points} ${icon("people", 14)}<small>${esc(c.name)}</small>`);
+					break;
+				}
 				case "cityLevel": {
 					const c = sim.city(e.city);
 					if (c?.owner === me) {
@@ -951,6 +968,17 @@ export class Hud {
 		this.damage.push({ el, tile, age: 0 });
 	}
 
+	/** A green "+2 population" rising from a tile (buildings and harvests growing a city). */
+	floatGain (tile: number, text: string): void {
+		const layer = document.getElementById("labels");
+		if (!layer) return;
+		const el = document.createElement("div");
+		el.className = "damage gain";
+		el.innerHTML = text;
+		layer.appendChild(el);
+		this.damage.push({ el, tile, age: 0, life: 2 });
+	}
+
 	/**
 	 * Quick actions floating above the selected unit, as in Polytopia: the
 	 * crossed swords capture the city it stands on, the house founds a city,
@@ -1057,14 +1085,15 @@ export class Hud {
 		for (let i = this.damage.length - 1; i >= 0; i--) {
 			const d = this.damage[i];
 			d.age += dt;
-			if (d.age > 1.1) {
+			const life = d.life ?? 1.1;
+			if (d.age > life) {
 				d.el.remove();
 				this.damage.splice(i, 1);
 				continue;
 			}
 			const p = renderer.worldToScreen(viewport, world.tileX(d.tile), h.terrain.surface.tileHeight(d.tile) + 50 + d.age * 40, world.tileZ(d.tile));
 			if (!p || !p.visible) continue;
-			d.el.style.opacity = String(1 - d.age / 1.1);
+			d.el.style.opacity = String(Math.min(1, (1 - d.age / life) * 1.6));
 			d.el.style.transform = `translate(${p.x.toFixed(0)}px, ${p.y.toFixed(0)}px) translate(-50%, -50%)`;
 		}
 	}
@@ -1404,7 +1433,7 @@ export class Hud {
 			<p><b>Stars</b>: cities earn them each turn. Units beyond your free allowance (3, plus 1 per city) cost upkeep every turn (doubled once you know 12 techs), and cities beyond your tenth cost administration. Hover your stars for the breakdown.</p>
 			<p><b>Wonders</b> (M): a world wonder exists once, so civs race to finish it; monuments are earned by feats and raise their city a level.</p>
 			<p><b>Expand</b>: capture grey villages with any unit (start a turn on one, press Capture)${this.sim.options.allowFounding ? ", or found cities with settlers" : ""}. Cities earn stars every turn.</p>
-			<p><b>Grow</b>: deliver food (fish, game, bread) to cities. Each level adds a building slot and a reward.</p>
+			<p><b>Grow</b>: ${this.sim.options.buildGrowth ? "as in Polytopia, every building finished in a city's land adds population (shown as +N on the build buttons). Workshops add more for each neighbour that feeds them: a sawmill for each woodcutter beside it, a mill for each farm, a smelter two for each mine, a market for each workshop. Fish and game can be harvested for stars to grow a city at once. Food delivered by road (fish, game, bread) adds growth too." : "deliver food (fish, game, bread) to cities."} Each level adds a building slot and a reward.</p>
 			<p><b>Build</b>: click your land to place buildings. Woodcutters are ready at once; other sites wait for logs, planks or stone carried by road, and Rush finishes them for stars. Anything joined to a city by road reaches it the same turn. Ports (Sailing) let goods sail between your coastal cities, and a market also sells you goods at twice its price.</p>
 			<p><b>Diplomacy</b> (G): treaties, cultural exchanges, research agreements, trades of goods and stars (once, or every turn as a route; where your roads meet theirs the goods travel as carts), demands, denouncing and sanctions. Wars wear both sides down, making peace easier the longer they last. Wars without enough grievances are surprise wars that everyone resents; peace brings a 10-turn truce.</p>
 			<p><b>Quick actions</b>: buttons float above a selected unit when it can do something where it stands: crossed swords capture a city, a house founds one, a flame pillages.</p>

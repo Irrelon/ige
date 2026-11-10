@@ -39,6 +39,8 @@ export interface GameOptions {
 	shuffleStarts?: boolean;
 	/** Civs start unaligned rather than at peace (new games; older ones keep peace). */
 	neutralStart?: boolean;
+	/** Polytopia-style growth: buildings and harvested resources add population (new games). */
+	buildGrowth?: boolean;
 	/** Rivers along tile edges (new games; absent in older ones, which stay as they were). */
 	rivers?: boolean;
 	victories: Record<VictoryType, boolean>;
@@ -312,6 +314,7 @@ export type Command =
 	| { type: "goto"; unit: number; to: number }
 	| { type: "upgrade"; unit: number }
 	| { type: "renameCity"; city: number; name: string }
+	| { type: "harvest"; tile: number }
 	| { type: "endTurn" };
 
 export interface CommandResult {
@@ -336,6 +339,9 @@ export type SimEvent =
 	| { type: "cityCaptured"; city: number; from: number; to: number }
 	| { type: "cityFounded"; city: number }
 	| { type: "cityLevel"; city: number; level: number }
+	/** A city gained population (buildGrowth games), from something at `tile`. */
+	| { type: "population"; city: number; points: number; tile: number; reason: string }
+	| { type: "harvested"; tile: number; deposit: number; city: number }
 	| { type: "territory"; player: number; tiles: number[] }
 	| { type: "featureCleared"; tile: number }
 	| { type: "buildingPlaced"; building: number }

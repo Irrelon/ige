@@ -7,6 +7,7 @@ import * as cities from "./cities";
 import * as combat from "./combat";
 import * as diplomacy from "./diplomacy";
 import * as economy from "./economy";
+import * as growth from "./growth";
 import { hasWonder, researchCost, sightBonus } from "./effects";
 import * as movement from "./movement";
 import * as orders from "./orders";
@@ -45,6 +46,7 @@ export function defaultOptions (overrides: Partial<GameOptions> = {}): GameOptio
 		shuffleStarts: true,
 		rivers: true,
 		neutralStart: true,
+		buildGrowth: true,
 		victories: { domination: true, score: true, prosperity: true, alliance: true, diplomatic: true },
 		turnLimit: 60,
 		difficulty: "normal",
@@ -613,6 +615,7 @@ export class Sim {
 			case "goto": result = orders.gotoCommand(this, player, command.unit, command.to); break;
 			case "upgrade": result = orders.upgradeCommand(this, player, command.unit); break;
 			case "renameCity": result = cities.renameCommand(this, player, command.city, command.name); break;
+			case "harvest": result = growth.harvestCommand(this, player, command.tile); break;
 			case "endTurn": result = this.endTurn(player); break;
 			default: result = fail("Unknown command");
 		}

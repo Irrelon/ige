@@ -238,6 +238,8 @@
 		#panel .hover { color: var(--dim); padding: 8px 14px 10px; font-size: 12px; border-top: 1px solid var(--line); background: rgba(0, 0, 0, 0.18); }
 		#panel .actions { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; align-items: center; }
 		#panel .actions button { padding: 5px 10px; }
+		#panel .pop { display: inline-flex; align-items: center; gap: 2px; margin-left: 4px; padding: 0 5px; border-radius: 999px; font-size: 10.5px; font-weight: 800; line-height: 16px; color: #9ff0a8; background: rgba(80, 190, 110, 0.14); border: 1px solid rgba(80, 190, 110, 0.4); vertical-align: 1px; }
+		#panel .pop svg { width: 11px; height: 11px; }
 		#panel .actions.train button { flex-direction: column; align-items: flex-start; gap: 0; padding: 5px 10px; }
 		#panel .reward { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px; align-items: stretch; }
 		#panel .reward button { flex-direction: column; align-items: flex-start; gap: 0; }
@@ -536,6 +538,8 @@
 		.ub em { display: block; width: 26px; height: 3px; margin-top: 2px; background: rgba(0, 0, 0, 0.6); border-radius: 2px; overflow: hidden; }
 		.ub em s { display: block; height: 100%; background: #4ade80; text-decoration: none; }
 		.damage { font: 800 20px var(--font); color: #ffd84d; text-shadow: 0 0 3px #000, 0 0 8px #000, 0 2px 0 #7a3b00; }
+		.damage.gain { font: 800 16px var(--font); color: #9ff0a8; text-shadow: 0 0 3px #000, 0 0 8px #000, 0 2px 0 #1d5a2a; display: flex; align-items: center; gap: 4px; }
+		.damage.gain small { font-size: 11px; font-weight: 700; color: #e9f6ea; }
 		#unitActions { position: absolute; left: 0; top: 0; z-index: 45; display: flex; gap: 10px; will-change: transform; }
 		#unitActions button { width: 44px; height: 44px; min-height: 0; padding: 0; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--gold-hi); background: radial-gradient(circle at 50% 35%, #2b3d58, #0f1724 75%); border: 2px solid var(--gold); box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.45), 0 4px 14px rgba(0, 0, 0, 0.55), 0 0 16px rgba(240, 195, 90, 0.35); animation: qpop 0.25s var(--ease); }
 		#unitActions button:hover { transform: scale(1.1); background: radial-gradient(circle at 50% 35%, #3a5175, #16233a 75%); }

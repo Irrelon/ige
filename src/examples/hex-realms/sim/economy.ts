@@ -1,6 +1,7 @@
 import { Feature, Relief, Terrain } from "../terrain";
 import { riverside } from "../rivers";
 import { addGrowth, foodValue, slotCap, slotsUsed } from "./cities";
+import { buildingGrowth } from "./growth";
 import { marketFactor } from "./effects";
 import { wonderCompleted, wonderProblem } from "./wonders";
 import { fail, ok } from "./result";
@@ -248,6 +249,7 @@ function completeBuilding (sim: Sim, building: BuildingState): void {
 		}
 	}
 	sim.emit({ type: "buildingCompleted", building: building.id });
+	buildingGrowth(sim, building);
 	if (BUILDINGS[building.type].wonder) wonderCompleted(sim, building);
 }
 

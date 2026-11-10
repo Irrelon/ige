@@ -677,6 +677,7 @@ export class Client extends IgeBaseClass implements IgeCanInit, HudHost {
 		this.ingest(this.sim.drainEvents());
 		if (cmd.type === "move") play("move");
 		if (cmd.type === "build" || cmd.type === "road") play("build");
+		if (cmd.type === "harvest") play("level");
 		return true;
 	}
 
