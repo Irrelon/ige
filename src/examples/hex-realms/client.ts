@@ -7,7 +7,7 @@ import { ige } from "@/engine/instance";
 import { IgeAmbientLight, IgeDirectionalLight } from "@/engine/webgl/IgeWebGlLight";
 import { IgeBehaviourType } from "@/enums";
 import type { IgeCanInit } from "@/types/IgeCanInit";
-import type { FogMode } from "./fog";
+import { type FogMode, VISIBLE } from "./fog";
 import { HexLayout } from "./hex";
 import { Minimap } from "./minimap";
 import { bestSites } from "./sim/sites";
@@ -28,7 +28,7 @@ import { StrategyCamera } from "./strategyCamera";
 import type { TerrainStyle } from "./surface";
 import { esc, setHtml } from "./ui/html";
 import { Hud, type HudHost } from "./ui/hud";
-import { play } from "./ui/sfx";
+import { attackSound, play } from "./ui/sfx";
 import { type SaveData, type SaveKind, type SaveMeta, SaveStore } from "./saves";
 import { downloadText } from "./ui/savesScreen";
 import { onMusicProgress, playTitleMusic, prepareTitleMusic, startGameMusic, stopTitleMusic } from "./ui/music";
@@ -693,6 +693,7 @@ export class Client extends IgeBaseClass implements IgeCanInit, HudHost {
 		if (!events.length) return;
 		this.world.ingest(events);
 		this.hud.notify(events);
+		this.battleEffects(events);
 		for (const e of events) {
 			if (e.type === "fog" && e.player === this.player) {
 				this.minimapTerrainDirty = this.minimapTerritoryDirty = true;
@@ -707,6 +708,43 @@ export class Client extends IgeBaseClass implements IgeCanInit, HudHost {
 		this.refreshSelection();
 		this.hud.refresh();
 		this.invalidate();
+	}
+
+	/**
+	 * The sounds of battle and the fanfare of a capture: each blow (by weapon) in a fight you're in or
+	 * can see, a trumpet when you win it and a falling horn when you lose, and for a city changing
+	 * hands a fanfare (or a lament) and a shimmering burst over it.
+	 */
+	protected battleEffects (events: SimEvent[]): void {
+		const me = this.player;
+		const seen = (t: number) => this.terrain.fogView[t] === VISIBLE;
+		let blows = 0, outcome: "won" | "lost" | null = null, outcomeAt = 0;
+		for (const e of events) {
+			if (e.type === "attack") {
+				const mine = e.attackerOwner === me || e.defenderOwner === me;
+				if (!mine && !seen(e.to) && !seen(e.from)) continue;
+				// A batch of several attacks (an AI's turn) spaces its blows out a little, and only the first few sound
+				if (blows < 3) play(attackSound(e.attackerType), blows * 0.12, mine ? 1 : 0.5);
+				const won = (e.killed && e.attackerOwner === me) || (e.attackerDied && e.defenderOwner === me);
+				const lost = (e.killed && e.defenderOwner === me) || (e.attackerDied && e.attackerOwner === me);
+				if (won || lost) {
+					// One call per batch: a loss outweighs a win
+					if (lost || !outcome) outcome = lost ? "lost" : "won";
+					outcomeAt = blows * 0.12;
+				}
+				blows++;
+			}
+			if (e.type === "cityCaptured") {
+				const city = this.sim.city(e.city);
+				if (e.to === me) play("capture", 0.15);
+				else if (e.from === me) play("cityLost", 0.15);
+				if (city && (e.to === me || e.from === me || seen(city.tile))) this.world.celebrate(city.tile, e.to);
+				// The capture's own fanfare says it all
+				outcome = null;
+			}
+		}
+		if (outcome === "won") play("fanfare", outcomeAt + 0.5);
+		if (outcome === "lost") play("defeat", outcomeAt + 0.5);
 	}
 
 	endTurn (): void {

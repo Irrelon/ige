@@ -887,9 +887,9 @@ export class Hud {
 					break;
 				case "cityCaptured": {
 					const c = sim.city(e.city);
+					// (The client plays its fanfare, with the burst over the city)
 					if (e.to === me) {
 						this.toast(`Captured <b>${esc(c?.name ?? "a city")}</b>`, "good");
-						play("capture");
 					} else if (e.from === me) {
 						this.toast(`${name(e.to)} captured <b>${esc(c?.name ?? "your city")}</b>!`, "bad", 6);
 					}

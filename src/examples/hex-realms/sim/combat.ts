@@ -98,7 +98,8 @@ export function attackCommand (sim: Sim, player: number, unitId: number, target:
 
 	sim.emit({
 		type: "attack", attacker: attacker.id, defender: defender.id, from, to: target,
-		damage: result.damage, retaliation: result.retaliation, killed: defender.hp <= 0, ranged
+		damage: result.damage, retaliation: result.retaliation, killed: defender.hp <= 0, ranged,
+		attackerOwner: attacker.owner, defenderOwner: defender.owner, attackerType: attacker.type, attackerDied: attacker.hp <= 0
 	});
 
 	if (defender.hp <= 0) {

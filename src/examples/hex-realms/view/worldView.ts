@@ -2,6 +2,7 @@ import { IgeEntity } from "@/engine/core/IgeEntity";
 import type { IgeWebGlRenderer } from "@/engine/core/IgeWebGlRenderer";
 import type { IgeGeometryData3d } from "@/types/IgeGeometryData3d";
 import type { IgeMaterialData } from "@/types/IgeMaterialData";
+import { IgeParticleSystem3d, type IgeParticleSystem3dOptions } from "@/engine/webgl/IgeParticleSystem3d";
 import { UNEXPLORED, VISIBLE } from "../fog";
 import { CORNER_X, CORNER_Z, type HexLayout } from "../hex";
 import { MeshBuilder } from "../meshBuilder";
@@ -1689,7 +1690,7 @@ export class WorldView {
 	// ------------------------------------------------------------------
 
 	get animating (): boolean {
-		if (this.cargo.length || this.shots.length) return true;
+		if (this.cargo.length || this.shots.length || this.time < this.burstUntil) return true;
 		for (const v of this.units.values()) {
 			if (v.queue.length || v.lunge || v.flash > 0 || v.pop < 1 || v.removeAt >= 0) return true;
 			if (v.clipUntil !== undefined && v.clipUntil > this.time) return true;
@@ -1697,10 +1698,78 @@ export class WorldView {
 		return false;
 	}
 
+	// ------------------------------------------------------------------
+	// Celebrations
+	// ------------------------------------------------------------------
+
+	/** The particle effects for a city changing hands (made on first use), and until when they're alive. */
+	protected bursts: { gold: IgeParticleSystem3d; colour: IgeParticleSystem3d; twinkle: IgeParticleSystem3d; rise: IgeParticleSystem3d } | null = null;
+	protected burstUntil = 0;
+	protected laterBursts: { at: number; fire: () => void }[] = [];
+
+	/**
+	 * A shimmering burst over a city that has just been captured: gold sparks and sparks in the new
+	 * owner's colour shooting up and drifting down, a column of golden sparkles streaming up from it,
+	 * white twinkles, and a second gold pop a moment later.
+	 */
+	celebrate (tile: number, owner: number): void {
+		const R = this.layout.size;
+		if (!this.bursts) {
+			const make = (o: Partial<IgeParticleSystem3dOptions>) => {
+				const p = new IgeParticleSystem3d(o);
+				p.id(this.uid("burst"));
+				p.mount(this.unitLayer);
+				return p;
+			};
+			const sparks: Partial<IgeParticleSystem3dOptions> = {
+				maxParticles: 400, blending: "additive", lifetime: [1.4, 2.5], speed: [R * 1.2, R * 3], direction: { x: 0, y: 1, z: 0 }, spread: 0.95,
+				gravity: { x: 0, y: -R * 2.2, z: 0 }, drag: 0.9, size: [R * 0.17, R * 0.06], emitterRadius: R * 0.35
+			};
+			this.bursts = {
+				gold: make({ ...sparks, startColor: { r: 1, g: 0.86, b: 0.35, a: 1 }, endColor: { r: 1, g: 0.55, b: 0.15, a: 0 } }),
+				colour: make({ ...sparks, maxParticles: 200, size: [R * 0.15, R * 0.05], spread: 1.25 }),
+				twinkle: make({
+					maxParticles: 200, blending: "additive", lifetime: [1.6, 2.8], speed: [R * 0.3, R * 0.9], direction: { x: 0, y: 1, z: 0 }, spread: 0.7,
+					gravity: { x: 0, y: R * 0.5, z: 0 }, drag: 0.4, size: [R * 0.13, R * 0.03], emitterRadius: R * 0.6,
+					startColor: { r: 1, g: 1, b: 1, a: 1 }, endColor: { r: 0.75, g: 0.88, b: 1, a: 0 }
+				}),
+				rise: make({
+					maxParticles: 300, blending: "additive", rate: 0, lifetime: [1.2, 2], speed: [R * 0.8, R * 1.6], direction: { x: 0, y: 1, z: 0 }, spread: 0.25,
+					gravity: { x: 0, y: R * 0.4, z: 0 }, drag: 0.2, size: [R * 0.12, R * 0.02], emitterRadius: R * 0.45,
+					startColor: { r: 1, g: 0.95, b: 0.7, a: 1 }, endColor: { r: 1, g: 0.75, b: 0.3, a: 0 }
+				})
+			};
+		}
+		const b = this.bursts;
+		const a = this.anchor(tile);
+		const y = this.groundAt(a.x, a.z) + R * 0.7;
+		const c = owner >= 0 ? hexToRgb(this.sim.player(owner).color) : NEUTRAL;
+		b.colour._options.startColor = { r: c.r, g: c.g, b: c.b, a: 1 };
+		b.colour._options.endColor = { r: c.r, g: c.g, b: c.b, a: 0 };
+		b.gold.burst(110, { x: a.x, y, z: a.z });
+		b.colour.burst(70, { x: a.x, y, z: a.z });
+		b.twinkle.burst(40, { x: a.x, y: y - R * 0.3, z: a.z });
+		// The column streams up for a second and a half
+		b.rise.translateTo(a.x, y - R * 0.5, a.z);
+		b.rise._options.rate = 70;
+		this.laterBursts.push(
+			{ at: this.time + 1.5, fire: () => (b.rise._options.rate = 0) },
+			{ at: this.time + 0.35, fire: () => b.gold.burst(70, { x: a.x, y: y + R * 0.4, z: a.z }) },
+			{ at: this.time + 0.7, fire: () => b.twinkle.burst(30, { x: a.x, y, z: a.z }) }
+		);
+		this.burstUntil = Math.max(this.burstUntil, this.time + 3.4);
+		this.hooks.invalidate?.();
+	}
+
 	/** Advance animations. Returns true while anything moved. */
 	update (dt: number, time: number): boolean {
 		this.time = time;
-		let moving = false;
+		let moving = time < this.burstUntil;
+		for (let i = this.laterBursts.length - 1; i >= 0; i--) {
+			if (time < this.laterBursts[i].at) continue;
+			this.laterBursts[i].fire();
+			this.laterBursts.splice(i, 1);
+		}
 
 		for (const v of [...this.units.values()]) {
 			if (v.removeAt >= 0 && time >= v.removeAt) {

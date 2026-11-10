@@ -368,7 +368,11 @@ export type SimEvent =
 	| { type: "unitMoved"; unit: number; path: number[] }
 	| { type: "unitRemoved"; unit: number; owner: number; tile: number; reason: "killed" | "founded" | "disbanded" | "eliminated" }
 	| { type: "unitChanged"; unit: number }
-	| { type: "attack"; attacker: number; defender: number; from: number; to: number; damage: number; retaliation: number; killed: boolean; ranged: boolean }
+	/** One unit attacked another. `killed`: the defender died; `attackerDied`: the attacker fell to the counter-blow. */
+	| {
+		type: "attack"; attacker: number; defender: number; from: number; to: number; damage: number; retaliation: number; killed: boolean; ranged: boolean;
+		attackerOwner: number; defenderOwner: number; attackerType: UnitTypeId; attackerDied: boolean;
+	}
 	| { type: "cityChanged"; city: number }
 	| { type: "orderEnded"; unit: number; reason: "arrived" | "blocked" | "enemy" | "explored" }
 	| { type: "unitUpgraded"; unit: number; from: UnitTypeId; to: UnitTypeId }
