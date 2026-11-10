@@ -62,6 +62,11 @@ zombie.skeletalAnimation()?.on("complete", (clip) => { /* back to walking */ });
   (30 per second). Give hero characters full-rate animation with `entity.skeletalAnimation().poseCache(false)`.
 - Characters that aren't drawn in any view skip pose sampling. Turn this off with `cullOffscreen(false)` when game
   logic reads bone positions while the character is off screen.
+- A clip that isn't looping ends on its last frame, even when it finishes while the character is off screen (it's
+  posed when next drawn): a death clip that ended in an unseen room still leaves the body on the floor.
+- Root motion on a node above the skin's joints (3ds Max rigs keep it on "Bip001", over the skinned
+  "Bip001 Pelvis") is played: such an animated node becomes a bone, after the skin's joints. Without it a fall never
+  reaches the floor, a crouch floats and a character climbing out of the ground stays put.
 - Walk and run cycles that travel forward (the hips move ahead and snap back when the clip loops) play on the spot
   with `model(model, { inPlace: ["walk", "run"] })` (or `true` for every clip): the root bone keeps its bob and sway
   and loses its drift, for games that move characters themselves. `clipInPlace(clip, skeleton)` does it by hand.

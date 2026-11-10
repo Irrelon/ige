@@ -845,9 +845,43 @@ export class IgeGltfLoader extends IgeBaseClass {
 
 		if (!gltf.skins) return skins;
 
+		// Map each node to its parent node
+		const parentNodeOf = new Map<number, number>();
+		for (let i = 0; i < gltf.nodes.length; i++) {
+			const children: number[] | undefined = gltf.nodes[i].children;
+			if (children) {
+				for (const child of children) parentNodeOf.set(child, i);
+			}
+		}
+		// Nodes the file's animations move
+		const animatedNodes = new Set<number>();
+		for (const animDef of gltf.animations || []) {
+			for (const channelDef of animDef.channels || []) {
+				if (channelDef.target?.node !== undefined && channelDef.target.path !== "weights") animatedNodes.add(channelDef.target.node);
+			}
+		}
+
 		for (let skinIndex = 0; skinIndex < gltf.skins.length; skinIndex++) {
 			const skinDef = gltf.skins[skinIndex];
-			const jointNodeIndices: number[] = skinDef.joints || [];
+			const skinJoints: number[] = skinDef.joints || [];
+			// Animated nodes above the root joints that aren't joints themselves (3ds Max rigs keep the root motion on
+			// "Bip001" over the skinned "Bip001 Pelvis": a fall, a crouch, climbing up out of the floor) become bones
+			// too, after the skin's joints so the vertices' joint indices are unchanged. Unanimated ancestors above
+			// them stay a fixed parentTransform.
+			const skinJointSet = new Set(skinJoints);
+			const animatedAncestors: number[] = [];
+			for (const jointNode of skinJoints) {
+				const chain: number[] = [];
+				let top = 0;
+				for (let n = parentNodeOf.get(jointNode); n !== undefined && !skinJointSet.has(n); n = parentNodeOf.get(n)) {
+					chain.push(n);
+					if (animatedNodes.has(n)) top = chain.length;
+				}
+				for (let k = 0; k < top; k++) {
+					if (!animatedAncestors.includes(chain[k])) animatedAncestors.push(chain[k]);
+				}
+			}
+			const jointNodeIndices: number[] = [...skinJoints, ...animatedAncestors];
 			const boneCount = jointNodeIndices.length;
 
 			// Get inverse bind matrices
@@ -873,15 +907,6 @@ export class IgeGltfLoader extends IgeBaseClass {
 			const nodeIndexToBoneIndex = new Map<number, number>();
 			for (let i = 0; i < jointNodeIndices.length; i++) {
 				nodeIndexToBoneIndex.set(jointNodeIndices[i], i);
-			}
-
-			// Map each node to its parent node
-			const parentNodeOf = new Map<number, number>();
-			for (let i = 0; i < gltf.nodes.length; i++) {
-				const children: number[] | undefined = gltf.nodes[i].children;
-				if (children) {
-					for (const child of children) parentNodeOf.set(child, i);
-				}
 			}
 
 			// Build bones array
@@ -915,9 +940,13 @@ export class IgeGltfLoader extends IgeBaseClass {
 				// Get local bind transform
 				const localBindTransform = this._getNodeLocalTransform(nodeDef);
 
-				// Get inverse bind matrix for this bone
+				// Get inverse bind matrix for this bone (an animated ancestor skins no vertices: identity)
 				const inverseBindMatrix = new Float32Array(16);
-				inverseBindMatrix.set(inverseBindMatrices.subarray(boneIndex * 16, boneIndex * 16 + 16));
+				if (boneIndex < skinJoints.length) {
+					inverseBindMatrix.set(inverseBindMatrices.subarray(boneIndex * 16, boneIndex * 16 + 16));
+				} else {
+					inverseBindMatrix[0] = inverseBindMatrix[5] = inverseBindMatrix[10] = inverseBindMatrix[15] = 1;
+				}
 
 				const bone: IgeBone = {
 					name: nodeDef.name || `bone_${boneIndex}`,
