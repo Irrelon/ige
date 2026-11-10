@@ -12,7 +12,7 @@ import { termCard, type TermKey, termLink } from "./glossary";
 import { riverside } from "../rivers";
 import {
 	AMBITIONS, type BuildingId, BUILDINGS, DEPOSIT_GOOD, DEPOSIT_NAMES, Deposit, type EndableTreaty, END_TRUCE_TURNS, GOOD_INFO, GOODS, type Good, type Goods, growthNeeded, HARVEST, levelRewards, REWARDS, ROAD_COST,
-	eraOfTier, type TechId, TECH_IDS, TECHS, UNIT_LOOK, UNIT_TYPE_IDS, type UnitTypeId, UNIT_TYPES, WONDER_IDS
+	eraOfTier, type TechId, TECH_IDS, TECHS, UNIT_LOOK, UNIT_TYPE_IDS, type UnitTypeId, UNIT_TYPES, VETERAN_KILLS, WONDER_IDS
 } from "../sim/rules";
 import type { Sim } from "../sim/sim";
 import { cityIncome, freeUnits, income, upkeepFactor } from "../sim/treasury";
@@ -36,7 +36,7 @@ import { getMusicVolume, getSfxVolume, setMusicVolume, setSfxVolume } from "./au
 import { contactModal } from "./contact";
 import { chartHover, historyChart, historyModal, shownCivs } from "./historyScreen";
 import type { HistoryMetric } from "../sim/history";
-import { exploreProblem, fortifyProblem, hasOrders, isReady, sleepProblem, upgradeCost, upgradeProblem, UPGRADES } from "../sim/orders";
+import { exploreProblem, fortifyProblem, hasOrders, isReady, promoteProblem, sleepProblem, upgradeCost, upgradeProblem, UPGRADES } from "../sim/orders";
 import { renameProblem } from "../sim/cities";
 import { type ChatLine, type RoomInfo, TURN_TIMERS } from "../net/protocol";
 
@@ -135,7 +135,8 @@ const ICONS = {
 	capture: `<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M4 4L14 14M11 16.5L16.5 11M14 14L19 19M20 4L10 14M7.5 11L13 16.5M10 14L5 19"/></svg>`,
 	found: `<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11L12 4L21 11M5.5 9.5V20H18.5V9.5M10 20V14.5H14V20"/></svg>`,
 	pillage: `<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3C13 6.5 18 8.5 18 14A6 6 0 0 1 6 14C6 10.5 8.5 9.5 8.5 6.5C10 8 11 9.5 11.5 11.5C12.5 9 12.5 6 12 3Z"/></svg>`,
-	wake: `<svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><rect x="6.5" y="6.5" width="11" height="11" rx="2"/></svg>`
+	wake: `<svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><rect x="6.5" y="6.5" width="11" height="11" rx="2"/></svg>`,
+	promote: `<svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" stroke="none" aria-hidden="true"><path d="M12 2.8l2.7 5.9 6.4.7-4.8 4.3 1.4 6.3L12 16.8 6.3 20l1.4-6.3-4.8-4.3 6.4-.7z"/></svg>`
 };
 
 /** What calling off a unit's standing order is called. */
@@ -411,6 +412,7 @@ export class Hud {
 			case "fortify": run({ type: "fortify", unit: h.selectedUnit as number }); break;
 			case "wake": run({ type: "wake", unit: h.selectedUnit as number }); break;
 			case "explore": run({ type: "explore", unit: h.selectedUnit as number }); break;
+			case "promote": run({ type: "promote", unit: h.selectedUnit as number }); break;
 			case "upgrade": run({ type: "upgrade", unit: h.selectedUnit as number }); break;
 			case "rename-city": this.renaming = num("city"); this.refreshPanel(); (document.getElementById("cityName") as HTMLInputElement | null)?.select(); break;
 			case "rename-cancel": this.renaming = -1; this.refreshPanel(); break;
@@ -591,6 +593,7 @@ export class Hud {
 		const enemyRoad = sim.roads[u.tile] >= 0 && sim.roads[u.tile] !== this.me;
 		const enemyBuilding = sim.buildingOn(u.tile);
 		if (enemyRoad || (enemyBuilding && enemyBuilding.owner !== this.me)) buttons.push(btn("pillage", "Pillage", null));
+		if (!promoteProblem(sim, this.me, id)) buttons.push(btn("promote", `${icon("star", 14)} Promote <small>+5 health, healed</small>`, null, "primary"));
 		if (hasOrders(u)) buttons.push(btn("wake", stopLabel(u), null));
 		else {
 			if (!info.founder) buttons.push(btn("fortify", `${icon("fortify", 14)} Fortify`, fortifyProblem(sim, this.me, id)));
@@ -918,6 +921,14 @@ export class Hud {
 						this.toast(`Peace with ${name(e.a === me ? e.b : e.a)}`, "good");
 					}
 					break;
+				case "unitPromoted": {
+					const u = sim.unit(e.unit);
+					if (u?.owner === me) {
+						this.toast(`${UNIT_TYPES[u.type].name} promoted to <b>veteran</b>: +5 health, fully healed`, "good", 3);
+						play("level");
+					}
+					break;
+				}
 				case "unitUpgraded": {
 					const u = sim.unit(e.unit);
 					if (u?.owner === me) {
@@ -1072,6 +1083,7 @@ export class Hud {
 		}
 		const next = UPGRADES[u.type];
 		if (next && !upgradeProblem(sim, this.me, u.id)) buttons.push(quickButton("upgrade", `Upgrade to ${UNIT_TYPES[next].name} for ${upgradeCost(u)} stars (U)`));
+		if (!promoteProblem(sim, this.me, u.id)) buttons.push(quickButton("promote", "Promote to veteran: +5 health and fully healed"));
 		// A standing order (marching, exploring, asleep, dug in) can be called off from here too
 		if (hasOrders(u)) buttons.push(quickButton("wake", stopLabel(u)));
 		if (!buttons.length) return hide();
@@ -1142,7 +1154,8 @@ export class Hud {
 				const color = sim.player(u.owner).color;
 				const bar = hurt ? `<em><s style="width:${Math.round((100 * u.hp) / u.maxHp)}%"></s></em>` : "";
 				const order = u.owner === this.me ? (u.order === "sleep" ? `<q title="Asleep">z</q>` : u.order === "fortify" ? `<q title="Fortified">&#9960;</q>` : u.order === "explore" ? `<q title="Exploring">&#10022;</q>` : u.goto !== undefined ? `<q title="Marching">&#10140;</q>` : "") : u.order === "fortify" ? `<q title="Fortified">&#9960;</q>` : "";
-				const html = `<span style="--c:${color}">${u.veteran ? "<u>&#9733;</u>" : ""}<i>${UNIT_ICONS[u.type]}</i>${hurt ? `<b>${u.hp}</b>` : ""}${order}</span>${bar}`;
+				const promotable = u.owner === this.me && !u.veteran && !!sim.options.promotions && u.kills >= VETERAN_KILLS;
+				const html = `<span style="--c:${color}">${u.veteran ? "<u>&#9733;</u>" : promotable ? `<u class="ready" title="Ready to promote">&#9733;</u>` : ""}<i>${UNIT_ICONS[u.type]}</i>${hurt ? `<b>${u.hp}</b>` : ""}${order}</span>${bar}`;
 				label(`unit${u.id}`, "ub", html, pos.x, pos.y + BADGE_HEIGHT[u.type], pos.z);
 			}
 		}

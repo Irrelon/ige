@@ -609,6 +609,8 @@
 		.lens-store .chip { font-size: 10px; line-height: 16px; background: rgba(10, 16, 26, 0.85); }
 		/* Unit badges: a shield in the owner's colour with the unit's icon, health when hurt, a star for veterans */
 		.ub { display: flex; flex-direction: column; align-items: center; }
+		.ub span u.ready { color: #ffe08a; animation: promote-pulse 1.1s ease-in-out infinite; }
+		@keyframes promote-pulse { 50% { transform: scale(1.35); text-shadow: 0 0 8px rgba(255, 210, 90, 0.9); } }
 		/* Attack forecast over the units' heads */
 		.forecast { position: absolute; left: 0; top: 0; z-index: 6; pointer-events: none; white-space: nowrap; will-change: transform; }
 		.forecast span { display: inline-flex; align-items: center; gap: 4px; margin-bottom: 34px; padding: 2px 9px; border-radius: 999px; font: 800 14px/20px var(--font); color: #fff; background: rgba(150, 28, 28, 0.92); border: 1.5px solid #ff8a80; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5); animation: fadein 0.12s ease; }

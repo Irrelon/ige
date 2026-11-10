@@ -1,5 +1,5 @@
 import { ambitionProblem, measure, target as milestoneTarget } from "./ambitions";
-import { upgradeCost, upgradeProblem } from "./orders";
+import { promoteProblem, upgradeCost, upgradeProblem } from "./orders";
 import { attackTargets, preview } from "./combat";
 import { captureProblem, foundProblem, slotCap, slotsUsed, trainProblem, unitCost } from "./cities";
 import { actionProblem, agreementCost, aiAccepts, attitude, type DealTerms, endTreatyProblem, justified, proposalProblem, strandedUnits, strength, warProblem, weariness } from "./diplomacy";
@@ -663,6 +663,8 @@ class AiTurn {
 		const sim = this.sim;
 		for (const unit of [...sim.unitsOf(this.p)]) {
 			if (!sim.unit(unit.id)) continue;
+			// A unit with three kills is promoted (and healed) before it acts
+			if (!promoteProblem(sim, this.p, unit.id)) this.do({ type: "promote", unit: unit.id });
 			this.actUnit(unit);
 		}
 	}

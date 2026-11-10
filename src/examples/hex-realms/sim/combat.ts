@@ -106,7 +106,8 @@ export function attackCommand (sim: Sim, player: number, unitId: number, target:
 		sim.player(attacker.owner).stats.kills++;
 		sim.removeUnit(defender, "killed");
 		attacker.kills++;
-		if (!attacker.veteran && attacker.kills >= VETERAN_KILLS) {
+		// Older games promote at once; new ones let the player promote (and heal) when they choose
+		if (!sim.options.promotions && !attacker.veteran && attacker.kills >= VETERAN_KILLS) {
 			attacker.veteran = true;
 			attacker.maxHp += 5;
 			attacker.hp = attacker.maxHp;

@@ -1087,6 +1087,39 @@ describe("unit orders, upgrades and renaming", () => {
 		expect(open.apply(0, { type: "explore", unit: s2.id }).ok).toBe(false);
 	});
 
+	test("three kills let a unit be promoted to veteran: +5 health and healed in full, without using its turn", () => {
+		const sim = blank(2, [sim0Start(), 200], { promotions: true, humans: [0, 1] });
+		meetAll(sim);
+		expect(sim.apply(0, { type: "declareWar", target: 1 }).ok).toBe(true);
+		clearUnits(sim);
+		const a = unitAt(sim, 0, 60);
+		a.kills = 2;
+		a.hp = 4;
+		expect(sim.apply(0, { type: "promote", unit: a.id }).ok).toBe(false);
+		// The third kill makes it eligible, but doesn't promote it
+		const prey = unitAt(sim, 1, 61);
+		prey.hp = 1;
+		expect(sim.apply(0, { type: "attack", unit: a.id, target: 61 }).ok).toBe(true);
+		expect(sim.unit(a.id)?.kills).toBe(3);
+		expect(sim.unit(a.id)?.veteran).toBe(false);
+		const max = sim.unit(a.id)!.maxHp;
+		expect(sim.apply(0, { type: "promote", unit: a.id }).ok).toBe(true);
+		expect(sim.unit(a.id)?.veteran).toBe(true);
+		expect(sim.unit(a.id)?.maxHp).toBe(max + 5);
+		expect(sim.unit(a.id)?.hp).toBe(max + 5);
+		expect(sim.apply(0, { type: "promote", unit: a.id }).ok).toBe(false);
+		// Older games still promote at once
+		const old = blank(2, [sim0Start(), 200], { promotions: false, humans: [0, 1] });
+		meetAll(old);
+		old.apply(0, { type: "declareWar", target: 1 });
+		clearUnits(old);
+		const b = unitAt(old, 0, 60);
+		b.kills = 2;
+		unitAt(old, 1, 61).hp = 1;
+		old.apply(0, { type: "attack", unit: b.id, target: 61 });
+		expect(old.unit(b.id)?.veteran).toBe(true);
+	});
+
 	test("warriors upgrade to swordsmen with Smithing, inside your borders, for stars", () => {
 		const sim = blank(2, [sim0Start(), 14 * 24 + 21]);
 		clearUnits(sim);

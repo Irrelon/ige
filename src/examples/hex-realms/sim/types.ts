@@ -43,6 +43,8 @@ export interface GameOptions {
 	buildGrowth?: boolean;
 	/** Raider camps appear on unclaimed land and send out raiders (new games). */
 	raiders?: boolean;
+	/** Units with three kills are promoted by their player (Polytopia-style) rather than at once (new games). */
+	promotions?: boolean;
 	/** Rivers along tile edges (new games; absent in older ones, which stay as they were). */
 	rivers?: boolean;
 	victories: Record<VictoryType, boolean>;
@@ -329,6 +331,7 @@ export type Command =
 	| { type: "fortify"; unit: number }
 	| { type: "wake"; unit: number }
 	| { type: "explore"; unit: number }
+	| { type: "promote"; unit: number }
 	| { type: "goto"; unit: number; to: number }
 	| { type: "upgrade"; unit: number }
 	| { type: "renameCity"; city: number; name: string }
@@ -360,6 +363,7 @@ export type SimEvent =
 	/** A city gained population (buildGrowth games), from something at `tile`. */
 	| { type: "population"; city: number; points: number; tile: number; reason: string }
 	| { type: "harvested"; tile: number; deposit: number; city: number }
+	| { type: "unitPromoted"; unit: number }
 	| { type: "campFounded"; camp: number; tile: number }
 	/** A camp was scattered (by `player`'s unit, for a bounty), or -1 if it just went. */
 	| { type: "campCleared"; camp: number; tile: number; player: number; stars: number }

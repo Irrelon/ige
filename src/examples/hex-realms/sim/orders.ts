@@ -1,6 +1,6 @@
 import { canEnter, enemyAdjacent, moveCommand, reachable, stepCost } from "./movement";
 import { fail, ok } from "./result";
-import { UNIT_TYPES, type UnitTypeId } from "./rules";
+import { UNIT_TYPES, type UnitTypeId, VETERAN_KILLS } from "./rules";
 import type { Sim } from "./sim";
 import type { CommandResult, UnitState } from "./types";
 
@@ -348,6 +348,33 @@ export function runOrders (sim: Sim, player: number, lines: string[]): void {
 		if (u.order === "explore") exploreStep(sim, u);
 		else if (u.goto !== undefined) advance(sim, u);
 	}
+}
+
+// ------------------------------------------------------------------
+// Promotion
+// ------------------------------------------------------------------
+
+/** Can the unit be promoted to veteran (three kills, as in Polytopia)? */
+export function promoteProblem (sim: Sim, player: number, unitId: number): string | null {
+	const unit = own(sim, player, unitId);
+	if (typeof unit === "string") return unit;
+	if (!sim.options.promotions) return "Units are promoted on their own in this game";
+	if (unit.veteran) return "Already a veteran";
+	if (unit.kills < VETERAN_KILLS) return `Needs ${VETERAN_KILLS} kills (${unit.kills} so far)`;
+	return null;
+}
+
+/** Promote a unit with three kills: a veteran, with 5 more health and healed in full. Doesn't use its turn. */
+export function promoteCommand (sim: Sim, player: number, unitId: number): CommandResult {
+	const problem = promoteProblem(sim, player, unitId);
+	if (problem) return fail(problem);
+	const unit = sim.unit(unitId) as UnitState;
+	unit.veteran = true;
+	unit.maxHp += 5;
+	unit.hp = unit.maxHp;
+	sim.emit({ type: "unitPromoted", unit: unit.id });
+	sim.emit({ type: "unitChanged", unit: unit.id });
+	return ok();
 }
 
 // ------------------------------------------------------------------

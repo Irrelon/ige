@@ -49,6 +49,7 @@ export function defaultOptions (overrides: Partial<GameOptions> = {}): GameOptio
 		neutralStart: true,
 		buildGrowth: true,
 		raiders: true,
+		promotions: true,
 		victories: { domination: true, score: true, prosperity: true, alliance: true, diplomatic: true },
 		turnLimit: 60,
 		difficulty: "normal",
@@ -631,6 +632,7 @@ export class Sim {
 			case "fortify": result = orders.fortifyCommand(this, player, command.unit); break;
 			case "wake": result = orders.wakeCommand(this, player, command.unit); break;
 			case "explore": result = orders.exploreCommand(this, player, command.unit); break;
+			case "promote": result = orders.promoteCommand(this, player, command.unit); break;
 			case "goto": result = orders.gotoCommand(this, player, command.unit, command.to); break;
 			case "upgrade": result = orders.upgradeCommand(this, player, command.unit); break;
 			case "renameCity": result = cities.renameCommand(this, player, command.city, command.name); break;
