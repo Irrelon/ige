@@ -923,6 +923,28 @@
 		"bytes": 1424572,
 		"floor": -0.4455
 	},
+	"workerSmith": {
+		"file": "workerSmith.glb",
+		"min": [
+			-0.2482,
+			-0.4386,
+			-0.1198
+		],
+		"max": [
+			0.2631,
+			0.4394,
+			0.2187
+		],
+		"triangles": 19402,
+		"animations": [
+			"idle",
+			"walk",
+			"work"
+		],
+		"skinned": true,
+		"bytes": 1587044,
+		"floor": -0.431
+	},
 	"workerWoodcutter": {
 		"file": "workerWoodcutter.glb",
 		"min": [
