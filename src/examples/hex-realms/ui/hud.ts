@@ -1,7 +1,7 @@
 import type { IgeViewport } from "@/engine/core/IgeViewport";
 import type { IgeWebGlRenderer } from "@/engine/core/IgeWebGlRenderer";
 import { FOGGED, type FogMode, UNEXPLORED } from "../fog";
-import { captureProblem, foundProblem, slotCap, slotsUsed, trainProblem, unitCost } from "../sim/cities";
+import { captureProblem, foundProblem, slotCap, slotsUsed, trainProblem, unitCapacity, unitCost, unitsSupported } from "../sim/cities";
 import { attackProblem, preview } from "../sim/combat";
 import { buildingStars, buildOptions, buyCost, buyProblem, roadCost, roadProblem, rushCost, rushProblem, storedGoods, wonderOptions } from "../sim/economy";
 import { researchCost } from "../sim/effects";
@@ -624,13 +624,14 @@ export class Hud {
 			const who = c.owner < 0 ? "Neutral village" : esc(sim.player(c.owner).name);
 			return `<section><div class="title">${c.capital ? "&#9733; " : ""}${esc(c.name)} <span class="dim">level ${c.level} &middot; ${who}</span></div>${c.owner < 0 ? `<div class="dim small">Move a unit here and capture it at the start of your next turn.</div>` : ""}</section>`;
 		}
-		const need = growthNeeded(c.level);
+		const need = growthNeeded(c.level, sim.options.polytopiaCities);
 		const earns = cityIncome(sim, c);
 		const out = [this.renaming === c.id
 			? `<div class="rename"><input id="cityName" maxlength="24" value="${esc(c.name)}" aria-label="City name" autocomplete="off" spellcheck="false" data-city="${c.id}"><button class="primary" data-action="rename-save" data-city="${c.id}">Save</button><button class="ghost" data-action="rename-cancel">Cancel</button>${renameProblem(sim, this.me, c.id, c.name) ? "" : ""}</div>`
 			: `<div class="title">${c.capital ? `<span class="stars">${icon("crown", 15)}</span>` : ""}${esc(c.name)} <button class="ghost icon-btn rename-btn" data-action="rename-city" data-city="${c.id}" title="Rename this city" aria-label="Rename">${icon("edit", 14)}</button> <span class="dim">level ${c.level}${c.walls ? " &middot; walls" : ""}</span></div>`];
 		out.push(`<div class="bar" title="${sim.options.buildGrowth ? "Growth: buildings finished in its land, fish and game harvested, and food delivered by road" : "Growth: deliver food"}"><span style="width:${(c.growth / need) * 100}%"></span><em>Growth ${c.growth}/${need}</em></div>`);
-		out.push(`<div>Income ${stars(earns)}/turn &middot; Buildings ${slotsUsed(sim, c)}/${slotCap(c)} slots</div>`);
+		const units = sim.options.polytopiaCities ? ` &middot; <span title="Units this city supports (level + 1); grow it for more">Units ${unitsSupported(sim, c)}/${unitCapacity(c)}</span>` : "";
+		out.push(`<div>Income ${stars(earns)}/turn &middot; Buildings ${slotsUsed(sim, c)}/${slotCap(c)} slots${units}</div>`);
 		out.push(`<div class="store">Store: ${goodsList(c.store, "empty")}</div>`);
 		if (c.pendingRewards > 0) {
 			const [a, b] = levelRewards(c.level);
@@ -638,7 +639,7 @@ export class Hud {
 		}
 		// Units beyond the free allowance cost upkeep every turn
 		const held = sim.unitsOf(this.me).reduce((n, u) => n + UNIT_TYPES[u.type].upkeep, 0);
-		const overAllowance = held >= freeUnits(sim, this.me);
+		const overAllowance = !sim.options.polytopiaCities && held >= freeUnits(sim, this.me);
 		const factor = upkeepFactor(sim, this.me);
 		const trains = UNIT_TYPE_IDS.filter((t) => sim.hasTech(this.me, UNIT_TYPES[t].tech) && (!UNIT_TYPES[t].founder || sim.options.allowFounding)).map((t) => {
 			const cost = unitCost(sim, this.me, t);
@@ -1148,7 +1149,7 @@ export class Hud {
 			const store = this.lens && c.owner === this.me ? lensStore(c.store) : "";
 			const mineCity = c.owner === this.me;
 			// Population: a pip per point, as in Polytopia (a bar when there are too many to read)
-			const need = growthNeeded(c.level);
+			const need = growthNeeded(c.level, sim.options.polytopiaCities);
 			const grow = !mineCity ? ""
 				: need <= 12 ? `<i class="pips">${Array.from({ length: need }, (_, k) => `<u class="${k < c.growth ? "on" : ""}"></u>`).join("")}</i>`
 					: `<i class="grow"><s style="width:${Math.min(100, Math.round((c.growth / need) * 100))}%"></s></i>`;
@@ -1596,7 +1597,7 @@ export class Hud {
 	citiesModal (): string {
 		const sim = this.sim, me = this.me;
 		const rows = sim.citiesOf(me).sort((a, b) => Number(b.capital) - Number(a.capital) || b.level - a.level).map((c) => {
-			const need = growthNeeded(c.level);
+			const need = growthNeeded(c.level, sim.options.polytopiaCities);
 			const reward = c.pendingRewards ? ` <span class="pill gold">Reward</span>` : "";
 			return `<tr>
 				<td><a href="#" data-action="select-city" data-city="${c.id}">${c.capital ? `<span class="stars">${icon("crown", 13)}</span> ` : ""}${esc(c.name)}</a>${reward}</td>
@@ -1680,11 +1681,15 @@ export class Hud {
 	])}
 			${section("Cities and economy", [
 		card("capture", "Expand", "", `Capture grey villages with any unit (start a turn on one, press Capture)${o.allowFounding ? ", or found cities with settlers" : ""}. Cities earn stars every turn.`),
-		card("grow", "Grow", "", o.buildGrowth
-			? "As in Polytopia, every building finished in a city's land adds population (shown as +N on the build buttons). Workshops add more for each neighbour that feeds them: a sawmill for each woodcutter beside it, a mill for each farm, a smelter two for each mine, a market for each workshop. Harvest fish and game for stars to grow a city at once. Food delivered by road adds growth too. Each level adds a building slot and a reward."
-			: "Deliver food (fish, game, bread) to cities. Each level adds a building slot and a reward."),
+		card("grow", "Grow", "", o.polytopiaCities
+			? "As in Polytopia, a city needs its level + 1 population to grow (2 to reach level 2, 3 to reach level 3...). Every building finished in its land adds population (shown as +N on the build buttons), workshops more for each neighbour that feeds them, harvesting fish or game adds one at once, and joining a city to your capital gives both one. Each level adds a building slot, a unit slot and a reward."
+			: o.buildGrowth
+				? "As in Polytopia, every building finished in a city's land adds population (shown as +N on the build buttons). Workshops add more for each neighbour that feeds them: a sawmill for each woodcutter beside it, a mill for each farm, a smelter two for each mine, a market for each workshop. Harvest fish and game for stars to grow a city at once. Food delivered by road adds growth too. Each level adds a building slot and a reward."
+				: "Deliver food (fish, game, bread) to cities. Each level adds a building slot and a reward."),
 		card("hammer", "Build", "", `Click your land to place buildings. Woodcutters are ready at once; other sites wait for logs, planks or stone carried by road, and Rush finishes them for stars. Anything joined to a city by road reaches it the same turn.${o.connections ? " Roads cost 3 stars a tile, and as in Polytopia, the first time a city is joined to your capital (by road or between ports) both gain 1 population." : ""} Ports (Sailing) join coastal cities; a market also sells you goods at twice its price.`),
-		card("star", "Stars", "", "Units beyond your free allowance (3, plus 1 per city) cost upkeep every turn (doubled once you know 12 techs), and cities beyond your tenth cost administration. Hover your stars for the breakdown.")
+		card("star", o.polytopiaCities ? "Stars and armies" : "Stars", "", o.polytopiaCities
+			? "Cities earn stars every turn, more as they grow. As in Polytopia, each city supports its level + 1 units (the units it trained), with no upkeep: grow your cities for a bigger army. Cities beyond your tenth cost administration. Hover your stars for the breakdown."
+			: "Units beyond your free allowance (3, plus 1 per city) cost upkeep every turn (doubled once you know 12 techs), and cities beyond your tenth cost administration. Hover your stars for the breakdown.")
 	])}
 			${section("Neighbours and war", [
 		card("diplomacy", "Meeting civs", "", "A civ you have just met is unaligned: there's no treaty, so units of both sides may wander through each other's land, but nobody fights. The first attack starts a war. Make peace to close your borders to their soldiers."),

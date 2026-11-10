@@ -57,7 +57,7 @@ export function wonderCompleted (sim: Sim, building: BuildingState): void {
 		}
 	} else if (info.wonder === "monument") {
 		const city = sim.city(building.city);
-		if (city) addGrowth(sim, city, Math.max(0, growthNeeded(city.level) - city.growth));
+		if (city) addGrowth(sim, city, Math.max(0, growthNeeded(city.level, sim.options.polytopiaCities) - city.growth));
 	}
 	sim.emit({ type: "wonder", player: building.owner, building: building.type, city: building.city, lost });
 }

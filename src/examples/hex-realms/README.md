@@ -125,6 +125,7 @@ The setup screen sets everything; the same options work as URL parameters (`?qui
 | `founding` | `1` (default) or `0`: allow settlers to found cities |
 | `raiders` | `1` (default) or `0`: raider camps |
 | `growth` | `buildings` (default, Polytopia-style: buildings and harvests add population) or `food` (cities grow from delivered food alone) |
+| `cities` | `polytopia` (default: a level needs level + 1 population, food doesn't grow cities, each city supports level + 1 units with no upkeep) or `classic` (level² + 1 population, food growth, upkeep beyond a free allowance) |
 | `v` | Victory types that are on, e.g. `v=domination,score` |
 | `style` | `tiles` (Polytopia-like stepped hexes, clouds over unexplored land) or `natural` (Civilization-like blended heightfield, parchment over unexplored land) |
 | `chunk`, `shadows` | Terrain chunk size (16); `shadows=0` turns shadows off |

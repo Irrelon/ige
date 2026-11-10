@@ -49,6 +49,12 @@ export interface GameOptions {
 	connections?: boolean;
 	/** Ports stand on shallow water beside a city, as in Polytopia (new games; older ones build them on the shore). */
 	waterPorts?: boolean;
+	/**
+	 * Polytopia's city rules (new games): a level needs level + 1 population,
+	 * cities don't grow from food, and each city supports level + 1 units it
+	 * trained, with no upkeep. (Income keeps the tapering curve.)
+	 */
+	polytopiaCities?: boolean;
 	/** Rivers along tile edges (new games; absent in older ones, which stay as they were). */
 	rivers?: boolean;
 	victories: Record<VictoryType, boolean>;
@@ -118,6 +124,8 @@ export interface UnitState {
 	goto?: number;
 	/** Raiders: the camp that sent the unit out. */
 	camp?: number;
+	/** The city that supports it (polytopiaCities games): trained there, or the capital for starting units. */
+	home?: number;
 }
 
 /** An outlaw camp on unclaimed land that sends out raiders (see raiders.ts). */

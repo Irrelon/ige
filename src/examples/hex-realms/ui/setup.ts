@@ -106,6 +106,7 @@ export function optionsFromUrl (): { options: GameOptions; style: TerrainStyle; 
 		tribeTechs: q.get("tribetech") !== "0",
 		raiders: q.get("raiders") !== "0",
 		buildGrowth: q.get("growth") !== "food",
+		polytopiaCities: q.get("cities") !== "classic",
 		difficulty: (["easy", "normal", "hard"].includes(q.get("difficulty") ?? "") ? q.get("difficulty") : "normal") as Difficulty,
 		turnLimit: q.get("turns") === "0" || q.get("turns") === "off" ? 0 : int("turns", 60, 10, 500)
 	});
@@ -193,6 +194,7 @@ function newGamePane (start: GameOptions, style: TerrainStyle, size: string): st
 				<div>${toggle("tribetech", start.tribeTechs !== false, "Tribe starting techs", "Off: every tribe starts with no research")}</div>
 				<div>${toggle("raiders", start.raiders !== false, "Raider camps", "Outlaw camps appear on unclaimed land and raid nearby units and buildings")}</div>
 				<div>${toggle("growth", start.buildGrowth !== false, "Cities grow from buildings", "As in Polytopia: each building adds population; off, cities grow from delivered food alone")}</div>
+				<div>${toggle("polycities", start.polytopiaCities !== false, "Polytopia city levels", "Levels need level + 1 population, food doesn't grow cities, and each city supports level + 1 units with no upkeep")}</div>
 			</div>
 			<div class="field-group">
 				<div class="field-label">Victory conditions</div>
@@ -384,6 +386,7 @@ export function showSetup (saves: SaveMeta[], onlineAvailable: boolean, store?: 
 			tribeTechs: f.get("tribetech") === "on",
 			raiders: f.get("raiders") === "on",
 			buildGrowth: f.get("growth") === "on",
+			polytopiaCities: f.get("polycities") === "on",
 			difficulty: String(f.get("difficulty") || "normal") as Difficulty,
 			turnLimit: f.get("turns") === "0" ? 0 : Number(f.get("turns")) || 60,
 			victories: wins

@@ -450,7 +450,10 @@ export function economyPhase (sim: Sim, player: number, lines: string[]): void {
 		}
 	}
 	let ate = 0;
+	// Polytopia's cities grow from what is built, not from food: food is kept in store like any good
+	const eats = !sim.options.polytopiaCities;
 	for (const city of sim.citiesOf(player)) {
+		if (!eats) continue;
 		// Food already in the city's own store is eaten straight away
 		for (const g of foodGoodsOf(p.civ)) {
 			while ((city.store[g] ?? 0) > 0) {
@@ -504,7 +507,7 @@ export function economyPhase (sim: Sim, player: number, lines: string[]): void {
 					}
 					const city = sim.cityOn(t);
 					if (city && city.owner === player) {
-						dest = { kind: "city", id: city.id, tile: t, purpose: foodValueOf(p.civ, g) > 0 ? "food" : "store" };
+						dest = { kind: "city", id: city.id, tile: t, purpose: !sim.options.polytopiaCities && foodValueOf(p.civ, g) > 0 ? "food" : "store" };
 						break;
 					}
 				}
@@ -589,7 +592,7 @@ export function economyPhase (sim: Sim, player: number, lines: string[]): void {
 		if (cargo.destKind === "city") {
 			const city = sim.city(cargo.dest);
 			if (!city || city.owner !== player) continue;
-			if (cargo.purpose === "food" && foodValue(sim, player, cargo.good) > 0) {
+			if (!sim.options.polytopiaCities && cargo.purpose === "food" && foodValue(sim, player, cargo.good) > 0) {
 				addGrowth(sim, city, foodValue(sim, player, cargo.good));
 				ate++;
 			} else {

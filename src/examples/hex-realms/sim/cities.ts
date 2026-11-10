@@ -107,6 +107,8 @@ export function transferCity (sim: Sim, city: CityState, to: number): void {
 	const from = city.owner;
 	city.owner = to;
 	city.pendingRewards = 0;
+	// Its old owner's units no longer have it to fall back on
+	for (const u of sim.state.units) if (u.home === city.id) u.home = undefined;
 	// Its new owner can earn the bonus for joining it to their capital
 	city.linked = false;
 	if (from >= 0) {
@@ -146,8 +148,8 @@ export function transferCity (sim: Sim, city: CityState, to: number): void {
 /** Add growth points; a city that fills its bar levels up and earns a reward choice. */
 export function addGrowth (sim: Sim, city: CityState, points: number): void {
 	city.growth += points;
-	while (city.growth >= growthNeeded(city.level)) {
-		city.growth -= growthNeeded(city.level);
+	while (city.growth >= growthNeeded(city.level, sim.options.polytopiaCities)) {
+		city.growth -= growthNeeded(city.level, sim.options.polytopiaCities);
 		city.level++;
 		city.pendingRewards++;
 		sim.emit({ type: "cityLevel", city: city.id, level: city.level });
@@ -172,7 +174,11 @@ export function rewardCommand (sim: Sim, player: number, cityId: number, reward:
 		case "warrior":
 		case "swordsman": {
 			const spot = sim.freeLandNear(city.tile, 2)[0];
-			if (spot !== undefined) sim.createUnit(reward, player, spot);
+			if (spot !== undefined) {
+				const unit = sim.createUnit(reward, player, spot);
+				// A reward unit belongs to its city (it may take it over its limit)
+				if (sim.options.polytopiaCities) unit.home = city.id;
+			}
 			break;
 		}
 		case "borders":
@@ -200,6 +206,18 @@ export function slotCap (city: CityState): number {
 	return buildingSlots(city.level);
 }
 
+/** Units a city can support (polytopiaCities games): its level + 1, as in Polytopia. */
+export function unitCapacity (city: CityState): number {
+	return city.level + 1;
+}
+
+/** Units a city supports now (those whose home it is; settlers, which become cities, don't count). */
+export function unitsSupported (sim: Sim, city: CityState): number {
+	let n = 0;
+	for (const u of sim.state.units) if (u.home === city.id && !UNIT_TYPES[u.type].founder) n++;
+	return n;
+}
+
 /** Unit cost for a civ (perks applied). */
 export function unitCost (sim: Sim, player: number, type: UnitTypeId): { stars: number; goods: Record<string, number> } {
 	const info = UNIT_TYPES[type];
@@ -220,6 +238,7 @@ export function trainProblem (sim: Sim, player: number, cityId: number, type: Un
 	if (info.founder && !sim.options.allowFounding) return "Founding cities is turned off";
 	if (!sim.hasTech(player, info.tech)) return "Needs a technology";
 	if (sim.unitAt[city.tile] >= 0) return "The city tile is occupied";
+	if (sim.options.polytopiaCities && !info.founder && unitsSupported(sim, city) >= unitCapacity(city)) return `${city.name} supports ${unitCapacity(city)} units at level ${city.level}: grow it for more`;
 	const cost = unitCost(sim, player, type);
 	if (sim.player(player).stars < cost.stars) return `Needs ${cost.stars} stars`;
 	const have = availableGoods(sim, player, city.tile);
@@ -240,6 +259,7 @@ export function trainCommand (sim: Sim, player: number, cityId: number, type: Un
 	sim.player(player).stars -= cost.stars;
 	takeGoods(sim, player, city.tile, cost.goods);
 	const unit = sim.createUnit(type, player, city.tile);
+	if (sim.options.polytopiaCities) unit.home = city.id;
 	if (trainsVeterans(sim, player) && !info(type).founder) {
 		unit.veteran = true;
 		unit.maxHp += 5;

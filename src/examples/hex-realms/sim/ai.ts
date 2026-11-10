@@ -848,7 +848,9 @@ class AiTurn {
 			if (sim.unitAt[city.tile] >= 0) continue;
 			const army = sim.unitsOf(this.p).filter((u) => !UNIT_TYPES[u.type].founder).length;
 			let choice: UnitTypeId | null = null;
-			const affordable = (type: UnitTypeId) => (net - UNIT_TYPES[type].upkeep >= margin || (war && this.stars > 30)) && (war || this.spare >= unitCost(sim, this.p, type).stars);
+			// (With Polytopia's cities there's no upkeep: each city's unit limit holds the army in check)
+			const owes = (type: UnitTypeId) => (sim.options.polytopiaCities ? 0 : UNIT_TYPES[type].upkeep);
+			const affordable = (type: UnitTypeId) => (net - owes(type) >= margin || (war && this.stars > 30)) && (war || this.spare >= unitCost(sim, this.p, type).stars);
 			const wanted = Math.round(6 * this.pers.expansion);
 			if (sim.options.allowFounding && settlers < (this.pers.expansion >= 1.5 ? 2 : 1) && cities.length < wanted && this.stars >= 7 && trainProblem(sim, this.p, city.id, "settler") === null) {
 				choice = "settler";

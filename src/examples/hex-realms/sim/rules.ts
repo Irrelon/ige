@@ -546,7 +546,9 @@ export function levelRewards (level: number): [RewardId, RewardId] {
  * Food arrives every turn, so needs rise with the square of the level to keep
  * big cities (and their star income) from running away.
  */
-export function growthNeeded (level: number): number {
+export function growthNeeded (level: number, polytopia = false): number {
+	// Polytopia: level + 1 (2, 3, 4, 5...)
+	if (polytopia) return level + 1;
 	return level * level + 1;
 }
 

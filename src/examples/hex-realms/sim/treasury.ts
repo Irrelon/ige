@@ -33,6 +33,8 @@ export interface Income {
 
 /** Stars a city earns by itself. */
 export function cityIncome (sim: Sim, city: CityState): number {
+	// (Polytopia's cities pay a star per level, but without upkeep that left AI treasuries in the
+	// thousands by turn 60: the tapering curve stays)
 	let stars = levelIncome(city.level) + (city.capital ? 1 : 0) + city.bonusIncome;
 	if (city.owner < 0) return stars;
 	// Later economic techs (Guilds, Banking, Railways, Computing, Fusion) pay every city
@@ -61,6 +63,8 @@ export function adminCost (sim: Sim, player: number): number {
 
 /** Upkeep owed this turn: each unit's upkeep, less the free allowance; doubled for modern civs. */
 export function upkeep (sim: Sim, player: number): number {
+	// Polytopia's cities cap armies instead (each supports level + 1 units)
+	if (sim.options.polytopiaCities) return 0;
 	let total = 0;
 	for (const u of sim.state.units) if (u.owner === player) total += UNIT_TYPES[u.type].upkeep;
 	return Math.max(0, total - freeUnits(sim, player)) * upkeepFactor(sim, player);

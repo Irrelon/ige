@@ -52,6 +52,7 @@ export function defaultOptions (overrides: Partial<GameOptions> = {}): GameOptio
 		promotions: true,
 		connections: true,
 		waterPorts: true,
+		polytopiaCities: true,
 		victories: { domination: true, score: true, prosperity: true, alliance: true, diplomatic: true },
 		turnLimit: 60,
 		difficulty: "normal",
@@ -189,9 +190,10 @@ export class Sim {
 			const capital = cities.createCity(sim, p, tile, true);
 			capital.store = { ...STARTING_STORE };
 			const spots = sim.freeLandNear(tile, 2).filter((t) => t !== tile);
-			sim.createUnit("warrior", p, spots[0] ?? tile, true);
-			sim.createUnit("warrior", p, spots[1] ?? tile, true);
-			if (options.allowFounding) sim.createUnit("settler", p, spots[2] ?? tile, true);
+			const start = [sim.createUnit("warrior", p, spots[0] ?? tile, true), sim.createUnit("warrior", p, spots[1] ?? tile, true)];
+			if (options.allowFounding) start.push(sim.createUnit("settler", p, spots[2] ?? tile, true));
+			// The capital supports the starting units
+			if (options.polytopiaCities) for (const u of start) u.home = capital.id;
 		}
 
 		if (setup.villages !== false) sim.placeVillages(starts);

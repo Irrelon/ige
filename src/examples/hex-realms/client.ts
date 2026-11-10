@@ -1600,6 +1600,7 @@ function urlForOptions (o: GameOptions, style: TerrainStyle): string {
 	q.set("tribetech", o.tribeTechs === false ? "0" : "1");
 	q.set("raiders", o.raiders === false ? "0" : "1");
 	q.set("growth", o.buildGrowth === false ? "food" : "buildings");
+	q.set("cities", o.polytopiaCities === false ? "classic" : "polytopia");
 	q.set("turns", String(o.turnLimit));
 	q.set("v", Object.entries(o.victories).filter(([, v]) => v).map(([k]) => k).join(","));
 	q.set("style", style);

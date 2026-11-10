@@ -5,7 +5,7 @@ import { preview } from "./combat";
 import { buildOptions, economyPhase, rushCost, total } from "./economy";
 import { canEnter, reachable } from "./movement";
 import { ambitionProblem, ambitionScore, checkAmbition } from "./ambitions";
-import { createCity } from "./cities";
+import { createCity, trainProblem, transferCity, unitsSupported } from "./cities";
 import { networkNodes, SEA } from "./network";
 import { attitude, councilVote, grievance, hasPact, pickAgenda, warProblem } from "./diplomacy";
 import { researchCost } from "./effects";
@@ -31,7 +31,7 @@ function blank (players: number, starts: number[], overrides: Partial<GameOption
 	map.shade.fill(1);
 	map.landmass.fill(0);
 	map.landmassSizes = [map.count];
-	const options = defaultOptions({ width, height, players, humans: [0], fog: "off", allowFounding: true, neutralStart: false, buildGrowth: false, raiders: false, connections: false, waterPorts: false, ...overrides });
+	const options = defaultOptions({ width, height, players, humans: [0], fog: "off", allowFounding: true, neutralStart: false, buildGrowth: false, raiders: false, connections: false, waterPorts: false, polytopiaCities: false, ...overrides });
 	const sim = Sim.create(options, { map, starts, villages: false });
 	sim.drainEvents();
 	return sim;
@@ -423,7 +423,7 @@ describe("stars: upkeep, administration and income", () => {
 	});
 
 	test("city income grows more slowly at high levels; very wide civs pay administration", () => {
-		expect([1, 2, 3, 4, 5, 6, 7, 8].map(levelIncome)).toEqual([1, 2, 2, 3, 3, 4, 4, 5]);
+		expect([1, 2, 3, 4, 5, 6, 7, 8].map((l) => levelIncome(l))).toEqual([1, 2, 2, 3, 3, 4, 4, 5]);
 		expect([10, 11, 20, 21, 30, 31].map(administration)).toEqual([0, 1, 10, 12, 30, 33]);
 	});
 });
@@ -926,6 +926,37 @@ describe("Polytopia-style growth", () => {
 		// Older games (and replays) keep food-only growth
 		const old = blank(2, [sim2(4, 4), sim2(20, 12)], { buildGrowth: false });
 		expect(buildingPop(old, 0, sim.map.neighbor(old.citiesOf(0)[0].tile, 0), "woodcutter")).toBe(0);
+	});
+});
+
+describe("Polytopia's cities", () => {
+	test("a level needs level + 1 population; cities don't grow from food; each supports level + 1 units, with no upkeep", () => {
+		const sim = blank(2, [sim2(3, 3), sim2(20, 12)], { polytopiaCities: true, humans: [0, 1] });
+		const city = sim.citiesOf(0)[0];
+		expect([1, 2, 3, 4].map((l) => growthNeeded(l, true))).toEqual([2, 3, 4, 5]);
+		// Starting units belong to the capital
+		expect(sim.unitsOf(0).every((u) => u.home === city.id)).toBe(true);
+		// Food in store is kept, not eaten
+		city.store = { fish: 3 };
+		const growth = city.growth;
+		nextTurn(sim);
+		expect(city.growth).toBe(growth);
+		expect(city.store.fish).toBe(3);
+		// A level-1 city supports 2 units: the two starting warriors fill it (settlers don't count, and can still be trained)
+		sim.player(0).stars = 100;
+		for (const u of sim.unitsOf(0)) if (u.tile === city.tile) sim.relocateUnit(u, sim.freeLandNear(city.tile, 3).find((t) => t !== city.tile && sim.unitAt[t] < 0) as number);
+		expect(trainProblem(sim, 0, city.id, "warrior")).toMatch(/supports 2 units/);
+		expect(unitsSupported(sim, city)).toBe(2);
+		// Level 3 supports 4: two more
+		city.level = 3;
+		expect(sim.apply(0, { type: "train", city: city.id, unit: "warrior" }).ok).toBe(true);
+		expect(unitsSupported(sim, city)).toBe(3);
+		// No upkeep, however big the army
+		for (let k = 0; k < 6; k++) sim.createUnit("warrior", 0, sim.freeLandNear(city.tile, 4).find((t) => sim.unitAt[t] < 0) as number);
+		expect(upkeep(sim, 0)).toBe(0);
+		// A captured city frees its units from it
+		transferCity(sim, city, 1);
+		expect(sim.unitsOf(0).some((u) => u.home === city.id)).toBe(false);
 	});
 });
 
