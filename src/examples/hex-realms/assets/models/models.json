@@ -695,6 +695,24 @@
 		"bytes": 296668,
 		"floor": -0.1548
 	},
+	"railgun": {
+		"file": "railgun.glb",
+		"min": [
+			-0.4278,
+			-0.2838,
+			-0.4279
+		],
+		"max": [
+			0.4619,
+			0.3423,
+			0.4318
+		],
+		"triangles": 4960,
+		"animations": [],
+		"skinned": false,
+		"bytes": 562580,
+		"yaw": -1.5708
+	},
 	"rider": {
 		"file": "rider.glb",
 		"min": [
