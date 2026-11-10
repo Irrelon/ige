@@ -11,6 +11,7 @@ import * as growth from "./growth";
 import { hasWonder, researchCost, sightBonus } from "./effects";
 import * as movement from "./movement";
 import * as orders from "./orders";
+import * as raiders from "./raiders";
 import { recordHistory } from "./history";
 import { addRivers } from "../rivers";
 import { CIV_IDS, CIVS, type CivId, STARTING_STARS, STARTING_STORE, type TechId, TECHS, techCost, UNIT_TYPES, type UnitTypeId } from "./rules";
@@ -18,7 +19,7 @@ import * as treasury from "./treasury";
 import * as wonders from "./wonders";
 import {
 	ALLIANCE, type BuildingState, type CargoState, type CityState, type Command, type CommandResult, type GameOptions,
-	type GameState, NEUTRAL, PEACE, type PlayerState, type SimEvent, type UnitState, WAR
+	type GameState, NEUTRAL, PEACE, type PlayerState, RAIDERS, type SimEvent, type UnitState, WAR
 } from "./types";
 import { fail, ok } from "./result";
 import * as victory from "./victory";
@@ -47,6 +48,7 @@ export function defaultOptions (overrides: Partial<GameOptions> = {}): GameOptio
 		rivers: true,
 		neutralStart: true,
 		buildGrowth: true,
+		raiders: true,
 		victories: { domination: true, score: true, prosperity: true, alliance: true, diplomatic: true },
 		turnLimit: 60,
 		difficulty: "normal",
@@ -133,7 +135,8 @@ export class Sim {
 			},
 			firsts: {},
 			winner: null,
-			history: []
+			history: [],
+			camps: []
 		};
 		const sim = new Sim(state, map);
 
@@ -272,7 +275,19 @@ export class Sim {
 	}
 
 	player (p: number): PlayerState {
-		return this.state.players[p];
+		return p >= 0 ? this.state.players[p] : this.raiderPlayer;
+	}
+
+	protected _raiderPlayer?: PlayerState;
+
+	/** Raiders (owner -1) as a stand-in civ: a name and colour for their units, no techs, at war with all. */
+	get raiderPlayer (): PlayerState {
+		this._raiderPlayer ??= {
+			index: RAIDERS, name: "Raiders", color: "#6b4a3a", civ: "highlanders", human: false, alive: true, stars: 0, techs: [], sell: [], priority: [],
+			stats: { kills: 0, lost: 0, produced: 0, captured: 0, delivered: 0, conquered: 0, warsDeclared: 0 },
+			feats: [], ambition: null, milestones: [], legacy: false, lastWar: 0, agenda: null
+		};
+		return this._raiderPlayer;
 	}
 
 	unit (id: number): UnitState | undefined {
@@ -315,7 +330,7 @@ export class Sim {
 	}
 
 	hasTech (p: number, tech: TechId | null): boolean {
-		return !tech || this.state.players[p].techs.includes(tech);
+		return !tech || (p >= 0 && this.state.players[p].techs.includes(tech));
 	}
 
 	distance (a: number, b: number): number {
@@ -423,6 +438,7 @@ export class Sim {
 		unit.tile = tile;
 		this.unitAt[tile] = unit.id;
 		this.markFog(unit.owner);
+		if (unit.owner >= 0 && this.state.camps.length) raiders.enterCamp(this, unit);
 	}
 
 	// ------------------------------------------------------------------
@@ -526,12 +542,14 @@ export class Sim {
 			this.state.diplomacy.met[q * n + p] = 1;
 			this.emit({ type: "met", a: p, b: q });
 		};
-		for (const u of this.state.units) if (u.owner !== p && visible[u.tile]) meet(u.owner);
+		for (const u of this.state.units) if (u.owner >= 0 && u.owner !== p && visible[u.tile]) meet(u.owner);
 		for (const c of this.state.cities) if (c.owner >= 0 && c.owner !== p && visible[c.tile]) meet(c.owner);
 	}
 
 	/** What player p knows of a tile under the game's fog mode (UNEXPLORED / FOGGED / VISIBLE). */
 	viewOf (p: number, tile: number): number {
+		// Raiders know the land
+		if (p < 0) return VISIBLE;
 		return tileView(this.options.fog, this.fog.explored[p][tile], this.fog.visible[p][tile]);
 	}
 
@@ -685,6 +703,7 @@ export class Sim {
 
 	/** Once per round, after the last civ has played. */
 	protected endRound (): void {
+		raiders.raidersRound(this);
 		diplomacy.roundUpdate(this);
 		victory.roundCheck(this);
 		recordHistory(this);
@@ -806,6 +825,7 @@ export class Sim {
 		d.treaties ??= [];
 		state.firsts ??= {};
 		state.history ??= [];
+		state.camps ??= [];
 		for (const p of state.players) {
 			p.feats ??= [];
 			p.ambition ??= null;

@@ -407,11 +407,76 @@ export class WorldView {
 		return e;
 	}
 
+	// ------------------------------------------------------------------
+	// Raider camps
+	// ------------------------------------------------------------------
+
+	/** Camp views by camp id; rebuilt when camps come and go or the fog lifts. */
+	camps = new Map<number, IgeEntity>();
+	campsDirty = true;
+
+	/** Show the camps this player has explored (and drop the scattered ones). */
+	rebuildCamps (): void {
+		this.campsDirty = false;
+		const live = new Map(this.sim.state.camps.map((c) => [c.id, c]));
+		for (const [id, e] of this.camps) {
+			const camp = live.get(id);
+			if (!camp || this.terrain.fogView[camp.tile] === UNEXPLORED) {
+				e.destroy();
+				this.camps.delete(id);
+			}
+		}
+		for (const camp of live.values()) {
+			if (this.camps.has(camp.id) || this.terrain.fogView[camp.tile] === UNEXPLORED) continue;
+			this.camps.set(camp.id, this.buildCamp(camp.tile, camp.id));
+		}
+		this.hooks.invalidate?.();
+	}
+
+	/** Hide tents round a fire, a ring of sharpened stakes and a ragged banner. */
+	protected buildCamp (tile: number, id: number): IgeEntity {
+		const R = this.layout.size;
+		const x = this.tileX(tile), z = this.tileZ(tile);
+		const root = new IgeEntity();
+		root.id(this.uid("camp"));
+		root.translateTo(x, this.groundAt(x, z), z).mount(this.unitLayer);
+		const rand = mulberry32(id * 31 + 7);
+		const piece = (g: IgeGeometryData3d, c: Rgb, sx: number, sy: number, sz: number, px: number, py: number, pz: number, glow = 0) => {
+			const e = new IgeEntity();
+			e.id(this.uid("campPart"));
+			e._geometryData = g;
+			e._materialData = material(c, c, glow);
+			e.scaleTo(sx, sy, sz).translateTo(px, py, pz).mount(root);
+			return e;
+		};
+		const hide: Rgb[] = [{ r: 0.42, g: 0.3, b: 0.22 }, { r: 0.36, g: 0.27, b: 0.2 }, { r: 0.5, g: 0.38, b: 0.27 }];
+		for (let i = 0; i < 3; i++) {
+			const a = (i / 3) * Math.PI * 2 + rand() * 0.5;
+			const tent = piece(PYRAMID, hide[i], R * 0.36, R * 0.34, R * 0.36, Math.cos(a) * R * 0.3, R * 0.17, Math.sin(a) * R * 0.3);
+			tent.rotateTo(0, a + Math.PI / 4, 0);
+		}
+		// The fire: logs and a glowing heart
+		piece(CUBE, { r: 0.3, g: 0.2, b: 0.12 }, R * 0.2, R * 0.04, R * 0.05, 0, R * 0.02, 0).rotateTo(0, 0.6, 0);
+		piece(CUBE, { r: 0.3, g: 0.2, b: 0.12 }, R * 0.2, R * 0.04, R * 0.05, 0, R * 0.02, 0).rotateTo(0, -0.6, 0);
+		piece(ORB, { r: 1, g: 0.5, b: 0.15 }, R * 0.1, R * 0.12, R * 0.1, 0, R * 0.07, 0, 1.6);
+		// Stakes round the edge, leaning out
+		for (let i = 0; i < 11; i++) {
+			const a = (i / 11) * Math.PI * 2 + rand() * 0.2;
+			const stake = piece(CUBE, { r: 0.46, g: 0.33, b: 0.2 }, R * 0.04, R * 0.22, R * 0.04, Math.cos(a) * R * 0.6, R * 0.09, Math.sin(a) * R * 0.6);
+			stake.rotateTo(Math.sin(a) * 0.35, 0, -Math.cos(a) * 0.35);
+		}
+		// A pole with a dark red banner
+		piece(CUBE, { r: 0.3, g: 0.22, b: 0.15 }, R * 0.035, R * 0.7, R * 0.035, -R * 0.1, R * 0.35, R * 0.02);
+		piece(CUBE, { r: 0.55, g: 0.1, b: 0.08 }, R * 0.22, R * 0.14, R * 0.015, R * 0.02, R * 0.6, R * 0.02);
+		return root;
+	}
+
 	/** Create views for everything already in the game. */
 	build (): void {
 		for (const u of this.sim.state.units) this.addUnit(u);
 		for (const c of this.sim.state.cities) this.buildCity(c);
 		for (const b of this.sim.state.buildings) this.buildBuilding(b);
+		this.campsDirty = true;
 		this.roadsDirty = true;
 		this.bordersDirty = true;
 		this.depositsDirty = true;
@@ -419,6 +484,9 @@ export class WorldView {
 
 	/** Everything stands on the active terrain surface: re-place it all (style switch). */
 	reseatAll (): void {
+		for (const e of this.camps.values()) e.destroy();
+		this.camps.clear();
+		this.campsDirty = true;
 		for (const v of this.units.values()) this.placeUnit(v);
 		for (const c of this.sim.state.cities) this.buildCity(c);
 		for (const b of this.sim.state.buildings) this.buildBuilding(b);
@@ -1339,6 +1407,10 @@ export class WorldView {
 				case "harvested":
 					this.depositsDirty = true;
 					break;
+				case "campFounded":
+				case "campCleared":
+					this.campsDirty = true;
+					break;
 				case "territory":
 				case "eliminated":
 					this.bordersDirty = true;
@@ -1354,6 +1426,7 @@ export class WorldView {
 	/** Revealed or hidden tiles: re-seat what stands near them and refresh what's shown. */
 	fogChanged (tiles: number[]): void {
 		if (!tiles.length) return;
+		this.campsDirty = true;
 		this.roadsDirty = true;
 		this.bordersDirty = true;
 		this.depositsDirty = true;
@@ -1534,6 +1607,7 @@ export class WorldView {
 		if (this.roadsDirty) this.rebuildRoads();
 		if (this.depositsDirty) this.rebuildDeposits();
 		if (this.bordersDirty) this.rebuildBorders();
+		if (this.campsDirty) this.rebuildCamps();
 		return moving;
 	}
 

@@ -6,6 +6,7 @@ import { attackProblem, preview } from "../sim/combat";
 import { buildingStars, buildOptions, buyCost, buyProblem, roadProblem, rushCost, rushProblem, storedGoods, wonderOptions } from "../sim/economy";
 import { researchCost } from "../sim/effects";
 import { buildingPop, harvestProblem } from "../sim/growth";
+import { campAt, campBounty } from "../sim/raiders";
 import {
 	AMBITIONS, type BuildingId, BUILDINGS, DEPOSIT_NAMES, Deposit, type EndableTreaty, END_TRUCE_TURNS, GOOD_INFO, GOODS, type Good, type Goods, growthNeeded, HARVEST, levelRewards, REWARDS, ROAD_COST,
 	eraOfTier, type TechId, TECH_IDS, TECHS, UNIT_LOOK, UNIT_TYPE_IDS, type UnitTypeId, UNIT_TYPES, WONDER_IDS
@@ -821,6 +822,15 @@ export class Hud {
 					}
 					break;
 				}
+				case "campCleared":
+					if (e.player === me) {
+						this.toast(`Raider camp scattered: <b>+${e.stars}</b> ${icon("star", 13)}`, "good", 4);
+						play("capture");
+					}
+					break;
+				case "campFounded":
+					if (this.host.terrain.fogView[e.tile] !== UNEXPLORED) this.toast("Raiders have made camp nearby", "bad", 4);
+					break;
 				case "population": {
 					const c = sim.city(e.city);
 					if (c?.owner === me && !this.host.replaying) this.floatGain(e.tile, `+${e.points} ${icon("people", 14)}<small>${esc(c.name)}</small>`);
@@ -1438,6 +1448,7 @@ export class Hud {
 			<p><b>Diplomacy</b> (G): treaties, cultural exchanges, research agreements, trades of goods and stars (once, or every turn as a route; where your roads meet theirs the goods travel as carts), demands, denouncing and sanctions. Wars wear both sides down, making peace easier the longer they last. Wars without enough grievances are surprise wars that everyone resents; peace brings a 10-turn truce.</p>
 			<p><b>Quick actions</b>: buttons float above a selected unit when it can do something where it stands: crossed swords capture a city, a house founds one, a flame pillages.</p>
 			<p><b>Meeting civs</b>: a civ you have just met is unaligned: there's no treaty, so units of both sides may wander through each other's land, but nobody fights. The first attack starts a war. Make peace in Diplomacy to close your borders to their soldiers.</p>
+			${this.sim.options.raiders ? `<p><b>Raiders</b>: outlaw camps spring up on unclaimed land out of sight. Their raiders attack units and burn buildings and roads near the camp, but never take cities. Walk a unit into a camp to scatter it for a bounty of stars.</p>` : ""}
 			<p><b>Fight</b>: attack an unaligned civ's unit, or declare war in Diplomacy. Select a unit to see red attack rings; hover one to preview the damage. Ranged units need line of sight. Units stop when they move next to an enemy.</p>
 			<p><b>Orders</b>: click a far tile to march a unit there over several turns (its route shows as gold dots). Sleep (K) leaves a unit be until an enemy comes near; Fortify (I) digs it in for +50% defence; Upgrade (U) turns a warrior into a swordsman inside your borders once you have Smithing. Click a city's name to rename it.</p><p><b>Keys</b>: Ctrl/Cmd+S quicksave, N log of notices, Y rankings, WASD/arrows pan, wheel or Z/X zoom, Q/E rotate, Page Up/Page Down tilt (or right-drag: sideways rotates, up and down tilts), Space next unit, Enter end turn, Esc deselect, C centre, T terrain style, R research, G diplomacy, J ambition, M wonders, B economy, V economy lens, L cities, F found city, O menu, H help.</p></div>`;
 	}
@@ -1482,6 +1493,7 @@ export function describeTile (sim: Sim, tile: number): string {
 	if (feature) parts.push(feature);
 	const deposit = DEPOSIT_NAMES[map.deposit[tile] as Deposit];
 	if (deposit) parts.push(`<b>${deposit}</b>`);
+	if (campAt(sim, tile)) parts.push(`<b class="bad">Raider camp</b> <span class="dim">(walk a unit in to scatter it for &#9733;${campBounty(sim)})</span>`);
 	return parts.join(" &middot; ");
 }
 

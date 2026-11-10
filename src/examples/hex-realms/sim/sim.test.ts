@@ -11,9 +11,10 @@ import { attitude, councilVote, grievance, hasPact, pickAgenda, warProblem } fro
 import { researchCost } from "./effects";
 import { administration, BUILDINGS, Deposit, foodGoodsOf, foodValueOf, growthNeeded, levelIncome, type TechId, TECH_IDS, techCost } from "./rules";
 import { buildingPop, harvestProblem } from "./growth";
+import { campBounty, raiderType } from "./raiders";
 import { income, upkeep } from "./treasury";
 import { defaultOptions, Sim } from "./sim";
-import { ALLIANCE, type Command, type GameOptions, NEUTRAL, PEACE, type UnitState, WAR } from "./types";
+import { ALLIANCE, type Command, type GameOptions, NEUTRAL, PEACE, RAIDERS, type UnitState, WAR } from "./types";
 
 /** A start tile near the left of the blank map. */
 function sim0Start (): number {
@@ -29,7 +30,7 @@ function blank (players: number, starts: number[], overrides: Partial<GameOption
 	map.shade.fill(1);
 	map.landmass.fill(0);
 	map.landmassSizes = [map.count];
-	const options = defaultOptions({ width, height, players, humans: [0], fog: "off", allowFounding: true, neutralStart: false, buildGrowth: false, ...overrides });
+	const options = defaultOptions({ width, height, players, humans: [0], fog: "off", allowFounding: true, neutralStart: false, buildGrowth: false, raiders: false, ...overrides });
 	const sim = Sim.create(options, { map, starts, villages: false });
 	sim.drainEvents();
 	return sim;
@@ -907,6 +908,51 @@ describe("Polytopia-style growth", () => {
 		// Older games (and replays) keep food-only growth
 		const old = blank(2, [sim2(4, 4), sim2(20, 12)], { buildGrowth: false });
 		expect(buildingPop(old, 0, sim.map.neighbor(old.citiesOf(0)[0].tile, 0), "woodcutter")).toBe(0);
+	});
+});
+
+describe("raider camps", () => {
+	test("camps send out raiders that attack civ units, never enter cities, and scatter for a bounty", () => {
+		const sim = blank(2, [sim2(4, 4), sim2(20, 12)], { raiders: true, humans: [0, 1] });
+		clearUnits(sim);
+		const campTile = sim2(12, 8);
+		sim.state.camps.push({ id: sim.nextId(), tile: campTile, nextRaid: 0 });
+		// A round passes: the camp sends out a raider
+		nextTurn(sim);
+		const raiders = sim.state.units.filter((u) => u.owner === RAIDERS);
+		expect(raiders.length).toBe(1);
+		expect(raiders[0].camp).toBe(sim.state.camps[0].id);
+		expect(sim.player(RAIDERS).name).toBe("Raiders");
+		expect(sim.atWar(0, RAIDERS)).toBe(true);
+		// Raiders can't step into a city
+		expect(canEnter(sim, raiders[0], sim.citiesOf(0)[0].tile)).toBe(false);
+		// A civ unit next to the raider gets attacked when the round ends
+		const raider = raiders[0];
+		const prey = sim.createUnit("warrior", 0, sim.neighbors(raider.tile).find((t) => sim.unitAt[t] < 0 && t !== campTile) as number, true);
+		const hp = prey.hp;
+		nextTurn(sim);
+		expect(sim.unit(prey.id)?.hp ?? 0).toBeLessThan(hp);
+		// Scatter the camp: a civ unit walks in (once nothing stands on it)
+		for (const r of sim.state.units.filter((u) => u.owner === RAIDERS)) sim.removeUnit(r, "killed");
+		const stars = sim.player(0).stars;
+		const scout = sim.createUnit("warrior", 0, sim.neighbors(campTile)[0], true);
+		if (sim.unitAt[scout.tile] !== scout.id) sim.relocateUnit(scout, scout.tile);
+		expect(sim.apply(0, { type: "move", unit: scout.id, to: campTile }).ok).toBe(true);
+		expect(sim.state.camps.length).toBe(0);
+		expect(sim.player(0).stars).toBe(stars + campBounty(sim));
+	});
+
+	test("camps appear out of sight on unclaimed land, and raiders keep up with the world's techs", () => {
+		const sim = blank(2, [sim2(2, 2), sim2(21, 13)], { raiders: true, humans: [0, 1], fog: "civ" });
+		for (let k = 0; k < 14; k++) nextTurn(sim);
+		expect(sim.state.camps.length).toBeGreaterThan(0);
+		for (const camp of sim.state.camps) {
+			expect(sim.map.owner[camp.tile]).toBe(-1);
+			expect(sim.state.cities.every((c) => sim.distance(c.tile, camp.tile) >= 4)).toBe(true);
+		}
+		expect(raiderType(sim, false)).toBe("warrior");
+		for (const p of sim.state.players) p.techs.push("smithing");
+		expect(raiderType(sim, false)).toBe("swordsman");
 	});
 });
 

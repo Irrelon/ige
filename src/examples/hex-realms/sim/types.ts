@@ -41,6 +41,8 @@ export interface GameOptions {
 	neutralStart?: boolean;
 	/** Polytopia-style growth: buildings and harvested resources add population (new games). */
 	buildGrowth?: boolean;
+	/** Raider camps appear on unclaimed land and send out raiders (new games). */
+	raiders?: boolean;
 	/** Rivers along tile edges (new games; absent in older ones, which stay as they were). */
 	rivers?: boolean;
 	victories: Record<VictoryType, boolean>;
@@ -107,6 +109,16 @@ export interface UnitState {
 	order?: "sleep" | "fortify";
 	/** A far tile the unit walks to over several turns. */
 	goto?: number;
+	/** Raiders: the camp that sent the unit out. */
+	camp?: number;
+}
+
+/** An outlaw camp on unclaimed land that sends out raiders (see raiders.ts). */
+export interface CampState {
+	id: number;
+	tile: number;
+	/** The round its next raider may set out. */
+	nextRaid: number;
 }
 
 export interface CityState {
@@ -217,6 +229,8 @@ export const ALLIANCE = 2;
  * and the first attack starts a war.
  */
 export const NEUTRAL = 3;
+/** The owner of raider units: no civ, at war with everyone. */
+export const RAIDERS = -1;
 
 export interface CouncilState {
 	formed: boolean;
@@ -273,6 +287,8 @@ export interface GameState {
 	winner: Winner | null;
 	/** Each civ's standing once per round (Rankings charts). */
 	history: HistoryPoint[];
+	/** Raider camps on the map (raiders games). */
+	camps: CampState[];
 }
 
 // ------------------------------------------------------------------
@@ -342,6 +358,9 @@ export type SimEvent =
 	/** A city gained population (buildGrowth games), from something at `tile`. */
 	| { type: "population"; city: number; points: number; tile: number; reason: string }
 	| { type: "harvested"; tile: number; deposit: number; city: number }
+	| { type: "campFounded"; camp: number; tile: number }
+	/** A camp was scattered (by `player`'s unit, for a bounty), or -1 if it just went. */
+	| { type: "campCleared"; camp: number; tile: number; player: number; stars: number }
 	| { type: "territory"; player: number; tiles: number[] }
 	| { type: "featureCleared"; tile: number }
 	| { type: "buildingPlaced"; building: number }

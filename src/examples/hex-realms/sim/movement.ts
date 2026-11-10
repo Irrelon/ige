@@ -43,6 +43,8 @@ export function canEnter (sim: Sim, unit: UnitState, tile: number, from = unit.t
 	const owner = map.owner[tile];
 	if (owner >= 0 && owner !== unit.owner && !mayCross(sim, unit.owner, owner) && map.owner[from] !== owner) return false;
 	const city = sim.cityOn(tile);
+	// Raiders never set foot in a city (or a village)
+	if (city && unit.owner < 0) return false;
 	if (city && city.owner >= 0 && city.owner !== unit.owner && !sim.atWar(unit.owner, city.owner)) return false;
 	return true;
 }

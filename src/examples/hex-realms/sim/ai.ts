@@ -737,6 +737,8 @@ class AiTurn {
 		for (const u of sim.state.units) {
 			if (u.owner !== this.p && sim.atWar(this.p, u.owner) && sim.canSee(this.p, u.tile)) consider(u.tile, 1.2);
 		}
+		// Raider camps it knows of: a bounty, and an end to the raids
+		for (const camp of sim.state.camps) if (sim.knows(this.p, camp.tile)) consider(camp.tile, 0.9);
 		if (best >= 0 && bestDist <= 16) {
 			if (sim.cityOn(best)) this.targeted.add(best);
 			return best;
