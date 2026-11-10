@@ -61,8 +61,8 @@ const SITE_TEXT: Record<string, string> = {
 
 /** Icons on unit badges. */
 const UNIT_ICONS: Record<UnitTypeId, string> = {
-	warrior: "&#x1FA93;", archer: "&#x1F3F9;", swordsman: "&#x2694;&#xFE0F;", settler: "&#x26FA;", rider: "&#x1F40E;", catapult: "&#x2604;&#xFE0F;",
-	musketeer: "&#x1F4A5;", rifleman: "&#x1F396;&#xFE0F;", infantry: "&#x1FA96;", mechInfantry: "&#x1F6E1;&#xFE0F;", exoTrooper: "&#x1F916;",
+	warrior: "&#x1FA93;", archer: "&#x1F3F9;", swordsman: "&#x2694;&#xFE0F;", settler: "&#x26FA;", rider: "&#x1F40E;", catapult: "&#x2604;&#xFE0F;", defender: "&#x1F6E1;&#xFE0F;",
+	musketeer: "&#x1F4A5;", rifleman: "&#x1F396;&#xFE0F;", infantry: "&#x1FA96;", mechInfantry: "&#x1F9BE;", exoTrooper: "&#x1F916;",
 	crossbowman: "&#x1F3AF;", machineGunner: "&#x1F525;", laserTrooper: "&#x26A1;",
 	knight: "&#x265E;", cavalry: "&#x1F3C7;", tank: "&#x2699;&#xFE0F;", hoverTank: "&#x1F6F8;",
 	trebuchet: "&#x1FAA8;", cannon: "&#x1F4A3;", artillery: "&#x1F9E8;", rocketArtillery: "&#x1F680;", railgun: "&#x1F531;"

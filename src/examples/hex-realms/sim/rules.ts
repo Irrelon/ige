@@ -291,7 +291,7 @@ export const ROAD_COST = 1;
 // Units
 // ------------------------------------------------------------------
 
-export type UnitTypeId = "warrior" | "archer" | "rider" | "swordsman" | "catapult" | "settler"
+export type UnitTypeId = "warrior" | "archer" | "rider" | "swordsman" | "catapult" | "settler" | "defender"
 	| "musketeer" | "rifleman" | "infantry" | "mechInfantry" | "exoTrooper"
 	| "crossbowman" | "machineGunner" | "laserTrooper"
 	| "knight" | "cavalry" | "tank" | "hoverTank"
@@ -323,6 +323,8 @@ export const UNIT_TYPES: Record<UnitTypeId, UnitType> = {
 	rider: { id: "rider", name: "Rider", shape: "Cube on orb", tech: "riding", hp: 10, attack: 2, defence: 1, moves: 3, range: 1, stars: 3, upkeep: 1, goods: { horses: 1 }, description: "Fast unit. Needs a horse." },
 	swordsman: { id: "swordsman", name: "Swordsman", shape: "Tall cube", tech: "smithing", hp: 15, attack: 3, defence: 3, moves: 2, range: 1, stars: 5, upkeep: 1, goods: { weapons: 1 }, description: "Strong melee unit. Needs weapons." },
 	catapult: { id: "catapult", name: "Catapult", shape: "Wide pyramid", tech: "siege", hp: 10, attack: 4, defence: 0, moves: 1, range: 3, stars: 8, upkeep: 2, goods: { planks: 1, iron: 1 }, description: "Siege engine with range 3. Needs planks and iron." },
+	// Polytopia's defender: hardly hits back, but very hard to shift (best fortified in a city: x1.5, x4 with walls)
+	defender: { id: "defender", name: "Defender", shape: "Tall cube", tech: "masonry", hp: 15, attack: 1, defence: 3, moves: 2, range: 1, stars: 3, upkeep: 1, goods: {}, description: "Shield-bearer: weak in attack but very hard to dislodge, above all in a city (defence x1.5, x4 with walls)." },
 	settler: { id: "settler", name: "Settler", shape: "Orb", tech: null, hp: 6, attack: 0, defence: 1, moves: 2, range: 1, stars: 5, upkeep: 1, goods: { food: 2 }, founder: true, description: "Founds a new city. Needs 2 food." },
 	// Melee, through the eras
 	musketeer: { id: "musketeer", name: "Musketeer", shape: "Tall cube", tech: "gunpowder", hp: 18, attack: 4, defence: 4, moves: 2, range: 1, stars: 8, upkeep: 1, goods: { weapons: 1, gunpowder: 1 }, description: "Renaissance infantry with matchlocks." },
@@ -335,7 +337,8 @@ export const UNIT_TYPES: Record<UnitTypeId, UnitType> = {
 	machineGunner: { id: "machineGunner", name: "Machine Gunner", shape: "Pyramid", tech: "automaticWeapons", hp: 18, attack: 5, defence: 4, moves: 2, range: 2, stars: 11, upkeep: 1, goods: { gunpowder: 1, machinery: 1 }, description: "Modern ranged support." },
 	laserTrooper: { id: "laserTrooper", name: "Laser Trooper", shape: "Pyramid", tech: "lasers", hp: 20, attack: 8, defence: 5, moves: 2, range: 3, stars: 18, upkeep: 2, goods: { electronics: 2 }, description: "Future ranged unit with range 3." },
 	// Mounted and armour
-	knight: { id: "knight", name: "Knight", shape: "Cube on orb", tech: "chivalry", hp: 16, attack: 4, defence: 3, moves: 3, range: 1, stars: 8, upkeep: 1, goods: { horses: 1, weapons: 1 }, description: "Heavily armoured medieval horseman." },
+	// As in Polytopia, a fast glass cannon: hits hard, defends poorly
+	knight: { id: "knight", name: "Knight", shape: "Cube on orb", tech: "chivalry", hp: 12, attack: 4, defence: 1, moves: 4, range: 1, stars: 8, upkeep: 1, goods: { horses: 1, weapons: 1 }, description: "Fast medieval horseman: hits hard, defends poorly." },
 	cavalry: { id: "cavalry", name: "Cavalry", shape: "Cube on orb", tech: "rifling", hp: 18, attack: 5, defence: 3, moves: 4, range: 1, stars: 10, upkeep: 1, goods: { horses: 1, gunpowder: 1 }, description: "Fast industrial-age horsemen." },
 	tank: { id: "tank", name: "Tank", shape: "Cube on orb", tech: "combustion", hp: 25, attack: 7, defence: 5, moves: 4, range: 1, stars: 16, upkeep: 2, goods: { machinery: 1, steel: 1 }, description: "Armoured vehicle: fast and powerful." },
 	hoverTank: { id: "hoverTank", name: "Hover Tank", shape: "Cube on orb", tech: "fusion", hp: 30, attack: 10, defence: 7, moves: 5, range: 1, stars: 24, upkeep: 2, goods: { electronics: 2, machinery: 1 }, description: "Fusion-powered armour of the future." },
@@ -352,7 +355,7 @@ export const UNIT_TYPES: Record<UnitTypeId, UnitType> = {
  * a later unit borrows until it has its own model.
  */
 export const UNIT_LOOK: Record<UnitTypeId, "warrior" | "archer" | "rider" | "swordsman" | "catapult" | "settler"> = {
-	warrior: "warrior", archer: "archer", rider: "rider", swordsman: "swordsman", catapult: "catapult", settler: "settler",
+	warrior: "warrior", archer: "archer", rider: "rider", swordsman: "swordsman", catapult: "catapult", settler: "settler", defender: "swordsman",
 	musketeer: "swordsman", rifleman: "swordsman", infantry: "swordsman", mechInfantry: "swordsman", exoTrooper: "swordsman",
 	crossbowman: "archer", machineGunner: "archer", laserTrooper: "archer",
 	knight: "rider", cavalry: "rider", tank: "rider", hoverTank: "rider",
@@ -439,7 +442,7 @@ export const TECHS: Record<TechId, Tech> = {
 	trade: { id: "trade", name: "Trade", tier: 1, requires: [], branch: "Society", unlocks: "Market, trade agreements" },
 	sawmills: { id: "sawmills", name: "Sawmills", tier: 2, requires: ["forestry"], branch: "Industry", unlocks: "Sawmill" },
 	smelting: { id: "smelting", name: "Smelting", tier: 2, requires: ["mining"], branch: "Industry", unlocks: "Smelter" },
-	masonry: { id: "masonry", name: "Masonry", tier: 2, requires: ["mining", "construction"], branch: "War", unlocks: "City Walls" },
+	masonry: { id: "masonry", name: "Masonry", tier: 2, requires: ["mining", "construction"], branch: "War", unlocks: "City Walls, Defender" },
 	milling: { id: "milling", name: "Milling", tier: 2, requires: ["farming"], branch: "Food", unlocks: "Mill" },
 	sailing: { id: "sailing", name: "Sailing", tier: 2, requires: ["fishing", "forestry"], branch: "Sea", unlocks: "Port; units can embark onto coastal water" },
 	archery: { id: "archery", name: "Archery", tier: 2, requires: ["forestry"], branch: "War", unlocks: "Archer" },

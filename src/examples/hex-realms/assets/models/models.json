@@ -1018,6 +1018,66 @@
 		"bytes": 679444,
 		"floor": -0.2198
 	},
+	"trialMarket": {
+		"file": "trialMarket.glb",
+		"min": [
+			-0.4341,
+			-0.154,
+			-0.5059
+		],
+		"max": [
+			0.4256,
+			0.1528,
+			0.1804
+		],
+		"triangles": 18180,
+		"animations": [],
+		"skinned": false,
+		"bytes": 1972104,
+		"floor": -0.1346
+	},
+	"trialMarketTex": {
+		"file": "trialMarketTex.glb",
+		"min": [
+			-0.4355,
+			-0.1242,
+			-0.2439
+		],
+		"max": [
+			0.4451,
+			0.1202,
+			0.1533
+		],
+		"triangles": 4876,
+		"animations": [],
+		"skinned": false,
+		"bytes": 596008,
+		"floor": -0.1195
+	},
+	"trialSwordsman": {
+		"file": "trialSwordsman.glb",
+		"min": [
+			-0.3057,
+			-0.4319,
+			-0.4845
+		],
+		"max": [
+			0.3317,
+			0.4434,
+			0.3937
+		],
+		"triangles": 19038,
+		"animations": [
+			"idle",
+			"walk",
+			"attack",
+			"hit",
+			"death"
+		],
+		"skinned": true,
+		"bytes": 2577324,
+		"floor": -0.4361
+	},
 	"victoryArch": {
 		"file": "victoryArch.glb",
 		"min": [

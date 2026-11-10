@@ -104,6 +104,23 @@ describe("movement", () => {
 });
 
 describe("combat", () => {
+	test("a defender holding a city shrugs off a warrior, as in Polytopia (3 damage dealt, 9 taken)", () => {
+		const sim = blank(2, [sim0Start(), 200]);
+		clearUnits(sim);
+		const city = sim.citiesOf(0)[0];
+		const guard = sim.createUnit("defender", 0, city.tile, true);
+		const attacker = sim.createUnit("warrior", 1, sim.neighbors(city.tile)[0], true);
+		const r = preview(sim, attacker, guard);
+		expect(r.damage).toBe(3);
+		expect(r.retaliation).toBe(9);
+		// A knight hits hard but is easily hurt back on open ground
+		const knight = sim.createUnit("knight", 1, sim2(12, 8), true);
+		const foot = sim.createUnit("warrior", 0, sim2(13, 8), true);
+		const k = preview(sim, knight, foot);
+		expect(k.damage).toBeGreaterThan(5);
+		expect(preview(sim, foot, knight).damage).toBeGreaterThanOrEqual(6);
+	});
+
 	test("warriors on open ground trade 5 damage each way", () => {
 		const sim = blank(2, [sim2(0, 2), sim2(20, 12)]);
 		clearUnits(sim);

@@ -852,6 +852,9 @@ class AiTurn {
 			const wanted = Math.round(6 * this.pers.expansion);
 			if (sim.options.allowFounding && settlers < (this.pers.expansion >= 1.5 ? 2 : 1) && cities.length < wanted && this.stars >= 7 && trainProblem(sim, this.p, city.id, "settler") === null) {
 				choice = "settler";
+			} else if (this.threatened(city) && affordable("defender") && trainProblem(sim, this.p, city.id, "defender") === null) {
+				// A city under threat gets a shield-bearer to hold it
+				choice = "defender";
 			} else if (army < target) {
 				// The newest unit of each line it can make, strongest lines first
 				const lines: UnitTypeId[][] = [
