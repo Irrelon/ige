@@ -655,6 +655,30 @@
 		"bytes": 423496,
 		"floor": -0.3133
 	},
+	"musketeer": {
+		"file": "musketeer.glb",
+		"min": [
+			-0.2365,
+			-0.4386,
+			-0.1319
+		],
+		"max": [
+			0.2373,
+			0.4432,
+			0.1084
+		],
+		"triangles": 17156,
+		"animations": [
+			"death",
+			"hit",
+			"idle",
+			"attack",
+			"walk"
+		],
+		"skinned": true,
+		"bytes": 1779668,
+		"floor": -0.4434
+	},
 	"observatory": {
 		"file": "observatory.glb",
 		"min": [
