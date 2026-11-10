@@ -293,17 +293,18 @@
 		   ================================================================ */
 		#modal { position: absolute; inset: 0; z-index: 200; display: flex; align-items: center; justify-content: center; background: radial-gradient(ellipse at center, rgba(5, 9, 15, 0.45), rgba(3, 5, 9, 0.75)); backdrop-filter: blur(3px); -webkit-backdrop-filter: blur(3px); animation: fadein 0.2s ease; }
 		@keyframes fadein { from { opacity: 0; } }
-		.modal-box { position: relative; background: var(--panel-solid); border: 1px solid rgba(240, 195, 90, 0.28); border-radius: var(--r-lg); padding: 0 22px 20px; max-width: min(1040px, calc(100vw - 24px)); max-height: calc(100vh - 40px); overflow: auto; box-sizing: border-box; box-shadow: 0 30px 80px rgba(0, 0, 0, 0.65), 0 0 0 1px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.07); animation: modalin 0.28s var(--ease); }
+		.modal-box { position: relative; background: var(--panel-solid); border: 1px solid rgba(240, 195, 90, 0.28); border-radius: var(--r-lg); padding: 0 22px 20px; max-width: min(1040px, calc(100vw - 24px)); max-height: calc(100vh - 40px); overflow: auto; box-sizing: border-box; box-shadow: 0 30px 80px rgba(0, 0, 0, 0.65), 0 0 0 1px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.07); }
+		.modal-wrap { position: relative; display: flex; max-width: 100%; animation: modalin 0.28s var(--ease); }
 		@keyframes modalin { from { opacity: 0; transform: translateY(12px) scale(0.985); } }
-		.modal-box.static, .modal-box.static .contact-crest, .modal-box.static .lu-level, .modal-box.static .tier .tech.focus { animation: none; }
+		.modal-wrap.static, .modal-wrap.static .contact-crest, .modal-wrap.static .lu-level, .modal-wrap.static .tier .tech.focus { animation: none; }
 		.modal-box > h3:first-of-type { position: sticky; top: 0; z-index: 3; margin: 0 -22px 14px; padding: 16px 60px 14px 22px; font-family: var(--display); font-size: 21px; font-weight: 800; letter-spacing: 0.06em; color: #fff4d6; background: linear-gradient(180deg, #1c2a40, #142034); border-bottom: 1px solid rgba(240, 195, 90, 0.25); box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25); }
 		.modal-box > h3:first-of-type::after { content: ""; position: absolute; left: 22px; bottom: -1px; width: 64px; height: 2px; background: linear-gradient(90deg, var(--gold), transparent); }
 		.modal-box h3 { margin: 0 0 10px; font-family: var(--display); letter-spacing: 0.04em; }
 		.modal-box h4 { margin: 18px 0 8px; color: var(--gold); font-weight: 700; font-size: 11px; text-transform: uppercase; letter-spacing: 0.12em; }
-		.modal-box .close { position: absolute; top: 12px; right: 14px; z-index: 4; width: 34px; height: 34px; min-height: 0; padding: 0; border-radius: 50%; font-size: 0; background: rgba(255, 255, 255, 0.05); border-color: var(--line-2); box-shadow: none; }
-		.modal-box .close::before, .modal-box .close::after { content: ""; position: absolute; left: 50%; top: 50%; width: 14px; height: 2px; border-radius: 2px; background: var(--dim); transform: translate(-50%, -50%) rotate(45deg); }
-		.modal-box .close::after { transform: translate(-50%, -50%) rotate(-45deg); }
-		.modal-box .close:hover::before, .modal-box .close:hover::after { background: #fff; }
+		.modal-wrap > .close { position: absolute; top: 12px; right: 14px; z-index: 4; width: 34px; height: 34px; min-height: 0; padding: 0; border-radius: 50%; font-size: 0; background: rgba(255, 255, 255, 0.05); border-color: var(--line-2); box-shadow: none; }
+		.modal-wrap > .close::before, .modal-wrap > .close::after { content: ""; position: absolute; left: 50%; top: 50%; width: 14px; height: 2px; border-radius: 2px; background: var(--dim); transform: translate(-50%, -50%) rotate(45deg); }
+		.modal-wrap > .close::after { transform: translate(-50%, -50%) rotate(-45deg); }
+		.modal-wrap > .close:hover::before, .modal-wrap > .close:hover::after { background: #fff; }
 		.modal-box table { border-collapse: collapse; width: 100%; }
 		.modal-box th { text-align: left; font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--faint); font-weight: 700; padding: 4px 8px 6px; border-bottom: 1px solid var(--line-2); }
 		.modal-box td { padding: 7px 8px; border-bottom: 1px solid var(--line); vertical-align: top; }

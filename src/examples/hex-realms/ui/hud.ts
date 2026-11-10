@@ -1295,7 +1295,8 @@ export class Hud {
 		// The same screen updating in place (a click inside it) keeps its scroll and doesn't replay the opening animation
 		const same = this.renderedModal === this.modal && !el.classList.contains("hidden");
 		const scrolls = same ? [...el.querySelectorAll<HTMLElement>(".modal-box, .techs-scroll, .unlocks")].map((e) => [e.scrollLeft, e.scrollTop]) : [];
-		el.innerHTML = `<div class="modal-box ${this.modal}${same ? " static" : ""}"><button class="close" data-action="close-modal" aria-label="Close">&times;</button>${body}</div>`;
+		// The close button sits on a wrapper outside the scrolling box, so it stays put like the title
+		el.innerHTML = `<div class="modal-wrap ${this.modal}${same ? " static" : ""}"><button class="close" data-action="close-modal" aria-label="Close">&times;</button><div class="modal-box ${this.modal}">${body}</div></div>`;
 		el.classList.remove("hidden");
 		this.renderedModal = this.modal;
 		if (same) {
