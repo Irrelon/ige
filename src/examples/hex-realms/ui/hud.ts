@@ -33,6 +33,7 @@ import type { SaveKind, SaveMeta, SaveStore } from "../saves";
 import { savesModal } from "./savesScreen";
 import { emblem, icon } from "./icons";
 import { getMusicVolume, getSfxVolume, setMusicVolume, setSfxVolume } from "./audio";
+import type { ArtPack } from "../view/models";
 import { currentTrack, currentTrackIndex, isMusicPaused, onTrackChange, playTrackNow, skipTrack, toggleMusicPause } from "./music";
 import { TRACKS } from "./tracks";
 import { contactModal } from "./contact";
@@ -113,7 +114,8 @@ export interface HudHost {
 	setReducedMotion (on: boolean): void;
 	setShowStats (on: boolean): void;
 	setModels (on: boolean): void;
-	models?: { enabled: boolean; models: Map<string, unknown>; infos: Record<string, unknown> };
+	setArtPack (pack: ArtPack): void;
+	models?: { enabled: boolean; pack: ArtPack; models: Map<string, unknown>; infos: Record<string, unknown>; thumbs: Record<string, unknown> };
 	inviteLink (): string | null;
 	room?: RoomInfo;
 	chat: ChatLine[];
@@ -483,6 +485,7 @@ export class Hud {
 			case "motion": h.setReducedMotion(data.on === "1"); this.openModal("menu"); break;
 			case "stats": h.setShowStats(data.on === "1"); this.openModal("menu"); break;
 			case "models": h.setModels(data.on === "1"); this.openModal("menu"); break;
+			case "art-pack": h.setArtPack(data.pack as ArtPack); this.openModal("menu"); break;
 			case "tip-ok": if (this.tipId) markTipSeen(this.tipId); this.refreshTip(); break;
 			case "tip-off": setTipsEnabled(false); this.refreshTip(); break;
 			case "copy-invite": {
@@ -1549,7 +1552,7 @@ export class Hud {
 	/** Everything a tech unlocks: its buildings, units, wonders and other abilities. */
 	techUnlocks (tech: TechId): { kind: "building" | "unit" | "wonder" | "ability"; id: string; name: string; thumb?: string; icon?: string; text: string }[] {
 		const out: ReturnType<Hud["techUnlocks"]> = [];
-		const thumbs = this.host.models?.infos ?? {};
+		const thumbs = this.host.models?.thumbs ?? {};
 		const thumb = (id: string) => (id in thumbs ? `./assets/models/thumbs/${id}.jpg` : undefined);
 		for (const b of Object.values(BUILDINGS)) {
 			if (b.tech !== tech || b.wonder === "monument") continue;
@@ -1668,7 +1671,7 @@ export class Hud {
 				<div>${toggle("tips", tipsEnabled(), "Advisor tips")}</div>
 				<div>${toggle("motion", h.reducedMotion, "Reduced motion (skip animations)")}</div>
 				<div>${toggle("stats", h.showStats, "Performance stats")}</div>
-				<div>${toggle("models", !!h.models?.enabled, `3D models <span class="dim small">(${h.models?.models.size ?? 0} loaded, the rest load when needed; off shows simple shapes)</span>`)}</div>
+				<div>Art: ${([["models", "3D models"], ["blocky", "Blocky"], ["shapes", "Simple shapes"]] as const).map(([p, label]) => `<button class="mini ${(h.models?.pack ?? "models") === p ? "on" : ""}" data-action="art-pack" data-pack="${p}">${label}</button>`).join(" ")} <span class="dim small">${h.models?.pack === "shapes" ? "" : `(${h.models?.models.size ?? 0} loaded, the rest load when needed)`}</span></div>
 			</div>`;
 	}
 

@@ -15,7 +15,7 @@ import { IgeRoomClient, type IgeRoomCommandEvent } from "@/engine/network/rooms/
 import type { IgeRoomChatLine } from "@/engine/network/rooms/igeRoomProtocol";
 import { connectRoomTransport, serverAvailable } from "./net/netClient";
 import type { ChatLine, OnlineCommand, RoomInfo, RoomOptions, TimerInfo } from "./net/protocol";
-import { ModelLibrary } from "./view/models";
+import { type ArtPack, ModelLibrary } from "./view/models";
 import { runAiTurn } from "./sim/ai";
 import { attackProblem, attackTargets } from "./sim/combat";
 import { pathTo, type Reach, reachable, stepCost } from "./sim/movement";
@@ -1014,9 +1014,15 @@ export class Client extends IgeBaseClass implements IgeCanInit, HudHost {
 
 	/** Turn the 3D models on or off (primitives otherwise). */
 	setModels (on: boolean): void {
+		this.setArtPack(on ? "models" : "shapes");
+	}
+
+	/** Draw the world with another art pack: the 3D models, the blocky pack, or simple shapes. */
+	setArtPack (pack: ArtPack): void {
 		if (!this.models) return;
-		this.models.setEnabled(on);
+		this.models.setPack(pack);
 		this.world?.rebuildModels();
+		if (this.life) this.life.dirty = true;
 		this.invalidate();
 	}
 

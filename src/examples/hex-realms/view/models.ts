@@ -1,6 +1,7 @@
 import { IgeEntity } from "@/engine/core/IgeEntity";
 import { type IgeGltfModel, igeGltfLoader } from "@/engine/webgl/IgeGltfLoader";
 import type { IgeModelLodLevel } from "@/engine/webgl/IgeModelParts";
+import { blockyModel, BLOCKY_IDS } from "./blocky";
 
 /**
  * The game's 3D models: GLBs made with AssetFurnace and imported by
@@ -13,6 +14,9 @@ import type { IgeModelLodLevel } from "@/engine/webgl/IgeModelParts";
  *
  * Whose a unit is shows in its base and its badge (see WorldView and the
  * HUD), not in the model: the models keep their own colours.
+ *
+ * The art can be switched between packs: the AssetFurnace models, the
+ * blocky pack (built in code, view/blocky), or simple shapes (no models).
  */
 
 export interface ModelInfo {
@@ -42,60 +46,51 @@ export interface ModelFit {
 }
 
 const STORAGE_KEY = "hexRealms.models";
+const PACK_KEY = "hexRealms.pack";
 
-export class ModelLibrary {
-	base: string;
+/** Which art the world is drawn with: the AssetFurnace models, the blocky pack, or simple shapes. */
+export type ArtPack = "models" | "blocky" | "shapes";
+
+/** One set of models: what it has (infos) and what has loaded, loading a few at a time. */
+export class PackSource {
 	infos: Record<string, ModelInfo> = {};
 	models = new Map<string, IgeGltfModel>();
-	enabled: boolean;
-	/** Called each time a model finishes loading. */
-	onLoaded?: (id: string) => void;
-	protected _uid = 0;
+	started = false;
 	protected _queue: string[] = [];
 	protected _queued = new Set<string>();
 	protected _waiting = new Set<string>();
 	protected _active = 0;
+	protected lib: ModelLibrary;
+	protected kind: "models" | "blocky";
 
-	constructor (base = "./assets/models/") {
-		this.base = base;
-		const q = new URLSearchParams(window.location.search).get("models");
-		let stored: string | null = null;
-		try {
-			stored = localStorage.getItem(STORAGE_KEY);
-		} catch {
-			stored = null;
-		}
-		this.enabled = q !== null ? q !== "0" : stored !== "0";
+	constructor (lib: ModelLibrary, kind: "models" | "blocky") {
+		this.lib = lib;
+		this.kind = kind;
 	}
 
-	setEnabled (on: boolean): void {
-		this.enabled = on;
-		try {
-			localStorage.setItem(STORAGE_KEY, on ? "1" : "0");
-		} catch {
-			// Not remembered without storage
-		}
-	}
-
-	/**
-	 * Read the manifest and load the models given, a few at a time, most
-	 * wanted first. Any other model (a building, wonder or monument) loads the
-	 * first time something asks for it, so models nobody builds never load.
-	 */
-	async start (eager: string[] = []): Promise<void> {
-		try {
-			const response = await fetch(`${this.base}models.json`, { cache: "no-cache" });
-			if (!response.ok) return;
-			this.infos = await response.json();
-		} catch {
-			return;
+	async start (eager: string[]): Promise<void> {
+		if (this.started) return;
+		this.started = true;
+		if (this.kind === "blocky") {
+			// Built in code: work out every model's size up front (they're small)
+			for (const id of BLOCKY_IDS) {
+				const m = blockyModel(id);
+				if (m) this.infos[id] = { file: "", min: m.min, max: m.max, triangles: m.triangles, animations: m.animations, skinned: m.skinned, bytes: m.bytes, floor: m.skinned ? 0 : undefined };
+			}
+		} else {
+			try {
+				const response = await fetch(`${this.lib.base}models.json`, { cache: "no-cache" });
+				if (!response.ok) return;
+				this.infos = await response.json();
+			} catch {
+				return;
+			}
 		}
 		for (const id of eager) this.request(id);
 		for (const id of this._waiting) this.request(id);
 		this._waiting.clear();
 	}
 
-	/** Load a model in the background if it exists and isn't loaded; onLoaded(id) fires when it is. */
 	request (id: string): void {
 		if (this.models.has(id) || this._queued.has(id)) return;
 		if (!this.infos[id]) {
@@ -112,9 +107,8 @@ export class ModelLibrary {
 		this._active++;
 		for (let id = this._queue.shift(); id; id = this._queue.shift()) {
 			try {
-				const model = await igeGltfLoader.load(`${this.base}${this.infos[id].file}`, `hexRealms_model_${id}`);
-				this.models.set(id, model);
-				this.onLoaded?.(id);
+				this.models.set(id, await this.load(id));
+				if (this.lib.source === this) this.lib.onLoaded?.(id);
 			} catch (error) {
 				console.warn(`Couldn't load model ${id}`, error);
 			}
@@ -122,12 +116,107 @@ export class ModelLibrary {
 		this._active--;
 	}
 
+	protected async load (id: string): Promise<IgeGltfModel> {
+		if (this.kind === "models") return igeGltfLoader.load(`${this.lib.base}${this.infos[id].file}`, `hexRealms_model_${id}`);
+		// The blocky pack's glTF, handed to the loader as a file of its own
+		const built = blockyModel(id);
+		if (!built) throw new Error(`No blocky model ${id}`);
+		const url = URL.createObjectURL(new Blob([JSON.stringify(built.gltf)], { type: "model/gltf+json" }));
+		try {
+			return await igeGltfLoader.load(url, `hexRealms_blocky_${id}`);
+		} finally {
+			URL.revokeObjectURL(url);
+		}
+	}
+}
+
+export class ModelLibrary {
+	base: string;
+	pack: ArtPack;
+	/** Called each time a model of the pack in use finishes loading. */
+	onLoaded?: (id: string) => void;
+	protected _uid = 0;
+	protected _eager: string[] = [];
+	protected sources: Record<"models" | "blocky", PackSource>;
+
+	constructor (base = "./assets/models/") {
+		this.base = base;
+		this.sources = { models: new PackSource(this, "models"), blocky: new PackSource(this, "blocky") };
+		const params = new URLSearchParams(window.location.search);
+		const q = params.get("pack") ?? (params.get("models") === "0" ? "shapes" : params.get("models") !== null ? "models" : null);
+		let stored: string | null = null, old: string | null = null;
+		try {
+			stored = localStorage.getItem(PACK_KEY);
+			old = localStorage.getItem(STORAGE_KEY);
+		} catch {
+			stored = null;
+		}
+		const pick = (p: string | null): ArtPack | null => (p === "models" || p === "blocky" || p === "shapes" ? p : null);
+		this.pack = pick(q) ?? pick(stored) ?? (old === "0" ? "shapes" : "models");
+	}
+
+	/** The models of the pack in use (the AssetFurnace set when drawing simple shapes, which uses none). */
+	get source (): PackSource {
+		return this.sources[this.pack === "blocky" ? "blocky" : "models"];
+	}
+
+	get infos (): Record<string, ModelInfo> {
+		return this.source.infos;
+	}
+
+	get models (): Map<string, IgeGltfModel> {
+		return this.source.models;
+	}
+
+	get enabled (): boolean {
+		return this.pack !== "shapes";
+	}
+
+	/** The AssetFurnace models' manifest (their pictures make the research screen's thumbnails, whatever the pack). */
+	get thumbs (): Record<string, ModelInfo> {
+		return this.sources.models.infos;
+	}
+
+	/** Models on (the AssetFurnace set) or off (simple shapes). */
+	setEnabled (on: boolean): void {
+		this.setPack(on ? "models" : "shapes");
+	}
+
+	setPack (pack: ArtPack): void {
+		this.pack = pack;
+		try {
+			localStorage.setItem(PACK_KEY, pack);
+			localStorage.setItem(STORAGE_KEY, pack === "shapes" ? "0" : "1");
+		} catch {
+			// Not remembered without storage
+		}
+		if (pack !== "shapes") void this.source.start(this._eager);
+	}
+
+	/**
+	 * Read the manifest and load the models given, a few at a time, most
+	 * wanted first. Any other model (a building, wonder or monument) loads the
+	 * first time something asks for it, so models nobody builds never load.
+	 */
+	async start (eager: string[] = []): Promise<void> {
+		this._eager = eager;
+		// The AssetFurnace manifest is read whatever the pack (for the thumbnails)
+		const models = this.sources.models.start(this.pack === "models" ? eager : []);
+		if (this.pack === "blocky") await this.sources.blocky.start(eager);
+		await models;
+	}
+
+	/** Load a model in the background if it exists and isn't loaded; onLoaded(id) fires when it is. */
+	request (id: string): void {
+		this.source.request(id);
+	}
+
 	has (id: string): boolean {
 		return this.enabled && this.models.has(id);
 	}
 
 	info (id: string): ModelInfo | undefined {
-		return this.infos[id];
+		return this.enabled ? this.infos[id] : undefined;
 	}
 
 	/** Does a loaded model have this clip? */

@@ -93,6 +93,11 @@ const BASE_MODEL_FIT = {
 const UNIT_MODEL_FIT = Object.fromEntries(UNIT_TYPE_IDS.map((t) => [t, BASE_MODEL_FIT[UNIT_LOOK[t]]])) as Record<UnitTypeId, { height?: number; footprint?: number }>;
 /** Later industries borrow an older building's model until they have their own. */
 const BUILDING_MODEL_OF: Partial<Record<BuildingId, string>> = { steelworks: "smelter", powderMill: "toolsmith", factory: "armoury", electronicsWorks: "mint" };
+
+/** The model a building is drawn with: its own if the art pack has one, else the one it borrows. */
+function buildingModelOf (type: BuildingId, models?: ModelLibrary): string {
+	return models?.info(type) ? type : BUILDING_MODEL_OF[type] ?? type;
+}
 /** Buildings whose models read small at the usual size (long and low ones) are drawn this much bigger. */
 const MODEL_GROW: Partial<Record<BuildingId, number>> = { market: 1.3, mill: 1.35, greatWall: 1.4 };
 /**
@@ -622,7 +627,7 @@ export class WorldView {
 		}
 		if (id === "village" || id === "town" || id === "city") for (const c of sim.state.cities) this.buildCity(c);
 		for (const b of sim.state.buildings) {
-			if (b.type === id || (id === "construction" && !b.built) || (b.type === "mill" && (id === WINDMILL.body || id === WINDMILL.sails))) this.buildBuilding(b);
+			if (buildingModelOf(b.type, this.models) === id || (id === "construction" && !b.built) || (b.type === "mill" && (id === WINDMILL.body || id === WINDMILL.sails))) this.buildBuilding(b);
 		}
 		this.hooks.invalidate?.();
 	}
@@ -882,7 +887,7 @@ export class WorldView {
 		// A model when one is loaded: the building, wonder or monument, or a construction site
 		const kind = info.wonder;
 		const grow = b.built ? MODEL_GROW[b.type] ?? 1 : 1;
-		const prop = this.models?.create(b.built ? BUILDING_MODEL_OF[b.type] ?? b.type : "construction", {
+		const prop = this.models?.create(b.built ? buildingModelOf(b.type, this.models) : "construction", {
 			footprint: R * grow * (kind === "world" ? 1.25 : kind === "monument" ? 0.85 : 0.95),
 			height: R * grow * (kind === "world" ? 1.7 : kind === "monument" ? 1.15 : 1),
 			lod: PROP_LOD
