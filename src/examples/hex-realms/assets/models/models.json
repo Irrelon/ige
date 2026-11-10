@@ -44,20 +44,19 @@
 	"artillery": {
 		"file": "artillery.glb",
 		"min": [
-			-0.4253,
-			-0.3767,
-			-0.4395
+			-0.3728,
+			-0.4347,
+			-0.4999
 		],
 		"max": [
-			0.407,
-			0.4771,
-			0.4013
+			0.3736,
+			0.4361,
+			0.5005
 		],
-		"triangles": 4740,
+		"triangles": 19995,
 		"animations": [],
 		"skinned": false,
-		"bytes": 493624,
-		"yaw": -0.7854
+		"bytes": 1642112
 	},
 	"artisansColumn": {
 		"file": "artisansColumn.glb",
