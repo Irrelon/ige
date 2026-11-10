@@ -712,6 +712,24 @@
 		"skinned": false,
 		"bytes": 557732
 	},
+	"rocketArtillery": {
+		"file": "rocketArtillery.glb",
+		"min": [
+			-0.4371,
+			-0.267,
+			-0.4072
+		],
+		"max": [
+			0.478,
+			0.3194,
+			0.3761
+		],
+		"triangles": 4985,
+		"animations": [],
+		"skinned": false,
+		"bytes": 621144,
+		"yaw": 1.3614
+	},
 	"sageTower": {
 		"file": "sageTower.glb",
 		"min": [
