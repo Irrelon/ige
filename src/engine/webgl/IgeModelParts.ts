@@ -84,6 +84,16 @@ export function getModelParts (model: IgeGltfModel): IgeModelPart[] {
 	return parts;
 }
 
+/**
+ * Add a part made in code to a loaded model (a shell from addShellPart(), a resized copy of one of its parts): from
+ * then on it is one of the model's parts, which entities show by name like the rest. Add parts before creating
+ * entities with the model; an entity made earlier picks them up when entity.model() is called again. A part's name
+ * should be unique in the model.
+ */
+export function addModelPart (model: IgeGltfModel, part: IgeModelPart): void {
+	getModelParts(model).push(part);
+}
+
 const restCache: WeakMap<IgeSkeletonData, Float32Array[]> = new WeakMap();
 
 /**

@@ -140,6 +140,35 @@ A-pose:
 sword.mount(hero).attachToBone(bones.right.hand).attachAt(gripMatrix, { pose: "current" });
 ```
 
+## Customizable characters and worn gear
+
+A customizable character file holds every head, outfit and accessory on one skeleton; each entity shows one
+combination by node name, and changes it as gear changes:
+
+```typescript
+soldier.model(soldiers, { parts: ["TTS_Body_plain_A_04", "TTS_Head_basic_01"] });
+soldier.modelParts(["TTS_Body_plain_A_04", "TTS_Head_plain_A_06", "TTS_Backpack_plain_A"]);
+```
+
+Gear the file doesn't have can be made from the character itself. `addShellPart()` copies the triangles weighted
+(at least half) to some bones, pushes every face out a little and adds the result to the model as a new part,
+skinned to the same bones, so it bends with every animation: gloves over the hands, boots over the feet and shins,
+gauntlets to the elbow. Low-poly toon characters suit it best. Make shells once, after loading and before creating
+entities with the model:
+
+```typescript
+addShellPart(soldiers, "TTS_Body_plain_A_04", {
+	name: "Boots_black",
+	bones: ["Bip001 L Foot", "Bip001 R Foot", "Bip001 L Toe0", "Bip001 R Toe0", "Bip001 L Calf", "Bip001 R Calf"],
+	inflate: 0.01, // model units
+	material: { color: { r: 0.1, g: 0.09, b: 0.08, a: 1 }, roughness: 0.85 }
+});
+player.modelParts([...outfit, "Boots_black"]);
+```
+
+`keep: (x, y, z) => y < 0.1` limits a shell to the triangles whose corners pass the test (rest pose, model space).
+Any other part made in code (a resized copy of a backpack, say) joins a model with `addModelPart(model, part)`.
+
 ## Generated and auto-rigged characters
 
 Text- or image-to-3D generators (AssetFurnace, Meshy, Tripo) give each character its own rig, often with numbered
