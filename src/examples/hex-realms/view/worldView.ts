@@ -338,6 +338,8 @@ export class WorldView {
 	selectRing: IgeEntity;
 	markers: IgeEntity[] = [];
 	targets: IgeEntity[] = [];
+	/** Dots along a multi-turn route (go-to orders and their preview). */
+	routeDots: IgeEntity[] = [];
 	protected _uid = 0;
 
 	constructor (sim: Sim, layout: HexLayout, terrain: TerrainView, renderer: IgeWebGlRenderer, unitLayer: IgeEntity, overlayLayer: IgeEntity, player: number, hooks: WorldViewHooks = {}) {
@@ -885,7 +887,12 @@ export class WorldView {
 		};
 
 		for (let t = 0; t < sim.map.count; t++) {
-			if (sim.roads[t] < 0 || this.terrain.fogView[t] === UNEXPLORED) continue;
+			if (this.terrain.fogView[t] === UNEXPLORED) continue;
+			const road = sim.roads[t] >= 0;
+			// Cities and buildings get the ends of the roads that reach them, drawn under their models
+			const site = !road && (sim.cityAt[t] >= 0 || sim.buildingAt[t] >= 0);
+			if (!road && !site) continue;
+			if (site && !sim.neighbors(t).some((n) => sim.roads[n] >= 0)) continue;
 			const cx = this.tileX(t), cz = this.tileZ(t);
 			// Roads follow the ground (over hills, and the natural style's slopes)
 			const y = (x: number, z: number) => this.groundAt(x, z) + lift;
@@ -893,11 +900,11 @@ export class WorldView {
 			// Where the road leaves this tile: the middle of each edge it crosses
 			const exits: { x: number; z: number }[] = [];
 			for (const n of sim.neighbors(t)) {
-				if (!connects(n)) continue;
+				if (site ? sim.roads[n] < 0 : !connects(n)) continue;
 				exits.push({ x: (cx + this.tileX(n)) / 2, z: (cz + this.tileZ(n)) / 2 });
 			}
-			const centre = { x: cx + (rand() - 0.5) * R * 0.12, z: cz + (rand() - 0.5) * R * 0.12 };
-			if (exits.length === 2) {
+			const centre = site ? { x: cx, z: cz } : { x: cx + (rand() - 0.5) * R * 0.12, z: cz + (rand() - 0.5) * R * 0.12 };
+			if (exits.length === 2 && !site) {
 				// One smooth bend through the tile
 				ribbon(curve(exits[0], centre, exits[1], 10), y);
 			} else {
@@ -1119,6 +1126,32 @@ export class WorldView {
 			m.scaleTo(k, 1, k);
 			// Centre markers sit on whatever is at the tile's middle (a hill's crown)
 			m.translateTo(this.tileX(tiles[i]), Math.max(this.surface.overlayHeight(tiles[i]), this.surface.tileHeight(tiles[i])) + 1.2 * (this.terrain.style === "natural" ? 1.5 : 1), this.tileZ(tiles[i]));
+			m.show();
+		});
+	}
+
+	/**
+	 * A route over several turns: gold dots, brighter for the part walked
+	 * this turn (`firstTurn` tiles), dimmer beyond, and a ring at the end.
+	 */
+	showRoute (tiles: number[], firstTurn = 0): void {
+		const R = this.layout.size;
+		while (this.routeDots.length < tiles.length) {
+			this.routeDots.push(this.overlay(createDisc("hexRealms_routeDot", R * 0.09, 16), { r: 1, g: 0.85, b: 0.35 }, 0.6));
+		}
+		this.routeDots.forEach((m, i) => {
+			if (i >= tiles.length) {
+				m.hide();
+				return;
+			}
+			const last = i === tiles.length - 1;
+			const near = i < firstTurn;
+			const c = last ? { r: 1, g: 0.9, b: 0.45 } : near ? { r: 1, g: 0.85, b: 0.35 } : { r: 0.85, g: 0.72, b: 0.4 };
+			m._materialData = material(c, c, near || last ? 0.8 : 0.35);
+			const k = last ? 1.8 : near ? 1.1 : 0.85;
+			m.scaleTo(k, 1, k);
+			const t = tiles[i];
+			m.translateTo(this.tileX(t), Math.max(this.surface.overlayHeight(t), this.surface.tileHeight(t)) + 1.4 * (this.terrain.style === "natural" ? 1.5 : 1), this.tileZ(t));
 			m.show();
 		});
 	}

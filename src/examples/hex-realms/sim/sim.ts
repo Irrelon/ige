@@ -9,6 +9,7 @@ import * as diplomacy from "./diplomacy";
 import * as economy from "./economy";
 import { hasWonder, researchCost, sightBonus } from "./effects";
 import * as movement from "./movement";
+import * as orders from "./orders";
 import { CIV_IDS, CIVS, type CivId, STARTING_STARS, STARTING_STORE, type TechId, TECHS, techCost, UNIT_TYPES, type UnitTypeId } from "./rules";
 import * as treasury from "./treasury";
 import * as wonders from "./wonders";
@@ -565,6 +566,14 @@ export class Sim {
 		if (!p || !p.alive) return fail("Unknown or eliminated player");
 
 		let result: CommandResult;
+		// A direct order replaces a unit's standing one (sleep, fortify, go to)
+		if (command.type === "move" || command.type === "attack" || command.type === "capture" || command.type === "found" || command.type === "pillage") {
+			const u = this.unit(command.unit);
+			if (u && u.owner === player && orders.hasOrders(u)) {
+				orders.clearOrders(u);
+				this.emit({ type: "unitChanged", unit: u.id });
+			}
+		}
 		switch (command.type) {
 			case "move": result = movement.moveCommand(this, player, command.unit, command.to); break;
 			case "attack": result = combat.attackCommand(this, player, command.unit, command.target); break;
@@ -591,6 +600,12 @@ export class Sim {
 			case "closeBorders": result = diplomacy.endTreatyCommand(this, player, command.target, "openBorders"); break;
 			case "ambition": result = ambitions.ambitionCommand(this, player, command.ambition); break;
 			case "seat": result = this.seatCommand(command.player, command.human); break;
+			case "sleep": result = orders.sleepCommand(this, player, command.unit); break;
+			case "fortify": result = orders.fortifyCommand(this, player, command.unit); break;
+			case "wake": result = orders.wakeCommand(this, player, command.unit); break;
+			case "goto": result = orders.gotoCommand(this, player, command.unit, command.to); break;
+			case "upgrade": result = orders.upgradeCommand(this, player, command.unit); break;
+			case "renameCity": result = cities.renameCommand(this, player, command.city, command.name); break;
 			case "endTurn": result = this.endTurn(player); break;
 			default: result = fail("Unknown command");
 		}
@@ -692,6 +707,9 @@ export class Sim {
 			u.attacked = false;
 			u.acted = false;
 		}
+		// Sleepers near enemies wake; units with a go-to order walk on
+		this.updateFog();
+		orders.runOrders(this, player, lines);
 
 		for (const c of this.citiesOf(player)) {
 			if (c.pendingRewards > 0) lines.push(`${c.name} grew to level ${c.level}: choose a reward`);

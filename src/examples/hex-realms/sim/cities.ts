@@ -246,3 +246,24 @@ export function trainCommand (sim: Sim, player: number, cityId: number, type: Un
 	sim.emit({ type: "stars", player, amount: -cost.stars, reason: UNIT_TYPES[type].name });
 	return ok();
 }
+
+/** Longest city name allowed. */
+export const CITY_NAME_MAX = 24;
+
+export function renameProblem (sim: Sim, player: number, cityId: number, name: string): string | null {
+	const city = sim.city(cityId);
+	if (!city || city.owner !== player) return "Not your city";
+	const clean = name.replace(/\s+/g, " ").trim();
+	if (!clean) return "Give it a name";
+	if (clean.length > CITY_NAME_MAX) return `At most ${CITY_NAME_MAX} letters`;
+	return null;
+}
+
+export function renameCommand (sim: Sim, player: number, cityId: number, name: string): CommandResult {
+	const problem = renameProblem(sim, player, cityId, name);
+	if (problem) return fail(problem);
+	const city = sim.city(cityId) as CityState;
+	city.name = name.replace(/\s+/g, " ").trim();
+	sim.emit({ type: "cityChanged", city: city.id });
+	return ok();
+}

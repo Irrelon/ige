@@ -1,4 +1,5 @@
 import { Feature, Relief } from "../terrain";
+import { fortifyBonus } from "./orders";
 import { cityDefence, damageFactor } from "./effects";
 import { canEnter } from "./movement";
 import { fail, ok } from "./result";
@@ -32,10 +33,11 @@ export function defenceValue (sim: Sim, unit: UnitState): number {
 export function defenceBonus (sim: Sim, unit: UnitState): number {
 	const tile = unit.tile;
 	if (sim.map.isWater(tile)) return 1;
+	const dug = fortifyBonus(sim, unit);
 	const city = sim.cityOn(tile);
-	if (city && city.owner === unit.owner) return cityDefence(sim, unit.owner, city.walls);
-	if (sim.map.relief[tile] === Relief.Hills || sim.map.feature[tile] !== Feature.None) return 1.5;
-	return 1;
+	if (city && city.owner === unit.owner) return cityDefence(sim, unit.owner, city.walls) * dug;
+	if (sim.map.relief[tile] === Relief.Hills || sim.map.feature[tile] !== Feature.None) return 1.5 * dug;
+	return dug;
 }
 
 export function preview (sim: Sim, attacker: UnitState, defender: UnitState): CombatPreview {

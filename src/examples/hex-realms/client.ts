@@ -18,6 +18,7 @@ import { ModelLibrary } from "./view/models";
 import { runAiTurn } from "./sim/ai";
 import { attackTargets } from "./sim/combat";
 import { pathTo, type Reach, reachable } from "./sim/movement";
+import { gotoProblem, isReady, planRoute } from "./sim/orders";
 import { UNIT_TYPES } from "./sim/rules";
 import { defaultOptions, Sim } from "./sim/sim";
 import { hashString } from "./noise";
@@ -796,6 +797,32 @@ export class Client extends IgeBaseClass implements IgeCanInit, HudHost {
 		this.world.showReach(this.reach?.tiles ?? [], this.pathPreview());
 		this.world.showTargets(this.targets);
 		this.world.setSelectedTile(unit ? unit.tile : this.selectedTile);
+		this.showRoute();
+	}
+
+	/**
+	 * Multi-turn routes: the selected unit's go-to order, or, when the
+	 * pointer is over a far tile it could walk to, the route a click would
+	 * give it.
+	 */
+	showRoute (): void {
+		const unit = this.selectedUnit !== null ? this.sim.unit(this.selectedUnit) : undefined;
+		if (!unit || unit.owner !== this.player) {
+			this.world.showRoute([]);
+			return;
+		}
+		const hover = this.hoverTile;
+		const far = hover >= 0 && hover !== unit.tile && !this.reach?.tiles.includes(hover) && !this.targets.includes(hover) && this.myTurn;
+		const target = far && this.sim.knows(this.player, hover) ? hover : unit.goto;
+		if (target === undefined) {
+			this.world.showRoute([]);
+			return;
+		}
+		const route = planRoute(this.sim, unit, target);
+		// The part it can walk this turn
+		let firstTurn = 0;
+		while (firstTurn < route.length && this.reach?.tiles.includes(route[firstTurn])) firstTurn++;
+		this.world.showRoute(route, firstTurn);
 	}
 
 	pathPreview (): number[] {
@@ -814,6 +841,14 @@ export class Client extends IgeBaseClass implements IgeCanInit, HudHost {
 			}
 			if (this.reach?.tiles.includes(tile)) {
 				this.command({ type: "move", unit: unit.id, to: tile });
+				return;
+			}
+			// A far tile it could walk to over several turns: march there
+			const occupied = this.sim.unitOn(tile);
+			if (!occupied && tile !== unit.tile && gotoProblem(this.sim, this.player, unit.id, tile) === null) {
+				if (this.command({ type: "goto", unit: unit.id, to: tile })) {
+					this.hud.toast(`${UNIT_TYPES[unit.type].name} is marching there: it walks on at the start of each turn`, "info", 3);
+				}
 				return;
 			}
 		}
@@ -846,7 +881,7 @@ export class Client extends IgeBaseClass implements IgeCanInit, HudHost {
 	/** Select the next own unit that can still act, and glide to it. */
 	nextUnit (): void {
 		if (!this.ready) return;
-		const ready = this.sim.unitsOf(this.player).filter((u) => (u.moves > 0 && !u.attacked) || (UNIT_TYPES[u.type].founder && !u.acted));
+		const ready = this.sim.unitsOf(this.player).filter(isReady);
 		if (!ready.length) {
 			this.deselect();
 			return;
@@ -1160,6 +1195,7 @@ export class Client extends IgeBaseClass implements IgeCanInit, HudHost {
 		const kind = this.targets.includes(tile) ? "attack" : this.reach?.tiles.includes(tile) ? "move" : "normal";
 		this.world.setHover(tile, kind);
 		if (this.reach) this.world.showReach(this.reach.tiles, this.pathPreview());
+		this.showRoute();
 		this.hud.refreshPanel();
 		this.invalidate();
 	}
@@ -1358,6 +1394,15 @@ export class Client extends IgeBaseClass implements IgeCanInit, HudHost {
 				case "KeyF": {
 					const u = this.selectedUnit !== null ? this.sim.unit(this.selectedUnit) : undefined;
 					if (u && UNIT_TYPES[u.type].founder) this.command({ type: "found", unit: u.id });
+					break;
+				}
+				case "KeyK":
+				case "KeyI":
+				case "KeyU": {
+					const u = this.selectedUnit !== null ? this.sim.unit(this.selectedUnit) : undefined;
+					if (!u || u.owner !== this.player) break;
+					const type = e.code === "KeyK" ? (u.order === "sleep" ? "wake" : "sleep") : e.code === "KeyI" ? "fortify" : "upgrade";
+					if (this.command({ type, unit: u.id }) && type !== "wake" && type !== "upgrade") this.nextUnit();
 					break;
 				}
 			}

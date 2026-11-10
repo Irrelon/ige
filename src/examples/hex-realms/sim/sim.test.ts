@@ -14,6 +14,11 @@ import { income, upkeep } from "./treasury";
 import { defaultOptions, Sim } from "./sim";
 import { ALLIANCE, type Command, type GameOptions, PEACE, type UnitState, WAR } from "./types";
 
+/** A start tile near the left of the blank map. */
+function sim0Start (): number {
+	return 3 * 24 + 3;
+}
+
 /** A flat grassland map with capitals at the given tiles and no villages. */
 function blank (players: number, starts: number[], overrides: Partial<GameOptions> = {}): Sim {
 	const width = 24, height = 16;
@@ -819,6 +824,84 @@ describe("diplomacy II", () => {
 		expect(loaded.player(2).agenda).toBe(pickAgenda(sim.options.seed, 2));
 		expect(loaded.state.diplomacy.grievance.length).toBe(9);
 		expect(loaded.player(0).feats).toEqual([]);
+	});
+});
+
+describe("unit orders, upgrades and renaming", () => {
+	function unitAt (sim: Sim, owner: number, tile: number, type: UnitState["type"] = "warrior"): UnitState {
+		return sim.createUnit(type, owner, tile, true);
+	}
+
+	test("fortified units defend 50% better (25% in a city), and moving cancels it", () => {
+		const sim = blank(2, [sim0Start(), 200]);
+		clearUnits(sim);
+		const a = unitAt(sim, 0, 60);
+		const enemy = unitAt(sim, 1, 61);
+		const before = preview(sim, enemy, a);
+		expect(sim.apply(0, { type: "fortify", unit: a.id }).ok).toBe(true);
+		expect(sim.unit(a.id)?.moves).toBe(0);
+		const after = preview(sim, enemy, a);
+		expect(after.damage).toBeLessThan(before.damage);
+		nextTurn(sim);
+		expect(sim.unit(a.id)?.order).toBe("fortify");
+		expect(sim.apply(0, { type: "move", unit: a.id, to: 59 }).ok).toBe(true);
+		expect(sim.unit(a.id)?.order).toBeUndefined();
+	});
+
+	test("sleeping units are left alone until an enemy comes within two tiles", () => {
+		const sim = blank(2, [sim0Start(), 200]);
+		clearUnits(sim);
+		const a = unitAt(sim, 0, 60);
+		expect(sim.apply(0, { type: "sleep", unit: a.id }).ok).toBe(true);
+		nextTurn(sim);
+		expect(sim.unit(a.id)?.order).toBe("sleep");
+		unitAt(sim, 1, 62);
+		nextTurn(sim);
+		expect(sim.unit(a.id)?.order).toBeUndefined();
+	});
+
+	test("go-to orders walk a unit on at the start of each turn until it arrives", () => {
+		const sim = blank(2, [sim0Start(), 14 * 24 + 21]);
+		clearUnits(sim);
+		const a = unitAt(sim, 0, sim.map.index(2, 8));
+		const target = sim.map.index(12, 8);
+		expect(sim.apply(0, { type: "goto", unit: a.id, to: target }).ok).toBe(true);
+		let last = sim.distance(sim.unit(a.id)!.tile, target);
+		expect(last).toBeLessThan(10);
+		for (let k = 0; k < 8 && sim.unit(a.id)!.goto !== undefined; k++) {
+			nextTurn(sim);
+			const d = sim.distance(sim.unit(a.id)!.tile, target);
+			expect(d).toBeLessThan(last);
+			last = d;
+		}
+		expect(sim.unit(a.id)!.tile).toBe(target);
+		expect(sim.unit(a.id)!.goto).toBeUndefined();
+	});
+
+	test("warriors upgrade to swordsmen with Smithing, inside your borders, for stars", () => {
+		const sim = blank(2, [sim0Start(), 14 * 24 + 21]);
+		clearUnits(sim);
+		const home = sim.citiesOf(0)[0].tile;
+		const a = unitAt(sim, 0, home);
+		a.hp = 5;
+		expect(sim.apply(0, { type: "upgrade", unit: a.id }).ok).toBe(false);
+		give(sim, 0, "smithing");
+		sim.player(0).stars = 50;
+		expect(sim.apply(0, { type: "upgrade", unit: a.id }).ok).toBe(true);
+		const u = sim.unit(a.id)!;
+		expect(u.type).toBe("swordsman");
+		expect(u.maxHp).toBe(15);
+		expect(u.hp).toBe(8);
+		expect(sim.player(0).stars).toBe(44);
+	});
+
+	test("cities can be renamed by their owner", () => {
+		const sim = blank(2, [sim0Start(), 200]);
+		const mine = sim.citiesOf(0)[0], theirs = sim.citiesOf(1)[0];
+		expect(sim.apply(0, { type: "renameCity", city: mine.id, name: "  Port   Royal " }).ok).toBe(true);
+		expect(sim.city(mine.id)!.name).toBe("Port Royal");
+		expect(sim.apply(0, { type: "renameCity", city: theirs.id, name: "Mine now" }).ok).toBe(false);
+		expect(sim.apply(0, { type: "renameCity", city: mine.id, name: "   " }).ok).toBe(false);
 	});
 });
 

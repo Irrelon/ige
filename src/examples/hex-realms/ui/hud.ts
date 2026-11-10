@@ -28,6 +28,8 @@ import type { SaveKind, SaveMeta, SaveStore } from "../saves";
 import { savesModal } from "./savesScreen";
 import { emblem, icon } from "./icons";
 import { contactModal } from "./contact";
+import { fortifyProblem, hasOrders, isReady, sleepProblem, upgradeCost, upgradeProblem, UPGRADES } from "../sim/orders";
+import { renameProblem } from "../sim/cities";
 import { type ChatLine, type RoomInfo, TURN_TIMERS } from "../net/protocol";
 
 /** What the HUD needs from the game controller. */
@@ -114,6 +116,9 @@ function lensStore (store: Goods): string {
 
 /** Icons for the quick actions above a unit (24 x 24, drawn with the button's colour). */
 const ICONS = {
+	sleep: `<svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 14.5A8 8 0 019.5 4a8 8 0 1010.5 10.5z"/></svg>`,
+	fortify: `<svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l8 3v6c0 4.8-3.4 8-8 9-4.6-1-8-4.2-8-9V6z"/><path d="M8.5 12l2.5 2.5 4.5-5"/></svg>`,
+	upgrade: `<svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 19V6M6 11.5l6-6 6 6"/><path d="M6 19.5h12"/></svg>`,
 	capture: `<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M4 4L14 14M11 16.5L16.5 11M14 14L19 19M20 4L10 14M7.5 11L13 16.5M10 14L5 19"/></svg>`,
 	found: `<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11L12 4L21 11M5.5 9.5V20H18.5V9.5M10 20V14.5H14V20"/></svg>`,
 	pillage: `<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3C13 6.5 18 8.5 18 14A6 6 0 0 1 6 14C6 10.5 8.5 9.5 8.5 6.5C10 8 11 9.5 11.5 11.5C12.5 9 12.5 6 12 3Z"/></svg>`
@@ -132,6 +137,8 @@ export class Hud {
 	/** Every notice shown this session (the Log screen), oldest first. */
 	logEntries: { turn: number; html: string; kind: "info" | "good" | "bad"; seen?: boolean }[] = [];
 	tipId: string | null = null;
+	/** The city whose name is being edited (-1 = none). */
+	renaming = -1;
 	/** Civs met whose first-contact card hasn't been shown yet. */
 	contacts: number[] = [];
 	/** The civ on the first-contact card being shown. */
@@ -185,6 +192,18 @@ export class Hud {
 		};
 		document.addEventListener("input", edit);
 		document.addEventListener("change", edit);
+		// Renaming a city: Enter saves, Escape cancels
+		document.addEventListener("keydown", (e) => {
+			const el = e.target as HTMLInputElement;
+			if (el?.id !== "cityName") return;
+			if (e.key === "Enter") {
+				e.preventDefault();
+				this.action("rename-save", { city: el.dataset.city });
+			} else if (e.key === "Escape") {
+				e.stopPropagation();
+				this.action("rename-cancel", {});
+			}
+		});
 		// Chat: Enter sends
 		document.addEventListener("keydown", (e) => {
 			const el = e.target as HTMLInputElement;
@@ -254,8 +273,10 @@ export class Hud {
 		const unit = h.selectedUnit;
 		const tile = h.selectedTile;
 		const num = (k: string) => Number(data[k]);
-		const run = (cmd: Command) => {
-			if (h.command(cmd)) this.refresh();
+		const run = (cmd: Command): boolean => {
+			const done = h.command(cmd);
+			if (done) this.refresh();
+			return done;
 		};
 		switch (name) {
 			case "capture": if (unit !== null) run({ type: "capture", unit }); break;
@@ -333,6 +354,18 @@ export class Hud {
 			case "modal": this.openModal(data.modal as string); break;
 			case "close-modal": this.closeModal(); break;
 			case "contact-ok": this.closeModal(); break;
+			case "sleep": run({ type: "sleep", unit: h.selectedUnit as number }); break;
+			case "fortify": run({ type: "fortify", unit: h.selectedUnit as number }); break;
+			case "wake": run({ type: "wake", unit: h.selectedUnit as number }); break;
+			case "upgrade": run({ type: "upgrade", unit: h.selectedUnit as number }); break;
+			case "rename-city": this.renaming = num("city"); this.refreshPanel(); (document.getElementById("cityName") as HTMLInputElement | null)?.select(); break;
+			case "rename-cancel": this.renaming = -1; this.refreshPanel(); break;
+			case "rename-save": {
+				const input = document.getElementById("cityName") as HTMLInputElement | null;
+				if (input && run({ type: "renameCity", city: num("city"), name: input.value })) this.renaming = -1;
+				this.refreshPanel();
+				break;
+			}
 			case "contact-diplo": this.diplo.civ = num("player"); this.closeModal(); this.openModal("diplomacy"); break;
 			case "lens": this.toggleLens(); break;
 			case "chat": this.toggleChat(); break;
@@ -490,6 +523,9 @@ export class Hud {
 			stat("rng", "range", String(info.range), "Range"),
 			mine ? stat("mov", "moves", `${u.moves}<small>/${info.moves}</small>`, "Moves left this turn") : ""
 		].join("")}</div>`);
+		if (u.order === "fortify") out.push(`<div class="order-line">${icon("fortify", 14)} Fortified: ${sim.cityOn(u.tile)?.owner === u.owner ? "+25" : "+50"}% defence</div>`);
+		else if (u.order === "sleep") out.push(`<div class="order-line">${icon("sleep", 14)} Asleep until an enemy comes near</div>`);
+		else if (u.goto !== undefined) out.push(`<div class="order-line">${icon("route", 14)} Marching to (${sim.map.col(u.goto)}, ${sim.map.row(u.goto)})</div>`);
 		if (!mine) return `<section>${out.join("")}</section>`;
 		const buttons: string[] = [];
 		const capture = captureProblem(sim, this.me, id);
@@ -499,6 +535,18 @@ export class Hud {
 		const enemyRoad = sim.roads[u.tile] >= 0 && sim.roads[u.tile] !== this.me;
 		const enemyBuilding = sim.buildingOn(u.tile);
 		if (enemyRoad || (enemyBuilding && enemyBuilding.owner !== this.me)) buttons.push(btn("pillage", "Pillage", null));
+		if (hasOrders(u)) buttons.push(btn("wake", u.goto !== undefined ? "Stop marching" : u.order === "sleep" ? "Wake" : "Stand down", null));
+		else {
+			if (!info.founder) buttons.push(btn("fortify", `${icon("fortify", 14)} Fortify`, fortifyProblem(sim, this.me, id)));
+			buttons.push(btn("sleep", `${icon("sleep", 14)} Sleep`, sleepProblem(sim, this.me, id)));
+		}
+		const next = UPGRADES[u.type];
+		if (next) {
+			const problem = upgradeProblem(sim, this.me, id);
+			// Only offer it once the new unit is researched
+			const tech = UNIT_TYPES[next].tech;
+			if (!tech || sim.hasTech(this.me, tech)) buttons.push(btn("upgrade", `${icon("upgrade", 14)} Upgrade to ${UNIT_TYPES[next].name} <small>${icon("star", 11)}${upgradeCost(u)}</small>`, problem));
+		}
 		buttons.push(btn("disband", "Disband", null, "ghost"));
 		out.push(`<div class="actions">${buttons.join("")}</div>`);
 		if (info.founder && foundProblem(sim, this.me, u.tile)) out.push(`<div class="dim small">${foundProblem(sim, this.me, u.tile)}</div>`);
@@ -514,7 +562,9 @@ export class Hud {
 		}
 		const need = growthNeeded(c.level);
 		const earns = cityIncome(sim, c);
-		const out = [`<div class="title">${c.capital ? "&#9733; " : ""}${esc(c.name)} <span class="dim">level ${c.level}${c.walls ? " &middot; walls" : ""}</span></div>`];
+		const out = [this.renaming === c.id
+			? `<div class="rename"><input id="cityName" maxlength="24" value="${esc(c.name)}" aria-label="City name" autocomplete="off" spellcheck="false" data-city="${c.id}"><button class="primary" data-action="rename-save" data-city="${c.id}">Save</button><button class="ghost" data-action="rename-cancel">Cancel</button>${renameProblem(sim, this.me, c.id, c.name) ? "" : ""}</div>`
+			: `<div class="title">${c.capital ? `<span class="stars">${icon("crown", 15)}</span>` : ""}${esc(c.name)} <button class="ghost icon-btn rename-btn" data-action="rename-city" data-city="${c.id}" title="Rename this city" aria-label="Rename">${icon("edit", 14)}</button> <span class="dim">level ${c.level}${c.walls ? " &middot; walls" : ""}</span></div>`];
 		out.push(`<div class="bar" title="Growth: deliver food"><span style="width:${(c.growth / need) * 100}%"></span><em>Growth ${c.growth}/${need}</em></div>`);
 		out.push(`<div>Income ${stars(earns)}/turn &middot; Buildings ${slotsUsed(sim, c)}/${slotCap(c)} slots</div>`);
 		out.push(`<div class="store">Store: ${goodsList(c.store, "empty")}</div>`);
@@ -768,6 +818,19 @@ export class Hud {
 						this.toast(`Alliance with ${name(e.a === me ? e.b : e.a)}`, "good");
 					}
 					break;
+				case "unitUpgraded": {
+					const u = sim.unit(e.unit);
+					if (u?.owner === me) {
+						this.toast(`${UNIT_TYPES[e.from].name} upgraded to <b>${UNIT_TYPES[e.to].name}</b>`, "good", 3);
+						play("level");
+					}
+					break;
+				}
+				case "orderEnded": {
+					const u = sim.unit(e.unit);
+					if (u?.owner === me && e.reason !== "arrived") this.toast(`${UNIT_TYPES[u.type].name} stopped marching: ${e.reason === "enemy" ? "enemies close by" : "the way is blocked"}`, "bad", 4);
+					break;
+				}
 				case "met": {
 					if (e.a !== me && e.b !== me) break;
 					const other = e.a === me ? e.b : e.a;
@@ -895,6 +958,8 @@ export class Hud {
 		if ((enemyBuilding || enemyRoad) && !u.attacked && u.moves > 0) {
 			buttons.push(quickButton("pillage", `Pillage the ${enemyBuilding ? BUILDINGS[building!.type].name.toLowerCase() : "road"}`));
 		}
+		const next = UPGRADES[u.type];
+		if (next && !upgradeProblem(sim, this.me, u.id)) buttons.push(quickButton("upgrade", `Upgrade to ${UNIT_TYPES[next].name} for ${upgradeCost(u)} stars (U)`));
 		if (!buttons.length) return hide();
 		// Above the unit, or above the city banner when it stands in a city (the banner's bottom
 		// is drawn at the city height + 62 and it is about 24 px tall)
@@ -958,7 +1023,8 @@ export class Hud {
 				const hurt = u.hp < u.maxHp;
 				const color = sim.player(u.owner).color;
 				const bar = hurt ? `<em><s style="width:${Math.round((100 * u.hp) / u.maxHp)}%"></s></em>` : "";
-				const html = `<span style="--c:${color}">${u.veteran ? "<u>&#9733;</u>" : ""}<i>${UNIT_ICONS[u.type]}</i>${hurt ? `<b>${u.hp}</b>` : ""}</span>${bar}`;
+				const order = u.owner === this.me ? (u.order === "sleep" ? `<q title="Asleep">z</q>` : u.order === "fortify" ? `<q title="Fortified">&#9960;</q>` : u.goto !== undefined ? `<q title="Marching">&#10140;</q>` : "") : u.order === "fortify" ? `<q title="Fortified">&#9960;</q>` : "";
+				const html = `<span style="--c:${color}">${u.veteran ? "<u>&#9733;</u>" : ""}<i>${UNIT_ICONS[u.type]}</i>${hurt ? `<b>${u.hp}</b>` : ""}${order}</span>${bar}`;
 				label(`unit${u.id}`, "ub", html, pos.x, pos.y + BADGE_HEIGHT[u.type], pos.z);
 			}
 		}
@@ -1013,7 +1079,7 @@ export class Hud {
 
 	/** Your units that can still move, attack or found a city this turn. */
 	readyUnits (): number {
-		return this.sim.unitsOf(this.me).filter((u) => (u.moves > 0 && !u.attacked) || (UNIT_TYPES[u.type].founder && !u.acted)).length;
+		return this.sim.unitsOf(this.me).filter(isReady).length;
 	}
 
 	/** "Highlanders (Azure), turn 26". */
@@ -1312,7 +1378,7 @@ export class Hud {
 			<p><b>Diplomacy</b> (G): treaties, cultural exchanges, research agreements, trades of goods and stars (once, or every turn as a route; where your roads meet theirs the goods travel as carts), demands, denouncing and sanctions. Wars wear both sides down, making peace easier the longer they last. Wars without enough grievances are surprise wars that everyone resents; peace brings a 10-turn truce.</p>
 			<p><b>Quick actions</b>: buttons float above a selected unit when it can do something where it stands: crossed swords capture a city, a house founds one, a flame pillages.</p>
 			<p><b>Fight</b>: declare war in Diplomacy first. Select a unit to see red attack rings; hover one to preview the damage. Ranged units need line of sight. Units stop when they move next to an enemy.</p>
-			<p><b>Keys</b>: Ctrl/Cmd+S quicksave, N log of notices, WASD/arrows pan, wheel or Z/X zoom, Q/E rotate, Page Up/Page Down tilt (or right-drag: sideways rotates, up and down tilts), Space next unit, Enter end turn, Esc deselect, C centre, T terrain style, R research, G diplomacy, J ambition, M wonders, B economy, V economy lens, L cities, F found city, O menu, H help.</p></div>`;
+			<p><b>Orders</b>: click a far tile to march a unit there over several turns (its route shows as gold dots). Sleep (K) leaves a unit be until an enemy comes near; Fortify (I) digs it in for +50% defence; Upgrade (U) turns a warrior into a swordsman inside your borders once you have Smithing. Click a city's name to rename it.</p><p><b>Keys</b>: Ctrl/Cmd+S quicksave, N log of notices, WASD/arrows pan, wheel or Z/X zoom, Q/E rotate, Page Up/Page Down tilt (or right-drag: sideways rotates, up and down tilts), Space next unit, Enter end turn, Esc deselect, C centre, T terrain style, R research, G diplomacy, J ambition, M wonders, B economy, V economy lens, L cities, F found city, O menu, H help.</p></div>`;
 	}
 
 	gameOverModal (): string {
