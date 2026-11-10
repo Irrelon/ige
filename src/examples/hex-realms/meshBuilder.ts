@@ -18,6 +18,7 @@ export class MeshBuilder {
 	protected _r = 1;
 	protected _g = 1;
 	protected _b = 1;
+	protected _a = 1;
 	protected _tinted = false;
 
 	protected _minX = Infinity;
@@ -30,18 +31,19 @@ export class MeshBuilder {
 	reset (): void {
 		this.vertexCount = 0;
 		this.indexCount = 0;
-		this._r = this._g = this._b = 1;
+		this._r = this._g = this._b = this._a = 1;
 		this._tinted = false;
 		this._minX = this._minY = this._minZ = Infinity;
 		this._maxX = this._maxY = this._maxZ = -Infinity;
 	}
 
 	/** Colour for the vertices that follow (1, 1, 1 = untinted). */
-	tint (r: number, g = r, b = r): this {
+	tint (r: number, g = r, b = r, a = 1): this {
 		this._r = r;
 		this._g = g;
 		this._b = b;
-		if (r !== 1 || g !== 1 || b !== 1) this._tinted = true;
+		this._a = a;
+		if (r !== 1 || g !== 1 || b !== 1 || a !== 1) this._tinted = true;
 		return this;
 	}
 
@@ -61,7 +63,7 @@ export class MeshBuilder {
 		this.colors[c] = this._r;
 		this.colors[c + 1] = this._g;
 		this.colors[c + 2] = this._b;
-		this.colors[c + 3] = 1;
+		this.colors[c + 3] = this._a;
 
 		const p = n * 3;
 		this.positions[p] = x;

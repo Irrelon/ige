@@ -37,6 +37,8 @@ export interface GameOptions {
 	 * the best one. Missing in games from before it, which keep their starts.
 	 */
 	shuffleStarts?: boolean;
+	/** Rivers along tile edges (new games; absent in older ones, which stay as they were). */
+	rivers?: boolean;
 	victories: Record<VictoryType, boolean>;
 	/** Score victory is decided after this many turns. */
 	turnLimit: number;

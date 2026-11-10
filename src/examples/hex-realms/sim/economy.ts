@@ -1,4 +1,5 @@
 import { Feature, Relief, Terrain } from "../terrain";
+import { riverside } from "../rivers";
 import { addGrowth, foodValue, slotCap, slotsUsed } from "./cities";
 import { marketFactor, roadBonus } from "./effects";
 import { wonderCompleted, wonderProblem } from "./wonders";
@@ -358,6 +359,8 @@ export function outputsOf (sim: Sim, building: BuildingState): Goods {
 	const out: Goods = { ...info.outputs };
 	const double = (building.type === "farm" && civ === "plainsfolk") || (building.type === "sawmill" && civ === "woodlanders");
 	if (double) for (const g of Object.keys(out) as Good[]) out[g] = out[g]! * 2;
+	// Fresh water: a farm beside a river grows an extra grain
+	if (building.type === "farm" && riverside(sim.map, building.tile)) out.grain = (out.grain ?? 0) + 1;
 	return out;
 }
 

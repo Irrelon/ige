@@ -1,4 +1,5 @@
 import { Feature, Relief } from "../terrain";
+import { riverBetween } from "../rivers";
 import { fortifyBonus } from "./orders";
 import { cityDefence, damageFactor } from "./effects";
 import { canEnter } from "./movement";
@@ -44,7 +45,9 @@ export function preview (sim: Sim, attacker: UnitState, defender: UnitState): Co
 	const atk = attackValue(sim, attacker);
 	const def = defenceValue(sim, defender);
 	const attackForce = atk * (attacker.hp / attacker.maxHp);
-	const defenceForce = def * (defender.hp / defender.maxHp) * defenceBonus(sim, defender);
+	// Attacked across a river, a defender has the bank: +25%
+	const across = sim.distance(attacker.tile, defender.tile) === 1 && riverBetween(sim.map, attacker.tile, defender.tile) ? 1.25 : 1;
+	const defenceForce = def * (defender.hp / defender.maxHp) * defenceBonus(sim, defender) * across;
 	const total = attackForce + defenceForce || 1;
 	const damage = Math.round((attackForce / total) * atk * 4.5 * damageFactor(sim, attacker.owner));
 	const kills = damage >= defender.hp;

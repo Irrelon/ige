@@ -38,6 +38,10 @@ export class HexMap {
 	shade: Float32Array;
 	/** Player that owns the tile's territory, -1 if none. */
 	owner: Int8Array;
+	/** Rivers along each tile's edges: bit d set when edge d has one (see rivers.ts). */
+	river: Uint8Array;
+	/** River courses, source to mouth (for drawing; not saved, regenerated from the seed). */
+	riverCourses: { corners: [number, number][] }[] = [];
 	/** Id of the landmass (connected land) a tile belongs to, -1 for water. */
 	landmass: Int32Array;
 	landmassSizes: number[] = [];
@@ -54,6 +58,7 @@ export class HexMap {
 		this.shade = new Float32Array(this.count);
 		this.owner = new Int8Array(this.count).fill(-1);
 		this.landmass = new Int32Array(this.count).fill(-1);
+		this.river = new Uint8Array(this.count);
 	}
 
 	index (col: number, row: number): number {

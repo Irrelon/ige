@@ -34,6 +34,7 @@ import { onMusicProgress, playTitleMusic, prepareTitleMusic, startGameMusic, sto
 import { MAP_PRESETS, optionsFromUrl, type SetupResult, showSetup } from "./ui/setup";
 import { TerrainView } from "./view/terrainView";
 import { WorldView } from "./view/worldView";
+import { WaterView } from "./view/water";
 
 // @ts-ignore
 window.ige = ige;
@@ -128,6 +129,8 @@ export class Client extends IgeBaseClass implements IgeCanInit, HudHost {
 
 	busy = false;
 	replaying = false;
+	/** Surf along the shores and flowing rivers. */
+	water?: WaterView;
 	/** A small all-AI world turning slowly behind the title screen. */
 	showcase = false;
 	online = false;
@@ -300,6 +303,8 @@ export class Client extends IgeBaseClass implements IgeCanInit, HudHost {
 			this.modelsStarted = true;
 			void this.models.start(["village", "town", "city", "warrior", "archer", "swordsman", "rider", "settler", "construction", "boat", "catapult"]);
 			this.world.build();
+			this.water ??= new WaterView(this.renderer, this.overlayLayer);
+			this.water.dirty = true;
 			console.info(`[title] world: sim ${(t1 - t0).toFixed(0)} ms (turn ${sim.state.turn}), views ${(performance.now() - t1).toFixed(0)} ms`);
 			ige.engine.useManualRender(true);
 			this.showcase = true;
@@ -421,6 +426,8 @@ export class Client extends IgeBaseClass implements IgeCanInit, HudHost {
 			for (const id of this.models.models.keys()) this.world.modelLoaded(id);
 		}
 		this.world.build();
+		this.water ??= new WaterView(this.renderer, this.overlayLayer);
+		this.water.dirty = true;
 
 		this.minimap = new Minimap(document.getElementById("minimap") as HTMLCanvasElement, sim.map, this.layout, 260, 190);
 		this.minimapTerrainDirty = this.minimapTerritoryDirty = true;
@@ -673,7 +680,10 @@ export class Client extends IgeBaseClass implements IgeCanInit, HudHost {
 		this.world.ingest(events);
 		this.hud.notify(events);
 		for (const e of events) {
-			if (e.type === "fog" && e.player === this.player) this.minimapTerrainDirty = this.minimapTerritoryDirty = true;
+			if (e.type === "fog" && e.player === this.player) {
+				this.minimapTerrainDirty = this.minimapTerritoryDirty = true;
+				if (this.water) this.water.dirty = true;
+			}
 			if (e.type === "territory" || e.type === "cityCaptured" || e.type === "eliminated") this.minimapTerritoryDirty = true;
 			if (e.type === "featureCleared") this.minimapTerrainDirty = true;
 			if (e.type === "unitRemoved" && e.unit === this.selectedUnit) this.selectedUnit = null;
@@ -904,6 +914,7 @@ export class Client extends IgeBaseClass implements IgeCanInit, HudHost {
 		const style: TerrainStyle = this.terrain.style === "tiles" ? "natural" : "tiles";
 		if (!this.terrain.setStyle(style)) return;
 		this.world.reseatAll();
+		if (this.water) this.water.dirty = true;
 		this.minimapTerrainDirty = true;
 		const url = new URL(window.location.href);
 		url.searchParams.set("style", style);
@@ -1104,6 +1115,7 @@ export class Client extends IgeBaseClass implements IgeCanInit, HudHost {
 			this.cam.update(dt, this.viewport.camera);
 			this.terrain.update();
 			this.world.update(dt, this.time);
+			this.updateWater();
 			this.updateLighting();
 			this.queueRender(true);
 			return;
@@ -1129,6 +1141,7 @@ export class Client extends IgeBaseClass implements IgeCanInit, HudHost {
 
 		this.terrain.update();
 		const moving = this.world.update(this.reducedMotion ? 10 : dt, this.time);
+		const flowing = this.updateWater();
 		this.updateLighting();
 
 		if (this.pointer.moved) {
@@ -1155,7 +1168,18 @@ export class Client extends IgeBaseClass implements IgeCanInit, HudHost {
 			this.minimap.draw(this.sim, this.player, (id) => this.world.unitPosition(id), this.viewFootprint(), this.terrain.fogView);
 		}
 
-		this.queueRender(moving);
+		this.queueRender(moving || flowing);
+	}
+
+	/** Rebuild the water when the explored map changed; move it on. Returns true when a frame is due. */
+	updateWater (): boolean {
+		const w = this.water;
+		if (!w) return false;
+		if (w.dirty) {
+			w.rebuild(this.sim.map, this.layout, this.terrain.surface, this.terrain.fogView);
+			this.invalidate();
+		}
+		return !this.reducedMotion && w.update(this.time);
 	}
 
 	invalidate (): void {

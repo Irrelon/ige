@@ -1,4 +1,5 @@
 import { Feature, Relief, Terrain } from "../terrain";
+import { riverBetween } from "../rivers";
 import { fail, ok } from "./result";
 import type { Sim } from "./sim";
 import type { CommandResult, UnitState } from "./types";
@@ -61,8 +62,10 @@ export function stepCost (sim: Sim, from: number, to: number): number {
 	if (map.isWater(to)) return 1;
 	const roadFrom = sim.roads[from] >= 0 || sim.cityAt[from] >= 0;
 	const roadTo = sim.roads[to] >= 0 || sim.cityAt[to] >= 0;
+	// Roads on both banks make a bridge
 	if (roadFrom && roadTo) return 0.5;
-	return map.relief[to] === Relief.Hills || map.feature[to] !== Feature.None ? 2 : 1;
+	const ford = riverBetween(map, from, to) ? 1 : 0;
+	return (map.relief[to] === Relief.Hills || map.feature[to] !== Feature.None ? 2 : 1) + ford;
 }
 
 /** Is there an enemy unit the owner can see next to this tile? */

@@ -11,6 +11,7 @@ import { hasWonder, researchCost, sightBonus } from "./effects";
 import * as movement from "./movement";
 import * as orders from "./orders";
 import { recordHistory } from "./history";
+import { addRivers } from "../rivers";
 import { CIV_IDS, CIVS, type CivId, STARTING_STARS, STARTING_STORE, type TechId, TECHS, techCost, UNIT_TYPES, type UnitTypeId } from "./rules";
 import * as treasury from "./treasury";
 import * as wonders from "./wonders";
@@ -42,6 +43,7 @@ export function defaultOptions (overrides: Partial<GameOptions> = {}): GameOptio
 		allowFounding: true,
 		tribeTechs: true,
 		shuffleStarts: true,
+		rivers: true,
 		victories: { domination: true, score: true, prosperity: true, alliance: true, diplomatic: true },
 		turnLimit: 60,
 		difficulty: "normal",
@@ -97,6 +99,7 @@ export class Sim {
 	 */
 	static create (options: GameOptions, setup: { map?: HexMap; starts?: number[]; villages?: boolean } = {}): Sim {
 		const map = setup.map ?? generateMap({ width: options.width, height: options.height, seed: options.seed });
+		if (!setup.map && options.rivers) map.riverCourses = addRivers(map);
 		const n = options.players;
 		const state: GameState = {
 			version: 2,
@@ -816,6 +819,7 @@ export class Sim {
 		const state = data.state as GameState;
 		const o = state.options;
 		const map = generateMap({ width: o.width, height: o.height, seed: o.seed });
+		if (o.rivers) map.riverCourses = addRivers(map);
 		map.feature.set(decode(data.map.feature));
 		map.owner.set(new Int8Array(decode(data.map.owner).buffer));
 		map.deposit.set(decode(data.map.deposit));
