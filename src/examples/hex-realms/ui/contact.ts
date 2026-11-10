@@ -61,7 +61,7 @@ export function greeting (sim: Sim, them: number, me: number): string {
 
 function moodOf (sim: Sim, them: number, me: number): [string, string] {
 	const feel = attitude(sim, them, me);
-	const m = feel >= 5 ? "Friendly" : feel >= 1 ? "Cordial" : feel > -3 ? "Neutral" : feel > -6 ? "Wary" : "Hostile";
+	const m = feel >= 5 ? "Friendly" : feel >= 1 ? "Cordial" : feel > -3 ? "Indifferent" : feel > -6 ? "Wary" : "Hostile";
 	return [m, `mood-${m.toLowerCase()}`];
 }
 

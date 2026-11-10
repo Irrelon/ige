@@ -1274,9 +1274,10 @@ export class Hud {
 				const mark = t === focus ? " focus" : path.has(t) ? " path" : "";
 				const need = t === focus && this.techFocus?.for ? `<small class="need">Needed for ${esc(this.techFocus.for)}</small>` : path.has(t) ? `<small class="need">Research first</small>` : "";
 				// Buying: this tech alone, or it with every prerequisite still missing, for their total
-				let buy = "";
+				let buy = "", chained = false;
 				if (!have) {
 					const steps = this.techChain(t);
+					chained = steps.length > 1;
 					const total = chainCost(steps);
 					const short = total - p.stars;
 					const label = steps.length > 1 ? `Buy all ${steps.length} &middot; &#9733;${total}` : `Buy &#9733;${total}`;
@@ -1285,7 +1286,7 @@ export class Hud {
 						: `Research ${tech.name} for ${total} stars`;
 					buy = `<button class="buy${steps.length > 1 ? " chain" : ""}" data-action="research-chain" data-tech="${t}" ${short > 0 ? `disabled title="${esc(`${title}. You need ${short} more.`)}"` : `title="${esc(title)}"`}>${label}</button>`;
 				}
-				return `<div class="tech ${state}${mark}" data-action="select-tech" data-tech="${t}" role="button" tabindex="0" aria-pressed="${t === focus}"><b>${tech.name}</b>${buy}<small>${tech.unlocks}${wonders.length ? `; wonder: ${wonders.join(", ")}` : ""}</small>${have ? "<small>Researched</small>" : `<small>&#9733;${cost}</small>`}${have ? "" : req}${need}</div>`;
+				return `<div class="tech ${state}${mark}" data-action="select-tech" data-tech="${t}" role="button" tabindex="0" aria-pressed="${t === focus}"><div class="tech-head"><b>${tech.name}</b>${chained ? "" : buy}</div><small>${tech.unlocks}${wonders.length ? `; wonder: ${wonders.join(", ")}` : ""}</small>${have ? "<small>Researched</small>" : `<small>&#9733;${cost}</small>`}${have ? "" : req}${need}${chained ? `<div class="tech-foot">${buy}</div>` : ""}</div>`;
 			});
 			const era = eraOfTier(tier);
 			const first = tier === 1 || eraOfTier(tier - 1) !== era;
@@ -1361,24 +1362,43 @@ export class Hud {
 		const sim = this.sim, me = this.me, p = sim.player(me);
 		const stock = storedGoods(sim, me);
 		const hasMarket = sim.buildingsOf(me).some((b) => b.type === "market" && b.built);
-		const goods = GOODS.map((g) => {
-			const n = stock[g] ?? 0;
-			const selling = p.sell.includes(g);
-			const sell = sim.hasTech(me, "trade") ? `<button class="mini ${selling ? "on" : ""}" data-action="sell" data-good="${g}" data-on="${selling ? 0 : 1}" title="${hasMarket ? "" : "Build a market to sell goods"}">${selling ? "Selling" : "Keep"}</button>` : "";
-			return `<tr><td>${goodChip(g)}</td><td><b>${n}</b></td><td class="dim small">tier ${GOOD_INFO[g].tier}, &#9733;${GOOD_INFO[g].price}</td><td>${sell}</td></tr>`;
+		const canSell = sim.hasTech(me, "trade");
+		const TIERS = ["Raw materials", "Crafted", "Advanced", "Industrial"];
+		const tiers = [1, 2, 3, 4].map((tier) => {
+			const cards = GOODS.filter((g) => GOOD_INFO[g].tier === tier).map((g) => {
+				const n = stock[g] ?? 0;
+				const selling = p.sell.includes(g);
+				const sell = canSell ? `<button class="mini ${selling ? "on" : ""}" data-action="sell" data-good="${g}" data-on="${selling ? 0 : 1}" title="${hasMarket ? (selling ? "Stop selling" : "Sell at your markets") : "Build a market to sell goods"}">${selling ? "Selling" : "Sell"}</button>` : "";
+				return `<div class="good-card${n ? "" : " empty"}"><div class="gc-top">${goodChip(g)}<b>${n}</b></div><div class="gc-foot"><span class="dim small">&#9733;${GOOD_INFO[g].price} each</span>${sell}</div></div>`;
+			}).join("");
+			return `<div class="tier-h">${TIERS[tier - 1]}</div><div class="goods-grid">${cards}</div>`;
 		}).join("");
-		const order = p.priority.map((k, i) => `<li>${k === "construction" ? "Construction sites" : k === "production" ? "Workshops' inputs" : "Food for cities"} ${i > 0 ? `<button class="mini" data-action="priority" data-kind="${k}">&uarr;</button>` : ""}</li>`).join("");
+		const order = p.priority.map((k, i) => `<li>${k === "construction" ? "Construction sites" : k === "production" ? "Workshops' inputs" : "Food for cities"} ${i > 0 ? `<button class="mini" data-action="priority" data-kind="${k}" title="Move up">&uarr;</button>` : ""}</li>`).join("");
 		const buildings = sim.buildingsOf(me).map((b) =>
-			`<tr><td><a href="#" data-action="select-tile" data-tile="${b.tile}">${BUILDINGS[b.type].name}</a></td><td class="small">${b.built ? (b.status ? `<span class="warn">${esc(b.status)}</span>` : `<span class="good">working</span>`) : `building: needs ${goodsInline(b.needs)}`}</td><td class="small">${esc(sim.city(b.city)?.name ?? "")}</td></tr>`
+			`<tr><td><a href="#" data-action="select-tile" data-tile="${b.tile}">${BUILDINGS[b.type].name}</a></td><td class="small">${b.built ? (b.status ? `<span class="warn">${esc(b.status)}</span>` : `<span class="good">Working</span>`) : `Building: needs ${goodsInline(b.needs)}`}</td><td class="small dim">${esc(sim.city(b.city)?.name ?? "")}</td></tr>`
 		).join("");
 		const inTransit = sim.state.cargo.filter((c) => c.owner === me).length;
-		return `<h3>Economy</h3><div class="cols"><div><h4>Stores</h4><table>${goods}</table></div><div><h4>Who gets scarce goods first</h4><ol>${order}</ol><p class="dim small">Anything joined to a city by road reaches it the same turn.${inTransit ? ` ${inTransit} loads are waiting on cut or blocked roads.` : ""}</p><h4>Buildings <button class="mini ${this.lens ? "on" : ""}" data-action="lens">Show on map (V)</button></h4><table>${buildings || `<tr><td class="dim">None yet: click a tile in your territory.</td></tr>`}</table></div></div>`;
+		return `<h3>Economy</h3><p class="dim small eco-lede">Goods in your cities' stores. Anything joined to a city by road reaches it the same turn.${inTransit ? ` ${inTransit} loads are waiting on cut or blocked roads.` : ""}</p>
+			${tiers}
+			<div class="cols eco-cols"><div><h4>Who gets scarce goods first</h4><ol class="priority">${order}</ol></div>
+			<div><h4>Buildings <button class="mini ${this.lens ? "on" : ""}" data-action="lens">Show on map (V)</button></h4><table>${buildings ? `<tr><th>Building</th><th>State</th><th>City</th></tr>${buildings}` : `<tr><td class="dim">None yet: click a tile in your territory.</td></tr>`}</table></div></div>`;
 	}
 
 	citiesModal (): string {
 		const sim = this.sim, me = this.me;
-		const rows = sim.citiesOf(me).map((c) => `<tr><td><a href="#" data-action="select-city" data-city="${c.id}">${c.capital ? "&#9733; " : ""}${esc(c.name)}</a>${c.pendingRewards ? ` <span class="badge">reward</span>` : ""}</td><td>Level ${c.level}</td><td>Growth ${c.growth}/${growthNeeded(c.level)}</td><td>${slotsUsed(sim, c)}/${slotCap(c)} slots</td><td class="small">${goodsList(c.store, "")}</td></tr>`).join("");
-		return `<h3>Your cities</h3><table>${rows}</table>`;
+		const rows = sim.citiesOf(me).sort((a, b) => Number(b.capital) - Number(a.capital) || b.level - a.level).map((c) => {
+			const need = growthNeeded(c.level);
+			const reward = c.pendingRewards ? ` <span class="pill gold">Reward</span>` : "";
+			return `<tr>
+				<td><a href="#" data-action="select-city" data-city="${c.id}">${c.capital ? `<span class="stars">${icon("crown", 13)}</span> ` : ""}${esc(c.name)}</a>${reward}</td>
+				<td class="num">${c.level}</td>
+				<td><div class="mini-bar" title="Growth ${c.growth}/${need}"><span style="width:${Math.min(100, (c.growth / need) * 100)}%"></span></div><span class="dim small">${c.growth}/${need}</span></td>
+				<td class="num">${slotsUsed(sim, c)}/${slotCap(c)}</td>
+				<td class="num">${stars(cityIncome(sim, c))}</td>
+				<td class="small">${goodsList(c.store, `<span class="dim">Empty</span>`)}</td>
+			</tr>`;
+		}).join("");
+		return `<h3>Your cities</h3><table class="city-table"><tr><th>City</th><th>Level</th><th>Growth</th><th>Slots</th><th>Income</th><th>Store</th></tr>${rows}</table>`;
 	}
 
 	menuModal (): string {

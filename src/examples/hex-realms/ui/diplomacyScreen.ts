@@ -104,7 +104,7 @@ function control (action: string, label: string, data: Record<string, string | n
 function mood (sim: Sim, o: number, me: number): string {
 	if (sim.player(o).human) return "Human";
 	const feel = attitude(sim, o, me);
-	return feel >= 5 ? "Friendly" : feel >= 1 ? "Cordial" : feel > -3 ? "Neutral" : feel > -6 ? "Wary" : "Hostile";
+	return feel >= 5 ? "Friendly" : feel >= 1 ? "Cordial" : feel > -3 ? "Indifferent" : feel > -6 ? "Wary" : "Hostile";
 }
 
 const moodPill = (sim: Sim, o: number, me: number) => {
