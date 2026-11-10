@@ -796,6 +796,30 @@
 		"skinned": false,
 		"bytes": 557732
 	},
+	"rifleman": {
+		"file": "rifleman.glb",
+		"min": [
+			-0.2307,
+			-0.4366,
+			-0.4871
+		],
+		"max": [
+			0.2332,
+			0.4314,
+			0.493
+		],
+		"triangles": 5474,
+		"animations": [
+			"death",
+			"hit",
+			"idle",
+			"attack",
+			"walk"
+		],
+		"skinned": true,
+		"bytes": 964192,
+		"floor": -0.4672
+	},
 	"rocketArtillery": {
 		"file": "rocketArtillery.glb",
 		"min": [
