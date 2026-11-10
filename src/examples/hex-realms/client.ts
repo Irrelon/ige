@@ -819,7 +819,7 @@ export class Client extends IgeBaseClass implements IgeCanInit, HudHost {
 		const mine = !!unit && unit.owner === this.player && this.myTurn;
 		this.reach = mine && unit!.moves > 0 && !unit!.attacked ? reachable(this.sim, unit!) : undefined;
 		this.targets = mine ? attackTargets(this.sim, unit!) : [];
-		this.world.showReach(this.reach?.tiles ?? [], this.pathPreview());
+		this.world.showReach(this.reach?.tiles ?? []);
 		this.world.showTargets(this.targets);
 		this.world.setSelectedTile(unit ? unit.tile : this.selectedTile);
 		this.showRoute();
@@ -840,6 +840,12 @@ export class Client extends IgeBaseClass implements IgeCanInit, HudHost {
 			return;
 		}
 		const hover = this.hoverTile;
+		// Any tile it could move to, this turn or over several: the same line, solid for this turn's part
+		if (hover >= 0 && hover !== unit.tile && this.myTurn && this.reach?.tiles.includes(hover) && !this.targets.includes(hover)) {
+			const path = pathTo(unit, this.reach, hover);
+			this.world.showRoute(path, path.length, unit.tile, [path.length - 1]);
+			return;
+		}
 		const far = hover >= 0 && hover !== unit.tile && !this.reach?.tiles.includes(hover) && !this.targets.includes(hover) && this.myTurn;
 		const target = far && this.sim.knows(this.player, hover) ? hover : unit.goto;
 		if (target === undefined) {
@@ -875,12 +881,6 @@ export class Client extends IgeBaseClass implements IgeCanInit, HudHost {
 			from = route[i];
 		}
 		return ends;
-	}
-
-	pathPreview (): number[] {
-		const unit = this.selectedUnit !== null ? this.sim.unit(this.selectedUnit) : undefined;
-		if (!unit || !this.reach || !this.reach.tiles.includes(this.hoverTile)) return [];
-		return pathTo(unit, this.reach, this.hoverTile);
 	}
 
 	/**
@@ -1316,7 +1316,7 @@ export class Client extends IgeBaseClass implements IgeCanInit, HudHost {
 		this.hoverTile = tile;
 		const kind = this.targets.includes(tile) ? "attack" : this.reach?.tiles.includes(tile) ? "move" : "normal";
 		this.world.setHover(tile, kind);
-		if (this.reach) this.world.showReach(this.reach.tiles, this.pathPreview());
+		if (this.reach) this.world.showReach(this.reach.tiles);
 		this.showRoute();
 		this.hud.refreshPanel();
 		this.invalidate();
