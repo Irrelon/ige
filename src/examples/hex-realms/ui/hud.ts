@@ -849,6 +849,10 @@ export class Hud {
 				case "campFounded":
 					if (this.host.terrain.fogView[e.tile] !== UNEXPLORED) this.toast("Raiders have made camp nearby", "bad", 4);
 					break;
+				case "cityChanged":
+					// A reward chosen elsewhere (the AI playing your seat): its open card is done with
+					if (this.modal === "levelup" && e.city === this.levelCity && (sim.city(e.city)?.pendingRewards ?? 0) <= 0) this.closeModal();
+					break;
 				case "population": {
 					const c = sim.city(e.city);
 					if (c?.owner === me && !this.host.replaying) this.floatGain(e.tile, `+${e.points} ${icon("people", 14)}<small>${esc(c.name)}</small>`);
