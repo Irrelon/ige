@@ -218,6 +218,7 @@ export class Hud {
 		};
 		document.addEventListener("input", edit);
 		document.addEventListener("change", edit);
+		this.dragToPan();
 		// Rankings charts: a crosshair and every civ's value under the pointer
 		document.addEventListener("pointermove", (e) => {
 			if ((e.target as HTMLElement)?.closest?.(".hchart")) chartHover(e);
@@ -1160,6 +1161,57 @@ export class Hud {
 		if (kind === "saves") (document.getElementById("saveName") as HTMLInputElement | null)?.select();
 	}
 
+	/**
+	 * Click and drag the tech tree to move around it: sideways through its
+	 * own scroller, up and down through the screen's. A press that moves more
+	 * than a few pixels is a drag, and the click that ends it is swallowed so
+	 * it doesn't select the tech under the pointer.
+	 */
+	protected dragToPan (): void {
+		const THRESHOLD = 5;
+		let drag: { x: number; y: number; left: number; top: number; scroller: HTMLElement; box: HTMLElement; moved: boolean } | null = null;
+		let swallow = false;
+		document.addEventListener("pointerdown", (e) => {
+			if (e.button !== 0 || e.pointerType === "touch") return;
+			const scroller = (e.target as HTMLElement)?.closest?.(".techs-scroll") as HTMLElement | null;
+			const box = scroller?.closest(".modal-box") as HTMLElement | null;
+			if (!scroller || !box) return;
+			drag = { x: e.clientX, y: e.clientY, left: scroller.scrollLeft, top: box.scrollTop, scroller, box, moved: false };
+		});
+		document.addEventListener("pointermove", (e) => {
+			if (!drag) return;
+			const dx = e.clientX - drag.x, dy = e.clientY - drag.y;
+			if (!drag.moved && Math.hypot(dx, dy) < THRESHOLD) return;
+			if (!drag.moved) {
+				drag.moved = true;
+				drag.scroller.classList.add("dragging");
+				drag.scroller.style.scrollBehavior = "auto";
+			}
+			drag.scroller.scrollLeft = drag.left - dx;
+			drag.box.scrollTop = drag.top - dy;
+			e.preventDefault();
+		});
+		const end = () => {
+			if (!drag) return;
+			if (drag.moved) {
+				swallow = true;
+				drag.scroller.classList.remove("dragging");
+				drag.scroller.style.scrollBehavior = "";
+				// If no click follows (released outside), stop swallowing
+				setTimeout(() => { swallow = false; }, 0);
+			}
+			drag = null;
+		};
+		document.addEventListener("pointerup", end);
+		document.addEventListener("pointercancel", end);
+		document.addEventListener("click", (e) => {
+			if (!swallow) return;
+			swallow = false;
+			e.stopPropagation();
+			e.preventDefault();
+		}, true);
+	}
+
 	/** Show the next first-contact card, then any level-up reward cards, unless another screen is open. */
 	nextContact (): void {
 		if (this.modal) return;
@@ -1369,7 +1421,7 @@ export class Hud {
 			const first = tier === 1 || eraOfTier(tier - 1) !== era;
 			return `<div class="tier" data-tier="${tier}"><h4>${first ? `<span class="era">${era}</span>` : `<span class="era cont">${era}</span>`}Tier ${tier}</h4>${cards.join("")}</div>`;
 		});
-		let note = `<div class="tech-note dim">Click a tech to see what it needs; <b>Buy</b> researches it, with any techs it still needs first.</div>`;
+		let note = `<div class="tech-note dim">Click a tech to see what it needs; <b>Buy</b> researches it, with any techs it still needs first. Drag to move around the tree.</div>`;
 		if (focus) {
 			const name = TECHS[focus].name;
 			const what = this.techFocus?.for ? `${esc(this.techFocus.for)} needs ` : "";
