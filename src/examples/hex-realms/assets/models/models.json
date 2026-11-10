@@ -449,20 +449,21 @@
 	"millBody": {
 		"file": "millBody.glb",
 		"min": [
-			-0.2306,
-			-0.4324,
-			-0.3658
+			-0.3199,
+			-0.4044,
+			-0.321
 		],
 		"max": [
-			0.23,
-			0.4335,
-			0.1823
+			0.3338,
+			0.4481,
+			0.3402
 		],
-		"triangles": 3934,
+		"triangles": 3999,
 		"animations": [],
 		"skinned": false,
-		"bytes": 356664,
-		"floor": -0.3875
+		"bytes": 348936,
+		"yaw": -0.7854,
+		"floor": -0.3995
 	},
 	"millSails": {
 		"file": "millSails.glb",

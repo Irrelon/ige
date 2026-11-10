@@ -131,7 +131,7 @@ const PROP_LOD = [{ screenSize: 110, ratio: 0.35 }, { screenSize: 40, ratio: 0.1
  * cross on a hub at the front of the cap (in tile radii from the foot of the
  * mill, in the body's own frame: +z is its front). Sizes are in tile radii too.
  */
-const WINDMILL = { body: "millBody", sails: "millSails", bodyHeight: 1.2, sailSpan: 0.82, hub: { x: 0, y: 0.8, z: 0.27 }, depth: 0.3, turn: 0.9 };
+const WINDMILL = { body: "millBody", sails: "millSails", bodyHeight: 1.2, sailSpan: 0.82, hub: { x: 0, y: 0.85, z: 0.27 }, depth: 0.3, turn: 0.9 };
 const CARGO_TILES_PER_SECOND = 6;
 
 interface UnitView {
