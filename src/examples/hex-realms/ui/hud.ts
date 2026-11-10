@@ -29,6 +29,7 @@ import { ambitionsModal, wondersModal } from "./wondersScreen";
 import type { SaveKind, SaveMeta, SaveStore } from "../saves";
 import { savesModal } from "./savesScreen";
 import { emblem, icon } from "./icons";
+import { getMusicVolume, getSfxVolume, setMusicVolume, setSfxVolume } from "./audio";
 import { contactModal } from "./contact";
 import { chartHover, historyChart, historyModal, shownCivs } from "./historyScreen";
 import type { HistoryMetric } from "../sim/history";
@@ -188,6 +189,15 @@ export class Hud {
 		// The deal editor's fields
 		const edit = (e: Event) => {
 			const el = e.target as HTMLInputElement;
+			// Music and sound effect volumes (the menu)
+			if (el?.dataset?.vol) {
+				const v = Number(el.value) / 100;
+				if (el.dataset.vol === "music") setMusicVolume(v);
+				else setSfxVolume(v);
+				const out = el.parentElement?.querySelector("output");
+				if (out) out.textContent = `${el.value}%`;
+				return;
+			}
 			if (el?.id === "saveImport") {
 				const file = el.files?.[0];
 				if (e.type === "change" && file) void this.host.importSave(file);
@@ -1466,6 +1476,8 @@ export class Hud {
 			</div>
 			<h4>Settings</h4>
 			<div class="opts">
+				<label class="vol"><span>${icon("music", 16)} Music</span><input type="range" min="0" max="100" value="${Math.round(getMusicVolume() * 100)}" data-vol="music"><output>${Math.round(getMusicVolume() * 100)}%</output></label>
+				<label class="vol"><span>${icon("sound", 16)} Sound effects</span><input type="range" min="0" max="100" value="${Math.round(getSfxVolume() * 100)}" data-vol="sfx"><output>${Math.round(getSfxVolume() * 100)}%</output></label>
 				<div>${toggle("sound", soundEnabled(), "Sound")}</div>
 				<div>${toggle("tips", tipsEnabled(), "Advisor tips")}</div>
 				<div>${toggle("motion", h.reducedMotion, "Reduced motion (skip animations)")}</div>
