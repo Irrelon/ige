@@ -32,6 +32,7 @@ import { findBoneIndex } from "@/engine/webgl/IgeAnimationRetarget";
  * Bone matrices for one quantised frame of a clip on one skeleton.
  */
 interface IgePoseCacheEntry {
+	local: Float32Array;
 	world: Float32Array;
 	skin: Float32Array;
 }
@@ -455,6 +456,12 @@ export class IgeSkeletalAnimationComponent extends IgeComponent<IgeEntity> {
 		for (let i = 0; i < states.length; i++) {
 			const state = states[i];
 
+			// Finished while out of sight: still waiting to have its last frame posed (see below)
+			if (!state.playing) {
+				totalWeight += state.weight;
+				continue;
+			}
+
 			// Update fade
 			if (state.fadeInDuration > 0 && state.weight < 1) {
 				state.fadeTime += deltaSeconds;
@@ -516,9 +523,12 @@ export class IgeSkeletalAnimationComponent extends IgeComponent<IgeEntity> {
 			}
 		}
 
-		// Remove completed/faded-out animations (a finished clip's final frame was just posed: the skeleton keeps it)
+		// Remove faded-out animations, and finished ones once their final frame has been posed (the skeleton then keeps
+		// it). A clip that finishes out of sight waits until the entity is next drawn, so a death clip that ended in an
+		// unseen room still leaves the body lying down rather than in whatever pose it was last seen in.
 		for (let i = states.length - 1; i >= 0; i--) {
-			if (!states[i].playing) {
+			const state = states[i];
+			if (!state.playing && (samplePose || state.weight <= 0)) {
 				states.splice(i, 1);
 			}
 		}
@@ -607,6 +617,7 @@ export class IgeSkeletalAnimationComponent extends IgeComponent<IgeEntity> {
 			skeletonManager.updateSkeletonMatrices(skeleton);
 
 			entry = {
+				local: skeleton.localMatrices.slice(),
 				world: skeleton.worldMatrices.slice(),
 				skin: skeleton.skinMatrices.slice()
 			};
@@ -614,6 +625,9 @@ export class IgeSkeletalAnimationComponent extends IgeComponent<IgeEntity> {
 			return true;
 		}
 
+		// The bones' local matrices as well, so anything that rebuilds the skeleton from them later (a bone rotation,
+		// a ragdoll taking over) starts from this pose rather than an older one
+		skeleton.localMatrices.set(entry.local);
 		skeleton.worldMatrices.set(entry.world);
 		skeleton.skinMatrices.set(entry.skin);
 		skeleton.dirty = false;
