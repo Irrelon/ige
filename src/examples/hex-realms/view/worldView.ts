@@ -68,8 +68,12 @@ const VEHICLE_PARTS: Partial<Record<UnitTypeId, Part[]>> = {
 
 const UNIT_PARTS = Object.fromEntries(UNIT_TYPE_IDS.map((t) => [t, VEHICLE_PARTS[t] ?? BASE_UNIT_PARTS[UNIT_LOOK[t]]])) as Record<UnitTypeId, Part[]>;
 
-/** Units that have no model of their own yet borrow their line's (vehicles use their parts instead). */
-function modelOf (type: UnitTypeId): string {
+/**
+ * A unit's model: its own once one is imported (named after the unit type),
+ * otherwise its line's (vehicles use their parts instead).
+ */
+function modelOf (type: UnitTypeId, models?: ModelLibrary): string {
+	if (type !== UNIT_LOOK[type] && models?.info(type)) return type;
 	return VEHICLE_PARTS[type] ? `vehicle:${type}` : UNIT_LOOK[type];
 }
 
@@ -537,7 +541,7 @@ export class WorldView {
 		root.mount(this.unitLayer);
 		// A 3D model when one is loaded (characters stand in their idle pose), primitives otherwise;
 		// whose it is shows in its base and its badge (the HUD), not in the model
-		const model = this.models?.create(modelOf(unit.type), { ...UNIT_MODEL_FIT[unit.type], animation: "idle", speed: 0 }) ?? null;
+		const model = this.models?.create(modelOf(unit.type, this.models), { ...UNIT_MODEL_FIT[unit.type], animation: "idle", speed: 0 }) ?? null;
 		let body: IgeEntity | undefined;
 		let base: IgeEntity | undefined;
 		let baseFill: IgeEntity | undefined;
@@ -570,14 +574,14 @@ export class WorldView {
 	/** Play a character clip (looping, or once for attack, hit and death). */
 	protected playClip (v: UnitView, clip: string, speed = 1, once = false): void {
 		const models = this.models;
-		if (!v.model || !models || !models.hasClip(modelOf(v.type), clip)) return;
+		if (!v.model || !models || !models.hasClip(modelOf(v.type, this.models), clip)) return;
 		if (!once && v.clip === clip && v.clipSpeed === speed) return;
 		const anim = v.model.components.skeletalAnimation as unknown as { play: (id: string, o: object) => void } | undefined;
 		if (!anim) return;
 		anim.play(clip, { crossFadeDuration: 0.12, speed, loop: !once });
 		v.clip = clip;
 		v.clipSpeed = speed;
-		v.clipUntil = once ? this.time + models.clipDuration(modelOf(v.type), clip) / Math.max(0.01, speed) : undefined;
+		v.clipUntil = once ? this.time + models.clipDuration(modelOf(v.type, this.models), clip) / Math.max(0.01, speed) : undefined;
 	}
 
 	/** The clip a character should be playing now: dying, a one-shot, walking, or idle (only the selected unit breathes). */
@@ -594,7 +598,7 @@ export class WorldView {
 
 	/** Is a selected character breathing (worth drawing a few frames a second)? */
 	get idleAnimating (): boolean {
-		for (const v of this.units.values()) if (v.selected && v.model && v.shown && this.models?.hasClip(modelOf(v.type), "idle")) return true;
+		for (const v of this.units.values()) if (v.selected && v.model && v.shown && this.models?.hasClip(modelOf(v.type, this.models), "idle")) return true;
 		return false;
 	}
 
@@ -602,7 +606,7 @@ export class WorldView {
 	modelLoaded (id: string): void {
 		const sim = this.sim;
 		for (const v of [...this.units.values()]) {
-			if ((modelOf(v.type) === id || id === "boat") && !v.queue.length && !v.lunge && v.removeAt < 0) this.rebuildUnit(v);
+			if ((modelOf(v.type, this.models) === id || id === "boat") && !v.queue.length && !v.lunge && v.removeAt < 0) this.rebuildUnit(v);
 		}
 		if (id === "village" || id === "town" || id === "city") for (const c of sim.state.cities) this.buildCity(c);
 		for (const b of sim.state.buildings) if (b.type === id || (id === "construction" && !b.built)) this.buildBuilding(b);
@@ -1329,7 +1333,7 @@ export class WorldView {
 					if (v) {
 						v.removeAt = e.reason === "killed" ? this.time + LUNGE_TIME + this.pathTime(v) : this.time + this.pathTime(v);
 						// Characters play their death before they go
-						if (e.reason === "killed" && v.model && this.models?.hasClip(modelOf(v.type), "death")) {
+						if (e.reason === "killed" && v.model && this.models?.hasClip(modelOf(v.type, this.models), "death")) {
 							v.dying = v.removeAt;
 							v.removeAt += DEATH_TIME;
 						}
