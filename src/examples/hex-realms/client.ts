@@ -1223,7 +1223,8 @@ export class Client extends IgeBaseClass implements IgeCanInit, HudHost {
 		// Animate in step with the water's frames (about 30 a second)
 		if (!frameDue && Math.floor(this.time * 30) === this._lifeFrame) return false;
 		this._lifeFrame = Math.floor(this.time * 30);
-		return life.update(this.time, 1 / 30, focus, this.cam.distance, this.layout.size);
+		const spun = this.world.spin(this.time, this.cam.distance);
+		return life.update(this.time, 1 / 30, focus, this.cam.distance, this.layout.size) || spun;
 	}
 
 	protected _lifeFocus = { x: NaN, z: NaN };
@@ -1538,6 +1539,8 @@ function urlForOptions (o: GameOptions, style: TerrainStyle): string {
 	q.set("los", o.lineOfSight ? "1" : "0");
 	q.set("founding", o.allowFounding ? "1" : "0");
 	q.set("tribetech", o.tribeTechs === false ? "0" : "1");
+	q.set("raiders", o.raiders === false ? "0" : "1");
+	q.set("growth", o.buildGrowth === false ? "food" : "buildings");
 	q.set("turns", String(o.turnLimit));
 	q.set("v", Object.entries(o.victories).filter(([, v]) => v).map(([k]) => k).join(","));
 	q.set("style", style);

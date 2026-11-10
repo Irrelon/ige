@@ -118,6 +118,8 @@ The setup screen sets everything; the same options work as URL parameters (`?qui
 | `fog` | `civ` (default): explored tiles out of sight dim and show last-known terrain. `polytopia`: explored tiles stay visible. `off`: everything revealed |
 | `los` | `1` (default): hills see further; mountains, forests and jungle block the view. `0`: plain sight radius |
 | `founding` | `1` (default) or `0`: allow settlers to found cities |
+| `raiders` | `1` (default) or `0`: raider camps |
+| `growth` | `buildings` (default, Polytopia-style: buildings and harvests add population) or `food` (cities grow from delivered food alone) |
 | `v` | Victory types that are on, e.g. `v=domination,score` |
 | `style` | `tiles` (Polytopia-like stepped hexes, clouds over unexplored land) or `natural` (Civilization-like blended heightfield, parchment over unexplored land) |
 | `chunk`, `shadows` | Terrain chunk size (16); `shadows=0` turns shadows off |

@@ -1476,7 +1476,7 @@ export class Hud {
 			<div class="opts">
 				<div>Fog of war: ${(["civ", "polytopia", "off"] as FogMode[]).map((m) => `<button class="mini ${o.fog === m ? "on" : ""}" data-action="fog" data-mode="${m}" ${local ? "" : "disabled"}>${m === "civ" ? "Civilization" : m === "polytopia" ? "Polytopia" : "Off"}</button>`).join(" ")}</div>
 				<div>${local ? toggle("los", o.lineOfSight, "Line of sight") : `Line of sight: ${o.lineOfSight ? "on" : "off"}`}</div>
-				<div class="dim small">Founding cities: ${o.allowFounding ? "allowed" : "off"} &middot; Tribe starting techs: ${o.tribeTechs === false ? "off" : "on"} &middot; Victories: ${Object.entries(o.victories).filter(([, v]) => v).map(([k]) => k).join(", ")} &middot; Difficulty: ${o.difficulty} &middot; Map ${o.width} x ${o.height}, seed "${esc(o.seedText)}"</div>
+				<div class="dim small">Founding cities: ${o.allowFounding ? "allowed" : "off"} &middot; Tribe starting techs: ${o.tribeTechs === false ? "off" : "on"} &middot; Raiders: ${o.raiders ? "on" : "off"} &middot; Growth: ${o.buildGrowth ? "from buildings" : "from food"} &middot; Victories: ${Object.entries(o.victories).filter(([, v]) => v).map(([k]) => k).join(", ")} &middot; Difficulty: ${o.difficulty} &middot; Map ${o.width} x ${o.height}, seed "${esc(o.seedText)}"</div>
 			</div>
 			<h4>Settings</h4>
 			<div class="opts">

@@ -104,6 +104,8 @@ export function optionsFromUrl (): { options: GameOptions; style: TerrainStyle; 
 		lineOfSight: q.get("los") !== "0",
 		allowFounding: q.get("founding") !== "0",
 		tribeTechs: q.get("tribetech") !== "0",
+		raiders: q.get("raiders") !== "0",
+		buildGrowth: q.get("growth") !== "food",
 		difficulty: (["easy", "normal", "hard"].includes(q.get("difficulty") ?? "") ? q.get("difficulty") : "normal") as Difficulty,
 		turnLimit: int("turns", 60, 10, 500)
 	});
@@ -189,6 +191,8 @@ function newGamePane (start: GameOptions, style: TerrainStyle, size: string): st
 				<div>${toggle("los", start.lineOfSight, "Line of sight", "Hills see further; mountains and forests block the view")}</div>
 				<div>${toggle("founding", start.allowFounding, "Found new cities", "Settlers can build cities as well as capture villages")}</div>
 				<div>${toggle("tribetech", start.tribeTechs !== false, "Tribe starting techs", "Off: every tribe starts with no research")}</div>
+				<div>${toggle("raiders", start.raiders !== false, "Raider camps", "Outlaw camps appear on unclaimed land and raid nearby units and buildings")}</div>
+				<div>${toggle("growth", start.buildGrowth !== false, "Cities grow from buildings", "As in Polytopia: each building adds population; off, cities grow from delivered food alone")}</div>
 			</div>
 			<div class="field-group">
 				<div class="field-label">Victory conditions</div>
@@ -378,6 +382,8 @@ export function showSetup (saves: SaveMeta[], onlineAvailable: boolean, store?: 
 			lineOfSight: f.get("los") === "on",
 			allowFounding: f.get("founding") === "on",
 			tribeTechs: f.get("tribetech") === "on",
+			raiders: f.get("raiders") === "on",
+			buildGrowth: f.get("growth") === "on",
 			difficulty: String(f.get("difficulty") || "normal") as Difficulty,
 			turnLimit: Number(f.get("turns")) || 60,
 			victories: wins
