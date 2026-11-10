@@ -583,14 +583,15 @@ export class LifeView {
 			// Corners sit between two edges; avoid those edges' roads
 			const n1 = sim.map.neighbor(b.tile, (i + 5) % 6), n2 = sim.map.neighbor(b.tile, i);
 			const roads = (n1 >= 0 && sim.roads[n1] >= 0 ? 1 : 0) + (n2 >= 0 && sim.roads[n2] >= 0 ? 1 : 0);
-			const score = -roads * 2 + rand();
+			// The near side (toward the default camera, +z), so the building doesn't hide them
+			const score = -roads * 2 + CORNER_Z[i] * 1.6 + rand() * 0.8;
 			if (score > bestScore) {
 				bestScore = score;
 				best = i;
 			}
 		}
 		if (best < 0) return null;
-		const x = x0 + CORNER_X[best] * R * 0.6, z = z0 + CORNER_Z[best] * R * 0.6;
+		const x = x0 + CORNER_X[best] * R * 0.7, z = z0 + CORNER_Z[best] * R * 0.7;
 		// Facing along the tile's edge, so the work happens beside the building
 		const yaw = Math.atan2(CORNER_Z[best], -CORNER_X[best]);
 		return { x, y: ground(x, z), z, yaw };

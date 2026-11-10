@@ -878,5 +878,27 @@
 		"skinned": true,
 		"bytes": 1424572,
 		"floor": -0.4455
+	},
+	"workerWoodcutter": {
+		"file": "workerWoodcutter.glb",
+		"min": [
+			-0.2652,
+			-0.4533,
+			-0.4808
+		],
+		"max": [
+			0.2698,
+			0.4393,
+			0.455
+		],
+		"triangles": 19960,
+		"animations": [
+			"idle",
+			"walk",
+			"work"
+		],
+		"skinned": true,
+		"bytes": 1632872,
+		"floor": -0.4562
 	}
 }
