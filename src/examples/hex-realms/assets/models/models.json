@@ -111,6 +111,24 @@
 		"skinned": false,
 		"bytes": 421416
 	},
+	"cavalry": {
+		"file": "cavalry.glb",
+		"min": [
+			-0.2545,
+			-0.4228,
+			-0.2549
+		],
+		"max": [
+			0.3044,
+			0.4911,
+			0.3134
+		],
+		"triangles": 5994,
+		"animations": [],
+		"skinned": false,
+		"bytes": 568088,
+		"yaw": 1.3614
+	},
 	"city": {
 		"file": "city.glb",
 		"min": [
