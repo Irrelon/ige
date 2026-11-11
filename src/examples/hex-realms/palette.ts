@@ -35,6 +35,12 @@ const BASE_COLORS = {
 	forest: [46, 112, 54],
 	jungle: [38, 136, 70],
 	pine: [50, 92, 74],
+	// The blocky art pack's trees: brighter, cuter greens and a warm trunk
+	blockLeaf: [80, 164, 64],
+	blockPine: [48, 120, 82],
+	blockJungle: [58, 156, 70],
+	trunk: [126, 86, 52],
+	blossom: [250, 120, 140],
 	// Unexplored areas: clouds in the tile style, a parchment map in the natural style
 	cloud: [246, 248, 252],
 	cloudShade: [198, 208, 224],

@@ -1,9 +1,10 @@
 import type { IgeGeometryData3d } from "@/types/IgeGeometryData3d";
+import { addBlockyFlower, addBlockyMountain, addBlockyRock, addBlockyTree, addCloudBlocks, cloudUv } from "./blockyTerrain";
 import { FOGGED, UNEXPLORED } from "./fog";
 import { CORNER_X, CORNER_Z, EDGE_X, EDGE_Z, type HexLayout } from "./hex";
 import type { HexMap } from "./mapGen";
 import type { MeshBuilder } from "./meshBuilder";
-import { mulberry32 } from "./noise";
+import { mulberry32, SimplexNoise2d } from "./noise";
 import { forestedKey, type PaletteKey, paletteU, paletteV } from "./palette";
 import { Feature, FLOOR_HEIGHT, hillRise, HILL_RISE, hillSlope, LAND_BEVEL, Relief, Terrain, TERRAIN_INFO, WATER_BEVEL } from "./terrain";
 
@@ -46,6 +47,12 @@ export const CLOUD_TOP = CLOUD_BASE + 24;
  */
 export type ChunkDetail = "full" | "lite";
 
+/**
+ * How trees, mountains, rocks and clouds are shaped: smooth low-poly, or
+ * built from boxes to match the blocky art pack.
+ */
+export type TerrainDecor = "smooth" | "blocky";
+
 /** Tile top as shown: the cloud layer when unexplored. */
 export function shownTop (map: HexMap, view: Uint8Array | undefined, t: number): number {
 	return view && view[t] === UNEXPLORED ? CLOUD_BASE : map.topHeight(t);
@@ -64,7 +71,8 @@ export function buildChunk (
 	size: number,
 	id: string,
 	detail: ChunkDetail = "full",
-	view?: Uint8Array
+	view?: Uint8Array,
+	decor: TerrainDecor = "smooth"
 ): IgeGeometryData3d | null {
 	builder.reset();
 	const col1 = Math.min(map.width, col0 + size);
@@ -73,9 +81,9 @@ export function buildChunk (
 	for (let row = row0; row < row1; row++) {
 		for (let col = col0; col < col1; col++) {
 			const t = row * map.width + col;
-			if (view && view[t] === UNEXPLORED) addCloudTile(map, layout, builder, t, col, row, view, detail);
-			else if (detail === "lite") addLiteTile(map, layout, builder, t, col, row, view);
-			else addTile(map, layout, builder, t, col, row, view);
+			if (view && view[t] === UNEXPLORED) addCloudTile(map, layout, builder, t, col, row, view, detail, decor);
+			else if (detail === "lite") addLiteTile(map, layout, builder, t, col, row, view, decor);
+			else addTile(map, layout, builder, t, col, row, view, decor);
 		}
 	}
 
@@ -141,7 +149,7 @@ const isLand = (map: HexMap, n: number) => n >= 0 && !TERRAIN_INFO[map.terrain[n
  */
 function addCloudTile (
 	map: HexMap, layout: HexLayout, b: MeshBuilder, t: number, col: number, row: number,
-	view: Uint8Array, detail: ChunkDetail
+	view: Uint8Array, detail: ChunkDetail, decor: TerrainDecor
 ): void {
 	const R = layout.size;
 	const cx = layout.centerX(col, row);
@@ -156,6 +164,11 @@ function addCloudTile (
 	addWalls(map, layout, b, t, cx, cz, CLOUD_BASE, 1, "cloudShade", view, false);
 
 	if (detail === "lite") return;
+
+	if (decor === "blocky") {
+		addBlockyCloud(map, layout, b, col, row, cx, cz, view);
+		return;
+	}
 
 	const rand = mulberry32(Math.imul(t + 3, 2654435761) ^ map.seed);
 	const pu = paletteU(1.02);
@@ -173,6 +186,47 @@ function addCloudTile (
 			R * (0.42 + rand() * 0.14), R * (0.26 + rand() * 0.12), rand() * Math.PI, pu, v
 		);
 	}
+}
+
+/** Noise for the blocky clouds' heights, one per map seed. */
+const cloudNoise = new Map<number, SimplexNoise2d>();
+
+/**
+ * Blocky clouds over an unexplored tile: one to three steps of cloud
+ * blocks on a world grid, rising and falling smoothly across the map, so
+ * neighbouring tiles' clouds join up. Over explored ground the level is 0.
+ */
+function addBlockyCloud (map: HexMap, layout: HexLayout, b: MeshBuilder, col: number, row: number, cx: number, cz: number, view: Uint8Array): void {
+	const R = layout.size;
+	const cell = R * 0.46;
+	const step = R * 0.13;
+	let noise = cloudNoise.get(map.seed);
+	if (!noise) cloudNoise.set(map.seed, (noise = new SimplexNoise2d(mulberry32(map.seed ^ 0x51c3a7))));
+	const n = noise;
+	const at = { col: 0, row: 0 };
+	const freq = 1 / (R * 3.2);
+	const cloudy = (x: number, z: number): boolean => {
+		layout.worldToOffset(x, z, at);
+		if (at.col < 0 || at.row < 0 || at.col >= map.width || at.row >= map.height) return true;
+		return view[at.row * map.width + at.col] === UNEXPLORED;
+	};
+	// A block only where all of it is over unexplored ground, so clouds never hide explored tiles
+	const level = (gi: number, gj: number): number => {
+		const x = gi * cell, z = gj * cell;
+		if (!cloudy(x, z) || !cloudy(x + cell, z) || !cloudy(x, z + cell) || !cloudy(x + cell, z + cell)) return 0;
+		const k = n.noise((x + cell / 2) * freq, (z + cell / 2) * freq) * 0.5 + 0.5;
+		return Math.min(3, Math.max(1, Math.floor(k * 3.3 + 0.2)));
+	};
+	const mine = (gi: number, gj: number): boolean => {
+		layout.worldToOffset((gi + 0.5) * cell, (gj + 0.5) * cell, at);
+		return at.col === col && at.row === row;
+	};
+	const uv = cloudUv();
+	addCloudBlocks(
+		b, cell, CLOUD_BASE - 1, step,
+		Math.floor((cx - R) / cell), Math.floor((cx + R) / cell), Math.floor((cz - R) / cell), Math.floor((cz + R) / cell),
+		mine, level, uv.side, uv.top, uv.v
+	);
 }
 
 /**
@@ -214,7 +268,7 @@ function addPuff (b: MeshBuilder, x: number, y: number, z: number, r: number, h:
 }
 
 function addLiteTile (
-	map: HexMap, layout: HexLayout, b: MeshBuilder, t: number, col: number, row: number, view?: Uint8Array
+	map: HexMap, layout: HexLayout, b: MeshBuilder, t: number, col: number, row: number, view: Uint8Array | undefined, decor: TerrainDecor
 ): void {
 	const R = layout.size;
 	const cx = layout.centerX(col, row);
@@ -242,7 +296,8 @@ function addLiteTile (
 	if (relief === Relief.Mountain) {
 		const rand = mulberry32(Math.imul(t + 1, 2654435761) ^ map.seed);
 		const cold = terrain === Terrain.Tundra || terrain === Terrain.Snow;
-		addPeak(b, cx, rim - 1, cz, R * 0.68, R * (1.1 + rand() * 0.55), 4, rand, cold ? 0.35 : 0.62, fogged);
+		if (decor === "blocky") addBlockyMountain(b, cx, rim - 1, cz, R, rand, cold, fogged ? paletteUvFogged : paletteUv, 0.3);
+		else addPeak(b, cx, rim - 1, cz, R * 0.68, R * (1.1 + rand() * 0.55), 4, rand, cold ? 0.35 : 0.62, fogged);
 	}
 }
 
@@ -289,7 +344,7 @@ function addWalls (
 	}
 }
 
-function addTile (map: HexMap, layout: HexLayout, b: MeshBuilder, t: number, col: number, row: number, view?: Uint8Array): void {
+function addTile (map: HexMap, layout: HexLayout, b: MeshBuilder, t: number, col: number, row: number, view: Uint8Array | undefined, decor: TerrainDecor): void {
 	const R = layout.size;
 	const cx = layout.centerX(col, row);
 	const cz = layout.centerZ(row);
@@ -332,11 +387,11 @@ function addTile (map: HexMap, layout: HexLayout, b: MeshBuilder, t: number, col
 	const feature = map.feature[t] as Feature;
 	if (relief === Relief.Mountain || relief === Relief.Hills || feature !== Feature.None) {
 		const rand = mulberry32(Math.imul(t + 1, 2654435761) ^ map.seed);
-		if (relief === Relief.Mountain) addMountain(b, cx, top, cz, R, rand, terrain, fogged);
-		else if (relief === Relief.Hills) addHillRocks(b, cx, top, cz, R, rand, fogged);
-		if (feature !== Feature.None && relief !== Relief.Mountain) addTrees(b, cx, top, cz, R, rand, feature, fogged, hill);
+		if (relief === Relief.Mountain) addMountain(b, cx, top, cz, R, rand, terrain, fogged, decor);
+		else if (relief === Relief.Hills) addHillRocks(b, cx, top, cz, R, rand, fogged, decor);
+		if (feature !== Feature.None && relief !== Relief.Mountain) addTrees(b, cx, top, cz, R, rand, feature, fogged, hill, decor);
 	}
-	if (relief === Relief.Flat && feature === Feature.None) addGroundDetail(map, b, t, cx, top, cz, R, terrain, fogged);
+	if (relief === Relief.Flat && feature === Feature.None) addGroundDetail(map, b, t, cx, top, cz, R, terrain, fogged, decor);
 }
 
 /**
@@ -345,7 +400,7 @@ function addTile (map: HexMap, layout: HexLayout, b: MeshBuilder, t: number, col
  * corners, clear of the centre (units, cities, buildings) and of the edge
  * midpoints (where roads run).
  */
-function addGroundDetail (map: HexMap, b: MeshBuilder, t: number, cx: number, top: number, cz: number, R: number, terrain: Terrain, fogged: boolean): void {
+function addGroundDetail (map: HexMap, b: MeshBuilder, t: number, cx: number, top: number, cz: number, R: number, terrain: Terrain, fogged: boolean, decor: TerrainDecor): void {
 	const rand = mulberry32(Math.imul(t + 11, 2654435761) ^ (map.seed * 3));
 	const grassy = terrain === Terrain.Grassland || terrain === Terrain.Plains;
 	const stony = terrain === Terrain.Desert || terrain === Terrain.Tundra;
@@ -363,14 +418,19 @@ function addGroundDetail (map: HexMap, b: MeshBuilder, t: number, cx: number, to
 			if (terrain === Terrain.Grassland && rand() < 0.35) {
 				// A flower: a tiny bright cone on a blade
 				const petals = [[1.3, 1.25, 0.55], [1.35, 1.3, 1.3], [1.5, 0.75, 0.7], [1.15, 0.95, 1.4]][Math.floor(rand() * 4)];
-				b.tint(petals[0], petals[1], petals[2]);
 				const fx = x + (rand() - 0.5) * R * 0.12, fz = z + (rand() - 0.5) * R * 0.12;
-				addCone(b, fx, top + R * 0.07, fz, R * 0.04, R * 0.05, 5, rand() * Math.PI, paletteU(1.3), paletteV("snow", fogged));
-				b.tint(1);
+				if (decor === "blocky") {
+					addBlockyFlower(b, fx, top - 0.3, fz, R * 0.05, fogged ? paletteUvFogged : paletteUv, [petals[0] * 0.8, petals[1] * 0.8, petals[2] * 0.8]);
+				} else {
+					b.tint(petals[0], petals[1], petals[2]);
+					addCone(b, fx, top + R * 0.07, fz, R * 0.04, R * 0.05, 5, rand() * Math.PI, paletteU(1.3), paletteV("snow", fogged));
+					b.tint(1);
+				}
 			}
 		} else {
 			const key: PaletteKey = terrain === Terrain.Desert ? "sand" : "rock";
-			addCone(b, x, top - 0.5, z, R * (0.05 + rand() * 0.04), R * (0.04 + rand() * 0.04), 4, rand() * Math.PI, paletteU(0.9 + rand() * 0.2), paletteV(key, fogged));
+			if (decor === "blocky") addBlockyRock(b, x, top, z, R * (0.06 + rand() * 0.04), rand, key, fogged ? paletteUvFogged : paletteUv);
+			else addCone(b, x, top - 0.5, z, R * (0.05 + rand() * 0.04), R * (0.04 + rand() * 0.04), 4, rand() * Math.PI, paletteU(0.9 + rand() * 0.2), paletteV(key, fogged));
 		}
 	}
 }
@@ -397,9 +457,13 @@ function addTuft (b: MeshBuilder, x: number, y: number, z: number, h: number, ra
 
 /** A main rocky peak with a snow cap, and sometimes a smaller second peak. */
 function addMountain (
-	b: MeshBuilder, cx: number, top: number, cz: number, R: number, rand: () => number, terrain: Terrain, fogged: boolean
+	b: MeshBuilder, cx: number, top: number, cz: number, R: number, rand: () => number, terrain: Terrain, fogged: boolean, decor: TerrainDecor
 ): void {
 	const cold = terrain === Terrain.Tundra || terrain === Terrain.Snow;
+	if (decor === "blocky") {
+		addBlockyMountain(b, cx, top - 1.5, cz, R, rand, cold, fogged ? paletteUvFogged : paletteUv);
+		return;
+	}
 	const height = R * (1.1 + rand() * 0.55);
 	addPeak(b, cx, top - 2, cz, R * (0.62 + rand() * 0.1), height, 5, rand, cold ? 0.35 : 0.62, fogged);
 
@@ -532,12 +596,16 @@ function addHillTop (
 }
 
 /** A few rocks on a hill's shoulders. */
-function addHillRocks (b: MeshBuilder, cx: number, top: number, cz: number, R: number, rand: () => number, fogged: boolean): void {
+function addHillRocks (b: MeshBuilder, cx: number, top: number, cz: number, R: number, rand: () => number, fogged: boolean, decor: TerrainDecor): void {
 	const count = 1 + Math.floor(rand() * 3);
 	for (let k = 0; k < count; k++) {
 		const a = rand() * Math.PI * 2;
 		const d = R * (0.4 + rand() * 0.22);
 		const x = cx + Math.cos(a) * d, z = cz + Math.sin(a) * d;
+		if (decor === "blocky") {
+			addBlockyRock(b, x, top + hillRise(d, R) - 0.4, z, R * (0.07 + rand() * 0.05), rand, "rock", fogged ? paletteUvFogged : paletteUv);
+			continue;
+		}
 		addCone(b, x, top + hillRise(d, R) - 0.8, z, R * (0.05 + rand() * 0.04), R * (0.05 + rand() * 0.05), 4, rand() * Math.PI, paletteU(0.9 + rand() * 0.2), paletteV("rock", fogged));
 	}
 }
@@ -550,7 +618,7 @@ const paletteUvFogged: ColorUv = (key, shade) => [paletteU(shade), paletteV(key,
 
 /** Three or four trees spaced around the tile centre. */
 function addTrees (
-	b: MeshBuilder, cx: number, top: number, cz: number, R: number, rand: () => number, feature: Feature, fogged: boolean, hill = false
+	b: MeshBuilder, cx: number, top: number, cz: number, R: number, rand: () => number, feature: Feature, fogged: boolean, hill: boolean, decor: TerrainDecor
 ): void {
 	const count = 3 + (rand() < 0.5 ? 1 : 0);
 	const start = rand() * Math.PI * 2;
@@ -560,15 +628,19 @@ function addTrees (
 		const angle = start + (k / count) * Math.PI * 2 + (rand() - 0.5) * 0.6;
 		const dist = R * (0.42 + rand() * 0.14);
 		const y = top - 0.5 + (hill ? hillRise(dist, R) - 0.6 : 0);
-		addTree(b, cx + Math.cos(angle) * dist, y, cz + Math.sin(angle) * dist, R, 0.85 + rand() * 0.35, feature, rand, uv);
+		addTree(b, cx + Math.cos(angle) * dist, y, cz + Math.sin(angle) * dist, R, 0.85 + rand() * 0.35, feature, rand, uv, decor);
 	}
 }
 
 /** One tree of a forest type standing on (x, y, z), sized relative to the tile radius R. */
 export function addTree (
 	b: MeshBuilder, x: number, y: number, z: number, R: number, scale: number,
-	feature: Feature, rand: () => number, uv: ColorUv
+	feature: Feature, rand: () => number, uv: ColorUv, decor: TerrainDecor = "smooth"
 ): void {
+	if (decor === "blocky") {
+		addBlockyTree(b, x, y, z, R, scale, feature === Feature.Pine ? "pine" : feature === Feature.Jungle ? "jungle" : "forest", rand, uv);
+		return;
+	}
 	const rot = rand() * Math.PI;
 	if (feature === Feature.Pine) {
 		const [u, v] = uv("pine", 0.9 + rand() * 0.2);

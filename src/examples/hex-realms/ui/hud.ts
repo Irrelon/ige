@@ -1671,7 +1671,7 @@ export class Hud {
 				<div>${toggle("tips", tipsEnabled(), "Advisor tips")}</div>
 				<div>${toggle("motion", h.reducedMotion, "Reduced motion (skip animations)")}</div>
 				<div>${toggle("stats", h.showStats, "Performance stats")}</div>
-				<div>Art: ${([["models", "3D models"], ["blocky", "Blocky"], ["shapes", "Simple shapes"]] as const).map(([p, label]) => `<button class="mini ${(h.models?.pack ?? "models") === p ? "on" : ""}" data-action="art-pack" data-pack="${p}">${label}</button>`).join(" ")} <span class="dim small">${h.models?.pack === "shapes" ? "" : `(${h.models?.models.size ?? 0} loaded, the rest load when needed)`}</span></div>
+				<div>Art: ${([["blocky", "Blocky"], ["models", "3D models"], ["shapes", "Simple shapes"]] as const).map(([p, label]) => `<button class="mini ${(h.models?.pack ?? "blocky") === p ? "on" : ""}" data-action="art-pack" data-pack="${p}">${label}</button>`).join(" ")} <span class="dim small">${h.models?.pack === "shapes" ? "" : `(${h.models?.models.size ?? 0} loaded, the rest load when needed)`}</span></div>
 			</div>`;
 	}
 

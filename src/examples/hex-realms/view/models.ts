@@ -152,7 +152,8 @@ export class ModelLibrary {
 			stored = null;
 		}
 		const pick = (p: string | null): ArtPack | null => (p === "models" || p === "blocky" || p === "shapes" ? p : null);
-		this.pack = pick(q) ?? pick(stored) ?? (old === "0" ? "shapes" : "models");
+		// The blocky pack unless the player picked another (or turned the models off before there were packs)
+		this.pack = pick(q) ?? pick(stored) ?? (old === "0" ? "shapes" : "blocky");
 	}
 
 	/** The models of the pack in use (the AssetFurnace set when drawing simple shapes, which uses none). */

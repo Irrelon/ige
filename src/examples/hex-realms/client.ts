@@ -7,6 +7,7 @@ import { ige } from "@/engine/instance";
 import { IgeAmbientLight, IgeDirectionalLight } from "@/engine/webgl/IgeWebGlLight";
 import { IgeBehaviourType } from "@/enums";
 import type { IgeCanInit } from "@/types/IgeCanInit";
+import type { TerrainDecor } from "./chunkMesh";
 import { type FogMode, VISIBLE } from "./fog";
 import { HexLayout } from "./hex";
 import { Minimap } from "./minimap";
@@ -281,7 +282,8 @@ export class Client extends IgeBaseClass implements IgeCanInit, HudHost {
 			const t1 = performance.now();
 			this.sim = sim;
 			this.player = 0;
-			this.terrain = new TerrainView({ sim, layout: this.layout, renderer: this.renderer, viewport: this.viewport, layer: this.terrainLayer, style: "tiles", chunkSize: 16, player: 0 });
+			this.models ??= new ModelLibrary();
+			this.terrain = new TerrainView({ sim, layout: this.layout, renderer: this.renderer, viewport: this.viewport, layer: this.terrainLayer, style: "tiles", chunkSize: 16, player: 0, decor: this.decor() });
 			const map = sim.map;
 			const worldW = this.layout.colSpacing * map.width, worldH = this.layout.rowSpacing * map.height;
 			this.cam.bounds = { minX: 0, maxX: worldW, minZ: 0, maxZ: worldH };
@@ -409,9 +411,10 @@ export class Client extends IgeBaseClass implements IgeCanInit, HudHost {
 		if (new URLSearchParams(window.location.search).get("debug") === "1") (window as unknown as { hex: Client }).hex = this;
 		sim.onApplied = (p, cmd) => this.recording?.log.push({ p, cmd: structuredClone(cmd) });
 
+		this.models ??= new ModelLibrary();
 		this.terrain = new TerrainView({
 			sim, layout: this.layout, renderer: this.renderer, viewport: this.viewport, layer: this.terrainLayer,
-			style, chunkSize: Number(new URLSearchParams(window.location.search).get("chunk")) || 16, player
+			style, chunkSize: Number(new URLSearchParams(window.location.search).get("chunk")) || 16, player, decor: this.decor()
 		});
 		this.setupCamera();
 		const t = performance.now();
@@ -1055,10 +1058,16 @@ export class Client extends IgeBaseClass implements IgeCanInit, HudHost {
 		this.setArtPack(on ? "models" : "shapes");
 	}
 
+	/** Trees, mountains and clouds to match the art pack: blocky with the blocky pack, smooth otherwise. */
+	decor (): TerrainDecor {
+		return this.models?.pack === "blocky" ? "blocky" : "smooth";
+	}
+
 	/** Draw the world with another art pack: the 3D models, the blocky pack, or simple shapes. */
 	setArtPack (pack: ArtPack): void {
 		if (!this.models) return;
 		this.models.setPack(pack);
+		this.terrain?.setDecor(this.decor());
 		this.world?.rebuildModels();
 		if (this.life) this.life.dirty = true;
 		this.invalidate();

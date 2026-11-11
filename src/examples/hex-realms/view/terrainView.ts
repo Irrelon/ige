@@ -3,7 +3,7 @@ import type { IgeTexture } from "@/engine/core/IgeTexture";
 import type { IgeViewport } from "@/engine/core/IgeViewport";
 import type { IgeWebGlRenderer } from "@/engine/core/IgeWebGlRenderer";
 import type { IgeGeometryData3d } from "@/types/IgeGeometryData3d";
-import { buildChunk } from "../chunkMesh";
+import { buildChunk, type TerrainDecor } from "../chunkMesh";
 import { UNEXPLORED } from "../fog";
 import type { HexLayout } from "../hex";
 import { MeshBuilder } from "../meshBuilder";
@@ -58,6 +58,8 @@ export interface TerrainViewOptions {
 	style: TerrainStyle;
 	chunkSize: number;
 	player: number;
+	/** Trees, mountains and clouds smooth or blocky (to match the art pack). */
+	decor?: TerrainDecor;
 }
 
 export class TerrainView {
@@ -69,6 +71,7 @@ export class TerrainView {
 	chunkSize: number;
 	player: number;
 	style: TerrainStyle;
+	decor: TerrainDecor;
 
 	/** What the viewing player knows of each tile (UNEXPLORED / FOGGED / VISIBLE). */
 	fogView: Uint8Array;
@@ -96,6 +99,7 @@ export class TerrainView {
 		this.chunkSize = options.chunkSize;
 		this.player = options.player;
 		this.style = options.style;
+		this.decor = options.decor ?? "smooth";
 		this.fogView = new Uint8Array(this.sim.map.count);
 		this.palette = createPaletteTexture("hexRealmsPalette");
 		this.refreshFogView();
@@ -110,6 +114,7 @@ export class TerrainView {
 		if (style === "natural") {
 			if (!this.natural) {
 				this.natural = new NaturalTerrain(this.map, this.layout, this.fogView);
+				this.natural.decor = this.decor;
 				// Interior chunks span the same stretch of the hex grid: parchment repeats with them
 				this.natural.setParchmentPeriod(this.chunkSize * this.layout.colSpacing, this.chunkSize * this.layout.rowSpacing);
 			}
@@ -218,7 +223,7 @@ export class TerrainView {
 		if (this.style === "natural") {
 			return (this.natural as NaturalTerrain).buildLite(chunk.rect, id, this.builder, chunk.textureLayout as NaturalTextureLayout);
 		}
-		return buildChunk(this.map, this.layout, this.builder, chunk.col0, chunk.row0, this.chunkSize, id, detail, this.fogView);
+		return buildChunk(this.map, this.layout, this.builder, chunk.col0, chunk.row0, this.chunkSize, id, detail, this.fogView, this.decor);
 	}
 
 	chunkTilePx (chunk: ChunkRecord): number {
@@ -244,6 +249,15 @@ export class TerrainView {
 		if (style === this.style) return false;
 		this.style = style;
 		this.surface = this.surfaceFor(style);
+		this.queueChunks(this.chunks.map((_, i) => i));
+		return true;
+	}
+
+	/** Switch trees, mountains and clouds between smooth and blocky; chunks rebuild progressively. */
+	setDecor (decor: TerrainDecor): boolean {
+		if (decor === this.decor) return false;
+		this.decor = decor;
+		if (this.natural) this.natural.decor = decor;
 		this.queueChunks(this.chunks.map((_, i) => i));
 		return true;
 	}

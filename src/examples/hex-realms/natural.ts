@@ -1,6 +1,6 @@
 import { IgeTexture } from "@/engine/core/IgeTexture";
 import type { IgeGeometryData3d } from "@/types/IgeGeometryData3d";
-import { addTree, type ColorUv } from "./chunkMesh";
+import { addTree, type ColorUv, type TerrainDecor } from "./chunkMesh";
 import { FOGGED, UNEXPLORED } from "./fog";
 import { EDGE_X, EDGE_Z, type HexLayout, ODD_R_NEIGHBOURS, SQRT3 } from "./hex";
 import type { HexMap } from "./mapGen";
@@ -116,6 +116,9 @@ export class NaturalTerrain implements TerrainSurface {
 	 * always how explored (e) and visible (v) the point is, from 0 to 1.
 	 */
 	protected _s = { r: 0, g: 0, b: 0, br: 0, bg: 0, bb: 0, forest: 0, e: 1, v: 1 };
+
+	/** Trees smooth or blocky (to match the art pack). */
+	decor: TerrainDecor = "smooth";
 
 	constructor (map: HexMap, layout: HexLayout, view: Uint8Array) {
 		this._map = map;
@@ -757,7 +760,7 @@ export class NaturalTerrain implements TerrainSurface {
 					const z = cz + Math.sin(angle) * dist;
 					const raw = this.sample(x, z, false);
 					if (raw < SEA_LEVEL + 1.5) continue;
-					addTree(b, x, this.displayHeight(raw, this._s.e) - 0.8, z, R, 0.7 + rand() * 0.25, feature, rand, uv);
+					addTree(b, x, this.displayHeight(raw, this._s.e) - 0.8, z, R, 0.7 + rand() * 0.25, feature, rand, uv, this.decor);
 				}
 			}
 		}
