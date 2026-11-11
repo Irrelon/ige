@@ -35,6 +35,9 @@ const host = new IgeNetSyncHost<ZonesInput>(sockets.listen("/sync"), {
 		if (!ticket) return "Enter through the directory (POST /enter).";
 		const { player, data } = ticket as IgeZoneTicket;
 		const arrival = (data ?? {}) as Partial<ZonesArrival>;
+		// Reconnecting while their old connection lingers: it's replaced
+		const old = host.machines().find((m) => m.players.includes(player));
+		if (old) host.disconnect(old);
 		dots[player] = {
 			x: Math.max(0, Math.min(ZONE_WIDTH, arrival.x ?? ZONE_WIDTH / 2)),
 			y: Math.max(0, Math.min(ZONE_HEIGHT, arrival.y ?? ZONE_HEIGHT / 2)),

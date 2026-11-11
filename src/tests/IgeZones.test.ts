@@ -231,6 +231,10 @@ describe("the zone directory from a browser", () => {
 			expect((await refused.json()).error).toBe("Log in first.");
 			const other = await fetch(`${base}/enter`, { method: "OPTIONS", headers: { origin: "http://elsewhere.test" } });
 			expect(other.headers.get("access-control-allow-origin")).toBeNull();
+			// A second directory on the same port is told so
+			const clash = new IgeZoneDirectory({ launcher: fake.launcher, secret: SECRET, resolveEntry: () => "No." });
+			await expect(clash.listen(port)).rejects.toThrow(/EADDRINUSE/);
+			await clash.close();
 		} finally {
 			await dir.close();
 		}
@@ -275,6 +279,9 @@ describe("moving between zones", () => {
 				const t = ticket as IgeZoneTicket | undefined;
 				const who = t ? t.player : (players[0] as { name: string }).name;
 				const id = `${name}:${who}`;
+				// Reconnecting while the old connection lingers: it's replaced
+				const old = host.machines().find((m) => m.players.includes(id));
+				if (old) host.disconnect(old);
 				dots[id] = { x: (t?.data as { x?: number } | undefined)?.x ?? 0, who, zone: name };
 				return [id];
 			},
@@ -349,16 +356,25 @@ describe("moving between zones", () => {
 		thief.destroy();
 	});
 
-	it("a fresh connection to the zone you're already in (a reconnect) joins on a ticket too", async () => {
+	it("a fresh connection to the zone you're already in (a reconnect) joins on a ticket, replacing the old one", async () => {
 		const a = zone("a");
 		const first = new IgeNetSyncClient<Input>(a.net.connect(), { pingInterval: 0 });
 		await first.join([{ name: "ann" }]);
-		first.destroy();
-		await run([a.host], 40);
+		let dropped = false;
+		first.on("disconnected", () => {
+			dropped = true;
+		});
+		// Her old connection is still open (a dead network nobody's noticed yet) as she comes back
 		const again = new IgeNetSyncClient<Input>(a.net.connect(), { pingInterval: 0 });
 		const welcome = await again.join([], signTicket({ player: "ann", zone: "a", data: { x: 42 } }, SECRET));
 		expect(welcome.players).toEqual(["a:ann"]);
 		expect(a.dots["a:ann"].x).toBe(42);
+		// The old one's replaced: it left once (before she joined again), and it's gone
+		await until(() => dropped);
+		expect(a.left.length).toBe(1);
+		expect(a.host.machines().length).toBe(1);
+		expect(a.dots["a:ann"].x).toBe(42);
+		first.destroy();
 		// Without acceptTicket, a host refuses tickets
 		const net = igeNetLoopback();
 		new IgeNetSyncHost(net.listener, { join: () => ["x"], step: () => undefined, snapshot: () => ({}) });

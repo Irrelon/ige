@@ -10,7 +10,7 @@ import type { IgeNetWelcome } from "@/engine/network/sync/igeNetSyncProtocol";
 import { igeNetWebSocketConnect } from "@/engine/network/sync/igeNetWebSocket";
 import type { ZonesInfo, ZonesInput, ZonesTransferEvent } from "../shared";
 
-const directoryUrl = process.argv[2] ?? "http://127.0.0.1:8690";
+const directoryUrl = process.argv[2] ?? "http://127.0.0.1:8810";
 const name = `probe-${process.pid}`;
 
 async function main (): Promise<void> {

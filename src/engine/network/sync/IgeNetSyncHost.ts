@@ -161,11 +161,30 @@ export class IgeNetSyncHost<Input = unknown> extends IgeEventingClass {
 		});
 		connection.onClose(() => {
 			if (!state) return;
-			this._machines.delete(state.machine.id);
-			this._options.leave?.(state.machine);
-			this.emit("leave", state.machine);
+			// Unless disconnect() has already seen it out
+			if (this._machines.get(state.machine.id) === state) this._drop(state);
 			state = undefined;
 		});
+	}
+
+	/**
+	 * Disconnects one machine: its players leave at once (the leave hook
+	 * runs before this returns), then its connection closes. A player
+	 * reconnecting on a fresh connection while the old one lingers (a
+	 * dropped network nobody's noticed yet) replaces it this way: call it
+	 * from join for the machine that still has them.
+	 */
+	disconnect (machine: IgeNetMachine | string): void {
+		const state = this._machines.get(typeof machine === "string" ? machine : machine.id);
+		if (!state) return;
+		this._drop(state);
+		state.connection.close();
+	}
+
+	_drop (state: MachineState<Input>): void {
+		this._machines.delete(state.machine.id);
+		this._options.leave?.(state.machine);
+		this.emit("leave", state.machine);
 	}
 
 	/** A machine joining (with player descriptions, or a ticket): its state once it's in. */

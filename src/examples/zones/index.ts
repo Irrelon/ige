@@ -2,7 +2,7 @@
  * The zones example's page: enters through the directory, joins its zone
  * with the ticket, and follows the zone servers' handoffs with
  * IgeNetSyncClient.transfer. ?directory=<url> points it at another directory
- * (default http://localhost:8690), ?name=<name> picks the player's name.
+ * (default http://localhost:8810), ?name=<name> picks the player's name.
  */
 import { IgeNetSyncClient } from "@/engine/network/sync/IgeNetSyncClient";
 import type { IgeNetWelcome } from "@/engine/network/sync/igeNetSyncProtocol";
@@ -10,7 +10,7 @@ import { igeNetWebSocketConnect } from "@/engine/network/sync/igeNetWebSocket";
 import { moveDot, ZONE_HEIGHT, ZONE_WIDTH, type ZonesDot, type ZonesInfo, type ZonesInput, type ZonesTransferEvent } from "./shared";
 
 const params = new URLSearchParams(location.search);
-const directoryUrl = params.get("directory") ?? "http://localhost:8690";
+const directoryUrl = params.get("directory") ?? "http://localhost:8810";
 const name = params.get("name") ?? `pilot-${Math.random().toString(36).slice(2, 6)}`;
 
 const canvas = document.getElementById("view") as HTMLCanvasElement;

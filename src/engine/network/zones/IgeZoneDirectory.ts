@@ -242,13 +242,18 @@ export class IgeZoneDirectory extends IgeEventingClass {
 				res.writeHead(status, JSON_HEADERS).end(JSON.stringify({ error: error instanceof Error ? error.message : String(error) }));
 			});
 		});
-		this._timer = setInterval(() => void this.check(), 1000);
-		return new Promise((resolve) => server.listen(port, host, () => {
-			const address = server.address();
-			const actual = typeof address === "object" && address ? address.port : port;
-			this._url = `http://${host}:${actual}`;
-			resolve(actual);
-		}));
+		return new Promise((resolve, reject) => {
+			// The port's taken, say
+			server.once("error", reject);
+			server.listen(port, host, () => {
+				server.off("error", reject);
+				const address = server.address();
+				const actual = typeof address === "object" && address ? address.port : port;
+				this._url = `http://${host}:${actual}`;
+				this._timer = setInterval(() => void this.check(), 1000);
+				resolve(actual);
+			});
+		});
 	}
 
 	/** Stops listening and stops every zone. */
