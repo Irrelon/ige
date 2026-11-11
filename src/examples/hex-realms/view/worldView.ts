@@ -11,6 +11,8 @@ import type { Sim } from "../sim/sim";
 import type { BuildingState, CityState, SimEvent, UnitState } from "../sim/types";
 import { buildBorderGeometry, createDisc, createHexRing, createRing, CUBE, ORB, PYRAMID } from "../shapes";
 import { mulberry32 } from "../noise";
+import { type DepositLook, depositVox } from "./blocky/deposits";
+import { separatedBoxes } from "./blocky/mesh";
 import type { ModelLibrary } from "./models";
 import type { TerrainView } from "./terrainView";
 
@@ -114,6 +116,16 @@ const STONE: Rgb = { r: 0.86, g: 0.82, b: 0.74 };
 const ROOF: Rgb = { r: 0.72, g: 0.36, b: 0.24 };
 const NEUTRAL: Rgb = { r: 0.62, g: 0.6, b: 0.56 };
 const WOOD: Rgb = { r: 0.5, g: 0.34, b: 0.2 };
+
+/** The blocky pack's scene for each deposit. */
+const DEPOSIT_VOX: Record<Exclude<Deposit, Deposit.None>, DepositLook> = {
+	[Deposit.Fish]: "fish",
+	[Deposit.Game]: "game",
+	[Deposit.Ore]: "ore",
+	[Deposit.Coal]: "coal",
+	[Deposit.Gold]: "gold",
+	[Deposit.Horses]: "horses"
+};
 
 /** Little piles marking resource deposits: [colour, shape] per deposit. */
 const DEPOSIT_LOOK: Record<Exclude<Deposit, Deposit.None>, { color: Rgb; shape: "rocks" | "fish" | "game" | "horses" }> = {
@@ -635,6 +647,9 @@ export class WorldView {
 
 	/** Models were turned on or off: rebuild everything that can use one. */
 	rebuildModels (): void {
+		// Deposits are drawn differently in the blocky pack
+		this.shownDeposits.clear();
+		this.depositsDirty = true;
 		for (const v of [...this.units.values()]) if (v.removeAt < 0) this.rebuildUnit(v);
 		for (const c of this.sim.state.cities) this.buildCity(c);
 		for (const b of this.sim.state.buildings) this.buildBuilding(b);
@@ -1231,13 +1246,30 @@ export class WorldView {
 			paint(from, c);
 		};
 
+		const blocky = this.models?.pack === "blocky";
+		// A blocky scene, its boxes nudged apart where faces would flicker
+		const scene = (look: DepositLook, x: number, y: number, z: number, s: number) => {
+			const vox = depositVox(look);
+			const corners = separatedBoxes(vox.boxes);
+			vox.boxes.forEach((bx, i) => {
+				const [lo, hi] = corners[i];
+				const c = { r: ((bx.c >> 16) & 255) / 255, g: ((bx.c >> 8) & 255) / 255, b: (bx.c & 255) / 255 };
+				box(x + ((lo[0] + hi[0]) / 2) * s, y + lo[1] * s, z + ((lo[2] + hi[2]) / 2) * s, (hi[0] - lo[0]) * s, (hi[1] - lo[1]) * s, (hi[2] - lo[2]) * s, 0, c);
+			});
+		};
+
 		for (const t of tiles) {
-			const look = DEPOSIT_LOOK[sim.map.deposit[t] as Exclude<Deposit, Deposit.None>];
+			const deposit = sim.map.deposit[t] as Exclude<Deposit, Deposit.None>;
+			const look = DEPOSIT_LOOK[deposit];
 			if (!look) continue;
 			// Off to one side of the tile so units and buildings stay clear
 			const x = this.tileX(t) + R * 0.38, z = this.tileZ(t) - R * 0.3;
 			const ground = natural ? Math.max(this.groundAt(x, z), this.surface.tileHeight(t)) : this.surface.tileHeight(t);
 			const y = ground + (natural ? 0.5 : 0);
+			if (blocky) {
+				scene(DEPOSIT_VOX[deposit], x, y, z, 1.75);
+				continue;
+			}
 			const c = look.color;
 			const dark = { r: c.r * 0.7, g: c.g * 0.7, b: c.b * 0.7 };
 			switch (look.shape) {

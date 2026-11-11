@@ -1,4 +1,5 @@
 import { CHARACTERS, RIDERS } from "./characters";
+import { type DepositLook, depositVox } from "./deposits";
 import { BLOCKY_IDS, blockyModel } from "./index";
 import { type Box, separatedBoxes } from "./mesh";
 import { PROPS } from "./props";
@@ -59,5 +60,17 @@ describe("blocky art pack", () => {
 			}
 		}
 		expect(clashes.slice(0, 10)).toEqual([]);
+	});
+
+	test("every deposit scene builds and sits on its tile", () => {
+		for (const look of ["ore", "coal", "gold", "fish", "game", "horses"] as DepositLook[]) {
+			const v = depositVox(look);
+			expect(v.boxes.length).toBeGreaterThan(5);
+			const minY = Math.min(...v.boxes.map((b) => b.y));
+			const width = Math.max(...v.boxes.map((b) => b.x + b.w)) - Math.min(...v.boxes.map((b) => b.x));
+			// Fish swim a little below the surface; everything else stands on it
+			expect(minY).toBeGreaterThanOrEqual(look === "fish" ? -1 : 0);
+			expect(width).toBeLessThan(16);
+		}
 	});
 });
