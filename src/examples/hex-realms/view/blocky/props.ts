@@ -1,3 +1,4 @@
+import { speckled } from "./deposits";
 import { Vox } from "./mesh";
 import { barrel, battlements, C, chimney, cottage, crate, door, fence, flatRoof, flower, gable, pine, pyramid, shade, tree, walls, windowX, windowZ } from "./parts";
 
@@ -80,6 +81,18 @@ function wheel (v: Vox, x: number, y: number, z: number, r = 2.2, c = C.plankDar
 	v.cbox(x, y - r, z, 0.8, r * 2, r * 1.2, c).cbox(x, y - r * 0.6, z, 0.8, r * 1.2, r * 2, c).cbox(x, y - 0.5, z, 1, 1, 1, C.steel);
 }
 
+/** A block of quarried stone: courses of blocks in two shades, the joints staggered. */
+function cutStone (v: Vox, cx: number, y: number, cz: number, w: number, h: number, d: number): void {
+	const rows = Math.max(1, Math.round(h / 1.5));
+	const rh = h / rows;
+	for (let r = 0; r < rows; r++) {
+		const c = r % 2 ? C.stone : shade(C.stone, 0.9);
+		v.cbox(cx, y + r * rh, cz, w, rh, d, c);
+		// Joints on the front face, staggered course by course
+		for (let x = -w / 2 + (r % 2 ? 2 : 3.5); x < w / 2 - 0.5; x += 3.2) v.cbox(cx + x, y + r * rh + 0.1, cz + d / 2 + 0.05, 0.25, rh - 0.2, 0.1, C.stoneDark);
+	}
+}
+
 function dome (v: Vox, cx: number, y: number, cz: number, w: number, c: number): number {
 	let s = w, i = 0;
 	while (s > 1) {
@@ -111,34 +124,43 @@ const buildings: Record<string, Builder> = {
 	},
 	quarry: () => {
 		const v = new Vox(102);
-		// A cut cliff of stone terraces at the back
+		// A cut cliff of stone terraces at the back, in courses of blocks, turf on the top
 		for (const [x, z, w, d, h] of [[-4, -7, 16, 8, 9], [5, -6, 10, 10, 6], [-7, 1, 8, 8, 4], [2, 2, 8, 6, 2]] as const) {
-			v.cbox(x, 0.5, z, w, h, d, C.stone);
-			v.cbox(x, h + 0.5, z, w - 0.6, 0.4, d - 0.6, shade(C.stone, 1.06));
-			v.cbox(x - w / 2 + 1, 0.5, z + d / 2 - 0.3, 1.2, h, 0.6, C.stoneDark);
+			cutStone(v, x, 0.5, z, w, h, d);
+			if (h > 5) v.cbox(x, h + 0.5, z, w - 0.6, 0.8, d - 0.6, C.grass).cbox(x - w / 4, h + 1.3, z - d / 4, 2, 0.6, 2, C.grassDark);
 		}
 		// Cut blocks, a cart, a crane
-		crate(v, 7, 0.5, 7, 3, C.stone);
-		crate(v, 9.5, 0.5, 6.5, 2.6, shade(C.stone, 1.05));
-		crate(v, 7.5, 3.5, 7, 2.4, shade(C.stone, 0.95));
+		crate(v, 7, 0.5, 7, 3, C.cobble);
+		crate(v, 9.5, 0.5, 6.5, 2.6, shade(C.cobble, 1.08));
+		crate(v, 7.5, 3.5, 7, 2.4, shade(C.cobble, 0.94));
 		v.cbox(-1, 0.5, 8.5, 5, 1.5, 3, C.plankDark).cbox(-1, 2, 8.5, 5.4, 1.6, 3.4, C.plank).cbox(-1, 3.6, 8.5, 3.5, 1, 2.4, C.stoneDark);
 		wheel(v, -3.2, 1.6, 8.5, 1.2);
 		wheel(v, 1.2, 1.6, 8.5, 1.2);
-		v.cbox(-9, 0.5, 7, 1, 12, 1, C.plank).box(-9, 12, 6.5, 8, 1, 1, C.plank).cbox(-2, 6, 7, 0.3, 6, 0.3, C.dark).cbox(-2, 4.6, 7, 2, 1.4, 2, C.stone);
+		v.cbox(-9, 0.5, 7, 1, 12, 1, C.plank).box(-9, 12, 6.5, 8, 1, 1, C.plank).cbox(-2, 6, 7, 0.3, 6, 0.3, C.dark).cbox(-2, 4.6, 7, 2, 1.4, 2, C.cobble);
+		// A pick left by the blocks
+		v.cbox(4, 0.5, 9.5, 0.5, 0.5, 3.5, C.plank).cbox(4, 0.5, 11.2, 2.6, 0.5, 0.5, C.steel);
 		return v;
 	},
 	mine: () => {
 		const v = new Vox(103);
-		// A rocky hill with a timbered entrance
-		for (const [x, z, w, d, h, c] of [[0, -4, 20, 14, 10, C.stoneDark], [-2, -5, 14, 10, 14, C.stone], [3, -6, 8, 6, 17, C.stoneDark], [-6, 0, 8, 8, 6, C.stone]] as const) v.cbox(x, 0.5, z, w, h, d, c);
-		v.cbox(0, 0.5, 3.2, 5, 6, 0.4, 0x1e1a1a);
-		v.cbox(-2.9, 0.5, 3.4, 1, 7, 1, C.log).cbox(2.9, 0.5, 3.4, 1, 7, 1, C.log).cbox(0, 7, 3.4, 7, 1.2, 1.2, C.log);
+		// A rocky hill flecked with ore, grass on its shoulders, and a timbered entrance
+		const ore = 0xd0743c;
+		speckled(v, 0, 0.5, -4, 20, 10, 14, C.stoneDark, ore);
+		speckled(v, -2, 10.5, -5, 14, 4, 10, C.stone, C.gold);
+		speckled(v, 3, 14.5, -6, 8, 3, 6, C.stoneDark, ore);
+		speckled(v, -6, 0.5, 0, 8, 6, 8, C.stone, ore);
+		v.cbox(-6, 6.5, 0, 7.6, 0.7, 7.6, C.grass).cbox(7, 10.5, -1.5, 5.6, 0.7, 4.6, C.grass).cbox(-6.5, 14.5, -8, 4.4, 0.6, 3.6, C.grass);
+		// The entrance: a dark mouth framed in timber
+		v.cbox(0, 0.5, 3.2, 5.4, 6.4, 0.4, 0x1e1a1a);
+		v.cbox(-3.1, 0.5, 3.4, 1.2, 7.4, 1.2, C.log).cbox(3.1, 0.5, 3.4, 1.2, 7.4, 1.2, C.log).cbox(0, 7.4, 3.4, 7.6, 1.3, 1.4, C.log);
+		v.cbox(0, 8.7, 3.6, 4, 1.6, 0.4, C.plank).cbox(-0.8, 9.1, 3.85, 0.8, 0.8, 0.2, C.dark).cbox(0.8, 9.1, 3.85, 0.8, 0.8, 0.2, C.dark);
 		// Rails and an ore cart
 		for (let z = 3.5; z < 12; z += 1.6) v.cbox(0, 0.5, z, 4, 0.3, 0.6, C.plankDark);
 		v.cbox(-1.2, 0.8, 7.5, 0.4, 0.3, 9, C.steel).cbox(1.2, 0.8, 7.5, 0.4, 0.3, 9, C.steel);
-		v.cbox(0, 1.3, 9, 4, 2.4, 3.6, C.steel).cbox(0, 3.5, 9, 3.4, 0.8, 3, 0xd0743c).cbox(-0.8, 4.2, 9.3, 1, 0.8, 1, C.gold).cbox(0.9, 4.1, 8.5, 0.9, 0.7, 0.9, 0xd0743c);
-		lantern(v, 4.5, 4.5, 4);
-		v.cbox(-6, 6.5, 0, 1, 1, 1, C.gold).cbox(5, 10.5, -3, 1, 1, 1, 0xd0743c);
+		v.cbox(0, 1.3, 9, 4, 2.4, 3.6, C.steel).cbox(0, 3.5, 9, 3.4, 0.8, 3, ore).cbox(-0.8, 4.2, 9.3, 1, 0.8, 1, C.gold).cbox(0.9, 4.1, 8.5, 0.9, 0.7, 0.9, ore);
+		lantern(v, 4.8, 4.8, 4);
+		// Ore heaped by the mouth
+		v.cbox(-6, 0.5, 6.5, 3, 1.4, 3, ore).cbox(-5.6, 1.9, 6.8, 1.6, 0.8, 1.6, shade(ore, 1.1)).cbox(-8, 0.5, 8, 1.4, 1, 1.4, C.gold);
 		return v;
 	},
 	farm: () => {

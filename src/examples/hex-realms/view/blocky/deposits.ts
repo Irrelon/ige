@@ -11,7 +11,7 @@ import { C, shade } from "./parts";
 export type DepositLook = "ore" | "coal" | "gold" | "fish" | "game" | "horses";
 
 /** A stone block with flecks of ore on its front, sides and top. */
-function speckled (v: Vox, cx: number, y: number, cz: number, w: number, h: number, d: number, stone: number, fleck: number): void {
+export function speckled (v: Vox, cx: number, y: number, cz: number, w: number, h: number, d: number, stone: number, fleck: number): void {
 	v.cbox(cx, y, cz, w, h, d, stone);
 	const out = 0.3;
 	// Front and back: loose clusters of flecks, some wide, some tall, like ore in rock
