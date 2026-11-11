@@ -28,9 +28,18 @@ export interface IgeNetSyncHostOptions<Input> {
 	 * A machine wants to join with these players (game-defined descriptions:
 	 * names, looks...). Return the id the game gives each one, in the same
 	 * order (they become the ids in snapshots and step inputs), or an error
-	 * message to turn the machine away.
+	 * message to turn the machine away. A machine arriving from another zone
+	 * (IgeNetSyncClient.transfer) brings a ticket instead of descriptions:
+	 * `ticket` is what `acceptTicket` made of it (who they are, where they
+	 * arrive).
 	 */
-	join: (machine: IgeNetMachine, players: unknown[]) => string[] | string;
+	join: (machine: IgeNetMachine, players: unknown[], ticket?: unknown) => string[] | string;
+	/**
+	 * Checks a ticket a machine joins with (a zone server: IgeZoneHost's
+	 * acceptTicket): whatever it carries, or a string to turn the machine
+	 * away. Without it, joins with a ticket are refused.
+	 */
+	acceptTicket?: (token: string, machine: IgeNetMachine) => unknown;
 	/** A machine left or disconnected: remove its players. */
 	leave?: (machine: IgeNetMachine) => void;
 	/**
@@ -123,23 +132,7 @@ export class IgeNetSyncHost<Input = unknown> extends IgeEventingClass {
 			const message = data as IgeNetClientMessage;
 			if (!message || typeof message !== "object") return;
 			if (message.t === "join") {
-				if (state) return;
-				const machine: IgeNetMachine = { id: `m${nextMachine++}`, players: [], rtt: 0, data: {} };
-				const result = this._options.join(machine, Array.isArray(message.players) ? message.players : []);
-				if (typeof result === "string") {
-					this._send(connection, { t: "error", error: result, ref: message.ref });
-					return;
-				}
-				machine.players = result;
-				state = {
-					machine, connection, queue: [], received: 0, applied: 0, current: [], sent: new Map(), acked: 0
-				};
-				this._machines.set(machine.id, state);
-				this._send(connection, {
-					t: "welcome", ref: message.ref, machine: machine.id, players: machine.players,
-					tick: this.tick, tickRate: this.tickRate, info: this._options.info?.(machine)
-				});
-				this.emit("join", machine);
+				if (!state) state = this._join(connection, message);
 				return;
 			}
 			if (!state) return;
@@ -173,6 +166,37 @@ export class IgeNetSyncHost<Input = unknown> extends IgeEventingClass {
 			this.emit("leave", state.machine);
 			state = undefined;
 		});
+	}
+
+	/** A machine joining (with player descriptions, or a ticket): its state once it's in. */
+	_join (connection: IgeNetConnection, message: Extract<IgeNetClientMessage, { t: "join" }>): MachineState<Input> | undefined {
+		const machine: IgeNetMachine = { id: `m${nextMachine++}`, players: [], rtt: 0, data: {} };
+		// Arriving from another zone (or reconnecting): the ticket says who
+		let ticket: unknown;
+		if (typeof message.ticket === "string") {
+			ticket = this._options.acceptTicket ? this._options.acceptTicket(message.ticket, machine) : "Tickets aren't taken here.";
+			if (typeof ticket === "string" || ticket === undefined) {
+				this._send(connection, { t: "error", error: typeof ticket === "string" ? ticket : "That ticket won't do.", ref: message.ref });
+				return;
+			}
+			machine.data.ticket = ticket;
+		}
+		const result = this._options.join(machine, Array.isArray(message.players) ? message.players : [], ticket);
+		if (typeof result === "string") {
+			this._send(connection, { t: "error", error: result, ref: message.ref });
+			return;
+		}
+		machine.players = result;
+		const state: MachineState<Input> = {
+			machine, connection, queue: [], received: 0, applied: 0, current: [], sent: new Map(), acked: 0
+		};
+		this._machines.set(machine.id, state);
+		this._send(connection, {
+			t: "welcome", ref: message.ref, machine: machine.id, players: machine.players,
+			tick: this.tick, tickRate: this.tickRate, info: this._options.info?.(machine)
+		});
+		this.emit("join", machine);
+		return state;
 	}
 
 	/** Send a reliable event to every machine, or to one. */

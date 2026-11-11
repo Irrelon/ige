@@ -22,7 +22,8 @@ export interface IgeNetInputFrame<Input = unknown> {
 }
 
 export type IgeNetClientMessage =
-	| { t: "join"; ref: number; players: unknown[] }
+	/** Join with these players, or (arriving from another zone, IgeNetSyncClient.transfer) with a ticket the host checks instead. */
+	| { t: "join"; ref: number; players: unknown[]; ticket?: string }
 	/** The latest input frames (a few repeated, as these may be lost) and the newest snapshot the machine has. */
 	| { t: "input"; frames: IgeNetInputFrame[]; snap: number }
 	| { t: "ping"; time: number }

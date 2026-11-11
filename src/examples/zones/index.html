@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+	<title>Zone servers - Isogenic Engine</title>
+	<script src="./index.bundle.js" type="module"></script>
+	<style>
+		body {
+			margin: 0;
+			padding: 0;
+			background: #0b0e14;
+			color: #ccc;
+			font-family: monospace;
+			overflow: hidden;
+		}
+		canvas {
+			display: block;
+			width: 100vw;
+			height: 100vh;
+		}
+		#info {
+			position: absolute;
+			top: 8px;
+			left: 8px;
+			background: rgba(0, 0, 0, 0.7);
+			padding: 8px 12px;
+			border-radius: 4px;
+			line-height: 1.5;
+		}
+	</style>
+</head>
+<body>
+	<canvas id="view"></canvas>
+	<div id="info">
+		<b>Zone servers</b><br />
+		Two zones, each its own server process. Fly off an edge and you're handed on to the next.<br />
+		Arrow keys, WASD or a pad's left stick. Start the directory first (src/examples/zones/server/directory.ts).<br />
+		<span id="status">Connecting...</span>
+	</div>
+</body>
+</html>

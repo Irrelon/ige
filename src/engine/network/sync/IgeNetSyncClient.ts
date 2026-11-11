@@ -37,6 +37,12 @@ export interface IgeNetSyncClientOptions {
 	 * authority's.
 	 */
 	timeout?: number;
+	/**
+	 * How transfer() connects to another zone's url (default: a WebSocket,
+	 * igeNetWebSocketConnect). Tests and in-page games pass their own
+	 * (igeNetLoopback's connect, by url).
+	 */
+	connect?: (url: string) => IgeNetConnection | Promise<IgeNetConnection>;
 }
 
 /** A full snapshot as the client rebuilt it. */
@@ -64,8 +70,14 @@ const RESYNC_MS = 500;
  *   with the inputs the authority hasn't applied yet replayed on top (using
  *   the game's own movement code), so the player responds at once.
  *
+ * Zone servers (engine/network/zones): transfer({ url, ticket }) moves the
+ * machine to another authority (the next star system's server) during
+ * the game's own transition: the old connection closes, the new one is
+ * joined with the ticket, and the world starts afresh from its snapshots.
+ *
  * Events: "welcome", "snapshot" (IgeNetSnapshot), "event" (data, tick),
- * "error" (message), "disconnected".
+ * "error" (message), "disconnected", "transfer" ({ url }),
+ * "transferred" (IgeNetWelcome), "transferFailed" (Error).
  * @example #Join with two local players and draw the world
  *     const client = new IgeNetSyncClient(connection, { blend: { facing: "angle" } });
  *     const welcome = await client.join([{ name: "Ann" }, { name: "Bob" }]);
@@ -103,14 +115,28 @@ export class IgeNetSyncClient<Input = unknown> extends IgeEventingClass {
 	_ref: number = 0;
 	_joining?: { ref: number; resolve: (w: IgeNetWelcome) => void; reject: (e: Error) => void };
 	_pingTimer?: ReturnType<typeof setInterval>;
+	/** Which connection is current (messages and closes from an earlier one, before a transfer, are ignored). */
+	_generation = 0;
+	/** A transfer to another zone under way. */
+	transferring = false;
 
 	constructor (connection: IgeNetConnection, options: IgeNetSyncClientOptions = {}) {
 		super();
 		this._connection = connection;
 		this._options = options;
 		this._now = options.now ?? (() => (typeof performance !== "undefined" ? performance.now() : Date.now()));
-		connection.onMessage((data) => this._onMessage(data as IgeNetServerMessage));
+		this._attach(connection);
+	}
+
+	/** Listens to a connection (the first, or the one a transfer made), ignoring it once it's been replaced. */
+	_attach (connection: IgeNetConnection): void {
+		const generation = ++this._generation;
+		this._connection = connection;
+		connection.onMessage((data) => {
+			if (generation === this._generation) this._onMessage(data as IgeNetServerMessage);
+		});
 		connection.onClose(() => {
+			if (generation !== this._generation) return;
 			this._stopPing();
 			this._joining?.reject(new Error("Disconnected"));
 			this._joining = undefined;
@@ -118,12 +144,66 @@ export class IgeNetSyncClient<Input = unknown> extends IgeEventingClass {
 		});
 	}
 
-	/** Join the game with this machine's local players (game-defined descriptions). */
-	join (players: unknown[]): Promise<IgeNetWelcome> {
+	/**
+	 * Moves to another zone's authority: leaves this one, connects to `url`
+	 * (with the `connect` option, else a WebSocket) and joins with the
+	 * ticket instead of player descriptions. The world starts afresh from
+	 * the new authority's snapshots (its clock, interpolation and prediction
+	 * too; inputs not yet applied are dropped), and the machine's players
+	 * keep their slots (the new authority gives their ids in its welcome).
+	 * Show a transition (a jump, a loading screen) from "transfer" until
+	 * the first "snapshot" after "transferred".
+	 */
+	async transfer (target: { url: string; ticket: string }): Promise<IgeNetWelcome> {
+		this.transferring = true;
+		this.emit("transfer", { url: target.url });
+		const old = this._connection;
+		this._stopPing();
+		this._joining?.reject(new Error("Transferred"));
+		this._joining = undefined;
+		// Whatever the old connection says now isn't ours to hear (its close least of all)
+		this._generation++;
+		try {
+			old.send({ t: "leave" } satisfies IgeNetClientMessage);
+			old.close();
+		} catch {
+			// Gone already
+		}
+		this._snapshots = [];
+		this._pending = [];
+		this._ticks.clear();
+		this._offset = undefined;
+		this._lastHeard = this._now();
+		this._unanswered = 0;
+		try {
+			const connect = this._options.connect ?? (async (url: string) => (await import("@/engine/network/sync/igeNetWebSocket")).igeNetWebSocketConnect(url));
+			this._attach(await connect(target.url));
+			const ref = ++this._ref;
+			const welcome = await new Promise<IgeNetWelcome>((resolve, reject) => {
+				this._joining = { ref, resolve, reject };
+				this._send({ t: "join", ref, players: [], ticket: target.ticket });
+			});
+			this.transferring = false;
+			this.emit("transferred", welcome);
+			return welcome;
+		} catch (error) {
+			this.transferring = false;
+			this.emit("transferFailed", error);
+			throw error;
+		}
+	}
+
+	/**
+	 * Join the game with this machine's local players (game-defined
+	 * descriptions). With a zone ticket (from a zone directory's /enter: a
+	 * player entering, or reconnecting to the zone they're already in), the
+	 * authority lets them in on the ticket.
+	 */
+	join (players: unknown[], ticket?: string): Promise<IgeNetWelcome> {
 		const ref = ++this._ref;
 		return new Promise((resolve, reject) => {
 			this._joining = { ref, resolve, reject };
-			this._send({ t: "join", ref, players });
+			this._send(ticket === undefined ? { t: "join", ref, players } : { t: "join", ref, players, ticket });
 		});
 	}
 
