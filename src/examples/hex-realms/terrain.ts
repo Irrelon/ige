@@ -1,3 +1,4 @@
+import { EDGE_X, EDGE_Z } from "./hex";
 import type { PaletteKey } from "./palette";
 
 export enum Terrain {
@@ -101,6 +102,29 @@ export function hillSlope (dist: number, R: number): number {
 	const crown = R * HILL_CROWN, foot = R * HILL_FOOT;
 	if (dist <= crown || dist >= foot) return 0;
 	return -HILL_RISE * 0.5 * (Math.PI / (foot - crown)) * Math.sin((Math.PI * (dist - crown)) / (foot - crown));
+}
+
+/**
+ * Blocky hills (the blocky art pack): three hexagonal terraces lined up
+ * with the tile, each a third of HILL_RISE, by the corner radius of each
+ * (a fraction of the tile radius), lowest first. The top terrace is the
+ * crown units and cities stand on.
+ */
+export const HILL_TIERS = [0.7, 0.5, 0.3];
+
+/** How far a point is from a tile's centre, as the corner radius of the tile-aligned hexagon through it. */
+export function hexReach (dx: number, dz: number): number {
+	let m = 0;
+	for (let k = 0; k < 6; k++) m = Math.max(m, dx * EDGE_X[k] + dz * EDGE_Z[k]);
+	return m / Math.cos(Math.PI / 6);
+}
+
+/** How far a blocky hill's ground rises at (dx, dz) from its centre: whole terraces. */
+export function hillStepRise (dx: number, dz: number, R: number): number {
+	const reach = hexReach(dx, dz) / R;
+	let steps = 0;
+	for (const tier of HILL_TIERS) if (reach <= tier) steps++;
+	return (steps * HILL_RISE) / HILL_TIERS.length;
 }
 
 /** Bottom of the map slab; map-edge walls drop to here. */

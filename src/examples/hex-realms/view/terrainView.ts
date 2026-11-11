@@ -120,7 +120,9 @@ export class TerrainView {
 			}
 			return this.natural;
 		}
-		return (this.tileSurface ??= new TileSurface(this.map, this.layout, this.fogView));
+		this.tileSurface ??= new TileSurface(this.map, this.layout, this.fogView);
+		this.tileSurface.blockyHills = this.decor === "blocky";
+		return this.tileSurface;
 	}
 
 	unexploredLook (): "cloud" | "parchment" {
@@ -258,6 +260,7 @@ export class TerrainView {
 		if (decor === this.decor) return false;
 		this.decor = decor;
 		if (this.natural) this.natural.decor = decor;
+		if (this.tileSurface) this.tileSurface.blockyHills = decor === "blocky";
 		this.queueChunks(this.chunks.map((_, i) => i));
 		return true;
 	}

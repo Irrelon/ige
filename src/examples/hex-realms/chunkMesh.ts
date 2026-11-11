@@ -6,7 +6,7 @@ import type { HexMap } from "./mapGen";
 import type { MeshBuilder } from "./meshBuilder";
 import { mulberry32, SimplexNoise2d } from "./noise";
 import { forestedKey, type PaletteKey, paletteU, paletteV } from "./palette";
-import { Feature, FLOOR_HEIGHT, hillRise, HILL_RISE, hillSlope, LAND_BEVEL, Relief, Terrain, TERRAIN_INFO, WATER_BEVEL } from "./terrain";
+import { Feature, FLOOR_HEIGHT, hillRise, HILL_RISE, hillSlope, hillStepRise, HILL_TIERS, LAND_BEVEL, Relief, Terrain, TERRAIN_INFO, WATER_BEVEL } from "./terrain";
 
 /**
  * Builds the terrain mesh for one rectangular chunk of the map. Everything
@@ -362,12 +362,13 @@ function addTile (map: HexMap, layout: HexLayout, b: MeshBuilder, t: number, col
 	const [tr, tg, tb] = tileTint(map, t);
 	b.tint(tr, tg, tb);
 	const hill = relief === Relief.Hills;
-	const verts = hill
+	const verts = hill && decor !== "blocky"
 		? addHillTop(b, cx, cz, R, top, rim, paletteU(shade), paletteU(shade * LAND_RIM_SHADE), paletteV(topKey, fogged), [tr, tg, tb])
 		: addBevelledTop(
 			b, cx, cz, R, top, rim, water ? WATER_INNER : LAND_INNER,
 			paletteU(shade), paletteU(shade * (water ? WATER_RIM_SHADE : LAND_RIM_SHADE)), paletteV(topKey, fogged)
 		);
+	if (hill && decor === "blocky") addHillTerraces(b, cx, cz, R, top, paletteV(topKey, fogged), paletteV(info.wall, fogged), shade);
 	b.tint(1);
 	if (water && terrain !== Terrain.Ice) {
 		// Shallows and surf: water lightens toward land, and the rim along a shore is foam
@@ -595,6 +596,37 @@ function addHillTop (
 	return { inner: edge, outer: o0 };
 }
 
+/**
+ * A blocky hill: stacked hexagonal terraces lined up with the tile, each
+ * with a turf top and a turf lip over earth sides, like grass blocks.
+ */
+function addHillTerraces (b: MeshBuilder, cx: number, cz: number, R: number, top: number, turfV: number, earthV: number, shade: number): void {
+	const step = HILL_RISE / HILL_TIERS.length;
+	const lip = step * 0.32;
+	HILL_TIERS.forEach((tier, i) => {
+		const r = R * tier;
+		const y0 = top + i * step, y1 = y0 + step;
+		const t0 = b.vertexCount;
+		const uTop = paletteU(shade * (1.02 + i * 0.04));
+		for (let k = 0; k < 6; k++) b.vertex(cx + CORNER_X[k] * r, y1, cz + CORNER_Z[k] * r, 0, 1, 0, uTop, turfV);
+		for (let k = 1; k < 5; k++) b.triFacing(t0, t0 + k, t0 + k + 1, 0, 1, 0);
+		for (let k = 0; k < 6; k++) {
+			const j = (k + 1) % 6;
+			const ax = cx + CORNER_X[k] * r, az = cz + CORNER_Z[k] * r, bx = cx + CORNER_X[j] * r, bz = cz + CORNER_Z[j] * r;
+			const nx = EDGE_X[k], nz = EDGE_Z[k];
+			const band = (ya: number, yb: number, u: number, v: number) => {
+				const q = b.vertex(ax, yb, az, nx, 0, nz, u, v);
+				b.vertex(bx, yb, bz, nx, 0, nz, u, v);
+				b.vertex(bx, ya, bz, nx, 0, nz, u, v);
+				b.vertex(ax, ya, az, nx, 0, nz, u, v);
+				b.quadFacing(q, q + 1, q + 2, q + 3, nx, 0, nz);
+			};
+			band(y1 - lip, y1, paletteU(shade * 0.88), turfV);
+			band(y0 - 0.6, y1 - lip, paletteU(shade * 0.8), earthV);
+		}
+	});
+}
+
 /** A few rocks on a hill's shoulders. */
 function addHillRocks (b: MeshBuilder, cx: number, top: number, cz: number, R: number, rand: () => number, fogged: boolean, decor: TerrainDecor): void {
 	const count = 1 + Math.floor(rand() * 3);
@@ -603,7 +635,7 @@ function addHillRocks (b: MeshBuilder, cx: number, top: number, cz: number, R: n
 		const d = R * (0.4 + rand() * 0.22);
 		const x = cx + Math.cos(a) * d, z = cz + Math.sin(a) * d;
 		if (decor === "blocky") {
-			addBlockyRock(b, x, top + hillRise(d, R) - 0.4, z, R * (0.07 + rand() * 0.05), rand, "rock", fogged ? paletteUvFogged : paletteUv);
+			addBlockyRock(b, x, top + hillStepRise(x - cx, z - cz, R) - 0.4, z, R * (0.07 + rand() * 0.05), rand, "rock", fogged ? paletteUvFogged : paletteUv);
 			continue;
 		}
 		addCone(b, x, top + hillRise(d, R) - 0.8, z, R * (0.05 + rand() * 0.04), R * (0.05 + rand() * 0.05), 4, rand() * Math.PI, paletteU(0.9 + rand() * 0.2), paletteV("rock", fogged));
@@ -627,8 +659,9 @@ function addTrees (
 	for (let k = 0; k < count; k++) {
 		const angle = start + (k / count) * Math.PI * 2 + (rand() - 0.5) * 0.6;
 		const dist = R * (0.42 + rand() * 0.14);
-		const y = top - 0.5 + (hill ? hillRise(dist, R) - 0.6 : 0);
-		addTree(b, cx + Math.cos(angle) * dist, y, cz + Math.sin(angle) * dist, R, 0.85 + rand() * 0.35, feature, rand, uv, decor);
+		const tx = cx + Math.cos(angle) * dist, tz = cz + Math.sin(angle) * dist;
+		const y = top - 0.5 + (!hill ? 0 : decor === "blocky" ? hillStepRise(tx - cx, tz - cz, R) : hillRise(dist, R) - 0.6);
+		addTree(b, tx, y, tz, R, 0.85 + rand() * 0.35, feature, rand, uv, decor);
 	}
 }
 

@@ -2,7 +2,7 @@ import { CLOUD_BASE, CLOUD_TOP, shownTop } from "./chunkMesh";
 import { UNEXPLORED } from "./fog";
 import type { HexLayout } from "./hex";
 import type { HexMap } from "./mapGen";
-import { FLOOR_HEIGHT, hillRise, HILL_RISE, LAND_HEIGHT, Relief } from "./terrain";
+import { FLOOR_HEIGHT, hillRise, HILL_RISE, hillStepRise, LAND_HEIGHT, Relief } from "./terrain";
 
 export type TerrainStyle = "tiles" | "natural";
 
@@ -36,6 +36,8 @@ export class TileSurface implements TerrainSurface {
 	protected _layout: HexLayout;
 	protected _view: Uint8Array;
 	protected _tmp = { col: 0, row: 0 };
+	/** Hills are stepped terraces (the blocky art pack) rather than smooth mounds. */
+	blockyHills = false;
 
 	constructor (map: HexMap, layout: HexLayout, view: Uint8Array) {
 		this._map = map;
@@ -63,7 +65,12 @@ export class TileSurface implements TerrainSurface {
 		const t = this._tileAt(x, z);
 		if (t < 0) return FLOOR_HEIGHT;
 		const flat = shownTop(this._map, this._view, t);
-		return this._hill(t) ? flat + hillRise(this._dist(t, x, z), this._layout.size) : flat;
+		if (!this._hill(t)) return flat;
+		if (this.blockyHills) {
+			const m = this._map;
+			return flat + hillStepRise(x - this._layout.centerX(m.col(t), m.row(t)), z - this._layout.centerZ(m.row(t)), this._layout.size);
+		}
+		return flat + hillRise(this._dist(t, x, z), this._layout.size);
 	}
 
 	pickHeight (x: number, z: number): number {
