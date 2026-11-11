@@ -1660,6 +1660,9 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 
 		// Post-processing: bloom, tone mapping and grading onto the canvas
 		if (postActive) {
+			// Depth of field turns depth into distance with the main view's camera
+			const cam = viewports[0].camera as unknown as { _near?: number; _far?: number; _projectionType?: string } | undefined;
+			post!.depthRange(cam?._near || 0.1, cam?._far || 1000, (cam?._projectionType || "perspective") === "perspective");
 			post!.end();
 			this._stateManager.reset();
 		}
@@ -1832,6 +1835,7 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 				transparent: false,
 				doubleSided: false,
 				castShadow: true,
+				shadowOnly: false,
 				worldMatrix,
 				cx: 0, cy: 0, cz: 0, radius: -1,
 				sortKey: 0,
@@ -1890,6 +1894,7 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 			!!(item.texture && (item.texture as any)._hasAlpha);
 		item.doubleSided = !!(overrideData?.doubleSided ?? materialData?.doubleSided);
 		item.castShadow = !entity._noShadowCast && !item.transparent;
+		item.shadowOnly = entity._shadowOnly;
 
 		// Skeleton: compute skin matrices once per frame (dirty-guarded) and
 		// give each skeleton a bone palette row for instanced draws.
@@ -2063,7 +2068,9 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 			mat.emissiveR = materialData.emissiveColor.r;
 			mat.emissiveG = materialData.emissiveColor.g;
 			mat.emissiveB = materialData.emissiveColor.b;
-			mat.emissiveIntensity = materialData.emissiveIntensity ?? 1;
+			// A negative intensity tells the shader to multiply the emissive by the vertex colours
+			// (emissiveVertexColor): it rides in the existing uniform and per-instance slot
+			mat.emissiveIntensity = (materialData.emissiveIntensity ?? 1) * (materialData.emissiveVertexColor ? -1 : 1);
 		}
 
 		if (materialData.uvScale) {
@@ -2161,6 +2168,8 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 		const models = data.models;
 		for (let i = 0; i < models.length; i++) {
 			const item = models[i];
+			// Shadow casters only: not drawn in the view
+			if (item.shadowOnly) continue;
 			if (item.radius >= 0 && !frustum.containsSphereXYZ(item.cx, item.cy, item.cz, item.radius)) {
 				continue;
 			}

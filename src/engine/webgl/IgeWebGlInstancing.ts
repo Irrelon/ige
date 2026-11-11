@@ -55,6 +55,8 @@ export interface IgeWebGlRenderItem {
 	/** Never back-face culled (material doubleSided). */
 	doubleSided: boolean;
 	castShadow: boolean;
+	/** Drawn in shadow passes only (IgeObject._shadowOnly). */
+	shadowOnly: boolean;
 	/** Column-major world matrix (entity._worldMatrix4.matrix). */
 	worldMatrix: Float32Array;
 	/** World-space bounding sphere. */

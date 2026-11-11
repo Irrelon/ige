@@ -10,6 +10,12 @@
  *   colour where the browser supports rendering to it
  * - colour grading: contrast, saturation and colour temperature
  * - a vignette, and a little dither so gradients don't band
+ * - depth of field (off unless `dof` > 0): what's nearer or further than
+ *   the focus blurs, by depth. The focus is a distance from the camera, or
+ *   (dofFocus 0) whatever is nearest the camera around a point on the
+ *   screen, the middle by default, so it follows the subject. Blurred at
+ *   half resolution, each sample weighted by how out of focus it is so
+ *   sharp edges don't smear into the blur behind them.
  *
  * Off by default. Enable it with `renderer.postProcess({ enabled: true, ... })`.
  * It runs once over the whole canvas, after every viewport has drawn.
@@ -44,6 +50,20 @@ export interface IgePostProcessSettings {
 	samples: number;
 	/** Use half-float colour (values above 1 survive to the tone mapper) when supported. */
 	hdr: boolean;
+	/** Depth of field strength (0 = off; 1 = blur up to about 2% of the screen's height). */
+	dof: number;
+	/** Distance from the camera that's sharp (world units); 0 focuses on what's at dofFocusX/Y. */
+	dofFocus: number;
+	/** Where to focus when dofFocus is 0, as a point on the screen (0-1 from the bottom left). */
+	dofFocusX: number;
+	dofFocusY: number;
+	/**
+	 * How deep the sharp zone is, as a fraction of the focus distance (0.15:
+	 * 15% nearer or further stays sharp). With an orthographic camera the
+	 * distance is measured from its near plane, so a camera with a near plane
+	 * far behind it wants a smaller range.
+	 */
+	dofRange: number;
 }
 
 export const IGE_POST_PROCESS_DEFAULTS: IgePostProcessSettings = {
@@ -60,8 +80,81 @@ export const IGE_POST_PROCESS_DEFAULTS: IgePostProcessSettings = {
 	bloomKnee: 0.25,
 	bloomRadius: 1,
 	samples: 4,
-	hdr: true
+	hdr: true,
+	dof: 0,
+	dofFocus: 0,
+	dofFocusX: 0.5,
+	dofFocusY: 0.5,
+	dofRange: 0.15
 };
+
+/** Depth to distance and circle of confusion, shared by the depth-of-field passes. */
+const DOF_COMMON = `
+uniform sampler2D u_depth;
+uniform vec2 u_depthRange;
+uniform int u_perspective;
+uniform float u_focus;
+uniform vec2 u_focusUv;
+uniform float u_range;
+float distanceAt(float d) {
+	if (u_perspective == 1) {
+		float z = d * 2.0 - 1.0;
+		return 2.0 * u_depthRange.x * u_depthRange.y / (u_depthRange.y + u_depthRange.x - z * (u_depthRange.y - u_depthRange.x));
+	}
+	// Orthographic: depth is linear; measured from the near plane (so it's never negative)
+	return d * (u_depthRange.y - u_depthRange.x);
+}
+float focusDistance() {
+	if (u_focus > 0.0) return u_focus;
+	// The nearest thing around the focus point (so a subject in the middle wins over the sky behind it)
+	float d = texture(u_depth, u_focusUv).r;
+	d = min(d, texture(u_depth, u_focusUv + vec2(0.03, 0.0)).r);
+	d = min(d, texture(u_depth, u_focusUv - vec2(0.03, 0.0)).r);
+	d = min(d, texture(u_depth, u_focusUv + vec2(0.0, 0.03)).r);
+	d = min(d, texture(u_depth, u_focusUv - vec2(0.0, 0.03)).r);
+	return distanceAt(d);
+}
+float cocAt(float d, float focus) {
+	float z = distanceAt(d);
+	return clamp((abs(z - focus) / max(focus, 1e-3) - u_range) / max(u_range, 0.05), 0.0, 1.0);
+}
+`;
+
+const DOF_BLUR = `#version 300 es
+precision highp float;
+in vec2 v_uv;
+out vec4 o;
+uniform sampler2D u_src;
+uniform vec2 u_radius;
+${DOF_COMMON}
+void main() {
+	float focus = focusDistance();
+	// A disc of samples (golden angle spiral), each weighted by how blurred it is itself
+	vec3 sum = texture(u_src, v_uv).rgb * 0.05;
+	float weight = 0.05;
+	for (int i = 0; i < 28; i++) {
+		float f = float(i) + 0.5;
+		float r = sqrt(f / 28.0);
+		float a = f * 2.39996323;
+		vec2 uv = v_uv + vec2(cos(a), sin(a)) * r * u_radius;
+		float w = cocAt(texture(u_depth, uv).r, focus) + 0.02;
+		sum += texture(u_src, uv).rgb * w;
+		weight += w;
+	}
+	o = vec4(sum / weight, 1.0);
+}`;
+
+const DOF_COMBINE = `#version 300 es
+precision highp float;
+in vec2 v_uv;
+out vec4 o;
+uniform sampler2D u_src;
+uniform sampler2D u_blurred;
+${DOF_COMMON}
+void main() {
+	float k = smoothstep(0.0, 1.0, cocAt(texture(u_depth, v_uv).r, focusDistance()));
+	o = vec4(mix(texture(u_src, v_uv).rgb, texture(u_blurred, v_uv).rgb, k), 1.0);
+}`;
 
 const VERT = `#version 300 es
 out vec2 v_uv;
@@ -187,7 +280,15 @@ export class IgeWebGlPostProcess {
 	protected _scene: Target | null = null;
 	/** Bloom levels: [half A, half B, quarter A, quarter B]. */
 	protected _bloom: Target[] = [];
-	protected _programs: { bright: Program; blur: Program; composite: Program } | null = null;
+	/** Depth of field (made when first used): the resolved depth, the half-size blur and the full-size result. */
+	protected _dofDepth: { fbo: WebGLFramebuffer; tex: WebGLTexture } | null = null;
+	protected _dofHalf: Target | null = null;
+	protected _dofOut: Target | null = null;
+	/** The main camera's near and far planes and projection, for turning depth into distance. */
+	protected _near = 0.1;
+	protected _far = 1000;
+	protected _perspective = true;
+	protected _programs: { bright: Program; blur: Program; composite: Program; dofBlur: Program; dofCombine: Program } | null = null;
 	protected _vao: WebGLVertexArrayObject | null = null;
 	protected _active = false;
 	protected _failed = false;
@@ -223,6 +324,13 @@ export class IgeWebGlPostProcess {
 		return true;
 	}
 
+	/** The camera the frame was drawn with (for depth of field): its near and far planes and whether it's a perspective one. */
+	depthRange (near: number, far: number, perspective: boolean = true): void {
+		this._near = near;
+		this._far = far;
+		this._perspective = perspective;
+	}
+
 	/** Re-bind the offscreen target (passes such as shadow maps bind their own and then the canvas). */
 	bindTarget (): void {
 		if (this._active) this._gl.bindFramebuffer(this._gl.FRAMEBUFFER, this._msaaFbo);
@@ -252,6 +360,8 @@ export class IgeWebGlPostProcess {
 		gl.bindFramebuffer(gl.DRAW_FRAMEBUFFER, null);
 
 		gl.bindVertexArray(this._vao);
+		// Depth of field first, from the sharp frame and its depth; the composite then reads the result
+		const sceneTex = s.dof > 0 ? this._depthOfField(scene) : scene.tex;
 		const bloomOn = s.bloom > 0;
 		if (bloomOn) {
 			const [a0, b0, a1, b1] = this._bloom;
@@ -281,7 +391,7 @@ export class IgeWebGlPostProcess {
 		const comp = programs.composite;
 		gl.useProgram(comp.program);
 		const u = (name: string) => this._uniform(comp, name);
-		this._texture(0, scene.tex);
+		this._texture(0, sceneTex);
 		gl.uniform1i(u("u_scene"), 0);
 		this._texture(1, bloomOn ? this._bloom[0].tex : scene.tex);
 		gl.uniform1i(u("u_bloom0"), 1);
@@ -299,7 +409,7 @@ export class IgeWebGlPostProcess {
 		gl.drawArrays(gl.TRIANGLES, 0, 3);
 
 		gl.bindVertexArray(null);
-		for (let unit = 0; unit < 3; unit++) {
+		for (let unit = 0; unit < 4; unit++) {
 			gl.activeTexture(gl.TEXTURE0 + unit);
 			gl.bindTexture(gl.TEXTURE_2D, null);
 		}
@@ -326,6 +436,7 @@ export class IgeWebGlPostProcess {
 		this._msaaFbo = this._msaaColor = this._msaaDepth = null;
 		this._scene = null;
 		this._bloom = [];
+		this._dofDepth = this._dofHalf = this._dofOut = null;
 		this._programs = null;
 		this._vao = null;
 		this._w = this._h = 0;
@@ -340,7 +451,9 @@ export class IgeWebGlPostProcess {
 			this._programs = {
 				bright: this._compile(BRIGHT),
 				blur: this._compile(BLUR),
-				composite: this._compile(COMPOSITE)
+				composite: this._compile(COMPOSITE),
+				dofBlur: this._compile(DOF_BLUR),
+				dofCombine: this._compile(DOF_COMBINE)
 			};
 			this._vao = gl.createVertexArray();
 		}
@@ -394,8 +507,71 @@ export class IgeWebGlPostProcess {
 		return { fbo, tex, w, h };
 	}
 
+	/** Depth of field: resolve the depth, blur at half size by how out of focus each sample is, then blend by depth. Returns the texture to composite. */
+	protected _depthOfField (scene: Target): WebGLTexture {
+		const gl = this._gl, s = this.settings;
+		const programs = this._programs!;
+		if (!this._dofDepth) {
+			const tex = gl.createTexture()!;
+			gl.bindTexture(gl.TEXTURE_2D, tex);
+			gl.texImage2D(gl.TEXTURE_2D, 0, gl.DEPTH24_STENCIL8, this._w, this._h, 0, gl.DEPTH_STENCIL, gl.UNSIGNED_INT_24_8, null);
+			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+			gl.bindTexture(gl.TEXTURE_2D, null);
+			const fbo = gl.createFramebuffer()!;
+			gl.bindFramebuffer(gl.FRAMEBUFFER, fbo);
+			gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.DEPTH_STENCIL_ATTACHMENT, gl.TEXTURE_2D, tex, 0);
+			gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+			this._dofDepth = { fbo, tex };
+			this._dofHalf = this._target(Math.max(1, this._w >> 1), Math.max(1, this._h >> 1), this._half);
+			this._dofOut = this._target(this._w, this._h, this._half);
+		}
+		gl.bindFramebuffer(gl.READ_FRAMEBUFFER, this._msaaFbo);
+		gl.bindFramebuffer(gl.DRAW_FRAMEBUFFER, this._dofDepth.fbo);
+		gl.blitFramebuffer(0, 0, this._w, this._h, 0, 0, this._w, this._h, gl.DEPTH_BUFFER_BIT, gl.NEAREST);
+		gl.bindFramebuffer(gl.READ_FRAMEBUFFER, null);
+		gl.bindFramebuffer(gl.DRAW_FRAMEBUFFER, null);
+		const focus = (u: (name: string) => WebGLUniformLocation | null) => {
+			this._texture(3, this._dofDepth!.tex);
+			gl.uniform1i(u("u_depth"), 3);
+			gl.uniform2f(u("u_depthRange"), this._near, this._far);
+			gl.uniform1i(u("u_perspective"), this._perspective ? 1 : 0);
+			gl.uniform1f(u("u_focus"), s.dofFocus);
+			gl.uniform2f(u("u_focusUv"), s.dofFocusX, s.dofFocusY);
+			gl.uniform1f(u("u_range"), Math.max(0.01, s.dofRange));
+		};
+		const radius = 0.02 * Math.min(2, s.dof);
+		this._pass(programs.dofBlur, this._dofHalf!, (u) => {
+			this._texture(0, scene.tex);
+			gl.uniform1i(u("u_src"), 0);
+			gl.uniform2f(u("u_radius"), radius * (this._h / Math.max(1, this._w)), radius);
+			focus(u);
+		});
+		this._pass(programs.dofCombine, this._dofOut!, (u) => {
+			this._texture(0, scene.tex);
+			gl.uniform1i(u("u_src"), 0);
+			this._texture(1, this._dofHalf!.tex);
+			gl.uniform1i(u("u_blurred"), 1);
+			focus(u);
+		});
+		return this._dofOut!.tex;
+	}
+
 	protected _freeTargets (): void {
 		const gl = this._gl;
+		if (this._dofDepth) {
+			gl.deleteFramebuffer(this._dofDepth.fbo);
+			gl.deleteTexture(this._dofDepth.tex);
+			this._dofDepth = null;
+		}
+		for (const t of [this._dofHalf, this._dofOut]) {
+			if (!t) continue;
+			gl.deleteFramebuffer(t.fbo);
+			gl.deleteTexture(t.tex);
+		}
+		this._dofHalf = this._dofOut = null;
 		if (this._msaaFbo) gl.deleteFramebuffer(this._msaaFbo);
 		if (this._msaaColor) gl.deleteRenderbuffer(this._msaaColor);
 		if (this._msaaDepth) gl.deleteRenderbuffer(this._msaaDepth);

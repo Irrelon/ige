@@ -155,6 +155,13 @@ export class IgeObject extends IgeEventingClass implements IgeCanRegisterById, I
 	_adjustmentMatrix?: IgeMatrix2d;
 	_hidden: boolean;
 	_noShadowCast: boolean = false; // When true, entity is excluded from shadow map rendering
+	/**
+	 * When true (WebGL), the entity only casts shadows: it's left out of the
+	 * views themselves. For a merged copy of many separate pieces (walls that
+	 * fade one at a time, say) that casts their shadows in one draw while the
+	 * pieces themselves are drawn without shadows.
+	 */
+	_shadowOnly: boolean = false;
 	_cache: boolean = false;
 	_cacheCtx?: IgeCanvasRenderingContext2d | null;
 	_cacheCanvas?: OffscreenCanvas | IgeDummyCanvas;

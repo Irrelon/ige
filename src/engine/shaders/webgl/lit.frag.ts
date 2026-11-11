@@ -628,8 +628,10 @@ void main() {
 		}
 	}
 
-	// Add emissive
-	vec3 emissive = u_emissiveColor * u_emissiveIntensity * texture2D(u_emissiveTexture, v_uv).rgb;
+	// Add emissive (a negative intensity: the material's emissiveVertexColor, so the
+	// glow follows the vertex colours and the shading baked into them)
+	vec3 emissive = u_emissiveColor * abs(u_emissiveIntensity) * texture2D(u_emissiveTexture, v_uv).rgb;
+	if (u_emissiveIntensity < 0.0) emissive *= v_vertexColor.rgb;
 	finalColor += emissive;
 
 	// Apply distance fog

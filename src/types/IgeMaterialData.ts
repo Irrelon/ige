@@ -44,6 +44,14 @@ export interface IgeMaterialData extends IgeAbstractData3d {
 	emissiveColor?: { r: number; g: number; b: number };
 	/** Emissive intensity multiplier */
 	emissiveIntensity?: number;
+	/**
+	 * Multiply the emissive colour by the mesh's vertex colours (default
+	 * false). One material can then light a merged mesh of glowing parts in
+	 * many colours, with whatever shading the vertex colours carry: one
+	 * draw instead of one per colour. Set emissiveColor white to glow in
+	 * exactly the vertex colours.
+	 */
+	emissiveVertexColor?: boolean;
 
 	// Texture references
 	/** ID of the base color/diffuse texture (loaded via TextureManager) */
