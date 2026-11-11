@@ -348,10 +348,14 @@ export class IgeNetSyncHost<Input = unknown> extends IgeEventingClass {
 		const base = state.sent.get(state.acked);
 		const set: IgeNetEntities = {};
 		const del: string[] = [];
+		let unset: Record<string, string[]> | undefined;
 		if (base) {
 			for (const id in entities) {
 				const changed = diffEntity(base[id], entities[id]);
 				if (changed) set[id] = changed;
+				// Fields that went away: a delta can't say so with a value (undefined doesn't survive JSON)
+				const gone = goneFields(base[id], entities[id]);
+				if (gone) (unset ??= {})[id] = gone;
 			}
 			for (const id in base) if (!(id in entities)) del.push(id);
 		} else {
@@ -364,7 +368,7 @@ export class IgeNetSyncHost<Input = unknown> extends IgeEventingClass {
 			const oldest = state.sent.keys().next().value!;
 			if (oldest !== state.acked) state.sent.delete(oldest);
 		}
-		this._send(state.connection, { t: "snap", tick: this.tick, base: base ? state.acked : 0, ack: state.applied, set, del }, false);
+		this._send(state.connection, { t: "snap", tick: this.tick, base: base ? state.acked : 0, ack: state.applied, set, del, ...(unset ? { unset } : {}) }, false);
 	}
 
 	_send (connection: IgeNetConnection, message: IgeNetServerMessage, reliable: boolean = true): void {
@@ -372,14 +376,23 @@ export class IgeNetSyncHost<Input = unknown> extends IgeEventingClass {
 	}
 }
 
-/** The fields of `next` that differ from `prev` (all of them for a new entity), or undefined if none. */
+/** The fields of `next` that differ from `prev` (all of them for a new entity), or undefined if none. Fields now undefined are left to goneFields. */
 function diffEntity (prev: IgeNetEntityState | undefined, next: IgeNetEntityState): IgeNetEntityState | undefined {
 	if (!prev) return next;
 	let changed: IgeNetEntityState | undefined;
 	for (const key in next) {
+		if (next[key] === undefined) continue;
 		if (!sameValue(prev[key], next[key])) (changed ??= {})[key] = next[key];
 	}
 	return changed;
+}
+
+/** The fields `prev` had that `next` no longer has (missing, or set to undefined), or undefined if none. */
+function goneFields (prev: IgeNetEntityState | undefined, next: IgeNetEntityState): string[] | undefined {
+	if (!prev) return;
+	let gone: string[] | undefined;
+	for (const key in prev) if (prev[key] !== undefined && next[key] === undefined) (gone ??= []).push(key);
+	return gone;
 }
 
 function sameValue (a: unknown, b: unknown): boolean {

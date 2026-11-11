@@ -56,6 +56,8 @@ export type IgeNetServerMessage =
 		set: IgeNetEntities;
 		/** Entities gone since the base snapshot. */
 		del: string[];
+		/** Fields gone from entities still there (absent or undefined now), by entity id, since the base snapshot. */
+		unset?: Record<string, string[]>;
 	}
 	| { t: "event"; tick: number; data: unknown }
 	| { t: "pong"; time: number; tick: number }

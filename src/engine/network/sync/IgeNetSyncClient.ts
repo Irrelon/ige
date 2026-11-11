@@ -426,6 +426,8 @@ export class IgeNetSyncClient<Input = unknown> extends IgeEventingClass {
 					for (const id in base.entities) entities[id] = { ...base.entities[id] };
 					for (const id of message.del) delete entities[id];
 					for (const id in message.set) entities[id] = { ...entities[id], ...message.set[id] };
+					// Fields gone from entities still there
+					if (message.unset) for (const id in message.unset) if (entities[id]) for (const key of message.unset[id]) delete entities[id][key];
 				} else {
 					entities = message.set;
 				}

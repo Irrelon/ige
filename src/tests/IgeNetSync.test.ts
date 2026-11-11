@@ -215,6 +215,40 @@ describe("IgeNetSyncHost / IgeNetSyncClient", () => {
 		host.destroy();
 	});
 
+	it("carries fields that go away in a delta (a field set to undefined or deleted), not just changed ones", async () => {
+		const net = igeNetLoopback();
+		const { host, dots } = game(net);
+		const client = new IgeNetSyncClient<Input>(net.connect(), { pingInterval: 0 });
+		const { players: [id] } = await client.join([{ name: "Ann" }]);
+		const run = async (steps: number) => {
+			for (let i = 0; i < steps; i++) {
+				client.sendInput([{ dx: 0 }]);
+				await settle(1);
+				host.update(1000 / 30);
+				await settle(1);
+			}
+		};
+		// (The game replaces each dot every step, so always change the current one)
+		const dot = () => dots[id] as Dot & { held?: string[]; badge?: string };
+		dot().held = ["platinum"];
+		dot().badge = "rookie";
+		await run(6);
+		expect(client.latest()!.entities[id]).toMatchObject({ held: ["platinum"], badge: "rookie" });
+		// The last contract handed in (the game sends undefined), and a badge dropped from the object altogether
+		dot().held = undefined;
+		delete dot().badge;
+		await run(6);
+		const seen = client.latest()!.entities[id];
+		expect(seen.held).toBeUndefined();
+		expect("badge" in seen).toBe(false);
+		expect(seen.name).toBe("Ann");
+		// And they come back when set again
+		dot().held = ["iron"];
+		await run(6);
+		expect(client.latest()!.entities[id].held).toEqual(["iron"]);
+		host.destroy();
+	});
+
 	describe("over a network with latency", () => {
 		beforeEach(() => jest.useFakeTimers({ now: 1000 }));
 		afterEach(() => jest.useRealTimers());
