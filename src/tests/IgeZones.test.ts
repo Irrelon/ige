@@ -241,6 +241,60 @@ describe("the zone directory from a browser", () => {
 	});
 });
 
+describe("the game's own routes on the directory", () => {
+	it("answers what the game's route takes, leaves the rest (and the zones' routes) to the directory, with CORS for allowed pages", async () => {
+		const fake = fakeLauncher();
+		const seen: string[] = [];
+		const dir = new IgeZoneDirectory({
+			launcher: fake.launcher, secret: SECRET, cors: ["http://game.test"],
+			resolveEntry: () => "Sign in first.",
+			route: async (req, res) => {
+				seen.push(`${req.method} ${req.url}`);
+				if (req.url === "/zones") {
+					res.writeHead(200).end("hijacked");
+					return true;
+				}
+				if (!req.url?.startsWith("/auth/") || req.method === "OPTIONS") return false;
+				if (req.url === "/auth/fail") throw new Error("The sign-in service is down");
+				let body = "";
+				for await (const chunk of req) body += chunk;
+				res.writeHead(200, { "content-type": "application/json" }).end(JSON.stringify({ me: "ann", body }));
+				return true;
+			}
+		});
+		const port = await dir.listen(0);
+		const base = `http://127.0.0.1:${port}`;
+		const origin = { origin: "http://game.test" };
+		try {
+			const me = await fetch(`${base}/auth/me`, { method: "POST", headers: origin, body: "hello" });
+			expect(await me.json()).toEqual({ me: "ann", body: "hello" });
+			expect(me.headers.get("access-control-allow-origin")).toBe("http://game.test");
+			// A preflight the route leaves is answered for it
+			const preflight = await fetch(`${base}/auth/me`, { method: "OPTIONS", headers: origin });
+			expect(preflight.status).toBe(204);
+			expect(preflight.headers.get("access-control-allow-methods")).toContain("GET");
+			// The directory's own: /enter still goes to resolveEntry (after the route declined it)
+			const enter = await fetch(`${base}/enter`, { method: "POST", headers: origin, body: JSON.stringify({ player: "ann" }) });
+			expect(enter.status).toBe(403);
+			expect((await enter.json()).error).toBe("Sign in first.");
+			// The route's errors come back as errors
+			const fail = await fetch(`${base}/auth/fail`, { method: "POST" });
+			expect(fail.status).toBe(500);
+			expect((await fail.json()).error).toBe("The sign-in service is down");
+			// Unknown paths are still the directory's 404
+			expect((await fetch(`${base}/nothing`)).status).toBe(404);
+			// The control plane is never the route's, and gets no CORS
+			const zones = await fetch(`${base}/zones`, { headers: origin });
+			expect(zones.status).toBe(401);
+			expect(zones.headers.get("access-control-allow-origin")).toBeNull();
+			expect(seen).not.toContain("GET /zones");
+			expect(seen).toContain("POST /enter");
+		} finally {
+			await dir.close();
+		}
+	});
+});
+
 describe("Docker zones", () => {
 	it("runs the image with the zone's environment, on the network, and stops it by name", async () => {
 		const calls: string[][] = [];

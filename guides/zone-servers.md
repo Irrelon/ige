@@ -91,6 +91,28 @@ await directory.listen(8690, "0.0.0.0");
 - The directory keeps no record of who is where: `resolveEntry` reads it from the game's store. That's also what
   makes reconnecting work (below).
 
+#### The game's own routes
+
+The directory owns its HTTP server, but the game can add routes to it with `route`: the sign-in service, say, so
+players sign in and enter at one address. It's called first for every request outside `/zones` (the control plane,
+which is always the directory's own), and returns true once it has answered:
+
+```typescript
+const auth = new Auth({ ... });   // the game's sign-in: /auth/start, /auth/callback, /auth/me...
+
+const directory = new IgeZoneDirectory({
+	...,
+	cors: ["https://play.example.com"],
+	route: (req, res) => auth.handle(req, res),   // true: answered; false: the directory's (/enter, or a 404)
+	resolveEntry: async (player, body) => auth.entry(player, body)
+});
+```
+
+- Return false without reading the request's body, or the directory won't be able to read it for `/enter`.
+- Pages the `cors` option allows get CORS headers before `route` is called (the route may set its own, which
+  replace them), and a preflight (`OPTIONS`) the route leaves is answered for it.
+- An error the route throws comes back as `{ error }` with a 500 (or an `IgeZoneError`'s status).
+
 ### The zone script
 
 A zone is an `IgeNetSyncHost` on a WebSocket server, with an `IgeZoneHost` beside it. Everyone joins on a ticket:
@@ -292,8 +314,9 @@ A TLS proxy on the same network (below) gives local `wss://` without publishing 
   those through the DNS-01 challenge), and have it route each hostname to the zone's container,
   `ige-zone-<zone>:8080`, on the private network. Zone ids become hostnames, which is why they're limited to letters,
   digits, `-` and `_`.
-- **The directory** gets an https hostname of its own. Only `POST /enter` needs to be public; keep `/zones/*` and
-  `GET /zones` on the private network (they need the secret anyway). Set `cors` to the game's page origins. One
+- **The directory** gets an https hostname of its own. Only `POST /enter` (and the game's routes) need to be
+  public; keep `/zones/*` and `GET /zones` on the private network (they need the secret anyway). Sign-in providers
+  call back to the game's routes there, so register the directory's public address with them. Set `cors` to the game's page origins. One
   directory is enough: it restarts safely, since running zones re-register through their heartbeats, but nobody can
   enter while it's down, so run it under a supervisor.
 - **Secrets come from the environment**, never the image, a url or a log. `ZONE_SECRET` (32 random bytes or more) is
@@ -327,8 +350,9 @@ Directory HTTP (JSON; errors are `{ error }` with a 400, 401, 403, 404 or 500):
 | `POST /zones/register { zone, url }` | zones | ready for players |
 | `POST /zones/heartbeat { zone, players, url? }` | zones | alive, and how many are in it |
 | `GET /zones` | operators | every zone's state, url, players and times |
+| anything else | players | the game's `route`, if it answers (else a 404) |
 
-The `/zones` routes need `Authorization: Bearer <ZONE_SECRET>`.
+The `/zones` routes need `Authorization: Bearer <ZONE_SECRET>`, and get no CORS headers.
 
 Defaults: heartbeats every 5 s (`heartbeatMs`), a zone forgotten after 15 s without one (`heartbeatTimeoutMs`),
 stopped after 60 s empty (`idleMs`), 20 s to register after starting (`startTimeoutMs`), tickets good for 30 s

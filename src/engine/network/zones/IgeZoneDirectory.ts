@@ -34,10 +34,20 @@ export interface IgeZoneDirectoryOptions {
 	/** Extra environment for every zone the directory starts. */
 	env?: Record<string, string>;
 	/**
-	 * Pages on other origins allowed to POST /enter (a browser game served
-	 * from elsewhere): a list of origins, or "*". Default: none.
+	 * Pages on other origins allowed to call /enter and the game's own
+	 * routes (a browser game served from elsewhere): a list of origins, or
+	 * "*". Default: none. Never the zones' routes.
 	 */
 	cors?: string[] | "*";
+	/**
+	 * The game's own HTTP routes on the directory's server (sign-in, say):
+	 * called first for every request outside /zones (the directory's control
+	 * plane, always its own). Return true once it's answered the request;
+	 * false (without reading the body) leaves it to the directory. Pages the
+	 * `cors` option allows get CORS headers before it's called (it may set
+	 * its own), and a preflight it doesn't answer is answered for it.
+	 */
+	route?: (req: IncomingMessage, res: ServerResponse) => boolean | Promise<boolean>;
 	/** Clock (ms), for tests. */
 	now?: () => number;
 }
@@ -80,6 +90,7 @@ const JSON_HEADERS = { "content-type": "application/json", "cache-control": "no-
  * - `POST /zones/register { zone, url }` and `POST /zones/heartbeat
  *   { zone, players, url? }`: from zones (with the secret).
  * - `GET /zones`: every zone, for operators.
+ * - Anything else the game's `route` answers (its sign-in, say).
  *
  * Events: "start" (zone), "ready" (record), "stop" (zone, why: "idle" or
  * "shutdown"), "lost" (zone, why: "heartbeat" or "exit"), "enter" (player,
@@ -270,35 +281,43 @@ export class IgeZoneDirectory extends IgeEventingClass {
 
 	async _route (req: IncomingMessage, res: ServerResponse): Promise<void> {
 		const path = (req.url ?? "/").split("?")[0];
-		const send = (body: unknown, status = 200): void => {
-			res.writeHead(status, JSON_HEADERS).end(JSON.stringify(body));
-		};
-		if (path === "/enter" && this._cors(req, res)) return;
-		// Everything under /zones is for zones and operators: the secret
-		if (path.startsWith("/zones") && !this._authorised(req)) throw new IgeZoneError(401, "Not authorised");
-		if (req.method === "GET" && path === "/zones") return send({ zones: this.status() });
-		if (req.method !== "POST") throw new IgeZoneError(404, "Not found");
-		const body = await readJson(req);
+		// Everything under /zones is for zones and operators (with the secret);
+		// the rest (/enter, the game's routes) may be called from allowed pages
+		const control = path === "/zones" || path.startsWith("/zones/");
+		if (!control && await this._open(req, res)) return;
+		if (control && !this._authorised(req)) throw new IgeZoneError(401, "Not authorised");
+		let answer: unknown;
+		if (req.method === "GET" && path === "/zones") answer = { zones: this.status() };
+		else if (req.method === "POST") answer = await this._post(path, await readJson(req));
+		else throw new IgeZoneError(404, "Not found");
+		res.writeHead(200, JSON_HEADERS).end(JSON.stringify(answer));
+	}
+
+	/** The directory's POST routes: what to answer. */
+	async _post (path: string, body: Record<string, unknown>): Promise<unknown> {
 		switch (path) {
 			case "/enter":
-				return send(await this.enter(String(body.player ?? ""), body));
+				return this.enter(String(body.player ?? ""), body);
 			case "/zones/ensure":
-				return send({ url: await this.ensure(String(body.zone ?? "")) });
+				return { url: await this.ensure(String(body.zone ?? "")) };
 			case "/zones/register":
-				return send({ ok: true, zone: this.register(String(body.zone ?? ""), String(body.url ?? "")).zone });
-			case "/zones/heartbeat": {
-				const record = this.heartbeat(String(body.zone ?? ""), Number(body.players) || 0, typeof body.url === "string" ? body.url : undefined);
-				return send({ ok: !!record });
-			}
+				return { ok: true, zone: this.register(String(body.zone ?? ""), String(body.url ?? "")).zone };
+			case "/zones/heartbeat":
+				return { ok: !!this.heartbeat(String(body.zone ?? ""), Number(body.players) || 0, typeof body.url === "string" ? body.url : undefined) };
 		}
 		throw new IgeZoneError(404, "Not found");
 	}
 
-	/** Lets an allowed page on another origin call /enter. True when that's all the request was (a preflight, answered). */
-	_cors (req: IncomingMessage, res: ServerResponse): boolean {
+	/**
+	 * A request outside the control plane: CORS headers for allowed pages,
+	 * then the game's route, then a preflight answered. True once it's been
+	 * answered.
+	 */
+	async _open (req: IncomingMessage, res: ServerResponse): Promise<boolean> {
 		const allowed = this._options.cors;
 		const origin = req.headers.origin;
 		if (allowed && origin && (allowed === "*" || allowed.includes(origin))) this._corsHeaders(res, allowed === "*" ? "*" : origin);
+		if (this._options.route && await this._options.route(req, res)) return true;
 		if (req.method !== "OPTIONS") return false;
 		res.writeHead(204).end();
 		return true;
@@ -307,7 +326,7 @@ export class IgeZoneDirectory extends IgeEventingClass {
 	_corsHeaders (res: ServerResponse, origin: string): void {
 		const allowed = this._options.cors;
 		res.setHeader("access-control-allow-origin", origin);
-		res.setHeader("access-control-allow-methods", "POST, OPTIONS");
+		res.setHeader("access-control-allow-methods", "GET, POST, OPTIONS");
 		res.setHeader("access-control-allow-headers", "content-type, authorization");
 		res.setHeader("access-control-max-age", "600");
 		if (allowed !== "*") res.setHeader("vary", "origin");
