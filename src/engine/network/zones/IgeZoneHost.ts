@@ -37,6 +37,8 @@ export interface IgeZoneHostOptions {
  *     const { url, ticket } = await zone.handoff(playerId, "orhaan", { x, z, vx, vz });
  *     host.event({ t: "zoneTransfer", url, ticket }, machine);
  *
+ * Start the zone beyond a gate early with `ensure(zone)` as a player nears it.
+ *
  * Events: "registered", "heartbeatFailed" (error), "handoff" (player, zone).
  */
 export class IgeZoneHost extends IgeEventingClass {
@@ -102,10 +104,22 @@ export class IgeZoneHost extends IgeEventingClass {
 	 * it calls IgeNetSyncClient.transfer with them.
 	 */
 	async handoff (player: string, toZone: string, data?: unknown): Promise<{ url: string; ticket: string }> {
-		const { url } = await this._post("/zones/ensure", { zone: toZone }) as { url: string };
+		const url = await this.ensure(toZone);
 		const ticket = signTicket({ player, zone: toZone, data }, this._options.secret, this._options.ticketTtl ?? 30, this._now());
 		this.emit("handoff", player, toZone);
 		return { url, ticket };
+	}
+
+	/**
+	 * Makes sure another zone is up (the directory starts it if need be,
+	 * and waits for it to register): its url. Call it early, as a player
+	 * nears the way into that zone, and the handoff won't wait on a cold
+	 * start. A zone started this way and never entered stops once it's been
+	 * empty for the directory's idleMs.
+	 */
+	async ensure (zone: string): Promise<string> {
+		const { url } = await this._post("/zones/ensure", { zone }) as { url: string };
+		return url;
 	}
 
 	/** A ticket a player arrives with: the ticket (signed, unexpired, for this zone, first use), or a string saying why not. */

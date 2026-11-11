@@ -295,6 +295,145 @@ describe("the game's own routes on the directory", () => {
 	});
 });
 
+describe("joins that load from a store (async join)", () => {
+	type Input = { dx: number };
+	const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+	function zoneWithStore (overrides: { join?: (machine: IgeNetMachine, players: unknown[], ticket?: unknown) => Promise<string[] | string> } = {}) {
+		const net = igeNetLoopback();
+		const store: Record<string, { x: number; hull: number }> = { ann: { x: 7, hull: 80 } };
+		const zoneHost = new IgeZoneHost({ zone: "a", directoryUrl: "http://unused", secret: SECRET, url: "loop://a", players: () => 0 });
+		const ships: Record<string, { x: number; hull: number }> = {};
+		const left: string[][] = [];
+		const joined: string[] = [];
+		const failures: unknown[] = [];
+		const host = new IgeNetSyncHost<Input>(net.listener, {
+			acceptTicket: async (token) => {
+				await wait(5);
+				return zoneHost.acceptTicket(token);
+			},
+			join: overrides.join ?? (async (machine, players, ticket) => {
+				const { player } = ticket as IgeZoneTicket;
+				const saved = await wait(20).then(() => store[player]);
+				if (!saved) return "No such pilot.";
+				ships[player] = { ...saved };
+				return [player];
+			}),
+			leave: (machine) => {
+				left.push(machine.players);
+				for (const id of machine.players) delete ships[id];
+			},
+			step: () => undefined,
+			snapshot: () => ships
+		});
+		host.on("join", (machine: IgeNetMachine) => {
+			joined.push(machine.id);
+		});
+		host.on("joinFailed", (error: unknown) => {
+			failures.push(error);
+		});
+		return { net, host, ships, left, joined, failures };
+	}
+
+	it("welcomes the machine once the game has loaded its player, and its snapshots carry them", async () => {
+		const a = zoneWithStore();
+		const client = new IgeNetSyncClient<Input>(a.net.connect(), { pingInterval: 0 });
+		const ticket = signTicket({ player: "ann", zone: "a" }, SECRET);
+		const welcome = await client.join([], ticket);
+		expect(welcome.players).toEqual(["ann"]);
+		expect(a.joined.length).toBe(1);
+		expect(a.host.machines()[0].players).toEqual(["ann"]);
+		for (let i = 0; i < 5 && !client.latest(); i++) {
+			a.host.update(50);
+			await wait(5);
+		}
+		expect(client.latest()?.entities.ann).toEqual({ x: 7, hull: 80 });
+		// The game's refusal, decided later, still reaches the machine
+		const nobody = new IgeNetSyncClient<Input>(a.net.connect(), { pingInterval: 0 });
+		await expect(nobody.join([], signTicket({ player: "zed", zone: "a" }, SECRET))).rejects.toThrow("No such pilot.");
+		// An async ticket check: a spent ticket's still refused
+		const again = new IgeNetSyncClient<Input>(a.net.connect(), { pingInterval: 0 });
+		await expect(again.join([], ticket)).rejects.toThrow(/already been used/);
+		client.destroy();
+		nobody.destroy();
+		again.destroy();
+	});
+
+	it("sees a machine out through leave if it disconnects while its join is loading", async () => {
+		const a = zoneWithStore();
+		const client = new IgeNetSyncClient<Input>(a.net.connect(), { pingInterval: 0 });
+		const joining = client.join([], signTicket({ player: "ann", zone: "a" }, SECRET));
+		joining.catch(() => undefined);
+		await wait(10);
+		client.destroy();
+		await wait(40);
+		expect(a.joined).toEqual([]);
+		expect(a.host.machines()).toEqual([]);
+		expect(a.left).toEqual([["ann"]]);
+		expect(a.ships.ann).toBeUndefined();
+	});
+
+	it("turns a machine away (without the error's details) when the game's join throws, and says so", async () => {
+		const a = zoneWithStore({
+			join: async () => {
+				await wait(5);
+				throw new Error("redis://secret-host is down");
+			}
+		});
+		const client = new IgeNetSyncClient<Input>(a.net.connect(), { pingInterval: 0 });
+		await expect(client.join([], signTicket({ player: "ann", zone: "a" }, SECRET))).rejects.toThrow("Couldn't join.");
+		expect((a.failures[0] as Error).message).toMatch(/is down/);
+		expect(a.host.machines()).toEqual([]);
+		client.destroy();
+	});
+
+	it("keeps synchronous joins synchronous (welcomed as the join arrives)", () => {
+		const host = new IgeNetSyncHost(null, { join: () => ["x"], step: () => undefined, snapshot: () => ({}) });
+		const sent: { t: string; players?: string[] }[] = [];
+		let deliver: (message: unknown) => void = () => undefined;
+		host.connect({
+			send: (message) => {
+				sent.push(message as { t: string });
+			},
+			onMessage: (fn) => {
+				deliver = fn;
+			},
+			onClose: () => undefined,
+			close: () => undefined
+		});
+		deliver({ t: "join", ref: 1, players: [{}] });
+		expect(sent[0]).toMatchObject({ t: "welcome", players: ["x"] });
+		expect(host.machines().length).toBe(1);
+	});
+});
+
+describe("starting the next zone early", () => {
+	it("IgeZoneHost.ensure starts another zone through the directory and resolves with its url", async () => {
+		const fake = fakeLauncher();
+		const dir = new IgeZoneDirectory({ launcher: fake.launcher, secret: SECRET, resolveEntry: () => ({ zone: "valeria" }) });
+		const port = await dir.listen(0);
+		const base = `http://127.0.0.1:${port}`;
+		try {
+			const valeria = new IgeZoneHost({ zone: "valeria", directoryUrl: base, secret: SECRET, url: "ws://v/sync", players: () => 1 });
+			// A pilot nears the gate to Orhaan: start it now
+			const warming = valeria.ensure("orhaan");
+			await until(() => fake.started.some((s) => s.zone === "orhaan"));
+			expect(dir.zones.get("orhaan")?.state).toBe("starting");
+			const orhaan = new IgeZoneHost({ zone: "orhaan", directoryUrl: base, secret: SECRET, url: "ws://o/sync", players: () => 0, heartbeatMs: 60000 });
+			await orhaan.start();
+			expect(await warming).toBe("ws://o/sync");
+			// It's up: the handoff doesn't wait, and nothing starts twice
+			const { url } = await valeria.handoff("ann", "orhaan");
+			expect(url).toBe("ws://o/sync");
+			expect(fake.started.filter((s) => s.zone === "orhaan").length).toBe(1);
+			await expect(valeria.ensure("not a zone!")).rejects.toThrow(/Not a zone id/);
+			orhaan.stop();
+		} finally {
+			await dir.close();
+		}
+	});
+});
+
 describe("Docker zones", () => {
 	it("runs the image with the zone's environment, on the network, and stops it by name", async () => {
 		const calls: string[][] = [];

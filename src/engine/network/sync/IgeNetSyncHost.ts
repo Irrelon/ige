@@ -32,12 +32,20 @@ export interface IgeNetSyncHostOptions<Input> {
 	 * (IgeNetSyncClient.transfer) brings a ticket instead of descriptions:
 	 * `ticket` is what `acceptTicket` made of it (who they are, where they
 	 * arrive).
+	 *
+	 * It may return a Promise (loading the players from a store): the machine
+	 * is welcomed once it resolves, and nothing it sends counts until then.
+	 * A machine that disconnects meanwhile is seen out through `leave` once
+	 * it does resolve. If it throws (or rejects) the machine is told it
+	 * couldn't join, and the error is emitted as "joinFailed" (return a
+	 * string to give the player a reason).
 	 */
-	join: (machine: IgeNetMachine, players: unknown[], ticket?: unknown) => string[] | string;
+	join: (machine: IgeNetMachine, players: unknown[], ticket?: unknown) => string[] | string | Promise<string[] | string>;
 	/**
 	 * Checks a ticket a machine joins with (a zone server: IgeZoneHost's
 	 * acceptTicket): whatever it carries, or a string to turn the machine
-	 * away. Without it, joins with a ticket are refused.
+	 * away (or a Promise of either). Without it, joins with a ticket are
+	 * refused.
 	 */
 	acceptTicket?: (token: string, machine: IgeNetMachine) => unknown;
 	/** A machine left or disconnected: remove its players. */
@@ -79,6 +87,21 @@ interface MachineState<Input> {
 
 let nextMachine = 1;
 
+/** How a join reaches back to its connection: whether it's gone, and its state once it's in. */
+interface JoinLink<Input> {
+	closed: () => boolean;
+	joined: (state: MachineState<Input>) => void;
+}
+
+function isThenable (value: unknown): value is PromiseLike<unknown> {
+	return !!value && (typeof value === "object" || typeof value === "function") && typeof (value as { then?: unknown }).then === "function";
+}
+
+/** `next(value)`, straight away for a plain value, or once a Promise resolves (keeping sync hooks sync). */
+function after<T, R> (value: T | PromiseLike<T>, next: (value: T) => R | PromiseLike<R>): R | PromiseLike<R> {
+	return isThenable(value) ? (value as PromiseLike<T>).then(next) : next(value as T);
+}
+
 /**
  * The authority of a real-time game: machines connect (each with one or
  * more local players), their players' inputs are queued and applied one per
@@ -88,7 +111,8 @@ let nextMachine = 1;
  * or offline play over igeNetLoopback()) or in Node (a dedicated server).
  *
  * Drive it with update(ms) from a frame loop, or start() for its own timer.
- * Events: "join" (machine), "leave" (machine).
+ * Events: "join" (machine), "leave" (machine), "joinFailed" (error: the
+ * game's join or acceptTicket threw).
  * @example #A host with one moving dot per player
  *     const host = new IgeNetSyncHost(listener, {
  *         join: (machine, players) => players.map((p, i) => { const id = `${machine.id}.${i}`; dots[id] = { x: 0 }; return id; }),
@@ -128,11 +152,33 @@ export class IgeNetSyncHost<Input = unknown> extends IgeEventingClass {
 	/** Take a connection from a transport not passed to the constructor. */
 	connect (connection: IgeNetConnection): void {
 		let state: MachineState<Input> | undefined;
+		let joining = false;
+		let closed = false;
+		const link: JoinLink<Input> = { closed: () => closed, joined: (joined) => { state = joined; } };
 		connection.onMessage((data) => {
 			const message = data as IgeNetClientMessage;
 			if (!message || typeof message !== "object") return;
 			if (message.t === "join") {
-				if (!state) state = this._join(connection, message);
+				if (state || joining) return;
+				joining = true;
+				const failed = (error: unknown) => {
+					// The game's hook threw: the machine hears only that it couldn't join
+					this._send(connection, { t: "error", error: "Couldn't join.", ref: message.ref });
+					this.emit("joinFailed", error);
+				};
+				let pending: void | PromiseLike<void> = undefined;
+				try {
+					pending = this._join(connection, message, link);
+				} catch (error) {
+					failed(error);
+				}
+				if (!isThenable(pending)) {
+					joining = false;
+					return;
+				}
+				pending.then(undefined, failed).then(() => {
+					joining = false;
+				});
 				return;
 			}
 			if (!state) return;
@@ -160,6 +206,7 @@ export class IgeNetSyncHost<Input = unknown> extends IgeEventingClass {
 			}
 		});
 		connection.onClose(() => {
+			closed = true;
 			if (!state) return;
 			// Unless disconnect() has already seen it out
 			if (this._machines.get(state.machine.id) === state) this._drop(state);
@@ -187,35 +234,48 @@ export class IgeNetSyncHost<Input = unknown> extends IgeEventingClass {
 		this.emit("leave", state.machine);
 	}
 
-	/** A machine joining (with player descriptions, or a ticket): its state once it's in. */
-	_join (connection: IgeNetConnection, message: Extract<IgeNetClientMessage, { t: "join" }>): MachineState<Input> | undefined {
+	/**
+	 * A machine joining (with player descriptions, or a ticket). Synchronous
+	 * when the game's hooks are; a Promise when either returns one.
+	 */
+	_join (connection: IgeNetConnection, message: Extract<IgeNetClientMessage, { t: "join" }>, link: JoinLink<Input>): void | PromiseLike<void> {
 		const machine: IgeNetMachine = { id: `m${nextMachine++}`, players: [], rtt: 0, data: {} };
+		const refuse = (error: string): void => {
+			this._send(connection, { t: "error", error, ref: message.ref });
+		};
+		const players = Array.isArray(message.players) ? message.players : [];
+		const join = (ticket?: unknown) => after(this._options.join(machine, players, ticket), (result) => {
+			if (typeof result === "string") return refuse(result);
+			machine.players = result;
+			this._welcome(connection, machine, message.ref, link);
+		});
+		if (typeof message.ticket !== "string") return join();
 		// Arriving from another zone (or reconnecting): the ticket says who
-		let ticket: unknown;
-		if (typeof message.ticket === "string") {
-			ticket = this._options.acceptTicket ? this._options.acceptTicket(message.ticket, machine) : "Tickets aren't taken here.";
-			if (typeof ticket === "string" || ticket === undefined) {
-				this._send(connection, { t: "error", error: typeof ticket === "string" ? ticket : "That ticket won't do.", ref: message.ref });
-				return;
-			}
+		const accepted = this._options.acceptTicket ? this._options.acceptTicket(message.ticket, machine) : "Tickets aren't taken here.";
+		return after(accepted, (ticket) => {
+			if (typeof ticket === "string" || ticket === undefined) return refuse(typeof ticket === "string" ? ticket : "That ticket won't do.");
 			machine.data.ticket = ticket;
-		}
-		const result = this._options.join(machine, Array.isArray(message.players) ? message.players : [], ticket);
-		if (typeof result === "string") {
-			this._send(connection, { t: "error", error: result, ref: message.ref });
+			return join(ticket);
+		});
+	}
+
+	/** The game has let a machine in: welcome it (unless it went while the game was deciding). */
+	_welcome (connection: IgeNetConnection, machine: IgeNetMachine, ref: number, link: JoinLink<Input>): void {
+		if (link.closed()) {
+			// It left before its join finished: the game sees it out
+			this._options.leave?.(machine);
 			return;
 		}
-		machine.players = result;
 		const state: MachineState<Input> = {
 			machine, connection, queue: [], received: 0, applied: 0, current: [], sent: new Map(), acked: 0
 		};
 		this._machines.set(machine.id, state);
+		link.joined(state);
 		this._send(connection, {
-			t: "welcome", ref: message.ref, machine: machine.id, players: machine.players,
+			t: "welcome", ref, machine: machine.id, players: machine.players,
 			tick: this.tick, tickRate: this.tickRate, info: this._options.info?.(machine)
 		});
 		this.emit("join", machine);
-		return state;
 	}
 
 	/** Send a reliable event to every machine, or to one. */

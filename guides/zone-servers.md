@@ -32,8 +32,8 @@ is game-specific: the game says where a player enters, what a zone simulates and
   (processes on one machine: development and small servers) or `IgeDockerLauncher` (containers). Kubernetes with
   Agones is planned behind the same interface. Every zone gets the same environment whichever starts it (see
   Reference).
-- **The zone host** (`IgeZoneHost`) is a zone's side: it registers, sends heartbeats, hands players on to other
-  zones (`handoff`) and checks the tickets players arrive with (`acceptTicket`).
+- **The zone host** (`IgeZoneHost`) is a zone's side: it registers, sends heartbeats, starts other zones early
+  (`ensure`), hands players on to them (`handoff`) and checks the tickets players arrive with (`acceptTicket`).
 - **Tickets** (`signTicket` / `verifyTicket`) are HMAC-SHA256 signed with the secret the directory and zones share.
   Each names a player and a zone, expires (30 seconds by default) and is good for one join. `data` is the game's
   own, opaque to the engine: where the player arrives, their velocity. Anything bigger belongs in the game's store.
@@ -44,6 +44,10 @@ is game-specific: the game says where a player enters, what a zone simulates and
 
 A player belongs to one zone at a time. Keeping it that way is the game's job: save the player as they leave, and
 load them as they arrive (a lock in the store, if two zones could ever race for one player).
+
+Every process keeps its own memory, so anything a process caches about a player (a profile, an account) goes stale
+the moment they move to another zone and it changes there. Read the store fresh where it matters: in the
+directory's `resolveEntry`, and in a zone's `join`. Cache only what a zone owns while the player is in it.
 
 ## Wiring a game
 
@@ -132,13 +136,15 @@ const sockets = new IgeNetWebSocketServer(server);
 
 const host = new IgeNetSyncHost<PadInput>(sockets.listen("/sync"), {
 	acceptTicket: (token) => zone.acceptTicket(token),   // signed, unexpired, for this zone, not used before
-	join: (machine, players, ticket) => {
+	join: async (machine, players, ticket) => {   // may be async: welcomed once it resolves
 		if (!ticket) return "Enter through the directory.";
 		const { player, data } = ticket as IgeZoneTicket;
+		const saved = await store.loadPilot(player);   // fresh from the store, never a cached copy
+		if (!saved) return "No such pilot.";
 		// Reconnecting while their old connection lingers: replace it (its leave runs first)
 		const old = host.machines().find((m) => m.players.includes(player));
 		if (old) host.disconnect(old);
-		world.arrive(player, data);   // load from the store, place them where the ticket says
+		world.arrive(player, saved, data);   // place them where the ticket says
 		return [player];
 	},
 	leave: (machine) => machine.players.forEach((id) => world.depart(id)),   // save them
@@ -160,6 +166,10 @@ process.on("SIGTERM", async () => {   // the directory stopping an idle zone
 });
 ```
 
+- `join` may return a Promise, so the zone loads the player from the store itself and tickets stay small (who,
+  and where they arrive). The machine is welcomed once it resolves; one that disconnects meanwhile is seen out
+  through `leave`. If it throws, the machine is told only that it couldn't join, and the host emits `"joinFailed"`
+  (error) for the logs; return a string to give the player a reason.
 - A zone is stopped with SIGTERM once it has been empty for `idleMs` (60 seconds by default). The child process
   launcher sends SIGKILL if it hasn't exited within `stopTimeout` (5 seconds), so save promptly.
 - A zone that crashes is forgotten (`"lost"`, `"exit"`) and restarted the next time someone needs it, from whatever
@@ -185,8 +195,10 @@ async function leaveFor (player: string, next: string, arrival: { x: number; z: 
 }
 ```
 
-- `handoff` asks the directory to ensure the next zone (starting it and waiting for it to register: allow for that
-  in the transition, a cold start can take a second or two) and signs a ticket into it carrying `arrival`.
+- `handoff` asks the directory to ensure the next zone (starting it and waiting for it to register: a cold start
+  can take a second or two) and signs a ticket into it carrying `arrival`.
+- Start the next zone early so the handoff doesn't wait: `zone.ensure(next)` as the player nears the way in (a
+  gate's range, a level's exit). A zone started that way and never entered stops after `idleMs` like any other.
 - The player leaves this zone when their client moves (its leave hook runs as the old connection closes).
 
 ### The client
@@ -363,5 +375,7 @@ Events:
 - `IgeZoneDirectory`: `"start"` (zone), `"ready"` (record), `"stop"` (zone, `"idle"` or `"shutdown"`), `"lost"`
   (zone, `"heartbeat"` or `"exit"`), `"enter"` (player, zone).
 - `IgeZoneHost`: `"registered"`, `"heartbeatFailed"` (error), `"handoff"` (player, zone).
+- `IgeNetSyncHost`: `"join"` (machine), `"leave"` (machine), `"joinFailed"` (error: the game's `join` or
+  `acceptTicket` threw).
 - `IgeNetSyncClient`: `"transfer"` ({ url }), `"transferred"` (welcome), `"transferFailed"` (error), as well as its
   usual events.

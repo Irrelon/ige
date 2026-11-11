@@ -33,6 +33,9 @@ host.event({ type: "death", id, impulse: [x, y, z] });   // reliable, to every m
 - Snapshots are deltas against the last one the machine acknowledged: unchanged entities and fields aren't sent.
   Keep an entity's field names the same from snapshot to snapshot (use `null` rather than leaving a field out).
 - Return only what's near a machine's players from `snapshot()` to save bandwidth (interest management).
+- `join` may be async (loading players from a store): the machine is welcomed once it resolves. If it throws, the
+  machine is told it couldn't join and the host emits `"joinFailed"` (error). Zone servers (`zone-servers.md`) join
+  machines on tickets this way.
 
 ## A machine
 

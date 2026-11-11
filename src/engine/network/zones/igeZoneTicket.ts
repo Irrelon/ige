@@ -1,4 +1,4 @@
-import { createHmac, randomBytes, timingSafeEqual } from "node:crypto";
+import { createHmac, randomBytes } from "node:crypto";
 
 /**
  * Zone tickets (Node only): what lets a player into a zone without logging
@@ -26,23 +26,26 @@ export interface IgeZoneTicket extends IgeZoneTicketPayload {
 	nonce: string;
 }
 
-function base64url (data: Buffer | string): string {
-	return Buffer.from(data).toString("base64").replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
-}
-
-function fromBase64url (text: string): Buffer {
-	return Buffer.from(text.replace(/-/g, "+").replace(/_/g, "/"), "base64");
-}
+// Strings throughout (base64url text, and a constant-time comparison of
+// signatures), so the types agree across @types/node versions
 
 function signature (body: string, secret: string): string {
-	return base64url(createHmac("sha256", secret).update(body).digest());
+	return createHmac("sha256", secret).update(body).digest("base64url");
+}
+
+/** Equal strings, compared in a time that doesn't depend on where they differ. */
+function sameText (a: string, b: string): boolean {
+	if (a.length !== b.length) return false;
+	let diff = 0;
+	for (let i = 0; i < a.length; i++) diff |= a.charCodeAt(i) ^ b.charCodeAt(i);
+	return diff === 0;
 }
 
 /** A signed ticket for `payload`, good for `ttlSeconds` (default 30). */
 export function signTicket (payload: IgeZoneTicketPayload, secret: string, ttlSeconds: number = 30, now: number = Date.now()): string {
 	if (!secret) throw new Error("A zone ticket needs a secret");
-	const ticket: IgeZoneTicket = { player: payload.player, zone: payload.zone, data: payload.data, exp: now + ttlSeconds * 1000, nonce: base64url(randomBytes(12)) };
-	const body = base64url(JSON.stringify(ticket));
+	const ticket: IgeZoneTicket = { player: payload.player, zone: payload.zone, data: payload.data, exp: now + ttlSeconds * 1000, nonce: randomBytes(12).toString("base64url") };
+	const body = Buffer.from(JSON.stringify(ticket), "utf8").toString("base64url");
 	return `${body}.${signature(body, secret)}`;
 }
 
@@ -56,11 +59,10 @@ export function verifyTicket (token: string, secret: string, now: number = Date.
 	const dot = token.indexOf(".");
 	if (dot < 1) return "That isn't a ticket.";
 	const body = token.slice(0, dot), sig = token.slice(dot + 1);
-	const want = Buffer.from(signature(body, secret)), got = Buffer.from(sig);
-	if (want.length !== got.length || !timingSafeEqual(want, got)) return "The ticket's signature doesn't match.";
+	if (!sameText(signature(body, secret), sig)) return "The ticket's signature doesn't match.";
 	let ticket: IgeZoneTicket;
 	try {
-		ticket = JSON.parse(fromBase64url(body).toString("utf8"));
+		ticket = JSON.parse(Buffer.from(body, "base64url").toString("utf8"));
 	} catch {
 		return "That isn't a ticket.";
 	}
