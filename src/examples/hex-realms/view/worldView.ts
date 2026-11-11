@@ -639,6 +639,7 @@ export class WorldView {
 			if ((modelOf(v.type, this.models) === id || id === "boat") && !v.queue.length && !v.lunge && v.removeAt < 0) this.rebuildUnit(v);
 		}
 		if (id === "village" || id === "town" || id === "city") for (const c of sim.state.cities) this.buildCity(c);
+		if (id === "wallSegment" || id === "wallTower") for (const c of sim.state.cities) if (c.walls) this.buildCity(c);
 		for (const b of sim.state.buildings) {
 			if (buildingModelOf(b.type, this.models) === id || (id === "construction" && !b.built) || (b.type === "mill" && (id === WINDMILL.body || id === WINDMILL.sails))) this.buildBuilding(b);
 		}
@@ -849,11 +850,30 @@ export class WorldView {
 			block(PYRAMID, w * 1.25, h * 0.7, w * 1.25, hx, hy + h + 2, hz, neutral ? WOOD : ROOF, a);
 		}
 		if (city.walls) {
+			// Model walls (the blocky pack has them): a stretch along each edge, a tower at each corner
+			const modelWalls = !!this.models?.info("wallSegment") && !!this.models.info("wallTower");
+			const mount = (id: string, fit: { footprint?: number; height?: number }, wx: number, wz: number, yaw: number) => {
+				const m = this.models?.create(id, { ...fit, lod: PROP_LOD });
+				if (!m) return false;
+				const holder = new IgeEntity();
+				holder.id(this.uid(`city_${city.id}_wall`));
+				holder.translateTo(wx, this.groundAt(wx, wz), wz).rotateTo(0, yaw, 0).mount(this.unitLayer);
+				m.mount(holder);
+				entities.push(holder);
+				return true;
+			};
+			// Model walls ring the whole town (wider for bigger places, whose models spread further)
+			const ring = modelWalls && cityModel ? (size === "village" ? 0.78 : size === "town" ? 0.88 : 0.95) : 0.78;
 			for (let i = 0; i < 6; i++) {
 				const j = (i + 1) % 6;
 				const mx = (CORNER_X[i] + CORNER_X[j]) / 2, mz = (CORNER_Z[i] + CORNER_Z[j]) / 2;
-				const wx = x + mx * R * 0.78, wz = z + mz * R * 0.78;
-				block(CUBE, R * 0.5, R * 0.16, R * 0.06, wx, this.groundAt(wx, wz) + R * 0.08, wz, STONE, -Math.atan2(mz, mx) + Math.PI / 2);
+				const wx = x + mx * R * ring, wz = z + mz * R * ring;
+				const yaw = -Math.atan2(mz, mx) + Math.PI / 2;
+				if (modelWalls && mount("wallSegment", { footprint: R * ring * 0.85 }, wx, wz, yaw)) {
+					mount("wallTower", { height: R * (0.3 + ring * 0.08) }, x + CORNER_X[i] * R * ring, z + CORNER_Z[i] * R * ring, yaw);
+					continue;
+				}
+				block(CUBE, R * 0.5, R * 0.16, R * 0.06, wx, this.groundAt(wx, wz) + R * 0.08, wz, STONE, yaw);
 			}
 		}
 		this.updateCityVisibility(city);

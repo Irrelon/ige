@@ -910,4 +910,31 @@ const vehicles: Record<string, Builder> = {
 	}
 };
 
-export const PROPS: Record<string, Builder> = { ...buildings, ...cities, ...wonders, ...monuments, ...vehicles, millBody, millSails };
+/** City walls, put together round a walled city: a straight stretch (along x, outside to +Z) and a corner tower. */
+const fortifications: Record<string, Builder> = {
+	wallSegment: () => {
+		const v = new Vox(190);
+		const len = 24;
+		// Courses of stone on a darker footing, a walkway and merlons on top
+		v.cbox(0, 0, 0, len, 1.4, 3.6, C.stoneDark);
+		for (let r = 0; r < 4; r++) v.cbox(0, 1.4 + r * 1.4, 0, len, 1.4, 3, r % 2 ? C.stone : shade(C.stone, 0.92));
+		for (let r = 0; r < 4; r++) {
+			for (let x = -len / 2 + (r % 2 ? 1.6 : 3.2); x < len / 2 - 0.4; x += 3.2) v.cbox(x, 1.5 + r * 1.4, 1.55, 0.25, 1.2, 0.1, C.stoneDark);
+		}
+		v.cbox(0, 7, 0, len, 0.6, 3.6, shade(C.stone, 1.06));
+		for (let x = -len / 2 + 0.9; x < len / 2; x += 3.2) v.cbox(x, 7.6, 1.3, 1.8, 1.6, 1, C.stone).cbox(x, 7.6, -1.3, 1.8, 1.6, 1, shade(C.stone, 0.95));
+		return v;
+	},
+	wallTower: () => {
+		const v = new Vox(191);
+		v.cbox(0, 0, 0, 6.4, 1.4, 6.4, C.stoneDark);
+		for (let r = 0; r < 7; r++) v.cbox(0, 1.4 + r * 1.4, 0, 5.6, 1.4, 5.6, r % 2 ? C.stone : shade(C.stone, 0.92));
+		// A slit window, a jutting top and battlements
+		v.cbox(0, 6, 2.85, 0.8, 2.2, 0.1, C.dark).cbox(0, 6, -2.85, 0.8, 2.2, 0.1, C.dark);
+		v.cbox(0, 11.2, 0, 7, 0.8, 7, shade(C.stone, 1.06));
+		for (const [x, z] of [[-2.9, -2.9], [0, -2.9], [2.9, -2.9], [-2.9, 0], [2.9, 0], [-2.9, 2.9], [0, 2.9], [2.9, 2.9]] as const) v.cbox(x, 12, z, 1.2, 1.6, 1.2, C.stone);
+		return v;
+	}
+};
+
+export const PROPS: Record<string, Builder> = { ...buildings, ...cities, ...wonders, ...monuments, ...vehicles, ...fortifications, millBody, millSails };
