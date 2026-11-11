@@ -372,6 +372,14 @@ function toMaterialData (model: IgeGltfModel, mat: IgeWebGlMaterial, index: numb
 		data.textureBlob = blob;
 	}
 
+	const emissiveBlob = m.emissiveTextureData?.() as Blob | undefined;
+	if (emissiveBlob) {
+		data.emissiveTextureId = `${model.id}_material${index}_emissive`;
+		data.emissiveTextureBlob = emissiveBlob;
+		data.emissiveColor ??= { r: 1, g: 1, b: 1 };
+		data.emissiveIntensity ??= m.emissiveIntensity?.() ?? 1;
+	}
+
 	return data;
 }
 

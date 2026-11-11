@@ -48,6 +48,11 @@ export interface IgeWebGlRenderItem {
 	texture?: IgeTexture;
 	/** Batch key component describing the texture. */
 	textureKey: string;
+	/** Emissive map: a glTF one (createTextureFromBlob id) or an IgeTexture (see IgeMaterialData.emissiveTexture). */
+	emissiveBlobTextureId?: string;
+	emissiveTexture?: IgeTexture;
+	/** An emissive map was asked for but isn't loaded yet (the item doesn't glow until it is). */
+	emissivePending?: boolean;
 	skeleton?: IgeSkeleton;
 	/** Row in the bone palette texture (instanced skinned draws), -1 if none. */
 	boneRow: number;

@@ -52,6 +52,8 @@ import { MAX_BONES } from "@/types/IgeSkeletonData";
 const SHADOW_TEXTURE_UNIT = 1;
 const POINT_SHADOW_TEXTURE_UNIT = 2; // 2 and 3
 const BONE_TEXTURE_UNIT = 4;
+/** Emissive maps (see IgeMaterialData.emissiveTexture); without one the shader's emissive samples unit 0. */
+const EMISSIVE_TEXTURE_UNIT = 5;
 
 const IDENTITY_MATRIX = new Float32Array([
 	1, 0, 0, 0,
@@ -338,6 +340,8 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 	/** This view's items with a silhouette colour (see IgeEntity.occludedColor()). */
 	protected _occludedItems: IgeWebGlRenderItem[] = [];
 	protected _occludedSaved?: Float32Array;
+	/** Drawing occluded silhouettes (flat colour): emissive maps aren't used. */
+	protected _drawingSilhouettes = false;
 	protected _opaqueSprites: IgeEntity[] = [];
 	protected _transparentSprites: IgeEntity[] = [];
 	protected _maxPixelRatio: number = Infinity;
@@ -1871,6 +1875,9 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 
 		item.blobTextureId = undefined;
 		item.texture = entity._texture;
+		item.emissiveBlobTextureId = undefined;
+		item.emissiveTexture = undefined;
+		item.emissivePending = false;
 
 		if (materialData) {
 			this._applyMaterialData(item, materialData);
@@ -1878,6 +1885,13 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 		if (overrideData) {
 			this._applyMaterialData(item, overrideData);
 		}
+		// An emissive map still loading: no glow until it's there (else the base texture would glow in its place)
+		if (item.emissivePending && !item.emissiveBlobTextureId && !item.emissiveTexture) mat.emissiveIntensity = 0;
+		// (set by _applyMaterialData, so read back through the item's type)
+		const emissiveMap = item.emissiveTexture as IgeTexture | undefined;
+		const emissiveKey = item.emissiveBlobTextureId
+			? "|e" + item.emissiveBlobTextureId
+			: emissiveMap ? "|e" + ((emissiveMap as any)._id || emissiveMap.id()) : "";
 
 		if (item.blobTextureId) {
 			item.textureKey = item.blobTextureId;
@@ -1967,7 +1981,7 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 		const um = item.material;
 		const uv = um.uvScaleU !== 1 || um.uvScaleV !== 1 || um.uvOffsetU !== 0 || um.uvOffsetV !== 0
 			? `|uv${um.uvScaleU},${um.uvScaleV},${um.uvOffsetU},${um.uvOffsetV}` : "";
-		item.batchKey = geometry.id + "|" + item.textureKey + skinned + sided + uv;
+		item.batchKey = geometry.id + "|" + item.textureKey + emissiveKey + skinned + sided + uv;
 		item.depthKey = geometry.id + skinned;
 
 		// Level-of-detail geometry (index 0 is the full mesh)
@@ -1987,7 +2001,7 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 				const lodGeometry = this._getGeometry(lodGeometryData[i]);
 				if (!lodGeometry) break;
 				geometries.push(lodGeometry);
-				batchKeys.push(lodGeometry.id + "|" + item.textureKey + skinned + sided);
+				batchKeys.push(lodGeometry.id + "|" + item.textureKey + emissiveKey + skinned + sided);
 				depthKeys.push(lodGeometry.id + skinned);
 			}
 
@@ -2071,6 +2085,31 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 			// A negative intensity tells the shader to multiply the emissive by the vertex colours
 			// (emissiveVertexColor): it rides in the existing uniform and per-instance slot
 			mat.emissiveIntensity = (materialData.emissiveIntensity ?? 1) * (materialData.emissiveVertexColor ? -1 : 1);
+		} else if (materialData.emissiveIntensity !== undefined) {
+			// Intensity alone: how strongly the emission already given glows (keeping its vertex colour flag)
+			mat.emissiveIntensity = materialData.emissiveIntensity * (mat.emissiveIntensity < 0 ? -1 : 1);
+		}
+
+		// An emissive map: glowing in its own colours (white unless a colour was given)
+		const emissiveTexture = materialData.emissiveTexture;
+		const emissiveId = materialData.emissiveTextureId;
+		if (emissiveTexture || emissiveId) {
+			if (!materialData.emissiveColor && mat.emissiveR === 0 && mat.emissiveG === 0 && mat.emissiveB === 0) {
+				mat.emissiveR = mat.emissiveG = mat.emissiveB = 1;
+				mat.emissiveIntensity = materialData.emissiveIntensity ?? 1;
+			}
+			item.emissiveTexture = undefined;
+			item.emissiveBlobTextureId = undefined;
+			item.emissivePending = true;
+			if (emissiveTexture) {
+				if (emissiveTexture._loaded) item.emissiveTexture = emissiveTexture;
+			} else if (emissiveId && this._textureManager) {
+				if (this._textureManager.getBlobTexture(emissiveId)) {
+					item.emissiveBlobTextureId = emissiveId;
+				} else if (materialData.emissiveTextureBlob) {
+					this._requestBlobTexture(emissiveId, materialData.emissiveTextureBlob);
+				}
+			}
 		}
 
 		if (materialData.uvScale) {
@@ -2754,6 +2793,29 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 	}
 
 	/**
+	 * Bind an item's emissive map to its unit and point the lit shader's
+	 * emissive sampler at it; without one (or while drawing silhouettes) the
+	 * sampler reads unit 0, the base colour texture, as it always has.
+	 */
+	protected _bindEmissiveTexture(program: IgeWebGlProgram, item: IgeWebGlRenderItem): void {
+		let webGlTexture: WebGLTexture | null | undefined;
+		if (!this._drawingSilhouettes) {
+			if (item.emissiveBlobTextureId) {
+				webGlTexture = this._textureManager!.getBlobTexture(item.emissiveBlobTextureId);
+			} else if (item.emissiveTexture) {
+				webGlTexture = this._textureManager!.getTextureForIgeTexture(item.emissiveTexture);
+				this._stateManager!.invalidateTextureBindings();
+			}
+		}
+		if (webGlTexture) {
+			this._stateManager!.bindTexture(webGlTexture, EMISSIVE_TEXTURE_UNIT);
+			program.setUniform1i("u_emissiveTexture", EMISSIVE_TEXTURE_UNIT);
+		} else {
+			program.setUniform1i("u_emissiveTexture", 0);
+		}
+	}
+
+	/**
 	 * Set one item's per-draw uniforms on a non-instanced lit program.
 	 */
 	protected _applyItemUniforms(program: IgeWebGlProgram, item: IgeWebGlRenderItem): void {
@@ -2793,6 +2855,7 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 
 			this._geometryManager.bindGeometry(batch.geometry, program);
 			this._bindBaseTexture(batch.blobTextureId, batch.texture);
+			this._bindEmissiveTexture(program, batch.items[0]);
 			program.setUniform1i("u_hasVertexColors", batch.geometry.hasVertexColors ? 1 : 0);
 			if (this._backFaceCulling) {
 				// Shadow passes cull front faces with raw GL calls
@@ -2877,7 +2940,9 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 			mat.emissiveB = c.b;
 			mat.emissiveIntensity = 1;
 		}
+		this._drawingSilhouettes = true;
 		this._renderTransparentItems(items, matrices);
+		this._drawingSilhouettes = false;
 		gl.disable(gl.STENCIL_TEST);
 		// Put them back for the next view (the same items draw in every split-screen view)
 		for (let i = 0; i < items.length; i++) {
@@ -2913,6 +2978,7 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 			const geometry = item.drawGeometry;
 			this._geometryManager.bindGeometry(geometry, program);
 			this._bindBaseTexture(item.blobTextureId, item.texture);
+			this._bindEmissiveTexture(program, item);
 			program.setUniform1i("u_hasVertexColors", geometry.hasVertexColors ? 1 : 0);
 			this._applyItemUniforms(program, item);
 			if (skinned) {

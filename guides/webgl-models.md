@@ -51,6 +51,19 @@ zombie.material({ color: "#ffffff", emissiveColor: { r: 1, g: 0.1, b: 0.1 }, emi
 Material objects can be shared between entities. With render on demand, call `material()` again after changing a
 shared object in place.
 
+Things that glow by themselves (lit windows, signs, lamp bulbs, screens) use an emissive map: a glTF material's
+`emissiveTexture` is loaded with the model (with `emissiveFactor` and `KHR_materials_emissive_strength`; a map with no
+factor glows as it is), or give any entity one with `material({ emissiveTexture })`. The map's colours are added after
+lighting, so they show in the dark; `emissiveIntensity` on its own scales the glow, e.g. to put a town's windows out in
+a power cut through one shared material object. Without a map, `emissiveColor` is tinted by the base colour texture.
+
+```typescript
+const night = new IgeTexture("night", "./assets/city_night.png"); // black, except the lit windows
+const lit = { emissiveTexture: night, emissiveIntensity: 1 };
+for (const building of buildings) building.material(lit);
+lit.emissiveIntensity = 0; // the power's gone
+```
+
 ## Animation
 
 ```typescript

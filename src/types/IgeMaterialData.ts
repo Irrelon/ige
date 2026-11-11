@@ -1,3 +1,4 @@
+import type { IgeTexture } from "@/engine/core/IgeTexture";
 import type { IgeAbstractData3d } from "@/types/IgeAbstractData3d";
 
 /**
@@ -42,8 +43,24 @@ export interface IgeMaterialData extends IgeAbstractData3d {
 	roughness?: number;
 	/** Emissive color */
 	emissiveColor?: { r: number; g: number; b: number };
-	/** Emissive intensity multiplier */
+	/**
+	 * Emissive intensity multiplier. Given on its own (without emissiveColor)
+	 * it scales the emission the mesh's material already has: dim or switch
+	 * off one entity's lit windows, say, while it still shares its draw.
+	 */
 	emissiveIntensity?: number;
+	/**
+	 * A texture that glows: lit windows, signs, lamp bulbs, screens. The
+	 * emission is emissiveColor (white when not given) x emissiveIntensity x
+	 * this texture's colour, added after lighting, so it shows in the dark.
+	 * Without one, emissiveColor is tinted by the base colour texture.
+	 * Items that differ only by their emissive texture can't share a draw.
+	 */
+	emissiveTexture?: IgeTexture;
+	/** ID of a glTF emissive texture (with emissiveTextureBlob, uploaded on first use like textureId's). */
+	emissiveTextureId?: string;
+	/** Encoded image for the emissive texture (e.g. from a GLB's emissiveTexture). */
+	emissiveTextureBlob?: Blob;
 	/**
 	 * Multiply the emissive colour by the mesh's vertex colours (default
 	 * false). One material can then light a merged mesh of glowing parts in

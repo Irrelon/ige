@@ -529,6 +529,17 @@ export class IgeGltfLoader extends IgeBaseClass {
 					matDef.emissiveFactor[2]
 				);
 			}
+			if (matDef.emissiveTexture !== undefined) {
+				const texture = textures[matDef.emissiveTexture.index];
+				const image = texture?.imageIndex !== undefined ? images[texture.imageIndex] : undefined;
+				if (image?.data) {
+					material.emissiveTextureData(image.data);
+					// (a map with no factor glows as it is, rather than not at all)
+					if (!matDef.emissiveFactor) material.emissiveColor(1, 1, 1);
+				}
+			}
+			const strength = matDef.extensions?.KHR_materials_emissive_strength?.emissiveStrength;
+			if (typeof strength === "number") material.emissiveIntensity(strength);
 
 			// Parse alpha mode
 			if (matDef.alphaMode === "BLEND") {

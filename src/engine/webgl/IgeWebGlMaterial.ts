@@ -41,6 +41,8 @@ export class IgeWebGlMaterial extends IgeBaseClass {
 
 	// Raw texture data from GLTF (Blob for creating WebGL textures)
 	protected _baseColorTextureData?: Blob;
+	/** Encoded emissive image (e.g. from a GLB's emissiveTexture). */
+	protected _emissiveTextureData?: Blob;
 	protected _baseColorTexCoord: number = 0;
 	// Texture ID for the loaded WebGL texture
 	public _baseColorTextureId?: string;
@@ -152,7 +154,20 @@ export class IgeWebGlMaterial extends IgeBaseClass {
 	}
 
 	/**
-	 * Gets / sets the base color texture data (raw Blob from GLTF).
+	 * Gets / sets the encoded emissive image (raw Blob from a glTF's emissiveTexture).
+	 */
+	emissiveTextureData(data?: Blob): Blob | undefined | this {
+		if (data !== undefined) {
+			this._emissiveTextureData = data;
+			this._dirty = true;
+			return this;
+		}
+		return this._emissiveTextureData;
+	}
+
+	/**
+	 * Gets / sets the encoded base colour image (e.g. from a GLB) and the
+	 * texture coordinate set it uses.
 	 */
 	baseColorTextureData(data?: Blob, texCoord?: number): Blob | undefined | this {
 		if (data !== undefined) {
@@ -283,6 +298,7 @@ export class IgeWebGlMaterial extends IgeBaseClass {
 		cloned._diffuseTexture = this._diffuseTexture;
 		cloned._normalTexture = this._normalTexture;
 		cloned._emissiveTexture = this._emissiveTexture;
+		cloned._emissiveTextureData = this._emissiveTextureData;
 		cloned._emissiveColor = { ...this._emissiveColor };
 		cloned._emissiveIntensity = this._emissiveIntensity;
 		cloned._blendMode = this._blendMode;
@@ -380,6 +396,7 @@ export class IgeWebGlPBRMaterial extends IgeWebGlMaterial {
 		cloned._diffuseTexture = this._diffuseTexture;
 		cloned._normalTexture = this._normalTexture;
 		cloned._emissiveTexture = this._emissiveTexture;
+		cloned._emissiveTextureData = this._emissiveTextureData;
 		cloned._emissiveColor = { ...this._emissiveColor };
 		cloned._emissiveIntensity = this._emissiveIntensity;
 		cloned._blendMode = this._blendMode;

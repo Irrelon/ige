@@ -77,3 +77,38 @@ describe("IgeGltfLoader ids", () => {
 		}
 	});
 });
+
+/** Exposes the material parser. */
+class MaterialLoader extends IgeGltfLoader {
+	materials (gltf: any, textures: any[], images: any[]) {
+		return this._parseMaterials(gltf, textures, images);
+	}
+}
+
+describe("IgeGltfLoader emissive maps", () => {
+	const image = { data: new Blob(["png"]) };
+	const textures = [{ imageIndex: 0 }];
+
+	it("keeps an emissive texture, glowing white when no factor is given", () => {
+		const [material] = new MaterialLoader().materials({ materials: [{ emissiveTexture: { index: 0 } }] }, textures, [image]) as any[];
+		expect(material.emissiveTextureData()).toBe(image.data);
+		expect(material.emissiveColor()).toEqual({ r: 1, g: 1, b: 1 });
+	});
+
+	it("uses the factor given with it, and KHR_materials_emissive_strength's strength", () => {
+		const [material] = new MaterialLoader().materials({
+			materials: [{
+				emissiveTexture: { index: 0 },
+				emissiveFactor: [1, 0.5, 0.25],
+				extensions: { KHR_materials_emissive_strength: { emissiveStrength: 4 } }
+			}]
+		}, textures, [image]) as any[];
+		expect(material.emissiveColor()).toEqual({ r: 1, g: 0.5, b: 0.25 });
+		expect(material.emissiveIntensity()).toBe(4);
+	});
+
+	it("has no emissive map without one", () => {
+		const [material] = new MaterialLoader().materials({ materials: [{ emissiveFactor: [0.2, 0.2, 0.2] }] }, textures, [image]) as any[];
+		expect(material.emissiveTextureData()).toBeUndefined();
+	});
+});
