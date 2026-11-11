@@ -88,6 +88,8 @@ export interface IgeAnimationState {
 	fadeOutDuration: number;
 	/** Current fade progress time */
 	fadeTime: number;
+	/** Non-looping: start fading out this many seconds (of playback) before the end (see IgeAnimationPlayOptions.blendOut). */
+	blendOut?: number;
 }
 
 /**
@@ -106,6 +108,16 @@ export interface IgeAnimationPlayOptions {
 	 * With a speed of 0 the clip holds that frame, e.g. its last pose.
 	 */
 	startTime?: number;
+	/**
+	 * Play on a layer (IgeSkeletalAnimationComponent.layer()) instead of the base animation: the clip moves only the
+	 * layer's bones, over whatever the base is playing, and cross-fades only with the layer's other clips.
+	 */
+	layer?: string;
+	/**
+	 * Non-looping clips: fade out over this many seconds (of playback) before the end, so whatever plays under it (the
+	 * base animation, under a layer's clip) takes over smoothly instead of snapping back when it finishes.
+	 */
+	blendOut?: number;
 	/** Callback when animation completes (non-looping only) */
 	onComplete?: (animId: string) => void;
 	/** Callback when animation loops */

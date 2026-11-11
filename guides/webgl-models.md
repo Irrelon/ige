@@ -71,6 +71,30 @@ zombie.skeletalAnimation()?.on("complete", (clip) => { /* back to walking */ });
   with `model(model, { inPlace: ["walk", "run"] })` (or `true` for every clip): the root bone keeps its bob and sway
   and loses its drift, for games that move characters themselves. `clipInPlace(clip, skeleton)` does it by hand.
 
+### Upper body and lower body
+
+Twin-stick characters aim one way and walk another. Two tools do it:
+
+```typescript
+const anim = player.skeletalAnimation();
+// Layers: clips that move only part of the skeleton, over the base animation
+anim.layer("upper", { root: "Bip001 Spine" });                 // the spine and everything above it
+anim.play("walk");                                             // the base: the whole body
+anim.play("shoot", { layer: "upper", loop: false, crossFadeDuration: 0.08, blendOut: 0.15 });
+
+// Bone rotations on top of the pose: the hips toward the movement, the spine back toward the aim
+const twist = moveAngle - aimAngle;
+anim.rotateBone("Bip001 Pelvis", { x: 0, y: Math.sin(twist / 2), z: 0, w: Math.cos(twist / 2) });
+anim.rotateBone("Bip001 Spine", { x: 0, y: Math.sin(-twist / 2), z: 0, w: Math.cos(-twist / 2) });
+```
+
+- A layer's clips cross-fade with each other, not with the base, and blend over it by their weight (and the layer's
+  `weight`). Later layers go on top. `stopLayer(name, fade)` fades a layer out; `layerPlaying(name)` says whether
+  it's busy.
+- `blendOut` fades a clip that isn't looping to nothing over its last moments, so the base takes over smoothly
+  instead of snapping back when it ends (useful for the base too).
+- A character with a layer playing, or bone rotations, is posed on its own rather than from the shared pose cache.
+
 ### Animations in separate files
 
 Many generators and animation libraries ship each animation in its own file, or one file of animations without a

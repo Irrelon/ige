@@ -27,6 +27,10 @@ import { findBoneIndex } from "@/engine/webgl/IgeAnimationRetarget";
  *
  * // Play with cross-fade
  * entity.skeletalAnimation.play("walk", { crossFadeDuration: 0.2 });
+ *
+ * // Swing with the upper body while the legs keep walking (a layer from the spine up)
+ * entity.skeletalAnimation.layer("upper", { root: "Bip001 Spine" });
+ * entity.skeletalAnimation.play("attack", { layer: "upper", loop: false, crossFadeDuration: 0.08, blendOut: 0.15 });
  */
 /**
  * Bone matrices for one quantised frame of a clip on one skeleton.
@@ -123,6 +127,17 @@ function getRestPose (data: IgeSkeletonData): IgeRestPose {
 	return rest;
 }
 
+/** A layer over the base animation: its clips move only its bones (`roots` and the bones below them). */
+interface IgeAnimationLayer {
+	roots: string[];
+	weight: number;
+	/** 1 for each bone the layer moves (made when there's a skeleton). */
+	mask?: Uint8Array;
+	states: IgeAnimationState[];
+	/** Its clips' total weight this frame. */
+	total: number;
+}
+
 export class IgeSkeletalAnimationComponent extends IgeComponent<IgeEntity> {
 	/**
 	 * Samples per second used by the shared pose cache (see poseCache()).
@@ -139,6 +154,9 @@ export class IgeSkeletalAnimationComponent extends IgeComponent<IgeEntity> {
 
 	// Active animation states (supports blending multiple animations)
 	protected _activeStates: IgeAnimationState[] = [];
+
+	// Layers over the base animation, in the order they were made (later ones on top)
+	protected _layers: Map<string, IgeAnimationLayer> = new Map();
 
 	// Reference to entity's skeleton instance
 	protected _skeleton?: IgeSkeleton;
@@ -164,6 +182,10 @@ export class IgeSkeletalAnimationComponent extends IgeComponent<IgeEntity> {
 	private _boneTranslationWeights: number[] = [];
 	private _boneRotationWeights: number[] = [];
 	private _boneScaleWeights: number[] = [];
+	// The pose being built while layers blend over the base
+	private _poseTranslations: Float32Array[] = [];
+	private _poseRotations: Float32Array[] = [];
+	private _poseScales: Float32Array[] = [];
 
 	constructor(entity: IgeEntity, options?: any) {
 		super(entity, options);
@@ -186,6 +208,9 @@ export class IgeSkeletalAnimationComponent extends IgeComponent<IgeEntity> {
 		this._boneTranslationWeights = [];
 		this._boneRotationWeights = [];
 		this._boneScaleWeights = [];
+		this._poseTranslations = [];
+		this._poseRotations = [];
+		this._poseScales = [];
 
 		for (let i = 0; i < boneCount; i++) {
 			this._boneTranslations.push(new Float32Array(3));
@@ -194,9 +219,77 @@ export class IgeSkeletalAnimationComponent extends IgeComponent<IgeEntity> {
 			this._boneTranslationWeights.push(0);
 			this._boneRotationWeights.push(0);
 			this._boneScaleWeights.push(0);
+			this._poseTranslations.push(new Float32Array(3));
+			this._poseRotations.push(new Float32Array(4));
+			this._poseScales.push(new Float32Array(3));
 		}
+		for (const layer of this._layers.values()) layer.mask = undefined;
 
 		return this;
+	}
+
+	/**
+	 * Make (or change) a layer over the base animation. Clips played on it (`play(id, { layer })`) move only `root` and
+	 * the bones below it (several roots: all their branches), blended over the base by their weights (and the layer's
+	 * own `weight`, default 1): an upper body that swings, shoots or waves while the legs keep walking. Layers made
+	 * later go on top of earlier ones. A character with a layer playing is posed individually (not from the shared pose
+	 * cache) until the layer's clips end.
+	 * @example #Attacks with the upper body only
+	 *     anim.layer("upper", { root: "Bip001 Spine" });
+	 *     anim.play("walk");
+	 *     anim.play("swing", { layer: "upper", loop: false, crossFadeDuration: 0.08, blendOut: 0.15 });
+	 */
+	layer(name: string, options: { root: string | string[]; weight?: number }): this {
+		const existing = this._layers.get(name);
+		const roots = Array.isArray(options.root) ? options.root : [options.root];
+		if (existing) {
+			existing.roots = roots;
+			existing.weight = options.weight ?? existing.weight;
+			existing.mask = undefined;
+		} else {
+			this._layers.set(name, { roots, weight: options.weight ?? 1, states: [], total: 0 });
+		}
+		return this;
+	}
+
+	/** Fade out whatever a layer is playing (over `fadeDuration` seconds), leaving the base animation. */
+	stopLayer(name: string, fadeDuration = 0.2): this {
+		const layer = this._layers.get(name);
+		if (!layer) return this;
+		if (fadeDuration <= 0) {
+			layer.states = [];
+			markSceneChanged();
+			return this;
+		}
+		for (const state of layer.states) {
+			if (state.fadeOutDuration === 0) {
+				state.fadeOutDuration = fadeDuration;
+				state.fadeTime = 0;
+			}
+		}
+		return this;
+	}
+
+	/** Whether a layer has a clip playing (or fading out). */
+	layerPlaying(name: string): boolean {
+		return !!this._layers.get(name)?.states.some((state) => state.playing);
+	}
+
+	/** The bones a layer moves (1 each), worked out from its roots once there's a skeleton. */
+	protected _layerMask(layer: IgeAnimationLayer): Uint8Array {
+		const data = this._skeleton!.data;
+		if (layer.mask && layer.mask.length === data.boneCount) return layer.mask;
+		const mask = new Uint8Array(data.boneCount);
+		const mark = (i: number) => {
+			mask[i] = 1;
+			for (const child of data.bones[i].childIndices) mark(child);
+		};
+		for (const root of layer.roots) {
+			const index = findBoneIndex(data, root);
+			if (index >= 0) mark(index);
+		}
+		layer.mask = mask;
+		return mask;
 	}
 
 	/**
@@ -257,15 +350,23 @@ export class IgeSkeletalAnimationComponent extends IgeComponent<IgeEntity> {
 		const crossFadeDuration = options?.crossFadeDuration ?? 0.2;
 		const speed = options?.speed ?? 1.0;
 		const loop = options?.loop ?? true;
+		const layer = options?.layer !== undefined ? this._layers.get(options.layer) : undefined;
+		if (options?.layer !== undefined && !layer) {
+			this.log(`Animation layer "${options.layer}" not found (make it with layer())`, "error");
+			return this;
+		}
+		const states = layer ? layer.states : this._activeStates;
 
 		// If there are existing animations, start fading them out
 		if (crossFadeDuration > 0) {
-			for (const state of this._activeStates) {
+			for (const state of states) {
 				if (state.fadeOutDuration === 0) {
 					state.fadeOutDuration = crossFadeDuration;
 					state.fadeTime = 0;
 				}
 			}
+		} else if (layer) {
+			layer.states = [];
 		} else {
 			// Instant switch - clear all existing animations
 			this._activeStates = [];
@@ -282,10 +383,12 @@ export class IgeSkeletalAnimationComponent extends IgeComponent<IgeEntity> {
 			playing: true,
 			fadeInDuration: crossFadeDuration,
 			fadeOutDuration: 0,
-			fadeTime: 0
+			fadeTime: 0,
+			...(options?.blendOut && !loop ? { blendOut: options.blendOut } : {})
 		};
 
-		this._activeStates.push(state);
+		(layer ? layer.states : this._activeStates).push(state);
+		markSceneChanged();
 
 		this.emit("started", animId);
 		return this;
@@ -296,6 +399,7 @@ export class IgeSkeletalAnimationComponent extends IgeComponent<IgeEntity> {
 	 */
 	stop(): this {
 		this._activeStates = [];
+		for (const layer of this._layers.values()) layer.states = [];
 		this.emit("stopped");
 		return this;
 	}
@@ -442,21 +546,53 @@ export class IgeSkeletalAnimationComponent extends IgeComponent<IgeEntity> {
 	 * - anything else (cross-fades, blends) samples and blends every clip.
 	 */
 	protected _update = (entity: IgeEntity, tickDelta: number): void => {
-		if (!this._skeleton || this._activeStates.length === 0) {
+		const layers = this._layers.size ? [...this._layers.values()].filter((layer) => layer.states.length) : [];
+		if (!this._skeleton || (this._activeStates.length === 0 && !layers.length)) {
 			return;
 		}
 
 		const deltaSeconds = tickDelta / 1000;
 		const samplePose = this._isPoseVisible(entity);
 
-		// Advance every active state
-		let totalWeight = 0;
+		// Advance every active state (the base's, then each layer's)
 		const states = this._activeStates;
+		const totalWeight = this._advance(states, deltaSeconds);
+		let layerWeight = 0;
+		for (const layer of layers) {
+			layer.total = this._advance(layer.states, deltaSeconds);
+			layerWeight += layer.total;
+		}
 
+		if (samplePose && (totalWeight > 0 || layerWeight > 0)) {
+			// A new pose is about to be applied: render on demand needs a frame
+			markSceneChanged();
+
+			// Fast path: one clip at full weight -> shared pose cache (not with extra bone rotations or layers: they're per entity)
+			if (!(layerWeight === 0 && states.length === 1 && states[0].weight >= 1 && this._poseCache && !this._skeleton.boneRotations?.length && this._applyCachedPose(states[0]))) {
+				this._sampleBlendedPose(totalWeight, layerWeight > 0 ? layers : []);
+			}
+		}
+
+		// Remove faded-out animations, and finished ones once their final frame has been posed (the skeleton then keeps
+		// it). A clip that finishes out of sight waits until the entity is next drawn, so a death clip that ended in an
+		// unseen room still leaves the body lying down rather than in whatever pose it was last seen in.
+		for (const list of [states, ...layers.map((layer) => layer.states)]) {
+			for (let i = list.length - 1; i >= 0; i--) {
+				const state = list[i];
+				if (!state.playing && (samplePose || state.weight <= 0)) {
+					list.splice(i, 1);
+				}
+			}
+		}
+	};
+
+	/** Move some states on by `deltaSeconds`: fades, time, looping and finishing. Returns their total weight. */
+	protected _advance(states: IgeAnimationState[], deltaSeconds: number): number {
+		let totalWeight = 0;
 		for (let i = 0; i < states.length; i++) {
 			const state = states[i];
 
-			// Finished while out of sight: still waiting to have its last frame posed (see below)
+			// Finished while out of sight: still waiting to have its last frame posed (see _update())
 			if (!state.playing) {
 				totalWeight += state.weight;
 				continue;
@@ -484,6 +620,12 @@ export class IgeSkeletalAnimationComponent extends IgeComponent<IgeEntity> {
 			// Update animation time
 			state.time += deltaSeconds * state.speed;
 
+			// A clip that blends out fades to nothing over its last moments
+			if (state.blendOut && state.speed !== 0) {
+				const left = (state.speed > 0 ? state.clip.duration - state.time : state.time) / Math.abs(state.speed);
+				if (left < state.blendOut) state.weight = Math.min(state.weight, Math.max(0, left / state.blendOut));
+			}
+
 			// Handle looping (both ways: a negative speed plays the clip backwards)
 			if (state.time < 0) {
 				if (state.loop) {
@@ -492,7 +634,7 @@ export class IgeSkeletalAnimationComponent extends IgeComponent<IgeEntity> {
 					if (state.time >= d) state.time = 0;
 					this.emit("loopComplete", state.clip.id);
 				} else {
-					// Finished (backwards): its first frame is posed once more below, then it's removed
+					// Finished (backwards): its first frame is posed once more, then it's removed
 					state.time = 0;
 					state.playing = false;
 					this.emit("complete", state.clip.id);
@@ -503,7 +645,7 @@ export class IgeSkeletalAnimationComponent extends IgeComponent<IgeEntity> {
 					state.time = state.clip.duration > 0 ? state.time % state.clip.duration : 0;
 					this.emit("loopComplete", state.clip.id);
 				} else {
-					// Finished: its last frame is posed once more below (the skeleton then holds it), then it's removed
+					// Finished: its last frame is posed once more (the skeleton then holds it), then it's removed
 					state.time = state.clip.duration;
 					state.playing = false;
 					this.emit("complete", state.clip.id);
@@ -512,37 +654,12 @@ export class IgeSkeletalAnimationComponent extends IgeComponent<IgeEntity> {
 
 			totalWeight += state.weight;
 		}
+		return totalWeight;
+	}
 
-		if (samplePose && totalWeight > 0 && states.length > 0) {
-			// A new pose is about to be applied: render on demand needs a frame
-			markSceneChanged();
-
-			// Fast path: one clip at full weight -> shared pose cache (not with extra bone rotations: they're per entity)
-			if (!(states.length === 1 && states[0].weight >= 1 && this._poseCache && !this._skeleton.boneRotations?.length && this._applyCachedPose(states[0]))) {
-				this._sampleBlendedPose(totalWeight);
-			}
-		}
-
-		// Remove faded-out animations, and finished ones once their final frame has been posed (the skeleton then keeps
-		// it). A clip that finishes out of sight waits until the entity is next drawn, so a death clip that ended in an
-		// unseen room still leaves the body lying down rather than in whatever pose it was last seen in.
-		for (let i = states.length - 1; i >= 0; i--) {
-			const state = states[i];
-			if (!state.playing && (samplePose || state.weight <= 0)) {
-				states.splice(i, 1);
-			}
-		}
-	};
-
-	/**
-	 * Sample every active state at its own time, blend and write the result
-	 * into the skeleton's local matrices.
-	 */
-	protected _sampleBlendedPose(totalWeight: number): void {
-		const skeleton = this._skeleton!;
-
-		// Reset bone accumulators
-		const boneCount = skeleton.data.boneCount;
+	/** Zero the per-bone accumulators. */
+	protected _resetAccumulators(): void {
+		const boneCount = this._skeleton!.data.boneCount;
 		for (let i = 0; i < boneCount; i++) {
 			const t = this._boneTranslations[i];
 			const r = this._boneRotations[i];
@@ -554,7 +671,18 @@ export class IgeSkeletalAnimationComponent extends IgeComponent<IgeEntity> {
 			this._boneRotationWeights[i] = 0;
 			this._boneScaleWeights[i] = 0;
 		}
+	}
 
+	/**
+	 * Sample every active state at its own time, blend and write the result
+	 * into the skeleton's local matrices; then each playing layer, blended
+	 * over its bones.
+	 */
+	protected _sampleBlendedPose(totalWeight: number, layers: IgeAnimationLayer[] = []): void {
+		const skeleton = this._skeleton!;
+		const boneCount = skeleton.data.boneCount;
+
+		this._resetAccumulators();
 		const states = this._activeStates;
 		for (let i = 0; i < states.length; i++) {
 			const state = states[i];
@@ -563,7 +691,60 @@ export class IgeSkeletalAnimationComponent extends IgeComponent<IgeEntity> {
 			}
 		}
 
-		this._applyBlendedTransforms(totalWeight);
+		if (!layers.length) {
+			this._applyBlendedTransforms(totalWeight);
+			return;
+		}
+
+		// The base pose (the rest pose if only layers are playing), kept while the layers blend over it
+		const rest = getRestPose(skeleton.data);
+		if (totalWeight > 0) this._resolveAccumulated(totalWeight);
+		for (let i = 0; i < boneCount; i++) {
+			if (totalWeight > 0) {
+				this._poseTranslations[i].set(this._boneTranslations[i]);
+				this._poseRotations[i].set(this._boneRotations[i]);
+				this._poseScales[i].set(this._boneScales[i]);
+			} else {
+				this._poseTranslations[i].set(rest.translations.subarray(i * 3, i * 3 + 3));
+				this._poseRotations[i].set(rest.rotations.subarray(i * 4, i * 4 + 4));
+				this._poseScales[i].set(rest.scales.subarray(i * 3, i * 3 + 3));
+			}
+		}
+
+		for (const layer of layers) {
+			if (layer.total <= 0) continue;
+			const mask = this._layerMask(layer);
+			this._resetAccumulators();
+			for (const state of layer.states) {
+				if (state.weight > 0) this._sampleAnimation(state.clip, state.time, state.weight, mask);
+			}
+			this._resolveAccumulated(layer.total, mask);
+			// Over the pose so far, as strongly as the layer's clips are faded in
+			const w = Math.min(1, layer.total) * layer.weight;
+			for (let i = 0; i < boneCount; i++) {
+				if (!mask[i]) continue;
+				const pt = this._poseTranslations[i], lt = this._boneTranslations[i];
+				const ps = this._poseScales[i], ls = this._boneScales[i];
+				for (let k = 0; k < 3; k++) {
+					pt[k] += (lt[k] - pt[k]) * w;
+					ps[k] += (ls[k] - ps[k]) * w;
+				}
+				const pr = this._poseRotations[i], lr = this._boneRotations[i];
+				const sign = pr[0] * lr[0] + pr[1] * lr[1] + pr[2] * lr[2] + pr[3] * lr[3] < 0 ? -1 : 1;
+				let len = 0;
+				for (let k = 0; k < 4; k++) {
+					pr[k] += (lr[k] * sign - pr[k]) * w;
+					len += pr[k] * pr[k];
+				}
+				len = Math.sqrt(len) || 1;
+				for (let k = 0; k < 4; k++) pr[k] /= len;
+			}
+		}
+
+		for (let i = 0; i < boneCount; i++) {
+			this._applyBoneTransform(i, this._poseTranslations[i], this._poseRotations[i], this._poseScales[i]);
+		}
+		skeleton.dirty = true;
 	}
 
 	/**
@@ -640,14 +821,15 @@ export class IgeSkeletalAnimationComponent extends IgeComponent<IgeEntity> {
 	protected _sampleAnimation(
 		clip: IgeAnimationClipData,
 		time: number,
-		weight: number
+		weight: number,
+		mask?: Uint8Array
 	): void {
 		for (const channel of clip.channels) {
 			const sampler = clip.samplers[channel.samplerIndex];
 			const boneIndex = channel.targetBoneIndex;
 
-			// Skip invalid bone indices
-			if (boneIndex < 0 || boneIndex >= this._boneTranslationWeights.length) {
+			// Skip invalid bone indices (and, for a layer, bones it doesn't move)
+			if (boneIndex < 0 || boneIndex >= this._boneTranslationWeights.length || (mask && !mask[boneIndex])) {
 				continue;
 			}
 
@@ -913,11 +1095,26 @@ export class IgeSkeletalAnimationComponent extends IgeComponent<IgeEntity> {
 		if (!this._skeleton) {
 			return;
 		}
-
+		this._resolveAccumulated(totalWeight);
 		const boneCount = this._skeleton.data.boneCount;
-		const rest = getRestPose(this._skeleton.data);
+		for (let i = 0; i < boneCount; i++) {
+			this._applyBoneTransform(i, this._boneTranslations[i], this._boneRotations[i], this._boneScales[i]);
+		}
+
+		// Mark skeleton as dirty so matrices get recomputed
+		this._skeleton.dirty = true;
+	}
+
+	/**
+	 * Turn the accumulated, weighted transforms into each bone's final translation, rotation and scale (in place), any
+	 * weight short of `totalWeight` filled from the rest pose. `mask`: only those bones.
+	 */
+	protected _resolveAccumulated(totalWeight: number, mask?: Uint8Array): void {
+		const boneCount = this._skeleton!.data.boneCount;
+		const rest = getRestPose(this._skeleton!.data);
 
 		for (let i = 0; i < boneCount; i++) {
+			if (mask && !mask[i]) continue;
 			const translationWeight = this._boneTranslationWeights[i];
 			const rotationWeight = this._boneRotationWeights[i];
 			const scaleWeight = this._boneScaleWeights[i];
@@ -986,13 +1183,7 @@ export class IgeSkeletalAnimationComponent extends IgeComponent<IgeEntity> {
 			scale[0] *= invS;
 			scale[1] *= invS;
 			scale[2] *= invS;
-
-			// Apply to skeleton; the skeleton manager computes the final matrices
-			this._applyBoneTransform(i, translation, rotation, scale);
 		}
-
-		// Mark skeleton as dirty so matrices get recomputed
-		this._skeleton.dirty = true;
 	}
 
 	/**
