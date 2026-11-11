@@ -569,17 +569,27 @@ const wonders: Record<string, Builder> = {
 	},
 	colossus: () => {
 		const v = new Vox(152);
-		v.cbox(0, 0.5, 0, 14, 4, 14, C.stone).cbox(0, 4.5, 0, 12, 1, 12, C.white);
-		// A giant bronze chibi with a torch held high
-		const BR = 0xd39a52, BRD = 0xb47c3c;
-		v.cbox(-2, 5.5, 0, 3, 6, 3.4, BR).cbox(2, 5.5, 0, 3, 6, 3.4, BR);
-		v.cbox(0, 11.5, 0, 8, 7, 5, BR).cbox(0, 11.5, 0, 8.4, 2, 5.4, BRD);
-		v.cbox(0, 18.5, 0, 11, 10, 10, BR);
-		v.cbox(-2.2, 22, 5.05, 1.4, 2, 0.3, 0x5b3a1e).cbox(2.2, 22, 5.05, 1.4, 2, 0.3, 0x5b3a1e);
-		for (let i = 0; i < 7; i++) v.cbox(-4.5 + i * 1.5, 28.5, 0, 1, 2 + (i % 2), 1, BRD);
-		v.cbox(5.5, 15, 0, 2.4, 2.4, 2.4, BR).cbox(5.5, 17.4, 0, 2.2, 13, 2.2, BR).cbox(5.5, 30.4, 0, 2.8, 1.2, 2.8, C.gold);
-		v.cbox(5.5, 31.6, 0, 2, 2, 2, C.glow).cbox(5.5, 33.6, 0, 1.2, 1.4, 1.2, 0xfff0a0);
-		v.cbox(-5.6, 12, 0, 2.4, 6, 2.4, BR);
+		// A stepped plinth with a gold band
+		v.cbox(0, 0.5, 0, 15, 2.5, 15, C.stone).cbox(0, 3, 0, 13, 2, 13, C.white).cbox(0, 3.6, 6.55, 9, 0.8, 0.2, C.gold);
+		// A giant bronze chibi, legs planted wide, a spear in one hand and a torch held high in the other
+		const BR = 0xd39a52, BRD = 0xa8702f, BRL = 0xe8b46a, EYE = 0x4a2c12;
+		for (const x of [-2.8, 2.8]) v.cbox(x, 5, 0, 3, 6.5, 3.4, BR).cbox(x, 5, 0.3, 3.3, 1.2, 3.8, BRD);
+		// Pleated kilt, belted tunic, a cloak down the back
+		for (let i = 0; i < 5; i++) v.cbox(-3.6 + i * 1.8, 10.5, 0, 1.8, 3, 5.6, i % 2 ? BR : BRD);
+		v.cbox(0, 13.5, 0, 8, 5.5, 5, BR).cbox(0, 13.5, 0, 8.3, 1, 5.3, BRD).cbox(0, 15.6, 2.55, 3, 2.4, 0.2, BRL);
+		v.cbox(0, 9, -3, 9, 9.5, 0.8, BRD);
+		// The head: big and round-faced, with a calm face and a crown of sun rays
+		v.cbox(0, 19, 0, 10, 8.5, 9, BR).cbox(0, 26, 0, 10.4, 1.4, 9.4, BRD);
+		v.cbox(-2.3, 22, 4.55, 1.3, 1.9, 0.2, EYE).cbox(2.3, 22, 4.55, 1.3, 1.9, 0.2, EYE).cbox(0, 20.2, 4.55, 2, 0.5, 0.2, BRD);
+		for (const [x, z] of [[-4, 4], [0, 4.4], [4, 4], [-5, 0], [5, 0], [-4, -4], [0, -4.4], [4, -4]] as const) {
+			v.cbox(x, 27.4, z, 1.2, x === 0 ? 4 : 3, 1.2, C.gold).cbox(x, 27.4 + (x === 0 ? 4 : 3), z, 0.6, 0.8, 0.6, BRL);
+		}
+		// Torch arm raised beside the head
+		v.cbox(6.3, 14.5, 0, 2.6, 4, 2.6, BR).cbox(6.6, 18.5, 0, 2.4, 9, 2.4, BR).cbox(6.6, 27.5, 0, 3, 2, 3, BRL);
+		v.cbox(6.6, 29.5, 0, 1.4, 3, 1.4, BRD).cbox(6.6, 32.5, 0, 3, 1, 3, C.gold).cbox(6.6, 33.5, 0, 2.2, 2.2, 2.2, C.glow).cbox(6.6, 35.7, 0, 1.2, 1.4, 1.2, 0xfff0a0);
+		// Spear arm down the other side
+		v.cbox(-6.2, 12.5, 0, 2.6, 6.5, 2.6, BR).cbox(-6.2, 11, 0, 3, 2, 3, BRL);
+		v.cbox(-6.2, 4.6, 0, 0.9, 25, 0.9, BRD).cbox(-6.2, 29.6, 0, 1.6, 2.4, 1.6, C.gold).cbox(-6.2, 32, 0, 0.8, 1.2, 0.8, C.gold);
 		return v;
 	},
 	hangingGardens: () => {
