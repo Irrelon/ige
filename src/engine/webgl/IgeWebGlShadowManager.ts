@@ -211,6 +211,23 @@ export class IgeWebGlShadowManager extends IgeBaseClass {
 	/**
 	 * Create or update a shadow map for a directional light.
 	 */
+	/**
+	 * After the WebGL context was lost and restored: every shadow map made
+	 * again at the size and bias it had (the old framebuffers and textures
+	 * died with the old context; they're forgotten, not deleted), and the
+	 * static caches dropped (they're rebuilt when next drawn).
+	 */
+	contextRestored(resourceManager?: IgeWebGlResourceManager): void {
+		if (resourceManager) this._resourceManager = resourceManager;
+		const maps = [...this._shadowMaps].map(([id, m]) => [id, { size: m.size, bias: m.bias, normalBias: m.normalBias }] as const);
+		const points = [...this._pointShadowMaps].map(([id, m]) => [id, { size: m.faceSize, bias: m.bias, nearPlane: m.nearPlane, farPlane: m.farPlane }] as const);
+		this._shadowMaps.clear();
+		this._pointShadowMaps.clear();
+		this._shadowCaches.clear();
+		for (const [id, cfg] of maps) this.createShadowMap(id, cfg);
+		for (const [id, cfg] of points) this.createPointShadowMap(id, cfg);
+	}
+
 	createShadowMap(
 		lightId: string,
 		config?: Partial<IgeShadowMapConfig>

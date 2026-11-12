@@ -692,23 +692,77 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 	 * Handle WebGL context loss.
 	 */
 	protected _handleContextLost = (event: Event): void => {
+		// (Without preventDefault the browser never gives the context back)
 		event.preventDefault();
 		this._contextLost = true;
 		this._postProcess?.contextLost();
 		this.log("WebGL context lost!", "warning");
+		this.emit("contextLost");
 	};
 
 	/**
-	 * Handle WebGL context restoration.
+	 * Handle WebGL context restoration: every GPU resource is made again from
+	 * what the CPU still holds, then drawing resumes (the game goes on
+	 * without a reload). Emits "contextRestored" with the ids of any meshes
+	 * that can't come back (discardGeometryArrays kept only their GPU copy:
+	 * the game must rebuild those).
 	 */
 	protected _handleContextRestored = (): void => {
-		this._contextLost = false;
-		// (The UI layer's program and buffer went with the old context)
-		this._uiPass = undefined;
 		this.log("WebGL context restored, reinitializing resources...");
-		// Recreate all GPU resources
-		// this._recreateResources();
+		const lost = this._recreateResources();
+		this._contextLost = false;
+		this.emit("contextRestored", { lost });
 	};
+
+	/** Whether the WebGL context is lost right now (nothing draws until it's back). */
+	contextLost(): boolean {
+		return this._contextLost;
+	}
+
+	/**
+	 * Every GPU resource made again on the restored context: new managers (their
+	 * caches held the old context's handles, now dead), the built-in shaders
+	 * compiled, the instancing and bone buffers, the renderer's own buffers and
+	 * textures forgotten so they're made on first use. Geometry re-uploads from
+	 * its arrays, textures from their images and canvases (text labels, smart
+	 * textures), shadow maps and post-process targets as they're next needed.
+	 * Returns the ids of meshes that kept only their GPU copy (lost for good).
+	 */
+	protected _recreateResources(): string[] {
+		const gl = this._canvasContext;
+		if (!gl) return [];
+		// Forget (don't delete) the old handles: deleting them on the new context would be an error
+		this._particleBuffers.clear();
+		this._decalMeshBuffers.clear();
+		this._defaultParticleTexture = null;
+		this._defaultDecalTexture = null;
+		this._debugLineBuffer = null;
+		this._postProcess?.contextLost();
+		this._uiPass = undefined;
+		this._shadowMapHoldsCache = false;
+		// Extensions are per context: asked for again (32-bit indices, instancing, float textures)
+		this._queryCapabilities();
+		this._resourceManager = new IgeWebGlResourceManager(gl, this._webglVersion);
+		this._shaderManager = new IgeWebGlShaderManager(gl, this._resourceManager);
+		this._textureManager = new IgeWebGlTextureManager(gl, this._resourceManager);
+		this._geometryManager = new IgeWebGlGeometryManager(gl, this._resourceManager);
+		this._stateManager = new IgeWebGlStateManager(gl);
+		// (The shadow manager keeps its lights' settings: its maps are made again at the same sizes)
+		this._shadowManager?.contextRestored(this._resourceManager);
+		this._skeletonManager?.cleanup();
+		this._skeletonManager = new IgeWebGlSkeletonManager();
+		if (this._webglVersion === 2) {
+			const gl2 = gl as WebGL2RenderingContext;
+			this._instanceBuffer = new IgeWebGlInstanceBuffer(gl2);
+			this._bonePalette = new IgeWebGlBonePalette(gl2);
+		}
+		this._compileBuiltInShaders();
+		const lost = [...this._gpuOnlyGeometry];
+		return lost;
+	}
+
+	/** Meshes whose arrays were discarded (discardGeometryArrays): a lost context can't bring them back. */
+	protected _gpuOnlyGeometry: Set<string> = new Set();
 
 	/**
 	 * Set the background clear colour used for the canvas and each viewport.
@@ -873,6 +927,8 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 		delete geometryData.boneWeights;
 		delete geometryData.boneIndices;
 		geometryData.gpuOnly = true;
+		// (If the context is ever lost, this one can't be re-uploaded: contextRestored names it)
+		if (geometryData.id) this._gpuOnlyGeometry.add(geometryData.id);
 		return true;
 	}
 

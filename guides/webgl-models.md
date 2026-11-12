@@ -291,3 +291,19 @@ and `renderer.releaseTexture(texture)` or `texture.destroy()`.
   first, and expect triangle picking, raycasts, decals and physics mesh shapes to skip it.
 - Raycasts and projected decals use a triangle BVH for meshes over 512 triangles, built on first use (about half a
   second for 320,000 triangles). `getTriangleBvh(mesh)` from `IgeTriangleBvh` builds it ahead, e.g. while loading.
+
+## Losing the WebGL context
+
+The browser can take the GPU away (several 3D tabs, a driver reset): the canvas stops drawing. The renderer handles it: on `webglcontextlost` it stops drawing and emits `"contextLost"`; on `webglcontextrestored` it makes every GPU resource again from what the CPU still holds (geometry from its arrays, textures from their images and canvases, UI-layer text labels, the built-in shaders, shadow maps at the sizes they had, instancing and bone buffers, post-process targets) and emits `"contextRestored"` before drawing again. The game carries on without a reload.
+
+```typescript
+renderer.on("contextLost", () => showNotice("Graphics paused: restoring…"));
+renderer.on("contextRestored", ({ lost }) => {
+	hideNotice();
+	// Meshes kept only on the GPU (discardGeometryArrays) can't come back: rebuild these
+	for (const id of lost) rebuildMesh(id);
+});
+renderer.contextLost(); // true while it's gone
+```
+
+Test it with the `WEBGL_lose_context` extension: `gl.getExtension("WEBGL_lose_context").loseContext()`, then `.restoreContext()`.
