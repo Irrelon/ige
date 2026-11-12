@@ -30,6 +30,8 @@ export interface IgeUiSettings extends IgeUiPlacement {
 	space: IgeUiSpace;
 	/** World: its height on screen in CSS pixels at any distance and zoom (unset: its world size, as the camera sees it). */
 	screenSize?: number;
+	/** World, at its world size: never shorter on screen than this many CSS pixels (a far target's bracket). */
+	minScreenSize?: number;
 	/** World: CSS pixels to move it on screen from its point (x right, y down). */
 	offsetX: number;
 	offsetY: number;
@@ -87,6 +89,10 @@ export function placeUi (settings: IgeUiSettings, world: Float32Array, sizeX: nu
 			const perUnit = (view.yScale * view.height * 0.5) / cw;
 			w = sizeX * Math.hypot(world[0], world[1], world[2]) * perUnit;
 			h = sizeY * Math.hypot(world[4], world[5], world[6]) * perUnit;
+			if (settings.minScreenSize !== undefined && h < settings.minScreenSize && h > 0) {
+				w *= settings.minScreenSize / h;
+				h = settings.minScreenSize;
+			}
 		}
 		rect = { x: cx - w / 2, y: cy - h / 2, width: w, height: h, depth: cw };
 	}

@@ -1407,6 +1407,20 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 		return this;
 	}
 
+	/**
+	 * Gets / sets the least height on screen, in CSS pixels, of a world-anchored
+	 * UI element shown at its world size (a target's bracket that shouldn't
+	 * shrink to nothing far away). `undefined` removes it.
+	 */
+	uiMinScreenSize (pixels: number | undefined): this;
+	uiMinScreenSize (): number | undefined;
+	uiMinScreenSize (...args: [number | undefined] | []) {
+		if (args.length === 0) return this._ui?.minScreenSize;
+		this._uiSettings().minScreenSize = args[0];
+		this._renderChanged();
+		return this;
+	}
+
 	/** Moves a world-anchored UI element on screen from its point, in CSS pixels (x right, y down). */
 	uiOffset (x: number, y: number): this {
 		const ui = this._uiSettings();

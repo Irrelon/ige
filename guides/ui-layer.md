@@ -43,6 +43,8 @@ An element follows its own world position, always faces the camera, and is centr
 - `uiScreenSize(px)` keeps it that many CSS pixels tall at any distance and zoom, with its width following its
   aspect. `uiScreenSize(undefined)` goes back to its world size.
 - `uiOffset(x, y)` moves it on screen by CSS pixels (x right, y down), e.g. above a character's head.
+- `uiMinScreenSize(px)` keeps one shown at its world size from shrinking below that many pixels (a far target's
+  bracket).
 
 ```typescript
 // A name tag over a character, the same size at any distance, a little above the point

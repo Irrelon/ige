@@ -63,6 +63,11 @@ describe("the UI layer: where elements go", () => {
 		expect(placeUi(sized, at(0, 0, -10), 40, 10, 1, 1, zoomedOut)!.height).toBeCloseTo(24, 5);
 		// Without one, an orthographic view shows it at its world size × pixels per unit
 		expect(placeUi(world(), at(0, 0, -10), 40, 10, 1, 1, zoomedIn)!.height).toBeCloseTo(10 * (600 / 100), 3);
+		// ...never shorter than its least screen size, keeping its shape
+		const least = placeUi(world({ minScreenSize: 30 }), at(0, 0, -10), 40, 10, 1, 1, zoomedOut)!;
+		expect(least.height).toBeCloseTo(30, 5);
+		expect(least.width).toBeCloseTo(120, 5);
+		expect(placeUi(world({ minScreenSize: 30 }), at(0, 0, -10), 40, 10, 1, 1, zoomedIn)!.height).toBeCloseTo(60, 3);
 	});
 
 	it("isn't drawn behind the camera or off the screen", () => {
