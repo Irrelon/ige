@@ -11,6 +11,8 @@ export interface IgeZoneHostOptions {
 	url: string;
 	/** How many players are here now (sent with each heartbeat; nobody for a while and the directory stops the zone). */
 	players: () => number;
+	/** Who's here (names, for a layered directory placing companions together); sent with each heartbeat if given. */
+	who?: () => string[];
 	/** Heartbeats this often (ms, default 5000). */
 	heartbeatMs?: number;
 	/** How long a handoff ticket is good for (seconds, default 30: the jump plus a slow connection). */
@@ -39,7 +41,14 @@ export interface IgeZoneHostOptions {
  *
  * Start the zone beyond a gate early with `ensure(zone)` as a player nears it.
  *
- * Events: "registered", "heartbeatFailed" (error), "handoff" (player, zone).
+ * Layers (the directory's `layers`): a handoff with `{ place: true }` lets
+ * the directory choose which layer of the zone (with `companions`, by
+ * who's in each); without it the exact zone (a layer hop to a friend's).
+ * When the directory merges this layer into another, a heartbeat's answer
+ * says so: "drain" (zone) fires, and the game hands its players there.
+ *
+ * Events: "registered", "heartbeatFailed" (error), "handoff" (player,
+ * zone), "drain" (zone: hand everyone here over to it).
  */
 export class IgeZoneHost extends IgeEventingClass {
 	classId = "IgeZoneHost";
@@ -48,6 +57,8 @@ export class IgeZoneHost extends IgeEventingClass {
 	_guard = new IgeZoneTicketGuard();
 	_timer?: ReturnType<typeof setInterval>;
 	_now: () => number;
+	/** The layer this one's being merged into (the directory said), if it is. */
+	draining?: string;
 
 	constructor (options: IgeZoneHostOptions) {
 		super();
@@ -94,7 +105,12 @@ export class IgeZoneHost extends IgeEventingClass {
 
 	/** Tells the directory this zone's alive, and how many are in it. */
 	async heartbeat (): Promise<void> {
-		await this._post("/zones/heartbeat", { zone: this.zone, players: this._options.players(), url: this._options.url });
+		const answer = await this._post("/zones/heartbeat", { zone: this.zone, players: this._options.players(), url: this._options.url, ...(this._options.who ? { who: this._options.who() } : {}) }) as { drain?: string };
+		const drain = typeof answer.drain === "string" ? answer.drain : undefined;
+		if (drain !== this.draining) {
+			this.draining = drain;
+			if (drain) this.emit("drain", drain);
+		}
 	}
 
 	/**
@@ -103,11 +119,12 @@ export class IgeZoneHost extends IgeEventingClass {
 	 * they arrive, their velocity...). Send both to the player's machine;
 	 * it calls IgeNetSyncClient.transfer with them.
 	 */
-	async handoff (player: string, toZone: string, data?: unknown): Promise<{ url: string; ticket: string }> {
-		const url = await this.ensure(toZone);
-		const ticket = signTicket({ player, zone: toZone, data }, this._options.secret, this._options.ticketTtl ?? 30, this._now());
-		this.emit("handoff", player, toZone);
-		return { url, ticket };
+	async handoff (player: string, toZone: string, data?: unknown, options: { place?: boolean; companions?: string[] } = {}): Promise<{ url: string; ticket: string; zone: string }> {
+		const answer = await this._post("/zones/ensure", { zone: toZone, ...(options.place ? { place: true, player, companions: options.companions ?? [] } : {}) }) as { url: string; zone?: string };
+		const zone = typeof answer.zone === "string" && answer.zone ? answer.zone : toZone;
+		const ticket = signTicket({ player, zone, data }, this._options.secret, this._options.ticketTtl ?? 30, this._now());
+		this.emit("handoff", player, zone);
+		return { url: answer.url, ticket, zone };
 	}
 
 	/**

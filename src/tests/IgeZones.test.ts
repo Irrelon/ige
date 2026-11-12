@@ -6,6 +6,7 @@ import { IgeZoneDirectory } from "@/engine/network/zones/IgeZoneDirectory";
 import { IgeZoneHost } from "@/engine/network/zones/IgeZoneHost";
 import type { IgeZoneLauncher } from "@/engine/network/zones/IgeZoneLauncher";
 import { type IgeZoneTicket, IgeZoneTicketGuard, signTicket, verifyTicket } from "@/engine/network/zones/igeZoneTicket";
+import { igeLayerZone, igeZoneLayer } from "@/engine/network/zones/igeZoneLayers";
 
 const SECRET = "test-secret";
 
@@ -575,5 +576,110 @@ describe("moving between zones", () => {
 		await expect(c.join([], "anything")).rejects.toThrow(/Tickets aren't taken here/);
 		again.destroy();
 		c.destroy();
+	});
+});
+
+describe("zone layers", () => {
+	it("names layers after their zone (layer 0 is the zone itself)", () => {
+		expect(igeLayerZone("valeria", 0)).toBe("valeria");
+		expect(igeLayerZone("valeria", 2)).toBe("valeria--2");
+		expect(igeZoneLayer("valeria--2")).toEqual({ base: "valeria", layer: 2 });
+		expect(igeZoneLayer("valeria")).toEqual({ base: "valeria", layer: 0 });
+		expect(igeZoneLayer("deep-space")).toEqual({ base: "deep-space", layer: 0 });
+		expect(igeZoneLayer("odd--x")).toEqual({ base: "odd--x", layer: 0 });
+	});
+
+	function layered (capacity = 2, mergeBelow = 1) {
+		let now = 1000;
+		const fake = fakeLauncher();
+		const dir = new IgeZoneDirectory({
+			launcher: fake.launcher, secret: SECRET, idleMs: 60000, layers: { capacity, mergeBelow, reserveMs: 30000 },
+			resolveEntry: (player, body) => ({ zone: "valeria", companions: Array.isArray(body.with) ? body.with as string[] : [] }),
+			directoryUrl: "http://dir", now: () => now
+		});
+		/** Enters a player, registering any zone that starts for it. */
+		const enter = async (player: string, body: Record<string, unknown> = {}) => {
+			const entering = dir.enter(player, body);
+			await until(() => [...dir.zones.values()].every((r) => r.state === "running" || !dir._starting.has(r.zone)) || fake.started.some((s) => !dir.zones.get(s.zone)?.url || dir.zones.get(s.zone)?.state === "starting"));
+			for (const s of fake.started) if (dir.zones.get(s.zone)?.state === "starting" && dir._starting.has(s.zone)) dir.register(s.zone, `ws://${s.zone}`);
+			return entering;
+		};
+		return { dir, fake, enter, advance: (ms: number) => { now += ms; } };
+	}
+
+	it("opens a new layer when a zone's full, and puts companions in their friends' layer", async () => {
+		const { dir, enter } = layered(2);
+		const opened: string[] = [];
+		dir.on("layer", (zone: string) => {
+			opened.push(zone);
+		});
+		expect((await enter("ann")).zone).toBe("valeria");
+		expect((await enter("bob")).zone).toBe("valeria");
+		// (Places held before their zone's heartbeat counts them: the third doesn't squeeze in)
+		const cid = await enter("cid");
+		expect(cid.zone).toBe("valeria--1");
+		expect(opened).toEqual(["valeria--1"]);
+		expect(verifyTicket(cid.ticket, SECRET, 1500)).toMatchObject({ player: "cid", zone: "valeria--1" });
+		// The heartbeats say who's where
+		dir.heartbeat("valeria", 2, undefined, ["Ann", "Bob"]);
+		dir.heartbeat("valeria--1", 1, undefined, ["Cid"]);
+		// Dee's a friend of Ann's: with her, full or not; Eve has nobody: the layer with room
+		expect((await enter("dee", { with: ["ann"] })).zone).toBe("valeria");
+		expect((await enter("eve")).zone).toBe("valeria--1");
+		// A zone given as exact (still has them: a reconnect) isn't placed
+		const exact = new IgeZoneDirectory({ launcher: fakeLauncher().launcher, secret: SECRET, layers: { capacity: 1 }, resolveEntry: () => ({ zone: "valeria--1", exact: true }) });
+		exact.register("valeria--1", "ws://v1");
+		expect((await exact.enter("ann")).zone).toBe("valeria--1");
+	});
+
+	it("merges quiet layers: one drains into another (its zone host hears), then stops once it's empty", async () => {
+		const fake = fakeLauncher();
+		let now = 1000;
+		const dir = new IgeZoneDirectory({ launcher: fake.launcher, secret: SECRET, layers: { capacity: 4, mergeBelow: 0.5 }, resolveEntry: () => ({ zone: "valeria" }), now: () => now });
+		const port = await dir.listen(0);
+		const base = `http://127.0.0.1:${port}`;
+		try {
+			let inTop = ["cid"];
+			const bottom = new IgeZoneHost({ zone: "valeria", directoryUrl: base, secret: SECRET, url: "ws://v/sync", players: () => 1, who: () => ["ann"], heartbeatMs: 60000 });
+			const top = new IgeZoneHost({ zone: "valeria--1", directoryUrl: base, secret: SECRET, url: "ws://v1/sync", players: () => inTop.length, who: () => inTop, heartbeatMs: 60000 });
+			await bottom.start();
+			await top.start();
+			await bottom.heartbeat();
+			await top.heartbeat();
+			const drains: string[] = [];
+			top.on("drain", (into: string) => {
+				drains.push(into);
+			});
+			const merging: string[] = [];
+			dir.on("drain", (from: string, into: string) => {
+				merging.push(`${from}>${into}`);
+			});
+			// Two players over two layers of four: well under half a layer together
+			await dir.check();
+			expect(merging).toEqual(["valeria--1>valeria"]);
+			await top.heartbeat();
+			expect(drains).toEqual(["valeria"]);
+			// Nobody's placed in the draining layer meanwhile
+			expect(dir.place("valeria", "dee")).toBe("valeria");
+			// Its player handed over (the game's doing), it's empty: stopped, as merged
+			inTop = [];
+			await top.heartbeat();
+			const stopped: string[] = [];
+			dir.on("stop", (zone: string, why: string) => {
+				stopped.push(`${zone}:${why}`);
+			});
+			now += 1000;
+			await dir.check();
+			expect(stopped).toEqual(["valeria--1:merged"]);
+			expect(fake.stopped).toContain("valeria--1");
+			// A handoff placed by the directory: into a layer, the ticket for it
+			const handed = await bottom.handoff("eve", "valeria", { x: 1 }, { place: true, companions: ["ann"] });
+			expect(handed.zone).toBe("valeria");
+			expect(verifyTicket(handed.ticket, SECRET, Date.now())).toMatchObject({ player: "eve", zone: "valeria" });
+			bottom.stop();
+			top.stop();
+		} finally {
+			await dir.close();
+		}
 	});
 });

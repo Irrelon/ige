@@ -245,6 +245,37 @@ the old connection hasn't closed yet (a dropped network takes a while to notice)
 replaces it, as in the zone script above. Anything the game keeps across a disconnect (a fight in progress) lives
 in the store with the player, so it's there however long they were away, and whichever process runs the zone now.
 
+### Layers: busy zones split, quiet ones merge
+
+A zone that gets crowded can run as several copies of itself ("layers"), each its own zone process with its own
+players. Turn it on with the directory's `layers` option:
+
+```typescript
+const directory = new IgeZoneDirectory({
+	launcher, secret,
+	layers: { capacity: 60, mergeBelow: 0.5 },
+	// Who a player should be put with (friends, party, guild), by the names zones report
+	resolveEntry: async (player) => ({ zone: await savedZone(player), companions: await friendsOf(player) })
+});
+```
+
+A layer's zone id is the zone's with its number after `--` (`valeria--2`); layer 0 is the zone itself, so with
+nobody about there are no layer ids at all. `igeZoneLayer(zone)` splits one into `{ base, layer }` (the game
+simulates `base`), `igeLayerZone(base, n)` makes one.
+
+- **Placing.** `/enter` (and a handoff with `{ place: true }`) puts a player into the layer most of their
+  `companions` are in, full or not; else the fullest one with room; else a new layer (the lowest number free, and
+  a `"layer"` event). The place is held for `reserveMs` until the zone's heartbeats count them, so a rush of
+  arrivals doesn't overfill one. An entry with `exact: true` (a zone that still has the player: a reconnect)
+  isn't placed.
+- **Who's where.** Give the zone host `who: () => names` and its heartbeats say who's in it.
+- **Handing on.** `zone.handoff(player, toZone, data, { place: true, companions })` lets the directory choose the
+  layer (the result's `zone` is the one chosen); without `place`, the exact zone: a hop to a friend's layer.
+- **Merging.** Each check, of a zone's running layers, the highest-numbered one with players is merged into the
+  fullest other they'd both fit in under `capacity × mergeBelow`. The directory answers that layer's next heartbeat
+  with `drain`; its zone host emits `"drain"` (the target zone) and the game hands everyone there (a layer hop, as
+  above). Nobody's placed in a draining layer, and once it's empty it stops (`"stop"`, `"merged"`).
+
 ## Running locally
 
 ### Child processes
@@ -358,9 +389,9 @@ Directory HTTP (JSON; errors are `{ error }` with a 400, 401, 403, 404 or 500):
 | Route | Who | |
 |---|---|---|
 | `POST /enter { player, ... }` | players | `resolveEntry`, the zone started if need be → `{ zone, url, ticket }` |
-| `POST /zones/ensure { zone }` | zones (handoff) | started and registered → `{ url }` |
+| `POST /zones/ensure { zone, place?, player?, companions? }` | zones (handoff) | started and registered → `{ url, zone }` (`place`: into a layer) |
 | `POST /zones/register { zone, url }` | zones | ready for players |
-| `POST /zones/heartbeat { zone, players, url? }` | zones | alive, and how many are in it |
+| `POST /zones/heartbeat { zone, players, url?, who? }` | zones | alive, how many are in it (and who) → `{ ok, drain? }` |
 | `GET /zones` | operators | every zone's state, url, players and times |
 | anything else | players | the game's `route`, if it answers (else a 404) |
 
@@ -372,9 +403,10 @@ stopped after 60 s empty (`idleMs`), 20 s to register after starting (`startTime
 
 Events:
 
-- `IgeZoneDirectory`: `"start"` (zone), `"ready"` (record), `"stop"` (zone, `"idle"` or `"shutdown"`), `"lost"`
-  (zone, `"heartbeat"` or `"exit"`), `"enter"` (player, zone).
-- `IgeZoneHost`: `"registered"`, `"heartbeatFailed"` (error), `"handoff"` (player, zone).
+- `IgeZoneDirectory`: `"start"` (zone), `"ready"` (record), `"stop"` (zone, `"idle"`, `"merged"` or `"shutdown"`),
+  `"lost"` (zone, `"heartbeat"` or `"exit"`), `"enter"` (player, zone), `"layer"` (a new layer's zone), `"drain"`
+  (zone, into).
+- `IgeZoneHost`: `"registered"`, `"heartbeatFailed"` (error), `"handoff"` (player, zone), `"drain"` (zone).
 - `IgeNetSyncHost`: `"join"` (machine), `"leave"` (machine), `"joinFailed"` (error: the game's `join` or
   `acceptTicket` threw).
 - `IgeNetSyncClient`: `"transfer"` ({ url }), `"transferred"` (welcome), `"transferFailed"` (error), as well as its

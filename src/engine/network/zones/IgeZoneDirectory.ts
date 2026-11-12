@@ -2,11 +2,20 @@ import { createServer, type IncomingMessage, type Server, type ServerResponse } 
 import { IgeEventingClass } from "@/engine/core/IgeEventingClass";
 import { signTicket } from "@/engine/network/zones/igeZoneTicket";
 import { igeZoneIdValid, type IgeZoneLauncher } from "@/engine/network/zones/IgeZoneLauncher";
+import { igeLayerZone, igeZoneLayer, type IgeZoneLayering } from "@/engine/network/zones/igeZoneLayers";
 
-/** Where a player enters the game (the game's say: their saved place), and what their ticket carries. */
+/**
+ * Where a player enters the game (the game's say: their saved place), and
+ * what their ticket carries. With layers on, `zone` is placed into one of
+ * its layers (the one most of `companions` are in, else one with room),
+ * unless `exact` (a zone that still has them: a reconnect).
+ */
 export interface IgeZoneEntry {
 	zone: string;
 	data?: unknown;
+	/** Players to be put with (friends, party, guild), by the names zones report them by (IgeZoneHost `who`). */
+	companions?: string[];
+	exact?: boolean;
 }
 
 export interface IgeZoneDirectoryOptions {
@@ -48,6 +57,12 @@ export interface IgeZoneDirectoryOptions {
 	 * its own), and a preflight it doesn't answer is answered for it.
 	 */
 	route?: (req: IncomingMessage, res: ServerResponse) => boolean | Promise<boolean>;
+	/**
+	 * Layers (igeZoneLayers): a zone with `capacity` players in it gets
+	 * another copy of itself for the next to arrive, and quiet layers are
+	 * merged back. Off without it (every player of a zone in the one zone).
+	 */
+	layers?: IgeZoneLayering;
 	/** Clock (ms), for tests. */
 	now?: () => number;
 }
@@ -64,6 +79,12 @@ export interface IgeZoneRecord {
 	lastHeartbeat: number;
 	/** Since when it's had nobody in it (undefined: someone's there). */
 	emptySince?: number;
+	/** Who's in it (names, as its heartbeats say: for putting companions together). */
+	who?: string[];
+	/** Places given to players on their way in (name → until when it holds), not yet in its heartbeats. */
+	reserved?: Record<string, number>;
+	/** A layer being merged into another (that zone): nobody's placed in it, and its players are handed over. */
+	draining?: string;
 }
 
 interface Starting {
@@ -85,16 +106,24 @@ const JSON_HEADERS = { "content-type": "application/json", "cache-control": "no-
  * HTTP (JSON bodies):
  * - `POST /enter { player, ... }`: the game's resolveEntry says which zone;
  *   it's started if need be → `{ zone, url, ticket }`.
- * - `POST /zones/ensure { zone }`: a zone handing a player on (with the
- *   secret as a bearer token) → `{ url }` once the zone's up.
+ * - `POST /zones/ensure { zone, place?, player?, companions? }`: a zone
+ *   handing a player on (with the secret as a bearer token) → `{ url, zone }`
+ *   once the zone's up (`place`: into one of its layers, as /enter does).
  * - `POST /zones/register { zone, url }` and `POST /zones/heartbeat
- *   { zone, players, url? }`: from zones (with the secret).
+ *   { zone, players, url?, who? }`: from zones (with the secret); a
+ *   heartbeat's answer says `drain` (another layer) when this one's to be
+ *   merged into it.
+ *
+ * Layers (`layers`, igeZoneLayers): a busy zone runs as several copies;
+ * players are placed with their companions where possible, and quiet
+ * layers drain into one another.
  * - `GET /zones`: every zone, for operators.
  * - Anything else the game's `route` answers (its sign-in, say).
  *
- * Events: "start" (zone), "ready" (record), "stop" (zone, why: "idle" or
- * "shutdown"), "lost" (zone, why: "heartbeat" or "exit"), "enter" (player,
- * zone).
+ * Events: "start" (zone), "ready" (record), "stop" (zone, why: "idle",
+ * "merged" or "shutdown"), "lost" (zone, why: "heartbeat" or "exit"),
+ * "enter" (player, zone), "layer" (zone: a new layer opened for a busy
+ * one), "drain" (zone, into: a layer merging into another).
  *
  *     const directory = new IgeZoneDirectory({ launcher, secret, resolveEntry: async (player) => ({ zone: await savedSystem(player) }) });
  *     await directory.listen(8680);
@@ -129,10 +158,74 @@ export class IgeZoneDirectory extends IgeEventingClass {
 		if (typeof player !== "string" || !player || player.length > 128) throw new IgeZoneError(400, "Who's entering?");
 		const entry = await this._options.resolveEntry(player, body);
 		if (typeof entry === "string") throw new IgeZoneError(403, entry);
-		const url = await this.ensure(entry.zone);
-		const ticket = signTicket({ player, zone: entry.zone, data: entry.data }, this._options.secret, this._options.ticketTtl ?? 30, this._now());
-		this.emit("enter", player, entry.zone);
-		return { zone: entry.zone, url, ticket };
+		const zone = entry.exact ? entry.zone : this.place(entry.zone, player, entry.companions);
+		const url = await this.ensure(zone);
+		const ticket = signTicket({ player, zone, data: entry.data }, this._options.secret, this._options.ticketTtl ?? 30, this._now());
+		this.emit("enter", player, zone);
+		return { zone, url, ticket };
+	}
+
+	/**
+	 * Which layer of `zone` a player goes into (layers off: `zone` itself).
+	 * The layer most of their companions are in (room or not: friends stay
+	 * together); else the first with room (fullest first, so layers fill
+	 * rather than spread); else a new layer. Their place is held there until
+	 * the zone's heartbeats count them. Layers being merged away take nobody.
+	 */
+	place (zone: string, player?: string, companions: string[] = []): string {
+		const layering = this._options.layers;
+		if (!layering) return zone;
+		const { base } = igeZoneLayer(zone);
+		const now = this._now();
+		const layers = [...this.zones.values()].filter((r) => igeZoneLayer(r.zone).base === base && !r.draining);
+		const friends = new Set(companions.map((c) => c.toLowerCase()));
+		let chosen: IgeZoneRecord | undefined, most = 0;
+		if (friends.size) {
+			for (const r of layers) {
+				const n = this._names(r, now).filter((name) => friends.has(name)).length;
+				if (n > most) [chosen, most] = [r, n];
+			}
+		}
+		if (!chosen) {
+			const room = layers.filter((r) => this.load(r) < layering.capacity).sort((a, b) => this.load(b) - this.load(a) || igeZoneLayer(a.zone).layer - igeZoneLayer(b.zone).layer);
+			chosen = room[0];
+		}
+		let id = chosen?.zone;
+		if (!id) {
+			// A new layer: the lowest number not in use (the base zone itself first)
+			const used = new Set([...this.zones.keys()].filter((z) => igeZoneLayer(z).base === base).map((z) => igeZoneLayer(z).layer));
+			let n = 0;
+			while (used.has(n)) n++;
+			id = igeLayerZone(base, n);
+			if (n > 0) this.emit("layer", id);
+		}
+		if (player) this._reserve(id, player.toLowerCase(), now);
+		return id;
+	}
+
+	/** How many are in a zone, or on their way into it. */
+	load (record: IgeZoneRecord): number {
+		const now = this._now();
+		const who = new Set(record.who ?? []);
+		const coming = Object.entries(record.reserved ?? {}).filter(([name, until]) => until > now && !who.has(name)).length;
+		return Math.max(record.players, who.size) + coming;
+	}
+
+	/** Who's in a zone, or on their way into it (names, lower case). */
+	_names (record: IgeZoneRecord, now: number): string[] {
+		return [...new Set([...(record.who ?? []), ...Object.entries(record.reserved ?? {}).filter(([, until]) => until > now).map(([name]) => name)])];
+	}
+
+	_reserve (zone: string, player: string, now: number): void {
+		let record = this.zones.get(zone);
+		// (A zone not started yet: its record's made as it starts; the place is held from now)
+		if (!record) {
+			record = { zone, state: "starting", players: 0, startedAt: now, lastHeartbeat: now, emptySince: now };
+			this.zones.set(zone, record);
+		}
+		const reserved = record.reserved ??= {};
+		for (const [name, until] of Object.entries(reserved)) if (until <= now) delete reserved[name];
+		reserved[player] = now + (this._options.layers?.reserveMs ?? 30000);
 	}
 
 	/** A zone that's up: started (and waited for) if it isn't. Resolves with its url. */
@@ -154,7 +247,9 @@ export class IgeZoneDirectory extends IgeEventingClass {
 		const starting: Starting = { promise, resolve, reject };
 		this._starting.set(zone, starting);
 		const now = this._now();
-		this.zones.set(zone, { zone, state: "starting", players: 0, startedAt: now, lastHeartbeat: now, emptySince: now });
+		// (Places already held in it are kept)
+		const held = this.zones.get(zone)?.reserved;
+		this.zones.set(zone, { zone, state: "starting", players: 0, startedAt: now, lastHeartbeat: now, emptySince: now, ...(held ? { reserved: held } : {}) });
 		this.emit("start", zone);
 		const env: Record<string, string> = { ...this._options.env, ZONE_SECRET: this._options.secret };
 		if (this.url) env.DIRECTORY_URL = this.url;
@@ -195,8 +290,12 @@ export class IgeZoneDirectory extends IgeEventingClass {
 		return record;
 	}
 
-	/** A zone's still alive, with this many players (a zone the directory had forgotten is taken back, given its url). */
-	heartbeat (zone: string, players: number, url?: string): IgeZoneRecord | undefined {
+	/**
+	 * A zone's still alive, with this many players (and, given, who: for
+	 * placing companions together). A zone the directory had forgotten is
+	 * taken back, given its url.
+	 */
+	heartbeat (zone: string, players: number, url?: string, who?: string[]): IgeZoneRecord | undefined {
 		let record = this.zones.get(zone);
 		if (!record) {
 			if (!url) return;
@@ -205,6 +304,11 @@ export class IgeZoneDirectory extends IgeEventingClass {
 		const now = this._now();
 		record.lastHeartbeat = now;
 		record.players = Math.max(0, Math.floor(Number(players) || 0));
+		if (Array.isArray(who)) {
+			record.who = who.filter((w) => typeof w === "string").slice(0, 2000).map((w) => w.toLowerCase());
+			// (Arrived: their held places go)
+			for (const name of record.who) if (record.reserved) delete record.reserved[name];
+		}
 		if (record.players > 0) record.emptySince = undefined;
 		else record.emptySince ??= now;
 		return record;
@@ -215,7 +319,7 @@ export class IgeZoneDirectory extends IgeEventingClass {
 		return [...this.zones.values()].map((r) => ({ ...r }));
 	}
 
-	/** Stops idle zones and forgets silent ones (the directory's own timer calls this every second). */
+	/** Stops idle zones (and drained layers), forgets silent ones, and merges quiet layers (the directory's own timer calls this every second). */
 	async check (): Promise<void> {
 		const now = this._now();
 		const idle = this._options.idleMs ?? 60000;
@@ -227,10 +331,50 @@ export class IgeZoneDirectory extends IgeEventingClass {
 				this._options.launcher.stop(record.zone).catch(() => undefined);
 				continue;
 			}
-			if (record.players === 0 && record.emptySince !== undefined && now - record.emptySince > idle) {
+			const empty = record.players === 0 && this.load(record) === 0;
+			// A layer merged away, now empty, stops at once; anything else empty a while stops
+			if (empty && record.draining) {
+				this.zones.delete(record.zone);
+				this.emit("stop", record.zone, "merged");
+				await this._options.launcher.stop(record.zone).catch(() => undefined);
+				continue;
+			}
+			if (empty && record.emptySince !== undefined && now - record.emptySince > idle) {
 				this.zones.delete(record.zone);
 				this.emit("stop", record.zone, "idle");
 				await this._options.launcher.stop(record.zone).catch(() => undefined);
+			}
+		}
+		this._merge();
+	}
+
+	/**
+	 * Quiet layers merged: of a zone's running layers, the highest-numbered
+	 * one with players drains into the fullest other that both fit in, well
+	 * under capacity (`mergeBelow`). One merge at a time per zone; a drain
+	 * whose target's gone is called off.
+	 */
+	_merge (): void {
+		const layering = this._options.layers;
+		if (!layering) return;
+		const below = Math.max(1, Math.floor(layering.capacity * (layering.mergeBelow ?? 0.5)));
+		const bases = new Map<string, IgeZoneRecord[]>();
+		for (const r of this.zones.values()) {
+			if (r.draining && !this.zones.has(r.draining)) r.draining = undefined;
+			if (r.state !== "running") continue;
+			const { base } = igeZoneLayer(r.zone);
+			bases.set(base, [...(bases.get(base) ?? []), r]);
+		}
+		for (const layers of bases.values()) {
+			if (layers.length < 2 || layers.some((r) => r.draining)) continue;
+			const order = [...layers].sort((a, b) => igeZoneLayer(b.zone).layer - igeZoneLayer(a.zone).layer);
+			for (const from of order) {
+				if (igeZoneLayer(from.zone).layer === 0 || this.load(from) === 0) continue;
+				const into = layers.filter((r) => r !== from && this.load(r) + this.load(from) <= below).sort((a, b) => this.load(b) - this.load(a))[0];
+				if (!into) continue;
+				from.draining = into.zone;
+				this.emit("drain", from.zone, into.zone);
+				break;
 			}
 		}
 	}
@@ -298,12 +442,18 @@ export class IgeZoneDirectory extends IgeEventingClass {
 		switch (path) {
 			case "/enter":
 				return this.enter(String(body.player ?? ""), body);
-			case "/zones/ensure":
-				return { url: await this.ensure(String(body.zone ?? "")) };
+			case "/zones/ensure": {
+				const asked = String(body.zone ?? "");
+				const companions = Array.isArray(body.companions) ? body.companions.filter((c): c is string => typeof c === "string").slice(0, 200) : [];
+				const zone = body.place ? this.place(asked, typeof body.player === "string" ? body.player : undefined, companions) : asked;
+				return { url: await this.ensure(zone), zone };
+			}
 			case "/zones/register":
 				return { ok: true, zone: this.register(String(body.zone ?? ""), String(body.url ?? "")).zone };
-			case "/zones/heartbeat":
-				return { ok: !!this.heartbeat(String(body.zone ?? ""), Number(body.players) || 0, typeof body.url === "string" ? body.url : undefined) };
+			case "/zones/heartbeat": {
+				const record = this.heartbeat(String(body.zone ?? ""), Number(body.players) || 0, typeof body.url === "string" ? body.url : undefined, Array.isArray(body.who) ? body.who as string[] : undefined);
+				return { ok: !!record, ...(record?.draining ? { drain: record.draining } : {}) };
+			}
 		}
 		throw new IgeZoneError(404, "Not found");
 	}
