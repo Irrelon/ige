@@ -1,4 +1,5 @@
 import type { IgeBaseClass } from "@/engine/core/IgeBaseClass";
+import { renderDue } from "@/engine/utils/renderDue";
 import { igeSceneChange } from "@/engine/utils/sceneChange";
 import type { IgeBaseRenderer } from "@/engine/core/IgeBaseRenderer";
 import type { IgeCamera } from "@/engine/core/IgeCamera";
@@ -32,6 +33,8 @@ export class IgeEngine extends IgeEntity implements IgeIsReadyPromise {
 	_useManualRender: boolean = false;
 	_manualRenderQueued: boolean = false;
 	_renderOnDemand: boolean = false;
+	_maxRenderRate: number = 0;
+	_lastRenderAt: number = -Infinity;
 	_renderedSceneChange: number = -1;
 	_viewState: number[] = [];
 	_viewStateScratch: number[] = [];
@@ -650,6 +653,23 @@ export class IgeEngine extends IgeEntity implements IgeIsReadyPromise {
 	 * to call multiple times if required by different sections of game
 	 * logic without incurring extra rendering cost.
 	 */
+	/**
+	 * Draws the scene at most this many times a second (0, the default: every
+	 * tick). Everything else goes on as usual (ticks, behaviours, the game's
+	 * own logic); only the drawing waits. For a scene behind a full-screen
+	 * menu, say: set it when the menu opens and back to 0 when it closes, and
+	 * the next tick draws at once.
+	 * @example #Draw at 20 fps behind a menu
+	 *     ige.engine.maxRenderRate(menuOpen ? 20 : 0);
+	 */
+	maxRenderRate (): number;
+	maxRenderRate (fps: number): this;
+	maxRenderRate (fps?: number) {
+		if (fps === undefined) return this._maxRenderRate;
+		this._maxRenderRate = Math.max(0, fps);
+		return this;
+	}
+
 	manualRender () {
 		this._manualRenderQueued = true;
 	}
@@ -1528,8 +1548,9 @@ export class IgeEngine extends IgeEntity implements IgeIsReadyPromise {
 						const settled = this._captureViewState(this._viewState);
 						this._viewState = settled;
 					}
-				} else {
-					// We are not in manual render mode so render the scenegraph
+				} else if (renderDue(this._maxRenderRate, this._lastRenderAt, performance.now())) {
+					// We are not in manual render mode so render the scenegraph (at most maxRenderRate() times a second, if capped)
+					this._lastRenderAt = performance.now();
 					this.statStart("engineStep", "renderSceneGraph");
 					this.renderSceneGraph();
 					this.statEnd("engineStep", "renderSceneGraph");
