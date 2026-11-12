@@ -111,6 +111,7 @@ The engine has extensive 3D infrastructure:
 -   Guides: `guides/webgl-models.md`, `guides/physics-3d.md`, `guides/2d-on-webgl.md`, `guides/online-rooms.md`, `guides/realtime-sync.md`, `guides/zone-servers.md`, `guides/ui-layer.md`.
 -   Entities can carry a quaternion rotation (`entity.quaternion()`) that replaces the Euler `rotate()` in 3D transforms.
 -   `entity.occludedColor({ r, g, b, a })`: a flat silhouette wherever the entity (and its children) is hidden behind something, e.g. players behind walls.
+-   `entity.outline({ r, g, b, a }, widthPx)`: a crisp line of constant screen width round the entity's silhouette (children included), drawn over the finished frame with no z-fighting; `null` clears it. Instanced, skinned and LOD meshes; nothing outlined costs nothing (`IgeWebGlOutlinePass`). See `guides/webgl-models.md`.
 -   Any number of point and spot lights: each view draws with the nearest that reach it (8 point, 4 spot), chosen per view.
 -   `entity.geometry(mesh)` swaps an entity's mesh (render on demand notices); `renderer.discardGeometryArrays(mesh)` keeps only the GPU copy of a big mesh.
 -   Entity `preTick` behaviours run under WebGL once per frame with a dummy 2D context; entity `tick()` itself isn't called.

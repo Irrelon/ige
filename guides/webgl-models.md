@@ -261,6 +261,12 @@ const bones = humanoidBones(model.skins![0].skeleton)!;
 - Entity pointer events (`pointerOver`, `pointerDown`, `pointerUp`...) work in every view: meshes are hit by their
   bounding box, skinned characters by a box around their animated joints, or by their triangles with
   `renderer.pointerPicking("triangles")`. `renderer.pointerHitTest(entity, x, y)` is the same test for your own code.
+- `entity.outline({ r, g, b, a }, widthPx)` draws a crisp line round the entity's silhouette (its children's
+  included, as one shape), `widthPx` CSS pixels wide at any zoom; `outline(null)` clears it. Use it for what the
+  player is about to act on: `door.outline({ r: 0.37, g: 0.89, b: 1 }, 3)`. It goes round the whole silhouette,
+  through anything in front (no z-fighting), works for instanced, skinned and level-of-detail meshes, is drawn over
+  the post-processed frame (exact colours) and costs nothing while nothing is outlined. Several outlined things with
+  the same outline share one pass. Model meshes only (not 2D sprites).
 
 ## Performance switches
 

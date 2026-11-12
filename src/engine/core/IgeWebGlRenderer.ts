@@ -46,6 +46,7 @@ import { IGE_POST_PROCESS_DEFAULTS, IgeWebGlPostProcess, type IgePostProcessSett
 import { intersectHeightfield } from "@/engine/webgl/IgeHeightfieldRay";
 import { type IgeUiSettings, type IgeUiView, placeUi } from "@/engine/webgl/IgeUiLayout";
 import { type IgeUiQuad, IgeWebGlUiPass } from "@/engine/webgl/IgeWebGlUiPass";
+import { type IgeOutlineRect, IgeWebGlOutlinePass, OUTLINE_MAX_RADIUS, outlineGroups, outlineOf, outlineRect } from "@/engine/webgl/IgeWebGlOutlinePass";
 import type { IgeMaterialData } from "@/types/IgeMaterialData";
 import type { IgeSkeleton } from "@/types/IgeSkeletonData";
 import { MAX_BONES } from "@/types/IgeSkeletonData";
@@ -348,6 +349,10 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 	protected _transparentItems: IgeWebGlRenderItem[] = [];
 	/** This view's items with a silhouette colour (see IgeEntity.occludedColor()). */
 	protected _occludedItems: IgeWebGlRenderItem[] = [];
+	/** Each view's outlined items this frame (see IgeEntity.outline()), drawn after the post-processing. */
+	protected _outlineJobs: { items: IgeWebGlRenderItem[]; matrices: IgeCameraMatrices; view: IgeOutlineRect }[] = [];
+	protected _outlinePass?: IgeWebGlOutlinePass;
+	protected _outlineSpheres = new Float32Array(64);
 	protected _occludedSaved?: Float32Array;
 	/** Drawing occluded silhouettes (flat colour): emissive maps aren't used. */
 	protected _drawingSilhouettes = false;
@@ -696,6 +701,8 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 		event.preventDefault();
 		this._contextLost = true;
 		this._postProcess?.contextLost();
+		this._outlinePass?.contextLost();
+		this._outlinePass = undefined;
 		this.log("WebGL context lost!", "warning");
 		this.emit("contextLost");
 	};
@@ -739,6 +746,7 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 		this._debugLineBuffer = null;
 		this._postProcess?.contextLost();
 		this._uiPass = undefined;
+		this._outlinePass = undefined;
 		this._shadowMapHoldsCache = false;
 		// Extensions are per context: asked for again (32-bit indices, instancing, float textures)
 		this._queryCapabilities();
@@ -1740,6 +1748,9 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 			this._stateManager.reset();
 		}
 
+		// Outlines round what's marked (IgeEntity.outline()), crisp over the finished frame
+		this._renderOutlines();
+
 		// The UI layer: on top of everything, post-processing included, in each view
 		this._renderUiLayer(viewports);
 
@@ -2060,6 +2071,8 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 		let occluded: IgeObject | null = entity;
 		while (occluded && occluded._occludedColor === undefined) occluded = occluded._parent;
 		item.occluded = occluded?._occludedColor ?? null;
+		// Outlined: this entity, or one it's mounted under (its outline goes round them all)
+		item.outline = outlineOf(entity);
 		item.transparent = mat.opacity < 1 || mat.a < 1 || !!materialData?.transparent || !!overrideData?.transparent ||
 			!!(item.texture && (item.texture as any)._hasAlpha);
 		item.doubleSided = !!(overrideData?.doubleSided ?? materialData?.doubleSided);
@@ -2370,6 +2383,7 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 		const transparent = this._transparentItems;
 		const occludedItems = this._occludedItems;
 		occludedItems.length = 0;
+		let outlined: IgeWebGlRenderItem[] | undefined;
 		batcher.begin();
 		transparent.length = 0;
 
@@ -2407,6 +2421,7 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 			}
 			item.drawGeometry = geometry;
 			if (item.occluded) occludedItems.push(item);
+			if (item.outline) (outlined ??= []).push(item);
 
 			if (item.transparent) {
 				item.sortKey = distSq;
@@ -2538,6 +2553,9 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 
 		// Silhouettes of marked entities where something stands in front of them
 		if (occludedItems.length > 0) this._renderOccluded(occludedItems, matrices);
+
+		// Outlined items: drawn round once the frame's finished (and post-processed)
+		if (outlined) (this._outlineJobs ??= []).push({ items: outlined, matrices, view: { x0: vpX, y0: vpY, x1: vpX + vpWidth, y1: vpY + vpHeight } });
 
 		this._renderDebugLines(matrices);
 
@@ -3056,6 +3074,81 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 
 		// Everything drawn after opaque meshes is double-sided
 		this._stateManager.setCullFace(false);
+	}
+
+	/**
+	 * Outlines (IgeEntity.outline()), over the finished frame: for each view's
+	 * outlined items, grouped by outline, the items are drawn flat into a
+	 * mask (only inside their rectangle on screen), then IgeWebGlOutlinePass
+	 * draws the line round it onto the frame. Nothing outlined: nothing done.
+	 */
+	protected _renderOutlines(): void {
+		const jobs = this._outlineJobs;
+		if (!jobs || jobs.length === 0) return;
+		const gl = this._canvasContext;
+		if (!gl || !this._stateManager || this._contextLost) {
+			jobs.length = 0;
+			return;
+		}
+		this._outlinePass ??= new IgeWebGlOutlinePass(gl);
+		const pass = this._outlinePass;
+		const target = gl.getParameter(gl.FRAMEBUFFER_BINDING) as WebGLFramebuffer | null;
+		const width = gl.drawingBufferWidth, height = gl.drawingBufferHeight;
+		const dpr = this._devicePixelRatio;
+		for (const job of jobs) {
+			for (const group of outlineGroups(job.items)) {
+				const o = group.outline;
+				const radius = Math.max(1, Math.min(OUTLINE_MAX_RADIUS, Math.round(o.width * dpr)));
+				// Where they are on screen, with room for the line
+				const n = group.items.length * 4;
+				if (this._outlineSpheres.length < n) this._outlineSpheres = new Float32Array(n * 2);
+				const spheres = this._outlineSpheres;
+				for (let i = 0; i < group.items.length; i++) {
+					const it = group.items[i];
+					spheres[i * 4] = it.cx; spheres[i * 4 + 1] = it.cy; spheres[i * 4 + 2] = it.cz; spheres[i * 4 + 3] = it.radius >= 0 ? it.radius : 1e6;
+				}
+				const rect = outlineRect(spheres.subarray(0, n), job.matrices.viewProjection.matrix, job.view, radius + 2);
+				if (!rect) continue;
+				this._stateManager.reset();
+				if (!pass.beginMask(width, height, rect)) break;
+				// The items, flat and opaque, in the view they were drawn in: no depth test, no blending
+				this._stateManager.setViewport(job.view.x0, job.view.y0, job.view.x1 - job.view.x0, job.view.y1 - job.view.y0);
+				this._stateManager.setDepthTest(false);
+				this._stateManager.setDepthWrite(false);
+				this._stateManager.setBlend(false);
+				this._drawFlat(group.items, job.matrices);
+				pass.composite(target, rect, o, radius);
+				this._stats.drawCalls++;
+			}
+		}
+		jobs.length = 0;
+		gl.bindFramebuffer(gl.FRAMEBUFFER, target);
+		this._stateManager.reset();
+		gl.depthFunc(gl.LEQUAL);
+	}
+
+	/** Items drawn as flat, opaque white (lighting cancelled: a black base, white emission), their own materials put back after. */
+	protected _drawFlat(items: IgeWebGlRenderItem[], matrices: IgeCameraMatrices): void {
+		const n = items.length * 9;
+		if (!this._occludedSaved || this._occludedSaved.length < n) this._occludedSaved = new Float32Array(n * 2);
+		const saved = this._occludedSaved;
+		for (let i = 0; i < items.length; i++) {
+			const mat = items[i].material, o = i * 9;
+			saved[o] = mat.r; saved[o + 1] = mat.g; saved[o + 2] = mat.b; saved[o + 3] = mat.a; saved[o + 4] = mat.opacity;
+			saved[o + 5] = mat.emissiveR; saved[o + 6] = mat.emissiveG; saved[o + 7] = mat.emissiveB; saved[o + 8] = mat.emissiveIntensity;
+			mat.r = mat.g = mat.b = 0;
+			mat.a = mat.opacity = 1;
+			mat.emissiveR = mat.emissiveG = mat.emissiveB = 1;
+			mat.emissiveIntensity = 1;
+		}
+		this._drawingSilhouettes = true;
+		this._renderTransparentItems(items, matrices);
+		this._drawingSilhouettes = false;
+		for (let i = 0; i < items.length; i++) {
+			const mat = items[i].material, o = i * 9;
+			mat.r = saved[o]; mat.g = saved[o + 1]; mat.b = saved[o + 2]; mat.a = saved[o + 3]; mat.opacity = saved[o + 4];
+			mat.emissiveR = saved[o + 5]; mat.emissiveG = saved[o + 6]; mat.emissiveB = saved[o + 7]; mat.emissiveIntensity = saved[o + 8];
+		}
 	}
 
 	/**
@@ -3968,6 +4061,8 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 		this._postProcess = null;
 		this._uiPass?.destroy();
 		this._uiPass = undefined;
+		this._outlinePass?.destroy();
+		this._outlinePass = undefined;
 		this._geometryManager?.cleanup();
 		this._shaderManager?.deleteAllPrograms();
 		this._textureManager?.clearState();

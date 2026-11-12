@@ -38,6 +38,8 @@ export interface IgeWebGlRenderItem {
 	entity: IgeEntity;
 	/** Silhouette colour where something stands in front of this item (see IgeEntity.occludedColor()). */
 	occluded?: { r: number; g: number; b: number; a: number } | null;
+	/** The outline round this item's entity (or an ancestor's), see IgeEntity.outline(). */
+	outline?: { r: number; g: number; b: number; a: number; width: number } | null;
 	geometry: IgeWebGlGeometry;
 	/** Source material data (entity or model primitive). */
 	materialData: IgeMaterialData | null;

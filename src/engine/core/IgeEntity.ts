@@ -1290,6 +1290,32 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 	}
 
 	/**
+	 * Gets / sets an outline round this entity's silhouette (its children's
+	 * included, as one shape): a crisp line `width` CSS pixels wide in
+	 * `color` (0 to 1, alpha blended over the frame), the same width at any
+	 * zoom (WebGL renderer). Pass null to clear it. It's drawn round the
+	 * whole silhouette, through anything in front of it, so it never
+	 * z-fights; instanced, skinned and level-of-detail meshes all work.
+	 * Use it to show what the player is about to act on. Costs nothing
+	 * while nothing's outlined (IgeWebGlOutlinePass).
+	 * @example #Highlight what E will use
+	 *     terminal.outline({ r: 0.37, g: 0.89, b: 1 }, 3);
+	 *     terminal.outline(null);
+	 */
+	outline (color: { r: number; g: number; b: number; a?: number } | null, width?: number): this;
+	outline (): { r: number; g: number; b: number; a: number; width: number } | null;
+	outline (color?: { r: number; g: number; b: number; a?: number } | null, width: number = 2) {
+		if (color === undefined) return this._outline ?? null;
+		const next = color ? { r: color.r, g: color.g, b: color.b, a: color.a ?? 1, width: Math.max(0.5, width) } : null;
+		const was = this._outline;
+		if (!next && !was) return this;
+		if (next && was && was.r === next.r && was.g === next.g && was.b === next.b && was.a === next.a && was.width === next.width) return this;
+		this._outline = next;
+		this._renderChanged();
+		return this;
+	}
+
+	/**
 	 * Gets / sets a silhouette colour for this entity and its children where
 	 * something stands in front of them: a character walking behind a wall
 	 * still shows as a coloured outline (WebGL renderer). Pass null to turn
