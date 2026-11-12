@@ -44,6 +44,8 @@ import { takeGeneratedLods } from "@/engine/webgl/IgeModelParts";
 import type { IgeHeightfieldRayOptions } from "@/engine/webgl/IgeHeightfieldRay";
 import { IGE_POST_PROCESS_DEFAULTS, IgeWebGlPostProcess, type IgePostProcessSettings } from "@/engine/webgl/IgeWebGlPostProcess";
 import { intersectHeightfield } from "@/engine/webgl/IgeHeightfieldRay";
+import { type IgeUiSettings, type IgeUiView, placeUi } from "@/engine/webgl/IgeUiLayout";
+import { type IgeUiQuad, IgeWebGlUiPass } from "@/engine/webgl/IgeWebGlUiPass";
 import type { IgeMaterialData } from "@/types/IgeMaterialData";
 import type { IgeSkeleton } from "@/types/IgeSkeletonData";
 import { MAX_BONES } from "@/types/IgeSkeletonData";
@@ -110,6 +112,9 @@ interface IgeWebGlSceneFrameData {
 	sprites: IgeEntity[];
 	particles: IgeParticleSystem3d[];
 	decals: IgeDecalSystem3d[];
+	/** UI layer elements (IgeEntity.uiLayer()) and the settings each is drawn with (its own, or its UI ancestor's). */
+	ui: IgeEntity[];
+	uiSettings: IgeUiSettings[];
 }
 
 /** Anything that supplies packed per-instance data (particles, decals). */
@@ -333,6 +338,10 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 	protected _itemPool: IgeWebGlRenderItem[] = [];
 	protected _itemCount: number = 0;
 	protected _sceneData: WeakMap<IgeObject, IgeWebGlSceneFrameData> = new WeakMap();
+	/** The UI layer: each viewport's camera as of its last view drawn, the quads being drawn, and the pass that draws them. */
+	protected _uiViews: WeakMap<IgeViewport, IgeUiView & { frameId: number }> = new WeakMap();
+	protected _uiQuads: IgeUiQuad[] = [];
+	protected _uiPass?: IgeWebGlUiPass;
 	protected _skeletonRows: Map<IgeSkeleton, number> = new Map();
 	protected _mainBatcher: IgeWebGlItemBatcher = new IgeWebGlItemBatcher();
 	protected _depthBatcher: IgeWebGlItemBatcher = new IgeWebGlItemBatcher();
@@ -694,6 +703,8 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 	 */
 	protected _handleContextRestored = (): void => {
 		this._contextLost = false;
+		// (The UI layer's program and buffer went with the old context)
+		this._uiPass = undefined;
 		this.log("WebGL context restored, reinitializing resources...");
 		// Recreate all GPU resources
 		// this._recreateResources();
@@ -1621,7 +1632,7 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 
 			let data = this._sceneData.get(scene);
 			if (!data) {
-				data = { frameId: -1, models: [], sprites: [], particles: [], decals: [] };
+				data = { frameId: -1, models: [], sprites: [], particles: [], decals: [], ui: [], uiSettings: [] };
 				this._sceneData.set(scene, data);
 			}
 
@@ -1631,6 +1642,8 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 				data.sprites.length = 0;
 				data.particles.length = 0;
 				data.decals.length = 0;
+				data.ui.length = 0;
+				data.uiSettings.length = 0;
 				this._collectRenderables(scene, data);
 				for (let p = 0; p < data.particles.length; p++) {
 					this._uploadInstanceData(data.particles[p], PARTICLE_FLOATS);
@@ -1671,6 +1684,9 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 			this._stateManager.reset();
 		}
 
+		// The UI layer: on top of everything, post-processing included, in each view
+		this._renderUiLayer(viewports);
+
 		// Lines queued with debugLine() last one rendered frame
 		this._debugLineVertices = 0;
 
@@ -1681,7 +1697,7 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 	 * Walk a scene graph once, refreshing transforms and turning every
 	 * renderable entity into pooled render items with world-space bounds.
 	 */
-	protected _collectRenderables(obj: IgeObject, data: IgeWebGlSceneFrameData, isSceneRoot: boolean = true): void {
+	protected _collectRenderables(obj: IgeObject, data: IgeWebGlSceneFrameData, isSceneRoot: boolean = true, ui?: IgeUiSettings): void {
 		if (obj._hidden) {
 			return;
 		}
@@ -1707,7 +1723,14 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 		}
 
 		const parts = entity._modelParts;
-		if ((obj as unknown as IgeParticleSystem3d)._isParticleSystem3d) {
+		// The UI layer (IgeEntity.uiLayer()): its own settings, or its UI ancestor's
+		const uiHere = entity._ui ?? ui;
+		if (uiHere) {
+			if (entity._texture) {
+				data.ui.push(entity);
+				data.uiSettings.push(uiHere);
+			}
+		} else if ((obj as unknown as IgeParticleSystem3d)._isParticleSystem3d) {
 			data.particles.push(obj as unknown as IgeParticleSystem3d);
 		} else if ((obj as unknown as IgeDecalSystem3d)._isDecalSystem3d) {
 			data.decals.push(obj as unknown as IgeDecalSystem3d);
@@ -1734,9 +1757,86 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 		const children = obj._children;
 		if (children) {
 			for (let i = 0; i < children.length; i++) {
-				this._collectRenderables(children[i], data, false);
+				this._collectRenderables(children[i], data, false, uiHere);
 			}
 		}
+	}
+
+	/**
+	 * The UI layer (IgeEntity.uiLayer()): every viewport's UI elements over
+	 * all it has drawn (and the post-processing), with no depth test, in
+	 * layer order (see IgeUiLayout's compareUi). Each view draws its own,
+	 * clipped to its area, so split screen works.
+	 */
+	protected _renderUiLayer(viewports: IgeViewport[]): void {
+		const gl = this._canvasContext;
+		if (!gl || !viewports || !this._textureManager || !this._stateManager) return;
+		const dpr = this._devicePixelRatio;
+		let drew = false;
+		for (const viewport of viewports) {
+			const scene = viewport._scene;
+			const data = scene ? this._sceneData.get(scene) : undefined;
+			const view = this._uiViews.get(viewport);
+			if (!data || data.ui.length === 0 || !view || view.frameId !== this._frameId) continue;
+			const quads = this._uiQuads;
+			quads.length = 0;
+			for (let i = 0; i < data.ui.length; i++) {
+				const quad = this._uiQuad(data.ui[i], data.uiSettings[i], view, i);
+				if (quad) quads.push(quad);
+			}
+			if (quads.length === 0) continue;
+			this._uiPass ??= new IgeWebGlUiPass(gl);
+			const vpX = Math.floor((viewport._translate?.x || 0) * dpr);
+			const vpY = Math.floor((viewport._translate?.y || 0) * dpr);
+			this._stats.drawCalls += this._uiPass.draw(quads, vpX, vpY, view.width, view.height, dpr, this._textureManager.getDefaultWhiteTexture());
+			drew = true;
+		}
+		if (drew) {
+			// The pass set GL state behind the state cache's back
+			this._stateManager.reset();
+			gl.depthFunc(gl.LEQUAL);
+		}
+	}
+
+	/** One UI element placed in a view, with its texture and colour (or nothing, when it isn't on screen). */
+	protected _uiQuad(entity: IgeEntity, settings: IgeUiSettings, view: IgeUiView & { frameId: number }, order: number): IgeUiQuad | undefined {
+		const world = entity._worldMatrix4?.matrix;
+		const texture = entity._texture;
+		if (!world || !texture || entity._opacity <= 0) return;
+		const rect = placeUi(settings, world, entity._bounds2d.x, entity._bounds2d.y, entity._scale.x, entity._scale.y, view);
+		if (!rect) return;
+
+		// Smart textures and font sheets draw per entity; anything else is its image (or a sheet's cell)
+		let glTexture: WebGLTexture | null;
+		let u0 = 0, v0 = 0, u1 = 1, v1 = 1;
+		if (texture._renderMode === IgeTextureRenderMode.smartTexture || texture._rendersPerEntity) {
+			glTexture = this._textureManager!.getSmartTexture(texture, entity, this._devicePixelRatio, this._frameId);
+		} else {
+			glTexture = this._textureManager!.getTextureForIgeTexture(texture);
+			const cells = (texture as any)._cells as number[][] | undefined;
+			const cell = cells && entity._cell ? cells[entity._cell] : undefined;
+			const texW = (texture as any)._sizeX as number, texH = (texture as any)._sizeY as number;
+			if (cell && texW > 0 && texH > 0) {
+				u0 = cell[0] / texW;
+				v0 = cell[1] / texH;
+				u1 = (cell[0] + cell[2]) / texW;
+				v1 = (cell[1] + cell[3]) / texH;
+			}
+		}
+		// Still loading: skip it rather than flash a white quad
+		if (!glTexture) return;
+
+		let r = 1, g = 1, b = 1, a = 1;
+		const color = entity._materialData?.color;
+		if (color && typeof color === "object") {
+			r = color.r;
+			g = color.g;
+			b = color.b;
+			a = color.a ?? 1;
+		} else if (typeof color === "string") {
+			[r, g, b] = parseHexColor(color);
+		}
+		return { ...rect, layer: settings.layer, space: settings.space, order, texture: glTexture, u0, v0, u1, v1, r, g, b, a: a * entity._opacity };
 	}
 
 	/**
@@ -2192,6 +2292,20 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 		const viewScale = Math.sqrt(view[1] * view[1] + view[5] * view[5] + view[9] * view[9]);
 		const pixelsPerUnit = proj[5] * viewScale * vpHeight * 0.5;
 		const perspective = proj[11] !== 0;
+
+		// The UI layer draws after every view (and the post-processing): keep this one's camera for it
+		if (data.ui.length > 0) {
+			let uiView = this._uiViews.get(viewport);
+			if (!uiView) {
+				uiView = { viewProj: new Float32Array(16), yScale: 1, width: 0, height: 0, frameId: -1 };
+				this._uiViews.set(viewport, uiView);
+			}
+			multiplyMat4Into(uiView.viewProj, proj, view);
+			uiView.yScale = proj[5] * viewScale;
+			uiView.width = viewport._bounds2d.x;
+			uiView.height = viewport._bounds2d.y;
+			uiView.frameId = this._frameId;
+		}
 
 		// ------------------------------------------------------------
 		// Cull against the camera frustum and batch what remains
@@ -3796,6 +3910,8 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 		this._bonePalette?.destroy();
 		this._postProcess?.dispose();
 		this._postProcess = null;
+		this._uiPass?.destroy();
+		this._uiPass = undefined;
 		this._geometryManager?.cleanup();
 		this._shaderManager?.deleteAllPrograms();
 		this._textureManager?.clearState();

@@ -50,6 +50,7 @@ import type { IgePoint } from "@/types/IgePoint";
 import type { IgeSmartTexture } from "@/types/IgeSmartTexture";
 import type { IgeTimeStreamPacket, IgeTimeStreamTransformData } from "@/types/IgeTimeStream";
 import type { IgeTriggerPolygonFunctionName } from "@/types/IgeTriggerPolygonFunctionName";
+import type { IgeUiSettings } from "@/engine/webgl/IgeUiLayout";
 
 export class IgeObject extends IgeEventingClass implements IgeCanRegisterById, IgeCanRegisterByCategory, IgeCanAcceptComponents {
 	classId = "IgeObject";
@@ -203,6 +204,11 @@ export class IgeObject extends IgeEventingClass implements IgeCanRegisterById, I
 	 * camera (default), 2 = rotates around the world Y axis only.
 	 */
 	_billboardMode: number = 1;
+	/**
+	 * Drawn in the WebGL renderer's UI layer (IgeEntity.uiLayer()): after
+	 * everything else, with no depth test. Its descendants are UI too.
+	 */
+	_ui?: IgeUiSettings;
 	/** Render parts from a model assigned with IgeEntity.model() (shared, read-only). */
 	_modelParts?: IgeModelPart[];
 	/** Which of _modelParts are drawn (undefined: all), see IgeEntity.modelParts(). */

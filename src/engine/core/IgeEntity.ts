@@ -42,6 +42,7 @@ import { createSkeletonInstance, getGeometryLod, getModelLod, getModelParts, mat
 import { invertMat4 } from "@/engine/webgl/IgeRaycast";
 import { IgeSkeletalAnimationComponent } from "@/engine/components/IgeSkeletalAnimationComponent";
 import type { IgeAnimationPlayOptions } from "@/types/IgeAnimationClipData";
+import type { IgeUiPlacement, IgeUiSettings } from "@/engine/webgl/IgeUiLayout";
 
 /**
  * Options for IgeEntity.model().
@@ -1356,6 +1357,85 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 		}
 		this._renderChanged();
 		return this;
+	}
+
+	/**
+	 * Gets / sets whether this entity is drawn in the WebGL renderer's UI
+	 * layer, and in which layer: after the scene, its transparent things,
+	 * particles and post-processing, with no depth test, so nothing in the
+	 * scene ever covers it (labels, name tags, health bars, panels). Higher
+	 * layers draw over lower ones. A textured entity (a sprite, an
+	 * IgeUiTextLabel) is drawn as a flat quad, unlit and casting no shadow;
+	 * its descendants are drawn in the same layer. `false` puts it back in
+	 * the scene. See guides/ui-layer.md.
+	 *
+	 * By default it's anchored to its place in the world: it follows that
+	 * point, always faces the camera, and is its world size as the camera
+	 * sees it. uiScreenSize() keeps it one size on screen instead, and
+	 * uiOffset() nudges it in pixels; uiScreen() pins it to a place on the
+	 * screen (in pixels) instead, as the old 2D UI did.
+	 * @example #A name tag 40 pixels above a character, the same size at any distance
+	 *     new IgeUiTextLabel({ text: "Ann" }).uiLayer(0).uiScreenSize(24).uiOffset(0, -40).translateTo(0, 180, 0).mount(character);
+	 */
+	uiLayer (layer: number | false): this;
+	uiLayer (): number | undefined;
+	uiLayer (layer?: number | false) {
+		if (layer === undefined) return this._ui?.layer;
+		if (layer === false) {
+			if (this._ui) this._renderChanged();
+			this._ui = undefined;
+			return this;
+		}
+		if (!this._ui) this._ui = { layer, space: "world", offsetX: 0, offsetY: 0 };
+		else this._ui.layer = layer;
+		this._renderChanged();
+		return this;
+	}
+
+	/**
+	 * Gets / sets a world-anchored UI element's height on screen in CSS
+	 * pixels, whatever the distance or zoom (its width keeps its aspect).
+	 * `undefined` returns it to its world size. Puts it in the UI layer
+	 * (layer 0) if it isn't already.
+	 */
+	uiScreenSize (pixels: number | undefined): this;
+	uiScreenSize (): number | undefined;
+	uiScreenSize (...args: [number | undefined] | []) {
+		if (args.length === 0) return this._ui?.screenSize;
+		this._uiSettings().screenSize = args[0];
+		this._renderChanged();
+		return this;
+	}
+
+	/** Moves a world-anchored UI element on screen from its point, in CSS pixels (x right, y down). */
+	uiOffset (x: number, y: number): this {
+		const ui = this._uiSettings();
+		ui.offsetX = x;
+		ui.offsetY = y;
+		this._renderChanged();
+		return this;
+	}
+
+	/**
+	 * Pins a UI element to a place in each viewport, in CSS pixels, as the
+	 * old 2D UI layer did: `left` / `right` / `center` across, `top` /
+	 * `bottom` / `middle` down (centred on an axis left unset). Its size is
+	 * its width() and height() in pixels, times its scale. `false` anchors
+	 * it to the world again. Puts it in the UI layer (layer 0) if it isn't
+	 * already.
+	 * @example #A panel 16 pixels in from the top right corner
+	 *     panel.texture(panelTexture).width(240).height(80).uiScreen({ right: 16, top: 16 }).mount(scene);
+	 */
+	uiScreen (place: IgeUiPlacement | false): this {
+		const ui = this._uiSettings();
+		for (const key of ["left", "right", "center", "top", "bottom", "middle"] as const) ui[key] = place ? place[key] : undefined;
+		ui.space = place ? "screen" : "world";
+		this._renderChanged();
+		return this;
+	}
+
+	_uiSettings (): IgeUiSettings {
+		return (this._ui ??= { layer: 0, space: "world", offsetX: 0, offsetY: 0 });
 	}
 
 	/**
