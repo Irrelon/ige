@@ -8,6 +8,8 @@ export interface IgeUiQuad extends IgeUiSortable, IgeUiRect {
 	v0: number;
 	u1: number;
 	v1: number;
+	/** Turned about its middle on screen (radians, clockwise): the entity's own rotation about z. */
+	rotation?: number;
 	/** Tint, and alpha (its opacity). */
 	r: number;
 	g: number;
@@ -81,6 +83,20 @@ export class IgeWebGlUiPass {
 		for (let i = 0; i < quads.length; i++) {
 			const q = quads[i];
 			const x0 = q.x * dpr, y0 = q.y * dpr, x1 = (q.x + q.width) * dpr, y1 = (q.y + q.height) * dpr;
+			if (q.rotation) {
+				// Its corners turned about its middle
+				const cx = (x0 + x1) / 2, cy = (y0 + y1) / 2, hw = (x1 - x0) / 2, hh = (y1 - y0) / 2;
+				const c = Math.cos(q.rotation), s = Math.sin(q.rotation);
+				const tl = [cx - hw * c + hh * s, cy - hw * s - hh * c], tr = [cx + hw * c + hh * s, cy + hw * s - hh * c];
+				const bl = [cx - hw * c - hh * s, cy - hw * s + hh * c], br = [cx + hw * c - hh * s, cy + hw * s + hh * c];
+				o = vertex(d, o, tl[0], tl[1], q.u0, q.v0, q);
+				o = vertex(d, o, tr[0], tr[1], q.u1, q.v0, q);
+				o = vertex(d, o, bl[0], bl[1], q.u0, q.v1, q);
+				o = vertex(d, o, bl[0], bl[1], q.u0, q.v1, q);
+				o = vertex(d, o, tr[0], tr[1], q.u1, q.v0, q);
+				o = vertex(d, o, br[0], br[1], q.u1, q.v1, q);
+				continue;
+			}
 			o = vertex(d, o, x0, y0, q.u0, q.v0, q);
 			o = vertex(d, o, x1, y0, q.u1, q.v0, q);
 			o = vertex(d, o, x0, y1, q.u0, q.v1, q);

@@ -1373,7 +1373,8 @@ export class IgeEntity extends IgeObject implements IgeCanRegisterById, IgeCanRe
 	 * point, always faces the camera, and is its world size as the camera
 	 * sees it. uiScreenSize() keeps it one size on screen instead, and
 	 * uiOffset() nudges it in pixels; uiScreen() pins it to a place on the
-	 * screen (in pixels) instead, as the old 2D UI did.
+	 * screen (in pixels) instead, as the old 2D UI did. Its rotation about z
+	 * turns it on screen (clockwise).
 	 * @example #A name tag 40 pixels above a character, the same size at any distance
 	 *     new IgeUiTextLabel({ text: "Ann" }).uiLayer(0).uiScreenSize(24).uiOffset(0, -40).translateTo(0, 180, 0).mount(character);
 	 */

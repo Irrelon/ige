@@ -143,6 +143,12 @@ describe("the UI layer: drawing", () => {
 		expect(calls.filter((c) => c.startsWith("drawArrays"))).toEqual(["drawArrays(4,0,12)", "drawArrays(4,12,6)", "drawArrays(4,18,6)"]);
 		// Viewport and scissor in device pixels
 		expect(calls).toContain("viewport(0,0,1600,1200)");
+		// A turned quad's corners turn about its middle (a quarter turn: its top left goes to the top right)
+		const turned = new IgeWebGlUiPass(fakeGl().gl);
+		turned.draw([quad("a", 0, 0, { x: 0, y: 0, width: 20, height: 10, rotation: Math.PI / 2 })], 0, 0, 800, 600, 1, null);
+		const v = turned._data;
+		expect(v[0]).toBeCloseTo(15, 5);
+		expect(v[1]).toBeCloseTo(-5, 5);
 		expect(calls).toContain("scissor(0,0,1600,1200)");
 	});
 });

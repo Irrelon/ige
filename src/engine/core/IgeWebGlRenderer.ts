@@ -1836,7 +1836,7 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 		} else if (typeof color === "string") {
 			[r, g, b] = parseHexColor(color);
 		}
-		return { ...rect, layer: settings.layer, space: settings.space, order, texture: glTexture, u0, v0, u1, v1, r, g, b, a: a * entity._opacity };
+		return { ...rect, layer: settings.layer, space: settings.space, order, texture: glTexture, u0, v0, u1, v1, r, g, b, a: a * entity._opacity, rotation: entity._rotate.z };
 	}
 
 	/**

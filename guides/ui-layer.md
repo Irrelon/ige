@@ -45,6 +45,7 @@ An element follows its own world position, always faces the camera, and is centr
 - `uiOffset(x, y)` moves it on screen by CSS pixels (x right, y down), e.g. above a character's head.
 - `uiMinScreenSize(px)` keeps one shown at its world size from shrinking below that many pixels (a far target's
   bracket).
+- Its rotation about z (`rotateTo(0, 0, a)`) turns it on screen, clockwise (a spinning marker).
 
 ```typescript
 // A name tag over a character, the same size at any distance, a little above the point
