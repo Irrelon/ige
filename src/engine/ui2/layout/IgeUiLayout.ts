@@ -1319,6 +1319,19 @@ export class IgeUiLayoutEngine {
 	}
 
 	/**
+	 * A replaced element's width from a definite height and its aspect ratio (a canvas, an image with height: 100% and
+	 * width: auto), border box; undefined when its width is given, or its height isn't known (CSS Flexbox 9.2.3 B).
+	 */
+	_transferredWidth (it: IgeUiBox, cbH: number | undefined): number | undefined {
+		if (!it.el || it.pseudo || !REPLACED.has(it.el.localName) || it.el.localName === "input" || it.el.localName === "select" || it.el.localName === "textarea") return undefined;
+		if (styleValue(it.style, "width") !== "auto") return undefined;
+		const h = this._specH(it, cbH);
+		const r = this._replacedSize(it);
+		if (h === undefined || !r.w || !r.h) return undefined;
+		return (Math.max(0, h - this._vEdges(it)) * r.w) / r.h + this._hEdges(it);
+	}
+
+	/**
 	 * Whether a block's margins can collapse with its children's: an element's block in a block flow, not a
 	 * formatting context of its own (a flex or grid item, a scroller, a button, something out of the flow).
 	 */
@@ -1394,19 +1407,6 @@ export class IgeUiLayoutEngine {
 		for (const c of b.children) this._inlineItems(c, b.style, out, own);
 		out.push({ kind: "close", box: b, style: b.style, edge: b.marginRight + b.borderRight + b.paddingRight, layer: own });
 		void parentStyle;
-	}
-
-	/**
-	 * A replaced element's width from a definite height and its aspect ratio (a canvas, an image with height: 100% and
-	 * width: auto), border box; undefined when its width is given, or its height isn't known (CSS Flexbox 9.2.3 B).
-	 */
-	_transferredWidth (it: IgeUiBox, cbH: number | undefined): number | undefined {
-		if (!it.el || it.pseudo || !REPLACED.has(it.el.localName) || it.el.localName === "input" || it.el.localName === "select" || it.el.localName === "textarea") return undefined;
-		if (styleValue(it.style, "width") !== "auto") return undefined;
-		const h = this._specH(it, cbH);
-		const r = this._replacedSize(it);
-		if (h === undefined || !r.w || !r.h) return undefined;
-		return (Math.max(0, h - this._vEdges(it)) * r.w) / r.h + this._hEdges(it);
 	}
 
 	/**
@@ -2038,8 +2038,9 @@ export class IgeUiLayoutEngine {
 				const cs = crossOf(f);
 				let cross = 0;
 				const mcStartAuto = styleValue(it.style, row ? "margin-top" : "margin-left") === "auto", mcEndAuto = styleValue(it.style, row ? "margin-bottom" : "margin-right") === "auto";
-				if (mcStartAuto && mcEndAuto) cross = (lineCross[li] - cs) / 2;
-				else if (mcStartAuto) cross = lineCross[li] - cs;
+				// (Auto margins take only room there is: an item larger than its line starts at the start)
+				if (mcStartAuto && mcEndAuto) cross = Math.max(0, (lineCross[li] - cs) / 2);
+				else if (mcStartAuto) cross = Math.max(0, lineCross[li] - cs);
 				else if (align === "center") cross = (lineCross[li] - cs) / 2;
 				else if (align === "flex-end" || align === "end" || align === "self-end") cross = lineCross[li] - cs;
 				else if (align === "baseline" && row) cross = lineBase[li] - ((it.baseline ?? it.borderH) + it.marginTop);
@@ -2313,7 +2314,10 @@ export class IgeUiLayoutEngine {
 			const mh = styleValue(it.style, "min-height");
 			const scroller = styleValue(it.style, "overflow-y") !== "visible";
 			const margins = it.marginTop + it.marginBottom;
-			const least = mh === "auto" ? (scroller ? margins : it.borderH + margins) : (this.len(it.style, "min-height", innerH) ?? 0) + margins;
+			// (A height of its own given: that's what it needs, scroller or not)
+			const hv = styleValue(it.style, "height");
+			const definite = hv !== "auto" && !hv.includes("%") && !/content/.test(hv);
+			const least = definite ? it.borderH + margins : mh === "auto" ? (scroller ? margins : it.borderH + margins) : (this.len(it.style, "min-height", innerH) ?? 0) + margins;
 			rowMin[cell.row] = Math.max(rowMin[cell.row], Math.min(least, it.borderH + margins));
 		}
 		const isFr = (t: ReturnType<typeof rowTrack>) => t.kind === "fr" || t.maxFr !== undefined;
@@ -2387,6 +2391,9 @@ export class IgeUiLayoutEngine {
 			const h = spanH(cell);
 			if ((align === "stretch" || align === "normal") && styleValue(it.style, "height") === "auto" && Math.abs(it.borderH + it.marginTop + it.marginBottom - h) > 0.01) {
 				this.layoutBox(it, w, innerH, { width: it.borderW, height: Math.max(0, h - it.marginTop - it.marginBottom) });
+			} else if (styleValue(it.style, "height").includes("%")) {
+				// (A percentage height is of its grid area's)
+				this.layoutBox(it, w, h, { width: it.borderW });
 			}
 			let dy = 0;
 			if (align === "center") dy = (h - it.borderH - it.marginTop - it.marginBottom) / 2;
@@ -2681,7 +2688,8 @@ export class IgeUiLayoutEngine {
 			const parentAbs = box.parent ? this._abs(box.parent) : { x: 0, y: 0 };
 			let ax: number, ay: number;
 			const ml = styleValue(s, "margin-left") === "auto", mr = styleValue(s, "margin-right") === "auto";
-			if (left !== undefined && right !== undefined && ml && mr) ax = cbX + left + (cbW - left - right - box.borderW) / 2;
+			// (Both margins auto: centred, unless it's wider than the room, when it starts at its left, as CSS 2.1 has it)
+			if (left !== undefined && right !== undefined && ml && mr) ax = cbX + left + Math.max(0, (cbW - left - right - box.borderW) / 2);
 			else if (left !== undefined) ax = cbX + left + box.marginLeft;
 			else if (right !== undefined) ax = cbX + cbW - right - box.marginRight - box.borderW;
 			else ax = parentAbs.x + this._staticAt(box, "x") + box.marginLeft;

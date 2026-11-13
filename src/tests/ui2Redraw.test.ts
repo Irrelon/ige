@@ -635,3 +635,21 @@ describe("ui2: the casino port's gaps", () => {
 		expect(r.document.defaultView!.getComputedStyle(r.root.querySelector("circle")!).opacity).toBe("0.4");
 	});
 });
+
+describe("ui2: the casino port's gaps, more", () => {
+	it("auto margins in a column's cross axis and on an absolutely placed box take only room there is", () => {
+		const r = ui(`.c { display: flex; flex-direction: column; width: 100px; } .i { width: 160px; margin: 0 auto; height: 10px; flex: none; } .a { position: relative; width: 100px; height: 50px; } .ab { position: absolute; left: 0; right: 0; width: 160px; margin: 0 auto; height: 10px; }`, 400, 300);
+		r.root.innerHTML = `<div class="c"><div class="i"></div></div><div class="a"><div class="ab"></div></div>`;
+		r.update(0);
+		expect([r.root.querySelector(".i")!.getBoundingClientRect().left, r.root.querySelector(".ab")!.getBoundingClientRect().left]).toEqual([0, 0]);
+	});
+
+	it("a grid item with a set height holds its row open (a scroller too); a percentage height is of its grid area", () => {
+		const r = ui(`.g { display: grid; height: 300px; grid-template-rows: 1fr 1fr; } .s { height: 200px; overflow-y: auto; } .t { height: 1000px; } .h { display: grid; height: 300px; grid-template-rows: auto 1fr; } .p { height: 100%; overflow-y: auto; }`, 400, 900);
+		r.root.innerHTML = `<div class="g"><div class="s"><div class="t"></div></div><div class="s"><div class="t"></div></div></div><div class="h"><div>head</div><div class="p"><div class="t"></div></div></div>`;
+		r.update(0);
+		const [a, b] = [...r.root.querySelectorAll(".g .s")].map((e) => e.getBoundingClientRect());
+		expect([a.height, b.top - a.top, b.height]).toEqual([200, 200, 200]);
+		expect(r.root.querySelector(".p")!.getBoundingClientRect().height).toBe(290);
+	});
+});
