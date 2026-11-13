@@ -18,6 +18,7 @@
 import { placeTextField, takeSelection, textFieldPaint, wireTextField } from "@/engine/ui2/dom/IgeUiTextField";
 import { IgeUiDocument, type IgeUiDocumentHost, IgeUiElement, IgeUiEvent, type IgeUiChange, type IgeUiNode, type IgeUiTreeChange, type IgeUiView } from "@/engine/ui2/dom/IgeUiDom";
 import { type IgeUiBox, stickyShift } from "@/engine/ui2/layout/IgeUiBox";
+import { IgeUiDragDrop } from "@/engine/ui2/input/IgeUiDragDrop";
 import { IgeUiLayoutEngine } from "@/engine/ui2/layout/IgeUiLayout";
 import { IgeUiGlRenderer } from "@/engine/ui2/render/IgeUiGlRenderer";
 import { type IgeUiPaintItem, IgeUiPainter } from "@/engine/ui2/render/IgeUiPaint";
@@ -159,6 +160,10 @@ export class IgeUiRoot implements IgeUiDocumentHost {
 	_momentum?: { el: IgeUiElement; vx: number; vy: number };
 	_tooltip?: { el: IgeUiElement; at: number; x: number; y: number; shown?: IgeUiElement };
 	_now = 0;
+	/** The last thing the user did was a key (not the pointer): focus moved by a script then shows its ring, as a browser's does. */
+	_keyboardModality = false;
+	/** HTML drag and drop from the pointer (draggable="true"). */
+	readonly drag: IgeUiDragDrop = new IgeUiDragDrop(this);
 	_textInput?: HTMLInputElement;
 	/** Time spent in each stage last frame (ms), and counts, for the stats overlay and tests. */
 	stats = { style: 0, layout: 0, paint: 0, draw: 0, elements: 0, items: 0, drawCalls: 0, partial: 0 };
@@ -375,7 +380,9 @@ export class IgeUiRoot implements IgeUiDocumentHost {
 		this.document.activeElement = el;
 		if (el) {
 			el._states.add("focus");
-			if (opts?.focusVisible !== false) el._states.add("focus-visible");
+			// (Ring or not: as asked; else a browser's way: after a key, or for a field you type in)
+			const typing = (el.localName === "input" && !["button", "submit", "reset", "checkbox", "radio", "range", "color", "file", "image"].includes(el.getAttribute("type") ?? "text")) || el.localName === "textarea";
+			if (opts?.focusVisible ?? (this._keyboardModality || typing)) el._states.add("focus-visible");
 			this.changed(el, "state");
 			el.dispatchEvent(new IgeUiEvent("focus"));
 			el.dispatchEvent(new IgeUiEvent("focusin", { bubbles: true }));
@@ -757,7 +764,7 @@ export class IgeUiRoot implements IgeUiDocumentHost {
 			this.gl = new IgeUiGlRenderer(gl, this.atlas);
 		} else if (this.gl.gl !== gl) this.gl.restore(gl);
 		const t0 = perf();
-		const calls = this.gl.draw(this.items, width, height, this.scale * dpr, [(this.safe.x + this.pageOffset.x) * dpr, (this.safe.y + this.pageOffset.y) * dpr]);
+		const calls = this.gl.draw(this.drag.withGhost(this.items), width, height, this.scale * dpr, [(this.safe.x + this.pageOffset.x) * dpr, (this.safe.y + this.pageOffset.y) * dpr]);
 		this.stats.draw = perf() - t0;
 		this.stats.drawCalls = calls;
 		return calls;
@@ -901,6 +908,11 @@ export class IgeUiRoot implements IgeUiDocumentHost {
 	}
 
 	_pointer (type: string, e: PointerEvent): void {
+		// (A drag under way has the pointer: IgeUiDragDrop)
+		if ((type === "pointermove" && this.drag.move(e)) || ((type === "pointerup" || type === "pointercancel") && this.drag.up(e, type === "pointercancel"))) {
+			e.stopImmediatePropagation();
+			return;
+		}
 		// A captured pointer (setPointerCapture) goes to its element wherever it is, until it's let go
 		const captured = this.document._capture;
 		const hit = this.hitTest(e.clientX, e.clientY);
@@ -933,6 +945,7 @@ export class IgeUiRoot implements IgeUiDocumentHost {
 		}
 		if (type === "pointerdown") {
 			this._momentum = undefined;
+			this._keyboardModality = false;
 			if (!t) {
 				// (Pressed outside the UI (the game behind it): the UI's focus goes, as a page's does)
 				if (this.document.activeElement) this.focus(null);
@@ -945,6 +958,7 @@ export class IgeUiRoot implements IgeUiDocumentHost {
 			const ev = this._event(type, e);
 			t.dispatchEvent(ev);
 			t.dispatchEvent(this._event("mousedown", e));
+			if (!ev.defaultPrevented) this.drag.down(t, e);
 			// Focus goes to what was pressed (a field, a button), or leaves
 			const focusable = t.closest("input, textarea, select, button, [tabindex]");
 			if (focusable && focusable.tabIndex >= 0 && !focusable.isDisabled) this.focus(focusable, { preventScroll: true, focusVisible: false });
@@ -986,6 +1000,16 @@ export class IgeUiRoot implements IgeUiDocumentHost {
 		}
 	}
 
+	/** A press that's become a drag (IgeUiDragDrop): over with no click, its :active states dropped, pointercancel sent. */
+	endPress (): void {
+		const d = this._down;
+		this._down = undefined;
+		for (let n = this._active; n; n = n.parentNode) n._states.delete("active");
+		if (this._active && this.styles.stateDependent.has("active")) this.changed(this._active, "state");
+		this._active = null;
+		d?.el.dispatchEvent(new IgeUiEvent("pointercancel", { bubbles: true, pointerType: d.pointerType, pointerId: 1 }));
+	}
+
 	_scroller (el: IgeUiElement): IgeUiElement | undefined {
 		for (let n: IgeUiElement | null = el; n; n = n.parentNode) {
 			const oy = styleValue(n._computed, "overflow-y");
@@ -1019,6 +1043,13 @@ export class IgeUiRoot implements IgeUiDocumentHost {
 	}
 
 	_key (type: string, e: KeyboardEvent): void {
+		if (type === "keydown" && e.key === "Escape" && this.drag.cancel()) {
+			e.preventDefault();
+			e.stopImmediatePropagation();
+			return;
+		}
+		// (A person's key, not one a script sent: as a browser counts them)
+		if (type === "keydown" && e.isTrusted !== false && !e.metaKey && !e.ctrlKey && !e.altKey) this._keyboardModality = true;
 		const a = this.document.activeElement;
 		if (!a) return;
 		const ev = new IgeUiEvent(type, { bubbles: true, cancelable: true, key: e.key, code: e.code, shiftKey: e.shiftKey, ctrlKey: e.ctrlKey, altKey: e.altKey, metaKey: e.metaKey, repeat: e.repeat });

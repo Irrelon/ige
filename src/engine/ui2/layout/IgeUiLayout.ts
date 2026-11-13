@@ -17,11 +17,20 @@ import { splitTop } from "@/engine/ui2/css/IgeCssParser";
 import { type IgeCssLengthContext, parseTransform, resolveLength, resolveNumber } from "@/engine/ui2/css/IgeCssValues";
 import type { IgeUiElement, IgeUiText } from "@/engine/ui2/dom/IgeUiDom";
 import { contentHeight, contentLeft, contentTop, contentWidth, type IgeUiBox, type IgeUiInlineFragment, type IgeUiTextRun, newBox } from "@/engine/ui2/layout/IgeUiBox";
+import { SVG_UNRENDERED, svgLayoutBounds, svgViewport } from "@/engine/ui2/render/IgeUiSvg";
+import { INHERITED } from "@/engine/ui2/style/IgeUiProperties";
 import { type IgeUiComputedStyle, styleValue } from "@/engine/ui2/style/IgeUiStyleEngine";
 import { fontWeight, type IgeUiFontProvider, type IgeUiFontSpec } from "@/engine/ui2/text/IgeUiFonts";
 
 const INLINE_LEVEL = new Set(["inline", "inline-block", "inline-flex", "inline-grid", "inline-table", "text"]);
 const ATOMIC_INLINE = new Set(["inline-block", "inline-flex", "inline-grid", "inline-table"]);
+/** The style of an anonymous box in a box with this style: the properties that inherit (and custom ones), the rest as they start. */
+function anonStyle (parent: IgeUiComputedStyle): IgeUiComputedStyle {
+	const s: IgeUiComputedStyle = {};
+	for (const k in parent) if (k.startsWith("--") || INHERITED.has(k)) s[k] = parent[k];
+	return s;
+}
+
 const REPLACED = new Set(["img", "canvas", "input", "svg", "video", "select", "textarea"]);
 
 type Size = { min: number; max: number };
@@ -746,44 +755,34 @@ export class IgeUiLayoutEngine {
 	}
 
 	/**
-	 * An SVG's shapes given boxes: their geometry's bounds (no stroke) through the viewBox, as a browser's client
-	 * rects of them are (the drawing itself is the painter's).
+	 * An SVG's shapes given boxes: their geometry's bounds (no stroke) through the viewBox (fitted by
+	 * preserveAspectRatio) and any transforms, as a browser's client rects of them are (IgeUiSvg; the drawing itself
+	 * is the painter's).
 	 */
 	_layoutSvg (b: IgeUiBox, w: number, h: number): void {
 		const el = b.el!;
-		const vb = (el.getAttribute("viewBox") ?? "").split(/[\s,]+/).map(Number);
-		const sx = vb.length === 4 && vb[2] ? w / vb[2] : 1, sy = vb.length === 4 && vb[3] ? h / vb[3] : 1;
-		const ox = contentLeft(b) + (vb.length === 4 ? -vb[0] * sx : 0), oy = contentTop(b) + (vb.length === 4 ? -vb[1] * sy : 0);
-		const num = (e: IgeUiElement, a: string) => Number(e.getAttribute(a) ?? 0) || 0;
+		const viewport = svgViewport(el, contentLeft(b), contentTop(b), w, h);
 		/** A shape's bounds in the svg's box (undefined: nothing to measure). */
 		const bounds = (c: IgeUiBox): [number, number, number, number] | undefined => {
 			const e = c.el;
 			if (!e) return undefined;
-			let xs: number[] = [], ys: number[] = [];
-			switch (e.localName) {
-				case "line": xs = [num(e, "x1"), num(e, "x2")]; ys = [num(e, "y1"), num(e, "y2")]; break;
-				case "polyline": case "polygon": {
-					const n = (e.getAttribute("points") ?? "").split(/[\s,]+/).filter(Boolean).map(Number);
-					for (let i = 0; i + 1 < n.length; i += 2) {
-						xs.push(n[i]);
-						ys.push(n[i + 1]);
-					}
-					break;
-				}
-				case "circle": { const r = num(e, "r"); xs = [num(e, "cx") - r, num(e, "cx") + r]; ys = [num(e, "cy") - r, num(e, "cy") + r]; break; }
-				case "ellipse": xs = [num(e, "cx") - num(e, "rx"), num(e, "cx") + num(e, "rx")]; ys = [num(e, "cy") - num(e, "ry"), num(e, "cy") + num(e, "ry")]; break;
-				case "rect": xs = [num(e, "x"), num(e, "x") + num(e, "width")]; ys = [num(e, "y"), num(e, "y") + num(e, "height")]; break;
-				case "g": {
-					const kids = c.children.map(bounds).filter((k): k is [number, number, number, number] => !!k);
-					if (!kids.length) return undefined;
-					return [Math.min(...kids.map((k) => k[0])), Math.min(...kids.map((k) => k[1])), Math.max(...kids.map((k) => k[2])), Math.max(...kids.map((k) => k[3]))];
-				}
-				default: return undefined;
+			if (e.localName === "g" || e.localName === "a") {
+				const kids = c.children.map(bounds).filter((k): k is [number, number, number, number] => !!k);
+				if (!kids.length) return undefined;
+				return [Math.min(...kids.map((k) => k[0])), Math.min(...kids.map((k) => k[1])), Math.max(...kids.map((k) => k[2])), Math.max(...kids.map((k) => k[3]))];
 			}
-			if (!xs.length) return undefined;
-			return [ox + Math.min(...xs) * sx, oy + Math.min(...ys) * sy, ox + Math.max(...xs) * sx, oy + Math.max(...ys) * sy];
+			return svgLayoutBounds(el, viewport, e);
 		};
 		const place = (c: IgeUiBox, px: number, py: number) => {
+			// (What's only referred to, not drawn where it is: no box, as a browser gives it none)
+			if (c.el && SVG_UNRENDERED.has(c.el.localName)) {
+				const none = (k: IgeUiBox) => {
+					k.borderW = k.borderH = 0;
+					k.children.forEach(none);
+				};
+				none(c);
+				return;
+			}
 			const r = bounds(c);
 			if (r) {
 				c.x = r[0] - px;
@@ -859,16 +858,38 @@ export class IgeUiLayoutEngine {
 	_scrollExtent (b: IgeUiBox): void {
 		let w = 0, h = 0;
 		const left = b.borderLeft, top = b.borderTop;
+		let overW = 0, overH = 0;
+		// How far a box's content reaches (from its own corner): its box, and what overflows it when it doesn't clip
+		const reach = (c: IgeUiBox): [number, number] => {
+			let rw = c.borderW, rh = c.borderH;
+			if (styleValue(c.style, "overflow-x") !== "visible" || styleValue(c.style, "overflow-y") !== "visible") return [rw, rh];
+			// (A flex or grid container's children are its items whatever their display; elsewhere an inline box's
+			// reach is its lines')
+			const items = /flex|grid/.test(c.display);
+			for (const k of c.children) {
+				if (k.position === "fixed" || k.position === "absolute" || k.display === "text" || (k.display === "inline" && !items)) continue;
+				const [kw, kh] = reach(k);
+				rw = Math.max(rw, k.x + kw);
+				rh = Math.max(rh, k.y + kh);
+			}
+			for (const r of c.runs ?? []) rw = Math.max(rw, r.x + r.w);
+			for (const l of c.lines ?? []) rh = Math.max(rh, l.y + l.h);
+			return [rw, rh];
+		};
 		for (const c of b.children) {
 			// (Text boxes hold no place of their own: their lines and runs are the block's)
 			if (c.position === "fixed" || c.display === "text") continue;
 			w = Math.max(w, c.x + c.borderW + Math.max(0, c.marginRight) - left);
 			h = Math.max(h, c.y + c.borderH + Math.max(0, c.marginBottom) - top);
+			// (What overflows a child counts as it is, with no end padding after it, as a browser counts it)
+			const [cw, ch] = reach(c);
+			overW = Math.max(overW, c.x + cw - left);
+			overH = Math.max(overH, c.y + ch - top);
 		}
 		for (const r of b.runs ?? []) w = Math.max(w, r.x + r.w - left);
 		for (const l of b.lines ?? []) h = Math.max(h, l.y + l.h - top);
-		b.scrollW = w + b.paddingRight;
-		b.scrollH = h + b.paddingBottom;
+		b.scrollW = Math.max(w + b.paddingRight, overW);
+		b.scrollH = Math.max(h + b.paddingBottom, overH);
 	}
 
 	_applyRelative (c: IgeUiBox, cbW: number, cbH: number | undefined): void {
@@ -1438,7 +1459,8 @@ export class IgeUiLayoutEngine {
 			}
 			if (c.display === "text") {
 				if (!/\S/.test(c.text ?? "")) continue;
-				const anon = newBox(null, b.style, "block", b);
+				// (An anonymous item has only what its parent passes down, not its size or edges)
+				const anon = newBox(null, anonStyle(b.style), "block", b);
 				anon.children = [c];
 				c.parent = anon;
 				items.push(anon);
@@ -1595,6 +1617,11 @@ export class IgeUiLayoutEngine {
 		// A single-line container's line is its whole cross size
 		const crossSize = row ? innerH : cw;
 		if (lines.length === 1 && crossSize !== undefined) lineCross[0] = crossSize;
+		else if (lines.length === 1 && row) {
+			// (Its height not given: the line still keeps within its min-height and max-height, and its items stretch to that)
+			const edges = this._vEdges(b);
+			lineCross[0] = this._clampH(b, lineCross[0] + edges, undefined) - edges;
+		}
 		// Stretch
 		for (let li = 0; li < lines.length; li++) {
 			for (const f of lines[li]) {
@@ -1655,7 +1682,8 @@ export class IgeUiLayoutEngine {
 				space = Math.max(0, free) / (line.length + 1);
 				pos = space;
 			}
-			if (reverse && justify !== "center" && !justify.startsWith("space")) pos = (mainSize ?? used) - used - pos;
+			// (Reversed, the room's at the other end: none of it when auto margins took it)
+			if (reverse && justify !== "center" && !justify.startsWith("space")) pos = free - pos;
 			for (const f of order) {
 				const it = f.box;
 				if (f.autoStart) pos += autoShare;
@@ -1717,9 +1745,11 @@ export class IgeUiLayoutEngine {
 
 	// ---------------------------------------------------------------- grid (a subset)
 
-	_tracks (b: IgeUiBox, cw: number | undefined): { kind: "px" | "fr" | "auto" | "minmax"; v: number; min?: number; maxFr?: number }[] {
-		const v = styleValue(b.style, "grid-template-columns");
-		if (v === "none") return [{ kind: "fr", v: 1 }];
+	/** A grid's column tracks (or its row tracks: `prop` grid-template-rows, `cw` the height percentages are of). */
+	_tracks (b: IgeUiBox, cw: number | undefined, prop: "grid-template-columns" | "grid-template-rows" | "grid-auto-rows" = "grid-template-columns"): { kind: "px" | "fr" | "auto" | "minmax"; v: number; min?: number; maxFr?: number }[] {
+		const columns = prop === "grid-template-columns";
+		const v = styleValue(b.style, prop) || "none";
+		if (v === "none") return columns ? [{ kind: "fr", v: 1 }] : [];
 		const out: { kind: "px" | "fr" | "auto" | "minmax"; v: number; min?: number; maxFr?: number }[] = [];
 		const ctx = this._ctx(b.style, cw);
 		const gap = this._gap(b.style, "column-gap", cw);
@@ -1732,9 +1762,12 @@ export class IgeUiLayoutEngine {
 				const [a, c] = splitTop(mm[1], ",").map((x) => x.trim());
 				const min = a === "auto" || a.endsWith("content") ? 0 : resolveLength(a, ctx) ?? 0;
 				if (c.endsWith("fr")) return { kind: "minmax", v: min, min, maxFr: parseFloat(c) };
+				// (A maximum under the minimum is the minimum)
 				const max = resolveLength(c, ctx);
-				return { kind: "minmax", v: max ?? min, min };
+				return { kind: "minmax", v: Math.max(min, max ?? min), min };
 			}
+			// (A percentage of a height that isn't known: auto)
+			if (t.endsWith("%") && cw === undefined) return { kind: "auto", v: 0 };
 			const px = resolveLength(t, ctx);
 			return px !== undefined ? { kind: "px", v: px } : undefined;
 		};
@@ -1755,7 +1788,7 @@ export class IgeUiLayoutEngine {
 			const t = one(part);
 			if (t) out.push(t);
 		}
-		return out.length ? out : [{ kind: "fr", v: 1 }];
+		return out.length || !columns ? out : [{ kind: "fr", v: 1 }];
 	}
 
 	_gridColumnCount (b: IgeUiBox, cw: number | undefined): number {
@@ -1792,7 +1825,8 @@ export class IgeUiLayoutEngine {
 			}
 			if (c.display === "text") {
 				if (!/\S/.test(c.text ?? "")) continue;
-				const anon = newBox(null, b.style, "block", b);
+				// (An anonymous item has only what its parent passes down, not its size or edges)
+				const anon = newBox(null, anonStyle(b.style), "block", b);
 				anon.children = [c];
 				c.parent = anon;
 				items.push(anon);
@@ -1888,8 +1922,13 @@ export class IgeUiLayoutEngine {
 			colX.push(xx);
 			xx += widths[k] + colGap;
 		}
-		// Rows: tallest item in each (an item over several rows: the last of them grows if it needs more room)
-		const rows = cells.reduce((a, cell) => Math.max(a, cell.row + cell.rowSpan), 0);
+		// Rows: their tracks (grid-template-rows, then grid-auto-rows; auto when not given), sized to the tallest item in
+		// each (an item over several rows: the last of them grows if it needs more room), then given the room left in a
+		// grid of known height: fr rows share it, else auto rows stretch into it (align-content: normal)
+		const rowTracks = this._tracks(b, innerH, "grid-template-rows");
+		const autoRow = this._tracks(b, innerH, "grid-auto-rows")[0] ?? { kind: "auto" as const, v: 0 };
+		const rows = Math.max(rowTracks.length, cells.reduce((a, cell) => Math.max(a, cell.row + cell.rowSpan), 0));
+		const rowTrack = (k: number) => rowTracks[k] ?? autoRow;
 		const rowH = new Array(rows).fill(0);
 		const spanH = (cell: { row: number; rowSpan: number }) => rowH.slice(cell.row, cell.row + cell.rowSpan).reduce((a, h) => a + h, 0) + rowGap * (cell.rowSpan - 1);
 		const cellW = (cell: { col: number; span: number }) => widths.slice(cell.col, cell.col + cell.span).reduce((a, w) => a + w, 0) + colGap * (cell.span - 1);
@@ -1909,6 +1948,65 @@ export class IgeUiLayoutEngine {
 			if (cell.rowSpan === 1) continue;
 			const need = cell.box.borderH + cell.box.marginTop + cell.box.marginBottom - spanH(cell);
 			if (need > 0) rowH[cell.row + cell.rowSpan - 1] += need;
+		}
+		// Each row's least height: what its items can shrink to (none with min-height: 0, or a scroller's automatic
+		// minimum; else their content)
+		const rowMin = new Array(rows).fill(0);
+		for (const cell of cells) {
+			if (cell.rowSpan !== 1) continue;
+			const it = cell.box;
+			const mh = styleValue(it.style, "min-height");
+			const scroller = styleValue(it.style, "overflow-y") !== "visible";
+			const margins = it.marginTop + it.marginBottom;
+			const least = mh === "auto" ? (scroller ? margins : it.borderH + margins) : (this.len(it.style, "min-height", innerH) ?? 0) + margins;
+			rowMin[cell.row] = Math.max(rowMin[cell.row], Math.min(least, it.borderH + margins));
+		}
+		const isFr = (t: ReturnType<typeof rowTrack>) => t.kind === "fr" || t.maxFr !== undefined;
+		const content = rowH.slice();
+		for (let k = 0; k < rows; k++) {
+			const t = rowTrack(k);
+			if (t.kind === "px") rowH[k] = t.v;
+			else if (t.kind === "minmax" && t.maxFr === undefined) rowH[k] = Math.max(t.min ?? 0, Math.min(t.v, rowH[k]));
+			// (In a grid of unknown height, auto and fr rows are as tall as their content)
+			else if (innerH !== undefined) rowH[k] = t.kind === "minmax" ? t.min ?? 0 : rowMin[k];
+			else if (t.kind === "minmax") rowH[k] = Math.max(t.min ?? 0, rowH[k]);
+		}
+		if (innerH !== undefined && rows) {
+			const room = innerH - rowGap * (rows - 1);
+			const sum = () => rowH.reduce((a, h) => a + h, 0);
+			// Auto rows grow towards their content while there's room
+			const auto = [...rowH.keys()].filter((k) => rowTrack(k).kind === "auto");
+			for (let pass = 0; pass < auto.length + 1; pass++) {
+				const growing = auto.filter((k) => rowH[k] < content[k] - 0.01);
+				const free = room - sum();
+				if (!growing.length || free <= 0.01) break;
+				const share = free / growing.length;
+				for (const k of growing) rowH[k] = Math.min(content[k], rowH[k] + share);
+			}
+			const fr = [...rowH.keys()].filter((k) => isFr(rowTrack(k)));
+			if (fr.length) {
+				// fr shares of what the other rows leave; a row whose share is under its minimum keeps its minimum
+				const frOf = (k: number) => {
+					const t = rowTrack(k);
+					return t.kind === "fr" ? t.v : t.maxFr!;
+				};
+				let active = fr;
+				for (let pass = 0; pass < fr.length + 1; pass++) {
+					const fixedSum = rowH.reduce((a, h, k) => a + (active.includes(k) ? 0 : h), 0);
+					const total = active.reduce((a, k) => a + frOf(k), 0);
+					const unit = total > 0 ? Math.max(0, room - fixedSum) / total : 0;
+					const under = active.filter((k) => unit * frOf(k) < rowH[k]);
+					if (!under.length) {
+						for (const k of active) rowH[k] = unit * frOf(k);
+						break;
+					}
+					active = active.filter((k) => !under.includes(k));
+				}
+			} else if (/^(normal|stretch)$/.test(styleValue(s, "align-content"))) {
+				// No fr rows: auto rows stretch into what's left (align-content: normal)
+				const extra = room - sum();
+				if (extra > 0 && auto.length) for (const k of auto) rowH[k] += extra / auto.length;
+			}
 		}
 		const rowY: number[] = [];
 		let yy = 0;

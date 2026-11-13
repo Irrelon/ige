@@ -91,6 +91,14 @@ function readParens (text: string, i: number): [string, number] {
 }
 
 const IDENT = /^-?[_a-zA-Z -￿][\w -￿-]*/;
+/** An identifier that may have CSS escapes in it (`\31 0`, `\:`), as CSS.escape() writes them. */
+const IDENT_ESCAPED = /^-?(?:[_a-zA-Z\u0080-￿]|\\[0-9a-fA-F]{1,6}[ \t\n]?|\\[^\n0-9a-fA-F])(?:[\w\u0080-￿-]|\\[0-9a-fA-F]{1,6}[ \t\n]?|\\[^\n0-9a-fA-F])*/;
+
+/** CSS escapes read: a backslash and up to six hex digits (and one space after them) is that character; before anything else, that character. */
+export function cssUnescape (s: string): string {
+	if (!s.includes("\\")) return s;
+	return s.replace(/\\([0-9a-fA-F]{1,6})[ \t\n]?|\\([^\n])/g, (_, hex: string | undefined, ch: string | undefined) => (hex ? String.fromCodePoint(parseInt(hex, 16) || 0xfffd) : ch ?? ""));
+}
 
 /** Parses a comma-separated selector list. */
 export function parseSelectorList (text: string): IgeCssSelector[] {
@@ -143,12 +151,12 @@ export function parseSelector (text: string): IgeCssSelector {
 			continue;
 		}
 		if (ch === "#" || ch === ".") {
-			const m = IDENT.exec(text.slice(i + 1));
+			const m = IDENT_ESCAPED.exec(text.slice(i + 1));
 			if (!m) {
 				sel.unsupported = true;
 				break;
 			}
-			add({ kind: ch === "#" ? "id" : "class", name: m[0].replace(/\\/g, "") });
+			add({ kind: ch === "#" ? "id" : "class", name: cssUnescape(m[0].trimEnd()) });
 			sel.specificity[ch === "#" ? 0 : 1]++;
 			i += 1 + m[0].length;
 			continue;
@@ -162,7 +170,8 @@ export function parseSelector (text: string): IgeCssSelector {
 				sel.unsupported = true;
 				break;
 			}
-			add({ kind: "attr", name: m[1].toLowerCase(), op: (m[2] ?? "") as AttrOp, value: m[3] ?? m[4] ?? m[5], caseInsensitive: !!m[6] });
+			const value = m[3] ?? m[4] ?? m[5];
+			add({ kind: "attr", name: m[1].toLowerCase(), op: (m[2] ?? "") as AttrOp, value: value === undefined ? undefined : cssUnescape(value), caseInsensitive: !!m[6] });
 			sel.specificity[1]++;
 			continue;
 		}

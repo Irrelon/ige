@@ -15,6 +15,8 @@ import type { IgeUiElement } from "@/engine/ui2/dom/IgeUiDom";
 import { type IgeUiBox, type IgeUiTextRun, stickyShift } from "@/engine/ui2/layout/IgeUiBox";
 import { type IgeUiComputedStyle, styleValue } from "@/engine/ui2/style/IgeUiStyleEngine";
 import type { IgeUiFontSpec } from "@/engine/ui2/text/IgeUiFonts";
+import { hasDashedSide, paintDashedBorder } from "@/engine/ui2/render/IgeUiBorderDash";
+import { paintSvg } from "@/engine/ui2/render/IgeUiSvg";
 
 export type IgeUiClip = [number, number, number, number] | null;
 
@@ -88,9 +90,22 @@ export interface IgeUiPaintLine extends IgeUiPaintBase {
 	color: IgeCssColor;
 	opacity: number;
 	closed?: boolean;
+	/** Its ends and corners (SVG's stroke-linecap and stroke-linejoin); round when not given. */
+	cap?: "butt" | "round" | "square";
+	join?: "miter" | "round" | "bevel";
+	miterLimit?: number;
 }
 
-export type IgeUiPaintItem = IgeUiPaintBox | IgeUiPaintText | IgeUiPaintImage | IgeUiPaintLine;
+/** Filled triangles (an SVG shape's fill): x, y three times each, and which of each one's edges are the outline (IgeUiSvg). */
+export interface IgeUiPaintFill extends IgeUiPaintBase {
+	op: "fill";
+	tris: number[];
+	edges: number[];
+	color: IgeCssColor;
+	opacity: number;
+}
+
+export type IgeUiPaintItem = IgeUiPaintBox | IgeUiPaintText | IgeUiPaintImage | IgeUiPaintLine | IgeUiPaintFill;
 
 interface Ctx {
 	clip: IgeUiClip;
@@ -439,6 +454,11 @@ export class IgeUiPainter {
 			h += (line[0] + line[2]) / 2;
 		}
 		if (all.every((e) => e.w <= 0 || e.c.a <= 0)) return;
+		// Dashed and dotted sides: their dashes (IgeUiBorderDash)
+		if (hasDashedSide(all)) {
+			paintDashedBorder(this.items, x, y, w, h, [t, r, bt, l], base);
+			return;
+		}
 		const same = all.every((e) => e.w === t.w && e.c.r === t.c.r && e.c.g === t.c.g && e.c.b === t.c.b && e.c.a === t.c.a);
 		if (same && t.w > 0) {
 			this.items.push({ op: "box", ...base, x, y, w, h, color: t.c, border: t.w });
@@ -505,52 +525,10 @@ export class IgeUiPainter {
 		this.items.push(item);
 	}
 
-	// ---------------------------------------------------------------- SVG (lines and shapes) and range sliders
+	// ---------------------------------------------------------------- SVG (IgeUiSvg) and range sliders
 
 	_svg (el: IgeUiElement, x: number, y: number, w: number, h: number, ctx: Ctx, current: IgeCssColor): void {
-		const vb = (el.getAttribute("viewBox") ?? "").split(/[\s,]+/).map(Number);
-		const sx = vb.length === 4 && vb[2] ? w / vb[2] : 1, sy = vb.length === 4 && vb[3] ? h / vb[3] : 1;
-		const ox = vb.length === 4 ? -vb[0] * sx : 0, oy = vb.length === 4 ? -vb[1] * sy : 0;
-		const walk = (n: IgeUiElement, inherited: IgeUiComputedStyle) => {
-			for (const c of n.children) {
-				const cs = c._computed ?? inherited;
-				const strokeV = c.getAttribute("stroke") ?? styleValue(cs, "stroke");
-				const stroke = strokeV && strokeV !== "none" ? parseColor(strokeV === "currentColor" ? styleValue(cs, "color") : strokeV, current) : undefined;
-				const sw = Number(c.getAttribute("stroke-width") ?? (cs["stroke-width"] ? parseFloat(cs["stroke-width"]) : 1)) || 1;
-				const op = ctx.opacity * (resolveNumber(styleValue(cs, "opacity")) ?? 1);
-				const P = (px: number, py: number) => [x + ox + px * sx, y + oy + py * sy];
-				if (stroke && stroke.a > 0) {
-					if (c.localName === "line") {
-						const a = P(Number(c.getAttribute("x1")), Number(c.getAttribute("y1"))), bb = P(Number(c.getAttribute("x2")), Number(c.getAttribute("y2")));
-						this.items.push({ op: "line", points: [...a, ...bb], width: sw * sx, color: stroke, opacity: op, clip: ctx.clip, matrix: ctx.matrix, el: c });
-					} else if (c.localName === "polyline" || c.localName === "polygon") {
-						const nums = (c.getAttribute("points") ?? "").split(/[\s,]+/).filter(Boolean).map(Number);
-						const pts: number[] = [];
-						for (let i = 0; i + 1 < nums.length; i += 2) pts.push(...P(nums[i], nums[i + 1]));
-						this.items.push({ op: "line", points: pts, width: sw * sx, color: stroke, opacity: op, clip: ctx.clip, matrix: ctx.matrix, el: c, closed: c.localName === "polygon" });
-					} else if (c.localName === "circle") {
-						const cx = Number(c.getAttribute("cx")), cy = Number(c.getAttribute("cy")), rr = Number(c.getAttribute("r"));
-						const pts: number[] = [];
-						for (let i = 0; i <= 32; i++) pts.push(...P(cx + Math.cos((i / 32) * Math.PI * 2) * rr, cy + Math.sin((i / 32) * Math.PI * 2) * rr));
-						this.items.push({ op: "line", points: pts, width: sw * sx, color: stroke, opacity: op, clip: ctx.clip, matrix: ctx.matrix, el: c });
-					}
-				}
-				const fillV = c.getAttribute("fill") ?? cs.fill;
-				const fill = fillV && fillV !== "none" ? parseColor(fillV === "currentColor" ? styleValue(cs, "color") : fillV, current) : undefined;
-				if (fill && fill.a > 0) {
-					if (c.localName === "circle") {
-						const [cx, cy] = P(Number(c.getAttribute("cx")), Number(c.getAttribute("cy")));
-						const rr = Number(c.getAttribute("r")) * sx;
-						this.items.push({ op: "box", x: cx - rr, y: cy - rr, w: rr * 2, h: rr * 2, radii: [rr, rr, rr, rr], color: fill, opacity: op, clip: ctx.clip, matrix: ctx.matrix, el: c });
-					} else if (c.localName === "rect") {
-						const [rx, ry] = P(Number(c.getAttribute("x") ?? 0), Number(c.getAttribute("y") ?? 0));
-						this.items.push({ op: "box", x: rx, y: ry, w: Number(c.getAttribute("width")) * sx, h: Number(c.getAttribute("height")) * sy, radii: [0, 0, 0, 0], color: fill, opacity: op, clip: ctx.clip, matrix: ctx.matrix, el: c });
-					}
-				}
-				if (c.localName === "g") walk(c, cs);
-			}
-		};
-		walk(el, el._computed ?? {});
+		paintSvg(this.items, el, x, y, w, h, ctx, current);
 	}
 
 	_range (el: IgeUiElement, x: number, y: number, w: number, h: number, ctx: Ctx): void {
@@ -575,6 +553,7 @@ export function describePaint (items: IgeUiPaintItem[]): string[] {
 		if (i.op === "box") return `box ${n(i.x)},${n(i.y)} ${n(i.w)}x${n(i.h)}${i.shadow ? ` ${i.shadow}(${n(i.blur ?? 0)})` : ""}${i.border ? ` border ${n(i.border)}` : ""} ${i.color ? c(i.color) : `${i.gradient?.type}-gradient`}${i.radii.some((r) => r) ? ` r${i.radii.map(n).join("/")}` : ""}${i.chamfer ? ` cut${i.chamfer.map(n).join("/")}` : ""}${i.opacity < 1 ? ` a${n(i.opacity)}` : ""}${i.clip ? ` clip[${i.clip.map(n).join(",")}]` : ""}`;
 		if (i.op === "text") return `text "${i.text}" ${n(i.x)},${n(i.y)} ${i.font.size}px/${i.font.weight} ${c(i.color)}${i.shadow ? ` glow(${n(i.shadow.blur)})` : ""}${i.clip ? ` clip[${i.clip.map(n).join(",")}]` : ""}`;
 		if (i.op === "image") return `image ${i.source.localName} ${n(i.x)},${n(i.y)} ${n(i.w)}x${n(i.h)}`;
+		if (i.op === "fill") return `fill ${i.tris.length / 6}tris ${c(i.color)}${i.opacity < 1 ? ` a${n(i.opacity)}` : ""}`;
 		return `line ${i.points.length / 2}pts ${c(i.color)}`;
 	});
 }

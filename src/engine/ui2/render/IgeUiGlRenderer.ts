@@ -95,6 +95,15 @@ float shape(vec2 p, vec4 box, vec4 radii, vec4 cut) {
 	return d;
 }
 
+// How much of a triangle's edge (a to b, the inside on its s side) covers p: smoothed over a pixel for an outline
+// edge; for a shared one, all or nothing, a tie on the line going to one side only (so two neighbours never both draw it)
+float edgeCover(vec2 p, vec2 a, vec2 b, float s, bool outline, float px) {
+	vec2 e = (b - a) * s;
+	float d = (e.x * (p.y - a.y) - e.y * (p.x - a.x)) / max(length(e), 1e-6);
+	if (outline) return clamp(d / px + 0.5, 0.0, 1.0);
+	return (d > 0.0 || (d == 0.0 && (e.y > 0.0 || (e.y == 0.0 && e.x < 0.0)))) ? 1.0 : 0.0;
+}
+
 vec4 fill(vec2 p) {
 	if (v_grad.x < 0.0) return vec4(v_color.rgb * v_color.a, v_color.a);
 	float t;
@@ -160,6 +169,14 @@ void main() {
 			float reach = ${SDF_EDGE.toFixed(3)} * ${SDF_RADIUS.toFixed(1)} * v_params.z;
 			a = (1.0 - smoothstep(-blur * 0.25, blur, d)) * 0.6 * (1.0 - smoothstep(reach * 0.55, reach * 0.95, d));
 		}
+	} else if (kind > 6.5) {
+		// A filled triangle (an SVG fill cut into triangles): corners v_shape.xy, v_shape.zw, v_radii.xy; v_radii.z's
+		// bits say which edges are the shape's outline (smoothed) rather than shared with a neighbour (cut sharp, so
+		// neighbours meet without a seam)
+		vec2 p0 = v_shape.xy, p1 = v_shape.zw, p2 = v_radii.xy;
+		float s = sign((p1.x - p0.x) * (p2.y - p0.y) - (p1.y - p0.y) * (p2.x - p0.x));
+		int mask = int(v_radii.z + 0.5);
+		a = min(edgeCover(v_local, p0, p1, s, (mask & 1) != 0, px), min(edgeCover(v_local, p1, p2, s, (mask & 2) != 0, px), edgeCover(v_local, p2, p0, s, (mask & 4) != 0, px)));
 	} else {
 		// An image (or a blurred backdrop: v_params.y set, the first pass, clears its shape for it), cut to its box's shape
 		col = v_params.y > 0.5 ? vec4(0.0, 0.0, 0.0, 1.0) : texture(u_image, v_tex);
@@ -646,22 +663,53 @@ export class IgeUiGlRenderer {
 				write(push(tex, additive), [it.x, it.y, it.w, it.h], [it.x, it.y, it.w, it.h], Z4, [1, 1, 1, 1], [6, 0, 0, 0], [0, 0, 1, 1], Z4, clip, it.matrix, it.opacity, 0, NOGRAD);
 				continue;
 			}
+			if (it.op === "fill") {
+				const t = it.tris;
+				for (let i = 0, k = 0; i + 5 < t.length; i += 6, k++) {
+					const x0 = Math.min(t[i], t[i + 2], t[i + 4]) - 1, y0 = Math.min(t[i + 1], t[i + 3], t[i + 5]) - 1;
+					const x1 = Math.max(t[i], t[i + 2], t[i + 4]) + 1, y1 = Math.max(t[i + 1], t[i + 3], t[i + 5]) + 1;
+					write(push(null, additive), [x0, y0, x1 - x0, y1 - y0], [t[i], t[i + 1], t[i + 2], t[i + 3]], [t[i + 4], t[i + 5], it.edges[k] ?? 7, 0], it.color, [7, 0, 0, 0], Z4, Z4, clip, it.matrix, it.opacity, 0, NOGRAD);
+				}
+				continue;
+			}
 			if (it.op === "line") {
 				const p = it.points;
-				const count = it.closed ? p.length / 2 : p.length / 2 - 1;
+				const n2 = p.length / 2;
+				const count = it.closed ? n2 : n2 - 1;
+				const w = Math.max(it.width, 0.5);
+				const cap = it.cap ?? "round", join = it.join ?? "round", limit = it.miterLimit ?? 4;
+				// How far a segment's end reaches past its point, and whether it's round there: a cap at an open end;
+				// at a corner, round, or square ends out to where the two outer edges meet (a miter), or none (bevel)
+				const end = (corner: number, a: number, b: number): [number, boolean] => {
+					if (corner < 0) return cap === "butt" ? [0, false] : [w / 2, cap === "round"];
+					if (join === "round") return [w / 2, true];
+					if (join === "bevel") return [0, false];
+					// The turn's angle from the two segments' directions
+					const ax = p[corner * 2] - p[a * 2], ay = p[corner * 2 + 1] - p[a * 2 + 1], bx = p[b * 2] - p[corner * 2], by = p[b * 2 + 1] - p[corner * 2 + 1];
+					const la = Math.hypot(ax, ay), lb = Math.hypot(bx, by);
+					if (la < 1e-6 || lb < 1e-6) return [0, false];
+					const cos = Math.max(-1, Math.min(1, (ax * bx + ay * by) / (la * lb)));
+					const turn = Math.acos(cos);
+					// (Past the miter limit, a bevel)
+					if (1 / Math.max(1e-6, Math.cos(turn / 2)) > limit) return [0, false];
+					return [(w / 2) * Math.tan(turn / 2), false];
+				};
 				for (let i = 0; i < count; i++) {
 					const x0 = p[i * 2], y0 = p[i * 2 + 1];
-					const j = (i + 1) % (p.length / 2);
+					const j = (i + 1) % n2;
 					const x1 = p[j * 2], y1 = p[j * 2 + 1];
 					const len = Math.hypot(x1 - x0, y1 - y0);
 					if (len < 0.01) continue;
 					const c = (x1 - x0) / len, s = (y1 - y0) / len;
+					const open0 = !it.closed && i === 0, open1 = !it.closed && j === n2 - 1;
+					const [e0, r0] = open0 ? end(-1, 0, 0) : end(i, (i + n2 - 1) % n2, j);
+					const [e1, r1] = open1 ? end(-1, 0, 0) : end(j, i, (j + 1) % n2);
 					// A segment: a box along it, turned about its start (and then the item's own transform)
 					const rot: IgeCssMatrix = [c, s, -s, c, x0 - c * x0 + s * y0, y0 - s * x0 - c * y0];
 					const m = it.matrix ? multiply2(it.matrix, rot) : rot;
-					const w = Math.max(it.width, 0.5);
-					const rect = [x0 - w / 2, y0 - w / 2, len + w, w];
-					write(push(null, additive), rect, rect, [w / 2, w / 2, w / 2, w / 2], it.color, [0, 0, 0, 0], Z4, Z4, clip, m, it.opacity, 0, NOGRAD);
+					const rect = [x0 - e0, y0 - w / 2, len + e0 + e1, w];
+					const ra = r0 ? w / 2 : 0, rb = r1 ? w / 2 : 0;
+					write(push(null, additive), rect, rect, [ra, rb, rb, ra], it.color, [0, 0, 0, 0], Z4, Z4, clip, m, it.opacity, 0, NOGRAD);
 				}
 			}
 		}
