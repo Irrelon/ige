@@ -16,6 +16,7 @@
  * on its own with draw().
  */
 import type { IgeCssStylesheet } from "@/engine/ui2/css/IgeCssParser";
+import { parseColor } from "@/engine/ui2/css/IgeCssValues";
 import { IgeUiCaretBlink, isTextField, textFieldPaint } from "@/engine/ui2/dom/IgeUiTextField";
 import type { IgeUiHost, IgeUiInputEvent, IgeUiInputResult, IgeUiTextEntryEvents, IgeUiTextEntryField } from "@/engine/ui2/IgeUiHost";
 import { igeUiAttachWebInput, webUiHost } from "@/engine/ui2/IgeUiWebHost";
@@ -1213,6 +1214,11 @@ export class IgeUiRoot implements IgeUiDocumentHost {
 			this.atlas ??= new IgeUiSdfAtlas(this.host.surface);
 			this.gl = new IgeUiGlRenderer(gl, this.atlas);
 		} else if (this.gl.gl !== gl) this.gl.restore(gl);
+		// (The look's tunings, off by default)
+		this.gl.textWeight = this.look.textWeight;
+		this.gl.textGamma = this.look.textGamma;
+		this.gl.textMinSize = this.look.textMinSize;
+		this.gl.backdrop = this.look.backdrop;
 		const t0 = this.host.time.now();
 		const calls = this.gl.draw(this.drag.withGhost(this.items), width, height, this.scale * dpr, [(this.safe.x + this.pageOffset.x) * dpr, (this.safe.y + this.pageOffset.y) * dpr]);
 		this.stats.draw = this.host.time.now() - t0;
@@ -1252,6 +1258,27 @@ export class IgeUiRoot implements IgeUiDocumentHost {
 		};
 		if (opts.loop !== false) frame = this.host.time.frame(tick);
 		return { draw, stop: () => this.host.time.cancelFrame(frame) };
+	}
+
+	/**
+	 * Tunings of how it's drawn, all off by default (the decisions' comparisons): text's weight (device px its edge is
+	 * moved out) and gamma (its edge's ramp bent), on text `textMinSize` CSS px and up; and backdrop-filter blur:
+	 * "panel" (each panel's from what's under it, the UI too, as a browser's), "shared" (panels asking for the same blur
+	 * share one of the game) or "off".
+	 */
+	readonly look: { textWeight: number; textGamma: number; textMinSize: number; backdrop: "panel" | "shared" | "off" } = { textWeight: 0, textGamma: 1, textMinSize: 0, backdrop: "panel" };
+
+	/**
+	 * The game's own scrollbars, whatever the CSS says (off by default): every scrollbar `width` CSS px, its thumb and
+	 * track in these colours (CSS colours); null, back to the CSS's (and the browser's look).
+	 */
+	gameScrollbars (opts: { width: number; thumb: string; track?: string } | null): void {
+		this.layoutEngine.scrollbarOverride = opts?.width;
+		const thumb = opts ? parseColor(opts.thumb) : undefined;
+		this.painter.scrollbarLook = opts && thumb ? { thumb, track: opts.track ? parseColor(opts.track) : undefined } : undefined;
+		this._layoutAll = true;
+		this._layoutDirty = true;
+		this._paintDirty = true;
 	}
 
 	/** The renderer was made again (a lost context restored). */

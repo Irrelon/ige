@@ -476,6 +476,9 @@ export class IgeUiPainter {
 	 * A scroll container's scrollbars, in the room layout kept for them: the track and a thumb as long as the
 	 * view is of the content (scrollbar-color, else a desktop browser's light classic look).
 	 */
+	/** The game's own scrollbars' colours (IgeUiRoot.gameScrollbars); undefined: the CSS's, else the browser's. */
+	scrollbarLook?: { thumb: IgeCssColor; track?: IgeCssColor };
+
 	_scrollbars (b: IgeUiBox, ctx: Ctx): void {
 		const sy = b.scrollbarY ?? 0, sx = b.scrollbarX ?? 0;
 		if (!sy && !sx) return;
@@ -483,7 +486,12 @@ export class IgeUiPainter {
 		const [sl, st] = this._scroll(el);
 		const sc = styleValue(b.style, "scrollbar-color");
 		let thumb: IgeCssColor = { r: 193, g: 193, b: 193, a: 1 }, track: IgeCssColor | undefined = { r: 250, g: 250, b: 250, a: 1 };
-		if (sc !== "auto") {
+		const own = this.scrollbarLook;
+		if (own) {
+			// (The game's own, IgeUiRoot.gameScrollbars: its colours whatever the CSS says)
+			thumb = own.thumb;
+			track = own.track;
+		} else if (sc !== "auto") {
 			const current = parseColor(styleValue(b.style, "color"));
 			const [t, k] = splitTop(sc, " ").filter((x) => x);
 			thumb = parseColor(t, current) ?? thumb;
@@ -501,13 +509,16 @@ export class IgeUiPainter {
 			const tx = vertical ? x0 + w - size : x0, ty = vertical ? y0 : y0 + h - size;
 			if (track && track.a > 0) this.items.push({ op: "box", x: tx, y: ty, w: vertical ? size : len, h: vertical ? len : size, radii: [0, 0, 0, 0], color: track, ...base });
 			if (content <= view + 0.5) return;
-			const pad = 2, thick = Math.max(2, size - 8);
+			// (Chrome's thin bar: a 6 px thumb in its 11 px track, a pixel nearer the right)
+			const thin = !own && styleValue(b.style, "scrollbar-width") === "thin";
+			const pad = own ? 1 : 2, thick = own ? Math.max(2, size - 2) : Math.max(2, size - (thin ? 5 : 8));
+			const nudge = thin ? 0.5 : 0;
 			const room = len - pad * 2;
 			const tl = Math.max(18, (room * view) / content);
 			const at = pad + ((room - tl) * pos) / Math.max(1, content - view);
 			const r = thick / 2;
-			if (vertical) this.items.push({ op: "box", x: tx + (size - thick) / 2, y: ty + at, w: thick, h: tl, radii: [r, r, r, r], color: thumb, ...base });
-			else this.items.push({ op: "box", x: tx + at, y: ty + (size - thick) / 2, w: tl, h: thick, radii: [r, r, r, r], color: thumb, ...base });
+			if (vertical) this.items.push({ op: "box", x: tx + (size - thick) / 2 + nudge, y: ty + at, w: thick, h: tl, radii: [r, r, r, r], color: thumb, ...base });
+			else this.items.push({ op: "box", x: tx + at, y: ty + (size - thick) / 2 + nudge, w: tl, h: thick, radii: [r, r, r, r], color: thumb, ...base });
 		};
 		if (sy) bar(true);
 		if (sx) bar(false);
@@ -521,7 +532,9 @@ export class IgeUiPainter {
 		if (ox !== "visible" || oy !== "visible") {
 			const x = b.ax + ctx.dx + b.borderLeft, y = b.ay + ctx.dy + b.borderTop;
 			const w = b.borderW - b.borderLeft - b.borderRight, h = b.borderH - b.borderTop - b.borderBottom;
-			const c: IgeUiClip = [ox !== "visible" ? x : -1e6, oy !== "visible" ? y : -1e6, ox !== "visible" ? x + w : 1e6, oy !== "visible" ? y + h : 1e6];
+			// (Its scrollbars aren't under what's in it: the content's cut at them, as a browser's is)
+			const sw = b.scrollbarY ?? 0, sh = b.scrollbarX ?? 0;
+			const c: IgeUiClip = [ox !== "visible" ? x : -1e6, oy !== "visible" ? y : -1e6, ox !== "visible" ? x + w - sw : 1e6, oy !== "visible" ? y + h - sh : 1e6];
 			clip = intersect(clip, c);
 			if (b.el && !b.pseudo) {
 				const [sl, st] = this._scroll(b.el);

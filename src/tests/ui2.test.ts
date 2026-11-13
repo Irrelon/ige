@@ -268,10 +268,11 @@ describe("ui2: layout", () => {
 		expect(s.scrollTop).toBe(40);
 		r.update(0);
 		const boxes = describePaint(r.items).filter((l) => l.startsWith("box"));
+		// (Cut at the scrollbar, as a browser cuts them)
 		expect(boxes.slice(0, 5)).toEqual([
-			"box 0,-40 385x30 rgba(255,0,0,1) clip[0,0,400,50]",
-			"box 0,-10 385x30 rgba(255,0,0,1) clip[0,0,400,50]",
-			"box 0,20 385x30 rgba(255,0,0,1) clip[0,0,400,50]",
+			"box 0,-40 385x30 rgba(255,0,0,1) clip[0,0,385,50]",
+			"box 0,-10 385x30 rgba(255,0,0,1) clip[0,0,385,50]",
+			"box 0,20 385x30 rgba(255,0,0,1) clip[0,0,385,50]",
 			// The track, then the thumb: as long as the view is of the content, at the end it's scrolled to
 			"box 385,0 15x50 rgba(250,250,250,1)",
 			"box 389,22.4 7x25.6 rgba(193,193,193,1) r3.5/3.5/3.5/3.5"

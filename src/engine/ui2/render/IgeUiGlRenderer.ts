@@ -250,8 +250,11 @@ void main() {
 		float s = texture(u_atlas, vec3(v_tex, v_m1.w)).r;
 		// Distance from the glyph's edge, in UI px (outside positive)
 		float d = (${SDF_EDGE.toFixed(3)} - s) * ${SDF_RADIUS.toFixed(1)} * v_params.z;
-		if (kind < 4.5) a = clamp(0.5 - d / px, 0.0, 1.0);
-		else {
+		if (kind < 4.5) {
+			// (A tuning, off by default: v_params.y moves the edge out by that many device px, v_params.w bends its ramp)
+			a = clamp(0.5 - d / px + v_params.y, 0.0, 1.0);
+			if (v_params.w > 0.0) a = pow(a, v_params.w);
+		} else {
 			// A glow (text-shadow): a soft falloff, faded out before the field runs out (no square edges)
 			float blur = max(v_params.w, px);
 			float reach = ${SDF_EDGE.toFixed(3)} * ${SDF_RADIUS.toFixed(1)} * v_params.z;
@@ -303,6 +306,16 @@ const STRIDE = 52;
 /** Instanced attributes (a vec4 each). */
 const ATTRIBS = STRIDE / 4;
 
+/** A backdrop-filter's rectangle on the target (device px), its blur and its colour functions. */
+interface Backdrop {
+	x: number;
+	y: number;
+	w: number;
+	h: number;
+	sigma: number;
+	ops?: number[][];
+}
+
 interface Batch {
 	start: number;
 	count: number;
@@ -311,7 +324,7 @@ interface Batch {
 	/** A clip of any shape opening or closing (IgeUiStencilClip): no instances, its shape marked in the stencil as it's reached. */
 	stencil?: IgeUiStencilStep;
 	/** Before it's drawn: what's on the target so far, this rectangle of it (device px, top-down), blurred into its image. */
-	backdrop?: { x: number; y: number; w: number; h: number; sigma: number; ops?: number[][] };
+	backdrop?: Backdrop;
 	/**
 	 * A backdrop's two passes: "erase" takes its shape out of what's there (so the blurred copy replaces it rather than
 	 * going over it), "add" puts the blurred copy in.
@@ -416,6 +429,8 @@ export class IgeUiGlRenderer {
 	_grab: { tex: WebGLTexture; w: number; h: number } | null = null;
 	_blurA: { tex: WebGLTexture; w: number; h: number } | null = null;
 	_blurB: { tex: WebGLTexture; w: number; h: number } | null = null;
+	/** backdrop "shared": the shared blurs' textures, one for each kind of blur asked for, kept from frame to frame. */
+	_sharedBlurs: { tex: WebGLTexture; w: number; h: number }[] = [];
 	_blurFbo: WebGLFramebuffer | null = null;
 	/** Clips of any shape, by the stencil (IgeUiStencilClip). */
 	_stencil = new IgeUiStencilClip();
@@ -430,6 +445,17 @@ export class IgeUiGlRenderer {
 	/** Draw calls made last frame. */
 	drawCalls = 0;
 	instances = 0;
+	/**
+	 * Tunings, off by default. `textWeight`: text's edge moved out (device px; bolder above 0), `textGamma`: its
+	 * edge's ramp bent (below 1 heavier, above 1 lighter), both on text `textMinSize` CSS px and up. `backdrop`:
+	 * "panel", each backdrop-filter blur made from what's under that panel (the UI too, as a browser's is); "shared",
+	 * panels asking for the same blur share one of what's drawn before the UI (the game), made once; "off", none (the
+	 * panels' own backgrounds only).
+	 */
+	textWeight = 0;
+	textGamma = 1;
+	textMinSize = 0;
+	backdrop: "panel" | "shared" | "off" = "panel";
 
 	constructor (gl: WebGL2RenderingContext, atlas: IgeUiSdfAtlas) {
 		this.gl = gl;
@@ -476,6 +502,7 @@ export class IgeUiGlRenderer {
 		this._blurProgram = bp;
 		for (const u of ["u_src", "u_area", "u_step", "u_sigma", "u_lod"]) this._blurUniforms[u] = gl.getUniformLocation(bp, u);
 		this._grab = this._blurA = this._blurB = null;
+		this._sharedBlurs = [];
 		this._shadows.reset();
 		this._filters.reset();
 		this._glows.reset();
@@ -733,7 +760,7 @@ export class IgeUiGlRenderer {
 		const FLAT = [0, 0, 1, 0];
 		const Z4 = [0, 0, 0, 0];
 		const NOGRAD = [-1, 0, 0, 0];
-		const backdrops: { o: number; bd: { w: number; h: number; sigma: number } }[] = [];
+		const backdrops: { o: number; bd: Backdrop }[] = [];
 		const shadowGroups: IgeUiShadowGroup[] = [];
 		const openGroups: (IgeUiShadowGroup | null)[] = [];
 		const layers: IgeUiFilterLayer[] = [], openLayers: IgeUiFilterLayer[] = [], openKinds: ("layer" | "shadow")[] = [];
@@ -947,6 +974,9 @@ export class IgeUiGlRenderer {
 				const shadow = it.shadow;
 				const color = shadow ? shadow.color : it.color;
 				const ox = shadow ? shadow.x : 0, oy = shadow ? shadow.y : 0;
+				// (The text tunings, on text this size and up)
+				const tuned = f.size >= this.textMinSize;
+				const weight = shadow || !tuned ? 0 : this.textWeight, gamma = shadow ? shadow.blur / 2 : !tuned || this.textGamma === 1 ? 0 : this.textGamma;
 				for (let i = 0; i < chars.length; i++) {
 					const ch = chars[i];
 					const g = this.atlas.glyph(ch, f);
@@ -954,7 +984,7 @@ export class IgeUiGlRenderer {
 					if (g) {
 						const gx = x + g.left * k + ox, gy = it.y + g.top * k + oy;
 						const u0 = g.x / PAGE, v0 = g.y / PAGE, u1 = (g.x + g.w) / PAGE, v1 = (g.y + g.h) / PAGE;
-						write(push(null, additive), [gx, gy, g.w * k, g.h * k], Z4, Z4, color, [shadow ? 5 : 4, 0, k, shadow ? shadow.blur / 2 : 0], [u0, v0, u1, v1], Z4, clip, it.matrix, it.opacity, g.page, NOGRAD);
+						write(push(null, additive), [gx, gy, g.w * k, g.h * k], Z4, Z4, color, [shadow ? 5 : 4, weight, k, gamma], [u0, v0, u1, v1], Z4, clip, it.matrix, it.opacity, g.page, NOGRAD);
 					}
 					x += adv + it.letterSpacing + (i + 1 < chars.length ? this.atlas.kerning(ch, chars[i + 1], f) * k : 0);
 				}
@@ -1036,6 +1066,43 @@ export class IgeUiGlRenderer {
 		gl.useProgram(this._program);
 		gl.bindVertexArray(this._vao);
 		gl.bindBuffer(gl.ARRAY_BUFFER, this._inst);
+		// backdrop "shared": panels asking for the same filter (one blur radius, the same colour functions) share one blur
+		// of what's drawn before the UI (the game), over all their rectangles, made before the UI's drawn; each panel's uv
+		// moved to its part of it. A panel alone in what it asks for (or in a filter's layer) keeps its own
+		const groups: { bd: Backdrop; members: typeof backdrops }[] = [];
+		if (backdrops.length && this.backdrop === "shared") {
+			// (Not one in a filter's layer: what's behind it there is the layer's own)
+			const inLayer = new Set(batches.filter((b) => b.backdrop && b.owner).map((b) => b.backdrop));
+			const byKind = new Map<string, typeof backdrops>();
+			for (const b of backdrops) {
+				if (inLayer.has(b.bd)) continue;
+				const key = `${b.bd.sigma.toFixed(2)}|${JSON.stringify(b.bd.ops ?? [])}`;
+				byKind.set(key, [...(byKind.get(key) ?? []), b]);
+			}
+			for (const members of byKind.values()) {
+				if (members.length < 2) continue;
+				const u = { x: Infinity, y: Infinity, w: 0, h: 0 };
+				let x1 = -Infinity, y1 = -Infinity;
+				for (const { bd } of members) {
+					u.x = Math.min(u.x, bd.x);
+					u.y = Math.min(u.y, bd.y);
+					x1 = Math.max(x1, bd.x + bd.w);
+					y1 = Math.max(y1, bd.y + bd.h);
+				}
+				u.w = x1 - u.x;
+				u.h = y1 - u.y;
+				for (const { o, bd } of members) {
+					const d = this._data;
+					for (const i of [0, 2]) {
+						const px = d[o + 20 + i] * bd.w + bd.x, py = bd.y + bd.h - d[o + 21 + i] * bd.h;
+						d[o + 20 + i] = (px - u.x) / u.w;
+						d[o + 21 + i] = (u.h - (py - u.y)) / u.h;
+					}
+					Object.assign(bd, u);
+				}
+				groups.push({ bd: members[0].bd, members });
+			}
+		}
 		if (backdrops.length) {
 			// The blur textures sized for the frame's biggest backdrop, and each backdrop's uv scaled to its part of them
 			for (const { bd } of backdrops) {
@@ -1156,6 +1223,30 @@ export class IgeUiGlRenderer {
 			gl.drawArraysInstanced(gl.TRIANGLE_STRIP, 0, 4, b.count);
 			calls++;
 		};
+		// (The shared blurs, of the game alone: before any of the UI's drawn. Each kept in a texture of its own, the same
+		// size as the blur texture it was made in, which takes its place for the blurs made after it)
+		const shared = new Map<Backdrop, WebGLTexture>();
+		groups.forEach((g, i) => {
+			const tex = this._blurBackdrop(g.bd, height, target);
+			const inA = tex === this._blurA?.tex;
+			const made = (inA ? this._blurA : this._blurB)!;
+			let spare = this._sharedBlurs[i];
+			if (!spare || spare.w !== made.w || spare.h !== made.h) {
+				if (spare) gl.deleteTexture(spare.tex);
+				spare = this._tex(null, made.w, made.h);
+			}
+			this._sharedBlurs[i] = made;
+			if (inA) this._blurA = spare;
+			else this._blurB = spare;
+			for (const m of g.members) shared.set(m.bd, made.tex);
+			calls += 2;
+		});
+		if (groups.length) {
+			gl.useProgram(this._program);
+			gl.bindVertexArray(this._vao);
+			gl.viewport(0, 0, width, height);
+			gl.enable(gl.BLEND);
+		}
 		// The fades, into their places in the atlas, before the screen's own pass
 		const fades = layers.filter((L) => L.atlas);
 		if (fades.length && this._fade) {
@@ -1216,7 +1307,10 @@ export class IgeUiGlRenderer {
 				}
 				b.image = this._shadows.outs[b.shadow.index]!.tex;
 			}
-			if (b.backdrop) {
+			// (backdrop "off": a panel's blur passes left out; "shared": the one blur, made before the UI was drawn)
+			if (this.backdrop === "off" && (b.backdrop || b.blend === "add")) continue;
+			if (b.backdrop && shared.has(b.backdrop)) blurred = shared.get(b.backdrop)!;
+			else if (b.backdrop) {
 				blurred = this._blurBackdrop(b.backdrop, height, target);
 				gl.useProgram(this._program);
 				gl.bindVertexArray(this._vao);

@@ -115,6 +115,8 @@ export class IgeUiLayoutEngine {
 	 * scrollbar is 15, overlay scrollbars (phones, a Mac's trackpad) take none: set 0 for those.
 	 */
 	scrollbarSize = 15;
+	/** Every scrollbar this wide, whatever its CSS says (IgeUiRoot.gameScrollbars); undefined: as CSS and the browser have it. */
+	scrollbarOverride?: number;
 	/**
 	 * Device pixels per UI pixel (the UI's scale times the device's pixel ratio): a font's ascent and descent
 	 * are rounded to them, as a browser does, so line boxes come out the same height.
@@ -1187,6 +1189,8 @@ export class IgeUiLayoutEngine {
 	/** The room a scroll container's scrollbar takes (scrollbar-width). */
 	_scrollbarSize (s: IgeUiComputedStyle): number {
 		const v = styleValue(s, "scrollbar-width");
+		// (The game's own scrollbars, IgeUiRoot.gameScrollbars: one width wherever there's a scrollbar)
+		if (this.scrollbarOverride !== undefined) return v === "none" ? 0 : this.scrollbarOverride;
 		if (v === "none" || !this.scrollbarSize) return 0;
 		return v === "thin" ? Math.min(this.scrollbarSize, 11) : this.scrollbarSize;
 	}
