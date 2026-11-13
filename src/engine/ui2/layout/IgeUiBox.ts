@@ -124,6 +124,8 @@ export interface IgeUiBox {
 	ownBordersGrid?: number;
 	/** Kept, not laid out again, in the layout with this stamp (its contents' places stand too). */
 	keptStamp?: number;
+	/** The layout it was last laid out afresh in (not kept): a box laid out in this one and then found as it was isn't kept. */
+	laidStamp?: number;
 	/** It or something in it is sticky (held in a scroller's view: worked out again every time). */
 	hasSticky?: boolean;
 	/** Its height as laid out for each set of inputs it was laid out for (measuring without laying out again). */

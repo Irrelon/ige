@@ -916,7 +916,8 @@ export class IgeUiLayoutEngine {
 				b.extShift = 0;
 				b.borderH = b.layoutH ?? b.borderH;
 				this.kept++;
-				if (!b.hasSticky) b.keptStamp = this._stamp;
+				// (Kept as it was in the last layout; not if it was laid out afresh earlier in this one: what's in it moved then)
+				if (!b.hasSticky && b.laidStamp !== this._stamp) b.keptStamp = this._stamp;
 				return;
 			}
 			// Asked again at a set height (a row's, a stretched item's), laid out as it was otherwise, and nothing in it
@@ -937,6 +938,7 @@ export class IgeUiLayoutEngine {
 		// (Laid out now: not as it was, even if it was kept earlier in this layout (a scroller laid out again for its
 		// scrollbar: _placePositioned), so where its contents are is worked out afresh: _absolute)
 		b.keptStamp = undefined;
+		b.laidStamp = this._stamp;
 		this._layoutBox(b, cbW, cbH, opts);
 		b.cacheKey = key;
 		b.layoutOk = true;

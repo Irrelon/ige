@@ -97,6 +97,19 @@ describe("ui2: layout at a phone's sizes, as Chrome's", () => {
 		expect([s.clientWidth, s.scrollHeight, widths(r, ".s > div")[0], widths(r, ".s > div")[4]]).toEqual([105, 248, 105, 105]);
 	});
 
+	it("what's in a positioned box laid out afresh and then found as it was in the same layout is placed where it now is", () => {
+		// (Slots in a list that gains a scrollbar: each laid out again narrower, then met again unchanged; the "1" pushed to the
+		// row's end by an auto margin goes with the row)
+		const r = ui(`.s { position: relative; width: 143px; height: 292px; overflow-y: auto; overflow-x: hidden; } .slot { position: absolute; left: 0; right: 0; height: 40px; padding: 0 8px; } .t { display: flex; align-items: center; } .t i { margin-left: auto; }`,
+			`<div class="s">${Array.from({ length: 7 }, (_, i) => `<button class="slot" style="top: ${i * 41}px"><span class="t"><b>S</b>WEAPON<i>${i}</i></span></button>`).join("")}</div>`);
+		const row = r.root.querySelectorAll(".t")[1], i1 = r.root.querySelectorAll(".t i")[1];
+		r.root.querySelectorAll(".slot")[6].style.top = "270px";
+		r.update(16);
+		const rb = row.getBoundingClientRect(), ib = i1.getBoundingClientRect();
+		expect(r.root.querySelector(".s")!.clientWidth).toBe(128);
+		expect(ib.right).toBeCloseTo(rb.right, 3);
+	});
+
 	it("an <svg> with no width has its user units as they are (its content's client rects, as Chrome's), and draws nothing", () => {
 		const r = ui(`.d { position: relative; width: 0; height: 292px; } svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }`,
 			`<div class="d"><svg viewBox="-25.1 -42 50.2 74"><rect x="-75.3" y="-116" width="150.6" height="222"></rect></svg></div>`);
