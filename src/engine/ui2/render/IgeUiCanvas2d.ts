@@ -27,9 +27,12 @@
  * - drawImage of an engine canvas or image, or a page canvas or image (the
  *   whole picture, or the whole of it named as the source rectangle).
  *
- * Not there (the screens using them keep the page's canvas): putImageData,
- * getImageData and createImageData (pixels), patterns, filters, a clip that
- * isn't a rectangle, isPointInPath.
+ * - putImageData, getImageData and createImageData: the pixels kept in a
+ *   pixel layer (IgeUiPixelSurface) drawn where it was first put since the
+ *   canvas was cleared (getImageData reads that layer, not what's drawn as
+ *   shapes).
+ *
+ * Not there: patterns, filters, a clip that isn't a rectangle, isPointInPath.
  */
 import { type IgeCssColor, type IgeCssGradient, type IgeCssMatrix, IDENTITY, multiply, parseColor } from "@/engine/ui2/css/IgeCssValues";
 import type { IgeUiElement } from "@/engine/ui2/dom/IgeUiDom";
@@ -39,6 +42,7 @@ import { paintGradientTriangles, svgGradientMiddle } from "@/engine/ui2/render/I
 import { gradientColorAt } from "@/engine/ui2/render/IgeUiTextClip";
 import { fontWeight, type IgeUiFontSpec } from "@/engine/ui2/text/IgeUiFonts";
 import type { IgeUiHost, IgeUiHostSurface, IgeUiSurface } from "@/engine/ui2/IgeUiHost";
+import { type IgeUiImageData, IgeUiPixelSurface } from "@/engine/ui2/render/IgeUiPixelSurface";
 
 type M = [number, number, number, number, number, number];
 type Cap = "butt" | "round" | "square";
@@ -177,6 +181,9 @@ export class IgeUiCanvas2d {
 	_subs: Sub[] = [];
 	_size: [number, number];
 	_warned = new Set<string>();
+	/** putImageData's pixels, and whether the layer's drawn (an image item) since the canvas was last cleared. */
+	_pixels?: IgeUiPixelSurface;
+	_pixelsDrawn = false;
 
 	constructor (readonly canvas: unknown, readonly fonts: IgeUiCanvas2dFonts, readonly size: () => [number, number], readonly changed: () => void = () => undefined) {
 		const [w, h] = size();
@@ -200,6 +207,8 @@ export class IgeUiCanvas2d {
 		this._state = IgeUiCanvas2d._fresh();
 		this._stack = [];
 		this._subs = [];
+		this._pixels = undefined;
+		this._pixelsDrawn = false;
 	}
 
 	_push (item: IgeUiPaintItem, own = false): void {
@@ -619,12 +628,15 @@ export class IgeUiCanvas2d {
 		const m = this._state.m;
 		const [ax, ay] = apply(m, x, y), [bx, by] = apply(m, x + w, y + h);
 		const x0 = Math.min(ax, bx), y0 = Math.min(ay, by), x1 = Math.max(ax, bx), y1 = Math.max(ay, by);
-		if (x0 <= 0 && y0 <= 0 && x1 >= cw && y1 >= ch) this._drawn = [];
-		else {
+		this._pixels?.getContext("2d")!.clearRect(x0, y0, x1 - x0, y1 - y0);
+		if (x0 <= 0 && y0 <= 0 && x1 >= cw && y1 >= ch) {
+			this._drawn = [];
+			this._pixelsDrawn = false;
+		} else {
 			// (What's drawn wholly inside it goes; what's partly in it stays: the engine's canvas keeps shapes, not pixels)
 			this._drawn = this._drawn.filter((d) => {
 				const b = bounds(d.item);
-				return !b || d.own || !(b[0] >= x0 && b[1] >= y0 && b[2] <= x1 && b[3] <= y1);
+				return !b || d.own || (d.item.op === "image" && this._pixels && d.item.source === imageSource(this._pixels)?.el) || !(b[0] >= x0 && b[1] >= y0 && b[2] <= x1 && b[3] <= y1);
 			});
 		}
 		this.changed();
@@ -715,21 +727,37 @@ export class IgeUiCanvas2d {
 		}, own));
 	}
 
+	// ------------------------------------------------------------ pixels
+
+	/** The pixel layer, the canvas's size (made as it's first put to). */
+	_layer (): IgeUiPixelSurface {
+		this._sized();
+		const [w, h] = this._size;
+		if (!this._pixels || this._pixels.width !== w || this._pixels.height !== h) this._pixels = new IgeUiPixelSurface(w, h);
+		return this._pixels;
+	}
+
+	createImageData (w: number | IgeUiImageData, h?: number): IgeUiImageData {
+		return new IgeUiPixelSurface(0, 0).getContext("2d")!.createImageData(w, h);
+	}
+
+	getImageData (x: number, y: number, w: number, h: number): IgeUiImageData {
+		return this._layer().getContext("2d")!.getImageData(x, y, w, h);
+	}
+
+	/** The pixels put as they are (the transform, alpha and clip don't apply, as a canvas has it), on the pixel layer. */
+	putImageData (img: IgeUiImageData, dx: number, dy: number, dirtyX?: number, dirtyY?: number, dirtyW?: number, dirtyH?: number): void {
+		const layer = this._layer();
+		layer.getContext("2d")!.putImageData(img, dx, dy, dirtyX, dirtyY, dirtyW, dirtyH);
+		if (!this._pixelsDrawn) {
+			const src = imageSource(layer)!;
+			this._push({ op: "image", x: 0, y: 0, w: layer.width, h: layer.height, source: src.el, opacity: 1, clip: null });
+			this._pixelsDrawn = true;
+		}
+		this.changed();
+	}
+
 	// ------------------------------------------------------------ not drawn
-
-	createImageData (w: number, h: number): { width: number; height: number; data: Uint8ClampedArray } {
-		this._unsupported("createImageData");
-		return { width: w, height: h, data: new Uint8ClampedArray(Math.max(0, w * h * 4)) };
-	}
-
-	putImageData (): void {
-		this._unsupported("putImageData");
-	}
-
-	getImageData (x: number, y: number, w: number, h: number): { width: number; height: number; data: Uint8ClampedArray } {
-		this._unsupported("getImageData");
-		return { width: w, height: h, data: new Uint8ClampedArray(Math.max(0, w * h * 4)) };
-	}
 
 	createPattern (): null {
 		this._unsupported("createPattern");

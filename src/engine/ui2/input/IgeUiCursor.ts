@@ -2,8 +2,9 @@
  * The pointer's cursor over an engine UI: the computed `cursor` of what the
  * pointer's over (inherited as CSS has it: a button's `pointer`, a text
  * field's `text`, a canvas's own `crosshair` set as it's pointed at), given
- * to the platform. On the web that's a page element's style (the canvas the
- * UI's drawn on); a native host sets the system cursor.
+ * to the platform: the host's display (IgeUiHost: on the web, a page
+ * element's style, the canvas the UI's drawn on; a native host sets the
+ * system cursor).
  *
  * It follows the UI's own hover (the pointerover/out the root dispatches as
  * the pointer moves) and reads the cursor again as the pointer moves over the
@@ -13,21 +14,14 @@
 import type { IgeUiRoot } from "../IgeUiRoot";
 import type { IgeUiElement } from "../dom/IgeUiDom";
 
-/** The part of the platform the cursor needs (the host seam's `display.cursor`). */
+/** What the cursor's given to (the host's display: IgeUiHost's `display.cursor`). */
 export interface IgeUiCursorHost {
 	/** A CSS cursor keyword (`pointer`, `text`, `grab`…), or "" for the platform's own (off the UI, or `auto`). */
 	cursor (name: string): void;
 }
 
-/** The web's: an element's style (the canvas the UI's drawn on, whose cursor the page shows over it). */
-export function igeUiWebCursorHost (el: { style: { cursor: string } }): IgeUiCursorHost {
-	return { cursor: (name) => {
-		if (el.style.cursor !== name) el.style.cursor = name;
-	} };
-}
-
 /**
- * Keeps the host's cursor as the UI under the pointer wants it. Returns a function that stops (the platform's own
+ * Keeps the host's cursor as the UI under the pointer wants it (`igeUiCursor(root, root.host.display)`). Returns a function that stops (the platform's own
  * cursor back).
  */
 export function igeUiCursor (root: IgeUiRoot, host: IgeUiCursorHost): () => void {

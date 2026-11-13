@@ -518,9 +518,12 @@ export class IgeUiGlRenderer {
 		const gl = this.gl;
 		let source: TexImageSource | null = null;
 		let version = 0;
+		let pixels: { width: number; height: number; data: Uint8Array; version: number } | undefined;
 		if (el.localName === "canvas") {
 			source = (el._canvas as TexImageSource | undefined) ?? null;
-			version = -1;
+			// (Pixels in memory, IgeUiPixelSurface: uploaded when they've changed; a page canvas each frame it's shown)
+			pixels = (el._canvas as { pixels?: () => typeof pixels } | undefined)?.pixels?.();
+			version = pixels ? pixels.version + 1 : -1;
 		} else {
 			const src = el.getAttribute("src") ?? "";
 			// (The picture its UI's already loaded, if it has: dom/IgeUiImages)
@@ -547,7 +550,8 @@ export class IgeUiGlRenderer {
 		if (version === -1 || entry.version !== version) {
 			gl.bindTexture(gl.TEXTURE_2D, entry.tex);
 			gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, true);
-			gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, source);
+			if (pixels) gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, pixels.width, pixels.height, 0, gl.RGBA, gl.UNSIGNED_BYTE, pixels.data);
+			else gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, source);
 			gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, false);
 			entry.version = version;
 		}

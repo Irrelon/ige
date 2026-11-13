@@ -1,6 +1,6 @@
 import { IgeUiRoot } from "@/engine/ui2/IgeUiRoot";
 import { IgeUiFixedFonts } from "@/engine/ui2/text/IgeUiFonts";
-import { igeUiCursor, igeUiWebCursorHost } from "@/engine/ui2/input/IgeUiCursor";
+import { igeUiCursor } from "@/engine/ui2/input/IgeUiCursor";
 
 /** A page pointer event as the UI's input sees it. */
 const pe = (x: number, y: number) => ({ clientX: x, clientY: y, button: 0, buttons: 0, pointerId: 1, pointerType: "mouse", timeStamp: 0, detail: 0, shiftKey: false, ctrlKey: false, altKey: false, metaKey: false, stopImmediatePropagation () {}, preventDefault () {} }) as unknown as PointerEvent;
@@ -13,10 +13,9 @@ describe("ui2: the cursor", () => {
 		r.update();
 		const canvas = { style: { cursor: "" } };
 		const shown: string[] = [];
-		const web = igeUiWebCursorHost(canvas);
 		const stop = igeUiCursor(r, { cursor: (name) => {
 			shown.push(name);
-			web.cursor(name);
+			canvas.style.cursor = name;
 		} });
 		r._pointer("pointermove", pe(5, 5));
 		expect(canvas.style.cursor).toBe("pointer");
