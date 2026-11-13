@@ -28,6 +28,7 @@ import { type IgeUiPaintItem, IgeUiPainter } from "@/engine/ui2/render/IgeUiPain
 import { type IgeUiPress, pressChain, pressClicks, pressMoved, touchScroller } from "@/engine/ui2/input/IgeUiPointers";
 import { IgeUiAnimator, LAYOUT_PROPS } from "@/engine/ui2/style/IgeUiAnimator";
 import { cssNumber, serializeComputed } from "@/engine/ui2/style/IgeUiComputed";
+import { INHERITED } from "@/engine/ui2/style/IgeUiProperties";
 import { type IgeUiComputedStyle, IgeUiStyleEngine, styleValue } from "@/engine/ui2/style/IgeUiStyleEngine";
 import { IgeUiCanvasFonts, IgeUiFixedFonts, type IgeUiFontProvider } from "@/engine/ui2/text/IgeUiFonts";
 import { IgeUiSdfAtlas } from "@/engine/ui2/text/IgeUiSdfAtlas";
@@ -371,7 +372,9 @@ export class IgeUiRoot implements IgeUiDocumentHost {
 			this._paintDirty = true;
 			return;
 		}
-		if (change !== "scroll" && change !== "paint" && change !== "state") {
+		// (A class or inline style changed: laid out again only if its style turns out different where that matters (the
+		// restyle marks it); a colour alone is only painted again)
+		if (change !== "scroll" && change !== "paint" && change !== "state" && change !== "class" && change !== "style") {
 			this._relayout.add(el);
 			this._markLayout(el);
 		}
@@ -807,6 +810,12 @@ export class IgeUiRoot implements IgeUiDocumentHost {
 					}
 				}
 			}
+			// (An inherited property moving (color, visibility): what's in it is restyled to inherit it, as a browser's is)
+			if (prev) for (const k of INHERITED) {
+				if (prev[k] === cur[k]) continue;
+				for (const c of el.children) this._markStyle(c);
+				break;
+			}
 			el._computed = cur;
 			if (el._box) el._box.style = cur;
 		}
@@ -856,6 +865,7 @@ export class IgeUiRoot implements IgeUiDocumentHost {
 		const visit = (el: IgeUiElement, parent: IgeUiComputedStyle | undefined, force: boolean) => {
 			if (force || el._styleDirty || !el._computed) {
 				const prev = el._computed;
+				let keepBox = false;
 				const a = el._adopt;
 				el._adopt = undefined;
 				let next: IgeUiComputedStyle;
@@ -868,12 +878,16 @@ export class IgeUiRoot implements IgeUiDocumentHost {
 					if (a.subtreeSame) el._reuseFrom = a.from;
 					adopted++;
 				} else {
+					const pseudo = el._pseudo;
 					next = this.styles.compute(el, parent);
 					// (The same as before, or as the element it replaced: the same object kept, so what's under it can be
 					// seen not to need working out)
 					const was = this.animator._base.get(el) ?? prev ?? (a?.from._computed ? this.animator._base.get(a.from) ?? a.from._computed : undefined);
 					if (was && sameStyle(was, next)) next = was;
-					else {
+					else if (was && was === prev && paintOnly(was, next) && samePseudo(pseudo, el._pseudo) && el._box?.el === el && !el._box.pseudo) {
+						// Only how it looks (a colour, inherited from an animation say): its box kept, given the new style
+						keepBox = true;
+					} else {
 						this._markLayout(el);
 						this._relayout.add(el);
 					}
@@ -882,6 +896,7 @@ export class IgeUiRoot implements IgeUiDocumentHost {
 				el._styledVersion = this.styles.version;
 				el._styledClass = el._attrs.get("class");
 				el._computed = this.animator.restyled(el, prev, next, now);
+				if (keepBox && el._box) el._box.style = el._computed;
 				el._styleDirty = false;
 				count++;
 				force = true;
@@ -1583,6 +1598,20 @@ export class IgeUiRoot implements IgeUiDocumentHost {
 
 function mul (m: [number, number, number, number, number, number], n: [number, number, number, number, number, number]): [number, number, number, number, number, number] {
 	return [m[0] * n[0] + m[2] * n[1], m[1] * n[0] + m[3] * n[1], m[0] * n[2] + m[2] * n[3], m[1] * n[2] + m[3] * n[3], m[0] * n[4] + m[2] * n[5] + m[4], m[1] * n[4] + m[3] * n[5] + m[5]];
+}
+
+/** Properties that change only how a box looks, not where anything is. */
+const PAINT_ONLY = new Set([
+	"color", "background-color", "background-image", "border-top-color", "border-right-color", "border-bottom-color", "border-left-color",
+	"outline-color", "box-shadow", "text-shadow", "opacity", "visibility", "fill", "stroke", "fill-opacity", "stroke-opacity", "caret-color",
+	"cursor", "pointer-events", "text-decoration-color"
+]);
+
+/** Whether two styles differ only in how a box looks (and custom properties, whose uses would differ themselves). */
+function paintOnly (a: IgeUiComputedStyle, b: IgeUiComputedStyle): boolean {
+	for (const k in a) if (a[k] !== b[k] && !PAINT_ONLY.has(k) && !k.startsWith("--")) return false;
+	for (const k in b) if (!(k in a) && !PAINT_ONLY.has(k) && !k.startsWith("--")) return false;
+	return true;
 }
 
 /** Whether an element's ::before, ::after and ::placeholder styles say the same. */

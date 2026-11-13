@@ -72,6 +72,8 @@ interface InlineItem {
 	layer?: IgeUiBox;
 	/** Text straight in the block (or in the anonymous block round it): on the baseline, whatever its element's vertical-align. */
 	direct?: boolean;
+	/** Text: the element it's in (none for a ::before or ::after's). */
+	owner?: IgeUiElement;
 }
 
 interface PlacedItem {
@@ -1342,7 +1344,9 @@ export class IgeUiLayoutEngine {
 
 	_inlineItems (b: IgeUiBox, parentStyle: IgeUiComputedStyle, out: InlineItem[], layer?: IgeUiBox): void {
 		if (b.display === "text") {
-			out.push({ kind: "text", text: this._prepText(b.text ?? "", b.style), style: b.style, layer });
+			let owner: IgeUiElement | undefined;
+			if (!b.parent?.pseudo) for (let q = b.parent; q && !owner; q = q.parent) owner = q.el ?? undefined;
+			out.push({ kind: "text", text: this._prepText(b.text ?? "", b.style), style: b.style, layer, owner });
 			return;
 		}
 		if (this._outOfFlow(b)) return;
@@ -1486,7 +1490,7 @@ export class IgeUiLayoutEngine {
 				else if (p.valign === "bottom") by = top + y + h - p.below;
 				else by = top + y + baseline - p.shift;
 				if (p.item.kind === "text" && p.text) {
-					runs.push({ text: p.text, x: px, y: by, w: p.w, font: this.font(p.item.style), letterSpacing: this.letterSpacing(p.item.style), style: p.item.style, layer: p.item.layer });
+					runs.push({ text: p.text, x: px, y: by, w: p.w, font: this.font(p.item.style), letterSpacing: this.letterSpacing(p.item.style), style: p.item.style, layer: p.item.layer, el: p.item.owner });
 					if (p.item.layer) p.item.layer.layerBlock = b;
 				} else if (p.item.kind === "atom") {
 					const a = p.item.box!;

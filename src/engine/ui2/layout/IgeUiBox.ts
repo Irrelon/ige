@@ -21,6 +21,8 @@ export interface IgeUiTextRun {
 	letterSpacing: number;
 	/** The style of the element it's in (colour, shadow). */
 	style: IgeUiComputedStyle;
+	/** The element it's in (its colour, visibility and glow are read from its style as it is when it's painted: animated). */
+	el?: IgeUiElement;
 	/** Cut off with an ellipsis (text-overflow). */
 	ellipsis?: boolean;
 	/** In a positioned inline element (`position` set: its own layer, z-index and all): drawn with it, not the block. */

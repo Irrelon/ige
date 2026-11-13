@@ -524,3 +524,26 @@ describe("ui2: positioned boxes painted and hit in the document's order", () => 
 		expect(r.hitTest(5, 35)).toBe(r.root.querySelector(".a"));
 	});
 });
+
+describe("ui2: an animated colour reaches the text in it", () => {
+	it("its own text and its children's, and a colour-only restyle keeps the boxes", () => {
+		const r = ui(`button { color: rgb(0, 0, 0); transition: color 1s linear; } button.on { color: rgb(200, 0, 0); } .x { color: rgb(0, 0, 10); } .x.on { color: rgb(0, 0, 250); }`, 400, 300);
+		r.root.innerHTML = `<button>ab<span>cd</span></button><p class="x">plain <b>text</b></p>`;
+		r.update(0);
+		r.root.querySelector("button")!.classList.add("on");
+		r.update(100);
+		r.update(500);
+		const colour = (t: string) => Math.round((r.items.find((i) => i.op === "text" && (i as { text: string }).text.trim() === t) as { color: { r: number; b: number } }).color.r);
+		expect([colour("ab"), colour("cd")]).toEqual([80, 80]);
+		// (A colour changed by a class, no animation: restyled, painted, nothing laid out again)
+		const p = r.root.querySelector(".x")!;
+		const box = p._box;
+		p.classList.add("on");
+		r.update(600);
+		expect(p._box === box).toBe(true);
+		const blue = (r.items.find((i) => i.op === "text" && (i as { text: string }).text.trim() === "text") as { color: { b: number } }).color.b;
+		expect(blue).toBe(250);
+		const now = snapshot(r);
+		expect(fresh(r, 600)).toEqual(now);
+	});
+});

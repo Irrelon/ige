@@ -731,11 +731,13 @@ export class IgeUiPainter {
 	}
 
 	_text (b: IgeUiBox, r: IgeUiTextRun, ctx: Ctx): void {
-		if (styleValue(r.style, "visibility") === "hidden") return;
-		const color = parseColor(styleValue(r.style, "color")) ?? { r: 0, g: 0, b: 0, a: 1 };
+		// (Its colour, visibility and glow as its element has them now: an animated colour, or one inherited from an animation)
+		const live = r.el?._computed ?? r.style;
+		if (styleValue(live, "visibility") === "hidden") return;
+		const color = parseColor(styleValue(live, "color")) ?? { r: 0, g: 0, b: 0, a: 1 };
 		const textClip = clipsToText(r.style);
 		if (color.a <= 0 && !textClip) return;
-		const shadows = parseShadows(styleValue(r.style, "text-shadow"), lenCtx(r.style), color);
+		const shadows = parseShadows(styleValue(live, "text-shadow"), lenCtx(r.style), color);
 		const x = b.ax + ctx.dx + r.x, y = b.ay + ctx.dy + r.y;
 		// (Its element: the block's, or for an anonymous one (text straight in a flex item) the nearest element round it)
 		let el = b.el;
