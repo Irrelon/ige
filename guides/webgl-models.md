@@ -14,8 +14,8 @@ await renderer.setup();
 renderer.createFrontBuffer(true);
 ```
 
-`renderer.preferredWebGlVersion(1)` (before `createFrontBuffer()`) runs the WebGL 1 fallback, for testing
-it on a WebGL 2 machine. WebGL 1 has no instancing, so every mesh is a separate draw call.
+The renderer needs WebGL 2. It draws through the GPU device (`guides/gpu-device.md`), which is WebGL 2 only, so the
+old WebGL 1 fallback is gone; `preferredWebGlVersion(1)` now only logs a warning.
 
 ## Load and place a model
 

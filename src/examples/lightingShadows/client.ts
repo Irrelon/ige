@@ -83,10 +83,6 @@ export class Client extends IgeBaseClass implements IgeCanInit {
 
 			// Create WebGL renderer
 			this.renderer = new IgeWebGlRenderer();
-			// ?webgl=1 runs the WebGL 1 fallback path
-			if (new URLSearchParams(window.location.search).get("webgl") === "1") {
-				this.renderer.preferredWebGlVersion(1);
-			}
 			ige.engine.renderer(this.renderer);
 
 			await this.renderer.setup();

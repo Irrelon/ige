@@ -98,6 +98,9 @@ interface GlPipeline extends IgeGpuRenderPipeline {
 
 /** What's set in GL now (undefined: not known, set it). */
 interface GlState {
+	/** The pipeline whose fixed state is set (and the stencil reference with it): applying it again does nothing. */
+	pipeline?: GlPipeline;
+	pipelineRef?: number;
 	program?: WebGLProgram | null;
 	vao?: WebGLVertexArrayObject | null;
 	fbo?: WebGLFramebuffer | null;
@@ -790,18 +793,21 @@ export class IgeWebGl2GpuDevice implements IgeGpuDevice {
 		if (this._state.colorMask === on) return;
 		this.gl.colorMask(on, on, on, on);
 		this._state.colorMask = on;
+		this._state.pipeline = undefined;
 	}
 
 	_depthMask (on: boolean): void {
 		if (this._state.depthMask === on) return;
 		this.gl.depthMask(on);
 		this._state.depthMask = on;
+		this._state.pipeline = undefined;
 	}
 
 	_stencilMask (m: number): void {
 		if (this._state.stencilMask === m) return;
 		this.gl.stencilMask(m);
 		this._state.stencilMask = m;
+		this._state.pipeline = undefined;
 	}
 
 	_scissorOn (on: boolean): void {
@@ -833,6 +839,8 @@ export class IgeWebGl2GpuDevice implements IgeGpuDevice {
 	/** A pipeline's fixed state and program set (only what's changed). */
 	_applyPipeline (p: GlPipeline, stencilRef: number): void {
 		const gl = this.gl, d = p._desc, s = this._state;
+		// (Set already, its program and vertex array still bound: nothing to do)
+		if (s.pipeline === p && s.pipelineRef === stencilRef && s.program === p._module._program && s.vao === p._layout._vao) return;
 		if (p._module._gen !== this._gen) this._liveModule(p._module);
 		if (p._layout._gen !== this._gen) this._liveLayout(p._layout);
 		this._useProgram(p._module._program);
@@ -902,6 +910,8 @@ export class IgeWebGl2GpuDevice implements IgeGpuDevice {
 				s.frontFace = front;
 			}
 		}
+		s.pipeline = p;
+		s.pipelineRef = stencilRef;
 	}
 
 	/** A module's uniform block set from `data`: the members that changed. */
@@ -965,6 +975,9 @@ class IgeWebGl2RenderPass implements IgeGpuRenderPass {
 	_index?: { buf: GlBuffer; type: number; size: number; offset: number };
 	_textures: ({ t: GlTexture | null; s?: IgeGpuSampler } | undefined)[] = [];
 	_uniforms?: ArrayLike<number>;
+	/** Uniforms set since the last draw (or a pipeline whose block hasn't been sent): sent before the next. */
+	_uniformsDirty = true;
+	_uniformModule?: GlModule;
 	_viewport: [number, number, number, number];
 	_scissor: [number, number, number, number] | null = null;
 	_ref = 0;
@@ -993,6 +1006,7 @@ class IgeWebGl2RenderPass implements IgeGpuRenderPass {
 
 	setUniforms (data: ArrayLike<number>): void {
 		this._uniforms = data;
+		this._uniformsDirty = true;
 	}
 
 	setViewport (x: number, y: number, width: number, height: number): void {
@@ -1048,7 +1062,11 @@ class IgeWebGl2RenderPass implements IgeGpuRenderPass {
 				d._state.samplers[i] = so;
 			}
 		}
-		d._applyUniforms(p._module, this._uniforms);
+		if (this._uniformsDirty || this._uniformModule !== p._module) {
+			d._applyUniforms(p._module, this._uniforms);
+			this._uniformsDirty = false;
+			this._uniformModule = p._module;
+		}
 		d._applyVertexBuffers(p, this._slots, firstInstance);
 		return p;
 	}

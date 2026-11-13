@@ -41,7 +41,7 @@ The example currently has TypeScript compilation errors that need to be resolved
 - Batching: Render batch and state management
 
 **Architecture Highlights:**
-- WebGL2 with WebGL1 fallback
+- WebGL 2 (drawn through the GPU device)
 - Instanced rendering for sprites
 - Frustum culling
 - Opaque/transparent pass separation

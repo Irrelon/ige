@@ -1,8 +1,9 @@
 import { IgeBaseClass } from "@/engine/core/IgeBaseClass";
-import type { IgeWebGlResourceManager } from "@/engine/webgl/IgeWebGlResourceManager";
 import type { IgeDirectionalLight, IgePointLight } from "@/engine/webgl/IgeWebGlLight";
 import type { IgeWebGlProgram } from "@/engine/webgl/IgeWebGlProgram";
 import { IgeMatrix4 } from "@/engine/core/IgeMatrix4";
+import type { IgeGpuRenderPass, IgeGpuSamplerDesc, IgeGpuTexture } from "@/engine/gpu/IgeGpuDevice";
+import { type IgeWebGl2GpuDevice, webGl2Texture } from "@/engine/gpu/IgeWebGl2GpuDevice";
 
 /**
  * Shadow map configuration.
@@ -21,12 +22,10 @@ export interface IgeShadowMapConfig {
 }
 
 /**
- * Shadow map data for a single light.
+ * Shadow map data for a single light: its depth, drawn on the GPU device.
  */
 interface ShadowMapData {
-	framebuffer: WebGLFramebuffer;
-	depthTexture: WebGLTexture;
-	colorTexture?: WebGLTexture; // For WebGL 1 depth packing
+	depth: IgeGpuTexture;
 	lightSpaceMatrix: Float32Array;
 	size: number;
 	bias: number;
@@ -34,14 +33,12 @@ interface ShadowMapData {
 }
 
 /**
- * Cached depth of a directional light's static shadow casters (WebGL 2).
- * The renderer redraws it only when the static casters or the light's
- * matrix change, and copies it into the light's shadow map each frame
- * before drawing the moving casters on top.
+ * Cached depth of a directional light's static shadow casters. The renderer redraws it only when the static casters or
+ * the light's matrix change, and copies it into the light's shadow map each frame before drawing the moving casters on
+ * top.
  */
 export interface IgeShadowCacheData {
-	framebuffer: WebGLFramebuffer;
-	depthTexture: WebGLTexture;
+	depth: IgeGpuTexture;
 	size: number;
 	/** Light space matrix the cache was rendered with. */
 	matrix: Float32Array;
@@ -67,15 +64,17 @@ export type PointShadowTextureFormat = "rgba8" | "r32f";
  * Face layout: row0=[+X, -X, +Y], row1=[-Y, +Z, -Z]
  */
 export interface PointShadowMapData {
-	framebuffer: WebGLFramebuffer;        // Single framebuffer for depth rendering
-	atlasTexture: WebGLTexture;           // Single 3x2 atlas texture storing linear depth
-	depthRenderbuffer: WebGLRenderbuffer; // Shared depth renderbuffer
+	atlas: IgeGpuTexture;                 // The 3x2 atlas, storing linear depth
+	depth: IgeGpuTexture;                 // Its depth buffer (the whole atlas)
 	lightSpaceMatrices: IgeMatrix4[];     // 6 view-projection matrices
 	faceSize: number;                     // Size of each face (atlas is faceSize*3 x faceSize*2)
 	bias: number;
 	nearPlane: number;
 	farPlane: number;
 }
+
+/** How every shadow texture is sampled: its nearest texel, clamped at its edges. */
+const NEAREST: IgeGpuSamplerDesc = { minFilter: "nearest", magFilter: "nearest", addressModeU: "clamp-to-edge", addressModeV: "clamp-to-edge" };
 
 /** Maximum number of point lights that can cast shadows. */
 export const MAX_SHADOW_POINT_LIGHTS = 2;
@@ -108,9 +107,9 @@ const DEFAULT_SHADOW_CONFIG: IgeShadowMapConfig = {
 export class IgeWebGlShadowManager extends IgeBaseClass {
 	classId = "IgeWebGlShadowManager";
 
-	protected _gl: WebGLRenderingContext | WebGL2RenderingContext;
-	protected _resourceManager: IgeWebGlResourceManager;
-	protected _webglVersion: 1 | 2;
+	/** The GPU device the maps are made and drawn on; GL for the passes that sample them and aren't on it yet. */
+	protected _device: IgeWebGl2GpuDevice;
+	protected _gl: WebGL2RenderingContext;
 
 	// Directional shadow maps
 	protected _shadowMaps: Map<string, ShadowMapData> = new Map();
@@ -118,7 +117,7 @@ export class IgeWebGlShadowManager extends IgeBaseClass {
 	// Point light shadow maps
 	protected _pointShadowMaps: Map<string, PointShadowMapData> = new Map();
 
-	// Static caster caches for directional lights (WebGL 2 only)
+	// Static caster caches for directional lights
 	protected _shadowCaches: Map<string, IgeShadowCacheData> = new Map();
 
 	// Point shadow atlas texture format (configurable for performance vs precision)
@@ -138,24 +137,19 @@ export class IgeWebGlShadowManager extends IgeBaseClass {
 	protected _shadowNear: number = 1;
 	protected _shadowFar: number = 500;
 
-	constructor(
-		gl: WebGLRenderingContext | WebGL2RenderingContext,
-		resourceManager: IgeWebGlResourceManager,
-		webglVersion: 1 | 2
-	) {
+	constructor(device: IgeWebGl2GpuDevice) {
 		super();
-		this._gl = gl;
-		this._resourceManager = resourceManager;
-		this._webglVersion = webglVersion;
+		this._device = device;
+		this._gl = device.gl;
 
 		// Prefer R32F point shadow atlases: 8-bit depth bands visibly on curved
-		// surfaces at zero bias. Rendering to float targets needs the
-		// EXT_color_buffer_float extension, so fall back to RGBA8 without it.
-		if (webglVersion === 2 && (gl as WebGL2RenderingContext).getExtension("EXT_color_buffer_float")) {
+		// surfaces at zero bias. Rendering to float targets needs
+		// EXT_color_buffer_float, so fall back to RGBA8 without it.
+		if (device.limits.floatTargets) {
 			this._pointShadowFormat = "r32f";
 		}
 
-		this.log(`Shadow manager initialized (WebGL ${webglVersion})`);
+		this.log("Shadow manager initialized");
 	}
 
 	/**
@@ -209,16 +203,11 @@ export class IgeWebGlShadowManager extends IgeBaseClass {
 	}
 
 	/**
-	 * Create or update a shadow map for a directional light.
-	 */
-	/**
 	 * After the WebGL context was lost and restored: every shadow map made
-	 * again at the size and bias it had (the old framebuffers and textures
-	 * died with the old context; they're forgotten, not deleted), and the
-	 * static caches dropped (they're rebuilt when next drawn).
+	 * again at the size and bias it had (its old textures are let go), and
+	 * the static caches dropped (they're rebuilt when next drawn).
 	 */
-	contextRestored(resourceManager?: IgeWebGlResourceManager): void {
-		if (resourceManager) this._resourceManager = resourceManager;
+	contextRestored(): void {
 		const maps = [...this._shadowMaps].map(([id, m]) => [id, { size: m.size, bias: m.bias, normalBias: m.normalBias }] as const);
 		const points = [...this._pointShadowMaps].map(([id, m]) => [id, { size: m.faceSize, bias: m.bias, nearPlane: m.nearPlane, farPlane: m.farPlane }] as const);
 		this._shadowMaps.clear();
@@ -228,11 +217,14 @@ export class IgeWebGlShadowManager extends IgeBaseClass {
 		for (const [id, cfg] of points) this.createPointShadowMap(id, cfg);
 	}
 
+	/**
+	 * Create or update a shadow map for a directional light: a depth texture
+	 * (32-bit float), sampled nearest.
+	 */
 	createShadowMap(
 		lightId: string,
 		config?: Partial<IgeShadowMapConfig>
 	): boolean {
-		const gl = this._gl;
 		const cfg = { ...this._defaultConfig, ...config };
 
 		// Delete existing shadow map (and its static cache) if present
@@ -241,123 +233,11 @@ export class IgeWebGlShadowManager extends IgeBaseClass {
 		}
 		this.deleteShadowCache(lightId);
 
-		// Create framebuffer
-		const framebuffer = gl.createFramebuffer();
-		if (!framebuffer) {
-			this.log(`Failed to create shadow framebuffer for ${lightId}`, "error");
-			return false;
-		}
+		this._device.invalidate();
+		const depth = this._device.createTexture({ width: cfg.size, height: cfg.size, format: "depth32float", sampler: NEAREST, label: `${lightId} shadow map` });
 
-		gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer);
-
-		let depthTexture: WebGLTexture | null = null;
-		let colorTexture: WebGLTexture | null = null;
-
-		if (this._webglVersion === 2) {
-			// WebGL 2: Use depth texture directly
-			depthTexture = gl.createTexture();
-			if (!depthTexture) {
-				this.log(`Failed to create depth texture for ${lightId}`, "error");
-				gl.deleteFramebuffer(framebuffer);
-				return false;
-			}
-
-			gl.bindTexture(gl.TEXTURE_2D, depthTexture);
-			(gl as WebGL2RenderingContext).texImage2D(
-				gl.TEXTURE_2D,
-				0,
-				(gl as WebGL2RenderingContext).DEPTH_COMPONENT32F,
-				cfg.size,
-				cfg.size,
-				0,
-				gl.DEPTH_COMPONENT,
-				gl.FLOAT,
-				null
-			);
-
-			// Set texture parameters for shadow sampling
-			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
-			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
-			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-
-			// Attach depth texture to framebuffer
-			gl.framebufferTexture2D(
-				gl.FRAMEBUFFER,
-				gl.DEPTH_ATTACHMENT,
-				gl.TEXTURE_2D,
-				depthTexture,
-				0
-			);
-
-			// No color attachment needed for depth-only rendering
-			const gl2 = gl as WebGL2RenderingContext;
-			gl2.drawBuffers([gl2.NONE]);
-			gl2.readBuffer(gl2.NONE);
-		} else {
-			// WebGL 1: Use color texture with depth packing
-			// Create color texture for packed depth
-			colorTexture = gl.createTexture();
-			if (!colorTexture) {
-				this.log(`Failed to create color texture for ${lightId}`, "error");
-				gl.deleteFramebuffer(framebuffer);
-				return false;
-			}
-
-			gl.bindTexture(gl.TEXTURE_2D, colorTexture);
-			gl.texImage2D(
-				gl.TEXTURE_2D,
-				0,
-				gl.RGBA,
-				cfg.size,
-				cfg.size,
-				0,
-				gl.RGBA,
-				gl.UNSIGNED_BYTE,
-				null
-			);
-			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
-			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
-			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-
-			gl.framebufferTexture2D(
-				gl.FRAMEBUFFER,
-				gl.COLOR_ATTACHMENT0,
-				gl.TEXTURE_2D,
-				colorTexture,
-				0
-			);
-
-			// Create renderbuffer for depth
-			const depthBuffer = gl.createRenderbuffer();
-			gl.bindRenderbuffer(gl.RENDERBUFFER, depthBuffer);
-			gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_COMPONENT16, cfg.size, cfg.size);
-			gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, depthBuffer);
-
-			// Use color texture as the "depth texture" for sampling
-			depthTexture = colorTexture;
-		}
-
-		// Check framebuffer completeness
-		const status = gl.checkFramebufferStatus(gl.FRAMEBUFFER);
-		if (status !== gl.FRAMEBUFFER_COMPLETE) {
-			this.log(`Shadow framebuffer incomplete: ${status}`, "error");
-			gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-			gl.deleteFramebuffer(framebuffer);
-			if (depthTexture) gl.deleteTexture(depthTexture);
-			if (colorTexture && colorTexture !== depthTexture) gl.deleteTexture(colorTexture);
-			return false;
-		}
-
-		gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-		gl.bindTexture(gl.TEXTURE_2D, null);
-
-		// Store shadow map data
 		this._shadowMaps.set(lightId, {
-			framebuffer,
-			depthTexture: depthTexture!,
-			colorTexture: colorTexture || undefined,
+			depth,
 			lightSpaceMatrix: new Float32Array(16),
 			size: cfg.size,
 			bias: cfg.bias,
@@ -375,13 +255,8 @@ export class IgeWebGlShadowManager extends IgeBaseClass {
 		const shadowMap = this._shadowMaps.get(lightId);
 		if (!shadowMap) return;
 
-		const gl = this._gl;
-		gl.deleteFramebuffer(shadowMap.framebuffer);
-		gl.deleteTexture(shadowMap.depthTexture);
-		if (shadowMap.colorTexture && shadowMap.colorTexture !== shadowMap.depthTexture) {
-			gl.deleteTexture(shadowMap.colorTexture);
-		}
-
+		this._device.invalidate();
+		this._device.destroyTexture(shadowMap.depth);
 		this._shadowMaps.delete(lightId);
 		this.deleteShadowCache(lightId);
 		this.log(`Deleted shadow map for ${lightId}`);
@@ -389,11 +264,9 @@ export class IgeWebGlShadowManager extends IgeBaseClass {
 
 	/**
 	 * Get (creating on first use) the static caster cache for a directional
-	 * light's shadow map. Returns null on WebGL 1, where depth can't be
-	 * copied between framebuffers.
+	 * light's shadow map.
 	 */
 	getShadowCache(lightId: string): IgeShadowCacheData | null {
-		if (this._webglVersion !== 2) return null;
 		const shadowMap = this._shadowMaps.get(lightId);
 		if (!shadowMap) return null;
 
@@ -401,32 +274,8 @@ export class IgeWebGlShadowManager extends IgeBaseClass {
 		if (existing && existing.size === shadowMap.size) return existing;
 		if (existing) this.deleteShadowCache(lightId);
 
-		const gl = this._gl as WebGL2RenderingContext;
-		const framebuffer = gl.createFramebuffer();
-		const depthTexture = gl.createTexture();
-		if (!framebuffer || !depthTexture) return null;
-
-		gl.bindTexture(gl.TEXTURE_2D, depthTexture);
-		gl.texImage2D(gl.TEXTURE_2D, 0, gl.DEPTH_COMPONENT32F, shadowMap.size, shadowMap.size, 0, gl.DEPTH_COMPONENT, gl.FLOAT, null);
-		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
-		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
-		gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer);
-		gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.TEXTURE_2D, depthTexture, 0);
-		gl.drawBuffers([gl.NONE]);
-		gl.readBuffer(gl.NONE);
-		const complete = gl.checkFramebufferStatus(gl.FRAMEBUFFER) === gl.FRAMEBUFFER_COMPLETE;
-		gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-		gl.bindTexture(gl.TEXTURE_2D, null);
-
-		if (!complete) {
-			gl.deleteFramebuffer(framebuffer);
-			gl.deleteTexture(depthTexture);
-			return null;
-		}
-
 		const cache: IgeShadowCacheData = {
-			framebuffer,
-			depthTexture,
+			depth: this._device.createTexture({ width: shadowMap.size, height: shadowMap.size, format: "depth32float", sampler: NEAREST, label: `${lightId} static shadow casters` }),
 			size: shadowMap.size,
 			matrix: new Float32Array(16),
 			signatureA: 0,
@@ -443,8 +292,7 @@ export class IgeWebGlShadowManager extends IgeBaseClass {
 	deleteShadowCache(lightId: string): void {
 		const cache = this._shadowCaches.get(lightId);
 		if (!cache) return;
-		this._gl.deleteFramebuffer(cache.framebuffer);
-		this._gl.deleteTexture(cache.depthTexture);
+		this._device.destroyTexture(cache.depth);
 		this._shadowCaches.delete(lightId);
 	}
 
@@ -452,10 +300,10 @@ export class IgeWebGlShadowManager extends IgeBaseClass {
 	 * Begin rendering static casters into a light's cache (cleared first).
 	 * Finish with endShadowPass().
 	 */
-	beginShadowCachePass(lightId: string): boolean {
+	beginShadowCachePass(lightId: string): IgeGpuRenderPass | null {
 		const cache = this._shadowCaches.get(lightId);
-		if (!this._enabled || !cache) return false;
-		return this._beginDepthPass(cache.framebuffer, cache.size, true);
+		if (!this._enabled || !cache) return null;
+		return this._device.beginRenderPass({ depthStencil: { target: cache.depth, depthLoadOp: "clear", depthClearValue: 1 } });
 	}
 
 	/**
@@ -464,15 +312,8 @@ export class IgeWebGlShadowManager extends IgeBaseClass {
 	copyShadowCache(lightId: string): boolean {
 		const cache = this._shadowCaches.get(lightId);
 		const shadowMap = this._shadowMaps.get(lightId);
-		if (!cache || !shadowMap || this._webglVersion !== 2) return false;
-
-		const gl = this._gl as WebGL2RenderingContext;
-		gl.disable(gl.SCISSOR_TEST); // the scissor box would clip the copy
-		gl.bindFramebuffer(gl.READ_FRAMEBUFFER, cache.framebuffer);
-		gl.bindFramebuffer(gl.DRAW_FRAMEBUFFER, shadowMap.framebuffer);
-		gl.blitFramebuffer(0, 0, cache.size, cache.size, 0, 0, shadowMap.size, shadowMap.size, gl.DEPTH_BUFFER_BIT, gl.NEAREST);
-		gl.bindFramebuffer(gl.READ_FRAMEBUFFER, null);
-		gl.bindFramebuffer(gl.DRAW_FRAMEBUFFER, null);
+		if (!cache || !shadowMap) return false;
+		this._device.copyTextureToTexture(cache.depth, shadowMap.depth);
 		return true;
 	}
 
@@ -561,92 +402,28 @@ export class IgeWebGlShadowManager extends IgeBaseClass {
 	}
 
 	/**
-	 * Begin shadow pass rendering.
-	 * Binds the shadow framebuffer and sets up viewport.
+	 * Begin a light's shadow pass: depth only, into its map (cleared to the
+	 * far plane unless `clear` is false: the static casters copied in kept).
+	 * Draws are culled front faces (pipelines with cullMode "front"). Finish
+	 * with endShadowPass().
 	 */
-	beginShadowPass(lightId: string, clear: boolean = true): boolean {
-		if (!this._enabled) return false;
+	beginShadowPass(lightId: string, clear: boolean = true): IgeGpuRenderPass | null {
+		if (!this._enabled) return null;
 
 		const shadowMap = this._shadowMaps.get(lightId);
-		if (!shadowMap) return false;
+		if (!shadowMap) return null;
 
-		return this._beginDepthPass(shadowMap.framebuffer, shadowMap.size, clear);
+		return this._device.beginRenderPass({ depthStencil: { target: shadowMap.depth, depthLoadOp: clear ? "clear" : "load", depthClearValue: 1 } });
+	}
+
+	/** End a shadow pass. */
+	endShadowPass(pass: IgeGpuRenderPass): void {
+		pass.end();
 	}
 
 	/**
-	 * Bind a depth framebuffer for a directional shadow pass, optionally
-	 * clearing it to the far plane, with front-face culling.
-	 */
-	protected _beginDepthPass(framebuffer: WebGLFramebuffer, size: number, clear: boolean): boolean {
-		const gl = this._gl;
-
-		// Bind shadow framebuffer
-		gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer);
-
-		// Set viewport to shadow map size
-		gl.viewport(0, 0, size, size);
-
-		// Depth written as colour (WebGL 1 packs it into RGBA) must not be
-		// blended with what is already there
-		gl.disable(gl.BLEND);
-
-		// Enable depth testing and writing BEFORE clearing
-		gl.enable(gl.DEPTH_TEST);
-		gl.depthFunc(gl.LESS);
-		gl.depthMask(true);
-
-		// Set clear depth to 1.0 (far plane) - this is crucial for proper shadow mapping
-		gl.clearDepth(1.0);
-
-		// Clear depth buffer (and color for WebGL 1)
-		if (!clear) {
-			// Keep the copied static depth
-		} else if (this._webglVersion === 1) {
-			gl.clearColor(1.0, 1.0, 1.0, 1.0); // White = far depth when packed
-			gl.clear(gl.DEPTH_BUFFER_BIT | gl.COLOR_BUFFER_BIT);
-		} else {
-			gl.clear(gl.DEPTH_BUFFER_BIT);
-		}
-
-		// Cull front faces to reduce shadow acne (Peter Panning)
-		gl.enable(gl.CULL_FACE);
-		gl.cullFace(gl.FRONT);
-
-		return true;
-	}
-
-	/**
-	 * End shadow pass rendering.
-	 * Restores default framebuffer and GL state.
-	 */
-	endShadowPass(): void {
-		const gl = this._gl;
-
-		// Restore default framebuffer
-		gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-
-		// Restore culling state - disable it since normal rendering will enable as needed
-		gl.disable(gl.CULL_FACE);
-		gl.cullFace(gl.BACK);
-
-		// Restore depth state
-		gl.depthFunc(gl.LEQUAL);
-		gl.depthMask(true);
-
-		// Restore color mask (in case it was modified)
-		gl.colorMask(true, true, true, true);
-
-		// Restore clear color (shadow pass may have changed it for WebGL 1)
-		gl.clearColor(0.0, 0.0, 0.0, 0.0);
-
-		// Unbind shadow map texture to avoid feedback loops
-		gl.activeTexture(gl.TEXTURE1);
-		gl.bindTexture(gl.TEXTURE_2D, null);
-		gl.activeTexture(gl.TEXTURE0);
-	}
-
-	/**
-	 * Apply shadow uniforms to a shader program.
+	 * Apply shadow uniforms to a shader program (one not yet drawing through
+	 * the device: its map's GL texture bound to `textureUnit`).
 	 */
 	applyShadowUniforms(program: IgeWebGlProgram, lightId: string, textureUnit: number = 1): boolean {
 		if (!this._enabled) {
@@ -661,10 +438,11 @@ export class IgeWebGlShadowManager extends IgeBaseClass {
 		}
 
 		const gl = this._gl;
+		const tex = webGl2Texture(this._device, shadowMap.depth);
 
 		// Bind shadow map texture to specified unit
 		gl.activeTexture(gl.TEXTURE0 + textureUnit);
-		gl.bindTexture(gl.TEXTURE_2D, shadowMap.depthTexture);
+		gl.bindTexture(gl.TEXTURE_2D, tex);
 
 		// Set shadow uniforms
 		program.setUniform1i("u_hasShadowMap", 1);
@@ -673,7 +451,7 @@ export class IgeWebGlShadowManager extends IgeBaseClass {
 		program.setUniform1f("u_shadowBias", shadowMap.bias);
 		program.setUniform1f("u_shadowNormalBias", shadowMap.normalBias);
 		program.setUniform1f("u_shadowMapSize", shadowMap.size);
-		program.setUniform1i("u_usePackedDepth", this._webglVersion === 1 ? 1 : 0);
+		program.setUniform1i("u_usePackedDepth", 0);
 
 		// Restore active texture to unit 0 so state manager stays in sync
 		gl.activeTexture(gl.TEXTURE0);
@@ -698,11 +476,10 @@ export class IgeWebGlShadowManager extends IgeBaseClass {
 	}
 
 	/**
-	 * Get shadow map texture for a light.
+	 * Get a light's shadow map (its depth texture on the device).
 	 */
-	getShadowMapTexture(lightId: string): WebGLTexture | null {
-		const shadowMap = this._shadowMaps.get(lightId);
-		return shadowMap?.depthTexture ?? null;
+	getShadowMapTexture(lightId: string): IgeGpuTexture | null {
+		return this._shadowMaps.get(lightId)?.depth ?? null;
 	}
 
 	/**
@@ -718,14 +495,14 @@ export class IgeWebGlShadowManager extends IgeBaseClass {
 
 	/**
 	 * Create a point light shadow map using a 3x2 atlas texture.
-	 * All 6 cube faces are rendered into a single RGBA texture.
+	 * All 6 cube faces are rendered into a single texture (R32F, or RGBA8
+	 * packed), with one depth buffer for the whole atlas.
 	 * Layout: row0=[+X, -X, +Y], row1=[-Y, +Z, -Z]
 	 */
 	createPointShadowMap(
 		lightId: string,
 		config?: { size?: number; bias?: number; nearPlane?: number; farPlane?: number }
 	): boolean {
-		const gl = this._gl;
 		const faceSize = config?.size ?? 512;
 		const bias = config?.bias ?? 0.002;
 		const nearPlane = config?.nearPlane ?? 0.5;
@@ -738,62 +515,11 @@ export class IgeWebGlShadowManager extends IgeBaseClass {
 			this.deletePointShadowMap(lightId);
 		}
 
-		// Create atlas RGBA texture
-		const atlasTexture = gl.createTexture();
-		if (!atlasTexture) {
-			this.log(`Failed to create point shadow atlas texture for ${lightId}`, "error");
-			return false;
-		}
-
-		gl.bindTexture(gl.TEXTURE_2D, atlasTexture);
-		if (this._pointShadowFormat === "r32f" && this._webglVersion === 2) {
-			const gl2 = gl as WebGL2RenderingContext;
-			gl2.getExtension("EXT_color_buffer_float");
-			gl2.texImage2D(gl2.TEXTURE_2D, 0, gl2.R32F, atlasWidth, atlasHeight, 0, gl2.RED, gl2.FLOAT, null);
-		} else {
-			gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, atlasWidth, atlasHeight, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
-		}
-		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
-		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
-		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-
-		// Create framebuffer
-		const framebuffer = gl.createFramebuffer();
-		if (!framebuffer) {
-			this.log(`Failed to create point shadow framebuffer for ${lightId}`, "error");
-			gl.deleteTexture(atlasTexture);
-			return false;
-		}
-
-		gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer);
-		gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, atlasTexture, 0);
-
-		// Create depth renderbuffer (full atlas size)
-		const depthRenderbuffer = gl.createRenderbuffer();
-		if (!depthRenderbuffer) {
-			this.log(`Failed to create point shadow depth buffer for ${lightId}`, "error");
-			gl.deleteFramebuffer(framebuffer);
-			gl.deleteTexture(atlasTexture);
-			return false;
-		}
-
-		gl.bindRenderbuffer(gl.RENDERBUFFER, depthRenderbuffer);
-		gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_COMPONENT16, atlasWidth, atlasHeight);
-		gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, depthRenderbuffer);
-
-		const status = gl.checkFramebufferStatus(gl.FRAMEBUFFER);
-		if (status !== gl.FRAMEBUFFER_COMPLETE) {
-			this.log(`Point shadow framebuffer incomplete: ${status}`, "error");
-			gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-			gl.deleteFramebuffer(framebuffer);
-			gl.deleteRenderbuffer(depthRenderbuffer);
-			gl.deleteTexture(atlasTexture);
-			return false;
-		}
-
-		gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-		gl.bindTexture(gl.TEXTURE_2D, null);
+		const d = this._device;
+		d.invalidate();
+		const float = this._pointShadowFormat === "r32f" && d.limits.floatTargets;
+		const atlas = d.createTexture({ width: atlasWidth, height: atlasHeight, format: float ? "r32float" : "rgba8unorm", sampler: NEAREST, label: `${lightId} point shadow atlas` });
+		const depth = d.createTexture({ width: atlasWidth, height: atlasHeight, format: "depth16unorm", sampler: NEAREST, label: `${lightId} point shadow depth` });
 
 		const lightSpaceMatrices: IgeMatrix4[] = [];
 		for (let i = 0; i < 6; i++) {
@@ -801,9 +527,8 @@ export class IgeWebGlShadowManager extends IgeBaseClass {
 		}
 
 		this._pointShadowMaps.set(lightId, {
-			framebuffer,
-			atlasTexture,
-			depthRenderbuffer,
+			atlas,
+			depth,
 			lightSpaceMatrices,
 			faceSize,
 			bias,
@@ -822,10 +547,9 @@ export class IgeWebGlShadowManager extends IgeBaseClass {
 		const data = this._pointShadowMaps.get(lightId);
 		if (!data) return;
 
-		const gl = this._gl;
-		gl.deleteFramebuffer(data.framebuffer);
-		gl.deleteRenderbuffer(data.depthRenderbuffer);
-		gl.deleteTexture(data.atlasTexture);
+		this._device.invalidate();
+		this._device.destroyTexture(data.atlas);
+		this._device.destroyTexture(data.depth);
 
 		this._pointShadowMaps.delete(lightId);
 		this.log(`Deleted point shadow map for ${lightId}`);
@@ -872,59 +596,30 @@ export class IgeWebGlShadowManager extends IgeBaseClass {
 	}
 
 	/**
-	 * Begin rendering to one face of a point light shadow atlas.
-	 * Binds the atlas framebuffer and sets viewport to the correct face region.
-	 * On faceIndex 0, clears the entire atlas first.
+	 * Begin rendering a point light's shadow atlas: the whole of it cleared
+	 * (to the far plane: white). Draw each face after pointShadowFace(), then
+	 * finish with endShadowPass().
 	 */
-	beginPointShadowPass(lightId: string, faceIndex: number): boolean {
-		if (!this._enabled) return false;
+	beginPointShadowPass(lightId: string): IgeGpuRenderPass | null {
+		if (!this._enabled) return null;
 
 		const data = this._pointShadowMaps.get(lightId);
-		if (!data || faceIndex < 0 || faceIndex > 5) return false;
+		if (!data) return null;
 
-		const gl = this._gl;
-
-		gl.bindFramebuffer(gl.FRAMEBUFFER, data.framebuffer);
-
-		// Packed or float depth written as colour must not be blended
-		gl.disable(gl.BLEND);
-
-		// On first face, clear the entire atlas
-		if (faceIndex === 0) {
-			gl.viewport(0, 0, data.faceSize * 3, data.faceSize * 2);
-			gl.enable(gl.SCISSOR_TEST);
-			gl.scissor(0, 0, data.faceSize * 3, data.faceSize * 2);
-			gl.clearColor(1.0, 1.0, 1.0, 1.0);
-			gl.clearDepth(1.0);
-			gl.clear(gl.DEPTH_BUFFER_BIT | gl.COLOR_BUFFER_BIT);
-			gl.disable(gl.SCISSOR_TEST);
-		}
-
-		// Set viewport to this face's region in the atlas
-		const offset = this.getAtlasFaceOffset(faceIndex, data.faceSize);
-		gl.viewport(offset.x, offset.y, data.faceSize, data.faceSize);
-
-		// Enable scissor test to prevent bleeding between faces
-		gl.enable(gl.SCISSOR_TEST);
-		gl.scissor(offset.x, offset.y, data.faceSize, data.faceSize);
-
-		gl.enable(gl.DEPTH_TEST);
-		gl.depthFunc(gl.LESS);
-		gl.depthMask(true);
-
-		gl.enable(gl.CULL_FACE);
-		gl.cullFace(gl.FRONT);
-
-		return true;
+		return this._device.beginRenderPass({
+			color: { target: data.atlas, loadOp: "clear", clearValue: [1, 1, 1, 1] },
+			depthStencil: { target: data.depth, depthLoadOp: "clear", depthClearValue: 1 }
+		});
 	}
 
-	/**
-	 * End a point light shadow face pass.
-	 */
-	endPointShadowPass(): void {
-		const gl = this._gl;
-		gl.disable(gl.SCISSOR_TEST);
-		this.endShadowPass();
+	/** Draw into one face of a point light's atlas: the viewport set to its region, scissored to it (no bleeding between faces). */
+	pointShadowFace(pass: IgeGpuRenderPass, lightId: string, faceIndex: number): boolean {
+		const data = this._pointShadowMaps.get(lightId);
+		if (!data || faceIndex < 0 || faceIndex > 5) return false;
+		const offset = this.getAtlasFaceOffset(faceIndex, data.faceSize);
+		pass.setViewport(offset.x, offset.y, data.faceSize, data.faceSize);
+		pass.setScissorRect([offset.x, offset.y, data.faceSize, data.faceSize]);
+		return true;
 	}
 
 	/**
@@ -951,7 +646,8 @@ export class IgeWebGlShadowManager extends IgeBaseClass {
 	}
 
 	/**
-	 * Apply point shadow uniforms to a shader program.
+	 * Apply point shadow uniforms to a shader program (one not yet drawing
+	 * through the device: the atlas's GL texture bound to `textureUnit`).
 	 * @param program Shader program
 	 * @param shadowIndex Which point shadow slot (0 or 1)
 	 * @param lightId Light ID
@@ -967,10 +663,11 @@ export class IgeWebGlShadowManager extends IgeBaseClass {
 		if (!data) return false;
 
 		const gl = this._gl;
+		const tex = webGl2Texture(this._device, data.atlas);
 
 		// Bind atlas texture
 		gl.activeTexture(gl.TEXTURE0 + textureUnit);
-		gl.bindTexture(gl.TEXTURE_2D, data.atlasTexture);
+		gl.bindTexture(gl.TEXTURE_2D, tex);
 		program.setUniform1i(`u_pointShadowAtlas[${shadowIndex}]`, textureUnit);
 
 		// Set per-shadow uniforms

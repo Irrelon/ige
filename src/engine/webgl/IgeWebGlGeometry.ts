@@ -1,4 +1,5 @@
 import { IgeBaseClass } from "@/engine/core/IgeBaseClass";
+import type { IgeGpuBuffer, IgeGpuRenderPipeline, IgeGpuVertexBufferLayout } from "@/engine/gpu/IgeGpuDevice";
 
 /**
  * Vertex attribute descriptor.
@@ -24,6 +25,14 @@ export class IgeWebGlGeometry extends IgeBaseClass {
 	id: string;
 	/** Unique number per GPU geometry (cheap identity for checksums). */
 	uid: number = IgeWebGlGeometry._nextUid++;
+	/** Its vertex and index buffers on the GPU device. */
+	gpuVertex?: IgeGpuBuffer;
+	gpuIndex?: IgeGpuBuffer;
+	/** Its vertex layout on the device, and a key naming it (meshLayout() makes it). */
+	gpuLayout?: { layout: IgeGpuVertexBufferLayout; key: string };
+	/** Its depth passes' pipelines, by kind (point light or not, skinned or not, instanced or not). */
+	gpuDepthPipelines?: (IgeGpuRenderPipeline | undefined)[];
+	/** The GL buffers behind gpuVertex and gpuIndex, for the passes not yet drawing through the device. */
 	vertexBuffer: WebGLBuffer | null = null;
 	indexBuffer: WebGLBuffer | null = null;
 	vertexCount: number = 0;

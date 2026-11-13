@@ -30,10 +30,15 @@ import {
 	IgeWebGlBonePalette,
 	IgeWebGlInstanceBuffer,
 	IgeWebGlItemBatcher,
+	INSTANCE_FLOATS,
+	packInstances,
 	type IgeWebGlItemBatch,
 	type IgeWebGlRenderItem
 } from "@/engine/webgl/IgeWebGlInstancing";
 import type { IgeGeometryData3d } from "@/types/IgeGeometryData3d";
+import type { IgeGpuBuffer, IgeGpuRenderPass, IgeGpuRenderPipeline, IgeGpuUniform } from "@/engine/gpu/IgeGpuDevice";
+import { type IgeWebGl2GpuDevice, webGl2GpuDevice, webGl2Texture } from "@/engine/gpu/IgeWebGl2GpuDevice";
+import { IgeGpuMeshPrograms, INSTANCE_LAYOUT, meshLayout, meshTopology } from "@/engine/webgl/IgeGpuMeshPrograms";
 import type { IgeModelPart } from "@/engine/webgl/IgeModelParts";
 import type { IgeParticleSystem3d } from "@/engine/webgl/IgeParticleSystem3d";
 import type { IgeDecalSystem3d } from "@/engine/webgl/IgeDecalSystem3d";
@@ -57,6 +62,25 @@ const POINT_SHADOW_TEXTURE_UNIT = 2; // 2 and 3
 const BONE_TEXTURE_UNIT = 4;
 /** Emissive maps (see IgeMaterialData.emissiveTexture); without one the shader's emissive samples unit 0. */
 const EMISSIVE_TEXTURE_UNIT = 5;
+
+/**
+ * A depth pass's uniform block: the light's matrix, the item's world matrix (not instanced), a point light's position
+ * and far plane, and the skinning a skinned mesh needs (its bone matrices; instanced, the bone palette's size).
+ */
+function depthUniforms (skinned: boolean, instanced: boolean): IgeGpuUniform[] {
+	const u: IgeGpuUniform[] = [
+		{ name: "u_lightSpaceMatrix", type: "mat4" },
+		{ name: "u_worldMatrix", type: "mat4" },
+		{ name: "u_pointLightPosition", type: "vec3" },
+		{ name: "u_pointShadowFarPlane", type: "f32" }
+	];
+	if (skinned) {
+		u.push({ name: "u_useSkinning", type: "i32" });
+		if (instanced) u.push({ name: "u_boneTextureSize", type: "vec2" });
+		else u.push({ name: "u_boneMatrices[0]", type: "mat4", count: MAX_BONES });
+	}
+	return u;
+}
 
 const IDENTITY_MATRIX = new Float32Array([
 	1, 0, 0, 0,
@@ -301,6 +325,16 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 	protected _canvasContext?: WebGLRenderingContext | WebGL2RenderingContext | null;
 	protected _webglVersion: 1 | 2 = 2;
 	protected _contextLost: boolean = false;
+	/**
+	 * The GPU device everything moves onto, a pass at a time (guides/gpu-device.md): the shadow passes draw through it,
+	 * the rest still with GL of its own. Its meshes' programs and pipelines, and the instance data its passes stream.
+	 */
+	protected _device?: IgeWebGl2GpuDevice;
+	protected _gpuPrograms?: IgeGpuMeshPrograms;
+	protected _gpuInstances?: IgeGpuBuffer;
+	protected _gpuInstanceData: Float32Array = new Float32Array(INSTANCE_FLOATS * 256);
+	/** The depth passes' uniform blocks (each pipeline's members, set as one array), by how they're laid out. */
+	protected _depthBlocks: Float32Array[] = [];
 
 	// Background clear colour (defaults to opaque black to preserve prior behaviour).
 	protected _clearColor = { r: 0, g: 0, b: 0, a: 1 };
@@ -432,9 +466,6 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 	// Must be set before createFrontBuffer() is called.
 	protected _preserveDrawingBuffer: boolean = false;
 
-	// Context version to ask for first (see preferredWebGlVersion())
-	protected _preferredWebGlVersion: 1 | 2 = 2;
-
 	// Debug drawing (see debugDraw() and debugLine())
 	protected _debugOptions = { bounds: false, shadowFrustum: false };
 	protected _debugLineData: Float32Array = new Float32Array(DEBUG_LINE_FLOATS * 2048);
@@ -462,26 +493,23 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 		this._queryCapabilities();
 
 		// Initialize manager classes
+		const gl2 = this._canvasContext as WebGL2RenderingContext;
+		const device = this._device = webGl2GpuDevice(gl2);
+		this._gpuPrograms = new IgeGpuMeshPrograms(device);
+		this._gpuInstances = device.createBuffer({ size: 0, usage: "vertex", stream: true, label: "shadow pass instances" });
 		this._resourceManager = new IgeWebGlResourceManager(this._canvasContext, this._webglVersion);
 		this._shaderManager = new IgeWebGlShaderManager(this._canvasContext, this._resourceManager);
 		this._textureManager = new IgeWebGlTextureManager(this._canvasContext, this._resourceManager);
-		this._geometryManager = new IgeWebGlGeometryManager(this._canvasContext, this._resourceManager);
+		this._geometryManager = new IgeWebGlGeometryManager(gl2, this._resourceManager, device);
 		this._cameraController = new IgeWebGlCameraController();
 		this._stateManager = new IgeWebGlStateManager(this._canvasContext);
 		this._lightManager = new IgeWebGlLightManager();
-		this._shadowManager = new IgeWebGlShadowManager(
-			this._canvasContext,
-			this._resourceManager,
-			this._webglVersion
-		);
+		this._shadowManager = new IgeWebGlShadowManager(device);
 		this._skeletonManager = new IgeWebGlSkeletonManager();
 
-		// Instanced rendering needs WebGL 2 (instanced arrays + float textures)
-		if (this._webglVersion === 2) {
-			const gl2 = this._canvasContext as WebGL2RenderingContext;
-			this._instanceBuffer = new IgeWebGlInstanceBuffer(gl2);
-			this._bonePalette = new IgeWebGlBonePalette(gl2);
-		}
+		// Instanced rendering (instanced arrays + float textures)
+		this._instanceBuffer = new IgeWebGlInstanceBuffer(gl2);
+		this._bonePalette = new IgeWebGlBonePalette(device);
 
 		// Compile built-in shaders
 		this._compileBuiltInShaders();
@@ -542,29 +570,11 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 			powerPreference: "high-performance"
 		};
 
-		// Try WebGL2 first (unless WebGL 1 was asked for, e.g. for testing)
-		gl = this._preferredWebGlVersion === 2
-			? this._canvasElement.getContext("webgl2", contextAttributes) as WebGL2RenderingContext | null
-			: null;
-
-		if (gl) {
-			this._webglVersion = 2;
-			this.log("Using WebGL 2.0");
-		} else {
-			// Fallback to WebGL1
-			gl = this._canvasElement.getContext("webgl", contextAttributes) as WebGLRenderingContext | null;
-			if (!gl) {
-				// Try experimental WebGL
-				gl = this._canvasElement.getContext("experimental-webgl", contextAttributes) as WebGLRenderingContext | null;
-			}
-
-			if (gl) {
-				this._webglVersion = 1;
-				this.log("Using WebGL 1.0");
-			} else {
-				throw new Error("WebGL is not supported in this browser!");
-			}
-		}
+		// WebGL 2 (WebGL 1 isn't supported: the renderer draws through the GPU device, which needs WebGL 2)
+		gl = this._canvasElement.getContext("webgl2", contextAttributes) as WebGL2RenderingContext | null;
+		if (!gl) throw new Error("IgeWebGlRenderer needs WebGL 2, which this browser doesn't have (WebGL 1 isn't supported)");
+		this._webglVersion = 2;
+		this.log("Using WebGL 2.0");
 
 		this._canvasContext = gl;
 
@@ -638,35 +648,11 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 		this._capabilities.maxVertexUniformVectors = gl.getParameter(gl.MAX_VERTEX_UNIFORM_VECTORS);
 		this._capabilities.maxFragmentUniformVectors = gl.getParameter(gl.MAX_FRAGMENT_UNIFORM_VECTORS);
 
-		// Check for instanced arrays support
-		if (this._webglVersion === 2) {
-			this._capabilities.supportsInstancedArrays = true;
-			this._capabilities.supportsVertexArrayObjects = true;
-		} else {
-			const instancedExt = gl.getExtension("ANGLE_instanced_arrays");
-			this._capabilities.supportsInstancedArrays = !!instancedExt;
-
-			const vaoExt = gl.getExtension("OES_vertex_array_object");
-			this._capabilities.supportsVertexArrayObjects = !!vaoExt;
-		}
-
-		// 32-bit indices (meshes over 65535 vertices) are core in WebGL 2
-		// but an extension in WebGL 1 that must be switched on before use
-		if (this._webglVersion === 1 && !gl.getExtension("OES_element_index_uint")) {
-			this.log("OES_element_index_uint is unavailable: meshes with more than 65535 vertices can't be drawn", "warning");
-		}
-
-		// Check for depth texture support
-		if (this._webglVersion === 2) {
-			this._capabilities.supportsDepthTexture = true;
-		} else {
-			const depthTextureExt = gl.getExtension("WEBGL_depth_texture");
-			this._capabilities.supportsDepthTexture = !!depthTextureExt;
-		}
-
-		// Check for float texture support
-		const floatTextureExt = gl.getExtension("OES_texture_float");
-		this._capabilities.supportsFloatTextures = !!floatTextureExt;
+		// WebGL 2: instanced arrays, vertex arrays, depth textures and 32-bit indices are core; float textures are too
+		this._capabilities.supportsInstancedArrays = true;
+		this._capabilities.supportsVertexArrayObjects = true;
+		this._capabilities.supportsDepthTexture = true;
+		this._capabilities.supportsFloatTextures = true;
 
 		this.log(`WebGL Capabilities:`);
 		this.log(`  Max Texture Size: ${this._capabilities.maxTextureSize}`);
@@ -749,6 +735,9 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 	protected _recreateResources(): string[] {
 		const gl = this._canvasContext;
 		if (!gl) return [];
+		// The device first (if it hasn't noticed already): what it made is made again as it's next used
+		const device = this._device!;
+		device.restore();
 		// Forget (don't delete) the old handles: deleting them on the new context would be an error
 		this._particleBuffers.clear();
 		this._decalMeshBuffers.clear();
@@ -764,17 +753,14 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 		this._resourceManager = new IgeWebGlResourceManager(gl, this._webglVersion);
 		this._shaderManager = new IgeWebGlShaderManager(gl, this._resourceManager);
 		this._textureManager = new IgeWebGlTextureManager(gl, this._resourceManager);
-		this._geometryManager = new IgeWebGlGeometryManager(gl, this._resourceManager);
+		this._geometryManager = new IgeWebGlGeometryManager(gl as WebGL2RenderingContext, this._resourceManager, device);
 		this._stateManager = new IgeWebGlStateManager(gl);
 		// (The shadow manager keeps its lights' settings: its maps are made again at the same sizes)
-		this._shadowManager?.contextRestored(this._resourceManager);
+		this._shadowManager?.contextRestored();
 		this._skeletonManager?.cleanup();
 		this._skeletonManager = new IgeWebGlSkeletonManager();
-		if (this._webglVersion === 2) {
-			const gl2 = gl as WebGL2RenderingContext;
-			this._instanceBuffer = new IgeWebGlInstanceBuffer(gl2);
-			this._bonePalette = new IgeWebGlBonePalette(gl2);
-		}
+		this._instanceBuffer = new IgeWebGlInstanceBuffer(gl as WebGL2RenderingContext);
+		this._bonePalette = new IgeWebGlBonePalette(device);
 		this._compileBuiltInShaders();
 		const lost = [...this._gpuOnlyGeometry];
 		return lost;
@@ -1758,9 +1744,14 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 			}
 		}
 
-		// Upload the bone palette once; every viewport and shadow pass reads it
+		// Upload the bone palette once; every viewport and shadow pass reads it (the passes not yet on the device on
+		// BONE_TEXTURE_UNIT, left bound there for the frame)
 		if (this._bonePalette && this._skeletonRows.size > 0) {
-			this._bonePalette.upload(BONE_TEXTURE_UNIT);
+			const device = this._gpuBegin();
+			this._bonePalette.upload();
+			const gl2 = gl as WebGL2RenderingContext;
+			gl2.activeTexture(gl2.TEXTURE0 + BONE_TEXTURE_UNIT);
+			gl2.bindTexture(gl2.TEXTURE_2D, webGl2Texture(device, this._bonePalette.texture));
 			this._stateManager.invalidateTextureBindings();
 		}
 
@@ -2684,53 +2675,142 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 	}
 
 	/**
-	 * Draw depth-only batches (shadow passes). `setup` applies the pass's
-	 * shared uniforms whenever the active program changes.
+	 * The device's GL handed to the renderer's own GL code for a stretch: what the device knew of GL's state forgotten
+	 * first (GL code since may have changed anything). Pair with _gpuEnd() (passes) or not (resources made amid GL code).
+	 */
+	protected _gpuBegin(): IgeWebGl2GpuDevice {
+		const device = this._device!;
+		device.invalidate();
+		return device;
+	}
+
+	/**
+	 * GL handed back from the device to the renderer's own GL code, as its shadow passes left it: the canvas bound, no
+	 * culling (back faces when it's on), depth tested less-or-equal and written, no blending, colour written, no
+	 * scissor, unit 0 active; the state manager's cache forgotten.
+	 */
+	protected _gpuEnd(): void {
+		const gl = this._canvasContext as WebGL2RenderingContext;
+		const device = this._device!;
+		// Only what the device left otherwise (what it set, it knows; release() puts back depth and colour writes,
+		// the scissor and the stencil test)
+		const s = device._state;
+		if (s.fbo !== null) gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+		if (s.cullOn !== false) gl.disable(gl.CULL_FACE);
+		if (s.cullFace !== undefined && s.cullFace !== gl.BACK) gl.cullFace(gl.BACK);
+		if (s.frontFace !== undefined && s.frontFace !== gl.CCW) gl.frontFace(gl.CCW);
+		if (s.depthOn !== true) gl.enable(gl.DEPTH_TEST);
+		if (s.depthFunc !== gl.LEQUAL) gl.depthFunc(gl.LEQUAL);
+		if (s.blendOn !== false) gl.disable(gl.BLEND);
+		if (s.offsetOn !== false) gl.disable(gl.POLYGON_OFFSET_FILL);
+		const c = s.clearColor;
+		if (!c || c[0] || c[1] || c[2] || c[3]) gl.clearColor(0, 0, 0, 0);
+		if (s.unit !== 0) gl.activeTexture(gl.TEXTURE0);
+		device.release();
+		this._stateManager?.reset();
+	}
+
+	/**
+	 * A depth pass's pipeline for a program (shadow or point_shadow, skinned or not, instanced or not) and a mesh's
+	 * layout: depth tested less and written, front faces culled, nothing blended.
+	 */
+	protected _depthPipeline(programId: string, skinned: boolean, instanced: boolean, geometry: IgeWebGlGeometry): IgeGpuRenderPipeline {
+		// (Kept on the mesh too, by kind: a pass's batches look theirs up without making a key)
+		const slot = (programId.startsWith("point") ? 4 : 0) + (skinned ? 2 : 0) + (instanced ? 1 : 0);
+		const kept = (geometry.gpuDepthPipelines ??= [])[slot];
+		if (kept) return kept;
+		const id = instanced ? `${programId}_instanced` : programId;
+		const { layout, key } = meshLayout(geometry);
+		return geometry.gpuDepthPipelines[slot] = this._gpuPrograms!.pipeline(`depth|${id}|${key}`, () => ({
+			module: this._gpuPrograms!.module(id),
+			vertex: { buffers: instanced ? [layout, INSTANCE_LAYOUT] : [layout] },
+			primitive: { topology: meshTopology(geometry), cullMode: "front", frontFace: "ccw" },
+			depth: { compare: "less", write: true },
+			uniforms: depthUniforms(skinned, instanced),
+			textures: skinned && instanced ? [{ name: "u_boneTexture" }] : [],
+			label: `${id} depth`
+		}));
+	}
+
+	/** A pipeline's uniform block, kept for its layout (the members its kind of depth pass has). */
+	protected _depthBlock(pipeline: IgeGpuRenderPipeline, skinned: boolean, instanced: boolean): Float32Array {
+		const slot = (skinned ? 2 : 0) + (instanced ? 1 : 0);
+		let block = this._depthBlocks[slot];
+		if (!block || block.length !== pipeline.uniformSize) {
+			block = new Float32Array(pipeline.uniformSize);
+			this._depthBlocks[slot] = block;
+		}
+		return block;
+	}
+
+	/**
+	 * Draw depth-only batches (shadow passes) into a pass on the device. `shared` sets each block's members common to
+	 * the pass (the light's matrix; a point light's position and far plane).
 	 */
 	protected _drawDepthBatches(
+		pass: IgeGpuRenderPass,
 		batches: IgeWebGlItemBatch[],
 		baseId: string,
 		skinnedId: string,
-		setup: (program: IgeWebGlProgram) => void
+		shared: (block: Float32Array, offsets: Readonly<Record<string, number>>) => void
 	): void {
-		if (!this._geometryManager) return;
-
-		let current: IgeWebGlProgram | undefined;
+		const device = this._device!;
+		const palette = this._bonePalette;
 
 		for (let b = 0; b < batches.length; b++) {
 			const batch = batches[b];
+			const geometry = batch.geometry;
+			if (!geometry.gpuVertex) continue;
 			const instanced = this._shouldInstance(batch);
-			const program = this._selectProgram(batch.skinned, instanced, baseId, skinnedId);
-			if (!program) continue;
+			const skinned = batch.skinned;
+			const pipeline = this._depthPipeline(skinned ? skinnedId : baseId, skinned, instanced, geometry);
+			const block = this._depthBlock(pipeline, skinned, instanced);
+			const at = pipeline.uniformOffsets;
+			shared(block, at);
 
-			if (program !== current) {
-				program.use();
-				setup(program);
-				current = program;
-				if (batch.skinned && instanced) {
-					this._bindBonePalette(program);
-				}
-			}
-
-			this._geometryManager.bindGeometry(batch.geometry, program);
+			pass.setPipeline(pipeline);
+			pass.setVertexBuffer(0, geometry.gpuVertex);
+			const indexed = !!geometry.gpuIndex && geometry.indexCount > 0;
+			if (indexed) pass.setIndexBuffer(geometry.gpuIndex!, geometry.indexType === 0x1405 ? "uint32" : "uint16");
+			if (!indexed && geometry.vertexCount <= 0) continue;
 
 			if (instanced) {
-				this._drawInstanced(batch, program);
+				const count = batch.items.length;
+				this._gpuInstanceData = packInstances(batch.items, 0, count, this._gpuInstanceData);
+				device.writeBuffer(this._gpuInstances!, 0, this._gpuInstanceData.subarray(0, count * INSTANCE_FLOATS));
+				pass.setVertexBuffer(1, this._gpuInstances!);
+				if (skinned && palette) {
+					pass.setTexture(0, palette.texture);
+					block[at.u_useSkinning] = 1;
+					block[at.u_boneTextureSize] = palette.width;
+					block[at.u_boneTextureSize + 1] = Math.max(1, palette.height);
+				}
+				pass.setUniforms(block);
+				if (indexed) pass.drawIndexed(geometry.indexCount, count);
+				else pass.draw(geometry.vertexCount, count);
+				this._stats.instancedDrawCalls++;
+				this._stats.instances += count;
+				this._countTriangles(geometry, count);
 				this._stats.shadowDrawCalls++;
 			} else {
 				for (let i = 0; i < batch.items.length; i++) {
 					const item = batch.items[i];
-					program.setUniformMatrix4fv("u_worldMatrix", item.worldMatrix);
-					if (batch.skinned) {
-						this._uploadBoneUniforms(program, item);
+					block.set(item.worldMatrix, at.u_worldMatrix);
+					if (skinned) {
+						const skeleton = item.skeleton;
+						block[at.u_useSkinning] = skeleton ? 1 : 0;
+						if (skeleton) {
+							const boneCount = Math.min(skeleton.data.boneCount, MAX_BONES);
+							block.set(skeleton.skinMatrices.subarray(0, boneCount * 16), at["u_boneMatrices[0]"]);
+						}
 					}
-					this._geometryManager.drawGeometry(batch.geometry);
+					pass.setUniforms(block);
+					if (indexed) pass.drawIndexed(geometry.indexCount);
+					else pass.draw(geometry.vertexCount);
 					this._stats.shadowDrawCalls++;
-					this._countTriangles(batch.geometry, 1);
+					this._countTriangles(geometry, 1);
 				}
 			}
-
-			this._geometryManager.unbindGeometry(batch.geometry, program);
 		}
 	}
 
@@ -2807,14 +2887,38 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 			batcher.add(item, key, geometry);
 		}
 
-		const setup = (program: IgeWebGlProgram) => {
-			program.setUniformMatrix4fv("u_lightSpaceMatrix", lightSpaceMatrix);
+		const shared = (block: Float32Array, at: Readonly<Record<string, number>>) => {
+			block.set(lightSpaceMatrix, at.u_lightSpaceMatrix);
 		};
 
+		this._gpuBegin();
+		try {
+			this._directionalPasses(cache, batcher, staticBatcher, shared, signatureA, signatureB, staticCount, movingCount, m);
+		} finally {
+			this._gpuEnd();
+		}
+	}
+
+	/** The directional shadow map's passes on the device: the map drawn whole, or the static cache (redrawn if it must be) copied in and what moves drawn over it. */
+	protected _directionalPasses(
+		cache: ReturnType<IgeWebGlShadowManager["getShadowCache"]>,
+		batcher: IgeWebGlItemBatcher,
+		staticBatcher: IgeWebGlItemBatcher,
+		shared: (block: Float32Array, at: Readonly<Record<string, number>>) => void,
+		signatureA: number,
+		signatureB: number,
+		staticCount: number,
+		movingCount: number,
+		m: Float32Array
+	): void {
+		const shadowManager = this._shadowManager!;
+		const lightId = this._shadowLightId;
+
 		if (!cache) {
-			if (!shadowManager.beginShadowPass(lightId)) return;
-			this._drawDepthBatches(batcher.batches, "shadow", "skinned_shadow", setup);
-			shadowManager.endShadowPass();
+			const pass = shadowManager.beginShadowPass(lightId);
+			if (!pass) return;
+			this._drawDepthBatches(pass, batcher.batches, "shadow", "skinned_shadow", shared);
+			shadowManager.endShadowPass(pass);
 			this._shadowMapHoldsCache = false;
 			return;
 		}
@@ -2826,9 +2930,10 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 			cache.signatureA === signatureA && cache.signatureB === signatureB;
 
 		if (!cacheCurrent) {
-			if (shadowManager.beginShadowCachePass(lightId)) {
-				this._drawDepthBatches(staticBatcher.batches, "shadow", "skinned_shadow", setup);
-				shadowManager.endShadowPass();
+			const pass = shadowManager.beginShadowCachePass(lightId);
+			if (pass) {
+				this._drawDepthBatches(pass, staticBatcher.batches, "shadow", "skinned_shadow", shared);
+				shadowManager.endShadowPass(pass);
 			}
 			cache.matrix.set(m);
 			cache.count = staticCount;
@@ -2843,9 +2948,10 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 		if (movingCount === 0 && this._shadowMapHoldsCache) return;
 
 		shadowManager.copyShadowCache(lightId);
-		if (movingCount > 0 && shadowManager.beginShadowPass(lightId, false)) {
-			this._drawDepthBatches(batcher.batches, "shadow", "skinned_shadow", setup);
-			shadowManager.endShadowPass();
+		const pass = movingCount > 0 ? shadowManager.beginShadowPass(lightId, false) : null;
+		if (pass) {
+			this._drawDepthBatches(pass, batcher.batches, "shadow", "skinned_shadow", shared);
+			shadowManager.endShadowPass(pass);
 		}
 		this._shadowMapHoldsCache = movingCount === 0;
 	}
@@ -2910,36 +3016,37 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 				}
 			}
 
-			for (let face = 0; face < 6; face++) {
-				// Begin even when nothing falls in this face: it clears it
-				if (!this._shadowManager.beginPointShadowPass(lightId, face)) {
-					continue;
-				}
+			// The whole atlas cleared, then each face drawn in its own region
+			this._gpuBegin();
+			try {
+				const pass = this._shadowManager.beginPointShadowPass(lightId);
+				if (!pass) continue;
+				for (let face = 0; face < 6; face++) {
+					const lightSpaceMatrix = this._shadowManager.getPointLightSpaceMatrix(lightId, face);
+					if (!lightSpaceMatrix || !this._shadowManager.pointShadowFace(pass, lightId, face)) continue;
 
-				const lightSpaceMatrix = this._shadowManager.getPointLightSpaceMatrix(lightId, face);
-				if (!lightSpaceMatrix) {
-					this._shadowManager.endPointShadowPass();
-					continue;
-				}
-
-				// Only the casters inside this face's 90 degree frustum
-				this._lightFrustum.extractFromMatrix(lightSpaceMatrix);
-				batcher.begin();
-				for (let c = 0; c < casters.length; c++) {
-					const item = casters[c];
-					if (item.radius >= 0 && !this._lightFrustum.containsSphereXYZ(item.cx, item.cy, item.cz, item.radius)) {
-						continue;
+					// Only the casters inside this face's 90 degree frustum
+					this._lightFrustum.extractFromMatrix(lightSpaceMatrix);
+					batcher.begin();
+					for (let c = 0; c < casters.length; c++) {
+						const item = casters[c];
+						if (item.radius >= 0 && !this._lightFrustum.containsSphereXYZ(item.cx, item.cy, item.cz, item.radius)) {
+							continue;
+						}
+						batcher.add(item, casterKeys[c], casterGeometries[c]);
 					}
-					batcher.add(item, casterKeys[c], casterGeometries[c]);
+
+					this._drawDepthBatches(pass, batcher.batches, "point_shadow", "skinned_point_shadow", (block, at) => {
+						block.set(lightSpaceMatrix.matrix, at.u_lightSpaceMatrix);
+						block[at.u_pointLightPosition] = pos.x;
+						block[at.u_pointLightPosition + 1] = pos.y;
+						block[at.u_pointLightPosition + 2] = pos.z;
+						block[at.u_pointShadowFarPlane] = farPlane;
+					});
 				}
-
-				this._drawDepthBatches(batcher.batches, "point_shadow", "skinned_point_shadow", (program) => {
-					program.setUniformMatrix4fv("u_lightSpaceMatrix", lightSpaceMatrix);
-					program.setUniform3f("u_pointLightPosition", pos.x, pos.y, pos.z);
-					program.setUniform1f("u_pointShadowFarPlane", farPlane);
-				});
-
-				this._shadowManager.endPointShadowPass();
+				this._shadowManager.endShadowPass(pass);
+			} finally {
+				this._gpuEnd();
 			}
 		}
 	}
@@ -4011,17 +4118,18 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 	};
 
 	/**
-	 * Gets / sets the WebGL version to ask for (default 2, falling back to
-	 * 1 when unavailable). Set it to 1 before createFrontBuffer() to run the
-	 * WebGL 1 path on a WebGL 2 machine, e.g. to test the fallback.
+	 * The WebGL version the renderer uses: always 2. WebGL 1 was dropped (the
+	 * renderer draws through the GPU device, which needs WebGL 2): asking for
+	 * it logs a warning and changes nothing.
+	 * @deprecated WebGL 1 isn't supported; there's nothing to choose.
 	 */
-	preferredWebGlVersion(): 1 | 2;
+	preferredWebGlVersion(): 2;
 	preferredWebGlVersion(val: 1 | 2): this;
-	preferredWebGlVersion(val?: 1 | 2): 1 | 2 | this {
+	preferredWebGlVersion(val?: 1 | 2): 2 | this {
 		if (val === undefined) {
-			return this._preferredWebGlVersion;
+			return 2;
 		}
-		this._preferredWebGlVersion = val;
+		if (val === 1) this.log("preferredWebGlVersion(1): WebGL 1 isn't supported any more; the renderer uses WebGL 2", "warning");
 		return this;
 	}
 
@@ -4099,6 +4207,7 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 		if (this._defaultParticleTexture) this._canvasContext?.deleteTexture(this._defaultParticleTexture);
 		this._instanceBuffer?.destroy();
 		this._bonePalette?.destroy();
+		if (this._gpuInstances) this._device?.destroyBuffer(this._gpuInstances);
 		this._postProcess?.dispose();
 		this._postProcess = null;
 		this._uiPass?.destroy();

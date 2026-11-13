@@ -35,7 +35,7 @@ plan prioritises what the target games need.
 
 | Area | What exists |
 |------|-------------|
-| Core | WebGL 2 with a verified WebGL 1 fallback (`preferredWebGlVersion(1)` to test it), shader library with instanced variants, state and uniform caching |
+| Core | WebGL 2 only (the WebGL 1 fallback was dropped 2026-11-13 as the renderer moves onto the GPU device, `guides/gpu-device.md`), shader library with instanced variants, state and uniform caching |
 | Frame pipeline | Scene collected once per frame; each viewport culls, renders its own directional shadow map (or shares one when split-screen views are close), then draws opaque batches front to back, ground decals, transparent items, particles and debug lines. Point light shadows render once per frame, culled per cube face |
 | Split screen, HUD and picking | Per-viewport cameras and shadow maps, `IgeViewportOverlay` (DOM HUD clipped to each view), `worldToScreen()`, `screenToWorldRay()`, `screenToGround()`, `screenToHeightfield()`, `viewportAt()`, `cameraMatrices()`, `maxPixelRatio()` |
 | Models | GLTF/GLB loader; `IgeEntity.model()` sets up every mesh, material, texture, node transform, skeleton and animation clip; per-entity material overrides with `entity.material({...})`; vertex colours; double-sided materials; `attachToBone()` and `bonePosition()` |
@@ -74,9 +74,7 @@ On the development machine (Apple silicon, Chrome):
 
 ### Verified
 
-- WebGL 1 (`?webgl=1` on the zombie and lighting examples): everything renders with no GL errors, including skinned
-  characters, shadows, decals, particles and the overlay (two bugs found and fixed: shadows were blended away, and
-  meshes over 65535 vertices didn't draw).
+- WebGL 1 was verified here until 2026-11-13, when it was dropped (the GPU device is WebGL 2 only).
 - Multiple viewports: the 4-view zombie demo, the 2-view 2D example (`webGl2d?split=1`), and racing-game's
   two-player split screen.
 - Hex Realms runs on the current engine; back-face culling, shadow caching and render on demand were tried on it from

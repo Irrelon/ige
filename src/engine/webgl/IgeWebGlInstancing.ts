@@ -5,6 +5,7 @@ import type { IgeWebGlProgram } from "@/engine/webgl/IgeWebGlProgram";
 import type { IgeMaterialData } from "@/types/IgeMaterialData";
 import type { IgeSkeleton } from "@/types/IgeSkeletonData";
 import { MAX_BONES } from "@/types/IgeSkeletonData";
+import type { IgeGpuDevice, IgeGpuTexture } from "@/engine/gpu/IgeGpuDevice";
 
 /**
  * Resolved per-draw material values. Parsed once per item per frame so the
@@ -173,6 +174,41 @@ export class IgeWebGlItemBatcher {
 
 /** Floats per instance: mat4 world + colour + emissive + material. */
 export const INSTANCE_FLOATS = 28;
+
+/**
+ * Items' instance data (world matrix, colour, emissive, material, bone palette row) packed into `into` (grown, by
+ * doubling, when it's too small: the array written is returned).
+ */
+export function packInstances (items: IgeWebGlRenderItem[], start: number, count: number, into: Float32Array): Float32Array {
+	const needed = count * INSTANCE_FLOATS;
+	let data = into;
+	if (data.length < needed) {
+		let size = Math.max(data.length, INSTANCE_FLOATS);
+		while (size < needed) size *= 2;
+		data = new Float32Array(size);
+	}
+	let o = 0;
+	for (let i = start; i < start + count; i++) {
+		const item = items[i];
+		const m = item.worldMatrix;
+		const mat = item.material;
+		for (let j = 0; j < 16; j++) data[o + j] = m[j];
+		data[o + 16] = mat.r;
+		data[o + 17] = mat.g;
+		data[o + 18] = mat.b;
+		data[o + 19] = mat.a;
+		data[o + 20] = mat.emissiveR;
+		data[o + 21] = mat.emissiveG;
+		data[o + 22] = mat.emissiveB;
+		data[o + 23] = mat.emissiveIntensity;
+		data[o + 24] = mat.metallic;
+		data[o + 25] = mat.roughness;
+		data[o + 26] = mat.opacity;
+		data[o + 27] = item.boneRow;
+		o += INSTANCE_FLOATS;
+	}
+	return data;
+}
 const INSTANCE_STRIDE = INSTANCE_FLOATS * 4;
 
 const INSTANCE_ATTRIBUTES: { name: string; offset: number }[] = [
@@ -205,38 +241,10 @@ export class IgeWebGlInstanceBuffer {
 	 * Write the instance data for a list of items into the GPU buffer.
 	 */
 	upload (items: IgeWebGlRenderItem[], start: number, count: number): void {
-		const needed = count * INSTANCE_FLOATS;
-		if (this._data.length < needed) {
-			let size = this._data.length;
-			while (size < needed) size *= 2;
-			this._data = new Float32Array(size);
-		}
-
-		const data = this._data;
-		let o = 0;
-		for (let i = start; i < start + count; i++) {
-			const item = items[i];
-			const m = item.worldMatrix;
-			const mat = item.material;
-			for (let j = 0; j < 16; j++) data[o + j] = m[j];
-			data[o + 16] = mat.r;
-			data[o + 17] = mat.g;
-			data[o + 18] = mat.b;
-			data[o + 19] = mat.a;
-			data[o + 20] = mat.emissiveR;
-			data[o + 21] = mat.emissiveG;
-			data[o + 22] = mat.emissiveB;
-			data[o + 23] = mat.emissiveIntensity;
-			data[o + 24] = mat.metallic;
-			data[o + 25] = mat.roughness;
-			data[o + 26] = mat.opacity;
-			data[o + 27] = item.boneRow;
-			o += INSTANCE_FLOATS;
-		}
-
+		this._data = packInstances(items, start, count, this._data);
 		const gl = this._gl;
 		gl.bindBuffer(gl.ARRAY_BUFFER, this._buffer);
-		gl.bufferData(gl.ARRAY_BUFFER, data.subarray(0, needed), gl.STREAM_DRAW);
+		gl.bufferData(gl.ARRAY_BUFFER, this._data.subarray(0, count * INSTANCE_FLOATS), gl.STREAM_DRAW);
 	}
 
 	/**
@@ -291,19 +299,23 @@ export class IgeWebGlBonePalette {
 	/** Texels per row (4 per bone). */
 	static readonly WIDTH = MAX_BONES * 4;
 
-	protected _gl: WebGL2RenderingContext;
-	protected _texture: WebGLTexture | null;
+	protected _device: IgeGpuDevice;
+	protected _texture: IgeGpuTexture;
 	protected _height = 0;
 	protected _data: Float32Array = new Float32Array(0);
 	protected _rows = 0;
 	protected _uploadedRows = 0;
 
-	constructor (gl: WebGL2RenderingContext) {
-		this._gl = gl;
-		this._texture = gl.createTexture();
+	constructor (device: IgeGpuDevice) {
+		this._device = device;
+		this._texture = device.createTexture({
+			width: 0, height: 0, format: "rgba32float", label: "bone palette",
+			sampler: { minFilter: "nearest", magFilter: "nearest", addressModeU: "clamp-to-edge", addressModeV: "clamp-to-edge" }
+		});
 	}
 
-	get texture (): WebGLTexture | null {
+	/** Its texture on the GPU device. */
+	get texture (): IgeGpuTexture {
 		return this._texture;
 	}
 
@@ -343,50 +355,29 @@ export class IgeWebGlBonePalette {
 		return row;
 	}
 
-	/**
-	 * Upload any rows written since the last upload, growing the texture
-	 * when needed. Binds the texture to `unit` as a side effect.
-	 */
-	upload (unit: number): void {
-		const gl = this._gl;
+	/** Upload any rows written since the last upload, growing the texture when needed. */
+	upload (): void {
+		const d = this._device;
 		const rowFloats = IgeWebGlBonePalette.WIDTH * 4;
 		const rowsNeeded = Math.max(1, this._rows);
-
-		gl.activeTexture(gl.TEXTURE0 + unit);
-		gl.bindTexture(gl.TEXTURE_2D, this._texture);
 
 		if (rowsNeeded > this._height) {
 			let height = Math.max(16, this._height);
 			while (height < rowsNeeded) height *= 2;
 			this._height = height;
-			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
-			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
-			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-			gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA32F, IgeWebGlBonePalette.WIDTH, height, 0, gl.RGBA, gl.FLOAT, null);
+			d.resizeTexture(this._texture, IgeWebGlBonePalette.WIDTH, height);
 			this._uploadedRows = 0;
 		}
 
 		if (this._rows > this._uploadedRows) {
 			const first = this._uploadedRows;
 			const count = this._rows - first;
-			gl.texSubImage2D(
-				gl.TEXTURE_2D,
-				0,
-				0,
-				first,
-				IgeWebGlBonePalette.WIDTH,
-				count,
-				gl.RGBA,
-				gl.FLOAT,
-				this._data.subarray(first * rowFloats, (first + count) * rowFloats)
-			);
+			d.writeTexture(this._texture, this._data.subarray(first * rowFloats, (first + count) * rowFloats), { y: first, width: IgeWebGlBonePalette.WIDTH, height: count });
 			this._uploadedRows = this._rows;
 		}
 	}
 
 	destroy (): void {
-		if (this._texture) this._gl.deleteTexture(this._texture);
-		this._texture = null;
+		this._device.destroyTexture(this._texture);
 	}
 }

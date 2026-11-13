@@ -2,15 +2,17 @@ import { IgeBaseClass } from "@/engine/core/IgeBaseClass";
 import type { IgeWebGlResourceManager } from "@/engine/webgl/IgeWebGlResourceManager";
 import { IgeWebGlGeometry } from "@/engine/webgl/IgeWebGlGeometry";
 import type { IgeGeometryData3d } from "@/types/IgeGeometryData3d";
+import { type IgeWebGl2GpuDevice, webGl2Buffer } from "@/engine/gpu/IgeWebGl2GpuDevice";
 
 /**
- * Manages geometry (VBO/IBO) creation and caching for WebGL renderer.
+ * Manages geometry (vertex and index buffers, on the GPU device) creation and caching for WebGL renderer.
  */
 export class IgeWebGlGeometryManager extends IgeBaseClass {
 	classId = "IgeWebGlGeometryManager";
 
-	protected _gl: WebGLRenderingContext | WebGL2RenderingContext;
+	protected _gl: WebGL2RenderingContext;
 	protected _resourceManager: IgeWebGlResourceManager;
+	protected _device: IgeWebGl2GpuDevice;
 
 	// Cached geometries
 	protected _geometries: Map<string, IgeWebGlGeometry> = new Map();
@@ -19,15 +21,36 @@ export class IgeWebGlGeometryManager extends IgeBaseClass {
 	protected _sharedQuadGeometry?: IgeWebGlGeometry;
 
 	constructor(
-		gl: WebGLRenderingContext | WebGL2RenderingContext,
-		resourceManager: IgeWebGlResourceManager
+		gl: WebGL2RenderingContext,
+		resourceManager: IgeWebGlResourceManager,
+		device: IgeWebGl2GpuDevice
 	) {
 		super();
 		this._gl = gl;
 		this._resourceManager = resourceManager;
+		this._device = device;
 
 		// Create shared quad geometry for sprites
 		this._createSharedQuadGeometry();
+	}
+
+	/**
+	 * A geometry's buffers made on the device and filled. (Called amid GL code of the renderer's own: what the device
+	 * knows of GL's state is forgotten first, and the buffer bindings are left as GL code made them, none.)
+	 */
+	protected _upload(geometry: IgeWebGlGeometry, vertices: Float32Array, indices?: Uint16Array | Uint32Array): void {
+		const gl = this._gl, d = this._device;
+		d.invalidate();
+		geometry.gpuVertex = d.createBuffer({ size: vertices.byteLength, usage: "vertex", label: `${geometry.id} vertices` });
+		d.writeBuffer(geometry.gpuVertex, 0, vertices);
+		geometry.vertexBuffer = webGl2Buffer(d, geometry.gpuVertex);
+		if (indices) {
+			geometry.gpuIndex = d.createBuffer({ size: indices.byteLength, usage: "index", label: `${geometry.id} indices` });
+			d.writeBuffer(geometry.gpuIndex, 0, indices);
+			geometry.indexBuffer = webGl2Buffer(d, geometry.gpuIndex);
+		}
+		gl.bindBuffer(gl.ARRAY_BUFFER, null);
+		gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null);
 	}
 
 	/**
@@ -58,23 +81,8 @@ export class IgeWebGlGeometryManager extends IgeBaseClass {
 			0, 2, 3  // Second triangle
 		]);
 
-		// Create and populate vertex buffer
-		const vbo = this._resourceManager.createBuffer("shared_quad_vbo");
-		if (vbo) {
-			gl.bindBuffer(gl.ARRAY_BUFFER, vbo);
-			gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW);
-			gl.bindBuffer(gl.ARRAY_BUFFER, null);
-			geometry.vertexBuffer = vbo;
-		}
-
-		// Create and populate index buffer
-		const ibo = this._resourceManager.createBuffer("shared_quad_ibo");
-		if (ibo) {
-			gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, ibo);
-			gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, indices, gl.STATIC_DRAW);
-			gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null);
-			geometry.indexBuffer = ibo;
-		}
+		// Its vertex and index buffers
+		this._upload(geometry, vertices, indices);
 
 		// Define vertex attributes
 		const stride = 4 * 4; // 4 floats per vertex * 4 bytes per float
@@ -189,29 +197,9 @@ export class IgeWebGlGeometryManager extends IgeBaseClass {
 			}
 		}
 
-		// Create vertex buffer
-		const vbo = this._resourceManager.createBuffer(`${geometryId}_vbo`);
-		if (vbo) {
-			gl.bindBuffer(gl.ARRAY_BUFFER, vbo);
-			gl.bufferData(gl.ARRAY_BUFFER, interleavedData, gl.STATIC_DRAW);
-			gl.bindBuffer(gl.ARRAY_BUFFER, null);
-			geometry.vertexBuffer = vbo;
-		} else {
-			this.log(`Failed to create VBO for geometry "${geometryId}"`, "error");
-			return null;
-		}
-
-		// Create index buffer if indices exist
-		if (data.indices) {
-			const ibo = this._resourceManager.createBuffer(`${geometryId}_ibo`);
-			if (ibo) {
-				gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, ibo);
-				gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, data.indices, gl.STATIC_DRAW);
-				gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null);
-				geometry.indexBuffer = ibo;
-				geometry.setIndexData(data.indices);
-			}
-		}
+		// Its vertex buffer, and its index buffer if it has indices
+		this._upload(geometry, interleavedData, data.indices ?? undefined);
+		if (data.indices) geometry.setIndexData(data.indices);
 
 		// Define vertex attributes
 		let attrOffset = 0;
@@ -349,10 +337,9 @@ export class IgeWebGlGeometryManager extends IgeBaseClass {
 		}
 
 		// Delete buffers
-		this._resourceManager.deleteBuffer(`${geometryId}_vbo`);
-		if (geometry.indexBuffer) {
-			this._resourceManager.deleteBuffer(`${geometryId}_ibo`);
-		}
+		if (geometry.gpuVertex) this._device.destroyBuffer(geometry.gpuVertex);
+		if (geometry.gpuIndex) this._device.destroyBuffer(geometry.gpuIndex);
+		geometry.vertexBuffer = geometry.indexBuffer = null;
 
 		// Remove from cache
 		this._geometries.delete(geometryId);
