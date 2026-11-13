@@ -442,7 +442,16 @@ export class IgeUiPainter {
 			const ow = Math.max(0, resolveLength(styleValue(s, "outline-width"), lenCtx(s)) ?? 3);
 			const off = resolveLength(styleValue(s, "outline-offset"), lenCtx(s)) ?? 0;
 			const oc = parseColor(styleValue(s, "outline-color"), current);
-			if (ow > 0 && oc && oc.a > 0) this.items.push({ op: "box", ...base, x: x - off - ow, y: y - off - ow, w: w + 2 * (off + ow), h: h + 2 * (off + ow), color: oc, border: ow, radii: radii.map((r) => (r > 0 ? r + off + ow : 0)) as [number, number, number, number] });
+			if (ow > 0 && oc && oc.a > 0) {
+				const ox = x - off - ow, oy = y - off - ow, owd = w + 2 * (off + ow), oh = h + 2 * (off + ow);
+				const oradii = radii.map((r) => (r > 0 ? r + off + ow : 0)) as [number, number, number, number];
+				const os = styleValue(s, "outline-style");
+				// (Dashed and dotted: their dashes, as a border's are: IgeUiBorderDash)
+				if (os === "dashed" || os === "dotted") {
+					const side = { w: ow, c: oc, style: os };
+					paintDashedBorder(this.items, ox, oy, owd, oh, [side, side, side, side], { ...base, radii: oradii });
+				} else this.items.push({ op: "box", ...base, x: ox, y: oy, w: owd, h: oh, color: oc, border: ow, radii: oradii });
+			}
 		}
 		// Replaced content: a canvas's surface, an image; an SVG's lines
 		if (el && !b.pseudo) {
@@ -638,12 +647,15 @@ export class IgeUiPainter {
 		const min = Number(el.getAttribute("min") ?? 0), max = Number(el.getAttribute("max") ?? 100);
 		const v = Number(el.value || (min + max) / 2);
 		const t = max > min ? (v - min) / (max - min) : 0;
-		const accent = parseColor(styleValue(el._computed ?? {}, "accent-color")) ?? { r: 95, g: 227, b: 255, a: 1 };
+		// (Disabled: greyed, as a browser draws it)
+		const accent = el.isDisabled ? { r: 197, g: 197, b: 197, a: 1 } : parseColor(styleValue(el._computed ?? {}, "accent-color")) ?? { r: 95, g: 227, b: 255, a: 1 };
 		const track = { r: 120, g: 140, b: 155, a: 0.5 };
 		const mid = y + h / 2;
-		this.items.push({ op: "box", x, y: mid - 2, w, h: 4, radii: [2, 2, 2, 2], color: track, opacity: ctx.opacity, clip: ctx.clip, el });
-		this.items.push({ op: "box", x, y: mid - 2, w: w * t, h: 4, radii: [2, 2, 2, 2], color: accent, opacity: ctx.opacity, clip: ctx.clip, el });
-		this.items.push({ op: "box", x: x + w * t - 8, y: mid - 8, w: 16, h: 16, radii: [8, 8, 8, 8], color: accent, opacity: ctx.opacity, clip: ctx.clip, el });
+		// (Through the transforms it's in, as the rest of it is)
+		const at = { opacity: ctx.opacity, clip: ctx.clip, matrix: ctx.matrix, el };
+		this.items.push({ op: "box", ...at, x, y: mid - 2, w, h: 4, radii: [2, 2, 2, 2], color: track });
+		if (!el.isDisabled) this.items.push({ op: "box", ...at, x, y: mid - 2, w: w * t, h: 4, radii: [2, 2, 2, 2], color: accent });
+		this.items.push({ op: "box", ...at, x: x + w * t - 8, y: mid - 8, w: 16, h: 16, radii: [8, 8, 8, 8], color: accent });
 	}
 }
 

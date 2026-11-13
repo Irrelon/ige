@@ -22,6 +22,7 @@ import { IgeUiDragDrop } from "@/engine/ui2/input/IgeUiDragDrop";
 import { IgeUiLayoutEngine } from "@/engine/ui2/layout/IgeUiLayout";
 import { IgeUiGlRenderer } from "@/engine/ui2/render/IgeUiGlRenderer";
 import { type IgeUiPaintItem, IgeUiPainter } from "@/engine/ui2/render/IgeUiPaint";
+import { type IgeUiPress, pressChain, pressClicks, pressMoved, touchScroller } from "@/engine/ui2/input/IgeUiPointers";
 import { IgeUiAnimator, LAYOUT_PROPS } from "@/engine/ui2/style/IgeUiAnimator";
 import { cssNumber, serializeComputed } from "@/engine/ui2/style/IgeUiComputed";
 import { type IgeUiComputedStyle, IgeUiStyleEngine, styleValue } from "@/engine/ui2/style/IgeUiStyleEngine";
@@ -160,8 +161,10 @@ export class IgeUiRoot implements IgeUiDocumentHost {
 	/** The pointer's last move over the UI (hover is worked out again there after layout), and whether the hovered chain lost an element. */
 	_pointerAt?: PointerEvent;
 	_hoverStale = false;
-	_active: IgeUiElement | null = null;
-	_down?: { el: IgeUiElement; x: number; y: number; time: number; pointerType: string; scroller?: IgeUiElement; dragging?: boolean; vy?: number; lastY?: number; lastT?: number };
+	/** Presses under way, a pointer each (fingers at once: input/IgeUiPointers.ts). */
+	_presses = new Map<number, IgeUiPress>();
+	/** Touches that landed on the game, not the UI: the game's to the end. */
+	_outside = new Set<number>();
 	_momentum?: { el: IgeUiElement; vx: number; vy: number };
 	_tooltip?: { el: IgeUiElement; at: number; x: number; y: number; shown?: IgeUiElement };
 	_now = 0;
@@ -447,7 +450,7 @@ export class IgeUiRoot implements IgeUiDocumentHost {
 		const was = this._hover.length;
 		this._hover = this._hover.filter((h) => !el.contains(h));
 		if (this._hover.length !== was) this._hoverStale = true;
-		if (this._active && el.contains(this._active)) this._active = null;
+		for (const [id, c] of this.document._captures) if (el.contains(c)) this.document._captures.delete(id);
 		if (this._tooltip?.shown && el.contains(this._tooltip.el)) this._hideTooltip();
 	}
 
@@ -1143,7 +1146,8 @@ export class IgeUiRoot implements IgeUiDocumentHost {
 		return new IgeUiEvent(type, {
 			bubbles: !["mouseenter", "mouseleave", "pointerenter", "pointerleave"].includes(type), cancelable: true,
 			clientX: e.clientX, clientY: e.clientY, button: e.button, buttons: e.buttons, shiftKey: e.shiftKey, ctrlKey: e.ctrlKey, altKey: e.altKey, metaKey: e.metaKey,
-			pointerId: (e as PointerEvent).pointerId ?? 1, pointerType: (e as PointerEvent).pointerType ?? "mouse", detail: e.detail, ...extra
+			pointerId: (e as PointerEvent).pointerId ?? 1, pointerType: (e as PointerEvent).pointerType ?? "mouse", isPrimary: (e as PointerEvent).isPrimary ?? true, detail: e.detail,
+			...(e.timeStamp !== undefined ? { timeStamp: e.timeStamp } : {}), ...extra
 		});
 	}
 
@@ -1209,15 +1213,29 @@ export class IgeUiRoot implements IgeUiDocumentHost {
 			e.stopImmediatePropagation();
 			return;
 		}
-		// A captured pointer (setPointerCapture) goes to its element wherever it is, until it's let go
-		const captured = this.document._capture;
+		// Pointers at once, each its own (input/IgeUiPointers.ts)
+		const id = e.pointerId ?? 1;
+		const touch = e.pointerType === "touch", primary = e.isPrimary !== false;
+		const ends = type === "pointerup" || type === "pointercancel";
+		// (A touch that landed on the game stays the game's wherever it goes, as a browser keeps a touch where it landed)
+		if (this._outside.has(id)) {
+			if (ends) this._outside.delete(id);
+			return;
+		}
+		// A captured pointer (setPointerCapture; a touch, where it landed) goes to its element wherever it is, until it's let go
+		const captures = this.document._captures;
+		const captured = type !== "pointerdown" ? captures.get(id) : undefined;
 		const hit = this.hitTest(e.clientX, e.clientY);
-		const t = captured && captured.id === e.pointerId && type !== "pointerdown" && captured.el.isConnected ? captured.el : hit;
-		if (captured && (type === "pointerup" || type === "pointercancel")) this.document._capture = undefined;
+		const t = captured?.isConnected ? captured : hit;
+		if (ends) captures.delete(id);
 		if (type === "pointermove") {
-			this._pointerAt = e;
-			this._setHover(t, e);
-			const d = this._down;
+			const d = this._presses.get(id);
+			// Hover follows the mouse (or a pen); a finger's is where it pressed
+			if (!touch) {
+				this._pointerAt = e;
+				this._setHover(t, e);
+			}
+			if (d) pressMoved(d, e.clientX, e.clientY);
 			if (d?.pointerType === "touch" && d.scroller) {
 				// A touch drag scrolls the box it started in
 				const dy = e.clientY - (d.lastY ?? d.y);
@@ -1233,8 +1251,8 @@ export class IgeUiRoot implements IgeUiDocumentHost {
 			if (t || d) {
 				const to = t ?? d!.el;
 				to.dispatchEvent(this._event(type, e));
-				// (And the mouse's own move, as a browser sends it after the pointer's: not for a touch)
-				if (e.pointerType !== "touch") to.dispatchEvent(this._event("mousemove", e));
+				// (And the mouse's own move, as a browser sends it after the pointer's: not for a touch, nor a cancelled press)
+				if (!touch && d?.compat !== false) to.dispatchEvent(this._event("mousemove", e));
 				e.stopImmediatePropagation();
 			}
 			return;
@@ -1243,33 +1261,37 @@ export class IgeUiRoot implements IgeUiDocumentHost {
 			this._momentum = undefined;
 			this._keyboardModality = false;
 			if (!t) {
+				if (touch) this._outside.add(id);
 				// (Pressed outside the UI (the game behind it): the UI's focus goes, as a page's does)
-				if (this.document.activeElement) this.focus(null);
+				if (primary && this.document.activeElement) this.focus(null);
 				return;
 			}
-			this._down = { el: t, x: e.clientX, y: e.clientY, time: e.timeStamp, pointerType: e.pointerType, scroller: this._scroller(t) };
-			this._active = t;
-			for (let n: IgeUiElement | null = t; n; n = n.parentNode) n._states.add("active");
+			// (A finger's hover: where it pressed, from its press on, as a browser's)
+			if (touch && primary) this._setHover(t, e);
+			const d: IgeUiPress = { el: t, x: e.clientX, y: e.clientY, time: e.timeStamp, pointerType: e.pointerType, moved: 0, scroller: touch ? touchScroller(t) : undefined };
+			this._presses.set(id, d);
+			if (touch) captures.set(id, t);
+			for (const n of pressChain(d)) n._states.add("active");
 			if (this.styles.stateDependent.has("active")) this.changed(t, "state");
 			const ev = this._event(type, e);
 			t.dispatchEvent(ev);
-			t.dispatchEvent(this._event("mousedown", e));
+			// The mouse's own events follow the primary pointer, unless its press was cancelled (as a browser has it: a
+			// pointerdown's preventDefault keeps them back, and with them the focus a press gives); a finger's come when
+			// it lifts from a tap (below)
+			d.compat = primary && !ev.defaultPrevented;
+			const md = d.compat && !touch ? this._event("mousedown", e) : undefined;
+			if (md) t.dispatchEvent(md);
 			if (!ev.defaultPrevented) this.drag.down(t, e);
-			// Focus goes to what was pressed (a field, a button), or leaves
-			const focusable = t.closest("input, textarea, select, button, [tabindex]");
-			if (focusable && focusable.tabIndex >= 0 && !focusable.isDisabled) this.focus(focusable, { preventScroll: true, focusVisible: false });
-			else if (this.document.activeElement && !this.document.activeElement.contains(t)) this.focus(null);
+			if (md && !md.defaultPrevented) this._pressFocus(t);
 			e.stopImmediatePropagation();
 			if (ev.defaultPrevented) e.preventDefault();
 			this._hideTooltip();
 			return;
 		}
-		if (type === "pointerup" || type === "pointercancel") {
-			const d = this._down;
-			this._down = undefined;
-			for (let n = this._active; n; n = n.parentNode) n._states.delete("active");
-			if (this._active && this.styles.stateDependent.has("active")) this.changed(this._active, "state");
-			this._active = null;
+		if (ends) {
+			const d = this._presses.get(id);
+			this._presses.delete(id);
+			this._unpress(d);
 			if (d?.dragging && d.scroller) {
 				// Momentum
 				this._momentum = { el: d.scroller, vx: 0, vy: (d.vy ?? 0) * 16 };
@@ -1279,8 +1301,17 @@ export class IgeUiRoot implements IgeUiDocumentHost {
 			const target = t ?? d?.el;
 			if (!target) return;
 			target.dispatchEvent(this._event(type, e));
-			target.dispatchEvent(this._event("mouseup", e));
-			if (type === "pointerup" && d && t) {
+			const tap = type === "pointerup" && !!d && !!t && primary && pressClicks(d);
+			if (touch) {
+				// A finger's tap: the mouse's own press and lift now, and the focus a press gives
+				if (tap && d!.compat) {
+					const md = this._event("mousedown", e);
+					t!.dispatchEvent(md);
+					if (!md.defaultPrevented) this._pressFocus(t!);
+					t!.dispatchEvent(this._event("mouseup", e));
+				}
+			} else if (primary && (d ? d.compat : true)) target.dispatchEvent(this._event("mouseup", e));
+			if (tap && d && t) {
 				// A click on what was pressed and released (their nearest common ancestor)
 				let common: IgeUiElement | null = t;
 				while (common && !common.contains(d.el)) common = common.parentNode;
@@ -1290,20 +1321,37 @@ export class IgeUiRoot implements IgeUiDocumentHost {
 				}
 				// (A field tapped: its hidden input focused again as the finger lifts, where a phone shows its keyboard for
 				// a focus that comes with the tap (iOS doesn't for one made as it's pressed))
-				if (e.pointerType === "touch" && this._textInput && this.document.activeElement === t.closest("input, textarea")) this._textInput.focus({ preventScroll: true });
+				if (touch && this._textInput && this.document.activeElement === t.closest("input, textarea")) this._textInput.focus({ preventScroll: true });
 			}
 			e.stopImmediatePropagation();
 		}
 	}
 
-	/** A press that's become a drag (IgeUiDragDrop): over with no click, its :active states dropped, pointercancel sent. */
-	endPress (): void {
-		const d = this._down;
-		this._down = undefined;
-		for (let n = this._active; n; n = n.parentNode) n._states.delete("active");
-		if (this._active && this.styles.stateDependent.has("active")) this.changed(this._active, "state");
-		this._active = null;
-		d?.el.dispatchEvent(new IgeUiEvent("pointercancel", { bubbles: true, pointerType: d.pointerType, pointerId: 1 }));
+	/** A press's focus: to what was pressed (a field, a button), or away. */
+	_pressFocus (t: IgeUiElement): void {
+		const focusable = t.closest("input, textarea, select, button, [tabindex]");
+		if (focusable && focusable.tabIndex >= 0 && !focusable.isDisabled) this.focus(focusable, { preventScroll: true, focusVisible: false });
+		else if (this.document.activeElement && !this.document.activeElement.contains(t)) this.focus(null);
+	}
+
+	/** A press over: :active off what it held, unless another pointer still holds it. */
+	_unpress (d: IgeUiPress | undefined): void {
+		if (!d) return;
+		const held = new Set<IgeUiElement>();
+		for (const o of this._presses.values()) for (const n of pressChain(o)) held.add(n);
+		for (const n of pressChain(d)) if (!held.has(n)) n._states.delete("active");
+		if (this.styles.stateDependent.has("active")) this.changed(d.el, "state");
+	}
+
+	/** A press that's become a drag (IgeUiDragDrop): over with no click, its :active states dropped, pointercancel sent (no id: the mouse's and pens'). */
+	endPress (pointerId?: number): void {
+		for (const [id, d] of [...this._presses]) {
+			if (pointerId !== undefined ? id !== pointerId : d.pointerType === "touch") continue;
+			this._presses.delete(id);
+			this.document._captures.delete(id);
+			this._unpress(d);
+			d.el.dispatchEvent(new IgeUiEvent("pointercancel", { bubbles: true, pointerType: d.pointerType, pointerId: id }));
+		}
 	}
 
 	_scroller (el: IgeUiElement): IgeUiElement | undefined {

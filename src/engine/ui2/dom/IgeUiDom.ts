@@ -40,6 +40,8 @@ export class IgeUiEvent {
 	buttons = 0;
 	pointerId = 1;
 	pointerType = "mouse";
+	/** The pointer the mouse's own events follow (a touch: the first finger down). */
+	isPrimary = true;
 	deltaX = 0;
 	deltaY = 0;
 	deltaMode = 0;
@@ -65,7 +67,7 @@ export class IgeUiEvent {
 	static from (e: Event): IgeUiEvent {
 		const src = e as Event & Record<string, unknown>;
 		const init: IgeUiEventInit = { bubbles: e.bubbles, cancelable: e.cancelable };
-		for (const k of ["detail", "key", "code", "shiftKey", "ctrlKey", "altKey", "metaKey", "repeat", "clientX", "clientY", "button", "buttons", "pointerId", "pointerType", "deltaX", "deltaY", "deltaMode", "data", "inputType"]) {
+		for (const k of ["detail", "key", "code", "shiftKey", "ctrlKey", "altKey", "metaKey", "repeat", "clientX", "clientY", "button", "buttons", "pointerId", "pointerType", "isPrimary", "deltaX", "deltaY", "deltaMode", "data", "inputType"]) {
 			const v = src[k];
 			if (v !== undefined && v !== null) init[k] = v;
 		}
@@ -1134,15 +1136,15 @@ export class IgeUiElement extends IgeUiNode implements IgeCssMatchable {
 	// ---- pointer capture: a drag that leaves the element keeps going to it until the pointer's let go
 
 	setPointerCapture (pointerId: number): void {
-		this.ownerDocument._capture = { el: this, id: pointerId };
+		this.ownerDocument._captures.set(pointerId, this);
 	}
 
 	releasePointerCapture (pointerId: number): void {
-		if (this.ownerDocument._capture?.el === this && this.ownerDocument._capture.id === pointerId) this.ownerDocument._capture = undefined;
+		if (this.ownerDocument._captures.get(pointerId) === this) this.ownerDocument._captures.delete(pointerId);
 	}
 
 	hasPointerCapture (pointerId: number): boolean {
-		return this.ownerDocument._capture?.el === this && this.ownerDocument._capture.id === pointerId;
+		return this.ownerDocument._captures.get(pointerId) === this;
 	}
 
 	// ---- canvas
@@ -1411,8 +1413,8 @@ export class IgeUiDocument extends IgeUiNode {
 	/** Device pixels per UI pixel (scroll offsets are kept on them). */
 	_pixelGrid = 1;
 	_selectorCache = new Map<string, IgeCssSelector[]>();
-	/** The element a pointer's captured to (setPointerCapture), if any. */
-	_capture?: { el: IgeUiElement; id: number };
+	/** The element each captured pointer goes to (setPointerCapture; a touch, where it landed), by pointer id. */
+	_captures = new Map<number, IgeUiElement>();
 
 	constructor () {
 		// (A document is its own owner)

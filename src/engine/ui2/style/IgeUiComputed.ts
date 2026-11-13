@@ -8,7 +8,7 @@
  * keeps as written (display, position, text-align…) pass through.
  */
 import { splitTop } from "@/engine/ui2/css/IgeCssParser";
-import { type IgeCssColor, type IgeCssLengthContext, parseColor, parseShadows, parseTransform, resolveLength } from "@/engine/ui2/css/IgeCssValues";
+import { type IgeCssColor, type IgeCssLengthContext, parseColor, parseShadows, parseTransform, resolveLength, resolveNumber } from "@/engine/ui2/css/IgeCssValues";
 import type { IgeUiBox } from "@/engine/ui2/layout/IgeUiBox";
 import { type IgeUiComputedStyle, styleValue } from "@/engine/ui2/style/IgeUiStyleEngine";
 
@@ -115,8 +115,11 @@ export function serializeComputed (name: string, cs: IgeUiComputedStyle, ctx: Ig
 			const px = resolveLength(value, { ...ctx, percent: ctx.em });
 			return px === undefined ? value : `${cssNumber(px)}px`;
 		}
-		case "opacity":
-			return cssNumber(parseFloat(value));
+		case "opacity": {
+			// (calc() worked out, and kept to 0 to 1, as a browser writes it)
+			const v = resolveNumber(value, ctx) ?? parseFloat(value);
+			return cssNumber(Number.isFinite(v) ? Math.max(0, Math.min(1, v)) : 1);
+		}
 		case "transform": {
 			if (value === "none") return value;
 			const m = parseTransform(value, box?.borderW ?? 0, box?.borderH ?? 0, ctx);

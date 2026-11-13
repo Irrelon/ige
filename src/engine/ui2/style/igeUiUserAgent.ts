@@ -39,6 +39,7 @@ button { text-align: center; }
 button { padding: 1px 6px; border: 2px outset #000; background-color: #efefef; cursor: default; }
 input, textarea { padding: 1px 2px; border: 2px inset #767676; background-color: #fff; text-align: start; cursor: text; }
 input[type=range] { border: none; padding: 0; margin: 2px; width: 129px; height: 16px; color: #101010; cursor: default; }
+input[type=range]:disabled { background-color: transparent; }
 input[type=checkbox], input[type=radio] { border: none; background-color: transparent; padding: 0; width: 13px; height: 13px; margin: 3px 3px 3px 4px; }
 select { padding: 1px 2px; border: 1px solid #767676; background-color: #fff; }
 textarea { white-space: pre-wrap; }
