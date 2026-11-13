@@ -978,6 +978,9 @@ export class IgeUiRoot implements IgeUiDocumentHost {
 					const disabled = common.closest("button:disabled, input:disabled");
 					if (!disabled) common.dispatchEvent(this._event("click", e, { detail: 1 }));
 				}
+				// (A field tapped: its hidden input focused again as the finger lifts, where a phone shows its keyboard for
+				// a focus that comes with the tap (iOS doesn't for one made as it's pressed))
+				if (e.pointerType === "touch" && this._textInput && this.document.activeElement === t.closest("input, textarea")) this._textInput.focus({ preventScroll: true });
 			}
 			e.stopImmediatePropagation();
 		}
