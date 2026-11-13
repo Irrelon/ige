@@ -110,7 +110,10 @@ describe("ui2: SVG in the document", () => {
 		const r = ui(".s { width: 100px; height: 100px; display: block; }");
 		r.document.body.innerHTML = `<svg class="s" viewBox="0 0 100 100"><circle cx="50" cy="50" r="10" fill="#ffffff" stroke="#000000" stroke-width="2"/></svg>`;
 		r.update();
-		expect(describePaint(r.items.filter((i) => i.op === "box"))).toEqual(["box 40,40 20x20 rgba(255,255,255,1) r10/10/10/10 clip[0,0,100,100]", "box 39,39 22x22 border 2 rgba(0,0,0,1) r11/11/11/11 clip[0,0,100,100]"]);
+		const boxes = r.items.filter((i) => i.op === "box");
+		expect(describePaint(boxes)).toEqual(["box 40,40 20x20 rgba(255,255,255,1) r10/10/10/10 clip[0,0,100,100]", "box 39,39 22x22 border 2 rgba(0,0,0,1) r11/11/11/11 clip[0,0,100,100]"]);
+		// (Drawn where the drawing puts them: not snapped to device pixels as boxes are)
+		expect(boxes.every((b) => b.op === "box" && b.exact)).toBe(true);
 	});
 
 	it("a pattern fill: its tile repeated over the shape, each copy clipped to its tile", () => {

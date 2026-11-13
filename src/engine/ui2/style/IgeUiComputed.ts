@@ -37,6 +37,17 @@ export function cssColor (c: IgeCssColor): string {
 	return a >= 1 ? `rgb(${ch(c.r)}, ${ch(c.g)}, ${ch(c.b)})` : `rgba(${ch(c.r)}, ${ch(c.g)}, ${ch(c.b)}, ${cssNumber(a)})`;
 }
 
+/**
+ * A colour as a browser writes its computed value: rgb() / rgba(), except a color-mix() in srgb, which Chrome writes
+ * as color(srgb r g b / a) with its channels from 0 to 1.
+ */
+export function cssColorOf (value: string, c: IgeCssColor): string {
+	if (!/^color-mix\(\s*in\s+srgb\b/i.test(value.trim())) return cssColor(c);
+	const ch = (v: number) => cssNumber(Math.max(0, Math.min(255, v)) / 255);
+	const a = cssAlpha(c.a);
+	return `color(srgb ${ch(c.r)} ${ch(c.g)} ${ch(c.b)}${a < 1 ? ` / ${cssNumber(a)}` : ""})`;
+}
+
 const COLOR_PROPS = new Set(["color", "background-color", "border-top-color", "border-right-color", "border-bottom-color", "border-left-color", "outline-color", "caret-color", "text-decoration-color", "column-rule-color", "-webkit-text-stroke-color", "accent-color"]);
 const BOX_LENGTHS: Record<string, keyof IgeUiBox> = {
 	"margin-top": "marginTop", "margin-right": "marginRight", "margin-bottom": "marginBottom", "margin-left": "marginLeft",
@@ -62,7 +73,7 @@ export function cssColorsIn (value: string, current: IgeCssColor): string {
 	}
 	if (/^-?[\d.]/.test(value)) return value;
 	const c = parseColor(value, current);
-	return c ? cssColor(c) : value;
+	return c ? cssColorOf(value, c) : value;
 }
 
 /**
@@ -74,7 +85,7 @@ export function serializeComputed (name: string, cs: IgeUiComputedStyle, ctx: Ig
 	const current = parseColor(styleValue(cs, "color")) ?? { r: 0, g: 0, b: 0, a: 1 };
 	if (COLOR_PROPS.has(name)) {
 		const c = value === "auto" && name === "caret-color" ? current : parseColor(value, current);
-		return c ? cssColor(c) : value;
+		return c ? cssColorOf(value, c) : value;
 	}
 	const bw = /^(border-(top|right|bottom|left)|outline)-width$/.exec(name);
 	if (bw) {

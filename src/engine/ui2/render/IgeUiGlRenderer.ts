@@ -104,6 +104,39 @@ float edgeCover(vec2 p, vec2 a, vec2 b, float s, bool outline, float px) {
 	return (d > 0.0 || (d == 0.0 && (e.y > 0.0 || (e.y == 0.0 && e.x < 0.0)))) ? 1.0 : 0.0;
 }
 
+// A rounded box blurred by a Gaussian (Evan Wallace's fast rounded-rectangle shadows): exact for square corners,
+// the corners' curve integrated in four steps
+vec2 erf2(vec2 x) {
+	vec2 s = sign(x), a = abs(x);
+	x = 1.0 + (0.278393 + (0.230389 + 0.078108 * (a * a)) * a) * a;
+	x *= x;
+	return s - s / (x * x);
+}
+float blurredBoxX(float x, float y, float sigma, float corner, vec2 hs) {
+	float delta = min(hs.y - corner - abs(y), 0.0);
+	float curved = hs.x - corner + sqrt(max(0.0, corner * corner - delta * delta));
+	vec2 integral = 0.5 + 0.5 * erf2((x + vec2(-curved, curved)) * (0.70710678 / sigma));
+	return integral.y - integral.x;
+}
+float blurredBox(vec2 lower, vec2 upper, vec2 p, float sigma, float corner) {
+	vec2 c = (lower + upper) * 0.5, hs = (upper - lower) * 0.5;
+	p -= c;
+	if (corner <= 0.0) {
+		vec4 q = vec4(p + hs, hs - p) * (0.70710678 / sigma);
+		vec2 ex = erf2(q.xz), ey = erf2(q.yw);
+		return 0.25 * (ex.x + ex.y) * (ey.x + ey.y);
+	}
+	float lo = p.y - hs.y, hi = p.y + hs.y;
+	float start = clamp(-3.0 * sigma, lo, hi), end = clamp(3.0 * sigma, lo, hi);
+	float stp = (end - start) / 4.0;
+	float y = start + stp * 0.5, v = 0.0;
+	for (int i = 0; i < 4; i++) {
+		v += blurredBoxX(p.x, p.y - y, sigma, corner, hs) * exp(-(y * y) / (2.0 * sigma * sigma)) / (2.5066283 * sigma) * stp;
+		y += stp;
+	}
+	return v;
+}
+
 vec4 fill(vec2 p) {
 	if (v_grad.x < 0.0) return vec4(v_color.rgb * v_color.a, v_color.a);
 	float t;
@@ -146,9 +179,16 @@ void main() {
 		d = max(d, shape(v_local, v_shape, v_radii, v_chamfer));
 		a = clamp(0.5 - d / px, 0.0, 1.0);
 	} else if (kind < 2.5) {
+		// A glow: the shadow's box blurred as a browser blurs it (a Gaussian of half the blur radius), so a small box's glow
+		// is as faint as it is there; cut corners keep the shape's own falloff
 		float blur = max(v_params.z, px);
-		float d = shape(v_local, v_shape, v_radii, v_chamfer);
-		a = 1.0 - smoothstep(-blur, blur, d);
+		if (v_chamfer == vec4(0.0)) {
+			float r = max(max(v_radii.x, v_radii.y), max(v_radii.z, v_radii.w));
+			a = blurredBox(v_shape.xy, v_shape.xy + v_shape.zw, v_local, blur * 0.5, min(r, 0.5 * min(v_shape.z, v_shape.w)));
+		} else {
+			float d = shape(v_local, v_shape, v_radii, v_chamfer);
+			a = 1.0 - smoothstep(-blur, blur, d);
+		}
 		// (Not under the box itself)
 		float own = shape(v_local, v_uv, max(v_radii - v_params.w, vec4(0.0)), v_chamfer);
 		a *= clamp(own / px + 0.5, 0.0, 1.0);
@@ -583,13 +623,25 @@ export class IgeUiGlRenderer {
 				continue;
 			}
 			if (it.op === "box") {
-				const rect = [it.x, it.y, it.w, it.h];
+				// (On device pixels, as a browser paints a box: its edges crisp, not smoothed across a pixel; not an SVG shape,
+				// a glow, or anything turned or scaled)
+				let rect = [it.x, it.y, it.w, it.h];
+				const m = it.matrix;
+				if (!it.exact && it.shadow !== "outer" && !it.backdrop && (!m || (m[0] === 1 && m[1] === 0 && m[2] === 0 && m[3] === 1))) {
+					const tx = m ? m[4] : 0, ty = m ? m[5] : 0;
+					const sx = (v: number) => (Math.round((v + tx) * scale + offset[0]) - offset[0]) / scale - tx;
+					const sy = (v: number) => (Math.round((v + ty) * scale + offset[1]) - offset[1]) / scale - ty;
+					const x0 = sx(it.x), y0 = sy(it.y);
+					rect = [x0, y0, sx(it.x + it.w) - x0, sy(it.y + it.h) - y0];
+				}
 				const cut = it.chamfer ?? Z4;
 				if (it.shadow === "outer") {
 					const blur = it.blur ?? 0;
 					const own = [it.x + (it.spread ?? 0), it.y + (it.spread ?? 0), it.w - 2 * (it.spread ?? 0), it.h - 2 * (it.spread ?? 0)];
 					// (The shadow's offset is in its rect; "own" is the element's own box: it isn't shaded under it)
-					write(push(null, additive), [it.x - blur, it.y - blur, it.w + 2 * blur, it.h + 2 * blur], rect, it.radii, it.color!, [2, 0, blur, it.spread ?? 0], own, cut, clip, it.matrix, it.opacity, 0, NOGRAD);
+					// (The blur's Gaussian reaches three of its deviations, half the radius each, past the box)
+					const reach = blur * 1.5;
+					write(push(null, additive), [it.x - reach, it.y - reach, it.w + 2 * reach, it.h + 2 * reach], rect, it.radii, it.color!, [2, 0, blur, it.spread ?? 0], own, cut, clip, it.matrix, it.opacity, 0, NOGRAD);
 					continue;
 				}
 				if (it.shadow === "inset") {

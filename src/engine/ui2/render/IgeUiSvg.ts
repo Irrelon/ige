@@ -592,7 +592,8 @@ function shape (
 	const uniform = axisAligned && Math.abs(Math.abs(m[0]) - Math.abs(m[3])) < 1e-9;
 	const num = (a: string) => Number(el.getAttribute(a) ?? 0) || 0;
 	const name = el.localName;
-	const at = { clip, matrix, el };
+	// (Where the drawing puts them, not snapped to device pixels as boxes are)
+	const at = { clip, matrix, el, exact: true };
 	// Circles and plain rectangles as boxes (exact, smooth); everything else as triangles and lines
 	if ((name === "circle" && uniform) || (name === "rect" && axisAligned && !el.hasAttribute("rx") && !el.hasAttribute("ry"))) {
 		let bx: number, by: number, bw: number, bh: number, r: number;

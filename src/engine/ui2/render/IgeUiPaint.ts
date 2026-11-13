@@ -48,6 +48,8 @@ export interface IgeUiPaintBox extends IgeUiPaintBase {
 	border?: number;
 	/** A glow (outer box-shadow) or an inset shadow, with its blur. */
 	shadow?: "outer" | "inset";
+	/** Drawn exactly where it is (an SVG shape), not snapped to device pixels as a box is. */
+	exact?: boolean;
 	/** backdrop-filter: blur(): what's already drawn behind it, blurred this much (its shape cut out), under its fills. */
 	backdrop?: boolean;
 	blur?: number;
