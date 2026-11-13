@@ -301,8 +301,24 @@ export class IgeUiAnimator {
 		}
 	}
 
-	/** An element's style as it shows at `now` (undefined when nothing's moving on it). */
+	/**
+	 * An element out of the document: whatever was moving on it stops and is forgotten (as a browser cancels a removed
+	 * element's transitions and animations, and starts its animations afresh if it's put back). Kept, a dropped
+	 * element with an endless animation stayed in `active`, and through its box the whole tree it was dropped with.
+	 */
+	forget (el: IgeUiElement): void {
+		this.active.delete(el);
+		this._transitions.delete(el);
+		this._animations.delete(el);
+		this._base.delete(el);
+	}
+
+	/** An element's style as it shows at `now` (undefined when nothing's moving on it, or it's out of the document). */
 	current (el: IgeUiElement, now: number): IgeUiComputedStyle | undefined {
+		if (!el.isConnected) {
+			this.forget(el);
+			return undefined;
+		}
 		const base = this._base.get(el);
 		if (!base) return undefined;
 		const out: IgeUiComputedStyle = { ...base };
