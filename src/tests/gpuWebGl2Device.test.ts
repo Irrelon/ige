@@ -158,4 +158,45 @@ describe("IgeGpuDevice: WebGL2", () => {
 		// (Uniforms are the program's own: kept)
 		expect(again.filter((c) => c.startsWith("uniform"))).toEqual([]);
 	});
+
+	it("a stencil-marking pipeline writes no colour, tests equal to the pass's reference and increments where it passes", () => {
+		const { d, calls, take, quad } = setUp();
+		const mark = d.createRenderPipeline({
+			module: d.createShaderModule({ vertex: VS, fragment: FS }),
+			vertex: { buffers: [{ arrayStride: 8, attributes: [{ shaderLocation: 0, format: "float32x2", offset: 0 }] }] },
+			writeColor: false,
+			stencil: { compare: "equal", passOp: "increment-clamp" }
+		});
+		take();
+		const pass = d.beginRenderPass({ color: { target: d.surface() } });
+		pass.setPipeline(mark);
+		pass.setVertexBuffer(0, quad);
+		pass.setStencilReference(2);
+		pass.draw(3);
+		const sent = Object.fromEntries(calls.map(([k, a]) => [k, a]));
+		expect(sent.colorMask).toEqual([false, false, false, false]);
+		// (GL's EQUAL, the reference, all bits; KEEP, KEEP, INCR)
+		expect(sent.stencilFunc).toEqual([0x0202, 2, 0xff]);
+		expect(sent.stencilOp).toEqual([0x1e00, 0x1e00, 0x1e02]);
+		expect(calls[calls.length - 1][0]).toBe("drawArrays");
+	});
+
+	it("acts on a texture through the scratch unit made active, though it was bound there already (a draw's unit active since)", () => {
+		const { d, calls, take, quad, inst, pipeline } = setUp();
+		const image = d.createTexture({ width: 4, height: 4, format: "rgba8unorm" });
+		const tex = d.createTexture({ width: 8, height: 8, format: "rgba8unorm" });
+		d.generateMipmaps(tex);
+		take();
+		// A draw: its texture slot's unit (0) made active
+		const pass = d.beginRenderPass({ color: { target: d.surface() } });
+		pass.setPipeline(pipeline);
+		pass.setVertexBuffer(0, quad);
+		pass.setVertexBuffer(1, inst);
+		pass.setTexture(0, image);
+		pass.draw(4, 1);
+		take();
+		// The same texture's mips again: the scratch unit active before generateMipmap, though it's bound there still
+		d.generateMipmaps(tex);
+		expect(calls.map(([k]) => k)).toEqual(["activeTexture", "generateMipmap"]);
+	});
 });

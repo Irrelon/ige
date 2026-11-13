@@ -78,6 +78,11 @@ interface GlPipeline extends IgeGpuRenderPipeline {
 	_mode: number;
 	_instanced: boolean;
 	_textures: number;
+	/** The blend, stencil op and depth bias keys the state cache compares, made once */
+	_blendKey: string;
+	_blendOps: string;
+	_stencilOp: string;
+	_offsetKey: string;
 }
 
 /** What's set in GL now (undefined: not known, set it). */
@@ -89,17 +94,20 @@ interface GlState {
 	unit?: number;
 	units: ({ target: number; tex: WebGLTexture | null } | undefined)[];
 	samplers: (WebGLSampler | null | undefined)[];
-	viewport?: string;
+	viewport?: [number, number, number, number];
 	scissorOn?: boolean;
-	scissor?: string;
+	scissor?: [number, number, number, number];
 	blendOn?: boolean;
 	blend?: string;
+	blendOps?: string;
 	colorMask?: boolean;
 	depthOn?: boolean;
 	depthFunc?: number;
 	depthMask?: boolean;
 	stencilOn?: boolean;
-	stencilFunc?: string;
+	stencilFunc?: number;
+	stencilRef?: number;
+	stencilRead?: number;
 	stencilOp?: string;
 	stencilMask?: number;
 	cullOn?: boolean;
@@ -107,7 +115,12 @@ interface GlState {
 	frontFace?: number;
 	offsetOn?: boolean;
 	offset?: string;
-	clearColor?: string;
+	clearColor?: [number, number, number, number];
+}
+
+/** Whether four numbers are those kept. */
+function same4 (have: [number, number, number, number] | undefined, want: ArrayLike<number>): boolean {
+	return !!have && have[0] === want[0] && have[1] === want[1] && have[2] === want[2] && have[3] === want[3];
 }
 
 const FORMATS: Record<IgeGpuTextureFormat, { internal: number; format: number; type: number; bytes: number }> = {
@@ -223,7 +236,12 @@ export class IgeWebGl2GpuDevice implements IgeGpuDevice {
 		gl.bindVertexArray(null);
 		gl.depthMask(true);
 		if (s.stencilOn !== false) gl.disable(gl.STENCIL_TEST);
+		if (s.scissorOn !== false) gl.disable(gl.SCISSOR_TEST);
 		if (s.colorMask !== true) gl.colorMask(true, true, true, true);
+		// (A draw's own sampler objects taken off their units: GL code after reads its textures' own sampling)
+		s.samplers.forEach((so, unit) => {
+			if (so) gl.bindSampler(unit, null);
+		});
 		this.invalidate();
 	}
 
@@ -405,9 +423,16 @@ export class IgeWebGl2GpuDevice implements IgeGpuDevice {
 		return s;
 	}
 
-	/** A texture bound on the scratch unit (uploads, copies, sampling set). */
+	/**
+	 * A texture bound on the scratch unit, and that unit made the active one: uploads, copies and sampling act on the
+	 * active unit's texture (bound already, its unit may still not be the active one).
+	 */
 	_bindScratch (t: GlTexture): void {
 		this._bindTexture(this._scratch, t._target, t._tex);
+		if (this._state.unit !== this._scratch) {
+			this.gl.activeTexture(this.gl.TEXTURE0 + this._scratch);
+			this._state.unit = this._scratch;
+		}
 	}
 
 	_bindTexture (unit: number, target: number, tex: WebGLTexture | null): void {
@@ -473,9 +498,14 @@ export class IgeWebGl2GpuDevice implements IgeGpuDevice {
 		const uniformOffsets: Record<string, number> = {};
 		for (const u of m._uniforms) uniformOffsets[u.name] = u.offset;
 		const instanced = desc.vertex.buffers.some((b) => b.stepMode === "instance");
+		const b = desc.blend, st = desc.stencil, bias = desc.depth?.bias;
 		return {
 			kind: "pipeline", label: desc.label, uniformOffsets, uniformSize: m._values!.length,
-			_module: m, _layout: this._layoutFor(desc.vertex.buffers), _desc: desc, _mode: TOPOLOGY[desc.primitive?.topology ?? "triangle-list"], _instanced: instanced, _textures: m._textures!
+			_module: m, _layout: this._layoutFor(desc.vertex.buffers), _desc: desc, _mode: TOPOLOGY[desc.primitive?.topology ?? "triangle-list"], _instanced: instanced, _textures: m._textures!,
+			_blendKey: b ? `${b.color.srcFactor} ${b.color.dstFactor} ${b.alpha.srcFactor} ${b.alpha.dstFactor} ${b.color.operation ?? "add"} ${b.alpha.operation ?? "add"}` : "",
+			_blendOps: b ? (b.color.operation ?? "add") + " " + (b.alpha.operation ?? "add") : "",
+			_stencilOp: st ? `${st.failOp ?? "keep"},${st.depthFailOp ?? "keep"},${st.passOp ?? "keep"}` : "",
+			_offsetKey: bias ? `${bias.slopeScale},${bias.constant}` : ""
 		} as GlPipeline;
 	}
 
@@ -561,10 +591,9 @@ export class IgeWebGl2GpuDevice implements IgeGpuDevice {
 	}
 
 	_clearColor (c: [number, number, number, number]): void {
-		const key = c.join(",");
-		if (this._state.clearColor === key) return;
+		if (same4(this._state.clearColor, c)) return;
 		this.gl.clearColor(c[0], c[1], c[2], c[3]);
-		this._state.clearColor = key;
+		this._state.clearColor = [c[0], c[1], c[2], c[3]];
 	}
 
 	_colorMask (on: boolean): void {
@@ -593,17 +622,15 @@ export class IgeWebGl2GpuDevice implements IgeGpuDevice {
 	}
 
 	_scissor (r: [number, number, number, number]): void {
-		const key = r.join(",");
-		if (this._state.scissor === key) return;
+		if (same4(this._state.scissor, r)) return;
 		this.gl.scissor(r[0], r[1], r[2], r[3]);
-		this._state.scissor = key;
+		this._state.scissor = [r[0], r[1], r[2], r[3]];
 	}
 
 	_viewport (v: [number, number, number, number]): void {
-		const key = v.join(",");
-		if (this._state.viewport === key) return;
+		if (same4(this._state.viewport, v)) return;
 		this.gl.viewport(v[0], v[1], v[2], v[3]);
-		this._state.viewport = key;
+		this._state.viewport = [v[0], v[1], v[2], v[3]];
 	}
 
 	_toggle (cap: number, key: "blendOn" | "depthOn" | "stencilOn" | "cullOn" | "offsetOn", on: boolean): void {
@@ -624,18 +651,17 @@ export class IgeWebGl2GpuDevice implements IgeGpuDevice {
 		const b = d.blend;
 		this._toggle(gl.BLEND, "blendOn", !!b);
 		if (b) {
-			const key = `${b.color.srcFactor} ${b.color.dstFactor} ${b.alpha.srcFactor} ${b.alpha.dstFactor} ${b.color.operation ?? "add"} ${b.alpha.operation ?? "add"}`;
+			const key = p._blendKey;
 			if (s.blend !== key) {
 				const same = b.color.srcFactor === b.alpha.srcFactor && b.color.dstFactor === b.alpha.dstFactor;
 				if (same) gl.blendFunc(BLEND_FACTORS[b.color.srcFactor], BLEND_FACTORS[b.color.dstFactor]);
 				else gl.blendFuncSeparate(BLEND_FACTORS[b.color.srcFactor], BLEND_FACTORS[b.color.dstFactor], BLEND_FACTORS[b.alpha.srcFactor], BLEND_FACTORS[b.alpha.dstFactor]);
-				const ops = (b.color.operation ?? "add") + (b.alpha.operation ?? "add");
-				const was = s.blend?.split(" ").slice(4).join("") ?? "";
-				if (ops !== was) {
+				if (p._blendOps !== s.blendOps) {
 					if ((b.color.operation ?? "add") === (b.alpha.operation ?? "add")) gl.blendEquation(BLEND_OPS[b.color.operation ?? "add"]);
 					else gl.blendEquationSeparate(BLEND_OPS[b.color.operation ?? "add"], BLEND_OPS[b.alpha.operation ?? "add"]);
 				}
 				s.blend = key;
+				s.blendOps = p._blendOps;
 			}
 		}
 		this._colorMask(d.writeColor !== false);
@@ -648,21 +674,22 @@ export class IgeWebGl2GpuDevice implements IgeGpuDevice {
 		}
 		this._toggle(gl.POLYGON_OFFSET_FILL, "offsetOn", !!z?.bias);
 		if (z?.bias) {
-			const key = `${z.bias.slopeScale},${z.bias.constant}`;
-			if (s.offset !== key) {
+			if (s.offset !== p._offsetKey) {
 				gl.polygonOffset(z.bias.slopeScale, z.bias.constant);
-				s.offset = key;
+				s.offset = p._offsetKey;
 			}
 		}
 		const st = d.stencil;
 		this._toggle(gl.STENCIL_TEST, "stencilOn", !!st);
 		if (st) {
-			const func = `${st.compare},${stencilRef},${st.readMask ?? 0xff}`;
-			if (s.stencilFunc !== func) {
-				gl.stencilFunc(COMPARE[st.compare], stencilRef, st.readMask ?? 0xff);
+			const func = COMPARE[st.compare], read = st.readMask ?? 0xff;
+			if (s.stencilFunc !== func || s.stencilRef !== stencilRef || s.stencilRead !== read) {
+				gl.stencilFunc(func, stencilRef, read);
 				s.stencilFunc = func;
+				s.stencilRef = stencilRef;
+				s.stencilRead = read;
 			}
-			const op = `${st.failOp ?? "keep"},${st.depthFailOp ?? "keep"},${st.passOp ?? "keep"}`;
+			const op = p._stencilOp;
 			if (s.stencilOp !== op) {
 				gl.stencilOp(STENCIL_OPS[st.failOp ?? "keep"], STENCIL_OPS[st.depthFailOp ?? "keep"], STENCIL_OPS[st.passOp ?? "keep"]);
 				s.stencilOp = op;
