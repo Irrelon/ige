@@ -9,6 +9,7 @@
  * Changes tell the document what's out of date (styles, layout, paint), so
  * a frame only redoes what changed (IgeUiRoot).
  */
+import { igeUiCanvasSurfaceScale } from "./IgeUiCanvasSurface";
 import { matchesSelector, parseSelectorList, type IgeCssMatchable, type IgeCssSelector } from "@/engine/ui2/css/IgeCssSelector";
 import { escapeAttr, escapeText, parseHtml, VOID_TAGS, type IgeHtmlNode } from "@/engine/ui2/dom/IgeUiHtml";
 import type { IgeUiBox } from "@/engine/ui2/layout/IgeUiBox";
@@ -471,6 +472,8 @@ export class IgeUiElement extends IgeUiNode implements IgeCssMatchable {
 	/** A canvas element's drawing surface (the page's, when there is one). */
 	_canvas?: HTMLCanvasElement | OffscreenCanvas;
 	_canvasVersion = 0;
+	/** Its surface's pixels per canvas unit (data-resolution="auto": IgeUiCanvasSurface.ts). */
+	_surfaceScale = 1;
 	[key: string]: unknown;
 
 	constructor (doc: IgeUiDocument, tag: string) {
@@ -540,6 +543,15 @@ export class IgeUiElement extends IgeUiNode implements IgeCssMatchable {
 		this.setAttribute("type", v);
 	}
 
+	/** A form field's name (`name=""`), as a browser reflects it. */
+	get name (): string {
+		return this._attrs.get("name") ?? "";
+	}
+
+	set name (v: string) {
+		this.setAttribute("name", v);
+	}
+
 	get placeholder (): string {
 		return this._attrs.get("placeholder") ?? "";
 	}
@@ -582,7 +594,7 @@ export class IgeUiElement extends IgeUiNode implements IgeCssMatchable {
 
 	set width (v: number) {
 		this.setAttribute("width", String(v));
-		if (this._canvas) this._canvas.width = v;
+		if (this._canvas) this._canvas.width = Math.max(1, Math.round(v * this._surfaceScale));
 	}
 
 	get height (): number {
@@ -591,7 +603,7 @@ export class IgeUiElement extends IgeUiNode implements IgeCssMatchable {
 
 	set height (v: number) {
 		this.setAttribute("height", String(v));
-		if (this._canvas) this._canvas.height = v;
+		if (this._canvas) this._canvas.height = Math.max(1, Math.round(v * this._surfaceScale));
 	}
 
 	get tabIndex (): number {
@@ -1072,6 +1084,20 @@ export class IgeUiElement extends IgeUiNode implements IgeCssMatchable {
 		return !!this._box;
 	}
 
+	// ---- pointer capture: a drag that leaves the element keeps going to it until the pointer's let go
+
+	setPointerCapture (pointerId: number): void {
+		this.ownerDocument._capture = { el: this, id: pointerId };
+	}
+
+	releasePointerCapture (pointerId: number): void {
+		if (this.ownerDocument._capture?.el === this && this.ownerDocument._capture.id === pointerId) this.ownerDocument._capture = undefined;
+	}
+
+	hasPointerCapture (pointerId: number): boolean {
+		return this.ownerDocument._capture?.el === this && this.ownerDocument._capture.id === pointerId;
+	}
+
 	// ---- canvas
 
 	getContext (kind: string, opts?: unknown): RenderingContext | OffscreenCanvasRenderingContext2D | null {
@@ -1083,10 +1109,22 @@ export class IgeUiElement extends IgeUiNode implements IgeCssMatchable {
 			this._canvas.width = this.width;
 			this._canvas.height = this.height;
 		}
+		// data-resolution="auto": a surface at the pixels it's shown at, drawn on in its own units (IgeUiCanvasSurface.ts)
+		const k = kind === "2d" ? igeUiCanvasSurfaceScale(this) : 1;
+		if (k !== 1 || this._surfaceScale !== 1) {
+			const bw = Math.max(1, Math.round(this.width * k)), bh = Math.max(1, Math.round(this.height * k));
+			if (this._canvas.width !== bw || this._canvas.height !== bh) {
+				this._canvas.width = bw;
+				this._canvas.height = bh;
+			}
+			this._surfaceScale = k;
+		}
 		// (Drawn on: its texture's uploaded again each frame it's shown)
 		this._canvasVersion++;
 		this.ownerDocument._changed(this, "paint");
-		return (this._canvas as HTMLCanvasElement).getContext(kind, opts as CanvasRenderingContext2DSettings) as RenderingContext | null;
+		const ctx = (this._canvas as HTMLCanvasElement).getContext(kind, opts as CanvasRenderingContext2DSettings) as RenderingContext | null;
+		if (this._surfaceScale !== 1) (ctx as CanvasRenderingContext2D | null)?.setTransform(this._surfaceScale, 0, 0, this._surfaceScale, 0, 0);
+		return ctx;
 	}
 
 	toString (): string {
@@ -1178,6 +1216,8 @@ export class IgeUiDocument extends IgeUiNode {
 	/** Device pixels per UI pixel (scroll offsets are kept on them). */
 	_pixelGrid = 1;
 	_selectorCache = new Map<string, IgeCssSelector[]>();
+	/** The element a pointer's captured to (setPointerCapture), if any. */
+	_capture?: { el: IgeUiElement; id: number };
 
 	constructor () {
 		// (A document is its own owner)

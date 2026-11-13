@@ -151,6 +151,9 @@ export class IgeUiRoot implements IgeUiDocumentHost {
 	/** Observed sizes to compare after the next layout. */
 	_resizeCheck = false;
 	_hover: IgeUiElement[] = [];
+	/** The pointer's last move over the UI (hover is worked out again there after layout), and whether the hovered chain lost an element. */
+	_pointerAt?: PointerEvent;
+	_hoverStale = false;
 	_active: IgeUiElement | null = null;
 	_down?: { el: IgeUiElement; x: number; y: number; time: number; pointerType: string; scroller?: IgeUiElement; dragging?: boolean; vy?: number; lastY?: number; lastT?: number };
 	_momentum?: { el: IgeUiElement; vx: number; vy: number };
@@ -322,7 +325,9 @@ export class IgeUiRoot implements IgeUiDocumentHost {
 	removed (node: IgeUiNode): void {
 		if (node.nodeType !== 1) return;
 		const el = node as IgeUiElement;
+		const was = this._hover.length;
 		this._hover = this._hover.filter((h) => !el.contains(h));
+		if (this._hover.length !== was) this._hoverStale = true;
 		if (this._active && el.contains(this._active)) this._active = null;
 		if (this._tooltip?.shown && el.contains(this._tooltip.el)) this._hideTooltip();
 	}
@@ -479,6 +484,7 @@ export class IgeUiRoot implements IgeUiDocumentHost {
 		this._now = now;
 		this._animate(now);
 		this._restyle();
+		const laidOut = this._layoutDirty;
 		if (this._layoutDirty) this._layout();
 		else if (this._resizeCheck) this._resized();
 		this._momentumStep();
@@ -489,6 +495,9 @@ export class IgeUiRoot implements IgeUiDocumentHost {
 			this.items = this.rootBox ? this.painter.paint(this.rootBox) : [];
 			this._hits();
 			this._paintDirty = false;
+			// What's under a pointer that hasn't moved, when what's there changed (a list redrawn under it), as a browser does after layout
+			if (this._pointerAt && (laidOut || this._hoverStale)) this._setHover(this.hitTest(this._pointerAt.clientX, this._pointerAt.clientY), this._pointerAt);
+			this._hoverStale = false;
 			this.stats.paint = perf() - t0;
 			this.stats.items = this.items.length;
 		}
@@ -809,6 +818,12 @@ export class IgeUiRoot implements IgeUiDocumentHost {
 			on("pointerdown", (e) => this._pointer("pointerdown", e as PointerEvent)),
 			on("pointerup", (e) => this._pointer("pointerup", e as PointerEvent)),
 			on("pointercancel", (e) => this._pointer("pointercancel", e as PointerEvent)),
+			// (Out of the window: nothing's under the pointer any more)
+			on("pointerout", (e) => {
+				if ((e as PointerEvent).relatedTarget) return;
+				this._pointerAt = undefined;
+				this._setHover(null, e as PointerEvent);
+			}),
 			on("click", (e) => this._swallow(e as MouseEvent)),
 			on("mousedown", (e) => this._swallow(e as MouseEvent)),
 			on("mouseup", (e) => this._swallow(e as MouseEvent)),
@@ -886,8 +901,13 @@ export class IgeUiRoot implements IgeUiDocumentHost {
 	}
 
 	_pointer (type: string, e: PointerEvent): void {
-		const t = this.hitTest(e.clientX, e.clientY);
+		// A captured pointer (setPointerCapture) goes to its element wherever it is, until it's let go
+		const captured = this.document._capture;
+		const hit = this.hitTest(e.clientX, e.clientY);
+		const t = captured && captured.id === e.pointerId && type !== "pointerdown" && captured.el.isConnected ? captured.el : hit;
+		if (captured && (type === "pointerup" || type === "pointercancel")) this.document._capture = undefined;
 		if (type === "pointermove") {
+			this._pointerAt = e;
 			this._setHover(t, e);
 			const d = this._down;
 			if (d?.pointerType === "touch" && d.scroller) {
@@ -903,7 +923,10 @@ export class IgeUiRoot implements IgeUiDocumentHost {
 				d.lastT = e.timeStamp;
 			}
 			if (t || d) {
-				(t ?? d!.el).dispatchEvent(this._event(type, e));
+				const to = t ?? d!.el;
+				to.dispatchEvent(this._event(type, e));
+				// (And the mouse's own move, as a browser sends it after the pointer's: not for a touch)
+				if (e.pointerType !== "touch") to.dispatchEvent(this._event("mousemove", e));
 				e.stopImmediatePropagation();
 			}
 			return;

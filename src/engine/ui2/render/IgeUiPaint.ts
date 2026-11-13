@@ -297,6 +297,11 @@ export class IgeUiPainter {
 				dy -= st;
 			}
 		}
+		// clip-path cuts its contents too, as it does in a browser: to its border box here (the cut corners themselves aside)
+		if (styleValue(b.style, "clip-path") !== "none") {
+			const x = b.ax + ctx.dx, y = b.ay + ctx.dy;
+			clip = intersect(clip, [x, y, x + b.borderW, y + b.borderH]);
+		}
 		return { clip, dx, dy, opacity: ctx.opacity, matrix: ctx.matrix };
 	}
 
@@ -361,7 +366,18 @@ export class IgeUiPainter {
 			const cx = x + b.borderLeft + b.paddingLeft, cy = y + b.borderTop + b.paddingTop;
 			const cw = w - b.borderLeft - b.borderRight - b.paddingLeft - b.paddingRight, ch = h - b.borderTop - b.borderBottom - b.paddingTop - b.paddingBottom;
 			if (el.localName === "canvas" || el.localName === "img") {
-				this.items.push({ op: "image", x: cx, y: cy, w: cw, h: ch, source: el, opacity: ctx.opacity, clip: ctx.clip, matrix: ctx.matrix, el, pixelated: styleValue(s, "image-rendering") === "pixelated" });
+				// object-fit: contain (and scale-down): the picture kept to its shape, in the middle of its box
+				const fit = styleValue(s, "object-fit");
+				let [ix, iy, iw, ih] = [cx, cy, cw, ch];
+				const nw = el.width, nh = el.height;
+				if ((fit === "contain" || fit === "scale-down") && nw > 0 && nh > 0 && cw > 0 && ch > 0) {
+					const k = Math.min(cw / nw, ch / nh, fit === "scale-down" ? 1 : Infinity);
+					iw = nw * k;
+					ih = nh * k;
+					ix = cx + (cw - iw) / 2;
+					iy = cy + (ch - ih) / 2;
+				}
+				this.items.push({ op: "image", x: ix, y: iy, w: iw, h: ih, source: el, opacity: ctx.opacity, clip: ctx.clip, matrix: ctx.matrix, el, pixelated: styleValue(s, "image-rendering") === "pixelated" });
 			} else if (el.localName === "svg") this._svg(el, cx, cy, cw, ch, ctx, current);
 			else if (el.localName === "input" && (el.getAttribute("type") === "range")) this._range(el, cx, cy, cw, ch, ctx);
 		}

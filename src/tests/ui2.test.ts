@@ -111,6 +111,27 @@ describe("ui2: layout", () => {
 		expect(box(f.children[0].children[0])).toEqual([0, 103, 400, 10]);
 	});
 
+	it("flex: a row's width as an item of another (shrink to fit) counts gaps between its items only, not the white space between them", () => {
+		const r = ui(`.o { display: flex; justify-content: space-between; } .r { display: flex; gap: 10px; } b { display: block; width: 40px; height: 10px; }`, 400, 300);
+		r.root.innerHTML = `<div class="o"><div class="r">
+			<b></b>
+			<b></b>
+			<b></b>
+		</div></div>`;
+		expect(box(r.root.querySelector(".r")!)[2]).toBe(140);
+	});
+
+	it("flex: a column with no height but a max-height: its scrolling item shrinks into it (the panel's cap), its fixed one doesn't", () => {
+		const r = ui(`.f { display: flex; flex-direction: column; max-height: 100px; border: 1px solid; } .h { height: 20px; flex: none; } .b { overflow-y: auto; } .k { height: 300px; }`, 400, 300);
+		r.root.innerHTML = `<div class="f"><div class="h"></div><div class="b"><div class="k"></div></div></div>`;
+		const f = r.root.children[0];
+		// (100 inside the border)
+		expect(box(f)[3]).toBe(102);
+		expect(box(f.children[0])[3]).toBe(20);
+		expect(box(f.children[1])[3]).toBe(80);
+		expect((f.children[1] as unknown as { scrollHeight: number }).scrollHeight).toBe(300);
+	});
+
 	it("block flow: a button is as wide as its contents, unless it has a width; auto margins move it", () => {
 		const r = ui(`button { display: block; padding: 0 5px; border: 0; font: inherit; } .r { margin-left: auto; } .w { width: 200px; }`, 400, 300);
 		r.root.innerHTML = `<button>abcd</button><button class="r">abcd</button><button class="w">abcd</button>`;
@@ -301,6 +322,13 @@ describe("ui2: laying out only what changed", () => {
 });
 
 describe("ui2: transforms", () => {
+	it("clip-path cuts what's inside the element too (to its box): a footer that overflows a cut panel isn't drawn past it", () => {
+		const r = ui(`.p { width: 100px; height: 50px; clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%); } .f { height: 80px; background: red; }`, 400, 300);
+		r.root.innerHTML = `<div class="p"><div class="f"></div></div>`;
+		r.update(0);
+		expect(describePaint(r.items).find((l) => l.includes("rgba(255,0,0,1)"))).toBe("box 0,0 100x80 rgba(255,0,0,1) clip[0,0,100,50]");
+	});
+
 	it("hit tests and client rects go through transforms; clips inside one are in its own pixels", () => {
 		const r = ui(`.bar { position: absolute; left: 200px; top: 0; transform: translateX(-50%); width: 100px; height: 50px; }
 			.btn { width: 40px; height: 40px; overflow: hidden; } .in { width: 10px; height: 10px; background: red; }`, 400, 300);
@@ -403,6 +431,64 @@ describe("ui2: the UI's scale and safe area, events, observers", () => {
 		expect(r.root.querySelector("button")!._computed!.color).toBe("red");
 		const ev = new IgeUiEvent("x", { bubbles: true, detail: 3 });
 		expect(ev.detail).toBe(3);
+	});
+
+	it("a list redrawn under a pointer that hasn't moved: what's under it now is hovered (as a browser does after layout)", () => {
+		const r = ui(`button { display: block; width: 80px; height: 20px; } button:hover { color: red; }`, 400, 300);
+		r.root.innerHTML = `<div class="list"><button class="a">A</button></div>`;
+		r.update(0);
+		const pt = { clientX: 10, clientY: 10, button: 0, buttons: 0, pointerType: "mouse", pointerId: 1, timeStamp: 0, stopImmediatePropagation () {}, preventDefault () {} };
+		r._pointer("pointermove", pt as never);
+		r.update(16);
+		expect(r.root.querySelector("button.a")!._computed!.color).toBe("red");
+		// Redrawn: a new button in its place, the pointer still
+		r.root.querySelector(".list")!.innerHTML = `<button class="b">B</button>`;
+		r.update(32);
+		r.update(48);
+		expect(r.root.querySelector("button.b")!._states.has("hover")).toBe(true);
+		expect(r.root.querySelector("button.b")!._computed!.color).toBe("red");
+	});
+
+	it("a captured pointer keeps going to the element that captured it, off it, until it's let go", () => {
+		const r = ui(`.a, .b { width: 100px; height: 50px; }`, 400, 300);
+		r.root.innerHTML = `<div class="a"></div><div class="b"></div>`;
+		const a = r.root.querySelector(".a")!;
+		const got: string[] = [];
+		a.addEventListener("pointermove", () => got.push("move"));
+		a.addEventListener("pointerup", () => got.push("up"));
+		a.addEventListener("pointerdown", (e) => a.setPointerCapture((e as unknown as { pointerId: number }).pointerId));
+		const at = (y: number, buttons = 1) => ({ clientX: 10, clientY: y, button: 0, buttons, pointerType: "mouse", pointerId: 7, timeStamp: 0, stopImmediatePropagation () {}, preventDefault () {} }) as never;
+		r._pointer("pointerdown", at(10));
+		expect(a.hasPointerCapture(7)).toBe(true);
+		// Over .b now: still .a's
+		a.addEventListener("mousemove", () => got.push("mousemove"));
+		r._pointer("pointermove", at(70));
+		r._pointer("pointerup", at(70, 0));
+		// (The mouse's own move after the pointer's, as a browser sends them)
+		expect(got).toEqual(["move", "mousemove", "up"]);
+		expect(a.hasPointerCapture(7)).toBe(false);
+		r._pointer("pointermove", at(70, 0));
+		expect(got).toEqual(["move", "mousemove", "up"]);
+	});
+
+	it("a canvas with data-resolution=auto has a surface at the size it's shown (its box, kept to shape by object-fit: contain, and the UI's scale)", async () => {
+		const { igeUiCanvasSurfaceScale } = await import("@/engine/ui2/dom/IgeUiCanvasSurface");
+		const r = ui(`canvas { display: block; width: 200px; height: 100px; } .c { object-fit: contain; width: 300px; }`, 400, 300);
+		r.root.innerHTML = `<canvas width="100" height="50" data-resolution="auto"></canvas><canvas class="c" width="100" height="50" data-resolution="auto"></canvas><canvas width="100" height="50"></canvas>`;
+		const [a, c, plain] = r.root.children as unknown as Parameters<typeof igeUiCanvasSurfaceScale>[0][];
+		expect(igeUiCanvasSurfaceScale(a)).toBe(2);
+		// (300 x 100 holds it at 200 x 100 kept to its shape)
+		expect(igeUiCanvasSurfaceScale(c)).toBe(2);
+		expect(igeUiCanvasSurfaceScale(plain)).toBe(1);
+	});
+
+	it("form fields reflect their name", () => {
+		const r = ui();
+		r.root.innerHTML = `<input name="fName" value="x">`;
+		const input = r.root.querySelector("input")! as unknown as { name: string };
+		expect(input.name).toBe("fName");
+		input.name = "other";
+		expect(r.root.querySelector("input[name=other]")).toBeTruthy();
 	});
 
 	it("innerHTML parses and serialises; textContent; dataset; classList; inline style", () => {

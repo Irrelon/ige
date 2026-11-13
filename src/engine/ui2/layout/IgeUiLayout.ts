@@ -506,7 +506,9 @@ export class IgeUiLayoutEngine {
 			const gap = this.len(b.style, "column-gap") ?? 0;
 			const wrap = styleValue(b.style, "flex-wrap") !== "nowrap";
 			let min = 0, max = 0;
-			for (const c of kids) {
+			// (White space between items isn't an item: no gap for it, as the layout has it)
+			const items = kids.filter((c) => c.display !== "text" || /\S/.test(c.text ?? ""));
+			for (const c of items) {
 				const s = c.display === "text" ? this._inlineIntrinsic([c], b.style) : this._marginBox(c);
 				if (row) {
 					min = wrap ? Math.max(min, s.min) : min + s.min;
@@ -516,9 +518,9 @@ export class IgeUiLayoutEngine {
 					max = Math.max(max, s.max);
 				}
 			}
-			if (row && kids.length > 1) {
-				max += gap * (kids.length - 1);
-				if (!wrap) min += gap * (kids.length - 1);
+			if (row && items.length > 1) {
+				max += gap * (items.length - 1);
+				if (!wrap) min += gap * (items.length - 1);
 			}
 			return { min, max };
 		}
@@ -1425,7 +1427,7 @@ export class IgeUiLayoutEngine {
 		const rowGap = this._gap(s, "row-gap", innerH);
 		const colGap = this._gap(s, "column-gap", cw);
 		const mainGap = row ? colGap : rowGap, crossGap = row ? rowGap : colGap;
-		const mainSize = row ? cw : innerH;
+		let mainSize = row ? cw : innerH;
 		const left = contentLeft(b), top = contentTop(b);
 		// Items: in-flow children (text in anonymous items)
 		const items: IgeUiBox[] = [];
@@ -1499,6 +1501,15 @@ export class IgeUiLayoutEngine {
 			const hypo = Math.max(min ?? 0, Math.min(max, base));
 			return { box: it, base, hypo, min: min ?? 0, max, grow, shrink: Number.isFinite(shrink) ? shrink : 1, size: hypo, frozen: false, marginMain, autoStart: ms === "auto", autoEnd: me === "auto" };
 		});
+		// A column with no height of its own but a limit on it (max-height, min-height): its items flex in the height it
+		// will have (the container's main size comes first: CSS Flexbox 9.3), so a scrolling item shrinks into a capped panel
+		if (!row && mainSize === undefined && !wrap) {
+			const sum = flex.reduce((a, f) => a + f.hypo + f.marginMain, 0) + mainGap * Math.max(0, flex.length - 1);
+			const ve = this._vEdges(b);
+			const max = this._specH(b, undefined, "max-height"), min = this._specH(b, undefined, "min-height");
+			if (max !== undefined && sum > max - ve) mainSize = Math.max(0, max - ve);
+			else if (min !== undefined && sum < min - ve) mainSize = Math.max(0, min - ve);
+		}
 		// Lines
 		const lines: F[][] = [];
 		if (!wrap || mainSize === undefined) lines.push(flex);
