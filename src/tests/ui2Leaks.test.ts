@@ -38,13 +38,18 @@ async function redraw (rows: (n: number) => string, ticks: number): Promise<{ ke
 		dropped.push(...watch());
 		draw(n);
 	}
-	// (A task later (a WeakRef's target is held to the end of the task that made it), then a collection)
-	await new Promise((res) => setTimeout(res, 0));
-	collect();
-	const kept = dropped.filter((w) => {
+	const alive = () => dropped.filter((w) => {
 		const el = w.deref() as { isConnected?: boolean } | undefined;
 		return el && !el.isConnected;
 	}).length;
+	// (Rounds of a task later (a WeakRef's target is held to the end of the task that made it) and a full collection,
+	// until they're gone: one sometimes isn't enough for what was let go, while what a leak holds stays through them all)
+	let kept = dropped.length;
+	for (let round = 0; round < 10 && kept > 0; round++) {
+		await new Promise((res) => setTimeout(res, 0));
+		collect();
+		kept = alive();
+	}
 	return { kept, dropped: dropped.length, root: r };
 }
 

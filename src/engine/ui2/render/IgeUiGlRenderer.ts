@@ -277,8 +277,11 @@ void main() {
 		int mask = int(v_radii.z + 0.5);
 		a = min(edgeCover(v_local, p0, p1, s, (mask & 1) != 0, px), min(edgeCover(v_local, p1, p2, s, (mask & 2) != 0, px), edgeCover(v_local, p2, p0, s, (mask & 4) != 0, px)));
 	} else {
-		// An image (or a blurred backdrop: v_params.y set, the first pass, clears its shape for it), cut to its box's shape
-		col = v_params.y > 0.5 ? vec4(0.0, 0.0, 0.0, 1.0) : texture(u_image, v_tex);
+		// An image (or a blurred backdrop: v_params.y set, the first pass, clears its shape for it), cut to its box's shape.
+		// A backdrop's blurred copy is read only inside the part of its texture it fills (v_params.zw), half a texel in:
+		// past that is stale (a panel at the screen's edge has its edge there)
+		vec2 t = v_params.z > 0.0 ? clamp(v_tex, 0.5 / vec2(textureSize(u_image, 0)), v_params.zw - 0.5 / vec2(textureSize(u_image, 0))) : v_tex;
+		col = v_params.y > 0.5 ? vec4(0.0, 0.0, 0.0, 1.0) : texture(u_image, t);
 		a = clamp(0.5 - shape(v_local, v_shape, v_radii, v_radiiY, v_chamfer) / px, 0.0, 1.0);
 		// (A backdrop's mask-image: its gradient's alpha)
 		if (v_grad.x >= 0.0) a *= maskAlpha(v_local);
@@ -380,10 +383,14 @@ void main() {
 	int r = int(min(ceil(s * 3.0), 64.0));
 	vec4 sum = vec4(0.0);
 	float total = 0.0;
+	// (Kept inside the area: half a texel in, so filtering takes nothing from past its edge (the texture's stale
+	// rest); a whole texel of a smaller level, as its edge texel can be half past it)
+	vec2 inset = (u_lod > 0.5 ? 1.0 : 0.5) / vec2(textureSize(u_src, int(u_lod + 0.5)));
+	vec2 lo = u_area.xy + min(inset, u_area.zw * 0.5), hi = u_area.xy + u_area.zw - min(inset, u_area.zw * 0.5);
 	for (int i = -64; i <= 64; i++) {
 		if (i < -r || i > r) continue;
 		float w = exp(-float(i * i) / (2.0 * s * s));
-		vec2 at = clamp(uv + u_step * float(i), u_area.xy, u_area.xy + u_area.zw);
+		vec2 at = clamp(uv + u_step * float(i), lo, hi);
 		sum += textureLod(u_src, at, u_lod) * w;
 		total += w;
 	}
@@ -1120,6 +1127,9 @@ export class IgeUiGlRenderer {
 				this._data[o + 21] *= kv;
 				this._data[o + 22] *= ku;
 				this._data[o + 23] *= kv;
+				// (How far the texture holds it: read no further, IgeUiGlRenderer's fragment shader)
+				this._data[o + 18] = ku;
+				this._data[o + 19] = kv;
 			}
 		}
 		if (shadowGroups.length) {
