@@ -802,8 +802,8 @@ export class IgeUiRoot implements IgeUiDocumentHost {
 	flush (): void {
 		this._restyle();
 		if (this._layoutDirty) this._layout();
-		else if (this._resizeCheck) this._resized();
 		this._containerQueries();
+		// (Resize observers are told at the frame's step only, as a browser's are: not on a layout a measurement forced)
 	}
 
 	/**
@@ -839,8 +839,9 @@ export class IgeUiRoot implements IgeUiDocumentHost {
 		this._restyle();
 		const laidOut = this._layoutDirty;
 		if (this._layoutDirty) this._layout();
-		else if (this._resizeCheck) this._resized();
 		this._containerQueries();
+		// (Sizes changed by this frame's layout, or by one a measurement forced since the last frame: told now)
+		if (this._resizeCheck) this._resized();
 		this._momentumStep();
 		this._tooltipStep(now);
 		// (The focused field's caret showing or hiding as it blinks: its run of items painted again)
@@ -1177,7 +1178,7 @@ export class IgeUiRoot implements IgeUiDocumentHost {
 		// (What's under a pointer that hasn't moved is looked at again after the paint, whoever asked for this layout)
 		this._hoverStale = true;
 		this._focusFixup();
-		if (this._resizeObservers.size) this._resized();
+		if (this._resizeObservers.size) this._resizeCheck = true;
 	}
 
 	/**
