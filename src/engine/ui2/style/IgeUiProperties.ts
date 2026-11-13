@@ -142,20 +142,33 @@ export function expandShorthand (name: string, value: string): [string, string][
 			return [["align-self", a], ["justify-self", j]];
 		}
 		case "background": {
-			// Colour (the last layer's), images (gradients, url()), size after "/" (kept simple)
+			// Colour (the last layer's), and each layer's image (gradients, url()), position, size after "/" and repeat
 			const layers = splitTop(v, ",").map((x) => x.trim());
-			const images: string[] = [];
+			const images: string[] = [], positions: string[] = [], sizes: string[] = [], repeats: string[] = [];
 			let color = "transparent";
+			const isLen = (t: string) => /^-?[\d.]/.test(t) || t.startsWith("calc(");
 			for (let i = 0; i < layers.length; i++) {
-				const toks = splitTop(layers[i], " ").map((x) => x.trim()).filter(Boolean);
-				let image = "none";
+				const toks = splitTop(layers[i], " ").map((x) => x.trim()).filter(Boolean).flatMap((t) => (t.includes("/") && !t.includes("(") ? t.split(/(\/)/).filter(Boolean) : [t]));
+				let image = "none", slash = false;
+				const pos: string[] = [], size: string[] = [], repeat: string[] = [];
 				for (const t of toks) {
 					if (/^(repeating-)?(linear|radial|conic)-gradient\(|^url\(/.test(t)) image = t;
+					else if (t === "/") slash = true;
+					else if (/^(repeat|repeat-x|repeat-y|no-repeat|space|round)$/.test(t)) repeat.push(t);
+					else if (slash && (/^(auto|cover|contain)$/.test(t) || isLen(t))) size.push(t);
+					else if (/^(left|right|top|bottom|center)$/.test(t) || isLen(t)) pos.push(t);
+					else if (/^(scroll|fixed|local|border-box|padding-box|content-box|text)$/.test(t)) continue;
 					else if (i === layers.length - 1 && (parseColor(t) || t.startsWith("var(") || t.startsWith("color-mix("))) color = t;
 				}
 				images.push(image);
+				positions.push(pos.join(" ") || "0% 0%");
+				sizes.push(size.join(" ") || "auto");
+				repeats.push(repeat.join(" ") || "repeat");
 			}
-			return [["background-color", color], ["background-image", images.every((x) => x === "none") ? "none" : images.join(", ")]];
+			return [
+				["background-color", color], ["background-image", images.every((x) => x === "none") ? "none" : images.join(", ")],
+				["background-position", positions.join(", ")], ["background-size", sizes.join(", ")], ["background-repeat", repeats.join(", ")]
+			];
 		}
 		case "font": return expandFont(v);
 		case "text-decoration": {

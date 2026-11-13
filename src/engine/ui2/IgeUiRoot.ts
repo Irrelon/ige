@@ -212,6 +212,7 @@ export class IgeUiRoot implements IgeUiDocumentHost {
 		this.layoutEngine.imageSizes = this.images.sizes;
 		this.layoutEngine.requestImage = (src) => this.images.request(src);
 		this.painter.imageSizes = this.images.sizes;
+		this.painter.requestImage = (src) => this.images.request(src);
 		this.painter.decorationMetrics = (f) => ({ ascent: this.layoutEngine.metrics(f).ascent, grid: this.layoutEngine.pixelGrid > 0 ? this.layoutEngine.pixelGrid : 1 });
 		this.images.onLoad = (src, ok) => {
 			this._layoutDirty = true;

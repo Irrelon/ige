@@ -142,9 +142,10 @@ export class IgeUiDropShadowPass {
 	/**
 	 * Renders a group's silhouette: its batches drawn alone into the silhouette texture, its region's corner at 0,0.
 	 * `drawBatch` draws one of the frame's batches with the program as it's set up. Leaves `target` bound, the
-	 * program's uniforms and viewport as the frame has them.
+	 * program's uniforms and viewport as the frame has them (`base`: the UI's corner on the screen's target, when the
+	 * frame is a filter's layer and its own offset differs).
 	 */
-	renderSilhouette (host: IgeUiShadowHost, g: IgeUiShadowGroup, drawBatch: (i: number) => void, frame: { width: number; height: number; offset: [number, number]; target: WebGLFramebuffer | null }): void {
+	renderSilhouette (host: IgeUiShadowHost, g: IgeUiShadowGroup, drawBatch: (i: number) => void, frame: { width: number; height: number; offset: [number, number]; target: WebGLFramebuffer | null; base?: [number, number] }): void {
 		const gl = host.gl, r = g.region!;
 		this.fbo ??= gl.createFramebuffer();
 		gl.bindFramebuffer(gl.FRAMEBUFFER, this.fbo);
@@ -155,7 +156,9 @@ export class IgeUiDropShadowPass {
 		gl.useProgram(host._program);
 		gl.bindVertexArray(host._vao);
 		gl.uniform2f(host._uniforms.u_resolution, r.w, r.h);
-		gl.uniform2f(host._uniforms.u_offset, frame.offset[0] - r.x, frame.offset[1] - r.y);
+		// (The region's on the UI's target: from the UI's corner there, `base`, when what's drawing is a filter's layer)
+		const base = frame.base ?? frame.offset;
+		gl.uniform2f(host._uniforms.u_offset, base[0] - r.x, base[1] - r.y);
 		gl.enable(gl.BLEND);
 		for (let i = g.from; i < g.to; i++) drawBatch(i);
 		gl.uniform2f(host._uniforms.u_resolution, frame.width, frame.height);

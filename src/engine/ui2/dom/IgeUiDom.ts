@@ -11,6 +11,7 @@
  */
 import type { IgeUiHost, IgeUiSurface } from "@/engine/ui2/IgeUiHost";
 import { igeUiCanvasSurfaceScale } from "./IgeUiCanvasSurface";
+import { splitTop } from "@/engine/ui2/css/IgeCssParser";
 import { matchesSelector, parseSelectorList, type IgeCssMatchable, type IgeCssSelector } from "@/engine/ui2/css/IgeCssSelector";
 import { escapeAttr, escapeText, parseHtml, VOID_TAGS, type IgeHtmlNode } from "@/engine/ui2/dom/IgeUiHtml";
 import type { IgeUiBox } from "@/engine/ui2/layout/IgeUiBox";
@@ -386,7 +387,8 @@ export class IgeUiInlineStyle {
 
 	set cssText (text: string) {
 		this._props.clear();
-		for (const part of text.split(";")) {
+		// (Not at a ; inside brackets or quotes: a url(data:image/png;base64,...))
+		for (const part of splitTop(text, ";")) {
 			const c = part.indexOf(":");
 			if (c < 0) continue;
 			const name = part.slice(0, c).trim();

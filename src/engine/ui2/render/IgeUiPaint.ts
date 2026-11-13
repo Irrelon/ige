@@ -16,7 +16,9 @@ import { type IgeUiBox, type IgeUiTextRun, stickyShift } from "@/engine/ui2/layo
 import { type IgeUiComputedStyle, styleValue } from "@/engine/ui2/style/IgeUiStyleEngine";
 import type { IgeUiFontSpec } from "@/engine/ui2/text/IgeUiFonts";
 import { hasDashedSide, paintDashedBorder } from "@/engine/ui2/render/IgeUiBorderDash";
+import { backgroundUrl, paintBackgroundImage } from "@/engine/ui2/render/IgeUiBackgroundImage";
 import { type IgeUiDropShadow, parseDropShadows } from "@/engine/ui2/render/IgeUiDropShadow";
+import { type IgeUiFilterOp, onlyDropShadows, parseFilterList } from "@/engine/ui2/render/IgeUiFilters";
 import { enter3d, invert3, needs3d, perspectiveOf, project } from "@/engine/ui2/render/IgeUiPerspective";
 import { fillTriangles, paintSvg } from "@/engine/ui2/render/IgeUiSvg";
 import { paintTextDecorations, textDecorations } from "@/engine/ui2/render/IgeUiTextDecoration";
@@ -60,6 +62,8 @@ export interface IgeUiPaintBox extends IgeUiPaintBase {
 	exact?: boolean;
 	/** backdrop-filter: blur(): what's already drawn behind it, blurred this much (its shape cut out), under its fills. */
 	backdrop?: boolean;
+	/** backdrop-filter's colour functions (grayscale(), contrast()...), after its blur: their matrices (IgeUiFilters). */
+	colorOps?: number[][];
 	blur?: number;
 	spread?: number;
 	opacity: number;
@@ -91,6 +95,16 @@ export interface IgeUiPaintImage extends IgeUiPaintBase {
 	opacity: number;
 	/** Pixelated (image-rendering) or smooth. */
 	pixelated?: boolean;
+	/** A url() background layer's picture (its url): drawn from the UI's images, not `source` (IgeUiBackgroundImage). */
+	src?: string;
+	/** Its texture coordinates over the quad (past 0 to 1 where it repeats), and the ways it repeats. */
+	uv?: [number, number, number, number];
+	repeat?: [boolean, boolean];
+	/** The box it's cut to (its element's border box), with that box's corners. */
+	area?: [number, number, number, number];
+	radii?: [number, number, number, number];
+	radiiY?: [number, number, number, number];
+	chamfer?: [number, number, number, number];
 }
 
 export interface IgeUiPaintLine extends IgeUiPaintBase {
@@ -118,13 +132,14 @@ export interface IgeUiPaintFill extends IgeUiPaintBase {
 }
 
 /**
- * Where an element with `filter: drop-shadow()` starts (open, with its shadows) and ends in the list: what's between is
- * what its shadows are of (IgeUiDropShadow).
+ * Where an element with a filter starts (open, with its shadows or filters) and ends in the list: what's between is
+ * what its drop shadows are of (only drop-shadows: IgeUiDropShadow), or what its filters are run on (IgeUiFilters).
  */
 export interface IgeUiPaintGroup extends IgeUiPaintBase {
 	op: "group";
 	open: boolean;
 	shadows?: IgeUiDropShadow[];
+	filters?: IgeUiFilterOp[];
 	opacity: number;
 }
 
@@ -183,6 +198,9 @@ export class IgeUiPainter {
 	_scroll = (el: IgeUiElement | null): [number, number] => (el ? [el._scrollLeft, el._scrollTop] : [0, 0]);
 	/** Drawn after a box's text: the focused field's caret or selection (dom/IgeUiTextField). */
 	fieldPaint?: (b: IgeUiBox, ctx: Ctx, items: IgeUiPaintItem[]) => void;
+
+	/** Asks for a picture (a url() background's), as it's first painted (IgeUiRoot's images). */
+	requestImage?: (src: string) => void;
 
 	/** A font's ascent and the device's pixels per UI px, for text decorations (IgeUiRoot's layout's). */
 	decorationMetrics?: (font: IgeUiFontSpec) => { ascent: number; grid: number };
@@ -297,12 +315,19 @@ export class IgeUiPainter {
 
 	_context (b: IgeUiBox, ctx: Ctx): void {
 		const start = this.items.length, entry = ctx;
-		// filter: drop-shadow(): its run marked, for the renderer to shade (IgeUiDropShadow)
+		// A filter: its run marked, for the renderer to shade (drop-shadows alone: IgeUiDropShadow) or to run its filters on
+		// (IgeUiFilters)
 		const filter = b.pseudo ? "none" : styleValue(b.style, "filter");
-		const shadows = filter.includes("drop-shadow(") ? parseDropShadows(filter, lenCtx(b.style), parseColor(styleValue(b.style, "color")) ?? { r: 0, g: 0, b: 0, a: 1 }) : [];
+		const current = parseColor(styleValue(b.style, "color")) ?? { r: 0, g: 0, b: 0, a: 1 };
+		const ops = filter && filter !== "none" ? parseFilterList(filter, lenCtx(b.style), current) : [];
+		const shadows = ops.length && onlyDropShadows(ops) ? parseDropShadows(filter, lenCtx(b.style), current) : [];
+		const filters = ops.length && !onlyDropShadows(ops) ? ops : undefined;
+		// (A filtered element's own opacity is its layer's, applied to it whole, as CSS applies it after the filter)
+		const own = filters ? resolveNumber(styleValue(b.style, "opacity")) ?? 1 : 1;
 		if (shadows.length) this.items.push({ op: "group", open: true, shadows, clip: ctx.clip, matrix: ctx.matrix, el: b.el, opacity: 1 });
-		this._contextInner(b, ctx);
-		if (shadows.length) this.items.push({ op: "group", open: false, clip: null, el: b.el, opacity: 1 });
+		else if (filters) this.items.push({ op: "group", open: true, filters, clip: ctx.clip, matrix: ctx.matrix, el: b.el, opacity: own });
+		this._contextInner(b, own < 1 && own > 0.001 ? { ...ctx, opacity: ctx.opacity / own } : ctx);
+		if (shadows.length || filters) this.items.push({ op: "group", open: false, clip: null, el: b.el, opacity: 1 });
 		this.groups.set(b, { start, end: this.items.length, ctx: entry, stacking: this._isStacking(b) });
 	}
 
@@ -514,14 +539,17 @@ export class IgeUiPainter {
 			if (sh.inset || sh.color.a <= 0 || clipped) continue;
 			this.items.push({ op: "box", ...base, x: x + sh.x - sh.spread, y: y + sh.y - sh.spread, w: w + sh.spread * 2, h: h + sh.spread * 2, color: sh.color, shadow: "outer", blur: sh.blur, spread: sh.spread, radii: radii.map((r) => (r > 0 ? r + sh.spread : r)) as [number, number, number, number], radiiY: grow(radiiY, sh.spread) });
 		}
-		// What's behind it, blurred (backdrop-filter: blur(), the panels' frosted glass)
-		const bd = /blur\(\s*([^)]+)\)/.exec(styleValue(s, "backdrop-filter"));
-		if (bd) {
-			const blur = resolveLength(bd[1].trim(), lenCtx(s)) ?? 0;
+		// What's behind it, blurred (backdrop-filter: blur(), the panels' frosted glass), and its colour functions after
+		// (grayscale(), contrast(): IgeUiFilters)
+		const bdv = styleValue(s, "backdrop-filter");
+		const bdOps = bdv && bdv !== "none" ? parseFilterList(bdv, lenCtx(s), current) : [];
+		const colorOps = bdOps.flatMap((o) => (o.type === "matrix" ? [o.m] : []));
+		if (bdOps.length) {
+			const blur = bdOps.reduce((a, o) => (o.type === "blur" ? Math.max(a, o.radius) : a), 0);
 			// (mask-image: a linear gradient fades it, tilt-shift's soft bands)
 			const maskV = styleValue(s, "mask-image") !== "none" ? styleValue(s, "mask-image") : styleValue(s, "-webkit-mask-image");
 			const mask = maskV && maskV !== "none" ? parseGradient(maskV, current) : undefined;
-			if (blur > 0) this.items.push({ op: "box", ...base, x, y, w, h, backdrop: true, blur, color: { r: 0, g: 0, b: 0, a: 1 }, ...(mask?.type === "linear" ? { mask } : {}) });
+			if (blur > 0 || colorOps.length) this.items.push({ op: "box", ...base, x, y, w, h, backdrop: true, blur, color: { r: 0, g: 0, b: 0, a: 1 }, ...(colorOps.length ? { colorOps } : {}), ...(mask?.type === "linear" ? { mask } : {}) });
 		}
 		// clip-path: a polygon that isn't cut corners: the fills drawn in its shape (a gradient as its middle colour; no
 		// border, as the shape cuts it away), the contents cut to the box
@@ -552,10 +580,18 @@ export class IgeUiPainter {
 		const img = styleValue(s, "background-image");
 		if (img !== "none" && !textClip) {
 			const layers = splitTop(img, ",").map((l) => l.trim()).reverse();
-			for (const l of layers) {
+			layers.forEach((l, k) => {
 				const g = parseGradient(l, current);
-				if (g) this.items.push({ op: "box", ...base, x, y, w, h, gradient: g });
-			}
+				if (g) {
+					this.items.push({ op: "box", ...base, x, y, w, h, gradient: g });
+					return;
+				}
+				// A picture (url(): IgeUiBackgroundImage), drawn once it's arrived
+				const src = backgroundUrl(l);
+				if (!src) return;
+				this.requestImage?.(src);
+				paintBackgroundImage(this.items, b, x, y, src, layers.length - 1 - k, this.imageSizes?.get(src), base, lenCtx(s));
+			});
 		}
 		// Inset shadows, over the fill: inside the padding box (within the border), its corners' curves, as CSS draws them
 		const ry = radiiY ?? radii;
@@ -855,10 +891,11 @@ export function describePaint (items: IgeUiPaintItem[]): string[] {
 	const n = (v: number) => Math.round(v * 10) / 10;
 	const c = (k: IgeCssColor) => `rgba(${Math.round(k.r)},${Math.round(k.g)},${Math.round(k.b)},${n(k.a)})`;
 	return items.map((i) => {
-		if (i.op === "box" && i.backdrop) return `backdrop ${n(i.x)},${n(i.y)} ${n(i.w)}x${n(i.h)} blur(${n(i.blur ?? 0)})`;
+		if (i.op === "box" && i.backdrop) return `backdrop ${n(i.x)},${n(i.y)} ${n(i.w)}x${n(i.h)} blur(${n(i.blur ?? 0)})${i.colorOps ? ` colour(${i.colorOps.length})` : ""}`;
 		if (i.op === "box") return `box ${n(i.x)},${n(i.y)} ${n(i.w)}x${n(i.h)}${i.shadow ? ` ${i.shadow}(${n(i.blur ?? 0)})` : ""}${i.border ? ` border ${n(i.border)}` : ""} ${i.color ? c(i.color) : `${i.gradient?.type}-gradient`}${i.radii.some((r) => r) ? ` r${i.radii.map(n).join("/")}` : ""}${i.chamfer ? ` cut${i.chamfer.map(n).join("/")}` : ""}${i.opacity < 1 ? ` a${n(i.opacity)}` : ""}${i.clip ? ` clip[${i.clip.map(n).join(",")}]` : ""}`;
 		if (i.op === "text") return `text "${i.text}" ${n(i.x)},${n(i.y)} ${i.font.size}px/${i.font.weight} ${c(i.color)}${i.shadow ? ` glow(${n(i.shadow.blur)})` : ""}${i.clip ? ` clip[${i.clip.map(n).join(",")}]` : ""}`;
-		if (i.op === "image") return `image ${i.source.localName} ${n(i.x)},${n(i.y)} ${n(i.w)}x${n(i.h)}`;
+		if (i.op === "image") return `image ${i.src ? "url" : i.source.localName} ${n(i.x)},${n(i.y)} ${n(i.w)}x${n(i.h)}`;
+		if (i.op === "group" && i.open && i.filters) return `filter ${i.filters.map((f) => (f.type === "blur" ? `blur(${n(f.radius)})` : f.type === "shadow" ? `drop-shadow(${n(f.x)},${n(f.y)} blur(${n(f.blur)}))` : "colour")).join(" ")} {`;
 		if (i.op === "group") return i.open ? `drop-shadow ${(i.shadows ?? []).map((s) => `${n(s.x)},${n(s.y)} blur(${n(s.blur)}) ${c(s.color)}`).join(" ")} {` : "}";
 		if (i.op === "fill") return `fill ${i.tris.length / 6}tris ${c(i.color)}${i.opacity < 1 ? ` a${n(i.opacity)}` : ""}`;
 		return `line ${i.points.length / 2}pts ${c(i.color)}`;

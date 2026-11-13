@@ -9,6 +9,7 @@
 import { splitTop, type IgeCssKeyframes } from "@/engine/ui2/css/IgeCssParser";
 import { parseColor, resolveTime } from "@/engine/ui2/css/IgeCssValues";
 import type { IgeUiElement } from "@/engine/ui2/dom/IgeUiDom";
+import { identityFilter } from "@/engine/ui2/render/IgeUiFilters";
 import { expandShorthand } from "@/engine/ui2/style/IgeUiProperties";
 import { type IgeUiComputedStyle, styleValue } from "@/engine/ui2/style/IgeUiStyleEngine";
 
@@ -111,6 +112,13 @@ export function interpolate (prop: string, a: string, b: string, t: number): str
 		const n = lerpNumbersIn(fa, fb, t);
 		if (n !== undefined) return n;
 		return t < 0.5 ? a : b;
+	}
+	// A filter from or to none: from or to the other's functions at their identity (IgeUiFilters)
+	if ((prop === "filter" || prop === "backdrop-filter") && (a === "none" || b === "none")) {
+		const fa = a === "none" ? identityFilter(withRgba(b)) : withRgba(a);
+		const fb = b === "none" ? identityFilter(withRgba(a)) : withRgba(b);
+		const f = lerpNumbersIn(fa, fb, t);
+		if (f !== undefined) return f;
 	}
 	const ra = withRgba(a), rb = withRgba(b);
 	const n = lerpNumbersIn(ra, rb, t);

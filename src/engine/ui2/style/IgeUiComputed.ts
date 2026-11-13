@@ -58,6 +58,8 @@ const BORDER_WIDTHS: Record<string, number> = { thin: 1, medium: 3, thick: 5 };
 
 /** Colours anywhere in a value (a gradient's stops, a filter's drop-shadow) written as rgb() / rgba(). */
 export function cssColorsIn (value: string, current: IgeCssColor): string {
+	// (A url() as it is: a data URL's commas aren't a list's)
+	if (/^url\(/i.test(value.trim())) return value.trim();
 	const fn = /^([a-z-]+)\(([\s\S]*)\)$/i.exec(value.trim());
 	if (fn && !/^(rgba?|hsla?|color-mix|color|hwb|lab|lch|oklab|oklch)$/i.test(fn[1])) {
 		const name = fn[1].toLowerCase();
