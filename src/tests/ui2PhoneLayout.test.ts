@@ -213,6 +213,15 @@ describe("ui2: layout at a phone's sizes, as Chrome's", () => {
 		expect([lines(".b { width: 45px; }"), lines(".b { width: 45.03125px; }"), lines(".b { display: inline-block; }"), lines(".b { width: 46px; }")]).toEqual([2, 1, 1, 1]);
 	});
 
+	it("grid items aligned on their baselines line up, the row as tall as that makes them (an empty one at its bottom edge)", () => {
+		// (A 20px label's baseline 16px down its 20px line, a 10px value's 13px down its, their half-leadings on whole pixels:
+		// the value 3px lower, the row 23px, as Chrome has the ship design's stat rows, a label beside a value in another font)
+		const r = ui(`.g { display: grid; grid-template-columns: 1fr auto 40px; align-items: baseline; line-height: 20px; } .l { font-size: 20px; } .v { font-size: 10px; }`,
+			`<div class="g"><span class="l">Turning</span><span class="v">147</span><span class="d"></span></div>`);
+		const top = (sel: string) => Math.round(r.root.querySelector(sel)!.getBoundingClientRect().y * 100) / 100;
+		expect([top(".l"), top(".v"), top(".d"), heights(r, ".g")[0]]).toEqual([0, 3, 16, 23]);
+	});
+
 	it("aspect-ratio on an absolutely placed ::before gives it its height", () => {
 		const r = ui(`.p { position: relative; width: 400px; height: 300px; } .p::before { content: ""; position: absolute; width: 50%; aspect-ratio: 2; }`, `<div class="p"></div>`);
 		const pb = r.root.querySelector(".p")!._box!.children.find((c) => c.pseudo === "before")!;

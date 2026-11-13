@@ -2453,6 +2453,24 @@ export class IgeUiLayoutEngine {
 			}
 			if (cell.rowSpan === 1) rowH[cell.row] = Math.max(rowH[cell.row], it.borderH + it.marginTop + it.marginBottom);
 		}
+		// Items aligned on their baselines (align-items or align-self: baseline), each row's: moved down so their first
+		// baselines line up with the lowest (one with no line in it, at its bottom edge, as CSS Align synthesizes it), the
+		// row as tall as that makes them, as CSS Grid sizes it (a label beside a value in another font)
+		const alignOf = (it: IgeUiBox) => {
+			const self = styleValue(it.style, "align-self");
+			return self === "auto" ? styleValue(s, "align-items") : self;
+		};
+		const shim = new Map<IgeUiBox, number>();
+		const lowest = new Map<number, number>();
+		const above = (it: IgeUiBox) => it.marginTop + (it.baseline ?? it.borderH);
+		const onBaseline = cells.filter((cell) => cell.rowSpan === 1 && /^(first )?baseline$/.test(alignOf(cell.box)));
+		for (const cell of onBaseline) lowest.set(cell.row, Math.max(lowest.get(cell.row) ?? 0, above(cell.box)));
+		for (const cell of onBaseline) {
+			const it = cell.box, d = lowest.get(cell.row)! - above(it);
+			if (d <= 0) continue;
+			shim.set(it, d);
+			rowH[cell.row] = Math.max(rowH[cell.row], d + it.borderH + it.marginTop + it.marginBottom);
+		}
 		for (const cell of cells) {
 			if (cell.rowSpan === 1) continue;
 			const need = cell.box.borderH + cell.box.marginTop + cell.box.marginBottom - spanH(cell);
@@ -2472,7 +2490,7 @@ export class IgeUiLayoutEngine {
 			const definite = hv !== "auto" && !hv.includes("%") && !/content/.test(hv);
 			// (A scroller's automatic minimum is none, but its padding and borders are still there: grid's "minimum contribution")
 			const least = definite ? it.borderH + margins : mh === "auto" ? (scroller ? margins + this._vEdges(it) : it.borderH + margins) : (this.len(it.style, "min-height", innerH) ?? 0) + margins;
-			rowMin[cell.row] = Math.max(rowMin[cell.row], Math.min(least, it.borderH + margins));
+			rowMin[cell.row] = Math.max(rowMin[cell.row], Math.min(least, it.borderH + margins) + (shim.get(it) ?? 0));
 		}
 		const isFr = (t: ReturnType<typeof rowTrack>) => t.kind === "fr" || t.maxFr !== undefined;
 		const content = rowH.slice();
@@ -2544,12 +2562,10 @@ export class IgeUiLayoutEngine {
 			for (let k = 0; k < rows; k++) rowY[k] += first + between * k;
 			yy += spare;
 		}
-		const alignItems = styleValue(s, "align-items");
 		for (const cell of cells) {
 			const it = cell.box;
 			const w = cellW(cell);
-			const self = styleValue(it.style, "align-self");
-			const align = self === "auto" ? alignItems : self;
+			const align = alignOf(it);
 			const h = spanH(cell);
 			// (Stretched to its area, as far as its max-height lets it, and no less than its min-height)
 			const stretchTo = this._clampH(it, Math.max(0, h - it.marginTop - it.marginBottom), innerH);
@@ -2559,7 +2575,7 @@ export class IgeUiLayoutEngine {
 				// (A percentage height is of its grid area's)
 				this.layoutBox(it, w, h, { width: it.borderW });
 			}
-			let dy = 0;
+			let dy = shim.get(it) ?? 0;
 			if (align === "center") dy = (h - it.borderH - it.marginTop - it.marginBottom) / 2;
 			else if (align === "end" || align === "flex-end") dy = h - it.borderH - it.marginTop - it.marginBottom;
 			const justify = styleValue(it.style, "justify-self") !== "auto" ? styleValue(it.style, "justify-self") : styleValue(s, "justify-items");
