@@ -18,10 +18,9 @@
  * - `backface-visibility: hidden`: an element whose back is turned to the
  *   viewer isn't drawn (a card's face from behind, a die's far faces), as
  *   Chrome decides it (the sign of the transformed normal's z).
- *
- * What it doesn't do: sort planes by depth inside a preserve-3d context
- * (they're drawn in the document's order; a die's near faces don't overlap
- * once the far ones are hidden).
+ * - Inside a preserve-3d context, its planes are drawn farthest first (by
+ *   their middles), whatever their z-index or order, as a browser sorts
+ *   them. Planes that cut through each other aren't split.
  */
 import { splitTop } from "@/engine/ui2/css/IgeCssParser";
 import { type IgeCssMatrix, type IgeCssMatrix2d, IDENTITY, multiply, parseTransform, resolveAngle, resolveLength, resolveNumber } from "@/engine/ui2/css/IgeCssValues";
@@ -247,7 +246,7 @@ export function needs3d (b: IgeUiBox, st: IgeUi3dState, ctx: LenCtx): boolean {
  * on the screen (`matrix`), that plane against the one round it (`rel`: what a clip round it is brought through),
  * whether its back is turned and hidden, and what its children get.
  */
-export function enter3d (b: IgeUiBox, x: number, y: number, origin: [number, number], st: IgeUi3dState, ctx: LenCtx): { matrix: IgeCssMatrix; rel: IgeCssMatrix; hidden: boolean; children: IgeUi3dState } {
+export function enter3d (b: IgeUiBox, x: number, y: number, origin: [number, number], st: IgeUi3dState, ctx: LenCtx): { matrix: IgeCssMatrix; rel: IgeCssMatrix; hidden: boolean; children: IgeUi3dState; a: IgeUiMat4 } {
 	const t3 = boxTransform3d(b, ctx);
 	const oz = resolveLength(splitTop(styleValue(b.style, "transform-origin").trim(), " ").filter(Boolean)[2] ?? "0", ctx) ?? 0;
 	const ox = x + origin[0], oy = y + origin[1];
@@ -260,7 +259,19 @@ export function enter3d (b: IgeUiBox, x: number, y: number, origin: [number, num
 	const hidden = styleValue(b.style, "backface-visibility") === "hidden" && backFacing(a);
 	const persp = perspectiveOf(b, x, y, ctx);
 	const children: IgeUi3dState = preserves3d(b) ? { m4: a, root: plane, persp } : { matrix, persp };
-	return { matrix, rel, hidden, children };
+	return { matrix, rel, hidden, children, a };
+}
+
+/**
+ * How near a box's plane is in its 3D context (its middle through its 3D transform: larger is nearer the viewer), for
+ * drawing a preserve-3d context's planes farthest first; 0 for a box with no 3D on or round it.
+ */
+export function planeDepth (b: IgeUiBox, x: number, y: number, origin: [number, number], st: IgeUi3dState, ctx: LenCtx): number {
+	if (!needs3d(b, st, ctx)) return 0;
+	const a = enter3d(b, x, y, origin, st, ctx).a;
+	const cx = x + b.borderW / 2, cy = y + b.borderH / 2;
+	const z = a[2] * cx + a[6] * cy + a[14], w = a[3] * cx + a[7] * cy + a[15];
+	return Math.abs(w) > 1e-9 ? z / w : z;
 }
 
 /**

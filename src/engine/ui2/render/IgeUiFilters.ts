@@ -443,6 +443,8 @@ export interface IgeUiFilterLayer {
 	opacity: number;
 	/** Only an opacity, drawn ahead of the screen's own pass: where it is in the fades' atlas (texels). */
 	atlas?: [number, number];
+	/** Its element (a backdrop of its own is what's behind the layer). */
+	el?: unknown;
 }
 
 /**

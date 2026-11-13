@@ -8,7 +8,7 @@ import { parseColor } from "@/engine/ui2/css/IgeCssValues";
 export const INHERITED = new Set([
 	"color", "font-family", "font-size", "font-style", "font-weight", "font-variant-numeric", "font-feature-settings", "letter-spacing", "word-spacing", "line-height", "text-align",
 	"text-transform", "text-indent", "white-space", "word-break", "overflow-wrap", "word-wrap", "visibility", "cursor", "text-shadow", "pointer-events", "direction", "list-style-type",
-	"-webkit-text-stroke", "tab-size", "user-select", "text-rendering", "-webkit-font-smoothing", "hyphens", "caret-color", "font-kerning", "text-wrap", "scrollbar-color",
+	"-webkit-text-stroke", "tab-size", "user-select", "text-rendering", "-webkit-font-smoothing", "hyphens", "caret-color", "font-kerning", "text-wrap", "scrollbar-color", "text-decoration-skip-ink",
 	// (SVG's)
 	"fill", "fill-opacity", "fill-rule", "stroke", "stroke-width", "stroke-opacity", "stroke-linecap", "stroke-linejoin", "stroke-miterlimit", "stroke-dasharray",
 	"stroke-dashoffset", "text-anchor", "dominant-baseline", "paint-order", "clip-rule", "shape-rendering"
@@ -29,7 +29,7 @@ export const INITIAL: Record<string, string> = {
 	"table-layout": "auto", "border-collapse": "separate", "border-spacing": "0px", "grid-template-columns": "none", "grid-template-rows": "none", "grid-column": "auto", "grid-row": "auto",
 	"grid-auto-flow": "row", "justify-items": "normal", "object-fit": "fill", "outline-width": "medium", "outline-style": "none", "outline-color": "currentcolor", "outline-offset": "0px",
 	content: "normal", transition: "none", animation: "none", cursor: "auto", "caret-color": "auto", "word-break": "normal", "overflow-wrap": "normal", "text-indent": "0px", "aspect-ratio": "auto",
-	filter: "none", "backdrop-filter": "none", "mix-blend-mode": "normal", "text-decoration-line": "none", "text-decoration-color": "currentcolor", "text-decoration-style": "solid", "text-decoration-thickness": "auto", "font-variant-numeric": "normal", "user-select": "auto", "container-type": "normal",
+	filter: "none", "backdrop-filter": "none", "mix-blend-mode": "normal", "text-decoration-line": "none", "text-decoration-color": "currentcolor", "text-decoration-style": "solid", "text-decoration-thickness": "auto", "text-decoration-skip-ink": "auto", "font-variant-numeric": "normal", "user-select": "auto", "container-type": "normal",
 	"container-name": "none", "scrollbar-width": "auto", "scrollbar-gutter": "auto", "scrollbar-color": "auto", "overscroll-behavior": "auto", "list-style-type": "disc", float: "none", clear: "none", "image-rendering": "auto", "text-wrap": "wrap"
 };
 

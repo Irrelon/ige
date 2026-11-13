@@ -340,6 +340,8 @@ interface Batch {
 	hidden?: boolean;
 	/** A text glow's composite (IgeUiTextGlow): its blurred silhouette, from the cache or made as it's drawn. */
 	glow?: IgeUiTextGlow;
+	/** A backdrop's element (in a layer: its own backdrop is what's behind the layer, a descendant's what's in it). */
+	el?: IgeUiElement | null;
 }
 
 /** Where batches are drawn: the target, or a filter's layer. */
@@ -781,7 +783,7 @@ export class IgeUiGlRenderer {
 				if ((it.open ? openKinds[openKinds.length - 1] : openKinds.pop()) === "layer") {
 					batch = undefined;
 					if (it.open) {
-						const L: IgeUiFilterLayer = { ops: it.filters!, from: batches.length, to: 0, start: n, end: 0, depth: openLayers.length, clip, o: -1, opacity: it.opacity };
+						const L: IgeUiFilterLayer = { ops: it.filters!, from: batches.length, to: 0, start: n, end: 0, depth: openLayers.length, clip, o: -1, opacity: it.opacity, el: it.el };
 						openLayers.push(L);
 						layers.push(L);
 					} else {
@@ -848,7 +850,7 @@ export class IgeUiGlRenderer {
 					if (it.mask.toCorner) ang = Math.atan2(it.mask.toCorner[0] * it.h, -it.mask.toCorner[1] * it.w);
 					mask = [this._rampRow(it.mask, Math.abs(it.w * Math.sin(ang)) + Math.abs(it.h * Math.cos(ang))), 0, ang, 0];
 				}
-				batch = { start: n, count: 0, image: null, additive: false, backdrop: bd, blend: "erase" };
+				batch = { start: n, count: 0, image: null, additive: false, backdrop: bd, blend: "erase", el: it.el };
 				batches.push(batch);
 				const oe = push(null, false);
 				// (Its texture is the blurred copy, set as it's drawn; uv from the box to the copy, 0..1 of it, the copy upside
@@ -1297,6 +1299,8 @@ export class IgeUiGlRenderer {
 				if (!g.region) continue;
 				const frame = { width, height, offset, target };
 				if (!g.drawn) {
+					// (Its text glows made first, so its silhouette has them)
+					for (let k = g.from; k < g.to; k++) if (batches[k].glow && !batches[k].image) batches[k].image = this._glowTexture(batches[k].glow!, batches, drawBatch, frame, offset);
 					this._shadows.renderSilhouette(this, g, (i) => {
 						const s = batches[i];
 						// (Not a backdrop's passes or another shadow: what's drawn of the element itself)
@@ -1372,9 +1376,19 @@ export class IgeUiGlRenderer {
 		gl.clearColor(0, 0, 0, 0);
 		gl.clear(gl.COLOR_BUFFER_BIT);
 		gl.disable(gl.SCISSOR_TEST);
+		let blurred: WebGLTexture | null = null;
 		for (let i = L.from; i < L.to; i++) {
 			const b = batches[i];
-			if (b.owner !== L || b.backdrop || b.blend || b.hidden) continue;
+			if (b.owner !== L || b.hidden) continue;
+			if (b.backdrop) {
+				// A backdrop: its element's own (the layer's element: faded or filtered with what it shows) from what's behind
+				// the layer; a descendant's from what's in the layer before it (the layer's element is its backdrop root)
+				const outside = b.el === L.el;
+				const dx = outside ? offset[0] - frame.offset[0] : r.x, dy = outside ? offset[1] - frame.offset[1] : r.y;
+				blurred = this._blurBackdrop({ ...b.backdrop, x: b.backdrop.x - dx, y: b.backdrop.y - dy }, outside ? frame.height : r.h, outside ? frame.target : into.target);
+				begin(into);
+			}
+			if (b.blend === "add") b.image = blurred;
 			if (b.glow) {
 				b.image = this._glowTexture(b.glow, batches, drawBatch, into, offset);
 				if (!b.image) continue;
@@ -1387,6 +1401,7 @@ export class IgeUiGlRenderer {
 				const g = b.shadow.group;
 				if (!g.region) continue;
 				if (!g.drawn) {
+					for (let k = g.from; k < g.to; k++) if (batches[k].glow && !batches[k].image) batches[k].image = this._glowTexture(batches[k].glow!, batches, drawBatch, into, offset);
 					const sf = { ...into, base: offset };
 					this._shadows.renderSilhouette(this, g, (k) => {
 						const s = batches[k];

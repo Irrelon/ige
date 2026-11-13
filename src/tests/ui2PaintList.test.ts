@@ -2,6 +2,7 @@ import { IgeUiRoot } from "@/engine/ui2/IgeUiRoot";
 import { describePaint, type IgeUiPaintBox, type IgeUiPaintItem } from "@/engine/ui2/render/IgeUiPaint";
 import { colorMatrix, identityFilter, parseFilterList } from "@/engine/ui2/render/IgeUiFilters";
 import { backFacing, flatten, parseTransform3d, project } from "@/engine/ui2/render/IgeUiPerspective";
+import { fitDashes } from "@/engine/ui2/render/IgeUiTextDecoration";
 import { interpolate } from "@/engine/ui2/style/IgeUiAnimator";
 import { IgeUiFixedFonts } from "@/engine/ui2/text/IgeUiFonts";
 
@@ -204,5 +205,72 @@ describe("ui2: group opacity", () => {
 		r.painter.paint(r.rootBox!);
 		expect(describePaint(r.painter.items).some((l) => l.startsWith("opacity("))).toBe(false);
 		expect(boxesOf(r, r.document.querySelector(".panel"))[0].opacity).toBeCloseTo(0.5);
+	});
+});
+
+describe("ui2: planes in a preserve-3d context", () => {
+	it("are drawn farthest first, whatever their order or z-index", () => {
+		const r = ui(`.stage { position: absolute; left: 50px; top: 50px; width: 200px; height: 200px; perspective: 600px; }
+			.ctx { position: absolute; inset: 0; transform-style: preserve-3d; transform: rotateY(20deg); }
+			.p { position: absolute; inset: 40px; } .near { transform: translateZ(60px); background: red; z-index: 1; } .far { transform: translateZ(-60px); background: blue; z-index: 2; }`);
+		r.document.body.innerHTML = `<div class="stage"><div class="ctx"><div class="p far"></div><div class="p near"></div></div></div>`;
+		r.update();
+		const at = (q: string) => (r.painter.items as IgeUiPaintItem[]).findIndex((i) => i.el === r.document.querySelector(q));
+		expect(at(".far")).toBeLessThan(at(".near"));
+		// (Its z-index would put the far one on top: in 3D it's behind)
+		r.document.querySelector(".near")!.setAttribute("style", "transform: translateZ(-90px)");
+		r.update();
+		expect(at(".near")).toBeLessThan(at(".far"));
+	});
+});
+
+describe("ui2: text decoration styles and skip-ink", () => {
+	it("dashes are fitted to the run as Chrome fits them, starting and ending on one", () => {
+		// (13px text: 1px dashes of 3, about 2 apart; 3px: dashes of 6, 3 apart)
+		expect(fitDashes(67.7, 3, 2).length).toBe(14);
+		const d = fitDashes(78, 6, 3);
+		expect(d.length).toBe(9);
+		expect(d[d.length - 1] + 6).toBeCloseTo(78);
+	});
+
+	it("double, dotted, dashed and wavy lines; an underline broken round the glyphs' ink, a thickness clear of it", () => {
+		const r = ui(".d { text-decoration: underline double; } .o { text-decoration: underline dotted; } .w { text-decoration: underline wavy; } .s { text-decoration: underline; } .n { text-decoration: underline; text-decoration-skip-ink: none; }");
+		r.document.body.innerHTML = `<p><span class="d">double</span> <span class="o">dotted</span> <span class="w">wavy</span> <span class="s">skip</span> <span class="n">none</span></p>`;
+		// (Ink from x 5 to 7 wherever it's asked: the underline breaks there)
+		r.painter.inkSpans = (t) => [[t.x + 5, t.x + 7]];
+		r.update();
+		const items = r.painter.items as IgeUiPaintItem[];
+		// (A word's underlines: what's drawn just before its text)
+		const lines = (word: string) => {
+			const at = items.findIndex((i) => i.op === "text" && i.text === word);
+			const out: IgeUiPaintItem[] = [];
+			for (let k = at - 1; k >= 0 && (items[k].op === "line" || (items[k].op === "box" && (items[k] as IgeUiPaintBox).h <= 3)); k--) out.unshift(items[k]);
+			return out;
+		};
+		// (Two lines, each broken round the ink)
+		expect(lines("double").length).toBe(4);
+		const dots = lines("dotted") as IgeUiPaintBox[];
+		expect(dots.length).toBeGreaterThan(5);
+		expect(dots[1].x - dots[0].x).toBeCloseTo(2 * dots[0].w);
+		expect(lines("wavy").length).toBe(2);
+		expect(lines("wavy").every((i) => i.op === "line")).toBe(true);
+		const skip = lines("skip") as IgeUiPaintBox[];
+		expect(skip.length).toBe(2);
+		expect(skip[1].x - (skip[0].x + skip[0].w)).toBeCloseTo(2 + 2 * 1);
+		expect(lines("none").length).toBe(1);
+	});
+});
+
+describe("ui2: background-repeat space and round", () => {
+	it("space: whole tiles spread out to the edges; round: tiles stretched to fit a whole number", () => {
+		const r = ui(".s, .r { width: 100px; height: 30px; background-image: url(t.png); } .s { background-repeat: space no-repeat; } .r { background-repeat: round no-repeat; }");
+		r.images.sizes.set("t.png", { w: 30, h: 30 });
+		r.document.body.innerHTML = `<div class="s"></div><div class="r"></div>`;
+		r.update();
+		const imgs = (el: string) => (r.painter.items as IgeUiPaintItem[]).filter((i) => i.op === "image" && i.el === r.document.querySelector(el)) as { x: number; w: number }[];
+		// Three 30px tiles in 100: 5px between
+		expect(imgs(".s").map((i) => i.x)).toEqual([0, 35, 70]);
+		// Round: 100 / 3 each, one quad repeating
+		expect(imgs(".r").length).toBe(1);
 	});
 });

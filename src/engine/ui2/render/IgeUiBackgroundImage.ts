@@ -6,8 +6,9 @@
  *   keeping the picture's shape);
  * - background-position: keywords, percentages (of the room left over) and
  *   lengths, two values or four (edge and offset: right 10px bottom 4px);
- * - background-repeat: repeat, repeat-x, repeat-y, no-repeat, or one for
- *   each way (space and round are drawn as repeat);
+ * - background-repeat: repeat, repeat-x, repeat-y, no-repeat, space (as
+ *   many whole tiles as fit, spread out, the first and last at the edges),
+ *   round (tiles stretched to fit a whole number), or one for each way;
  * - positioned in the padding box (background-origin), painted over the
  *   border box (background-clip), cut to the box's corners.
  *
@@ -79,12 +80,14 @@ function tilePosition (v: string, roomX: number, roomY: number, ctx: IgeCssLengt
 	return [one(t[0], roomX), one(t[1], roomY)];
 }
 
-/** Whether a layer repeats across and down. */
-function repeats (v: string): [boolean, boolean] {
+type Repeat = "repeat" | "no-repeat" | "space" | "round";
+
+/** How a layer repeats across and down. */
+function repeats (v: string): [Repeat, Repeat] {
 	const t = splitTop(v.trim() || "repeat", " ").filter(Boolean);
-	if (t[0] === "repeat-x") return [true, false];
-	if (t[0] === "repeat-y") return [false, true];
-	const r = (s: string | undefined) => s !== "no-repeat";
+	if (t[0] === "repeat-x") return ["repeat", "no-repeat"];
+	if (t[0] === "repeat-y") return ["no-repeat", "repeat"];
+	const r = (s: string | undefined): Repeat => (s === "no-repeat" || s === "space" || s === "round" ? s : "repeat");
 	return t.length > 1 ? [r(t[0]), r(t[1])] : [r(t[0]), r(t[0])];
 }
 
@@ -106,18 +109,47 @@ export function paintBackgroundImage (items: IgeUiPaintItem[], b: IgeUiBox, x: n
 	const [ax, ay, aw, ah] = box(listAt(styleValue(s, "background-origin"), index) || "padding-box");
 	const paint = box(listAt(styleValue(s, "background-clip"), index) || "border-box");
 	if (aw <= 0 || ah <= 0) return;
-	const [tw, th] = tileSize(listAt(styleValue(s, "background-size"), index), aw, ah, size.w, size.h, ctx);
+	const sizeV = listAt(styleValue(s, "background-size"), index);
+	let [tw, th] = tileSize(sizeV, aw, ah, size.w, size.h, ctx);
 	if (!(tw > 0) || !(th > 0)) return;
+	const [modeX, modeY] = repeats(listAt(styleValue(s, "background-repeat"), index));
+	// round: the tiles stretched so a whole number fit (the other way keeping the picture's shape, if its size is auto)
+	if (modeX === "round" || modeY === "round") {
+		const auto = splitTop(sizeV.trim() || "auto", " ").filter(Boolean);
+		const w0 = tw, h0 = th;
+		if (modeX === "round") tw = aw / Math.max(1, Math.round(aw / tw));
+		if (modeY === "round") th = ah / Math.max(1, Math.round(ah / th));
+		if (modeX === "round" && modeY !== "round" && (auto[1] ?? "auto") === "auto") th = (h0 * tw) / w0;
+		if (modeY === "round" && modeX !== "round" && (auto[0] ?? "auto") === "auto") tw = (w0 * th) / h0;
+	}
 	const [px, py] = tilePosition(listAt(styleValue(s, "background-position"), index), aw - tw, ah - th, ctx);
-	const [rx, ry] = repeats(listAt(styleValue(s, "background-repeat"), index));
-	const tx = ax + px, ty = ay + py;
-	// The quad: the painting area where the tiles reach it (all of it, the way they repeat)
-	const qx0 = rx ? paint[0] : Math.max(paint[0], tx), qx1 = rx ? paint[0] + paint[2] : Math.min(paint[0] + paint[2], tx + tw);
-	const qy0 = ry ? paint[1] : Math.max(paint[1], ty), qy1 = ry ? paint[1] + paint[3] : Math.min(paint[1] + paint[3], ty + th);
-	if (qx1 <= qx0 || qy1 <= qy0) return;
-	items.push({
-		op: "image", x: qx0, y: qy0, w: qx1 - qx0, h: qy1 - qy0, source: b.el, src,
-		uv: [(qx0 - tx) / tw, (qy0 - ty) / th, (qx1 - tx) / tw, (qy1 - ty) / th], repeat: [rx, ry], area: [x, y, w, h],
-		radii: base.radii, radiiY: base.radiiY, chamfer: base.chamfer, opacity: base.opacity, clip: base.clip, matrix: base.matrix, el: base.el, additive: base.additive
-	});
+	// space: as many whole tiles as fit, the first and last at the edges, the rest spread between (one alone where it's
+	// placed; none if none fits)
+	const spaced = (mode: Repeat, area: number, tile: number): number[] | undefined => {
+		if (mode !== "space") return undefined;
+		const n = Math.floor(area / tile + 1e-6);
+		if (n < 1) return [];
+		if (n === 1) return undefined;
+		const gap = (area - n * tile) / (n - 1);
+		return Array.from({ length: n }, (_, i) => i * (tile + gap));
+	};
+	const sx = spaced(modeX, aw, tw), sy = spaced(modeY, ah, th);
+	if (sx || sy) {
+		const xs = sx ?? [px], ys = sy ?? [py];
+		if (xs.length * ys.length > 4000) return;
+		for (const ox of xs) for (const oy of ys) one(ax + ox, ay + oy, !sx && modeX !== "no-repeat" && modeX !== "space", !sy && modeY !== "no-repeat" && modeY !== "space");
+		return;
+	}
+	one(ax + px, ay + py, modeX !== "no-repeat" && modeX !== "space", modeY !== "no-repeat" && modeY !== "space");
+	function one (tx: number, ty: number, rx: boolean, ry: boolean): void {
+		// The quad: the painting area where the tiles reach it (all of it, the way they repeat)
+		const qx0 = rx ? paint[0] : Math.max(paint[0], tx), qx1 = rx ? paint[0] + paint[2] : Math.min(paint[0] + paint[2], tx + tw);
+		const qy0 = ry ? paint[1] : Math.max(paint[1], ty), qy1 = ry ? paint[1] + paint[3] : Math.min(paint[1] + paint[3], ty + th);
+		if (qx1 <= qx0 || qy1 <= qy0) return;
+		items.push({
+			op: "image", x: qx0, y: qy0, w: qx1 - qx0, h: qy1 - qy0, source: b.el!, src,
+			uv: [(qx0 - tx) / tw, (qy0 - ty) / th, (qx1 - tx) / tw, (qy1 - ty) / th], repeat: [rx, ry], area: [x, y, w, h],
+			radii: base.radii, radiiY: base.radiiY, chamfer: base.chamfer, opacity: base.opacity, clip: base.clip, matrix: base.matrix, el: base.el, additive: base.additive
+		});
+	}
 }

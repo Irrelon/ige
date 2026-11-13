@@ -1880,7 +1880,10 @@ export class IgeUiLayoutEngine {
 				if (minV === "auto" && ov === "visible") {
 					if (row) {
 						const spec = this._specW(it, cw);
-						min = Math.min(this.intrinsic(it).min, spec ?? Infinity, transferred ?? Infinity);
+						// (Its content's min-content, not its own width: an empty item 60px wide shrinks into a 48px row, as
+						// CSS Flexbox's content size suggestion has it)
+						const content = it.display !== "text" && !(it.el && REPLACED.has(it.el.localName) && !it.pseudo) ? this._innerIntrinsic(it).min + this._hEdges(it) : this.intrinsic(it).min;
+						min = Math.min(content, spec ?? Infinity, transferred ?? Infinity);
 					} else {
 						if (contentH === undefined) contentH = this.measureH(it, cw, undefined, { shrink: false, width: this._crossWidth(it, cw, s) });
 						const spec = this._specH(it, innerH);

@@ -19,7 +19,7 @@ import { hasDashedSide, paintDashedBorder } from "@/engine/ui2/render/IgeUiBorde
 import { backgroundUrl, paintBackgroundImage } from "@/engine/ui2/render/IgeUiBackgroundImage";
 import { type IgeUiDropShadow, parseDropShadows } from "@/engine/ui2/render/IgeUiDropShadow";
 import { type IgeUiFilterOp, onlyDropShadows, parseFilterList } from "@/engine/ui2/render/IgeUiFilters";
-import { enter3d, invert3, needs3d, perspectiveOf, project } from "@/engine/ui2/render/IgeUiPerspective";
+import { enter3d, invert3, needs3d, perspectiveOf, planeDepth, project } from "@/engine/ui2/render/IgeUiPerspective";
 import { fillTriangles, paintSvg } from "@/engine/ui2/render/IgeUiSvg";
 import { paintTextDecorations, textDecorations } from "@/engine/ui2/render/IgeUiTextDecoration";
 import { clipsToText, paintTextInBackground } from "@/engine/ui2/render/IgeUiTextClip";
@@ -212,6 +212,8 @@ export class IgeUiPainter {
 
 	/** A font's ascent and the device's pixels per UI px, for text decorations (IgeUiRoot's layout's). */
 	decorationMetrics?: (font: IgeUiFontSpec) => { ascent: number; grid: number };
+	/** Where a text item's glyphs have ink between two heights (for underlines skipping it: IgeUiTextDecoration). */
+	inkSpans?: (text: IgeUiPaintText, top: number, bottom: number) => [number, number][];
 
 	/** `<img>` pictures' own sizes by src (IgeUiRoot's images), for object-fit. */
 	imageSizes?: Map<string, { w: number; h: number }>;
@@ -342,7 +344,8 @@ export class IgeUiPainter {
 		if (shadows.length || filters) this.items.push({ op: "group", open: false, clip: null, el: b.el, opacity: 1 });
 		if (fades) {
 			const run = this.items.slice(runStart);
-			if (run.length > 1 || run.some((i) => i.op === "group")) {
+			// (A shape's clip in it (the stencil's, on the screen's target): faded item by item instead)
+			if ((run.length > 1 || run.some((i) => i.op === "group")) && !run.some((i) => i.op === "group" && i.mask)) {
 				this.items.splice(runStart, 0, { op: "group", open: true, filters: [], clip: ctx.clip, matrix: ctx.matrix, el: b.el, opacity: own });
 				this.items.push({ op: "group", open: false, clip: null, el: b.el, opacity: 1 });
 				// (The runs recorded in it moved on by its opening)
@@ -404,6 +407,11 @@ export class IgeUiPainter {
 		collect(b, inner);
 		this._scrollbars(b, own.ctx);
 		positioned.sort((p, q) => this.positionedOrder(p, q));
+		// In a preserve-3d context: its planes farthest first (IgeUiPerspective), as a browser sorts them
+		if (inner.m4 && positioned.length > 1) {
+			const depth = new Map(positioned.map((p) => [p, planeDepth(p.box, p.box.ax + p.ctx.dx, p.box.ay + p.ctx.dy, this._origin(p.box), p.ctx, lenCtx(p.box.style))]));
+			positioned.sort((p, q) => depth.get(p)! - depth.get(q)!);
+		}
 		const neg = positioned.filter((p) => p.z < 0);
 		const rest = positioned.filter((p) => p.z >= 0);
 		if (neg.length) {
@@ -895,7 +903,9 @@ export class IgeUiPainter {
 		const decorations = textDecorations(r.el ?? el);
 		const dm = decorations.length ? this.decorationMetrics?.(r.font) : undefined;
 		const ascent = dm?.ascent ?? r.font.size * 0.9, grid = dm?.grid ?? 1;
-		if (decorations.length) paintTextDecorations(this.items, item, decorations, ascent, grid, "under");
+		// (Skipping the glyphs' ink unless text-decoration-skip-ink says not to)
+		const ink = decorations.length && this.inkSpans && styleValue(live, "text-decoration-skip-ink") !== "none" ? (top: number, bottom: number) => this.inkSpans!(item, top, bottom) : undefined;
+		if (decorations.length) paintTextDecorations(this.items, item, decorations, ascent, grid, "under", ink);
 		if (textClip) paintTextInBackground(this.items, item, r.style, b.ax + ctx.dx, b.ay + ctx.dy, b.borderW, b.borderH);
 		else this.items.push(item);
 		if (decorations.length) paintTextDecorations(this.items, item, decorations, ascent, grid, "over");

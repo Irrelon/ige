@@ -35,7 +35,8 @@ import { cssNumber, serializeComputed } from "@/engine/ui2/style/IgeUiComputed";
 import { INHERITED } from "@/engine/ui2/style/IgeUiProperties";
 import { type IgeUiComputedStyle, IgeUiStyleEngine, styleValue } from "@/engine/ui2/style/IgeUiStyleEngine";
 import type { IgeUiFontProvider } from "@/engine/ui2/text/IgeUiFonts";
-import { IgeUiSdfAtlas } from "@/engine/ui2/text/IgeUiSdfAtlas";
+import { IgeUiSdfAtlas, PAGE, SDF_EDGE, SDF_SIZE } from "@/engine/ui2/text/IgeUiSdfAtlas";
+import { inkSpans } from "@/engine/ui2/render/IgeUiTextDecoration";
 import { svgTransform } from "@/engine/ui2/render/IgeUiSvg";
 
 export interface IgeUiMutationRecord {
@@ -215,6 +216,11 @@ export class IgeUiRoot implements IgeUiDocumentHost {
 		this.painter.imageSizes = this.images.sizes;
 		this.painter.requestImage = (src) => this.images.request(src);
 		this.painter.decorationMetrics = (f) => ({ ascent: this.layoutEngine.metrics(f).ascent, grid: this.layoutEngine.pixelGrid > 0 ? this.layoutEngine.pixelGrid : 1 });
+		// (Underlines skip the glyphs' ink: found in the glyph atlas, made now if it hasn't been)
+		this.painter.inkSpans = (t, top, bottom) => {
+			const a = (this.atlas ??= new IgeUiSdfAtlas(this.host.surface)), f = t.font;
+			return inkSpans(t.text, t.x, t.y, t.letterSpacing, f.size / SDF_SIZE, top, bottom, { glyph: (ch) => a.glyph(ch, f), advance: (ch) => a.advance(ch, f), kerning: (p, q) => a.kerning(p, q, f), pages: a.pages, page: PAGE, edge: SDF_EDGE });
+		};
 		this.images.onLoad = (src, ok) => {
 			this._layoutDirty = true;
 			this._layoutAll = true;
