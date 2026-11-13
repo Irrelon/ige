@@ -97,6 +97,56 @@ describe("ui2: layout at a phone's sizes, as Chrome's", () => {
 		expect([s.clientWidth, s.scrollHeight, widths(r, ".s > div")[0], widths(r, ".s > div")[4]]).toEqual([105, 248, 105, 105]);
 	});
 
+	it("a positioned box laid out again on its own that no longer overflows its scroller takes the bar away (and it stays away)", () => {
+		const r = ui(`.s { position: relative; width: 120px; height: 200px; overflow-y: auto; overflow-x: hidden; } .s > div { position: absolute; left: 0; right: 0; height: 30px; }`,
+			`<div class="s">${Array.from({ length: 5 }, (_, i) => `<div style="top: ${i * 32}px"></div>`).join("")}</div>`);
+		const s = r.root.querySelector(".s")!;
+		const last = r.root.querySelectorAll(".s > div")[4];
+		last.style.height = "120px";
+		r.update(16);
+		expect(s.clientWidth).toBe(105);
+		// (Back as it was: laid out on its own again, the scroller with it, without the bar, in the same layout)
+		last.style.height = "30px";
+		r.update(16);
+		expect(r.stats.partial).toBe(1);
+		const seen = [[s.clientWidth, s.scrollHeight, ...widths(r, ".s > div")]];
+		// (Frames after, and a layout of everything: as it is)
+		r.update(16);
+		seen.push([s.clientWidth, s.scrollHeight, ...widths(r, ".s > div")]);
+		r.root.querySelector(".s")!.classList.add("x");
+		r.update(16);
+		seen.push([s.clientWidth, s.scrollHeight, ...widths(r, ".s > div")]);
+		expect(seen).toEqual(Array(3).fill([120, 200, 120, 120, 120, 120, 120]));
+	});
+
+	it("a scroller's bar its positioned boxes needed goes when one laid out on its own reaches less far, though others kept still overflow it less", () => {
+		// (Two tall ones: one shrinks, the bar stays for the other; it shrinks too, the bar goes. Its scroll height with them)
+		const r = ui(`.s { position: relative; width: 120px; height: 200px; overflow-y: auto; overflow-x: hidden; } .s > div { position: absolute; left: 0; right: 0; height: 30px; }`,
+			`<div class="s"><div style="top: 0"></div><div style="top: 40px; height: 250px"></div><div style="top: 80px; height: 300px"></div></div>`);
+		const s = r.root.querySelector(".s")!;
+		const [, a, b] = r.root.querySelectorAll(".s > div");
+		expect([s.clientWidth, s.scrollHeight]).toEqual([105, 380]);
+		b.style.height = "30px";
+		r.update(16);
+		expect([s.clientWidth, s.scrollHeight]).toEqual([105, 290]);
+		a.style.height = "30px";
+		r.update(16);
+		expect([s.clientWidth, s.scrollHeight, ...widths(r, ".s > div")]).toEqual([120, 200, 120, 120, 120]);
+	});
+
+	it("a positioned box that fits its scroller only with the bar (its height from its width) keeps the bar, frame after frame", () => {
+		const r = ui(`.s { position: relative; width: 120px; height: 112px; overflow-y: auto; overflow-x: hidden; } .c { position: absolute; left: 0; width: 100%; aspect-ratio: 1; }`,
+			`<div class="s"><div class="c">0</div></div>`);
+		const s = r.root.querySelector(".s")!, c = r.root.querySelector(".c")!;
+		const seen: number[][] = [];
+		for (let i = 1; i <= 3; i++) {
+			c.textContent = String(i);
+			r.update(16);
+			seen.push([r.stats.partial, s.clientWidth, ...widths(r, ".c")]);
+		}
+		expect(seen).toEqual(Array(3).fill([1, 105, 105]));
+	});
+
 	it("what's in a positioned box laid out afresh and then found as it was in the same layout is placed where it now is", () => {
 		// (Slots in a list that gains a scrollbar: each laid out again narrower, then met again unchanged; the "1" pushed to the
 		// row's end by an auto margin goes with the row)

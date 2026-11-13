@@ -1296,8 +1296,9 @@ export class IgeUiLayoutEngine {
 		}
 		for (const r of b.runs ?? []) w = Math.max(w, r.x + r.w - left);
 		for (const l of b.lines ?? []) h = Math.max(h, l.y + l.h - top);
-		b.scrollW = Math.max(w + b.paddingRight, overW, b.absReach?.w ?? 0);
-		b.scrollH = Math.max(h + b.paddingBottom, overH, b.absReach?.h ?? 0);
+		b.flowScroll = { w: Math.max(w + b.paddingRight, overW), h: Math.max(h + b.paddingBottom, overH) };
+		b.scrollW = Math.max(b.flowScroll.w, b.absReach?.w ?? 0);
+		b.scrollH = Math.max(b.flowScroll.h, b.absReach?.h ?? 0);
 	}
 
 	_applyRelative (c: IgeUiBox, cbW: number, cbH: number | undefined): void {
@@ -2811,82 +2812,152 @@ export class IgeUiLayoutEngine {
 		// (How far each scroller's absolutely placed boxes reach, and the scrollers laid out again for them)
 		const reach = new Map<IgeUiBox, { w: number; h: number }>();
 		const again = new Set<IgeUiBox>();
-		// In tree order, so a containing block that's positioned itself is placed first
-		for (let i = 0; i < this._positioned.length; i++) {
-			const { box } = this._positioned[i];
-			const cb = this._containingBlock(box);
-			const cbAbs = cb ? this._abs(cb) : { x: 0, y: 0 };
-			const cbX = cb ? cbAbs.x + cb.borderLeft : 0, cbY = cb ? cbAbs.y + cb.borderTop : 0;
-			// (Its padding box, less a scroller's scrollbars: they're not in it)
-			const cbW = cb ? cb.borderW - cb.borderLeft - cb.borderRight - (cb.scrollbarY ?? 0) : this.viewport.w;
-			const cbH = cb ? cb.borderH - cb.borderTop - cb.borderBottom - (cb.scrollbarX ?? 0) : this.viewport.h;
-			this._edges(box, cbW);
-			const s = box.style;
-			const left = this.len(s, "left", cbW), right = this.len(s, "right", cbW);
-			const top = this.len(s, "top", cbH), bottom = this.len(s, "bottom", cbH);
-			let width: number | undefined = this._specW(box, cbW);
-			if (width === undefined && left !== undefined && right !== undefined) width = cbW - left - right - box.marginLeft - box.marginRight;
-			let height: number | undefined = this._specH(box, cbH);
-			if (height === undefined && top !== undefined && bottom !== undefined) height = cbH - top - bottom - box.marginTop - box.marginBottom;
-			if (width !== undefined) width = this._clampW(box, width, cbW);
-			if (height !== undefined) height = this._clampH(box, height, cbH);
-			// Shrink-to-fit in the room it has (worked out from what's in it, then laid out once at that width)
-			const room = cbW - (left ?? 0) - (right ?? 0);
-			if (width === undefined) {
-				const i = this.intrinsic(box);
-				width = this._clampW(box, Math.min(i.max, Math.max(i.min, room - box.marginLeft - box.marginRight)), cbW);
-			}
-			this.layoutBox(box, cbW, cbH, { width, height });
-			// Where: from its offsets, else its static position
-			const parentAbs = box.parent ? this._abs(box.parent) : { x: 0, y: 0 };
-			let ax: number, ay: number;
-			const ml = styleValue(s, "margin-left") === "auto", mr = styleValue(s, "margin-right") === "auto";
-			// (Both margins auto: centred, unless it's wider than the room, when it starts at its left, as CSS 2.1 has it)
-			if (left !== undefined && right !== undefined && ml && mr) ax = cbX + left + Math.max(0, (cbW - left - right - box.borderW) / 2);
-			else if (left !== undefined) ax = cbX + left + box.marginLeft;
-			else if (right !== undefined) ax = cbX + cbW - right - box.marginRight - box.borderW;
-			else ax = parentAbs.x + this._staticAt(box, "x") + box.marginLeft;
-			const mt = styleValue(s, "margin-top") === "auto", mb = styleValue(s, "margin-bottom") === "auto";
-			if (top !== undefined && bottom !== undefined && mt && mb) ay = cbY + top + (cbH - top - bottom - box.borderH) / 2;
-			else if (top !== undefined) ay = cbY + top + box.marginTop;
-			else if (bottom !== undefined) ay = cbY + cbH - bottom - box.marginBottom - box.borderH;
-			else ay = parentAbs.y + this._staticAt(box, "y") + box.marginTop;
-			box.x = ax - parentAbs.x;
-			box.y = ay - parentAbs.y;
-			// What a scroller (or a box that clips) holds reaches as far as this does
-			if (cb && box.position === "absolute" && (styleValue(cb.style, "overflow-x") !== "visible" || styleValue(cb.style, "overflow-y") !== "visible")) {
-				// (Its box, and what overflows it when it doesn't clip, as a browser counts it)
-				const [ow, oh] = this._reach(box);
-				const rw = ax + Math.max(box.borderW + Math.max(0, box.marginRight), ow) - (cbAbs.x + cb.borderLeft), rh = ay + Math.max(box.borderH + Math.max(0, box.marginBottom), oh) - (cbAbs.y + cb.borderTop);
-				cb.scrollW = Math.max(cb.scrollW ?? 0, rw);
-				cb.scrollH = Math.max(cb.scrollH ?? 0, rh);
-				const r = reach.get(cb) ?? { w: 0, h: 0 };
-				r.w = Math.max(r.w, rw);
-				r.h = Math.max(r.h, rh);
-				reach.set(cb, r);
-				// A scroller (overflow: auto) its laid-out content fitted, that these overflow: laid out once more, in place
-				// (its size its own), with the scrollbar they need, as a browser decides it with them; what's placed in it
-				// (put on the list again by that layout) placed again further on
-				// (Its whole extent, what it was laid out holding and every positioned box placed in it so far, not just these)
-				const ox = styleValue(cb.style, "overflow-x"), oy = styleValue(cb.style, "overflow-y");
-				const needY = oy === "auto" && !cb.scrollbarY && (cb.scrollH ?? 0) > cb.borderH - cb.borderTop - cb.borderBottom - (cb.scrollbarX ?? 0) + 0.5;
-				const needX = ox === "auto" && !cb.scrollbarX && (cb.scrollW ?? 0) > cb.borderW - cb.borderLeft - cb.borderRight - (cb.scrollbarY ?? 0) + 0.5;
-				if ((needY || needX) && cb.lastCb && !again.has(cb) && cb.el && !cb.pseudo) {
-					again.add(cb);
-					// (Only the way it needs a bar: what's placed in it is narrower once there's a bar down its side)
-					cb.absReach = { w: needX ? Math.max(r.w, cb.scrollW ?? 0) : 0, h: needY ? Math.max(r.h, cb.scrollH ?? 0) : 0 };
-					cb.cacheKey = undefined;
-					this.layoutBox(cb, cb.lastCb[0], cb.lastCb[1], { width: cb.borderW, height: cb.borderH });
-					// (Their reach measured again as they're placed again)
-					reach.set(cb, { w: 0, h: 0 });
+		// (Laid out again without a scrollbar only they had needed: one that takes it back if what's placed in it then needs it)
+		const dropped = new Set<IgeUiBox>();
+		let i = 0;
+		for (;;) {
+			// In tree order, so a containing block that's positioned itself is placed first
+			for (; i < this._positioned.length; i++) {
+				const { box } = this._positioned[i];
+				const cb = this._containingBlock(box);
+				const cbAbs = cb ? this._abs(cb) : { x: 0, y: 0 };
+				const cbX = cb ? cbAbs.x + cb.borderLeft : 0, cbY = cb ? cbAbs.y + cb.borderTop : 0;
+				// (Its padding box, less a scroller's scrollbars: they're not in it)
+				const cbW = cb ? cb.borderW - cb.borderLeft - cb.borderRight - (cb.scrollbarY ?? 0) : this.viewport.w;
+				const cbH = cb ? cb.borderH - cb.borderTop - cb.borderBottom - (cb.scrollbarX ?? 0) : this.viewport.h;
+				this._edges(box, cbW);
+				const s = box.style;
+				const left = this.len(s, "left", cbW), right = this.len(s, "right", cbW);
+				const top = this.len(s, "top", cbH), bottom = this.len(s, "bottom", cbH);
+				let width: number | undefined = this._specW(box, cbW);
+				if (width === undefined && left !== undefined && right !== undefined) width = cbW - left - right - box.marginLeft - box.marginRight;
+				let height: number | undefined = this._specH(box, cbH);
+				if (height === undefined && top !== undefined && bottom !== undefined) height = cbH - top - bottom - box.marginTop - box.marginBottom;
+				if (width !== undefined) width = this._clampW(box, width, cbW);
+				if (height !== undefined) height = this._clampH(box, height, cbH);
+				// Shrink-to-fit in the room it has (worked out from what's in it, then laid out once at that width)
+				const room = cbW - (left ?? 0) - (right ?? 0);
+				if (width === undefined) {
+					const i = this.intrinsic(box);
+					width = this._clampW(box, Math.min(i.max, Math.max(i.min, room - box.marginLeft - box.marginRight)), cbW);
 				}
+				this.layoutBox(box, cbW, cbH, { width, height });
+				// Where: from its offsets, else its static position
+				const parentAbs = box.parent ? this._abs(box.parent) : { x: 0, y: 0 };
+				let ax: number, ay: number;
+				const ml = styleValue(s, "margin-left") === "auto", mr = styleValue(s, "margin-right") === "auto";
+				// (Both margins auto: centred, unless it's wider than the room, when it starts at its left, as CSS 2.1 has it)
+				if (left !== undefined && right !== undefined && ml && mr) ax = cbX + left + Math.max(0, (cbW - left - right - box.borderW) / 2);
+				else if (left !== undefined) ax = cbX + left + box.marginLeft;
+				else if (right !== undefined) ax = cbX + cbW - right - box.marginRight - box.borderW;
+				else ax = parentAbs.x + this._staticAt(box, "x") + box.marginLeft;
+				const mt = styleValue(s, "margin-top") === "auto", mb = styleValue(s, "margin-bottom") === "auto";
+				if (top !== undefined && bottom !== undefined && mt && mb) ay = cbY + top + (cbH - top - bottom - box.borderH) / 2;
+				else if (top !== undefined) ay = cbY + top + box.marginTop;
+				else if (bottom !== undefined) ay = cbY + cbH - bottom - box.marginBottom - box.borderH;
+				else ay = parentAbs.y + this._staticAt(box, "y") + box.marginTop;
+				box.x = ax - parentAbs.x;
+				box.y = ay - parentAbs.y;
+				// (Measured again below when what it's in clips)
+				box.ownReach = undefined;
+				// What a scroller (or a box that clips) holds reaches as far as this does
+				if (cb && box.position === "absolute" && (styleValue(cb.style, "overflow-x") !== "visible" || styleValue(cb.style, "overflow-y") !== "visible")) {
+					// (Its box, and what overflows it when it doesn't clip, as a browser counts it)
+					const [ow, oh] = (box.ownReach = this._reach(box));
+					const rw = ax + Math.max(box.borderW + Math.max(0, box.marginRight), ow) - (cbAbs.x + cb.borderLeft), rh = ay + Math.max(box.borderH + Math.max(0, box.marginBottom), oh) - (cbAbs.y + cb.borderTop);
+					cb.scrollW = Math.max(cb.scrollW ?? 0, rw);
+					cb.scrollH = Math.max(cb.scrollH ?? 0, rh);
+					const r = reach.get(cb) ?? { w: 0, h: 0 };
+					r.w = Math.max(r.w, rw);
+					r.h = Math.max(r.h, rh);
+					reach.set(cb, r);
+					// A scroller (overflow: auto) its laid-out content fitted, that these overflow: laid out once more, in place
+					// (its size its own), with the scrollbar they need, as a browser decides it with them; what's placed in it
+					// (put on the list again by that layout) placed again further on
+					// (Its whole extent, what it was laid out holding and every positioned box placed in it so far, not just these)
+					const ox = styleValue(cb.style, "overflow-x"), oy = styleValue(cb.style, "overflow-y");
+					const needY = oy === "auto" && !cb.scrollbarY && (cb.scrollH ?? 0) > cb.borderH - cb.borderTop - cb.borderBottom - (cb.scrollbarX ?? 0) + 0.5;
+					const needX = ox === "auto" && !cb.scrollbarX && (cb.scrollW ?? 0) > cb.borderW - cb.borderLeft - cb.borderRight - (cb.scrollbarY ?? 0) + 0.5;
+					if ((needY || needX) && cb.lastCb && (!again.has(cb) || dropped.has(cb)) && cb.el && !cb.pseudo) {
+						again.add(cb);
+						dropped.delete(cb);
+						// (Only the way it needs a bar: what's placed in it is narrower once there's a bar down its side)
+						cb.absReach = { w: needX ? Math.max(r.w, cb.scrollW ?? 0) : 0, h: needY ? Math.max(r.h, cb.scrollH ?? 0) : 0 };
+						cb.cacheKey = undefined;
+						this.layoutBox(cb, cb.lastCb[0], cb.lastCb[1], { width: cb.borderW, height: cb.borderH });
+						// (Their reach measured again as they're placed again)
+						reach.set(cb, { w: 0, h: 0 });
+					}
+				}
+				void root;
 			}
-			void root;
+			// A scroller (overflow: auto) with a scrollbar they no longer need, now they reach less far: laid out once more, in
+			// place, without it, as a browser decides it with them (it's not kept until the scroller's laid out for something
+			// else); what's placed in it placed again further on
+			let more = false;
+			for (const cb of reach.keys()) {
+				if (again.has(cb) || !cb.lastCb || !cb.el || cb.pseudo || !this._autoScroller(cb)) continue;
+				const oy = styleValue(cb.style, "overflow-y"), ox = styleValue(cb.style, "overflow-x");
+				const barY = oy === "auto" && !!cb.scrollbarY && !styleValue(cb.style, "scrollbar-gutter").startsWith("stable");
+				const barX = ox === "auto" && !!cb.scrollbarX;
+				if (!barY && !barX) continue;
+				// (Its whole extent: what it was laid out holding, and every box placed in it, as far as each now reaches)
+				this._takeAbsReach(cb);
+				const fitsY = cb.scrollH! <= cb.borderH - cb.borderTop - cb.borderBottom - cb.scrollbarX! + 0.5;
+				const fitsX = cb.scrollW! <= cb.borderW - cb.borderLeft - cb.borderRight - cb.scrollbarY! + 0.5;
+				if (!(barY && fitsY) && !(barX && fitsX)) continue;
+				again.add(cb);
+				dropped.add(cb);
+				cb.cacheKey = undefined;
+				this.layoutBox(cb, cb.lastCb[0], cb.lastCb[1], { width: cb.borderW, height: cb.borderH });
+				more = true;
+			}
+			if (!more) break;
 		}
-		// (What they reached this time, for the next layout of each: its scrollbar decided with them from the start; only
-		// some placed, at least what reached before)
-		for (const [cb, r] of reach) cb.absReach = partial && cb.absReach ? { w: Math.max(r.w, cb.absReach.w), h: Math.max(r.h, cb.absReach.h) } : r;
+		// (What they reached this time, for the next layout of each: its scrollbar decided with them from the start. A
+		// scroller's from every box placed in it, placed now or kept as it was (only some are placed when one's laid out on
+		// its own, or when what holds the others is kept), so it can reach less far than before; its extent with it. Others',
+		// only some placed: at least what reached before)
+		for (const [cb, r] of reach) {
+			if (this._autoScroller(cb)) this._takeAbsReach(cb);
+			else cb.absReach = partial && cb.absReach ? { w: Math.max(r.w, cb.absReach.w), h: Math.max(r.h, cb.absReach.h) } : r;
+		}
 		return again;
+	}
+
+	/** A scroller's reach from every box placed in it, as far as each now reaches, and its scroll extent with that. */
+	_takeAbsReach (cb: IgeUiBox): void {
+		const r = (cb.absReach = this._absReach(cb));
+		if (!cb.flowScroll) return this._scrollExtent(cb);
+		cb.scrollW = Math.max(cb.flowScroll.w, r.w);
+		cb.scrollH = Math.max(cb.flowScroll.h, r.h);
+	}
+
+	/** A box that scrolls (overflow: auto either way): its scrollbars come and go with what's in it. */
+	_autoScroller (b: IgeUiBox): boolean {
+		return styleValue(b.style, "overflow-y") === "auto" || styleValue(b.style, "overflow-x") === "auto";
+	}
+
+	/**
+	 * How far the absolutely placed boxes a box is the containing block of reach, from its padding box's corner: each one's
+	 * box, and what overflows it when it doesn't clip, as a browser counts them in its scroll extent.
+	 */
+	_absReach (cb: IgeUiBox): { w: number; h: number } {
+		const r = { w: 0, h: 0 };
+		const walk = (p: IgeUiBox, px: number, py: number) => {
+			for (const c of p.children) {
+				const cx = px + c.x, cy = py + c.y;
+				if (c.position === "absolute") {
+					const [ow, oh] = c.ownReach ?? this._reach(c);
+					r.w = Math.max(r.w, cx + Math.max(c.borderW + Math.max(0, c.marginRight), ow));
+					r.h = Math.max(r.h, cy + Math.max(c.borderH + Math.max(0, c.marginBottom), oh));
+				}
+				// (A positioned or transformed box holds its own)
+				if (c.position === "static" && !c.transform) walk(c, cx, cy);
+			}
+		};
+		walk(cb, -cb.borderLeft, -cb.borderTop);
+		return r;
 	}
 
 	_absolute (b: IgeUiBox, px: number, py: number): void {

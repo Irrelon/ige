@@ -87,6 +87,10 @@ export interface IgeUiBox {
 	 * corner to theirs), counted in its scroll extent so its scrollbar is decided with them, as a browser's is.
 	 */
 	absReach?: { w: number; h: number };
+	/** A scroller's scroll extent without its absolutely placed descendants: what's in flow, and what overflows that. */
+	flowScroll?: { w: number; h: number };
+	/** An absolutely placed box: how far it, and what overflows it when it doesn't clip, reached from its corner when last placed. */
+	ownReach?: [number, number];
 	/** The containing block it was last laid out in (layoutBox's cbW, cbH): to lay it out again in place. */
 	lastCb?: [number, number | undefined];
 	scrollbarX?: number;
