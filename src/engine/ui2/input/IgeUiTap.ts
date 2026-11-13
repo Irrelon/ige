@@ -4,8 +4,9 @@
  * - Range inputs take the pointer: a press sets the value where it's pressed
  *   and a drag follows it (the element captures the pointer), with "input" as
  *   it moves and "change" when it's let go having moved it; the arrow keys,
- *   Page Up and Down, Home and End step it. (Drawn by IgeUiPaint: the thumb's
- *   middle at its share of the content box, which is where a press puts it.)
+ *   Page Up and Down, Home and End step it. A press maps to the value as a
+ *   browser's does: the thumb's middle runs from half a thumb (16 px) in from
+ *   one end to half a thumb in from the other.
  *
  * - Touch adjustment ("fat-finger"): a tap whose exact point isn't on
  *   anything that responds to a tap goes to the nearest thing that does
@@ -63,11 +64,20 @@ function setRange (el: IgeUiElement, v: string): boolean {
 	return true;
 }
 
-/** The value at a client x on a range input (its content box: the thumb's middle runs from end to end). */
+/** A range input's thumb, as wide as a browser's (CSS px). */
+export const RANGE_THUMB = 16;
+
+/**
+ * The value at a client x on a range input, as a browser has it: the thumb's middle runs from half a thumb in from
+ * one end to half a thumb in from the other.
+ */
 export function rangeValueAt (el: IgeUiElement, clientX: number): string {
 	const r = el.getBoundingClientRect();
 	const { min, max } = rangeBounds(el);
-	const t = r.width > 0 ? Math.min(1, Math.max(0, (clientX - r.left) / r.width)) : 0;
+	// (The thumb at the scale it's shown at)
+	const thumb = RANGE_THUMB * (el.offsetWidth > 0 ? r.width / el.offsetWidth : 1);
+	const run = r.width - thumb;
+	const t = run > 0 ? Math.min(1, Math.max(0, (clientX - r.left - thumb / 2) / run)) : 0;
 	return rangeSnap(el, min + t * (max - min));
 }
 

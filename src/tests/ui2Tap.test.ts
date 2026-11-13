@@ -34,7 +34,7 @@ describe("ui2: range inputs take the pointer", () => {
 		// (Off the end: the end)
 		r._pointer("pointermove", pe(180, 40, { type: "mouse" }));
 		r._pointer("pointerup", pe(180, 40, { type: "mouse", buttons: 0 }));
-		expect(seen).toEqual(["input 20", "input 60", "input 100", "change 100"]);
+		expect(seen).toEqual(["input 15", "input 65", "input 100", "change 100"]);
 	});
 
 	it("the arrow keys step a focused range input, Home and End go to its ends", () => {
@@ -57,7 +57,7 @@ describe("ui2: range inputs take the pointer", () => {
 });
 
 describe("ui2: a finger's tap is adjusted to what takes one nearby, as Chrome adjusts it", () => {
-	it("a range input ending 4px left of a tap of radius 10 takes it (its value from the tap's adjusted point); exact, the mouse's doesn't move", () => {
+	it("a range input ending 4px left of a tap of radius 10 takes it (its value from the tap's adjusted point: its end); exact, the mouse's doesn't move", () => {
 		const r = ui(`.row { display: flex; } input { width: 100px; height: 16px; margin: 0; } .gap { width: 60px; height: 16px; }`);
 		r.root.innerHTML = `<div class="row"><input type="range" min="0" max="100" value="0"><div class="gap"></div></div>`;
 		r.update(0);
@@ -71,7 +71,7 @@ describe("ui2: a finger's tap is adjusted to what takes one nearby, as Chrome ad
 		// A finger there (radius 10): the slider, at its end
 		tap(r, 104, 8, { w: 20 });
 		expect(clicks).toEqual(["click 99"]);
-		expect(input.value).toBe("99");
+		expect(input.value).toBe("100");
 	});
 
 	it("a tap off anything to the nearest button within reach; none within reach, it stays where it was", () => {
