@@ -282,6 +282,14 @@ function sortSpritesBackToFront (a: IgeEntity, b: IgeEntity): number {
 	return (b as any)._webglSortKey - (a as any)._webglSortKey;
 }
 
+/** Drawn over the whole canvas after the UI layer (IgeWebGlRenderer.addOverlay). */
+export interface IgeWebGlOverlay {
+	/** Draws (canvas width x height in device px, dpr device px per CSS px); returns its draw calls. */
+	draw(gl: WebGL2RenderingContext, width: number, height: number, dpr: number): number;
+	/** A lost context came back: make GPU resources again. */
+	contextRestored?(gl: WebGL2RenderingContext): void;
+}
+
 /**
  * Custom WebGL renderer for IGE supporting full 3D rendering.
  * This renderer replaces the experimental three.js integration with
@@ -718,6 +726,7 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 		this.log("WebGL context restored, reinitializing resources...");
 		const lost = this._recreateResources();
 		this._contextLost = false;
+		if (this._canvasContext && this._webglVersion === 2) for (const o of this._overlays) o.contextRestored?.(this._canvasContext as WebGL2RenderingContext);
 		this.emit("contextRestored", { lost });
 	};
 
@@ -1014,6 +1023,32 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 		}
 		this._debugOptions = { ...this._debugOptions, ...options };
 		return this;
+	}
+
+	/**
+	 * Something drawn over the whole canvas after everything else, the UI
+	 * layer included: the engine's document UI (ui2's IgeUiRoot) and the like.
+	 * Each draws itself with WebGL 2 (the renderer's state is reset after) and
+	 * returns its draw calls; it's told when a lost context comes back.
+	 */
+	addOverlay(overlay: IgeWebGlOverlay): void {
+		if (!this._overlays.includes(overlay)) this._overlays.push(overlay);
+	}
+
+	removeOverlay(overlay: IgeWebGlOverlay): void {
+		const i = this._overlays.indexOf(overlay);
+		if (i >= 0) this._overlays.splice(i, 1);
+	}
+
+	protected _overlays: IgeWebGlOverlay[] = [];
+
+	protected _renderOverlays(): void {
+		const gl = this._canvasContext;
+		const canvas = this._canvasElement;
+		if (!this._overlays?.length || !gl || !canvas || this._webglVersion !== 2 || !this._stateManager) return;
+		for (const o of this._overlays) this._stats.drawCalls += o.draw(gl as WebGL2RenderingContext, canvas.width, canvas.height, this._devicePixelRatio) || 0;
+		this._stateManager.reset();
+		gl.depthFunc(gl.LEQUAL);
 	}
 
 	/**
@@ -1753,6 +1788,9 @@ export class IgeWebGlRenderer extends IgeBaseRenderer {
 
 		// The UI layer: on top of everything, post-processing included, in each view
 		this._renderUiLayer(viewports);
+
+		// Overlays (the document UI) over the whole canvas, last of all
+		this._renderOverlays();
 
 		// Lines queued with debugLine() last one rendered frame
 		this._debugLineVertices = 0;
