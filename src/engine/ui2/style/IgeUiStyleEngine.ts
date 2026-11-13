@@ -14,6 +14,7 @@ import { resolveLength, substituteVars } from "@/engine/ui2/css/IgeCssValues";
 import type { IgeUiElement } from "@/engine/ui2/dom/IgeUiDom";
 import { expandShorthand, INHERITED, INITIAL, shorthandKeys } from "@/engine/ui2/style/IgeUiProperties";
 import { UA_STYLESHEET } from "@/engine/ui2/style/igeUiUserAgent";
+import { effectiveZoom, hasZoomedLength, ZOOM_KEY, zoomLengths, zoomOf, zoomsProperty } from "@/engine/ui2/style/IgeUiZoom";
 
 export type IgeUiComputedStyle = Record<string, string>;
 
@@ -372,7 +373,40 @@ export class IgeUiStyleEngine {
 		const fs = cs["font-size"];
 		if (fs !== undefined && !fs.endsWith("px")) cs["font-size"] = `${this._fontSize(fs, parentSize, cs)}px`;
 		else if (fs !== undefined && !/^-?[\d.]+px$/.test(fs)) cs["font-size"] = `${this._fontSize(fs, parentSize, cs)}px`;
+		this._zoom(cs, specified, parent, fs);
 		return cs;
+	}
+
+	/**
+	 * zoom (IgeUiZoom): the element's effective zoom (its own times its parent's), and the lengths its style gives
+	 * multiplied by it: what it declares by all of it, what it takes from its parent (already its parent's zoom) by its
+	 * own; a font size relative to its parent's (em, %) by its own too.
+	 */
+	_zoom (cs: IgeUiComputedStyle, specified: Map<string, string>, parent: IgeUiComputedStyle | undefined, fs: string | undefined): void {
+		const own = zoomOf(cs.zoom);
+		const z = effectiveZoom(parent) * own;
+		if (z !== 1) cs[ZOOM_KEY] = String(z);
+		else delete cs[ZOOM_KEY];
+		if (z === 1 && own === 1) return;
+		// (What came from its parent: not declared here, or declared as the parent's: inherit, unset, revert)
+		const fromParent = (k: string) => {
+			const d = specified.get(k);
+			// (A longhand of a shorthand made of var() isn't in the declared map by its own name: it's its parent's only if it's the same)
+			if (d === undefined) return parent !== undefined && cs[k] === parent[k];
+			return /^(inherit|unset|revert|revert-layer)$/i.test(d.trim());
+		};
+		for (const k in cs) {
+			if (!zoomsProperty(k) || k === "font-size") continue;
+			const v = cs[k];
+			if (!v || !hasZoomedLength(v)) continue;
+			cs[k] = zoomLengths(v, fromParent(k) ? own : z);
+		}
+		const size = parseFloat(cs["font-size"] ?? "");
+		if (Number.isFinite(size) && cs["font-size"]) {
+			const relative = fromParent("font-size") || (fs !== undefined && /(em|%)\s*$|^(smaller|larger)$/i.test(fs.trim()));
+			const f = relative ? own : z;
+			if (f !== 1) cs["font-size"] = `${+(size * f).toFixed(6)}px`;
+		}
 	}
 
 	_assign (cs: IgeUiComputedStyle, name: string, value: string, parent: IgeUiComputedStyle | undefined): void {

@@ -12,6 +12,7 @@ import type { IgeUiElement } from "@/engine/ui2/dom/IgeUiDom";
 import { identityFilter } from "@/engine/ui2/render/IgeUiFilters";
 import { expandShorthand } from "@/engine/ui2/style/IgeUiProperties";
 import { type IgeUiComputedStyle, styleValue } from "@/engine/ui2/style/IgeUiStyleEngine";
+import { effectiveZoom, zoomLengths, zoomsProperty } from "@/engine/ui2/style/IgeUiZoom";
 
 type Ease = (t: number) => number;
 
@@ -362,12 +363,15 @@ export class IgeUiAnimator {
 	_applyFrames (out: IgeUiComputedStyle, base: IgeUiComputedStyle, kf: IgeCssKeyframes, p: number, ease: Ease): void {
 		// Each property: the keyframes either side of p that set it (the element's own value at 0% / 100% if they don't)
 		const props = new Set<string>();
+		// (Its lengths zoomed as the element's own styles are: IgeUiZoom)
+		const z = effectiveZoom(base);
 		const expanded = kf.frames.map((f) => {
 			const m = new Map<string, string>();
 			for (const d of f.declarations) {
 				const longs = expandShorthand(d.name, d.value);
 				for (const [k, v] of longs ?? [[d.name, d.value]]) {
-					m.set(k, v.includes("var(") ? v.replace(/var\((--[\w-]+)(?:\s*,\s*([^)]*))?\)/g, (_, n: string, fb?: string) => base[n] ?? fb ?? "") : v);
+					const value = v.includes("var(") ? v.replace(/var\((--[\w-]+)(?:\s*,\s*([^)]*))?\)/g, (_, n: string, fb?: string) => base[n] ?? fb ?? "") : v;
+					m.set(k, z !== 1 && zoomsProperty(k) ? zoomLengths(value, z) : value);
 					props.add(k);
 				}
 			}

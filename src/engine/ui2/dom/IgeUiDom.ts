@@ -15,6 +15,7 @@ import { splitTop } from "@/engine/ui2/css/IgeCssParser";
 import { matchesSelector, parseSelectorList, type IgeCssMatchable, type IgeCssSelector } from "@/engine/ui2/css/IgeCssSelector";
 import { escapeAttr, escapeText, parseHtml, VOID_TAGS, type IgeHtmlNode } from "@/engine/ui2/dom/IgeUiHtml";
 import type { IgeUiBox } from "@/engine/ui2/layout/IgeUiBox";
+import { effectiveZoom } from "@/engine/ui2/style/IgeUiZoom";
 
 // ---------------------------------------------------------------- events
 
@@ -1044,14 +1045,19 @@ export class IgeUiElement extends IgeUiNode implements IgeCssMatchable {
 
 	// ---- geometry (from the last layout)
 
+	/** Its effective CSS zoom (IgeUiZoom): its layout's pixels are that many of its own (offsetWidth and the like). */
+	get _cssZoom (): number {
+		return effectiveZoom(this._computed);
+	}
+
 	get offsetWidth (): number {
 		this.ownerDocument._flush();
-		return this._box ? Math.round(this._box.borderW) : 0;
+		return this._box ? Math.round(this._box.borderW / this._cssZoom) : 0;
 	}
 
 	get offsetHeight (): number {
 		this.ownerDocument._flush();
-		return this._box ? Math.round(this._box.borderH) : 0;
+		return this._box ? Math.round(this._box.borderH / this._cssZoom) : 0;
 	}
 
 	get offsetLeft (): number {
@@ -1076,8 +1082,10 @@ export class IgeUiElement extends IgeUiNode implements IgeCssMatchable {
 			for (let n: typeof box | null = box; n; n = n.parent) v += axis === "x" ? n.x : n.y;
 			return v;
 		};
-		const p = this.offsetParent?._box;
-		return Math.round(at(b) - (p ? at(p) + (axis === "x" ? p.borderLeft : p.borderTop) : 0));
+		// (From the body: from the page's corner, as CSSOM has it, past a margin that collapsed through the body)
+		const op = this.offsetParent;
+		const p = op && op !== this.ownerDocument.body ? op._box : undefined;
+		return Math.round((at(b) - (p ? at(p) + (axis === "x" ? p.borderLeft : p.borderTop) : 0)) / this._cssZoom);
 	}
 
 	get offsetParent (): IgeUiElement | null {
@@ -1095,46 +1103,46 @@ export class IgeUiElement extends IgeUiNode implements IgeCssMatchable {
 	get clientWidth (): number {
 		this.ownerDocument._flush();
 		const b = this._box;
-		return b ? Math.round(b.borderW - b.borderLeft - b.borderRight - (b.scrollbarY ?? 0)) : 0;
+		return b ? Math.round((b.borderW - b.borderLeft - b.borderRight - (b.scrollbarY ?? 0)) / this._cssZoom) : 0;
 	}
 
 	get clientHeight (): number {
 		this.ownerDocument._flush();
 		const b = this._box;
-		return b ? Math.round(b.borderH - b.borderTop - b.borderBottom - (b.scrollbarX ?? 0)) : 0;
+		return b ? Math.round((b.borderH - b.borderTop - b.borderBottom - (b.scrollbarX ?? 0)) / this._cssZoom) : 0;
 	}
 
 	get clientLeft (): number {
 		this.ownerDocument._flush();
-		return this._box ? this._box.borderLeft : 0;
+		return this._box ? this._box.borderLeft / this._cssZoom : 0;
 	}
 
 	get clientTop (): number {
 		this.ownerDocument._flush();
-		return this._box ? this._box.borderTop : 0;
+		return this._box ? this._box.borderTop / this._cssZoom : 0;
 	}
 
 	get scrollWidth (): number {
 		this.ownerDocument._flush();
 		const b = this._box;
-		return b ? Math.max(this.clientWidth, Math.round(b.scrollW ?? 0)) : 0;
+		return b ? Math.max(this.clientWidth, Math.round((b.scrollW ?? 0) / this._cssZoom)) : 0;
 	}
 
 	get scrollHeight (): number {
 		this.ownerDocument._flush();
 		const b = this._box;
-		return b ? Math.max(this.clientHeight, Math.round(b.scrollH ?? 0)) : 0;
+		return b ? Math.max(this.clientHeight, Math.round((b.scrollH ?? 0) / this._cssZoom)) : 0;
 	}
 
 	get scrollTop (): number {
-		return this._scrollTop;
+		return this._scrollTop / this._cssZoom;
 	}
 
 	set scrollTop (v: number) {
 		const max = Math.max(0, this.scrollHeight - this.clientHeight);
-		// (On the device's pixels, as a browser keeps it)
-		const g = this.ownerDocument._pixelGrid || 1;
-		const next = Math.max(0, Math.min(max, Math.round((Number(v) || 0) * g) / g));
+		// (On the device's pixels, as a browser keeps it; kept in its layout's pixels: zoomed)
+		const z = this._cssZoom, g = this.ownerDocument._pixelGrid || 1;
+		const next = Math.max(0, Math.min(max * z, Math.round(Math.max(0, Math.min(max, Number(v) || 0)) * z * g) / g));
 		if (next === this._scrollTop) return;
 		this._scrollTop = next;
 		this.ownerDocument._changed(this, "scroll");
@@ -1142,14 +1150,14 @@ export class IgeUiElement extends IgeUiNode implements IgeCssMatchable {
 	}
 
 	get scrollLeft (): number {
-		return this._scrollLeft;
+		return this._scrollLeft / this._cssZoom;
 	}
 
 	set scrollLeft (v: number) {
 		const max = Math.max(0, this.scrollWidth - this.clientWidth);
-		// (On the device's pixels, as a browser keeps it)
-		const g = this.ownerDocument._pixelGrid || 1;
-		const next = Math.max(0, Math.min(max, Math.round((Number(v) || 0) * g) / g));
+		// (On the device's pixels, as a browser keeps it; kept in its layout's pixels: zoomed)
+		const z = this._cssZoom, g = this.ownerDocument._pixelGrid || 1;
+		const next = Math.max(0, Math.min(max * z, Math.round(Math.max(0, Math.min(max, Number(v) || 0)) * z * g) / g));
 		if (next === this._scrollLeft) return;
 		this._scrollLeft = next;
 		this.ownerDocument._changed(this, "scroll");
@@ -1184,9 +1192,9 @@ export class IgeUiElement extends IgeUiNode implements IgeCssMatchable {
 		return this._box ? [this.getBoundingClientRect()] : [];
 	}
 
-	/** How much bigger it's drawn than its own pixels (the UI's scale). */
+	/** How much bigger it's drawn than its own pixels (the UI's scale, and its CSS zoom). */
 	get currentCSSZoom (): number {
-		return this.ownerDocument._zoom;
+		return this.ownerDocument._zoom * this._cssZoom;
 	}
 
 	/** Whether it's drawn: displayed (and its ancestors), and with the options, visible and not see-through. */

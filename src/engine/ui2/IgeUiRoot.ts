@@ -39,6 +39,7 @@ import type { IgeUiFontProvider } from "@/engine/ui2/text/IgeUiFonts";
 import { IgeUiSdfAtlas, PAGE, SDF_EDGE, SDF_SIZE } from "@/engine/ui2/text/IgeUiSdfAtlas";
 import { inkSpans } from "@/engine/ui2/render/IgeUiTextDecoration";
 import { svgTransform } from "@/engine/ui2/render/IgeUiSvg";
+import { effectiveZoom, unzoomedStyle } from "@/engine/ui2/style/IgeUiZoom";
 
 export interface IgeUiMutationRecord {
 	type: "childList" | "attributes" | "characterData";
@@ -275,15 +276,18 @@ export class IgeUiRoot implements IgeUiDocumentHost {
 	 */
 	computedStyle (el: IgeUiElement): Record<string, string> & { getPropertyValue (name: string): string } {
 		this.flush();
-		const cs = el._computed;
+		// (Its lengths unzoomed, as a browser reports them: IgeUiZoom)
+		const zoom = effectiveZoom(el._computed);
+		const cs = el._computed && zoom !== 1 ? unzoomedStyle(el._computed) : el._computed;
 		const kebab = (k: string) => (k.startsWith("--") ? k : k.replace(/[A-Z]/g, (m) => `-${m.toLowerCase()}`));
 		const ctx = cs ? this.layoutEngine._ctx(cs) : undefined;
 		const read = (name: string): string => {
 			const b = el._box;
 			if (b && (name === "width" || name === "height")) {
 				const border = styleValue(cs, "box-sizing") === "border-box";
-				const v = name === "width" ? (border ? b.borderW : b.borderW - b.borderLeft - b.borderRight - b.paddingLeft - b.paddingRight) : border ? b.borderH : b.borderH - b.borderTop - b.borderBottom - b.paddingTop - b.paddingBottom;
-				return `${cssNumber(Math.max(0, v))}px`;
+				// (Less a scrollbar's room, which isn't zoomed)
+				const v = name === "width" ? (border ? b.borderW : b.borderW - b.borderLeft - b.borderRight - b.paddingLeft - b.paddingRight - (b.scrollbarY ?? 0)) : border ? b.borderH : b.borderH - b.borderTop - b.borderBottom - b.paddingTop - b.paddingBottom - (b.scrollbarX ?? 0);
+				return `${cssNumber(Math.max(0, v / zoom))}px`;
 			}
 			if (!cs || !ctx) return "";
 			if (name === "display") {
@@ -306,7 +310,9 @@ export class IgeUiRoot implements IgeUiDocumentHost {
 			}
 			// (Border widths snap to the device's pixels at the UI's scale, as they're drawn: a 1px border at 80% is one
 			// device pixel, 1.25px, as Chrome's zoomed UI gives it)
-			return serializeComputed(name, cs, ctx, b, this.dpr * this.scale, (u) => this.host.images.resolve(u));
+			// (A zoomed box's margins and paddings in its own pixels)
+			const own = b && zoom !== 1 ? (new Proxy(b, { get: (t, k) => (typeof t[k as keyof IgeUiBox] === "number" ? (t[k as keyof IgeUiBox] as number) / zoom : t[k as keyof IgeUiBox]) }) as IgeUiBox) : b;
+			return serializeComputed(name, cs, ctx, own, this.dpr * this.scale * zoom, (u) => this.host.images.resolve(u));
 		};
 		return new Proxy({} as Record<string, string> & { getPropertyValue (name: string): string }, {
 			get (_t, key) {
@@ -758,15 +764,17 @@ export class IgeUiRoot implements IgeUiDocumentHost {
 			if (!pb) continue;
 			const oy = styleValue(p._computed, "overflow-y");
 			if (oy !== "auto" && oy !== "scroll") continue;
+			// (In its layout's pixels: a zoomed scroller's are its zoom's worth of its own)
+			const z = p._cssZoom;
 			const top = b.ay - (pb.ay + pb.borderTop), bottom = top + b.borderH;
-			const view = p.clientHeight;
+			const view = p.clientHeight * z;
 			let next = p._scrollTop;
 			if (block === "start") next = top;
 			else if (block === "end") next = bottom - view;
 			else if (block === "center") next = top - (view - b.borderH) / 2;
 			else if (top < p._scrollTop) next = top;
 			else if (bottom > p._scrollTop + view) next = bottom - view;
-			p.scrollTop = next;
+			p.scrollTop = next / z;
 		}
 	}
 
@@ -1582,7 +1590,7 @@ export class IgeUiRoot implements IgeUiDocumentHost {
 				const dy = e.clientY - (d.lastY ?? d.y);
 				if (!d.dragging && Math.abs(e.clientY - d.y) > 8) d.dragging = true;
 				if (d.dragging) {
-					d.scroller.scrollTop -= dy / this.scale;
+					d.scroller.scrollTop -= dy / this.scale / d.scroller._cssZoom;
 					const dt = Math.max(1, e.timeStamp - (d.lastT ?? e.timeStamp - 16));
 					d.vy = (-dy / this.scale) / dt;
 				}
@@ -1785,11 +1793,11 @@ export class IgeUiRoot implements IgeUiDocumentHost {
 				const oy = styleValue(n._computed, "overflow-y"), ox = styleValue(n._computed, "overflow-x");
 				if ((oy === "auto" || oy === "scroll") && n.scrollHeight > n.clientHeight + 1 && e.deltaY) {
 					const before = n.scrollTop;
-					n.scrollTop += (e.deltaY * mult) / this.scale;
+					n.scrollTop += (e.deltaY * mult) / this.scale / n._cssZoom;
 					if (n.scrollTop !== before) break;
 				}
 				if ((ox === "auto" || ox === "scroll") && n.scrollWidth > n.clientWidth + 1 && e.deltaX) {
-					n.scrollLeft += (e.deltaX * mult) / this.scale;
+					n.scrollLeft += (e.deltaX * mult) / this.scale / n._cssZoom;
 					break;
 				}
 			}

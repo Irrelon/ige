@@ -21,6 +21,7 @@ import { measureSvgText, SVG_UNRENDERED, svgLayoutBounds, svgViewport } from "@/
 import { INHERITED } from "@/engine/ui2/style/IgeUiProperties";
 import { type IgeUiComputedStyle, styleValue } from "@/engine/ui2/style/IgeUiStyleEngine";
 import { fontWeight, type IgeUiFontProvider, type IgeUiFontSpec } from "@/engine/ui2/text/IgeUiFonts";
+import { effectiveZoom } from "@/engine/ui2/style/IgeUiZoom";
 
 const INLINE_LEVEL = new Set(["inline", "inline-block", "inline-flex", "inline-grid", "inline-table", "text"]);
 const ATOMIC_INLINE = new Set(["inline-block", "inline-flex", "inline-grid", "inline-table"]);
@@ -859,6 +860,14 @@ export class IgeUiLayoutEngine {
 	}
 
 	_replacedSize (b: IgeUiBox): { w: number; h: number } {
+		const r = this._replacedSizeNow(b);
+		// (Its own size in its zoom's pixels, as its lengths are: IgeUiZoom; a text field's is its font's, zoomed already)
+		const z = effectiveZoom(b.style);
+		if (z === 1 || (b.el!.localName === "input" && !["checkbox", "radio", "range"].includes(b.el!.getAttribute("type") ?? "text"))) return r;
+		return { w: r.w * z, h: r.h * z };
+	}
+
+	_replacedSizeNow (b: IgeUiBox): { w: number; h: number } {
 		const el = b.el!;
 		// (An attribute given is its size, 0 too; one not given, the element's own default)
 		const given = (v: string | null) => !!v && /^\s*(\d+\.?\d*|\.\d+)(px)?\s*$/.test(v);
