@@ -337,6 +337,9 @@ export class IgeUiLayoutEngine {
 		return { em: numOr(styleValue(style, "font-size"), 16), rem: this.rootFontSize, percent, vw: this.viewport.w, vh: this.viewport.h, cqw: cqw ?? this.viewport.w, cqh: cqh ?? this.viewport.h };
 	}
 
+	/** Size containers laid out in this layout, their content boxes (for @container: IgeUiRoot). */
+	containersSeen = new Map<IgeUiElement, { w: number; h: number }>();
+
 	/** Each style's box (for the size container round it: cq units), and size containers' content sizes as laid out. */
 	_styleBox = new WeakMap<IgeUiComputedStyle, IgeUiBox>();
 	_cqSize = new WeakMap<IgeUiBox, { w: number; h?: number }>();
@@ -1016,6 +1019,8 @@ export class IgeUiLayoutEngine {
 			}
 		}
 		if (b.el && !b.pseudo && oy === "auto") b.el._scrollbarY = b.scrollbarY! > 0;
+		// (A size container's content box, as laid out: what @container queries in it ask about, IgeUiRoot)
+		if ((ct === "inline-size" || ct === "size") && b.el && !b.pseudo) this.containersSeen.set(b.el, { w: contentWidth(b), h: Math.max(0, b.borderH - this._vEdges(b) - (b.scrollbarX ?? 0)) });
 		// Relative offsets are applied by the parent (after it places it); transforms recorded
 		b.transform = this.layoutBoxTransform(b);
 		if (b.baseline === undefined) b.baseline = this._firstBaseline(b);

@@ -653,3 +653,16 @@ describe("ui2: the casino port's gaps, more", () => {
 		expect(r.root.querySelector(".p")!.getBoundingClientRect().height).toBe(290);
 	});
 });
+
+describe("ui2: @container queries", () => {
+	it("ask about the nearest (or the named) size container's content box as laid out, and follow it as it changes", () => {
+		const r = ui(`.c { container-type: inline-size; width: 300px; padding: 0 10px; } .n { container: card / inline-size; width: 500px; } .x { color: blue; } @container (max-width: 300px) { .x { color: red; } } @container card (min-width: 450px) { .y { color: green; } }`, 800, 600);
+		r.root.innerHTML = `<div class="n"><div class="c"><p class="x">a</p><p class="y">b</p></div></div><p class="x out">c</p>`;
+		r.update(0);
+		const color = (s: string) => r.root.querySelector(s)!._computed!.color;
+		expect([color(".c .x"), color(".c .y"), color(".x.out")]).toEqual(["red", "green", "blue"]);
+		(r.root.querySelector(".c") as unknown as { style: { width: string } }).style.width = "320px";
+		r.update(16);
+		expect(color(".c .x")).toBe("blue");
+	});
+});

@@ -707,6 +707,30 @@ export class IgeUiRoot implements IgeUiDocumentHost {
 		this._restyle();
 		if (this._layoutDirty) this._layout();
 		else if (this._resizeCheck) this._resized();
+		this._containerQueries();
+	}
+
+	/**
+	 * Size containers laid out at a new size: their sizes given to the @container queries, and what's in them styled
+	 * and laid out again, now (once: a query that changes its container's size settles next frame).
+	 */
+	_containerQueries (): void {
+		const seen = this.layoutEngine.containersSeen;
+		if (!seen.size) return;
+		let moved = false;
+		for (const [el, size] of seen) {
+			const was = this.styles.containerSize.get(el);
+			if (was && Math.abs(was.w - size.w) < 0.01 && Math.abs(was.h - size.h) < 0.01) continue;
+			this.styles.containerSize.set(el, size);
+			if (!this.styles.containerQueries) continue;
+			for (const c of el.children) this._markStyle(c);
+			moved = true;
+		}
+		seen.clear();
+		if (!moved) return;
+		this._restyle();
+		if (this._layoutDirty) this._layout();
+		seen.clear();
 	}
 
 	/** The frame's work: animations, styles, layout, the display list. */
@@ -720,6 +744,7 @@ export class IgeUiRoot implements IgeUiDocumentHost {
 		const laidOut = this._layoutDirty;
 		if (this._layoutDirty) this._layout();
 		else if (this._resizeCheck) this._resized();
+		this._containerQueries();
 		this._momentumStep();
 		this._tooltipStep(now);
 		if (!this._paintDirty && this._repaintEls.size) {

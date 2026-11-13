@@ -127,7 +127,7 @@ export class IgeUiStyleEngine {
 		this.keyframes.clear();
 		this._index.clear();
 		this._any = [];
-		this.usesHas = this.usesSiblings = this.siblingDeep = false;
+		this.usesHas = this.usesSiblings = this.siblingDeep = this.containerQueries = false;
 		for (const set of [this.hasSubjects, this.siblingSubjects, this.combinatorSubjects, this.combinatorAnchors, this.hasArguments, this.stateDependent]) set.clear();
 		this._subjectClasses.clear();
 		let order = 0;
@@ -142,8 +142,12 @@ export class IgeUiStyleEngine {
 	/** The engine's defaults' sheets. */
 	_uaSheets = new WeakSet<IgeCssStylesheet>();
 
+	/** Some rule is inside an @container query (container sizes then matter to the styles). */
+	containerQueries = false;
+
 	_indexSheet (sheet: IgeCssStylesheet, ua: boolean): void {
 		for (const [k, v] of sheet.keyframes) this.keyframes.set(k, v);
+		if (sheet.rules.some((r) => r.container?.length)) this.containerQueries = true;
 		for (const rule of sheet.rules) {
 			for (const selector of parseSelectorList(rule.selector)) {
 				if (selector.unsupported) continue;
