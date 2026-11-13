@@ -1159,7 +1159,7 @@ export class IgeUiElement extends IgeUiNode implements IgeCssMatchable {
 		if (this.localName !== "canvas") return null;
 		if (!this._canvas) {
 			// (Its surface: the host's (a page canvas on the web), none where there are none (a test))
-			this._canvas = this.ownerDocument.host?.host?.surface.create(this.width, this.height);
+			this._canvas = this.ownerDocument.host?.host?.surface.create(this.width, this.height, this);
 			if (!this._canvas) return null;
 			this._canvas.width = this.width;
 			this._canvas.height = this.height;

@@ -38,6 +38,7 @@ import { fillTriangles } from "@/engine/ui2/render/IgeUiSvg";
 import { paintGradientTriangles, svgGradientMiddle } from "@/engine/ui2/render/IgeUiSvgGradient";
 import { gradientColorAt } from "@/engine/ui2/render/IgeUiTextClip";
 import { fontWeight, type IgeUiFontSpec } from "@/engine/ui2/text/IgeUiFonts";
+import type { IgeUiHost, IgeUiHostSurface, IgeUiSurface } from "@/engine/ui2/IgeUiHost";
 
 type M = [number, number, number, number, number, number];
 type Cap = "butt" | "round" | "square";
@@ -841,57 +842,33 @@ function imageSource (source: unknown): { el: IgeUiElement; width: number; heigh
 
 // ---------------------------------------------------------------- as a surface
 
-/**
- * A canvas surface drawn by the engine (the host seam's IgeUiSurface: its size and getContext), with one thing a
- * pixel surface hasn't: `paint`, its drawing as the painter's own items, which the painter uses in place of a
- * picture of it (no texture: nothing to upload).
- */
-export interface IgeUiCanvas2dSurface {
-	readonly width: number;
-	readonly height: number;
-	getContext (kind: string): IgeUiCanvas2d | null;
-	paint (items: IgeUiPaintItem[], x: number, y: number, w: number, h: number, opacity: number, clip: IgeUiClip, matrix?: IgeCssMatrix): void;
-}
-
-/** An engine-drawn surface: its 2D context records, its paint gives the painter what's recorded. */
-export function igeUiCanvas2dSurface (canvas: unknown, fonts: IgeUiCanvas2dFonts, size: () => [number, number], changed?: () => void): IgeUiCanvas2dSurface {
-	const ctx = new IgeUiCanvas2d(canvas, fonts, size, changed);
-	return {
-		get width () { return size()[0]; },
-		get height () { return size()[1]; },
-		getContext: (kind: string) => (kind === "2d" ? ctx : null),
-		paint: (items, x, y, w, h, opacity, clip, matrix) => ctx.paint(items, x, y, w, h, opacity, clip, matrix)
+/** An engine-drawn surface (the host seam's IgeUiSurface, with its paint): its 2D context records, its paint draws it. */
+export function igeUiCanvas2dSurface (w: number, h: number, fonts: IgeUiCanvas2dFonts, changed?: () => void): IgeUiSurface & { context: IgeUiCanvas2d } {
+	const surface = {
+		width: w,
+		height: h,
+		context: undefined as unknown as IgeUiCanvas2d,
+		getContext: (kind: string) => (kind === "2d" ? surface.context : null),
+		paint: (items: IgeUiPaintItem[], x: number, y: number, pw: number, ph: number, opacity: number, clip: IgeUiClip, matrix?: IgeCssMatrix) => surface.context.paint(items, x, y, pw, ph, opacity, clip, matrix)
 	};
+	// (Its size, the surface's: set by its canvas element as its width and height change, which clears it)
+	surface.context = new IgeUiCanvas2d(surface, fonts, () => [surface.width, surface.height], changed);
+	return surface;
 }
 
-// ---------------------------------------------------------------- on the canvas element
-
-/** The engine's 2D context of each engine <canvas> drawn by it. */
-const contexts = new WeakMap<IgeUiElement, IgeUiCanvas2d>();
-let everywhere = false;
-
-/** Every engine <canvas> draws its 2D through the engine, not only those marked data-canvas="engine" (a check of them all). */
-export function igeUiCanvas2dEverywhere (on: boolean): void {
-	everywhere = on;
-}
-
-/** An engine <canvas>'s engine 2D context, when it's to have one (data-canvas="engine", or everywhere); else undefined. */
-export function igeUiCanvas2dFor (el: IgeUiElement): IgeUiCanvas2d | undefined {
-	if (el.localName !== "canvas" || (!everywhere && el.getAttribute("data-canvas") !== "engine")) return undefined;
-	let ctx = contexts.get(el);
-	if (!ctx) {
-		const doc = el.ownerDocument as unknown as { host?: { layoutEngine?: { fonts?: IgeUiCanvas2dFonts } }; _changed?: (el: IgeUiElement, what: string) => void };
-		const fonts = doc.host?.layoutEngine?.fonts ?? { measure: () => 0, metrics: () => ({ ascent: 0, descent: 0 }) };
-		ctx = new IgeUiCanvas2d(el, fonts, () => [el.width, el.height], () => doc._changed?.(el, "paint"));
-		contexts.set(el, ctx);
-	}
-	return ctx;
-}
-
-/** The painter's items for an engine <canvas> its engine 2D context draws (true), or false (it's drawn as a picture). */
-export function igeUiPaintCanvas2d (items: IgeUiPaintItem[], el: IgeUiElement, x: number, y: number, w: number, h: number, opacity: number, clip: IgeUiClip, matrix?: IgeCssMatrix): boolean {
-	const ctx = contexts.get(el);
-	if (!ctx) return false;
-	ctx.paint(items, x, y, w, h, opacity, clip, matrix);
-	return true;
+/**
+ * Gives a host's engine canvases the engine's own 2D (IgeUiCanvas2d) in place of its surfaces: those `which` says
+ * (by default the ones marked data-canvas="engine"; `() => true` for every one, to compare them). The glyph atlas's
+ * surfaces (asked for with no element) stay the host's.
+ */
+export function igeUiCanvas2dOn (host: IgeUiHost, which: (el: IgeUiElement) => boolean = (el) => el.getAttribute("data-canvas") === "engine"): void {
+	const own = host.surface;
+	(host as { surface: IgeUiHostSurface }).surface = {
+		create: (w, h, el) => {
+			if (!el || !which(el)) return own.create(w, h, el);
+			const doc = el.ownerDocument as unknown as { host?: { host?: IgeUiHost; layoutEngine?: { fonts?: IgeUiCanvas2dFonts } }; _changed?: (el: IgeUiElement, what: string) => void };
+			const fonts = doc.host?.layoutEngine?.fonts ?? host.text.fonts;
+			return igeUiCanvas2dSurface(w, h, fonts, () => doc._changed?.(el, "paint"));
+		}
+	};
 }

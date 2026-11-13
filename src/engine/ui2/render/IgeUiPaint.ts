@@ -562,7 +562,10 @@ export class IgeUiPainter {
 					iy = cy + py;
 					if (iw > cw + 0.01 || ih > ch + 0.01) clip = intersect(clip, [cx, cy, cx + cw, cy + ch]);
 				}
-				this.items.push({ op: "image", x: ix, y: iy, w: iw, h: ih, source: el, opacity: ctx.opacity, clip, matrix: ctx.matrix, el, pixelated: styleValue(s, "image-rendering") === "pixelated" });
+				// (A surface the engine draws itself gives its own items: IgeUiHost's IgeUiSurface.paint)
+				const surface = el.localName === "canvas" ? el._canvas : undefined;
+				if (surface?.paint) surface.paint(this.items, ix, iy, iw, ih, ctx.opacity, clip, ctx.matrix);
+				else this.items.push({ op: "image", x: ix, y: iy, w: iw, h: ih, source: el, opacity: ctx.opacity, clip, matrix: ctx.matrix, el, pixelated: styleValue(s, "image-rendering") === "pixelated" });
 			} else if (el.localName === "svg") this._svg(el, cx, cy, cw, ch, ctx, current);
 			else if (el.localName === "input" && (el.getAttribute("type") === "range")) this._range(el, cx, cy, cw, ch, ctx);
 		}

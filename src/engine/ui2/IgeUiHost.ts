@@ -24,6 +24,8 @@
  * check that a native host has everything).
  */
 import type { IgeUiElement } from "@/engine/ui2/dom/IgeUiDom";
+import type { IgeCssMatrix } from "@/engine/ui2/css/IgeCssValues";
+import type { IgeUiClip, IgeUiPaintItem } from "@/engine/ui2/render/IgeUiPaint";
 import { type IgeUiFontProvider, IgeUiFixedFonts } from "@/engine/ui2/text/IgeUiFonts";
 
 export interface IgeUiHostTime {
@@ -73,11 +75,20 @@ export interface IgeUiSurface {
 	width: number;
 	height: number;
 	getContext (kind: string, opts?: unknown): unknown;
+	/**
+	 * A surface the engine draws itself (IgeUiCanvas2d): what's drawn on it as the painter's own items, shown in a box
+	 * (the canvas's, the UI's px) with the element's opacity, clip and transform, in place of a picture of its pixels
+	 * (it has none to upload).
+	 */
+	paint? (items: IgeUiPaintItem[], x: number, y: number, w: number, h: number, opacity: number, clip: IgeUiClip, matrix?: IgeCssMatrix): void;
 }
 
 export interface IgeUiHostSurface {
-	/** A surface w x h px; undefined where there are none (a test with no Canvas 2D). */
-	create (w: number, h: number): IgeUiSurface | undefined;
+	/**
+	 * A surface w x h px; undefined where there are none (a test with no Canvas 2D). `el`: the engine <canvas> it's
+	 * for (none for the glyph atlas's), so a host can give a canvas the engine's own (igeUiCanvas2dOn).
+	 */
+	create (w: number, h: number, el?: IgeUiElement): IgeUiSurface | undefined;
 }
 
 /** The field typing goes to, as the host's text input needs it. */

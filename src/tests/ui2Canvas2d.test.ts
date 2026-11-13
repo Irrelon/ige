@@ -1,4 +1,6 @@
-import { IgeUiCanvas2d, parseCanvasFont } from "@/engine/ui2/render/IgeUiCanvas2d";
+import { IgeUiCanvas2d, igeUiCanvas2dOn, parseCanvasFont } from "@/engine/ui2/render/IgeUiCanvas2d";
+import { IgeUiRoot } from "@/engine/ui2/IgeUiRoot";
+import { igeUiHeadlessHost } from "@/engine/ui2/IgeUiHost";
 import type { IgeUiPaintItem } from "@/engine/ui2/render/IgeUiPaint";
 
 /** Text as 6 px a character at 10 px, ascent 8 and descent 2 a 10 px font. */
@@ -115,5 +117,24 @@ describe("ui2: the engine's 2D canvas", () => {
 		expect(paint().length).toBe(0);
 		c.fillRect(0, 0, 10, 10);
 		expect((paint()[0] as Extract<IgeUiPaintItem, { op: "box" }>).x).toBe(0);
+	});
+
+	it("is a canvas element's surface when its host gives it (data-canvas=\"engine\"): its items painted in the canvas's box; other canvases keep the host's", () => {
+		const host = igeUiHeadlessHost({ width: 400, height: 300 });
+		igeUiCanvas2dOn(host);
+		const r = new IgeUiRoot({ host, width: 400, height: 300 });
+		r.addStyleSheet("body { margin: 0; } canvas { display: block; width: 200px; height: 100px; }");
+		r.document.body.innerHTML = `<canvas width="100" height="50" data-canvas="engine"></canvas><canvas width="10" height="10"></canvas>`;
+		const [mine, other] = r.document.querySelectorAll("canvas");
+		const c = mine.getContext("2d") as unknown as IgeUiCanvas2d;
+		expect(c).toBeInstanceOf(IgeUiCanvas2d);
+		expect(other.getContext("2d")).toBeNull();
+		c.fillStyle = "#00f";
+		c.fillRect(10, 5, 20, 10);
+		r.update();
+		const box = r.items.find((i) => i.op === "box" && i.color?.b === 255) as Extract<IgeUiPaintItem, { op: "box" }>;
+		expect([box.x, box.y, box.w, box.h]).toEqual([20, 10, 40, 20]);
+		// (No picture of it: its items are the drawing)
+		expect(r.items.some((i) => i.op === "image" && i.source === mine)).toBe(false);
 	});
 });
